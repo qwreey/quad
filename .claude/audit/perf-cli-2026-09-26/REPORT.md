@@ -1,6 +1,6 @@
 # CLI 산술 성능 측정 — P3(Compute 전파) · P2(Slot:List 갱신) — 2026-09-26
 
-`research/perf-measurement-plan.md` §2의 P3·P2 첫 회차(sonnet, 자율 루프 1회차 — `session/2026-09-26-01-autonomous-loop.md`). **CLI mock 산술**이다 — 호출 수·할당·상대 비용만 믿고, `os.clock()`은 3회 반복 중앙값 참고치일 뿐 프레임 시간 주장이 아니다. 재현: 레포 루트에서 `./scripts/relink.sh` 뒤 `luau .claude/audit/perf-cli-2026-09-26/p3-compute.luau`, `luau .claude/audit/perf-cli-2026-09-26/p2-slotlist.luau`.
+`research/perf-measurement-plan.md` §2의 P3·P2 첫 회차(sonnet, 자율 루프 1회차 — `session/2026-09-26-01-autonomous-loop.md`). **[2026-09-27 E62 보강]** 측정 커밋 sha가 빠져 있었다 — P2·P3는 `6f3da255`, P1·P6·p2-trace는 `85383454` 시점(그 사이 `9afd271e`·`a38f4a00`이 `Dispatch/init.luau`를 바꿈)이고, 두 sha와 HEAD `36db81c6`를 같은 하네스로 재측정한 결과 호출·스캔 수는 바이트 단위 동일·시간 ±10% 안(`audit/round13-e62-perf-recheck/`). 절대 시간은 그날 머신 상태 값(재측정에서 P2 end-insert/middle-delete가 10%+ 낮게 나온 것은 기준선 트리도 같아 머신 차이). **CLI mock 산술**이다 — 호출 수·할당·상대 비용만 믿고, `os.clock()`은 3회 반복 중앙값 참고치일 뿐 프레임 시간 주장이 아니다. 재현: 레포 루트에서 `./scripts/relink.sh` 뒤 `luau .claude/audit/perf-cli-2026-09-26/p3-compute.luau`, `luau .claude/audit/perf-cli-2026-09-26/p2-slotlist.luau`.
 
 측정 과정의 교훈 둘(프로브 머리에도 적음): Observer 콜백이 `target:Get()`을 안 하면 리프 Compute는 재계산되지 않는다(게으름 계약 — 1차 초안이 recompute 0으로 나온 원인); 타이밍 반복과 카운팅을 같은 그래프·카운터로 하면 카운트가 반복 수만큼 불린다 — 최종 스크립트는 둘을 분리했다.
 
@@ -11,7 +11,7 @@ Source 1 → 선형 Compute 사슬 깊이 d → 리프에 Observer f개(살아 �
 | d | f | recompute | 발화 | t(중앙값) | gcΔ KB(그래프 빌드) |
 |---|---|---|---|---|---|
 | 1 | 1 | 1 | 1 | 0.000001s | 4 |
-| 1 | 10 | 1 | 10 | 0.000004s | 14 |
+| 1 | 10 | 1 | 10 | 0.000004s | 14(**[2026-09-27 E62]** 세 커밋 재측정 15회 전부 28~29 — 당시 단발 값 또는 d=10·f=1 행과 섞임; 결론 무영향) |
 | 1 | 100 | 1 | 100 | 0.000027s | 272 |
 | 10 | 1 | 10 | 1 | 0.000006s | 15 |
 | 10 | 10 | 10 | 10 | 0.000009s | 39 |

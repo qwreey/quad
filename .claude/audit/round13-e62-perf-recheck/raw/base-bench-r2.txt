@@ -1,0 +1,16 @@
+B1 leaf Add x1000, mounted                                        88.240 ms
+B2 State(leaf) Add x1000, mounted                                217.311 ms
+B3 nil State Add x1000, unmounted                                 51.433 ms
+B4 :List full replace (1000 -> 1000 new keys), one :Set           91.650 ms
+B5 :List full reverse (1000), one :Set                            71.846 ms
+B6 :List half replace (odd keys new), one :Set                    50.480 ms
+B7 :List end-insert 1 (1000), one :Set                             0.712 ms
+B8 :List middle-delete 1 (1000), one :Set                          1.522 ms
+B9 nested Set: st:Set(fresh Slot{leaf}) x1000, mounted State element    14.135 ms
+B10 nested Set: Slot{State<State<leaf>> x1000}, inner:Set x1000     9.376 ms
+B11 nested Set: Slot{State<Frame> x1000}, each :Set(new leaf)      7.958 ms
+B12 Add+Extract of Slot{leaf} x1000 at depth 1, mounted           13.445 ms
+B12 Add+Extract of Slot{leaf} x1000 at depth 10, mounted          38.024 ms
+B12 Add+Extract of Slot{leaf} x1000 at depth 100, mounted        206.000 ms
+B13 chain: 1000 nested unmounted Slots built bottom-up             1.615 ms
+B14 chain via States: 1000 levels Slot{State(prev)}                7.858 ms

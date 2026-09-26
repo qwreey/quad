@@ -1,0 +1,121 @@
+=== front-insert-1 — writes into bk tables by writing function (counting run, proxied) ===
+writer -> table  (scan: = wrapped fn)             N=100       N=1000         N=5000 /N² @5000
+spliceArraysUp -> sourceList                        101         1001           5001      0.000
+reindexFrom -> indexOfElement                       101         1001           5001      0.000
+spliceArraysUp -> lengthList                        101         1001           5001      0.000
+scan:_recompute                                     101         1001           5001      0.000
+spliceArraysUp -> observers                         101         1001           5001      0.000
+scan:getOffsetAt                                    101         1001           5001      0.000
+getOffsetAt cursor-advance, caller reconcile          100         1000           5000      0.000
+getOffsetAt -> offsetCache                          100         1000           5000      0.000
+getOffsetAt cursor-advance, caller rawAdd             1            1              1      0.000
+ensureBase -> offsetCache                             1            1              1      0.000
+setLength -> lengthList                               1            1              1      0.000
+setLength -> indexOfElement                           1            1              1      0.000
+setOffsetSource -> sourceList                         1            1              1      0.000
+calls: getOffsetAt / _recompute                   102/1       1002/1         5002/1
+
+=== full-reverse — writes into bk tables by writing function (counting run, proxied) ===
+writer -> table  (scan: = wrapped fn)             N=100       N=1000         N=5000 /N² @5000
+scan:getOffsetAt                                   5050       500500       12502500      0.500
+rotateInPlace -> sourceList                        5049       500499       12502499      0.500
+reindexRange -> indexOfElement                     5049       500499       12502499      0.500
+getOffsetAt -> offsetCache                         5049       500499       12502499      0.500
+rotateInPlace -> lengthList                        5049       500499       12502499      0.500
+rotateInPlace -> observers                         5049       500499       12502499      0.500
+getOffsetAt cursor-advance, caller rawMove         4852       498502       12492502      0.500
+getOffsetAt cursor-advance, caller reconcile          198         1998           9998      0.000
+scan:_recompute                                     100         1000           5000      0.000
+ensureBase -> offsetCache                             1            1              1      0.000
+calls: getOffsetAt / _recompute                   298/1       2998/1        14998/1
+
+=== full-replace — writes into bk tables by writing function (counting run, proxied) ===
+writer -> table  (scan: = wrapped fn)             N=100       N=1000         N=5000 /N² @5000
+reindexFrom -> indexOfElement                     12395      1244569       30960289      1.238
+spliceArraysUp -> lengthList                      10100      1001000       25005000      1.000
+spliceArraysUp -> observers                       10100      1001000       25005000      1.000
+spliceArraysUp -> sourceList                      10100      1001000       25005000      1.000
+spliceArraysDown -> sourceList                     2395       244569        5960289      0.238
+spliceArraysDown -> lengthList                     2395       244569        5960289      0.238
+spliceArraysDown -> observers                      2395       244569        5960289      0.238
+scan:getOffsetAt                                   1144        83279        2057808      0.082
+getOffsetAt -> offsetCache                         1143        83278        2057807      0.082
+getOffsetAt cursor-advance, caller rawRemove          945        81280        2047809      0.082
+vacate -> indexOfElement                            100         1000           5000      0.000
+setLength -> lengthList                             100         1000           5000      0.000
+getOffsetAt cursor-advance, caller rawAdd           100         1000           5000      0.000
+scan:_recompute                                     100         1000           5000      0.000
+setLength -> indexOfElement                         100         1000           5000      0.000
+setOffsetSource -> sourceList                       100         1000           5000      0.000
+getOffsetAt cursor-advance, caller reconcile           99          999           4999      0.000
+ensureBase -> offsetCache                             1            1              1      0.000
+calls: getOffsetAt / _recompute                   300/1       3000/1        15000/1
+
+=== timing runs (no proxies): SELF time of wrapped functions vs total — median-of-1, fresh build ===
+op             N      total(s)  self-time share of wrapped fns (rest = Slot internals: reindex*/splice*/rotate/table.insert|remove on _elements, List reconcile, updateFn)
+front-insert-1 100      0.0002  getOffsetAt 20.7%, _recompute 7.6%, REST 70.8%
+front-insert-1 1000     0.0018  getOffsetAt 22.5%, _recompute 6.8%, REST 70.6%
+front-insert-1 5000     0.0083  getOffsetAt 23.6%, _recompute 6.8%, REST 69.6%
+full-reverse   100      0.0012  getOffsetAt 49.3%, _recompute 1.1%, nativeMove 1.0%, REST 48.6%
+full-reverse   1000     0.0829  getOffsetAt 60.8%, REST 38.9%
+full-reverse   5000     1.9907  getOffsetAt 62.4%, REST 37.5%
+full-replace   100      0.0021  getOffsetAt 10.7%, nativeRemove 4.9%, setLength 3.3%, nativeInsert 1.4%, setOffsetSource 1.4%, _recompute 1.1%, REST 77.2%
+full-replace   1000     0.0924  getOffsetAt 10.0%, nativeRemove 2.6%, setLength 0.8%, REST 85.8%
+full-replace   5000     2.0866  getOffsetAt 10.1%, nativeRemove 1.8%, REST 87.7%
+
+micro: one weak-key reindex write 11.9 ns, one array-slot shift 7.1 ns
+
+=== nested: inner insert 1 — per-owner scans (counting run) + time ===
+outerN  recompute calls in/out     recompute scan in/out      getOffsetAt adv in/out t(s)       self-time shares
+10      1/0                        11/0                       3/0                    0.000043   _recompute 21%, getOffsetAt 11%, setLength 2%, nativeInsert 1%, setOffsetSource 1%, REST 63%
+100     1/0                        11/0                       3/0                    0.000046   _recompute 36%, getOffsetAt 8%, setLength 2%, nativeInsert 1%, setOffsetSource 1%, REST 53%
+1000    1/0                        11/0                       3/0                    0.000157   _recompute 79%, getOffsetAt 3%, setLength 1%, nativeInsert 0%, setOffsetSource 0%, REST 17%
+  inner bk reads/writes by function (N=5000):
+    READ lengthList by contribution          14
+    READ offsetCache by getOffsetAt          12
+    READ lengthList by recompute             11
+    READ sourceList by recompute             11
+    READ indexOfElement by indexOfRaw        10
+    getOffsetAt -> offsetCache               3
+    READ lengthList by getOffsetAt           3
+    reindexFrom -> indexOfElement            1
+    setOffsetSource -> sourceList            1
+    spliceArraysUp -> lengthList             1
+    setLength -> indexOfElement              1
+    spliceArraysUp -> observers              1
+    READ indexOfElement by gatedRecompute    1
+    READ observers by setLength              1
+    spliceArraysUp -> sourceList             1
+    setLength -> lengthList                  1
+  outer bk reads/writes by function (N=5000) — recompute here is Bookkeeping's LOCAL recompute reached via gatedRecompute, invisible to the BK._recompute wrap:
+    READ lengthList by recompute             1000
+    READ lengthList by contribution          1000
+    READ sourceList by recompute             1000
+    READ offsetCache by getOffsetAt          1
+    READ indexOfElement by gatedRecompute    1
+5000    1/0                        11/0                       3/0                    0.000620   _recompute 93%, getOffsetAt 1%, setLength 0%, nativeInsert 0%, setOffsetSource 0%, REST 6%
+  inner bk reads/writes by function (N=5000):
+    READ lengthList by contribution          14
+    READ offsetCache by getOffsetAt          12
+    READ lengthList by recompute             11
+    READ sourceList by recompute             11
+    READ indexOfElement by indexOfRaw        10
+    getOffsetAt -> offsetCache               3
+    READ lengthList by getOffsetAt           3
+    reindexFrom -> indexOfElement            1
+    setOffsetSource -> sourceList            1
+    spliceArraysUp -> lengthList             1
+    setLength -> indexOfElement              1
+    spliceArraysUp -> observers              1
+    READ indexOfElement by gatedRecompute    1
+    READ observers by setLength              1
+    spliceArraysUp -> sourceList             1
+    setLength -> lengthList                  1
+  outer bk reads/writes by function (N=5000) — recompute here is Bookkeeping's LOCAL recompute reached via gatedRecompute, invisible to the BK._recompute wrap:
+    READ lengthList by recompute             5000
+    READ lengthList by contribution          5000
+    READ sourceList by recompute             5000
+    READ offsetCache by getOffsetAt          1
+    READ indexOfElement by gatedRecompute    1
+
+DONE

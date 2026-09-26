@@ -1,0 +1,4 @@
+B9 nested Set: st:Set(fresh Slot{leaf}) x1000, mounted State element    12.042 ms
+B10 nested Set: Slot{State<State<leaf>> x1000}, inner:Set x1000    10.171 ms
+B13 chain: 1000 nested unmounted Slots built bottom-up             1.828 ms
+B14 chain via States: 1000 levels Slot{State(prev)}                7.605 ms

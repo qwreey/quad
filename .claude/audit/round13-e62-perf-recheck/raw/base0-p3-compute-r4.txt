@@ -1,0 +1,34 @@
+=== P3a: depth d, fanout f — recomputes/notifications for ONE root :Set (counting run) ===
+d      f      recomputes     fires         
+1      1      1              1             
+1      10     1              10            
+1      100    1              100           
+10     1      10             1             
+10     10     10             10            
+10     100    10             100           
+50     1      50             1             
+50     10     50             10            
+50     100    50             100           
+
+=== P3a-time: same shapes, wall time for ONE root :Set, median of 3 FRESH graphs, + GC delta of one fresh build ===
+d      f      t(median,3x)   gcΔ(build,KB)
+1      1      0.000001       4.0         
+1      10     0.000004       28.0        
+1      100    0.000026       271.0       
+10     1      0.000006       14.0        
+10     10     0.000009       40.0        
+10     100    0.000033       283.0       
+50     1      0.000029       54.0        
+50     10     0.000030       78.0        
+50     100    0.000056       301.0       
+
+=== P3b: diamond — one source -> two computes -> one join compute, join recomputes once? ===
+aRuns=1 bRuns=1 joinRuns=1 fires=1 (join:Get()=13, expected 13)
+
+=== P3c: fanout-only sanity (d=1), wall time trend for ONE :Set, fresh graph per f ===
+f        t(one :Set)
+1        0.000001  
+100      0.000028  
+1000     0.000297  
+
+DONE

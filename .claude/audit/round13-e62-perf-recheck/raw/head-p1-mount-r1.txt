@@ -1,0 +1,26 @@
+=== P1-count: static `D.Frame { D.TextLabel {...} x N }`, 1 property/item — one counting build per N ===
+N      process    Property   InstChild      recompute      scanSum    getOffset  claim    hold+bind
+100    0          100        100            1              100        0          101      402     
+1000   0          1000       1000           1              1000       0          1001     4002    
+5000   0          5000       5000           1              5000       0          5001     20002   
+
+=== P1-count-list: `Slot:List` building the SAME N TextLabels (1 property/item), mounted as the Frame's one child ===
+N      process    Property   SlotHandler    recompute      scanSum    getOffset  claim    hold+bind
+100    0          100        1              2              101        100        101      214     
+1000   0          1000       1              2              1001       1000       1001     2014    
+5000   0          5000       1              2              5001       5000       5001     10014   
+
+=== P1-props: static, N=1000 fixed, properties/item varied — Property.process call count and per-item marginal cost ===
+propsPerItem     process    Property   t(median,3x) gcΔ(KB)    
+1                0          1000       0.018906     5409.0      
+5                0          5000       0.026477     8140.0      
+10               0          10000      0.040696     12708.0     
+
+=== P1-time: static vs Slot:List, same N, 1 property/item — wall time (median of 3 FRESH builds) + gcΔ (1 fresh build) ===
+shape    N        t(median,3x) gcΔ(KB)    
+static   100      0.001367     453.0       
+list     100      0.001495     455.0       
+static   1000     0.013803     4386.0      
+list     1000     0.012715     4292.0      
+static   5000     0.071737     22913.0     
+list     5000     0.070828     22676.0     

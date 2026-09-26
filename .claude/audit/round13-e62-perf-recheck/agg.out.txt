@@ -1,0 +1,460 @@
+bench        | bench                  | B1 leaf Add x1000, mounted               | ms             | base med 89.652 min 88.24 n5 | head med 90.135 min 88.496 n5 | x1.005 VAR
+bench        | bench                  | B10 nested Set: Slot{State<State<leaf>>  | ms             | base med 9.039 min 8.542 n5 | head med 9.746 min 9.487 n5 | x1.078 VAR
+bench        | bench                  | B11 nested Set: Slot{State<Frame> x1000} | ms             | base med 7.766 min 7.373 n5 | head med 7.641 min 7.305 n5 | x0.984 VAR
+bench        | bench                  | B12 Add+Extract of Slot{leaf} x1000 at d | ms             | base med 13.445 min 13.083 n5 | head med 14.012 min 13.197 n5 | x1.042 VAR
+bench        | bench                  | B12 Add+Extract of Slot{leaf} x1000 at d | ms             | base med 38.024 min 31.322 n5 | head med 32.262 min 31.058 n5 | x0.848 VAR
+bench        | bench                  | B12 Add+Extract of Slot{leaf} x1000 at d | ms             | base med 213.902 min 206 n5 | head med 211.737 min 210.359 n5 | x0.990 VAR
+bench        | bench                  | B13 chain: 1000 nested unmounted Slots b | ms             | base med 1.687 min 1.615 n5 | head med 2.679 min 1.661 n5 | x1.588 VAR
+bench        | bench                  | B14 chain via States: 1000 levels Slot{S | ms             | base med 8.191 min 7.858 n5 | head med 13.384 min 7.931 n5 | x1.634 VAR
+bench        | bench                  | B2 State(leaf) Add x1000, mounted        | ms             | base med 212.789 min 206.38 n5 | head med 208.793 min 204.903 n5 | x0.981 VAR
+bench        | bench                  | B3 nil State Add x1000, unmounted        | ms             | base med 52.005 min 48.029 n5 | head med 48.868 min 48.093 n5 | x0.940 VAR
+bench        | bench                  | B4 :List full replace (1000 -> 1000 new  | ms             | base med 92.252 min 90.53 n5 | head med 90.813 min 89.91 n5 | x0.984 VAR
+bench        | bench                  | B5 :List full reverse (1000), one :Set   | ms             | base med 74.805 min 71.731 n5 | head med 72.944 min 72.063 n5 | x0.975 VAR
+bench        | bench                  | B6 :List half replace (odd keys new), on | ms             | base med 52.403 min 50.279 n5 | head med 51.561 min 50.312 n5 | x0.984 VAR
+bench        | bench                  | B7 :List end-insert 1 (1000), one :Set   | ms             | base med 0.725 min 0.706 n5 | head med 0.792 min 0.706 n5 | x1.092 VAR
+bench        | bench                  | B8 :List middle-delete 1 (1000), one :Se | ms             | base med 1.355 min 1.235 n5 | head med 1.278 min 1.243 n5 | x0.943 VAR
+bench        | bench                  | B9 nested Set: st:Set(fresh Slot{leaf})  | ms             | base med 16.682 min 12.308 n5 | head med 12.411 min 12.229 n5 | x0.744 VAR
+p1-mount     | P1-count               | 100                                      | InstChild      | base med 100 min 100 n5 | head med 100 min 100 n5 | x1.000 CONST
+p1-mount     | P1-count               | 100                                      | Property       | base med 100 min 100 n5 | head med 100 min 100 n5 | x1.000 CONST
+p1-mount     | P1-count               | 100                                      | claim          | base med 101 min 101 n5 | head med 101 min 101 n5 | x1.000 CONST
+p1-mount     | P1-count               | 100                                      | getOffset      | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p1-mount     | P1-count               | 100                                      | hold+bind      | base med 402 min 402 n5 | head med 402 min 402 n5 | x1.000 CONST
+p1-mount     | P1-count               | 100                                      | process        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p1-mount     | P1-count               | 100                                      | recompute      | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p1-mount     | P1-count               | 100                                      | scanSum        | base med 100 min 100 n5 | head med 100 min 100 n5 | x1.000 CONST
+p1-mount     | P1-count               | 1000                                     | InstChild      | base med 1000 min 1000 n5 | head med 1000 min 1000 n5 | x1.000 CONST
+p1-mount     | P1-count               | 1000                                     | Property       | base med 1000 min 1000 n5 | head med 1000 min 1000 n5 | x1.000 CONST
+p1-mount     | P1-count               | 1000                                     | claim          | base med 1001 min 1001 n5 | head med 1001 min 1001 n5 | x1.000 CONST
+p1-mount     | P1-count               | 1000                                     | getOffset      | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p1-mount     | P1-count               | 1000                                     | hold+bind      | base med 4002 min 4002 n5 | head med 4002 min 4002 n5 | x1.000 CONST
+p1-mount     | P1-count               | 1000                                     | process        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p1-mount     | P1-count               | 1000                                     | recompute      | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p1-mount     | P1-count               | 1000                                     | scanSum        | base med 1000 min 1000 n5 | head med 1000 min 1000 n5 | x1.000 CONST
+p1-mount     | P1-count               | 5000                                     | InstChild      | base med 5000 min 5000 n5 | head med 5000 min 5000 n5 | x1.000 CONST
+p1-mount     | P1-count               | 5000                                     | Property       | base med 5000 min 5000 n5 | head med 5000 min 5000 n5 | x1.000 CONST
+p1-mount     | P1-count               | 5000                                     | claim          | base med 5001 min 5001 n5 | head med 5001 min 5001 n5 | x1.000 CONST
+p1-mount     | P1-count               | 5000                                     | getOffset      | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p1-mount     | P1-count               | 5000                                     | hold+bind      | base med 20002 min 20002 n5 | head med 20002 min 20002 n5 | x1.000 CONST
+p1-mount     | P1-count               | 5000                                     | process        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p1-mount     | P1-count               | 5000                                     | recompute      | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p1-mount     | P1-count               | 5000                                     | scanSum        | base med 5000 min 5000 n5 | head med 5000 min 5000 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 100                                      | Property       | base med 100 min 100 n5 | head med 100 min 100 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 100                                      | SlotHandler    | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 100                                      | claim          | base med 101 min 101 n5 | head med 101 min 101 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 100                                      | getOffset      | base med 100 min 100 n5 | head med 100 min 100 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 100                                      | hold+bind      | base med 214 min 214 n5 | head med 214 min 214 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 100                                      | process        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p1-mount     | P1-count-list          | 100                                      | recompute      | base med 2 min 2 n5 | head med 2 min 2 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 100                                      | scanSum        | base med 101 min 101 n5 | head med 101 min 101 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 1000                                     | Property       | base med 1000 min 1000 n5 | head med 1000 min 1000 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 1000                                     | SlotHandler    | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 1000                                     | claim          | base med 1001 min 1001 n5 | head med 1001 min 1001 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 1000                                     | getOffset      | base med 1000 min 1000 n5 | head med 1000 min 1000 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 1000                                     | hold+bind      | base med 2014 min 2014 n5 | head med 2014 min 2014 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 1000                                     | process        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p1-mount     | P1-count-list          | 1000                                     | recompute      | base med 2 min 2 n5 | head med 2 min 2 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 1000                                     | scanSum        | base med 1001 min 1001 n5 | head med 1001 min 1001 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 5000                                     | Property       | base med 5000 min 5000 n5 | head med 5000 min 5000 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 5000                                     | SlotHandler    | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 5000                                     | claim          | base med 5001 min 5001 n5 | head med 5001 min 5001 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 5000                                     | getOffset      | base med 5000 min 5000 n5 | head med 5000 min 5000 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 5000                                     | hold+bind      | base med 10014 min 10014 n5 | head med 10014 min 10014 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 5000                                     | process        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p1-mount     | P1-count-list          | 5000                                     | recompute      | base med 2 min 2 n5 | head med 2 min 2 n5 | x1.000 CONST
+p1-mount     | P1-count-list          | 5000                                     | scanSum        | base med 5001 min 5001 n5 | head med 5001 min 5001 n5 | x1.000 CONST
+p1-mount     | P1-props               | 1                                        | Property       | base med 1000 min 1000 n5 | head med 1000 min 1000 n5 | x1.000 CONST
+p1-mount     | P1-props               | 1                                        | gcΔ(KB)        | base med 5409 min 5409 n5 | head med 5411 min 5409 n5 | x1.000 VAR
+p1-mount     | P1-props               | 1                                        | process        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p1-mount     | P1-props               | 1                                        | t(median,3x)   | base med 0.019127 min 0.018627 n5 | head med 0.018724 min 0.01835 n5 | x0.979 VAR
+p1-mount     | P1-props               | 10                                       | Property       | base med 10000 min 10000 n5 | head med 10000 min 10000 n5 | x1.000 CONST
+p1-mount     | P1-props               | 10                                       | gcΔ(KB)        | base med 12709 min 12709 n5 | head med 12708 min 12708 n5 | x1.000 VAR
+p1-mount     | P1-props               | 10                                       | process        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p1-mount     | P1-props               | 10                                       | t(median,3x)   | base med 0.041325 min 0.040906 n5 | head med 0.041143 min 0.040184 n5 | x0.996 VAR
+p1-mount     | P1-props               | 5                                        | Property       | base med 5000 min 5000 n5 | head med 5000 min 5000 n5 | x1.000 CONST
+p1-mount     | P1-props               | 5                                        | gcΔ(KB)        | base med 8140 min 8140 n5 | head med 8140 min 8140 n5 | x1.000 VAR
+p1-mount     | P1-props               | 5                                        | process        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p1-mount     | P1-props               | 5                                        | t(median,3x)   | base med 0.025896 min 0.025737 n5 | head med 0.026226 min 0.025205 n5 | x1.013 VAR
+p1-mount     | P1-time                | list 100                                 | gcΔ(KB)        | base med 455 min 455 n5 | head med 455 min 455 n5 | x1.000 CONST
+p1-mount     | P1-time                | list 100                                 | t(median,3x)   | base med 0.001521 min 0.001505 n5 | head med 0.001497 min 0.001486 n5 | x0.984 VAR
+p1-mount     | P1-time                | list 1000                                | gcΔ(KB)        | base med 4292 min 4292 n5 | head med 4292 min 4292 n5 | x1.000 CONST
+p1-mount     | P1-time                | list 1000                                | t(median,3x)   | base med 0.012916 min 0.012503 n5 | head med 0.012715 min 0.01256 n5 | x0.984 VAR
+p1-mount     | P1-time                | list 5000                                | gcΔ(KB)        | base med 22676 min 22676 n5 | head med 22676 min 22676 n5 | x1.000 CONST
+p1-mount     | P1-time                | list 5000                                | t(median,3x)   | base med 0.068234 min 0.067242 n5 | head med 0.068854 min 0.06756 n5 | x1.009 VAR
+p1-mount     | P1-time                | static 100                               | gcΔ(KB)        | base med 453 min 453 n5 | head med 453 min 453 n5 | x1.000 CONST
+p1-mount     | P1-time                | static 100                               | t(median,3x)   | base med 0.001378 min 0.001371 n5 | head med 0.001367 min 0.001336 n5 | x0.992 VAR
+p1-mount     | P1-time                | static 1000                              | gcΔ(KB)        | base med 4385 min 4385 n5 | head med 4386 min 4385 n5 | x1.000 VAR
+p1-mount     | P1-time                | static 1000                              | t(median,3x)   | base med 0.014645 min 0.013959 n5 | head med 0.013803 min 0.013476 n5 | x0.943 VAR
+p1-mount     | P1-time                | static 5000                              | gcΔ(KB)        | base med 22914 min 22914 n5 | head med 22913 min 22913 n5 | x1.000 VAR
+p1-mount     | P1-time                | static 5000                              | t(median,3x)   | base med 0.07343 min 0.07176 n5 | head med 0.071737 min 0.070986 n5 | x0.977 VAR
+p2-slotlist  | P2                     | end-insert-1 100                         | dispose        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | end-insert-1 100                         | extract        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | end-insert-1 100                         | insert         | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p2-slotlist  | P2                     | end-insert-1 100                         | move           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | end-insert-1 100                         | remove         | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | end-insert-1 100                         | swap           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | end-insert-1 100                         | updateFn       | base med 101 min 101 n5 | head med 101 min 101 n5 | x1.000 CONST
+p2-slotlist  | P2                     | end-insert-1 1000                        | dispose        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | end-insert-1 1000                        | extract        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | end-insert-1 1000                        | insert         | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p2-slotlist  | P2                     | end-insert-1 1000                        | move           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | end-insert-1 1000                        | remove         | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | end-insert-1 1000                        | swap           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | end-insert-1 1000                        | updateFn       | base med 1001 min 1001 n5 | head med 1001 min 1001 n5 | x1.000 CONST
+p2-slotlist  | P2                     | end-insert-1 5000                        | dispose        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | end-insert-1 5000                        | extract        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | end-insert-1 5000                        | insert         | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p2-slotlist  | P2                     | end-insert-1 5000                        | move           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | end-insert-1 5000                        | remove         | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | end-insert-1 5000                        | swap           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | end-insert-1 5000                        | updateFn       | base med 5001 min 5001 n5 | head med 5001 min 5001 n5 | x1.000 CONST
+p2-slotlist  | P2                     | front-insert-1 100                       | dispose        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | front-insert-1 100                       | extract        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | front-insert-1 100                       | insert         | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p2-slotlist  | P2                     | front-insert-1 100                       | move           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | front-insert-1 100                       | remove         | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | front-insert-1 100                       | swap           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | front-insert-1 100                       | updateFn       | base med 101 min 101 n5 | head med 101 min 101 n5 | x1.000 CONST
+p2-slotlist  | P2                     | front-insert-1 1000                      | dispose        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | front-insert-1 1000                      | extract        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | front-insert-1 1000                      | insert         | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p2-slotlist  | P2                     | front-insert-1 1000                      | move           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | front-insert-1 1000                      | remove         | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | front-insert-1 1000                      | swap           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | front-insert-1 1000                      | updateFn       | base med 1001 min 1001 n5 | head med 1001 min 1001 n5 | x1.000 CONST
+p2-slotlist  | P2                     | front-insert-1 5000                      | dispose        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | front-insert-1 5000                      | extract        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | front-insert-1 5000                      | insert         | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p2-slotlist  | P2                     | front-insert-1 5000                      | move           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | front-insert-1 5000                      | remove         | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | front-insert-1 5000                      | swap           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | front-insert-1 5000                      | updateFn       | base med 5001 min 5001 n5 | head med 5001 min 5001 n5 | x1.000 CONST
+p2-slotlist  | P2                     | full-replace 100                         | dispose        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-replace 100                         | extract        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-replace 100                         | insert         | base med 100 min 100 n5 | head med 100 min 100 n5 | x1.000 CONST
+p2-slotlist  | P2                     | full-replace 100                         | move           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-replace 100                         | remove         | base med 100 min 100 n5 | head med 100 min 100 n5 | x1.000 CONST
+p2-slotlist  | P2                     | full-replace 100                         | swap           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-replace 100                         | updateFn       | base med 200 min 200 n5 | head med 200 min 200 n5 | x1.000 CONST
+p2-slotlist  | P2                     | full-replace 1000                        | dispose        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-replace 1000                        | extract        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-replace 1000                        | insert         | base med 1000 min 1000 n5 | head med 1000 min 1000 n5 | x1.000 CONST
+p2-slotlist  | P2                     | full-replace 1000                        | move           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-replace 1000                        | remove         | base med 1000 min 1000 n5 | head med 1000 min 1000 n5 | x1.000 CONST
+p2-slotlist  | P2                     | full-replace 1000                        | swap           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-replace 1000                        | updateFn       | base med 2000 min 2000 n5 | head med 2000 min 2000 n5 | x1.000 CONST
+p2-slotlist  | P2                     | full-replace 5000                        | dispose        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-replace 5000                        | extract        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-replace 5000                        | insert         | base med 5000 min 5000 n5 | head med 5000 min 5000 n5 | x1.000 CONST
+p2-slotlist  | P2                     | full-replace 5000                        | move           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-replace 5000                        | remove         | base med 5000 min 5000 n5 | head med 5000 min 5000 n5 | x1.000 CONST
+p2-slotlist  | P2                     | full-replace 5000                        | swap           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-replace 5000                        | updateFn       | base med 10000 min 10000 n5 | head med 10000 min 10000 n5 | x1.000 CONST
+p2-slotlist  | P2                     | full-reverse 100                         | dispose        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-reverse 100                         | extract        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-reverse 100                         | insert         | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-reverse 100                         | move           | base med 99 min 99 n5 | head med 99 min 99 n5 | x1.000 CONST
+p2-slotlist  | P2                     | full-reverse 100                         | remove         | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-reverse 100                         | swap           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-reverse 100                         | updateFn       | base med 100 min 100 n5 | head med 100 min 100 n5 | x1.000 CONST
+p2-slotlist  | P2                     | full-reverse 1000                        | dispose        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-reverse 1000                        | extract        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-reverse 1000                        | insert         | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-reverse 1000                        | move           | base med 999 min 999 n5 | head med 999 min 999 n5 | x1.000 CONST
+p2-slotlist  | P2                     | full-reverse 1000                        | remove         | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-reverse 1000                        | swap           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-reverse 1000                        | updateFn       | base med 1000 min 1000 n5 | head med 1000 min 1000 n5 | x1.000 CONST
+p2-slotlist  | P2                     | full-reverse 5000                        | dispose        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-reverse 5000                        | extract        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-reverse 5000                        | insert         | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-reverse 5000                        | move           | base med 4999 min 4999 n5 | head med 4999 min 4999 n5 | x1.000 CONST
+p2-slotlist  | P2                     | full-reverse 5000                        | remove         | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-reverse 5000                        | swap           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | full-reverse 5000                        | updateFn       | base med 5000 min 5000 n5 | head med 5000 min 5000 n5 | x1.000 CONST
+p2-slotlist  | P2                     | middle-delete-1 100                      | dispose        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | middle-delete-1 100                      | extract        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | middle-delete-1 100                      | insert         | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | middle-delete-1 100                      | move           | base med 50 min 50 n5 | head med 50 min 50 n5 | x1.000 CONST
+p2-slotlist  | P2                     | middle-delete-1 100                      | remove         | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p2-slotlist  | P2                     | middle-delete-1 100                      | swap           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | middle-delete-1 100                      | updateFn       | base med 100 min 100 n5 | head med 100 min 100 n5 | x1.000 CONST
+p2-slotlist  | P2                     | middle-delete-1 1000                     | dispose        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | middle-delete-1 1000                     | extract        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | middle-delete-1 1000                     | insert         | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | middle-delete-1 1000                     | move           | base med 500 min 500 n5 | head med 500 min 500 n5 | x1.000 CONST
+p2-slotlist  | P2                     | middle-delete-1 1000                     | remove         | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p2-slotlist  | P2                     | middle-delete-1 1000                     | swap           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | middle-delete-1 1000                     | updateFn       | base med 1000 min 1000 n5 | head med 1000 min 1000 n5 | x1.000 CONST
+p2-slotlist  | P2                     | middle-delete-1 5000                     | dispose        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | middle-delete-1 5000                     | extract        | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | middle-delete-1 5000                     | insert         | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | middle-delete-1 5000                     | move           | base med 2500 min 2500 n5 | head med 2500 min 2500 n5 | x1.000 CONST
+p2-slotlist  | P2                     | middle-delete-1 5000                     | remove         | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p2-slotlist  | P2                     | middle-delete-1 5000                     | swap           | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p2-slotlist  | P2                     | middle-delete-1 5000                     | updateFn       | base med 5000 min 5000 n5 | head med 5000 min 5000 n5 | x1.000 CONST
+p2-slotlist  | P2-nested              | 10                                       | inner          | base med 12 min 12 n5 | head med 12 min 12 n5 | x1.000 CONST
+p2-slotlist  | P2-nested              | 10                                       | insert)        | base med 2.4e-05 min 2.3e-05 n5 | head med 2.4e-05 min 2.4e-05 n5 | x1.000 VAR
+p2-slotlist  | P2-nested              | 100                                      | inner          | base med 12 min 12 n5 | head med 12 min 12 n5 | x1.000 CONST
+p2-slotlist  | P2-nested              | 100                                      | insert)        | base med 3.7e-05 min 3.5e-05 n5 | head med 3.5e-05 min 3.4e-05 n5 | x0.946 VAR
+p2-slotlist  | P2-nested              | 1000                                     | inner          | base med 12 min 12 n5 | head med 12 min 12 n5 | x1.000 CONST
+p2-slotlist  | P2-nested              | 1000                                     | insert)        | base med 0.000146 min 0.000141 n5 | head med 0.000141 min 0.000138 n5 | x0.966 VAR
+p2-slotlist  | P2-nested              | 5000                                     | inner          | base med 12 min 12 n5 | head med 12 min 12 n5 | x1.000 CONST
+p2-slotlist  | P2-nested              | 5000                                     | insert)        | base med 0.000642 min 0.000636 n5 | head med 0.000644 min 0.000641 n5 | x1.003 VAR
+p2-slotlist  | P2-time                | end-insert-1 100                         | gcΔ(KB)        | base med 42 min 40 n5 | head med 41 min 40 n5 | x0.976 VAR
+p2-slotlist  | P2-time                | end-insert-1 100                         | t(median,3x)   | base med 0.000112 min 0.000106 n5 | head med 0.000109 min 0.000101 n5 | x0.973 VAR
+p2-slotlist  | P2-time                | end-insert-1 1000                        | gcΔ(KB)        | base med 363 min 363 n5 | head med 364 min 363 n5 | x1.003 VAR
+p2-slotlist  | P2-time                | end-insert-1 1000                        | t(median,3x)   | base med 0.000888 min 0.000867 n5 | head med 0.000882 min 0.000855 n5 | x0.993 VAR
+p2-slotlist  | P2-time                | end-insert-1 5000                        | gcΔ(KB)        | base med 1951 min 1950 n5 | head med 1951 min 1950 n5 | x1.000 VAR
+p2-slotlist  | P2-time                | end-insert-1 5000                        | t(median,3x)   | base med 0.004898 min 0.004812 n5 | head med 0.00492 min 0.004894 n5 | x1.004 VAR
+p2-slotlist  | P2-time                | front-insert-1 100                       | gcΔ(KB)        | base med 43 min 40 n5 | head med 41 min 40 n5 | x0.953 VAR
+p2-slotlist  | P2-time                | front-insert-1 100                       | t(median,3x)   | base med 0.000118 min 0.000115 n5 | head med 0.000117 min 0.000116 n5 | x0.992 VAR
+p2-slotlist  | P2-time                | front-insert-1 1000                      | gcΔ(KB)        | base med 363 min 363 n5 | head med 363 min 363 n5 | x1.000 VAR
+p2-slotlist  | P2-time                | front-insert-1 1000                      | t(median,3x)   | base med 0.001073 min 0.001063 n5 | head med 0.00109 min 0.001052 n5 | x1.016 VAR
+p2-slotlist  | P2-time                | front-insert-1 5000                      | gcΔ(KB)        | base med 1951 min 1950 n5 | head med 1950 min 1950 n5 | x0.999 VAR
+p2-slotlist  | P2-time                | front-insert-1 5000                      | t(median,3x)   | base med 0.006188 min 0.005656 n5 | head med 0.005991 min 0.005896 n5 | x0.968 VAR
+p2-slotlist  | P2-time                | full-replace 100                         | gcΔ(KB)        | base med 265 min 265 n5 | head med 265 min 265 n5 | x1.000 VAR
+p2-slotlist  | P2-time                | full-replace 100                         | t(median,3x)   | base med 0.001537 min 0.00151 n5 | head med 0.001539 min 0.001523 n5 | x1.001 VAR
+p2-slotlist  | P2-time                | full-replace 1000                        | gcΔ(KB)        | base med 2584 min 2584 n5 | head med 2586 min 2584 n5 | x1.001 VAR
+p2-slotlist  | P2-time                | full-replace 1000                        | t(median,3x)   | base med 0.087184 min 0.086784 n5 | head med 0.087886 min 0.086102 n5 | x1.008 VAR
+p2-slotlist  | P2-time                | full-replace 5000                        | gcΔ(KB)        | base med 13691 min 13689 n5 | head med 13689 min 13689 n5 | x1.000 VAR
+p2-slotlist  | P2-time                | full-replace 5000                        | t(median,3x)   | base med 2.06595 min 2.03801 n5 | head med 2.0537 min 2.03971 n5 | x0.994 VAR
+p2-slotlist  | P2-time                | full-reverse 100                         | gcΔ(KB)        | base med 44 min 44 n5 | head med 44 min 44 n5 | x1.000 CONST
+p2-slotlist  | P2-time                | full-reverse 100                         | t(median,3x)   | base med 0.000998 min 0.000986 n5 | head med 0.001004 min 0.000991 n5 | x1.006 VAR
+p2-slotlist  | P2-time                | full-reverse 1000                        | gcΔ(KB)        | base med 424 min 424 n5 | head med 425 min 423 n5 | x1.002 VAR
+p2-slotlist  | P2-time                | full-reverse 1000                        | t(median,3x)   | base med 0.081306 min 0.080229 n5 | head med 0.081937 min 0.080918 n5 | x1.008 VAR
+p2-slotlist  | P2-time                | full-reverse 5000                        | gcΔ(KB)        | base med 2259 min 2259 n5 | head med 2259 min 2259 n5 | x1.000 CONST
+p2-slotlist  | P2-time                | full-reverse 5000                        | t(median,3x)   | base med 1.99038 min 1.98005 n5 | head med 2.01135 min 1.98873 n5 | x1.011 VAR
+p2-slotlist  | P2-time                | middle-delete-1 100                      | gcΔ(KB)        | base med 43 min 42 n5 | head med 41 min 41 n5 | x0.953 VAR
+p2-slotlist  | P2-time                | middle-delete-1 100                      | t(median,3x)   | base med 0.000165 min 0.000163 n5 | head med 0.000168 min 0.000163 n5 | x1.018 VAR
+p2-slotlist  | P2-time                | middle-delete-1 1000                     | gcΔ(KB)        | base med 393 min 393 n5 | head med 394 min 393 n5 | x1.003 VAR
+p2-slotlist  | P2-time                | middle-delete-1 1000                     | t(median,3x)   | base med 0.001627 min 0.001543 n5 | head med 0.001542 min 0.001513 n5 | x0.948 VAR
+p2-slotlist  | P2-time                | middle-delete-1 5000                     | gcΔ(KB)        | base med 2106 min 2104 n5 | head med 2106 min 2105 n5 | x1.000 VAR
+p2-slotlist  | P2-time                | middle-delete-1 5000                     | t(median,3x)   | base med 0.008548 min 0.00817 n5 | head med 0.008555 min 0.00851 n5 | x1.001 VAR
+p2-trace     | front-insert-1         | ensureBase -> offsetCache 1              | /N²            | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | ensureBase -> offsetCache 1              | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | front-insert-1         | ensureBase -> offsetCache 1              | N=5000         | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | getOffsetAt -> offsetCache 100           | /N²            | base med 5000 min 5000 n2 | head med 5000 min 5000 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | getOffsetAt -> offsetCache 100           | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | front-insert-1         | getOffsetAt -> offsetCache 100           | N=5000         | base med 1000 min 1000 n2 | head med 1000 min 1000 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | getOffsetAt cursor-advance, caller rawAd | /N²            | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | getOffsetAt cursor-advance, caller rawAd | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | front-insert-1         | getOffsetAt cursor-advance, caller rawAd | N=5000         | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | getOffsetAt cursor-advance, caller recon | /N²            | base med 5000 min 5000 n2 | head med 5000 min 5000 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | getOffsetAt cursor-advance, caller recon | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | front-insert-1         | getOffsetAt cursor-advance, caller recon | N=5000         | base med 1000 min 1000 n2 | head med 1000 min 1000 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | reindexFrom -> indexOfElement 101        | /N²            | base med 5001 min 5001 n2 | head med 5001 min 5001 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | reindexFrom -> indexOfElement 101        | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | front-insert-1         | reindexFrom -> indexOfElement 101        | N=5000         | base med 1001 min 1001 n2 | head med 1001 min 1001 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | scan:_recompute 101                      | /N²            | base med 5001 min 5001 n2 | head med 5001 min 5001 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | scan:_recompute 101                      | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | front-insert-1         | scan:_recompute 101                      | N=5000         | base med 1001 min 1001 n2 | head med 1001 min 1001 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | scan:getOffsetAt 101                     | /N²            | base med 5001 min 5001 n2 | head med 5001 min 5001 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | scan:getOffsetAt 101                     | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | front-insert-1         | scan:getOffsetAt 101                     | N=5000         | base med 1001 min 1001 n2 | head med 1001 min 1001 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | setLength -> indexOfElement 1            | /N²            | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | setLength -> indexOfElement 1            | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | front-insert-1         | setLength -> indexOfElement 1            | N=5000         | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | setLength -> lengthList 1                | /N²            | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | setLength -> lengthList 1                | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | front-insert-1         | setLength -> lengthList 1                | N=5000         | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | setOffsetSource -> sourceList 1          | /N²            | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | setOffsetSource -> sourceList 1          | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | front-insert-1         | setOffsetSource -> sourceList 1          | N=5000         | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | spliceArraysUp -> lengthList 101         | /N²            | base med 5001 min 5001 n2 | head med 5001 min 5001 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | spliceArraysUp -> lengthList 101         | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | front-insert-1         | spliceArraysUp -> lengthList 101         | N=5000         | base med 1001 min 1001 n2 | head med 1001 min 1001 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | spliceArraysUp -> observers 101          | /N²            | base med 5001 min 5001 n2 | head med 5001 min 5001 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | spliceArraysUp -> observers 101          | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | front-insert-1         | spliceArraysUp -> observers 101          | N=5000         | base med 1001 min 1001 n2 | head med 1001 min 1001 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | spliceArraysUp -> sourceList 101         | /N²            | base med 5001 min 5001 n2 | head med 5001 min 5001 n2 | x1.000 CONST
+p2-trace     | front-insert-1         | spliceArraysUp -> sourceList 101         | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | front-insert-1         | spliceArraysUp -> sourceList 101         | N=5000         | base med 1001 min 1001 n2 | head med 1001 min 1001 n2 | x1.000 CONST
+p2-trace     | full-replace           | ensureBase -> offsetCache 1              | /N²            | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | full-replace           | ensureBase -> offsetCache 1              | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | full-replace           | ensureBase -> offsetCache 1              | N=5000         | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | full-replace           | getOffsetAt -> offsetCache 1143          | /N²            | base med 2.05781e+06 min 2.05781e+06 n2 | head med 2.05781e+06 min 2.05781e+06 n2 | x1.000 CONST
+p2-trace     | full-replace           | getOffsetAt -> offsetCache 1143          | @5000          | base med 0.082 min 0.082 n2 | head med 0.082 min 0.082 n2 | x1.000 CONST
+p2-trace     | full-replace           | getOffsetAt -> offsetCache 1143          | N=5000         | base med 83278 min 83278 n2 | head med 83278 min 83278 n2 | x1.000 CONST
+p2-trace     | full-replace           | getOffsetAt cursor-advance, caller rawAd | /N²            | base med 5000 min 5000 n2 | head med 5000 min 5000 n2 | x1.000 CONST
+p2-trace     | full-replace           | getOffsetAt cursor-advance, caller rawAd | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | full-replace           | getOffsetAt cursor-advance, caller rawAd | N=5000         | base med 1000 min 1000 n2 | head med 1000 min 1000 n2 | x1.000 CONST
+p2-trace     | full-replace           | getOffsetAt cursor-advance, caller rawRe | /N²            | base med 2.04781e+06 min 2.04781e+06 n2 | head med 2.04781e+06 min 2.04781e+06 n2 | x1.000 CONST
+p2-trace     | full-replace           | getOffsetAt cursor-advance, caller rawRe | @5000          | base med 0.082 min 0.082 n2 | head med 0.082 min 0.082 n2 | x1.000 CONST
+p2-trace     | full-replace           | getOffsetAt cursor-advance, caller rawRe | N=5000         | base med 81280 min 81280 n2 | head med 81280 min 81280 n2 | x1.000 CONST
+p2-trace     | full-replace           | getOffsetAt cursor-advance, caller recon | /N²            | base med 4999 min 4999 n2 | head med 4999 min 4999 n2 | x1.000 CONST
+p2-trace     | full-replace           | getOffsetAt cursor-advance, caller recon | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | full-replace           | getOffsetAt cursor-advance, caller recon | N=5000         | base med 999 min 999 n2 | head med 999 min 999 n2 | x1.000 CONST
+p2-trace     | full-replace           | reindexFrom -> indexOfElement 12395      | /N²            | base med 3.09603e+07 min 3.09603e+07 n2 | head med 3.09603e+07 min 3.09603e+07 n2 | x1.000 CONST
+p2-trace     | full-replace           | reindexFrom -> indexOfElement 12395      | @5000          | base med 1.238 min 1.238 n2 | head med 1.238 min 1.238 n2 | x1.000 CONST
+p2-trace     | full-replace           | reindexFrom -> indexOfElement 12395      | N=5000         | base med 1.24457e+06 min 1.24457e+06 n2 | head med 1.24457e+06 min 1.24457e+06 n2 | x1.000 CONST
+p2-trace     | full-replace           | scan:_recompute 100                      | /N²            | base med 5000 min 5000 n2 | head med 5000 min 5000 n2 | x1.000 CONST
+p2-trace     | full-replace           | scan:_recompute 100                      | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | full-replace           | scan:_recompute 100                      | N=5000         | base med 1000 min 1000 n2 | head med 1000 min 1000 n2 | x1.000 CONST
+p2-trace     | full-replace           | scan:getOffsetAt 1144                    | /N²            | base med 2.05781e+06 min 2.05781e+06 n2 | head med 2.05781e+06 min 2.05781e+06 n2 | x1.000 CONST
+p2-trace     | full-replace           | scan:getOffsetAt 1144                    | @5000          | base med 0.082 min 0.082 n2 | head med 0.082 min 0.082 n2 | x1.000 CONST
+p2-trace     | full-replace           | scan:getOffsetAt 1144                    | N=5000         | base med 83279 min 83279 n2 | head med 83279 min 83279 n2 | x1.000 CONST
+p2-trace     | full-replace           | setLength -> indexOfElement 100          | /N²            | base med 5000 min 5000 n2 | head med 5000 min 5000 n2 | x1.000 CONST
+p2-trace     | full-replace           | setLength -> indexOfElement 100          | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | full-replace           | setLength -> indexOfElement 100          | N=5000         | base med 1000 min 1000 n2 | head med 1000 min 1000 n2 | x1.000 CONST
+p2-trace     | full-replace           | setLength -> lengthList 100              | /N²            | base med 5000 min 5000 n2 | head med 5000 min 5000 n2 | x1.000 CONST
+p2-trace     | full-replace           | setLength -> lengthList 100              | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | full-replace           | setLength -> lengthList 100              | N=5000         | base med 1000 min 1000 n2 | head med 1000 min 1000 n2 | x1.000 CONST
+p2-trace     | full-replace           | setOffsetSource -> sourceList 100        | /N²            | base med 5000 min 5000 n2 | head med 5000 min 5000 n2 | x1.000 CONST
+p2-trace     | full-replace           | setOffsetSource -> sourceList 100        | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | full-replace           | setOffsetSource -> sourceList 100        | N=5000         | base med 1000 min 1000 n2 | head med 1000 min 1000 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysDown -> lengthList 2395      | /N²            | base med 5.96029e+06 min 5.96029e+06 n2 | head med 5.96029e+06 min 5.96029e+06 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysDown -> lengthList 2395      | @5000          | base med 0.238 min 0.238 n2 | head med 0.238 min 0.238 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysDown -> lengthList 2395      | N=5000         | base med 244569 min 244569 n2 | head med 244569 min 244569 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysDown -> observers 2395       | /N²            | base med 5.96029e+06 min 5.96029e+06 n2 | head med 5.96029e+06 min 5.96029e+06 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysDown -> observers 2395       | @5000          | base med 0.238 min 0.238 n2 | head med 0.238 min 0.238 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysDown -> observers 2395       | N=5000         | base med 244569 min 244569 n2 | head med 244569 min 244569 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysDown -> sourceList 2395      | /N²            | base med 5.96029e+06 min 5.96029e+06 n2 | head med 5.96029e+06 min 5.96029e+06 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysDown -> sourceList 2395      | @5000          | base med 0.238 min 0.238 n2 | head med 0.238 min 0.238 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysDown -> sourceList 2395      | N=5000         | base med 244569 min 244569 n2 | head med 244569 min 244569 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysUp -> lengthList 10100       | /N²            | base med 2.5005e+07 min 2.5005e+07 n2 | head med 2.5005e+07 min 2.5005e+07 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysUp -> lengthList 10100       | @5000          | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysUp -> lengthList 10100       | N=5000         | base med 1.001e+06 min 1.001e+06 n2 | head med 1.001e+06 min 1.001e+06 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysUp -> observers 10100        | /N²            | base med 2.5005e+07 min 2.5005e+07 n2 | head med 2.5005e+07 min 2.5005e+07 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysUp -> observers 10100        | @5000          | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysUp -> observers 10100        | N=5000         | base med 1.001e+06 min 1.001e+06 n2 | head med 1.001e+06 min 1.001e+06 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysUp -> sourceList 10100       | /N²            | base med 2.5005e+07 min 2.5005e+07 n2 | head med 2.5005e+07 min 2.5005e+07 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysUp -> sourceList 10100       | @5000          | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | full-replace           | spliceArraysUp -> sourceList 10100       | N=5000         | base med 1.001e+06 min 1.001e+06 n2 | head med 1.001e+06 min 1.001e+06 n2 | x1.000 CONST
+p2-trace     | full-replace           | vacate -> indexOfElement 100             | /N²            | base med 5000 min 5000 n2 | head med 5000 min 5000 n2 | x1.000 CONST
+p2-trace     | full-replace           | vacate -> indexOfElement 100             | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | full-replace           | vacate -> indexOfElement 100             | N=5000         | base med 1000 min 1000 n2 | head med 1000 min 1000 n2 | x1.000 CONST
+p2-trace     | full-reverse           | ensureBase -> offsetCache 1              | /N²            | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | full-reverse           | ensureBase -> offsetCache 1              | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | full-reverse           | ensureBase -> offsetCache 1              | N=5000         | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | full-reverse           | getOffsetAt -> offsetCache 5049          | /N²            | base med 1.25025e+07 min 1.25025e+07 n2 | head med 1.25025e+07 min 1.25025e+07 n2 | x1.000 CONST
+p2-trace     | full-reverse           | getOffsetAt -> offsetCache 5049          | @5000          | base med 0.5 min 0.5 n2 | head med 0.5 min 0.5 n2 | x1.000 CONST
+p2-trace     | full-reverse           | getOffsetAt -> offsetCache 5049          | N=5000         | base med 500499 min 500499 n2 | head med 500499 min 500499 n2 | x1.000 CONST
+p2-trace     | full-reverse           | getOffsetAt cursor-advance, caller rawMo | /N²            | base med 1.24925e+07 min 1.24925e+07 n2 | head med 1.24925e+07 min 1.24925e+07 n2 | x1.000 CONST
+p2-trace     | full-reverse           | getOffsetAt cursor-advance, caller rawMo | @5000          | base med 0.5 min 0.5 n2 | head med 0.5 min 0.5 n2 | x1.000 CONST
+p2-trace     | full-reverse           | getOffsetAt cursor-advance, caller rawMo | N=5000         | base med 498502 min 498502 n2 | head med 498502 min 498502 n2 | x1.000 CONST
+p2-trace     | full-reverse           | getOffsetAt cursor-advance, caller recon | /N²            | base med 9998 min 9998 n2 | head med 9998 min 9998 n2 | x1.000 CONST
+p2-trace     | full-reverse           | getOffsetAt cursor-advance, caller recon | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | full-reverse           | getOffsetAt cursor-advance, caller recon | N=5000         | base med 1998 min 1998 n2 | head med 1998 min 1998 n2 | x1.000 CONST
+p2-trace     | full-reverse           | reindexRange -> indexOfElement 5049      | /N²            | base med 1.25025e+07 min 1.25025e+07 n2 | head med 1.25025e+07 min 1.25025e+07 n2 | x1.000 CONST
+p2-trace     | full-reverse           | reindexRange -> indexOfElement 5049      | @5000          | base med 0.5 min 0.5 n2 | head med 0.5 min 0.5 n2 | x1.000 CONST
+p2-trace     | full-reverse           | reindexRange -> indexOfElement 5049      | N=5000         | base med 500499 min 500499 n2 | head med 500499 min 500499 n2 | x1.000 CONST
+p2-trace     | full-reverse           | rotateInPlace -> lengthList 5049         | /N²            | base med 1.25025e+07 min 1.25025e+07 n2 | head med 1.25025e+07 min 1.25025e+07 n2 | x1.000 CONST
+p2-trace     | full-reverse           | rotateInPlace -> lengthList 5049         | @5000          | base med 0.5 min 0.5 n2 | head med 0.5 min 0.5 n2 | x1.000 CONST
+p2-trace     | full-reverse           | rotateInPlace -> lengthList 5049         | N=5000         | base med 500499 min 500499 n2 | head med 500499 min 500499 n2 | x1.000 CONST
+p2-trace     | full-reverse           | rotateInPlace -> observers 5049          | /N²            | base med 1.25025e+07 min 1.25025e+07 n2 | head med 1.25025e+07 min 1.25025e+07 n2 | x1.000 CONST
+p2-trace     | full-reverse           | rotateInPlace -> observers 5049          | @5000          | base med 0.5 min 0.5 n2 | head med 0.5 min 0.5 n2 | x1.000 CONST
+p2-trace     | full-reverse           | rotateInPlace -> observers 5049          | N=5000         | base med 500499 min 500499 n2 | head med 500499 min 500499 n2 | x1.000 CONST
+p2-trace     | full-reverse           | rotateInPlace -> sourceList 5049         | /N²            | base med 1.25025e+07 min 1.25025e+07 n2 | head med 1.25025e+07 min 1.25025e+07 n2 | x1.000 CONST
+p2-trace     | full-reverse           | rotateInPlace -> sourceList 5049         | @5000          | base med 0.5 min 0.5 n2 | head med 0.5 min 0.5 n2 | x1.000 CONST
+p2-trace     | full-reverse           | rotateInPlace -> sourceList 5049         | N=5000         | base med 500499 min 500499 n2 | head med 500499 min 500499 n2 | x1.000 CONST
+p2-trace     | full-reverse           | scan:_recompute 100                      | /N²            | base med 5000 min 5000 n2 | head med 5000 min 5000 n2 | x1.000 CONST
+p2-trace     | full-reverse           | scan:_recompute 100                      | @5000          | base med 0 min 0 n2 | head med 0 min 0 n2 | xnan CONST
+p2-trace     | full-reverse           | scan:_recompute 100                      | N=5000         | base med 1000 min 1000 n2 | head med 1000 min 1000 n2 | x1.000 CONST
+p2-trace     | full-reverse           | scan:getOffsetAt 5050                    | /N²            | base med 1.25025e+07 min 1.25025e+07 n2 | head med 1.25025e+07 min 1.25025e+07 n2 | x1.000 CONST
+p2-trace     | full-reverse           | scan:getOffsetAt 5050                    | @5000          | base med 0.5 min 0.5 n2 | head med 0.5 min 0.5 n2 | x1.000 CONST
+p2-trace     | full-reverse           | scan:getOffsetAt 5050                    | N=5000         | base med 500500 min 500500 n2 | head med 500500 min 500500 n2 | x1.000 CONST
+p2-trace     | nested                 |                                          | function       | base med 5000 min 5000 n2 | head med 5000 min 5000 n2 | x1.000 CONST
+p2-trace     | nested                 |                                          | here           | base med 0.000619 min 0.000605 n2 | head med 0.000623 min 0.00062 n2 | x1.006 VAR
+p2-trace     | nested                 | 10                                       | c3             | base med 3.85e-05 min 3.8e-05 n2 | head med 4e-05 min 3.7e-05 n2 | x1.039 VAR
+p2-trace     | nested                 | 100                                      | c3             | base med 4.4e-05 min 4.4e-05 n2 | head med 4.9e-05 min 4.6e-05 n2 | x1.114 VAR
+p2-trace     | nested                 | 1000                                     | c3             | base med 0.0001595 min 0.000158 n2 | head med 0.0001605 min 0.000157 n2 | x1.006 VAR
+p2-trace     | nested                 | READ indexOfElement by gatedRecompute    | (N=5000):      | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | nested                 | READ indexOfElement by gatedRecompute    | wrap:          | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | nested                 | READ indexOfElement by indexOfRaw        | (N=5000):      | base med 10 min 10 n2 | head med 10 min 10 n2 | x1.000 CONST
+p2-trace     | nested                 | READ lengthList by contribution          | (N=5000):      | base med 14 min 14 n2 | head med 14 min 14 n2 | x1.000 CONST
+p2-trace     | nested                 | READ lengthList by contribution          | wrap:          | base med 5000 min 5000 n2 | head med 5000 min 5000 n2 | x1.000 CONST
+p2-trace     | nested                 | READ lengthList by getOffsetAt           | (N=5000):      | base med 3 min 3 n2 | head med 3 min 3 n2 | x1.000 CONST
+p2-trace     | nested                 | READ lengthList by recompute             | (N=5000):      | base med 11 min 11 n2 | head med 11 min 11 n2 | x1.000 CONST
+p2-trace     | nested                 | READ lengthList by recompute             | wrap:          | base med 5000 min 5000 n2 | head med 5000 min 5000 n2 | x1.000 CONST
+p2-trace     | nested                 | READ observers by setLength              | (N=5000):      | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | nested                 | READ offsetCache by getOffsetAt          | (N=5000):      | base med 12 min 12 n2 | head med 12 min 12 n2 | x1.000 CONST
+p2-trace     | nested                 | READ offsetCache by getOffsetAt          | wrap:          | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | nested                 | READ sourceList by recompute             | (N=5000):      | base med 11 min 11 n2 | head med 11 min 11 n2 | x1.000 CONST
+p2-trace     | nested                 | READ sourceList by recompute             | wrap:          | base med 5000 min 5000 n2 | head med 5000 min 5000 n2 | x1.000 CONST
+p2-trace     | nested                 | getOffsetAt -> offsetCache               | (N=5000):      | base med 3 min 3 n2 | head med 3 min 3 n2 | x1.000 CONST
+p2-trace     | nested                 | reindexFrom -> indexOfElement            | (N=5000):      | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | nested                 | setLength -> indexOfElement              | (N=5000):      | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | nested                 | setLength -> lengthList                  | (N=5000):      | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | nested                 | setOffsetSource -> sourceList            | (N=5000):      | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | nested                 | spliceArraysUp -> lengthList             | (N=5000):      | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | nested                 | spliceArraysUp -> observers              | (N=5000):      | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | nested                 | spliceArraysUp -> sourceList             | (N=5000):      | base med 1 min 1 n2 | head med 1 min 1 n2 | x1.000 CONST
+p2-trace     | timing runs (no proxie | front-insert-1 100                       | internals:     | base med 0.0002 min 0.0002 n1 | head med 0.0002 min 0.0002 n2 | x1.000 CONST
+p2-trace     | timing runs (no proxie | front-insert-1 1000                      | internals:     | base med 0.00185 min 0.0018 n2 | head med 0.0018 min 0.0018 n2 | x0.973 VAR
+p2-trace     | timing runs (no proxie | front-insert-1 5000                      | internals:     | base med 0.0088 min 0.0086 n2 | head med 0.0085 min 0.0083 n2 | x0.966 VAR
+p2-trace     | timing runs (no proxie | full-replace 100                         | self-time      | base med 0.00215 min 0.0021 n2 | head med 0.0022 min 0.0021 n2 | x1.023 VAR
+p2-trace     | timing runs (no proxie | full-replace 1000                        | =              | base med 0.0964 min 0.0954 n2 | head med 0.094 min 0.0924 n2 | x0.975 VAR
+p2-trace     | timing runs (no proxie | full-replace 5000                        | internals:     | base med 2.1308 min 2.0957 n2 | head med 2.0843 min 2.082 n2 | x0.978 VAR
+p2-trace     | timing runs (no proxie | full-reverse 100                         | =              | base med 0.0012 min 0.0012 n2 | head med 0.0012 min 0.0012 n2 | x1.000 CONST
+p2-trace     | timing runs (no proxie | full-reverse 1000                        | on             | base med 0.08425 min 0.0829 n2 | head med 0.0829 min 0.0829 n2 | x0.984 VAR
+p2-trace     | timing runs (no proxie | full-reverse 5000                        | on             | base med 2.0185 min 2.0131 n2 | head med 2.00355 min 1.9907 n2 | x0.993 VAR
+p2-trace     | timing runs (no proxie | micro: one weak-key reindex write        | internals:     | base med 12.7 min 12.4 n2 | head med 12.65 min 11.9 n2 | x0.996 VAR
+p2-trace     | timing runs (no proxie | micro: one weak-key reindex write        | reconcile,     | base med 7.15 min 7.1 n2 | head med 7.3 min 7.1 n2 | x1.021 VAR
+p3-compute   | P3a                    | 1 1                                      | fires          | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p3-compute   | P3a                    | 1 1                                      | recomputes     | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p3-compute   | P3a                    | 1 10                                     | fires          | base med 10 min 10 n5 | head med 10 min 10 n5 | x1.000 CONST
+p3-compute   | P3a                    | 1 10                                     | recomputes     | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p3-compute   | P3a                    | 1 100                                    | fires          | base med 100 min 100 n5 | head med 100 min 100 n5 | x1.000 CONST
+p3-compute   | P3a                    | 1 100                                    | recomputes     | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p3-compute   | P3a                    | 10 1                                     | fires          | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p3-compute   | P3a                    | 10 1                                     | recomputes     | base med 10 min 10 n5 | head med 10 min 10 n5 | x1.000 CONST
+p3-compute   | P3a                    | 10 10                                    | fires          | base med 10 min 10 n5 | head med 10 min 10 n5 | x1.000 CONST
+p3-compute   | P3a                    | 10 10                                    | recomputes     | base med 10 min 10 n5 | head med 10 min 10 n5 | x1.000 CONST
+p3-compute   | P3a                    | 10 100                                   | fires          | base med 100 min 100 n5 | head med 100 min 100 n5 | x1.000 CONST
+p3-compute   | P3a                    | 10 100                                   | recomputes     | base med 10 min 10 n5 | head med 10 min 10 n5 | x1.000 CONST
+p3-compute   | P3a                    | 50 1                                     | fires          | base med 1 min 1 n5 | head med 1 min 1 n5 | x1.000 CONST
+p3-compute   | P3a                    | 50 1                                     | recomputes     | base med 50 min 50 n5 | head med 50 min 50 n5 | x1.000 CONST
+p3-compute   | P3a                    | 50 10                                    | fires          | base med 10 min 10 n5 | head med 10 min 10 n5 | x1.000 CONST
+p3-compute   | P3a                    | 50 10                                    | recomputes     | base med 50 min 50 n5 | head med 50 min 50 n5 | x1.000 CONST
+p3-compute   | P3a                    | 50 100                                   | fires          | base med 100 min 100 n5 | head med 100 min 100 n5 | x1.000 CONST
+p3-compute   | P3a                    | 50 100                                   | recomputes     | base med 50 min 50 n5 | head med 50 min 50 n5 | x1.000 CONST
+p3-compute   | P3a-time               | 1 1                                      | gcΔ(build,KB)  | base med 4 min 4 n5 | head med 4 min 4 n5 | x1.000 CONST
+p3-compute   | P3a-time               | 1 1                                      | t(median,3x)   | base med 1e-06 min 1e-06 n5 | head med 1e-06 min 1e-06 n5 | x1.000 VAR
+p3-compute   | P3a-time               | 1 10                                     | gcΔ(build,KB)  | base med 29 min 28 n5 | head med 29 min 28 n5 | x1.000 VAR
+p3-compute   | P3a-time               | 1 10                                     | t(median,3x)   | base med 4e-06 min 4e-06 n5 | head med 4e-06 min 4e-06 n5 | x1.000 CONST
+p3-compute   | P3a-time               | 1 100                                    | gcΔ(build,KB)  | base med 272 min 271 n5 | head med 272 min 271 n5 | x1.000 VAR
+p3-compute   | P3a-time               | 1 100                                    | t(median,3x)   | base med 2.7e-05 min 2.7e-05 n5 | head med 2.7e-05 min 2.7e-05 n5 | x1.000 VAR
+p3-compute   | P3a-time               | 10 1                                     | gcΔ(build,KB)  | base med 14 min 14 n5 | head med 14 min 14 n5 | x1.000 VAR
+p3-compute   | P3a-time               | 10 1                                     | t(median,3x)   | base med 7e-06 min 6e-06 n5 | head med 6e-06 min 6e-06 n5 | x0.857 VAR
+p3-compute   | P3a-time               | 10 10                                    | gcΔ(build,KB)  | base med 39 min 39 n5 | head med 39 min 39 n5 | x1.000 CONST
+p3-compute   | P3a-time               | 10 10                                    | t(median,3x)   | base med 9e-06 min 9e-06 n5 | head med 9e-06 min 9e-06 n5 | x1.000 VAR
+p3-compute   | P3a-time               | 10 100                                   | gcΔ(build,KB)  | base med 282 min 235 n5 | head med 234 min 222 n5 | x0.830 VAR
+p3-compute   | P3a-time               | 10 100                                   | t(median,3x)   | base med 3.3e-05 min 3.3e-05 n5 | head med 3.3e-05 min 3.2e-05 n5 | x1.000 VAR
+p3-compute   | P3a-time               | 50 1                                     | gcΔ(build,KB)  | base med 54 min 54 n5 | head med 54 min 54 n5 | x1.000 CONST
+p3-compute   | P3a-time               | 50 1                                     | t(median,3x)   | base med 3e-05 min 2.9e-05 n5 | head med 2.9e-05 min 2.9e-05 n5 | x0.967 VAR
+p3-compute   | P3a-time               | 50 10                                    | gcΔ(build,KB)  | base med 78 min 78 n5 | head med 78 min 78 n5 | x1.000 CONST
+p3-compute   | P3a-time               | 50 10                                    | t(median,3x)   | base med 3.1e-05 min 3e-05 n5 | head med 3e-05 min 3e-05 n5 | x0.968 VAR
+p3-compute   | P3a-time               | 50 100                                   | gcΔ(build,KB)  | base med 301 min 301 n5 | head med 321 min 321 n5 | x1.066 VAR
+p3-compute   | P3a-time               | 50 100                                   | t(median,3x)   | base med 5.7e-05 min 5.5e-05 n5 | head med 6e-05 min 5.9e-05 n5 | x1.053 VAR
+p3-compute   | P3c                    | 1                                        | :Set)          | base med 1e-06 min 1e-06 n5 | head med 1e-06 min 1e-06 n5 | x1.000 VAR
+p3-compute   | P3c                    | 100                                      | :Set)          | base med 2.8e-05 min 2.8e-05 n5 | head med 2.9e-05 min 2.8e-05 n5 | x1.036 VAR
+p3-compute   | P3c                    | 1000                                     | :Set)          | base med 0.000361 min 0.000343 n5 | head med 0.000364 min 0.000348 n5 | x1.008 VAR
+p6-gc        | P6                     | list 100                                 | bkLeft         | base med 2023 min 2023 n5 | head med 2026 min 2026 n5 | x1.001 CONST
+p6-gc        | P6                     | list 100                                 | refs           | base med 24 min 24 n5 | head med 24 min 24 n5 | x1.000 CONST
+p6-gc        | P6                     | list 100                                 | residKB        | base med 1632 min 1632 n5 | head med 1635 min 1635 n5 | x1.002 CONST
+p6-gc        | P6                     | list 100                                 | still          | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p6-gc        | P6                     | list 100                                 | weak           | base med 1656 min 1656 n5 | head med 1659 min 1659 n5 | x1.002 CONST
+p6-gc        | P6                     | list 1000                                | (Source        | base med 1824 min 1824 n5 | head med 1827 min 1827 n5 | x1.002 CONST
+p6-gc        | P6                     | list 1000                                | after-destroy+ | base med 5352 min 5352 n5 | head med 5355 min 5355 n5 | x1.001 CONST
+p6-gc        | P6                     | list 1000                                | before-destroy | base med 1632 min 1632 n5 | head med 1635 min 1635 n5 | x1.002 CONST
+p6-gc        | P6                     | list 1000                                | itself         | base med 192 min 192 n5 | head med 192 min 192 n5 | x1.000 CONST
+p6-gc        | P6                     | list 1000                                | was            | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p6-gc        | P6                     | list 5000                                | (Source        | base med 3168 min 3168 n5 | head med 3171 min 3171 n5 | x1.001 CONST
+p6-gc        | P6                     | list 5000                                | after-destroy+ | base med 21391 min 21391 n5 | head med 21394 min 21394 n5 | x1.000 CONST
+p6-gc        | P6                     | list 5000                                | before-destroy | base med 1632 min 1632 n5 | head med 1636 min 1636 n5 | x1.002 CONST
+p6-gc        | P6                     | list 5000                                | itself         | base med 1536 min 1536 n5 | head med 1535 min 1535 n5 | x0.999 CONST
+p6-gc        | P6                     | list 5000                                | was            | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p6-gc        | P6                     | static 100                               | bkLeft         | base med 1512 min 1512 n5 | head med 1515 min 1515 n5 | x1.002 CONST
+p6-gc        | P6                     | static 100                               | refs           | base med 37 min 37 n5 | head med 37 min 37 n5 | x1.000 CONST
+p6-gc        | P6                     | static 100                               | residKB        | base med 1086 min 1086 n5 | head med 1089 min 1089 n5 | x1.003 CONST
+p6-gc        | P6                     | static 100                               | still          | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p6-gc        | P6                     | static 100                               | weak           | base med 1123 min 1123 n5 | head med 1126 min 1126 n5 | x1.003 CONST
+p6-gc        | P6                     | static 1000                              | bkLeft         | base med 5241 min 5241 n5 | head med 5244 min 5244 n5 | x1.001 CONST
+p6-gc        | P6                     | static 1000                              | refs           | base med 295 min 295 n5 | head med 295 min 295 n5 | x1.000 CONST
+p6-gc        | P6                     | static 1000                              | residKB        | base med 1112 min 1112 n5 | head med 1115 min 1115 n5 | x1.003 CONST
+p6-gc        | P6                     | static 1000                              | still          | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p6-gc        | P6                     | static 1000                              | weak           | base med 1407 min 1407 n5 | head med 1410 min 1410 n5 | x1.002 CONST
+p6-gc        | P6                     | static 5000                              | bkLeft         | base med 22967 min 22967 n5 | head med 22970 min 22970 n5 | x1.000 CONST
+p6-gc        | P6                     | static 5000                              | refs           | base med 2239 min 2239 n5 | head med 2239 min 2239 n5 | x1.000 CONST
+p6-gc        | P6                     | static 5000                              | residKB        | base med 1184 min 1184 n5 | head med 1187 min 1187 n5 | x1.003 CONST
+p6-gc        | P6                     | static 5000                              | still          | base med 0 min 0 n5 | head med 0 min 0 n5 | xnan CONST
+p6-gc        | P6                     | static 5000                              | weak           | base med 3423 min 3423 n5 | head med 3426 min 3426 n5 | x1.001 CONST

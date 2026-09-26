@@ -80,4 +80,5 @@
 - `round13-e55-throw-injection/` — **[2026-09-27 자율 루프 E55]** 예외 주입 퍼저(자리 27·`fuzz.luau`·`axes.luau` P1~P9·`gc.luau`·`deb.luau`·`out-*`) — 차등 0, `H-802`, `Q146`.
 - `round13-e58-reference-examples/` — **[2026-09-27 자율 루프 E58]** 레퍼런스 `luau` 예제 304블록 전수(추출·러너·strict·`probes/`·`out/`·`run.sh`) — mock 108/109·불일치 0·strict 새 진단 1(`H-805`).
 - `round13-e60-store-fuzz/` — **[2026-09-27 자율 루프 E60]** `q.Store` 차등 퍼저(`fuzz.luau` 규칙 17·2만 시드·`axes.luau` X1~X9·`types-probe*`·`perf-gc`) — 차등 0, `H-806`, `Q147`.
+- `round13-e62-perf-recheck/` — **[2026-09-27 자율 루프 E62]** CLI 성능 P1~P6 재측정(기준선 두 sha vs HEAD, `agg.py`·`run.sh`·`raw/` 90여 출력·`bench.e62focus`) — 회귀 0, `H-808`(REPORT sha 부재·14KB 재현 안 됨).
 

@@ -1,0 +1,11 @@
+=== P6: dispose a bulk-mounted tree, collectgarbage x2, compare against a pre-build baseline ===
+shape    N      baseKB       peakKB       afterKB      residKB    bkLeft   weak refs still alive         
+static   100    1086.0       1512.0       1123.0       37.0       0        (none)                        
+static   1000   1112.0       5241.0       1407.0       295.0      0        (none)                        
+static   5000   1184.0       22967.0      3423.0       2239.0     0        (none)                        
+list     100    1632.0       2023.0       1656.0       24.0       0        (none)                        
+list     N=100  Source._subs: before-destroy=1 after-destroy+gc=n/a (Source itself was collected)
+list     1000   1632.0       5352.0       1824.0       192.0      0        (none)                        
+list     N=1000 Source._subs: before-destroy=1 after-destroy+gc=n/a (Source itself was collected)
+list     5000   1632.0       21391.0      3168.0       1536.0     0        (none)                        
+list     N=5000 Source._subs: before-destroy=1 after-destroy+gc=n/a (Source itself was collected)

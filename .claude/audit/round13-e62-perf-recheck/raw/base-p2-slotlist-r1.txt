@@ -1,0 +1,44 @@
+=== P2: Slot:List one mutation on N items — updateFn calls / native* calls (counting run) ===
+op               N      updateFn   insert   extract  remove   move     swap     dispose 
+end-insert-1     100    101        1        0        0        0        0        0       
+front-insert-1   100    101        1        0        0        0        0        0       
+middle-delete-1  100    100        0        0        1        50       0        0       
+full-reverse     100    100        0        0        0        99       0        0       
+full-replace     100    200        100      0        100      0        0        0       
+end-insert-1     1000   1001       1        0        0        0        0        0       
+front-insert-1   1000   1001       1        0        0        0        0        0       
+middle-delete-1  1000   1000       0        0        1        500      0        0       
+full-reverse     1000   1000       0        0        0        999      0        0       
+full-replace     1000   2000       1000     0        1000     0        0        0       
+end-insert-1     5000   5001       1        0        0        0        0        0       
+front-insert-1   5000   5001       1        0        0        0        0        0       
+middle-delete-1  5000   5000       0        0        1        2500     0        0       
+full-reverse     5000   5000       0        0        0        4999     0        0       
+full-replace     5000   10000      5000     0        5000     0        0        0       
+
+=== P2-time: same shapes, wall time for ONE mutation, median of 3 FRESH builds, + GC delta of one fresh mutation ===
+op               N      t(median,3x) gcΔ(KB)    
+end-insert-1     100    0.000117   42.0        
+front-insert-1   100    0.000118   43.0        
+middle-delete-1  100    0.000168   43.0        
+full-reverse     100    0.001015   44.0        
+full-replace     100    0.001557   265.0       
+end-insert-1     1000   0.000913   363.0       
+front-insert-1   1000   0.001063   363.0       
+middle-delete-1  1000   0.001543   393.0       
+full-reverse     1000   0.092660   424.0       
+full-replace     1000   0.086794   2584.0      
+end-insert-1     5000   0.004850   1951.0      
+front-insert-1   5000   0.006188   1951.0      
+middle-delete-1  5000   0.008548   2106.0      
+full-reverse     5000   2.061750   2259.0      
+full-replace     5000   2.065953   13691.0     
+
+=== P2-nested: list-in-list (outer N items, position 1 is itself a Slot:List with 10 items, positions 2..N are plain leaves that FOLLOW it) — inner insert 1 ===
+outerN   getOffsetAt calls    t(one inner insert)
+10       12                   0.000023      
+100      12                   0.000036      
+1000     12                   0.000146      
+5000     12                   0.000661      
+
+DONE
