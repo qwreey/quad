@@ -206,6 +206,7 @@
 - **`H-733` [2026-09-27 E26, LOW] 옛 코드가 에러 없이 틀린 값을 내는 BREAKING 셋의 줄이 그 사실을 말하지 않았다** — `updateFn(ctx)`(옛 위치 인자 모양은 `ctx` 테이블이 첫 인자로 들어와 `item.label`/`index` nil 행·`prev` 재사용 소실·키가 빠질 때 `Quad0147`), `blocker.IsBlocked`(에러 없이 `nil`), `Owned`(strict도 못 잡음). 셋 다 한 문장씩.
 - **`H-734` [2026-09-27 E26, LOW~MED] 표시 없는 BREAKING(타입) 둘** — `EffectFn` cleanup 타입 `() -> ()` → `(dying: boolean) -> ()`(`local cleanup: () -> () = …`·`type Cleanup = () -> ()` 헬퍼가 strict 에러; 3.2.0 통과) Added 줄에 표시 + 옮기는 법; `DebounceOptions`/`ThrottleOptions`/`SlotListOpts` 필드 `read`화로 주석 단 옵션 테이블을 나중에 고치는 코드(`o.Leading = true`)가 에러인데 Changed 줄은 "넓어지기만"이라 적었다 — 표시 추가.
 - **`H-735` [2026-09-27 E26, LOW] `q.Operator`가 값 `nil`인 State 인자를 건너뛰던 것을 `Quad0120`으로 던지게 한 변경(`H-535`)이 Fixed 절에 버그 수정으로만 적혀 BREAKING 표시가 없었다** — 3.2.0 코드가 새로 던진다. 표시 추가. `q.Effect` 비함수 반환 즉시 검사((18) 결정)는 옮기는 법이 있어 표시만 검토 — 이번엔 그대로(결정 (18)이 "즉시 검사"를 의도한 정정이라 판단; 다르면 사용자 몫). R2 "누락 없음"은 이름 층에서 맞고 타입·동작 층에서 위 셋이 빠져 있었다.
+- **`H-736` [2026-09-27 감사 13라운드, LOW] `H-732`로 새로 쓴 CHANGELOG `q.Backend` 줄이 "슬롯 스물"이라 세고 열아홉만 나열했다** — 빠진 것은 `isClaimed`(`quad-types/src/init.luau` `Backend` 24필드 − base 조립 넷 = 20, `quad-roblox/src/LifetimeHandle.luau`가 심고 `Claim.luau`가 부르는 실재 슬롯). 나열에 추가. 같은 라운드 나머지는 확인만(H-731~H-735 상호·CHANGELOG 문구 일치, Q90 ①~⑮ 결번 없음, 8.13 GS 14 서술 일치, 소비자 언어 규약 준수).
 - **`H-596` [2026-09-26 D1] `docs/getting-started/09-lifecycle-hooks.md:157` "(7장)" → "(8장)".** cleanup이 도는 네 자리는 08장 §2가 다룬다(07장은 Ref 상자). 고침.
 
 ## §2 확인만 한 것(결함 아님 — 재발견 방지)
