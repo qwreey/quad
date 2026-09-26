@@ -1,0 +1,9 @@
+ab specs+smoke: 42 files, 0 fail
+luau-analyze exit 0
+/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/p-q111/ab/src/Slot/init.luau(200,17): FunctionUnused: Function 'occupantOf' is never used; prefix with '_' to silence
+./src/Slot/init.luau(200,17): FunctionUnused: Function 'occupantOf' is never used; prefix with '_' to silence
+../../../tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/p-q111/ab/src/Slot/init.luau(200,17): FunctionUnused: Function 'occupantOf' is never used; prefix with '_' to silence
+luau-lsp exit 0
+error-codes: 248 ids, 242 raise sites, 0 untagged, 0 errors, 0 warnings
+ab specs+smoke (final): 42 files, 0 fail
+luau-lsp exit 0

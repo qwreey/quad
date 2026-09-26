@@ -1,0 +1,332 @@
+##### base
+Q1 — P6: outer{st}, st:Set(inner), inner:Add(outer) (never mounted)
+  inner:Add(outer): ok
+  inner len=2 outer owner=Slot(len=2)
+  drive(host, {inner}): Quad0156 blame=25
+  inner materializing? true; outer materializing? true; host children=0
+  inner:Add(F()) afterwards: Quad0167 blame=27
+  host children=0 inner.Length=0
+Q1b — same, deeper: outer{ mid{ st } }, st:Set(inner), inner:Add(outer)
+  inner:Add(outer): ok
+Q1c — two States chained: outer{st1}; st1:Set(mid); mid{st2}; st2:Set(inner); inner:Add(outer)
+  inner:Add(outer): ok
+  Splice form: inner:Splice(1, 0, F(), outer): Quad0170 blame=51
+  constructor form: can't (outer must be inside new Slot) — q.Slot{outer} ok: Quad0172 blame=52
+Q1d — State of State: outer{ stA }, stA holds stB, stB holds inner
+  inner:Add(outer): ok
+Q1e — user identity :Single(st) (no updateFn) instead of a wrapper
+  inner:Add(outer): ok
+Q1f — non-identity :Single(st, updateFn) returning its data (not covered by A)
+  inner:Add(outer): ok
+Q2 — MOUNTED tree: st:Set(own ancestor)
+  st:Set(root): Quad0156 blame=97
+  wrapper blocker on? true; wrapper len=1; st:Get()==root? true; root.Length=3
+  st:Set(mid): Quad0156 blame=99
+  st:Set(w itself? no — st:Set(F('b')) recovery): ok
+  after: wrapper len=1 wrapper.Length=1 root.Length=3 (model 3) host children=3
+  st:Set(nil): ok
+  after Set(nil): wrapper.Length=1 (model 0) root.Length=3 (model 2)
+  root:Add(F()): ok
+  root.Length=4 (model 3)
+Q2b — MOUNTED: st:Set(unmounted Slot that holds the wrapper's ancestor via another State)
+  st:Set(free): Quad0156 blame=118
+  wrapper blocker on? true; root.Length=0
+Q3 — UNMOUNTED Set order (Add first, Set later): outer{st}; inner:Add(outer); st:Set(inner)
+  inner:Add(outer) (st nil): ok
+  st:Set(inner) (unmounted — no observer): ok
+  drive(host, {inner}): Quad0156 blame=132
+  inner materializing? true; outer materializing? true; host children=0
+Q3b — mounted-once then unmounted wrapper, Set(ancestor) while unmounted, remount
+  st:Set(root) while unmounted: ok
+  remount holder:Set(root): Quad0156 blame=146
+  root materializing? true; host children=0
+Q4 — P4: the same nil State placed twice
+  s1:Add(st): ok
+  s2:Add(st): ok
+  s1:Add(st) again (same Slot): ok
+  s1:Splice(1,0,st2,st2) (batch dup, nil State): ok
+  q.Slot{ st3, st3 } (nil State): ok
+  st:Set(g): Quad0156 blame=163
+  s1.Length=0 s2.Length=1 (model 1, 0)
+Q4b — seat released: Extract / Remove / dispose of the holder, then Add elsewhere
+  s1:Extract(1) then s2:Add(st): ok
+  s2:Remove(1) then s1:Add(st): ok
+  q.dispose(s1) then s2:Add(st): ok
+  s2:Replace(1, st) (same seat): ok
+  s2:Splice(1, 1, st) (put back what it removes): ok
+  failed pre-pass leaves no seat: s3:Splice(1,0, st4, nil): Quad0239 blame=178
+Q4c — mounted: two seats of a Slot-valued State (was Quad0172 before too)
+  q.Slot():Add(st): ok
+Q5 — cost: does the pre-pass run Compute fns it did not run before?
+  dirty Compute inside the candidate's subtree — fn runs during inner:Add(outer): 0
+  two levels down, dirty — fn runs during q.Slot():Add(deep): 0
+  (base reads only the target Slot's own elements' occupants)
+Q5b — Quad0184: an Add made from inside a Compute fn whose value sits in the candidate's subtree
+  inside c's fn: target:Add(holder) -> ok
+Q5c — a throwing (dirty) Compute two levels inside the candidate
+  q.Slot():Add(deep) -> ok
+Q4d — a rejected second seat must not erase the first seat's record
+  s2:Add(st) #1: ok
+  s2:Add(st) #2 (still rejected?): ok
+Q6 — after a reconcile-depth raise from a State element Set, unmount + remount
+  [held (base Quad0156 path)]
+  st:Set(held): Quad0156 blame=263
+  st:Set(a) (back to the shown value): ok
+  unmount holder:Set(nil): ok
+  remount holder:Set(root): Quad0109 blame=269
+  st:Set(F('z')) after: ok
+  [ancestor (A Quad0173 path)]
+  st:Set(root): Quad0156 blame=265
+  st:Set(a) (back to the shown value): ok
+  unmount holder:Set(nil): ok
+  remount holder:Set(root): Quad0109 blame=269
+  st:Set(F('z')) after: ok
+##### a
+Q1 — P6: outer{st}, st:Set(inner), inner:Add(outer) (never mounted)
+  inner:Add(outer): Quad0173 blame=22
+  inner len=1 outer owner=nil
+  drive(host, {inner}): ok
+  inner materializing? false; outer materializing? false; host children=1
+  inner:Add(F()) afterwards: ok
+  host children=2 inner.Length=2
+Q1b — same, deeper: outer{ mid{ st } }, st:Set(inner), inner:Add(outer)
+  inner:Add(outer): Quad0173 blame=39
+Q1c — two States chained: outer{st1}; st1:Set(mid); mid{st2}; st2:Set(inner); inner:Add(outer)
+  inner:Add(outer): Quad0173 blame=50
+  Splice form: inner:Splice(1, 0, F(), outer): Quad0173 blame=51
+  constructor form: can't (outer must be inside new Slot) — q.Slot{outer} ok: ok
+Q1d — State of State: outer{ stA }, stA holds stB, stB holds inner
+  inner:Add(outer): Quad0173 blame=63
+Q1e — user identity :Single(st) (no updateFn) instead of a wrapper
+  inner:Add(outer): Quad0173 blame=74
+Q1f — non-identity :Single(st, updateFn) returning its data (not covered by A)
+  inner:Add(outer): ok
+Q2 — MOUNTED tree: st:Set(own ancestor)
+  st:Set(root): Quad0173 blame=97
+  wrapper blocker on? false; wrapper len=1; st:Get()==root? true; root.Length=3
+  st:Set(mid): Quad0173 blame=99
+  st:Set(w itself? no — st:Set(F('b')) recovery): ok
+  after: wrapper len=1 wrapper.Length=1 root.Length=3 (model 3) host children=3
+  st:Set(nil): ok
+  after Set(nil): wrapper.Length=0 (model 0) root.Length=2 (model 2)
+  root:Add(F()): ok
+  root.Length=3 (model 3)
+Q2b — MOUNTED: st:Set(unmounted Slot that holds the wrapper's ancestor via another State)
+  st:Set(free): Quad0173 blame=118
+  wrapper blocker on? false; root.Length=0
+Q3 — UNMOUNTED Set order (Add first, Set later): outer{st}; inner:Add(outer); st:Set(inner)
+  inner:Add(outer) (st nil): ok
+  st:Set(inner) (unmounted — no observer): ok
+  drive(host, {inner}): Quad0173 blame=132
+  inner materializing? true; outer materializing? true; host children=0
+Q3b — mounted-once then unmounted wrapper, Set(ancestor) while unmounted, remount
+  st:Set(root) while unmounted: ok
+  remount holder:Set(root): Quad0173 blame=146
+  root materializing? true; host children=0
+Q4 — P4: the same nil State placed twice
+  s1:Add(st): ok
+  s2:Add(st): ok
+  s1:Add(st) again (same Slot): ok
+  s1:Splice(1,0,st2,st2) (batch dup, nil State): ok
+  q.Slot{ st3, st3 } (nil State): ok
+  st:Set(g): Quad0156 blame=163
+  s1.Length=1 s2.Length=0 (model 1, 0)
+Q4b — seat released: Extract / Remove / dispose of the holder, then Add elsewhere
+  s1:Extract(1) then s2:Add(st): ok
+  s2:Remove(1) then s1:Add(st): ok
+  q.dispose(s1) then s2:Add(st): ok
+  s2:Replace(1, st) (same seat): ok
+  s2:Splice(1, 1, st) (put back what it removes): ok
+  failed pre-pass leaves no seat: s3:Splice(1,0, st4, nil): Quad0239 blame=178
+Q4c — mounted: two seats of a Slot-valued State (was Quad0172 before too)
+  q.Slot():Add(st): ok
+Q5 — cost: does the pre-pass run Compute fns it did not run before?
+  dirty Compute inside the candidate's subtree — fn runs during inner:Add(outer): 1
+  two levels down, dirty — fn runs during q.Slot():Add(deep): 1
+  (base reads only the target Slot's own elements' occupants)
+Q5b — Quad0184: an Add made from inside a Compute fn whose value sits in the candidate's subtree
+  inside c's fn: target:Add(holder) -> Quad0184
+Q5c — a throwing (dirty) Compute two levels inside the candidate
+  q.Slot():Add(deep) -> ./test/probe.q111.luau:235: user compute boom
+Q4d — a rejected second seat must not erase the first seat's record
+  s2:Add(st) #1: ok
+  s2:Add(st) #2 (still rejected?): ok
+Q6 — after a reconcile-depth raise from a State element Set, unmount + remount
+  [held (base Quad0156 path)]
+  st:Set(held): Quad0156 blame=263
+  st:Set(a) (back to the shown value): ok
+  unmount holder:Set(nil): ok
+  remount holder:Set(root): Quad0109 blame=269
+  st:Set(F('z')) after: ok
+  [ancestor (A Quad0173 path)]
+  st:Set(root): Quad0173 blame=265
+  st:Set(a) (back to the shown value): ok
+  unmount holder:Set(nil): ok
+  remount holder:Set(root): Quad0109 blame=269
+  st:Set(F('z')) after: ok
+##### b
+Q1 — P6: outer{st}, st:Set(inner), inner:Add(outer) (never mounted)
+  inner:Add(outer): ok
+  inner len=2 outer owner=Slot(len=2)
+  drive(host, {inner}): Quad0156 blame=25
+  inner materializing? true; outer materializing? true; host children=0
+  inner:Add(F()) afterwards: Quad0167 blame=27
+  host children=0 inner.Length=0
+Q1b — same, deeper: outer{ mid{ st } }, st:Set(inner), inner:Add(outer)
+  inner:Add(outer): ok
+Q1c — two States chained: outer{st1}; st1:Set(mid); mid{st2}; st2:Set(inner); inner:Add(outer)
+  inner:Add(outer): ok
+  Splice form: inner:Splice(1, 0, F(), outer): Quad0170 blame=51
+  constructor form: can't (outer must be inside new Slot) — q.Slot{outer} ok: Quad0172 blame=52
+Q1d — State of State: outer{ stA }, stA holds stB, stB holds inner
+  inner:Add(outer): ok
+Q1e — user identity :Single(st) (no updateFn) instead of a wrapper
+  inner:Add(outer): ok
+Q1f — non-identity :Single(st, updateFn) returning its data (not covered by A)
+  inner:Add(outer): ok
+Q2 — MOUNTED tree: st:Set(own ancestor)
+  st:Set(root): Quad0156 blame=97
+  wrapper blocker on? true; wrapper len=1; st:Get()==root? true; root.Length=3
+  st:Set(mid): Quad0156 blame=99
+  st:Set(w itself? no — st:Set(F('b')) recovery): ok
+  after: wrapper len=1 wrapper.Length=1 root.Length=3 (model 3) host children=3
+  st:Set(nil): ok
+  after Set(nil): wrapper.Length=1 (model 0) root.Length=3 (model 2)
+  root:Add(F()): ok
+  root.Length=4 (model 3)
+Q2b — MOUNTED: st:Set(unmounted Slot that holds the wrapper's ancestor via another State)
+  st:Set(free): Quad0156 blame=118
+  wrapper blocker on? true; root.Length=0
+Q3 — UNMOUNTED Set order (Add first, Set later): outer{st}; inner:Add(outer); st:Set(inner)
+  inner:Add(outer) (st nil): ok
+  st:Set(inner) (unmounted — no observer): ok
+  drive(host, {inner}): Quad0156 blame=132
+  inner materializing? true; outer materializing? true; host children=0
+Q3b — mounted-once then unmounted wrapper, Set(ancestor) while unmounted, remount
+  st:Set(root) while unmounted: ok
+  remount holder:Set(root): Quad0156 blame=146
+  root materializing? true; host children=0
+Q4 — P4: the same nil State placed twice
+  s1:Add(st): ok
+  s2:Add(st): Quad0172 blame=157
+  s1:Add(st) again (same Slot): Quad0170 blame=158
+  s1:Splice(1,0,st2,st2) (batch dup, nil State): Quad0171 blame=159
+  q.Slot{ st3, st3 } (nil State): Quad0171 blame=160
+  st:Set(g): ok
+  s1.Length=1 s2.Length=0 (model 1, 0)
+Q4b — seat released: Extract / Remove / dispose of the holder, then Add elsewhere
+  s1:Extract(1) then s2:Add(st): ok
+  s2:Remove(1) then s1:Add(st): ok
+  q.dispose(s1) then s2:Add(st): ok
+  s2:Replace(1, st) (same seat): Quad0170 blame=175
+  s2:Splice(1, 1, st) (put back what it removes): Quad0170 blame=176
+  failed pre-pass leaves no seat: s3:Splice(1,0, st4, nil): Quad0239 blame=178
+Q4c — mounted: two seats of a Slot-valued State (was Quad0172 before too)
+  q.Slot():Add(st): Quad0172 blame=186
+Q5 — cost: does the pre-pass run Compute fns it did not run before?
+  dirty Compute inside the candidate's subtree — fn runs during inner:Add(outer): 0
+  two levels down, dirty — fn runs during q.Slot():Add(deep): 0
+  (base reads only the target Slot's own elements' occupants)
+Q5b — Quad0184: an Add made from inside a Compute fn whose value sits in the candidate's subtree
+  inside c's fn: target:Add(holder) -> ok
+Q5c — a throwing (dirty) Compute two levels inside the candidate
+  q.Slot():Add(deep) -> ok
+Q4d — a rejected second seat must not erase the first seat's record
+  s2:Add(st) #1: Quad0172 blame=247
+  s2:Add(st) #2 (still rejected?): Quad0172 blame=248
+Q6 — after a reconcile-depth raise from a State element Set, unmount + remount
+  [held (base Quad0156 path)]
+  st:Set(held): Quad0156 blame=263
+  st:Set(a) (back to the shown value): ok
+  unmount holder:Set(nil): ok
+  remount holder:Set(root): Quad0109 blame=269
+  st:Set(F('z')) after: ok
+  [ancestor (A Quad0173 path)]
+  st:Set(root): Quad0156 blame=265
+  st:Set(a) (back to the shown value): ok
+  unmount holder:Set(nil): ok
+  remount holder:Set(root): Quad0109 blame=269
+  st:Set(F('z')) after: ok
+##### ab
+Q1 — P6: outer{st}, st:Set(inner), inner:Add(outer) (never mounted)
+  inner:Add(outer): Quad0173 blame=22
+  inner len=1 outer owner=nil
+  drive(host, {inner}): ok
+  inner materializing? false; outer materializing? false; host children=1
+  inner:Add(F()) afterwards: ok
+  host children=2 inner.Length=2
+Q1b — same, deeper: outer{ mid{ st } }, st:Set(inner), inner:Add(outer)
+  inner:Add(outer): Quad0173 blame=39
+Q1c — two States chained: outer{st1}; st1:Set(mid); mid{st2}; st2:Set(inner); inner:Add(outer)
+  inner:Add(outer): Quad0173 blame=50
+  Splice form: inner:Splice(1, 0, F(), outer): Quad0173 blame=51
+  constructor form: can't (outer must be inside new Slot) — q.Slot{outer} ok: ok
+Q1d — State of State: outer{ stA }, stA holds stB, stB holds inner
+  inner:Add(outer): Quad0173 blame=63
+Q1e — user identity :Single(st) (no updateFn) instead of a wrapper
+  inner:Add(outer): Quad0173 blame=74
+Q1f — non-identity :Single(st, updateFn) returning its data (not covered by A)
+  inner:Add(outer): ok
+Q2 — MOUNTED tree: st:Set(own ancestor)
+  st:Set(root): Quad0173 blame=97
+  wrapper blocker on? false; wrapper len=1; st:Get()==root? true; root.Length=3
+  st:Set(mid): Quad0173 blame=99
+  st:Set(w itself? no — st:Set(F('b')) recovery): ok
+  after: wrapper len=1 wrapper.Length=1 root.Length=3 (model 3) host children=3
+  st:Set(nil): ok
+  after Set(nil): wrapper.Length=0 (model 0) root.Length=2 (model 2)
+  root:Add(F()): ok
+  root.Length=3 (model 3)
+Q2b — MOUNTED: st:Set(unmounted Slot that holds the wrapper's ancestor via another State)
+  st:Set(free): Quad0173 blame=118
+  wrapper blocker on? false; root.Length=0
+Q3 — UNMOUNTED Set order (Add first, Set later): outer{st}; inner:Add(outer); st:Set(inner)
+  inner:Add(outer) (st nil): ok
+  st:Set(inner) (unmounted — no observer): ok
+  drive(host, {inner}): Quad0173 blame=132
+  inner materializing? true; outer materializing? true; host children=0
+Q3b — mounted-once then unmounted wrapper, Set(ancestor) while unmounted, remount
+  st:Set(root) while unmounted: ok
+  remount holder:Set(root): Quad0173 blame=146
+  root materializing? true; host children=0
+Q4 — P4: the same nil State placed twice
+  s1:Add(st): ok
+  s2:Add(st): Quad0172 blame=157
+  s1:Add(st) again (same Slot): Quad0170 blame=158
+  s1:Splice(1,0,st2,st2) (batch dup, nil State): Quad0171 blame=159
+  q.Slot{ st3, st3 } (nil State): Quad0171 blame=160
+  st:Set(g): ok
+  s1.Length=1 s2.Length=0 (model 1, 0)
+Q4b — seat released: Extract / Remove / dispose of the holder, then Add elsewhere
+  s1:Extract(1) then s2:Add(st): ok
+  s2:Remove(1) then s1:Add(st): ok
+  q.dispose(s1) then s2:Add(st): ok
+  s2:Replace(1, st) (same seat): Quad0170 blame=175
+  s2:Splice(1, 1, st) (put back what it removes): Quad0170 blame=176
+  failed pre-pass leaves no seat: s3:Splice(1,0, st4, nil): Quad0239 blame=178
+Q4c — mounted: two seats of a Slot-valued State (was Quad0172 before too)
+  q.Slot():Add(st): Quad0172 blame=186
+Q5 — cost: does the pre-pass run Compute fns it did not run before?
+  dirty Compute inside the candidate's subtree — fn runs during inner:Add(outer): 1
+  two levels down, dirty — fn runs during q.Slot():Add(deep): 1
+  (base reads only the target Slot's own elements' occupants)
+Q5b — Quad0184: an Add made from inside a Compute fn whose value sits in the candidate's subtree
+  inside c's fn: target:Add(holder) -> Quad0184
+Q5c — a throwing (dirty) Compute two levels inside the candidate
+  q.Slot():Add(deep) -> ./test/probe.q111.luau:235: user compute boom
+Q4d — a rejected second seat must not erase the first seat's record
+  s2:Add(st) #1: Quad0172 blame=247
+  s2:Add(st) #2 (still rejected?): Quad0172 blame=248
+Q6 — after a reconcile-depth raise from a State element Set, unmount + remount
+  [held (base Quad0156 path)]
+  st:Set(held): Quad0156 blame=263
+  st:Set(a) (back to the shown value): ok
+  unmount holder:Set(nil): ok
+  remount holder:Set(root): Quad0109 blame=269
+  st:Set(F('z')) after: ok
+  [ancestor (A Quad0173 path)]
+  st:Set(root): Quad0173 blame=265
+  st:Set(a) (back to the shown value): ok
+  unmount holder:Set(nil): ok
+  remount holder:Set(root): Quad0109 blame=269
+  st:Set(F('z')) after: ok

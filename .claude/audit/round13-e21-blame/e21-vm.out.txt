@@ -1,0 +1,46 @@
+V|getHandler({},Size,1)|LEAF Reflection.luau:30|-|./quad-roblox/src/Reflection.luau:30: table index is nil
+V|getBookkeeping(nil)|USER|Quad0020|./.claude/audit/round13-e21-blame/e21-vm.luau:18: Quad0020 Bookkeeping.getBookkeeping: ownerKey must not be nil
+V|getBlocker(nil)|USER|Quad0020|./.claude/audit/round13-e21-blame/e21-vm.luau:19: Quad0020 Bookkeeping.getBlocker: ownerKey must not be nil
+V|isClaimed(5)|NO-RAISE|-|nil
+V|holdLifetime(nil,{})|LEAF LifetimeHandle.luau:124|Quad0138|./quad-roblox/src/LifetimeHandle.luau:124: Quad0138 Relate:GetWeak: inst must not be nil
+V|releaseLifetime(nil)|LEAF LifetimeHandle.luau:146|Quad0138|./quad-roblox/src/LifetimeHandle.luau:146: Quad0138 Relate:GetWeak: inst must not be nil
+V|nativeInsert(nil,f,1)|LEAF EngineOps.luau:47|-|./quad-roblox/src/EngineOps.luau:47: attempt to iterate over a number value
+V|nativeFindChild(nil,'a')|LEAF EngineOps.luau:102|-|./quad-roblox/src/EngineOps.luau:102: attempt to index nil with 'FindFirstChild'
+V|addTag(nil,'a')|LEAF EngineOps.luau:125|-|./quad-roblox/src/EngineOps.luau:125: attempt to iterate over a string value
+V|setAttr(nil,'a',1)|LEAF EngineOps.luau:138|-|./quad-roblox/src/EngineOps.luau:138: attempt to index nil with 'SetAttribute'
+V|onDestroying(nil,fn)|LEAF EngineOps.luau:94|-|./quad-roblox/src/EngineOps.luau:94: attempt to index nil with 'Destroying'
+V|canBound(nil)|NO-RAISE|-|nil
+V|D.New(5,{})|NO-RAISE|-|nil
+V|D.New('NoSuch',{})|NO-RAISE|-|nil
+V|D.Frame()|USER|Quad0082|./.claude/audit/round13-e21-blame/e21-vm.luau:31: Quad0082 Dispatch.drive: props must be a table (got nil)
+V|D.Frame(nil)|USER|Quad0082|./.claude/audit/round13-e21-blame/e21-vm.luau:32: Quad0082 Dispatch.drive: props must be a table (got nil)
+V|Ref:Set(5)|NO-RAISE|-|nil
+V|PreRef:Set(5)|NO-RAISE|-|nil
+V|Blocker:On twice|NO-RAISE|-|nil
+V|Blocker:Off never on|NO-RAISE|-|nil
+V|Gate emit(5)|NO-RAISE|-|nil
+V|Slot:Move('a',1)|USER|Quad0168|./.claude/audit/round13-e21-blame/e21-vm.luau:38: Quad0168 Slot:Move: index must be a positive integer (got a)
+V|Slot:Get(0)|NO-RAISE|-|nil
+V|Slot:Splice('a')|USER|Quad0168|./.claude/audit/round13-e21-blame/e21-vm.luau:40: Quad0168 Slot:Splice: index must be a positive integer (got a)
+V|Store:Of(5)|USER|Quad0193|./.claude/audit/round13-e21-blame/e21-vm.luau:41: Quad0193 Store: Of name must be a non-empty string (got number)
+V|tostring(Store)|NO-RAISE|-|nil
+V|mod:Apply(Debounce)|USER|Quad0050|./.claude/audit/round13-e21-blame/e21-vm.luau:43: Quad0050 Modifier:Apply: factory must be a function (got table)
+V|mod:Apply(Blocker)|USER|Quad0050|./.claude/audit/round13-e21-blame/e21-vm.luau:44: Quad0050 Modifier:Apply: factory must be a function (got table)
+V|mod:Size(Animate)|LEAF Animate.luau:90|-|./quad-roblox/src/Animate.luau:90: attempt to index nil with 'Compute'
+V|tag:Apply(Animate)|LEAF Animate.luau:90|-|./quad-roblox/src/Animate.luau:90: attempt to call missing method 'Compute' of table
+V|state:Apply(Animate) w/ Tag value|NO-RAISE|-|nil
+V|OnChange Text at numeric|NO-RAISE|-|nil
+V|Out at string key|USER|Quad0076|./.claude/audit/round13-e21-blame/e21-vm.luau:49: Quad0076 Dispatch: no handler matched key X (value: table) — check that the provider for this value (e.g. quad-roblox) is initialized
+V|OnChange at string key|USER|Quad0076|./.claude/audit/round13-e21-blame/e21-vm.luau:50: Quad0076 Dispatch: no handler matched key X (value: table) — check that the provider for this value (e.g. quad-roblox) is initialized
+V|Tween at numeric key|USER|Quad0076|./.claude/audit/round13-e21-blame/e21-vm.luau:51: Quad0076 Dispatch: no handler matched key 1 (value: table, brand: Tween) — check that the provider for this value (e.g. quad-roblox) is initialized
+V|Tween at Name|LEAF Handlers/Property.luau:161|-|./quad-roblox/src/Handlers/Property.luau:161: Name must be a string
+V|Tag at string key|USER|Quad0076|./.claude/audit/round13-e21-blame/e21-vm.luau:53: Quad0076 Dispatch: no handler matched key X (value: table, brand: Tag) — a quad value at a string key: it belongs in a numeric (array) slot
+V|Attr at string key|USER|Quad0076|./.claude/audit/round13-e21-blame/e21-vm.luau:54: Quad0076 Dispatch: no handler matched key X (value: table, brand: Attr) — a quad value at a string key: it belongs in a numeric (array) slot
+V|AttrKey value table|LEAF EngineOps.luau:138|-|./quad-roblox/src/EngineOps.luau:138: table is not a supported attribute type
+V|Context:Set(P,v) then Get wrong ctx|USER|Quad0038|./.claude/audit/round13-e21-blame/e21-vm.luau:56: Quad0038 Context:Get: no value for Provider — the creator of this Context did not :Set it (use :Peek to test)
+V|Debounce handle:Flush on nil|NO-RAISE|-|nil
+V|Fallback onError throws|USER|-|./.claude/audit/round13-e21-blame/e21-vm.luau:58: b
+V|Mapper as prop value|USER|Quad0076|./.claude/audit/round13-e21-blame/e21-vm.luau:59: Quad0076 Dispatch: no handler matched key X (value: table, brand: MapperDescriptor) — a quad value at a string key: it belongs in a numeric (array) slot
+V|Mapper at numeric in D.Frame|USER|Quad0076|./.claude/audit/round13-e21-blame/e21-vm.luau:60: Quad0076 Dispatch: no handler matched key 1 (value: table, brand: MapperDescriptor) — this quad value has no handler at an array position
+V|Claim root desc w/ Mapper.Root inside|USER|Quad0032|./.claude/audit/round13-e21-blame/e21-vm.luau:61: Quad0032 Claim: no child matched key MapperRoot under Frame (mapper Frame) — a child with that name must also be a Frame
+DONE

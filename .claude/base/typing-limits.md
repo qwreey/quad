@@ -1208,3 +1208,7 @@ Luau 쪽 한계라 quad 결함이 아니고, 처방은 미정이다 — 상류 �
 ## 8.31. 숫자 키 자리에 `q.Source(q.PreRef(…))`·`q.Source(q.PostRef(…))`·`q.Source(q.OnCreated(…))`를 넣어도 strict 신 솔버가 통과한다 — 런타임은 항상 `Quad0136` (2026-09-27 round13 E16 실측, luau-lsp 1.69.0)
 
 PreRef/PostRef가 `Ref`의 하위 타입이라 숫자 키 자리의 `State<Ref>` 팔을 그대로 탄다(`audit/round13-e16-probe-types.luau` — 같은 파일의 대조 줄 `local _c: number = st`는 에러라 파일이 실제로 검사됨). 런타임 가드(`Quad0136 PreRef: must be a literal array item — it reached array index … through a State/Store value, which the pre-pass cannot see`)가 잡으니 조용히 틀리는 것은 아니지만, 타입이 약속하는 "PreRef/PostRef는 리터럴 자리만"이 State 포장 한 겹에 뚫린다. E7의 구멍 목록에는 없던 아홉째. 타입에서 막으려면 `NewChild`의 State 팔에서 `Ref`를 하위 타입 배제하는 장치가 필요한데 Luau엔 부정 타입이 없다 — 기록만.
+
+## 8.32. 문서가 "정상 지원"이라 한 중첩 `State<State<T>>`를 strict가 타입 있는 모든 자리에서 거부한다 — 런타임 언랩과 타입 표면의 어긋남 (2026-09-27 round13 E23 실측, luau-lsp 1.69.0 신 솔버)
+
+문자 키 프로퍼티(GS 20 §2 `Text = which` 원문 모양)·숫자 키 자식·setter 체인·중첩된 Store 필드·State를 돌려주는 Compute 자리에서 `State<State<T>>`(`State<State<Tag/Slot/Ref>>` 포함)가 거부되고, `q.Slot { q.Source(q.Source(f)) }`는 "too complex"다(`audit/round13-e23-probe-types*.luau` T1·T1b·T4·T11·T12·T15~T17·T19). 통과하는 자리는 `sl:Add(…)`·`:Single(…)`(인자가 넓음)과 `q.Modifier{…}`/`D.Modifier.<Class>{…}` 테이블 형태(`H-673`의 무검사)뿐. 원인으로 보이는 것은 마커 `__quadStateValue: T`가 한 겹이라는 점 — 타입에서 중첩을 받으려면 새 타입 장치가 필요하다(기록만). GS 20·SKILL.md §2.2·how-to 10 함정 6에 "런타임 지원, strict는 한 겹 — `:: any`" 캐비엇을 달았다(`H-718`).

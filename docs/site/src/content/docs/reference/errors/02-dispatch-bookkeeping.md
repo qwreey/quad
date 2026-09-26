@@ -287,7 +287,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 ### Quad0076
 
-`Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}, brand: {brand})` + 꼬리 힌트 하나(+ nil 안내) — `quad-base/src/Dispatch/init.luau`
+`Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}[, brand: {brand}])` + 꼬리 힌트 하나(+ nil 안내) — `brand:`는 브랜드가 있을 때만 붙습니다 — `quad-base/src/Dispatch/init.luau`
 
 꼬리 힌트는 넷 중 하나입니다 — 값에 브랜드가 없거나 백엔드(프로바이더) 브랜드면 ` — check that the provider for this value (e.g. quad-roblox) is initialized`; quad-base 브랜드(`Slot`/`Ref`/`State`/`Tag`/`Attr`/`Context`/`Provider`/`MapperDescriptor` 등)이면 `Store`일 때 ` — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))`, 문자 키일 때 ` — a quad value at a string key: it belongs in a numeric (array) slot`, 숫자 키일 때 ` — this quad value has no handler at an array position`. 값이 `nil`이면 그 뒤에 ` (a nil at this depth may be an unwrapped None or a reactive nil — the key's own handler must accept nil)`이 더 붙습니다. `brand: …` 조각은 브랜드를 알아낼 수 있을 때만 들어갑니다.
 
@@ -337,7 +337,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 ### Quad0083
 
-`Dispatch.drive: props must be a plain \{ ... \} table — a quad value needs the braces (got {brandNameOf(flattened) or "a table with a metatable"})` — `quad-base/src/Dispatch/init.luau`
+`Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got {brandNameOf(flattened) or "a table with a metatable"})` — `quad-base/src/Dispatch/init.luau`
 
 - **언제**: `flattened` 자체가 메타테이블을 가진 값(quad 값 등)일 때 — `D.Frame(q.Source(1))`처럼 중괄호를 잊어 quad 값 하나를 그대로 props로 넘긴 흔한 실수를 잡습니다.
 - **고치려면**: 항상 중괄호로 감싼 평범한 테이블을 넘기세요 — `D.Frame { q.Source(1) }`.

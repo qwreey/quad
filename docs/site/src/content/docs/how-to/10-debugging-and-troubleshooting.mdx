@@ -155,8 +155,8 @@ local dynamicStyle2 = D.Modifier.Frame { BackgroundColor3 = themeColor }
 
 - **증상**: 스토어를 통째로 갈아끼우는 `currentStore:Set(newStore)`를 넣었는데,
   `currentStore.Hp` 같은 접근이 `nil`이거나 타입 에러.
-- **원인**: **중첩 `State`는 지원됩니다** — `State<State<T>>`는 프로퍼티 자리에서
-  재귀적으로 풀립니다. 문제는 `State`에 값의 필드를 꺼내는 dot-access가 없다는
+- **원인**: **중첩 `State`는 런타임에서 지원됩니다** — `State<State<T>>`는 프로퍼티 자리에서
+  재귀적으로 풀립니다(단 strict 타입은 한 겹만 받아 `Text = which`처럼 타입 있는 자리에 놓으면 진단이 납니다 — `:: any`로 넘기거나 안쪽을 `Compute`로 펴세요, [2026-09-27 실측]). 문제는 `State`에 값의 필드를 꺼내는 dot-access가 없다는
   것입니다. `Store`를 담은 `State`의 필드를 반응형으로 읽으려면 명시적인 읽기
   콤비네이터가 필요합니다.
 - **해결책 (a)**: 필드 읽기는 `q.Operator.Indexed`로(3.0.0에서는 `Index`, 3.1.0부터 `Indexed`). 결과 타입은 호출자가 직접

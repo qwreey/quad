@@ -27,7 +27,7 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
 
 `{ctx}: attribute name cannot be empty` — `quad-base/src/Attr/init.luau`
 
-- **언제**: `q.Attr(...)`에 넘긴 `Store`가 선언한 이름(`store:Names()`) 중 빈 문자열이 있을 때. `{ctx}`는 부른 자리 이름(`Attr`)입니다.
+- **언제**: `q.Attr(...)`에 넘긴 `Store`가 선언한 이름(`store:Names()`) 중 빈 문자열이 있을 때. `{ctx}`는 부른 자리 이름(`Attr`)입니다. 다만 `Store`는 생성자와 `:Of` 모두 빈 문자열 이름을 `Quad0193`으로 먼저 막으므로, 현재 공개 표면에서 이 조건에 닿는 호출은 없습니다(Quad0004·Quad0009와 같은 부류 — [2026-09-27 실측]).
 - **고치려면**: `Store`의 키 이름을 비어 있지 않게 하세요.
 - **참고**: [`q.Attr(...)`](../core/09-tag-attr.md#qattr)
 

@@ -1,0 +1,1738 @@
+[
+ {
+  "id": "Quad0001",
+  "loc": "quad-base/src/Attr/Key.luau:58",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Attr/Key.luau:58",
+  "text": "Err.errorBeforeNearest(\"Quad0001 AttrKey: name must be a non-empty string\", SURFACE)"
+ },
+ {
+  "id": "Quad0002",
+  "loc": "quad-base/src/Attr/Key.luau:112",
+  "call": "errorBefore",
+  "site": "quad-base/src/Attr/Key.luau:112",
+  "text": "Err.errorBefore(`Quad0002 AttrKey: attribute \"{k.Name}\" is already bound by another owner`, SURFACE)"
+ },
+ {
+  "id": "Quad0003",
+  "loc": "quad-base/src/Attr/init.luau:99",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Attr/init.luau:99",
+  "text": "Err.errorBeforeNearest(`Quad0003 {ctx}: attribute name cannot be empty`, SURFACE) -- round3 `H-443` (G-13, Store gate's twin)"
+ },
+ {
+  "id": "Quad0004",
+  "loc": "quad-base/src/Attr/init.luau:102",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Attr/init.luau:102",
+  "text": "Err.errorBeforeNearest(`Quad0004 {ctx}: attribute name \"{name}\" appears more than once`, SURFACE)"
+ },
+ {
+  "id": "Quad0005",
+  "loc": "quad-base/src/Attr/init.luau:109",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Attr/init.luau:109",
+  "text": "Err.errorBeforeNearest(`Quad0005 {ctx}: attribute name \"{name}\" appears more than once`, SURFACE)"
+ },
+ {
+  "id": "Quad0006",
+  "loc": "quad-base/src/Attr/init.luau:128",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Attr/init.luau:128",
+  "text": "Err.errorBeforeNearest(`Quad0006 {ctx}: plain-table keys must be non-empty strings`, SURFACE)"
+ },
+ {
+  "id": "Quad0007",
+  "loc": "quad-base/src/Attr/init.luau:132",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Attr/init.luau:132",
+  "text": "Err.errorBeforeNearest(`Quad0007 {ctx}: attribute \"{name}\" cannot be a function — attribute values are raw values or State`, SURFACE)"
+ },
+ {
+  "id": "Quad0008",
+  "loc": "quad-base/src/Attr/init.luau:138",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Attr/init.luau:138",
+  "text": "Err.errorBeforeNearest(`Quad0008 {ctx}: attribute \"{name}\" cannot be a table — attribute values are raw values, None or State (got {typeof(v)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0009",
+  "loc": "quad-base/src/Attr/init.luau:141",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Attr/init.luau:141",
+  "text": "Err.errorBeforeNearest(`Quad0009 {ctx}: attribute name \"{name}\" appears more than once`, SURFACE)"
+ },
+ {
+  "id": "Quad0010",
+  "loc": "quad-base/src/Attr/init.luau:146",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Attr/init.luau:146",
+  "text": "Err.errorBeforeNearest(`Quad0010 {ctx}: arguments must be Stores, Attr values or plain tables`, SURFACE)"
+ },
+ {
+  "id": "Quad0011",
+  "loc": "quad-base/src/Attr/init.luau:167",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Attr/init.luau:167",
+  "text": "Err.errorBeforeNearest(\"Quad0011 Attr.Merged: arguments must be Attr values\", SURFACE)"
+ },
+ {
+  "id": "Quad0012",
+  "loc": "quad-base/src/Attr/init.luau:179",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Attr/init.luau:179",
+  "text": "Err.errorBeforeNearest(\"Quad0012 Attr.Overridden: arguments must be Attr values\", SURFACE)"
+ },
+ {
+  "id": "Quad0013",
+  "loc": "quad-base/src/Attr/init.luau:195",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Attr/init.luau:195",
+  "text": "Err.errorBeforeNearest(`Quad0013 {fnName}: name must be a non-empty string`, SURFACE)"
+ },
+ {
+  "id": "Quad0014",
+  "loc": "quad-base/src/Attr/init.luau:198",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Attr/init.luau:198",
+  "text": "Err.errorBeforeNearest(`Quad0014 {fnName}: value of \"{name}\" must not be nil — use None to delete`, SURFACE)"
+ },
+ {
+  "id": "Quad0015",
+  "loc": "quad-base/src/Attr/init.luau:201",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Attr/init.luau:201",
+  "text": "Err.errorBeforeNearest(`Quad0015 {fnName}: value of \"{name}\" must be a {luaType}, State or None (got {typeof(value)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0016",
+  "loc": "quad-base/src/Attr/init.luau:262",
+  "call": "errorBefore",
+  "site": "quad-base/src/Attr/init.luau:262",
+  "text": "Err.errorBefore(\"Quad0016 Attr: the same group value is placed at two positions of this instance\", SURFACE)"
+ },
+ {
+  "id": "Quad0017",
+  "loc": "quad-base/src/Blocker.luau:94",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Blocker.luau:94",
+  "text": "Err.errorBeforeNearest(`Quad0017 Blocker: Policy emit must be a function (got {typeof(emit)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0018",
+  "loc": "quad-base/src/Blocker.luau:117",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Blocker.luau:117",
+  "text": "Err.errorBeforeNearest(`Quad0018 Blocker: Apply target must be a State (got {typeof(state)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0019",
+  "loc": "quad-base/src/Bookkeeping.luau:57",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Bookkeeping.luau:57",
+  "text": "Err.errorBeforeNearest(`Quad0019 Bookkeeping.{fnName}: position must be a positive integer (got {tostring(i)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0020",
+  "loc": "quad-base/src/Bookkeeping.luau:66",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Bookkeeping.luau:66",
+  "text": "Err.errorBeforeNearest(`Quad0020 Bookkeeping.{fnName}: ownerKey must not be nil`, SURFACE)"
+ },
+ {
+  "id": "Quad0021",
+  "loc": "quad-base/src/Bookkeeping.luau:137",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Bookkeeping.luau:137",
+  "text": "Err.errorBeforeNearest(`Quad0021 Bookkeeping.{fnName}: length must be a non-negative integer (got {tostring(n)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0022",
+  "loc": "quad-base/src/Bookkeeping.luau:201",
+  "call": "errorBefore",
+  "site": "quad-base/src/Bookkeeping.luau:199",
+  "text": "then `Quad0022 Bookkeeping.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) — or a leaf handler skipped its position registration: position {i} is not registered`"
+ },
+ {
+  "id": "Quad0023",
+  "loc": "quad-base/src/Bookkeeping.luau:248",
+  "call": "error",
+  "site": "quad-base/src/Bookkeeping.luau:248",
+  "text": "error(`Quad0023 Bookkeeping.recompute: sourceList[{i}] is nil — a nil hole in the numeric-key part of props (\\{ a, nil, b })? fill the optional slot with q.None (the children placed before this raise "
+ },
+ {
+  "id": "Quad0024",
+  "loc": "quad-base/src/Bookkeeping.luau:288",
+  "call": "error",
+  "site": "quad-base/src/Bookkeeping.luau:288",
+  "text": "error(`Quad0024 Bookkeeping.recompute: lengthList[{i}] is nil — bookkeeping is broken (setOffsetSource without setLength?)`, 1)"
+ },
+ {
+  "id": "Quad0025",
+  "loc": "quad-base/src/Bookkeeping.luau:380",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Bookkeeping.luau:380",
+  "text": "Err.errorBeforeNearest(`Quad0025 Bookkeeping.setOffsetSource: source must be a Source<number> or None (got {typeof(source)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0026",
+  "loc": "quad-base/src/Claim.luau:64",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Claim.luau:64",
+  "text": "Err.errorBeforeNearest(`Quad0026 newMapperClass: className must be a non-empty string (got {typeof(className)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0027",
+  "loc": "quad-base/src/Claim.luau:99",
+  "call": "errorBefore",
+  "site": "quad-base/src/Claim.luau:99",
+  "text": "Err.errorBefore(\"Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)\", SURFACE)"
+ },
+ {
+  "id": "Quad0028",
+  "loc": "quad-base/src/Claim.luau:105",
+  "call": "errorBefore",
+  "site": "quad-base/src/Claim.luau:105",
+  "text": "Err.errorBefore(`Quad0028 Claim: two mapper descriptors resolved to the same Instance {tostring(inst)} — each child needs exactly one descriptor`, SURFACE)"
+ },
+ {
+  "id": "Quad0029",
+  "loc": "quad-base/src/Claim.luau:115",
+  "call": "errorBefore",
+  "site": "quad-base/src/Claim.luau:115",
+  "text": "Err.errorBefore(`Quad0029 Claim: {tostring(inst)} is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separ"
+ },
+ {
+  "id": "Quad0030",
+  "loc": "quad-base/src/Claim.luau:121",
+  "call": "errorBefore",
+  "site": "quad-base/src/Claim.luau:121",
+  "text": "Err.errorBefore(`Quad0030 Claim: mapper props must be a table (got {typeof(desc._props)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0031",
+  "loc": "quad-base/src/Claim.luau:134",
+  "call": "errorBefore",
+  "site": "quad-base/src/Claim.luau:134",
+  "text": "Err.errorBefore(`Quad0031 Claim: array keys must be positive integers (got {i})`, SURFACE)"
+ },
+ {
+  "id": "Quad0032",
+  "loc": "quad-base/src/Claim.luau:148",
+  "call": "errorBefore",
+  "site": "quad-base/src/Claim.luau:148",
+  "text": "Err.errorBefore(`Quad0032 Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)}) — a child with that name must also be a {tostring(v._className)}`, SUR"
+ },
+ {
+  "id": "Quad0033",
+  "loc": "quad-base/src/Claim.luau:188",
+  "call": "errorBefore",
+  "site": "quad-base/src/Claim.luau:188",
+  "text": "Err.errorBefore(`Quad0033 Claim: first argument must be an Instance of the installed backend (got {typeof(inst)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0034",
+  "loc": "quad-base/src/Claim.luau:191",
+  "call": "errorBefore",
+  "site": "quad-base/src/Claim.luau:191",
+  "text": "Err.errorBefore(\"Quad0034 Claim: second argument must be a D.Mapper descriptor\", SURFACE)"
+ },
+ {
+  "id": "Quad0035",
+  "loc": "quad-base/src/Context.luau:52",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Context.luau:52",
+  "text": "Err.errorBeforeNearest(`Quad0035 Context.Provider: name must be a string (got {typeof(name)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0036",
+  "loc": "quad-base/src/Context.luau:72",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Context.luau:72",
+  "text": "Err.errorBeforeNearest(`Quad0036 Context:{fnName}: key must be a Provider from Context.Provider() (got {typeof(provider)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0037",
+  "loc": "quad-base/src/Context.luau:79",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Context.luau:79",
+  "text": "Err.errorBeforeNearest(`Quad0037 Context:Set: value for {tostring(provider)} must not be nil (absence is \"not set\")`, SURFACE)"
+ },
+ {
+  "id": "Quad0038",
+  "loc": "quad-base/src/Context.luau:89",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Context.luau:89",
+  "text": "Err.errorBeforeNearest(`Quad0038 Context:Get: no value for {tostring(provider)} — the creator of this Context did not :Set it (use :Peek to test)`, SURFACE)"
+ },
+ {
+  "id": "Quad0039",
+  "loc": "quad-base/src/Debounce.luau:88",
+  "call": "errorBefore",
+  "site": "quad-base/src/Debounce.luau:88",
+  "text": "Err.errorBefore(`Quad0039 {name}: {field} must be a non-negative number (got {typeof(v)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0040",
+  "loc": "quad-base/src/Debounce.luau:98",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Debounce.luau:98",
+  "text": "Err.errorBeforeNearest(`Quad0040 {name}: {field} is required (a number of seconds or a State<number>)`, SURFACE)"
+ },
+ {
+  "id": "Quad0041",
+  "loc": "quad-base/src/Debounce.luau:104",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Debounce.luau:104",
+  "text": "Err.errorBeforeNearest(`Quad0041 {name}: {field} must be a non-negative number or a State<number> (got {typeof(t)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0042",
+  "loc": "quad-base/src/Debounce.luau:110",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Debounce.luau:110",
+  "text": "Err.errorBeforeNearest(`Quad0042 {name}: {field} must be a boolean (got {typeof(v)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0043",
+  "loc": "quad-base/src/Debounce.luau:143",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Debounce.luau:143",
+  "text": "Err.errorBeforeNearest(`Quad0043 {self._name}: Apply target must be a State (got {typeof(state)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0044",
+  "loc": "quad-base/src/Debounce.luau:155",
+  "call": "errorBefore",
+  "site": "quad-base/src/Debounce.luau:155",
+  "text": "Err.errorBefore(`Quad0044 {name}: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default "
+ },
+ {
+  "id": "Quad0045",
+  "loc": "quad-base/src/Debounce.luau:323",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Debounce.luau:323",
+  "text": "Err.errorBeforeNearest(`Quad0045 {name}: options table expected (got {typeof(opts)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0046",
+  "loc": "quad-base/src/Debounce.luau:340",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Debounce.luau:340",
+  "text": "Err.errorBeforeNearest(\"Quad0046 Throttle: MaxTime is Debounce-only (a throttle already passes every Time)\", SURFACE)"
+ },
+ {
+  "id": "Quad0047",
+  "loc": "quad-base/src/Debounce.luau:343",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Debounce.luau:343",
+  "text": "Err.errorBeforeNearest(`Quad0047 {name}: Handle must be a Ref (got {typeof(opts.Handle)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0048",
+  "loc": "quad-base/src/Debounce.luau:349",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Debounce.luau:349",
+  "text": "Err.errorBeforeNearest(`Quad0048 {name}: Leading and Trailing both false would pass nothing through`, SURFACE)"
+ },
+ {
+  "id": "Quad0049",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:178",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:178",
+  "text": "Err.errorBeforeNearest(`Quad0049 Modifier:Peek: key must be a non-empty string (got {if key == \"\" then '\"\"' else typeof(key)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0050",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:187",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:187",
+  "text": "Err.errorBeforeNearest(`Quad0050 Modifier:Apply: factory must be a function (got {typeof(factory)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0051",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:201",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:201",
+  "text": "Err.errorBeforeNearest(`Quad0051 Modifier:As: name must be a class name string (got {typeof(name)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0052",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:204",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:204",
+  "text": "Err.errorBeforeNearest(`Quad0052 Modifier: unknown modifier class \"{name}\" — Modifier.TypedFactory/DefineSubtype it first`, SURFACE)"
+ },
+ {
+  "id": "Quad0053",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:216",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:216",
+  "text": "Err.errorBeforeNearest(\"Quad0053 Modifier.Overridden: expects at least one Modifier\", SURFACE)"
+ },
+ {
+  "id": "Quad0054",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:222",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:222",
+  "text": "Err.errorBeforeNearest(`Quad0054 Modifier.Overridden: argument #{i} is not a Modifier (got {typeof(arg)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0055",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:248",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:248",
+  "text": "Err.errorBeforeNearest(`Quad0055 Modifier: unknown modifier class \"{target}\" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)`, SURFACE)"
+ },
+ {
+  "id": "Quad0056",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:252",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:252",
+  "text": "Err.errorBeforeNearest(`Quad0056 Modifier: cannot cast a \"{tag}\" modifier to \"{target}\" — not an ancestor (use :As(name) to force)`, SURFACE)"
+ },
+ {
+  "id": "Quad0057",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:293",
+  "call": "error",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:293",
+  "text": "error(`Quad0057 Modifier: field \"{key}\" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, 2)"
+ },
+ {
+  "id": "Quad0058",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:327",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:327",
+  "text": "Err.errorBeforeNearest(\"Quad0058 Modifier: setter keys must be strings (got \" .. typeof(key) .. \") — put a non-string key in the props table itself (Frame { [key] = value })\", SURFACE)"
+ },
+ {
+  "id": "Quad0059",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:367",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:367",
+  "text": "Err.errorBeforeNearest(`Quad0059 Modifier: initial-field table keys must be non-empty field names (got {if k == \"\" then '\"\"' else typeof(k)} at argument #{i})`, SURFACE)"
+ },
+ {
+  "id": "Quad0060",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:373",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:373",
+  "text": "Err.errorBeforeNearest(`Quad0060 Modifier: field \"{k}\" collides with a reserved Modifier method`, SURFACE)"
+ },
+ {
+  "id": "Quad0061",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:376",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:376",
+  "text": "Err.errorBeforeNearest(`Quad0061 Modifier: field \"{k}\" matches the reserved cast prefix As<Class> — casts are methods, not fields`, SURFACE)"
+ },
+ {
+  "id": "Quad0062",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:382",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:382",
+  "text": "Err.errorBeforeNearest(`Quad0062 Modifier: field \"{k}\" starts with \"__\" — metamethod-looking names are never properties`, SURFACE)"
+ },
+ {
+  "id": "Quad0063",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:388",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:388",
+  "text": "Err.errorBeforeNearest(`Quad0063 Modifier: field \"{k}\" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as "
+ },
+ {
+  "id": "Quad0064",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:391",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:391",
+  "text": "Err.errorBeforeNearest(`Quad0064 Modifier: field \"{k}\" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, SURFACE)"
+ },
+ {
+  "id": "Quad0065",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:396",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:396",
+  "text": "Err.errorBeforeNearest(`Quad0065 Modifier: argument #{i} must be a Modifier or a plain field table (got {typeof(arg)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0066",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:404",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:404",
+  "text": "Err.errorBeforeNearest(`Quad0066 Modifier.{fn}: {what} must be a non-empty class name string (got {typeof(name)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0067",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:438",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:438",
+  "text": "Err.errorBeforeNearest(`Quad0067 Modifier.DefineSubtype: \"{subtype}\" ⊂ \"{parent}\" would make a cycle`, SURFACE)"
+ },
+ {
+  "id": "Quad0068",
+  "loc": "quad-base/src/Dispatch/Modifier/init.luau:497",
+  "call": "errorBefore",
+  "site": "quad-base/src/Dispatch/Modifier/init.luau:497",
+  "text": "Err.errorBefore(`Quad0068 Modifier: a Modifier cannot be a value of key \"{tostring(k)}\" — place it in the array part`, SURFACE)"
+ },
+ {
+  "id": "Quad0069",
+  "loc": "quad-base/src/Dispatch/Ref.luau:52",
+  "call": "errorBefore",
+  "site": "quad-base/src/Dispatch/Ref.luau:52",
+  "text": "Err.errorBefore(`Quad0069 {kind}: already fired — a {kind} is one-shot, make a new one for each instance`, SURFACE)"
+ },
+ {
+  "id": "Quad0070",
+  "loc": "quad-base/src/Dispatch/StoreBind.luau:78",
+  "call": "errorBefore",
+  "site": "quad-base/src/Dispatch/StoreBind.luau:78",
+  "text": "Err.errorBefore(\"Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle\", SURFACE)"
+ },
+ {
+  "id": "Quad0071",
+  "loc": "quad-base/src/Dispatch/init.luau:238",
+  "call": "error",
+  "site": "quad-base/src/Dispatch/init.luau:238",
+  "text": "error(`Quad0071 Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken`, 1)"
+ },
+ {
+  "id": "Quad0072",
+  "loc": "quad-base/src/Dispatch/init.luau:254",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/init.luau:254",
+  "text": "Err.errorBeforeNearest(`Quad0072 Dispatch.{fnName}: inst must not be nil`, SURFACE)"
+ },
+ {
+  "id": "Quad0073",
+  "loc": "quad-base/src/Dispatch/init.luau:264",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/init.luau:264",
+  "text": "Err.errorBeforeNearest(`Quad0073 Dispatch.{fnName}: index must be a positive integer (got {tostring(index)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0074",
+  "loc": "quad-base/src/Dispatch/init.luau:270",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/init.luau:270",
+  "text": "Err.errorBeforeNearest(`Quad0074 Dispatch.{fnName}: key must not be nil`, SURFACE)"
+ },
+ {
+  "id": "Quad0075",
+  "loc": "quad-base/src/Dispatch/init.luau:332",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/init.luau:332",
+  "text": "Err.errorBeforeNearest(`Quad0075 Dispatch.process: index {index} would leave a gap in the chain (the chain has {#list} slots — a delegating handler passes index + 1)`, SURFACE)"
+ },
+ {
+  "id": "Quad0076",
+  "loc": "quad-base/src/Dispatch/init.luau:206",
+  "call": "(helper/string)",
+  "site": null,
+  "text": "return `Quad0076 Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else \"\"})` .. hint"
+ },
+ {
+  "id": "Quad0077",
+  "loc": "quad-base/src/Dispatch/init.luau:214",
+  "call": "(helper/string)",
+  "site": null,
+  "text": "return `Quad0077 Dispatch: handler {describeHandler(h)} returned no retractor at key {tostring(k)}, index {index}`"
+ },
+ {
+  "id": "Quad0079",
+  "loc": "quad-base/src/Dispatch/init.luau:394",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/init.luau:394",
+  "text": "Err.errorBeforeNearest(`Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got {typeof(handler)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0080",
+  "loc": "quad-base/src/Dispatch/init.luau:402",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/init.luau:402",
+  "text": "Err.errorBeforeNearest(`Quad0080 Dispatch.addHandler: priority must be a finite number (got {tostring(pr)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0081",
+  "loc": "quad-base/src/Dispatch/init.luau:414",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Dispatch/init.luau:414",
+  "text": "Err.errorBeforeNearest(`Quad0081 Dispatch.addHandler: keyType must be \"number\", \"string\" or nil (got {tostring(kt)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0082",
+  "loc": "quad-base/src/Dispatch/init.luau:468",
+  "call": "errorBefore",
+  "site": "quad-base/src/Dispatch/init.luau:468",
+  "text": "Err.errorBefore(`Quad0082 Dispatch.drive: props must be a table (got {typeof(flattened)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0083",
+  "loc": "quad-base/src/Dispatch/init.luau:481",
+  "call": "errorBefore",
+  "site": "quad-base/src/Dispatch/init.luau:481",
+  "text": "Err.errorBefore(`Quad0083 Dispatch.drive: props must be a plain \\{ ... \\} table — a quad value needs the braces (got {brandNameOf(flattened) or \"a table with a metatable\"})`, SURFACE)"
+ },
+ {
+  "id": "Quad0084",
+  "loc": "quad-base/src/Dispatch/init.luau:484",
+  "call": "errorBefore",
+  "site": "quad-base/src/Dispatch/init.luau:484",
+  "text": "Err.errorBefore(\"Quad0084 Dispatch.drive: inst must not be nil\", SURFACE) -- round3 `H-442` (G-12): died in Relate with `table index is nil`"
+ },
+ {
+  "id": "Quad0085",
+  "loc": "quad-base/src/Dispatch/init.luau:505",
+  "call": "errorBefore",
+  "site": "quad-base/src/Dispatch/init.luau:505",
+  "text": "Err.errorBefore(`Quad0085 Dispatch.drive: array keys must be positive integers (got {k})`, SURFACE)"
+ },
+ {
+  "id": "Quad0086",
+  "loc": "quad-base/src/Effect.luau:119",
+  "call": "errorBefore",
+  "site": "quad-base/src/Effect.luau:119",
+  "text": "Err.errorBefore(`Quad0086 Effect: fn must return a cleanup function or nothing (got {typeof(cleanup)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0087",
+  "loc": "quad-base/src/Effect.luau:156",
+  "call": "errorBefore",
+  "site": "quad-base/src/Effect.luau:156",
+  "text": "Err.errorBefore(\"Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup\", SURFACE) -- `H-147` (A)"
+ },
+ {
+  "id": "Quad0088",
+  "loc": "quad-base/src/Effect.luau:234",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Effect.luau:234",
+  "text": "Err.errorBeforeNearest(\"Quad0088 Effect: cannot change subscription from inside fn or cleanup\", SURFACE) -- `H-147`"
+ },
+ {
+  "id": "Quad0089",
+  "loc": "quad-base/src/Effect.luau:237",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Effect.luau:237",
+  "text": "Err.errorBeforeNearest(if self.Subscribed then \"Quad0089 Effect: already subscribed\" else \"Quad0230 Effect: already bound to an Instance\", SURFACE) -- error-code: inline if"
+ },
+ {
+  "id": "Quad0090",
+  "loc": "quad-base/src/Effect.luau:252",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Effect.luau:252",
+  "text": "Err.errorBeforeNearest(\"Quad0090 Effect: cannot change subscription from inside fn or cleanup\", SURFACE) -- `H-147`"
+ },
+ {
+  "id": "Quad0091",
+  "loc": "quad-base/src/Effect.luau:255",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Effect.luau:255",
+  "text": "Err.errorBeforeNearest(if self.Subscribed then \"Quad0091 Effect: already subscribed\" else \"Quad0231 Effect: already bound to an Instance\", SURFACE) -- error-code: inline if"
+ },
+ {
+  "id": "Quad0092",
+  "loc": "quad-base/src/Effect.luau:276",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Effect.luau:276",
+  "text": "Err.errorBeforeNearest(\"Quad0092 Effect: subscribed strongly; use :Unsubscribe()\", SURFACE)"
+ },
+ {
+  "id": "Quad0093",
+  "loc": "quad-base/src/Effect.luau:285",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Effect.luau:285",
+  "text": "Err.errorBeforeNearest(\"Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()\", SURFACE)"
+ },
+ {
+  "id": "Quad0094",
+  "loc": "quad-base/src/Effect.luau:297",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Effect.luau:297",
+  "text": "Err.errorBeforeNearest(\"Quad0094 Effect: fn must be a function\", SURFACE)"
+ },
+ {
+  "id": "Quad0095",
+  "loc": "quad-base/src/Effect.luau:325",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Effect.luau:325",
+  "text": "Err.errorBeforeNearest(`Quad0095 Effect: dep #{i} is nil`, SURFACE)"
+ },
+ {
+  "id": "Quad0096",
+  "loc": "quad-base/src/Effect.luau:328",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Effect.luau:328",
+  "text": "Err.errorBeforeNearest(`Quad0096 Effect: dep #{i} is not a State/Source/Ref`, SURFACE)"
+ },
+ {
+  "id": "Quad0097",
+  "loc": "quad-base/src/Effect.luau:425",
+  "call": "errorBefore",
+  "site": "quad-base/src/Effect.luau:425",
+  "text": "Err.errorBefore(`Quad0097 Effect: must be an array item, not the value of a {typeof(k)} key`, SURFACE)"
+ },
+ {
+  "id": "Quad0098",
+  "loc": "quad-base/src/Effect.luau:439",
+  "call": "error",
+  "site": "quad-base/src/Effect.luau:439",
+  "text": "error(\"Quad0098 Effect: Effect.Init(module) has not run for this quad instance\", 1)"
+ },
+ {
+  "id": "Quad0099",
+  "loc": "quad-base/src/Fallback.luau:30",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Fallback.luau:30",
+  "text": "Err.errorBeforeNearest(`Quad0099 {name}: base must be a function (got {typeof(base)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0100",
+  "loc": "quad-base/src/Fallback.luau:33",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Fallback.luau:33",
+  "text": "Err.errorBeforeNearest(`Quad0100 {name}: onError must be a function (got {typeof(onError)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0101",
+  "loc": "quad-base/src/LifecycleHooks.luau:35",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/LifecycleHooks.luau:35",
+  "text": "Err.errorBeforeNearest(`Quad0101 {name}: fn must be a function (got {typeof(fn)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0102",
+  "loc": "quad-base/src/LifetimeHandle.luau:123",
+  "call": "errorBefore",
+  "site": "quad-base/src/LifetimeHandle.luau:123",
+  "text": "Err.errorBefore(\"Quad0102 bindLifetime: inst must not be nil\", SURFACE) -- round3 `H-447`: its own message, not \"Claim it first\""
+ },
+ {
+  "id": "Quad0103",
+  "loc": "quad-base/src/LifetimeHandle.luau:126",
+  "call": "errorBefore",
+  "site": "quad-base/src/LifetimeHandle.luau:126",
+  "text": "Err.errorBefore(\"Quad0103 bindLifetime: value must not be nil\", SURFACE) -- `H-447`: used to die at `gchold[nil]`"
+ },
+ {
+  "id": "Quad0104",
+  "loc": "quad-base/src/LifetimeHandle.luau:139",
+  "call": "errorBefore",
+  "site": "quad-base/src/LifetimeHandle.luau:137",
+  "text": "then \"Quad0104 bindLifetime: value is already subscribed\""
+ },
+ {
+  "id": "Quad0105",
+  "loc": "quad-base/src/LifetimeHandle.luau:180",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/LifetimeHandle.luau:180",
+  "text": "Err.errorBeforeNearest(\"Quad0105 unbindLifetime: value must not be nil\", SURFACE)"
+ },
+ {
+  "id": "Quad0106",
+  "loc": "quad-base/src/ModuleIdentity.luau:25",
+  "call": "(helper/string)",
+  "site": null,
+  "text": "return `Quad0106 {what}: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances`"
+ },
+ {
+  "id": "Quad0108",
+  "loc": "quad-base/src/NotInstalled.luau:30",
+  "call": "errorBefore",
+  "site": "quad-base/src/NotInstalled.luau:29",
+  "text": "`Quad0108 quad: {name} is not available — no backend has installed {what} `"
+ },
+ {
+  "id": "Quad0109",
+  "loc": "quad-base/src/Observer.luau:118",
+  "call": "errorBefore",
+  "site": "quad-base/src/Observer.luau:118",
+  "text": "Err.errorBefore(\"Quad0109 Observer: cannot bind an Observer from inside its own fn\", SURFACE) -- `H-183`"
+ },
+ {
+  "id": "Quad0110",
+  "loc": "quad-base/src/Observer.luau:125",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Observer.luau:125",
+  "text": "Err.errorBeforeNearest(\"Quad0110 Observer: cannot change subscription from inside its own fn\", SURFACE) -- `H-183` (`H-147` symmetric)"
+ },
+ {
+  "id": "Quad0111",
+  "loc": "quad-base/src/Observer.luau:129",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Observer.luau:128",
+  "text": "if self.Subscribed then \"Quad0111 Observer: already subscribed\" else \"Quad0234 Observer: already bound to an Instance\","
+ },
+ {
+  "id": "Quad0112",
+  "loc": "quad-base/src/Observer.luau:146",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Observer.luau:146",
+  "text": "Err.errorBeforeNearest(\"Quad0112 Observer: subscribed strongly; use :Unsubscribe()\", SURFACE)"
+ },
+ {
+  "id": "Quad0113",
+  "loc": "quad-base/src/Observer.luau:156",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Observer.luau:156",
+  "text": "Err.errorBeforeNearest(\"Quad0113 Observer: cannot change subscription from inside its own fn\", SURFACE) -- `H-183`"
+ },
+ {
+  "id": "Quad0114",
+  "loc": "quad-base/src/Observer.luau:162",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Observer.luau:161",
+  "text": "if self.Subscribed then \"Quad0114 Observer: already subscribed\" else \"Quad0235 Observer: already bound to an Instance\","
+ },
+ {
+  "id": "Quad0115",
+  "loc": "quad-base/src/Observer.luau:176",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Observer.luau:176",
+  "text": "Err.errorBeforeNearest(\"Quad0115 Observer: not subscribed strongly; use :WeakUnsubscribe()\", SURFACE)"
+ },
+ {
+  "id": "Quad0116",
+  "loc": "quad-base/src/Observer.luau:274",
+  "call": "errorBefore",
+  "site": "quad-base/src/Observer.luau:274",
+  "text": "Err.errorBefore(`Quad0116 Observer: must be an array item, not the value of a {typeof(k)} key`, SURFACE)"
+ },
+ {
+  "id": "Quad0117",
+  "loc": "quad-base/src/Observer.luau:288",
+  "call": "error",
+  "site": "quad-base/src/Observer.luau:288",
+  "text": "error(\"Quad0117 Observer: Observer.Init(module) has not run for this quad instance\", 1) -- invariant; callers pull it in first"
+ },
+ {
+  "id": "Quad0118",
+  "loc": "quad-base/src/Operator.luau:37",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Operator.luau:37",
+  "text": "Err.errorBeforeNearest(`Quad0118 Operator.{name}: argument #{i} is nil`, SURFACE)"
+ },
+ {
+  "id": "Quad0119",
+  "loc": "quad-base/src/Operator.luau:43",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Operator.luau:43",
+  "text": "Err.errorBeforeNearest(`Quad0119 Operator.{name}: argument #{i} must be a {kind} or a State<{kind}> (got {typeof(a)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0120",
+  "loc": "quad-base/src/Operator.luau:60",
+  "call": "errorBefore",
+  "site": "quad-base/src/Operator.luau:60",
+  "text": "Err.errorBefore(`Quad0120 Operator.{name}: argument #{i} is a State whose current value is nil`, SURFACE)"
+ },
+ {
+  "id": "Quad0121",
+  "loc": "quad-base/src/Operator.luau:62",
+  "call": "errorBefore",
+  "site": "quad-base/src/Operator.luau:62",
+  "text": "Err.errorBefore(`Quad0121 Operator.{name}: argument #{i} is a State whose current value must be a {kind} (got {typeof(v)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0122",
+  "loc": "quad-base/src/Operator.luau:78",
+  "call": "errorBefore",
+  "site": "quad-base/src/Operator.luau:78",
+  "text": "Err.errorBefore(`Quad0122 Operator.{name}: the Apply target's current value must be a {kind} (got {typeof(v)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0123",
+  "loc": "quad-base/src/Operator.luau:85",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Operator.luau:85",
+  "text": "Err.errorBeforeNearest(`Quad0123 Operator.{name}: Apply target must be a State (got {typeof(self)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0124",
+  "loc": "quad-base/src/Operator.luau:164",
+  "call": "errorBefore",
+  "site": "quad-base/src/Operator.luau:164",
+  "text": "Err.errorBefore(`Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min {r[1]}, max {r[2]})`, SURFACE)"
+ },
+ {
+  "id": "Quad0125",
+  "loc": "quad-base/src/Operator.luau:178",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Operator.luau:178",
+  "text": "Err.errorBeforeNearest(\"Quad0125 Operator.Indexed: key must not be nil\", SURFACE)"
+ },
+ {
+  "id": "Quad0126",
+  "loc": "quad-base/src/Operator.luau:183",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Operator.luau:183",
+  "text": "Err.errorBeforeNearest(\"Quad0126 Operator.Indexed: key must be a plain value, not a State (the key is not reactive)\", SURFACE)"
+ },
+ {
+  "id": "Quad0127",
+  "loc": "quad-base/src/Operator.luau:190",
+  "call": "errorBefore",
+  "site": "quad-base/src/Operator.luau:190",
+  "text": "Err.errorBefore(`Quad0127 Operator.Indexed: value is not a table (got {typeof(t)}) — cannot read [{tostring(key)}]`, SURFACE)"
+ },
+ {
+  "id": "Quad0128",
+  "loc": "quad-base/src/Operator.luau:200",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Operator.luau:200",
+  "text": "Err.errorBeforeNearest(\"Quad0128 Operator.Alternative: default must not be nil\", SURFACE)"
+ },
+ {
+  "id": "Quad0129",
+  "loc": "quad-base/src/Operator.luau:213",
+  "call": "errorBefore",
+  "site": "quad-base/src/Operator.luau:213",
+  "text": "Err.errorBefore(\"Quad0129 Operator.Alternative: the default State's current value is nil\", SURFACE)"
+ },
+ {
+  "id": "Quad0130",
+  "loc": "quad-base/src/Ref/init.luau:101",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Ref/init.luau:101",
+  "text": "Err.errorBeforeNearest(`Quad0130 Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a {status} coroutine)`, SURFACE)"
+ },
+ {
+  "id": "Quad0132",
+  "loc": "quad-base/src/Ref/init.luau:124",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Ref/init.luau:124",
+  "text": "Err.errorBeforeNearest(`Quad0132 {surface}: callback must be a function (got {typeof(fn)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0133",
+  "loc": "quad-base/src/Ref/init.luau:155",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Ref/init.luau:155",
+  "text": "Err.errorBeforeNearest(`Quad0133 Ref: Wait(thread) expects a thread (got {typeof(thread)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0134",
+  "loc": "quad-base/src/Ref/init.luau:164",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Ref/init.luau:164",
+  "text": "Err.errorBeforeNearest(\"Quad0134 Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)\", SURFACE)"
+ },
+ {
+  "id": "Quad0135",
+  "loc": "quad-base/src/Ref/init.luau:190",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Ref/init.luau:190",
+  "text": "Err.errorBeforeNearest(\"Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed\", SURFACE)"
+ },
+ {
+  "id": "Quad0136",
+  "loc": "quad-base/src/Ref/init.luau:275",
+  "call": "errorBefore",
+  "site": "quad-base/src/Ref/init.luau:275",
+  "text": "Err.errorBefore(`Quad0136 {kind}: must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see`, SURFACE)"
+ },
+ {
+  "id": "Quad0137",
+  "loc": "quad-base/src/Ref/init.luau:277",
+  "call": "errorBefore",
+  "site": "quad-base/src/Ref/init.luau:277",
+  "text": "Err.errorBefore(`Quad0137 {kind}: must be an array item, not the value of a {typeof(k)} key`, SURFACE)"
+ },
+ {
+  "id": "Quad0138",
+  "loc": "quad-base/src/Relate.luau:28",
+  "call": "error",
+  "site": "quad-base/src/Relate.luau:28",
+  "text": "if inst == nil then error(`Quad0138 Relate:{method}: inst must not be nil`, 3) end"
+ },
+ {
+  "id": "Quad0139",
+  "loc": "quad-base/src/Relate.luau:29",
+  "call": "error",
+  "site": "quad-base/src/Relate.luau:29",
+  "text": "error(`Quad0139 Relate:{method}: key must not be nil`, 3)"
+ },
+ {
+  "id": "Quad0140",
+  "loc": "quad-base/src/Slot/Handler.luau:37",
+  "call": "errorBefore",
+  "site": "quad-base/src/Slot/Handler.luau:37",
+  "text": "Err.errorBefore(\"Quad0140 Slot: destroyed Slot cannot be mounted\", SURFACE)"
+ },
+ {
+  "id": "Quad0141",
+  "loc": "quad-base/src/Slot/Handler.luau:61",
+  "call": "errorBefore",
+  "site": "quad-base/src/Slot/Handler.luau:61",
+  "text": "Err.errorBefore(`Quad0141 Slot: must be an array item, not the value of a {typeof(k)} key`, SURFACE)"
+ },
+ {
+  "id": "Quad0142",
+  "loc": "quad-base/src/Slot/List.luau:95",
+  "call": "errorBefore",
+  "site": "quad-base/src/Slot/List.luau:95",
+  "text": "S.Err.errorBefore(`Quad0142 Slot:List: data must be a plain array (got {typeof(items)}) — a data State must hold one too`, S.SURFACE)"
+ },
+ {
+  "id": "Quad0143",
+  "loc": "quad-base/src/Slot/List.luau:102",
+  "call": "errorBefore",
+  "site": "quad-base/src/Slot/List.luau:102",
+  "text": "S.Err.errorBefore(`Quad0143 Slot:List: data must be a plain array — key \"{tostring(k)}\" is not an array position`, S.SURFACE)"
+ },
+ {
+  "id": "Quad0144",
+  "loc": "quad-base/src/Slot/List.luau:114",
+  "call": "errorBefore",
+  "site": "quad-base/src/Slot/List.luau:114",
+  "text": "S.Err.errorBefore(`Quad0144 Slot:List: keyFn returned {if key == nil then \"nil\" else \"NaN\"} for item #{i}`, S.SURFACE)"
+ },
+ {
+  "id": "Quad0145",
+  "loc": "quad-base/src/Slot/List.luau:117",
+  "call": "errorBefore",
+  "site": "quad-base/src/Slot/List.luau:117",
+  "text": "S.Err.errorBefore(`Quad0145 Slot:List: duplicate key {tostring(key)}`, S.SURFACE)"
+ },
+ {
+  "id": "Quad0146",
+  "loc": "quad-base/src/Slot/List.luau:138",
+  "call": "errorBefore",
+  "site": "quad-base/src/Slot/List.luau:138",
+  "text": "S.Err.errorBefore(\"Quad0146 Slot:List: updateFn returned q.KeyGone — it is the marker updateFn RECEIVES when a key disappears; return nil/q.None to drop the element or q.Detach to hold it\", S.SURFACE)"
+ },
+ {
+  "id": "Quad0147",
+  "loc": "quad-base/src/Slot/List.luau:172",
+  "call": "errorBefore",
+  "site": "quad-base/src/Slot/List.luau:172",
+  "text": "S.Err.errorBefore(\"Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)\", S.SURFACE)"
+ },
+ {
+  "id": "Quad0148",
+  "loc": "quad-base/src/Slot/List.luau:214",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/List.luau:214",
+  "text": "if self._listed then S.Err.errorBeforeNearest(\"Quad0148 Slot: already has :List/:Single installed\", S.SURFACE) end"
+ },
+ {
+  "id": "Quad0149",
+  "loc": "quad-base/src/Slot/List.luau:215",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/List.luau:215",
+  "text": "if self._crudUsed then S.Err.errorBeforeNearest(\"Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)\", S.SURFACE) end"
+ },
+ {
+  "id": "Quad0150",
+  "loc": "quad-base/src/Slot/List.luau:221",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/List.luau:221",
+  "text": "S.Err.errorBeforeNearest(`Quad0150 Slot:List: updateFn must be a function (got {typeof(updateFn)})`, S.SURFACE) -- round3 `H-441`"
+ },
+ {
+  "id": "Quad0151",
+  "loc": "quad-base/src/Slot/List.luau:226",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/List.luau:226",
+  "text": "S.Err.errorBeforeNearest(`Quad0151 Slot:List: data must be a plain array or a State of one (got {typeof(data)})`, S.SURFACE)"
+ },
+ {
+  "id": "Quad0152",
+  "loc": "quad-base/src/Slot/List.luau:232",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/List.luau:232",
+  "text": "S.Err.errorBeforeNearest(`Quad0152 Slot:List: keyFn must be a function (got {typeof(keyFn)})`, S.SURFACE) -- round3 `H-446`"
+ },
+ {
+  "id": "Quad0153",
+  "loc": "quad-base/src/Slot/List.luau:238",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/List.luau:238",
+  "text": "S.Err.errorBeforeNearest(`Quad0153 Slot:List: opts must be a table (got {typeof(opts)})`, S.SURFACE)"
+ },
+ {
+  "id": "Quad0154",
+  "loc": "quad-base/src/Slot/List.luau:265",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/List.luau:265",
+  "text": "S.Err.errorBeforeNearest(`Quad0154 Slot:Single: updateFn must be a function (got {typeof(updateFn)})`, S.SURFACE) -- round3 `H-446`: the List gate saw only the wrapper"
+ },
+ {
+  "id": "Quad0155",
+  "loc": "quad-base/src/Slot/List.luau:268",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/List.luau:268",
+  "text": "S.Err.errorBeforeNearest(`Quad0155 Slot:Single: opts must be a table (got {typeof(opts)})`, S.SURFACE)"
+ },
+ {
+  "id": "Quad0156",
+  "loc": "quad-base/src/Slot/Owner.luau:28",
+  "call": "errorBefore",
+  "site": "quad-base/src/Slot/Owner.luau:28",
+  "text": "S.Err.errorBefore(\"Quad0156 Slot: this element is already mounted — multiple mounts are not allowed\" .. S.ZOMBIE_NOTE, S.SURFACE)"
+ },
+ {
+  "id": "Quad0157",
+  "loc": "quad-base/src/Slot/Owner.luau:41",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/Owner.luau:41",
+  "text": "S.Err.errorBeforeNearest(\"Quad0157 Bookkeeping.claimOwnerAt: element must not be nil\", S.SURFACE)"
+ },
+ {
+  "id": "Quad0158",
+  "loc": "quad-base/src/Slot/Owner.luau:44",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/Owner.luau:44",
+  "text": "S.Err.errorBeforeNearest(\"Quad0158 Bookkeeping.claimOwnerAt: inst (ownerKey) must not be nil\", S.SURFACE)"
+ },
+ {
+  "id": "Quad0159",
+  "loc": "quad-base/src/Slot/Owner.luau:47",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/Owner.luau:47",
+  "text": "S.Err.errorBeforeNearest(\"Quad0159 Bookkeeping.claimOwnerAt: k (seat key — a position or a shorthand child name) must not be nil\", S.SURFACE)"
+ },
+ {
+  "id": "Quad0160",
+  "loc": "quad-base/src/Slot/Owner.luau:54",
+  "call": "errorBefore",
+  "site": "quad-base/src/Slot/Owner.luau:54",
+  "text": "S.Err.errorBefore(\"Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed\" .. S.ZOMBIE_NOTE, S.SURFACE)"
+ },
+ {
+  "id": "Quad0161",
+  "loc": "quad-base/src/Slot/Owner.luau:63",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/Owner.luau:63",
+  "text": "S.Err.errorBeforeNearest(\"Quad0161 Bookkeeping.releaseOwner: element must not be nil\", S.SURFACE) -- `H-546`"
+ },
+ {
+  "id": "Quad0162",
+  "loc": "quad-base/src/Slot/Owner.luau:66",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/Owner.luau:66",
+  "text": "S.Err.errorBeforeNearest(\"Quad0162 Bookkeeping.releaseOwner: ownerKey must not be nil\", S.SURFACE)"
+ },
+ {
+  "id": "Quad0163",
+  "loc": "quad-base/src/Slot/Owner.luau:72",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/Owner.luau:72",
+  "text": "S.Err.errorBeforeNearest(\"Quad0163 Bookkeeping.releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken\", S.SURFACE)"
+ },
+ {
+  "id": "Quad0164",
+  "loc": "quad-base/src/Slot/Tree.luau:34",
+  "call": "errorBefore",
+  "site": "quad-base/src/Slot/Tree.luau:34",
+  "text": "if slot._destroyed then S.Err.errorBefore(\"Quad0164 Slot: destroyed Slot cannot be mounted\", S.SURFACE) end"
+ },
+ {
+  "id": "Quad0165",
+  "loc": "quad-base/src/Slot/init.luau:131",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/init.luau:131",
+  "text": "if self._destroyed then Err.errorBeforeNearest(\"Quad0165 Slot: destroyed Slot cannot be reused\", SURFACE) end"
+ },
+ {
+  "id": "Quad0166",
+  "loc": "quad-base/src/Slot/init.luau:137",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/init.luau:137",
+  "text": "if self._listed then Err.errorBeforeNearest(\"Quad0166 Slot: manual CRUD is not allowed after :List/:Single\", SURFACE) end"
+ },
+ {
+  "id": "Quad0167",
+  "loc": "quad-base/src/Slot/init.luau:148",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/init.luau:148",
+  "text": "Err.errorBeforeNearest(\"Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it afte"
+ },
+ {
+  "id": "Quad0168",
+  "loc": "quad-base/src/Slot/init.luau:170",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/init.luau:168",
+  "text": "then `Quad0168 {surface}: index must be a positive integer (got {tostring(index)})`"
+ },
+ {
+  "id": "Quad0169",
+  "loc": "quad-base/src/Slot/init.luau:239",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/init.luau:239",
+  "text": "Err.errorBeforeNearest(\"Quad0169 \" .. surface .. \": destroyed Slot cannot be an element\", SURFACE)"
+ },
+ {
+  "id": "Quad0170",
+  "loc": "quad-base/src/Slot/init.luau:249",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/init.luau:249",
+  "text": "Err.errorBeforeNearest(\"Quad0170 \" .. surface .. \": this element is already in this Slot — reorder with Move/Swap instead of adding it again\", SURFACE)"
+ },
+ {
+  "id": "Quad0171",
+  "loc": "quad-base/src/Slot/init.luau:252",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/init.luau:252",
+  "text": "Err.errorBeforeNearest(\"Quad0171 \" .. surface .. \": the same element appears twice\", SURFACE)"
+ },
+ {
+  "id": "Quad0172",
+  "loc": "quad-base/src/Slot/init.luau:255",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/init.luau:255",
+  "text": "Err.errorBeforeNearest(\"Quad0172 \" .. surface .. \": this element is already mounted — multiple mounts are not allowed\" .. ZOMBIE_NOTE, SURFACE)"
+ },
+ {
+  "id": "Quad0173",
+  "loc": "quad-base/src/Slot/init.luau:266",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/init.luau:266",
+  "text": "Err.errorBeforeNearest(\"Quad0173 \" .. surface .. \": cannot add a Slot to itself or to one of its own descendants (that would be a cycle)\", SURFACE)"
+ },
+ {
+  "id": "Quad0174",
+  "loc": "quad-base/src/Slot/init.luau:329",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/init.luau:329",
+  "text": "Err.errorBeforeNearest(\"Quad0174 Slot:Splice: removeCount out of range\", SURFACE)"
+ },
+ {
+  "id": "Quad0175",
+  "loc": "quad-base/src/Slot/init.luau:365",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/init.luau:365",
+  "text": "Err.errorBeforeNearest(`Quad0175 Slot:Get: index must be a number (got {typeof(index)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0176",
+  "loc": "quad-base/src/Slot/init.luau:442",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/init.luau:442",
+  "text": "Err.errorBeforeNearest(`Quad0176 Slot: initial elements must be a plain \\{ element, ... \\} array (got {typeof(initial)} — a bare element or quad value needs the braces)`, SURFACE)"
+ },
+ {
+  "id": "Quad0177",
+  "loc": "quad-base/src/Slot/init.luau:448",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/init.luau:448",
+  "text": "Err.errorBeforeNearest(`Quad0177 Slot: initial elements must be an array — key \"{tostring(k)}\" is not an array position`, SURFACE)"
+ },
+ {
+  "id": "Quad0178",
+  "loc": "quad-base/src/Slot/init.luau:472",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/init.luau:472",
+  "text": "Err.errorBeforeNearest(\"Quad0178 dispose: value must not be nil\", SURFACE) -- `H-474` (Q31): say nil, not \"cannot dispose this value\""
+ },
+ {
+  "id": "Quad0179",
+  "loc": "quad-base/src/Slot/init.luau:478",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/init.luau:478",
+  "text": "Err.errorBeforeNearest(\"Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot"
+ },
+ {
+  "id": "Quad0180",
+  "loc": "quad-base/src/Slot/init.luau:491",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/init.luau:491",
+  "text": "else Err.errorBeforeNearest(\"Quad0180 dispose: this backend cannot dispose this value\", SURFACE) end"
+ },
+ {
+  "id": "Quad0181",
+  "loc": "quad-base/src/Source.luau:84",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Source.luau:84",
+  "text": "Err.errorBeforeNearest(\"Quad0181 Source: cannot Set a Modifier as a Source value\", SURFACE)"
+ },
+ {
+  "id": "Quad0182",
+  "loc": "quad-base/src/Source.luau:96",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Source.luau:96",
+  "text": "Err.errorBeforeNearest(\"Quad0182 Source: cannot hold a Modifier as a Source value\", SURFACE)"
+ },
+ {
+  "id": "Quad0183",
+  "loc": "quad-base/src/State.luau:111",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/State.luau:111",
+  "text": "Err.errorBeforeNearest(`Quad0183 State: dep #{i} is not a State/Source`, SURFACE) -- nearest SURFACE = the Compute/Depend/Gate the user called"
+ },
+ {
+  "id": "Quad0184",
+  "loc": "quad-base/src/State.luau:191",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/State.luau:191",
+  "text": "Err.errorBeforeNearest(\"Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, o"
+ },
+ {
+  "id": "Quad0185",
+  "loc": "quad-base/src/State.luau:213",
+  "call": "errorBefore",
+  "site": "quad-base/src/State.luau:213",
+  "text": "Err.errorBefore(\"Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers\", SURFACE)"
+ },
+ {
+  "id": "Quad0186",
+  "loc": "quad-base/src/State.luau:252",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/State.luau:252",
+  "text": "Err.errorBeforeNearest(`Quad0186 State: dep #{i + 1} is nil`, SURFACE) -- nearest SURFACE = the Depend/Compute the user called"
+ },
+ {
+  "id": "Quad0187",
+  "loc": "quad-base/src/State.luau:268",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/State.luau:268",
+  "text": "Err.errorBeforeNearest(\"Quad0187 State: Compute fn must be a function\", SURFACE)"
+ },
+ {
+  "id": "Quad0188",
+  "loc": "quad-base/src/State.luau:326",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/State.luau:326",
+  "text": "Err.errorBeforeNearest(\"Quad0188 State: Gate setup must be a function (emit) -> onUpstreamEmit\", SURFACE)"
+ },
+ {
+  "id": "Quad0189",
+  "loc": "quad-base/src/State.luau:339",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/State.luau:339",
+  "text": "Err.errorBeforeNearest(\"Quad0189 State: Gate setup must return the onUpstreamEmit function\", SURFACE)"
+ },
+ {
+  "id": "Quad0190",
+  "loc": "quad-base/src/State.luau:350",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/State.luau:350",
+  "text": "Err.errorBeforeNearest(\"Quad0190 State: Observer fn must be a function (or nil for the always-observe utility)\", SURFACE)"
+ },
+ {
+  "id": "Quad0191",
+  "loc": "quad-base/src/State.luau:360",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/State.luau:360",
+  "text": "Err.errorBeforeNearest(\"Quad0191 State: Apply factory must be a function or an object with an __apply method\", SURFACE)"
+ },
+ {
+  "id": "Quad0192",
+  "loc": "quad-base/src/State.luau:378",
+  "call": "error",
+  "site": "quad-base/src/State.luau:378",
+  "text": "error(\"Quad0192 State: State.Init(module) has not run for this quad instance\", 1) -- invariant check; every caller pulls it in first (`H-177`)"
+ },
+ {
+  "id": "Quad0193",
+  "loc": "quad-base/src/Store.luau:63",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Store.luau:63",
+  "text": "Err.errorBeforeNearest(`Quad0193 Store: {what} must be a non-empty string (got {if name == \"\" then '\"\"' else typeof(name)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0194",
+  "loc": "quad-base/src/Store.luau:66",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Store.luau:66",
+  "text": "Err.errorBeforeNearest(`Quad0194 Store: \"{name}\" is a reserved store key`, SURFACE)"
+ },
+ {
+  "id": "Quad0195",
+  "loc": "quad-base/src/Store.luau:115",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Store.luau:115",
+  "text": "Err.errorBeforeNearest(`Quad0195 Store: defaults must be a table of Sources (got {typeof(defaults)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0196",
+  "loc": "quad-base/src/Store.luau:118",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Store.luau:118",
+  "text": "Err.errorBeforeNearest(\"Quad0196 Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)\", SURFACE)"
+ },
+ {
+  "id": "Quad0197",
+  "loc": "quad-base/src/Store.luau:121",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Store.luau:121",
+  "text": "Err.errorBeforeNearest(\"Quad0197 Store: defaults must be a plain { name = Source } table (got an AttrKey/Mapper descriptor)\", SURFACE)"
+ },
+ {
+  "id": "Quad0198",
+  "loc": "quad-base/src/Store.luau:128",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Store.luau:128",
+  "text": "Err.errorBeforeNearest(`Quad0198 Store: default for \"{tostring(name)}\" is not a Source (got {typeof(value)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0199",
+  "loc": "quad-base/src/Tag.luau:76",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Tag.luau:76",
+  "text": "Err.errorBeforeNearest(\"Quad0199 Tag: names must be strings — an empty string is not a tag name\", SURFACE)"
+ },
+ {
+  "id": "Quad0200",
+  "loc": "quad-base/src/Tag.luau:104",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Tag.luau:102",
+  "text": "then \"Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)\""
+ },
+ {
+  "id": "Quad0201",
+  "loc": "quad-base/src/Tag.luau:114",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Tag.luau:114",
+  "text": "Err.errorBeforeNearest(\"Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)\", SURFACE)"
+ },
+ {
+  "id": "Quad0202",
+  "loc": "quad-base/src/Tag.luau:119",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Tag.luau:119",
+  "text": "Err.errorBeforeNearest(\"Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table\", SURFACE)"
+ },
+ {
+  "id": "Quad0203",
+  "loc": "quad-base/src/Tag.luau:128",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Tag.luau:128",
+  "text": "Err.errorBeforeNearest(\"Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes\", SURFACE)"
+ },
+ {
+  "id": "Quad0204",
+  "loc": "quad-base/src/Tag.luau:131",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Tag.luau:131",
+  "text": "Err.errorBeforeNearest(`Quad0204 Tag: names must be strings, Tags, or a plain \\{...} list of those (got {typeof(v)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0205",
+  "loc": "quad-base/src/Tag.luau:173",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Tag.luau:173",
+  "text": "Err.errorBeforeNearest(`Quad0205 Tag:Contains: names must be strings (got {typeof(name)} at argument {i})`, SURFACE)"
+ },
+ {
+  "id": "Quad0206",
+  "loc": "quad-base/src/Tag.luau:193",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Tag.luau:193",
+  "text": "Err.errorBeforeNearest(`Quad0206 Tag: Apply factory must be a function (got {typeof(factory)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0207",
+  "loc": "quad-base/src/Tag.luau:226",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Tag.luau:226",
+  "text": "Err.errorBeforeNearest(\"Quad0207 Tag.Merged: arguments must be Tag values\", SURFACE)"
+ },
+ {
+  "id": "Quad0208",
+  "loc": "quad-base/src/init.luau:129",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/init.luau:129",
+  "text": "Err.errorBeforeNearest(`Quad0208 Quad:RunInit: initFn must be a function (got {typeof(initFn)})`, QuadTypes.ERROR_LEVEL_SURFACE)"
+ },
+ {
+  "id": "Quad0209",
+  "loc": "quad-base/src/init.luau:145",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/init.luau:145",
+  "text": "Err.errorBeforeNearest(`Quad0209 {who}: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)`, QuadTypes.ERROR_LEVEL_SURFACE) -- Nearest li"
+ },
+ {
+  "id": "Quad0210",
+  "loc": "quad-base/src/init.luau:154",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/init.luau:154",
+  "text": "Err.errorBeforeNearest(`Quad0210 AddPlugin: plugin must be a function (got {typeof(pluginFn)})`, QuadTypes.ERROR_LEVEL_SURFACE)"
+ },
+ {
+  "id": "Quad0211",
+  "loc": "quad-base/src/init.luau:164",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/init.luau:164",
+  "text": "Err.errorBeforeNearest(`Quad0211 AddPlugin: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)`, QuadTypes.ERROR_LEVEL_SURFACE)"
+ },
+ {
+  "id": "Quad0212",
+  "loc": "quad-base/src/init.luau:197",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/init.luau:197",
+  "text": "Err.errorBeforeNearest(`Quad0212 UseProvider: provider must be a function (got {typeof(providerFn)})`, QuadTypes.ERROR_LEVEL_SURFACE)"
+ },
+ {
+  "id": "Quad0213",
+  "loc": "quad-base/src/init.luau:208",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/init.luau:207",
+  "text": "\"Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends\","
+ },
+ {
+  "id": "Quad0214",
+  "loc": "quad-roblox/src/Animate.luau:67",
+  "call": "errorBeforeNearest",
+  "site": "quad-roblox/src/Animate.luau:67",
+  "text": "Err.errorBeforeNearest(\"Quad0214 Animate: expected an options table (Animate{ Time = ... })\", SURFACE)"
+ },
+ {
+  "id": "Quad0215",
+  "loc": "quad-roblox/src/EngineOps.luau:146",
+  "call": "errorBefore",
+  "site": "quad-roblox/src/EngineOps.luau:146",
+  "text": "Err.errorBefore(`Quad0215 setTimeout: func must be a function (got {typeof(func)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0216",
+  "loc": "quad-roblox/src/EngineOps.luau:149",
+  "call": "errorBefore",
+  "site": "quad-roblox/src/EngineOps.luau:149",
+  "text": "Err.errorBefore(`Quad0216 setTimeout: delay must be a non-negative number (got {typeof(delay)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0217",
+  "loc": "quad-roblox/src/EngineOps.luau:156",
+  "call": "errorBefore",
+  "site": "quad-roblox/src/EngineOps.luau:156",
+  "text": "Err.errorBefore(`Quad0217 clearTimeout: expected a Timeout from setTimeout (got {typeof(timeout)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0218",
+  "loc": "quad-roblox/src/Handlers/Event.luau:79",
+  "call": "errorBefore",
+  "site": "quad-roblox/src/Handlers/Event.luau:79",
+  "text": "Err.errorBefore(`Quad0218 Event: handler for \"{k}\" must be a function (got {typeof(v)})`, SURFACE) -- `H-507`"
+ },
+ {
+  "id": "Quad0219",
+  "loc": "quad-roblox/src/Handlers/InstanceChild.luau:64",
+  "call": "errorBefore",
+  "site": "quad-roblox/src/Handlers/InstanceChild.luau:64",
+  "text": "Err.errorBefore(\"Quad0219 InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also co"
+ },
+ {
+  "id": "Quad0220",
+  "loc": "quad-roblox/src/Handlers/InstanceChild.luau:76",
+  "call": "errorBefore",
+  "site": "quad-roblox/src/Handlers/InstanceChild.luau:76",
+  "text": "Err.errorBefore(\"Quad0220 InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)\", SURFACE)"
+ },
+ {
+  "id": "Quad0221",
+  "loc": "quad-roblox/src/Handlers/OnChange.luau:67",
+  "call": "errorBeforeNearest",
+  "site": "quad-roblox/src/Handlers/OnChange.luau:67",
+  "text": "errNS.errorBeforeNearest(\"Quad0221 OnChange: property name must be a non-empty string\", SURFACE)"
+ },
+ {
+  "id": "Quad0222",
+  "loc": "quad-roblox/src/Handlers/OnChange.luau:70",
+  "call": "errorBeforeNearest",
+  "site": "quad-roblox/src/Handlers/OnChange.luau:70",
+  "text": "errNS.errorBeforeNearest(`Quad0222 OnChange: callback for \"{name}\" must be a function (got {typeof(fn)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0223",
+  "loc": "quad-roblox/src/Handlers/OnChange.luau:91",
+  "call": "errorBeforeNearest",
+  "site": "quad-roblox/src/Handlers/OnChange.luau:91",
+  "text": "errNS.errorBeforeNearest(\"Quad0223 Out: property name must be a non-empty string\", SURFACE)"
+ },
+ {
+  "id": "Quad0224",
+  "loc": "quad-roblox/src/Handlers/OnChange.luau:95",
+  "call": "errorBeforeNearest",
+  "site": "quad-roblox/src/Handlers/OnChange.luau:95",
+  "text": "errNS.errorBeforeNearest(`Quad0224 Out: second argument for \"{name}\" must be a Source to write back into (got {got})`, SURFACE)"
+ },
+ {
+  "id": "Quad0225",
+  "loc": "quad-roblox/src/LifetimeHandle.luau:68",
+  "call": "errorBefore",
+  "site": "quad-roblox/src/LifetimeHandle.luau:68",
+  "text": "Err.errorBefore(\"Quad0225 nativeClaim: Instance is already claimed by quad\", SURFACE)"
+ },
+ {
+  "id": "Quad0226",
+  "loc": "quad-roblox/src/LifetimeHandle.luau:135",
+  "call": "errorBefore",
+  "site": "quad-roblox/src/LifetimeHandle.luau:135",
+  "text": "Err.errorBefore(\"Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)\", SURFACE"
+ },
+ {
+  "id": "Quad0227",
+  "loc": "quad-roblox/src/Tween.luau:162",
+  "call": "errorBeforeNearest",
+  "site": "quad-roblox/src/Tween.luau:162",
+  "text": "Err.errorBeforeNearest(`Quad0227 Tween:Mapped: fn must be a function (got {typeof(fn)})`, SURFACE)"
+ },
+ {
+  "id": "Quad0228",
+  "loc": "quad-roblox/src/init.luau:229",
+  "call": "errorBefore",
+  "site": "quad-roblox/src/init.luau:228",
+  "text": "`Quad0228 quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')`,"
+ },
+ {
+  "id": "Quad0229",
+  "loc": "quad-base/src/Bookkeeping.luau:202",
+  "call": "errorBefore",
+  "site": "quad-base/src/Bookkeeping.luau:199",
+  "text": "else `Quad0229 Bookkeeping.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not — a leaf handler skipped its position registration`,"
+ },
+ {
+  "id": "Quad0230",
+  "loc": "quad-base/src/Effect.luau:237",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Effect.luau:237",
+  "text": "Err.errorBeforeNearest(if self.Subscribed then \"Quad0089 Effect: already subscribed\" else \"Quad0230 Effect: already bound to an Instance\", SURFACE) -- error-code: inline if"
+ },
+ {
+  "id": "Quad0231",
+  "loc": "quad-base/src/Effect.luau:255",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Effect.luau:255",
+  "text": "Err.errorBeforeNearest(if self.Subscribed then \"Quad0091 Effect: already subscribed\" else \"Quad0231 Effect: already bound to an Instance\", SURFACE) -- error-code: inline if"
+ },
+ {
+  "id": "Quad0232",
+  "loc": "quad-base/src/LifetimeHandle.luau:140",
+  "call": "errorBefore",
+  "site": "quad-base/src/LifetimeHandle.luau:137",
+  "text": "elseif Backend.isHeldBy(value, inst) then \"Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)\""
+ },
+ {
+  "id": "Quad0233",
+  "loc": "quad-base/src/LifetimeHandle.luau:141",
+  "call": "(helper/string)",
+  "site": null,
+  "text": "else \"Quad0233 bindLifetime: value is already bound to another Instance\","
+ },
+ {
+  "id": "Quad0234",
+  "loc": "quad-base/src/Observer.luau:129",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Observer.luau:128",
+  "text": "if self.Subscribed then \"Quad0111 Observer: already subscribed\" else \"Quad0234 Observer: already bound to an Instance\","
+ },
+ {
+  "id": "Quad0235",
+  "loc": "quad-base/src/Observer.luau:162",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Observer.luau:161",
+  "text": "if self.Subscribed then \"Quad0114 Observer: already subscribed\" else \"Quad0235 Observer: already bound to an Instance\","
+ },
+ {
+  "id": "Quad0236",
+  "loc": "quad-base/src/Slot/init.luau:171",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Slot/init.luau:168",
+  "text": "else `Quad0236 {surface}: index out of range (got {index}, limit {limit})`,"
+ },
+ {
+  "id": "Quad0237",
+  "loc": "quad-base/src/Tag.luau:105",
+  "call": "errorBeforeNearest",
+  "site": "quad-base/src/Tag.luau:102",
+  "text": "else \"Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)\","
+ },
+ {
+  "id": "Quad0238",
+  "loc": "quad-base/src/Slot/Elements.luau:38",
+  "call": "raise",
+  "site": "quad-base/src/Slot/Elements.luau:38",
+  "text": "raise(\"Quad0238 Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements\", S.SURFACE)"
+ },
+ {
+  "id": "Quad0239",
+  "loc": "quad-base/src/Slot/Elements.luau:41",
+  "call": "raise",
+  "site": "quad-base/src/Slot/Elements.luau:41",
+  "text": "raise(\"Quad0239 Slot: nil/None cannot be an element — only actually mountable values\", S.SURFACE)"
+ },
+ {
+  "id": "Quad0240",
+  "loc": "quad-base/src/Slot/Elements.luau:44",
+  "call": "raise",
+  "site": "quad-base/src/Slot/Elements.luau:44",
+  "text": "raise(\"Quad0240 Slot: this backend cannot mount this value\", S.SURFACE)"
+ },
+ {
+  "id": "Quad0241",
+  "loc": "quad-base/src/Slot/Elements.luau:52",
+  "call": "raise",
+  "site": "quad-base/src/Slot/Elements.luau:52",
+  "text": "raise(\"Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed "
+ },
+ {
+  "id": "Quad0242",
+  "loc": "quad-base/src/Slot/Elements.luau:68",
+  "call": "raise",
+  "site": "quad-base/src/Slot/Elements.luau:68",
+  "text": "raise(\"Quad0242 Slot: destroyed Slot cannot be an element\", S.SURFACE)"
+ },
+ {
+  "id": "Quad0243",
+  "loc": "quad-roblox/src/Tween.luau:103",
+  "call": "fail",
+  "site": "quad-roblox/src/Tween.luau:103",
+  "text": "fail(`Quad0243 Tween: {name} must be a number`, SURFACE)"
+ },
+ {
+  "id": "Quad0244",
+  "loc": "quad-roblox/src/Tween.luau:107",
+  "call": "fail",
+  "site": "quad-roblox/src/Tween.luau:107",
+  "text": "fail(\"Quad0244 Tween: Reverses must be a boolean\", SURFACE)"
+ },
+ {
+  "id": "Quad0245",
+  "loc": "quad-roblox/src/Tween.luau:110",
+  "call": "fail",
+  "site": "quad-roblox/src/Tween.luau:110",
+  "text": "fail(\"Quad0245 Tween: Dedup must be a boolean\", SURFACE)"
+ },
+ {
+  "id": "Quad0246",
+  "loc": "quad-roblox/src/Tween.luau:115",
+  "call": "fail",
+  "site": "quad-roblox/src/Tween.luau:115",
+  "text": "fail(`Quad0246 Tween: {name} must be a function`, SURFACE)"
+ },
+ {
+  "id": "Quad0247",
+  "loc": "quad-roblox/src/Tween.luau:120",
+  "call": "fail",
+  "site": "quad-roblox/src/Tween.luau:120",
+  "text": "fail('Quad0247 Tween: Override must be \"Cancel\" or \"Finish\"', SURFACE)"
+ },
+ {
+  "id": "Quad0248",
+  "loc": "quad-roblox/src/Tween.luau:131",
+  "call": "fail",
+  "site": "quad-roblox/src/Tween.luau:131",
+  "text": "fail(\"Quad0248 Tween: expected an options table (Tween{ Value = ... })\", SURFACE)"
+ },
+ {
+  "id": "Quad0249",
+  "loc": "quad-roblox/src/Tween.luau:134",
+  "call": "fail",
+  "site": "quad-roblox/src/Tween.luau:134",
+  "text": "fail(\"Quad0249 Tween: Value is required\", SURFACE)"
+ },
+ {
+  "id": "Quad0250",
+  "loc": "quad-roblox/src/Tween.luau:139",
+  "call": "fail",
+  "site": "quad-roblox/src/Tween.luau:139",
+  "text": "fail(\"Quad0250 Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))\", SURFACE)"
+ },
+ {
+  "id": "Quad0251",
+  "loc": "quad-roblox/src/Tween.luau:146",
+  "call": "fail",
+  "site": "quad-roblox/src/Tween.luau:146",
+  "text": "fail(\"Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)\", SURFACE)"
+ }
+]

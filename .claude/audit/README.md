@@ -43,4 +43,7 @@
 - `round13-s8-site-build/` — **[2026-09-27 자율 루프 S8]** 사이트 빌드 로그 + 링크·앵커 전수 검사 스크립트/출력(HTML 188·href 약 15,600) — 깨진 앵커 하나(`H-706`), `_redirects` 66 실존.
 - `round13-e20-probe-*.luau` — **[2026-09-27 자율 루프 E20]** Observer/Effect 구독 수명 상태 기계(8×8)·파동 안 전이·GC·cleanup 계약·Deferred/Immediate 창 — `H-707`(Deferred 창 재구독 시 늦은 Destroying이 죽임 — 코드 수정)·`H-708`·`H-709`, `Q109`·`Q110`.
 - `round13-e19-fuzz/` — **[2026-09-27 자율 루프 E19]** 수동 Slot op 참조 모델 차등 퍼저(12,000시드·11축) + 경계·State occupant·파괴 순회 stale offset·성능 프로브 — 불일치 1(`Q111`), `H-710`~`H-712`, `Q112`, Q75 입구 (e)·Q77 보강.
+- `round13-e21-blame/` — **[2026-09-27 자율 루프 E21]** 에러 ID 전수 blame 매트릭스(`TABLE.md`·하네스 셋·출력) — 도달 240, 잎 blame ID 다섯·유형 다섯, `H-714`~`H-716`, Q88·Q89·Q104·Q90 보강.
+- `round13-e23-probe-*.luau`(15개) — **[2026-09-27 자율 루프 E23]** StoreBind 언랩 사슬·래퍼 전환 매트릭스 — `Q113`(Slot State 순환 검사 없음)·`Q114`(한 파동 바깥/안쪽 순서 해시 의존), `H-717`~`H-719`, typing-limits 8.32.
+- `round13-q111-proto/` — **[2026-09-27 자율 루프 P-Q111]** Slot 선행 패스의 State 인식(A 순환 DFS + Set 시점 검사 / B State 신원 — 새 이름·ID 없음) diff·프로브·퍼저 네 설정 6000시드·List 회귀 대조·벤치(깊은 사슬 이차 비용) — §4 Q111/Q112 스파이크 문단.
 

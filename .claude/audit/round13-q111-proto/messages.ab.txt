@@ -1,0 +1,2 @@
+./test/msg.luau:7: Quad0173 Slot: cannot add a Slot to itself or to one of its own descendants (that would be a cycle) — here through a State element: its new value is the Slot it sits in or one of that Slot's ancestors (the State keeps the new value; this position keeps showing the previous one)
+./test/msg.luau:10: Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)

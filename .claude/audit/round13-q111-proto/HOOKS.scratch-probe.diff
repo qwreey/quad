@@ -1,0 +1,77 @@
+diff -ru a/src/Bookkeeping.luau b/src/Bookkeeping.luau
+--- a/src/Bookkeeping.luau	2026-09-22 12:13:57.011670714 +0900
++++ b/src/Bookkeeping.luau	2026-09-27 03:05:41.268049060 +0900
+@@ -176,6 +176,7 @@
+ 		checkOwner("getOffsetAt", ownerKey)
+ 		checkPosition("getOffsetAt", at) -- 공개 표면 셋 중 하나 (`H-256`/`H-280`)
+ 		local bk = getBookkeeping(ownerKey)
++		local pc = module._pc; if pc then pc.getOffsetAt += 1 end
+ 		ensureBase(bk, ownerKey)
+ 		if at <= bk.offsetCacheValidUpTo then
+ 			return bk.offsetCache[at]
+@@ -203,6 +204,7 @@
+ 					SURFACE
+ 				)
+ 			end
++			if pc then pc.getOffsetIters += 1 end
+ 			cur += contribution(bk, i) -- ← a State length's Get can run user code
+ 			if bk.offsetCacheValidUpTo < i then
+ 				-- `H-240`: that user code invalidated below us — entries past
+@@ -233,9 +235,11 @@
+ 	-- two tail writes safe by construction.
+ 	local function recompute(ownerKey: any, bk: any)
+ 		local sum = 0
++		local pc = module._pc; if pc then pc.recompute += 1 end
+ 		bk.recomputeBlocker:On()
+ 		local prefix, i = {} :: { number }, 1
+ 		while i <= (bk.N or 0) do
++			if pc then pc.recomputeIters += 1 end
+ 			prefix[i] = sum
+ 			-- entry snapshot: the read window below may lower the cursor; the
+ 			-- baseline differs by path (i-1 normally, i right after a rewind),
+diff -ru a/src/Slot/Raw.luau b/src/Slot/Raw.luau
+--- a/src/Slot/Raw.luau	2026-09-17 15:34:46.867595006 +0900
++++ b/src/Slot/Raw.luau	2026-09-27 03:05:41.267880580 +0900
+@@ -17,6 +17,7 @@
+ 	-- reindexFrom: rewrite bk.indexOfElement from `from` to end. Every place
+ 	-- that shifts _elements calls this — regardless of materialization.
+ 	local function reindexFrom(self: any, from: number)
++		local pc = module._pc; if pc then pc.reindexCalls += 1; pc.reindexIters += math.max(0, #self._elements - from + 1) end
+ 		local bk = S.BK.getBookkeeping(self)
+ 		for i = from, #self._elements do
+ 			bk.indexOfElement[self._elements[i]] = i
+@@ -27,6 +28,7 @@
+ 	-- (settle → rawMove of every following key by one slot) was O(N) per key, O(N²)
+ 	-- per cycle (4000 rows: 39 ms for one deletion).
+ 	local function reindexRange(self: any, lo: number, hi: number)
++		local pc = module._pc; if pc then pc.reindexCalls += 1; pc.reindexIters += math.max(0, hi - lo + 1) end
+ 		local bk = S.BK.getBookkeeping(self)
+ 		local els = self._elements
+ 		for i = lo, hi do
+@@ -37,6 +39,7 @@
+ 	local function spliceArraysUp(self: any, index: number)
+ 		local bk = S.BK.getBookkeeping(self)
+ 		local n = bk.N or 0
++		local pc = module._pc; if pc then pc.spliceArr += math.max(0, n - index + 1) end
+ 		for i = n, index, -1 do
+ 			bk.lengthList[i + 1] = bk.lengthList[i]
+ 			bk.sourceList[i + 1] = bk.sourceList[i]
+@@ -53,6 +56,7 @@
+ 	local function spliceArraysDown(self: any, index: number)
+ 		local bk = S.BK.getBookkeeping(self)
+ 		local n = bk.N or 0
++		local pc = module._pc; if pc then pc.spliceArr += math.max(0, n - index + 1) end
+ 		for i = index, n - 1 do
+ 			bk.lengthList[i] = bk.lengthList[i + 1]
+ 			bk.sourceList[i] = bk.sourceList[i + 1]
+diff -ru a/src/Slot/init.luau b/src/Slot/init.luau
+--- a/src/Slot/init.luau	2026-09-22 12:59:04.209277423 +0900
++++ b/src/Slot/init.luau	2026-09-27 03:05:41.267696450 +0900
+@@ -86,6 +86,7 @@
+ 	-- top-level SlotHandler and nested rawAdd (the gap H fixed by unifying).
+ 	local elementOwner = module.Relate()
+ 	local OWNER, OWNER_POS = "__owner", "__ownerPos"
++	module._probeOwner = elementOwner -- SCRATCH PROBE HOOK (e19)
+ 
+ 	-- Q9 (b) (사용자 결정 2026-09-07): a Slot whose mount target was destroyed outside quad
+ 	-- (`inst:Destroy()`) is dead for good — same as an Instance whose owner disposed it. No

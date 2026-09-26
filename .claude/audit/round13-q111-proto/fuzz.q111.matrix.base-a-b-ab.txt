@@ -1,0 +1,16 @@
+base plain total=6000 ok=5999 | ErrCycleViaST ERR-MISSING  x1
+base ss total=6000 ok=6000
+base q111 total=6000 ok=5799 | ErrStCycle ERR-ID Quad0173 x109 | ErrStSeat ERR-MISSING  x81 | ErrStSeat ERR-ID Quad0172 x9 | ErrCycleViaST ERR-MISSING  x2
+base q111ss total=6000 ok=5892 | ErrStCycle ERR-ID Quad0173 x52 | ErrStSeat ERR-MISSING  x51 | ErrStSeat ERR-ID Quad0172 x5
+a plain total=6000 ok=6000
+a ss total=6000 ok=6000
+a q111 total=6000 ok=5908 | ErrStSeat ERR-MISSING  x83 | ErrStSeat ERR-ID Quad0172 x9
+a q111ss total=6000 ok=5944 | ErrStSeat ERR-MISSING  x51 | ErrStSeat ERR-ID Quad0172 x5
+b plain total=6000 ok=5999 | ErrCycleViaST ERR-MISSING  x1
+b ss total=6000 ok=6000
+b q111 total=6000 ok=5888 | ErrStCycle ERR-ID Quad0173 x110 | ErrCycleViaST ERR-MISSING  x2
+b q111ss total=6000 ok=5946 | ErrStCycle ERR-ID Quad0173 x54
+ab plain total=6000 ok=6000
+ab ss total=6000 ok=6000
+ab q111 total=6000 ok=6000
+ab q111ss total=6000 ok=6000

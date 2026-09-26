@@ -1,0 +1,304 @@
+== Quad0005 (05-tag-attr.md)
+  SRC: {ctx}: attribute name "{name}" appears more than once
+  DOC: Attr.Merged: attribute name "{name}" appears more than once
+== Quad0023 (02-dispatch-bookkeeping.md)
+  SRC: Bookkeeping.recompute: sourceList[{i}] is nil — a nil hole in the numeric-key part of props (\{ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)`, 1) -- `H-472`: name the mirror of the lengthList check below
+			end
+			if offset == None then
+				-- No publish channel (a leaf) — nothing to Set, so no `abs` is needed and
+				-- no user code ran since the entry snapshot: advance the cursor directly
+				-- (2026-09-08 advisory RFC, user decision `H-483`). The prefix cache is NOT
+				-- warmed here any more — `getOffsetAt` fills it on demand where a number is
+				-- actually pulled (`nativeInsert` offsets, List's physIndex), which used to
+				-- duplicate this pass one-for-one on a flat list.
+				bk.offsetSetUpTo = i
+			else
+				local abs = getOffsetAt(ownerKey, i)
+				-- `H-240` check ① — BEFORE the write below stomps the signal
+				if bk.offsetSetUpTo < entryCursor then
+					i = math.max(bk.offsetSetUpTo, 1)
+					sum = prefix[i]
+					continue
+				end
+				bk.offsetSetUpTo = i -- Set done up to here
+				if offset:Get() ~= abs then
+					offset:Set(abs) -- ← user code can run here
+				end
+			end
+			-- `H-124`: rewind check BEFORE reading lengthList[i] — user code in
+			-- the Get/Set above may have removed slots past the cursor, and dying
+			-- between recomputeBlocker:On/Off would freeze this owner forever.
+			if bk.offsetSetUpTo < i then
+				-- resume AT the lowered slot (`+1` was wrong: prefix[j+1] was
+				-- accumulated with the OLD lengthList[j]); clamp to 1 —
+				-- offsetSetUpTo can legally be 0 ("1번부터 전부 다시").
+				i = math.max(bk.offsetSetUpTo, 1)
+				sum = prefix[i]
+				continue
+			end
+			-- `H-244`: same single coercion as getOffsetAt's cache fill — two
+			-- inline copies would drift when the coercion gains a case (M6).
+			-- 7순회 `H-427`: C-6's sibling — a `lengthList` hole (a provider that called
+			-- setOffsetSource without setLength) died as an anonymous arithmetic error
+			-- inside recomputeBlocker:On, freezing the owner. Internal invariant.
+			if bk.lengthList[i] == nil then
+				error(`Quad0024 Bookkeeping.recompute: lengthList[{i}] is nil — bookkeeping is broken (setOffsetSource without setLength?)`, 1)
+			end
+			sum += contribution(bk, i)
+			-- `H-240` check ② — contribution's own Get window; the possibly
+			-- stale += above is discarded by the rewind's prefix restore.
+			if bk.offsetSetUpTo < i then
+				i = math.max(bk.offsetSetUpTo, 1)
+				sum = prefix[i]
+				continue
+			end
+			i += 1
+		end
+		-- Tail writes are safe: the loop only exits right after a passed check
+		-- with no user-code window in between (`H-240`).
+		bk.offsetSetUpTo = bk.N or 0
+		bk.recomputeBlocker:OffWithoutEmit()
+		if Brand.isSlot(ownerKey) and ownerKey.Length:Get() ~= sum then
+			ownerKey.Length:Set(sum) -- Length carries no base — length is position-free
+		end
+	end
+
+	-- `setLength(ownerKey, i, len, anchor?, element?)` — the one place that
+	-- owns calling recompute for length changes (`H-19`). `anchor` is the
+	-- lifetime anchor (physical Instance; defaults to ownerKey — only Slot
+	-- owners pass it explicitly, `C-4`). `element` is the registered occupant
+	-- for the position (`H-141`/Q3): the persistent closure captures it and
+	-- looks the current index up in bk.indexOfElement instead of freezing `i`;
+	-- constant-length slots omit it.
+	-- Init-scope (4순회 `H-390`, the `H-365` family): a per-call closure was built
+	-- for every constant-length element too (N per mount) and thrown away after one
+	-- call. Current position by element lookup, not captured index (`H-102`).
+	local function gatedRecompute(bk: any, blocker: any, ownerKey: any, element: any, i: number)
+		local cur = if element ~= nil then bk.indexOfElement[element] else i
+		bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, cur)
+		bk.offsetSetUpTo = math.min(bk.offsetSetUpTo, cur)
+		if blocker.Blocking then
+			return -- batch registration in progress
+		end
+		if bk.recomputeBlocker.Blocking then
+			return -- recompute reentry — the outer pass's rewind picks it up
+		end
+		recompute(ownerKey, bk)
+	end
+
+	local function setLength(ownerKey: any, i: number, len: any, anchor: any?, element: any?)
+		checkOwner("setLength", ownerKey)
+		checkPosition("setLength", i)
+		if not Brand.isState(len) then
+			checkLengthValue("setLength", len) -- a State's value is checked in its Observer callback below, outside the blocker window (`H-445`) — never in `contribution`
+		end
+		anchor = anchor or ownerKey
+		local bk = getBookkeeping(ownerKey)
+		local blocker = getBlocker(ownerKey)
+
+		local oldObserver = bk.observers[i]
+		if oldObserver then
+			module.Backend.unbindLifetime(oldObserver) -- no need to know gchold internals or which inst
+			bk.observers[i] = nil
+		end
+
+		bk.lengthList[i] = len
+		bk.N = math.max(bk.N or 0, i) -- N lifecycle: grows here only ("저장 위치" 절)
+		if element ~= nil then
+			bk.indexOfElement[element] = i -- splice-time rewrites are the Slot layer's job (reindexFrom)
+		end
+		-- invalidation pulls BOTH cursors to `i` — position i's own offset is
+		-- the sum of 1..i-1 and does not change; everything AFTER it does.
+		bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, i)
+		bk.offsetSetUpTo = math.min(bk.offsetSetUpTo, i)
+
+		if Brand.isState(len) then
+			local observer = len:Observer(function()
+				checkLengthValue("setLength", len:Get()) -- `H-445`: outside the blocker window; nearest = the `:Set` line
+				gatedRecompute(bk, blocker, ownerKey, element, i)
+			end) -- immediate first run is gated too
+			module.Backend.bindLifetime(anchor, observer) -- physical target's lifetime, not :Subscribe()
+			bk.observers[i] = observer
+		else
+			gatedRecompute(bk, blocker, ownerKey, element, i) -- constants go through the same gate, no closure (4순회 `H-390`)
+		end
+	end
+
+	-- Registration + (if there is a publish channel) one immediate Set — the
+	-- batch is processed in order so 1..i-1 are always already registered.
+	-- None means "no publish channel", NOT "not participating" (that is
+	-- lengthList's answer); pull the number via getOffsetAt when needed.
+	local function setOffsetSource(ownerKey: any, i: number, source: any)
+		checkOwner("setOffsetSource", ownerKey)
+		checkPosition("setOffsetSource", i)
+		if source ~= None and not Brand.isSource(source) then
+			-- Q13 (b) (사용자 결정 2026-09-07): `checkPosition`'s sibling — a wrong `source` used to
+			-- die at `:Get()` with a Bookkeeping.luau line
+			Err.errorBeforeNearest(`Quad0025 Bookkeeping.setOffsetSource: source must be a Source<number> or None (got {typeof(source)})`, SURFACE)
+		end
+		local bk = getBookkeeping(ownerKey)
+		if source == None then
+			bk.sourceList[i] = None
+			return
+		end
+		-- 5순회 `H-392`: read the source BEFORE writing bookkeeping — a wrong
+		-- `source` (a plain table, say) used to raise on `:Get()` with
+		-- `sourceList[i]` already written, and the next unrelated `setLength`
+		-- then died inside `recomputeBlocker:On()`, freezing this owner's offset
+		-- arithmetic for good (`dispatch-core-plan.md` `H-256` (a): "부기를 하나라도
+		-- 만지기 전에 검사한다"). A type gate on `source` itself is §4 Q13.
+		local offset = getOffsetAt(ownerKey, i)
+		local current = source:Get()
+		bk.sourceList[i] = source
+		if current ~= offset then
+			source:Set(offset)
+		end
+	end
+
+	-- The terminal "empty slot" registration every nop/leaf handler does:
+	-- offsetSource FIRST, then length 0 — the release-order contract (`H-39`,
+	-- setLength ends in gatedRecompute). One body so the order cannot drift
+	-- between the terminal sites; on the Dispatch surface (not a quad-base
+	-- module helper) so quad-roblox handlers (`OnChange`, `InstanceChild`)
+	-- reach it too — post-implementation review Q3 ③, user-approved name
+	-- (2026-09-07: "setEmpty 같은걸 넣어도 큰 문제는 없어보이겠다"). `anchor`
+	-- is setLength's 4th argument (`inst`, `H-35`); NilHandler passes none.
+	local function setEmpty(ownerKey: any, i: number, anchor: any?)
+		checkOwner("setEmpty", ownerKey)
+		-- [round3 `H-434`] validate HERE: this function sits on the Dispatch table, so the
+		-- `H-242` loop tags it SURFACE — if the inner (also tagged) setOffsetSource raised,
+		-- nearest+1 would be this body, not the handler that called setEmpty.
+		checkPosition("setEmpty", i)
+		setOffsetSource(ownerKey, i, None)
+		setLength(ownerKey, i, 0, anchor)
+	end
+
+	module.Bookkeeping = {
+		getBlocker = getBlocker,
+		getBookkeeping = getBookkeeping,
+		getOffsetAt = getOffsetAt,
+		_recompute = recompute, -- internal (Slot/Dispatch only)
+		setLength = setLength,
+		setOffsetSource = setOffsetSource,
+		setEmpty = setEmpty,
+	}
+	-- the public six join the error tag layer here now that they are off the Dispatch table (its `H-242`
+	-- loop used to tag them) — handler-depth raises keep blaming the handler author's call
+	for key, v in module.Bookkeeping :: { [string]: any } do
+		if type(v) == "function" and string.sub(key, 1, 1) ~= "_" then
+			Err.setFuncLevel(SURFACE, v)
+		end
+	end
+end
+
+return Init
+
+  DOC: Bookkeeping.recompute: sourceList[{i}] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+== Quad0058 (02-dispatch-bookkeeping.md)
+  SRC: Modifier: setter keys must be strings (got {typeof(key}
+  DOC: Modifier: setter keys must be strings (got {typeof(key)}) — put a non-string key in the props table itself (Frame { [key] = value })
+== Quad0076 (02-dispatch-bookkeeping.md)
+  SRC: Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""}){hint}
+  DOC: Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}, brand: {brand})` + 꼬리 힌트 하나(+ nil 안내) — `quad-base/src/Dispatch/init.luau
+== Quad0156 (03-slot.md)
+  SRC: Slot: this element is already mounted — multiple mounts are not allowed{S.ZOMBIE_NOTE}
+  DOC: Slot: this element is already mounted — multiple mounts are not allowed
+== Quad0160 (03-slot.md)
+  SRC: Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed{S.ZOMBIE_NOTE}
+  DOC: Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed
+== Quad0169 (03-slot.md)
+  SRC: {surface .. ": destroyed Slot cannot be an element"}
+  DOC: {surface}: destroyed Slot cannot be an element
+== Quad0170 (03-slot.md)
+  SRC: {surface .. ": this element is already in this Slot — reorder with Move/Swap instead of adding it again"}
+  DOC: {surface}: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+== Quad0171 (03-slot.md)
+  SRC: {surface .. ": the same element appears twice"}
+  DOC: {surface}: the same element appears twice
+== Quad0172 (03-slot.md)
+  SRC: {surface .. ": this element is already mounted — multiple mounts are not allowed" .. ZOMBIE_NOTE}
+  DOC: {surface}: this element is already mounted — multiple mounts are not allowed
+== Quad0173 (03-slot.md)
+  SRC: {surface .. ": cannot add a Slot to itself or to one of its own descendants (that would be a cycle}
+  DOC: {surface}: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)
+== Quad0176 (03-slot.md)
+  SRC: Slot: initial elements must be a plain \{ element, ... \} array (got {typeof(initial)} — a bare element or quad value needs the braces)
+  DOC: Slot: initial elements must be a plain { element, ... } array (got {typeof(initial)} — a bare element or quad value needs the braces)
+== Quad0179 (03-slot.md)
+  SRC: dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key){ZOMBIE_NOTE}
+  DOC: dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key)
+== Quad0204 (05-tag-attr.md)
+  SRC: Tag: names must be strings, Tags, or a plain \{...} list of those (got {typeof(v)})`, SURFACE)
+	end
+end
+
+-- [2026-09-21 사용자 결정 — GS 05장 `:Added` 관용구] A nil ARGUMENT means "nothing to add/remove" — for the
+-- constructor's vararg slots, `Added`/`Removed`'s one argument and `Merged`'s slots. A nil HOLE inside a list
+-- stays an error (`H-380`): a table cannot hold nil, so `{ cond and "a" or nil, "b" }` silently truncates,
+-- while an argument's presence is exact (`select("#")`). This is what makes the immutable idiom
+-- `tag:Added(if cond then "Even" else nil)` an EXPRESSION that must be assigned — the alternative, a
+-- statement `if cond then tag:Added("Even") end`, drops the returned Tag silently and no type checker
+-- catches it (user: "base 자체가 바뀌는게 아닌 새로 생성되므로 = 으로 대입해야한다를 강하게 알려야").
+-- `Contains` keeps rejecting nil (`H-468`): asking "is nil a member" is a bug, not an empty choice.
+function TagImpl.Added(self: any, nameOrList: any): any
+	local names = table.clone(self._names)
+	if nameOrList ~= nil then
+		flattenInto(names, nameOrList, 1)
+	end
+	return newTag(names)
+end
+
+function TagImpl.Removed(self: any, nameOrList: any): any
+	-- `H-344`: same validation as `Added` — a non-string used to be a silent
+	-- no-op and `nil` a VM "table index is nil" blaming this file
+	local toRemove: { [string]: true } = {}
+	if nameOrList ~= nil then
+		flattenInto(toRemove, nameOrList, 1)
+	end
+	local names = table.clone(self._names)
+	for name in pairs(toRemove) do
+		names[name] = nil
+	end
+	return newTag(names)
+end
+
+-- `H-468` (Gemini 5차 G-20, 사용자 Q32): variadic — every name must be present; a nil
+-- (or non-string) argument is an error, never a silent false. Zero names (a dynamic
+-- unpack) is allowed and vacuously true.
+function TagImpl.Contains(self: any, ...: string): boolean
+	local n = select("#", ...)
+	for i = 1, n do
+		local name = select(i, ...)
+		if type(name) ~= "string" then
+			Err.errorBeforeNearest(`Quad0205 Tag:Contains: names must be strings (got {typeof(name)} at argument {i})`, SURFACE)
+		end
+		if self._names[name] ~= true then
+			return false
+		end
+	end
+	return true
+end
+
+-- [2026-09-15 user decision, public surface (26)] generalized iteration instead of a `:Names()` method —
+-- `for name in tag do`. Hands out the frozen set itself (no allocation); `pairs(tag)` bypasses `__iter`
+-- and walks the wrapper (Luau superseded `__pairs` with `__iter`) — documented caveat, not supported.
+function TagImpl.__iter(self: any)
+	return next, self._names
+end
+
+function TagImpl.Apply(self: any, factory: any): any
+	if type(factory) ~= "function" then
+		-- `H-497` (2026-09-08 2차 감사 I-4): sibling `State:Apply` gates; here a non-function
+		-- died at the call with `Tag.luau` on the blame line
+		Err.errorBeforeNearest(`Quad0206 Tag: Apply factory must be a function (got {typeof(factory)})`, SURFACE)
+	end
+	return factory(self)
+end
+
+-- Callable namespace: Tag(...names) constructs, Tag.Merged composes Tags.
+local Tag = setmetatable({}, {
+	__call = function(_self, ...: any)
+		-- vararg stays (static literal call sites — tag-plan "값 모양"); every slot
+		-- goes through the one door, so 
+  DOC: Tag: names must be strings, Tags, or a plain {...} list of those (got {typeof(v)})
+differ: 14 of 248

@@ -1,0 +1,248 @@
+Quad0001	quad-base/src/Attr/Key.luau:58	errorBeforeNearest	Err.errorBeforeNearest("Quad0001 AttrKey: name must be a non-empty string", SURFACE)
+Quad0002	quad-base/src/Attr/Key.luau:112	errorBefore	Err.errorBefore(`Quad0002 AttrKey: attribute "{k.Name}" is already bound by another owner`, SURFACE)
+Quad0003	quad-base/src/Attr/init.luau:99	errorBeforeNearest	Err.errorBeforeNearest(`Quad0003 {ctx}: attribute name cannot be empty`, SURFACE) -- round3 `H-443` (G-13, Store gate's twin)
+Quad0004	quad-base/src/Attr/init.luau:102	errorBeforeNearest	Err.errorBeforeNearest(`Quad0004 {ctx}: attribute name "{name}" appears more than once`, SURFACE)
+Quad0005	quad-base/src/Attr/init.luau:109	errorBeforeNearest	Err.errorBeforeNearest(`Quad0005 {ctx}: attribute name "{name}" appears more than once`, SURFACE)
+Quad0006	quad-base/src/Attr/init.luau:128	errorBeforeNearest	Err.errorBeforeNearest(`Quad0006 {ctx}: plain-table keys must be non-empty strings`, SURFACE)
+Quad0007	quad-base/src/Attr/init.luau:132	errorBeforeNearest	Err.errorBeforeNearest(`Quad0007 {ctx}: attribute "{name}" cannot be a function — attribute values are raw values or State`, SURFACE)
+Quad0008	quad-base/src/Attr/init.luau:138	errorBeforeNearest	Err.errorBeforeNearest(`Quad0008 {ctx}: attribute "{name}" cannot be a table — attribute values are raw values, None or State (got {typeof(v)})`, SURF
+Quad0009	quad-base/src/Attr/init.luau:141	errorBeforeNearest	Err.errorBeforeNearest(`Quad0009 {ctx}: attribute name "{name}" appears more than once`, SURFACE)
+Quad0010	quad-base/src/Attr/init.luau:146	errorBeforeNearest	Err.errorBeforeNearest(`Quad0010 {ctx}: arguments must be Stores, Attr values or plain tables`, SURFACE)
+Quad0011	quad-base/src/Attr/init.luau:167	errorBeforeNearest	Err.errorBeforeNearest("Quad0011 Attr.Merged: arguments must be Attr values", SURFACE)
+Quad0012	quad-base/src/Attr/init.luau:179	errorBeforeNearest	Err.errorBeforeNearest("Quad0012 Attr.Overridden: arguments must be Attr values", SURFACE)
+Quad0013	quad-base/src/Attr/init.luau:195	errorBeforeNearest	Err.errorBeforeNearest(`Quad0013 {fnName}: name must be a non-empty string`, SURFACE)
+Quad0014	quad-base/src/Attr/init.luau:198	errorBeforeNearest	Err.errorBeforeNearest(`Quad0014 {fnName}: value of "{name}" must not be nil — use None to delete`, SURFACE)
+Quad0015	quad-base/src/Attr/init.luau:201	errorBeforeNearest	Err.errorBeforeNearest(`Quad0015 {fnName}: value of "{name}" must be a {luaType}, State or None (got {typeof(value)})`, SURFACE)
+Quad0016	quad-base/src/Attr/init.luau:262	errorBefore	Err.errorBefore("Quad0016 Attr: the same group value is placed at two positions of this instance", SURFACE)
+Quad0017	quad-base/src/Blocker.luau:94	errorBeforeNearest	Err.errorBeforeNearest(`Quad0017 Blocker: Policy emit must be a function (got {typeof(emit)})`, SURFACE)
+Quad0018	quad-base/src/Blocker.luau:117	errorBeforeNearest	Err.errorBeforeNearest(`Quad0018 Blocker: Apply target must be a State (got {typeof(state)})`, SURFACE)
+Quad0019	quad-base/src/Bookkeeping.luau:57	errorBeforeNearest	Err.errorBeforeNearest(`Quad0019 Bookkeeping.{fnName}: position must be a positive integer (got {tostring(i)})`, SURFACE)
+Quad0020	quad-base/src/Bookkeeping.luau:66	errorBeforeNearest	Err.errorBeforeNearest(`Quad0020 Bookkeeping.{fnName}: ownerKey must not be nil`, SURFACE)
+Quad0021	quad-base/src/Bookkeeping.luau:137	errorBeforeNearest	Err.errorBeforeNearest(`Quad0021 Bookkeeping.{fnName}: length must be a non-negative integer (got {tostring(n)})`, SURFACE)
+Quad0022	quad-base/src/Bookkeeping.luau:201	errorBefore	then `Quad0022 Bookkeeping.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) — or a leaf handler skipped its posi
+Quad0023	quad-base/src/Bookkeeping.luau:248	error	error(`Quad0023 Bookkeeping.recompute: sourceList[{i}] is nil — a nil hole in the numeric-key part of props (\{ a, nil, b })? fill the optional slot w
+Quad0024	quad-base/src/Bookkeeping.luau:288	error	error(`Quad0024 Bookkeeping.recompute: lengthList[{i}] is nil — bookkeeping is broken (setOffsetSource without setLength?)`, 1)
+Quad0025	quad-base/src/Bookkeeping.luau:380	errorBeforeNearest	Err.errorBeforeNearest(`Quad0025 Bookkeeping.setOffsetSource: source must be a Source<number> or None (got {typeof(source)})`, SURFACE)
+Quad0026	quad-base/src/Claim.luau:64	errorBeforeNearest	Err.errorBeforeNearest(`Quad0026 newMapperClass: className must be a non-empty string (got {typeof(className)})`, SURFACE)
+Quad0027	quad-base/src/Claim.luau:99	errorBefore	Err.errorBefore("Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)", SURFACE)
+Quad0028	quad-base/src/Claim.luau:105	errorBefore	Err.errorBefore(`Quad0028 Claim: two mapper descriptors resolved to the same Instance {tostring(inst)} — each child needs exactly one descriptor`, SUR
+Quad0029	quad-base/src/Claim.luau:115	errorBefore	Err.errorBefore(`Quad0029 Claim: {tostring(inst)} is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again 
+Quad0030	quad-base/src/Claim.luau:121	errorBefore	Err.errorBefore(`Quad0030 Claim: mapper props must be a table (got {typeof(desc._props)})`, SURFACE)
+Quad0031	quad-base/src/Claim.luau:134	errorBefore	Err.errorBefore(`Quad0031 Claim: array keys must be positive integers (got {i})`, SURFACE)
+Quad0032	quad-base/src/Claim.luau:148	errorBefore	Err.errorBefore(`Quad0032 Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)}) — a child with that 
+Quad0033	quad-base/src/Claim.luau:188	errorBefore	Err.errorBefore(`Quad0033 Claim: first argument must be an Instance of the installed backend (got {typeof(inst)})`, SURFACE)
+Quad0034	quad-base/src/Claim.luau:191	errorBefore	Err.errorBefore("Quad0034 Claim: second argument must be a D.Mapper descriptor", SURFACE)
+Quad0035	quad-base/src/Context.luau:52	errorBeforeNearest	Err.errorBeforeNearest(`Quad0035 Context.Provider: name must be a string (got {typeof(name)})`, SURFACE)
+Quad0036	quad-base/src/Context.luau:72	errorBeforeNearest	Err.errorBeforeNearest(`Quad0036 Context:{fnName}: key must be a Provider from Context.Provider() (got {typeof(provider)})`, SURFACE)
+Quad0037	quad-base/src/Context.luau:79	errorBeforeNearest	Err.errorBeforeNearest(`Quad0037 Context:Set: value for {tostring(provider)} must not be nil (absence is "not set")`, SURFACE)
+Quad0038	quad-base/src/Context.luau:89	errorBeforeNearest	Err.errorBeforeNearest(`Quad0038 Context:Get: no value for {tostring(provider)} — the creator of this Context did not :Set it (use :Peek to test)`, SU
+Quad0039	quad-base/src/Debounce.luau:88	errorBefore	Err.errorBefore(`Quad0039 {name}: {field} must be a non-negative number (got {typeof(v)})`, SURFACE)
+Quad0040	quad-base/src/Debounce.luau:98	errorBeforeNearest	Err.errorBeforeNearest(`Quad0040 {name}: {field} is required (a number of seconds or a State<number>)`, SURFACE)
+Quad0041	quad-base/src/Debounce.luau:104	errorBeforeNearest	Err.errorBeforeNearest(`Quad0041 {name}: {field} must be a non-negative number or a State<number> (got {typeof(t)})`, SURFACE)
+Quad0042	quad-base/src/Debounce.luau:110	errorBeforeNearest	Err.errorBeforeNearest(`Quad0042 {name}: {field} must be a boolean (got {typeof(v)})`, SURFACE)
+Quad0043	quad-base/src/Debounce.luau:143	errorBeforeNearest	Err.errorBeforeNearest(`Quad0043 {self._name}: Apply target must be a State (got {typeof(state)})`, SURFACE)
+Quad0044	quad-base/src/Debounce.luau:155	errorBefore	Err.errorBefore(`Quad0044 {name}: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/
+Quad0045	quad-base/src/Debounce.luau:323	errorBeforeNearest	Err.errorBeforeNearest(`Quad0045 {name}: options table expected (got {typeof(opts)})`, SURFACE)
+Quad0046	quad-base/src/Debounce.luau:340	errorBeforeNearest	Err.errorBeforeNearest("Quad0046 Throttle: MaxTime is Debounce-only (a throttle already passes every Time)", SURFACE)
+Quad0047	quad-base/src/Debounce.luau:343	errorBeforeNearest	Err.errorBeforeNearest(`Quad0047 {name}: Handle must be a Ref (got {typeof(opts.Handle)})`, SURFACE)
+Quad0048	quad-base/src/Debounce.luau:349	errorBeforeNearest	Err.errorBeforeNearest(`Quad0048 {name}: Leading and Trailing both false would pass nothing through`, SURFACE)
+Quad0049	quad-base/src/Dispatch/Modifier/init.luau:178	errorBeforeNearest	Err.errorBeforeNearest(`Quad0049 Modifier:Peek: key must be a non-empty string (got {if key == "" then '""' else typeof(key)})`, SURFACE)
+Quad0050	quad-base/src/Dispatch/Modifier/init.luau:187	errorBeforeNearest	Err.errorBeforeNearest(`Quad0050 Modifier:Apply: factory must be a function (got {typeof(factory)})`, SURFACE)
+Quad0051	quad-base/src/Dispatch/Modifier/init.luau:201	errorBeforeNearest	Err.errorBeforeNearest(`Quad0051 Modifier:As: name must be a class name string (got {typeof(name)})`, SURFACE)
+Quad0052	quad-base/src/Dispatch/Modifier/init.luau:204	errorBeforeNearest	Err.errorBeforeNearest(`Quad0052 Modifier: unknown modifier class "{name}" — Modifier.TypedFactory/DefineSubtype it first`, SURFACE)
+Quad0053	quad-base/src/Dispatch/Modifier/init.luau:216	errorBeforeNearest	Err.errorBeforeNearest("Quad0053 Modifier.Overridden: expects at least one Modifier", SURFACE)
+Quad0054	quad-base/src/Dispatch/Modifier/init.luau:222	errorBeforeNearest	Err.errorBeforeNearest(`Quad0054 Modifier.Overridden: argument #{i} is not a Modifier (got {typeof(arg)})`, SURFACE)
+Quad0055	quad-base/src/Dispatch/Modifier/init.luau:248	errorBeforeNearest	Err.errorBeforeNearest(`Quad0055 Modifier: unknown modifier class "{target}" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an u
+Quad0056	quad-base/src/Dispatch/Modifier/init.luau:252	errorBeforeNearest	Err.errorBeforeNearest(`Quad0056 Modifier: cannot cast a "{tag}" modifier to "{target}" — not an ancestor (use :As(name) to force)`, SURFACE)
+Quad0057	quad-base/src/Dispatch/Modifier/init.luau:293	error	error(`Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, 2)
+Quad0058	quad-base/src/Dispatch/Modifier/init.luau:327	errorBeforeNearest	Err.errorBeforeNearest("Quad0058 Modifier: setter keys must be strings (got " .. typeof(key) .. ") — put a non-string key in the props table itself (F
+Quad0059	quad-base/src/Dispatch/Modifier/init.luau:367	errorBeforeNearest	Err.errorBeforeNearest(`Quad0059 Modifier: initial-field table keys must be non-empty field names (got {if k == "" then '""' else typeof(k)} at argume
+Quad0060	quad-base/src/Dispatch/Modifier/init.luau:373	errorBeforeNearest	Err.errorBeforeNearest(`Quad0060 Modifier: field "{k}" collides with a reserved Modifier method`, SURFACE)
+Quad0061	quad-base/src/Dispatch/Modifier/init.luau:376	errorBeforeNearest	Err.errorBeforeNearest(`Quad0061 Modifier: field "{k}" matches the reserved cast prefix As<Class> — casts are methods, not fields`, SURFACE)
+Quad0062	quad-base/src/Dispatch/Modifier/init.luau:382	errorBeforeNearest	Err.errorBeforeNearest(`Quad0062 Modifier: field "{k}" starts with "__" — metamethod-looking names are never properties`, SURFACE)
+Quad0063	quad-base/src/Dispatch/Modifier/init.luau:388	errorBeforeNearest	Err.errorBeforeNearest(`Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event
+Quad0064	quad-base/src/Dispatch/Modifier/init.luau:391	errorBeforeNearest	Err.errorBeforeNearest(`Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, SURFACE)
+Quad0065	quad-base/src/Dispatch/Modifier/init.luau:396	errorBeforeNearest	Err.errorBeforeNearest(`Quad0065 Modifier: argument #{i} must be a Modifier or a plain field table (got {typeof(arg)})`, SURFACE)
+Quad0066	quad-base/src/Dispatch/Modifier/init.luau:404	errorBeforeNearest	Err.errorBeforeNearest(`Quad0066 Modifier.{fn}: {what} must be a non-empty class name string (got {typeof(name)})`, SURFACE)
+Quad0067	quad-base/src/Dispatch/Modifier/init.luau:438	errorBeforeNearest	Err.errorBeforeNearest(`Quad0067 Modifier.DefineSubtype: "{subtype}" ⊂ "{parent}" would make a cycle`, SURFACE)
+Quad0068	quad-base/src/Dispatch/Modifier/init.luau:497	errorBefore	Err.errorBefore(`Quad0068 Modifier: a Modifier cannot be a value of key "{tostring(k)}" — place it in the array part`, SURFACE)
+Quad0069	quad-base/src/Dispatch/Ref.luau:52	errorBefore	Err.errorBefore(`Quad0069 {kind}: already fired — a {kind} is one-shot, make a new one for each instance`, SURFACE)
+Quad0070	quad-base/src/Dispatch/StoreBind.luau:78	errorBefore	Err.errorBefore("Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but 
+Quad0071	quad-base/src/Dispatch/init.luau:238	error	error(`Quad0071 Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken`, 1)
+Quad0072	quad-base/src/Dispatch/init.luau:254	errorBeforeNearest	Err.errorBeforeNearest(`Quad0072 Dispatch.{fnName}: inst must not be nil`, SURFACE)
+Quad0073	quad-base/src/Dispatch/init.luau:264	errorBeforeNearest	Err.errorBeforeNearest(`Quad0073 Dispatch.{fnName}: index must be a positive integer (got {tostring(index)})`, SURFACE)
+Quad0074	quad-base/src/Dispatch/init.luau:270	errorBeforeNearest	Err.errorBeforeNearest(`Quad0074 Dispatch.{fnName}: key must not be nil`, SURFACE)
+Quad0075	quad-base/src/Dispatch/init.luau:332	errorBeforeNearest	Err.errorBeforeNearest(`Quad0075 Dispatch.process: index {index} would leave a gap in the chain (the chain has {#list} slots — a delegating handler pa
+Quad0076	quad-base/src/Dispatch/init.luau:206	(helper/string)	return `Quad0076 Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})` .. hint
+Quad0077	quad-base/src/Dispatch/init.luau:214	(helper/string)	return `Quad0077 Dispatch: handler {describeHandler(h)} returned no retractor at key {tostring(k)}, index {index}`
+Quad0079	quad-base/src/Dispatch/init.luau:394	errorBeforeNearest	Err.errorBeforeNearest(`Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got {typeof(h
+Quad0080	quad-base/src/Dispatch/init.luau:402	errorBeforeNearest	Err.errorBeforeNearest(`Quad0080 Dispatch.addHandler: priority must be a finite number (got {tostring(pr)})`, SURFACE)
+Quad0081	quad-base/src/Dispatch/init.luau:414	errorBeforeNearest	Err.errorBeforeNearest(`Quad0081 Dispatch.addHandler: keyType must be "number", "string" or nil (got {tostring(kt)})`, SURFACE)
+Quad0082	quad-base/src/Dispatch/init.luau:468	errorBefore	Err.errorBefore(`Quad0082 Dispatch.drive: props must be a table (got {typeof(flattened)})`, SURFACE)
+Quad0083	quad-base/src/Dispatch/init.luau:481	errorBefore	Err.errorBefore(`Quad0083 Dispatch.drive: props must be a plain \{ ... \} table — a quad value needs the braces (got {brandNameOf(flattened) or "a tab
+Quad0084	quad-base/src/Dispatch/init.luau:484	errorBefore	Err.errorBefore("Quad0084 Dispatch.drive: inst must not be nil", SURFACE) -- round3 `H-442` (G-12): died in Relate with `table index is nil`
+Quad0085	quad-base/src/Dispatch/init.luau:505	errorBefore	Err.errorBefore(`Quad0085 Dispatch.drive: array keys must be positive integers (got {k})`, SURFACE)
+Quad0086	quad-base/src/Effect.luau:119	errorBefore	Err.errorBefore(`Quad0086 Effect: fn must return a cleanup function or nothing (got {typeof(cleanup)})`, SURFACE)
+Quad0087	quad-base/src/Effect.luau:156	errorBefore	Err.errorBefore("Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup", SURFACE) -- `H-147` (A)
+Quad0088	quad-base/src/Effect.luau:234	errorBeforeNearest	Err.errorBeforeNearest("Quad0088 Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
+Quad0089	quad-base/src/Effect.luau:237	errorBeforeNearest	Err.errorBeforeNearest(if self.Subscribed then "Quad0089 Effect: already subscribed" else "Quad0230 Effect: already bound to an Instance", SURFACE) --
+Quad0090	quad-base/src/Effect.luau:252	errorBeforeNearest	Err.errorBeforeNearest("Quad0090 Effect: cannot change subscription from inside fn or cleanup", SURFACE) -- `H-147`
+Quad0091	quad-base/src/Effect.luau:255	errorBeforeNearest	Err.errorBeforeNearest(if self.Subscribed then "Quad0091 Effect: already subscribed" else "Quad0231 Effect: already bound to an Instance", SURFACE) --
+Quad0092	quad-base/src/Effect.luau:276	errorBeforeNearest	Err.errorBeforeNearest("Quad0092 Effect: subscribed strongly; use :Unsubscribe()", SURFACE)
+Quad0093	quad-base/src/Effect.luau:285	errorBeforeNearest	Err.errorBeforeNearest("Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()", SURFACE)
+Quad0094	quad-base/src/Effect.luau:297	errorBeforeNearest	Err.errorBeforeNearest("Quad0094 Effect: fn must be a function", SURFACE)
+Quad0095	quad-base/src/Effect.luau:325	errorBeforeNearest	Err.errorBeforeNearest(`Quad0095 Effect: dep #{i} is nil`, SURFACE)
+Quad0096	quad-base/src/Effect.luau:328	errorBeforeNearest	Err.errorBeforeNearest(`Quad0096 Effect: dep #{i} is not a State/Source/Ref`, SURFACE)
+Quad0097	quad-base/src/Effect.luau:425	errorBefore	Err.errorBefore(`Quad0097 Effect: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
+Quad0098	quad-base/src/Effect.luau:439	error	error("Quad0098 Effect: Effect.Init(module) has not run for this quad instance", 1)
+Quad0099	quad-base/src/Fallback.luau:30	errorBeforeNearest	Err.errorBeforeNearest(`Quad0099 {name}: base must be a function (got {typeof(base)})`, SURFACE)
+Quad0100	quad-base/src/Fallback.luau:33	errorBeforeNearest	Err.errorBeforeNearest(`Quad0100 {name}: onError must be a function (got {typeof(onError)})`, SURFACE)
+Quad0101	quad-base/src/LifecycleHooks.luau:35	errorBeforeNearest	Err.errorBeforeNearest(`Quad0101 {name}: fn must be a function (got {typeof(fn)})`, SURFACE)
+Quad0102	quad-base/src/LifetimeHandle.luau:123	errorBefore	Err.errorBefore("Quad0102 bindLifetime: inst must not be nil", SURFACE) -- round3 `H-447`: its own message, not "Claim it first"
+Quad0103	quad-base/src/LifetimeHandle.luau:126	errorBefore	Err.errorBefore("Quad0103 bindLifetime: value must not be nil", SURFACE) -- `H-447`: used to die at `gchold[nil]`
+Quad0104	quad-base/src/LifetimeHandle.luau:139	errorBefore	then "Quad0104 bindLifetime: value is already subscribed"
+Quad0105	quad-base/src/LifetimeHandle.luau:180	errorBeforeNearest	Err.errorBeforeNearest("Quad0105 unbindLifetime: value must not be nil", SURFACE)
+Quad0106	quad-base/src/ModuleIdentity.luau:25	(helper/string)	return `Quad0106 {what}: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances`
+Quad0108	quad-base/src/NotInstalled.luau:30	errorBefore	`Quad0108 quad: {name} is not available — no backend has installed {what} `
+Quad0109	quad-base/src/Observer.luau:118	errorBefore	Err.errorBefore("Quad0109 Observer: cannot bind an Observer from inside its own fn", SURFACE) -- `H-183`
+Quad0110	quad-base/src/Observer.luau:125	errorBeforeNearest	Err.errorBeforeNearest("Quad0110 Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183` (`H-147` symmetric)
+Quad0111	quad-base/src/Observer.luau:129	errorBeforeNearest	if self.Subscribed then "Quad0111 Observer: already subscribed" else "Quad0234 Observer: already bound to an Instance",
+Quad0112	quad-base/src/Observer.luau:146	errorBeforeNearest	Err.errorBeforeNearest("Quad0112 Observer: subscribed strongly; use :Unsubscribe()", SURFACE)
+Quad0113	quad-base/src/Observer.luau:156	errorBeforeNearest	Err.errorBeforeNearest("Quad0113 Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183`
+Quad0114	quad-base/src/Observer.luau:162	errorBeforeNearest	if self.Subscribed then "Quad0114 Observer: already subscribed" else "Quad0235 Observer: already bound to an Instance",
+Quad0115	quad-base/src/Observer.luau:176	errorBeforeNearest	Err.errorBeforeNearest("Quad0115 Observer: not subscribed strongly; use :WeakUnsubscribe()", SURFACE)
+Quad0116	quad-base/src/Observer.luau:274	errorBefore	Err.errorBefore(`Quad0116 Observer: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
+Quad0117	quad-base/src/Observer.luau:288	error	error("Quad0117 Observer: Observer.Init(module) has not run for this quad instance", 1) -- invariant; callers pull it in first
+Quad0118	quad-base/src/Operator.luau:37	errorBeforeNearest	Err.errorBeforeNearest(`Quad0118 Operator.{name}: argument #{i} is nil`, SURFACE)
+Quad0119	quad-base/src/Operator.luau:43	errorBeforeNearest	Err.errorBeforeNearest(`Quad0119 Operator.{name}: argument #{i} must be a {kind} or a State<{kind}> (got {typeof(a)})`, SURFACE)
+Quad0120	quad-base/src/Operator.luau:60	errorBefore	Err.errorBefore(`Quad0120 Operator.{name}: argument #{i} is a State whose current value is nil`, SURFACE)
+Quad0121	quad-base/src/Operator.luau:62	errorBefore	Err.errorBefore(`Quad0121 Operator.{name}: argument #{i} is a State whose current value must be a {kind} (got {typeof(v)})`, SURFACE)
+Quad0122	quad-base/src/Operator.luau:78	errorBefore	Err.errorBefore(`Quad0122 Operator.{name}: the Apply target's current value must be a {kind} (got {typeof(v)})`, SURFACE)
+Quad0123	quad-base/src/Operator.luau:85	errorBeforeNearest	Err.errorBeforeNearest(`Quad0123 Operator.{name}: Apply target must be a State (got {typeof(self)})`, SURFACE)
+Quad0124	quad-base/src/Operator.luau:164	errorBefore	Err.errorBefore(`Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min {r[1]}, max {r[2]})`, SURFACE)
+Quad0125	quad-base/src/Operator.luau:178	errorBeforeNearest	Err.errorBeforeNearest("Quad0125 Operator.Indexed: key must not be nil", SURFACE)
+Quad0126	quad-base/src/Operator.luau:183	errorBeforeNearest	Err.errorBeforeNearest("Quad0126 Operator.Indexed: key must be a plain value, not a State (the key is not reactive)", SURFACE)
+Quad0127	quad-base/src/Operator.luau:190	errorBefore	Err.errorBefore(`Quad0127 Operator.Indexed: value is not a table (got {typeof(t)}) — cannot read [{tostring(key)}]`, SURFACE)
+Quad0128	quad-base/src/Operator.luau:200	errorBeforeNearest	Err.errorBeforeNearest("Quad0128 Operator.Alternative: default must not be nil", SURFACE)
+Quad0129	quad-base/src/Operator.luau:213	errorBefore	Err.errorBefore("Quad0129 Operator.Alternative: the default State's current value is nil", SURFACE)
+Quad0130	quad-base/src/Ref/init.luau:101	errorBeforeNearest	Err.errorBeforeNearest(`Quad0130 Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a {
+Quad0132	quad-base/src/Ref/init.luau:124	errorBeforeNearest	Err.errorBeforeNearest(`Quad0132 {surface}: callback must be a function (got {typeof(fn)})`, SURFACE)
+Quad0133	quad-base/src/Ref/init.luau:155	errorBeforeNearest	Err.errorBeforeNearest(`Quad0133 Ref: Wait(thread) expects a thread (got {typeof(thread)})`, SURFACE)
+Quad0134	quad-base/src/Ref/init.luau:164	errorBeforeNearest	Err.errorBeforeNearest("Quad0134 Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)", SURFACE
+Quad0135	quad-base/src/Ref/init.luau:190	errorBeforeNearest	Err.errorBeforeNearest("Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed", SURFACE)
+Quad0136	quad-base/src/Ref/init.luau:275	errorBefore	Err.errorBefore(`Quad0136 {kind}: must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see
+Quad0137	quad-base/src/Ref/init.luau:277	errorBefore	Err.errorBefore(`Quad0137 {kind}: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
+Quad0138	quad-base/src/Relate.luau:28	error	if inst == nil then error(`Quad0138 Relate:{method}: inst must not be nil`, 3) end
+Quad0139	quad-base/src/Relate.luau:29	error	error(`Quad0139 Relate:{method}: key must not be nil`, 3)
+Quad0140	quad-base/src/Slot/Handler.luau:37	errorBefore	Err.errorBefore("Quad0140 Slot: destroyed Slot cannot be mounted", SURFACE)
+Quad0141	quad-base/src/Slot/Handler.luau:61	errorBefore	Err.errorBefore(`Quad0141 Slot: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
+Quad0142	quad-base/src/Slot/List.luau:95	errorBefore	S.Err.errorBefore(`Quad0142 Slot:List: data must be a plain array (got {typeof(items)}) — a data State must hold one too`, S.SURFACE)
+Quad0143	quad-base/src/Slot/List.luau:102	errorBefore	S.Err.errorBefore(`Quad0143 Slot:List: data must be a plain array — key "{tostring(k)}" is not an array position`, S.SURFACE)
+Quad0144	quad-base/src/Slot/List.luau:114	errorBefore	S.Err.errorBefore(`Quad0144 Slot:List: keyFn returned {if key == nil then "nil" else "NaN"} for item #{i}`, S.SURFACE)
+Quad0145	quad-base/src/Slot/List.luau:117	errorBefore	S.Err.errorBefore(`Quad0145 Slot:List: duplicate key {tostring(key)}`, S.SURFACE)
+Quad0146	quad-base/src/Slot/List.luau:138	errorBefore	S.Err.errorBefore("Quad0146 Slot:List: updateFn returned q.KeyGone — it is the marker updateFn RECEIVES when a key disappears; return nil/q.None to dr
+Quad0147	quad-base/src/Slot/List.luau:172	errorBefore	S.Err.errorBefore("Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)", S.SURFACE)
+Quad0148	quad-base/src/Slot/List.luau:214	errorBeforeNearest	if self._listed then S.Err.errorBeforeNearest("Quad0148 Slot: already has :List/:Single installed", S.SURFACE) end
+Quad0149	quad-base/src/Slot/List.luau:215	errorBeforeNearest	if self._crudUsed then S.Err.errorBeforeNearest("Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot
+Quad0150	quad-base/src/Slot/List.luau:221	errorBeforeNearest	S.Err.errorBeforeNearest(`Quad0150 Slot:List: updateFn must be a function (got {typeof(updateFn)})`, S.SURFACE) -- round3 `H-441`
+Quad0151	quad-base/src/Slot/List.luau:226	errorBeforeNearest	S.Err.errorBeforeNearest(`Quad0151 Slot:List: data must be a plain array or a State of one (got {typeof(data)})`, S.SURFACE)
+Quad0152	quad-base/src/Slot/List.luau:232	errorBeforeNearest	S.Err.errorBeforeNearest(`Quad0152 Slot:List: keyFn must be a function (got {typeof(keyFn)})`, S.SURFACE) -- round3 `H-446`
+Quad0153	quad-base/src/Slot/List.luau:238	errorBeforeNearest	S.Err.errorBeforeNearest(`Quad0153 Slot:List: opts must be a table (got {typeof(opts)})`, S.SURFACE)
+Quad0154	quad-base/src/Slot/List.luau:265	errorBeforeNearest	S.Err.errorBeforeNearest(`Quad0154 Slot:Single: updateFn must be a function (got {typeof(updateFn)})`, S.SURFACE) -- round3 `H-446`: the List gate saw
+Quad0155	quad-base/src/Slot/List.luau:268	errorBeforeNearest	S.Err.errorBeforeNearest(`Quad0155 Slot:Single: opts must be a table (got {typeof(opts)})`, S.SURFACE)
+Quad0156	quad-base/src/Slot/Owner.luau:28	errorBefore	S.Err.errorBefore("Quad0156 Slot: this element is already mounted — multiple mounts are not allowed" .. S.ZOMBIE_NOTE, S.SURFACE)
+Quad0157	quad-base/src/Slot/Owner.luau:41	errorBeforeNearest	S.Err.errorBeforeNearest("Quad0157 Bookkeeping.claimOwnerAt: element must not be nil", S.SURFACE)
+Quad0158	quad-base/src/Slot/Owner.luau:44	errorBeforeNearest	S.Err.errorBeforeNearest("Quad0158 Bookkeeping.claimOwnerAt: inst (ownerKey) must not be nil", S.SURFACE)
+Quad0159	quad-base/src/Slot/Owner.luau:47	errorBeforeNearest	S.Err.errorBeforeNearest("Quad0159 Bookkeeping.claimOwnerAt: k (seat key — a position or a shorthand child name) must not be nil", S.SURFACE)
+Quad0160	quad-base/src/Slot/Owner.luau:54	errorBefore	S.Err.errorBefore("Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed" .. S.ZOMBIE_NOTE, S
+Quad0161	quad-base/src/Slot/Owner.luau:63	errorBeforeNearest	S.Err.errorBeforeNearest("Quad0161 Bookkeeping.releaseOwner: element must not be nil", S.SURFACE) -- `H-546`
+Quad0162	quad-base/src/Slot/Owner.luau:66	errorBeforeNearest	S.Err.errorBeforeNearest("Quad0162 Bookkeeping.releaseOwner: ownerKey must not be nil", S.SURFACE)
+Quad0163	quad-base/src/Slot/Owner.luau:72	errorBeforeNearest	S.Err.errorBeforeNearest("Quad0163 Bookkeeping.releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken", S.SURFACE)
+Quad0164	quad-base/src/Slot/Tree.luau:34	errorBefore	if slot._destroyed then S.Err.errorBefore("Quad0164 Slot: destroyed Slot cannot be mounted", S.SURFACE) end
+Quad0165	quad-base/src/Slot/init.luau:131	errorBeforeNearest	if self._destroyed then Err.errorBeforeNearest("Quad0165 Slot: destroyed Slot cannot be reused", SURFACE) end
+Quad0166	quad-base/src/Slot/init.luau:137	errorBeforeNearest	if self._listed then Err.errorBeforeNearest("Quad0166 Slot: manual CRUD is not allowed after :List/:Single", SURFACE) end
+Quad0167	quad-base/src/Slot/init.luau:148	errorBeforeNearest	Err.errorBeforeNearest("Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the
+Quad0168	quad-base/src/Slot/init.luau:170	errorBeforeNearest	then `Quad0168 {surface}: index must be a positive integer (got {tostring(index)})`
+Quad0169	quad-base/src/Slot/init.luau:239	errorBeforeNearest	Err.errorBeforeNearest("Quad0169 " .. surface .. ": destroyed Slot cannot be an element", SURFACE)
+Quad0170	quad-base/src/Slot/init.luau:249	errorBeforeNearest	Err.errorBeforeNearest("Quad0170 " .. surface .. ": this element is already in this Slot — reorder with Move/Swap instead of adding it again", SURFACE
+Quad0171	quad-base/src/Slot/init.luau:252	errorBeforeNearest	Err.errorBeforeNearest("Quad0171 " .. surface .. ": the same element appears twice", SURFACE)
+Quad0172	quad-base/src/Slot/init.luau:255	errorBeforeNearest	Err.errorBeforeNearest("Quad0172 " .. surface .. ": this element is already mounted — multiple mounts are not allowed" .. ZOMBIE_NOTE, SURFACE)
+Quad0173	quad-base/src/Slot/init.luau:266	errorBeforeNearest	Err.errorBeforeNearest("Quad0173 " .. surface .. ": cannot add a Slot to itself or to one of its own descendants (that would be a cycle)", SURFACE)
+Quad0174	quad-base/src/Slot/init.luau:329	errorBeforeNearest	Err.errorBeforeNearest("Quad0174 Slot:Splice: removeCount out of range", SURFACE)
+Quad0175	quad-base/src/Slot/init.luau:365	errorBeforeNearest	Err.errorBeforeNearest(`Quad0175 Slot:Get: index must be a number (got {typeof(index)})`, SURFACE)
+Quad0176	quad-base/src/Slot/init.luau:442	errorBeforeNearest	Err.errorBeforeNearest(`Quad0176 Slot: initial elements must be a plain \{ element, ... \} array (got {typeof(initial)} — a bare element or quad value
+Quad0177	quad-base/src/Slot/init.luau:448	errorBeforeNearest	Err.errorBeforeNearest(`Quad0177 Slot: initial elements must be an array — key "{tostring(k)}" is not an array position`, SURFACE)
+Quad0178	quad-base/src/Slot/init.luau:472	errorBeforeNearest	Err.errorBeforeNearest("Quad0178 dispose: value must not be nil", SURFACE) -- `H-474` (Q31): say nil, not "cannot dispose this value"
+Quad0179	quad-base/src/Slot/init.luau:478	errorBeforeNearest	Err.errorBeforeNearest("Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its ke
+Quad0180	quad-base/src/Slot/init.luau:491	errorBeforeNearest	else Err.errorBeforeNearest("Quad0180 dispose: this backend cannot dispose this value", SURFACE) end
+Quad0181	quad-base/src/Source.luau:84	errorBeforeNearest	Err.errorBeforeNearest("Quad0181 Source: cannot Set a Modifier as a Source value", SURFACE)
+Quad0182	quad-base/src/Source.luau:96	errorBeforeNearest	Err.errorBeforeNearest("Quad0182 Source: cannot hold a Modifier as a Source value", SURFACE)
+Quad0183	quad-base/src/State.luau:111	errorBeforeNearest	Err.errorBeforeNearest(`Quad0183 State: dep #{i} is not a State/Source`, SURFACE) -- nearest SURFACE = the Compute/Depend/Gate the user called
+Quad0184	quad-base/src/State.luau:191	errorBeforeNearest	Err.errorBeforeNearest("Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or thr
+Quad0185	quad-base/src/State.luau:213	errorBefore	Err.errorBefore("Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers", SURFACE)
+Quad0186	quad-base/src/State.luau:252	errorBeforeNearest	Err.errorBeforeNearest(`Quad0186 State: dep #{i + 1} is nil`, SURFACE) -- nearest SURFACE = the Depend/Compute the user called
+Quad0187	quad-base/src/State.luau:268	errorBeforeNearest	Err.errorBeforeNearest("Quad0187 State: Compute fn must be a function", SURFACE)
+Quad0188	quad-base/src/State.luau:326	errorBeforeNearest	Err.errorBeforeNearest("Quad0188 State: Gate setup must be a function (emit) -> onUpstreamEmit", SURFACE)
+Quad0189	quad-base/src/State.luau:339	errorBeforeNearest	Err.errorBeforeNearest("Quad0189 State: Gate setup must return the onUpstreamEmit function", SURFACE)
+Quad0190	quad-base/src/State.luau:350	errorBeforeNearest	Err.errorBeforeNearest("Quad0190 State: Observer fn must be a function (or nil for the always-observe utility)", SURFACE)
+Quad0191	quad-base/src/State.luau:360	errorBeforeNearest	Err.errorBeforeNearest("Quad0191 State: Apply factory must be a function or an object with an __apply method", SURFACE)
+Quad0192	quad-base/src/State.luau:378	error	error("Quad0192 State: State.Init(module) has not run for this quad instance", 1) -- invariant check; every caller pulls it in first (`H-177`)
+Quad0193	quad-base/src/Store.luau:63	errorBeforeNearest	Err.errorBeforeNearest(`Quad0193 Store: {what} must be a non-empty string (got {if name == "" then '""' else typeof(name)})`, SURFACE)
+Quad0194	quad-base/src/Store.luau:66	errorBeforeNearest	Err.errorBeforeNearest(`Quad0194 Store: "{name}" is a reserved store key`, SURFACE)
+Quad0195	quad-base/src/Store.luau:115	errorBeforeNearest	Err.errorBeforeNearest(`Quad0195 Store: defaults must be a table of Sources (got {typeof(defaults)})`, SURFACE)
+Quad0196	quad-base/src/Store.luau:118	errorBeforeNearest	Err.errorBeforeNearest("Quad0196 Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)", SURFACE)
+Quad0197	quad-base/src/Store.luau:121	errorBeforeNearest	Err.errorBeforeNearest("Quad0197 Store: defaults must be a plain { name = Source } table (got an AttrKey/Mapper descriptor)", SURFACE)
+Quad0198	quad-base/src/Store.luau:128	errorBeforeNearest	Err.errorBeforeNearest(`Quad0198 Store: default for "{tostring(name)}" is not a Source (got {typeof(value)})`, SURFACE)
+Quad0199	quad-base/src/Tag.luau:76	errorBeforeNearest	Err.errorBeforeNearest("Quad0199 Tag: names must be strings — an empty string is not a tag name", SURFACE)
+Quad0200	quad-base/src/Tag.luau:104	errorBeforeNearest	then "Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)"
+Quad0201	quad-base/src/Tag.luau:114	errorBeforeNearest	Err.errorBeforeNearest("Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it con
+Quad0202	quad-base/src/Tag.luau:119	errorBeforeNearest	Err.errorBeforeNearest("Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table", SURFAC
+Quad0203	quad-base/src/Tag.luau:128	errorBeforeNearest	Err.errorBeforeNearest("Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes", SURFACE)
+Quad0204	quad-base/src/Tag.luau:131	errorBeforeNearest	Err.errorBeforeNearest(`Quad0204 Tag: names must be strings, Tags, or a plain \{...} list of those (got {typeof(v)})`, SURFACE)
+Quad0205	quad-base/src/Tag.luau:173	errorBeforeNearest	Err.errorBeforeNearest(`Quad0205 Tag:Contains: names must be strings (got {typeof(name)} at argument {i})`, SURFACE)
+Quad0206	quad-base/src/Tag.luau:193	errorBeforeNearest	Err.errorBeforeNearest(`Quad0206 Tag: Apply factory must be a function (got {typeof(factory)})`, SURFACE)
+Quad0207	quad-base/src/Tag.luau:226	errorBeforeNearest	Err.errorBeforeNearest("Quad0207 Tag.Merged: arguments must be Tag values", SURFACE)
+Quad0208	quad-base/src/init.luau:129	errorBeforeNearest	Err.errorBeforeNearest(`Quad0208 Quad:RunInit: initFn must be a function (got {typeof(initFn)})`, QuadTypes.ERROR_LEVEL_SURFACE)
+Quad0209	quad-base/src/init.luau:145	errorBeforeNearest	Err.errorBeforeNearest(`Quad0209 {who}: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothi
+Quad0210	quad-base/src/init.luau:154	errorBeforeNearest	Err.errorBeforeNearest(`Quad0210 AddPlugin: plugin must be a function (got {typeof(pluginFn)})`, QuadTypes.ERROR_LEVEL_SURFACE)
+Quad0211	quad-base/src/init.luau:164	errorBeforeNearest	Err.errorBeforeNearest(`Quad0211 AddPlugin: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds n
+Quad0212	quad-base/src/init.luau:197	errorBeforeNearest	Err.errorBeforeNearest(`Quad0212 UseProvider: provider must be a function (got {typeof(providerFn)})`, QuadTypes.ERROR_LEVEL_SURFACE)
+Quad0213	quad-base/src/init.luau:208	errorBeforeNearest	"Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends",
+Quad0214	quad-roblox/src/Animate.luau:67	errorBeforeNearest	Err.errorBeforeNearest("Quad0214 Animate: expected an options table (Animate{ Time = ... })", SURFACE)
+Quad0215	quad-roblox/src/EngineOps.luau:146	errorBefore	Err.errorBefore(`Quad0215 setTimeout: func must be a function (got {typeof(func)})`, SURFACE)
+Quad0216	quad-roblox/src/EngineOps.luau:149	errorBefore	Err.errorBefore(`Quad0216 setTimeout: delay must be a non-negative number (got {typeof(delay)})`, SURFACE)
+Quad0217	quad-roblox/src/EngineOps.luau:156	errorBefore	Err.errorBefore(`Quad0217 clearTimeout: expected a Timeout from setTimeout (got {typeof(timeout)})`, SURFACE)
+Quad0218	quad-roblox/src/Handlers/Event.luau:79	errorBefore	Err.errorBefore(`Quad0218 Event: handler for "{k}" must be a function (got {typeof(v)})`, SURFACE) -- `H-507`
+Quad0219	quad-roblox/src/Handlers/InstanceChild.luau:64	errorBefore	Err.errorBefore("Quad0219 InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Ins
+Quad0220	quad-roblox/src/Handlers/InstanceChild.luau:76	errorBefore	Err.errorBefore("Quad0220 InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)", SURFACE)
+Quad0221	quad-roblox/src/Handlers/OnChange.luau:67	errorBeforeNearest	errNS.errorBeforeNearest("Quad0221 OnChange: property name must be a non-empty string", SURFACE)
+Quad0222	quad-roblox/src/Handlers/OnChange.luau:70	errorBeforeNearest	errNS.errorBeforeNearest(`Quad0222 OnChange: callback for "{name}" must be a function (got {typeof(fn)})`, SURFACE)
+Quad0223	quad-roblox/src/Handlers/OnChange.luau:91	errorBeforeNearest	errNS.errorBeforeNearest("Quad0223 Out: property name must be a non-empty string", SURFACE)
+Quad0224	quad-roblox/src/Handlers/OnChange.luau:95	errorBeforeNearest	errNS.errorBeforeNearest(`Quad0224 Out: second argument for "{name}" must be a Source to write back into (got {got})`, SURFACE)
+Quad0225	quad-roblox/src/LifetimeHandle.luau:68	errorBefore	Err.errorBefore("Quad0225 nativeClaim: Instance is already claimed by quad", SURFACE)
+Quad0226	quad-roblox/src/LifetimeHandle.luau:135	errorBefore	Err.errorBefore("Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed
+Quad0227	quad-roblox/src/Tween.luau:162	errorBeforeNearest	Err.errorBeforeNearest(`Quad0227 Tween:Mapped: fn must be a function (got {typeof(fn)})`, SURFACE)
+Quad0228	quad-roblox/src/init.luau:229	errorBefore	`Quad0228 quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')`,
+Quad0229	quad-base/src/Bookkeeping.luau:202	errorBefore	else `Quad0229 Bookkeeping.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not — a leaf handler skipped its position regi
+Quad0230	quad-base/src/Effect.luau:237	errorBeforeNearest	Err.errorBeforeNearest(if self.Subscribed then "Quad0089 Effect: already subscribed" else "Quad0230 Effect: already bound to an Instance", SURFACE) --
+Quad0231	quad-base/src/Effect.luau:255	errorBeforeNearest	Err.errorBeforeNearest(if self.Subscribed then "Quad0091 Effect: already subscribed" else "Quad0231 Effect: already bound to an Instance", SURFACE) --
+Quad0232	quad-base/src/LifetimeHandle.luau:140	errorBefore	elseif Backend.isHeldBy(value, inst) then "Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)"
+Quad0233	quad-base/src/LifetimeHandle.luau:141	(helper/string)	else "Quad0233 bindLifetime: value is already bound to another Instance",
+Quad0234	quad-base/src/Observer.luau:129	errorBeforeNearest	if self.Subscribed then "Quad0111 Observer: already subscribed" else "Quad0234 Observer: already bound to an Instance",
+Quad0235	quad-base/src/Observer.luau:162	errorBeforeNearest	if self.Subscribed then "Quad0114 Observer: already subscribed" else "Quad0235 Observer: already bound to an Instance",
+Quad0236	quad-base/src/Slot/init.luau:171	errorBeforeNearest	else `Quad0236 {surface}: index out of range (got {index}, limit {limit})`,
+Quad0237	quad-base/src/Tag.luau:105	errorBeforeNearest	else "Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)",
+Quad0238	quad-base/src/Slot/Elements.luau:38	raise	raise("Quad0238 Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements", S.SURFACE)
+Quad0239	quad-base/src/Slot/Elements.luau:41	raise	raise("Quad0239 Slot: nil/None cannot be an element — only actually mountable values", S.SURFACE)
+Quad0240	quad-base/src/Slot/Elements.luau:44	raise	raise("Quad0240 Slot: this backend cannot mount this value", S.SURFACE)
+Quad0241	quad-base/src/Slot/Elements.luau:52	raise	raise("Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by anothe
+Quad0242	quad-base/src/Slot/Elements.luau:68	raise	raise("Quad0242 Slot: destroyed Slot cannot be an element", S.SURFACE)
+Quad0243	quad-roblox/src/Tween.luau:103	fail	fail(`Quad0243 Tween: {name} must be a number`, SURFACE)
+Quad0244	quad-roblox/src/Tween.luau:107	fail	fail("Quad0244 Tween: Reverses must be a boolean", SURFACE)
+Quad0245	quad-roblox/src/Tween.luau:110	fail	fail("Quad0245 Tween: Dedup must be a boolean", SURFACE)
+Quad0246	quad-roblox/src/Tween.luau:115	fail	fail(`Quad0246 Tween: {name} must be a function`, SURFACE)
+Quad0247	quad-roblox/src/Tween.luau:120	fail	fail('Quad0247 Tween: Override must be "Cancel" or "Finish"', SURFACE)
+Quad0248	quad-roblox/src/Tween.luau:131	fail	fail("Quad0248 Tween: expected an options table (Tween{ Value = ... })", SURFACE)
+Quad0249	quad-roblox/src/Tween.luau:134	fail	fail("Quad0249 Tween: Value is required", SURFACE)
+Quad0250	quad-roblox/src/Tween.luau:139	fail	fail("Quad0250 Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() retu
+Quad0251	quad-roblox/src/Tween.luau:146	fail	fail("Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)", SURFACE)

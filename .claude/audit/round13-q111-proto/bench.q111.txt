@@ -1,0 +1,66 @@
+## base
+  1000 leaf Add, unmounted                                      36.67 ms
+  1000 leaf Add, mounted                                        91.79 ms
+  1000 Add of Slot{leaf,leaf}, mounted                         189.62 ms
+  1000 Add of nil State, unmounted                              48.84 ms
+  1000 Add of State(leaf), mounted                             203.51 ms
+  chain: 1000 nested unmounted Slots built bottom-up             1.48 ms
+  chain via States: 1000 levels Slot{State(prev)}                7.07 ms
+  wide: one Add of a Slot holding 1000 leaves (x1000 containers)    47.88 ms
+  1000 st:Set(fresh Slot{leaf}) of a mounted State element      15.75 ms
+  1000 st:Set(fresh leaf) of a mounted State element             5.88 ms
+## ab
+  1000 leaf Add, unmounted                                      53.20 ms
+  1000 leaf Add, mounted                                       108.03 ms
+  1000 Add of Slot{leaf,leaf}, mounted                         211.32 ms
+  1000 Add of nil State, unmounted                              86.47 ms
+  1000 Add of State(leaf), mounted                             252.11 ms
+  chain: 1000 nested unmounted Slots built bottom-up            95.90 ms
+  chain via States: 1000 levels Slot{State(prev)}              297.53 ms
+  wide: one Add of a Slot holding 1000 leaves (x1000 containers)    84.86 ms
+  1000 st:Set(fresh Slot{leaf}) of a mounted State element      14.15 ms
+  1000 st:Set(fresh leaf) of a mounted State element             5.79 ms
+## a
+  1000 leaf Add, unmounted                                      35.05 ms
+  1000 leaf Add, mounted                                        89.51 ms
+  1000 Add of Slot{leaf,leaf}, mounted                         196.80 ms
+  1000 Add of nil State, unmounted                              48.36 ms
+  1000 Add of State(leaf), mounted                             212.44 ms
+  chain: 1000 nested unmounted Slots built bottom-up            95.57 ms
+  chain via States: 1000 levels Slot{State(prev)}              292.47 ms
+  wide: one Add of a Slot holding 1000 leaves (x1000 containers)    85.43 ms
+  1000 st:Set(fresh Slot{leaf}) of a mounted State element      17.65 ms
+  1000 st:Set(fresh leaf) of a mounted State element             7.15 ms
+## b
+  1000 leaf Add, unmounted                                      52.77 ms
+  1000 leaf Add, mounted                                       107.08 ms
+  1000 Add of Slot{leaf,leaf}, mounted                         208.90 ms
+  1000 Add of nil State, unmounted                              90.75 ms
+  1000 Add of State(leaf), mounted                             247.98 ms
+  chain: 1000 nested unmounted Slots built bottom-up             1.95 ms
+  chain via States: 1000 levels Slot{State(prev)}               13.27 ms
+  wide: one Add of a Slot holding 1000 leaves (x1000 containers)    44.80 ms
+  1000 st:Set(fresh Slot{leaf}) of a mounted State element      12.67 ms
+  1000 st:Set(fresh leaf) of a mounted State element             5.63 ms
+## ab (final, B seed loop inlined)
+  1000 leaf Add, unmounted                                      33.74 ms
+  1000 leaf Add, mounted                                        92.16 ms
+  1000 Add of Slot{leaf,leaf}, mounted                         191.18 ms
+  1000 Add of nil State, unmounted                              61.98 ms
+  1000 Add of State(leaf), mounted                             233.86 ms
+  chain: 1000 nested unmounted Slots built bottom-up            99.05 ms
+  chain via States: 1000 levels Slot{State(prev)}              290.78 ms
+  wide: one Add of a Slot holding 1000 leaves (x1000 containers)    88.64 ms
+  1000 st:Set(fresh Slot{leaf}) of a mounted State element      13.93 ms
+  1000 st:Set(fresh leaf) of a mounted State element             6.09 ms
+## base (rerun)
+  1000 leaf Add, unmounted                                      35.66 ms
+  1000 leaf Add, mounted                                        90.20 ms
+  1000 Add of Slot{leaf,leaf}, mounted                         184.79 ms
+  1000 Add of nil State, unmounted                              47.60 ms
+  1000 Add of State(leaf), mounted                             203.79 ms
+  chain: 1000 nested unmounted Slots built bottom-up             1.47 ms
+  chain via States: 1000 levels Slot{State(prev)}                6.96 ms
+  wide: one Add of a Slot holding 1000 leaves (x1000 containers)    47.20 ms
+  1000 st:Set(fresh Slot{leaf}) of a mounted State element      16.61 ms
+  1000 st:Set(fresh leaf) of a mounted State element             5.91 ms

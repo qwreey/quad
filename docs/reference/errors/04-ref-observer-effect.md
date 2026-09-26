@@ -19,8 +19,8 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 `Effect: cannot bind an Effect from inside its own fn or cleanup` — `quad-base/src/Effect.luau`
 
-- **언제**: `fn`이나 cleanup 안에서 새로 만든 `Effect`를 그 자리(props의 숫자 키)에 놓아 바인딩하려 할 때.
-- **고치려면**: 새 핸들은 다음 렌더/실행에서 놓으세요 — `fn`/cleanup 실행 중에는 자기 자신도, 새로 만든 핸들도 그 자리에서 바인딩할 수 없습니다.
+- **언제**: **그 핸들 자신**의 `fn`이나 cleanup이 도는 동안 같은 핸들을 다시 바인딩하려 할 때 — 예: fn 안에서 자기 인스턴스를 `q.dispose`한 뒤 `D.Frame { self }`, 또는 `:Unsubscribe()`가 부른 cleanup 안에서 `D.Frame { self }`. fn/cleanup 안에서 **새로 만든** 핸들을 놓는 것은 에러 없이 통과합니다([2026-09-27 실측] — 예전 서술이 반대로 적혀 있었습니다).
+- **고치려면**: 자기 자신을 실행 중에 다시 놓지 마세요 — 다시 묶으려면 fn/cleanup이 끝난 뒤에.
 - **참고**: [`q.Effect(fn, ...deps)`](../core/05-observer-effect.md#qeffectfn-deps)
 
 ### Quad0088
@@ -139,8 +139,8 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 `Observer: cannot bind an Observer from inside its own fn` — `quad-base/src/Observer.luau`
 
-- **언제**: `state:Observer(fn)`의 콜백 안에서 새로 만든 `Observer`를 그 자리(props의 숫자 키)에 놓아 바인딩하려 할 때.
-- **고치려면**: 새 핸들은 다음 렌더/실행에서 놓으세요 — 콜백 실행 중에는 자기 자신도, 새로 만든 핸들도 그 자리에서 바인딩할 수 없습니다.
+- **언제**: **그 핸들 자신**의 콜백이 도는 동안 같은 핸들을 다시 바인딩하려 할 때. 콜백 안에서 **새로 만든** `Observer`를 놓는 것은 통과합니다([2026-09-27 실측]).
+- **고치려면**: 자기 자신을 실행 중에 다시 놓지 마세요.
 - **참고**: [`state:Observer(fn)`](../core/05-observer-effect.md#stateobserverfn)
 
 ### Quad0110

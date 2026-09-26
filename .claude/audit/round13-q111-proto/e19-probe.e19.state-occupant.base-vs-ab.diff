@@ -1,0 +1,27 @@
+0a1,7
+> ./test/probe.e19.state-occupant.luau:154: Quad0020 Bookkeeping.getBlocker: ownerKey must not be nil
+> stacktrace:
+> [C] function error
+> ./luau_packages/.pesde/qwreey+quad_error/3.2.0/quad_error/src/init.luau:193 function errorBeforeNearest
+> ./src/Bookkeeping.luau:66 function checkOwner
+> ./src/Bookkeeping.luau:71 function getBlocker
+> ./test/probe.e19.state-occupant.luau:154
+30,44c37,38
+<   s2:Add(st) (same State, second seat): ok
+<   st:Set(g): Quad0156 blame=152
+<   g owner: w1=true w2=false; s1.Length=1 s2.Length=0 blockers w1=false w2=true
+<   st:Set(F()) again: Quad0156 blame=155
+<   s1.Length=1 s2.Length=0
+< P5 — element destroyed outside quad while seated, then Extract and reuse
+<   s:Extract(1): ok
+<   q.Slot():Add(extracted corpse): Quad0241 blame=169
+<   s.Length=1 len=1
+< P6 — cycle via State link: what the mount-time raise leaves behind
+<   inner:Add(outer): ok
+<   drive(host, {inner}): Quad0156 blame=183
+<   inner owner=host? true; outer materializing? true; inner materializing? true; host children=0
+<   inner:Add(F()) afterwards: Quad0167 blame=185
+<   outer:Remove(1) afterwards: Quad0167 blame=186
+---
+>   s2:Add(st) (same State, second seat): Quad0172 blame=149
+>   st:Set(g): ok

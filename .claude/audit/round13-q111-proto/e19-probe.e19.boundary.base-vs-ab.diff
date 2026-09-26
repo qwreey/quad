@@ -1,0 +1,31 @@
+0a1,7
+> ./test/probe.e19.boundary.luau:106: Quad0170 Slot:Add: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+> stacktrace:
+> [C] function error
+> ./luau_packages/.pesde/qwreey+quad_error/3.2.0/quad_error/src/init.luau:193 function errorBeforeNearest
+> ./src/Slot/init.luau:335 function prepareElements
+> ./src/Slot/init.luau:364 function Add
+> ./test/probe.e19.boundary.luau:106
+47,66c54
+< B | same nil-State twice (second place) | no error | blame=- | user=105
+<    same nil-State added twice to one Slot: len=2
+< B | Set that State to a leaf (two wrappers race for it) | Quad0156 | blame=110 | user=110
+<    -> g owner is wrapper#1? false wrapper#2? true; c.Length=1 (Blocker left on? false)
+< B | inner:Add(outer) — cycle via unclaimed State link | no error | blame=- | user=123
+<    outer owner=inner; inner owner=nil
+< B |   then mount outer's owner chain (drive inner) | Quad0156 | blame=127 | user=127
+< B |   then dispose(inner) | Quad0179 | blame=128 | user=128
+< B | st:Set(inner) after inner:Add(outer) (free tree) | no error | blame=- | user=134
+< B |   then drive(i2) | Quad0156 | blame=136 | user=136
+< B | mounted: st:Set(its own ancestor) | Quad0156 | blame=141 | user=141
+< B | mounted: st:Set(free Slot containing ... nothing) ok | no error | blame=- | user=146
+< B | mounted: free:Add(r4) where r4 ⊃ m4 ⊃ st4 ⊃ free | Quad0172 | blame=147 | user=147
+< B | Offset observer CRUDs the parent Slot (re-entry) | no error | blame=- | user=161
+<    s len=4 Length=4 nested.Offset=4 (logical: leaves before nested = 4)
+< B | Single updateFn CRUDs its ancestor during mount | Quad0167 | blame=166 | user=168
+< B | Single updateFn CRUDs its ancestor after mount (src:Set) | no error | blame=- | user=174
+<    p5 len=2 Length=2
+< B | Single updateFn re-Sets its own data (UB) | no error | blame=- | user=180
+<    sub6 element=b calls=3
+---
+> B | same nil-State twice (second place) | Quad0172 | blame=105 | user=105

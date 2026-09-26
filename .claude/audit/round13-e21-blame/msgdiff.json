@@ -1,0 +1,1986 @@
+[
+ {
+  "id": "Quad0001",
+  "src": "AttrKey: name must be a non-empty string",
+  "doc": "AttrKey: name must be a non-empty string",
+  "same": true,
+  "when": "`q.AttrKey(name)`에 넘긴 `name`이 문자열이 아니거나 빈 문자열일 때.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0002",
+  "src": "AttrKey: attribute \"{k.Name}\" is already bound by another owner",
+  "doc": "AttrKey: attribute \"{k.Name}\" is already bound by another owner",
+  "same": true,
+  "when": "한 인스턴스의 같은 속성 이름을 서로 다른 `AttrKey` 객체가 동시에 주장할 때 — 먼저 그 이름을 차지한 키가 아직 자리에서 물러나지 않은 채로 다른 키 객체가 같은 이름에 값을 놓으려 할 때입니다.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0003",
+  "src": "{ctx}: attribute name cannot be empty",
+  "doc": "{ctx}: attribute name cannot be empty",
+  "same": true,
+  "when": "`q.Attr(...)`에 넘긴 `Store`가 선언한 이름(`store:Names()`) 중 빈 문자열이 있을 때. `{ctx}`는 부른 자리 이름(`Attr`)입니다.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0004",
+  "src": "{ctx}: attribute name \"{name}\" appears more than once",
+  "doc": "{ctx}: attribute name \"{name}\" appears more than once",
+  "same": true,
+  "when": "내부 헬퍼 `flattenArg`가 `overwrite=false`로 `Store`를 펼치다가 그 이름이 맵에 이미 있을 때 던지는 조건입니다. 지금 공개 표면 중 이 조합(`Store` + `overwrite=false`)에 실제로 닿는 호출은 없습니다 — `q.Attr.Merged`/`q.Attr.Overridden`은 인자를 `Attr` 값으로만 제한해 `Store` 분기를 타지 않고, 생성자 `q.Attr(...)`는 항상 `overwrite=true`로 부릅니다.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0005",
+  "src": "{ctx}: attribute name \"{name}\" appears more than once",
+  "doc": "Attr.Merged: attribute name \"{name}\" appears more than once",
+  "same": false,
+  "when": "`q.Attr.Merged(...)`에 넘긴 여러 `Attr` 값이 같은 속성 이름을 중복해서 선언할 때.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0006",
+  "src": "{ctx}: plain-table keys must be non-empty strings",
+  "doc": "{ctx}: plain-table keys must be non-empty strings",
+  "same": true,
+  "when": "`q.Attr(...)`에 넘긴 평범한 테이블(메타테이블 없는)의 키 중 문자열이 아니거나 빈 문자열인 것이 있을 때.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0007",
+  "src": "{ctx}: attribute \"{name}\" cannot be a function — attribute values are raw values or State",
+  "doc": "{ctx}: attribute \"{name}\" cannot be a function — attribute values are raw values or State",
+  "same": true,
+  "when": "평범한 테이블 값 자리에 함수를 뒀을 때 — 속성 값은 원시 값이거나 `State`/`q.None`이어야 합니다.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0008",
+  "src": "{ctx}: attribute \"{name}\" cannot be a table — attribute values are raw values, None or State (got {typeof(v)})",
+  "doc": "{ctx}: attribute \"{name}\" cannot be a table — attribute values are raw values, None or State (got {typeof(v)})",
+  "same": true,
+  "when": "평범한 테이블 값 자리에 (`None`도 `State`도 아닌) 또 다른 테이블을 뒀을 때 — 엔진은 그런 테이블을 속성 값으로 저장할 수 없습니다(Slot/Ref/Tween/Modifier 등이 여기 걸립니다).",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0009",
+  "src": "{ctx}: attribute name \"{name}\" appears more than once",
+  "doc": "{ctx}: attribute name \"{name}\" appears more than once",
+  "same": true,
+  "when": "Quad0004와 같은 헬퍼의 같은 조건이 평범한 테이블 분기에서 일어난 것 — `flattenArg`가 `overwrite=false`로 평범한 테이블을 펼치다가 그 이름이 이미 맵에 있을 때입니다. Quad0004와 마찬가지로 현재 공개 표면에서 이 조합에 실제로 닿는 호출은 없습니다.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0010",
+  "src": "{ctx}: arguments must be Stores, Attr values or plain tables",
+  "doc": "{ctx}: arguments must be Stores, Attr values or plain tables",
+  "same": true,
+  "when": "`q.Attr(...)`에 `Store`/`Attr`/평범한 테이블이 아닌 다른 것을 넘겼을 때.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0011",
+  "src": "Attr.Merged: arguments must be Attr values",
+  "doc": "Attr.Merged: arguments must be Attr values",
+  "same": true,
+  "when": "`q.Attr.Merged(...)`에 `Attr` 값이 아닌 인자를 넘겼을 때.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0012",
+  "src": "Attr.Overridden: arguments must be Attr values",
+  "doc": "Attr.Overridden: arguments must be Attr values",
+  "same": true,
+  "when": "`q.Attr.Overridden(...)`에 `Attr` 값이 아닌 인자를 넘겼을 때.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0013",
+  "src": "{fnName}: name must be a non-empty string",
+  "doc": "{fnName}: name must be a non-empty string",
+  "same": true,
+  "when": "`q.StringAttr`/`q.NumberAttr`/`q.BooleanAttr`에 넘긴 `name`이 문자열이 아니거나 빈 문자열일 때. `{fnName}`은 부른 패밀리 이름입니다.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0014",
+  "src": "{fnName}: value of \"{name}\" must not be nil — use None to delete",
+  "doc": "{fnName}: value of \"{name}\" must not be nil — use None to delete",
+  "same": true,
+  "when": "타입드 Attr 패밀리(`StringAttr`/`NumberAttr`/`BooleanAttr`)의 값 자리에 리터럴 `nil`을 넘겼을 때 — 평범한 테이블은 `nil`을 담을 수 없어 항목이 조용히 사라지는 것을 막습니다.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0015",
+  "src": "{fnName}: value of \"{name}\" must be a {luaType}, State or None (got {typeof(value)})",
+  "doc": "{fnName}: value of \"{name}\" must be a {luaType}, State or None (got {typeof(value)})",
+  "same": true,
+  "when": "타입드 Attr 패밀리의 값이 `State`도 `q.None`도 아니면서, 그 패밀리의 원시 타입(`StringAttr`이면 `string` 등)과 다를 때.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0016",
+  "src": "Attr: the same group value is placed at two positions of this instance",
+  "doc": "Attr: the same group value is placed at two positions of this instance",
+  "same": true,
+  "when": "같은 `Attr` 그룹 값 객체(테이블 신원 기준)를 한 인스턴스의 서로 다른 두 props 자리에 동시에 놓았을 때.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0017",
+  "src": "Blocker: Policy emit must be a function (got {typeof(emit)})",
+  "doc": "Blocker: Policy emit must be a function (got {typeof(emit)})",
+  "same": true,
+  "when": "`blocker:Policy(emit)`을 직접 부를 때 `emit`이 함수가 아닌 경우. `state:Apply(blocker)`를 쓰면 언제나 함수를 넘기므로 그 경로에서는 나지 않습니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0018",
+  "src": "Blocker: Apply target must be a State (got {typeof(state)})",
+  "doc": "Blocker: Apply target must be a State (got {typeof(state)})",
+  "same": true,
+  "when": "`state:Apply(blocker)`의 대상이 `State`가 아닐 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0019",
+  "src": "Bookkeeping.{fnName}: position must be a positive integer (got {tostring(i)})",
+  "doc": "Bookkeeping.{fnName}: position must be a positive integer (got {tostring(i)})",
+  "same": true,
+  "when": "`q.Bookkeeping.setLength`/`setOffsetSource`/`setEmpty`/`getOffsetAt` 등 위치(`i`/`at`)를 받는 공개 함수에 양의 정수가 아닌 값을 넘겼을 때. `{fnName}`은 실제로 부른 함수 이름입니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0020",
+  "src": "Bookkeeping.{fnName}: ownerKey must not be nil",
+  "doc": "Bookkeeping.{fnName}: ownerKey must not be nil",
+  "same": true,
+  "when": "`q.Bookkeeping`의 공개 함수에 `ownerKey`(부기의 주인 — 요소 또는 Slot)로 `nil`을 넘겼을 때.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0021",
+  "src": "Bookkeeping.{fnName}: length must be a non-negative integer (got {tostring(n)})",
+  "doc": "Bookkeeping.{fnName}: length must be a non-negative integer (got {tostring(n)})",
+  "same": true,
+  "when": "`q.Bookkeeping.setLength(ownerKey, i, len, ...)`의 `len`(상수인 경우) 또는 그 값에 바인딩된 `State`가 내놓은 값이 음수/소수/숫자가 아닐 때.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0022",
+  "src": "Bookkeeping.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) — or a leaf handler skipped its position registration: position {i} is not registered",
+  "doc": "Bookkeeping.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) — or a leaf handler skipped its position registration: position {i} is not registered",
+  "same": true,
+  "when": "`q.Bookkeeping.getOffsetAt(ownerKey, at)`으로 조회한 `at`이 등록된 마지막 위치(`N`) + 1보다 클 때 — 범위 밖 조회입니다. (같은 자리에서 중간의 어떤 위치가 등록 자체를 건너뛴 경우도 이 갈래로 잡힙니다 — 두 원인을 코드가 구분할 수 없어 메시지가 둘 다 말합니다.)",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0023",
+  "src": "Bookkeeping.recompute: sourceList[{i}] is nil — a nil hole in the numeric-key part of props (\\{ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)`, 1) -- `H-472`: name the mirror of the lengthList check below\n\t\t\tend\n\t\t\tif offset == None then\n\t\t\t\t-- No publish channel (a leaf) — nothing to Set, so no `abs` is needed and\n\t\t\t\t-- no user code ran since the entry snapshot: advance the cursor directly\n\t\t\t\t-- (2026-09-08 advisory RFC, user decision `H-483`). The prefix cache is NOT\n\t\t\t\t-- warmed here any more — `getOffsetAt` fills it on demand where a number is\n\t\t\t\t-- actually pulled (`nativeInsert` offsets, List's physIndex), which used to\n\t\t\t\t-- duplicate this pass one-for-one on a flat list.\n\t\t\t\tbk.offsetSetUpTo = i\n\t\t\telse\n\t\t\t\tlocal abs = getOffsetAt(ownerKey, i)\n\t\t\t\t-- `H-240` check ① — BEFORE the write below stomps the signal\n\t\t\t\tif bk.offsetSetUpTo < entryCursor then\n\t\t\t\t\ti = math.max(bk.offsetSetUpTo, 1)\n\t\t\t\t\tsum = prefix[i]\n\t\t\t\t\tcontinue\n\t\t\t\tend\n\t\t\t\tbk.offsetSetUpTo = i -- Set done up to here\n\t\t\t\tif offset:Get() ~= abs then\n\t\t\t\t\toffset:Set(abs) -- ← user code can run here\n\t\t\t\tend\n\t\t\tend\n\t\t\t-- `H-124`: rewind check BEFORE reading lengthList[i] — user code in\n\t\t\t-- the Get/Set above may have removed slots past the cursor, and dying\n\t\t\t-- between recomputeBlocker:On/Off would freeze this owner forever.\n\t\t\tif bk.offsetSetUpTo < i then\n\t\t\t\t-- resume AT the lowered slot (`+1` was wrong: prefix[j+1] was\n\t\t\t\t-- accumulated with the OLD lengthList[j]); clamp to 1 —\n\t\t\t\t-- offsetSetUpTo can legally be 0 (\"1번부터 전부 다시\").\n\t\t\t\ti = math.max(bk.offsetSetUpTo, 1)\n\t\t\t\tsum = prefix[i]\n\t\t\t\tcontinue\n\t\t\tend\n\t\t\t-- `H-244`: same single coercion as getOffsetAt's cache fill — two\n\t\t\t-- inline copies would drift when the coercion gains a case (M6).\n\t\t\t-- 7순회 `H-427`: C-6's sibling — a `lengthList` hole (a provider that called\n\t\t\t-- setOffsetSource without setLength) died as an anonymous arithmetic error\n\t\t\t-- inside recomputeBlocker:On, freezing the owner. Internal invariant.\n\t\t\tif bk.lengthList[i] == nil then\n\t\t\t\terror(`Quad0024 Bookkeeping.recompute: lengthList[{i}] is nil — bookkeeping is broken (setOffsetSource without setLength?)`, 1)\n\t\t\tend\n\t\t\tsum += contribution(bk, i)\n\t\t\t-- `H-240` check ② — contribution's own Get window; the possibly\n\t\t\t-- stale += above is discarded by the rewind's prefix restore.\n\t\t\tif bk.offsetSetUpTo < i then\n\t\t\t\ti = math.max(bk.offsetSetUpTo, 1)\n\t\t\t\tsum = prefix[i]\n\t\t\t\tcontinue\n\t\t\tend\n\t\t\ti += 1\n\t\tend\n\t\t-- Tail writes are safe: the loop only exits right after a passed check\n\t\t-- with no user-code window in between (`H-240`).\n\t\tbk.offsetSetUpTo = bk.N or 0\n\t\tbk.recomputeBlocker:OffWithoutEmit()\n\t\tif Brand.isSlot(ownerKey) and ownerKey.Length:Get() ~= sum then\n\t\t\townerKey.Length:Set(sum) -- Length carries no base — length is position-free\n\t\tend\n\tend\n\n\t-- `setLength(ownerKey, i, len, anchor?, element?)` — the one place that\n\t-- owns calling recompute for length changes (`H-19`). `anchor` is the\n\t-- lifetime anchor (physical Instance; defaults to ownerKey — only Slot\n\t-- owners pass it explicitly, `C-4`). `element` is the registered occupant\n\t-- for the position (`H-141`/Q3): the persistent closure captures it and\n\t-- looks the current index up in bk.indexOfElement instead of freezing `i`;\n\t-- constant-length slots omit it.\n\t-- Init-scope (4순회 `H-390`, the `H-365` family): a per-call closure was built\n\t-- for every constant-length element too (N per mount) and thrown away after one\n\t-- call. Current position by element lookup, not captured index (`H-102`).\n\tlocal function gatedRecompute(bk: any, blocker: any, ownerKey: any, element: any, i: number)\n\t\tlocal cur = if element ~= nil then bk.indexOfElement[element] else i\n\t\tbk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, cur)\n\t\tbk.offsetSetUpTo = math.min(bk.offsetSetUpTo, cur)\n\t\tif blocker.Blocking then\n\t\t\treturn -- batch registration in progress\n\t\tend\n\t\tif bk.recomputeBlocker.Blocking then\n\t\t\treturn -- recompute reentry — the outer pass's rewind picks it up\n\t\tend\n\t\trecompute(ownerKey, bk)\n\tend\n\n\tlocal function setLength(ownerKey: any, i: number, len: any, anchor: any?, element: any?)\n\t\tcheckOwner(\"setLength\", ownerKey)\n\t\tcheckPosition(\"setLength\", i)\n\t\tif not Brand.isState(len) then\n\t\t\tcheckLengthValue(\"setLength\", len) -- a State's value is checked in its Observer callback below, outside the blocker window (`H-445`) — never in `contribution`\n\t\tend\n\t\tanchor = anchor or ownerKey\n\t\tlocal bk = getBookkeeping(ownerKey)\n\t\tlocal blocker = getBlocker(ownerKey)\n\n\t\tlocal oldObserver = bk.observers[i]\n\t\tif oldObserver then\n\t\t\tmodule.Backend.unbindLifetime(oldObserver) -- no need to know gchold internals or which inst\n\t\t\tbk.observers[i] = nil\n\t\tend\n\n\t\tbk.lengthList[i] = len\n\t\tbk.N = math.max(bk.N or 0, i) -- N lifecycle: grows here only (\"저장 위치\" 절)\n\t\tif element ~= nil then\n\t\t\tbk.indexOfElement[element] = i -- splice-time rewrites are the Slot layer's job (reindexFrom)\n\t\tend\n\t\t-- invalidation pulls BOTH cursors to `i` — position i's own offset is\n\t\t-- the sum of 1..i-1 and does not change; everything AFTER it does.\n\t\tbk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, i)\n\t\tbk.offsetSetUpTo = math.min(bk.offsetSetUpTo, i)\n\n\t\tif Brand.isState(len) then\n\t\t\tlocal observer = len:Observer(function()\n\t\t\t\tcheckLengthValue(\"setLength\", len:Get()) -- `H-445`: outside the blocker window; nearest = the `:Set` line\n\t\t\t\tgatedRecompute(bk, blocker, ownerKey, element, i)\n\t\t\tend) -- immediate first run is gated too\n\t\t\tmodule.Backend.bindLifetime(anchor, observer) -- physical target's lifetime, not :Subscribe()\n\t\t\tbk.observers[i] = observer\n\t\telse\n\t\t\tgatedRecompute(bk, blocker, ownerKey, element, i) -- constants go through the same gate, no closure (4순회 `H-390`)\n\t\tend\n\tend\n\n\t-- Registration + (if there is a publish channel) one immediate Set — the\n\t-- batch is processed in order so 1..i-1 are always already registered.\n\t-- None means \"no publish channel\", NOT \"not participating\" (that is\n\t-- lengthList's answer); pull the number via getOffsetAt when needed.\n\tlocal function setOffsetSource(ownerKey: any, i: number, source: any)\n\t\tcheckOwner(\"setOffsetSource\", ownerKey)\n\t\tcheckPosition(\"setOffsetSource\", i)\n\t\tif source ~= None and not Brand.isSource(source) then\n\t\t\t-- Q13 (b) (사용자 결정 2026-09-07): `checkPosition`'s sibling — a wrong `source` used to\n\t\t\t-- die at `:Get()` with a Bookkeeping.luau line\n\t\t\tErr.errorBeforeNearest(`Quad0025 Bookkeeping.setOffsetSource: source must be a Source<number> or None (got {typeof(source)})`, SURFACE)\n\t\tend\n\t\tlocal bk = getBookkeeping(ownerKey)\n\t\tif source == None then\n\t\t\tbk.sourceList[i] = None\n\t\t\treturn\n\t\tend\n\t\t-- 5순회 `H-392`: read the source BEFORE writing bookkeeping — a wrong\n\t\t-- `source` (a plain table, say) used to raise on `:Get()` with\n\t\t-- `sourceList[i]` already written, and the next unrelated `setLength`\n\t\t-- then died inside `recomputeBlocker:On()`, freezing this owner's offset\n\t\t-- arithmetic for good (`dispatch-core-plan.md` `H-256` (a): \"부기를 하나라도\n\t\t-- 만지기 전에 검사한다\"). A type gate on `source` itself is §4 Q13.\n\t\tlocal offset = getOffsetAt(ownerKey, i)\n\t\tlocal current = source:Get()\n\t\tbk.sourceList[i] = source\n\t\tif current ~= offset then\n\t\t\tsource:Set(offset)\n\t\tend\n\tend\n\n\t-- The terminal \"empty slot\" registration every nop/leaf handler does:\n\t-- offsetSource FIRST, then length 0 — the release-order contract (`H-39`,\n\t-- setLength ends in gatedRecompute). One body so the order cannot drift\n\t-- between the terminal sites; on the Dispatch surface (not a quad-base\n\t-- module helper) so quad-roblox handlers (`OnChange`, `InstanceChild`)\n\t-- reach it too — post-implementation review Q3 ③, user-approved name\n\t-- (2026-09-07: \"setEmpty 같은걸 넣어도 큰 문제는 없어보이겠다\"). `anchor`\n\t-- is setLength's 4th argument (`inst`, `H-35`); NilHandler passes none.\n\tlocal function setEmpty(ownerKey: any, i: number, anchor: any?)\n\t\tcheckOwner(\"setEmpty\", ownerKey)\n\t\t-- [round3 `H-434`] validate HERE: this function sits on the Dispatch table, so the\n\t\t-- `H-242` loop tags it SURFACE — if the inner (also tagged) setOffsetSource raised,\n\t\t-- nearest+1 would be this body, not the handler that called setEmpty.\n\t\tcheckPosition(\"setEmpty\", i)\n\t\tsetOffsetSource(ownerKey, i, None)\n\t\tsetLength(ownerKey, i, 0, anchor)\n\tend\n\n\tmodule.Bookkeeping = {\n\t\tgetBlocker = getBlocker,\n\t\tgetBookkeeping = getBookkeeping,\n\t\tgetOffsetAt = getOffsetAt,\n\t\t_recompute = recompute, -- internal (Slot/Dispatch only)\n\t\tsetLength = setLength,\n\t\tsetOffsetSource = setOffsetSource,\n\t\tsetEmpty = setEmpty,\n\t}\n\t-- the public six join the error tag layer here now that they are off the Dispatch table (its `H-242`\n\t-- loop used to tag them) — handler-depth raises keep blaming the handler author's call\n\tfor key, v in module.Bookkeeping :: { [string]: any } do\n\t\tif type(v) == \"function\" and string.sub(key, 1, 1) ~= \"_\" then\n\t\t\tErr.setFuncLevel(SURFACE, v)\n\t\tend\n\tend\nend\n\nreturn Init\n",
+  "doc": "Bookkeeping.recompute: sourceList[{i}] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)",
+  "same": false,
+  "when": "재계산 도중 위치 `i`의 오프셋 발행 채널(`sourceList[i]`)이 `nil`일 때 — 대표 원인은 배열 리터럴 중간에 `nil`이 낀 props(`{ a, nil, b }`)이고, 핸들러를 직접 쓰는 입장이면 `setOffsetSource`(또는 `setEmpty`) 등록을 빠뜨린 경우입니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0024",
+  "src": "Bookkeeping.recompute: lengthList[{i}] is nil — bookkeeping is broken (setOffsetSource without setLength?)",
+  "doc": "Bookkeeping.recompute: lengthList[{i}] is nil — bookkeeping is broken (setOffsetSource without setLength?)",
+  "same": true,
+  "when": "재계산 도중 위치 `i`의 길이(`lengthList[i]`)가 `nil`일 때 — 내부 불변식 위반으로, 어떤 핸들러가 `setOffsetSource`만 부르고 `setLength`는 부르지 않은 경우입니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0025",
+  "src": "Bookkeeping.setOffsetSource: source must be a Source<number> or None (got {typeof(source)})",
+  "doc": "Bookkeeping.setOffsetSource: source must be a Source<number> or None (got {typeof(source)})",
+  "same": true,
+  "when": "`q.Bookkeeping.setOffsetSource(ownerKey, i, source)`의 `source`가 `Source<number>`도 `q.None`도 아닐 때.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0026",
+  "src": "newMapperClass: className must be a non-empty string (got {typeof(className)})",
+  "doc": "newMapperClass: className must be a non-empty string (got {typeof(className)})",
+  "same": true,
+  "when": "`q.newMapperClass(className)`에 넘긴 `className`이 문자열이 아니거나 빈 문자열일 때.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0027",
+  "src": "Claim: mapper descriptor was already used (descriptors are one-shot)",
+  "doc": "Claim: mapper descriptor was already used (descriptors are one-shot)",
+  "same": true,
+  "when": "이미 한 번 `q.Claim`에 쓰인 디스크립터(1회용)를 다시 쓰려고 할 때.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0028",
+  "src": "Claim: two mapper descriptors resolved to the same Instance {tostring(inst)} — each child needs exactly one descriptor",
+  "doc": "Claim: two mapper descriptors resolved to the same Instance {tostring(inst)} — each child needs exactly one descriptor",
+  "same": true,
+  "when": "서로 다른 두 디스크립터가 해석 결과 같은 Instance를 가리켰을 때 — 한 자식에 매퍼가 두 번 걸린 경우입니다.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0029",
+  "src": "Claim: {tostring(inst)} is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)",
+  "doc": "Claim: {tostring(inst)} is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)",
+  "same": true,
+  "when": "디스크립터가 해석한 Instance가 이미 quad에 의해 소유돼 있을 때 — `D.New`로 만들었거나 먼저 `Claim`된 것(루트도 자식도 해당)입니다.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0030",
+  "src": "Claim: mapper props must be a table (got {typeof(desc._props)})",
+  "doc": "Claim: mapper props must be a table (got {typeof(desc._props)})",
+  "same": true,
+  "when": "디스크립터의 props가 테이블이 아닐 때.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0031",
+  "src": "Claim: array keys must be positive integers (got {i})",
+  "doc": "Claim: array keys must be positive integers (got {i})",
+  "same": true,
+  "when": "디스크립터 props의 숫자 키(다른 매퍼 디스크립터를 담은 자리) 중 양의 정수가 아닌 것이 있을 때.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0032",
+  "src": "Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)}) — a child with that name must also be a {tostring(v._className)}",
+  "doc": "Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)}) — a child with that name must also be a {tostring(v._className)}",
+  "same": true,
+  "when": "매퍼 디스크립터가 지목한 이름의 자식이 없거나, 이름은 맞는데 그 클래스(`IsA`)가 아닐 때.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0033",
+  "src": "Claim: first argument must be an Instance of the installed backend (got {typeof(inst)})",
+  "doc": "Claim: first argument must be an Instance of the installed backend (got {typeof(inst)})",
+  "same": true,
+  "when": "`q.Claim(inst, desc)`의 첫 인자가 설치된 백엔드의 Instance가 아닐 때.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0034",
+  "src": "Claim: second argument must be a D.Mapper descriptor",
+  "doc": "Claim: second argument must be a D.Mapper descriptor",
+  "same": true,
+  "when": "`q.Claim(inst, desc)`의 둘째 인자가 `D.Mapper` 디스크립터가 아닐 때.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0035",
+  "src": "Context.Provider: name must be a string (got {typeof(name)})",
+  "doc": "Context.Provider: name must be a string (got {typeof(name)})",
+  "same": true,
+  "when": "`q.Context.Provider(name?)`에 준 `name`이 문자열이 아닐 때(생략은 허용됩니다).",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0036",
+  "src": "Context:{fnName}: key must be a Provider from Context.Provider() (got {typeof(provider)})",
+  "doc": "Context:{fnName}: key must be a Provider from Context.Provider() (got {typeof(provider)})",
+  "same": true,
+  "when": "`ctx:Set`/`ctx:Get`/`ctx:Peek`의 `provider` 자리에 `q.Context.Provider()`로 만든 값이 아닌 것을 넘겼을 때. `{fnName}`은 실제로 부른 메소드 이름입니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0037",
+  "src": "Context:Set: value for {tostring(provider)} must not be nil (absence is \"not set\")",
+  "doc": "Context:Set: value for {tostring(provider)} must not be nil (absence is \"not set\")",
+  "same": true,
+  "when": "`ctx:Set(provider, value)`의 `value`로 `nil`을 넘겼을 때 — 부재는 애초에 `:Set`을 하지 않는 것으로 표현합니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0038",
+  "src": "Context:Get: no value for {tostring(provider)} — the creator of this Context did not :Set it (use :Peek to test)",
+  "doc": "Context:Get: no value for {tostring(provider)} — the creator of this Context did not :Set it (use :Peek to test)",
+  "same": true,
+  "when": "`ctx:Get(provider)`를 불렀는데 그 `Provider`에 아직 아무도 `:Set`하지 않았을 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0039",
+  "src": "{name}: {field} must be a non-negative number (got {typeof(v)})",
+  "doc": "{name}: {field} must be a non-negative number (got {typeof(v)})",
+  "same": true,
+  "when": "`Time`(또는 `MaxTime`)에 바인딩한 `State`가 상류 신호 시점에 내놓은 값이 숫자가 아니거나 음수/NaN일 때. 생성 시점이 아니라 **신호가 들어오는 시점**에 읽어 검사합니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0040",
+  "src": "{name}: {field} is required (a number of seconds or a State<number>)",
+  "doc": "{name}: {field} is required (a number of seconds or a State<number>)",
+  "same": true,
+  "when": "`Debounce{...}`/`Throttle{...}`에 필수 옵션인 `Time`을 아예 안 줬을 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0041",
+  "src": "{name}: {field} must be a non-negative number or a State<number> (got {typeof(t)})",
+  "doc": "{name}: {field} must be a non-negative number or a State<number> (got {typeof(t)})",
+  "same": true,
+  "when": "옵션 생성 시점에 `Time`/`MaxTime`이 `State`도 숫자도 아니거나, 숫자인데 음수/NaN일 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0042",
+  "src": "{name}: {field} must be a boolean (got {typeof(v)})",
+  "doc": "{name}: {field} must be a boolean (got {typeof(v)})",
+  "same": true,
+  "when": "`Leading`/`Trailing` 옵션에 `boolean`도 `nil`도 아닌 값을 줬을 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0043",
+  "src": "{self._name}: Apply target must be a State (got {typeof(state)})",
+  "doc": "{self._name}: Apply target must be a State (got {typeof(state)})",
+  "same": true,
+  "when": "`state:Apply(factory)`의 대상이 `State`가 아닐 때(`factory`는 `Debounce{...}`/`Throttle{...}`가 돌려준 값).",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0044",
+  "src": "{name}: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)",
+  "doc": "{name}: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)",
+  "same": true,
+  "when": "`opts.Handle`로 넘긴 `Ref`가 이미 다른 `:Apply` 호출의 제어 핸들로 채워져 있을 때(또는 기본값이 `nil`이 아닌 `Ref`를 애초에 줬을 때) — 하나의 `Ref`는 하나의 `:Apply`만 가리킬 수 있습니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0045",
+  "src": "{name}: options table expected (got {typeof(opts)})",
+  "doc": "{name}: options table expected (got {typeof(opts)})",
+  "same": true,
+  "when": "`q.Debounce{...}`/`q.Throttle{...}`에 넘긴 옵션 자체가 테이블이 아닐 때(안 준 경우 포함).",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0046",
+  "src": "Throttle: MaxTime is Debounce-only (a throttle already passes every Time)",
+  "doc": "Throttle: MaxTime is Debounce-only (a throttle already passes every Time)",
+  "same": true,
+  "when": "`q.Throttle{...}`에 `MaxTime`을 줬을 때 — `Throttle`은 이미 매 `Time`마다 통과시키므로 `MaxTime` 개념이 없습니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0047",
+  "src": "{name}: Handle must be a Ref (got {typeof(opts.Handle)})",
+  "doc": "{name}: Handle must be a Ref (got {typeof(opts.Handle)})",
+  "same": true,
+  "when": "`Handle` 옵션에 `Ref`가 아닌 값을 줬을 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0048",
+  "src": "{name}: Leading and Trailing both false would pass nothing through",
+  "doc": "{name}: Leading and Trailing both false would pass nothing through",
+  "same": true,
+  "when": "`Leading`과 `Trailing`을 둘 다 `false`로 줬을 때 — 그러면 아무 신호도 하류로 통과하지 못합니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0049",
+  "src": "Modifier:Peek: key must be a non-empty string (got {if key == \"\" then '\"\"' else typeof(key)})",
+  "doc": "Modifier:Peek: key must be a non-empty string (got {if key == \"\" then '\"\"' else typeof(key)})",
+  "same": true,
+  "when": "`mod:Peek(key)`를 부를 때 `key`가 빈 문자열이거나 문자열이 아닌 경우. setter 경로(`mod:Field(...)`)가 거부하는 것과 같은 키 도메인이라, 예전에는 `Peek`이 그런 키에 조용히 `nil`을 돌려주던 것을 바로잡았습니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0050",
+  "src": "Modifier:Apply: factory must be a function (got {typeof(factory)})",
+  "doc": "Modifier:Apply: factory must be a function (got {typeof(factory)})",
+  "same": true,
+  "when": "`mod:Apply(factory)`의 `factory`가 함수가 아닐 때.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0051",
+  "src": "Modifier:As: name must be a class name string (got {typeof(name)})",
+  "doc": "Modifier:As: name must be a class name string (got {typeof(name)})",
+  "same": true,
+  "when": "`mod:As(name)`에서 `name`을 줬는데 문자열이 아닐 때(생략은 허용됩니다).",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0052",
+  "src": "Modifier: unknown modifier class \"{name}\" — Modifier.TypedFactory/DefineSubtype it first",
+  "doc": "Modifier: unknown modifier class \"{name}\" — Modifier.TypedFactory/DefineSubtype it first",
+  "same": true,
+  "when": "`mod:As(name)`에 준 `name`이 아직 `Modifier.TypedFactory`나 `DefineSubtype`으로 등록되지 않은 클래스일 때.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0053",
+  "src": "Modifier.Overridden: expects at least one Modifier",
+  "doc": "Modifier.Overridden: expects at least one Modifier",
+  "same": true,
+  "when": "`q.Modifier.Overridden(...)`(콜론 형태 `mod:Overridden(...)`도 같은 함수)을 인자 없이 부를 때.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0054",
+  "src": "Modifier.Overridden: argument #{i} is not a Modifier (got {typeof(arg)})",
+  "doc": "Modifier.Overridden: argument #{i} is not a Modifier (got {typeof(arg)})",
+  "same": true,
+  "when": "`Overridden`에 넘긴 인자 중 하나가 Modifier가 아닐 때 — `q.Modifier(...)`와 달리 평범한 필드 테이블은 받지 않습니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0055",
+  "src": "Modifier: unknown modifier class \"{target}\" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)",
+  "doc": "Modifier: unknown modifier class \"{target}\" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)",
+  "same": true,
+  "when": "`mod:As<Class>()` 검사형 다운캐스트의 대상 클래스가 아직 등록되지 않았을 때.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0056",
+  "src": "Modifier: cannot cast a \"{tag}\" modifier to \"{target}\" — not an ancestor (use :As(name) to force)",
+  "doc": "Modifier: cannot cast a \"{tag}\" modifier to \"{target}\" — not an ancestor (use :As(name) to force)",
+  "same": true,
+  "when": "`mod:As<Class>()`의 대상이 등록은 돼 있지만, 지금 Modifier의 태그가 무타입도 대상 자신도 대상의 조상도 아닐 때.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0057",
+  "src": "Modifier: field \"{key}\" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)",
+  "doc": "Modifier: field \"{key}\" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)",
+  "same": true,
+  "when": "`mod:Field(value)`의 `value`(리터럴이든 변환 함수의 반환이든)가 `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier` 같은 핸들러 계층 값일 때. `State`/`Source`는 통과합니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0058",
+  "src": "Modifier: setter keys must be strings (got {typeof(key}",
+  "doc": "Modifier: setter keys must be strings (got {typeof(key)}) — put a non-string key in the props table itself (Frame { [key] = value })",
+  "same": false,
+  "when": "`mod[key](...)`를 문자열이 아닌 `key`로 부를 때(`AttrKey`/`MapperDescriptor` 같은 비문자열 키). 생성자의 같은 규칙(Quad0059)과 짝입니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0059",
+  "src": "Modifier: initial-field table keys must be non-empty field names (got {if k == \"\" then '\"\"' else typeof(k)} at argument #{i})",
+  "doc": "Modifier: initial-field table keys must be non-empty field names (got {if k == \"\" then '\"\"' else typeof(k)} at argument #{i})",
+  "same": true,
+  "when": "`q.Modifier{ ... }`/`D.Modifier.<Class>{ ... }` 생성자에 넘긴 필드 테이블의 키가 빈 문자열이거나 문자열이 아닐 때.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0060",
+  "src": "Modifier: field \"{k}\" collides with a reserved Modifier method",
+  "doc": "Modifier: field \"{k}\" collides with a reserved Modifier method",
+  "same": true,
+  "when": "초기 필드 테이블의 키가 `Peek`/`Apply`/`Overridden`/`As` 같은 예약 메소드 이름과 같을 때 — setter 경로에서는 애초에 만들어질 수 없는 필드라 생성자도 같은 이름을 거부합니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0061",
+  "src": "Modifier: field \"{k}\" matches the reserved cast prefix As<Class> — casts are methods, not fields",
+  "doc": "Modifier: field \"{k}\" matches the reserved cast prefix As<Class> — casts are methods, not fields",
+  "same": true,
+  "when": "초기 필드 테이블의 키가 `As` + 대문자로 시작하는 예약된 캐스트 접두사 모양일 때.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0062",
+  "src": "Modifier: field \"{k}\" starts with \"__\" — metamethod-looking names are never properties",
+  "doc": "Modifier: field \"{k}\" starts with \"__\" — metamethod-looking names are never properties",
+  "same": true,
+  "when": "초기 필드 테이블의 키가 `\"__\"`로 시작할 때 — setter 경로(`__index`)도 그런 이름엔 항상 `nil`을 돌려주므로 생성자에서도 같은 이름을 막습니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0063",
+  "src": "Modifier: field \"{k}\" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)",
+  "doc": "Modifier: field \"{k}\" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)",
+  "same": true,
+  "when": "초기 필드 테이블의 값으로 함수를 줬을 때 — setter 자리에서 함수는 변환 함수라는 다른 뜻이라, 생성자에서 그대로 받으면 두 경로가 조용히 갈립니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0064",
+  "src": "Modifier: field \"{k}\" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)",
+  "doc": "Modifier: field \"{k}\" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)",
+  "same": true,
+  "when": "초기 필드 테이블의 값이 핸들러 계층 값(`Ref`/`Observer`/`Effect`/`Slot`/`Modifier`)일 때 — setter 경로(Quad0057)와 같은 규칙을 생성자에도 적용합니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0065",
+  "src": "Modifier: argument #{i} must be a Modifier or a plain field table (got {typeof(arg)})",
+  "doc": "Modifier: argument #{i} must be a Modifier or a plain field table (got {typeof(arg)})",
+  "same": true,
+  "when": "`q.Modifier(...)`/`D.Modifier.<Class>(...)`에 넘긴 인자가 Modifier도, 메타테이블 없는 평범한 필드 테이블도 아닐 때(`Source`/`Ref`/`Tag` 같은 다른 quad 값을 넘긴 경우 등).",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0066",
+  "src": "Modifier.{fn}: {what} must be a non-empty class name string (got {typeof(name)})",
+  "doc": "Modifier.{fn}: {what} must be a non-empty class name string (got {typeof(name)})",
+  "same": true,
+  "when": "`q.Modifier.TypedFactory(name)`의 `name`이나 `q.Modifier.DefineSubtype(parent, subtype)`의 `parent`/`subtype`이 빈 문자열이거나 문자열이 아닐 때. `{fn}`/`{what}`은 실제로 부른 함수와 검사한 인자 이름입니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0067",
+  "src": "Modifier.DefineSubtype: \"{subtype}\" ⊂ \"{parent}\" would make a cycle",
+  "doc": "Modifier.DefineSubtype: \"{subtype}\" ⊂ \"{parent}\" would make a cycle",
+  "same": true,
+  "when": "`q.Modifier.DefineSubtype(parent, subtype)`이 등록하려는 간선이 이미 있는 조상 관계를 거슬러 올라가 순환을 만들 때.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0068",
+  "src": "Modifier: a Modifier cannot be a value of key \"{tostring(k)}\" — place it in the array part",
+  "doc": "Modifier: a Modifier cannot be a value of key \"{tostring(k)}\" — place it in the array part",
+  "same": true,
+  "when": "Modifier를 props의 문자 키 값 자리에 뒀을 때 — 합칠 대상이 없는 자리입니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0069",
+  "src": "{kind}: already fired — a {kind} is one-shot, make a new one for each instance",
+  "doc": "{kind}: already fired — a {kind} is one-shot, make a new one for each instance",
+  "same": true,
+  "when": "이미 한 번 발화(`v:Set(inst)`)한 `PreRef`/`PostRef`를 다른 인스턴스의 props 숫자 키 자리에 또 놓았을 때. `{kind}`는 `PreRef` 또는 `PostRef`입니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0070",
+  "src": "StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle",
+  "doc": "StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle",
+  "same": true,
+  "when": "props 자리에 놓인 State의 값을 따라가다(State가 다른 State를 값으로 들고 있으면 그 State도 마저 벗기는 재귀) 결국 자기 자신으로 돌아오는 순환을 만났을 때(예: `a:Set(b); b:Set(a)`).",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0071",
+  "src": "Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken",
+  "doc": "Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken",
+  "same": true,
+  "when": "`retractFrom`이 체인 배열을 되감다가 구멍(`nil` 슬롯)을 만났을 때 — 정상 경로로는 나지 않는 내부 불변식 위반입니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0072",
+  "src": "Dispatch.{fnName}: inst must not be nil",
+  "doc": "Dispatch.{fnName}: inst must not be nil",
+  "same": true,
+  "when": "`q.Dispatch.process`/`q.Dispatch.retractFrom`/`q.Dispatch.getHandler`를 `inst = nil`로 직접 부를 때. `{fnName}`은 실제로 부른 함수 이름입니다(`getHandler`는 **[2026-09-26 round13 `H-603`]** 추가된 게이트).",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0073",
+  "src": "Dispatch.{fnName}: index must be a positive integer (got {tostring(index)})",
+  "doc": "Dispatch.{fnName}: index must be a positive integer (got {tostring(index)})",
+  "same": true,
+  "when": "`q.Dispatch.process`/`q.Dispatch.retractFrom`의 `index`가 1 이상의 정수가 아닐 때.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0074",
+  "src": "Dispatch.{fnName}: key must not be nil",
+  "doc": "Dispatch.{fnName}: key must not be nil",
+  "same": true,
+  "when": "`q.Dispatch.process`/`q.Dispatch.retractFrom`/`q.Dispatch.getHandler`를 `key = nil`로 부를 때(`getHandler`는 **[2026-09-26 round13 `H-603`]** 추가된 게이트).",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0075",
+  "src": "Dispatch.process: index {index} would leave a gap in the chain (the chain has {#list} slots — a delegating handler passes index + 1)",
+  "doc": "Dispatch.process: index {index} would leave a gap in the chain (the chain has {#list} slots — a delegating handler passes index + 1)",
+  "same": true,
+  "when": "`process`에 준 `index`가 그 자리 체인의 다음 자연스러운 깊이(`#list + 1`)보다 클 때 — 위임 핸들러가 `index + 1`이 아닌 값을 건너뛰어 부른 경우입니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0076",
+  "src": "Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else \"\"}){hint}",
+  "doc": "Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}, brand: {brand})` + 꼬리 힌트 하나(+ nil 안내) — `quad-base/src/Dispatch/init.luau",
+  "same": false,
+  "when": "그 값을 받아줄 핸들러가 하나도 없을 때. `noMatchMessage` 헬퍼가 만드는 문구이고, `Dispatch.process`의 매치 실패 raise가 이 헬퍼를 부릅니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0077",
+  "src": "Dispatch: handler {describeHandler(h)} returned no retractor at key {tostring(k)}, index {index} — return Void when there is nothing to undo",
+  "doc": "Dispatch: handler {describeHandler(h)} returned no retractor at key {tostring(k)}, index {index} — return Void when there is nothing to undo",
+  "same": true,
+  "when": "매치된 핸들러의 `process`가 retractor(되돌리는 함수)를 돌려주지 않았을 때 — 프로바이더 계약 위반입니다. `noRetractorMessage` 헬퍼가 만드는 문구이고, `process`의 두 갈래(같은 핸들러 재처리 / 다른 핸들러로 교체) raise가 모두 이 헬퍼를 부릅니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0079",
+  "src": "Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got {typeof(handler)})",
+  "doc": "Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got {typeof(handler)})",
+  "same": true,
+  "when": "`q.Dispatch.addHandler`에 넘긴 `handler`가 테이블이 아니거나, `isHandlable`/`process`가 함수가 아니거나, `priority`가 숫자가 아닐 때.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0080",
+  "src": "Dispatch.addHandler: priority must be a finite number (got {tostring(pr)})",
+  "doc": "Dispatch.addHandler: priority must be a finite number (got {tostring(pr)})",
+  "same": true,
+  "when": "`handler.priority`가 NaN이거나 ±무한대일 때 — 그런 값은 정렬 순서를 정의할 수 없고 동률 검사(`==`)도 항상 거짓이 됩니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0081",
+  "src": "Dispatch.addHandler: keyType must be \"number\", \"string\" or nil (got {tostring(kt)})",
+  "doc": "Dispatch.addHandler: keyType must be \"number\", \"string\" or nil (got {tostring(kt)})",
+  "same": true,
+  "when": "`handler.keyType`이 `\"number\"`/`\"string\"`/`nil` 중 하나가 아닐 때 — 오타가 있으면 그 핸들러가 어느 버킷에도 안 들어가 조용히 매치되지 않게 됩니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0082",
+  "src": "Dispatch.drive: props must be a table (got {typeof(flattened)})",
+  "doc": "Dispatch.drive: props must be a table (got {typeof(flattened)})",
+  "same": true,
+  "when": "`q.Dispatch.drive(inst, flattened)`의 `flattened`가 테이블이 아닐 때(백엔드의 생성 경로/`Claim`이 아니라 직접 부를 때 밟을 수 있는 자리입니다).",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0083",
+  "src": "Dispatch.drive: props must be a plain \\{ ... \\} table — a quad value needs the braces (got {brandNameOf(flattened) or \"a table with a metatable\"})",
+  "doc": "Dispatch.drive: props must be a plain \\{ ... \\} table — a quad value needs the braces (got {brandNameOf(flattened) or \"a table with a metatable\"})",
+  "same": true,
+  "when": "`flattened` 자체가 메타테이블을 가진 값(quad 값 등)일 때 — `D.Frame(q.Source(1))`처럼 중괄호를 잊어 quad 값 하나를 그대로 props로 넘긴 흔한 실수를 잡습니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0084",
+  "src": "Dispatch.drive: inst must not be nil",
+  "doc": "Dispatch.drive: inst must not be nil",
+  "same": true,
+  "when": "`q.Dispatch.drive`를 `inst = nil`로 부를 때.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0085",
+  "src": "Dispatch.drive: array keys must be positive integers (got {k})",
+  "doc": "Dispatch.drive: array keys must be positive integers (got {k})",
+  "same": true,
+  "when": "`flattened`의 숫자 키 중 하나가 1 이상의 정수가 아닐 때(0, 음수, 소수 등) — 어떤 핸들러가 부기를 만지기 전에 먼저 봅니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0086",
+  "src": "Effect: fn must return a cleanup function or nothing (got {typeof(cleanup)})",
+  "doc": "Effect: fn must return a cleanup function or nothing (got {typeof(cleanup)})",
+  "same": true,
+  "when": "`q.Effect(fn, ...)`의 `fn`이 함수도 `nil`도 아닌 값(숫자, 연결 객체 등)을 돌려줬을 때 — cleanup 자리는 함수 하나뿐입니다.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0087",
+  "src": "Effect: cannot bind an Effect from inside its own fn or cleanup",
+  "doc": "Effect: cannot bind an Effect from inside its own fn or cleanup",
+  "same": true,
+  "when": "`fn`이나 cleanup 안에서 새로 만든 `Effect`를 그 자리(props의 숫자 키)에 놓아 바인딩하려 할 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0088",
+  "src": "Effect: cannot change subscription from inside fn or cleanup",
+  "doc": "Effect: cannot change subscription from inside fn or cleanup",
+  "same": true,
+  "when": "`effect:WeakSubscribe()`를 그 `Effect` 자신의 `fn`이나 cleanup 실행 중에 부를 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0089",
+  "src": "Effect: already subscribed",
+  "doc": "Effect: already subscribed",
+  "same": true,
+  "when": "`effect:WeakSubscribe()`를 부를 때 이미 강하게(`:Subscribe()`) 구독돼 있어서 약한 구독으로 바꿀 수 없을 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0090",
+  "src": "Effect: cannot change subscription from inside fn or cleanup",
+  "doc": "Effect: cannot change subscription from inside fn or cleanup",
+  "same": true,
+  "when": "`effect:Subscribe()`를 그 `Effect` 자신의 `fn`이나 cleanup 실행 중에 부를 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0091",
+  "src": "Effect: already subscribed",
+  "doc": "Effect: already subscribed",
+  "same": true,
+  "when": "`effect:Subscribe()`를 부를 때 이미 강하게 구독돼 있을 때(중복 `:Subscribe()`).",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0092",
+  "src": "Effect: subscribed strongly; use :Unsubscribe()",
+  "doc": "Effect: subscribed strongly; use :Unsubscribe()",
+  "same": true,
+  "when": "`effect:WeakUnsubscribe()`를 부를 때 그 핸들이 강한 구독(`:Subscribe()`)으로 살아 있을 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0093",
+  "src": "Effect: not subscribed strongly; use :WeakUnsubscribe()",
+  "doc": "Effect: not subscribed strongly; use :WeakUnsubscribe()",
+  "same": true,
+  "when": "`effect:Unsubscribe()`를 부를 때 그 핸들이 강하게 구독된 적이 없을 때(약한 구독뿐이거나, 자리에만 묶여 있거나, 이미 `:Unsubscribe()`로 한 번 풀린 뒤 다시 부른 경우).",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0094",
+  "src": "Effect: fn must be a function",
+  "doc": "Effect: fn must be a function",
+  "same": true,
+  "when": "`q.Effect(fn, ...)`의 `fn`이 함수가 아닐 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0095",
+  "src": "Effect: dep #{i} is nil",
+  "doc": "Effect: dep #{i} is nil",
+  "same": true,
+  "when": "`q.Effect(fn, ...deps)`의 의존성 목록 중 `i`번째가 `nil`일 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0096",
+  "src": "Effect: dep #{i} is not a State/Source/Ref",
+  "doc": "Effect: dep #{i} is not a State/Source/Ref",
+  "same": true,
+  "when": "의존성 목록의 `i`번째가 `State`/`Source`/`Ref` 중 어느 것도 아닐 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0097",
+  "src": "Effect: must be an array item, not the value of a {typeof(k)} key",
+  "doc": "Effect: must be an array item, not the value of a {typeof(k)} key",
+  "same": true,
+  "when": "`Effect`를 props의 문자 키 값 자리에 두거나, `State`/`Store`에 담아 그 자리에 닿게 했을 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0098",
+  "src": "Effect: Effect.Init(module) has not run for this quad instance",
+  "doc": "Effect: Effect.Init(module) has not run for this quad instance",
+  "same": true,
+  "when": "`Effect.implFor(module)`이 그 quad 모듈 인스턴스에서 아직 `Effect.Init`이 돌지 않았는데 불렸을 때 — 정상 경로(`module:RunInit`)로는 나지 않는 내부 조립 순서 불변식입니다.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0099",
+  "src": "{name}: base must be a function (got {typeof(base)})",
+  "doc": "{name}: base must be a function (got {typeof(base)})",
+  "same": true,
+  "when": "`q.Fallback(base, onError)`/`q.Traceback(base, onError)`을 만들 때 첫 인자 `base`가 함수가 아닐 때. `{name}`은 실제로 부른 쪽 이름(`Fallback`/`Traceback`)입니다.",
+  "docfile": "09-sugar.md"
+ },
+ {
+  "id": "Quad0100",
+  "src": "{name}: onError must be a function (got {typeof(onError)})",
+  "doc": "{name}: onError must be a function (got {typeof(onError)})",
+  "same": true,
+  "when": "두 번째 인자 `onError`가 함수가 아닐 때.",
+  "docfile": "09-sugar.md"
+ },
+ {
+  "id": "Quad0101",
+  "src": "{name}: fn must be a function (got {typeof(fn)})",
+  "doc": "{name}: fn must be a function (got {typeof(fn)})",
+  "same": true,
+  "when": "`q.OnCreated(fn)`/`q.OnRendered(fn)`/`q.OnDestroyed(fn)`에 넘긴 `fn`이 함수가 아닐 때. `{name}`은 실제로 부른 훅 이름입니다.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0102",
+  "src": "bindLifetime: inst must not be nil",
+  "doc": "bindLifetime: inst must not be nil",
+  "same": true,
+  "when": "`q.Backend.bindLifetime(inst, value)`의 `inst`가 `nil`일 때 — 값을 묶으려면 살아 있는 요소가 있어야 합니다.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0103",
+  "src": "bindLifetime: value must not be nil",
+  "doc": "bindLifetime: value must not be nil",
+  "same": true,
+  "when": "`q.Backend.bindLifetime(inst, value)`의 `value`가 `nil`일 때.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0104",
+  "src": "bindLifetime: value is already subscribed",
+  "doc": "bindLifetime: value is already subscribed",
+  "same": true,
+  "when": "이미 전역 구독(`:Subscribe()`/`:WeakSubscribe()`)으로 살아 있는 `Observer`/`Effect`를 다시 어떤 요소의 자리에 묶으려 할 때 — 전역 구독과 자리 바인딩은 겹칠 수 없습니다.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0105",
+  "src": "unbindLifetime: value must not be nil",
+  "doc": "unbindLifetime: value must not be nil",
+  "same": true,
+  "when": "`q.Backend.unbindLifetime(value)`에 `nil`을 넘겼을 때 — 묶여 있지 않은 값은 no-op이지만, `nil`은 애초에 값이 아니라 인자 누락으로 취급합니다.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0106",
+  "src": "{what}: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances",
+  "doc": "{what}: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances",
+  "same": true,
+  "when": "한 quad 모듈 인스턴스가 만든 Observer·Effect·Slot·State를 다른 인스턴스의 트리 자리(숫자 키, 프로퍼티 값, `:List`의 데이터, `Slot`의 원소 자리 등)에 놓았을 때. `{what}`은 그 값이 놓인 자리를 가리키는 이름(`\"Observer\"`/`\"Slot\"` 등)입니다.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0108",
+  "src": "quad: {name} is not available — no backend has installed {what} (install a provider with quad:UseProvider — a bare Quad.New() has none{hint or \"\"})",
+  "doc": "quad: {name} is not available — no backend has installed {what} (install a provider with quad:UseProvider — a bare Quad.New() has none{hint or \"\"})",
+  "same": true,
+  "when": "프로바이더를 설치하지 않은 `Quad.New()`에서 백엔드가 채워야 할 op(생명주기 hold op, 엔진 op, 시간 op 등)를 부를 때 — `{name}`은 그 op 이름입니다.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0109",
+  "src": "Observer: cannot bind an Observer from inside its own fn",
+  "doc": "Observer: cannot bind an Observer from inside its own fn",
+  "same": true,
+  "when": "`state:Observer(fn)`의 콜백 안에서 새로 만든 `Observer`를 그 자리(props의 숫자 키)에 놓아 바인딩하려 할 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0110",
+  "src": "Observer: cannot change subscription from inside its own fn",
+  "doc": "Observer: cannot change subscription from inside its own fn",
+  "same": true,
+  "when": "`observer:WeakSubscribe()`를 그 `Observer` 자신의 콜백 실행 중에 부를 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0111",
+  "src": "Observer: already subscribed",
+  "doc": "Observer: already subscribed",
+  "same": true,
+  "when": "`observer:WeakSubscribe()`를 부를 때 이미 강하게(`:Subscribe()`) 구독돼 있어서 약한 구독으로 바꿀 수 없을 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0112",
+  "src": "Observer: subscribed strongly; use :Unsubscribe()",
+  "doc": "Observer: subscribed strongly; use :Unsubscribe()",
+  "same": true,
+  "when": "`observer:WeakUnsubscribe()`를 부를 때 그 핸들이 강한 구독(`:Subscribe()`)으로 살아 있을 때 — 반쯤 풀린 핸들이 되는 것을 막습니다.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0113",
+  "src": "Observer: cannot change subscription from inside its own fn",
+  "doc": "Observer: cannot change subscription from inside its own fn",
+  "same": true,
+  "when": "`observer:Subscribe()`를 그 `Observer` 자신의 콜백 실행 중에 부를 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0114",
+  "src": "Observer: already subscribed",
+  "doc": "Observer: already subscribed",
+  "same": true,
+  "when": "`observer:Subscribe()`를 부를 때 이미 강하게 구독돼 있을 때(중복 `:Subscribe()`).",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0115",
+  "src": "Observer: not subscribed strongly; use :WeakUnsubscribe()",
+  "doc": "Observer: not subscribed strongly; use :WeakUnsubscribe()",
+  "same": true,
+  "when": "`observer:Unsubscribe()`를 부를 때 그 핸들이 강하게 구독된 적이 없을 때(약한 구독뿐이거나, 자리에만 묶여 있거나, 이미 한 번 풀린 뒤 다시 부른 경우).",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0116",
+  "src": "Observer: must be an array item, not the value of a {typeof(k)} key",
+  "doc": "Observer: must be an array item, not the value of a {typeof(k)} key",
+  "same": true,
+  "when": "`Observer`를 props의 문자 키 값 자리에 두거나, `State`/`Store`에 담아 그 자리에 닿게 했을 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0117",
+  "src": "Observer: Observer.Init(module) has not run for this quad instance",
+  "doc": "Observer: Observer.Init(module) has not run for this quad instance",
+  "same": true,
+  "when": "`Observer.implFor(module)`이 그 quad 모듈 인스턴스에서 아직 `Observer.Init`이 돌지 않았는데 불렸을 때 — 정상 경로(`module:RunInit`)로는 나지 않는 내부 조립 순서 불변식입니다.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0118",
+  "src": "Operator.{name}: argument #{i} is nil",
+  "doc": "Operator.{name}: argument #{i} is nil",
+  "same": true,
+  "when": "`Sum`/`Product`/`Min`/`Max`/`Clamp`/`Band`/`Bor`/`Bxor`/`Shl`/`Shr` 같은 커링 콤비네이터를 만들 때 `i`번째 인자가 `nil`일 때 — 자리마다 검사하므로 조용히 사라져 뒤 인자를 당겨오지 않습니다. `{name}`은 실제로 부른 콤비네이터 이름입니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0119",
+  "src": "Operator.{name}: argument #{i} must be a {kind} or a State<{kind}> (got {typeof(a)})",
+  "doc": "Operator.{name}: argument #{i} must be a {kind} or a State<{kind}> (got {typeof(a)})",
+  "same": true,
+  "when": "커링 콤비네이터를 만드는 줄에서 `i`번째 인자가 기대하는 값 종류(`kind`, 보통 `number`)도 그 `State<kind>`도 아닐 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0120",
+  "src": "Operator.{name}: argument #{i} is a State whose current value is nil",
+  "doc": "Operator.{name}: argument #{i} is a State whose current value is nil",
+  "same": true,
+  "when": "인자로 넘긴 `State`의 **현재값**을 읽는 시점(연산이 도는 시점)에 그 값이 `nil`일 때 — 갓 만든 `store:Of(...)`나 없는 키를 읽은 `Indexed` 등이 원인일 수 있습니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0121",
+  "src": "Operator.{name}: argument #{i} is a State whose current value must be a {kind} (got {typeof(v)})",
+  "doc": "Operator.{name}: argument #{i} is a State whose current value must be a {kind} (got {typeof(v)})",
+  "same": true,
+  "when": "인자로 넘긴 `State`의 현재값이 `nil`은 아니지만 기대하는 타입(`kind`)이 아닐 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0122",
+  "src": "Operator.{name}: the Apply target's current value must be a {kind} (got {typeof(v)})",
+  "doc": "Operator.{name}: the Apply target's current value must be a {kind} (got {typeof(v)})",
+  "same": true,
+  "when": "`state:Apply(factory)`의 대상 `State` 자신의 현재값을 읽는 시점에 그 값이 기대하는 타입(`kind`)이 아닐 때 — 인자와 마찬가지로 `:Apply`를 받는 State의 값도 검사합니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0123",
+  "src": "Operator.{name}: Apply target must be a State (got {typeof(self)})",
+  "doc": "Operator.{name}: Apply target must be a State (got {typeof(self)})",
+  "same": true,
+  "when": "`state:Apply(factory)`의 대상이 `State`가 아닐 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0124",
+  "src": "Operator.Clamp: min must be <= max and neither NaN (got min {r[1]}, max {r[2]})",
+  "doc": "Operator.Clamp: min must be <= max and neither NaN (got min {r[1]}, max {r[2]})",
+  "same": true,
+  "when": "`Operator.Clamp(lo, hi)`의 경계를 읽는 시점에 `lo > hi`이거나 둘 중 하나가 `NaN`(흔히 `0/0`)일 때 — 반응형 경계가 한 프레임 엇갈리는 경우도 포함됩니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0125",
+  "src": "Operator.Indexed: key must not be nil",
+  "doc": "Operator.Indexed: key must not be nil",
+  "same": true,
+  "when": "`Operator.Indexed<<V>>(key)`를 만드는 즉시 `key`가 `nil`일 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0126",
+  "src": "Operator.Indexed: key must be a plain value, not a State (the key is not reactive)",
+  "doc": "Operator.Indexed: key must be a plain value, not a State (the key is not reactive)",
+  "same": true,
+  "when": "`key` 자리에 `State`를 넘겼을 때 — 다른 콤비네이터들이 전부 `T | State<T>`를 받으므로 자연스러운 실수지만, `Indexed`의 키는 반응형이 아니라 그렇게 넘기면 조용히 `t[<State 객체>]`(항상 nil)를 읽습니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0127",
+  "src": "Operator.Indexed: value is not a table (got {typeof(t)}) — cannot read [{tostring(key)}]",
+  "doc": "Operator.Indexed: value is not a table (got {typeof(t)}) — cannot read [{tostring(key)}]",
+  "same": true,
+  "when": "읽는 시점에 `:Apply`한 State의 현재값이 테이블이 아닐 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0128",
+  "src": "Operator.Alternative: default must not be nil",
+  "doc": "Operator.Alternative: default must not be nil",
+  "same": true,
+  "when": "`Operator.Alternative(default)`를 만드는 즉시 `default`가 `nil`일 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0129",
+  "src": "Operator.Alternative: the default State's current value is nil",
+  "doc": "Operator.Alternative: the default State's current value is nil",
+  "same": true,
+  "when": "`default`로 넘긴 `State`의 현재값이 `nil`일 때(예: 아직 안 채운 `store:Of`) — 기본값 자리에는 실제 값이 있어야 합니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0130",
+  "src": "Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a {status} coroutine)",
+  "doc": "Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a {status} coroutine)",
+  "same": true,
+  "when": "`ref:Wait()`로 대기 중인 바로 그 코루틴이나, 그 코루틴이 resume한 코루틴에서 같은 `Ref`에 `:Set`을 부를 때 — 대기 중인 코루틴을 resume하는 것 자체가 이 `:Set`이라 재진입이 됩니다.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0132",
+  "src": "{surface}: callback must be a function (got {typeof(fn)})",
+  "doc": "{surface}: callback must be a function (got {typeof(fn)})",
+  "same": true,
+  "when": "`ref:Callback(fn)`/`ref:WeakCallback(fn)`/`ref:Uncallback(fn)`에 넘긴 `fn`이 함수가 아닐 때. `{surface}`는 실제로 부른 메소드 이름(`Ref:Callback` 등)입니다.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0133",
+  "src": "Ref: Wait(thread) expects a thread (got {typeof(thread)})",
+  "doc": "Ref: Wait(thread) expects a thread (got {typeof(thread)})",
+  "same": true,
+  "when": "`ref:Wait(thread)`에 넘긴 인자가 `thread`가 아닐 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0134",
+  "src": "Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)",
+  "doc": "Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)",
+  "same": true,
+  "when": "인자 없이 `ref:Wait()`를 불렀는데 지금 코루틴이 yield할 수 없는 곳(메인 스레드, 메타메소드/C 호출 경계 등)일 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0135",
+  "src": "Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed",
+  "doc": "Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed",
+  "same": true,
+  "when": "`ref:Unwrap()`을 불렀는데 `.Value`가 아직 `nil`일 때 — 아직 채워지지 않았거나, 애초에 자리에 놓이지 않았습니다.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0136",
+  "src": "{kind}: must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see",
+  "doc": "{kind}: must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see",
+  "same": true,
+  "when": "`PreRef`/`PostRef`/`Ref`가 리터럴 숫자 키 자리가 아니라 `State`/`Store` 값에 담겨 숫자 키 자리에 도착했을 때 — pre-pass가 그 경로를 미리 볼 수 없습니다. `{kind}`는 실제 종류(`PreRef`/`PostRef`/`Ref`)입니다.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0137",
+  "src": "{kind}: must be an array item, not the value of a {typeof(k)} key",
+  "doc": "{kind}: must be an array item, not the value of a {typeof(k)} key",
+  "same": true,
+  "when": "`PreRef`/`PostRef`/`Ref`를 props의 문자 키 값 자리에 두었을 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0138",
+  "src": "Relate:{method}: inst must not be nil",
+  "doc": "Relate:{method}: inst must not be nil",
+  "same": true,
+  "when": "`q.Relate()`가 돌려준 릴레이션의 `SetStrong`/`GetStrong`/`SetWeak`/`GetWeak` 중 하나를 부를 때 `inst` 자리에 `nil`을 넘겼을 때. `{method}`는 실제로 부른 메소드 이름입니다.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0139",
+  "src": "Relate:{method}: key must not be nil",
+  "doc": "Relate:{method}: key must not be nil",
+  "same": true,
+  "when": "같은 네 메소드 중 하나를 부를 때 `key` 자리에 `nil`을 넘겼을 때.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0140",
+  "src": "Slot: destroyed Slot cannot be mounted",
+  "doc": "Slot: destroyed Slot cannot be mounted",
+  "same": true,
+  "when": "이미 파괴된 `Slot`을 부모의 숫자 키 자리에 놓아 마운트하려 할 때 — `claimOwnerAt`/`bindLifetime`이 커밋되기 전에 걸러집니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0141",
+  "src": "Slot: must be an array item, not the value of a {typeof(k)} key",
+  "doc": "Slot: must be an array item, not the value of a {typeof(k)} key",
+  "same": true,
+  "when": "`Slot`을 props의 문자 키 값 자리에 두거나, `State`/`Store`에 담아 그 자리에 닿게 했을 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0142",
+  "src": "Slot:List: data must be a plain array (got {typeof(items)}) — a data State must hold one too",
+  "doc": "Slot:List: data must be a plain array (got {typeof(items)}) — a data State must hold one too",
+  "same": true,
+  "when": "`:List`/`:Single`의 재조정이 돌 때(마운트 시점, 또는 `data`가 `State`면 그 값이 바뀔 때마다) `data`(또는 그 `State`가 담은 현재 값)가 테이블이 아니거나 메타테이블이 있을 때 — 브랜드된 quad 값(`Store`/`Tween`/`Modifier` 등)도 메타테이블이 있어 배열로 치지 않습니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0143",
+  "src": "Slot:List: data must be a plain array — key \"{tostring(k)}\" is not an array position",
+  "doc": "Slot:List: data must be a plain array — key \"{tostring(k)}\" is not an array position",
+  "same": true,
+  "when": "재조정 중 `data` 테이블에 정수가 아니거나 1보다 작은 키가 있을 때 — 딕셔너리(아이디 맵, 디코딩된 JSON 오브젝트 등)를 통째로 `:List`에 준 경우가 대표적입니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0144",
+  "src": "Slot:List: keyFn returned {if key == nil then \"nil\" else \"NaN\"} for item #{i}",
+  "doc": "Slot:List: keyFn returned {if key == nil then \"nil\" else \"NaN\"} for item #{i}",
+  "same": true,
+  "when": "`keyFn(item, i)`이 `nil` 또는 NaN을 돌려줬을 때 — 재조정은 이 키로 항목의 신원을 구별하므로 둘 다 쓸 수 없습니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0145",
+  "src": "Slot:List: duplicate key {tostring(key)}",
+  "doc": "Slot:List: duplicate key {tostring(key)}",
+  "same": true,
+  "when": "`keyFn`이 두 항목에 같은 키를 돌려줬을 때 — 재조정은 키로 항목을 구별하므로 겹치면 어느 쪽이 그 자리인지 정할 수 없습니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0146",
+  "src": "Slot:List: updateFn returned q.KeyGone — it is the marker updateFn RECEIVES when a key disappears; return nil/q.None to drop the element or q.Detach to hold it",
+  "doc": "Slot:List: updateFn returned q.KeyGone — it is the marker updateFn RECEIVES when a key disappears; return nil/q.None to drop the element or q.Detach to hold it",
+  "same": true,
+  "when": "`updateFn`이 결과 자리에 `q.KeyGone`을 그대로 반환했을 때 — `KeyGone`은 사라진 키를 알리려고 `updateFn`이 **받는** 입력 마커이지, 반환값이 아닙니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0147",
+  "src": "Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)",
+  "doc": "Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)",
+  "same": true,
+  "when": "사라진 키를 처리하는 `KeyGone` 호출(`ctx.Item == q.KeyGone`)에서 `updateFn`이 새 원소를 반환했을 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0148",
+  "src": "Slot: already has :List/:Single installed",
+  "doc": "Slot: already has :List/:Single installed",
+  "same": true,
+  "when": "이미 `:List`나 `:Single`을 건 `Slot`에 다시 `:List`/`:Single`을 걸려고 할 때 — 재조정 모드 설치는 한 Slot에 한 번뿐입니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0149",
+  "src": "Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)",
+  "doc": "Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)",
+  "same": true,
+  "when": "이미 수동 CRUD(`Add`/`Remove`/... 또는 `initial` 원소를 준 생성자)를 쓴 `Slot`에 `:List`/`:Single`을 걸려고 할 때 — 두 모드는 상호 배타입니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0150",
+  "src": "Slot:List: updateFn must be a function (got {typeof(updateFn)})",
+  "doc": "Slot:List: updateFn must be a function (got {typeof(updateFn)})",
+  "same": true,
+  "when": "`:List`의 두 번째 인자 `updateFn`이 함수가 아닐 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0151",
+  "src": "Slot:List: data must be a plain array or a State of one (got {typeof(data)})",
+  "doc": "Slot:List: data must be a plain array or a State of one (got {typeof(data)})",
+  "same": true,
+  "when": "`:List`의 첫 인자 `data`가 평범한 배열도, 배열을 담은 `State`도 아닐 때 — 브랜드된 quad 값(`Store`/`Tween`/`Modifier` 등)은 메타테이블이 있어 여기 걸립니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0152",
+  "src": "Slot:List: keyFn must be a function (got {typeof(keyFn)})",
+  "doc": "Slot:List: keyFn must be a function (got {typeof(keyFn)})",
+  "same": true,
+  "when": "`:List`의 `keyFn` 인자를 줬는데 함수가 아닐 때(생략은 허용 — 그러면 인덱스가 키가 됩니다).",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0153",
+  "src": "Slot:List: opts must be a table (got {typeof(opts)})",
+  "doc": "Slot:List: opts must be a table (got {typeof(opts)})",
+  "same": true,
+  "when": "`:List`의 `opts` 인자를 줬는데 테이블이 아닐 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0154",
+  "src": "Slot:Single: updateFn must be a function (got {typeof(updateFn)})",
+  "doc": "Slot:Single: updateFn must be a function (got {typeof(updateFn)})",
+  "same": true,
+  "when": "`:Single`의 `updateFn` 인자를 줬는데 함수가 아닐 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0155",
+  "src": "Slot:Single: opts must be a table (got {typeof(opts)})",
+  "doc": "Slot:Single: opts must be a table (got {typeof(opts)})",
+  "same": true,
+  "when": "`:Single`의 `opts` 인자를 줬는데 테이블이 아닐 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0156",
+  "src": "Slot: this element is already mounted — multiple mounts are not allowed{S.ZOMBIE_NOTE}",
+  "doc": "Slot: this element is already mounted — multiple mounts are not allowed",
+  "same": false,
+  "when": "이미 다른 자리(Slot 원소·정적 자식·숏핸드가 만드는 관리 자식 — 전부 한 레지스트리를 같이 씁니다)에 마운트된 값을 다시 마운트하려 할 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0157",
+  "src": "Bookkeeping.claimOwnerAt: element must not be nil",
+  "doc": "Bookkeeping.claimOwnerAt: element must not be nil",
+  "same": true,
+  "when": "`q.Bookkeeping.claimOwnerAt(element, inst, k)`에 `element`로 `nil`을 넘겼을 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0158",
+  "src": "Bookkeeping.claimOwnerAt: inst (ownerKey) must not be nil",
+  "doc": "Bookkeeping.claimOwnerAt: inst (ownerKey) must not be nil",
+  "same": true,
+  "when": "`claimOwnerAt`의 `inst`(그 자리의 주인 — ownerKey)로 `nil`을 넘겼을 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0159",
+  "src": "Bookkeeping.claimOwnerAt: k (seat key — a position or a shorthand child name) must not be nil",
+  "doc": "Bookkeeping.claimOwnerAt: k (seat key — a position or a shorthand child name) must not be nil",
+  "same": true,
+  "when": "`claimOwnerAt`의 `k`(자리 키 — 위치 숫자 또는 숏핸드 자식 이름)로 `nil`을 넘겼을 때 — `nil` 위치로 등록하면 나중에 그 자리를 되짚거나 해제할 수 없는 자리가 생깁니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0160",
+  "src": "Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed{S.ZOMBIE_NOTE}",
+  "doc": "Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed",
+  "same": false,
+  "when": "`claimOwnerAt`이 등록하려는 값이 이미 다른 자리에 등록돼 있을 때(정확히 같은 자리의 재확인은 예외 — 던지지 않고 `false`를 돌려줍니다).",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0161",
+  "src": "Bookkeeping.releaseOwner: element must not be nil",
+  "doc": "Bookkeeping.releaseOwner: element must not be nil",
+  "same": true,
+  "when": "`q.Bookkeeping.releaseOwner(element, ownerKey)`에 `element`로 `nil`을 넘겼을 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0162",
+  "src": "Bookkeeping.releaseOwner: ownerKey must not be nil",
+  "doc": "Bookkeeping.releaseOwner: ownerKey must not be nil",
+  "same": true,
+  "when": "`releaseOwner`의 `ownerKey`로 `nil`을 넘겼을 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0163",
+  "src": "Bookkeeping.releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken",
+  "doc": "Bookkeeping.releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken",
+  "same": true,
+  "when": "`releaseOwner`에 넘긴 `ownerKey`가 그 값을 실제로 쥔 owner와 다를 때 — 자기가 잡지 않은 자리를 풀려고 한 것으로, 소유권 부기가 깨졌다는 신호입니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0164",
+  "src": "Slot: destroyed Slot cannot be mounted",
+  "doc": "Slot: destroyed Slot cannot be mounted",
+  "same": true,
+  "when": "이미 파괴된 `Slot`을 마운트(부모의 숫자 키 자리에 놓는 것)하려 할 때 — `materializeSlotTree`의 첫 검사입니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0165",
+  "src": "Slot: destroyed Slot cannot be reused",
+  "doc": "Slot: destroyed Slot cannot be reused",
+  "same": true,
+  "when": "파괴된 `Slot`에 CRUD(`Add`/`Remove`/...)나 `:List`/`:Single` 설치를 다시 쓰려고 할 때 — 모든 공개 CRUD·설치 진입점이 이 가드(`assertLive`)를 거칩니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0166",
+  "src": "Slot: manual CRUD is not allowed after :List/:Single",
+  "doc": "Slot: manual CRUD is not allowed after :List/:Single",
+  "same": true,
+  "when": "`:List`/`:Single`을 이미 건 `Slot`에 수동 CRUD(`Add`/`Remove`/`Replace`/...)를 쓰려고 할 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0167",
+  "src": "Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)",
+  "doc": "Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)",
+  "same": true,
+  "when": "이 `Slot`의 마운트 walk이 스택에 있는 동안(`_materializing`) 이 `Slot`에 CRUD나 `:List`/`:Single` 설치를 쓰려고 할 때 — 중첩된 `:List`의 첫 `updateFn`이나 그 안에서 도는 `Observer`가 조상 `Slot`을 건드리면 여기 걸립니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0168",
+  "src": "{surface}: index must be a positive integer (got {tostring(index)})",
+  "doc": "{surface}: index must be a positive integer (got {tostring(index)})",
+  "same": true,
+  "when": "`Add`/`Remove`/`Replace`/`Extract`/`Splice`/`Move`/`Swap` 같은 CRUD의 `index` 인자가 숫자가 아니거나 정수가 아닐 때. `{surface}`는 실제로 부른 메소드 이름(`Slot:Add` 등)입니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0169",
+  "src": "{surface .. \": destroyed Slot cannot be an element\"}",
+  "doc": "{surface}: destroyed Slot cannot be an element",
+  "same": false,
+  "when": "이미 파괴된 `Slot`을 다른 `Slot`의 원소로 넣으려 할 때(`prepareElements`의 배치 사전검사).",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0170",
+  "src": "{surface .. \": this element is already in this Slot — reorder with Move/Swap instead of adding it again\"}",
+  "doc": "{surface}: this element is already in this Slot — reorder with Move/Swap instead of adding it again",
+  "same": false,
+  "when": "이 `Slot`이 이미 들고 있는 원소를 다시 넣으려 할 때(`Replace(i, slot:Get(i))`, `Splice`가 방금 뺀 원소를 같은 호출에서 다시 넣는 경우 등).",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0171",
+  "src": "{surface .. \": the same element appears twice\"}",
+  "doc": "{surface}: the same element appears twice",
+  "same": false,
+  "when": "한 번의 배치 호출(`Splice`, 생성자 `initial` 등) 안에 같은 원소가 두 번 들어 있을 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0172",
+  "src": "{surface .. \": this element is already mounted — multiple mounts are not allowed\" .. ZOMBIE_NOTE}",
+  "doc": "{surface}: this element is already mounted — multiple mounts are not allowed",
+  "same": false,
+  "when": "이미 다른 곳(다른 `Slot`의 원소, 정적 자식, 숏핸드가 만드는 관리 자식 등)에 마운트된 값을 원소로 넣으려 할 때(`prepareElements`의 배치 사전검사).",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0173",
+  "src": "{surface .. \": cannot add a Slot to itself or to one of its own descendants (that would be a cycle}",
+  "doc": "{surface}: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)",
+  "same": false,
+  "when": "`Slot`을 자기 자신이나 자기 조상(원소 관계로 이어진)에 원소로 넣으려 할 때 — 그대로 두면 순환이 생겨 이후 CRUD가 `teardownTree`/`releaseOwner`에서 무한히 재귀합니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0174",
+  "src": "Slot:Splice: removeCount out of range",
+  "doc": "Slot:Splice: removeCount out of range",
+  "same": true,
+  "when": "`:Splice`의 `removeCount`가 숫자가 아니거나 음수/소수이거나, `index + removeCount - 1`이 현재 길이를 넘을 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0175",
+  "src": "Slot:Get: index must be a number (got {typeof(index)})",
+  "doc": "Slot:Get: index must be a number (got {typeof(index)})",
+  "same": true,
+  "when": "`:Get`의 `index` 인자가 숫자가 아닐 때 — \"빈 Slot\"처럼 조용히 `nil`을 주지 않고 던집니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0176",
+  "src": "Slot: initial elements must be a plain \\{ element, ... \\} array (got {typeof(initial)} — a bare element or quad value needs the braces)",
+  "doc": "Slot: initial elements must be a plain { element, ... } array (got {typeof(initial)} — a bare element or quad value needs the braces)",
+  "same": false,
+  "when": "생성자 `q.Slot(initial)`의 `initial`이 테이블이 아니거나, 메타테이블이 있거나(브랜드된 quad 값), 괄호 없이 값 하나만 넘겼을 때(`Slot(frame)`).",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0177",
+  "src": "Slot: initial elements must be an array — key \"{tostring(k)}\" is not an array position",
+  "doc": "Slot: initial elements must be an array — key \"{tostring(k)}\" is not an array position",
+  "same": true,
+  "when": "`initial` 테이블의 키 중 정수가 아니거나 1보다 작은 것이 있을 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0178",
+  "src": "dispose: value must not be nil",
+  "doc": "dispose: value must not be nil",
+  "same": true,
+  "when": "`q.dispose(value)`에 `nil`을 넘겼을 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0179",
+  "src": "dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key){ZOMBIE_NOTE}",
+  "doc": "dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key)",
+  "same": false,
+  "when": "아직 어떤 `Slot`의 원소이거나 마운트된 자리(정적 자식·숏핸드 관리 자식 포함)를 차지하고 있는 값을 `dispose`하려 할 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0180",
+  "src": "dispose: this backend cannot dispose this value",
+  "doc": "dispose: this backend cannot dispose this value",
+  "same": true,
+  "when": "`dispose`에 준 값이 `Slot`도 아니고 백엔드가 요소로 인정하는 값(`q.Backend.isInst`가 참)도 아닐 때 — 백엔드가 아예 설치되지 않은 모듈에서는 그 전에 `q.Backend.isInst` 스텁이 먼저 던집니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0181",
+  "src": "Source: cannot Set a Modifier as a Source value",
+  "doc": "Source: cannot Set a Modifier as a Source value",
+  "same": true,
+  "when": "`source:Set(v)`의 `v`로 `Modifier`(`:Apply`용 값)를 넘겼을 때 — `Source`/`State`는 값 자리에 `Modifier`를 담을 수 없습니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0182",
+  "src": "Source: cannot hold a Modifier as a Source value",
+  "doc": "Source: cannot hold a Modifier as a Source value",
+  "same": true,
+  "when": "`q.Source(default)`를 만들 때 초기값으로 `Modifier`를 넘겼을 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0183",
+  "src": "State: dep #{i} is not a State/Source",
+  "doc": "State: dep #{i} is not a State/Source",
+  "same": true,
+  "when": "`:Compute`나 `:Depend`에 넘긴 후행 의존성 중 하나가 `State`도 `Source`도 아닐 때. 번호는 리시버가 1번이라, 후행 의존성의 첫 자리가 `#2`입니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0184",
+  "src": "State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)",
+  "doc": "State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)",
+  "same": true,
+  "when": "계산 함수가 자기 자신의 값을 직접·간접(하류 State를 거쳐)으로 읽는 의존성 순환일 때, 계산 함수 안에서 yield하는 사이 다른 코루틴이 같은 노드를 다시 읽을 때, 또는 직전 계산이 던진 뒤 같은 세대(상류가 그 사이 움직이지 않음)에서 다시 읽을 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0185",
+  "src": "State: a Compute function returned a Modifier — State/Source cannot hold Modifiers",
+  "doc": "State: a Compute function returned a Modifier — State/Source cannot hold Modifiers",
+  "same": true,
+  "when": "`:Compute`의 계산 함수가 `Modifier` 값을 반환했을 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0186",
+  "src": "State: dep #{i + 1} is nil",
+  "doc": "State: dep #{i + 1} is nil",
+  "same": true,
+  "when": "`:Compute`나 `:Depend`의 후행 의존성 자리(`...deps`)에 `nil`을 넘겼을 때 — 자리를 그냥 건너뛰면 뒤 의존성이 앞으로 밀려 잘못된 위치에 들어가므로, 조용히 사라지지 않고 에러입니다. 번호는 리시버가 1번이라, 후행 의존성의 첫 자리가 `#2`입니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0187",
+  "src": "State: Compute fn must be a function",
+  "doc": "State: Compute fn must be a function",
+  "same": true,
+  "when": "`:Compute(fn, ...deps)`의 `fn` 자리가 함수가 아닐 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0188",
+  "src": "State: Gate setup must be a function (emit) -> onUpstreamEmit",
+  "doc": "State: Gate setup must be a function (emit) -> onUpstreamEmit",
+  "same": true,
+  "when": "`:Gate(setup)`의 `setup` 자리가 함수가 아닐 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0189",
+  "src": "State: Gate setup must return the onUpstreamEmit function",
+  "doc": "State: Gate setup must return the onUpstreamEmit function",
+  "same": true,
+  "when": "`:Gate(setup)`이 생성 시 딱 한 번 불렸는데, `setup`이 함수가 아닌 것을 반환했을 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0190",
+  "src": "State: Observer fn must be a function (or nil for the always-observe utility)",
+  "doc": "State: Observer fn must be a function (or nil for the always-observe utility)",
+  "same": true,
+  "when": "`:Observer(fn)`의 `fn` 자리가 함수도 `nil`도 아닐 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0191",
+  "src": "State: Apply factory must be a function or an object with an __apply method",
+  "doc": "State: Apply factory must be a function or an object with an __apply method",
+  "same": true,
+  "when": "`:Apply(factory)`의 `factory` 자리가 함수도, `__apply` 메소드를 가진 객체도 아닐 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0192",
+  "src": "State: State.Init(module) has not run for this quad instance",
+  "doc": "State: State.Init(module) has not run for this quad instance",
+  "same": true,
+  "when": "quad 모듈 인스턴스에서 `State` 서브시스템이 아직 `RunInit`으로 설치되지 않은 채로 State 관련 API에 닿았을 때 — 내부 불변조건 검사입니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0193",
+  "src": "Store: {what} must be a non-empty string (got {if name == \"\" then '\"\"' else typeof(name)})",
+  "doc": "Store: {what} must be a non-empty string (got {if name == \"\" then '\"\"' else typeof(name)})",
+  "same": true,
+  "when": "`{what}`은 생성자에서 `key`, `:Of`에서 `Of name`입니다 — `q.Store(defaults)`의 키나 `store:Of(name)`의 `name`이 문자열이 아니거나 빈 문자열일 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0194",
+  "src": "Store: \"{name}\" is a reserved store key",
+  "doc": "Store: \"{name}\" is a reserved store key",
+  "same": true,
+  "when": "`q.Store(defaults)`의 키나 `store:Of(name)`의 `name`으로 예약된 이름(`Of`, `Names`, `__`로 시작하는 이름)을 썼을 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0195",
+  "src": "Store: defaults must be a table of Sources (got {typeof(defaults)})",
+  "doc": "Store: defaults must be a table of Sources (got {typeof(defaults)})",
+  "same": true,
+  "when": "`q.Store(defaults)`의 `defaults`가 테이블이 아닐 때(생략은 허용 — 빈 Store가 됩니다).",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0196",
+  "src": "Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)",
+  "doc": "Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)",
+  "same": true,
+  "when": "`q.Store(defaults)`에 메타테이블이 달린 테이블(`Source` 하나를 감싸는 테이블 없이 그대로 넘긴 경우 등)을 넘겼을 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0197",
+  "src": "Store: defaults must be a plain { name = Source } table (got an AttrKey/Mapper descriptor)",
+  "doc": "Store: defaults must be a plain { name = Source } table (got an AttrKey/Mapper descriptor)",
+  "same": true,
+  "when": "`q.Store(defaults)`에 `AttrKey`/`Mapper` 같은 브랜드 값을 넘겼을 때 — 평범한 `{ name = Source }` 테이블이 아닙니다.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0198",
+  "src": "Store: default for \"{tostring(name)}\" is not a Source (got {typeof(value)})",
+  "doc": "Store: default for \"{tostring(name)}\" is not a Source (got {typeof(value)})",
+  "same": true,
+  "when": "`q.Store(defaults)`의 값 자리(또는 `:Of`가 만든 필드)가 `Source`가 아닐 때.",
+  "docfile": "01-core-reactive.md"
+ },
+ {
+  "id": "Quad0199",
+  "src": "Tag: names must be strings — an empty string is not a tag name",
+  "doc": "Tag: names must be strings — an empty string is not a tag name",
+  "same": true,
+  "when": "`q.Tag(...)`나 `tag:Added`/`tag:Removed`의 이름 자리에 빈 문자열 `\"\"`을 넘겼을 때.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0200",
+  "src": "Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)",
+  "doc": "Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)",
+  "same": true,
+  "when": "이름 자리에 `AttrKey`/`Mapper` 같은 브랜드 테이블을 넘겼을 때 — 문자열도, `Tag`도, 평범한 리스트도 아닙니다.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0201",
+  "src": "Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)",
+  "doc": "Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)",
+  "same": true,
+  "when": "이름 리스트가 64단계보다 깊게 중첩됐을 때 — 리스트가 자기 자신을 담아 무한히 중첩되는 경우를 이 한도로 잡습니다.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0202",
+  "src": "Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table",
+  "doc": "Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table",
+  "same": true,
+  "when": "이름 자리의 리스트가 배열이 아니라 해시 테이블(정수가 아니거나 1 미만인 키를 가짐)일 때.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0203",
+  "src": "Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes",
+  "doc": "Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes",
+  "same": true,
+  "when": "이름 리스트 중간에 `nil` 구멍이 있을 때(항목 수와 최대 인덱스가 다를 때).",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0204",
+  "src": "Tag: names must be strings, Tags, or a plain \\{...} list of those (got {typeof(v)})`, SURFACE)\n\tend\nend\n\n-- [2026-09-21 사용자 결정 — GS 05장 `:Added` 관용구] A nil ARGUMENT means \"nothing to add/remove\" — for the\n-- constructor's vararg slots, `Added`/`Removed`'s one argument and `Merged`'s slots. A nil HOLE inside a list\n-- stays an error (`H-380`): a table cannot hold nil, so `{ cond and \"a\" or nil, \"b\" }` silently truncates,\n-- while an argument's presence is exact (`select(\"#\")`). This is what makes the immutable idiom\n-- `tag:Added(if cond then \"Even\" else nil)` an EXPRESSION that must be assigned — the alternative, a\n-- statement `if cond then tag:Added(\"Even\") end`, drops the returned Tag silently and no type checker\n-- catches it (user: \"base 자체가 바뀌는게 아닌 새로 생성되므로 = 으로 대입해야한다를 강하게 알려야\").\n-- `Contains` keeps rejecting nil (`H-468`): asking \"is nil a member\" is a bug, not an empty choice.\nfunction TagImpl.Added(self: any, nameOrList: any): any\n\tlocal names = table.clone(self._names)\n\tif nameOrList ~= nil then\n\t\tflattenInto(names, nameOrList, 1)\n\tend\n\treturn newTag(names)\nend\n\nfunction TagImpl.Removed(self: any, nameOrList: any): any\n\t-- `H-344`: same validation as `Added` — a non-string used to be a silent\n\t-- no-op and `nil` a VM \"table index is nil\" blaming this file\n\tlocal toRemove: { [string]: true } = {}\n\tif nameOrList ~= nil then\n\t\tflattenInto(toRemove, nameOrList, 1)\n\tend\n\tlocal names = table.clone(self._names)\n\tfor name in pairs(toRemove) do\n\t\tnames[name] = nil\n\tend\n\treturn newTag(names)\nend\n\n-- `H-468` (Gemini 5차 G-20, 사용자 Q32): variadic — every name must be present; a nil\n-- (or non-string) argument is an error, never a silent false. Zero names (a dynamic\n-- unpack) is allowed and vacuously true.\nfunction TagImpl.Contains(self: any, ...: string): boolean\n\tlocal n = select(\"#\", ...)\n\tfor i = 1, n do\n\t\tlocal name = select(i, ...)\n\t\tif type(name) ~= \"string\" then\n\t\t\tErr.errorBeforeNearest(`Quad0205 Tag:Contains: names must be strings (got {typeof(name)} at argument {i})`, SURFACE)\n\t\tend\n\t\tif self._names[name] ~= true then\n\t\t\treturn false\n\t\tend\n\tend\n\treturn true\nend\n\n-- [2026-09-15 user decision, public surface (26)] generalized iteration instead of a `:Names()` method —\n-- `for name in tag do`. Hands out the frozen set itself (no allocation); `pairs(tag)` bypasses `__iter`\n-- and walks the wrapper (Luau superseded `__pairs` with `__iter`) — documented caveat, not supported.\nfunction TagImpl.__iter(self: any)\n\treturn next, self._names\nend\n\nfunction TagImpl.Apply(self: any, factory: any): any\n\tif type(factory) ~= \"function\" then\n\t\t-- `H-497` (2026-09-08 2차 감사 I-4): sibling `State:Apply` gates; here a non-function\n\t\t-- died at the call with `Tag.luau` on the blame line\n\t\tErr.errorBeforeNearest(`Quad0206 Tag: Apply factory must be a function (got {typeof(factory)})`, SURFACE)\n\tend\n\treturn factory(self)\nend\n\n-- Callable namespace: Tag(...names) constructs, Tag.Merged composes Tags.\nlocal Tag = setmetatable({}, {\n\t__call = function(_self, ...: any)\n\t\t-- vararg stays (static literal call sites — tag-plan \"값 모양\"); every slot\n\t\t-- goes through the one door, so ",
+  "doc": "Tag: names must be strings, Tags, or a plain {...} list of those (got {typeof(v)})",
+  "same": false,
+  "when": "이름 자리에 문자열도, `Tag`도, 리스트도 아닌 값(숫자, 불린 등)을 넘겼을 때.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0205",
+  "src": "Tag:Contains: names must be strings (got {typeof(name)} at argument {i})",
+  "doc": "Tag:Contains: names must be strings (got {typeof(name)} at argument {i})",
+  "same": true,
+  "when": "`tag:Contains(...names)`의 가변 인자 중 하나가 문자열이 아닐 때(`nil` 포함).",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0206",
+  "src": "Tag: Apply factory must be a function (got {typeof(factory)})",
+  "doc": "Tag: Apply factory must be a function (got {typeof(factory)})",
+  "same": true,
+  "when": "`tag:Apply(factory)`의 `factory` 자리가 함수가 아닐 때.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0207",
+  "src": "Tag.Merged: arguments must be Tag values",
+  "doc": "Tag.Merged: arguments must be Tag values",
+  "same": true,
+  "when": "`q.Tag.Merged(...tags)`의 인자 중 `nil`이 아니면서 `Tag`도 아닌 값을 넘겼을 때 — `Tag.Merged`는 `Tag`만 받는 엄격한 철자입니다.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0208",
+  "src": "Quad:RunInit: initFn must be a function (got {typeof(initFn)})",
+  "doc": "Quad:RunInit: initFn must be a function (got {typeof(initFn)})",
+  "same": true,
+  "when": "`q:RunInit(initFn)`의 `initFn` 자리가 함수가 아닐 때.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0209",
+  "src": "{who}: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)",
+  "doc": "{who}: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)",
+  "same": true,
+  "when": "`{who}`은 부른 자리 이름입니다 — `q:UseProvider(providerFn)`이 부른 `providerFn(self)`가 테이블을 반환하지 않았을 때(`q:AddPlugin`은 자기 자리에서 먼저 검사하므로 이 문은 사실상 `UseProvider` 경로에서만 닿습니다).",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0210",
+  "src": "AddPlugin: plugin must be a function (got {typeof(pluginFn)})",
+  "doc": "AddPlugin: plugin must be a function (got {typeof(pluginFn)})",
+  "same": true,
+  "when": "`q:AddPlugin(pluginFn)`의 `pluginFn` 자리가 함수가 아닐 때.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0211",
+  "src": "AddPlugin: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)",
+  "doc": "AddPlugin: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)",
+  "same": true,
+  "when": "`pluginFn(self)`가 테이블을 반환하지 않았을 때 — 모듈을 고쳐 쓰기만 하고 아무것도 반환하지 않는 플러그인이 흔한 실수입니다.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0212",
+  "src": "UseProvider: provider must be a function (got {typeof(providerFn)})",
+  "doc": "UseProvider: provider must be a function (got {typeof(providerFn)})",
+  "same": true,
+  "when": "`q:UseProvider(providerFn)`의 `providerFn` 자리가 함수가 아닐 때(`UseProvider(nil)`은 전에 조용히 통과했습니다).",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0213",
+  "src": "UseProvider: this Quad module already has a provider — a module cannot serve two backends",
+  "doc": "UseProvider: this Quad module already has a provider — a module cannot serve two backends",
+  "same": true,
+  "when": "이미 다른 프로바이더 함수(identity 기준)로 `UseProvider`를 부른 모듈에 다시 (다른) `providerFn`으로 `UseProvider`를 부를 때 — 같은 함수를 다시 넘기는 것은 멱등 no-op이라 에러가 아닙니다.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0214",
+  "src": "Animate: expected an options table (Animate{ Time = ... })",
+  "doc": "Animate: expected an options table (Animate{ Time = ... })",
+  "same": true,
+  "when": "`q.Animate(info)`의 `info`가 테이블이 아닐 때. 리터럴 옵션은 `Animate(info)` 호출 시점에 즉시 검증되고, `State`로 준 옵션은 실행할 때마다 풀려서 그때 검증됩니다.",
+  "docfile": "08-roblox-tween.md"
+ },
+ {
+  "id": "Quad0215",
+  "src": "setTimeout: func must be a function (got {typeof(func)})",
+  "doc": "setTimeout: func must be a function (got {typeof(func)})",
+  "same": true,
+  "when": "백엔드가 심는 시간 op `setTimeout(func, delay)`의 `func` 자리가 함수가 아닐 때(`Debounce`/`Throttle`이 내부에서 이 op를 씁니다).",
+  "docfile": "07-roblox.md"
+ },
+ {
+  "id": "Quad0216",
+  "src": "setTimeout: delay must be a non-negative number (got {typeof(delay)})",
+  "doc": "setTimeout: delay must be a non-negative number (got {typeof(delay)})",
+  "same": true,
+  "when": "`setTimeout(func, delay)`의 `delay`가 숫자가 아니거나, NaN이거나, 음수일 때.",
+  "docfile": "07-roblox.md"
+ },
+ {
+  "id": "Quad0217",
+  "src": "clearTimeout: expected a Timeout from setTimeout (got {typeof(timeout)})",
+  "doc": "clearTimeout: expected a Timeout from setTimeout (got {typeof(timeout)})",
+  "same": true,
+  "when": "`clearTimeout(timeout)`에 `setTimeout`이 돌려준 `Timeout` 핸들이 아닌 값을 넘겼을 때 — 마커 필드(`__quadTimeout`)로 신원을 확인합니다.",
+  "docfile": "07-roblox.md"
+ },
+ {
+  "id": "Quad0218",
+  "src": "Event: handler for \"{k}\" must be a function (got {typeof(v)})",
+  "doc": "Event: handler for \"{k}\" must be a function (got {typeof(v)})",
+  "same": true,
+  "when": "`D.<Class> { EventName = v }`에서 이벤트 이름 키의 값 `v`가 함수도, `None`/`nil`(연결 해제 전용)도 아닐 때.",
+  "docfile": "07-roblox.md"
+ },
+ {
+  "id": "Quad0219",
+  "src": "InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)",
+  "doc": "InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)",
+  "same": true,
+  "when": "숫자 키 자리에 quad가 소유하지 않은 Instance(`Instance.new`나 다른 라이브러리가 만든 것, 다른 quad 모듈 인스턴스가 만든 것, 또는 이미 파괴된 것)를 놓았을 때.",
+  "docfile": "07-roblox.md"
+ },
+ {
+  "id": "Quad0220",
+  "src": "InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)",
+  "doc": "InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)",
+  "same": true,
+  "when": "어떤 Instance를 자기 자신이나 자기 조상의 숫자 키 자리에 자식으로 놓으려 할 때 — 조상 사슬을 따라 올라가며 검사합니다.",
+  "docfile": "07-roblox.md"
+ },
+ {
+  "id": "Quad0221",
+  "src": "OnChange: property name must be a non-empty string",
+  "doc": "OnChange: property name must be a non-empty string",
+  "same": true,
+  "when": "`q.OnChange(name, fn)`의 `name`이 문자열이 아니거나 빈 문자열일 때.",
+  "docfile": "07-roblox.md"
+ },
+ {
+  "id": "Quad0222",
+  "src": "OnChange: callback for \"{name}\" must be a function (got {typeof(fn)})",
+  "doc": "OnChange: callback for \"{name}\" must be a function (got {typeof(fn)})",
+  "same": true,
+  "when": "`q.OnChange(name, fn)`의 `fn`이 함수가 아닐 때.",
+  "docfile": "07-roblox.md"
+ },
+ {
+  "id": "Quad0223",
+  "src": "Out: property name must be a non-empty string",
+  "doc": "Out: property name must be a non-empty string",
+  "same": true,
+  "when": "`q.Out(name, src)`의 `name`이 문자열이 아니거나 빈 문자열일 때.",
+  "docfile": "07-roblox.md"
+ },
+ {
+  "id": "Quad0224",
+  "src": "Out: second argument for \"{name}\" must be a Source to write back into (got {got})",
+  "doc": "Out: second argument for \"{name}\" must be a Source to write back into (got {got})",
+  "same": true,
+  "when": "`q.Out(name, src)`의 `src`가 `Source`가 아닐 때 — `:Compute` 결과 같은 읽기 전용 `State`는 `Set`이 없어 `{got}`가 `\"a read-only State (a :Compute result?)\"`로 나옵니다.",
+  "docfile": "07-roblox.md"
+ },
+ {
+  "id": "Quad0225",
+  "src": "nativeClaim: Instance is already claimed by quad",
+  "doc": "nativeClaim: Instance is already claimed by quad",
+  "same": true,
+  "when": "같은 Instance를 `nativeClaim`으로 두 번 claim할 때. 공개 경로(`q.Claim`을 두 번, `New`가 만든 인스턴스를 claim)는 `Claim`의 1패스가 `isClaimed`로 먼저 걸러 `Quad0029`를 내므로, 이 에러는 백엔드 op를 직접 부르거나 파괴된 인스턴스를 GC 전에 다시 claim하는 정의되지 않은 경로에서만 봅니다([2026-09-27 기준]).",
+  "docfile": "07-roblox.md"
+ },
+ {
+  "id": "Quad0226",
+  "src": "bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)",
+  "doc": "bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)",
+  "same": true,
+  "when": "`q.Backend.bindLifetime(inst, value)`의 `inst`가 이 백엔드의 quad 소유 요소가 아닐 때(quad 밖에서 만들어졌거나, 이미 파괴됐을 때).",
+  "docfile": "07-roblox.md"
+ },
+ {
+  "id": "Quad0227",
+  "src": "Tween:Mapped: fn must be a function (got {typeof(fn)})",
+  "doc": "Tween:Mapped: fn must be a function (got {typeof(fn)})",
+  "same": true,
+  "when": "`tween:Mapped(fn)`의 `fn`이 함수가 아닐 때.",
+  "docfile": "08-roblox-tween.md"
+ },
+ {
+  "id": "Quad0228",
+  "src": "quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')",
+  "doc": "quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')",
+  "same": true,
+  "when": "`q:UseProvider(QuadRoblox)`에 넘긴 `quad-base` 모듈의 `Version`이 이 quad-roblox 사본이 요구하는 버전 패턴과 맞지 않을 때(`{VERSION_PATTERN}`은 이 패키지에 박힌 상수, `{tostring(q.Version)}`은 넘어온 모듈의 실제 버전).",
+  "docfile": "07-roblox.md"
+ },
+ {
+  "id": "Quad0229",
+  "src": "Bookkeeping.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not — a leaf handler skipped its position registration",
+  "doc": "Bookkeeping.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not — a leaf handler skipped its position registration",
+  "same": true,
+  "when": "조회한 `at`은 등록 범위 안(`N+1` 이하)인데, 그 앞의 어떤 위치 `i`가 등록되지 않았을 때 — 어떤 leaf 핸들러가 자기 자리의 위치 등록(`setLength`/`setOffsetSource`)을 건너뛴 경우입니다. `getOffsetAt`의 if/else 두 갈래 중 하나로, 같은 조건문의 다른 갈래가 Quad0022입니다.",
+  "docfile": "02-dispatch-bookkeeping.md"
+ },
+ {
+  "id": "Quad0230",
+  "src": "Effect: already bound to an Instance",
+  "doc": "Effect: already bound to an Instance",
+  "same": true,
+  "when": "`effect:WeakSubscribe()`를 부를 때 이미 어떤 인스턴스의 props 자리에 묶여 있어서(전역 구독과 자리 바인딩은 겹칠 수 없음) 전역 구독으로 바꿀 수 없을 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0231",
+  "src": "Effect: already bound to an Instance",
+  "doc": "Effect: already bound to an Instance",
+  "same": true,
+  "when": "`effect:Subscribe()`를 부를 때 이미 어떤 인스턴스의 props 자리에 묶여 있을 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0232",
+  "src": "bindLifetime: value is already bound to this Instance (the same handle at two positions?)",
+  "doc": "bindLifetime: value is already bound to this Instance (the same handle at two positions?)",
+  "same": true,
+  "when": "이미 어떤 요소의 자리에 묶여 있는 값을 **같은** 요소의 다른 자리에 또 묶으려 할 때 — 같은 핸들을 한 인스턴스 안 두 자리(`D.Frame { eff, eff }` 등)에 놓은 경우입니다.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0233",
+  "src": "bindLifetime: value is already bound to another Instance",
+  "doc": "bindLifetime: value is already bound to another Instance",
+  "same": true,
+  "when": "이미 다른 요소의 자리에 묶여 있는 값을 또 다른 요소의 자리에 묶으려 할 때.",
+  "docfile": "06-module-backend.md"
+ },
+ {
+  "id": "Quad0234",
+  "src": "Observer: already bound to an Instance",
+  "doc": "Observer: already bound to an Instance",
+  "same": true,
+  "when": "`observer:WeakSubscribe()`를 부를 때 이미 어떤 인스턴스의 props 자리에 묶여 있어서(전역 구독과 자리 바인딩은 겹칠 수 없음) 전역 구독으로 바꿀 수 없을 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0235",
+  "src": "Observer: already bound to an Instance",
+  "doc": "Observer: already bound to an Instance",
+  "same": true,
+  "when": "`observer:Subscribe()`를 부를 때 이미 어떤 인스턴스의 props 자리에 묶여 있을 때.",
+  "docfile": "04-ref-observer-effect.md"
+ },
+ {
+  "id": "Quad0236",
+  "src": "{surface}: index out of range (got {index}, limit {limit})",
+  "doc": "{surface}: index out of range (got {index}, limit {limit})",
+  "same": true,
+  "when": "Quad0168과 같은 CRUD의 `index`가 정수이지만 허용 범위(1..n, `Add`/`Splice`는 1..n+1)를 벗어났을 때. Quad0168과 한 호출(`checkIndex`)의 두 갈래입니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0237",
+  "src": "Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)",
+  "doc": "Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)",
+  "same": true,
+  "when": "이름 자리에 메타테이블이 달린 테이블(브랜드가 아닌 커스텀 메타테이블)을 넘겼을 때 — 문자열도, `Tag`도, 평범한 리스트도 아닙니다.",
+  "docfile": "05-tag-attr.md"
+ },
+ {
+  "id": "Quad0238",
+  "src": "Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements",
+  "doc": "Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements",
+  "same": true,
+  "when": "`Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Modifier` 같은 핸들러 레이어 값을 `Slot`의 원소(생성자 `initial`, `:Add`/`:Replace`/`:Splice`/`:List`/`:Single`의 새 원소)로 넣으려 할 때 — 이런 값은 마운트할 물리 원소가 아니라 다른 값에 붙이는 부착물입니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0239",
+  "src": "Slot: nil/None cannot be an element — only actually mountable values",
+  "doc": "Slot: nil/None cannot be an element — only actually mountable values",
+  "same": true,
+  "when": "`nil`이나 `q.None`을 `Slot`의 원소로 넣으려 할 때 — `Slot`은 \"빈 자리\"를 원소 부재가 아니라 배열에서 그 항목이 아예 없는 것으로 표현하므로, `nil`/`None`은 원소 자리에 들어올 수 없습니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0240",
+  "src": "Slot: this backend cannot mount this value",
+  "doc": "Slot: this backend cannot mount this value",
+  "same": true,
+  "when": "백엔드의 `isInst`가 거짓을 돌려주는 값(Roblox 백엔드라면 `Instance`가 아닌 값)을 `Slot`의 원소로 넣으려 할 때.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0241",
+  "src": "Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)",
+  "doc": "Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)",
+  "same": true,
+  "when": "quad 밖에서 만들어졌거나(`Instance.new`, 다른 라이브러리) 아직 `Claim`으로 넘겨받지 않은 값, 다른 quad 모듈 인스턴스가 만든 값, 또는 이미 파괴된 값을 `Slot`의 원소로 넣으려 할 때 — 죽음을 추적할 수 없는 값은 받지 않습니다.",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0242",
+  "src": "Slot: destroyed Slot cannot be an element",
+  "doc": "Slot: destroyed Slot cannot be an element",
+  "same": true,
+  "when": "이미 파괴된 `Slot`을 다른 `Slot`의 원소로 직접 넣으려 할 때(`wrapElement`의 원소 자체가 파괴된 Slot인 경우 — 같은 뜻: Quad0169, 그쪽은 State로 감싸인 occupant가 파괴된 Slot인 경우).",
+  "docfile": "03-slot.md"
+ },
+ {
+  "id": "Quad0243",
+  "src": "Tween: {name} must be a number",
+  "doc": "Tween: {name} must be a number",
+  "same": true,
+  "when": "`Time`/`RepeatCount`/`DelayTime` 중 하나가 숫자가 아닌 값으로 주어졌을 때. `{name}`은 실제 필드 이름입니다.",
+  "docfile": "08-roblox-tween.md"
+ },
+ {
+  "id": "Quad0244",
+  "src": "Tween: Reverses must be a boolean",
+  "doc": "Tween: Reverses must be a boolean",
+  "same": true,
+  "when": "`Reverses`가 불린이 아닌 값으로 주어졌을 때.",
+  "docfile": "08-roblox-tween.md"
+ },
+ {
+  "id": "Quad0245",
+  "src": "Tween: Dedup must be a boolean",
+  "doc": "Tween: Dedup must be a boolean",
+  "same": true,
+  "when": "`Dedup`이 불린이 아닌 값으로 주어졌을 때.",
+  "docfile": "08-roblox-tween.md"
+ },
+ {
+  "id": "Quad0246",
+  "src": "Tween: {name} must be a function",
+  "doc": "Tween: {name} must be a function",
+  "same": true,
+  "when": "`Started`/`Completed`/`Cancelled` 중 하나가 함수가 아닌 값으로 주어졌을 때. `{name}`은 실제 필드 이름입니다.",
+  "docfile": "08-roblox-tween.md"
+ },
+ {
+  "id": "Quad0247",
+  "src": "Tween: Override must be \"Cancel\" or \"Finish\"",
+  "doc": "Tween: Override must be \"Cancel\" or \"Finish\"",
+  "same": true,
+  "when": "`Override`가 `\"Cancel\"`/`\"Finish\"` 둘 중 하나가 아닌 값으로 주어졌을 때.",
+  "docfile": "08-roblox-tween.md"
+ },
+ {
+  "id": "Quad0248",
+  "src": "Tween: expected an options table (Tween{ Value = ... })",
+  "doc": "Tween: expected an options table (Tween{ Value = ... })",
+  "same": true,
+  "when": "`q.Tween(opts)`의 `opts`가 테이블이 아닐 때.",
+  "docfile": "08-roblox-tween.md"
+ },
+ {
+  "id": "Quad0249",
+  "src": "Tween: Value is required",
+  "doc": "Tween: Value is required",
+  "same": true,
+  "when": "`opts.Value`가 `nil`일 때 — `Tween`은 목표 값 없이 존재할 수 없습니다.",
+  "docfile": "08-roblox-tween.md"
+ },
+ {
+  "id": "Quad0250",
+  "src": "Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))",
+  "doc": "Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))",
+  "same": true,
+  "when": "`opts.Value`로 `State`를 그대로 넘겼을 때 — `Tween`의 모든 필드는 평범한 값이어야 한다는 불변식(Q16 (b))을 어깁니다.",
+  "docfile": "08-roblox-tween.md"
+ },
+ {
+  "id": "Quad0251",
+  "src": "Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)",
+  "doc": "Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)",
+  "same": true,
+  "when": "`opts.Value`로 `q.None`이나 다른 `Tween`을 넘겼을 때 — 이 역시 \"모든 필드는 평범한 값\" 불변식 위반입니다(`H-463`).",
+  "docfile": "08-roblox-tween.md"
+ }
+]

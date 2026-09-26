@@ -137,7 +137,7 @@ also re-publishes when the given deps change — no callback, no values passed) 
 
 ### 2.2 Nesting and Stores
 
-- `State<State<T>>` is **supported**. In a property/child slot the inner state is
+- `State<State<T>>` is **supported at runtime** (strict typing accepts only one level — a nested State in a typed property/child/setter position is a TypeError; pass it as `:: any` or flatten with `Compute`). In a property/child slot the inner state is
   subscribed too (`StoreBind` re-dispatches the unwrapped value at `index + 1`), so the
   inner `:Set` updates the instance. As a `:Compute` dependency only the outer handle is
   subscribed — the inner `:Set` does not recompute; read it via the outer or `q.Operator.Indexed`.

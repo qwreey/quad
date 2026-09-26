@@ -109,7 +109,7 @@ const a = q.Source("A")
 const b = q.Source("B")
 const which = q.Source(a)      -- State를 담은 State
 
-const label = D.TextLabel { Text = which }
+const label = D.TextLabel { Text = which :: any } -- 런타임은 중첩을 풀지만 strict 타입은 한 겹만 받아 캐스트가 필요합니다(레퍼런스 typing-limits)
 print(label.Text)   --> "A"
 
 a:Set("A2")

@@ -137,7 +137,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `Slot: this element is already mounted — multiple mounts are not allowed` — `quad-base/src/Slot/Owner.luau`
 
-- **언제**: 이미 다른 자리(Slot 원소·정적 자식·숏핸드가 만드는 관리 자식 — 전부 한 레지스트리를 같이 씁니다)에 마운트된 값을 다시 마운트하려 할 때.
+- **언제**: `:List`/`:Single`의 `updateFn`이 돌려준 값이 이미 다른 자리에 마운트돼 있을 때(레지스트리는 Slot 원소·정적 자식·숏핸드 관리 자식이 하나를 같이 쓰지만, 정적 자식 자리는 Quad0160, 수동 Slot CRUD는 Quad0172가 냅니다 — [2026-09-27 실측]). `updateFn`이 같은 원소를 두 키에 돌려주거나 자기 Slot을 돌려준 경우도 중복·순환 문구가 아니라 이 문구가 납니다. 런타임 메시지 끝에는 "if its owner was destroyed outside quad …" 꼬리가 붙습니다.
 - **고치려면**: 그 값을 먼저 옛 자리에서 빼세요(`Extract`, 데이터 키 삭제 등). 다만 그 값의 원래 owner가 quad 밖에서(`inst:Destroy()`) 파괴됐다면 되살릴 수 없습니다.
 - **참고**: [죽은 Slot과 마운트 규칙](/reference/core/06-slot/#죽은-slot과-마운트-규칙)
 
@@ -167,7 +167,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ### Quad0160
 
-`Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed` — `quad-base/src/Slot/Owner.luau`
+`Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed` (+ 런타임엔 "if its owner was destroyed outside quad …" 꼬리) — `quad-base/src/Slot/Owner.luau`
 
 - **언제**: `claimOwnerAt`이 등록하려는 값이 이미 다른 자리에 등록돼 있을 때(정확히 같은 자리의 재확인은 예외 — 던지지 않고 `false`를 돌려줍니다).
 - **고치려면**: Quad0156과 같습니다 — 먼저 옛 자리에서 빼세요.
@@ -202,7 +202,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 `Slot: destroyed Slot cannot be mounted` — `quad-base/src/Slot/Tree.luau`
 
 - **같은 뜻**: Quad0140
-- **언제**: 이미 파괴된 `Slot`을 마운트(부모의 숫자 키 자리에 놓는 것)하려 할 때 — `materializeSlotTree`의 첫 검사입니다.
+- **언제**: 이미 파괴된 `Slot`을 마운트(부모의 숫자 키 자리에 놓는 것)하려 할 때 — `materializeSlotTree`의 첫 검사입니다. 공개 경로에서는 핸들러 사전검사 Quad0140이 먼저 걸리고, 중첩 경로에서는 Quad0160/Quad0179가 먼저 나므로 이 ID를 직접 볼 일은 드뭅니다([2026-09-27 실측]).
 - **고치려면**: 파괴된 `Slot`은 되살릴 수 없습니다 — 새 `Slot`을 만드세요.
 - **참고**: [죽은 Slot과 마운트 규칙](/reference/core/06-slot/#죽은-slot과-마운트-규칙)
 
@@ -272,7 +272,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ### Quad0172
 
-`{surface}: this element is already mounted — multiple mounts are not allowed` — `quad-base/src/Slot/init.luau`
+`{surface}: this element is already mounted — multiple mounts are not allowed` (+ 같은 꼬리) — `quad-base/src/Slot/init.luau`
 
 - **언제**: 이미 다른 곳(다른 `Slot`의 원소, 정적 자식, 숏핸드가 만드는 관리 자식 등)에 마운트된 값을 원소로 넣으려 할 때(`prepareElements`의 배치 사전검사).
 - **고치려면**: Quad0156과 같습니다 — 먼저 옛 자리에서 빼세요.
