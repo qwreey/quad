@@ -206,8 +206,9 @@ toastList:List(toasts, function(ctx): (any, nil)
     if ctx.Prev then
         return ctx.Prev, ctx.UserData -- 이미 있는 토스트 → 그대로 둔다
     end
+    const toast = ctx.Item :: Toast -- KeyGone 팔을 위에서 걸렀으니 좁혀 준다(props 타입이 있는 컴포넌트에 넘길 때 strict가 요구)
     return D.TextLabel {
-        Text = ctx.Item.Text,
+        Text = toast.Text,
         Size = UDim2.new(1, 0, 0, 32),
         BackgroundColor3 = Color3.fromRGB(40, 40, 48),
     }, ctx.UserData
@@ -244,6 +245,8 @@ const toastHost = D.Frame {
 ```
 
 > `updateFn`의 반환 타입 주석 `): (any, nil)`을 빼지 마세요 — 첫 리턴(`return nil, ctx.UserData`)이 `nil`을 먼저 내놓으면 그 뒤 `D.TextLabel {...}`을 돌려주는 리턴까지 `nil`로 굳어 strict에서 막힙니다. **strict에서는 반환 타입 주석을 붙이세요 — how-to 08 §7 13행**([시작하기 14](../getting-started/14-lists.md)는 nonstrict 장이라 이 주석 없이도 통과합니다).
+
+`toastList`는 **처음 앉은 호스트에 묶입니다.** 모듈 스코프에 두었으니 화면을 다시 지을 때 `toastHost`가 파괴되면(엔진이 지우는 경우도 포함) 그 Slot은 그 사실을 모릅니다 — `:List`는 조용히 재조정을 멈추고, 보류 중이던 `task.delay`의 `toasts:Set`은 에러 없이 흘러가며, 새 호스트에 다시 앉히면 `Quad0160 … cannot be reused after its parent is destroyed`로 막힙니다([Slot 레퍼런스](../reference/core/06-slot.md)의 "quad 밖에서 파괴된" 캐비엇). 화면을 다시 짓는 앱이면 `toastList`도 화면과 함께 새로 만들거나, 호스트를 파괴하지 말고 숨기세요.
 
 `Id`를 늘어나기만 하는 카운터로 둔 것은 [시작하기 14 §3](../getting-started/14-lists.md#3-데이터를-바꾸면-필요한-것만-바뀝니다)의 경고와 같은 이유입니다 — 배열 길이나 시각처럼 되풀이될 수 있는 값을 신원으로 쓰면 같은 `Id`가 다시 생겨 `Quad0145 Slot:List: duplicate key`로 막힙니다.
 

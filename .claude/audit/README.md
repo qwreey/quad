@@ -32,4 +32,5 @@
 - `round13-e12-probe.luau`(+`.out.txt`) — **[2026-09-27 자율 루프 E12]** 시간 op·Debounce/Throttle·Gate·Blocker 조합 경계 프로브 — 타이머 커밋 중 하류 throw(`H-662`), `Time = 0`(`H-663`), State Time 무효 시 보류 유지·형제 누락(`H-664`), `math.huge`(`Q100`), 자기 타이머 취소 0건·GC 2×Time·문서 약속 D1~D4.
 - `round13-e13-probe.luau`·`round13-e13-types-probe.luau` — **[2026-09-27 자율 루프 E13]** Store·Context·Operator 조합 경계(S1~S12·C1~C9·O1~O13·D0~D4, 타입 T1~T14) — `H-666`~`H-671`·`Q101`·`Q102`, 문서 예제 출력 대조 전부 일치.
 - `round13-e14-probe*.luau`·`round13-e14-types*.luau` — **[2026-09-27 자율 루프 E14]** Modifier 팩토리·세터 체인·`__apply`·타입드 팩토리 경계(런타임 넷·타입 여섯 + quad 없는 최소 재현 `types5`) — `H-672`~`H-676`·`Q103`·`Q104`, typing-limits 8.29.
+- `round13-e15-probe-*.luau`(20개, 하네스 `-setup`·타입 설정 `-types-settings`) — **[2026-09-27 자율 루프 E15]** how-to 레시피를 이어 붙인 통합 시나리오 다섯 + 보조 넷(quad-roblox 실코드 + 가상 `task`·TweenService 심; 정상·파괴·재진입·배치·strict 다섯 축) — `H-677`~`H-680`, typing-limits 8.30.
 

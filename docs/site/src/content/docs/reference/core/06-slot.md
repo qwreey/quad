@@ -604,5 +604,5 @@ q.dispose(temp)                -- 마운트된 적 없는 Slot은 트리째 파�
   ```
 
 - 파괴된 Slot은 되살아나지 않습니다 — `Quad0165 Slot: destroyed Slot cannot be reused`, 원소로 넣으려 하면 `Quad0169 Slot: destroyed Slot cannot be an element`, 마운트하려 하면 `Quad0164 Slot: destroyed Slot cannot be mounted`.
-- 마운트 대상이 **quad 밖에서** 파괴된 Slot은 그 사실을 모릅니다(정의되지 않은 동작) — `Add`/`Replace`/`Splice`는 계속 성공하고 새 원소는 죽은 인스턴스에 붙습니다. 알아채는 자리는 `q.dispose`(`… cannot be reused after its parent is destroyed`)와 뽑아낸 원소의 재사용(`… a destroyed Instance cannot be reused`)뿐입니다. 화면을 quad 밖에서 지웠다면 그 Slot도 버리세요.
+- 마운트 대상이 **quad 밖에서** 파괴된 Slot은 그 사실을 모릅니다(정의되지 않은 동작) — `Add`/`Replace`/`Splice`는 계속 성공하고 새 원소는 죽은 인스턴스에 붙으며, `:List` 모드는 데이터가 바뀌어도 조용히 재조정을 멈춥니다(`updateFn`이 더는 불리지 않음 — [2026-09-27 mock 관측]). 알아채는 자리는 `q.dispose`(`… cannot be reused after its parent is destroyed`)와 뽑아낸 원소의 재사용(`… a destroyed Instance cannot be reused`)뿐입니다. 화면을 quad 밖에서 지웠다면 그 Slot도 버리세요.
 - Slot을 자기 자신이나 자기 조상에 넣는 순환은 넣는 시점에 거부됩니다. 인스턴스를 매개로 한 순환(이 Slot의 마운트 대상이나 그 조상을 원소로)은 거부되지 않고 정의되지 않은 동작입니다 — 위 `Slot:Add` 절.
