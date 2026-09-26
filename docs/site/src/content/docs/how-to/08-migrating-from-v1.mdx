@@ -381,13 +381,14 @@ v1에 없던 것도 챙겨두면 좋습니다 — `q.Tag`/`q.Attr`(선언적 메
 
 ## 7. strict 체크리스트
 
-v1 코드를 직역하면 아래 열여덟 가지에서 막힙니다. 진단 문구는 실제로 나오는 문자열의 머리 부분입니다.
+v1 코드를 직역하면 아래 열아홉 가지에서 막힙니다. 진단 문구는 실제로 나오는 문자열의 머리 부분입니다.
 
 | v1 직역 모양 | 진단 | 처방 |
 |---|---|---|
 | 프로퍼티 자리에 인라인 무주석 `:Compute` | `Expected this to be '(StateData<number>, UDim2?, ...any) -> UDim2' but got '(t1) -> UDim2 …'` | 콜백 파라미터에 `q.StateData<T>` 주석을 붙이고, 가능하면 지역 변수로 빼세요 |
 | `q.Slot()` — 타입 인자 없음 | `… but got 'Slot<unknown>'` | `q.Slot<<Instance>>()`. **홑화살괄호 `q.Slot<Instance>()`는 문법 오류입니다** |
-| `q.OnCreated(fn)` — 타입 인자 없음 | `Type functions do not currently support types of the form '*error-type*'` | `q.OnCreated<<Frame>>(fn)` (`OnRendered`도 같음) |
+| `q.OnCreated(function(inst: Frame) end)` — 콜백 파라미터에 타입 주석 | `Type functions do not currently support types of the form '*error-type*'` | `q.OnCreated<<Frame>>(fn)` (`OnRendered`도 같음) |
+| `q.OnCreated(function(inst) end)` — 콜백 파라미터가 완전 무주석 | 진단이 나지 않습니다 — 조용히 통과하지만 `inst`가 특화 타입을 얻지 못해 자동완성이 안 뜹니다 | 위와 똑같이 `q.OnCreated<<Frame>>(fn)` |
 | 생성 `D`에 없는 키(v1의 `Corner`/`PaddingAllOffset`/`Scale`) | `Expected this to be 'number', but got '"Corner"'` + 배열 유니언 불일치 한 줄 | 두 줄짜리 이 모양은 "그런 프로퍼티가 없다"는 뜻입니다(키가 배열 인덱스로 오독됩니다). `UICorner`/`UIPaddingOffset`/`UIScale` 숏핸드로 바꾸세요 |
 | 이벤트 콜백 첫 인자에 `self` | `Expected this to be '((() -> ()) \| None \| StateMarker<() -> ()>)?' but got '(unknown, unknown, unknown) -> ()'` | `self`를 지우세요 — 엔진이 주는 것보다 많은 인자를 받으면 그 자리에서 막힙니다 |
 | `Frame`에 `Activated` | `Expected this to be 'number', but got '"Activated"'` | `TextButton` / `ImageButton` 같은 `GuiButton` 계열로 |
@@ -395,7 +396,7 @@ v1 코드를 직역하면 아래 열여덟 가지에서 막힙니다. 진단 문
 | 미리 만들어둔 props 테이블을 `D.Frame(props)` | `Expected this to be 'FrameParam<…>' … 'string' is not exactly 'StateMarker<string>'` | 양방향 추론은 **리터럴 자리에서만** 삽니다. 테이블 리터럴로 직접 쓰세요 |
 | 자식 배열 변수를 `D.ScreenGui(children)` | 같은 계열의 파라미터 불일치 | `D.ScreenGui { table.unpack(children) }` — 리터럴의 **마지막** 원소일 때만 전부 펼쳐집니다 |
 | `q.Store()` 뒤 `store.Text = v` | `Cannot add property 'Text' to table '{ } & { Names: …, Of: … }'` | `defaults`에 선언하거나 `store:Of<<string>>("Text")` |
-| `State<Frame>`을 `State<Instance>` 파라미터에 | `'Frame' is not exactly 'Instance'` (수백 줄) | `State<T>`는 불변입니다. 입력 자리는 생성 prop 타입(공변 마커)이나 `State<Instance>`로 선언하세요 |
+| `State<Frame>`을 `State<Instance>` 파라미터에 | `'Frame' is not exactly 'Instance'` (수백 줄) | `State<T>`는 불변입니다. 입력 자리는 생성 prop 타입(공변 마커)으로 선언하세요. **지역 변수 주석만으론 안 됩니다** — 불변 `State`라 `Source<Frame>` 추론이 먼저 굳습니다. 생성자에 타입 인자를 주세요: `q.Source<<Instance>>(D.Frame{})` |
 | `Slot:List` updateFn이 먼저 `return nil` | `Expected this to be 'nil', but got 'TextLabel'` | 반환 팩을 주석하세요: `): (any, UD?)` |
 | `q.Context.Provider("Theme")` 무캐스트 | prop 자리에서 `Get()` 결과가 `unknown` | `q.Context.Provider<<Theme>>("Theme")` |
 | `q.Ref(nil)` | `… but got 'Ref<nil>'` | `q.Ref<<Frame?>>(nil)` — 타입 인자로 넓힙니다 |

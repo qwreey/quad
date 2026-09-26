@@ -198,8 +198,8 @@ type Toast = { Id: number, Text: string }
 
 const toasts = q.Source<<{ Toast }>>({})
 
-const toastList = q.Slot()
-toastList:List(toasts, function(ctx)
+const toastList = q.Slot<<Instance>>()
+toastList:List(toasts, function(ctx): (any, nil)
     if ctx.Item == q.KeyGone then
         return nil, ctx.UserData -- 사라진 토스트 → 파괴
     end
@@ -243,6 +243,8 @@ const toastHost = D.Frame {
 }
 ```
 
+> `updateFn`의 반환 타입 주석 `): (any, nil)`을 빼지 마세요 — 첫 리턴(`return nil, ctx.UserData`)이 `nil`을 먼저 내놓으면 그 뒤 `D.TextLabel {...}`을 돌려주는 리턴까지 `nil`로 굳어 strict에서 막힙니다. **strict에서는 반환 타입 주석을 붙이세요 — how-to 08 §7 13행**([시작하기 14](../getting-started/14-lists.md)는 nonstrict 장이라 이 주석 없이도 통과합니다).
+
 `Id`를 늘어나기만 하는 카운터로 둔 것은 [시작하기 14 §3](../getting-started/14-lists.md#3-데이터를-바꾸면-필요한-것만-바뀝니다)의 경고와 같은 이유입니다 — 배열 길이나 시각처럼 되풀이될 수 있는 값을 신원으로 쓰면 같은 `Id`가 다시 생겨 `Quad0145 Slot:List: duplicate key`로 막힙니다.
 
 ---
@@ -280,16 +282,20 @@ local function ErrorModal(props: {
     read OnReport: (err: any) -> (),
     read OnConfirm: () -> (),
 }): Frame
+    -- 파생 상태는 props 테이블 밖에서 만들어 둔다(아래 주의 참고)
+    const visible: q.State<boolean> = props.Error:Compute(function(e)
+        return e:Get() ~= nil
+    end)
+    const text: q.State<string> = props.Error:Compute(function(e)
+        const value = e:Get()
+        return if value == nil then "" else tostring(value)
+    end)
+
     return D.Frame {
-        Visible = props.Error:Compute(function(e)
-            return e:Get() ~= nil
-        end),
+        Visible = visible,
 
         D.TextLabel {
-            Text = props.Error:Compute(function(e)
-                const value = e:Get()
-                return if value == nil then "" else tostring(value)
-            end),
+            Text = text,
         },
 
         D.TextButton {
@@ -307,6 +313,8 @@ local function ErrorModal(props: {
     }
 end
 ```
+
+> [how-to 02 §4](../how-to/02-form-validation-pattern.md#4-ui-조립--컴포넌트는-상태를-받기만-한다)의 캐비엇 그대로입니다 — **`:Compute`를 props 테이블 안에 인라인으로 쓰면 에디터 타입 검사가 깨집니다**(런타임은 정상이지만 편집기에 빨간 줄이 그어집니다), 그래서 위처럼 별도 문장으로 뺐습니다.
 
 부르는 쪽에서 `SafeCard`와 `ErrorModal`을 같은 화면에 놓고, `errorState`를 지우는 쪽(`OnConfirm`)만 정해 주면 됩니다.
 

@@ -1057,6 +1057,10 @@ D 파일 안에서 유니언을 새로 조립하거나 유니언 인자로 인�
 같은 날 정정했고, 사용자 문서(docs-ignoreme reference/04·skills)는 `<<Class>>` 형태로 통일. 발견 경위: docs-ignoreme 재작성 중(2026-09-09,
 `session/2026-09-09-01-docs-polish.md`).
 
+**[2026-09-27 round13 H-632]** 위 문단은 "콜백 파라미터에 타입 주석을 붙였을 때"의 에러만 말한다 — 완전 무주석 콜백(`q.OnCreated(function(inst) end)`)은
+이 에러를 **안 낸다**. `I`가 타입 인자로 채워지지 않은 채 조용히 통과하고, `inst`는 특화 타입을 얻지 못해 그 콜백 안에서 자동완성이 안 뜬다(스펙
+`spec.hooks`가 안 밟은 이유가 바로 이 무주석 형태를 썼기 때문이었다는 뜻). how-to 08 §7 체크리스트가 이 관측을 반영해 두 행으로 갈렸다.
+
 ## 8.17. 테이블 타입의 인덱서는 하나뿐이라 `[AttrKey]` 해시 키를 `<Class>Param`에 따로 못 단다 — 키 유니언 확장은 되지만 값은 children 유니언에 대조된다 (2026-09-09 스파이크, 사용자 결정 "안 함")
 
 `D.Frame({ [q.AttrKey("Hp")] = hp })`는 strict 신 솔버에서 에러 둘 — 키 `Expected this to be 'number', but got 'AttrKeyObject'`, 그리고 값이 배열부 원소
@@ -1183,3 +1187,10 @@ Luau 쪽 한계라 quad 결함이 아니고, 처방은 미정이다 — 상류 �
 부수 관측 둘: (1) **교집합 오버로드**(`OutFn = F1 & F2`)에서는 K가 문자열 싱글턴으로 추론되지 않고 `string`으로 넓어져(`Property 'string' does not exist on type 'PropTypesRead'`, 반환 `Desc<string>`) 비충돌 이름까지 D 문맥에서 실패한다 — 8.25의 마커+`{ read Set }`도 오버로드 층에서 먼저 막힌다. (2) 생성기가 충돌 이름에 `any` 대신 유니언(`UDim2 | Vector2`)을 내면 불변 `Source<T>` 때문에 `Source<UDim2>`가 들어가지 않고, `OnChange` 콜백은 반공변이라 `(Color3) -> ()`가 `(Color3 | ColorSequence) -> ()` 자리에 들어가지 않아 `spec.onchangetypes`가 회귀한다.
 
 **통과하는 모양**(긍정 열·부정 일곱 전부 기대대로, 생성 `PropTypesRead` 무변경): 충돌 이름 여섯만 클래스별 `Source` 유니언으로 적은 보조 맵을 `& { [string]: never }`로 닫고 `index<…, K> | Source<index<PropTypesRead, K>>` 합집합 팔로 받는 것(스파이크 C4, 진단 9 → 부정 각 1). 그룹 타입 검사 시간 차이는 잡음 범위(orig 3748~3796ms vs C4 3723~3774ms). 그 맵은 생성기가 아는 지식의 사본이라 어디에 둘지(생성 파일 vs `init.luau` 인라인)는 Q87의 결정 — 채택 전까지 `OutFn`은 그대로다.
+
+## 8.28. luau-lsp에 한도 플래그 셋을 빼면 생성 `Declaration`이 "Code is too complex"로 무너져 그 타입을 쓰는 호출부의 특정 진단이 조용히 사라진다 — 배치/단독과 무관 (2026-09-27 T1 실측, luau-lsp 1.69.0)
+
+`scripts/test.sh`의 quad-roblox 게이트 명령(`--flag:LuauSolverV2=true --flag:LuauTarjanChildLimit=160000 --flag:LuauSubtypingIterationLimit=100000 --flag:LuauTypeInferIterationLimit=1000000 --definitions=scripts/roblox-defs/globalTypes.d.luau`)에서 한도 플래그 셋을 빼면 `quad-roblox/src/Declaration/init.luau` 자체에 `TypeError: Internal error: Code is too complex to typecheck!`가 여러 줄 뜨고, how-to 08 §7 17행 재현(`D.TextLabel({ Text = 42 })`)의 TypeError가 **통째로 사라진다**(18행 `Op.Sum` 비숫자는 남음) — 단독 실행에서도 같다. 에러 타입으로 무너진 뒤 하위 검사가 스킵되는 Luau 일반 동작으로 추정(소스 미확인).
+
+반면 **게이트 명령 그대로**(플래그 포함)는 파일 수·전체 진단 수(219까지)·파일 위치(앞/중간/뒤)·D-heavy 필러 추가 어느 조건에서도 진단 소실이 없었다 — 세 게이트(luau-analyze quad-base·luau-lsp quad-base·luau-lsp quad-roblox) 모두. S2가 보고한 "배치 0/단독 정확" 비대칭은 재현되지 않았고(S2의 정확한 명령·나머지 프로브를 복원할 수 없어 원인 미확정 — 플래그 조합 차이가 가장 유력), 이 항목이 확인한 것은 방향이 반대인 별개 함정이다. 규칙은 `conventions.md` 2026-09-08 항목에 한 줄: **임시 프로브·스윕은 test.sh 플래그를 그대로 복사한다.**
+
