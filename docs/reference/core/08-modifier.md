@@ -94,6 +94,7 @@ Modifier: setmetatable<{
 - `Quad0059 Modifier: initial-field table keys must be non-empty field names (got {if k == "" then '""' else typeof(k)} at argument #{i})`
 - `Quad0060 Modifier: field "{k}" collides with a reserved Modifier method`
 - `Quad0061 Modifier: field "{k}" matches the reserved cast prefix As<Class> — casts are methods, not fields`
+- `Quad0062 Modifier: field "{k}" starts with "__" — metamethod-looking names are never properties`
 - `Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)`
 - `Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`
 

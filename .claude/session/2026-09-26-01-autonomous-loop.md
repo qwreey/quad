@@ -26,3 +26,7 @@
 - **22:05** P2-trace 완료(opus) — O(N²) 확정, 원인 함수 표를 REPORT에 추가. full-replace는 reconcile 순서(KeyGone 뒤) 탓, full-reverse는 no-op `nativeMove`에 넘길 offset 계산이 62%. 처방은 updateFn 순서/백엔드 계약을 건드려 **§4 Q76·Q77**. 중첩 Slot 선형은 설계대로(고칠 근거 없음). E2(opus) 띄움; H-595 배치·D2 진행 중.
 - **22:15** D2 완료(12~21 사실 정확도 높음; 발견 1 → `H-597` 20장 Tag 힌트 문구 — H-595 배치 종료 뒤 고침). D3(sonnet) 띄움; H-595 배치·E2 진행 중.
 - **22:30** H-595 배치 완료(24파일 52곳) + 부산물 `H-598`(how-to 10 예시 ID 오기)·`H-599`(how-to 08 조용히 잘린 인용)·`H-600`(함정 3 Modifier ID 둘 중 생성자 경로) + `H-597` 반영. 게이트 뒤 커밋. 도는 중: E2·D3.
+- **22:45** 1회차 커밋 `6f3da255`. E2 완료(opus, E1~E17) — `H-601`(Out+Animate 캐비엇)·`H-602`(listHandlers 문구)·`H-603`(getHandler 게이트) 반영 배치(sonnet) 띄움, **§4 Q78·Q79**. 확인만 §2에 추가. E3(opus) 띄움. 도는 중: D3·E3·fix 배치.
+- **22:55** D3 완료(how-to 01~10 사실 정확도 높음 — 발견 2: `H-599` 중복, `H-604` how-to 10 frontmatter 번호). 즉시 고침. 도는 중: fix 배치(H-601~603)·E3. 다음 sonnet 슬롯은 D4(레퍼런스 core).
+- **23:10** D4 완료(레퍼런스 core 전수 일치, 발견 2 → `H-605`·`H-606` 즉시 고침). 도는 중: fix 배치·E3. 다음 sonnet: D5(레퍼런스 roblox·sugar·extend — fix 배치가 extend/02·roblox/05를 만지므로 배치 종료 뒤).
+- (시각은 `date` 기준으로 다시 맞춤) fix 배치 완료 — H-601 캐비엇(roblox/05·GS 06 §6·onchange-plan), H-602 문구, H-603 nil 게이트+spec 2건; 잔여 `{}` 갭은 **Q80**. 커밋. 도는 중: E3·V1. D5 띄움.

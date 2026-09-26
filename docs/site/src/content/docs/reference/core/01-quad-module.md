@@ -174,13 +174,14 @@ Version: "3.2.0"
 debug: boolean
 ```
 
-**동작** — 기본값 `false`. 진단 줄을 켜는 플래그입니다 — 켜도 동작은 바뀌지 않고, 치명적이지 않은 실수를 한 줄씩 출력한 뒤 **실행을 그대로 계속합니다**. 지금 이 플래그를 읽는 자리는 셋입니다.
+**동작** — 기본값 `false`. 진단 줄을 켜는 플래그입니다 — 켜도 동작은 바뀌지 않고, 치명적이지 않은 실수를 한 줄씩 출력한 뒤 **실행을 그대로 계속합니다**. 지금 이 플래그를 읽는 자리는 넷입니다.
 
 - `q.Dispatch.addHandler`가 등록 시점에 같은 우선순위의 핸들러를 발견할 때([`../extend/02-dispatch-handler-contract.md`](/reference/extend/02-dispatch-handler-contract/)).
 - [`q:AddPlugin`](#qaddpluginpluginfn)이 기존 필드를 덮을 때.
 - 옵션 테이블에 모르는 키(오타·옛 이름)가 있을 때 — `q.Debounce`/`q.Throttle`, `slot:List`/`slot:Single`의 `opts`, `q.Tween`, `q.Animate`. 모르는 키는 꺼져 있을 때와 똑같이 무시됩니다.
+- [`q.Claim`](/reference/roblox/04-claim-mapper/)의 디스크립터가 이상할 때 — 자식 디스크립터의 키가 문자열이 아니거나, 루트 디스크립터에 키를 적어 무시될 때.
 
-셋 다 그 호출 시점에 한 번 보므로 `q.debug`는 먼저 켜 두세요.
+넷 다 그 호출 시점에 한 번 보므로 `q.debug`는 먼저 켜 두세요.
 
 ```luau
 q.debug = true -- 동률·덮어쓰기·모르는 옵션 키 진단을 켠다

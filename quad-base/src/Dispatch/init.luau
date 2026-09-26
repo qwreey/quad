@@ -213,21 +213,6 @@ local function Init(module: any)
 			.. " — return Void when there is nothing to undo"
 	end
 
-	-- Pure scan: first handler (in priority order) whose isHandlable accepts.
-	-- Returns nil on no match — the immediate error is `process`'s job, so the
-	-- failure message is only ever built there ("에러 메시지는 매치 실패
-	-- 시에만" — 핸들러 계약 절의 지연 생성 규칙).
-	local function getHandler(inst: any, k: any, v: any): Handler?
-		local kt = type(k)
-		local list = if kt == "number" then buckets.number elseif kt == "string" then buckets.string else buckets.other
-		for _, h in list do
-			if h.isHandlable(inst, k, v) then
-				return h
-			end
-		end
-		return nil
-	end
-
 	-- `release` (`H-329`, 사용자 확정 (a) 2026-09-06): a PURE retract that empties
 	-- the chain also drops the list from `chains` and from the inst's gchold —
 	-- otherwise every fresh key (the per-object group keys `State<Attr>`
@@ -282,6 +267,34 @@ local function Init(module: any)
 		if k == nil then
 			Err.errorBeforeNearest(`Quad0074 Dispatch.{fnName}: key must not be nil`, SURFACE)
 		end
+	end
+
+	-- Pure scan: first handler (in priority order) whose isHandlable accepts.
+	-- Returns nil on no match — the immediate error is `process`'s job, so the
+	-- failure message is only ever built there ("에러 메시지는 매치 실패
+	-- 시에만" — 핸들러 계약 절의 지연 생성 규칙). `H-603` (round13 E2): this is
+	-- also the PUBLIC `getHandler`, called directly with no `process`/`retractFrom`
+	-- in front of it — without its own gate, `inst`/`key = nil` fell straight into
+	-- `h.isHandlable`, and the resulting VM error named a leaf module (e.g.
+	-- `Handlers/Property.luau`) instead of quad. Same gate, same blame posture
+	-- (nearest) as its siblings — no new error id, `checkInst`/`checkKey` already
+	-- carry `Quad0072`/`Quad0074`. NOT covered: a non-nil `inst` shaped unlike an
+	-- Instance (e.g. `{}`) still reaches `isHandlable` and can still surface a
+	-- leaf-module error (e.g. `Reflection.luau`) — `process` dodges this only
+	-- incidentally, via its own `bindLifetime` claim-check, which `getHandler` (a
+	-- pure scan with no side effects) must not replicate; closing that gap needs a
+	-- new inst-shape check this round doesn't introduce.
+	local function getHandler(inst: any, k: any, v: any): Handler?
+		checkInst("getHandler", inst)
+		checkKey("getHandler", k)
+		local kt = type(k)
+		local list = if kt == "number" then buckets.number elseif kt == "string" then buckets.string else buckets.other
+		for _, h in list do
+			if h.isHandlable(inst, k, v) then
+				return h
+			end
+		end
+		return nil
 	end
 
 	local function retractFrom(inst: any, k: any, index: number)
@@ -431,9 +444,11 @@ local function Init(module: any)
 		-- union of the three per-key-type scan lists, `H-484` — a given key only
 		-- ever asks the list for its `type(k)`), prints nothing (`D-8`); whether to
 		-- display them is the caller's business.
-		-- A copy, so callers can't disturb the registry. Each handler carries
-		-- the doc'd name/priority via the optional `name` contract field
-		-- (`H-214` (a) — absent name just shows as nil).
+		-- `table.clone` is shallow: only this array is a copy — the Handler tables inside
+		-- it are the live registry entries, not copies (`H-602`, round13 E2: mutating a
+		-- returned handler's `isHandlable` changed real dispatch behavior). Callers may
+		-- read but must not write. Each handler carries the doc'd name/priority via the
+		-- optional `name` contract field (`H-214` (a) — absent name just shows as nil).
 		return table.clone(handlers)
 	end
 

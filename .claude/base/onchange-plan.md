@@ -156,4 +156,7 @@ TextBox { Text = textSrc, Out("Text", textSrc) }
   결과를 거부하고(전체형을 쓰는 이유는 `typing-limits.md` 8.25), 런타임은 `isSource`로 한 번 더 거부한다(`State`면 "read-only State (a :Compute result?)").
 - 포커스·커서 정책은 넣지 않는다 — 값 동등성과 다른 범주(탐사자 둘 다 같은 판단).
 - 스펙: `spec.events` 4b(초기 echo 무발화·같은 값 건너뜀·되쓰기 무echo·거부 셋), `spec.onchangetypes`(strict 양성). 레퍼런스 roblox/05 `q.Out` 절.
+- **[2026-09-26 E2 발견, round13 `H-601`]** 애니메이션이 거는 프로퍼티에 `q.Out`을 같이 걸면 트윈의 프레임별 중간값이 `Out`으로 되쓰이고,
+  `Animate`가 그 값을 새 목표로 삼아 옛 트윈을 취소해 첫 프레임에 멈춘다(mock 확인 — 실기기의 매 프레임 신호 여부는 미실측). 동작 변경 여부는
+  `qa-request/post-implementation-review-round13.md` Q78(사용자 미답, 메인 권고는 캐비엇+관용구 문서화, 새 메커니즘 없음) — 레퍼런스 roblox/05·GS 06에 캐비엇 반영 완료.
 

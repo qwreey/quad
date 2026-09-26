@@ -80,6 +80,14 @@ do
 	assert(q.Dispatch.getHandler(inst, "k", "s") == high, "higher priority wins the scan")
 	assert(q.Dispatch.getHandler(inst, "k", 42) == nil, "no match -> nil (the error is process's job)")
 	assert(#log == 0, "getHandler is a pure scan — no process/retract side effects")
+	-- `H-603` (round13 E2): getHandler has no process/retractFrom in front of it, so a
+	-- nil inst/key used to fall straight into h.isHandlable and the VM error named a
+	-- leaf module (Handlers/Property.luau, Reflection.luau), not quad. Same gate
+	-- (checkInst/checkKey), same two Quad ids, as process/retractFrom.
+	local okInst, errInst = pcall(q.Dispatch.getHandler, nil, "Size", 1)
+	assert(not okInst and string.find(tostring(errInst), "Quad0072") ~= nil, "nil inst -> Quad0072, not a leaf-module VM error")
+	local okKey, errKey = pcall(q.Dispatch.getHandler, inst, nil, 1)
+	assert(not okKey and string.find(tostring(errKey), "Quad0074") ~= nil, "nil key -> Quad0074, not a leaf-module VM error")
 	print("PASS")
 end
 
