@@ -1,0 +1,74 @@
+--- quad-base/src/Slot/List.luau	2026-09-26 23:03:41.830257063 +0900
++++ quad-base/src/Slot/List.luau	2026-09-26 23:04:35.739207040 +0900
+@@ -124,6 +124,38 @@
+ 			local ownsGate = not blocker.Blocking
+ 			if ownsGate then blocker:On() end
+ 
++			-- PROTOTYPE (round13 Q76 A1, scratch only): the KeyGone pass now runs FIRST, so the
++			-- gone elements leave the array before any new key is added — every later rawAdd
++			-- appends at the tail of the live range instead of shifting the N stale elements
++			-- (`reindexFrom`/`spliceArraysUp` O(N) each). `H-38` still holds: a gone key leaves
++			-- prevKeys only after its settle; a throw here leaves the remaining gone keys (and
++			-- their mounted elements) in place and no new key recorded yet.
++			-- KeyGone pass over last cycle's key set. No `table.clone` snapshot
++			-- (`H-480`, 2026-09-08 advisory RFC): the loop only CLEARS existing keys
++			-- (`prevKeys[key] = nil` below), which Lua/Luau `pairs` explicitly allows
++			-- during traversal — only inserting new keys is undefined. The one way
++			-- to insert mid-traversal is a REENTRANT reconcile (user code below —
++			-- `updateFn`/a destroyed element's cleanup — `:Set`s this List's data
++			-- State; State emits synchronously): its first loop writes new keys here.
++			-- That is the `slot-plan.md` "재진입성" UB the clone used to hide, not a
++			-- supported path — `H-486` (2026-09-08 감사 A-1/B-1 — the round7 `H-480`
++			-- note "the clone was never needed" was wrong about insertion).
++			for key in pairs(prevKeys) do
++				if not seen[key] then
++					local prev = S.unwrapElement(mounted[key] or (self._detached and self._detached[key]))
++					local result, ud = updateFn({ Item = S.KeyGone, Index = 0, Offset = offset, Prev = prev, UserData = userdata[key] })
++					if result == S.None then result = nil end
++					local detach = (result == S.Detach)
++					if detach then result = nil end
++					if result ~= nil then
++						S.Err.errorBefore("Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)", S.SURFACE)
++					end
++					settle(key, result, detach, 0)
++					userdata[key] = ud
++					prevKeys[key] = nil -- `H-38`: gone — not asked again next cycle
++				end
++			end
++
+ 			local slotPos = 0
+ 			for i, item in ipairs(items) do
+ 				local key = keys[i]
+@@ -151,32 +183,6 @@
+ 				userdata[key] = ud
+ 			end
+ 
+-			-- KeyGone pass over last cycle's key set. No `table.clone` snapshot
+-			-- (`H-480`, 2026-09-08 advisory RFC): the loop only CLEARS existing keys
+-			-- (`prevKeys[key] = nil` below), which Lua/Luau `pairs` explicitly allows
+-			-- during traversal — only inserting new keys is undefined. The one way
+-			-- to insert mid-traversal is a REENTRANT reconcile (user code below —
+-			-- `updateFn`/a destroyed element's cleanup — `:Set`s this List's data
+-			-- State; State emits synchronously): its first loop writes new keys here.
+-			-- That is the `slot-plan.md` "재진입성" UB the clone used to hide, not a
+-			-- supported path — `H-486` (2026-09-08 감사 A-1/B-1 — the round7 `H-480`
+-			-- note "the clone was never needed" was wrong about insertion).
+-			for key in pairs(prevKeys) do
+-				if not seen[key] then
+-					local prev = S.unwrapElement(mounted[key] or (self._detached and self._detached[key]))
+-					local result, ud = updateFn({ Item = S.KeyGone, Index = 0, Offset = offset, Prev = prev, UserData = userdata[key] })
+-					if result == S.None then result = nil end
+-					local detach = (result == S.Detach)
+-					if detach then result = nil end
+-					if result ~= nil then
+-						S.Err.errorBefore("Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)", S.SURFACE)
+-					end
+-					settle(key, result, detach, 0)
+-					userdata[key] = ud
+-					prevKeys[key] = nil -- `H-38`: gone — not asked again next cycle
+-				end
+-			end
+-
+ 			if ownsGate then
+ 				blocker:OffWithoutEmit()
+ 				S.maybeRecompute(self, S.BK.getBookkeeping(self))
