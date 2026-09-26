@@ -1,0 +1,26 @@
+R | string reorder | mount=ok [1,2] -> set=ok [2,1] built=2 gone=0 Len=2
+R | number reorder | mount=ok [1,2] -> set=ok [2,1] built=2 gone=0 Len=2
+R | number 0 vs -0 dup | mount=Quad0145 [] -> set=ok [] built=0 gone=0 Len=0
+R | number 1 vs string '1' | mount=ok [1,2] -> set=ok [2,1] built=2 gone=0 Len=2
+R | boolean true/false | mount=ok [1,2] -> set=ok [2,1] built=2 gone=0 Len=2
+R | table keys | mount=ok [1,2] -> set=ok [2,1] built=2 gone=0 Len=2
+R | Instance keys | mount=ok [1,2] -> set=ok [2,1] built=2 gone=0 Len=2
+R | function keys | mount=ok [1,2] -> set=ok [2,1] built=2 gone=0 Len=2
+R | q.None key (other module None) | mount=ok [1,2] -> set=ok [2,1] built=2 gone=0 Len=2
+R | NaN key | mount=Quad0144 [] -> set=ok [] built=0 gone=0 Len=0
+R | nil key | mount=Quad0144 [] -> set=ok [] built=0 gone=0 Len=0
+R | dup key first cycle | mount=Quad0145 [] -> set=ok [] built=0 gone=0 Len=0
+R | dup key recycle | mount=ok [1] -> set=Quad0145 [1] built=1 gone=0 Len=1
+R | key move a->a2 same item | mount=ok [1,2] -> set=ok [1,2] built=3 gone=1 Len=2
+R | KeyGone remove a | mount=ok [1,2] -> set=ok [2] built=2 gone=1 Len=1
+R | default index key reorder | mount=ok [1,2] -> set=ok [1,2] built=2 gone=0 Len=2
+R | default index key shrink | mount=ok [1,2] -> set=ok [1] built=2 gone=1 Len=1
+R | keyFn returns float 1.5 | mount=ok [1,2] -> set=ok [2,1] built=2 gone=0 Len=2
+R | keyFn returns inf | mount=ok [1] -> set=ok [1] built=1 gone=0 Len=1
+R | keyFn returns vector/userdata(newproxy) | mount=ok [1] -> set=ok [1] built=2 gone=1 Len=1
+R | KeyGone item (index key) | mount=ok [x,y] updateFn saw: x@1 KG@2 y@2
+R | None item | mount=ok [x,y] updateFn saw: x@1 None@2 y@2
+R | Detach item | mount=ok [x,y] updateFn saw: x@1 Detach@2 y@2
+R | KeyGone item with id keyFn | Quad0144
+R | keyFn throws mid-cycle | set=raw: ./.claude/audit/round13-e45-list-contract/probe-keys.luau:85: keyFn boom after=[a,b] Len=2 then good set=ok [b,c] Len=2 kids=b,c
+R | non-deterministic keyFn (3 cycles, same data) | built=6 gone=4 [a,b] kids=a,b

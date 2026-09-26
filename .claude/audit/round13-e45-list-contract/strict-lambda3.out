@@ -1,0 +1,5 @@
+.claude/audit/round13-e45-list-contract/strict-lambda3.luau(10,12): TypeError: No valid instantiation could be inferred for generic type parameter Item. It was expected to be at least:
+	t1 where t1 = t2 & { Emit: (t1) -> t1, read Revision: number, Set: (t1, string?) -> t1 } ; t2 = { Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? } & { Apply: (({ Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateV
+and at most:
+	string
+but these types are not compatible with one another.

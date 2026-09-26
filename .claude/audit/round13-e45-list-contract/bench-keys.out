@@ -1,0 +1,5 @@
+B | index(default)  | mount 4.40 ms | recycle same 0.89 ms | recycle reversed 0.89 ms | keyFn+hash only 0.025 ms
+B | number          | mount 5.09 ms | recycle same 0.80 ms | recycle reversed 71.98 ms | keyFn+hash only 0.026 ms
+B | string          | mount 5.54 ms | recycle same 0.87 ms | recycle reversed 71.84 ms | keyFn+hash only 0.065 ms
+B | table           | mount 4.54 ms | recycle same 0.90 ms | recycle reversed 72.28 ms | keyFn+hash only 0.070 ms
+B | Instance        | mount 6.13 ms | recycle same 1.20 ms | recycle reversed 72.63 ms | keyFn+hash only 0.146 ms

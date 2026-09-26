@@ -1,0 +1,6 @@
+R | first-cycle dup key | mount=Quad0145 [] Len=0 obs=false act=true | set2=ok [] | set3=ok [] Len=0 kids=
+R | first-cycle nil key | mount=Quad0144 [] Len=0 obs=false act=true | set2=ok [] | set3=ok [] Len=0 kids=
+R | later dup key | mount=ok [a] Len=1 obs=true act=true | set2=Quad0145 [p,q] | set3=ok [p,q] Len=2 kids=p,q
+R | first-cycle updateFn throw | mount=raw: ./.claude/audit/round13-e45-list-contract/probe-firstcycle.luau:25: user boom [a] Len=0 obs=false act=true | set2=ok [a] | set3=ok [a] Len=0 kids=
+R | later updateFn throw | mount=ok [a,c] Len=2 obs=true act=true | set2=raw: ./.claude/audit/round13-e45-list-contract/probe-firstcycle.luau:30: user boom [p,q] | set3=ok [p,q] Len=2 kids=p,q
+R | first-cycle Quad0146 (returns KeyGone) | mount=Quad0146 [] Len=0 obs=false act=true | set2=ok [] | set3=ok [] Len=0 kids=

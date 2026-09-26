@@ -1,0 +1,4 @@
+R | outer:Add(listed inner) — dup key | add=Quad0145 materializing=true outer.Len=1 elements=2 | next Add=Quad0167 | Remove=Quad0167 outer.Len=1 kids=o1
+R | outer:Add(listed inner) — updateFn throws | add=raw: ./.claude/audit/round13-e45-list-contract/probe-addthrow.luau:15: boom materializing=true outer.Len=1 elements=2 | next Add=Quad0167 | Remove=Quad0167 outer.Len=1 kids=o1
+R | outer:Add(listed inner) — Quad0156 element | add=Quad0156 materializing=true outer.Len=1 elements=2 | next Add=Quad0167 | Remove=Quad0167 outer.Len=1 kids=o1
+R | :List on mounted Slot, first cycle dup | list=Quad0145 listed=true | fixed Set=ok [] Len=0 kids=

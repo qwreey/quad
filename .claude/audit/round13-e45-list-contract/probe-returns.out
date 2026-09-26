@@ -1,0 +1,43 @@
+R | fresh element every cycle | ok[a#1]L1 -> ok[a#2]L1 | kids=a#2 | log a:prev=nil,ud=nil,i=1 a:prev=a#1,ud=nil,i=1
+R |   replaced old destroyed?true | old dead=true old parent=nil
+R | nil return for present item (2nd cycle) | ok[a]L1 -> ok[]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1 a:prev=a,ud=nil,i=1 a:prev=nil,ud=nil,i=1
+R |   dropped element dead?true | dead=true parent=nil
+R | (nil, ud) then (Prev?) | ok[]L0 -> ok[a]L1 -> ok[]L0 -> ok[a]L1 | kids=a | log a:prev=nil,ud=nil,i=1 a:prev=nil,ud=U1,i=1 KG:prev=a,ud=U2,i=0 a:prev=nil,ud=gone-ud,i=1
+R | q.None return | ok[]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1 a:prev=nil,ud=nil,i=1
+R | Detach via KeyGone, reappear | ok[a]L1 -> ok[]L0 -> ok[a]L1 | kids=a | log a:prev=nil,ud=nil,i=1 KG:prev=a,ud=ud0,i=0 a:prev=a,ud=held-ud,i=1
+R |   held element dead/parent true | dead=false parent=Folder
+R | Detach present item then Prev | ok[a]L1 -> ok[]L0 -> ok[a]L1 | kids=a | log a:prev=nil,ud=nil,i=1 a:prev=a,ud=nil,i=1 a:prev=a,ud=nil,i=1
+R | Detach then new element | ok[a1]L1 -> ok[]L0 -> ok[a2]L1 | kids=a2 | log a:prev=nil,ud=nil,i=1 KG:prev=a1,ud=nil,i=0 a:prev=a1,ud=nil,i=1
+R |   held2 after new element true | dead=true parent=nil
+R | Detach with no Prev | ok[]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1 a:prev=nil,ud=nil,i=1
+R | Detach held then dispose(slot) / host Destroy true | dispose=Quad0179 host=ok held dead=true
+R | fresh element every cycle (Owns=false) | ok[a#1]L1 -> ok[a#2]L1 | kids=a#2 | log a:prev=nil,ud=nil,i=1 a:prev=a#1,ud=nil,i=1
+R |   replaced old destroyed?false | old dead=false old parent=nil
+R | nil return for present item (2nd cycle) (Owns=false) | ok[a]L1 -> ok[]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1 a:prev=a,ud=nil,i=1 a:prev=nil,ud=nil,i=1
+R |   dropped element dead?false | dead=false parent=nil
+R | (nil, ud) then (Prev?) (Owns=false) | ok[]L0 -> ok[a]L1 -> ok[]L0 -> ok[a]L1 | kids=a | log a:prev=nil,ud=nil,i=1 a:prev=nil,ud=U1,i=1 KG:prev=a,ud=U2,i=0 a:prev=nil,ud=gone-ud,i=1
+R | q.None return (Owns=false) | ok[]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1 a:prev=nil,ud=nil,i=1
+R | Detach via KeyGone, reappear (Owns=false) | ok[a]L1 -> ok[]L0 -> ok[a]L1 | kids=a | log a:prev=nil,ud=nil,i=1 KG:prev=a,ud=ud0,i=0 a:prev=nil,ud=held-ud,i=1
+R |   held element dead/parent false | dead=false parent=Folder
+R | Detach present item then Prev (Owns=false) | ok[a]L1 -> ok[]L0 -> ok[a]L1 | kids=a | log a:prev=nil,ud=nil,i=1 a:prev=a,ud=nil,i=1 a:prev=nil,ud=nil,i=1
+R | Detach then new element (Owns=false) | ok[a1]L1 -> ok[]L0 -> ok[a2]L1 | kids=a2 | log a:prev=nil,ud=nil,i=1 KG:prev=a1,ud=nil,i=0 a:prev=nil,ud=nil,i=1
+R |   held2 after new element false | dead=false parent=nil
+R | Detach with no Prev (Owns=false) | ok[]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1 a:prev=nil,ud=nil,i=1
+R | Detach held then dispose(slot) / host Destroy false | dispose=Quad0179 host=ok held dead=false
+R | ret plain table | Quad0240[]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1
+R | ret number | Quad0240[]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1
+R | ret string | Quad0240[]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1
+R | ret KeyGone | Quad0146[]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1
+R | ret Observer | Quad0238[]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1
+R | ret destroyed Instance | Quad0241[]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1
+R | ret foreign Instance | Quad0241[]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1
+R | ret destroyed Slot | Quad0242[]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1
+R | ret other Slot's element | Quad0156[]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1
+R | ret Slot mounted elsewhere | Quad0156[]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1
+R | ret own Slot (self) | Quad0156[]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1
+R | ret State element | ok[Source(stateEl)]L1 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1 KG:prev=tbl,ud=nil,i=0
+R | ret nested Slot | ok[Slot(len=2, mounted)]L2 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1 KG:prev=tbl,ud=nil,i=0
+R | ret State<nil> | ok[Source(nil)]L0 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1 KG:prev=tbl,ud=nil,i=0
+R | ret State<Slot> | ok[Source(Slot(len=1, mounted))]L1 -> ok[]L0 | kids= | log a:prev=nil,ud=nil,i=1 KG:prev=tbl,ud=nil,i=0
+R | ret State of plain table | Quad0240[Source(table: 0x000057986fc1ed80)]L0 -> ok[Source(table: 0x000057986fc1ed80)]L0 | kids= | log a:prev=nil,ud=nil,i=1
+R | ret nil, ud then KeyGone->new element | ok[a]L1 -> Quad0147[a]L1 | kids=a | log a:prev=nil,ud=nil,i=1 KG:prev=a,ud=nil,i=0

@@ -1,0 +1,4 @@
+R | held: Offset observer fires on sibling growth | fired mount=1 after Add=2 s.Offset=2 after.Offset=3
+R | held: Offset observer throws | add=raw: ./.claude/audit/round13-e45-list-contract/probe-offset.luau:15: offset obs boom s.Offset=3 (true 3) after.Offset=3 (true 4) | add=ok s.Offset=3 (true 4) after.Offset=3 (true 5) | data set=ok after.Offset=3 (true 6) s.Len=2 | after:Add=ok after.Len=2 kids=8 fired=4
+R | unheld: Offset observer fires on sibling growth | fired mount=1 after Add=1 s.Offset=2 after.Offset=3
+R | unheld: Offset observer throws | add=ok s.Offset=3 (true 3) after.Offset=4 (true 4) | add=ok s.Offset=4 (true 4) after.Offset=5 (true 5) | data set=ok after.Offset=6 (true 6) s.Len=2 | after:Add=ok after.Len=2 kids=8 fired=2

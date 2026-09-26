@@ -370,14 +370,14 @@ type SlotListOpts = { read OwnsElements: boolean? }
 | 새 원소 | 그 자리에 놓습니다. `ctx.Prev`가 있었으면 교체(소유 Slot이면 옛 원소 파괴) |
 | `ctx.Prev` 그대로 | 그대로 유지 — 다시 만들지 않습니다. 위치만 필요하면 옮깁니다 |
 | `nil` 또는 `q.None` | 이 키를 버립니다(소유 Slot이면 파괴) |
-| `q.Detach` | 트리에서 떼되 **파괴하지 않고** 보관합니다. 다음에 `ctx.Prev`를 반환하면 그대로 다시 붙습니다 |
+| `q.Detach` | 트리에서 떼되 **파괴하지 않고** 보관합니다. 다음에 `ctx.Prev`를 반환하면 그대로 다시 붙습니다(`OwnsElements = false`면 보관이 아니라 해제 — 아래 옵션 절) |
 
 두 번째 반환값은 이 키의 다음 `ctx.UserData`가 됩니다.
 
 `updateFn`은 항목 하나를 원소로 바꾸는 함수입니다 — 자기가 만드는 자식 Slot을 채우는 것은 되지만, **이 Slot의 조상을 CRUD하면 안 됩니다.** 첫 `updateFn`은 이 Slot이 트리에 붙는 순간(부모와 함께 마운트될 때, 또는 이미 마운트된 부모에 `Add`/`Splice`/`Replace`로 들어갈 때) 그 부모들의 마운트 작업 안에서 불리므로 그 자리에서 던집니다(아래 문구). 조상을 바꿔야 하면 마운트 뒤 Observer에서 하세요.
 
 ```
-Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer
+Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)
 ```
 
 **동작**
@@ -394,7 +394,7 @@ Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Singl
 - 재조정 중 에러: `Quad0142 Slot:List: data must be a plain array (got {typeof(items)}) — a data State must hold one too`, `Quad0144 Slot:List: keyFn returned nil for item #{i}`(NaN도 같은 모양으로 `returned NaN`), `Quad0145 Slot:List: duplicate key {tostring(key)}`. 인자 검증에 `Quad0153 Slot:List: opts must be a table (got {typeof(opts)})`(`:Single`도 같음)이 더해집니다.
 - `updateFn`이 이 Slot의 `data` State를 다시 `:Set` 하는 **재진입**은 정의되지 않은 동작입니다.
 - `KeyGone` 호출끼리의 순서는 정해져 있지 않습니다 — 사라진 키가 데이터에 있던 순서로 온다고 기대하지 마세요.
-- `updateFn`이 도중에 던지면(이미 다른 곳에 마운트된 원소나 claim되지 않은 Instance를 반환해 quad가 대신 던지는 경우 포함) 그 사이클의 배치가 닫히지 않아 **그 Slot의 `Length`가 더 이상 발행되지 않습니다** — 재조정 자체는 계속 돌아 항목이 붙고 떨어지지만, 같은 부모 안의 형제 Slot이 옛 오프셋에 자식을 넣게 되고 에러는 나지 않습니다. 사용자 코드의 예외를 감싸 복구하지 않는 계약이라 [`slot:Clear`](#slotclear)와 같이 정의되지 않은 동작으로 둡니다 — 던질 수 있는 일은 `updateFn` 밖에서 끝내세요.
+- `updateFn`이 도중에 던지면(이미 다른 곳에 마운트된 원소나 claim되지 않은 Instance를 반환해 quad가 대신 던지는 경우 포함) 그 사이클의 배치가 닫히지 않아 **그 Slot의 `Length`가 더 이상 발행되지 않습니다** — **이후 사이클**이라면 재조정 자체는 계속 돌아 항목이 붙고 떨어지지만(**첫 사이클**, 즉 `:List`를 부르는 그 호출 안에서 던지면 데이터 구독이 만들어지기 전이라 그 뒤의 `data:Set`이 전부 조용히 무시됩니다 — 위 재조정 중 에러 `Quad0142`~`0146`도 첫 사이클이면 같습니다 — [2026-09-27 mock 관측]; `:List`를 다시 걸 수도 없으니 그 Slot은 버리세요), 같은 부모 안의 형제 Slot이 옛 오프셋에 자식을 넣게 되고 에러는 나지 않습니다. 사용자 코드의 예외를 감싸 복구하지 않는 계약이라 [`slot:Clear`](#slotclear)와 같이 정의되지 않은 동작으로 둡니다 — 던질 수 있는 일은 `updateFn` 밖에서 끝내세요.
 
 **`OwnsElements = false`**
 
@@ -452,7 +452,7 @@ Single: <Item, UD>(
 ) -> Slot<T>
 ```
 
-타입 인자는 `:List`와 같은 `<Item, UD>`입니다 — `state`가 담는 것은 **데이터**(`Item`)이고, 원소 타입 `T`와 묶이지 않습니다. `Source<string?>`로 `Slot<Instance>`를 `updateFn`으로 매핑해 모는 모양은 **strict에서 타입 인자를 명시해야** 통과합니다 — `slot:Single<<string, nil>>(cur, function(ctx) … end)`처럼; 무주석 람다는 `ctx`가 `unknown`으로 굳고, `ctx: q.SingleCtx<string, nil>`처럼 정확히 주석해도 `Item`의 인스턴스를 추론하지 못합니다(`Item?` 팔이 넘긴 `State`를 `Item`의 하한으로 잡는 신 솔버 한계 — [2026-09-27 실측]; `:List`는 같은 무주석 람다로 통과합니다). `updateFn`을 생략하는 항등 사용에서는 `Item`이 곧 원소라 `T`로 두시면 됩니다(다른 것을 넘기면 타입이 아니라 런타임 가드 `Quad0240 Slot: this backend cannot mount this value`가 잡습니다).
+타입 인자는 `:List`와 같은 `<Item, UD>`입니다 — `state`가 담는 것은 **데이터**(`Item`)이고, 원소 타입 `T`와 묶이지 않습니다. `Source<string?>`로 `Slot<Instance>`를 `updateFn`으로 매핑해 모는 모양은 **strict에서 타입 인자를 명시해야** 통과합니다 — `slot:Single<<string, nil>>(cur, function(ctx) … end)`처럼; 무주석 람다는 `ctx`가 `unknown`으로 굳고, `ctx: q.SingleCtx<string, nil>`처럼 정확히 주석해도 `Item`의 인스턴스를 추론하지 못합니다(`Item?` 팔이 넘긴 `State`를 `Item`의 하한으로 잡는 신 솔버 한계 — [2026-09-27 실측]; `KeyGone` 갈래에서 `return nil`을 먼저 하는 관용구는 반환 타입이 `nil`로 굳어 `:List`·`:Single<<…>>` 둘 다 반환 팩 주석(`): (TextLabel?, nil)`)까지 필요하고, `Text = ctx.Item`은 `ctx.Item :: string` 캐스트가 있어야 통과합니다; 반환이 한 갈래인 람다는 `:List`는 같은 무주석 람다로 통과합니다). `updateFn`을 생략하는 항등 사용에서는 `Item`이 곧 원소라 `T`로 두시면 됩니다(다른 것을 넘기면 타입이 아니라 런타임 가드 `Quad0240 Slot: this backend cannot mount this value`가 잡습니다).
 
 **인자**
 
@@ -469,7 +469,7 @@ Single: <Item, UD>(
 - 원소가 최대 하나인 `:List`입니다. 설치 규칙·모드 배타성·`OwnsElements` 의미는 전부 `:List`와 같습니다.
 - `updateFn`은 `:List`와 **같은 모양의 `ctx`** 하나를 받습니다(`ctx.Index`도 들어옵니다). 그래서 같은 `updateFn`을 `:List`와 `:Single`에 나눠 쓸 수 있습니다.
 - `state`의 값이 `nil`이거나 `q.None`이면 원소가 없는 상태입니다. 값이 있다가 `nil`/`q.None`이 되면 `updateFn`에 `ctx.Item`으로 `q.KeyGone`이 옵니다 — 처음부터 비어 있으면 `updateFn`은 불리지 않습니다.
-- `state`가 State면 값이 바뀔 때마다 그 자리가 통째로 교체됩니다.
+- `state`가 State면 값이 바뀔 때마다 `updateFn`이 다시 돌고, 그 자리는 `updateFn`이 돌려주는 대로 갑니다 — `ctx.Prev`를 돌려주면 원소가 유지되고(키가 상수라 `Prev`가 늘 옵니다), 새 원소를 돌려주면 통째로 교체됩니다.
 - 인자 검증 에러: `Quad0154 Slot:Single: updateFn must be a function (got {typeof(updateFn)})`.
 
 `Slot`에 State를 원소로 넣는 `slot:Add(someState)`는 내부적으로 `OwnsElements = false`인 래퍼 Slot에 `:Single`을 건 것과 같습니다. 래퍼가 `OwnsElements = false`이므로 값이 바뀔 때 **옛 원소는 파괴되지 않습니다** — 더 쓸 일이 없으면 직접 `q.dispose` 하세요.

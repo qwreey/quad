@@ -1,0 +1,4 @@
+.claude/audit/round13-e45-list-contract/strict-lambda2.luau(14,9): TypeError: Expected this to be 'nil', but got 'Instance'
+.claude/audit/round13-e45-list-contract/strict-lambda2.luau(21,9): TypeError: Expected this to be 'nil', but got 'Instance'
+.claude/audit/round13-e45-list-contract/strict-lambda2.luau(4,7): ImportUnused: Import 'QT' is never used; prefix with '_' to silence
+.claude/audit/round13-e45-list-contract/strict-lambda2.luau(5,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence

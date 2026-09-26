@@ -1,0 +1,9 @@
+R | rename reuse a->a2 (old key still live) owns=true | set=Quad0156 Len=2 [a,b] | next set=Quad0156 Len=2 [a,b] kids=a,b aDead=false
+R | rename reuse a->a2 (old key still live) owns=false | set=Quad0156 Len=2 [a,b] | next set=Quad0156 Len=2 [a,b] kids=a,b aDead=false
+R | held(Detach) element returned under new key owns=true | set=Quad0156 Len=0 [] kids= dead=false
+R | held(Detach) element returned under new key owns=false | set=ok Len=1 [a] kids=a dead=false
+R | swap elements between keys | set=Quad0156 Len=2 [a,b,z]; after un-swap set=ok Len=2 [a,b,z] kids=a,b,z blocking=?
+R | later-cycle 0156 then good set | set=Quad0156 then=ok Len=1 (elements 3) [a,b,c] kids=a,b,c
+R | later-cycle State<table> return | set=Quad0240 elements=2 [a,Source(table: 0x00006142e60dd980)] Len=1 | then set a=ok elements=2 [a,Source(table: 0x00006142e60dd980)] Len=1 kids=a
+R | CRUD Add(State<table>) same value | add=Quad0240 elements=0
+R | State element: return Prev(State) / then its occupant Instance | keep=ok occupant=Quad0156 Len=1 [Source(occ)] kids=occ

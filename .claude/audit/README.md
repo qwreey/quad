@@ -68,4 +68,5 @@
 - `round13-e40-reactive-fuzz/` — **[2026-09-27 자율 루프 E40]** 반응형 그래프 차등 퍼저(`fuzz.e40.luau` 모델 둘·축소기, 프로브 P1~P8·`probe.e40.rule1`, `results.txt`) — 값 차등 0, `Q130`(게이트 뒤 게이트 재통지)·`H-783`.
 - `round13-e42-gc-sweep/` — **[2026-09-27 자율 루프 E42]** 서브시스템별 GC 스윕(`gclib.luau`·`probe-*.luau` 23·`out/`) — 강한 참조 잔여 0, `Q129`(게이트 수명)·`H-781`·`H-782`, mock 한계 M1~M4.
 - `round13-e43-release-rehearsal/` — **[2026-09-27 자율 루프 E43]** 릴리즈 리허설(3.3.0·4.0.0 사본 — bump·lock·test.sh·publish dry-run·사이트) 단계별 결과 — 타르볼 정상, `H-784`, `Q131`(게이트 구멍·경로별 함정).
+- `round13-e45-list-contract/` — **[2026-09-27 자율 루프 E45]** `Slot:List`/`:Single` keyFn·updateFn 매트릭스(프로브 8·strict 5·벤치 1) — `H-786`, `Q132`(첫 사이클 무반응)·`Q133`(유령 래퍼)·`Q134`(미정 일곱), Q121 보강.
 

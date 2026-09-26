@@ -1,0 +1,14 @@
+== strict-doc-list-example
+== strict-shapes
+.claude/audit/round13-e45-list-contract/strict-shapes.luau(38,2): TypeError: Expected this to be 'nil', but got 'Frame'; 
+the 1st entry in the type pack is `Frame` in the latter type and `nil` in the former type, and `Frame` is not a subtype of `nil`
+.claude/audit/round13-e45-list-contract/strict-shapes.luau(45,87): TypeError: Expected this to be 'boolean?', but got 'string'
+.claude/audit/round13-e45-list-contract/strict-shapes.luau(58,22): TypeError: Expected this to be 'string', but got 'number'
+.claude/audit/round13-e45-list-contract/strict-shapes.luau(66,21): TypeError: Expected this to be 'nil', but got 'TextLabel'
+.claude/audit/round13-e45-list-contract/strict-shapes.luau(64,60): TypeError: Expected this to be
+	'(({ Index: number, Item: Item | KeyGone, Offset: t1, Prev: (Instance | Slot<Instance> | t2)?, UserData: UD? }) -> (any, UD?))? where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, rea
+but got
+	'({ read Item: unknown, read Prev: nil }) -> nil'
+.claude/audit/round13-e45-list-contract/strict-shapes.luau(56,8): LocalUnused: Variable 'i' is never used; prefix with '_' to silence
+.claude/audit/round13-e45-list-contract/strict-shapes.luau(57,8): LocalUnused: Variable 'o' is never used; prefix with '_' to silence
+.claude/audit/round13-e45-list-contract/strict-shapes.luau(58,8): LocalUnused: Variable 'bad' is never used; prefix with '_' to silence

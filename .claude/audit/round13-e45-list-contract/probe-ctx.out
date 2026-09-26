@@ -1,0 +1,17 @@
+R | Index/Offset first cycle | a:I1:O2:isState=true:same=true N:I2:O2:isState=true:same=true skip:I5:O2:isState=true:same=true b:I5:O2:isState=true:same=true
+R | Index/Offset reorder | b:I1:O2:isState=true:same=true N:I2:O2:isState=true:same=true a:I5:O2:isState=true:same=true KG:I0:O2:isState=true:same=true
+R | Index/Offset drop N (KeyGone) | b:I1:O2:isState=true:same=true a:I2:O2:isState=true:same=true KG:I0:O2:isState=true:same=true
+R | ctx fresh per call | distinct=true firstItemStill=a
+R | Index is a snapshot (nested grows, no cycle) | y Index at cycle=3, y actual pos now=3 (Index not updated, number=true)
+R | Offset observer fires on sibling growth | fired before=1 after Add=1 Offset=2 afterOffset=3
+R | Offset observer throws (core/06:129) | add=ok then add=ok s.Offset=4 (expect 4) after.Offset=5 (expect 5) before.Len=4
+R | :Single keep/KeyGone/Detach/return | made=1 [z] log x:prev=nil:ud=nil:I1 y:prev=x:ud=u0:I1 KG:prev=y:ud=u:I0 z:prev=y:ud=held:I1
+R | :Single identity swap | A dead=true B mounted=true
+R | :Single identity Set same value | ok
+R | opts OwnsElements=false | owned flag=nil element destroyed on KeyGone=true
+R | opts OwnsElements=0 | owned flag=nil element destroyed on KeyGone=true
+R | opts nil=nil | owned flag=nil element destroyed on KeyGone=true
+R | opts Owned=false | owned flag=nil element destroyed on KeyGone=true
+R | opts nil=nil | owned flag=nil element destroyed on KeyGone=true
+Slot:List/:Single: unknown option "Owned" is ignored (known: OwnsElements)
+Slot:List/:Single: unknown option "ownsElements" is ignored (known: OwnsElements)

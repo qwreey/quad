@@ -1,0 +1,29 @@
+.claude/audit/round13-e45-list-contract/strict-lambda.luau(12,2): TypeError: Expected this to be 'nil', but got 'TextLabel'; 
+the 1st entry in the type pack is `TextLabel` in the latter type and `nil` in the former type, and `TextLabel` is not a subtype of `nil`
+.claude/audit/round13-e45-list-contract/strict-lambda.luau(8,45): TypeError: Expected this to be
+	'({ Index: number, Item: KeyGone | string, Offset: t1, Prev: (Instance | Slot<Instance> | t2)?, UserData: unknown? }) -> (any, unknown?) where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, re
+but got
+	'({ read Item: (None | StateMarker<string> | string)? }) -> nil'; 
+this is because 
+	 * it returns `nil` in the latter type and `any, unknown?` in the former type, and `nil` is not a subtype of `any, unknown?`
+	 * it takes the 1st entry in the type pack, accessing `Item` results in `(None | StateMarker<string> | string)?` and it takes the 1st entry in the type pack, accessing `Item` has the 2nd component of the union as `KeyGone`, and `(None | StateMarker<string> | string)?` is not a supertype of `KeyGone
+.claude/audit/round13-e45-list-contract/strict-lambda.luau(21,2): TypeError: Expected this to be 'nil', but got 'TextLabel'; 
+the 1st entry in the type pack is `TextLabel` in the latter type and `nil` in the former type, and `TextLabel` is not a subtype of `nil`
+.claude/audit/round13-e45-list-contract/strict-lambda.luau(17,12): TypeError: No valid instantiation could be inferred for generic type parameter Item. It was expected to be at least:
+	t1 where t1 = t2 & { Emit: (t1) -> t1, read Revision: number, Set: (t1, string?) -> t1 } ; t2 = { Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? } & { Apply: (({ Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? }, { __apply: (any, 
+and at most:
+	string
+but these types are not compatible with one another.
+.claude/audit/round13-e45-list-contract/strict-lambda.luau(28,2): TypeError: Expected this to be 'nil', but got 'TextLabel'; 
+the 1st entry in the type pack is `TextLabel` in the latter type and `nil` in the former type, and `TextLabel` is not a subtype of `nil`
+.claude/audit/round13-e45-list-contract/strict-lambda.luau(25,45): TypeError: Expected this to be
+	'({ Index: number, Item: KeyGone | string, Offset: t1, Prev: (Instance | Slot<Instance> | t2)?, UserData: unknown? }) -> (any, unknown?) where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, re
+but got
+	'({ read Item: (None | StateMarker<string> | string)?, read Prev: nil }) -> nil'; 
+this is because 
+	 * it returns `nil` in the latter type and `any, unknown?` in the former type, and `nil` is not a subtype of `any, unknown?`
+	 * it takes the 1st entry in the type pack, accessing `Item` results in `(None | StateMarker<string> | string)?` and it takes the 1st entry in the type pack, accessing `Item` has the 2nd component of the union as `KeyGone`, and `(None | StateMarker<string> | string)?` is not a supertype of `KeyGone
+	 * it takes the 1st entry in the type pack, accessing `Prev` results in `nil` and it takes the 1st entry in the type pack, accessing `Prev` has the 1st component of the union as `Instance`, and `nil` is not a supertype of `Instance`
+	 * it takes the 1st entry in the type pack, accessing `Prev` results in `nil` and it takes the 1st entry in the type pack, accessing `Prev` has the 2nd component of the unionthe 1st component of the intersection is `StateData<Instance>`, and `nil` is not a supertype of `StateData<Instance>`
+	 * it takes the 1st entry in the type pack, accessing `Prev` results in `nil` and it takes the 1st entry in the type pack, accessing `Prev` has the 2nd component of the unionthe 2nd component of the intersection is `t1 where t1 = { Apply: (({ Get: (*CYCLE*) -> Instance, read __quadState: true, read
+	 * it takes the 1st entry in the type pack, accessing `Prev` results in `nil` and it takes the 1st entry in the type pack, accessing `Prev` has the 3rd component of the union as `Slot<Instance>`, and `nil` is not a supertype of `Slot<Instance>`
