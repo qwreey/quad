@@ -289,9 +289,11 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 ### Quad0076
 
-`Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}, brand: {brand}) — ...` — `quad-base/src/Dispatch/init.luau`
+`Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}, brand: {brand})` + 꼬리 힌트 하나(+ nil 안내) — `quad-base/src/Dispatch/init.luau`
 
-- **언제**: 그 값을 받아줄 핸들러가 하나도 없을 때 — 값의 브랜드를 알아낼 수 있으면 같이 싣고, 브랜드별/키 종류별로 다른 안내(hint)가 뒤에 붙습니다(값이 `nil`이면 벗겨진 `None`이거나 반응형 `nil`일 수 있다는 안내도 붙습니다). `noMatchMessage` 헬퍼가 만드는 문구이고, `Dispatch.process`의 매치 실패 raise가 이 헬퍼를 부릅니다.
+꼬리 힌트는 넷 중 하나입니다 — 값에 브랜드가 없거나 백엔드(프로바이더) 브랜드면 ` — check that the provider for this value (e.g. quad-roblox) is initialized`; quad-base 브랜드(`Slot`/`Ref`/`State`/`Tag`/`Attr`/`Context`/`Provider`/`MapperDescriptor` 등)이면 `Store`일 때 ` — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))`, 문자 키일 때 ` — a quad value at a string key: it belongs in a numeric (array) slot`, 숫자 키일 때 ` — this quad value has no handler at an array position`. 값이 `nil`이면 그 뒤에 ` (a nil at this depth may be an unwrapped None or a reactive nil — the key's own handler must accept nil)`이 더 붙습니다. `brand: …` 조각은 브랜드를 알아낼 수 있을 때만 들어갑니다.
+
+- **언제**: 그 값을 받아줄 핸들러가 하나도 없을 때. `noMatchMessage` 헬퍼가 만드는 문구이고, `Dispatch.process`의 매치 실패 raise가 이 헬퍼를 부릅니다.
 - **고치려면**: 그 값을 다루는 프로바이더(quad-roblox 등)가 설치돼 있는지 확인하거나, 그 값을 올바른 종류의 키(숫자/문자) 자리에 놓으세요.
 - **참고**: [`q.Dispatch.process(inst, key, value, index)`](../extend/02-dispatch-handler-contract.md#qdispatchprocessinst-key-value-index)
 

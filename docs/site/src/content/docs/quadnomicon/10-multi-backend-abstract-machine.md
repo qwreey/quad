@@ -117,6 +117,9 @@ quad-base 것이고, 백엔드가 심는 것은 그 아래의 hold op 넷(`holdL
 
 ```luau
 function module.UseProvider(self, providerFn)
+	if type(providerFn) ~= "function" then
+		Err.errorBeforeNearest(`Quad0212 UseProvider: provider must be a function (got {typeof(providerFn)})`, QuadTypes.ERROR_LEVEL_SURFACE)
+	end
 	local current = providerRelate:GetStrong(self, "provider")
 	if current == providerFn then
 		return self :: any -- 같은 프로바이더 재호출 — 멱등 no-op
@@ -128,7 +131,7 @@ function module.UseProvider(self, providerFn)
 		)
 	end
 	local extension = providerFn(self)
-	mergeExtension(self, extension)
+	mergeExtension(self, extension, "UseProvider")
 	providerRelate:SetStrong(self, "provider", providerFn)
 	return self :: any
 end
@@ -137,7 +140,9 @@ end
 읽을 점 셋:
 
 1. **멱등.** 여러 모듈이 같은 프로바이더를 require하면 require 캐시가 같은 함수
-   신원을 주므로 자연히 통과합니다.
+   신원을 주므로 자연히 통과합니다. 다만 그 비교 전에 먼저 `providerFn`이 함수인지부터
+   봅니다(`Quad0212`) — 2026-09-16에 닫힌 구멍으로, 그전엔 `UseProvider(nil)`이
+   `nil == current(nil)`로 멱등 분기를 그대로 타고 조용히 통과했습니다.
 2. **다른 신원이면 즉시 error.** 점유자를 이름으로 짚지는 않습니다 — 신원 락에는
    이름이 없고, 소스 경로를 메시지에 싣는 것은 이 프로젝트의 에러 규약이 금지합니다.
    메시지는 계약만 말합니다.

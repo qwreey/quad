@@ -660,6 +660,11 @@ do
 		q.Dispatch.drive(Instance.new("Frame"), { Thing = q.Tag() })
 	end)
 	assert(not okT and string.find(tostring(errT), "brand: Tag", 1, true) ~= nil and string.find(tostring(errT), "belongs in a numeric (array) slot", 1, true) ~= nil and string.find(tostring(errT), "provider", 1, true) == nil, "base brand hint: " .. tostring(errT))
+	-- H-613: Context/Provider are base leaves too — must not get the "provider not initialized" hint
+	local okCtx, errCtx = pcall(function()
+		q.Dispatch.drive(Instance.new("Frame"), { Thing = q.Context() })
+	end)
+	assert(not okCtx and string.find(tostring(errCtx), "brand: Context", 1, true) ~= nil and string.find(tostring(errCtx), "belongs in a numeric (array) slot", 1, true) ~= nil and string.find(tostring(errCtx), "provider", 1, true) == nil, "base brand hint (Context): " .. tostring(errCtx))
 	local okU, errU = pcall(function()
 		q.Dispatch.drive(Instance.new("Frame"), { q.Store({ x = q.Source(1) }) })
 	end)

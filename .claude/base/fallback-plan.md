@@ -137,6 +137,8 @@ end
 화면+트레이스로 띄우는 것에 비유). 따라서 **동적 바인딩 쪽에서 `Fallback`을 거는 건 의도에 안 맞는 사용**이고(불가능하진
 않음), **고아 Instance는 quad가 처리하지 않는다**. 사용자 문서엔 "실패 뒤 상태는 손보지 않는다, 생성 전에 검증하라"로 적는다.
 
+**[2026-09-26 round13 E5]** 경계 **밖**에서 만들어 안에 넘긴 `Ref`·`PreRef`·`PostRef`도 같은 UB에 든다는 것을 문서화했다(`docs/reference/sugar/05-fallback-traceback.md`·`docs/reference/core/07-ref.md`) — 던지기 전에 처리된 자리에 놓였다면 반쯤 지어진 인스턴스에 이미 묶이거나(`Ref`/`PreRef`) 발화 없이 소진돼(`PostRef`) 재시도에 재사용할 수 없다. 해제 수단(고아를 `dispose`하면 바인딩이 풀리는지 등)은 `qa-request/post-implementation-review-round13.md`의 `Q83`이 열어둠.
+
 ~~**상태: 백로그.**~~ `Fallback`/`Traceback` 자체가 슈가라 **그 둘을 구현할 때 같이
 다룬다**(사용자 판단, 2026-08-24: *"의도적으로 error 를 사용하고자 하는 경우
 항상 컴포넌트들이 쌓이거든. 이건 후행에서 더 다뤄보도록 백로깅해줘.

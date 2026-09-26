@@ -17,11 +17,11 @@ Main.client.luau:12: Quad0042 Slot:List: duplicate key "a"
 | [반응형 코어](/reference/errors/01-core-reactive/) | `Source`/`State`/`Store`/`Blocker`/`Context`/`Operator`/`Debounce`·`Throttle`/`Gate` |
 | [디스패치와 장부](/reference/errors/02-dispatch-bookkeeping/) | `Dispatch`/`Bookkeeping`/`Modifier`/`None`/핸들러 계약 |
 | [Slot](/reference/errors/03-slot/) | `Slot` CRUD·`:List`·`:Single`·`dispose` |
-| [Ref·Observer·Effect·훅](/reference/errors/04-ref-observer-effect/) | `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/생명주기 훅/`bindLifetime` |
+| [Ref·Observer·Effect·훅](/reference/errors/04-ref-observer-effect/) | `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/생명주기 훅 |
 | [Tag·Attr](/reference/errors/05-tag-attr/) | `Tag`/`Attr`/`AttrKey`/타입드 Attr |
-| [모듈·백엔드 계약](/reference/errors/06-module-backend/) | `UseProvider`/플러그인/`Brand`/`ModuleIdentity`/미설치 op 스텁/`Relate`/`Claim`(base) |
+| [모듈·백엔드 계약](/reference/errors/06-module-backend/) | `UseProvider`/플러그인/`Brand`/`ModuleIdentity`/미설치 op 스텁/`bindLifetime`·`unbindLifetime`/`Relate`/`Claim`(base) |
 | [Roblox — Declaration·Claim·핸들러](/reference/errors/07-roblox/) | `D.*`/`Mapper`/`Claim`/`Property`/`Event`/`OnChange`/`Out`/숏핸드 |
 | [Roblox — Tween·Animate](/reference/errors/08-roblox-tween/) | `Tween`/`Animate` |
-| [슈거](/reference/errors/09-sugar/) | `Fallback`/`Traceback`/`Version` 등 그 밖의 슈거 |
+| [슈거](/reference/errors/09-sugar/) | `Fallback`/`Traceback`(버전 검사 `type_version_check`는 타입 시점 진단이라 이 번호 체계 밖) |
 
 번호와 문서의 정합은 `scripts/error-codes.py`가 지킵니다(소스의 모든 번호에 절이 있어야 하고, 번호는 유일해야 합니다).

@@ -87,7 +87,8 @@ export type Handler = {
 |---|---|
 | `HIGH` | 디스패치 골격 자체 — `StoreBind`, `NoneHandler`/`NilHandler`, `Processed*` 말단(Modifier·PreRef·PostRef), `SlotHandler`, `Ref`/`Observer`/`Effect` 잎 핸들러 |
 | `NORMAL + 1` | `InstanceShorthand`(`UICorner` 등 특수 키) |
-| `NORMAL` | 백엔드의 실제 일 — `Property`, `Event`, `InstanceChild`, `OnChange` |
+| `NORMAL` | 백엔드의 실제 일 — `Property`, `InstanceChild` |
+| `NORMAL - 1` | `Event`, `OnChange`(`Property`/`InstanceChild`와 서로소 술어라 순서가 문제되진 않지만, 동률 미정의 순서를 피하려고 한 밴드 내려 앉힙니다) |
 | `FALLBACK` | base가 알고리즘을 소유하고 효과만 주입받는 것 — `TagFallbackHandler`, `AttrKeyFallbackHandler`, `AttrGroupFallbackHandler`(§5); 그리고 동적 경로로 온 `Ref`/`Observer`/`Effect`를 즉시 거부하는 가드 셋 |
 
 **base 소속이라고 전부 위에 오는 게 아닙니다.** `StoreBind`는 프로퍼티 세터보다 먼저
@@ -190,11 +191,15 @@ base가 소유하되 **최하위 밴드**에 등록됩니다.
 백엔드가 없을 때 나는 일은 두 층으로 갈립니다.
 
 1. **매치 자체가 안 되면** `Dispatch.process`가 즉시 error를 냅니다. 메시지는 값의
-   브랜드까지 알아내서 말합니다:
-   `Quad0076 Dispatch: no handler matched key 1 (value: table, brand: MapperDescriptor) — check
+   브랜드까지 알아내서 말합니다 — 예를 들어 숫자 키 자리에 브랜드 없는 값(`boolean` 등)이
+   와서 아무 핸들러도 못 매치하면:
+   `Quad0076 Dispatch: no handler matched key 1 (value: boolean) — check
    that the provider for this value (e.g. quad-roblox) is initialized`.
    브랜드 조회는 실패 경로에서만 도는 진단입니다 — 모듈에 있는 `is<Brand>` 필드를
    훑는 규약이라, 프로바이더가 `isTween` 같은 술어를 얹어 두면 그것이 곧 등록입니다.
+   `MapperDescriptor`처럼 quad-base 자신의 브랜드는 이 힌트를 받지 않습니다(프로바이더가
+   빠진 게 아니라 그 값 자체가 그 자리에 안 맞는 것이므로) — 같은 숫자 키에 그 값이
+   오면 대신 `… — this quad value has no handler at an array position`가 붙습니다.
 2. **매치는 됐는데 엔진 op이 없으면** 그 op 자리에 심어진 안내 스텁이 던집니다:
    `Quad0108 quad: addTag is not available — no backend has installed the tag ops (install a
    provider with quad:UseProvider — a bare Quad.New() has none)`.

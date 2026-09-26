@@ -67,6 +67,8 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 
 - `Quad0069 PreRef: already fired — a PreRef is one-shot, make a new one for each instance`
 
+[`Fallback`/`Traceback`](../sugar/05-fallback-traceback.md) 경계 **밖**에서 만들어 안에 넘긴 `Ref`류도 이 두 제약을 그대로 받습니다 — 던지기 전에 처리된 자리에 놓였다면 이미 위 두 에러 중 하나로 다시 쓸 수 없거나(`Ref`/`PreRef`), 발화 없이 소진돼(`PostRef`) 재시도 때는 새 것을 만들어야 합니다.
+
 ## `q.Ref<<T>>(default)`
 
 **시그니처**

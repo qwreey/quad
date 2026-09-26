@@ -1,6 +1,6 @@
 ---
 title: "에러 코드 — 슈거"
-description: "Fallback/Traceback/Version 등 슈거가 던지는 에러"
+description: "Fallback/Traceback 슈거가 던지는 에러(버전 검사는 타입 시점 진단이라 번호가 없음)"
 ---
 # [레퍼런스] 에러 코드 — 슈거
 

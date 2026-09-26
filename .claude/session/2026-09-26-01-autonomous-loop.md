@@ -34,3 +34,7 @@
 - **22:05** V1 완료(sonnet) — compat §9.5 사실 다섯(CLI 로드 불가 확정·`Destroying` 미청취·체이닝 여섯·`self("이름")` 경로 죽음·Lang 스코프), 오버뷰 02 `H-607`. D6(sonnet) 띄움. 도는 중: D5·E4·D6.
 - **22:15** E4 완료(opus) — **§4 Q81**(Dedup이 기록 Value를 믿음 — Reverses·외부 쓰기, MED)·**Q82**(시체 위 retractFrom 콜백, LOW), round11 `H-582` 확인 기록 정정, 확인만 §2. E5(opus) 띄움. 도는 중: D5·D6·E5.
 - **22:25** D5 완료(레퍼런스 roblox·sugar·extend 전수 일치, 발견 3 + 덤 1 → `H-608`~`H-610`; 메인 grep으로 레퍼런스 접두 잔여 다섯 `H-611`). 전부 고침. D7(에러 레지스트리 ↔ 소스 전수, sonnet) 띄움. 도는 중: D6·E5·D7.
+- **22:05** 3회차 커밋 `2a1ccf7d`. E5 완료(opus) — `H-612`(Fallback 경계 안 Ref 캐비엇)·`H-613`(BRAND_PROBES Context/Provider)·`H-614`(ref:Callback 예외 시 등록 유지 문서) 반영 배치(sonnet) 띄움, **Q83**, Q75 넷째 입구 보강. 도는 중: D6·D7·fix 배치.
+- **22:20** D6 완료(sonnet — 하위 셋으로 나눠 돎; Quadnomicon 01~06·11 발견 0) — `H-615`~`H-619`(오버뷰 01 ctx.Index·Q09 Bookkeeping 표면·Q07 Claim 2패스·Q08 예시 힌트+우선순위 표·Q10 UseProvider 인용 stale) 반영 배치(sonnet) 띄움. 도는 중: D7·fix(H-612~614)·fix(H-615~619).
+- **22:30** D7 완료(sonnet) — 레지스트리 247/248 일치, `H-620` 색인 둘 즉시 고침, `H-621`(Quad0076 힌트 전문)은 H-613 배치 뒤. 도는 중: fix(H-612~614)·fix(H-615~619). 다음: E6(opus).
+- **22:40** fix 배치 둘 완료(H-612~614: sugar/05·core/07 캐비엇, BRAND_PROBES Context/Provider + spec 1; H-615~619: 오버뷰 01·Quadnomicon 07/08/09/10). `H-621` Quad0076 힌트 전문(메인). 4회차 커밋. 도는 중: E6·E7.

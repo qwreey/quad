@@ -35,6 +35,8 @@ Quad0100 Traceback: onError must be a function (got string)
 예외가 나기 전까지 이미 생성된 인스턴스들은 자기 앵커로 스스로를 붙들고 있어서, 이 경계가 그것들을 정리해주지 않습니다. 대체 UI를 띄우더라도 그 잔재는 남습니다.
 
 **삼킨 예외가 남기는 상태도 그대로입니다.** quad는 사용자 콜백을 감싸지 않으므로, 예외가 지나간 자리의 부기는 복구되지 않은 채입니다 — `Declaration`이 중간에 던지면 그 인스턴스의 배치 게이트가 켜진 채 남고(이후 Slot 자식이 옛 오프셋에 앉음), `:List`의 `updateFn`이나 `slot.Offset` 구독이 던지면 그 Slot·부모의 부기가 멈추며, 정적 자식은 반쯤 지어진 인스턴스에 앉은 채 남습니다([Slot 레퍼런스](../core/06-slot.md)의 캐비엇들). 이 경계 안에서 던진 인스턴스·Slot을 **계속 쓰지 마세요** — 대체 UI는 새 인스턴스로 만드세요.
+
+경계 **밖**에서 만들어 안에 넘긴 `Ref`·`PreRef`·`PostRef`도 마찬가지입니다: 던지기 전에 처리된 자리에 놓였다면 반쯤 지어진 인스턴스에 이미 묶여(`Quad0233 bindLifetime: value is already bound to another Instance`) 다시 쓸 수 없고, `PostRef`는 발화 없이 소진됩니다(`Quad0069`) — 재시도에는 새 Ref를 만드세요.
 :::
 
 ---

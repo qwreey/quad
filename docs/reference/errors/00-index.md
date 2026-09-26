@@ -19,11 +19,11 @@ Main.client.luau:12: Quad0042 Slot:List: duplicate key "a"
 | [반응형 코어](./01-core-reactive.md) | `Source`/`State`/`Store`/`Blocker`/`Context`/`Operator`/`Debounce`·`Throttle`/`Gate` |
 | [디스패치와 장부](./02-dispatch-bookkeeping.md) | `Dispatch`/`Bookkeeping`/`Modifier`/`None`/핸들러 계약 |
 | [Slot](./03-slot.md) | `Slot` CRUD·`:List`·`:Single`·`dispose` |
-| [Ref·Observer·Effect·훅](./04-ref-observer-effect.md) | `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/생명주기 훅/`bindLifetime` |
+| [Ref·Observer·Effect·훅](./04-ref-observer-effect.md) | `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/생명주기 훅 |
 | [Tag·Attr](./05-tag-attr.md) | `Tag`/`Attr`/`AttrKey`/타입드 Attr |
-| [모듈·백엔드 계약](./06-module-backend.md) | `UseProvider`/플러그인/`Brand`/`ModuleIdentity`/미설치 op 스텁/`Relate`/`Claim`(base) |
+| [모듈·백엔드 계약](./06-module-backend.md) | `UseProvider`/플러그인/`Brand`/`ModuleIdentity`/미설치 op 스텁/`bindLifetime`·`unbindLifetime`/`Relate`/`Claim`(base) |
 | [Roblox — Declaration·Claim·핸들러](./07-roblox.md) | `D.*`/`Mapper`/`Claim`/`Property`/`Event`/`OnChange`/`Out`/숏핸드 |
 | [Roblox — Tween·Animate](./08-roblox-tween.md) | `Tween`/`Animate` |
-| [슈거](./09-sugar.md) | `Fallback`/`Traceback`/`Version` 등 그 밖의 슈거 |
+| [슈거](./09-sugar.md) | `Fallback`/`Traceback`(버전 검사 `type_version_check`는 타입 시점 진단이라 이 번호 체계 밖) |
 
 번호와 문서의 정합은 `scripts/error-codes.py`가 지킵니다(소스의 모든 번호에 절이 있어야 하고, 번호는 유일해야 합니다).

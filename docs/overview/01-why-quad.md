@@ -243,7 +243,7 @@ Tween/Spring을 `Computed`의 입력으로 합성하던 코드는 그대로 옮�
 
 - **이전 선택과 그 한계**: 두 라이브러리 다 마운트에 소유권 가드가 없습니다. Fusion `Children.luau`엔 `-- TODO: check for ancestry conflicts here`가 그대로 남아 있고 이미 마운트된 인스턴스를 조건 없이 재부모화합니다. Vide `mount.luau`도 중복 마운트 체크가 전혀 없어 같은 타깃에 두 번 마운트하면 독립된 루트가 둘 생깁니다. 둘 다 **조용히** 두 벌이 됩니다.
 - **우리가 넘은 방법**: Slot이 자식 위치를 장부로 들고, 이미 마운트된 Slot의 재마운트는 즉시 던집니다. 실재하는 버그 클래스를 막는 가드이고 두 라이브러리 어디에도 없습니다.
-- **알아 둘 것**: `LayoutOrder`는 직접 넣으셔야 합니다 — `updateFn`이 받는 `ctx.Index`/`ctx.Offset`에서 대입하면 됩니다. 대신 채워 주지 않는 것 자체는 Fusion·Vide도 같습니다. quad가 다른 점은 그 자리의 `ctx.Index`/`ctx.Offset`을 **반응형 값으로 쥐어 준다**는 것이고, 이미 지정해 둔 값을 조용히 덮지 않으려고 대입만 남겼습니다. 소유권 가드가 막는 것도 실재하는 버그 클래스(조용히 두 벌이 되는 것)뿐이라, 한 자리에 한 번 마운트하는 정상 사용에서는 걸리지 않습니다.
+- **알아 둘 것**: `LayoutOrder`는 직접 넣으셔야 합니다 — `updateFn`이 받는 `ctx.Index`/`ctx.Offset`에서 대입하면 됩니다. 대신 채워 주지 않는 것 자체는 Fusion·Vide도 같습니다. quad가 다른 점은 그 자리의 `ctx.Offset`을 **State 핸들로 쥐어 준다**는 것입니다(`ctx.Index`는 State가 아니라 그 호출 시점의 물리 위치를 다시 계산한 plain number입니다) — 이미 지정해 둔 값을 조용히 덮지 않으려고 대입만 남겼습니다. 소유권 가드가 막는 것도 실재하는 버그 클래스(조용히 두 벌이 되는 것)뿐이라, 한 자리에 한 번 마운트하는 정상 사용에서는 걸리지 않습니다.
 - **자세히**: [11. 자식이 들어갈 자리](../getting-started/11-slot.md), [Quadnomicon Vol. 9 — 컴포넌트가 형제 여럿을 반환하는 문제와 DOMless Slot 트리](../quadnomicon/09-fragment-breakthrough-and-domless-slot.md), [Vol. 2 — Slot-in-Slot 부분합 트리](../quadnomicon/02-slot-prefix-sum-tree.md)
 
 ### (4) 수명을 GC에 위임한다

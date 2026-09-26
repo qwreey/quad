@@ -117,9 +117,10 @@ quad는 자리마다 길이와 오프셋을 부기합니다.
 3. 길이가 바뀌면 그 자리 뒤쪽의 오프셋만 다시 계산됩니다. 재계산은 배치 게이트
    (`Blocker`) 안에서 모여 한 번만 돕니다.
 
-부기 함수들은 `Dispatch` 표면에 있지만 구현은 별도 부기 서브시스템에 삽니다
-(`quad-base/src/Bookkeeping.luau`) — `Slot`과 `Dispatch`가 둘 다 그것을 쓰고, 부기
-쪽은 둘 다 모릅니다.
+부기 함수들의 공개 표면은 `Dispatch`가 아니라 독립 네임스페이스 `module.Bookkeeping`이고
+(2026-09-15 공개 표면 결정 (30) — `Dispatch` 표면에서 재수출하던 걸 분리), 구현은 별도 부기
+서브시스템에 삽니다(`quad-base/src/Bookkeeping.luau`) — `Slot`과 `Dispatch`가 둘 다 그것을
+쓰고, 부기 쪽은 둘 다 모릅니다.
 
 ### `LayoutOrder`를 자동으로 쓰지 않는 이유
 

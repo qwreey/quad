@@ -128,15 +128,19 @@ local root = q.Claim(template:Clone(), M.Frame(M.Root)({
   대상이 아닙니다. 즉 "게임의 모든 인스턴스를 claim해야 하나"의 답은 아니오지만, 그
   이유는 직계만 느슨하게 본다는 것이 아니라 **claim한 것 안에서는 전부, claim하지
   않은 것은 아예 대상 밖**이라는 것입니다.
-- **디스크립터는 1회용**입니다. 재사용하면 error. 소진 표시는 claim이 성공한 *뒤*에
-  서고 해석(키·클래스·재사용 검사)은 claim보다 먼저 트리 전체에 대해 끝나므로, 그런 실패는
-  아무것도 claim하지 않은 채 재시도가 진짜 원인을 다시 보고합니다 — 예외 둘: 어떤 자식이 이미
-  밖에서 claim돼 있으면 루트와 앞선 형제가 claim된 채 남고(claim 루프 도중 멈춤), 적용 단계
-  (프로퍼티·핸들러)에서 던지면 claim은 트리 전체가 끝난 뒤라 그 시점까지 claim·적용된 것이
-  남습니다.
-- **같은 `inst`를 두 번 claim하는 것**(또는 `New`가 만든 inst를 claim하는 것)은
-  error입니다: `Quad0225 nativeClaim: Instance is already claimed by quad`. 판정은 별도 레지스트리가
-  아니라 §3의 셋업이 이미 있는지 하나로 합니다.
+- **디스크립터는 1회용**입니다. 재사용하면 error. `Claim`은 2패스입니다(round11 Q64 (b)로
+  바뀜) — pass 1(`resolve`)이 키·클래스·재사용 검사와 함께 `Backend.isClaimed`로 트리 전체의
+  claim 여부를 먼저 검증하고, 아무것도 claim하지 않은 채 계획만 세웁니다. pass 2(`commit`)가
+  그 계획대로 `nativeClaim`을 실제로 호출합니다. 그래서 자식이 이미 밖에서 claim돼 있어도 pass 1에서
+  `Quad0029 Claim: … is already claimed by quad`로 커밋 전에 실패하고, 루트를 포함해 아무것도
+  claim되지 않습니다(예전 단일 패스에선 루트와 앞선 형제가 claim된 채 남았지만 지금은 그렇지
+  않습니다). 남는 예외는 하나뿐 — 적용 단계(프로퍼티·핸들러)에서 던지면 claim은 트리 전체가
+  끝난 뒤라 그 시점까지 claim·적용된 것이 남습니다.
+- **같은 `inst`를 두 번 claim하는 것**(또는 `New`가 만든 inst를 claim하는 것)은 error입니다.
+  `Claim()`을 거치면 위 pass 1의 `Backend.isClaimed` 검사가 먼저 잡아 `Quad0029`로 실패하고,
+  `nativeClaim`을 내부에서 직접 호출하는 경로(백엔드 구현 안쪽, `Claim`의 resolve를 거치지 않는
+  자리)에서는 그 함수 자신의 셋업 존재 검사가 `Quad0225 nativeClaim: Instance is already claimed by quad`로
+  잡습니다. 어느 쪽이든 판정은 별도 레지스트리가 아니라 §3의 셋업이 이미 있는지 하나로 합니다.
 - **루트의 `.Parent`는 어느 부기에도 속하지 않습니다.** 그래서 밖에서
   `root.Parent = playerGui`로 붙이고 떼는 것은 허용이고, `Mount(root, parent)`류
   표면은 일부러 만들지 않았습니다. 금지는 여전히 "quad가 소유한 부모 *아래*"에 밖에서

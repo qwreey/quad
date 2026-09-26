@@ -98,6 +98,8 @@ local BRAND_PROBES = {
 	"isObserver",
 	"isEffect",
 	"isBlocker",
+	"isContext", -- `H-613`: base leaves, not providers — must not get the "provider not initialized" hint
+	"isProvider",
 	"isModifier",
 	"isEpoch",
 }
