@@ -42,4 +42,5 @@
 - `round13-q90-proto/` — **[2026-09-27 자율 루프 P-Q90]** 메시지 모양 배치 (b) 사본 적용 — diff 셋(17행·`surface` 인자·`Quad0076` 분기 변형 A/B) + 깨지는 spec 7줄 diff + 프로브 61줄 전후; 정적 자리 주어 표·문서 파급 30곳 표는 §4 Q90 스파이크 문단.
 - `round13-s8-site-build/` — **[2026-09-27 자율 루프 S8]** 사이트 빌드 로그 + 링크·앵커 전수 검사 스크립트/출력(HTML 188·href 약 15,600) — 깨진 앵커 하나(`H-706`), `_redirects` 66 실존.
 - `round13-e20-probe-*.luau` — **[2026-09-27 자율 루프 E20]** Observer/Effect 구독 수명 상태 기계(8×8)·파동 안 전이·GC·cleanup 계약·Deferred/Immediate 창 — `H-707`(Deferred 창 재구독 시 늦은 Destroying이 죽임 — 코드 수정)·`H-708`·`H-709`, `Q109`·`Q110`.
+- `round13-e19-fuzz/` — **[2026-09-27 자율 루프 E19]** 수동 Slot op 참조 모델 차등 퍼저(12,000시드·11축) + 경계·State occupant·파괴 순회 stale offset·성능 프로브 — 불일치 1(`Q111`), `H-710`~`H-712`, `Q112`, Q75 입구 (e)·Q77 보강.
 

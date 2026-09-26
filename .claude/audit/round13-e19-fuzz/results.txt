@@ -1,0 +1,413 @@
+# E19 aggregated outputs (2026-09-27, HEAD d79c43b2, scratch copy cp -rL quad-base + HOOKS.txt)
+## fuzz.e19 plain seeds 1..6000 / ssheavy seeds 20001..26000 — per-seed result
+[plain]
+      1 MM op=ErrCycleViaST ERR-MISSING
+   5999 ok  
+[ss]
+   6000 ok  
+R 3415 MM step=16 op=ErrCycleViaST ERR-MISSING Quad0173
+## Q75-class stale native offsets (non-fatal S lines): count by top-level op
+     38 Clear
+     25 Remove
+     19 Replace
+## notifications (observer fires vs real Length/Offset change per step; over = fires > (changed?1:0))
+key steps changed over transient maxn
+Add:L 153188 25606 0 0 1
+Add:O 153188 8944 0 0 1
+Clear:L 22869 3490 0 0 1
+Clear:O 22869 348 0 0 1
+Dispose:L 18497 0 0 0 0
+Dispose:O 18497 0 0 0 0
+ErrCycle:L 545 0 0 0 0
+ErrCycle:O 545 0 0 0 0
+ErrCycleSelf:L 4610 0 0 0 0
+ErrCycleSelf:O 4610 0 0 0 0
+ErrDisposeHeld:L 5377 0 0 0 0
+ErrDisposeHeld:O 5377 0 0 0 0
+ErrDup:L 5298 0 0 0 0
+ErrDup:O 5298 0 0 0 0
+ErrHeld:L 3776 0 0 0 0
+ErrHeld:O 3776 0 0 0 0
+ErrNil:L 4922 0 0 0 0
+ErrNil:O 4922 0 0 0 0
+ErrReplaceSelf:L 4177 0 0 0 0
+ErrReplaceSelf:O 4177 0 0 0 0
+Extract:L 52917 5944 0 0 1
+Extract:O 52917 3387 0 0 1
+ExtractAll:L 22800 3651 0 0 1
+ExtractAll:O 22800 320 0 0 1
+Move:L 54087 0 0 0 0
+Move:O 54087 3664 0 0 1
+Noop:L 101061 0 0 0 0
+Noop:O 101061 0 0 0 0
+Remove:L 53111 9245 0 0 1
+Remove:O 53111 5553 0 0 1
+Replace:L 52764 2507 0 0 1
+Replace:O 52764 1549 0 0 1
+Splice:L 86669 12455 0 0 1
+Splice:O 86669 4181 0 0 1
+SsSet:L 192886 14720 0 0 1
+SsSet:O 192886 8822 0 0 1
+StSet:L 66812 2394 0 0 1
+StSet:O 66812 1863 0 0 1
+Swap:L 52706 0 0 0 0
+Swap:O 52706 1535 0 0 1
+Toggle:L 23477 4659 0 0 1
+Toggle:O 23477 4947 0 0 1
+## transient stale-occupant materializations (model T counter)
+2863
+## coverage (model-side counters, both runs)
+maxdepth0 70024
+maxdepth1 126851
+maxdepth2 41231
+maxdepth3 6856
+op-Add-M 17711
+op-Add-M-nested 6546
+op-Add-U 11518
+op-Add-U-nested 4744
+op-Clear-M 2623
+op-Clear-M-nested 964
+op-Clear-U 1742
+op-Clear-U-nested 736
+op-Dispose-M 1836
+op-Dispose-M-nested 888
+op-Dispose-U 1127
+op-Dispose-U-nested 631
+op-ErrCycle-M-nested 66
+op-ErrCycle-U-nested 40
+op-ErrCycleSelf-M 585
+op-ErrCycleSelf-M-nested 149
+op-ErrCycleSelf-U 409
+op-ErrCycleSelf-U-nested 105
+op-ErrCycleViaST-U-nested 1
+op-ErrDisposeHeld-M 666
+op-ErrDisposeHeld-M-nested 251
+op-ErrDisposeHeld-U 349
+op-ErrDisposeHeld-U-nested 174
+op-ErrDup-M 600
+op-ErrDup-M-nested 227
+op-ErrDup-U 385
+op-ErrDup-U-nested 154
+op-ErrHeld-M 381
+op-ErrHeld-M-nested 189
+op-ErrHeld-U 141
+op-ErrHeld-U-nested 140
+op-ErrNil-M 602
+op-ErrNil-M-nested 212
+op-ErrNil-U 362
+op-ErrNil-U-nested 152
+op-ErrReplaceSelf-M 529
+op-ErrReplaceSelf-M-nested 170
+op-ErrReplaceSelf-U 307
+op-ErrReplaceSelf-U-nested 135
+op-Extract-M 6454
+op-Extract-M-nested 2131
+op-Extract-U 4031
+op-Extract-U-nested 1558
+op-ExtractAll-M 2687
+op-ExtractAll-M-nested 1021
+op-ExtractAll-U 1683
+op-ExtractAll-U-nested 670
+op-Move-M 6359
+op-Move-M-nested 2241
+op-Move-U 4024
+op-Move-U-nested 1605
+op-Noop-M 14556
+op-Noop-M-nested 3111
+op-Noop-U 9190
+op-Noop-U-nested 2205
+op-Remove-M 6388
+op-Remove-M-nested 2081
+op-Remove-U 4069
+op-Remove-U-nested 1604
+op-Replace-M 6318
+op-Replace-M-nested 2101
+op-Replace-U 3972
+op-Replace-U-nested 1606
+op-Splice-M 9669
+op-Splice-M-nested 3908
+op-Splice-U 6293
+op-Splice-U-nested 2964
+op-SsSet-M 17166
+op-SsSet-M-nested 5681
+op-SsSet-U 11053
+op-SsSet-U-nested 3959
+op-StSet-M 4806
+op-StSet-M-nested 3134
+op-StSet-U 3399
+op-StSet-U-nested 2380
+op-Swap-M 6296
+op-Swap-M-nested 2153
+op-Swap-U 4123
+op-Swap-U-nested 1561
+op-Toggle-M 2710
+op-Toggle-M-nested 1028
+op-Toggle-U 1756
+op-Toggle-U-nested 711
+ss-create 19655
+ss-keep-prev 2662
+ss-keygone-detach-hold 1368
+ss-keygone-detach-noown-release 1368
+ss-noown-destroy-release 4079
+ss-pending-remount 445
+ss-reattach-detached 185
+ss-replace-detached 205
+ss-replace-noown 1574
+ss-replace-own 1448
+## perf.e19
+variant | op | N | getOffsetAt calls | getOffsetAt iters | reindex iters | bk-array splice iters | recompute calls | recompute iters | ms
+flat | Add@1 | 10 | 2 | 0 | 11 | 10 | 2 | 12 | 0.01
+flat | Add@end | 10 | 2 | 10 | 1 | 0 | 2 | 12 | 0.01
+flat | Remove@1 | 10 | 2 | 0 | 9 | 10 | 2 | 10 | 0.01
+flat | Remove@mid | 10 | 2 | 4 | 5 | 6 | 2 | 10 | 0.01
+flat | Replace@mid | 10 | 1 | 4 | 0 | 0 | 1 | 10 | 0.01
+flat | Extract@1 | 10 | 2 | 0 | 9 | 10 | 2 | 10 | 0.01
+flat | Extract@mid+new | 10 | 1 | 4 | 0 | 0 | 1 | 10 | 0.02
+flat | Splice@1 rm1 +1 | 10 | 1 | 0 | 19 | 19 | 1 | 10 | 0.02
+flat | Splice@mid rm5 +5 | 10 | 1 | 4 | 15 | 15 | 1 | 10 | 0.04
+flat | Splice@1 +100 | 10 | 2 | 0 | 1100 | 1000 | 2 | 111 | 0.43
+flat | Move 1->n | 10 | 2 | 9 | 10 | 0 | 1 | 10 | 0.01
+flat | Move n->1 | 10 | 2 | 9 | 10 | 0 | 1 | 10 | 0.01
+flat | Move mid->mid+1 | 10 | 2 | 5 | 2 | 0 | 1 | 10 | 0.01
+flat | Swap 1,n | 10 | 2 | 9 | 0 | 0 | 1 | 10 | 0.01
+flat | Swap mid,mid+1 | 10 | 2 | 5 | 0 | 0 | 1 | 10 | 0.01
+flat | ExtractAll | 10 | 2 | 0 | 0 | 10 | 2 | 1 | 0.02
+flat | Clear | 10 | 11 | 9 | 0 | 10 | 2 | 1 | 0.02
+flat | Add@1 | 100 | 2 | 0 | 101 | 100 | 2 | 102 | 0.05
+flat | Add@end | 100 | 2 | 100 | 1 | 0 | 2 | 102 | 0.05
+flat | Remove@1 | 100 | 2 | 0 | 99 | 100 | 2 | 100 | 0.03
+flat | Remove@mid | 100 | 2 | 49 | 50 | 51 | 2 | 100 | 0.03
+flat | Replace@mid | 100 | 1 | 49 | 0 | 0 | 1 | 100 | 0.04
+flat | Extract@1 | 100 | 2 | 0 | 99 | 100 | 2 | 100 | 0.03
+flat | Extract@mid+new | 100 | 1 | 49 | 0 | 0 | 1 | 100 | 0.04
+flat | Splice@1 rm1 +1 | 100 | 1 | 0 | 199 | 199 | 1 | 100 | 0.05
+flat | Splice@mid rm5 +5 | 100 | 1 | 49 | 465 | 465 | 1 | 100 | 0.08
+flat | Splice@1 +100 | 100 | 2 | 0 | 10100 | 10000 | 2 | 201 | 0.94
+flat | Move 1->n | 100 | 2 | 99 | 100 | 0 | 1 | 100 | 0.04
+flat | Move n->1 | 100 | 2 | 99 | 100 | 0 | 1 | 100 | 0.03
+flat | Move mid->mid+1 | 100 | 2 | 50 | 2 | 0 | 1 | 100 | 0.02
+flat | Swap 1,n | 100 | 2 | 99 | 0 | 0 | 1 | 100 | 0.03
+flat | Swap mid,mid+1 | 100 | 2 | 50 | 0 | 0 | 1 | 100 | 0.02
+flat | ExtractAll | 100 | 2 | 0 | 0 | 100 | 2 | 1 | 0.12
+flat | Clear | 100 | 101 | 99 | 0 | 100 | 2 | 1 | 0.19
+flat | Add@1 | 1000 | 2 | 0 | 1001 | 1000 | 2 | 1002 | 0.32
+flat | Add@end | 1000 | 2 | 1000 | 1 | 0 | 2 | 1002 | 0.36
+flat | Remove@1 | 1000 | 2 | 0 | 999 | 1000 | 2 | 1000 | 0.19
+flat | Remove@mid | 1000 | 2 | 499 | 500 | 501 | 2 | 1000 | 0.22
+flat | Replace@mid | 1000 | 1 | 499 | 0 | 0 | 1 | 1000 | 0.30
+flat | Extract@1 | 1000 | 2 | 0 | 999 | 1000 | 2 | 1000 | 0.19
+flat | Extract@mid+new | 1000 | 1 | 499 | 0 | 0 | 1 | 1000 | 0.31
+flat | Splice@1 rm1 +1 | 1000 | 1 | 0 | 1999 | 1999 | 1 | 1000 | 0.41
+flat | Splice@mid rm5 +5 | 1000 | 1 | 499 | 4965 | 4965 | 1 | 1000 | 0.63
+flat | Splice@1 +100 | 1000 | 2 | 0 | 100100 | 100000 | 2 | 1101 | 6.44
+flat | Move 1->n | 1000 | 2 | 999 | 1000 | 0 | 1 | 1000 | 0.31
+flat | Move n->1 | 1000 | 2 | 999 | 1000 | 0 | 1 | 1000 | 0.31
+flat | Move mid->mid+1 | 1000 | 2 | 500 | 2 | 0 | 1 | 1000 | 0.18
+flat | Swap 1,n | 1000 | 2 | 999 | 0 | 0 | 1 | 1000 | 0.24
+flat | Swap mid,mid+1 | 1000 | 2 | 500 | 0 | 0 | 1 | 1000 | 0.19
+flat | ExtractAll | 1000 | 2 | 0 | 0 | 1000 | 2 | 1 | 1.20
+flat | Clear | 1000 | 1001 | 999 | 0 | 1000 | 2 | 1 | 3.65
+flat | Add@1 | 4000 | 2 | 0 | 4001 | 4000 | 2 | 4002 | 1.36
+flat | Add@end | 4000 | 2 | 4000 | 1 | 0 | 2 | 4002 | 1.36
+flat | Remove@1 | 4000 | 2 | 0 | 3999 | 4000 | 2 | 4000 | 0.81
+flat | Remove@mid | 4000 | 2 | 1999 | 2000 | 2001 | 2 | 4000 | 0.94
+flat | Replace@mid | 4000 | 1 | 1999 | 0 | 0 | 1 | 4000 | 1.32
+flat | Extract@1 | 4000 | 2 | 0 | 3999 | 4000 | 2 | 4000 | 0.90
+flat | Extract@mid+new | 4000 | 1 | 1999 | 0 | 0 | 1 | 4000 | 1.13
+flat | Splice@1 rm1 +1 | 4000 | 1 | 0 | 7999 | 7999 | 1 | 4000 | 1.40
+flat | Splice@mid rm5 +5 | 4000 | 1 | 1999 | 19965 | 19965 | 1 | 4000 | 2.44
+flat | Splice@1 +100 | 4000 | 2 | 0 | 400100 | 400000 | 2 | 4101 | 24.57
+flat | Move 1->n | 4000 | 2 | 3999 | 4000 | 0 | 1 | 4000 | 1.18
+flat | Move n->1 | 4000 | 2 | 3999 | 4000 | 0 | 1 | 4000 | 1.19
+flat | Move mid->mid+1 | 4000 | 2 | 2000 | 2 | 0 | 1 | 4000 | 0.71
+flat | Swap 1,n | 4000 | 2 | 3999 | 0 | 0 | 1 | 4000 | 0.94
+flat | Swap mid,mid+1 | 4000 | 2 | 2000 | 0 | 0 | 1 | 4000 | 0.71
+flat | ExtractAll | 4000 | 2 | 0 | 0 | 4000 | 2 | 1 | 6.05
+flat | Clear | 4000 | 4001 | 3999 | 0 | 4000 | 2 | 1 | 37.34
+nested-sibling | Add@1 | 10 | 4 | 1 | 11 | 10 | 4 | 24 | 0.02
+nested-sibling | Add@end | 10 | 4 | 11 | 1 | 0 | 4 | 24 | 0.02
+nested-sibling | Remove@1 | 10 | 4 | 1 | 9 | 10 | 4 | 22 | 0.01
+nested-sibling | Remove@mid | 10 | 4 | 5 | 5 | 6 | 4 | 22 | 0.01
+nested-sibling | Replace@mid | 10 | 1 | 4 | 0 | 0 | 1 | 10 | 0.01
+nested-sibling | Extract@1 | 10 | 4 | 1 | 9 | 10 | 4 | 22 | 0.01
+nested-sibling | Extract@mid+new | 10 | 1 | 4 | 0 | 0 | 1 | 10 | 0.01
+nested-sibling | Splice@1 rm1 +1 | 10 | 1 | 0 | 19 | 19 | 1 | 10 | 0.02
+nested-sibling | Splice@mid rm5 +5 | 10 | 1 | 4 | 15 | 15 | 1 | 10 | 0.05
+nested-sibling | Splice@1 +100 | 10 | 4 | 1 | 1100 | 1000 | 4 | 123 | 0.64
+nested-sibling | Move 1->n | 10 | 2 | 9 | 10 | 0 | 1 | 10 | 0.01
+nested-sibling | Move n->1 | 10 | 2 | 9 | 10 | 0 | 1 | 10 | 0.01
+nested-sibling | Move mid->mid+1 | 10 | 2 | 5 | 2 | 0 | 1 | 10 | 0.01
+nested-sibling | Swap 1,n | 10 | 2 | 9 | 0 | 0 | 1 | 10 | 0.01
+nested-sibling | Swap mid,mid+1 | 10 | 2 | 5 | 0 | 0 | 1 | 10 | 0.01
+nested-sibling | ExtractAll | 10 | 4 | 1 | 0 | 10 | 4 | 13 | 0.02
+nested-sibling | Clear | 10 | 13 | 10 | 0 | 10 | 4 | 13 | 0.03
+nested-sibling | Add@1 | 100 | 4 | 1 | 101 | 100 | 4 | 204 | 0.05
+nested-sibling | Add@end | 100 | 4 | 101 | 1 | 0 | 4 | 204 | 0.07
+nested-sibling | Remove@1 | 100 | 4 | 1 | 99 | 100 | 4 | 202 | 0.04
+nested-sibling | Remove@mid | 100 | 4 | 50 | 50 | 51 | 4 | 202 | 0.05
+nested-sibling | Replace@mid | 100 | 1 | 49 | 0 | 0 | 1 | 100 | 0.05
+nested-sibling | Extract@1 | 100 | 4 | 1 | 99 | 100 | 4 | 202 | 0.04
+nested-sibling | Extract@mid+new | 100 | 1 | 49 | 0 | 0 | 1 | 100 | 0.05
+nested-sibling | Splice@1 rm1 +1 | 100 | 1 | 0 | 199 | 199 | 1 | 100 | 0.06
+nested-sibling | Splice@mid rm5 +5 | 100 | 1 | 49 | 465 | 465 | 1 | 100 | 0.10
+nested-sibling | Splice@1 +100 | 100 | 4 | 1 | 10100 | 10000 | 4 | 303 | 1.21
+nested-sibling | Move 1->n | 100 | 2 | 99 | 100 | 0 | 1 | 100 | 0.04
+nested-sibling | Move n->1 | 100 | 2 | 99 | 100 | 0 | 1 | 100 | 0.04
+nested-sibling | Move mid->mid+1 | 100 | 2 | 50 | 2 | 0 | 1 | 100 | 0.02
+nested-sibling | Swap 1,n | 100 | 2 | 99 | 0 | 0 | 1 | 100 | 0.03
+nested-sibling | Swap mid,mid+1 | 100 | 2 | 50 | 0 | 0 | 1 | 100 | 0.03
+nested-sibling | ExtractAll | 100 | 4 | 1 | 0 | 100 | 4 | 103 | 0.14
+nested-sibling | Clear | 100 | 103 | 100 | 0 | 100 | 4 | 103 | 0.23
+nested-sibling | Add@1 | 1000 | 4 | 1 | 1001 | 1000 | 4 | 2004 | 0.49
+nested-sibling | Add@end | 1000 | 4 | 1001 | 1 | 0 | 4 | 2004 | 0.53
+nested-sibling | Remove@1 | 1000 | 4 | 1 | 999 | 1000 | 4 | 2002 | 0.37
+nested-sibling | Remove@mid | 1000 | 4 | 500 | 500 | 501 | 4 | 2002 | 0.38
+nested-sibling | Replace@mid | 1000 | 1 | 499 | 0 | 0 | 1 | 1000 | 0.33
+nested-sibling | Extract@1 | 1000 | 4 | 1 | 999 | 1000 | 4 | 2002 | 0.35
+nested-sibling | Extract@mid+new | 1000 | 1 | 499 | 0 | 0 | 1 | 1000 | 0.32
+nested-sibling | Splice@1 rm1 +1 | 1000 | 1 | 0 | 1999 | 1999 | 1 | 1000 | 0.38
+nested-sibling | Splice@mid rm5 +5 | 1000 | 1 | 499 | 4965 | 4965 | 1 | 1000 | 0.64
+nested-sibling | Splice@1 +100 | 1000 | 4 | 1 | 100100 | 100000 | 4 | 2103 | 6.81
+nested-sibling | Move 1->n | 1000 | 2 | 999 | 1000 | 0 | 1 | 1000 | 0.31
+nested-sibling | Move n->1 | 1000 | 2 | 999 | 1000 | 0 | 1 | 1000 | 0.31
+nested-sibling | Move mid->mid+1 | 1000 | 2 | 500 | 2 | 0 | 1 | 1000 | 0.20
+nested-sibling | Swap 1,n | 1000 | 2 | 999 | 0 | 0 | 1 | 1000 | 0.28
+nested-sibling | Swap mid,mid+1 | 1000 | 2 | 500 | 0 | 0 | 1 | 1000 | 0.18
+nested-sibling | ExtractAll | 1000 | 4 | 1 | 0 | 1000 | 4 | 1003 | 1.72
+nested-sibling | Clear | 1000 | 1003 | 1000 | 0 | 1000 | 4 | 1003 | 4.19
+nested-sibling | Add@1 | 4000 | 4 | 1 | 4001 | 4000 | 4 | 8004 | 1.69
+nested-sibling | Add@end | 4000 | 4 | 4001 | 1 | 0 | 4 | 8004 | 1.87
+nested-sibling | Remove@1 | 4000 | 4 | 1 | 3999 | 4000 | 4 | 8002 | 1.33
+nested-sibling | Remove@mid | 4000 | 4 | 2000 | 2000 | 2001 | 4 | 8002 | 1.34
+nested-sibling | Replace@mid | 4000 | 1 | 1999 | 0 | 0 | 1 | 4000 | 1.13
+nested-sibling | Extract@1 | 4000 | 4 | 1 | 3999 | 4000 | 4 | 8002 | 1.24
+nested-sibling | Extract@mid+new | 4000 | 1 | 1999 | 0 | 0 | 1 | 4000 | 1.13
+nested-sibling | Splice@1 rm1 +1 | 4000 | 1 | 0 | 7999 | 7999 | 1 | 4000 | 1.40
+nested-sibling | Splice@mid rm5 +5 | 4000 | 1 | 1999 | 19965 | 19965 | 1 | 4000 | 2.34
+nested-sibling | Splice@1 +100 | 4000 | 4 | 1 | 400100 | 400000 | 4 | 8103 | 24.74
+nested-sibling | Move 1->n | 4000 | 2 | 3999 | 4000 | 0 | 1 | 4000 | 1.22
+nested-sibling | Move n->1 | 4000 | 2 | 3999 | 4000 | 0 | 1 | 4000 | 1.19
+nested-sibling | Move mid->mid+1 | 4000 | 2 | 2000 | 2 | 0 | 1 | 4000 | 0.74
+nested-sibling | Swap 1,n | 4000 | 2 | 3999 | 0 | 0 | 1 | 4000 | 0.94
+nested-sibling | Swap mid,mid+1 | 4000 | 2 | 2000 | 0 | 0 | 1 | 4000 | 0.72
+nested-sibling | ExtractAll | 4000 | 4 | 1 | 0 | 4000 | 4 | 4003 | 9.79
+nested-sibling | Clear | 4000 | 4003 | 4000 | 0 | 4000 | 4 | 4003 | 43.07
+## probe.e19.boundary (blame = line in the error prefix; user = line of the offending call)
+B | Add idx 0 | Quad0168 | blame=31 | user=31
+B | Add idx n+2 | Quad0236 | blame=32 | user=32
+B | Add idx 1.5 | Quad0168 | blame=33 | user=33
+B | Add idx NaN | Quad0168 | blame=34 | user=34
+B | Add idx math.huge | Quad0168 | blame=35 | user=35
+B | Add idx '1' | Quad0168 | blame=36 | user=36
+B | Remove idx n+1 | Quad0236 | blame=37 | user=37
+B | Remove idx 0 | Quad0168 | blame=38 | user=38
+B | Remove idx nil | Quad0168 | blame=39 | user=39
+B | Replace idx n+1 | Quad0236 | blame=40 | user=40
+B | Extract idx n+1 | Quad0236 | blame=41 | user=41
+B | Extract idx -1 | Quad0168 | blame=42 | user=42
+B | Move to n+1 | Quad0236 | blame=43 | user=43
+B | Move from 0 | Quad0168 | blame=44 | user=44
+B | Swap b n+1 | Quad0236 | blame=45 | user=45
+B | Splice idx n+2 | Quad0236 | blame=46 | user=46
+B | Splice rc past end | Quad0174 | blame=47 | user=47
+B | Splice rc -1 | Quad0174 | blame=48 | user=48
+B | Splice rc 1.5 | Quad0174 | blame=49 | user=49
+B | Splice rc nil | Quad0174 | blame=50 | user=50
+B | Splice idx n+1 rc 0 (end insert) | no error | blame=- | user=51
+B | Get idx 99 (nil ok) | no error | blame=- | user=52
+B | Get idx 'x' | Quad0175 | blame=53 | user=53
+   Get(1.5) ->	nil
+B | Get idx 1.5 (nil?) | no error | blame=- | user=54
+   state after index probes: len=4 (4 = only the end-insert Splice succeeded)
+B | Add destroyed Instance | Quad0241 | blame=64 | user=64
+B | Add destroyed Slot | Quad0242 | blame=66 | user=66
+B | Add State holding destroyed Slot | Quad0169 | blame=67 | user=67
+B | Add State holding destroyed Instance | Quad0241 | blame=68 | user=68
+B | CRUD on destroyed Slot | Quad0165 | blame=69 | user=69
+B | Move on destroyed Slot | Quad0165 | blame=70 | user=70
+   ds:Get(1) ->	nil
+B | Get on destroyed Slot | no error | blame=- | user=71
+B | Splice with destroyed in the middle | Quad0241 | blame=72 | user=72
+   after: len=0 (pre-pass: expect 0)
+B | Remove element destroyed outside quad | no error | blame=- | user=80
+B | Extract element destroyed outside quad (then reuse) | no error | blame=- | user=81
+B | Replace over destroyed element | no error | blame=- | user=83
+B | Add self (free) | Quad0173 | blame=92 | user=92
+B | Add parent into child (free root) | Quad0173 | blame=94 | user=94
+B | Add parent into child (mounted root) | Quad0172 | blame=96 | user=96
+B | Add held leaf into other Slot | Quad0172 | blame=99 | user=99
+B | Add held leaf into same Slot | Quad0170 | blame=100 | user=100
+B | Replace(i, Get(i)) | Quad0170 | blame=101 | user=101
+B | Splice puts back what it removes | Quad0170 | blame=102 | user=102
+B | same nil-State twice (second place) | no error | blame=- | user=105
+   same nil-State added twice to one Slot: len=2
+B | Set that State to a leaf (two wrappers race for it) | Quad0156 | blame=110 | user=110
+   -> g owner is wrapper#1? false wrapper#2? true; c.Length=1 (Blocker left on? false)
+B | inner:Add(outer) — cycle via unclaimed State link | no error | blame=- | user=123
+   outer owner=inner; inner owner=nil
+B |   then mount outer's owner chain (drive inner) | Quad0156 | blame=127 | user=127
+B |   then dispose(inner) | Quad0179 | blame=128 | user=128
+B | st:Set(inner) after inner:Add(outer) (free tree) | no error | blame=- | user=134
+B |   then drive(i2) | Quad0156 | blame=136 | user=136
+B | mounted: st:Set(its own ancestor) | Quad0156 | blame=141 | user=141
+B | mounted: st:Set(free Slot containing ... nothing) ok | no error | blame=- | user=146
+B | mounted: free:Add(r4) where r4 ⊃ m4 ⊃ st4 ⊃ free | Quad0172 | blame=147 | user=147
+B | Offset observer CRUDs the parent Slot (re-entry) | no error | blame=- | user=161
+   s len=4 Length=4 nested.Offset=4 (logical: leaves before nested = 4)
+B | Single updateFn CRUDs its ancestor during mount | Quad0167 | blame=166 | user=168
+B | Single updateFn CRUDs its ancestor after mount (src:Set) | no error | blame=- | user=174
+   p5 len=2 Length=2
+B | Single updateFn re-Sets its own data (UB) | no error | blame=- | user=180
+   sub6 element=b calls=3
+## probe.e19.state-occupant
+P1 — State element value changed while its Slot is UNMOUNTED: the old occupant stays claimed until remount
+  mounted: A.Parent=host?	true
+  after unmount + st:Set(B): A owner is wrapper?	true
+  other:Add(A): Quad0172 blame=30
+  q.dispose(A): Quad0179 blame=31
+  after remount: A owner=	nil	 B.Parent=host?	true	 A.Parent=	nil
+  q.dispose(A) after remount: ok
+  never-mounted: q.dispose(A): ok
+P1b — same for a user :Single(src) with OwnsElements=false, data changed while unmounted
+  q.dispose(old 'a' element) while unmounted: Quad0179 blame=55
+  q.dispose(old 'a' element) after remount: ok
+P2 — remount materializes the STALE occupant subtree before the catch-up swap
+  first mount: innerSingle updateFn calls =	1
+  after remount: innerSingle calls =	1	 old1 Parent changes during remount =		 final old1.Parent =	nil
+  pending nil->Slot->leaf, remount: innerSingle updateFn calls =	0	(0 = the intermediate Slot never mounted)
+  fresh :Single inside the stale occupant — updateFn calls at remount =	1	 its element =	inner-x	 parented? 	nil
+  oldOcc Length/Offset after remount =	2	0	 (it is no longer in the tree)
+P3 — a State element set to an already-held value while MOUNTED (reconcile-depth raise), then recovery
+  st:Set(held): Quad0156 blame=128
+  after raise: wrapper elements=1 wrapper.Length=1 root.Length=2 wrapper blocker on? true
+  st:Set(fresh) (recover?): ok
+  after: wrapper elements=1 wrapper.Length=1 root.Length=2 fresh.Parent=host? true
+  root:Add after: root.Length=3 (model 3)
+  st:Set(nil): ok
+  after Set(nil): wrapper elements=0 wrapper.Length=1 (model 0) root.Length=3 (model 2) tail Parent=host? true
+  st:Set(F('again')): ok
+  after Set(again): wrapper.Length=1 (model 1) root.Length=3 (model 3)
+P4 — the same nil State placed twice (pre-pass sees no occupant), then Set
+  s1:Add(st): ok
+  s2:Add(st) (same State, second seat): ok
+  st:Set(g): Quad0156 blame=152
+  g owner: w1=true w2=false; s1.Length=1 s2.Length=0 blockers w1=false w2=true
+  st:Set(F()) again: Quad0156 blame=155
+  s1.Length=1 s2.Length=0
+P5 — element destroyed outside quad while seated, then Extract and reuse
+  s:Extract(1): ok
+  q.Slot():Add(extracted corpse): Quad0241 blame=169
+  s.Length=1 len=1
+P6 — cycle via State link: what the mount-time raise leaves behind
+  inner:Add(outer): ok
+  drive(host, {inner}): Quad0156 blame=183
+  inner owner=host? true; outer materializing? true; inner materializing? true; host children=0
+  inner:Add(F()) afterwards: Quad0167 blame=185
+  outer:Remove(1) afterwards: Quad0167 blame=186
+## probe.e19.stale-destroywalk
+A Remove(nested [f1 f2 State(g)]): stale=1 stale extract: passed 4, actual 2 (g) | viol=0 | phys=[L,a,T]
+B Clear(root [f1 State(g)])  (root walk is batched, not a destroy walk): stale=0  | viol=0 | phys=[L,T]
+C Remove(nested [f1 Single(noown)]): stale=1 stale extract: passed 3, actual 2 (s) | viol=0 | phys=[L,a,T]
+D Replace(nested [f1 State(g)], new): stale=1 stale extract: passed 2, actual 1 (g) | viol=0 | phys=[L,n,T]
+E Remove(nested [State(g) f1]) — wrapper first: no stale: stale=0  | viol=0 | phys=[L,T]
+F Remove(nested [f1 nested2[State(g)]]): stale=1 stale extract: passed 2, actual 1 (g) | viol=0 | phys=[L,T]

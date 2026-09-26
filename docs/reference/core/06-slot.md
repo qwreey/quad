@@ -164,7 +164,7 @@ Add: (self: Slot<T>, element: SlotElement<T>, index: number?) -> number
 
 - Slot을 자기 자신이나 자기 조상에 넣으면 순환이라 거부됩니다 — `Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)`. **인스턴스를 매개로 한 순환은 거부되지 않습니다(정의되지 않은 동작)** — 이 Slot이 붙어 있는 인스턴스나 그 조상을 원소로 넣는 것(`slot:Add(host)`). quad-base는 인스턴스의 조상 사슬을 모르고, 정적 자식 자리의 같은 검사(`InstanceChild: cannot place an Instance inside itself …`)는 백엔드 핸들러가 하는 것입니다. Roblox에서는 엔진이 부모 대입에서 던지는데 그때는 Slot 부기가 이미 끝난 뒤라 그 원소가 자리에 끼인 채 남습니다. 회복은 **`slot:Extract(그 자리)`** 로 자리를 비운 뒤 그 인스턴스를 원래 부모에 다시 붙이는 것입니다 — `Extract`는 그 인스턴스의 `Parent`를 `nil`로 만들고, `Remove`는 그 인스턴스(자기 자신이거나 조상!)를 **파괴**하니 쓰지 마세요. `Splice`로 넣은 경우는 배치 창 안에서 던진 것이라 그 Slot의 `Length`가 더는 갱신되지 않습니다(위 `:Clear` 캐비엇과 같은 동결) — 그 Slot은 버리세요.
 - quad가 소유하지 않은(claim되지 않은) 인스턴스는 거부됩니다 — 위 "원소 대수" 절의 `Quad0241 Slot: this element is not claimed by quad …`. 생성자 `initial`·`:Replace`·`:Splice`·`:List`/`:Single`의 새 원소도 같은 검사를 지납니다.
-- 마운트된 Slot의 단일 변경(`Add`·`Remove`·`Replace`·`Move`·`Swap`·`Extract`)은 현재 길이에 비례하는 부기 비용을 냅니다 — `Move`/`Swap`은 Roblox에서 물리 이동이 없을 뿐 자리 계산은 전량 돕니다. 여러 개를 한 번에 넣거나 뺄 때는 [`:Splice`](#slotspliceindex-removecount-newelements)를 쓰세요(한 호출에 여럿이 배치이고, 한 개씩 반복 호출은 배치가 아닙니다). `:List`의 한 사이클도 바뀐 항목 수와 무관하게 전체 항목 수에 비례합니다.
+- 마운트된 Slot의 단일 변경(`Add`·`Remove`·`Replace`·`Move`·`Swap`·`Extract`)은 현재 길이에 비례하는 부기 비용을 냅니다 — `Move`/`Swap`은 Roblox에서 물리 이동이 없을 뿐 자리 계산은 전량 돕니다. 여러 개를 한 번에 넣거나 뺄 때는 [`:Splice`](#slotspliceindex-removecount-newelements)를 쓰세요(한 호출에 여럿이 배치이고, 한 개씩 반복 호출은 배치가 아닙니다 — 다만 `:Splice`의 배치는 **recompute와 물리 op**가 한 번이라는 뜻이고, 인덱스 부기는 넣는 원소마다 뒤쪽을 한 번씩 밀어 k개를 앞에 넣으면 k·(남은 길이)만큼 듭니다 — N=4000 앞에 100개 25ms 안팎, mock CLI). `:List`의 한 사이클도 바뀐 항목 수와 무관하게 전체 항목 수에 비례합니다.
 
 **예제**
 
@@ -473,6 +473,8 @@ Single: <Item, UD>(
 - 인자 검증 에러: `Quad0154 Slot:Single: updateFn must be a function (got {typeof(updateFn)})`.
 
 `Slot`에 State를 원소로 넣는 `slot:Add(someState)`는 내부적으로 `OwnsElements = false`인 래퍼 Slot에 `:Single`을 건 것과 같습니다. 래퍼가 `OwnsElements = false`이므로 값이 바뀔 때 **옛 원소는 파괴되지 않습니다** — 더 쓸 일이 없으면 직접 `q.dispose` 하세요.
+
+두 가지를 알아 두세요. **(1) 옛 원소가 풀리는 시점은 마운트 중일 때입니다** — 이 Slot이 언마운트된 상태(마운트된 적은 있으나 지금은 떼인)에서 `:Set`하면 조정이 돌지 않아 옛 원소는 다시 마운트될 때까지 래퍼에 묶인 채 남습니다(그 사이 다른 Slot에 넣으면 `Quad0172`, `q.dispose`는 `Quad0179`). `OwnsElements = false`인 `:Single`도 같습니다. **(2) 이미 다른 자리가 쥔 원소로 `:Set`하면 정의되지 않은 동작입니다** — `Set` 줄에서 `Quad0156`이 나고 그 래퍼는 배치 게이트가 켜진 채 남아 뒤의 `Set`이 겉으론 되는 듯해도 `Length`가 조용히 어긋납니다(`:List`의 `updateFn` 절과 같은 UB — 던진 자리의 Slot은 버리세요).
 
 **예제**
 

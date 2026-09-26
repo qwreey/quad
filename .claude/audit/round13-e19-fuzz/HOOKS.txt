@@ -1,0 +1,12 @@
+Scratch-only probe hooks (NOT a proposal) applied to a `cp -rL quad-base` copy at HEAD d79c43b2:
+  src/Slot/init.luau  after `local OWNER, OWNER_POS = "__owner", "__ownerPos"`:
+      module._probeOwner = elementOwner
+  src/Slot/Raw.luau   reindexFrom / reindexRange: `module._pc.reindexCalls += 1; reindexIters += (span)`
+                      spliceArraysUp / spliceArraysDown: `module._pc.spliceArr += (n - index + 1)`
+  src/Bookkeeping.luau getOffsetAt: `_pc.getOffsetAt += 1` per call, `_pc.getOffsetIters += 1` per walk step
+                      recompute: `_pc.recompute += 1` per call, `_pc.recomputeIters += 1` per loop turn
+  (every hook is a no-op when `module._pc` is nil; the fuzzer/perf scripts set it.)
+Run: copy the .luau files into <copy>/quad-base/test/, then from <copy>/quad-base:
+  luau test/fuzz.e19.luau -a <fromSeed> <count> [verboseSeed] [flags]     flags: ssheavy,ndetail,noerr,nost,noss,nomount,nodispose
+  luau test/probe.e19.boundary.luau | probe.e19.state-occupant.luau | probe.e19.stale-destroywalk.luau | perf.e19.luau
+Seeds used: plain 1..6000, ssheavy 20001..26000 (100 seeds per process, ~0.3 s each). Raw per-seed outputs stayed in the scratchpad; results.txt is the aggregate.
