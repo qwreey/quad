@@ -127,7 +127,7 @@ local a = FADE:Mapped(function(v: number): number return 1 end)  -- Time = 0.15 
 local b = FADE:Mapped(function(v: number): number return 0.5 end)
 ```
 
-`fn`이 함수가 아니면 `Tween:Mapped: fn must be a function (got {typeof(fn)})`.
+`fn`이 함수가 아니면 `Quad0227 Tween:Mapped: fn must be a function (got {typeof(fn)})`.
 
 ---
 

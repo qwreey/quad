@@ -121,7 +121,7 @@ Quad0081 Dispatch.addHandler: keyType must be "number", "string" or nil (got {�
 listHandlers: () -> { Handler }
 ```
 
-**반환** — 등록된 핸들러 전부를 우선순위 순으로 담은 **사본**(`table.clone`). **[2026-09-26 round13 `H-602` 정정]** 사본인 건 그 배열뿐입니다 — 안의 핸들러 테이블은 레지스트리에 실제로 앉은 항목 그 자체입니다. 읽기만 하세요: 예를 들어 돌려받은 항목의 `isHandlable`을 갈아 끼우면 그 자리에서 레지스트리의 핸들러가 바뀌고, 이후 그 우선순위로 오는 모든 매치에 영향을 줍니다(`q.Dispatch.getHandler` 사본도 같습니다).
+**반환** — 등록된 핸들러 전부를 우선순위 순으로 담은 **사본**(`table.clone`). **[2026-09-26 기준]** 사본인 건 그 배열뿐입니다 — 안의 핸들러 테이블은 레지스트리에 실제로 앉은 항목 그 자체입니다. 읽기만 하세요: 예를 들어 돌려받은 항목의 `isHandlable`을 갈아 끼우면 그 자리에서 레지스트리의 핸들러가 바뀌고, 이후 그 우선순위로 오는 모든 매치에 영향을 줍니다(`q.Dispatch.getHandler` 사본도 같습니다).
 
 **동작** — 순수 조회입니다. 아무것도 출력하지 않습니다 — 보여줄지 말지는 부르는 쪽의 일입니다.
 
@@ -137,7 +137,7 @@ getHandler: (inst: any, key: any, value: any) -> Handler?
 
 **동작** — 순수 스캔입니다. `process`/`retract`를 부르지 않고 부기도 건드리지 않습니다. 매치 실패를 에러로 만드는 것은 `process`의 일이라, 여기서는 조용히 `nil`입니다. 키의 `type`에 맞는 버킷만 훑습니다.
 
-인자 자체가 틀리면(`inst`가 `nil`, `key`가 `nil`) 매치 실패와는 다른 층 — `process`/`retractFrom`과 같은 검사(`checkInst`/`checkKey`)로 그 자리에서 즉시 던집니다(`Quad0072`/`Quad0074`). `getHandler`는 `process`/`retractFrom` 앞에 서는 다른 진입점이 없어, 이 검사가 없으면 `nil`/`nil` 인자가 그대로 `isHandlable`에 들어가 잎 모듈(예: quad-roblox의 `Reflection`)의 raw VM 에러가 됩니다. **[2026-09-26 round13 `H-603`]** `inst`가 `nil`이 아니지만 그 백엔드의 Instance 모양이 아닌 값(예: 빈 테이블)은 이 검사를 통과합니다 — 그 경우 `isHandlable`이 여전히 잎 모듈 에러를 낼 수 있고, `q.Dispatch`는 백엔드 무관 설계라 여기서 인스턴스 모양을 검증하지 않습니다.
+인자 자체가 틀리면(`inst`가 `nil`, `key`가 `nil`) 매치 실패와는 다른 층 — `process`/`retractFrom`과 같은 검사(`checkInst`/`checkKey`)로 그 자리에서 즉시 던집니다(`Quad0072`/`Quad0074`). `getHandler`는 `process`/`retractFrom` 앞에 서는 다른 진입점이 없어, 이 검사가 없으면 `nil`/`nil` 인자가 그대로 `isHandlable`에 들어가 잎 모듈(예: quad-roblox의 `Reflection`)의 raw VM 에러가 됩니다. **[2026-09-26 기준]** `inst`가 `nil`이 아니지만 그 백엔드의 Instance 모양이 아닌 값(예: 빈 테이블)은 이 검사를 통과합니다 — 그 경우 `isHandlable`이 여전히 잎 모듈 에러를 낼 수 있고, `q.Dispatch`는 백엔드 무관 설계라 여기서 인스턴스 모양을 검증하지 않습니다.
 
 ## `q.Dispatch.process(inst, key, value, index)`
 

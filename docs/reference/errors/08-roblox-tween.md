@@ -83,7 +83,7 @@ description: "Tween/Animate가 던지는 에러"
 
 `Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))` — `quad-roblox/src/Tween.luau`
 
-- **언제**: `opts.Value`로 `State`를 그대로 넘겼을 때 — `Tween`의 모든 필드는 평범한 값이어야 한다는 불변식(Q16 (b))을 어깁니다.
+- **언제**: `opts.Value`로 `State`를 그대로 넘겼을 때 — `Tween`의 모든 필드는 평범한 값이어야 한다는 불변식을 어깁니다.
 - **고치려면**: `State` 쪽을 감싸세요 — `state:Apply(q.Animate{...})`, 또는 `Compute` 안에서 `Tween{...}`을 만드세요.
 - **참고**: [`q.Tween(opts)`](../roblox/06-tween-animate.md#qtweenopts)
 
@@ -91,6 +91,6 @@ description: "Tween/Animate가 던지는 에러"
 
 `Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)` — `quad-roblox/src/Tween.luau`
 
-- **언제**: `opts.Value`로 `q.None`이나 다른 `Tween`을 넘겼을 때 — 이 역시 "모든 필드는 평범한 값" 불변식 위반입니다(`H-463`).
+- **언제**: `opts.Value`로 `q.None`이나 다른 `Tween`을 넘겼을 때 — 이 역시 "모든 필드는 평범한 값" 불변식 위반입니다.
 - **고치려면**: 프로퍼티를 풀고 싶으면 `Tween`으로 감싸지 말고 `None` 자체를 그 자리에 방출하세요.
 - **참고**: [`q.Tween(opts)`](../roblox/06-tween-animate.md#qtweenopts)

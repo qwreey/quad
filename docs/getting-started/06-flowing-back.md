@@ -192,7 +192,7 @@ D.TextBox { q.Out("Text", derived) }
 <details>
 <summary><strong>같은 프로퍼티에 <code>q.Tween</code>/<code>q.Animate</code>와 <code>q.Out</code>을 같이 걸면요?</strong></summary>
 
-**[2026-09-26 round13 `H-601`]** 이 장의 `name`/`nameBox`처럼 사용자가 직접 바꾸는 프로퍼티라면 문제가 없지만,
+**[2026-09-26 기준]** 이 장의 `name`/`nameBox`처럼 사용자가 직접 바꾸는 프로퍼티라면 문제가 없지만,
 [애니메이션이 거는 프로퍼티](./17-animation.md)에 `q.Out`을 같이 걸면 얘기가 달라집니다. 트윈은 매 프레임 값을
 바꾸는데, 그 중간값이 `q.Out`을 거쳐 되쓸 `Source`에 그대로 앉습니다. 애니메이션이 그 새 값을 다음 목표로
 받아들이면 방금 만든 트윈을 취소하고 다시 만들게 되고, 결과적으로 애니메이션이 첫 프레임에서 멈춘 것처럼

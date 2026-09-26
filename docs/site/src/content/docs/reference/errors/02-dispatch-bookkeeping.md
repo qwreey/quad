@@ -257,7 +257,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Dispatch.{fnName}: inst must not be nil` — `quad-base/src/Dispatch/init.luau`
 
-- **언제**: `q.Dispatch.process`/`q.Dispatch.retractFrom`/`q.Dispatch.getHandler`를 `inst = nil`로 직접 부를 때. `{fnName}`은 실제로 부른 함수 이름입니다(`getHandler`는 **[2026-09-26 round13 `H-603`]** 추가된 게이트).
+- **언제**: `q.Dispatch.process`/`q.Dispatch.retractFrom`/`q.Dispatch.getHandler`를 `inst = nil`로 직접 부를 때. `{fnName}`은 실제로 부른 함수 이름입니다(`getHandler`는 **[2026-09-26 기준]** 추가된 게이트).
 - **고치려면**: 실제 대상 요소(`inst`)를 넘기세요.
 - **참고**: [`q.Dispatch.process(inst, key, value, index)`](/reference/extend/02-dispatch-handler-contract/#qdispatchprocessinst-key-value-index)
 
@@ -273,7 +273,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Dispatch.{fnName}: key must not be nil` — `quad-base/src/Dispatch/init.luau`
 
-- **언제**: `q.Dispatch.process`/`q.Dispatch.retractFrom`/`q.Dispatch.getHandler`를 `key = nil`로 부를 때(`getHandler`는 **[2026-09-26 round13 `H-603`]** 추가된 게이트).
+- **언제**: `q.Dispatch.process`/`q.Dispatch.retractFrom`/`q.Dispatch.getHandler`를 `key = nil`로 부를 때(`getHandler`는 **[2026-09-26 기준]** 추가된 게이트).
 - **고치려면**: 실제 props 키(숫자 또는 문자열)를 넘기세요.
 - **참고**: [`q.Dispatch.process(inst, key, value, index)`](/reference/extend/02-dispatch-handler-contract/#qdispatchprocessinst-key-value-index)
 

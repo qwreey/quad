@@ -127,7 +127,7 @@ local root = q.Claim(template:Clone(), M.Frame(M.Root)({
   대상이 아닙니다. 즉 "게임의 모든 인스턴스를 claim해야 하나"의 답은 아니오지만, 그
   이유는 직계만 느슨하게 본다는 것이 아니라 **claim한 것 안에서는 전부, claim하지
   않은 것은 아예 대상 밖**이라는 것입니다.
-- **디스크립터는 1회용**입니다. 재사용하면 error. `Claim`은 2패스입니다(round11 Q64 (b)로
+- **디스크립터는 1회용**입니다. 재사용하면 error. `Claim`은 2패스입니다(2026-09-18 결정으로
   바뀜) — pass 1(`resolve`)이 키·클래스·재사용 검사와 함께 `Backend.isClaimed`로 트리 전체의
   claim 여부를 먼저 검증하고, 아무것도 claim하지 않은 채 계획만 세웁니다. pass 2(`commit`)가
   그 계획대로 `nativeClaim`을 실제로 호출합니다. 그래서 자식이 이미 밖에서 claim돼 있어도 pass 1에서
