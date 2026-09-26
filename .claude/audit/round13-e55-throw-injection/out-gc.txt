@@ -1,0 +1,14 @@
+Observer fn threw, host destroyed                                              control: all collected          throw: all collected
+Effect fn threw, host destroyed                                                control: all collected          throw: all collected
+Effect fn threw, strong-subscribed, dropped                                    control: all collected          throw: ALIVE: handle
+:List updateFn threw (gate stuck), host destroyed                              control: all collected          throw: all collected
+Declaration threw in OnRendered (half-built, Ref kept by caller then dropped)  control: all collected          throw: all collected
+Declaration threw in OnRendered, half-built NOT destroyed, no refs             control: ALIVE: host            throw: ALIVE: host
+Declaration threw in PreRef (pre-pass), not destroyed                          control: ALIVE: host            throw: ALIVE: host
+Declaration threw in property (plain Compute), not destroyed                   control: ALIVE: host            throw: ALIVE: host
+nested-Slot attach: first-cycle updateFn threw during S1:Add(listSlot), root destroyed control: all collected          throw: all collected
+Offset subscriber threw (recompute window), host destroyed                     control: all collected          throw: all collected
+Offset subscriber threw, host NOT destroyed, all refs dropped                  control: ALIVE: host,slot       throw: ALIVE: host,slot
+Tween Started threw (engine path), host destroyed                              control: all collected          throw: all collected
+Cleanup threw on destroy                                                       control: all collected          throw: all collected
+attach-window: first-cycle updateFn threw while Add-ing into a mounted Slot    control: all collected          throw: ALIVE: slot

@@ -1,0 +1,92 @@
+== P1 transient Compute throw, who absorbs it
+  before: effRuns	1	effLast	10	obsLast	10
+  a:Set(2) with throwing fn:	C-throw
+  reread same gen:	Quad0184
+  a:Set(3):	ok	c:Get()	30
+  after: effRuns	2	effLast	10	obsLast	30
+  (which reader absorbed the throw depends on subscriber iteration order; the Effect, if it was first, is dead:)
+  a:Set(4): effRuns	2	effLast	10	obsLast	40
+  Clamp: first run	1	5
+  lo:Set(20) (lo > hi):	Quad0124
+  lo:Set(1):	ok	cl:Get()	5	effect saw	5	runs	2
+  v:Set(7): cl	7	effect saw	5	runs	2	 (dead Effect -> stays)
+  List: initial sl.Length	1	sib.Offset	1
+  List: a:Set(2) throwing (read by i1's ZIndex binding):	C-throw
+  items:Set({1,2}) in the same generation:	Quad0184
+  after a:Set(3), items {1,2,3}: sl.Length	1	sib.Offset	1	(want 3 / 4)
+== P2 side effects before the throw
+  a:Set(2):	after-side-effects	other	99	slot Length	1
+  updateFn: items {1,2,3}:	upd	other	7	children	1	Length	1
+  next cycle {3,1}: children	2	Length	1	(Length frozen per core/06:400)
+== P3 two throwers in one wave
+  a:Set(1):	T2	ran:	2:1
+  a:Set(2) (next wave):	1:2 2:2 3:2 4:2	— all four run again
+   handle	Observer(subscribed)	WeakSubscribe after:	Quad0111
+   handle	Observer(subscribed)	WeakSubscribe after:	Quad0110
+   handle	Observer(subscribed)	WeakSubscribe after:	Quad0111
+   handle	Observer(subscribed)	WeakSubscribe after:	Quad0111
+  chain: after a:Set(1) seen m1/m2/a1 =	101	101	0	(some subscribers missed the cut wave)
+  a:Set(2): m1/m2/a1 =	102	102	2
+== P4 Traceback: does the trace name the throwing user line?
+  compute        err prefix line 172 | trace has the callback line 188: true | trace lines 16
+  observer       err prefix line 172 | trace has the callback line 189: true | trace lines 9
+  effectFn       err prefix line 172 | trace has the callback line 190: true | trace lines 9
+  preRef         err prefix line 172 | trace has the callback line 191: true | trace lines 11
+  postRef        err prefix line 172 | trace has the callback line 192: true | trace lines 11
+  onCreated      err prefix line 172 | trace has the callback line 193: true | trace lines 12
+  onRendered     err prefix line 172 | trace has the callback line 194: true | trace lines 12
+  updateFn       err prefix line 172 | trace has the callback line 195: true | trace lines 15
+  keyFn          err prefix line 172 | trace has the callback line 196: true | trace lines 15
+  modFn          err prefix line 172 | trace has the callback line 197: true | trace lines 8
+  tweenStarted   err prefix line 172 | trace has the callback line 198: true | trace lines 13
+  Offset obs     err prefix line 172 | trace has the callback line 199: true | trace lines 9
+  later Observer throw after mount: boundary n/a, Set line got late
+== P5 GC residue
+  obsThrown      collected
+  effThrown      collected
+  effStrongDead  ALIVE
+  stuckSlot      collected
+  stuckHost      collected
+  halfBuilt      ALIVE
+  halfRef        ALIVE
+  tweenHost      ALIVE
+  tweenHostCtl   ALIVE
+  offHost        ALIVE
+== P6 attach window (H-554 / Quad0167)
+  S1:Add(frame carrying an unmounted list slot) -> 	first-cycle
+  S1:Add(another) after -> 	ok	S1.Length	1
+  items:Set({1}) -> 	ok	lst.Length	0
+  nested: S1:Add(listSlot) -> 	first-cycle
+  nested: S1:Add(frame) after -> 	Quad0167	S1.Length	0
+  nested: items:Set({1}) -> 	ok	lst.Length	0
+  nested: q.dispose(root) -> 	ok
+  D.Frame{ list } first cycle throws:	first-cycle
+  items:Set({1}) afterwards:	ok	lst.Length	0	(Q132: no subscription)
+  reuse lst in a new frame:	Quad0160
+== P7 Tween callbacks throwing
+  Set(T .5, Started throws):	S	plays	1
+  Set(T .7):	ok	log	S0.5 X0.5 S0.7
+  Set(T .9, prev Cancelled throws? no; this one's Cancelled throws later)	ok
+  Set(T .3) -> cancels .9 whose Cancelled throws:	X	log	S0.5 X0.5 S0.7 X0.7 S0.9 X0.9
+  engine tweens still Playing:	0	(.3 was created before the throw but never played/recorded?)
+  Set(T .1):	ok	log	S0.5 X0.5 S0.7 X0.7 S0.9 X0.9 S0.1
+  snap Started throw in a literal:	snapStart	(the frame is half built — sugar/05:34)
+== P8 Debounce leading lost
+  [task error] ./axes.luau:377: deb-down
+  seen after Set(3):	1,2	| after 0.5s:	1,2,3	(doc: 3 arrives as trailing, not leading)
+  a:Set(4) later:	1,2,3	(doc: back to normal — 4 leading)
+== P9 Blocker:Off, downstream throw
+  Off():	gy-down	Blocking	false	seen x/y	0	1
+  second Off():	gx-down	seen x/y	1	1
+  next Sets (blocker open):	seen x/y	2	2
+== P10 module-level install throws
+  RunInit throw:	init	retry:	ok	ran	1	(doc: no-op on retry)
+  AddPlugin throw:	plug	retry:	ok	ran	2	X	1
+  UseProvider throw:	prov	retry:	ok	ran	2
+== P11 Claim apply-stage throw
+  Claim with throwing OnRendered in a child:	claim-apply	root claimed	true	child claimed	true
+  re-Claim:	Quad0029
+== P12 cleanup throw by exit
+  rerun        exit -> cl-rerun | runs 1 cleans 1 | WeakSubscribe Quad0088 | Unsubscribe Quad0093
+  destroy      exit -> ./axes.luau:451: cl-destroy | runs 1 cleans 1 | WeakSubscribe Quad0088 | Unsubscribe Quad0093
+== done

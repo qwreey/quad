@@ -155,7 +155,7 @@ self와 인자들의 최대값(`math.max` 폴딩).
 Clamp: (lo: NumArg, hi: NumArg) -> NumOp
 ```
 
-`math.clamp(self, lo, hi)`. 인자가 정확히 둘이라 하나만 주면 `Quad0118 Operator.Clamp: argument #2 is nil`입니다. 읽는 시점에 `lo > hi`이면(반응형 경계가 한 프레임 엇갈림) 그 `:Get()` 줄에서 `Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 0, max -5)`로 던지고, 경계가 돌아오면 다음 세대에 회복됩니다. 경계가 `NaN`(`0/0` — 나누기 결과가 흔한 원인)이어도 같은 문구입니다.
+`math.clamp(self, lo, hi)`. 인자가 정확히 둘이라 하나만 주면 `Quad0118 Operator.Clamp: argument #2 is nil`입니다. 읽는 시점에 `lo > hi`이면(반응형 경계가 한 프레임 엇갈림) 그 `:Get()` 줄에서 `Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 0, max -5)`로 던지고, 경계가 돌아오면 다음 세대에 회복됩니다(노드만 — 던질 때 읽던 `Effect`는 죽은 채, 그 사이 재읽기는 `Quad0184`). 경계가 `NaN`(`0/0` — 나누기 결과가 흔한 원인)이어도 같은 문구입니다.
 
 ```luau
 local posX, maxX = q.Source(150), q.Source(100)

@@ -169,3 +169,4 @@
 - **19:20** E54 완료(opus, Debounce/Throttle 퍼저 8만 시드 — 차등 0) — `H-799`(Debounce 주석 MaxTime·gate-plan 규칙 3 조건부·sugar/03 MaxTime 행), Q130 보강(X1), `Q142`(미정 넷). 87회차 커밋(`16dd5c32`). 도는 중: E55·E56.
 - **19:45** E56 완료(opus, GS strict 경로 — 21장 중 15 클린·우회 12) — `H-800`(GS 01 "§6에 모아" 정정·how-to 01 309·GS 13 주석·SKILL §4.3 재작성·8.34 정정·core/05 캐비엇), Q121 보강 셋째, `Q143`(안내 위치·`:List` 처방)·`Q144`(`__apply` 객체 팔)·`Q145`(Effect `return nil`). 88회차 커밋(`fa900f30`). 도는 중: E55·E57.
 - **20:00** E57 완료(sonnet, 인덱스 레이어 사전 점검) — `H-801`(HUMAN_TODO I 개수·README e6b·todos E 범위·E22 결번), 종결 갱신 목록을 closing 초안 끝에. 89회차 커밋(`5800c93a`). 도는 중: E55 → 새 각도 둘.
+- **20:10** E55 완료(opus, 예외 주입 퍼저 2만 시드 — 설명되지 않는 차등 0) — `H-802`(회복 범위 노드만·첫 사이클 정의·keyFn 후속·Blocker Off 순회 throw), `Q146`(Tween 콜백 throw). 90회차 커밋(`360eff16`). 도는 중: 없음 → 새 각도 셋.

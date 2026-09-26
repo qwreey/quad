@@ -391,10 +391,11 @@ Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Singl
 - 사이클 순서는 (1) 데이터 순서대로 키를 계산해 중복/누락을 먼저 검사, (2) 항목마다 `updateFn`, (3) 지난 사이클에 있었지만 이번엔 없는 키에 `q.KeyGone`으로 `updateFn`을 한 번 더 — 입니다.
 - `KeyGone` 호출에서는 `nil`/`q.None`(파괴)과 `q.Detach`(보관)만 반환할 수 있습니다. 새 원소를 반환하면 `Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)`.
 - 인자 검증 에러: `Quad0150 Slot:List: updateFn must be a function (got {typeof(updateFn)})`, `Quad0151 Slot:List: data must be a plain array or a State of one (got {typeof(data)})`, `Quad0152 Slot:List: keyFn must be a function (got {typeof(keyFn)})`.
+- `keyFn`이 이후 사이클에서 던지면 게이트를 켜기 전이라 아무것도 바뀌지 않고 다음 `data:Set`에서 회복됩니다([2026-09-27 mock 실측] — 첫 사이클이면 아래 `updateFn` 항목과 같습니다).
 - 재조정 중 에러: `Quad0142 Slot:List: data must be a plain array (got {typeof(items)}) — a data State must hold one too`, `Quad0144 Slot:List: keyFn returned nil for item #{i}`(NaN도 같은 모양으로 `returned NaN`), `Quad0145 Slot:List: duplicate key {tostring(key)}`. 인자 검증에 `Quad0153 Slot:List: opts must be a table (got {typeof(opts)})`(`:Single`도 같음)이 더해집니다.
 - `updateFn`이 이 Slot의 `data` State를 다시 `:Set` 하는 **재진입**은 정의되지 않은 동작입니다.
 - `KeyGone` 호출끼리의 순서는 정해져 있지 않습니다 — 사라진 키가 데이터에 있던 순서로 온다고 기대하지 마세요.
-- `updateFn`이 도중에 던지면(이미 다른 곳에 마운트된 원소나 claim되지 않은 Instance를 반환해 quad가 대신 던지는 경우 포함) 그 사이클의 배치가 닫히지 않아 **그 Slot의 `Length`가 더 이상 발행되지 않습니다** — **이후 사이클**이라면 재조정 자체는 계속 돌아 항목이 붙고 떨어지지만(**첫 사이클**, 즉 `:List`를 부르는 그 호출 안에서 던지면 데이터 구독이 만들어지기 전이라 그 뒤의 `data:Set`이 전부 조용히 무시됩니다 — 위 재조정 중 에러 `Quad0142`~`0146`도 첫 사이클이면 같습니다 — [2026-09-27 mock 관측]; `:List`를 다시 걸 수도 없으니 그 Slot은 버리세요), 같은 부모 안의 형제 Slot이 옛 오프셋에 자식을 넣게 되고 에러는 나지 않습니다. 사용자 코드의 예외를 감싸 복구하지 않는 계약이라 [`slot:Clear`](#slotclear)와 같이 정의되지 않은 동작으로 둡니다 — 던질 수 있는 일은 `updateFn` 밖에서 끝내세요.
+- `updateFn`이 도중에 던지면(이미 다른 곳에 마운트된 원소나 claim되지 않은 Instance를 반환해 quad가 대신 던지는 경우 포함) 그 사이클의 배치가 닫히지 않아 **그 Slot의 `Length`가 더 이상 발행되지 않습니다** — **이후 사이클**이라면 재조정 자체는 계속 돌아 항목이 붙고 떨어지지만(**첫 사이클**, 즉 첫 재조정(`:List`를 부르는 그 호출 안, 또는 `D.Frame{ q.Slot():List(...) }`처럼 마운트 때 처음 도는 경우)에서 던지면 데이터 구독이 만들어지기 전이라 그 뒤의 `data:Set`이 전부 조용히 무시됩니다 — 위 재조정 중 에러 `Quad0142`~`0146`도 첫 사이클이면 같습니다 — [2026-09-27 mock 관측]; `:List`를 다시 걸 수도 없으니 그 Slot은 버리세요), 같은 부모 안의 형제 Slot이 옛 오프셋에 자식을 넣게 되고 에러는 나지 않습니다. 사용자 코드의 예외를 감싸 복구하지 않는 계약이라 [`slot:Clear`](#slotclear)와 같이 정의되지 않은 동작으로 둡니다 — 던질 수 있는 일은 `updateFn` 밖에서 끝내세요.
 
 **`OwnsElements = false`**
 

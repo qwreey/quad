@@ -1,0 +1,258 @@
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] INJ:debObs
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+== seeds=10000 fired=5786 failSeeds=2150 ctrlFailSeeds=0 iso=true
+-- sites
+  cleanup          seeds 383 fired 257 failSeeds 87
+  compute1         seeds 354 fired 246 failSeeds 72
+  compute2         seeds 370 fired 287 failSeeds 92
+  computeTag       seeds 362 fired 79 failSeeds 21
+  computeTween     seeds 370 fired 232 failSeeds 49
+  debObs           seeds 360 fired 180 failSeeds 99
+  effectFn         seeds 346 fired 229 failSeeds 108
+  keyFn            seeds 366 fired 243 failSeeds 0
+  keyFnLate        seeds 380 fired 248 failSeeds 0
+  lengthSub        seeds 392 fired 187 failSeeds 0
+  modFn            seeds 359 fired 204 failSeeds 81
+  observer         seeds 364 fired 230 failSeeds 62
+  observer2        seeds 372 fired 221 failSeeds 47
+  offsetSub        seeds 369 fired 268 failSeeds 268
+  onChange         seeds 348 fired 213 failSeeds 0
+  onCreated        seeds 393 fired 182 failSeeds 116
+  onDestroyed      seeds 393 fired 184 failSeeds 0
+  onRendered       seeds 342 fired 174 failSeeds 114
+  postRefCb        seeds 367 fired 194 failSeeds 105
+  preRefCb         seeds 380 fired 196 failSeeds 108
+  refCb            seeds 389 fired 224 failSeeds 144
+  tweenCancelled   seeds 366 fired 173 failSeeds 80
+  tweenCompleted   seeds 376 fired 192 failSeeds 95
+  tweenStarted     seeds 368 fired 240 failSeeds 116
+  txtObs           seeds 367 fired 164 failSeeds 0
+  updateFn         seeds 377 fired 270 failSeeds 201
+  updateFnLate     seeds 387 fired 269 failSeeds 85
+-- where the throw surfaced
+  cleanup @ handler                                             64
+  cleanup @ op                                                 193
+  compute1 @ op                                                246
+  compute2 @ op                                                287
+  computeTag @ op                                               79
+  computeTween @ op                                            232
+  debObs @ LOST                                                 31
+  debObs @ op                                                  149
+  effectFn @ op                                                229
+  keyFn @ op                                                   243
+  keyFnLate @ op                                               248
+  lengthSub @ op                                               187
+  modFn @ op                                                   204
+  observer @ op                                                230
+  observer2 @ op                                               221
+  offsetSub @ op                                               268
+  onChange @ handler                                           213
+  onCreated @ op                                               182
+  onDestroyed @ handler                                        184
+  onRendered @ op                                              174
+  postRefCb @ op                                               194
+  preRefCb @ op                                                196
+  refCb @ op                                                   224
+  tweenCancelled @ op                                          173
+  tweenCompleted @ handler                                      50
+  tweenCompleted @ op                                          142
+  tweenStarted @ op                                            240
+  txtObs @ handler                                              63
+  txtObs @ op                                                  101
+  updateFn @ op                                                270
+  updateFnLate @ op                                            269
+-- immediate state
+  cleanup imm.effWeakSub=Quad0088                              257
+  compute1 imm.C1=ERR:Quad0184                                 246
+  compute2 imm.C2=ERR:Quad0184                                 287
+  computeTag imm.tag=ERR:Quad0184                               79
+  effectFn imm.effWeakSub=Quad0088                             169
+  observer imm.obsWeakSub=Quad0110                             129
+-- control-run model failures (should be empty)
+-- secondary (cascade) errors in inject run
+  compute1 -> Quad0184                                         144
+  compute2 -> Quad0184                                         130
+  computeTag -> Quad0184                                        44
+-- user frames a throw passed through (site thru frame)
+  compute1 thru compute2                                       153
+  compute1 thru computeTween                                    31
+  compute1 thru debObs                                          27
+  compute1 thru effectFn                                        39
+  compute1 thru observer                                       162
+  compute1 thru observer2                                       42
+  compute1 thru updateFn                                        71
+  compute2 thru computeTween                                    64
+  compute2 thru effectFn                                       118
+  compute2 thru observer2                                       79
+  compute2 thru updateFn                                        78
+  computeTag thru updateFn                                      27
+  computeTween thru updateFn                                    54
+  debObs thru updateFn                                         112
+  effectFn thru updateFn                                        37
+  modFn thru updateFn                                           91
+  observer thru updateFn                                        68
+  observer2 thru updateFn                                       50
+  onCreated thru updateFn                                      122
+  onRendered thru updateFn                                     125
+  postRefCb thru updateFn                                      116
+  preRefCb thru updateFn                                       119
+  refCb thru updateFn                                          155
+  tweenCompleted thru updateFn                                  89
+  tweenStarted thru updateFn                                    59
+-- inject-only failures
+    doc cleanup | comp.eff | victim <- cleanup                  87   e.g. seed 165 arm 17/20 fired op18(op:setA) skip 1 owner c6: c6 44
+    doc cleanup | td.dying | victim <- cleanup                  87   e.g. seed 165 arm 17/20 fired op18(op:setA) skip 1 owner c6: c6 nil
+    doc cleanup | td.effBalance | victim <- cleanup             87   e.g. seed 165 arm 17/20 fired op18(op:setA) skip 1 owner c6: c6 4/3
+    doc compute1 | S2.Length | casc:root <- updateFn            60   e.g. seed 28 arm 19/44 fired op26(op:setA) skip 2 owner nil: root 0
+    doc compute1 | S2.Length | root <- updateFn                  2   e.g. seed 1201 arm 10/39 fired op23(op:setItems) skip 0 owner nil: root 0
+    doc compute1 | S3.Offset | casc:root <- updateFn            60   e.g. seed 28 arm 19/44 fired op26(op:setA) skip 2 owner nil: root 5 want 9
+    doc compute1 | S3.Offset | root <- updateFn                  2   e.g. seed 1201 arm 10/39 fired op23(op:setItems) skip 0 owner nil: root 2 want 6
+    doc compute1 | comp.eff | casc:other <- effectFn            10   e.g. seed 2106 arm 21/25 fired op22(op:setA) skip 0 owner nil: cm8 31
+    doc compute1 | comp.eff | other <- effectFn                  6   e.g. seed 1304 arm 4/46 fired op45(op:setA) skip 2 owner nil: cm01 95
+    doc compute1 | comp.effBalance | casc:other <- effectFn     10   e.g. seed 2106 arm 21/25 fired op22(op:setA) skip 0 owner nil: cm8 4/4
+    doc compute1 | comp.effBalance | other <- effectFn           6   e.g. seed 1304 arm 4/46 fired op45(op:setA) skip 2 owner nil: cm01 7/7
+    doc compute1 | td.dying | casc:other <- effectFn            10   e.g. seed 2106 arm 21/25 fired op22(op:setA) skip 0 owner nil: cm8 nil
+    doc compute1 | td.dying | other <- effectFn                  6   e.g. seed 1304 arm 4/46 fired op45(op:setA) skip 2 owner nil: cm01 nil
+    doc compute2 | S2.Length | casc:root <- updateFn            68   e.g. seed 74 arm 6/27 fired op11(op:setA) skip 2 owner nil: root 2
+    doc compute2 | S3.Offset | casc:root <- updateFn            68   e.g. seed 74 arm 6/27 fired op11(op:setA) skip 2 owner nil: root 5 want 7
+    doc compute2 | comp.eff | casc:other <- effectFn            12   e.g. seed 3552 arm 8/45 fired op23(op:setA) skip 0 owner nil: cm1 13
+    doc compute2 | comp.eff | other <- effectFn                 19   e.g. seed 560 arm 24/30 fired op30(op:setA) skip 2 owner nil: cm01 57
+    doc compute2 | comp.effBalance | casc:other <- effectFn     12   e.g. seed 3552 arm 8/45 fired op23(op:setA) skip 0 owner nil: cm1 2/2
+    doc compute2 | comp.effBalance | other <- effectFn          19   e.g. seed 560 arm 24/30 fired op30(op:setA) skip 2 owner nil: cm01 5/5
+    doc compute2 | td.dying | casc:other <- effectFn            12   e.g. seed 3552 arm 8/45 fired op23(op:setA) skip 0 owner nil: cm1 nil
+    doc compute2 | td.dying | other <- effectFn                 19   e.g. seed 560 arm 24/30 fired op30(op:setA) skip 2 owner nil: cm01 nil
+    doc computeTag | S2.Length | casc:root <- updateFn          21   e.g. seed 101 arm 17/45 fired op34(op:toggle) skip 0 owner nil: root 0
+    doc computeTag | S3.Offset | casc:root <- updateFn          21   e.g. seed 101 arm 17/45 fired op34(op:toggle) skip 0 owner nil: root 3 want 7
+    doc computeTween | S2.Length | root <- updateFn             49   e.g. seed 12 arm 11/27 fired op17(op:setItems) skip 0 owner c6: root 0
+    doc computeTween | S3.Offset | root <- updateFn             49   e.g. seed 12 arm 11/27 fired op17(op:setItems) skip 0 owner c6: root 5 want 9
+    doc debObs | S2.Length | root <- updateFn                   99   e.g. seed 321 arm 29/39 fired op34(op:setItems) skip 0 owner c2: root 0
+    doc debObs | S3.Offset | root <- updateFn                   99   e.g. seed 321 arm 29/39 fired op34(op:setItems) skip 0 owner c2: root 6 want 10
+    doc effectFn | S2.Length | root <- updateFn                 32   e.g. seed 663 arm 4/29 fired op5(op:setItems) skip 1 owner c4: root 2
+    doc effectFn | S3.Offset | root <- updateFn                 32   e.g. seed 663 arm 4/29 fired op5(op:setItems) skip 1 owner c4: root 4 want 6
+    doc effectFn | comp.eff | victim <- effectFn                76   e.g. seed 51 arm 5/20 fired op5(op:setA) skip 1 owner cm2: cm2 9
+    doc effectFn | comp.effBalance | victim <- effectFn         76   e.g. seed 51 arm 5/20 fired op5(op:setA) skip 1 owner cm2: cm2 2/2
+    doc effectFn | td.dying | victim <- effectFn                76   e.g. seed 51 arm 5/20 fired op5(op:setA) skip 1 owner cm2: cm2 nil
+    doc modFn | S2.Length | root <- updateFn                    81   e.g. seed 4 arm 2/50 fired op17(op:setItems) skip 1 owner c2: root 1
+    doc modFn | S3.Offset | root <- updateFn                    81   e.g. seed 4 arm 2/50 fired op17(op:setItems) skip 1 owner c2: root 10 want 13
+    doc observer | S2.Length | root <- updateFn                 62   e.g. seed 9 arm 9/50 fired op13(op:setItems) skip 1 owner c2: root 2
+    doc observer | S3.Offset | root <- updateFn                 62   e.g. seed 9 arm 9/50 fired op13(op:setItems) skip 1 owner c2: root 6 want 8
+    doc observer2 | S2.Length | root <- updateFn                47   e.g. seed 656 arm 29/43 fired op31(op:setItems) skip 0 owner c6: root 1
+    doc observer2 | S3.Offset | root <- updateFn                47   e.g. seed 656 arm 29/43 fired op31(op:setItems) skip 0 owner c6: root 9 want 12
+    doc offsetSub | S2.Offset | victim <- offsetSub            167   e.g. seed 19 arm 15/50 fired op20(op:late) skip 0 owner root: root 6 want 7
+    doc offsetSub | S3.Offset | victim <- offsetSub            213   e.g. seed 19 arm 15/50 fired op20(op:late) skip 0 owner root: root 7 want 10
+    doc offsetSub | top.off3 | victim <- offsetSub             268   e.g. seed 19 arm 15/50 fired op20(op:late) skip 0 owner root: root 6 vs 7
+    doc onCreated | S2.Length | root <- updateFn               116   e.g. seed 52 arm 24/45 fired op24(op:setItems) skip 1 owner c6: root 3
+    doc onCreated | S3.Offset | root <- updateFn               116   e.g. seed 52 arm 24/45 fired op24(op:setItems) skip 1 owner c6: root 8 want 9
+    doc onRendered | S2.Length | root <- updateFn              114   e.g. seed 70 arm 17/47 fired op17(op:setItems) skip 2 owner c6: root 2
+    doc onRendered | S3.Offset | root <- updateFn              114   e.g. seed 70 arm 17/47 fired op17(op:setItems) skip 2 owner c6: root 7 want 9
+    doc postRefCb | S2.Length | root <- updateFn               105   e.g. seed 119 arm 10/24 fired op12(op:setItems) skip 0 owner c1: root 0
+    doc postRefCb | S3.Offset | root <- updateFn               105   e.g. seed 119 arm 10/24 fired op12(op:setItems) skip 0 owner c1: root 7 want 11
+    doc preRefCb | S2.Length | root <- updateFn                108   e.g. seed 33 arm 10/50 fired op20(op:setItems) skip 1 owner c1: root 1
+    doc preRefCb | S3.Offset | root <- updateFn                108   e.g. seed 33 arm 10/50 fired op20(op:setItems) skip 1 owner c1: root 3 want 6
+    doc refCb | S2.Length | root <- updateFn                   144   e.g. seed 17 arm 10/20 fired op16(op:setItems) skip 0 owner c2: root 2
+    doc refCb | S3.Offset | root <- updateFn                   144   e.g. seed 17 arm 10/20 fired op16(op:setItems) skip 0 owner c2: root 4 want 6
+    doc tweenCancelled | comp.tweenPair | victim <- tweenCancelled    80   e.g. seed 35 arm 17/23 fired op19(op:setB) skip 1 owner cm11: cm11 6/2/3
+    doc tweenCancelled | td.tweenPair | victim <- tweenCancelled    80   e.g. seed 35 arm 17/23 fired op19(op:setB) skip 1 owner cm11: cm11 6/2/3
+    doc tweenCompleted | S2.Length | root <- updateFn           75   e.g. seed 187 arm 7/35 fired op12(op:setItems) skip 0 owner c6: root 0
+    doc tweenCompleted | S3.Offset | root <- updateFn           75   e.g. seed 187 arm 7/35 fired op12(op:setItems) skip 0 owner c6: root 3 want 7
+    doc tweenCompleted | comp.tweenPair | victim <- tweenCompleted    20   e.g. seed 48 arm 33/34 fired op33(handler:complete) skip 2 owner c2: c2 7/4/2
+    doc tweenCompleted | td.tweenPair | victim <- tweenCompleted    20   e.g. seed 48 arm 33/34 fired op33(handler:complete) skip 2 owner c2: c2 7/4/2
+    doc tweenStarted | S2.Length | root <- updateFn             51   e.g. seed 132 arm 17/26 fired op26(op:setItems) skip 0 owner c4: root 0
+    doc tweenStarted | S3.Offset | root <- updateFn             51   e.g. seed 132 arm 17/26 fired op26(op:setItems) skip 0 owner c4: root 1 want 5
+    doc tweenStarted | comp.tweenPair | victim <- tweenStarted    65   e.g. seed 212 arm 35/38 fired op36(op:setA) skip 1 owner c2: c2 4/2/3
+    doc tweenStarted | td.tweenPair | victim <- tweenStarted    65   e.g. seed 212 arm 35/38 fired op36(op:setA) skip 1 owner c2: c2 4/2/3
+    doc updateFn | S2.Length | root <- updateFn                201   e.g. seed 26 arm 42/42 fired op42(op:setItems) skip 0 owner nil: root 2
+    doc updateFn | S3.Offset | root <- updateFn                201   e.g. seed 26 arm 42/42 fired op42(op:setItems) skip 0 owner nil: root 9 want 11
+    doc updateFnLate | late.Length | victim <- updateFnLate     85   e.g. seed 245 arm 15/28 fired op21(op:setItems) skip 1 owner late6: late6 0
+
+real	1m43.979s
+user	1m43.090s
+sys	0m0.827s

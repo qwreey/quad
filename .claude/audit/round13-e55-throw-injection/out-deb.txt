@@ -1,0 +1,18 @@
+  [task error] ./deb.luau:15: deb-down
+Debounce gap 0.5  control: afterSet3=1,2  afterSet4=1,2,3  end=1,2,3,4
+                 throw:   afterSet3=1,2  afterSet4=1,2,3  end=1,2,3,4
+  [task error] ./deb.luau:15: deb-down
+Debounce gap 1.0  control: afterSet3=1,2,3  afterSet4=1,2,3,4  end=1,2,3,4
+                 throw:   afterSet3=1,2  afterSet4=1,2,3,4  end=1,2,3,4
+  [task error] ./deb.luau:15: deb-down
+Debounce gap 2.0  control: afterSet3=1,2,3  afterSet4=1,2,3,4  end=1,2,3,4
+                 throw:   afterSet3=1,2  afterSet4=1,2,3,4  end=1,2,3,4
+  [task error] ./deb.luau:15: deb-down
+Throttle gap 0.5  control: afterSet3=1,2  afterSet4=1,2,3,4  end=1,2,3,4
+                 throw:   afterSet3=1,2  afterSet4=1,2,3  end=1,2,3,4
+  [task error] ./deb.luau:15: deb-down
+Throttle gap 1.0  control: afterSet3=1,2,3  afterSet4=1,2,3,4  end=1,2,3,4
+                 throw:   afterSet3=1,2  afterSet4=1,2,3,4  end=1,2,3,4
+  [task error] ./deb.luau:15: deb-down
+Throttle gap 2.0  control: afterSet3=1,2,3  afterSet4=1,2,3,4  end=1,2,3,4
+                 throw:   afterSet3=1,2  afterSet4=1,2,3,4  end=1,2,3,4

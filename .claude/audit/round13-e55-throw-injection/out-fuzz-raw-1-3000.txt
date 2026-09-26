@@ -1,0 +1,218 @@
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] INJ:debObs
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] INJ:debObs
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] ../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:241: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  [task error] INJ:debObs
+== seeds=3000 fired=1749 failSeeds=742 ctrlFailSeeds=0 iso=false
+-- sites
+  cleanup          seeds 130 fired 91 failSeeds 49
+  compute1         seeds 88 fired 58 failSeeds 17
+  compute2         seeds 114 fired 88 failSeeds 28
+  computeTag       seeds 111 fired 31 failSeeds 10
+  computeTween     seeds 104 fired 70 failSeeds 13
+  debObs           seeds 105 fired 49 failSeeds 26
+  effectFn         seeds 104 fired 74 failSeeds 34
+  keyFn            seeds 105 fired 71 failSeeds 0
+  keyFnLate        seeds 102 fired 66 failSeeds 0
+  lengthSub        seeds 119 fired 62 failSeeds 0
+  modFn            seeds 102 fired 58 failSeeds 20
+  observer         seeds 100 fired 60 failSeeds 22
+  observer2        seeds 112 fired 65 failSeeds 9
+  offsetSub        seeds 91 fired 67 failSeeds 67
+  onChange         seeds 114 fired 78 failSeeds 23
+  onCreated        seeds 122 fired 55 failSeeds 39
+  onDestroyed      seeds 133 fired 70 failSeeds 70
+  onRendered       seeds 97 fired 48 failSeeds 31
+  postRefCb        seeds 115 fired 56 failSeeds 24
+  preRefCb         seeds 128 fired 58 failSeeds 29
+  refCb            seeds 115 fired 60 failSeeds 41
+  tweenCancelled   seeds 95 fired 49 failSeeds 27
+  tweenCompleted   seeds 113 fired 55 failSeeds 26
+  tweenStarted     seeds 129 fired 89 failSeeds 39
+  txtObs           seeds 99 fired 44 failSeeds 0
+  updateFn         seeds 123 fired 88 failSeeds 71
+  updateFnLate     seeds 130 fired 89 failSeeds 27
+-- where the throw surfaced
+  cleanup @ op                                                  91
+  compute1 @ op                                                 58
+  compute2 @ op                                                 88
+  computeTag @ op                                               31
+  computeTween @ op                                             70
+  debObs @ op                                                   39
+  debObs @ scheduler                                            10
+  effectFn @ op                                                 74
+  keyFn @ op                                                    71
+  keyFnLate @ op                                                66
+  lengthSub @ op                                                62
+  modFn @ op                                                    58
+  observer @ op                                                 60
+  observer2 @ op                                                65
+  offsetSub @ op                                                67
+  onChange @ op                                                 78
+  onCreated @ op                                                55
+  onDestroyed @ op                                              70
+  onRendered @ op                                               48
+  postRefCb @ op                                                56
+  preRefCb @ op                                                 58
+  refCb @ op                                                    60
+  tweenCancelled @ op                                           49
+  tweenCompleted @ op                                           55
+  tweenStarted @ op                                             89
+  txtObs @ op                                                   44
+  updateFn @ op                                                 88
+  updateFnLate @ op                                             89
+-- immediate state
+  cleanup imm.effWeakSub=Quad0088                               91
+  compute1 imm.C1=ERR:Quad0184                                  58
+  compute2 imm.C2=ERR:Quad0184                                  88
+  computeTag imm.tag=ERR:Quad0184                               31
+  effectFn imm.effWeakSub=Quad0088                              55
+  observer imm.obsWeakSub=Quad0110                              28
+-- control-run model failures (should be empty)
+-- secondary (cascade) errors in inject run
+  cleanup -> Quad0163                                           14
+  compute1 -> Quad0184                                          31
+  compute2 -> Quad0184                                          41
+  computeTag -> Quad0184                                        18
+  onDestroyed -> Quad0163                                       34
+-- user frames a throw passed through (site thru frame)
+  compute1 thru compute2                                        37
+  compute1 thru computeTween                                     5
+  compute1 thru debObs                                           4
+  compute1 thru effectFn                                        13
+  compute1 thru observer                                        32
+  compute1 thru observer2                                        8
+  compute1 thru updateFn                                        17
+  compute2 thru computeTween                                    21
+  compute2 thru effectFn                                        35
+  compute2 thru observer2                                       24
+  compute2 thru updateFn                                        26
+  computeTag thru updateFn                                      13
+  computeTween thru updateFn                                    14
+  debObs thru updateFn                                          30
+  effectFn thru updateFn                                        10
+  modFn thru updateFn                                           21
+  observer thru updateFn                                        22
+  observer2 thru updateFn                                       10
+  onChange thru updateFn                                        25
+  onCreated thru updateFn                                       41
+  onRendered thru updateFn                                      33
+  postRefCb thru updateFn                                       29
+  preRefCb thru updateFn                                        33
+  refCb thru updateFn                                           45
+  tweenCompleted thru updateFn                                  21
+  tweenStarted thru updateFn                                    19
+-- inject-only failures
+    doc cleanup | comp.eff | casc:victim <- cleanup             14   e.g. seed 143 arm 15/24 fired op18(op:setItems) skip 0 owner c3: c3 16
+    doc cleanup | comp.eff | victim <- cleanup                  35   e.g. seed 165 arm 17/20 fired op18(op:setA) skip 1 owner cm17: cm17 44
+    doc cleanup | td.dying | casc:victim <- cleanup             14   e.g. seed 143 arm 15/24 fired op18(op:setItems) skip 0 owner c3: c3 nil
+    doc cleanup | td.dying | victim <- cleanup                  35   e.g. seed 165 arm 17/20 fired op18(op:setA) skip 1 owner cm17: cm17 nil
+    doc cleanup | td.effBalance | casc:victim <- cleanup        14   e.g. seed 143 arm 15/24 fired op18(op:setItems) skip 0 owner c3: c3 2/1
+    doc cleanup | td.effBalance | victim <- cleanup             35   e.g. seed 165 arm 17/20 fired op18(op:setA) skip 1 owner cm17: cm17 1/nil
+    doc compute1 | S2.Length | casc:root <- updateFn            14   e.g. seed 28 arm 19/44 fired op26(op:setA) skip 2 owner nil: root 0
+    doc compute1 | S2.Length | root <- updateFn                  1   e.g. seed 1201 arm 10/39 fired op23(op:setItems) skip 0 owner nil: root 0
+    doc compute1 | S3.Offset | casc:root <- updateFn            14   e.g. seed 28 arm 19/44 fired op26(op:setA) skip 2 owner nil: root 5 want 9
+    doc compute1 | S3.Offset | root <- updateFn                  1   e.g. seed 1201 arm 10/39 fired op23(op:setItems) skip 0 owner nil: root 2 want 6
+    doc compute1 | comp.eff | casc:other <- effectFn             2   e.g. seed 2106 arm 21/25 fired op22(op:setA) skip 0 owner nil: cm20 31
+    doc compute1 | comp.eff | other <- effectFn                  1   e.g. seed 191 arm 33/45 fired op42(op:setA) skip 0 owner nil: cm17 74
+    doc compute1 | comp.effBalance | casc:other <- effectFn      2   e.g. seed 2106 arm 21/25 fired op22(op:setA) skip 0 owner nil: cm20 1/1
+    doc compute1 | comp.effBalance | other <- effectFn           1   e.g. seed 191 arm 33/45 fired op42(op:setA) skip 0 owner nil: cm17 4/4
+    doc compute1 | td.dying | casc:other <- effectFn             2   e.g. seed 2106 arm 21/25 fired op22(op:setA) skip 0 owner nil: cm20 nil
+    doc compute1 | td.dying | other <- effectFn                  1   e.g. seed 191 arm 33/45 fired op42(op:setA) skip 0 owner nil: cm17 nil
+    doc compute2 | S2.Length | casc:root <- updateFn            24   e.g. seed 74 arm 6/27 fired op11(op:setA) skip 2 owner nil: root 2
+    doc compute2 | S3.Offset | casc:root <- updateFn            24   e.g. seed 74 arm 6/27 fired op11(op:setA) skip 2 owner nil: root 5 want 7
+    doc compute2 | comp.eff | casc:other <- effectFn             2   e.g. seed 511 arm 19/44 fired op35(op:setB) skip 1 owner nil: cm2 25
+    doc compute2 | comp.eff | other <- effectFn                  4   e.g. seed 38 arm 17/32 fired op17(op:setB) skip 0 owner nil: cm02 37
+    doc compute2 | comp.effBalance | casc:other <- effectFn      2   e.g. seed 511 arm 19/44 fired op35(op:setB) skip 1 owner nil: cm2 5/5
+    doc compute2 | comp.effBalance | other <- effectFn           4   e.g. seed 38 arm 17/32 fired op17(op:setB) skip 0 owner nil: cm02 5/5
+    doc compute2 | td.dying | casc:other <- effectFn             2   e.g. seed 511 arm 19/44 fired op35(op:setB) skip 1 owner nil: cm2 nil
+    doc compute2 | td.dying | other <- effectFn                  4   e.g. seed 38 arm 17/32 fired op17(op:setB) skip 0 owner nil: cm02 nil
+    doc computeTag | S2.Length | casc:root <- updateFn          10   e.g. seed 101 arm 17/45 fired op34(op:toggle) skip 0 owner nil: root 0
+    doc computeTag | S3.Offset | casc:root <- updateFn          10   e.g. seed 101 arm 17/45 fired op34(op:toggle) skip 0 owner nil: root 3 want 7
+    doc computeTween | S2.Length | root <- updateFn             13   e.g. seed 12 arm 11/27 fired op17(op:setItems) skip 0 owner c6: root 0
+    doc computeTween | S3.Offset | root <- updateFn             13   e.g. seed 12 arm 11/27 fired op17(op:setItems) skip 0 owner c6: root 5 want 9
+    doc debObs | S2.Length | root <- updateFn                   26   e.g. seed 321 arm 29/39 fired op34(op:setItems) skip 0 owner c2: root 0
+    doc debObs | S3.Offset | root <- updateFn                   26   e.g. seed 321 arm 29/39 fired op34(op:setItems) skip 0 owner c2: root 6 want 10
+    doc effectFn | S2.Length | root <- updateFn                 10   e.g. seed 663 arm 4/29 fired op5(op:setItems) skip 1 owner c4: root 2
+    doc effectFn | S3.Offset | root <- updateFn                 10   e.g. seed 663 arm 4/29 fired op5(op:setItems) skip 1 owner c4: root 4 want 6
+    doc effectFn | comp.eff | victim <- effectFn                24   e.g. seed 138 arm 17/21 fired op17(op:setA) skip 1 owner cm02: cm02 3
+    doc effectFn | comp.effBalance | victim <- effectFn         24   e.g. seed 138 arm 17/21 fired op17(op:setA) skip 1 owner cm02: cm02 1/1
+    doc effectFn | td.dying | victim <- effectFn                24   e.g. seed 138 arm 17/21 fired op17(op:setA) skip 1 owner cm02: cm02 nil
+    doc modFn | S2.Length | root <- updateFn                    20   e.g. seed 4 arm 2/50 fired op17(op:setItems) skip 1 owner c2: root 1
+    doc modFn | S3.Offset | root <- updateFn                    20   e.g. seed 4 arm 2/50 fired op17(op:setItems) skip 1 owner c2: root 10 want 13
+    doc observer | S2.Length | root <- updateFn                 22   e.g. seed 9 arm 9/50 fired op13(op:setItems) skip 1 owner c2: root 2
+    doc observer | S3.Offset | root <- updateFn                 22   e.g. seed 9 arm 9/50 fired op13(op:setItems) skip 1 owner c2: root 6 want 8
+    doc observer2 | S2.Length | root <- updateFn                 9   e.g. seed 656 arm 29/43 fired op31(op:setItems) skip 0 owner c6: root 1
+    doc observer2 | S3.Offset | root <- updateFn                 9   e.g. seed 656 arm 29/43 fired op31(op:setItems) skip 0 owner c6: root 9 want 12
+    doc offsetSub | S2.Offset | victim <- offsetSub             36   e.g. seed 19 arm 15/50 fired op20(op:late) skip 0 owner root: root 6 want 7
+    doc offsetSub | S3.Offset | victim <- offsetSub             50   e.g. seed 19 arm 15/50 fired op20(op:late) skip 0 owner root: root 7 want 10
+    doc offsetSub | top.off3 | victim <- offsetSub              67   e.g. seed 19 arm 15/50 fired op20(op:late) skip 0 owner root: root 6 vs 7
+    doc onChange | S2.Length | root <- updateFn                 23   e.g. seed 31 arm 9/48 fired op13(op:setItems) skip 1 owner c6: root 3
+    doc onChange | S3.Offset | root <- updateFn                 23   e.g. seed 31 arm 9/48 fired op13(op:setItems) skip 1 owner c6: root 13 want 14
+    doc onCreated | S2.Length | root <- updateFn                39   e.g. seed 52 arm 24/45 fired op24(op:setItems) skip 1 owner c6: root 3
+    doc onCreated | S3.Offset | root <- updateFn                39   e.g. seed 52 arm 24/45 fired op24(op:setItems) skip 1 owner c6: root 8 want 9
+    doc onRendered | S2.Length | root <- updateFn               31   e.g. seed 70 arm 17/47 fired op17(op:setItems) skip 2 owner c6: root 2
+    doc onRendered | S3.Offset | root <- updateFn               31   e.g. seed 70 arm 17/47 fired op17(op:setItems) skip 2 owner c6: root 7 want 9
+    doc postRefCb | S2.Length | root <- updateFn                24   e.g. seed 119 arm 10/24 fired op12(op:setItems) skip 0 owner c1: root 0
+    doc postRefCb | S3.Offset | root <- updateFn                24   e.g. seed 119 arm 10/24 fired op12(op:setItems) skip 0 owner c1: root 7 want 11
+    doc preRefCb | S2.Length | root <- updateFn                 29   e.g. seed 33 arm 10/50 fired op20(op:setItems) skip 1 owner c1: root 1
+    doc preRefCb | S3.Offset | root <- updateFn                 29   e.g. seed 33 arm 10/50 fired op20(op:setItems) skip 1 owner c1: root 3 want 6
+    doc refCb | S2.Length | root <- updateFn                    41   e.g. seed 17 arm 10/20 fired op16(op:setItems) skip 0 owner c2: root 2
+    doc refCb | S3.Offset | root <- updateFn                    41   e.g. seed 17 arm 10/20 fired op16(op:setItems) skip 0 owner c2: root 4 want 6
+    doc tweenCancelled | comp.tweenPair | victim <- tweenCancelled    27   e.g. seed 18 arm 29/36 fired op35(op:setB) skip 0 owner cm23: cm23 4/2/1
+    doc tweenCancelled | td.tweenPair | victim <- tweenCancelled    27   e.g. seed 18 arm 29/36 fired op35(op:setB) skip 0 owner cm23: cm23 4/2/1
+    doc tweenCompleted | S2.Length | root <- updateFn           20   e.g. seed 187 arm 7/35 fired op12(op:setItems) skip 0 owner c6: root 0
+    doc tweenCompleted | S3.Offset | root <- updateFn           20   e.g. seed 187 arm 7/35 fired op12(op:setItems) skip 0 owner c6: root 3 want 7
+    doc tweenCompleted | comp.tweenPair | victim <- tweenCompleted     6   e.g. seed 139 arm 25/33 fired op32(op:complete) skip 1 owner cm2: cm2 7/2/4
+    doc tweenCompleted | td.tweenPair | victim <- tweenCompleted     6   e.g. seed 139 arm 25/33 fired op32(op:complete) skip 1 owner cm2: cm2 7/2/4
+    doc tweenStarted | S2.Length | root <- updateFn             18   e.g. seed 132 arm 17/26 fired op26(op:setItems) skip 0 owner c4: root 0
+    doc tweenStarted | S3.Offset | root <- updateFn             18   e.g. seed 132 arm 17/26 fired op26(op:setItems) skip 0 owner c4: root 1 want 5
+    doc tweenStarted | comp.tweenPair | victim <- tweenStarted    21   e.g. seed 349 arm 16/21 fired op21(op:setA) skip 1 owner cm01: cm01 4/3/2
+    doc tweenStarted | td.tweenPair | victim <- tweenStarted    21   e.g. seed 349 arm 16/21 fired op21(op:setA) skip 1 owner cm01: cm01 4/3/2
+    doc updateFn | S2.Length | root <- updateFn                 71   e.g. seed 26 arm 42/42 fired op42(op:setItems) skip 0 owner nil: root 2
+    doc updateFn | S3.Offset | root <- updateFn                 71   e.g. seed 26 arm 42/42 fired op42(op:setItems) skip 0 owner nil: root 9 want 11
+    doc updateFnLate | late.Length | victim <- updateFnLate     27   e.g. seed 245 arm 15/28 fired op21(op:setItems) skip 1 owner late6: late6 0
+  UNEX cleanup | S2.Length | casc:root                           9   e.g. seed 569 arm 38/43 fired op38(op:setItems) skip 2 owner c4: root 3
+  UNEX cleanup | S2.Length | root                                2   e.g. seed 174 arm 26/43 fired op27(op:setItems) skip 1 owner c4: root 3
+  UNEX cleanup | S2.order | casc:other                           1   e.g. seed 569 arm 38/43 fired op38(op:setItems) skip 2 owner c4: c5 at 5
+  UNEX cleanup | S2.order | casc:victim                          1   e.g. seed 569 arm 38/43 fired op38(op:setItems) skip 2 owner c4: c4 at 6
+  UNEX cleanup | S2.order | other                                1   e.g. seed 174 arm 26/43 fired op27(op:setItems) skip 1 owner c4: c5 at 5
+  UNEX cleanup | S2.order | victim                               1   e.g. seed 174 arm 26/43 fired op27(op:setItems) skip 1 owner c4: c4 at 6
+  UNEX cleanup | S3.Offset | casc:root                           9   e.g. seed 569 arm 38/43 fired op38(op:setItems) skip 2 owner c4: root 7 want 8
+  UNEX cleanup | S3.Offset | root                                2   e.g. seed 174 arm 26/43 fired op27(op:setItems) skip 1 owner c4: root 6 want 7
+  UNEX cleanup | healErr.Quad0163 | casc:root                    9   e.g. seed 143 arm 15/24 fired op18(op:setItems) skip 0 owner c3: root heal5
+  UNEX cleanup | healErr.Quad0163 | root                         2   e.g. seed 174 arm 26/43 fired op27(op:setItems) skip 1 owner c4: root heal5
+  UNEX cleanup | late.Length | casc:other                        1   e.g. seed 569 arm 38/43 fired op38(op:setItems) skip 2 owner c4: late24 3
+  UNEX cleanup | late.Length | other                             1   e.g. seed 174 arm 26/43 fired op27(op:setItems) skip 1 owner c4: late6 2
+  UNEX onDestroyed | S2.Length | casc:root                      23   e.g. seed 224 arm 11/25 fired op17(op:setItems) skip 0 owner c1: root 3
+  UNEX onDestroyed | S2.Length | root                           15   e.g. seed 357 arm 26/42 fired op37(op:setItems) skip 2 owner c6: root 3
+  UNEX onDestroyed | S2.order | casc:other                       4   e.g. seed 485 arm 5/45 fired op22(op:setItems) skip 0 owner c4: c5 at 5
+  UNEX onDestroyed | S2.order | casc:victim                      7   e.g. seed 485 arm 5/45 fired op22(op:setItems) skip 0 owner c4: c4 at 6
+  UNEX onDestroyed | S2.order | other                            5   e.g. seed 554 arm 21/28 fired op24(op:setItems) skip 2 owner c4: c5 at 5
+  UNEX onDestroyed | S2.order | victim                           6   e.g. seed 554 arm 21/28 fired op24(op:setItems) skip 2 owner c4: c4 at 6
+  UNEX onDestroyed | S3.Offset | casc:root                      23   e.g. seed 224 arm 11/25 fired op17(op:setItems) skip 0 owner c1: root 10 want 11
+  UNEX onDestroyed | S3.Offset | root                           15   e.g. seed 357 arm 26/42 fired op37(op:setItems) skip 2 owner c6: root 8 want 9
+  UNEX onDestroyed | healErr.Quad0163 | casc:root               24   e.g. seed 224 arm 11/25 fired op17(op:setItems) skip 0 owner c1: root heal5
+  UNEX onDestroyed | healErr.Quad0163 | root                    22   e.g. seed 223 arm 17/26 fired op24(op:setItems) skip 0 owner c1: root heal5
+  UNEX onDestroyed | late.Length | casc:other                    4   e.g. seed 1482 arm 17/29 fired op20(op:setItems) skip 0 owner c4: late6 1
+  UNEX onDestroyed | late.Length | other                         2   e.g. seed 1096 arm 9/23 fired op11(op:setItems) skip 2 owner c5: late7 3
+  UNEX onDestroyed | td.dying | casc:victim                     24   e.g. seed 251 arm 11/31 fired op11(op:setItems) skip 0 owner c1: c1 nil
+  UNEX onDestroyed | td.dying | victim                          20   e.g. seed 584 arm 17/35 fired op19(op:setItems) skip 2 owner c3: c3 nil
+  UNEX onDestroyed | td.effBalance | casc:victim                24   e.g. seed 251 arm 11/31 fired op11(op:setItems) skip 0 owner c1: c1 9/8
+  UNEX onDestroyed | td.effBalance | victim                     20   e.g. seed 584 arm 17/35 fired op19(op:setItems) skip 2 owner c3: c3 6/5
+  UNEX onDestroyed | td.onDestroyed | casc:victim               34   e.g. seed 122 arm 11/27 fired op18(op:setItems) skip 1 owner c2: c2 nil
+  UNEX onDestroyed | td.onDestroyed | victim                    36   e.g. seed 223 arm 17/26 fired op24(op:setItems) skip 0 owner c1: c1 nil
