@@ -1,0 +1,57 @@
+--- C5a root class mismatch, overlap-only props ---
+C5a	false	./quad-roblox/test/probe.q84b.luau:44: QuadXXXX Claim: the root Frame is not a TextLabel — the root descriptor's class must match the Instance (M.<Class>(M.Root) with the Instance's own class)
+C5a root claimed:	false	name	Frame
+--- C5b root class mismatch + Text prop + mapped child ---
+C5b	false	./quad-roblox/test/probe.q84b.luau:51: QuadXXXX Claim: the root Frame is not a TextLabel — the root descriptor's class must match the Instance (M.<Class>(M.Root) with the Instance's own class)
+C5b root claimed:	false	child claimed:	false	child Text:	nil	fired:	false
+C5b retry fixed	true	
+C5b retry root claimed:	true	Text	t
+--- K1 control: right class root ---
+K1	true	
+K1 claimed	true	k
+--- K2 abstract class via newMapperClass('GuiObject') at root (Roblox IsA would pass; mock is ClassName ==) ---
+K2 root	false	./quad-roblox/test/probe.q84b.luau:65: QuadXXXX Claim: the root Frame is not a GuiObject — the root descriptor's class must match the Instance (M.<Class>(M.Root) with the Instance's own class)
+K2 root claimed	false
+K2 child	false	./quad-roblox/test/probe.q84b.luau:68: Quad0032 Claim: no child matched key Title under Frame (mapper GuiObject) — a child with that name must also be a GuiObject
+K2 child r2 claimed	false
+--- K3 child class mismatch (Q49 path) — message after V2 unify ---
+K3	false	./quad-roblox/test/probe.q84b.luau:74: Quad0032 Claim: no child matched key Title under Frame (mapper ImageLabel) — a child with that name must also be a ImageLabel
+K3 r claimed	false
+K3 absent	false	./quad-roblox/test/probe.q84b.luau:77: Quad0032 Claim: no child matched key Nope under Frame (mapper TextLabel) — a child with that name must also be a TextLabel
+--- K4 provider that predates the op: base stub on every Claim ---
+K4 stub kept	true
+K4 claim	false	./quad-roblox/test/probe.q84b.luau:89: Quad0108 quad: nativeIsA is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+--- C4 (Q85): descriptor inside a Modifier field ---
+C4 Modifier build	false	./quad-roblox/test/probe.q84b.luau:95: Quad0064 Modifier: field "Kid" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)
+--- C4s (Q85): descriptor through the setter path / typed factory / Modifier merge ---
+C4s setter	false	./quad-roblox/test/probe.q84b.luau:104: Quad0057 Modifier: field "Kid" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)
+C4s setter transform	false	./quad-roblox/test/probe.q84b.luau:105: Quad0057 Modifier: field "Kid" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)
+C4s typed	false	./quad-roblox/test/probe.q84b.luau:106: Quad0064 Modifier: field "Kid" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)
+C4d D.Frame	false	./quad-roblox/test/probe.q84b.luau:114: Quad0064 Modifier: field "Kid" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)
+--- C4b (Q85): State(descriptor) inside a Modifier field (X2) ---
+C4b Modifier build	true	
+C4b claim	false	./quad-roblox/test/probe.q84b.luau:121: Quad0076 Dispatch: no handler matched key Kid (value: table, brand: MapperDescriptor) — a quad value at a string key: it belongs in a numeric (array) slot
+C4b root claimed after throw:	true
+--- C4c (Q85): Modifier setter path (D.Modifier.Frame():...) / :Apply / Compute holding a descriptor ---
+C4c Compute-descriptor field	true	
+C4c claim	false	./quad-roblox/test/probe.q84b.luau:131: Quad0076 Dispatch: no handler matched key Kid (value: table, brand: MapperDescriptor) — a quad value at a string key: it belongs in a numeric (array) slot
+C4c root claimed after throw:	true
+--- C1 (Q85): descriptor at a string key (not a Modifier) ---
+C1	false	./quad-roblox/test/probe.q84b.luau:138: QuadXXX2 Claim: a mapper descriptor at key "Kid" — a descriptor is resolved only as the direct value of a numeric (array) key in mapper props
+C1 root claimed after throw:	false
+--- C2 (Q85): descriptor inside a State at array slot ---
+C2	false	./quad-roblox/test/probe.q84b.luau:144: QuadXXX2 Claim: a mapper descriptor inside a State at [1] — a descriptor is resolved only as the direct value of a numeric (array) key in mapper props
+C2 root claimed after throw:	false
+--- X5 cycle: claimed ancestor in the claimed root's props ---
+X5	false	./quad-roblox/test/probe.q84b.luau:151: QuadXXX7 Claim: Host at [2] under Frame is that place itself or one of its ancestors — placing it there would be a cycle
+X5 r claimed	false
+--- X6 State holding a foreign Instance ---
+X6	false	./quad-roblox/test/probe.q84b.luau:158: QuadXXX4 Claim: Frame at [2] under Frame is not claimed by quad — a child of the template goes in as a mapper descriptor (M.<Class>("name")), and anything else must be built with the Declaration or claimed first
+X6 r claimed	false
+--- X7 Modifier at a string key ---
+X7	false	./quad-roblox/test/probe.q84b.luau:164: QuadXXX6 Claim: a Modifier cannot be the value of key "Kid" in mapper props — place it in the array part
+X7 r claimed	false
+--- X8 controls: valid claim with raw claimed Instance, State, Modifier ---
+X8	true	
+X8 r claimed	true	t.Text	ok	x.Parent==r	true	BT	0.25
+=== probe done ===

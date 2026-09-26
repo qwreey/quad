@@ -1,0 +1,121 @@
+diff --git a/quad-base/src/Claim.luau b/quad-base/src/Claim.luau
+index d7fc8fe..5a4a60d 100644
+--- a/quad-base/src/Claim.luau
++++ b/quad-base/src/Claim.luau
+@@ -258,6 +258,11 @@ local function Init(module: any)
+ 				Err.errorBefore(`QuadXXX3 Claim: {tostring(v)} at [{seat.key}] under {tostring(seat.parent)} is already part of this Claim (the root, a mapped child, or another numeric key) — each Instance takes exactly one place`, SURFACE) -- id on adoption
+ 			end
+ 			seen[v] = true
++			-- round13 Q84b X5 PROTOTYPE: the cycle gate `InstanceChild` asks at drive (`Quad0220`), asked here
++			-- through the backend (base never reads `.Parent`) — needs its own op, not the class predicate
++			if module.Backend.nativeContains(v, seat.parent) then
++				Err.errorBefore(`QuadXXX7 Claim: {tostring(v)} at [{seat.key}] under {tostring(seat.parent)} is that place itself or one of its ancestors — placing it there would be a cycle`, SURFACE) -- id on adoption
++			end
+ 			if not module.Backend.isClaimed(v) then
+ 				Err.errorBefore(`QuadXXX4 Claim: {tostring(v)} at [{seat.key}] under {tostring(seat.parent)} is not claimed by quad — a child of the template goes in as a mapper descriptor (M.<Class>("name")), and anything else must be built with the Declaration or claimed first`, SURFACE) -- id on adoption
+ 			end
+diff --git a/quad-base/src/LifetimeHandle.luau b/quad-base/src/LifetimeHandle.luau
+index 7bd088d..9571548 100644
+--- a/quad-base/src/LifetimeHandle.luau
++++ b/quad-base/src/LifetimeHandle.luau
+@@ -221,6 +221,10 @@ local function Init(module: any)
+ 	if Backend.nativeIsA == nil then
+ 		Backend.nativeIsA = notInstalled("nativeIsA")
+ 	end
++	-- round13 Q84b X5 PROTOTYPE: ancestry predicate (name is a candidate)
++	if Backend.nativeContains == nil then
++		Backend.nativeContains = notInstalled("nativeContains")
++	end
+ 	-- `H-501` (2026-09-08 2차 감사 H-2): Q6 withdrew the composition fallback and promised
+ 	-- "여섯 전부 필수·미주입이면 안내 스텁 에러" — but the six had no stub at all, so a
+ 	-- backend that forgot one died with `attempt to call a nil value` on a Slot/Raw.luau line.
+diff --git a/quad-base/test/mock.luau b/quad-base/test/mock.luau
+index d1bcf0c..64e84be 100644
+--- a/quad-base/test/mock.luau
++++ b/quad-base/test/mock.luau
+@@ -468,6 +468,17 @@ local function installNative(quad: any)
+ 	local function nativeIsA(inst: any, className: string): boolean
+ 		return inst.ClassName == className
+ 	end
++	-- round13 Q84b X5 PROTOTYPE: ancestry by the `.Parent` walk
++	local function nativeContains(ancestor: any, inst: any): boolean
++		local node = inst
++		while node ~= nil do
++			if node == ancestor then
++				return true
++			end
++			node = node.Parent
++		end
++		return false
++	end
+ 	local function nativeMove(_target: any, _fromOffset: number, _elements: { any }, _toOffset: number) end
+ 	local function nativeSwap(_target: any, _oa: number, _ea: { any }, _ob: number, _eb: { any }) end
+ 	local function nativeDispose(element: any)
+@@ -483,11 +494,12 @@ local function installNative(quad: any)
+ 	quad.Backend.nativeMove = nativeMove
+ 	quad.Backend.nativeFindChild = nativeFindChild
+ 	quad.Backend.nativeIsA = nativeIsA
++	quad.Backend.nativeContains = nativeContains
+ 	quad.Backend.nativeSwap = nativeSwap
+ 	quad.Backend.nativeDispose = nativeDispose
+ 	quad.Backend.isInst = isInst
+ 
+-	Err.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, nativeFindChild, nativeIsA, isInst)
++	Err.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, nativeFindChild, nativeIsA, nativeContains, isInst)
+ end
+ 
+ -- `H-294` (a, 사용자 확정: "mock 또한 하나의 백엔드이다") — mock도 실
+diff --git a/quad-roblox/src/EngineOps.luau b/quad-roblox/src/EngineOps.luau
+index 2ea445f..6203ea1 100644
+--- a/quad-roblox/src/EngineOps.luau
++++ b/quad-roblox/src/EngineOps.luau
+@@ -109,6 +109,19 @@ local function install(quad: any)
+ 		return inst:IsA(className)
+ 	end
+ 
++	-- round13 Q84b X5 PROTOTYPE (name is a candidate): `inst == ancestor` or a descendant of it — the
++	-- same `.Parent` walk `InstanceChild`'s cycle gate (`Quad0220`) does, asked by Claim's pass 1.
++	local function nativeContains(ancestor: any, inst: any): boolean
++		local node = inst
++		while node ~= nil do
++			if node == ancestor then
++				return true
++			end
++			node = node.Parent
++		end
++		return false
++	end
++
+ 	-- Tag/Attr ops (M10 engine axis). Batched `{string}` is the contract
+ 	-- (a web backend rewrites className once); Roblox has no batch API, so
+ 	-- the loop is here rather than in the base handler.
+@@ -173,6 +186,7 @@ local function install(quad: any)
+ 	quad.Backend.onDestroying = onDestroying
+ 	quad.Backend.nativeFindChild = nativeFindChild
+ 	quad.Backend.nativeIsA = nativeIsA
++	quad.Backend.nativeContains = nativeContains
+ 	quad.Backend.addTag = addTag
+ 	quad.Backend.removeTag = removeTag
+ 	quad.Backend.setAttr = setAttr
+@@ -180,7 +194,7 @@ local function install(quad: any)
+ 	quad.Backend.clearTimeout = clearTimeout
+ 
+ 	-- `H-238`: tag everything the backend installs (see LifetimeHandle.luau)
+-	Err.setFuncLevel(SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, isInst, onDestroying, nativeFindChild, nativeIsA, addTag, removeTag, setAttr, setTimeout, clearTimeout)
++	Err.setFuncLevel(SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, isInst, onDestroying, nativeFindChild, nativeIsA, nativeContains, addTag, removeTag, setAttr, setTimeout, clearTimeout)
+ end
+ 
+ return install
+diff --git a/quad-types/src/init.luau b/quad-types/src/init.luau
+index 6dd1767..bd9cdad 100644
+--- a/quad-types/src/init.luau
++++ b/quad-types/src/init.luau
+@@ -632,6 +632,8 @@ export type Backend = {
+ 	nativeFindChild: (inst: any, key: any) -> any, -- round13 Q84b PROTOTYPE (V2): 이름만 — 클래스는 nativeIsA로
+ 	-- round13 Q84b PROTOTYPE (이름 후보): 클래스 술어 — Roblox `IsA`(상속 포함), mock `ClassName ==`. Claim 루트 대조.
+ 	nativeIsA: (inst: any, className: string) -> boolean,
++	-- round13 Q84b X5 PROTOTYPE (이름 후보): `inst`가 `ancestor` 자신이거나 그 자손인가 — Claim 1패스 순환 게이트
++	nativeContains: (ancestor: any, inst: any) -> boolean,
+ 	-- base 소유 핸들러(Tag/Attr)가 부르는 주입 op(`dispatch-core-plan.md`
+ 	-- "base가 소유하는 핸들러와 주입되는 엔진 op"). quad-base는 안내 스텁을
+ 	-- 두고 프로바이더가 덮어쓴다 — **[2026-09-03 M10 엔진 축]** quad-roblox

@@ -1,0 +1,28 @@
+=== X1 Q85 edge: State(descriptor) at a string key ===
+X1	false	./quad-roblox/test/probe.q84q85.luau:40: QuadXXX2 Claim: a mapper descriptor inside a State at key "Kid" — a descriptor is resolved only as the direct value of a numeric (array) key in mapper props
+X1 r claimed	false
+=== X2 Q85 edge: Modifier field holding State(descriptor) ===
+X2	false	./quad-roblox/test/probe.q84q85.luau:46: Quad0076 Dispatch: no handler matched key Kid (value: table, brand: MapperDescriptor) — a quad value at a string key: it belongs in a numeric (array) slot
+X2 r claimed	true
+=== X3 same raw Instance at two numeric keys ===
+X3	false	./quad-roblox/test/probe.q84q85.luau:53: QuadXXX3 Claim: X at [3] under R is already part of this Claim (the root, a mapped child, or another numeric key) — each Instance takes exactly one place
+X3 r claimed	false	Title claimed	false
+=== X4 raw Instance equal to a mapped child (descriptor AND the Instance) ===
+X4	false	./quad-roblox/test/probe.q84q85.luau:59: QuadXXX3 Claim: Title at [1] under R is already part of this Claim (the root, a mapped child, or another numeric key) — each Instance takes exactly one place
+X4 r claimed	false	Title claimed	false
+=== X5 RESIDUE cycle: a claimed ancestor placed in the claimed root's props (needs .Parent) ===
+X5	false	./quad-roblox/test/probe.q84q85.luau:66: QuadXXX7 Claim: Host at [2] under R is that place itself or one of its ancestors — placing it there would be a cycle
+X5 r claimed	false
+=== X6 RESIDUE: State holding a foreign Instance at a numeric key ===
+X6	false	./quad-roblox/test/probe.q84q85.luau:73: QuadXXX4 Claim: Foreign at [2] under R is not claimed by quad — a child of the template goes in as a mapper descriptor (M.<Class>("name")), and anything else must be built with the Declaration or claimed first
+X6 r claimed	false
+=== X7 RESIDUE: Modifier at a string key (flatten's Quad0068, a pure check) ===
+X7	false	./quad-roblox/test/probe.q84q85.luau:79: QuadXXX6 Claim: a Modifier cannot be the value of key "Kid" in mapper props — place it in the array part
+X7 r claimed	false
+=== X8 controls: valid claims still pass (raw claimed Instance, State, Modifier, sparse none) ===
+X8	true	
+X8 r claimed	true	t.Text	ok	x.Parent==r	true	BT	0.25
+=== X9 Q84 control: right-class root, subclass-free ===
+X9	true	
+X9 claimed	true	k
+=== probe done ===

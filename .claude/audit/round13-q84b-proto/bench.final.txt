@@ -1,0 +1,6 @@
+A 1000 mapped children                   median 19.11 ms
+B 1 mapped + 1000 raw claimed Instances  median 5.46 ms
+C 1000 mapped, each Modifier(2 fields)+State median 43.95 ms
+A 1000 mapped children                   median 19.72 ms
+B 1 mapped + 1000 raw claimed Instances  median 5.46 ms
+C 1000 mapped, each Modifier(2 fields)+State median 46.19 ms

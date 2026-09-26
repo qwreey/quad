@@ -1,0 +1,71 @@
+diff --git a/quad-base/src/Claim.luau b/quad-base/src/Claim.luau
+index aca8548..f6d3e72 100644
+--- a/quad-base/src/Claim.luau
++++ b/quad-base/src/Claim.luau
+@@ -142,8 +142,11 @@ local function Init(module: any)
+ 				end
+ 				-- round10 Q49 (a) (user decision 2026-09-17): the descriptor's class goes to the backend —
+ 				-- a same-name child of another class is "not matched" (Roblox: `IsA`; mock: ClassName)
+-				local child = module.Backend.nativeFindChild(inst, v._key, v._className)
+-				if child == nil then
++				-- round13 Q84b PROTOTYPE (V2): lookup and class check split — `nativeFindChild` is name-only again,
++				-- the class goes to the same predicate the root asks (`nativeIsA`, name is a candidate). One op for
++				-- both places; the message and its id stay (absence and mismatch are still one site).
++				local child = module.Backend.nativeFindChild(inst, v._key)
++				if child == nil or not module.Backend.nativeIsA(child, v._className) then
+ 					Err.errorBefore(`Quad0032 Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)}) — a child with that name must also be a {tostring(v._className)}`, SURFACE)
+ 				end
+ 				resolve(child, v, plan, seen)
+diff --git a/quad-base/test/mock.luau b/quad-base/test/mock.luau
+index 8697bce..d1bcf0c 100644
+--- a/quad-base/test/mock.luau
++++ b/quad-base/test/mock.luau
+@@ -460,12 +460,9 @@ local function installNative(quad: any)
+ 	-- 2순회 `H-374`: the real provider's `nativeFindChild(inst, key, className?)` is
+ 	-- `inst:FindFirstChild(key)` + `IsA(className)` (quad-roblox EngineOps) — the mock has no
+ 	-- class hierarchy (file header), so the class check is `ClassName ==` (round10 Q49 (a))
+-	local function nativeFindChild(inst: any, key: any, className: string?): any?
+-		local child = inst:FindFirstChild(key)
+-		if child ~= nil and className ~= nil and child.ClassName ~= className then
+-			return nil
+-		end
+-		return child
++	-- round13 Q84b PROTOTYPE (V2): name-only; the class check is `nativeIsA` below
++	local function nativeFindChild(inst: any, key: any): any?
++		return inst:FindFirstChild(key)
+ 	end
+ 	-- round13 Q84b PROTOTYPE: the class predicate — no hierarchy in the mock, so `ClassName ==` (same as `methods.IsA`)
+ 	local function nativeIsA(inst: any, className: string): boolean
+diff --git a/quad-roblox/src/EngineOps.luau b/quad-roblox/src/EngineOps.luau
+index 6630c35..2ea445f 100644
+--- a/quad-roblox/src/EngineOps.luau
++++ b/quad-roblox/src/EngineOps.luau
+@@ -98,12 +98,9 @@ local function install(quad: any)
+ 	-- with the right name but the wrong class is "not found" (`IsA`, so subclasses pass).
+ 	-- Before, `M.TextLabel("Kid")` silently claimed an ImageLabel named Kid when the props
+ 	-- happened to overlap. User: "이름만 보던 함수에 className 넣고 검사 한번 한다".
+-	local function nativeFindChild(inst: any, key: any, className: string?): any?
+-		local child = inst:FindFirstChild(key)
+-		if child ~= nil and className ~= nil and not child:IsA(className) then
+-			return nil
+-		end
+-		return child
++	-- round13 Q84b PROTOTYPE (V2): name-only again — the class check moved to `nativeIsA` (base asks it)
++	local function nativeFindChild(inst: any, key: any): any?
++		return inst:FindFirstChild(key)
+ 	end
+ 
+ 	-- round13 Q84b PROTOTYPE (name is a candidate): the class predicate `Claim` asks of the ROOT.
+diff --git a/quad-types/src/init.luau b/quad-types/src/init.luau
+index 5eab619..6dd1767 100644
+--- a/quad-types/src/init.luau
++++ b/quad-types/src/init.luau
+@@ -629,7 +629,7 @@ export type Backend = {
+ 	-- (자동 claim은 마법 — 사용자가 `Claim`/`Declaration`으로 먼저 소유해야 한다).
+ 	isClaimed: (inst: any) -> boolean,
+ 	-- 매퍼 키 해석 op(claim-plan — 조회라 조합 폴백 예외, 미주입이면 error).
+-	nativeFindChild: (inst: any, key: any, className: string?) -> any, -- 클래스가 다르면 nil(round10 Q49 (a), 2026-09-17)
++	nativeFindChild: (inst: any, key: any) -> any, -- round13 Q84b PROTOTYPE (V2): 이름만 — 클래스는 nativeIsA로
+ 	-- round13 Q84b PROTOTYPE (이름 후보): 클래스 술어 — Roblox `IsA`(상속 포함), mock `ClassName ==`. Claim 루트 대조.
+ 	nativeIsA: (inst: any, className: string) -> boolean,
+ 	-- base 소유 핸들러(Tag/Attr)가 부르는 주입 op(`dispatch-core-plan.md`

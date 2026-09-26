@@ -1,0 +1,18 @@
+./quad-roblox/test/probe.e6.luau:70: Quad0064 Modifier: field "Kid" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)
+stacktrace:
+[C] function error
+./quad-roblox/luau_packages/.pesde/qwreey+quad_error/3.2.0/quad_error/src/init.luau:193 function errorBeforeNearest
+./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/Modifier/init.luau:395 function construct
+./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/Modifier/init.luau:456 function __call
+./quad-roblox/test/probe.e6.luau:70
+--- C1 descriptor at a hash key (not array) ---
+C1 claim	false	./quad-roblox/test/probe.e6.luau:47: QuadXXX2 Claim: a mapper descriptor at key "Kid" — a descriptor is resolved only as the direct value of a numeric (array) key in mapper props
+C1 root claimed after throw:	false	BT:	nil	fired:	false
+C1 retry (fixed)	true	
+--- C2 descriptor inside a State at array slot ---
+C2 claim	false	./quad-roblox/test/probe.e6.luau:56: QuadXXX2 Claim: a mapper descriptor inside a State at [1] — a descriptor is resolved only as the direct value of a numeric (array) key in mapper props
+C2 root claimed after throw:	false
+--- C3 descriptor inside a Slot at array slot ---
+C3 claim	false	./quad-roblox/test/probe.e6.luau:63: Quad0240 Slot: this backend cannot mount this value
+C3 root claimed after throw:	false
+--- C4 descriptor inside a Modifier field ---

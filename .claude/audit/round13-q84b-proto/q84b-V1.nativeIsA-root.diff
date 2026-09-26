@@ -1,0 +1,108 @@
+diff --git a/quad-base/src/Claim.luau b/quad-base/src/Claim.luau
+index 84dfbd4..aca8548 100644
+--- a/quad-base/src/Claim.luau
++++ b/quad-base/src/Claim.luau
+@@ -194,6 +194,12 @@ local function Init(module: any)
+ 		if module.debug and desc._key ~= MapperRoot then
+ 			print(`Claim: the root descriptor's key {tostring(desc._key)} is ignored — the root takes M.Root; put a keyed descriptor in the root's props instead`)
+ 		end
++		-- round13 Q84b PROTOTYPE (V1): the root descriptor's class was never read (E6 C5a/C5b). Ask the
++		-- backend's class predicate (`nativeIsA`, name is a candidate) — same meaning as the child path
++		-- (`nativeFindChild`'s className: Roblox `IsA`, mock `ClassName ==`). Pure predicate → pass 1 (`H-30`).
++		if not module.Backend.nativeIsA(inst, desc._className) then
++			Err.errorBefore(`QuadXXXX Claim: the root {tostring(inst)} is not a {tostring(desc._className)} — the root descriptor's class must match the Instance (M.<Class>(M.Root) with the Instance's own class)`, SURFACE) -- id on adoption
++		end
+ 		local plan: { Step } = {}
+ 		resolve(inst, desc, plan, {})
+ 		commit(plan)
+diff --git a/quad-base/src/LifetimeHandle.luau b/quad-base/src/LifetimeHandle.luau
+index 8b03e82..7bd088d 100644
+--- a/quad-base/src/LifetimeHandle.luau
++++ b/quad-base/src/LifetimeHandle.luau
+@@ -217,6 +217,10 @@ local function Init(module: any)
+ 	if Backend.nativeFindChild == nil then
+ 		Backend.nativeFindChild = notInstalled("nativeFindChild")
+ 	end
++	-- round13 Q84b PROTOTYPE: class predicate (name is a candidate) — a query, no composition fallback
++	if Backend.nativeIsA == nil then
++		Backend.nativeIsA = notInstalled("nativeIsA")
++	end
+ 	-- `H-501` (2026-09-08 2차 감사 H-2): Q6 withdrew the composition fallback and promised
+ 	-- "여섯 전부 필수·미주입이면 안내 스텁 에러" — but the six had no stub at all, so a
+ 	-- backend that forgot one died with `attempt to call a nil value` on a Slot/Raw.luau line.
+diff --git a/quad-base/test/mock.luau b/quad-base/test/mock.luau
+index f7f62c1..8697bce 100644
+--- a/quad-base/test/mock.luau
++++ b/quad-base/test/mock.luau
+@@ -467,6 +467,10 @@ local function installNative(quad: any)
+ 		end
+ 		return child
+ 	end
++	-- round13 Q84b PROTOTYPE: the class predicate — no hierarchy in the mock, so `ClassName ==` (same as `methods.IsA`)
++	local function nativeIsA(inst: any, className: string): boolean
++		return inst.ClassName == className
++	end
+ 	local function nativeMove(_target: any, _fromOffset: number, _elements: { any }, _toOffset: number) end
+ 	local function nativeSwap(_target: any, _oa: number, _ea: { any }, _ob: number, _eb: { any }) end
+ 	local function nativeDispose(element: any)
+@@ -481,11 +485,12 @@ local function installNative(quad: any)
+ 	quad.Backend.nativeRemove = nativeRemove
+ 	quad.Backend.nativeMove = nativeMove
+ 	quad.Backend.nativeFindChild = nativeFindChild
++	quad.Backend.nativeIsA = nativeIsA
+ 	quad.Backend.nativeSwap = nativeSwap
+ 	quad.Backend.nativeDispose = nativeDispose
+ 	quad.Backend.isInst = isInst
+ 
+-	Err.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, nativeFindChild, isInst)
++	Err.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, nativeFindChild, nativeIsA, isInst)
+ end
+ 
+ -- `H-294` (a, 사용자 확정: "mock 또한 하나의 백엔드이다") — mock도 실
+diff --git a/quad-roblox/src/EngineOps.luau b/quad-roblox/src/EngineOps.luau
+index c15610d..6630c35 100644
+--- a/quad-roblox/src/EngineOps.luau
++++ b/quad-roblox/src/EngineOps.luau
+@@ -106,6 +106,12 @@ local function install(quad: any)
+ 		return child
+ 	end
+ 
++	-- round13 Q84b PROTOTYPE (name is a candidate): the class predicate `Claim` asks of the ROOT.
++	-- `IsA`, so a subclass passes — the same meaning `nativeFindChild` gives the child path.
++	local function nativeIsA(inst: any, className: string): boolean
++		return inst:IsA(className)
++	end
++
+ 	-- Tag/Attr ops (M10 engine axis). Batched `{string}` is the contract
+ 	-- (a web backend rewrites className once); Roblox has no batch API, so
+ 	-- the loop is here rather than in the base handler.
+@@ -169,6 +175,7 @@ local function install(quad: any)
+ 	quad.Backend.isInst = isInst
+ 	quad.Backend.onDestroying = onDestroying
+ 	quad.Backend.nativeFindChild = nativeFindChild
++	quad.Backend.nativeIsA = nativeIsA
+ 	quad.Backend.addTag = addTag
+ 	quad.Backend.removeTag = removeTag
+ 	quad.Backend.setAttr = setAttr
+@@ -176,7 +183,7 @@ local function install(quad: any)
+ 	quad.Backend.clearTimeout = clearTimeout
+ 
+ 	-- `H-238`: tag everything the backend installs (see LifetimeHandle.luau)
+-	Err.setFuncLevel(SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, isInst, onDestroying, nativeFindChild, addTag, removeTag, setAttr, setTimeout, clearTimeout)
++	Err.setFuncLevel(SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, isInst, onDestroying, nativeFindChild, nativeIsA, addTag, removeTag, setAttr, setTimeout, clearTimeout)
+ end
+ 
+ return install
+diff --git a/quad-types/src/init.luau b/quad-types/src/init.luau
+index 7dcdaf3..5eab619 100644
+--- a/quad-types/src/init.luau
++++ b/quad-types/src/init.luau
+@@ -630,6 +630,8 @@ export type Backend = {
+ 	isClaimed: (inst: any) -> boolean,
+ 	-- 매퍼 키 해석 op(claim-plan — 조회라 조합 폴백 예외, 미주입이면 error).
+ 	nativeFindChild: (inst: any, key: any, className: string?) -> any, -- 클래스가 다르면 nil(round10 Q49 (a), 2026-09-17)
++	-- round13 Q84b PROTOTYPE (이름 후보): 클래스 술어 — Roblox `IsA`(상속 포함), mock `ClassName ==`. Claim 루트 대조.
++	nativeIsA: (inst: any, className: string) -> boolean,
+ 	-- base 소유 핸들러(Tag/Attr)가 부르는 주입 op(`dispatch-core-plan.md`
+ 	-- "base가 소유하는 핸들러와 주입되는 엔진 op"). quad-base는 안내 스텁을
+ 	-- 두고 프로바이더가 덮어쓴다 — **[2026-09-03 M10 엔진 축]** quad-roblox

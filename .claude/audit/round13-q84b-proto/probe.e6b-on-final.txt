@@ -1,0 +1,129 @@
+=== N1 depth 4 success ===
+N1	true	
+N1 claimed r,a,b,c,leaf	true,true,true,true,true	Text	deep	B.BT	0.3
+N1 offsets a@1	0	c pos2 offset	1
+=== N2 depth 4 class mismatch at leaf -> nothing claimed/applied ===
+N2	false	./quad-roblox/test/probe.e6b.luau:70: Quad0032 Claim: no child matched key Leaf under C (mapper ImageLabel) — a child with that name must also be a ImageLabel
+N2 claimed	false,false,false,false,false	BT r,b	nil	nil	fired root,B,leaf	false	false	false	B props[1] is desc	true
+N2 retry	true	
+N2 retry leaf	ok	true,true,true,true,true
+=== N3 depth 3 missing name / wrong name at depth 3 ===
+N3	false	./quad-roblox/test/probe.e6b.luau:80: Quad0032 Claim: no child matched key Nope under B (mapper Frame) — a child with that name must also be a Frame
+N3 claimed	false,false,false,false,false
+=== N4 same descriptor at two depths (depth1 and depth3) ===
+N4	false	./quad-roblox/test/probe.e6b.luau:92: Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)
+N4 claimed	false,false,false,false,false	fired	false
+=== N5 deep child already claimed (D.Frame parked in template at depth 3) ===
+N5	false	./quad-roblox/test/probe.e6b.luau:101: Quad0029 Claim: Made is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+N5 claimed r,a,b	false,false,false
+=== N6 same name twice at depth 2 (UB §3) + class filter picks? ===
+N6 TextLabel K (second child)	false	./quad-roblox/test/probe.e6b.luau:111: Quad0032 Claim: no child matched key K under A (mapper TextLabel) — a child with that name must also be a TextLabel
+N6 claimed r,a,k1,k2	false,false,false,false
+N6b two descs 'J'	false	./quad-roblox/test/probe.e6b.luau:118: Quad0028 Claim: two mapper descriptors resolved to the same Instance J — each child needs exactly one descriptor
+N6b claimed	false,false,false,false
+=== N7 depth-3 props gate/[0] key/drive throw at deepest ===
+N7a non-table props at depth 4	false	./quad-roblox/test/probe.e6b.luau:125: Quad0030 Claim: mapper props must be a table (got number)
+N7a claimed	false,false,false,false,false
+N7b [0]=desc at depth 3	false	./quad-roblox/test/probe.e6b.luau:127: Quad0031 Claim: array keys must be positive integers (got 0)
+N7b claimed	false,false,false,false,false
+N7c bad prop at depth 4 (drive)	false	./quad-roblox/test/probe.e6b.luau:129: Quad0076 Dispatch: no handler matched key Nope (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+N7c claimed	true,true,true,true,true	r BT	nil
+=== N8 depth: descriptor under a D.Frame inside a Mapper (New child holding a mapper desc) ===
+N8	false	./quad-roblox/test/probe.e6b.luau:136: Quad0076 Dispatch: no handler matched key 1 (value: table, brand: MapperDescriptor) — this quad value has no handler at an array position
+N8 r claimed	false
+=== S1 manual Slot between claimed template siblings ===
+S1 claim	true	
+S1 after claim	OK	phys:	Top s1 s2 Bot	| model:	Top s1 s2 Bot	#viol	0
+S1 offsets pos2	1	pos3	3
+S1 add	OK	phys:	Top s0 s1 s2 s3 Bot	| model:	Top s0 s1 s2 s3 Bot	#viol	0
+S1 move/swap	OK	phys:	Top s3 s2 s0 s1 Bot	| model:	Top s3 s2 s0 s1 Bot	#viol	0
+S1 extract/remove	OK	phys:	Top s0 s1 Bot	| model:	Top s0 s1 Bot	#viol	0
+S1 replace/splice	OK	phys:	Top p1 p2 s1 Bot	| model:	Top p1 p2 s1 Bot	#viol	0
+S1 clear	OK	phys:	Top Bot	| model:	Top Bot	#viol	0
+S1 re-add extracted	OK	phys:	Top s2 Bot	| model:	Top s2 Bot	#viol	0
+=== S2 :List at depth 2 inside claimed tree, with claimed siblings, reorder + Detach + OwnsElements=false ===
+S2 claim	true	
+S2 after claim	OK	phys:	Hdr a b c Ftr	| model:	Hdr a b c Ftr	#viol	0
+S2 reorder	OK	phys:	Hdr c a b Ftr	| model:	Hdr c a b Ftr	#viol	0
+S2 detach b	OK	phys:	Hdr c a Ftr	| model:	Hdr c a Ftr	#viol	0
+S2 reattach b + d	OK	phys:	Hdr b c a d Ftr	| model:	Hdr b c a d Ftr	#viol	0
+S2 empty	OK	phys:	Hdr Ftr	| model:	Hdr Ftr	#viol	0
+S2 ftr offset	1
+=== S3 OwnsElements=false :List whose elements are Claimed clones (updateFn claims per item) ===
+S3 claim	true	
+S3 after	OK	phys:	Hdr x y	| model:	Hdr x y	#viol	0
+S3 title x	x
+S3 x after removal: destroyed?	false	parent	nil	claimed	true
+S3 after remove	OK	phys:	Hdr y	| model:	Hdr y	#viol	0
+S3 reuse orphan in other slot	true	
+=== S4 Slot as mapped-child sibling; Claim root then dispose(slot element) / template child destroyed outside ===
+S4 claim	OK	phys:	Top e1 e2 Bot	| model:	Top e1 e2 Bot	#viol	0
+S4 after Top:Destroy offset pos2	1	pos3	3	Length slot	2
+S4 add after Top destroyed	true	
+S4 after add	MISMATCH	phys:	e1 e3 e2 Bot	| model:	e3 e1 e2 Bot	#viol	0
+S4 violations list printed above; offset used would be	1
+=== A1 Attr(store) on claimed instance with pre-existing attribute ===
+A1 claim	true	
+A1 after claim hp,mp,keep	1	2	k	tags	Card,New,Pre
+A1 hp after store set	10
+A1 after retract hp,mp,keep	10	2	k	tags	Pre
+A1 hp after retract + store set	10
+A1 late name via Of after mount	nil
+=== A2 Attr on mapped deep child; mapped child re-claimed? AttrKey conflict with root ===
+A2	true	
+A2 leaf x	5	tags	t
+A2 after dispose root: leaf destroyed	true	x	5
+=== D1 q.dispose(claimed root) / dispose(mapped child) ===
+D1 dispose mapped child b (sits at a pos1)	false	./quad-roblox/test/probe.e6b.luau:352: Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+D1 dispose unmapped c	true	
+D1 c destroyed	true	leaf destroyed	true
+D1 dispose root	true	
+D1 r,a destroyed	true	true	claimed r,a	false,false
+=== D2 mapped template child destroyed outside, then drive / re-Claim root ===
+D2 t claimed after destroy	false	offset pos2	1
+D2 set Text on destroyed title	true	
+D2 t.Text	a
+D2 re-claim root (already claimed)	false	./quad-roblox/test/probe.e6b.luau:370: Quad0029 Claim: Root is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+D2 drive pos1 new child	true	
+D2 nt parent is r	true	offset pos2	1
+D2 dispose root	true	
+=== D3 fresh clone: template child already destroyed before Claim (corpse child) ===
+D3 claim with destroyed child mapped	false	./quad-roblox/test/probe.e6b.luau:384: Quad0032 Claim: no child matched key Title under Root (mapper TextLabel) — a child with that name must also be a TextLabel
+D3 r claimed	false
+=== R1 same descriptor across two Claims (Quad0027) ===
+R1 reuse	false	./quad-roblox/test/probe.e6b.luau:395: Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)
+R1 r2 claimed	false
+=== R2 shared props TABLE across two descriptors (mutated in place by first Claim) ===
+R2 props[1] after first Claim is	table	t1
+R2 second Claim with same props table	false	./quad-roblox/test/probe.e6b.luau:406: QuadXXX5 Claim: Title at [1] under R2 is already mounted elsewhere — take it off its seat first (a props table given to an earlier Claim now holds that Claim's Instances: build a fresh table)
+R2 r2 claimed	false	t2 claimed	false	t1.Parent==r1	true	t1.Parent==r2	false	r2 BT	nil
+=== R3 Slot:List updateFn hoisted descriptor (reuse across items) ===
+R3 list	false	./quad-roblox/test/probe.e6b.luau:421: Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)
+R3 slot length	0
+=== R4 Slot:List updateFn per-item fresh descriptors, update of existing key re-claims prev? ===
+R4 second reconcile same key	false	./quad-roblox/test/probe.e6b.luau:437: Quad0029 Claim: p is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+R4 length	1
+=== probe done ===
+=== R5 generalisation: numeric seat holds an Instance that drive will reject (mounted elsewhere / foreign) ===
+R5a mounted-elsewhere Instance in claim props	false	./quad-roblox/test/probe.e6b.luau:448: QuadXXX5 Claim: Seated at [2] under R is already mounted elsewhere — take it off its seat first (a props table given to an earlier Claim now holds that Claim's Instances: build a fresh table)
+R5a r claimed	false	Title claimed	false	Title.Text	nil
+R5b foreign Instance in claim props	false	./quad-roblox/test/probe.e6b.luau:452: QuadXXX4 Claim: Foreign at [2] under R2 is not claimed by quad — a child of the template goes in as a mapper descriptor (M.<Class>("name")), and anything else must be built with the Declaration or claimed first
+R5b r2 claimed	false	Title claimed	false
+R5b retry fixed	true	
+R5c control D.Frame with foreign	false	./quad-roblox/test/probe.e6b.luau:456: Quad0219 InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+=== S5 Claim'd template child placed into a Slot of the same claimed root ===
+S5 claim root with slot containing its own template child	true	
+S5 row parent is r	true	slot len	1	phys	Top Row Row	#viol	0
+=== S6 depth-3 mapper hosting State<Instance> seat + Slot + mapped sibling ===
+S6 claim	true	
+S6 offsets pos3(slot) pos4(sib)	1	2
+S6 after State set: slot pos3 offset	2	sib	3
+S6 slot add after state child	OK	phys:	Leaf StateKid z2 z1 Sib	| model:	Leaf StateKid z2 z1 Sib	#viol	0
+S6 after state cleared	OK	phys:	Leaf z2 z1 z3 Sib	| model:	Leaf z2 z1 z3 Sib	#viol	0
+=== probe2 done ===
+=== R6 realistic: template child passed directly instead of a descriptor ===
+R6	false	./quad-roblox/test/probe.e6b.luau:497: QuadXXX4 Claim: Title at [2] under R is not claimed by quad — a child of the template goes in as a mapper descriptor (M.<Class>("name")), and anything else must be built with the Declaration or claimed first
+R6 r claimed	false	List claimed	false	List BT	nil	Title claimed	false
+R6 retry fixed	true	
+R6b root in its own props	false	./quad-roblox/test/probe.e6b.luau:501: QuadXXX3 Claim: R3 at [1] under R3 is already part of this Claim (the root, a mapped child, or another numeric key) — each Instance takes exactly one place
+R6b r3 claimed	false

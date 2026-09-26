@@ -1,0 +1,28 @@
+diff --git a/quad-base/src/Claim.luau b/quad-base/src/Claim.luau
+index 5629ac6..d7fc8fe 100644
+--- a/quad-base/src/Claim.luau
++++ b/quad-base/src/Claim.luau
+@@ -141,6 +141,10 @@ local function Init(module: any)
+ 		for i, v in desc._props :: { [any]: any } do
+ 			if type(i) ~= "number" then
+ 				assertNoDescriptor(v, `at key "{tostring(i)}"`) -- Q85 (a)(ii)
++				-- round13 Q84b (a+) X7 PROTOTYPE: flatten's own `Quad0068` asked in pass 1 (a pure check)
++				if Brand.isModifier(v) then
++					Err.errorBefore(`QuadXXX6 Claim: a Modifier cannot be the value of key "{tostring(i)}" in mapper props — place it in the array part`, SURFACE) -- id on adoption
++				end
+ 				continue
+ 			end
+ 			-- round11 code-review (`H-560`): Dispatch's array-key domain (`H-495`, positive integers)
+@@ -152,6 +156,12 @@ local function Init(module: any)
+ 			end
+ 			if Brand.isState(v) then
+ 				assertNoDescriptor(v, `at [{i}]`) -- Q85 (a)(ii)
++				-- round13 Q84b (a+) X6 PROTOTYPE: the State's CURRENT Instance takes the static-child gates too
++				-- (`:Get` already ran in assertNoDescriptor — the same one read, not a second)
++				local held = v:Get()
++				if module.Backend.isInst(held) then
++					table.insert(seats, { parent = inst, key = i, value = held })
++				end
+ 			elseif Brand.isModifier(v) then
+ 				for fk, fv in v[FieldsKey] :: { [any]: any } do -- Q85 (a)(ii): one level — field values are flat (Quad0064 gates handler-layer values)
+ 					assertNoDescriptor(fv, `in Modifier field "{tostring(fk)}" at [{i}]`)

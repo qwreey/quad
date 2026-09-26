@@ -1,0 +1,24 @@
+diff --git a/quad-base/src/Claim.luau b/quad-base/src/Claim.luau
+index 5a4a60d..7e44460 100644
+--- a/quad-base/src/Claim.luau
++++ b/quad-base/src/Claim.luau
+@@ -42,7 +42,6 @@
+ ]]
+ 
+ local Brand = require("./Brand")
+-local FieldsKey = require("./Dispatch/Modifier")._FieldsKey -- Q85 prototype: a private reach (the export says "specs only")
+ local QuadTypes = require("../luau_packages/quad_types")
+ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
+ 
+@@ -162,10 +161,7 @@ local function Init(module: any)
+ 				if module.Backend.isInst(held) then
+ 					table.insert(seats, { parent = inst, key = i, value = held })
+ 				end
+-			elseif Brand.isModifier(v) then
+-				for fk, fv in v[FieldsKey] :: { [any]: any } do -- Q85 (a)(ii): one level — field values are flat (Quad0064 gates handler-layer values)
+-					assertNoDescriptor(fv, `in Modifier field "{tostring(fk)}" at [{i}]`)
+-				end
++			-- round13 Q84b (a′) PROTOTYPE: no Modifier-field walk — C4 is refused at Modifier creation (C4-alt), `H-303` stands
+ 			elseif not Brand.isMapperDescriptor(v) then
+ 				if module.Backend.isInst(v) then
+ 					table.insert(seats, { parent = inst, key = i, value = v }) -- Q85 (a)(iii): judged after the whole tree resolved

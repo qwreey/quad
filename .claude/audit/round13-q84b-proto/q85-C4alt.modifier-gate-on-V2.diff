@@ -1,0 +1,36 @@
+diff --git a/quad-base/src/Dispatch/Modifier/init.luau b/quad-base/src/Dispatch/Modifier/init.luau
+index 6c51fc5..d03b7c2 100644
+--- a/quad-base/src/Dispatch/Modifier/init.luau
++++ b/quad-base/src/Dispatch/Modifier/init.luau
+@@ -100,8 +100,12 @@ local isPlainBranded = Brand.isPlainBranded -- `H-377`: AttrKey/MapperDescriptor
+ -- user field name (spike 17 / spike 11 idiom)
+ local FieldsKey = table.freeze({})
+ 
++-- round13 Q85 C4-alt PROTOTYPE: a mapper descriptor in a field is always misuse — a field lands at a
++-- STRING key after flatten, and a descriptor resolves only at a numeric key of mapper props (Claim), so it
++-- died in the drive with `Quad0076 … brand: MapperDescriptor` (E6 C4 — after the Claim root was claimed).
++-- Refused at Modifier creation instead (the Slot `Quad0240` shape); Claim's DFS still skips fields (`H-303`).
+ local function isHandlerLayerValue(v: any): boolean
+-	return isRef(v) or isObserver(v) or isEffect(v) or Brand.isSlot(v) or isModifier(v)
++	return isRef(v) or isObserver(v) or isEffect(v) or Brand.isSlot(v) or isModifier(v) or Brand.isMapperDescriptor(v)
+ end
+ 
+ local ModifierMT = {}
+@@ -290,7 +294,7 @@ local function setterClosure(key: string): (any, any) -> any
+ 		if isHandlerLayerValue(value) then
+ 			-- level 2 = the user's `mod:Field(...)` line (the closure is not
+ 			-- table-reached, so no tag — `H-250`)
+-			error(`Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, 2)
++			error(`Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`, 2)
+ 		end
+ 		local newFields = table.clone(oldFields)
+ 		newFields[key] = value
+@@ -388,7 +392,7 @@ local function construct(tag: any, ...: any): any
+ 					Err.errorBeforeNearest(`Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)`, SURFACE)
+ 				end
+ 				if isHandlerLayerValue(v) then
+-					Err.errorBeforeNearest(`Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, SURFACE)
++					Err.errorBeforeNearest(`Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`, SURFACE)
+ 				end
+ 				merged[k] = v
+ 			end

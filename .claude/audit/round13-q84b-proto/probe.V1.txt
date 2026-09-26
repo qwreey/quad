@@ -1,0 +1,54 @@
+--- C5a root class mismatch, overlap-only props ---
+C5a	false	./quad-roblox/test/probe.q84b.luau:44: QuadXXXX Claim: the root Frame is not a TextLabel — the root descriptor's class must match the Instance (M.<Class>(M.Root) with the Instance's own class)
+C5a root claimed:	false	name	Frame
+--- C5b root class mismatch + Text prop + mapped child ---
+C5b	false	./quad-roblox/test/probe.q84b.luau:51: QuadXXXX Claim: the root Frame is not a TextLabel — the root descriptor's class must match the Instance (M.<Class>(M.Root) with the Instance's own class)
+C5b root claimed:	false	child claimed:	false	child Text:	nil	fired:	false
+C5b retry fixed	true	
+C5b retry root claimed:	true	Text	t
+--- K1 control: right class root ---
+K1	true	
+K1 claimed	true	k
+--- K2 abstract class via newMapperClass('GuiObject') at root (Roblox IsA would pass; mock is ClassName ==) ---
+K2 root	false	./quad-roblox/test/probe.q84b.luau:65: QuadXXXX Claim: the root Frame is not a GuiObject — the root descriptor's class must match the Instance (M.<Class>(M.Root) with the Instance's own class)
+K2 root claimed	false
+K2 child	false	./quad-roblox/test/probe.q84b.luau:68: Quad0032 Claim: no child matched key Title under Frame (mapper GuiObject) — a child with that name must also be a GuiObject
+K2 child r2 claimed	false
+--- K3 child class mismatch (Q49 path) — message after V2 unify ---
+K3	false	./quad-roblox/test/probe.q84b.luau:74: Quad0032 Claim: no child matched key Title under Frame (mapper ImageLabel) — a child with that name must also be a ImageLabel
+K3 r claimed	false
+K3 absent	false	./quad-roblox/test/probe.q84b.luau:77: Quad0032 Claim: no child matched key Nope under Frame (mapper TextLabel) — a child with that name must also be a TextLabel
+--- K4 provider that predates the op: base stub on every Claim ---
+K4 stub kept	true
+K4 claim	false	./quad-roblox/test/probe.q84b.luau:89: Quad0108 quad: nativeIsA is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+--- C4 (Q85): descriptor inside a Modifier field ---
+C4 Modifier build	true	
+C4 claim	false	./quad-roblox/test/probe.q84b.luau:98: Quad0076 Dispatch: no handler matched key Kid (value: table, brand: MapperDescriptor) — a quad value at a string key: it belongs in a numeric (array) slot
+C4 root claimed after throw:	true
+--- C4b (Q85): State(descriptor) inside a Modifier field (X2) ---
+C4b Modifier build	true	
+C4b claim	false	./quad-roblox/test/probe.q84b.luau:107: Quad0076 Dispatch: no handler matched key Kid (value: table, brand: MapperDescriptor) — a quad value at a string key: it belongs in a numeric (array) slot
+C4b root claimed after throw:	true
+--- C4c (Q85): Modifier setter path (D.Modifier.Frame():...) / :Apply / Compute holding a descriptor ---
+C4c Compute-descriptor field	true	
+C4c claim	false	./quad-roblox/test/probe.q84b.luau:117: Quad0076 Dispatch: no handler matched key Kid (value: table, brand: MapperDescriptor) — a quad value at a string key: it belongs in a numeric (array) slot
+C4c root claimed after throw:	true
+--- C1 (Q85): descriptor at a string key (not a Modifier) ---
+C1	false	./quad-roblox/test/probe.q84b.luau:124: Quad0076 Dispatch: no handler matched key Kid (value: table, brand: MapperDescriptor) — a quad value at a string key: it belongs in a numeric (array) slot
+C1 root claimed after throw:	true
+--- C2 (Q85): descriptor inside a State at array slot ---
+C2	false	./quad-roblox/test/probe.q84b.luau:130: Quad0076 Dispatch: no handler matched key 1 (value: table, brand: MapperDescriptor) — this quad value has no handler at an array position
+C2 root claimed after throw:	true
+--- X5 cycle: claimed ancestor in the claimed root's props ---
+X5	false	./quad-roblox/test/probe.q84b.luau:137: Quad0220 InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)
+X5 r claimed	true
+--- X6 State holding a foreign Instance ---
+X6	false	./quad-roblox/test/probe.q84b.luau:144: Quad0219 InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+X6 r claimed	true
+--- X7 Modifier at a string key ---
+X7	false	./quad-roblox/test/probe.q84b.luau:150: Quad0068 Modifier: a Modifier cannot be a value of key "Kid" — place it in the array part
+X7 r claimed	true
+--- X8 controls: valid claim with raw claimed Instance, State, Modifier ---
+X8	true	
+X8 r claimed	true	t.Text	ok	x.Parent==r	true	BT	0.25
+=== probe done ===

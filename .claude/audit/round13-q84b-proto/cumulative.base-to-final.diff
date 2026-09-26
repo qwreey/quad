@@ -1,0 +1,320 @@
+diff --git a/quad-base/src/Claim.luau b/quad-base/src/Claim.luau
+index 84dfbd4..7e44460 100644
+--- a/quad-base/src/Claim.luau
++++ b/quad-base/src/Claim.luau
+@@ -93,7 +93,20 @@ local function Init(module: any)
+ 	-- claimed child used to be the other case — closed by round11 Q64 (b): pass 1 asks
+ 	-- `Backend.isClaimed` on every instance (the mock's "claimed" became one flag so it can).
+ 	type Step = { inst: any, desc: any, children: { [number]: any } }
+-	local function resolve(inst: any, desc: any, plan: { Step }, seen: { [any]: boolean })
++	type Seat = { parent: any, key: number, value: any }
++
++	-- round13 Q85 (a)(ii) PROTOTYPE: a descriptor is resolved ONLY as the direct value of a numeric key.
++	-- Anywhere else (a string key, inside a State, a Modifier field) pass 1 used to walk past it and the
++	-- drive died with `Quad0076 … brand: MapperDescriptor` after the root was claimed (E6 C1·C2·C4).
++	-- A State is read with `:Get()` — the same read its handler does in the drive, one step earlier.
++	local function assertNoDescriptor(v: any, where: string)
++		local held = if Brand.isState(v) then v:Get() else v
++		if Brand.isMapperDescriptor(held) then
++			Err.errorBefore(`QuadXXX2 Claim: a mapper descriptor {if held ~= v then "inside a State " else ""}{where} — a descriptor is resolved only as the direct value of a numeric (array) key in mapper props`, SURFACE) -- id on adoption
++		end
++	end
++
++	local function resolve(inst: any, desc: any, plan: { Step }, seen: { [any]: boolean }, seats: { Seat })
+ 		if desc._fired or seen[desc] then -- `seen`: the same descriptor at two slots of one tree
+ 			Err.errorBefore("Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)", SURFACE)
+ 		end
+@@ -125,13 +138,35 @@ local function Init(module: any)
+ 		-- drive가 보는 모든 배열 자리를 똑같이 본다.
+ 		local children: { [number]: any } = {}
+ 		for i, v in desc._props :: { [any]: any } do
+-			if type(i) == "number" and Brand.isMapperDescriptor(v) then
+-				-- round11 code-review (`H-560`): Dispatch's array-key domain (`H-495`, positive integers)
+-				-- used to be asked only by `drive` — after the root and this child were claimed and the
+-				-- child driven. A pure predicate belongs in the validating pass (`H-30`/`H-31`).
+-				if i < 1 or i % 1 ~= 0 then
+-					Err.errorBefore(`Quad0031 Claim: array keys must be positive integers (got {i})`, SURFACE)
++			if type(i) ~= "number" then
++				assertNoDescriptor(v, `at key "{tostring(i)}"`) -- Q85 (a)(ii)
++				-- round13 Q84b (a+) X7 PROTOTYPE: flatten's own `Quad0068` asked in pass 1 (a pure check)
++				if Brand.isModifier(v) then
++					Err.errorBefore(`QuadXXX6 Claim: a Modifier cannot be the value of key "{tostring(i)}" in mapper props — place it in the array part`, SURFACE) -- id on adoption
++				end
++				continue
++			end
++			-- round11 code-review (`H-560`): Dispatch's array-key domain (`H-495`, positive integers)
++			-- used to be asked only by `drive` — after the root and this child were claimed and the
++			-- child driven. A pure predicate belongs in the validating pass (`H-30`/`H-31`).
++			-- round13 Q85 (a)(i) PROTOTYPE: EVERY numeric key, not only descriptor seats (E6 C13b/C12).
++			if i < 1 or i % 1 ~= 0 then
++				Err.errorBefore(`Quad0031 Claim: array keys must be positive integers (got {i})`, SURFACE)
++			end
++			if Brand.isState(v) then
++				assertNoDescriptor(v, `at [{i}]`) -- Q85 (a)(ii)
++				-- round13 Q84b (a+) X6 PROTOTYPE: the State's CURRENT Instance takes the static-child gates too
++				-- (`:Get` already ran in assertNoDescriptor — the same one read, not a second)
++				local held = v:Get()
++				if module.Backend.isInst(held) then
++					table.insert(seats, { parent = inst, key = i, value = held })
+ 				end
++			-- round13 Q84b (a′) PROTOTYPE: no Modifier-field walk — C4 is refused at Modifier creation (C4-alt), `H-303` stands
++			elseif not Brand.isMapperDescriptor(v) then
++				if module.Backend.isInst(v) then
++					table.insert(seats, { parent = inst, key = i, value = v }) -- Q85 (a)(iii): judged after the whole tree resolved
++				end
++			else
+ 				-- 이름 중복은 UB(§3 — debug 검사는 debug 도구 몫). 부재는 [2026-09-16 hunt C] fail-fast:
+ 				-- 옛 "자연 크래시"는 `LifetimeHandle.luau:59: Relate:GetWeak: inst must not be nil`로 죽어
+ 				-- 키도 주체도 안 보였다(`H-418`/`H-442`/`H-504`와 같은 leaf-message 부류).
+@@ -142,11 +177,14 @@ local function Init(module: any)
+ 				end
+ 				-- round10 Q49 (a) (user decision 2026-09-17): the descriptor's class goes to the backend —
+ 				-- a same-name child of another class is "not matched" (Roblox: `IsA`; mock: ClassName)
+-				local child = module.Backend.nativeFindChild(inst, v._key, v._className)
+-				if child == nil then
++				-- round13 Q84b PROTOTYPE (V2): lookup and class check split — `nativeFindChild` is name-only again,
++				-- the class goes to the same predicate the root asks (`nativeIsA`, name is a candidate). One op for
++				-- both places; the message and its id stay (absence and mismatch are still one site).
++				local child = module.Backend.nativeFindChild(inst, v._key)
++				if child == nil or not module.Backend.nativeIsA(child, v._className) then
+ 					Err.errorBefore(`Quad0032 Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)}) — a child with that name must also be a {tostring(v._className)}`, SURFACE)
+ 				end
+-				resolve(child, v, plan, seen)
++				resolve(child, v, plan, seen, seats)
+ 				children[i] = child
+ 			end
+ 		end
+@@ -194,8 +232,40 @@ local function Init(module: any)
+ 		if module.debug and desc._key ~= MapperRoot then
+ 			print(`Claim: the root descriptor's key {tostring(desc._key)} is ignored — the root takes M.Root; put a keyed descriptor in the root's props instead`)
+ 		end
++		-- round13 Q84b PROTOTYPE (V1): the root descriptor's class was never read (E6 C5a/C5b). Ask the
++		-- backend's class predicate (`nativeIsA`, name is a candidate) — same meaning as the child path
++		-- (`nativeFindChild`'s className: Roblox `IsA`, mock `ClassName ==`). Pure predicate → pass 1 (`H-30`).
++		if not module.Backend.nativeIsA(inst, desc._className) then
++			Err.errorBefore(`QuadXXXX Claim: the root {tostring(inst)} is not a {tostring(desc._className)} — the root descriptor's class must match the Instance (M.<Class>(M.Root) with the Instance's own class)`, SURFACE) -- id on adoption
++		end
+ 		local plan: { Step } = {}
+-		resolve(inst, desc, plan, {})
++		local seen: { [any]: boolean } = {}
++		local seats: { Seat } = {}
++		resolve(inst, desc, plan, seen, seats)
++		-- round13 Q85 (a)(iii) PROTOTYPE: the static-child gates `InstanceChild.process` asks at drive time
++		-- (`Quad0219` unclaimed / `Quad0160` seated elsewhere) asked here first, read-only — a template child
++		-- passed as-is (E6-2 R6), a mounted or foreign Instance (R5a/R5b), a props table reused by a second
++		-- Claim (R2) used to leave the root and mapped children claimed. After the whole resolve so `seen`
++		-- holds every Instance of the plan. The cycle gate (`Quad0220`) needs `.Parent` — not asked (report).
++		local ownerOf = module._slotInternal.ownerOf
++		for _, seat in seats do
++			local v = seat.value
++			if seen[v] then
++				Err.errorBefore(`QuadXXX3 Claim: {tostring(v)} at [{seat.key}] under {tostring(seat.parent)} is already part of this Claim (the root, a mapped child, or another numeric key) — each Instance takes exactly one place`, SURFACE) -- id on adoption
++			end
++			seen[v] = true
++			-- round13 Q84b X5 PROTOTYPE: the cycle gate `InstanceChild` asks at drive (`Quad0220`), asked here
++			-- through the backend (base never reads `.Parent`) — needs its own op, not the class predicate
++			if module.Backend.nativeContains(v, seat.parent) then
++				Err.errorBefore(`QuadXXX7 Claim: {tostring(v)} at [{seat.key}] under {tostring(seat.parent)} is that place itself or one of its ancestors — placing it there would be a cycle`, SURFACE) -- id on adoption
++			end
++			if not module.Backend.isClaimed(v) then
++				Err.errorBefore(`QuadXXX4 Claim: {tostring(v)} at [{seat.key}] under {tostring(seat.parent)} is not claimed by quad — a child of the template goes in as a mapper descriptor (M.<Class>("name")), and anything else must be built with the Declaration or claimed first`, SURFACE) -- id on adoption
++			end
++			if ownerOf(v) ~= nil then
++				Err.errorBefore(`QuadXXX5 Claim: {tostring(v)} at [{seat.key}] under {tostring(seat.parent)} is already mounted elsewhere — take it off its seat first (a props table given to an earlier Claim now holds that Claim's Instances: build a fresh table)`, SURFACE) -- id on adoption
++			end
++		end
+ 		commit(plan)
+ 		return inst
+ 	end
+diff --git a/quad-base/src/Dispatch/Modifier/init.luau b/quad-base/src/Dispatch/Modifier/init.luau
+index 6c51fc5..d03b7c2 100644
+--- a/quad-base/src/Dispatch/Modifier/init.luau
++++ b/quad-base/src/Dispatch/Modifier/init.luau
+@@ -100,8 +100,12 @@ local isPlainBranded = Brand.isPlainBranded -- `H-377`: AttrKey/MapperDescriptor
+ -- user field name (spike 17 / spike 11 idiom)
+ local FieldsKey = table.freeze({})
+ 
++-- round13 Q85 C4-alt PROTOTYPE: a mapper descriptor in a field is always misuse — a field lands at a
++-- STRING key after flatten, and a descriptor resolves only at a numeric key of mapper props (Claim), so it
++-- died in the drive with `Quad0076 … brand: MapperDescriptor` (E6 C4 — after the Claim root was claimed).
++-- Refused at Modifier creation instead (the Slot `Quad0240` shape); Claim's DFS still skips fields (`H-303`).
+ local function isHandlerLayerValue(v: any): boolean
+-	return isRef(v) or isObserver(v) or isEffect(v) or Brand.isSlot(v) or isModifier(v)
++	return isRef(v) or isObserver(v) or isEffect(v) or Brand.isSlot(v) or isModifier(v) or Brand.isMapperDescriptor(v)
+ end
+ 
+ local ModifierMT = {}
+@@ -290,7 +294,7 @@ local function setterClosure(key: string): (any, any) -> any
+ 		if isHandlerLayerValue(value) then
+ 			-- level 2 = the user's `mod:Field(...)` line (the closure is not
+ 			-- table-reached, so no tag — `H-250`)
+-			error(`Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, 2)
++			error(`Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`, 2)
+ 		end
+ 		local newFields = table.clone(oldFields)
+ 		newFields[key] = value
+@@ -388,7 +392,7 @@ local function construct(tag: any, ...: any): any
+ 					Err.errorBeforeNearest(`Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)`, SURFACE)
+ 				end
+ 				if isHandlerLayerValue(v) then
+-					Err.errorBeforeNearest(`Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, SURFACE)
++					Err.errorBeforeNearest(`Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`, SURFACE)
+ 				end
+ 				merged[k] = v
+ 			end
+diff --git a/quad-base/src/LifetimeHandle.luau b/quad-base/src/LifetimeHandle.luau
+index 8b03e82..9571548 100644
+--- a/quad-base/src/LifetimeHandle.luau
++++ b/quad-base/src/LifetimeHandle.luau
+@@ -217,6 +217,14 @@ local function Init(module: any)
+ 	if Backend.nativeFindChild == nil then
+ 		Backend.nativeFindChild = notInstalled("nativeFindChild")
+ 	end
++	-- round13 Q84b PROTOTYPE: class predicate (name is a candidate) — a query, no composition fallback
++	if Backend.nativeIsA == nil then
++		Backend.nativeIsA = notInstalled("nativeIsA")
++	end
++	-- round13 Q84b X5 PROTOTYPE: ancestry predicate (name is a candidate)
++	if Backend.nativeContains == nil then
++		Backend.nativeContains = notInstalled("nativeContains")
++	end
+ 	-- `H-501` (2026-09-08 2차 감사 H-2): Q6 withdrew the composition fallback and promised
+ 	-- "여섯 전부 필수·미주입이면 안내 스텁 에러" — but the six had no stub at all, so a
+ 	-- backend that forgot one died with `attempt to call a nil value` on a Slot/Raw.luau line.
+diff --git a/quad-base/src/Slot/init.luau b/quad-base/src/Slot/init.luau
+index 2e292a7..dbe81ad 100644
+--- a/quad-base/src/Slot/init.luau
++++ b/quad-base/src/Slot/init.luau
+@@ -505,6 +505,10 @@ local function Init(module: any)
+ 		attachSlot = S.attachSlot,
+ 		unmountSlotTree = S.unmountSlotTree,
+ 		isSlot = isSlot,
++		-- round13 Q85 (a)(iii) PROTOTYPE: read-only seat lookup for Claim's pass 1 (no claim, no release)
++		ownerOf = function(value: any): any
++			return elementOwner:GetWeak(value, OWNER)
++		end,
+ 	}
+ 	-- [2026-09-17 round10 Q48 (a) — user decision] the seat ops are public on the bookkeeping
+ 	-- namespace: a provider's numeric-key handler that parents a value (quad-roblox's
+diff --git a/quad-base/test/mock.luau b/quad-base/test/mock.luau
+index f7f62c1..64e84be 100644
+--- a/quad-base/test/mock.luau
++++ b/quad-base/test/mock.luau
+@@ -460,12 +460,24 @@ local function installNative(quad: any)
+ 	-- 2순회 `H-374`: the real provider's `nativeFindChild(inst, key, className?)` is
+ 	-- `inst:FindFirstChild(key)` + `IsA(className)` (quad-roblox EngineOps) — the mock has no
+ 	-- class hierarchy (file header), so the class check is `ClassName ==` (round10 Q49 (a))
+-	local function nativeFindChild(inst: any, key: any, className: string?): any?
+-		local child = inst:FindFirstChild(key)
+-		if child ~= nil and className ~= nil and child.ClassName ~= className then
+-			return nil
++	-- round13 Q84b PROTOTYPE (V2): name-only; the class check is `nativeIsA` below
++	local function nativeFindChild(inst: any, key: any): any?
++		return inst:FindFirstChild(key)
++	end
++	-- round13 Q84b PROTOTYPE: the class predicate — no hierarchy in the mock, so `ClassName ==` (same as `methods.IsA`)
++	local function nativeIsA(inst: any, className: string): boolean
++		return inst.ClassName == className
++	end
++	-- round13 Q84b X5 PROTOTYPE: ancestry by the `.Parent` walk
++	local function nativeContains(ancestor: any, inst: any): boolean
++		local node = inst
++		while node ~= nil do
++			if node == ancestor then
++				return true
++			end
++			node = node.Parent
+ 		end
+-		return child
++		return false
+ 	end
+ 	local function nativeMove(_target: any, _fromOffset: number, _elements: { any }, _toOffset: number) end
+ 	local function nativeSwap(_target: any, _oa: number, _ea: { any }, _ob: number, _eb: { any }) end
+@@ -481,11 +493,13 @@ local function installNative(quad: any)
+ 	quad.Backend.nativeRemove = nativeRemove
+ 	quad.Backend.nativeMove = nativeMove
+ 	quad.Backend.nativeFindChild = nativeFindChild
++	quad.Backend.nativeIsA = nativeIsA
++	quad.Backend.nativeContains = nativeContains
+ 	quad.Backend.nativeSwap = nativeSwap
+ 	quad.Backend.nativeDispose = nativeDispose
+ 	quad.Backend.isInst = isInst
+ 
+-	Err.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, nativeFindChild, isInst)
++	Err.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, nativeFindChild, nativeIsA, nativeContains, isInst)
+ end
+ 
+ -- `H-294` (a, 사용자 확정: "mock 또한 하나의 백엔드이다") — mock도 실
+diff --git a/quad-roblox/src/EngineOps.luau b/quad-roblox/src/EngineOps.luau
+index c15610d..6203ea1 100644
+--- a/quad-roblox/src/EngineOps.luau
++++ b/quad-roblox/src/EngineOps.luau
+@@ -98,12 +98,28 @@ local function install(quad: any)
+ 	-- with the right name but the wrong class is "not found" (`IsA`, so subclasses pass).
+ 	-- Before, `M.TextLabel("Kid")` silently claimed an ImageLabel named Kid when the props
+ 	-- happened to overlap. User: "이름만 보던 함수에 className 넣고 검사 한번 한다".
+-	local function nativeFindChild(inst: any, key: any, className: string?): any?
+-		local child = inst:FindFirstChild(key)
+-		if child ~= nil and className ~= nil and not child:IsA(className) then
+-			return nil
++	-- round13 Q84b PROTOTYPE (V2): name-only again — the class check moved to `nativeIsA` (base asks it)
++	local function nativeFindChild(inst: any, key: any): any?
++		return inst:FindFirstChild(key)
++	end
++
++	-- round13 Q84b PROTOTYPE (name is a candidate): the class predicate `Claim` asks of the ROOT.
++	-- `IsA`, so a subclass passes — the same meaning `nativeFindChild` gives the child path.
++	local function nativeIsA(inst: any, className: string): boolean
++		return inst:IsA(className)
++	end
++
++	-- round13 Q84b X5 PROTOTYPE (name is a candidate): `inst == ancestor` or a descendant of it — the
++	-- same `.Parent` walk `InstanceChild`'s cycle gate (`Quad0220`) does, asked by Claim's pass 1.
++	local function nativeContains(ancestor: any, inst: any): boolean
++		local node = inst
++		while node ~= nil do
++			if node == ancestor then
++				return true
++			end
++			node = node.Parent
+ 		end
+-		return child
++		return false
+ 	end
+ 
+ 	-- Tag/Attr ops (M10 engine axis). Batched `{string}` is the contract
+@@ -169,6 +185,8 @@ local function install(quad: any)
+ 	quad.Backend.isInst = isInst
+ 	quad.Backend.onDestroying = onDestroying
+ 	quad.Backend.nativeFindChild = nativeFindChild
++	quad.Backend.nativeIsA = nativeIsA
++	quad.Backend.nativeContains = nativeContains
+ 	quad.Backend.addTag = addTag
+ 	quad.Backend.removeTag = removeTag
+ 	quad.Backend.setAttr = setAttr
+@@ -176,7 +194,7 @@ local function install(quad: any)
+ 	quad.Backend.clearTimeout = clearTimeout
+ 
+ 	-- `H-238`: tag everything the backend installs (see LifetimeHandle.luau)
+-	Err.setFuncLevel(SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, isInst, onDestroying, nativeFindChild, addTag, removeTag, setAttr, setTimeout, clearTimeout)
++	Err.setFuncLevel(SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, isInst, onDestroying, nativeFindChild, nativeIsA, nativeContains, addTag, removeTag, setAttr, setTimeout, clearTimeout)
+ end
+ 
+ return install
+diff --git a/quad-types/src/init.luau b/quad-types/src/init.luau
+index 7dcdaf3..bd9cdad 100644
+--- a/quad-types/src/init.luau
++++ b/quad-types/src/init.luau
+@@ -629,7 +629,11 @@ export type Backend = {
+ 	-- (자동 claim은 마법 — 사용자가 `Claim`/`Declaration`으로 먼저 소유해야 한다).
+ 	isClaimed: (inst: any) -> boolean,
+ 	-- 매퍼 키 해석 op(claim-plan — 조회라 조합 폴백 예외, 미주입이면 error).
+-	nativeFindChild: (inst: any, key: any, className: string?) -> any, -- 클래스가 다르면 nil(round10 Q49 (a), 2026-09-17)
++	nativeFindChild: (inst: any, key: any) -> any, -- round13 Q84b PROTOTYPE (V2): 이름만 — 클래스는 nativeIsA로
++	-- round13 Q84b PROTOTYPE (이름 후보): 클래스 술어 — Roblox `IsA`(상속 포함), mock `ClassName ==`. Claim 루트 대조.
++	nativeIsA: (inst: any, className: string) -> boolean,
++	-- round13 Q84b X5 PROTOTYPE (이름 후보): `inst`가 `ancestor` 자신이거나 그 자손인가 — Claim 1패스 순환 게이트
++	nativeContains: (ancestor: any, inst: any) -> boolean,
+ 	-- base 소유 핸들러(Tag/Attr)가 부르는 주입 op(`dispatch-core-plan.md`
+ 	-- "base가 소유하는 핸들러와 주입되는 엔진 op"). quad-base는 안내 스텁을
+ 	-- 두고 프로바이더가 덮어쓴다 — **[2026-09-03 M10 엔진 축]** quad-roblox
