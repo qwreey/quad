@@ -274,4 +274,4 @@ const card = D.Frame {
 - [레퍼런스: 생명주기 훅](../reference/sugar/04-lifecycle-hooks.md) — `q.OnCreated`/`q.OnRendered`/`q.OnDestroyed`(`Ref`/`Effect` 위에 얹은 슈거)
 - [04. RemoteEvent와 엔진 입력을 상태로 브릿징하기](../how-to/04-network-and-input-bridge.md) — `Effect`의 cleanup으로 엔진 연결을 끊는 실전 배치
 
-[^alive]: 이 문서에서 **살아난다**는 `Observer`/`Effect`에 구독이 붙어 그 뒤의 변경을 계속 받게 된다는 뜻입니다. 레퍼런스는 같은 상태를 "구독됨"(`Subscribed`)이라 부릅니다.
+[^alive]: 이 문서에서 **살아난다**는 `Observer`/`Effect`에 구독이 붙어 그 뒤의 변경을 계속 받게 된다는 뜻입니다. 레퍼런스의 `Subscribed` 필드는 그중 **전역 구독**(`:Subscribe`/`:WeakSubscribe`) 쪽만 `true`로 표시하고, 숫자 키 자리에 묶여 살아난 경우는 `false`입니다 — 두 경로 다 "살아났다"이지만 필드는 하나만 가리킵니다.

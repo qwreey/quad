@@ -238,6 +238,10 @@ local function createImpl(module: any)
 		end
 		self.Subscribed = true
 		self._dying = false -- `H-182`: every path that re-arms executability lowers it
+		-- round13 E20 (`H-707`): the host died (gcconn cut) but its Deferred `Destroying` callback may
+		-- still be queued — drop that connection so the late callback sees `_destroyConn ~= conn`
+		-- (the `H-574` staleness guard) instead of raising `_dying` on this revived handle.
+		self:_unbindDestroying()
 		WeakSubscribed[self] = true
 		resubscribeTail(self)
 		return self
@@ -252,6 +256,7 @@ local function createImpl(module: any)
 		end
 		self.Subscribed = true
 		self._dying = false -- `H-182`
+		self:_unbindDestroying() -- `H-707`, same as WeakSubscribe
 		WeakSubscribed[self] = true
 		Subscribed[self] = true -- the strong keep is up BEFORE the tail runs
 		resubscribeTail(self)

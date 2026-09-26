@@ -509,6 +509,26 @@ do
 	assert(#cleanups == 2 and cleanups[2] == true, "the real death runs the cleanup once with dying=true: " .. #cleanups)
 	dep:Set(2)
 	assert(runs == 2, "dead after the real death")
+	-- round13 E20 `H-707` (2026-09-27): the same window, but the handle is revived by a GLOBAL
+	-- (re)subscription instead of a rebind — the late callback used to raise `_dying` and consume
+	-- the cleanup on the living subscription (fn never ran again).
+	local runs2, cleanups2 = 0, {}
+	local eff2 = Effect(function()
+		runs2 += 1
+		return function(dying: boolean)
+			table.insert(cleanups2, dying)
+		end
+	end, dep)
+	local host3 = Instance.new("Frame")
+	quad.Dispatch.drive(host3, { eff2 })
+	host3:Destroy() -- gcconn cut; Destroying queued
+	eff2:Subscribe() -- revive globally inside the same chunk
+	flush() -- the stale callback must not touch the revived handle
+	dep:Set(3)
+	assert(runs2 == 2, "revived handle still runs after the stale Destroying arrives: " .. runs2)
+	assert(#cleanups2 == 1 and cleanups2[1] == false, "only the rerun cleanup, dying=false: " .. #cleanups2)
+	assert(eff2.Subscribed == true and quad.Backend.canExecute(eff2), "still a live global subscription")
+	eff2:Unsubscribe()
 	quad.Backend.onDestroying = origOnDestroying
 	print("PASS")
 end

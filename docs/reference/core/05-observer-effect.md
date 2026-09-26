@@ -29,7 +29,7 @@ local D = q.Declaration
 
 만들어진 직후의 핸들은 **아직 실행 자격이 없습니다**(`.Subscribed`는 `false`). 자격을 얻는 경로는 둘이고, 둘 중 하나만 골라야 합니다.
 
-1. **props의 숫자 키 자리에 핸들을 넣어 인스턴스에 매다는 것** — 그 인스턴스가 사는 동안만 실행 자격을 유지합니다. 인스턴스가 파괴되면 `Observer`는 **관측을 멈추고**(그 뒤로는 값이 바뀌어도 콜백이 불리지 않습니다), `Effect`은 **cleanup이 한 번 돈 뒤** 멈춥니다. UI에 딸린 부수효과는 대개 이쪽입니다.
+1. **props의 숫자 키 자리에 핸들을 넣어 인스턴스에 매다는 것** — 그 인스턴스가 사는 동안만 실행 자격을 유지합니다. 인스턴스가 파괴되면 `Observer`는 **관측을 멈추고**(그 뒤로는 값이 바뀌어도 콜백이 불리지 않습니다 — 기본 Deferred 시그널 설정에선 파괴 즉시; Immediate 설정에선 파괴 파동 안에서 죽는 쪽의 cleanup·`OnDestroyed`가 부른 `Set`은 같은 호스트의 핸들을 한 번 더 돌릴 수 있습니다), `Effect`은 **cleanup이 한 번 돈 뒤** 멈춥니다. UI에 딸린 부수효과는 대개 이쪽입니다.
 2. **전역 구독** — `:Subscribe()`(강한 유지) 또는 `:WeakSubscribe()`(약한 유지). 인스턴스와 무관하게 사는 구독입니다.
 
 **둘을 겹칠 수는 없습니다.** 이미 한쪽으로 살아 있는 핸들을 다른 쪽으로 다시 살리려 하면 거절합니다 — `Observer: already subscribed` 또는 `Observer: already bound to an Instance`(`Effect`도 주어만 바뀐 같은 문구).
@@ -104,6 +104,7 @@ export type Observer = {
 - 콜백은 **자기 자신을 구독하거나 묶을 수 없습니다**. 콜백 안에서 `:Subscribe()`/`:WeakSubscribe()`를 부르면
   `Observer: cannot change subscription from inside its own fn`
   (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Quad0109 Observer: cannot bind an Observer from inside its own fn`). 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 콜백 안에서도 됩니다 — 해제는 콜백을 다시 부르지 않습니다.
+- 콜백이 자기 관측 대상을 `:Set`하면 **재귀**로 돕니다 — `Effect`처럼 다음 사이클로 미루지 않으므로 수렴하지 않는 콜백은 스택이 자라 넘칩니다(CLI 실측 약 4천 단, 그 뒤 핸들은 "던진" 상태). 대상을 되쓰는 콜백은 `Effect`로 옮기거나 수렴 조건을 두세요.
 - 콜백이 예외를 던지면 그 핸들은 **굳습니다** — 이후 (재)구독과 다른 인스턴스에 묶기는 위 문구로 거부됩니다. 발화 자체는 막히지 않아 상류가 바뀌면 콜백은 계속 돕니다(quad는 예외를 잡지 않으므로 "던졌다"는 사실을 따로 기억하지 못합니다). 정리하려면 `:Unsubscribe()`(강한 구독) 또는 묶인 인스턴스의 파괴로 놓아주세요.
 - 인자 검증: `Quad0190 State: Observer fn must be a function (or nil for the always-observe utility)`
 - 같은 원천을 구독한 Observer·Effect끼리의 **발화 순서는 정해져 있지 않습니다** — 등록 순서도 아닙니다. 순서가 필요하면 한 콜백 안에서 차례대로 부르세요.
@@ -137,7 +138,7 @@ print(#log) --> 3
 
 ## `observer.Subscribed`
 
-`boolean` 필드. **강한 구독뿐 아니라 약한 구독에서도 `true`가 됩니다** — "지금 살아 있는가"를 나타내는 플래그이지 "강하게 잡혀 있는가"가 아닙니다. 강·약 구분은 해제할 때 어느 문을 써야 하는지로 드러납니다(아래 두 쌍).
+`boolean` 필드. **강한 구독뿐 아니라 약한 구독에서도 `true`가 됩니다** — "전역 구독(`:Subscribe`/`:WeakSubscribe`)이 붙어 있는가"를 나타내는 플래그이지 "강하게 잡혀 있는가"가 아닙니다. 숫자 키 자리에 묶여 살아 있는 핸들은 이 필드가 `false`입니다(그 경로는 인스턴스 수명이 자격을 주므로) — "지금 실행 자격이 있는가"를 묻는 것이 아닙니다. 강·약 구분은 해제할 때 어느 문을 써야 하는지로 드러납니다(아래 두 쌍).
 
 `Effect`도 같은 이름의 플래그를 같은 뜻으로 갖습니다.
 
@@ -228,7 +229,7 @@ export type Effect = {
   `Effect: cannot change subscription from inside fn or cleanup`
   (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup`). 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 `fn` 안에서도 됩니다 — `fn`을 다시 부르지 않고, `fn`이 그 뒤 돌려준 cleanup은 저장되지 않고 즉시 소진됩니다(핸들이 더는 실행 자격이 없으므로).
 - `fn` 안에서 의존성을 `:Set`하면 그 실행이 끝난 뒤 한 번 더 도는 **지연 재실행**이 됩니다.
-- `fn`이 예외를 던지면 그 `Effect`는 **죽습니다** — 이후 재실행과 (재)구독이 막힙니다. 남는 일은 `:Unsubscribe()`(강한 구독을 풀어 핸들과 상류를 놓아줌 — 그때 소진할 cleanup은 없습니다, 던진 `fn`은 돌려준 게 없으니까) 또는 `:WeakUnsubscribe()`뿐입니다. 죽은 핸들을 강한 구독에 둔 채 버리면 모듈 수명 동안 남습니다.
+- `fn`이 예외를 던지면 그 `Effect`는 **죽습니다** — 이후 재실행과 (재)구독이 막힙니다. **cleanup이 던져도 같습니다** — 재실행·`:Unsubscribe`·호스트 파괴·`:WeakUnsubscribe` 어느 자리에서 던졌든 그 뒤 재실행은 보류되고 (재)구독은 "cannot change subscription from inside fn or cleanup"으로 거부됩니다(던진 자리에 따라 강한 구독이 남거나, 호스트 파괴 자리였다면 재바인드도 막힙니다). 남는 일은 `:Unsubscribe()`(강한 구독을 풀어 핸들과 상류를 놓아줌 — 그때 소진할 cleanup은 없습니다, 던진 `fn`은 돌려준 게 없으니까) 또는 `:WeakUnsubscribe()`뿐입니다. 죽은 핸들을 강한 구독에 둔 채 버리면 모듈 수명 동안 남습니다.
 - `fn`과 cleanup 안에서 **yield하지 마세요** — 정의되지 않은 동작입니다. 증상은 `Observer`와 다릅니다: `Effect`는 겹친 요청을 `fn`이 돌아온 뒤 한 번 더 도는 것으로 흡수하지만, yield하는 사이 묶인 인스턴스가 죽거나 자리에서 내려가면 죽음의 cleanup은 이미 지나간 뒤입니다. 그래도 `fn`이 돌아오며 돌려준 cleanup은 버려지지 않습니다 — 핸들이 더는 실행 자격이 없으므로 그 자리에서 **즉시 소진**됩니다(인스턴스가 죽어서면 `dying = true`, 자리에서 내려가서면 `false`). 그 사이에 `fn`이 잡은 자원은 그렇게 정리되지만, 순서와 타이밍은 보장하지 않습니다. 네트워크 왕복은 `fn` 밖(따로 띄운 코루틴)에서 하고 결과를 `State`로 넣으세요.
 
 **예제**
