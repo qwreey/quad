@@ -1,0 +1,6 @@
+flags= from=1 count=50000
+cleanups=298601 destroyHost=27761 destroyRefHost=5110 diffs=0 dupDepEffects=21526 dying=19473 effRuns=615993 errOps=386508 flushes=12963 heldReplays=35972 invalidCtor=280298 lateMade=0 obsFires=272379 refSame=35086 refSets=120676 seeds=50000 srcSame=200781 steps=2799719 zeroDepEffects=16801
+failSeeds(first 20):	
+flags=late from=50001 count=50000
+cleanups=446198 destroyHost=19820 destroyRefHost=5219 diffs=0 dupDepEffects=59532 dying=27251 effRuns=999790 errOps=319022 flushes=12961 heldReplays=52514 invalidCtor=279398 lateMade=219832 obsFires=470561 refSame=34877 refSets=120821 seeds=50000 srcSame=201164 steps=2798040 zeroDepEffects=46180
+failSeeds(first 20):	

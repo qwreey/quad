@@ -1,0 +1,40 @@
+Effect ctor, 100 distinct Source deps                          0.13 ms 
+  one dep :Set (x100)                                          0.12 ms 
+    runs	101
+Effect ctor, 100 copies of one dep                             0.01 ms 
+  :Set (x100)                                                  0.17 ms 
+    runs	101
+Compute ctor, 99 trailing deps                                 0.03 ms 
+  first Get                                                    0.01 ms 
+  Set one + Get (x100)                                         1.46 ms 
+Depend ctor, 99 deps                                           0.03 ms 
+  Set each dep once (N Sets)                                   0.18 ms 
+    observer	100
+Effect ctor, 1000 distinct Source deps                         1.08 ms 
+  one dep :Set (x100)                                          0.12 ms 
+    runs	101
+Effect ctor, 1000 copies of one dep                            0.06 ms 
+  :Set (x100)                                                  0.18 ms 
+    runs	101
+Compute ctor, 999 trailing deps                                0.32 ms 
+  first Get                                                    0.13 ms 
+  Set one + Get (x100)                                        13.19 ms 
+Depend ctor, 999 deps                                          0.33 ms 
+  Set each dep once (N Sets)                                   1.93 ms 
+    observer	1000
+Effect ctor, 7000 distinct Source deps                         8.33 ms 
+  one dep :Set (x100)                                          0.12 ms 
+    runs	101
+Effect ctor, 7000 copies of one dep                            0.41 ms 
+  :Set (x100)                                                  0.17 ms 
+    runs	101
+Compute ctor, 6999 trailing deps                               2.14 ms 
+  first Get                                                    1.02 ms 
+  Set one + Get (x100)                                       101.52 ms 
+Depend ctor, 6999 deps                                         2.34 ms 
+  Set each dep once (N Sets)                                  16.10 ms 
+    observer	7000
+Effect ctor, 10000 distinct Source deps                        0.03 ms ERR ./perf.luau:12: too many results to unpack
+Effect ctor, 10000 copies of one dep                           0.00 ms ERR ./perf.luau:22: too many results to unpack
+Compute ctor, 9999 trailing deps                               0.00 ms ERR ./perf.luau:25: too many results to unpack
+Depend ctor, 9999 deps                                         0.00 ms ERR ./perf.luau:28: too many results to unpack

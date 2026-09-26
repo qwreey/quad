@@ -76,7 +76,7 @@ Compute: <U>(self: StateData<T>, fn: (self: StateData<T>, previous: U?, ...any) 
   `Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)`
 - 계산 결과로 **Modifier를 돌려줄 수 없습니다**:
   `Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers`
-- 인자 검증: `Quad0187 State: Compute fn must be a function` / `Quad0186 State: dep #{i + 1} is nil` / `Quad0183 State: dep #{i} is not a State/Source`. 번호는 **리시버가 1번**이라, 후행 의존성의 첫 자리가 `#2`입니다.
+- 인자 검증: `Quad0187 State: Compute fn must be a function` / `Quad0186 State: dep #{i + 1} is nil` / `Quad0183 State: dep #{i} is not a State/Source`. 번호는 **리시버가 1번**이라, 후행 의존성의 첫 자리가 `#2`입니다. 검사는 `nil`을 먼저 전부 보고 그다음 타입을 보므로 `a:Depend(5, nil)`은 `#2`가 아니라 `dep #3 is nil`을 냅니다(`q.Effect(fn, 5, nil)`은 자리 순서대로 `dep #1` — [2026-09-27 mock 실측]).
 
 **strict 캐비엇** — 반환이 `State<U>`로 온전히 추론되지 않는 자리가 있어, **파생 노드를 만드는 줄에는 결과 타입을 주석**하는 것이 이 코퍼스의 관례입니다. 또 `...deps`가 `...any`이므로 콜백 안에서 의존성 파라미터에 타입 주석을 다세요.
 

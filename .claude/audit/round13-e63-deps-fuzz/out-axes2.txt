@@ -1,0 +1,47 @@
+
+== A15 D.Frame with Ref + Effect(fn, ref) — effect before ref
+after mount:	nil clfalse inst
+after Destroy:	nil clfalse inst cltrue	ref still set:	true
+
+== A15 D.Frame with Ref + Effect(fn, ref) — effect after ref
+after mount:	nil clfalse inst
+after Destroy:	nil clfalse inst cltrue	ref still set:	true
+
+== A15 D.Frame with PreRef + Effect(fn, ref) — effect before ref
+after mount:	nil clfalse inst
+after Destroy:	nil clfalse inst cltrue	ref still set:	true
+
+== A15 D.Frame with PreRef + Effect(fn, ref) — effect after ref
+after mount:	nil clfalse inst
+after Destroy:	nil clfalse inst cltrue	ref still set:	true
+
+== A15 D.Frame with PostRef + Effect(fn, ref) — effect before ref
+after mount:	nil clfalse inst
+after Destroy:	nil clfalse inst cltrue	ref still set:	true
+
+== A15 D.Frame with PostRef + Effect(fn, ref) — effect after ref
+after mount:	nil clfalse inst
+after Destroy:	nil clfalse inst cltrue	ref still set:	true
+
+== A16 Ref placed in a Slot:List element, element removed (KeyGone → destroy)
+after mount runs a/b	2	2
+after removing b runs a/b	2	2	refs.b still points at destroyed element:	true
+Effect(fn, slot.Length): runs after two list changes	3	Length	0
+re-added b: runs b	4
+
+== A17 Effect with 0 deps
+Rerun unsubscribed:	1
+Subscribe after held Rerun:	2
+Rerun subscribed:	3
+
+== A18 Effect whose dep node Compute throws: other deps keep driving?
+a:Set(1) throws through Set:	true	boom	0
+runs after death (install+1 attempt):	2
+
+== A19 same handle passed as dep AND bound in the frame that Ref points to
+Frame{ r, e } with Effect(fn, r, r, r): runs (install + one Set)	2
+
+== A20 error position: first bad argument vs reported index
+a:Depend(5, nil)      	Quad0186 State: dep #3 is nil
+a:Compute(fn, {}, nil)	Quad0186 State: dep #3 is nil
+q.Effect(fn, 5, nil)  	Quad0096 Effect: dep #1 is not a State/Source/Ref

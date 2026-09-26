@@ -1,0 +1,5 @@
+== types-pos
+== types-neg
+types-neg.luau(8,37): TypeError: Expected this to be
+types-neg.luau(12,12): TypeError: Argument count mismatch. Function expects 1 to 2 arguments, but 3 are specified
+types-neg.luau(13,40): TypeError: Expected this to be '(boolean) -> ()', but got 'number'

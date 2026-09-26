@@ -1,0 +1,26 @@
+E bind while strong	Quad0104 bindLifetime: value is already subscribed
+E bind while weak	Quad0104 bindLifetime: value is already subscribed
+E bind again while bound	Quad0233 bindLifetime: value is already bound to another Instance
+E Subscribe while bound	Quad0231 Effect: already bound to an Instance
+E WeakUnsubscribe while bound	OK
+E Unsubscribe while bound	Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()
+E Subscribe after host destroy	OK
+E rebind after host destroy	OK
+E WeakSub on weak	Quad0089 Effect: already subscribed
+E Sub on weak	Quad0091 Effect: already subscribed
+E WeakUnsub on strong	Quad0092 Effect: subscribed strongly; use :Unsubscribe()
+E Unsub on weak	Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()
+E Unsub fresh	Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()
+O bind while strong	Quad0104 bindLifetime: value is already subscribed
+O bind while weak	Quad0104 bindLifetime: value is already subscribed
+O bind again while bound	Quad0233 bindLifetime: value is already bound to another Instance
+O Subscribe while bound	Quad0235 Observer: already bound to an Instance
+O WeakUnsubscribe while bound	OK
+O Unsubscribe while bound	Quad0115 Observer: not subscribed strongly; use :WeakUnsubscribe()
+O Subscribe after host destroy	OK
+O rebind after host destroy	OK
+O WeakSub on weak	Quad0111 Observer: already subscribed
+O Sub on weak	Quad0114 Observer: already subscribed
+O WeakUnsub on strong	Quad0112 Observer: subscribed strongly; use :Unsubscribe()
+O Unsub on weak	Quad0115 Observer: not subscribed strongly; use :WeakUnsubscribe()
+O Unsub fresh	Quad0115 Observer: not subscribed strongly; use :WeakUnsubscribe()

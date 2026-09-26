@@ -1,0 +1,94 @@
+
+== A1 diamond: Effect(fn, a, a:Compute(id), a:Depend()) — one Set
+runs(install+2 sets)=	3
+
+== A2 duplicate deps
+Effect(a,a,a): runs	2	cleanups	1
+a:Compute(fn,a,a) value	15	args	true,true,true
+dup-dep Compute value	21	fn runs total	1	observer	2
+a:Depend(a,a) value	8	observer	2
+
+== A3 Ref dep
+install runs	1
+after Set 1,1,nil,nil: runs	5	cleanups	4
+after placing in D.Frame: runs	6	ref.Value is frame	true
+after frame:Destroy(): runs	6	ref.Value still frame	true
+
+== A3b Ref dep retract via State<Ref?> seat
+place→	2	retract→	3	value nil	true
+
+== A4 Depend(a,b): value self, emits on either
+value	y	observer(install+3)	4	effect(install+3)	4
+Depend of Depend value	y
+DoD observer (install+3)	4	z
+
+== A5 Compute trailing dep unread
+unread trailing dep: observer	2	fn runs delta	1	value	1
+
+== A7 invalid deps
+Effect(fn, 5)	Quad0096 Effect: dep #1 is not a State/Source/Ref
+Effect(fn, a, {})	Quad0096 Effect: dep #2 is not a State/Source/Ref
+Effect(fn, a, nil)	Quad0095 Effect: dep #2 is nil
+Effect(fn, nil, a)	Quad0095 Effect: dep #1 is nil
+Effect(fn, Slot)	Quad0096 Effect: dep #1 is not a State/Source/Ref
+Effect(fn, Tag)	Quad0096 Effect: dep #1 is not a State/Source/Ref
+Effect(fn, Blocker)	Quad0096 Effect: dep #1 is not a State/Source/Ref
+Effect(fn, Observer)	Quad0096 Effect: dep #1 is not a State/Source/Ref
+Effect(fn, Effect)	Quad0096 Effect: dep #1 is not a State/Source/Ref
+Effect(fn, PreRef)	OK
+Effect(fn, PostRef)	OK
+Effect(fn, Store)	Quad0096 Effect: dep #1 is not a State/Source/Ref
+Effect(fn, {__quadState=true})	Quad0096 Effect: dep #1 is not a State/Source/Ref
+Effect(fn, Instance)	Quad0096 Effect: dep #1 is not a State/Source/Ref
+a:Compute(fn, Ref)	Quad0183 State: dep #2 is not a State/Source
+a:Compute(fn, a, nil)	Quad0186 State: dep #3 is nil
+a:Compute(fn, 5)	Quad0183 State: dep #2 is not a State/Source
+a:Depend(nil)	Quad0186 State: dep #2 is nil
+a:Depend(Ref)	Quad0183 State: dep #2 is not a State/Source
+a:Depend(a, Slot)	Quad0183 State: dep #3 is not a State/Source
+Effect(5)	Quad0094 Effect: fn must be a function
+a:Observer(5)	Quad0190 State: Observer fn must be a function (or nil for the always-observe utility)
+a:Observer(fn, b) (extra arg)	OK
+Effect(fn, store.x)	OK
+Effect(fn, a:Gate(...))	OK
+
+== A8 subscribe lifecycle keeps deps
+unsubscribed, 2 sets: runs	1
+after Subscribe: runs	2
+after Unsubscribe: runs	2	cl	2
+resubscribe with no change: runs	3
+b:Set: runs	4
+strong→weak resub: runs	5
+weak unsub/resub no change: runs	5
+a:Set: runs	6	cl	5
+
+== A9 Blocker-gated dep
+blocked: runs	1
+b:Set during block: runs	2	read	2
+Off: runs	3	read	2
+OffWithoutEmit: runs	3
+next set: runs	4	4
+Effect(a, a|blocker): during block	2	after Off	2
+
+== A10 re-entry: fn Sets a dep
+fn0/0 cl fn1/0 cl fn1/1
+self-dep ladder:	fn1 cl fn2/1 cl fn2 cl fn3/1 cl fn3
+
+== A11 dep order irrelevant; Compute arg order
+a:Compute(fn, c, b) =	acb
+Effect fn args: self only?	tablefalse
+
+== A12 Depend/Compute node lifetime under GC
+weak Effect over inline Depend (handle kept): runs	2	 weak Observer over inline Depend: fires	2
+bound Effect over inline Depend (frame kept): runs	2
+after frame destroy: runs	2
+
+== A13 Effect bound to instance destroyed; Slot element removal
+runs	2	cleanups	false,true
+k1 runs	3	k2 runs	2	k1 cl	false;false;	k2 cl	false;true;
+after host destroy k1 runs	3	k1 cl	false;false;true;
+
+== A14 Effect created on a node downstream of a CLOSED gate (seeding)
+Effect over pre-existing node behind gate: runs	1	values	1
+Observer same setup: fires	2	values	1,1
+control Effect on gate itself: runs	1	values	1

@@ -32,7 +32,7 @@ local D = q.Declaration
 1. **props의 숫자 키 자리에 핸들을 넣어 인스턴스에 매다는 것** — 그 인스턴스가 사는 동안만 실행 자격을 유지합니다. 인스턴스가 파괴되면 `Observer`는 **관측을 멈추고**(그 뒤로는 값이 바뀌어도 콜백이 불리지 않습니다 — 기본 Deferred 시그널 설정에선 파괴 즉시; Immediate 설정에선 파괴 파동 안에서 죽는 쪽의 cleanup·`OnDestroyed`가 부른 `Set`은 같은 호스트의 핸들을 한 번 더 돌릴 수 있습니다), `Effect`은 **cleanup이 한 번 돈 뒤** 멈춥니다. UI에 딸린 부수효과는 대개 이쪽입니다.
 2. **전역 구독** — `:Subscribe()`(강한 유지) 또는 `:WeakSubscribe()`(약한 유지). 인스턴스와 무관하게 사는 구독입니다.
 
-**둘을 겹칠 수는 없습니다.** 이미 한쪽으로 살아 있는 핸들을 다른 쪽으로 다시 살리려 하면 거절합니다 — `Observer: already subscribed` 또는 `Observer: already bound to an Instance`(`Effect`도 주어만 바뀐 같은 문구).
+**둘을 겹칠 수는 없습니다.** 이미 한쪽으로 살아 있는 핸들을 다른 쪽으로 다시 살리려 하면 거절합니다 — 묶인 핸들에 `:Subscribe()`/`:WeakSubscribe()`를 부르면 `Observer: already bound to an Instance`(`Effect`도 주어만 바뀐 같은 문구), 반대로 구독된 핸들을 숫자 키 자리(`D.Frame { h }`)에 놓으면 `Quad0104 bindLifetime: value is already subscribed`([2026-09-27 mock 실측] — 강한·약한 구독 둘 다).
 
 ### 숫자 키 자리에 넣기
 
@@ -209,7 +209,7 @@ export type Effect = {
 | 이름 | 타입 | 설명 |
 |---|---|---|
 | `fn` | `EffectFn` | 부수효과 본문. 인자로 **핸들 자신**을 받습니다(의존성 값은 넘어오지 않습니다 — 클로저로 직접 읽으세요). cleanup 함수를 돌려줄 수 있습니다. |
-| `...deps` | `State` / `Source` / `Ref` | 이것들이 움직일 때마다 `fn`이 다시 돕니다. |
+| `...deps` | `State` / `Source` / `Ref` | 이것들이 움직일 때마다 `fn`이 다시 돕니다 — 한 `Set`이 서로 다른 여러 dep을 거쳐 와도 **1회**이고(다이아몬드 흡수), 게이트를 거친 사본이 나중에 풀려도 이미 본 리비전이면 0회입니다([2026-09-27 mock 실측]). |
 
 **반환** — `Effect`. **아직 구독되지 않은 상태**입니다.
 
