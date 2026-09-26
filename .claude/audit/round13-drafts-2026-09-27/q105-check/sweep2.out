@@ -1,0 +1,445 @@
+====================================================================================================
+docs/getting-started/03-flowing-values.md:72  [Compute]  name=countText  annotated=N 
+  bind: const countText = count:Compute(function(c)    -- ② 파이프: 숫자를 글자로 처리한다
+  usage@80: Text = countText,                       -- ③ 파이프의 끝을 프로퍼티에 꽂는다
+====================================================================================================
+docs/getting-started/03-flowing-values.md:108  [Compute]  name=both  annotated=N 
+  bind: const both = count:Compute(function(c, previous, s)
+  usage@112: print(both:Get())  --> "7회"
+  usage@114: print(both:Get())  --> "7번"
+====================================================================================================
+docs/getting-started/04-reacting.md:21  [Compute]  name=countText  annotated=N 
+  bind: const countText = count:Compute(function(c)
+  usage@36: Text = countText,
+====================================================================================================
+docs/getting-started/05-tag-attr.md:21  [Compute]  name=countText  annotated=N 
+  bind: const countText = count:Compute(function(c) return `카운트: {c:Get()}` end)
+  usage@29: D.TextLabel { Text = countText },
+====================================================================================================
+docs/getting-started/06-flowing-back.md:23  [Compute]  name=countText  annotated=N 
+  bind: const countText = count:Compute(function(c) return `카운트: {c:Get()}` end)
+  usage@29: D.TextLabel { Text = countText },
+====================================================================================================
+docs/getting-started/06-flowing-back.md:180  [Compute]  name=derived  annotated=N 
+  bind: const derived = name:Compute(function(n) return n:Get() end)
+  usage@181: D.TextBox { q.Out("Text", derived) }
+====================================================================================================
+docs/getting-started/08-observer-effect.md:182  [Compute]  name=isBig  annotated=N 
+  bind: const isBig = count:Compute(function(c) return c:Get() >= 10 end)
+  usage@195: if inst and isBig:Get() then
+  usage@205: end, isBig, buttonRef),
+====================================================================================================
+docs/getting-started/10-modifier.md:54  [Compute]  name=cardColor  annotated=N 
+  bind: const cardColor = hot:Compute(function(h)
+  usage@61: BackgroundColor3 = cardColor, -- Compute를 테이블 안에 바로 쓰면 strict가 콜백 타입을 못 잡습니다 — 지역 변수로 빼세요
+====================================================================================================
+docs/getting-started/10-modifier.md:171  [Apply]  name=title  annotated=N 
+  bind: const title = D.Modifier.TextLabel { BackgroundTransparency = 1 }:Apply(emphasis(24))
+  usage@172: const label = D.TextLabel { title, Text = "카운터" }
+====================================================================================================
+docs/getting-started/12-components.md:31  [Compute]  name=countText  annotated=N 
+  bind: const countText = count:Compute(function(c)
+  usage@46: Text = countText,
+====================================================================================================
+docs/getting-started/12-components.md:109  [Compute]  name=countText  annotated=N 
+  bind: const countText = count:Compute(function(c)
+  usage@124: Text = countText,
+====================================================================================================
+docs/getting-started/12-components.md:195  [Compute]  name=labelText  annotated=N 
+  bind: const labelText = checked:Compute(function(c)
+  usage@204: Text = labelText,
+====================================================================================================
+docs/getting-started/12-components.md:221  [Compute]  name=statusText  annotated=N 
+  bind: const statusText = agreed:Compute(function(c)
+  usage@238: Text = statusText,
+====================================================================================================
+docs/getting-started/12-components.md:256  [Compute]  name=readOnly  annotated=N 
+  bind: const readOnly = agreed:Compute(function(c) return c:Get() end)
+  usage@257: -- readOnly:Set(true) → attempt to call missing method 'Set' of table
+====================================================================================================
+docs/getting-started/13-functions.md:151  [Compute]  name=plusTen  annotated=N 
+  bind: const plusTen = count:Compute(Sum(10))
+  usage@153: print(plusTen:Get())   --> 10
+  usage@156: print(plusTen:Get())   --> 11
+====================================================================================================
+docs/getting-started/13-functions.md:189  [Apply]  name=plusTenOp  annotated=N 
+  bind: const plusTenOp = count:Apply(q.Operator.Sum(10))   -- 앞서 손으로 만든 Sum(10)과 같은 결과
+  usages: (none found later in block)
+====================================================================================================
+docs/getting-started/13-functions.md:228  [Apply]  name=total  annotated=Y : q.State<number>
+  bind: const total: q.State<number> = count:Apply(q.Operator.Sum(10))
+  usages: (none found later in block)
+====================================================================================================
+docs/getting-started/13-functions.md:248  [Apply]  name=twice  annotated=N 
+  bind: const twice = count:Apply(Doubled)
+  usages: (none found later in block)
+====================================================================================================
+docs/getting-started/17-animation.md:90  [Compute]  name=numberColor  annotated=N 
+  bind: const numberColor = count:Compute(function(c)
+  usages: (none found later in block)
+====================================================================================================
+docs/getting-started/18-blocker.md:27  [Compute]  name=countText  annotated=N 
+  bind: const countText = count:Compute(function(c, prev, u)
+  usages: (none found later in block)
+====================================================================================================
+docs/getting-started/18-blocker.md:66  [Compute]  name=countText  annotated=N 
+  bind: const countText = count:Compute(function(c, prev, u)
+  usages: (none found later in block)
+====================================================================================================
+docs/getting-started/19-laziness.md:38  [Compute]  name=countText  annotated=N 
+  bind: const countText = count:Compute(function(c)
+  usages: (none found later in block)
+====================================================================================================
+docs/getting-started/19-laziness.md:56  [Compute]  name=doubled  annotated=N 
+  bind: const doubled = n:Compute(function(s) return s:Get() * 2 end)
+  usage@62: end, doubled)                       -- n으로부터 직접 + doubled를 거쳐 두 경로
+====================================================================================================
+docs/getting-started/19-laziness.md:59  [Compute]  name=total  annotated=N 
+  bind: const total = n:Compute(function(s, previous, d)
+  usage@64: const label = D.TextLabel { Text = total:Compute(function(s) return tostring(s:Get()) end) }
+====================================================================================================
+docs/getting-started/19-laziness.md:64  [Compute]  name=label  annotated=N 
+  bind: const label = D.TextLabel { Text = total:Compute(function(s) return tostring(s:Get()) end) }
+  usage@65: print(calls, label.Text)  --> 1   "3"
+  usage@68: print(calls, label.Text)  --> 2   "15"
+====================================================================================================
+docs/getting-started/19-laziness.md:142  [Apply]  name=animated  annotated=N 
+  bind: const animated = numberColor:Apply(q.Animate { Time = time })
+  usage@143: const label = D.TextLabel { TextColor3 = animated }
+====================================================================================================
+docs/how-to/01-component-conventions.md:294  [Compute]  name=isEven  annotated=Y : q.State<boolean>
+  bind: local isEven: q.State<boolean> = count:Compute(function(c: q.StateData<number>): boolean
+  usage@302: return { count = count, isEven = isEven, increment = increment }
+====================================================================================================
+docs/how-to/02-form-validation-pattern.md:45  [Compute]  name=labelText  annotated=Y : q.State<string>
+  bind: local labelText: q.State<string> = checked:Compute(function(c)
+  usage@54: Text = labelText,
+====================================================================================================
+docs/how-to/02-form-validation-pattern.md:70  [Compute]  name=canSubmit  annotated=Y : q.State<boolean>
+  bind: local canSubmit: q.State<boolean> = agreed:Compute(function(c)
+  usage@74: local submitColor: q.State<Color3> = canSubmit:Compute(function(enabled)
+  usage@87: Interactable = canSubmit, -- false면 눌리지 않는다
+====================================================================================================
+docs/how-to/02-form-validation-pattern.md:74  [Compute]  name=submitColor  annotated=Y : q.State<Color3>
+  bind: local submitColor: q.State<Color3> = canSubmit:Compute(function(enabled)
+  usage@88: BackgroundColor3 = submitColor,
+====================================================================================================
+docs/how-to/02-form-validation-pattern.md:125  [Compute]  name=isUsernameValid  annotated=N 
+  bind: local isUsernameValid = store.Username:Compute(function(self)
+  usage@135: local canSubmit = isUsernameValid:Compute(function(validUser, _previous, validPass)
+  usage@144: IsUsernameValid = isUsernameValid,
+====================================================================================================
+docs/how-to/02-form-validation-pattern.md:129  [Compute]  name=isPasswordValid  annotated=N 
+  bind: local isPasswordValid = store.Password:Compute(function(self)
+  usage@137: end, isPasswordValid)
+  usage@145: IsPasswordValid = isPasswordValid,
+====================================================================================================
+docs/how-to/02-form-validation-pattern.md:135  [Compute]  name=canSubmit  annotated=N 
+  bind: local canSubmit = isUsernameValid:Compute(function(validUser, _previous, validPass)
+  usage@146: CanSubmit = canSubmit,
+====================================================================================================
+docs/how-to/02-form-validation-pattern.md:181  [Compute]  name=canSubmit  annotated=N 
+  bind: local canSubmit = isUsernameValid:Depend(isPasswordValid):Compute(function(validUser)
+  usages: (none found later in block)
+====================================================================================================
+docs/how-to/02-form-validation-pattern.md:203  [Compute]  name=showUsernameError  annotated=Y : q.State<boolean>
+  bind: local showUsernameError: q.State<boolean> = form.IsUsernameValid:Compute(function(valid)
+  usage@230: Visible = showUsernameError,
+====================================================================================================
+docs/how-to/02-form-validation-pattern.md:206  [Compute]  name=submitColor  annotated=Y : q.State<Color3>
+  bind: local submitColor: q.State<Color3> = form.CanSubmit:Compute(function(enabled)
+  usage@244: BackgroundColor3 = submitColor,
+====================================================================================================
+docs/how-to/03-long-lists-and-windowing.md:74  [Compute]  name=order  annotated=Y : q.State<number>
+  bind: local order: q.State<number> = layoutOrder:Depend(ctx.Offset):Compute(function(i)
+  usage@78: LayoutOrder = order,
+====================================================================================================
+docs/how-to/03-long-lists-and-windowing.md:120  [Compute]  name=window  annotated=N 
+  bind: local window = scrollY:Compute(function(y, _previous, height)
+  usage@132: local rows = q.Slot<<Instance>>():List(window, function(ctx: any): (any, any)
+====================================================================================================
+docs/how-to/03-long-lists-and-windowing.md:145  [Compute]  name=position  annotated=Y : q.State<UDim2>
+  bind: local position: q.State<UDim2> = abs:Compute(function(a)
+  usage@150: Position = position,
+====================================================================================================
+docs/how-to/03-long-lists-and-windowing.md:197  [Apply]  name=gatedScrollY  annotated=Y : q.State<number>
+  bind: local gatedScrollY: q.State<number> = scrollY:Apply(q.Throttle { Time = 0.1 })  -- 0.1초 창마다 한 번 통지 —
+  usage@199: local window = gatedScrollY:Compute(function(y, _previous, height)
+====================================================================================================
+docs/how-to/03-long-lists-and-windowing.md:199  [Compute]  name=window  annotated=N 
+  bind: local window = gatedScrollY:Compute(function(y, _previous, height)
+  usages: (none found later in block)
+====================================================================================================
+docs/how-to/04-network-and-input-bridge.md:81  [Compute]  name=goldText  annotated=Y : q.State<string>
+  bind: local goldText: q.State<string> = ProfileStore.Gold:Compute(function(gold)
+  usage@86: Text = goldText,
+====================================================================================================
+docs/how-to/04-network-and-input-bridge.md:154  [Compute]  name=dotPosition  annotated=Y : q.State<UDim2>
+  bind: local dotPosition: q.State<UDim2> = mousePos:Compute(function(pos)
+  usage@177: Position = dotPosition,
+====================================================================================================
+docs/how-to/05-theme-and-dynamic-styling.md:94  [Compute]  name=palette  annotated=N 
+  bind: local palette = isDark:Compute(function(dark)
+  usage@100: return palette
+====================================================================================================
+docs/how-to/06-headless-testing.md:81  [Compute]  name=isEven  annotated=N 
+  bind: local isEven = count:Compute(function(c)
+  usage@86: assert(isEven:Get() == true, "0은 짝수")
+  usage@89: assert(count:Get() == 1 and isEven:Get() == false, "파생 상태가 따라온다")
+====================================================================================================
+docs/how-to/06-headless-testing.md:99  [Apply]  name=gated  annotated=N 
+  bind: local gated = raw:Apply(gate)
+  usage@104: assert(gated:Get() == 2, "값 자체는 항상 최신 — 막히는 것은 아래로의 전파다")
+====================================================================================================
+docs/how-to/07-studio-ui-binding-and-claim.md:29  [Compute]  name=clickText  annotated=Y : q.State<string>
+  bind: local clickText: q.State<string> = clicks:Compute(function(c)
+  usage@37: Text = clickText,
+====================================================================================================
+docs/how-to/08-migrating-from-v1.md:110  [Compute]  name=size  annotated=N 
+  bind: local size = width:Compute(function(
+  usage@118: local frame = D.Frame { Size = size }
+====================================================================================================
+docs/how-to/08-migrating-from-v1.md:135  [Apply]  name=total  annotated=N 
+  bind: local total = price:Apply(Op.Sum(500))
+  usages: (none found later in block)
+====================================================================================================
+docs/how-to/08-migrating-from-v1.md:139  [Apply]  name=shown  annotated=N 
+  bind: local shown = nickname:Apply(Op.Alternative("Guest"))
+  usages: (none found later in block)
+====================================================================================================
+docs/how-to/08-migrating-from-v1.md:143  [Apply]  name=primary  annotated=N 
+  bind: local primary = theme:Apply(Op.Indexed<<Color3>>("Primary"))
+  usages: (none found later in block)
+====================================================================================================
+docs/how-to/08-migrating-from-v1.md:148  [Compute]  name=moved  annotated=N 
+  bind: local moved = base:Compute(function(
+  usages: (none found later in block)
+====================================================================================================
+docs/how-to/08-migrating-from-v1.md:169  [Compute]  name=color  annotated=N 
+  bind: local color = hovered:Compute(function(self: q.StateData<boolean>): Color3
+  usage@179: local frame = D.Frame { BackgroundColor3 = color, Position = position }
+====================================================================================================
+docs/how-to/08-migrating-from-v1.md:175  [Compute]  name=position  annotated=N 
+  bind: local position = target:Compute(function(self: q.StateData<UDim2>): any
+  usage@179: local frame = D.Frame { BackgroundColor3 = color, Position = position }
+====================================================================================================
+docs/how-to/09-overlays-modal-toast.md:289  [Compute]  name=visible  annotated=Y : q.State<boolean>
+  bind: const visible: q.State<boolean> = props.Error:Compute(function(e)
+  usage@298: Visible = visible,
+====================================================================================================
+docs/how-to/09-overlays-modal-toast.md:292  [Compute]  name=text  annotated=Y : q.State<string>
+  bind: const text: q.State<string> = props.Error:Compute(function(e)
+  usage@301: Text = text,
+====================================================================================================
+docs/how-to/10-debugging-and-troubleshooting.md:166  [Apply]  name=primary  annotated=Y : q.State<string>
+  bind: local primary: q.State<string> = theme:Apply(q.Operator.Indexed<<string>>("Primary"))
+  usage@167: -- theme:Set({ Primary = "blue", Size = 12 }) → primary:Get() == "blue"
+====================================================================================================
+docs/overview/01-why-quad.md:119  [Compute]  name=both  annotated=N 
+  bind: local both = count:Compute(function(c, previous, s)
+  usages: (none found later in block)
+====================================================================================================
+docs/quadnomicon/09-fragment-breakthrough-and-domless-slot.md:151  [Compute]  name=layoutOrder  annotated=N 
+  bind: local layoutOrder = order:Depend(ctx.Offset):Compute(function(i: q.StateData<number>): number
+  usage@154: return D.TextButton { Text = ctx.Item :: string, LayoutOrder = layoutOrder }, { order = order }
+====================================================================================================
+docs/reference/core/02-source.md:153  [Compute]  name=label  annotated=Y : q.State<string>
+  bind: local label: q.State<string> = hp:Compute(function(self)
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/core/03-state.md:91  [Compute]  name=area  annotated=Y : q.State<number>
+  bind: local area: q.State<number> = width:Compute(function(self, previous, other: q.StateData<number>)
+  usage@95: print(area:Get()) --> 20
+  usage@97: print(area:Get()) --> 40
+====================================================================================================
+docs/reference/core/03-state.md:165  [Apply]  name=gated  annotated=Y : q.State<number>
+  bind: local gated: q.State<number> = raw:Apply(blocker)
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/core/03-state.md:221  [Gate]  name=held  annotated=Y : q.State<number>
+  bind: local held: q.State<number> = raw:Gate(function(emit)
+  usage@227: held:Observer(function(target)
+  usage@233: print(#seen, held:Get()) --> 1  2   (통지는 설치 발화 한 번뿐, 값은 이미 최신)
+====================================================================================================
+docs/reference/core/06-slot.md:112  [Compute]  name=empty  annotated=N 
+  bind: local empty = slot.Length:Compute(function(self)
+  usage@115: local view = D.Frame { slot, D.TextLabel { Text = "비었음", Visible = empty } }
+====================================================================================================
+docs/reference/core/08-modifier.md:236  [Apply]  name=styled  annotated=N 
+  bind: local styled = q.Modifier():Apply(rounded)
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/roblox/03-d-modifier.md:275  [Apply]  name=bold  annotated=N 
+  bind: local bold = D.Modifier.TextButton():Text("go"):Apply(Boldify)
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/roblox/06-tween-animate.md:62  [Compute]  name=size  annotated=N 
+  bind: local size = open:Compute(function(self: q.StateData<boolean>): RobloxModule.Tween<UDim2>
+  usage@72: local panel = D.Frame({ Size = size })
+====================================================================================================
+docs/reference/roblox/06-tween-animate.md:128  [Mapped]  name=a  annotated=N 
+  bind: local a = FADE:Mapped(function(v: number): number return 1 end)  -- Time = 0.15 유지
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/roblox/06-tween-animate.md:129  [Mapped]  name=b  annotated=N 
+  bind: local b = FADE:Mapped(function(v: number): number return 0.5 end)
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/roblox/06-tween-animate.md:182  [Apply]  name=animated  annotated=N 
+  bind: local animated = alpha:Apply(q.Animate({ Time = 0.3, Style = Enum.EasingStyle.Quad }))
+  usage@192: local box = D.Frame({ BackgroundTransparency = animated })
+====================================================================================================
+docs/reference/roblox/06-tween-animate.md:185  [Apply]  name=guarded  annotated=N 
+  bind: local guarded = alpha:Apply(q.Animate({
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/sugar/02-operator.md:40  [Apply]  name=a  annotated=Y : State<number>
+  bind: local a: State<number> = basePrice:Apply(addTaxAndShipping) -- 15
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/sugar/02-operator.md:41  [Apply]  name=b  annotated=Y : State<number>
+  bind: local b: State<number> = otherPrice:Apply(addTaxAndShipping) -- 105
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/sugar/02-operator.md:101  [Apply]  name=isHidden  annotated=Y : State<boolean>
+  bind: local isHidden: State<boolean> = isVisible:Apply(Op.Not) -- false
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/sugar/02-operator.md:116  [Apply]  name=total  annotated=Y : State<number>
+  bind: local total: State<number> = basePrice:Apply(Op.Sum(tax, shipping, 500)) -- 1650
+  usage@117: tax:Set(200) -- total:Get() == 1750
+====================================================================================================
+docs/reference/sugar/02-operator.md:162  [Apply]  name=boundX  annotated=Y : State<number>
+  bind: local boundX: State<number> = posX:Apply(Op.Clamp(0, maxX)) -- 100
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/sugar/02-operator.md:179  [Apply]  name=masked  annotated=Y : State<number>
+  bind: local masked: State<number> = flags:Apply(Op.Band(0b1010)) -- 8
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/sugar/02-operator.md:224  [Apply]  name=shifted  annotated=Y : State<number>
+  bind: local shifted: State<number> = flags:Apply(Op.Shl(2)) -- 0b110000
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/sugar/02-operator.md:253  [Apply]  name=safeName  annotated=Y : State<string>
+  bind: local safeName: State<string> = optionalName:Apply(Op.Alternative("Guest")) -- "Guest"
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/sugar/02-operator.md:274  [Apply]  name=primary  annotated=Y : State<string>
+  bind: local primary: State<string> = palette:Apply(Op.Indexed<<string>>("Primary"))
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/sugar/02-operator.md:275  [Apply]  name=size  annotated=Y : State<number>
+  bind: local size: State<number> = palette:Apply(Op.Indexed<<number>>("Size"))
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/sugar/02-operator.md:276  [Apply]  name=missing  annotated=Y : State<string?>
+  bind: local missing: State<string?> = palette:Apply(Op.Indexed<<string?>>("Nope")) -- nil
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/sugar/03-debounce-throttle.md:190  [Apply]  name=debounced  annotated=Y : State<string>
+  bind: local debounced: State<string> = searchInput:Apply(q.Debounce {
+  usage@198: debounced:Observer(function(target)
+  usage@203: searchInput:Set("ab") -- 창 안이라 통지 없음. 다만 debounced:Get()은 이미 "ab"
+====================================================================================================
+docs/reference/sugar/03-debounce-throttle.md:214  [Apply]  name=scrollPos  annotated=Y : State<number>
+  bind: local scrollPos: State<number> = scrollRaw:Apply(scrollGate)
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/sugar/06-blocker.md:52  [Apply]  name=shownHp  annotated=Y : q.State<number>
+  bind: local shownHp: q.State<number> = hp:Apply(blocker)
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/sugar/06-blocker.md:53  [Apply]  name=shownMp  annotated=Y : q.State<number>
+  bind: local shownMp: q.State<number> = mp:Apply(blocker)
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/sugar/06-blocker.md:112  [Apply]  name=shown  annotated=Y : q.State<number>
+  bind: local shown: q.State<number> = hp:Apply(blocker)
+  usage@117: print(shown:Get()) --> 80 (값은 언제나 최신)
+====================================================================================================
+docs/reference/sugar/06-blocker.md:153  [Gate]  name=gated  annotated=Y : q.State<number>
+  bind: local gated: q.State<number> = hp:Gate(function(emit)
+  usages: (none found later in block)
+====================================================================================================
+docs/reference/sugar/06-blocker.md:175  [Apply]  name=gated  annotated=Y : q.State<number>
+  bind: local gated: q.State<number> = hp:Apply(blocker)
+  usages: (none found later in block)
+====================================================================================================
+docs/skills/quad-ui-dev/SKILL.md:130  [Compute]  name=fullName  annotated=N 
+  bind: local fullName = firstName:Compute(function(self, prev, last)
+  usages: (none found later in block)
+====================================================================================================
+docs/skills/quad-ui-dev/SKILL.md:159  [Apply]  name=isHidden  annotated=N 
+  bind: local isHidden   = isVisible:Apply(Op.Not)                     -- unary
+  usages: (none found later in block)
+====================================================================================================
+docs/skills/quad-ui-dev/SKILL.md:160  [Apply]  name=totalPrice  annotated=N 
+  bind: local totalPrice = price:Apply(Op.Sum(tax, shipping))          -- n-ary, plain numbers or States
+  usages: (none found later in block)
+====================================================================================================
+docs/skills/quad-ui-dev/SKILL.md:161  [Apply]  name=clamped  annotated=N 
+  bind: local clamped    = rawPos:Apply(Op.Clamp(0, maxBound))
+  usages: (none found later in block)
+====================================================================================================
+docs/skills/quad-ui-dev/SKILL.md:162  [Apply]  name=safeName  annotated=N 
+  bind: local safeName   = optionalName:Apply(Op.Alternative("Guest")) -- State<T?> -> State<T>
+  usages: (none found later in block)
+====================================================================================================
+docs/skills/quad-ui-dev/SKILL.md:163  [Apply]  name=primary  annotated=N 
+  bind: local primary    = theme:Apply(Op.Indexed<<string>>("Primary"))  -- caller supplies the result type
+  usages: (none found later in block)
+====================================================================================================
+docs/skills/quad-ui-dev/SKILL.md:379  [Compute]  name=btnColor  annotated=N 
+  bind: local btnColor = hoverSrc:Compute(function(self)
+  usages: (none found later in block)
+====================================================================================================
+docs/skills/quad-ui-dev/SKILL.md:385  [Compute]  name=positionState  annotated=N 
+  bind: local positionState = targetSrc:Compute(function(self)
+  usages: (none found later in block)
+====================================================================================================
+docs/skills/quad-ui-dev/SKILL.md:492  [Apply]  name=debouncedQuery  annotated=N 
+  bind: local debouncedQuery = searchInput:Apply(q.Debounce { Time = 0.3, MaxTime = 1.0 })
+  usages: (none found later in block)
+====================================================================================================
+docs/skills/quad-ui-dev/SKILL.md:495  [Apply]  name=throttledScroll  annotated=N 
+  bind: local throttledScroll = scrollPos:Apply(q.Throttle { Time = 0.05 })
+  usages: (none found later in block)
+====================================================================================================
+docs/skills/quad-ui-dev/references/code-recipes.md:24  [Compute]  name=countText  annotated=N 
+  bind: local countText = count:Compute(function(self)
+  usage@46: Text = countText,
+====================================================================================================
+docs/skills/quad-ui-dev/references/code-recipes.md:28  [Compute]  name=frameBg  annotated=N 
+  bind: local frameBg = count:Compute(function(self)
+  usage@42: BackgroundColor3 = frameBg,
+====================================================================================================
+docs/skills/quad-ui-dev/references/code-recipes.md:169  [Compute]  name=nameText  annotated=N 
+  bind: local nameText = playerState:Compute(function(self)
+  usage@177: M.TextLabel("PlayerName")({ Text = nameText }),
+====================================================================================================
+docs/skills/quad-ui-dev/references/code-recipes.md:172  [Compute]  name=levelText  annotated=N 
+  bind: local levelText = playerState:Compute(function(self)
+  usage@178: M.TextLabel("PlayerLevel")({ Text = levelText }),
+====================================================================================================
+docs/skills/quad-ui-dev/references/code-recipes.md:202  [Compute]  name=isValid  annotated=N 
+  bind: local isValid = form.Username:Compute(function(self, prev, pwd)
+  usage@206: local submitColor = isValid:Compute(function(self)
+  usage@230: AutoButtonColor = isValid,
+  usage@232: if isValid:Get() then
+====================================================================================================
+docs/skills/quad-ui-dev/references/code-recipes.md:206  [Compute]  name=submitColor  annotated=N 
+  bind: local submitColor = isValid:Compute(function(self)
+  usage@229: BackgroundColor3 = submitColor,
+====================================================================================================
+docs/skills/quad-ui-dev/references/code-recipes.md:252  [Apply]  name=debouncedQuery  annotated=Y : QuadTypes.State<string>
+  bind: local debouncedQuery: QuadTypes.State<string> = rawQuery:Apply(q.Debounce {
+  usage@264: local searchObserver = debouncedQuery:Observer(function(target)
+====================================================================================================
+docs/skills/quad-ui-dev/references/code-recipes.md:257  [Compute]  name=hasQuery  annotated=N 
+  bind: local hasQuery = rawQuery:Compute(function(self)
+  usage@290: Visible = hasQuery,
+====================================================================================================
+docs/skills/quad-ui-dev/references/code-recipes.md:326  [Compute]  name=coinText  annotated=N 
+  bind: local coinText = inventory.Coins:Compute(function(self)
+  usage@331: Text = coinText,

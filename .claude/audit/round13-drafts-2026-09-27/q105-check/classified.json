@@ -1,0 +1,1660 @@
+[
+ {
+  "usages": [
+   [
+    80,
+    "Text = countText,                       -- ③ 파이프의 끝을 프로퍼티에 꽂는다"
+   ]
+  ],
+  "file": "docs/getting-started/03-flowing-values.md",
+  "line": 72,
+  "method": "Compute",
+  "name": "countText",
+  "annotated": false,
+  "ann": "",
+  "bind": "const countText = count:Compute(function(c)    -- ② 파이프: 숫자를 글자로 처리한다",
+  "usecat": "prop",
+  "proptype": "string"
+ },
+ {
+  "usages": [
+   [
+    112,
+    "print(both:Get())  --> \"7회\""
+   ],
+   [
+    114,
+    "print(both:Get())  --> \"7번\""
+   ]
+  ],
+  "file": "docs/getting-started/03-flowing-values.md",
+  "line": 108,
+  "method": "Compute",
+  "name": "both",
+  "annotated": false,
+  "ann": "",
+  "bind": "const both = count:Compute(function(c, previous, s)",
+  "usecat": "arith",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    36,
+    "Text = countText,"
+   ]
+  ],
+  "file": "docs/getting-started/04-reacting.md",
+  "line": 21,
+  "method": "Compute",
+  "name": "countText",
+  "annotated": false,
+  "ann": "",
+  "bind": "const countText = count:Compute(function(c)",
+  "usecat": "prop",
+  "proptype": "string"
+ },
+ {
+  "usages": [
+   [
+    29,
+    "D.TextLabel { Text = countText },"
+   ]
+  ],
+  "file": "docs/getting-started/05-tag-attr.md",
+  "line": 21,
+  "method": "Compute",
+  "name": "countText",
+  "annotated": false,
+  "ann": "",
+  "bind": "const countText = count:Compute(function(c) return `카운트: {c:Get()}` end)",
+  "usecat": "prop",
+  "proptype": "string"
+ },
+ {
+  "usages": [
+   [
+    29,
+    "D.TextLabel { Text = countText },"
+   ]
+  ],
+  "file": "docs/getting-started/06-flowing-back.md",
+  "line": 23,
+  "method": "Compute",
+  "name": "countText",
+  "annotated": false,
+  "ann": "",
+  "bind": "const countText = count:Compute(function(c) return `카운트: {c:Get()}` end)",
+  "usecat": "prop",
+  "proptype": "string"
+ },
+ {
+  "usages": [
+   [
+    181,
+    "D.TextBox { q.Out(\"Text\", derived) }"
+   ]
+  ],
+  "file": "docs/getting-started/06-flowing-back.md",
+  "line": 180,
+  "method": "Compute",
+  "name": "derived",
+  "annotated": false,
+  "ann": "",
+  "bind": "const derived = name:Compute(function(n) return n:Get() end)",
+  "usecat": "other",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    195,
+    "if inst and isBig:Get() then"
+   ],
+   [
+    205,
+    "end, isBig, buttonRef),"
+   ]
+  ],
+  "file": "docs/getting-started/08-observer-effect.md",
+  "line": 182,
+  "method": "Compute",
+  "name": "isBig",
+  "annotated": false,
+  "ann": "",
+  "bind": "const isBig = count:Compute(function(c) return c:Get() >= 10 end)",
+  "usecat": "arith",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    61,
+    "BackgroundColor3 = cardColor, -- Compute를 테이블 안에 바로 쓰면 strict가 콜백 타입을 못 잡습니다 — 지역 변수로 빼세요"
+   ]
+  ],
+  "file": "docs/getting-started/10-modifier.md",
+  "line": 54,
+  "method": "Compute",
+  "name": "cardColor",
+  "annotated": false,
+  "ann": "",
+  "bind": "const cardColor = hot:Compute(function(h)",
+  "usecat": "prop",
+  "proptype": "Color3"
+ },
+ {
+  "usages": [
+   [
+    172,
+    "const label = D.TextLabel { title, Text = \"카운터\" }"
+   ]
+  ],
+  "file": "docs/getting-started/10-modifier.md",
+  "line": 171,
+  "method": "Apply",
+  "name": "title",
+  "annotated": false,
+  "ann": "",
+  "bind": "const title = D.Modifier.TextLabel { BackgroundTransparency = 1 }:Apply(emphasis(24))",
+  "usecat": "other",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    46,
+    "Text = countText,"
+   ]
+  ],
+  "file": "docs/getting-started/12-components.md",
+  "line": 31,
+  "method": "Compute",
+  "name": "countText",
+  "annotated": false,
+  "ann": "",
+  "bind": "const countText = count:Compute(function(c)",
+  "usecat": "prop",
+  "proptype": "string"
+ },
+ {
+  "usages": [
+   [
+    124,
+    "Text = countText,"
+   ]
+  ],
+  "file": "docs/getting-started/12-components.md",
+  "line": 109,
+  "method": "Compute",
+  "name": "countText",
+  "annotated": false,
+  "ann": "",
+  "bind": "const countText = count:Compute(function(c)",
+  "usecat": "prop",
+  "proptype": "string"
+ },
+ {
+  "usages": [
+   [
+    204,
+    "Text = labelText,"
+   ]
+  ],
+  "file": "docs/getting-started/12-components.md",
+  "line": 195,
+  "method": "Compute",
+  "name": "labelText",
+  "annotated": false,
+  "ann": "",
+  "bind": "const labelText = checked:Compute(function(c)",
+  "usecat": "prop",
+  "proptype": "string"
+ },
+ {
+  "usages": [
+   [
+    238,
+    "Text = statusText,"
+   ]
+  ],
+  "file": "docs/getting-started/12-components.md",
+  "line": 221,
+  "method": "Compute",
+  "name": "statusText",
+  "annotated": false,
+  "ann": "",
+  "bind": "const statusText = agreed:Compute(function(c)",
+  "usecat": "prop",
+  "proptype": "string"
+ },
+ {
+  "usages": [
+   [
+    257,
+    "-- readOnly:Set(true) → attempt to call missing method 'Set' of table"
+   ]
+  ],
+  "file": "docs/getting-started/12-components.md",
+  "line": 256,
+  "method": "Compute",
+  "name": "readOnly",
+  "annotated": false,
+  "ann": "",
+  "bind": "const readOnly = agreed:Compute(function(c) return c:Get() end)",
+  "usecat": "other",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    153,
+    "print(plusTen:Get())   --> 10"
+   ],
+   [
+    156,
+    "print(plusTen:Get())   --> 11"
+   ]
+  ],
+  "file": "docs/getting-started/13-functions.md",
+  "line": 151,
+  "method": "Compute",
+  "name": "plusTen",
+  "annotated": false,
+  "ann": "",
+  "bind": "const plusTen = count:Compute(Sum(10))",
+  "usecat": "arith",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/getting-started/13-functions.md",
+  "line": 189,
+  "method": "Apply",
+  "name": "plusTenOp",
+  "annotated": false,
+  "ann": "",
+  "bind": "const plusTenOp = count:Apply(q.Operator.Sum(10))   -- 앞서 손으로 만든 Sum(10)과 같은 결과",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/getting-started/13-functions.md",
+  "line": 228,
+  "method": "Apply",
+  "name": "total",
+  "annotated": true,
+  "ann": ": q.State<number>",
+  "bind": "const total: q.State<number> = count:Apply(q.Operator.Sum(10))",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/getting-started/13-functions.md",
+  "line": 248,
+  "method": "Apply",
+  "name": "twice",
+  "annotated": false,
+  "ann": "",
+  "bind": "const twice = count:Apply(Doubled)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/getting-started/17-animation.md",
+  "line": 90,
+  "method": "Compute",
+  "name": "numberColor",
+  "annotated": false,
+  "ann": "",
+  "bind": "const numberColor = count:Compute(function(c)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/getting-started/18-blocker.md",
+  "line": 27,
+  "method": "Compute",
+  "name": "countText",
+  "annotated": false,
+  "ann": "",
+  "bind": "const countText = count:Compute(function(c, prev, u)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/getting-started/18-blocker.md",
+  "line": 66,
+  "method": "Compute",
+  "name": "countText",
+  "annotated": false,
+  "ann": "",
+  "bind": "const countText = count:Compute(function(c, prev, u)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/getting-started/19-laziness.md",
+  "line": 38,
+  "method": "Compute",
+  "name": "countText",
+  "annotated": false,
+  "ann": "",
+  "bind": "const countText = count:Compute(function(c)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    62,
+    "end, doubled)                       -- n으로부터 직접 + doubled를 거쳐 두 경로"
+   ]
+  ],
+  "file": "docs/getting-started/19-laziness.md",
+  "line": 56,
+  "method": "Compute",
+  "name": "doubled",
+  "annotated": false,
+  "ann": "",
+  "bind": "const doubled = n:Compute(function(s) return s:Get() * 2 end)",
+  "usecat": "other",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    64,
+    "const label = D.TextLabel { Text = total:Compute(function(s) return tostring(s:Get()) end) }"
+   ]
+  ],
+  "file": "docs/getting-started/19-laziness.md",
+  "line": 59,
+  "method": "Compute",
+  "name": "total",
+  "annotated": false,
+  "ann": "",
+  "bind": "const total = n:Compute(function(s, previous, d)",
+  "usecat": "receiver",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    65,
+    "print(calls, label.Text)  --> 1   \"3\""
+   ],
+   [
+    68,
+    "print(calls, label.Text)  --> 2   \"15\""
+   ]
+  ],
+  "file": "docs/getting-started/19-laziness.md",
+  "line": 64,
+  "method": "Compute",
+  "name": "label",
+  "annotated": false,
+  "ann": "",
+  "bind": "const label = D.TextLabel { Text = total:Compute(function(s) return tostring(s:Get()) end) }",
+  "usecat": "print-only",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    143,
+    "const label = D.TextLabel { TextColor3 = animated }"
+   ]
+  ],
+  "file": "docs/getting-started/19-laziness.md",
+  "line": 142,
+  "method": "Apply",
+  "name": "animated",
+  "annotated": false,
+  "ann": "",
+  "bind": "const animated = numberColor:Apply(q.Animate { Time = time })",
+  "usecat": "prop",
+  "proptype": "Color3"
+ },
+ {
+  "usages": [
+   [
+    302,
+    "return { count = count, isEven = isEven, increment = increment }"
+   ]
+  ],
+  "file": "docs/how-to/01-component-conventions.md",
+  "line": 294,
+  "method": "Compute",
+  "name": "isEven",
+  "annotated": true,
+  "ann": ": q.State<boolean>",
+  "bind": "local isEven: q.State<boolean> = count:Compute(function(c: q.StateData<number>): boolean",
+  "usecat": "prop",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    54,
+    "Text = labelText,"
+   ]
+  ],
+  "file": "docs/how-to/02-form-validation-pattern.md",
+  "line": 45,
+  "method": "Compute",
+  "name": "labelText",
+  "annotated": true,
+  "ann": ": q.State<string>",
+  "bind": "local labelText: q.State<string> = checked:Compute(function(c)",
+  "usecat": "prop",
+  "proptype": "string"
+ },
+ {
+  "usages": [
+   [
+    74,
+    "local submitColor: q.State<Color3> = canSubmit:Compute(function(enabled)"
+   ],
+   [
+    87,
+    "Interactable = canSubmit, -- false면 눌리지 않는다"
+   ]
+  ],
+  "file": "docs/how-to/02-form-validation-pattern.md",
+  "line": 70,
+  "method": "Compute",
+  "name": "canSubmit",
+  "annotated": true,
+  "ann": ": q.State<boolean>",
+  "bind": "local canSubmit: q.State<boolean> = agreed:Compute(function(c)",
+  "usecat": "prop+receiver",
+  "proptype": "boolean"
+ },
+ {
+  "usages": [
+   [
+    88,
+    "BackgroundColor3 = submitColor,"
+   ]
+  ],
+  "file": "docs/how-to/02-form-validation-pattern.md",
+  "line": 74,
+  "method": "Compute",
+  "name": "submitColor",
+  "annotated": true,
+  "ann": ": q.State<Color3>",
+  "bind": "local submitColor: q.State<Color3> = canSubmit:Compute(function(enabled)",
+  "usecat": "prop",
+  "proptype": "Color3"
+ },
+ {
+  "usages": [
+   [
+    135,
+    "local canSubmit = isUsernameValid:Compute(function(validUser, _previous, validPass)"
+   ],
+   [
+    144,
+    "IsUsernameValid = isUsernameValid,"
+   ]
+  ],
+  "file": "docs/how-to/02-form-validation-pattern.md",
+  "line": 125,
+  "method": "Compute",
+  "name": "isUsernameValid",
+  "annotated": false,
+  "ann": "",
+  "bind": "local isUsernameValid = store.Username:Compute(function(self)",
+  "usecat": "prop+receiver",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    137,
+    "end, isPasswordValid)"
+   ],
+   [
+    145,
+    "IsPasswordValid = isPasswordValid,"
+   ]
+  ],
+  "file": "docs/how-to/02-form-validation-pattern.md",
+  "line": 129,
+  "method": "Compute",
+  "name": "isPasswordValid",
+  "annotated": false,
+  "ann": "",
+  "bind": "local isPasswordValid = store.Password:Compute(function(self)",
+  "usecat": "prop",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    146,
+    "CanSubmit = canSubmit,"
+   ]
+  ],
+  "file": "docs/how-to/02-form-validation-pattern.md",
+  "line": 135,
+  "method": "Compute",
+  "name": "canSubmit",
+  "annotated": false,
+  "ann": "",
+  "bind": "local canSubmit = isUsernameValid:Compute(function(validUser, _previous, validPass)",
+  "usecat": "prop",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/how-to/02-form-validation-pattern.md",
+  "line": 181,
+  "method": "Compute",
+  "name": "canSubmit",
+  "annotated": false,
+  "ann": "",
+  "bind": "local canSubmit = isUsernameValid:Depend(isPasswordValid):Compute(function(validUser)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    230,
+    "Visible = showUsernameError,"
+   ]
+  ],
+  "file": "docs/how-to/02-form-validation-pattern.md",
+  "line": 203,
+  "method": "Compute",
+  "name": "showUsernameError",
+  "annotated": true,
+  "ann": ": q.State<boolean>",
+  "bind": "local showUsernameError: q.State<boolean> = form.IsUsernameValid:Compute(function(valid)",
+  "usecat": "prop",
+  "proptype": "boolean"
+ },
+ {
+  "usages": [
+   [
+    244,
+    "BackgroundColor3 = submitColor,"
+   ]
+  ],
+  "file": "docs/how-to/02-form-validation-pattern.md",
+  "line": 206,
+  "method": "Compute",
+  "name": "submitColor",
+  "annotated": true,
+  "ann": ": q.State<Color3>",
+  "bind": "local submitColor: q.State<Color3> = form.CanSubmit:Compute(function(enabled)",
+  "usecat": "prop",
+  "proptype": "Color3"
+ },
+ {
+  "usages": [
+   [
+    78,
+    "LayoutOrder = order,"
+   ]
+  ],
+  "file": "docs/how-to/03-long-lists-and-windowing.md",
+  "line": 74,
+  "method": "Compute",
+  "name": "order",
+  "annotated": true,
+  "ann": ": q.State<number>",
+  "bind": "local order: q.State<number> = layoutOrder:Depend(ctx.Offset):Compute(function(i)",
+  "usecat": "prop",
+  "proptype": "number"
+ },
+ {
+  "usages": [
+   [
+    132,
+    "local rows = q.Slot<<Instance>>():List(window, function(ctx: any): (any, any)"
+   ]
+  ],
+  "file": "docs/how-to/03-long-lists-and-windowing.md",
+  "line": 120,
+  "method": "Compute",
+  "name": "window",
+  "annotated": false,
+  "ann": "",
+  "bind": "local window = scrollY:Compute(function(y, _previous, height)",
+  "usecat": "other",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    150,
+    "Position = position,"
+   ]
+  ],
+  "file": "docs/how-to/03-long-lists-and-windowing.md",
+  "line": 145,
+  "method": "Compute",
+  "name": "position",
+  "annotated": true,
+  "ann": ": q.State<UDim2>",
+  "bind": "local position: q.State<UDim2> = abs:Compute(function(a)",
+  "usecat": "prop",
+  "proptype": "UDim2"
+ },
+ {
+  "usages": [
+   [
+    199,
+    "local window = gatedScrollY:Compute(function(y, _previous, height)"
+   ]
+  ],
+  "file": "docs/how-to/03-long-lists-and-windowing.md",
+  "line": 197,
+  "method": "Apply",
+  "name": "gatedScrollY",
+  "annotated": true,
+  "ann": ": q.State<number>",
+  "bind": "local gatedScrollY: q.State<number> = scrollY:Apply(q.Throttle { Time = 0.1 })  -- 0.1초 창마다 한 번 통지 —",
+  "usecat": "receiver",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/how-to/03-long-lists-and-windowing.md",
+  "line": 199,
+  "method": "Compute",
+  "name": "window",
+  "annotated": false,
+  "ann": "",
+  "bind": "local window = gatedScrollY:Compute(function(y, _previous, height)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    86,
+    "Text = goldText,"
+   ]
+  ],
+  "file": "docs/how-to/04-network-and-input-bridge.md",
+  "line": 81,
+  "method": "Compute",
+  "name": "goldText",
+  "annotated": true,
+  "ann": ": q.State<string>",
+  "bind": "local goldText: q.State<string> = ProfileStore.Gold:Compute(function(gold)",
+  "usecat": "prop",
+  "proptype": "string"
+ },
+ {
+  "usages": [
+   [
+    177,
+    "Position = dotPosition,"
+   ]
+  ],
+  "file": "docs/how-to/04-network-and-input-bridge.md",
+  "line": 154,
+  "method": "Compute",
+  "name": "dotPosition",
+  "annotated": true,
+  "ann": ": q.State<UDim2>",
+  "bind": "local dotPosition: q.State<UDim2> = mousePos:Compute(function(pos)",
+  "usecat": "prop",
+  "proptype": "UDim2"
+ },
+ {
+  "usages": [
+   [
+    100,
+    "return palette"
+   ]
+  ],
+  "file": "docs/how-to/05-theme-and-dynamic-styling.md",
+  "line": 94,
+  "method": "Compute",
+  "name": "palette",
+  "annotated": false,
+  "ann": "",
+  "bind": "local palette = isDark:Compute(function(dark)",
+  "usecat": "return",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    86,
+    "assert(isEven:Get() == true, \"0은 짝수\")"
+   ],
+   [
+    89,
+    "assert(count:Get() == 1 and isEven:Get() == false, \"파생 상태가 따라온다\")"
+   ]
+  ],
+  "file": "docs/how-to/06-headless-testing.md",
+  "line": 81,
+  "method": "Compute",
+  "name": "isEven",
+  "annotated": false,
+  "ann": "",
+  "bind": "local isEven = count:Compute(function(c)",
+  "usecat": "arith",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    104,
+    "assert(gated:Get() == 2, \"값 자체는 항상 최신 — 막히는 것은 아래로의 전파다\")"
+   ]
+  ],
+  "file": "docs/how-to/06-headless-testing.md",
+  "line": 99,
+  "method": "Apply",
+  "name": "gated",
+  "annotated": false,
+  "ann": "",
+  "bind": "local gated = raw:Apply(gate)",
+  "usecat": "arith",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    37,
+    "Text = clickText,"
+   ]
+  ],
+  "file": "docs/how-to/07-studio-ui-binding-and-claim.md",
+  "line": 29,
+  "method": "Compute",
+  "name": "clickText",
+  "annotated": true,
+  "ann": ": q.State<string>",
+  "bind": "local clickText: q.State<string> = clicks:Compute(function(c)",
+  "usecat": "prop",
+  "proptype": "string"
+ },
+ {
+  "usages": [
+   [
+    118,
+    "local frame = D.Frame { Size = size }"
+   ]
+  ],
+  "file": "docs/how-to/08-migrating-from-v1.md",
+  "line": 110,
+  "method": "Compute",
+  "name": "size",
+  "annotated": false,
+  "ann": "",
+  "bind": "local size = width:Compute(function(",
+  "usecat": "prop",
+  "proptype": "UDim2"
+ },
+ {
+  "usages": [],
+  "file": "docs/how-to/08-migrating-from-v1.md",
+  "line": 135,
+  "method": "Apply",
+  "name": "total",
+  "annotated": false,
+  "ann": "",
+  "bind": "local total = price:Apply(Op.Sum(500))",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/how-to/08-migrating-from-v1.md",
+  "line": 139,
+  "method": "Apply",
+  "name": "shown",
+  "annotated": false,
+  "ann": "",
+  "bind": "local shown = nickname:Apply(Op.Alternative(\"Guest\"))",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/how-to/08-migrating-from-v1.md",
+  "line": 143,
+  "method": "Apply",
+  "name": "primary",
+  "annotated": false,
+  "ann": "",
+  "bind": "local primary = theme:Apply(Op.Indexed<<Color3>>(\"Primary\"))",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/how-to/08-migrating-from-v1.md",
+  "line": 148,
+  "method": "Compute",
+  "name": "moved",
+  "annotated": false,
+  "ann": "",
+  "bind": "local moved = base:Compute(function(",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    179,
+    "local frame = D.Frame { BackgroundColor3 = color, Position = position }"
+   ]
+  ],
+  "file": "docs/how-to/08-migrating-from-v1.md",
+  "line": 169,
+  "method": "Compute",
+  "name": "color",
+  "annotated": false,
+  "ann": "",
+  "bind": "local color = hovered:Compute(function(self: q.StateData<boolean>): Color3",
+  "usecat": "prop",
+  "proptype": "Color3"
+ },
+ {
+  "usages": [
+   [
+    179,
+    "local frame = D.Frame { BackgroundColor3 = color, Position = position }"
+   ]
+  ],
+  "file": "docs/how-to/08-migrating-from-v1.md",
+  "line": 175,
+  "method": "Compute",
+  "name": "position",
+  "annotated": false,
+  "ann": "",
+  "bind": "local position = target:Compute(function(self: q.StateData<UDim2>): any",
+  "usecat": "prop",
+  "proptype": "UDim2"
+ },
+ {
+  "usages": [
+   [
+    298,
+    "Visible = visible,"
+   ]
+  ],
+  "file": "docs/how-to/09-overlays-modal-toast.md",
+  "line": 289,
+  "method": "Compute",
+  "name": "visible",
+  "annotated": true,
+  "ann": ": q.State<boolean>",
+  "bind": "const visible: q.State<boolean> = props.Error:Compute(function(e)",
+  "usecat": "prop",
+  "proptype": "boolean"
+ },
+ {
+  "usages": [
+   [
+    301,
+    "Text = text,"
+   ]
+  ],
+  "file": "docs/how-to/09-overlays-modal-toast.md",
+  "line": 292,
+  "method": "Compute",
+  "name": "text",
+  "annotated": true,
+  "ann": ": q.State<string>",
+  "bind": "const text: q.State<string> = props.Error:Compute(function(e)",
+  "usecat": "prop",
+  "proptype": "string"
+ },
+ {
+  "usages": [
+   [
+    167,
+    "-- theme:Set({ Primary = \"blue\", Size = 12 }) → primary:Get() == \"blue\""
+   ]
+  ],
+  "file": "docs/how-to/10-debugging-and-troubleshooting.md",
+  "line": 166,
+  "method": "Apply",
+  "name": "primary",
+  "annotated": true,
+  "ann": ": q.State<string>",
+  "bind": "local primary: q.State<string> = theme:Apply(q.Operator.Indexed<<string>>(\"Primary\"))",
+  "usecat": "arith",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/overview/01-why-quad.md",
+  "line": 119,
+  "method": "Compute",
+  "name": "both",
+  "annotated": false,
+  "ann": "",
+  "bind": "local both = count:Compute(function(c, previous, s)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    154,
+    "return D.TextButton { Text = ctx.Item :: string, LayoutOrder = layoutOrder }, { order = order }"
+   ]
+  ],
+  "file": "docs/quadnomicon/09-fragment-breakthrough-and-domless-slot.md",
+  "line": 151,
+  "method": "Compute",
+  "name": "layoutOrder",
+  "annotated": false,
+  "ann": "",
+  "bind": "local layoutOrder = order:Depend(ctx.Offset):Compute(function(i: q.StateData<number>): number",
+  "usecat": "prop",
+  "proptype": "number"
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/core/02-source.md",
+  "line": 153,
+  "method": "Compute",
+  "name": "label",
+  "annotated": true,
+  "ann": ": q.State<string>",
+  "bind": "local label: q.State<string> = hp:Compute(function(self)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    95,
+    "print(area:Get()) --> 20"
+   ],
+   [
+    97,
+    "print(area:Get()) --> 40"
+   ]
+  ],
+  "file": "docs/reference/core/03-state.md",
+  "line": 91,
+  "method": "Compute",
+  "name": "area",
+  "annotated": true,
+  "ann": ": q.State<number>",
+  "bind": "local area: q.State<number> = width:Compute(function(self, previous, other: q.StateData<number>)",
+  "usecat": "arith",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/core/03-state.md",
+  "line": 165,
+  "method": "Apply",
+  "name": "gated",
+  "annotated": true,
+  "ann": ": q.State<number>",
+  "bind": "local gated: q.State<number> = raw:Apply(blocker)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    227,
+    "held:Observer(function(target)"
+   ],
+   [
+    233,
+    "print(#seen, held:Get()) --> 1  2   (통지는 설치 발화 한 번뿐, 값은 이미 최신)"
+   ]
+  ],
+  "file": "docs/reference/core/03-state.md",
+  "line": 221,
+  "method": "Gate",
+  "name": "held",
+  "annotated": true,
+  "ann": ": q.State<number>",
+  "bind": "local held: q.State<number> = raw:Gate(function(emit)",
+  "usecat": "arith+receiver",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    115,
+    "local view = D.Frame { slot, D.TextLabel { Text = \"비었음\", Visible = empty } }"
+   ]
+  ],
+  "file": "docs/reference/core/06-slot.md",
+  "line": 112,
+  "method": "Compute",
+  "name": "empty",
+  "annotated": false,
+  "ann": "",
+  "bind": "local empty = slot.Length:Compute(function(self)",
+  "usecat": "prop",
+  "proptype": "boolean"
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/core/08-modifier.md",
+  "line": 236,
+  "method": "Apply",
+  "name": "styled",
+  "annotated": false,
+  "ann": "",
+  "bind": "local styled = q.Modifier():Apply(rounded)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/roblox/03-d-modifier.md",
+  "line": 275,
+  "method": "Apply",
+  "name": "bold",
+  "annotated": false,
+  "ann": "",
+  "bind": "local bold = D.Modifier.TextButton():Text(\"go\"):Apply(Boldify)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    72,
+    "local panel = D.Frame({ Size = size })"
+   ]
+  ],
+  "file": "docs/reference/roblox/06-tween-animate.md",
+  "line": 62,
+  "method": "Compute",
+  "name": "size",
+  "annotated": false,
+  "ann": "",
+  "bind": "local size = open:Compute(function(self: q.StateData<boolean>): RobloxModule.Tween<UDim2>",
+  "usecat": "prop",
+  "proptype": "UDim2"
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/roblox/06-tween-animate.md",
+  "line": 128,
+  "method": "Mapped",
+  "name": "a",
+  "annotated": false,
+  "ann": "",
+  "bind": "local a = FADE:Mapped(function(v: number): number return 1 end)  -- Time = 0.15 유지",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/roblox/06-tween-animate.md",
+  "line": 129,
+  "method": "Mapped",
+  "name": "b",
+  "annotated": false,
+  "ann": "",
+  "bind": "local b = FADE:Mapped(function(v: number): number return 0.5 end)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    192,
+    "local box = D.Frame({ BackgroundTransparency = animated })"
+   ]
+  ],
+  "file": "docs/reference/roblox/06-tween-animate.md",
+  "line": 182,
+  "method": "Apply",
+  "name": "animated",
+  "annotated": false,
+  "ann": "",
+  "bind": "local animated = alpha:Apply(q.Animate({ Time = 0.3, Style = Enum.EasingStyle.Quad }))",
+  "usecat": "prop",
+  "proptype": "number"
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/roblox/06-tween-animate.md",
+  "line": 185,
+  "method": "Apply",
+  "name": "guarded",
+  "annotated": false,
+  "ann": "",
+  "bind": "local guarded = alpha:Apply(q.Animate({",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/sugar/02-operator.md",
+  "line": 40,
+  "method": "Apply",
+  "name": "a",
+  "annotated": true,
+  "ann": ": State<number>",
+  "bind": "local a: State<number> = basePrice:Apply(addTaxAndShipping) -- 15",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/sugar/02-operator.md",
+  "line": 41,
+  "method": "Apply",
+  "name": "b",
+  "annotated": true,
+  "ann": ": State<number>",
+  "bind": "local b: State<number> = otherPrice:Apply(addTaxAndShipping) -- 105",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/sugar/02-operator.md",
+  "line": 101,
+  "method": "Apply",
+  "name": "isHidden",
+  "annotated": true,
+  "ann": ": State<boolean>",
+  "bind": "local isHidden: State<boolean> = isVisible:Apply(Op.Not) -- false",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    117,
+    "tax:Set(200) -- total:Get() == 1750"
+   ]
+  ],
+  "file": "docs/reference/sugar/02-operator.md",
+  "line": 116,
+  "method": "Apply",
+  "name": "total",
+  "annotated": true,
+  "ann": ": State<number>",
+  "bind": "local total: State<number> = basePrice:Apply(Op.Sum(tax, shipping, 500)) -- 1650",
+  "usecat": "arith",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/sugar/02-operator.md",
+  "line": 162,
+  "method": "Apply",
+  "name": "boundX",
+  "annotated": true,
+  "ann": ": State<number>",
+  "bind": "local boundX: State<number> = posX:Apply(Op.Clamp(0, maxX)) -- 100",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/sugar/02-operator.md",
+  "line": 179,
+  "method": "Apply",
+  "name": "masked",
+  "annotated": true,
+  "ann": ": State<number>",
+  "bind": "local masked: State<number> = flags:Apply(Op.Band(0b1010)) -- 8",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/sugar/02-operator.md",
+  "line": 224,
+  "method": "Apply",
+  "name": "shifted",
+  "annotated": true,
+  "ann": ": State<number>",
+  "bind": "local shifted: State<number> = flags:Apply(Op.Shl(2)) -- 0b110000",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/sugar/02-operator.md",
+  "line": 253,
+  "method": "Apply",
+  "name": "safeName",
+  "annotated": true,
+  "ann": ": State<string>",
+  "bind": "local safeName: State<string> = optionalName:Apply(Op.Alternative(\"Guest\")) -- \"Guest\"",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/sugar/02-operator.md",
+  "line": 274,
+  "method": "Apply",
+  "name": "primary",
+  "annotated": true,
+  "ann": ": State<string>",
+  "bind": "local primary: State<string> = palette:Apply(Op.Indexed<<string>>(\"Primary\"))",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/sugar/02-operator.md",
+  "line": 275,
+  "method": "Apply",
+  "name": "size",
+  "annotated": true,
+  "ann": ": State<number>",
+  "bind": "local size: State<number> = palette:Apply(Op.Indexed<<number>>(\"Size\"))",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/sugar/02-operator.md",
+  "line": 276,
+  "method": "Apply",
+  "name": "missing",
+  "annotated": true,
+  "ann": ": State<string?>",
+  "bind": "local missing: State<string?> = palette:Apply(Op.Indexed<<string?>>(\"Nope\")) -- nil",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    198,
+    "debounced:Observer(function(target)"
+   ],
+   [
+    203,
+    "searchInput:Set(\"ab\") -- 창 안이라 통지 없음. 다만 debounced:Get()은 이미 \"ab\""
+   ]
+  ],
+  "file": "docs/reference/sugar/03-debounce-throttle.md",
+  "line": 190,
+  "method": "Apply",
+  "name": "debounced",
+  "annotated": true,
+  "ann": ": State<string>",
+  "bind": "local debounced: State<string> = searchInput:Apply(q.Debounce {",
+  "usecat": "arith+receiver",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/sugar/03-debounce-throttle.md",
+  "line": 214,
+  "method": "Apply",
+  "name": "scrollPos",
+  "annotated": true,
+  "ann": ": State<number>",
+  "bind": "local scrollPos: State<number> = scrollRaw:Apply(scrollGate)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/sugar/06-blocker.md",
+  "line": 52,
+  "method": "Apply",
+  "name": "shownHp",
+  "annotated": true,
+  "ann": ": q.State<number>",
+  "bind": "local shownHp: q.State<number> = hp:Apply(blocker)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/sugar/06-blocker.md",
+  "line": 53,
+  "method": "Apply",
+  "name": "shownMp",
+  "annotated": true,
+  "ann": ": q.State<number>",
+  "bind": "local shownMp: q.State<number> = mp:Apply(blocker)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    117,
+    "print(shown:Get()) --> 80 (값은 언제나 최신)"
+   ]
+  ],
+  "file": "docs/reference/sugar/06-blocker.md",
+  "line": 112,
+  "method": "Apply",
+  "name": "shown",
+  "annotated": true,
+  "ann": ": q.State<number>",
+  "bind": "local shown: q.State<number> = hp:Apply(blocker)",
+  "usecat": "arith",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/sugar/06-blocker.md",
+  "line": 153,
+  "method": "Gate",
+  "name": "gated",
+  "annotated": true,
+  "ann": ": q.State<number>",
+  "bind": "local gated: q.State<number> = hp:Gate(function(emit)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/reference/sugar/06-blocker.md",
+  "line": 175,
+  "method": "Apply",
+  "name": "gated",
+  "annotated": true,
+  "ann": ": q.State<number>",
+  "bind": "local gated: q.State<number> = hp:Apply(blocker)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/skills/quad-ui-dev/SKILL.md",
+  "line": 130,
+  "method": "Compute",
+  "name": "fullName",
+  "annotated": false,
+  "ann": "",
+  "bind": "local fullName = firstName:Compute(function(self, prev, last)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/skills/quad-ui-dev/SKILL.md",
+  "line": 159,
+  "method": "Apply",
+  "name": "isHidden",
+  "annotated": false,
+  "ann": "",
+  "bind": "local isHidden   = isVisible:Apply(Op.Not)                     -- unary",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/skills/quad-ui-dev/SKILL.md",
+  "line": 160,
+  "method": "Apply",
+  "name": "totalPrice",
+  "annotated": false,
+  "ann": "",
+  "bind": "local totalPrice = price:Apply(Op.Sum(tax, shipping))          -- n-ary, plain numbers or States",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/skills/quad-ui-dev/SKILL.md",
+  "line": 161,
+  "method": "Apply",
+  "name": "clamped",
+  "annotated": false,
+  "ann": "",
+  "bind": "local clamped    = rawPos:Apply(Op.Clamp(0, maxBound))",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/skills/quad-ui-dev/SKILL.md",
+  "line": 162,
+  "method": "Apply",
+  "name": "safeName",
+  "annotated": false,
+  "ann": "",
+  "bind": "local safeName   = optionalName:Apply(Op.Alternative(\"Guest\")) -- State<T?> -> State<T>",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/skills/quad-ui-dev/SKILL.md",
+  "line": 163,
+  "method": "Apply",
+  "name": "primary",
+  "annotated": false,
+  "ann": "",
+  "bind": "local primary    = theme:Apply(Op.Indexed<<string>>(\"Primary\"))  -- caller supplies the result type",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/skills/quad-ui-dev/SKILL.md",
+  "line": 379,
+  "method": "Compute",
+  "name": "btnColor",
+  "annotated": false,
+  "ann": "",
+  "bind": "local btnColor = hoverSrc:Compute(function(self)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/skills/quad-ui-dev/SKILL.md",
+  "line": 385,
+  "method": "Compute",
+  "name": "positionState",
+  "annotated": false,
+  "ann": "",
+  "bind": "local positionState = targetSrc:Compute(function(self)",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/skills/quad-ui-dev/SKILL.md",
+  "line": 492,
+  "method": "Apply",
+  "name": "debouncedQuery",
+  "annotated": false,
+  "ann": "",
+  "bind": "local debouncedQuery = searchInput:Apply(q.Debounce { Time = 0.3, MaxTime = 1.0 })",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [],
+  "file": "docs/skills/quad-ui-dev/SKILL.md",
+  "line": 495,
+  "method": "Apply",
+  "name": "throttledScroll",
+  "annotated": false,
+  "ann": "",
+  "bind": "local throttledScroll = scrollPos:Apply(q.Throttle { Time = 0.05 })",
+  "usecat": "unused",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    46,
+    "Text = countText,"
+   ]
+  ],
+  "file": "docs/skills/quad-ui-dev/references/code-recipes.md",
+  "line": 24,
+  "method": "Compute",
+  "name": "countText",
+  "annotated": false,
+  "ann": "",
+  "bind": "local countText = count:Compute(function(self)",
+  "usecat": "prop",
+  "proptype": "string"
+ },
+ {
+  "usages": [
+   [
+    42,
+    "BackgroundColor3 = frameBg,"
+   ]
+  ],
+  "file": "docs/skills/quad-ui-dev/references/code-recipes.md",
+  "line": 28,
+  "method": "Compute",
+  "name": "frameBg",
+  "annotated": false,
+  "ann": "",
+  "bind": "local frameBg = count:Compute(function(self)",
+  "usecat": "prop",
+  "proptype": "Color3"
+ },
+ {
+  "usages": [
+   [
+    177,
+    "M.TextLabel(\"PlayerName\")({ Text = nameText }),"
+   ]
+  ],
+  "file": "docs/skills/quad-ui-dev/references/code-recipes.md",
+  "line": 169,
+  "method": "Compute",
+  "name": "nameText",
+  "annotated": false,
+  "ann": "",
+  "bind": "local nameText = playerState:Compute(function(self)",
+  "usecat": "prop",
+  "proptype": "string"
+ },
+ {
+  "usages": [
+   [
+    178,
+    "M.TextLabel(\"PlayerLevel\")({ Text = levelText }),"
+   ]
+  ],
+  "file": "docs/skills/quad-ui-dev/references/code-recipes.md",
+  "line": 172,
+  "method": "Compute",
+  "name": "levelText",
+  "annotated": false,
+  "ann": "",
+  "bind": "local levelText = playerState:Compute(function(self)",
+  "usecat": "prop",
+  "proptype": "string"
+ },
+ {
+  "usages": [
+   [
+    206,
+    "local submitColor = isValid:Compute(function(self)"
+   ],
+   [
+    230,
+    "AutoButtonColor = isValid,"
+   ],
+   [
+    232,
+    "if isValid:Get() then"
+   ]
+  ],
+  "file": "docs/skills/quad-ui-dev/references/code-recipes.md",
+  "line": 202,
+  "method": "Compute",
+  "name": "isValid",
+  "annotated": false,
+  "ann": "",
+  "bind": "local isValid = form.Username:Compute(function(self, prev, pwd)",
+  "usecat": "arith+prop+receiver",
+  "proptype": "boolean"
+ },
+ {
+  "usages": [
+   [
+    229,
+    "BackgroundColor3 = submitColor,"
+   ]
+  ],
+  "file": "docs/skills/quad-ui-dev/references/code-recipes.md",
+  "line": 206,
+  "method": "Compute",
+  "name": "submitColor",
+  "annotated": false,
+  "ann": "",
+  "bind": "local submitColor = isValid:Compute(function(self)",
+  "usecat": "prop",
+  "proptype": "Color3"
+ },
+ {
+  "usages": [
+   [
+    264,
+    "local searchObserver = debouncedQuery:Observer(function(target)"
+   ]
+  ],
+  "file": "docs/skills/quad-ui-dev/references/code-recipes.md",
+  "line": 252,
+  "method": "Apply",
+  "name": "debouncedQuery",
+  "annotated": true,
+  "ann": ": QuadTypes.State<string>",
+  "bind": "local debouncedQuery: QuadTypes.State<string> = rawQuery:Apply(q.Debounce {",
+  "usecat": "receiver",
+  "proptype": null
+ },
+ {
+  "usages": [
+   [
+    290,
+    "Visible = hasQuery,"
+   ]
+  ],
+  "file": "docs/skills/quad-ui-dev/references/code-recipes.md",
+  "line": 257,
+  "method": "Compute",
+  "name": "hasQuery",
+  "annotated": false,
+  "ann": "",
+  "bind": "local hasQuery = rawQuery:Compute(function(self)",
+  "usecat": "prop",
+  "proptype": "boolean"
+ },
+ {
+  "usages": [
+   [
+    331,
+    "Text = coinText,"
+   ]
+  ],
+  "file": "docs/skills/quad-ui-dev/references/code-recipes.md",
+  "line": 326,
+  "method": "Compute",
+  "name": "coinText",
+  "annotated": false,
+  "ann": "",
+  "bind": "local coinText = inventory.Coins:Compute(function(self)",
+  "usecat": "prop",
+  "proptype": "string"
+ }
+]
