@@ -36,7 +36,7 @@ Quad0100 Traceback: onError must be a function (got string)
 
 **삼킨 예외가 남기는 상태도 그대로입니다.** quad는 사용자 콜백을 감싸지 않으므로, 예외가 지나간 자리의 부기는 복구되지 않은 채입니다 — `Declaration`이 중간에 던지면 그 인스턴스의 배치 게이트가 켜진 채 남고(이후 Slot 자식이 옛 오프셋에 앉음), `:List`의 `updateFn`이나 `slot.Offset` 구독이 던지면 그 Slot·부모의 부기가 멈추며, 정적 자식은 반쯤 지어진 인스턴스에 앉은 채 남습니다([Slot 레퍼런스](../core/06-slot.md)의 캐비엇들). 이 경계 안에서 던진 인스턴스·Slot을 **계속 쓰지 마세요** — 대체 UI는 새 인스턴스로 만드세요.
 
-경계 **밖**에서 만들어 안에 넘긴 `Ref`·`PreRef`·`PostRef`도 마찬가지입니다: 던지기 전에 처리된 자리에 놓였다면 반쯤 지어진 인스턴스에 이미 묶여(`Quad0233 bindLifetime: value is already bound to another Instance`) 그대로는 다시 쓸 수 없고, `PostRef`는 발화 없이 소진됩니다(`Quad0069`). `Ref`는 그 고아 인스턴스(`ref.Value`로 잡힙니다)를 `q.dispose`하면 묶임이 풀려 같은 `Ref`로 다시 부를 수 있습니다(mock 확인, [2026-09-27 기준]); `PreRef`/`PostRef`는 일회용이라 dispose 뒤에도 소진된 채이니 새로 만드세요.
+경계 **밖**에서 만들어 안에 넘긴 `Ref`·`PreRef`·`PostRef`도 마찬가지입니다: 던지기 전에 처리된 자리에 놓였다면 반쯤 지어진 인스턴스에 이미 묶여(`Quad0233 bindLifetime: value is already bound to another Instance`) 그대로는 다시 쓸 수 없고, `PostRef`는 pre-pass가 닿은 뒤 던졌으면(던진 항목 뒤 자리도) 발화 없이 소진됩니다(`Quad0069`; 앞 자리 `PreRef` 콜백이 pre-pass 안에서 던진 경우만 뒤 `PostRef`가 살아남습니다). `Ref`는 그 고아 인스턴스(`ref.Value`로 잡힙니다)를 `q.dispose`하면 묶임이 풀려 같은 `Ref`로 다시 부를 수 있습니다(mock 확인, [2026-09-27 기준]); `PreRef`/`PostRef`는 일회용이라 dispose 뒤에도 소진된 채이니 새로 만드세요.
 :::
 
 ---

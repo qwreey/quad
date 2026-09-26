@@ -48,7 +48,7 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 
 ## 숫자 키 자리에만 놓는다
 
-`PreRef`/`PostRef`는 props의 **숫자 키 리터럴 항목**으로만 놓을 수 있습니다. 문자 키의 값으로 두거나 `Source`/`Store` 값에 담아 숫자 키 자리에 닿게 하면 전용 가드가 그 자리에서 던집니다(`PostRef`도 주어만 바뀐 같은 문구).
+`PreRef`/`PostRef`는 props의 **숫자 키 리터럴 항목**으로만 놓을 수 있습니다. 문자 키의 값으로 두거나 `Source`/`Store` 값에 담아 숫자 키 자리에 닿게 하면 전용 가드가 그 자리에서 던집니다(`PostRef`도 주어만 바뀐 같은 문구) — 단 그 문자 키가 **그 클래스의 반영 프로퍼티 이름**이면 프로퍼티 핸들러가 먼저 받아 가드에 닿지 않습니다(아래 목록).
 
 - `Quad0137 PreRef: must be an array item, not the value of a {typeof(k)} key`
 - `Quad0136 PreRef: must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see`
@@ -56,8 +56,8 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 평범한 `Ref`도 같은 가드를 갖습니다(3.2.0부터) — 문자 키에 두면 `Quad0137 Ref: must be an array item, not the value of a string key`. 숫자 키 자리에 닿기만 하면 되므로 `Source`/`Store` 값에 담아 넣어도 그대로 채워지는 것은 `Ref`만이고, `PreRef`/`PostRef`는 State에 담아 숫자 키에 넣어도 `Quad0136`으로 거부됩니다(위 문단).
 
 - Modifier 필드 — `Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`
-- 문자 키(어느 이름이든) — `Quad0137 Ref: must be an array item, not the value of a string key`(3.2.0부터 — 그 전엔 `Quad0076`의 프로바이더 안내가 나왔습니다)
-- 반영 프로퍼티 키 — 생성된 props 타입이 그 값 자리에서 `Ref`를 거부합니다.
+- 문자 키(반영 프로퍼티·이벤트가 **아닌** 이름 — `Parent`·오타 등) — `Quad0137 Ref: must be an array item, not the value of a string key`(3.2.0부터 — 그 전엔 `Quad0076`의 프로바이더 안내가 나왔습니다)
+- 반영 프로퍼티 키 — 생성된 props 타입이 그 값 자리에서 `Ref`를 거부합니다. 타입 검사 없이 넘기면 가드가 아니라 **프로퍼티 핸들러**가 먼저 받아 `inst[k] = ref`로 대입합니다 — mock에서는 `Name = ref`가 번호 없는 `Name must be a string`(핸들러 줄 blame), `Size`/`Visible`은 에러 없이 `Ref` 테이블이 들어가고 `PostRef`는 소비도 발화도 되지 않습니다; 실엔진은 엔진 대입 에러로 추정(미실측, [2026-09-27 기준]). 이벤트 키(`Activated = ref`)는 `Quad0218 Event: handler … must be a function (got table)`.
 
 하나의 `Ref`는 **한 자리에만** 놓을 수 있습니다. 생명주기 결합이 그 자리에서 던집니다 — 같은 인스턴스의 두 자리면 `Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)`, 다른 인스턴스면 `Quad0233 bindLifetime: value is already bound to another Instance`(이 두 문구는 quad-base의 것이라 어느 백엔드에서나 같습니다).
 
@@ -65,7 +65,7 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 
 - `Quad0069 PreRef: already fired — a PreRef is one-shot, make a new one for each instance`
 
-[`Fallback`/`Traceback`](/reference/sugar/05-fallback-traceback/) 경계 **밖**에서 만들어 안에 넘긴 `Ref`류도 이 두 제약을 그대로 받습니다 — 던지기 전에 처리된 자리에 놓였다면 이미 위 두 에러 중 하나로 그대로는 다시 쓸 수 없거나(`Ref`/`PreRef`), 발화 없이 소진됩니다(`PostRef`). `Ref`는 던진 고아 인스턴스(`ref.Value`)를 `q.dispose`하면 풀려 재사용할 수 있고(mock 확인, [2026-09-27 기준]), `PreRef`/`PostRef`는 일회용이라 재시도 때 새로 만들어야 합니다.
+[`Fallback`/`Traceback`](/reference/sugar/05-fallback-traceback/) 경계 **밖**에서 만들어 안에 넘긴 `Ref`류도 이 두 제약을 그대로 받습니다 — 던지기 전에 처리된 자리에 놓였다면 이미 위 두 에러 중 하나로 그대로는 다시 쓸 수 없고(`Ref`/`PreRef`), `PostRef`는 pre-pass가 그 항목에 닿은 뒤 본문 루프나 앞선 `PostRef` 콜백이 던졌으면 **배열에서 던진 항목보다 뒤에 놓였어도** 발화 없이 소진됩니다(`D.Frame { throwingRef, post }`의 `post` — 재사용은 `Quad0069`; 반대로 앞 자리 `PreRef` 콜백이 pre-pass 안에서 던지면 뒤 자리 `PostRef`는 소비되지 않아 다시 쓸 수 있습니다 — [2026-09-27 mock 관측]). `Ref`는 던진 고아 인스턴스(`ref.Value`)를 `q.dispose`하면 풀려 재사용할 수 있고(mock 확인, [2026-09-27 기준]), `PreRef`/`PostRef`는 일회용이라 재시도 때 새로 만들어야 합니다.
 
 ## `q.Ref<<T>>(default)`
 
@@ -273,7 +273,7 @@ Callback: <Self>(self: Self, fn: RefCallback<T>) -> Self
 
 - **등록하는 그 자리에서 한 번 즉시 호출됩니다** — 지금 담긴 값으로. 아직 비어 있으면 `nil`로 불립니다(nil 가드는 호출자 몫입니다).
 - 콜백을 강하게 붙듭니다(`Callbacks`). 중복 등록은 집합 의미로 한 번입니다.
-- 인자 검증: `Ref:Callback: callback must be a function (got {typeof(fn)})`.
+- 인자 검증: `Quad0132 Ref:Callback: callback must be a function (got {typeof(fn)})`.
 
 ## `ref:WeakCallback(fn)`
 
@@ -285,7 +285,7 @@ WeakCallback: <Self>(self: Self, fn: RefCallback<T>) -> Self
 
 **동작** — `:Callback`과 모든 동작이 같고, **GC 보호만 없습니다**(`WeakCallbacks`에 weak 키로 들어갑니다). 등록 즉시 한 번 호출되는 것도 같습니다.
 
-콜백을 다른 곳에서 붙들고 있고 그 수명에 Ref 구독을 맞추고 싶을 때 씁니다. 인자 검증: `Ref:WeakCallback: callback must be a function (got {typeof(fn)})`.
+콜백을 다른 곳에서 붙들고 있고 그 수명에 Ref 구독을 맞추고 싶을 때 씁니다. 인자 검증: `Quad0132 Ref:WeakCallback: callback must be a function (got {typeof(fn)})`.
 
 ## `ref:Uncallback(fn)`
 
@@ -297,7 +297,7 @@ Uncallback: <Self>(self: Self, fn: RefCallback<T>) -> Self
 
 **동작** — 등록을 해제합니다. **두 테이블 모두에서** 지웁니다 — 약하게 등록한 콜백도 이걸로만 뗄 수 있습니다.
 
-등록이 집합이라 "몇 번 뗄지"를 셀 필요가 없습니다. 인자 검증: `Ref:Uncallback: callback must be a function (got {typeof(fn)})`.
+등록이 집합이라 "몇 번 뗄지"를 셀 필요가 없습니다. 인자 검증: `Quad0132 Ref:Uncallback: callback must be a function (got {typeof(fn)})`.
 
 ## `ref:Wait(thread?)`
 
@@ -355,7 +355,7 @@ Unwrap: (self: Ref<T>) -> StripNil<T> -- StripNil은 T에서 nil 성분만 벗�
 
 **규약이지 강제가 아닙니다** — 런타임 보장이 있는 자리에서만 쓰세요. 비어 있으면 호출한 줄을 blame하며 던집니다.
 
-- `Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed`
+- `Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed`
 
 `Ref`/`PreRef`/`PostRef` 셋 다 같은 동작입니다.
 

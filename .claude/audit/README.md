@@ -69,4 +69,5 @@
 - `round13-e42-gc-sweep/` — **[2026-09-27 자율 루프 E42]** 서브시스템별 GC 스윕(`gclib.luau`·`probe-*.luau` 23·`out/`) — 강한 참조 잔여 0, `Q129`(게이트 수명)·`H-781`·`H-782`, mock 한계 M1~M4.
 - `round13-e43-release-rehearsal/` — **[2026-09-27 자율 루프 E43]** 릴리즈 리허설(3.3.0·4.0.0 사본 — bump·lock·test.sh·publish dry-run·사이트) 단계별 결과 — 타르볼 정상, `H-784`, `Q131`(게이트 구멍·경로별 함정).
 - `round13-e45-list-contract/` — **[2026-09-27 자율 루프 E45]** `Slot:List`/`:Single` keyFn·updateFn 매트릭스(프로브 8·strict 5·벤치 1) — `H-786`, `Q132`(첫 사이클 무반응)·`Q133`(유령 래퍼)·`Q134`(미정 일곱), Q121 보강.
+- `round13-e44-ref-statemachine/` — **[2026-09-27 자율 루프 E44]** Ref 패밀리 상태표 69칸(`STATE-TABLE.md`)·퍼저 1만 시드·축 프로브(`axis-*`·`probe-stringkeys`) — 차등 0, `H-787`, `Q135`(반영 키 가드 미도달)·`Q136`(Wait(thread) 미정 칸).
 

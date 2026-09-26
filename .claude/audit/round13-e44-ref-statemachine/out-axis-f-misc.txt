@@ -1,0 +1,20 @@
+f1 deliveries:	nil,table,table(State),function	Unwrap is fn:	true
+f1 placed after holding a function: Value is the Frame	true
+f1 bound Ref now holds a State; canBound	false
+f2 Foo = ref:	Quad0137
+f2 Name = ref (reflected prop):	RAW:../../../quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+f2 Name = PreRef:	RAW:../../../quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+f2 Size = PostRef:	ok
+f2 Modifier field:	Quad0064
+f2 [5] = ref (sparse numeric key):	Quad0023
+f2 dispose(ref):	Quad0180
+f3 seat a->b (b bound elsewhere):	Quad0233	| a.Value	nil	| a canBound	true	| b.Value==fb	true
+f3  then seat ->a:	ok	| a.Value==g	true
+f3  then seat ->None:	ok	| a.Value	nil
+f4 seat Set after Destroy:	ok	| a.Value==g	true	a calls	0	| b.Value	nil
+f5 seat same Ref: extra deliveries	0
+f6 PreRef user-Set then placed:	ok
+f6 PostRef Unwrap empty:	Quad0135
+f6 tostring:	Ref(1)	PreRef(nil)	PostRef(2)
+f7 literal + State seat, same frame:	built	| st:Set(a):	Quad0232
+f8 throwing waiter on retract:	Quad0135	| re-seat:	ok	| a.Value==g	true

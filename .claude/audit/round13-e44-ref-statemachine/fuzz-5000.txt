@@ -1,0 +1,3 @@
+seeds 5000  ops 74749  diffs 0
+op kinds: Callback cA=3928, Callback cB=3804, Callback cU=1832, Callback cW=3806, Callback cX=1841, Destroy frame=1065, Set with Wait(main) registered=1862, Set with dead thread registered=1852, Set(v)=11394, Uncallback=3883, Unwrap=3955, Wait() in coroutine=3942, Wait(parked thread)=2003, WeakCallback cA=1972, WeakCallback cB=1935, WeakCallback cW=1906, armReentry=1495, dispose frame=2015, new PreRef/PostRef=1904, place D.Frame{post, ref, pre}=1141, place D.Frame{ref, ref}=1132, place D.Frame{ref}=7789, place fired PreRef alone=1918, seat frame Destroy=645, seat set=5730
+errors seen: Quad0069=691, Quad0130=1862, Quad0135=1364, Quad0232=1132, Quad0233=3087, RAW:cannot resume dead coroutine=1852

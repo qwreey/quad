@@ -1,0 +1,5 @@
+after mount	Frame	cb:nil,cb:Frame
+after destroy	Frame	cb:nil,cb:Frame
+re-place after Destroy	true	true
+after dispose	Frame
+re-place after dispose	true	true	Frame

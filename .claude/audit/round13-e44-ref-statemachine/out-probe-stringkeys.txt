@@ -1,0 +1,19 @@
+Ref at Name:	RAW:../../../quad-roblox/src/Handlers/Property.luau:266: Name must be a string  | ../../../quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+Ref at Size:	ok (no error)
+Ref at Visible:	ok (no error)
+Ref at Activated (event):	Quad0218  | ./probe-stringkeys.luau:10: Quad0218 Event: handler for "Activated" must be a function (got table)
+Ref at Parent:	Quad0137  | ./probe-stringkeys.luau:11: Quad0137 Ref: must be an array item, not the value of a string key
+Ref at Foo:	Quad0137  | ./probe-stringkeys.luau:12: Quad0137 Ref: must be an array item, not the value of a string key
+PreRef at Name:	RAW:../../../quad-roblox/src/Handlers/Property.luau:266: Name must be a string  | ../../../quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+PreRef at Size:	ok (no error)
+PreRef at Visible:	ok (no error)
+PreRef at Activated (event):	Quad0218  | ./probe-stringkeys.luau:10: Quad0218 Event: handler for "Activated" must be a function (got table)
+PreRef at Parent:	Quad0137  | ./probe-stringkeys.luau:11: Quad0137 PreRef: must be an array item, not the value of a string key
+PreRef at Foo:	Quad0137  | ./probe-stringkeys.luau:12: Quad0137 PreRef: must be an array item, not the value of a string key
+PostRef at Name:	RAW:../../../quad-roblox/src/Handlers/Property.luau:266: Name must be a string  | ../../../quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+PostRef at Size:	ok (no error)
+PostRef at Visible:	ok (no error)
+PostRef at Activated (event):	Quad0218  | ./probe-stringkeys.luau:10: Quad0218 Event: handler for "Activated" must be a function (got table)
+PostRef at Parent:	Quad0137  | ./probe-stringkeys.luau:11: Quad0137 PostRef: must be an array item, not the value of a string key
+PostRef at Foo:	Quad0137  | ./probe-stringkeys.luau:12: Quad0137 PostRef: must be an array item, not the value of a string key
+PostRef at Size: _fired	false	Size is the PostRef table	true

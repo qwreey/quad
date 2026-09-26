@@ -1,0 +1,23 @@
+1 main status at reg:	running
+1 Set from main (registered main):	Quad0130
+1  after: Value	1	cb calls	0	waiter still registered	false
+1 second Set:	ok
+2 Set from the running registered coroutine:	Quad0130	Value	1
+3 Set from B resumed by registered A (normal):	Quad0130
+3b grand-ancestor registered (normal):	Quad0130
+4 suspended parked coroutine: got	ref:7	status	suspended	still registered	false
+4b thread waiting on r1, Wait(thread) on r2, r2:Set -> r1:Wait() returned Value	r1-initial	status	dead	r1 still holds waiter	true
+4b later r1:Set:	RAW:cannot resume dead coroutine
+4c after a:Set: status	dead	fired==a	true	b still holds thread	true
+4c b:Set(2) afterwards:	RAW:cannot resume dead coroutine
+4c  b.Value	2	b callback got 2?	1
+5 Set with a dead registered thread:	RAW:cannot resume dead coroutine
+5  Value	1	still registered	false
+6 top-level isyieldable:	true
+6 Wait() inside table.sort comparator (C boundary):	Quad0134
+6b Wait() inside pcall/__index in a coroutine:	Quad0134
+6b resume:	true
+6b status	dead
+7 Wait(123):	Quad0133
+7 Wait(nil) in C boundary (== Wait()):	Quad0134
+8 callback yields mid-walk: status	suspended	other cb ran	1

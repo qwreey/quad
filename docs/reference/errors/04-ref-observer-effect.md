@@ -235,7 +235,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 `Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)` — `quad-base/src/Ref/init.luau`
 
-- **언제**: 인자 없이 `ref:Wait()`를 불렀는데 지금 코루틴이 yield할 수 없는 곳(메인 스레드, 메타메소드/C 호출 경계 등)일 때.
+- **언제**: 인자 없이 `ref:Wait()`를 불렀는데 지금 코루틴이 yield할 수 없는 곳일 때 — 메타메소드(`__index` 등)나 `table.sort` 비교자 같은 C 호출 경계 안. `luau` CLI의 메인 청크는 yield할 수 있어 이 에러 없이 스크립트가 멈춥니다([2026-09-27 mock 관측]; Roblox의 스크립트 최상위가 yield 가능한지는 미실측).
 - **고치려면**: yield 가능한 코루틴 안에서 부르거나, 대기시킬 `thread`를 명시적으로 넘겨 등록만 하세요.
 - **참고**: [`ref:Wait(thread?)`](../core/07-ref.md#refwaitthread)
 
@@ -259,7 +259,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 `{kind}: must be an array item, not the value of a {typeof(k)} key` — `quad-base/src/Ref/init.luau`
 
-- **언제**: `PreRef`/`PostRef`/`Ref`를 props의 문자 키 값 자리에 두었을 때.
+- **언제**: `PreRef`/`PostRef`/`Ref`를 props의 문자 키 값 자리에 두었을 때 — 단 그 키가 클래스의 반영 프로퍼티나 이벤트 이름이면 프로퍼티·이벤트 핸들러가 먼저 받아 이 가드에 닿지 않습니다(`Name = ref`는 핸들러의 번호 없는 타입 에러, `Size = ref`는 조용히 대입, `Activated = ref`는 `Quad0218` — [2026-09-27 mock 관측]; 생성 props 타입이 strict에서 이 자리를 거부합니다).
 - **고치려면**: 숫자 키(배열부) 자리에만 놓으세요.
 - **참고**: [숫자 키 자리에만 놓는다](../core/07-ref.md#숫자-키-자리에만-놓는다)
 

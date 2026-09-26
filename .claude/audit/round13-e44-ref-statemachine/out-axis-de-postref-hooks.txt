@@ -1,0 +1,21 @@
+d1 {post, throwingRef}	build:	RAW:boom	| fired:	0	| _fired:	true	| reuse:	Quad0069
+d2 {throwingPreRef, post}	build:	RAW:boom	| fired:	0	| _fired:	false	| reuse:	reusable
+d3 {post, throwingPreRef}	build:	RAW:boom	| fired:	0	| _fired:	true	| reuse:	Quad0069
+d4 {throwingRef, post} (post after throw pos)	build:	RAW:boom	| fired:	0	| _fired:	true	| reuse:	Quad0069
+d5 State<PostRef>	build:	Quad0136	| fired:	0	| _fired:	false	| reuse:	reusable
+d6 string key	build:	Quad0137	| fired:	0	| _fired:	false	| reuse:	reusable
+d7 {p, p}	build:	Quad0069	| fired:	0	| _fired:	true	| reuse:	Quad0069
+d8 Fallback boundary:	fallback	| fired:	0	| reuse:	Quad0069
+d9 PreRef destroys inst:	ok	| PostRef fired:	true	Parent-destroyed? nil
+d10 first PostRef throws:	RAW:boom	| second fired:	0	| second reuse:	Quad0069
+d11 Ref bound to orphan:	true	| reuse:	reusable
+d11 re-place before dispose:	Quad0233
+d11 re-place after dispose:	ok
+e1	childC childR(parent=nil) C1(size=nil,kids=0) C2(ref.isPreRef=true) Ref(size=nil) R1(kids=1) R2 |built D2 D1 |destroyed
+e2 OnDestroyed unseat/reseat/destroy:	0	1
+e3 OnCreated reuse:	Quad0069
+e3 OnRendered in State seat:	Quad0136
+e3 OnCreated(5):	Quad0101
+e4 manual Set on hook PreRef:	not-an-instance	_fired	false
+e5 OnDestroyed on q.dispose:	1
+e6 OnRendered for a Slot child: Parent at fire	nil	Parent now	true

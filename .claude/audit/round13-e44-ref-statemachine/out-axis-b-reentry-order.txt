@@ -1,0 +1,14 @@
+(a) order after 8 regs:	8 7 4 3 2 6 1 5
+(b) trial	1	c1=[1,2] c2=[2] c3=[1,2] c4=[1,2] c5=[2] c6=[1,2]	final	2	anyLastNot2	false
+(b) trial	2	c1=[2] c2=[2] c3=[1,2] c4=[2] c5=[2] c6=[2]	final	2	anyLastNot2	false
+(b) trial	3	c1=[2] c2=[2] c3=[1,2] c4=[1,2] c5=[1,2] c6=[2]	final	2	anyLastNot2	false
+(b) trial	4	c1=[2] c2=[2] c3=[1,2] c4=[2] c5=[2] c6=[2]	final	2	anyLastNot2	false
+(b) trial	5	c1=[2] c2=[2] c3=[1,2] c4=[2] c5=[2] c6=[2]	final	2	anyLastNot2	false
+(b2) waiter re-enters Set:	true	true	waiter:5,cb:99	final	99
+(b3) trial	1	a	1	b	2
+(b3) trial	2	a	1	b	2
+(b3) trial	3	a	1	b	2
+(b3) trial	4	a	1	b	2
+(b4) same value: calls	2	rev changed	true
+(b4) Set(None): Value==None	true	Unwrap==None	true
+(b4) Set(false): Unwrap	false
