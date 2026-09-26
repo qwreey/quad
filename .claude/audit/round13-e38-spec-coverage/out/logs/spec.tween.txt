@@ -1,0 +1,76 @@
+=== 1. 생성 — 브랜드·마커·frozen·옵션 보존·호출자 테이블 비-aliasing ===
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tween.luau:42: attempt to modify a readonly table
+PASS
+
+=== 2. Override — 문자열 싱글톤 "Cancel"/"Finish"(H-343), Tween은 순수 함수 ===
+PASS
+
+=== 3. 검증 — 테이블·Value 필수·스칼라 타입·Override 멤버십, blame은 사용자 줄 ===
+@@QERR	Quad0248 Tween: expected an options table (Tween{ Value = ... })
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tween.luau:78: Quad0248 Tween: expected an options table (Tween{ Value = ... })
+@@FIND	Quad0248	expected an options table
+@@QERR	Quad0249 Tween: Value is required
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tween.luau:78: Quad0249 Tween: Value is required
+@@FIND	Quad0249	Value is required
+@@QERR	Quad0243 Tween: Time must be a number
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tween.luau:78: Quad0243 Tween: Time must be a number
+@@FIND	Quad0243	Time must be a number
+@@QERR	Quad0243 Tween: RepeatCount must be a number
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tween.luau:78: Quad0243 Tween: RepeatCount must be a number
+@@FIND	Quad0243	RepeatCount must be a number
+@@QERR	Quad0243 Tween: DelayTime must be a number
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tween.luau:78: Quad0243 Tween: DelayTime must be a number
+@@FIND	Quad0243	DelayTime must be a number
+@@QERR	Quad0244 Tween: Reverses must be a boolean
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tween.luau:78: Quad0244 Tween: Reverses must be a boolean
+@@FIND	Quad0244	Reverses must be a boolean
+@@QERR	Quad0247 Tween: Override must be "Cancel" or "Finish"
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tween.luau:78: Quad0247 Tween: Override must be "Cancel" or "Finish"
+@@FIND	Quad0247	Override must be "Cancel" or "Finish"
+@@QERR	Quad0246 Tween: Completed must be a function
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tween.luau:78: Quad0246 Tween: Completed must be a function
+@@FIND	Quad0246	Completed must be a function
+@@QERR	Quad0246 Tween: Started must be a function
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tween.luau:78: Quad0246 Tween: Started must be a function
+@@FIND	Quad0246	Started must be a function
+@@QERR	Quad0246 Tween: Cancelled must be a function
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tween.luau:78: Quad0246 Tween: Cancelled must be a function
+@@FIND	Quad0246	Cancelled must be a function
+PASS
+
+=== 4. Mapped — 원본 불변·옵션 보존·Value만 교체·재검증·재브랜드 ===
+@@QERR	Quad0249 Tween: Value is required
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tween.luau:103: Quad0249 Tween: Value is required
+@@FIND	Quad0249	Value is required
+@@QERR	Quad0227 Tween:Mapped: fn must be a function (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tween.luau:109: Quad0227 Tween:Mapped: fn must be a function (got number)
+@@FIND	Quad0227	Tween:Mapped: fn must be a function (got number)
+PASS
+
+=== 4b. __tostring (2026-09-08 권고 1) — 목표 값 + Time ===
+=== 5. 경계 — StoreBind는 Tween을 언랩하지 않는다(값 그대로 도착), Source 안의 Tween ===
+PASS
+=== 6. 회신 3차 Q16 (b) — Tween{ Value = State }는 생성 시점에 거부(모든 필드는 plain — tween-plan 불변식), 사용자 줄 blame ===
+@@QERR	Quad0250 Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tween.luau:157: Quad0250 Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))
+@@FIND	Quad0250	Value must be a plain value, not a State
+@@QERR	Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tween.luau:164: Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)
+@@FIND	Quad0251	not None or another Tween
+@@QERR	Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tween.luau:169: Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)
+@@FIND	Quad0251	not None or another Tween
+PASS
+=== 7. Q25 (2026-09-08) — `Dedup` 필드: boolean만, 값에 그대로 실림(기본은 nil = true 취급, 비교는 Property 핸들러) ===
+@@QERR	Quad0245 Tween: Dedup must be a boolean
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tween.luau:179: Quad0245 Tween: Dedup must be a boolean
+@@FIND	Quad0245	Dedup must be a boolean
+PASS
+
+=== 8. debug 층(2026-09-15 사용자 결정) — 모르는 옵션 키는 경고만, Tween은 그대로 만들어진다 ===
+(아래 Tween unknown option 경고 한 줄은 의도된 출력이다 — 육안 확인)
+Tween: unknown option "Duraton" is ignored (known: Value, Info, Time, Style, Direction, RepeatCount, Reverses, DelayTime, Override, Dedup, Started, Completed, Cancelled)
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (124 functions)

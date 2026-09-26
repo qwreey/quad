@@ -1,0 +1,97 @@
+=== 1. Compute — lazy: 아무도 Get 안 하면 fn이 안 돈다, Get마다 재계산 안 함 ===
+PASS
+
+=== 2. 전파 루프 — 출처(Source 자신)를 그대로 넘긴다, 스냅샷 순회 (H-23), 브랜드 ===
+PASS
+
+=== 3. 다이아몬드 — 같은 리비전이 두 경로로 와도 두 번째는 삼킨다 (규칙 3) ===
+PASS
+
+=== 4. 순회(Refresh) — 놓친 emit을 Get에서 값만 앞당기고 통지는 안 한다 ===
+PASS
+
+=== 5. 규칙 2 — 값은 이미 최신(앞당겨 읽음)인데 emit이 오면 통지만 하고 재계산 없음 ===
+PASS
+
+=== 6. 캐시 카운터 쌍 (H-85) + Get 재시작 루프 (H-198) — 재계산 도중 온 무효화는 같은 Get이 수렴할 때까지 다시 계산 ===
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.state.luau:168: boom
+@@QERR	Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.state.luau:177: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+@@FIND	Quad0184	an earlier read that threw
+PASS
+
+=== 7. :Depend — pass-through 새 노드, 구독만 넓힘; :Compute(fn, ...deps) — 노드 1개, positional lazy deps ===
+PASS
+
+=== 8. previous — 직전 결과가 두 번째 인자로, 노드마다 독립 ===
+PASS
+
+=== 9. self는 리시버의 lazy 핸들 — 결과 노드가 아니다; 조건부로 self:Get을 건너뛰면 계산 안 됨 ===
+PASS
+
+=== 10. Apply — 함수 / 메소드형 __apply, 반환은 열려 있음 ===
+@@QERR	Quad0191 State: Apply factory must be a function or an object with an __apply method
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.state.luau:273: Quad0191 State: Apply factory must be a function or an object with an __apply method
+@@FIND	Quad0191	__apply
+@@FIND	Quad0191	spec.state.luau
+@@QERR	Quad0191 State: Apply factory must be a function or an object with an __apply method
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.state.luau:273: Quad0191 State: Apply factory must be a function or an object with an __apply method
+@@FIND	Quad0191	__apply
+@@FIND	Quad0191	spec.state.luau
+PASS
+
+=== 11. _hold — 하류가 상류를 강하게, 상류는 하류를 weak로 ===
+PASS
+
+=== 12. 가드 — Compute 결과가 Modifier면 캐싱 전에 error(level 3, H-205); dep이 State가 아니면 error ===
+@@QERR	Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.state.luau:326: Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers
+@@FIND	Quad0185	Modifier
+@@FIND	Quad0185	spec.state.luau
+@@QERR	Quad0183 State: dep #2 is not a State/Source
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.state.luau:335: Quad0183 State: dep #2 is not a State/Source
+@@FIND	Quad0183	dep #2
+@@FIND	Quad0183	spec.state.luau
+PASS
+
+=== 13. 가드 (H-199/H-202) — nil dep은 조용히 사라지지 않고 error, Compute fn은 함수여야 ===
+@@QERR	Quad0186 State: dep #2 is nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.state.luau:351: Quad0186 State: dep #2 is nil
+@@FIND	Quad0186	dep #2 is nil
+@@FIND	Quad0186	spec.state.luau
+@@QERR	Quad0186 State: dep #3 is nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.state.luau:359: Quad0186 State: dep #3 is nil
+@@FIND	Quad0186	dep #3 is nil
+@@QERR	Quad0186 State: dep #2 is nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.state.luau:365: Quad0186 State: dep #2 is nil
+@@QERR	Quad0187 State: Compute fn must be a function
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.state.luau:370: Quad0187 State: Compute fn must be a function
+@@FIND	Quad0187	Compute fn must be a function
+@@FIND	Quad0187	spec.state.luau
+PASS
+
+=== 14. round10 Q50 (a) (2026-09-17) — Compute 재진입 가드: 순환은 사용자 줄 blame으로 즉시 error; fn이 던지면 같은 세대의 재읽기도 error, 상류가 바뀌면 다시 돈다 ===
+@@QERR	Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.state.luau:384: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+@@FIND	Quad0184	State: Compute fn is already running for this value
+@@FIND	Quad0184	spec.state.luau
+@@QERR	Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.state.luau:392: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+@@FIND	Quad0184	already running
+@@QERR	Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.state.luau:397: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.state.luau:411: boom
+@@QERR	Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.state.luau:420: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+@@FIND	Quad0184	an earlier read that threw
+PASS
+
+=== 15. round11 H-540 (2026-09-17) — fn이 던진 뒤 닫힌 게이트 너머의 상류 변경(드리프트)도 새 세대: 고친 값으로 다시 돈다 ===
+@@PC	transient
+@@QERR	Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.state.luau:460: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+@@FIND	Quad0184	already running
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (53 functions)

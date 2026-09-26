@@ -1,0 +1,26 @@
+=== 1. Update — 읽고 비교하고 덮는다, 하나라도 달랐으면 true ===
+PASS
+
+=== 2. EpochSet — 집합({[Epoch]: true})을 받는다, 배열이 아니다 ===
+PASS
+
+=== 3. Peek — 비교만, 덮지 않음 ===
+PASS
+
+=== 4. Sync — 읽지 않고 쓰기만, 반환값 없음 ===
+PASS
+
+=== 5. Refresh — 인자 없는 Update: 추적 중인 키 전부를 라이브로 ===
+PASS
+
+=== 6. TrackFrom — other의 키를 넘겨받아 라이브 리비전으로, other는 안 건드림 ===
+PASS
+
+=== 7. 키는 weak — Epoch가 죽으면 항목이 사라짐 ===
+PASS
+
+=== 8. Source/Ref는 Epoch로서 그대로 들어간다 ===
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (53 functions)

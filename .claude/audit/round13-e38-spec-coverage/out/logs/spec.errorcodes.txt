@@ -1,0 +1,14 @@
+=== 1. 던진 문자열은 `파일:줄: QuadNNNN 주어: …` 모양이다 ===
+@@QERR	Quad0013 StringAttr: name must be a non-empty string
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.errorcodes.luau:16: Quad0013 StringAttr: name must be a non-empty string
+@@FIND	Quad0013	^[^
+]-:%d+: (Quad%d%d%d%d) StringAttr: 
+PASS	Quad0013
+
+=== 2. Fallback의 err에서 번호로 분기할 수 있다(문자열일 때) ===
+@@QERR	Quad0013 StringAttr: name must be a non-empty string
+@@FIND	Quad0013	Quad%d%d%d%d
+PASS	Quad0013
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (53 functions)

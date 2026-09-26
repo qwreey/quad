@@ -1,0 +1,67 @@
+=== 1. Dispatch.process/retractFrom — index는 양의 정수(hunt F 1) ===
+@@QERR	Quad0073 Dispatch.process: index must be a positive integer (got 1.5)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.inputgates.luau:24: Quad0073 Dispatch.process: index must be a positive integer (got 1.5)
+@@FIND	Quad0073	Dispatch.process: index must be a positive integer (got 1.5)
+@@QERR	Quad0073 Dispatch.retractFrom: index must be a positive integer (got 0)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.inputgates.luau:26: Quad0073 Dispatch.retractFrom: index must be a positive integer (got 0)
+@@FIND	Quad0073	Dispatch.retractFrom: index must be a positive integer (got 0)
+@@QERR	Quad0073 Dispatch.retractFrom: index must be a positive integer (got 1)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.inputgates.luau:27: Quad0073 Dispatch.retractFrom: index must be a positive integer (got 1)
+@@FIND	Quad0073	index must be a positive integer (got 1)
+PASS
+
+=== 2. Modifier:Apply — factory는 함수(hunt F 2, H-497 형제) ===
+@@QERR	Quad0050 Modifier:Apply: factory must be a function (got nil)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.inputgates.luau:38: Quad0050 Modifier:Apply: factory must be a function (got nil)
+@@FIND	Quad0050	Modifier:Apply: factory must be a function (got nil)
+@@QERR	Quad0050 Modifier:Apply: factory must be a function (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.inputgates.luau:40: Quad0050 Modifier:Apply: factory must be a function (got number)
+@@FIND	Quad0050	factory must be a function (got number)
+PASS
+
+=== 3. Slot:List/:Single opts는 테이블(hunt F 3) — 문자열도 조용히 안 지나간다 ===
+@@QERR	Quad0153 Slot:List: opts must be a table (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.inputgates.luau:49: Quad0153 Slot:List: opts must be a table (got number)
+@@FIND	Quad0153	Slot:List: opts must be a table (got number)
+@@QERR	Quad0155 Slot:Single: opts must be a table (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.inputgates.luau:51: Quad0155 Slot:Single: opts must be a table (got string)
+@@FIND	Quad0155	Slot:Single: opts must be a table (got string)
+PASS
+
+=== 4. AddPlugin/UseProvider — 함수가 아니면 거부, 확장 테이블을 안 돌려주면 거부(hunt F 4) ===
+@@QERR	Quad0210 AddPlugin: plugin must be a function (got nil)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.inputgates.luau:63: Quad0210 AddPlugin: plugin must be a function (got nil)
+@@FIND	Quad0210	AddPlugin: plugin must be a function (got nil)
+@@QERR	Quad0212 UseProvider: provider must be a function (got nil)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.inputgates.luau:65: Quad0212 UseProvider: provider must be a function (got nil)
+@@FIND	Quad0212	UseProvider: provider must be a function (got nil)
+@@QERR	Quad0211 AddPlugin: the function must return its extension table (got nil — return an empty table if it adds nothing)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.inputgates.luau:66: Quad0211 AddPlugin: the function must return its extension table (got nil — return an empty table if it adds nothing)
+@@FIND	Quad0211	AddPlugin: the function must return its extension table (got nil
+@@QERR	Quad0211 AddPlugin: the function must return its extension table (got nil — return an empty table if it adds nothing)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.inputgates.luau:68: Quad0211 AddPlugin: the function must return its extension table (got nil — return an empty table if it adds nothing)
+@@FIND	Quad0211	AddPlugin: the function must return its extension table (got nil
+@@QERR	Quad0209 UseProvider: the function must return its extension table (got number — return an empty table if it adds nothing)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.inputgates.luau:70: Quad0209 UseProvider: the function must return its extension table (got number — return an empty table if it adds nothing)
+@@FIND	Quad0209	UseProvider: the function must return its extension table (got number
+PASS
+
+=== 5. 자기 검증에 실패한 CRUD는 Slot을 수동으로 표시하지 않는다(hunt F 5, H-386 형제) ===
+@@QERR	Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.inputgates.luau:82: Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+@@FIND	Quad0239	nil/None cannot be an element
+@@QERR	Quad0236 Slot:Remove: index out of range (got 1, limit 0)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.inputgates.luau:83: Quad0236 Slot:Remove: index out of range (got 1, limit 0)
+@@FIND	Quad0236	out of range
+@@QERR	Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.inputgates.luau:87: Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)
+@@FIND	Quad0149	cannot install :List/:Single on a manual Slot
+PASS
+
+=== 6. Tag — 자기를 담은 리스트는 도메인 메시지(hunt F 7) ===
+@@QERR	Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.inputgates.luau:97: Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)
+@@FIND	Quad0201	this list nests deeper than 64 levels (does it contain itself?)
+PASS
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

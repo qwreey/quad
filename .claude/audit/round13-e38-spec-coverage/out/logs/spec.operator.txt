@@ -1,0 +1,80 @@
+=== 1. Not — 0항 팩토리 그 자체를 :Apply; 파생 State, 반응 ===
+PASS
+
+=== 2. Sum/Product — self + deps(State), 이름 붙여 재사용해도 deps가 따라간다(왜 :Apply인가 1번); plain 숫자 혼용 ===
+PASS
+
+=== 3. Min/Max/Clamp/비트 — bit32 위의 얇은 층, Shl/Shr는 인자 하나 ===
+PASS
+
+=== 4. Alternative — nil이면 default(plain 또는 State), 아니면 값 ===
+PASS
+
+=== 4b. Indexed<<V>>(key) — 반응형 필드 읽기, 결과 타입은 호출자가 직접 지정; 테이블이 아니면 에러 ===
+@@QERR	Quad0125 Operator.Indexed: key must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.operator.luau:95: Quad0125 Operator.Indexed: key must not be nil
+@@FIND	Quad0125	key must not be nil
+@@QERR	Quad0127 Operator.Indexed: value is not a table (got number) — cannot read [x]
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.operator.luau:101: Quad0127 Operator.Indexed: value is not a table (got number) — cannot read [x]
+@@FIND	Quad0127	Operator.Indexed: value is not a table (got number)
+PASS
+
+=== 5. 게이트 — 인자 타입·nil 인자(H-199 관용구)는 팩토리 호출 즉시 에러(blame은 그 줄), Apply 대상 State(직접 호출 폴백), Alternative nil default ===
+@@QERR	Quad0119 Operator.Sum: argument #1 must be a number or a State<number> (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.operator.luau:111: Quad0119 Operator.Sum: argument #1 must be a number or a State<number> (got string)
+@@FIND	Quad0119	Operator.Sum: argument #1 must be a number or a State<number>
+@@QERR	Quad0118 Operator.Sum: argument #2 is nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.operator.luau:116: Quad0118 Operator.Sum: argument #2 is nil
+@@FIND	Quad0118	Operator.Sum: argument #2 is nil
+@@QERR	Quad0118 Operator.Clamp: argument #2 is nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.operator.luau:120: Quad0118 Operator.Clamp: argument #2 is nil
+@@FIND	Quad0118	Operator.Clamp: argument #2 is nil
+@@QERR	Quad0123 Operator.Sum: Apply target must be a State (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/src/Operator.luau:85: Quad0123 Operator.Sum: Apply target must be a State (got table)
+@@FIND	Quad0123	Apply target must be a State
+@@QERR	Quad0128 Operator.Alternative: default must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.operator.luau:128: Quad0128 Operator.Alternative: default must not be nil
+@@FIND	Quad0128	default must not be nil
+PASS
+
+=== 6. round10 H-1 — 인자 State의 현재값이 nil/비숫자면 조용히 건너뛰지 않고 읽는 줄을 blame ===
+@@QERR	Quad0120 Operator.Sum: argument #1 is a State whose current value is nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.operator.luau:141: Quad0120 Operator.Sum: argument #1 is a State whose current value is nil
+@@FIND	Quad0120	Operator.Sum: argument #1 is a State whose current value is nil
+@@QERR	Quad0121 Operator.Sum: argument #1 is a State whose current value must be a number (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.operator.luau:146: Quad0121 Operator.Sum: argument #1 is a State whose current value must be a number (got string)
+@@FIND	Quad0121	current value must be a number (got string)
+@@QERR	Quad0120 Operator.Band: argument #1 is a State whose current value is nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.operator.luau:150: Quad0120 Operator.Band: argument #1 is a State whose current value is nil
+@@FIND	Quad0120	Operator.Band: argument #1 is a State whose current value is nil
+@@QERR	Quad0122 Operator.Sum: the Apply target's current value must be a number (got nil)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.operator.luau:153: Quad0122 Operator.Sum: the Apply target's current value must be a number (got nil)
+@@FIND	Quad0122	the Apply target's current value must be a number (got nil)
+@@QERR	Quad0122 Operator.Clamp: the Apply target's current value must be a number (got nil)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.operator.luau:159: Quad0122 Operator.Clamp: the Apply target's current value must be a number (got nil)
+@@FIND	Quad0122	the Apply target's current value must be a number (got nil)
+@@QERR	Quad0122 Operator.Bnot: the Apply target's current value must be a number (got nil)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.operator.luau:159: Quad0122 Operator.Bnot: the Apply target's current value must be a number (got nil)
+@@FIND	Quad0122	the Apply target's current value must be a number (got nil)
+@@QERR	Quad0122 Operator.Shl: the Apply target's current value must be a number (got nil)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.operator.luau:159: Quad0122 Operator.Shl: the Apply target's current value must be a number (got nil)
+@@FIND	Quad0122	the Apply target's current value must be a number (got nil)
+@@QERR	Quad0129 Operator.Alternative: the default State's current value is nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.operator.luau:165: Quad0129 Operator.Alternative: the default State's current value is nil
+@@FIND	Quad0129	Operator.Alternative: the default State's current value is nil
+PASS
+
+=== 7. round11 H-553 (2026-09-17) — Clamp 경계 엇갈림은 사용자 줄 blame의 Operator 메시지; Indexed 키에 State는 거부 ===
+@@QERR	Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 0, max -5)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.operator.luau:179: Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 0, max -5)
+@@FIND	Quad0124	Operator.Clamp: min must be <= max
+@@QERR	Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 0, max nan)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.operator.luau:185: Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 0, max nan)
+@@FIND	Quad0124	Operator.Clamp: min must be <= max and neither NaN
+@@QERR	Quad0126 Operator.Indexed: key must be a plain value, not a State (the key is not reactive)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.operator.luau:192: Quad0126 Operator.Indexed: key must be a plain value, not a State (the key is not reactive)
+@@FIND	Quad0126	Operator.Indexed: key must be a plain value, not a State
+PASS
+
+ALL PASS
+Coverage dump written to coverage.out (54 functions)

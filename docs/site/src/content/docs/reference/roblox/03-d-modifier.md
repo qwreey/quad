@@ -257,8 +257,12 @@ Themed({ Modifier = D.Modifier.TextButton():TextSize(18) })          -- 자기 �
 컴포넌트가 자기 Modifier 클래스를 만들고 싶다면 `quad-base`의 `q.Modifier.TypedFactory(name)`으로
 태그 생성자를 얻고 `q.Modifier.DefineSubtype(parent, subtype)`으로 상속 간선을 등록하면 됩니다
 ([core/08 — Modifier](/reference/core/08-modifier/)) —
-`D.Modifier.<Class>`가 쓰는 것과 정확히 같은 등록 경로라, 커스텀 클래스도 `Into<Class>` 자리에서
-`FrameModifier`와 같은 지위를 갖습니다.
+`D.Modifier.<Class>`가 쓰는 것과 정확히 같은 등록 경로라, 커스텀 클래스도 **타입 층에서는** `Into<Class>` 자리에
+`FrameModifier`와 같은 지위를 갖습니다. **런타임은 다릅니다** — 검사형 `:AsTextButton()`은 조상 방향으로만 내려받으므로
+`DefineSubtype("TextButton", "MaterialButtonSpec")`으로 만든 **하위** 클래스 값에 부르면 `Quad0056 Modifier: cannot cast a
+"MaterialButtonSpec" modifier to "TextButton" — not an ancestor (use :As(name) to force)`로 던집니다([2026-09-27 mock 실측]).
+커스텀 하위 클래스를 받는 컴포넌트는 위 `Themed`의 캐스트 줄을 비검사 `props.Modifier:As("TextButton")`으로 쓰거나,
+`Into<Class>` 대신 `<Class>Modifier?`(같은 클래스만)를 받으세요.
 
 **예약 메소드 — `Apply` / `Peek` / `Overridden`**
 

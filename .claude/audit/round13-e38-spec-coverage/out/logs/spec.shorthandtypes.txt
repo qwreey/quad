@@ -1,0 +1,5 @@
+=== 1. 런타임 대응 — 생성 D의 숏핸드 키가 실제 핸들러에 닿는다(mock 없이 타입만 — 본문은 실행하지 않음) ===
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (71 functions)

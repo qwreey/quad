@@ -1,0 +1,17 @@
+=== 1. New()마다 M2 첫 단위 탑레벨 값이 실려 있음 ===
+PASS
+
+=== 2. [H-181] New() 인스턴스는 참조를 놓으면 수거된다 — 임플을 모듈 비공개 필드에 두므로 순환이 자기완결 ===
+PASS
+
+=== 3. round11 H-566 (2026-09-17) — RunInit 인자 게이트(형제 AddPlugin/UseProvider와 같은 모양) ===
+@@QERR	Quad0208 Quad:RunInit: initFn must be a function (got nil)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.init.luau:61: Quad0208 Quad:RunInit: initFn must be a function (got nil)
+@@FIND	Quad0208	Quad:RunInit: initFn must be a function (got nil)
+@@QERR	Quad0208 Quad:RunInit: initFn must be a function (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.init.luau:66: Quad0208 Quad:RunInit: initFn must be a function (got number)
+@@FIND	Quad0208	got number
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

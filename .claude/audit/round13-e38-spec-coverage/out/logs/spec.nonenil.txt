@@ -1,0 +1,21 @@
+=== 1. None 값 — 단일 센티널, frozen, tostring ===
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.nonenil.luau:26: attempt to modify a readonly table
+PASS
+
+=== 2. 해시 자리 None — NoneHandler가 nil로 재귀(index+1), 키 담당 핸들러가 받는다 ===
+PASS
+
+=== 3. 배열 자리 None/nil — NilHandler가 setOffsetSource(None)→setLength(0) 등록 ===
+PASS
+
+=== 4. 전환 — 값 → None(철거+0 등록), None → 값(복원) — 하강 diff가 잇는다 ===
+PASS
+
+=== 5. 매치 경계 — NilHandler는 숫자 키의 nil만, None은 어디서든 NoneHandler ===
+@@QERR	Quad0076 Dispatch: no handler matched key Text (value: nil) — check that the provider for this value (e.g. quad-roblox) is initialized (a nil at this depth may be an unwrapped None or a reactive nil — the key's own handler must accept nil)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.nonenil.luau:104: Quad0076 Dispatch: no handler matched key Text (value: nil) — check that the provider for this value (e.g. quad-roblox) is initialized (a nil at this depth may be an unwrapped None or a reactive nil — the key's own handler must accept nil)
+@@FIND	Quad0076	no handler matched
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

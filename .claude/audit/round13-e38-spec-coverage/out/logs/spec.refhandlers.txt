@@ -1,0 +1,51 @@
+=== 1. Ref leaf — 배열 자리 바인딩: :Set(inst), H-39 부기(None/0), gchold로 묶임 ===
+PASS
+
+=== 2. 이중 배치 방지 — 같은 Ref를 두 인스턴스에 놓으면 두 번째 자리에서 즉시 error(사용자 줄 blame) ===
+@@QERR	Quad0233 bindLifetime: value is already bound to another Instance
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.refhandlers.luau:55: Quad0233 bindLifetime: value is already bound to another Instance
+@@QERR	Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.refhandlers.luau:63: Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)
+PASS
+
+=== 3. State<Ref> 재바인드 — retractor가 언바인딩(nil 통지·gchold 해제), process가 새 Ref 바인딩; 같은 Ref 재발행은 둘 다 skip ===
+PASS
+
+=== 4. [Q4 (a)] 재진입 — 콜백이 같은 자리를 같은 Ref로 재드라이브해도 dedup(SetWeak가 Set 앞) ===
+PASS
+
+=== 5. PreRef — 호이스팅(위치 무관, 프로퍼티보다 먼저), 계열 안 index 순서, 슬롯 소진 부기 None/0 ===
+@@QERR	Quad0069 PreRef: already fired — a PreRef is one-shot, make a new one for each instance
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.refhandlers.luau:148: Quad0069 PreRef: already fired — a PreRef is one-shot, make a new one for each instance
+@@FIND	Quad0069	one%-shot
+PASS
+
+=== 6. PostRef — 본체 루프·배치 종료 뒤 fire, 계열 안 index 순서, 부모 부착은 무보장(mock: nil), 재사용 error ===
+@@QERR	Quad0069 PostRef: already fired — a PostRef is one-shot, make a new one for each instance
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.refhandlers.luau:189: Quad0069 PostRef: already fired — a PostRef is one-shot, make a new one for each instance
+@@FIND	Quad0069	one%-shot
+PASS
+
+=== 7. 동적 경로 가드 — named 자리의 PreRef/PostRef는 typeof(k)를 실은 error; named 자리의 Ref도 같은 가드(round11 H-567) ===
+@@QERR	Quad0137 PreRef: must be an array item, not the value of a string key
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.refhandlers.luau:202: Quad0137 PreRef: must be an array item, not the value of a string key
+@@FIND	Quad0137	must be an array item, not the value of a string key
+@@QERR	Quad0137 PostRef: must be an array item, not the value of a string key
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.refhandlers.luau:202: Quad0137 PostRef: must be an array item, not the value of a string key
+@@FIND	Quad0137	must be an array item, not the value of a string key
+@@QERR	Quad0136 PreRef: must be a literal array item — it reached array index 1 through a State/Store value, which the pre-pass cannot see
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.refhandlers.luau:209: Quad0136 PreRef: must be a literal array item — it reached array index 1 through a State/Store value, which the pre-pass cannot see
+@@FIND	Quad0136	through a State/Store value
+@@QERR	Quad0136 PostRef: must be a literal array item — it reached array index 1 through a State/Store value, which the pre-pass cannot see
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.refhandlers.luau:213: Quad0136 PostRef: must be a literal array item — it reached array index 1 through a State/Store value, which the pre-pass cannot see
+@@FIND	Quad0136	PostRef: must be a literal array item
+@@QERR	Quad0137 Ref: must be an array item, not the value of a string key
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.refhandlers.luau:217: Quad0137 Ref: must be an array item, not the value of a string key
+@@FIND	Quad0137	Ref: must be an array item, not the value of a string key
+PASS
+
+=== 8. Processed* 슬롯의 retract는 Void(no-op) — 소진된 자리를 철거해도 아무 일 없음, Ref leaf 철거는 nil 통지 ===
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

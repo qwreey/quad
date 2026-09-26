@@ -1,0 +1,27 @@
+=== 1. Version 필드가 pesde.toml과 맞음 ===
+PASS
+
+=== 2. AddPlugin이 원본 identity를 유지한 채(mutate) 확장 필드를 추가함 ===
+PASS
+
+=== 3. 체이닝 — 여러 플러그인을 연속으로 추가해도 전부 누적됨 ===
+PASS
+
+=== 4. 기존 필드 덮어쓰기 — 허용하되 debug일 때 경고(2026-09-15 사용자 결정) ===
+(아래 AddPlugin 덮어쓰기 경고 한 줄은 의도된 출력이다 — print 캡처가 안 돼 육안 확인)
+AddPlugin: plugin overwrites existing module field "Effect" — intended if the plugin extends a core part on purpose; otherwise rename the plugin's field
+PASS
+
+=== 5. 같은 플러그인 두 번 — identity dedup, 표시는 성공 후(2026-09-15 사용자 결정) ===
+@@PC	install exploded
+PASS
+
+=== 6. debug 층 — 모르는 옵션 키는 경고만 하고 실행은 계속(2026-09-15 사용자 결정) ===
+(아래 unknown option 경고 셋은 의도된 출력이다 — print 캡처가 안 돼 육안 확인)
+Debounce: unknown option "leading" is ignored (known: Time, Leading, Trailing, MaxTime, Handle)
+Throttle: unknown option "trailing" is ignored (known: Time, Leading, Trailing, MaxTime, Handle)
+Slot:List/:Single: unknown option "Owned" is ignored (known: OwnsElements)
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (53 functions)

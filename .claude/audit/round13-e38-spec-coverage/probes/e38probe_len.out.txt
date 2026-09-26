@@ -1,0 +1,6 @@
+mounted Length	2
+after unmount Length	2
+after Add,Add,Remove while unmounted Length	2	#elements	3
+ex mounted in outer Length/Offset	1	0	o2 idx	2
+extracted ex Length	1	outer Length	1
+extracted ex after Add Length	1

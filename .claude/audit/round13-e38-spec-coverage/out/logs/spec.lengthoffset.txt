@@ -1,0 +1,124 @@
+=== 1. 등록 + 즉시 계산 — 배치 밖 순차 등록에서 각 자리 offset이 그 자리에서 맞는다 ===
+PASS
+
+=== 2. None 자리 — 발행 채널 없음일 뿐 참여는 setLength가 답, 숫자는 pull ===
+PASS
+
+=== 3. State 길이 — Observer가 recompute를 몰고, 뒤 형제 offset만 갱신된다 ===
+PASS
+
+=== 4. drive 배치 게이팅 — 등록 중 recompute 0회, 닫힌 뒤 한 번(offset은 즉시 계산이 이미 정확) ===
+PASS
+
+=== 5. 되감기 + 재진입 게이트 — offset:Set 콜백이 앞자리를 바꾸면 그 자리부터 다시 돈다 ===
+PASS
+
+=== 6. 캐시 무효화 — setLength(i)는 i까지 당기고, i 이전 캐시는 산다 ===
+PASS
+
+=== 7. H-229 패턴 — bk도 gchold 앵커: Destroy 후 부기 그래프 전체가 회수된다 ===
+PASS
+
+=== 8. anchor 인자 — 길이 Observer의 생명주기는 부기 키가 아니라 앵커를 따른다 ===
+PASS
+
+=== 9. H-256 — 부기 진입점의 양의 정수 검증: 소수·음수·0·비숫자는 즉시 error ===
+@@QERR	Quad0019 Bookkeeping.setLength: position must be a positive integer (got 1.5)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:256: Quad0019 Bookkeeping.setLength: position must be a positive integer (got 1.5)
+@@FIND	Quad0019	positive integer
+@@QERR	Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got 1.5)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:265: Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got 1.5)
+@@FIND	Quad0019	positive integer
+@@QERR	Quad0019 Bookkeeping.setEmpty: position must be a positive integer (got 1.5)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:274: Quad0019 Bookkeeping.setEmpty: position must be a positive integer (got 1.5)
+@@FIND	Quad0019	setEmpty: position must be a positive integer
+@@QERR	Quad0019 Bookkeeping.setLength: position must be a positive integer (got -1)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:256: Quad0019 Bookkeeping.setLength: position must be a positive integer (got -1)
+@@FIND	Quad0019	positive integer
+@@QERR	Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got -1)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:265: Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got -1)
+@@FIND	Quad0019	positive integer
+@@QERR	Quad0019 Bookkeeping.setEmpty: position must be a positive integer (got -1)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:274: Quad0019 Bookkeeping.setEmpty: position must be a positive integer (got -1)
+@@FIND	Quad0019	setEmpty: position must be a positive integer
+@@QERR	Quad0019 Bookkeeping.setLength: position must be a positive integer (got 0)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:256: Quad0019 Bookkeeping.setLength: position must be a positive integer (got 0)
+@@FIND	Quad0019	positive integer
+@@QERR	Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got 0)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:265: Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got 0)
+@@FIND	Quad0019	positive integer
+@@QERR	Quad0019 Bookkeeping.setEmpty: position must be a positive integer (got 0)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:274: Quad0019 Bookkeeping.setEmpty: position must be a positive integer (got 0)
+@@FIND	Quad0019	setEmpty: position must be a positive integer
+@@QERR	Quad0019 Bookkeeping.setLength: position must be a positive integer (got 1)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:256: Quad0019 Bookkeeping.setLength: position must be a positive integer (got 1)
+@@FIND	Quad0019	positive integer
+@@QERR	Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got 1)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:265: Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got 1)
+@@FIND	Quad0019	positive integer
+@@QERR	Quad0019 Bookkeeping.setEmpty: position must be a positive integer (got 1)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:274: Quad0019 Bookkeeping.setEmpty: position must be a positive integer (got 1)
+@@FIND	Quad0019	setEmpty: position must be a positive integer
+@@QERR	Quad0019 Bookkeeping.setLength: position must be a positive integer (got nan)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:256: Quad0019 Bookkeeping.setLength: position must be a positive integer (got nan)
+@@FIND	Quad0019	positive integer
+@@QERR	Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got nan)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:265: Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got nan)
+@@FIND	Quad0019	positive integer
+@@QERR	Quad0019 Bookkeeping.setEmpty: position must be a positive integer (got nan)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:274: Quad0019 Bookkeeping.setEmpty: position must be a positive integer (got nan)
+@@FIND	Quad0019	setEmpty: position must be a positive integer
+@@QERR	Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/src/Bookkeeping.luau:248: Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+@@FIND	Quad0023	sourceList
+@@QERR	Quad0019 Bookkeeping.getOffsetAt: position must be a positive integer (got 0)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:297: Quad0019 Bookkeeping.getOffsetAt: position must be a positive integer (got 0)
+@@FIND	Quad0019	positive integer
+PASS
+
+=== 10. H-240의 원 재현(길이 Compute의 fn이 같은 owner의 앞자리를 setLength)은 round10 Q50 (a)부터 Compute 재진입 error다 — 그 fn이 중첩 recompute를 통해 자기 값을 다시 읽으므로 ===
+@@QERR	Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/src/Bookkeeping.luau:143: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+@@FIND	Quad0184	State: Compute fn is already running for this value
+PASS
+
+
+=== 11. 5순회 H-392/H-397 — setOffsetSource는 부기를 만지기 전에 source를 읽는다(H-256 (a)); getOffsetAt은 N+1 너머를 사용자 입력 에러로 ===
+@@QERR	Quad0025 Bookkeeping.setOffsetSource: source must be a Source<number> or None (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:340: Quad0025 Bookkeeping.setOffsetSource: source must be a Source<number> or None (got table)
+@@QERR	Quad0022 Bookkeeping.getOffsetAt: position 3 is past N+1 (N = 1, at most 2 may be queried) — or a leaf handler skipped its position registration: position 2 is not registered
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:355: Quad0022 Bookkeeping.getOffsetAt: position 3 is past N+1 (N = 1, at most 2 may be queried) — or a leaf handler skipped its position registration: position 2 is not registered
+@@FIND	Quad0022	past N+1
+@@FIND	Quad0022	skipped its position registration
+@@QERR	Quad0022 Bookkeeping.getOffsetAt: position 5 is past N+1 (N = 1, at most 2 may be queried) — or a leaf handler skipped its position registration: position 2 is not registered
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:361: Quad0022 Bookkeeping.getOffsetAt: position 5 is past N+1 (N = 1, at most 2 may be queried) — or a leaf handler skipped its position registration: position 2 is not registered
+@@FIND	Quad0022	past N+1
+PASS
+=== 12. 회신 3차(2026-09-07) — Q13 (b) setOffsetSource의 source 게이트(Source | None), Q15 (a) setLength 길이 도메인: 상수는 등록 시, State는 읽을 때(비음수 정수) ===
+@@QERR	Quad0025 Bookkeeping.setOffsetSource: source must be a Source<number> or None (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:374: Quad0025 Bookkeeping.setOffsetSource: source must be a Source<number> or None (got table)
+@@FIND	Quad0025	source must be a Source<number> or None
+@@QERR	Quad0021 Bookkeeping.setLength: length must be a non-negative integer (got -1)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:380: Quad0021 Bookkeeping.setLength: length must be a non-negative integer (got -1)
+@@FIND	Quad0021	length must be a non-negative integer
+@@QERR	Quad0021 Bookkeeping.setLength: length must be a non-negative integer (got 1.5)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:380: Quad0021 Bookkeeping.setLength: length must be a non-negative integer (got 1.5)
+@@FIND	Quad0021	length must be a non-negative integer
+@@QERR	Quad0021 Bookkeeping.setLength: length must be a non-negative integer (got 3)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:380: Quad0021 Bookkeeping.setLength: length must be a non-negative integer (got 3)
+@@FIND	Quad0021	length must be a non-negative integer
+@@QERR	Quad0021 Bookkeeping.setLength: length must be a non-negative integer (got -4)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lengthoffset.luau:392: Quad0021 Bookkeeping.setLength: length must be a non-negative integer (got -4)
+@@FIND	Quad0021	length must be a non-negative integer
+PASS
+=== 13. 탐사 A H-472 — recompute의 sourceList nil 메시지가 빠뜨린 등록 절반(setOffsetSource)을 짚는다(H-427 lengthList 형제와 대칭) ===
+@@QERR	Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/src/Bookkeeping.luau:248: Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+@@FIND	Quad0023	setLength without setOffsetSource?
+PASS
+
+
+=== 14. 2026-09-08 감사 A-3 — H-483 None 분기 + 되감기: 커서가 None 자리로 내려가도 그 자리부터 다시 돈다 ===
+PASS
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

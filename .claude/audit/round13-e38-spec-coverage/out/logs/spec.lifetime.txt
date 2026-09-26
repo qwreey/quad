@@ -1,0 +1,194 @@
+=== 1. 미주입 스텁 — hold op 넷(holdLifetime/releaseLifetime/isHeld/isHeldBy, round11 Q59) + 조합 불가 엔진 op 다섯(onDestroying/isInst/nativeClaim/isClaimed/nativeFindChild, 2순회 H-373 + 2026-09-16) 전부 영어 메시지로 error, 호출부를 가리킴 ===
+@@QERR	Quad0108 quad: holdLifetime is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:17: Quad0108 quad: holdLifetime is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	holdLifetime
+@@FIND	Quad0108	not available
+@@FIND	Quad0108	spec.lifetime.luau
+@@QERR	Quad0108 quad: releaseLifetime is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:17: Quad0108 quad: releaseLifetime is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	releaseLifetime
+@@FIND	Quad0108	not available
+@@FIND	Quad0108	spec.lifetime.luau
+@@QERR	Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:17: Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	isHeld
+@@FIND	Quad0108	not available
+@@FIND	Quad0108	spec.lifetime.luau
+@@QERR	Quad0108 quad: isHeldBy is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:17: Quad0108 quad: isHeldBy is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	isHeldBy
+@@FIND	Quad0108	not available
+@@FIND	Quad0108	spec.lifetime.luau
+@@QERR	Quad0108 quad: onDestroying is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:17: Quad0108 quad: onDestroying is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	onDestroying
+@@FIND	Quad0108	not available
+@@FIND	Quad0108	spec.lifetime.luau
+@@QERR	Quad0108 quad: isInst is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:17: Quad0108 quad: isInst is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	isInst
+@@FIND	Quad0108	not available
+@@FIND	Quad0108	spec.lifetime.luau
+@@QERR	Quad0108 quad: nativeClaim is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:17: Quad0108 quad: nativeClaim is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	nativeClaim
+@@FIND	Quad0108	not available
+@@FIND	Quad0108	spec.lifetime.luau
+@@QERR	Quad0108 quad: isClaimed is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:17: Quad0108 quad: isClaimed is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	isClaimed
+@@FIND	Quad0108	not available
+@@FIND	Quad0108	spec.lifetime.luau
+@@QERR	Quad0108 quad: nativeFindChild is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:17: Quad0108 quad: nativeFindChild is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	nativeFindChild
+@@FIND	Quad0108	not available
+@@FIND	Quad0108	spec.lifetime.luau
+PASS
+
+=== 1a. 생명주기 넷은 quad-base 것(round11 Q59, 2026-09-18) — 백엔드 없이도 함수이고, 부르면 hold op 스텁에 닿아 그 op 이름으로 error, blame은 호출부 ===
+@@QERR	Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:36: Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	isHeld is not available
+@@FIND	Quad0108	spec.lifetime.luau
+@@QERR	Quad0108 quad: releaseLifetime is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:36: Quad0108 quad: releaseLifetime is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	releaseLifetime is not available
+@@FIND	Quad0108	spec.lifetime.luau
+@@QERR	Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:36: Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	isHeld is not available
+@@FIND	Quad0108	spec.lifetime.luau
+@@QERR	Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:36: Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	isHeld is not available
+@@FIND	Quad0108	spec.lifetime.luau
+PASS
+
+=== 1b. 스텁의 에러 깊이 — 아홉 전부 errorBefore(최외곽): 태그된 래퍼(핸들러 프레임 상당)를 타넘어 그 호출자를 blame (H-348, 3순회 H-378로 복원) ===
+@@QERR	Quad0108 quad: holdLifetime is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:57: Quad0108 quad: holdLifetime is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	spec.lifetime.luau:57:
+@@QERR	Quad0108 quad: releaseLifetime is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:57: Quad0108 quad: releaseLifetime is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	spec.lifetime.luau:57:
+@@QERR	Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:57: Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	spec.lifetime.luau:57:
+@@QERR	Quad0108 quad: isHeldBy is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:57: Quad0108 quad: isHeldBy is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	spec.lifetime.luau:57:
+@@QERR	Quad0108 quad: onDestroying is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:57: Quad0108 quad: onDestroying is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	spec.lifetime.luau:57:
+@@QERR	Quad0108 quad: isInst is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:57: Quad0108 quad: isInst is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	spec.lifetime.luau:57:
+@@QERR	Quad0108 quad: nativeClaim is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:57: Quad0108 quad: nativeClaim is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	spec.lifetime.luau:57:
+@@QERR	Quad0108 quad: isClaimed is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:57: Quad0108 quad: isClaimed is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	spec.lifetime.luau:57:
+@@QERR	Quad0108 quad: nativeFindChild is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:57: Quad0108 quad: nativeFindChild is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	spec.lifetime.luau:57:
+@@QERR	Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:68: Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	isHeld is not available
+@@QERR	Quad0108 quad: isInst is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:73: Quad0108 quad: isInst is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	isInst is not available
+@@QERR	Quad0108 quad: nativeInsert is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:78: Quad0108 quad: nativeInsert is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	nativeInsert is not available
+@@QERR	Quad0108 quad: nativeExtract is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:78: Quad0108 quad: nativeExtract is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	nativeExtract is not available
+@@QERR	Quad0108 quad: nativeRemove is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:78: Quad0108 quad: nativeRemove is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	nativeRemove is not available
+@@QERR	Quad0108 quad: nativeMove is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:78: Quad0108 quad: nativeMove is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	nativeMove is not available
+@@QERR	Quad0108 quad: nativeSwap is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:78: Quad0108 quad: nativeSwap is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	nativeSwap is not available
+@@QERR	Quad0108 quad: nativeDispose is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:78: Quad0108 quad: nativeDispose is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	nativeDispose is not available
+PASS
+
+=== 2. 주입 후 — bind 전엔 canBound/‖canExecute, bind 후엔 반대 ===
+PASS
+
+=== 3. Destroy → canExecute false / canBound true (gcconn.Connected 전환) ===
+PASS
+
+=== 4. 이중 바인딩 게이트 — `if not canBound(v) then error(...)` 모양, level 2 ===
+@@QERR	Quad0233 bindLifetime: value is already bound to another Instance
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:119: Quad0233 bindLifetime: value is already bound to another Instance
+@@FIND	Quad0233	already bound
+@@FIND	Quad0233	spec.lifetime.luau
+@@FIND	Quad0233	another Instance
+@@QERR	Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:127: Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)
+@@FIND	Quad0232	this Instance
+@@QERR	Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:131: Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)
+PASS
+
+=== 5. unbindLifetime — 특정 값 하나만 조기 해제, inst는 그대로 ===
+PASS
+
+=== 6. gchold — inst가 사는 동안 value 생존 보장(계약 1), inst가 죽고 놓이면 같이 회수 ===
+PASS
+
+=== 6b. 이미 Destroy된 inst에 bind — GC 여부와 무관하게 죽은 상태로 시작 (H-171) ===
+PASS
+
+=== 6c. 조상 Destroy — 자손에 묶인 값도 같이 죽는다 (H-172) ===
+PASS
+
+=== 7. 첫 인자는 mock Instance여야 함 ===
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:217: bindLifetime: inst is not a mock instance
+PASS
+
+=== 8. installLifetime은 quad 인스턴스별 — 다른 New()엔 안 퍼짐, 두 번 불러도 무시 ===
+@@QERR	Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:228: Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+PASS
+
+=== 9. mock 프로바이더도 nativeClaim/nativeFindChild를 심는다 — 실 프로바이더와 같은 형태 (2순회 H-374, H-305 (d′)) ===
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:249: nativeClaim: Instance is already claimed by quad
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:265: nativeClaim: Instance is already claimed by quad
+@@QERR	Quad0033 Claim: first argument must be an Instance of the installed backend (got nil)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:270: Quad0033 Claim: first argument must be an Instance of the installed backend (got nil)
+@@FIND	Quad0033	first argument must be an Instance
+@@QERR	Quad0030 Claim: mapper props must be a table (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:277: Quad0030 Claim: mapper props must be a table (got string)
+@@FIND	Quad0030	props must be a table
+@@QERR	Quad0029 Claim: Frame is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:286: Quad0029 Claim: Frame is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+@@FIND	Quad0029	already claimed
+@@QERR	Quad0029 Claim: Frame is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:288: Quad0029 Claim: Frame is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+@@FIND	Quad0029	already claimed
+PASS
+=== 10. round3 H-444 (외부 리뷰 G-14) — nil 인자: unbindLifetime(nil)은 표면 에러(H-474, Q31 — H-444의 no-op 역전), canExecute(nil) false, canBound(nil) true, bindLifetime(nil, v)는 표면 에러 ===
+@@QERR	Quad0105 unbindLifetime: value must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:296: Quad0105 unbindLifetime: value must not be nil
+@@FIND	Quad0105	unbindLifetime: value must not be nil
+@@QERR	Quad0178 dispose: value must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:299: Quad0178 dispose: value must not be nil
+@@FIND	Quad0178	dispose: value must not be nil
+@@QERR	Quad0102 bindLifetime: inst must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:303: Quad0102 bindLifetime: inst must not be nil
+@@FIND	Quad0102	inst must not be nil
+@@QERR	Quad0103 bindLifetime: value must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.lifetime.luau:310: Quad0103 bindLifetime: value must not be nil
+@@FIND	Quad0103	value must not be nil
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

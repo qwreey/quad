@@ -1,0 +1,306 @@
+=== 1. 생성 — 빈 Slot, 브랜드, Length 0 ===
+PASS
+
+=== 2. Slot 마운트 — Frame { slot }, 요소가 물리 자식이 된다 ===
+PASS
+
+=== 3. 마운트 후 Add/Remove가 물리에 반영 ===
+PASS
+
+=== 4. 형제 순서 — Frame { slotA, static, slotB }, Offset 누적 ===
+PASS
+
+=== 5. State<Slot> 교체 = 언마운트(파괴 아님), 재마운트 가능 ===
+PASS
+
+=== 6. dispose — 마운트 중이면 거부, 뗀 뒤엔 파괴 ===
+@@QERR	Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:121: Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@QERR	Quad0165 Slot: destroyed Slot cannot be reused
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:127: Quad0165 Slot: destroyed Slot cannot be reused
+PASS
+
+=== 7. 타입 가드 — nil/None·핸들러 계층 값 거부 (State는 :List 슬라이스) ===
+@@QERR	Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:136: Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+@@QERR	Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:137: Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+@@QERR	Quad0240 Slot: this backend cannot mount this value
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:138: Quad0240 Slot: this backend cannot mount this value
+PASS
+
+=== 7b. 디스패치 깊이의 Slot 오류는 사용자 줄을 blame(H-330 — errorBefore) ===
+@@QERR	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:148: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@FIND	Quad0160	already mounted
+PASS
+
+=== 8. Slot-in-Slot 중첩 — 재귀 마운트, Length = 기여도 합 ===
+PASS
+
+=== 9. 중첩 언마운트 — outer 언마운트가 inner까지 재귀로 뗀다 ===
+PASS
+
+=== 10. :List — 키 기반 재조정(추가/갱신/제거/필터) ===
+PASS
+
+=== 11. :Single(state) + Slot:Add(state) — State 요소 래핑 ===
+PASS
+
+=== 12. Detach — 파괴 없이 뗐다 되붙임(재사용) ===
+PASS
+
+=== 12b. 5순회 H-393 — Detach된 OwnsElements=false 요소 Slot을 settle이 nil로 버릴 때 소유권을 먼저 놓는다(죽은 owner가 영구히 남던 것) ===
+PASS
+
+=== 13. :List 상호배타 가드 — CRUD 후 :List, :List 후 CRUD 금지 ===
+@@QERR	Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:309: Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)
+@@QERR	Quad0166 Slot: manual CRUD is not allowed after :List/:Single
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:311: Quad0166 Slot: manual CRUD is not allowed after :List/:Single
+@@QERR	Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:314: Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)
+@@FIND	Quad0149	:List/:Single on a manual Slot
+@@QERR	Quad0148 Slot: already has :List/:Single installed
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:318: Quad0148 Slot: already has :List/:Single installed
+@@FIND	Quad0148	already has :List/:Single installed
+PASS
+
+=== 14. :List 리오더 — State 요소(래퍼 Slot)의 Offset이 자기 자리를 따라간다 ===
+PASS
+
+=== 15. :List Slot의 언마운트→재마운트(H-163) — 상태 보존 + 캐치업 1회 ===
+PASS
+
+=== 16. 통합 리뷰 — 이름 키의 Slot은 매치 안 됨(H-52, 소유권·생명주기 고아 없음) + :List keyFn nil은 도메인 에러 ===
+@@QERR	Quad0141 Slot: must be an array item, not the value of a string key
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:390: Quad0141 Slot: must be an array item, not the value of a string key
+@@QERR	Quad0144 Slot:List: keyFn returned nil for item #2
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:403: Quad0144 Slot:List: keyFn returned nil for item #2
+@@FIND	Quad0144	keyFn returned nil
+PASS
+
+=== 17. Move/Swap — 중첩 Slot 요소의 리프가 native*에 배열로 넘어가고(collectLeaves) 부기가 따라간다 ===
+@@QERR	Quad0168 Slot:Move: index must be a positive integer (got 0)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:464: Quad0168 Slot:Move: index must be a positive integer (got 0)
+@@QERR	Quad0236 Slot:Swap: index out of range (got 9, limit 3)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:465: Quad0236 Slot:Swap: index out of range (got 9, limit 3)
+@@QERR	Quad0168 Slot:Move: index must be a positive integer (got 1.5)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:466: Quad0168 Slot:Move: index must be a positive integer (got 1.5)
+@@QERR	Quad0168 Slot:Move: index must be a positive integer (got 0)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:467: Quad0168 Slot:Move: index must be a positive integer (got 0)
+PASS
+
+=== 18. Extract/Replace — 비파괴 추출(소유권 반납), 제자리 교체, 파괴 교체, State 요소 언래핑 ===
+@@QERR	Quad0172 Slot:Replace: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:502: Quad0172 Slot:Replace: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+PASS
+
+=== 19. Splice — 구간 비파괴 추출 + 삽입, recompute 1회, 검증 선행 패스(반쪽 상태 없음) ===
+@@QERR	Quad0236 Slot:Splice: index out of range (got 8, limit 7)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:584: Quad0236 Slot:Splice: index out of range (got 8, limit 7)
+@@QERR	Quad0174 Slot:Splice: removeCount out of range
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:585: Quad0174 Slot:Splice: removeCount out of range
+@@QERR	Quad0174 Slot:Splice: removeCount out of range
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:586: Quad0174 Slot:Splice: removeCount out of range
+@@QERR	Quad0172 Slot:Splice: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:593: Quad0172 Slot:Splice: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@QERR	Quad0171 Slot:Splice: the same element appears twice
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:595: Quad0171 Slot:Splice: the same element appears twice
+@@QERR	Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:596: Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+PASS
+
+=== 20. KeyGone 처분 세 갈래 — nil(파괴) / Detach(홀드→재마운트) / 새 값(error), OwnsElements=false는 언마운트만 ===
+@@QERR	Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:638: Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)
+PASS
+
+=== 21. 실체화 전 CRUD — Move/Swap/Splice/Extract가 _elements만 만지고, 마운트 때 그 순서대로 선다 ===
+PASS
+
+=== 22. 통합 리뷰(H6-19) — 선행 검증이 raw 값을 본다·파괴된 Slot 요소·언마운트 부기 리셋·생성자 blame ===
+@@QERR	Quad0242 Slot: destroyed Slot cannot be an element
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:693: Quad0242 Slot: destroyed Slot cannot be an element
+@@QERR	Quad0171 Slot:Splice: the same element appears twice
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:703: Quad0171 Slot:Splice: the same element appears twice
+@@QERR	Quad0172 Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:708: Quad0172 Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@QERR	Quad0172 Slot:Splice: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:709: Quad0172 Slot:Splice: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@QERR	Quad0240 Slot: this backend cannot mount this value
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:729: Quad0240 Slot: this backend cannot mount this value
+@@QERR	Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:742: Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+@@FIND	Quad0239	nil/None cannot be an element
+@@FIND	Quad0239	spec.slot.luau:742:
+PASS
+
+=== 22b. 4순회 H-386 — Slot(initial)의 컨테이너 모양 게이트: 잊은 {}·quad 값·해시 테이블이 요소 0개로 통과해 :List를 잠그던 것 ===
+@@QERR	Quad0177 Slot: initial elements must be an array — key "gamma" is not an array position
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:756: Quad0177 Slot: initial elements must be an array — key "gamma" is not an array position
+@@FIND	Quad0177	initial elements must be
+@@QERR	Quad0176 Slot: initial elements must be a plain { element, ... } array (got table — a bare element or quad value needs the braces)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:756: Quad0176 Slot: initial elements must be a plain { element, ... } array (got table — a bare element or quad value needs the braces)
+@@FIND	Quad0176	initial elements must be
+@@QERR	Quad0176 Slot: initial elements must be a plain { element, ... } array (got table — a bare element or quad value needs the braces)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:756: Quad0176 Slot: initial elements must be a plain { element, ... } array (got table — a bare element or quad value needs the braces)
+@@FIND	Quad0176	initial elements must be
+@@QERR	Quad0176 Slot: initial elements must be a plain { element, ... } array (got table — a bare element or quad value needs the braces)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:756: Quad0176 Slot: initial elements must be a plain { element, ... } array (got table — a bare element or quad value needs the braces)
+@@FIND	Quad0176	initial elements must be
+@@QERR	Quad0176 Slot: initial elements must be a plain { element, ... } array (got string — a bare element or quad value needs the braces)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:756: Quad0176 Slot: initial elements must be a plain { element, ... } array (got string — a bare element or quad value needs the braces)
+@@FIND	Quad0176	initial elements must be
+@@QERR	Quad0177 Slot: initial elements must be an array — key "0" is not an array position
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:756: Quad0177 Slot: initial elements must be an array — key "0" is not an array position
+@@FIND	Quad0177	initial elements must be
+@@QERR	Quad0176 Slot: initial elements must be a plain { element, ... } array (got table — a bare element or quad value needs the braces)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:756: Quad0176 Slot: initial elements must be a plain { element, ... } array (got table — a bare element or quad value needs the braces)
+@@FIND	Quad0176	initial elements must be
+@@QERR	Quad0177 Slot: initial elements must be an array — key "1.5" is not an array position
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:756: Quad0177 Slot: initial elements must be an array — key "1.5" is not an array position
+@@FIND	Quad0177	initial elements must be
+PASS
+
+=== 23. 회신 반영 리뷰(H6-24) — 점유자 단위 dedup: 같은 Instance를 든 State 둘·raw+State, 마운트 전 aliasing, 미실체화 Extract(i,new)의 래퍼 반납 ===
+@@QERR	Quad0171 Slot:Splice: the same element appears twice
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:777: Quad0171 Slot:Splice: the same element appears twice
+@@QERR	Quad0171 Slot:Splice: the same element appears twice
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:778: Quad0171 Slot:Splice: the same element appears twice
+@@QERR	Quad0170 Slot:Add: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:788: Quad0170 Slot:Add: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+PASS
+=== 24. 회신 3차(2026-09-07) — Q9 (b) 마운트 대상이 quad 밖에서 Destroy된 Slot은 죽은 것(메시지가 그렇게 말한다), Q14 (a) destroySlotTree가 OwnsElements=false 자식의 소유권을 놓는다, G-11 List 인자 게이트 ===
+@@QERR	Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:816: Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@FIND	Quad0179	destroyed outside quad
+@@QERR	Quad0172 Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:818: Quad0172 Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@FIND	Quad0172	cannot be reused after its parent is destroyed
+@@QERR	Quad0151 Slot:List: data must be a plain array or a State of one (got nil)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:835: Quad0151 Slot:List: data must be a plain array or a State of one (got nil)
+@@FIND	Quad0151	data must be a plain array
+@@QERR	Quad0150 Slot:List: updateFn must be a function (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:838: Quad0150 Slot:List: updateFn must be a function (got string)
+@@FIND	Quad0150	updateFn must be a function
+@@QERR	Quad0154 Slot:Single: updateFn must be a function (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:842: Quad0154 Slot:Single: updateFn must be a function (got number)
+@@FIND	Quad0154	Slot:Single: updateFn must be a function
+@@QERR	Quad0152 Slot:List: keyFn must be a function (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:845: Quad0152 Slot:List: keyFn must be a function (got string)
+@@FIND	Quad0152	keyFn must be a function
+@@QERR	Quad0151 Slot:List: data must be a plain array or a State of one (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:847: Quad0151 Slot:List: data must be a plain array or a State of one (got table)
+@@FIND	Quad0151	plain array
+PASS
+=== 25. Gemini 5차 G-16/G-20 — :Single의 None은 nil과 같다(Q30, H-467): KeyGone 언마운트; Slot:Get(nil)은 에러(Q32, H-468), 범위 밖은 여전히 nil ===
+@@QERR	Quad0175 Slot:Get: index must be a number (got nil)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:877: Quad0175 Slot:Get: index must be a number (got nil)
+@@FIND	Quad0175	Slot:Get: index must be a number (got nil)
+PASS
+
+=== 26. 자문 RFC(2026-09-08) — Clear/ExtractAll은 배치 한 번의 recompute(H-479), IndexOf는 역맵 경유·State 요소는 언랩 폴백(H-481), List의 KeyGone 사이클(H-480 clone 제거, H-485 증분 집합 유지) ===
+PASS
+
+
+=== 27. 2026-09-08 2차 감사 H-500 — 자기 자신·조상을 요소로 넣는 순환은 선행 검증이 거부(옛: 다음 CRUD에서 스택오버플로/내부 불변식 에러) ===
+@@QERR	Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:971: Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)
+@@FIND	Quad0173	Slot:Add: cannot add a Slot to itself or to one of its own descendants
+@@QERR	Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:977: Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)
+@@FIND	Quad0173	cycle
+@@QERR	Quad0173 Slot:Splice: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:979: Quad0173 Slot:Splice: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)
+@@FIND	Quad0173	Slot:Splice: cannot add a Slot
+@@QERR	Quad0172 Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:986: Quad0172 Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+PASS
+
+=== 28. 2026-09-08 round8 H-505/H-506 — Move 뒤 역맵은 회전 구간만 다시 쓰고도 정확, 생성자는 배치 선행 패스 한 번(Slot{ a, a } 거부 유지) ===
+@@QERR	Quad0171 Slot: the same element appears twice
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1039: Quad0171 Slot: the same element appears twice
+@@FIND	Quad0171	Slot: the same element appears twice
+PASS
+
+=== 29. 미claim 요소 거부 — isClaimed 게이트(2026-09-16 사용자 결정, question.md §2) ===
+@@QERR	Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1056: Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+@@FIND	Quad0241	Slot: this element is not claimed by quad
+@@QERR	Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1062: Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+@@FIND	Quad0241	not claimed
+@@QERR	Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1064: Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+@@FIND	Quad0241	not claimed
+@@QERR	Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1067: Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+@@FIND	Quad0241	not claimed
+@@FIND	Quad0241	Slot: this element is not claimed
+PASS
+
+=== 30. State 요소의 현재값도 pre-pass 게이트(hunt A) — 마운트 전후 모두 삽입 전에 거부, Replace는 옛 요소를 살려 둔다 ===
+@@QERR	Quad0240 Slot: this backend cannot mount this value
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1083: Quad0240 Slot: this backend cannot mount this value
+@@FIND	Quad0240	Slot: this backend cannot mount this value
+@@QERR	Quad0238 Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1091: Quad0238 Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements
+@@FIND	Quad0238	handler-layer values
+@@QERR	Quad0240 Slot: this backend cannot mount this value
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1096: Quad0240 Slot: this backend cannot mount this value
+@@FIND	Quad0240	cannot mount this value
+@@QERR	Quad0240 Slot: this backend cannot mount this value
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1098: Quad0240 Slot: this backend cannot mount this value
+@@QERR	Quad0240 Slot: this backend cannot mount this value
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1102: Quad0240 Slot: this backend cannot mount this value
+@@QERR	Quad0169 Slot:Add: destroyed Slot cannot be an element
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1108: Quad0169 Slot:Add: destroyed Slot cannot be an element
+@@FIND	Quad0169	destroyed Slot cannot be an element
+PASS
+
+=== 31. keyFn NaN은 nil과 같은 도메인 에러(hunt A); 같은 Slot의 요소를 되넣으면 '이미 이 Slot에 있다'(Move/Swap 안내) ===
+@@QERR	Quad0144 Slot:List: keyFn returned NaN for item #1
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1122: Quad0144 Slot:List: keyFn returned NaN for item #1
+@@FIND	Quad0144	keyFn returned NaN for item #1
+@@QERR	Quad0170 Slot:Splice: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1126: Quad0170 Slot:Splice: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+@@FIND	Quad0170	already in this Slot — reorder with Move/Swap
+@@QERR	Quad0170 Slot:Replace: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1128: Quad0170 Slot:Replace: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+@@FIND	Quad0170	already in this Slot
+@@QERR	Quad0171 Slot:Splice: the same element appears twice
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1131: Quad0171 Slot:Splice: the same element appears twice
+@@FIND	Quad0171	the same element appears twice
+PASS
+
+=== 32. round10 Q52 (a) (2026-09-17) — 마운트 walk 중인 조상 Slot의 CRUD는 즉시 error(사용자 줄 blame); 정상 사용(자기 자식 Slot 구성·마운트 뒤 Observer CRUD·형제 CRUD)은 그대로 ===
+@@QERR	Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1146: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)
+@@FIND	Quad0167	Slot: cannot mutate a Slot while it is being mounted
+@@QERR	Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1158: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)
+@@FIND	Quad0167	while it is being mounted
+@@QERR	Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1193: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)
+@@FIND	Quad0167	while it is being mounted
+PASS
+
+=== 33. round11 H-571 (2026-09-17) — :List data가 배열이 아니면(딕셔너리·해시 키 혼입) 조용히 비우지 않고 거부; updateFn이 q.KeyGone을 돌려주면 안내 에러 ===
+@@QERR	Quad0143 Slot:List: data must be a plain array — key "a" is not an array position
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1216: Quad0143 Slot:List: data must be a plain array — key "a" is not an array position
+@@FIND	Quad0143	Slot:List: data must be a plain array — key "
+@@QERR	Quad0143 Slot:List: data must be a plain array — key "extra" is not an array position
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1221: Quad0143 Slot:List: data must be a plain array — key "extra" is not an array position
+@@FIND	Quad0143	key "extra" is not an array position
+@@QERR	Quad0146 Slot:List: updateFn returned q.KeyGone — it is the marker updateFn RECEIVES when a key disappears; return nil/q.None to drop the element or q.Detach to hold it
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1231: Quad0146 Slot:List: updateFn returned q.KeyGone — it is the marker updateFn RECEIVES when a key disappears; return nil/q.None to drop the element or q.Detach to hold it
+@@FIND	Quad0146	Slot:List: updateFn returned q.KeyGone
+PASS
+=== ALL PASS ===
+
+=== 38. round11 Q61 (2026-09-18) — OwnsElements=false Slot을 dispose하거나 소유하는 부모가 Remove하면 자기 원소의 소유권을 놓고 비운다(원소는 자유, Slot은 빈 채 재사용 가능); Extract 경로는 원소째 옮겨간다 ===
+@@QERR	Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.slot.luau:1259: Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+PASS
+Coverage dump written to coverage.out (54 functions)

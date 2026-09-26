@@ -1,0 +1,7 @@
+Debounce{Trailing=false}	ERR ./e38probe_b.luau:5: Quad0048 Debounce: Leading and Trailing both false would pass nothing through
+Alternative(None)	ok true
+Indexed on None	ok nil
+Sum on None	ERR ./e38probe_b.luau:9: Quad0122 Operator.Sum: the Apply target's current value must be a number (got table)
+uncalled factory Apply(Op.Sum)	ERR ./e38probe_b.luau:10: attempt to index function with 'Get'
+transform->nil plain: Peek	nil	Overridden(base,m3).A	1
+transform->nil State: Peek is State	true	nil

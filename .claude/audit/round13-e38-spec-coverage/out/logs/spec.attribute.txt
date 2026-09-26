@@ -1,0 +1,100 @@
+=== 1. AttrKey — 이름별 캐시 동일성, 브랜드 (패밀리는 이제 키가 아니다 — 10절) ===
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:27: attempt to modify a readonly table
+@@QERR	Quad0001 AttrKey: name must be a non-empty string
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:31: Quad0001 AttrKey: name must be a non-empty string
+@@QERR	Quad0001 AttrKey: name must be a non-empty string
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:35: Quad0001 AttrKey: name must be a non-empty string
+@@QERR	Quad0011 Attr.Merged: arguments must be Attr values
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:37: Quad0011 Attr.Merged: arguments must be Attr values
+PASS
+
+=== 1b. 생성자 — plain 테이블만 (핸드오버 리뷰 `H-345`, Modifier `H-310`의 거울) ===
+@@QERR	Quad0010 Attr: arguments must be Stores, Attr values or plain tables
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:49: Quad0010 Attr: arguments must be Stores, Attr values or plain tables
+@@FIND	Quad0010	plain tables
+@@QERR	Quad0010 Attr: arguments must be Stores, Attr values or plain tables
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:54: Quad0010 Attr: arguments must be Stores, Attr values or plain tables
+@@FIND	Quad0010	plain tables
+@@QERR	Quad0010 Attr: arguments must be Stores, Attr values or plain tables
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:60: Quad0010 Attr: arguments must be Stores, Attr values or plain tables
+@@FIND	Quad0010	plain tables
+@@QERR	Quad0007 Attr: attribute "Foo" cannot be a function — attribute values are raw values or State
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:68: Quad0007 Attr: attribute "Foo" cannot be a function — attribute values are raw values or State
+@@FIND	Quad0007	attribute "Foo" cannot be a function
+@@QERR	Quad0006 Attr: plain-table keys must be non-empty strings
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:73: Quad0006 Attr: plain-table keys must be non-empty strings
+@@QERR	Quad0013 NumberAttr: name must be a non-empty string
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:74: Quad0013 NumberAttr: name must be a non-empty string
+=== 2. 단일 키 왕복 — 무조건 set, store-bind, None → nil 삭제 ===
+PASS
+
+=== 3. 그룹 — Store 평탄화 반영, 필드 변경은 그룹 재진입 없이 단일 키 경로 ===
+PASS
+
+=== 4. 그룹 교체 — 값은 잔존(클로저는 setAttr 안 부름), 구독은 끊김 ===
+PASS
+
+=== 5. 합성 정책 — 생성자·Overridden은 뒤가 이김, Merged는 겹치면 error ===
+@@QERR	Quad0005 Attr.Merged: attribute name "Y" appears more than once
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:153: Quad0005 Attr.Merged: attribute name "Y" appears more than once
+@@FIND	Quad0005	more than once
+PASS
+
+=== 6. 이름 claim — 그룹이 잡은 이름을 직접 쓰기가 노리면 즉시 error ===
+@@QERR	Quad0002 AttrKey: attribute "Hp" is already bound by another owner
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:167: Quad0002 AttrKey: attribute "Hp" is already bound by another owner
+@@FIND	Quad0002	attribute "Hp" is already bound by another owner
+@@QERR	Quad0002 AttrKey: attribute "Hp" is already bound by another owner
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:176: Quad0002 AttrKey: attribute "Hp" is already bound by another owner
+@@FIND	Quad0002	attribute "Hp" is already bound by another owner
+PASS
+
+=== 7. groupClaimKeys — 같은 그룹 객체를 두 위치에 놓으면 즉시 error ===
+@@QERR	Quad0016 Attr: the same group value is placed at two positions of this instance
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:190: Quad0016 Attr: the same group value is placed at two positions of this instance
+@@FIND	Quad0016	two positions
+PASS
+
+=== 8. H-39 부기 + 미주입 스텁 안내 ===
+@@QERR	Quad0108 quad: setAttr is not available — no backend has installed the attribute op (install a provider with quad:UseProvider — a bare Quad.New() has none)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:216: Quad0108 quad: setAttr is not available — no backend has installed the attribute op (install a provider with quad:UseProvider — a bare Quad.New() has none)
+@@FIND	Quad0108	setAttr is not available
+PASS
+
+=== 9. 통합 리뷰(H10-8) — 같은 그룹 객체 재발행은 엔진 호출 0·claim 유지 ===
+PASS
+
+=== 10. 타입드 스칼라 슈가(2026-09-03 사용자 확정) — 단일 항목 그룹, 값 검증, 이름 claim·위치 claim은 그룹 그대로 ===
+@@QERR	Quad0015 BooleanAttr: value of "X" must be a boolean, State or None (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:277: Quad0015 BooleanAttr: value of "X" must be a boolean, State or None (got number)
+@@QERR	Quad0015 NumberAttr: value of "X" must be a number, State or None (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:276: Quad0015 NumberAttr: value of "X" must be a number, State or None (got string)
+@@QERR	Quad0013 StringAttr: name must be a non-empty string
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:274: Quad0013 StringAttr: name must be a non-empty string
+@@QERR	Quad0014 StringAttr: value of "X" must not be nil — use None to delete
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:275: Quad0014 StringAttr: value of "X" must not be nil — use None to delete
+@@QERR	Quad0002 AttrKey: attribute "Owned" is already bound by another owner
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:289: Quad0002 AttrKey: attribute "Owned" is already bound by another owner
+@@QERR	Quad0002 AttrKey: attribute "Owned" is already bound by another owner
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:295: Quad0002 AttrKey: attribute "Owned" is already bound by another owner
+@@QERR	Quad0016 Attr: the same group value is placed at two positions of this instance
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:301: Quad0016 Attr: the same group value is placed at two positions of this instance
+PASS
+
+
+=== 11. 2026-09-08 2차 감사 H-498 — 그룹 값이 테이블(Slot/Ref/메타테이블 테이블)이면 거부, None/State/raw는 통과 ===
+@@QERR	Quad0008 Attr: attribute "X" cannot be a table — attribute values are raw values, None or State (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:313: Quad0008 Attr: attribute "X" cannot be a table — attribute values are raw values, None or State (got table)
+@@FIND	Quad0008	attribute "X" cannot be a table
+@@QERR	Quad0008 Attr: attribute "X" cannot be a table — attribute values are raw values, None or State (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:313: Quad0008 Attr: attribute "X" cannot be a table — attribute values are raw values, None or State (got table)
+@@FIND	Quad0008	attribute "X" cannot be a table
+@@QERR	Quad0008 Attr: attribute "X" cannot be a table — attribute values are raw values, None or State (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:313: Quad0008 Attr: attribute "X" cannot be a table — attribute values are raw values, None or State (got table)
+@@FIND	Quad0008	attribute "X" cannot be a table
+@@QERR	Quad0008 Attr: attribute "X" cannot be a table — attribute values are raw values, None or State (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.attribute.luau:313: Quad0008 Attr: attribute "X" cannot be a table — attribute values are raw values, None or State (got table)
+@@FIND	Quad0008	attribute "X" cannot be a table
+PASS
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

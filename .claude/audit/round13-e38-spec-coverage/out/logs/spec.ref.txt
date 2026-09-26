@@ -1,0 +1,91 @@
+=== 1. 생성 — Value/Revision 초기값, 브랜드(isRef + isEpoch), Callback 테이블 둘 ===
+PASS
+
+=== 2. :Set 순서 — 콜백이 볼 때 .Value와 .Revision이 이미 새 것, fn(value, ref) ===
+PASS
+
+=== 3. 리비전 — bit32.bnot(-rev) 랩어라운드 감소: 0 → 4294967295 → 4294967294, 매번 다름 ===
+PASS
+
+=== 4. 즉시 1회 호출 — nil/미설정이어도 그 상태 그대로 (H-120), Weak도 동일 ===
+PASS
+
+=== 5. 중복 등록은 dedup — 같은 fn을 여러 번/양쪽에 걸어도 Set당 1회 ===
+PASS
+
+=== 6. :Uncallback — 양쪽 테이블에서 뗌, self 반환, 안 걸린 fn은 no-op ===
+PASS
+
+=== 7. WeakCallback — 다른 곳에서 안 잡으면 GC 뒤 침묵, Callback은 살아남음 ===
+PASS
+
+=== 8. 발화 중 Uncallback/Callback 안전 — 스냅샷 순회, 순회 중 해제된 건 skip ===
+PASS
+
+=== 9. thread 키 — 대기자는 1회 소진, resume 인자는 Ref 자신 (M8 :Wait의 기반) ===
+PASS
+
+=== 10. [H-170] 대기자 안의 에러는 :Set 호출부로 올라온다 (즉시 반환된 false 확인) ===
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.ref.luau:212: waiter exploded
+@@PC	cannot resume dead coroutine
+PASS
+
+=== 11. [H-169] 재진입 :Set — 순회는 자기 리비전이 바뀌면 놓고, 후행 Set이 전부 호출 ===
+PASS
+
+=== 12. [M8 단위 ①] :Wait() — 자기 코루틴을 대기자로 넣고 yield, 다음 :Set에 self로 재개, 채워져 있어도 기다린다 (Q5 (a)) ===
+PASS
+
+=== 13. :Wait(thread) — 남의 thread는 등록만, 즉시 self 반환, 정지시키지 않는다; thread가 아니면 error ===
+@@QERR	Quad0133 Ref: Wait(thread) expects a thread (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.ref.luau:300: Quad0133 Ref: Wait(thread) expects a thread (got number)
+@@FIND	Quad0133	spec.ref.luau
+PASS
+
+=== 14. Wait 대기자와 Callback 공존 — 같은 :Set이 콜백을 호출하고 대기자를 소진, 콜백은 유지 ===
+PASS
+
+
+=== 15. 7순회 H-426 — Wait(thread)로 등록된 스레드가 resume한 코루틴 안의 :Set은 위치 있는 에러 (running/normal 둘 다) ===
+@@QERR	Quad0130 Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a normal coroutine)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.ref.luau:336: /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.ref.luau:335: Quad0130 Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a normal coroutine)
+@@FIND	Quad0130	normal coroutine
+@@FIND	Quad0130	spec.ref.luau
+PASS
+=== 16. Gemini 5차 G-22 (H-473) — Callback/WeakCallback/Uncallback은 함수만: nil은 VM 에러, 숫자는 call 에러였다 ===
+@@QERR	Quad0132 Ref:Callback: callback must be a function (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.ref.luau:349: Quad0132 Ref:Callback: callback must be a function (got number)
+@@FIND	Quad0132	Ref:Callback: callback must be a function
+@@QERR	Quad0132 Ref:Callback: callback must be a function (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.ref.luau:349: Quad0132 Ref:Callback: callback must be a function (got string)
+@@FIND	Quad0132	Ref:Callback: callback must be a function
+@@QERR	Quad0132 Ref:WeakCallback: callback must be a function (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.ref.luau:349: Quad0132 Ref:WeakCallback: callback must be a function (got number)
+@@FIND	Quad0132	Ref:WeakCallback: callback must be a function
+@@QERR	Quad0132 Ref:WeakCallback: callback must be a function (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.ref.luau:349: Quad0132 Ref:WeakCallback: callback must be a function (got string)
+@@FIND	Quad0132	Ref:WeakCallback: callback must be a function
+@@QERR	Quad0132 Ref:Uncallback: callback must be a function (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.ref.luau:349: Quad0132 Ref:Uncallback: callback must be a function (got number)
+@@FIND	Quad0132	Ref:Uncallback: callback must be a function
+@@QERR	Quad0132 Ref:Uncallback: callback must be a function (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.ref.luau:349: Quad0132 Ref:Uncallback: callback must be a function (got string)
+@@FIND	Quad0132	Ref:Uncallback: callback must be a function
+PASS
+
+=== U. :Unwrap() (2026-09-08, ref-plan) — 비어 있으면 호출 줄 에러, 아니면 값; 타입은 StripNil<T>로 nil이 벗겨진다 ===
+@@QERR	Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.ref.luau:365: Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
+@@FIND	Quad0135	Ref:Unwrap: the Ref is empty
+@@FIND	Quad0135	spec.ref.luau
+PASS
+
+=== 17. round11 H-569 (2026-09-17) — 철거의 Set(nil)에 깨어난 대기자가 던져도 dedup 기록은 이미 지워져 같은 Ref를 되꽂으면 채워진다 ===
+@@QERR	Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
+@@QERR	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.ref.luau:391: Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.ref.luau:391: Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
+@@FIND	Quad0135	Unwrap
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

@@ -1,0 +1,74 @@
+=== 1. 생성 — 등록 즉시 1회(emitFrom = nil), _state 강참조, 브랜드, 순서(fn → _subs) ===
+PASS
+
+=== 2. _receive — canExecute 게이팅: 안 묶이면 홀드, 묶이면 fn(state, self, from) ===
+PASS
+
+=== 3. 무인자 state:Observer() — 항상 관측 유틸(호출 즉시 Get) ===
+PASS
+
+=== 4. WeakSubscribe(프리미티브) — .Subscribed=true, 약한 등록, 캐치업; canExecute true ===
+@@QERR	Quad0111 Observer: already subscribed
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.observer.luau:103: Quad0111 Observer: already subscribed
+@@FIND	Quad0111	already subscribed
+@@FIND	Quad0111	spec.observer.luau
+@@QERR	Quad0104 bindLifetime: value is already subscribed
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.observer.luau:108: Quad0104 bindLifetime: value is already subscribed
+@@FIND	Quad0104	already subscribed
+PASS
+
+=== 5. WeakUnsubscribe — 관대(H-133), 단 강한 킵이 있으면 error ===
+@@QERR	Quad0112 Observer: subscribed strongly; use :Unsubscribe()
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.observer.luau:125: Quad0112 Observer: subscribed strongly; use :Unsubscribe()
+@@FIND	Quad0112	use :Unsubscribe()
+PASS
+
+=== 6. Subscribe/Unsubscribe — 인라인 게이트(H-149), 강한 킵, 엄격 해제 ===
+@@QERR	Quad0114 Observer: already subscribed
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.observer.luau:144: Quad0114 Observer: already subscribed
+@@FIND	Quad0114	spec.observer.luau
+@@QERR	Quad0115 Observer: not subscribed strongly; use :WeakUnsubscribe()
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.observer.luau:149: Quad0115 Observer: not subscribed strongly; use :WeakUnsubscribe()
+@@FIND	Quad0115	use :WeakUnsubscribe()
+@@QERR	Quad0115 Observer: not subscribed strongly; use :WeakUnsubscribe()
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.observer.luau:155: Quad0115 Observer: not subscribed strongly; use :WeakUnsubscribe()
+PASS
+
+=== 7. GC — 강한 구독은 참조를 안 들어도 산다, 약한 구독은 놓으면 수거 ===
+PASS
+
+=== 8. 파동 중 새 구독자 — 스냅샷 계약(다음 파동부터) + 인스턴스별 레지스트리 ===
+PASS
+
+=== 9a. H-332 — 재진입 파동(fn 안에서 자기 Source를 Set)이 바깥 fn 꼬리의 _running 가드를 풀지 않는다 ===
+@@QERR	Quad0113 Observer: cannot change subscription from inside its own fn
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.observer.luau:223: Quad0113 Observer: cannot change subscription from inside its own fn
+@@FIND	Quad0113	inside its own fn
+PASS
+
+=== 9. H-183 — fn은 자기 생명주기를 못 바꾼다(_running 가드, H-147 대칭); H-184 — 거부돼도 반쯤 묶이지 않음 ===
+@@QERR	Quad0113 Observer: cannot change subscription from inside its own fn
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.observer.luau:243: Quad0113 Observer: cannot change subscription from inside its own fn
+@@QERR	Quad0109 Observer: cannot bind an Observer from inside its own fn
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.observer.luau:241: Quad0109 Observer: cannot bind an Observer from inside its own fn
+@@FIND	Quad0113	inside its own fn
+@@FIND	Quad0109	inside its own fn
+@@QERR	Quad0110 Observer: cannot change subscription from inside its own fn
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.observer.luau:268: Quad0110 Observer: cannot change subscription from inside its own fn
+@@FIND	Quad0110	inside its own fn
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.observer.luau:285: observer fn boom
+@@QERR	Quad0113 Observer: cannot change subscription from inside its own fn
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.observer.luau:294: Quad0113 Observer: cannot change subscription from inside its own fn
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.observer.luau:298: boom
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.observer.luau:285: observer fn boom
+PASS
+
+
+=== 4순회 H-384 — fn 안에서 자기 자신을 drive로 바인드하려는 오용(H-147 (A)) — blame은 사용자의 Observer 생성 줄 (process → bindLifetime → _assertBindable, 최외곽) ===
+@@QERR	Quad0109 Observer: cannot bind an Observer from inside its own fn
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.observer.luau:316: Quad0109 Observer: cannot bind an Observer from inside its own fn
+@@FIND	Quad0109	cannot bind an Observer from inside its own fn
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

@@ -1,0 +1,138 @@
+=== 1. Modifier() — 빈 인스턴스, 브랜드, frozen, 예약 메소드 ===
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:30: attempt to modify a readonly table
+PASS
+
+=== 2. setter 체이닝 — 리터럴/함수, 원본 불변, 형제 분기, 재호출(스파이크 17 재현) ===
+PASS
+
+=== 3. State 필드 — 리터럴은 반응성을 끊고, 함수는 :Compute 파생으로 반응성 유지 (4-1) ===
+PASS
+
+=== 4. Peek — raw 그대로(State 핸들·None·nil 구별), Apply = factory(self) ===
+PASS
+
+=== 5. Overridden — 닷·콜론, 뒤가 필드 단위로 이김, 입력 불변, baked 값 그대로, 비Modifier 인자 error ===
+@@QERR	Quad0054 Modifier.Overridden: argument #2 is not a Modifier (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:129: Quad0054 Modifier.Overridden: argument #2 is not a Modifier (got number)
+@@QERR	Quad0053 Modifier.Overridden: expects at least one Modifier
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:134: Quad0053 Modifier.Overridden: expects at least one Modifier
+PASS
+
+=== 6. 핸들러 계층 값은 필드에 못 든다 — 리터럴·변환 반환 둘 다 즉시 error, State는 통과 ===
+@@QERR	Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:152: Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@QERR	Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:157: Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@QERR	Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:152: Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@QERR	Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:157: Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@QERR	Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:152: Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@QERR	Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:157: Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@QERR	Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:152: Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@QERR	Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:157: Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+PASS
+
+=== 7. M2 가드 재확인(7절) — Modifier는 State/Source의 값이 될 수 없다 ===
+@@QERR	Quad0182 Source: cannot hold a Modifier as a Source value
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:173: Quad0182 Source: cannot hold a Modifier as a Source value
+@@QERR	Quad0181 Source: cannot Set a Modifier as a Source value
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:179: Quad0181 Source: cannot Set a Modifier as a Source value
+@@QERR	Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:187: Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers
+PASS
+
+=== 8. Modifier(...) 인자(H-310, 사용자 확정) — Modifier/필드 테이블 혼합, 뒤가 덮어씀, 검증 셋 ===
+@@QERR	Quad0065 Modifier: argument #1 must be a Modifier or a plain field table (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:205: Quad0065 Modifier: argument #1 must be a Modifier or a plain field table (got number)
+@@QERR	Quad0059 Modifier: initial-field table keys must be non-empty field names (got number at argument #1)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:208: Quad0059 Modifier: initial-field table keys must be non-empty field names (got number at argument #1)
+@@QERR	Quad0064 Modifier: field "X" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:211: Quad0064 Modifier: field "X" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@QERR	Quad0065 Modifier: argument #1 must be a Modifier or a plain field table (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:218: Quad0065 Modifier: argument #1 must be a Modifier or a plain field table (got table)
+@@QERR	Quad0063 Modifier: field "X" in an initial-field table cannot be a function — a transform goes through mod:X(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:221: Quad0063 Modifier: field "X" in an initial-field table cannot be a function — a transform goes through mod:X(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)
+@@QERR	Quad0065 Modifier: argument #1 must be a Modifier or a plain field table (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:215: Quad0065 Modifier: argument #1 must be a Modifier or a plain field table (got table)
+PASS
+
+=== 9. TypedFactory(name) / DefineSubtype(parent, subtype) — 한 함수에 한 일, dedup, 부모 여럿, 순환 거부 (11절) ===
+@@QERR	Quad0066 Modifier.TypedFactory: name must be a non-empty class name string (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:265: Quad0066 Modifier.TypedFactory: name must be a non-empty class name string (got number)
+@@QERR	Quad0067 Modifier.DefineSubtype: "SpecInstance" ⊂ "SpecTextLabel" would make a cycle
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:259: Quad0067 Modifier.DefineSubtype: "SpecInstance" ⊂ "SpecTextLabel" would make a cycle
+@@QERR	Quad0066 Modifier.DefineSubtype: parent must be a non-empty class name string (got nil)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:268: Quad0066 Modifier.DefineSubtype: parent must be a non-empty class name string (got nil)
+@@QERR	Quad0067 Modifier.DefineSubtype: "SpecInstance" ⊂ "SpecInstance" would make a cycle
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:262: Quad0067 Modifier.DefineSubtype: "SpecInstance" ⊂ "SpecInstance" would make a cycle
+PASS
+
+=== 10. As<Class>() — 검사형 하강: 무타입·자기·조상 태그만 통과, 미등록·비조상은 사용자 줄 error ===
+@@QERR	Quad0055 Modifier: unknown modifier class "SpecNope" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:291: Quad0055 Modifier: unknown modifier class "SpecNope" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)
+@@QERR	Quad0056 Modifier: cannot cast a "SpecTextLabel" modifier to "SpecUICorner" — not an ancestor (use :As(name) to force)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:294: Quad0056 Modifier: cannot cast a "SpecTextLabel" modifier to "SpecUICorner" — not an ancestor (use :As(name) to force)
+@@QERR	Quad0056 Modifier: cannot cast a "SpecTextLabel" modifier to "SpecGuiObject" — not an ancestor (use :As(name) to force)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:297: Quad0056 Modifier: cannot cast a "SpecTextLabel" modifier to "SpecGuiObject" — not an ancestor (use :As(name) to force)
+PASS
+
+=== 11. As() / As(name) — 무검사: 인자 없으면 self, 이름은 존재 검사만(조상 무관), 잘못된 이름은 error ===
+@@QERR	Quad0052 Modifier: unknown modifier class "SpecNope" — Modifier.TypedFactory/DefineSubtype it first
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:316: Quad0052 Modifier: unknown modifier class "SpecNope" — Modifier.TypedFactory/DefineSubtype it first
+@@QERR	Quad0051 Modifier:As: name must be a class name string (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:319: Quad0051 Modifier:As: name must be a class name string (got number)
+PASS
+
+=== 12. 예약 캐스트 접두 — As+대문자는 setter가 되지 않는다(오타가 필드로 새지 않음), As+소문자는 setter ===
+@@QERR	Quad0055 Modifier: unknown modifier class "TextLabl" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:334: Quad0055 Modifier: unknown modifier class "TextLabl" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)
+PASS
+
+
+=== 13. 3순회 H-377 — 브랜드는 메타테이블이 아니다: AttrKey/MapperDescriptor는 필드 테이블이 아니다(Name이 필드로 병합돼 조용히 rename되던 것) ===
+@@QERR	Quad0065 Modifier: argument #1 must be a Modifier or a plain field table (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:349: Quad0065 Modifier: argument #1 must be a Modifier or a plain field table (got table)
+@@FIND	Quad0065	must be a Modifier or a plain field table
+@@QERR	Quad0065 Modifier: argument #1 must be a Modifier or a plain field table (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:355: Quad0065 Modifier: argument #1 must be a Modifier or a plain field table (got table)
+@@FIND	Quad0065	must be a Modifier or a plain field table
+PASS
+=== 14. 회신 3차 Q11 (a) — 제네릭 setter도 construct처럼 문자열 키만(H-310 거울): m[AttrKey]는 즉시 error, 사용자 줄 blame ===
+@@QERR	Quad0058 Modifier: setter keys must be strings (got table) — put a non-string key in the props table itself (Frame { [key] = value })
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:367: Quad0058 Modifier: setter keys must be strings (got table) — put a non-string key in the props table itself (Frame { [key] = value })
+@@FIND	Quad0058	setter keys must be strings
+@@QERR	Quad0061 Modifier: field "AsTextLabl" matches the reserved cast prefix As<Class> — casts are methods, not fields
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:374: Quad0061 Modifier: field "AsTextLabl" matches the reserved cast prefix As<Class> — casts are methods, not fields
+@@FIND	Quad0061	reserved
+@@QERR	Quad0060 Modifier: field "Apply" collides with a reserved Modifier method
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:374: Quad0060 Modifier: field "Apply" collides with a reserved Modifier method
+@@FIND	Quad0060	reserved
+@@QERR	Quad0059 Modifier: initial-field table keys must be non-empty field names (got "" at argument #1)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:374: Quad0059 Modifier: initial-field table keys must be non-empty field names (got "" at argument #1)
+@@FIND	Quad0059	non-empty
+PASS
+=== 15. Gemini 5차 G-21 — Peek(nil)/Peek("")는 에러(Q32, H-469): 없는 필드의 nil과 구분되게 ===
+@@QERR	Quad0049 Modifier:Peek: key must be a non-empty string (got "")
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:385: Quad0049 Modifier:Peek: key must be a non-empty string (got "")
+@@FIND	Quad0049	Modifier:Peek: key must be a non-empty string
+@@QERR	Quad0049 Modifier:Peek: key must be a non-empty string (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:385: Quad0049 Modifier:Peek: key must be a non-empty string (got number)
+@@FIND	Quad0049	Modifier:Peek: key must be a non-empty string
+PASS
+
+=== 16. round11 H-552 (2026-09-17) — `__` 접두 이름은 setter가 아니다: state:Apply(modifier)는 팩토리 검사에서 거부 ===
+@@QERR	Quad0191 State: Apply factory must be a function or an object with an __apply method
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:399: Quad0191 State: Apply factory must be a function or an object with an __apply method
+@@FIND	Quad0191	State: Apply factory must be a function or an object with an __apply method
+@@QERR	Quad0062 Modifier: field "__apply" starts with "__" — metamethod-looking names are never properties
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.modifier.luau:404: Quad0062 Modifier: field "__apply" starts with "__" — metamethod-looking names are never properties
+@@FIND	Quad0062	Modifier: field "__apply" starts with "__"
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

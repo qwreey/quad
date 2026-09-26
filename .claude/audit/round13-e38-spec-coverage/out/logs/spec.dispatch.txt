@@ -1,0 +1,169 @@
+=== 1. getHandler — 우선순위 스캔·첫 매치, 매치 없으면 nil (순수 조회) ===
+@@QERR	Quad0072 Dispatch.getHandler: inst must not be nil
+@@PC	Quad0072 Dispatch.getHandler: inst must not be nil
+@@FIND	Quad0072	Quad0072
+@@QERR	Quad0074 Dispatch.getHandler: key must not be nil
+@@PC	Quad0074 Dispatch.getHandler: key must not be nil
+@@FIND	Quad0074	Quad0074
+PASS
+
+=== 2. process 매치 실패 — 즉시 error, typeof + (있으면) 브랜드 + provider 안내 ===
+@@QERR	Quad0076 Dispatch: no handler matched key Size (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:100: Quad0076 Dispatch: no handler matched key Size (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+@@FIND	Quad0076	no handler matched
+@@FIND	Quad0076	number
+@@FIND	Quad0076	provider
+@@QERR	Quad0076 Dispatch: no handler matched key Size (value: table, brand: Blocker) — a quad value at a string key: it belongs in a numeric (array) slot
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:113: Quad0076 Dispatch: no handler matched key Size (value: table, brand: Blocker) — a quad value at a string key: it belongs in a numeric (array) slot
+@@FIND	Quad0076	brand: Blocker
+@@QERR	Quad0076 Dispatch: no handler matched key Size (value: table, brand: Spring) — check that the provider for this value (e.g. quad-roblox) is initialized
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:127: Quad0076 Dispatch: no handler matched key Size (value: table, brand: Spring) — check that the provider for this value (e.g. quad-roblox) is initialized
+@@FIND	Quad0076	brand: Spring
+PASS
+
+=== 3. (B) 설치·교체 — 다른 핸들러가 오면 그 자리 retract(nil) 후 새로 설치 ===
+PASS
+
+=== 4. (A) 같은 핸들러 재프로세스 — retractor가 **새 값**을 받고, 그 다음 process ===
+PASS
+
+=== 5. retractor 반환 생략 — (B) 신규 설치·(A) 재프로세스 양쪽에서 즉시 error ===
+@@QERR	Quad0077 Dispatch: handler (priority 0) returned no retractor at key k, index 1 — return Void when there is nothing to undo
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:187: Quad0077 Dispatch: handler (priority 0) returned no retractor at key k, index 1 — return Void when there is nothing to undo
+@@FIND	Quad0077	returned no retractor
+@@QERR	Quad0077 Dispatch: handler (priority 0) returned no retractor at key other, index 1 — return Void when there is nothing to undo
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:193: Quad0077 Dispatch: handler (priority 0) returned no retractor at key other, index 1 — return Void when there is nothing to undo
+@@FIND	Quad0077	returned no retractor
+PASS
+
+=== 6. retractFrom — 꼬리(깊은 인덱스)부터 역순, 항상 소비, 재설치 가능 ===
+PASS
+
+=== 7. 깊은 체인의 (A) 연쇄 — 아무것도 철거되지 않고 각 레벨이 자기 힌트를 받음 ===
+PASS
+
+=== 8. 조건부 재위임 핸들러 — 재위임을 건너뛰는 자리에서 retractFrom(index+1) 직접 호출 ===
+PASS
+
+=== 9. 다른 키로 위임 — 그 키에선 항상 인덱스 1, 정리는 위임한 클로저 몫 ===
+PASS
+
+=== 10. addHandler 동률 — 규칙 없음(에러 아님), 경고 print는 debug일 때만 ===
+(아래 quad.Dispatch 동률 경고 한 줄은 의도된 출력이다 — print 캡처가 안 돼 육안 확인)
+Dispatch.addHandler: handler priority tie between (priority 0) and (priority 0) — ties have no defined order; offset from a HANDLER_PRIORITY_* band
+PASS
+
+=== 11. listHandlers — 항상 호출 가능, 우선순위순 반환만(출력 없음), 사본 ===
+PASS
+
+=== 12. 인스턴스 격리 — New() 둘은 레지스트리·chains를 공유하지 않음 ===
+PASS
+
+=== 13. H-229 — 체인은 inst의 bind 수명에 앵커: Destroy 후 GC로 통째로 회수 ===
+PASS
+
+=== 14. H-258 — retractor 2번째 인자: retractFrom는 (nil, true), (A) 재프로세스는 (v, false) ===
+PASS
+
+=== 15. H-329 (a) — 순수 철거로 비워진 체인은 chains·gchold에서 놓인다(새 키마다 누적 없음); (B) 재설치 경로는 같은 리스트 유지 ===
+PASS
+
+
+=== 16. H-419 (외부 리뷰 G-07) — drive의 props가 테이블이 아니면 표면 에러(flatten 안 VM 에러가 Dispatch/Modifier/init.luau를 blame하던 것) ===
+@@QERR	Quad0082 Dispatch.drive: props must be a table (got nil)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:486: Quad0082 Dispatch.drive: props must be a table (got nil)
+@@FIND	Quad0082	props must be a table
+@@QERR	Quad0082 Dispatch.drive: props must be a table (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:486: Quad0082 Dispatch.drive: props must be a table (got string)
+@@FIND	Quad0082	props must be a table
+@@QERR	Quad0082 Dispatch.drive: props must be a table (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:486: Quad0082 Dispatch.drive: props must be a table (got number)
+@@FIND	Quad0082	props must be a table
+@@QERR	Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got Source)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:496: Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got Source)
+@@FIND	Quad0083	a quad value needs the braces
+@@QERR	Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got Tag)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:496: Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got Tag)
+@@FIND	Quad0083	a quad value needs the braces
+@@QERR	Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got AttrKey)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:496: Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got AttrKey)
+@@FIND	Quad0083	a quad value needs the braces
+@@QERR	Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got a table with a metatable)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:496: Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got a table with a metatable)
+@@FIND	Quad0083	a quad value needs the braces
+@@QERR	Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got AttrKey)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:501: Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got AttrKey)
+@@FIND	Quad0083	got AttrKey
+PASS
+=== 17. round3 H-442 (외부 리뷰 G-12) — drive(nil, props)는 표면 에러(Relate의 `table index is nil` 대신), 사용자 줄 blame ===
+@@QERR	Quad0084 Dispatch.drive: inst must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:509: Quad0084 Dispatch.drive: inst must not be nil
+@@FIND	Quad0084	inst must not be nil
+PASS
+=== 18. round3 H-452 (Q7 셋째 (a), H-416 재현) — 디스패치가 lazy Compute를 처음 강제해 Modifier가 나오면 blame은 사용자 drive 줄(outermost), StoreBind 내부가 아니다 ===
+@@QERR	Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:525: Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers
+@@FIND	Quad0185	cannot hold Modifiers
+PASS
+
+=== 19. round7 Q37 (a) H-484 — keyType 버킷: 선언한 타입의 키에서만 물어보고, 미선언은 모든 버킷, 버킷 안 순서는 priority, 잘못된 선언은 등록 시 표면 에러 ===
+@@QERR	Quad0081 Dispatch.addHandler: keyType must be "number", "string" or nil (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:573: Quad0081 Dispatch.addHandler: keyType must be "number", "string" or nil (got table)
+@@FIND	Quad0081	keyType must be "number", "string" or nil
+PASS
+
+
+=== 20. 2026-09-08 2차 감사 H-493/H-495 — addHandler 모양 게이트, drive 배열 키 도메인([0]/[1.5]/[-1]) ===
+@@QERR	Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:592: Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got number)
+@@FIND	Quad0079	Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority
+@@QERR	Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:592: Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got table)
+@@FIND	Quad0079	Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority
+@@QERR	Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:592: Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got table)
+@@FIND	Quad0079	Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority
+@@QERR	Quad0085 Dispatch.drive: array keys must be positive integers (got 0)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:598: Quad0085 Dispatch.drive: array keys must be positive integers (got 0)
+@@FIND	Quad0085	Dispatch.drive: array keys must be positive integers (got 0)
+@@QERR	Quad0085 Dispatch.drive: array keys must be positive integers (got -1)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:598: Quad0085 Dispatch.drive: array keys must be positive integers (got -1)
+@@FIND	Quad0085	Dispatch.drive: array keys must be positive integers (got -1)
+@@QERR	Quad0085 Dispatch.drive: array keys must be positive integers (got 1.5)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:598: Quad0085 Dispatch.drive: array keys must be positive integers (got 1.5)
+@@FIND	Quad0085	Dispatch.drive: array keys must be positive integers (got 1.5)
+PASS
+
+=== 21. round11 H-563/H-564/H-565/H-567/H-568 (2026-09-17) — 비브랜드 is* 헬퍼 무시·체인 구멍 index 거부·nil 키 게이트·base 브랜드 no-match 안내·priority NaN·addHandler dedup ===
+@@QERR	Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got Source)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:622: Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got Source)
+@@FIND	Quad0083	props must be a plain
+@@QERR	Quad0075 Dispatch.process: index 3 would leave a gap in the chain (the chain has 0 slots — a delegating handler passes index + 1)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:640: Quad0075 Dispatch.process: index 3 would leave a gap in the chain (the chain has 0 slots — a delegating handler passes index + 1)
+@@FIND	Quad0075	Dispatch.process: index 3 would leave a gap in the chain
+@@QERR	Quad0074 Dispatch.process: key must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:647: Quad0074 Dispatch.process: key must not be nil
+@@FIND	Quad0074	Dispatch.process: key must not be nil
+@@QERR	Quad0074 Dispatch.retractFrom: key must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:651: Quad0074 Dispatch.retractFrom: key must not be nil
+@@FIND	Quad0074	Dispatch.retractFrom: key must not be nil
+@@QERR	Quad0141 Slot: must be an array item, not the value of a string key
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:656: Quad0141 Slot: must be an array item, not the value of a string key
+@@FIND	Quad0141	Slot: must be an array item, not the value of a string key
+@@QERR	Quad0076 Dispatch: no handler matched key Thing (value: table, brand: Tag) — a quad value at a string key: it belongs in a numeric (array) slot
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:660: Quad0076 Dispatch: no handler matched key Thing (value: table, brand: Tag) — a quad value at a string key: it belongs in a numeric (array) slot
+@@FIND	Quad0076	brand: Tag
+@@FIND	Quad0076	belongs in a numeric (array) slot
+@@QERR	Quad0076 Dispatch: no handler matched key Thing (value: table, brand: Context) — a quad value at a string key: it belongs in a numeric (array) slot
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:665: Quad0076 Dispatch: no handler matched key Thing (value: table, brand: Context) — a quad value at a string key: it belongs in a numeric (array) slot
+@@FIND	Quad0076	brand: Context
+@@FIND	Quad0076	belongs in a numeric (array) slot
+@@QERR	Quad0076 Dispatch: no handler matched key 1 (value: table, brand: Store) — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:669: Quad0076 Dispatch: no handler matched key 1 (value: table, brand: Store) — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))
+@@FIND	Quad0076	a Store is not a value for any key
+@@QERR	Quad0080 Dispatch.addHandler: priority must be a finite number (got nan)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.dispatch.luau:674: Quad0080 Dispatch.addHandler: priority must be a finite number (got nan)
+@@FIND	Quad0080	priority must be a finite number
+PASS
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

@@ -1,0 +1,27 @@
+=== 1. 생성 — 값, Revision 0, SourceBrand+EpochBrand 다중 태깅, StateBrand엔 미등록 ===
+PASS
+
+=== 2. :Set — 값 갱신 + 리비전 감소 랩 + self 반환; 동일값도 항상 (H-68) ===
+PASS
+
+=== 3. :Emit — 값은 그대로, 리비전만 갱신, self 반환 ===
+PASS
+
+=== 4. Modifier 가드 — 생성자와 Set 둘 다, level 2 ===
+@@QERR	Quad0182 Source: cannot hold a Modifier as a Source value
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.source.luau:60: Quad0182 Source: cannot hold a Modifier as a Source value
+@@FIND	Quad0182	Modifier
+@@FIND	Quad0182	spec.source.luau
+@@QERR	Quad0181 Source: cannot Set a Modifier as a Source value
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.source.luau:66: Quad0181 Source: cannot Set a Modifier as a Source value
+@@FIND	Quad0181	Modifier
+PASS
+
+=== 5. State 메소드 위임 — Source에서 Depend/Compute/Apply가 바로 됨 ===
+PASS
+
+=== 6. 인스턴스별 팩토리 (H-174) — 다른 New()의 Source는 다른 임플, 브랜드는 공유 ===
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (53 functions)

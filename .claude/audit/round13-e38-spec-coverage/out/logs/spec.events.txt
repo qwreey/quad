@@ -1,0 +1,57 @@
+=== 1. Event — 리플렉션 매치로 Connect, 엔진 인자만 그대로(self 없음) ===
+PASS
+
+=== 2. 클래스별 판별 — 다른 클래스의 이벤트 이름은 매치 안 됨(no-match error, 사용자 blame) ===
+@@QERR	Quad0076 Dispatch: no handler matched key MouseButton1Click (value: function) — check that the provider for this value (e.g. quad-roblox) is initialized
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.events.luau:72: Quad0076 Dispatch: no handler matched key MouseButton1Click (value: function) — check that the provider for this value (e.g. quad-roblox) is initialized
+PASS
+
+=== 3. Event store-bind — None으로 끄면 Connect 안 함(nil 매치), 다시 켜면 재연결 ===
+PASS
+
+=== 4. OnChange — 배열부 디스크립터, 초기값 발화 계약(배열→해시 순서), 같은 이름 둘 ===
+@@QERR	Quad0221 OnChange: property name must be a non-empty string
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.events.luau:145: Quad0221 OnChange: property name must be a non-empty string
+@@QERR	Quad0222 OnChange: callback for "Text" must be a function (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.events.luau:150: Quad0222 OnChange: callback for "Text" must be a function (got string)
+PASS
+
+=== 4b. Out — Source에 되쓰는 슈거(OnChange 위): 초기 echo·같은 값 건너뜀, Source만 받음 ===
+@@QERR	Quad0223 Out: property name must be a non-empty string
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.events.luau:179: Quad0223 Out: property name must be a non-empty string
+@@QERR	Quad0224 Out: second argument for "Text" must be a Source to write back into (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.events.luau:182: Quad0224 Out: second argument for "Text" must be a Source to write back into (got number)
+@@FIND	Quad0224	must be a Source
+@@QERR	Quad0224 Out: second argument for "Text" must be a Source to write back into (got a read-only State (a :Compute result?))
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.events.luau:185: Quad0224 Out: second argument for "Text" must be a Source to write back into (got a read-only State (a :Compute result?))
+@@FIND	Quad0224	read-only State
+PASS
+
+=== 5. OnChange store-bind — State<디스크립터> 교체·None으로 끄기·재연결·철거 ===
+PASS
+
+=== 6. 교대 — 같은 이벤트 자리의 평문/State 교체가 연결을 하나로 유지, OnChange 팩토리는 quad 간 공유 ===
+PASS
+=== 7. round3 H-440 (외부 리뷰 G-10, H-417 짝) — OnChange("", fn)은 생성자에서 거부(엔진 GetPropertyChangedSignal에 디스패치 깊이로 닿던 것) ===
+@@QERR	Quad0221 OnChange: property name must be a non-empty string
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.events.luau:238: Quad0221 OnChange: property name must be a non-empty string
+@@FIND	Quad0221	must be a non-empty string
+PASS
+
+
+=== 8. round8 H-507 (Studio 실측 2026-09-08) — 비함수 핸들러는 quad가 거부(엔진은 던지지 않고 콘솔에만 남긴다) ===
+@@QERR	Quad0218 Event: handler for "MouseButton1Click" must be a function (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.events.luau:250: Quad0218 Event: handler for "MouseButton1Click" must be a function (got number)
+@@FIND	Quad0218	Event: handler for "MouseButton1Click" must be a function (got
+@@QERR	Quad0218 Event: handler for "MouseButton1Click" must be a function (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.events.luau:250: Quad0218 Event: handler for "MouseButton1Click" must be a function (got table)
+@@FIND	Quad0218	Event: handler for "MouseButton1Click" must be a function (got
+@@QERR	Quad0218 Event: handler for "MouseButton1Click" must be a function (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.events.luau:250: Quad0218 Event: handler for "MouseButton1Click" must be a function (got string)
+@@FIND	Quad0218	Event: handler for "MouseButton1Click" must be a function (got
+@@QERR	Quad0218 Event: handler for "MouseButton1Click" must be a function (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.events.luau:258: Quad0218 Event: handler for "MouseButton1Click" must be a function (got number)
+@@FIND	Quad0218	must be a function (got number)
+PASS
+=== ALL PASS ===
+Coverage dump written to coverage.out (124 functions)

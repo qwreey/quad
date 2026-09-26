@@ -1,0 +1,20 @@
+=== 1. Declaration 설치(H-299) — module.Declaration, 별칭 전부 함수, New 포함 ===
+PASS (31 aliases + New + Mapper + Modifier)
+
+=== 2. 범위 관찰 계약 — H-296 (a) 화이트리스트 트리오 존재, defs-드롭 클래스 부재 ===
+PASS
+
+=== 3. 커링 계약 — New(name)은 함수(2단계 호출), 별칭은 이미 1회 적용된 것 ===
+PASS
+
+=== 4. H-238 — Declaration의 함수 전부 SURFACE 태그(리뷰 발견 반영 — 실제 태그 레벨 조회) ===
+PASS
+
+=== 5. 파이프라인 CLI e2e(탐사자 관측 반영) — getfenv 주입으로 ①~④ 실주행 ===
+@@QERR	Quad0225 nativeClaim: Instance is already claimed by quad
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.d.luau:122: Quad0225 nativeClaim: Instance is already claimed by quad
+@@FIND	Quad0225	already claimed
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (124 functions)

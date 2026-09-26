@@ -1,0 +1,14 @@
+--- S1 Replace on a materialized-but-unmounted Slot (swapped out of a State<Slot> seat), then swap back
+A mounted	a1,a2	2	_mounted	true	target	true
+B mounted	b1	sA._mounted	false	sA target kept	false
+Replace(1, Slot) on unmounted A	ok
+a1 destroyed	true	sA.Length	2	inner.Offset	0
+Replace(2, plain) on unmounted A	ok
+sA.Length	2
+A remounted	i1,i2,i3,z	Length	4	inner mounted	true	inner.Offset	0	z.Parent==p	true
+tail	i1,i2,i3,tail,z	5
+--- S2 Extract(i, Slot) on unmounted-materialized (destroyOld=false, old is Slot)
+got old	true	old el alive	true	old._mounted	false
+remounted	n1,n2,x	3
+reuse extracted old Slot elsewhere	ok
+p2	o1	1

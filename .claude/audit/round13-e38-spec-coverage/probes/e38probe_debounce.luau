@@ -1,0 +1,26 @@
+local mock = require("./mock")
+local q = mock.newQuad()
+local advance = mock.advanceTime
+local function run(label, opts, script)
+	mock.resetTimers()
+	local src = q.Source(0)
+	local handle = q.Ref(nil)
+	opts.Handle = handle
+	local g = src:Apply(q.Debounce(opts))
+	local seen = {}
+	local o = g:Observer(function() table.insert(seen, string.format("%s@%.1f", tostring(g:Get()), mock.now())) end); o:Subscribe()
+	script(src, handle, advance)
+	print(label, "emits:", table.concat(seen, " "), "pending timers:", mock.pendingTimers())
+end
+run("D1 window ends before cap (Time 1, MaxTime 5), one signal", { Time = 1, MaxTime = 5 }, function(src, h, adv)
+	src:Set(1); adv(1); adv(1); adv(4)
+end)
+run("D2 Flush while cap armed", { Time = 1, MaxTime = 5 }, function(src, h, adv)
+	src:Set(1); adv(0.5); h.Value:Flush(); adv(0.5); src:Set(2); adv(1.2); adv(5)
+end)
+run("D3 Cancel while cap armed", { Time = 1, MaxTime = 5 }, function(src, h, adv)
+	src:Set(1); adv(0.5); h.Value:Cancel(); adv(6); src:Set(2); adv(1)
+end)
+run("D4 cap cuts continuous signals (every 0.5, Time 1, MaxTime 2)", { Time = 1, MaxTime = 2 }, function(src, h, adv)
+	for i = 1, 8 do src:Set(i); adv(0.5) end; adv(3)
+end)

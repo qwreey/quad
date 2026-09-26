@@ -1,0 +1,6 @@
+=== 1. Source / State / Gate — 값, 캐시 무효면 `?`, print가 compute를 돌리지 않음 ===
+=== 2. Store / Tag / Attr — 키·이름 집합, 정렬 ===
+=== 3. Ref / PreRef / PostRef / Slot / Modifier ===
+=== 4. Observer / Effect / Blocker — 구독·차단 상태 ===
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

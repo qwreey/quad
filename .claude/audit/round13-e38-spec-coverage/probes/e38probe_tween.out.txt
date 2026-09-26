@@ -1,0 +1,15 @@
+--- T1 Tween convenience fields → TweenInfo args (Time,Style,Direction,RepeatCount,Reverses,DelayTime)
+#log	1	args	0.5,Quad,In,2,true,0.25
+--- T2 Animate passes Info/Direction/RepeatCount/Reverses/DelayTime/Started/Cancelled
+#log	1	args	0.2,Quad,InOut,1,true,0.1	started	2
+after dir State change (no value change) #log	1
+after src:Set(6) #log	2	args	0.2,Quad,Out,1,true,0.1	cancelled	1	started	3
+--- T3 Tween{Info=..., Time=0}: Info wins → engine path (not zero-time snap)?
+#log	1	0.7	Size	0
+--- T4 first-set snap fires Started/Completed?
+Size	2	started	1	completed	1	cancelled	0
+--- T5 CanAnimate=false with Cancelled only
+Size	4	#log	0	cancelled	0
+--- T6 Dedup default: same Value re-sent while running → no new tween; DelayTime=0 & RepeatCount=0 & Time=0 snap
+#log (expect 1)	1
+zero-time: #log (expect still 1)	1	Size	2	completed	1	old cancelled	1

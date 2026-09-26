@@ -1,0 +1,15 @@
+=== 1. 브랜드 삼분 — isRef는 셋 다 참, isPreRef/isPostRef는 서로소, Epoch도 그대로 ===
+PASS
+
+=== 2. 런타임은 Ref 그대로 — Value/Set/Callback/Wait, 마커 필드(H-300), _fired 초기 false ===
+PASS
+
+=== 3. 값 자리 — Modifier 필드는 Ref 계열 전부 거부(modifier-plan 4절, isRef), Source 값은 런타임에선 통과(타입·디스패치 가드 몫) ===
+@@QERR	Quad0057 Modifier: field "X" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.preref.luau:65: Quad0057 Modifier: field "X" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@QERR	Quad0057 Modifier: field "X" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.preref.luau:65: Quad0057 Modifier: field "X" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

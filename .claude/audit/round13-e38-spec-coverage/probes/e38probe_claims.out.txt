@@ -1,0 +1,34 @@
+--- C1 State-held element survives every discard path
+Replace: destroyed	false	Parent	nil
+  re-add to other Slot	ok
+Clear: destroyed	false	Parent	nil
+  re-add	ok
+List mounted f.Parent==p	true
+KeyGone(nil): destroyed	false	Parent	nil
+  re-add	ok
+extracted s; f.Parent	nil
+dispose(slot): destroyed	false	Parent	nil
+  re-add	ok
+Remove: destroyed	false	Parent	nil
+Clear before mount: destroyed	false
+  re-add	ok
+Splice: destroyed	false	Parent	nil
+owner Slot destroyed by parent Remove: destroyed	false	Parent	nil
+--- C2 Slot:Add index gates
+Add idx 3 (limit 2)	ERR ./e38probe_claims.luau:36: Quad0236 Slot:Add: index out of range (got 3, limit 2)
+Add idx 1.5	ERR ./e38probe_claims.luau:37: Quad0168 Slot:Add: index must be a positive integer (got 1.5)
+Add idx 0	ERR ./e38probe_claims.luau:38: Quad0168 Slot:Add: index must be a positive integer (got 0)
+Add idx -1	ERR ./e38probe_claims.luau:39: Quad0168 Slot:Add: index must be a positive integer (got -1)
+#elements	1
+--- C3 WeakUnsubscribe leaves cleanup; unbindLifetime does not run cleanup
+WeakUnsubscribe cleanups	0
+re-Subscribe cleanups (held replay?)	0
+Unsubscribe cleanups	1
+unbindLifetime cleanups	0
+after inst destroy cleanups	0
+--- C4 RunInit throws → second RunInit no-op; Store undeclared dot read
+first	ERR ./e38probe_claims.luau:49: boom
+second	ok
+calls	1
+undeclared read	nil	names	a
+empty Slot{} then :List	ERR ./e38probe_claims.luau:52: Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)

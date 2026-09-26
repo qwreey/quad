@@ -1,0 +1,23 @@
+=== 1. register/is — 등록한 값만 통과 ===
+PASS
+
+=== 2. 다중 태깅 — 한 값이 여러 브랜드에 동시에 ===
+PASS
+
+=== 3. 브랜드 간 독립 — 한 브랜드 등록이 다른 브랜드에 안 샘 ===
+PASS
+
+=== 4. weak-key — 등록만으로는 값이 살아남지 않음 ===
+PASS
+
+=== 5. isRef 계층 — PreRef/PostRef는 Ref의 한 종류, 서로는 배타 ===
+PASS
+
+=== 6. isState 계층 — Source는 State를 구조적으로 만족 ===
+PASS
+
+=== 7. 단순 항등 술어 + Quad 탑레벨 재export ===
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (53 functions)

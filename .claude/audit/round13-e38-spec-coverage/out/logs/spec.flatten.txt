@@ -1,0 +1,20 @@
+=== 1. 순수 flatten — in-place, 나중 modifier 우선, 인라인(None 포함) 무조건 우선, 비Modifier 항목 통과 ===
+PASS
+
+=== 2. drive 경유 — 센티널 자리는 길이 0(H-39), 형제 오프셋 무영향, 병합 필드는 해시 핸들러로 ===
+PASS
+
+=== 3. 센티널 핸들러 — 등록됨(HIGH), 철거는 Void(no-op), 배열 밖 값은 안 잡음 ===
+PASS
+
+=== 4. H-312(사용자 확정) — 해시 키 자리의 Modifier는 flatten이 즉시 error(사용자 줄 blame), 슬롯 소진 전 ===
+@@QERR	Quad0068 Modifier: a Modifier cannot be a value of key "Size" — place it in the array part
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.flatten.luau:109: Quad0068 Modifier: a Modifier cannot be a value of key "Size" — place it in the array part
+@@FIND	Quad0068	array part
+@@QERR	Quad0068 Modifier: a Modifier cannot be a value of key "5" — place it in the array part
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.flatten.luau:117: Quad0068 Modifier: a Modifier cannot be a value of key "5" — place it in the array part
+@@FIND	Quad0068	array part
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

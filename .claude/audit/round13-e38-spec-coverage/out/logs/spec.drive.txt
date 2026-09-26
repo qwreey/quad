@@ -1,0 +1,11 @@
+=== 1. 배열 파트 전체가 해시 파트보다 먼저 + 배열 안에서는 index 순서 ===
+PASS
+
+=== 2. 모든 진입은 체인 인덱스 1 ===
+PASS
+
+=== 3. 빈 props — no-op (아무 핸들러도 안 불림) ===
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

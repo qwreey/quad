@@ -1,0 +1,32 @@
+=== 1. 생성·브랜드·tostring — Context()는 콜러블 네임스페이스, Provider는 frozen 신원 키(이름은 선택) ===
+@@QERR	Quad0035 Context.Provider: name must be a string (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.context.luau:28: Quad0035 Context.Provider: name must be a string (got number)
+@@FIND	Quad0035	name must be a string
+PASS
+
+=== 2. Set/Get/Peek — 타입은 Provider<T>의 팬텀 T로 추론; Get은 없으면 에러(호출 줄 blame), Peek은 nil ===
+@@QERR	Quad0038 Context:Get: no value for Provider(Theme) — the creator of this Context did not :Set it (use :Peek to test)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.context.luau:50: Quad0038 Context:Get: no value for Provider(Theme) — the creator of this Context did not :Set it (use :Peek to test)
+@@FIND	Quad0038	no value for Provider(Theme)
+PASS
+
+=== 3. 게이트 — 키는 Provider만, nil 값 거부; Set은 덮어쓰기 ===
+@@QERR	Quad0036 Context:Set: key must be a Provider from Context.Provider() (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.context.luau:65: Quad0036 Context:Set: key must be a Provider from Context.Provider() (got table)
+@@FIND	Quad0036	Context:Set: key must be a Provider
+@@QERR	Quad0036 Context:Get: key must be a Provider from Context.Provider() (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.context.luau:65: Quad0036 Context:Get: key must be a Provider from Context.Provider() (got table)
+@@FIND	Quad0036	Context:Get: key must be a Provider
+@@QERR	Quad0036 Context:Peek: key must be a Provider from Context.Provider() (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.context.luau:65: Quad0036 Context:Peek: key must be a Provider from Context.Provider() (got table)
+@@FIND	Quad0036	Context:Peek: key must be a Provider
+@@QERR	Quad0037 Context:Set: value for Provider must not be nil (absence is "not set")
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.context.luau:70: Quad0037 Context:Set: value for Provider must not be nil (absence is "not set")
+@@FIND	Quad0037	must not be nil
+PASS
+
+=== 4. 중간 계층 — 스키마를 모르는 셸이 가방을 그대로 내리고, 깊은 자식이 자기 키만 읽는다 ===
+PASS
+
+ALL PASS
+Coverage dump written to coverage.out (54 functions)

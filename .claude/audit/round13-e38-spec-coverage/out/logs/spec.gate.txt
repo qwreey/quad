@@ -1,0 +1,37 @@
+=== 1. 조립 — setup은 생성 시 1회, StateBrand 등록, State 노드로 위임(Get은 pass-through) ===
+@@QERR	Quad0188 State: Gate setup must be a function (emit) -> onUpstreamEmit
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.gate.luau:70: Quad0188 State: Gate setup must be a function (emit) -> onUpstreamEmit
+@@QERR	Quad0189 State: Gate setup must return the onUpstreamEmit function
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.gate.luau:74: Quad0189 State: Gate setup must return the onUpstreamEmit function
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.gate.luau:83: setup boom
+PASS
+
+=== 2. 열린 게이트 — 통과하되 출처는 게이트의 배치(집합)로 바뀐다 ===
+PASS
+
+=== 3. 닫힌 게이트 — 유보: 통지 없음, 값은 Get으로 보인다(3번), 풀면 배치 1회 ===
+PASS
+
+=== 4. emit(false) — 배치를 버린다: 전파도 Sync도 없음, 다음 진짜 emit이 스스로 낫는다 ===
+PASS
+
+=== 5. 규칙 3 — 같은 리비전이 두 경로로 와도 정책은 한 번(다이아몬드), 유보 중엔 Peek이라 재도착은 정책 재실행(무해) ===
+PASS
+
+=== 6. flush 순서 — 스왑 → Sync(배치) → 전파: 전파 중 재진입 flush는 새 테이블에 쌓인다 ===
+PASS
+
+=== 7. 게이트 안 게이트 — 받은 배치를 풀어 자기 집합에 합친다(참조를 들고 있지 않는다) ===
+PASS
+
+=== 8. 유보 중 Get으로 앞당겨 읽은 하류 — 풀릴 때 통지만 오고 재계산 없음(규칙 2) ===
+PASS
+
+=== 9. 흡수 집합은 weak-key, 스왑된 새 테이블도 weak (H-9) ===
+PASS
+
+=== 10. H-198 — 닫힌 게이트 너머 fn 도중의 Set: 같은 Get 안에서 재시작해 최신으로 수렴, flush는 통지만 ===
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (53 functions)

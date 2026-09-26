@@ -1,0 +1,35 @@
+=== 1. Observer leaf — 배열 자리 바인딩: H-39 부기(None/0) + gchold로 실행 가능해진다 ===
+PASS
+
+=== 2. Effect leaf — 바인딩 후 dep 변경마다 재실행 ===
+PASS
+
+=== 3. dedup — 같은 값 재발행에 bindLifetime 재호출 없음(있으면 already-bound error가 난다) ===
+PASS
+
+=== 4. 값 교체 — 옛 값 unbind(발화 중단), Effect는 cleanup 소진(H-57) ===
+PASS
+
+=== 5. nil로 철거 — (B) 분기: NilHandler로 교대, leaf retractor가 unbind+cleanup ===
+PASS
+
+=== 6. 동적 경로 가드 — named 자리로 흘러온 Observer/Effect는 typeof(k)를 실은 error ===
+@@QERR	Quad0116 Observer: must be an array item, not the value of a string key
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.leaf.luau:147: Quad0116 Observer: must be an array item, not the value of a string key
+@@FIND	Quad0116	Observer: must be an array item, not the value of a string key
+@@QERR	Quad0097 Effect: must be an array item, not the value of a string key
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.leaf.luau:157: Quad0097 Effect: must be an array item, not the value of a string key
+@@FIND	Quad0097	Effect: must be an array item, not the value of a string key
+PASS
+
+=== 7. FALLBACK 의미론 — 평범한 우선순위 핸들러가 가드를 덮어쓴다 ===
+PASS
+
+=== 8. 이중 배치 — 디스패치 경유 designed error가 quad 내부가 아니라 사용자를 blame(H-272) ===
+@@QERR	Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.leaf.luau:198: Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)
+@@FIND	Quad0232	already bound
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

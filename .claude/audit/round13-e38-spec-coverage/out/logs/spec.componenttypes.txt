@@ -1,0 +1,2 @@
+=== ALL PASS ===
+Coverage dump written to coverage.out (71 functions)

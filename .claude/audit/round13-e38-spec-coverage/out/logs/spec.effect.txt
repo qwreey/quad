@@ -1,0 +1,101 @@
+=== 1. 생성 — deps 검증(H-70), 설치 즉시 1회(force), _deps 강한 주인, 브랜드 ===
+@@QERR	Quad0095 Effect: dep #2 is nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:45: Quad0095 Effect: dep #2 is nil
+@@FIND	Quad0095	is nil
+@@FIND	Quad0095	spec.effect.luau
+@@QERR	Quad0096 Effect: dep #2 is not a State/Source/Ref
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:45: Quad0096 Effect: dep #2 is not a State/Source/Ref
+@@FIND	Quad0096	not a State/Source/Ref
+@@FIND	Quad0096	spec.effect.luau
+@@QERR	Quad0096 Effect: dep #2 is not a State/Source/Ref
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:45: Quad0096 Effect: dep #2 is not a State/Source/Ref
+@@FIND	Quad0096	not a State/Source/Ref
+@@FIND	Quad0096	spec.effect.luau
+@@QERR	Quad0094 Effect: fn must be a function
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:51: Quad0094 Effect: fn must be a function
+PASS
+
+=== 2. 발화 — 안 묶이면 홀드(H-159), 묶이면 dep 변경마다 1회; Ref dep도 같은 경로 ===
+PASS
+
+=== 3. 다이아몬드 — 공통 상류가 한 번 바뀌면 fn은 한 번 (H-107: 클로저를 나눠도 dedup은 _epochs) ===
+PASS
+
+=== 4. cleanup — fn의 반환이 cleanup, 다음 fn 전에 1회, Unsubscribe가 소진, 파괴가 소진 ===
+PASS
+
+=== 5. cleanup 없는 fn — 바인드/재마운트마다 재실행되지 않는다 (_rerunRequired 판정, H-58 회귀 방지) ===
+PASS
+
+=== 6. 재진입 — fn 안의 dep:Set은 지연 재실행(_pending); fn/cleanup은 자기 구독을 못 바꾼다 (H-147) ===
+@@QERR	Quad0090 Effect: cannot change subscription from inside fn or cleanup
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:175: Quad0090 Effect: cannot change subscription from inside fn or cleanup
+@@QERR	Quad0088 Effect: cannot change subscription from inside fn or cleanup
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:175: Quad0088 Effect: cannot change subscription from inside fn or cleanup
+@@QERR	Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:175: Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()
+@@QERR	Quad0090 Effect: cannot change subscription from inside fn or cleanup
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:183: Quad0090 Effect: cannot change subscription from inside fn or cleanup
+PASS
+
+=== 7. 네 진입점 — 게이트·관대/엄격·강한 킵 뒤 꼬리, canExecute 연동 ===
+@@QERR	Quad0091 Effect: already subscribed
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:212: Quad0091 Effect: already subscribed
+@@QERR	Quad0092 Effect: subscribed strongly; use :Unsubscribe()
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:219: Quad0092 Effect: subscribed strongly; use :Unsubscribe()
+@@QERR	Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:223: Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()
+@@QERR	Quad0104 bindLifetime: value is already subscribed
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:226: Quad0104 bindLifetime: value is already subscribed
+@@FIND	Quad0104	already subscribed
+PASS
+
+=== 8. error — fn이 던지면 그 Effect는 죽는다(_running 남음), 재실행·(재)구독은 차단; round11 Q63 (b): 해제(Unsubscribe/WeakUnsubscribe)는 통과해 강한 킵이 풀린다 ===
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:238: boom
+@@QERR	Quad0090 Effect: cannot change subscription from inside fn or cleanup
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:248: Quad0090 Effect: cannot change subscription from inside fn or cleanup
+@@QERR	Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:252: Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()
+PASS
+
+=== 9. GC — Effect가 강한 주인: 핸들을 놓으면 Ref 콜백·내부 Observer도 같이 사라진다 ===
+PASS
+
+=== 10. H-182 — Destroy 파동 안 cleanup 소진 뒤의 dep 변경은 홀드(_dying); H-184 — 거부된 bind는 아무것도 커밋 안 함 ===
+@@QERR	Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:342: Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup
+@@FIND	Quad0087	inside its own fn or cleanup
+PASS
+
+
+=== 4순회 H-384 — fn 안에서 자기 자신을 drive로 바인드하려는 오용(H-147 (A)) — blame은 사용자의 Effect 생성 줄 (fn은 생성 시 즉시 돈다; drive → process → bindLifetime → _assertBindable, 최외곽) ===
+@@QERR	Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:363: Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup
+@@FIND	Quad0087	cannot bind an Effect from inside its own fn
+PASS
+
+=== 공개 표면 (18) 2026-09-15 — fn이 함수도 nil도 아닌 값을 돌려주면 그 자리에서 던진다(사용자 줄 blame) ===
+@@QERR	Quad0086 Effect: fn must return a cleanup function or nothing (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:377: Quad0086 Effect: fn must return a cleanup function or nothing (got number)
+@@FIND	Quad0086	Effect: fn must return a cleanup function or nothing (got number)
+@@QERR	Quad0086 Effect: fn must return a cleanup function or nothing (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:392: Quad0086 Effect: fn must return a cleanup function or nothing (got table)
+@@FIND	Quad0086	(got table)
+PASS
+
+=== round10 Q51 (a) (2026-09-17) — cleanup 안의 dep Set은 뒤따르는 fn이 소비한다: 사이클 하나(cl fn), 옛 순서의 cl fn cl fn이 아니다 ===
+PASS
+
+=== round10 Q57 (2026-09-17, 사용자 제안) — cleanup(dying): 잎 사망 소진만 true, 재실행 직전·Unsubscribe·자리 교체는 false; () -> () cleanup은 그대로 ===
+PASS
+
+=== 11. round11 H-574 (2026-09-17, Deferred 실측) — 호스트가 죽은 뒤 같은 청크에서 다른 인스턴스에 다시 묶인 핸들은 옛 Destroying 콜백(지연 배달)에 죽지 않는다 ===
+PASS
+
+
+=== 12. round11 Q68 (b) (2026-09-18) — fn이 yield하는 사이 leaf가 죽으면(_dying) fn이 돌려준 cleanup을 저장하지 않고 즉시 dying=true로 소진(전엔 죽은 핸들에 남는 영구 누수); 자리 철거로 실행 자격을 잃은 경우도 같다 ===
+@@QERR	Quad0090 Effect: cannot change subscription from inside fn or cleanup
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.effect.luau:599: Quad0090 Effect: cannot change subscription from inside fn or cleanup
+PASS
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

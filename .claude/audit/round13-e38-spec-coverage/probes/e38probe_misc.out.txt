@@ -1,0 +1,6 @@
+start
+store ok
+direct assign	ok
+Quad0003 Attr(store with '')	ERR ./e38probe_misc.luau:9: Quad0003 Attr: attribute name cannot be empty
+destroyed Slot mounted (0140 vs 0164)	ERR ./e38probe_misc.luau:12: Quad0140 Slot: destroyed Slot cannot be mounted
+updateFn same element for two keys (0156)	ERR ./e38probe_misc.luau:16: Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)

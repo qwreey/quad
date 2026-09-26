@@ -1,0 +1,5 @@
+=== 1. 런타임 대응 — 타입이 약속한 값이 실제로 있다(H-300) ===
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (71 functions)

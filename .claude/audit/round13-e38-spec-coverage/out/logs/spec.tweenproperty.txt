@@ -1,0 +1,37 @@
+=== 1. 첫 세팅 스냅 — Tween 값이어도 엔진 트윈 없이 즉시 Value, plain도 동일 ===
+PASS
+
+=== 2. 세팅된 뒤 Tween — Create·Play 1회, 슬롯에 {Tween, Value}; Info 우선·편의 필드 기본값 채움(H-333) ===
+PASS
+
+=== 3. Tween→Tween 기본(Cancel) — 이전 Cancel 1, 스냅 없음, 새 Create ===
+PASS
+
+=== 4. Tween→Tween Finish — 이전 Cancel 뒤 prev.Value로 스냅, 그 다음 새 Create ===
+PASS
+
+=== 5. Tween→plain — Cancel 뒤 즉시 덮어쓰기, Create 없음; plain→plain은 슬롯 true 유지 ===
+PASS
+
+=== 6. Mapped 값·None 재디스패치(nil 쓰기 + 활성 트윈 취소 — Q33, H-352 역전)·다른 프로퍼티는 독립 슬롯 ===
+PASS
+=== 7. Q8 (a) Animate 아래 nil/None 통과(해제 가능); Q25 (2026-09-08, 옛 Q12 신원 모델 대체) 값 dedup: 같은 목표 Value면 무동작(취소·재시작 0 — 새 객체여도), Dedup=false면 재시작 ===
+PASS
+
+=== 8. Q26 (a) (2026-09-08) — 첫 스냅도 { Value }: 같은 목표 재발행은 엔진 트윈 0, 다른 목표는 Create 1, plain은 여전히 true ===
+PASS
+
+=== 9. 2026-09-08 round8 H-502/K-9 — Animate의 State 옵션 오류는 drive 깊이에서도 사용자 줄(D.Frame)을 blame ===
+@@QERR	Quad0243 Tween: Time must be a number
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tweenproperty.luau:203: Quad0243 Tween: Time must be a number
+@@FIND	Quad0243	Time must be a number
+PASS
+
+=== 10. round11 H-547 (2026-09-17) → Q65 (2026-09-18) — 기록은 (inst, k)에 인스턴스 수명 동안 남는다: 철거·핸들러 교체 뒤에도 '쓴 적 있음'이라 다음 Tween은 애니메이션; 진행 중이던 트윈만 Cancel 뒤 true; retractor는 GC를 견딘다 ===
+PASS
+=== 11. [2026-09-21 docs-review 1-5] 콜백 Started/Completed/Cancelled — 스냅은 Started→Completed 동기, 교체는 이전 Cancelled→새 Started, 자연 완료는 엔진 Completed(Completed)에서만, 끝난 트윈의 Cancel(엔진 재발화)은 무시, 철거는 진행 중일 때만 Cancelled, Dedup 스킵은 무발화, Time=0은 엔진 트윈 없는 스냅 ===
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tweenproperty.luau:369: boom
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (124 functions)

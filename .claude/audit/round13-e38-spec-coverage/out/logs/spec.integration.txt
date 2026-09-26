@@ -1,0 +1,14 @@
+=== 1. 혼합 drive — 해시 프로퍼티 + 배열(문자열/Observer/None/Effect)이 한 트리에서 ===
+PASS
+
+=== 2. 자리 타입 교대 — Observer 자리에 문자열: 철거(unbind) + 오프셋 이동 ===
+PASS
+
+=== 3. Destroy — retract는 계약상 안 불린다(메모리 해제지 teardown 아님), 발화만 멎는다 ===
+PASS
+
+=== 4. GC — Destroy 후 참조를 놓으면 leaf 값·체인 그래프가 회수된다(H-229 end-to-end) ===
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

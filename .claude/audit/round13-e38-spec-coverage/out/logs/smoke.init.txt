@@ -1,0 +1,14 @@
+=== 1. New()가 만든 module엔 InitDebug가 이미 반영돼 있음 ===
+PASS
+
+=== 2. RunInit은 같은 함수를 다시 넘겨도 재실행하지 않음 ===
+PASS: 1회 호출 중 실제 실행 1회
+
+=== 3. New()로 만든 서로 다른 module은 RunInit 기록을 공유하지 않음 ===
+PASS: 독립 인스턴스 2개 각각 1회씩, 총 2회
+
+=== 4. 서로 다른 initFn은 서로의 실행 여부에 영향을 안 줌 ===
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (53 functions)

@@ -1,0 +1,19 @@
+=== 1. 설치 — 프로바이더가 세 op을 심는다(스텁 아님), H-238 태깅 ===
+@@QERR	Quad0108 quad: addTag is not available — no backend has installed the tag ops (install a provider with quad:UseProvider — a bare Quad.New() has none)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tagattribute.luau:41: Quad0108 quad: addTag is not available — no backend has installed the tag ops (install a provider with quad:UseProvider — a bare Quad.New() has none)
+@@FIND	Quad0108	addTag is not available
+PASS
+
+=== 2. Tag — 배치 addTag / 깜빡임 없는 diff / nil로 전량 제거 (CollectionService 경유) ===
+PASS
+
+=== 3. Attr — 단일 키·그룹·반응형 값·nil 삭제 (inst:SetAttribute 경유) ===
+PASS
+
+=== 4. 실물 계약 경계 — 태그 이름은 문자열만 (CollectionService가 거부하는 값은 base 검증이 먼저 막는다) ===
+@@QERR	Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.tagattribute.luau:88: Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (124 functions)

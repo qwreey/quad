@@ -1,0 +1,16 @@
+local mock = require("./mock")
+local q = mock.newQuad()
+local Op = q.Operator
+local function try(l, f) local ok, e = pcall(f) print(l, ok and ("ok " .. tostring(e)) or ("ERR " .. tostring(e))) end
+try("Debounce{Trailing=false}", function() return q.Debounce({ Time = 1, Trailing = false }) end)
+local n = q.Source(q.None)
+try("Alternative(None)", function() return n:Apply(Op.Alternative(5)):Get() == q.None end)
+try("Indexed on None", function() return n:Apply(Op.Indexed("x")):Get() end)
+try("Sum on None", function() return n:Apply(Op.Sum(1)):Get() end)
+try("uncalled factory Apply(Op.Sum)", function() return typeof(q.Source(1):Apply(Op.Sum):Get()) end)
+local M = q.Modifier; local T = M.TypedFactory("E38X")
+local base = T({ A = 1 })
+local m2 = T({ A = 2 }); local m3 = m2:A(function(old) return nil end)
+print("transform->nil plain: Peek", m3:Peek("A"), "Overridden(base,m3).A", M.Overridden(base, m3):Peek("A"))
+local st = q.Source(3); local m4 = T({ A = st }):A(function(old) return nil end)
+print("transform->nil State: Peek is State", q.isState(m4:Peek("A")), q.isState(m4:Peek("A")) and m4:Peek("A"):Get())

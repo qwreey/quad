@@ -1,0 +1,44 @@
+=== 1. 생성·상태 — On/Off/OffWithoutEmit은 self 반환, `Blocking` 필드(2026-09-15 옛 상태 필드·접근자 쌍 대체), 브랜드, 단순 불리언(카운터 아님) ===
+PASS
+
+=== 2. state:Apply(blocker) — __apply 메소드형(H-158)으로 GateNode 하나, 열려 있으면 투명 통과 ===
+PASS
+
+=== 3. On → 유보(HasBlockedEmit = withheld 비어있지 않음), Off → 정확히 1회 flush, 이미 비었으면 no-op ===
+PASS
+
+=== 4. OffWithoutEmit — 밀린 전파를 버리며 끈다, 다음 진짜 emit은 정상 ===
+PASS
+
+=== 5. 하나의 Blocker가 여러 gated state를 — Off가 전부 풀고, 순회는 스냅샷(풀리는 중 새 등록 안전) ===
+PASS
+
+=== 6. H-63 — 핸들은 weak-key, 강한 주인은 게이트의 onUpstreamEmit 클로저: 게이트가 죽으면 핸들도 사라진다 ===
+PASS
+
+=== 7. Policy(emit)를 직접 Gate에 배선 — Apply와 같은 모양, 여러 노드가 정책을 공유 ===
+PASS
+
+=== 8. H-203 — Off 순회 중 재차단: 남은 핸들은 유보 유지, Blocking true인 채 통지가 새지 않는다 ===
+PASS
+
+
+=== 9. 2026-09-08 2차 감사 H-492 — Policy(emit)의 emit 게이트: 비함수는 등록 줄에서 표면 에러(옛: Off()에서 Blocker.luau VM 에러) ===
+@@QERR	Quad0017 Blocker: Policy emit must be a function (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.blocker.luau:200: Quad0017 Blocker: Policy emit must be a function (got number)
+@@FIND	Quad0017	Blocker: Policy emit must be a function (got number)
+@@FIND	Quad0017	spec.blocker.luau
+@@QERR	Quad0017 Blocker: Policy emit must be a function (got nil)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.blocker.luau:203: Quad0017 Blocker: Policy emit must be a function (got nil)
+@@FIND	Quad0017	(got nil)
+PASS
+
+=== 10. round10 H-2 — Blocker:__apply의 대상 게이트(형제 Apply와 같은 모양) ===
+@@QERR	Quad0018 Blocker: Apply target must be a State (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.blocker.luau:213: Quad0018 Blocker: Apply target must be a State (got number)
+@@FIND	Quad0018	Blocker: Apply target must be a State (got number)
+@@QERR	Quad0018 Blocker: Apply target must be a State (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.blocker.luau:216: Quad0018 Blocker: Apply target must be a State (got table)
+PASS
+=== ALL PASS ===
+Coverage dump written to coverage.out (53 functions)

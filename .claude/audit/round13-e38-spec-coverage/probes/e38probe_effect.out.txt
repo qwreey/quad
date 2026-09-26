@@ -1,0 +1,31 @@
+--- R1 Rerun on a subscribed Effect: cleanup first, then fn, returns self
+log	cl fn	returns self	true
+--- R2 Rerun on a created-but-not-subscribed Effect: held, replayed once on Subscribe
+after construct n	1	Subscribed	false
+after two Rerun unsubscribed n	1
+after Subscribe n	2
+--- R3 Rerun inside fn: deferred after the run (once)
+n after subscribe	1
+n after Rerun that re-requests twice inside	3
+--- R4 Rerun inside cleanup: held → replayed when?
+fn runs	1	cleanups	1
+fn runs total	2	cleanups	2
+--- R5 Rerun after Unsubscribe: held? replayed on re-Subscribe?
+after Rerun on unsubscribed	0
+after re-Subscribe	1
+--- R6 Rerun on a bound (props seat) Effect after instance destroyed
+bound Rerun runs	1
+Subscribe on bound (Quad0231)	ERR ./e38probe_effect.luau:53: Quad0231 Effect: already bound to an Instance
+WeakSubscribe on bound (Quad0230)	ERR ./e38probe_effect.luau:54: Quad0230 Effect: already bound to an Instance
+Rerun after destroy runs	0
+--- O1 Observer bound then Subscribe
+obs Subscribe on bound (Quad0235)	ERR ./e38probe_effect.luau:63: Quad0235 Observer: already bound to an Instance
+obs WeakSubscribe on bound (Quad0234)	ERR ./e38probe_effect.luau:64: Quad0234 Observer: already bound to an Instance
+Effect WeakSubscribe twice (Quad0089)	ERR ./e38probe_effect.luau:66: Quad0089 Effect: already subscribed
+--- misc NONE error IDs
+Quad0134 Wait inside table.sort comparator	ERR ./e38probe_effect.luau:69: Quad0134 Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)
+Quad0134 Wait inside __index	ERR ./e38probe_effect.luau:70: Quad0134 Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)
+Quad0045 Debounce()	ERR ./e38probe_effect.luau:71: Quad0045 Debounce: options table expected (got nil)
+Quad0012 Overridden(5)	ERR ./e38probe_effect.luau:72: Quad0012 Attr.Overridden: arguments must be Attr values
+Quad0190 Observer(5)	ERR ./e38probe_effect.luau:73: Quad0190 State: Observer fn must be a function (or nil for the always-observe utility)
+Quad0180 dispose({})	ERR ./e38probe_effect.luau:74: Quad0180 dispose: this backend cannot dispose this value

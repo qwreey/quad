@@ -1,0 +1,34 @@
+=== 1. UICorner = 8 — 관리 자식 _quad_round 생성·부착, CornerRadius = UDim(0, 8); UDim은 그대로 ===
+PASS
+
+=== 2. 반응형 — State<number> 변경은 자식을 재생성하지 않고 프로퍼티만 갱신(Relate 조회) ===
+PASS
+
+=== 3. nil — 자식 파괴(retractFrom 뒤), 다시 숫자면 재생성(첫 값 스냅); None 경유도 같은 경로 ===
+PASS
+
+=== 4. Tween — Tween<number>이 Mapped로 UDim Tween이 되어 (child, CornerRadius) 슬롯에서 애니메이션(첫 값은 스냅) ===
+PASS
+
+=== 5. UIPadding(UDim)·UIPaddingOffset(number) — 같은 _quad_padding 자식, 네 프로퍼티; UIScale ===
+PASS
+
+=== 6. 우선순위가 Property보다 높다 (Q17 (a), 2026-09-07: 옛 `numberOnly` 값 게이트는 제거 — 타입이 1차 방어, 최종 프로퍼티 대입이 다른 프로퍼티처럼 raise) ===
+PASS
+
+=== 7. Q25 (2026-09-08) — Animate 아래 같은 값 재발행: Mapped가 매번 새 Tween을 만들어도 Property 핸들러가 목표 Value로 접는다(취소·재시작 0) ===
+PASS
+
+=== 8. 관리 자식 소유권 자리(round10 Q48 (a)·G-6) — dispose 거부, nil로 내리면 자리도 풀린다 ===
+@@QERR	Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.shorthand.luau:155: Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@FIND	Quad0179	dispose: this value is still held by a Slot or a mounted position
+@@QERR	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.shorthand.luau:157: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+@@FIND	Quad0160	already mounted elsewhere
+PASS
+
+=== 9. round10 Q53 (a) (2026-09-17) — 체인 철거는 진행 중 엔진 Tween을 Cancel한다(Q65: 그 기록만 true로 — 진행 중이 아니던 { Value } 스냅 기록은 남아 같은 타깃은 dedup, 다음 타깃은 애니메이션): 관리 자식 파괴 전 취소(G-7) ===
+PASS
+=== ALL PASS ===
+Coverage dump written to coverage.out (124 functions)

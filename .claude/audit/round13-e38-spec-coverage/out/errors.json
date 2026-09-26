@@ -1,0 +1,4125 @@
+[
+{
+"id": "Quad0001",
+"class": "FAIL",
+"doc": "05-tag-attr.md:10",
+"src": [
+"quad-base/src/Attr/Key.luau:58"
+],
+"thrown_in": [
+"spec.attribute"
+],
+"pcall_in": [
+"spec.attribute"
+],
+"find_in": []
+},
+{
+"id": "Quad0002",
+"class": "MSG",
+"doc": "05-tag-attr.md:18",
+"src": [
+"quad-base/src/Attr/Key.luau:112"
+],
+"thrown_in": [
+"spec.attribute"
+],
+"pcall_in": [
+"spec.attribute"
+],
+"find_in": [
+"spec.attribute"
+]
+},
+{
+"id": "Quad0003",
+"class": "NONE",
+"doc": "05-tag-attr.md:26",
+"src": [
+"quad-base/src/Attr/init.luau:99"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0004",
+"class": "NONE",
+"doc": "05-tag-attr.md:34",
+"src": [
+"quad-base/src/Attr/init.luau:102"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0005",
+"class": "MSG",
+"doc": "05-tag-attr.md:42",
+"src": [
+"quad-base/src/Attr/init.luau:109"
+],
+"thrown_in": [
+"spec.attribute"
+],
+"pcall_in": [
+"spec.attribute"
+],
+"find_in": [
+"spec.attribute"
+]
+},
+{
+"id": "Quad0006",
+"class": "FAIL",
+"doc": "05-tag-attr.md:50",
+"src": [
+"quad-base/src/Attr/init.luau:128"
+],
+"thrown_in": [
+"spec.attribute"
+],
+"pcall_in": [
+"spec.attribute"
+],
+"find_in": []
+},
+{
+"id": "Quad0007",
+"class": "MSG",
+"doc": "05-tag-attr.md:58",
+"src": [
+"quad-base/src/Attr/init.luau:132"
+],
+"thrown_in": [
+"spec.attribute"
+],
+"pcall_in": [
+"spec.attribute"
+],
+"find_in": [
+"spec.attribute"
+]
+},
+{
+"id": "Quad0008",
+"class": "MSG",
+"doc": "05-tag-attr.md:66",
+"src": [
+"quad-base/src/Attr/init.luau:138"
+],
+"thrown_in": [
+"spec.attribute"
+],
+"pcall_in": [
+"spec.attribute"
+],
+"find_in": [
+"spec.attribute"
+]
+},
+{
+"id": "Quad0009",
+"class": "NONE",
+"doc": "05-tag-attr.md:74",
+"src": [
+"quad-base/src/Attr/init.luau:141"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0010",
+"class": "MSG",
+"doc": "05-tag-attr.md:82",
+"src": [
+"quad-base/src/Attr/init.luau:146"
+],
+"thrown_in": [
+"spec.attribute"
+],
+"pcall_in": [
+"spec.attribute"
+],
+"find_in": [
+"spec.attribute"
+]
+},
+{
+"id": "Quad0011",
+"class": "FAIL",
+"doc": "05-tag-attr.md:90",
+"src": [
+"quad-base/src/Attr/init.luau:167"
+],
+"thrown_in": [
+"spec.attribute"
+],
+"pcall_in": [
+"spec.attribute"
+],
+"find_in": []
+},
+{
+"id": "Quad0012",
+"class": "NONE",
+"doc": "05-tag-attr.md:98",
+"src": [
+"quad-base/src/Attr/init.luau:179"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0013",
+"class": "MSG",
+"doc": "05-tag-attr.md:106",
+"src": [
+"quad-base/src/Attr/init.luau:195"
+],
+"thrown_in": [
+"spec.attribute",
+"spec.errorcodes"
+],
+"pcall_in": [
+"spec.attribute",
+"spec.errorcodes"
+],
+"find_in": [
+"spec.errorcodes"
+]
+},
+{
+"id": "Quad0014",
+"class": "FAIL",
+"doc": "05-tag-attr.md:114",
+"src": [
+"quad-base/src/Attr/init.luau:198"
+],
+"thrown_in": [
+"spec.attribute"
+],
+"pcall_in": [
+"spec.attribute"
+],
+"find_in": []
+},
+{
+"id": "Quad0015",
+"class": "FAIL",
+"doc": "05-tag-attr.md:122",
+"src": [
+"quad-base/src/Attr/init.luau:201"
+],
+"thrown_in": [
+"spec.attribute"
+],
+"pcall_in": [
+"spec.attribute"
+],
+"find_in": []
+},
+{
+"id": "Quad0016",
+"class": "MSG",
+"doc": "05-tag-attr.md:130",
+"src": [
+"quad-base/src/Attr/init.luau:262"
+],
+"thrown_in": [
+"spec.attribute"
+],
+"pcall_in": [
+"spec.attribute"
+],
+"find_in": [
+"spec.attribute"
+]
+},
+{
+"id": "Quad0017",
+"class": "MSG",
+"doc": "01-core-reactive.md:10",
+"src": [
+"quad-base/src/Blocker.luau:94"
+],
+"thrown_in": [
+"spec.blocker"
+],
+"pcall_in": [
+"spec.blocker"
+],
+"find_in": [
+"spec.blocker"
+]
+},
+{
+"id": "Quad0018",
+"class": "MSG",
+"doc": "01-core-reactive.md:18",
+"src": [
+"quad-base/src/Blocker.luau:117"
+],
+"thrown_in": [
+"spec.blocker"
+],
+"pcall_in": [
+"spec.blocker"
+],
+"find_in": [
+"spec.blocker"
+]
+},
+{
+"id": "Quad0019",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:10",
+"src": [
+"quad-base/src/Bookkeeping.luau:57"
+],
+"thrown_in": [
+"spec.lengthoffset"
+],
+"pcall_in": [
+"spec.lengthoffset"
+],
+"find_in": [
+"spec.lengthoffset"
+]
+},
+{
+"id": "Quad0020",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:18",
+"src": [
+"quad-base/src/Bookkeeping.luau:66"
+],
+"thrown_in": [
+"spec.relate"
+],
+"pcall_in": [
+"spec.relate"
+],
+"find_in": [
+"spec.relate"
+]
+},
+{
+"id": "Quad0021",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:26",
+"src": [
+"quad-base/src/Bookkeeping.luau:137"
+],
+"thrown_in": [
+"spec.lengthoffset"
+],
+"pcall_in": [
+"spec.lengthoffset"
+],
+"find_in": [
+"spec.lengthoffset"
+]
+},
+{
+"id": "Quad0022",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:34",
+"src": [
+"quad-base/src/Bookkeeping.luau:201"
+],
+"thrown_in": [
+"spec.lengthoffset"
+],
+"pcall_in": [
+"spec.lengthoffset"
+],
+"find_in": [
+"spec.lengthoffset"
+]
+},
+{
+"id": "Quad0023",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:42",
+"src": [
+"quad-base/src/Bookkeeping.luau:248"
+],
+"thrown_in": [
+"spec.handlers",
+"spec.lengthoffset"
+],
+"pcall_in": [
+"spec.handlers",
+"spec.lengthoffset"
+],
+"find_in": [
+"spec.handlers",
+"spec.lengthoffset"
+]
+},
+{
+"id": "Quad0024",
+"class": "NONE",
+"doc": "02-dispatch-bookkeeping.md:50",
+"src": [
+"quad-base/src/Bookkeeping.luau:288"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0025",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:58",
+"src": [
+"quad-base/src/Bookkeeping.luau:380"
+],
+"thrown_in": [
+"spec.lengthoffset"
+],
+"pcall_in": [
+"spec.lengthoffset"
+],
+"find_in": [
+"spec.lengthoffset"
+]
+},
+{
+"id": "Quad0026",
+"class": "MSG",
+"doc": "06-module-backend.md:10",
+"src": [
+"quad-base/src/Claim.luau:64"
+],
+"thrown_in": [
+"spec.claim"
+],
+"pcall_in": [
+"spec.claim"
+],
+"find_in": [
+"spec.claim"
+]
+},
+{
+"id": "Quad0027",
+"class": "MSG",
+"doc": "06-module-backend.md:18",
+"src": [
+"quad-base/src/Claim.luau:99"
+],
+"thrown_in": [
+"spec.claim"
+],
+"pcall_in": [
+"spec.claim"
+],
+"find_in": [
+"spec.claim"
+]
+},
+{
+"id": "Quad0028",
+"class": "MSG",
+"doc": "06-module-backend.md:26",
+"src": [
+"quad-base/src/Claim.luau:105"
+],
+"thrown_in": [
+"spec.claim"
+],
+"pcall_in": [
+"spec.claim"
+],
+"find_in": [
+"spec.claim"
+]
+},
+{
+"id": "Quad0029",
+"class": "MSG",
+"doc": "06-module-backend.md:34",
+"src": [
+"quad-base/src/Claim.luau:25",
+"quad-base/src/Claim.luau:115"
+],
+"thrown_in": [
+"spec.claim",
+"spec.lifetime"
+],
+"pcall_in": [
+"spec.claim",
+"spec.lifetime"
+],
+"find_in": [
+"spec.claim",
+"spec.lifetime"
+]
+},
+{
+"id": "Quad0030",
+"class": "MSG",
+"doc": "06-module-backend.md:42",
+"src": [
+"quad-base/src/Claim.luau:121"
+],
+"thrown_in": [
+"spec.lifetime"
+],
+"pcall_in": [
+"spec.lifetime"
+],
+"find_in": [
+"spec.lifetime"
+]
+},
+{
+"id": "Quad0031",
+"class": "MSG",
+"doc": "06-module-backend.md:50",
+"src": [
+"quad-base/src/Claim.luau:134"
+],
+"thrown_in": [
+"spec.claim"
+],
+"pcall_in": [
+"spec.claim"
+],
+"find_in": [
+"spec.claim"
+]
+},
+{
+"id": "Quad0032",
+"class": "MSG",
+"doc": "06-module-backend.md:58",
+"src": [
+"quad-base/src/Claim.luau:148"
+],
+"thrown_in": [
+"spec.claim"
+],
+"pcall_in": [
+"spec.claim"
+],
+"find_in": [
+"spec.claim"
+]
+},
+{
+"id": "Quad0033",
+"class": "MSG",
+"doc": "06-module-backend.md:66",
+"src": [
+"quad-base/src/Claim.luau:188"
+],
+"thrown_in": [
+"spec.lifetime"
+],
+"pcall_in": [
+"spec.lifetime"
+],
+"find_in": [
+"spec.lifetime"
+]
+},
+{
+"id": "Quad0034",
+"class": "FAIL",
+"doc": "06-module-backend.md:74",
+"src": [
+"quad-base/src/Claim.luau:191"
+],
+"thrown_in": [
+"spec.claim"
+],
+"pcall_in": [
+"spec.claim"
+],
+"find_in": []
+},
+{
+"id": "Quad0035",
+"class": "MSG",
+"doc": "01-core-reactive.md:26",
+"src": [
+"quad-base/src/Context.luau:52"
+],
+"thrown_in": [
+"spec.context"
+],
+"pcall_in": [
+"spec.context"
+],
+"find_in": [
+"spec.context"
+]
+},
+{
+"id": "Quad0036",
+"class": "MSG",
+"doc": "01-core-reactive.md:34",
+"src": [
+"quad-base/src/Context.luau:72"
+],
+"thrown_in": [
+"spec.context"
+],
+"pcall_in": [
+"spec.context"
+],
+"find_in": [
+"spec.context"
+]
+},
+{
+"id": "Quad0037",
+"class": "MSG",
+"doc": "01-core-reactive.md:42",
+"src": [
+"quad-base/src/Context.luau:79"
+],
+"thrown_in": [
+"spec.context"
+],
+"pcall_in": [
+"spec.context"
+],
+"find_in": [
+"spec.context"
+]
+},
+{
+"id": "Quad0038",
+"class": "MSG",
+"doc": "01-core-reactive.md:50",
+"src": [
+"quad-base/src/Context.luau:89"
+],
+"thrown_in": [
+"spec.context"
+],
+"pcall_in": [
+"spec.context"
+],
+"find_in": [
+"spec.context"
+]
+},
+{
+"id": "Quad0039",
+"class": "MSG",
+"doc": "01-core-reactive.md:58",
+"src": [
+"quad-base/src/Debounce.luau:88"
+],
+"thrown_in": [
+"spec.debounce"
+],
+"pcall_in": [
+"spec.debounce"
+],
+"find_in": [
+"spec.debounce"
+]
+},
+{
+"id": "Quad0040",
+"class": "MSG",
+"doc": "01-core-reactive.md:66",
+"src": [
+"quad-base/src/Debounce.luau:98"
+],
+"thrown_in": [
+"spec.debounce"
+],
+"pcall_in": [
+"spec.debounce"
+],
+"find_in": [
+"spec.debounce"
+]
+},
+{
+"id": "Quad0041",
+"class": "MSG",
+"doc": "01-core-reactive.md:74",
+"src": [
+"quad-base/src/Debounce.luau:104"
+],
+"thrown_in": [
+"spec.debounce"
+],
+"pcall_in": [
+"spec.debounce"
+],
+"find_in": [
+"spec.debounce"
+]
+},
+{
+"id": "Quad0042",
+"class": "MSG",
+"doc": "01-core-reactive.md:82",
+"src": [
+"quad-base/src/Debounce.luau:110"
+],
+"thrown_in": [
+"spec.debounce"
+],
+"pcall_in": [
+"spec.debounce"
+],
+"find_in": [
+"spec.debounce"
+]
+},
+{
+"id": "Quad0043",
+"class": "MSG",
+"doc": "01-core-reactive.md:90",
+"src": [
+"quad-base/src/Debounce.luau:143"
+],
+"thrown_in": [
+"spec.debounce"
+],
+"pcall_in": [
+"spec.debounce"
+],
+"find_in": [
+"spec.debounce"
+]
+},
+{
+"id": "Quad0044",
+"class": "MSG",
+"doc": "01-core-reactive.md:98",
+"src": [
+"quad-base/src/Debounce.luau:155"
+],
+"thrown_in": [
+"spec.debounce"
+],
+"pcall_in": [
+"spec.debounce"
+],
+"find_in": [
+"spec.debounce"
+]
+},
+{
+"id": "Quad0045",
+"class": "NONE",
+"doc": "01-core-reactive.md:106",
+"src": [
+"quad-base/src/Debounce.luau:323"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0046",
+"class": "MSG",
+"doc": "01-core-reactive.md:114",
+"src": [
+"quad-base/src/Debounce.luau:340"
+],
+"thrown_in": [
+"spec.debounce"
+],
+"pcall_in": [
+"spec.debounce"
+],
+"find_in": [
+"spec.debounce"
+]
+},
+{
+"id": "Quad0047",
+"class": "MSG",
+"doc": "01-core-reactive.md:122",
+"src": [
+"quad-base/src/Debounce.luau:343"
+],
+"thrown_in": [
+"spec.debounce"
+],
+"pcall_in": [
+"spec.debounce"
+],
+"find_in": [
+"spec.debounce"
+]
+},
+{
+"id": "Quad0048",
+"class": "MSG",
+"doc": "01-core-reactive.md:130",
+"src": [
+"quad-base/src/Debounce.luau:349"
+],
+"thrown_in": [
+"spec.debounce"
+],
+"pcall_in": [
+"spec.debounce"
+],
+"find_in": [
+"spec.debounce"
+]
+},
+{
+"id": "Quad0049",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:74",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:178"
+],
+"thrown_in": [
+"spec.modifier"
+],
+"pcall_in": [
+"spec.modifier"
+],
+"find_in": [
+"spec.modifier"
+]
+},
+{
+"id": "Quad0050",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:82",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:187"
+],
+"thrown_in": [
+"spec.inputgates"
+],
+"pcall_in": [
+"spec.inputgates"
+],
+"find_in": [
+"spec.inputgates"
+]
+},
+{
+"id": "Quad0051",
+"class": "FAIL",
+"doc": "02-dispatch-bookkeeping.md:90",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:201"
+],
+"thrown_in": [
+"spec.modifier"
+],
+"pcall_in": [
+"spec.modifier"
+],
+"find_in": []
+},
+{
+"id": "Quad0052",
+"class": "FAIL",
+"doc": "02-dispatch-bookkeeping.md:98",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:204"
+],
+"thrown_in": [
+"spec.modifier"
+],
+"pcall_in": [
+"spec.modifier"
+],
+"find_in": []
+},
+{
+"id": "Quad0053",
+"class": "FAIL",
+"doc": "02-dispatch-bookkeeping.md:106",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:216"
+],
+"thrown_in": [
+"spec.modifier"
+],
+"pcall_in": [
+"spec.modifier"
+],
+"find_in": []
+},
+{
+"id": "Quad0054",
+"class": "FAIL",
+"doc": "02-dispatch-bookkeeping.md:114",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:222"
+],
+"thrown_in": [
+"spec.modifier"
+],
+"pcall_in": [
+"spec.modifier"
+],
+"find_in": []
+},
+{
+"id": "Quad0055",
+"class": "FAIL",
+"doc": "02-dispatch-bookkeeping.md:122",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:248"
+],
+"thrown_in": [
+"spec.modifier"
+],
+"pcall_in": [
+"spec.modifier"
+],
+"find_in": []
+},
+{
+"id": "Quad0056",
+"class": "FAIL",
+"doc": "02-dispatch-bookkeeping.md:130",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:252"
+],
+"thrown_in": [
+"spec.component",
+"spec.modifier"
+],
+"pcall_in": [
+"spec.component",
+"spec.modifier"
+],
+"find_in": []
+},
+{
+"id": "Quad0057",
+"class": "FAIL",
+"doc": "02-dispatch-bookkeeping.md:138",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:293"
+],
+"thrown_in": [
+"spec.modifier",
+"spec.preref"
+],
+"pcall_in": [
+"spec.modifier",
+"spec.preref"
+],
+"find_in": []
+},
+{
+"id": "Quad0058",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:146",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:327"
+],
+"thrown_in": [
+"spec.modifier"
+],
+"pcall_in": [
+"spec.modifier"
+],
+"find_in": [
+"spec.modifier"
+]
+},
+{
+"id": "Quad0059",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:154",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:367"
+],
+"thrown_in": [
+"spec.modifier"
+],
+"pcall_in": [
+"spec.modifier"
+],
+"find_in": [
+"spec.modifier"
+]
+},
+{
+"id": "Quad0060",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:162",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:373"
+],
+"thrown_in": [
+"spec.modifier"
+],
+"pcall_in": [
+"spec.modifier"
+],
+"find_in": [
+"spec.modifier"
+]
+},
+{
+"id": "Quad0061",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:170",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:376"
+],
+"thrown_in": [
+"spec.modifier"
+],
+"pcall_in": [
+"spec.modifier"
+],
+"find_in": [
+"spec.modifier"
+]
+},
+{
+"id": "Quad0062",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:178",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:382"
+],
+"thrown_in": [
+"spec.modifier"
+],
+"pcall_in": [
+"spec.modifier"
+],
+"find_in": [
+"spec.modifier"
+]
+},
+{
+"id": "Quad0063",
+"class": "FAIL",
+"doc": "02-dispatch-bookkeeping.md:186",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:388"
+],
+"thrown_in": [
+"spec.modifier"
+],
+"pcall_in": [
+"spec.modifier"
+],
+"find_in": []
+},
+{
+"id": "Quad0064",
+"class": "FAIL",
+"doc": "02-dispatch-bookkeeping.md:194",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:391"
+],
+"thrown_in": [
+"spec.modifier"
+],
+"pcall_in": [
+"spec.modifier"
+],
+"find_in": []
+},
+{
+"id": "Quad0065",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:202",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:396"
+],
+"thrown_in": [
+"spec.modifier"
+],
+"pcall_in": [
+"spec.modifier"
+],
+"find_in": [
+"spec.modifier"
+]
+},
+{
+"id": "Quad0066",
+"class": "FAIL",
+"doc": "02-dispatch-bookkeeping.md:210",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:404"
+],
+"thrown_in": [
+"spec.modifier"
+],
+"pcall_in": [
+"spec.modifier"
+],
+"find_in": []
+},
+{
+"id": "Quad0067",
+"class": "FAIL",
+"doc": "02-dispatch-bookkeeping.md:218",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:438"
+],
+"thrown_in": [
+"spec.modifier"
+],
+"pcall_in": [
+"spec.modifier"
+],
+"find_in": []
+},
+{
+"id": "Quad0068",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:226",
+"src": [
+"quad-base/src/Dispatch/Modifier/init.luau:497"
+],
+"thrown_in": [
+"spec.flatten"
+],
+"pcall_in": [
+"spec.flatten"
+],
+"find_in": [
+"spec.flatten"
+]
+},
+{
+"id": "Quad0069",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:234",
+"src": [
+"quad-base/src/Dispatch/Ref.luau:52"
+],
+"thrown_in": [
+"spec.refhandlers"
+],
+"pcall_in": [
+"spec.refhandlers"
+],
+"find_in": [
+"spec.refhandlers"
+]
+},
+{
+"id": "Quad0070",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:242",
+"src": [
+"quad-base/src/Dispatch/StoreBind.luau:78"
+],
+"thrown_in": [
+"spec.storebind"
+],
+"pcall_in": [
+"spec.storebind"
+],
+"find_in": [
+"spec.storebind"
+]
+},
+{
+"id": "Quad0071",
+"class": "NONE",
+"doc": "02-dispatch-bookkeeping.md:250",
+"src": [
+"quad-base/src/Dispatch/init.luau:238"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0072",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:258",
+"src": [
+"quad-base/src/Dispatch/init.luau:254",
+"quad-base/src/Dispatch/init.luau:283"
+],
+"thrown_in": [
+"spec.dispatch",
+"spec.relate"
+],
+"pcall_in": [
+"spec.dispatch",
+"spec.relate"
+],
+"find_in": [
+"spec.dispatch",
+"spec.relate"
+]
+},
+{
+"id": "Quad0073",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:266",
+"src": [
+"quad-base/src/Dispatch/init.luau:264"
+],
+"thrown_in": [
+"spec.inputgates"
+],
+"pcall_in": [
+"spec.inputgates"
+],
+"find_in": [
+"spec.inputgates"
+]
+},
+{
+"id": "Quad0074",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:274",
+"src": [
+"quad-base/src/Dispatch/init.luau:270",
+"quad-base/src/Dispatch/init.luau:283"
+],
+"thrown_in": [
+"spec.dispatch"
+],
+"pcall_in": [
+"spec.dispatch"
+],
+"find_in": [
+"spec.dispatch"
+]
+},
+{
+"id": "Quad0075",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:282",
+"src": [
+"quad-base/src/Dispatch/init.luau:332"
+],
+"thrown_in": [
+"spec.dispatch"
+],
+"pcall_in": [
+"spec.dispatch"
+],
+"find_in": [
+"spec.dispatch"
+]
+},
+{
+"id": "Quad0076",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:290",
+"src": [
+"quad-base/src/Dispatch/init.luau:206"
+],
+"thrown_in": [
+"spec.claim",
+"spec.component",
+"spec.dispatch",
+"spec.events",
+"spec.handlers",
+"spec.nonenil"
+],
+"pcall_in": [
+"spec.claim",
+"spec.component",
+"spec.dispatch",
+"spec.events",
+"spec.handlers",
+"spec.nonenil"
+],
+"find_in": [
+"spec.claim",
+"spec.component",
+"spec.dispatch",
+"spec.nonenil"
+]
+},
+{
+"id": "Quad0077",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:300",
+"src": [
+"quad-base/src/Dispatch/init.luau:214"
+],
+"thrown_in": [
+"spec.dispatch"
+],
+"pcall_in": [
+"spec.dispatch"
+],
+"find_in": [
+"spec.dispatch"
+]
+},
+{
+"id": "Quad0079",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:308",
+"src": [
+"quad-base/src/Dispatch/init.luau:394"
+],
+"thrown_in": [
+"spec.dispatch"
+],
+"pcall_in": [
+"spec.dispatch"
+],
+"find_in": [
+"spec.dispatch"
+]
+},
+{
+"id": "Quad0080",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:316",
+"src": [
+"quad-base/src/Dispatch/init.luau:402"
+],
+"thrown_in": [
+"spec.dispatch"
+],
+"pcall_in": [
+"spec.dispatch"
+],
+"find_in": [
+"spec.dispatch"
+]
+},
+{
+"id": "Quad0081",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:324",
+"src": [
+"quad-base/src/Dispatch/init.luau:414"
+],
+"thrown_in": [
+"spec.dispatch"
+],
+"pcall_in": [
+"spec.dispatch"
+],
+"find_in": [
+"spec.dispatch"
+]
+},
+{
+"id": "Quad0082",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:332",
+"src": [
+"quad-base/src/Dispatch/init.luau:468"
+],
+"thrown_in": [
+"spec.dispatch"
+],
+"pcall_in": [
+"spec.dispatch"
+],
+"find_in": [
+"spec.dispatch"
+]
+},
+{
+"id": "Quad0083",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:340",
+"src": [
+"quad-base/src/Dispatch/init.luau:481"
+],
+"thrown_in": [
+"spec.dispatch"
+],
+"pcall_in": [
+"spec.dispatch"
+],
+"find_in": [
+"spec.dispatch"
+]
+},
+{
+"id": "Quad0084",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:348",
+"src": [
+"quad-base/src/Dispatch/init.luau:484"
+],
+"thrown_in": [
+"spec.dispatch"
+],
+"pcall_in": [
+"spec.dispatch"
+],
+"find_in": [
+"spec.dispatch"
+]
+},
+{
+"id": "Quad0085",
+"class": "MSG",
+"doc": "02-dispatch-bookkeeping.md:356",
+"src": [
+"quad-base/src/Dispatch/init.luau:505"
+],
+"thrown_in": [
+"spec.dispatch"
+],
+"pcall_in": [
+"spec.dispatch"
+],
+"find_in": [
+"spec.dispatch"
+]
+},
+{
+"id": "Quad0086",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:10",
+"src": [
+"quad-base/src/Effect.luau:119"
+],
+"thrown_in": [
+"spec.effect"
+],
+"pcall_in": [
+"spec.effect"
+],
+"find_in": [
+"spec.effect"
+]
+},
+{
+"id": "Quad0087",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:18",
+"src": [
+"quad-base/src/Effect.luau:156"
+],
+"thrown_in": [
+"spec.effect"
+],
+"pcall_in": [
+"spec.effect"
+],
+"find_in": [
+"spec.effect"
+]
+},
+{
+"id": "Quad0088",
+"class": "FAIL",
+"doc": "04-ref-observer-effect.md:26",
+"src": [
+"quad-base/src/Effect.luau:234"
+],
+"thrown_in": [
+"spec.effect"
+],
+"pcall_in": [
+"spec.effect"
+],
+"find_in": []
+},
+{
+"id": "Quad0089",
+"class": "NONE",
+"doc": "04-ref-observer-effect.md:34",
+"src": [
+"quad-base/src/Effect.luau:237"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0090",
+"class": "FAIL",
+"doc": "04-ref-observer-effect.md:50",
+"src": [
+"quad-base/src/Effect.luau:252"
+],
+"thrown_in": [
+"spec.effect"
+],
+"pcall_in": [
+"spec.effect"
+],
+"find_in": []
+},
+{
+"id": "Quad0091",
+"class": "FAIL",
+"doc": "04-ref-observer-effect.md:58",
+"src": [
+"quad-base/src/Effect.luau:255"
+],
+"thrown_in": [
+"spec.effect"
+],
+"pcall_in": [
+"spec.effect"
+],
+"find_in": []
+},
+{
+"id": "Quad0092",
+"class": "FAIL",
+"doc": "04-ref-observer-effect.md:74",
+"src": [
+"quad-base/src/Effect.luau:276"
+],
+"thrown_in": [
+"spec.effect"
+],
+"pcall_in": [
+"spec.effect"
+],
+"find_in": []
+},
+{
+"id": "Quad0093",
+"class": "FAIL",
+"doc": "04-ref-observer-effect.md:82",
+"src": [
+"quad-base/src/Effect.luau:285"
+],
+"thrown_in": [
+"spec.effect"
+],
+"pcall_in": [
+"spec.effect"
+],
+"find_in": []
+},
+{
+"id": "Quad0094",
+"class": "FAIL",
+"doc": "04-ref-observer-effect.md:90",
+"src": [
+"quad-base/src/Effect.luau:297"
+],
+"thrown_in": [
+"spec.effect"
+],
+"pcall_in": [
+"spec.effect"
+],
+"find_in": []
+},
+{
+"id": "Quad0095",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:98",
+"src": [
+"quad-base/src/Effect.luau:325"
+],
+"thrown_in": [
+"spec.effect"
+],
+"pcall_in": [
+"spec.effect"
+],
+"find_in": [
+"spec.effect"
+]
+},
+{
+"id": "Quad0096",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:106",
+"src": [
+"quad-base/src/Effect.luau:328"
+],
+"thrown_in": [
+"spec.effect"
+],
+"pcall_in": [
+"spec.effect"
+],
+"find_in": [
+"spec.effect"
+]
+},
+{
+"id": "Quad0097",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:114",
+"src": [
+"quad-base/src/Effect.luau:425"
+],
+"thrown_in": [
+"spec.leaf"
+],
+"pcall_in": [
+"spec.leaf"
+],
+"find_in": [
+"spec.leaf"
+]
+},
+{
+"id": "Quad0098",
+"class": "NONE",
+"doc": "04-ref-observer-effect.md:122",
+"src": [
+"quad-base/src/Effect.luau:439"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0099",
+"class": "MSG",
+"doc": "09-sugar.md:10",
+"src": [
+"quad-base/src/Fallback.luau:30"
+],
+"thrown_in": [
+"spec.fallback"
+],
+"pcall_in": [
+"spec.fallback"
+],
+"find_in": [
+"spec.fallback"
+]
+},
+{
+"id": "Quad0100",
+"class": "MSG",
+"doc": "09-sugar.md:18",
+"src": [
+"quad-base/src/Fallback.luau:33"
+],
+"thrown_in": [
+"spec.fallback"
+],
+"pcall_in": [
+"spec.fallback"
+],
+"find_in": [
+"spec.fallback"
+]
+},
+{
+"id": "Quad0101",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:130",
+"src": [
+"quad-base/src/LifecycleHooks.luau:35"
+],
+"thrown_in": [
+"spec.hooks"
+],
+"pcall_in": [
+"spec.hooks"
+],
+"find_in": [
+"spec.hooks"
+]
+},
+{
+"id": "Quad0102",
+"class": "MSG",
+"doc": "06-module-backend.md:82",
+"src": [
+"quad-base/src/LifetimeHandle.luau:123"
+],
+"thrown_in": [
+"spec.lifetime"
+],
+"pcall_in": [
+"spec.lifetime"
+],
+"find_in": [
+"spec.lifetime"
+]
+},
+{
+"id": "Quad0103",
+"class": "MSG",
+"doc": "06-module-backend.md:90",
+"src": [
+"quad-base/src/LifetimeHandle.luau:126"
+],
+"thrown_in": [
+"spec.lifetime"
+],
+"pcall_in": [
+"spec.lifetime"
+],
+"find_in": [
+"spec.lifetime"
+]
+},
+{
+"id": "Quad0104",
+"class": "MSG",
+"doc": "06-module-backend.md:98",
+"src": [
+"quad-base/src/LifetimeHandle.luau:139"
+],
+"thrown_in": [
+"spec.effect",
+"spec.observer"
+],
+"pcall_in": [
+"spec.effect",
+"spec.observer"
+],
+"find_in": [
+"spec.effect",
+"spec.observer"
+]
+},
+{
+"id": "Quad0105",
+"class": "MSG",
+"doc": "06-module-backend.md:106",
+"src": [
+"quad-base/src/LifetimeHandle.luau:180"
+],
+"thrown_in": [
+"spec.lifetime"
+],
+"pcall_in": [
+"spec.lifetime"
+],
+"find_in": [
+"spec.lifetime"
+]
+},
+{
+"id": "Quad0106",
+"class": "MSG",
+"doc": "06-module-backend.md:114",
+"src": [
+"quad-base/src/ModuleIdentity.luau:25"
+],
+"thrown_in": [
+"spec.moduleidentity"
+],
+"pcall_in": [
+"spec.moduleidentity"
+],
+"find_in": [
+"spec.moduleidentity"
+]
+},
+{
+"id": "Quad0108",
+"class": "MSG",
+"doc": "06-module-backend.md:122",
+"src": [
+"quad-roblox/src/EngineOps.luau:14",
+"quad-roblox/src/EngineOps.luau:34",
+"quad-base/src/NotInstalled.luau:30",
+"quad-types/src/init.luau:611"
+],
+"thrown_in": [
+"spec.attribute",
+"spec.debounce",
+"spec.lifetime",
+"spec.tag",
+"spec.tagattribute"
+],
+"pcall_in": [
+"spec.attribute",
+"spec.debounce",
+"spec.lifetime",
+"spec.tag",
+"spec.tagattribute"
+],
+"find_in": [
+"spec.attribute",
+"spec.debounce",
+"spec.lifetime",
+"spec.tag",
+"spec.tagattribute"
+]
+},
+{
+"id": "Quad0109",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:138",
+"src": [
+"quad-base/src/Observer.luau:118"
+],
+"thrown_in": [
+"spec.observer",
+"spec.robloxfactory"
+],
+"pcall_in": [
+"spec.observer",
+"spec.robloxfactory"
+],
+"find_in": [
+"spec.observer"
+]
+},
+{
+"id": "Quad0110",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:146",
+"src": [
+"quad-base/src/Observer.luau:125"
+],
+"thrown_in": [
+"spec.observer"
+],
+"pcall_in": [
+"spec.observer"
+],
+"find_in": [
+"spec.observer"
+]
+},
+{
+"id": "Quad0111",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:154",
+"src": [
+"quad-base/src/Observer.luau:129"
+],
+"thrown_in": [
+"spec.observer"
+],
+"pcall_in": [
+"spec.observer"
+],
+"find_in": [
+"spec.observer"
+]
+},
+{
+"id": "Quad0112",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:162",
+"src": [
+"quad-base/src/Observer.luau:146"
+],
+"thrown_in": [
+"spec.observer"
+],
+"pcall_in": [
+"spec.observer"
+],
+"find_in": [
+"spec.observer"
+]
+},
+{
+"id": "Quad0113",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:170",
+"src": [
+"quad-base/src/Observer.luau:156"
+],
+"thrown_in": [
+"spec.observer"
+],
+"pcall_in": [
+"spec.observer"
+],
+"find_in": [
+"spec.observer"
+]
+},
+{
+"id": "Quad0114",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:178",
+"src": [
+"quad-base/src/Observer.luau:162"
+],
+"thrown_in": [
+"spec.observer"
+],
+"pcall_in": [
+"spec.observer"
+],
+"find_in": [
+"spec.observer"
+]
+},
+{
+"id": "Quad0115",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:186",
+"src": [
+"quad-base/src/Observer.luau:176"
+],
+"thrown_in": [
+"spec.observer"
+],
+"pcall_in": [
+"spec.observer"
+],
+"find_in": [
+"spec.observer"
+]
+},
+{
+"id": "Quad0116",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:194",
+"src": [
+"quad-base/src/Observer.luau:274"
+],
+"thrown_in": [
+"spec.leaf"
+],
+"pcall_in": [
+"spec.leaf"
+],
+"find_in": [
+"spec.leaf"
+]
+},
+{
+"id": "Quad0117",
+"class": "NONE",
+"doc": "04-ref-observer-effect.md:202",
+"src": [
+"quad-base/src/Observer.luau:288"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0118",
+"class": "MSG",
+"doc": "01-core-reactive.md:138",
+"src": [
+"quad-base/src/Operator.luau:37"
+],
+"thrown_in": [
+"spec.operator"
+],
+"pcall_in": [
+"spec.operator"
+],
+"find_in": [
+"spec.operator"
+]
+},
+{
+"id": "Quad0119",
+"class": "MSG",
+"doc": "01-core-reactive.md:146",
+"src": [
+"quad-base/src/Operator.luau:43"
+],
+"thrown_in": [
+"spec.operator"
+],
+"pcall_in": [
+"spec.operator"
+],
+"find_in": [
+"spec.operator"
+]
+},
+{
+"id": "Quad0120",
+"class": "MSG",
+"doc": "01-core-reactive.md:154",
+"src": [
+"quad-base/src/Operator.luau:60"
+],
+"thrown_in": [
+"spec.operator"
+],
+"pcall_in": [
+"spec.operator"
+],
+"find_in": [
+"spec.operator"
+]
+},
+{
+"id": "Quad0121",
+"class": "MSG",
+"doc": "01-core-reactive.md:162",
+"src": [
+"quad-base/src/Operator.luau:62"
+],
+"thrown_in": [
+"spec.operator"
+],
+"pcall_in": [
+"spec.operator"
+],
+"find_in": [
+"spec.operator"
+]
+},
+{
+"id": "Quad0122",
+"class": "MSG",
+"doc": "01-core-reactive.md:170",
+"src": [
+"quad-base/src/Operator.luau:78"
+],
+"thrown_in": [
+"spec.operator"
+],
+"pcall_in": [
+"spec.operator"
+],
+"find_in": [
+"spec.operator"
+]
+},
+{
+"id": "Quad0123",
+"class": "MSG",
+"doc": "01-core-reactive.md:178",
+"src": [
+"quad-base/src/Operator.luau:85"
+],
+"thrown_in": [
+"spec.operator"
+],
+"pcall_in": [
+"spec.operator"
+],
+"find_in": [
+"spec.operator"
+]
+},
+{
+"id": "Quad0124",
+"class": "MSG",
+"doc": "01-core-reactive.md:186",
+"src": [
+"quad-base/src/Operator.luau:164"
+],
+"thrown_in": [
+"spec.operator"
+],
+"pcall_in": [
+"spec.operator"
+],
+"find_in": [
+"spec.operator"
+]
+},
+{
+"id": "Quad0125",
+"class": "MSG",
+"doc": "01-core-reactive.md:194",
+"src": [
+"quad-base/src/Operator.luau:178"
+],
+"thrown_in": [
+"spec.operator"
+],
+"pcall_in": [
+"spec.operator"
+],
+"find_in": [
+"spec.operator"
+]
+},
+{
+"id": "Quad0126",
+"class": "MSG",
+"doc": "01-core-reactive.md:202",
+"src": [
+"quad-base/src/Operator.luau:183"
+],
+"thrown_in": [
+"spec.operator"
+],
+"pcall_in": [
+"spec.operator"
+],
+"find_in": [
+"spec.operator"
+]
+},
+{
+"id": "Quad0127",
+"class": "MSG",
+"doc": "01-core-reactive.md:210",
+"src": [
+"quad-base/src/Operator.luau:190"
+],
+"thrown_in": [
+"spec.operator"
+],
+"pcall_in": [
+"spec.operator"
+],
+"find_in": [
+"spec.operator"
+]
+},
+{
+"id": "Quad0128",
+"class": "MSG",
+"doc": "01-core-reactive.md:218",
+"src": [
+"quad-base/src/Operator.luau:200"
+],
+"thrown_in": [
+"spec.operator"
+],
+"pcall_in": [
+"spec.operator"
+],
+"find_in": [
+"spec.operator"
+]
+},
+{
+"id": "Quad0129",
+"class": "MSG",
+"doc": "01-core-reactive.md:226",
+"src": [
+"quad-base/src/Operator.luau:213"
+],
+"thrown_in": [
+"spec.operator"
+],
+"pcall_in": [
+"spec.operator"
+],
+"find_in": [
+"spec.operator"
+]
+},
+{
+"id": "Quad0130",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:210",
+"src": [
+"quad-base/src/Ref/init.luau:101"
+],
+"thrown_in": [
+"spec.ref"
+],
+"pcall_in": [
+"spec.ref"
+],
+"find_in": [
+"spec.ref"
+]
+},
+{
+"id": "Quad0132",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:218",
+"src": [
+"quad-base/src/Ref/init.luau:124"
+],
+"thrown_in": [
+"spec.ref"
+],
+"pcall_in": [
+"spec.ref"
+],
+"find_in": [
+"spec.ref"
+]
+},
+{
+"id": "Quad0133",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:226",
+"src": [
+"quad-base/src/Ref/init.luau:155"
+],
+"thrown_in": [
+"spec.ref"
+],
+"pcall_in": [
+"spec.ref"
+],
+"find_in": [
+"spec.ref"
+]
+},
+{
+"id": "Quad0134",
+"class": "NONE",
+"doc": "04-ref-observer-effect.md:234",
+"src": [
+"quad-base/src/Ref/init.luau:164"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0135",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:242",
+"src": [
+"quad-base/src/Ref/init.luau:190"
+],
+"thrown_in": [
+"spec.ref"
+],
+"pcall_in": [
+"spec.ref"
+],
+"find_in": [
+"spec.ref"
+]
+},
+{
+"id": "Quad0136",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:250",
+"src": [
+"quad-base/src/Ref/init.luau:275"
+],
+"thrown_in": [
+"spec.refhandlers"
+],
+"pcall_in": [
+"spec.refhandlers"
+],
+"find_in": [
+"spec.refhandlers"
+]
+},
+{
+"id": "Quad0137",
+"class": "MSG",
+"doc": "04-ref-observer-effect.md:258",
+"src": [
+"quad-base/src/Ref/init.luau:277"
+],
+"thrown_in": [
+"spec.refhandlers"
+],
+"pcall_in": [
+"spec.refhandlers"
+],
+"find_in": [
+"spec.refhandlers"
+]
+},
+{
+"id": "Quad0138",
+"class": "MSG",
+"doc": "06-module-backend.md:130",
+"src": [
+"quad-base/src/Relate.luau:28"
+],
+"thrown_in": [
+"spec.relate"
+],
+"pcall_in": [
+"spec.relate"
+],
+"find_in": [
+"spec.relate"
+]
+},
+{
+"id": "Quad0139",
+"class": "MSG",
+"doc": "06-module-backend.md:138",
+"src": [
+"quad-base/src/Relate.luau:29"
+],
+"thrown_in": [
+"spec.relate"
+],
+"pcall_in": [
+"spec.relate"
+],
+"find_in": [
+"spec.relate"
+]
+},
+{
+"id": "Quad0140",
+"class": "NONE",
+"doc": "03-slot.md:10",
+"src": [
+"quad-base/src/Slot/Handler.luau:37"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0141",
+"class": "MSG",
+"doc": "03-slot.md:18",
+"src": [
+"quad-base/src/Slot/Handler.luau:61"
+],
+"thrown_in": [
+"spec.dispatch",
+"spec.slot"
+],
+"pcall_in": [
+"spec.dispatch",
+"spec.slot"
+],
+"find_in": [
+"spec.dispatch"
+]
+},
+{
+"id": "Quad0142",
+"class": "NONE",
+"doc": "03-slot.md:26",
+"src": [
+"quad-base/src/Slot/List.luau:95"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0143",
+"class": "MSG",
+"doc": "03-slot.md:34",
+"src": [
+"quad-base/src/Slot/List.luau:102"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0144",
+"class": "MSG",
+"doc": "03-slot.md:42",
+"src": [
+"quad-base/src/Slot/List.luau:114"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0145",
+"class": "NONE",
+"doc": "03-slot.md:50",
+"src": [
+"quad-base/src/Slot/List.luau:117"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0146",
+"class": "MSG",
+"doc": "03-slot.md:58",
+"src": [
+"quad-base/src/Slot/List.luau:138"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0147",
+"class": "FAIL",
+"doc": "03-slot.md:66",
+"src": [
+"quad-base/src/Slot/List.luau:172"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": []
+},
+{
+"id": "Quad0148",
+"class": "MSG",
+"doc": "03-slot.md:74",
+"src": [
+"quad-base/src/Slot/List.luau:214"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0149",
+"class": "MSG",
+"doc": "03-slot.md:82",
+"src": [
+"quad-base/src/Slot/List.luau:215"
+],
+"thrown_in": [
+"spec.inputgates",
+"spec.slot"
+],
+"pcall_in": [
+"spec.inputgates",
+"spec.slot"
+],
+"find_in": [
+"spec.inputgates",
+"spec.slot"
+]
+},
+{
+"id": "Quad0150",
+"class": "MSG",
+"doc": "03-slot.md:90",
+"src": [
+"quad-base/src/Slot/List.luau:221"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0151",
+"class": "MSG",
+"doc": "03-slot.md:98",
+"src": [
+"quad-base/src/Slot/List.luau:226"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0152",
+"class": "MSG",
+"doc": "03-slot.md:106",
+"src": [
+"quad-base/src/Slot/List.luau:232"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0153",
+"class": "MSG",
+"doc": "03-slot.md:114",
+"src": [
+"quad-base/src/Slot/List.luau:238"
+],
+"thrown_in": [
+"spec.inputgates"
+],
+"pcall_in": [
+"spec.inputgates"
+],
+"find_in": [
+"spec.inputgates"
+]
+},
+{
+"id": "Quad0154",
+"class": "MSG",
+"doc": "03-slot.md:122",
+"src": [
+"quad-base/src/Slot/List.luau:265"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0155",
+"class": "MSG",
+"doc": "03-slot.md:130",
+"src": [
+"quad-base/src/Slot/List.luau:268"
+],
+"thrown_in": [
+"spec.inputgates"
+],
+"pcall_in": [
+"spec.inputgates"
+],
+"find_in": [
+"spec.inputgates"
+]
+},
+{
+"id": "Quad0156",
+"class": "NONE",
+"doc": "03-slot.md:138",
+"src": [
+"quad-base/src/Slot/Owner.luau:28"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0157",
+"class": "MSG",
+"doc": "03-slot.md:146",
+"src": [
+"quad-base/src/Slot/Owner.luau:41"
+],
+"thrown_in": [
+"spec.handlers"
+],
+"pcall_in": [
+"spec.handlers"
+],
+"find_in": [
+"spec.handlers"
+]
+},
+{
+"id": "Quad0158",
+"class": "MSG",
+"doc": "03-slot.md:154",
+"src": [
+"quad-base/src/Slot/Owner.luau:44"
+],
+"thrown_in": [
+"spec.handlers"
+],
+"pcall_in": [
+"spec.handlers"
+],
+"find_in": [
+"spec.handlers"
+]
+},
+{
+"id": "Quad0159",
+"class": "MSG",
+"doc": "03-slot.md:162",
+"src": [
+"quad-base/src/Slot/Owner.luau:47"
+],
+"thrown_in": [
+"spec.handlers"
+],
+"pcall_in": [
+"spec.handlers"
+],
+"find_in": [
+"spec.handlers"
+]
+},
+{
+"id": "Quad0160",
+"class": "MSG",
+"doc": "03-slot.md:170",
+"src": [
+"quad-base/src/Slot/Owner.luau:54"
+],
+"thrown_in": [
+"spec.handlers",
+"spec.shorthand",
+"spec.slot"
+],
+"pcall_in": [
+"spec.handlers",
+"spec.shorthand",
+"spec.slot"
+],
+"find_in": [
+"spec.handlers",
+"spec.shorthand",
+"spec.slot"
+]
+},
+{
+"id": "Quad0161",
+"class": "MSG",
+"doc": "03-slot.md:178",
+"src": [
+"quad-base/src/Slot/Owner.luau:63"
+],
+"thrown_in": [
+"spec.handlers"
+],
+"pcall_in": [
+"spec.handlers"
+],
+"find_in": [
+"spec.handlers"
+]
+},
+{
+"id": "Quad0162",
+"class": "MSG",
+"doc": "03-slot.md:186",
+"src": [
+"quad-base/src/Slot/Owner.luau:66"
+],
+"thrown_in": [
+"spec.handlers"
+],
+"pcall_in": [
+"spec.handlers"
+],
+"find_in": [
+"spec.handlers"
+]
+},
+{
+"id": "Quad0163",
+"class": "NONE",
+"doc": "03-slot.md:194",
+"src": [
+"quad-base/src/Slot/Owner.luau:72"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0164",
+"class": "NONE",
+"doc": "03-slot.md:202",
+"src": [
+"quad-base/src/Slot/Tree.luau:34"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0165",
+"class": "FAIL",
+"doc": "03-slot.md:211",
+"src": [
+"quad-base/src/Slot/init.luau:131"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": []
+},
+{
+"id": "Quad0166",
+"class": "FAIL",
+"doc": "03-slot.md:219",
+"src": [
+"quad-base/src/Slot/init.luau:137"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": []
+},
+{
+"id": "Quad0167",
+"class": "MSG",
+"doc": "03-slot.md:227",
+"src": [
+"quad-base/src/Slot/init.luau:148"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0168",
+"class": "FAIL",
+"doc": "03-slot.md:235",
+"src": [
+"quad-base/src/Slot/init.luau:170"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": []
+},
+{
+"id": "Quad0169",
+"class": "MSG",
+"doc": "03-slot.md:251",
+"src": [
+"quad-base/src/Slot/init.luau:239"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0170",
+"class": "MSG",
+"doc": "03-slot.md:259",
+"src": [
+"quad-base/src/Slot/init.luau:249"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0171",
+"class": "MSG",
+"doc": "03-slot.md:267",
+"src": [
+"quad-base/src/Slot/init.luau:252"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0172",
+"class": "MSG",
+"doc": "03-slot.md:275",
+"src": [
+"quad-base/src/Slot/init.luau:255"
+],
+"thrown_in": [
+"spec.handlers",
+"spec.slot"
+],
+"pcall_in": [
+"spec.handlers",
+"spec.slot"
+],
+"find_in": [
+"spec.handlers",
+"spec.slot"
+]
+},
+{
+"id": "Quad0173",
+"class": "MSG",
+"doc": "03-slot.md:283",
+"src": [
+"quad-base/src/Slot/init.luau:266"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0174",
+"class": "FAIL",
+"doc": "03-slot.md:291",
+"src": [
+"quad-base/src/Slot/init.luau:329"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": []
+},
+{
+"id": "Quad0175",
+"class": "MSG",
+"doc": "03-slot.md:299",
+"src": [
+"quad-base/src/Slot/init.luau:365"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0176",
+"class": "MSG",
+"doc": "03-slot.md:307",
+"src": [
+"quad-base/src/Slot/init.luau:442"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0177",
+"class": "MSG",
+"doc": "03-slot.md:315",
+"src": [
+"quad-base/src/Slot/init.luau:448"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0178",
+"class": "MSG",
+"doc": "03-slot.md:323",
+"src": [
+"quad-base/src/Slot/init.luau:472"
+],
+"thrown_in": [
+"spec.lifetime"
+],
+"pcall_in": [
+"spec.lifetime"
+],
+"find_in": [
+"spec.lifetime"
+]
+},
+{
+"id": "Quad0179",
+"class": "MSG",
+"doc": "03-slot.md:331",
+"src": [
+"quad-base/src/Slot/init.luau:478"
+],
+"thrown_in": [
+"spec.handlers",
+"spec.shorthand",
+"spec.slot"
+],
+"pcall_in": [
+"spec.handlers",
+"spec.shorthand",
+"spec.slot"
+],
+"find_in": [
+"spec.handlers",
+"spec.shorthand",
+"spec.slot"
+]
+},
+{
+"id": "Quad0180",
+"class": "NONE",
+"doc": "03-slot.md:339",
+"src": [
+"quad-base/src/Slot/init.luau:491"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0181",
+"class": "MSG",
+"doc": "01-core-reactive.md:234",
+"src": [
+"quad-base/src/Source.luau:84"
+],
+"thrown_in": [
+"spec.modifier",
+"spec.source"
+],
+"pcall_in": [
+"spec.modifier",
+"spec.source"
+],
+"find_in": [
+"spec.source"
+]
+},
+{
+"id": "Quad0182",
+"class": "MSG",
+"doc": "01-core-reactive.md:242",
+"src": [
+"quad-base/src/Source.luau:96"
+],
+"thrown_in": [
+"spec.modifier",
+"spec.source"
+],
+"pcall_in": [
+"spec.modifier",
+"spec.source"
+],
+"find_in": [
+"spec.source"
+]
+},
+{
+"id": "Quad0183",
+"class": "MSG",
+"doc": "01-core-reactive.md:250",
+"src": [
+"quad-base/src/State.luau:111"
+],
+"thrown_in": [
+"spec.state"
+],
+"pcall_in": [
+"spec.state"
+],
+"find_in": [
+"spec.state"
+]
+},
+{
+"id": "Quad0184",
+"class": "MSG",
+"doc": "01-core-reactive.md:258",
+"src": [
+"quad-base/src/State.luau:191"
+],
+"thrown_in": [
+"spec.lengthoffset",
+"spec.state"
+],
+"pcall_in": [
+"spec.lengthoffset",
+"spec.state"
+],
+"find_in": [
+"spec.lengthoffset",
+"spec.state"
+]
+},
+{
+"id": "Quad0185",
+"class": "MSG",
+"doc": "01-core-reactive.md:266",
+"src": [
+"quad-base/src/State.luau:213"
+],
+"thrown_in": [
+"spec.dispatch",
+"spec.modifier",
+"spec.state"
+],
+"pcall_in": [
+"spec.dispatch",
+"spec.modifier",
+"spec.state"
+],
+"find_in": [
+"spec.dispatch",
+"spec.state"
+]
+},
+{
+"id": "Quad0186",
+"class": "MSG",
+"doc": "01-core-reactive.md:274",
+"src": [
+"quad-base/src/State.luau:252"
+],
+"thrown_in": [
+"spec.state"
+],
+"pcall_in": [
+"spec.state"
+],
+"find_in": [
+"spec.state"
+]
+},
+{
+"id": "Quad0187",
+"class": "MSG",
+"doc": "01-core-reactive.md:282",
+"src": [
+"quad-base/src/State.luau:268"
+],
+"thrown_in": [
+"spec.state"
+],
+"pcall_in": [
+"spec.state"
+],
+"find_in": [
+"spec.state"
+]
+},
+{
+"id": "Quad0188",
+"class": "FAIL",
+"doc": "01-core-reactive.md:290",
+"src": [
+"quad-base/src/State.luau:326"
+],
+"thrown_in": [
+"spec.gate"
+],
+"pcall_in": [
+"spec.gate"
+],
+"find_in": []
+},
+{
+"id": "Quad0189",
+"class": "FAIL",
+"doc": "01-core-reactive.md:298",
+"src": [
+"quad-base/src/State.luau:339"
+],
+"thrown_in": [
+"spec.gate"
+],
+"pcall_in": [
+"spec.gate"
+],
+"find_in": []
+},
+{
+"id": "Quad0190",
+"class": "NONE",
+"doc": "01-core-reactive.md:306",
+"src": [
+"quad-base/src/State.luau:350"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0191",
+"class": "MSG",
+"doc": "01-core-reactive.md:314",
+"src": [
+"quad-base/src/State.luau:360"
+],
+"thrown_in": [
+"spec.modifier",
+"spec.state"
+],
+"pcall_in": [
+"spec.modifier",
+"spec.state"
+],
+"find_in": [
+"spec.modifier",
+"spec.state"
+]
+},
+{
+"id": "Quad0192",
+"class": "NONE",
+"doc": "01-core-reactive.md:322",
+"src": [
+"quad-base/src/State.luau:378"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0193",
+"class": "MSG",
+"doc": "01-core-reactive.md:330",
+"src": [
+"quad-base/src/Store.luau:63"
+],
+"thrown_in": [
+"spec.store"
+],
+"pcall_in": [
+"spec.store"
+],
+"find_in": [
+"spec.store"
+]
+},
+{
+"id": "Quad0194",
+"class": "MSG",
+"doc": "01-core-reactive.md:338",
+"src": [
+"quad-base/src/Store.luau:66"
+],
+"thrown_in": [
+"spec.store"
+],
+"pcall_in": [
+"spec.store"
+],
+"find_in": [
+"spec.store"
+]
+},
+{
+"id": "Quad0195",
+"class": "MSG",
+"doc": "01-core-reactive.md:346",
+"src": [
+"quad-base/src/Store.luau:115"
+],
+"thrown_in": [
+"spec.store"
+],
+"pcall_in": [
+"spec.store"
+],
+"find_in": [
+"spec.store"
+]
+},
+{
+"id": "Quad0196",
+"class": "MSG",
+"doc": "01-core-reactive.md:354",
+"src": [
+"quad-base/src/Store.luau:118"
+],
+"thrown_in": [
+"spec.store"
+],
+"pcall_in": [
+"spec.store"
+],
+"find_in": [
+"spec.store"
+]
+},
+{
+"id": "Quad0197",
+"class": "MSG",
+"doc": "01-core-reactive.md:362",
+"src": [
+"quad-base/src/Store.luau:121"
+],
+"thrown_in": [
+"spec.store"
+],
+"pcall_in": [
+"spec.store"
+],
+"find_in": [
+"spec.store"
+]
+},
+{
+"id": "Quad0198",
+"class": "MSG",
+"doc": "01-core-reactive.md:370",
+"src": [
+"quad-base/src/Store.luau:128"
+],
+"thrown_in": [
+"spec.store"
+],
+"pcall_in": [
+"spec.store"
+],
+"find_in": [
+"spec.store"
+]
+},
+{
+"id": "Quad0199",
+"class": "MSG",
+"doc": "05-tag-attr.md:138",
+"src": [
+"quad-base/src/Tag.luau:76"
+],
+"thrown_in": [
+"spec.tag"
+],
+"pcall_in": [
+"spec.tag"
+],
+"find_in": [
+"spec.tag"
+]
+},
+{
+"id": "Quad0200",
+"class": "MSG",
+"doc": "05-tag-attr.md:146",
+"src": [
+"quad-base/src/Tag.luau:104"
+],
+"thrown_in": [
+"spec.tag"
+],
+"pcall_in": [
+"spec.tag"
+],
+"find_in": [
+"spec.tag"
+]
+},
+{
+"id": "Quad0201",
+"class": "MSG",
+"doc": "05-tag-attr.md:154",
+"src": [
+"quad-base/src/Tag.luau:114"
+],
+"thrown_in": [
+"spec.inputgates"
+],
+"pcall_in": [
+"spec.inputgates"
+],
+"find_in": [
+"spec.inputgates"
+]
+},
+{
+"id": "Quad0202",
+"class": "MSG",
+"doc": "05-tag-attr.md:162",
+"src": [
+"quad-base/src/Tag.luau:119"
+],
+"thrown_in": [
+"spec.tag"
+],
+"pcall_in": [
+"spec.tag"
+],
+"find_in": [
+"spec.tag"
+]
+},
+{
+"id": "Quad0203",
+"class": "MSG",
+"doc": "05-tag-attr.md:170",
+"src": [
+"quad-base/src/Tag.luau:128"
+],
+"thrown_in": [
+"spec.tag"
+],
+"pcall_in": [
+"spec.tag"
+],
+"find_in": [
+"spec.tag"
+]
+},
+{
+"id": "Quad0204",
+"class": "MSG",
+"doc": "05-tag-attr.md:178",
+"src": [
+"quad-base/src/Tag.luau:131"
+],
+"thrown_in": [
+"spec.tag",
+"spec.tagattribute"
+],
+"pcall_in": [
+"spec.tag",
+"spec.tagattribute"
+],
+"find_in": [
+"spec.tag"
+]
+},
+{
+"id": "Quad0205",
+"class": "MSG",
+"doc": "05-tag-attr.md:186",
+"src": [
+"quad-base/src/Tag.luau:173"
+],
+"thrown_in": [
+"spec.tag"
+],
+"pcall_in": [
+"spec.tag"
+],
+"find_in": [
+"spec.tag"
+]
+},
+{
+"id": "Quad0206",
+"class": "MSG",
+"doc": "05-tag-attr.md:194",
+"src": [
+"quad-base/src/Tag.luau:193"
+],
+"thrown_in": [
+"spec.tag"
+],
+"pcall_in": [
+"spec.tag"
+],
+"find_in": [
+"spec.tag"
+]
+},
+{
+"id": "Quad0207",
+"class": "FAIL",
+"doc": "05-tag-attr.md:202",
+"src": [
+"quad-base/src/Tag.luau:226"
+],
+"thrown_in": [
+"spec.tag"
+],
+"pcall_in": [
+"spec.tag"
+],
+"find_in": []
+},
+{
+"id": "Quad0208",
+"class": "MSG",
+"doc": "06-module-backend.md:162",
+"src": [
+"quad-base/src/init.luau:129"
+],
+"thrown_in": [
+"spec.init"
+],
+"pcall_in": [
+"spec.init"
+],
+"find_in": [
+"spec.init"
+]
+},
+{
+"id": "Quad0209",
+"class": "MSG",
+"doc": "06-module-backend.md:170",
+"src": [
+"quad-base/src/init.luau:145"
+],
+"thrown_in": [
+"spec.inputgates"
+],
+"pcall_in": [
+"spec.inputgates"
+],
+"find_in": [
+"spec.inputgates"
+]
+},
+{
+"id": "Quad0210",
+"class": "MSG",
+"doc": "06-module-backend.md:178",
+"src": [
+"quad-base/src/init.luau:154"
+],
+"thrown_in": [
+"spec.inputgates"
+],
+"pcall_in": [
+"spec.inputgates"
+],
+"find_in": [
+"spec.inputgates"
+]
+},
+{
+"id": "Quad0211",
+"class": "MSG",
+"doc": "06-module-backend.md:186",
+"src": [
+"quad-base/src/init.luau:164"
+],
+"thrown_in": [
+"spec.inputgates"
+],
+"pcall_in": [
+"spec.inputgates"
+],
+"find_in": [
+"spec.inputgates"
+]
+},
+{
+"id": "Quad0212",
+"class": "MSG",
+"doc": "06-module-backend.md:194",
+"src": [
+"quad-base/src/init.luau:197"
+],
+"thrown_in": [
+"spec.inputgates"
+],
+"pcall_in": [
+"spec.inputgates"
+],
+"find_in": [
+"spec.inputgates"
+]
+},
+{
+"id": "Quad0213",
+"class": "MSG",
+"doc": "06-module-backend.md:202",
+"src": [
+"quad-base/src/init.luau:208"
+],
+"thrown_in": [
+"spec.robloxfactory"
+],
+"pcall_in": [
+"spec.robloxfactory"
+],
+"find_in": [
+"spec.robloxfactory"
+]
+},
+{
+"id": "Quad0214",
+"class": "MSG",
+"doc": "08-roblox-tween.md:10",
+"src": [
+"quad-roblox/src/Animate.luau:67"
+],
+"thrown_in": [
+"spec.animate"
+],
+"pcall_in": [
+"spec.animate"
+],
+"find_in": [
+"spec.animate"
+]
+},
+{
+"id": "Quad0215",
+"class": "MSG",
+"doc": "07-roblox.md:10",
+"src": [
+"quad-roblox/src/EngineOps.luau:146"
+],
+"thrown_in": [
+"spec.timers"
+],
+"pcall_in": [
+"spec.timers"
+],
+"find_in": [
+"spec.timers"
+]
+},
+{
+"id": "Quad0216",
+"class": "MSG",
+"doc": "07-roblox.md:18",
+"src": [
+"quad-roblox/src/EngineOps.luau:149"
+],
+"thrown_in": [
+"spec.timers"
+],
+"pcall_in": [
+"spec.timers"
+],
+"find_in": [
+"spec.timers"
+]
+},
+{
+"id": "Quad0217",
+"class": "MSG",
+"doc": "07-roblox.md:26",
+"src": [
+"quad-roblox/src/EngineOps.luau:156"
+],
+"thrown_in": [
+"spec.timers"
+],
+"pcall_in": [
+"spec.timers"
+],
+"find_in": [
+"spec.timers"
+]
+},
+{
+"id": "Quad0218",
+"class": "MSG",
+"doc": "07-roblox.md:34",
+"src": [
+"quad-roblox/src/Handlers/Event.luau:79"
+],
+"thrown_in": [
+"spec.events"
+],
+"pcall_in": [
+"spec.events"
+],
+"find_in": [
+"spec.events"
+]
+},
+{
+"id": "Quad0219",
+"class": "MSG",
+"doc": "07-roblox.md:42",
+"src": [
+"quad-roblox/src/Handlers/InstanceChild.luau:64"
+],
+"thrown_in": [
+"spec.handlers"
+],
+"pcall_in": [
+"spec.handlers"
+],
+"find_in": [
+"spec.handlers"
+]
+},
+{
+"id": "Quad0220",
+"class": "MSG",
+"doc": "07-roblox.md:50",
+"src": [
+"quad-roblox/src/Handlers/InstanceChild.luau:76"
+],
+"thrown_in": [
+"spec.handlers"
+],
+"pcall_in": [
+"spec.handlers"
+],
+"find_in": [
+"spec.handlers"
+]
+},
+{
+"id": "Quad0221",
+"class": "MSG",
+"doc": "07-roblox.md:58",
+"src": [
+"quad-roblox/src/Handlers/OnChange.luau:67"
+],
+"thrown_in": [
+"spec.events"
+],
+"pcall_in": [
+"spec.events"
+],
+"find_in": [
+"spec.events"
+]
+},
+{
+"id": "Quad0222",
+"class": "FAIL",
+"doc": "07-roblox.md:66",
+"src": [
+"quad-roblox/src/Handlers/OnChange.luau:70"
+],
+"thrown_in": [
+"spec.events"
+],
+"pcall_in": [
+"spec.events"
+],
+"find_in": []
+},
+{
+"id": "Quad0223",
+"class": "FAIL",
+"doc": "07-roblox.md:74",
+"src": [
+"quad-roblox/src/Handlers/OnChange.luau:91"
+],
+"thrown_in": [
+"spec.events"
+],
+"pcall_in": [
+"spec.events"
+],
+"find_in": []
+},
+{
+"id": "Quad0224",
+"class": "MSG",
+"doc": "07-roblox.md:82",
+"src": [
+"quad-roblox/src/Handlers/OnChange.luau:95"
+],
+"thrown_in": [
+"spec.events"
+],
+"pcall_in": [
+"spec.events"
+],
+"find_in": [
+"spec.events"
+]
+},
+{
+"id": "Quad0225",
+"class": "MSG",
+"doc": "07-roblox.md:90",
+"src": [
+"quad-roblox/src/LifetimeHandle.luau:68"
+],
+"thrown_in": [
+"spec.claim",
+"spec.d",
+"spec.robloxfactory"
+],
+"pcall_in": [
+"spec.claim",
+"spec.d",
+"spec.robloxfactory"
+],
+"find_in": [
+"spec.d",
+"spec.robloxfactory"
+]
+},
+{
+"id": "Quad0226",
+"class": "MSG",
+"doc": "07-roblox.md:98",
+"src": [
+"quad-roblox/src/LifetimeHandle.luau:135"
+],
+"thrown_in": [
+"spec.robloxfactory"
+],
+"pcall_in": [
+"spec.robloxfactory"
+],
+"find_in": [
+"spec.robloxfactory"
+]
+},
+{
+"id": "Quad0227",
+"class": "MSG",
+"doc": "08-roblox-tween.md:18",
+"src": [
+"quad-roblox/src/Tween.luau:162"
+],
+"thrown_in": [
+"spec.tween"
+],
+"pcall_in": [
+"spec.tween"
+],
+"find_in": [
+"spec.tween"
+]
+},
+{
+"id": "Quad0228",
+"class": "MSG",
+"doc": "07-roblox.md:106",
+"src": [
+"quad-roblox/src/init.luau:229"
+],
+"thrown_in": [
+"spec.robloxfactory"
+],
+"pcall_in": [
+"spec.robloxfactory"
+],
+"find_in": [
+"spec.robloxfactory"
+]
+},
+{
+"id": "Quad0229",
+"class": "NONE",
+"doc": "02-dispatch-bookkeeping.md:66",
+"src": [
+"quad-base/src/Bookkeeping.luau:202"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0230",
+"class": "NONE",
+"doc": "04-ref-observer-effect.md:42",
+"src": [
+"quad-base/src/Effect.luau:237"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0231",
+"class": "NONE",
+"doc": "04-ref-observer-effect.md:66",
+"src": [
+"quad-base/src/Effect.luau:255"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0232",
+"class": "MSG",
+"doc": "06-module-backend.md:146",
+"src": [
+"quad-base/src/LifetimeHandle.luau:140"
+],
+"thrown_in": [
+"spec.leaf",
+"spec.lifetime",
+"spec.refhandlers",
+"spec.robloxfactory"
+],
+"pcall_in": [
+"spec.leaf",
+"spec.lifetime",
+"spec.refhandlers",
+"spec.robloxfactory"
+],
+"find_in": [
+"spec.leaf",
+"spec.lifetime"
+]
+},
+{
+"id": "Quad0233",
+"class": "MSG",
+"doc": "06-module-backend.md:154",
+"src": [
+"quad-base/src/LifetimeHandle.luau:141"
+],
+"thrown_in": [
+"spec.lifetime",
+"spec.refhandlers"
+],
+"pcall_in": [
+"spec.lifetime",
+"spec.refhandlers"
+],
+"find_in": [
+"spec.lifetime"
+]
+},
+{
+"id": "Quad0234",
+"class": "NONE",
+"doc": "04-ref-observer-effect.md:266",
+"src": [
+"quad-base/src/Observer.luau:129"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0235",
+"class": "NONE",
+"doc": "04-ref-observer-effect.md:274",
+"src": [
+"quad-base/src/Observer.luau:162"
+],
+"thrown_in": [],
+"pcall_in": [],
+"find_in": []
+},
+{
+"id": "Quad0236",
+"class": "MSG",
+"doc": "03-slot.md:243",
+"src": [
+"quad-base/src/Slot/init.luau:171"
+],
+"thrown_in": [
+"spec.inputgates",
+"spec.slot"
+],
+"pcall_in": [
+"spec.inputgates",
+"spec.slot"
+],
+"find_in": [
+"spec.inputgates"
+]
+},
+{
+"id": "Quad0237",
+"class": "MSG",
+"doc": "05-tag-attr.md:210",
+"src": [
+"quad-base/src/Tag.luau:105"
+],
+"thrown_in": [
+"spec.tag"
+],
+"pcall_in": [
+"spec.tag"
+],
+"find_in": [
+"spec.tag"
+]
+},
+{
+"id": "Quad0238",
+"class": "MSG",
+"doc": "03-slot.md:347",
+"src": [
+"quad-base/src/Slot/Elements.luau:38"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0239",
+"class": "MSG",
+"doc": "03-slot.md:355",
+"src": [
+"quad-base/src/Slot/Elements.luau:41"
+],
+"thrown_in": [
+"spec.inputgates",
+"spec.slot"
+],
+"pcall_in": [
+"spec.inputgates",
+"spec.slot"
+],
+"find_in": [
+"spec.inputgates",
+"spec.slot"
+]
+},
+{
+"id": "Quad0240",
+"class": "MSG",
+"doc": "03-slot.md:363",
+"src": [
+"quad-base/src/Slot/Elements.luau:44"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": [
+"spec.slot"
+]
+},
+{
+"id": "Quad0241",
+"class": "MSG",
+"doc": "03-slot.md:371",
+"src": [
+"quad-base/src/Slot/Elements.luau:52"
+],
+"thrown_in": [
+"spec.handlers",
+"spec.slot"
+],
+"pcall_in": [
+"spec.handlers",
+"spec.slot"
+],
+"find_in": [
+"spec.handlers",
+"spec.slot"
+]
+},
+{
+"id": "Quad0242",
+"class": "FAIL",
+"doc": "03-slot.md:379",
+"src": [
+"quad-base/src/Slot/Elements.luau:68"
+],
+"thrown_in": [
+"spec.slot"
+],
+"pcall_in": [
+"spec.slot"
+],
+"find_in": []
+},
+{
+"id": "Quad0243",
+"class": "MSG",
+"doc": "08-roblox-tween.md:26",
+"src": [
+"quad-roblox/src/Tween.luau:103"
+],
+"thrown_in": [
+"spec.animate",
+"spec.tween",
+"spec.tweenproperty"
+],
+"pcall_in": [
+"spec.animate",
+"spec.tween",
+"spec.tweenproperty"
+],
+"find_in": [
+"spec.animate",
+"spec.tween",
+"spec.tweenproperty"
+]
+},
+{
+"id": "Quad0244",
+"class": "MSG",
+"doc": "08-roblox-tween.md:34",
+"src": [
+"quad-roblox/src/Tween.luau:107"
+],
+"thrown_in": [
+"spec.tween"
+],
+"pcall_in": [
+"spec.tween"
+],
+"find_in": [
+"spec.tween"
+]
+},
+{
+"id": "Quad0245",
+"class": "MSG",
+"doc": "08-roblox-tween.md:42",
+"src": [
+"quad-roblox/src/Tween.luau:110"
+],
+"thrown_in": [
+"spec.animate",
+"spec.tween"
+],
+"pcall_in": [
+"spec.animate",
+"spec.tween"
+],
+"find_in": [
+"spec.animate",
+"spec.tween"
+]
+},
+{
+"id": "Quad0246",
+"class": "MSG",
+"doc": "08-roblox-tween.md:50",
+"src": [
+"quad-roblox/src/Tween.luau:115"
+],
+"thrown_in": [
+"spec.tween"
+],
+"pcall_in": [
+"spec.tween"
+],
+"find_in": [
+"spec.tween"
+]
+},
+{
+"id": "Quad0247",
+"class": "MSG",
+"doc": "08-roblox-tween.md:58",
+"src": [
+"quad-roblox/src/Tween.luau:120"
+],
+"thrown_in": [
+"spec.animate",
+"spec.tween"
+],
+"pcall_in": [
+"spec.animate",
+"spec.tween"
+],
+"find_in": [
+"spec.animate",
+"spec.tween"
+]
+},
+{
+"id": "Quad0248",
+"class": "MSG",
+"doc": "08-roblox-tween.md:66",
+"src": [
+"quad-roblox/src/Tween.luau:131"
+],
+"thrown_in": [
+"spec.tween"
+],
+"pcall_in": [
+"spec.tween"
+],
+"find_in": [
+"spec.tween"
+]
+},
+{
+"id": "Quad0249",
+"class": "MSG",
+"doc": "08-roblox-tween.md:74",
+"src": [
+"quad-roblox/src/Tween.luau:134"
+],
+"thrown_in": [
+"spec.tween"
+],
+"pcall_in": [
+"spec.tween"
+],
+"find_in": [
+"spec.tween"
+]
+},
+{
+"id": "Quad0250",
+"class": "MSG",
+"doc": "08-roblox-tween.md:82",
+"src": [
+"quad-roblox/src/Tween.luau:139"
+],
+"thrown_in": [
+"spec.tween"
+],
+"pcall_in": [
+"spec.tween"
+],
+"find_in": [
+"spec.tween"
+]
+},
+{
+"id": "Quad0251",
+"class": "MSG",
+"doc": "08-roblox-tween.md:90",
+"src": [
+"quad-roblox/src/Tween.luau:146"
+],
+"thrown_in": [
+"spec.animate",
+"spec.tween"
+],
+"pcall_in": [
+"spec.animate",
+"spec.tween"
+],
+"find_in": [
+"spec.animate",
+"spec.tween"
+]
+}
+]

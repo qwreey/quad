@@ -1,0 +1,18 @@
+local mock = require("./mock")
+local q = mock.newQuad()
+local Instance = mock.Instance
+local function F(n) local f = Instance.new("Frame"); f.Name = n; return f end
+local sA = q.Slot(); sA:Add(F("a1")); sA:Add(F("a2"))
+local seat = q.Source(sA)
+local p = Instance.new("Folder"); q.Dispatch.drive(p, { seat })
+print("mounted Length", sA.Length:Get())
+seat:Set(q.Slot())
+print("after unmount Length", sA.Length:Get())
+sA:Add(F("a3")); sA:Add(F("a4")); sA:Remove(1)
+print("after Add,Add,Remove while unmounted Length", sA.Length:Get(), "#elements", #sA._elements)
+local outer = q.Slot(); local ex = q.Slot(); ex:Add(F("e1")); outer:Add(ex); outer:Add(F("o2"))
+local p2 = Instance.new("Folder"); q.Dispatch.drive(p2, { outer })
+print("ex mounted in outer Length/Offset", ex.Length:Get(), ex.Offset:Get(), "o2 idx", outer:IndexOf(outer:Get(2)))
+local got = outer:Extract(1)
+print("extracted ex Length", ex.Length:Get(), "outer Length", outer.Length:Get())
+ex:Add(F("e2")); print("extracted ex after Add Length", ex.Length:Get())

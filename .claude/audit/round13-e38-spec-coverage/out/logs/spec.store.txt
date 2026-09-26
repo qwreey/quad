@@ -1,0 +1,92 @@
+=== 1. 명시적 초기화 — store.key는 넣은 Source 그 자체, 평범한 레코드 필드 ===
+PASS
+
+=== 2. defaults 검증 (H-122) — isSource 화이트리스트, level 2, 영어 ===
+@@QERR	Quad0198 Store: default for "hp" is not a Source (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:38: Quad0198 Store: default for "hp" is not a Source (got number)
+@@FIND	Quad0198	not a Source
+@@FIND	Quad0198	spec.store.luau
+@@QERR	Quad0198 Store: default for "bad" is not a Source (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:43: Quad0198 Store: default for "bad" is not a Source (got table)
+@@QERR	Quad0193 Store: key must be a non-empty string (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:48: Quad0193 Store: key must be a non-empty string (got number)
+@@FIND	Quad0193	key must be a non-empty string
+@@FIND	Quad0193	spec.store.luau
+@@QERR	Quad0195 Store: defaults must be a table of Sources (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:55: Quad0195 Store: defaults must be a table of Sources (got number)
+@@FIND	Quad0195	must be a table
+@@FIND	Quad0195	spec.store.luau
+@@QERR	Quad0196 Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:60: Quad0196 Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)
+@@FIND	Quad0196	plain table
+@@QERR	Quad0196 Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:64: Quad0196 Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)
+PASS
+
+=== 3. 예약 이름 (H-153) — 생성자 순회와 Of 둘 다 error(level 2) ===
+@@QERR	Quad0194 Store: "Of" is a reserved store key
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:76: Quad0194 Store: "Of" is a reserved store key
+@@FIND	Quad0194	reserved
+@@QERR	Quad0194 Store: "Of" is a reserved store key
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:81: Quad0194 Store: "Of" is a reserved store key
+@@FIND	Quad0194	reserved
+@@FIND	Quad0194	spec.store.luau
+@@QERR	Quad0194 Store: "Names" is a reserved store key
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:76: Quad0194 Store: "Names" is a reserved store key
+@@FIND	Quad0194	reserved
+@@QERR	Quad0194 Store: "Names" is a reserved store key
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:81: Quad0194 Store: "Names" is a reserved store key
+@@FIND	Quad0194	reserved
+@@FIND	Quad0194	spec.store.luau
+@@QERR	Quad0194 Store: "__reservedCheck" is a reserved store key
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:76: Quad0194 Store: "__reservedCheck" is a reserved store key
+@@FIND	Quad0194	reserved
+@@QERR	Quad0194 Store: "__reservedCheck" is a reserved store key
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:81: Quad0194 Store: "__reservedCheck" is a reserved store key
+@@FIND	Quad0194	reserved
+@@FIND	Quad0194	spec.store.luau
+@@QERR	Quad0194 Store: "__anything" is a reserved store key
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:76: Quad0194 Store: "__anything" is a reserved store key
+@@FIND	Quad0194	reserved
+@@QERR	Quad0194 Store: "__anything" is a reserved store key
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:81: Quad0194 Store: "__anything" is a reserved store key
+@@FIND	Quad0194	reserved
+@@FIND	Quad0194	spec.store.luau
+@@QERR	Quad0193 Store: Of name must be a non-empty string (got nil)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:91: Quad0193 Store: Of name must be a non-empty string (got nil)
+@@FIND	Quad0193	Of name must be a non-empty string
+@@FIND	Quad0193	spec.store.luau
+@@QERR	Quad0193 Store: Of name must be a non-empty string (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:96: Quad0193 Store: Of name must be a non-empty string (got number)
+@@FIND	Quad0193	Of name must be a non-empty string
+PASS
+
+=== 4. :Of — 없는 이름은 그 자리에서 만들어 저장(lazy가 남는 유일한 자리), 있으면 그것 ===
+PASS
+
+=== 5. :Names — defaults 키 + Of가 만든 키, 메소드는 안 셈, 팬텀 필드도 없음 ===
+PASS
+
+=== 6. 빈 Store (H-83/H-157) — 무인자도 유효 ===
+PASS
+
+=== 7. 인스턴스별 팩토리 (H-174) — Of가 자기 quad의 Source를 만든다 ===
+PASS
+
+
+=== 8. 4순회 H-390 — defaults가 메타테이블 없는 브랜드 값(AttrKey)이면 plain 테이블 문에서 거부 ===
+@@QERR	Quad0197 Store: defaults must be a plain { name = Source } table (got an AttrKey/Mapper descriptor)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:163: Quad0197 Store: defaults must be a plain { name = Source } table (got an AttrKey/Mapper descriptor)
+@@FIND	Quad0197	AttrKey/Mapper descriptor
+PASS
+=== 9. round3 H-443 (외부 리뷰 G-13, H-421 자매) — 빈 문자열 키는 생성자·Of 둘 다 거부(Attr(store)로 setAttr("")에 닿던 경로) ===
+@@QERR	Quad0193 Store: key must be a non-empty string (got "")
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:172: Quad0193 Store: key must be a non-empty string (got "")
+@@FIND	Quad0193	must be a non-empty string
+@@QERR	Quad0193 Store: Of name must be a non-empty string (got "")
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.store.luau:176: Quad0193 Store: Of name must be a non-empty string (got "")
+@@FIND	Quad0193	must be a non-empty string
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (53 functions)

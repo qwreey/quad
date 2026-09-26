@@ -1,0 +1,105 @@
+=== 1. 생성 게이트 — Time 필수·음수 거부, Leading/Trailing 둘 다 false 거부, Throttle MaxTime 거부, Handle은 Ref, Apply 대상은 State ===
+@@QERR	Quad0040 Debounce: Time is required (a number of seconds or a State<number>)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:43: Quad0040 Debounce: Time is required (a number of seconds or a State<number>)
+@@FIND	Quad0040	Time is required
+@@QERR	Quad0041 Debounce: Time must be a non-negative number or a State<number> (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:46: Quad0041 Debounce: Time must be a non-negative number or a State<number> (got number)
+@@FIND	Quad0041	non%-negative
+@@QERR	Quad0041 Debounce: Time must be a non-negative number or a State<number> (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:48: Quad0041 Debounce: Time must be a non-negative number or a State<number> (got string)
+@@FIND	Quad0041	got string
+@@QERR	Quad0048 Throttle: Leading and Trailing both false would pass nothing through
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:50: Quad0048 Throttle: Leading and Trailing both false would pass nothing through
+@@FIND	Quad0048	both false
+@@QERR	Quad0046 Throttle: MaxTime is Debounce-only (a throttle already passes every Time)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:52: Quad0046 Throttle: MaxTime is Debounce-only (a throttle already passes every Time)
+@@FIND	Quad0046	Debounce%-only
+@@QERR	Quad0047 Debounce: Handle must be a Ref (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:54: Quad0047 Debounce: Handle must be a Ref (got table)
+@@FIND	Quad0047	Handle must be a Ref
+@@QERR	Quad0042 Debounce: Leading must be a boolean (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:56: Quad0042 Debounce: Leading must be a boolean (got number)
+@@FIND	Quad0042	Leading must be a boolean
+@@QERR	Quad0043 Debounce: Apply target must be a State (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:59: Quad0043 Debounce: Apply target must be a State (got table)
+@@FIND	Quad0043	Apply target must be a State
+PASS
+
+=== 2. Debounce 기본(Leading=false, Trailing=true) — 버스트 중 침묵, 조용해지고 Time 뒤 1회; 창 안 :Get()은 최신값((A) emit-gate) ===
+PASS
+
+=== 3. Debounce 한 비트 — 신호가 창을 민다: 0/0.2/0.4에 신호, Time 0.3이면 0.7에 한 번 ===
+PASS
+
+=== 4. Throttle 사용자 시나리오(1-1절) — 0.0 즉시(leading), 0.1 눌러둠, 1.0 통과(trailing)+창 재개방, 1.05 눌러둠, 2.0 통과, 3.0 idle, 3.5 즉시 ===
+PASS
+
+=== 5. Leading=true, Trailing=false — 버스트 시작에 한 번, 나머지는 창 끝에 버려진다(emit(false) — 집합이 빈다) ===
+PASS
+
+=== 6. MaxTime(Debounce 전용) — 신호가 안 끊겨도 MaxTime마다 통과, 창은 통과 뒤 재개방 ===
+PASS
+
+=== 7. 제어 핸들 — Handle Ref가 Apply 시점에 채워짐; Flush는 즉시 커밋(+창 재개방)·idle이면 no-op, Cancel은 버림 ===
+PASS
+
+=== 7b. Flush는 Trailing과 무관(배너 (4)) — Trailing=false 게이트도 명시적 Flush면 보류분을 통과; 창 안 Time 오류는 상태를 안 남긴다(H-509) ===
+@@QERR	Quad0039 Throttle: Time must be a non-negative number (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:240: Quad0039 Throttle: Time must be a non-negative number (got string)
+PASS
+
+=== 7d. H-509 호출자 층 — Leading=false idle과 Debounce 재개방에서 Time 오류가 Blocker On/창 없음을 안 남긴다(hunt B) ===
+@@QERR	Quad0039 Throttle: Time must be a non-negative number (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:258: Quad0039 Throttle: Time must be a non-negative number (got number)
+@@QERR	Quad0039 Debounce: Time must be a non-negative number (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:272: Quad0039 Debounce: Time must be a non-negative number (got string)
+PASS
+
+=== 7c. (j) 같은 Handle Ref로 두 번 :Apply — 둘째가 조용히 덮어쓰지 않고 에러(사용자 결정, round9) ===
+@@QERR	Quad0044 Debounce: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:294: Quad0044 Debounce: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)
+@@FIND	Quad0044	Handle is already filled
+PASS
+
+=== 8. 팩토리 브로드캐스트 — factory:Flush()/Cancel()은 그 팩토리로 만든 게이트 전부에; 레지스트리는 weak ===
+PASS
+
+=== 9. Time = State<number> — 신호가 들어올 때 읽는다(round10 Q55 (b), 2026-09-17): 바꿔도 진행 중인 창은 그대로, 다음 신호가 여는 창부터 ===
+@@QERR	Quad0039 Debounce: Time must be a non-negative number (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:368: Quad0039 Debounce: Time must be a non-negative number (got string)
+@@FIND	Quad0039	Time must be a non%-negative number
+@@QERR	Quad0039 Throttle: Time must be a non-negative number (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:385: Quad0039 Throttle: Time must be a non-negative number (got string)
+@@FIND	Quad0039	Time must be a non%-negative number
+@@QERR	Quad0039 Throttle: Time must be a non-negative number (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:398: Quad0039 Throttle: Time must be a non-negative number (got string)
+@@QERR	Quad0039 Debounce: MaxTime must be a non-negative number (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:406: Quad0039 Debounce: MaxTime must be a non-negative number (got string)
+@@FIND	Quad0039	MaxTime must be a non%-negative number
+PASS
+
+=== 10. 재진입 — flush 도중 하류가 상류를 :Set해도 창은 하나(타이머 하나), 두 번째 신호는 새 창으로 ===
+PASS
+
+=== 10b. 타이머 경로 재진입 — 창 끝 flush 중 하류가 상류를 :Set하면 보류되고(창 하나), 다음 창에서 통과 ===
+PASS
+
+=== 11. 미주입 백엔드 — 맨 Quad.New()에선 setTimeout 스텁이 안내 에러(첫 신호 때) ===
+@@QERR	Quad0108 quad: setTimeout is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:477: Quad0108 quad: setTimeout is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	setTimeout is not available
+PASS
+
+=== 12. round11 H-541/H-542 (2026-09-17) — 게이트 핸들 Flush의 blame은 사용자 줄; Trailing = false Debounce는 MaxTime을 읽지도 않는다 ===
+@@QERR	Quad0108 quad: setTimeout is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:493: Quad0108 quad: setTimeout is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@QERR	Quad0108 quad: setTimeout is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.debounce.luau:496: Quad0108 quad: setTimeout is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+@@FIND	Quad0108	setTimeout is not available
+PASS
+
+=== 13. round11 H-570 (2026-09-17) — flush 도중 하류가 handle:Cancel()을 재진입으로 부르면 창을 다시 열지 않는다(다음 leading 신호가 즉시 통과) ===
+PASS
+
+ALL PASS
+Coverage dump written to coverage.out (54 functions)

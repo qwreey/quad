@@ -1,0 +1,20 @@
+=== 1. setTimeout — 인자 순서 뒤집어 task.delay로; Timeout 마커; 게이트(함수/음수) ===
+@@QERR	Quad0215 setTimeout: func must be a function (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.timers.luau:74: Quad0215 setTimeout: func must be a function (got number)
+@@FIND	Quad0215	setTimeout: func must be a function
+@@QERR	Quad0216 setTimeout: delay must be a non-negative number (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.timers.luau:78: Quad0216 setTimeout: delay must be a non-negative number (got number)
+@@FIND	Quad0216	delay must be a non%-negative
+PASS
+
+=== 2. clearTimeout — task.cancel; 이미 발화한 핸들도 그냥 넘긴다(dead thread cancel은 무해 — Studio 실측); 마커 없는 값 거부 ===
+@@QERR	Quad0217 clearTimeout: expected a Timeout from setTimeout (got table)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.timers.luau:103: Quad0217 clearTimeout: expected a Timeout from setTimeout (got table)
+@@FIND	Quad0217	clearTimeout: expected a Timeout
+PASS
+
+=== 3. Debounce 끝까지 — base 슈거가 이 배선 위에서 돈다(Time 0.3, 신호 둘 → 0.3 뒤 1회) ===
+PASS
+
+ALL PASS
+Coverage dump written to coverage.out (71 functions)

@@ -1,0 +1,22 @@
+=== 1. 단일 루트 — Modifier/Ref/자식이 named parameter로 경계를 넘어 내부 루트에 꽂힌다 ===
+PASS
+
+=== 2. 생략 — Modifier/Ref/Content를 안 넘겨도 `or None`이 그 자리를 기여 0으로 만든다(nil-hole 없음) ===
+PASS
+
+=== 3. Modifier.Overridden — caller가 여러 modifier를 한 슬롯에 밀어넣는다(뒤가 이김) ===
+PASS
+
+=== 4. Slot 반환 컴포넌트 — 형제 레벨에 래퍼 없이 펼쳐지고, 추가 항목이 그 자리에 끼어든다 ===
+PASS
+
+=== 5. 커스텀 클래스 Modifier — 컴포넌트가 자기 필드를 소비한 뒤 무검사 As(name)로 부모 클래스에 꽂는다(11절: 검사형 As는 하강만) ===
+@@QERR	Quad0056 Modifier: cannot cast a "MaterialButtonSpec" modifier to "TextButton" — not an ancestor (use :As(name) to force)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.component.luau:131: Quad0056 Modifier: cannot cast a "MaterialButtonSpec" modifier to "TextButton" — not an ancestor (use :As(name) to force)
+@@QERR	Quad0076 Dispatch: no handler matched key Elevation (value: nil) — check that the provider for this value (e.g. quad-roblox) is initialized (a nil at this depth may be an unwrapped None or a reactive nil — the key's own handler must accept nil)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.component.luau:142: Quad0076 Dispatch: no handler matched key Elevation (value: nil) — check that the provider for this value (e.g. quad-roblox) is initialized (a nil at this depth may be an unwrapped None or a reactive nil — the key's own handler must accept nil)
+@@FIND	Quad0076	no handler matched key Elevation
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (124 functions)

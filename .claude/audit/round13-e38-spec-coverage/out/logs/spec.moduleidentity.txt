@@ -1,0 +1,81 @@
+=== 1. moduleIdentity — an empty table per instance, never the module ===
+PASS
+
+=== 2. handles/Slot/State placed into another instance's tree raise at the placement ===
+@@QERR	Quad0106 Observer: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.moduleidentity.luau:37: Quad0106 Observer: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@FIND	Quad0106	another quad module instance
+@@FIND	Quad0106	spec.moduleidentity.luau
+@@QERR	Quad0106 Effect: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.moduleidentity.luau:40: Quad0106 Effect: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@FIND	Quad0106	another quad module instance
+@@FIND	Quad0106	spec.moduleidentity.luau
+@@QERR	Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.moduleidentity.luau:43: Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@FIND	Quad0106	another quad module instance
+@@FIND	Quad0106	spec.moduleidentity.luau
+@@QERR	Quad0106 State: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.moduleidentity.luau:46: Quad0106 State: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@FIND	Quad0106	another quad module instance
+@@FIND	Quad0106	spec.moduleidentity.luau
+@@QERR	Quad0106 Slot:List: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.moduleidentity.luau:49: Quad0106 Slot:List: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@FIND	Quad0106	another quad module instance
+@@FIND	Quad0106	spec.moduleidentity.luau
+@@QERR	Quad0106 Slot:Single: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.moduleidentity.luau:53: Quad0106 Slot:Single: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@FIND	Quad0106	Slot:Single: this value was made by another quad module instance
+@@FIND	Quad0106	spec.moduleidentity.luau
+PASS
+
+=== 3. same-instance placement is untouched; reactive links across instances are not guarded ===
+PASS
+
+
+=== 4. round10 H-537 — Slot 요소 문(Add/생성자/Replace/Extract/Splice, State 안의 점유자, :List 반환값)과 dispose(quad 값)도 교차 인스턴스 문이다 ===
+@@QERR	Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.moduleidentity.luau:83: Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@FIND	Quad0106	another quad module instance
+@@FIND	Quad0106	spec.moduleidentity.luau
+@@QERR	Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.moduleidentity.luau:84: Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@FIND	Quad0106	another quad module instance
+@@FIND	Quad0106	spec.moduleidentity.luau
+@@QERR	Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.moduleidentity.luau:85: Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@FIND	Quad0106	another quad module instance
+@@FIND	Quad0106	spec.moduleidentity.luau
+@@QERR	Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.moduleidentity.luau:86: Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@FIND	Quad0106	another quad module instance
+@@FIND	Quad0106	spec.moduleidentity.luau
+@@QERR	Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.moduleidentity.luau:88: Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@FIND	Quad0106	another quad module instance
+@@FIND	Quad0106	spec.moduleidentity.luau
+@@QERR	Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.moduleidentity.luau:89: Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@FIND	Quad0106	another quad module instance
+@@FIND	Quad0106	spec.moduleidentity.luau
+@@QERR	Quad0106 Slot:Add: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.moduleidentity.luau:91: Quad0106 Slot:Add: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@FIND	Quad0106	another quad module instance
+@@FIND	Quad0106	spec.moduleidentity.luau
+@@QERR	Quad0106 Slot:Add: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.moduleidentity.luau:92: Quad0106 Slot:Add: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@FIND	Quad0106	another quad module instance
+@@FIND	Quad0106	spec.moduleidentity.luau
+@@QERR	Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/src/Slot/List.luau:200: Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@FIND	Quad0106	another quad module instance
+@@QERR	Quad0106 dispose: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.moduleidentity.luau:100: Quad0106 dispose: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@FIND	Quad0106	another quad module instance
+@@FIND	Quad0106	spec.moduleidentity.luau
+@@QERR	Quad0106 dispose: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.moduleidentity.luau:101: Quad0106 dispose: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+@@FIND	Quad0106	another quad module instance
+@@FIND	Quad0106	spec.moduleidentity.luau
+PASS
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

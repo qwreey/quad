@@ -1,0 +1,29 @@
+=== 1. errorAt — 태그된 프레임 **안**의 줄을 blame ===
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.errorutil.luau:40: boom-inner
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.errorutil.luau:59: boom-outer
+PASS
+
+=== 2. errorBefore — 태그된 프레임의 **호출부**를 blame ===
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.errorutil.luau:83: boom-before
+PASS
+
+=== 3. 최상단부터 스캔 — 같은 태그가 겹치면 **바깥쪽**이 이긴다(샌드위치에 강건) ===
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.errorutil.luau:103: boom-outermost
+PASS
+
+=== 4. 무태그 기본 — 매치 없으면 raise 자리로 폴백, 등록 안 된 함수는 level 0 ===
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.errorutil.luau:118: boom-nomatch
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.errorutil.luau:125: boom-nomatch-near
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.errorutil.luau:132: boom-nomatch-before
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.errorutil.luau:137: boom-nomatch-bnear
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.errorutil.luau:143: boom-zero
+PASS
+
+=== 5. 태그 맵은 weak — 죽은 함수의 태그가 맵을 붙잡지 않는다 ===
+PASS
+
+=== V. setFuncLevel(level, ...fns) — 가변인자 계약(2026-09-08 사용자 결정) ===
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.errorutil.luau:182: setFuncLevel: argument #3 must be a function (got nil) — a renamed or missing method?
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.errorutil.luau:188: setFuncLevel: level must be a number (got function) — the signature is setFuncLevel(level, ...fns)
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

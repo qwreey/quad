@@ -1,0 +1,20 @@
+=== 1. 인자 게이트 — base/onError는 함수(blame은 호출 줄) ===
+@@QERR	Quad0099 Fallback: base must be a function (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.fallback.luau:16: Quad0099 Fallback: base must be a function (got number)
+@@FIND	Quad0099	Fallback: base must be a function
+@@QERR	Quad0100 Traceback: onError must be a function (got string)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.fallback.luau:21: Quad0100 Traceback: onError must be a function (got string)
+@@FIND	Quad0100	Traceback: onError must be a function
+PASS
+
+=== 2. Fallback — 정상이면 결과 그대로(인자 전달), 에러면 onError(err); err는 any(테이블도 손실 없이) ===
+PASS
+
+=== 3. Traceback — onError(err, trace); trace는 항상 string이고 던진 지점을 담는다; 정상 경로엔 비용 없음 ===
+PASS
+
+=== 4. 커링된 onError/중첩 — 바깥 Fallback이 안쪽 실패 컴포넌트의 placeholder를 그대로 받는다 ===
+PASS
+
+ALL PASS
+Coverage dump written to coverage.out (54 functions)

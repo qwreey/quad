@@ -1,0 +1,11 @@
+=== 1. property bag + changed signal ===
+PASS
+
+=== 2. parent/children tree ===
+PASS
+
+=== 3. Destroy fires Destroying + detaches ===
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

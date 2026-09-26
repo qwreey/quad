@@ -1,0 +1,33 @@
+--- P1 Replace before mount (never mounted): old destroyed?
+a destroyed	true	a.Parent	nil	Get(1)==b	true
+mounted kids	b	Length	1
+--- P2 Replace mounted: Slot -> plain, plain -> Slot
+before	x,i1,i2,y	4
+after Slot->plain	x,y,z	Length	3	i1 destroyed	true	Offsets	2
+after plain->Slot	x,y,k1,k2,k3	Length	5	z destroyed	true	inner2.Offset	1
+tail add	x,y,k1,k2,k3,w	6
+Extract Slot->plain	x,y,w,e	4	returned inner2?	true	k1 destroyed	false
+--- P3 List duplicate key / non-array data from State
+initial	1,2	2
+dup key	ERR ./e38probe_slot.luau:40: Quad0145 Slot:List: duplicate key 1
+after dup	1,2	2	data:Get #	2
+non-array	ERR ./e38probe_slot.luau:42: Quad0142 Slot:List: data must be a plain array (got number) — a data State must hold one too
+recover	ok
+after recover	3	1
+dup key at initial mount	ERR ./e38probe_slot.luau:47: Quad0145 Slot:List: duplicate key 1
+--- P4 List Detach with OwnsElements=false (mounted)
+detached(non-owned)		Length	0	x1 destroyed	false	x1.Parent	nil	_detached	nil
+re-show	x2	made	2	Length	1
+dispose x1 (user's now)	ok
+--- P5 List: detached key comes back with a NEW element (settle 77-79)
+held		true
+new instead of prev	x2	Length	1	x1 destroyed	true	detached cleared	true
+--- P6 held (Detach) element fate when owner Slot is destroyed / physical parent destroyed
+held	true	fx alive	true
+after owner Slot destroyed: fx destroyed	true
+held2	true
+after physical parent Destroy: fx destroyed	true	_detached	nil
+--- P7 :List installed on an already-mounted empty Slot
+pre	before,after	0
+post-install	before,after,L1,L2	Length	2	Offset	1
+reconcile	before,after,L2,L3	2	outer.Length	4	after offset	3

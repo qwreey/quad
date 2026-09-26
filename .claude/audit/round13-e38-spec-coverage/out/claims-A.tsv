@@ -1,0 +1,52 @@
+page:line	claim	class	evidence
+core/01-quad-module.md:36	Placing a value made by another quad instance in a tree position (Slot element seats, dispose) throws "made by another quad module instance"	ASSERTED	quad-base/test/spec.moduleidentity.luau:36 (Slot:Single) + expectCross helper (line ~20, used for dispose(other Slot/State) at :100-101)
+core/01-quad-module.md:58	RunInit runs initFn once per (module, fn); another instance runs it again	ASSERTED	quad-base/test/smoke.init.luau:22 (runCount==1), :42 (two instances → 2)
+core/01-quad-module.md:58	If initFn throws midway, the pair is already marked, so re-calling RunInit with the same fn is a no-op	NOT-ASSERTED	no spec/smoke throws inside a RunInit initFn; spec.init.luau:57-66 only checks the non-function gate
+core/01-quad-module.md:92	AddPlugin mutates and returns the same module; same pluginFn merged once (dedup), a failed plugin install is not marked	ASSERTED	quad-base/test/smoke.plugin.luau:21 (identity), :79-83 (dedup / other instance), :98 (retry after throw)
+core/01-quad-module.md:133	UseProvider: same fn = idempotent no-op; different identity throws Quad0213 "already has a provider"; throwing provider leaves slot free for retry	ASSERTED	quad-roblox/test/spec.robloxfactory.luau:34, :45, :77
+core/02-source.md:44	Source constructor rejects a Modifier value (Quad0182)	ASSERTED	quad-base/test/spec.source.luau:62 (matches fragment "Modifier" only, not full text)
+core/02-source.md:46	isSource/isEpoch/isState all true; not registered in State brand	ASSERTED	quad-base/test/spec.source.luau:20-22
+core/02-source.md:47	print(source) renders "Source(<value>)"	ASSERTED	quad-base/test/spec.tostring.luau:19 (no-compute part not checked)
+core/02-source.md:78	Set returns self and same value still bumps revision (no == dedup)	ASSERTED	quad-base/test/spec.source.luau:33, :37
+core/02-source.md:103	Emit bumps revision without touching the value, returns self	ASSERTED	quad-base/test/spec.source.luau:50
+core/03-state.md:48	Compute is lazy: not run until Get; repeated Get on fresh value doesn't recompute	ASSERTED	quad-base/test/spec.state.luau:42-44
+core/03-state.md:50	Get converges within the same call when upstream moves mid-compute; rewind advances value only, notification waits for real emit	ASSERTED	quad-base/test/spec.state.luau:160 (converge), :114-115 (no notify), spec.gate.luau:282-288
+core/03-state.md:77	Self-read cycle throws Quad0184; a thrown fn's same-generation re-read throws same text; runs again after upstream change	ASSERTED	quad-base/test/spec.state.luau:387, :395, :421, :424
+core/03-state.md:158	Apply with neither function nor __apply object throws Quad0191; object arm calls factory:__apply(self)	ASSERTED	quad-base/test/spec.modifier.luau:401 (full text), spec.state.luau:270
+core/03-state.md:209	Gate: value never gated; emit(false) discards batch and returns had-something; empty emit returns false; withheld Sets coalesce into one notification	ASSERTED	quad-base/test/spec.gate.luau:122, :123 (two Sets → count 1), :124, :137-138
+core/04-store.md:42	Store fields are the very Sources passed in; Names excludes methods	ASSERTED	quad-base/test/spec.store.luau:19, :127
+core/04-store.md:48	Non-Source default rejected at construction (Quad0198 "is not a Source")	ASSERTED	quad-base/test/spec.store.luau:40
+core/04-store.md:56	print(store) is "Store{...}" with sorted keys	ASSERTED	quad-base/test/spec.tostring.luau:44-45
+core/04-store.md:79	Dot-reading an undeclared key returns nil (no lazy creation on dot access)	NOT-ASSERTED	spec.store.luau has no store.<undeclared> read; only rawget(s,"__reservedCheck")==nil at :131 (phantom field, different claim)
+core/04-store.md:108	Of creates Source(nil) if missing, same name → same object	ASSERTED	quad-base/test/spec.store.luau:108-110
+core/05-observer-effect.md:103	Unalive Observer holds emits and replays exactly once (emitFrom=nil) on Subscribe/bind, however many arrived	PARTIAL	spec.observer.luau:60 (bind replay once, from==nil), :99, :142 — each with only ONE held Set; "several → once" asserted only for Effect (spec.effect.luau:69), not Observer
+core/05-observer-effect.md:155	Re-subscribing a live handle throws Quad0114 "already subscribed" / Quad0235 "already bound to an Instance"	PARTIAL	"already subscribed" asserted spec.observer.luau:105, :110; "already bound to an Instance" text (Quad0235/0231/0230) not asserted anywhere
+core/05-observer-effect.md:224	Effect fn returning non-function non-nil throws Quad0086 and the Effect dies	ASSERTED	quad-base/test/spec.effect.luau:381, :394, :396
+core/05-observer-effect.md:290	Effect:Unsubscribe consumes the last cleanup exactly once; strict when not strongly subscribed	ASSERTED	quad-base/test/spec.effect.luau:115, :222-224
+core/05-observer-effect.md:300	Effect:WeakUnsubscribe does not touch the cleanup	NOT-ASSERTED	spec.effect.luau:214-219 exercise WeakUnsubscribe only on a cleanup-less fn; no check that a stored cleanup survives
+core/06-slot.md:73	initial (even an empty Slot{}) locks the Slot to manual CRUD; :List then throws Quad0149	PARTIAL	lock after Add asserted spec.slot.luau:309 / spec.inputgates.luau:87; the empty Slot{} case is not asserted
+core/06-slot.md:74	initial must be a plain array: bare element / non-array keys rejected (Quad0176/Quad0177)	ASSERTED	quad-base/test/spec.slot.luau:757 (fragment "initial elements must be", 8 bad shapes incl. bare element, [0], [1.5])
+core/06-slot.md:157	Add index beyond n+1 throws Quad0236; non-integer index throws Quad0168	NOT-ASSERTED	no spec calls :Add with an out-of-range or fractional index (grep of all :Add(..., N) calls: only index 1); Move/Swap range checked at spec.slot.luau:464-466 instead
+core/06-slot.md:164	Adding a Slot to itself or its descendant throws Quad0173 (cycle)	ASSERTED	quad-base/test/spec.slot.luau:972
+core/06-slot.md:238	ExtractAll keeps elements alive with one recompute; Clear destroys with one recompute; Clear on empty is no-op	ASSERTED	quad-base/test/spec.slot.luau:910, :912, :930-933
+core/06-slot.md:314	Get(non-number) throws Quad0175; out-of-range returns nil	ASSERTED	quad-base/test/spec.slot.luau:878, :880
+core/06-slot.md:397	:List duplicate key throws Quad0145 "duplicate key"	NOT-ASSERTED	no spec feeds duplicate keys to :List (grep "duplicate key"/"dup" finds only Splice/constructor element duplicates); keyFn nil/NaN are asserted (:405, :1123)
+core/06-slot.md:404	State-held element is never destroyed on Remove/Replace/Clear/KeyGone/dispose(slot) — only unmounted and released	PARTIAL	only Remove path asserted (spec.slot.luau:523) and Extract (:511); Replace/Clear/KeyGone/dispose(slot) paths for a State element not asserted
+core/07-ref.md:55	PreRef/PostRef at a string key throw Quad0137; through a State/Store value throw Quad0136 (plain Ref too at string key)	ASSERTED	quad-base/test/spec.refhandlers.luau:204, :211, :215, :219
+core/07-ref.md:64	One Ref, one position: same instance twice throws Quad0232, another instance Quad0233	PARTIAL	spec.refhandlers.luau:57, :65 assert throw + user blame, but neither message text (bindLifetime ... already bound to this/another Instance) is checked
+core/07-ref.md:68	PreRef/PostRef are one-shot: placing a fired one again throws Quad0069	ASSERTED	quad-base/test/spec.refhandlers.luau:150, :191 (fragment "one-shot")
+core/07-ref.md:91	Ref is Set(inst) when its seat is processed and Set(nil) when the seat is retracted/re-driven	ASSERTED	quad-base/test/spec.refhandlers.luau:40, :86, :234
+core/07-ref.md:117	PreRefs fire before everything (position-independent, index order); PostRefs after all keys	ASSERTED	quad-base/test/spec.refhandlers.luau:140, :182
+core/07-ref.md:236	Ref:Set order: Value then Revision then callbacks; reentrant Set stops outer walk so no callback sees a stale value	ASSERTED	quad-base/test/spec.ref.luau:40-41, :254-256
+core/07-ref.md:322	Wait always waits for the next Set even when Value is already filled	ASSERTED	quad-base/test/spec.ref.luau:272
+core/07-ref.md:360	Unwrap on an empty Ref throws "Ref:Unwrap: the Ref is empty"	ASSERTED	quad-base/test/spec.ref.luau:367
+core/10-lifetime-sentinels.md:32	None: tostring "None", frozen, same object across instances	ASSERTED	quad-base/test/spec.nonenil.luau:23-27
+core/10-lifetime-sentinels.md:90	Void returns nothing for any args	ASSERTED	quad-base/test/spec.void.luau:16-17
+core/10-lifetime-sentinels.md:115	dispose errors: nil → Quad0178, still held → Quad0179, backend cannot dispose → Quad0180	PARTIAL	Quad0178 spec.lifetime.luau:300; Quad0179 quad-roblox/test/spec.handlers.luau:291 (and spec.slot.luau:122 without text); Quad0180 not asserted anywhere
+core/10-lifetime-sentinels.md:169	Lifetime ops without a backend hit the stub error "isHeld is not available" (Quad0108)	ASSERTED	quad-base/test/spec.lifetime.luau:36, :70
+core/10-lifetime-sentinels.md:182	unbindLifetime: no-op on unbound value, nil errors, Effect: disconnects without running cleanup	PARTIAL	no-op spec.lifetime.luau:147-148, quad-roblox spec.robloxfactory.luau:163; nil error spec.lifetime.luau:297; "cleanup not called on unbind" never asserted (spec.effect.luau:149 uses a cleanup-less Effect)
+core/11-predicates.md:19	is* never throw; false for unregistered tables, nil, numbers	PARTIAL	q.is*({})==false for all predicates at spec.init.luau:29; nil/number/string only asserted at the Brand:Is layer (spec.brand.luau:15), not through q.is*
+core/11-predicates.md:25	isState true for Source, Compute/Depend nodes and Gate nodes	ASSERTED	spec.source.luau:21, spec.state.luau:58, :191, spec.gate.luau:65
+core/11-predicates.md:50	isRef covers Ref/PreRef/PostRef; PreRef and PostRef mutually exclusive; isEpoch covers all	ASSERTED	quad-base/test/spec.preref.luau:25-28, spec.ref.luau:18
+core/11-predicates.md:60	Module-level is* helpers that are not brand predicates are filtered by the dispatch scan	ASSERTED	quad-base/test/spec.dispatch.luau:622-623
+core/11-predicates.md:64	Brands are per quad-base copy: a second copy's values fail this copy's is*; instances of one copy recognize each other	PARTIAL	same-copy cross-instance half asserted (spec.source.luau:96), but the claim's load-bearing half (two copies → false) has no spec

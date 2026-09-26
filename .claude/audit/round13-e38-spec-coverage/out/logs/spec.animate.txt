@@ -1,0 +1,42 @@
+=== 1. 기본 — :Apply(Animate{…}) → State<Tween<T>>, 옵션은 plain으로 실림, Value는 소스 값 ===
+PASS
+
+=== 2. CanAnimate — 생략은 true, false면 plain 값 그대로, State<boolean>로 토글(다음 Value 변경 때 반영) ===
+PASS
+
+=== 3. 옵션 State는 deps가 아니다 — Style State가 바뀌어도 재계산 0, Value 변경 때만 최신 반영 ===
+PASS
+
+=== 4. 검증 — info가 테이블이 아니면 error(blame은 사용자 줄); Tween 검증도 그대로 산다 ===
+@@QERR	Quad0214 Animate: expected an options table (Animate{ Time = ... })
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.animate.luau:79: Quad0214 Animate: expected an options table (Animate{ Time = ... })
+@@FIND	Quad0214	expected an options table
+@@QERR	Quad0243 Tween: Time must be a number
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.animate.luau:86: Quad0243 Tween: Time must be a number
+@@FIND	Quad0243	Time must be a number
+@@QERR	Quad0247 Tween: Override must be "Cancel" or "Finish"
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.animate.luau:91: Quad0247 Tween: Override must be "Cancel" or "Finish"
+@@FIND	Quad0247	Override must be
+@@QERR	Quad0243 Tween: Time must be a number
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.animate.luau:100: Quad0243 Tween: Time must be a number
+@@FIND	Quad0243	Time must be a number
+PASS
+=== 5. Q25 (2026-09-08) — Dedup은 Tween 필드로 전달될 뿐(값 비교는 Property 핸들러): 리터럴은 즉시 검증, State는 실행마다 resolve ===
+@@QERR	Quad0245 Tween: Dedup must be a boolean
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.animate.luau:121: Quad0245 Tween: Dedup must be a boolean
+@@FIND	Quad0245	Dedup must be a boolean
+PASS
+
+=== 6. debug 층(2026-09-15 사용자 결정) — 모르는 옵션 키는 경고만, Animate는 그대로 돈다 ===
+(아래 Animate unknown option 경고 한 줄은 의도된 출력이다 — 육안 확인)
+Animate: unknown option "Duration" is ignored (known: Info, Time, Style, Direction, RepeatCount, Reverses, DelayTime, Override, Dedup, Started, Completed, Cancelled, CanAnimate)
+PASS
+
+
+=== 7. round10 G-1 — Animate가 건 State에 Tween/State를 넣으면 Tween 검증이 사용자 줄을 blame(옛: Animate.luau:115) ===
+@@QERR	Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.animate.luau:155: Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)
+@@FIND	Quad0251	Tween: Value must be a plain value, not None or another Tween
+PASS
+=== ALL PASS ===
+Coverage dump written to coverage.out (124 functions)

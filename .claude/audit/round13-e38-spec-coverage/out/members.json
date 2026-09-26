@@ -1,0 +1,3045 @@
+[
+{
+"kind": "module",
+"type": "q",
+"name": "Version",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 1,
+"stat_files": [
+"smoke.plugin.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "debug",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 5,
+"stat_files": [
+"smoke.init.luau",
+"smoke.plugin.luau",
+"spec.dispatch.luau",
+"spec.handlers.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "New",
+"dyn": 247,
+"dyn_specs": 61,
+"stat": 72,
+"stat_files": [
+"smoke.init.luau",
+"smoke.plugin.luau",
+"spec.attribute.luau",
+"spec.debounce.luau",
+"spec.effect.luau",
+"spec.errorcodes.luau",
+"spec.init.luau",
+"spec.inputgates.luau",
+"spec.lifetime.luau",
+"spec.moduleidentity.luau",
+"spec.observer.luau",
+"spec.relate.luau",
+"spec.source.luau",
+"spec.store.luau",
+"spec.tag.luau",
+"spec.animate.luau",
+"spec.claim.luau",
+"spec.component.luau",
+"spec.componenttypes.luau",
+"spec.d.luau",
+"spec.events.luau",
+"spec.handlers.luau",
+"spec.modifiertypes.luau",
+"spec.onchangetypes.luau",
+"spec.reftypes.luau",
+"spec.robloxfactory.luau",
+"spec.rootexports.luau",
+"spec.shorthand.luau",
+"spec.shorthandtypes.luau",
+"spec.slottypes.luau",
+"spec.tagattribute.luau",
+"spec.timers.luau",
+"spec.tween.luau",
+"spec.tweenproperty.luau",
+"spec.tweentypes.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "RunInit",
+"dyn": 7173,
+"dyn_specs": 61,
+"stat": 10,
+"stat_files": [
+"smoke.init.luau",
+"spec.init.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "AddPlugin",
+"dyn": 12,
+"dyn_specs": 2,
+"stat": 10,
+"stat_files": [
+"smoke.plugin.luau",
+"spec.inputgates.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "UseProvider",
+"dyn": 161,
+"dyn_specs": 44,
+"stat": 4,
+"stat_files": [
+"spec.inputgates.luau",
+"spec.handlers.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Relate",
+"dyn": 3327,
+"dyn_specs": 61,
+"stat": 4,
+"stat_files": [
+"spec.init.luau",
+"spec.relate.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Void",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 20,
+"stat_files": [
+"spec.dispatch.luau",
+"spec.drive.luau",
+"spec.flatten.luau",
+"spec.init.luau",
+"spec.leaf.luau",
+"spec.lengthoffset.luau",
+"spec.nonenil.luau",
+"spec.refhandlers.luau",
+"spec.void.luau",
+"spec.tween.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Ref",
+"dyn": 77,
+"dyn_specs": 12,
+"stat": 41,
+"stat_files": [
+"spec.attribute.luau",
+"spec.debounce.luau",
+"spec.effect.luau",
+"spec.epochmap.luau",
+"spec.init.luau",
+"spec.preref.luau",
+"spec.ref.luau",
+"spec.refhandlers.luau",
+"spec.slot.luau",
+"spec.store.luau",
+"spec.tostring.luau",
+"spec.component.luau",
+"spec.componenttypes.luau",
+"spec.reftypes.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "PreRef",
+"dyn": 17,
+"dyn_specs": 5,
+"stat": 14,
+"stat_files": [
+"spec.preref.luau",
+"spec.ref.luau",
+"spec.refhandlers.luau",
+"spec.tostring.luau",
+"spec.reftypes.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "PostRef",
+"dyn": 14,
+"dyn_specs": 4,
+"stat": 12,
+"stat_files": [
+"spec.preref.luau",
+"spec.refhandlers.luau",
+"spec.tostring.luau",
+"spec.reftypes.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Source",
+"dyn": 825,
+"dyn_specs": 43,
+"stat": 302,
+"stat_files": [
+"spec.attribute.luau",
+"spec.blocker.luau",
+"spec.context.luau",
+"spec.debounce.luau",
+"spec.dispatch.luau",
+"spec.effect.luau",
+"spec.epochmap.luau",
+"spec.flatten.luau",
+"spec.gate.luau",
+"spec.hooks.luau",
+"spec.init.luau",
+"spec.inputgates.luau",
+"spec.integration.luau",
+"spec.leaf.luau",
+"spec.lengthoffset.luau",
+"spec.lifetime.luau",
+"spec.modifier.luau",
+"spec.moduleidentity.luau",
+"spec.observer.luau",
+"spec.operator.luau",
+"spec.preref.luau",
+"spec.ref.luau",
+"spec.refhandlers.luau",
+"spec.slot.luau",
+"spec.source.luau",
+"spec.state.luau",
+"spec.store.luau",
+"spec.storebind.luau",
+"spec.tag.luau",
+"spec.tostring.luau",
+"spec.animate.luau",
+"spec.claim.luau",
+"spec.componenttypes.luau",
+"spec.events.luau",
+"spec.handlers.luau",
+"spec.modifiertypes.luau",
+"spec.onchangetypes.luau",
+"spec.reftypes.luau",
+"spec.robloxfactory.luau",
+"spec.shorthand.luau",
+"spec.shorthandtypes.luau",
+"spec.slottypes.luau",
+"spec.tagattribute.luau",
+"spec.timers.luau",
+"spec.tween.luau",
+"spec.tweenproperty.luau",
+"spec.tweentypes.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Store",
+"dyn": 31,
+"dyn_specs": 5,
+"stat": 12,
+"stat_files": [
+"spec.attribute.luau",
+"spec.context.luau",
+"spec.dispatch.luau",
+"spec.init.luau",
+"spec.store.luau",
+"spec.tostring.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Effect",
+"dyn": 94,
+"dyn_specs": 10,
+"stat": 19,
+"stat_files": [
+"spec.effect.luau",
+"spec.init.luau",
+"spec.integration.luau",
+"spec.leaf.luau",
+"spec.modifier.luau",
+"spec.moduleidentity.luau",
+"spec.tostring.luau",
+"spec.componenttypes.luau",
+"spec.robloxfactory.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Blocker",
+"dyn": 648,
+"dyn_specs": 30,
+"stat": 8,
+"stat_files": [
+"spec.blocker.luau",
+"spec.dispatch.luau",
+"spec.gate.luau",
+"spec.init.luau",
+"spec.slot.luau",
+"spec.tostring.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Debounce",
+"dyn": 24,
+"dyn_specs": 3,
+"stat": 7,
+"stat_files": [
+"smoke.plugin.luau",
+"spec.debounce.luau",
+"spec.timers.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Throttle",
+"dyn": 13,
+"dyn_specs": 2,
+"stat": 2,
+"stat_files": [
+"smoke.plugin.luau",
+"spec.debounce.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "OnCreated",
+"dyn": 6,
+"dyn_specs": 1,
+"stat": 1,
+"stat_files": [
+"spec.hooks.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "OnRendered",
+"dyn": 5,
+"dyn_specs": 1,
+"stat": 1,
+"stat_files": [
+"spec.hooks.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "OnDestroyed",
+"dyn": 7,
+"dyn_specs": 1,
+"stat": 1,
+"stat_files": [
+"spec.hooks.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Fallback",
+"dyn": 6,
+"dyn_specs": 2,
+"stat": 2,
+"stat_files": [
+"spec.errorcodes.luau",
+"spec.fallback.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Traceback",
+"dyn": 4,
+"dyn_specs": 1,
+"stat": 1,
+"stat_files": [
+"spec.fallback.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Context",
+"dyn": 5,
+"dyn_specs": 2,
+"stat": 5,
+"stat_files": [
+"spec.context.luau",
+"spec.dispatch.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Operator",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 1,
+"stat_files": [
+"spec.operator.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Dispatch",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 347,
+"stat_files": [
+"spec.attribute.luau",
+"spec.dispatch.luau",
+"spec.drive.luau",
+"spec.effect.luau",
+"spec.flatten.luau",
+"spec.hooks.luau",
+"spec.inputgates.luau",
+"spec.integration.luau",
+"spec.leaf.luau",
+"spec.lengthoffset.luau",
+"spec.lifetime.luau",
+"spec.moduleidentity.luau",
+"spec.nonenil.luau",
+"spec.observer.luau",
+"spec.ref.luau",
+"spec.refhandlers.luau",
+"spec.slot.luau",
+"spec.storebind.luau",
+"spec.tag.luau",
+"spec.tostring.luau",
+"spec.events.luau",
+"spec.handlers.luau",
+"spec.shorthand.luau",
+"spec.tagattribute.luau",
+"spec.tween.luau",
+"spec.tweenproperty.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Bookkeeping",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 143,
+"stat_files": [
+"spec.attribute.luau",
+"spec.flatten.luau",
+"spec.integration.luau",
+"spec.leaf.luau",
+"spec.lengthoffset.luau",
+"spec.nonenil.luau",
+"spec.refhandlers.luau",
+"spec.relate.luau",
+"spec.slot.luau",
+"spec.storebind.luau",
+"spec.tag.luau",
+"spec.claim.luau",
+"spec.component.luau",
+"spec.events.luau",
+"spec.handlers.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Backend",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 211,
+"stat_files": [
+"spec.attribute.luau",
+"spec.effect.luau",
+"spec.hooks.luau",
+"spec.init.luau",
+"spec.inputgates.luau",
+"spec.integration.luau",
+"spec.leaf.luau",
+"spec.lifetime.luau",
+"spec.observer.luau",
+"spec.refhandlers.luau",
+"spec.slot.luau",
+"spec.storebind.luau",
+"spec.tag.luau",
+"spec.claim.luau",
+"spec.component.luau",
+"spec.d.luau",
+"spec.events.luau",
+"spec.handlers.luau",
+"spec.robloxfactory.luau",
+"spec.shorthand.luau",
+"spec.tagattribute.luau",
+"spec.timers.luau",
+"spec.tweenproperty.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "errorNamespace",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 7,
+"stat_files": [
+"spec.lifetime.luau",
+"spec.d.luau",
+"spec.events.luau",
+"spec.handlers.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "moduleIdentity",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 4,
+"stat_files": [
+"spec.moduleidentity.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "None",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 65,
+"stat_files": [
+"spec.attribute.luau",
+"spec.flatten.luau",
+"spec.hooks.luau",
+"spec.integration.luau",
+"spec.leaf.luau",
+"spec.lengthoffset.luau",
+"spec.modifier.luau",
+"spec.nonenil.luau",
+"spec.refhandlers.luau",
+"spec.relate.luau",
+"spec.slot.luau",
+"spec.storebind.luau",
+"spec.tostring.luau",
+"spec.claim.luau",
+"spec.component.luau",
+"spec.componenttypes.luau",
+"spec.events.luau",
+"spec.handlers.luau",
+"spec.modifiertypes.luau",
+"spec.onchangetypes.luau",
+"spec.shorthand.luau",
+"spec.tween.luau",
+"spec.tweenproperty.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Slot",
+"dyn": 191,
+"dyn_specs": 11,
+"stat": 76,
+"stat_files": [
+"smoke.plugin.luau",
+"spec.attribute.luau",
+"spec.dispatch.luau",
+"spec.inputgates.luau",
+"spec.lifetime.luau",
+"spec.modifier.luau",
+"spec.moduleidentity.luau",
+"spec.slot.luau",
+"spec.tostring.luau",
+"spec.component.luau",
+"spec.componenttypes.luau",
+"spec.handlers.luau",
+"spec.slottypes.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Detach",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 5,
+"stat_files": [
+"spec.slot.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "KeyGone",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 19,
+"stat_files": [
+"spec.slot.luau",
+"spec.slottypes.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "dispose",
+"dyn": 21,
+"dyn_specs": 5,
+"stat": 21,
+"stat_files": [
+"spec.lifetime.luau",
+"spec.moduleidentity.luau",
+"spec.slot.luau",
+"spec.handlers.luau",
+"spec.shorthand.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isSlot",
+"dyn": 7399,
+"dyn_specs": 30,
+"stat": 4,
+"stat_files": [
+"spec.slot.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isEpoch",
+"dyn": 1614,
+"dyn_specs": 44,
+"stat": 8,
+"stat_files": [
+"spec.gate.luau",
+"spec.init.luau",
+"spec.observer.luau",
+"spec.preref.luau",
+"spec.ref.luau",
+"spec.source.luau",
+"spec.state.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isSource",
+"dyn": 11337,
+"dyn_specs": 45,
+"stat": 10,
+"stat_files": [
+"spec.brand.luau",
+"spec.init.luau",
+"spec.source.luau",
+"spec.state.luau",
+"spec.store.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isState",
+"dyn": 10789,
+"dyn_specs": 44,
+"stat": 17,
+"stat_files": [
+"spec.blocker.luau",
+"spec.brand.luau",
+"spec.debounce.luau",
+"spec.gate.luau",
+"spec.init.luau",
+"spec.modifier.luau",
+"spec.observer.luau",
+"spec.operator.luau",
+"spec.ref.luau",
+"spec.source.luau",
+"spec.state.luau",
+"spec.animate.luau",
+"spec.shorthandtypes.luau",
+"spec.tween.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isStore",
+"dyn": 394,
+"dyn_specs": 33,
+"stat": 4,
+"stat_files": [
+"spec.init.luau",
+"spec.source.luau",
+"spec.store.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isObserver",
+"dyn": 13974,
+"dyn_specs": 34,
+"stat": 4,
+"stat_files": [
+"spec.effect.luau",
+"spec.init.luau",
+"spec.leaf.luau",
+"spec.observer.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isEffect",
+"dyn": 18640,
+"dyn_specs": 33,
+"stat": 4,
+"stat_files": [
+"spec.effect.luau",
+"spec.hooks.luau",
+"spec.init.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isBlocker",
+"dyn": 357,
+"dyn_specs": 32,
+"stat": 2,
+"stat_files": [
+"spec.blocker.luau",
+"spec.init.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isContext",
+"dyn": 355,
+"dyn_specs": 30,
+"stat": 3,
+"stat_files": [
+"spec.context.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isProvider",
+"dyn": 376,
+"dyn_specs": 30,
+"stat": 3,
+"stat_files": [
+"spec.context.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isModifier",
+"dyn": 3112,
+"dyn_specs": 46,
+"stat": 5,
+"stat_files": [
+"spec.init.luau",
+"spec.modifier.luau",
+"spec.tween.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isRef",
+"dyn": 1139,
+"dyn_specs": 36,
+"stat": 13,
+"stat_files": [
+"spec.brand.luau",
+"spec.hooks.luau",
+"spec.init.luau",
+"spec.preref.luau",
+"spec.ref.luau",
+"spec.source.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isPreRef",
+"dyn": 2392,
+"dyn_specs": 36,
+"stat": 12,
+"stat_files": [
+"spec.brand.luau",
+"spec.hooks.luau",
+"spec.init.luau",
+"spec.preref.luau",
+"spec.ref.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isPostRef",
+"dyn": 2389,
+"dyn_specs": 36,
+"stat": 12,
+"stat_files": [
+"spec.brand.luau",
+"spec.hooks.luau",
+"spec.init.luau",
+"spec.preref.luau",
+"spec.ref.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isMapperDescriptor",
+"dyn": 1266,
+"dyn_specs": 32,
+"stat": 0,
+"stat_files": []
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Claim",
+"dyn": 34,
+"dyn_specs": 2,
+"stat": 34,
+"stat_files": [
+"spec.lifetime.luau",
+"spec.claim.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "MapperRoot",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 5,
+"stat_files": [
+"spec.lifetime.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "newMapperClass",
+"dyn": 875,
+"dyn_specs": 22,
+"stat": 3,
+"stat_files": [
+"spec.lifetime.luau",
+"spec.modifier.luau",
+"spec.claim.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isTag",
+"dyn": 1132,
+"dyn_specs": 29,
+"stat": 3,
+"stat_files": [
+"spec.tag.luau",
+"spec.tween.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isAttr",
+"dyn": 429,
+"dyn_specs": 29,
+"stat": 4,
+"stat_files": [
+"spec.attribute.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isAttrKey",
+"dyn": 1296,
+"dyn_specs": 32,
+"stat": 1,
+"stat_files": [
+"spec.attribute.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Tag",
+"dyn": 247,
+"dyn_specs": 6,
+"stat": 50,
+"stat_files": [
+"spec.dispatch.luau",
+"spec.inputgates.luau",
+"spec.slot.luau",
+"spec.tag.luau",
+"spec.tostring.luau",
+"spec.onchangetypes.luau",
+"spec.tagattribute.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Modifier",
+"dyn": 58,
+"dyn_specs": 8,
+"stat": 55,
+"stat_files": [
+"spec.dispatch.luau",
+"spec.flatten.luau",
+"spec.inputgates.luau",
+"spec.modifier.luau",
+"spec.preref.luau",
+"spec.tostring.luau",
+"spec.claim.luau",
+"spec.component.luau",
+"spec.componenttypes.luau",
+"spec.d.luau",
+"spec.handlers.luau",
+"spec.modifiertypes.luau",
+"spec.rootexports.luau",
+"spec.shorthandtypes.luau",
+"spec.tweentypes.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Attr",
+"dyn": 27,
+"dyn_specs": 3,
+"stat": 29,
+"stat_files": [
+"spec.attribute.luau",
+"spec.tostring.luau",
+"spec.onchangetypes.luau",
+"spec.tagattribute.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "AttrKey",
+"dyn": 21,
+"dyn_specs": 7,
+"stat": 21,
+"stat_files": [
+"spec.attribute.luau",
+"spec.dispatch.luau",
+"spec.modifier.luau",
+"spec.store.luau",
+"spec.tag.luau",
+"spec.tostring.luau",
+"spec.tagattribute.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "StringAttr",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 13,
+"stat_files": [
+"spec.attribute.luau",
+"spec.errorcodes.luau",
+"spec.onchangetypes.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "NumberAttr",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 4,
+"stat_files": [
+"spec.attribute.luau",
+"spec.onchangetypes.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "BooleanAttr",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 3,
+"stat_files": [
+"spec.attribute.luau",
+"spec.onchangetypes.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Declaration",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 154,
+"stat_files": [
+"spec.claim.luau",
+"spec.component.luau",
+"spec.componenttypes.luau",
+"spec.d.luau",
+"spec.events.luau",
+"spec.handlers.luau",
+"spec.modifiertypes.luau",
+"spec.onchangetypes.luau",
+"spec.reftypes.luau",
+"spec.robloxfactory.luau",
+"spec.rootexports.luau",
+"spec.shorthand.luau",
+"spec.shorthandtypes.luau",
+"spec.slottypes.luau",
+"spec.tweenproperty.luau",
+"spec.tweentypes.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "OnChange",
+"dyn": 12,
+"dyn_specs": 2,
+"stat": 12,
+"stat_files": [
+"spec.events.luau",
+"spec.handlers.luau",
+"spec.onchangetypes.luau",
+"spec.tweenproperty.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Out",
+"dyn": 5,
+"dyn_specs": 1,
+"stat": 7,
+"stat_files": [
+"spec.events.luau",
+"spec.onchangetypes.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Animate",
+"dyn": 22,
+"dyn_specs": 3,
+"stat": 10,
+"stat_files": [
+"spec.animate.luau",
+"spec.shorthand.luau",
+"spec.shorthandtypes.luau",
+"spec.tweenproperty.luau",
+"spec.tweentypes.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "Tween",
+"dyn": 88,
+"dyn_specs": 5,
+"stat": 31,
+"stat_files": [
+"spec.animate.luau",
+"spec.modifiertypes.luau",
+"spec.shorthand.luau",
+"spec.shorthandtypes.luau",
+"spec.tween.luau",
+"spec.tweenproperty.luau",
+"spec.tweentypes.luau"
+]
+},
+{
+"kind": "module",
+"type": "q",
+"name": "isTween",
+"dyn": 562,
+"dyn_specs": 11,
+"stat": 12,
+"stat_files": [
+"spec.animate.luau",
+"spec.tween.luau",
+"spec.tweentypes.luau"
+]
+},
+{
+"kind": "member",
+"type": "State",
+"name": "Compute",
+"dyn": 122,
+"dyn_specs": 19,
+"stat": 51,
+"stat_files": [
+"spec.debounce.luau",
+"spec.dispatch.luau",
+"spec.effect.luau",
+"spec.gate.luau",
+"spec.lengthoffset.luau",
+"spec.modifier.luau",
+"spec.observer.luau",
+"spec.source.luau",
+"spec.state.luau",
+"spec.store.luau",
+"spec.tostring.luau",
+"spec.events.luau",
+"spec.modifiertypes.luau",
+"spec.shorthandtypes.luau",
+"spec.slottypes.luau",
+"spec.tweentypes.luau"
+]
+},
+{
+"kind": "member",
+"type": "State",
+"name": "Depend",
+"dyn": 6,
+"dyn_specs": 3,
+"stat": 7,
+"stat_files": [
+"spec.gate.luau",
+"spec.source.luau",
+"spec.state.luau"
+]
+},
+{
+"kind": "member",
+"type": "State",
+"name": "Apply",
+"dyn": 90,
+"dyn_specs": 11,
+"stat": 110,
+"stat_files": [
+"spec.blocker.luau",
+"spec.debounce.luau",
+"spec.gate.luau",
+"spec.inputgates.luau",
+"spec.modifier.luau",
+"spec.operator.luau",
+"spec.source.luau",
+"spec.state.luau",
+"spec.tag.luau",
+"spec.animate.luau",
+"spec.modifiertypes.luau",
+"spec.shorthand.luau",
+"spec.shorthandtypes.luau",
+"spec.timers.luau",
+"spec.tweenproperty.luau",
+"spec.tweentypes.luau"
+]
+},
+{
+"kind": "member",
+"type": "State",
+"name": "Observer",
+"dyn": 510,
+"dyn_specs": 31,
+"stat": 52,
+"stat_files": [
+"spec.integration.luau",
+"spec.leaf.luau",
+"spec.lengthoffset.luau",
+"spec.lifetime.luau",
+"spec.modifier.luau",
+"spec.moduleidentity.luau",
+"spec.observer.luau",
+"spec.slot.luau",
+"spec.tostring.luau",
+"spec.animate.luau",
+"spec.componenttypes.luau",
+"spec.events.luau",
+"spec.robloxfactory.luau"
+]
+},
+{
+"kind": "member",
+"type": "State",
+"name": "Gate",
+"dyn": 55,
+"dyn_specs": 6,
+"stat": 18,
+"stat_files": [
+"spec.blocker.luau",
+"spec.debounce.luau",
+"spec.gate.luau",
+"spec.state.luau",
+"spec.tostring.luau"
+]
+},
+{
+"kind": "member",
+"type": "Source",
+"name": "Revision",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 23,
+"stat_files": [
+"spec.epochmap.luau",
+"spec.ref.luau",
+"spec.source.luau"
+]
+},
+{
+"kind": "member",
+"type": "Source",
+"name": "Set",
+"dyn": 647,
+"dyn_specs": 35,
+"stat": 419,
+"stat_files": [
+"spec.attribute.luau",
+"spec.blocker.luau",
+"spec.context.luau",
+"spec.debounce.luau",
+"spec.effect.luau",
+"spec.epochmap.luau",
+"spec.flatten.luau",
+"spec.gate.luau",
+"spec.hooks.luau",
+"spec.integration.luau",
+"spec.leaf.luau",
+"spec.lengthoffset.luau",
+"spec.modifier.luau",
+"spec.moduleidentity.luau",
+"spec.observer.luau",
+"spec.operator.luau",
+"spec.preref.luau",
+"spec.ref.luau",
+"spec.refhandlers.luau",
+"spec.slot.luau",
+"spec.source.luau",
+"spec.state.luau",
+"spec.store.luau",
+"spec.storebind.luau",
+"spec.tag.luau",
+"spec.tostring.luau",
+"spec.animate.luau",
+"spec.claim.luau",
+"spec.events.luau",
+"spec.handlers.luau",
+"spec.robloxfactory.luau",
+"spec.shorthand.luau",
+"spec.tagattribute.luau",
+"spec.timers.luau",
+"spec.tweenproperty.luau"
+]
+},
+{
+"kind": "member",
+"type": "Source",
+"name": "Emit",
+"dyn": 2,
+"dyn_specs": 2,
+"stat": 3,
+"stat_files": [
+"spec.source.luau",
+"spec.tag.luau"
+]
+},
+{
+"kind": "member",
+"type": "Store",
+"name": "Of",
+"dyn": 13,
+"dyn_specs": 1,
+"stat": 12,
+"stat_files": [
+"spec.store.luau"
+]
+},
+{
+"kind": "member",
+"type": "Store",
+"name": "Names",
+"dyn": 13,
+"dyn_specs": 3,
+"stat": 11,
+"stat_files": [
+"spec.store.luau",
+"spec.tag.luau"
+]
+},
+{
+"kind": "member",
+"type": "Slot",
+"name": "Length",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 54,
+"stat_files": [
+"spec.dispatch.luau",
+"spec.moduleidentity.luau",
+"spec.slot.luau"
+]
+},
+{
+"kind": "member",
+"type": "Slot",
+"name": "Offset",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 38,
+"stat_files": [
+"spec.slot.luau",
+"spec.component.luau",
+"spec.shorthand.luau",
+"spec.slottypes.luau"
+]
+},
+{
+"kind": "member",
+"type": "Slot",
+"name": "Add",
+"dyn": 174,
+"dyn_specs": 7,
+"stat": 136,
+"stat_files": [
+"spec.inputgates.luau",
+"spec.lifetime.luau",
+"spec.moduleidentity.luau",
+"spec.slot.luau",
+"spec.tostring.luau",
+"spec.component.luau",
+"spec.componenttypes.luau",
+"spec.handlers.luau"
+]
+},
+{
+"kind": "member",
+"type": "Slot",
+"name": "Remove",
+"dyn": 7,
+"dyn_specs": 2,
+"stat": 7,
+"stat_files": [
+"spec.inputgates.luau",
+"spec.slot.luau"
+]
+},
+{
+"kind": "member",
+"type": "Slot",
+"name": "Replace",
+"dyn": 5,
+"dyn_specs": 2,
+"stat": 5,
+"stat_files": [
+"spec.moduleidentity.luau",
+"spec.slot.luau"
+]
+},
+{
+"kind": "member",
+"type": "Slot",
+"name": "Extract",
+"dyn": 10,
+"dyn_specs": 2,
+"stat": 10,
+"stat_files": [
+"spec.moduleidentity.luau",
+"spec.slot.luau"
+]
+},
+{
+"kind": "member",
+"type": "Slot",
+"name": "ExtractAll",
+"dyn": 2,
+"dyn_specs": 1,
+"stat": 2,
+"stat_files": [
+"spec.slot.luau"
+]
+},
+{
+"kind": "member",
+"type": "Slot",
+"name": "Splice",
+"dyn": 22,
+"dyn_specs": 2,
+"stat": 23,
+"stat_files": [
+"spec.moduleidentity.luau",
+"spec.slot.luau"
+]
+},
+{
+"kind": "member",
+"type": "Slot",
+"name": "Clear",
+"dyn": 5,
+"dyn_specs": 2,
+"stat": 5,
+"stat_files": [
+"spec.slot.luau",
+"spec.handlers.luau"
+]
+},
+{
+"kind": "member",
+"type": "Slot",
+"name": "Move",
+"dyn": 12,
+"dyn_specs": 1,
+"stat": 12,
+"stat_files": [
+"spec.slot.luau"
+]
+},
+{
+"kind": "member",
+"type": "Slot",
+"name": "Swap",
+"dyn": 6,
+"dyn_specs": 1,
+"stat": 6,
+"stat_files": [
+"spec.slot.luau"
+]
+},
+{
+"kind": "member",
+"type": "Slot",
+"name": "Get",
+"dyn": 95,
+"dyn_specs": 1,
+"stat": 369,
+"stat_files": [
+"spec.blocker.luau",
+"spec.context.luau",
+"spec.debounce.luau",
+"spec.dispatch.luau",
+"spec.effect.luau",
+"spec.gate.luau",
+"spec.integration.luau",
+"spec.lengthoffset.luau",
+"spec.modifier.luau",
+"spec.moduleidentity.luau",
+"spec.nonenil.luau",
+"spec.observer.luau",
+"spec.operator.luau",
+"spec.preref.luau",
+"spec.slot.luau",
+"spec.source.luau",
+"spec.state.luau",
+"spec.store.luau",
+"spec.tostring.luau",
+"spec.animate.luau",
+"spec.componenttypes.luau",
+"spec.events.luau",
+"spec.modifiertypes.luau",
+"spec.robloxfactory.luau",
+"spec.shorthandtypes.luau",
+"spec.slottypes.luau",
+"spec.timers.luau",
+"spec.tween.luau",
+"spec.tweentypes.luau"
+]
+},
+{
+"kind": "member",
+"type": "Slot",
+"name": "IndexOf",
+"dyn": 128,
+"dyn_specs": 1,
+"stat": 21,
+"stat_files": [
+"spec.slot.luau"
+]
+},
+{
+"kind": "member",
+"type": "Slot",
+"name": "List",
+"dyn": 71,
+"dyn_specs": 4,
+"stat": 60,
+"stat_files": [
+"smoke.plugin.luau",
+"spec.inputgates.luau",
+"spec.moduleidentity.luau",
+"spec.slot.luau",
+"spec.slottypes.luau"
+]
+},
+{
+"kind": "member",
+"type": "Slot",
+"name": "Single",
+"dyn": 39,
+"dyn_specs": 3,
+"stat": 23,
+"stat_files": [
+"spec.inputgates.luau",
+"spec.moduleidentity.luau",
+"spec.slot.luau",
+"spec.slottypes.luau"
+]
+},
+{
+"kind": "member",
+"type": "Ref",
+"name": "Value",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 56,
+"stat_files": [
+"spec.debounce.luau",
+"spec.integration.luau",
+"spec.preref.luau",
+"spec.ref.luau",
+"spec.refhandlers.luau",
+"spec.animate.luau",
+"spec.component.luau",
+"spec.tween.luau",
+"spec.tweenproperty.luau"
+]
+},
+{
+"kind": "member",
+"type": "Ref",
+"name": "Revision",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 23,
+"stat_files": [
+"spec.epochmap.luau",
+"spec.ref.luau",
+"spec.source.luau"
+]
+},
+{
+"kind": "member",
+"type": "Ref",
+"name": "Callbacks",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 12,
+"stat_files": [
+"spec.ref.luau"
+]
+},
+{
+"kind": "member",
+"type": "Ref",
+"name": "WeakCallbacks",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 4,
+"stat_files": [
+"spec.effect.luau",
+"spec.ref.luau"
+]
+},
+{
+"kind": "member",
+"type": "Ref",
+"name": "Set",
+"dyn": 163,
+"dyn_specs": 9,
+"stat": 419,
+"stat_files": [
+"spec.attribute.luau",
+"spec.blocker.luau",
+"spec.context.luau",
+"spec.debounce.luau",
+"spec.effect.luau",
+"spec.epochmap.luau",
+"spec.flatten.luau",
+"spec.gate.luau",
+"spec.hooks.luau",
+"spec.integration.luau",
+"spec.leaf.luau",
+"spec.lengthoffset.luau",
+"spec.modifier.luau",
+"spec.moduleidentity.luau",
+"spec.observer.luau",
+"spec.operator.luau",
+"spec.preref.luau",
+"spec.ref.luau",
+"spec.refhandlers.luau",
+"spec.slot.luau",
+"spec.source.luau",
+"spec.state.luau",
+"spec.store.luau",
+"spec.storebind.luau",
+"spec.tag.luau",
+"spec.tostring.luau",
+"spec.animate.luau",
+"spec.claim.luau",
+"spec.events.luau",
+"spec.handlers.luau",
+"spec.robloxfactory.luau",
+"spec.shorthand.luau",
+"spec.tagattribute.luau",
+"spec.timers.luau",
+"spec.tweenproperty.luau"
+]
+},
+{
+"kind": "member",
+"type": "Ref",
+"name": "Callback",
+"dyn": 34,
+"dyn_specs": 4,
+"stat": 29,
+"stat_files": [
+"spec.preref.luau",
+"spec.ref.luau",
+"spec.refhandlers.luau",
+"spec.events.luau",
+"spec.reftypes.luau"
+]
+},
+{
+"kind": "member",
+"type": "Ref",
+"name": "WeakCallback",
+"dyn": 9,
+"dyn_specs": 2,
+"stat": 4,
+"stat_files": [
+"spec.ref.luau"
+]
+},
+{
+"kind": "member",
+"type": "Ref",
+"name": "Uncallback",
+"dyn": 6,
+"dyn_specs": 1,
+"stat": 6,
+"stat_files": [
+"spec.ref.luau"
+]
+},
+{
+"kind": "member",
+"type": "Ref",
+"name": "Wait",
+"dyn": 10,
+"dyn_specs": 2,
+"stat": 13,
+"stat_files": [
+"spec.preref.luau",
+"spec.ref.luau"
+]
+},
+{
+"kind": "member",
+"type": "Ref",
+"name": "Unwrap",
+"dyn": 4,
+"dyn_specs": 1,
+"stat": 6,
+"stat_files": [
+"spec.ref.luau"
+]
+},
+{
+"kind": "member",
+"type": "Observer",
+"name": "Subscribed",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 15,
+"stat_files": [
+"spec.effect.luau",
+"spec.observer.luau"
+]
+},
+{
+"kind": "member",
+"type": "Observer",
+"name": "Subscribe",
+"dyn": 24,
+"dyn_specs": 6,
+"stat": 50,
+"stat_files": [
+"spec.effect.luau",
+"spec.init.luau",
+"spec.lengthoffset.luau",
+"spec.lifetime.luau",
+"spec.moduleidentity.luau",
+"spec.observer.luau",
+"spec.slot.luau",
+"spec.tostring.luau",
+"spec.events.luau"
+]
+},
+{
+"kind": "member",
+"type": "Observer",
+"name": "WeakSubscribe",
+"dyn": 44,
+"dyn_specs": 8,
+"stat": 8,
+"stat_files": [
+"spec.effect.luau",
+"spec.observer.luau",
+"spec.tostring.luau"
+]
+},
+{
+"kind": "member",
+"type": "Observer",
+"name": "Unsubscribe",
+"dyn": 7,
+"dyn_specs": 2,
+"stat": 27,
+"stat_files": [
+"spec.effect.luau",
+"spec.moduleidentity.luau",
+"spec.observer.luau",
+"spec.tostring.luau"
+]
+},
+{
+"kind": "member",
+"type": "Observer",
+"name": "WeakUnsubscribe",
+"dyn": 5,
+"dyn_specs": 2,
+"stat": 9,
+"stat_files": [
+"spec.effect.luau",
+"spec.observer.luau",
+"spec.tostring.luau"
+]
+},
+{
+"kind": "member",
+"type": "Effect",
+"name": "Subscribed",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 15,
+"stat_files": [
+"spec.effect.luau",
+"spec.observer.luau"
+]
+},
+{
+"kind": "member",
+"type": "Effect",
+"name": "Rerun",
+"dyn": 40,
+"dyn_specs": 5,
+"stat": 0,
+"stat_files": []
+},
+{
+"kind": "member",
+"type": "Effect",
+"name": "Subscribe",
+"dyn": 26,
+"dyn_specs": 4,
+"stat": 50,
+"stat_files": [
+"spec.effect.luau",
+"spec.init.luau",
+"spec.lengthoffset.luau",
+"spec.lifetime.luau",
+"spec.moduleidentity.luau",
+"spec.observer.luau",
+"spec.slot.luau",
+"spec.tostring.luau",
+"spec.events.luau"
+]
+},
+{
+"kind": "member",
+"type": "Effect",
+"name": "WeakSubscribe",
+"dyn": 2,
+"dyn_specs": 1,
+"stat": 8,
+"stat_files": [
+"spec.effect.luau",
+"spec.observer.luau",
+"spec.tostring.luau"
+]
+},
+{
+"kind": "member",
+"type": "Effect",
+"name": "Unsubscribe",
+"dyn": 20,
+"dyn_specs": 3,
+"stat": 27,
+"stat_files": [
+"spec.effect.luau",
+"spec.moduleidentity.luau",
+"spec.observer.luau",
+"spec.tostring.luau"
+]
+},
+{
+"kind": "member",
+"type": "Effect",
+"name": "WeakUnsubscribe",
+"dyn": 4,
+"dyn_specs": 1,
+"stat": 9,
+"stat_files": [
+"spec.effect.luau",
+"spec.observer.luau",
+"spec.tostring.luau"
+]
+},
+{
+"kind": "member",
+"type": "Blocker",
+"name": "Blocking",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 9,
+"stat_files": [
+"spec.blocker.luau",
+"spec.lengthoffset.luau",
+"spec.refhandlers.luau",
+"spec.slot.luau"
+]
+},
+{
+"kind": "member",
+"type": "Blocker",
+"name": "On",
+"dyn": 917,
+"dyn_specs": 30,
+"stat": 11,
+"stat_files": [
+"spec.blocker.luau",
+"spec.gate.luau",
+"spec.tostring.luau"
+]
+},
+{
+"kind": "member",
+"type": "Blocker",
+"name": "Off",
+"dyn": 9,
+"dyn_specs": 2,
+"stat": 9,
+"stat_files": [
+"spec.blocker.luau",
+"spec.gate.luau"
+]
+},
+{
+"kind": "member",
+"type": "Blocker",
+"name": "OffWithoutEmit",
+"dyn": 807,
+"dyn_specs": 27,
+"stat": 2,
+"stat_files": [
+"spec.blocker.luau"
+]
+},
+{
+"kind": "member",
+"type": "Blocker",
+"name": "Policy",
+"dyn": 41,
+"dyn_specs": 4,
+"stat": 3,
+"stat_files": [
+"spec.blocker.luau"
+]
+},
+{
+"kind": "member",
+"type": "Modifier",
+"name": "Peek",
+"dyn": 9,
+"dyn_specs": 1,
+"stat": 20,
+"stat_files": [
+"spec.context.luau",
+"spec.epochmap.luau",
+"spec.modifier.luau",
+"spec.modifiertypes.luau",
+"spec.rootexports.luau"
+]
+},
+{
+"kind": "member",
+"type": "Modifier",
+"name": "Apply",
+"dyn": 5,
+"dyn_specs": 2,
+"stat": 110,
+"stat_files": [
+"spec.blocker.luau",
+"spec.debounce.luau",
+"spec.gate.luau",
+"spec.inputgates.luau",
+"spec.modifier.luau",
+"spec.operator.luau",
+"spec.source.luau",
+"spec.state.luau",
+"spec.tag.luau",
+"spec.animate.luau",
+"spec.modifiertypes.luau",
+"spec.shorthand.luau",
+"spec.shorthandtypes.luau",
+"spec.timers.luau",
+"spec.tweenproperty.luau",
+"spec.tweentypes.luau"
+]
+},
+{
+"kind": "member",
+"type": "Modifier",
+"name": "Overridden",
+"dyn": 9,
+"dyn_specs": 2,
+"stat": 17,
+"stat_files": [
+"spec.attribute.luau",
+"spec.modifier.luau",
+"spec.component.luau",
+"spec.modifiertypes.luau"
+]
+},
+{
+"kind": "member",
+"type": "Modifier",
+"name": "As",
+"dyn": 6,
+"dyn_specs": 2,
+"stat": 8,
+"stat_files": [
+"spec.modifier.luau",
+"spec.component.luau",
+"spec.modifiertypes.luau"
+]
+},
+{
+"kind": "member",
+"type": "Tag",
+"name": "Added",
+"dyn": 17,
+"dyn_specs": 1,
+"stat": 13,
+"stat_files": [
+"spec.tag.luau"
+]
+},
+{
+"kind": "member",
+"type": "Tag",
+"name": "Removed",
+"dyn": 11,
+"dyn_specs": 1,
+"stat": 7,
+"stat_files": [
+"spec.tag.luau"
+]
+},
+{
+"kind": "member",
+"type": "Tag",
+"name": "Contains",
+"dyn": 251,
+"dyn_specs": 3,
+"stat": 39,
+"stat_files": [
+"spec.inputgates.luau",
+"spec.tag.luau"
+]
+},
+{
+"kind": "member",
+"type": "Tag",
+"name": "Apply",
+"dyn": 3,
+"dyn_specs": 1,
+"stat": 110,
+"stat_files": [
+"spec.blocker.luau",
+"spec.debounce.luau",
+"spec.gate.luau",
+"spec.inputgates.luau",
+"spec.modifier.luau",
+"spec.operator.luau",
+"spec.source.luau",
+"spec.state.luau",
+"spec.tag.luau",
+"spec.animate.luau",
+"spec.modifiertypes.luau",
+"spec.shorthand.luau",
+"spec.shorthandtypes.luau",
+"spec.timers.luau",
+"spec.tweenproperty.luau",
+"spec.tweentypes.luau"
+]
+},
+{
+"kind": "member",
+"type": "Brand",
+"name": "Register",
+"dyn": 4207,
+"dyn_specs": 47,
+"stat": 14,
+"stat_files": [
+"spec.brand.luau",
+"spec.epochmap.luau",
+"spec.source.luau",
+"spec.state.luau"
+]
+},
+{
+"kind": "member",
+"type": "Brand",
+"name": "Is",
+"dyn": 78110,
+"dyn_specs": 47,
+"stat": 12,
+"stat_files": [
+"spec.brand.luau",
+"spec.gate.luau",
+"spec.source.luau",
+"spec.state.luau"
+]
+},
+{
+"kind": "member",
+"type": "Operator",
+"name": "Not",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 1,
+"stat_files": [
+"spec.operator.luau"
+]
+},
+{
+"kind": "member",
+"type": "Operator",
+"name": "Sum",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 9,
+"stat_files": [
+"spec.operator.luau"
+]
+},
+{
+"kind": "member",
+"type": "Operator",
+"name": "Product",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 1,
+"stat_files": [
+"spec.operator.luau"
+]
+},
+{
+"kind": "member",
+"type": "Operator",
+"name": "Min",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 1,
+"stat_files": [
+"spec.operator.luau"
+]
+},
+{
+"kind": "member",
+"type": "Operator",
+"name": "Max",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 1,
+"stat_files": [
+"spec.operator.luau"
+]
+},
+{
+"kind": "member",
+"type": "Operator",
+"name": "Band",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 3,
+"stat_files": [
+"spec.operator.luau"
+]
+},
+{
+"kind": "member",
+"type": "Operator",
+"name": "Bor",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 1,
+"stat_files": [
+"spec.operator.luau"
+]
+},
+{
+"kind": "member",
+"type": "Operator",
+"name": "Bxor",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 1,
+"stat_files": [
+"spec.operator.luau"
+]
+},
+{
+"kind": "member",
+"type": "Operator",
+"name": "Bnot",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 2,
+"stat_files": [
+"spec.operator.luau"
+]
+},
+{
+"kind": "member",
+"type": "Operator",
+"name": "Shl",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 2,
+"stat_files": [
+"spec.operator.luau"
+]
+},
+{
+"kind": "member",
+"type": "Operator",
+"name": "Shr",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 1,
+"stat_files": [
+"spec.operator.luau"
+]
+},
+{
+"kind": "member",
+"type": "Operator",
+"name": "Clamp",
+"dyn": 4,
+"dyn_specs": 1,
+"stat": 7,
+"stat_files": [
+"spec.operator.luau"
+]
+},
+{
+"kind": "member",
+"type": "Operator",
+"name": "Alternative",
+"dyn": 4,
+"dyn_specs": 1,
+"stat": 5,
+"stat_files": [
+"spec.operator.luau"
+]
+},
+{
+"kind": "member",
+"type": "Operator",
+"name": "Indexed",
+"dyn": 6,
+"dyn_specs": 1,
+"stat": 8,
+"stat_files": [
+"spec.operator.luau"
+]
+},
+{
+"kind": "member",
+"type": "Relate",
+"name": "SetStrong",
+"dyn": 5003,
+"dyn_specs": 61,
+"stat": 5,
+"stat_files": [
+"spec.relate.luau"
+]
+},
+{
+"kind": "member",
+"type": "Relate",
+"name": "GetStrong",
+"dyn": 8866,
+"dyn_specs": 61,
+"stat": 6,
+"stat_files": [
+"spec.relate.luau"
+]
+},
+{
+"kind": "member",
+"type": "Relate",
+"name": "SetWeak",
+"dyn": 35307,
+"dyn_specs": 31,
+"stat": 5,
+"stat_files": [
+"spec.relate.luau"
+]
+},
+{
+"kind": "member",
+"type": "Relate",
+"name": "GetWeak",
+"dyn": 49802,
+"dyn_specs": 33,
+"stat": 4,
+"stat_files": [
+"spec.relate.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "bindLifetime",
+"dyn": 6211,
+"dyn_specs": 29,
+"stat": 54,
+"stat_files": [
+"spec.effect.luau",
+"spec.hooks.luau",
+"spec.init.luau",
+"spec.lifetime.luau",
+"spec.observer.luau",
+"spec.robloxfactory.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "unbindLifetime",
+"dyn": 5159,
+"dyn_specs": 18,
+"stat": 14,
+"stat_files": [
+"spec.effect.luau",
+"spec.hooks.luau",
+"spec.init.luau",
+"spec.lifetime.luau",
+"spec.storebind.luau",
+"spec.robloxfactory.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "canBound",
+"dyn": 6315,
+"dyn_specs": 30,
+"stat": 19,
+"stat_files": [
+"spec.effect.luau",
+"spec.init.luau",
+"spec.lifetime.luau",
+"spec.observer.luau",
+"spec.refhandlers.luau",
+"spec.slot.luau",
+"spec.robloxfactory.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "canExecute",
+"dyn": 474,
+"dyn_specs": 24,
+"stat": 40,
+"stat_files": [
+"spec.effect.luau",
+"spec.init.luau",
+"spec.integration.luau",
+"spec.leaf.luau",
+"spec.lifetime.luau",
+"spec.observer.luau",
+"spec.robloxfactory.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "holdLifetime",
+"dyn": 6194,
+"dyn_specs": 29,
+"stat": 0,
+"stat_files": []
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "releaseLifetime",
+"dyn": 5157,
+"dyn_specs": 18,
+"stat": 0,
+"stat_files": []
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "isHeld",
+"dyn": 6782,
+"dyn_specs": 31,
+"stat": 0,
+"stat_files": []
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "isHeldBy",
+"dyn": 7,
+"dyn_specs": 4,
+"stat": 0,
+"stat_files": []
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "onDestroying",
+"dyn": 71,
+"dyn_specs": 7,
+"stat": 5,
+"stat_files": [
+"spec.effect.luau",
+"spec.init.luau",
+"spec.robloxfactory.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "setTimeout",
+"dyn": 79,
+"dyn_specs": 2,
+"stat": 5,
+"stat_files": [
+"spec.timers.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "clearTimeout",
+"dyn": 31,
+"dyn_specs": 2,
+"stat": 3,
+"stat_files": [
+"spec.timers.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "nativeInsert",
+"dyn": 91,
+"dyn_specs": 6,
+"stat": 1,
+"stat_files": [
+"spec.robloxfactory.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "nativeExtract",
+"dyn": 28,
+"dyn_specs": 3,
+"stat": 2,
+"stat_files": [
+"spec.robloxfactory.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "nativeRemove",
+"dyn": 13,
+"dyn_specs": 2,
+"stat": 1,
+"stat_files": [
+"spec.robloxfactory.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "nativeMove",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 1,
+"stat_files": [
+"spec.robloxfactory.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "nativeSwap",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 1,
+"stat_files": [
+"spec.robloxfactory.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "nativeDispose",
+"dyn": 19,
+"dyn_specs": 3,
+"stat": 1,
+"stat_files": [
+"spec.robloxfactory.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "isInst",
+"dyn": 527,
+"dyn_specs": 7,
+"stat": 10,
+"stat_files": [
+"spec.inputgates.luau",
+"spec.claim.luau",
+"spec.component.luau",
+"spec.events.luau",
+"spec.handlers.luau",
+"spec.robloxfactory.luau",
+"spec.shorthand.luau",
+"spec.tweenproperty.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "nativeClaim",
+"dyn": 193,
+"dyn_specs": 10,
+"stat": 33,
+"stat_files": [
+"spec.lifetime.luau",
+"spec.claim.luau",
+"spec.d.luau",
+"spec.handlers.luau",
+"spec.robloxfactory.luau",
+"spec.tagattribute.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "isClaimed",
+"dyn": 626,
+"dyn_specs": 10,
+"stat": 5,
+"stat_files": [
+"spec.claim.luau",
+"spec.handlers.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "nativeFindChild",
+"dyn": 30,
+"dyn_specs": 3,
+"stat": 4,
+"stat_files": [
+"spec.lifetime.luau",
+"spec.robloxfactory.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "addTag",
+"dyn": 8,
+"dyn_specs": 2,
+"stat": 5,
+"stat_files": [
+"spec.tag.luau",
+"spec.tagattribute.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "removeTag",
+"dyn": 6,
+"dyn_specs": 2,
+"stat": 2,
+"stat_files": [
+"spec.tagattribute.luau"
+]
+},
+{
+"kind": "member",
+"type": "Backend",
+"name": "setAttr",
+"dyn": 34,
+"dyn_specs": 2,
+"stat": 4,
+"stat_files": [
+"spec.attribute.luau",
+"spec.tagattribute.luau"
+]
+},
+{
+"kind": "member",
+"type": "Attr",
+"name": "NameMap",
+"dyn": 36,
+"dyn_specs": 2,
+"stat": 7,
+"stat_files": [
+"spec.attribute.luau"
+]
+},
+{
+"kind": "member",
+"type": "Context",
+"name": "Set",
+"dyn": 9,
+"dyn_specs": 1,
+"stat": 419,
+"stat_files": [
+"spec.attribute.luau",
+"spec.blocker.luau",
+"spec.context.luau",
+"spec.debounce.luau",
+"spec.effect.luau",
+"spec.epochmap.luau",
+"spec.flatten.luau",
+"spec.gate.luau",
+"spec.hooks.luau",
+"spec.integration.luau",
+"spec.leaf.luau",
+"spec.lengthoffset.luau",
+"spec.modifier.luau",
+"spec.moduleidentity.luau",
+"spec.observer.luau",
+"spec.operator.luau",
+"spec.preref.luau",
+"spec.ref.luau",
+"spec.refhandlers.luau",
+"spec.slot.luau",
+"spec.source.luau",
+"spec.state.luau",
+"spec.store.luau",
+"spec.storebind.luau",
+"spec.tag.luau",
+"spec.tostring.luau",
+"spec.animate.luau",
+"spec.claim.luau",
+"spec.events.luau",
+"spec.handlers.luau",
+"spec.robloxfactory.luau",
+"spec.shorthand.luau",
+"spec.tagattribute.luau",
+"spec.timers.luau",
+"spec.tweenproperty.luau"
+]
+},
+{
+"kind": "member",
+"type": "Context",
+"name": "Get",
+"dyn": 8,
+"dyn_specs": 1,
+"stat": 369,
+"stat_files": [
+"spec.blocker.luau",
+"spec.context.luau",
+"spec.debounce.luau",
+"spec.dispatch.luau",
+"spec.effect.luau",
+"spec.gate.luau",
+"spec.integration.luau",
+"spec.lengthoffset.luau",
+"spec.modifier.luau",
+"spec.moduleidentity.luau",
+"spec.nonenil.luau",
+"spec.observer.luau",
+"spec.operator.luau",
+"spec.preref.luau",
+"spec.slot.luau",
+"spec.source.luau",
+"spec.state.luau",
+"spec.store.luau",
+"spec.tostring.luau",
+"spec.animate.luau",
+"spec.componenttypes.luau",
+"spec.events.luau",
+"spec.modifiertypes.luau",
+"spec.robloxfactory.luau",
+"spec.shorthandtypes.luau",
+"spec.slottypes.luau",
+"spec.timers.luau",
+"spec.tween.luau",
+"spec.tweentypes.luau"
+]
+},
+{
+"kind": "member",
+"type": "Context",
+"name": "Peek",
+"dyn": 5,
+"dyn_specs": 1,
+"stat": 20,
+"stat_files": [
+"spec.context.luau",
+"spec.epochmap.luau",
+"spec.modifier.luau",
+"spec.modifiertypes.luau",
+"spec.rootexports.luau"
+]
+},
+{
+"kind": "member",
+"type": "TimedGate",
+"name": "Flush",
+"dyn": 8,
+"dyn_specs": 1,
+"stat": 8,
+"stat_files": [
+"spec.debounce.luau"
+]
+},
+{
+"kind": "member",
+"type": "TimedGate",
+"name": "Cancel",
+"dyn": 5,
+"dyn_specs": 1,
+"stat": 5,
+"stat_files": [
+"spec.debounce.luau",
+"spec.tweenproperty.luau"
+]
+},
+{
+"kind": "member",
+"type": "GateHandle",
+"name": "Flush",
+"dyn": 8,
+"dyn_specs": 1,
+"stat": 8,
+"stat_files": [
+"spec.debounce.luau"
+]
+},
+{
+"kind": "member",
+"type": "GateHandle",
+"name": "Cancel",
+"dyn": 5,
+"dyn_specs": 1,
+"stat": 5,
+"stat_files": [
+"spec.debounce.luau",
+"spec.tweenproperty.luau"
+]
+},
+{
+"kind": "member",
+"type": "Handler",
+"name": "name",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 11,
+"stat_files": [
+"spec.brand.luau",
+"spec.dispatch.luau",
+"spec.flatten.luau",
+"spec.store.luau",
+"spec.handlers.luau",
+"spec.shorthand.luau"
+]
+},
+{
+"kind": "member",
+"type": "Handler",
+"name": "keyType",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 4,
+"stat_files": [
+"spec.dispatch.luau"
+]
+},
+{
+"kind": "member",
+"type": "Handler",
+"name": "isHandlable",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 2,
+"stat_files": [
+"spec.dispatch.luau"
+]
+},
+{
+"kind": "member",
+"type": "Handler",
+"name": "priority",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 1,
+"stat_files": [
+"spec.handlers.luau"
+]
+},
+{
+"kind": "member",
+"type": "Handler",
+"name": "process",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 93,
+"stat_files": [
+"spec.attribute.luau",
+"spec.dispatch.luau",
+"spec.inputgates.luau",
+"spec.integration.luau",
+"spec.leaf.luau",
+"spec.nonenil.luau",
+"spec.storebind.luau",
+"spec.events.luau",
+"spec.handlers.luau",
+"spec.shorthand.luau",
+"spec.tweenproperty.luau"
+]
+},
+{
+"kind": "member",
+"type": "Dispatch",
+"name": "getHandler",
+"dyn": 5800,
+"dyn_specs": 27,
+"stat": 14,
+"stat_files": [
+"spec.dispatch.luau",
+"spec.shorthand.luau"
+]
+},
+{
+"kind": "member",
+"type": "Dispatch",
+"name": "process",
+"dyn": 5790,
+"dyn_specs": 28,
+"stat": 93,
+"stat_files": [
+"spec.attribute.luau",
+"spec.dispatch.luau",
+"spec.inputgates.luau",
+"spec.integration.luau",
+"spec.leaf.luau",
+"spec.nonenil.luau",
+"spec.storebind.luau",
+"spec.events.luau",
+"spec.handlers.luau",
+"spec.shorthand.luau",
+"spec.tweenproperty.luau"
+]
+},
+{
+"kind": "member",
+"type": "Dispatch",
+"name": "retractFrom",
+"dyn": 5036,
+"dyn_specs": 11,
+"stat": 31,
+"stat_files": [
+"spec.dispatch.luau",
+"spec.flatten.luau",
+"spec.inputgates.luau",
+"spec.refhandlers.luau",
+"spec.storebind.luau",
+"spec.events.luau",
+"spec.handlers.luau",
+"spec.shorthand.luau",
+"spec.tweenproperty.luau"
+]
+},
+{
+"kind": "member",
+"type": "Dispatch",
+"name": "addHandler",
+"dyn": 4903,
+"dyn_specs": 61,
+"stat": 48,
+"stat_files": [
+"spec.dispatch.luau",
+"spec.drive.luau",
+"spec.flatten.luau",
+"spec.integration.luau",
+"spec.leaf.luau",
+"spec.lengthoffset.luau",
+"spec.nonenil.luau",
+"spec.refhandlers.luau",
+"spec.storebind.luau",
+"spec.handlers.luau",
+"spec.tween.luau"
+]
+},
+{
+"kind": "member",
+"type": "Dispatch",
+"name": "listHandlers",
+"dyn": 5,
+"dyn_specs": 3,
+"stat": 5,
+"stat_files": [
+"spec.dispatch.luau",
+"spec.flatten.luau",
+"spec.handlers.luau"
+]
+},
+{
+"kind": "member",
+"type": "Dispatch",
+"name": "drive",
+"dyn": 350,
+"dyn_specs": 29,
+"stat": 185,
+"stat_files": [
+"spec.attribute.luau",
+"spec.dispatch.luau",
+"spec.drive.luau",
+"spec.effect.luau",
+"spec.flatten.luau",
+"spec.hooks.luau",
+"spec.inputgates.luau",
+"spec.integration.luau",
+"spec.leaf.luau",
+"spec.lengthoffset.luau",
+"spec.lifetime.luau",
+"spec.moduleidentity.luau",
+"spec.nonenil.luau",
+"spec.observer.luau",
+"spec.ref.luau",
+"spec.refhandlers.luau",
+"spec.slot.luau",
+"spec.storebind.luau",
+"spec.tag.luau",
+"spec.tostring.luau",
+"spec.tagattribute.luau",
+"spec.tween.luau",
+"spec.tweenproperty.luau"
+]
+},
+{
+"kind": "member",
+"type": "Dispatch",
+"name": "HANDLER_PRIORITY_HIGH",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 7,
+"stat_files": [
+"spec.dispatch.luau"
+]
+},
+{
+"kind": "member",
+"type": "Dispatch",
+"name": "HANDLER_PRIORITY_NORMAL",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 31,
+"stat_files": [
+"spec.dispatch.luau",
+"spec.drive.luau",
+"spec.leaf.luau",
+"spec.lengthoffset.luau",
+"spec.refhandlers.luau",
+"spec.storebind.luau",
+"spec.tween.luau"
+]
+},
+{
+"kind": "member",
+"type": "Dispatch",
+"name": "HANDLER_PRIORITY_LOW",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 9,
+"stat_files": [
+"spec.dispatch.luau",
+"spec.flatten.luau",
+"spec.integration.luau",
+"spec.lengthoffset.luau",
+"spec.nonenil.luau"
+]
+},
+{
+"kind": "member",
+"type": "Dispatch",
+"name": "HANDLER_PRIORITY_FALLBACK",
+"dyn": null,
+"dyn_specs": 0,
+"stat": 1,
+"stat_files": [
+"spec.dispatch.luau"
+]
+},
+{
+"kind": "member",
+"type": "Bookkeeping",
+"name": "setLength",
+"dyn": 530,
+"dyn_specs": 25,
+"stat": 36,
+"stat_files": [
+"spec.lengthoffset.luau"
+]
+},
+{
+"kind": "member",
+"type": "Bookkeeping",
+"name": "setOffsetSource",
+"dyn": 530,
+"dyn_specs": 25,
+"stat": 32,
+"stat_files": [
+"spec.lengthoffset.luau"
+]
+},
+{
+"kind": "member",
+"type": "Bookkeeping",
+"name": "setEmpty",
+"dyn": 165,
+"dyn_specs": 23,
+"stat": 1,
+"stat_files": [
+"spec.lengthoffset.luau"
+]
+},
+{
+"kind": "member",
+"type": "Bookkeeping",
+"name": "getOffsetAt",
+"dyn": 618,
+"dyn_specs": 18,
+"stat": 45,
+"stat_files": [
+"spec.attribute.luau",
+"spec.flatten.luau",
+"spec.integration.luau",
+"spec.lengthoffset.luau",
+"spec.nonenil.luau",
+"spec.slot.luau",
+"spec.storebind.luau",
+"spec.tag.luau",
+"spec.claim.luau",
+"spec.component.luau",
+"spec.events.luau",
+"spec.handlers.luau"
+]
+},
+{
+"kind": "member",
+"type": "Bookkeeping",
+"name": "getBlocker",
+"dyn": 1137,
+"dyn_specs": 27,
+"stat": 8,
+"stat_files": [
+"spec.lengthoffset.luau",
+"spec.refhandlers.luau",
+"spec.relate.luau",
+"spec.slot.luau"
+]
+},
+{
+"kind": "member",
+"type": "Bookkeeping",
+"name": "getBookkeeping",
+"dyn": 2963,
+"dyn_specs": 26,
+"stat": 17,
+"stat_files": [
+"spec.integration.luau",
+"spec.leaf.luau",
+"spec.lengthoffset.luau",
+"spec.nonenil.luau",
+"spec.refhandlers.luau",
+"spec.slot.luau"
+]
+},
+{
+"kind": "member",
+"type": "Bookkeeping",
+"name": "claimOwnerAt",
+"dyn": 135,
+"dyn_specs": 9,
+"stat": 7,
+"stat_files": [
+"spec.handlers.luau"
+]
+},
+{
+"kind": "member",
+"type": "Bookkeeping",
+"name": "releaseOwner",
+"dyn": 85,
+"dyn_specs": 4,
+"stat": 4,
+"stat_files": [
+"spec.handlers.luau"
+]
+}
+]

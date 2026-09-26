@@ -1,0 +1,49 @@
+=== 1. 진입점 — UseProvider identity 락: 같은 fn no-op·다른 identity error (H-305 d′) ===
+@@QERR	Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.robloxfactory.luau:42: Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends
+@@FIND	Quad0213	already has a provider
+@@QERR	Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/mock.luau:794: Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends
+@@QERR	Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.robloxfactory.luau:59: Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends
+@@FIND	Quad0213	already has a provider
+@@PC	install exploded midway
+@@QERR	Quad0228 quad-roblox: requires a quad-base matching version pattern '3.2^.0^' (got '9.9.9')
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.robloxfactory.luau:85: Quad0228 quad-roblox: requires a quad-base matching version pattern '3.2^.0^' (got '9.9.9')
+@@FIND	Quad0228	version pattern '3.2^.0^'
+@@FIND	Quad0228	got '9.9.9'
+PASS
+
+=== 2. nativeClaim — 1회 셋업, 이중 claim은 셋업 유무만으로 error ===
+@@QERR	Quad0225 nativeClaim: Instance is already claimed by quad
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.robloxfactory.luau:108: Quad0225 nativeClaim: Instance is already claimed by quad
+@@FIND	Quad0225	already claimed
+PASS
+
+=== 3. bindLifetime — 미claim inst는 error(H-290), claim 후 정상 경로 ===
+@@QERR	Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.robloxfactory.luau:122: Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)
+@@FIND	Quad0226	not claimed
+@@QERR	Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.robloxfactory.luau:136: Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)
+PASS
+
+=== 4. unbindLifetime — O(1) 개별 해제, 같은 inst 다른 값 무영향, no-op 관대 ===
+PASS
+
+=== 5. EngineOps — native* 여섯 + 판정/훅/조회 셋 (mock instance 구조 대역) ===
+PASS
+
+=== 6. 주입 op 스코프 — Tag/Attr 셋은 M10 엔진 축에서 채워짐, 시간 op 둘은 백로그(미설치) ===
+PASS
+
+=== 7. 반응형 통합 — Observer가 roblox 생명주기로 게이팅됨 ===
+PASS
+
+=== 8. 탐사자 보강(🟡-5) — Effect 배선·훅 가드·재바인드 캐치업이 roblox 전사본 경유로 ===
+@@QERR	Quad0109 Observer: cannot bind an Observer from inside its own fn
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-roblox/test/spec.robloxfactory.luau:273: Quad0109 Observer: cannot bind an Observer from inside its own fn
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (124 functions)

@@ -1,0 +1,75 @@
+=== 1. 네 메서드 — Strong/Weak는 서로 다른 슬롯, 같은 키라도 안 섞임 ===
+PASS
+
+=== 2. lazy 서브테이블 — 읽기는 쓰기를 유발하지 않음, Set이 처음 불릴 때만 생성 ===
+PASS
+
+=== 3. 공유 메타테이블 — 모든 WeakMap이 같은 {__mode='v'} 객체 ===
+PASS
+
+=== 4. Weak 값은 다른 곳에서 안 잡으면 GC됨, Strong 값은 살아남음 ===
+PASS
+
+=== 5. inst는 항상 weak — inst를 놓으면 버킷째 사라짐 ===
+PASS
+
+=== 6. 비싱글톤 — 인스턴스마다 독립 ===
+PASS
+
+
+=== 7. 2026-09-08 2차 감사 H-499 — nil inst/key는 호출 줄을 blame하는 표면 에러(옛: Relate.luau 'table index is nil') ===
+@@QERR	Quad0138 Relate:SetStrong: inst must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.relate.luau:100: Quad0138 Relate:SetStrong: inst must not be nil
+@@FIND	Quad0138	Relate:SetStrong: inst must not be nil
+@@FIND	Quad0138	spec.relate.luau
+@@QERR	Quad0139 Relate:SetStrong: key must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.relate.luau:103: Quad0139 Relate:SetStrong: key must not be nil
+@@FIND	Quad0139	Relate:SetStrong: key must not be nil
+@@QERR	Quad0138 Relate:SetWeak: inst must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.relate.luau:100: Quad0138 Relate:SetWeak: inst must not be nil
+@@FIND	Quad0138	Relate:SetWeak: inst must not be nil
+@@FIND	Quad0138	spec.relate.luau
+@@QERR	Quad0139 Relate:SetWeak: key must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.relate.luau:103: Quad0139 Relate:SetWeak: key must not be nil
+@@FIND	Quad0139	Relate:SetWeak: key must not be nil
+@@QERR	Quad0138 Relate:GetStrong: inst must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.relate.luau:100: Quad0138 Relate:GetStrong: inst must not be nil
+@@FIND	Quad0138	Relate:GetStrong: inst must not be nil
+@@FIND	Quad0138	spec.relate.luau
+@@QERR	Quad0139 Relate:GetStrong: key must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.relate.luau:103: Quad0139 Relate:GetStrong: key must not be nil
+@@FIND	Quad0139	Relate:GetStrong: key must not be nil
+@@QERR	Quad0138 Relate:GetWeak: inst must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.relate.luau:100: Quad0138 Relate:GetWeak: inst must not be nil
+@@FIND	Quad0138	Relate:GetWeak: inst must not be nil
+@@FIND	Quad0138	spec.relate.luau
+@@QERR	Quad0139 Relate:GetWeak: key must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.relate.luau:103: Quad0139 Relate:GetWeak: key must not be nil
+@@FIND	Quad0139	Relate:GetWeak: key must not be nil
+@@QERR	Quad0020 Bookkeeping.getBlocker: ownerKey must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.relate.luau:108: Quad0020 Bookkeeping.getBlocker: ownerKey must not be nil
+@@FIND	Quad0020	Bookkeeping.getBlocker: ownerKey must not be nil
+@@QERR	Quad0020 Bookkeeping.getBookkeeping: ownerKey must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.relate.luau:115: Quad0020 Bookkeeping.getBookkeeping: ownerKey must not be nil
+@@FIND	Quad0020	Bookkeeping.getBookkeeping: ownerKey must not be nil
+@@QERR	Quad0020 Bookkeeping.getOffsetAt: ownerKey must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.relate.luau:115: Quad0020 Bookkeeping.getOffsetAt: ownerKey must not be nil
+@@FIND	Quad0020	Bookkeeping.getOffsetAt: ownerKey must not be nil
+@@QERR	Quad0020 Bookkeeping.setLength: ownerKey must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.relate.luau:115: Quad0020 Bookkeeping.setLength: ownerKey must not be nil
+@@FIND	Quad0020	Bookkeeping.setLength: ownerKey must not be nil
+@@QERR	Quad0020 Bookkeeping.setOffsetSource: ownerKey must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.relate.luau:115: Quad0020 Bookkeeping.setOffsetSource: ownerKey must not be nil
+@@FIND	Quad0020	Bookkeeping.setOffsetSource: ownerKey must not be nil
+@@QERR	Quad0020 Bookkeeping.setEmpty: ownerKey must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.relate.luau:115: Quad0020 Bookkeeping.setEmpty: ownerKey must not be nil
+@@FIND	Quad0020	Bookkeeping.setEmpty: ownerKey must not be nil
+@@QERR	Quad0072 Dispatch.process: inst must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.relate.luau:120: Quad0072 Dispatch.process: inst must not be nil
+@@FIND	Quad0072	Dispatch.process: inst must not be nil
+@@QERR	Quad0072 Dispatch.retractFrom: inst must not be nil
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.relate.luau:120: Quad0072 Dispatch.retractFrom: inst must not be nil
+@@FIND	Quad0072	Dispatch.retractFrom: inst must not be nil
+PASS
+=== ALL PASS ===
+Coverage dump written to coverage.out (53 functions)

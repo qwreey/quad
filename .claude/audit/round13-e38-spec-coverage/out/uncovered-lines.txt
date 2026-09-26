@@ -1,0 +1,89 @@
+quad-base/src/Attr/init.luau:99	Err.errorBeforeNearest(`Quad0003 {ctx}: attribute name cannot be empty`, SURFACE) -- round3 `H-443` (G-13, Store gate's twin)
+quad-base/src/Attr/init.luau:102	Err.errorBeforeNearest(`Quad0004 {ctx}: attribute name "{name}" appears more than once`, SURFACE)
+quad-base/src/Attr/init.luau:141	Err.errorBeforeNearest(`Quad0009 {ctx}: attribute name "{name}" appears more than once`, SURFACE)
+quad-base/src/Attr/init.luau:179	Err.errorBeforeNearest("Quad0012 Attr.Overridden: arguments must be Attr values", SURFACE)
+quad-base/src/Bookkeeping.luau:202	else `Quad0229 Bookkeeping.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not — a leaf handler skipped its position registration`,
+quad-base/src/Bookkeeping.luau:213	ensureBase(bk, ownerKey)
+quad-base/src/Bookkeeping.luau:214	i = bk.offsetCacheValidUpTo
+quad-base/src/Bookkeeping.luau:215	cur = bk.offsetCache[i]
+quad-base/src/Bookkeeping.luau:216	continue
+quad-base/src/Bookkeeping.luau:262	i = math.max(bk.offsetSetUpTo, 1)
+quad-base/src/Bookkeeping.luau:263	sum = prefix[i]
+quad-base/src/Bookkeeping.luau:264	continue
+quad-base/src/Bookkeeping.luau:288	error(`Quad0024 Bookkeeping.recompute: lengthList[{i}] is nil — bookkeeping is broken (setOffsetSource without setLength?)`, 1)
+quad-base/src/Bookkeeping.luau:294	i = math.max(bk.offsetSetUpTo, 1)
+quad-base/src/Bookkeeping.luau:295	sum = prefix[i]
+quad-base/src/Bookkeeping.luau:296	continue
+quad-base/src/Claim.luau:142	print(`Claim: child descriptor key is a {typeof(v._key)} — M.Root is only for the root descriptor; a child key is a name`)
+quad-base/src/Claim.luau:196	print(`Claim: the root descriptor's key {tostring(desc._key)} is ignored — the root takes M.Root; put a keyed descriptor in the root's props instead`)
+quad-base/src/Debounce.luau:178	module.Backend.clearTimeout(h._cap)
+quad-base/src/Debounce.luau:179	h._cap = nil
+quad-base/src/Debounce.luau:323	Err.errorBeforeNearest(`Quad0045 {name}: options table expected (got {typeof(opts)})`, SURFACE)
+quad-base/src/Dispatch/Modifier/init.luau:147	return true
+quad-base/src/Dispatch/init.luau:238	error(`Quad0071 Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken`, 1)
+quad-base/src/Effect.luau:237	Err.errorBeforeNearest(if self.Subscribed then "Quad0089 Effect: already subscribed" else "Quad0230 Effect: already bound to an Instance", SURFACE) -- error-code: inline 
+quad-base/src/Effect.luau:426	return Void -- unreachable; keeps the contract type
+quad-base/src/Effect.luau:437	local impl = implsOf(module).Effect
+quad-base/src/Effect.luau:438	if impl == nil then
+quad-base/src/Effect.luau:439	error("Quad0098 Effect: Effect.Init(module) has not run for this quad instance", 1)
+quad-base/src/Effect.luau:441	return impl
+quad-base/src/EpochMap.luau:86	return false
+quad-base/src/Observer.luau:275	return Void -- unreachable; keeps the contract type
+quad-base/src/Observer.luau:288	error("Quad0117 Observer: Observer.Init(module) has not run for this quad instance", 1) -- invariant; callers pull it in first
+quad-base/src/Ref/init.luau:164	Err.errorBeforeNearest("Quad0134 Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)", SURFACE)
+quad-base/src/Ref/init.luau:278	return Void -- unreachable; keeps the contract type
+quad-base/src/Relate.luau:66	return nil
+quad-base/src/Relate.luau:94	return nil
+quad-base/src/Slot/Handler.luau:37	Err.errorBefore("Quad0140 Slot: destroyed Slot cannot be mounted", SURFACE)
+quad-base/src/Slot/Handler.luau:62	return module.Void -- unreachable; keeps the contract type
+quad-base/src/Slot/List.luau:51	S.rawUnmount(self, idx)
+quad-base/src/Slot/List.luau:52	mounted[key] = nil
+quad-base/src/Slot/List.luau:77	S.releaseElement(self, nil, prev, true)
+quad-base/src/Slot/List.luau:78	detached[key] = nil
+quad-base/src/Slot/List.luau:79	S.rawAdd(self, element, slotPos)
+quad-base/src/Slot/List.luau:95	S.Err.errorBefore(`Quad0142 Slot:List: data must be a plain array (got {typeof(items)}) — a data State must hold one too`, S.SURFACE)
+quad-base/src/Slot/List.luau:117	S.Err.errorBefore(`Quad0145 Slot:List: duplicate key {tostring(key)}`, S.SURFACE)
+quad-base/src/Slot/List.luau:188	if not self._detached then return end
+quad-base/src/Slot/List.luau:189	for key, element in pairs(self._detached) do
+quad-base/src/Slot/List.luau:190	S.releaseOwner(element, self)
+quad-base/src/Slot/List.luau:191	S.destroyElement(element)
+quad-base/src/Slot/List.luau:192	self._detached[key] = nil
+quad-base/src/Slot/List.luau:256	self:_activateList(self._physicalTarget)
+quad-base/src/Slot/List.luau:257	S.maybeRecompute(self, S.BK.getBookkeeping(self))
+quad-base/src/Slot/Owner.luau:28	S.Err.errorBefore("Quad0156 Slot: this element is already mounted — multiple mounts are not allowed" .. S.ZOMBIE_NOTE, S.SURFACE)
+quad-base/src/Slot/Owner.luau:72	S.Err.errorBeforeNearest("Quad0163 Bookkeeping.releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken", S.SURFACE)
+quad-base/src/Slot/Raw.luau:203	S.destroyElement(oldElement)
+quad-base/src/Slot/Raw.luau:213	if S.isSlot(newElement) then
+quad-base/src/Slot/Raw.luau:214	local wasMaterializing = self._materializing -- Q52 window (see rawAdd)
+quad-base/src/Slot/Raw.luau:215	self._materializing = true
+quad-base/src/Slot/Raw.luau:216	S.attachSlot(newElement, self._physicalTarget, self, index, false)
+quad-base/src/Slot/Raw.luau:217	self._materializing = wasMaterializing
+quad-base/src/Slot/Raw.luau:219	S.BK.setOffsetSource(self, index, S.None)
+quad-base/src/Slot/Raw.luau:220	S.BK.setLength(self, index, 1, self._physicalTarget, newElement)
+quad-base/src/Slot/Raw.luau:231	local op = if destroyOld then module.Backend.nativeRemove else module.Backend.nativeExtract
+quad-base/src/Slot/Raw.luau:232	op(self._mountedInst, offset, { oldElement })
+quad-base/src/Slot/Raw.luau:241	S.BK.setOffsetSource(self, index, S.None)
+quad-base/src/Slot/Raw.luau:242	module.Backend.nativeInsert(self._mountedInst, offset, { newElement })
+quad-base/src/Slot/Tree.luau:180	for key, element in pairs(slot._detached) do
+quad-base/src/Slot/Tree.luau:181	S.releaseOwner(element, slot)
+quad-base/src/Slot/Tree.luau:182	if S.isSlot(element) and (element :: any)._wrapped ~= nil then releaseSugarWrapper(element) end
+quad-base/src/Slot/Tree.luau:183	slot._detached[key] = nil
+quad-base/src/Slot/Tree.luau:203	for key, element in pairs(slot._detached) do
+quad-base/src/Slot/Tree.luau:204	S.releaseOwner(element, slot)
+quad-base/src/Slot/Tree.luau:205	S.destroyElement(element)
+quad-base/src/Slot/Tree.luau:206	slot._detached[key] = nil
+quad-base/src/Slot/Tree.luau:210	module.Backend.unbindLifetime(slot._detachCleanup)
+quad-base/src/Slot/Tree.luau:211	slot._detachCleanup = nil
+quad-base/src/Slot/Tree.luau:217	module.Backend.unbindLifetime(observer)
+quad-base/src/Slot/init.luau:66	return "Slot(destroyed)"
+quad-base/src/Slot/init.luau:491	else Err.errorBeforeNearest("Quad0180 dispose: this backend cannot dispose this value", SURFACE) end
+quad-base/src/State.luau:293	return -- rule 3: swallowed — no policy, not added to the set
+quad-base/src/State.luau:350	Err.errorBeforeNearest("Quad0190 State: Observer fn must be a function (or nil for the always-observe utility)", SURFACE)
+quad-base/src/State.luau:378	error("Quad0192 State: State.Init(module) has not run for this quad instance", 1) -- invariant check; every caller pulls it in first (`H-177`)
+quad-roblox/src/Handlers/InstanceShorthand.luau:51	return v
+quad-roblox/src/Handlers/InstanceShorthand.luau:96	return
+quad-roblox/src/LifetimeHandle.luau:72	nop(gchold, inst) -- never fires; the capture is the point
+quad-roblox/src/LifetimeHandle.luau:84	return false
+quad-roblox/src/LifetimeHandle.luau:106	return false -- round3 `H-444` (G-14): a nil key died in Relate
+quad-roblox/src/LifetimeHandle.luau:115	return false
+quad-roblox/src/types.luau:97	return nil :: any

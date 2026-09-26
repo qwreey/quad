@@ -1,0 +1,29 @@
+=== 1. 첫 end-to-end — store 값 변경이 process를 다시 부르고, 첫 재발행에서 인덱스 2 retractor가 실제로 불린다 ===
+PASS
+
+=== 2. 타입 교대 — 이전 process가 반환했던 retractor가 (nil, true)로 정확히 불리고 새 핸들러 설치 ===
+PASS
+
+=== 3. State<State<T>> — 인덱스 N/N+1 비충돌: 안쪽 재발행은 안쪽 슬롯만, 바깥 재발행은 구독을 갈아탄다 ===
+PASS
+
+=== 4. 실제 StoreBind 경유 (B) — 깊은 인덱스부터 정리 + 효과 수준: 옛 구독 0, 죽은 store가 값을 못 덮는다 ===
+PASS
+
+=== 5. 스파이크 03 몫 — 배열 자리에서 None→nil 핸드오프, 재귀 종료, 부기까지 반응형으로 움직인다 ===
+PASS
+
+=== 6. 단순 철거와 사후 발화 — retractFrom이 구독을 끊고, Destroy된 inst로는 발화가 무시된다 ===
+PASS
+
+=== 7. round11 H-573 (2026-09-17) — 순환하는 State 사슬은 stack overflow 대신 StoreBind 메시지 ===
+@@QERR	Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.storebind.luau:264: Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle
+@@FIND	Quad0070	StoreBind: the State's value chain is circular
+@@QERR	Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.storebind.luau:271: Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle
+@@FIND	Quad0070	circular
+PASS
+
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

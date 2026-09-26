@@ -1,0 +1,103 @@
+=== 1. 값 API — immutable clone 체이닝, Merged 합집합, 빈 Tag 유효 ===
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:41: attempt to modify a readonly table
+PASS
+
+=== 2. 미주입 스텁 — 백엔드 없는 quad에서 Tag를 걸면 안내 에러(blame은 사용자 줄) ===
+@@QERR	Quad0108 quad: addTag is not available — no backend has installed the tag ops (install a provider with quad:UseProvider — a bare Quad.New() has none)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:60: Quad0108 quad: addTag is not available — no backend has installed the tag ops (install a provider with quad:UseProvider — a bare Quad.New() has none)
+@@FIND	Quad0108	addTag is not available
+@@QERR	Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:67: Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+@@FIND	Quad0204	names must be strings
+@@QERR	Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:73: Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+@@FIND	Quad0204	names must be strings
+@@QERR	Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:90: Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes
+@@FIND	Quad0203	nil holes
+@@QERR	Quad0205 Tag:Contains: names must be strings (got nil at argument 1)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:95: Quad0205 Tag:Contains: names must be strings (got nil at argument 1)
+@@QERR	Quad0207 Tag.Merged: arguments must be Tag values
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:99: Quad0207 Tag.Merged: arguments must be Tag values
+@@QERR	Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:110: Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table
+@@FIND	Quad0202	names must be strings
+@@QERR	Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:114: Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table
+@@QERR	Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:115: Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table
+@@QERR	Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:110: Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+@@FIND	Quad0237	names must be strings
+@@QERR	Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:114: Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+@@QERR	Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:115: Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+@@QERR	Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:110: Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)
+@@FIND	Quad0200	names must be strings
+@@QERR	Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:114: Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)
+@@QERR	Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:115: Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)
+@@QERR	Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:110: Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+@@FIND	Quad0204	names must be strings
+@@QERR	Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:114: Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+@@QERR	Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:115: Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+@@QERR	Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:110: Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes
+@@FIND	Quad0203	names must be strings
+@@QERR	Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:114: Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes
+@@QERR	Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:115: Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes
+@@QERR	Quad0207 Tag.Merged: arguments must be Tag values
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:128: Quad0207 Tag.Merged: arguments must be Tag values
+@@QERR	Quad0199 Tag: names must be strings — an empty string is not a tag name
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:130: Quad0199 Tag: names must be strings — an empty string is not a tag name
+@@FIND	Quad0199	empty string
+@@QERR	Quad0199 Tag: names must be strings — an empty string is not a tag name
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:130: Quad0199 Tag: names must be strings — an empty string is not a tag name
+@@FIND	Quad0199	empty string
+@@QERR	Quad0199 Tag: names must be strings — an empty string is not a tag name
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:130: Quad0199 Tag: names must be strings — an empty string is not a tag name
+@@FIND	Quad0199	empty string
+@@QERR	Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:137: Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+@@FIND	Quad0237	table with a metatable
+@@QERR	Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:139: Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)
+@@FIND	Quad0200	AttrKey/Mapper descriptor
+PASS
+
+=== 3. process/retractor 왕복 — Tag(A)→Tag(B) 깜빡임 방지, Tag(A)→nil 전량 제거 ===
+PASS
+
+=== 4. 참조 카운트 — 겹친 이름·같은 객체 재사용(위치 기준)이 합집합으로 안전 ===
+PASS
+
+=== 5. H-39 부기 — Tag를 자식보다 앞에 둬도 recompute가 죽지 않는다 ===
+PASS
+
+=== 6. 같은 객체 재발행(no-op emit) — 홀더 유지, 엔진 호출 0 ===
+PASS
+=== Gemini 5차 G-20 — Contains는 가변인자(전부 있으면 true, 0개는 true), nil/비문자열은 에러(Q32, H-468) ===
+@@QERR	Quad0205 Tag:Contains: names must be strings (got nil at argument 1)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:232: Quad0205 Tag:Contains: names must be strings (got nil at argument 1)
+@@FIND	Quad0205	Tag:Contains: names must be strings (got nil at argument 1)
+@@QERR	Quad0205 Tag:Contains: names must be strings (got number at argument 2)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:235: Quad0205 Tag:Contains: names must be strings (got number at argument 2)
+@@FIND	Quad0205	got number at argument 2
+PASS
+
+
+=== 7. 2026-09-08 2차 감사 H-497 — Tag:Apply(비함수)는 표면 에러(옛: Tag.luau VM 에러) ===
+@@QERR	Quad0206 Tag: Apply factory must be a function (got number)
+@@PC	/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/e38/repo/quad-base/test/spec.tag.luau:245: Quad0206 Tag: Apply factory must be a function (got number)
+@@FIND	Quad0206	Tag: Apply factory must be a function (got number)
+PASS
+=== ALL PASS ===
+Coverage dump written to coverage.out (54 functions)

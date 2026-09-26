@@ -1,0 +1,4 @@
+D1 window ends before cap (Time 1, MaxTime 5), one signal	emits:	0@0.0 1@1.0	pending timers:	0
+D2 Flush while cap armed	emits:	0@0.0 1@0.5 2@2.0	pending timers:	0
+D3 Cancel while cap armed	emits:	0@0.0 2@7.5	pending timers:	1
+D4 cap cuts continuous signals (every 0.5, Time 1, MaxTime 2)	emits:	0@0.0 4@2.0 8@4.0	pending timers:	0
