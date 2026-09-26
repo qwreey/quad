@@ -559,6 +559,8 @@ sentinel 상수(구현 세부는 M11 착수 시, 문자열이든 전용 테이�
 
 ### 최종 타입
 
+> **[2026-09-27 round13 E24]** 아래 블록은 2026-09-21 이전 모양이다 — `Started`/`Completed`/`Cancelled` 콜백 셋(docs-review 1-5, 2026-09-21 절)이 빠져 있다. 현재 시그니처는 `docs/reference/roblox/06-tween-animate.md`가 소스.
+
 **[2026-09-06 구현됨 — M11 단위 ①, round19]** 아래 스케치의 실물: 값 타입의
 정본은 **quad-types**(`Tween<T>` = `TweenData<T>` & `{ Mapped }`, `TweenOptions<T>`
 — 엔진 무관이라 `Info`/`Style`/`Direction` 자리는 `any`, 옵션 필드는 전부 `read`

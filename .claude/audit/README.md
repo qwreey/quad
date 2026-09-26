@@ -48,4 +48,5 @@
 - `round13-q111-proto/` — **[2026-09-27 자율 루프 P-Q111]** Slot 선행 패스의 State 인식(A 순환 DFS + Set 시점 검사 / B State 신원 — 새 이름·ID 없음) diff·프로브·퍼저 네 설정 6000시드·List 회귀 대조·벤치(깊은 사슬 이차 비용) — §4 Q111/Q112 스파이크 문단.
 - `round13-q113-proto/` — **[2026-09-27 자율 루프 P-Q113/Q114]** Slot State 경로 `Quad0070` 순환 검사(A)·StoreBind 안쪽 재검증(B/C) diff 다섯(분리·합본·Q111 합본)·프로브·300그래프 분포·벤치·문서/CHANGELOG 초안 — §4 스파이크 문단.
 - `round13-gates-proto/` — **[2026-09-27 자율 루프 P-gates]** Q100(`math.huge` 거부 — 기존 ID)·Q106(`is*` 프로브 확대 — 술어 19 전수)·Q108(`UseProvider` 설치 중 플래그 — pcall판/naive 참고판) diff·프로브·변형 넷 스위트 — §4 스파이크 문단.
+- `round13-e24-probe-*.luau`(a~e·types) — **[2026-09-27 자율 루프 E24]** Tween/Animate/Mapped 옵션 매트릭스·보간 불가 타입·재사용·문서 예제 — `H-721`(Q34가 Animate 경로엔 안 섬)~`H-724`, `Q115`·`Q116`, Q90 ⑭.
 

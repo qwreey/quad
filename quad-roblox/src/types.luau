@@ -114,7 +114,9 @@ export type FieldOut<T> = QuadTypes.FieldOut<T | Tween<T>>
 -- 옵션(`Value` 제외) + `CanAnimate`, 각 필드는 `T | State<T>`([2026-09-07 마커] State 자리는
 -- 입력이라 `StateMarker<T>` — typing-limits 8.11; factory 안에서 `:Get()`
 -- 한 번 풀어 plain으로 `Tween{...}`에 넘긴다). 반환 factory는 `:Apply` 전용이고
--- 타입은 **`(self: any) -> State<Tween<any>>`**(`H-334`, §4 확인 항목 — 실측 넷):
+-- 타입은 **`(self: any) -> State<Tween<any>>`**(`H-334`, §4 확인 항목 — 실측 넷; [2026-09-27 round13 E24]
+-- 잃는 음성은 "교차-T 하나"가 아니다 — `:Apply`의 결과 자체가 무검사라(typing-limits 8.29·§1)
+-- 보간 불가 슬롯(`Name`·`FontFace`·Enum)에 `src:Apply(Animate{})`를 놓아도 통과한다):
 -- (1) 정직한 `State<T | Tween<T>>`(CanAnimate=false 분기가 plain)는 어느 슬롯
 -- 유니언에 넣어도 "too complex"([2026-09-07 마커] 이 제약은 사라졌다 — 슬롯이 그 타입을
 -- 받는다, `spec.shorthandtypes` `_markerUnion`; (2)~(4)는 그대로라 반환 타입은 유지); (2) `<T>(self: State<T>) -> …` 제네릭 factory는

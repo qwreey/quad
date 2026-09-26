@@ -799,7 +799,7 @@ base는 `{ read __quadModifier: true }`(`QuadTypes.ModifierMarker`, `NewChild`),
 `read`로(`H-325`). (4) **`:Apply`에 넘기는 콤비네이터 factory는 `self: any`여야
 한다**(`H-334`, M11 단위 ③) — `factory: (State<T>) -> U` 자리에 제네릭 함수 값
 `<T>(State<T>) -> …`은 못 들어가고, `self: State<any>`도 불변성으로 거부된다;
-`Animate`는 `(self: any) -> State<Tween<any>>`(교차-T 음성 하나만 잃음). `State<T |
+`Animate`는 `(self: any) -> State<Tween<any>>`(교차-T 음성 하나만 잃음 — **[2026-09-27 round13 E24 정정]** 실제로는 `:Apply` 결과가 무검사(8.29·§1)라 보간 불가 슬롯(`Name`·`FontFace`·`TextXAlignment`)에 `src:Apply(Animate{})`를 놓아도 통과한다 — Q34의 "타입 에러" 약속은 plain `q.Tween{}` 경로에만 성립). `State<T |
 Tween<T>>`를 슬롯 유니언에 넣는 건 어디든 too complex.
 
 **[2026-09-04 실측, M7 단위 ④ — `luau-test/done/31`, `audit/m7-unit4-as-modifier-2026-09-04.md`]**
