@@ -19,16 +19,16 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
 
 `AttrKey: attribute "{k.Name}" is already bound by another owner` — `quad-base/src/Attr/Key.luau`
 
-- **언제**: 한 인스턴스의 같은 속성 이름을 서로 다른 `AttrKey` 객체가 동시에 주장할 때 — 먼저 그 이름을 차지한 키가 아직 자리에서 물러나지 않은 채로 다른 키 객체가 같은 이름에 값을 놓으려 할 때입니다.
-- **고치려면**: 같은 이름엔 항상 캐시된 같은 `q.AttrKey(name)` 객체를 쓰거나, 먼저 것을 그 자리에서 물린 뒤에 다시 놓으세요.
+- **언제**: 한 인스턴스의 같은 속성 이름을 서로 다른 두 주인이 동시에 주장할 때 — 먼저 그 이름을 차지한 쪽이 아직 자리에서 물러나지 않은 채로 다른 쪽이 같은 이름에 값을 놓으려 할 때입니다. 공개 `q.AttrKey(name)`는 이름별로 캐시돼 그 키를 붙든 동안 같은 이름에 다른 키 객체가 나오지 않으므로, 실제로 흔한 경로는 그룹 쪽입니다: 같은 이름을 가진 그룹 `q.Attr(...)` 둘을 한 인스턴스에 놓거나(`{ q.Attr({ Hp = 5 }), q.Attr({ Hp = 9 }) }` — [2026-09-27 실측]), 그룹 `q.Attr`과 `[q.AttrKey("Hp")] = …`를 함께 놓는 경우입니다. 그룹은 이름마다 자기 전용 키를 쓰기 때문에, 메시지가 `AttrKey`를 말해도 사용자가 `AttrKey`를 직접 쓰지 않았을 수 있습니다.
+- **고치려면**: 한 인스턴스에서 한 속성 이름은 한 곳에서만 놓으세요 — 그룹 여럿이 같은 이름을 가지면 `q.Attr.Overridden(...)`으로 하나로 합쳐 놓거나(뒤 인자가 이깁니다), 먼저 것을 그 자리에서 물린 뒤에 다시 놓으세요.
 - **참고**: [`q.AttrKey(name)`](../core/09-tag-attr.md#qattrkeyname)
 
 ### Quad0003
 
 `{ctx}: attribute name cannot be empty` — `quad-base/src/Attr/init.luau`
 
-- **언제**: `q.Attr(...)`에 넘긴 `Store`가 선언한 이름(`store:Names()`) 중 빈 문자열이 있을 때. `{ctx}`는 부른 자리 이름(`Attr`)입니다. 다만 `Store`는 생성자와 `:Of` 모두 빈 문자열 이름을 `Quad0193`으로 먼저 막으므로, 현재 공개 표면에서 이 조건에 닿는 호출은 없습니다(Quad0004·Quad0009와 같은 부류 — [2026-09-27 실측]).
-- **고치려면**: `Store`의 키 이름을 비어 있지 않게 하세요.
+- **언제**: `q.Attr(...)`에 넘긴 `Store`가 선언한 이름(`store:Names()`) 중 빈 문자열이 있을 때. `{ctx}`는 부른 자리 이름(`Attr`)입니다. `Store`의 생성자와 `:Of`는 빈 문자열 이름을 `Quad0193`으로 먼저 막지만, 그 두 문 밖에서 직접 대입한 필드(`store[""] = q.Source(2)`)는 막지 않으므로 그런 `Store`를 `q.Attr`에 넘기면 이 에러가 납니다([2026-09-27 실측]).
+- **고치려면**: `Store`의 필드는 직접 대입하지 말고 생성자나 `store:Of(name)`으로, 비어 있지 않은 이름으로 만드세요.
 - **참고**: [`q.Attr(...)`](../core/09-tag-attr.md#qattr)
 
 ### Quad0004
@@ -211,6 +211,6 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
 
 `Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)` — `quad-base/src/Tag.luau`
 
-- **언제**: 이름 자리에 메타테이블이 달린 테이블(브랜드가 아닌 커스텀 메타테이블)을 넘겼을 때 — 문자열도, `Tag`도, 평범한 리스트도 아닙니다.
+- **언제**: 이름 자리에 메타테이블이 달린 테이블을 넘겼을 때 — `State`나 `Attr` 같은 quad 값도 포함됩니다(`q.Tag(state)`도 이 에러입니다; 메타테이블이 없는 `AttrKey`/Mapper 디스크립터는 Quad0200). 문자열도, `Tag`도, 평범한 리스트도 아닙니다.
 - **고치려면**: 문자열, `Tag`, 또는 그것들의 평범한(메타테이블 없는) `{...}` 리스트를 넘기세요.
 - **참고**: [`q.Tag(...names)`](../core/09-tag-attr.md#qtagnames)

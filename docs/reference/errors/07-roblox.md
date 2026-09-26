@@ -51,7 +51,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 `InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)` — `quad-roblox/src/Handlers/InstanceChild.luau`
 
-- **언제**: 어떤 Instance를 자기 자신이나 자기 조상의 숫자 키 자리에 자식으로 놓으려 할 때 — 조상 사슬을 따라 올라가며 검사합니다.
+- **언제**: 어떤 Instance를 자기 자신이나 자기 자손의 숫자 키 자리에 자식으로 놓으려 할 때 — 놓이는 자리의 Instance에서 조상 사슬을 따라 올라가며 그 Instance를 만나는지 검사합니다.
 - **고치려면**: 순환이 생기지 않게 트리 구조를 바꾸세요.
 - **참고**: [D — 숫자 키](../roblox/02-d.md#숫자-키--자식과-디스크립터)
 
@@ -99,8 +99,8 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 `bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)` — `quad-roblox/src/LifetimeHandle.luau`
 
-- **언제**: `q.Backend.bindLifetime(inst, value)`의 `inst`가 이 백엔드의 quad 소유 요소가 아닐 때(quad 밖에서 만들어졌거나, 이미 파괴됐을 때).
-- **고치려면**: quad가 만들었거나 `Claim`으로 넘겨받은, 아직 살아 있는 Instance에만 값을 묶으세요.
+- **언제**: `q.Backend.bindLifetime(inst, value)`의 `inst`가 이 백엔드의 quad 소유 요소가 아닐 때(quad 밖에서 만들어졌거나, 이미 파괴됐을 때). 직접 부르지 않아도 닿습니다 — `q.Dispatch.process`로 quad가 만들지도 `Claim`하지도 않은 Instance의 자리에 `Effect`처럼 수명에 묶이는 값을 놓거나, `q.Backend.holdLifetime`을 그런 Instance에 직접 부르면 같은 메시지가 납니다(메시지는 부르지 않은 `bindLifetime`을 말합니다, [2026-09-27 실측]).
+- **고치려면**: quad가 만들었거나 `Claim`으로 넘겨받은, 아직 살아 있는 Instance에만 값을 놓거나 묶으세요 — 밖에서 만든 Instance는 먼저 `q.Claim`으로 넘겨받으세요.
 - **참고**: [`q.Backend.bindLifetime(inst, value)`](../core/10-lifetime-sentinels.md#qbackendbindlifetimeinst-value)
 
 ### Quad0228

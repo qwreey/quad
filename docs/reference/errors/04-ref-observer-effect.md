@@ -12,31 +12,31 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 `Effect: fn must return a cleanup function or nothing (got {typeof(cleanup)})` — `quad-base/src/Effect.luau`
 
 - **언제**: `q.Effect(fn, ...)`의 `fn`이 함수도 `nil`도 아닌 값(숫자, 연결 객체 등)을 돌려줬을 때 — cleanup 자리는 함수 하나뿐입니다.
-- **고치려면**: 정리할 게 있으면 함수로 감싸 돌려주세요 — 연결 객체는 `return function() conn:Disconnect() end`처럼 감싸세요. 여럿이면 한 클로저로 묶으세요.
+- **고치려면**: 정리할 게 있으면 함수로 감싸 돌려주세요 — 연결 객체는 `return function() conn:Disconnect() end`처럼 감싸세요. 여럿이면 한 클로저로 묶으세요. 이 에러가 난 `Effect`는 fn이 던진 것과 같이 멈춰, 그 뒤의 구독·바인딩이 Quad0087/Quad0088/Quad0090으로 거부됩니다 — 고친 뒤에는 새 `Effect`를 만드세요.
 - **참고**: [`q.Effect(fn, ...deps)`](../core/05-observer-effect.md#qeffectfn-deps)
 
 ### Quad0087
 
 `Effect: cannot bind an Effect from inside its own fn or cleanup` — `quad-base/src/Effect.luau`
 
-- **언제**: **그 핸들 자신**의 `fn`이나 cleanup이 도는 동안 같은 핸들을 다시 바인딩하려 할 때 — 예: fn 안에서 자기 인스턴스를 `q.dispose`한 뒤 `D.Frame { self }`, 또는 `:Unsubscribe()`가 부른 cleanup 안에서 `D.Frame { self }`. fn/cleanup 안에서 **새로 만든** 핸들을 놓는 것은 에러 없이 통과합니다([2026-09-27 실측] — 예전 서술이 반대로 적혀 있었습니다).
-- **고치려면**: 자기 자신을 실행 중에 다시 놓지 마세요 — 다시 묶으려면 fn/cleanup이 끝난 뒤에.
+- **언제**: **그 핸들 자신**의 `fn`이나 cleanup이 도는 동안 같은 핸들을 다시 바인딩하려 할 때 — 예: fn 안에서 자기 인스턴스를 `q.dispose`한 뒤 `D.Frame { self }`, 또는 `:Unsubscribe()`가 부른 cleanup 안에서 `D.Frame { self }`. fn/cleanup 안에서 **새로 만든** 핸들을 놓는 것은 에러 없이 통과합니다([2026-09-27 실측] — 예전 서술이 반대로 적혀 있었습니다). [2026-09-27 실측] fn이 한 번 던졌거나 Quad0086으로 멈춘 `Effect`는 "실행 중" 표시가 풀리지 않은 채 남으므로, 그 뒤에는 fn 밖에서 불러도 이 에러가 납니다.
+- **고치려면**: 자기 자신을 실행 중에 다시 놓지 마세요 — 다시 묶으려면 fn/cleanup이 끝난 뒤에. fn이 던졌던 `Effect`라면 그 핸들은 다시 구독·바인딩할 수 없으니 새 `Effect`를 만드세요.
 - **참고**: [`q.Effect(fn, ...deps)`](../core/05-observer-effect.md#qeffectfn-deps)
 
 ### Quad0088
 
 `Effect: cannot change subscription from inside fn or cleanup` — `quad-base/src/Effect.luau`
 
-- **언제**: `effect:WeakSubscribe()`를 그 `Effect` 자신의 `fn`이나 cleanup 실행 중에 부를 때.
-- **고치려면**: 구독/재구독은 `fn`·cleanup 밖에서 하세요. 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 그 안에서도 됩니다.
+- **언제**: `effect:WeakSubscribe()`를 그 `Effect` 자신의 `fn`이나 cleanup 실행 중에 부를 때. [2026-09-27 실측] fn이 한 번 던졌거나 Quad0086으로 멈춘 `Effect`는 "실행 중" 표시가 풀리지 않은 채 남으므로, 그 뒤에는 fn 밖에서 불러도 이 에러가 납니다.
+- **고치려면**: 구독/재구독은 `fn`·cleanup 밖에서 하세요. 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 그 안에서도 됩니다. fn이 던졌던 `Effect`라면 그 핸들은 다시 구독·바인딩할 수 없으니 새 `Effect`를 만드세요.
 - **참고**: [`effect:WeakSubscribe()`](../core/05-observer-effect.md#effectweaksubscribe)
 
 ### Quad0089
 
 `Effect: already subscribed` — `quad-base/src/Effect.luau`
 
-- **언제**: `effect:WeakSubscribe()`를 부를 때 이미 강하게(`:Subscribe()`) 구독돼 있어서 약한 구독으로 바꿀 수 없을 때.
-- **고치려면**: 이미 구독 중인 핸들은 그대로 두거나, 새 `Effect`를 만드세요.
+- **언제**: `effect:WeakSubscribe()`를 부를 때 이미 구독돼 있을 때 — 강한 구독(`:Subscribe()`)이든 약한 구독이든 마찬가지라, `:WeakSubscribe()`를 두 번 불러도 이 에러입니다.
+- **고치려면**: 이미 구독 중인 핸들은 그대로 두세요. 강한 구독을 약한 구독으로 바꾸려면 먼저 `:Unsubscribe()`로 푼 뒤 `:WeakSubscribe()`하세요.
 - **참고**: [`effect:WeakSubscribe()`](../core/05-observer-effect.md#effectweaksubscribe)
 
 ### Quad0230
@@ -51,16 +51,16 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 `Effect: cannot change subscription from inside fn or cleanup` — `quad-base/src/Effect.luau`
 
-- **언제**: `effect:Subscribe()`를 그 `Effect` 자신의 `fn`이나 cleanup 실행 중에 부를 때.
-- **고치려면**: 구독/재구독은 `fn`·cleanup 밖에서 하세요. 해제는 그 안에서도 됩니다.
+- **언제**: `effect:Subscribe()`를 그 `Effect` 자신의 `fn`이나 cleanup 실행 중에 부를 때. [2026-09-27 실측] fn이 한 번 던졌거나 Quad0086으로 멈춘 `Effect`는 "실행 중" 표시가 풀리지 않은 채 남으므로, 그 뒤에는 fn 밖에서 불러도 이 에러가 납니다.
+- **고치려면**: 구독/재구독은 `fn`·cleanup 밖에서 하세요. 해제는 그 안에서도 됩니다. fn이 던졌던 `Effect`라면 그 핸들은 다시 구독·바인딩할 수 없으니 새 `Effect`를 만드세요.
 - **참고**: [`effect:Subscribe()`](../core/05-observer-effect.md#effectsubscribe)
 
 ### Quad0091
 
 `Effect: already subscribed` — `quad-base/src/Effect.luau`
 
-- **언제**: `effect:Subscribe()`를 부를 때 이미 강하게 구독돼 있을 때(중복 `:Subscribe()`).
-- **고치려면**: 이미 구독 중이면 다시 부르지 마세요.
+- **언제**: `effect:Subscribe()`를 부를 때 이미 구독돼 있을 때 — 중복 `:Subscribe()`뿐 아니라, 약하게(`:WeakSubscribe()`) 구독된 핸들을 강한 구독으로 올리려 할 때도 이 에러입니다.
+- **고치려면**: 이미 강하게 구독 중이면 다시 부르지 마세요. 약한 구독을 강한 구독으로 바꾸려면 먼저 `:WeakUnsubscribe()`로 푼 뒤 `:Subscribe()`하세요.
 - **참고**: [`effect:Subscribe()`](../core/05-observer-effect.md#effectsubscribe)
 
 ### Quad0231
@@ -123,8 +123,8 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 `Effect: Effect.Init(module) has not run for this quad instance` — `quad-base/src/Effect.luau`
 
-- **언제**: `Effect.implFor(module)`이 그 quad 모듈 인스턴스에서 아직 `Effect.Init`이 돌지 않았는데 불렸을 때 — 정상 경로(`module:RunInit`)로는 나지 않는 내부 조립 순서 불변식입니다.
-- **고치려면**: (문서 미정) — 사용자 코드가 직접 부딪히는 자리가 아닙니다. quad 모듈 조립(`New()`) 경로를 우회해 내부 함수를 직접 부르지 않았는지 확인하세요.
+- **언제**: `Effect.implFor(module)`이 그 quad 모듈 인스턴스에서 아직 `Effect.Init`이 돌지 않았는데 불렸을 때 던지는 내부 조립 순서 불변식입니다. 지금은 quad 안에서 이 함수를 부르는 곳이 없어, 현재 공개 표면에서 이 조건에 닿는 호출은 없습니다([2026-09-27 실측]).
+- **고치려면**: (문서 미정 — 현재 도달 경로가 없습니다)
 - **참고**: [Observer / Effect](../core/05-observer-effect.md)
 
 ### Quad0101
@@ -139,24 +139,24 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 `Observer: cannot bind an Observer from inside its own fn` — `quad-base/src/Observer.luau`
 
-- **언제**: **그 핸들 자신**의 콜백이 도는 동안 같은 핸들을 다시 바인딩하려 할 때. 콜백 안에서 **새로 만든** `Observer`를 놓는 것은 통과합니다([2026-09-27 실측]).
-- **고치려면**: 자기 자신을 실행 중에 다시 놓지 마세요.
+- **언제**: **그 핸들 자신**의 콜백이 도는 동안 같은 핸들을 다시 바인딩하려 할 때. 콜백 안에서 **새로 만든** `Observer`를 놓는 것은 통과합니다([2026-09-27 실측]). [2026-09-27 실측] 콜백이 한 번 던진 `Observer`는 "실행 중" 표시가 풀리지 않은 채 남으므로(콜백은 계속 불립니다), 그 뒤에는 콜백 밖에서 불러도 이 에러가 납니다.
+- **고치려면**: 자기 자신을 실행 중에 다시 놓지 마세요. 콜백이 던졌던 `Observer`라면 그 핸들은 다시 구독·바인딩할 수 없으니 새 `Observer`를 만드세요.
 - **참고**: [`state:Observer(fn)`](../core/05-observer-effect.md#stateobserverfn)
 
 ### Quad0110
 
 `Observer: cannot change subscription from inside its own fn` — `quad-base/src/Observer.luau`
 
-- **언제**: `observer:WeakSubscribe()`를 그 `Observer` 자신의 콜백 실행 중에 부를 때.
-- **고치려면**: 구독/재구독은 콜백 밖에서 하세요. 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 콜백 안에서도 됩니다.
+- **언제**: `observer:WeakSubscribe()`를 그 `Observer` 자신의 콜백 실행 중에 부를 때. [2026-09-27 실측] 콜백이 한 번 던진 `Observer`는 "실행 중" 표시가 풀리지 않은 채 남으므로(콜백은 계속 불립니다), 그 뒤에는 콜백 밖에서 불러도 이 에러가 납니다.
+- **고치려면**: 구독/재구독은 콜백 밖에서 하세요. 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 콜백 안에서도 됩니다. 콜백이 던졌던 `Observer`라면 그 핸들은 다시 구독·바인딩할 수 없으니 새 `Observer`를 만드세요.
 - **참고**: [`observer:WeakSubscribe()`](../core/05-observer-effect.md#observerweaksubscribe)
 
 ### Quad0111
 
 `Observer: already subscribed` — `quad-base/src/Observer.luau`
 
-- **언제**: `observer:WeakSubscribe()`를 부를 때 이미 강하게(`:Subscribe()`) 구독돼 있어서 약한 구독으로 바꿀 수 없을 때.
-- **고치려면**: 이미 구독 중인 핸들은 그대로 두거나, 새 `Observer`를 만드세요.
+- **언제**: `observer:WeakSubscribe()`를 부를 때 이미 구독돼 있을 때 — 강한 구독(`:Subscribe()`)이든 약한 구독이든 마찬가지라, `:WeakSubscribe()`를 두 번 불러도 이 에러입니다.
+- **고치려면**: 이미 구독 중인 핸들은 그대로 두세요. 강한 구독을 약한 구독으로 바꾸려면 먼저 `:Unsubscribe()`로 푼 뒤 `:WeakSubscribe()`하세요.
 - **참고**: [`observer:WeakSubscribe()`](../core/05-observer-effect.md#observerweaksubscribe)
 
 ### Quad0112
@@ -171,16 +171,16 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 `Observer: cannot change subscription from inside its own fn` — `quad-base/src/Observer.luau`
 
-- **언제**: `observer:Subscribe()`를 그 `Observer` 자신의 콜백 실행 중에 부를 때.
-- **고치려면**: 구독/재구독은 콜백 밖에서 하세요. 해제는 그 안에서도 됩니다.
+- **언제**: `observer:Subscribe()`를 그 `Observer` 자신의 콜백 실행 중에 부를 때. [2026-09-27 실측] 콜백이 한 번 던진 `Observer`는 "실행 중" 표시가 풀리지 않은 채 남으므로(콜백은 계속 불립니다), 그 뒤에는 콜백 밖에서 불러도 이 에러가 납니다.
+- **고치려면**: 구독/재구독은 콜백 밖에서 하세요. 해제는 그 안에서도 됩니다. 콜백이 던졌던 `Observer`라면 그 핸들은 다시 구독·바인딩할 수 없으니 새 `Observer`를 만드세요.
 - **참고**: [`observer:Subscribe()`](../core/05-observer-effect.md#observersubscribe)
 
 ### Quad0114
 
 `Observer: already subscribed` — `quad-base/src/Observer.luau`
 
-- **언제**: `observer:Subscribe()`를 부를 때 이미 강하게 구독돼 있을 때(중복 `:Subscribe()`).
-- **고치려면**: 이미 구독 중이면 다시 부르지 마세요.
+- **언제**: `observer:Subscribe()`를 부를 때 이미 구독돼 있을 때 — 중복 `:Subscribe()`뿐 아니라, 약하게(`:WeakSubscribe()`) 구독된 핸들을 강한 구독으로 올리려 할 때도 이 에러입니다.
+- **고치려면**: 이미 강하게 구독 중이면 다시 부르지 마세요. 약한 구독을 강한 구독으로 바꾸려면 먼저 `:WeakUnsubscribe()`로 푼 뒤 `:Subscribe()`하세요.
 - **참고**: [`observer:Subscribe()`](../core/05-observer-effect.md#observersubscribe)
 
 ### Quad0115
@@ -211,8 +211,8 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 `Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a {status} coroutine)` — `quad-base/src/Ref/init.luau`
 
-- **언제**: `ref:Wait()`로 대기 중인 바로 그 코루틴이나, 그 코루틴이 resume한 코루틴에서 같은 `Ref`에 `:Set`을 부를 때 — 대기 중인 코루틴을 resume하는 것 자체가 이 `:Set`이라 재진입이 됩니다.
-- **고치려면**: `:Set`은 대기자 자신이 아닌 다른 코루틴에서 부르세요.
+- **언제**: `ref:Wait(thread)`로 등록해 둔 코루틴이 지금 `:Set`을 부르는 바로 그 코루틴이거나, 지금 코루틴을 resume한(바깥의) 코루틴일 때 — 대기자를 resume하는 것이 이 `:Set`인데, 실행 중인 코루틴은 resume할 수 없습니다. 인자 없는 `ref:Wait()`로 yield한 코루틴은 멈춰 있는 동안 `:Set`을 부를 수 없으므로 이 경우에 해당하지 않습니다.
+- **고치려면**: `ref:Wait(thread)`에 지금 실행 중인 코루틴이나 그 바깥 코루틴을 등록하지 마세요 — `:Set`은 등록된 대기자와 무관한 코루틴에서 부르세요.
 - **참고**: [`ref:Set(value)`](../core/07-ref.md#refsetvalue)
 
 ### Quad0132
@@ -251,7 +251,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 `{kind}: must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see` — `quad-base/src/Ref/init.luau`
 
-- **언제**: `PreRef`/`PostRef`/`Ref`가 리터럴 숫자 키 자리가 아니라 `State`/`Store` 값에 담겨 숫자 키 자리에 도착했을 때 — pre-pass가 그 경로를 미리 볼 수 없습니다. `{kind}`는 실제 종류(`PreRef`/`PostRef`/`Ref`)입니다.
+- **언제**: `PreRef`/`PostRef`가 리터럴 숫자 키 자리가 아니라 `State`/`Store` 값에 담겨 숫자 키 자리에 도착했을 때 — pre-pass가 그 경로를 미리 볼 수 없습니다. `{kind}`는 실제 종류(`PreRef`/`PostRef`)입니다. 평범한 `Ref`는 `State`/`Store`를 거쳐 숫자 키 자리에 와도 정상적으로 채워지므로 이 에러가 나지 않습니다.
 - **고치려면**: 리터럴 숫자 키 자리에 직접 놓으세요.
 - **참고**: [숫자 키 자리에만 놓는다](../core/07-ref.md#숫자-키-자리에만-놓는다)
 

@@ -1,0 +1,21 @@
+# E28 sub-brief — error reference vs code, semantic check (read-only)
+
+Repo: /code/Projects/quad (Luau, Roblox UI renderer "quad"). DO NOT modify any repo file. No git stash/commit/push. No Studio/MCP.
+Write any scratch files only under your own subfolder of: /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/sub-<GROUP>/ (create it). Never name a scratch file with a `spec.` prefix.
+
+Each raise site in quad-base/src, quad-roblox/src, quad-types/src carries a unique id `QuadNNNN` at the start of its message. docs/reference/errors/<file>.md has one `### QuadNNNN` section per id: first line = message template (placeholders `{…}`) + source file; then bullets **언제** (when), **고치려면** (how to fix), **참고** (link).
+
+ALREADY DONE by the caller (don't redo): message TEXT equality. A runtime capture of every message thrown while running the full spec suite was matched against the doc template: 219/248 full-match, placeholders match statically. Your packet (/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/packets/<file>.json) lists for each id: source site(s), doc line, runtime status (FULL/PREFIX/NONE/NOTRIG), captured message samples, and which spec files triggered it (grep those specs for the id or message to see the triggering scenario).
+
+YOUR JOB for every id in your packet(s):
+ (b) Does the **언제** sentence match the actual condition in code? Read the raise site with enough context (the enclosing `if`, the function, who calls it — for helper-built messages look at `-- error-code: via <helper>` call lines too). Check: the triggering surface(s) named are right and complete enough (does it name a surface that can't reach it, or miss the main one?), the stated condition matches the predicate (e.g. doc says "not a string" but code also rejects empty string, or doc says "nil" but code checks `type ~= "number"`), timing claims (at creation vs at signal time), and any "cannot be reached"/"not reachable" claims (verify reachability by reading callers).
+ (c) Does **고치려면** actually escape the condition? Do the names/methods/options it mentions exist on the CURRENT public surface? Verify against code (quad-base/src/init.luau export table, quad-roblox/src, quad-types/src) and docs/reference other pages. Also check **참고** link targets: the target file exists and the `#anchor` corresponds to a heading in that file (Starlight slug: lowercase, strip punctuation like `` ` ( ) . : , { } ``, spaces -> `-`; if unsure, say so rather than guessing).
+ (d) Note ids that appear at multiple sites, or the same condition raised by two ids, or a helper message whose subject/surface name is wrong for some caller.
+ When a claim is doubtful and cheaply testable, you MAY run a tiny Luau probe: copy harness from /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/cp (a patched copy of the repo where every quad error prints `@@QERR\t<msg>`); place probe scripts in /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/cp/quad-base/test/ with names like `e28probe_<GROUP>_<n>.luau` and require `../src` like the specs do (look at an existing spec for the require pattern), run with `cd /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/cp && luau quad-base/test/e28probe_...luau`. quad-roblox probes: look at quad-roblox/test/spec.handlers.luau for the setup pattern. Luau facts must come from execution output, not memory.
+
+Findings in three kinds — (a) doc error (when/fix/ref disagrees with code; give code file:line + doc file:line + evidence), (b) code defect (message misstates its own condition, same condition under two ids, helper subject wrong for a caller — minimal repro), (c) needs judgment (wording improvements go here). DO NOT propose new fields/arguments/names/mechanisms as fixes; state symptom + evidence only. Never propose wrapping user callbacks in pcall.
+
+Be thorough but terse. Final output (ONE final message, everything in it, mark anything unfinished as "미완"): 
+1. A compact table line per id: `QuadNNNN | when: OK/BAD | fix: OK/BAD | ref: OK/BAD/?` 
+2. Findings list, each a plain prose paragraph (Korean or English), with id, code file:line, doc file:line, evidence.
+Do not promise follow-up messages.

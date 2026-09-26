@@ -6,7 +6,7 @@ description: "클래스별 Modifier 생성자, setter 체인의 값 대수, 검�
 
 `Modifier`는 "프로퍼티 묶음"을 값으로 들고 다니는 불변 객체입니다. `D.Modifier.<Class>()`는 그것에
 **클래스 태그와 타입드 setter**를 붙인 생성자로, 잘못된 필드 이름과 잘못된 클래스 조합을 컴파일
-시점에 잡아줍니다. — **체인 형태**(`D.Modifier.TextButton():Text("x")`)에서만입니다. 테이블 형태(`D.Modifier.Frame({ Size = … })`)는 필드 이름도 값 타입도 검사하지 않습니다(클래스별 필드 테이블 타입은 복잡도 예산 때문에 찍지 않습니다 — `{ Sise = 1 }`·`{ Size = "x" }`·`{ Activated = fn }` 전부 통과하고 런타임 drive에서 `Quad0076`/`Quad0063`으로 잡힙니다). 클래스 태그 자체는 두 형태 모두 붙습니다.
+시점에 잡아줍니다. — **체인 형태**(`D.Modifier.TextButton():Text("x")`)에서만입니다. 테이블 형태(`D.Modifier.Frame({ Size = … })`)는 필드 이름도 값 타입도 검사하지 않습니다(클래스별 필드 테이블 타입은 복잡도 예산 때문에 찍지 않습니다 — `{ Sise = 1 }`·`{ Size = "x" }`·`{ Activated = fn }` 전부 통과하고 런타임에 잡힙니다 — 필드 이름·값은 drive에서 `Quad0076` 등으로, 함수 값은 그 테이블로 Modifier를 만드는 순간 `Quad0063`으로). 클래스 태그 자체는 두 형태 모두 붙습니다.
 
 이 페이지의 심볼: [`D.Modifier.<Class>(...)`](#dmodifierclass) · [`mod:<Field>(value)`](#modfieldvalue) ·
 [`mod:As<Class>()`](#modasclass) · [`mod:As()` / `mod:As(name)` / `mod:As<<T>>()`](#modas--modasname--modast) ·

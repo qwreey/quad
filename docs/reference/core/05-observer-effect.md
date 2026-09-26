@@ -279,6 +279,8 @@ effect:Unsubscribe() -- 마지막 정리 1회
 
 **동작** — **약한 구독**. 나머지는 `:Subscribe()`와 같지만 레지스트리가 핸들을 잡아주지 않습니다 — 참조를 놓으면 수거됩니다. 이때 `Effect`가 강하게 쥐고 있던 의존성 등록(`Ref` 콜백, 내부 Observer)도 함께 사라집니다.
 
+**에러** — `Quad0089 Effect: already subscribed` / `Quad0230 Effect: already bound to an Instance` / `Quad0088 Effect: cannot change subscription from inside fn or cleanup`
+
 ---
 
 ## `effect:Unsubscribe()`

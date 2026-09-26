@@ -241,7 +241,7 @@ Set: <Self>(self: Self, value: T) -> Self
 
 콜백이 순회 도중 다시 `:Set`을 부르면(재진입), 안쪽 순회가 이미 모두에게 더 새 값을 전달했으므로 **바깥 순회는 남은 콜백을 건너뛰고 멈춥니다** — 콜백이 낡은 값을 받는 일은 없습니다.
 
-`thread` 키(= `:Wait` 대기자)는 소진되고 `Ref` 자신을 인자로 resume됩니다. 대기 중인 코루틴 자신이나 그 코루틴이 resume한 코루틴에서 `:Set`을 부르면 그 자리에서 던집니다.
+`thread` 키(= `:Wait` 대기자)는 소진되고 `Ref` 자신을 인자로 resume됩니다. `:Wait(thread)`로 등록한 코루틴이 지금 `:Set`을 부르는 코루틴 자신이거나 지금 코루틴을 resume한 바깥 코루틴이면(실행 중인 코루틴은 resume할 수 없으므로) 그 자리에서 던집니다 — 인자 없는 `:Wait()`로 멈춰 있는 코루틴은 `:Set`을 부를 수 없으니 이 경우가 아닙니다.
 
 - `Quad0130 Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a {status} coroutine)`
 

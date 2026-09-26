@@ -1,0 +1,565 @@
+quad-base/test/spec.attribute.luau	@@QERR	Quad0001 AttrKey: name must be a non-empty string
+quad-base/test/spec.attribute.luau	@@QERR	Quad0001 AttrKey: name must be a non-empty string
+quad-base/test/spec.attribute.luau	@@QERR	Quad0011 Attr.Merged: arguments must be Attr values
+quad-base/test/spec.attribute.luau	@@QERR	Quad0010 Attr: arguments must be Stores, Attr values or plain tables
+quad-base/test/spec.attribute.luau	@@QERR	Quad0010 Attr: arguments must be Stores, Attr values or plain tables
+quad-base/test/spec.attribute.luau	@@QERR	Quad0010 Attr: arguments must be Stores, Attr values or plain tables
+quad-base/test/spec.attribute.luau	@@QERR	Quad0007 Attr: attribute "Foo" cannot be a function — attribute values are raw values or State
+quad-base/test/spec.attribute.luau	@@QERR	Quad0006 Attr: plain-table keys must be non-empty strings
+quad-base/test/spec.attribute.luau	@@QERR	Quad0013 NumberAttr: name must be a non-empty string
+quad-base/test/spec.attribute.luau	@@QERR	Quad0005 Attr.Merged: attribute name "Y" appears more than once
+quad-base/test/spec.attribute.luau	@@QERR	Quad0002 AttrKey: attribute "Hp" is already bound by another owner
+quad-base/test/spec.attribute.luau	@@QERR	Quad0002 AttrKey: attribute "Hp" is already bound by another owner
+quad-base/test/spec.attribute.luau	@@QERR	Quad0016 Attr: the same group value is placed at two positions of this instance
+quad-base/test/spec.attribute.luau	@@QERR	Quad0108 quad: setAttr is not available — no backend has installed the attribute op (install a provider with quad:UseProvider — a bare Quad.New() has none)
+quad-base/test/spec.attribute.luau	@@QERR	Quad0015 BooleanAttr: value of "X" must be a boolean, State or None (got number)
+quad-base/test/spec.attribute.luau	@@QERR	Quad0015 NumberAttr: value of "X" must be a number, State or None (got string)
+quad-base/test/spec.attribute.luau	@@QERR	Quad0013 StringAttr: name must be a non-empty string
+quad-base/test/spec.attribute.luau	@@QERR	Quad0014 StringAttr: value of "X" must not be nil — use None to delete
+quad-base/test/spec.attribute.luau	@@QERR	Quad0002 AttrKey: attribute "Owned" is already bound by another owner
+quad-base/test/spec.attribute.luau	@@QERR	Quad0002 AttrKey: attribute "Owned" is already bound by another owner
+quad-base/test/spec.attribute.luau	@@QERR	Quad0016 Attr: the same group value is placed at two positions of this instance
+quad-base/test/spec.attribute.luau	@@QERR	Quad0008 Attr: attribute "X" cannot be a table — attribute values are raw values, None or State (got table)
+quad-base/test/spec.attribute.luau	@@QERR	Quad0008 Attr: attribute "X" cannot be a table — attribute values are raw values, None or State (got table)
+quad-base/test/spec.attribute.luau	@@QERR	Quad0008 Attr: attribute "X" cannot be a table — attribute values are raw values, None or State (got table)
+quad-base/test/spec.attribute.luau	@@QERR	Quad0008 Attr: attribute "X" cannot be a table — attribute values are raw values, None or State (got table)
+quad-base/test/spec.blocker.luau	@@QERR	Quad0017 Blocker: Policy emit must be a function (got number)
+quad-base/test/spec.blocker.luau	@@QERR	Quad0017 Blocker: Policy emit must be a function (got nil)
+quad-base/test/spec.blocker.luau	@@QERR	Quad0018 Blocker: Apply target must be a State (got number)
+quad-base/test/spec.blocker.luau	@@QERR	Quad0018 Blocker: Apply target must be a State (got table)
+quad-base/test/spec.context.luau	@@QERR	Quad0035 Context.Provider: name must be a string (got number)
+quad-base/test/spec.context.luau	@@QERR	Quad0038 Context:Get: no value for Provider(Theme) — the creator of this Context did not :Set it (use :Peek to test)
+quad-base/test/spec.context.luau	@@QERR	Quad0036 Context:Set: key must be a Provider from Context.Provider() (got table)
+quad-base/test/spec.context.luau	@@QERR	Quad0036 Context:Get: key must be a Provider from Context.Provider() (got table)
+quad-base/test/spec.context.luau	@@QERR	Quad0036 Context:Peek: key must be a Provider from Context.Provider() (got table)
+quad-base/test/spec.context.luau	@@QERR	Quad0037 Context:Set: value for Provider must not be nil (absence is "not set")
+quad-base/test/spec.debounce.luau	@@QERR	Quad0040 Debounce: Time is required (a number of seconds or a State<number>)
+quad-base/test/spec.debounce.luau	@@QERR	Quad0041 Debounce: Time must be a non-negative number or a State<number> (got number)
+quad-base/test/spec.debounce.luau	@@QERR	Quad0041 Debounce: Time must be a non-negative number or a State<number> (got string)
+quad-base/test/spec.debounce.luau	@@QERR	Quad0048 Throttle: Leading and Trailing both false would pass nothing through
+quad-base/test/spec.debounce.luau	@@QERR	Quad0046 Throttle: MaxTime is Debounce-only (a throttle already passes every Time)
+quad-base/test/spec.debounce.luau	@@QERR	Quad0047 Debounce: Handle must be a Ref (got table)
+quad-base/test/spec.debounce.luau	@@QERR	Quad0042 Debounce: Leading must be a boolean (got number)
+quad-base/test/spec.debounce.luau	@@QERR	Quad0043 Debounce: Apply target must be a State (got table)
+quad-base/test/spec.debounce.luau	@@QERR	Quad0039 Throttle: Time must be a non-negative number (got string)
+quad-base/test/spec.debounce.luau	@@QERR	Quad0039 Throttle: Time must be a non-negative number (got number)
+quad-base/test/spec.debounce.luau	@@QERR	Quad0039 Debounce: Time must be a non-negative number (got string)
+quad-base/test/spec.debounce.luau	@@QERR	Quad0044 Debounce: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)
+quad-base/test/spec.debounce.luau	@@QERR	Quad0039 Debounce: Time must be a non-negative number (got string)
+quad-base/test/spec.debounce.luau	@@QERR	Quad0039 Throttle: Time must be a non-negative number (got string)
+quad-base/test/spec.debounce.luau	@@QERR	Quad0039 Throttle: Time must be a non-negative number (got string)
+quad-base/test/spec.debounce.luau	@@QERR	Quad0039 Debounce: MaxTime must be a non-negative number (got string)
+quad-base/test/spec.debounce.luau	@@QERR	Quad0108 quad: setTimeout is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.debounce.luau	@@QERR	Quad0108 quad: setTimeout is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.debounce.luau	@@QERR	Quad0108 quad: setTimeout is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0072 Dispatch.getHandler: inst must not be nil
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0074 Dispatch.getHandler: key must not be nil
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0076 Dispatch: no handler matched key Size (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0076 Dispatch: no handler matched key Size (value: table, brand: Blocker) — a quad value at a string key: it belongs in a numeric (array) slot
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0076 Dispatch: no handler matched key Size (value: table, brand: Spring) — check that the provider for this value (e.g. quad-roblox) is initialized
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0077 Dispatch: handler (priority 0) returned no retractor at key k, index 1 — return Void when there is nothing to undo
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0077 Dispatch: handler (priority 0) returned no retractor at key other, index 1 — return Void when there is nothing to undo
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0082 Dispatch.drive: props must be a table (got nil)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0082 Dispatch.drive: props must be a table (got string)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0082 Dispatch.drive: props must be a table (got number)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got Source)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got Tag)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got AttrKey)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got a table with a metatable)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got AttrKey)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0084 Dispatch.drive: inst must not be nil
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0081 Dispatch.addHandler: keyType must be "number", "string" or nil (got table)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got number)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got table)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got table)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0085 Dispatch.drive: array keys must be positive integers (got 0)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0085 Dispatch.drive: array keys must be positive integers (got -1)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0085 Dispatch.drive: array keys must be positive integers (got 1.5)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got Source)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0075 Dispatch.process: index 3 would leave a gap in the chain (the chain has 0 slots — a delegating handler passes index + 1)
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0074 Dispatch.process: key must not be nil
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0074 Dispatch.retractFrom: key must not be nil
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0141 Slot: must be an array item, not the value of a string key
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0076 Dispatch: no handler matched key Thing (value: table, brand: Tag) — a quad value at a string key: it belongs in a numeric (array) slot
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0076 Dispatch: no handler matched key Thing (value: table, brand: Context) — a quad value at a string key: it belongs in a numeric (array) slot
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0076 Dispatch: no handler matched key 1 (value: table, brand: Store) — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))
+quad-base/test/spec.dispatch.luau	@@QERR	Quad0080 Dispatch.addHandler: priority must be a finite number (got nan)
+quad-base/test/spec.effect.luau	@@QERR	Quad0095 Effect: dep #2 is nil
+quad-base/test/spec.effect.luau	@@QERR	Quad0096 Effect: dep #2 is not a State/Source/Ref
+quad-base/test/spec.effect.luau	@@QERR	Quad0096 Effect: dep #2 is not a State/Source/Ref
+quad-base/test/spec.effect.luau	@@QERR	Quad0094 Effect: fn must be a function
+quad-base/test/spec.effect.luau	@@QERR	Quad0090 Effect: cannot change subscription from inside fn or cleanup
+quad-base/test/spec.effect.luau	@@QERR	Quad0088 Effect: cannot change subscription from inside fn or cleanup
+quad-base/test/spec.effect.luau	@@QERR	Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()
+quad-base/test/spec.effect.luau	@@QERR	Quad0090 Effect: cannot change subscription from inside fn or cleanup
+quad-base/test/spec.effect.luau	@@QERR	Quad0091 Effect: already subscribed
+quad-base/test/spec.effect.luau	@@QERR	Quad0092 Effect: subscribed strongly; use :Unsubscribe()
+quad-base/test/spec.effect.luau	@@QERR	Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()
+quad-base/test/spec.effect.luau	@@QERR	Quad0104 bindLifetime: value is already subscribed
+quad-base/test/spec.effect.luau	@@QERR	Quad0090 Effect: cannot change subscription from inside fn or cleanup
+quad-base/test/spec.effect.luau	@@QERR	Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()
+quad-base/test/spec.effect.luau	@@QERR	Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup
+quad-base/test/spec.effect.luau	@@QERR	Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup
+quad-base/test/spec.effect.luau	@@QERR	Quad0086 Effect: fn must return a cleanup function or nothing (got number)
+quad-base/test/spec.effect.luau	@@QERR	Quad0086 Effect: fn must return a cleanup function or nothing (got table)
+quad-base/test/spec.effect.luau	@@QERR	Quad0090 Effect: cannot change subscription from inside fn or cleanup
+quad-base/test/spec.errorcodes.luau	@@QERR	Quad0013 StringAttr: name must be a non-empty string
+quad-base/test/spec.errorcodes.luau	@@QERR	Quad0013 StringAttr: name must be a non-empty string
+quad-base/test/spec.fallback.luau	@@QERR	Quad0099 Fallback: base must be a function (got number)
+quad-base/test/spec.fallback.luau	@@QERR	Quad0100 Traceback: onError must be a function (got string)
+quad-base/test/spec.flatten.luau	@@QERR	Quad0068 Modifier: a Modifier cannot be a value of key "Size" — place it in the array part
+quad-base/test/spec.flatten.luau	@@QERR	Quad0068 Modifier: a Modifier cannot be a value of key "5" — place it in the array part
+quad-base/test/spec.gate.luau	@@QERR	Quad0188 State: Gate setup must be a function (emit) -> onUpstreamEmit
+quad-base/test/spec.gate.luau	@@QERR	Quad0189 State: Gate setup must return the onUpstreamEmit function
+quad-base/test/spec.hooks.luau	@@QERR	Quad0101 OnCreated: fn must be a function (got number)
+quad-base/test/spec.hooks.luau	@@QERR	Quad0101 OnRendered: fn must be a function (got number)
+quad-base/test/spec.hooks.luau	@@QERR	Quad0101 OnDestroyed: fn must be a function (got number)
+quad-base/test/spec.init.luau	@@QERR	Quad0208 Quad:RunInit: initFn must be a function (got nil)
+quad-base/test/spec.init.luau	@@QERR	Quad0208 Quad:RunInit: initFn must be a function (got number)
+quad-base/test/spec.inputgates.luau	@@QERR	Quad0073 Dispatch.process: index must be a positive integer (got 1.5)
+quad-base/test/spec.inputgates.luau	@@QERR	Quad0073 Dispatch.retractFrom: index must be a positive integer (got 0)
+quad-base/test/spec.inputgates.luau	@@QERR	Quad0073 Dispatch.retractFrom: index must be a positive integer (got 1)
+quad-base/test/spec.inputgates.luau	@@QERR	Quad0050 Modifier:Apply: factory must be a function (got nil)
+quad-base/test/spec.inputgates.luau	@@QERR	Quad0050 Modifier:Apply: factory must be a function (got number)
+quad-base/test/spec.inputgates.luau	@@QERR	Quad0153 Slot:List: opts must be a table (got number)
+quad-base/test/spec.inputgates.luau	@@QERR	Quad0155 Slot:Single: opts must be a table (got string)
+quad-base/test/spec.inputgates.luau	@@QERR	Quad0210 AddPlugin: plugin must be a function (got nil)
+quad-base/test/spec.inputgates.luau	@@QERR	Quad0212 UseProvider: provider must be a function (got nil)
+quad-base/test/spec.inputgates.luau	@@QERR	Quad0211 AddPlugin: the function must return its extension table (got nil — return an empty table if it adds nothing)
+quad-base/test/spec.inputgates.luau	@@QERR	Quad0211 AddPlugin: the function must return its extension table (got nil — return an empty table if it adds nothing)
+quad-base/test/spec.inputgates.luau	@@QERR	Quad0209 UseProvider: the function must return its extension table (got number — return an empty table if it adds nothing)
+quad-base/test/spec.inputgates.luau	@@QERR	Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+quad-base/test/spec.inputgates.luau	@@QERR	Quad0236 Slot:Remove: index out of range (got 1, limit 0)
+quad-base/test/spec.inputgates.luau	@@QERR	Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)
+quad-base/test/spec.inputgates.luau	@@QERR	Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)
+quad-base/test/spec.leaf.luau	@@QERR	Quad0116 Observer: must be an array item, not the value of a string key
+quad-base/test/spec.leaf.luau	@@QERR	Quad0097 Effect: must be an array item, not the value of a string key
+quad-base/test/spec.leaf.luau	@@QERR	Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0019 Bookkeeping.setLength: position must be a positive integer (got 1.5)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got 1.5)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0019 Bookkeeping.setEmpty: position must be a positive integer (got 1.5)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0019 Bookkeeping.setLength: position must be a positive integer (got -1)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got -1)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0019 Bookkeeping.setEmpty: position must be a positive integer (got -1)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0019 Bookkeeping.setLength: position must be a positive integer (got 0)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got 0)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0019 Bookkeeping.setEmpty: position must be a positive integer (got 0)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0019 Bookkeeping.setLength: position must be a positive integer (got 1)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got 1)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0019 Bookkeeping.setEmpty: position must be a positive integer (got 1)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0019 Bookkeeping.setLength: position must be a positive integer (got nan)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got nan)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0019 Bookkeeping.setEmpty: position must be a positive integer (got nan)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0019 Bookkeeping.getOffsetAt: position must be a positive integer (got 0)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0025 Bookkeeping.setOffsetSource: source must be a Source<number> or None (got table)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0022 Bookkeeping.getOffsetAt: position 3 is past N+1 (N = 1, at most 2 may be queried) — or a leaf handler skipped its position registration: position 2 is not registered
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0022 Bookkeeping.getOffsetAt: position 5 is past N+1 (N = 1, at most 2 may be queried) — or a leaf handler skipped its position registration: position 2 is not registered
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0025 Bookkeeping.setOffsetSource: source must be a Source<number> or None (got table)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0021 Bookkeeping.setLength: length must be a non-negative integer (got -1)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0021 Bookkeeping.setLength: length must be a non-negative integer (got 1.5)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0021 Bookkeeping.setLength: length must be a non-negative integer (got 3)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0021 Bookkeeping.setLength: length must be a non-negative integer (got -4)
+quad-base/test/spec.lengthoffset.luau	@@QERR	Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: holdLifetime is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: releaseLifetime is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: isHeldBy is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: onDestroying is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: isInst is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: nativeClaim is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: isClaimed is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: nativeFindChild is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: releaseLifetime is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: holdLifetime is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: releaseLifetime is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: isHeldBy is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: onDestroying is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: isInst is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: nativeClaim is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: isClaimed is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: nativeFindChild is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: isInst is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: nativeInsert is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: nativeExtract is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: nativeRemove is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: nativeMove is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: nativeSwap is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: nativeDispose is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0233 bindLifetime: value is already bound to another Instance
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0033 Claim: first argument must be an Instance of the installed backend (got nil)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0030 Claim: mapper props must be a table (got string)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0029 Claim: Frame is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0029 Claim: Frame is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0105 unbindLifetime: value must not be nil
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0178 dispose: value must not be nil
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0102 bindLifetime: inst must not be nil
+quad-base/test/spec.lifetime.luau	@@QERR	Quad0103 bindLifetime: value must not be nil
+quad-base/test/spec.modifier.luau	@@QERR	Quad0054 Modifier.Overridden: argument #2 is not a Modifier (got number)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0053 Modifier.Overridden: expects at least one Modifier
+quad-base/test/spec.modifier.luau	@@QERR	Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0057 Modifier: field "Field" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0182 Source: cannot hold a Modifier as a Source value
+quad-base/test/spec.modifier.luau	@@QERR	Quad0181 Source: cannot Set a Modifier as a Source value
+quad-base/test/spec.modifier.luau	@@QERR	Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers
+quad-base/test/spec.modifier.luau	@@QERR	Quad0065 Modifier: argument #1 must be a Modifier or a plain field table (got number)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0059 Modifier: initial-field table keys must be non-empty field names (got number at argument #1)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0064 Modifier: field "X" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0065 Modifier: argument #1 must be a Modifier or a plain field table (got table)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0063 Modifier: field "X" in an initial-field table cannot be a function — a transform goes through mod:X(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0065 Modifier: argument #1 must be a Modifier or a plain field table (got table)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0066 Modifier.TypedFactory: name must be a non-empty class name string (got number)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0067 Modifier.DefineSubtype: "SpecInstance" ⊂ "SpecTextLabel" would make a cycle
+quad-base/test/spec.modifier.luau	@@QERR	Quad0066 Modifier.DefineSubtype: parent must be a non-empty class name string (got nil)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0067 Modifier.DefineSubtype: "SpecInstance" ⊂ "SpecInstance" would make a cycle
+quad-base/test/spec.modifier.luau	@@QERR	Quad0055 Modifier: unknown modifier class "SpecNope" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0056 Modifier: cannot cast a "SpecTextLabel" modifier to "SpecUICorner" — not an ancestor (use :As(name) to force)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0056 Modifier: cannot cast a "SpecTextLabel" modifier to "SpecGuiObject" — not an ancestor (use :As(name) to force)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0052 Modifier: unknown modifier class "SpecNope" — Modifier.TypedFactory/DefineSubtype it first
+quad-base/test/spec.modifier.luau	@@QERR	Quad0051 Modifier:As: name must be a class name string (got number)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0055 Modifier: unknown modifier class "TextLabl" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0065 Modifier: argument #1 must be a Modifier or a plain field table (got table)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0065 Modifier: argument #1 must be a Modifier or a plain field table (got table)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0058 Modifier: setter keys must be strings (got table) — put a non-string key in the props table itself (Frame { [key] = value })
+quad-base/test/spec.modifier.luau	@@QERR	Quad0061 Modifier: field "AsTextLabl" matches the reserved cast prefix As<Class> — casts are methods, not fields
+quad-base/test/spec.modifier.luau	@@QERR	Quad0060 Modifier: field "Apply" collides with a reserved Modifier method
+quad-base/test/spec.modifier.luau	@@QERR	Quad0059 Modifier: initial-field table keys must be non-empty field names (got "" at argument #1)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0049 Modifier:Peek: key must be a non-empty string (got "")
+quad-base/test/spec.modifier.luau	@@QERR	Quad0049 Modifier:Peek: key must be a non-empty string (got number)
+quad-base/test/spec.modifier.luau	@@QERR	Quad0191 State: Apply factory must be a function or an object with an __apply method
+quad-base/test/spec.modifier.luau	@@QERR	Quad0062 Modifier: field "__apply" starts with "__" — metamethod-looking names are never properties
+quad-base/test/spec.moduleidentity.luau	@@QERR	Quad0106 Observer: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+quad-base/test/spec.moduleidentity.luau	@@QERR	Quad0106 Effect: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+quad-base/test/spec.moduleidentity.luau	@@QERR	Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+quad-base/test/spec.moduleidentity.luau	@@QERR	Quad0106 State: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+quad-base/test/spec.moduleidentity.luau	@@QERR	Quad0106 Slot:List: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+quad-base/test/spec.moduleidentity.luau	@@QERR	Quad0106 Slot:Single: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+quad-base/test/spec.moduleidentity.luau	@@QERR	Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+quad-base/test/spec.moduleidentity.luau	@@QERR	Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+quad-base/test/spec.moduleidentity.luau	@@QERR	Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+quad-base/test/spec.moduleidentity.luau	@@QERR	Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+quad-base/test/spec.moduleidentity.luau	@@QERR	Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+quad-base/test/spec.moduleidentity.luau	@@QERR	Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+quad-base/test/spec.moduleidentity.luau	@@QERR	Quad0106 Slot:Add: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+quad-base/test/spec.moduleidentity.luau	@@QERR	Quad0106 Slot:Add: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+quad-base/test/spec.moduleidentity.luau	@@QERR	Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+quad-base/test/spec.moduleidentity.luau	@@QERR	Quad0106 dispose: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+quad-base/test/spec.moduleidentity.luau	@@QERR	Quad0106 dispose: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+quad-base/test/spec.nonenil.luau	@@QERR	Quad0076 Dispatch: no handler matched key Text (value: nil) — check that the provider for this value (e.g. quad-roblox) is initialized (a nil at this depth may be an unwrapped None or a reactive nil — the key's own handler must accept nil)
+quad-base/test/spec.observer.luau	@@QERR	Quad0111 Observer: already subscribed
+quad-base/test/spec.observer.luau	@@QERR	Quad0104 bindLifetime: value is already subscribed
+quad-base/test/spec.observer.luau	@@QERR	Quad0112 Observer: subscribed strongly; use :Unsubscribe()
+quad-base/test/spec.observer.luau	@@QERR	Quad0114 Observer: already subscribed
+quad-base/test/spec.observer.luau	@@QERR	Quad0115 Observer: not subscribed strongly; use :WeakUnsubscribe()
+quad-base/test/spec.observer.luau	@@QERR	Quad0115 Observer: not subscribed strongly; use :WeakUnsubscribe()
+quad-base/test/spec.observer.luau	@@QERR	Quad0113 Observer: cannot change subscription from inside its own fn
+quad-base/test/spec.observer.luau	@@QERR	Quad0113 Observer: cannot change subscription from inside its own fn
+quad-base/test/spec.observer.luau	@@QERR	Quad0109 Observer: cannot bind an Observer from inside its own fn
+quad-base/test/spec.observer.luau	@@QERR	Quad0110 Observer: cannot change subscription from inside its own fn
+quad-base/test/spec.observer.luau	@@QERR	Quad0113 Observer: cannot change subscription from inside its own fn
+quad-base/test/spec.observer.luau	@@QERR	Quad0109 Observer: cannot bind an Observer from inside its own fn
+quad-base/test/spec.operator.luau	@@QERR	Quad0125 Operator.Indexed: key must not be nil
+quad-base/test/spec.operator.luau	@@QERR	Quad0127 Operator.Indexed: value is not a table (got number) — cannot read [x]
+quad-base/test/spec.operator.luau	@@QERR	Quad0119 Operator.Sum: argument #1 must be a number or a State<number> (got string)
+quad-base/test/spec.operator.luau	@@QERR	Quad0118 Operator.Sum: argument #2 is nil
+quad-base/test/spec.operator.luau	@@QERR	Quad0118 Operator.Clamp: argument #2 is nil
+quad-base/test/spec.operator.luau	@@QERR	Quad0123 Operator.Sum: Apply target must be a State (got table)
+quad-base/test/spec.operator.luau	@@QERR	Quad0128 Operator.Alternative: default must not be nil
+quad-base/test/spec.operator.luau	@@QERR	Quad0120 Operator.Sum: argument #1 is a State whose current value is nil
+quad-base/test/spec.operator.luau	@@QERR	Quad0121 Operator.Sum: argument #1 is a State whose current value must be a number (got string)
+quad-base/test/spec.operator.luau	@@QERR	Quad0120 Operator.Band: argument #1 is a State whose current value is nil
+quad-base/test/spec.operator.luau	@@QERR	Quad0122 Operator.Sum: the Apply target's current value must be a number (got nil)
+quad-base/test/spec.operator.luau	@@QERR	Quad0122 Operator.Clamp: the Apply target's current value must be a number (got nil)
+quad-base/test/spec.operator.luau	@@QERR	Quad0122 Operator.Bnot: the Apply target's current value must be a number (got nil)
+quad-base/test/spec.operator.luau	@@QERR	Quad0122 Operator.Shl: the Apply target's current value must be a number (got nil)
+quad-base/test/spec.operator.luau	@@QERR	Quad0129 Operator.Alternative: the default State's current value is nil
+quad-base/test/spec.operator.luau	@@QERR	Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 0, max -5)
+quad-base/test/spec.operator.luau	@@QERR	Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 0, max nan)
+quad-base/test/spec.operator.luau	@@QERR	Quad0126 Operator.Indexed: key must be a plain value, not a State (the key is not reactive)
+quad-base/test/spec.preref.luau	@@QERR	Quad0057 Modifier: field "X" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+quad-base/test/spec.preref.luau	@@QERR	Quad0057 Modifier: field "X" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+quad-base/test/spec.ref.luau	@@QERR	Quad0133 Ref: Wait(thread) expects a thread (got number)
+quad-base/test/spec.ref.luau	@@QERR	Quad0130 Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a normal coroutine)
+quad-base/test/spec.ref.luau	@@QERR	Quad0132 Ref:Callback: callback must be a function (got number)
+quad-base/test/spec.ref.luau	@@QERR	Quad0132 Ref:Callback: callback must be a function (got string)
+quad-base/test/spec.ref.luau	@@QERR	Quad0132 Ref:WeakCallback: callback must be a function (got number)
+quad-base/test/spec.ref.luau	@@QERR	Quad0132 Ref:WeakCallback: callback must be a function (got string)
+quad-base/test/spec.ref.luau	@@QERR	Quad0132 Ref:Uncallback: callback must be a function (got number)
+quad-base/test/spec.ref.luau	@@QERR	Quad0132 Ref:Uncallback: callback must be a function (got string)
+quad-base/test/spec.ref.luau	@@QERR	Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
+quad-base/test/spec.ref.luau	@@QERR	Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
+quad-base/test/spec.ref.luau	@@QERR	./quad-base/test/spec.ref.luau:391: Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
+quad-base/test/spec.refhandlers.luau	@@QERR	Quad0233 bindLifetime: value is already bound to another Instance
+quad-base/test/spec.refhandlers.luau	@@QERR	Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)
+quad-base/test/spec.refhandlers.luau	@@QERR	Quad0069 PreRef: already fired — a PreRef is one-shot, make a new one for each instance
+quad-base/test/spec.refhandlers.luau	@@QERR	Quad0069 PostRef: already fired — a PostRef is one-shot, make a new one for each instance
+quad-base/test/spec.refhandlers.luau	@@QERR	Quad0137 PreRef: must be an array item, not the value of a string key
+quad-base/test/spec.refhandlers.luau	@@QERR	Quad0137 PostRef: must be an array item, not the value of a string key
+quad-base/test/spec.refhandlers.luau	@@QERR	Quad0136 PreRef: must be a literal array item — it reached array index 1 through a State/Store value, which the pre-pass cannot see
+quad-base/test/spec.refhandlers.luau	@@QERR	Quad0136 PostRef: must be a literal array item — it reached array index 1 through a State/Store value, which the pre-pass cannot see
+quad-base/test/spec.refhandlers.luau	@@QERR	Quad0137 Ref: must be an array item, not the value of a string key
+quad-base/test/spec.relate.luau	@@QERR	Quad0138 Relate:SetStrong: inst must not be nil
+quad-base/test/spec.relate.luau	@@QERR	Quad0139 Relate:SetStrong: key must not be nil
+quad-base/test/spec.relate.luau	@@QERR	Quad0138 Relate:SetWeak: inst must not be nil
+quad-base/test/spec.relate.luau	@@QERR	Quad0139 Relate:SetWeak: key must not be nil
+quad-base/test/spec.relate.luau	@@QERR	Quad0138 Relate:GetStrong: inst must not be nil
+quad-base/test/spec.relate.luau	@@QERR	Quad0139 Relate:GetStrong: key must not be nil
+quad-base/test/spec.relate.luau	@@QERR	Quad0138 Relate:GetWeak: inst must not be nil
+quad-base/test/spec.relate.luau	@@QERR	Quad0139 Relate:GetWeak: key must not be nil
+quad-base/test/spec.relate.luau	@@QERR	Quad0020 Bookkeeping.getBlocker: ownerKey must not be nil
+quad-base/test/spec.relate.luau	@@QERR	Quad0020 Bookkeeping.getBookkeeping: ownerKey must not be nil
+quad-base/test/spec.relate.luau	@@QERR	Quad0020 Bookkeeping.getOffsetAt: ownerKey must not be nil
+quad-base/test/spec.relate.luau	@@QERR	Quad0020 Bookkeeping.setLength: ownerKey must not be nil
+quad-base/test/spec.relate.luau	@@QERR	Quad0020 Bookkeeping.setOffsetSource: ownerKey must not be nil
+quad-base/test/spec.relate.luau	@@QERR	Quad0020 Bookkeeping.setEmpty: ownerKey must not be nil
+quad-base/test/spec.relate.luau	@@QERR	Quad0072 Dispatch.process: inst must not be nil
+quad-base/test/spec.relate.luau	@@QERR	Quad0072 Dispatch.retractFrom: inst must not be nil
+quad-base/test/spec.slot.luau	@@QERR	Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-base/test/spec.slot.luau	@@QERR	Quad0165 Slot: destroyed Slot cannot be reused
+quad-base/test/spec.slot.luau	@@QERR	Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+quad-base/test/spec.slot.luau	@@QERR	Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+quad-base/test/spec.slot.luau	@@QERR	Quad0240 Slot: this backend cannot mount this value
+quad-base/test/spec.slot.luau	@@QERR	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-base/test/spec.slot.luau	@@QERR	Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)
+quad-base/test/spec.slot.luau	@@QERR	Quad0166 Slot: manual CRUD is not allowed after :List/:Single
+quad-base/test/spec.slot.luau	@@QERR	Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)
+quad-base/test/spec.slot.luau	@@QERR	Quad0148 Slot: already has :List/:Single installed
+quad-base/test/spec.slot.luau	@@QERR	Quad0141 Slot: must be an array item, not the value of a string key
+quad-base/test/spec.slot.luau	@@QERR	Quad0144 Slot:List: keyFn returned nil for item #2
+quad-base/test/spec.slot.luau	@@QERR	Quad0168 Slot:Move: index must be a positive integer (got 0)
+quad-base/test/spec.slot.luau	@@QERR	Quad0236 Slot:Swap: index out of range (got 9, limit 3)
+quad-base/test/spec.slot.luau	@@QERR	Quad0168 Slot:Move: index must be a positive integer (got 1.5)
+quad-base/test/spec.slot.luau	@@QERR	Quad0168 Slot:Move: index must be a positive integer (got 0)
+quad-base/test/spec.slot.luau	@@QERR	Quad0172 Slot:Replace: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-base/test/spec.slot.luau	@@QERR	Quad0236 Slot:Splice: index out of range (got 8, limit 7)
+quad-base/test/spec.slot.luau	@@QERR	Quad0174 Slot:Splice: removeCount out of range
+quad-base/test/spec.slot.luau	@@QERR	Quad0174 Slot:Splice: removeCount out of range
+quad-base/test/spec.slot.luau	@@QERR	Quad0172 Slot:Splice: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-base/test/spec.slot.luau	@@QERR	Quad0171 Slot:Splice: the same element appears twice
+quad-base/test/spec.slot.luau	@@QERR	Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+quad-base/test/spec.slot.luau	@@QERR	Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)
+quad-base/test/spec.slot.luau	@@QERR	Quad0242 Slot: destroyed Slot cannot be an element
+quad-base/test/spec.slot.luau	@@QERR	Quad0171 Slot:Splice: the same element appears twice
+quad-base/test/spec.slot.luau	@@QERR	Quad0172 Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-base/test/spec.slot.luau	@@QERR	Quad0172 Slot:Splice: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-base/test/spec.slot.luau	@@QERR	Quad0240 Slot: this backend cannot mount this value
+quad-base/test/spec.slot.luau	@@QERR	Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+quad-base/test/spec.slot.luau	@@QERR	Quad0177 Slot: initial elements must be an array — key "gamma" is not an array position
+quad-base/test/spec.slot.luau	@@QERR	Quad0176 Slot: initial elements must be a plain { element, ... } array (got table — a bare element or quad value needs the braces)
+quad-base/test/spec.slot.luau	@@QERR	Quad0176 Slot: initial elements must be a plain { element, ... } array (got table — a bare element or quad value needs the braces)
+quad-base/test/spec.slot.luau	@@QERR	Quad0176 Slot: initial elements must be a plain { element, ... } array (got table — a bare element or quad value needs the braces)
+quad-base/test/spec.slot.luau	@@QERR	Quad0176 Slot: initial elements must be a plain { element, ... } array (got string — a bare element or quad value needs the braces)
+quad-base/test/spec.slot.luau	@@QERR	Quad0177 Slot: initial elements must be an array — key "0" is not an array position
+quad-base/test/spec.slot.luau	@@QERR	Quad0176 Slot: initial elements must be a plain { element, ... } array (got table — a bare element or quad value needs the braces)
+quad-base/test/spec.slot.luau	@@QERR	Quad0177 Slot: initial elements must be an array — key "1.5" is not an array position
+quad-base/test/spec.slot.luau	@@QERR	Quad0171 Slot:Splice: the same element appears twice
+quad-base/test/spec.slot.luau	@@QERR	Quad0171 Slot:Splice: the same element appears twice
+quad-base/test/spec.slot.luau	@@QERR	Quad0170 Slot:Add: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+quad-base/test/spec.slot.luau	@@QERR	Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-base/test/spec.slot.luau	@@QERR	Quad0172 Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-base/test/spec.slot.luau	@@QERR	Quad0151 Slot:List: data must be a plain array or a State of one (got nil)
+quad-base/test/spec.slot.luau	@@QERR	Quad0150 Slot:List: updateFn must be a function (got string)
+quad-base/test/spec.slot.luau	@@QERR	Quad0154 Slot:Single: updateFn must be a function (got number)
+quad-base/test/spec.slot.luau	@@QERR	Quad0152 Slot:List: keyFn must be a function (got string)
+quad-base/test/spec.slot.luau	@@QERR	Quad0151 Slot:List: data must be a plain array or a State of one (got table)
+quad-base/test/spec.slot.luau	@@QERR	Quad0175 Slot:Get: index must be a number (got nil)
+quad-base/test/spec.slot.luau	@@QERR	Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)
+quad-base/test/spec.slot.luau	@@QERR	Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)
+quad-base/test/spec.slot.luau	@@QERR	Quad0173 Slot:Splice: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)
+quad-base/test/spec.slot.luau	@@QERR	Quad0172 Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-base/test/spec.slot.luau	@@QERR	Quad0171 Slot: the same element appears twice
+quad-base/test/spec.slot.luau	@@QERR	Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+quad-base/test/spec.slot.luau	@@QERR	Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+quad-base/test/spec.slot.luau	@@QERR	Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+quad-base/test/spec.slot.luau	@@QERR	Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+quad-base/test/spec.slot.luau	@@QERR	Quad0240 Slot: this backend cannot mount this value
+quad-base/test/spec.slot.luau	@@QERR	Quad0238 Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements
+quad-base/test/spec.slot.luau	@@QERR	Quad0240 Slot: this backend cannot mount this value
+quad-base/test/spec.slot.luau	@@QERR	Quad0240 Slot: this backend cannot mount this value
+quad-base/test/spec.slot.luau	@@QERR	Quad0240 Slot: this backend cannot mount this value
+quad-base/test/spec.slot.luau	@@QERR	Quad0169 Slot:Add: destroyed Slot cannot be an element
+quad-base/test/spec.slot.luau	@@QERR	Quad0144 Slot:List: keyFn returned NaN for item #1
+quad-base/test/spec.slot.luau	@@QERR	Quad0170 Slot:Splice: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+quad-base/test/spec.slot.luau	@@QERR	Quad0170 Slot:Replace: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+quad-base/test/spec.slot.luau	@@QERR	Quad0171 Slot:Splice: the same element appears twice
+quad-base/test/spec.slot.luau	@@QERR	Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)
+quad-base/test/spec.slot.luau	@@QERR	Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)
+quad-base/test/spec.slot.luau	@@QERR	Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)
+quad-base/test/spec.slot.luau	@@QERR	Quad0143 Slot:List: data must be a plain array — key "a" is not an array position
+quad-base/test/spec.slot.luau	@@QERR	Quad0143 Slot:List: data must be a plain array — key "extra" is not an array position
+quad-base/test/spec.slot.luau	@@QERR	Quad0146 Slot:List: updateFn returned q.KeyGone — it is the marker updateFn RECEIVES when a key disappears; return nil/q.None to drop the element or q.Detach to hold it
+quad-base/test/spec.slot.luau	@@QERR	Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-base/test/spec.source.luau	@@QERR	Quad0182 Source: cannot hold a Modifier as a Source value
+quad-base/test/spec.source.luau	@@QERR	Quad0181 Source: cannot Set a Modifier as a Source value
+quad-base/test/spec.state.luau	@@QERR	Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+quad-base/test/spec.state.luau	@@QERR	Quad0191 State: Apply factory must be a function or an object with an __apply method
+quad-base/test/spec.state.luau	@@QERR	Quad0191 State: Apply factory must be a function or an object with an __apply method
+quad-base/test/spec.state.luau	@@QERR	Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers
+quad-base/test/spec.state.luau	@@QERR	Quad0183 State: dep #2 is not a State/Source
+quad-base/test/spec.state.luau	@@QERR	Quad0186 State: dep #2 is nil
+quad-base/test/spec.state.luau	@@QERR	Quad0186 State: dep #3 is nil
+quad-base/test/spec.state.luau	@@QERR	Quad0186 State: dep #2 is nil
+quad-base/test/spec.state.luau	@@QERR	Quad0187 State: Compute fn must be a function
+quad-base/test/spec.state.luau	@@QERR	Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+quad-base/test/spec.state.luau	@@QERR	Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+quad-base/test/spec.state.luau	@@QERR	Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+quad-base/test/spec.state.luau	@@QERR	Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+quad-base/test/spec.state.luau	@@QERR	Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+quad-base/test/spec.store.luau	@@QERR	Quad0198 Store: default for "hp" is not a Source (got number)
+quad-base/test/spec.store.luau	@@QERR	Quad0198 Store: default for "bad" is not a Source (got table)
+quad-base/test/spec.store.luau	@@QERR	Quad0193 Store: key must be a non-empty string (got number)
+quad-base/test/spec.store.luau	@@QERR	Quad0195 Store: defaults must be a table of Sources (got number)
+quad-base/test/spec.store.luau	@@QERR	Quad0196 Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)
+quad-base/test/spec.store.luau	@@QERR	Quad0196 Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)
+quad-base/test/spec.store.luau	@@QERR	Quad0194 Store: "Of" is a reserved store key
+quad-base/test/spec.store.luau	@@QERR	Quad0194 Store: "Of" is a reserved store key
+quad-base/test/spec.store.luau	@@QERR	Quad0194 Store: "Names" is a reserved store key
+quad-base/test/spec.store.luau	@@QERR	Quad0194 Store: "Names" is a reserved store key
+quad-base/test/spec.store.luau	@@QERR	Quad0194 Store: "__reservedCheck" is a reserved store key
+quad-base/test/spec.store.luau	@@QERR	Quad0194 Store: "__reservedCheck" is a reserved store key
+quad-base/test/spec.store.luau	@@QERR	Quad0194 Store: "__anything" is a reserved store key
+quad-base/test/spec.store.luau	@@QERR	Quad0194 Store: "__anything" is a reserved store key
+quad-base/test/spec.store.luau	@@QERR	Quad0193 Store: Of name must be a non-empty string (got nil)
+quad-base/test/spec.store.luau	@@QERR	Quad0193 Store: Of name must be a non-empty string (got number)
+quad-base/test/spec.store.luau	@@QERR	Quad0197 Store: defaults must be a plain { name = Source } table (got an AttrKey/Mapper descriptor)
+quad-base/test/spec.store.luau	@@QERR	Quad0193 Store: key must be a non-empty string (got "")
+quad-base/test/spec.store.luau	@@QERR	Quad0193 Store: Of name must be a non-empty string (got "")
+quad-base/test/spec.storebind.luau	@@QERR	Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle
+quad-base/test/spec.storebind.luau	@@QERR	Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle
+quad-base/test/spec.tag.luau	@@QERR	Quad0108 quad: addTag is not available — no backend has installed the tag ops (install a provider with quad:UseProvider — a bare Quad.New() has none)
+quad-base/test/spec.tag.luau	@@QERR	Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+quad-base/test/spec.tag.luau	@@QERR	Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+quad-base/test/spec.tag.luau	@@QERR	Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes
+quad-base/test/spec.tag.luau	@@QERR	Quad0205 Tag:Contains: names must be strings (got nil at argument 1)
+quad-base/test/spec.tag.luau	@@QERR	Quad0207 Tag.Merged: arguments must be Tag values
+quad-base/test/spec.tag.luau	@@QERR	Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table
+quad-base/test/spec.tag.luau	@@QERR	Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table
+quad-base/test/spec.tag.luau	@@QERR	Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table
+quad-base/test/spec.tag.luau	@@QERR	Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+quad-base/test/spec.tag.luau	@@QERR	Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+quad-base/test/spec.tag.luau	@@QERR	Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+quad-base/test/spec.tag.luau	@@QERR	Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)
+quad-base/test/spec.tag.luau	@@QERR	Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)
+quad-base/test/spec.tag.luau	@@QERR	Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)
+quad-base/test/spec.tag.luau	@@QERR	Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+quad-base/test/spec.tag.luau	@@QERR	Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+quad-base/test/spec.tag.luau	@@QERR	Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+quad-base/test/spec.tag.luau	@@QERR	Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes
+quad-base/test/spec.tag.luau	@@QERR	Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes
+quad-base/test/spec.tag.luau	@@QERR	Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes
+quad-base/test/spec.tag.luau	@@QERR	Quad0207 Tag.Merged: arguments must be Tag values
+quad-base/test/spec.tag.luau	@@QERR	Quad0199 Tag: names must be strings — an empty string is not a tag name
+quad-base/test/spec.tag.luau	@@QERR	Quad0199 Tag: names must be strings — an empty string is not a tag name
+quad-base/test/spec.tag.luau	@@QERR	Quad0199 Tag: names must be strings — an empty string is not a tag name
+quad-base/test/spec.tag.luau	@@QERR	Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+quad-base/test/spec.tag.luau	@@QERR	Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)
+quad-base/test/spec.tag.luau	@@QERR	Quad0205 Tag:Contains: names must be strings (got nil at argument 1)
+quad-base/test/spec.tag.luau	@@QERR	Quad0205 Tag:Contains: names must be strings (got number at argument 2)
+quad-base/test/spec.tag.luau	@@QERR	Quad0206 Tag: Apply factory must be a function (got number)
+quad-roblox/test/spec.animate.luau	@@QERR	Quad0214 Animate: expected an options table (Animate{ Time = ... })
+quad-roblox/test/spec.animate.luau	@@QERR	Quad0243 Tween: Time must be a number
+quad-roblox/test/spec.animate.luau	@@QERR	Quad0247 Tween: Override must be "Cancel" or "Finish"
+quad-roblox/test/spec.animate.luau	@@QERR	Quad0243 Tween: Time must be a number
+quad-roblox/test/spec.animate.luau	@@QERR	Quad0245 Tween: Dedup must be a boolean
+quad-roblox/test/spec.animate.luau	@@QERR	Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)
+quad-roblox/test/spec.claim.luau	@@QERR	Quad0225 nativeClaim: Instance is already claimed by quad
+quad-roblox/test/spec.claim.luau	@@QERR	Quad0225 nativeClaim: Instance is already claimed by quad
+quad-roblox/test/spec.claim.luau	@@QERR	Quad0225 nativeClaim: Instance is already claimed by quad
+quad-roblox/test/spec.claim.luau	@@QERR	Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)
+quad-roblox/test/spec.claim.luau	@@QERR	Quad0034 Claim: second argument must be a D.Mapper descriptor
+quad-roblox/test/spec.claim.luau	@@QERR	Quad0076 Dispatch: no handler matched key 1 (value: table, brand: MapperDescriptor) — this quad value has no handler at an array position
+quad-roblox/test/spec.claim.luau	@@QERR	Quad0029 Claim: Frame is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+quad-roblox/test/spec.claim.luau	@@QERR	Quad0032 Claim: no child matched key Nope under Frame (mapper TextLabel) — a child with that name must also be a TextLabel
+quad-roblox/test/spec.claim.luau	@@QERR	Quad0032 Claim: no child matched key MapperRoot under Frame (mapper TextLabel) — a child with that name must also be a TextLabel
+quad-roblox/test/spec.claim.luau	@@QERR	Quad0032 Claim: no child matched key Title under Frame (mapper ImageLabel) — a child with that name must also be a ImageLabel
+quad-roblox/test/spec.claim.luau	@@QERR	Quad0032 Claim: no child matched key Wrong under Frame (mapper Frame) — a child with that name must also be a Frame
+quad-roblox/test/spec.claim.luau	@@QERR	Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)
+quad-roblox/test/spec.claim.luau	@@QERR	Quad0029 Claim: Frame is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+quad-roblox/test/spec.claim.luau	@@QERR	Quad0028 Claim: two mapper descriptors resolved to the same Instance Title — each child needs exactly one descriptor
+quad-roblox/test/spec.claim.luau	@@QERR	Quad0031 Claim: array keys must be positive integers (got 0)
+quad-roblox/test/spec.claim.luau	@@QERR	Quad0026 newMapperClass: className must be a non-empty string (got number)
+quad-roblox/test/spec.claim.luau	@@QERR	Quad0029 Claim: Widget is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+quad-roblox/test/spec.component.luau	@@QERR	Quad0056 Modifier: cannot cast a "MaterialButtonSpec" modifier to "TextButton" — not an ancestor (use :As(name) to force)
+quad-roblox/test/spec.component.luau	@@QERR	Quad0076 Dispatch: no handler matched key Elevation (value: nil) — check that the provider for this value (e.g. quad-roblox) is initialized (a nil at this depth may be an unwrapped None or a reactive nil — the key's own handler must accept nil)
+quad-roblox/test/spec.d.luau	@@QERR	Quad0225 nativeClaim: Instance is already claimed by quad
+quad-roblox/test/spec.events.luau	@@QERR	Quad0076 Dispatch: no handler matched key MouseButton1Click (value: function) — check that the provider for this value (e.g. quad-roblox) is initialized
+quad-roblox/test/spec.events.luau	@@QERR	Quad0221 OnChange: property name must be a non-empty string
+quad-roblox/test/spec.events.luau	@@QERR	Quad0222 OnChange: callback for "Text" must be a function (got string)
+quad-roblox/test/spec.events.luau	@@QERR	Quad0223 Out: property name must be a non-empty string
+quad-roblox/test/spec.events.luau	@@QERR	Quad0224 Out: second argument for "Text" must be a Source to write back into (got number)
+quad-roblox/test/spec.events.luau	@@QERR	Quad0224 Out: second argument for "Text" must be a Source to write back into (got a read-only State (a :Compute result?))
+quad-roblox/test/spec.events.luau	@@QERR	Quad0221 OnChange: property name must be a non-empty string
+quad-roblox/test/spec.events.luau	@@QERR	Quad0218 Event: handler for "MouseButton1Click" must be a function (got number)
+quad-roblox/test/spec.events.luau	@@QERR	Quad0218 Event: handler for "MouseButton1Click" must be a function (got table)
+quad-roblox/test/spec.events.luau	@@QERR	Quad0218 Event: handler for "MouseButton1Click" must be a function (got string)
+quad-roblox/test/spec.events.luau	@@QERR	Quad0218 Event: handler for "MouseButton1Click" must be a function (got number)
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0076 Dispatch: no handler matched key Bogus (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0076 Dispatch: no handler matched key Parent (value: table) — check that the provider for this value (e.g. quad-roblox) is initialized
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0076 Dispatch: no handler matched key AbsoluteSize (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0076 Dispatch: no handler matched key Text (value: string) — check that the provider for this value (e.g. quad-roblox) is initialized
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0219 InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0172 Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0076 Dispatch: no handler matched key 0 (value: table) — check that the provider for this value (e.g. quad-roblox) is initialized
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0220 InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0220 InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0220 InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0157 Bookkeeping.claimOwnerAt: element must not be nil
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0158 Bookkeeping.claimOwnerAt: inst (ownerKey) must not be nil
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0161 Bookkeeping.releaseOwner: element must not be nil
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0159 Bookkeeping.claimOwnerAt: k (seat key — a position or a shorthand child name) must not be nil
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0162 Bookkeeping.releaseOwner: ownerKey must not be nil
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+quad-roblox/test/spec.handlers.luau	@@QERR	Quad0023 Bookkeeping.recompute: sourceList[2] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+quad-roblox/test/spec.robloxfactory.luau	@@QERR	Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends
+quad-roblox/test/spec.robloxfactory.luau	@@QERR	Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends
+quad-roblox/test/spec.robloxfactory.luau	@@QERR	Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends
+quad-roblox/test/spec.robloxfactory.luau	@@QERR	Quad0228 quad-roblox: requires a quad-base matching version pattern '3.2^.0^' (got '9.9.9')
+quad-roblox/test/spec.robloxfactory.luau	@@QERR	Quad0225 nativeClaim: Instance is already claimed by quad
+quad-roblox/test/spec.robloxfactory.luau	@@QERR	Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)
+quad-roblox/test/spec.robloxfactory.luau	@@QERR	Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)
+quad-roblox/test/spec.robloxfactory.luau	@@QERR	Quad0109 Observer: cannot bind an Observer from inside its own fn
+quad-roblox/test/spec.shorthand.luau	@@QERR	Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-roblox/test/spec.shorthand.luau	@@QERR	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+quad-roblox/test/spec.tagattribute.luau	@@QERR	Quad0108 quad: addTag is not available — no backend has installed the tag ops (install a provider with quad:UseProvider — a bare Quad.New() has none)
+quad-roblox/test/spec.tagattribute.luau	@@QERR	Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)
+quad-roblox/test/spec.timers.luau	@@QERR	Quad0215 setTimeout: func must be a function (got number)
+quad-roblox/test/spec.timers.luau	@@QERR	Quad0216 setTimeout: delay must be a non-negative number (got number)
+quad-roblox/test/spec.timers.luau	@@QERR	Quad0217 clearTimeout: expected a Timeout from setTimeout (got table)
+quad-roblox/test/spec.tween.luau	@@QERR	Quad0248 Tween: expected an options table (Tween{ Value = ... })
+quad-roblox/test/spec.tween.luau	@@QERR	Quad0249 Tween: Value is required
+quad-roblox/test/spec.tween.luau	@@QERR	Quad0243 Tween: Time must be a number
+quad-roblox/test/spec.tween.luau	@@QERR	Quad0243 Tween: RepeatCount must be a number
+quad-roblox/test/spec.tween.luau	@@QERR	Quad0243 Tween: DelayTime must be a number
+quad-roblox/test/spec.tween.luau	@@QERR	Quad0244 Tween: Reverses must be a boolean
+quad-roblox/test/spec.tween.luau	@@QERR	Quad0247 Tween: Override must be "Cancel" or "Finish"
+quad-roblox/test/spec.tween.luau	@@QERR	Quad0246 Tween: Completed must be a function
+quad-roblox/test/spec.tween.luau	@@QERR	Quad0246 Tween: Started must be a function
+quad-roblox/test/spec.tween.luau	@@QERR	Quad0246 Tween: Cancelled must be a function
+quad-roblox/test/spec.tween.luau	@@QERR	Quad0249 Tween: Value is required
+quad-roblox/test/spec.tween.luau	@@QERR	Quad0227 Tween:Mapped: fn must be a function (got number)
+quad-roblox/test/spec.tween.luau	@@QERR	Quad0250 Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))
+quad-roblox/test/spec.tween.luau	@@QERR	Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)
+quad-roblox/test/spec.tween.luau	@@QERR	Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)
+quad-roblox/test/spec.tween.luau	@@QERR	Quad0245 Tween: Dedup must be a boolean
+quad-roblox/test/spec.tweenproperty.luau	@@QERR	Quad0243 Tween: Time must be a number

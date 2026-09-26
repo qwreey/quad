@@ -1,0 +1,106 @@
+=== quad-base/test/e28probe_A_1.luau
+debounce trailing=false only	false	./quad-base/test/e28probe_A_1.luau:4: Quad0048 Debounce: Leading and Trailing both false would pass nothing through
+tag:Apply(Operator.Not)	false	./quad-base/src/Tag.luau:196: Quad0123 Operator.Not: Apply target must be a State (got table)
+tag:Apply(Operator.Sum(1))	false	./quad-base/test/e28probe_A_1.luau:6: Quad0123 Operator.Sum: Apply target must be a State (got table)
+tag:Apply(blocker)	false	./quad-base/test/e28probe_A_1.luau:7: Quad0206 Tag: Apply factory must be a function (got table)
+Operator.Not(5)	false	./quad-base/test/e28probe_A_1.luau:8: Quad0123 Operator.Not: Apply target must be a State (got number)
+mutated opts Time	false	./quad-base/test/e28probe_A_1.luau:14: Quad0039 Debounce: Time must be a non-negative number (got string)
+store Of reserved __x	false	./quad-base/test/e28probe_A_1.luau:15: Quad0194 Store: "__x" is a reserved store key
+=== quad-base/test/e28probe_A_2.luau
+Alternative(modifier) get	false	./quad-base/test/e28probe_A_2.luau:7: Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers
+Indexed -> modifier	false	./quad-base/test/e28probe_A_2.luau:10: Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers
+modifier:Apply(Operator.Bnot)	false	./quad-base/src/Dispatch/Modifier/init.luau:190: Quad0123 Operator.Bnot: Apply target must be a State (got table)
+Observer(5)	false	./quad-base/test/e28probe_A_2.luau:12: Quad0190 State: Observer fn must be a function (or nil for the always-observe utility)
+Debounce()	false	./quad-base/test/e28probe_A_2.luau:13: Quad0045 Debounce: options table expected (got nil)
+=== quad-base/test/e28probe_A_3.luau
+first	false	./quad-base/test/e28probe_A_3.luau:5: Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 0, max -1)
+second	false	./quad-base/test/e28probe_A_3.luau:6: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+after fix	true	
+=== quad-base/test/e28probe_B_1.luau
+preref-twice-same	false	./quad-base/test/e28probe_B_1.luau:12: Quad0069 PreRef: already fired — a PreRef is one-shot, make a new one for each instance
+preref-userSet-then-place	true	nil
+As<Unknown>	false	./quad-base/test/e28probe_B_1.luau:21: Quad0055 Modifier: unknown modifier class "NopeClass" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)
+As(name) unknown	false	./quad-base/test/e28probe_B_1.luau:22: Quad0052 Modifier: unknown modifier class "NopeClass" — Modifier.TypedFactory/DefineSubtype it first
+setOffsetSource pos3 fresh owner	false	./quad-base/test/e28probe_B_1.luau:26: Quad0022 Bookkeeping.getOffsetAt: position 3 is past N+1 (N = 0, at most 1 may be queried) — or a leaf handler skipped its position registration: position 1 is not registered
+getOffsetAt hole	false	./quad-base/src/Bookkeeping.luau:249: Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build th
+getOffsetAt hole2	false	./quad-base/src/Bookkeeping.luau:249: Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build t
+getOffsetAt hole3	false	./quad-base/test/e28probe_B_1.luau:43: Quad0229 Bookkeeping.getOffsetAt: position 2 needs positions 1..1 registered but 1 is not — a leaf handler skipped its position registration
+lengthList hole	false	./quad-base/src/Bookkeeping.luau:289: Quad0024 Bookkeeping.recompute: lengthList[1] is nil — bookkeeping is broken (setOffsetSource without setLength?)
+mt	nil
+drive AttrKey	false	./quad-base/test/e28probe_B_1.luau:55: Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got AttrKey)
+Overridden colon	true	Modifier(0 fields)
+modifier at [5]	false	./quad-base/test/e28probe_B_1.luau:60: Quad0068 Modifier: a Modifier cannot be a value of key "5" — place it in the array part
+=== quad-base/test/e28probe_C_1.luau
+0141 k=0	false	./quad-base/test/e28probe_C_1.luau:6: Quad0085 Dispatch.drive: array keys must be positive integers (got 0)
+0141 k=1.5	false	./quad-base/test/e28probe_C_1.luau:7: Quad0085 Dispatch.drive: array keys must be positive integers (got 1.5)
+0141 state str	false	./quad-base/test/e28probe_C_1.luau:8: Quad0141 Slot: must be an array item, not the value of a string key
+0140	false	./quad-base/test/e28probe_C_1.luau:10: Quad0140 Slot: destroyed Slot cannot be mounted
+0140 state	false	./quad-base/test/e28probe_C_1.luau:11: Quad0140 Slot: destroyed Slot cannot be mounted
+raw destroyed	false	./quad-base/test/e28probe_C_1.luau:13: Quad0242 Slot: destroyed Slot cannot be an element
+state destroyed	false	./quad-base/test/e28probe_C_1.luau:14: Quad0169 Slot:Add: destroyed Slot cannot be an element
+ctor state destroyed	false	./quad-base/test/e28probe_C_1.luau:15: Quad0169 Slot: destroyed Slot cannot be an element
+0142 state nil	false	./quad-base/test/e28probe_C_1.luau:17: Quad0142 Slot:List: data must be a plain array (got nil) — a data State must hold one too
+0142 plain setmt	false	./quad-base/test/e28probe_C_1.luau:18: Quad0142 Slot:List: data must be a plain array (got table) — a data State must hold one too
+0149 empty	false	./quad-base/test/e28probe_C_1.luau:20: Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)
+ok
+0149 after failed add	true	nil
+own list crud	false	./quad-base/test/e28probe_C_1.luau:23: Quad0166 Slot: manual CRUD is not allowed after :List/:Single
+ancestor crud	false	./quad-base/test/e28probe_C_1.luau:24: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)
+0145	false	./quad-base/test/e28probe_C_1.luau:26: Quad0145 Slot:List: duplicate key a
+0163	false	./quad-base/test/e28probe_C_1.luau:28: Quad0163 Bookkeeping.releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken
+0163 unowned	false	./quad-base/test/e28probe_C_1.luau:29: Quad0163 Bookkeeping.releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken
+0156	false	./quad-base/test/e28probe_C_1.luau:31: Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+0180 num	false	./quad-base/test/e28probe_C_1.luau:33: Quad0180 dispose: this backend cannot dispose this value
+0180 state	false	./quad-base/test/e28probe_C_1.luau:34: Quad0180 dispose: this backend cannot dispose this value
+0180 table	false	./quad-base/test/e28probe_C_1.luau:35: Quad0180 dispose: this backend cannot dispose this value
+0168 -1	false	./quad-base/test/e28probe_C_1.luau:37: Quad0168 Slot:Remove: index must be a positive integer (got -1)
+0168 nan	false	./quad-base/test/e28probe_C_1.luau:38: Quad0168 Slot:Remove: index must be a positive integer (got nan)
+0168 str	false	./quad-base/test/e28probe_C_1.luau:39: Quad0168 Slot:Remove: index must be a positive integer (got 1)
+0174 nil	false	./quad-base/test/e28probe_C_1.luau:41: Quad0174 Slot:Splice: removeCount out of range
+0241	false	./quad-base/test/e28probe_C_1.luau:43: Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+0238 extract	false	./quad-base/test/e28probe_C_1.luau:45: Quad0238 Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements
+0170 extract	false	./quad-base/test/e28probe_C_1.luau:47: Quad0170 Slot:Extract: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+0171 ctor	false	./quad-base/test/e28probe_C_1.luau:49: Quad0171 Slot: the same element appears twice
+0172	false	./quad-base/test/e28probe_C_1.luau:51: Quad0172 Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+0179	false	./quad-base/test/e28probe_C_1.luau:53: Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owne
+0176 slot	false	./quad-base/test/e28probe_C_1.luau:55: Quad0176 Slot: initial elements must be a plain { element, ... } array (got table — a bare element or quad value needs the braces)
+0177	false	./quad-base/test/e28probe_C_1.luau:57: Quad0177 Slot: initial elements must be an array — key "a" is not an array position
+single state tbl	false	./quad-base/test/e28probe_C_1.luau:59: Quad0240 Slot: this backend cannot mount this value
+=== quad-base/test/e28probe_C_2.luau
+process k=0	false	./quad-base/test/e28probe_C_2.luau:6: Quad0141 Slot: must be an array item, not the value of a number key
+process k=-2	false	./quad-base/test/e28probe_C_2.luau:7: Quad0141 Slot: must be an array item, not the value of a number key
+bare	nil
+=== quad-base/test/e28probe_D_1.luau
+E weak,weak	false	./quad-base/test/e28probe_D_1.luau:12: Quad0089 Effect: already subscribed
+O weak,weak	false	./quad-base/test/e28probe_D_1.luau:16: Quad0111 Observer: already subscribed
+O weak,strong	false	./quad-base/test/e28probe_D_1.luau:17: Quad0114 Observer: already subscribed
+E dead resub	false	./quad-base/test/e28probe_D_1.luau:22: Quad0090 Effect: cannot change subscription from inside fn or cleanup
+E dead bind	false	./quad-base/test/e28probe_D_1.luau:23: Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup
+O dead resub	false	./quad-base/test/e28probe_D_1.luau:29: Quad0113 Observer: cannot change subscription from inside its own fn
+O dead bind	false	./quad-base/test/e28probe_D_1.luau:30: Quad0109 Observer: cannot bind an Observer from inside its own fn
+E bound sub	false	./quad-base/test/e28probe_D_1.luau:35: Quad0231 Effect: already bound to an Instance
+E self-bind at install	false	./quad-base/test/e28probe_D_1.luau:37: Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup
+E return false	false	./quad-base/test/e28probe_D_1.luau:39: Quad0086 Effect: fn must return a cleanup function or nothing (got boolean)
+=== quad-base/test/e28probe_E_1.luau
+0003	false	./quad-base/test/e28probe_E_1.luau:8: Quad0003 Attr: attribute name cannot be empty
+0002 gg	false	./quad-base/test/e28probe_E_1.luau:11: Quad0002 AttrKey: attribute "Hp" is already bound by another owner
+0201 64	true	Tag("x")
+0201 65	false	./quad-base/test/e28probe_E_1.luau:15: Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)
+0008	false	./quad-base/test/e28probe_E_1.luau:17: Quad0008 Attr: attribute "X" cannot be a table — attribute values are raw values, None or State (got table)
+src	true	Attr{X}
+0016	false	./quad-base/test/e28probe_E_1.luau:23: Quad0016 Attr: the same group value is placed at two positions of this instance
+=== quad-base/test/e28probe_E_2.luau
+0237 state	false	./quad-base/test/e28probe_E_2.luau:4: Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+0237 attr	false	./quad-base/test/e28probe_E_2.luau:5: Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+0027 same tree	false	./quad-base/test/e28probe_E_2.luau:8: Quad0029 Claim: Frame is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+0010 nil	false	./quad-base/test/e28probe_E_2.luau:9: Quad0010 Attr: arguments must be Stores, Attr values or plain tables
+=== quad-base/test/e28probe_E_3.luau
+0027 same tree	false	./quad-base/test/e28probe_E_3.luau:7: Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)
+=== quad-roblox/test/e28probe_F_1.luau
+effect-on-unclaimed	false	./quad-roblox/test/e28probe_F_1.luau:16: Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)
+holdLifetime-direct	false	./quad-roblox/test/e28probe_F_1.luau:20: Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)
+setTimeout-neg	false	./quad-roblox/test/e28probe_F_1.luau:23: Quad0216 setTimeout: delay must be a non-negative number (got number)
+claim-destroyed	false	./quad-roblox/test/e28probe_F_1.luau:28: Quad0034 Claim: second argument must be a D.Mapper descriptor
+animate-state-info	true	nil
+mapped-nil	false	./quad-roblox/test/e28probe_F_1.luau:32: Quad0249 Tween: Value is required
+out-number	false	./quad-roblox/test/e28probe_F_1.luau:34: Quad0224 Out: second argument for "Text" must be a Source to write back into (got number)

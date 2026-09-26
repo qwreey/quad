@@ -19,7 +19,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `Slot: must be an array item, not the value of a {typeof(k)} key` — `quad-base/src/Slot/Handler.luau`
 
-- **언제**: `Slot`을 props의 문자 키 값 자리에 두거나, `State`/`Store`에 담아 그 자리에 닿게 했을 때.
+- **언제**: `Slot`을 props의 문자 키 값 자리에 두거나, `State`/`Store`에 담아 그 자리에 닿게 했을 때. 숫자 키라도 `q.Dispatch.process(inst, key, slot, index)`를 직접 불러 배열 리터럴이 아닌 자리(`0`·음수 키 등)에 놓으면 같은 가드로 오고, 이때 메시지는 "number key"라고 말합니다(`q.Dispatch.drive`는 그런 키를 Quad0085로 먼저 막습니다).
 - **고치려면**: `Slot`은 부모의 숫자 키(배열부) 리터럴 자리에만 놓으세요.
 - **참고**: [Slot](../core/06-slot.md)
 
@@ -83,8 +83,8 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)` — `quad-base/src/Slot/List.luau`
 
-- **언제**: 이미 수동 CRUD(`Add`/`Remove`/... 또는 `initial` 원소를 준 생성자)를 쓴 `Slot`에 `:List`/`:Single`을 걸려고 할 때 — 두 모드는 상호 배타입니다.
-- **고치려면**: `:List`/`:Single`을 쓸 `Slot`은 CRUD 없이 빈 `q.Slot()`으로 만드세요.
+- **언제**: 이미 수동 CRUD(`Add`/`Remove`/...)를 쓴 `Slot`이나, 생성자에 `initial` 테이블을 준 `Slot`(빈 `q.Slot({})`도 포함)에 `:List`/`:Single`을 걸려고 할 때 — 두 모드는 상호 배타입니다. 자기 검증에서 거부된 CRUD 호출은 수동으로 표시하지 않습니다.
+- **고치려면**: `:List`/`:Single`을 쓸 `Slot`은 CRUD 없이, 인자 없는 `q.Slot()`으로 만드세요.
 - **참고**: [`slot:List(data, updateFn, keyFn?, opts?)`](../core/06-slot.md#slotlistdata-updatefn-keyfn-opts)
 
 ### Quad0150
@@ -236,8 +236,8 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `{surface}: index must be a positive integer (got {tostring(index)})` — `quad-base/src/Slot/init.luau`
 
-- **언제**: `Add`/`Remove`/`Replace`/`Extract`/`Splice`/`Move`/`Swap` 같은 CRUD의 `index` 인자가 숫자가 아니거나 정수가 아닐 때. `{surface}`는 실제로 부른 메소드 이름(`Slot:Add` 등)입니다.
-- **고치려면**: 정수 인덱스를 넘기세요.
+- **언제**: `Add`/`Remove`/`Replace`/`Extract`/`Splice`/`Move`/`Swap` 같은 CRUD의 `index` 인자가 숫자가 아니거나, 정수가 아니거나, 1보다 작을 때(`Remove(0)`/`Remove(-1)`, NaN 포함). `{surface}`는 실제로 부른 메소드 이름(`Slot:Add` 등)입니다.
+- **고치려면**: 1 이상의 정수 인덱스를 넘기세요.
 - **참고**: [`slot:Add(element, index?)`](../core/06-slot.md#slotaddelement-index)
 
 ### Quad0236
@@ -252,7 +252,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `{surface}: destroyed Slot cannot be an element` — `quad-base/src/Slot/init.luau`
 
-- **언제**: 이미 파괴된 `Slot`을 다른 `Slot`의 원소로 넣으려 할 때(`prepareElements`의 배치 사전검사).
+- **언제**: 원소로 넣은 `State`가 쥔 현재값이 이미 파괴된 `Slot`일 때(`slot:Add(q.Source(deadSlot))`, 생성자 `q.Slot({ state })` 포함 — `prepareElements`의 배치 사전검사). 파괴된 `Slot`을 `State` 없이 직접 넣으면 같은 문구의 Quad0242가 납니다.
 - **고치려면**: 파괴된 `Slot`은 원소로 쓸 수 없습니다 — 새 `Slot`을 만드세요.
 - **참고**: [죽은 Slot과 마운트 규칙](../core/06-slot.md#죽은-slot과-마운트-규칙)
 
@@ -330,7 +330,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ### Quad0179
 
-`dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key)` — `quad-base/src/Slot/init.luau`
+``dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)`` — `quad-base/src/Slot/init.luau`
 
 - **언제**: 아직 어떤 `Slot`의 원소이거나 마운트된 자리(정적 자식·숏핸드 관리 자식 포함)를 차지하고 있는 값을 `dispose`하려 할 때.
 - **고치려면**: 먼저 그 자리에서 빼세요 — 수동 `Slot`이면 `Remove`/`Extract`, `:List` `Slot`이면 데이터에서 그 키 제거(또는 owner `Slot` 자체를 파괴), 숫자 키 자리면 그 자리를 쥔 `State`를 `Set(nil)`, 숏핸드 관리 자식이면 그 키를 `nil`로.

@@ -19,7 +19,7 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 `Claim: mapper descriptor was already used (descriptors are one-shot)` — `quad-base/src/Claim.luau`
 
-- **언제**: 이미 한 번 `q.Claim`에 쓰인 디스크립터(1회용)를 다시 쓰려고 할 때.
+- **언제**: 이미 한 번 `q.Claim`에 쓰인 디스크립터(1회용)를 다시 쓰려고 할 때. 한 `q.Claim` 트리 안의 두 자리에 같은 디스크립터 값을 놓아도(`M(q.MapperRoot)({ d, d })`) 이 에러입니다([2026-09-27 실측]).
 - **고치려면**: 디스크립터 값을 저장해 재사용하지 말고, 필요하면 그것을 만드는 호출을 팩토리 함수로 감싸 매번 새로 만드세요.
 - **참고**: [`q.Claim(inst, desc)`](../roblox/04-claim-mapper.md#qclaiminst-desc)
 
@@ -124,7 +124,7 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 `quad: {name} is not available — no backend has installed {what} (install a provider with quad:UseProvider — a bare Quad.New() has none{hint or ""})` — `quad-base/src/NotInstalled.luau`
 
 - **언제**: 프로바이더를 설치하지 않은 `Quad.New()`에서 백엔드가 채워야 할 op(생명주기 hold op, 엔진 op, 시간 op 등)를 부를 때 — `{name}`은 그 op 이름입니다.
-- **고치려면**: `quad:UseProvider(...)`로 백엔드를 설치하세요. 테스트에서는 `mock.installLifetime` 등을 쓰세요.
+- **고치려면**: `quad:UseProvider(...)`로 백엔드를 설치하세요. 헤드리스 테스트라면 필요한 op를 채운 자기 프로바이더를 `quad:UseProvider`로 설치하세요 — 이 저장소의 테스트용 mock은 배포되지 않습니다([헤드리스 테스트](../../how-to/06-headless-testing.md)).
 - **참고**: [`q.Backend.bindLifetime(inst, value)`](../core/10-lifetime-sentinels.md#qbackendbindlifetimeinst-value)
 
 ### Quad0138

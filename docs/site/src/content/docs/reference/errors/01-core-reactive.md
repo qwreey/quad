@@ -17,8 +17,8 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 `Blocker: Apply target must be a State (got {typeof(state)})` — `quad-base/src/Blocker.luau`
 
-- **언제**: `state:Apply(blocker)`의 대상이 `State`가 아닐 때.
-- **고치려면**: `State`에 `Apply`하세요.
+- **언제**: `blocker:__apply(x)`를 직접 불러 `x`에 `State`가 아닌 값을 넘겼을 때. `state:Apply(blocker)`는 언제나 그 `State` 자신을 넘기므로 그 경로에서는 나지 않습니다.
+- **고치려면**: `__apply`를 직접 부르지 말고 `state:Apply(blocker)`로 붙이세요.
 - **참고**: [`state:Apply(blocker)`](/reference/sugar/06-blocker/#stateapplyblocker)
 
 ### Quad0035
@@ -89,8 +89,8 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 `{self._name}: Apply target must be a State (got {typeof(state)})` — `quad-base/src/Debounce.luau`
 
-- **언제**: `state:Apply(factory)`의 대상이 `State`가 아닐 때(`factory`는 `Debounce{...}`/`Throttle{...}`가 돌려준 값).
-- **고치려면**: `State`에 `Apply`하세요.
+- **언제**: `factory:__apply(x)`를 직접 불러 `x`에 `State`가 아닌 값을 넘겼을 때(`factory`는 `Debounce{...}`/`Throttle{...}`가 돌려준 값). `state:Apply(factory)`는 언제나 그 `State` 자신을 넘기므로 그 경로에서는 나지 않습니다.
+- **고치려면**: `__apply`를 직접 부르지 말고 `state:Apply(factory)`로 붙이세요.
 - **참고**: [공통 계약](/reference/sugar/03-debounce-throttle/#공통-계약)
 
 ### Quad0044
@@ -129,8 +129,8 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 `{name}: Leading and Trailing both false would pass nothing through` — `quad-base/src/Debounce.luau`
 
-- **언제**: `Leading`과 `Trailing`을 둘 다 `false`로 줬을 때 — 그러면 아무 신호도 하류로 통과하지 못합니다.
-- **고치려면**: 적어도 하나는 `true`로 두세요(둘 다 기본값을 건드리지 않는 것도 방법입니다).
+- **언제**: 기본값을 적용한 결과 `Leading`과 `Trailing`이 둘 다 `false`가 될 때 — 그러면 아무 신호도 하류로 통과하지 못합니다. `q.Debounce`는 `Leading`의 기본값이 `false`라서 `Trailing = false` 하나만 줘도 여기에 해당합니다(`q.Throttle`은 `Leading`의 기본값이 `true`).
+- **고치려면**: 적어도 하나는 `true`가 되게 하세요 — `Debounce`에서 `Trailing = false`를 쓰려면 `Leading = true`를 같이 주세요(둘 다 기본값을 건드리지 않는 것도 방법입니다).
 - **참고**: [옵션](/reference/sugar/03-debounce-throttle/#옵션)
 
 ### Quad0118
@@ -177,8 +177,8 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 `Operator.{name}: Apply target must be a State (got {typeof(self)})` — `quad-base/src/Operator.luau`
 
-- **언제**: `state:Apply(factory)`의 대상이 `State`가 아닐 때.
-- **고치려면**: `State`에 `Apply`하세요.
+- **언제**: Operator 콤비네이터가 `State`가 아닌 대상에 붙을 때 — `q.Tag(...):Apply(q.Operator.Not)`나 `modifier:Apply(q.Operator.Bnot)`처럼 `Tag`/`Modifier`의 `:Apply`에 넘기거나, `q.Operator.Not(5)`처럼 콤비네이터(또는 `q.Operator.Sum(1)`이 돌려준 함수)를 직접 불러 State가 아닌 값을 넘긴 경우입니다. `state:Apply(...)`로 붙이면 대상은 언제나 그 `State`라 나지 않습니다.
+- **고치려면**: Operator 콤비네이터는 `state:Apply(...)`로만 붙이세요.
 - **참고**: [공통 계약](/reference/sugar/02-operator/#공통-계약)
 
 ### Quad0124
@@ -265,8 +265,8 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 `State: a Compute function returned a Modifier — State/Source cannot hold Modifiers` — `quad-base/src/State.luau`
 
-- **언제**: `:Compute`의 계산 함수가 `Modifier` 값을 반환했을 때.
-- **고치려면**: 계산 함수가 평범한 값을 반환하게 하세요. `Modifier`는 `:Apply`에 넘기는 것입니다.
+- **언제**: `:Compute`의 계산 함수가 `Modifier` 값을 반환했을 때. Operator 콤비네이터도 내부에서 같은 계산 노드를 쓰므로, `q.Operator.Alternative(default)`가 `Modifier`인 기본값을 내놓거나 `q.Operator.Indexed(key)`가 읽어 낸 값이 `Modifier`일 때도 이 메시지가 납니다(메시지는 "Compute function"이라고 말합니다).
+- **고치려면**: 계산 함수가 평범한 값을 반환하게 하세요 — Operator라면 `Alternative`의 기본값이나 `Indexed`로 읽는 테이블 칸에 `Modifier`를 두지 마세요. `Modifier`는 `:Apply`에 넘기는 것입니다.
 - **참고**: [`state:Compute(fn, ...deps)`](/reference/core/03-state/#statecomputefn-deps)
 
 ### Quad0186
@@ -321,8 +321,8 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 `State: State.Init(module) has not run for this quad instance` — `quad-base/src/State.luau`
 
-- **언제**: quad 모듈 인스턴스에서 `State` 서브시스템이 아직 `RunInit`으로 설치되지 않은 채로 State 관련 API에 닿았을 때 — 내부 불변조건 검사입니다.
-- **고치려면**: 보통은 나지 않는 에러입니다 — `quad-base` 내부를 직접 조립하는 게 아니라면 `require(quad-base)`가 돌려주는 기본 인스턴스나 `Quad.New()`를 그대로 쓰세요.
+- **언제**: quad 모듈 인스턴스에서 `State` 서브시스템이 아직 `RunInit`으로 설치되지 않은 채로 그 설치물을 찾을 때 던지는 내부 불변조건 검사입니다. 이 검사를 부르는 곳은 `Source` 서브시스템의 설치 하나뿐이고, 그 설치가 바로 앞에서 `State`를 먼저 설치하므로 현재 공개 표면에서 이 조건에 닿는 호출은 없습니다([2026-09-27 실측]).
+- **고치려면**: (문서 미정 — 현재 도달 경로가 없습니다)
 - **참고**: [`q:RunInit(initFn)`](/reference/core/01-quad-module/#qruninitinitfn)
 
 ### Quad0193
@@ -369,6 +369,6 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 `Store: default for "{tostring(name)}" is not a Source (got {typeof(value)})` — `quad-base/src/Store.luau`
 
-- **언제**: `q.Store(defaults)`의 값 자리(또는 `:Of`가 만든 필드)가 `Source`가 아닐 때.
+- **언제**: `q.Store(defaults)`의 값 자리가 `Source`가 아닐 때 — 생성자에서만 검사합니다(`store:Of(name)`은 없는 이름에 새 `Source`를 만들 뿐 이 검사를 거치지 않습니다).
 - **고치려면**: 값 자리를 `Source`로 채우세요.
 - **참고**: [`q.Store(defaults)`](/reference/core/04-store/#qstoredefaults)

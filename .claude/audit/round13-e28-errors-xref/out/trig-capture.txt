@@ -1,0 +1,122 @@
+e28trig_main	@@QERR	Quad0193 Store: key must be a non-empty string (got "")
+e28trig_main	@@QERR	Quad0193 Store: Of name must be a non-empty string (got table)
+e28trig_main	@@QERR	Quad0011 Attr.Merged: arguments must be Attr values
+e28trig_main	@@QERR	Quad0011 Attr.Merged: arguments must be Attr values
+e28trig_main	@@QERR	Quad0012 Attr.Overridden: arguments must be Attr values
+e28trig_main	@@QERR	Quad0022 Bookkeeping.getOffsetAt: position 2 is past N+1 (N = 0, at most 1 may be queried) — or a leaf handler skipped its position registration: position 1 is not registered
+e28trig_main	@@QERR	Quad0045 Debounce: options table expected (got number)
+e28trig_main	@@QERR	Quad0045 Throttle: options table expected (got nil)
+e28trig_main	@@QERR	Quad0089 Effect: already subscribed
+e28trig_main	@@QERR	Quad0230 Effect: already bound to an Instance
+e28trig_main	@@QERR	Quad0231 Effect: already bound to an Instance
+e28trig_main	@@QERR	Quad0234 Observer: already bound to an Instance
+e28trig_main	@@QERR	Quad0235 Observer: already bound to an Instance
+e28trig_main	@@QERR	Quad0134 Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)
+e28trig_main	@@QERR	Quad0140 Slot: destroyed Slot cannot be mounted
+e28trig_main	@@QERR	Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+e28trig_main	@@QERR	Quad0142 Slot:List: data must be a plain array (got number) — a data State must hold one too
+e28trig_main	@@QERR	Quad0151 Slot:List: data must be a plain array or a State of one (got number)
+e28trig_main	@@QERR	Quad0145 Slot:List: duplicate key 1
+e28trig_main	@@QERR	Quad0163 Bookkeeping.releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken
+e28trig_main	@@QERR	Quad0180 dispose: this backend cannot dispose this value
+e28trig_main	@@QERR	Quad0180 dispose: this backend cannot dispose this value
+e28trig_main	@@QERR	Quad0190 State: Observer fn must be a function (or nil for the always-observe utility)
+e28trig_main	@@QERR	Quad0023 Bookkeeping.recompute: sourceList[2] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+e28trig_main	@@QERR	Quad0172 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+e28trig_main	@@QERR	Quad0242 Slot: destroyed Slot cannot be an element
+e28trig_bk	@@QERR	Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+e28trig_bk	@@QERR	Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+e28trig_bk	@@QERR	Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+e28trig_bk	@@QERR	Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+e28trig_bk	@@QERR	Quad0024 Bookkeeping.recompute: lengthList[1] is nil — bookkeeping is broken (setOffsetSource without setLength?)
+e28trig_slot	@@QERR	Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+e28trig_slot	@@QERR	Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+e28trig_slot	@@QERR	Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+e28trig_slot	@@QERR	Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+e28trig_slot	@@QERR	Quad0242 Slot: destroyed Slot cannot be an element
+e28probe_A_1	@@QERR	Quad0048 Debounce: Leading and Trailing both false would pass nothing through
+e28probe_A_1	@@QERR	Quad0123 Operator.Not: Apply target must be a State (got table)
+e28probe_A_1	@@QERR	Quad0123 Operator.Sum: Apply target must be a State (got table)
+e28probe_A_1	@@QERR	Quad0206 Tag: Apply factory must be a function (got table)
+e28probe_A_1	@@QERR	Quad0123 Operator.Not: Apply target must be a State (got number)
+e28probe_A_1	@@QERR	Quad0039 Debounce: Time must be a non-negative number (got string)
+e28probe_A_1	@@QERR	Quad0194 Store: "__x" is a reserved store key
+e28probe_A_2	@@QERR	Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers
+e28probe_A_2	@@QERR	Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers
+e28probe_A_2	@@QERR	Quad0123 Operator.Bnot: Apply target must be a State (got table)
+e28probe_A_2	@@QERR	Quad0190 State: Observer fn must be a function (or nil for the always-observe utility)
+e28probe_A_2	@@QERR	Quad0045 Debounce: options table expected (got nil)
+e28probe_A_3	@@QERR	Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 0, max -1)
+e28probe_A_3	@@QERR	Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+e28probe_B_1	@@QERR	Quad0069 PreRef: already fired — a PreRef is one-shot, make a new one for each instance
+e28probe_B_1	@@QERR	Quad0055 Modifier: unknown modifier class "NopeClass" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)
+e28probe_B_1	@@QERR	Quad0052 Modifier: unknown modifier class "NopeClass" — Modifier.TypedFactory/DefineSubtype it first
+e28probe_B_1	@@QERR	Quad0022 Bookkeeping.getOffsetAt: position 3 is past N+1 (N = 0, at most 1 may be queried) — or a leaf handler skipped its position registration: position 1 is not registered
+e28probe_B_1	@@QERR	Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+e28probe_B_1	@@QERR	Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+e28probe_B_1	@@QERR	Quad0229 Bookkeeping.getOffsetAt: position 2 needs positions 1..1 registered but 1 is not — a leaf handler skipped its position registration
+e28probe_B_1	@@QERR	Quad0024 Bookkeeping.recompute: lengthList[1] is nil — bookkeeping is broken (setOffsetSource without setLength?)
+e28probe_B_1	@@QERR	Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got AttrKey)
+e28probe_B_1	@@QERR	Quad0068 Modifier: a Modifier cannot be a value of key "5" — place it in the array part
+e28probe_C_1	@@QERR	Quad0085 Dispatch.drive: array keys must be positive integers (got 0)
+e28probe_C_1	@@QERR	Quad0085 Dispatch.drive: array keys must be positive integers (got 1.5)
+e28probe_C_1	@@QERR	Quad0141 Slot: must be an array item, not the value of a string key
+e28probe_C_1	@@QERR	Quad0140 Slot: destroyed Slot cannot be mounted
+e28probe_C_1	@@QERR	Quad0140 Slot: destroyed Slot cannot be mounted
+e28probe_C_1	@@QERR	Quad0242 Slot: destroyed Slot cannot be an element
+e28probe_C_1	@@QERR	Quad0169 Slot:Add: destroyed Slot cannot be an element
+e28probe_C_1	@@QERR	Quad0169 Slot: destroyed Slot cannot be an element
+e28probe_C_1	@@QERR	Quad0142 Slot:List: data must be a plain array (got nil) — a data State must hold one too
+e28probe_C_1	@@QERR	Quad0142 Slot:List: data must be a plain array (got table) — a data State must hold one too
+e28probe_C_1	@@QERR	Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)
+e28probe_C_1	@@QERR	Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+e28probe_C_1	@@QERR	Quad0166 Slot: manual CRUD is not allowed after :List/:Single
+e28probe_C_1	@@QERR	Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)
+e28probe_C_1	@@QERR	Quad0145 Slot:List: duplicate key a
+e28probe_C_1	@@QERR	Quad0163 Bookkeeping.releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken
+e28probe_C_1	@@QERR	Quad0163 Bookkeeping.releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken
+e28probe_C_1	@@QERR	Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+e28probe_C_1	@@QERR	Quad0180 dispose: this backend cannot dispose this value
+e28probe_C_1	@@QERR	Quad0180 dispose: this backend cannot dispose this value
+e28probe_C_1	@@QERR	Quad0180 dispose: this backend cannot dispose this value
+e28probe_C_1	@@QERR	Quad0168 Slot:Remove: index must be a positive integer (got -1)
+e28probe_C_1	@@QERR	Quad0168 Slot:Remove: index must be a positive integer (got nan)
+e28probe_C_1	@@QERR	Quad0168 Slot:Remove: index must be a positive integer (got 1)
+e28probe_C_1	@@QERR	Quad0174 Slot:Splice: removeCount out of range
+e28probe_C_1	@@QERR	Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+e28probe_C_1	@@QERR	Quad0238 Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements
+e28probe_C_1	@@QERR	Quad0170 Slot:Extract: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+e28probe_C_1	@@QERR	Quad0171 Slot: the same element appears twice
+e28probe_C_1	@@QERR	Quad0172 Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+e28probe_C_1	@@QERR	Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+e28probe_C_1	@@QERR	Quad0176 Slot: initial elements must be a plain { element, ... } array (got table — a bare element or quad value needs the braces)
+e28probe_C_1	@@QERR	Quad0177 Slot: initial elements must be an array — key "a" is not an array position
+e28probe_C_1	@@QERR	Quad0240 Slot: this backend cannot mount this value
+e28probe_C_2	@@QERR	Quad0141 Slot: must be an array item, not the value of a number key
+e28probe_C_2	@@QERR	Quad0141 Slot: must be an array item, not the value of a number key
+e28probe_D_1	@@QERR	Quad0089 Effect: already subscribed
+e28probe_D_1	@@QERR	Quad0111 Observer: already subscribed
+e28probe_D_1	@@QERR	Quad0114 Observer: already subscribed
+e28probe_D_1	@@QERR	Quad0090 Effect: cannot change subscription from inside fn or cleanup
+e28probe_D_1	@@QERR	Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup
+e28probe_D_1	@@QERR	Quad0113 Observer: cannot change subscription from inside its own fn
+e28probe_D_1	@@QERR	Quad0109 Observer: cannot bind an Observer from inside its own fn
+e28probe_D_1	@@QERR	Quad0231 Effect: already bound to an Instance
+e28probe_D_1	@@QERR	Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup
+e28probe_D_1	@@QERR	Quad0086 Effect: fn must return a cleanup function or nothing (got boolean)
+e28probe_E_1	@@QERR	Quad0003 Attr: attribute name cannot be empty
+e28probe_E_1	@@QERR	Quad0002 AttrKey: attribute "Hp" is already bound by another owner
+e28probe_E_1	@@QERR	Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)
+e28probe_E_1	@@QERR	Quad0008 Attr: attribute "X" cannot be a table — attribute values are raw values, None or State (got table)
+e28probe_E_1	@@QERR	Quad0016 Attr: the same group value is placed at two positions of this instance
+e28probe_E_2	@@QERR	Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+e28probe_E_2	@@QERR	Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+e28probe_E_2	@@QERR	Quad0029 Claim: Frame is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+e28probe_E_2	@@QERR	Quad0010 Attr: arguments must be Stores, Attr values or plain tables
+e28probe_E_3	@@QERR	Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)
+e28probe_F_1	@@QERR	Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)
+e28probe_F_1	@@QERR	Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)
+e28probe_F_1	@@QERR	Quad0216 setTimeout: delay must be a non-negative number (got number)
+e28probe_F_1	@@QERR	Quad0034 Claim: second argument must be a D.Mapper descriptor
+e28probe_F_1	@@QERR	Quad0249 Tween: Value is required
+e28probe_F_1	@@QERR	Quad0224 Out: second argument for "Text" must be a Source to write back into (got number)
