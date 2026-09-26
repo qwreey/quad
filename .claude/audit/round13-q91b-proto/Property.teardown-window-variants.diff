@@ -1,0 +1,131 @@
+--- quad-roblox/src/Handlers/Property.luau
++++ quad-roblox/src/Handlers/Property.luau
+@@ -79,6 +79,21 @@
+ -- after this call's record write but BEFORE its Play/Started (the existing spec order "w:completed,x:started"
+ -- holds); false = NEW-FIRST — after Play/Started (Started(B) → Completed(A); spec 11절 line 360 fails).
+ local ORDER_OLD_FIRST = true
++-- PROTOTYPE switches (round13 E4-2 / Q91 teardown window, scratch):
++--   Q91_ON        — the Q91 (b) process-path deferral above (false = today's in-place Completed)
++--   TEARDOWN_MODE — how the RETRACTOR (teardown) settles a tween caught in the deferred-notice window:
++--     "base"    today: Completed in place, inside the teardown
++--     "a-noop"  (a) in place, but a Property `process` for the same (inst, k) re-entered from that callback is a no-op
++--     "a-raise" (a) same, but the re-entered `process` raises QuadXXXX
++--     "b1"      (b) fire after this retractor's own slot write (known insufficient — Q91 note)
++--     "b2"      (b) do not settle: keep the connection, the engine's pending notice delivers Completed later
++--                   (outside any quad call; isClaimed-gated like every engine notice, H-594)
++--     "b3"      (b) queue it and fire when the OUTERMOST Dispatch call returns (needs Dispatch.deferToOutermost)
++--     "c"       (c) report the window as Cancelled on teardown (H-581 reverted for teardown only)
++--   Q82_GATE      — stopRunning fires no callback when the tween's Instance is no longer claimed (round13 Q82 (a))
++local Q91_ON = true
++local TEARDOWN_MODE = "base"
++local Q82_GATE = false
+ 
+ local function install(quad: any)
+ 	local dispatch = quad.Dispatch
+@@ -93,6 +108,7 @@
+ 	-- The live chain holds the retractor strongly (`list[index].retractor`); after teardown the
+ 	-- entry may collect and a later chain simply mints a new one — identity never matters.
+ 	local tweenRetractors = quad.Relate()
++	local tearing: { [any]: { [any]: boolean } } = setmetatable({} :: any, { __mode = "k" }) -- PROTOTYPE (a)
+ 
+ 	-- [2026-09-21 사용자 결정 — docs-review 1-5] Tween callbacks `Started`/`Completed`/`Cancelled` (`() -> ()`, no
+ 	-- arguments: a closure that captured `inst` would sit in the engine tween's connection and pin the
+@@ -138,7 +154,7 @@
+ 	-- (the documented chaining idiom) sees the NEW record as `prev` and replaces it normally instead of
+ 	-- being overwritten by this call's later slot write (orphaned engine tween). Teardown (retractor)
+ 	-- still fires in place (nothing is written after it).
+-	local function stopRunning(rec: any, deferCompleted: boolean?): any?
++	local function stopRunning(rec: any, deferCompleted: boolean?, windowAs: string?): any?
+ 		local conn = rec.Conn
+ 		if conn ~= nil then
+ 			rec.Conn = nil
+@@ -150,6 +166,9 @@
+ 		rec.Done = true -- settle first (header)
+ 		local cb = rec.Cb
+ 		rec.Cb = nil
++		if Q82_GATE and cb ~= nil and not quad.Backend.isClaimed(rec.Tween.Instance) then
++			cb = nil -- Q82 (a): a corpse's tween still settles (Cancel below), but no callback
++		end
+ 		-- Deferred-notice window (code-review 2026-09-21; REPORT 1·3): the engine flips `PlaybackState` when the
+ 		-- tween reaches its target but delivers `Completed` only at the next resumption point — a synchronous
+ 		-- replacement/teardown inside that window is a FINISH, not a cancel. The pending notice died with the
+@@ -161,7 +180,7 @@
+ 				if deferCompleted then
+ 					return cb
+ 				end
+-				fire(cb, "Completed")
++				fire(cb, windowAs or "Completed")
+ 			end
+ 			return nil
+ 		end
+@@ -197,12 +216,46 @@
+ 				-- (B) branch calls the old retractor with retracting == true) and made the next Tween snap.
+ 				local slot = tweenSlots:GetStrong(inst, k)
+ 				if type(slot) == "table" and slot.Tween ~= nil then
+-					stopRunning(slot) -- Cancel (if still running) + Cancelled callback + Disconnect
++					local mode = TEARDOWN_MODE
++					local pb = (Enum :: any).PlaybackState
++					local inWindow = pb ~= nil and not slot.Done and slot.Tween.PlaybackState == pb.Completed
++					local heldCb: any = nil
++					if mode == "b2" and inWindow and slot.Conn ~= nil then
++						-- leave `slot` unsettled: its connection stays, the engine's queued notice fires Completed
++						-- (isClaimed gate in the connection) after this teardown has returned
++					elseif mode == "c" then
++						stopRunning(slot, false, "Cancelled")
++					elseif mode == "a-noop" or mode == "a-raise" then
++						local t = tearing[inst]
++						if t == nil then
++							t = {}
++							tearing[inst] = t
++						end
++						t[k] = true
++						stopRunning(slot)
++						t[k] = nil
++					elseif mode == "b1" or mode == "b3" then
++						heldCb = stopRunning(slot, true)
++					else
++						stopRunning(slot) -- Cancel (if still running) + Cancelled callback + Disconnect
++					end
++					if heldCb ~= nil then
++						local cb = heldCb
++						if mode == "b3" then
++							quad.Dispatch.deferToOutermost(function()
++								fire(cb, "Completed")
++							end)
++							heldCb = nil
++						end
++					end
+ 					-- code-review (2026-09-18): `.Tween` is still set after a tween COMPLETED on its own,
+ 					-- and then the property really holds `Value` — keep the `{ Value }` snap record so the
+ 					-- dedup stays right. The record's truth is read from the property itself, not from the
+ 					-- engine's PlaybackState (engine-agnostic, mock-safe); `Done` only gates the callback.
+ 					tweenSlots:SetStrong(inst, k, if inst[k] == slot.Value then { Value = slot.Value } else true)
++					if heldCb ~= nil then
++						fire(heldCb, "Completed") -- b1: after this retractor's own record write
++					end
+ 				end
+ 			end
+ 			tweenRetractors:SetWeak(inst, k, r)
+@@ -263,6 +316,13 @@
+ 			-- engine itself raises on a property that cannot take nil, and that is the user's
+ 			-- error to see). The old skip-defense (M10, `H-352`) silently swallowed None here.
+ 			-- A nil takes the plain-value path below: it cancels an active tween and writes nil.
++			local tk = tearing[inst]
++			if tk ~= nil and tk[k] then
++				if TEARDOWN_MODE == "a-raise" then
++					error(`QuadXXXX Property: {tostring(k)} is being torn down — a write from inside its tween's Completed callback is refused`, 0)
++				end
++				return tweenRetractor(inst, k) -- (a) no-op: the chain is going away anyway
++			end
+ 			local prev = tweenSlots:GetStrong(inst, k)
+ 			local tweenIn = isTween(v)
+ 			if tweenIn and type(prev) == "table" and v.Dedup ~= false and prev.Value == v.Value then
+@@ -303,7 +363,7 @@
+ 				-- branch 3: an engine tween is active — clean it up before the new value lands
+ 				-- (a snapped `{ Value }` record has nothing to cancel and nothing to
+ 				-- Finish-snap to: the property already holds that value)
+-				pendingCompleted = stopRunning(prev, true) -- settle: Cancel (if running) + Cancelled | window → held Completed
++				pendingCompleted = stopRunning(prev, Q91_ON) -- settle: Cancel (if running) + Cancelled | window → held Completed
+ 				if tweenIn and v.Override == "Finish" and not zeroTime then
+ 					-- (a zero-time snap writes `v.Value` right below — a Finish snap first would be a second
+ 					-- synchronous write of the same property, visible under Immediate signals; code-review)

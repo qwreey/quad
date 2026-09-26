@@ -1,0 +1,71 @@
+diff --git quad-base/src/Dispatch/init.luau quad-base/src/Dispatch/init.luau
+index 0c5585b..f548b79 100644
+--- quad-base/src/Dispatch/init.luau
++++ quad-base/src/Dispatch/init.luau
+@@ -299,14 +299,58 @@ local function Init(module: any)
+ 		return nil
+ 	end
+ 
++	-- PROTOTYPE (round13 E4-2 (b3), scratch): a callback a handler must not run inside the teardown that
++	-- produced it is queued here and run when the OUTERMOST `process`/`retractFrom` returns. Not
++	-- exception-safe: a throw leaves `depth` raised and the queue is never flushed again (no pcall on the
++	-- hot path — `architecture.md` "예외 안전성 계약").
++	local depth = 0
++	local flushing = false
++	local outerQueue: { () -> () } = {}
++	local function flushOuter()
++		if flushing then
++			return
++		end
++		flushing = true
++		local i = 1
++		while outerQueue[i] ~= nil do
++			local fn = outerQueue[i]
++			outerQueue[i] = nil
++			i += 1
++			fn()
++		end
++		table.clear(outerQueue)
++		flushing = false
++	end
++	local function deferToOutermost(fn: () -> ())
++		if depth == 0 and not flushing then
++			fn()
++		else
++			table.insert(outerQueue, fn)
++		end
++	end
++
+ 	local function retractFrom(inst: any, k: any, index: number)
+ 		checkInst("retractFrom", inst)
+ 		checkKey("retractFrom", k)
+ 		checkIndex("retractFrom", index)
++		depth += 1
+ 		retractRange(inst, k, index, true)
++		depth -= 1
++		if depth == 0 and outerQueue[1] ~= nil then
++			flushOuter()
++		end
+ 	end
+ 
++	local processInner: (any, any, any, number) -> ()
+ 	local function process(inst: any, k: any, v: any, index: number)
++		depth += 1
++		processInner(inst, k, v, index)
++		depth -= 1
++		if depth == 0 and outerQueue[1] ~= nil then
++			flushOuter()
++		end
++	end
++	function processInner(inst: any, k: any, v: any, index: number)
+ 		checkInst("process", inst)
+ 		checkKey("process", k)
+ 		checkIndex("process", index)
+@@ -548,6 +592,7 @@ local function Init(module: any)
+ 		getHandler = getHandler,
+ 		process = process,
+ 		retractFrom = retractFrom,
++		deferToOutermost = deferToOutermost, -- PROTOTYPE (E4-2 b3)
+ 		addHandler = addHandler,
+ 		listHandlers = listHandlers,
+ 		drive = drive,

@@ -88,9 +88,10 @@ it is *not* the port of `:With`. Never map by name alone.
 | :--- | :--- | :--- |
 | inline unannotated `:Compute` in a prop table | `Expected this to be '(StateData<number>, UDim2?, ...any) -> UDim2' but got '(t1) -> UDim2 …'` | annotate params `QuadTypes.StateData<T>`; hoist to a local |
 | `q.Slot()` | `… but got 'Slot<unknown>'` | `q.Slot<<Instance>>()`; single angle brackets are a **SyntaxError** |
-| `q.OnCreated(fn)` | `Type functions do not currently support types of the form '*error-type*'` | `q.OnCreated<<Frame>>(fn)` (same for `OnRendered`) |
+| `q.OnCreated(function(inst: Frame) end)` — annotated param | `Type functions do not currently support types of the form '*error-type*'` | `q.OnCreated<<Frame>>(fn)` (same for `OnRendered`) |
+| `q.OnCreated(function(inst) end)` — fully unannotated param | none — passes silently, but `inst` never gets a specialized type (no autocomplete) | same fix: `q.OnCreated<<Frame>>(fn)` |
 | key not in generated `D` (v1 `Corner`/`PaddingAllOffset`/`Scale`) | `Expected this to be 'number', but got '"Corner"'` + an array-union mismatch line | this two-line shape means "no such property" (the key is read as an array index) |
-| event callback with leading `self` | `Expected this to be '((() -> ()) \| None \| StateMarker<() -> ()>)?' but got '(unknown, unknown, unknown) -> ()'` | drop `self`, match engine arity |
+| event callback with leading `self` (v1's `fn(self, …)`, e.g. `Activated`) | `Expected this to be '(((InputObject, number) -> ()) \| None \| StateMarker<(InputObject, number) -> ()>)?' but got '(InputObject, number, unknown) -> ()'` | drop `self` and match the engine's exact arity — **shrinking to exactly 2 args instead** (`function(self, inputObject)`) passes with **zero diagnostics**: bidirectional inference binds `self` to `InputObject` and the second param to `number` (clickCount), so arguments are shifted by one at runtime. Write `function(inputObject, clickCount)` with no `self` |
 | `Activated` on a `Frame` | `Expected this to be 'number', but got '"Activated"'` | use a `GuiButton` class |
 | `nil` in the array part | `the 2nd component of the union is 'nil', which is not a subtype of …` | `props.X or q.None` |
 | prebuilt props table `D.Frame(props)` | `Expected this to be 'FrameParam<…>' … 'string' is not exactly 'StateMarker<string>'` | bidirectional inference only works at the literal site |
