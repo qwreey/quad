@@ -148,3 +148,4 @@
 - **13:00** 감사 17라운드(sonnet, 65~67회차 — §4 Q117~Q124 복원 검증 최우선) — 확실 0·판단 0·미완 0(H-737~H-768 연속, §2 E26~E36 열하나, 세션 로그 회차 규약 일치, quadnomicon 11 정정은 `luau` 직접 실행으로 확인). 68회차 커밋(`30510fcd`). 도는 중: E38·E39.
 - **13:20** E39 완료(sonnet, base/ 정본 vs 코드) — `H-776`(2026-09-15 개명 다섯의 전파 누락: `EffectHandle`·`:With`·`IsBlocked`/`:IsOn()`·`tag:Names()`(정본에 배너 없음)·registry 옛 `updateFn`) → architecture 555·registry 97 정정, tag-plan 배너, base/README 읽기 안내(일괄 치환 안 함). 68회차 커밋(`30510fcd`). 도는 중: E38·E40.
 - **13:40** E38 완료(opus, spec 커버리지 지도) — 코드 결함 0(미실행 89줄 뒤 공개 경로 전부 문서대로); `H-777`(roblox/03 커스텀 클래스 `Into<Class>` 런타임 `Quad0056`)·`H-778`(언마운트 `Length` 멈춤 문장), `Q128`(Length 동작·spec 초안 채택). 69회차 커밋(`01c2cae9`). 도는 중: E40·E41.
+- **13:55** E41 완료(sonnet, research/ 상태) — `H-779`(README 칸 누락·upward-flow 닫힘 배너·v1-compat `Owned`·공개 표면 (27) 포인터·docs-review 3-8 문항 수), 오탐 1. 70회차 커밋(`c45655dd`). 도는 중: E40.
