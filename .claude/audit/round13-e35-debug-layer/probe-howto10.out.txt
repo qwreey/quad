@@ -1,0 +1,72 @@
+=== E1 Slot unclaimed element
+  debug=false ok=false :: ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:31: Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+  debug=true ok=false :: ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:31: Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+  Traceback err=: ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:31: Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+  Traceback trace (9 lines):
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_error/3.2.0/quad_error/src/init.luau:193 function errorBeforeNearest
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Slot/Elements.luau:52 function checkRawElement
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Slot/Elements.luau:73 function wrapElement
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Slot/init.luau:220 function prepareElements
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Slot/init.luau:281 function Add
+    ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:31
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Fallback.luau:52
+    ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:25 function run
+  Traceback returned:	fallback
+=== E2 Slot at string key
+  debug=false ok=false :: ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:35: Quad0141 Slot: must be an array item, not the value of a string key
+  debug=true ok=false :: ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:35: Quad0141 Slot: must be an array item, not the value of a string key
+  Traceback err=: ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:35: Quad0141 Slot: must be an array item, not the value of a string key
+  Traceback trace (9 lines):
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_error/3.2.0/quad_error/src/init.luau:183 function errorBefore
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Slot/Handler.luau:61 function process
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:371 function process
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:522 function drive
+    ./quad-roblox/src/Declaration/init.luau:4965 function stage
+    ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:35
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Fallback.luau:52
+    ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:25 function run
+  Traceback returned:	fallback
+=== E3 Compute re-entry
+  debug=false ok=false :: ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:41: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  debug=true ok=false :: ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:41: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  Traceback err=: ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:41: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+  Traceback trace (10 lines):
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_error/3.2.0/quad_error/src/init.luau:193 function errorBeforeNearest
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:191 function _recompute
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:229 function Get
+    ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:41
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:205 function _recompute
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:229 function Get
+    ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:42
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Fallback.luau:52
+  Traceback returned:	fallback
+=== E4 Tween option type
+  debug=false ok=false :: ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:48: Quad0243 Tween: Time must be a number
+  debug=true ok=false :: ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:48: Quad0243 Tween: Time must be a number
+  Traceback err=: ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:48: Quad0243 Tween: Time must be a number
+  Traceback trace (9 lines):
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_error/3.2.0/quad_error/src/init.luau:193 function errorBeforeNearest
+    ./quad-roblox/src/Tween.luau:103 function validateFields
+    ./quad-roblox/src/Tween.luau:148 function validate
+    ./quad-roblox/src/Tween.luau:154 function newTween
+    ./quad-roblox/src/Tween.luau:188 function Tween
+    ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:48
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Fallback.luau:52
+    ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:25 function run
+  Traceback returned:	fallback
+=== E5 Attr bad value
+  debug=false ok=false :: ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:52: Quad0008 Attr: attribute "Hp" cannot be a table — attribute values are raw values, None or State (got table)
+  debug=true ok=false :: ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:52: Quad0008 Attr: attribute "Hp" cannot be a table — attribute values are raw values, None or State (got table)
+  Traceback err=: ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:52: Quad0008 Attr: attribute "Hp" cannot be a table — attribute values are raw values, None or State (got table)
+  Traceback trace (7 lines):
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_error/3.2.0/quad_error/src/init.luau:193 function errorBeforeNearest
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Attr/init.luau:138 function flattenArg
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Attr/init.luau:156 function __call
+    ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:52
+    ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Fallback.luau:52
+    ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:25 function run
+    ./.claude/audit/round13-e35-debug-layer/probe-howto10.luau:51
+  Traceback returned:	fallback
+=== limit 1: pcall(quadFn, ...) direct
+  	false	Quad0243 Tween: Time must be a number
+  	false	Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)

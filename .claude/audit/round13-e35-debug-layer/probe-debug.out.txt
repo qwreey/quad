@@ -1,0 +1,77 @@
+--- [AddPlugin overwrite] debug=false BEGIN
+  Relate replaced:	true
+--- [AddPlugin overwrite] debug=false END ok=true
+--- [AddPlugin overwrite] debug=true BEGIN
+AddPlugin: plugin overwrites existing module field "Relate" — intended if the plugin extends a core part on purpose; otherwise rename the plugin's field
+  Relate replaced:	true
+--- [AddPlugin overwrite] debug=true END ok=true
+--- [Dispatch tie] debug=false BEGIN
+--- [Dispatch tie] debug=false END ok=true
+--- [Dispatch tie] debug=true BEGIN
+Dispatch.addHandler: handler priority tie between "A" (priority 7777) and "B" (priority 7777) — ties have no defined order; offset from a HANDLER_PRIORITY_* band
+Dispatch.addHandler: handler priority tie between "A" (priority 7777) and "C-number" (priority 7777) — ties have no defined order; offset from a HANDLER_PRIORITY_* band
+--- [Dispatch tie] debug=true END ok=true
+--- [Dispatch tie across keyTypes (expect silence)] debug=false BEGIN
+--- [Dispatch tie across keyTypes (expect silence)] debug=false END ok=true
+--- [Dispatch tie across keyTypes (expect silence)] debug=true BEGIN
+--- [Dispatch tie across keyTypes (expect silence)] debug=true END ok=true
+--- [Debounce unknown] debug=false BEGIN
+  typeof:	table
+--- [Debounce unknown] debug=false END ok=true
+--- [Debounce unknown] debug=true BEGIN
+Debounce: unknown option "Tme" is ignored (known: Time, Leading, Trailing, MaxTime, Handle)
+  typeof:	table
+--- [Debounce unknown] debug=true END ok=true
+--- [Throttle unknown] debug=false BEGIN
+  typeof:	table
+--- [Throttle unknown] debug=false END ok=true
+--- [Throttle unknown] debug=true BEGIN
+Throttle: unknown option "Leadng" is ignored (known: Time, Leading, Trailing, MaxTime, Handle)
+  typeof:	table
+--- [Throttle unknown] debug=true END ok=true
+--- [Slot:List Owned (old name)] debug=false BEGIN
+  owned field:	nil
+--- [Slot:List Owned (old name)] debug=false END ok=true
+--- [Slot:List Owned (old name)] debug=true BEGIN
+Slot:List/:Single: unknown option "Owned" is ignored (known: OwnsElements)
+  owned field:	nil
+--- [Slot:List Owned (old name)] debug=true END ok=true
+--- [Slot:Single unknown] debug=false BEGIN
+  owned field:	nil
+--- [Slot:Single unknown] debug=false END ok=true
+--- [Slot:Single unknown] debug=true BEGIN
+Slot:List/:Single: unknown option "Ownselements" is ignored (known: OwnsElements)
+  owned field:	nil
+--- [Slot:Single unknown] debug=true END ok=true
+--- [Tween unknown] debug=false BEGIN
+  tween ok:	true
+--- [Tween unknown] debug=false END ok=true
+--- [Tween unknown] debug=true BEGIN
+Tween: unknown option "Duration" is ignored (known: Value, Info, Time, Style, Direction, RepeatCount, Reverses, DelayTime, Override, Dedup, Started, Completed, Cancelled)
+Tween: unknown option "Easing" is ignored (known: Value, Info, Time, Style, Direction, RepeatCount, Reverses, DelayTime, Override, Dedup, Started, Completed, Cancelled)
+  tween ok:	true
+--- [Tween unknown] debug=true END ok=true
+--- [Animate unknown] debug=false BEGIN
+  animate ok:	true
+--- [Animate unknown] debug=false END ok=true
+--- [Animate unknown] debug=true BEGIN
+Animate: unknown option "Duration" is ignored (known: Info, Time, Style, Direction, RepeatCount, Reverses, DelayTime, Override, Dedup, Started, Completed, Cancelled, CanAnimate)
+  animate ok:	true
+--- [Animate unknown] debug=true END ok=true
+--- [Claim root key] debug=false BEGIN
+  claimed root itself:	true	0.5
+--- [Claim root key] debug=false END ok=true
+--- [Claim root key] debug=true BEGIN
+Claim: the root descriptor's key SomeName is ignored — the root takes M.Root; put a keyed descriptor in the root's props instead
+  claimed root itself:	true	0.5
+--- [Claim root key] debug=true END ok=true
+--- [Claim child key M.Root] debug=false BEGIN
+--- [Claim child key M.Root] debug=false END ok=false err=./.claude/audit/round13-e35-debug-layer/probe-debug.luau:93: Quad0032 Claim: no child matched key MapperRoot under Frame (mapper TextLabel) — a child with that name must also be a TextLabel
+--- [Claim child key M.Root] debug=true BEGIN
+Claim: child descriptor key is a table — M.Root is only for the root descriptor; a child key is a name
+--- [Claim child key M.Root] debug=true END ok=false err=./.claude/audit/round13-e35-debug-layer/probe-debug.luau:93: Quad0032 Claim: no child matched key MapperRoot under Frame (mapper TextLabel) — a child with that name must also be a TextLabel
+--- [Claim child key number] debug=false BEGIN
+--- [Claim child key number] debug=false END ok=false err=./.claude/audit/round13-e35-debug-layer/probe-debug.luau:97: Quad0032 Claim: no child matched key 5 under Frame (mapper TextLabel) — a child with that name must also be a TextLabel
+--- [Claim child key number] debug=true BEGIN
+Claim: child descriptor key is a number — M.Root is only for the root descriptor; a child key is a name
+--- [Claim child key number] debug=true END ok=false err=./.claude/audit/round13-e35-debug-layer/probe-debug.luau:97: Quad0032 Claim: no child matched key 5 under Frame (mapper TextLabel) — a child with that name must also be a TextLabel

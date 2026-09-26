@@ -141,3 +141,4 @@
 - **11:05** E33 완료(opus, 레퍼런스 시그니처 225항목) — 일치 222·불일치 3; `H-749`~`H-753`(core/09 Tag nil 슬롯·`read Name`·`OutFn`·`:Single` 매핑 추론 문서/8.19 정정·`FieldOut` 동명 주석), `Q121`(`:Single` Item 추론)·`Q122`(`OnChangeDescriptor` 동명·`read`). 도는 중: E31·E34.
 - **11:25** E31 완료(opus, SKILL.md 따라 짜기) — `H-754`~`H-758`(생성 타입 경로 `RobloxModule.X`·`IntoTextButton` 경계·concat 주장·ID/지도·`:Single` strict 캐비엇), `Q123`(공백 여덟), 8.34(두 `quad_types` 섞은 하네스); B1의 "명시 타입 인자도 실패"는 메인 재실행으로 반증(16행만 실패). 62회차 커밋(`e552ba11`). 도는 중: E34.
 - **11:40** E34 완료(sonnet, 오버뷰·README·랜딩 사실 대조) — `H-759`(`q.Out` 미게시인데 현재 API처럼 — 세 자리 캐비엇 + HUMAN_TODO F 메모), 나머지 전부 일치(v1 비교는 v1 소스 전수). 63회차 커밋(`ae51fb4a`). 도는 중: 없음 → 다음 각도 셋 띄움.
+- **12:05** E35 완료(opus, debug 층 전수) — 코드 결함 0(원칙 준수), 문서 `H-760`~`H-763`(예시 주석 Claim·how-to 08 `q.debug` 안내·how-to 10 §1 단정 정정 + §4 `q.debug`/`q.Traceback`·네 페이지 포인터·미게시 캐비엇). 64회차 커밋(`ed5adad4`). 도는 중: 감사 16라운드·E36.

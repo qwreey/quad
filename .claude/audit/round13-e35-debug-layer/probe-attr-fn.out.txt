@@ -1,0 +1,2 @@
+false	./.claude/audit/round13-e35-debug-layer/probe-attr-fn.luau:4: Quad0007 Attr: attribute "Hp" cannot be a function — attribute values are raw values or State
+true

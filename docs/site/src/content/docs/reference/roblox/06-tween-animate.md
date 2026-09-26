@@ -26,6 +26,8 @@ local D = q.Declaration
 
 ## `q.Tween(opts)`
 
+`opts`의 모르는 키는 조용히 무시됩니다(`q.Animate`도 같음). `q.debug = true`면 모르는 옵션 키(오타·옛 이름)를 한 줄로 알려 줍니다 — 정본은 [`q.debug`](/reference/core/01-quad-module/#qdebug).
+
 **시그니처**
 
 ```luau

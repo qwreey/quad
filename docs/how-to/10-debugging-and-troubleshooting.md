@@ -17,7 +17,7 @@ local D = q.Declaration
 
 ## 1. quad의 에러는 "사용자 줄"을 가리키려 한다
 
-에러 메시지의 첫 토큰은 `QuadNNNN` 식별자입니다(예: `Quad0145 Slot:List: duplicate key "a"`). 문구보다 번호로 찾는 편이 빠릅니다 — [레퍼런스 › 에러 코드](../reference/errors/00-index.md)에 번호마다 언제 나는지와 고치는 법이 있습니다. 번호가 없으면 quad가 아니라 엔진이 낸 에러입니다.
+에러 메시지의 첫 토큰은 `QuadNNNN` 식별자입니다(예: `Quad0145 Slot:List: duplicate key "a"`). 문구보다 번호로 찾는 편이 빠릅니다 — [레퍼런스 › 에러 코드](../reference/errors/00-index.md)에 번호마다 언제 나는지와 고치는 법이 있습니다. 번호가 없으면 quad 자신이 던진 에러가 아닙니다 — 엔진이 낸 에러, 여러분의 콜백이 던져 그대로 되던져진 에러, `q.debug`의 진단 줄(에러 아님) 중 하나입니다.
 
 quad는 공개 표면 함수에 태그를 달아두고, 에러를 낼 때 **스택에서 태그된
 프레임을 걷어내 그 바깥의 사용자 줄**을 blame합니다.
@@ -239,6 +239,8 @@ s2:List(items, function(ctx) return D.Frame { Text = ctx.Item } end)
 - blame 접두(`파일:줄`)를 포함한 에러 메시지 전문
 - 재현되는 가장 작은 props 테이블(최소 재현)
 - Studio·실제 클라이언트·`luau` CLI 중 어디서 발생하는지
+
+그 전에 두 가지를 먼저 켜 보세요. `q.debug = true`는 치명적이지 않은 실수(모르는 옵션 키, 플러그인 덮어쓰기, 핸들러 우선순위 동률, `Claim` 디스크립터 이상)를 한 줄씩 찍어 줍니다 — 동작은 바뀌지 않습니다([`q.debug`](../reference/core/01-quad-module.md#qdebug)). 컴포넌트 함수를 `q.Traceback(fn, function(err, trace) … end)`로 감싸면 던진 자리의 트레이스백(사용자 줄 포함)을 받을 수 있습니다([Fallback / Traceback](../reference/sugar/05-fallback-traceback.md)).
 
 ---
 

@@ -26,6 +26,8 @@ local M = D.Mapper
 
 ## `q.Claim(inst, desc)`
 
+`q.debug = true`면 이상한 디스크립터(자식 키가 문자열이 아님, 루트에 적혀 무시되는 키)를 한 줄로 알려 줍니다 — 정본은 [`q.debug`](/reference/core/01-quad-module/#qdebug).
+
 **시그니처**
 
 ```luau

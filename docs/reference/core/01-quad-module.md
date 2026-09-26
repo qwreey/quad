@@ -183,10 +183,10 @@ debug: boolean
 - 옵션 테이블에 모르는 키(오타·옛 이름)가 있을 때 — `q.Debounce`/`q.Throttle`, `slot:List`/`slot:Single`의 `opts`, `q.Tween`, `q.Animate`. 모르는 키는 꺼져 있을 때와 똑같이 무시됩니다.
 - [`q.Claim`](../roblox/04-claim-mapper.md)의 디스크립터가 이상할 때 — 자식 디스크립터의 키가 문자열이 아니거나, 루트 디스크립터에 키를 적어 무시될 때.
 
-넷 다 그 호출 시점에 한 번 보므로 `q.debug`는 먼저 켜 두세요.
+넷 다 그 호출 시점에 한 번 보므로 `q.debug`는 먼저 켜 두세요. 진단 줄은 `print`이고 `QuadNNNN` 번호가 없습니다(에러가 아니라서 — 번호는 에러에만 붙습니다). **[2026-09-27 기준]** 게시된 3.2.0에는 첫 항목(우선순위 동률)만 있고 나머지 셋은 다음 릴리즈부터입니다([변경 이력](../../../CHANGELOG.md) `[Unreleased]`).
 
 ```luau
-q.debug = true -- 동률·덮어쓰기·모르는 옵션 키 진단을 켠다
+q.debug = true -- 동률·덮어쓰기·모르는 옵션 키·Claim 디스크립터 진단을 켠다
 ```
 
 ## `q.errorNamespace`

@@ -327,6 +327,8 @@ IndexOf: (self: Slot<T>, element: SlotElement<T>) -> number?
 
 ## `slot:List(data, updateFn, keyFn?, opts?)`
 
+`opts`의 모르는 키(옛 `Owned` 등)는 조용히 무시됩니다(`:Single`도 같음). `q.debug = true`면 모르는 옵션 키(오타·옛 이름)를 한 줄로 알려 줍니다 — 정본은 [`q.debug`](../core/01-quad-module.md#qdebug).
+
 **시그니처**
 
 ```luau

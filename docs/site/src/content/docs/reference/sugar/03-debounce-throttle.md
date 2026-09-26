@@ -82,6 +82,8 @@ export type ThrottleOptions = {
 
 ## 옵션
 
+모르는 키는 조용히 무시됩니다. `q.debug = true`면 모르는 옵션 키(오타·옛 이름)를 한 줄로 알려 줍니다 — 정본은 [`q.debug`](/reference/core/01-quad-module/#qdebug).
+
 | 옵션 | 타입 | Debounce 기본값 | Throttle 기본값 | 설명 |
 |---|---|---|---|---|
 | `Time` | `number \| State<number>` | **필수** | **필수** | 창 길이(초). 음수·NaN 거부. `0`은 허용되지만 "즉시"가 아니라 백엔드 타이머의 다음 재개점(Roblox `task.delay(0)`은 다음 프레임 근방)으로 미뤄질 수 있습니다 — mock 백엔드에선 같은 `advanceTime(0)` 안에서 발화합니다 |

@@ -178,7 +178,7 @@ local frame = D.Frame { BackgroundColor3 = color, Position = position }
 
 **옵션 이름이 v1과 겹치지 않습니다.** v1의 `TweenOptions`는 `Easing`(문자열이나 함수, 기본 `Exp2`)과 문자열 `Direction`을 받았습니다. `q.Animate`/`q.Tween`이 읽는 필드는 `Info`·`Time`·`Style`·`Direction`·`RepeatCount`·`Reverses`·`DelayTime`·`Override`·`Dedup` 아홉 개이고, `q.Animate`는 여기에 `CanAnimate`를 하나 더 읽습니다.
 
-모르는 키는 **에러도 타입 진단도 없이 무시됩니다.** `Easing`을 그대로 옮겨 적으면 그 줄은 통과하고 곡선만 기본값인 `Enum.EasingStyle.Quad`가 됩니다 — 이징은 `Style = Enum.EasingStyle.*`로 옮기세요. `Direction`도 문자열이 아니라 `Enum.EasingDirection.*`이고, 문자열을 그대로 두면 quad가 막지 않고 엔진의 `TweenInfo` 생성까지 흘려보냅니다.
+모르는 키는 **에러도 타입 진단도 없이 무시됩니다**(`q.debug = true`를 켜면 `Tween: unknown option "Easing" is ignored (known: …)` 한 줄이 찍힙니다 — 이관 중엔 켜 두세요). `Easing`을 그대로 옮겨 적으면 그 줄은 통과하고 곡선만 기본값인 `Enum.EasingStyle.Quad`가 됩니다 — 이징은 `Style = Enum.EasingStyle.*`로 옮기세요. `Direction`도 문자열이 아니라 `Enum.EasingDirection.*`이고, 문자열을 그대로 두면 quad가 막지 않고 엔진의 `TweenInfo` 생성까지 흘려보냅니다.
 
 ### 관측 — `:Register`/`:Observe` 자리
 
@@ -413,7 +413,7 @@ v1 코드를 직역하면 아래 열아홉 가지에서 막힙니다. 진단 문
 
 ## 8. 직역하면 못 잡는 것
 
-타입 검사가 잡아주지 못하고 런타임까지 흘러가는 자리가 있습니다. 자주 밟는 둘을 여기서 다루고, 나머지 둘은 각각 제자리에서 다뤘습니다 — 둘째 props 테이블이 조용히 버려지는 것은 5절 마운트 절, `q.Animate`가 모르는 옵션 키를 조용히 무시하는 것은 4절 애니메이션 절입니다.
+타입 검사가 잡아주지 못하고 런타임까지 흘러가는 자리가 있습니다. 자주 밟는 둘을 여기서 다루고, 나머지 둘은 각각 제자리에서 다뤘습니다 — 둘째 props 테이블이 조용히 버려지는 것은 5절 마운트 절, `q.Animate`가 모르는 옵션 키를 조용히 무시하는 것은 4절 애니메이션 절입니다(둘 다 `q.debug = true`면 한 줄로 알려 줍니다).
 
 **1. 숫자 키 자리의 `nil` 구멍 — props가 느슨한 타입일 때.** v1의 props는 타입 없는 가방이라, 직역하면 `{ [string]: any }`나 `any?` 같은 모양이 되기 쉽습니다. 그러면 숫자 키 자리에 `nil`이 들어가도 **타입 검사가 조용히 통과하고**, 실행할 때 부기 안쪽에서 죽습니다.
 
