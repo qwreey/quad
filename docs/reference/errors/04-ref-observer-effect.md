@@ -1,6 +1,6 @@
 ---
 title: "에러 코드 — Ref·Observer·Effect·훅"
-description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅/bindLifetime이 던지는 에러"
+description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 에러"
 ---
 # [레퍼런스] 에러 코드 — Ref·Observer·Effect·훅
 
