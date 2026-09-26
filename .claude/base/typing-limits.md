@@ -833,6 +833,9 @@ factory 인자의 재귀만으로 샌다).
 **처방(사용자 확정)**:
 1. `Apply: <U>(self: any, factory: (any) -> U) -> U` — 재귀 포기. 주석 붙인
    팩토리는 그대로 타입드, 무주석은 `any`(현행에서도 무주석은 에러였다).
+   **[2026-09-27 round13 E14 정정]** "주석 붙인 팩토리는 그대로 타입드"는 틀렸다 —
+   `mod:Apply(factory)`는 인자도 결과도 검사되지 않는다(8.29). 검사가 서는 자리는
+   결과를 주석 단 변수에 담을 때뿐.
 2. **생성기 게이트**: setter 이름이 children 유니언 멤버의 함수 필드(defs의
    `Instance`/`Object` 메소드, quad-types의 `State`/`StateData`/`Tag`/`Attr`/
    **`Slot`**의 **함수 필드**(`name: (`/`name: <` — 데이터 필드 `Offset`/`Length`는
@@ -1194,3 +1197,6 @@ Luau 쪽 한계라 quad 결함이 아니고, 처방은 미정이다 — 상류 �
 
 반면 **게이트 명령 그대로**(플래그 포함)는 파일 수·전체 진단 수(219까지)·파일 위치(앞/중간/뒤)·D-heavy 필러 추가 어느 조건에서도 진단 소실이 없었다 — 세 게이트(luau-analyze quad-base·luau-lsp quad-base·luau-lsp quad-roblox) 모두. S2가 보고한 "배치 0/단독 정확" 비대칭은 재현되지 않았고(S2의 정확한 명령·나머지 프로브를 복원할 수 없어 원인 미확정 — 플래그 조합 차이가 가장 유력), 이 항목이 확인한 것은 방향이 반대인 별개 함정이다. 규칙은 `conventions.md` 2026-09-08 항목에 한 줄: **임시 프로브·스윕은 test.sh 플래그를 그대로 복사한다.**
 
+## 8.29. 선언된 테이블 타입의 제네릭 함수 필드는 `U`가 인자도 결과도 제약하지 않는다 — `mod:Apply(factory)`는 무검사 (2026-09-27 round13 E14 실측, luau-lsp 1.69.0·luau-analyze 0.734 공통)
+
+`Apply: <U>(self: any, factory: (any) -> U) -> U`를 **타입 별칭 안에 선언된 함수 필드**로 두면, `:`로 부르든 `.`로 부르든 `U`가 결과를 제약하지 않는다 — `D.Modifier.Frame():Apply(Boldify)`(TextButton으로 주석 단 팩토리)·`local z: number = D.Modifier.TextButton():Apply(Boldify)`·`D.Frame({ D.Modifier.TextButton():Apply(Boldify) })` 전부 진단 0. 대조군: 같은 값을 `local v: R.TextButtonModifier`에 담으면 거부된다. quad 없는 최소 재현은 `audit/round13-e14-types5.luau` — 자유 함수이거나 **추론된** 테이블의 제네릭 함수는 정상적으로 잡히고, 선언된 테이블 타입의 필드만 이렇다. 8.9 처방 1의 "주석 붙인 팩토리는 그대로 타입드"·roblox/03의 "주석을 달아야 클래스 검사가 살아난다"는 이 실측으로 정정했다. 8.15 "부수"가 `state:Apply` 결과 무검사를 Compute 순환 타입 탓으로 적었는데 이쪽이 더 일반적인 원인일 수 있다(미확인). 상류 보고 후보(Q86과 같은 묶음).

@@ -31,4 +31,5 @@
 - `round13-e11-probe/` — **[2026-09-27 자율 루프 E11]** 백엔드 계약 삼자 대조(계약 문서 ↔ quad-roblox 실 구현 ↔ mock) 프로브 넷 + 출력 — 20슬롯 표, mock이 관대했던 둘(lazy claim·속성 값 범위 → `H-658`·`H-659`), 순수 술어 경계 인자 7종, 스텁 20개 확인.
 - `round13-e12-probe.luau`(+`.out.txt`) — **[2026-09-27 자율 루프 E12]** 시간 op·Debounce/Throttle·Gate·Blocker 조합 경계 프로브 — 타이머 커밋 중 하류 throw(`H-662`), `Time = 0`(`H-663`), State Time 무효 시 보류 유지·형제 누락(`H-664`), `math.huge`(`Q100`), 자기 타이머 취소 0건·GC 2×Time·문서 약속 D1~D4.
 - `round13-e13-probe.luau`·`round13-e13-types-probe.luau` — **[2026-09-27 자율 루프 E13]** Store·Context·Operator 조합 경계(S1~S12·C1~C9·O1~O13·D0~D4, 타입 T1~T14) — `H-666`~`H-671`·`Q101`·`Q102`, 문서 예제 출력 대조 전부 일치.
+- `round13-e14-probe*.luau`·`round13-e14-types*.luau` — **[2026-09-27 자율 루프 E14]** Modifier 팩토리·세터 체인·`__apply`·타입드 팩토리 경계(런타임 넷·타입 여섯 + quad 없는 최소 재현 `types5`) — `H-672`~`H-676`·`Q103`·`Q104`, typing-limits 8.29.
 
