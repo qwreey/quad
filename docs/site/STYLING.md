@@ -43,7 +43,7 @@ import Default from '@astrojs/starlight/components/Sidebar.astro';
 // astro.config.mjs → starlight({ components: { Sidebar: './src/components/Sidebar.astro' } })
 ```
 
-오버라이드 가능한 컴포넌트 목록은 Starlight 문서 "Overrides Reference"(Header·Sidebar·PageFrame·TableOfContents·Pagination·ContentPanel·MarkdownContent 등 스무 개 남짓). 이미 다른 플러그인이 같은 컴포넌트를 바꾸고 있으면(지금은 sidebar-topics가 `Sidebar`, sidebar-swipe가 `MobileMenuToggle`) 그 플러그인의 컴포넌트를 감싸야 한다 — 그 경우는 플러그인이 제공하는 클래스(`.starlight-sidebar-topics`)를 쓰는 편이 낫다.
+오버라이드 가능한 컴포넌트 목록은 Starlight 문서 "Overrides Reference"(Header·Sidebar·PageFrame·TableOfContents·Pagination·ContentPanel·MarkdownContent 등 스무 개 남짓). 이미 다른 플러그인이 같은 컴포넌트를 바꾸고 있으면(지금은 sidebar-topics가 `Sidebar`; **[2026-09-27 정정]** 스와이프는 2026-09-14부터 플러그인이 아니라 `public/scripts/sidebar-swipe.js`가 네이티브 popover로 여는 클라이언트 스크립트라 컴포넌트 오버라이드를 쓰지 않는다 — `astro.config.mjs` 176~177행 주석) 그 플러그인의 컴포넌트를 감싸야 한다 — 그 경우는 플러그인이 제공하는 클래스(`.starlight-sidebar-topics`)를 쓰는 편이 낫다.
 
 ## 확인
 
