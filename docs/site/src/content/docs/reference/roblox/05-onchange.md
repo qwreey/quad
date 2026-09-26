@@ -7,6 +7,8 @@ description: "프로퍼티 변경 신호를 숫자 키 자리 디스크립터로
 
 이 페이지의 심볼: [`q.OnChange(name, fn)`](#qonchangename-fn) · [`q.Out(name, src)`](#qoutname-src)
 
+> **[2026-09-27 기준]** `q.Out`은 게시된 3.2.0에는 없습니다 — 다음 릴리즈부터([변경 이력](/changelog/) `[Unreleased]`). 그전엔 `q.OnChange(name, function(v) if v ~= src:Get() then src:Set(v) end end)`가 같은 일을 합니다.
+
 :::note
 `OnChange`는 `quad-roblox` 백엔드 전용입니다 — 신호를 찾는 일 자체가 엔진의 지식이라
 백엔드가 소유합니다.

@@ -21,7 +21,7 @@ description: "React·Vue·Solid·Svelte 같은 웹 프레임워크의 개념을 
 | key 붙은 리스트 재조정(`.map(item => <Card key=… />)`) | `slot:List(data, updateFn, keyFn)` — 키가 같은 항목은 재사용, 사라진 키만 파괴 | [시작하기 14](../getting-started/14-lists.md) · [레퍼런스 Slot](../reference/core/06-slot.md) |
 | `ref`/`useRef`/콜백 ref | `Ref`/`PreRef`/`PostRef` — 발화 시점이 셋으로 갈림(자식·프로퍼티 처리 전/그 순서대로/전부 끝난 뒤) | [시작하기 07](../getting-started/07-ref.md) · [레퍼런스 Ref](../reference/core/07-ref.md) |
 | Context API(`createContext`/`useContext`, 트리를 거슬러 조회) | `q.Context`/`Provider` — 명시적으로 아래로 넘기는 가방, 위로 조회하지 않음 | [시작하기 15](../getting-started/15-context.md) · [레퍼런스 Context](../reference/sugar/01-context.md) |
-| 양방향 바인딩(`v-model`, 제어 컴포넌트) | `Text = src`(in 한 줄) + `q.Out("Text", src)`(out 한 줄) — 각각 따로 적는 명시적 두 줄 | [시작하기 06](../getting-started/06-flowing-back.md) · [레퍼런스 OnChange](../reference/roblox/05-onchange.md) |
+| 양방향 바인딩(`v-model`, 제어 컴포넌트) | `Text = src`(in 한 줄) + `q.Out("Text", src)`(out 한 줄 — [2026-09-27 기준] 게시본 3.2.0에는 없고 다음 릴리즈부터, 그전엔 `q.OnChange`로) — 각각 따로 적는 명시적 두 줄 | [시작하기 06](../getting-started/06-flowing-back.md) · [레퍼런스 OnChange](../reference/roblox/05-onchange.md) |
 | `onChange` 핸들러 | `q.OnChange(name, fn)` | [레퍼런스 OnChange](../reference/roblox/05-onchange.md) |
 | 에러 바운더리(`<ErrorBoundary>`, `error.tsx`) | `q.Fallback(base, onError)` / `q.Traceback(base, onError)` | [레퍼런스 Fallback·Traceback](../reference/sugar/05-fallback-traceback.md) |
 | debounce/throttle 훅 | `state:Apply(q.Debounce{ Time = … })` / `q.Throttle{ Time = … }` | [레퍼런스 Debounce·Throttle](../reference/sugar/03-debounce-throttle.md) |
