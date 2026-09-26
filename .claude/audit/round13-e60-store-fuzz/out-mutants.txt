@@ -1,0 +1,12 @@
+== mutant iter
+assigns=949 attrChecks=19097 attrDrives=858 ctorErr=845 ctorOk=728 diffs=971 internalReads=258 iters=971 multiBad=147 ofNew=1066 ofOld=482 ofRaw=25 ops=12408 seeds=300 sets=1867 tostrs=891
+multi-bad ctor first-error distribution: Quad0193:42 Quad0194:42 Quad0198:23
+== mutant of
+assigns=949 attrChecks=19097 attrDrives=858 ctorErr=845 ctorOk=728 diffs=507 internalReads=258 iters=971 multiBad=147 ofNew=1066 ofOld=482 ofRaw=25 ops=12408 seeds=300 sets=1867 tostrs=891
+multi-bad ctor first-error distribution: Quad0193:42 Quad0194:42 Quad0198:23
+== mutant tostr
+assigns=949 attrChecks=19097 attrDrives=858 ctorErr=845 ctorOk=728 diffs=712 internalReads=258 iters=971 multiBad=147 ofNew=1066 ofOld=482 ofRaw=25 ops=12408 seeds=300 sets=1867 tostrs=891
+multi-bad ctor first-error distribution: Quad0193:42 Quad0194:42 Quad0198:23
+== mutant ctor
+assigns=826 attrChecks=16354 attrDrives=777 ctorErr=2342 ctorOk=425 diffs=862 internalReads=228 iters=896 multiBad=271 ofNew=1055 ofOld=321 ofRaw=30 ops=12408 seeds=300 sets=1678 tostrs=799
+multi-bad ctor first-error distribution: Quad0193:91 Quad0194:71 Quad0198:37

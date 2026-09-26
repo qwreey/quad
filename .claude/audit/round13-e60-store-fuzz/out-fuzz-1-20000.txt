@@ -1,0 +1,2 @@
+assigns=59570 attrChecks=1229050 attrDrives=56863 ctorErr=54995 ctorOk=47625 diffs=0 internalReads=16894 iters=60049 multiBad=9974 ofNew=70137 ofOld=30442 ofRaw=1565 ops=797982 seeds=20000 sets=119874 tostrs=59790
+multi-bad ctor first-error distribution: Quad0193:3050 Quad0194:2729 Quad0198:1443

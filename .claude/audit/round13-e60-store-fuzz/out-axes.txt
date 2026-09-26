@@ -1,0 +1,33 @@
+== X1 core/04:42 'the passed table becomes the store' vs table.clone
+ store == defaults:	false	 late defaults key visible:	false	 Names:	hp
+ frozen defaults accepted:	true	 store frozen?	false	 Of new on it:	ok true
+== X2 dot read of internal names (core/04:79 'undeclared key -> nil')
+ s.__index:	table	 s.__tostring:	function	 s.Of:	function	 s.__x:	nil
+ after s.__index.zz = Source: other.zz:	true	 other:Names():	0	 other:Of('zz') returns it:	false
+ getmetatable(s) == s.__index:	true
+== X3 Attr(store) snapshot timing (core/09:267 'the store's declared keys')
+ Attr built before :Of('mp') and before hp replacement ->	hp=1
+ old hp:Set(7), new hp:Set(60) ->	hp=7
+ fresh Attr(s) ->	hp=60,mp=2
+== X4 Attr(store) with direct-assigned raw values bypasses the plain-table gates (0007/0008)
+ table: Attr ctor ok; drive -> ERR ./quad-base/src/Attr/Key.luau:116: table is not a supported attribute type; attrs hp=1
+ function: Attr ctor ok; drive -> ERR ./quad-base/src/Attr/Key.luau:116: function is not a supported attribute type; attrs hp=1
+ number: Attr ctor ok; drive -> ok nil; attrs hp=1,x=5
+ numeric key: Attr ctor ok; drive -> ok nil; attrs 1=3,hp=1
+ plain {x={}}:	ERR Quad0008 Attr: attribute "x" cannot be a table — attribute values are raw values, None or State (got table)	 plain {x=fn}:	ERR Quad0007 Attr: attribute "x" cannot be a function — attribute values are raw values or State
+== X5 tostring / Names under shadowing
+ tostring with shadowed Names and boolean key:	ok Store{Names, hp, true}
+ s:Names() now:	ERR ./.claude/audit/round13-e60-store-fuzz/axes.luau:66: boom
+ ordering:	Store{B, a, a b, b}
+ empty:	Store{}	Store{}
+== X6 table.clone(store) / copies
+ isStore(clone):	false	 clone:Of('hp') == s.hp:	true	 tostring:	Store{hp}
+ Attr(clone):	ERR Quad0010 Attr: arguments must be Stores, Attr values or plain tables
+== X7 Of on falsy raw field / Source<Store> field
+ s.f=false; s:Of('f'):	ok false
+ Source<Store> field Get().a:Get():	1	 Attr(s2) drive:	ERR ./quad-base/src/Attr/Key.luau:116: table is not a supported attribute type
+== X8 ctor multi-bad precedence (hash order) — same table content, different insertion orders
+ {'' , '__a', x=5} + padding ->	Quad0193:172 Quad0198:28
+== X9 same Source under two stores / names, Of reuse after delete
+ a.x==b.y==b.z:	true	 values:	5	5
+ after a.x=nil; a:Of('x'):Set(100): dbl =	10	 b.y =	5	 (old Source still shared by b)

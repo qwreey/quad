@@ -1,0 +1,11 @@
+== (b) perf, N = 1000 / 10000
+ N=1000 ctor 0.12ms  Names 0.02ms  iter 0.00ms  tostring 0.35ms  Of-new 0.52ms  Of-again 0.13ms  Attr drive 5.92ms  Set-all(with Attr) 2.38ms
+ N=10000 ctor 1.49ms  Names 0.31ms  iter 0.05ms  tostring 4.87ms  Of-new 5.72ms  Of-again 1.35ms  Attr drive 66.64ms  Set-all(with Attr) 29.02ms
+== (c) GC
+ c1 plain Store + 1000 Sources dropped -> alive	0
+ c2 Store dropped, Compute over k1 kept -> alive	1	(expect 1: k1)
+    Compute dropped too -> alive	0
+ c3 Attr(store) on a live instance, store dropped -> alive	100	(Sources held by the binding; Store itself?)
+    after inst:Destroy() -> alive	100
+    after dropping inst -> alive	0
+ c4 1000 Stores in brand registry -> alive	0
