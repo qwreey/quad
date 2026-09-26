@@ -37,7 +37,7 @@
 - **`H-626` [2026-09-26 E8] how-to 10 §1 "알려진 한계 둘"의 2번이 "observer 콜백 안에서 다시 디스패치"만 적어, `Compute`·`Effect`·`updateFn` 안의 `D.Frame` 오류(마운트·`data:Set` 줄을 가리킴 — 실측)와 사용자가 콜백 안에서 직접 부른 `Claim`·`drive`가 빠져 있었다** — 문장을 넓히고 "인자 검증 계열은 콜백 안에서도 정확"을 덧붙임.
 - **`H-627` [2026-09-26 D9] `CHANGELOG.md` `[Unreleased]`의 `QuadNNNN` 예시가 `Quad0142 Slot:List: duplicate key "a"`였다** — 실제는 `Quad0145 … duplicate key a`(`Slot/List.luau:117`, `tostring(key)`라 따옴표 없음; 0142는 "data must be a plain array"). 고침(how-to 10의 같은 오기 `H-598`과 같은 뿌리).
 - **`H-628` [2026-09-26 D9] `H-603`(getHandler nil 게이트, 커밋 `9afd271e`)은 사용자가 보는 에러 위치·문구가 바뀐 동작 변경인데 같은 커밋에서 `[Unreleased]` 줄을 넣지 않았다**(conventions 2026-09-10 규약 위반 — 자율 루프의 실수) — Fixed 절 기존 nil 게이트 줄에 덧붙임. `H-613`(브랜드 힌트 품질)은 문구만이라 줄 없이 둠. D9의 나머지 `[Unreleased]` 항목은 전부 소스와 일치, 규약 위반 0; 3.0.0 시점 `Context.luau` 실존 확인(메인).
-- **`H-629` [2026-09-26 정합 감사 1라운드] `base/quad-types-plan.md`의 "`__versionCheck`를 참조해야만 평가된다(lazy), 빠지면 조용히 스킵" 주장이 `H-624` 정정을 못 따라왔다** — 취소선 + 정정 문단. 같은 라운드: core/07:64·core/05:110의 `bindLifetime` 인용에 `Quad0232`/`0233` 접두 부착(H-611 잔여), `audit/README.md`에 round13 프로브·perf-cli 행 추가, `todos.md` 00에 자율 루프 중간 체크포인트.
+- **`H-629` [2026-09-26 정합 감사 1라운드] `base/quad-types-plan.md`에 남아 있던 옛 주장(`__versionCheck`를 참조해야만 평가된다 — lazy, 빠지면 조용히 스킵)이 `H-624` 정정을 못 따라왔다** — 취소선 + 정정 문단. 같은 라운드: core/07:64·core/05:110의 `bindLifetime` 인용에 `Quad0232`/`0233` 접두 부착(H-611 잔여), `audit/README.md`에 round13 프로브·perf-cli 행 추가, `todos.md` 00에 자율 루프 중간 체크포인트.
 - **`H-596` [2026-09-26 D1] `docs/getting-started/09-lifecycle-hooks.md:157` "(7장)" → "(8장)".** cleanup이 도는 네 자리는 08장 §2가 다룬다(07장은 Ref 상자). 고침.
 
 ## §2 확인만 한 것(결함 아님 — 재발견 방지)
