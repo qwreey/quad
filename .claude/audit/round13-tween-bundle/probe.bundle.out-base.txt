@@ -1,0 +1,47 @@
+=== ORDER (4) — observed callback order per path ===
+  N0 engine start (after snap)                 order=A:S                    playing=[10]
+  N1 natural finish                            order=A:C                    playing=[]
+  R1 replace running (engine B)                order=A:X,B:S                playing=[20]
+  R2 replace running (zero-time B)             order=A:X,B:S,B:C            playing=[]
+  R3 replace running (plain 20)                order=A:X                    playing=[]
+  W1 window replace (engine B), late notice    order=A:C,B:S                playing=[20]
+  W2 window replace, A.Completed chains C      order=A:C,C:S,B:S            playing=[20,77]
+  W3 window replace (zero-time B)              order=A:C,B:S,B:C            playing=[]
+  W4 window replace (plain 20)                 order=A:C                    playing=[]
+  W5 window + same target (engine wrote it)    order=A:C                    playing=[]
+  W6 window + same target, Reverses (rest=start) order=A:C                    playing=[]
+  T1 teardown running                          order=A:X                    playing=[]
+  T2 teardown in window (+late notice)         order=A:C                    playing=[]
+  T3 teardown in window, A.Completed chains C  order=A:C,C:S                playing=[77] s=Tween(77, 1s)
+  T4 teardown after natural finish             order=                       playing=[]
+  T5 None (handler switch) running             order=A:X                    playing=[]
+  T6 corpse retractFrom running (Q82)          order=A:X                    playing=[]
+  T7 corpse retractFrom window (Q82)           order=A:C                    playing=[]
+  T8 Destroy then natural finish (Q71)         order=                       playing=[]
+  S1 first-set snap                            order=A:S,A:C                playing=[]
+  S2 dedup, running same target                order=                       playing=[10]
+  S3 dedup, finished at target                 order=                       playing=[]
+  S4 finished + outside write, same target (Q81) order=                       playing=[]
+  S5 Reverses pulse again (Q81)                order=                       playing=[]
+  S6 snapped record + outside write (Q81)      order=                       playing=[]
+  S7 Dedup=false, finished at target           order=B:S                    playing=[10]
+=== I1 Q81 x Q92 — padding: outside write on ONE side, same target again ===
+  after finish: S	4	C	4
+  right-only outside write → new tweens	0	[] S	4
+  left(first chain) outside write → new tweens	0	[] S	4
+=== I2 Q97 — engine-quantized read-back (retractor record + Q81 same-target) ===
+  number 0.1 (float32)                   teardown+redeclare tweens=2  dedup-after-finish tweens=1
+  number 0.5 (exact)                     teardown+redeclare tweens=1  dedup-after-finish tweens=1
+  Rotation 33.3 (float32)                teardown+redeclare tweens=2  dedup-after-finish tweens=1
+  UDim2 scale .3 f32 / offset 10.6→10  teardown+redeclare tweens=2  dedup-after-finish tweens=1
+  Vector2 (.1,.7) f32                    teardown+redeclare tweens=2  dedup-after-finish tweens=1
+  Color3 (.1,.2,.3) f32                  teardown+redeclare tweens=2  dedup-after-finish tweens=1
+  UDim2 genuinely different (off by 1)   teardown+redeclare tweens=2  dedup-after-finish tweens=1
+=== I3 clamping property (CanvasPosition-like): engine never holds the target ===
+  3x same target 1000 (engine clamps to 300): tweens	1	Started	1	Completed	1
+=== I4 Q81 x engine-side cancel (another TweenService tween on the same property) ===
+  same target after outside cancel             order=                       playing=[] A.cancels=0
+=== I5 Q91 nested x Q81 — A.Completed chains the incoming B's target ===
+  inner same target as B (B not yet played)    order=A:C,C:S,B:S            playing=[20,20]
+=== I6 Q99c x Q81 — teardown in window, then same target re-declared ===
+  window teardown → same target              order=A:C                    playing=[] tweens=1

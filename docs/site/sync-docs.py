@@ -267,6 +267,7 @@ def main():
         # 쓰고, 정본에서 사라진 사본만 지운다 — 출력은 동일하고 idempotent하다.
         n = 0
         written = set()
+        track_failed = 0
         for dp, dn, fn in os.walk(src_dir):
             for f in sorted(fn):
                 if not f.endswith('.md'):
@@ -276,6 +277,7 @@ def main():
                 if not text.startswith('---\n'):
                     print(f'ERROR: frontmatter 없음 — {os.path.relpath(sp, DOCS)}', file=sys.stderr)
                     failed += 1
+                    track_failed += 1
                     continue
                 out, has_quiz = transform(sp, text)
                 rel = os.path.relpath(sp, src_dir)
@@ -290,8 +292,10 @@ def main():
                 if prev != out:
                     open(dst, 'w', encoding='utf-8').write(out)
                 n += 1
-        # 정본에서 없어진 사본 청소(빈 디렉터리도)
-        for dp, dn, fn in os.walk(dest_dir, topdown=False):
+        # 정본에서 없어진 사본 청소(빈 디렉터리도). [2026-09-27 T2] 이 트랙에 frontmatter 실패가
+        # 있으면 건너뛴다 — 예전엔 실패한 파일이 `written`에 없어 그 기존 사본이 실패를 보고하는
+        # 바로 그 실행에서 지워졌다(exit 1은 맞았지만 되돌릴 수 없는 부수효과가 먼저 났다).
+        for dp, dn, fn in ([] if track_failed else os.walk(dest_dir, topdown=False)):
             for f in fn:
                 fp = os.path.abspath(os.path.join(dp, f))
                 if fp not in written:

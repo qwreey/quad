@@ -458,7 +458,7 @@ BREAKING — 브랜드를 직접 만드는 백엔드·플러그인 작성자만 
 
 **CHANGELOG `[Unreleased]`**: `read` 목록의 `Timeout._native`가 바로 위 "`_` 필드는 공개 표면 아님"과 부딪친다(빼거나 괄호); `Epoch.Revision` `read`로 자기 값에 Epoch를 직접 구현하던 백엔드 작성자도 깨지는데 옮기는 법이 quad 메소드만 안내한다("자기 impl 타입이나 캐스트로"); `ref.Value = x` → `ref:Set(x)`는 콜백 발화·Revision 갱신이 새로 붙는 동작 변화라는 한 줄(추정).
 
-**스킬**: `docs/skills/quad-ui-dev/references/rules-and-invariants.md`가 에러 문구에 "match on them"을 권한다 — 위 (11) 정책과 반대, (11)을 닫을 때 같이. `SKILL.md`의 "`q.State<T>` does not exist"는 레퍼런스가 설정 모듈 재수출 전제로 `q.State<T>`를 쓰는 것과 같이 읽으면 모순 — "설정 모듈을 거치지 않을 때" 조건을 붙일 것.
+**스킬**: `docs/skills/quad-ui-dev/references/rules-and-invariants.md`가 에러 문구에 "match on them"을 권한다 — 위 (11) 정책과 반대, (11)을 닫을 때 같이. `SKILL.md`에 적힌 "`q.State<T>` does not exist" 문장은 레퍼런스가 설정 모듈 재수출 전제로 `q.State<T>`를 쓰는 것과 같이 읽으면 모순 — "설정 모듈을 거치지 않을 때" 조건을 붙일 것.
 
 **탐사자가 미완으로 표시한 것**: how-to·시작하기 본문 전수 대조(약속 낱말 247줄 중 계약성 있는 것만 봄), Tween/Animate·OnChange·Claim·Context·Operator 레퍼런스 동작 주장 대조, 랜딩 FAQ "`D.<Class>` 31개" 개수. 런타임 탐사의 미완: Tween·Animate 모르는 키 런타임 실측, `Time = "x"` 무진단 원인, pesde 게시 매니페스트 치환·버전 합치기.
 

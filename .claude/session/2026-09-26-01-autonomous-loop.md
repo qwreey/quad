@@ -80,3 +80,7 @@
 - **01:30** P-Q84/Q85 완료(opus) — (a2)는 계약 위반(base가 Instance를 모름), (a1) op 술어형 권고; Q85 (a) 전부 1패스 포착·새 ID 5·비용 잡음, 잔여 X5~X7. 원장 갱신. 도는 중: R1·G1.
 - **01:45** R1 완료(sonnet) — 하드 블로커 0; `H-645`(패키지 README 셋·루트 README 버전·HUMAN_TODO E 잔여) 즉시 고침. 도는 중: G1·T2.
 - **01:55** G1 완료(sonnet — 커버리지 누락 0) — `H-646`(gen-d docstring 예외·HUMAN_TODO H 신선도). E12(type-version-check 문법 경계, sonnet) 띄움. 도는 중: T2·E12.
+- **02:05** E12 완료(sonnet) — 문법 경계 12 전부 일치, `H-647`(파서 차이 주석). 도는 중: T2·E13.
+- **00:47(폴백 틱, `date` 실측)** ⚠️ 위 "01:05"~"02:05" 항목의 시각은 추정치가 앞서 있다 — 실제로는 00:06(10회차)~00:47 사이에 일어난 일. 이후 항목은 `date`로 찍는다. 도는 중: T2·E13·Q-summary. 13회차까지 커밋됨(`eacdf28f`).
+- **00:55** E13 완료(sonnet) — 퀴즈 78문항 불일치 0(todos "73문항" stale — 마감 때 수치 삭제·소스 지시로). 도는 중: T2·Q-summary.
+- **01:05** Q-summary 완료(opus) — 교차 검토 표·충돌 둘(Q78↔Q81, Q93↔Q88)·본문 어긋남 일곱·결정 묶음 아홉 → 원장 **§0 신설**(§4 앞), §4 각 문단에 "정정 표시" 여덟, `question.md` 4절 갱신(프로토타입 목록·Q83·실기기 후보 셋 추가). T2 완료(sonnet) — 게이트 스크립트 구멍 아홉 → `H-648`~`H-655` 즉시 고침(error-codes 정의 판별·문자열·괄호·여러 줄 주석 / check-version 헤딩 없음 exit / sync-docs 실패 시 청소 스킵 / doc-coverage 메소드 타입 게이트 + **`Brand()` 레퍼런스 공백** extend/01 §3.1 / **doc-check `docs/` 편입** — REF `../` 정정·이름 색인·공개 문서 규칙, WARN 226→181 / relink 트리 밖 매니페스트 폐기 / 주석 둘). P-TWEEN 완료(opus) — 여섯 패치 한 사본 성립, 스펙 회귀 0, 재현 스물 기대 쪽, Q81 (b)는 Q97 (b)와만 → §4 끝 문단·§0 묶음 2 줄·`audit/round13-tween-bundle/`. test.sh exit 0(스펙 62), doc-coverage 202/202. 14회차 커밋.

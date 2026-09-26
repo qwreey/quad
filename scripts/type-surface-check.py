@@ -13,6 +13,7 @@
 - 메소드 수신자 `self: State<T>`/`self: Source<T>`는 출력·수신자 자리라 허용(8.11).
 - 줄에 `type-surface: allow`가 있으면 그 줄은 건너뛴다(이유를 같은 주석에 적을 것).
 사용법: python3 scripts/type-surface-check.py [파일 …]   (인자 없으면 기본 공개 타입 파일 셋; 위반이 있으면 exit 1)
+[2026-09-27] 파일 인자를 명시하면 그 파일들의 마커 규칙만 본다 — 프라이밍 검사(`check_priming`)는 인자 없는 기본 실행에서만 돈다(test.sh가 그 형태).
 """
 import os, re, sys
 

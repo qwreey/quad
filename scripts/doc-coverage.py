@@ -24,14 +24,23 @@ TYPES = os.path.join(ROOT, 'quad-types', 'src', 'init.luau')
 RBX = os.path.join(ROOT, 'quad-roblox', 'src', 'init.luau')
 REF = os.path.join(ROOT, 'docs', 'reference')
 
-CONTRACT_ONLY = {'Handler'}  # 레코드 계약 — extend/02가 필드 표로 설명한다(멤버 헤딩을 요구하지 않는다)
+CONTRACT_ONLY = {
+    'Handler',  # 레코드 계약 — extend/02가 필드 표로 설명한다(멤버 헤딩을 요구하지 않는다)
+    'Relate',   # 잎 프리미티브 — core/01 `q.Relate()` 절의 시그니처 블록이 네 메소드를 적는다
+}
+BARE_NAME_TYPES = {'Backend'}  # 백엔드가 심는 op — extend/01이 `q.Backend.x`가 아니라 op 이름만으로 표·헤딩을 쓴다
 INJECTED = {
     'nativeInsert', 'nativeExtract', 'nativeRemove', 'nativeMove', 'nativeSwap', 'nativeDispose', 'isInst',
     'onDestroying', 'nativeClaim', 'isClaimed', 'nativeFindChild', 'bindLifetime', 'unbindLifetime', 'canBound', 'canExecute',
     'addTag', 'removeTag', 'setAttr', 'setTimeout', 'clearTimeout',
 }
-MEMBER_TYPES = ['State', 'Source', 'Store', 'Slot', 'Ref', 'Observer', 'Effect', 'Blocker', 'Modifier', 'Tag',
+MEMBER_TYPES = ['State', 'Source', 'Store', 'Slot', 'Ref', 'Observer', 'Effect', 'Blocker', 'Modifier', 'Tag', 'Brand', 'Operator', 'Relate', 'Backend',
                 'Attr', 'Context', 'TimedGate', 'GateHandle', 'Handler', 'Dispatch', 'Bookkeeping']
+# 메소드가 있지만 멤버 검사를 하지 않는 타입(이유를 옆에) — 새 타입은 여기나 위 목록 중 한 곳에.
+MEMBER_SKIP = {
+    'Quad',       # 모듈 자체 — 키는 위 module_keys 경로가 검사한다
+    'StateData',  # `State`의 데이터 부분(Apply/Compute/Depend/Gate/Observer) — `State` 행이 같은 멤버를 검사한다
+}
 
 
 def strip_comments(text):
@@ -82,6 +91,13 @@ def main():
     rbx = open(RBX, encoding='utf-8').read()
     module_keys = [f for f in block_fields(types, r'^export type Quad = \{') if f not in INJECTED]
     module_keys += block_fields(rbx, r'^export type RobloxExtension = \{')
+    # [2026-09-27 T2] `MEMBER_TYPES`는 손 목록이라 새 공개 타입을 여기 안 넣으면 그 멤버는 영구히
+    # 검사 밖이었다(모듈 키 헤딩 하나만 있으면 "전부 커버"로 통과 — 재현됨). 메소드(`self:`)를 가진
+    # export 타입이 목록에도 `MEMBER_SKIP`에도 없으면 실패시킨다 — 어느 쪽에 넣을지는 사람이 정한다.
+    method_types = set(re.findall(r'^export type (\w+)(?:<[^>]*>)? = (?:[^\n{]*)\{[^}]*?\bself:', strip_comments(types), re.M | re.S))
+    unlisted = sorted(method_types - set(MEMBER_TYPES) - MEMBER_SKIP)
+    if unlisted:
+        sys.exit(f'doc-coverage: export types with methods not in MEMBER_TYPES/MEMBER_SKIP: {", ".join(unlisted)}')
     members = {}
     for t in MEMBER_TYPES:
         fs = block_fields(types, rf'^export type {t}(?:<[^>]*>)? = (?:[^\n{{]*)\{{')
@@ -108,7 +124,8 @@ def main():
         for f in fs:
             if f in INJECTED:
                 continue
-            if not re.search(rf'[:.]{re.escape(f)}(?:[\s(<]|$)', htext, re.M):
+            pat = rf'(?:^|[\s|:.]){re.escape(f)}(?:[\s(<|]|$)' if t in BARE_NAME_TYPES else rf'[:.]{re.escape(f)}(?:[\s(<]|$)'
+            if not re.search(pat, htext, re.M):
                 missing.append(f'{t}.{f}')
 
     total = len(module_keys) + sum(len(v) for v in members.values())

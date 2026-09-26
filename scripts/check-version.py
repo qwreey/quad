@@ -75,6 +75,8 @@ def matches_places(actual, pattern):
 
 def matches_pattern(actual, pattern):
     """type-version-check/src/init.luau의 matchesPattern과 같은 규칙(포트) — 규칙이 바뀌면 여기도 같이.
+    [2026-09-27 round13 E12] 숫자 파서만 다르다: 여기는 int(x, 10)이라 "0x10"/"1e2"가 False인데, Luau 쪽은 tonumber라
+    16진수·지수 표기도 숫자로 본다(caret 자리 "16^"에 "0x10"이 통과). SemVer 자리에 그런 표기는 없어 실무 차이는 없다.
     [2026-09-15] `|` 대안, 프리릴리즈 꼬리 유무 일치, core·prerelease 따로 사전식 판정."""
     for alt in pattern.split('|'):
         ac, apre = split_tail(actual)
@@ -139,6 +141,10 @@ def cut_changelog(path, new):
     elif '## [Unreleased]' in cl:
         cl = cl.replace('## [Unreleased]', f'## [Unreleased]\n\n{head}', 1)
         write(path, cl)
+    else:
+        # [2026-09-27 T2] 헤딩이 없으면 예전엔 아무것도 안 쓰고 "cut to …"를 찍으며 성공 종료했다 —
+        # 매니페스트·소스 버전만 올라간 채 CHANGELOG에 릴리즈 절이 없는 릴리즈가 "완료"됐다.
+        sys.exit(f'{path}: no "## [Unreleased]" heading — cannot cut the changelog (manifests already bumped; fix the heading and rerun bump)')
     return head
 
 

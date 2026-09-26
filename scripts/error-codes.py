@@ -68,6 +68,22 @@ def blank_comments(text):
     return ''.join(out)
 
 
+def blank_strings(text):
+    """문자열 안을 같은 길이의 공백으로(구분자는 보존) — 호출 탐지용. 위치 보존."""
+    out = []
+    i, n = 0, len(text)
+    while i < n:
+        c = text[i]
+        if c in '"\'`':
+            j = i + 1
+            while j < n and text[j] != c:
+                j += 2 if text[j] == '\\' else 1
+            out.append(c + re.sub(r'[^\n]', ' ', text[i + 1:j]) + (c if j < n else '')); i = j + 1
+        else:
+            out.append(c); i += 1
+    return ''.join(out)
+
+
 def first_arg(text, start):
     """`(` 다음부터 첫 최상위 `,` 또는 짝 `)` 전까지 — 문자열·괄호를 넘는다."""
     depth, i, n = 0, start, len(text)
@@ -100,16 +116,22 @@ def scan():
         for m in ID_RE.finditer(text):  # 주석은 지웠으니 문자열·코드 안의 ID만
             ln = text.count('\n', 0, m.start()) + 1
             ids.setdefault(m.group(0), []).append(f'{os.path.relpath(path, ROOT)}:{ln}')
-        for m in CALL_RE.finditer(text):
+        code = blank_strings(text)  # [2026-09-27 T2] 문자열 안의 `error(` 텍스트를 호출로 오인하지 않게
+        for m in CALL_RE.finditer(code):
             name = m.group(1)
             ln = text.count('\n', 0, m.start()) + 1
             line_start = text.rfind('\n', 0, m.start()) + 1
-            if 'function' in text[line_start:m.start()]:
-                continue  # 정의(`function ns.errorBefore(`)이지 호출이 아님
-            arg = first_arg(text, m.end()).strip()
-            line = lines[ln - 1]
+            # 정의(`function ns.errorBefore(`)이지 호출이 아님 — `function` 키워드가 이름 바로 앞에
+            # 올 때만. [2026-09-27 T2] 예전엔 같은 줄 앞쪽 아무 데나 "function" 부분문자열이 있으면
+            # (`local functionCache = …; error(x)`) raise 자리가 통째로 빠졌다.
+            if re.search(r'\bfunction\s*$', text[line_start:m.start()]):
+                continue
+            raw_arg = first_arg(text, m.end())
+            arg = re.sub(r'^[\s(]+', '', raw_arg).strip()  # `error(("Quad…"))` 여분 괄호 허용
             tagged = bool(re.match(r'^["`\']Quad\d{4} ', arg)) or bool(re.match(r'^"Quad\d{4} "\s*\.\.', arg))
-            allowed = bool(ALLOW_RE.search(line))
+            # 허용 주석은 호출이 시작하는 줄 또는 첫 인자가 끝나는 줄(여러 줄 호출의 닫는 줄)에
+            ln_end = text.count('\n', 0, m.end() + len(raw_arg)) + 1
+            allowed = any(ALLOW_RE.search(lines[i - 1]) for i in range(ln, min(ln_end, len(lines)) + 1))
             sites.append({'file': os.path.relpath(path, ROOT), 'line': ln, 'call': name,
                           'arg': arg[:80].replace('\n', ' '), 'tagged': tagged, 'allowed': allowed})
     return sites, ids

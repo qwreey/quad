@@ -63,6 +63,16 @@ def live_docs():
                     out.append(os.path.join(dp, f))
         if base is ROOT:
             break
+    # [2026-09-27 T2] 공개 문서 `docs/`(사이트 미러 `docs/site/` 제외)도 검사 대상 — 예전엔 상대
+    # 마크다운 링크(`check_md_links`)만 봤고 백틱 파일 인용·시한부 주장은 통째로 빠져 있었다
+    # (적대적 프로브: 없는 파일·없는 절을 `docs/README.md`에 넣어도 ERROR/WARN 0 변화).
+    for dp, dn, fn in os.walk(os.path.join(ROOT, 'docs')):
+        if 'site' in os.path.relpath(dp, ROOT).split(os.sep):
+            dn[:] = []
+            continue
+        for f in fn:
+            if f.endswith('.md'):
+                out.append(os.path.join(dp, f))
     # 루트 md 직접 추가
     for f in ('CLAUDE.md', 'ROADMAP.md', 'HUMAN_TODO.md', 'SAFETY.md'):
         p = os.path.join(ROOT, f)
@@ -87,7 +97,10 @@ def rel(p):
 # (`conventions.md` "문서 표기 규약"). 그 표기는 `@`·`:`가 들어가 아래 문법에 애초에
 # 안 걸리므로 존재 검사 대상이 되지 않는다 — 이 레포에 없는 파일이니 그게 맞다.
 # 별도 예외 코드를 두지 않는 건 같은 이유(검사할 수 없는 것을 검사하는 척하지 않는다).
-REF = re.compile(r'`\.?/?((?:[\w.-]+/\s*)*[\w.@-]+\.(?:md|luau))`(\s*(?:의\s*)?"([^"]{2,160})")?')
+# [2026-09-27 T2] 선두 `./`·`../`를 캡처에 넣는다 — 예전엔 `\.?/?`가 `../x.md`의 첫 `.`만 먹어
+# 대상이 `./x.md`로 변해 소스 폴더 기준 해석이 어긋났다(`.claude/`엔 그런 인용이 없어 안 드러났고,
+# `docs/`를 검사 대상에 넣자 링크 라벨 `[\`../extend/…\`]` 마흔 곳이 전부 오탐으로 잡혔다).
+REF = re.compile(r'`((?:\.\.?/)*(?:[\w.-]+/\s*)*[\w.@-]+\.(?:md|luau))`(\s*(?:의\s*)?"([^"]{2,160})")?')
 
 # 소스 파일 색인(접미 일치용) — 워크스페이스 패키지의 src/test + scripts + luau-test.
 # 설치 사본(`luau_packages`/`.pesde`)은 제외: 원본만 존재 판정에 쓴다.
@@ -157,7 +170,8 @@ def resolve(target, src):
         if os.path.exists(c):
             return c
     # 파일명만으로 찾히면 인정(`.claude/` 안에 실재하는 파일만 — [2026-09-11] initreq 제거 전엔
-    # 그 클론까지 색인됐다).
+    # 그 클론까지 색인됐다). [2026-09-27] 공개 문서 `docs/`(site 제외)도 같은 색인에 — 트랙 색인
+    # `docs/README.md`가 파일명만으로 인용한다.
     # 색인은 한 번만 걷는다(`H-460` — 참조마다 `.claude/` 전체를 걷던 것이 게이트 시간의 40%).
     return _claude_by_name().get(os.path.basename(target))
 
@@ -166,12 +180,14 @@ def _claude_by_name():
     global _claude_index
     if _claude_index is None:
         idx = {}
-        for dp, dn, fn in os.walk(CLAUDE):
-            if 'worktrees' in os.path.relpath(dp, ROOT).split(os.sep):
-                dn[:] = []
-                continue
-            for f in fn:
-                idx.setdefault(f, os.path.join(dp, f))
+        for base in (CLAUDE, os.path.join(ROOT, 'docs')):
+            for dp, dn, fn in os.walk(base):
+                parts = os.path.relpath(dp, ROOT).split(os.sep)
+                if 'worktrees' in parts or (base != CLAUDE and 'site' in parts):
+                    dn[:] = []
+                    continue
+                for f in fn:
+                    idx.setdefault(f, os.path.join(dp, f))
         _claude_index = idx
     return _claude_index
 
@@ -261,7 +277,7 @@ def interesting(target):
     실제로 지금 존재해야 하는 건 이 레포의 `.md` 문서와 `.luau` 소스뿐 — 레포 밖
     소스는 포인터 표기(위 REF 주석)라 여기까지 오지도 않는다.
     """
-    if 'YYYY' in target or target in ('X.luau', 'X/init.luau', '<파일>.luau'):  # 자리표시자
+    if 'YYYY' in target or target in ('X.luau', 'X/init.luau', '<파일>.luau', '.d.luau'):  # 자리표시자(`.d.luau`는 확장자 서술)
         return False
     if 'initreq' in target.split('/'):  # 제거된 클론(위 (a))
         return False
@@ -296,7 +312,8 @@ def check_refs(docs):
         for m in REF.finditer(text):
             ln = text.count('\n', 0, m.start()) + 1
             target, _, section = m.group(1), m.group(2), m.group(3)
-            target = re.sub(r'\s+', '', target)
+            target = re.sub(r'^(\./)+', '', re.sub(r'\s+', '', target))
+            is_public = rel(d).startswith('docs' + os.sep)  # 공개 문서 — 예제 파일 이름(`Counter.luau`)이 흔하다
             if section is not None:
                 section = re.sub(r'\s+', ' ', section).strip()
             if not interesting(target):
@@ -313,9 +330,13 @@ def check_refs(docs):
                     msg = f"{rel(d)}:{ln}  소스 파일 없음 → `{target}`"
                     if is_archive or '옛' in text[max(0, m.start() - 120):m.start()]:  # 창 120자 — "옛 A + B" 결합절의 B까지
                         continue
+                    if is_public and not target.startswith(_SRC_ROOTS):
+                        continue  # 공개 문서의 이름만 인용(`Counter.luau`·`Main.client.luau`)은 독자 프로젝트의 예제 파일 — 존재를 묻지 않는다
                     (errors if target.startswith(_SRC_ROOTS) else warns).append(
                         msg if target.startswith(_SRC_ROOTS) else msg + " (옮겨졌거나 옛 이름 — 지금 경로로 고칠 것)")
                     continue
+                if is_public and '옛' in text[max(0, m.start() - 120):m.start()]:
+                    continue  # 공개 문서의 옛 이름 서술(`옛 \`13-blocker.md\``) — 재번호 이력
                 msg = f"{rel(d)}:{ln}  깨진 파일 참조 → `{target}`"
                 (errors if OURS.search(name) else warns).append(
                     msg if OURS.search(name) else msg + " (외부 문서명일 수 있음)")

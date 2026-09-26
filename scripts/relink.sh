@@ -24,6 +24,18 @@ MANIFEST=".relink-manifest"
 fail=0
 note_fail() { echo "relink: $*" >&2; fail=1; }
 
+# 0-) [2026-09-27 T2] 매니페스트가 이 트리 밖의 절대경로를 가리키면 버린다 — 레포를 `cp -r`/clone한
+#    사본에 원본의 `.relink-manifest`(gitignore, 절대경로 기록)가 따라오면 2)가 **원본** 소스에서 다시
+#    복사해 사본의 수정이 반영되지 않는데, 경로가 실존하니 아무 에러도 없었다(감사 사본에서 실측).
+#    버리면 0)이 이 트리의 pesde 레이아웃에서 매핑을 다시 만든다.
+if [ -f "$MANIFEST" ]; then
+	here="$(pwd -P)/"
+	if awk -F'\t' -v here="$here" 'NF >= 2 && index($2, here) != 1 { bad = 1 } END { exit bad ? 0 : 1 }' "$MANIFEST"; then
+		echo "relink: $MANIFEST 가 이 트리 밖을 가리킨다(사본에 따라온 원본 매니페스트) — 버리고 다시 만든다" >&2
+		rm "$MANIFEST"
+	fi
+fi
+
 # 0) 매니페스트가 없는데 이미 복사돼 있으면(도입 전에 한 번 돌린 트리 등)
 #    pesde 레이아웃에서 원본 매핑을 되살린다.
 #    구조: <member>/{luau,roblox}_packages/.pesde/<owner>+<pkg>/<ver>/<pkg>/<entry>

@@ -103,6 +103,19 @@ nativeFindChild (inst: any, key: any, className: string?) -> any
 - **`isClaimed(inst)`** — "이 요소가 이미 quad 소유인가". `Slot`이 원소를 받을 때와 **정적 자식 자리마다**(`D.<Class> { child }`의 `InstanceChild` 핸들러 — 구동 hot path) 부르고, 거짓이면 거부합니다(`Quad0241 Slot: this element is not claimed by quad …` / `Quad0219 InstanceChild: this Instance is not claimed by quad …`). 싸게 만드세요 — 자식 하나당 한 번 불립니다 — 자동으로 claim해 주지 않는 것이 계약입니다. quad-roblox 구현은 `nativeClaim`이 남긴 셋업(`gchold`)이 있고 **그 인스턴스의 `Destroying` 연결이 아직 살아 있는가**를 봅니다 — 파괴된 인스턴스는 GC를 기다리지 않고 즉시 거짓이어야 합니다(약한 기록만 보면 다음 GC까지 시체가 claim된 것으로 읽혀 Slot이 그 시체를 앉힙니다). `Claim`도 해석 패스에서 트리의 모든 인스턴스에 이걸 물어 이미 소유된 것이 하나라도 있으면 아무것도 claim하지 않고 거부합니다 — 그러니 "`nativeClaim`이 지나간 것만 참"이어야 `Claim`이 성립합니다. mock은 `Instance.new`가 태어날 때 claim된 것(Declaration이 만든 것의 대역)이고 밖의 것은 `Instance.foreign`입니다.
 - **`nativeFindChild(inst, key, className?)`** — 매퍼 디스크립터의 키로 직계 자식을 찾는 조회 op. 키가 무슨 뜻인지는 백엔드가 정합니다(Roblox는 `Name`, web이라면 id나 selector). 셋째 인자는 디스크립터의 클래스 이름 — 이름은 맞는데 그 클래스가 아닌 자식이면 **`nil`을 돌려주세요**(찾지 못한 것과 같이 취급되어 `Claim`이 "no child matched" 에러를 냅니다). quad-roblox 구현은 `inst:FindFirstChild(key)` 뒤 `child:IsA(className)`이고, mock은 `ClassName` 비교입니다.
 
+### 3.1 자기 값 타입에 브랜드 붙이기 — `Brand()`
+
+백엔드가 자기 값 타입(quad-roblox의 `Tween`처럼 디스패치가 알아봐야 하는 값)을 추가할 때 쓰는 팩토리입니다. quad-base 없이 닿아야 하므로 **`quad_types`가 런타임 값으로 내보냅니다** — `require(quad_types).Brand()`. quad-base가 자기 `State`/`Slot`/`Tag`에, quad-roblox가 `Tween`에 붙이는 것과 같은 도구입니다.
+
+| 호출 | 뜻 |
+|---|---|
+| `local B = QuadTypes.Brand()` | 브랜드 하나(약한 키 집합 하나를 쥔 객체)를 만듭니다 |
+| `B:Register(x)` | `x`를 이 브랜드의 멤버로 등록합니다. 값을 만드는 팩토리가 부릅니다 |
+| `B:Is(x)` | `x`가 등록된 멤버인가. 순수 술어 — 던지지 않고 `nil`에도 거짓 |
+
+- 멤버 집합은 **약한 키**입니다 — 값이 GC되면 항목도 사라지고, 등록 해제 op는 없습니다. 역조회(어느 브랜드인가)도 없습니다.
+- 브랜드를 붙였으면 **모듈 표면에 `is<Brand>` 술어를 얹는 것**이 등록입니다(`q.isTween`이 그 예) — 디스패치가 매치 실패 진단과 props 검사에서 값의 브랜드 이름을 찾을 때 그 규약대로 모듈을 훑습니다. 별도 등록 op는 없습니다([술어 레퍼런스](/reference/core/11-predicates/)).
+
 ---
 
 ## 4. 생명주기 hold op
