@@ -92,7 +92,7 @@ const inst = D.Frame { q.Tag("Card"), q.Tag("Card", "Panel") }
 ```luau
 const card = D.Frame {
     q.Tag("Card"),
-    count:Compute(function(c)
+    count:Compute(function(c: q.StateData<number>) -- 숫자 키 자리의 인라인 Compute도 파라미터 타입을 적어야 strict가 봅니다
         return q.Tag("Card"):Added(if c:Get() % 2 == 0 then "Even" else nil)
     end),
 

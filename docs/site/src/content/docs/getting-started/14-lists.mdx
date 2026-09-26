@@ -297,7 +297,7 @@ const single = q.Slot<<Instance>>():Single(cur, function(ctx)
     end
     return D.TextLabel {
         Text = ctx.Item,
-        LayoutOrder = ctx.Offset:Compute(function(o) return o:Get() + 1 end),
+        LayoutOrder = ctx.Offset:Compute(function(o: q.StateData<number>) return o:Get() + 1 end),
     }
 end)
 

@@ -142,7 +142,7 @@ logger:Set(nil)     -- 이 시점부터 위 print는 더 이상 돌지 않는다
 -- … card 안의 버튼에 한 줄을 더합니다
     D.TextButton {
         -- …buttonRef·Text·BackgroundTransparency = 0·Activated(07장 2절 그대로)…
-        BackgroundColor3 = count:Compute(function(c)
+        BackgroundColor3 = count:Compute(function(c: q.StateData<number>) -- 인라인 자리라 파라미터 타입을 적습니다(위 접힘)
             return if c:Get() >= 10
                 then Color3.fromRGB(255, 190, 0)
                 else Color3.fromRGB(0, 162, 255)

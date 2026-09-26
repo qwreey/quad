@@ -210,7 +210,7 @@ print(innerB.Offset:Get(), innerB.Length:Get())  --> 4  1
 slotB:Add(D.TextLabel {
     Text = "B2",
     -- 이 Slot의 둘째 원소가 부모 전체에서 몇 번째인가: Offset + 2
-    LayoutOrder = slotB.Offset:Compute(function(o) return o:Get() + 2 end),   -- 지금은 6
+    LayoutOrder = slotB.Offset:Compute(function(o: q.StateData<number>) return o:Get() + 2 end),   -- 지금은 6 (테이블 안 인라인 Compute는 파라미터 타입을 적어야 strict가 봅니다)
 })
 ```
 

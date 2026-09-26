@@ -93,7 +93,7 @@ return function(props)
 -- (Main.client.luau 계속 — board 뒤에)
 const stepButton = D.TextButton {
     Size = UDim2.fromOffset(120, 32),
-    Text = settings.Step:Compute(function(s)
+    Text = settings.Step:Compute(function(s: q.StateData<number>) -- 테이블 안 인라인 Compute는 파라미터 타입을 적습니다
         return `보폭: {s:Get()}`
     end),
     Activated = function()

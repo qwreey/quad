@@ -1002,7 +1002,7 @@ D 파일 안에서 유니언을 새로 조립하거나 유니언 인자로 인�
 
 - **인라인 `:Compute`**: `q.Declaration.Frame({ ZIndex = n:Compute(function(h) return h:Get() + 1 end) })`가 strict + 신 솔버에서 TypeError(*"Expected
   `(StateData<number>, number?, ...any) -> number` but got `<a>(t1) -> add<a, number>` … `Get` is a read-only property"*). 함수 **인자로 넘기는 테이블
-  리터럴 안**에서만 깨진다 — typed 파라미터·주석 대입(`local t: Rec = {...}`)·children 배열 자리·`:With`/`:Gate`/`:Apply`/`:Mapped` 인라인은 통과.
+  리터럴 안**에서만 깨진다 — typed 파라미터·주석 대입(`local t: Rec = {...}`)·`:With`/`:Gate`/`:Apply`/`:Mapped` 인라인은 통과. ~~children 배열 자리~~ **[2026-09-27 round13 S6 정정]** children(숫자 키) 자리도 똑같이 깨진다 — `D.Frame({ q.Tag("Card"), count:Compute(function(c) … end) })`(GS 05)와 배열부에 직접 넣은 `state:Compute(function(c) … return D.TextLabel({…}) end)` 둘 다 named field와 같은 "Get is a read-only property" 에러(`audit/round13-s6-inline-compute/iso-g-*`·`iso-h-*`). 자리가 아니라 **인라인 `:Compute` 호출 자체**가 관건. 처방은 파라미터 타입 주석(`c: q.StateData<number>`) 또는 지역 변수 추출 — 단 Instance를 돌려주며 `nil` 분기가 있는 콜백은 지역 변수로 빼도 `Expected TextLabel, got nil`이라 반환형 주석(`function(c): TextLabel?`)까지 필요(`iso-h-*-after2`). **곁가지(원인 미규명)**: `n:Compute(function(s, previous, d) … end, doubled)`처럼 파라미터 셋 + 후행 dep의 무주석 Compute(GS 19:64)는 테이블 밖 평범한 대입에서도 결과 State가 무제약 타입이 돼(`local x: string = total`이 통과) 그 뒤 인라인 사용의 에러가 조용히 사라진다 — 8.13이 없어서가 아니라 앞선 추론 실패 때문(`gs19-laziness.luau`·`iso-f-total-type.luau`); 별개 구멍 후보.
   `luau-analyze`(구 솔버)는 통과라 `test.sh`는 못 보고 사용자 에디터는 본다. §1②의 "무주석으로 통과"는 이 자리엔 해당 없음. 우회: 별도 문장으로
   빼서 `local lbl: State<string> = n:Compute(...)`. 순수 Luau 최소 재현은 실패(`Box<T>` 모사는 신 솔버에서도 클린) — quad의 `StateData`/`State`
   분리 + `previous: U?` + `...any` 조합 특유일 가능성, 원인 미확정. 부수: 같은 자리 인라인 `:Gate`의 `emit()` 무인자 호출도 시그니처 추론을 깨뜨린다.

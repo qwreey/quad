@@ -21,7 +21,7 @@ description: "값을 Tween 래퍼로 감싸 프로퍼티에 흘려 보간을 직
 
 ```luau
 -- … (Counter.luau) 숫자 라벨의 TextColor3 한 줄을 이렇게 바꿉니다
-        TextColor3 = count:Compute(function(c)
+        TextColor3 = count:Compute(function(c: q.StateData<number>) -- 테이블 안 인라인 Compute는 파라미터 타입을 적습니다
             const n = c:Get()
             const isMilestone = n > 0 and n % 10 == 0
 
@@ -69,7 +69,7 @@ const flash = q.Source(false)
             }
 
 -- 버튼의 Text는 그 원천을 따릅니다
-            Text = flash:Compute(function(f) return if f:Get() then "✨" else "+ 1" end),
+            Text = flash:Compute(function(f: q.StateData<boolean>) return if f:Get() then "✨" else "+ 1" end),
 ```
 
 **실행하면** 10회째 클릭에 글자가 ✨로 바뀌었다가 0.6초 뒤 `+ 1`로 돌아옵니다. 그 사이에 한 번 더 누르면 금색 트윈이 취소되고 흰색 트윈이 시작되는데, 이때 `Cancelled`가 불려 글자가 바로 돌아옵니다 — 취소를 안 받으면 ✨가 남습니다.
