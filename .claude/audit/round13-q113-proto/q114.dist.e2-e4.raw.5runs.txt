@@ -1,0 +1,200 @@
+base e2 r1: a2,b2,b2	52
+base e2 r1: a2,b2	81
+base e2 r1: b2	49
+base e2 r1: b2,b2	118
+base e2 r2: a2,b2,b2	51
+base e2 r2: a2,b2	79
+base e2 r2: b2,b2	113
+base e2 r2: b2	57
+base e2 r3: a2,b2,b2	55
+base e2 r3: a2,b2	71
+base e2 r3: b2,b2	130
+base e2 r3: b2	44
+base e2 r4: a2,b2,b2	49
+base e2 r4: a2,b2	89
+base e2 r4: b2	49
+base e2 r4: b2,b2	113
+base e2 r5: a2,b2,b2	71
+base e2 r5: a2,b2	77
+base e2 r5: b2	46
+base e2 r5: b2,b2	106
+base e3 r1: 139	ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allow | host[] Z.Parent=other
+base e3 r1: 161	ok | host[Y] Z.Parent=other
+base e3 r2: 133	ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allow | host[] Z.Parent=other
+base e3 r2: 167	ok | host[Y] Z.Parent=other
+base e3 r3: 139	ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allow | host[] Z.Parent=other
+base e3 r3: 161	ok | host[Y] Z.Parent=other
+base e3 r4: 138	ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allow | host[] Z.Parent=other
+base e3 r4: 162	ok | host[Y] Z.Parent=other
+base e3 r5: 126	ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allow | host[] Z.Parent=other
+base e3 r5: 174	ok | host[Y] Z.Parent=other
+base e4 r1: --- child
+base e4 r1: 143	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple  [] || back: ok [X] || again: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple  []
+base e4 r1: 157	ok [Y] || back: ok [X] || again: ok [Y]
+base e4 r1: --- slot
+base e4 r1: 127	Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its [X] len=1 || back: ok [X] || again: Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its [X]
+base e4 r1: 173	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+base e4 r2: --- child
+base e4 r2: 143	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple  [] || back: ok [X] || again: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple  []
+base e4 r2: 157	ok [Y] || back: ok [X] || again: ok [Y]
+base e4 r2: --- slot
+base e4 r2: 150	Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its [X] len=1 || back: ok [X] || again: Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its [X]
+base e4 r2: 150	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+base e4 r3: --- child
+base e4 r3: 129	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple  [] || back: ok [X] || again: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple  []
+base e4 r3: 171	ok [Y] || back: ok [X] || again: ok [Y]
+base e4 r3: --- slot
+base e4 r3: 140	Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its [X] len=1 || back: ok [X] || again: Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its [X]
+base e4 r3: 160	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+base e4 r4: --- child
+base e4 r4: 132	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple  [] || back: ok [X] || again: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple  []
+base e4 r4: 168	ok [Y] || back: ok [X] || again: ok [Y]
+base e4 r4: --- slot
+base e4 r4: 144	Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its [X] len=1 || back: ok [X] || again: Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its [X]
+base e4 r4: 156	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+base e4 r5: --- child
+base e4 r5: 142	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple  [] || back: ok [X] || again: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple  []
+base e4 r5: 158	ok [Y] || back: ok [X] || again: ok [Y]
+base e4 r5: --- slot
+base e4 r5: 131	Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its [X] len=1 || back: ok [X] || again: Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its [X]
+base e4 r5: 169	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+B e2 r1: b2,b2	157
+B e2 r1: b2	143
+B e2 r2: b2,b2	167
+B e2 r2: b2	133
+B e2 r3: b2,b2	158
+B e2 r3: b2	142
+B e2 r4: b2	126
+B e2 r4: b2,b2	174
+B e2 r5: b2	120
+B e2 r5: b2,b2	180
+B e3 r1: 300	ok | host[Y] Z.Parent=other
+B e3 r2: 300	ok | host[Y] Z.Parent=other
+B e3 r3: 300	ok | host[Y] Z.Parent=other
+B e3 r4: 300	ok | host[Y] Z.Parent=other
+B e3 r5: 300	ok | host[Y] Z.Parent=other
+B e4 r1: --- child
+B e4 r1: 300	ok [Y] || back: ok [X] || again: ok [Y]
+B e4 r1: --- slot
+B e4 r1: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+B e4 r2: --- child
+B e4 r2: 300	ok [Y] || back: ok [X] || again: ok [Y]
+B e4 r2: --- slot
+B e4 r2: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+B e4 r3: --- child
+B e4 r3: 300	ok [Y] || back: ok [X] || again: ok [Y]
+B e4 r3: --- slot
+B e4 r3: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+B e4 r4: --- child
+B e4 r4: 300	ok [Y] || back: ok [X] || again: ok [Y]
+B e4 r4: --- slot
+B e4 r4: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+B e4 r5: --- child
+B e4 r5: 300	ok [Y] || back: ok [X] || again: ok [Y]
+B e4 r5: --- slot
+B e4 r5: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+C e2 r1: b2	135
+C e2 r1: b2,b2	165
+C e2 r2: b2	138
+C e2 r2: b2,b2	162
+C e2 r3: b2,b2	169
+C e2 r3: b2	131
+C e2 r4: b2,b2	163
+C e2 r4: b2	137
+C e2 r5: b2,b2	168
+C e2 r5: b2	132
+C e3 r1: 300	ok | host[Y] Z.Parent=other
+C e3 r2: 300	ok | host[Y] Z.Parent=other
+C e3 r3: 300	ok | host[Y] Z.Parent=other
+C e3 r4: 300	ok | host[Y] Z.Parent=other
+C e3 r5: 300	ok | host[Y] Z.Parent=other
+C e4 r1: --- child
+C e4 r1: 300	ok [Y] || back: ok [X] || again: ok [Y]
+C e4 r1: --- slot
+C e4 r1: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+C e4 r2: --- child
+C e4 r2: 300	ok [Y] || back: ok [X] || again: ok [Y]
+C e4 r2: --- slot
+C e4 r2: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+C e4 r3: --- child
+C e4 r3: 300	ok [Y] || back: ok [X] || again: ok [Y]
+C e4 r3: --- slot
+C e4 r3: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+C e4 r4: --- child
+C e4 r4: 300	ok [Y] || back: ok [X] || again: ok [Y]
+C e4 r4: --- slot
+C e4 r4: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+C e4 r5: --- child
+C e4 r5: 300	ok [Y] || back: ok [X] || again: ok [Y]
+C e4 r5: --- slot
+C e4 r5: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+C2 e2 r1: b2,b2	164
+C2 e2 r1: b2	136
+C2 e2 r2: b2,b2	179
+C2 e2 r2: b2	121
+C2 e2 r3: b2	120
+C2 e2 r3: b2,b2	180
+C2 e2 r4: b2	126
+C2 e2 r4: b2,b2	174
+C2 e2 r5: b2,b2	169
+C2 e2 r5: b2	131
+C2 e3 r1: 300	ok | host[Y] Z.Parent=other
+C2 e3 r2: 300	ok | host[Y] Z.Parent=other
+C2 e3 r3: 300	ok | host[Y] Z.Parent=other
+C2 e3 r4: 300	ok | host[Y] Z.Parent=other
+C2 e3 r5: 300	ok | host[Y] Z.Parent=other
+C2 e4 r1: --- child
+C2 e4 r1: 300	ok [Y] || back: ok [X] || again: ok [Y]
+C2 e4 r1: --- slot
+C2 e4 r1: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+C2 e4 r2: --- child
+C2 e4 r2: 300	ok [Y] || back: ok [X] || again: ok [Y]
+C2 e4 r2: --- slot
+C2 e4 r2: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+C2 e4 r3: --- child
+C2 e4 r3: 300	ok [Y] || back: ok [X] || again: ok [Y]
+C2 e4 r3: --- slot
+C2 e4 r3: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+C2 e4 r4: --- child
+C2 e4 r4: 300	ok [Y] || back: ok [X] || again: ok [Y]
+C2 e4 r4: --- slot
+C2 e4 r4: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+C2 e4 r5: --- child
+C2 e4 r5: 300	ok [Y] || back: ok [X] || again: ok [Y]
+C2 e4 r5: --- slot
+C2 e4 r5: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+CQ e2 r1: b2,b2	173
+CQ e2 r1: b2	127
+CQ e2 r2: b2,b2	171
+CQ e2 r2: b2	129
+CQ e2 r3: b2,b2	165
+CQ e2 r3: b2	135
+CQ e2 r4: b2	136
+CQ e2 r4: b2,b2	164
+CQ e2 r5: b2,b2	179
+CQ e2 r5: b2	121
+CQ e3 r1: 300	ok | host[Y] Z.Parent=other
+CQ e3 r2: 300	ok | host[Y] Z.Parent=other
+CQ e3 r3: 300	ok | host[Y] Z.Parent=other
+CQ e3 r4: 300	ok | host[Y] Z.Parent=other
+CQ e3 r5: 300	ok | host[Y] Z.Parent=other
+CQ e4 r1: --- child
+CQ e4 r1: 300	ok [Y] || back: ok [X] || again: ok [Y]
+CQ e4 r1: --- slot
+CQ e4 r1: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+CQ e4 r2: --- child
+CQ e4 r2: 300	ok [Y] || back: ok [X] || again: ok [Y]
+CQ e4 r2: --- slot
+CQ e4 r2: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+CQ e4 r3: --- child
+CQ e4 r3: 300	ok [Y] || back: ok [X] || again: ok [Y]
+CQ e4 r3: --- slot
+CQ e4 r3: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+CQ e4 r4: --- child
+CQ e4 r4: 300	ok [Y] || back: ok [X] || again: ok [Y]
+CQ e4 r4: --- slot
+CQ e4 r4: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+CQ e4 r5: --- child
+CQ e4 r5: 300	ok [Y] || back: ok [X] || again: ok [Y]
+CQ e4 r5: --- slot
+CQ e4 r5: 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]

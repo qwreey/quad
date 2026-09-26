@@ -1,0 +1,58 @@
+######## base
+=== E1 outer and inner both derived from one source (same wave) ===
+  src=2 Text	b2	writes	3	a2,b2,b2
+  src=3 Text	a3	writes	4	a2,b2,b2,a3
+  src=4 Text	b4	writes	7	a2,b2,b2,a3,a4,b4,b4
+=== E1b same but outer created BEFORE the inners (subscription order flipped) ===
+  src=2 Text	b2	writes	3	a2,b2,b2
+  src=3 Text	a3	writes	4	a2,b2,b2,a3
+=== E2 inner stays the same object, both outer and inner notify in one wave ===
+  src=2 Text	a2	writes	2	a2,a2
+  src=3 Text	a3	writes	4	a2,a2,a3,a3
+=== E3 Observer on outer sets the OLD inner during the swap wave (ghost within wave?) ===
+  Text	B	writes	1	B
+=== E4 Blocker on outer: inner changes while outer swap is withheld ===
+  which:Set(b) blocked Text	A
+  a:Set while blocked Text	A2	(gated:Get()==b?	true	)
+  b:Set while blocked Text	A2
+  Off Text	B2	writes	2	A2,B2
+  OffWithoutEmit after swap back Text	B2
+  a:Set after OffWithoutEmit Text	B2
+  b:Set after OffWithoutEmit Text	B3
+=== E5 Blocker on inner; outer swaps away while inner holds a withheld emit ===
+  swapped to c while ga blocked Text	C
+  Off Text	C	writes	1	C
+=== E6 Blocker on BOTH (same blocker): swap + inner change, Off order ===
+  Off Text	B2	writes	2	A2,B2
+=== E7 numeric child: inner and outer change in same wave (Instance) ===
+  kids	fa1
+  src=11 kids	fa2	fa1 parent	nil
+######## B
+=== E1 outer and inner both derived from one source (same wave) ===
+  src=2 Text	b2	writes	1	b2
+  src=3 Text	a3	writes	3	b2,a3,a3
+  src=4 Text	b4	writes	4	b2,a3,a3,b4
+=== E1b same but outer created BEFORE the inners (subscription order flipped) ===
+  src=2 Text	b2	writes	2	b2,b2
+  src=3 Text	a3	writes	3	b2,b2,a3
+=== E2 inner stays the same object, both outer and inner notify in one wave ===
+  src=2 Text	a2	writes	2	a2,a2
+  src=3 Text	a3	writes	4	a2,a2,a3,a3
+=== E3 Observer on outer sets the OLD inner during the swap wave (ghost within wave?) ===
+  Text	B	writes	1	B
+=== E4 Blocker on outer: inner changes while outer swap is withheld ===
+  which:Set(b) blocked Text	A
+  a:Set while blocked Text	A	(gated:Get()==b?	true	)
+  b:Set while blocked Text	A
+  Off Text	B2	writes	1	B2
+  OffWithoutEmit after swap back Text	B2
+  a:Set after OffWithoutEmit Text	B2
+  b:Set after OffWithoutEmit Text	B2
+=== E5 Blocker on inner; outer swaps away while inner holds a withheld emit ===
+  swapped to c while ga blocked Text	C
+  Off Text	C	writes	1	C
+=== E6 Blocker on BOTH (same blocker): swap + inner change, Off order ===
+  Off Text	B2	writes	1	B2
+=== E7 numeric child: inner and outer change in same wave (Instance) ===
+  kids	fa1
+  src=11 kids	fa2	fa1 parent	nil

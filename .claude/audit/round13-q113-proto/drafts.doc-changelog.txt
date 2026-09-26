@@ -1,0 +1,30 @@
+[초안 — 채택 제안 아님, 메인 검토용]
+
+(Q113 (a)) docs/reference/errors/02-dispatch-bookkeeping.md — Quad0070 절
+  메시지:  `{subject}: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle`
+           — `quad-base/src/Dispatch/StoreBind.luau` (`{subject}`는 `StoreBind` 또는 `Slot`)
+  언제 (끝에 한 문장 추가): Slot 원소 자리도 같습니다 — Slot에 원소로 넣은 State(또는 `slot:Single(state)`의 State)의 값 사슬이
+     순환하면 넣는 줄(`q.Slot{…}`·`Add`/`Replace`/`Splice`), 순환을 만든 `:Set` 줄, 또는 이미 순환하는 State를 담은 Slot을 마운트하는 줄에서
+     `Slot:`으로 시작하는 같은 문구가 납니다. 그 자리는 이전 원소를 그대로 보여 주고, 다음 정상 `:Set`으로 회복됩니다.
+
+docs/reference/core/06-slot.md 165행 근처(Quad0173 문단 뒤) 한 문장:
+  - 원소로 넣은 State의 **값 사슬이 순환**하면(`st:Set(st)`, `a:Set(b); b:Set(a)`) 그 `:Set` 줄에서 `Quad0070 Slot: …`으로 거부됩니다 —
+    그 자리는 이전 원소를 보여 준 채 남고(State는 이미 새 값을 들고 있습니다), 다음 정상 `:Set`으로 회복됩니다. 프로퍼티·숫자 키 자리와 같은 규칙입니다.
+  (주: `updateFn`이 순환 State를 **돌려주는** `:List`는 같은 문구로 거부되지만 배치 게이트 안에서 던지므로 core/06:397의 "던진 뒤 Length 동결" UB를 그대로 따른다 — 문서에 따로 적을지는 결정 사항.)
+
+.claude/base/dispatch-core-plan.md 1380·1412행 H-719 배너의 "지금도 맞는 자리는 Slot 원소 State 경로 하나 — Q113" → 채택 시 "없음(Q113 (a)로 닫힘)".
+
+CHANGELOG [Unreleased] ### Changed
+  - A State placed as a Slot element (or given to `slot:Single`) whose value chain is circular (`st:Set(st)`, `a:Set(b); b:Set(a)`) is now rejected with `Quad0070` on the line that made the cycle, adding it, or mounting it; the element keeps showing its previous value and the next valid `:Set` recovers. Previously this overflowed the stack and left the Slot with a stale `Length` (the next `:Set` then raised an internal `Bookkeeping.releaseOwner` error). The `Quad0070` message now starts with `Slot:` or `StoreBind:` depending on where the cycle was found.
+  (A0 갈래 — 주어를 `StoreBind:`로 고정 — 이면 마지막 문장 삭제.)
+
+(Q114 (a)) docs/reference/core/03-state.md 또는 core/06(State를 고르는 Compute 절) 한 문단:
+  - State를 고르는 계산(`outer = src:Compute(→ a 또는 b)`)이 자리에 놓여 있고 한 번의 `:Set`으로 선택과 선택된 값이 함께 바뀌면,
+    자리에는 새로 선택된 쪽의 값만 쓰입니다 — 더 이상 선택되지 않은 쪽의 새 값이 잠깐 쓰이거나(숫자 키·Slot 자리에서 에러가 나던 경우 포함) 하지 않습니다.
+    같은 값이 두 번 쓰일 수는 있습니다(쓰기 횟수는 약속하지 않음).
+    예외: 바깥 선택이 `Blocker`/`Debounce` 뒤에서 유보 중이면 — [갈래 A] 그동안 옛 선택의 값 갱신도 화면에 반영되지 않고, 유보가 풀릴 때 한 번에 따라잡습니다
+    / [갈래 A′] 게이트가 바인딩된 State 바로 위에 있으면 옛 선택을 계속 따르지만, 게이트가 선택 계산보다 위(상류)에 있으면 A와 같습니다.
+    `:List`의 `updateFn`이 State를 골라 돌려주는 모양은 이 보장 밖입니다(Slot 자리에서 `Quad0156` 가능).
+
+CHANGELOG [Unreleased] ### Changed (Q114)
+  - When a State that selects another State (`outer = src:Compute(function(s) return if … then a else b end)`) is bound to a property, a numeric child position, or a Slot element, and one `:Set` changes both the selection and the selected values, only the newly selected branch is written. Previously, depending on subscription order, the branch no longer selected could be written first (a numeric child or Slot position could then fail with `Quad0160`/`Quad0156` and stay empty). While the selection itself is held by a `Blocker`/`Debounce`, updates of the previously selected branch are no longer shown until the hold is released [A′: unless the gate is directly on the bound State].

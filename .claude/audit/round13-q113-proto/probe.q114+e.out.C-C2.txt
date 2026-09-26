@@ -1,0 +1,106 @@
+######## C
+=== K1 outer re-selects the SAME inner every wave (Compute re-emits a)
+  src=2                              Text=a2 writes=2 [a2,a2]
+  src=3                              Text=a3 writes=4 [a2,a2,a3,a3]
+=== K2 outer swaps a -> Source(a) (same inner, wrapped once more) while a changes
+  src=2 (-> Source(a))               Text=a2 writes=2 [a2,a2]
+  src=1 (-> a)                       Text=a1 writes=4 [a2,a2,a1,a1]
+=== K3 the same inner State bound at two levels of one chain (outer -> x, x -> a; outer later -> a)
+  src=2 (x -> a direct)              Text=a2 writes=2 [a2,a2]
+  src=1 (-> x)                       Text=a1 writes=4 [a2,a2,a1,a1]
+=== K4 Blocker directly on the outer (Gate node): inner of the OLD selection updates during the hold
+  hold: which->b, a->A2              Text=A writes=0 []
+  hold: b->B2                        Text=A writes=0 []
+  Off                                Text=B2 writes=1 [B2]
+=== K5 Blocker UPSTREAM of a Compute outer (gate not on the bound State)
+  hold: which->2, a->A2              Text=A writes=0 []
+  Off                                Text=B writes=1 [B]
+=== K6 Slot place, Blocker on the element State: hold, old branch updates
+  hold: which->b, a->a2  kids	a1	len	1
+  Off  kids	b	len	1
+=== K7 Slot place, user sl:Single(outer) (not a wrapper) same-wave race
+  	300	ok [Y] len=1
+=== K8 Slot place wrapper: same-wave Slot-valued branches (State<Slot> swap with length change)
+  src=2	ok	kids	b1,b2,b3,tail	len	4
+  src=3	ok	kids	a3,tail	len	2
+=== E1 outer and inner both derived from one source (same wave) ===
+  src=2 Text	b2	writes	1	b2
+  src=3 Text	a3	writes	3	b2,a3,a3
+  src=4 Text	b4	writes	4	b2,a3,a3,b4
+=== E1b same but outer created BEFORE the inners (subscription order flipped) ===
+  src=2 Text	b2	writes	2	b2,b2
+  src=3 Text	a3	writes	3	b2,b2,a3
+=== E2 inner stays the same object, both outer and inner notify in one wave ===
+  src=2 Text	a2	writes	2	a2,a2
+  src=3 Text	a3	writes	4	a2,a2,a3,a3
+=== E3 Observer on outer sets the OLD inner during the swap wave (ghost within wave?) ===
+  Text	B	writes	1	B
+=== E4 Blocker on outer: inner changes while outer swap is withheld ===
+  which:Set(b) blocked Text	A
+  a:Set while blocked Text	A	(gated:Get()==b?	true	)
+  b:Set while blocked Text	A
+  Off Text	B2	writes	1	B2
+  OffWithoutEmit after swap back Text	B2
+  a:Set after OffWithoutEmit Text	B2
+  b:Set after OffWithoutEmit Text	B2
+=== E5 Blocker on inner; outer swaps away while inner holds a withheld emit ===
+  swapped to c while ga blocked Text	C
+  Off Text	C	writes	1	C
+=== E6 Blocker on BOTH (same blocker): swap + inner change, Off order ===
+  Off Text	B2	writes	2	B2,B2
+=== E7 numeric child: inner and outer change in same wave (Instance) ===
+  kids	fa1
+  src=11 kids	fa2	fa1 parent	nil
+######## C2
+=== K1 outer re-selects the SAME inner every wave (Compute re-emits a)
+  src=2                              Text=a2 writes=2 [a2,a2]
+  src=3                              Text=a3 writes=4 [a2,a2,a3,a3]
+=== K2 outer swaps a -> Source(a) (same inner, wrapped once more) while a changes
+  src=2 (-> Source(a))               Text=a2 writes=2 [a2,a2]
+  src=1 (-> a)                       Text=a1 writes=4 [a2,a2,a1,a1]
+=== K3 the same inner State bound at two levels of one chain (outer -> x, x -> a; outer later -> a)
+  src=2 (x -> a direct)              Text=a2 writes=2 [a2,a2]
+  src=1 (-> x)                       Text=a1 writes=3 [a2,a2,a1]
+=== K4 Blocker directly on the outer (Gate node): inner of the OLD selection updates during the hold
+  hold: which->b, a->A2              Text=A2 writes=1 [A2]
+  hold: b->B2                        Text=A2 writes=1 [A2]
+  Off                                Text=B2 writes=2 [A2,B2]
+=== K5 Blocker UPSTREAM of a Compute outer (gate not on the bound State)
+  hold: which->2, a->A2              Text=A writes=0 []
+  Off                                Text=B writes=1 [B]
+=== K6 Slot place, Blocker on the element State: hold, old branch updates
+  hold: which->b, a->a2  kids	a2	len	1
+  Off  kids	b	len	1
+=== K7 Slot place, user sl:Single(outer) (not a wrapper) same-wave race
+  	300	ok [Y] len=1
+=== K8 Slot place wrapper: same-wave Slot-valued branches (State<Slot> swap with length change)
+  src=2	ok	kids	b1,b2,b3,tail	len	4
+  src=3	ok	kids	a3,tail	len	2
+=== E1 outer and inner both derived from one source (same wave) ===
+  src=2 Text	b2	writes	2	b2,b2
+  src=3 Text	a3	writes	4	b2,b2,a3,a3
+  src=4 Text	b4	writes	6	b2,b2,a3,a3,b4,b4
+=== E1b same but outer created BEFORE the inners (subscription order flipped) ===
+  src=2 Text	b2	writes	2	b2,b2
+  src=3 Text	a3	writes	4	b2,b2,a3,a3
+=== E2 inner stays the same object, both outer and inner notify in one wave ===
+  src=2 Text	a2	writes	2	a2,a2
+  src=3 Text	a3	writes	4	a2,a2,a3,a3
+=== E3 Observer on outer sets the OLD inner during the swap wave (ghost within wave?) ===
+  Text	B	writes	1	B
+=== E4 Blocker on outer: inner changes while outer swap is withheld ===
+  which:Set(b) blocked Text	A
+  a:Set while blocked Text	A2	(gated:Get()==b?	true	)
+  b:Set while blocked Text	A2
+  Off Text	B2	writes	2	A2,B2
+  OffWithoutEmit after swap back Text	B2
+  a:Set after OffWithoutEmit Text	B2
+  b:Set after OffWithoutEmit Text	B2
+=== E5 Blocker on inner; outer swaps away while inner holds a withheld emit ===
+  swapped to c while ga blocked Text	C
+  Off Text	C	writes	1	C
+=== E6 Blocker on BOTH (same blocker): swap + inner change, Off order ===
+  Off Text	B2	writes	3	A2,B2,B2
+=== E7 numeric child: inner and outer change in same wave (Instance) ===
+  kids	fa1
+  src=11 kids	fa2	fa1 parent	nil

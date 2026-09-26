@@ -1,0 +1,103 @@
+diff -ru src/Dispatch/StoreBind.luau ../../A/quad-base/src/Dispatch/StoreBind.luau
+--- src/Dispatch/StoreBind.luau	2026-09-27 03:54:02.370020803 +0900
++++ ../../A/quad-base/src/Dispatch/StoreBind.luau	2026-09-27 03:55:00.810201513 +0900
+@@ -48,6 +48,25 @@
+ 
+ local StoreBind = {}
+ 
++-- [round13 Q113 (a) prototype] the one Quad0070 literal (error-codes: one id, one raise site), shared
++-- by StoreBind (above) and the Slot element path (`Slot/Elements.luau` wrapElement, `Slot/List.luau`
++-- identity reconcile) — the Slot side had no cycle check and overflowed in Brand/Relate. `first` is
++-- the value to walk from; `seed` (optional) is a State already on the chain (StoreBind's own state).
++-- `raise` is the caller's depth; `subject` names the surface ("StoreBind" / "Slot").
++function StoreBind.assertAcyclicChain(first: any, seed: any?, raise: (string, any) -> (), subject: string)
++	if not isState(first) then return end
++	local visited = {}
++	if seed ~= nil then visited[seed] = true end
++	local cur = first
++	while isState(cur) do
++		if visited[cur] then
++			raise("Quad0070 " .. subject .. ": the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle", SURFACE)
++		end
++		visited[cur] = true
++		cur = cur:Get()
++	end
++end
++
+ -- Called by InitDispatch once per module instance, after the Dispatch table
+ -- is assembled (the factory pattern, `H-174`). addHandler tags the received
+ -- functions into the shared error namespace itself.
+@@ -67,20 +86,10 @@
+ 			ModuleIdentity.assertOwnAtDispatch(module, state, "State") -- before the registration fire subscribes here
+ 			local observer = state:Observer(function()
+ 				local realv = state:Get()
+-				if isState(realv) then
+-					-- round11 `H-573` (탐사 I′ 4): a State whose value chain loops back on itself
+-					-- (`a:Set(b); b:Set(a)`, or `s:Set(s)`) recursed through `index + 1` until
+-					-- "Brand.luau: stack overflow" — walk the chain once with a visited set
+-					local visited = { [state] = true }
+-					local cur = realv
+-					while isState(cur) do
+-						if visited[cur] then
+-							Err.errorBefore("Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle", SURFACE)
+-						end
+-						visited[cur] = true
+-						cur = cur:Get()
+-					end
+-				end
++				-- round11 `H-573` (탐사 I′ 4): a State whose value chain loops back on itself
++				-- (`a:Set(b); b:Set(a)`, or `s:Set(s)`) recursed through `index + 1` until
++				-- "Brand.luau: stack overflow" — walk the chain once with a visited set
++				StoreBind.assertAcyclicChain(realv, state, Err.errorBefore, "StoreBind") -- error-code: via assertAcyclicChain
+ 				dispatch.process(inst, k, realv, index + 1)
+ 			end)
+ 			module.Backend.bindLifetime(inst, observer)
+diff -ru src/Slot/Elements.luau ../../A/quad-base/src/Slot/Elements.luau
+--- src/Slot/Elements.luau	2026-09-27 03:54:02.370339683 +0900
++++ ../../A/quad-base/src/Slot/Elements.luau	2026-09-27 03:55:00.810357353 +0900
+@@ -10,6 +10,7 @@
+ 
+ local Types = require("./types")
+ local ModuleIdentity = require("../ModuleIdentity") -- round10 H-537: cross-instance door for Slot/State elements
++local StoreBind = require("../Dispatch/StoreBind") -- [round13 Q113 (a) prototype] shared Quad0070 chain walk
+ 
+ return function(S: Types.SlotInternal, module: any)
+ 
+@@ -73,6 +74,10 @@
+ 			checkRawElement(v, raise)
+ 			return v
+ 		end
++		-- [round13 Q113 (a) prototype] a State whose value chain loops (`st:Set(st)`, `a`→`b`→`a`) wrapped
++		-- itself forever at mount/reconcile (stack overflow in Brand/Relate) — the `H-573` walk, at the
++		-- caller's depth (CRUD/`Slot{}` → nearest; reconcile → outermost)
++		StoreBind.assertAcyclicChain(v, nil, raise, "Slot") -- error-code: via StoreBind.assertAcyclicChain
+ 		local sub = S.Slot()
+ 		sub:Single(v, nil, { OwnsElements = false })
+ 		sub._wrapped = v
+diff -ru src/Slot/List.luau ../../A/quad-base/src/Slot/List.luau
+--- src/Slot/List.luau	2026-09-27 03:54:02.370303663 +0900
++++ ../../A/quad-base/src/Slot/List.luau	2026-09-27 03:55:00.810458133 +0900
+@@ -12,6 +12,7 @@
+ 
+ local Types = require("./types")
+ local ModuleIdentity = require("../ModuleIdentity")
++local StoreBind = require("../Dispatch/StoreBind") -- [round13 Q113 (a) prototype]
+ 
+ return function(S: Types.SlotInternal, module: any)
+ 
+@@ -120,6 +121,15 @@
+ 				keys[i] = key
+ 			end
+ 
++			-- [round13 Q113 (a) prototype] an identity :Single/:List (a State element's wrapper, or
++			-- `slot:Single(st)` without an updateFn) mounts each item as-is — a State item whose chain
++			-- loops would wrap itself forever. Checked BEFORE the batch gate goes On so the raise leaves
++			-- this Slot showing its previous element (the State already holds the new value).
++			if updateFn == identityUpdateFn then
++				for _, item in ipairs(items) do
++					StoreBind.assertAcyclicChain(item, nil, S.Err.errorBefore, "Slot") -- error-code: via StoreBind.assertAcyclicChain
++				end
++			end
+ 			local blocker = S.BK.getBlocker(self)
+ 			local ownsGate = not blocker.Blocking
+ 			if ownsGate then blocker:On() end

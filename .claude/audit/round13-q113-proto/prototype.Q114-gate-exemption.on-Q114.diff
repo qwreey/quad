@@ -1,0 +1,30 @@
+diff -ru src/Dispatch/StoreBind.luau ../../B2/quad-base/src/Dispatch/StoreBind.luau
+--- src/Dispatch/StoreBind.luau	2026-09-27 04:00:41.656248298 +0900
++++ ../../B2/quad-base/src/Dispatch/StoreBind.luau	2026-09-27 04:01:45.354345335 +0900
+@@ -79,7 +79,10 @@
+ 				-- [round13 Q114 (a) prototype] same-wave revalidation: the outer State already moved to a
+ 				-- different value (its own observer, later in this wave, rebinds this slot) — writing
+ 				-- now would show a branch the outer no longer selects (hash-order dependent)
+-				if parent ~= nil and parent:Get() ~= state then return end
++				-- (A′) exemption: the outer is a Gate holding a withheld emit (Blocker/Debounce On) — the
++				-- screen keeps following the selection it last delivered, as before
++				if parent ~= nil and parent:Get() ~= state
++					and not (parent._withheld ~= nil and next(parent._withheld) ~= nil) then return end
+ 				local realv = state:Get()
+ 				if isState(realv) then
+ 					-- round11 `H-573` (탐사 I′ 4): a State whose value chain loops back on itself
+diff -ru src/Slot/List.luau ../../B2/quad-base/src/Slot/List.luau
+--- src/Slot/List.luau	2026-09-27 04:00:41.656389978 +0900
++++ ../../B2/quad-base/src/Slot/List.luau	2026-09-27 04:01:45.354479014 +0900
+@@ -100,7 +100,10 @@
+ 				if owner ~= nil and S.isSlot(owner) and owner._listed and owner._updateFn == identityUpdateFn then
+ 					local od = owner._listData
+ 					local oitems = if S.isState(od) then od:Get() else od
+-					if type(oitems) == "table" and oitems[1] ~= wrapped then return end
++					-- (A′) exemption: the wrapper's State is a Gate holding a withheld emit — keep following
++					local ow = owner._wrapped
++					local held = ow ~= nil and ow._withheld ~= nil and next(ow._withheld) ~= nil
++					if type(oitems) == "table" and oitems[1] ~= wrapped and not held then return end
+ 				end
+ 			end
+ 			if type(items) ~= "table" or getmetatable(items) ~= nil then

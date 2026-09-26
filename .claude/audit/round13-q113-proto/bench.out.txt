@@ -1,0 +1,90 @@
+## base pass1
+P1 flat State<string> x1000, inner:Set                         1.84 ms
+P2 nested State<State<string>> x1000, inner:Set                1.81 ms
+P3 nested x1000, outer:Set(new inner State)                    5.07 ms
+P4 depth-3 x1000, innermost:Set                                1.85 ms
+P5 selector Compute(a|b) x1000, src:Set                       12.04 ms
+S1 Slot{ State<Frame> x1000 }, each :Set(new Frame)           20.35 ms
+S2 Slot{ State<State<Frame>> x1000 }, inner :Set              20.18 ms
+S3 Slot{} x1000 Add(State<Frame>) (CRUD pre-pass walk)       238.07 ms
+## A pass1
+P1 flat State<string> x1000, inner:Set                         1.96 ms
+P2 nested State<State<string>> x1000, inner:Set                1.90 ms
+P3 nested x1000, outer:Set(new inner State)                    5.05 ms
+P4 depth-3 x1000, innermost:Set                                1.83 ms
+P5 selector Compute(a|b) x1000, src:Set                       16.73 ms
+S1 Slot{ State<Frame> x1000 }, each :Set(new Frame)           18.42 ms
+S2 Slot{ State<State<Frame>> x1000 }, inner :Set              21.48 ms
+S3 Slot{} x1000 Add(State<Frame>) (CRUD pre-pass walk)       243.56 ms
+## B pass1
+P1 flat State<string> x1000, inner:Set                         1.79 ms
+P2 nested State<State<string>> x1000, inner:Set                1.84 ms
+P3 nested x1000, outer:Set(new inner State)                    5.57 ms
+P4 depth-3 x1000, innermost:Set                                1.91 ms
+P5 selector Compute(a|b) x1000, src:Set                       11.62 ms
+S1 Slot{ State<Frame> x1000 }, each :Set(new Frame)           17.23 ms
+S2 Slot{ State<State<Frame>> x1000 }, inner :Set              21.00 ms
+S3 Slot{} x1000 Add(State<Frame>) (CRUD pre-pass walk)       247.13 ms
+## C pass1
+P1 flat State<string> x1000, inner:Set                         2.09 ms
+P2 nested State<State<string>> x1000, inner:Set                1.92 ms
+P3 nested x1000, outer:Set(new inner State)                    5.30 ms
+P4 depth-3 x1000, innermost:Set                                1.92 ms
+P5 selector Compute(a|b) x1000, src:Set                       17.40 ms
+S1 Slot{ State<Frame> x1000 }, each :Set(new Frame)           21.35 ms
+S2 Slot{ State<State<Frame>> x1000 }, inner :Set              22.56 ms
+S3 Slot{} x1000 Add(State<Frame>) (CRUD pre-pass walk)       250.17 ms
+## C2 pass1
+P1 flat State<string> x1000, inner:Set                         1.84 ms
+P2 nested State<State<string>> x1000, inner:Set                1.89 ms
+P3 nested x1000, outer:Set(new inner State)                    5.34 ms
+P4 depth-3 x1000, innermost:Set                                1.97 ms
+P5 selector Compute(a|b) x1000, src:Set                       11.88 ms
+S1 Slot{ State<Frame> x1000 }, each :Set(new Frame)           20.50 ms
+S2 Slot{ State<State<Frame>> x1000 }, inner :Set              22.96 ms
+S3 Slot{} x1000 Add(State<Frame>) (CRUD pre-pass walk)       250.78 ms
+## base pass2
+P1 flat State<string> x1000, inner:Set                         1.79 ms
+P2 nested State<State<string>> x1000, inner:Set                1.78 ms
+P3 nested x1000, outer:Set(new inner State)                    5.26 ms
+P4 depth-3 x1000, innermost:Set                                1.83 ms
+P5 selector Compute(a|b) x1000, src:Set                       11.56 ms
+S1 Slot{ State<Frame> x1000 }, each :Set(new Frame)           18.80 ms
+S2 Slot{ State<State<Frame>> x1000 }, inner :Set              22.14 ms
+S3 Slot{} x1000 Add(State<Frame>) (CRUD pre-pass walk)       241.80 ms
+## A pass2
+P1 flat State<string> x1000, inner:Set                         2.31 ms
+P2 nested State<State<string>> x1000, inner:Set                1.81 ms
+P3 nested x1000, outer:Set(new inner State)                    5.03 ms
+P4 depth-3 x1000, innermost:Set                                1.76 ms
+P5 selector Compute(a|b) x1000, src:Set                       11.05 ms
+S1 Slot{ State<Frame> x1000 }, each :Set(new Frame)           18.67 ms
+S2 Slot{ State<State<Frame>> x1000 }, inner :Set              20.04 ms
+S3 Slot{} x1000 Add(State<Frame>) (CRUD pre-pass walk)       237.86 ms
+## B pass2
+P1 flat State<string> x1000, inner:Set                         1.79 ms
+P2 nested State<State<string>> x1000, inner:Set                1.83 ms
+P3 nested x1000, outer:Set(new inner State)                    5.16 ms
+P4 depth-3 x1000, innermost:Set                                1.88 ms
+P5 selector Compute(a|b) x1000, src:Set                       15.46 ms
+S1 Slot{ State<Frame> x1000 }, each :Set(new Frame)           20.01 ms
+S2 Slot{ State<State<Frame>> x1000 }, inner :Set              21.62 ms
+S3 Slot{} x1000 Add(State<Frame>) (CRUD pre-pass walk)       240.72 ms
+## C pass2
+P1 flat State<string> x1000, inner:Set                         1.86 ms
+P2 nested State<State<string>> x1000, inner:Set                1.89 ms
+P3 nested x1000, outer:Set(new inner State)                    5.34 ms
+P4 depth-3 x1000, innermost:Set                                1.94 ms
+P5 selector Compute(a|b) x1000, src:Set                       15.94 ms
+S1 Slot{ State<Frame> x1000 }, each :Set(new Frame)           20.17 ms
+S2 Slot{ State<State<Frame>> x1000 }, inner :Set              23.87 ms
+S3 Slot{} x1000 Add(State<Frame>) (CRUD pre-pass walk)       241.99 ms
+## C2 pass2
+P1 flat State<string> x1000, inner:Set                         1.99 ms
+P2 nested State<State<string>> x1000, inner:Set                1.91 ms
+P3 nested x1000, outer:Set(new inner State)                    6.30 ms
+P4 depth-3 x1000, innermost:Set                                1.93 ms
+P5 selector Compute(a|b) x1000, src:Set                       11.15 ms
+S1 Slot{ State<Frame> x1000 }, each :Set(new Frame)           21.86 ms
+S2 Slot{ State<State<Frame>> x1000 }, inner :Set              22.09 ms
+S3 Slot{} x1000 Add(State<Frame>) (CRUD pre-pass walk)       245.32 ms

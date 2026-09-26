@@ -1,0 +1,411 @@
+######## C
+=== C1 mounted element st:Set(st), then Length/next Set/Add/Remove
+  st:Set(st)	probe.q113.luau:14 | Quad0070 Slot:
+   	kids[a] Length=1
+  st:Set(b)	ok
+   	kids[b] Length=1
+    blocker.Blocking =	false
+  sl:Add(c)	ok
+   	kids[b,c] Length=2
+  sl:Remove(1)	ok
+   	kids[c] Length=1
+  s:Set(d) after removal	ok
+   	kids[c] Length=1
+=== C2 two-State cycle through inner wrapper b:Set(a)
+  b:Set(a)	probe.q113.luau:25 | Quad0070 Slot:
+   	kids[z,b] Length=2
+  a:Set(a) (outer self)	probe.q113.luau:26 | Quad0070 Slot:
+   	kids[z,b] Length=2
+  a:Set(y)	ok
+   	kids[z,y] Length=2
+=== C3 three-hop a->b->c->b (cycle not through a)
+  c:Set(b)	probe.q113.luau:32 | Quad0070 Slot:
+   	kids[c] Length=1
+  c:Set(k)	ok
+   	kids[k] Length=1
+=== C4 unmounted Slot{st}, THEN st:Set(st), then mount
+  st:Set(st) (unmounted)	ok
+  mount D.Frame{sl}	probe.q113.luau:39 | Quad0070 Slot:
+  st:Set(b) after	ok
+=== C5 user-level sl:Single(st) (no updateFn), st:Set(st)
+  st:Set(st)	probe.q113.luau:47 | Quad0070 Slot:
+   	kids[a] Length=1
+  st:Set(b)	ok
+   	kids[b] Length=1
+=== C6 sl:List(stateArray, pass-through updateFn), an item State becomes cyclic
+   	kids[x,y] Length=2
+  y:Set(y)	probe.q113.luau:54 | Quad0070 Slot:
+   	kids[x,y] Length=2
+  y:Set(w)	ok
+   	kids[x,w] Length=2
+=== C7 sl:List(data, updateFn) returning a cyclic State (non-identity)
+   	kids[i1] Length=1
+  data:Set({2})	probe.q113.luau:63 | Quad0070 Slot:
+   	kids[i1] Length=1
+  data:Set({3})	ok
+   	kids[i3] Length=1
+  data:Set({4,5})	ok
+   	kids[i4,i5] Length=1
+    blocker.Blocking after =	true
+  data:Set({2,6}) (cycle mid-list)	probe.q113.luau:68 | Quad0070 Slot:
+   	kids[i4,i5] Length=1
+  data:Set({7})	ok
+   	kids[i7] Length=1
+=== C8 CRUD sl:Add(cyclic State) / Replace / Splice
+  sl:Add(cyc)	probe.q113.luau:74 | Quad0070 Slot:
+   	kids[z] Length=1
+  sl:Replace(1, cyc)	probe.q113.luau:75 | Quad0070 Slot:
+   	kids[z] Length=1
+  sl:Splice(1,0,cyc)	probe.q113.luau:76 | Quad0070 Slot:
+   	kids[z] Length=1
+  sl:Add(ok)	ok
+   	kids[z,ok] Length=2
+=== C9 legit deep chain State<State<State<Frame>>> still mounts; swap depth
+   	kids[deep] Length=1
+  a:Set(Source(Frame n))	ok
+   	kids[n] Length=1
+=== C10 same State twice in chain but no cycle (diamond: a->b, c->b)
+  a:Set(c)	ok
+   	kids[b] Length=1
+=== C11 after the raise, the wrapper must still recompute Length (State<Slot> swap)
+  s:Set(s)	probe.q113.luau:95 | Quad0070 Slot:
+   	kids[a,z] Length=2
+  s:Set(Slot{p,q,r})	ok
+   	kids[z,p,q,r] Length=4
+  s:Set(Frame m)	ok
+   	kids[z,m] Length=2
+=== C12 comparison (pre-existing): non-identity updateFn returns a non-mountable string mid-list
+  data:Set({2})	probe.q113.luau:103 | Quad0240 Slot:
+   	kids[i1] Length=1
+  data:Set({4,5})	ok
+   	kids[i4,i5] Length=1
+## e23-d
+=== D1 single-level self: st:Set(st) mounted Slot element ===
+  st:Set(st)	ERR Quad0070 Slot: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycl
+  	kids[a] Length=1
+  st:Set(b)	ok
+  	kids[b] Length=1
+  sl:Add(c)	ok
+  	kids[b,c] Length=2
+=== D2 two-State cycle a->b->a as Slot element (mounted) ===
+  b:Set(a)	ERR Quad0070 Slot: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycl
+  	kids[b] Length=1
+  b:Set(x)	ok
+  	kids[x] Length=1
+=== D3 self-holding State given to unmounted Slot, then mount ===
+  Slot{st}	ERR Quad0070 Slot: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycl
+=== D4 self-holding State at static child place (InstanceChild/StoreBind) for comparison ===
+  D.Frame{st}	ERR Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a
+=== D5 Add(Source(Source(a))) where a is held by ANOTHER mounted Slot ===
+  s2:Add(Source(Source(a)))	ERR Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destro
+  s1	kids[a] Length=1	s2	kids[z] Length=1
+  s2:Add(fresh) after	ERR Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must
+  s2	kids[z] Length=1
+  s3:Add(Source(a)) single level	ERR Quad0172 Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:De
+  s3:Add(fresh) after	ok
+  s3	kids[z3,fresh3] Length=2
+=== D6 Add(Source(Source('text'))) — non-mountable inner value ===
+  Add(Source(Source('text')))	ERR Quad0240 Slot: this backend cannot mount this value
+  	kids[z] Length=1
+  Add(fresh) after	ERR Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must
+  	kids[z] Length=1
+  single Add(Source('text'))	ERR Quad0240 Slot: this backend cannot mount this value
+  Add(fresh) after	ok
+  	kids[z2,fresh] Length=2
+=== D7 Add(Source(Source(foreign))) — unclaimed inner ===
+  Add(Source(Source(foreign)))	ERR Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by a
+  	kids[z] Length=1
+  Add(fresh) after	ERR Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must
+  	kids[z] Length=1
+=== D8 unmounted Slot: Add(Source(Source(a))) with a held elsewhere, then mount ===
+  unmounted Add	ok
+  mount	ERR Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destro
+  s1	kids[a] Length=1
+=== D9 Slot{ Source(Source(Slot)) } — State<State<Slot>> element; inner swaps Slot ===
+  	kids[p,q] Length=2
+  inner:Set(Slot{r})	ok
+  	kids[r] Length=1
+  outer:Set(Source(Slot{s,t,u}))	ok
+  	kids[s,t,u] Length=3
+=== D10 Slot element State<State>: outer swapped to a State holding a Slot that CONTAINS this Slot (cycle via state) ===
+  !! section error:	Quad0172 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destro
+## e23-g
+G1 Modifier field self-cycle	./.claude/audit/round13-e23-probe-g.luau:11 | Quad0070
+G2 chain inner Compute returns Modifier	./.claude/audit/round13-e23-probe-g.luau:18 | Quad0185
+G3 Slot pre-pass gap: Add(Source(Source(a))) with a held elsewhere	./.claude/audit/round13-e23-probe-g.luau:24 | Quad0156
+G4 Slot element self-cycle	./.claude/audit/round13-e23-probe-g.luau:29 | Quad0070
+G5 numeric child nested: outer:Set(Source(mounted-elsewhere))	./.claude/audit/round13-e23-probe-g.luau:36 | Quad0160
+######## C2
+=== C1 mounted element st:Set(st), then Length/next Set/Add/Remove
+  st:Set(st)	probe.q113.luau:14 | Quad0070 Slot:
+   	kids[a] Length=1
+  st:Set(b)	ok
+   	kids[b] Length=1
+    blocker.Blocking =	false
+  sl:Add(c)	ok
+   	kids[b,c] Length=2
+  sl:Remove(1)	ok
+   	kids[c] Length=1
+  s:Set(d) after removal	ok
+   	kids[c] Length=1
+=== C2 two-State cycle through inner wrapper b:Set(a)
+  b:Set(a)	probe.q113.luau:25 | Quad0070 Slot:
+   	kids[z,b] Length=2
+  a:Set(a) (outer self)	probe.q113.luau:26 | Quad0070 Slot:
+   	kids[z,b] Length=2
+  a:Set(y)	ok
+   	kids[z,y] Length=2
+=== C3 three-hop a->b->c->b (cycle not through a)
+  c:Set(b)	probe.q113.luau:32 | Quad0070 Slot:
+   	kids[c] Length=1
+  c:Set(k)	ok
+   	kids[k] Length=1
+=== C4 unmounted Slot{st}, THEN st:Set(st), then mount
+  st:Set(st) (unmounted)	ok
+  mount D.Frame{sl}	probe.q113.luau:39 | Quad0070 Slot:
+  st:Set(b) after	ok
+=== C5 user-level sl:Single(st) (no updateFn), st:Set(st)
+  st:Set(st)	probe.q113.luau:47 | Quad0070 Slot:
+   	kids[a] Length=1
+  st:Set(b)	ok
+   	kids[b] Length=1
+=== C6 sl:List(stateArray, pass-through updateFn), an item State becomes cyclic
+   	kids[x,y] Length=2
+  y:Set(y)	probe.q113.luau:54 | Quad0070 Slot:
+   	kids[x,y] Length=2
+  y:Set(w)	ok
+   	kids[x,w] Length=2
+=== C7 sl:List(data, updateFn) returning a cyclic State (non-identity)
+   	kids[i1] Length=1
+  data:Set({2})	probe.q113.luau:63 | Quad0070 Slot:
+   	kids[i1] Length=1
+  data:Set({3})	ok
+   	kids[i3] Length=1
+  data:Set({4,5})	ok
+   	kids[i4,i5] Length=1
+    blocker.Blocking after =	true
+  data:Set({2,6}) (cycle mid-list)	probe.q113.luau:68 | Quad0070 Slot:
+   	kids[i4,i5] Length=1
+  data:Set({7})	ok
+   	kids[i7] Length=1
+=== C8 CRUD sl:Add(cyclic State) / Replace / Splice
+  sl:Add(cyc)	probe.q113.luau:74 | Quad0070 Slot:
+   	kids[z] Length=1
+  sl:Replace(1, cyc)	probe.q113.luau:75 | Quad0070 Slot:
+   	kids[z] Length=1
+  sl:Splice(1,0,cyc)	probe.q113.luau:76 | Quad0070 Slot:
+   	kids[z] Length=1
+  sl:Add(ok)	ok
+   	kids[z,ok] Length=2
+=== C9 legit deep chain State<State<State<Frame>>> still mounts; swap depth
+   	kids[deep] Length=1
+  a:Set(Source(Frame n))	ok
+   	kids[n] Length=1
+=== C10 same State twice in chain but no cycle (diamond: a->b, c->b)
+  a:Set(c)	ok
+   	kids[b] Length=1
+=== C11 after the raise, the wrapper must still recompute Length (State<Slot> swap)
+  s:Set(s)	probe.q113.luau:95 | Quad0070 Slot:
+   	kids[a,z] Length=2
+  s:Set(Slot{p,q,r})	ok
+   	kids[z,p,q,r] Length=4
+  s:Set(Frame m)	ok
+   	kids[z,m] Length=2
+=== C12 comparison (pre-existing): non-identity updateFn returns a non-mountable string mid-list
+  data:Set({2})	probe.q113.luau:103 | Quad0240 Slot:
+   	kids[i1] Length=1
+  data:Set({4,5})	ok
+   	kids[i4,i5] Length=1
+## e23-d
+=== D1 single-level self: st:Set(st) mounted Slot element ===
+  st:Set(st)	ERR Quad0070 Slot: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycl
+  	kids[a] Length=1
+  st:Set(b)	ok
+  	kids[b] Length=1
+  sl:Add(c)	ok
+  	kids[b,c] Length=2
+=== D2 two-State cycle a->b->a as Slot element (mounted) ===
+  b:Set(a)	ERR Quad0070 Slot: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycl
+  	kids[b] Length=1
+  b:Set(x)	ok
+  	kids[x] Length=1
+=== D3 self-holding State given to unmounted Slot, then mount ===
+  Slot{st}	ERR Quad0070 Slot: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycl
+=== D4 self-holding State at static child place (InstanceChild/StoreBind) for comparison ===
+  D.Frame{st}	ERR Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a
+=== D5 Add(Source(Source(a))) where a is held by ANOTHER mounted Slot ===
+  s2:Add(Source(Source(a)))	ERR Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destro
+  s1	kids[a] Length=1	s2	kids[z] Length=1
+  s2:Add(fresh) after	ERR Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must
+  s2	kids[z] Length=1
+  s3:Add(Source(a)) single level	ERR Quad0172 Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:De
+  s3:Add(fresh) after	ok
+  s3	kids[z3,fresh3] Length=2
+=== D6 Add(Source(Source('text'))) — non-mountable inner value ===
+  Add(Source(Source('text')))	ERR Quad0240 Slot: this backend cannot mount this value
+  	kids[z] Length=1
+  Add(fresh) after	ERR Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must
+  	kids[z] Length=1
+  single Add(Source('text'))	ERR Quad0240 Slot: this backend cannot mount this value
+  Add(fresh) after	ok
+  	kids[z2,fresh] Length=2
+=== D7 Add(Source(Source(foreign))) — unclaimed inner ===
+  Add(Source(Source(foreign)))	ERR Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by a
+  	kids[z] Length=1
+  Add(fresh) after	ERR Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must
+  	kids[z] Length=1
+=== D8 unmounted Slot: Add(Source(Source(a))) with a held elsewhere, then mount ===
+  unmounted Add	ok
+  mount	ERR Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destro
+  s1	kids[a] Length=1
+=== D9 Slot{ Source(Source(Slot)) } — State<State<Slot>> element; inner swaps Slot ===
+  	kids[p,q] Length=2
+  inner:Set(Slot{r})	ok
+  	kids[r] Length=1
+  outer:Set(Source(Slot{s,t,u}))	ok
+  	kids[s,t,u] Length=3
+=== D10 Slot element State<State>: outer swapped to a State holding a Slot that CONTAINS this Slot (cycle via state) ===
+  !! section error:	Quad0172 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destro
+## e23-g
+G1 Modifier field self-cycle	./.claude/audit/round13-e23-probe-g.luau:11 | Quad0070
+G2 chain inner Compute returns Modifier	./.claude/audit/round13-e23-probe-g.luau:18 | Quad0185
+G3 Slot pre-pass gap: Add(Source(Source(a))) with a held elsewhere	./.claude/audit/round13-e23-probe-g.luau:24 | Quad0156
+G4 Slot element self-cycle	./.claude/audit/round13-e23-probe-g.luau:29 | Quad0070
+G5 numeric child nested: outer:Set(Source(mounted-elsewhere))	./.claude/audit/round13-e23-probe-g.luau:36 | Quad0160
+######## CQ
+=== C1 mounted element st:Set(st), then Length/next Set/Add/Remove
+  st:Set(st)	probe.q113.luau:14 | Quad0070 Slot:
+   	kids[a] Length=1
+  st:Set(b)	ok
+   	kids[b] Length=1
+    blocker.Blocking =	false
+  sl:Add(c)	ok
+   	kids[b,c] Length=2
+  sl:Remove(1)	ok
+   	kids[c] Length=1
+  s:Set(d) after removal	ok
+   	kids[c] Length=1
+=== C2 two-State cycle through inner wrapper b:Set(a)
+  b:Set(a)	probe.q113.luau:25 | Quad0070 Slot:
+   	kids[z,b] Length=2
+  a:Set(a) (outer self)	probe.q113.luau:26 | Quad0070 Slot:
+   	kids[z,b] Length=2
+  a:Set(y)	ok
+   	kids[z,y] Length=2
+=== C3 three-hop a->b->c->b (cycle not through a)
+  c:Set(b)	probe.q113.luau:32 | Quad0070 Slot:
+   	kids[c] Length=1
+  c:Set(k)	ok
+   	kids[k] Length=1
+=== C4 unmounted Slot{st}, THEN st:Set(st), then mount
+  st:Set(st) (unmounted)	ok
+  mount D.Frame{sl}	probe.q113.luau:39 | Quad0070 Slot:
+  st:Set(b) after	ok
+=== C5 user-level sl:Single(st) (no updateFn), st:Set(st)
+  st:Set(st)	probe.q113.luau:47 | Quad0070 Slot:
+   	kids[a] Length=1
+  st:Set(b)	ok
+   	kids[b] Length=1
+=== C6 sl:List(stateArray, pass-through updateFn), an item State becomes cyclic
+   	kids[x,y] Length=2
+  y:Set(y)	probe.q113.luau:54 | Quad0070 Slot:
+   	kids[x,y] Length=2
+  y:Set(w)	ok
+   	kids[x,w] Length=2
+=== C7 sl:List(data, updateFn) returning a cyclic State (non-identity)
+   	kids[i1] Length=1
+  data:Set({2})	probe.q113.luau:63 | Quad0070 Slot:
+   	kids[i1] Length=1
+  data:Set({3})	ok
+   	kids[i3] Length=1
+  data:Set({4,5})	ok
+   	kids[i4,i5] Length=1
+    blocker.Blocking after =	true
+  data:Set({2,6}) (cycle mid-list)	probe.q113.luau:68 | Quad0070 Slot:
+   	kids[i4,i5] Length=1
+  data:Set({7})	ok
+   	kids[i7] Length=1
+=== C8 CRUD sl:Add(cyclic State) / Replace / Splice
+  sl:Add(cyc)	probe.q113.luau:74 | Quad0070 Slot:
+   	kids[z] Length=1
+  sl:Replace(1, cyc)	probe.q113.luau:75 | Quad0070 Slot:
+   	kids[z] Length=1
+  sl:Splice(1,0,cyc)	probe.q113.luau:76 | Quad0070 Slot:
+   	kids[z] Length=1
+  sl:Add(ok)	ok
+   	kids[z,ok] Length=2
+=== C9 legit deep chain State<State<State<Frame>>> still mounts; swap depth
+   	kids[deep] Length=1
+  a:Set(Source(Frame n))	ok
+   	kids[n] Length=1
+=== C10 same State twice in chain but no cycle (diamond: a->b, c->b)
+  a:Set(c)	ok
+   	kids[b] Length=1
+=== C11 after the raise, the wrapper must still recompute Length (State<Slot> swap)
+  s:Set(s)	probe.q113.luau:95 | Quad0070 Slot:
+   	kids[a,z] Length=2
+  s:Set(Slot{p,q,r})	ok
+   	kids[z,p,q,r] Length=4
+  s:Set(Frame m)	ok
+   	kids[z,m] Length=2
+=== C12 comparison (pre-existing): non-identity updateFn returns a non-mountable string mid-list
+  data:Set({2})	probe.q113.luau:103 | Quad0240 Slot:
+   	kids[i1] Length=1
+  data:Set({4,5})	ok
+   	kids[i4,i5] Length=1
+## e23-d
+=== D1 single-level self: st:Set(st) mounted Slot element ===
+  st:Set(st)	ERR Quad0070 Slot: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycl
+  	kids[a] Length=1
+  st:Set(b)	ok
+  	kids[b] Length=1
+  sl:Add(c)	ok
+  	kids[b,c] Length=2
+=== D2 two-State cycle a->b->a as Slot element (mounted) ===
+  b:Set(a)	ERR Quad0070 Slot: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycl
+  	kids[b] Length=1
+  b:Set(x)	ok
+  	kids[x] Length=1
+=== D3 self-holding State given to unmounted Slot, then mount ===
+  Slot{st}	ERR Quad0070 Slot: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycl
+=== D4 self-holding State at static child place (InstanceChild/StoreBind) for comparison ===
+  D.Frame{st}	ERR Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a
+=== D5 Add(Source(Source(a))) where a is held by ANOTHER mounted Slot ===
+  s2:Add(Source(Source(a)))	ERR Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destro
+  s1	kids[a] Length=1	s2	kids[z] Length=1
+  s2:Add(fresh) after	ERR Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must
+  s2	kids[z] Length=1
+  s3:Add(Source(a)) single level	ERR Quad0172 Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:De
+  s3:Add(fresh) after	ok
+  s3	kids[z3,fresh3] Length=2
+=== D6 Add(Source(Source('text'))) — non-mountable inner value ===
+  Add(Source(Source('text')))	ERR Quad0240 Slot: this backend cannot mount this value
+  	kids[z] Length=1
+  Add(fresh) after	ERR Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must
+  	kids[z] Length=1
+  single Add(Source('text'))	ERR Quad0240 Slot: this backend cannot mount this value
+  Add(fresh) after	ok
+  	kids[z2,fresh] Length=2
+=== D7 Add(Source(Source(foreign))) — unclaimed inner ===
+  Add(Source(Source(foreign)))	ERR Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by a
+  	kids[z] Length=1
+  Add(fresh) after	ERR Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must
+  	kids[z] Length=1
+=== D8 unmounted Slot: Add(Source(Source(a))) with a held elsewhere, then mount ===
+  unmounted Add	ok
+  mount	ERR Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destro
+  s1	kids[a] Length=1
+=== D9 Slot{ Source(Source(Slot)) } — State<State<Slot>> element; inner swaps Slot ===
+  	kids[p,q] Length=2
+  inner:Set(Slot{r})	ok
+  	kids[r] Length=1
+  outer:Set(Source(Slot{s,t,u}))	ok
+  	kids[s,t,u] Length=3
+=== D10 Slot element State<State>: outer swapped to a State holding a Slot that CONTAINS this Slot (cycle via state) ===
+  !! section error:	Quad0172 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destro
+## e23-g
+G1 Modifier field self-cycle	./.claude/audit/round13-e23-probe-g.luau:11 | Quad0070
+G2 chain inner Compute returns Modifier	./.claude/audit/round13-e23-probe-g.luau:18 | Quad0185
+G3 Slot pre-pass gap: Add(Source(Source(a))) with a held elsewhere	./.claude/audit/round13-e23-probe-g.luau:24 | Quad0156
+G4 Slot element self-cycle	./.claude/audit/round13-e23-probe-g.luau:29 | Quad0070
+G5 numeric child nested: outer:Set(Source(mounted-elsewhere))	./.claude/audit/round13-e23-probe-g.luau:36 | Quad0160

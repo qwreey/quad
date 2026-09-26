@@ -1,0 +1,77 @@
+######## base
+specs+smoke: 62 files, 0 fail
+./quad-base/test/spec.slot.luau(1277,79): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+./quad-base/test/spec.slot.luau(1289,80): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+./quad-base/test/spec.slot.luau(1304,76): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+luau-analyze exit 0
+[WARN] No definitions file provided by client
+quad-base/test/spec.slot.luau(1277,79): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+quad-base/test/spec.slot.luau(1289,80): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+quad-base/test/spec.slot.luau(1304,76): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+luau-lsp new-solver (engine-agnostic) exit 0
+luau-lsp roblox exit 0
+error-codes: 248 ids, 242 raise sites, 0 untagged, 0 errors, 0 warnings
+GATE exit 0
+######## A
+specs+smoke: 62 files, 0 fail
+./quad-base/test/spec.slot.luau(1277,79): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+./quad-base/test/spec.slot.luau(1289,80): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+./quad-base/test/spec.slot.luau(1304,76): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+luau-analyze exit 0
+[WARN] No definitions file provided by client
+quad-base/test/spec.slot.luau(1277,79): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+quad-base/test/spec.slot.luau(1289,80): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+quad-base/test/spec.slot.luau(1304,76): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+luau-lsp new-solver (engine-agnostic) exit 0
+luau-lsp roblox exit 0
+error-codes: 248 ids, 242 raise sites, 0 untagged, 0 errors, 0 warnings
+GATE exit 0
+######## AQ
+specs+smoke: 62 files, 0 fail
+./quad-base/test/spec.slot.luau(1277,79): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+./quad-base/test/spec.slot.luau(1289,80): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+./quad-base/test/spec.slot.luau(1304,76): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+luau-analyze exit 0
+[WARN] No definitions file provided by client
+quad-base/test/spec.slot.luau(1277,79): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+quad-base/test/spec.slot.luau(1289,80): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+quad-base/test/spec.slot.luau(1304,76): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+luau-lsp new-solver (engine-agnostic) exit 0
+luau-lsp roblox exit 0
+error-codes: 248 ids, 242 raise sites, 0 untagged, 0 errors, 0 warnings
+GATE exit 0
+######## B
+specs+smoke: 62 files, 0 fail
+luau-analyze exit 0
+luau-lsp new-solver (engine-agnostic) exit 0
+luau-lsp roblox exit 0
+error-codes: 248 ids, 242 raise sites, 0 untagged, 0 errors, 0 warnings
+GATE exit 0
+######## B2
+specs+smoke: 62 files, 0 fail
+luau-analyze exit 0
+luau-lsp new-solver (engine-agnostic) exit 0
+luau-lsp roblox exit 0
+error-codes: 248 ids, 242 raise sites, 0 untagged, 0 errors, 0 warnings
+GATE exit 0
+######## C
+specs+smoke: 62 files, 0 fail
+luau-analyze exit 0
+luau-lsp new-solver (engine-agnostic) exit 0
+luau-lsp roblox exit 0
+error-codes: 248 ids, 242 raise sites, 0 untagged, 0 errors, 0 warnings
+GATE exit 0
+######## C2
+specs+smoke: 62 files, 0 fail
+luau-analyze exit 0
+luau-lsp new-solver (engine-agnostic) exit 0
+luau-lsp roblox exit 0
+error-codes: 248 ids, 242 raise sites, 0 untagged, 0 errors, 0 warnings
+GATE exit 0
+######## CQ
+specs+smoke: 62 files, 0 fail
+luau-analyze exit 0
+luau-lsp new-solver (engine-agnostic) exit 0
+luau-lsp roblox exit 0
+error-codes: 248 ids, 242 raise sites, 0 untagged, 0 errors, 0 warnings
+GATE exit 0
