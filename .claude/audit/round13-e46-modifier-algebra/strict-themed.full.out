@@ -1,0 +1,4 @@
+[INFO] Loading definitions file: @roblox - scripts/roblox-defs/globalTypes.d.luau
+[INFO] sourcemap is disabled - automatic updating on sourcemap changes disabled
+[INFO] Loading Luau configuration from /code/Projects/quad/.luaurc
+.claude/audit/round13-e46-modifier-algebra/strict-themed.luau(9,26): TypeError: Key 'As' not found in table 'IntoTextButton'

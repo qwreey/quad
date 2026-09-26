@@ -1,0 +1,11 @@
+R1 Clickable:AsE46Card	ok	Modifier<E46Card>(0 fields)
+R2 GuiObject:AsE46Card (2nd parent)	ok	Modifier<E46Card>(0 fields)
+R3 Instance:AsE46Card (via GuiObject path)	ok	Modifier<E46Card>(0 fields)
+R4 Frame:AsE46Card (sibling)	ERR	./.claude/audit/round13-e46-modifier-algebra/probe-registry.luau:15: Quad0056 Modifier: cannot cast a "Frame" modifier to "E46Card" — not an ancestor (use :As(name) to force)
+R5 Card:AsE46Clickable (upcast)	ERR	./.claude/audit/round13-e46-modifier-algebra/probe-registry.luau:16: Quad0056 Modifier: cannot cast a "E46Card" modifier to "E46Clickable" — not an ancestor (use :As(name) to force)
+R6 cycle	ERR	./.claude/audit/round13-e46-modifier-algebra/probe-registry.luau:17: Quad0067 Modifier.DefineSubtype: "E46Clickable" ⊂ "E46Card" would make a cycle
+R7 self edge	ERR	./.claude/audit/round13-e46-modifier-algebra/probe-registry.luau:18: Quad0067 Modifier.DefineSubtype: "E46Card" ⊂ "E46Card" would make a cycle
+R8 dup edge no-op	ok	ok
+R9 dedup ctor	ok	true
+R10 DefineSubtype-only name then As(name)	ok	Modifier<E46Y>(0 fields)
+R11 DefineSubtype-only name then TypedFactory	ok	Modifier<E46Y>(0 fields)

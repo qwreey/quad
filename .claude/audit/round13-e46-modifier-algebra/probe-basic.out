@@ -1,0 +1,21 @@
+tostring untyped	ok	Modifier(1 fields)
+tostring typed table	ok	Modifier<Frame>(1 fields)
+tostring typed chain	ok	Modifier<Frame>(1 fields)
+tostring overridden	ok	Modifier(1 fields)
+tag overridden	ok	true
+typed ctor from sibling (TextButton->Frame)	ok	Modifier<Frame>(1 fields)
+Merged exists?	ok	nil
+Merged method?	ok	nil
+mod.Merged is setter	ok	3
+state xform returns Ref	ok	State(?)
+state xform returns Ref -> mount	ok	Ref(nil)
+state xform throws	ok	State(?)
+plain xform throws	ERR	./.claude/audit/round13-e46-modifier-algebra/probe-basic.luau:22: boom
+Alternative plain	ERR	./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Operator.luau:85: Quad0123 Operator.Alternative: Apply target must be a State (got number)
+Alternative nil	ERR	./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Operator.luau:85: Quad0123 Operator.Alternative: Apply target must be a State (got nil)
+Alternative State	ok	State(?) get=State(?)
+Alternative State mount	ok	7
+Tag as field	ERR	./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+Attr as field	ERR	./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+numeric key	ERR	./.claude/audit/round13-e46-modifier-algebra/probe-basic.luau:30: Quad0059 Modifier: initial-field table keys must be non-empty field names (got number at argument #1)
+state emits Modifier	ERR	./.claude/audit/round13-e46-modifier-algebra/probe-basic.luau:31: Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers

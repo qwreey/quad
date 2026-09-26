@@ -1,0 +1,7 @@
+Alt State mount initial	ok	5 -> 7
+state xform throws mount	ERR	./.claude/audit/round13-e46-modifier-algebra/probe-basic2.luau:11: boom
+xform-throw-later mount	ok	20 set3ok=false(./.claude/audit/round13-e46-modifier-algebra/probe-basic2.luau:14: boom3) after=20 then4=40 cnt=3
+calls before mount	0
+after 2 mounts	1	2	2
+after set	2	6	6
+after destroy f1, set 9	3	10

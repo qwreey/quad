@@ -1,0 +1,10 @@
+== mutant firstwins
+seeds 1..500  diffs 1227  time 0.1s
+== mutant keeptag
+seeds 1..500  diffs 7453  time 0.1s
+== mutant upcast
+seeds 1..500  diffs 383  time 0.1s
+== mutant eager
+seeds 1..500  diffs 1003  time 0.1s
+== mutant nilnone
+seeds 1..500  diffs 7393  time 0.1s

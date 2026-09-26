@@ -1,0 +1,20 @@
+  stat	experr	33094
+  stat	ops	351546
+  stat	stateW	41120
+  stat	tweenSnap	41846
+  stat	noneW	84777
+  stat	derived	5410
+  stat	tweenAnim	5739
+  stat	propchecks	383320
+  stat	mounts	40000
+seeds 1..20000  diffs 0  time 3.1s
+  stat	experr	16456
+  stat	ops	173912
+  stat	stateW	20460
+  stat	tweenSnap	21447
+  stat	noneW	41712
+  stat	derived	2685
+  stat	tweenAnim	2868
+  stat	propchecks	191730
+  stat	mounts	20000
+seeds 50001..60000  diffs 0  time 1.6s

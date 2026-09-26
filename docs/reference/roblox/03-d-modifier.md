@@ -143,8 +143,11 @@ end)
 
 **핸들러 층 값은 필드에 들어갈 수 없습니다**
 
-`Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier`를 필드 값으로 주면 — 리터럴이든
-변환 함수의 반환이든 — 그 자리에서 던집니다.
+`Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier`를 필드 값으로 주면 리터럴은 그 자리에서
+던지고(`Quad0057`), 변환 함수의 반환도 **저장된 값이 평범한 값일 때는** 그 자리에서 던집니다. 저장된 값이 `State`면
+변환이 `old:Compute(fn)`으로 들어가 lazy라 setter는 통과하고 마운트 때 드러납니다 — `Modifier`를 돌려주면 State 쪽
+가드 `Quad0185`, `Ref`를 돌려주면 quad가 막지 못해 프로퍼티에 `Ref` 테이블이 쓰이는 정의되지 않은 동작입니다
+([2026-09-27 mock 실측]; 소스 주석도 `State<Ref>` 안쪽을 UB로 둡니다).
 
 ```
 Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
@@ -213,6 +216,9 @@ class" 에러를 냅니다.
 | `mod:As(name)` | 그 이름으로 **다시 태그**한다. 존재 검사만 하고 **조상 검사는 안 한다** |
 | `mod:As<<T>>()` | 타입 인자로 결과 타입을 강제한다(`D`가 모르는 타입으로도 갈 수 있다) |
 
+타입 인자 없는 `mod:As(name)`·`mod:As()`의 결과 타입은 `unknown`이라 strict에서 그 값을 배열부에 두면 거부됩니다 —
+타입이 따라오게 하려면 `mod:As<<RobloxModule.TextButtonModifier>>("TextButton")`처럼 타입 인자를 같이 주세요(아래 `retagged`도 `unknown`).
+
 ```luau
 local forced: RobloxModule.TextLabelModifier = D.Modifier.GuiObject():As<<RobloxModule.TextLabelModifier>>()
 local retagged = D.Modifier.TextLabel():As("Frame") -- 태그만 Frame으로(조상 검사 없음)
@@ -263,8 +269,10 @@ Themed({ Modifier = D.Modifier.TextButton():TextSize(18) })          -- 자기 �
 `FrameModifier`와 같은 지위를 갖습니다. **런타임은 다릅니다** — 검사형 `:AsTextButton()`은 조상 방향으로만 내려받으므로
 `DefineSubtype("TextButton", "MaterialButtonSpec")`으로 만든 **하위** 클래스 값에 부르면 `Quad0056 Modifier: cannot cast a
 "MaterialButtonSpec" modifier to "TextButton" — not an ancestor (use :As(name) to force)`로 던집니다([2026-09-27 mock 실측]).
-커스텀 하위 클래스를 받는 컴포넌트는 위 `Themed`의 캐스트 줄을 비검사 `props.Modifier:As("TextButton")`으로 쓰거나,
-`Into<Class>` 대신 `<Class>Modifier?`(같은 클래스만)를 받으세요.
+커스텀 하위 클래스를 받는 컴포넌트는 `Into<Class>` 대신 `<Class>Modifier?`(같은 클래스만)를 받고, 하위 클래스 값을 꽂을 땐
+비검사 `props.Modifier:As<<RobloxModule.TextButtonModifier>>("TextButton")`을 쓰세요 — `IntoTextButton` 인터페이스에는
+`AsTextButton` 하나뿐이라 그 타입 위에서 `:As(...)`를 부르면 strict가 `Key 'As' not found`로 막고, 타입 인자 없는 `:As(name)`은
+결과가 `unknown`입니다([2026-09-27 strict 실측]).
 
 **예약 메소드 — `Apply` / `Peek` / `Overridden`**
 

@@ -1,0 +1,38 @@
+A1 destroyed inst collected while Modifier+Source alive:	true
+A2 undestroyed dropped inst collected:	false
+A3 derived-field modifier collected after inst destroyed:	true
+B1 plain throw at setter:	true	base still	1
+B2 State throw at setter?	false	(false = lazy, deferred to mount)
+B2 mount	ERR	./.claude/audit/round13-e46-modifier-algebra/probe-axes.luau:32: lazy
+B3 transform returns Ref on State field (roblox/03:146 says throws at setter)	ok	setter+mount ok, ZIndex holds Ref(nil)
+B4 transform returns Observer on State field	ERR	./.claude/audit/round13-e46-modifier-algebra/probe-axes.luau:41: attempt to call a nil value
+B5 transform returns Modifier on State field	ok	setter ok; mount: ./.claude/audit/round13-e46-modifier-algebra/probe-axes.luau:47: Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers
+B6 transform returns Ref on plain field	ERR	./.claude/audit/round13-e46-modifier-algebra/probe-axes.luau:49: Quad0057 Modifier: field "ZIndex" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+C1 q.Modifier.Merged	ok	nil
+C2 overlap same value via ctor	ok	Modifier(1 fields)
+C3 overlap None/nil via Overridden	ok	Modifier(1 fields)
+C4 mod:Merged(x) becomes a FIELD setter	ERR	./.claude/audit/round13-e46-modifier-algebra/probe-axes.luau:55: Quad0057 Modifier: field "Merged" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+C5 mod:Merged(1) field then mount	ERR	./.claude/audit/round13-e46-modifier-algebra/probe-axes.luau:56: Quad0076 Dispatch: no handler matched key Merged (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+D1 chain setter State reactive:	true
+E1 table numeric key	ERR	./.claude/audit/round13-e46-modifier-algebra/probe-axes.luau:63: Quad0059 Modifier: initial-field table keys must be non-empty field names (got number at argument #1)
+E2 setter numeric key	ERR	./.claude/audit/round13-e46-modifier-algebra/probe-axes.luau:64: Quad0058 Modifier: setter keys must be strings (got number) — put a non-string key in the props table itself (Frame { [key] = value })
+E3 Tag as field value (no gate)	ok	Modifier(1 fields)
+E4 Attr as field value (no gate)	ok	Modifier(1 fields)
+E5 Tag field mount	ERR	./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+E6 Tween as ctor-table value	ok	Modifier(1 fields)
+E7 array mix: ZIndex	2	tags	t1,t2
+F	Modifier(1 fields)	true	true	true
+F	Modifier<Frame>(1 fields)	true	Frame	true
+F	Modifier<Frame>(1 fields)	true	Frame	true
+F	Modifier(1 fields)	true	true	true
+F	Modifier(0 fields)	true	true	true
+F	Modifier<Frame>(0 fields)	true	Frame	true
+F	Modifier<Frame>(0 fields)	true	Frame	true
+F	Modifier<TextButton>(0 fields)	true	TextButton	true
+G1 D.Modifier.Frame(TextButtonModifier) → tag	ok	Frame
+G2 D.Modifier.TextButton(FrameModifier):AsTextButton	ok	Modifier<TextButton>(0 fields)
+G3 checked AsTextButton on Frame tag	ERR	./.claude/audit/round13-e46-modifier-algebra/probe-axes.luau:81: Quad0056 Modifier: cannot cast a "Frame" modifier to "TextButton" — not an ancestor (use :As(name) to force)
+H1 event-name setter calls fn at setter time:	1	field	nil
+I1 Alternative on plain field	ERR	./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Operator.luau:85: Quad0123 Operator.Alternative: Apply target must be a State (got number)
+I2 Alternative on State field: Peek:Get() is	State(?)	(State-of-State)
+I2 mount	5	->	7

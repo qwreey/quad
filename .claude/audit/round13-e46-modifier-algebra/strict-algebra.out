@@ -1,0 +1,8 @@
+strict-algebra.luau L8: TypeError: Expected this to be
+strict-algebra.luau L13: TypeError: Expected this to be
+strict-algebra.luau L15: TypeError: Expected this to be 'FrameModifier', but got 'unknown'
+strict-algebra.luau L16: TypeError: Expected this to be 'TextButtonModifier', but got 'unknown'
+strict-algebra.luau L21: TypeError: Expected this to be
+strict-algebra.luau L30: TypeError: Key 'AsGuiObject' not found in table 'FrameModifier'
+strict-algebra.luau L31: TypeError: Expected this to be 'Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMar
+strict-algebra.luau L32: TypeError: Type 'unknown' does not have key 'ZIndex'
