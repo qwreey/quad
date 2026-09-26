@@ -1,0 +1,12 @@
+14c14
+<   observer: outer:Remove(1)	true	
+---
+>   observer: outer:Remove(1)	false	./test/e1probe.luau:186: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from
+16,18c16,18
+< inner destroyed	true	sub destroyed	true	sub _mounted	true
+< f destroyed	true	f.Parent == parent	true	#children	1
+< outer Length	0	#outer._elements	0
+---
+> inner destroyed	nil	sub destroyed	nil	sub _mounted	true
+> f destroyed	false	f.Parent == parent	true	#children	1
+> outer Length	1	#outer._elements	1

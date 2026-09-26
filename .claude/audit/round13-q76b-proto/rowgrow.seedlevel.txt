@@ -1,0 +1,5 @@
+plain {'baseOk/q76Ok': 10000}
+  op at first wrong step: {'base': {}, 'q76': {}}
+rowgrow {'baseWrong/q76Wrong': 9302, 'sameFirstStep': 7236, 'baseOk/q76Wrong': 230, 'baseOk/q76Ok': 468}
+  op at first wrong step: {'base': {'ins': 2648, 'kind': 1256, 'move': 2150, 'revive': 1279, 'partreplace': 869, 'del': 366, 'mix': 632, 'reverse': 102}, 'q76': {'ins': 2027, 'del': 1964, 'move': 1696, 'revive': 1020, 'kind': 975, 'mix': 895, 'partreplace': 897, 'reverse': 58}}
+rowgrow first-wrong step: {'q76 earlier': 2296, 'same': 7236}

@@ -1,0 +1,16 @@
+FAIL Q76-1 KeyGone before this cycle's updateFn calls, gone keys from the back
+     ./test/spec.q76b.draft.luau:51: call order: gone:a gone:c x b y d
+FAIL Q76-2 many gone keys (integer keys): strictly descending by position
+     ./test/spec.q76b.draft.luau:65: not descending: 1,2,3,4,6,7,8,9,10,11,12,13,14,16,17,18,19,20
+FAIL Q76-3 a gone key with no mounted element (rendered nil) comes after the mounted ones
+     ./test/spec.q76b.draft.luau:75: order: gone:1 gone:2 gone:3
+PASS Q76-4 a new item's updateFn sees the gone elements already destroyed
+PASS Q76-5 state left by a throw in a NEW item's updateFn: old elements already gone; next :Set recovers
+FAIL Q76-6 Detach on KeyGone + OwnsElements=false: same final state, gone first
+     ./test/spec.q76b.draft.luau:132: order: gone:a gone:c n b
+FAIL Q74-1 grandparent Remove from an Observer inside a runtime Add's attach window is refused (Quad0167), no ghost
+     ./test/spec.q76b.draft.luau:153: grandparent Remove must raise Quad0167 (base: passes)
+FAIL Q74-2 depth-4 ancestor Clear from the same window is refused
+     ./test/spec.q76b.draft.luau:172: ancestor Clear must raise Quad0167
+PASS Q74-3 control (both): direct parent Clear is refused; sibling Add from the window passes
+summary 3/9

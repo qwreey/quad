@@ -1,0 +1,10 @@
+Scratch-only probe hook used by fuzz.list.luau (applied identically to every copy, NOT a proposal):
+  quad-base/src/Slot/init.luau, after `local OWNER, OWNER_POS = "__owner", "__ownerPos"`:
+	module._probeOwner = elementOwner -- SCRATCH PROBE HOOK (p-q76b), identical in all copies
+Copies (cp -rL quad-base at 075edb64): base / a1 (List.keygone-first.diff) / q76 (List.keygone-first-descending.diff = A1+A1b)
+  / q74 (Raw.owner-chain.diff) / both (q76 + Raw.owner-chain.diff).
+Run: from <copy>/quad-base, copy the .luau into test/ (probe.q75*.luau also need
+  audit/round13-e1-probe-fuzz/probe.e1.harness.luau there), then
+  luau test/fuzz.list.luau -a <fromSeed> <count> <verboseSeed|0> <plain|rowgrow>   (100 seeds per process: ~150MB RSS, mock leaks per quad)
+  python3 compare.py <scratchRoot> <verA> <verB>   (reads <scratchRoot>/out/<ver>.*.txt)
+Raw per-step outputs (10000 seeds x 5 runs, ~250k lines each) were left in the scratchpad, not copied.

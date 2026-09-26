@@ -1,0 +1,8 @@
+3c3
+< after 	L,k3,k1,T	viol:		known:	K1 stale offset extract: passed 2, actual 3 (k2st)
+---
+> after 	L,k3,k1,T	viol:		known:	
+6c6
+< after 	L,k3,k1,T	viol:		known:	K1 stale offset extract: passed 2, actual 3 (s1)
+---
+> after 	L,k3,k1,T	viol:		known:	

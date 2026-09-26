@@ -1,0 +1,6 @@
+== earlier-drop then State element dropped by updateFn (not KeyGone) ==
+before	L,k1,k2st,T	known:		viol:	
+after 	L,T	known:	K1 stale offset extract: passed 2, actual 1 (k2st)	viol:	
+== earlier-insert then State element dropped by updateFn (not KeyGone) ==
+before	L,k1,k2st,T	known:		viol:	
+after 	L,k3,k1,T	known:	K1 stale offset extract: passed 2, actual 3 (k2st)	viol:	

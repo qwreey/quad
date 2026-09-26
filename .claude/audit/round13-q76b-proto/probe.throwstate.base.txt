@@ -1,0 +1,6 @@
+newItem	threw	true	children	a,b,x	#_elements	3	Length	2	blocking	true
+newItem	 after recover: children	x,z	Length	2
+newItem	 three items: Length	2	blocking	true
+keyGone	threw	true	children	a,b,boom,x	#_elements	4	Length	2	blocking	true
+keyGone	 after recover: children	x,z	Length	2
+keyGone	 three items: Length	2	blocking	true

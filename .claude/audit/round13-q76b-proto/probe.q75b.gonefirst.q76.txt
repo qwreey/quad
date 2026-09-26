@@ -1,0 +1,8 @@
+== gone row before a kept row that grows in its updateFn (OwnsElements=true) ==
+before	L,r1_1,r2_1,T	known:		viol:	
+after 	L,r2_1,T,r2_2	known:		viol:	
+  row2 Offset	1	root Length	2	phys count	4
+== gone row before a kept row that grows in its updateFn (OwnsElements=false) ==
+before	L,r1_1,r2_1,T	known:		viol:	
+after 	L,r2_1,T,r2_2	known:		viol:	
+  row2 Offset	1	root Length	2	phys count	4
