@@ -63,6 +63,8 @@ const flash = q.Source(false)
             return q.Tween {
                 Value = if isMilestone then Color3.fromRGB(255, 215, 0) else Color3.fromRGB(255, 255, 255),
                 Time = if isMilestone then 0.6 else 0.2,
+                Style = Enum.EasingStyle.Quad,
+                Override = "Cancel",
                 Started = if isMilestone then function() flash:Set(true) end else nil,
                 Completed = if isMilestone then function() flash:Set(false) end else nil,
                 Cancelled = if isMilestone then function() flash:Set(false) end else nil,

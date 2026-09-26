@@ -26,7 +26,7 @@ const settings = q.Store({
 
 ```luau
 print(settings.Step:Get())   --> 1
-settings.Step:Set(5)
+settings.Step:Set(5)         -- 확인용 — 확인했으면 이 줄은 지웁니다(남겨 두면 §3의 보폭 버튼이 5부터 돕니다)
 ```
 
 ---

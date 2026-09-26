@@ -18,7 +18,7 @@ Quad에서 컴포넌트는 특수한 클래스도 매크로도 아닙니다. **p
 
 `src/client/UI/Counter.luau`를 새로 만들고, 지금까지의 코드를 그리로 옮깁니다. 바뀌어야 할 값은 `props`에서 받습니다.
 
-옮겨 가는 것은 **이 장에 필요한 뼈대**(카운트·라벨·버튼)뿐입니다. 05·07~10장에서 붙였던 태그·속성·07장의 `buttonRef`와 그 위의 `:Callback`/`:Wait`·버튼의 `BackgroundTransparency` 손쓰기·`CardStyle` Modifier·08장의 관측(`:Observer`)과 `Effect` 둘(뒤처리 이펙트·`buttonRef`의 게임패드 선택)·생명주기 훅은 여기서 뺐고, 08장의 버튼 색 파이프도 잠시 리터럴로 돌아갑니다([13장](/getting-started/13-functions/)에서 파이프로 되돌립니다). 그것들을 컴포넌트 안쪽에 두는 모양은 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/)이 다룹니다.
+옮겨 가는 것은 **이 장에 필요한 뼈대**(카운트·라벨·버튼)뿐입니다. 06장의 이름 라벨·입력창·되돌리기 버튼(`nameLabel`/`nameBox`/`resetButton`)과 `q.Out`, 05·07~10장에서 붙였던 태그·속성·07장의 `buttonRef`와 그 위의 `:Callback`/`:Wait`·버튼의 `BackgroundTransparency` 손쓰기·`CardStyle` Modifier·08장의 관측(`:Observer`)과 `Effect` 둘(뒤처리 이펙트·`buttonRef`의 게임패드 선택)·생명주기 훅은 여기서 뺐고, 08장의 버튼 색 파이프도 잠시 리터럴로 돌아갑니다([13장](/getting-started/13-functions/)에서 파이프로 되돌립니다). 그것들을 컴포넌트 안쪽에 두는 모양은 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/)이 다룹니다.
 
 ```luau
 -- 새 파일: ReplicatedStorage/Client/UI/Counter
@@ -63,7 +63,7 @@ return function(props)
 end
 ```
 
-이제 진입점에서 둘을 나란히 놓습니다. **02~09에서 만들었던 `card`와 `card.Parent = screen` 줄은 지웁니다** — 그 코드는 이제 `Counter` 안으로 들어갔습니다.
+이제 진입점에서 둘을 나란히 놓습니다. **02~10장에서 만들었던 `card`와 `card.Parent = screen` 줄은 지웁니다** — 그 코드는 이제 `Counter` 안으로 들어갔습니다.
 
 ```luau
 -- (Main.client.luau 계속 — 이제 진입점은 부르기만 합니다)
@@ -144,7 +144,7 @@ end
 **`Main.client.luau`**
 
 ```luau
--- (Main.client.luau — 01장부터 지금까지 전체 모습. Players·game.Loaded:Wait()·q·D·playerGui·screen은 01장 그대로입니다)
+-- (Main.client.luau — 01장부터 지금까지 전체 모습. Players·game.Loaded:Wait()·q·D·playerGui·screen은 01장 그대로이고, 06장의 이름 UI 셋은 서두에서 밝힌 대로 뺐습니다)
 const Players = game:GetService("Players")
 
 if not game:IsLoaded() then game.Loaded:Wait() end
@@ -174,7 +174,7 @@ row.Parent = screen
 screen.Parent = playerGui
 ```
 
-02~05·07~10장에서 `card`에 붙였던 태그·속성·`Ref`·관측·`Effect`·생명주기 훅·`Modifier`는 이 시점엔 아직 `Counter.luau`로 옮겨지지 않았습니다 — 이 절 서두에서 밝힌 대로 지금은 뼈대(카운트·라벨·버튼)만 옮겼습니다. 버튼 색도 08장의 파이프 대신 다시 리터럴이고, [13장](/getting-started/13-functions/)에서 파이프로 되돌립니다.
+02~05·07~10장에서 `card`에 붙였던 태그·속성·`Ref`·관측·`Effect`·생명주기 훅·`Modifier`와 06장의 이름 UI 셋은 이 시점엔 아직 `Counter.luau`로 옮겨지지 않았습니다 — 이 절 서두에서 밝힌 대로 지금은 뼈대(카운트·라벨·버튼)만 옮겼습니다. 버튼 색도 08장의 파이프 대신 다시 리터럴이고, [13장](/getting-started/13-functions/)에서 파이프로 되돌립니다.
 
 ---
 
@@ -214,7 +214,7 @@ end
 부르는 쪽은 원천을 만들어 넘기고, **같은 원천에 파이프를 하나 더 붙여** 자기 화면에 씁니다.
 
 ```luau
--- 새 예시: 별도 스크립트(01장 진입점의 screen에 붙인다)
+-- (Main.client.luau 계속 — 01장의 screen에 붙입니다)
 const Checkbox = require("@game/ReplicatedStorage/Client/UI/Checkbox")
 
 const agreed = q.Source(false)

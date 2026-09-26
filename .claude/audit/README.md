@@ -56,4 +56,5 @@
 - `round13-s10-snippet-recheck/` — **[2026-09-27 자율 루프 S10]** 오늘 고친 문서 스니펫 16파일 18블록 mock 실행(`run-*`)·strict(`strict-*`)·캐비엇 반대 재현 프로브 — 전부 통과, GS 14 §5 `:Single`은 8.13 기존 구멍(`probe-gs14-min.luau`).
 - `round13-slot-bundle/` — **[2026-09-27 자율 루프 P-slot-bundle]** Slot 여섯 문항(Q74+Q76+Q111~Q114) 합본 사본 — `conflicts.txt`·`bench.summary.txt`·`probe.bundle.interact*.out.txt`·퍼저 요약·게이트 로그·`HOW.txt`; 충돌 0, 상호작용 넷(Q74 I7 동결 확산·I1 잔여 유령, Q76 I2, Q74×Q113).
 - `round13-e28-errors-xref/` — **[2026-09-27 자율 루프 E28]** 에러 레퍼런스 248 id 전수 대조 — `README.md`(전수 표·발견 (a)(b)(c))·`scripts/`·`triggers/`(프로브 14)·`out/`(캡처 원문·`rows.json`)·`apply-log.md`(문서 반영 원장) — 문구 248 일치, 언제·고치려면 불일치 40 → 문서 반영 + `Q117`·Q90 ⑯⑰.
+- `round13-e27-gs-chain/` — **[2026-09-27 자율 루프 E27]** 시작하기 22편 `luau` 펜스 125개 누적 체인 mock 실행(`run-all.sh`, 러너 넷·탐침·strict/nonstrict) — 검사 181 통과, 문서 오류 `H-737`~`H-744`, `Q118`, 8.33.
 

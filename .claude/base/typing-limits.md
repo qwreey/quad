@@ -1093,7 +1093,7 @@ indexer`; (b) `Param & { [AttrKey]: V }` 교집합은 평범한 배열 리터럴
 
 ## 8.20. `<<I>>`로 고정한 생명주기 훅 콜백 안에서 `inst:GetChildren()`의 반환이 `unknown`이 된다 (2026-09-11 실측, GS 08 작성 중)
 
-`q.OnRendered<<Frame>>(function(inst) print(#inst:GetChildren()) end)`가 신 솔버 strict에서 `Operator '#' could not be applied to operand of type unknown`. 같은 식이 최상위나 `PostRef<Frame?>`의 `:Callback` 콜백에서는 통과하고, 같은 콜백 안의 `inst.Size`·`inst.ClassName`·`inst:FindFirstChildOfClass(...)`도 통과한다 — **제네릭 파라미터 `I`로 들어온 인스턴스의 배열 반환 메소드만** 걸린다. 우회는 지역 변수 주석 `const kids: { Instance } = inst:GetChildren()`(GS 08이 그 형태). `reference/sugar/04-lifecycle-hooks.md`의 예제는 `inst.Size`/`inst.ClassName`이라 지금은 안 걸리지만, 자식 순회 예제를 넣을 때 같은 벽 — 8.16과 같은 뿌리(훅의 `I`는 타입 인자로만 채워진다)로 보이나 원인은 좁히지 않았다.
+`q.OnRendered<<Frame>>(function(inst) print(#inst:GetChildren()) end)`가 신 솔버 strict에서 `Operator '#' could not be applied to operand of type unknown`. 같은 식이 최상위나 `PostRef<Frame?>`의 `:Callback` 콜백에서는 통과하고, 같은 콜백 안의 `inst.Size`·`inst.ClassName`·`inst:FindFirstChildOfClass(...)`도 통과한다 — **제네릭 파라미터 `I`로 들어온 인스턴스의 배열 반환 메소드만** 걸린다. 우회는 지역 변수 주석 `const kids: { Instance } = inst:GetChildren()`(**[2026-09-27 E27 정정]** GS 훅 장(지금 09장)이 한때 그 형태였으나 `d3790cdc`에서 주석을 지워 지금 `09-lifecycle-hooks.md` 98행은 무주석 `const kids = inst:GetChildren()`이고 strict에서 이 진단이 그대로 난다 — GS는 nonstrict 전제라 방치, `audit/round13-e27-gs-chain/probe-09-inline-hooks-strict.luau`. 부수 관측: 생성자 테이블 안에서는 `q.OnCreated<<Frame>>`의 콜백 파라미터도 `Frame`으로 고정되지 않고 구조 추론된다 — 테이블 밖에선 `Frame`으로 잡힘(`probe-09-standalone-hooks-strict.luau`)). `reference/sugar/04-lifecycle-hooks.md`의 예제는 `inst.Size`/`inst.ClassName`이라 지금은 안 걸리지만, 자식 순회 예제를 넣을 때 같은 벽 — 8.16과 같은 뿌리(훅의 `I`는 타입 인자로만 채워진다)로 보이나 원인은 좁히지 않았다.
 
 ## 8.21. 비균일 재귀 제네릭보다 **앞에 선언된** 별칭이 그걸 인스턴스화하면 그 참조가 통째로 에러 타입(any)이 된다 — `State`/`Source`는 파일 앞쪽에, 참조하는 별칭은 그 뒤에 (2026-09-15 실측, **신 솔버 전용**)
 
@@ -1212,3 +1212,8 @@ PreRef/PostRef가 `Ref`의 하위 타입이라 숫자 키 자리의 `State<Ref>`
 ## 8.32. 문서가 "정상 지원"이라 한 중첩 `State<State<T>>`를 strict가 타입 있는 모든 자리에서 거부한다 — 런타임 언랩과 타입 표면의 어긋남 (2026-09-27 round13 E23 실측, luau-lsp 1.69.0 신 솔버)
 
 문자 키 프로퍼티(GS 20 §2 `Text = which` 원문 모양)·숫자 키 자식·setter 체인·중첩된 Store 필드·State를 돌려주는 Compute 자리에서 `State<State<T>>`(`State<State<Tag/Slot/Ref>>` 포함)가 거부되고, `q.Slot { q.Source(q.Source(f)) }`는 "too complex"다(`audit/round13-e23-probe-types*.luau` T1·T1b·T4·T11·T12·T15~T17·T19). 통과하는 자리는 `sl:Add(…)`·`:Single(…)`(인자가 넓음)과 `q.Modifier{…}`/`D.Modifier.<Class>{…}` 테이블 형태(`H-673`의 무검사)뿐. 원인으로 보이는 것은 마커 `__quadStateValue: T`가 한 겹이라는 점 — 타입에서 중첩을 받으려면 새 타입 장치가 필요하다(기록만). GS 20·SKILL.md §2.2·how-to 10 함정 6에 "런타임 지원, strict는 한 겹 — `:: any`" 캐비엇을 달았다(`H-718`).
+
+## 8.33. nonstrict에서도 `table.clone(props.Rows:Get())`이 "Argument count mismatch"를 낸다 (2026-09-27 round13 E27 실측)
+
+GS 14 §3(`14-lists.md` 181행) `const nextRows = table.clone(props.Rows:Get())`이 신 솔버 **nonstrict**에서 `Argument count mismatch` 진단을 낸다 — GS 전체 nonstrict 검사에서 유일한 진단. quad 없이 한 줄(`table.clone(f())` 꼴, `audit/round13-e27-gs-chain/probe-14s3/pure4.luau`)로 재현되므로 Luau 추론 한계로 보이나 원인은 좁히지 않았다(추정). 우회는 지역 변수로 받기(`const rows = props.Rows:Get(); table.clone(rows)`) — 문서엔 반영하지 않았다(Q105 배치와 같이 볼 것).
+

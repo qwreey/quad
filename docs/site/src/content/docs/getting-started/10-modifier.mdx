@@ -34,7 +34,7 @@ const card = D.Frame {
     Size = UDim2.fromOffset(240, 160),
     UICorner = 12,
 
-    -- …05~08장에서 붙인 숫자 키와 자식들 생략…
+    -- …05·07~09장에서 붙인 숫자 키와 자식들 생략…
 }
 ```
 
@@ -150,7 +150,7 @@ return {
 §2와 §3을 합치면 "테마 전환"의 모양이 나옵니다. 팩토리에 리터럴 대신 `State`를 넘기면, 그 팩토리가 만든 `Modifier`는 그 `State`를 따라갑니다.
 
 ```luau
--- … 위쪽 코드에 이어집니다(§3의 accent를 그대로 씁니다)
+-- … 위쪽 코드에 이어집니다(§3 Styles 모듈의 accent 함수를 이 스크립트에도 같은 모양으로 정의해 둔 것으로 칩니다 — 모듈로 만들었다면 Styles.Accent)
 const accentColor = q.Source(Color3.fromRGB(0, 162, 255))
 const button = D.TextButton { accent(accentColor), Text = "+ 1" }
 
