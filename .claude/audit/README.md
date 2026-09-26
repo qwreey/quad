@@ -36,4 +36,5 @@
 - `round13-e16-probe*.luau`(런타임 다섯 + 타입 셋) — **[2026-09-27 자율 루프 E16]** Tag/Attr/AttrKey × Ref/PreRef/PostRef/dispose/훅 조합 경계 — `H-681`(가드 동률로 주어가 환경 의존)~`H-686`, typing-limits 8.31, 문서 예제 대조 전부 일치.
 - `round13-q103-proto/` — **[2026-09-27 자율 루프 P-Q103]** 생성 setter 타입 `Field<T>`/`FieldP<T>`에 nil 팔을 더한 변형 A의 gen-d·D diff, 타입 게이트 시간 8회(잡음 범위), strict 프로브 base/A 대조, 관용구 변형 B 결과 — 적용은 사용자 결정(§4 Q103).
 - `round13-s6-inline-compute/` — **[2026-09-27 자율 루프 S6]** 공개 문서 스니펫의 인라인 `:Compute` strict 검사 프로브 36개(실패 8·통과 8, before/after) — `H-688`(GS 일곱 주석)·`H-689`(8.13 "children 자리 통과" 정정, GS 19 무제약 Compute 구멍 후보).
+- `round13-s6b-compute-hole/` — **[2026-09-27 자율 루프 P-S6b]** "무주석 Compute 결과 무제약"의 원인 매트릭스(quad 없는 최소 재현·quad 실제 타입·처방 후보 다섯·문서 전수 12건) — §1 그 자체로 판정(`H-691`), 문서 배치는 `Q105`.
 

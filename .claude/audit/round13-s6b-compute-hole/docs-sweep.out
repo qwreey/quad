@@ -1,0 +1,13 @@
+file:line | nparams | ndeps | param-annot | return-annot | binding | line
+docs/getting-started/03-flowing-values.md:108 | 3 | 1 | N | N | local | const both = count:Compute(function(c, previous, s)
+docs/getting-started/18-blocker.md:27 | 3 | 1 | N | N | local | const countText = count:Compute(function(c, prev, u)
+docs/getting-started/18-blocker.md:66 | 3 | 1 | N | N | local | const countText = count:Compute(function(c, prev, u)
+docs/getting-started/19-laziness.md:59 | 3 | 1 | N | N | local | const total = n:Compute(function(s, previous, d)
+docs/how-to/02-form-validation-pattern.md:135 | 3 | 1 | N | N | local | local canSubmit = isUsernameValid:Compute(function(validUser, _previous, validPass)
+docs/how-to/03-long-lists-and-windowing.md:199 | 3 | 1 | N | N | local | local window = gatedScrollY:Compute(function(y, _previous, height)
+docs/how-to/08-migrating-from-v1.md:110 | 3 | 1 | Y | Y | local | local size = width:Compute(function(
+docs/how-to/08-migrating-from-v1.md:148 | 3 | 1 | Y | Y | local | local moved = base:Compute(function(
+docs/overview/01-why-quad.md:119 | 3 | 1 | N | N | local | local both = count:Compute(function(c, previous, s)
+docs/reference/core/03-state.md:91 | 3 | 1 | Y | N | annot | local area: q.State<number> = width:Compute(function(self, previous, other: q.StateData<nu
+docs/skills/quad-ui-dev/SKILL.md:130 | 3 | 1 | N | N | local | local fullName = firstName:Compute(function(self, prev, last)
+docs/skills/quad-ui-dev/references/code-recipes.md:202 | 3 | 1 | N | N | local | local isValid = form.Username:Compute(function(self, prev, pwd)

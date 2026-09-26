@@ -1,0 +1,33 @@
+=== min-any.luau [luau-lsp 1.69.0]
+[INFO] Loading definitions file: @roblox - scripts/roblox-defs/globalTypes.d.luau
+[INFO] sourcemap is disabled - automatic updating on sourcemap changes disabled
+[INFO] Loading Luau configuration from /code/Projects/quad/.luaurc
+.claude/audit/round13-s6b-compute-hole/min-any.luau(11,103): TypeError: Expected this to be 'string', but got 'number'
+.claude/audit/round13-s6b-compute-hole/min-any.luau(12,103): TypeError: Expected this to be 'string', but got 'number'
+.claude/audit/round13-s6b-compute-hole/min-any.luau(13,103): TypeError: Expected this to be 'string', but got 'number'
+.claude/audit/round13-s6b-compute-hole/min-any.luau(14,103): TypeError: Expected this to be 'string', but got 'number'
+.claude/audit/round13-s6b-compute-hole/min-any.luau(16,109): TypeError: Expected this to be 'string', but got 'number'
+.claude/audit/round13-s6b-compute-hole/min-any.luau(17,105): TypeError: Expected this to be 'string', but got 'number'
+.claude/audit/round13-s6b-compute-hole/min-any.luau(18,102): TypeError: Expected this to be 'number', but got 'string'
+.claude/audit/round13-s6b-compute-hole/min-any.luau(20,24): TypeError: Operator '+' could not be applied to operands of types (a & ~(false?)) | number and number; there is no corresponding overload for __add
+.claude/audit/round13-s6b-compute-hole/min-any.luau(20,46): TypeError: Operator '+' could not be applied to operands of types (a & ~(false?)) | number and number; there is no corresponding overload for __add
+.claude/audit/round13-s6b-compute-hole/min-any.luau(20,24): TypeError: Consider annotating the return with number
+.claude/audit/round13-s6b-compute-hole/min-any.luau(20,104): TypeError: Operator '+' could not be applied to operands of types t1 where t1 = ((add<t1, number>?) & ~(false?)) | number and number; there is no corresponding overload for __add
+.claude/audit/round13-s6b-compute-hole/min-any.luau(20,104): TypeError: Operator '+' could not be applied to operands of types t1 where t1 = ((add<t1, number>?) & ~(false?)) | number and number; there is no corresponding overload for __add
+.claude/audit/round13-s6b-compute-hole/min-any.luau(21,112): TypeError: Expected this to be 'string', but got 'number'
+.claude/audit/round13-s6b-compute-hole/min-any.luau(21,48): LocalUnused: Variable 'v' is never used; prefix with '_' to silence
+=== min-any.luau [luau-analyze 0.734]
+./.claude/audit/round13-s6b-compute-hole/min-any.luau(11,103): TypeError: Expected this to be 'string', but got 'number'
+./.claude/audit/round13-s6b-compute-hole/min-any.luau(12,103): TypeError: Expected this to be 'string', but got 'number'
+./.claude/audit/round13-s6b-compute-hole/min-any.luau(13,103): TypeError: Expected this to be 'string', but got 'number'
+./.claude/audit/round13-s6b-compute-hole/min-any.luau(14,103): TypeError: Expected this to be 'string', but got 'number'
+./.claude/audit/round13-s6b-compute-hole/min-any.luau(16,109): TypeError: Expected this to be 'string', but got 'number'
+./.claude/audit/round13-s6b-compute-hole/min-any.luau(17,105): TypeError: Expected this to be 'string', but got 'number'
+./.claude/audit/round13-s6b-compute-hole/min-any.luau(18,102): TypeError: Expected this to be 'number', but got 'string'
+./.claude/audit/round13-s6b-compute-hole/min-any.luau(20,24): TypeError: Operator '+' could not be applied to operands of types (a & ~(false?)) | number and number; there is no corresponding overload for __add
+./.claude/audit/round13-s6b-compute-hole/min-any.luau(20,46): TypeError: Operator '+' could not be applied to operands of types (a & ~(false?)) | number and number; there is no corresponding overload for __add
+./.claude/audit/round13-s6b-compute-hole/min-any.luau(20,24): TypeError: Consider annotating the return with number
+./.claude/audit/round13-s6b-compute-hole/min-any.luau(20,104): TypeError: Operator '+' could not be applied to operands of types t1 where t1 = ((add<t1, number>?) & ~(false?)) | number and number; there is no corresponding overload for __add
+./.claude/audit/round13-s6b-compute-hole/min-any.luau(20,104): TypeError: Operator '+' could not be applied to operands of types t1 where t1 = ((add<t1, number>?) & ~(false?)) | number and number; there is no corresponding overload for __add
+./.claude/audit/round13-s6b-compute-hole/min-any.luau(21,112): TypeError: Expected this to be 'string', but got 'number'
+./.claude/audit/round13-s6b-compute-hole/min-any.luau(21,48): LocalUnused: Variable 'v' is never used; prefix with '_' to silence

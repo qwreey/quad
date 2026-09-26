@@ -1,0 +1,39 @@
+=== min-matrix.luau [luau-lsp 1.69.0]
+[INFO] Loading definitions file: @roblox - scripts/roblox-defs/globalTypes.d.luau
+[INFO] sourcemap is disabled - automatic updating on sourcemap changes disabled
+[INFO] Loading Luau configuration from /code/Projects/quad/.luaurc
+.claude/audit/round13-s6b-compute-hole/min-matrix.luau(45,115): TypeError: Expected this to be 'string', but got 'SD<number> & { Compute: <U>(SD<number>, (SD<number>, U?, ...any) -> U, ...any) -> *error-type* }'; 
+this is because 
+	 * the 1st component of the intersection is `SD<number>`, which is not a subtype of `string`
+	 * the 2nd component of the intersection is `{ Compute: <U>(SD<number>, (SD<number>, U?, ...any) -> U, ...any) -> *error-type* }`, which is not a subtype of `string`
+.claude/audit/round13-s6b-compute-hole/min-matrix.luau(47,115): TypeError: Expected this to be 'string', but got 'Box<number>'
+.claude/audit/round13-s6b-compute-hole/min-matrix.luau(48,115): TypeError: Expected this to be 'string', but got 'Box<any>'
+.claude/audit/round13-s6b-compute-hole/min-matrix.luau(56,23): TypeError: Consider annotating the return with number
+.claude/audit/round13-s6b-compute-hole/min-matrix.luau(56,12): TypeError: None of the overloads for function that accept 2 arguments are compatible.
+.claude/audit/round13-s6b-compute-hole/min-matrix.luau(56,12): TypeError: Available overloads: <U>(SD<number>, (SD<number>) -> U) -> *error-type*; and <U>(SD<number>, (SD<number>, U?, ...any) -> U, ...any) -> *error-type*
+.claude/audit/round13-s6b-compute-hole/min-matrix.luau(59,115): TypeError: Expected this to be 'string', but got 't1 where t1 = { Get: (*CYCLE*) -> number, read __v: number } & { Map: ({ Get: (*CYCLE*) -> number, read __v: number }, ({ Get: (*CYCLE*) -> number, read __v: number }, number?, ...any) -> number, ...any) -> t1 }'; 
+this is because 
+	 * the 1st component of the intersection is `SD<number>`, which is not a subtype of `string`
+	 * the 2nd component of the intersection is `t1 where t1 = { Map: ({ Get: (*CYCLE*) -> number, read __v: number }, ({ Get: (*CYCLE*) -> number, read __v: number }, number?, ...any) -> number, ...any) -> t1 & { Get: (*CYCLE*) -> number, read __v: number } }`, which is not a subtype of `string`
+.claude/audit/round13-s6b-compute-hole/min-matrix.luau(60,115): TypeError: Expected this to be 'string', but got 't1 where t1 = { Get: (*CYCLE*) -> number, read __v: number } & { Map: ({ Get: (*CYCLE*) -> number, read __v: number }, ({ Get: (*CYCLE*) -> number, read __v: number }, number?, ...any) -> number, ...any) -> t1 }'; 
+this is because 
+	 * the 1st component of the intersection is `SD<number>`, which is not a subtype of `string`
+	 * the 2nd component of the intersection is `t1 where t1 = { Map: ({ Get: (*CYCLE*) -> number, read __v: number }, ({ Get: (*CYCLE*) -> number, read __v: number }, number?, ...any) -> number, ...any) -> t1 & { Get: (*CYCLE*) -> number, read __v: number } }`, which is not a subtype of `string`
+=== min-matrix.luau [luau-analyze 0.734]
+./.claude/audit/round13-s6b-compute-hole/min-matrix.luau(45,115): TypeError: Expected this to be 'string', but got 'SD<number> & { Compute: <U>(SD<number>, (SD<number>, U?, ...any) -> U, ...any) -> *error-type* }'; 
+this is because 
+	 * `SD<number>` is not a subtype of `string`
+	 * `{ Compute: <U>(SD<number>, (SD<number>, U?, ...any) -> U, ...any) -> *error-type* }` is not a subtype of `string`
+./.claude/audit/round13-s6b-compute-hole/min-matrix.luau(47,115): TypeError: Expected this to be 'string', but got 'Box<number>'
+./.claude/audit/round13-s6b-compute-hole/min-matrix.luau(48,115): TypeError: Expected this to be 'string', but got 'Box<any>'
+./.claude/audit/round13-s6b-compute-hole/min-matrix.luau(56,23): TypeError: Consider annotating the return with number
+./.claude/audit/round13-s6b-compute-hole/min-matrix.luau(56,12): TypeError: None of the overloads for function that accept 2 arguments are compatible.
+./.claude/audit/round13-s6b-compute-hole/min-matrix.luau(56,12): TypeError: Available overloads: <U>(SD<number>, (SD<number>) -> U) -> *error-type*; and <U>(SD<number>, (SD<number>, U?, ...any) -> U, ...any) -> *error-type*
+./.claude/audit/round13-s6b-compute-hole/min-matrix.luau(59,115): TypeError: Expected this to be 'string', but got 't1 where t1 = { Get: (*CYCLE*) -> number, read __v: number } & { Map: ({ Get: (*CYCLE*) -> number, read __v: number }, ({ Get: (*CYCLE*) -> number, read __v: number }, number?, ...any) -> number, ...any) -> t1 }'; 
+this is because 
+	 * `SD<number>` is not a subtype of `string`
+	 * `t1 where t1 = { Map: ({ Get: (*CYCLE*) -> number, read __v: number }, ({ Get: (*CYCLE*) -> number, read __v: number }, number?, ...any) -> number, ...any) -> t1 & { Get: (*CYCLE*) -> number, read __v: number } }` is not a subtype of `string`
+./.claude/audit/round13-s6b-compute-hole/min-matrix.luau(60,115): TypeError: Expected this to be 'string', but got 't1 where t1 = { Get: (*CYCLE*) -> number, read __v: number } & { Map: ({ Get: (*CYCLE*) -> number, read __v: number }, ({ Get: (*CYCLE*) -> number, read __v: number }, number?, ...any) -> number, ...any) -> t1 }'; 
+this is because 
+	 * `SD<number>` is not a subtype of `string`
+	 * `t1 where t1 = { Map: ({ Get: (*CYCLE*) -> number, read __v: number }, ({ Get: (*CYCLE*) -> number, read __v: number }, number?, ...any) -> number, ...any) -> t1 & { Get: (*CYCLE*) -> number, read __v: number } }` is not a subtype of `string`

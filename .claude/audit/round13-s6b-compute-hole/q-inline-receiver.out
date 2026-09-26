@@ -1,0 +1,23 @@
+=== q-inline-receiver.luau [luau-lsp 1.69.0]
+[INFO] Loading definitions file: @roblox - scripts/roblox-defs/globalTypes.d.luau
+[INFO] sourcemap is disabled - automatic updating on sourcemap changes disabled
+[INFO] Loading Luau configuration from /code/Projects/quad/.luaurc
+.claude/audit/round13-s6b-compute-hole/q-inline-receiver.luau(12,42): TypeError: Expected this to be
+	'(StateData<number>, string?, ...any) -> string'
+but got
+	'(t1) -> string where t1 = { read Get: (t1) -> unknown }'; 
+this is because 
+	 * `Get` is a read-only property in the latter type, but the former type requires a read-write property
+	 * it takes the 1st entry in the type pack, accessing `Get`, takes the 1st entry in the type pack, accessing `Get`, returns the 1st entry in the type pack is `unknown` in the latter type and `number` in the former type, and `unknown` is not a subtype of `number`
+.claude/audit/round13-s6b-compute-hole/q-inline-receiver.luau(15,46): TypeError: Expected this to be
+	'(StateData<number>, string?, ...any) -> string'
+but got
+	'(t1) -> string where t1 = { read Get: (t1) -> unknown }'; 
+this is because 
+	 * `Get` is a read-only property in the latter type, but the former type requires a read-write property
+	 * it takes the 1st entry in the type pack, accessing `Get`, takes the 1st entry in the type pack, accessing `Get`, returns the 1st entry in the type pack is `unknown` in the latter type and `number` in the former type, and `unknown` is not a subtype of `number`
+.claude/audit/round13-s6b-compute-hole/q-inline-receiver.luau(18,32): TypeError: Expected this to be
+	'(None | StateMarker<string> | string)?'
+but got
+	't1 where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*'
+=== q-inline-receiver.luau [luau-analyze 0.734]
