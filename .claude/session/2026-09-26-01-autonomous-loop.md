@@ -109,3 +109,4 @@
 - **04:50** S8 완료(sonnet, 사이트 빌드·링크 전수) — 빌드 성공·콜아웃 렌더 정상·`_redirects` 전부 실존; 깨진 앵커 하나(`H-706`, 2026-09-18 헤딩 개명 때 목차 누락). 34회차 커밋(`271b2ff3`). 도는 중: E19·E20.
 - **05:00** E20 완료(opus, Observer/Effect 구독 수명) — **`H-707` 동작 결함**(Deferred 창에서 `:Subscribe`로 되살린 Effect를 늦은 Destroying이 죽임 → Subscribe/WeakSubscribe에 `_unbindDestroying()`, spec 11 케이스, CHANGELOG Fixed)·`H-708`(`.Subscribed` 뜻)·`H-709`(cleanup throw·Observer 재귀·Immediate 조건 문장 셋); **Q109**(파동 도중 되살림 이중 처리)·**Q110**(설치 중 Rerun force); Q90 ⑫. 35회차 커밋(`50c29750`). 도는 중: E19·D-Q105.
 - **05:15** E19 완료(opus, Slot 수동 op 차등 퍼저 1.2만 시드) — 불일치 1 → **Q111**(State 링크 순환이 게이트 통과), **Q112**(nil State 두 자리); `H-710`(언마운트 중 옛 원소 잔류)·`H-711`(State 요소 UB)·`H-712`(Splice 실제 차수); Q75 (e)·Q77 보강. 36회차 커밋(`f3c832ed`). 도는 중: D-Q105·감사 10라운드.
+- **05:25** 감사 10라운드 완료(sonnet, 오늘 코드 변경 넷 ↔ 정본) — 확실 3 → `H-713`(effect-plan 의사코드·lifecycle-pattern 표·mock 주석 넷). 37회차 커밋(`56f98427`). P-Q111(opus) 띄움. 도는 중: D-Q105·P-Q111.

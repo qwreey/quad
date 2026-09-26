@@ -24,13 +24,14 @@
 	이걸 위해 `Destroy`가 Roblox처럼 동작한다 — Destroying 발화 → Parent nil →
 	**자손까지 Destroy** → **그 인스턴스의 모든 Connection을 끊는다**(`Connected =
 	false`), 두 번째 Destroy는 no-op. gcconn의 `.Connected`가 곧 생존 판정이라서.
-	Roblox와 다른 점 하나: gcconn/gchold 셋업(`nativeClaim`)은 quad가 Instance를
-	만들 때 하는 일인데 mock Instance는 quad 밖에서 만들어지므로 여기선
-	`holdLifetime` 첫 호출에 lazy로 한다 — quad-roblox는 그러면 안 된다
-	(userdata 동일성 구멍, 같은 문서 (0) 절). **[2026-09-18 round11 Q64]** "quad 소유"의
+	Roblox와 다른 점 하나: gcconn/gchold 셋업은 quad-roblox에선 `nativeClaim`이
+	Instance를 만들 때 하는 일인데, mock은 **이미 claim된** Instance의 첫 `holdLifetime`에
+	lazy로 세운다(셋업만 lazy — 소유 판정은 아래). **[2026-09-18 round11 Q64]** "quad 소유"의
 	판정은 `Data.claimed` 플래그 하나다 — `Instance.new`는 Declaration이 만든 것의 대역이라
 	태어날 때 claim(`isClaimed` 참, `nativeClaim`/`Claim`은 "already claimed"), 밖에서 만든
-	것은 `Instance.foreign`(`nativeClaim`·lazy hold가 지나가야 참). 전엔 `isClaimed`가
+	것은 `Instance.foreign`(`nativeClaim`/`Claim`이 지나가야 참). **[2026-09-27 round13 `H-658`]**
+	예전엔 `holdLifetime`이 미claim 인스턴스도 lazy로 claim해 주어 foreign 호스트가 조용히
+	통과했다 — 이제 quad-roblox와 같은 게이트("not claimed")로 던진다. 전엔 `isClaimed`가
 	"살아 있는 mock이면 참"이고 이중 claim 판정은 gchold 유무라 두 뜻이 갈라져 있었다.
 ]]
 
@@ -648,7 +649,7 @@ local function mockProvider(quad: any): { [any]: any }
 	-- `false or`: local 함수가 상수 접힘/인라인되면 아래 클로저의 업밸류 캡처가 사라진다
 	local nop = (false or function(...: any) end) :: (...any) -> ()
 
-	-- (0) nativeClaim 상당 — mock에선 lazy(헤더 주석 참고). Q64: 어느 경로든 여기를 지나면 quad 소유.
+	-- (0) gchold/gcconn 셋업 — mock은 이미 claim된 인스턴스의 첫 hold에 lazy로 세운다(헤더 주석). Q64: `claimed` 플래그가 소유 판정.
 	local function claim(inst: any)
 		getData(inst).claimed = true
 		if InstData:GetWeak(inst, "gchold") ~= nil then
@@ -737,13 +738,12 @@ local function mockProvider(quad: any): { [any]: any }
 
 	-- 2순회 `H-374`: the explicit `nativeClaim` op the real provider installs
 	-- (`H-305` (d′) "전부 같은 형태" — mock is a backend too, `H-294`). The
-	-- lazy internal `claim` stays idempotent (holdLifetime claims on demand);
-	-- the explicit op mirrors the real one's double-claim contract (§7-10).
-	-- 3순회 note: the "already claimed" marker (`gchold`) is SHARED with the
-	-- lazy claim, so `bindLifetime(inst, v)` then `Claim(inst, …)` reads as
-	-- "already claimed" here while the real provider rejects that order one
-	-- step earlier ("not claimed") — valid programs are unaffected, only the
-	-- error trajectory differs (the header's intended lazy divergence).
+	-- internal `claim` stays idempotent (it only sets up gchold/gcconn on an
+	-- already-claimed Instance); the explicit op mirrors the real one's
+	-- double-claim contract (§7-10). [2026-09-27 round13 `H-658`] `holdLifetime`
+	-- no longer claims on demand — `bindLifetime(foreign, v)` is rejected "not
+	-- claimed" here exactly as by the real provider (the old "error trajectory
+	-- differs" note is gone with the lazy claim).
 	local function nativeClaim(inst: any)
 		if not isMockInstance(inst) then
 			Err.errorBefore("nativeClaim: inst is not a mock instance", SURFACE)
@@ -760,7 +760,7 @@ local function mockProvider(quad: any): { [any]: any }
 	quad.Backend.isHeldBy = isHeldBy
 	quad.Backend.onDestroying = onDestroying
 	-- [2026-09-16] `isClaimed` — round11 Q64 (2026-09-18): the mock's one `claimed` flag (`Instance.new` =
-	-- born claimed, `Instance.foreign` = not until `nativeClaim`/lazy hold). The real provider answers
+	-- born claimed, `Instance.foreign` = not until `nativeClaim`/`Claim` — `H-658`: a hold no longer claims). The real provider answers
 	-- from the gchold setup + gcconn `.Connected` (round11 `H-548`: a destroyed Instance is "not
 	-- claimed" at once, not after the next GC) — mirrored by the `destroyed` half.
 	local function isClaimed(inst: any): boolean

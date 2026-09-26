@@ -762,6 +762,7 @@ function EffectHandle:WeakSubscribe()
     end
     self.Subscribed = true
     self._dying = false                        -- ⭐ [2026-08-31 `H-182`] 실행 가능성을 재무장하는 모든 자리가 내린다
+    self:_unbindDestroying()                   -- [2026-09-27 round13 `H-707`] 죽은 호스트의 늦은 Destroying 콜백을 stale로 — `_destroyConn`을 끊어 `H-574` 가드가 서게
     WeakSubscribed[self] = true
     resubscribeTail(self)
     return self
@@ -774,6 +775,7 @@ function EffectHandle:Subscribe()
     end
     self.Subscribed = true
     self._dying = false                        -- `H-182`
+    self:_unbindDestroying()                   -- [2026-09-27 round13 `H-707`] 죽은 호스트의 늦은 Destroying 콜백을 stale로 — `_destroyConn`을 끊어 `H-574` 가드가 서게
     WeakSubscribed[self] = true
     Subscribed[self] = true                    -- 강한 킵이 선 **뒤에** 꼬리 한 번
     resubscribeTail(self)

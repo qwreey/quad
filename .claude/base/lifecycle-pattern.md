@@ -522,7 +522,7 @@ inst의 홀더에 넣고 빼기, inst 쪽 증거(gcconn)가 살아 있는가. �
 
 ```lua
 -- 백엔드가 주입 (quad-roblox `LifetimeHandle.luau`, mock `installLifetime`)
-holdLifetime(inst, value)        -- gchold[value] = true + BindData 약참조 둘. inst 미claim이면 던짐(roblox) / lazy claim(mock). 커밋.
+holdLifetime(inst, value)        -- gchold[value] = true + BindData 약참조 둘. inst 미claim이면 던짐(roblox·mock 둘 다 — [2026-09-27 `H-658`] mock의 lazy claim 폐기). 커밋.
 releaseLifetime(value)           -- 그 역. 안 쥐고 있으면 no-op, inst 무관, cleanup 안 부름
 isHeld(value): boolean           -- BindData의 gcconn.Connected — 옛 isBoundAlive의 (a) 팔
 isHeldBy(value, inst): boolean   -- 홀더가 이 inst 것인가 — `H-395` 메시지 팔 하나용
