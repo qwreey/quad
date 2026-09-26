@@ -1,0 +1,25 @@
+seed 803 step 23 op Extract(2,S5[f12,f13,f18,f2]):
+   	R2 Offset 14 ~= 13
+   	LOGICAL slot S1 Length 12 ~= leaves 11
+   	LOGICAL slot S3 Length 6 ~= leaves 5
+   	LOGICAL slot S2 Offset 14 ~= 13 (first leaf f3)
+  pre:	S1[f20 S4[f17 f7 f21 f10 f1] S3[f5 S7[] f19]] S2[f3]
+  last:	S3:Extract(2,S5[f12,f13,f18,f2]){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S2.Off]S6:oRemove}
+seed 1384 step 34 op Add(S3[f6,f7],1):
+   	R2 Offset 5 ~= 6
+   	LOGICAL slot S1 Length 3 ~= leaves 4
+  pre:	S1[S7[] f15] S2[]
+  last:	S1:Add(S3[f6,f7],1){oERR ./probe.e1.reent.modes.luau:123: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S7.Off]S4:oAdd}
+seed 1543 step 81 op Add(S11[f26,f29,f33,f32,f23],1):
+   	R2 Offset 9 ~= 10
+   	LOGICAL slot S1 Length 7 ~= leaves 8
+   	LOGICAL slot S12 Length 7 ~= leaves 8
+   	LOGICAL slot S2 Offset 9 ~= 10 (first leaf f20)
+  pre:	S1[S12[f30 f31]] S2[f20]
+  last:	S12:Add(S11[f26,f29,f33,f32,f23],1){[S2.Off]S13:oAdd}
+seed 1896 step 63 op Add(S10[f25,f30,f29,f28],1):
+   	LOGICAL slot S2 Length 7 ~= leaves 8
+   	LOGICAL slot S8 Length 5 ~= leaves 6
+  pre:	S1[] S2[f16 f10 S7[] S8[f7]]
+  last:	S8:Add(S10[f25,f30,f29,f28],1){[S2.Len]S11:oAdd}
+obsOps	122478	rej0167	8054	fails	4	physBad	9001	seeds	803,1384,1543,1896

@@ -1,0 +1,45 @@
+--- quad-base/src/Observer.luau	2026-09-27 01:09:23.036008287 +0900
++++ quad-base/src/Observer.luau	2026-09-27 01:29:50.011903966 +0900
+@@ -90,6 +90,8 @@
+ 			self._running = true
+ 			self.fn(self._state, self, from)
+ 			self._running = outer
++		elseif self._installing then
++			self._installEmitted = true -- Q73 (a') PROTOTYPE: an emit inside the install window → re-fire
+ 		else
+ 			self._rerunRequired = true -- `H-159`: change before binding is held — replayed once when bound
+ 		end
+@@ -193,14 +195,27 @@
+ 			_rerunRequired = true,
+ 			_running = false, -- `H-183`: raised around every fn run; the subscribe entries + `_assertBindable` refuse while up (Q63 (b): releasing passes)
+ 			Subscribed = false, -- the shared flag both handle types carry (`H-111`)
++			_installing = false,
++			_installEmitted = false,
+ 		}, Impl)
+ 		ObserverBrand:Register(o)
+-		o._running = true -- `H-183`: the install fire is an fn run like any other
+-		o.fn(state, o, nil) -- (1) fire once at registration — no source (`nil`)
+-		o._running = false
+-		o._rerunRequired = false -- (2) the install fire lowers the flag
+-		state._subs[o] = true -- (3) only THEN join the subscriber set — reversed, (1) Setting its own
+-		return o --     State would land in this Observer's `_receive` and raise the flag
++		-- PROTOTYPE (Q73 (a') field split): join FIRST; while `_installing` is up, `_receive`'s hold
++		-- branch records an in-window emit in `_installEmitted` (not `_rerunRequired`); re-fire until quiet.
++		state._subs[o] = true
++		o._installing = true
++		local n = 0
++		repeat
++			o._installEmitted = false
++			o._running = true
++			o.fn(state, o, nil)
++			o._running = false
++			n += 1
++			if n > 100 then error("PROTOTYPE: install re-fire did not settle (100)") end
++		until not o._installEmitted
++		o._installing = false
++		o._installEmitted = false
++		o._rerunRequired = false -- the install fire lowers the flag
++		return o
+ 	end
+ 
+ 	-- `H-231`: public surface joins the shared error-namespace tag layer

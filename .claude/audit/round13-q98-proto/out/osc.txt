@@ -1,0 +1,97 @@
+######## none LIMIT=100000
+ runs 1 s 1 rerunReq false
+ after Subscribe runs 1
+--- O1 Observer fn Sets own State to a NEW value every run (install): ok  (0.0 ms)
+ runs 1 s 1
+--- O2 Observer 2-cycle toggle (install): fn Sets s = 1 - s: ok  (0.0 ms)
+ runs 1 s 1 t 1
+--- O3 Observer oscillation through ANOTHER subscribed Observer (install): ok  (0.0 ms)
+ runs 1 s 10
+--- O4 converging self-Set (clamp) — install runs: ok  (0.0 ms)
+ runs 100000 s 99999 running false pending false
+--- E1 Effect fn Sets its own dep to a NEW value every run (install): ok  (300.8 ms)
+ runs 100000 s 1
+--- E2 Effect 2-cycle toggle (install): ok  (231.5 ms)
+ runs 100000 s 99999 t 99999
+--- E3 Effect oscillation through another subscribed Observer (install): ok  (391.6 ms)
+ runs 2 s 10
+--- E4 Effect converging clamp — install runs: ok  (0.0 ms)
+--- S1 SUBSCRIBED Observer oscillates on a later Set (reentrant _receive = recursion): ERR ../src/LifetimeHandle.luau:118: stack overflow  (2.5 ms)
+ runs 100000 s 100000
+--- S2 SUBSCRIBED Effect oscillates on a later Set (_pending loop): ok  (317.2 ms)
+######## obsA_nocap LIMIT=100000
+ runs 100000 s 99999 rerunReq false
+ after Subscribe runs 100000
+--- O1 Observer fn Sets own State to a NEW value every run (install): ok  (123.9 ms)
+ runs 100000 s 1
+--- O2 Observer 2-cycle toggle (install): fn Sets s = 1 - s: ok  (210.6 ms)
+ runs 100000 s 99999 t 99999
+--- O3 Observer oscillation through ANOTHER subscribed Observer (install): ok  (270.2 ms)
+ runs 2 s 10
+--- O4 converging self-Set (clamp) — install runs: ok  (0.0 ms)
+ runs 100000 s 99999 running false pending false
+--- E1 Effect fn Sets its own dep to a NEW value every run (install): ok  (114.5 ms)
+ runs 100000 s 1
+--- E2 Effect 2-cycle toggle (install): ok  (121.5 ms)
+ runs 100000 s 99999 t 99999
+--- E3 Effect oscillation through another subscribed Observer (install): ok  (366.2 ms)
+ runs 2 s 10
+--- E4 Effect converging clamp — install runs: ok  (0.0 ms)
+--- S1 SUBSCRIBED Observer oscillates on a later Set (reentrant _receive = recursion): ERR ../src/LifetimeHandle.luau:118: stack overflow  (5.5 ms)
+ runs 100000 s 100000
+--- S2 SUBSCRIBED Effect oscillates on a later Set (_pending loop): ok  (314.5 ms)
+######## obsA2_nocap LIMIT=100000
+ runs 100000 s 99999 rerunReq false
+ after Subscribe runs 100000
+--- O1 Observer fn Sets own State to a NEW value every run (install): ok  (179.1 ms)
+ runs 100000 s 1
+--- O2 Observer 2-cycle toggle (install): fn Sets s = 1 - s: ok  (129.7 ms)
+ runs 100000 s 99999 t 99999
+--- O3 Observer oscillation through ANOTHER subscribed Observer (install): ok  (304.2 ms)
+ runs 2 s 10
+--- O4 converging self-Set (clamp) — install runs: ok  (0.0 ms)
+ runs 100000 s 99999 running false pending false
+--- E1 Effect fn Sets its own dep to a NEW value every run (install): ok  (304.6 ms)
+ runs 100000 s 1
+--- E2 Effect 2-cycle toggle (install): ok  (165.3 ms)
+ runs 100000 s 99999 t 99999
+--- E3 Effect oscillation through another subscribed Observer (install): ok  (330.0 ms)
+ runs 2 s 10
+--- E4 Effect converging clamp — install runs: ok  (0.0 ms)
+--- S1 SUBSCRIBED Observer oscillates on a later Set (reentrant _receive = recursion): ERR ../src/LifetimeHandle.luau:118: stack overflow  (5.8 ms)
+ runs 100000 s 100000
+--- S2 SUBSCRIBED Effect oscillates on a later Set (_pending loop): ok  (454.3 ms)
+######## obsA LIMIT=100000
+--- O1 Observer fn Sets own State to a NEW value every run (install): ERR ../src/Observer.luau:209: PROTOTYPE: install re-fire did not settle (100)  (0.1 ms)
+--- O2 Observer 2-cycle toggle (install): fn Sets s = 1 - s: ERR ../src/Observer.luau:209: PROTOTYPE: install re-fire did not settle (100)  (0.0 ms)
+--- O3 Observer oscillation through ANOTHER subscribed Observer (install): ERR ../src/Observer.luau:209: PROTOTYPE: install re-fire did not settle (100)  (0.1 ms)
+ runs 2 s 10
+--- O4 converging self-Set (clamp) — install runs: ok  (0.0 ms)
+ runs 100000 s 99999 running false pending false
+--- E1 Effect fn Sets its own dep to a NEW value every run (install): ok  (220.6 ms)
+ runs 100000 s 1
+--- E2 Effect 2-cycle toggle (install): ok  (366.5 ms)
+ runs 100000 s 99999 t 99999
+--- E3 Effect oscillation through another subscribed Observer (install): ok  (322.8 ms)
+ runs 2 s 10
+--- E4 Effect converging clamp — install runs: ok  (0.0 ms)
+--- S1 SUBSCRIBED Observer oscillates on a later Set (reentrant _receive = recursion): ERR ../src/LifetimeHandle.luau:118: stack overflow  (9.6 ms)
+ runs 100000 s 100000
+--- S2 SUBSCRIBED Effect oscillates on a later Set (_pending loop): ok  (386.4 ms)
+######## obsA2 LIMIT=100000
+--- O1 Observer fn Sets own State to a NEW value every run (install): ERR ../src/Observer.luau:211: PROTOTYPE: install re-fire did not settle (100)  (0.1 ms)
+--- O2 Observer 2-cycle toggle (install): fn Sets s = 1 - s: ERR ../src/Observer.luau:211: PROTOTYPE: install re-fire did not settle (100)  (0.1 ms)
+--- O3 Observer oscillation through ANOTHER subscribed Observer (install): ERR ../src/Observer.luau:211: PROTOTYPE: install re-fire did not settle (100)  (0.1 ms)
+ runs 2 s 10
+--- O4 converging self-Set (clamp) — install runs: ok  (0.0 ms)
+ runs 100000 s 99999 running false pending false
+--- E1 Effect fn Sets its own dep to a NEW value every run (install): ok  (200.6 ms)
+ runs 100000 s 1
+--- E2 Effect 2-cycle toggle (install): ok  (192.7 ms)
+ runs 100000 s 99999 t 99999
+--- E3 Effect oscillation through another subscribed Observer (install): ok  (297.5 ms)
+ runs 2 s 10
+--- E4 Effect converging clamp — install runs: ok  (0.0 ms)
+--- S1 SUBSCRIBED Observer oscillates on a later Set (reentrant _receive = recursion): ERR ../src/LifetimeHandle.luau:118: stack overflow  (4.2 ms)
+ runs 100000 s 100000
+--- S2 SUBSCRIBED Effect oscillates on a later Set (_pending loop): ok  (304.3 ms)

@@ -1,0 +1,7 @@
+stuckNoSet(after drain, same gen) 1489 = thrownStamp 1489 + orphan 0 + downstreamOfStuck(noStamp) 0
+dupSeq 0 dupAny 0
+seeds 20000 overlap 0 e184 24289 otherErr 0 stuck 0 wrong 0 fnRuns 326581 crash 0
+
+real	0m1.128s
+user	0m1.116s
+sys	0m0.012s

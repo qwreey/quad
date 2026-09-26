@@ -1,0 +1,1 @@
+pureCoreInstallStale	0	installStaleSeeds	439	installStaleTotal	479	fails	0	seeds	20000

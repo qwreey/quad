@@ -1,0 +1,3 @@
+stuckNoSet(after drain, same gen) 1265 = thrownStamp 1265 + orphan 0 + downstreamOfStuck(noStamp) 0
+dupSeq 4787 dupAny 7242
+seeds 20000 overlap 1214 e184 23680 otherErr 0 stuck 0 wrong 0 fnRuns 333879 crash 0

@@ -1,0 +1,65 @@
+seed 219 step 112 op Add(S12[f36],1):
+   	R2 Offset 3 ~= 4
+   	LOGICAL slot S1 Length 1 ~= leaves 2
+   	LOGICAL slot S2 Offset 3 ~= 4 (first leaf f58)
+  pre:	S1[] S2[S22[] f58]
+  last:	S1:Add(S12[f36],1){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S22.Off]S14:oAdd}
+seed 555 step 99 op Add(S4[f22,f17,f21,f23,f18,f13,f14],1):
+   	R2 Offset 10 ~= 9
+   	LOGICAL slot S1 Length 8 ~= leaves 7
+  pre:	S1[f30] S2[]
+  last:	S1:Add(S4[f22,f17,f21,f23,f18,f13,f14],1){[S1.Len]S6:oRemove}
+seed 622 step 82 op Add(S6[f30,f28,f25,f29,f26,f21,f15],2):
+   	R2 Offset 12 ~= 13
+   	LOGICAL slot S1 Length 10 ~= leaves 11
+   	LOGICAL slot S10 Length 8 ~= leaves 9
+   	LOGICAL slot S2 Offset 12 ~= 13 (first leaf f9)
+  pre:	S1[f27 f36 S10[f31]] S2[f9 f35 S11[f38]]
+  last:	S10:Add(S6[f30,f28,f25,f29,f26,f21,f15],2){oERR ./probe.e1.reent.modes.luau:123: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S1.Len]S9:oAdd}
+seed 833 step 91 op Replace(1,S7[f27,f33,f37,f28]):
+   	R2 Offset 6 ~= 7
+   	LOGICAL slot S1 Length 4 ~= leaves 5
+  pre:	S1[f47] S2[]
+  last:	S1:Replace(1,S7[f27,f33,f37,f28]){oERR ./probe.e1.reent.modes.luau:123: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S1.Len]S13:oAdd}
+seed 841 step 35 op Add(S3[f13,f14,f16,f8,f4,f5],1):
+   	R2 Offset 8 ~= 9
+   	LOGICAL slot S1 Length 6 ~= leaves 7
+   	LOGICAL slot S2 Offset 8 ~= 9 (first leaf f15)
+  pre:	S1[] S2[f15]
+  last:	S1:Add(S3[f13,f14,f16,f8,f4,f5],1){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S2.Off]S5:oAdd}
+seed 901 step 77 op Add(S10[f41,f19,f26],1):
+   	R2 Offset 6 ~= 5
+   	LOGICAL slot S1 Length 4 ~= leaves 3
+   	LOGICAL slot S16 Offset 4 ~= 3 (first leaf f42)
+  pre:	S1[S16[f42] S15[]] S2[]
+  last:	S1:Add(S10[f41,f19,f26],1){[S16.Off]S14:oRemove}
+seed 1010 step 47 op Extract(1,S6[f16,f10,f18,f22,f17]):
+   	LOGICAL slot S2 Length 6 ~= leaves 7
+   	LOGICAL slot S9 Offset 8 ~= 9 (first leaf f25)
+  pre:	S1[f23] S2[S8[f20 f21] S9[S10[] S3[] f25]]
+  last:	S2:Extract(1,S6[f16,f10,f18,f22,f17]){[S3.Off]S7:oAdd}
+seed 1209 step 19 op Add(S5[f10],1):
+   	R2 Offset 3 ~= 2
+   	LOGICAL slot S1 Length 1 ~= leaves 0
+   	LOGICAL slot S2 Offset 3 ~= 2 (first leaf f9)
+  pre:	S1[] S2[f9]
+  last:	S1:Add(S5[f10],1){[S1.Len]S6:oRemove}
+seed 1325 step 118 op Add(S9[f48,f50,f43],1):
+   	LOGICAL slot S2 Length 3 ~= leaves 2
+  pre:	S1[f62] S2[]
+  last:	S2:Add(S9[f48,f50,f43],1){[S2.Len]S10:oRemove}
+seed 1553 step 63 op Add(S9[f28,f29,f26],1):
+   	LOGICAL slot S2 Length 10 ~= leaves 9
+   	LOGICAL slot S7 Length 5 ~= leaves 4
+  pre:	S1[f15 f31 f16 f17 S8[] f27] S2[f2 f6 S7[f22 f30] f5 f1 f14]
+  last:	S7:Add(S9[f28,f29,f26],1){[S2.Len]S10:oRemove}
+seed 1719 step 117 op Extract(3,S9[f40,f37,f38]):
+   	R2 Offset 18 ~= 17
+   	LOGICAL slot S1 Length 16 ~= leaves 15
+   	LOGICAL slot S16 Length 12 ~= leaves 11
+   	LOGICAL slot S17 Offset 6 ~= 5 (first leaf f62)
+   	LOGICAL slot S18 Offset 15 ~= 14 (first leaf f63)
+   	LOGICAL slot S2 Offset 18 ~= 17 (first leaf f61)
+  pre:	S1[S16[f53 f54 S13[] S17[f62 f55 f56 f59 f24 f60 f58 S19[]]] f51 f52 S18[f63] f44] S2[f61]
+  last:	S16:Extract(3,S9[f40,f37,f38]){[S19.Off]S14:oRemove}
+obsOps	74367	rej0167	3074	fails	11	physBad	7714	seeds	219,555,622,833,841,901,1010,1209,1325,1553,1719

@@ -1,0 +1,1 @@
+obsOps	74530	rej0167	3088	fails	0	physBad	7645	seeds	

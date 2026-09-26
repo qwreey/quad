@@ -1,0 +1,20 @@
+ B	true 10	runs	2	curr=4294967295 target=4294967295 cache=10 computing=-1
+ A	true 10	runs	2	curr=4294967295 target=4294967295 cache=10 computing=-1
+ C	true 10	runs	2	curr=4294967295 target=4294967295 cache=10 computing=-1
+ log	v=0 prev=nil gen=0 | v=1 prev=nil gen=0
+--- X2 B finishes gen2 BEFORE A (gen1) returns: ok
+ B	true 20	runs	2	curr=4294967294 target=4294967294 cache=20 computing=-1
+ A	true 20	runs	2	curr=4294967294 target=4294967294 cache=20 computing=-1
+ C	true 20	runs	2	curr=4294967294 target=4294967294 cache=20 computing=-1
+--- X2b gen1 A parked, TWO upstream Sets, B finishes gen3, A returns: ok
+ A	true 10	runs	2	curr=4294967295 target=4294967295 cache=10 computing=-1
+ log	v=0 prev=nil gen=0 | v=1 prev=nil gen=0
+--- X2c A parked gen1, Set, NOBODY reads gen2, A returns (A's loop must run gen2 itself): ok
+ Get	true 107	curr=4294967295 target=4294967295 cache=107 computing=-1
+ log	v=0 prev=nil | v=7 prev=nil
+--- R1 same coroutine, fn Sets its own dep once (no yield) — `previous` seen by the rerun: ok
+ Get	true 5	curr=4294967295 target=4294967295 cache=5 computing=-1
+ log	v=0 prev=nil | v=5 prev=0
+--- R2 fn reads through a closed Blocker; upstream moves during fn (drift branch): ok
+ log	v=1 prev=nil | v=2 prev=2 | v=3 prev=4
+--- R3 previous across normal generations (sanity): ok

@@ -1,0 +1,17 @@
+--- quad-base/src/State.luau	2026-09-27 01:09:39.448231516 +0900
++++ quad-base/src/State.luau	2026-09-27 01:09:46.242747792 +0900
+@@ -218,8 +218,12 @@
+ 			-- (their `drive`/creation) is the useful one.
+ 			Err.errorBefore("Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers", SURFACE)
+ 		end
+-		self._cache = result
+-		self._cacheCurrCount = gen -- only on success: a thrown fn never marks the cache valid
++		-- round13 Q98 (a) PROTOTYPE: write the cache only while our generation is still the target —
++		-- a late return from a yielded older generation must not clobber a newer valid cache.
++		if gen == self._cacheTargetCount then
++			self._cache = result
++			self._cacheCurrCount = gen -- only on success: a thrown fn never marks the cache valid
++		end
+ 	end
+ 
+ 	function Impl.Get(self: any): any

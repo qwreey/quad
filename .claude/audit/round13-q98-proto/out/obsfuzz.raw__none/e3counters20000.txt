@@ -1,0 +1,6 @@
+  pure-core stale seed	8	node 4 kind M T0 seed-stale after install: saw 4 now 8
+  pure-core stale seed	10	node 10 kind C T0 seed-stale after install: saw 8 now 2
+  pure-core stale seed	16	node 11 kind C T0 seed-stale after install: saw 16 now 13
+  install-stale:	node 8 kind M T0 seed-stale after install: saw 10 now 6
+seed	16663	lost notification: node 8 (M) observer last 10 now 6; log on adv off off set4 set3
+pureCoreInstallStale	1523	installStaleSeeds	1974	installStaleTotal	2534	fails	1	seeds	20000

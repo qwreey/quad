@@ -1,0 +1,23 @@
+[A1 fn Sets own State (install)] no-loss | runs 2 seen 0,1 s 1 rerunReq false
+[A1' after Subscribe] no-loss | runs 2 seen 0,1
+[A2 clamp own State (install)] runs | runs 2 s 10 rerunReq false
+[A2' after Subscribe] runs | runs 2
+[B other Observer Sets (install)] no-loss | seen 0,1 s 1 rerunReq false
+[B' after Subscribe] no-loss | seen 0,1
+[C1 setLength nested (sibling Offset obs → grandchild Add)] no-loss | fired true S1.Length 2 leaves 2 R2.Offset 2 (want 2)
+[C2 setLength top-level holder:Set(R)] no-loss | fired true R.Length 2 R2.Offset 2 (want 2)
+[C3x oscillator (badge on list.Length==1)] ERR | ok false ../src/Observer.luau:213: PROTOTYPE: install re-fire did not settle (100) list.Length 1 leaves 2 footer Offset 1
+[C3a first Add] no-loss | list.Length 1 leaves 1 footer Offset 1
+[C3b natural: per-row delete button on list.Length>1, second Add] no-loss | ok true  list.Length 4 leaves 4 footer Offset 4 children footer,r1,r1-del,r2,r2-del
+[C3c row button on list.Length>0, first Add] no-loss | ok true  list.Length 2 leaves 2 footer Offset 2
+[C3d new row: separator shown when list.Length>1 (older rows plain)] no-loss | ok true  list.Length 3 leaves 3 footer Offset 3
+[C5 new row: hint on footer.Offset>0 (Compute only, no user Observer)] no-loss | ok true  list.Length 2 leaves 2 footer Offset 2
+[C4 natural: divider on own row.Offset>0, prepend] no-loss | ok true  list.Length 3 leaves 3 footer Offset 3
+[C4' append (new row's own Offset>0)] no-loss | ok true  list.Length 5 leaves 5 footer Offset 5
+[D StoreBind install (value's mount Sets holder)] no-loss | fired true holder==B true A mounted false B mounted true children x,B
+[E Tree makeBaseObserver] no user code in window | _rerunRequired false (install fire returns before any Set)
+[F List data install (updateFn Sets data — UB)] no-loss | ok true  list.Length 2 data# 2
+[Q74 T6 grandparent Remove in attach window] clean | remove ok false Quad0167 add ok true  sub destroyed nil mounted true f.Parent==parent true #children 1
+[Q74 depth-4 ancestor Clear in attach window] clean | clear ok false Quad0167 sub destroyed nil mounted true #children 1
+[Q74 control sibling Add in attach window] passes | ok true  outer.Length 3 leaves 3
+PATCH_STATS	installs 131 reruns 111

@@ -1,0 +1,170 @@
+== q93-extra.luau
+ A	true 10
+ B	true 10
+ C	true 10	runs	3	_computing	-1
+--- X1 B1 then B finishes: reads recover: ok
+ B	true 10
+ A	true 10	runs	3
+ C	true 10	runs	3
+--- X2 B finishes BEFORE A returns (A's late gen1 result clobbers curr): ok
+ A	true 10
+ C	true 10	runs	3
+ C after Set(2)	true 20	runs	4
+--- X3 B abandoned (never resumed): A errors; reads blocked until upstream Set: ok
+ A	true 11
+ B	true 10	runs	3
+ o	true 11
+--- X4 A's read goes through an internal reader (Operator) — blame: ok
+ Get	true 99	runs	3	_computing	-1
+ Get2	true 99	runs	3
+ after Set(5)	true 5	runs	4
+--- X5 same-coroutine UB: fn Sets its own dep, inner read throws, fn pcall-swallows: ok
+ A	true 0	runs	1	_computing	-1
+--- X6 fn yields, nothing moves, same coroutine resumes (plain yield OK): ok
+ A	true 30	runs	2	_computing	-1
+--- X7 fn yields, upstream Set, NO other reader, A resumes (H-85 drift rerun): ok
+== round13-e3-probe.luau
+ rev	4294967295
+ rev	4294967294
+ rev	4294967293
+ rev	4294967292
+ rev	4294967291
+ rev	1
+ rev	0
+ rev	4294967295
+ rev	4294967294
+--- P1 revision sequence: ok
+ seen	0	s now	1	rerunReq	false
+ after Subscribe seen	0
+ after Set(10) seen	0,10
+--- P2 observer install fire misses Set made by another observer triggered in install: ok
+ seen	0,1
+--- P3 effect install fire sees own-set via pending: ok
+ c	2
+--- P4 compute reads Get of downstream during fn (not cycle): ok
+ log	0,3,3
+--- P5 one blocker, two gated nodes, derived over both: notification count/order: ok
+ log	b2,a1,b99
+--- P6 blocker Off inside a flush toggles On then Off (nested): ok
+ log	c0:false c1:false
+ log	c0:false c1:false d1:false d2:true
+--- P7 effect cleanup dying at 4 sites + cleanup throwing: ok
+ set1	false	./round13-e3-probe.luau:113: boom
+ runs	1	running	true	cleanupRunning	true
+ unsub	true	nil
+--- P8 cleanup throws on rerun -> effect state: ok
+ subs	0	blocker handles	0	debounce instances	0
+--- P9 GC: unsubscribed observer, weak-subscribed dropped, gate dropped -> blocker handles: ok
+ runs after drop	1	subs	0
+--- P10 GC: Effect weak-subscribed dropped; strongly subscribed kept: ok
+ subs(before timer)	1
+ subs(after timers)	0	pending	0
+--- P11 GC: debounce with pending timer and handle: ok
+ __x	false	./round13-e3-probe.luau:164: Quad0194 Store: "__x" is a reserved store key
+ Of still method	true	Source(nil)
+ Names shadowed	false	./round13-e3-probe.luau:168: attempt to call a number value
+ tostring	true	Store{Names, a, b}
+--- P12 Store edge: ok
+ sum nil arg	false	./round13-e3-probe.luau:177: Quad0120 Operator.Sum: argument #1 is a State whose current value is nil
+ sum after set	true	3
+ Not nil	true
+ Bnot 2^31	2147483647	Shl(1)	0
+ Band float	1	neg	255
+ Band NaN	true	0
+ Shl State nil	false	./round13-e3-probe.luau:187: Quad0120 Operator.Shl: argument #1 is a State whose current value is nil
+ Min NaN	nan	1
+ Alternative false	false
+ Indexed nil value	false	./round13-e3-probe.luau:190: Quad0127 Operator.Indexed: value is not a table (got nil) — cannot read [x]
+--- P13 Operator nil/type boundaries: ok
+ c	10	a	10	seen	5,10	calls	4
+--- P14 Compute normalizes its own dep once (converging self-Set): ok
+ log	c0:false c1:true	rerunReq	true
+--- P15 Effect destroys its own host inside fn: ok
+ after unsub runs	0	rerunReq	true
+ after resub runs	0,7
+--- P16 cleanup Set in Unsubscribe then resubscribe: ok
+ c	30	rev	0
+ c	40	rev	4294967295
+ c	40	revb	4294967294	fires	4
+--- P17 Revision boundary with Depend/Compute: ok
+ emit in setup ->	false
+ fires	2	g	2
+--- P18 gate setup calls emit synchronously / returns emit: ok
+ 	D	nil	nil	sameTick		adv0	3	final	3,5	pending	0	blocking?	false
+ 	D	true	nil	sameTick	1	adv0	1,3	final	1,3,4,5	pending	0	blocking?	false
+ 	T	nil	nil	sameTick	1	adv0	1,3	final	1,3,4,5	pending	0	blocking?	false
+ 	T	nil	false	sameTick	1	adv0	1	final	1,4,5	pending	0	blocking?	false
+--- P20 Debounce/Throttle zero time & cancel-reschedule: ok
+ survivors	0	subs	0
+ survivors(dropped undestroyed)	1	subs	1
+--- P21 GC: observer/effect bound to destroyed instance, capturing it: ok
+== round13-e3b-probe.luau
+ A resume	true	suspended
+ B resume	true	suspended
+ _computing	4294967295	target	4294967295
+ A finish	true	10
+ after A: _computing	-1	curr	4294967295	target	4294967295
+ C main-thread Get	true	10
+ B finish	true	10
+ runs:	3
+  	run v=0 co=18ff80
+  	run v=1 co=18ff00
+  	run v=1 co=18ff80
+--- B1 gen1 yields, upstream Set (gen2), B runs gen2 and yields, A returns, C reads: ok
+ B resume	true	suspended	runs	2
+ A finish	true	5
+ C Get	true	5	runs	3
+ B finish	true	runs	3
+--- B2 same, but upstream behind a closed Blocker (drift path, H-540 branch): ok
+ C	false	./round13-e3b-probe.luau:80: Quad0184 State: Compute fn is a
+ A	true	0
+ after	true	0
+--- B3 reader while gen1 yields and NO drift -> Quad0184 (documented): ok
+ A	true	dead
+ log	fn 0 | fn-end 0 | cl 0 | fn 1 | fn-end 1 | cl 1 | fn 3 | fn-end 3
+ _running	false	_pending	false
+--- B4 Effect fn yields; dep Set from main + Rerun from another coroutine; runs/pending: ok
+ handled order	2,1	(stale-last is documented)
+--- B5 Observer fn yields; second Set runs fn overlapped (doc'd: stale last): ok
+ after discard seen		c	5
+ after b:Set(1) seen	6@0
+ after discard + a:Set(same 7) seen	6@0,8@0
+--- A1 discard then same-tick Set is observed; discard of a Compute sibling: ok
+ a seen	1	b seen	2@0	(one of the two dropped depending on order)
+ after b:Set(3) b seen	2@0,3@0
+--- A2 OffWithoutEmit inside an Off flush (another gate's observer discards the batch mid-walk): ok
+ seen	3@0
+--- A3 On/Off toggled N times while gate withholds: one notification at the latest value: ok
+ pending timers	1
+ seen	1@0,2@1,3@1
+--- C1 downstream Cancel during the LEADING pass (idle leading Debounce): ok
+ seen	1@1,10@1	value	20	blocking	pending	0
+ after Set(30) seen	1@1,10@1,30@7
+--- C2 downstream Flush inside trailing flush; Cancel inside Flush: ok
+  Debounce L=false T=true seen 2@1.5,102@2.5,202@3.5 val 202 src 202 timers 0
+  Throttle L=false T=true seen 2@1,102@2,202@3 val 202 src 202 timers 0
+  Debounce L=true T=true seen 1@0,101@0,201@0,2@1.5 val 2 src 2 timers 0
+  Throttle L=true T=true seen 1@0,101@0,201@0,2@1 val 2 src 2 timers 0
+  Debounce L=true T=false seen 1@0,101@0,201@0 val 2 src 2 timers 0
+  Throttle L=true T=false seen 1@0,101@0,201@0 val 2 src 2 timers 0
+  Debounce L=false T=false ERR ./round13-e3b-probe.luau:212: Quad0048 Debounce: Leading and Trailing both false would pass nothing through
+  Throttle L=false T=false ERR ./round13-e3b-probe.luau:212: Quad0048 Throttle: Leading and Trailing both false would pass nothing through
+--- C3 Set from inside a timer callback path (observer Sets source during commit) — leading/trailing four: ok
+ seen	1@0,2@1,3@4
+--- C4 Time State changed inside the flush (Q55 cache: next window one signal later): ok
+ after Flush a	1	b	5	b now	6	timers	2
+ after adv a	1	b	5,6
+--- C5 factory broadcast Flush: flushing gate1 Sets gate2's source mid-walk: ok
+ seen		g	2
+--- C6 Cancel called from an upstream observer BEFORE the gate hears the same Set: ok
+ tie seen	1@1,3@2	timers	0
+ T0 before adv	1@0	timers	1
+ T0 after adv0	1@0,3@0	timers	0
+--- C7 MaxTime tie with window; Time=0 same-tick; advanceTime(0): ok
+ seen	1@1,2@3	val	3	timers	0
+ after Set(4)	1@1,2@3,4@9
+--- C8 Blocker->Debounce->Throttle: Blocker Off exactly at window expiry tick: ok
+== round13-e3-probe-fuzz.luau
+fails	0
+== round13-e3b-probe-fuzz.luau
+3000	seeds	3000	fails	0

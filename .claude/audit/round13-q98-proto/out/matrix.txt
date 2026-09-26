@@ -1,0 +1,19 @@
+none__none | files=62 failed=0 fail=0  | vs base: identical
+none__obsA | files=62 failed=0 fail=0  | vs base: identical
+none__obsA2 | files=62 failed=0 fail=0  | vs base: identical
+q93__none | files=62 failed=0 fail=0  | vs base: identical
+q93__obsA | files=62 failed=0 fail=0  | vs base: identical
+q93__obsA2 | files=62 failed=0 fail=0  | vs base: identical
+q98__none | files=62 failed=0 fail=0  | vs base: identical
+q98__obsA | files=62 failed=0 fail=0  | vs base: identical
+q98__obsA2 | files=62 failed=0 fail=0  | vs base: identical
+q93q98__none | files=62 failed=0 fail=0  | vs base: identical
+q93q98__obsA | files=62 failed=0 fail=0  | vs base: identical
+q93q98__obsA2 | files=62 failed=0 fail=0  | vs base: identical
+q98b__none | files=62 failed=0 fail=0  | vs base: identical
+q98b__obsA | files=62 failed=0 fail=0  | vs base: identical
+q98b__obsA2 | files=62 failed=0 fail=0  | vs base: identical
+q93q98b__none | files=62 failed=0 fail=0  | vs base: identical
+q93q98b__obsA | files=62 failed=0 fail=0  | vs base: identical
+q93q98b__obsA2 | files=62 failed=0 fail=0  | vs base: identical
+done

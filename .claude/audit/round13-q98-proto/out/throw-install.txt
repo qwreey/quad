@@ -1,0 +1,11 @@
+## none__none
+ok	false	./throw-install.luau:6: boom	in _subs	false	calls	1
+## none__obsA
+ok	false	./throw-install.luau:6: boom	in _subs	true	calls	1
+after Sets calls	1	rerunReq	true	installing	nil	emitted	nil	running	true
+## none__obsA2
+ok	false	./throw-install.luau:6: boom	in _subs	true	calls	1
+after Sets calls	1	rerunReq	true	installing	true	emitted	true	running	true
+## none__obsA2f
+ok	false	./throw-install.luau:6: boom	in _subs	true	calls	1
+after Sets calls	1	rerunReq	true	installing	true	emitted	true	running	true

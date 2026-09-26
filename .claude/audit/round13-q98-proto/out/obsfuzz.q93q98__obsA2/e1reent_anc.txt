@@ -1,0 +1,577 @@
+seed 5 step 77 op Add(S14[f50,f51],2):
+   	mock children 18 ~= 16; extra: f50,f51
+  pre:	S1[f29 f43 f24 f16 f8 S9[S10[S13[f47 f48]]] S11[f19] S12[f45 f46] f2 f41 f31 S8[f40]] S2[S3[f49]]
+  last:	S13:Add(S14[f50,f51],2){[S13.Len]S9:oRemove}
+seed 18 step 100 op Add(S3[f9,f8,f6],5):
+   	mock children 19 ~= 16; extra: f9,f8,f6
+  pre:	S1[] S2[f22 f28 f44 S7[f34 f32 f41 S11[S13[f43 f42 f46 f37]] f36 f31] f23 f33 f35 S12[f38 f47] f40]
+  last:	S13:Add(S3[f9,f8,f6],5){[S3.Off]S11:oRemove,[S3.Off]S7:oRemove}
+seed 21 step 90 op Add(S14[f64],1):
+   	mock children 10 ~= 9; extra: f64
+  pre:	S1[S13[f63]] S2[S11[f55 f53 f54] f49 f56 f62]
+  last:	S13:Add(S14[f64],1){[S13.Len]S1:oRemove}
+seed 42 step 100 op Add(S14[f62],1):
+   	mock children 15 ~= 14; extra: f62
+  pre:	S1[f52 S8[S13[] f41 f59 f38] f51 f39 f57 f61 f10 f33] S2[f60]
+  last:	S13:Add(S14[f62],1){[S13.Len]S8:oRemove}
+seed 51 step 74 op Add(S13[f48,f49],3):
+   	mock children 13 ~= 11; extra: f48,f49
+  pre:	S1[f28 f30 f7 f27 f39 f23 S12[f47 f34] S10[f45]] S2[f42]
+  last:	S12:Add(S13[f48,f49],3){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S10.Off]S1:oRemove}
+seed 52 step 23 op Extract(1,S8[f25,f26]):
+   	mock children 7 ~= 5; extra: f25,f26
+  pre:	S1[f16 S4[f23 f22 f24] f14 S5[]] S2[]
+  last:	S4:Extract(1,S8[f25,f26]){[S5.Off]S1:oMove,[S4.Len]S1:oRemove}
+seed 62 step 120 Replace(1,S3[f2,f6,f10,f21,f17,f23,f7]) ERROR: ./probe.e1.reent.modes.luau:177: Quad0164 Slot: destroyed Slot cannot be mounted
+  log:	S2:noop | S1:Add(f3,2) | S2:Add(S3[],2) | S3:noop | S3:noop | S2:Add(f4,1){[S3.Off]S1:oMove,[S2.Len]S2:oMove} | S3:noop | S3:Add(S4[],1) | S2:Replace(1,f5) | S2:Splice(4,0,S5[]) | S4:noop | S5:Swap(1,1) | S4:noop | S2:Extract(2) | S1:noop | S3:noop | S5:ExtractAll{[S2.Len]S1:oMove,[S5.Len]S1:oMove} | S5:Add(f6,1) | S3:Add(f7,2){[S3.Len]S1:oAdd} | S4:noop | S4:noop | S3:Move(2,2) | S2:Splice(4,0,) | S1:Extract(2,f9) | S4:noop | S5:Add(f2,1) | S4:noop | S2:Add(f8,4) | S4:noop | S2:noop | S5:Splice(3,0,S6[f10]){[S4.Len]S4:oRemove,[S2.Len]S4:oAdd} | S2:Splice(3,1,f12;f13){[S2.Len]S2:oAdd} | S3:Add(f15,3){[S2.Off]S1:oMove,[S3.Len]S1:oRemove} | S1:Add(f16,3){[S4.Off]S4:oAdd} | S1:Splice(3,1,f18;f19){[S1.Len]S3:oRemove,[S2.Off]S1:oAdd} | S1:Move(5,3) | S4:Add(S5[f2,f6,f10],1){[S5.Off]S6:oAdd,oERR ./probe.e1.reent.modes.luau:122: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat} | S1:Add(f22,3){[S2.Len]S4:oAdd,[S2.Off]S2:oRemove} | S2:Add(f24,6) | S2:ExtractAll{[S2.Len]S1:oRemove} | S1:Swap(5,2) | S2:noop | S1:Extract(4,f25) | S2:noop | S2:noop | S1:Extract(2) | S1:Add(f26,1){[S1.Len]S1:oAdd,[S2.Off]S1:oRemove} | S1:Add(f28,1){[S2.Off]S1:oMove,[S1.Len]S1:oRemove} | S2:noop | S1:Swap(2,2) | S1:Add(S7[f29,f30],4) | S2:noop | S7:Replace(2,S8[f31]) | S8:noop | S7:Extract(1,f32) | S2:noop | S2:noop | S2:noop | S2:noop | S8:Add(f5,1) | S2:noop | S8:noop | S8:Swap(1,2) | S8:Swap(2,2) | S7:Move(2,1){[S8.Off]S1:oRemove} | S2:noop | S1:noop | S1:noop | S1:noop | S2:Add(f8,1){[S2.Len]S1:oMove} | S2:Splice(2,0,) | S2:Move(1,1) | S2:Add(f33,2){[S2.Len]S2:oMove} | S2:Add(f18,2) | S2:noop | S2:Add(S9[f34],3){oERR ./probe.e1.reent.modes.luau:122: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S2.Len]S1:oAdd} | S9:Extract(1) | S2:Extract(3,f36){[S2.Len]S2:oMove} | S1:ExtractAll{[S2.Off]S2:oMove} | S1:noop | S1:Add(f37,1){[S1.Len]S2:oRemove} | S2:Splice(4,0,S10[f38,f39]) | S10:Replace(2,f3) | S1:Replace(1,f12) | S2:Add(f27,3){[S10.Off]S1:oAdd} | S1:noop | S1:Replace(2,f41) | S10:Swap(1,1) | S1:Remove(1){[S2.Off]S1:oAdd} | S1:Remove(1){[S2.Off]S1:oAdd} | S10:Add(S11[],2) | S11:Add(S12[f44,f45],1) | S2:Extract(3,f46) | S10:Move(2,3){[S11.Off]S12:oMove} | S11:noop | S2:Swap(3,5) | S11:Move(1,1) | S10:Extract(2){[S12.Off]S1:oMove} | S12:Move(2,1) | S10:Remove(2){[S10.Len]S2:oRemove} | S10:Extract(1) | S1:Add(f47,3){[S2.Off]S1:oRemove} | S1:noop | S10:noop | S2:Extract(1,f48) | S1:noop | S1:Clear{[S2.Off]S2:oRemove} | S2:Splice(1,2,S13[]) | S1:noop | S2:Add(f38,1) | S1:Splice(1,0,f22) | S13:Add(S14[],1) | S13:Extract(1){[S2.Len]S2:oRemove} | S13:ExtractAll | S13:noop | S13:Add(S15[f50],1){oERR ./probe.e1.reent.modes.luau:122: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat} | S1:Clear | S2:Remove(2) | S2:noop
+seed 74 step 96 op Add(S13[f55,f56],1):
+   	mock children 10 ~= 8; extra: f55,f56
+  pre:	S1[S11[S12[]] f51 S9[f54 S10[f53]] f48 f32] S2[]
+  last:	S12:Add(S13[f55,f56],1){[S12.Len]S11:oRemove}
+seed 78 step 110 op Add(S12[f46],1):
+   	mock children 12 ~= 11; extra: f46
+  pre:	S1[f29 S9[f41] f35 f26 f25 S4[f45 f40] f42] S2[S10[] S11[]]
+  last:	S10:Add(S12[f46],1){[S10.Len]S2:oRemove}
+seed 80 step 112 op Add(S16[f68],1):
+   	mock children 16 ~= 15; extra: f68
+  pre:	S1[S11[S10[f62 S15[f65 f66] f43] f52] f63 f44 f53 f64] S2[f56 S14[] S9[f59 f67] f48]
+  last:	S14:Add(S16[f68],1){[S9.Off]S2:oRemove,[S9.Off]S15:oRemove}
+seed 94 step 111 op Add(S16[f57,f58],1):
+   	mock children 18 ~= 16; extra: f57,f58
+  pre:	S1[S6[S14[f55 f54] S15[]] S9[S12[f51] f38 f43 f40 f50 f39] f3 f18 f25 f10] S2[f29 S11[] f32]
+  last:	S14:Add(S16[f57,f58],1){[S15.Off]S6:oRemove,[S15.Off]S11:oAdd}
+seed 98 step 112 op Add(S14[f46],2):
+   	mock children 6 ~= 5; extra: f46
+  pre:	S1[f42 S12[f45 f44]] S2[S13[] f41]
+  last:	S12:Add(S14[f46],2){[S12.Len]S1:oRemove}
+seed 102 step 101 op Add(S13[f49,f50],2):
+   	mock children 7 ~= 5; extra: f49,f50
+  pre:	S1[S12[]] S2[f47 S6[f31 S11[f42 f48 f46]]]
+  last:	S11:Add(S13[f49,f50],2){[S11.Len]S6:oRemove}
+seed 117 step 115 op Add(S20[f78,f79],2):
+   	mock children 9 ~= 7; extra: f78,f79
+  pre:	S1[f74 f75] S2[f61 S12[S19[f77] S17[f73] f53 S16[S18[f76] f66 f67] f65 f68 f63] f62]
+  last:	S18:Add(S20[f78,f79],2){[S18.Off]S2:oRemove,[S18.Len]S16:oMove}
+seed 127 step 11 op Add(S5[f11,f12],2):
+   	mock children 10 ~= 8; extra: f11,f12
+  pre:	S1[f3 f5 f6 f8] S2[f2 S4[f9 f10]]
+  last:	S4:Add(S5[f11,f12],2){[S2.Len]S2:oRemove}
+seed 129 step 117 op Add(S20[f65],1):
+   	mock children 11 ~= 10; extra: f65
+  pre:	S1[S18[S4[f6 f48]] f56 S15[f38]] S2[f52 S13[S19[]] f57 f59 f3]
+  last:	S4:Add(S20[f65],1){[S18.Len]S1:oMove,[S4.Len]S18:oRemove}
+seed 150 step 83 op Replace(1,S11[f43,f44]):
+   	mock children 13 ~= 11; extra: f43,f44
+  pre:	S1[f21 S4[S10[f42] f39] f22 f14 f20 f26 f16] S2[f41]
+  last:	S10:Replace(1,S11[f43,f44]){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S2.Off]S4:oRemove}
+seed 153 step 38 op Add(S9[f25,f26],3):
+   	mock children 20 ~= 18; extra: f25,f26
+  pre:	S1[S8[f19 f20] f17 f15] S2[S5[f18 f14 f9 f23 f8 f12] S7[f22 f21] f24 S3[f3 f16 f7] f4]
+  last:	S7:Add(S9[f25,f26],3){[S3.Off]S3:oMove,[S7.Len]S2:oRemove}
+seed 174 step 116 op Add(S21[f54,f55],1):
+   	mock children 12 ~= 10; extra: f54,f55
+  pre:	S1[f51 f9 S10[f53 S19[f52] S17[]] f45 S13[] S8[S9[] f25] f27] S2[]
+  last:	S9:Add(S21[f54,f55],1){[S9.Len]S8:oRemove}
+seed 191 step 105 op Add(S6[f25],1):
+   	mock children 10 ~= 9; extra: f25
+  pre:	S1[f56 f61] S2[f57 f52 f55 S16[f58 S17[]]]
+  last:	S17:Add(S6[f25],1){[S6.Off]S16:oRemove}
+seed 224 step 99 op Extract(1,S14[f50,f51]):
+   	mock children 16 ~= 14; extra: f50,f51
+  pre:	S1[f49 S10[f43]] S2[f25 S3[f46 f41 S12[f45 S13[f47] f37]] S8[f48 f27] f44 f20 f42]
+  last:	S10:Extract(1,S14[f50,f51]){[S1.Len]S8:oRemove,[S13.Off]S1:oRemove}
+seed 240 step 92 op Extract(1,S15[f65,f66]):
+   	mock children 16 ~= 14; extra: f65,f66
+  pre:	S1[] S2[S12[f58 S14[f55]] S10[] S13[f61 f53] f49 S11[f46 f59 f64 f62 f45 f60 f50]]
+  last:	S14:Extract(1,S15[f65,f66]){[S12.Len]S13:oMove,[S10.Off]S12:oRemove}
+seed 243 step 85 op Add(S8[f34,f35,f36],1):
+   	mock children 9 ~= 6; extra: f34,f35,f36
+  pre:	S1[f37 f46 S14[]] S2[S12[] f41]
+  last:	S12:Add(S8[f34,f35,f36],1){[S12.Len]S2:oRemove}
+seed 259 step 7 op Add(S5[f7,f8],2):
+   	mock children 7 ~= 5; extra: f7,f8
+  pre:	S1[S4[f6]] S2[f5 f4]
+  last:	S4:Add(S5[f7,f8],2){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S1.Len]S1:oRemove}
+seed 265 step 94 op Add(S17[f68],1):
+   	mock children 6 ~= 5; extra: f68
+  pre:	S1[] S2[f43 S16[f66 f65 f64] f67]
+  last:	S16:Add(S17[f68],1){[S2.Len]S2:oRemove}
+seed 268 step 24 op Add(S7[f14],1):
+   	mock children 8 ~= 7; extra: f14
+  pre:	S1[f2 f10 S4[S6[f11]] f7] S2[f9]
+  last:	S4:Add(S7[f14],1){[S6.Len]S1:oRemove,[S6.Off]S6:oAdd}
+seed 276 step 11 op Add(S5[f8],3):
+   	mock children 6 ~= 5; extra: f8
+  pre:	S1[S4[f6 f7]] S2[S3[f4 f5]]
+  last:	S4:Add(S5[f8],3){oERR ./probe.e1.reent.modes.luau:122: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S3.Off]S1:oRemove}
+seed 280 step 26 op Add(S5[f11],1):
+   	mock children 8 ~= 7; extra: f11
+  pre:	S1[f8 f2 S3[f4] f6] S2[S4[]]
+  last:	S4:Add(S5[f11],1){[S2.Len]S2:oRemove}
+seed 285 step 91 op Add(S15[f47,f48],1):
+   	mock children 8 ~= 6; extra: f47,f48
+  pre:	S1[] S2[S13[S14[] f46 f44] f41 f42 f39]
+  last:	S14:Add(S15[f47,f48],1){[S2.Len]S2:oRemove}
+seed 314 step 58 op Add(S12[f43],1):
+   	mock children 7 ~= 6; extra: f43
+  pre:	S1[S11[f42] f26] S2[S4[S8[f35 S10[] f22] f25 f41] f17 f23]
+  last:	S11:Add(S12[f43],1){[S11.Len]S1:oRemove}
+seed 320 step 104 op Replace(1,S16[f42,f43]):
+   	mock children 7 ~= 5; extra: f42,f43
+  pre:	S1[] S2[f25 S14[] S15[f40]]
+  last:	S14:Replace(1,S16[f42,f43]){[S2.Len]S2:oRemove}
+seed 339 step 108 op Add(S23[f72],1):
+   	mock children 15 ~= 14; extra: f72
+  pre:	S1[f62 f49 f61 f39 f17 f63 S16[S22[]]] S2[S14[S21[f68]] S15[f48] f54 f46 f53]
+  last:	S22:Add(S23[f72],1){[S1.Len]S16:oRemove}
+seed 369 step 119 Add(S8[f45,f36,f11],2) ERROR: ./probe.e1.reent.modes.luau:166: Quad0164 Slot: destroyed Slot cannot be mounted
+  log:	S1:noop | S1:Remove(1){[S1.Len]S2:oRemove,[S1.Len]S1:oAdd} | S2:noop | S2:Splice(1,0,S3[]) | S3:noop | S1:Clear{[S2.Off]S3:oAdd} | S3:Add(f5,2) | S1:Add(f6,1){[S1.Len]S3:oMove} | S2:Add(S4[f7],1){[S3.Off]S1:oAdd} | S3:Replace(1,f9) | S2:Remove(2){[S2.Len]S4:oAdd} | S4:Extract(2,f11) | S4:Extract(2,f7) | S1:Splice(3,0,) | S4:Swap(1,2) | S4:Extract(1){[S4.Len]S1:oMove,[S4.Len]S4:oAdd} | S2:Add(f13,2){[S2.Len]S1:oRemove,[S2.Len]S2:oRemove} | S2:noop | S1:noop | S1:Swap(1,1) | S1:Extract(1) | S1:noop | S2:Extract(1) | S2:Add(f14,1){[S2.Len]S1:oAdd,[S2.Len]S2:oRemove} | S1:Swap(1,1) | S1:Remove(1){[S2.Off]S2:oAdd} | S2:Swap(1,1) | S2:Add(S5[],1) | S5:noop | S5:noop | S5:noop | S5:noop | S2:Splice(2,0,f18;f19){[S5.Off]S2:oRemove} | S2:Add(S6[],1) | S5:noop | S5:noop | S2:Replace(5,S7[]) | S1:noop | S7:noop | S7:noop | S1:noop | S6:Add(f20,1){[S6.Len]S6:oRemove} | S2:Add(S8[f21],2) | S6:noop | S2:Extract(2){[S7.Off]S2:oMove} | S7:Add(S9[],1) | S6:noop | S2:Move(4,4) | S7:Add(S10[],2) | S7:noop | S9:Splice(1,0,) | S6:noop | S1:Add(S11[f22],1) | S9:Splice(1,0,f23;S12[]) | S1:noop | S9:Remove(1){[S12.Off]S1:oAdd} | S12:noop | S7:noop | S2:Add(S8[f21],2){[S8.Off]S9:oAdd} | S8:Extract(1) | S9:Swap(1,1) | S9:Move(1,2) | S7:Clear{[S2.Len]S11:oRemove} | S11:noop | S6:Add(f7,1){[S6.Len]S1:oMove} | S2:Replace(6,S13[f26,f27]) | S8:Add(f11,1){[S8.Len]S6:oRemove} | S6:Splice(1,0,S14[f28];f6) | S6:Add(f29,3) | S11:noop | S13:noop | S11:Add(S15[f30],1) | S15:Move(1,1) | S6:Splice(1,0,f31;f32) | S14:Add(f33,2) | S8:Swap(1,1) | S8:Move(1,1) | S15:Add(f34,2) | S15:Replace(2,f35) | S8:Add(S16[f36],1){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat} | S11:Splice(1,0,f38;f39) | S13:Replace(1,f40) | S1:Extract(2,f13) | S14:Splice(3,0,S11[f38,f39,f30,f35];f41) | S14:Replace(2,S17[]) | S17:Add(S18[],1) | S6:Extract(2,f42) | S14:Add(f43,1) | S15:Remove(1) | S11:Extract(3,f44) | S17:noop | S1:Add(f21,2){[S16.Len]S2:oMove,[S1.Len]S16:oAdd} | S2:Remove(1){[S6.Off]S1:oMove,[S14.Off]S11:oMove} | S16:noop | S11:Add(f46,1) | S2:Splice(2,4,S19[f47,f48];S15[f35]) | S17:Extract(1) | S15:Add(f49,2){[S14.Off]S1:oAdd,[S15.Len]S6:oAdd} | S6:Add(f52,6){[S6.Len]S15:oMove} | S1:Clear | S1:Add(S18[],1){[S6.Len]S15:oRemove,[S18.Off]S6:oAdd} | S11:Add(S20[],3) | S19:Add(f54,1){[S6.Len]S19:oAdd,[S19.Len]S14:oRemove} | S17:noop | S19:Extract(2,f17) | S15:Clear{[S15.Len]S2:oRemove} | S14:Extract(4,f18) | S6:Extract(8,f32) | S1:Splice(1,1,) | S2:noop | S17:Add(f56,1) | S17:Add(S21[f57,f58],1) | S21:Add(f29,3){[S21.Len]S2:oAdd} | S2:Add(f60,1){[S6.Off]S14:oRemove} | S1:noop | S15:Add(S22[f61],1) | S1:Add(S23[f62,f63],1){[S15.Len]S17:oRemove,[S1.Len]S15:oAdd} | S17:noop
+seed 378 step 32 op Add(S7[f18,f19],1):
+   	mock children 10 ~= 8; extra: f18,f19
+  pre:	S1[f16 S3[] f14] S2[f15 S5[S6[]] f13 f17]
+  last:	S6:Add(S7[f18,f19],1){[S6.Len]S5:oRemove}
+seed 389 step 48 op Extract(1,S11[f29,f30]):
+   	mock children 7 ~= 5; extra: f29,f30
+  pre:	S1[S10[f27]] S2[f22 f25]
+  last:	S10:Extract(1,S11[f29,f30]){[S10.Len]S1:oRemove}
+seed 391 step 66 op Add(S11[f37,f38],1):
+   	mock children 7 ~= 5; extra: f37,f38
+  pre:	S1[f30 f32 S6[]] S2[S8[f35] f36]
+  last:	S8:Add(S11[f37,f38],1){[S6.Off]S2:oRemove,[S2.Len]S1:oRemove}
+seed 404 step 117 op Add(S18[f68,f69],1):
+   	mock children 6 ~= 4; extra: f68,f69
+  pre:	S1[S17[]] S2[]
+  last:	S17:Add(S18[f68,f69],1){[S2.Len]S1:oRemove,[S17.Len]S2:oAdd}
+seed 427 step 103 op Replace(1,S17[f49,f50]):
+   	mock children 6 ~= 4; extra: f49,f50
+  pre:	S1[S7[f44 f30 S16[f46 f47]]] S2[f14]
+  last:	S7:Replace(1,S17[f49,f50]){[S16.Off]S1:oRemove}
+seed 430 step 30 op Add(S7[f19],1):
+   	mock children 8 ~= 7; extra: f19
+  pre:	S1[f16 S4[S6[]] f17 f9 f5] S2[]
+  last:	S6:Add(S7[f19],1){oERR ./probe.e1.reent.modes.luau:122: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S2.Off]S4:oRemove}
+seed 435 step 105 op Add(S14[f59],1):
+   	mock children 12 ~= 11; extra: f59
+  pre:	S1[f58 f28 f49 f52] S2[S12[f55 f56 S8[]] f54 S13[f57]]
+  last:	S8:Add(S14[f59],1){[S8.Len]S12:oRemove}
+seed 463 step 13 op Add(S6[f17,f18],1):
+   	mock children 15 ~= 13; extra: f17,f18
+  pre:	S1[S3[f10 f11 f12 f13] f8 f5 f2 S5[f14] f1 f9] S2[S4[]]
+  last:	S4:Add(S6[f17,f18],1){[S4.Len]S2:oRemove}
+seed 466 step 97 op Add(S14[f43],1):
+   	mock children 5 ~= 4; extra: f43
+  pre:	S1[] S2[S11[S13[]] f36]
+  last:	S13:Add(S14[f43],1){[S2.Len]S2:oRemove}
+seed 493 step 31 op Add(S7[f20,f21],1):
+   	mock children 12 ~= 10; extra: f20,f21
+  pre:	S1[f13 f19 f6] S2[f7 f15 f14 S3[S5[f18 S6[]] S4[]]]
+  last:	S5:Add(S7[f20,f21],1){[S2.Len]S2:oAdd,[S6.Off]S2:oRemove}
+seed 519 step 118 op Add(S13[f65],1):
+   	mock children 14 ~= 13; extra: f65
+  pre:	S1[f56 f55 f3 f62 f49 f57] S2[f63 f59 f46 S9[f64] S11[] f16 S6[]]
+  last:	S6:Add(S13[f65],1){[S2.Len]S2:oRemove,[S2.Len]S2:oRemove}
+seed 531 step 40 op Add(S8[f24],1):
+   	mock children 14 ~= 13; extra: f24
+  pre:	S1[S5[f13 S6[f23 f19 f20 S7[]]] f12] S2[S4[f15 f17 f18] f21 f22 f16 f8]
+  last:	S7:Add(S8[f24],1){[S5.Len]S1:oAdd,[S5.Len]S5:oRemove}
+seed 543 step 52 op Add(S16[f42,f43],2):
+   	mock children 7 ~= 5; extra: f42,f43
+  pre:	S1[] S2[f6 S4[S5[f27 S15[] S10[f40 f33 f1 f28]] f41]]
+  last:	S5:Add(S16[f42,f43],2){[S15.Off]S4:oRemove}
+seed 549 step 27 op Replace(1,S5[f23,f24]):
+   	mock children 15 ~= 13; extra: f23,f24
+  pre:	S1[f8 f22 f10 f20 f14 f3 f7] S2[f16 S4[f18] f13 S3[f21]]
+  last:	S4:Replace(1,S5[f23,f24]){[S4.Len]S2:oRemove}
+seed 553 step 115 op Add(S23[f70],1):
+   	mock children 10 ~= 9; extra: f70
+  pre:	S1[] S2[f62 S19[f64 S22[]] S18[f67 S20[f68]] f57 f55]
+  last:	S22:Add(S23[f70],1){[S20.Off]S19:oRemove}
+seed 586 step 103 op Add(S14[f46,f47],1):
+   	mock children 9 ~= 7; extra: f46,f47
+  pre:	S1[S9[] S11[] S12[f45]] S2[f17 f36 S10[S13[f11] f38]]
+  last:	S10:Add(S14[f46,f47],1){[S2.Len]S1:oAdd,[S13.Off]S2:oRemove}
+seed 607 step 117 op Add(S24[f60,f61],1):
+   	mock children 19 ~= 17; extra: f60,f61
+  pre:	S1[S6[f62 f50 f58 f66 S23[]] S21[S26[]] S11[f65]] S2[f46 S3[f16 f36] S10[] f43 f6 f7 f2 f33 S20[] S4[f35 f57]]
+  last:	S11:Add(S24[f60,f61],1){[S24.Off]S3:oMove,[S1.Len]S1:oRemove}
+seed 634 step 46 op Add(S9[f24],1):
+   	mock children 9 ~= 8; extra: f24
+  pre:	S1[f20 f22 f15] S2[f17 S6[S7[f7 f9]] S8[f23]]
+  last:	S7:Add(S9[f24],1){[S7.Len]S6:oRemove}
+seed 646 step 92 op Add(S13[f46,f47],1):
+   	mock children 6 ~= 4; extra: f46,f47
+  pre:	S1[f43 S11[]] S2[S12[f44 f45]]
+  last:	S12:Add(S13[f46,f47],1){[S2.Len]S2:oRemove}
+seed 655 step 83 op Replace(1,S14[f29,f30]):
+   	mock children 8 ~= 6; extra: f29,f30
+  pre:	S1[f21 S10[S11[S13[]] f28 S12[f26 f27 f6]] f17 f19] S2[]
+  last:	S11:Replace(1,S14[f29,f30]){[S2.Off]S1:oMove,[S11.Len]S1:oRemove}
+seed 688 step 90 op Add(S11[f42],1):
+   	mock children 12 ~= 11; extra: f42
+  pre:	S1[S4[f32 f27 f36 f24] S10[f39 f40] f41 S7[] f30] S2[]
+  last:	S7:Add(S11[f42],1){[S7.Len]S1:oRemove}
+seed 690 step 6 op Replace(1,S5[f10,f11]):
+   	mock children 11 ~= 9; extra: f10,f11
+  pre:	S1[f1 S3[f4]] S2[f5 S4[f6 f7] f2]
+  last:	S4:Replace(1,S5[f10,f11]){[S3.Len]S2:oRemove,[S4.Len]S3:oAdd}
+seed 705 step 25 op Add(S6[f20,f21],1):
+   	mock children 14 ~= 12; extra: f20,f21
+  pre:	S1[f9 f10 S4[f11 f12 f15 f16 f18] f7] S2[S5[f19]]
+  last:	S5:Add(S6[f20,f21],1){[S2.Len]S2:oAdd,[S2.Len]S2:oRemove}
+seed 718 step 36 op Replace(1,S4[f23,f19,f15,f13,f22]):
+   	mock children 9 ~= 4; extra: f23,f19,f15,f13,f22
+  pre:	S1[S5[f25 f26] f24] S2[]
+  last:	S5:Replace(1,S4[f23,f19,f15,f13,f22]){[S4.Off]S1:oRemove}
+seed 732 step 102 Replace(3,S4[f26,f27,f28]) ERROR: ./probe.e1.reent.modes.luau:177: Quad0164 Slot: destroyed Slot cannot be mounted
+  log:	S1:Extract(1){[S1.Len]S2:oAdd} | S1:Add(f1,1) | S2:Add(f4,3) | S2:noop | S1:Add(S3[f5],1){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,oERR ./probe.e1.reent.modes.luau:122: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat} | S3:Move(1,1) | S2:Move(1,3) | S1:Add(f7,1) | S1:Swap(1,2){[S3.Off]S2:oMove} | S2:Move(1,3) | S3:noop | S1:Replace(3,f8) | S2:noop | S3:Extract(1){[S2.Len]S1:oRemove,[S3.Len]S2:oAdd} | S3:Add(f10,1){[S3.Len]S3:oAdd} | S3:Move(1,1) | S1:Clear{[S2.Len]S2:oRemove,[S2.Off]S2:oAdd} | S2:Add(f13,3){[S2.Len]S2:oRemove} | S1:Add(f14,1){[S2.Off]S2:oAdd} | S1:Swap(1,1) | S1:Add(f5,2){[S2.Off]S2:oRemove} | S1:ExtractAll{[S2.Off]S2:oAdd} | S1:Splice(1,0,f17;f18) | S2:Replace(3,S4[f19]) | S2:Extract(5){[S4.Off]S2:oAdd,[S2.Len]S1:oAdd} | S1:Add(S5[],3) | S5:noop | S2:Swap(4,4) | S2:Add(f5,5){[S2.Len]S4:oMove} | S4:Extract(1,S6[]){oERR ./probe.e1.reent.modes.luau:122: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S4.Len]S5:oAdd} | S6:noop | S4:noop | S2:Move(1,2) | S2:noop | S2:Add(f19,1){[S6.Off]S4:oMove} | S1:Move(1,5){[S5.Len]S4:oMove,[S5.Off]S5:oAdd} | S1:Move(5,3) | S1:Add(f3,4) | S4:Splice(2,1,f26;S7[f27,f28]){[S4.Len]S2:oRemove} | S2:Splice(2,3,) | S2:Remove(3){[S2.Len]S1:oAdd} | S2:Add(f30,1){[S2.Len]S1:oRemove} | S5:Extract(2,f31) | S2:Extract(2){[S2.Len]S5:oMove} | S5:Replace(1,f32) | S5:noop | S5:noop | S2:Extract(1,f33) | S2:Extract(2) | S5:noop | S5:noop | S1:Splice(5,0,f34){[S2.Len]S5:oMove,[S5.Off]S2:oRemove} | S2:noop | S1:noop | S1:Add(f35,1) | S2:noop | S5:Add(S8[],3) | S1:Move(5,2) | S5:Extract(1){[S8.Off]S1:oMove} | S2:Add(f16,1) | S1:Extract(1){[S5.Off]S5:oMove,[S8.Off]S5:oRemove} | S5:Remove(1){[S5.Len]S1:oMove} | S1:Clear | S1:Add(f5,1){[S2.Len]S1:oAdd,[S2.Off]S2:oRemove} | S2:Add(f4,1){[S2.Len]S1:oAdd,[S2.Len]S2:oRemove} | S2:Add(f31,1) | S1:Add(S9[],2) | S1:Add(f39,1){[S9.Off]S1:oAdd} | S9:Add(f41,1) | S1:Add(f42,6){[S9.Off]S2:oRemove,[S2.Off]S1:oAdd} | S2:noop | S2:noop | S9:Splice(2,0,S10[f44];f45) | S10:Extract(1,f14) | S9:Splice(1,3,f46) | S1:Splice(4,1,){[S9.Off]S1:oRemove,[S2.Off]S9:oAdd} | S1:Extract(5){[S2.Off]S9:oAdd} | S2:noop | S9:Add(f43,1){[S9.Len]S1:oAdd} | S2:Splice(1,0,f50;S11[f51,f52]){[S2.Len]S1:oMove} | S2:Replace(1,f30) | S9:Clear{[S9.Len]S11:oMove,[S11.Off]S11:oAdd} | S2:Extract(1) | S11:Add(f54,1) | S1:Extract(1,S4[f26,f27,f28]) | S1:ExtractAll{[S11.Off]S2:oAdd,[S11.Off]S1:oAdd} | S1:Move(1,1) | S11:noop | S2:Swap(1,2){[S2.Off]S2:oAdd,[S11.Off]S1:oAdd} | S2:Splice(3,1,) | S11:Swap(2,1) | S1:Replace(1,f45) | S1:Add(f5,3) | S11:Extract(1){[S11.Len]S2:oAdd} | S2:Remove(3){[S2.Len]S2:oRemove} | S11:noop | S11:Splice(3,0,f60;f61) | S11:Move(4,1) | S1:Add(f62,1) | S1:Remove(3) | S1:Extract(1,f44)
+seed 735 step 53 op Add(S8[f28],1):
+   	mock children 7 ~= 6; extra: f28
+  pre:	S1[f21 f25 f8 f9] S2[S6[]]
+  last:	S6:Add(S8[f28],1){[S2.Off]S2:oRemove,[S6.Len]S1:oRemove}
+seed 761 step 94 op Add(S9[f37,f40,f39],1):
+   	mock children 14 ~= 11; extra: f37,f40,f39
+  pre:	S1[S11[f43 f41] f51 S8[f42 f52 S12[] S14[f46 f47] S15[]] S13[f45 f53]] S2[f50 f8 f27]
+  last:	S12:Add(S9[f37,f40,f39],1){[S9.Off]S1:oRemove}
+seed 763 step 85 op Replace(2,S13[f45,f46]):
+   	mock children 8 ~= 6; extra: f45,f46
+  pre:	S1[f44 S11[f42 f43 f37 f41 f38] S12[f39]] S2[f33 S9[] f6]
+  last:	S11:Replace(2,S13[f45,f46]){[S12.Off]S1:oRemove,[S12.Off]S12:oRemove}
+seed 776 step 57 op Replace(1,S7[f30,f31]):
+   	mock children 9 ~= 7; extra: f30,f31
+  pre:	S1[] S2[f26 S4[f12 f13 S6[f10] f27]]
+  last:	S6:Replace(1,S7[f30,f31]){[S6.Len]S4:oRemove}
+seed 793 step 35 op Replace(2,S6[f26,f27]):
+   	mock children 13 ~= 11; extra: f26,f27
+  pre:	S1[S4[S5[f24 f25] f5 f22 f23] S3[] f17 f21 f10 f15 f9] S2[]
+  last:	S5:Replace(2,S6[f26,f27]){[S3.Off]S4:oRemove}
+seed 817 step 74 op Extract(3,S9[f32,f33]):
+   	mock children 5 ~= 3; extra: f32,f33
+  pre:	S1[S8[f31 f29 f30]] S2[]
+  last:	S8:Extract(3,S9[f32,f33]){[S2.Off]S1:oRemove}
+seed 819 step 21 op Extract(1,S6[f8,f9]):
+   	mock children 7 ~= 5; extra: f8,f9
+  pre:	S1[] S2[f2 f1 S4[S5[f4 f7 f5]]]
+  last:	S4:Extract(1,S6[f8,f9]){[S2.Len]S2:oRemove}
+seed 854 step 101 op Add(S11[f46],2):
+   	mock children 14 ~= 13; extra: f46
+  pre:	S1[f44 S9[] S7[S8[f30] S10[f40]] f38 f36 f43] S2[f22 f32 f8 f19 f45 f21]
+  last:	S7:Add(S11[f46],2){[S10.Off]S1:oRemove}
+seed 858 step 2 op Add(S4[f5],2):
+   	mock children 6 ~= 5; extra: f5
+  pre:	S1[S3[f3 f4]] S2[f2]
+  last:	S3:Add(S4[f5],2){[S1.Len]S1:oAdd,[S2.Off]S1:oRemove}
+seed 861 step 119 op Add(S20[f70,f71],1):
+   	mock children 18 ~= 16; extra: f70,f71
+  pre:	S1[f40 f19 S15[f67 S4[f68]] f7 f69 f20 S17[f58] f66 f16 f21] S2[S16[] S19[] f54 f48 f55]
+  last:	S4:Add(S20[f70,f71],1){[S4.Len]S15:oRemove}
+seed 870 step 101 op Extract(1,S19[f63,f64]):
+   	mock children 12 ~= 10; extra: f63,f64
+  pre:	S1[f49 f48] S2[S9[S16[f53 f60 f59] f29 f42] f27 S18[f57] f45 f40 f62 f21]
+  last:	S9:Extract(1,S19[f63,f64]){[S18.Len]S2:oRemove,[S18.Off]S18:oRemove}
+seed 871 step 35 op Add(S9[f30],2):
+   	mock children 12 ~= 11; extra: f30
+  pre:	S1[f23 S6[f24 S3[f29] S8[f27 f28] f26] f20 f6 f16] S2[f2 f10]
+  last:	S8:Add(S9[f30],2){[S6.Len]S6:oRemove,[S6.Len]S6:oRemove}
+seed 883 step 39 op Add(S8[f26],3):
+   	mock children 13 ~= 12; extra: f26
+  pre:	S1[f10 f13] S2[S4[S6[f20] f7 f19 f21 f17] f12 f25 S7[f23 f24] f22]
+  last:	S7:Add(S8[f26],3){[S7.Off]S2:oRemove,[S2.Len]S2:oRemove}
+seed 898 step 40 op Add(S7[f18],1):
+   	mock children 10 ~= 9; extra: f18
+  pre:	S1[f17] S2[f16 f9 f10 S6[] f12]
+  last:	S6:Add(S7[f18],1){[S2.Len]S2:oAdd,[S2.Len]S2:oRemove}
+seed 907 step 16 op Add(S6[f12],2):
+   	mock children 8 ~= 7; extra: f12
+  pre:	S1[f1 S4[f5 f3 f11]] S2[S5[f9 f8] f10 f7]
+  last:	S4:Add(S6[f12],2){[S2.Len]S1:oRemove,[S1.Len]S2:oRemove}
+seed 919 step 109 op Add(S18[f75],3):
+   	mock children 12 ~= 11; extra: f75
+  pre:	S1[f61 S15[] f9 f69 f28 f64 S14[S16[f70 f74 f71] f63 f67 f60 S17[f72 f73] f68]] S2[f54 f53 f66]
+  last:	S17:Add(S18[f75],3){[S14.Len]S1:oRemove}
+seed 928 step 99 op Extract(1,S9[f46,f47]):
+   	mock children 10 ~= 8; extra: f46,f47
+  pre:	S1[f44] S2[f22 f45 f40 S8[f17] f43]
+  last:	S8:Extract(1,S9[f46,f47]){[S8.Len]S2:oRemove}
+seed 937 step 54 op Add(S7[f26],2):
+   	mock children 7 ~= 6; extra: f26
+  pre:	S1[f16 S6[f25]] S2[f21 S5[f22] f17]
+  last:	S5:Add(S7[f26],2){[S2.Len]S2:oRemove,[S2.Len]S2:oRemove}
+seed 938 step 104 op Add(S12[f70,f71],5):
+   	mock children 11 ~= 9; extra: f70,f71
+  pre:	S1[f67 S9[f64 f63 f8 f55]] S2[f37 f69 f36 f44 f43]
+  last:	S9:Add(S12[f70,f71],5){[S9.Len]S1:oRemove}
+seed 946 step 82 op Add(S11[f32,f33],3):
+   	mock children 7 ~= 5; extra: f32,f33
+  pre:	S1[S9[f27 S10[f29 f30] f25 f28] f31] S2[f26]
+  last:	S10:Add(S11[f32,f33],3){[S10.Len]S1:oRemove}
+seed 949 step 64 op Add(S8[f39,f40],5):
+   	mock children 6 ~= 4; extra: f39,f40
+  pre:	S1[S7[f36 f37] S5[]] S2[S3[f33 f17 S4[] f38 f16]]
+  last:	S3:Add(S8[f39,f40],5){[S7.Len]S2:oRemove,[S2.Len]S7:oRemove}
+seed 1005 step 41 op Add(S6[f24],3):
+   	mock children 5 ~= 4; extra: f24
+  pre:	S1[] S2[S5[f23 f21 f22]]
+  last:	S5:Add(S6[f24],3){[S2.Len]S1:oAdd,[S5.Len]S2:oRemove}
+seed 1012 step 41 op Add(S3[f5,f7,f6],1):
+   	mock children 7 ~= 4; extra: f5,f7,f6
+  pre:	S1[S5[f10 S6[f13 f14]]] S2[f12]
+  last:	S5:Add(S3[f5,f7,f6],1){[S3.Off]S1:oRemove}
+seed 1028 step 102 op Replace(3,S18[f67,f68]):
+   	mock children 9 ~= 7; extra: f67,f68
+  pre:	S1[] S2[S8[f61 f64 S14[f66 f65 f63]] f1 f33]
+  last:	S14:Replace(3,S18[f67,f68]){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S8.Len]S8:oRemove}
+seed 1031 step 91 op Add(S18[f48,f49],1):
+   	mock children 14 ~= 12; extra: f48,f49
+  pre:	S1[S14[f35 S15[f43 f38]] S13[f32 f40 S17[]] f4 f16] S2[f29 S11[f47 f46] f36 f5]
+  last:	S15:Add(S18[f48,f49],1){oERR ./probe.e1.reent.modes.luau:122: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S17.Off]S1:oRemove}
+seed 1036 step 64 op Add(S9[f34,f35],2):
+   	mock children 11 ~= 9; extra: f34,f35
+  pre:	S1[S5[f22] f33 f30 f32 f24 f27 f31] S2[]
+  last:	S5:Add(S9[f34,f35],2){[S1.Len]S1:oRemove}
+seed 1047 step 74 op Add(S9[f34],2):
+   	mock children 11 ~= 10; extra: f34
+  pre:	S1[] S2[f29 S7[f31 S8[]] f15 f13 f30 f18 f21 f33]
+  last:	S7:Add(S9[f34],2){[S8.Off]S2:oMove,[S2.Len]S2:oRemove}
+seed 1061 step 37 op Add(S10[f20],1):
+   	mock children 8 ~= 7; extra: f20
+  pre:	S1[f15 f10] S2[S6[f16 f19] f14 S7[] f18]
+  last:	S6:Add(S10[f20],1){[S6.Off]S2:oRemove,[S6.Len]S2:oMove}
+seed 1081 step 60 op Add(S8[f38],2):
+   	mock children 13 ~= 12; extra: f38
+  pre:	S1[f25 f26 f36 f24] S2[f20 S4[S6[f23 f37 f22 f29] S5[f33 S7[f35]] f30 f21 f15 f31 f16] f32 f13 f18 f11]
+  last:	S6:Add(S8[f38],2){[S6.Len]S2:oRemove}
+seed 1103 step 8 op Extract(1,S4[f6,f7]):
+   	mock children 7 ~= 5; extra: f6,f7
+  pre:	S1[f5 f1] S2[S3[f3 f4]]
+  last:	S3:Extract(1,S4[f6,f7]){[S3.Len]S2:oRemove}
+seed 1116 step 73 op Add(S8[f41],1):
+   	mock children 15 ~= 14; extra: f41
+  pre:	S1[S7[] f24 f38 f37 f35 f26 f32] S2[f34 f36 f20 f33 f39 f40]
+  last:	S7:Add(S8[f41],1){[S1.Len]S1:oRemove,[S1.Len]S1:oRemove}
+seed 1138 step 33 op Extract(1,S5[f19,f20]):
+   	mock children 5 ~= 3; extra: f19,f20
+  pre:	S1[] S2[S3[S4[f18]]]
+  last:	S4:Extract(1,S5[f19,f20]){[S4.Len]S2:oRemove}
+seed 1141 step 57 op Add(S9[f31],1):
+   	mock children 7 ~= 6; extra: f31
+  pre:	S1[S8[]] S2[f16 f25 f3]
+  last:	S8:Add(S9[f31],1){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S1.Len]S1:oRemove}
+seed 1145 step 86 op Add(S14[f58],1):
+   	mock children 8 ~= 7; extra: f58
+  pre:	S1[S13[f57]] S2[f41 f50 S12[f52 f55]]
+  last:	S13:Add(S14[f58],1){[S13.Len]S1:oRemove}
+seed 1168 step 107 op Extract(2,S13[f70,f71]):
+   	mock children 7 ~= 5; extra: f70,f71
+  pre:	S1[S12[f68 f69]] S2[f67 f50 f53]
+  last:	S12:Extract(2,S13[f70,f71]){[S2.Off]S2:oRemove,[S12.Len]S1:oRemove}
+seed 1208 step 46 Add(S4[],1) ERROR: ./probe.e1.reent.modes.luau:166: Quad0164 Slot: destroyed Slot cannot be mounted
+  log:	S1:noop | S2:Extract(1,f3) | S1:Extract(1,f4) | S2:Add(f5,2) | S2:Remove(1){[S2.Off]S1:oRemove,[S2.Len]S1:oAdd} | S2:Remove(1){[S2.Len]S1:oRemove} | S2:noop | S2:noop | S1:noop | S2:Splice(1,0,f7;f8) | S1:noop | S1:noop | S1:noop | S2:Add(f9,3) | S2:Add(f2,3){[S2.Len]S2:oRemove} | S1:noop | S1:noop | S2:Add(S3[f10],2){oERR ./probe.e1.reent.modes.luau:122: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S2.Len]S1:oAdd} | S1:Extract(1){[S3.Off]S3:oRemove} | S2:Replace(2,S4[f12]){oERR ./probe.e1.reent.modes.luau:122: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat} | S2:noop | S4:noop | S2:ExtractAll | S2:Add(S4[f12],1) | S4:Move(1,1) | S2:Splice(2,0,f9) | S1:Add(S5[f13,f14],1) | S1:Splice(1,0,f15;f16){[S5.Off]S4:oRemove} | S1:Replace(3,f17) | S2:Swap(1,1) | S4:Add(S6[f18],1){[S4.Len]S1:oMove,[S2.Len]S1:oMove} | S1:Remove(2) | S1:Move(2,2) | S6:Remove(1) | S6:noop | S4:noop | S2:ExtractAll{[S2.Len]S1:oAdd} | S2:noop | S1:Add(f20,3) | S2:Add(f21,1) | S1:Move(3,4) | S2:Extract(1) | S2:noop | S2:Add(S7[],1) | S1:Add(f8,2)
+seed 1262 step 87 op Add(S15[f47],1):
+   	mock children 11 ~= 10; extra: f47
+  pre:	S1[S10[f46 f37 f36] S14[] f44 f43] S2[f41 f45]
+  last:	S14:Add(S15[f47],1){[S14.Len]S1:oRemove}
+seed 1286 step 104 op Add(S14[f64],3):
+   	mock children 16 ~= 15; extra: f64
+  pre:	S1[f21 f23 f48 S8[f43 S12[f55 f63 f56] f44] f45 f38 f52 S10[]] S2[f32 S9[] f34 f59 S13[f60 f61]]
+  last:	S12:Add(S14[f64],3){[S8.Off]S8:oRemove,[S8.Len]S1:oRemove}
+seed 1292 step 87 op Add(S11[f42],1):
+   	mock children 5 ~= 4; extra: f42
+  pre:	S1[] S2[S10[]]
+  last:	S10:Add(S11[f42],1){[S2.Len]S1:oAdd,[S2.Len]S2:oRemove}
+seed 1300 step 106 op Add(S13[f59],2):
+   	mock children 10 ~= 9; extra: f59
+  pre:	S1[f21 f53 f31 f16 f57 S4[f56 f58 f26] f25] S2[]
+  last:	S4:Add(S13[f59],2){[S4.Len]S1:oRemove}
+seed 1307 step 53 Splice(1,1,S5[]) ERROR: ./probe.e1.harness.luau:10: table index is nil
+  log:	S2:Replace(1,f3) | S1:noop | S1:Remove(1){[S2.Off]S2:oAdd} | S2:Add(f5,1){[S2.Len]S2:oAdd,[S2.Len]S2:oRemove} | S1:noop | S2:Add(f7,1) | S2:ExtractAll | S1:noop | S2:Add(f8,1) | S2:Add(f9,1){[S2.Len]S2:oMove} | S2:Replace(2,S3[f10,f11]){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat} | S2:Clear | S2:Add(f13,1) | S2:Swap(1,1) | S1:noop | S1:Add(f6,1){[S1.Len]S1:oRemove} | S2:Extract(1) | S2:noop | S2:noop | S1:noop | S1:noop | S2:noop | S1:noop | S1:Add(f14,1) | S2:Add(f15,1){[S2.Off]S1:oAdd,[S2.Len]S1:oRemove} | S1:Add(f17,2){[S2.Off]S2:oRemove} | S2:Add(S4[f18],1) | S2:Splice(2,0,f13){[S2.Len]S1:oAdd} | S2:noop | S2:Swap(2,2) | S1:Clear{[S2.Off]S1:oAdd} | S1:Extract(1) | S4:Add(f3,2){[S2.Len]S4:oRemove} | S4:Move(1,1) | S2:Move(2,2) | S4:Replace(1,S5[]) | S1:Add(f5,1){[S2.Off]S2:oAdd} | S1:Replace(1,f22) | S1:Add(S6[f23],2) | S5:noop | S5:noop | S1:Add(f7,1) | S1:Replace(3,f24) | S1:Remove(1) | S1:Add(f20,1) | S1:Add(S7[f25,f26],2){oERR ./probe.e1.reent.modes.luau:123: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S5.Off]S4:oAdd} | S4:noop | S4:ExtractAll | S4:Add(f27,1){[S4.Len]S2:oRemove} | S7:noop | S7:Add(f28,1){[S7.Len]S1:oAdd} | S2:Extract(1,S8[f30])
+seed 1309 step 56 op Add(S8[f28],2):
+   	mock children 10 ~= 9; extra: f28
+  pre:	S1[f21 S5[S6[f17] f27]] S2[f26 S7[f23 f25 f24] f22]
+  last:	S6:Add(S8[f28],2){[S5.Len]S1:oRemove,[S5.Len]S5:oAdd}
+seed 1322 step 25 op Add(S7[f19,f20],2):
+   	mock children 7 ~= 5; extra: f19,f20
+  pre:	S1[f16] S2[S6[f18] f17]
+  last:	S6:Add(S7[f19,f20],2){oERR ./probe.e1.reent.modes.luau:123: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S6.Len]S2:oRemove}
+seed 1331 step 36 op Add(S4[f14],2):
+   	mock children 5 ~= 4; extra: f14
+  pre:	S1[] S2[S5[f16] f7]
+  last:	S5:Add(S4[f14],2){[S4.Off]S2:oRemove}
+seed 1347 step 92 op Add(S20[f52,f53],1):
+   	mock children 11 ~= 9; extra: f52,f53
+  pre:	S1[S4[f8 f9]] S2[f42 f49 S15[f46 f51 f48 S19[f50]] f38 f47]
+  last:	S19:Add(S20[f52,f53],1){[S15.Len]S2:oRemove,[S19.Len]S15:oRemove}
+seed 1350 step 69 op Add(S8[f33],1):
+   	mock children 19 ~= 18; extra: f33
+  pre:	S1[f37 f36 S14[f49] f45 S10[S12[] f32]] S2[f46 f28 f23 f20 f40 f17 f31 S7[f44 f47 f26]]
+  last:	S12:Add(S8[f33],1){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S1.Len]S10:oRemove}
+seed 1362 step 51 op Add(S7[f25],3):
+   	mock children 5 ~= 4; extra: f25
+  pre:	S1[] S2[S5[f23 f22] S6[f24]]
+  last:	S5:Add(S7[f25],3){[S5.Len]S2:oRemove}
+seed 1366 step 119 op Add(S20[f74,f75],2):
+   	mock children 23 ~= 21; extra: f74,f75
+  pre:	S1[f25 f56 f8 S7[S16[f67] f73] f2 f52 f44 f24 S3[S18[f70 f71]] S19[f72] S6[] f29 f30 f19] S2[f14 S9[S15[f53] f64] f46]
+  last:	S18:Add(S20[f74,f75],2){[S19.Off]S1:oAdd,[S18.Len]S1:oRemove}
+seed 1387 step 96 op Add(S15[f40],1):
+   	mock children 18 ~= 17; extra: f40
+  pre:	S1[f7] S2[S10[S13[f36]] f23 f21 f33 S4[S14[f24 f39 f38] S12[f32 f31] S11[f29 f34 f17 f28 f35]] S5[]]
+  last:	S10:Add(S15[f40],1){[S13.Off]S2:oRemove}
+seed 1396 step 71 op Add(S12[f39],1):
+   	mock children 11 ~= 10; extra: f39
+  pre:	S1[f29 S9[S10[f37 f36 f31 S11[]]] f33 S8[f30]] S2[]
+  last:	S11:Add(S12[f39],1){[S2.Len]S10:oRemove,[S8.Off]S2:oAdd}
+seed 1397 step 45 op Add(S9[f20,f21],1):
+   	mock children 8 ~= 6; extra: f20,f21
+  pre:	S1[f17 f16 f14] S2[f15 S3[f4 f3]]
+  last:	S3:Add(S9[f20,f21],1){[S2.Len]S2:oRemove,[S2.Len]S2:oRemove}
+seed 1404 step 55 op Add(S7[f19,f20],2):
+   	mock children 11 ~= 9; extra: f19,f20
+  pre:	S1[f33 f38] S2[S9[f35 f34] S11[f36 f37] f23 f7 S5[] f6]
+  last:	S9:Add(S7[f19,f20],2){[S11.Off]S2:oRemove,[S7.Off]S2:oRemove}
+seed 1425 step 119 op Add(S11[f63],3):
+   	mock children 15 ~= 14; extra: f63
+  pre:	S1[f53 S7[S10[f59 f55 f56] f22] f37 f7 f57 f14 f52 f58 f62 f39 f13] S2[]
+  last:	S10:Add(S11[f63],3){[S7.Len]S7:oRemove}
+seed 1436 step 111 op Replace(2,S5[f21,f20]):
+   	mock children 11 ~= 9; extra: f21,f20
+  pre:	S1[f6] S2[S7[f46 S13[f44 f45] S12[f47]] S9[f25] f31 f42]
+  last:	S13:Replace(2,S5[f21,f20]){[S5.Off]S7:oRemove}
+seed 1450 step 47 Add(S3[f25,f5,f19,f18],4) ERROR: ./probe.e1.reent.modes.luau:166: Quad0164 Slot: destroyed Slot cannot be mounted
+  log:	S1:Remove(1) | S2:Extract(1,S3[f3,f4]) | S3:Clear{[S2.Len]S3:oAdd} | S3:Add(f6,2){[S3.Len]S1:oAdd} | S2:Extract(1) | S1:Extract(1,S3[f5,f6]){oERR ./probe.e1.reent.modes.luau:122: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat} | S2:noop | S2:noop | S2:noop | S3:Swap(1,1) | S2:Splice(1,0,) | S1:Splice(2,0,S4[f8];f9) | S1:noop | S3:Add(S5[f10,f11],1){oERR ./probe.e1.reent.modes.luau:123: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat} | S4:Remove(1) | S5:Add(f12,2){[S5.Len]S3:oAdd} | S4:Add(f14,1){[S4.Len]S4:oAdd} | S5:Splice(1,3,f16) | S2:Add(f17,1) | S1:noop | S4:noop | S3:Remove(4){[S4.Off]S2:oRemove} | S3:Add(f18,4){[S4.Off]S1:oMove} | S3:Replace(2,S6[f19]) | S3:Replace(1,f22){[S6.Off]S1:oMove} | S4:Extract(1){[S4.Len]S1:oAdd} | S6:Splice(1,0,) | S6:Swap(1,1) | S1:Remove(3){[S4.Off]S3:oMove} | S1:Add(f24,4) | S3:noop | S1:noop | S1:Replace(4,f11) | S4:Add(f7,2){[S4.Len]S1:oMove} | S1:Remove(5){[S1.Len]S4:oMove} | S3:Extract(1,f25) | S1:Remove(3){[S4.Off]S4:oMove} | S1:ExtractAll | S1:noop | S1:Add(S4[f7,f14],1){oERR ./probe.e1.reent.modes.luau:123: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat} | S1:Add(f26,1){[S4.Off]S1:oMove,[S1.Len]S4:oAdd} | S2:Add(S7[f28],1){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat} | S7:Splice(2,0,f10;f30) | S2:Swap(1,1) | S7:Splice(4,0,f11;f31) | S7:Add(f32,6){[S7.Len]S4:oRemove}
+seed 1454 step 100 op Replace(1,S17[f53,f54]):
+   	mock children 5 ~= 3; extra: f53,f54
+  pre:	S1[] S2[S15[S16[f52] f26]]
+  last:	S16:Replace(1,S17[f53,f54]){[S16.Len]S2:oRemove}
+seed 1488 step 77 op Add(S7[f35],1):
+   	mock children 8 ~= 7; extra: f35
+  pre:	S1[S6[f34] f20] S2[f32 f9 f21]
+  last:	S6:Add(S7[f35],1){[S6.Len]S1:oRemove}
+seed 1519 step 68 op Add(S10[f37,f38],2):
+   	mock children 9 ~= 7; extra: f37,f38
+  pre:	S1[S7[S8[f35 f34]] f28 S9[]] S2[f31 f33]
+  last:	S8:Add(S10[f37,f38],2){[S9.Off]S7:oRemove}
+seed 1523 step 76 op Extract(4,S12[f26]):
+   	mock children 9 ~= 8; extra: f26
+  pre:	S1[S13[S6[f23 S11[] f18 S9[]] f30] f27 f29] S2[f28 f32]
+  last:	S6:Extract(4,S12[f26]){[S13.Len]S1:oMove,[S12.Off]S13:oRemove}
+seed 1533 step 12 op Add(S5[f9,f10],2):
+   	mock children 8 ~= 6; extra: f9,f10
+  pre:	S1[S4[f7 f8] S3[f4]] S2[f2]
+  last:	S3:Add(S5[f9,f10],2){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S1.Len]S1:oRemove}
+seed 1543 step 18 op Add(S3[f3,f4],1):
+   	mock children 11 ~= 9; extra: f3,f4
+  pre:	S1[f1 f6 S4[] S5[f7 S6[] f9]] S2[f5 f8]
+  last:	S4:Add(S3[f3,f4],1){[S5.Off]S1:oRemove}
+seed 1546 step 50 op Add(S11[f29],3):
+   	mock children 8 ~= 7; extra: f29
+  pre:	S1[S7[S9[] f27]] S2[S10[] f13 S8[S6[] f28] f11]
+  last:	S7:Add(S11[f29],3){[S1.Len]S6:oAdd,[S7.Len]S1:oRemove}
+seed 1555 step 97 op Extract(3,S7[f57,f58]):
+   	mock children 13 ~= 11; extra: f57,f58
+  pre:	S1[f54] S2[f48 f35 S6[f50 f51 f45 f55 f36 f56 f37] f40 f53 f46 f30 f29]
+  last:	S6:Extract(3,S7[f57,f58]){[S2.Len]S2:oRemove}
+seed 1562 step 33 Splice(1,0,S5[f11,f13];f19) ERROR: ./probe.e1.harness.luau:10: table index is nil
+  log:	S2:Swap(1,1) | S2:Splice(1,1,f3;S3[f4]){[S2.Len]S2:oAdd} | S2:Swap(3,2) | S1:Extract(1){[S2.Off]S2:oMove} | S1:Add(f2,1){[S2.Len]S1:oRemove,[S2.Off]S2:oRemove} | S2:Swap(2,1) | S2:Swap(2,1) | S2:Add(f6,3) | S3:Add(f7,1) | S2:noop | S3:Replace(1,S4[]){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat} | S1:noop | S1:Add(f9,1) | S2:Add(S5[f10,f11],2) | S5:Extract(1){[S4.Off]S2:oAdd} | S1:Clear{[S2.Off]S5:oAdd} | S2:Extract(3,S6[f14,f15]) | S6:Remove(1) | S3:Extract(2) | S6:ExtractAll | S1:noop | S2:Extract(3) | S3:Add(S7[],1) | S4:noop | S4:Splice(1,0,) | S2:Replace(2,S8[]){[S7.Off]S1:oAdd} | S3:Add(f4,1){[S7.Len]S7:oRemove,[S7.Off]S7:oAdd} | S8:noop | S8:Splice(1,0,) | S1:Add(S9[f18],1) | S7:Splice(1,0,f1){[S4.Off]S1:oRemove} | S8:noop
+seed 1587 step 66 op Add(S10[f46],1):
+   	mock children 13 ~= 12; extra: f46
+  pre:	S1[] S2[f19 S3[] f4 f15 f35 f29 f7 f42 S6[] f43 f21]
+  last:	S6:Add(S10[f46],1){[S2.Len]S2:oRemove}
+seed 1597 step 28 op Add(S6[f19,f20],1):
+   	mock children 13 ~= 11; extra: f19,f20
+  pre:	S1[S5[]] S2[f4 f9 f5 f11 S4[f18 f13 f16] f17]
+  last:	S5:Add(S6[f19,f20],1){[S1.Len]S1:oRemove}
+seed 1604 step 112 op Add(S20[f65,f66],4):
+   	mock children 5 ~= 3; extra: f65,f66
+  pre:	S1[S17[f58 S18[f61 f62 f63]]] S2[]
+  last:	S18:Add(S20[f65,f66],4){oERR ./probe.e1.reent.modes.luau:123: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S1.Len]S1:oRemove}
+seed 1609 step 49 op Add(S10[f30],1):
+   	mock children 6 ~= 5; extra: f30
+  pre:	S1[S9[f27] f28] S2[f25]
+  last:	S9:Add(S10[f30],1){[S2.Off]S1:oRemove}
+seed 1622 step 75 op Add(S11[f43,f44],3):
+   	mock children 20 ~= 18; extra: f43,f44
+  pre:	S1[f39 f38 S8[f42 S9[f31 f30] f41]] S2[f35 f40 f26 f22 f10 f23 f20 f9 f2 f37]
+  last:	S9:Add(S11[f43,f44],3){[S8.Off]S8:oRemove,[S1.Len]S1:oAdd}
+seed 1626 step 73 op Add(S12[f42,f43],1):
+   	mock children 7 ~= 5; extra: f42,f43
+  pre:	S1[S6[]] S2[f28 f40]
+  last:	S6:Add(S12[f42,f43],1){[S6.Len]S1:oRemove}
+seed 1639 step 113 op Add(S11[f48],1):
+   	mock children 12 ~= 11; extra: f48
+  pre:	S1[f45 S8[f19]] S2[f44 S10[f46 f47] f43 f37 f3]
+  last:	S8:Add(S11[f48],1){[S1.Len]S10:oAdd,[S8.Len]S1:oRemove}
+seed 1661 step 9 op Add(S4[f8,f9],1):
+   	mock children 8 ~= 6; extra: f8,f9
+  pre:	S1[f6 f3] S2[S3[] f4]
+  last:	S3:Add(S4[f8,f9],1){[S2.Len]S2:oRemove}
+seed 1688 step 112 op Add(S17[f85],5):
+   	mock children 27 ~= 26; extra: f85
+  pre:	S1[f60 f57] S2[f50 f37 S9[f72 f62 f74 f71] f51 f63 f34 f47 f61 f52 f77 S11[S13[S15[f80 f84 f55] S16[f82 f83] f76] f65 f66 f64] S12[f68 S14[f78] f69]]
+  last:	S9:Add(S17[f85],5){[S15.Off]S2:oRemove}
+seed 1690 step 31 op Add(S5[f14],1):
+   	mock children 5 ~= 4; extra: f14
+  pre:	S1[S6[] S4[]] S2[f10]
+  last:	S4:Add(S5[f14],1){[S4.Len]S1:oRemove}
+seed 1696 step 120 op Extract(1,S15[f57,f58]):
+   	mock children 7 ~= 5; extra: f57,f58
+  pre:	S1[S14[f53]] S2[f56 f55]
+  last:	S14:Extract(1,S15[f57,f58]){oERR ./probe.e1.reent.modes.luau:123: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S2.Off]S1:oRemove}
+seed 1719 step 62 op Add(S12[f41,f42],2):
+   	mock children 6 ~= 4; extra: f41,f42
+  pre:	S1[S9[f40] S11[]] S2[S7[f39]]
+  last:	S7:Add(S12[f41,f42],2){[S2.Len]S2:oRemove}
+seed 1781 step 26 op Add(S7[f15,f16],1):
+   	mock children 10 ~= 8; extra: f15,f16
+  pre:	S1[] S2[S6[f13 f14] S4[S5[f10 f11]] f9 f12 f8]
+  last:	S5:Add(S7[f15,f16],1){[S5.Len]S4:oRemove}
+seed 1790 step 76 op Replace(1,S15[f40,f41]):
+   	mock children 11 ~= 9; extra: f40,f41
+  pre:	S1[f2 f37 f24 f32 f4] S2[S9[S10[f39 f36 S11[] f33]] S14[f38]]
+  last:	S9:Replace(1,S15[f40,f41]){[S14.Off]S2:oRemove}
+seed 1820 step 22 op Add(S8[f15],1):
+   	mock children 8 ~= 7; extra: f15
+  pre:	S1[S7[]] S2[f6 f12 f13 f14]
+  last:	S7:Add(S8[f15],1){[S7.Len]S1:oRemove}
+seed 1848 step 64 op Add(S10[f43],3):
+   	mock children 7 ~= 6; extra: f43
+  pre:	S1[] S2[f26 f12 f40 S9[f41 f42]]
+  last:	S9:Add(S10[f43],3){[S2.Len]S2:oRemove}
+seed 1849 step 69 op Replace(2,S14[f44,f45]):
+   	mock children 5 ~= 3; extra: f44,f45
+  pre:	S1[] S2[S12[f41 f4 S9[f21 f22] f43]]
+  last:	S12:Replace(2,S14[f44,f45]){[S9.Off]S2:oRemove}
+seed 1864 step 86 op Add(S17[f56,f57],1):
+   	mock children 15 ~= 13; extra: f56,f57
+  pre:	S1[f16 f13 S6[S10[S16[] S15[f55]] f48 f2 f24] f26 f45 S3[S12[f54] f47] f53] S2[S11[]]
+  last:	S12:Add(S17[f56,f57],1){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S2.Off]S3:oRemove}
+seed 1883 step 63 op Add(S4[f27],1):
+   	mock children 11 ~= 10; extra: f27
+  pre:	S1[S10[]] S2[f25 f6 f1 f31 f24 f14 S9[f32]]
+  last:	S10:Add(S4[f27],1){[S4.Off]S1:oRemove}
+seed 1886 step 99 op Add(S17[f53],2):
+   	mock children 15 ~= 14; extra: f53
+  pre:	S1[S6[f27] f42 f25 f9 f17 f33 f51 S12[f38 S14[S16[f52]]] f35] S2[f37 S8[f43] S10[]]
+  last:	S16:Add(S17[f53],2){[S16.Len]S14:oRemove}
+seed 1953 step 51 op Add(S6[f8],1):
+   	mock children 6 ~= 5; extra: f8
+  pre:	S1[S8[]] S2[f27 f17]
+  last:	S8:Add(S6[f8],1){[S6.Off]S1:oRemove}
+seed 1956 step 70 op Extract(1,S5[f9,f8]):
+   	mock children 10 ~= 8; extra: f9,f8
+  pre:	S1[S14[S17[f38] f37]] S2[f33 S7[f30 S16[]] f27 f10]
+  last:	S7:Extract(1,S5[f9,f8]){[S5.Off]S2:oRemove,[S7.Len]S14:oAdd}
+seed 1966 step 47 op Extract(1,S13[f34,f35]):
+   	mock children 15 ~= 13; extra: f34,f35
+  pre:	S1[f26 f16 f1 f27 S11[f23 f10 f32] S10[f29 f30 f33]] S2[S9[f31] S6[] f20 S12[]]
+  last:	S9:Extract(1,S13[f34,f35]){[S6.Off]S2:oRemove,[S6.Off]S10:oRemove}
+seed 1973 step 65 op Add(S8[f30],1):
+   	mock children 9 ~= 8; extra: f30
+  pre:	S1[S6[S7[f28 f29]]] S2[S4[] f27 f14 f11]
+  last:	S4:Add(S8[f30],1){[S4.Len]S2:oRemove}
+seed 1976 step 79 op Add(S14[f58],3):
+   	mock children 23 ~= 22; extra: f58
+  pre:	S1[S5[f31 f50 f39 f55 f32 S11[f37] f46 f41] f45 f20 f30 S10[f57] S6[f49]] S2[f14 f33 f56 f54 f44 f48 S8[S12[f51 f52]]]
+  last:	S12:Add(S14[f58],3){[S2.Len]S2:oRemove}
+seed 1996 step 86 Extract(4,S3[f16,f41,f26,f21,f15,f35,f37,f18,f25,f9,f5]) ERROR: ./probe.e1.reent.modes.luau:174: Quad0164 Slot: destroyed Slot cannot be mounted
+  log:	S1:Move(1,1) | S2:Swap(1,1) | S2:Splice(2,0,S3[f3]){[S2.Len]S2:oMove} | S3:Add(f4,2) | S1:Clear{[S1.Len]S3:oAdd} | S1:Add(f6,1) | S2:Replace(2,f7) | S2:Add(f8,2) | S3:Add(f9,3){[S2.Len]S3:oRemove,[S2.Len]S3:oAdd} | S3:Add(f11,5){[S2.Len]S3:oMove,[S3.Len]S1:oRemove} | S2:Extract(2) | S3:Swap(4,2) | S2:Add(S4[],2) | S1:Add(f12,1){[S1.Len]S3:oRemove} | S4:Add(f13,1) | S1:noop | S2:Add(f8,2){[S4.Off]S2:oRemove,[S4.Off]S2:oAdd} | S4:Add(S5[],1) | S3:Extract(1,S6[f15]) | S3:Add(f16,2) | S5:noop | S1:Remove(1){[S1.Len]S2:oMove,[S2.Off]S5:oAdd} | S1:noop | S3:Extract(3,f18) | S3:Add(f9,3){[S5.Off]S3:oMove} | S5:Remove(1) | S6:noop | S1:Add(S7[f19,f20],1){[S6.Len]S4:oMove,[S1.Len]S6:oAdd} | S6:Move(1,1) | S2:Add(f4,3){[S1.Len]S4:oMove,[S5.Off]S1:oRemove} | S4:Add(f22,2){[S4.Len]S2:oAdd} | S2:Add(f24,6){[S2.Len]S3:oMove} | S5:noop | S3:Add(f25,4){[S5.Off]S6:oAdd} | S2:Remove(7){[S2.Len]S4:oRemove} | S1:Add(f27,1) | S2:Add(S8[f28,f29],5){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat} | S4:Move(2,2) | S4:Move(1,1) | S8:Add(f31,2){[S5.Off]S5:oAdd,[S2.Len]S2:oRemove} | S8:Add(f33,1) | S1:Add(f34,2){[S5.Off]S6:oAdd,[S1.Len]S3:oAdd} | S3:Add(f37,4){[S5.Off]S4:oMove,[S5.Off]S1:oMove} | S6:Extract(2) | S2:noop | S6:Add(f38,3){[S2.Len]S6:oRemove,[S6.Len]S8:oRemove} | S1:Add(f39,3){[S1.Len]S4:oAdd} | S6:noop | S1:Move(2,1) | S2:noop | S8:Remove(3){[S2.Len]S1:oMove,[S8.Len]S4:oMove} | S1:Remove(1){[S8.Off]S6:oAdd,[S1.Len]S2:oMove} | S4:Add(f42,2) | S8:Extract(1,S9[]) | S5:Extract(1,f28) | S2:Splice(1,4,){[S5.Off]S1:oMove,[S4.Off]S4:oAdd} | S5:Add(S10[f44,f45],1){oERR ./probe.e1.reent.modes.luau:121: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updat,[S4.Len]S2:oMove} | S10:Replace(1,f47) | S10:Move(1,2) | S4:Swap(2,2) | S1:Add(S11[f48,f49],1) | S11:Swap(2,1) | S11:Move(2,1) | S2:Swap(1,1) | S5:Add(f50,3){[S5.Len]S10:oRemove} | S10:noop | S11:Replace(1,f51) | S1:noop | S10:Splice(2,0,S12[f52]){[S2.Len]S11:oRemove,[S5.Len]S2:oRemove} | S2:Add(S13[f53,f54],2){[S11.Len]S10:oAdd,[S2.Len]S11:oRemove} | S5:Add(f56,1) | S2:Extract(2,f36) | S12:Add(S14[f57],2){[S12.Len]S4:oMove} | S4:noop | S14:Extract(1) | S12:Add(f23,3){[S12.Len]S14:oAdd} | S4:Replace(3,S15[f59,f60]){[S5.Off]S1:oAdd} | S5:Move(2,2) | S10:noop | S14:Move(1,1) | S10:Remove(3){[S4.Len]S1:oMove,[S5.Len]S4:oMove} | S1:Add(S8[f31],2){[S12.Len]S10:oRemove,[S8.Off]S14:oAdd} | S5:noop | S5:Add(f32,1){[S10.Off]S15:oMove} | S1:Clear
+obsOps	119100	rej0167	6563	fails	148	physBad	9264	seeds	5,18,21,42,51,52,62,74,78,80,94,98,102,117,127,129,150,153,174,191,224,240,243,259,265,268,276,280,285,314,320,339,369,378,389,391,404,427,430,435,463,466,493,519,531,543,549,553,586,607,634,646,655,688,690,705,718,732,735,761,763,776,793,817,819,854,858,861,870,871,883,898,907,919,928,937,938,946,949,1005,1012,1028,1031,1036,1047,1061,1081,1103,1116,1138,1141,1145,1168,1208,1262,1286,1292,1300,1307,1309,1322,1331,1347,1350,1362,1366,1387,1396,1397,1404,1425,1436,1450,1454,1488,1519,1523,1533,1543,1546,1555,1562,1587,1597,1604,1609,1622,1626,1639,1661,1688,1690,1696,1719,1781,1790,1820,1848,1849,1864,1883,1886,1953,1956,1966,1973,1976,1996
