@@ -66,9 +66,9 @@
 사용자: *"아직 존재하지 않다는 해딩만 존재하면 되고, 그것만 나중에 해결되면 지우는게 나음."* — 각 절 머리의 날짜 표시가 그 헤딩이다.
 
 ### 3) 반응형 온톨로지 및 연산 규칙
-- **온톨로지**: `Source`는 값을 쓸 수 있는 `State`(`Set`/`Emit` 추가). `State`에 공개 생성자는 없다(`q.State`는 없음) — 파생은 `:Compute`/`:With`/`:Apply`/`:Gate`로만 생긴다.
+- **온톨로지**: `Source`는 값을 쓸 수 있는 `State`(`Set`/`Emit` 추가). `State`에 공개 생성자는 없다(`q.State`는 없음) — 파생은 `:Compute`/`:Depend`(**[2026-09-15]** 옛 `:With`)/`:Apply`/`:Gate`로만 생긴다.
 - **`:Compute(fn, ...deps)`**: 후행 의존성이 노드 하나로 끝나는 기본형. `fn(self, prev, ...depHandles)` — 전부 **핸들**이라 `:Get()`으로 읽는다.
-  `:With(...)`는 노드가 하나 더 생기지만 **정식 지원 경로**다(~~금지~~ 정정 — `source-state-plan.md`가 채택). 신 솔버 strict에서는 프로퍼티 자리의 인라인 무주석 `:Compute`가 에러라
+  `:Depend(...)`(옛 `:With`)는 노드가 하나 더 생기지만 **정식 지원 경로**다(~~금지~~ 정정 — `source-state-plan.md`가 채택). 신 솔버 strict에서는 프로퍼티 자리의 인라인 무주석 `:Compute`가 에러라
   타입 붙인 지역 변수로 뺀다(`typing-limits.md` 8.13).
 - **중첩 State**: `State<State<T>>`는 **정상 지원**(StoreBind가 재귀 언랩, ~~미지원~~ 정정). 런타임이 State 값으로 거부하는 것은 **Modifier뿐**(~~Store도 금지~~ 정정) —
   `State<Store>`는 되지만 필드 읽기가 반응형이 아니므로 `q.Operator.Indexed<<V>>(key)`를 쓴다.
