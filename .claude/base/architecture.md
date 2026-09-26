@@ -467,6 +467,10 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
   spec의 메시지 단언은 부분 문자열(`string.find(…, 1, true)`)이라 주어를 붙이거나 꼬리를 괄호로
   바꿔도 대부분 그대로 통과한다 — 모양 자체를 단언한 넷(`spec.leaf`·`spec.refhandlers`·
   `spec.tween`)만 같이 고쳤다.
+
+  **[2026-09-27 round13 Q90 검토 중]** 코드 전수에서 이 규약을 위반하는 자리들이 다시 나왔다 — 정규화를
+  배치로 고칠지가 사용자 문항으로 열려 있다(`qa-request/post-implementation-review-round13.md` §4). 본문은
+  결정 전이라 그대로 둔다.
 - **[2026-09-08 사용자 결정, Gemini 자문 권고 1] 값 프리미티브에 `__tostring`.** `print(v)`가
   `table: 0x…` 대신 상태를 보인다 — `Source(42)`·`State(84)`/`State(?)`(캐시 무효·미계산 —
   **print는 절대 compute를 돌리지 않는다**)·`Gate(…)`·`Store{Health, Name}`·`Slot(len=3, mounted)`·

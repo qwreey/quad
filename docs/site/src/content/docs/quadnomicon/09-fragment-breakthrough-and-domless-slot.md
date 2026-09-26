@@ -83,8 +83,8 @@ local Slot = q.Slot
 
 local function ButtonGroup()
 	return q.Slot<<Instance>>({
-		D.TextButton { Text = "Save" },
-		D.TextButton { Text = "Cancel" },
+		D.TextButton { Name = "SaveButton", Text = "Save" },
+		D.TextButton { Name = "CancelButton", Text = "Cancel" },
 	})
 end
 

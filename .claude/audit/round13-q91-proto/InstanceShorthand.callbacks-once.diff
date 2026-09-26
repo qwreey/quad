@@ -1,0 +1,27 @@
+--- quad-roblox/src/Handlers/InstanceShorthand.luau
++++ quad-roblox/src/Handlers/InstanceShorthand.luau
+@@ -131,9 +131,22 @@
+ 			-- identity wrap (UIPadding/UIScale): pass the Tween through — `Mapped`
+ 			-- would clone+re-validate+re-freeze an identical value per emit (2차 리뷰)
+ 			local mapped = if entry.wrap == identity then v elseif tweenIn then v:Mapped(entry.wrap) else entry.wrap(v)
++			-- PROTOTYPE (round13 Q92 (b), scratch only): one Tween value = one callback set. The callbacks stay on
++			-- the FIRST delegated chain only; the others get a callback-less copy (same Value/options, so the
++			-- Property handler's value dedup and the engine timing are unchanged — the props finish together).
++			-- Built with the module's own `quad.Tween` (clone minus the three callback fields), no new surface.
++			local rest = mapped
++			if tweenIn and #entry.props > 1
++				and (mapped.Started ~= nil or mapped.Completed ~= nil or mapped.Cancelled ~= nil) then
++				local o = table.clone(mapped) -- a clone of a frozen table is not frozen
++				o.Started = nil
++				o.Completed = nil
++				o.Cancelled = nil
++				rest = quad.Tween(o)
++			end
+ 			local child = ensureManagedChild(inst, entry)
+-			for _, prop in entry.props do
+-				dispatch.process(child, prop, mapped, 1) -- new chain per (child, prop), index 1
++			for i, prop in entry.props do
++				dispatch.process(child, prop, if i == 1 then mapped else rest, 1) -- new chain per (child, prop), index 1
+ 			end
+ 			return Void -- `H-135`: nothing to undo — destruction is the `v == nil` path
+ 		end,

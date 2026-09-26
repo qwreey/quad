@@ -305,7 +305,8 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
      확인 안 하면 이미 Destroy된 대상에 대해 처리가 실행되는 문제가 생김. GC가
      결국 정리하긴 하지만, GC 되기 전에도 store 값이 업데이트될 수 있으므로
      그 시점엔 그냥 `Connected`를 보고 무시(no-op). **[2026-09-01 주체 명시,
-     round13 `H-289`]** 이 확인을 **핸들러가 직접 짜는 게 아니다** — Observer
+     round13 `H-289`(2026-09-01 M4 자율 구현 라운드 — `archive/v2-initial-implementation/m4-implementation-round13.md`,
+     `qa-request/post-implementation-review-round13.md`와 다름)]** 이 확인을 **핸들러가 직접 짜는 게 아니다** — Observer
      `_receive`의 `canExecute` 게이팅이 그 자리다(아래 "Store 바인드는 특수
      경우인가" 절의 "핸들러가 직접 `canExecute`/liveness를 재구현할 필요
      없음" 항목이 정본). 이 항목만 읽고 핸들러 안에 중복 검사를 넣지 말 것.
@@ -1433,6 +1434,11 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
 리뷰로 잡기 어렵다.
 
 **0. [2026-09-06 신설 — 세 번 반복: `H-272`·`H10-2`·`H-330`] 디스패치·발행 깊이에서 raise할 땐 `errorBefore`, 직접 호출 표면에서만 `errorBeforeNearest`.** `process`/retractor/reconcile 안(또는 `Source:Set`의 파동 안)에서 `errorBeforeNearest`를 쓰면 최근접 태그 프레임이 핸들러 자신이라 `Dispatch/init.luau`나 `Source.luau`가 blame된다. 판별: 그 raise가 사용자의 `drive`/`:Set` 줄에서 시작한 스택 안이면 `errorBefore`.
+
+**[2026-09-27 round13 Q88·Q89 검토 중]** 위 판별 규칙이 실제 코드 전수에서 반증됐다 — 내부 경로가 읽을 때
+`Quad0184`(같은 세대 재읽기 금지)와 핸들러 `:Set`의 `Quad0130`이 잎 모듈을 가리키는 경우(Q88), 인자
+검증인데 outermost(`errorBefore`)로 던지는 자리(Q89)가 있다. 사용자 문항이 열려 있다
+(`qa-request/post-implementation-review-round13.md` §4). 본문은 결정 전이라 그대로 둔다.
 
 **0-b. [2026-09-06 신설 — 하루에 세 번 반복: `H-338`·`H-342`] 새 브랜드 술어(`isX`)를 모듈 표면에 얹으면 `Dispatch/init.luau`의 `BRAND_PROBES`에도 넣을 것.** 무매치 진단이 그 값을 `typeof`(`table`)로 보고해 "프로바이더 미초기화"로 오도한다 — 목록은 손 복사라 게이트가 없다. **[2026-09-08 Q27 사용자 결정]** 이 목록은 **base 브랜드만** 적는다 — 프로바이더 브랜드(`isTween`, 장래 `isSpring`)는 모듈 최상위 `is<Brand>` 필드가 곧 계약이고, `brandNameOf`가 진단 시점에 모듈을 스캔해 그 필드들을 base 목록보다 먼저 시도한다(등록 op 없음, `pcall`로 호출 — 브랜드 술어가 아닌 `isX` 헬퍼가 진단을 가리지 않게). 그러니 0-b는 quad-base 안의 새 브랜드에만 해당한다(`spec.dispatch` 2절).
 

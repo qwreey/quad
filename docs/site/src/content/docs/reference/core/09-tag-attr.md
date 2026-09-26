@@ -46,7 +46,7 @@ type Tag = {
 Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got {typeof(v)})
 ```
 
-빈 문자열은 태그 이름이 아닙니다 — `Tag: names must be strings — an empty string is not a tag name`.
+빈 문자열은 태그 이름이 아닙니다 — `Quad0199 Tag: names must be strings — an empty string is not a tag name`.
 
 **참조 계수로 붙습니다.** 한 인스턴스의 여러 자리에서 같은 이름을 얹으면 자리마다 세어지고, 마지막 자리가 물러날 때 비로소 엔진에서 떨어집니다. 세는 것은 **quad의 자리뿐**입니다 — `Claim`으로 입양한 트리나 `:Clone()` 사본에 Studio에서 이미 붙어 있던 같은 이름의 태그는 세지 않으므로, 앱의 마지막 자리가 물러나면 그 태그도 함께 떨어집니다(StyleSheet 셀렉터로 쓰던 태그라면 스타일이 빠집니다). 밖에서 붙인 태그와 앱의 자리가 같은 이름을 쓰지 않게 하세요. 같은 불변 `Tag` 객체를 두 자리에 놓아도 두 번으로 셉니다. 엔진 호출은 이름별로 묶여 한 번에 나갑니다.
 
@@ -74,11 +74,11 @@ Tag: setmetatable<{ Merged: (...TagMarker) -> Tag }, { __call: (self: any, ...Ta
 - 인자마다 같은 문을 지납니다. `q.Tag(otherTag, "focus", { "a", "b" })`처럼 섞어 쓸 수 있습니다.
 - **인자 자리의 `nil`은 "더할 것 없음"입니다** — 인자 개수는 정확히 세어지므로 뒤 이름이 사라지지 않습니다. `:Added`/`:Removed`/`Merged`도 같습니다.
 - 리스트는 **배열**이어야 합니다 — 정수가 아닌 키가 섞이거나 nil 구멍이 있으면 에러입니다. 인자와 달리 **리스트 안** `nil`은 테이블이 담지 못해 뒤가 조용히 잘리기 때문입니다.
-  - `Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table`
-  - `Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes`
-  - `Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)`
-  - `Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)`
-  - `Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)`
+  - `Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table`
+  - `Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes`
+  - `Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)`
+  - `Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)`
+  - `Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)`
 
 **예제**
 
@@ -189,7 +189,7 @@ Apply: <U>(self: Tag, factory: (Tag) -> U) -> U
 
 **동작** — `Modifier:Apply`와 같은 순수 호출 슈거입니다. 계약도 추가 의미도 없습니다. 함수가 아닌 것을 넘기면 그 자리에서 던집니다.
 
-- `Tag: Apply factory must be a function (got {typeof(factory)})`
+- `Quad0206 Tag: Apply factory must be a function (got {typeof(factory)})`
 
 ## `q.Tag.Merged(...tags)`
 
@@ -203,7 +203,7 @@ Merged: (...TagMarker) -> Tag
 
 **동작** — 손실 없는 합집합입니다. `q.Tag(tag1, tag2, …)`와 결과가 같고, **`Tag`만 받는 엄격한 철자**라는 점만 다릅니다 — 문자열이나 리스트를 섞어 넘길 수 없습니다.
 
-- `Tag.Merged: arguments must be Tag values`
+- `Quad0207 Tag.Merged: arguments must be Tag values`
 
 **예제**
 

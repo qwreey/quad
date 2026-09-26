@@ -599,3 +599,8 @@ State 층 dedup이 못 닫던 갭이다 — `Effect`가 자기 맵을 들면 그
 **[2026-09-17 round11 `H-540` — 탐사 B′, 메인 손 트레이싱과 동시 발견] 던진 fn 뒤 닫힌 게이트 너머의 상류 변경은 드리프트로만 오는데 스탬프가 그 길을 막고 있었다.** 위 Q50 항목의 "새 세대(상류 `Set`)면 다시 돈다"는 `_receive`가 닿는 상류에만 참이었다 — Blocker/Debounce/Throttle이 유보 중인 상류의 `Set`은 `_receive`를 안 부르고 §4의 `Refresh` 드리프트로 잡히는데, `Impl.Get`의 드리프트 분기는 `curr == target`(유효 캐시)일 때만 돌아 던진 노드(캐시 무효 + 스탬프 잔존)는 구조적으로 못 닿았다. 결과: `price:Set(-1)`로 한 번 던진 뒤 게이트가 닫힌 채 `price:Set(250)`을 해도 계속 "already running"이고 `OffWithoutEmit()`로 배치를 버리면 게이트 없는 `Set`이 올 때까지 영구 — 하류 서브트리 전체가 같이 막힌다(랜덤 DAG 1200시드 중 10건 자연 발생). `gate-plan.md` 3번·`blocker-plan.md`가 세운 원칙(게이트는 emit만 가로채지 값을 가리지 않는다 — `:Get()`엔 영향 없음)과 정면 충돌. 처방(새 메커니즘 아님 — `Refresh`는 Get 루프가 이미 쓰는 그 술어): `_recompute`의 스탬프 검사에서 같은 세대면 먼저 `_valueEpochMap:Refresh()`를 묻고, 움직였으면 `_invalidate`로 새 세대를 받아 진행, 아니면(진짜 순환·yield 겹침) 그대로 raise. 순환 안에서 유보 상류가 fn 도중 움직인 경우는 한 번 더 재귀한 뒤 같은 에러로 떨어진다(위 "못 잡는 모양"과 같은 UB 부류). 스펙 `spec.state` 15.
 
 **[2026-09-17 round11 탐사 A″ 2 — `H-540`의 알려진 잔여]** `_recompute`의 `Refresh()`는 드리프트를 **소비**한다(Get 루프의 `elseif Refresh()` 가지와 같다). 그래서 "던짐 → 유보 상류 `Set` → `Get`(드리프트 재실행, fn이 **또** 던짐 — 여기서 소비) → 게이트 flush → fn이 State 아닌 자기 상태로 고쳐짐 → `Get`"은 flush가 `valueChanged = false`라 새 세대가 안 되고 게이트 밖 `Set`까지 에러다. 고쳐짐이 미선언 의존성(State가 아닌 것)으로 오는 경우라 §8 stale UB 범주 — 값이 `Set`으로 고쳐지는 보통의 회복(유보 중이든 아니든)은 `spec.state` 15대로 된다.
+
+**[2026-09-27 round13 Q88·Q93 검토 중]** 위 세대 스탬프 가드의 blame 자리와 커버 범위가 다시 문항으로 열려
+있다 — 내부 경로가 읽을 때 `Quad0184`(같은 세대 재읽기 금지)가 잎 모듈을 가리키는 경우(Q88), Compute fn이
+yield하는 사이 상류가 바뀌면 새 세대의 fn이 두 번 동시에 도는 경우(Q93)가 실행 탐사에서 나왔다. 사용자
+문항이 열려 있다(`qa-request/post-implementation-review-round13.md` §4). 본문은 결정 전이라 그대로 둔다.

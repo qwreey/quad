@@ -49,11 +49,11 @@ export type NumOp = (self: StateData<number>) -> State<number>
 
 | 무엇 | 언제 | 예 |
 |---|---|---|
-| 인자 타입·`nil` 인자 | **팩토리를 부르는 줄** | `Operator.Sum: argument #1 must be a number or a State<number> (got string)`<br />`Operator.Sum: argument #2 is nil` |
-| `:Apply` 대상이 State가 아님 | **`:Apply` 하는 줄** | `Operator.Sum: Apply target must be a State (got table)` |
-| 값이 계약에 안 맞음(`Indexed`만) | **값을 읽는 시점** | `Operator.Indexed: value is not a table (got number) — cannot read [x]` |
+| 인자 타입·`nil` 인자 | **팩토리를 부르는 줄** | `Quad0119 Operator.Sum: argument #1 must be a number or a State<number> (got string)`<br />`Quad0118 Operator.Sum: argument #2 is nil` |
+| `:Apply` 대상이 State가 아님 | **`:Apply` 하는 줄** | `Quad0123 Operator.Sum: Apply target must be a State (got table)` |
+| 값이 계약에 안 맞음(`Indexed`만) | **값을 읽는 시점** | `Quad0127 Operator.Indexed: value is not a table (got number) — cannot read [x]` |
 
-`nil` 인자가 조용히 사라져 뒤 인자를 당겨오는 일은 없습니다 — 자리마다 검사해서 `argument #N is nil`로 던집니다. 인자로 넘긴 `State`의 **현재값**이 `nil`이거나 숫자가 아닌 경우도 마찬가지입니다 — 읽는 시점에 `Operator.Sum: argument #N is a State whose current value is nil`(또는 `… must be a number (got string)`)로 던지고, 그 항을 건너뛰어 틀린 합을 돌려주지 않습니다(`Apply` 대상 자신의 값도 같은 검사). 갓 만든 `store:Of(...)`나 없는 키를 읽은 `Indexed`처럼 값이 아직 `nil`인 State를 연산에 넣으면 그 `:Get()`이 던집니다.
+`nil` 인자가 조용히 사라져 뒤 인자를 당겨오는 일은 없습니다 — 자리마다 검사해서 `argument #N is nil`로 던집니다. 인자로 넘긴 `State`의 **현재값**이 `nil`이거나 숫자가 아닌 경우도 마찬가지입니다 — 읽는 시점에 `Quad0120 Operator.Sum: argument #N is a State whose current value is nil`(또는 `… must be a number (got string)`)로 던지고, 그 항을 건너뛰어 틀린 합을 돌려주지 않습니다(`Apply` 대상 자신의 값도 같은 검사). 갓 만든 `store:Of(...)`나 없는 키를 읽은 `Indexed`처럼 값이 아직 `nil`인 State를 연산에 넣으면 그 `:Get()`이 던집니다.
 
 **산술·비트 연산자는 숫자 전용입니다.** `Sum`/`Product`/`Min`/`Max`/`Clamp`와 `Band`~`Shr`는 인자뿐 아니라 **`:Apply`를 받는 State의 값도** 숫자여야 합니다. `UDim2`나 `Color3` 같은 타입에 쓰면 타입 검사에서 `None of the overloads for function that accept 2 arguments are compatible.`로 막힙니다 — 그런 연산은 `state:Compute`로 직접 쓰십시오. 값 타입을 가리지 않는 것은 `Not`·`Alternative`·`Indexed` 셋입니다.
 
@@ -149,7 +149,7 @@ self와 인자들의 최대값(`math.max` 폴딩).
 Clamp: (lo: NumArg, hi: NumArg) -> NumOp
 ```
 
-`math.clamp(self, lo, hi)`. 인자가 정확히 둘이라 하나만 주면 `Operator.Clamp: argument #2 is nil`입니다. 읽는 시점에 `lo > hi`이면(반응형 경계가 한 프레임 엇갈림) 그 `:Get()` 줄에서 `Operator.Clamp: min must be <= max and neither NaN (got min 0, max -5)`로 던지고, 경계가 돌아오면 다음 세대에 회복됩니다. 경계가 `NaN`(`0/0` — 나누기 결과가 흔한 원인)이어도 같은 문구입니다.
+`math.clamp(self, lo, hi)`. 인자가 정확히 둘이라 하나만 주면 `Quad0118 Operator.Clamp: argument #2 is nil`입니다. 읽는 시점에 `lo > hi`이면(반응형 경계가 한 프레임 엇갈림) 그 `:Get()` 줄에서 `Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 0, max -5)`로 던지고, 경계가 돌아오면 다음 세대에 회복됩니다. 경계가 `NaN`(`0/0` — 나누기 결과가 흔한 원인)이어도 같은 문구입니다.
 
 ```luau
 local posX, maxX = q.Source(150), q.Source(100)
@@ -236,7 +236,7 @@ Alternative: <T>(default: T | StateData<T>) -> (self: StateData<T?>) -> State<T>
 
 널 병합입니다 — self가 `nil`이면 `default`, 아니면 self. `default`가 State면 의존성으로 등록되므로 기본값 쪽이 바뀌어도 결과가 따라옵니다. 값 타입을 가리지 않습니다.
 
-`default`가 `nil`이면 팩토리 호출 줄에서 `Operator.Alternative: default must not be nil`입니다. `default`가 State인데 그 **현재값**이 `nil`이면(아직 안 채운 `store:Of`) 읽는 줄에서 `Operator.Alternative: the default State's current value is nil`로 던집니다 — 기본값 자리에는 값이 있어야 합니다.
+`default`가 `nil`이면 팩토리 호출 줄에서 `Quad0128 Operator.Alternative: default must not be nil`입니다. `default`가 State인데 그 **현재값**이 `nil`이면(아직 안 채운 `store:Of`) 읽는 줄에서 `Quad0129 Operator.Alternative: the default State's current value is nil`로 던집니다 — 기본값 자리에는 값이 있어야 합니다.
 
 `q.None`은 `nil`이 아닙니다 — self가 `None`이면 기본값으로 바뀌지 않고 `None`이 그대로 내려갑니다(프로퍼티 자리에서는 "비움"으로 처리). `Indexed`도 `None`을 테이블로 보고 조용히 `nil`을 돌려주며, 산술·비트 연산자는 `None`을 `must be a number (got table)`로 거부합니다.
 

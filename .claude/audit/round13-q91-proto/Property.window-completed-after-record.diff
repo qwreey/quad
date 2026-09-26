@@ -1,0 +1,126 @@
+--- quad-roblox/src/Handlers/Property.luau
++++ quad-roblox/src/Handlers/Property.luau
+@@ -75,6 +75,11 @@
+ local QuadTypes = require("../../luau_packages/quad_types")
+ local Reflection = require("../Reflection")
+ 
++-- PROTOTYPE switch (round13 Q91 (b), scratch): true = OLD-FIRST — the old value's window Completed fires
++-- after this call's record write but BEFORE its Play/Started (the existing spec order "w:completed,x:started"
++-- holds); false = NEW-FIRST — after Play/Started (Started(B) → Completed(A); spec 11절 line 360 fails).
++local ORDER_OLD_FIRST = true
++
+ local function install(quad: any)
+ 	local dispatch = quad.Dispatch
+ 	local isTween = quad.isTween
+@@ -127,14 +132,20 @@
+ 	end
+ 	-- Cancel a record's engine tween if it is still running (Cancelled callback), and drop its connection.
+ 	-- The property keeps whatever value it reached (engine `Cancel` semantics).
+-	local function stopRunning(rec: any)
++	-- PROTOTYPE (round13 Q91 (b), scratch only): `deferCompleted == true` (the `process` value-swap site)
++	-- makes the deferred-notice window RETURN the old value's callback holder instead of firing its
++	-- Completed here — the caller fires it after its own slot write, so a `:Set` inside that Completed
++	-- (the documented chaining idiom) sees the NEW record as `prev` and replaces it normally instead of
++	-- being overwritten by this call's later slot write (orphaned engine tween). Teardown (retractor)
++	-- still fires in place (nothing is written after it).
++	local function stopRunning(rec: any, deferCompleted: boolean?): any?
+ 		local conn = rec.Conn
+ 		if conn ~= nil then
+ 			rec.Conn = nil
+ 			conn:Disconnect()
+ 		end
+ 		if rec.Done then
+-			return
++			return nil
+ 		end
+ 		rec.Done = true -- settle first (header)
+ 		local cb = rec.Cb
+@@ -147,14 +158,18 @@
+ 		local playback = (Enum :: any).PlaybackState
+ 		if playback ~= nil and rec.Tween.PlaybackState == playback.Completed then
+ 			if cb ~= nil then
++				if deferCompleted then
++					return cb
++				end
+ 				fire(cb, "Completed")
+ 			end
+-			return
++			return nil
+ 		end
+ 		rec.Tween:Cancel()
+ 		if cb ~= nil then
+ 			fire(cb, "Cancelled")
+ 		end
++		return nil
+ 	end
+ 	-- Snap: write the target now, no engine tween; `{ Value }` keeps the dedup honest (Q26 (a)).
+ 	local function snap(inst: any, k: any, v: any)
+@@ -283,11 +298,12 @@
+ 			-- to. The slot is written before `Play` so a raise there leaves at most
+ 			-- an unplayed tween the slot knows about.
+ 			local engineTween = if tweenIn and not zeroTime then getTweenService():Create(inst, buildInfo(v), { [k] = v.Value }) else nil
++			local pendingCompleted: any = nil -- Q91 (b): the old value's window Completed, fired after our slot write
+ 			if type(prev) == "table" and prev.Tween ~= nil then
+ 				-- branch 3: an engine tween is active — clean it up before the new value lands
+ 				-- (a snapped `{ Value }` record has nothing to cancel and nothing to
+ 				-- Finish-snap to: the property already holds that value)
+-				stopRunning(prev) -- settle: Cancel (if still running) + previous Cancelled/Completed + Disconnect
++				pendingCompleted = stopRunning(prev, true) -- settle: Cancel (if running) + Cancelled | window → held Completed
+ 				if tweenIn and v.Override == "Finish" and not zeroTime then
+ 					-- (a zero-time snap writes `v.Value` right below — a Finish snap first would be a second
+ 					-- synchronous write of the same property, visible under Immediate signals; code-review)
+@@ -295,7 +311,26 @@
+ 				end
+ 			end
+ 			if zeroTime then
+-				snap(inst, k, v)
++				if pendingCompleted == nil then
++					snap(inst, k, v)
++					return tweenRetractor(inst, k)
++				end
++				-- Q91 (b): write + record, then the old Completed, then (only if a nested `process` did not
++				-- replace the record meanwhile) this value's own Started/Completed
++				inst[k] = v.Value
++				local srec = { Value = v.Value }
++				tweenSlots:SetStrong(inst, k, srec)
++				if ORDER_OLD_FIRST then
++					fire(pendingCompleted, "Completed")
++					if tweenSlots:GetStrong(inst, k) == srec then
++						fire(v, "Started")
++						fire(v, "Completed")
++					end
++				else
++					fire(v, "Started")
++					fire(v, "Completed")
++					fire(pendingCompleted, "Completed")
++				end
+ 				return tweenRetractor(inst, k)
+ 			end
+ 			-- branches 2/3 tail: plain → write + `true`; Tween → slot, then play
+@@ -329,12 +364,26 @@
+ 					end)
+ 					rec.Conn = conn
+ 				end
++				if pendingCompleted ~= nil and ORDER_OLD_FIRST then
++					-- variant OLD-FIRST: old Completed → (nested may replace `rec`) → our Play/Started only if
++					-- `rec` is still the record (a nested replacement already Cancel'd it; Play would revive it)
++					fire(pendingCompleted, "Completed")
++					if tweenSlots:GetStrong(inst, k) ~= rec then
++						return tweenRetractor(inst, k)
++					end
++				end
+ 				engineTween:Play()
+ 				fire(v, "Started")
++				if pendingCompleted ~= nil and not ORDER_OLD_FIRST then
++					fire(pendingCompleted, "Completed") -- variant NEW-FIRST: Started(B) → Completed(A)
++				end
+ 				return tweenRetractor(inst, k)
+ 			end
+ 			inst[k] = v
+ 			tweenSlots:SetStrong(inst, k, true)
++			if pendingCompleted ~= nil then
++				fire(pendingCompleted, "Completed") -- plain incoming value: after the `true` record either way
++			end
+ 			-- round11 `H-547` (탐사 D′): EVERY chain returns the retractor, not only one that has carried
+ 			-- a Tween. Two reasons — (1) the checkpoint's `GetWeak(...) or Void` relied on the previous
+ 			-- chain's `list[index].retractor` keeping the closure alive, but Dispatch parks NOOP there

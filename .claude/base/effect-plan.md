@@ -427,6 +427,11 @@ function EffectHandle:_consumeCleanup()
 end
 ```
 
+**[2026-09-27 round13 Q95 검토 중]** 위 `(1) leaf가 죽는 순간 cleanup을 정확히 1회` 훅이 Immediate 한정으로
+실행 탐사에서 반증됐다 — Destroy 파동 안에서 그 자리가 새 값으로 바뀌면 `OnDestroyed`가 한 번도 안 돌고
+옛 값은 `dying=false`를 받는 경우가 나왔다. 사용자 문항이 열려 있다
+(`qa-request/post-implementation-review-round13.md` §4). 본문은 결정 전이라 그대로 둔다.
+
 **⚠️ [2026-08-25 `/code-review high` 정정; 2026-08-28 `H-159`로 플래그 통합] "설치돼
 있는가"를 `_cleanup`의 유무로 판정하면 안 된다 — 별도 플래그가 필요하다.** 여기
 한때 `if self._cleanup == nil or ...`라고 적어뒀는데, **`fn`의 cleanup 반환은

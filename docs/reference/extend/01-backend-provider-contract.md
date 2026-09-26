@@ -101,8 +101,8 @@ nativeFindChild (inst: any, key: any, className: string?) -> any
 
 - **`isInst(value)`** — "이 값이 이 백엔드의 마운트 가능한 요소인가". quad-base는 `T`가 무엇인지 모르므로 요소 타입 검증을 이 화이트리스트 술어에 전부 위임합니다. quad-roblox 구현은 `typeof(value) == "Instance"` 한 줄이고, mock은 "이게 mock 인스턴스인가"입니다.
 - **`onDestroying(inst, fn)`** — 요소가 파괴될 때 `fn`을 부르는 훅. 반환값은 **Connection 모양**(`Connected` 필드와 `Disconnect` 메소드를 가진 값)이어야 합니다 — `Effect`가 바인딩을 풀 때 이걸 끊습니다. quad-roblox 구현은 `inst.Destroying:Connect(fn)`입니다.
-- **`nativeClaim(inst)`** — 요소 하나를 quad 소유로 등록하는 셋업. quad-roblox에서는 여기서 GC 앵커(`gchold`)와 절대 발화하지 않는 시그널 연결(`gcconn`)을 만듭니다. `New`가 인스턴스를 만든 직후, 그리고 `Claim`이 기존 트리를 흡수할 때 요소마다 정확히 한 번 불립니다. **같은 요소를 두 번 claim하면 에러**(`nativeClaim: Instance is already claimed by quad`)이고, 이미 파괴된 요소를 claim하는 것은 정의되지 않은 동작입니다(가드하지 않습니다).
-- **`isClaimed(inst)`** — "이 요소가 이미 quad 소유인가". `Slot`이 원소를 받을 때와 **정적 자식 자리마다**(`D.<Class> { child }`의 `InstanceChild` 핸들러 — 구동 hot path) 부르고, 거짓이면 거부합니다(`Slot: this element is not claimed by quad …` / `InstanceChild: this Instance is not claimed by quad …`). 싸게 만드세요 — 자식 하나당 한 번 불립니다 — 자동으로 claim해 주지 않는 것이 계약입니다. quad-roblox 구현은 `nativeClaim`이 남긴 셋업(`gchold`)이 있고 **그 인스턴스의 `Destroying` 연결이 아직 살아 있는가**를 봅니다 — 파괴된 인스턴스는 GC를 기다리지 않고 즉시 거짓이어야 합니다(약한 기록만 보면 다음 GC까지 시체가 claim된 것으로 읽혀 Slot이 그 시체를 앉힙니다). `Claim`도 해석 패스에서 트리의 모든 인스턴스에 이걸 물어 이미 소유된 것이 하나라도 있으면 아무것도 claim하지 않고 거부합니다 — 그러니 "`nativeClaim`이 지나간 것만 참"이어야 `Claim`이 성립합니다. mock은 `Instance.new`가 태어날 때 claim된 것(Declaration이 만든 것의 대역)이고 밖의 것은 `Instance.foreign`입니다.
+- **`nativeClaim(inst)`** — 요소 하나를 quad 소유로 등록하는 셋업. quad-roblox에서는 여기서 GC 앵커(`gchold`)와 절대 발화하지 않는 시그널 연결(`gcconn`)을 만듭니다. `New`가 인스턴스를 만든 직후, 그리고 `Claim`이 기존 트리를 흡수할 때 요소마다 정확히 한 번 불립니다. **같은 요소를 두 번 claim하면 에러**(`Quad0225 nativeClaim: Instance is already claimed by quad`)이고, 이미 파괴된 요소를 claim하는 것은 정의되지 않은 동작입니다(가드하지 않습니다).
+- **`isClaimed(inst)`** — "이 요소가 이미 quad 소유인가". `Slot`이 원소를 받을 때와 **정적 자식 자리마다**(`D.<Class> { child }`의 `InstanceChild` 핸들러 — 구동 hot path) 부르고, 거짓이면 거부합니다(`Quad0241 Slot: this element is not claimed by quad …` / `Quad0219 InstanceChild: this Instance is not claimed by quad …`). 싸게 만드세요 — 자식 하나당 한 번 불립니다 — 자동으로 claim해 주지 않는 것이 계약입니다. quad-roblox 구현은 `nativeClaim`이 남긴 셋업(`gchold`)이 있고 **그 인스턴스의 `Destroying` 연결이 아직 살아 있는가**를 봅니다 — 파괴된 인스턴스는 GC를 기다리지 않고 즉시 거짓이어야 합니다(약한 기록만 보면 다음 GC까지 시체가 claim된 것으로 읽혀 Slot이 그 시체를 앉힙니다). `Claim`도 해석 패스에서 트리의 모든 인스턴스에 이걸 물어 이미 소유된 것이 하나라도 있으면 아무것도 claim하지 않고 거부합니다 — 그러니 "`nativeClaim`이 지나간 것만 참"이어야 `Claim`이 성립합니다. mock은 `Instance.new`가 태어날 때 claim된 것(Declaration이 만든 것의 대역)이고 밖의 것은 `Instance.foreign`입니다.
 - **`nativeFindChild(inst, key, className?)`** — 매퍼 디스크립터의 키로 직계 자식을 찾는 조회 op. 키가 무슨 뜻인지는 백엔드가 정합니다(Roblox는 `Name`, web이라면 id나 selector). 셋째 인자는 디스크립터의 클래스 이름 — 이름은 맞는데 그 클래스가 아닌 자식이면 **`nil`을 돌려주세요**(찾지 못한 것과 같이 취급되어 `Claim`이 "no child matched" 에러를 냅니다). quad-roblox 구현은 `inst:FindFirstChild(key)` 뒤 `child:IsA(className)`이고, mock은 `ClassName` 비교입니다.
 
 ---
@@ -118,12 +118,12 @@ isHeld          (value: any) -> boolean
 isHeldBy        (value: any, inst: any) -> boolean
 ```
 
-- **`holdLifetime(inst, value)`** — `value`를 `inst`의 강참조 홀더에 넣고(`inst`가 사는 동안 `value`가 GC되지 않게), `value` 쪽에는 자기 생존 판정 근거를 약참조로 남깁니다. 이것이 **커밋**입니다. quad-base는 자기 게이트(nil, `canBound`, 값의 바인드 전 훅)를 전부 통과시킨 뒤에야 이걸 부르고, 이게 돌아오면 값의 커밋 뒤 훅(`Observer`의 따라잡기, `Effect`의 `onDestroying` 연결)을 돌립니다. `inst`가 이 백엔드의 quad 소유 요소가 아니면 **아무것도 쓰지 않고 던지세요** — quad-roblox 문구는 `bindLifetime: Instance is not claimed by quad …`입니다(접두는 사용자가 부른 프리미티브 이름 `bindLifetime:`으로 — 사용자는 `holdLifetime`을 모릅니다). 순서 하나: quad-base의 값 쪽 게이트(nil, `canBound`)가 이 인스턴스 게이트보다 **먼저** 돕니다 — 이미 다른 곳에 묶인 값을 미claim 인스턴스에 넣으면 "already bound"가 납니다. mock은 여기서 lazy claim을 합니다(mock 인스턴스는 quad 밖에서 만들어지므로). 파괴된 인스턴스를 `isClaimed`처럼 즉시 거부하지는 **마세요** — GC 전에 다시 claim된 시체가 영원히 살아 있는 gcconn을 얻는 구멍이 있어, 여기서는 셋업 유무만 봅니다.
+- **`holdLifetime(inst, value)`** — `value`를 `inst`의 강참조 홀더에 넣고(`inst`가 사는 동안 `value`가 GC되지 않게), `value` 쪽에는 자기 생존 판정 근거를 약참조로 남깁니다. 이것이 **커밋**입니다. quad-base는 자기 게이트(nil, `canBound`, 값의 바인드 전 훅)를 전부 통과시킨 뒤에야 이걸 부르고, 이게 돌아오면 값의 커밋 뒤 훅(`Observer`의 따라잡기, `Effect`의 `onDestroying` 연결)을 돌립니다. `inst`가 이 백엔드의 quad 소유 요소가 아니면 **아무것도 쓰지 않고 던지세요** — quad-roblox 문구는 `Quad0226 bindLifetime: Instance is not claimed by quad …`입니다(접두는 사용자가 부른 프리미티브 이름 `bindLifetime:`으로 — 사용자는 `holdLifetime`을 모릅니다). 순서 하나: quad-base의 값 쪽 게이트(nil, `canBound`)가 이 인스턴스 게이트보다 **먼저** 돕니다 — 이미 다른 곳에 묶인 값을 미claim 인스턴스에 넣으면 "already bound"가 납니다. mock은 여기서 lazy claim을 합니다(mock 인스턴스는 quad 밖에서 만들어지므로). 파괴된 인스턴스를 `isClaimed`처럼 즉시 거부하지는 **마세요** — GC 전에 다시 claim된 시체가 영원히 살아 있는 gcconn을 얻는 구멍이 있어, 여기서는 셋업 유무만 봅니다.
 - **`releaseLifetime(value)`** — 역입니다. 홀더에서 `value`를 빼고 남긴 근거를 지웁니다. 안 쥐고 있던 값이면 no-op, `inst`는 건드리지 않고, **cleanup을 부르지도 안쪽 구독을 떼지도 않습니다** — 그건 quad-base의 `unbindLifetime`이 이걸 부르기 전에 이미 처리합니다. `nil` 게이트도 quad-base 몫이라 여기엔 필요 없습니다.
 - **`isHeld(value)`** — "`value`에 남긴 근거가 아직 살아 있는가". quad-roblox와 mock 모두 `holdLifetime`이 복사해 둔 gcconn의 `.Connected`를 봅니다 — 인스턴스가 Destroy되면 즉시 거짓이 되고, 그 뒤 GC가 약한 항목을 치웁니다. 순수 술어입니다: 던지지 말고, `nil`에는 거짓을 돌려주세요. 매 emit 전파마다 불리므로 싸게 만드세요.
 - **`isHeldBy(value, inst)`** — "`value`를 쥔 것이 바로 이 `inst`인가". quad-base가 거부 메시지 한 팔(`… already bound to this Instance (the same handle at two positions?)`)을 고르는 데만 씁니다. 순수 술어입니다.
 
-**quad-base가 그 위에서 하는 일** — 읽는 사람이 경계를 알 수 있게 적습니다. `canExecute(v)`는 `isHeld(v)`이거나, `v`가 `Observer`/`Effect`이면서 전역 구독 상태(`.Subscribed`)가 참일 때 참이고, `canBound(v)`는 그 부정입니다. `bindLifetime(inst, value)`는 nil 게이트 → `canBound` 거부(`bindLifetime: value is already subscribed` / `… already bound to this Instance …` / `… to another Instance`) → 값의 바인드 전 훅(던지면 아무것도 남기지 않음) → **`holdLifetime`** → 값의 커밋 뒤 훅 순서이고, 마지막 단계는 사용자 콜백을 돌리므로 거기서 던지면 값은 묶인 채 남습니다(정의되지 않은 동작 — pcall로 감싸지 않습니다). `unbindLifetime(value)`는 nil 게이트 → `Effect`의 `Destroying` 연결 해제 → **`releaseLifetime`**입니다. 이 넷의 사용자 표면은 [core/10](../core/10-lifetime-sentinels.md)에 있습니다.
+**quad-base가 그 위에서 하는 일** — 읽는 사람이 경계를 알 수 있게 적습니다. `canExecute(v)`는 `isHeld(v)`이거나, `v`가 `Observer`/`Effect`이면서 전역 구독 상태(`.Subscribed`)가 참일 때 참이고, `canBound(v)`는 그 부정입니다. `bindLifetime(inst, value)`는 nil 게이트 → `canBound` 거부(`Quad0104 bindLifetime: value is already subscribed` / `… already bound to this Instance …` / `… to another Instance`) → 값의 바인드 전 훅(던지면 아무것도 남기지 않음) → **`holdLifetime`** → 값의 커밋 뒤 훅 순서이고, 마지막 단계는 사용자 콜백을 돌리므로 거기서 던지면 값은 묶인 채 남습니다(정의되지 않은 동작 — pcall로 감싸지 않습니다). `unbindLifetime(value)`는 nil 게이트 → `Effect`의 `Destroying` 연결 해제 → **`releaseLifetime`**입니다. 이 넷의 사용자 표면은 [core/10](../core/10-lifetime-sentinels.md)에 있습니다.
 
 hold op 넷은 quad-base가 `module.Backend.isHeld(v)`처럼 **부를 때마다 `Backend` 네임스페이스의 필드로** 읽습니다. 백엔드 쪽에서도 자기 op를 부를 일이 있으면 같은 방식으로 읽으세요 — `Init` 시점에 지역 변수로 캡처해 두면 나중에 덮어쓴 실 구현이 아니라 스텁을 계속 부르게 됩니다.
 
@@ -206,7 +206,7 @@ local q = Quad.New():UseProvider(CustomProvider)
 1. **모듈 인스턴스당 프로바이더는 하나**입니다. 슬롯을 점유하는 키는 **프로바이더 함수의 identity**입니다.
 2. **같은 함수를 다시 넘기면 멱등 no-op**입니다. 일반적인 경우엔 require 캐시가 같은 함수 identity를 주므로 자연히 통과합니다.
 3. **다른 identity를 넘기면 에러**입니다 — 다른 백엔드든, 같은 백엔드의 다른 사본/버전이든 똑같이 막힙니다:
-   `UseProvider: this Quad module already has a provider — a module cannot serve two backends`
+   `Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends`
 4. **슬롯 마킹은 프로바이더 함수가 성공적으로 반환한 뒤**에 일어납니다. 설치 도중 던지면 슬롯이 점유되지 않으므로, 원인을 고치고 다시 부를 수 있습니다.
 
 반환된 확장 테이블은 모듈에 키 단위로 병합됩니다(얕은 복사). quad-roblox가 반환하는 확장(`RobloxExtension`)은 여섯 개 키입니다 — `Declaration`(생성된 클래스 네임스페이스), `OnChange`, `Out`, `Animate`, `Tween`, `isTween`. 병합 뒤에는 `q.Declaration`처럼 모듈에서 바로 꺼내 쓰면 되고, 반환 타입이 교집합으로 합쳐지므로 캐스트가 필요 없습니다.
@@ -228,7 +228,7 @@ local q = Quad.New():UseProvider(CustomProvider)
 quad-base는 위 20슬롯 전부에 **안내 스텁**을 깔아둡니다. 백엔드 없이 부르면 nil 호출 크래시가 아니라 이름이 박힌 에러가 호출자 줄에서 납니다.
 
 ```
-quad: nativeInsert is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+Quad0108 quad: nativeInsert is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
 ```
 
 이 스텁은 프로바이더가 덮어쓸 때까지만 공개 표면에 앉아 있습니다. 즉 **백엔드가 슬롯 하나를 빠뜨리면 그 op를 처음 쓰는 순간 그 이름이 그대로 에러 메시지에 나옵니다** — 조합으로 대신 만들어 주는 폴백은 없습니다.

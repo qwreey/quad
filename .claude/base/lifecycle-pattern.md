@@ -331,6 +331,10 @@ gcconn 참조 복사, 타입별 후처리(`Observer:_catchUp`/`Effect:_bindDestr
 수명에 묶는다"는 원래 일과 같은 일이라 별도 앵커 표면을 만들지 않는다
 (표면이 커지는 대안을 사용자가 명시적으로 피함).
 
+**[2026-09-27 round13 Q94 검토 중]** `bindLifetime`이 원시값(숫자 등)을 받았을 때의 동작이 실행 탐사에서
+반증됐다 — 숫자 `1`이 gchold의 gcconn 자리를 덮어쓰는 경우가 나왔다(엔진 가정 하나 포함). 사용자 문항이
+열려 있다(`qa-request/post-implementation-review-round13.md` §4). 본문은 결정 전이라 그대로 둔다.
+
 #### (1) `bindLifetime` / `unbindLifetime` / `canBound` / `canExecute`
 
 ```lua

@@ -168,6 +168,11 @@ base는 여전히 `T`가 뭔지 모른다 — **아는 건 백엔드고 base는 
 InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "정적으로
 하나 박아넣는" 더 단순한 경우라 별개로 둠.
 
+**[2026-09-27 round13 Q75 검토 중]** 위 native op들이 받는 offset이 배치·파동 중 절대 오프셋이라는 전제가
+실행 탐사에서 반증됐다 — 배치·파동 중 native op에 stale offset이 넘어가는 경우가 있다(지금 백엔드에서는
+무해하다고 판단됐으나 사용자 문항이 열려 있다, `qa-request/post-implementation-review-round13.md` §4). 본문은
+결정 전이라 그대로 둔다.
+
 ## 개념
 
 뮤터블 자식 배열. `Slot<T>(initial?)`(다른 독립 프리미티브의 `Type(args)`
@@ -967,6 +972,9 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   Slot의 length를 자기 계산 도중 다시 건드리는 것)도 같은 톤으로 UB —
   `base/dispatch-core-plan.md`의 "Length/Offset" 절, `Source⊇State`
   단방향 원칙과 같은 카테고리로 명명됨(2026-08-11 세션).
+  **[2026-09-27 round13 Q73·Q74 검토 중]** 이 절의 "별도 가드 불필요" 서술과 Q52 `_materializing` 가드가
+  실행 탐사에서 반증됐다 — 설치 발화 중 CRUD로 형제 `Offset`이 조용히 stale로 남는 경우(Q73), Q52 가드가
+  런타임 `Add`의 attach 창에서 조부모 이상을 덮지 않는 경우(Q74)가 있다 — 사용자 문항이 열려 있다(`qa-request/post-implementation-review-round13.md` §4). 본문은 결정 전이라 그대로 둔다.
 - **`Slot(initial?: {T})` 생성자 — [정정, 2026-08-11 세션] "인자 없는
   빈 생성자로 확정"을 뒤집고 초기 배열을 받는 옵션 생성자를 다시 엶.**
   단, 새 마운트 로직이 아니라 **순수하게 `:Add`를 반복 호출하는
@@ -1436,6 +1444,11 @@ GC-native 원칙(`lifecycle-pattern.md`)을 `:List`라는 구체적 지점에 �
 자신이 마운트되는 순간(`Slot/Handler.luau`의 `process(inst,k,self,index)`)에
 `activateList`가 수행 — `Dispatch.setLength`가 이미 쓰고 있는 것과 같은
 패턴(마운트 시점까지 미뤘다가 그 자리에서 `bindLifetime`).
+
+**[2026-09-27 round13 Q76·Q77 검토 중]** 아래 `reconcile`(`H-38` 증분 갱신)이 O(n)이라는 전제와 무관하게,
+`Slot:List` 전체 교체가 O(N²)로 도는 경로(Q76)와 전체 역순에서 쓰지도 않는 offset 계산이 O(N²)를 만드는
+경로(Q77)가 성능 탐사에서 나왔다 — 프로토타입은 `audit/round13-q76-proto/`. 사용자 문항이 열려 있다
+(`qa-request/post-implementation-review-round13.md` §4). 본문은 결정 전이라 그대로 둔다.
 
 ```lua
 function Slot:List(data, updateFn, keyFn, opts)

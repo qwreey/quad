@@ -118,7 +118,7 @@ Mapped: <T, U>(self: TweenData<T>, fn: (T) -> U) -> Tween<U>
 ```
 
 옵션은 그대로 두고 **`Value`만 `fn(Value)`로 바꾼** 새 Tween을 돌려줍니다. 원본은 그대로입니다.
-결과는 다시 검증되므로 `fn`이 `nil`을 돌려주면 `Tween: Value is required`가 납니다.
+결과는 다시 검증되므로 `fn`이 `nil`을 돌려주면 `Quad0249 Tween: Value is required`가 납니다.
 
 옵션 프리셋을 상수로 두고 값만 갈아 끼우는 데 쓰면 좋습니다.
 
@@ -207,7 +207,7 @@ local box = D.Frame({ BackgroundTransparency = animated })
   일입니다 — 아래 `Dedup`.
 - **리터럴 옵션은 `Animate(info)` 시점에 즉시 검증**됩니다(여러분의 호출 줄을 blame). State로 준
   옵션은 실행할 때마다 풀려서 그때 검증됩니다.
-- 옵션이 테이블이 아니면 `Animate: expected an options table (Animate{ Time = ... })`.
+- 옵션이 테이블이 아니면 `Quad0214 Animate: expected an options table (Animate{ Time = ... })`.
 
 ---
 

@@ -56,7 +56,7 @@ local label = D.TextLabel {
 
 문자 키 자리에 넣으면 타입 우회 실수로 보고 거절합니다:
 
-- `Observer: must be an array item, not the value of a {typeof(k)} key`
+- `Quad0116 Observer: must be an array item, not the value of a {typeof(k)} key`
 - `Quad0097 Effect: must be an array item, not the value of a {typeof(k)} key`
 
 ---
@@ -102,9 +102,9 @@ export type Observer = {
 - 아직 살아나지 않은(구독도 바인딩도 안 된) 핸들에도 emit은 **도착합니다**. 다만 실행 자격이 없어 **보류**되고, 그 사이 몇 번이 왔든 살아나는 시점에 **정확히 한 번**, `emitFrom = nil`로 재생됩니다.
 - 콜백은 **자기 자신을 구독하거나 묶을 수 없습니다**. 콜백 안에서 `:Subscribe()`/`:WeakSubscribe()`를 부르면
   `Observer: cannot change subscription from inside its own fn`
-  (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Observer: cannot bind an Observer from inside its own fn`). 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 콜백 안에서도 됩니다 — 해제는 콜백을 다시 부르지 않습니다.
+  (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Quad0109 Observer: cannot bind an Observer from inside its own fn`). 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 콜백 안에서도 됩니다 — 해제는 콜백을 다시 부르지 않습니다.
 - 콜백이 예외를 던지면 그 핸들은 **굳습니다** — 이후 (재)구독과 다른 인스턴스에 묶기는 위 문구로 거부됩니다. 발화 자체는 막히지 않아 상류가 바뀌면 콜백은 계속 돕니다(quad는 예외를 잡지 않으므로 "던졌다"는 사실을 따로 기억하지 못합니다). 정리하려면 `:Unsubscribe()`(강한 구독) 또는 묶인 인스턴스의 파괴로 놓아주세요.
-- 인자 검증: `State: Observer fn must be a function (or nil for the always-observe utility)`
+- 인자 검증: `Quad0190 State: Observer fn must be a function (or nil for the always-observe utility)`
 - 같은 원천을 구독한 Observer·Effect끼리의 **발화 순서는 정해져 있지 않습니다** — 등록 순서도 아닙니다. 순서가 필요하면 한 콜백 안에서 차례대로 부르세요.
 - 콜백 안에서 **yield하지 마세요**(Roblox의 `task.wait` 등) — 정의되지 않은 동작입니다. 파동이 그 자리에서 멈추거나 같은 콜백이 겹쳐 돌 수 있고, 겹치면 나중 값의 콜백이 먼저 끝나 **마지막으로 처리한 값이 낡은 값**이 됩니다. 기다릴 일은 따로 띄운 코루틴으로 떼어 내세요.
 - 숫자 키 자리에 놓여 **묶이는 순간** 보류돼 있던 통지가 한 번 재생되는데, 그 콜백이 던지면 `Declaration`은 에러로 끝나지만 그 핸들은 실패한 인스턴스에 묶인 채 남습니다(정의되지 않은 동작 — `Effect`도 같습니다). 같은 핸들로 다시 놓으면 원인 대신 `Quad0233 bindLifetime: value is already bound to another Instance`가 납니다. 재시도는 새 핸들로 하세요 — `Declaration` 안에서 인라인으로 만드는 보통 코드는 자연히 그렇게 됩니다.
@@ -150,7 +150,7 @@ print(#log) --> 3
 
 **동작** — **강한 구독**. 전역 레지스트리가 핸들을 강하게 잡으므로, 참조를 어디에도 남기지 않아도 수거되지 않습니다. `.Subscribed`를 올리고, 보류된 변경이 있으면 그 자리에서 한 번 재생합니다.
 
-**에러** — 이미 살아 있으면 `Observer: already subscribed` / `Observer: already bound to an Instance`. 콜백 안에서 부르면 `Observer: cannot change subscription from inside its own fn`.
+**에러** — 이미 살아 있으면 `Quad0114 Observer: already subscribed` / `Quad0235 Observer: already bound to an Instance`. 콜백 안에서 부르면 `Quad0113 Observer: cannot change subscription from inside its own fn`.
 
 ---
 
@@ -169,7 +169,7 @@ print(#log) --> 3
 **시그니처** — `Unsubscribe: (self: Observer) -> Observer`
 
 **동작** — 강한 구독을 해제합니다(강·약 등록을 둘 다 지우고 `.Subscribed`를 내립니다). **엄격합니다** — 강하게 구독한 적이 없으면 거절합니다:
-`Observer: not subscribed strongly; use :WeakUnsubscribe()`
+`Quad0115 Observer: not subscribed strongly; use :WeakUnsubscribe()`
 콜백 안에서, 그리고 콜백이 던져 굳은 뒤에도 됩니다 — 해제는 콜백을 부르지 않습니다.
 
 ---
@@ -179,7 +179,7 @@ print(#log) --> 3
 **시그니처** — `WeakUnsubscribe: (self: Observer) -> Observer`
 
 **동작** — 약한 구독을 해제합니다. **관대합니다** — 구독한 적이 없거나 이미 풀린 핸들에 불러도 조용히 통과합니다. 단, 강한 유지가 남아 있으면 반쯤 풀린 핸들이 되므로 거절합니다:
-`Observer: subscribed strongly; use :Unsubscribe()`
+`Quad0112 Observer: subscribed strongly; use :Unsubscribe()`
 
 ---
 

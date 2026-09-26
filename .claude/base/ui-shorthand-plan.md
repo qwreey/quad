@@ -272,6 +272,8 @@ end
   **[2026-09-26 round13 E2-2, `H-630`]** 이 "4개가 같이" 자체가 Tween 콜백을
   네 배로 만든다(`Started`/`Completed`/`Cancelled`가 값 하나에 네 번씩) —
   `base/tween-plan.md` 콜백 절 포인터, 레퍼런스는 roblox/02·roblox/06.
+  **[2026-09-27 round13 Q92 검토 중]** 이 콜백 4회를 1회로 줄일지가 사용자 문항으로 열려 있다
+  (`qa-request/post-implementation-review-round13.md` §4). 본문은 결정 전이라 그대로 둔다.
 - **`Tween` 값과 이 숏핸드 Handler는 둘 다 `quad-roblox`**(**[2026-09-07]** Tween이
   quad-base에서 이동 — `tween-plan.md` "패키지 경계" 절) — 핸들러는 설치 시점에
   모듈의 `isTween`을 읽는다(Tween 설치가 먼저, `RobloxFactory.luau`).

@@ -52,8 +52,8 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 
 `PreRef`/`PostRef`는 props의 **숫자 키 리터럴 항목**으로만 놓을 수 있습니다. 문자 키의 값으로 두거나 `Source`/`Store` 값에 담아 숫자 키 자리에 닿게 하면 전용 가드가 그 자리에서 던집니다(`PostRef`도 주어만 바뀐 같은 문구).
 
-- `PreRef: must be an array item, not the value of a {typeof(k)} key`
-- `PreRef: must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see`
+- `Quad0137 PreRef: must be an array item, not the value of a {typeof(k)} key`
+- `Quad0136 PreRef: must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see`
 
 평범한 `Ref`에는 그 가드가 없습니다. 숫자 키 자리에 닿기만 하면 되므로 `Source`/`Store` 값에 담아 넣어도 그대로 채워지고, 다른 자리에 두면 "Ref를 잘못 놓았다"는 진단 대신 그 자리의 주인이 내는 에러를 봅니다.
 
@@ -243,7 +243,7 @@ Set: <Self>(self: Self, value: T) -> Self
 
 `thread` 키(= `:Wait` 대기자)는 소진되고 `Ref` 자신을 인자로 resume됩니다. 대기 중인 코루틴 자신이나 그 코루틴이 resume한 코루틴에서 `:Set`을 부르면 그 자리에서 던집니다.
 
-- `Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a {status} coroutine)`
+- `Quad0130 Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a {status} coroutine)`
 
 콜백끼리의 발화 순서는 **정해져 있지 않습니다**(등록 순서도 아닙니다). 콜백 안에서 yield하는 것은 정의되지 않은 동작입니다 — 기다릴 일은 따로 띄운 코루틴으로 떼어 내세요.
 
@@ -321,9 +321,9 @@ Wait: <Self>(self: Self, thread: thread?) -> Self
 
 - **항상 다음 `:Set`을 기다립니다.** 이미 값이 차 있어도 기다립니다 — `Ref<T?>`에서는 `nil`도 정당한 값이라 "차 있는가"를 여기서 판정할 수 없기 때문입니다. 미리 확인하고 싶으면 `if ref.Value then … else ref:Wait().Value end` 관용구를 쓰세요.
 - 인자 없이 부르려면 yield 가능한 코루틴 안이어야 합니다.
-  - `Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)`
+  - `Quad0134 Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)`
 - 명시적 `thread`를 주면 등록만 합니다 — 코루틴은 자기 자신만 멈출 수 있지 남의 코루틴을 대신 멈출 수 없기 때문입니다.
-  - `Ref: Wait(thread) expects a thread (got {typeof(thread)})`
+  - `Quad0133 Ref: Wait(thread) expects a thread (got {typeof(thread)})`
 - 대기자는 `Callbacks`에 `thread` 키로 들어가고, `:Set`이 그 키를 소진하며 resume합니다. 중복 등록은 집합이라 무해합니다.
 
 **예제**

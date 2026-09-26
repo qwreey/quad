@@ -75,10 +75,10 @@ Compute: <U>(self: StateData<T>, fn: (self: StateData<T>, previous: U?, ...any) 
 - 예외는 두 번째 인자 `previous`입니다 — 이건 핸들이 아니라 **이 노드가 직전에 계산해 둔 결과값 자체**이고, 아직 한 번도 계산하지 않았으면 `nil`입니다. 노드마다 독립적으로 기억됩니다.
 - 조건에 따라 `self:Get()`을 건너뛰는 계산도 그대로 허용됩니다 — 읽지 않으면 그 회차엔 상류를 계산하지 않습니다.
 - 계산 함수는 **값 한 세대에 한 번만 돕니다.** 계산 함수가 자기 노드의 값을 읽거나(직접, 또는 하류 State를 거쳐 — 의존성 순환), yield하는 사이 다른 코루틴이 같은 노드를 읽으면 그 `:Get()` 줄에서 아래 문구로 에러가 납니다. 순환은 만든 쪽의 실수라 그 자리에서 잡히고, yield는 지원하지 않습니다(계산은 읽는 쪽의 `:Get()` 안에서 동기로 돕니다). 계산 함수가 **던지면** 그 세대의 재읽기도 같은 문구로 에러이고, 상류가 바뀌어 새 세대가 되면 다시 돕니다 — 잘못된 값을 고쳐 `:Set`하면 회복됩니다(그 상류가 `Blocker`·`Debounce` 뒤에서 유보 중이어도 같습니다 — 게이트는 통지만 붙들지 값을 가리지 않습니다). 잡히지 않는 순환 하나: 계산 함수가 자기 의존성을 `:Set`한 **뒤** 자기 값을 읽으면 그 `:Set`이 새 세대를 만들어 재진입으로 보이지 않고 스택 오버플로가 납니다(계산 함수 안에서 자기 의존성을 쓰는 것 자체가 정의되지 않은 동작).
-  `State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)`
+  `Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)`
 - 계산 결과로 **Modifier를 돌려줄 수 없습니다**:
-  `State: a Compute function returned a Modifier — State/Source cannot hold Modifiers`
-- 인자 검증: `State: Compute fn must be a function` / `State: dep #{i + 1} is nil` / `State: dep #{i} is not a State/Source`. 번호는 **리시버가 1번**이라, 후행 의존성의 첫 자리가 `#2`입니다.
+  `Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers`
+- 인자 검증: `Quad0187 State: Compute fn must be a function` / `Quad0186 State: dep #{i + 1} is nil` / `Quad0183 State: dep #{i} is not a State/Source`. 번호는 **리시버가 1번**이라, 후행 의존성의 첫 자리가 `#2`입니다.
 
 **strict 캐비엇** — 반환이 `State<U>`로 온전히 추론되지 않는 자리가 있어, **파생 노드를 만드는 줄에는 결과 타입을 주석**하는 것이 이 코퍼스의 관례입니다. 또 `...deps`가 `...any`이므로 콜백 안에서 의존성 파라미터에 타입 주석을 다세요.
 
@@ -155,7 +155,7 @@ Apply: (<U>(self: StateData<T>, factory: (State<T>) -> U) -> U)
 - 함수를 넘기면 `factory(self)`를 그대로 부릅니다.
 - 객체를 넘기면 메소드 형태로 `factory:__apply(self)`를 부릅니다 — 이 자리의 `self`는 팩토리 객체입니다. [`Blocker`](../sugar/06-blocker.md)와 `Debounce`/`Throttle`이 이 팔로 붙습니다(`q.Animate { … }`는 함수를 돌려주는 팩토리라 함수 팔입니다).
 - 둘 중 어느 쪽도 아니면
-  `State: Apply factory must be a function or an object with an __apply method`
+  `Quad0191 State: Apply factory must be a function or an object with an __apply method`
 
 **strict 캐비엇** — 두 팔은 유니온이 아니라 **교집합 오버로드**입니다(객체가 너비 서브타이핑으로 들어가야 하기 때문). 객체 팔의 반환이 `any`이므로 결과 타입은 호출부에서 명시하세요:
 
@@ -180,7 +180,7 @@ export type ObserverFn<T> = (targetState: StateData<T>, self: Observer, emitFrom
 
 값을 실어주지 않는 leaf 구독 핸들을 만듭니다. 콜백은 **값이 아니라 관측 대상 핸들·자기 자신·출처**를 받고, 등록 시점에 즉시 한 번 발화합니다. 전체 계약(구독 네 진입점, 보류와 캐치업)은 **[05-observer-effect](./05-observer-effect.md#stateobserverfn)** 가 정본입니다.
 
-인자 검증: `State: Observer fn must be a function (or nil for the always-observe utility)`
+인자 검증: `Quad0190 State: Observer fn must be a function (or nil for the always-observe utility)`
 
 ---
 
@@ -209,7 +209,7 @@ export type GateSetup = (emit: GateEmit) -> () -> ()
 - `emit()` 또는 `emit(true)` — 모아둔 배치를 지금 한 번에 내려보냅니다. `emit(false)` — 모아둔 배치를 **버립니다**(전파도, 기록도 없음). 반환값은 "모아둔 게 있었는가"이며, 배치가 비어 있으면 아무 일도 하지 않고 `false`입니다.
 - 유보 중에 여러 번 온 변경은 **한 번의 통지로 합쳐집니다**. 내려가는 출처는 원래 `Source`가 아니라 게이트가 만든 배치(집합)입니다.
 - 게이트 위에 게이트를 얹을 수 있습니다. 위쪽 게이트가 내려보낸 배치는 참조로 들고 있지 않고 풀어서 자기 집합에 합칩니다.
-- 인자 검증: `State: Gate setup must be a function (emit) -> onUpstreamEmit` / `State: Gate setup must return the onUpstreamEmit function`
+- 인자 검증: `Quad0188 State: Gate setup must be a function (emit) -> onUpstreamEmit` / `Quad0189 State: Gate setup must return the onUpstreamEmit function`
 
 **예제**
 
