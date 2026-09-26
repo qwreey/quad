@@ -24,8 +24,8 @@ local D = q.Declaration
 - `base`나 `onError`가 함수가 아니면 감싸는 그 줄에서 던집니다.
 
 ```
-Fallback: base must be a function (got number)
-Traceback: onError must be a function (got string)
+Quad0099 Fallback: base must be a function (got number)
+Quad0100 Traceback: onError must be a function (got string)
 ```
 
 :::caution

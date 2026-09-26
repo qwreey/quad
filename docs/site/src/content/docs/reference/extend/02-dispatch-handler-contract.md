@@ -107,6 +107,7 @@ addHandler: (handler: Handler) -> ()
 
 ```
 Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got {typeof})
+Quad0080 Dispatch.addHandler: priority must be a finite number (got {tostring(pr)})
 Quad0081 Dispatch.addHandler: keyType must be "number", "string" or nil (got {값})
 ```
 

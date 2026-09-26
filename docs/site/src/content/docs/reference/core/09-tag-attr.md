@@ -43,7 +43,7 @@ type Tag = {
 이름 자리에는 어디서나 셋 중 하나가 옵니다 — **문자열**, **다른 `Tag`**(그 집합 전체), 또는 **그것들의 평범한 리스트**(중첩 가능). 세 문을 하나가 지키므로 생성자든 `:Added`든 규칙이 같습니다.
 
 ```
-Tag: names must be strings, Tags, or a plain {...} list of those (got {typeof(v)})
+Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got {typeof(v)})
 ```
 
 빈 문자열은 태그 이름이 아닙니다 — `Tag: names must be strings — an empty string is not a tag name`.

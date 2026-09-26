@@ -166,7 +166,7 @@ bindLifetime: (inst: any, value: any) -> ()
 **이 네 함수는 quad-base 것입니다.** 값 쪽 지식(nil 게이트, 거부 메시지, `Observer`/`Effect`의 훅, 전역 구독 상태)은 여기 있고, 인스턴스 쪽 부기만 백엔드가 심는 hold op 넷(`holdLifetime`/`releaseLifetime`/`isHeld`/`isHeldBy`)에 맡깁니다. quad-base는 임의의 엔진에서 그 부기의 "옳은" 기본값을 추측할 수 없으므로, 그 넷의 자리엔 조용한 no-op 대신 **크게 우는 스텁**을 둡니다. 프로바이더를 설치하지 않은 `Quad.New()`에서 `bindLifetime`을 부르면 그 스텁에 닿습니다:
 
 ```
-quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
 ```
 
 같은 문구가 이름만 바뀌어 hold op `holdLifetime`·`releaseLifetime`·`isHeldBy`, 엔진 op `onDestroying`·`isInst`·`nativeClaim`·`isClaimed`·`nativeFindChild`·`nativeInsert`·`nativeExtract`·`nativeRemove`·`nativeMove`·`nativeSwap`·`nativeDispose`, 시간 op `setTimeout`·`clearTimeout`에도 걸립니다. 각 슬롯이 무엇을 약속해야 하는지는 [`../extend/01-backend-provider-contract.md`](../extend/01-backend-provider-contract.md)가 정본입니다.

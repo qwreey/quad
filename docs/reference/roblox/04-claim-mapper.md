@@ -96,7 +96,7 @@ end
 | 둘째 인자가 디스크립터가 아님 | `Quad0034 Claim: second argument must be a D.Mapper descriptor` |
 | 디스크립터를 두 번 씀 | `Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)` |
 | 디스크립터의 props가 테이블이 아님 | `Quad0030 Claim: mapper props must be a table (got {typeof(desc._props)})` |
-| 이미 quad가 소유한 Instance | `nativeClaim: Instance is already claimed by quad` |
+| 이미 quad가 소유한 Instance(루트든 자식이든 — 백엔드의 `nativeClaim`보다 먼저 `isClaimed`로 걸립니다) | `Quad0029 Claim: {inst} is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)` |
 | 매퍼 키에 해당하는 자식이 없거나, 이름은 맞는데 그 클래스(`IsA`)가 아님 | `Quad0032 Claim: no child matched key {key} under {inst} (mapper {class}) — a child with that name must also be a {class}` |
 
 `D.<Class>{…}`의 숫자 키 자리에 디스크립터를 넣으면 매치되는 핸들러가 없어 일반 no-match 에러가

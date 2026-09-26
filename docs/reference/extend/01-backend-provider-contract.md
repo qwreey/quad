@@ -209,7 +209,7 @@ local q = Quad.New():UseProvider(CustomProvider)
    `UseProvider: this Quad module already has a provider — a module cannot serve two backends`
 4. **슬롯 마킹은 프로바이더 함수가 성공적으로 반환한 뒤**에 일어납니다. 설치 도중 던지면 슬롯이 점유되지 않으므로, 원인을 고치고 다시 부를 수 있습니다.
 
-반환된 확장 테이블은 모듈에 키 단위로 병합됩니다(얕은 복사). quad-roblox가 반환하는 확장(`RobloxExtension`)은 다섯 개 키입니다 — `Declaration`(생성된 클래스 네임스페이스), `OnChange`, `Animate`, `Tween`, `isTween`. 병합 뒤에는 `q.Declaration`처럼 모듈에서 바로 꺼내 쓰면 되고, 반환 타입이 교집합으로 합쳐지므로 캐스트가 필요 없습니다.
+반환된 확장 테이블은 모듈에 키 단위로 병합됩니다(얕은 복사). quad-roblox가 반환하는 확장(`RobloxExtension`)은 여섯 개 키입니다 — `Declaration`(생성된 클래스 네임스페이스), `OnChange`, `Out`, `Animate`, `Tween`, `isTween`. 병합 뒤에는 `q.Declaration`처럼 모듈에서 바로 꺼내 쓰면 되고, 반환 타입이 교집합으로 합쳐지므로 캐스트가 필요 없습니다.
 
 **백엔드가 값 층을 더한다면 자기 레퍼런스에 적습니다.** quad-base의 `FieldOut<T>`(Modifier `Peek` 반환·setter 변환 함수의 `old`)는 base가 소유한 층(`State`·`None`·`nil`)만 감쌉니다. 백엔드 고유의 값 층(quad-roblox의 `Tween<T>`)은 base가 알 수 없으므로, 백엔드가 생성하는 클래스별 타입에서 채우고 **무타입 `q.Modifier()`에서는 호출자가 `T` 안에 넣는다**는 것을 그 백엔드 문서에 밝혀 두세요([core/08의 층 나눔](../core/08-modifier.md)).
 

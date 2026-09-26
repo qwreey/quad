@@ -303,3 +303,10 @@ docs-review 3-1 (3)("v1이 버그 수정을 계속 받는가")의 사용자 답:
 
 **9.4 문항(사용자)**: ① (a)~(d) 중 첫 게이트, ② v1 쪽 코드 수정(브릿지용 훅)을 허용하는지 아니면 v2 쪽 `quad-roblox-v1-compat`에만 넣는지, ③ v1 `mock/`으로 CLI 게이트를 시도할지(안 되면 전부 Studio 몫이 된다).
 
+**9.5 [2026-09-26 자율 루프 V1 수집] v1 소스 대조 결과(`/code/Projects/quad-v1/src`, `VER = "2.25"` 미배포 master)** — 사실만.
+- **CLI 헤드리스 로드 불가 확정**: `libs/require.lua:1-30`이 `workspace`·`game`·`script` 셋 다 없으면 모듈 자체가 nil을 반환해 `exports.lua:11`의 커스텀 require부터 죽는다. 직접 엔진 API를 부르는 곳은 `class.lua`(`Instance.new`)·`lang.lua`(`LocalizationService`)·`libs/round.lua`(`ContentProvider`)·`libs/AdvancedTween/Stepped.lua`(`RunService`); store/event/mount/signal/style은 서비스는 안 부르지만 Instance 인자를 전제. → §9.4 ③의 답: **CLI 게이트 없음, 전부 Studio 몫**.
+- **§8 첫 항목 답 — v1은 자기 루트의 `Destroying`을 듣지 않는다.** `grep Destroying`은 `tracker.lua:70`(핫리로드 감시)·`libs/AdvancedTween/init.lua:458`(트윈 정리)뿐. `store.AddObject`가 등록한 태그(`items[id]`)는 `objectListClass.__mode="v"`로 GC에만 의존한다 → 7-1의 "v2가 v1 임베딩을 Destroy 대신 Unmount 경유로 정리하라"는 규칙은 **엄격히 지켜야 한다**(v1 쪽 안전망 없음).
+- **§8 둘째 답 — `registerClass` 체이닝 범위**: `store.lua:209-343`의 `With`/`Default`/`Tween`/`From`(deprecated)/`Add`/`Link` 여섯, 전부 `setmetatable({field=v},{__index=s})`로 앞 테이블 위에 쌓는 프로토타입 체인이라 같은 필드를 두 번 부르면 마지막 값만 남고 합성되지 않음. store 레벨 기능(Extend 인스턴스 레벨 아님).
+- **§2(a)의 `self("이름")` 링커 경로는 이 브랜치에서 죽어 있다**: `class.lua:526-540` `this.__call`이 `self.__props(name)`을 부르는데 `__props`는 파일 전체에서 이 한 곳뿐(실제 필드는 `__prop`) → 호출 즉시 `attempt to call a nil value`. `Link()` 자체(`class.lua:112-137`, `ProcessQuadProperty` 경유)는 정상. compat 레이어가 이 경로를 흉내 낼 이유가 없어졌다(v1 버그 수정 후보 — 사용자 판단).
+- 그 외 §2 서술은 줄 번호가 10~15줄 밀린 것 말고 일치. `exports.lua:29-63` `Init(id)`: id 없이 부르면 매번 새 인스턴스(캐시는 id가 있을 때만), `Uninit(id)`의 `cleanup()`은 빈 TODO. `lang.lua`의 `CurrentLocale`은 `module.init(shared)` 지역(72행)이라 **Store·Style과 똑같이 `Init` 인스턴스별 스코프** — 오버뷰 02가 "Lang만 전역 공유"라 적었던 것은 틀려서 고쳤다(`H-607`). `event.lua`: `Event::` 접두만 처리, 일반 이벤트 핸들러 첫 인자는 `self`(`t.self`로 오버라이드), `Property::X`는 `fn(대상, 값)`. `mount.lua`: 소유권 검사 없음, `Unmount`는 userdata면 무조건 `Destroy`. `signal.lua`: 커스텀 Bindable, `Fire`는 `task.spawn`, 자기 정리 경로 없음.
+

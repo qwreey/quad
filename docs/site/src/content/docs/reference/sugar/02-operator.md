@@ -268,16 +268,17 @@ local size: State<number> = palette:Apply(Op.Indexed<<number>>("Size"))
 local missing: State<string?> = palette:Apply(Op.Indexed<<string?>>("Nope")) -- nil
 ```
 
-에러 둘. `key`가 `nil`이면 팩토리 호출 즉시입니다.
+에러 셋. `key`가 `nil`이거나 `State`이면 팩토리 호출 즉시입니다(키는 반응형이 아닙니다).
 
 ```
-Operator.Indexed: key must not be nil
+Quad0125 Operator.Indexed: key must not be nil
+Quad0126 Operator.Indexed: key must be a plain value, not a State (the key is not reactive)
 ```
 
 상류 값이 테이블이 아니면 **읽는 시점에** 던집니다(`[...]` 자리엔 그 키가 들어갑니다).
 
 ```
-Operator.Indexed: value is not a table (got number) — cannot read [x]
+Quad0127 Operator.Indexed: value is not a table (got number) — cannot read [x]
 ```
 
 ---

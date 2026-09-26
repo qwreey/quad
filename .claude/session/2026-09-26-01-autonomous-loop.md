@@ -30,3 +30,7 @@
 - **22:55** D3 완료(how-to 01~10 사실 정확도 높음 — 발견 2: `H-599` 중복, `H-604` how-to 10 frontmatter 번호). 즉시 고침. 도는 중: fix 배치(H-601~603)·E3. 다음 sonnet 슬롯은 D4(레퍼런스 core).
 - **23:10** D4 완료(레퍼런스 core 전수 일치, 발견 2 → `H-605`·`H-606` 즉시 고침). 도는 중: fix 배치·E3. 다음 sonnet: D5(레퍼런스 roblox·sugar·extend — fix 배치가 extend/02·roblox/05를 만지므로 배치 종료 뒤).
 - (시각은 `date` 기준으로 다시 맞춤) fix 배치 완료 — H-601 캐비엇(roblox/05·GS 06 §6·onchange-plan), H-602 문구, H-603 nil 게이트+spec 2건; 잔여 `{}` 갭은 **Q80**. 커밋. 도는 중: E3·V1. D5 띄움.
+- **21:55** E3 완료(opus, P1~P21 + 퍼저 6만 시드) — 새 결함은 Q73의 일반형 하나(공개 `state:Observer` 설치 발화 창) → Q73에 보강, 코어 산술은 전 축 0. E4(opus) 띄움. 도는 중: V1·D5·E4.
+- **22:05** V1 완료(sonnet) — compat §9.5 사실 다섯(CLI 로드 불가 확정·`Destroying` 미청취·체이닝 여섯·`self("이름")` 경로 죽음·Lang 스코프), 오버뷰 02 `H-607`. D6(sonnet) 띄움. 도는 중: D5·E4·D6.
+- **22:15** E4 완료(opus) — **§4 Q81**(Dedup이 기록 Value를 믿음 — Reverses·외부 쓰기, MED)·**Q82**(시체 위 retractFrom 콜백, LOW), round11 `H-582` 확인 기록 정정, 확인만 §2. E5(opus) 띄움. 도는 중: D5·D6·E5.
+- **22:25** D5 완료(레퍼런스 roblox·sugar·extend 전수 일치, 발견 3 + 덤 1 → `H-608`~`H-610`; 메인 grep으로 레퍼런스 접두 잔여 다섯 `H-611`). 전부 고침. D7(에러 레지스트리 ↔ 소스 전수, sonnet) 띄움. 도는 중: D6·E5·D7.
