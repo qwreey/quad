@@ -30,7 +30,7 @@ raw 덤프 취득(재생성 때만 네트워크 필요 — 테스트 경로 의�
             이벤트 = 콜백 | StateMarker<콜백> | None, children = NewChild(types.luau) — None 표현은
             H-300 (a)로 확정(센티널 마커 필드 → QuadTypes.None)
   H-142     Parent는 덤프 층에서 제외(Q5 (a) — M7 목록과 공유되는 자리)
-드롭된 항목은 전부 normalized의 dropped에 남긴다 — 조용한 절단 금지.
+드롭된 항목은 전부 normalized의 dropped에 남긴다 — 조용한 절단 금지. (예외 하나 — 2026-09-27 G1 감사: `NotCreatable`/`Service` 태그 필터가 스코프 판정보다 먼저 걸리는 추상 클래스(GuiObject·GuiButton·LayerCollector·UIComponent 등 12개)는 `Instance.new`가 안 되는 것이라 dropped에 안 남긴다 — 의도된 생략이지 절단이 아님.)
 """
 
 import json

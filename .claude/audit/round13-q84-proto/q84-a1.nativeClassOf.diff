@@ -1,0 +1,89 @@
+--- quad-roblox/src/EngineOps.luau
++++ quad-roblox/src/EngineOps.luau
+@@ -106,6 +106,12 @@
+ 		return child
+ 	end
+ 
++	-- round13 Q84 (a1) PROTOTYPE — `nativeClassOf(inst): string` (가칭): the root descriptor's class check.
++	-- A query, so like `nativeFindChild` it is an exception to the composition fallback (no stub body).
++	local function nativeClassOf(inst: any): string
++		return inst.ClassName
++	end
++
+ 	-- Tag/Attr ops (M10 engine axis). Batched `{string}` is the contract
+ 	-- (a web backend rewrites className once); Roblox has no batch API, so
+ 	-- the loop is here rather than in the base handler.
+@@ -169,6 +175,7 @@
+ 	quad.Backend.isInst = isInst
+ 	quad.Backend.onDestroying = onDestroying
+ 	quad.Backend.nativeFindChild = nativeFindChild
++	quad.Backend.nativeClassOf = nativeClassOf
+ 	quad.Backend.addTag = addTag
+ 	quad.Backend.removeTag = removeTag
+ 	quad.Backend.setAttr = setAttr
+@@ -176,7 +183,7 @@
+ 	quad.Backend.clearTimeout = clearTimeout
+ 
+ 	-- `H-238`: tag everything the backend installs (see LifetimeHandle.luau)
+-	Err.setFuncLevel(SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, isInst, onDestroying, nativeFindChild, addTag, removeTag, setAttr, setTimeout, clearTimeout)
++	Err.setFuncLevel(SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, isInst, onDestroying, nativeFindChild, nativeClassOf, addTag, removeTag, setAttr, setTimeout, clearTimeout)
+ end
+ 
+ return install
+--- quad-base/test/mock.luau
++++ quad-base/test/mock.luau
+@@ -467,6 +467,10 @@
+ 		end
+ 		return child
+ 	end
++	-- round13 Q84 (a1) PROTOTYPE — the mock's class is its `ClassName` (no hierarchy)
++	local function nativeClassOf(inst: any): string
++		return inst.ClassName
++	end
+ 	local function nativeMove(_target: any, _fromOffset: number, _elements: { any }, _toOffset: number) end
+ 	local function nativeSwap(_target: any, _oa: number, _ea: { any }, _ob: number, _eb: { any }) end
+ 	local function nativeDispose(element: any)
+@@ -481,11 +485,12 @@
+ 	quad.Backend.nativeRemove = nativeRemove
+ 	quad.Backend.nativeMove = nativeMove
+ 	quad.Backend.nativeFindChild = nativeFindChild
++	quad.Backend.nativeClassOf = nativeClassOf
+ 	quad.Backend.nativeSwap = nativeSwap
+ 	quad.Backend.nativeDispose = nativeDispose
+ 	quad.Backend.isInst = isInst
+ 
+-	Err.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, nativeFindChild, isInst)
++	Err.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, nativeInsert, nativeExtract, nativeRemove, nativeMove, nativeSwap, nativeDispose, nativeFindChild, nativeClassOf, isInst)
+ end
+ 
+ -- `H-294` (a, 사용자 확정: "mock 또한 하나의 백엔드이다") — mock도 실
+--- quad-base/src/LifetimeHandle.luau
++++ quad-base/src/LifetimeHandle.luau
+@@ -217,6 +217,10 @@
+ 	if Backend.nativeFindChild == nil then
+ 		Backend.nativeFindChild = notInstalled("nativeFindChild")
+ 	end
++	-- round13 Q84 (a1) PROTOTYPE: `Claim`'s root class check
++	if Backend.nativeClassOf == nil then
++		Backend.nativeClassOf = notInstalled("nativeClassOf")
++	end
+ 	-- `H-501` (2026-09-08 2차 감사 H-2): Q6 withdrew the composition fallback and promised
+ 	-- "여섯 전부 필수·미주입이면 안내 스텁 에러" — but the six had no stub at all, so a
+ 	-- backend that forgot one died with `attempt to call a nil value` on a Slot/Raw.luau line.
+--- quad-base/src/Claim.luau
++++ quad-base/src/Claim.luau
+@@ -194,6 +194,14 @@
+ 		if module.debug and desc._key ~= MapperRoot then
+ 			print(`Claim: the root descriptor's key {tostring(desc._key)} is ignored — the root takes M.Root; put a keyed descriptor in the root's props instead`)
+ 		end
++		-- round13 Q84 (a1) PROTOTYPE: the root descriptor's class was never read — `M.TextLabel(M.Root)`
++		-- on a Frame claimed it silently (props overlapping) or died mid-drive (`Quad0076 … key Text`)
++		-- with root+children already claimed. Ask the backend (new op `nativeClassOf`, 가칭) in pass 1.
++		-- Exact equality here — the child path's `nativeFindChild` lets the backend use `IsA`; see report.
++		local rootClass = module.Backend.nativeClassOf(inst)
++		if rootClass ~= desc._className then
++			Err.errorBefore(`QuadXXXX Claim: the root {tostring(inst)} is a {tostring(rootClass)}, not a {tostring(desc._className)} — the root descriptor's class must be the Instance's own class`, SURFACE) -- id on adoption
++		end
+ 		local plan: { Step } = {}
+ 		resolve(inst, desc, plan, {})
+ 		commit(plan)

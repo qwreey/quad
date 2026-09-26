@@ -88,12 +88,16 @@
 
 docs-review 3-1 (4)의 답을 쓰려면 사용자 기기가 필요하다(사용자: *"studio 편집기에서 멀쩡히 작동하던것 같긴 한데, 내가 확인해야하는 목록과 그걸 확인하는 프로브를 주면 내가 확인해줄 수 있어"*). 프로브와 체크리스트는 **`.claude/audit/studio-editor-probe-2026-09-26/README.md`**가 소스 — 그 폴더에서 `rojo serve probe.project.json`으로 `src/` 셋을 `StarterPlayer/StarterPlayerScripts`에 싱크하고, README의 표에 관측만 적어 주면 문장 확정은 에이전트가 한다. 답이 오기 전엔 오버뷰에 (4)를 적지 않는다.
 
+#### H. [2026-09-27 신설] 생성기 입력(API dump) 신선도 — 사람만 다시 받을 수 있다
+
+`scripts/gen-d.py`가 읽는 정규화 산출물 `quad-roblox/dump/api-surface.json`의 `dumpVersion`은 2026-09-02 최초 생성 이후 한 번도 바뀌지 않았다(재생성 다섯 번은 전부 같은 고정 dump 재사용; `scripts/roblox-defs/globalTypes.d.luau`도 09-02). `gen-d.py check`는 "커밋된 산출물끼리의 일관성"만 보고 raw dump가 최신인지는 보지 않으므로, Roblox가 새 GUI 클래스·프로퍼티를 추가해도 **자동으로 알 길이 없다**(round13 G1 감사). 사람 몫: 릴리즈(특히 4.0.0) 전에 한 번 raw API Dump·`globalTypes.d.luau`를 새로 받아 `normalize <dump> <version>` → 재생성 → `gen-d.py check`·test.sh — 바뀐 클래스/프로퍼티가 있으면 CHANGELOG Added. 지금 커버리지는 GUI 후손 45 중 생성 31 + 화이트리스트 3, 제외 17(추상 12·문서화 태그 5)로 누락 없음.
+
 #### E. 밖에서 할 것
 
 - ~~**[2026-09-14] 3.2.0 게시**~~ **[같은 날 저녁 완료 — 사용자: "전부 업로드 끝났어"(실게시·사이트 배포·태그 싱크)]** bump 완료(`check-version.py bump 3.2.0`; CHANGELOG `[3.2.0] - 2026-09-14`에 `q.D → q.Declaration` BREAKING 둘; pesde install·test.sh exit 0·publish dry-run 9건 OK; 태그 `3.2.0`은 에이전트가 origin에 올림). 남은 것: `python3 scripts/publish.py --real`(사용자만) → 사이트 배포 → `git push github --tags`·`git push upstream --tags`. 게시 전까지 설치 문서의 "레지스트리에 3.2.0 게시됨"은 선행 서술이다.
 
 - **[2026-09-11] 3.1.0 게시** — `python3 scripts/publish.py --real`(사용자만; dry-run 9건은 에이전트가 통과시킴). **[같은 날 밤 게시 완료, 리모트 싱크 완료 — 사용자]** 태그 `3.0.0`(7a080e0)·`3.1.0`(01818b5)은 에이전트가 만들어 origin에 올렸다. **남은 것: 태그는 브랜치 싱크에 안 따라가므로 github/upstream에 `git push github --tags`·`git push upstream --tags`를 사용자가 한 번.**
-- 사이트 재배포: 게시 뒤 dev 서버를 내리고(`docs/site/dev.sh stop`) `npm run deploy`, 끝나면 `./dev.sh`로 다시(dev 중 build 금지 규약). 2026-09-11 커밋 스무여 개가 배포 전이다 — 헤더 배지가 3.1.0으로 바뀌므로 게시 **뒤에** 배포할 것.
+- ~~사이트 재배포: 게시 뒤 dev 서버를 내리고(`docs/site/dev.sh stop`) `npm run deploy`, 끝나면 `./dev.sh`로 다시(dev 중 build 금지 규약). 2026-09-11 커밋 스무여 개가 배포 전이다 — 헤더 배지가 3.1.0으로 바뀌므로 게시 **뒤에** 배포할 것.~~ **[2026-09-27 정리]** 3.1.0 시절 지시 — 3.2.0 배포로 끝났고, 다음 배포 절차는 `docs/site/DEPLOY.md`가 소스(dev 서버는 지금 없음 — 사용자 2026-09-26).
 - draw.io SVG 내보내기 설정(위 A 머리) 확인.
 
 

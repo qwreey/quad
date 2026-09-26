@@ -1,0 +1,15 @@
+--- quad-base/src/Claim.luau
++++ quad-base/src/Claim.luau
+@@ -194,6 +194,12 @@
+ 		if module.debug and desc._key ~= MapperRoot then
+ 			print(`Claim: the root descriptor's key {tostring(desc._key)} is ignored — the root takes M.Root; put a keyed descriptor in the root's props instead`)
+ 		end
++		-- round13 Q84 (a2) PROTOTYPE: base reads the engine field directly — no new op.
++		-- ⚠️ contract question: base otherwise never indexes an Instance (architecture.md 674, lifecycle-pattern.md 460).
++		local rootClass = inst.ClassName
++		if rootClass ~= desc._className then
++			Err.errorBefore(`QuadXXXX Claim: the root {tostring(inst)} is a {tostring(rootClass)}, not a {tostring(desc._className)} — the root descriptor's class must be the Instance's own class`, SURFACE) -- id on adoption
++		end
+ 		local plan: { Step } = {}
+ 		resolve(inst, desc, plan, {})
+ 		commit(plan)

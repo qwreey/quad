@@ -77,3 +77,6 @@
 - **01:05** S4 완료(sonnet — 레시피·SKILL 전부 통과) — `H-643`·`H-644`(스킬 v1-migration 표 두 행) 배치(sonnet) 띄움. 도는 중: E4-2·P-Q84·fix.
 - **01:15** E4-2 완료(opus) — 철거 창 후보 여섯 비교 → **§4 Q99**(권고 c: 철거 창은 Cancelled), Q82 게이트 검증. 도는 중: P-Q84·fix(H-643~644).
 - **01:20** fix(H-643~644) 완료. 12회차 커밋(게이트 묶음). 도는 중: P-Q84.
+- **01:30** P-Q84/Q85 완료(opus) — (a2)는 계약 위반(base가 Instance를 모름), (a1) op 술어형 권고; Q85 (a) 전부 1패스 포착·새 ID 5·비용 잡음, 잔여 X5~X7. 원장 갱신. 도는 중: R1·G1.
+- **01:45** R1 완료(sonnet) — 하드 블로커 0; `H-645`(패키지 README 셋·루트 README 버전·HUMAN_TODO E 잔여) 즉시 고침. 도는 중: G1·T2.
+- **01:55** G1 완료(sonnet — 커버리지 누락 0) — `H-646`(gen-d docstring 예외·HUMAN_TODO H 신선도). E12(type-version-check 문법 경계, sonnet) 띄움. 도는 중: T2·E12.

@@ -1,0 +1,119 @@
+--- quad-base/src/Claim.luau
++++ quad-base/src/Claim.luau
+@@ -42,6 +42,7 @@
+ ]]
+ 
+ local Brand = require("./Brand")
++local FieldsKey = require("./Dispatch/Modifier")._FieldsKey -- Q85 prototype: a private reach (the export says "specs only")
+ local QuadTypes = require("../luau_packages/quad_types")
+ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
+ 
+@@ -93,7 +94,20 @@
+ 	-- claimed child used to be the other case — closed by round11 Q64 (b): pass 1 asks
+ 	-- `Backend.isClaimed` on every instance (the mock's "claimed" became one flag so it can).
+ 	type Step = { inst: any, desc: any, children: { [number]: any } }
+-	local function resolve(inst: any, desc: any, plan: { Step }, seen: { [any]: boolean })
++	type Seat = { parent: any, key: number, value: any }
++
++	-- round13 Q85 (a)(ii) PROTOTYPE: a descriptor is resolved ONLY as the direct value of a numeric key.
++	-- Anywhere else (a string key, inside a State, a Modifier field) pass 1 used to walk past it and the
++	-- drive died with `Quad0076 … brand: MapperDescriptor` after the root was claimed (E6 C1·C2·C4).
++	-- A State is read with `:Get()` — the same read its handler does in the drive, one step earlier.
++	local function assertNoDescriptor(v: any, where: string)
++		local held = if Brand.isState(v) then v:Get() else v
++		if Brand.isMapperDescriptor(held) then
++			Err.errorBefore(`QuadXXX2 Claim: a mapper descriptor {if held ~= v then "inside a State " else ""}{where} — a descriptor is resolved only as the direct value of a numeric (array) key in mapper props`, SURFACE) -- id on adoption
++		end
++	end
++
++	local function resolve(inst: any, desc: any, plan: { Step }, seen: { [any]: boolean }, seats: { Seat })
+ 		if desc._fired or seen[desc] then -- `seen`: the same descriptor at two slots of one tree
+ 			Err.errorBefore("Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)", SURFACE)
+ 		end
+@@ -125,13 +139,28 @@
+ 		-- drive가 보는 모든 배열 자리를 똑같이 본다.
+ 		local children: { [number]: any } = {}
+ 		for i, v in desc._props :: { [any]: any } do
+-			if type(i) == "number" and Brand.isMapperDescriptor(v) then
+-				-- round11 code-review (`H-560`): Dispatch's array-key domain (`H-495`, positive integers)
+-				-- used to be asked only by `drive` — after the root and this child were claimed and the
+-				-- child driven. A pure predicate belongs in the validating pass (`H-30`/`H-31`).
+-				if i < 1 or i % 1 ~= 0 then
+-					Err.errorBefore(`Quad0031 Claim: array keys must be positive integers (got {i})`, SURFACE)
++			if type(i) ~= "number" then
++				assertNoDescriptor(v, `at key "{tostring(i)}"`) -- Q85 (a)(ii)
++				continue
++			end
++			-- round11 code-review (`H-560`): Dispatch's array-key domain (`H-495`, positive integers)
++			-- used to be asked only by `drive` — after the root and this child were claimed and the
++			-- child driven. A pure predicate belongs in the validating pass (`H-30`/`H-31`).
++			-- round13 Q85 (a)(i) PROTOTYPE: EVERY numeric key, not only descriptor seats (E6 C13b/C12).
++			if i < 1 or i % 1 ~= 0 then
++				Err.errorBefore(`Quad0031 Claim: array keys must be positive integers (got {i})`, SURFACE)
++			end
++			if Brand.isState(v) then
++				assertNoDescriptor(v, `at [{i}]`) -- Q85 (a)(ii)
++			elseif Brand.isModifier(v) then
++				for fk, fv in v[FieldsKey] :: { [any]: any } do -- Q85 (a)(ii): one level — field values are flat (Quad0064 gates handler-layer values)
++					assertNoDescriptor(fv, `in Modifier field "{tostring(fk)}" at [{i}]`)
+ 				end
++			elseif not Brand.isMapperDescriptor(v) then
++				if module.Backend.isInst(v) then
++					table.insert(seats, { parent = inst, key = i, value = v }) -- Q85 (a)(iii): judged after the whole tree resolved
++				end
++			else
+ 				-- 이름 중복은 UB(§3 — debug 검사는 debug 도구 몫). 부재는 [2026-09-16 hunt C] fail-fast:
+ 				-- 옛 "자연 크래시"는 `LifetimeHandle.luau:59: Relate:GetWeak: inst must not be nil`로 죽어
+ 				-- 키도 주체도 안 보였다(`H-418`/`H-442`/`H-504`와 같은 leaf-message 부류).
+@@ -146,7 +175,7 @@
+ 				if child == nil then
+ 					Err.errorBefore(`Quad0032 Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)}) — a child with that name must also be a {tostring(v._className)}`, SURFACE)
+ 				end
+-				resolve(child, v, plan, seen)
++				resolve(child, v, plan, seen, seats)
+ 				children[i] = child
+ 			end
+ 		end
+@@ -195,7 +224,28 @@
+ 			print(`Claim: the root descriptor's key {tostring(desc._key)} is ignored — the root takes M.Root; put a keyed descriptor in the root's props instead`)
+ 		end
+ 		local plan: { Step } = {}
+-		resolve(inst, desc, plan, {})
++		local seen: { [any]: boolean } = {}
++		local seats: { Seat } = {}
++		resolve(inst, desc, plan, seen, seats)
++		-- round13 Q85 (a)(iii) PROTOTYPE: the static-child gates `InstanceChild.process` asks at drive time
++		-- (`Quad0219` unclaimed / `Quad0160` seated elsewhere) asked here first, read-only — a template child
++		-- passed as-is (E6-2 R6), a mounted or foreign Instance (R5a/R5b), a props table reused by a second
++		-- Claim (R2) used to leave the root and mapped children claimed. After the whole resolve so `seen`
++		-- holds every Instance of the plan. The cycle gate (`Quad0220`) needs `.Parent` — not asked (report).
++		local ownerOf = module._slotInternal.ownerOf
++		for _, seat in seats do
++			local v = seat.value
++			if seen[v] then
++				Err.errorBefore(`QuadXXX3 Claim: {tostring(v)} at [{seat.key}] under {tostring(seat.parent)} is already part of this Claim (the root, a mapped child, or another numeric key) — each Instance takes exactly one place`, SURFACE) -- id on adoption
++			end
++			seen[v] = true
++			if not module.Backend.isClaimed(v) then
++				Err.errorBefore(`QuadXXX4 Claim: {tostring(v)} at [{seat.key}] under {tostring(seat.parent)} is not claimed by quad — a child of the template goes in as a mapper descriptor (M.<Class>("name")), and anything else must be built with the Declaration or claimed first`, SURFACE) -- id on adoption
++			end
++			if ownerOf(v) ~= nil then
++				Err.errorBefore(`QuadXXX5 Claim: {tostring(v)} at [{seat.key}] under {tostring(seat.parent)} is already mounted elsewhere — take it off its seat first (a props table given to an earlier Claim now holds that Claim's Instances: build a fresh table)`, SURFACE) -- id on adoption
++			end
++		end
+ 		commit(plan)
+ 		return inst
+ 	end
+--- quad-base/src/Slot/init.luau
++++ quad-base/src/Slot/init.luau
+@@ -505,6 +505,10 @@
+ 		attachSlot = S.attachSlot,
+ 		unmountSlotTree = S.unmountSlotTree,
+ 		isSlot = isSlot,
++		-- round13 Q85 (a)(iii) PROTOTYPE: read-only seat lookup for Claim's pass 1 (no claim, no release)
++		ownerOf = function(value: any): any
++			return elementOwner:GetWeak(value, OWNER)
++		end,
+ 	}
+ 	-- [2026-09-17 round10 Q48 (a) — user decision] the seat ops are public on the bookkeeping
+ 	-- namespace: a provider's numeric-key handler that parents a value (quad-roblox's

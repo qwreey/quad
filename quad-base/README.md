@@ -4,7 +4,7 @@ Engine-agnostic core of **quad**, a DOMless UI renderer. Holds the `Store`/`Stat
 
 Part of the [quad](https://github.com/qwreey/quad) monorepo. **Documentation (Korean): <https://quad.qwreey.moe/>** — start at [설치](https://quad.qwreey.moe/getting-started/00-installation/) or [왜 Quad인가](https://quad.qwreey.moe/overview/01-why-quad/); the same text is in the repo under [`docs/`](https://github.com/qwreey/quad/tree/main/docs).
 
-All five packages are published together at the same version — `quad_base` is the main one, and the docs show its version:
+The three quad packages (`quad_base`, `quad_roblox`, `quad_types`) are published together at the same version — `quad_base` is the main one, and the docs show its version. The two general-purpose helpers (`quad_error`, `type_version_check`) follow their own SemVer:
 
 | Package | Role | You add it? |
 |---|---|---|
