@@ -55,7 +55,9 @@ PROP_TAG_EXCLUDE = {"ReadOnly", "Deprecated", "NotScriptable", "Hidden"}
 # an agent migrating quad v1 → v2 needs `Font`/`FontSize`/`TextWrap` to autocomplete, and a
 # missing key surfaces as a type error it cannot resolve. 실측·선택지·결정 원문은
 # `.claude/audit/deprecated-props-spike-2026-09-09/REPORT.md`(Studio 실측으로 `ReflectionService`가
-# 이 프로퍼티들을 `Permits.Write == Edit`로 준다는 전제도 확인 — 런타임 디스패치가 매치한다).
+# 이 프로퍼티들을 `Permits.Write == Edit`로 준다는 전제도 확인 — 런타임 디스패치가 매치한다;
+# ⚠️ [2026-09-27 round13 E25] 그 실측은 `GetPropertiesOfClass("TextLabel")` 하나다 — `Font`/`FontSize`/`TextWrap`은
+# TextLabel·TextButton·TextBox가 각자 선언한 멤버라 뒤의 둘은 미실측(HUMAN_TODO I)).
 # 정책: ~~Deprecated 태그는 통째로~~ **[2026-09-21 사용자 결정 — round11 실측 1번]** Deprecated도 이름
 # 허용목록(`DEPRECATED_NAME_KEEP`)만 — 의도는 처음부터 "자주 쓰이던 것만"이었고(재작성 노고가 큰 것),
 # 소문자 별칭(`className`/`focus`)은 quad v1 이전의 유물이라 뺀다(`className`의 변경 시그널은 Studio

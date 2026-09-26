@@ -1,0 +1,149 @@
+  A-REJ	BillboardGui	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	BillboardGui	UICorner
+  SH-ACCEPT-nonGui	BillboardGui	UIPaddingOffset
+  SH-ACCEPT-nonGui	BillboardGui	UIPadding
+  SH-ACCEPT-nonGui	BillboardGui	UIScale
+  A-REJ	Camera	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	Camera	UICorner
+  SH-ACCEPT-nonGui	Camera	UIPaddingOffset
+  SH-ACCEPT-nonGui	Camera	UIPadding
+  SH-ACCEPT-nonGui	Camera	UIScale
+  A-REJ	CanvasGroup	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  A-REJ	Folder	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	Folder	UICorner
+  SH-ACCEPT-nonGui	Folder	UIPaddingOffset
+  SH-ACCEPT-nonGui	Folder	UIPadding
+  SH-ACCEPT-nonGui	Folder	UIScale
+  A-REJ	Frame	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  read-rej sample	Frame	AbsolutePosition	Quad0076
+  read-rej sample	Frame	AbsoluteRotation	Quad0076
+  read-rej sample	Frame	AbsoluteSize	Quad0076
+  read-rej sample	Frame	ClassName	Quad0076
+  read-rej sample	Frame	GuiState	Quad0076
+  read-rej sample	Frame	Parent	Quad0076
+  A-REJ	ImageButton	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  A-REJ	ImageLabel	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  A-REJ	ScreenGui	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	ScreenGui	UICorner
+  SH-ACCEPT-nonGui	ScreenGui	UIPaddingOffset
+  SH-ACCEPT-nonGui	ScreenGui	UIPadding
+  SH-ACCEPT-nonGui	ScreenGui	UIScale
+  A-REJ	ScrollingFrame	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  A-REJ	SurfaceGui	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	SurfaceGui	UICorner
+  SH-ACCEPT-nonGui	SurfaceGui	UIPaddingOffset
+  SH-ACCEPT-nonGui	SurfaceGui	UIPadding
+  SH-ACCEPT-nonGui	SurfaceGui	UIScale
+  A-REJ	TextBox	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  A-REJ	TextButton	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  A-REJ	TextLabel	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  A-REJ	UIAspectRatioConstraint	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	UIAspectRatioConstraint	UICorner
+  SH-ACCEPT-nonGui	UIAspectRatioConstraint	UIPaddingOffset
+  SH-ACCEPT-nonGui	UIAspectRatioConstraint	UIPadding
+  SH-ACCEPT-nonGui	UIAspectRatioConstraint	UIScale
+  A-REJ	UICorner	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	UICorner	UICorner
+  SH-ACCEPT-nonGui	UICorner	UIPaddingOffset
+  SH-ACCEPT-nonGui	UICorner	UIPadding
+  SH-ACCEPT-nonGui	UICorner	UIScale
+  A-REJ	UIDragDetector	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	UIDragDetector	UICorner
+  SH-ACCEPT-nonGui	UIDragDetector	UIPaddingOffset
+  SH-ACCEPT-nonGui	UIDragDetector	UIPadding
+  SH-ACCEPT-nonGui	UIDragDetector	UIScale
+  A-REJ	UIFlexItem	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	UIFlexItem	UICorner
+  SH-ACCEPT-nonGui	UIFlexItem	UIPaddingOffset
+  SH-ACCEPT-nonGui	UIFlexItem	UIPadding
+  SH-ACCEPT-nonGui	UIFlexItem	UIScale
+  A-REJ	UIGradient	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	UIGradient	UICorner
+  SH-ACCEPT-nonGui	UIGradient	UIPaddingOffset
+  SH-ACCEPT-nonGui	UIGradient	UIPadding
+  SH-ACCEPT-nonGui	UIGradient	UIScale
+  A-REJ	UIGridLayout	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	UIGridLayout	UICorner
+  SH-ACCEPT-nonGui	UIGridLayout	UIPaddingOffset
+  SH-ACCEPT-nonGui	UIGridLayout	UIPadding
+  SH-ACCEPT-nonGui	UIGridLayout	UIScale
+  A-REJ	UIListLayout	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	UIListLayout	UICorner
+  SH-ACCEPT-nonGui	UIListLayout	UIPaddingOffset
+  SH-ACCEPT-nonGui	UIListLayout	UIPadding
+  SH-ACCEPT-nonGui	UIListLayout	UIScale
+  A-REJ	UIPadding	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	UIPadding	UICorner
+  SH-ACCEPT-nonGui	UIPadding	UIPaddingOffset
+  SH-ACCEPT-nonGui	UIPadding	UIPadding
+  SH-ACCEPT-nonGui	UIPadding	UIScale
+  A-REJ	UIPageLayout	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	UIPageLayout	UICorner
+  SH-ACCEPT-nonGui	UIPageLayout	UIPaddingOffset
+  SH-ACCEPT-nonGui	UIPageLayout	UIPadding
+  SH-ACCEPT-nonGui	UIPageLayout	UIScale
+  A-REJ	UIScale	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	UIScale	UICorner
+  SH-ACCEPT-nonGui	UIScale	UIPaddingOffset
+  SH-ACCEPT-nonGui	UIScale	UIPadding
+  SH-ACCEPT-nonGui	UIScale	UIScale
+  A-REJ	UIShadow	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	UIShadow	UICorner
+  SH-ACCEPT-nonGui	UIShadow	UIPaddingOffset
+  SH-ACCEPT-nonGui	UIShadow	UIPadding
+  SH-ACCEPT-nonGui	UIShadow	UIScale
+  A-REJ	UISizeConstraint	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	UISizeConstraint	UICorner
+  SH-ACCEPT-nonGui	UISizeConstraint	UIPaddingOffset
+  SH-ACCEPT-nonGui	UISizeConstraint	UIPadding
+  SH-ACCEPT-nonGui	UISizeConstraint	UIScale
+  A-REJ	UIStroke	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	UIStroke	UICorner
+  SH-ACCEPT-nonGui	UIStroke	UIPaddingOffset
+  SH-ACCEPT-nonGui	UIStroke	UIPadding
+  SH-ACCEPT-nonGui	UIStroke	UIScale
+  A-REJ	UITableLayout	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	UITableLayout	UICorner
+  SH-ACCEPT-nonGui	UITableLayout	UIPaddingOffset
+  SH-ACCEPT-nonGui	UITableLayout	UIPadding
+  SH-ACCEPT-nonGui	UITableLayout	UIScale
+  A-REJ	UITextSizeConstraint	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	UITextSizeConstraint	UICorner
+  SH-ACCEPT-nonGui	UITextSizeConstraint	UIPaddingOffset
+  SH-ACCEPT-nonGui	UITextSizeConstraint	UIPadding
+  SH-ACCEPT-nonGui	UITextSizeConstraint	UIScale
+  A-REJ	VideoFrame	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  A-REJ	ViewportFrame	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  A-REJ	WorldModel	Name	<no id> ./quad-roblox/src/Handlers/Property.luau:266: Name must be a string
+  SH-ACCEPT-nonGui	WorldModel	UICorner
+  SH-ACCEPT-nonGui	WorldModel	UIPaddingOffset
+  SH-ACCEPT-nonGui	WorldModel	UIPadding
+  SH-ACCEPT-nonGui	WorldModel	UIScale
+A/B totals:	751	31	read rej/acc	140	0	ev acc/rej	483	0	sh acc/rej	124	0
+  C	Frame Parent	Quad0076	./.claude/audit/round13-e25-probe.luau:87: Quad0076 Dispatch: no handler matched key Parent (value: table) — check that the provider for this value (e.g. quad-roblox) is initialized
+  C	Frame Name	OK	
+  C	Frame Archivable	OK	
+  C	Frame ClassName	Quad0076	./.claude/audit/round13-e25-probe.luau:90: Quad0076 Dispatch: no handler matched key ClassName (value: string) — check that the provider for this value (e.g. quad-roblox) is initialized
+  C	Frame size (lowercase)	Quad0076	./.claude/audit/round13-e25-probe.luau:91: Quad0076 Dispatch: no handler matched key size (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+  C	Frame archivable (lowercase, dump Deprecated+Hidden)	Quad0076	./.claude/audit/round13-e25-probe.luau:92: Quad0076 Dispatch: no handler matched key archivable (value: boolean) — check that the provider for this value (e.g. quad-roblox) is initialized
+  C	Frame Draggable (dump Deprecated, dropped)	Quad0076	./.claude/audit/round13-e25-probe.luau:93: Quad0076 Dispatch: no handler matched key Draggable (value: boolean) — check that the provider for this value (e.g. quad-roblox) is initialized
+  C	TextLabel FontSize (legacy kept)	OK	
+  C	TextLabel Font+FontFace	OK	
+  C	Frame DragBegin (dump Deprecated event, dropped)	Quad0076	./.claude/audit/round13-e25-probe.luau:96: Quad0076 Dispatch: no handler matched key DragBegin (value: function) — check that the provider for this value (e.g. quad-roblox) is initialized
+  C	Frame Changed event fn	OK	
+  C	Frame Changed = 5	Quad0218	./.claude/audit/round13-e25-probe.luau:98: Quad0218 Event: handler for "Changed" must be a function (got number)
+  C	Frame MouseEnter = State<fn>	OK	
+  C	Frame MouseEnter = State<5>	Quad0218	./.claude/audit/round13-e25-probe.luau:100: Quad0218 Event: handler for "MouseEnter" must be a function (got number)
+  C	Frame MouseEnter = None	OK	
+  C	Frame MouseEnter = Tween	Quad0218	./.claude/audit/round13-e25-probe.luau:102: Quad0218 Event: handler for "MouseEnter" must be a function (got table)
+  C State<fn> → Set(5):	true	Quad0218
+  C	Folder UICorner (non-GuiObject shorthand)	OK	
+  C	UIScale UIScale (shorthand key = own class name)	OK	
+  C	D.New GuiObject (abstract)	OK	
+  C	Frame AbsoluteSize (read-only)	Quad0076	./.claude/audit/round13-e25-probe.luau:112: Quad0076 Dispatch: no handler matched key AbsoluteSize (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+  C	Frame [AttrKey-like string] Hp	Quad0076	./.claude/audit/round13-e25-probe.luau:113: Quad0076 Dispatch: no handler matched key Hp (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+  C	Modifier Frame():AbsoluteSize	Quad0076	./.claude/audit/round13-e25-probe.luau:115: Quad0076 Dispatch: no handler matched key AbsoluteSize (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+  C	Modifier Frame():Parent	Quad0076	./.claude/audit/round13-e25-probe.luau:116: Quad0076 Dispatch: no handler matched key Parent (value: table) — check that the provider for this value (e.g. quad-roblox) is initialized
+  C	Modifier Frame():UICorner	OK	
+  E TextLabel Font write -> Font:	legacy	FontFace:	nil
+  E Frame Transparency -> Transparency:	0.5	BackgroundTransparency:	nil

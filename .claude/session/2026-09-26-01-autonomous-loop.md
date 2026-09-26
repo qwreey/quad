@@ -121,3 +121,4 @@
 - **07:10** P-Q109/Q110 완료(opus) — Q109 (a) 문구 그대로는 `H-151`/`H-159` 폐기 모양(`Refresh`) 재개방 + 게이트 계약 위반 → (a′) Source/Ref dep만 Sync는 성립; Q110 (a) 깨끗(설치 직후 `WeakSubscribe` fn 실행이 새 동작) → §4 문단·§0 행 둘. 46회차 커밋(`99a058f7`). 도는 중: S10·감사 12라운드.
 - **07:20** 감사 12라운드 완료(sonnet, 45·46회차) — 확실 1(`H-721` 두 번째 자리 오지목 — roblox/02:119 캐비엇 누락) → `H-725`. 47회차 커밋(`f9d0c578`). 도는 중: S10·P-gates2.
 - **07:30** P-gates2 완료(opus) — Q102 (a) 깨끗(+원장 정정: strict 타입은 이미 잡음), Q104는 (b) 실측 반증 → (a) `Animate` 대상 게이트, Q115 (a)·Q116 (a) 깨끗(spec 62) → §4 문단·§0 행 넷. 48회차 커밋(`11a9bf56`). 도는 중: S10·E25.
+- **07:45** E25 완료(opus, D × Reflection × dump) — 집합 일치; `H-726`(`api-surface.json` dropped 44줄이 손편집 — 핀 dump로 재정규화, classes 동일·check 통과)·`H-727`(읽기 표면 레거시 이름)·`H-728`(레거시 넷 실측 TextLabel만 — HUMAN_TODO I 추가)·`H-729`(숏핸드 비GuiObject). 49회차 커밋(`5348e0e8`). 도는 중: S10·Q-summary v2.

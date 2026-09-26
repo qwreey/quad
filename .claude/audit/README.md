@@ -51,4 +51,5 @@
 - `round13-e24-probe-*.luau`(a~e·types) — **[2026-09-27 자율 루프 E24]** Tween/Animate/Mapped 옵션 매트릭스·보간 불가 타입·재사용·문서 예제 — `H-721`(Q34가 Animate 경로엔 안 섬)~`H-724`, `Q115`·`Q116`, Q90 ⑭.
 - `round13-q109-proto/` — **[2026-09-27 자율 루프 P-Q109/Q110]** Effect catch-up epoch 정렬((a) Refresh — 폐기된 모양·(a′) Source/Ref dep만 Sync)·설치 중 `force` 비전파(q110-a) diff·프로브·변형 여섯 × E20 재실행 — §4 스파이크 문단.
 - `round13-gates2-proto/` — **[2026-09-27 자율 루프 P-gates2]** Q102(`Context` 인자 거부)·Q104 (a)/(b)(`Animate` 대상 게이트 / `mod:Apply` 결과 검사 — (b)는 반증)·Q115(콜백 State 거부)·Q116(`CanAnimate` 검사) diff 다섯·프로브·타입 프로브·스위트 — §4 스파이크 문단.
+- `round13-e25-probe*`(`-sets.py`·`.luau`·`-data.luau`·`-types.luau`·`.out.txt`) — **[2026-09-27 자율 루프 E25]** 생성 D × Reflection(mock 심) × dump 삼자 대조 31클래스 — 집합 일치, `H-726`(api-surface.json 재현 불가 → 재정규화)~`H-729`.
 
