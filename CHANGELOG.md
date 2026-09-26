@@ -96,6 +96,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 - 서로를 담은 `State` 사슬(`a:Set(b); b:Set(a)`, `s:Set(s)`)을 자리에 놓으면 내부 파일을 가리키는 stack overflow로 죽던 것 — 이제 `StoreBind: the State's value chain is circular …`입니다.
 - Roblox 기본 Deferred 시그널 모드에서, 인스턴스가 파괴된 뒤 **같은 프레임 안에** 같은 `Effect`/훅 핸들을 다른 인스턴스에 다시 놓으면(행 캐시가 핸들을 재사용하는 목록) 옛 인스턴스의 지연된 Destroying 콜백이 새 바인딩을 끊어 cleanup이 살아 있는 인스턴스에서 돌고 그 뒤 fn이 영영 다시 안 돌던 것 — 이제 더 이상 자기 것이 아닌 바인딩의 콜백은 무시됩니다.
 - 모듈에 `is`로 시작하는 평범한 헬퍼(`q.isEmpty`, 인자를 무시하는 플러그인 `isMobile`)가 얹히면 그 뒤로 모든 `D.<Class>{}`가 `Dispatch.drive: props must be a plain { ... } table …`로 죽던 것 — 브랜드 술어답지 않은 함수(빈 테이블·비테이블에 `true`)는 브랜드 스캔에서 걸러냅니다.
+- `Context`/`Provider` 값을 `Declaration` 자리에 잘못 놓으면 "프로바이더가 초기화됐는지 확인하라"는 엉뚱한 안내가 붙던 것 — 이제 다른 quad-base 값과 같은 위치 힌트("숫자 키 자리에 두라")가 나옵니다.
 - `Frame { Children = slot }`·`Frame { Ref = ref }`처럼 Slot/Ref를 문자 키 값으로 주면 "프로바이더가 초기화됐는지 확인하라"는 엉뚱한 안내가 나오던 것 — 이제 `Slot: must be an array item, not the value of a string key`(Ref도 같은 모양)이고, 다른 quad 값(Tag 등)의 문자 키 no-match 문구도 "숫자 키 자리에 두라"로 바뀝니다.
 - 핸들러 작성자용: `q.Dispatch.process`에 체인 길이보다 큰 `index`를 주면 어떤 철거도 닿지 않는 슬롯이 남고 체인 기록까지 풀리던 것 — 이제 `index {n} would leave a gap in the chain …`으로 거부. `process`/`retractFrom`의 `nil` 키, `addHandler`의 NaN/무한 `priority`, `newMapperClass`의 비문자열 이름도 각각 즉시 거부하고, 같은 핸들러 테이블을 두 번 등록하면 한 번만 등록됩니다. `q.Dispatch.getHandler`도 같은 검사를 받아, `inst`나 `key`에 `nil`을 넘기면 다른 파일을 가리키는 VM 에러 대신 `process`와 같은 quad 메시지로 거부합니다.
 - `q:RunInit(nil)`/`RunInit(5)`가 내부 파일 줄로 죽던 것 — `Quad:RunInit: initFn must be a function …`.

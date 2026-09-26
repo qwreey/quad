@@ -92,3 +92,4 @@
 - **02:05** E11 완료(opus, 백엔드 계약 삼자 대조) — mock이 엔진보다 관대한 둘(lazy claim → `H-658` mock 게이트, 속성 값 범위 → `H-659` 계약 문장 + mock 테이블·함수 거부; spec 62 회귀 0), `H-660`(onDestroying 시점)·`H-661`(폴백 철회 이전 서술 셋·스텁 위치); 나머지는 §2 E11(Q94 보강 NaN). test.sh 1회 spec.shorthand "Terminated"(외부 SIGTERM — 단독 47ms 통과, 재실행으로 확인). 도는 중: P-Q76b.
 - **02:10** P-Q76b 완료(opus) — 차등 퍼저 1만 시드 최종 상태 base와 동일(불일치 0), stale extract 48k → 1k, 스펙 초안 9(판별력 8/9), **A1이 Q75 입구 (b)에 새 경우**(q76이 base보다 먼저 깨지는 시드 2,296) → Q75를 묶음 4로. §4 문단·§0 행 넷·묶음 3·4 갱신. 도는 중: E12·R2.
 - **02:20** E12 완료(opus, 시간 op·Debounce·Gate·Blocker) — `H-662`(타이머 커밋의 하류 throw — 주석·plan 정정 + sugar/03 caution)·`H-663`(`Time = 0` 문서 공백)·`H-664`(State Time 무효 시 "그 전과 같다" 정정)·**Q100**(`math.huge` 거부 여부). 20회차 커밋(`b5a9191a`). 도는 중: R2·감사 7라운드.
+- **02:25** R2 완료(sonnet, CHANGELOG ↔ 코드 변경 77커밋) — 누락 후보 하나(`H-613` 힌트 변경) → `H-665` Fixed 줄. 21회차 커밋(`8d38de8f`). E13(Store/Context/Operator, opus) 띄움. 도는 중: 감사 7라운드·E13.
