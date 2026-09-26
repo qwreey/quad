@@ -1,0 +1,12 @@
+drive group{A=State({})}:	RAW:../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Attr/Key.luau:116: table is not a supported attribute type
+G <- Attr{A=1} (new group object):	ok	A=	nil
+drive [AttrKey A]=State({}):	RAW:../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Attr/Key.luau:116: table is not a supported attribute type
+same AttrKey recovers k:Set(1):	ok	A=	nil
+another group on inst2 for A:	Quad0002
+-- reactive: valid at drive, engine rejects later
+v <- {}:	RAW:../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Attr/Key.luau:116: table is not a supported attribute type	A=	1
+v <- 2 (same private key recovers?):	ok	A=	2
+G3 <- Attr{A=3} (new group):	ok	A=	3
+G4 <- Attr{A=State({})}:	RAW:../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Attr/Key.luau:116: table is not a supported attribute type	A=	1
+G4 <- Attr{A=5} after engine reject:	Quad0002	A=	1
+badv <- 7 (zombie?):	ok	A=	1

@@ -1,0 +1,10 @@
+  tags=		attrs=	X=1,Y=1	log=	setAttr:X=1 | setAttr:Y=1
+B collide:	false	Quad0002
+  tags=		attrs=	X=1,Y=1	log=	
+B:Get	Attr{X, Z}
+  tags=		attrs=	X=7,Y=1	log=	setAttr:X=7
+B after:	true	true
+  tags=		attrs=	X=7,Y=1,Z=9	log=	setAttr:Z=9
+  tags=		attrs=	X=7,Y=1,Z=9	log=	
+B take X:	true	true
+  tags=		attrs=	X=3,Y=1,Z=9	log=	setAttr:X=3

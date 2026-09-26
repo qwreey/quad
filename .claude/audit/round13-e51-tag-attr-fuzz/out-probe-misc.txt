@@ -1,0 +1,27 @@
+  tags=		attrs=	K=1	log=	setAttr:K=1
+same val
+  tags=		attrs=	K=1	log=	setAttr:K=1
+nil
+  tags=		attrs=		log=	setAttr:K=nil
+nil again
+  tags=		attrs=		log=	setAttr:K=nil
+None
+  tags=		attrs=		log=	setAttr:K=nil
+  tags=		attrs=	K=2	log=	setAttr:K=2
+literal None at AttrKey
+  tags=		attrs=		log=	setAttr:K=nil
+group with None and inner state
+  tags=		attrs=		log=	setAttr:A=nil | setAttr:B=nil
+  tags=		attrs=	B=5	log=	setAttr:B=5
+  tags=		attrs=		log=	setAttr:B=nil
+  tags=		attrs=		log=	setAttr:B=nil
+group replaced by other group w/o B; inner still writes?
+  tags=		attrs=	A=3	log=	setAttr:A=3
+  tags=		attrs=	A=3	log=	
+same Tag set new object
+  tags=	a	attrs=		log=	addTag:a
+  tags=	a	attrs=		log=	
+destroy then set
+  tags=	a	attrs=	Q=1,R=1	log=	addTag:a | setAttr:Q=1 | setAttr:R=1
+  tags=	a	attrs=	Q=1,R=1	log=	
+  tags=	a	attrs=	Q=1,R=1	log=	

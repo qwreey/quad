@@ -1,0 +1,47 @@
+== (a) one name dropped by two positions in one wave
+ a1 drive:	addTag:a,b
+ a1 Set{b} (a leaves both):	removeTag:a
+ a1 Set nil:	removeTag:b	tags=	
+ a2 drive:	addTag:x | addTag:y
+ a2 wave (x leaves both):	removeTag:x,y	tags=	
+ a3 gated wave:	removeTag:y | removeTag:x | removeTag:z	tags=	
+== (b) Destroy: removeTag/setAttr on destroy?
+ b1 destroy calls:	0	
+ b2 Add calls:	
+ b2 Remove (dispose) calls:	0		destroyed=	true
+== (c) Quad0002 rejection leaves the original owner untouched
+ c1 B<-{X} :	Quad0002	attrs=	H=5,X=1	log=	
+ c1 owner A still writes:	setAttr:X=3
+ c2 B<-{H} (hash owner):	Quad0002	attrs=	H=5,X=3
+ c2 hash owner still writes:	setAttr:H=6
+ c3 A released; B<-{X}:	ok	attrs=	H=6,X=4
+ c4 partial group collide:	Quad0002	writes=	setAttr:a=1
+ c4 after C:Set(nil), inner sK:Set(42) writes:	setAttr:a=42	(zombie subscription — H-684)
+ c4 another owner takes 'b':	ok
+== (d) AttrKey vs group — who was placed first
+ d1 literal { [AttrKey X]=1, Attr{X=2} } :	Quad0002	attrs=	X=2
+ d2 literal { Attr{X=2}, [AttrKey X]=1 } :	Quad0002	attrs=	X=2
+ d3 AttrKey first, then group:	Quad0002	attrs=	X=1
+ d4 drive { State<Attr{X}>, [AttrKey X]=State(nil) }:	Quad0002	attrs=	X=2
+ d5 second drive adds group:	Quad0002	attrs=	X=1
+ d6 { NumberAttr X, Attr{X} }:	Quad0002	attrs=	X=1
+ d7 Overridden(Attr{X=1},Attr{X=2}) single:	ok	attrs=	X=2
+ d8 Merged overlap:	Quad0005
+ d9 Tag.Merged overlap (brief premise 'rejection'):	ok
+== (e) Tag/Attr name edge cases (quad gates; engine rules not modeled)
+ name=""(len 0): Tag Quad0199 / Attr Quad0006 / AttrKey Quad0001
+ name=" "(len 1): Tag ok / Attr ok / AttrKey ok
+ name="a b"(len 3): Tag ok / Attr ok / AttrKey ok
+ name="RBXfoo"(len 6): Tag ok / Attr ok / AttrKey ok
+ name="RBX"(len 3): Tag ok / Attr ok / AttrKey ok
+ name="xxxxxxxx…"(len 101): Tag ok / Attr ok / AttrKey ok
+ name="한글"(len 6): Tag ok / Attr ok / AttrKey ok
+ name="a\000b"(len 3): Tag ok / Attr ok / AttrKey ok
+== (f) perf: 1000 tag names
+ drive 2x1000 0.64ms; shift-by-500 0.49ms; retract 0.18ms; engine calls: addTag(1000) addTag(500) removeTag(500)
+ final tag count:	1000
+== (g) Slot: Tag-bearing element moved between slots / replaced
+ g1 Extract returned el:	true	calls:		tags=	e,f
+ g1 Add to s2 calls:		tags=	e,f
+ g1 element's own State still counts (f,e held by pos2):		tags=	e,f
+ g2 Replace calls:		old destroyed=	true	old tags(mock corpse)=	e,f

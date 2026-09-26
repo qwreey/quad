@@ -1,0 +1,10 @@
+  attrs=	X=1	log=	setAttr:X=1
+pairs order	a,c,b,e,d,g,f,h,X
+B collide:	false	Quad0002
+  attrs=	X=1,a=2,b=2,c=2,d=2,e=2,f=2,g=2,h=2	log=	setAttr:a=2 | setAttr:c=2 | setAttr:b=2 | setAttr:e=2 | setAttr:d=2 | setAttr:g=2 | setAttr:f=2 | setAttr:h=2
+C take a:	false	Quad0002
+  attrs=	X=1,a=2,b=2,c=2,d=2,e=2,f=2,g=2,h=2	log=	
+B nil:	true	true
+  attrs=	X=1,a=2,b=2,c=2,d=2,e=2,f=2,g=2,h=2	log=	
+C take a again:	false	Quad0002
+  attrs=	X=1,a=2,b=2,c=2,d=2,e=2,f=2,g=2,h=2	log=	

@@ -1,0 +1,4 @@
+m1: seeds=300 steps=4142 collisions(expected Quad0002)=0 tainted=0 destroys=145 reemit=288 tagCalls=466 attrCalls=619 DIFFS=237
+m2: seeds=300 steps=7485 collisions(expected Quad0002)=0 tainted=0 destroys=254 reemit=536 tagCalls=956 attrCalls=1108 DIFFS=150
+m3: seeds=300 steps=9804 collisions(expected Quad0002)=0 tainted=0 destroys=334 reemit=681 tagCalls=1214 attrCalls=1394 DIFFS=72
+m4: seeds=300 steps=8685 collisions(expected Quad0002)=106 tainted=106 destroys=247 reemit=513 tagCalls=823 attrCalls=831 DIFFS=105

@@ -1,0 +1,35 @@
+== None at number key
+drive None	OK
+Tag(None)	ERR Quad0237 :: ./probe-basic.luau:15: Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+== State<Tag> -> nil -> Tag
+  tags=	a	log=	addTag:a
+  tags=		log=	removeTag:a
+  tags=	a,b	log=	addTag:a,b
+  tags=		log=	removeTag:a,b
+Set None	OK
+  tags=	b	log=	addTag:b
+== State Tag -> Attr group
+set attr group	OK
+  tags=		log=	removeTag:b | setAttr:X=1
+  attrs X=	1
+  tags=	b	log=	addTag:b
+  attrs X=	1
+== Modifier with Tag
+Modifier{Tag}	ERR Quad0059 :: ./probe-basic.luau:33: Quad0059 Modifier: initial-field table keys must be non-empty field names (got number at argument #1)
+  tags=		log=	
+== Destroy
+  tags=	d	log=	addTag:d | setAttr:Y=2
+  tags=	d	log=	
+== AttrKey collisions
+AttrKey then group	ERR Quad0002 :: ./probe-basic.luau:40: Quad0002 AttrKey: attribute "X" is already bound by another owner
+  tags=		log=	setAttr:X=2
+  attrs	2
+group then AttrKey	ERR Quad0002 :: ./probe-basic.luau:43: Quad0002 AttrKey: attribute "X" is already bound by another owner
+  tags=		log=	setAttr:X=2
+  attrs	2
+== two groups same name
+two groups	ERR Quad0002 :: ./probe-basic.luau:47: Quad0002 AttrKey: attribute "X" is already bound by another owner
+  tags=		log=	setAttr:X=2
+  attrs	2
+== drive return
+  drive returned	nil	nil

@@ -1,0 +1,3 @@
+Quad0002:	3755	Quad0016:	149
+zombie lines from tainted insts (orphan subscriptions after Quad0002):	1124
+seeds=5000 steps=199913 collisions(expected Quad0002)=3904 tainted=3904 destroys=4657 reemit=9283 tagCalls=17355 attrCalls=16529 DIFFS=0
