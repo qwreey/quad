@@ -1,0 +1,15 @@
+howto01/howto01-chain.luau(23,42): TypeError: Expected this to be
+	'(StateData<boolean>, Color3?, ...any) -> Color3'
+but got
+	'(t1) -> Color3 where t1 = { read Get: (t1) -> (unknown, ...unknown) }'; 
+this is because 
+	 * `Get` is a read-only property in the latter type, but the former type requires a read-write property
+	 * it takes the 1st entry in the type pack, accessing `Get`, takes the 1st entry in the type pack, accessing `Get`, returns a tail of `...unknown` and it takes the 1st entry in the type pack, accessing `Get`, takes the 1st entry in the type pack, accessing `Get`, returns `boolean`, and `...unknown` is not a subtype of `boolean`
+howto01/howto01-chain.luau(42,16): FunctionUnused: Function 'MaterialButton' is never used; prefix with '_' to silence
+howto01/howto01-chain.luau(85,7): LocalUnused: Variable 'btn1' is never used; prefix with '_' to silence
+howto01/howto01-chain.luau(88,7): LocalUnused: Variable 'btn2' is never used; prefix with '_' to silence
+howto01/howto01-chain.luau(100,16): FunctionUnused: Function 'ModalDialog' is never used; prefix with '_' to silence
+howto01/howto01-chain.luau(132,7): LocalUnused: Variable 'list' is never used; prefix with '_' to silence
+howto01/howto01-chain.luau(139,16): FunctionUnused: Function 'CharacterBadge' is never used; prefix with '_' to silence
+howto01/howto01-chain.luau(174,7): LocalUnused: Variable 'left' is never used; prefix with '_' to silence
+howto01/howto01-chain.luau(174,13): LocalUnused: Variable 'right' is never used; prefix with '_' to silence

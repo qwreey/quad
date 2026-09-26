@@ -322,10 +322,14 @@ order is expressed through `LayoutOrder`.
 ### 4.3 Non-owning `Slot:Single`
 
 Same `updateFn(ctx)` shape as `List`, `ctx.Index` included — one `updateFn` can serve both at runtime.
-**strict caveat:** a mapping `:Single(state, updateFn)` needs explicit type arguments
-(`slot:Single<<Item, UD>>(…)`) — an annotated `ctx` without them fails with
-`No valid instantiation could be inferred for generic type parameter Item`, and an unannotated lambda
-loses its types; `:List` infers fine from the same lambda.
+**strict caveat:** a mapping `:Single(state, updateFn)` only type-checks in one shape — explicit type
+arguments **plus an unannotated `ctx`**, a return-pack annotation and a cast on `ctx.Item`
+(`slot:Single<<string, nil>>(cur, function(ctx): (TextLabel?, nil) … Text = ctx.Item :: string … end)`).
+An annotated `ctx` fails with `No valid instantiation could be inferred for generic type parameter Item`
+**even with** the type arguments; using `ctx.Offset:Compute(...)` inside the lambda fails too — hoist it
+(`const off: q.State<number> = ctx.Offset`). `:List` infers from an unannotated lambda but then leaves
+`ctx.Item` field access unchecked (typos pass); annotate `ctx` explicitly to catch them (then cast
+`ctx.Item :: Row` after the `KeyGone` guard).
 With `{ OwnsElements = false }` a replaced element is unmounted (`Parent = nil`) instead of
 destroyed, so it can be mounted somewhere else.
 

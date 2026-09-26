@@ -1,0 +1,17 @@
+12 mount 왼쪽: 0
+12 after2 왼쪽: 2
+12 children 4 오른쪽: 10|덤
+cb ☐ 약관
+cb ☑ 약관 true
+13 color 0
+13 color 1 L: 10 8,9,10
+board frames 2 왼쪽: 0|오른쪽: 10
+board step3 왼쪽: 3|오른쪽: 10
+board add 3 왼쪽: 3|오른쪽: 10|새 카운터: 0
+board 12? 왼쪽: 12
+board after tween 왼쪽: 12
+17b x: 0|nil 2
+18 10 점
+18 unit 100 포인트
+18 paused 10 점
+18 resumed 10 점

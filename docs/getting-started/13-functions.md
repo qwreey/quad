@@ -231,7 +231,7 @@ const total: q.State<number> = count:Apply(q.Operator.Sum(10))
 `q.StateData<T>`와 `q.State<T>`의 차이는 "핸들로 받는 자리"와 "값이 흐르는 노드"입니다. 콜백 파라미터는 앞의 것, 변수에 담아 프로퍼티로 흘려보내는 것은 뒤의 것을 씁니다.
 
 </details>
-<!-- strict 실측 2026-09-11: consumer/P4.luau·P6.luau·P16.luau — 위 네 형태(highlightColor·__apply 객체 포함) 전부 신 솔버 strict exit 0 -->
+<!-- strict 실측 2026-09-11: P4/P6 — highlightColor 등 함수 형태는 신 솔버 strict exit 0. [2026-09-27 정정] 아래 __apply 객체는 strict에서 `state: any`·반환 `any`로 주석할 때만 통과(무주석·`q.State<number>`·반환 타입 주석은 "None of the overloads" 거부) — 이 장은 nonstrict 전제라 그대로 둠 -->
 
 ### `:Apply`에는 테이블도 들어갑니다 — `__apply`
 
