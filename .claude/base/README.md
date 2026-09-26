@@ -2,6 +2,8 @@
 
 > **[2026-09-08 분리 — round7 Q39 사용자 결정]** 루트 `.claude/README.md`가 폴더마다 수천~수만 자의 행을 쥐고 있어(한 셀 17,005자) 폴더별 `README.md`로 나눴다(사용자: *"README.md 를 분리해 각 폴더 내에 두어 폴더가 뭐하는지 설명하는건 괜찮은것 같아"*). **이 파일이 `base/`의 기준과 파일 색인의 소스**이고 루트 README는 폴더 한 줄씩만 쥔다. `doc-check.py`의 색인 검사는 루트 + 이 파일을 함께 본다.
 
+> **[2026-09-27 읽기 안내 — round13 E39 `H-776`] 2026-09-15 공개 표면 배치 개명 여섯이 정본 plan 문서에만 배너로 반영됐고, 그 이름을 인용하는 다른 `base/` 문서 본문에는 옛 이름이 현재형으로 남아 있다.** 본문에서 다음 옛 이름을 보면 새 이름으로 읽을 것(일괄 치환은 하지 않는다 — 인용문·의사코드 클래스 이름이 섞여 있어 그 파일을 만질 때 같이 고친다): `EffectHandle` → `Effect`(정본 `effect-plan.md` 3행; 남은 곳 `architecture.md`·`lifecycle-hooks-plan.md`·`lifecycle-pattern.md`·`ref-plan.md`·`source-state-plan.md`), `:With(...)` → `:Depend(...)`(정본 `source-state-plan.md` 537·603행; 남은 곳 `brand-plan.md`·`module-lifecycle-plan.md`·`modifier-plan.md`·`component-composition-plan.md`·`store-plan.md`·`state-epoch-plan.md`·`typing-limits.md`·`slot-plan.md`·`dispatch-core-plan.md`), `blocker.IsBlocked`/`:IsOn()` → `blocker.Blocking`(정본 `blocker-plan.md` 3행; 남은 곳 `bind-system-plan.md`·`dispatch-core-plan.md`·`effect-plan.md`·`slot-plan.md`), `tag:Names()` → `for name in tag do`(`__iter`; `tag-plan.md`에 이번에 배너), `updateFn(item, index, offset, prev, ud)` → `updateFn(ctx)`(정본 `slot-plan.md` 1060·2310행), `Owned` → `OwnsElements`(`slot-plan.md` 2082행 — 잘 격리됨). 소스는 전부 새 이름(`State.luau` `Impl.Depend`, `Blocker.luau` `Blocking`, `Tag.luau` `__iter`, `Effect.luau`).
+
 **폴더 기준(루트 표에서 옮김)**: 결정 완료 + 프로젝트 전체에 걸치는 컨텍스트 — plan/done 개념 없음, 계속 참조되는 배경지식. **항상 읽어야 하는** 배경지식만 여기 둠(다른 문서를 이해하는 데 전제되는 것)
 
 | 문서 | 내용 |

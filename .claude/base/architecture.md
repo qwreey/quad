@@ -552,7 +552,7 @@ debug 는 치명적 부분 아니면 기본적으로 계속 실행은 시켜주�
   1. 프리미티브 타입 생성자, `Type(args)` 스타일: `Source(default)`/
      `Ref(default)`/`Store({defaults})`/`Modifier()`/`Relate()`/
      `Effect(fn, ...deps)`/`PreRef(default)`/`PostRef(default)`.
-  2. 그 인스턴스의 콜론 메서드: `state:Get()`/`:With(...)`/`:Compute(fn)`/
+  2. 그 인스턴스의 콜론 메서드: `state:Get()`/`:Depend(...)`(**[2026-09-15]** 옛 `:With`)/`:Compute(fn)`/
      `:Observer(fn)`/`:Apply(factory)`/`:Peek(key)`, `source:Set(v)`/`:Emit()`,
      `ref:Set(v)`/`:Callback(fn)`/`:Wait(thread?)`, `observer:Subscribe()`/
      `:Unsubscribe()`, `relate:SetWeak(...)`/`:GetWeak(...)`/`:SetStrong(...)`/
