@@ -1,0 +1,62 @@
+.claude/audit/round13-e31-skill-walkthrough/strict-recipes-L162.luau(15,16): FunctionUnused: Function 'BindPlayerCard' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-recipes-L194.luau(8,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-recipes-L194.luau(13,16): FunctionUnused: Function 'RegistrationForm' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-recipes-L20.luau(8,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-recipes-L248.luau(13,16): FunctionUnused: Function 'SearchBar' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-recipes-L312.luau(36,16): FunctionUnused: Function 'RootApp' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-recipes-L82.luau(31,16): FunctionUnused: Function 'Leaderboard' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-rules-L60.luau(8,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-rules-L60.luau(11,7): ImportUnused: Import 'DeclarationModule' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-rules-L60.luau(15,7): LocalUnused: Variable 'checked' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-rules-L60.luau(16,7): LocalUnused: Variable 'forced' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-rules-L75.luau(14,1): TypeError: Unknown global 'Activated'; consider assigning to it first
+.claude/audit/round13-e31-skill-walkthrough/strict-rules-L75.luau(8,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-rules-L75.luau(10,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-rules-L93.luau(8,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L126.luau(8,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L126.luau(10,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L126.luau(16,7): LocalUnused: Variable 'fullName' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L152.luau(8,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L152.luau(10,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L152.luau(19,7): LocalUnused: Variable 'isHidden' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L152.luau(20,7): LocalUnused: Variable 'totalPrice' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L152.luau(21,7): LocalUnused: Variable 'clamped' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L152.luau(22,7): LocalUnused: Variable 'safeName' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L152.luau(23,7): LocalUnused: Variable 'primary' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L180.luau(11,7): ImportUnused: Import 'DeclarationModule' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L180.luau(21,16): FunctionUnused: Function 'Button' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L214.luau(8,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L214.luau(11,7): ImportUnused: Import 'DeclarationModule' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L214.luau(18,7): LocalUnused: Variable 'buttonMod' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L214.luau(19,7): LocalUnused: Variable 'sameRuntimeValue' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L214.luau(22,7): LocalUnused: Variable 'checked' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L214.luau(23,7): LocalUnused: Variable 'unchecked' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L236.luau(10,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L236.luau(23,7): LocalUnused: Variable 'theme' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L271.luau(23,16): FunctionUnused: Function 'ItemList' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L321.luau(8,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L321.luau(10,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L336.luau(8,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L336.luau(15,16): FunctionUnused: Function 'InventoryCard' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L375.luau(8,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L375.luau(10,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L375.luau(16,7): LocalUnused: Variable 'btnColor' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L375.luau(22,7): LocalUnused: Variable 'positionState' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L447.luau(8,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L447.luau(13,16): FunctionUnused: Function 'InteractiveCard' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L490.luau(8,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L490.luau(10,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L490.luau(14,7): LocalUnused: Variable 'debouncedQuery' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L490.luau(17,7): LocalUnused: Variable 'throttledScroll' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L504.luau(8,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L504.luau(17,7): LocalUnused: Variable 'SafeProfile' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-skill-L504.luau(20,7): LocalUnused: Variable 'Traced' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-ui-b-components.luau(11,7): ImportUnused: Import 'DeclarationModule' is never used; prefix with '_' to silence
+.claude/audit/round13-e31-skill-walkthrough/strict-ui-b0-into-boundary.luau(39,9): TypeError: Expected this to be
+	'(false | Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | AttrMarker | ObserverMarker | EffectMarker | ModifierMarker | { Callback: (boolean) -> (), Name: "Active" } | { Callback: (Vector2) -> (), Name: "AnchorPoint" } | { Callback: (boolean) -> (), Name: "Archivable" } | { Callback: (boolean) -> (), Name: "AutoButtonColor" } | { Callback: (boolean) -> (), Name: "AutoLocalize" } | ... *TRUNCATED*'
+but got
+	'IntoTextButton?'; 
+the 1st component of the union is `IntoTextButton`, which is not a subtype of `(false | Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | AttrMarker | ObserverMarker | EffectMarker | ModifierMarker | { Callback: (boolean) -> (), Name: "Active" } | { Callback: (Vector2) -> (), Name: "AnchorPoint" } | { Callback: (boolean) -> (), Name: "Archivable" } | { Callback: (boolean) -> (), Name: "AutoButtonColor" } | { Callback: (boolean) -> (), Name: "AutoLocalize" } | ... *TRUNCATED*`
+.claude/audit/round13-e31-skill-walkthrough/strict-ui-b0-into-boundary.luau(54,9): TypeError: Expected this to be '(false | Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | AttrMarker | ObserverMarker | EffectMarker | ModifierMarker | { Callback: (boolean) -> (), Name: "Active" } | { Callback: (Vector2) -> (), Name: "AnchorPoint" } | { Callback: (boolean) -> (), Name: "Archivable" } | { Callback: (boolean) -> (), Name: "AutoLocalize" } | { Callback: (Enum.AutomaticSize) -> (), Name: "AutomaticSize" }... *TRUNCATED*', but got 'IntoFrame?'; 
+the 1st component of the union is `IntoFrame`, which is not a subtype of `(false | Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | AttrMarker | ObserverMarker | EffectMarker | ModifierMarker | { Callback: (boolean) -> (), Name: "Active" } | { Callback: (Vector2) -> (), Name: "AnchorPoint" } | { Callback: (boolean) -> (), Name: "Archivable" } | { Callback: (boolean) -> (), Name: "AutoLocalize" } | { Callback: (Enum.AutomaticSize) -> (), Name: "AutomaticSize" }... *TRUNCATED*`
+.claude/audit/round13-e31-skill-walkthrough/strict-ui-b0-into-boundary.luau(11,7): ImportUnused: Import 'DeclarationModule' is never used; prefix with '_' to silence

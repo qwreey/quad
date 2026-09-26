@@ -60,4 +60,5 @@
 - `round13-e30-changelog-released/` — **[2026-09-27 자율 루프 E30]** 릴리즈된 CHANGELOG 절 vs 태그 diff 구간별 대조표 — 사실 오류 0, 절차 결함 둘(3.0.0 lock `0.0.0`·README `D` 잔존 `H-747`), 정책 `Q119`.
 - `round13-e29-mock-fidelity/` — **[2026-09-27 자율 루프 E29]** mock × API dump 충실도 대조표 39행·변형 mock 생성기(`mock-variants.py`)·계측 출력·프로브 셋 — `H-748`(setAttr op 게이트 누락), `Q120`, 실기기 후보 여덟.
 - `round13-e33-reference-signatures/` — **[2026-09-27 자율 루프 E33]** 레퍼런스 시그니처 225항목 전수 표(`TABLE.md`)·추출/비교 스크립트·strict 프로브 여섯(`probe_single3`·`probe_onchange`·`probe_calls` 등) — `H-749`~`H-753`, `Q121`·`Q122`.
+- `round13-e31-skill-walkthrough/` — **[2026-09-27 자율 루프 E31]** 스킬 문서 따라 짠 UI 둘(`ui-a-screen`·`ui-b-components`)·펜스 23 mock/strict(`gen.py`·`run-all.sh`·`blocks/`·`tails/`)·프로브(`probe-single-*`·`probe-req1~3`·`probe-noDeclModule`) — `H-754`~`H-758`, `Q123`, 8.34.
 

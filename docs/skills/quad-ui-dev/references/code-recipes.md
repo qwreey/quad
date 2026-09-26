@@ -9,7 +9,7 @@ this prologue once per module; nothing else is implicit.
 local Quad = require(<quad-base module>)              -- already a live instance
 local QuadRoblox = require(<quad-roblox module>).QuadRoblox
 local QuadTypes = require(<quad-types module>)        -- types only: State<T>, Source<T>, Slot<T>, Provider<T>
-local q = Quad:UseProvider(QuadRoblox)                -- installs D / OnChange / Animate / Tween / isTween
+local q = Quad:UseProvider(QuadRoblox)                -- installs Declaration / OnChange / Out / Animate / Tween / isTween
 local D = q.Declaration
 ```
 

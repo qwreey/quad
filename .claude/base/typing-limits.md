@@ -1217,3 +1217,7 @@ PreRef/PostRef가 `Ref`의 하위 타입이라 숫자 키 자리의 `State<Ref>`
 
 GS 14 §3(`14-lists.md` 181행) `const nextRows = table.clone(props.Rows:Get())`이 신 솔버 **nonstrict**에서 `Argument count mismatch` 진단을 낸다 — GS 전체 nonstrict 검사에서 유일한 진단. quad 없이 한 줄(`table.clone(f())` 꼴, `audit/round13-e27-gs-chain/probe-14s3/pure4.luau`)로 재현되므로 Luau 추론 한계로 보이나 원인은 좁히지 않았다(추정). 우회는 지역 변수로 받기(`const rows = props.Rows:Get(); table.clone(rows)`) — 문서엔 반영하지 않았다(Q105 배치와 같이 볼 것).
 
+## 8.34. 하네스가 `quad-base/src`와 `quad-types/src`를 섞어 require하면 제네릭 `ctx` 주석이 든 `:List` 예제가 전부 strict에서 죽는다 — 타입 신원이 두 `quad_types` 파일로 갈림 (2026-09-27 round13 E31 실측)
+
+스크래치 하네스가 `quad-base/src`(그 안의 `luau_packages/quad_types`)와 `quad-types/src`를 따로 require하면 `Slot:List`의 `ctx: q.ListCtx<…>` 같은 주석이 *"No valid instantiation … Item"*으로 죽는다 — SKILL §4.2·recipes §2·core/06 예제·`spec.slottypes` 몸통까지 전부(같은 이름의 타입이 서로 다른 파일에서 와 신원이 다름; `relink.sh` 2.5단계가 잡는 "중첩 사본 둘" 문제와 같은 뿌리). 한 설치본(`quad-roblox/luau_packages` 한 벌)으로 돌리면 통과(`audit/round13-e31-skill-walkthrough/probe-req1~3`). 실사용자 환경(pesde 설치)엔 해당 없음. **스크래치 하네스는 한 `luau_packages` 벌에서만 require할 것** — S10·E27 하네스는 s10-config 사본으로 한 벌을 썼으므로 그 판정은 유효(E31이 의심한 "S10 오판"은 GS 14 §5가 한 벌 하네스에서도 같은 진단이라 성립하지 않음).
+

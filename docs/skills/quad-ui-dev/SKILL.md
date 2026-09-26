@@ -41,7 +41,7 @@ of guessing.**
   - `reference/core/01`…`11` (module, Source, State, Store, Observer·Effect, Slot, Ref, Modifier,
     Tag·Attr, sentinels, predicates), `reference/sugar/01`…`06` (Context, Operator,
     Debounce·Throttle, lifecycle hooks, Fallback·Traceback, Blocker), `reference/roblox/01`…`06`
-    (install, `D`, `D.Modifier`, Claim·Mapper, OnChange, Tween·Animate), `reference/extend/01`·`02`
+    (install, `Declaration`, `Declaration.Modifier`, Claim·Mapper, OnChange, Tween·Animate), `reference/extend/01`·`02`
     (backend provider / dispatch handler contracts). One type per page: signature → args → return →
     example → behavior → **error table (verbatim strings)** → related.
   - `how-to/01`…`10` — recipes: component boundary conventions, form validation, long lists,
@@ -50,7 +50,7 @@ of guessing.**
   - `getting-started/00`…`21` — the linear tutorial (one counter grows chapter by chapter). Fetch a
     chapter when the user is learning, not for lookups.
   - `overview/01` (comparison with Fusion/Vide/react-lua, design trade-offs, what is missing and
-    why), `overview/02` (for quad v1 users).
+    why), `overview/02` (for quad v1 users), `overview/03` (for readers coming from web frameworks).
   - `quadnomicon/01`…`11` — internals (revision/epoch, Slot prefix-sum tree, memory topology,
     markers, ownership, liveness gate, dispatch engine, …). Only when the question is "how is it
     implemented".
@@ -74,9 +74,10 @@ layout if it differs.
 --!strict
 -- install path depends on the project layout
 local Quad = require(<quad-base module>)              -- already a live instance
-local QuadRoblox = require(<quad-roblox module>).QuadRoblox
+local RobloxModule = require(<quad-roblox module>)   -- value + the ONLY public path to generated types (RobloxModule.TextButtonModifier, .Field<T>, …)
+local QuadRoblox = RobloxModule.QuadRoblox
 local QuadTypes = require(<quad-types module>)        -- types only
-local q = Quad:UseProvider(QuadRoblox)                -- installs D / OnChange / Out / Animate / Tween / isTween
+local q = Quad:UseProvider(QuadRoblox)                -- installs Declaration / OnChange / Out / Animate / Tween / isTween
 local D = q.Declaration
 ```
 
@@ -86,8 +87,10 @@ Snippets below assume this prologue.
 - `UseProvider` is one slot per module: a *different* provider function errors
   (`Quad0213 UseProvider: this Quad module already has a provider`); the same one is a no-op.
 - Types come from `quad-types` (`QuadTypes.State<T>`, `Source<T>`, `Slot<T>`, `Store<T>`,
-  `Provider<T>`, `Context`) and the generated `Declaration` module (`DeclarationModule.FrameModifier`,
-  `DeclarationModule.Field<T>`, …). **`q.State<T>` does not exist on the module value itself** — `q` is a value, not a type (the `q.State<T>` form in the reference works only because the setup module re-exports the types under its own name).
+  `Provider<T>`, `Context`) and, for the generated `Declaration` types, the **quad-roblox module root**
+  (`RobloxModule.FrameModifier`, `RobloxModule.IntoTextButton`, `RobloxModule.Field<T>`, `RobloxModule.OnChangeFn`, …
+  — the generated module itself has no public require path; an unbound `SomeName.X` type reference is
+  **silently unchecked** in strict, so a typo here removes the check without a diagnostic). **`q.State<T>` does not exist on the module value itself** — `q` is a value, not a type (the `q.State<T>` form in the reference works only because the setup module re-exports the types under its own name).
 
 ### 1.2 Core Ontological Grammar
 
@@ -120,8 +123,9 @@ binding (in and out stay two visible lines); `src` must be a `Source` — a `:Co
 ### 2.1 Trailing Dependencies for `:Compute`
 
 `fn` receives `(selfHandle, previous, ...depHandles)`. **Every dep arrives as a State
-handle, not as a value** — read it with `:Get()`. `#dep` or `dep .. ""` on a handle does
-not error, it silently produces garbage (`#handle` is `0`).
+handle, not as a value** — read it with `:Get()`. `#dep` and string interpolation (`` `{dep}` ``)
+on a handle do not error and silently produce garbage (`#handle` is `0`); `dep .. ""` throws
+(`attempt to concatenate table with string` — handles have no `__concat`).
 
 ```luau
 local firstName, lastName = q.Source("Ada"), q.Source("Lovelace")
@@ -182,7 +186,9 @@ export type ButtonProps = {
     Text: string | QuadTypes.State<string>,
     -- the handler type must match the engine signature exactly, arity included
     OnClick: (inputObject: InputObject, clickCount: number) -> (),
-    Modifier: any?,   -- or DeclarationModule.IntoTextButton for a typed boundary
+    Modifier: any?,   -- typed boundary: RobloxModule.TextButtonModifier? (plug it in as-is). RobloxModule.IntoTextButton?
+                      -- accepts parent-class modifiers too, but then plug `props.Modifier:AsTextButton()` — the interface
+                      -- type itself is NOT a valid array-part value (strict rejects it)
 }
 
 local function Button(props: ButtonProps)
@@ -214,14 +220,15 @@ the array walk, and the drive dies inside bookkeeping rather than at the author'
 ```luau
 -- both forms exist: builder chain and table call. Only the CHAIN form is type-checked
 -- (field names + value types); the table form only carries the class tag — `{ Sise = 1 }`,
--- `{ Size = "x" }`, `{ Activated = fn }` all pass strict and fail at runtime drive
--- (Quad0076/Quad0063). Prefer the chain form in generated code.
+-- `{ Size = "x" }`, `{ Activated = fn }` all pass strict. At runtime: `{ Sise = 1 }` → Quad0076 at drive,
+-- `{ Activated = fn }` → Quad0063 when the Modifier is built, `{ Size = "x" }` → quad does not check value
+-- types (the engine assignment rejects it — not measured on a device). Prefer the chain form in generated code.
 local buttonMod = D.Modifier.TextButton():BackgroundTransparency(0.5):Text("Go")
 local sameRuntimeValue = D.Modifier.TextButton{ BackgroundTransparency = 0.5, Text = "Go" }
 
 local base = D.Modifier.GuiObject():Visible(true)
 local checked   = base:AsTextButton():Text("ok")            -- CHECKED: one method per subclass
-local unchecked = base:As<<DeclarationModule.TextLabelModifier>>()     -- UNCHECKED: caller asserts the type
+local unchecked = base:As<<RobloxModule.TextLabelModifier>>()     -- UNCHECKED: caller asserts the type
 ```
 
 `:As<<T>>()` performs no ancestry check. Its optional string argument must be an already
@@ -314,7 +321,11 @@ order is expressed through `LayoutOrder`.
 
 ### 4.3 Non-owning `Slot:Single`
 
-Same `updateFn(ctx)` shape as `List`, `ctx.Index` included — one `updateFn` can serve both.
+Same `updateFn(ctx)` shape as `List`, `ctx.Index` included — one `updateFn` can serve both at runtime.
+**strict caveat:** a mapping `:Single(state, updateFn)` needs explicit type arguments
+(`slot:Single<<Item, UD>>(…)`) — an annotated `ctx` without them fails with
+`No valid instantiation could be inferred for generic type parameter Item`, and an unannotated lambda
+loses its types; `:List` infers fine from the same lambda.
 With `{ OwnsElements = false }` a replaced element is unmounted (`Parent = nil`) instead of
 destroyed, so it can be mounted somewhere else.
 
@@ -426,7 +437,7 @@ The first assignment snaps to the value; later emissions run an engine tween.
 ### 6.2 `Tag` and `Attr`
 
 - `q.Tag("A", "B")` — reference-counted CollectionService tag set, array part.
-  A `nil` **argument** (a vararg slot of `q.Tag(...)`, the argument of `:Added`/`:Removed`, a slot of `Merged`) means "nothing" and is fine — `tag:Added(if cond then "Even" else nil)` is the idiom. A `nil` **hole inside a name list** (`{ "a", nil, "b" }`) and `q.None` are errors (`Quad0203`); filter lists before passing.
+  A `nil` **argument** (a vararg slot of `q.Tag(...)`, the argument of `:Added`/`:Removed`, a slot of `Merged`) means "nothing" and is fine — `tag:Added(if cond then "Even" else nil)` is the idiom. A `nil` **hole inside a name list** (`{ "a", nil, "b" }`) and are errors — a hole in a list is `Quad0203`, `q.Tag(q.None)` (a value with a metatable) is `Quad0237`; filter lists before passing.
 - `q.Attr{ Level = 3 }`, `q.StringAttr("Title", v)`, `q.NumberAttr`, `q.BooleanAttr` —
   array part. `[q.AttrKey("Hp")] = hpState` is a hash key; it drives correctly but the
   generated prop types do not cover it, so prefer the array-part forms in `--!strict`.
@@ -525,7 +536,7 @@ the solver can see; `Fallback` returns `Ok | Err`.
 | `Modifier` as a hash key | `Quad0068 Modifier: a Modifier cannot be a value of key "..." — place it in the array part` | Put the value in the array part |
 | `Ref`/`PreRef`/`PostRef`/`Slot`/`Effect`/`Observer` as a hash key | `<Kind>: must be an array item, not the value of a string key` — `Quad0137` for `Ref:`/`PreRef:`/`PostRef:` (one shared raise site), `Quad0141` for `Slot:`, `Quad0097` for `Effect:`, `Quad0116` for `Observer:` | Put the value in the array part |
 | `Tag` as a hash key | `Quad0076 Dispatch: no handler matched key <K> (value: table, brand: Tag) — a quad value at a string key: it belongs in a numeric (array) slot` | Put the value in the array part |
-| Reading a `:Compute` dep without `:Get()` | No error — `#handle` is `0`, concatenation is garbage | `dep:Get()` |
+| Reading a `:Compute` dep without `:Get()` | No error for `#handle` (`0`) and `` `{handle}` `` (garbage); `handle .. ""` throws `attempt to concatenate table with string` | `dep:Get()` |
 | `Modifier` inside a `Source` | `Quad0182 Source: cannot hold a Modifier as a Source value` | Keep modifiers out of reactive values |
 | `q.Tween{ Value = someState }` | `Quad0250 Tween: Value must be a plain value, not a State` | `state:Apply(q.Animate{...})`, or build the Tween inside a `:Compute` |
 | `q.Claim(inst)` with one argument | `Quad0034 Claim: second argument must be a D.Mapper descriptor` | `q.Claim(inst, D.Mapper.<Class>(D.Mapper.Root)({...}))` |

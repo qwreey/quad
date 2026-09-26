@@ -53,14 +53,14 @@ fails. Input positions are covariant markers, so the same value *does* go into a
 `Slot<Instance>` element slot, a child array, or a Modifier field.
 
 - Annotate derived states with the concrete class: `QuadTypes.State<Frame>`.
-- Types live in `quad-types` and the generated `D` module — `q.State<T>` is not a type.
+- Types live in `quad-types` and, for generated `Declaration` types, the quad-roblox module root (`RobloxModule.FrameModifier` …) — `q.State<T>` is not a type.
 
 ### 2.2 Modifier Downcasting
 
 ```luau
 local base = D.Modifier.GuiObject():Visible(true)
 local checked = base:AsTextButton():Text("go")                    -- CHECKED (one method per subclass)
-local forced  = base:As<<DeclarationModule.TextLabelModifier>>()            -- UNCHECKED, caller asserts
+local forced  = base:As<<RobloxModule.TextLabelModifier>>()            -- UNCHECKED, caller asserts
 ```
 
 `:As<<T>>()` does no ancestry check. Its optional string argument must be an already

@@ -1,0 +1,88 @@
+--- §2.1 dep handle misuse
+#handle =	0
+dep .. '' on a handle (skill: 'does not error')            ERR ./run-claims.luau:18: attempt to concatenate table with string
+--- §2.2 nesting
+State<State> prop follows inner:	in2
+Compute first read:	in2
+Compute over outer after inner:Set (skill: not recomputed):	in2
+Store-in-Source outer fires on field Set (skill: no) — extra fires:	0
+Modifier inside Source (Quad0182)                          ERR Quad0182 Source: cannot hold a Modifier as a Source value
+--- §2.3 Operators
+Not	false	Sum	108	Clamp	100	Alt	Guest	Indexed	red
+And/Or/Sub/Div exist?	nil	nil	nil	nil
+Operator on plain value (rules Quad0123)                   ERR Quad0123 Operator.Sum: Apply target must be a State (got number)
+--- §3.1 props table mutated in place
+props[1] still the Modifier?	false	type:	table
+--- §3.2 priority
+later mod wins:	0.2	inline wins:	5
+Overridden(A,B) B wins:	4	 A:Overridden(B):	7
+--- §3.3 table-form typos fail at drive
+{ Sise = 1 } table form                                    ERR Quad0076 Dispatch: no handler matched key Sise (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+{ Size = 'x' } table form                                  OK(no error)
+{ Activated = fn } table form (Quad0063?)                  ERR Quad0063 Modifier: field "Activated" in an initial-field table cannot be a function — a transform goes through mod:Activated(fn); an event handler d
+:As('Nope') unknown class (Quad0052)                       ERR Quad0052 Modifier: unknown modifier class "Nope" — Modifier.TypedFactory/DefineSubtype it first
+:As('TextLabel') known class only retags                   OK(no error)
+--- §3.4 Context
+Set returns bag:	true	Get:	1
+ctx:Set(provider, nil) (Quad0037)                          ERR Quad0037 Context:Set: value for Provider(Theme) must not be nil (absence is "not set")
+ctx:Get(unset) (Quad0038)                                  ERR Quad0038 Context:Get: no value for Provider(Theme) — the creator of this Context did not :Set it (use :Peek to test)
+Peek unset:	nil
+--- §4 Slot
+slot:Remove(instance) (Quad0168)                           ERR Quad0168 Slot:Remove: index must be a positive integer (got e1)
+IndexOf:	1
+after Remove destroyed:	true
+List duplicate key (Quad0145)                              ERR Quad0145 Slot:List: duplicate key a
+A:Add(B); B:Add(A) (Quad0173)                              ERR Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)
+Single OwnsElements=false: old destroyed?	false	old Parent:	nil
+Single ctx.Index on value:	1
+Single on nil: Item is KeyGone?	true	Index:	0
+--- §5 Claim
+Claim returns same inst:	true	child text:	hi	root bt:	0.25
+descriptor reuse (Quad0027)                                ERR Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)
+claim D-made instance (Quad0029)                           ERR Quad0029 Claim: Frame is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descr
+Claim one arg (Quad0034)                                   ERR Quad0034 Claim: second argument must be a D.Mapper descriptor
+mapper class mismatch (Quad0032)                           ERR Quad0032 Claim: no child matched key Kid under Frame (mapper TextLabel) — a child with that name must also be a TextLabel
+--- §7 / rules table
+nil hole {a,nil,b} (Quad0023)                              ERR Quad0023 Bookkeeping.recompute: sourceList[2] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.No
+Modifier as hash key (Quad0068)                            ERR Quad0068 Modifier: a Modifier cannot be a value of key "M1" — place it in the array part
+Ref as hash key (Quad0137)                                 ERR Quad0137 Ref: must be an array item, not the value of a string key
+PreRef as hash key (Quad0137)                              ERR Quad0137 PreRef: must be an array item, not the value of a string key
+Slot as hash key (Quad0141)                                ERR Quad0141 Slot: must be an array item, not the value of a string key
+Effect as hash key (Quad0097)                              ERR Quad0097 Effect: must be an array item, not the value of a string key
+Observer as hash key (Quad0116)                            ERR Quad0116 Observer: must be an array item, not the value of a string key
+Tag as hash key (Quad0076 brand: Tag)                      ERR Quad0076 Dispatch: no handler matched key T (value: table, brand: Tag) — a quad value at a string key: it belongs in a numeric (array) slot
+Tween Value = State (Quad0250)                             ERR Quad0250 Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return T
+Parent = inst (Quad0076)                                   ERR Quad0076 Dispatch: no handler matched key Parent (value: table) — check that the provider for this value (e.g. quad-roblox) is initialized
+Activated on Frame (Quad0076)                              ERR Quad0076 Dispatch: no handler matched key Activated (value: function) — check that the provider for this value (e.g. quad-roblox) is initialized
+Store default not Source (Quad0198)                        ERR Quad0198 Store: default for "k" is not a Source (got number)
+static child foreign Instance (Quad0219)                   ERR Quad0219 InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by a
+Slot foreign Instance (Quad0241)                           ERR Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another qua
+same inst under two parents (Quad0160)                     ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside q
+Compute reads own result (Quad0184)                        ERR Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream Stat
+UseProvider different provider (Quad0213)                  ERR Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends
+Subscribe on bound Observer (Quad0235)                     ERR Quad0235 Observer: already bound to an Instance
+bound observer Subscribed:	false
+--- §6.2 Tag/Attr
+Tag name list nil hole (Quad0203)                          ERR Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes
+Tag(q.None) (skill §6.2 says Quad0203)                    ERR Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)
+tag:Added(nil) is fine                                     OK(no error)
+attrs:	3	5	7
+State->nil deletes attr (skill: yes):	nil
+StringAttr nil (Quad0014)                                  ERR Quad0014 StringAttr: value of "Title" must not be nil — use None to delete
+group key disappeared from replaced group (skill: NOT unset):	2
+--- §6.3 Ref / hooks / Observer / Effect
+Unwrap empty (Quad0135)                                    ERR Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
+hooks:	created | rendered parent=nil
+Observer fired at registration:	1	Subscribed:	false
+after two Sets unbound:	1
+after Subscribe (one replay):	2
+cleanup on rerun:	false
+cleanup on destroy:	false,true
+--- §6.4 Debounce/Throttle
+Debounce Time = -1 (Quad0041)                              ERR Quad0041 Debounce: Time must be a non-negative number or a State<number> (got number)
+Debounce Leading=false Trailing=false                      ERR Quad0048 Debounce: Leading and Trailing both false would pass nothing through
+Throttle MaxTime (Debounce-only)                           ERR Quad0046 Throttle: MaxTime is Debounce-only (a throttle already passes every Time)
+Debounce Handle = q.Ref(nil)                               OK(no error)
+Handle reused across two Apply                             ERR Quad0044 Debounce: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() bro
+--- §6.5 Fallback
+Fallback result:	failed table
