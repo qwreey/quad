@@ -1,0 +1,150 @@
+### luau 
+errorAt             depth=0  got line 14  want 14  OK
+errorAt             depth=1  got line 16  want 16  OK
+errorAt             depth=2  got line 16  want 16  OK
+errorAt             depth=3  got line 16  want 16  OK
+errorAt             depth=4  got line 16  want 16  OK
+errorBefore         depth=0  got line 14  want 14  OK
+errorBefore         depth=1  got line 31  want 31  OK
+errorBefore         depth=2  got line 31  want 31  OK
+errorBefore         depth=3  got line 31  want 31  OK
+errorBefore         depth=4  got line 31  want 31  OK
+errorAtNearest      depth=0  got line 14  want 14  OK
+errorAtNearest      depth=1  got line 16  want 16  OK
+errorAtNearest      depth=2  got line 17  want 17  OK
+errorAtNearest      depth=3  got line 18  want 18  OK
+errorAtNearest      depth=4  got line 19  want 19  OK
+errorBeforeNearest  depth=0  got line 14  want 14  OK
+errorBeforeNearest  depth=1  got line 31  want 31  OK
+errorBeforeNearest  depth=2  got line 16  want 16  OK
+errorBeforeNearest  depth=3  got line 17  want 17  OK
+errorBeforeNearest  depth=4  got line 18  want 18  OK
+blame table: 20/20 as documented
+-- edge levels (depth 2, tagged SURF); 'raise' line =	see below
+level=0   errorAt             -> line 64 (?)  ./quad_error_blame.luau:64: boom
+level=0   errorBefore         -> line nil (?)  boom
+level=0   errorAtNearest      -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=0   errorBeforeNearest  -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=-1  errorAt             -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=-1  errorBefore         -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=-1  errorAtNearest      -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=-1  errorBeforeNearest  -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=99  errorAt             -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=99  errorBefore         -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=99  errorAtNearest      -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=99  errorBeforeNearest  -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=1   errorAt             -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=1   errorBefore         -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=1   errorAtNearest      -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=1   errorBeforeNearest  -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+setFuncLevel(1)  -- no fns                   ok=true  nil
+setFuncLevel('1', a.g)                       ok=false  ./quad_error_blame.luau:81: setFuncLevel: level must be a number (got string) — the signature is setFuncLevel(level, ...fns)
+setFuncLevel(1, a.g, nil, a.h)               ok=false  ./quad_error_blame.luau:82: setFuncLevel: argument #3 must be a function (got nil) — a renamed or missing method?
+  after nil-hole throw: getFuncLevel(a.g) =	1	 getFuncLevel(a.h) =	0
+setFuncLevel(1, a.g, nil)  -- trailing nil   ok=false  ./quad_error_blame.luau:84: setFuncLevel: argument #3 must be a function (got nil) — a renamed or missing method?
+setFuncLevel(1, {})                          ok=false  ./quad_error_blame.luau:85: setFuncLevel: argument #2 must be a function (got table) — a renamed or missing method?
+setFuncLevel(1, print)  -- C function        ok=true  nil
+setFuncLevel(0/0, a.h)  -- NaN level         ok=true  nil
+  getFuncLevel(a.h) after NaN =	nan
+  setFuncLevel error blames line	90	call line	90
+old idiom over {x, nil, y}: visited	2	(2 = hole skipped, later entries still tagged; 1 = stops at hole)
+### luau -O2
+errorAt             depth=0  got line 14  want 14  OK
+errorAt             depth=1  got line 16  want 16  OK
+errorAt             depth=2  got line 16  want 16  OK
+errorAt             depth=3  got line 16  want 16  OK
+errorAt             depth=4  got line 16  want 16  OK
+errorBefore         depth=0  got line 14  want 14  OK
+errorBefore         depth=1  got line 31  want 31  OK
+errorBefore         depth=2  got line 31  want 31  OK
+errorBefore         depth=3  got line 31  want 31  OK
+errorBefore         depth=4  got line 31  want 31  OK
+errorAtNearest      depth=0  got line 14  want 14  OK
+errorAtNearest      depth=1  got line 16  want 16  OK
+errorAtNearest      depth=2  got line 17  want 17  OK
+errorAtNearest      depth=3  got line 18  want 18  OK
+errorAtNearest      depth=4  got line 19  want 19  OK
+errorBeforeNearest  depth=0  got line 14  want 14  OK
+errorBeforeNearest  depth=1  got line 31  want 31  OK
+errorBeforeNearest  depth=2  got line 16  want 16  OK
+errorBeforeNearest  depth=3  got line 17  want 17  OK
+errorBeforeNearest  depth=4  got line 18  want 18  OK
+blame table: 20/20 as documented
+-- edge levels (depth 2, tagged SURF); 'raise' line =	see below
+level=0   errorAt             -> line 64 (?)  ./quad_error_blame.luau:64: boom
+level=0   errorBefore         -> line nil (?)  boom
+level=0   errorAtNearest      -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=0   errorBeforeNearest  -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=-1  errorAt             -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=-1  errorBefore         -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=-1  errorAtNearest      -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=-1  errorBeforeNearest  -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=99  errorAt             -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=99  errorBefore         -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=99  errorAtNearest      -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=99  errorBeforeNearest  -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=1   errorAt             -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=1   errorBefore         -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=1   errorAtNearest      -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=1   errorBeforeNearest  -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+setFuncLevel(1)  -- no fns                   ok=true  nil
+setFuncLevel('1', a.g)                       ok=false  ./quad_error_blame.luau:81: setFuncLevel: level must be a number (got string) — the signature is setFuncLevel(level, ...fns)
+setFuncLevel(1, a.g, nil, a.h)               ok=false  ./quad_error_blame.luau:82: setFuncLevel: argument #3 must be a function (got nil) — a renamed or missing method?
+  after nil-hole throw: getFuncLevel(a.g) =	1	 getFuncLevel(a.h) =	0
+setFuncLevel(1, a.g, nil)  -- trailing nil   ok=false  ./quad_error_blame.luau:84: setFuncLevel: argument #3 must be a function (got nil) — a renamed or missing method?
+setFuncLevel(1, {})                          ok=false  ./quad_error_blame.luau:85: setFuncLevel: argument #2 must be a function (got table) — a renamed or missing method?
+setFuncLevel(1, print)  -- C function        ok=true  nil
+setFuncLevel(0/0, a.h)  -- NaN level         ok=true  nil
+  getFuncLevel(a.h) after NaN =	nan
+  setFuncLevel error blames line	90	call line	90
+old idiom over {x, nil, y}: visited	2	(2 = hole skipped, later entries still tagged; 1 = stops at hole)
+### luau -O2 --codegen
+errorAt             depth=0  got line 14  want 14  OK
+errorAt             depth=1  got line 16  want 16  OK
+errorAt             depth=2  got line 16  want 16  OK
+errorAt             depth=3  got line 16  want 16  OK
+errorAt             depth=4  got line 16  want 16  OK
+errorBefore         depth=0  got line 14  want 14  OK
+errorBefore         depth=1  got line 31  want 31  OK
+errorBefore         depth=2  got line 31  want 31  OK
+errorBefore         depth=3  got line 31  want 31  OK
+errorBefore         depth=4  got line 31  want 31  OK
+errorAtNearest      depth=0  got line 14  want 14  OK
+errorAtNearest      depth=1  got line 16  want 16  OK
+errorAtNearest      depth=2  got line 17  want 17  OK
+errorAtNearest      depth=3  got line 18  want 18  OK
+errorAtNearest      depth=4  got line 19  want 19  OK
+errorBeforeNearest  depth=0  got line 14  want 14  OK
+errorBeforeNearest  depth=1  got line 31  want 31  OK
+errorBeforeNearest  depth=2  got line 16  want 16  OK
+errorBeforeNearest  depth=3  got line 17  want 17  OK
+errorBeforeNearest  depth=4  got line 18  want 18  OK
+blame table: 20/20 as documented
+-- edge levels (depth 2, tagged SURF); 'raise' line =	see below
+level=0   errorAt             -> line 64 (?)  ./quad_error_blame.luau:64: boom
+level=0   errorBefore         -> line nil (?)  boom
+level=0   errorAtNearest      -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=0   errorBeforeNearest  -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=-1  errorAt             -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=-1  errorBefore         -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=-1  errorAtNearest      -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=-1  errorBeforeNearest  -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=99  errorAt             -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=99  errorBefore         -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=99  errorAtNearest      -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=99  errorBeforeNearest  -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=1   errorAt             -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=1   errorBefore         -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=1   errorAtNearest      -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+level=1   errorBeforeNearest  -> line 14 (raise)  ./quad_error_blame.luau:14: boom
+setFuncLevel(1)  -- no fns                   ok=true  nil
+setFuncLevel('1', a.g)                       ok=false  ./quad_error_blame.luau:81: setFuncLevel: level must be a number (got string) — the signature is setFuncLevel(level, ...fns)
+setFuncLevel(1, a.g, nil, a.h)               ok=false  ./quad_error_blame.luau:82: setFuncLevel: argument #3 must be a function (got nil) — a renamed or missing method?
+  after nil-hole throw: getFuncLevel(a.g) =	1	 getFuncLevel(a.h) =	0
+setFuncLevel(1, a.g, nil)  -- trailing nil   ok=false  ./quad_error_blame.luau:84: setFuncLevel: argument #3 must be a function (got nil) — a renamed or missing method?
+setFuncLevel(1, {})                          ok=false  ./quad_error_blame.luau:85: setFuncLevel: argument #2 must be a function (got table) — a renamed or missing method?
+setFuncLevel(1, print)  -- C function        ok=true  nil
+setFuncLevel(0/0, a.h)  -- NaN level         ok=true  nil
+  getFuncLevel(a.h) after NaN =	nan
+  setFuncLevel error blames line	90	call line	90
+old idiom over {x, nil, y}: visited	2	(2 = hole skipped, later entries still tagged; 1 = stops at hole)

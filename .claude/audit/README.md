@@ -62,4 +62,5 @@
 - `round13-e33-reference-signatures/` — **[2026-09-27 자율 루프 E33]** 레퍼런스 시그니처 225항목 전수 표(`TABLE.md`)·추출/비교 스크립트·strict 프로브 여섯(`probe_single3`·`probe_onchange`·`probe_calls` 등) — `H-749`~`H-753`, `Q121`·`Q122`.
 - `round13-e31-skill-walkthrough/` — **[2026-09-27 자율 루프 E31]** 스킬 문서 따라 짠 UI 둘(`ui-a-screen`·`ui-b-components`)·펜스 23 mock/strict(`gen.py`·`run-all.sh`·`blocks/`·`tails/`)·프로브(`probe-single-*`·`probe-req1~3`·`probe-noDeclModule`) — `H-754`~`H-758`, `Q123`, 8.34.
 - `round13-e35-debug-layer/` — **[2026-09-27 자율 루프 E35]** `q.debug` 분기 8자리 트리거 표·출력 원문·how-to 10 절차 × 에러 다섯 — 코드 결함 0, 문서 `H-760`~`H-763`.
+- `round13-e36-version-check-fuzz/` — **[2026-09-27 자율 루프 E36]** `type_version_check` 차등 퍼즈(`refs.py`·`fuzz.py`·`analyze.py`·`repros.py`)·type function 대조(`typefn_diff.py`)·`quad_error` blame 실측(`quad_error_blame.luau`) — 코드 결함 0, 문서 `H-766`~`H-768`, `Q124`.
 

@@ -52,7 +52,7 @@ QuadRoblox: <T>(quad: T) -> RobloxExtension
    맞지 않으면 소비자의 `UseProvider` 줄을 blame하며 던집니다.
 
    ```
-   quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')
+   Quad0228 quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')
    ```
 
    `{VERSION_PATTERN}`은 이 패키지에 박힌 상수이고 저장소 현재 값은 `"3.2^.0^"`(같은 메이저 안에서 3.2.0 이상), `{tostring(q.Version)}`은
@@ -60,10 +60,11 @@ QuadRoblox: <T>(quad: T) -> RobloxExtension
    정확 일치라 메이저가 바뀌면 통과하지 않습니다. 프리릴리즈 빌드는 그 빌드를 정확히 적은 패턴(`"3.3.0-rc.2"`)을 써서
    같은 프리릴리즈의 quad-base만 받습니다 — 중간 빌드끼리 섞지 않기 위해서입니다.
 
-   패턴은 `|`로 나뉜 대안 중 하나라도 맞으면 통과하고, 대안마다 `.`로 나뉜 자리를 `*`(뭐든 통과) /
-   `N^`(숫자로 N 이상 — N보다 크면 뒤 자리는 보지 않는 사전식 하한) / 그 외(정확 일치)로 읽습니다.
-   `+` 뒤 빌드 메타데이터는 양쪽 다 무시하고, `3.1.0-rc.1` 같은 프리릴리즈 꼬리는 **있고 없음이 양쪽에서
-   같아야** 합니다(꼬리 없는 패턴은 rc 빌드를 받지 않음). 전체 문법은
+   패턴은 `|`로 나뉜 대안 중 하나라도 맞으면 통과합니다. 대안마다 `+` 뒤 빌드 메타데이터를 버리고 첫 `-`에서
+   core와 프리릴리즈 꼬리로 나눠 **따로** 판정하며(자리 개수가 다르면 불일치), 각 구간의 `.`로 나뉜 자리를
+   `*`(뭐든 통과) / `N^`(숫자로 N 이상 — N보다 크면 **그 구간의** 뒤 자리는 보지 않는 사전식 하한) / 그 외(정확
+   일치)로 읽습니다. `3.1.0-rc.1` 같은 꼬리는 **있고 없음이 양쪽에서 같아야** 합니다(꼬리 없는 패턴은 rc 빌드를
+   받지 않음 — 예: `"3.4.0-rc.0"`은 `"3.3^.0^-rc.1^"`에 맞지 않지만 `"3.0.0-rc.1"`은 `"3.0.*-rc.1"`에 맞습니다). 전체 문법은
    [백엔드 프로바이더 규약](/reference/extend/01-backend-provider-contract/)에 있습니다.
 2. **모듈 뮤테이션** — 생명주기 hold op 넷(`holdLifetime`/`releaseLifetime`/`isHeld`/`isHeldBy` — 그 위의
    `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`는 quad-base 것)과

@@ -108,5 +108,5 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 `quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')` — `quad-roblox/src/init.luau`
 
 - **언제**: `q:UseProvider(QuadRoblox)`에 넘긴 `quad-base` 모듈의 `Version`이 이 quad-roblox 사본이 요구하는 버전 패턴과 맞지 않을 때(`{VERSION_PATTERN}`은 이 패키지에 박힌 상수, `{tostring(q.Version)}`은 넘어온 모듈의 실제 버전).
-- **고치려면**: quad-base와 quad-roblox의 버전을 맞추세요(같은 메이저, 요구 마이너 이상).
+- **고치려면**: quad-base와 quad-roblox의 버전을 맞추세요 — 저장소 현재 패턴 `"3.2^.0^"` 기준으로 같은 메이저에서 3.2.0 이상의 **릴리즈** 빌드(하한은 bump마다 패치까지 올라갑니다). quad-base가 프리릴리즈(`3.3.0-rc.1`)면 꼬리 유무가 달라 이 조건을 만족해도 막히니, 그 rc를 정확히 적은 quad-roblox 빌드를 쓰세요([설치](../roblox/01-install.md#quadroblox)의 문법).
 - **참고**: [`QuadRoblox`](../roblox/01-install.md#quadroblox)
