@@ -1,0 +1,55 @@
+WARNING: --platform is set to 'roblox' but no definitions files are provided. 'luau-lsp analyze' does not download definitions files; use `--platform=standard` to silence
+[WARN] No definitions file provided by client
+[INFO] sourcemap is disabled - automatic updating on sourcemap changes disabled
+[INFO] Loading Luau configuration from /code/Projects/quad/.luaurc
+L(38,19): TypeError: Expected this to be 'StateData<number> | number', but got 'string'
+L(39,12): TypeError: None of the overloads for function that accept 2 arguments are compatible.
+L(39,12): TypeError: Available overloads: t1 where t1 = <U>({ Get: (*CYCLE*) -> string, read __quadState: true, read __quadStateValue: string }, (t2) -> U) -> U ; t2 = { Get: (*CYCLE*) -> string, read __quadState: true, read __quadStateValue: string } & { Apply: (({ Get: (*CYCLE*) -> string, read __quadState: true, read __quadStateValue: string }, { __apply: (any, any) -> any }) -> any) & t1, Compute: <U>({ Get: (*CYCLE*) -> string, read __quadState: true, read __quadStateValue: string }, ({ Get: (*CYCLE*) -> string, read __quadState: true, read __quadStateValue: string }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> string, read __quadState: true, read __quadStateValue: string }, ...any) -> t2, Gate: ({ Get: (*CYCLE*) -> ... *TRUNCATED*; and (StateData<string>, { __apply: (any, any) -> any }) -> any
+L(40,20): TypeError: Expected this to be 'string', but got 'number'
+L(41,12): TypeError: Argument count mismatch. Function expects 2 arguments, but only 1 is specified
+L(42,12): TypeError: None of the overloads for function that accept 2 arguments are compatible.
+L(42,12): TypeError: Available overloads: t1 where t1 = <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t2) -> U) -> U ; t2 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & t1, Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ...any) -> t2, Gate: ({ Get: (*CYCLE*) -> ... *TRUNCATED*; and (StateData<number>, { __apply: (any, any) -> any }) -> any
+L(43,24): TypeError: Expected this to be
+	'(tp5) -> (StateData<number?>) -> t2 where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (tp5) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*'
+but got
+	'<T>(StateData<T> | T) -> (StateData<T?>) -> t1 where t1 = { Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue: T } & { Apply: (({ Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue: T }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue: T }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue: T }, ({ Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue: T }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue... *TRUNCATED*'
+L(44,20): TypeError: Type '(StateData<number>) -> t1 where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*' does not have key 'Get'
+L(45,12): TypeError: Argument count mismatch. Function expects 2 arguments, but 3 are specified
+L(46,12): TypeError: Argument count mismatch. Function expects 1 argument, but 2 are specified
+L(47,21): TypeError: None of the overloads for function that accept 2 arguments are compatible.
+L(47,21): TypeError: Available overloads: t1 where t1 = <U>({ Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? }, (t2) -> U) -> U ; t2 = { Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? } & { Apply: (({ Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? }, { __apply: (any, any) -> any }) -> any) & t1, Compute: <U>({ Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? }, ({ Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? }, ...any) -> t2, Gate: ({ Get: (... *TRUNCATED*; and (StateData<string?>, { __apply: (any, any) -> any }) -> any
+L(48,23): TypeError: Expected this to be 'StateData<number> | number', but got 'nil'
+L(49,13): TypeError: None of the overloads for function that accept 2 arguments are compatible.
+L(49,13): TypeError: Available overloads: t1 where t1 = <U>({ Get: (*CYCLE*) -> boolean, read __quadState: true, read __quadStateValue: boolean }, (t2) -> U) -> U ; t2 = { Get: (*CYCLE*) -> boolean, read __quadState: true, read __quadStateValue: boolean } & { Apply: (({ Get: (*CYCLE*) -> boolean, read __quadState: true, read __quadStateValue: boolean }, { __apply: (any, any) -> any }) -> any) & t1, Compute: <U>({ Get: (*CYCLE*) -> boolean, read __quadState: true, read __quadStateValue: boolean }, ({ Get: (*CYCLE*) -> boolean, read __quadState: true, read __quadStateValue: boolean }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> boolean, read __quadState: true, read __quadStateValue: boolean }, ...any) -> t2, Gate: ({ Get: (... *TRUNCATED*; and (StateData<boolean>, { __apply: (any, any) -> any }) -> any
+L(51,13): TypeError: None of the overloads for function that accept 2 arguments are compatible.
+L(51,13): TypeError: Available overloads: t1 where t1 = <U>({ Get: (*CYCLE*) -> number?, read __quadState: true, read __quadStateValue: number? }, (t2) -> U) -> U ; t2 = { Get: (*CYCLE*) -> number?, read __quadState: true, read __quadStateValue: number? } & { Apply: (({ Get: (*CYCLE*) -> number?, read __quadState: true, read __quadStateValue: number? }, { __apply: (any, any) -> any }) -> any) & t1, Compute: <U>({ Get: (*CYCLE*) -> number?, read __quadState: true, read __quadStateValue: number? }, ({ Get: (*CYCLE*) -> number?, read __quadState: true, read __quadStateValue: number? }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> number?, read __quadState: true, read __quadStateValue: number? }, ...any) -> t2, Gate: ({ Get: (... *TRUNCATED*; and (StateData<number?>, { __apply: (any, any) -> any }) -> any
+L(52,32): TypeError: Expected this to be
+	'StateData<number> | number'
+but got
+	't1 where t1 = t2 & { Emit: (t1) -> t1, read Revision: number, Set: (t1, number?) -> t1 } ; t2 = { Get: (*CYCLE*) -> number?, read __quadState: true, read __quadStateValue: number? } & { Apply: (({ Get: (*CYCLE*) -> number?, read __quadState: true, read __quadStateValue: number? }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number?, read __quadState: true, read __quadStateValue: number? }, (t2) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number?, read __quadState: true, read __quadStateValue: number? }, ({ Get: (*CYCLE*) -> number?, read __quadState: true, read __quadStateValue: number? }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*... *TRUNCATED*'
+L(9,7): LocalUnused: Variable 't1' is never used; prefix with '_' to silence
+L(11,7): LocalUnused: Variable 't2' is never used; prefix with '_' to silence
+L(13,7): LocalUnused: Variable 't3' is never used; prefix with '_' to silence
+L(15,7): LocalUnused: Variable 't4' is never used; prefix with '_' to silence
+L(17,7): LocalUnused: Variable 't5' is never used; prefix with '_' to silence
+L(20,7): LocalUnused: Variable 't6' is never used; prefix with '_' to silence
+L(23,7): LocalUnused: Variable 't7' is never used; prefix with '_' to silence
+L(27,7): LocalUnused: Variable 't8' is never used; prefix with '_' to silence
+L(29,7): LocalUnused: Variable 't9' is never used; prefix with '_' to silence
+L(31,7): LocalUnused: Variable 't10' is never used; prefix with '_' to silence
+L(35,7): LocalUnused: Variable 't11' is never used; prefix with '_' to silence
+L(38,7): LocalUnused: Variable 'n1' is never used; prefix with '_' to silence
+L(39,7): LocalUnused: Variable 'n2' is never used; prefix with '_' to silence
+L(40,7): LocalUnused: Variable 'n3' is never used; prefix with '_' to silence
+L(41,7): LocalUnused: Variable 'n4' is never used; prefix with '_' to silence
+L(42,7): LocalUnused: Variable 'n5' is never used; prefix with '_' to silence
+L(43,7): LocalUnused: Variable 'n6' is never used; prefix with '_' to silence
+L(44,7): LocalUnused: Variable 'n7' is never used; prefix with '_' to silence
+L(45,7): LocalUnused: Variable 'n8' is never used; prefix with '_' to silence
+L(46,7): LocalUnused: Variable 'n9' is never used; prefix with '_' to silence
+L(47,7): LocalUnused: Variable 'n10' is never used; prefix with '_' to silence
+L(48,7): LocalUnused: Variable 'n11' is never used; prefix with '_' to silence
+L(49,7): LocalUnused: Variable 'n12' is never used; prefix with '_' to silence
+L(50,7): LocalUnused: Variable 'n13' is never used; prefix with '_' to silence
+L(51,7): LocalUnused: Variable 'n14' is never used; prefix with '_' to silence
+L(52,7): LocalUnused: Variable 'n15' is never used; prefix with '_' to silence

@@ -170,7 +170,7 @@ Band: (...NumArg) -> NumOp
 
 `bit32.band` 폴딩. Luau엔 비트 연산자가 없어 `bit32` 위의 얇은 층입니다.
 
-비트 계열 여섯(`Band`/`Bor`/`Bxor`/`Bnot`/`Shl`/`Shr`)은 `bit32` 계약을 그대로 물려받고 게이트를 두지 않습니다 — 소수는 잘리고(`1.5` → `1`), 음수는 2^32 모듈로(`-1` → `4294967295`), 2^32 이상은 접히며(`2^53+2` → `2`), `NaN`·`±inf`는 `0`(`Bnot(NaN)`은 `4294967295`), 이동량이 32 이상이면 `0`, 음수 이동량은 방향이 뒤집힙니다. 수치 계열의 `NaN`도 검사하지 않습니다 — `Clamp`는 **경계**의 NaN만 거부하고 대상이 NaN이면 NaN을 그대로 돌려주며, `Min`/`Max`는 어느 쪽이 NaN이냐에 따라 결과가 갈립니다(대상이 NaN이면 NaN, 인자가 NaN이면 대상 값).
+비트 계열 여섯(`Band`/`Bor`/`Bxor`/`Bnot`/`Shl`/`Shr`)은 `bit32` 계약을 그대로 물려받고 게이트를 두지 않습니다 — 소수는 잘리고(`1.5` → `1`), 음수는 2^32 모듈로(`-1` → `4294967295`), 2^32 이상은 **2^63 미만까지만** 접히며(`2^53+2` → `2`; Luau가 `(unsigned)(long long)n` 캐스트로 변환하므로 절댓값 2^63 이상·`NaN`·`±inf`는 C에서 정의되지 않은 변환이라 **플랫폼에 달립니다** — x86에선 `0`(`Bnot(NaN)`은 `4294967295`), ARM64는 포화 변환이라 `+inf`가 `4294967295`가 될 수 있음, 미실측), 이동량도 같은 캐스트를 거쳐 32 이상이면 `0`(`NaN`·`inf`·2^31 이상은 플랫폼 의존), 음수 이동량은 방향이 뒤집힙니다. 수치 계열의 `NaN`도 검사하지 않습니다 — `Clamp`는 **경계**의 NaN만 거부하고 대상이 NaN이면 NaN을 그대로 돌려주며, `Min`/`Max`는 어느 쪽이 NaN이냐에 따라 결과가 갈립니다(대상이 NaN이면 NaN, 인자가 NaN이면 대상 값).
 
 ```luau
 local flags = q.Source(0b1100)
@@ -244,7 +244,7 @@ Alternative: <T>(default: T | StateData<T>) -> (self: StateData<T?>) -> State<T>
 
 `default`가 `nil`이면 팩토리 호출 줄에서 `Quad0128 Operator.Alternative: default must not be nil`입니다. `default`가 State인데 그 **현재값**이 `nil`이면(아직 안 채운 `store:Of`) 읽는 줄에서 `Quad0129 Operator.Alternative: the default State's current value is nil`로 던집니다 — 기본값 자리에는 값이 있어야 합니다.
 
-`q.None`은 `nil`이 아닙니다 — self가 `None`이면 기본값으로 바뀌지 않고 `None`이 그대로 내려갑니다(프로퍼티 자리에서는 프로퍼티 핸들러가 `nil`을 **씁니다** — `nil`을 못 받는 프로퍼티(`Text` 등)면 엔진이 던집니다, [Declaration](/reference/roblox/02-d/)의 값 대수 표). `Indexed`도 `None`을 테이블로 보고 조용히 `nil`을 돌려주며, 산술·비트 연산자는 `None`을 `must be a number (got table)`로 거부합니다.
+`q.None`은 `nil`이 아닙니다 — self가 `None`이면 기본값으로 바뀌지 않고 `None`이 그대로 내려갑니다(프로퍼티 자리에서는 프로퍼티 핸들러가 `nil`을 **씁니다** — `nil`을 못 받는 프로퍼티(`Text` 등)면 엔진이 던집니다, [Declaration](/reference/roblox/02-d/)의 값 대수 표). `Indexed`도 `None`을 테이블로 보고 조용히 `nil`을 돌려주며(예외 하나 — 센티널의 표시 필드 이름 `"__quadNone"`을 키로 주면 `true`), 산술·비트 연산자는 `None`을 `must be a number (got table)`로 거부합니다.
 
 ```luau
 local optionalName = q.Source<<string?>>(nil)

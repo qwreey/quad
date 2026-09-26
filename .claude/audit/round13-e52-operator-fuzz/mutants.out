@@ -1,0 +1,10 @@
+== sumfirst
+seeds 1..1000: cases=2567 reads=9482 factoryErr=142 DIFFS=0
+== noneisnil
+seeds 1..1000: cases=2567 reads=9482 factoryErr=142 DIFFS=98
+== floorbits
+seeds 1..1000: cases=2567 reads=9482 factoryErr=142 DIFFS=92
+== skipnil
+seeds 1..1000: cases=2567 reads=9337 factoryErr=142 DIFFS=294
+== clampswap
+seeds 1..1000: cases=2567 reads=9482 factoryErr=142 DIFFS=173

@@ -1,0 +1,4 @@
+seeds 100001..115000: cases=38590 reads=140845 factoryErr=2126 DIFFS=0
+ops: Alternative=1071 Band=1071 Bnot=1071 Bor=1072 Bxor=1072 Clamp=1073 Indexed=1071 Max=1071 Min=1069 Not=1073 Product=1072 Shl=1070 Shr=1073 Sum=1071
+undecided cells hit: U1=11037 U2=4555 U3=3232 U4=3675 U5=1404 U6=2998
+read errors: Quad0120=3111 Quad0121=6886 Quad0122=15480 Quad0124=1754 Quad0127=1360 Quad0129=8 Quad0184=20079

@@ -1,0 +1,49 @@
+0                      band=0 bnot=4294967295
+-0                     band=0 bnot=4294967295
+1.5                    band=1 bnot=4294967294
+-1.5                   band=4294967295 bnot=0
+-1                     band=4294967295 bnot=0
+2147483648             band=2147483648 bnot=2147483647
+4294967296             band=0 bnot=4294967295
+4294967301             band=5 bnot=4294967290
+9007199254740992       band=0 bnot=4294967295
+9007199254740994       band=2 bnot=4294967293
+-9007199254740992      band=0 bnot=4294967295
+9223372036854776000    band=0 bnot=4294967295
+9223372036854778000    band=0 bnot=4294967295
+-9223372036854776000   band=0 bnot=4294967295
+-9223372036854780000   band=0 bnot=4294967295
+18446744073709552000   band=0 bnot=4294967295
+1e+300                 band=0 bnot=4294967295
+-1e+300                band=0 bnot=4294967295
+nan                    band=0 bnot=4294967295
+inf                    band=0 bnot=4294967295
+-inf                   band=0 bnot=4294967295
+4294967295.9           band=4294967295 bnot=0
+-4294967296.5          band=0 bnot=4294967295
+shift 0            l=2147483649 r=2147483649
+shift 1            l=2 r=1073741824
+shift 31           l=2147483648 r=1
+shift 32           l=0 r=0
+shift 33           l=0 r=0
+shift 64           l=0 r=0
+shift -1           l=1073741824 r=2
+shift -31          l=1 r=2147483648
+shift -32          l=0 r=0
+shift -33          l=0 r=0
+shift 1.5          l=2 r=1073741824
+shift -1.5         l=1073741824 r=2
+shift nan          l=0 r=0
+shift inf          l=0 r=0
+shift -inf         l=0 r=0
+shift 2147483648   l=0 r=0
+shift 4294967296   l=0 r=0
+shift 2147483649   l=0 r=0
+shift -2147483648  l=0 r=0
+shift -2147483649  l=0 r=0
+shift 10000000000  l=0 r=0
+shift 9223372036854776000 l=0 r=0
+nan	1	nan	1
+true	true	true	-inf	-inf
+true	true	5
+inf	-inf	inf	-inf

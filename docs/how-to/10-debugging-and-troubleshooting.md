@@ -101,7 +101,7 @@ Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or neve
 - **증상**: `Modifier`에 넣으면
   `Quad0064 Modifier: field "Ref" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`(세터 체인 `:Field`로 넣었으면 같은 문구에 `Quad0057`).
   문자 키로 주면 종류에 맞는 주어로
-  `Quad0137 Ref: must be an array item, not the value of a string key`(`PreRef:`/`PostRef:`도 같은 모양)가 납니다.
+  `Quad0137 Ref: must be an array item, not the value of a string key`(`PreRef:`/`PostRef:`도 같은 모양)가 납니다 — 단 그 문자 키가 **실제 반영 프로퍼티나 이벤트 이름**이면 이 가드에 닿기 전에 프로퍼티·이벤트 핸들러가 값을 받아 다른 결과가 납니다(`Name = ref`는 번호 없는 타입 에러, `Size = ref`는 에러 없이 `Ref` 테이블이 대입되는 조용한 오염, `Activated = ref`는 `Quad0218` — [Ref 레퍼런스](../reference/core/07-ref.md)의 "숫자 키 자리에만 놓는다" 절; strict가 이 자리를 잡아 줍니다).
 - **원인**: `Modifier`는 여러 인스턴스에 재사용되는 스타일 가방이라, 단일
   인스턴스에 바인딩되는 핸들러 층 값(`Ref`/`Observer`/`Effect`/`Slot`/
   `Modifier`)을 담을 수 없습니다. 그리고 이 값들은 props의 **숫자 키 자리**에

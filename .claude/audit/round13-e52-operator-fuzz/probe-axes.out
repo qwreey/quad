@@ -1,0 +1,82 @@
+== (a) recovery after a throw (H-540)
+a1 b=nil	!Quad0120	reread	!Quad0184
+a1 b=2	=3
+a1 b='x'	!Quad0121
+a1 a=5 (b still 'x')	!Quad0121
+a1 b=3	=8
+a2 t=5	!Quad0127
+a2 after c:Set(2) (only outer dep moved)	!Quad0184
+a2 inner direct	!Quad0184
+a2 t={x=10}	=12
+a3	=50
+a3 lo=200	!Quad0124	!Quad0184
+a3 hi=300	=200
+a4	!Quad0120
+a4 z=9	=18
+a5	!Quad0129
+a5 v=1 (default still nil, not read)	=1
+a5 v=nil	!Quad0129
+a5 d=0	=0
+== (b) Indexed keys & nesting
+b1 key	a	table: 0x000063d3721b3710
+b1 key	1	one
+b1 key	0.5	half
+b1 key	true	yes
+b1 key	false	nil
+b1 key	table: 0x000063d3721b36e0	tablekey
+b1 key	function: 0x000063d37206d500	fnkey
+b1 key	nan	nil
+b1 key	None	nil
+b1 key	missing	nil
+b2 key nil	ERR Quad0125
+b2 key State	ERR Quad0126
+b2 key Derived State	ERR Quad0126
+b3 nested a.b	=7
+b3 after Set	=8
+b3 a missing -> inner nil -> outer	!Quad0127
+b3 message	./.claude/audit/round13-e52-operator-fuzz/probe-axes.luau:56: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)
+b3 recover	=9
+b4 None["a"]	=nil	None["__quadNone"]	=true
+b5 __index	=via:zz
+b6	=1
+b6 mutated in place, no Set	=1
+b6 Set same table	=2
+b7 string target	!Quad0127
+== misc
+m1 self as dep Sum(x)	=6	Sum(x,x)	=9	Product(x,x,x)	=81
+m2 same factory twice on same State	=11	=11	false
+m3 zero-arg	=-1	=1.5	=nan	vs 1-arg	=4294967295	vs Bnot(Bnot)	=4294967295
+m3 Sum()/Min()/Max()	=4	=nan	!Quad0122
+m4 Clamp()	ERR Quad0118
+m4 Clamp(1)	ERR Quad0118
+m4 Clamp(0,1,'junk')	ok 1
+m4 Shl()	ERR Quad0118
+m4 Shl(1, 'junk')	ok 2
+m4 Sum(1, nil)	ERR Quad0118
+m4 Sum('5')	ERR Quad0119
+m4 Alternative()	ERR Quad0128
+m4 Indexed()	ERR Quad0125
+m5 Op.Sum(1)(5)	ERR Quad0123
+m5 Op.Not(5)	ERR Quad0123
+m5 Op.Not(State) direct	ok true
+m6 price:Apply(Op.Sum) (curried not called)	ok function
+m6 price:Apply(Op.Clamp)	ERR Quad0118
+m6 price:Apply(Op.Alternative)	ok function
+m6 price:Apply(Op.Indexed)	ERR Quad0126
+m6 price:Apply(Op.Shl)	ok function
+m7 Not	=true	=false	=false	=false	=true
+m8 Alternative	=false	=false	=None	=None
+m9 Clamp NaN target	=nan	-0	-inf	lo==hi	=3	inf bounds	=5	lo=inf	=inf
+m9 Clamp lo>hi plain literals: factory ok, raise at read	!Quad0124
+m10 Sum inf-inf	=nan	Product 0*inf	=nan	2^53+1	9007199254740992
+m11 target nil + Clamp bounds bad: which error first	!Quad0124	target nil + arg nil (Sum)	!Quad0122
+m12 messages
+  	./.claude/audit/round13-e52-operator-fuzz/probe-axes.luau:105: Quad0122 Operator.Sum: the Apply target's current value must be a number (got nil)
+  	./.claude/audit/round13-e52-operator-fuzz/probe-axes.luau:106: Quad0121 Operator.Sum: argument #1 is a State whose current value must be a number (got string)
+  	./.claude/audit/round13-e52-operator-fuzz/probe-axes.luau:107: Quad0121 Operator.Sum: argument #1 is a State whose current value must be a number (got table)
+  	./.claude/audit/round13-e52-operator-fuzz/probe-axes.luau:108: Quad0122 Operator.Sum: the Apply target's current value must be a number (got table)
+  	./.claude/audit/round13-e52-operator-fuzz/probe-axes.luau:109: Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min nan, max 1)
+== (d) perf
+d1 Sum(100 States): build 0.04 ms, 10k Set+Get 161.2 ms (16.12 us/recompute), final 995050
+d2 Sum(100 literals): 10k Set+Get 41.4 ms (4.14 us/recompute)
+d3 hand-written Compute (100 deps) baseline: 10k Set+Get 132.6 ms
