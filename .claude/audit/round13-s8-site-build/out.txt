@@ -1,0 +1,39 @@
+Total html files: 188
+Total internal-ish hrefs checked: 17024
+External/mailto/tel links skipped: 1341
+
+=== MISSING TARGET FILES (30) ===
+changelog-versions/index.html  ->  href="./docs/how-to/08-migrating-from-v1.md"  (resolved: changelog-versions/docs/how-to/08-migrating-from-v1.md)
+changelog-versions/index.html  ->  href="./docs/overview/02-from-v1.md"  (resolved: changelog-versions/docs/overview/02-from-v1.md)
+changelog-versions/index.html  ->  href="./docs/how-to/08-migrating-from-v1.md"  (resolved: changelog-versions/docs/how-to/08-migrating-from-v1.md)
+changelog-versions/version/2-x-quad-v1...latest/index.html  ->  href="./docs/how-to/08-migrating-from-v1.md"  (resolved: changelog-versions/version/2-x-quad-v1...latest/docs/how-to/08-migrating-from-v1.md)
+changelog-versions/version/2-x-quad-v1...latest/index.html  ->  href="./docs/overview/02-from-v1.md"  (resolved: changelog-versions/version/2-x-quad-v1...latest/docs/overview/02-from-v1.md)
+changelog-versions/version/2-x-quad-v1...latest/index.html  ->  href="./docs/how-to/08-migrating-from-v1.md"  (resolved: changelog-versions/version/2-x-quad-v1...latest/docs/how-to/08-migrating-from-v1.md)
+changelog-versions/version/3-0-0...latest/index.html  ->  href="./docs/how-to/08-migrating-from-v1.md"  (resolved: changelog-versions/version/3-0-0...latest/docs/how-to/08-migrating-from-v1.md)
+changelog-versions/version/3-0-0...latest/index.html  ->  href="./docs/overview/02-from-v1.md"  (resolved: changelog-versions/version/3-0-0...latest/docs/overview/02-from-v1.md)
+changelog-versions/version/3-0-0...latest/index.html  ->  href="./docs/how-to/08-migrating-from-v1.md"  (resolved: changelog-versions/version/3-0-0...latest/docs/how-to/08-migrating-from-v1.md)
+changelog-versions/version/3-0-0/index.html  ->  href="./docs/how-to/08-migrating-from-v1.md"  (resolved: changelog-versions/version/3-0-0/docs/how-to/08-migrating-from-v1.md)
+changelog-versions/version/3-0-0/index.html  ->  href="./docs/overview/02-from-v1.md"  (resolved: changelog-versions/version/3-0-0/docs/overview/02-from-v1.md)
+changelog-versions/version/3-0-0/index.html  ->  href="./docs/how-to/08-migrating-from-v1.md"  (resolved: changelog-versions/version/3-0-0/docs/how-to/08-migrating-from-v1.md)
+changelog/index.html  ->  href="docs/reference/errors/00-index.md"  (resolved: changelog/docs/reference/errors/00-index.md)
+en/changelog-versions/index.html  ->  href="./docs/how-to/08-migrating-from-v1.md"  (resolved: en/changelog-versions/docs/how-to/08-migrating-from-v1.md)
+en/changelog-versions/index.html  ->  href="./docs/overview/02-from-v1.md"  (resolved: en/changelog-versions/docs/overview/02-from-v1.md)
+en/changelog-versions/index.html  ->  href="./docs/how-to/08-migrating-from-v1.md"  (resolved: en/changelog-versions/docs/how-to/08-migrating-from-v1.md)
+en/changelog-versions/version/2-x-quad-v1...latest/index.html  ->  href="./docs/how-to/08-migrating-from-v1.md"  (resolved: en/changelog-versions/version/2-x-quad-v1...latest/docs/how-to/08-migrating-from-v1.md)
+en/changelog-versions/version/2-x-quad-v1...latest/index.html  ->  href="./docs/overview/02-from-v1.md"  (resolved: en/changelog-versions/version/2-x-quad-v1...latest/docs/overview/02-from-v1.md)
+en/changelog-versions/version/2-x-quad-v1...latest/index.html  ->  href="./docs/how-to/08-migrating-from-v1.md"  (resolved: en/changelog-versions/version/2-x-quad-v1...latest/docs/how-to/08-migrating-from-v1.md)
+en/changelog-versions/version/3-0-0...latest/index.html  ->  href="./docs/how-to/08-migrating-from-v1.md"  (resolved: en/changelog-versions/version/3-0-0...latest/docs/how-to/08-migrating-from-v1.md)
+en/changelog-versions/version/3-0-0...latest/index.html  ->  href="./docs/overview/02-from-v1.md"  (resolved: en/changelog-versions/version/3-0-0...latest/docs/overview/02-from-v1.md)
+en/changelog-versions/version/3-0-0...latest/index.html  ->  href="./docs/how-to/08-migrating-from-v1.md"  (resolved: en/changelog-versions/version/3-0-0...latest/docs/how-to/08-migrating-from-v1.md)
+en/changelog-versions/version/3-0-0/index.html  ->  href="./docs/how-to/08-migrating-from-v1.md"  (resolved: en/changelog-versions/version/3-0-0/docs/how-to/08-migrating-from-v1.md)
+en/changelog-versions/version/3-0-0/index.html  ->  href="./docs/overview/02-from-v1.md"  (resolved: en/changelog-versions/version/3-0-0/docs/overview/02-from-v1.md)
+en/changelog-versions/version/3-0-0/index.html  ->  href="./docs/how-to/08-migrating-from-v1.md"  (resolved: en/changelog-versions/version/3-0-0/docs/how-to/08-migrating-from-v1.md)
+en/changelog/index.html  ->  href="docs/reference/errors/00-index.md"  (resolved: en/changelog/docs/reference/errors/00-index.md)
+en/how-to/06-headless-testing/index.html  ->  href="../../CONTRIBUTING.md"  (resolved: en/CONTRIBUTING.md)
+en/how-to/06-headless-testing/index.html  ->  href="../../CONTRIBUTING.md"  (resolved: en/CONTRIBUTING.md)
+how-to/06-headless-testing/index.html  ->  href="../../CONTRIBUTING.md"  (resolved: CONTRIBUTING.md)
+how-to/06-headless-testing/index.html  ->  href="../../CONTRIBUTING.md"  (resolved: CONTRIBUTING.md)
+
+=== MISSING ANCHORS (2) ===
+en/reference/extend/01-backend-provider-contract/index.html  ->  href="#4-%EC%83%9D%EB%AA%85%EC%A3%BC%EA%B8%B0-%ED%94%84%EB%A6%AC%EB%AF%B8%ED%8B%B0%EB%B8%8C"  (target file en/reference/extend/01-backend-provider-contract/index.html has no id="4-%EC%83%9D%EB%AA%85%EC%A3%BC%EA%B8%B0-%ED%94%84%EB%A6%AC%EB%AF%B8%ED%8B%B0%EB%B8%8C")
+reference/extend/01-backend-provider-contract/index.html  ->  href="#4-%EC%83%9D%EB%AA%85%EC%A3%BC%EA%B8%B0-%ED%94%84%EB%A6%AC%EB%AF%B8%ED%8B%B0%EB%B8%8C"  (target file reference/extend/01-backend-provider-contract/index.html has no id="4-%EC%83%9D%EB%AA%85%EC%A3%BC%EA%B8%B0-%ED%94%84%EB%A6%AC%EB%AF%B8%ED%8B%B0%EB%B8%8C")
