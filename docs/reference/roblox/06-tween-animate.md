@@ -270,6 +270,8 @@ local box = D.Frame({ BackgroundTransparency = size })
 
 **같은 프로퍼티를 `Started`·`Cancelled` 안에서 다시 쓰지 마세요** — 두 콜백은 프로퍼티 핸들러가 그 자리를 처리하는 **도중에** 불리므로, 거기서 같은 자리에 묶인 State를 `:Set`하면 같은 자리의 재진입이고 정의되지 않은 동작입니다(다른 프로퍼티나 다른 State를 바꾸는 것은 괜찮습니다 — 위 `flash` 모양이 그것입니다). 다음 트윈을 같은 프로퍼티에 잇는 자리는 `Completed`입니다.
 
+**숏핸드 `UIPadding`/`UIPaddingOffset`([02장](./02-d.md#숏핸드-키-넷))에 건 Tween 하나의 콜백은 값 하나에 네 번씩 불립니다** — 그 숏핸드가 관리 자식의 프로퍼티 넷(`PaddingLeft`/`Right`/`Top`/`Bottom`)에 같은 Tween을 각각 적용하기 때문입니다(mock 확인). 같은 Tween/State를 프로퍼티 둘 이상에 걸었을 때도 각각 불립니다 — `Completed` 안에서 같은 State를 `:Set`해 다음 트윈을 잇는 관용구는 이런 자리에서 네 통지가 같은 프레임에 겹쳐 위 재진입 캐비엇에 걸립니다(검토 중).
+
 **인자가 없는 이유** — 콜백이 인스턴스를 받으려면 엔진 트윈의 연결이 그 인스턴스를 붙잡아야 하는데, 그 연결은 기록이 트윈을 쥐는 동안 살아 있어 인스턴스가 수거되지 않습니다(Luau의 약한 키 테이블은 ephemeron이 아닙니다). 필요한 값은 클로저로 잡되, 인스턴스를 직접 쥐기보다 [원천을 거쳐 프로퍼티로 흘리는 모양](../../getting-started/17-animation.md#끝났을-때-알기--startedcompletedcancelled)을 권합니다.
 
 ---

@@ -91,7 +91,7 @@ print(#box:GetChildren())   --> 0
 
 사라집니다. Slot은 자리만 빌려주는 것이 아니라 **자기가 든 원소를 소유합니다** — 그래서 Slot이 원소를 버릴 때는 그 원소를 **파괴합니다**. 위의 `:Remove`도, 전부 비우는 `:Clear`도, 같은 자리를 새 원소로 갈아 끼우는 `:Replace`도 옛 원소를 파괴합니다.
 
-살려서 꺼내는 짝이 따로 있습니다.
+살려서 꺼내는 짝이 따로 있습니다(위 코드는 `:Clear()`로 끝나 `items`가 비어 있으니, 이 둘은 라벨을 다시 넣은 뒤에 쳐 보세요 — 빈 채로 치면 `Quad0236 Slot:Extract: index out of range (got 1, limit 0)`가 납니다).
 
 ```luau
 const taken = items:Extract(1)     -- 그 자리에서 살린 채로 꺼낸다

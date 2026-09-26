@@ -1,0 +1,32 @@
+Q87 spike results (2026-09-26, luau-lsp 1.69.0, test.sh quad-roblox flags). Diagnostics per case line.
+Cases: P1 Text/Source<string>, P2 Visible/Source<boolean>, P3 CanvasSize/Source<UDim2>, P4 Color/Source<Color3>,
+P5 Transparency/Source<number>, P6 CanvasSize/annotated Source<UDim2> var, C1/C3/C4/C5 = same inside D.<Class>{...};
+negatives N1 Text/Source<number>, N2 Text/State<string>, N3 "Nope", N4 Size/Source<Vector2>,
+extra negatives N5 CanvasSize/State<UDim2>, N6 CanvasSize/Source<string>, N7 Color/Source<number>.
+
+base (current OutFn, q.Out and R.OutFn): P1 P2 C1 pass; P3-P6 23 each, C3-C5 23 each; N1 90 N2 2 N3 3 N4 90 N5 12 N6 23 N7 23 (404)
+A  AnyIfAny union (whole param any on any-names): all P/C pass; N1 1 N2 1 N3 3 N4 1; N5 N6 N7 PASS (unchecked)  (6)
+A2 overload, key set by type fn, Source<any>: everything fails (overload widens K to string)                        (35)
+A3 union with IfAny<...,Source<any>>: P3-P6 C3-C5 1 each (fail); negatives rejected                               (16)
+A4 Sel<index,Source<any>,Source<index>>: everything fails incl P1 ("Expected this to be unreachable")             (49)
+A5 union with IfAny<...,StateMarker&{read Set}>: same as A3                                                        (16)
+B/B2/B3 literal Conflict overload Source<any> (order/generic variants): P1 P2 pass standalone; P3-P6, all C fail   (33)
+B4 literal Conflict overload src:any: P3-P6 pass standalone; C1 C3 C4 C5 fail (Desc<string>; K widened)           (28)
+C  union map Source<UDim2|Vector2>: P3-P6 C3-C5 86 each; P5 "Expected exactly NumberSequence got number"; OnChange("Color", v: Color3) rejected (X1) (1035)
+C2 overload union-of-Sources: all C fail + P fail (overload)                                                      (34)
+C3 union map + index<ConflictSrc & {[string]:never},K> | Source<index<PU,K>>: all P/C pass; N1-N7 rejected         (9)
+C4 any map (unchanged)  + same ConflictSrc arm: all P/C pass; N1-N7 rejected (1 diag each, N3 3)                 (9)
+C4b C4 without {[string]:never}: all P/C pass; N1-N7 rejected; N3 4                                               (10)
+C6 full generated map name -> Source<T> (conflict = Source union), src: index<Map,K>: all P/C pass; N1 87 N4 87 N2 2 N3 3 N5-N7 1 (182)
+D/D2 overload with marker + {read Set} on Conflict: same as B (overload)                                          (33)
+E  <K,T> Source<T> & Source<Pick<...>>: all fail ("No valid instantiation ... T")                                (17)
+E2 <K,T> Source<Pick<index,T>>: T not inferred -> unknown; conflict names 86 each                                  (1012)
+
+Through the real q.Out (patched scratch copies of quad-roblox, outfn-*.diff): orig 404, A 6, C4 9, C6 182 — same per-case pattern.
+Extra (probe.q87.nil.luau via q.Out): Z1 Adornee/Source<Instance?> rejected in orig/A/C4/C6; Z2 Transparency/Source<NumberSequence>,
+Z3 Padding/Source<UDim>, Z4 Style/Source<Enum.ButtonStyle>: orig ~23 each, A/C4/C6 pass.
+Regression: group (src + test/spec.*.luau) diags 0 for orig/A/C4/C6; runtime spec.events/onchangetypes/modifiertypes ALL PASS on each copy.
+Timing group (3 runs, ms): orig 3759/3796/3748, A 3756/3805/3851, C4 3774/3723/3771, C6 3738/3808/3886 — within noise.
+mini (probe.q87.mini.luau): Source<index<P,"A">> non-generic, Source<Id<any>>, <K>(..., Source<any>), <K>(..., Source<Id<any>>),
+  <K>(..., Source<Id<K>>)->"A" pass; <K>(K&keyof P, Source<index<P,K>>) with P.A=any FAILS (23);
+  <K>(..., index<{A: Source<any>,...},K>) FAILS (23) -> failing pattern = K-dependent type-function reduction that yields Source<any>.

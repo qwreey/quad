@@ -1175,3 +1175,11 @@ indexer`; (b) `Param & { [AttrKey]: V }` 교집합은 평범한 배열 리터럴
 Luau 쪽 한계라 quad 결함이 아니고, 처방은 미정이다 — 상류 보고 여부는 `question.md`의 **Q86**. 지금은 위 세 문서 + 레퍼런스
 `sugar/03-debounce-throttle.md`의 `Handle` 옵션에 캐비엇만 넣었다(런타임 가드는 그대로 돈다).
 
+
+## 8.27. 제네릭 K에 의존하는 type function이 `Source<any>`로 줄어드는 자리는 통과하지 못한다 — 직접 쓴 `Source<any>`는 통과한다 (2026-09-26 스파이크, luau-lsp 1.69.0 신 솔버; round13 Q87)
+
+`q.Out`의 `src: Source<index<PropTypesRead, K>>`에서 생성 맵의 값이 `any`인 이름(클래스 간 충돌 여섯 — `CanvasSize`/`Color`/`Offset`/`Padding`/`Style`/`Transparency`)은 올바른 `Source<UDim2>`를 넘겨도 23건 진단으로 거부된다(`Expected this to be exactly …` — `Source`의 불변 T 자리마다 한 번). 좁혀 본 결과(`audit/round13-q87-spike/candidates/`의 mini 프로브): `Source<index<P, "A">>`(비제네릭, 주석 시점에 이미 `any`)·`<K>(…, Source<any>)`·`<K>(…, Source<Id<any>>)`·K 의존이지만 `any`가 아닌 결과는 통과하고, **`<K>(K & keyof P, Source<index<P, K>>)`에서 `P.A`가 `any`인 경우와 `index<{ A: Source<any> }, K>`처럼 type function이 `Source<any>` 전체를 내는 경우만 실패**한다. 추론(미확정): 보류된 type function 적용을 상대로 기록된 "같은가" 대조가 `any`로 줄어든 뒤에도 실패로 남고, 직접 쓴 `Source<any>`만 `any` 특례를 탄다.
+
+부수 관측 둘: (1) **교집합 오버로드**(`OutFn = F1 & F2`)에서는 K가 문자열 싱글턴으로 추론되지 않고 `string`으로 넓어져(`Property 'string' does not exist on type 'PropTypesRead'`, 반환 `Desc<string>`) 비충돌 이름까지 D 문맥에서 실패한다 — 8.25의 마커+`{ read Set }`도 오버로드 층에서 먼저 막힌다. (2) 생성기가 충돌 이름에 `any` 대신 유니언(`UDim2 | Vector2`)을 내면 불변 `Source<T>` 때문에 `Source<UDim2>`가 들어가지 않고, `OnChange` 콜백은 반공변이라 `(Color3) -> ()`가 `(Color3 | ColorSequence) -> ()` 자리에 들어가지 않아 `spec.onchangetypes`가 회귀한다.
+
+**통과하는 모양**(긍정 열·부정 일곱 전부 기대대로, 생성 `PropTypesRead` 무변경): 충돌 이름 여섯만 클래스별 `Source` 유니언으로 적은 보조 맵을 `& { [string]: never }`로 닫고 `index<…, K> | Source<index<PropTypesRead, K>>` 합집합 팔로 받는 것(스파이크 C4, 진단 9 → 부정 각 1). 그룹 타입 검사 시간 차이는 잡음 범위(orig 3748~3796ms vs C4 3723~3774ms). 그 맵은 생성기가 아는 지식의 사본이라 어디에 둘지(생성 파일 vs `init.luau` 인라인)는 Q87의 결정 — 채택 전까지 `OutFn`은 그대로다.

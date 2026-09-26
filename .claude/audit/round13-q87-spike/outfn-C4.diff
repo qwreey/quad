@@ -1,0 +1,18 @@
+--- /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/q87/qr_orig/src/init.luau	2026-09-26 22:43:50.314666468 +0900
++++ /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/q87/qr_C4/src/init.luau	2026-09-26 22:44:07.198083731 +0900
+@@ -196,7 +196,14 @@
+ -- always a `Source<T>` alias instance, never a structural expansion.
+ export type OutFn = <K>(
+ 	name: K & keyof<DeclarationModule.PropTypesRead>,
+-	src: QuadTypes.Source<index<DeclarationModule.PropTypesRead, K>> -- type-surface: allow — writable input, marker+Set fails under the new solver (8.25)
++	src: index<{
++		CanvasSize: QuadTypes.Source<UDim2> | QuadTypes.Source<Vector2>, -- type-surface: allow
++		Color: QuadTypes.Source<Color3> | QuadTypes.Source<ColorSequence>, -- type-surface: allow
++		Offset: QuadTypes.Source<Vector2> | QuadTypes.Source<UDim2>, -- type-surface: allow
++		Padding: QuadTypes.Source<UDim> | QuadTypes.Source<UDim2>, -- type-surface: allow
++		Style: QuadTypes.Source<Enum.FrameStyle> | QuadTypes.Source<Enum.ButtonStyle>, -- type-surface: allow
++		Transparency: QuadTypes.Source<number> | QuadTypes.Source<NumberSequence>, -- type-surface: allow
++	} & { [string]: never }, K> | QuadTypes.Source<index<DeclarationModule.PropTypesRead, K>> -- type-surface: allow
+ ) -> DeclarationModule.OnChangeDescriptor<K>
+ -- M10: `OnChange(name, fn)` rides the same extension merge as `Declaration` — the
+ -- runtime (Handlers/OnChange.luau) is untyped, the GENERATED `OnChangeFn`

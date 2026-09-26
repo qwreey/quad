@@ -1,0 +1,15 @@
+--- /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/q87/qr_orig/src/init.luau	2026-09-26 22:43:50.314666468 +0900
++++ /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/q87/qr_C6/src/init.luau	2026-09-26 22:44:07.198168731 +0900
+@@ -194,9 +194,10 @@
+ -- `Source<T>` is the one shape that accepts a Source, rejects a `:Compute` State (no `Set`) and checks the value
+ -- type — the user caveat "compute 해서 in 을 넣으면 안 된다" is enforced here. Cost is bounded: the argument is
+ -- always a `Source<T>` alias instance, never a structural expansion.
++local OutMapModule = require("@self/OutMap")
+ export type OutFn = <K>(
+-	name: K & keyof<DeclarationModule.PropTypesRead>,
+-	src: QuadTypes.Source<index<DeclarationModule.PropTypesRead, K>> -- type-surface: allow — writable input, marker+Set fails under the new solver (8.25)
++	name: K & keyof<OutMapModule.OutSrcU>,
++	src: index<OutMapModule.OutSrcU, K>
+ ) -> DeclarationModule.OnChangeDescriptor<K>
+ -- M10: `OnChange(name, fn)` rides the same extension merge as `Declaration` — the
+ -- runtime (Handlers/OnChange.luau) is untyped, the GENERATED `OnChangeFn`

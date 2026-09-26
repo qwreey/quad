@@ -269,6 +269,9 @@ end
   `Left`/`Right`)에 같은 값을 쓰는 키는 각 프로퍼티마다 `Dispatch.process`를
   따로 부름 — 각자 독립된 `(child, prop)` 체인이 되고, PropertyHandler의
   트윈 슬롯도 프로퍼티별로 따로 잡혀서 자연스럽게 4개가 같이 애니메이션됨.
+  **[2026-09-26 round13 E2-2, `H-630`]** 이 "4개가 같이" 자체가 Tween 콜백을
+  네 배로 만든다(`Started`/`Completed`/`Cancelled`가 값 하나에 네 번씩) —
+  `base/tween-plan.md` 콜백 절 포인터, 레퍼런스는 roblox/02·roblox/06.
 - **`Tween` 값과 이 숏핸드 Handler는 둘 다 `quad-roblox`**(**[2026-09-07]** Tween이
   quad-base에서 이동 — `tween-plan.md` "패키지 경계" 절) — 핸들러는 설치 시점에
   모듈의 `isTween`을 읽는다(Tween 설치가 먼저, `RobloxFactory.luau`).

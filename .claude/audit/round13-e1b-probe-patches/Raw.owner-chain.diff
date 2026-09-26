@@ -1,0 +1,77 @@
+--- quad-base/src/Slot/Raw.luau	2026-09-17 15:34:46.867595006 +0900
++++ quad-base/src/Slot/Raw.luau	2026-09-26 22:47:35.714561064 +0900
+@@ -12,7 +12,9 @@
+ 
+ local Types = require("./types")
+ 
++local PATCH_RAW = { attaches = 0, chainTotal = 0 }
+ return function(S: Types.SlotInternal, module: any)
++	pcall(function() rawset(module, "PATCH_RAW", PATCH_RAW) end)
+ 
+ 	-- reindexFrom: rewrite bk.indexOfElement from `from` to end. Every place
+ 	-- that shifts _elements calls this — regardless of materialization.
+@@ -101,6 +103,25 @@
+ 		end
+ 	end
+ 
++	-- PROTOTYPE (E1-2 Q74, scratch only): raise `_materializing` on the whole owner chain (Slot owners
++	-- up to the first non-Slot owner), restoring each saved value afterwards. Temp locals, no new fields.
++	local function raiseChain(self: any): ({ any }, { any })
++		local slots, olds = {}, {}
++		local cur = self
++		while cur ~= nil and S.isSlot(cur) do
++			slots[#slots + 1] = cur
++			olds[#olds + 1] = cur._materializing
++			cur._materializing = true
++			cur = S.elementOwner:GetWeak(cur, S.OWNER)
++		end
++		PATCH_RAW.attaches += 1
++		PATCH_RAW.chainTotal += #slots
++		return slots, olds
++	end
++	local function restoreChain(slots: { any }, olds: { any })
++		for k = #slots, 1, -1 do slots[k]._materializing = olds[k] end
++	end
++
+ 	-- ── raw layer ──────────────────────────────────────────────────────
+ 	-- `deferPhysical` (rawAdd/rawUnmount): bookkeeping only — the caller
+ 	-- (rawSplice) issues the ONE physical op for the whole batch itself.
+@@ -122,10 +143,9 @@
+ 			-- registration — a CRUD on `self` from there shifted the array under the captured
+ 			-- position and left Length short for good. Save/restore: `_activateList` calls rawAdd
+ 			-- while `self` is already on a mount walk.
+-			local wasMaterializing = self._materializing
+-			self._materializing = true
++			local chainSlots, chainOlds = raiseChain(self)
+ 			S.attachSlot(element, self._physicalTarget, self, index, physical)
+-			self._materializing = wasMaterializing
++			restoreChain(chainSlots, chainOlds)
+ 		else
+ 			S.BK.setOffsetSource(self, index, S.None)
+ 			if physical then
+@@ -211,10 +231,9 @@
+ 			end
+ 			if self._physicalTarget ~= nil then
+ 				if S.isSlot(newElement) then
+-					local wasMaterializing = self._materializing -- Q52 window (see rawAdd)
+-					self._materializing = true
++					local chainSlots, chainOlds = raiseChain(self)
+ 					S.attachSlot(newElement, self._physicalTarget, self, index, false)
+-					self._materializing = wasMaterializing
++					restoreChain(chainSlots, chainOlds)
+ 				else
+ 					S.BK.setOffsetSource(self, index, S.None)
+ 					S.BK.setLength(self, index, 1, self._physicalTarget, newElement)
+@@ -232,10 +251,9 @@
+ 				op(self._mountedInst, offset, { oldElement })
+ 			end
+ 			if S.isSlot(newElement) then
+-				local wasMaterializing = self._materializing -- Q52 window (see rawAdd)
+-				self._materializing = true
++				local chainSlots, chainOlds = raiseChain(self)
+ 				S.attachSlot(newElement, self._physicalTarget, self, index, self._mounted)
+-				self._materializing = wasMaterializing
++				restoreChain(chainSlots, chainOlds)
+ 				return
+ 			end
+ 			S.BK.setOffsetSource(self, index, S.None)
