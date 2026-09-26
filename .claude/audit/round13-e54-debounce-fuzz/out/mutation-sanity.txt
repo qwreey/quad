@@ -1,0 +1,6 @@
+mut 1: seeds=1000 events=51740 records=10846 cfgErrors(R8)=181 diffs=898 coarse≠fine=0 invChecked=187 invFail=0 implThrows=1800 modelThrows=1026 time=0.32s
+mut 2: seeds=1000 events=51740 records=10846 cfgErrors(R8)=181 diffs=1054 coarse≠fine=0 invChecked=187 invFail=0 implThrows=1800 modelThrows=964 time=0.30s
+mut 3: seeds=1000 events=51740 records=10846 cfgErrors(R8)=181 diffs=118 coarse≠fine=0 invChecked=187 invFail=0 implThrows=1800 modelThrows=978 time=0.31s
+mut 4: seeds=1000 events=51740 records=10846 cfgErrors(R8)=181 diffs=292 coarse≠fine=0 invChecked=187 invFail=0 implThrows=1800 modelThrows=970 time=0.31s
+mut 5: seeds=1000 events=51740 records=10846 cfgErrors(R8)=181 diffs=438 coarse≠fine=0 invChecked=187 invFail=0 implThrows=1800 modelThrows=970 time=0.33s
+mut 6: seeds=1000 events=51740 records=10846 cfgErrors(R8)=181 diffs=66 coarse≠fine=0 invChecked=187 invFail=0 implThrows=1800 modelThrows=976 time=0.32s

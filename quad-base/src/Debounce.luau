@@ -264,7 +264,10 @@ function FactoryImpl.__apply(self: any, state: any): any
 			-- exactly as it was (an open window still ends its batch; idle stays idle)
 			h._time = readTime(name, "Time", opts.Time)
 			-- MaxTime too (checkpoint code-review): read here, before any state change, so the
-			-- "only throwing site is the entry" claim holds for both options — a cap read at the
+			-- "only throwing site is the entry" claim holds for both options — with one caveat
+			-- (round13 E54 U7): `h._time` above is already refreshed, so a signal whose MaxTime read
+			-- throws still leaves the NEW Time sample cached (the next Flush/window uses it). Only the
+			-- window length moves; Blocker/timer are untouched. A cap read at the
 			-- tail used to throw after `pass()`/`openWindow()` had moved the Blocker and timer
 			-- round11 `H-542` (탐사 C′): only when it can be armed — a `Trailing = false` Debounce
 			-- "does nothing" with MaxTime (reference sugar/03), so it must not validate it either

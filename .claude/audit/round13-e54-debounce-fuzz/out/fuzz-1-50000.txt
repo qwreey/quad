@@ -1,0 +1,2 @@
+seeds=50000 events=2617802 records=552321 cfgErrors(R8)=9062 diffs=0 coarse≠fine=0 invChecked=9358 invFail=0 implThrows=84166 modelThrows=40748 time=18.95s
+topo: T0=34007 T1=5206 T2=5207 T3=5580

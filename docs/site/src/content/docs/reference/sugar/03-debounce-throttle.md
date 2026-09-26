@@ -91,7 +91,7 @@ export type ThrottleOptions = {
 | `Time` | `number \| State<number>` | **필수** | **필수** | 창 길이(초). 음수·NaN 거부. `0`은 허용되지만 "즉시"가 아니라 백엔드 타이머의 다음 재개점(Roblox `task.delay(0)`은 다음 프레임 근방)으로 미뤄질 수 있습니다 — mock 백엔드에선 같은 `advanceTime(0)` 안에서 발화합니다 |
 | `Leading` | `boolean?` | `false` | `true` | 창이 열릴 때 첫 신호를 즉시 통과시킬지 |
 | `Trailing` | `boolean?` | `true` | `true` | 창이 닫힐 때 보류분을 통과시킬지 |
-| `MaxTime` | `(number \| State<number>)?` | `nil` | **없는 옵션** | 신호가 안 끊겨도, 보류가 시작된 뒤 최대 이만큼 안에 강제 통과 |
+| `MaxTime` | `(number \| State<number>)?` | `nil` | **없는 옵션** | 신호가 안 끊겨도, 보류가 시작된 뒤 최대 이만큼 안에 강제 통과. 강제 통과는 창을 다시 열지 않으므로 `MaxTime < Time`이면 통과 간격이 `Time`보다 짧아지고(`Time` 1·`MaxTime` 0.5·0.25초 간격 신호 → 0.5초마다), `MaxTime` 0이면 신호마다 다음 타이머 틱에 통과합니다([2026-09-27 mock 실측]). 걸린 캡은 원래 지연을 유지하고 다음 캡부터 새 `State` 값을 씁니다 |
 | `Handle` | `Ref<GateHandle?>?` | `nil` | `nil` | 수동 제어 핸들을 받을 Ref |
 
 - 기본값을 적용한 결과 `Leading`과 `Trailing`이 **둘 다 `false`가 되면 에러**입니다 — 아무것도 통과하지 못하므로. `Debounce`는 `Leading`의 기본값이 `false`라서 `Trailing = false` 하나만 줘도 여기에 해당합니다 — 그때는 `Leading = true`를 같이 주세요.

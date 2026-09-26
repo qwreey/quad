@@ -1,0 +1,55 @@
+== X1 gate→gate: downstream gate swallows a revision it already emitted — only if its value was read ==
+observer reads=true: [0.75:2] pending=0
+observer reads=false: [0.75:- 1.375:-] pending=0
+== X1b same with an upstream user Blocker (Source→Blocker→Throttle) ==
+observer reads=true: [0:1 2.5:3] pending=0
+observer reads=false: [0:- 2.5:-] pending=0
+== X1c Throttle window end with the value moved by an upstream held Blocker: downstream sees values the Blocker still holds ==
+reads: [0:1 1:3] pending=0
+== (a) passed value: always the LIVE value at pass time (Debounce trailing / Throttle trailing / MaxTime / Flush) ==
+debounce values: [1.5:c 1.5:d] pending=0
+== (b) state after Flush: withheld → pass + NEW window from now (Throttle: next signal is withheld, not leading) ==
+throttle flush: [0:1 0.5:2 1.5:3] pending=0
+throttle empty flush: [0:1 1:2] pending=0
+== (c) Cancel then the first signal: leading passes at once (Throttle default / Debounce Leading) ==
+Gate(3) cancel→leading: [0:1 0.5:3] pending=0
+Gate(3) cancel→leading: [0:1 0.5:3] pending=0
+== (d) Time State changed mid-window: running window keeps its delay; Debounce restart at the next signal uses the new value ==
+  before next signal: [] pending=1
+debounce time state: [1:2] pending=0
+throttle time state: [0:1 1:2 1.25:3] pending=0
+== (e) coarse vs fine advance (one probe; the fuzzer does both drives on every seed) ==
+fine=false: [0:1 0.625:5 1.125:9 1.625:13 2.125:17 2.625:20] pending=0
+fine=true: [0:1 0.625:5 1.125:9 1.625:13 2.125:17 2.625:20] pending=0
+== U1 same instant: two signals at the same time ==
+throttle same-instant: [0:1 1:2] pending=0
+== U2 signal at exactly the window end (timer fires first in the mock) ==
+Gate(3): [0:1 1:2 2:3] pending=0
+Gate(3): [1.5:2 2.5:3] pending=0
+Gate(3): [0:1 1.5:3] pending=0
+== U3 Time = 0 ==
+Gate(?) before advance(0): [0:1] pending=1
+  after advance(0): [0:1 0:2] pending=0
+  next: [0:1 0:2 0:3] pending=0
+Gate(?) before advance(0): [] pending=1
+  after advance(0): [0:2] pending=0
+  next: [0:2 0:3] pending=0
+Gate(?) before advance(0): [0:1] pending=1
+  after advance(0): [0:1 0:2] pending=0
+  next: [0:1 0:2 0:3] pending=0
+== U4 MaxTime == Time and MaxTime < Time (gap between passes shorter than Time) ==
+MaxTime=1: [1:4 2:8 3:12] pending=0
+MaxTime=0.5: [0.5:2 1:4 1.5:6 2:8 2.5:10 3:12] pending=0
+MaxTime=0: [0:1 0.25:2 0.5:3 0.75:4 1:5 1.25:6 1.5:7 1.75:8 2:9 2.25:10 2.5:11 2.75:12] pending=0
+== U5 Throttle Trailing=false: signal right after the leading pass is dropped at the window end ==
+throttle trailing=false: [0:1 1:3] pending=0
+== U6 MaxTime State changed while a cap is armed ==
+maxtime state: [2:8 2.75:11 3.25:12] pending=0
+== (f) perf: 10k signals ==
+Gate(10000): 10000 signals, 490 passes, 16.7 ms (mock timer list is linear — timing includes the mock)
+Gate(10000): 10000 signals, 2001 passes, 10.7 ms (mock timer list is linear — timing includes the mock)
+== U7 MaxTime State invalid at a signal: is the Time sample already replaced? (Debounce.luau:263-265 says 'before anything changes') ==
+  signal threw:	true	Quad0039 Debounce: MaxTime must be a non-negative number (got number)
+  h._time now =	0.25
+  timerLog tail:	set(0.25)@0
+  log: [0:2] pending=0
