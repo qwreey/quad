@@ -1,0 +1,23 @@
+diff --git a/quad-base/src/Context.luau b/quad-base/src/Context.luau
+index eadd30f..1d575a0 100644
+--- a/quad-base/src/Context.luau
++++ b/quad-base/src/Context.luau
+@@ -106,9 +106,17 @@ Err.setFuncLevel(SURFACE, ContextImpl.Set, ContextImpl.Get, ContextImpl.Peek, Pr
+ 
+ -- callable namespace (the `Tag`/`Attr` idiom — `setmetatable<A, B>` in the types)
+ local ContextConstructor = setmetatable({ Provider = Provider }, {
+-	__call = function(_self: any)
++	__call = function(_self: any, ...: any)
++		-- [P-gates2 Q102 (a) proto] `Tag(...)`/`Attr{...}`/`Store{...}` take initial values, so
++		-- `Context({ [P] = v })` reads naturally — it used to drop the table silently and fail
++		-- later at `:Get(P)` (Quad0038) far from the cause
++		local n = select("#", ...)
++		if n > 0 then
++			Err.errorBeforeNearest(`QuadXXXX Context: takes no arguments (got {n}) — create an empty bag and fill it with ctx:Set(provider, value)`, SURFACE)
++		end
+ 		return Context()
+ 	end,
+ })
++Err.setFuncLevel(SURFACE, getmetatable(ContextConstructor :: any).__call) -- Q102 proto: the Tag/Attr `__call` idiom
+ 
+ return { Context = ContextConstructor }

@@ -1,0 +1,19 @@
+diff --git a/quad-roblox/src/Animate.luau b/quad-roblox/src/Animate.luau
+index 7acc398..dfcc811 100644
+--- a/quad-roblox/src/Animate.luau
++++ b/quad-roblox/src/Animate.luau
+@@ -87,6 +87,14 @@ local function install(quad: any, validateFields: (any, any?) -> (), tweenOuterm
+ 		end
+ 		validateFields(literal)
+ 		return function(self: any): any
++			-- [P-gates2 Q104 (a) proto] State-only factory — the Operator `Quad0123` shape. Through
++			-- `mod:Apply` / a Modifier setter's transform arm / `tag:Apply`, `self` is not a State and
++			-- `self:Compute` either hit a generic Modifier setter (VM error on nil:Get) or a missing
++			-- method (Tag). Nearest blame: `State:Apply`/`Modifier:Apply`/`Tag:Apply` are SURFACE-tagged,
++			-- so the user's `:Apply` line; the setter arm is untagged (`H-250`) — raise-site fallback.
++			if not isState(self) then
++				Err.errorBeforeNearest(`QuadYYYY Animate: Apply target must be a State (got {if quad.isModifier(self) then "a Modifier" elseif quad.isTag(self) then "a Tag" else typeof(self)}) — animate the field's State: field = state:Apply(Animate\{...\})`, SURFACE)
++			end
+ 			return self:Compute(function(selfH: any): any
+ 				local v = selfH:Get()
+ 				if v == nil or v == None then

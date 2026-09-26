@@ -1,0 +1,20 @@
+== Q104 mod:Apply(State-only factory) ==
+M1 mod:Apply(q.Animate{Time=0.3})	ERR: ./quad-roblox/src/Animate.luau:91: attempt to index nil with 'Get'
+M2 mod:Apply(Op.Not)	ERR: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/Modifier/init.luau:192: Quad0123 Operator.Not: Apply target must be a State (got table)
+M3 mod:Apply(Op.Sum(1))	ERR: ./probes/probe.q104.luau:44: Quad0123 Operator.Sum: Apply target must be a State (got table)
+M4 mod:Apply(forgot return)	ERR: ./probes/probe.q104.luau:45: QuadXXXX Modifier:Apply: factory must return a Modifier (got nil)
+M5 mod:Apply(returns props table)	ERR: ./probes/probe.q104.luau:46: QuadXXXX Modifier:Apply: factory must return a Modifier (got table)
+M6 mod:Apply(ok factory)	OK
+M7 mod:Apply(returns a State)	ERR: ./probes/probe.q104.luau:48: QuadXXXX Modifier:Apply: factory must return a Modifier (got a State — this factory is for state:Apply)
+== Q104 setter transform arm ==
+S1 Modifier():BT(Animate) old nil	ERR: ./quad-roblox/src/Animate.luau:90: attempt to index nil with 'Compute'
+S2 Modifier({BT=0.5}):BT(Animate)	ERR: ./quad-roblox/src/Animate.luau:90: attempt to index number with 'Compute'
+S3 Modifier():BT(Op.Not) old nil	ERR: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/Modifier/init.luau:292: Quad0123 Operator.Not: Apply target must be a State (got nil)
+S4 state old: Modifier({BT=src}):BT(Animate) (legit)	OK
+== Q104 boost: Tag:Apply ==
+T1 tag:Apply(q.Animate{})	ERR: ./quad-roblox/src/Animate.luau:90: attempt to call missing method 'Compute' of table
+T2 tag:Apply(Op.Not)	ERR: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Tag.luau:195: Quad0123 Operator.Not: Apply target must be a State (got table)
+== reference: state:Apply ==
+R1 src:Apply(Animate) ok	OK
+R2 Animate factory called with a number	ERR: ./quad-roblox/src/Animate.luau:90: attempt to index number with 'Compute'
+done

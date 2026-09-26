@@ -1,0 +1,20 @@
+diff --git a/quad-base/src/Dispatch/Modifier/init.luau b/quad-base/src/Dispatch/Modifier/init.luau
+index 6c51fc5..0995239 100644
+--- a/quad-base/src/Dispatch/Modifier/init.luau
++++ b/quad-base/src/Dispatch/Modifier/init.luau
+@@ -186,7 +186,14 @@ function methods.Apply(self: any, factory: (any) -> any): any
+ 	if type(factory) ~= "function" then
+ 		Err.errorBeforeNearest(`Quad0050 Modifier:Apply: factory must be a function (got {typeof(factory)})`, SURFACE)
+ 	end
+-	return factory(self) -- nothing more, nothing less (8절)
++	-- [P-gates2 Q104 (b) proto] the factory must hand back a Modifier — a State-only factory
++	-- (`q.Animate{}`, `Op.Not`) or a forgotten `return` used to leak a State/nil into the props
++	-- table and die later (or deep inside the factory); the types let it through (`H-674`)
++	local result = factory(self)
++	if not isModifier(result) then
++		Err.errorBeforeNearest(`QuadXXXX Modifier:Apply: factory must return a Modifier (got {if result == nil then "nil" elseif isState(result) then "a State — this factory is for state:Apply" else typeof(result)})`, SURFACE)
++	end
++	return result
+ end
+ 
+ -- mod:As() — unchecked cast (11절): the "go somewhere Declaration does not know" path.

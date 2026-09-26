@@ -1,0 +1,12 @@
+=== luau-analyze
+./quad-base/test/spec.slot.luau(1277,79): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+./quad-base/test/spec.slot.luau(1289,80): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+./quad-base/test/spec.slot.luau(1304,76): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+=== luau-lsp new solver (engine-agnostic)
+[WARN] No definitions file provided by client
+quad-base/test/spec.slot.luau(1277,79): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+quad-base/test/spec.slot.luau(1289,80): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+quad-base/test/spec.slot.luau(1304,76): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+=== luau-lsp roblox
+specs run: 62  failed: none
+exit=0

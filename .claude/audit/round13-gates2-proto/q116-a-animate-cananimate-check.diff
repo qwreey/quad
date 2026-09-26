@@ -1,0 +1,30 @@
+diff --git a/quad-roblox/src/Animate.luau b/quad-roblox/src/Animate.luau
+index 7ee19fa..d59f44f 100644
+--- a/quad-roblox/src/Animate.luau
++++ b/quad-roblox/src/Animate.luau
+@@ -90,6 +90,13 @@ local function install(quad: any, validateFields: (any, any?) -> (), tweenOuterm
+ 			end
+ 		end
+ 		validateFields(literal)
++		-- [P-gates2 Q116 (a) proto] the one option without a runtime check: `"no"`/`0`/a function were
++		-- truthy and silently animated. Literal here (user's `Animate{}` line, like `Quad0243`~`0247`);
++		-- a State value is checked per run below (outermost blame — the user's Set/Get line)
++		local canAnimateOpt = info.CanAnimate
++		if canAnimateOpt ~= nil and not isState(canAnimateOpt) and type(canAnimateOpt) ~= "boolean" then
++			Err.errorBeforeNearest(`QuadZZZZ Animate: CanAnimate must be a boolean or a State<boolean> (got {typeof(canAnimateOpt)})`, SURFACE)
++		end
+ 		return function(self: any): any
+ 			-- [P-gates2 Q104 (a) proto] State-only factory — the Operator `Quad0123` shape. Through
+ 			-- `mod:Apply` / a Modifier setter's transform arm / `tag:Apply`, `self` is not a State and
+@@ -110,7 +117,10 @@ local function install(quad: any, validateFields: (any, any?) -> (), tweenOuterm
+ 
+ 				local canAnimate = resolve(info.CanAnimate)
+ 				if canAnimate == nil then
+-					canAnimate = true -- omitted ⇒ always animate
++					canAnimate = true -- omitted ⇒ always animate (a State holding nil too)
++				elseif type(canAnimate) ~= "boolean" then
++					-- Q116 proto: State-valued CanAnimate, resolved per run (same ID as the literal check)
++					Err.errorBefore(`QuadZZZZ Animate: CanAnimate must be a boolean or a State<boolean> (the State holds {typeof(canAnimate)})`, SURFACE)
+ 				end
+ 				if not canAnimate then
+ 					-- [2026-09-21 사용자 결정 — docs-review 1-5 (a)] callbacks must still fire without animation

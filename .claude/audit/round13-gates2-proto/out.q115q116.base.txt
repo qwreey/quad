@@ -1,0 +1,28 @@
+== Q115 callback State ==
+K1 Started=fn animated                   OK first=0 | set->0 tw1
+   fired:	S,S
+K2 Started=State(fn) animated            OK first=0 | set->0 tw1
+   fired:	S,S
+K3 Started=State(fn) CanAnimate=false    MOUNT Quad0246 @probe.q115q116.luau:18
+   fired:	
+K4 Completed=State(fn) CanAnimate=State(true) OK first=0 | set->0 tw1
+   fired:	C
+K5 Cancelled=Compute State               OK first=0 | set->0 tw1
+   fired:	
+K6 Started=true literal                  ANIMATE Quad0246 @probe.q115q116.luau:12
+K7 CanAnimate=false Completed=fn         OK first=1 | set->1 tw0
+   fired:	C,C
+K8 State cb + flip CanAnimate at runtime	Quad0246 @probe.q115q116.luau:46	 fired:	S,S
+== Q116 CanAnimate ==
+C1 CanAnimate='no'                       OK first=0 | set->0 tw1
+C2 CanAnimate=0                          OK first=0 | set->0 tw1
+C3 CanAnimate=function                   OK first=0 | set->0 tw1
+C4 CanAnimate=State(nil)                 OK first=0 | set->0 tw1
+C5 CanAnimate=false                      OK first=1 | set->1 tw0
+C6 CanAnimate=true                       OK first=0 | set->0 tw1
+C7 CanAnimate=State(true)                OK first=0 | set->0 tw1
+C8 CanAnimate=State('no')                OK first=0 | set->0 tw1
+C9 State(true)->Set(0) then value Set	OK
+   full:	
+C10 CanAnimate=None                      OK first=0 | set->0 tw1
+done

@@ -1,0 +1,24 @@
+diff --git a/quad-roblox/src/Animate.luau b/quad-roblox/src/Animate.luau
+index dfcc811..7ee19fa 100644
+--- a/quad-roblox/src/Animate.luau
++++ b/quad-roblox/src/Animate.luau
+@@ -57,6 +57,7 @@ local function install(quad: any, validateFields: (any, any?) -> (), tweenOuterm
+ 		end
+ 	end
+ 
++	local CALLBACK_FIELD: { [string]: boolean } = { Started = true, Completed = true, Cancelled = true } -- Q115 proto
+ 	local KNOWN_OPTIONS: { [string]: boolean } = { CanAnimate = true }
+ 	for _, name in FIELDS do
+ 		KNOWN_OPTIONS[name] = true
+@@ -81,7 +82,10 @@ local function install(quad: any, validateFields: (any, any?) -> (), tweenOuterm
+ 		local literal: { [string]: any } = {}
+ 		for _, name in FIELDS do
+ 			local v = info[name]
+-			if v ~= nil and not isState(v) then
++			-- [P-gates2 Q115 (a) proto] callback fields never take a State (types and roblox/06 say
++			-- so) — keep them in the literal set so a State fails `Quad0246` here, on the user's
++			-- line, instead of animating on one path and dying on the `CanAnimate=false` path
++			if v ~= nil and (not isState(v) or CALLBACK_FIELD[name]) then
+ 				literal[name] = v
+ 			end
+ 		end

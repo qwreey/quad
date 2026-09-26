@@ -50,4 +50,5 @@
 - `round13-gates-proto/` — **[2026-09-27 자율 루프 P-gates]** Q100(`math.huge` 거부 — 기존 ID)·Q106(`is*` 프로브 확대 — 술어 19 전수)·Q108(`UseProvider` 설치 중 플래그 — pcall판/naive 참고판) diff·프로브·변형 넷 스위트 — §4 스파이크 문단.
 - `round13-e24-probe-*.luau`(a~e·types) — **[2026-09-27 자율 루프 E24]** Tween/Animate/Mapped 옵션 매트릭스·보간 불가 타입·재사용·문서 예제 — `H-721`(Q34가 Animate 경로엔 안 섬)~`H-724`, `Q115`·`Q116`, Q90 ⑭.
 - `round13-q109-proto/` — **[2026-09-27 자율 루프 P-Q109/Q110]** Effect catch-up epoch 정렬((a) Refresh — 폐기된 모양·(a′) Source/Ref dep만 Sync)·설치 중 `force` 비전파(q110-a) diff·프로브·변형 여섯 × E20 재실행 — §4 스파이크 문단.
+- `round13-gates2-proto/` — **[2026-09-27 자율 루프 P-gates2]** Q102(`Context` 인자 거부)·Q104 (a)/(b)(`Animate` 대상 게이트 / `mod:Apply` 결과 검사 — (b)는 반증)·Q115(콜백 State 거부)·Q116(`CanAnimate` 검사) diff 다섯·프로브·타입 프로브·스위트 — §4 스파이크 문단.
 

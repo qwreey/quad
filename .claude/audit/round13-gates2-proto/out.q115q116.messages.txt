@@ -1,0 +1,5 @@
+./probes/probe.q116msg.luau:5: QuadZZZZ Animate: CanAnimate must be a boolean or a State<boolean> (got string)
+./probes/probe.q116msg.luau:6: QuadZZZZ Animate: CanAnimate must be a boolean or a State<boolean> (got function)
+./probes/probe.q116msg.luau:7: QuadZZZZ Animate: CanAnimate must be a boolean or a State<boolean> (got table)
+./probes/probe.q116msg.luau:8: QuadZZZZ Animate: CanAnimate must be a boolean or a State<boolean> (the State holds string)
+./probes/probe.q116msg.luau:9: Quad0246 Tween: Started must be a function
