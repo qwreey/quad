@@ -1,0 +1,1 @@
+Bxor: (...NumArg) -> NumOp

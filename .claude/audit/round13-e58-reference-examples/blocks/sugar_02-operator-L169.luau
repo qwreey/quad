@@ -1,0 +1,1 @@
+Band: (...NumArg) -> NumOp

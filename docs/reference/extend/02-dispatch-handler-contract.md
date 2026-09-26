@@ -372,7 +372,7 @@ q.Dispatch.addHandler({
 })
 ```
 
-이제 어떤 요소의 `"Note"` 자리에 `LogValue("hello")`가 놓이면 `mount Note = hello`가 찍힙니다. 같은 자리에 `LogValue("world")`가 오면 `unmount Note (retracting = false)` → `mount Note = world` 순으로, 그 자리가 철거되면 `unmount Note (retracting = true)`로 끝납니다.
+이제 어떤 요소의 `"Note"` 자리에 `LogValue("hello")`가 놓이면 `mount Note = hello`가 찍힙니다. 같은 자리에 `LogValue("world")`가 오면 `unmount Note (retracting = false)` → `mount Note = world` 순으로, 그 자리가 `q.Dispatch.retractFrom`으로 철거되면 `unmount Note (retracting = true)`로 끝납니다(요소 `Destroy`는 retractor를 부르지 않고(아래), State가 `q.None`을 발행하면 `unmount (retracting = true)` 뒤에 이 예제의 `isHandlable`이 nil을 거부해 `Quad0076`이 납니다 — 165행의 nil 규칙 그대로; [2026-09-27 mock 실측]).
 
 숫자 키 자리를 맡는 핸들러라면 `process` 안에서 자리 등록을 반드시 해야 합니다 — 물리 요소를 하나 놓았다면 `q.Bookkeeping.claimOwnerAt(value, inst, key)`로 자리를 잡은 뒤 `q.Bookkeeping.setOffsetSource(inst, key, 오프셋소스)` 다음 `q.Bookkeeping.setLength(inst, key, 1)`(retractor에서는 `setEmpty` 뒤 `releaseOwner(value, inst)`), 아무것도 놓지 않았다면 `q.Bookkeeping.setEmpty(inst, key)`.
 

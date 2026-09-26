@@ -1,0 +1,1 @@
+canExecute: (value: any) -> boolean

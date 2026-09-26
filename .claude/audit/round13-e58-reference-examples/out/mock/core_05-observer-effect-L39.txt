@@ -1,0 +1,6 @@
+hp is now	100
+effect sees	100
+hp is now	90
+effect sees	90
+Text	HP 90
+<<END>>

@@ -1,0 +1,1 @@
+BooleanAttr: AttrSugar<boolean>

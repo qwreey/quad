@@ -1,0 +1,4 @@
+mount Note = hello
+unmount Note (retracting = true)
+true
+<<END>>

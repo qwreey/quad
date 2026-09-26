@@ -1,0 +1,4 @@
+첫째	true
+둘째	false
+len	2	false
+<<END>>

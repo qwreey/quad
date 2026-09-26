@@ -1,0 +1,3 @@
+red	1
+false	Quad0005 Attr.Merged: attribute name "Accent" appears more than once
+<<END>>

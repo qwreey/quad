@@ -1,0 +1,11 @@
+mount Note = hello
+-- set world
+unmount Note (retracting = false)
+mount Note = world
+-- (None 경로는 probes/extend02-none.luau)
+-- set again + Destroy
+unmount Note (retracting = false)
+mount Note = again
+-- plain key + Destroy
+mount Note = plain
+<<END>>

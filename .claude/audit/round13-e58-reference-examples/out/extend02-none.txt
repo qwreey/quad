@@ -1,0 +1,4 @@
+mount Note = hello
+unmount Note (retracting = true)
+false	./probes/extend02-none.luau:37: Quad0076 Dispatch: no handler matched key Note (value: nil) — check that the provider for this value (e.g. quad-roblox) is initialized (a nil at this depth may be an unwrapped None or a reactive nil — the key's own handler must accept nil)
+<<END>>

@@ -1,0 +1,73 @@
+probes/extend02-none.luau(4,13): LocalUnused: Variable 'Quad' is never used; prefix with '_' to silence
+probes/extend02-none.luau(4,19): LocalUnused: Variable 'QuadRoblox' is never used; prefix with '_' to silence
+probes/extend02-none.luau(5,7): LocalUnused: Variable 'QuadTypes' is never used; prefix with '_' to silence
+probes/extend02-none.luau(5,18): LocalUnused: Variable 'RobloxModule' is never used; prefix with '_' to silence
+probes/extend02-none.luau(6,7): LocalUnused: Variable 'M' is never used; prefix with '_' to silence
+probes/extend02-none.luau(7,7): LocalUnused: Variable 'Op' is never used; prefix with '_' to silence
+probes/extend02-none.luau(9,7): LocalUnused: Variable 'UDim2' is never used; prefix with '_' to silence
+probes/extend02-none.luau(9,14): LocalUnused: Variable 'UDim' is never used; prefix with '_' to silence
+probes/extend02-none.luau(9,20): LocalUnused: Variable 'Color3' is never used; prefix with '_' to silence
+probes/extend02-none.luau(9,28): LocalUnused: Variable 'Enum' is never used; prefix with '_' to silence
+probes/extend02-none.luau(9,34): LocalUnused: Variable 'Vector2' is never used; prefix with '_' to silence
+probes/extend02-none.luau(9,43): LocalUnused: Variable 'Font' is never used; prefix with '_' to silence
+probes/extend02-none.luau(10,7): LocalUnused: Variable 'task' is never used; prefix with '_' to silence
+probes/extend02-none.luau(11,7): LocalUnused: Variable 'warn' is never used; prefix with '_' to silence
+probes/extend02-none.luau(12,7): LocalUnused: Variable 'script' is never used; prefix with '_' to silence
+probes/extend02-none.luau(13,7): LocalUnused: Variable 'game' is never used; prefix with '_' to silence
+probes/extend02-none.luau(36,7): LocalUnused: Variable 'f' is never used; prefix with '_' to silence
+probes/extend02-retract-sequence.luau(4,13): LocalUnused: Variable 'Quad' is never used; prefix with '_' to silence
+probes/extend02-retract-sequence.luau(4,19): LocalUnused: Variable 'QuadRoblox' is never used; prefix with '_' to silence
+probes/extend02-retract-sequence.luau(5,7): LocalUnused: Variable 'QuadTypes' is never used; prefix with '_' to silence
+probes/extend02-retract-sequence.luau(5,18): LocalUnused: Variable 'RobloxModule' is never used; prefix with '_' to silence
+probes/extend02-retract-sequence.luau(6,7): LocalUnused: Variable 'M' is never used; prefix with '_' to silence
+probes/extend02-retract-sequence.luau(7,7): LocalUnused: Variable 'Op' is never used; prefix with '_' to silence
+probes/extend02-retract-sequence.luau(9,7): LocalUnused: Variable 'UDim2' is never used; prefix with '_' to silence
+probes/extend02-retract-sequence.luau(9,14): LocalUnused: Variable 'UDim' is never used; prefix with '_' to silence
+probes/extend02-retract-sequence.luau(9,20): LocalUnused: Variable 'Color3' is never used; prefix with '_' to silence
+probes/extend02-retract-sequence.luau(9,28): LocalUnused: Variable 'Enum' is never used; prefix with '_' to silence
+probes/extend02-retract-sequence.luau(9,34): LocalUnused: Variable 'Vector2' is never used; prefix with '_' to silence
+probes/extend02-retract-sequence.luau(9,43): LocalUnused: Variable 'Font' is never used; prefix with '_' to silence
+probes/extend02-retract-sequence.luau(10,7): LocalUnused: Variable 'task' is never used; prefix with '_' to silence
+probes/extend02-retract-sequence.luau(11,7): LocalUnused: Variable 'warn' is never used; prefix with '_' to silence
+probes/extend02-retract-sequence.luau(12,7): LocalUnused: Variable 'script' is never used; prefix with '_' to silence
+probes/extend02-retract-sequence.luau(13,7): LocalUnused: Variable 'game' is never used; prefix with '_' to silence
+probes/extend02-retractfrom.luau(4,13): LocalUnused: Variable 'Quad' is never used; prefix with '_' to silence
+probes/extend02-retractfrom.luau(4,19): LocalUnused: Variable 'QuadRoblox' is never used; prefix with '_' to silence
+probes/extend02-retractfrom.luau(5,7): LocalUnused: Variable 'QuadTypes' is never used; prefix with '_' to silence
+probes/extend02-retractfrom.luau(5,18): LocalUnused: Variable 'RobloxModule' is never used; prefix with '_' to silence
+probes/extend02-retractfrom.luau(6,7): LocalUnused: Variable 'M' is never used; prefix with '_' to silence
+probes/extend02-retractfrom.luau(7,7): LocalUnused: Variable 'Op' is never used; prefix with '_' to silence
+probes/extend02-retractfrom.luau(9,7): LocalUnused: Variable 'UDim2' is never used; prefix with '_' to silence
+probes/extend02-retractfrom.luau(9,14): LocalUnused: Variable 'UDim' is never used; prefix with '_' to silence
+probes/extend02-retractfrom.luau(9,20): LocalUnused: Variable 'Color3' is never used; prefix with '_' to silence
+probes/extend02-retractfrom.luau(9,28): LocalUnused: Variable 'Enum' is never used; prefix with '_' to silence
+probes/extend02-retractfrom.luau(9,34): LocalUnused: Variable 'Vector2' is never used; prefix with '_' to silence
+probes/extend02-retractfrom.luau(9,43): LocalUnused: Variable 'Font' is never used; prefix with '_' to silence
+probes/extend02-retractfrom.luau(10,7): LocalUnused: Variable 'task' is never used; prefix with '_' to silence
+probes/extend02-retractfrom.luau(11,7): LocalUnused: Variable 'warn' is never used; prefix with '_' to silence
+probes/extend02-retractfrom.luau(12,7): LocalUnused: Variable 'script' is never used; prefix with '_' to silence
+probes/extend02-retractfrom.luau(13,7): LocalUnused: Variable 'game' is never used; prefix with '_' to silence
+probes/negctl-strict.luau(5,7): TypeError: Expected this to be 'number', but got 'string'
+probes/negctl-strict.luau(7,33): TypeError: Expected this to be '(None | StateMarker<string> | string)?', but got 'number'
+probes/onchange-state-variants.luau(9,23): TypeError: Expected this to be
+	'Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | AttrMarker | ObserverMarker | EffectMarker | ModifierMarker | { Callback: (boolean) -> (), Name: "Active" } | { Callback: (Vector2) -> (), Name: "AnchorPoint" } | { Callback: (boolean) -> (), Name: "Archivable" } | { Callback: (boolean) -> (), Name: "AutoLocalize" } | { Callback: (Enum.AutomaticSize) -> (), Name: "AutomaticSize" } | ... *TRUNCATED*'
+but got
+	't1 where t1 = t2 & { Emit: (t1) -> t1, read Revision: number, Set: (t1, { read Callback: (any) -> (), read Name: string }) -> t1 } ; t2 = { Get: (*CYCLE*) -> { read Callback: (any) -> (), read Name: string }, read __quadState: true, read __quadStateValue: { read Callback: (any) -> (), read Name: string } } & { Apply: (({ Get: (*CYCLE*) -> { read Callback: (any) -> (), read Name: string }, read __quadState: true, read __quadStateValue: { read Callback: (any) -> (), read Name: string } }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> { read Callback: (any) -> (), read Name: string }, read __quadState: true, read __quadStateValue: { read Callback: (any) -> (), read Name: string } }, (t2) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> { read Callback: (any) -> (), read Name: string },... *TRUNCATED*'
+probes/onchange-state-variants.luau(15,23): TypeError: Expected this to be
+	'Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | AttrMarker | ObserverMarker | EffectMarker | ModifierMarker | { Callback: (boolean) -> (), Name: "Active" } | { Callback: (Vector2) -> (), Name: "AnchorPoint" } | { Callback: (boolean) -> (), Name: "Archivable" } | { Callback: (boolean) -> (), Name: "AutoLocalize" } | { Callback: (Enum.AutomaticSize) -> (), Name: "AutomaticSize" } | ... *TRUNCATED*'
+but got
+	't1 where t1 = t2 & { Emit: (t1) -> t1, read Revision: number, Set: (t1, Instance | { read __quadSlot: true, read __quadSlotValue: Instance } | { read __quadState: true, read __quadStateValue: (Instance | { read __quadAttr: true } | { read __quadEffect: true } | { read __quadNone: true } | { read __quadObserver: true } | { read __quadSlot: true, read __quadSlotValue: Instance } | { read __quadTag: true })? } | { read __quadNone: true } | { read __quadTag: true } | { read __quadAttr: true } | { read __quadObserver: true }... *TRUNCATED*'
+probes/sugar05-error-path.luau(4,13): LocalUnused: Variable 'Quad' is never used; prefix with '_' to silence
+probes/sugar05-error-path.luau(4,19): LocalUnused: Variable 'QuadRoblox' is never used; prefix with '_' to silence
+probes/sugar05-error-path.luau(5,7): LocalUnused: Variable 'QuadTypes' is never used; prefix with '_' to silence
+probes/sugar05-error-path.luau(5,18): LocalUnused: Variable 'RobloxModule' is never used; prefix with '_' to silence
+probes/sugar05-error-path.luau(6,7): LocalUnused: Variable 'M' is never used; prefix with '_' to silence
+probes/sugar05-error-path.luau(7,7): LocalUnused: Variable 'Op' is never used; prefix with '_' to silence
+probes/sugar05-error-path.luau(9,7): LocalUnused: Variable 'UDim2' is never used; prefix with '_' to silence
+probes/sugar05-error-path.luau(9,14): LocalUnused: Variable 'UDim' is never used; prefix with '_' to silence
+probes/sugar05-error-path.luau(9,28): LocalUnused: Variable 'Enum' is never used; prefix with '_' to silence
+probes/sugar05-error-path.luau(9,34): LocalUnused: Variable 'Vector2' is never used; prefix with '_' to silence
+probes/sugar05-error-path.luau(9,43): LocalUnused: Variable 'Font' is never used; prefix with '_' to silence
+probes/sugar05-error-path.luau(10,7): LocalUnused: Variable 'task' is never used; prefix with '_' to silence
+probes/sugar05-error-path.luau(12,7): LocalUnused: Variable 'script' is never used; prefix with '_' to silence
+probes/sugar05-error-path.luau(13,7): LocalUnused: Variable 'game' is never used; prefix with '_' to silence

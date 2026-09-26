@@ -1,0 +1,1 @@
+Shl: (n: NumArg) -> NumOp

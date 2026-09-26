@@ -1,0 +1,2 @@
+./mock/roblox_04-claim-mapper-L189.luau:15: Expected identifier when parsing expression, got Unicode character U+2026 (did you mean '...'?)
+stacktrace:

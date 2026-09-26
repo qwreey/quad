@@ -1,0 +1,1 @@
+canBound: (value: any) -> boolean

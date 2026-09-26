@@ -1,0 +1,10 @@
+../../../quad-roblox/src/EngineOps.luau:138: table is not a supported attribute type
+stacktrace:
+[C] function error
+../../../quad-base/test/mock.luau:338 function SetAttribute
+../../../quad-roblox/src/EngineOps.luau:138 function setAttr
+../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Attr/Key.luau:116 function process
+../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:371 function process
+../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:522 function drive
+../../../quad-roblox/src/Declaration/init.luau:4965 function stage
+./mock/core_09-tag-attr-L392.luau:15

@@ -1,0 +1,1 @@
+Product: (...NumArg) -> NumOp

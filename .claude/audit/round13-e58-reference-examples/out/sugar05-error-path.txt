@@ -1,0 +1,8 @@
+[warn]	ProfileCard 렌더링 실패:	./probes/sugar05-error-path.luau:16: attempt to index nil with 'Name'	
+	./probes/sugar05-error-path.luau:16 function ProfileCard
+../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Fallback.luau:52
+./probes/sugar05-error-path.luau:31
+
+fallback:	Frame	1
+TextLabel	q
+<<END>>

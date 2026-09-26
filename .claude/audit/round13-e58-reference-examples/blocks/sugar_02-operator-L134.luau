@@ -1,0 +1,1 @@
+Min: (...NumArg) -> NumOp

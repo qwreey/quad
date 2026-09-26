@@ -1,0 +1,11 @@
+errorNamespace: ErrorNamespace
+-- Namespace = {
+--   setFuncLevel: (level: number, ...any) -> (),
+--   getFuncLevel: (func: any) -> number,
+--   getFirstMatch: (level: number) -> number,
+--   getNearestMatch: (level: number) -> number,
+--   errorAt: (content: any, level: number) -> never,
+--   errorBefore: (content: any, level: number) -> never,
+--   errorAtNearest: (content: any, level: number) -> never,
+--   errorBeforeNearest: (content: any, level: number) -> never,
+-- }

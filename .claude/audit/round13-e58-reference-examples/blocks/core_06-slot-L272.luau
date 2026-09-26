@@ -1,0 +1,1 @@
+Clear: (self: Slot<T>) -> ()

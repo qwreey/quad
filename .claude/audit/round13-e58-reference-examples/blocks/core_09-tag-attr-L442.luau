@@ -1,0 +1,1 @@
+NumberAttr: AttrSugar<number>

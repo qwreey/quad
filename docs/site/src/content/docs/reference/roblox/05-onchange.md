@@ -17,7 +17,7 @@ description: "프로퍼티 변경 신호를 숫자 키 자리 디스크립터로
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local RobloxModule = require(<quad-roblox 모듈>) -- 디스크립터 타입 `OnChangeDescriptor`의 공개 경로(루트 재수출)
+local RobloxModule = require("@game/ReplicatedStorage/roblox_packages/quad_roblox") -- 디스크립터 타입 `OnChangeDescriptor`의 공개 경로(루트 재수출)
 local D = q.Declaration
 ```
 
@@ -86,11 +86,13 @@ local box = D.Frame({
   일부러 숫자 키 자리 형태로 만든 것입니다.
 - 숫자 키 자리를 차지하지만 **길이는 0**입니다 — 물리 자식이 아니라서 형제 자식의 오프셋에 기여하지
   않습니다.
-- [`State`](/reference/core/03-state/)에 담아 반응형으로 바꿔 끼울 수 있습니다. `State<T>`는 불변이라
-  **클래스별 유니언을 타입 인자로 명시**해서 만듭니다.
+- [`State`](/reference/core/03-state/)에 담아 반응형으로 바꿔 끼울 수 있습니다. `State<T>`는 불변이라 담을 타입이
+  처음에 정해지는데, 자식 자리가 요구하는 클래스별 유니언(`FrameOnChange` 등)은 루트에 재수출되지 않아 공개 경로가
+  없습니다([2026-09-27 기준]) — 타입 인자 없이 만들면 추론으로 통과하고, 재수출 `OnChangeDescriptor`(비제네릭)를
+  명시하면 strict가 자식 자리에서 거부합니다.
 
   ```luau
-  local desc = q.Source<<RobloxModule.OnChangeDescriptor>>(q.OnChange("Visible", function(v: boolean) end)) -- 클래스별 `FrameOnChange` 유니언은 루트에 재수출되지 않아 공개 경로가 없습니다([2026-09-27 기준])
+  local desc = q.Source(q.OnChange("Visible", function(v: boolean) end)) -- 타입 인자 없이(추론) — `<<RobloxModule.OnChangeDescriptor>>`를 명시하면 아래 자식 자리에서 strict 에러
   local box = D.Frame({ desc })
   ```
 

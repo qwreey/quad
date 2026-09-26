@@ -1,0 +1,1 @@
+isTween: (x: any) -> boolean

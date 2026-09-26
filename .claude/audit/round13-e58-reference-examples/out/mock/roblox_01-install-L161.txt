@@ -1,0 +1,2 @@
+./mock/roblox_01-install-L161.luau:17: Expected 'end' (to close 'function' at line 15), got <eof>
+stacktrace:

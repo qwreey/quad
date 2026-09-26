@@ -1,0 +1,1 @@
+Uncallback: <Self>(self: Self, fn: RefCallback<T>) -> Self

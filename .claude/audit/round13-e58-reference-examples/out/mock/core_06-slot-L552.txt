@@ -1,0 +1,3 @@
+./mock/core_06-slot-L552.luau:15: attempt to index nil with 'Item'
+stacktrace:
+./mock/core_06-slot-L552.luau:15
