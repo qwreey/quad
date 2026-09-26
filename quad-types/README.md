@@ -9,7 +9,7 @@ The three quad packages (`quad_base`, `quad_roblox`, `quad_types`) are published
 | Package | Role | You add it? |
 |---|---|---|
 | `qwreey/quad_base` | engine-agnostic core (reactivity + dispatch engine) | yes |
-| `qwreey/quad_roblox` | Roblox backend (`D`, `Tween`/`Animate`, `OnChange`, `Claim`) | yes, for Roblox |
+| `qwreey/quad_roblox` | Roblox backend (`Declaration`, `Tween`/`Animate`, `OnChange`, `Claim`) | yes, for Roblox |
 | `qwreey/quad_types` | public type contract (no implementation) | yes, for `--!strict` consumers |
 | `qwreey/quad_error` | level-tagged error utility | no — pulled in as a dependency |
 | `qwreey/type_version_check` | compile-time version pattern matching | no — pulled in as a dependency |

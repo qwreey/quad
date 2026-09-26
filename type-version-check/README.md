@@ -9,7 +9,7 @@ This package is versioned **on its own** (SemVer, see [`CHANGELOG.md`](./CHANGEL
 | Package | Role | You add it? |
 |---|---|---|
 | `qwreey/quad_base` | engine-agnostic core (reactivity + dispatch engine) | yes |
-| `qwreey/quad_roblox` | Roblox backend (`D`, `Tween`/`Animate`, `OnChange`, `Claim`) | yes, for Roblox |
+| `qwreey/quad_roblox` | Roblox backend (`Declaration`, `Tween`/`Animate`, `OnChange`, `Claim`) | yes, for Roblox |
 | `qwreey/quad_types` | public type contract (no implementation) | yes, for `--!strict` consumers |
 | `qwreey/quad_error` | level-tagged error utility (own version) | no — pulled in as a dependency |
 | `qwreey/type_version_check` | compile-time version pattern matching (own version) | no — pulled in as a dependency |

@@ -40,7 +40,7 @@ local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/
 local D = q.Declaration
 ```
 
-`Quad:UseProvider(QuadRoblox)` 전에는 `D`/`Tween`/`Animate`/`OnChange`가 없습니다. 이어지는 카운터 컴포넌트는 [02. 첫 화면](./docs/getting-started/02-first-screen.md)부터 이어지는 열여섯 장에서 한 걸음씩 만듭니다.
+`Quad:UseProvider(QuadRoblox)` 전에는 `Declaration`/`Tween`/`Animate`/`OnChange`가 없습니다. 이어지는 카운터 컴포넌트는 [02. 첫 화면](./docs/getting-started/02-first-screen.md)부터 이어지는 열여섯 장에서 한 걸음씩 만듭니다.
 
 ## 변경 이력과 버전
 
