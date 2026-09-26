@@ -31,7 +31,7 @@ local Types = require("@self/types")
 local DeclarationModule = require("@self/Declaration")
 
 -- 독립 게시 백엔드는 여기만 느슨한 패턴("0.*.*"류)으로 바꾸면 된다
--- [2026-09-15 사용자 결정] floor within major 3 — base minors/patches at or above this release pass
+-- [2026-09-15 사용자 결정] floor within the current major — base minors/patches at or above this release pass
 -- (major has no `^`: a post-release BREAKING bumps it for real). `check-version.py bump` rewrites the floor.
 local VERSION_PATTERN = "3.2^.0^"
 
