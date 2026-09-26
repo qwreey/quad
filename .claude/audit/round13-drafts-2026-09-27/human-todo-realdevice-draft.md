@@ -44,6 +44,17 @@
 | debug 모드 동률 경고의 실제 출력 | E18 | 핸들러 동률 경고가 (등록 **전**에 debug를 켰을 때) Studio 출력창에 실제로 찍히는지 |
 | GS 07 §3 `:Wait` 코루틴 | E16 | mock은 심(가짜)만 확인했음 — 실제 코루틴 동작 확인 |
 
+### 2-E29 추가(2026-09-27, mock 충실도 대조가 낸 여덟 — 이미 위에 있는 IsA 상속·속성/태그 이름·`task.delay(0)`·Destroying 순서·별칭 우선순위는 제외)
+
+1. 파괴된 부모 아래로 부모 지정 — `core/06-slot.md` 613행 "[mock 관측]": 부모 `Destroy()` 뒤 새 Frame `.Parent` 대입을 pcall로 돌려 성공 여부·결과 Parent.
+2. 없는 이름의 `GetPropertyChangedSignal` — `roblox/05-onchange.md` 113~114행·`OnChange.luau` 헤더 전제: `D.Frame { q.OnChange("Text", fn) }`을 pcall로 돌려 문구·blame 줄.
+3. 보간 불가 타입의 `TweenService:Create` — `roblox/02-d.md` 119행 "둘째 값부터 엔진이 거부": Animate를 건 `Text`에 값 둘 `Set`.
+4. nil을 못 받는 프로퍼티에 `q.None` — `roblox/02-d.md` 121행: 문구, blame이 `Property.luau`인지, 활성 트윈 취소 여부, 그 뒤 같은 목표 재애니메이션.
+5. 같은 부모 재대입(Claim 재삽입 경로) — `GetChildren` 순서·`task.wait()` 뒤 Parent 신호 횟수.
+6. 레거시 별칭의 변경 신호 교차 — `Font` 쓰기에 `FontFace` 신호 횟수, 반대 방향.
+7. `Destroying` 핸들러 안에서 보이는 상태 — Parent·자식 수·자식의 Parent.
+8. `Name = 5` — 숫자가 `"5"`로 바뀌는지(mock은 거부 — 엄격한 행).
+
 ## 3. HUMAN_TODO 편입 제안 (결정은 메인)
 
 - **1절 다섯 항목(float32·프레임당 신호·같은 프레임 순서·b2 통지·IsA 상속)은 이미 서로 얽혀 있어(§0 "문항 사이 의존" 절) 기존 C 섹션 스타일대로 "Tween 실기기 프로브 팩" 하나로 묶는 게 자연스럽다** — 기존 프로브 팩 형식(`.claude/audit/studio-editor-probe-2026-09-26/`처럼 `rojo serve` + 관측표)과 같은 모양, 결과 하나가 Q78·Q81·Q91·Q97·Q99 다섯 문항의 처방을 동시에 좌우한다.

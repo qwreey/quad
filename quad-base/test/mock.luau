@@ -529,6 +529,13 @@ local function installTagAttrOps(quad: any, log: { string }?)
 		record("removeTag", names)
 	end
 	local function setAttr(inst: any, name: string, v: any)
+		-- [2026-09-27 round13 E29] same gate as `methods.SetAttribute` (`H-659`): quad-base specs and
+		-- headless snippets on `mock.newQuad()` reach attributes through THIS op, not the instance method,
+		-- so without it `[q.AttrKey("T")] = {}` still passed here while failing on the engine (`H-748`).
+		local t = type(v)
+		if t == "table" or t == "function" or t == "thread" then
+			error(`{t} is not a supported attribute type`, 2)
+		end
 		attrMapOf(inst)[name] = v -- v == nil deletes (the injected-op contract)
 		if log ~= nil then
 			table.insert(log, `setAttr:{name}={tostring(v)}`)
