@@ -26,6 +26,7 @@ quad 모듈 인스턴스를 만들고, 초기화 함수·플러그인·백엔드
 | `q.debug` | [core/01](/reference/core/01-quad-module/#qdebug) |
 | `q.errorNamespace` | [core/01](/reference/core/01-quad-module/#qerrornamespace) · [extend/01](/reference/extend/01-backend-provider-contract/) |
 | `q.Relate()` | [core/01](/reference/core/01-quad-module/#qrelate) |
+| `q.moduleIdentity` | [core/01](/reference/core/01-quad-module/#qmoduleidentity) |
 | `QuadRoblox` | [roblox/01 — 설치](/reference/roblox/01-install/) |
 | `RobloxExtension` | [roblox/01](/reference/roblox/01-install/) |
 
@@ -256,7 +257,8 @@ quad가 만든 인스턴스를 손에 쥐는 세 종류의 참조와, 채워질 
 
 | 심볼 | 페이지 |
 |---|---|
-| 주입 슬롯 전체(`native*`, `onDestroying`, `nativeClaim`, `isClaimed`, `nativeFindChild`, `addTag`, `removeTag`, `setAttr`, `setTimeout`, `clearTimeout`) | [extend/01 — 백엔드 프로바이더 규약](/reference/extend/01-backend-provider-contract/) |
+| 주입 슬롯 전체(`holdLifetime`/`releaseLifetime`/`isHeld`/`isHeldBy`, `native*`, `onDestroying`, `nativeClaim`, `isClaimed`, `nativeFindChild`, `addTag`, `removeTag`, `setAttr`, `setTimeout`, `clearTimeout`) | [extend/01 — 백엔드 프로바이더 규약](/reference/extend/01-backend-provider-contract/) |
+| `Brand()`(`quad_types` 런타임 값) · `brand:Register(v)` · `brand:Is(v)` | [extend/01 §3.1](/reference/extend/01-backend-provider-contract/#31-자기-값-타입에-브랜드-붙이기--brand) |
 | `Handler` 레코드(`isHandlable`/`priority`/`process`/`name`/`keyType`) | [extend/02 — 디스패치 핸들러 계약](/reference/extend/02-dispatch-handler-contract/#handler-레코드) |
 | retractor `(nextValue, retracting)` | [extend/02](/reference/extend/02-dispatch-handler-contract/#retractor) |
 | `q.Dispatch.HANDLER_PRIORITY_HIGH` / `_NORMAL` / `_LOW` / `_FALLBACK` | [extend/02](/reference/extend/02-dispatch-handler-contract/#우선순위-밴드) |
