@@ -1,0 +1,52 @@
+=== A. order ===
+A1 Destroy P{P1,P2,c1{g1},c2,P3}: P3C(true) P2D P1C(true) c1C(true) g1C(true) c2C(true)
+A2 dispose: PC(true) cC(true)
+A3 Clear e1,e2,e3: e3C(true) e2C(true) e1C(true)
+A4 dispose(unmounted slot): u1C(true) u2C(true)
+A5 List all KeyGone (index keys): k1C(true) k2C(true) k3C(true)
+A5b cleanup hosts: 
+=== A6. wave fires across hosts (mock Immediate, pre-order Destroying) ===
+A6a child OnDestroyed Sets during parent Destroy: P.effC(true) C.OD->Set P.obs
+A6b parent OnDestroyed Sets; child not yet destroying: P.OD->Set C.effC(false) C.effFn C.obs C.effC(true)
+A6c sibling (reverse child order in mock): S1.OD->Set S2.obs
+=== B. dying per path ===
+B1 State<Effect?> seat -> nil: seatEffC(false)
+B1b seat Effect -> other Effect: seatEff2C(false)
+B1c host Destroy with seatEff3: seatEff3C(true)
+B2 State<Instance?> seat -> nil (child detached): 
+B2b host destroyed, detached child alive: 
+B2c dispose(detached child): chD chC(true)
+B3 Extract: 
+B3b drop extracted + GC: 
+B4 OwnsElements=false KeyGone(nil): 
+B4b OwnsElements=false KeyGone(Detach): 
+B5 owned Detach (held, unparented): 
+B5b host Destroy while element held by the mounted Slot: heldD heldC(true)
+   held destroyed?	true	held parent	nil
+   dispose(held) after host destroyed:	true	true
+   dispose(slot) after host destroyed:	false	./axes.luau:94: Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+B5c: 
+B6 OwnsElements=false, host Destroy: uoHostC(true)
+B7 Replace: oldC(true)
+B8 unbindLifetime then Destroy: 
+B10 State<Slot?> seat -> nil (slot unmounted): 
+B10b host destroyed; unmounted slot keeps element: 
+B10c dispose(unmounted slot): wrappedC(true)
+=== B9. H-590 yield window ===
+B9a destroy during yield: C(false) fn:yield [destroyed] fn:resumed C(true)
+B9b seat nil during yield: C2(false) [seat nil] C2(false)
+=== C. late signals ===
+C1 pre: thr
+C1 after destroy + timers: 
+C2 destroy with running tween: 
+C2b late engine Completed: 
+C3 property seat retract (nil) with running tween: cancelled
+=== D. module instance drop ===
+D1 module ref dropped, tree alive: q2 collected=false: 
+D1b then Destroy tree: q2D q2C(true)
+D2 module + tree both dropped without Destroy: tree collected=false: 
+=== B11. OnDestroyed in a State seat (sugar/04:90) ===
+B11a seat -> None (host alive): 
+B11b host destroyed while hook out of seat: 
+B11c out and back in: 
+B11d host destroyed after re-seat: OD2

@@ -72,4 +72,5 @@
 - `round13-e44-ref-statemachine/` — **[2026-09-27 자율 루프 E44]** Ref 패밀리 상태표 69칸(`STATE-TABLE.md`)·퍼저 1만 시드·축 프로브(`axis-*`·`probe-stringkeys`) — 차등 0, `H-787`, `Q135`(반영 키 가드 미도달)·`Q136`(Wait(thread) 미정 칸).
 - `round13-e46-modifier-algebra/` — **[2026-09-27 자율 루프 E46]** Modifier 합성 대수 모델(`model.luau` 규칙 20)·퍼저 3만 시드(`fuzz.luau`)·축 프로브·strict(`strict-algebra`·`strict-themed`) — 차등 0, `H-789`, `Q137`, Q90 ⑲.
 - `round13-e48-claim-tree-fuzz/` — **[2026-09-27 자율 루프 E48]** Claim × Mapper 트리 모양 차등 퍼저(`model.luau` 규칙 20·`fuzz.luau` 4.5만 시드·`axes.luau`·`perf-split.luau`·결함 주입 `mut-*`) — 차등 0, `H-793`, Q85 보강 둘째, 실기기 넷.
+- `round13-e50-teardown-fuzz/` — **[2026-09-27 자율 루프 E50]** 트리 파괴 순서·cleanup 퍼저(규칙 23·Immediate/Deferred/raw·`axes.luau`·`probe-held.luau`) — 차등 0, `H-794`, `Q139`, 실기기 셋.
 

@@ -505,7 +505,7 @@ Detach: Detach -- { read __quadDetach: true }
 
 **동작** — `:List`/`:Single`의 `updateFn`이 반환하는 센티널입니다. "이 원소를 트리에서 떼되 파괴하지는 말고 들고 있어라"라는 뜻입니다. 다음 사이클에 같은 키가 다시 나타났을 때 `ctx.Prev`를 반환하면 **만들지 않고 그대로 다시 붙습니다**.
 
-보관은 `OwnsElements`가 켜진 Slot에서만 일어납니다 — 보관 중인 원소는 Slot이 소유하고, Slot이 파괴될 때 같이 파괴됩니다. `OwnsElements = false`인 Slot에서 `Detach`는 보관이 아니라 **완전한 해제**입니다: 원소는 파괴되지 않고 소유만 풀린 채 사용자 손에 남고, 같은 키가 다시 나타나도 `ctx.Prev`는 `nil`이라 새로 만들어집니다. 판정은 신원 비교(`result == q.Detach`)입니다.
+보관은 `OwnsElements`가 켜진 Slot에서만 일어납니다 — 보관 중인 원소는 Slot이 소유하고, Slot이 파괴될 때, 그리고 **Slot이 지금 마운트된 호스트 인스턴스가 `Destroy`/`q.dispose`로 죽을 때**도 같이 파괴됩니다(보관분의 수명이 호스트에 묶이고, 언마운트 때 풀려 다시 마운트되면 새 호스트에 묶입니다 — 그 원소의 Effect cleanup은 `dying = true`; [2026-09-27 mock 관측]). `OwnsElements = false`인 Slot에서 `Detach`는 보관이 아니라 **완전한 해제**입니다: 원소는 파괴되지 않고 소유만 풀린 채 사용자 손에 남고, 같은 키가 다시 나타나도 `ctx.Prev`는 `nil`이라 새로 만들어집니다. 판정은 신원 비교(`result == q.Detach`)입니다.
 <!-- mock 실측 2026-09-11: gs.owned.luau — OwnsElements=true는 같은 인스턴스가 prev로 돌아옴(made 2), OwnsElements=false는 prev nil·새로 만듦(made 3), 둘 다 옛 원소 파괴 안 됨 -->
 
 **예제**
@@ -613,5 +613,5 @@ q.dispose(temp)                -- 마운트된 적 없는 Slot은 트리째 파�
   ```
 
 - 파괴된 Slot은 되살아나지 않습니다 — `Quad0165 Slot: destroyed Slot cannot be reused`, 원소로 넣으려 하면 `Quad0169 Slot: destroyed Slot cannot be an element`, 마운트하려 하면 `Quad0164 Slot: destroyed Slot cannot be mounted`.
-- 마운트 대상이 파괴된 Slot은 그 사실을 모릅니다(정의되지 않은 동작) — 부모를 `inst:Destroy()`로 지웠든 `q.dispose(부모)`로 지웠든 같습니다(`q.dispose`는 Instance에 대해 백엔드의 파괴 op만 부릅니다) — `Add`/`Replace`/`Splice`는 계속 성공하고 새 원소는 죽은 인스턴스에 붙으며, `:List` 모드는 데이터가 바뀌어도 조용히 재조정을 멈춥니다(`updateFn`이 더는 불리지 않음 — [2026-09-27 mock 관측]). 알아채는 자리는 `q.dispose`(`… cannot be reused after its parent is destroyed`)와 뽑아낸 원소의 재사용(`… a destroyed Instance cannot be reused`)뿐입니다. 화면을 quad 밖에서 지웠다면 그 Slot도 버리세요.
+- 마운트 대상이 파괴된 Slot은 그 사실을 모릅니다(정의되지 않은 동작 — 예외는 `q.Detach`로 보관 중인 원소로, 이것만은 호스트와 함께 파괴됩니다) — 부모를 `inst:Destroy()`로 지웠든 `q.dispose(부모)`로 지웠든 같습니다(`q.dispose`는 Instance에 대해 백엔드의 파괴 op만 부릅니다) — `Add`/`Replace`/`Splice`는 계속 성공하고 새 원소는 죽은 인스턴스에 붙으며, `:List` 모드는 데이터가 바뀌어도 조용히 재조정을 멈춥니다(`updateFn`이 더는 불리지 않음 — [2026-09-27 mock 관측]). 알아채는 자리는 `q.dispose`(`… cannot be reused after its parent is destroyed`)와 뽑아낸 원소의 재사용(`… a destroyed Instance cannot be reused`)뿐입니다. 화면을 quad 밖에서 지웠다면 그 Slot도 버리세요.
 - Slot을 자기 자신이나 자기 조상에 넣는 순환은 넣는 시점에 거부됩니다. 인스턴스를 매개로 한 순환(이 Slot의 마운트 대상이나 그 조상을 원소로)은 거부되지 않고 정의되지 않은 동작입니다 — 위 `Slot:Add` 절.

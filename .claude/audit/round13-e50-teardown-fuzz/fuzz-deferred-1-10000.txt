@@ -1,0 +1,6 @@
+== seeds=10000 diffSeeds=0 nodes=117316 iso=true deferredDestroying=true
+paths: Clear=1189, Destroy=1563, Extract=1157, KeyGoneOwned=1824, KeyGoneUnowned=1797, Remove=1189, SeatNil=3613, dispose=1609, disposeHeld=3983
+actions: crud=19447, none=39214, read=19816, set=19506, throw=19333
+wave observer fires on hosts whose Destroy already started: sameHost=0 crossHost=0; on hosts not yet destroying=14780
+dep Effect fn reruns on a host whose Destroy started, before its dying cleanup: 0
+callback errors: 

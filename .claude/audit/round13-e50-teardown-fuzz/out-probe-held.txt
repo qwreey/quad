@@ -1,0 +1,6 @@
+Destroy	held.Parent before:	nil	destroyed:	false
+Destroy	after:	aC(true) bC(true)	held destroyed:	true
+dispose	held.Parent before:	nil	destroyed:	false
+dispose	after:	aC(true) bC(true)	held destroyed:	true
+remount: after old host destroyed (slot unmounted):		held destroyed:	false
+remount: after new host destroyed:	heldC(true)	held destroyed:	true

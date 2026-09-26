@@ -1,0 +1,6 @@
+tweens	1
+pre	rootObs,rootDeb,started,rootObs
+after keygone	keygone,libCleanup:true
+destroy	rootOnDestroyed,rootCleanup:true,childOnDestroyed,childCleanup:true,liaCleanup:true
+rmLog		attr	5	ref	true
+post	
