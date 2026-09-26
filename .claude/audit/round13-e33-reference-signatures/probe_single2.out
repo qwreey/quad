@@ -1,0 +1,9 @@
+.claude/audit/round13-e33-reference-signatures/probe_single2.luau(1,1): TypeError: Type inference failed to complete, you may see some confusing types and type errors.
+.claude/audit/round13-e33-reference-signatures/probe_single2.luau(8,15): TypeError: Expected this to be
+	'(({ Index: number, Item: Item | KeyGone, Offset: t1, Prev: (Instance | Slot<Instance> | t2)?, UserData: UD? }) -> (any, UD?))? where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*'
+but got
+	'(unknown) -> Instance'
+.claude/audit/round13-e33-reference-signatures/probe_single2.luau(10,15): TypeError: Expected this to be
+	'(({ Index: number, Item: KeyGone | any, Offset: t1, Prev: (Instance | Slot<Instance> | t2)?, UserData: any? }) -> (any, any?))? where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*'
+but got
+	'(any) -> Instance'

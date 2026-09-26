@@ -1,0 +1,19 @@
+.claude/audit/round13-e33-reference-signatures/probe_single3.luau(1,1): TypeError: Type inference failed to complete, you may see some confusing types and type errors.
+.claude/audit/round13-e33-reference-signatures/probe_single3.luau(8,17): TypeError: Expected this to be
+	'(({ Index: number, Item: Item | KeyGone, Offset: t1, Prev: (Instance | Slot<Instance> | t2)?, UserData: UD? }) -> (any, UD?))? where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*'
+but got
+	'(unknown) -> Instance'
+.claude/audit/round13-e33-reference-signatures/probe_single3.luau(10,14): TypeError: Expected this to be
+	'(({ Index: number, Item: Item | KeyGone, Offset: t1, Prev: (Instance | Slot<Instance> | t2)?, UserData: UD? }) -> (any, UD?))? where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*'
+but got
+	'(unknown) -> Instance'
+.claude/audit/round13-e33-reference-signatures/probe_single3.luau(13,1): TypeError: No valid instantiation could be inferred for generic type parameter Item. It was expected to be at least:
+	t1 where t1 = t2 & { Emit: (t1) -> t1, read Revision: number, Set: (t1, string?) -> t1 } ; t2 = { Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? } & { Apply: (({ Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? }, (t2) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? }, ({ Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*... *TRUNCATED* | string
+and at most:
+	string
+but these types are not compatible with one another.
+.claude/audit/round13-e33-reference-signatures/probe_single3.luau(21,1): TypeError: No valid instantiation could be inferred for generic type parameter Item. It was expected to be at least:
+	t1 where t1 = t2 & { Emit: (t1) -> t1, read Revision: number, Set: (t1, string?) -> t1 } ; t2 = { Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? } & { Apply: (({ Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? }, (t2) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? }, ({ Get: (*CYCLE*) -> string?, read __quadState: true, read __quadStateValue: string? }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*... *TRUNCATED* | string
+and at most:
+	string
+but these types are not compatible with one another.

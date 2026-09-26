@@ -59,4 +59,5 @@
 - `round13-e27-gs-chain/` — **[2026-09-27 자율 루프 E27]** 시작하기 22편 `luau` 펜스 125개 누적 체인 mock 실행(`run-all.sh`, 러너 넷·탐침·strict/nonstrict) — 검사 181 통과, 문서 오류 `H-737`~`H-744`, `Q118`, 8.33.
 - `round13-e30-changelog-released/` — **[2026-09-27 자율 루프 E30]** 릴리즈된 CHANGELOG 절 vs 태그 diff 구간별 대조표 — 사실 오류 0, 절차 결함 둘(3.0.0 lock `0.0.0`·README `D` 잔존 `H-747`), 정책 `Q119`.
 - `round13-e29-mock-fidelity/` — **[2026-09-27 자율 루프 E29]** mock × API dump 충실도 대조표 39행·변형 mock 생성기(`mock-variants.py`)·계측 출력·프로브 셋 — `H-748`(setAttr op 게이트 누락), `Q120`, 실기기 후보 여덟.
+- `round13-e33-reference-signatures/` — **[2026-09-27 자율 루프 E33]** 레퍼런스 시그니처 225항목 전수 표(`TABLE.md`)·추출/비교 스크립트·strict 프로브 여섯(`probe_single3`·`probe_onchange`·`probe_calls` 등) — `H-749`~`H-753`, `Q121`·`Q122`.
 

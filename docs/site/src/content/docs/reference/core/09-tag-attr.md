@@ -57,7 +57,7 @@ Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got {
 **시그니처**
 
 ```luau
-Tag: setmetatable<{ Merged: (...TagMarker) -> Tag }, { __call: (self: any, ...TagNames) -> Tag }>
+Tag: setmetatable<{ Merged: (...TagMarker?) -> Tag }, { __call: (self: any, ...TagNames?) -> Tag }>
 ```
 
 **인자**
@@ -196,12 +196,12 @@ Apply: <U>(self: Tag, factory: (Tag) -> U) -> U
 **시그니처**
 
 ```luau
-Merged: (...TagMarker) -> Tag
+Merged: (...TagMarker?) -> Tag
 ```
 
 **반환** — 모든 입력의 이름을 합친 새 `Tag`.
 
-**동작** — 손실 없는 합집합입니다. `q.Tag(tag1, tag2, …)`와 결과가 같고, **`Tag`만 받는 엄격한 철자**라는 점만 다릅니다 — 문자열이나 리스트를 섞어 넘길 수 없습니다.
+**동작** — 손실 없는 합집합입니다. `q.Tag(tag1, tag2, …)`와 결과가 같고, **`Tag`만 받는 엄격한 철자**라는 점만 다릅니다 — 문자열이나 리스트를 섞어 넘길 수 없습니다(`nil` 자리는 `q.Tag(...)`와 같이 건너뜁니다 — `if … then tag else nil` 인자를 그대로 넣을 수 있습니다).
 
 - `Quad0207 Tag.Merged: arguments must be Tag values`
 
@@ -357,7 +357,7 @@ local final = q.Attr.Overridden(theme, override) -- Accent = "red"
 
 ```luau
 AttrKey: (name: string) -> AttrKeyObject
-type AttrKeyObject = { Name: string }
+type AttrKeyObject = { read Name: string }
 ```
 
 **인자**

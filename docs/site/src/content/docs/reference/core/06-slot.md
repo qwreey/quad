@@ -449,7 +449,7 @@ Single: <Item, UD>(
 ) -> Slot<T>
 ```
 
-타입 인자는 `:List`와 같은 `<Item, UD>`입니다 — `state`가 담는 것은 **데이터**(`Item`)이고, 원소 타입 `T`와 묶이지 않습니다. `Source<string?>`로 `Slot<Instance>`를 `updateFn`으로 매핑해 모는 모양이 그대로 타입 검사를 통과합니다. `updateFn`을 생략하는 항등 사용에서는 `Item`이 곧 원소라 `T`로 두시면 됩니다(다른 것을 넘기면 타입이 아니라 런타임 가드 `Quad0240 Slot: this backend cannot mount this value`가 잡습니다).
+타입 인자는 `:List`와 같은 `<Item, UD>`입니다 — `state`가 담는 것은 **데이터**(`Item`)이고, 원소 타입 `T`와 묶이지 않습니다. `Source<string?>`로 `Slot<Instance>`를 `updateFn`으로 매핑해 모는 모양은 **strict에서 타입 인자를 명시해야** 통과합니다 — `slot:Single<<string, nil>>(cur, function(ctx) … end)`처럼; 무주석 람다는 `ctx`가 `unknown`으로 굳고, `ctx: q.SingleCtx<string, nil>`처럼 정확히 주석해도 `Item`의 인스턴스를 추론하지 못합니다(`Item?` 팔이 넘긴 `State`를 `Item`의 하한으로 잡는 신 솔버 한계 — [2026-09-27 실측]; `:List`는 같은 무주석 람다로 통과합니다). `updateFn`을 생략하는 항등 사용에서는 `Item`이 곧 원소라 `T`로 두시면 됩니다(다른 것을 넘기면 타입이 아니라 런타임 가드 `Quad0240 Slot: this backend cannot mount this value`가 잡습니다).
 
 **인자**
 

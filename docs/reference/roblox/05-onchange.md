@@ -156,7 +156,7 @@ local box = D.TextBox({
 | 이름 | 타입 | 설명 |
 |---|---|---|
 | `name` | 프로퍼티 이름 문자열 | `OnChange`와 같은 읽기 표면 `PropTypesRead`의 키 |
-| `src` | `Source` | 되쓸 곳. **`:Compute` 결과 같은 파생 `State`는 안 됩니다** — `Set`이 없어 타입 검사에서 걸리고, 우회하면 런타임에 거부합니다 |
+| `src` | `Source` | 되쓸 곳. **`:Compute` 결과 같은 파생 `State`는 안 됩니다** — `Set`이 없어 주석 달린 변수(`local s: q.State<UDim2>`)면 타입 검사에서 걸리고(무주석 인라인 `:Compute` 결과는 타입이 비어 검사를 지나칩니다), 런타임이 거부합니다 |
 
 **동작**
 

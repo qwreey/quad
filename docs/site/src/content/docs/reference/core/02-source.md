@@ -15,7 +15,7 @@ local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 
 ---
 
-## `q.Source(value)`
+## `q.Source(v)`
 
 **시그니처**
 

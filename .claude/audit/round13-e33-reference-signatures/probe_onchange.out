@@ -1,0 +1,3 @@
+.claude/audit/round13-e33-reference-signatures/probe_onchange.luau(1,1): TypeError: Type inference failed to complete, you may see some confusing types and type errors.
+.claude/audit/round13-e33-reference-signatures/probe_onchange.luau(7,10): TypeError: Expected this to be '"Size"', but got '"Position"'
+.claude/audit/round13-e33-reference-signatures/probe_onchange.luau(8,11): TypeError: Generic type 'OnChangeDescriptor' expects 0 type arguments, but 1 is specified

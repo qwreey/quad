@@ -1,0 +1,1687 @@
+[
+ {
+  "file": "core/01-quad-module.md",
+  "line": 26,
+  "heading": "`q.New()`",
+  "sig": "New: () -> Quad",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 새 `Quad` 모듈 인스턴스."
+ },
+ {
+  "file": "core/01-quad-module.md",
+  "line": 49,
+  "heading": "`q:RunInit(initFn)`",
+  "sig": "RunInit: (self: Quad, initFn: (Quad) -> any) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 없음. 확장 테이블을 병합하지 않습니다(그건 `AddPlugin`의 일입니다)."
+ },
+ {
+  "file": "core/01-quad-module.md",
+  "line": 81,
+  "heading": "`q:AddPlugin(pluginFn)`",
+  "sig": "AddPlugin: <Self, P>(self: Self, pluginFn: (Self) -> P) -> Self & P",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 같은 모듈(identity 그대로). 타입은 원래 표면과 확장의 교집합 `Self & P`라 체이닝이 그대로 이어집니다."
+ },
+ {
+  "file": "core/01-quad-module.md",
+  "line": 122,
+  "heading": "`q:UseProvider(providerFn)`",
+  "sig": "UseProvider: <Self, P>(self: Self, providerFn: (Self) -> P) -> Self & P",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 같은 모듈. 타입은 `Self & P`이므로 여기서부터 `q.Declaration`/`q.Tween` 같은 백엔드 표면이 타입에 실립니다."
+ },
+ {
+  "file": "core/01-quad-module.md",
+  "line": 164,
+  "heading": "`q.Version`",
+  "sig": "Version: \"3.2.0\"",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/01-quad-module.md",
+  "line": 176,
+  "heading": "`q.debug`",
+  "sig": "debug: boolean",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/01-quad-module.md",
+  "line": 197,
+  "heading": "`q.errorNamespace`",
+  "sig": "errorNamespace: ErrorNamespace\n-- Namespace = {\n--   setFuncLevel: (level: number, ...any) -> (),\n--   getFuncLevel: (func: any) -> number,\n--   getFirstMatch: (level: number) -> number,\n--   getNearestMatch: (level: number) -> number,\n--   errorAt: (content: any, level: number) -> never,\n--   errorBefore: (content: any, level: number) -> never,\n--   errorAtNearest: (content: any, level: number) -> never,\n--   errorBeforeNearest: (content: any, level: number) -> never,\n-- }",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/01-quad-module.md",
+  "line": 223,
+  "heading": "`q.moduleIdentity`",
+  "sig": "read moduleIdentity: {}",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/01-quad-module.md",
+  "line": 252,
+  "heading": "`q.Relate()`",
+  "sig": "Relate: () -> Relate\n-- Relate = {\n--   SetStrong: (self: Relate, inst: any, key: any, value: any) -> (),\n--   GetStrong: (self: Relate, inst: any, key: any) -> any?,\n--   SetWeak:   (self: Relate, inst: any, key: any, value: any) -> (),\n--   GetWeak:   (self: Relate, inst: any, key: any) -> any?,\n-- }",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/02-source.md",
+  "line": 25,
+  "heading": "`q.Source(value)`",
+  "sig": "Source: <T>(v: T) -> Source<T>\n\nexport type Source<T> = State<T> & {\n\tread Revision: number,\n\tSet: (self: Source<T>, v: T) -> Source<T>,\n\tEmit: (self: Source<T>) -> Source<T>,\n}",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `v` | `T` | 초기값. `nil`도 값으로 허용됩니다(`q.Source<<number?>>(nil)` — 타입 인자는 명시해야 `Source<number?>`가 됩니다). |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — `Source<T>`. 만들어진 시점의 `Revision`은 `0`입니다."
+ },
+ {
+  "file": "core/02-source.md",
+  "line": 65,
+  "heading": "`source:Set(v)`",
+  "sig": "Set: (self: Source<T>, v: T) -> Source<T>",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `v` | `T` | 새 값. Modifier는 거부됩니다. |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — `self`(체이닝 가능)."
+ },
+ {
+  "file": "core/02-source.md",
+  "line": 98,
+  "heading": "`source:Emit()`",
+  "sig": "Emit: (self: Source<T>) -> Source<T>",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — `self`."
+ },
+ {
+  "file": "core/02-source.md",
+  "line": 123,
+  "heading": "`source.Revision`",
+  "sig": "read Revision: number",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/03-state.md",
+  "line": 41,
+  "heading": "`state:Get()`",
+  "sig": "Get: (self: StateData<T>) -> T",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 이 노드의 현재 값."
+ },
+ {
+  "file": "core/03-state.md",
+  "line": 60,
+  "heading": "`state:Compute(fn, ...deps)`",
+  "sig": "Compute: <U>(self: StateData<T>, fn: (self: StateData<T>, previous: U?, ...any) -> U, ...any) -> State<U>",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `fn` | `(self, previous?, ...deps) -> U` | 계산 함수. 함수가 아니면 에러. |",
+   "| `...deps` | `State`/`Source` | 후행 의존성. 리시버 외에 더 구독할 노드들. `nil`은 에러. |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — `State<U>` 노드 하나. 의존성이 여럿이어도 노드는 하나입니다(합치는 중간 노드를 만들지 않습니다)."
+ },
+ {
+  "file": "core/03-state.md",
+  "line": 109,
+  "heading": "`state:Depend(...)`",
+  "sig": "Depend: (self: StateData<T>, ...any) -> State<T>",
+  "args": [],
+  "argsInline": "**인자** — 넘긴 가변 인자는 **전부 추가 의존성**입니다(`:Compute`와 같은 검증을 받습니다).",
+  "ret": "**반환** — `State<T>`. 값은 리시버의 것을 그대로 통과시키는 노드입니다."
+ },
+ {
+  "file": "core/03-state.md",
+  "line": 141,
+  "heading": "`state:Apply(factory)`",
+  "sig": "Apply: (<U>(self: StateData<T>, factory: (State<T>) -> U) -> U)\n     & ((self: StateData<T>, factory: { __apply: (self: any, state: any) -> any }) -> any)",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `factory` | 함수 또는 `__apply`를 가진 객체 | 이 노드를 받아 무언가를 돌려주는 애플리커티브 팩토리. |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 함수 팔은 팩토리가 돌려주는 것 그대로, 객체 팔은 `any`입니다."
+ },
+ {
+  "file": "core/03-state.md",
+  "line": 177,
+  "heading": "`state:Observer(fn)`",
+  "sig": "Observer: (self: StateData<T>, fn: ObserverFn<T>?) -> Observer\nexport type ObserverFn<T> = (targetState: StateData<T>, self: Observer, emitFrom: (Epoch | EpochSet)?) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/03-state.md",
+  "line": 192,
+  "heading": "`state:Gate(setup)`",
+  "sig": "Gate: (self: StateData<T>, setup: GateSetup) -> State<T>\nexport type GateEmit = (commit: boolean?) -> boolean\nexport type GateSetup = (emit: GateEmit) -> () -> ()",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `setup` | `(emit) -> onUpstreamEmit` | 게이트 정책. **생성 시 딱 한 번** 불리고, 상류 emit마다 불릴 클로저를 돌려줘야 합니다. |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 같은 `T`의 `State<T>`. 전파 경로에 게이트 노드 하나가 끼어든 것뿐입니다."
+ },
+ {
+  "file": "core/04-store.md",
+  "line": 23,
+  "heading": "`q.Store(defaults)`",
+  "sig": "Store: (() -> Store<{}>) & (<T>(defaults: T) -> Store<T>)\n\nexport type Store<T> = T & {\n\tOf: <U>(self: any, name: string) -> Source<U>,\n\tNames: (self: any) -> { string },\n\t__reservedCheck: CheckReservedKeys<keyof<T>>,\n}",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `defaults` | `T` | 초기 필드. 넘긴 레코드 타입이 그대로 `T`가 됩니다. 런타임 계약은 메타테이블 없는 **평범한 테이블**이고 값은 **전부 `Source`**여야 한다는 것입니다 — 생략하면 빈 Store입니다. |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — `Store<T>`. `T`는 넘긴 레코드 타입 그대로입니다(타입 함수 없이 평범한 레코드)."
+ },
+ {
+  "file": "core/04-store.md",
+  "line": 94,
+  "heading": "`store:Of<<U>>(name)`",
+  "sig": "Of: <U>(self: any, name: string) -> Source<U>",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `name` | `string` | 필드 이름. 빈 문자열이 아닌 문자열이어야 하고, 예약 이름이면 안 됩니다. |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 그 이름의 `Source<U>`. 없으면 **그 자리에서 만들어 저장하고** 돌려줍니다."
+ },
+ {
+  "file": "core/04-store.md",
+  "line": 130,
+  "heading": "`store:Names()`",
+  "sig": "Names: (self: any) -> { string }",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 지금 이 store에 있는 필드 이름들."
+ },
+ {
+  "file": "core/05-observer-effect.md",
+  "line": 70,
+  "heading": "`state:Observer(fn)`",
+  "sig": "Observer: (self: StateData<T>, fn: ObserverFn<T>?) -> Observer\n\nexport type ObserverFn<T> = (targetState: StateData<T>, self: Observer, emitFrom: (Epoch | EpochSet)?) -> ()\nexport type Observer = {\n\tread __quadObserver: true,\n\tread Subscribed: boolean,\n\tSubscribe: (self: Observer) -> Observer,\n\tWeakSubscribe: (self: Observer) -> Observer,\n\tUnsubscribe: (self: Observer) -> Observer,\n\tWeakUnsubscribe: (self: Observer) -> Observer,\n}",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `fn` | `ObserverFn<T>?` | 관측 콜백. 생략하면 \"언제나 관측만 하는\" 유틸이 됩니다(내부적으로 대상의 값을 읽기만 합니다). |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — `Observer` 핸들. **아직 구독되지 않은 상태**입니다."
+ },
+ {
+  "file": "core/05-observer-effect.md",
+  "line": 151,
+  "heading": "`observer:Subscribe()`",
+  "sig": "Subscribe: (self: Observer) -> Observer",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/05-observer-effect.md",
+  "line": 161,
+  "heading": "`observer:WeakSubscribe()`",
+  "sig": "WeakSubscribe: (self: Observer) -> Observer",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/05-observer-effect.md",
+  "line": 171,
+  "heading": "`observer:Unsubscribe()`",
+  "sig": "Unsubscribe: (self: Observer) -> Observer",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/05-observer-effect.md",
+  "line": 181,
+  "heading": "`observer:WeakUnsubscribe()`",
+  "sig": "WeakUnsubscribe: (self: Observer) -> Observer",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/05-observer-effect.md",
+  "line": 193,
+  "heading": "`q.Effect(fn, ...deps)`",
+  "sig": "Effect: (fn: EffectFn, ...any) -> Effect\n\nexport type EffectFn = (self: Effect) -> ...((dying: boolean) -> ())\nexport type Effect = {\n\tread __quadEffect: true,\n\tread Subscribed: boolean,\n\tRerun: (self: Effect) -> Effect,\n\tSubscribe: (self: Effect) -> Effect,\n\tWeakSubscribe: (self: Effect) -> Effect,\n\tUnsubscribe: (self: Effect) -> Effect,\n\tWeakUnsubscribe: (self: Effect) -> Effect,\n}",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `fn` | `EffectFn` | 부수효과 본문. 인자로 **핸들 자신**을 받습니다(의존성 값은 넘어오지 않습니다 — 클로저로 직접 읽으세요). cleanup 함수를 돌려줄 수 있습니다. |",
+   "| `...deps` | `State` / `Source` / `Ref` | 이것들이 움직일 때마다 `fn`이 다시 돕니다. |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — `Effect`. **아직 구독되지 않은 상태**입니다."
+ },
+ {
+  "file": "core/05-observer-effect.md",
+  "line": 260,
+  "heading": "`effect:Rerun()`",
+  "sig": "Rerun: (self: Effect) -> Effect",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/05-observer-effect.md",
+  "line": 268,
+  "heading": "`effect:Subscribe()`",
+  "sig": "Subscribe: (self: Effect) -> Effect",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/05-observer-effect.md",
+  "line": 278,
+  "heading": "`effect:WeakSubscribe()`",
+  "sig": "WeakSubscribe: (self: Effect) -> Effect",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/05-observer-effect.md",
+  "line": 288,
+  "heading": "`effect:Unsubscribe()`",
+  "sig": "Unsubscribe: (self: Effect) -> Effect",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/05-observer-effect.md",
+  "line": 298,
+  "heading": "`effect:WeakUnsubscribe()`",
+  "sig": "WeakUnsubscribe: (self: Effect) -> Effect",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 58,
+  "heading": "`q.Slot<<T>>(initial?)`",
+  "sig": "Slot: <T>(initial: { read [number]: SlotElement<T> }?) -> Slot<T>",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `initial` | `{ SlotElement<T> }?` | 초기 원소 배열. `:Add`를 순서대로 부른 것과 같습니다 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 새 `Slot<T>`. 아직 어디에도 마운트되지 않은 상태입니다."
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 99,
+  "heading": "`slot.Length`",
+  "sig": "read Length: State<number>",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 125,
+  "heading": "`slot.Offset`",
+  "sig": "read Offset: State<number>",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 143,
+  "heading": "`slot:Add(element, index?)`",
+  "sig": "Add: (self: Slot<T>, element: SlotElement<T>, index: number?) -> number",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `element` | `SlotElement<T>` | 넣을 원소 |",
+   "| `index` | `number?` | 삽입 위치(1..n+1). 생략하면 맨 뒤 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 실제로 들어간 인덱스."
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 183,
+  "heading": "`slot:Remove(index)`",
+  "sig": "Remove: (self: Slot<T>, index: number) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 193,
+  "heading": "`slot:Replace(index, newElement)`",
+  "sig": "Replace: (self: Slot<T>, index: number, newElement: SlotElement<T>) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 203,
+  "heading": "`slot:Extract(index, newElement?)`",
+  "sig": "Extract: (self: Slot<T>, index: number, newElement: SlotElement<T>?) -> SlotItem<T>",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `index` | `number` | 꺼낼 자리(1..n) |",
+   "| `newElement` | `SlotElement<T>?` | 주면 그 자리를 이 원소로 채웁니다. 생략하면 자리 자체가 사라집니다 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 꺼낸 원소. **언래핑된 원래 값**입니다(State를 넣었으면 그 State가 나옵니다)."
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 233,
+  "heading": "`slot:ExtractAll()`",
+  "sig": "ExtractAll: (self: Slot<T>) -> { SlotItem<T> }",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 원소 전부를 순서대로 담은 배열(언래핑된 원래 값)."
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 245,
+  "heading": "`slot:Splice(index, removeCount, ...newElements)`",
+  "sig": "Splice: (self: Slot<T>, index: number, removeCount: number, ...SlotElement<T>) -> { SlotItem<T> }",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `index` | `number` | 시작 위치(1..n+1) |",
+   "| `removeCount` | `number` | 살려서 꺼낼 개수. 실제로 있는 만큼만 허용 — 클램프 없음 |",
+   "| `...newElements` | `SlotElement<T>` | 그 자리에 끼워 넣을 원소들 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 꺼낸 원소들의 배열(살아 있음, 언래핑됨)."
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 273,
+  "heading": "`slot:Clear()`",
+  "sig": "Clear: (self: Slot<T>) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 285,
+  "heading": "`slot:Move(oldIndex, newIndex)`",
+  "sig": "Move: (self: Slot<T>, oldIndex: number, newIndex: number) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 297,
+  "heading": "`slot:Swap(indexA, indexB)`",
+  "sig": "Swap: (self: Slot<T>, indexA: number, indexB: number) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 309,
+  "heading": "`slot:Get(index)`",
+  "sig": "Get: (self: Slot<T>, index: number) -> SlotItem<T>?",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 그 자리의 원소(언래핑됨). 범위 밖이면 `nil`."
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 321,
+  "heading": "`slot:IndexOf(element)`",
+  "sig": "IndexOf: (self: Slot<T>, element: SlotElement<T>) -> number?",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 그 원소가 있는 인덱스, 없으면 `nil`."
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 333,
+  "heading": "`slot:List(data, updateFn, keyFn?, opts?)`",
+  "sig": "List: <Item, UD>(\n    self: Slot<T>,\n    data: { Item } | StateMarker<{ Item }>,\n    updateFn: (ctx: { Item: Item | KeyGone, Index: number, Offset: State<number>, Prev: SlotItem<T>?, UserData: UD? }) -> (any, UD?),\n    keyFn: ((item: Item, index: number) -> any)?,\n    opts: SlotListOpts?\n) -> Slot<T>\n\ntype SlotListOpts = { read OwnsElements: boolean? }",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `data` | `{ Item }` 또는 그걸 담은 State | 재조정의 원본. State면 값이 바뀔 때마다 다시 돕니다 |",
+   "| `updateFn` | 함수 | 항목 하나를 어떻게 만들/유지/버릴지 결정합니다(아래 계약) |",
+   "| `keyFn` | `((item, index) -> any)?` | 항목의 신원. 기본값은 **인덱스**입니다 |",
+   "| `opts` | `{ read OwnsElements: boolean? }?` | `OwnsElements = false`면 이 Slot이 원소를 파괴하지 않습니다 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — `self`(체이닝용)."
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 447,
+  "heading": "`slot:Single(state, updateFn?, opts?)`",
+  "sig": "Single: <Item, UD>(\n    self: Slot<T>,\n    state: Item? | StateMarker<Item?>,\n    updateFn: ((ctx: { Item: Item | KeyGone, Index: number, Offset: State<number>, Prev: SlotItem<T>?, UserData: UD? }) -> (any, UD?))?,\n    opts: SlotListOpts?\n) -> Slot<T>",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `state` | `Item?` 또는 그걸 담은 State | 이 Slot이 실을 **한 개**의 데이터 — `updateFn`이 원소로 바꿉니다 |",
+   "| `updateFn` | 함수? | 생략하면 항등 — 값을 그대로 원소로 씁니다(그때 `Item`은 원소 타입) |",
+   "| `opts` | `{ read OwnsElements: boolean? }?` | `:List`와 같습니다 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — `self`."
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 498,
+  "heading": "`q.Detach`",
+  "sig": "Detach: Detach -- { read __quadDetach: true }",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 539,
+  "heading": "`q.KeyGone`",
+  "sig": "KeyGone: KeyGone -- { read __quadKeyGone: true }",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/06-slot.md",
+  "line": 559,
+  "heading": "`q.dispose(value)`",
+  "sig": "dispose: (value: any) -> ()",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `value` | `any` | 파괴할 Slot 또는 백엔드 값(Roblox면 `Instance`) |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 없음."
+ },
+ {
+  "file": "core/07-ref.md",
+  "line": 77,
+  "heading": "`q.Ref<<T>>(default)`",
+  "sig": "Ref: <T>(default: T) -> Ref<T>",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `default` | `T` | 초기 `.Value` |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 새 `Ref<T>`. `.Revision`은 0, 콜백 테이블 둘은 비어 있습니다."
+ },
+ {
+  "file": "core/07-ref.md",
+  "line": 112,
+  "heading": "`q.PreRef<<T>>(default)`",
+  "sig": "PreRef: <T>(default: T) -> PreRef<T>",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/07-ref.md",
+  "line": 143,
+  "heading": "`q.PostRef<<T>>(default)`",
+  "sig": "PostRef: <T>(default: T) -> PostRef<T>",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/07-ref.md",
+  "line": 173,
+  "heading": "`ref.Value`",
+  "sig": "read Value: T",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/07-ref.md",
+  "line": 187,
+  "heading": "`ref.Revision`",
+  "sig": "read Revision: number",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/07-ref.md",
+  "line": 199,
+  "heading": "`ref.Callbacks`",
+  "sig": "read Callbacks: { [RefCallback<T> | thread]: true }",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/07-ref.md",
+  "line": 213,
+  "heading": "`ref.WeakCallbacks`",
+  "sig": "read WeakCallbacks: { [RefCallback<T>]: true }",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/07-ref.md",
+  "line": 225,
+  "heading": "`ref:Set(value)`",
+  "sig": "Set: <Self>(self: Self, value: T) -> Self",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `value` | `T` | 새 값 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — `self`."
+ },
+ {
+  "file": "core/07-ref.md",
+  "line": 263,
+  "heading": "`ref:Callback(fn)`",
+  "sig": "Callback: <Self>(self: Self, fn: RefCallback<T>) -> Self",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `fn` | `(value: T, ref: Ref<T>) -> ()` | 값이 바뀔 때 부를 함수 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — `self`."
+ },
+ {
+  "file": "core/07-ref.md",
+  "line": 285,
+  "heading": "`ref:WeakCallback(fn)`",
+  "sig": "WeakCallback: <Self>(self: Self, fn: RefCallback<T>) -> Self",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/07-ref.md",
+  "line": 297,
+  "heading": "`ref:Uncallback(fn)`",
+  "sig": "Uncallback: <Self>(self: Self, fn: RefCallback<T>) -> Self",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/07-ref.md",
+  "line": 309,
+  "heading": "`ref:Wait(thread?)`",
+  "sig": "Wait: <Self>(self: Self, thread: thread?) -> Self",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `thread` | `thread?` | 주면 **등록만** 하고 즉시 반환합니다. 생략하면 지금 코루틴을 등록하고 여기서 yield합니다 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — `self`. 그래서 `ref:Wait().Value`가 갓 도착한 값을 읽는 관용구입니다."
+ },
+ {
+  "file": "core/07-ref.md",
+  "line": 351,
+  "heading": "`ref:Unwrap()`",
+  "sig": "Unwrap: (self: Ref<T>) -> StripNil<T> -- StripNil은 T에서 nil 성분만 벗기는 타입 함수",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 담긴 값. 타입에서는 `nil`만 제거됩니다(`Frame?` → `Frame`)."
+ },
+ {
+  "file": "core/08-modifier.md",
+  "line": 67,
+  "heading": "`q.Modifier(...)`",
+  "sig": "Modifier: setmetatable<{\n    Overridden: (...any) -> any,\n    TypedFactory: <T>(name: string) -> (...(Modifier | { [string]: any })) -> T,\n    DefineSubtype: (parent: string, subtype: string) -> (),\n}, { __call: (self: any, ...(Modifier | { [string]: any })) -> Modifier }>",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `...` | `Modifier` 또는 `{ [string]: any }` | Modifier이거나 평범한 필드 테이블. 뒤 인자가 필드 단위로 덮어씁니다 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 새 무타입 `Modifier`(태그 `true`)."
+ },
+ {
+  "file": "core/08-modifier.md",
+  "line": 178,
+  "heading": "`mod:Peek<<T>>(key)`",
+  "sig": "Peek: <T>(self: Modifier, key: string) -> FieldOut<T>?\ntype FieldOut<T> = T | State<T> | None",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `key` | `string` | 필드 이름(빈 문자열 불가) |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — **저장된 그대로**의 값. 필드가 없으면 `nil`."
+ },
+ {
+  "file": "core/08-modifier.md",
+  "line": 214,
+  "heading": "`mod:Apply(factory)`",
+  "sig": "Apply: <U>(self: any, factory: (any) -> U) -> U",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `factory` | `(mod) -> U` | Modifier를 받아 무엇이든 돌려주는 함수 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — `factory(self)`의 결과 그대로."
+ },
+ {
+  "file": "core/08-modifier.md",
+  "line": 244,
+  "heading": "`mod:Overridden(...)`",
+  "sig": "Overridden: (self: Modifier, ...any) -> any",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 합쳐진 새 Modifier(태그 `true` — **무타입**)."
+ },
+ {
+  "file": "core/08-modifier.md",
+  "line": 258,
+  "heading": "`mod:As(name)`",
+  "sig": "As: <T>(self: Modifier, name: string?) -> T",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `name` | `string?` | 태그를 바꿀 클래스 이름. 생략하면 값은 그대로 두고 타입만 캐스트 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — `T`(호출자가 명시)."
+ },
+ {
+  "file": "core/08-modifier.md",
+  "line": 284,
+  "heading": "`mod:As<Class>()`",
+  "sig": "As<Class>: (self: <Ancestor>Modifier) -> <Class>Modifier -- 클래스별로 생성되는 메소드",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 그 클래스로 태그된 새 Modifier."
+ },
+ {
+  "file": "core/08-modifier.md",
+  "line": 313,
+  "heading": "`q.Modifier.Overridden(...)`",
+  "sig": "Overridden: (...any) -> any",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `...` | `Modifier` | 합칠 Modifier들. 하나 이상 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 새 무타입 Modifier."
+ },
+ {
+  "file": "core/08-modifier.md",
+  "line": 350,
+  "heading": "`q.Modifier.TypedFactory<<T>>(name)`",
+  "sig": "TypedFactory: <T>(name: string) -> (...(Modifier | { [string]: any })) -> T",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `name` | `string` | Modifier **클래스** 이름(빈 문자열 불가) |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 그 클래스로 태그된 생성자. 호출 모양은 `q.Modifier(...)`와 같습니다."
+ },
+ {
+  "file": "core/08-modifier.md",
+  "line": 390,
+  "heading": "`q.Modifier.DefineSubtype(parent, subtype)`",
+  "sig": "DefineSubtype: (parent: string, subtype: string) -> ()",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `parent` | `string` | 상위 클래스 이름 |",
+   "| `subtype` | `string` | 하위 클래스 이름 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 없음."
+ },
+ {
+  "file": "core/09-tag-attr.md",
+  "line": 63,
+  "heading": "`q.Tag(...names)`",
+  "sig": "Tag: setmetatable<{ Merged: (...TagMarker) -> Tag }, { __call: (self: any, ...TagNames) -> Tag }>",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `...names` | `TagNames?` | 문자열 / `Tag` / 그것들의 평범한 리스트. 개수 제한 없음. **`nil` 인자는 \"없음\"** — 조건부로 넣을 때 `q.Tag(\"Card\", if even then \"Even\" else nil)` |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 새 `Tag`(frozen)."
+ },
+ {
+  "file": "core/09-tag-attr.md",
+  "line": 104,
+  "heading": "`tag:Added(names)`",
+  "sig": "Added: (self: Tag, names: TagNames?) -> Tag",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 이름이 더해진 **새** `Tag`. 원본은 그대로입니다 — 결과를 **대입하거나 돌려주어야** 합니다."
+ },
+ {
+  "file": "core/09-tag-attr.md",
+  "line": 125,
+  "heading": "`tag:Removed(names)`",
+  "sig": "Removed: (self: Tag, names: TagNames?) -> Tag",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 이름이 빠진 새 `Tag`."
+ },
+ {
+  "file": "core/09-tag-attr.md",
+  "line": 137,
+  "heading": "`tag:Contains(...names)`",
+  "sig": "Contains: (self: Tag, ...string) -> boolean",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `...names` | `string` | 확인할 이름들 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 준 이름이 **전부** 있으면 `true`."
+ },
+ {
+  "file": "core/09-tag-attr.md",
+  "line": 166,
+  "heading": "`for name in tag`",
+  "sig": "export type Tag = setmetatable<{ …메소드… }, { __iter: TagIter }>",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/09-tag-attr.md",
+  "line": 188,
+  "heading": "`tag:Apply(factory)`",
+  "sig": "Apply: <U>(self: Tag, factory: (Tag) -> U) -> U",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — `factory(self)`의 결과."
+ },
+ {
+  "file": "core/09-tag-attr.md",
+  "line": 202,
+  "heading": "`q.Tag.Merged(...tags)`",
+  "sig": "Merged: (...TagMarker) -> Tag",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 모든 입력의 이름을 합친 새 `Tag`."
+ },
+ {
+  "file": "core/09-tag-attr.md",
+  "line": 256,
+  "heading": "`q.Attr(...)`",
+  "sig": "__call: (self: any, ...any) -> Attr",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `...` | `Store` / `Attr` / 평범한 테이블 | 하나의 이름 맵으로 평탄화됩니다 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 새 `Attr`(frozen)."
+ },
+ {
+  "file": "core/09-tag-attr.md",
+  "line": 303,
+  "heading": "`attr:NameMap()`",
+  "sig": "NameMap: (self: Attr) -> { [string]: any }",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 평탄화된 이름 맵(frozen). 값은 **저장된 그대로** — `Source` 슬롯은 핸들 자체로, `None`은 `None`으로 나옵니다."
+ },
+ {
+  "file": "core/09-tag-attr.md",
+  "line": 324,
+  "heading": "`q.Attr.Merged(...)`",
+  "sig": "Merged: (...Attr) -> Attr",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 합쳐진 새 `Attr`."
+ },
+ {
+  "file": "core/09-tag-attr.md",
+  "line": 339,
+  "heading": "`q.Attr.Overridden(...)`",
+  "sig": "Overridden: (...Attr) -> Attr",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 합쳐진 새 `Attr`."
+ },
+ {
+  "file": "core/09-tag-attr.md",
+  "line": 363,
+  "heading": "`q.AttrKey(name)`",
+  "sig": "AttrKey: (name: string) -> AttrKeyObject\ntype AttrKeyObject = { Name: string }",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `name` | `string` | 속성 이름(빈 문자열 불가) |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 그 이름의 키 객체."
+ },
+ {
+  "file": "core/09-tag-attr.md",
+  "line": 403,
+  "heading": "`q.StringAttr(name, value)`",
+  "sig": "StringAttr: AttrSugar<string>\ntype AttrSugar<T> = (name: string, value: T | StateMarker<T> | None) -> Attr",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `name` | `string` | 속성 이름(빈 문자열 불가) |",
+   "| `value` | `string` / `State<string>` / `q.None` | 값. `nil`은 거부됩니다 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 항목이 하나뿐인 `Attr`(즉 `q.Attr({ [name] = value })`)."
+ },
+ {
+  "file": "core/09-tag-attr.md",
+  "line": 443,
+  "heading": "`q.NumberAttr(name, value)`",
+  "sig": "NumberAttr: AttrSugar<number>",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/09-tag-attr.md",
+  "line": 455,
+  "heading": "`q.BooleanAttr(name, value)`",
+  "sig": "BooleanAttr: AttrSugar<boolean>",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/10-lifetime-sentinels.md",
+  "line": 24,
+  "heading": "`q.None`",
+  "sig": "None: None\n-- export type None = { read __quadNone: true }",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/10-lifetime-sentinels.md",
+  "line": 53,
+  "heading": "`q.Detach`",
+  "sig": "Detach: Detach\n-- export type Detach = { read __quadDetach: true }",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/10-lifetime-sentinels.md",
+  "line": 68,
+  "heading": "`q.KeyGone`",
+  "sig": "KeyGone: KeyGone\n-- export type KeyGone = { read __quadKeyGone: true }",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/10-lifetime-sentinels.md",
+  "line": 87,
+  "heading": "`q.Void`",
+  "sig": "Void: (...any) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/10-lifetime-sentinels.md",
+  "line": 99,
+  "heading": "`q.dispose(value)`",
+  "sig": "dispose: (value: any) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 없음."
+ },
+ {
+  "file": "core/10-lifetime-sentinels.md",
+  "line": 140,
+  "heading": "`q.MapperRoot`",
+  "sig": "MapperRoot: MapperRoot\n-- export type MapperRoot = { read __quadMapperRoot: true }",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/10-lifetime-sentinels.md",
+  "line": 151,
+  "heading": "`q.newMapperClass(className)`",
+  "sig": "newMapperClass: (className: string) -> (key: any) -> (props: any) -> MapperDescriptor",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/10-lifetime-sentinels.md",
+  "line": 161,
+  "heading": "`q.Backend.bindLifetime(inst, value)`",
+  "sig": "bindLifetime: (inst: any, value: any) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/10-lifetime-sentinels.md",
+  "line": 179,
+  "heading": "`q.Backend.unbindLifetime(value)`",
+  "sig": "unbindLifetime: (value: any) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/10-lifetime-sentinels.md",
+  "line": 189,
+  "heading": "`q.Backend.canBound(value)`",
+  "sig": "canBound: (value: any) -> boolean",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "core/10-lifetime-sentinels.md",
+  "line": 199,
+  "heading": "`q.Backend.canExecute(value)`",
+  "sig": "canExecute: (value: any) -> boolean",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "extend/02-dispatch-handler-contract.md",
+  "line": 26,
+  "heading": "Handler 레코드",
+  "sig": "export type Handler = {\n\tname: string?,\n\tkeyType: (\"number\" | \"string\")?,\n\tisHandlable: (inst: any, key: any, value: any) -> boolean,\n\tpriority: number,\n\tprocess: (inst: any, key: any, value: any, index: number) -> (nextValue: any?, retracting: boolean) -> (),\n}",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "extend/02-dispatch-handler-contract.md",
+  "line": 52,
+  "heading": "retractor",
+  "sig": "(nextValue: any?, retracting: boolean) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "extend/02-dispatch-handler-contract.md",
+  "line": 81,
+  "heading": "우선순위 밴드",
+  "sig": "HANDLER_PRIORITY_HIGH: number\nHANDLER_PRIORITY_NORMAL: number\nHANDLER_PRIORITY_LOW: number\nHANDLER_PRIORITY_FALLBACK: number",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "extend/02-dispatch-handler-contract.md",
+  "line": 103,
+  "heading": "`q.Dispatch.addHandler(handler)`",
+  "sig": "addHandler: (handler: Handler) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "extend/02-dispatch-handler-contract.md",
+  "line": 121,
+  "heading": "`q.Dispatch.listHandlers()`",
+  "sig": "listHandlers: () -> { Handler }",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 등록된 핸들러 전부를 우선순위 순으로 담은 **사본**(`table.clone`). **[2026-09-26 기준]** 사본인 건 그 배열뿐입니다 — 안의 핸들러 테이블은 레지스트리에 실제로 앉은 항목 그 자체입니다. 읽기만 하세요: 예를 들어 돌려받은 항목의 `isHandlable`을 갈아 끼우면 그 자리에서 레지스트리의 핸들러가 바뀌고, 이후 그 우선순위로 오는 모든 매치에 영향을 줍니다(`q.Dispatch.getHandler` 사본도 같습니다)."
+ },
+ {
+  "file": "extend/02-dispatch-handler-contract.md",
+  "line": 133,
+  "heading": "`q.Dispatch.getHandler(inst, key, value)`",
+  "sig": "getHandler: (inst: any, key: any, value: any) -> Handler?",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 우선순위 순으로 `isHandlable`이 참을 준 **첫** 핸들러, 없으면 `nil`."
+ },
+ {
+  "file": "extend/02-dispatch-handler-contract.md",
+  "line": 147,
+  "heading": "`q.Dispatch.process(inst, key, value, index)`",
+  "sig": "process: (inst: any, key: any, value: any, index: number) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "extend/02-dispatch-handler-contract.md",
+  "line": 180,
+  "heading": "`q.Dispatch.retractFrom(inst, key, index)`",
+  "sig": "retractFrom: (inst: any, key: any, index: number) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "extend/02-dispatch-handler-contract.md",
+  "line": 192,
+  "heading": "`q.Dispatch.drive(inst, flattened)`",
+  "sig": "drive: (inst: any, flattened: { [any]: any }) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "extend/02-dispatch-handler-contract.md",
+  "line": 237,
+  "heading": "`q.Bookkeeping.setLength(ownerKey, i, len, anchor, element)`",
+  "sig": "setLength: (ownerKey: any, i: number, len: number | StateMarker<number>, anchor: any?, element: any?) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "extend/02-dispatch-handler-contract.md",
+  "line": 257,
+  "heading": "`q.Bookkeeping.setOffsetSource(ownerKey, i, source)`",
+  "sig": "setOffsetSource: (ownerKey: any, i: number, source: any) -> () -- Source<number> | None",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "extend/02-dispatch-handler-contract.md",
+  "line": 273,
+  "heading": "`q.Bookkeeping.setEmpty(ownerKey, i, anchor)`",
+  "sig": "setEmpty: (ownerKey: any, i: number, anchor: any?) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "extend/02-dispatch-handler-contract.md",
+  "line": 283,
+  "heading": "`q.Bookkeeping.getOffsetAt(ownerKey, at)`",
+  "sig": "getOffsetAt: (ownerKey: any, at: number) -> number",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 자리 `at`의 절대 오프셋(0부터 세는 개수). Slot이 owner면 그 Slot 자신의 `.Offset`이 출발점이고, 물리 요소가 owner면 0입니다."
+ },
+ {
+  "file": "extend/02-dispatch-handler-contract.md",
+  "line": 302,
+  "heading": "`q.Bookkeeping.getBlocker(ownerKey)`",
+  "sig": "getBlocker: (ownerKey: any) -> Blocker",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 그 owner의 **배치 Blocker**(없으면 만들어서). 켜져 있는 동안 자리 등록이 재계산을 촉발하지 않습니다 — 여러 자리를 한 번에 등록할 때 매 자리마다 전체 재계산이 도는 것을 막는 게이트입니다. `drive`가 숫자 키가 있을 때 이걸 켜고, 마지막에 닫으면서 정확히 한 번 재계산합니다."
+ },
+ {
+  "file": "extend/02-dispatch-handler-contract.md",
+  "line": 312,
+  "heading": "`q.Bookkeeping.getBookkeeping(ownerKey)`",
+  "sig": "getBookkeeping: (ownerKey: any) -> any",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 그 owner의 내부 부기 테이블(없으면 만들어서). **절대 `nil`을 돌려주지 않으므로** 부르는 쪽이 다시 가드할 필요가 없습니다."
+ },
+ {
+  "file": "extend/02-dispatch-handler-contract.md",
+  "line": 324,
+  "heading": "`q.Bookkeeping.claimOwnerAt(element, inst, k)`",
+  "sig": "claimOwnerAt: (element: any, inst: any, k: any) -> boolean",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "extend/02-dispatch-handler-contract.md",
+  "line": 340,
+  "heading": "`q.Bookkeeping.releaseOwner(element, ownerKey)`",
+  "sig": "releaseOwner: (element: any, ownerKey: any) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "roblox/01-install.md",
+  "line": 35,
+  "heading": "`QuadRoblox`",
+  "sig": "-- require(\"@game/ReplicatedStorage/roblox_packages/quad_roblox\") 가 돌려주는 테이블의 유일한 값 필드\nQuadRoblox: <T>(quad: T) -> RobloxExtension",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `quad` | 모듈 인스턴스 | 백엔드를 설치할 `quad-base` 모듈. 보통 `UseProvider`가 `self`로 넘겨준다 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — `RobloxExtension`(아래). `UseProvider`가 이 테이블을 모듈에 병합합니다."
+ },
+ {
+  "file": "roblox/01-install.md",
+  "line": 88,
+  "heading": "`Quad:UseProvider(QuadRoblox)`",
+  "sig": "UseProvider: <Self, P>(self: Self, providerFn: (Self) -> P) -> Self & P",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 같은 모듈 인스턴스. 다만 타입은 `Self & P` 교집합이라, 반환값을 받아 쓰면 `q.Declaration`이 캐스트"
+ },
+ {
+  "file": "roblox/02-d.md",
+  "line": 39,
+  "heading": "`D.<Class>(props)`",
+  "sig": "-- 클래스마다 하나씩 생성된 별칭. Frame이라면:\nD.Frame: (FrameParam<FrameElem>) -> Frame\n\n-- props 테이블의 모양(생성 타입 — 클래스마다 프로퍼티·이벤트 목록이 다르다)\nexport type FrameParam<E> = {\n\t[number]: E,       -- 숫자 키: 자식과 디스크립터\n\tSize: PV8?,        -- 문자 키: 프로퍼티\n\tVisible: PV0?,\n\t-- …\n\tMouseEnter: (((x: number, y: number) -> ()) | StateMarker<(x: number, y: number) -> ()> | None)?,\n\t-- …\n}",
+  "args": [],
+  "argsInline": "**인자** — props 테이블 하나. 문자 키와 숫자 키가 **한 테이블에 섞여** 들어갑니다.",
+  "ret": "**반환** — 만들어진 Instance. 타입은 그 클래스 그대로(`D.Frame`은 `Frame`)."
+ },
+ {
+  "file": "roblox/02-d.md",
+  "line": 333,
+  "heading": "`D.New<<T>>(className)(props)`",
+  "sig": "New: <T>(className: string) -> (props: any) -> T",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "roblox/03-d-modifier.md",
+  "line": 36,
+  "heading": "`D.Modifier.<Class>(...)`",
+  "sig": "-- 클래스마다 하나씩 생성된 태그 생성자. Frame이라면:\nD.Modifier.Frame: (...(FrameModifier | { [string]: any })) -> FrameModifier",
+  "args": [],
+  "argsInline": "**인자** — 0개 이상. 각 인자는 **Modifier**이거나 **평범한 `{ 필드 = 값 }` 테이블**입니다. 순서대로",
+  "ret": "**반환** — 그 클래스로 태그된 새 Modifier(`FrameModifier` 등). 값은 frozen이고, 모든 연산은 새 값을"
+ },
+ {
+  "file": "roblox/03-d-modifier.md",
+  "line": 86,
+  "heading": "`mod:<Field>(value)`",
+  "sig": "-- 클래스의 쓰기 가능한 프로퍼티마다 하나씩 생성된다. FrameModifier의 Size라면:\nSize: (self: FrameModifier, value: Field<UDim2>) -> FrameModifier\n\n-- 값의 대수(생성 모듈의 별칭)\nexport type FieldV<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None\nexport type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 그 필드만 바뀐 **새 Modifier**. 원본은 그대로입니다(모든 setter가 얕은 복제)."
+ },
+ {
+  "file": "roblox/03-d-modifier.md",
+  "line": 173,
+  "heading": "`mod:As<Class>()`",
+  "sig": "-- 자기 하위 클래스마다 하나씩 생성된다. GuiObjectModifier라면:\nAsFrame: (self: GuiObjectModifier) -> FrameModifier\nAsTextLabel: (self: GuiObjectModifier) -> TextLabelModifier\n-- … 그리고 항등 캐스트\nAsGuiObject: (self: GuiObjectModifier) -> GuiObjectModifier",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "roblox/04-claim-mapper.md",
+  "line": 34,
+  "heading": "`q.Claim(inst, desc)`",
+  "sig": "Claim: <T>(inst: T, desc: MapperDescriptor) -> T",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `inst` | Instance | 소유할 트리의 루트. 설치된 백엔드의 Instance여야 한다 |",
+   "| `desc` | `MapperDescriptor` | `D.Mapper.<Class>(M.Root)(props)`로 만든 루트 디스크립터 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 넘긴 `inst` 그대로(타입도 그대로). 체이닝하기 좋습니다."
+ },
+ {
+  "file": "roblox/04-claim-mapper.md",
+  "line": 144,
+  "heading": "`D.Mapper.<Class>(key)(props)`",
+  "sig": "-- 클래스마다 하나씩 생성된 별칭. Frame이라면:\nD.Mapper.Frame: (key: string | MapperRoot) -> (FrameParam<FrameMapperElem>) -> MapperDescriptor",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `key` | `string` 또는 `MapperRoot` | 이 자리에 놓일 자식의 이름. 루트 자리면 `M.Root` 센티널 |",
+   "| `props` | 클래스의 props 테이블 | `D.<Class>`와 **같은 모양** — 문자 키·숫자 키 그대로 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — `MapperDescriptor`. **1회용**입니다 — 한 번 `Claim`에 쓰이면 다시 못 씁니다."
+ },
+ {
+  "file": "roblox/04-claim-mapper.md",
+  "line": 209,
+  "heading": "`q.newMapperClass(className)`",
+  "sig": "newMapperClass: (className: string) -> (key: any) -> (props: any) -> MapperDescriptor\nMapperRoot: MapperRoot -- export type MapperRoot = { read __quadMapperRoot: true }",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "roblox/05-onchange.md",
+  "line": 31,
+  "heading": "`q.OnChange(name, fn)`",
+  "sig": "-- 생성 타입(quad-roblox/src/Declaration). `PropTypesRead`는 D 스코프 전체의 \"읽기 가능한\n-- 프로퍼티 이름 → 타입\" 맵이고, 클래스 간 타입이 충돌하는 이름은 any다.\nexport type OnChangeFn = <K>(\n\tname: K & keyof<PropTypesRead>,\n\tfn: (index<PropTypesRead, K>) -> ()\n) -> OnChangeDescriptor<K>\n\nexport type OnChangeDescriptor<K> = { Name: K, Callback: (index<PropTypesRead, K>) -> () }",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `name` | 프로퍼티 이름 문자열 | `PropTypesRead`의 키여야 한다 — 오타는 타입 에러 |",
+   "| `fn` | `(newValue) -> ()` | 그 프로퍼티가 바뀔 때 불린다. 파라미터 타입은 이름에서 추론된다 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — frozen 디스크립터 `{ Name, Callback }`. **캐시가 없어** 호출마다 새 값입니다."
+ },
+ {
+  "file": "roblox/05-onchange.md",
+  "line": 135,
+  "heading": "`q.Out(name, src)`",
+  "sig": "export type OutFn = <K>(\n\tname: K & keyof<PropTypesRead>,\n\tsrc: Source<index<PropTypesRead, K>> -- 쓸 수 있는 값(Source)만 — :Compute 결과는 여기서 거부된다\n) -> OnChangeDescriptor<K>",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `name` | 프로퍼티 이름 문자열 | `OnChange`와 같은 읽기 표면 `PropTypesRead`의 키 |",
+   "| `src` | `Source` | 되쓸 곳. **`:Compute` 결과 같은 파생 `State`는 안 됩니다** — `Set`이 없어 타입 검사에서 걸리고, 우회하면 런타임에 거부합니다 |"
+  ],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "roblox/06-tween-animate.md",
+  "line": 34,
+  "heading": "`q.Tween(opts)`",
+  "sig": "export type TweenConstructor = <T>(opts: TweenOptions<T>) -> Tween<T>\n\nexport type TweenOverride = \"Cancel\" | \"Finish\"\nexport type TweenOptions<T> = {\n\tread Value: T,                       -- 필수. 평범한 값이어야 한다\n\tread Info: TweenInfo?,               -- 있으면 아래 편의 필드를 전부 무시한다\n\tread Time: number?,\n\tread Style: Enum.EasingStyle?,\n\tread Direction: Enum.EasingDirection?,\n\tread RepeatCount: number?,\n\tread Reverses: boolean?,\n\tread DelayTime: number?,\n\tread Override: TweenOverride?,       -- 기본 \"Cancel\"\n\tread Dedup: boolean?,                -- 기본 true\n\tread Started: (() -> ())?,           -- 콜백 셋(인자 없음) — 뜻은 아래 \"프로퍼티에서의 동작\"\n\tread Completed: (() -> ())?,\n\tread Cancelled: (() -> ())?,\n}",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — frozen `Tween<T>`. 넘긴 옵션 테이블은 **복제**되므로 호출자의 테이블을 나중에 고쳐도"
+ },
+ {
+  "file": "roblox/06-tween-animate.md",
+  "line": 117,
+  "heading": "`tween:Mapped(fn)`",
+  "sig": "Mapped: <T, U>(self: TweenData<T>, fn: (T) -> U) -> Tween<U>",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "roblox/06-tween-animate.md",
+  "line": 141,
+  "heading": "`q.isTween(x)`",
+  "sig": "isTween: (x: any) -> boolean",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "roblox/06-tween-animate.md",
+  "line": 155,
+  "heading": "`q.Animate(info)`",
+  "sig": "export type AnimateFn = (info: AnimateInfo) -> (self: any) -> State<Tween<any>>\n\nexport type AnimateInfo = {\n\t-- Tween의 옵션들과 같되(Value 제외), 각 자리에 State도 올 수 있다\n\tread Info: (TweenInfo | StateMarker<TweenInfo>)?,\n\tread Time: (number | StateMarker<number>)?,\n\tread Style: (Enum.EasingStyle | StateMarker<Enum.EasingStyle>)?,\n\tread Direction: (Enum.EasingDirection | StateMarker<Enum.EasingDirection>)?,\n\tread RepeatCount: (number | StateMarker<number>)?,\n\tread Reverses: (boolean | StateMarker<boolean>)?,\n\tread DelayTime: (number | StateMarker<number>)?,\n\tread Override: (TweenOverride | StateMarker<TweenOverride>)?,\n\tread CanAnimate: (boolean | StateMarker<boolean>)?, -- 기본 true\n\tread Dedup: (boolean | StateMarker<boolean>)?,\n\tread Started: (() -> ())?,   -- Tween에 그대로 실린다(State 불가)\n\tread Completed: (() -> ())?,\n\tread Cancelled: (() -> ())?,\n}",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — `:Apply`에 넘기는 팩토리. `state:Apply(q.Animate{…})`가 **State를 돌려주고**, 그 State의"
+ },
+ {
+  "file": "sugar/01-context.md",
+  "line": 26,
+  "heading": "`q.Context()`",
+  "sig": "Context: ContextConstructor\n-- export type ContextConstructor =\n--     setmetatable<{ Provider: <T>(name: string?) -> Provider<T> }, { __call: (self: any) -> Context }>",
+  "args": [],
+  "argsInline": "**인자** 없음. **반환** — 빈 `Context`.",
+  "ret": "**반환** — 빈 `Context`."
+ },
+ {
+  "file": "sugar/01-context.md",
+  "line": 44,
+  "heading": "`q.Context.Provider(name?)`",
+  "sig": "Provider: <T>(name: string?) -> Provider<T>\n-- export type Provider<T> = { read __quadProvider: true, read __quadProviderValue: T, read __quadProviderAccepts: (T) -> (), read Name: string? }",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `name` | `string?` | 선택. 에러 메시지와 `tostring`에만 쓰인다 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 새 `Provider<T>`. 매번 서로 다른 frozen 테이블입니다."
+ },
+ {
+  "file": "sugar/01-context.md",
+  "line": 84,
+  "heading": "`ctx:Set(provider, value)`",
+  "sig": "Set: <T>(self: Context, provider: Provider<T>, value: T) -> Context",
+  "args": [],
+  "argsInline": "**인자** — `provider`(이 가방의 키), `value`(붙일 값, `nil` 불가). **반환** — **self**(체이닝).",
+  "ret": "**반환** — **self**(체이닝)."
+ },
+ {
+  "file": "sugar/01-context.md",
+  "line": 117,
+  "heading": "`ctx:Get(provider)`",
+  "sig": "Get: <T>(self: Context, provider: Provider<T>) -> T",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 등록된 값. 타입은 `Provider<T>`의 팬텀 `T`에서 나옵니다."
+ },
+ {
+  "file": "sugar/01-context.md",
+  "line": 135,
+  "heading": "`ctx:Peek(provider)`",
+  "sig": "Peek: <T>(self: Context, provider: Provider<T>) -> T?",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 값 또는 `nil`. 키 게이트만 있고 부재 에러는 없습니다 — \"있는지\" 묻는 자리입니다."
+ },
+ {
+  "file": "sugar/01-context.md",
+  "line": 147,
+  "heading": "`provider.Name`",
+  "sig": "read Name: string?",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/02-operator.md",
+  "line": 94,
+  "heading": "`q.Operator.Not`",
+  "sig": "Not: (self: any) -> State<boolean>",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/02-operator.md",
+  "line": 109,
+  "heading": "`q.Operator.Sum(...)`",
+  "sig": "Sum: (...NumArg) -> NumOp",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/02-operator.md",
+  "line": 125,
+  "heading": "`q.Operator.Product(...)`",
+  "sig": "Product: (...NumArg) -> NumOp",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/02-operator.md",
+  "line": 135,
+  "heading": "`q.Operator.Min(...)`",
+  "sig": "Min: (...NumArg) -> NumOp",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/02-operator.md",
+  "line": 145,
+  "heading": "`q.Operator.Max(...)`",
+  "sig": "Max: (...NumArg) -> NumOp",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/02-operator.md",
+  "line": 155,
+  "heading": "`q.Operator.Clamp(lo, hi)`",
+  "sig": "Clamp: (lo: NumArg, hi: NumArg) -> NumOp",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/02-operator.md",
+  "line": 170,
+  "heading": "`q.Operator.Band(...)`",
+  "sig": "Band: (...NumArg) -> NumOp",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/02-operator.md",
+  "line": 187,
+  "heading": "`q.Operator.Bor(...)`",
+  "sig": "Bor: (...NumArg) -> NumOp",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/02-operator.md",
+  "line": 197,
+  "heading": "`q.Operator.Bxor(...)`",
+  "sig": "Bxor: (...NumArg) -> NumOp",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/02-operator.md",
+  "line": 207,
+  "heading": "`q.Operator.Bnot`",
+  "sig": "Bnot: NumOp",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/02-operator.md",
+  "line": 217,
+  "heading": "`q.Operator.Shl(n)`",
+  "sig": "Shl: (n: NumArg) -> NumOp",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/02-operator.md",
+  "line": 232,
+  "heading": "`q.Operator.Shr(n)`",
+  "sig": "Shr: (n: NumArg) -> NumOp",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/02-operator.md",
+  "line": 242,
+  "heading": "`q.Operator.Alternative(default)`",
+  "sig": "Alternative: <T>(default: T | StateData<T>) -> (self: StateData<T?>) -> State<T>",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/02-operator.md",
+  "line": 261,
+  "heading": "`q.Operator.Indexed<<V>>(key)`",
+  "sig": "Indexed: <V>(key: any) -> (self: any) -> State<V>",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/03-debounce-throttle.md",
+  "line": 53,
+  "heading": "`q.Debounce{...}`",
+  "sig": "Debounce: (opts: DebounceOptions) -> TimedGate\n\nexport type DebounceOptions = {\n    read Time: number | StateMarker<number>,\n    read Leading: boolean?, -- 기본 false\n    read Trailing: boolean?, -- 기본 true\n    read MaxTime: (number | StateMarker<number>)?,\n    read Handle: Ref<GateHandle?>?,\n}",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — `TimedGate` 팩토리. `state:Apply(factory)`의 결과 타입은 상류와 같은 `State<T>`이고 호출부가 명시합니다."
+ },
+ {
+  "file": "sugar/03-debounce-throttle.md",
+  "line": 71,
+  "heading": "`q.Throttle{...}`",
+  "sig": "Throttle: (opts: ThrottleOptions) -> TimedGate\n\nexport type ThrottleOptions = {\n    read Time: number | StateMarker<number>,\n    read Leading: boolean?, -- 기본 true\n    read Trailing: boolean?, -- 기본 true\n    read Handle: Ref<GateHandle?>?,\n}",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/03-debounce-throttle.md",
+  "line": 152,
+  "heading": "`handle:Flush()`",
+  "sig": "Flush: (self: GateHandle) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/03-debounce-throttle.md",
+  "line": 158,
+  "heading": "`handle:Cancel()`",
+  "sig": "Cancel: (self: GateHandle) -> ()",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/04-lifecycle-hooks.md",
+  "line": 49,
+  "heading": "`q.OnCreated<<I>>(fn)`",
+  "sig": "OnCreated: <I>(fn: (inst: I, ref: PreRef<I?>) -> ()) -> PreRef<I?>",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `fn` | `(inst: I, ref: PreRef<I?>) -> ()` | 인스턴스와 그 `PreRef`를 받는다 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — `PreRef<I?>`. 그 자체가 `PreRef`이므로 `q.isPreRef`가 참이고, `PreRef`가 하는 일(pre-pass에서 채워짐)을 그대로 합니다."
+ },
+ {
+  "file": "sugar/04-lifecycle-hooks.md",
+  "line": 67,
+  "heading": "`q.OnRendered<<I>>(fn)`",
+  "sig": "OnRendered: <I>(fn: (inst: I, ref: PostRef<I?>) -> ()) -> PostRef<I?>",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — `PostRef<I?>`."
+ },
+ {
+  "file": "sugar/04-lifecycle-hooks.md",
+  "line": 85,
+  "heading": "`q.OnDestroyed(fn)`",
+  "sig": "OnDestroyed: (fn: () -> ()) -> Effect",
+  "args": [],
+  "argsInline": "**인자** — `fn`(인자 없는 정리 함수). **반환** — `Effect`.",
+  "ret": "**반환** — `Effect`."
+ },
+ {
+  "file": "sugar/05-fallback-traceback.md",
+  "line": 49,
+  "heading": "`q.Fallback(base, onError)`",
+  "sig": "Fallback: <Ok, Err, A...>(base: (A...) -> Ok, onError: (err: any) -> Err) -> (A...) -> Ok | Err",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `base` | `(A...) -> Ok` | 감쌀 함수(보통 컴포넌트) |",
+   "| `onError` | `(err: any) -> Err` | 던졌을 때 대체 결과를 만드는 함수 |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — `base`와 같은 인자를 받고 `Ok | Err`를 돌려주는 함수."
+ },
+ {
+  "file": "sugar/05-fallback-traceback.md",
+  "line": 68,
+  "heading": "`q.Traceback(base, onError)`",
+  "sig": "Traceback: <Ok, Err, A...>(base: (A...) -> Ok, onError: (err: any, trace: string) -> Err) -> (A...) -> Ok | Err",
+  "args": [],
+  "argsInline": "**인자** — `base`는 같고, `onError`가 `(err, trace)` 두 인자를 받습니다.",
+  "ret": null
+ },
+ {
+  "file": "sugar/06-blocker.md",
+  "line": 25,
+  "heading": "`q.Blocker()`",
+  "sig": "Blocker: () -> Blocker\n\nexport type Blocker = {\n\tread Blocking: boolean,\n\tOn: (self: Blocker) -> Blocker,\n\tOff: (self: Blocker) -> Blocker,\n\tOffWithoutEmit: (self: Blocker) -> Blocker,\n\tPolicy: (self: Blocker, emit: GateEmit) -> () -> (),\n\t__apply: (self: any, state: any) -> any,\n}",
+  "args": [],
+  "argsInline": null,
+  "ret": "**반환** — 꺼진 상태(`Blocking = false`)의 새 `Blocker`."
+ },
+ {
+  "file": "sugar/06-blocker.md",
+  "line": 81,
+  "heading": "`blocker:On()`",
+  "sig": "On: (self: Blocker) -> Blocker",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/06-blocker.md",
+  "line": 89,
+  "heading": "`blocker:Off()`",
+  "sig": "Off: (self: Blocker) -> Blocker",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/06-blocker.md",
+  "line": 101,
+  "heading": "`blocker:OffWithoutEmit()`",
+  "sig": "OffWithoutEmit: (self: Blocker) -> Blocker",
+  "args": [],
+  "argsInline": null,
+  "ret": null
+ },
+ {
+  "file": "sugar/06-blocker.md",
+  "line": 127,
+  "heading": "`blocker:Policy(emit)`",
+  "sig": "Policy: (self: Blocker, emit: GateEmit) -> () -> ()\nexport type GateEmit = (commit: boolean?) -> boolean",
+  "args": [
+   "| 이름 | 타입 | 설명 |",
+   "|---|---|---|",
+   "| `emit` | `GateEmit` | 게이트가 `setup`에 넘겨준 flush 함수. |"
+  ],
+  "argsInline": null,
+  "ret": "**반환** — 게이트의 `onUpstreamEmit`(상류 emit마다 불릴 클로저)."
+ }
+]

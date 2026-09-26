@@ -137,3 +137,5 @@
 - **10:15** E30 완료(opus, 릴리즈된 CHANGELOG 절 vs 태그 diff) — 사실 오류 0·중복 0; `H-747`(패키지 README 일곱 자리 `D` → `Declaration` — 게시 표면), 3.0.0 lock `0.0.0` 실사례 확인, `Q119`(릴리즈 절 사후 편집 정책). 도는 중: E29·감사 15라운드.
 - **10:30** E29 완료(opus, mock 충실도 — 변형 다섯 spec 재실행) — `H-748`(mock `setAttr` op에 `H-659` 게이트 추가), `Q120`(mock을 엔진에 맞출지·nil 절·op 문구 ID), 실기기 후보 여덟을 HUMAN_TODO I 초안에. 60회차 커밋(`8875147e`). 도는 중: 감사 15라운드.
 - **10:35** 감사 15라운드(sonnet, 59회차 errors 배치 — 코드 대조·base 정합·공개 규약·apply-log 1:1) — 확실 0·판단 0("fn이 던진 핸들은 영구히 죽는다"는 `effect-plan.md` 447행 round11 Q63 사용자 결정으로 이미 계약). 도는 중: 없음 → 새 각도 셋 띄움(E31 SKILL.md 실행·E32 quadnomicon 사실 대조·E33 레퍼런스 시그니처 vs quad-types).
+- **10:50** E32 완료(sonnet, quadnomicon 11편 사실 대조) — 확실 0·판단 0(최근 BREAKING 전부 반영됨). 61회차 커밋(`47fad75f`). 띄움: E34(overview 트랙 사실 대조 — from-v1은 v1 worktree 대조, sonnet). 도는 중: E31·E33.
+- **11:05** E33 완료(opus, 레퍼런스 시그니처 225항목) — 일치 222·불일치 3; `H-749`~`H-753`(core/09 Tag nil 슬롯·`read Name`·`OutFn`·`:Single` 매핑 추론 문서/8.19 정정·`FieldOut` 동명 주석), `Q121`(`:Single` Item 추론)·`Q122`(`OnChangeDescriptor` 동명·`read`). 도는 중: E31·E34.

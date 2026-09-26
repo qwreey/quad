@@ -144,7 +144,7 @@ export type RobloxExtension = {
 
 **타입 재익스포트** — `quad-roblox` 모듈 자체는 값 표면 외에 타입도 내보냅니다.
 `Tween<T>` / `TweenData<T>` / `TweenOptions<T>` / `TweenOverride` / `TweenConstructor` / `NewChild` /
-`OnChangeDescriptor` / `AnimateInfo` / `AnimateFn`과, 생성 모듈에서 온 `Declaration` / `DeclarationMapper` / `PropTypes` /
+`OnChangeDescriptor` / `AnimateInfo` / `AnimateFn` / `OutFn`과, 생성 모듈에서 온 `Declaration` / `DeclarationMapper` / `PropTypes` /
 `OnChangeFn` / `Field<T>` / `FieldOut<T>`, 그리고 위 여섯 키의 모양인 `RobloxExtension`입니다.
 
 ```luau

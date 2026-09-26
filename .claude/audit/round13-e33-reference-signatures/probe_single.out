@@ -1,0 +1,188 @@
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(1,1): TypeError: Type inference failed to complete, you may see some confusing types and type errors.
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(12,15): TypeError: Expected this to be
+	'(({ Index: number, Item: Item | KeyGone, Offset: t1, Prev: (Instance | Slot<Instance> | t2)?, UserData: UD? }) -> (any, UD?))? where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*'
+but got
+	'(unknown) -> Frame'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(14,15): TypeError: Expected this to be
+	'(({ Index: number, Item: Item | KeyGone, Offset: t1, Prev: (Instance | Slot<Instance> | t2)?, UserData: UD? }) -> (any, UD?))? where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*'
+but got
+	'(unknown) -> Frame'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(16,15): TypeError: Expected this to be
+	'(({ Index: number, Item: Item | KeyGone, Offset: t1, Prev: (Instance | Slot<Instance> | t2)?, UserData: UD? }) -> (any, UD?))? where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*'
+but got
+	'(unknown) -> Frame'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(20,14): TypeError: Expected this to be
+	'(({ Index: number, Item: Item | KeyGone, Offset: t1, Prev: (Instance | Slot<Instance> | t2)?, UserData: UD? }) -> (any, UD?))? where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*'
+but got
+	'(unknown) -> Frame'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(22,30): TypeError: Expected this to be
+	'(({ Index: number, Item: Item | KeyGone, Offset: t1, Prev: (Instance | Slot<Instance> | t2)?, UserData: UD? }) -> (any, UD?))? where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*'
+but got
+	'(unknown) -> Frame'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(29,27): TypeError: Expected this to be
+	't1 where t1 = { Emit: (t1 & t2) -> t1 & t2, read Revision: number, Set: (t1 & t2, index<{ AbsoluteCanvasSize: Vector2, AbsoluteCellCount: Vector2, AbsoluteCellSize: Vector2, AbsoluteContentSize: Vector2, AbsolutePosition: Vector2, AbsoluteRotation: number, AbsoluteSize: Vector2, AbsoluteWindowSize: Vector2, ActivatedCursorIcon: string, ActivatedCursorIconContent: Content, Active: boolean, Adornee: Instance, AlwaysOnTop: boolean, Ambient: Color3, AnchorPoint: Vector2, Animated: boolean, ApplyStrokeMode... *TRUNCATED*'
+but got
+	'StateData<UDim2>'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(29,27): TypeError: Expected this to be
+	't1 where t1 = { Emit: (t1 & t2) -> t1 & t2, read Revision: number, Set: (t1 & t2, index<{ AbsoluteCanvasSize: Vector2, AbsoluteCellCount: Vector2, AbsoluteCellSize: Vector2, AbsoluteContentSize: Vector2, AbsolutePosition: Vector2, AbsoluteRotation: number, AbsoluteSize: Vector2, AbsoluteWindowSize: Vector2, ActivatedCursorIcon: string, ActivatedCursorIconContent: Content, Active: boolean, Adornee: Instance, AlwaysOnTop: boolean, Ambient: Color3, AnchorPoint: Vector2, Animated: boolean, ApplyStrokeMode... *TRUNCATED*'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, (t1 & { Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, ({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue... *TRUNCATED*'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly
+	't2 where t1 = { Get: (*CYCLE*) -> index<{ AbsoluteCanvasSize: Vector2, AbsoluteCellCount: Vector2, AbsoluteCellSize: Vector2, AbsoluteContentSize: Vector2, AbsolutePosition: Vector2, AbsoluteRotation: number, AbsoluteSize: Vector2, AbsoluteWindowSize: Vector2, ActivatedCursorIcon: string, ActivatedCursorIconContent: Content, Active: boolean, Adornee: Instance, AlwaysOnTop: boolean, Ambient: Color3, AnchorPoint: Vector2, Animated: boolean, ApplyStrokeMode: Enum.ApplyStrokeMode, Archivable: boolean, AspectRatio: ... *TRUNCATED*'
+but got
+	'{ __apply: (any, any) -> any }'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be
+	't1 where t1 = { Apply: (<U>({ Get: (*CYCLE*) -> index<{ AbsoluteCanvasSize: Vector2, AbsoluteCellCount: Vector2, AbsoluteCellSize: Vector2, AbsoluteContentSize: Vector2, AbsolutePosition: Vector2, AbsoluteRotation: number, AbsoluteSize: Vector2, AbsoluteWindowSize: Vector2, ActivatedCursorIcon: string, ActivatedCursorIconContent: Content, Active: boolean, Adornee: Instance, AlwaysOnTop: boolean, Ambient: Color3, AnchorPoint: Vector2, Animated: boolean, ApplyStrokeMode: Enum.ApplyStrokeMode, Archivable: boolean, AspectRatio... *TRUNCATED*'
+but got
+	't1 where t1 = { Emit: (t1 & t2) -> t1 & t2, read Revision: number, Set: (t1 & t2, number) -> t1 & t2 } ; t2 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t2) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be
+	'StateData<index<PropTypesRead, K>>'
+but got
+	't1 where t1 = { Emit: (t1 & t2) -> t1 & t2, read Revision: number, Set: (t1 & t2, number) -> t1 & t2 } ; t2 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t2) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly
+	'{ __apply: (any, any) -> any }'
+but got
+	't2 where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, t2) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> number... *TRUNCATED*'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be
+	'StateData<index<PropTypesRead, K>>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read ... *TRUNCATED*'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be
+	't1 where t1 = { Apply: (<U>({ Get: (*CYCLE*) -> index<{ AbsoluteCanvasSize: Vector2, AbsoluteCellCount: Vector2, AbsoluteCellSize: Vector2, AbsoluteContentSize: Vector2, AbsolutePosition: Vector2, AbsoluteRotation: number, AbsoluteSize: Vector2, AbsoluteWindowSize: Vector2, ActivatedCursorIcon: string, ActivatedCursorIconContent: Content, Active: boolean, Adornee: Instance, AlwaysOnTop: boolean, Ambient: Color3, AnchorPoint: Vector2, Animated: boolean, ApplyStrokeMode: Enum.ApplyStrokeMode, Archivable: boolean, AspectRatio... *TRUNCATED*'
+but got
+	'StateData<number>'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly
+	't2 where t1 = { Get: (*CYCLE*) -> index<{ AbsoluteCanvasSize: Vector2, AbsoluteCellCount: Vector2, AbsoluteCellSize: Vector2, AbsoluteContentSize: Vector2, AbsolutePosition: Vector2, AbsoluteRotation: number, AbsoluteSize: Vector2, AbsoluteWindowSize: Vector2, ActivatedCursorIcon: string, ActivatedCursorIconContent: Content, Active: boolean, Adornee: Instance, AlwaysOnTop: boolean, Ambient: Color3, AnchorPoint: Vector2, Animated: boolean, ApplyStrokeMode: Enum.ApplyStrokeMode, Archivable: boolean, AspectRatio: ... *TRUNCATED*'
+but got
+	'{ __apply: (any, any) -> any }'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly
+	'{ __apply: (any, any) -> any }'
+but got
+	't2 where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, t2) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> number... *TRUNCATED*'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be
+	't1 where t1 = { Emit: (t1 & t2) -> t1 & t2, read Revision: number, Set: (t1 & t2, index<{ AbsoluteCanvasSize: Vector2, AbsoluteCellCount: Vector2, AbsoluteCellSize: Vector2, AbsoluteContentSize: Vector2, AbsolutePosition: Vector2, AbsoluteRotation: number, AbsoluteSize: Vector2, AbsoluteWindowSize: Vector2, ActivatedCursorIcon: string, ActivatedCursorIconContent: Content, Active: boolean, Adornee: Instance, AlwaysOnTop: boolean, Ambient: Color3, AnchorPoint: Vector2, Animated: boolean, ApplyStrokeMode... *TRUNCATED*'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read ... *TRUNCATED*'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be
+	't1 where t1 = { Emit: (t1 & t2) -> t1 & t2, read Revision: number, Set: (t1 & t2, index<{ AbsoluteCanvasSize: Vector2, AbsoluteCellCount: Vector2, AbsoluteCellSize: Vector2, AbsoluteContentSize: Vector2, AbsolutePosition: Vector2, AbsoluteRotation: number, AbsoluteSize: Vector2, AbsoluteWindowSize: Vector2, ActivatedCursorIcon: string, ActivatedCursorIconContent: Content, Active: boolean, Adornee: Instance, AlwaysOnTop: boolean, Ambient: Color3, AnchorPoint: Vector2, Animated: boolean, ApplyStrokeMode... *TRUNCATED*'
+but got
+	'StateData<number>'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly
+	't1 where t1 = { Emit: (t1 & t2) -> t1 & t2, read Revision: number, Set: (t1 & t2, index<{ AbsoluteCanvasSize: Vector2, AbsoluteCellCount: Vector2, AbsoluteCellSize: Vector2, AbsoluteContentSize: Vector2, AbsolutePosition: Vector2, AbsoluteRotation: number, AbsoluteSize: Vector2, AbsoluteWindowSize: Vector2, ActivatedCursorIcon: string, ActivatedCursorIconContent: Content, Active: boolean, Adornee: Instance, AlwaysOnTop: boolean, Ambient: Color3, AnchorPoint: Vector2, Animated: boolean, ApplyStrokeMode... *TRUNCATED*'
+but got
+	'StateData<number>'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly
+	't1 where t1 = { Emit: (t1 & t2) -> t1 & t2, read Revision: number, Set: (t1 & t2, index<{ AbsoluteCanvasSize: Vector2, AbsoluteCellCount: Vector2, AbsoluteCellSize: Vector2, AbsoluteContentSize: Vector2, AbsolutePosition: Vector2, AbsoluteRotation: number, AbsoluteSize: Vector2, AbsoluteWindowSize: Vector2, ActivatedCursorIcon: string, ActivatedCursorIconContent: Content, Active: boolean, Adornee: Instance, AlwaysOnTop: boolean, Ambient: Color3, AnchorPoint: Vector2, Animated: boolean, ApplyStrokeMode... *TRUNCATED*'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read ... *TRUNCATED*'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly
+	'StateData<index<PropTypesRead, K>>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read ... *TRUNCATED*'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (<U>({ Get: (*CYCLE*) -> index<{ AbsoluteCanvasSize: Vector2, AbsoluteCellCount: Vector2, AbsoluteCellSize: Vector2, AbsoluteContentSize: Vector2, AbsolutePosition: Vector2, AbsoluteRotation: number, AbsoluteSize: Vector2, AbsoluteWindowSize: Vector2, ActivatedCursorIcon: string, ActivatedCursorIconContent: Content, Active: boolean, Adornee: Instance, AlwaysOnTop: boolean, Ambient: Color3, AnchorPoint: Vector2, Animated: boolean, ApplyStrokeMode: Enum.ApplyStrokeMode, Archivable: boolean, AspectRatio... *TRUNCATED*'
+but got
+	'StateData<number>'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly
+	'StateData<index<PropTypesRead, K>>'
+but got
+	't1 where t1 = { Emit: (t1 & t2) -> t1 & t2, read Revision: number, Set: (t1 & t2, number) -> t1 & t2 } ; t2 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t2) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly
+	't2 where t1 = { Get: (*CYCLE*) -> index<{ AbsoluteCanvasSize: Vector2, AbsoluteCellCount: Vector2, AbsoluteCellSize: Vector2, AbsoluteContentSize: Vector2, AbsolutePosition: Vector2, AbsoluteRotation: number, AbsoluteSize: Vector2, AbsoluteWindowSize: Vector2, ActivatedCursorIcon: string, ActivatedCursorIconContent: Content, Active: boolean, Adornee: Instance, AlwaysOnTop: boolean, Ambient: Color3, AnchorPoint: Vector2, Animated: boolean, ApplyStrokeMode: Enum.ApplyStrokeMode, Archivable: boolean, AspectRatio: ... *TRUNCATED*'
+but got
+	'{ __apply: (any, any) -> any }'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly
+	'((StateData<index<PropTypesRead, K>>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<number>, Observer, (Epoch | EpochSet)?) -> ()'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly
+	'((StateData<index<PropTypesRead, K>>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<number>, Observer, (Epoch | EpochSet)?) -> ()'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly
+	'((StateData<index<PropTypesRead, K>>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<number>, Observer, (Epoch | EpochSet)?) -> ()'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly
+	'StateData<index<PropTypesRead, K>>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read ... *TRUNCATED*'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly
+	'{ __apply: (any, any) -> any }'
+but got
+	't2 where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, t2) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> number... *TRUNCATED*'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (<U>({ Get: (*CYCLE*) -> index<{ AbsoluteCanvasSize: Vector2, AbsoluteCellCount: Vector2, AbsoluteCellSize: Vector2, AbsoluteContentSize: Vector2, AbsolutePosition: Vector2, AbsoluteRotation: number, AbsoluteSize: Vector2, AbsoluteWindowSize: Vector2, ActivatedCursorIcon: string, ActivatedCursorIconContent: Content, Active: boolean, Adornee: Instance, AlwaysOnTop: boolean, Ambient: Color3, AnchorPoint: Vector2, Animated: boolean, ApplyStrokeMode: Enum.ApplyStrokeMode, Archivable: boolean, AspectRatio... *TRUNCATED*'
+but got
+	'StateData<number>'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+.claude/audit/round13-e33-reference-signatures/probe_single.luau(30,27): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (<U>({ Get: (*CYCLE*) -> index<{ AbsoluteCanvasSize: Vector2, AbsoluteCellCount: Vector2, AbsoluteCellSize: Vector2, AbsoluteContentSize: Vector2, AbsolutePosition: Vector2, AbsoluteRotation: number, AbsoluteSize: Vector2, AbsoluteWindowSize: Vector2, ActivatedCursorIcon: string, ActivatedCursorIconContent: Content, Active: boolean, Adornee: Instance, AlwaysOnTop: boolean, Ambient: Color3, AnchorPoint: Vector2, Animated: boolean, ApplyStrokeMode: Enum.ApplyStrokeMode, Archivable: boolean, AspectRatio... *TRUNCATED*'
+but got
+	't1 where t1 = { Emit: (t1 & t2) -> t1 & t2, read Revision: number, Set: (t1 & t2, number) -> t1 & t2 } ; t2 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t2) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*'
