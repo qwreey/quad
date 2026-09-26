@@ -1,0 +1,26 @@
+diff --git a/quad-base/test/spec.slot.luau b/quad-base/test/spec.slot.luau
+index 567bd78..c8c2d97 100644
+--- a/quad-base/test/spec.slot.luau
++++ b/quad-base/test/spec.slot.luau
+@@ -1148,7 +1148,7 @@ do
+ 	end, function(item) return item end)
+ 	outer:Add(inner)
+ 	local ok, err = pcall(function() q6.Dispatch.drive(host, { outer }) end)
+-	assert(not ok and string.find(tostring(err), "Slot: cannot mutate a Slot while it is being mounted", 1, true) ~= nil, "ancestor CRUD mid-mount is the Q52 error: " .. tostring(err))
++	assert(not ok and string.find(tostring(err), "Slot:Add: cannot mutate a Slot while it is being mounted", 1, true) ~= nil, "ancestor CRUD mid-mount is the Q52 error: " .. tostring(err))
+ 	mock.assertBlamesUser(err, "spec.slot.luau", "blames the updateFn's Add line")
+ 	-- (2) installing :List on a mounting ancestor is the same error
+ 	local host2 = mock.Instance.new("Frame")
+diff --git a/quad-roblox/test/spec.handlers.luau b/quad-roblox/test/spec.handlers.luau
+index 86d2fdb..a5cd503 100644
+--- a/quad-roblox/test/spec.handlers.luau
++++ b/quad-roblox/test/spec.handlers.luau
+@@ -272,7 +272,7 @@ do
+ 	assert(c.Parent == a, "first static seat mounts")
+ 	-- (1) a second static seat refuses instead of silently re-parenting
+ 	local ok, err = pcall(function() return q.Declaration.Frame({ c }) end)
+-	assert(not ok and string.find(tostring(err), "Bookkeeping.claimOwnerAt: this element is already mounted elsewhere", 1, true) ~= nil, "double static mount rejected: " .. tostring(err))
++	assert(not ok and string.find(tostring(err), "Declaration: this element is already mounted elsewhere", 1, true) ~= nil, "double static mount rejected: " .. tostring(err))
+ 	assert(c.Parent == a, "the first tree keeps its child")
+ 	mock.assertBlamesUser(err, SPEC_FILE, "double-mount raise blames the D.Frame line")
+ 	-- (2) the same child twice in one Declaration

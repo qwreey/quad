@@ -100,9 +100,8 @@ Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or neve
 
 - **증상**: `Modifier`에 넣으면
   `Quad0064 Modifier: field "Ref" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`(세터 체인 `:Field`로 넣었으면 같은 문구에 `Quad0057`).
-  문자 키로 주면 값에 따라
-  `Quad0137 PreRef: must be an array item, not the value of a string key` 또는
-  `Quad0076 Dispatch: no handler matched key Ref (value: table, brand: Ref) — check that the provider for this value (e.g. quad-roblox) is initialized`.
+  문자 키로 주면 종류에 맞는 주어로
+  `Quad0137 Ref: must be an array item, not the value of a string key`(`PreRef:`/`PostRef:`도 같은 모양)가 납니다.
 - **원인**: `Modifier`는 여러 인스턴스에 재사용되는 스타일 가방이라, 단일
   인스턴스에 바인딩되는 핸들러 층 값(`Ref`/`Observer`/`Effect`/`Slot`/
   `Modifier`)을 담을 수 없습니다. 그리고 이 값들은 props의 **숫자 키 자리**에

@@ -1,0 +1,309 @@
+# P-Q90 diff 1 — Q90 (b) rows ①(0070/0219/0220)·⑤·⑥ wording only (ID·raise count unchanged).
+# 0160 (① row) needs the surface argument -> 2-surface-arg.diff; ⑩ Quad0076 -> 3-quad0076-hint-order.diff.
+# Base: b2af1510. Spec companion: 1-b-scope-17.spec.diff.
+diff --git a/docs/reference/errors/01-core-reactive.md b/docs/reference/errors/01-core-reactive.md
+index 1e52560..167af84 100644
+--- a/docs/reference/errors/01-core-reactive.md
++++ b/docs/reference/errors/01-core-reactive.md
+@@ -57,7 +57,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
+ 
+ ### Quad0039
+ 
+-`{name}: {field} must be a non-negative number (got {typeof(v)})` — `quad-base/src/Debounce.luau`
++`{name}: {field} must be a non-negative number (got {tostring(v)} if a number, else {typeof(v)})` — `quad-base/src/Debounce.luau`
+ 
+ - **언제**: `Time`(또는 `MaxTime`)에 바인딩한 `State`가 상류 신호 시점에 내놓은 값이 숫자가 아니거나 음수/NaN일 때. 생성 시점이 아니라 **신호가 들어오는 시점**에 읽어 검사합니다.
+ - **고치려면**: 그 `State`가 항상 0 이상의 숫자를 내놓게 하세요.
+@@ -73,7 +73,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
+ 
+ ### Quad0041
+ 
+-`{name}: {field} must be a non-negative number or a State<number> (got {typeof(t)})` — `quad-base/src/Debounce.luau`
++`{name}: {field} must be a non-negative number or a State<number> (got {tostring(t)} if a number, else {typeof(t)})` — `quad-base/src/Debounce.luau`
+ 
+ - **언제**: 옵션 생성 시점에 `Time`/`MaxTime`이 `State`도 숫자도 아니거나, 숫자인데 음수/NaN일 때.
+ - **고치려면**: 0 이상의 숫자나 `State<number>`를 넘기세요.
+@@ -281,7 +281,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
+ 
+ ### Quad0187
+ 
+-`State: Compute fn must be a function` — `quad-base/src/State.luau`
++`State:Compute: fn must be a function (got {typeof(fn)})` — `quad-base/src/State.luau`
+ 
+ - **언제**: `:Compute(fn, ...deps)`의 `fn` 자리가 함수가 아닐 때.
+ - **고치려면**: 함수를 넘기세요.
+@@ -289,7 +289,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
+ 
+ ### Quad0188
+ 
+-`State: Gate setup must be a function (emit) -> onUpstreamEmit` — `quad-base/src/State.luau`
++`State:Gate: setup must be a function (emit) -> onUpstreamEmit (got {typeof(setup)})` — `quad-base/src/State.luau`
+ 
+ - **언제**: `:Gate(setup)`의 `setup` 자리가 함수가 아닐 때.
+ - **고치려면**: `(emit) -> onUpstreamEmit` 모양의 함수를 넘기세요.
+@@ -305,7 +305,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
+ 
+ ### Quad0190
+ 
+-`State: Observer fn must be a function (or nil for the always-observe utility)` — `quad-base/src/State.luau`
++`State:Observer: fn must be a function (or nil for the always-observe utility) (got {typeof(fn)})` — `quad-base/src/State.luau`
+ 
+ - **언제**: `:Observer(fn)`의 `fn` 자리가 함수도 `nil`도 아닐 때.
+ - **고치려면**: 콜백 함수를 넘기거나, 값 없이 그냥 관측만 하려면 `nil`을 넘기세요.
+@@ -313,7 +313,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
+ 
+ ### Quad0191
+ 
+-`State: Apply factory must be a function or an object with an __apply method` — `quad-base/src/State.luau`
++`State:Apply: factory must be a function or an object with an __apply method (got {typeof(factory)})` — `quad-base/src/State.luau`
+ 
+ - **언제**: `:Apply(factory)`의 `factory` 자리가 함수도, `__apply` 메소드를 가진 객체도 아닐 때.
+ - **고치려면**: 함수를 넘기거나 `__apply`를 구현한 객체(`Blocker`, `Debounce`/`Throttle` 등)를 넘기세요.
+diff --git a/docs/reference/errors/02-dispatch-bookkeeping.md b/docs/reference/errors/02-dispatch-bookkeeping.md
+index 22a0de1..dfc7c3e 100644
+--- a/docs/reference/errors/02-dispatch-bookkeeping.md
++++ b/docs/reference/errors/02-dispatch-bookkeeping.md
+@@ -241,7 +241,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 
+ 
+ ### Quad0070
+ 
+-`StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle` — `quad-base/src/Dispatch/StoreBind.luau`
++`State: the value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle` — `quad-base/src/Dispatch/StoreBind.luau`
+ 
+ - **언제**: props 자리에 놓인 State의 값을 따라가다(State가 다른 State를 값으로 들고 있으면 그 State도 마저 벗기는 재귀) 결국 자기 자신으로 돌아오는 순환을 만났을 때(예: `a:Set(b); b:Set(a)`).
+ - **고치려면**: State가 다른 State를 값으로 들고 있는 것 자체는 되지만, 그 사슬이 순환하면 안 됩니다 — 순환이 생기지 않게 값 대입을 정리하세요.
+diff --git a/docs/reference/errors/04-ref-observer-effect.md b/docs/reference/errors/04-ref-observer-effect.md
+index 7cf5938..5aaf69c 100644
+--- a/docs/reference/errors/04-ref-observer-effect.md
++++ b/docs/reference/errors/04-ref-observer-effect.md
+@@ -89,7 +89,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 
+ 
+ ### Quad0094
+ 
+-`Effect: fn must be a function` — `quad-base/src/Effect.luau`
++`Effect: fn must be a function (got {typeof(fn)})` — `quad-base/src/Effect.luau`
+ 
+ - **언제**: `q.Effect(fn, ...)`의 `fn`이 함수가 아닐 때.
+ - **고치려면**: 함수를 넘기세요.
+diff --git a/docs/reference/errors/07-roblox.md b/docs/reference/errors/07-roblox.md
+index d530e19..f2d91a0 100644
+--- a/docs/reference/errors/07-roblox.md
++++ b/docs/reference/errors/07-roblox.md
+@@ -17,7 +17,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지
+ 
+ ### Quad0216
+ 
+-`setTimeout: delay must be a non-negative number (got {typeof(delay)})` — `quad-roblox/src/EngineOps.luau`
++`setTimeout: delay must be a non-negative number (got {tostring(delay)} if a number, else {typeof(delay)})` — `quad-roblox/src/EngineOps.luau`
+ 
+ - **언제**: `setTimeout(func, delay)`의 `delay`가 숫자가 아니거나, NaN이거나, 음수일 때.
+ - **고치려면**: 0 이상의 숫자를 넘기세요.
+@@ -41,7 +41,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지
+ 
+ ### Quad0219
+ 
+-`InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)` — `quad-roblox/src/Handlers/InstanceChild.luau`
++`Declaration: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)` — `quad-roblox/src/Handlers/InstanceChild.luau`
+ 
+ - **언제**: 숫자 키 자리에 quad가 소유하지 않은 Instance(`Instance.new`나 다른 라이브러리가 만든 것, 다른 quad 모듈 인스턴스가 만든 것, 또는 이미 파괴된 것)를 놓았을 때.
+ - **고치려면**: `D.<Class> { ... }`로 만들었거나 [`Claim`](../roblox/04-claim-mapper.md#qclaiminst-desc)으로 넘겨받은 Instance만 자식 자리에 놓으세요.
+@@ -49,7 +49,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지
+ 
+ ### Quad0220
+ 
+-`InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)` — `quad-roblox/src/Handlers/InstanceChild.luau`
++`Declaration: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)` — `quad-roblox/src/Handlers/InstanceChild.luau`
+ 
+ - **언제**: 어떤 Instance를 자기 자신이나 자기 조상의 숫자 키 자리에 자식으로 놓으려 할 때 — 조상 사슬을 따라 올라가며 검사합니다.
+ - **고치려면**: 순환이 생기지 않게 트리 구조를 바꾸세요.
+diff --git a/docs/reference/errors/08-roblox-tween.md b/docs/reference/errors/08-roblox-tween.md
+index 51274c1..311b1d6 100644
+--- a/docs/reference/errors/08-roblox-tween.md
++++ b/docs/reference/errors/08-roblox-tween.md
+@@ -25,7 +25,7 @@ description: "Tween/Animate가 던지는 에러"
+ 
+ ### Quad0243
+ 
+-`Tween: {name} must be a number` — `quad-roblox/src/Tween.luau`
++`Tween: {name} must be a number (got {typeof(v)})` — `quad-roblox/src/Tween.luau`
+ 
+ - **언제**: `Time`/`RepeatCount`/`DelayTime` 중 하나가 숫자가 아닌 값으로 주어졌을 때. `{name}`은 실제 필드 이름입니다.
+ - **고치려면**: 숫자를 넘기세요.
+@@ -33,7 +33,7 @@ description: "Tween/Animate가 던지는 에러"
+ 
+ ### Quad0244
+ 
+-`Tween: Reverses must be a boolean` — `quad-roblox/src/Tween.luau`
++`Tween: Reverses must be a boolean (got {typeof(opts.Reverses)})` — `quad-roblox/src/Tween.luau`
+ 
+ - **언제**: `Reverses`가 불린이 아닌 값으로 주어졌을 때.
+ - **고치려면**: `true`/`false`만 넘기세요.
+@@ -41,7 +41,7 @@ description: "Tween/Animate가 던지는 에러"
+ 
+ ### Quad0245
+ 
+-`Tween: Dedup must be a boolean` — `quad-roblox/src/Tween.luau`
++`Tween: Dedup must be a boolean (got {typeof(opts.Dedup)})` — `quad-roblox/src/Tween.luau`
+ 
+ - **언제**: `Dedup`이 불린이 아닌 값으로 주어졌을 때.
+ - **고치려면**: `true`/`false`만 넘기세요.
+@@ -49,7 +49,7 @@ description: "Tween/Animate가 던지는 에러"
+ 
+ ### Quad0246
+ 
+-`Tween: {name} must be a function` — `quad-roblox/src/Tween.luau`
++`Tween: {name} must be a function (got {typeof(v)})` — `quad-roblox/src/Tween.luau`
+ 
+ - **언제**: `Started`/`Completed`/`Cancelled` 중 하나가 함수가 아닌 값으로 주어졌을 때. `{name}`은 실제 필드 이름입니다.
+ - **고치려면**: 인자 없는 함수를 넘기세요.
+diff --git a/quad-base/src/Debounce.luau b/quad-base/src/Debounce.luau
+index 15572d2..34ed046 100644
+--- a/quad-base/src/Debounce.luau
++++ b/quad-base/src/Debounce.luau
+@@ -85,7 +85,7 @@ local function readTime(name: string, field: string, t: any): number
+ 	local v = if isState(t) then t:Get() else t
+ 	if type(v) ~= "number" or v ~= v or v < 0 then
+ 		-- reached from emit depth (upstream signal) only — outermost
+-		Err.errorBefore(`Quad0039 {name}: {field} must be a non-negative number (got {typeof(v)})`, SURFACE)
++		Err.errorBefore(`Quad0039 {name}: {field} must be a non-negative number (got {if type(v) == "number" then tostring(v) else typeof(v)})`, SURFACE)
+ 	end
+ 	return v
+ end
+@@ -101,7 +101,7 @@ local function checkTime(name: string, field: string, t: any, optional: boolean)
+ 		return
+ 	end
+ 	if type(t) ~= "number" or t ~= t or t < 0 then
+-		Err.errorBeforeNearest(`Quad0041 {name}: {field} must be a non-negative number or a State<number> (got {typeof(t)})`, SURFACE)
++		Err.errorBeforeNearest(`Quad0041 {name}: {field} must be a non-negative number or a State<number> (got {if type(t) == "number" then tostring(t) else typeof(t)})`, SURFACE)
+ 	end
+ end
+ 
+diff --git a/quad-base/src/Dispatch/StoreBind.luau b/quad-base/src/Dispatch/StoreBind.luau
+index 61f8ce7..9b09f33 100644
+--- a/quad-base/src/Dispatch/StoreBind.luau
++++ b/quad-base/src/Dispatch/StoreBind.luau
+@@ -75,7 +75,7 @@ function StoreBind.register(dispatch: QuadTypes.Dispatch, module: any)
+ 					local cur = realv
+ 					while isState(cur) do
+ 						if visited[cur] then
+-							Err.errorBefore("Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle", SURFACE)
++							Err.errorBefore("Quad0070 State: the value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle", SURFACE)
+ 						end
+ 						visited[cur] = true
+ 						cur = cur:Get()
+diff --git a/quad-base/src/Effect.luau b/quad-base/src/Effect.luau
+index ea0d04f..f9e70ae 100644
+--- a/quad-base/src/Effect.luau
++++ b/quad-base/src/Effect.luau
+@@ -289,7 +289,7 @@ local function createImpl(module: any)
+ 	-- ── constructor ──────────────────────────────────────────────────
+ 	local function Effect(fn: any, ...: any): any
+ 		if type(fn) ~= "function" then
+-			Err.errorBeforeNearest("Quad0094 Effect: fn must be a function", SURFACE)
++			Err.errorBeforeNearest(`Quad0094 Effect: fn must be a function (got {typeof(fn)})`, SURFACE)
+ 		end
+ 		local self = setmetatable({
+ 			fn = fn,
+diff --git a/quad-base/src/State.luau b/quad-base/src/State.luau
+index 1ba8911..0a47ed7 100644
+--- a/quad-base/src/State.luau
++++ b/quad-base/src/State.luau
+@@ -265,7 +265,7 @@ local function createImpl(module: any)
+ 		if type(fn) ~= "function" then
+ 			-- `H-202`: without this the crash lands at the first `Get` deep inside
+ 			-- `_recompute` — sibling surfaces (Gate/Observer/Apply) all validate here.
+-			Err.errorBeforeNearest("Quad0187 State: Compute fn must be a function", SURFACE)
++			Err.errorBeforeNearest(`Quad0187 State:Compute: fn must be a function (got {typeof(fn)})`, SURFACE)
+ 		end
+ 		return newNode(collectDeps(self, ...), fn) -- one node: edges only, no combining node
+ 	end
+@@ -323,7 +323,7 @@ local function createImpl(module: any)
+ 	-- `state:Gate(setup)`; `setup(emit) -> onUpstreamEmit`. Returns a State<T> (same T).
+ 	function Impl.Gate(self: any, setup: any): any
+ 		if type(setup) ~= "function" then
+-			Err.errorBeforeNearest("Quad0188 State: Gate setup must be a function (emit) -> onUpstreamEmit", SURFACE)
++			Err.errorBeforeNearest(`Quad0188 State:Gate: setup must be a function (emit) -> onUpstreamEmit (got {typeof(setup)})`, SURFACE)
+ 		end
+ 		local node = newNode({ self }, passThrough, GateImpl) -- StateBrand + seeding + `_hold` like any node
+ 		node._withheld = newWithheld()
+@@ -347,7 +347,7 @@ local function createImpl(module: any)
+ 	-- (`source-state-plan.md` "`state:Observer(fn)`"). Body lives in `Observer.luau`.
+ 	function Impl.Observer(self: any, fn: any?): any
+ 		if fn ~= nil and type(fn) ~= "function" then
+-			Err.errorBeforeNearest("Quad0190 State: Observer fn must be a function (or nil for the always-observe utility)", SURFACE)
++			Err.errorBeforeNearest(`Quad0190 State:Observer: fn must be a function (or nil for the always-observe utility) (got {typeof(fn)})`, SURFACE)
+ 		end
+ 		return ObserverImpl.new(self, fn)
+ 	end
+@@ -357,7 +357,7 @@ local function createImpl(module: any)
+ 			return (factory :: any)(self)
+ 		end
+ 		if type(factory) ~= "table" or type(factory.__apply) ~= "function" then
+-			Err.errorBeforeNearest("Quad0191 State: Apply factory must be a function or an object with an __apply method", SURFACE)
++			Err.errorBeforeNearest(`Quad0191 State:Apply: factory must be a function or an object with an __apply method (got {typeof(factory)})`, SURFACE)
+ 		end
+ 		return (factory :: any):__apply(self) -- method form: `self` there is the factory object (`H-158`)
+ 	end
+diff --git a/quad-roblox/src/EngineOps.luau b/quad-roblox/src/EngineOps.luau
+index 7516d41..963f6cc 100644
+--- a/quad-roblox/src/EngineOps.luau
++++ b/quad-roblox/src/EngineOps.luau
+@@ -146,7 +146,7 @@ local function install(quad: any)
+ 			Err.errorBefore(`Quad0215 setTimeout: func must be a function (got {typeof(func)})`, SURFACE)
+ 		end
+ 		if type(delay) ~= "number" or delay ~= delay or delay < 0 then
+-			Err.errorBefore(`Quad0216 setTimeout: delay must be a non-negative number (got {typeof(delay)})`, SURFACE)
++			Err.errorBefore(`Quad0216 setTimeout: delay must be a non-negative number (got {if type(delay) == "number" then tostring(delay) else typeof(delay)})`, SURFACE)
+ 		end
+ 		return { __quadTimeout = true :: true, _native = task.delay(delay, func) } -- ⚠️ order flipped vs the op
+ 	end
+diff --git a/quad-roblox/src/Handlers/InstanceChild.luau b/quad-roblox/src/Handlers/InstanceChild.luau
+index 2e6405c..245dbb6 100644
+--- a/quad-roblox/src/Handlers/InstanceChild.luau
++++ b/quad-roblox/src/Handlers/InstanceChild.luau
+@@ -61,7 +61,7 @@ local function install(quad: any)
+ 			-- corpse. Ownership starts explicitly: `Claim` or the Declaration. errorBefore so the
+ 			-- blame lands on the user's `D.<Class> { … }` line (dispatch depth, `H-330`).
+ 			if not quad.Backend.isClaimed(v) then
+-				Err.errorBefore("Quad0219 InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)", SURFACE)
++				Err.errorBefore("Quad0219 Declaration: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)", SURFACE)
+ 			end
+ 			-- round11 `H-545` (탐사 A′): the static seat had no twin of Slot's `H-500` cycle guard —
+ 			-- `src:Set(host)` made `host.Parent == host` in the mock, and on Roblox the engine's own
+@@ -73,7 +73,7 @@ local function install(quad: any)
+ 			local ancestor = inst
+ 			while ancestor ~= nil do
+ 				if ancestor == v then
+-					Err.errorBefore("Quad0220 InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)", SURFACE)
++					Err.errorBefore("Quad0220 Declaration: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)", SURFACE)
+ 				end
+ 				ancestor = ancestor.Parent
+ 			end
+diff --git a/quad-roblox/src/Tween.luau b/quad-roblox/src/Tween.luau
+index 94848f6..a92a326 100644
+--- a/quad-roblox/src/Tween.luau
++++ b/quad-roblox/src/Tween.luau
+@@ -100,19 +100,19 @@ local function install(quad: any): any
+ 		for _, name in NUMBER_FIELDS do
+ 			local v = opts[name]
+ 			if v ~= nil and type(v) ~= "number" then
+-				fail(`Quad0243 Tween: {name} must be a number`, SURFACE)
++				fail(`Quad0243 Tween: {name} must be a number (got {typeof(v)})`, SURFACE)
+ 			end
+ 		end
+ 		if opts.Reverses ~= nil and type(opts.Reverses) ~= "boolean" then
+-			fail("Quad0244 Tween: Reverses must be a boolean", SURFACE)
++			fail(`Quad0244 Tween: Reverses must be a boolean (got {typeof(opts.Reverses)})`, SURFACE)
+ 		end
+ 		if opts.Dedup ~= nil and type(opts.Dedup) ~= "boolean" then
+-			fail("Quad0245 Tween: Dedup must be a boolean", SURFACE)
++			fail(`Quad0245 Tween: Dedup must be a boolean (got {typeof(opts.Dedup)})`, SURFACE)
+ 		end
+ 		for _, name in CALLBACK_FIELDS do
+ 			local v = opts[name]
+ 			if v ~= nil and type(v) ~= "function" then
+-				fail(`Quad0246 Tween: {name} must be a function`, SURFACE)
++				fail(`Quad0246 Tween: {name} must be a function (got {typeof(v)})`, SURFACE)
+ 			end
+ 		end
+ 		local override = opts.Override

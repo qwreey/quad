@@ -1,0 +1,313 @@
+# P-Q90 diff 2 — surface argument for Quad0160 (claimOwnerAt 4th optional arg; public q.Bookkeeping type widened) and Quad0165~0167 (assertLive/assertManual/assertNotMounting/assertMutable/checkListInstall take surface);
+# InstanceChild routes 0160/0219/0220 through one SEAT_SUBJECT = "Declaration". Layered on diff 1. Spec companion: 2-surface-arg.spec.diff.
+diff --git a/docs/reference/errors/03-slot.md b/docs/reference/errors/03-slot.md
+index 6073c96..c25d474 100644
+--- a/docs/reference/errors/03-slot.md
++++ b/docs/reference/errors/03-slot.md
+@@ -169,7 +169,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
+ 
+ ### Quad0160
+ 
+-`Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed` — `quad-base/src/Slot/Owner.luau`
++`{surface}: this element is already mounted elsewhere — multiple mounts are not allowed` — `quad-base/src/Slot/Owner.luau`
+ 
+ - **언제**: `claimOwnerAt`이 등록하려는 값이 이미 다른 자리에 등록돼 있을 때(정확히 같은 자리의 재확인은 예외 — 던지지 않고 `false`를 돌려줍니다).
+ - **고치려면**: Quad0156과 같습니다 — 먼저 옛 자리에서 빼세요.
+@@ -210,7 +210,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
+ 
+ ### Quad0165
+ 
+-`Slot: destroyed Slot cannot be reused` — `quad-base/src/Slot/init.luau`
++`{surface}: destroyed Slot cannot be reused` — `quad-base/src/Slot/init.luau`
+ 
+ - **언제**: 파괴된 `Slot`에 CRUD(`Add`/`Remove`/...)나 `:List`/`:Single` 설치를 다시 쓰려고 할 때 — 모든 공개 CRUD·설치 진입점이 이 가드(`assertLive`)를 거칩니다.
+ - **고치려면**: 파괴된 `Slot`은 되살릴 수 없습니다 — 새 `Slot`을 만드세요.
+@@ -218,7 +218,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
+ 
+ ### Quad0166
+ 
+-`Slot: manual CRUD is not allowed after :List/:Single` — `quad-base/src/Slot/init.luau`
++`{surface}: manual CRUD is not allowed after :List/:Single` — `quad-base/src/Slot/init.luau`
+ 
+ - **언제**: `:List`/`:Single`을 이미 건 `Slot`에 수동 CRUD(`Add`/`Remove`/`Replace`/...)를 쓰려고 할 때.
+ - **고치려면**: `:List`/`:Single`을 건 `Slot`은 그 데이터 `State`를 통해서만 바꾸세요 — 수동 CRUD가 필요하면 그 설치 없이 새 `Slot`을 만드세요.
+@@ -226,7 +226,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
+ 
+ ### Quad0167
+ 
+-`Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)` — `quad-base/src/Slot/init.luau`
++`{surface}: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)` — `quad-base/src/Slot/init.luau`
+ 
+ - **언제**: 이 `Slot`의 마운트 walk이 스택에 있는 동안(`_materializing`) 이 `Slot`에 CRUD나 `:List`/`:Single` 설치를 쓰려고 할 때 — 중첩된 `:List`의 첫 `updateFn`이나 그 안에서 도는 `Observer`가 조상 `Slot`을 건드리면 여기 걸립니다.
+ - **고치려면**: 마운트가 끝난 뒤(`Observer`에서) 하세요. 이미 이 에러가 났다면 이전 마운트가 도중에 던진 것이라 이 `Slot`은 계속 쓸 수 없습니다 — 호스트 Instance를 `q.dispose`하세요.
+diff --git a/quad-base/src/Slot/Handler.luau b/quad-base/src/Slot/Handler.luau
+index b73465e..dc4ed7f 100644
+--- a/quad-base/src/Slot/Handler.luau
++++ b/quad-base/src/Slot/Handler.luau
+@@ -37,7 +37,7 @@ local function register(dispatch: any, module: any)
+ 				Err.errorBefore("Quad0140 Slot: destroyed Slot cannot be mounted", SURFACE)
+ 			end
+ 			ModuleIdentity.assertOwnAtDispatch(module, slotValue, "Slot") -- before claim/bind commit (same reason as above)
+-			if internal.claimOwnerAt(slotValue, inst, k) then
++			if internal.claimOwnerAt(slotValue, inst, k, "Slot") then
+ 				module.Backend.bindLifetime(inst, slotValue)
+ 				internal.attachSlot(slotValue, inst, inst, k)
+ 			end
+diff --git a/quad-base/src/Slot/List.luau b/quad-base/src/Slot/List.luau
+index 63f8206..7680917 100644
+--- a/quad-base/src/Slot/List.luau
++++ b/quad-base/src/Slot/List.luau
+@@ -208,15 +208,15 @@ return function(S: Types.SlotInternal, module: any)
+ 	-- 4순회 `H-385`: the install gates run at the PUBLIC entry — `Single` is tagged
+ 	-- and delegates to `List`, so a gate raised inside `List` was nearest to
+ 	-- `Single`'s own delegation line (`Slot/List.luau`), not the user's `:Single(...)`.
+-	local function checkListInstall(self: any)
+-		S.assertLive(self)
+-		S.assertNotMounting(self) -- round10 Q52 (a)
++	local function checkListInstall(self: any, surface: string)
++		S.assertLive(self, surface)
++		S.assertNotMounting(self, surface) -- round10 Q52 (a)
+ 		if self._listed then S.Err.errorBeforeNearest("Quad0148 Slot: already has :List/:Single installed", S.SURFACE) end
+ 		if self._crudUsed then S.Err.errorBeforeNearest("Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)", S.SURFACE) end
+ 	end
+ 
+ 	function S.Slot_mt.List(self: any, data: any, updateFn: any, keyFn: any?, opts: any?): any
+-		checkListInstall(self)
++		checkListInstall(self, "Slot:List")
+ 		if type(updateFn) ~= "function" then
+ 			S.Err.errorBeforeNearest(`Quad0150 Slot:List: updateFn must be a function (got {typeof(updateFn)})`, S.SURFACE) -- round3 `H-441`
+ 		end
+@@ -260,7 +260,7 @@ return function(S: Types.SlotInternal, module: any)
+ 	end
+ 
+ 	function S.Slot_mt.Single(self: any, state: any, updateFn: any?, opts: any?): any
+-		checkListInstall(self) -- `H-385`: gate here so the blame is this call, not the delegation below
++		checkListInstall(self, "Slot:Single") -- `H-385`: gate here so the blame is this call, not the delegation below
+ 		if updateFn ~= nil and type(updateFn) ~= "function" then
+ 			S.Err.errorBeforeNearest(`Quad0154 Slot:Single: updateFn must be a function (got {typeof(updateFn)})`, S.SURFACE) -- round3 `H-446`: the List gate saw only the wrapper
+ 		end
+diff --git a/quad-base/src/Slot/Owner.luau b/quad-base/src/Slot/Owner.luau
+index ab330b7..fc758ef 100644
+--- a/quad-base/src/Slot/Owner.luau
++++ b/quad-base/src/Slot/Owner.luau
+@@ -32,7 +32,7 @@ return function(S: Types.SlotInternal, module: any)
+ 		S.elementOwner:SetWeak(element, S.OWNER, ownerKey)
+ 	end
+ 
+-	local function claimOwnerAt(element: any, inst: any, k: any): boolean
++	local function claimOwnerAt(element: any, inst: any, k: any, surface: string?): boolean
+ 		-- round11 `H-546` (탐사 A′, `H-504` family): public since Q48 — a nil element died as
+ 		-- `Relate:GetWeak: inst must not be nil` (leaf blame), and a nil inst "succeeded" (OWNER
+ 		-- nil, OWNER_POS k → the caller attaches under nobody). Same fail-fast as the six
+@@ -51,7 +51,9 @@ return function(S: Types.SlotInternal, module: any)
+ 			return false -- exactly this position already holds it — re-confirm, no-op
+ 		end
+ 		if current ~= nil then
+-			S.Err.errorBefore("Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed" .. S.ZOMBIE_NOTE, S.SURFACE)
++			-- P-Q90 proto: `surface` = the user-facing subject the calling seat passes (Quad0170~0173 shape);
++			-- a direct `q.Bookkeeping.claimOwnerAt` call keeps its own name
++			S.Err.errorBefore("Quad0160 " .. (surface or "Bookkeeping.claimOwnerAt") .. ": this element is already mounted elsewhere — multiple mounts are not allowed" .. S.ZOMBIE_NOTE, S.SURFACE)
+ 		end
+ 		S.elementOwner:SetWeak(element, S.OWNER, inst)
+ 		S.elementOwner:SetWeak(element, S.OWNER_POS, k)
+diff --git a/quad-base/src/Slot/init.luau b/quad-base/src/Slot/init.luau
+index 2e292a7..1fbc8de 100644
+--- a/quad-base/src/Slot/init.luau
++++ b/quad-base/src/Slot/init.luau
+@@ -127,14 +127,14 @@ local function Init(module: any)
+ 	require("@self/List")(S, module)
+ 
+ 	-- ── public CRUD (guard + raw* delegation) ──────────────────────────
+-	local function assertLive(self: any)
+-		if self._destroyed then Err.errorBeforeNearest("Quad0165 Slot: destroyed Slot cannot be reused", SURFACE) end
++	local function assertLive(self: any, surface: string)
++		if self._destroyed then Err.errorBeforeNearest("Quad0165 " .. surface .. ": destroyed Slot cannot be reused", SURFACE) end
+ 	end
+ 	-- [2026-09-16 hunt F] `_crudUsed` is set by `markManual` at each CRUD's mutation point, not
+ 	-- here — a CRUD call rejected by its own validation (`Add(nil)`, out-of-range `Remove`) used to
+ 	-- lock the Slot as manual, and a later `:List` blamed "CRUD was used" (the `H-386` shape again).
+-	local function assertManual(self: any)
+-		if self._listed then Err.errorBeforeNearest("Quad0166 Slot: manual CRUD is not allowed after :List/:Single", SURFACE) end
++	local function assertManual(self: any, surface: string)
++		if self._listed then Err.errorBeforeNearest("Quad0166 " .. surface .. ": manual CRUD is not allowed after :List/:Single", SURFACE) end
+ 	end
+ 	local function markManual(self: any)
+ 		self._crudUsed = true
+@@ -143,16 +143,16 @@ local function Init(module: any)
+ 	-- stack — the `:List` updateFn is a pure item→element function, and an ancestor CRUD from
+ 	-- inside it broke the walk (slot-plan "재진입성" 절의 예외). User: "compute 든 slot 이든
+ 	-- 순수성 제약을 크게 풀어줄 이유가 없어서, 계약 상 조상 건들이기 등은 던져도 될것 같아".
+-	local function assertNotMounting(self: any)
++	local function assertNotMounting(self: any, surface: string)
+ 		if self._materializing then
+-			Err.errorBeforeNearest("Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)", SURFACE)
++			Err.errorBeforeNearest("Quad0167 " .. surface .. ": cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)", SURFACE)
+ 		end
+ 	end
+ 	-- every public CRUD entry: live AND manual (Q3 ⑥ — nine hand copies folded) AND not mid-mount
+-	local function assertMutable(self: any)
+-		assertLive(self)
+-		assertManual(self)
+-		assertNotMounting(self)
++	local function assertMutable(self: any, surface: string)
++		assertLive(self, surface)
++		assertManual(self, surface)
++		assertNotMounting(self, surface)
+ 	end
+ 
+ 	S.assertLive = assertLive -- `checkListInstall` (Slot/List.luau) gates through this
+@@ -276,7 +276,7 @@ local function Init(module: any)
+ 	end
+ 
+ 	function Slot_mt.Add(self: any, element: any, index: number?): number
+-		assertMutable(self)
++		assertMutable(self, "Slot:Add")
+ 		if index ~= nil then checkIndex(self, index, "Slot:Add", true) end
+ 		local prepared = prepareElements(self, "Slot:Add", 1, { element })
+ 		markManual(self)
+@@ -284,7 +284,7 @@ local function Init(module: any)
+ 	end
+ 
+ 	function Slot_mt.Remove(self: any, index: number)
+-		assertMutable(self)
++		assertMutable(self, "Slot:Remove")
+ 		checkIndex(self, index, "Slot:Remove")
+ 		markManual(self)
+ 		S.rawRemove(self, index)
+@@ -293,7 +293,7 @@ local function Init(module: any)
+ 	-- Replace: same position, new occupant, old one DESTROYED — Extract's
+ 	-- destroy twin (`B-5`). Public Replace always destroys (`destroyOld = true`).
+ 	function Slot_mt.Replace(self: any, index: number, newElement: any)
+-		assertMutable(self)
++		assertMutable(self, "Slot:Replace")
+ 		checkIndex(self, index, "Slot:Replace")
+ 		local prepared = prepareElements(self, "Slot:Replace", 1, { newElement })
+ 		markManual(self)
+@@ -304,7 +304,7 @@ local function Init(module: any)
+ 	-- tail is pulled in (O(n)); with it the position is swapped in place
+ 	-- (O(1)). Returns the previous element, unwrapped.
+ 	function Slot_mt.Extract(self: any, index: number, newElement: any?): any
+-		assertMutable(self)
++		assertMutable(self, "Slot:Extract")
+ 		checkIndex(self, index, "Slot:Extract")
+ 		local old = self._elements[index]
+ 		if newElement ~= nil then
+@@ -322,7 +322,7 @@ local function Init(module: any)
+ 	-- insertion in its place, one recompute. `index` ranges like Add (1..n+1);
+ 	-- `removeCount` must fit what is actually there — no clamping.
+ 	function Slot_mt.Splice(self: any, index: number, removeCount: number, ...: any): { any }
+-		assertMutable(self)
++		assertMutable(self, "Slot:Splice")
+ 		checkIndex(self, index, "Slot:Splice", true)
+ 		if type(removeCount) ~= "number" or removeCount < 0 or removeCount % 1 ~= 0
+ 			or index + removeCount - 1 > #self._elements then
+@@ -342,7 +342,7 @@ local function Init(module: any)
+ 	-- Roblox (`nativeMove`/`nativeSwap` are no-ops there). void by design:
+ 	-- the caller already knows the positions.
+ 	function Slot_mt.Move(self: any, oldIndex: number, newIndex: number)
+-		assertMutable(self)
++		assertMutable(self, "Slot:Move")
+ 		checkIndex(self, oldIndex, "Slot:Move")
+ 		checkIndex(self, newIndex, "Slot:Move")
+ 		markManual(self)
+@@ -350,7 +350,7 @@ local function Init(module: any)
+ 	end
+ 
+ 	function Slot_mt.Swap(self: any, indexA: number, indexB: number)
+-		assertMutable(self)
++		assertMutable(self, "Slot:Swap")
+ 		checkIndex(self, indexA, "Slot:Swap")
+ 		checkIndex(self, indexB, "Slot:Swap")
+ 		markManual(self)
+@@ -388,7 +388,7 @@ local function Init(module: any)
+ 	-- and this Slot's layout frozen, the same accepted outcome as a throwing
+ 	-- `updateFn` (`H-38` note in round7 `H-485`; 2026-09-08 감사 A-2).
+ 	function Slot_mt.Clear(self: any)
+-		assertMutable(self)
++		assertMutable(self, "Slot:Clear")
+ 		markManual(self)
+ 		local gate = if self._physicalTarget ~= nil then S.BK.getBlocker(self) else nil
+ 		local ownsGate = gate ~= nil and not gate.Blocking
+@@ -403,7 +403,7 @@ local function Init(module: any)
+ 	end
+ 
+ 	function Slot_mt.ExtractAll(self: any): { any }
+-		assertMutable(self)
++		assertMutable(self, "Slot:ExtractAll")
+ 		markManual(self)
+ 		-- `rawSplice` directly, not `self:Splice(1, n)` — a tagged public method calling
+ 		-- another would make a raise inside it blame this delegation line (`H-385`).
+diff --git a/quad-base/src/Slot/types.luau b/quad-base/src/Slot/types.luau
+index 1a2b1c1..3fffdc9 100644
+--- a/quad-base/src/Slot/types.luau
++++ b/quad-base/src/Slot/types.luau
+@@ -33,7 +33,7 @@ export type SlotInternal = {
+ 	KeyGone: any,
+ 	-- Owner.luau
+ 	claimOwner: (element: any, ownerKey: any, fromDetached: boolean?) -> (),
+-	claimOwnerAt: (element: any, inst: any, k: any) -> boolean,
++	claimOwnerAt: (element: any, inst: any, k: any, surface: string?) -> boolean,
+ 	releaseOwner: (element: any, ownerKey: any) -> (),
+ 	-- Elements.luau
+ 	destroyElement: (element: any) -> (),
+@@ -67,8 +67,8 @@ export type SlotInternal = {
+ 	List: (self: any, data: any, updateFn: any, keyFn: any?, opts: any?) -> any,
+ 	Single: (self: any, state: any, updateFn: any?, opts: any?) -> any,
+ 	-- init.luau (published AFTER the installs)
+-	assertLive: (self: any) -> (),
+-	assertNotMounting: (self: any) -> (),
++	assertLive: (self: any, surface: string) -> (),
++	assertNotMounting: (self: any, surface: string) -> (),
+ 	Slot: (initial: { any }?) -> any,
+ }
+ 
+diff --git a/quad-roblox/src/Handlers/InstanceChild.luau b/quad-roblox/src/Handlers/InstanceChild.luau
+index 245dbb6..22b9f5c 100644
+--- a/quad-roblox/src/Handlers/InstanceChild.luau
++++ b/quad-roblox/src/Handlers/InstanceChild.luau
+@@ -43,6 +43,9 @@ local function install(quad: any)
+ 	local None = quad.None
+ 	local Err = quad.errorNamespace
+ 	local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
++	-- P-Q90 proto: the static seat is reached through `D.<Class> { … }` (and Claim/drive/State swaps —
++	-- see the probe); one fixed subject, the class cannot be named here
++	local SEAT_SUBJECT = "Declaration"
+ 
+ 	dispatch.addHandler({
+ 		name = "InstanceChild",
+@@ -61,7 +64,7 @@ local function install(quad: any)
+ 			-- corpse. Ownership starts explicitly: `Claim` or the Declaration. errorBefore so the
+ 			-- blame lands on the user's `D.<Class> { … }` line (dispatch depth, `H-330`).
+ 			if not quad.Backend.isClaimed(v) then
+-				Err.errorBefore("Quad0219 Declaration: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)", SURFACE)
++				Err.errorBefore("Quad0219 " .. SEAT_SUBJECT .. ": this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)", SURFACE)
+ 			end
+ 			-- round11 `H-545` (탐사 A′): the static seat had no twin of Slot's `H-500` cycle guard —
+ 			-- `src:Set(host)` made `host.Parent == host` in the mock, and on Roblox the engine's own
+@@ -73,11 +76,11 @@ local function install(quad: any)
+ 			local ancestor = inst
+ 			while ancestor ~= nil do
+ 				if ancestor == v then
+-					Err.errorBefore("Quad0220 Declaration: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)", SURFACE)
++					Err.errorBefore("Quad0220 " .. SEAT_SUBJECT .. ": cannot place an Instance inside itself or one of its own descendants (that would be a cycle)", SURFACE)
+ 				end
+ 				ancestor = ancestor.Parent
+ 			end
+-			if quad.Bookkeeping.claimOwnerAt(v, inst, k) then -- Q48 (a): one seat per value — raises if held elsewhere
++			if quad.Bookkeeping.claimOwnerAt(v, inst, k, SEAT_SUBJECT) then -- Q48 (a): one seat per value — raises if held elsewhere
+ 				quad.Bookkeeping.setOffsetSource(inst, k, None)
+ 				v.Parent = inst -- 물리 먼저(H-134 정정 (2)) — setLength 꼬리의 recompute가 부착 후에 돌게
+ 				quad.Bookkeeping.setLength(inst, k, 1, inst)
+diff --git a/quad-types/src/init.luau b/quad-types/src/init.luau
+index 62554d0..4799c9e 100644
+--- a/quad-types/src/init.luau
++++ b/quad-types/src/init.luau
+@@ -581,7 +581,7 @@ export type Bookkeeping = {
+ 	-- retractor에서 `releaseOwner(value, inst)`로 푼다. Slot의 원소·정적 자식·숏핸드 관리 자식이
+ 	-- 같은 레지스트리를 쓰며, 다른 자리가 이미 쥔 값은 `already mounted elsewhere`로 거부되고
+ 	-- 쥐인 동안 `q.dispose`도 거부된다. 반환 false = 정확히 같은 자리가 이미 쥐고 있음(재확인 no-op).
+-	claimOwnerAt: (element: any, inst: any, k: any) -> boolean,
++	claimOwnerAt: (element: any, inst: any, k: any, surface: string?) -> boolean,
+ 	releaseOwner: (element: any, ownerKey: any) -> (),
+ }
+ 

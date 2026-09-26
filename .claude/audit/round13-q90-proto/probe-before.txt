@@ -1,0 +1,61 @@
+--- Quad0160 (already mounted elsewhere)
+[160 D.Frame{c} again] blame=./quad-roblox/test/pq90.luau:35 | Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside q
+[160 D.Frame{c2,c2}] blame=./quad-roblox/test/pq90.luau:37 | Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside q
+[160 Slot element into D.Frame] blame=./quad-roblox/test/pq90.luau:39 | Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside q
+[160 same Slot mounted twice (D.Frame{s})] blame=./quad-roblox/test/pq90.luau:41 | Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside q
+[160 Dispatch.drive(f,{c})] blame=./quad-roblox/test/pq90.luau:43 | Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside q
+[160 Claim(root, M.Frame(M.Root)({c}))] blame=./quad-roblox/test/pq90.luau:45 | Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside q
+[160 seat:Set(c) (State swap)] blame=./quad-roblox/test/pq90.luau:47 | Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside q
+[160 q.Bookkeeping.claimOwnerAt direct] blame=./quad-roblox/test/pq90.luau:48 | Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside q
+[160 State<Slot> into second host] blame=./quad-roblox/test/pq90.luau:50 | Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside q
+--- Quad0219 (not claimed)
+[219 D.Frame{foreign}] blame=./quad-roblox/test/pq90.luau:54 | Quad0219 InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by a
+[219 Dispatch.drive(f,{foreign})] blame=./quad-roblox/test/pq90.luau:55 | Quad0219 InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by a
+[219 seat:Set(foreign)] blame=./quad-roblox/test/pq90.luau:57 | Quad0219 InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by a
+[219 Claim children foreign] blame=./quad-roblox/test/pq90.luau:58 | Quad0219 InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by a
+--- Quad0220 (cycle)
+[220 seat:Set(f) self] blame=./quad-roblox/test/pq90.luau:63 | Quad0220 InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)
+[220 seat:Set(host) ancestor] blame=./quad-roblox/test/pq90.luau:64 | Quad0220 InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)
+[220 Dispatch.drive(f,{host})] blame=./quad-roblox/test/pq90.luau:65 | Quad0220 InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)
+--- Quad0165~0167 (Slot gates)
+[165 destroyed :Add] blame=./quad-roblox/test/pq90.luau:71 | Quad0165 Slot: destroyed Slot cannot be reused
+[165 destroyed :Clear] blame=./quad-roblox/test/pq90.luau:71 | Quad0165 Slot: destroyed Slot cannot be reused
+[165 destroyed :Move] blame=./quad-roblox/test/pq90.luau:71 | Quad0165 Slot: destroyed Slot cannot be reused
+[165 destroyed :ExtractAll] blame=./quad-roblox/test/pq90.luau:71 | Quad0165 Slot: destroyed Slot cannot be reused
+[165 destroyed :List] blame=./quad-roblox/test/pq90.luau:73 | Quad0165 Slot: destroyed Slot cannot be reused
+[165 destroyed :Single] blame=./quad-roblox/test/pq90.luau:74 | Quad0165 Slot: destroyed Slot cannot be reused
+[166 :Add after :List] blame=./quad-roblox/test/pq90.luau:76 | Quad0166 Slot: manual CRUD is not allowed after :List/:Single
+[166 :Swap after :List] blame=./quad-roblox/test/pq90.luau:77 | Quad0166 Slot: manual CRUD is not allowed after :List/:Single
+[167 ancestor :Add mid-mount] blame=./quad-roblox/test/pq90.luau:81 | Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD 
+[167 ancestor :Clear mid-mount] blame=./quad-roblox/test/pq90.luau:85 | Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD 
+--- ⑤⑥ tails
+[094 Effect(5)] blame=./quad-roblox/test/pq90.luau:89 | Quad0094 Effect: fn must be a function
+[187 :Compute(5)] blame=./quad-roblox/test/pq90.luau:90 | Quad0187 State: Compute fn must be a function
+[188 :Gate(5)] blame=./quad-roblox/test/pq90.luau:91 | Quad0188 State: Gate setup must be a function (emit) -> onUpstreamEmit
+[190 :Observer(5)] blame=./quad-roblox/test/pq90.luau:92 | Quad0190 State: Observer fn must be a function (or nil for the always-observe utility)
+[191 :Apply({})] blame=./quad-roblox/test/pq90.luau:93 | Quad0191 State: Apply factory must be a function or an object with an __apply method
+[243 Tween Time='x'] blame=./quad-roblox/test/pq90.luau:94 | Quad0243 Tween: Time must be a number
+[244 Tween Reverses=1] blame=./quad-roblox/test/pq90.luau:95 | Quad0244 Tween: Reverses must be a boolean
+[245 Tween Dedup='x'] blame=./quad-roblox/test/pq90.luau:96 | Quad0245 Tween: Dedup must be a boolean
+[246 Tween Completed=1] blame=./quad-roblox/test/pq90.luau:97 | Quad0246 Tween: Completed must be a function
+[041 Debounce Time=-1] blame=./quad-roblox/test/pq90.luau:98 | Quad0041 Debounce: Time must be a non-negative number or a State<number> (got number)
+[041 Debounce Time=0/0] blame=./quad-roblox/test/pq90.luau:99 | Quad0041 Debounce: Time must be a non-negative number or a State<number> (got number)
+[041 Debounce Time='x'] blame=./quad-roblox/test/pq90.luau:100 | Quad0041 Debounce: Time must be a non-negative number or a State<number> (got string)
+[039 Debounce State Time -2 at emit] blame=./quad-roblox/test/pq90.luau:105 | Quad0039 Debounce: Time must be a non-negative number (got number)
+[216 setTimeout(-1)] blame=./quad-roblox/test/pq90.luau:107 | Quad0216 setTimeout: delay must be a non-negative number (got number)
+[216 setTimeout('x')] blame=./quad-roblox/test/pq90.luau:108 | Quad0216 setTimeout: delay must be a non-negative number (got string)
+--- Quad0076 hint arms
+[076 size=5 (case typo)] blame=./quad-roblox/test/pq90.luau:110 | Quad0076 Dispatch: no handler matched key size (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+[076 AbsoluteSize (read-only)] blame=./quad-roblox/test/pq90.luau:111 | Quad0076 Dispatch: no handler matched key AbsoluteSize (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+[076 Text on Frame (other class)] blame=./quad-roblox/test/pq90.luau:112 | Quad0076 Dispatch: no handler matched key Text (value: string) — check that the provider for this value (e.g. quad-roblox) is initialized
+[076 Parent] blame=./quad-roblox/test/pq90.luau:113 | Quad0076 Dispatch: no handler matched key Parent (value: table) — check that the provider for this value (e.g. quad-roblox) is initialized
+[076 method name Destroy] blame=./quad-roblox/test/pq90.luau:114 | Quad0076 Dispatch: no handler matched key Destroy (value: function) — check that the provider for this value (e.g. quad-roblox) is initialized
+[076 numeric key unbranded 5] blame=./quad-roblox/test/pq90.luau:115 | Quad0076 Dispatch: no handler matched key 1 (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+[076 Tag at string key (base brand)] blame=./quad-roblox/test/pq90.luau:116 | Quad0076 Dispatch: no handler matched key X (value: table, brand: Tag) — a quad value at a string key: it belongs in a numeric (array) slot
+[076 Modifier setter typo] blame=./quad-roblox/test/pq90.luau:117 | Quad0076 Dispatch: no handler matched key size (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+[076 base-only quad Size=5 (no provider handlers)] blame=./quad-roblox/test/pq90.luau:121 | Quad0076 Dispatch: no handler matched key Size (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+[076 base-only Dispatch.process(f,'Size',5)] blame=./quad-roblox/test/pq90.luau:123 | Quad0076 Dispatch: no handler matched key Size (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+[076 Ref at key Ref (doc core/07:61, how-to 10:105)] blame=./quad-roblox/test/pq90.luau:124 | Quad0137 Ref: must be an array item, not the value of a string key
+[076 Parent=Instance (GS 02:72)] blame=./quad-roblox/test/pq90.luau:125 | Quad0076 Dispatch: no handler matched key Parent (value: table) — check that the provider for this value (e.g. quad-roblox) is initialized
+[076 key 1 boolean (how-to 08:229)] blame=./quad-roblox/test/pq90.luau:126 | Quad0076 Dispatch: no handler matched key 1 (value: boolean) — check that the provider for this value (e.g. quad-roblox) is initialized
+[076? Ref at key X] blame=./quad-roblox/test/pq90.luau:127 | Quad0137 Ref: must be an array item, not the value of a string key

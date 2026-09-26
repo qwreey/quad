@@ -1,0 +1,47 @@
+# P-Q90 diff 3 (variant B, test.sh exit 0 with no spec change) — Quad0076 hint: string key + unbranded value + some handler declares keyType "string" -> typo/read-only/other-class hint, before the provider arm. Layered on diffs 1+2.
+# Variant A (the draft table order, no handler check) is 3-quad0076-hint-order.variantA.diff — breaks spec.dispatch:106.
+diff --git a/docs/reference/errors/02-dispatch-bookkeeping.md b/docs/reference/errors/02-dispatch-bookkeeping.md
+index dfc7c3e..2e40434 100644
+--- a/docs/reference/errors/02-dispatch-bookkeeping.md
++++ b/docs/reference/errors/02-dispatch-bookkeeping.md
+@@ -291,10 +291,10 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 
+ 
+ `Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}, brand: {brand})` + 꼬리 힌트 하나(+ nil 안내) — `quad-base/src/Dispatch/init.luau`
+ 
+-꼬리 힌트는 넷 중 하나입니다 — 값에 브랜드가 없거나 백엔드(프로바이더) 브랜드면 ` — check that the provider for this value (e.g. quad-roblox) is initialized`; quad-base 브랜드(`Slot`/`Ref`/`State`/`Tag`/`Attr`/`Context`/`Provider`/`MapperDescriptor` 등)이면 `Store`일 때 ` — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))`, 문자 키일 때 ` — a quad value at a string key: it belongs in a numeric (array) slot`, 숫자 키일 때 ` — this quad value has no handler at an array position`. 값이 `nil`이면 그 뒤에 ` (a nil at this depth may be an unwrapped None or a reactive nil — the key's own handler must accept nil)`이 더 붙습니다. `brand: …` 조각은 브랜드를 알아낼 수 있을 때만 들어갑니다.
++꼬리 힌트는 다섯 중 하나입니다 — 문자 키에 브랜드 없는 값이 왔고 문자 키를 받는 핸들러(프로바이더의 프로퍼티·이벤트 핸들러)가 설치돼 있으면 ` — not a writable property or event of this class (misspelled, read-only, or it belongs to another class?)`; 그 밖에 값에 브랜드가 없거나 백엔드(프로바이더) 브랜드면 ` — check that the provider for this value (e.g. quad-roblox) is initialized`; quad-base 브랜드(`Slot`/`Ref`/`State`/`Tag`/`Attr`/`Context`/`Provider`/`MapperDescriptor` 등)이면 `Store`일 때 ` — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))`, 문자 키일 때 ` — a quad value at a string key: it belongs in a numeric (array) slot`, 숫자 키일 때 ` — this quad value has no handler at an array position`. 값이 `nil`이면 그 뒤에 ` (a nil at this depth may be an unwrapped None or a reactive nil — the key's own handler must accept nil)`이 더 붙습니다. `brand: …` 조각은 브랜드를 알아낼 수 있을 때만 들어갑니다.
+ 
+ - **언제**: 그 값을 받아줄 핸들러가 하나도 없을 때. `noMatchMessage` 헬퍼가 만드는 문구이고, `Dispatch.process`의 매치 실패 raise가 이 헬퍼를 부릅니다.
+-- **고치려면**: 그 값을 다루는 프로바이더(quad-roblox 등)가 설치돼 있는지 확인하거나, 그 값을 올바른 종류의 키(숫자/문자) 자리에 놓으세요.
++- **고치려면**: 첫 힌트면 키 이름의 철자·대소문자, 읽기 전용 여부(`AbsoluteSize` 등), 그 클래스에 있는 프로퍼티인지 확인하세요. 그 밖엔 그 값을 다루는 프로바이더(quad-roblox 등)가 설치돼 있는지 확인하거나, 그 값을 올바른 종류의 키(숫자/문자) 자리에 놓으세요.
+ - **참고**: [`q.Dispatch.process(inst, key, value, index)`](../extend/02-dispatch-handler-contract.md#qdispatchprocessinst-key-value-index)
+ 
+ ### Quad0077
+diff --git a/quad-base/src/Dispatch/init.luau b/quad-base/src/Dispatch/init.luau
+index 0c5585b..fe44811 100644
+--- a/quad-base/src/Dispatch/init.luau
++++ b/quad-base/src/Dispatch/init.luau
+@@ -198,7 +198,22 @@ local function Init(module: any)
+ 		-- round11 `H-567` (탐사 G′ 6): a BASE brand (Slot/Ref/State…) can never be "provider not
+ 		-- initialized" — that hint only fits a provider brand or an unbranded value
+ 		local isBase = brand ~= nil and BASE_PROBE["is" .. brand] == true
+-		local hint = if not isBase
++		-- P-Q90 proto (variant B): an UNBRANDED value at a string key is the everyday
++		-- typo/read-only/other-class case — it used to fall into the provider arm. Only when some
++		-- handler DECLARES string keys (a provider's property/event handlers are installed): with
++		-- none, "provider not initialized" is still the right hint (spec.dispatch §2).
++		local stringKeyed = false
++		if brand == nil and type(k) == "string" then
++			for _, h in handlers do
++				if h.keyType == "string" then
++					stringKeyed = true
++					break
++				end
++			end
++		end
++		local hint = if stringKeyed
++			then " — not a writable property or event of this class (misspelled, read-only, or it belongs to another class?)"
++			elseif not isBase
+ 			then " — check that the provider for this value (e.g. quad-roblox) is initialized"
+ 			elseif brand == "Store" then " — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))" -- 탐사 I′ 3
+ 			elseif type(k) == "string" then " — a quad value at a string key: it belongs in a numeric (array) slot"

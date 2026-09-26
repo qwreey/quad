@@ -1,0 +1,61 @@
+diff --git a/quad-base/test/spec.modifier.luau b/quad-base/test/spec.modifier.luau
+index ee252b0..b49d9da 100644
+--- a/quad-base/test/spec.modifier.luau
++++ b/quad-base/test/spec.modifier.luau
+@@ -398,7 +398,7 @@ do
+ 	local ok, err = pcall(function()
+ 		return q.Source(1):Apply(mod)
+ 	end)
+-	assert(not ok and string.find(tostring(err), "State: Apply factory must be a function or an object with an __apply method", 1, true) ~= nil, tostring(err))
++	assert(not ok and string.find(tostring(err), "State:Apply: factory must be a function or an object with an __apply method", 1, true) ~= nil, tostring(err))
+ 	assert(type(mod.Size) == "function", "ordinary names still get setters")
+ 	local okc, errc = pcall(function()
+ 		return Modifier({ __apply = 5 })
+diff --git a/quad-base/test/spec.state.luau b/quad-base/test/spec.state.luau
+index 44488ec..268da61 100644
+--- a/quad-base/test/spec.state.luau
++++ b/quad-base/test/spec.state.luau
+@@ -369,7 +369,7 @@ do
+ 	local ok4, err4 = pcall(function()
+ 		(s :: any):Compute(42)
+ 	end)
+-	assert(not ok4 and string.find(tostring(err4), "Compute fn must be a function", 1, true) ~= nil, "non-function fn: " .. tostring(err4))
++	assert(not ok4 and string.find(tostring(err4), "Compute: fn must be a function", 1, true) ~= nil, "non-function fn: " .. tostring(err4))
+ 	assert(string.find(tostring(err4), "spec.state.luau", 1, true) ~= nil, "points at the caller")
+ 	print("PASS")
+ end
+diff --git a/quad-base/test/spec.storebind.luau b/quad-base/test/spec.storebind.luau
+index f527ab0..9ec6c87 100644
+--- a/quad-base/test/spec.storebind.luau
++++ b/quad-base/test/spec.storebind.luau
+@@ -263,7 +263,7 @@ do
+ 	local ok, err = pcall(function()
+ 		q.Dispatch.drive(Instance.new("Frame"), { a })
+ 	end)
+-	assert(not ok and string.find(tostring(err), "StoreBind: the State's value chain is circular", 1, true) ~= nil, tostring(err))
++	assert(not ok and string.find(tostring(err), "State: the value chain is circular", 1, true) ~= nil, tostring(err))
+ 	assert(string.find(tostring(err), "stack overflow", 1, true) == nil and string.find(tostring(err), "Brand.luau", 1, true) == nil, "no leaf blame: " .. tostring(err))
+ 	local s = q.Source(nil :: any)
+ 	s:Set(s)
+diff --git a/quad-roblox/test/spec.handlers.luau b/quad-roblox/test/spec.handlers.luau
+index 41eed79..86d2fdb 100644
+--- a/quad-roblox/test/spec.handlers.luau
++++ b/quad-roblox/test/spec.handlers.luau
+@@ -256,7 +256,7 @@ do
+ 	local foreign, owned = Instance.new("TextLabel"), Instance.new("TextLabel")
+ 	q.Backend.nativeClaim(owned)
+ 	local ok, err = pcall(function() return q.Declaration.Frame({ foreign }) end)
+-	assert(not ok and string.find(tostring(err), "InstanceChild: this Instance is not claimed by quad", 1, true) ~= nil, "unclaimed static child rejected: " .. tostring(err))
++	assert(not ok and string.find(tostring(err), "Declaration: this Instance is not claimed by quad", 1, true) ~= nil, "unclaimed static child rejected: " .. tostring(err))
+ 	assert(foreign.Parent == nil, "no bookkeeping/parenting happened before the raise")
+ 	mock.assertBlamesUser(err, "spec.handlers.luau", "static-child gate blames the D.Frame line")
+ 	local f = q.Declaration.Frame({ owned }) :: any
+@@ -347,7 +347,7 @@ do
+ 	local f = q.Declaration.Frame({ seat }) :: any
+ 	f.Parent = host
+ 	local ok, err = pcall(function() seat:Set(f) end)
+-	assert(not ok and string.find(tostring(err), "InstanceChild: cannot place an Instance inside itself", 1, true) ~= nil, "self: " .. tostring(err))
++	assert(not ok and string.find(tostring(err), "Declaration: cannot place an Instance inside itself", 1, true) ~= nil, "self: " .. tostring(err))
+ 	local ok2, err2 = pcall(function() seat:Set(host) end)
+ 	assert(not ok2 and string.find(tostring(err2), "cannot place an Instance inside itself or one of its own descendants", 1, true) ~= nil, "ancestor: " .. tostring(err2))
+ 	assert(f.Parent == host and host.Parent == nil, "tree untouched")

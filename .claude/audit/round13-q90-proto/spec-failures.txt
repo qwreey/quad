@@ -1,0 +1,30 @@
+P-Q90 — spec assertions that pin the OLD wording (scratch copy of b2af1510; each spec aborts at its first
+failure, so the list was found iteratively: patch the failing line in the copy, rerun test.sh until exit 0).
+Baseline copy: test.sh exit 0.
+
+diff 1 (①0070/0219/0220 + ⑤ + ⑥) alone: test.sh exit 1 -> 5 assertion lines (all fixed in 1-b-scope-17.spec.diff, then exit 0)
+  quad-base/test/spec.modifier.luau:401    "State: Apply factory must be a function or an object with an __apply method"   (Quad0191 subject State: -> State:Apply:)
+  quad-base/test/spec.state.luau:372       "Compute fn must be a function"                                                 (Quad0187 -> "Compute: fn must be")
+  quad-base/test/spec.storebind.luau:266   "StoreBind: the State's value chain is circular"                                (Quad0070)
+  quad-roblox/test/spec.handlers.luau:259  "InstanceChild: this Instance is not claimed by quad"                           (Quad0219)
+  quad-roblox/test/spec.handlers.luau:350  "InstanceChild: cannot place an Instance inside itself"                         (Quad0220; reached via seat:Set(f) — a State swap, not a Declaration call)
+  not failing (substring still matches): spec.effect:52 "fn must be a function"; spec.tween:67-74,181 / spec.animate:88,102,123 /
+  spec.tweenproperty:205 "<X> must be a number|boolean|function" (tail appended after); spec.debounce "non-negative"; spec.handlers:352.
+  error-codes check: 248 ids, 242 raise sites, 0 untagged, 0 errors. No spec asserts any new (got …) tail.
+
+diff 2 (surface arg) on top: test.sh exit 1 -> 2 assertion lines (fixed in 2-surface-arg.spec.diff, then exit 0)
+  quad-base/test/spec.slot.luau:1151       "Slot: cannot mutate a Slot while it is being mounted"   (Quad0167 -> "Slot:Add: cannot mutate …")
+  quad-roblox/test/spec.handlers.luau:275  "Bookkeeping.claimOwnerAt: this element is already mounted elsewhere"   (Quad0160 -> "Declaration: …")
+  not failing: spec.handlers:281,288 / spec.shorthand:158 ("already mounted elsewhere"), spec.slot:1163,1197 ("while it is being mounted"),
+  spec.handlers:366-373 (direct q.Bookkeeping.claimOwnerAt arg checks 0157~0159 — untouched).
+
+diff 3 on top:
+  variant A (draft table order — unbranded + string key before the provider arm, unconditionally): test.sh exit 1 -> 1 line
+    quad-base/test/spec.dispatch.luau:106  "provider"  (base-only quad, Dispatch.process(inst, "Size", 5, 1): no provider handlers installed,
+                                                         the provider hint is the RIGHT one there — variant A turns it into the typo hint)
+    with that line patched: exit 0, no further hidden failures.
+  variant B (same, but only when some handler declares keyType "string"): test.sh exit 0, no spec change.
+
+Final copy (1+2+3B + spec companions): test.sh exit 0 (luau-analyze, luau-lsp new solver both groups, gen-d check,
+doc-coverage, type-surface-check, error-codes check, check-version all clean). doc-check ERROR 0; WARN delta vs the
+original tree is only from round13.md having moved on after the copy (unrelated).

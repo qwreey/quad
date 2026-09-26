@@ -56,7 +56,7 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 평범한 `Ref`도 같은 가드를 갖습니다(3.2.0부터) — 문자 키에 두면 `Quad0137 Ref: must be an array item, not the value of a string key`. 숫자 키 자리에 닿기만 하면 되므로 `Source`/`Store` 값에 담아 넣어도 그대로 채워지는 것은 `Ref`만이고, `PreRef`/`PostRef`는 State에 담아 숫자 키에 넣어도 `Quad0136`으로 거부됩니다(위 문단).
 
 - Modifier 필드 — `Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`
-- 아무 핸들러도 맡지 않는 문자 키 — `Quad0076 Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}, brand: Ref) — check that the provider for this value (e.g. quad-roblox) is initialized`
+- 문자 키(어느 이름이든) — `Quad0137 Ref: must be an array item, not the value of a string key`(3.2.0부터 — 그 전엔 `Quad0076`의 프로바이더 안내가 나왔습니다)
 - 반영 프로퍼티 키 — 생성된 props 타입이 그 값 자리에서 `Ref`를 거부합니다.
 
 하나의 `Ref`는 **한 자리에만** 놓을 수 있습니다. 생명주기 결합이 그 자리에서 던집니다 — 같은 인스턴스의 두 자리면 `Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)`, 다른 인스턴스면 `Quad0233 bindLifetime: value is already bound to another Instance`(이 두 문구는 quad-base의 것이라 어느 백엔드에서나 같습니다).

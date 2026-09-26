@@ -1,0 +1,30 @@
+diff --git a/quad-base/src/Dispatch/init.luau b/quad-base/src/Dispatch/init.luau
+index 0c5585b..a791710 100644
+--- a/quad-base/src/Dispatch/init.luau
++++ b/quad-base/src/Dispatch/init.luau
+@@ -198,7 +198,11 @@ local function Init(module: any)
+ 		-- round11 `H-567` (탐사 G′ 6): a BASE brand (Slot/Ref/State…) can never be "provider not
+ 		-- initialized" — that hint only fits a provider brand or an unbranded value
+ 		local isBase = brand ~= nil and BASE_PROBE["is" .. brand] == true
+-		local hint = if not isBase
++		-- P-Q90 proto (variant A — the draft table's order): an UNBRANDED value at a string key is
++		-- the everyday typo/read-only/other-class case — it used to fall into the provider arm
++		local hint = if brand == nil and type(k) == "string"
++			then " — not a writable property or event of this class (misspelled, read-only, or it belongs to another class?)"
++			elseif not isBase
+ 			then " — check that the provider for this value (e.g. quad-roblox) is initialized"
+ 			elseif brand == "Store" then " — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))" -- 탐사 I′ 3
+ 			elseif type(k) == "string" then " — a quad value at a string key: it belongs in a numeric (array) slot"
+diff --git a/quad-base/test/spec.dispatch.luau b/quad-base/test/spec.dispatch.luau
+index f68825a..ca56ad0 100644
+--- a/quad-base/test/spec.dispatch.luau
++++ b/quad-base/test/spec.dispatch.luau
+@@ -103,7 +103,7 @@ do
+ 	local msg = tostring(err)
+ 	assert(string.find(msg, "no handler matched", 1, true) ~= nil, `message says no handler matched: {msg}`)
+ 	assert(string.find(msg, "number", 1, true) ~= nil, `message carries typeof(v): {msg}`)
+-	assert(string.find(msg, "provider", 1, true) ~= nil, `message points at provider init: {msg}`)
++	assert(string.find(msg, "not a writable property", 1, true) ~= nil, `message points at provider init: {msg}`)
+ 
+ 	-- 브랜드 예시는 Blocker — Source는 M4부터 내장 StoreBind에 항상 매치돼
+ 	-- "핸들러 없는 브랜드 값"이 될 수 없다(언랩된 실제값이 대신 실패한다 —
