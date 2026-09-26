@@ -1,0 +1,8 @@
+newBase	nil	false	Quad0076	nil-tail:	true
+newBase	None	false	Quad0076	nil-tail:	true
+newBase	State(nil)	false	Quad0076	nil-tail:	true
+newBase	number	false	Quad0076	nil-tail:	false
+newProv	nil	false	Quad0076	nil-tail:	true
+newProv	None	false	Quad0076	nil-tail:	true
+newProv	State(nil)	false	Quad0076	nil-tail:	true
+newProv	number	false	Quad0076	nil-tail:	false

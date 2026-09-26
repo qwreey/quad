@@ -1,0 +1,70 @@
+== (a) tie determinism ==
+a1 six tied handlers, three fresh modules:	U5,U3,U1,U2,U4,U6	U5,U3,U1,U2,U4,U6	U5,U3,U1,U2,U4,U6	identical:	true
+a2 tie order of U1..U6 after each unrelated registration:
+   	0	U5,U3,U1,U2,U4,U6
+   	1	U3,U6,U5,U4,U1,U2
+   	2	U2,U3,U1,U5,U4,U6
+   	3	U4,U6,U5,U3,U1,U2
+   	4	U1,U2,U3,U6,U5,U4
+   	5	U4,U5,U6,U1,U2,U3
+a2 getHandler winner now:	U4
+a3 top-priority ties: 47, winner = earliest registered in 26 (55%)
+Dispatch.addHandler: handler priority tie between "NoneHandler" (priority 1000) and "UHigh" (priority 1000) — ties have no defined order; offset from a HANDLER_PRIORITY_* band
+Dispatch.addHandler: handler priority tie between "UA" (priority 7) and "UB" (priority 7) — ties have no defined order; offset from a HANDLER_PRIORITY_* band
+Dispatch.addHandler: handler priority tie between "UA" (priority 7) and "UC" (priority 7) — ties have no defined order; offset from a HANDLER_PRIORITY_* band
+Dispatch.addHandler: handler priority tie between "UB" (priority 7) and "UStr" (priority 7) — ties have no defined order; offset from a HANDLER_PRIORITY_* band
+Dispatch.addHandler: handler priority tie between "UC" (priority 7) and "UNum" (priority 7) — ties have no defined order; offset from a HANDLER_PRIORITY_* band
+a4 None at 'Foo' tie NoneHandler vs UHigh -> winner:	NoneHandler	 order:	NoneHandler,RefLeafHandler,ProcessedModifierHandler,ProcessedPostRefHandler,UHigh,StoreBind,ProcessedPreRefHandler,EffectLeafHandler,ObserverLeafHandler,NilHandler,SlotHandler
+a4 tie registered while debug=false, later debug=true + untied registration -> prints:	0
+== (b) competition with built-ins ==
+b1 D.Frame{Size = ref, Foo = ref} with user HIGH+1 Ref catcher:	true		caught Foo,caught Size
+b2 user NORMAL vs Property NORMAL on 'Size' -> winner:	Property	(order:	InstanceChild,Property,UNormal)
+b3 user HIGH+1 None handler:	UNone@1
+b4 user HIGH+1 State catcher:	UState@1
+b5 user FALLBACK vs SlotDynamicPathGuard (FALLBACK) -> winner:	SlotDynamicPathGuard
+b6 user LOW on 'Size' hits:	0
+== (c) retractFrom index = chain depth ==
+c1 W(W(5)):	Pw@1 Pw@2 P5@3
+c2 retractFrom(…, 2):	R5@3(next=nil,true) Rw@2(true)
+c3 then W(6) at 1 (A branch, rebuild depth 2):	Rw@1(false) Pw@1 P6@2
+c4 retractFrom beyond tail (5):	no-op
+c5 retractFrom(…, 0):	Quad0073  | Quad0073 Dispatch.retractFrom: index must be a positive integer (got 0)
+c6 retractFrom(…, 1.5):	Quad0073  | Quad0073 Dispatch.retractFrom: index must be a positive integer (got 1.5)
+c7 retractFrom key with no chain:	ok
+c8 cond-wrapper {c=7} then {c='stop'}:	Pc(7)@1 P7@2 Rc@1(false) Pc(stop)@1
+c8 final retract (depth-2 leaf 7 still there?):	R7@2(next=nil,true) Rc@1(true)
+c9 array key 2 chain retract:	Pw@1 P8@2 R8@2(next=nil,true) Rw@1(true)
+== (d) process return values ==
+d returns nil: process Quad0077 Quad0077 Dispatch: handler "URet" (priority 5) returned no retractor at key Foo, index 1 � | reprocess Quad0077 Quad0077 Dispatch: handler "URet" (priority 5) returned no retractor at key Foo, index 1 � | retract ok | retract again ok
+d returns true: process ok | reprocess RAW:./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:353: attempt to call a boolean value ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau | retract RAW:./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:240: attempt to call a boolean value ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau | retract again RAW:./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:240: attempt to call a boolean value ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau
+d returns number: process ok | reprocess RAW:./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:353: attempt to call a number value ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau | retract RAW:./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:240: attempt to call a number value ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau | retract again RAW:./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:240: attempt to call a number value ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau
+d returns table: process ok | reprocess RAW:./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:353: attempt to call a table value ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau | retract RAW:./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:240: attempt to call a table value ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau | retract again RAW:./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:240: attempt to call a table value ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau
+d returns callable table: process ok | reprocess ok | retract ok | retract again ok
+d returns q.Void: process ok | reprocess ok | retract ok | retract again ok
+== (e) retractor throws ==
+e1 retractFrom 1 (depth-2 retractor throws):	RAW:RETRACT-BOOM  | RETRACT-BOOM
+   log:	Rbad@2
+e2 retractFrom 1 again:	RAW:RETRACT-BOOM  | RETRACT-BOOM
+   log:	Rbad@2
+e3 process 'ok' at depth 1 (B: retract tail first):	RAW:RETRACT-BOOM  | RETRACT-BOOM
+   log:	Rbad@2
+== (f) addHandler gates ==
+f1 priority '5' (string):	Quad0079  | Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got table)
+f2 priority NaN:	Quad0080  | Quad0080 Dispatch.addHandler: priority must be a finite number (got nan)
+f3 priority inf:	Quad0080  | Quad0080 Dispatch.addHandler: priority must be a finite number (got inf)
+f4 priority nil:	Quad0079  | Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got table)
+f5 keyType 'Number':	Quad0081  | Quad0081 Dispatch.addHandler: keyType must be "number", "string" or nil (got Number)
+f6 keyType 1:	Quad0081  | Quad0081 Dispatch.addHandler: keyType must be "number", "string" or nil (got 1)
+f7 keyType 'boolean':	Quad0081  | Quad0081 Dispatch.addHandler: keyType must be "number", "string" or nil (got boolean)
+f8 isHandlable callable table:	Quad0079  | Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got table)
+f9 name = 5 (non-string):	ok
+f10 name = {} (table):	ok
+f11 same table twice + same name different table: registry grew by	2	(expect 2)
+f12 Mover priority -5 -> 50 then re-addHandler: winner	Other	(sorted order would give Mover)
+f13 re-add after keyType = 'bogus':	ok
+   winner for 'Zed' now:	Other
+f14 keyType 'number' + string-key predicate: getHandler 'Mis' ->	nil
+f15 handler registered mid-scan: first scan ->	Registrar	 next scan ->	Late
+== (h) before any provider (bare Quad.New()) ==
+h1 process on a mock inst with no backend:	Quad0108  | Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+h2 getHandler with no backend:	ok

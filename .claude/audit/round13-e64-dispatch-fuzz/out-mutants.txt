@@ -1,0 +1,8 @@
+mode=base mutant=stable seeds=2000 ops=71038 diffs=319 userProcess=34977 ties(user-involved pairs)=25006 sameHandlerA=9475 poisonedKeys=0 listHandlersUnsorted=0 time=1.3s
+mode=prov mutant=stable seeds=2000 ops=65732 diffs=483 userProcess=30375 ties(user-involved pairs)=30421 sameHandlerA=11429 poisonedKeys=0 listHandlersUnsorted=0 time=1.5s
+mode=base mutant=noA seeds=2000 ops=39355 diffs=1579 userProcess=14567 ties(user-involved pairs)=25006 sameHandlerA=0 poisonedKeys=0 listHandlersUnsorted=0 time=1.0s
+mode=prov mutant=noA seeds=2000 ops=40363 diffs=1533 userProcess=14368 ties(user-involved pairs)=30421 sameHandlerA=0 poisonedKeys=0 listHandlersUnsorted=0 time=1.3s
+mode=base mutant=retractHead seeds=2000 ops=66096 diffs=976 userProcess=29955 ties(user-involved pairs)=25006 sameHandlerA=8019 poisonedKeys=0 listHandlersUnsorted=0 time=1.3s
+mode=prov mutant=retractHead seeds=2000 ops=66254 diffs=974 userProcess=29317 ties(user-involved pairs)=30421 sameHandlerA=10869 poisonedKeys=0 listHandlersUnsorted=0 time=1.5s
+mode=base mutant=noNoop seeds=2000 ops=77408 diffs=151 userProcess=40112 ties(user-involved pairs)=25006 sameHandlerA=9925 poisonedKeys=0 listHandlersUnsorted=0 time=1.3s
+mode=prov mutant=noNoop seeds=2000 ops=77777 diffs=119 userProcess=38914 ties(user-involved pairs)=30421 sameHandlerA=12639 poisonedKeys=0 listHandlersUnsorted=0 time=1.5s

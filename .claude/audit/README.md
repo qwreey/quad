@@ -82,4 +82,5 @@
 - `round13-e60-store-fuzz/` — **[2026-09-27 자율 루프 E60]** `q.Store` 차등 퍼저(`fuzz.luau` 규칙 17·2만 시드·`axes.luau` X1~X9·`types-probe*`·`perf-gc`) — 차등 0, `H-806`, `Q147`.
 - `round13-e62-perf-recheck/` — **[2026-09-27 자율 루프 E62]** CLI 성능 P1~P6 재측정(기준선 두 sha vs HEAD, `agg.py`·`run.sh`·`raw/` 90여 출력·`bench.e62focus`) — 회귀 0, `H-808`(REPORT sha 부재·14KB 재현 안 됨).
 - `round13-e63-deps-fuzz/` — **[2026-09-27 자율 루프 E63]** 의존성 집합 계약 퍼저(규칙 18·10만 시드·축 A1~A20·`types-pos`·`out-lifecycle-ids`) — 차등 0, `H-809`.
+- `round13-e64-dispatch-fuzz/` — **[2026-09-27 자율 루프 E64]** `q.Dispatch` 핸들러 계약 차등 퍼저(규칙 15·5만 시드·`axes.luau` a~i·`out-p0-list`) — 차등 0, `H-810`, `Q148`(`0077` 게이트 구멍).
 

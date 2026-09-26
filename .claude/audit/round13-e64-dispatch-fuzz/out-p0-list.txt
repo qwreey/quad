@@ -1,0 +1,47 @@
+bands	1000	0	-1000	-1000000
+-- base+mock backend
+1	NoneHandler	1000	nil
+2	RefLeafHandler	1000	number
+3	EffectLeafHandler	1000	number
+4	StoreBind	1000	nil
+5	ProcessedModifierHandler	1000	nil
+6	ProcessedPostRefHandler	1000	nil
+7	NilHandler	1000	number
+8	ObserverLeafHandler	1000	number
+9	SlotHandler	1000	number
+10	ProcessedPreRefHandler	1000	nil
+11	PostRefDynamicPathGuard	-1000000	nil
+12	TagFallbackHandler	-1000000	number
+13	RefDynamicPathGuard	-1000000	nil
+14	ObserverDynamicPathGuard	-1000000	nil
+15	EffectDynamicPathGuard	-1000000	nil
+16	PreRefDynamicPathGuard	-1000000	nil
+17	SlotDynamicPathGuard	-1000000	nil
+18	AttrKeyFallbackHandler	-1000000	nil
+19	AttrGroupFallbackHandler	-1000000	number
+-- quad-roblox provider
+1	NoneHandler	1000	nil
+2	NilHandler	1000	number
+3	ObserverLeafHandler	1000	number
+4	StoreBind	1000	nil
+5	SlotHandler	1000	number
+6	ProcessedModifierHandler	1000	nil
+7	ProcessedPreRefHandler	1000	nil
+8	ProcessedPostRefHandler	1000	nil
+9	RefLeafHandler	1000	number
+10	EffectLeafHandler	1000	number
+11	InstanceShorthand	1	string
+12	InstanceChild	0	number
+13	Property	0	string
+14	Event	-1	string
+15	OnChange	-1	number
+16	RefDynamicPathGuard	-1000000	nil
+17	SlotDynamicPathGuard	-1000000	nil
+18	AttrKeyFallbackHandler	-1000000	nil
+19	AttrGroupFallbackHandler	-1000000	number
+20	PostRefDynamicPathGuard	-1000000	nil
+21	PreRefDynamicPathGuard	-1000000	nil
+22	ObserverDynamicPathGuard	-1000000	nil
+23	EffectDynamicPathGuard	-1000000	nil
+24	TagFallbackHandler	-1000000	number
+q.addProcessedHandler?	nil	nil

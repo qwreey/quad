@@ -89,7 +89,7 @@ export type Handler = {
 | `NORMAL + 1` | `InstanceShorthand`(`UICorner` 등 특수 키) |
 | `NORMAL` | 백엔드의 실제 일 — `Property`, `InstanceChild` |
 | `NORMAL - 1` | `Event`, `OnChange`(`Property`/`InstanceChild`와 서로소 술어라 순서가 문제되진 않지만, 동률 미정의 순서를 피하려고 한 밴드 내려 앉힙니다) |
-| `FALLBACK` | base가 알고리즘을 소유하고 효과만 주입받는 것 — `TagFallbackHandler`, `AttrKeyFallbackHandler`, `AttrGroupFallbackHandler`(§5); 그리고 동적 경로로 온 `Ref`/`Observer`/`Effect`를 즉시 거부하는 가드 셋 |
+| `FALLBACK` | base가 알고리즘을 소유하고 효과만 주입받는 것 — `TagFallbackHandler`, `AttrKeyFallbackHandler`, `AttrGroupFallbackHandler`(§5); 그리고 동적 경로로 온 `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`을 즉시 거부하는 가드 여섯([2026-09-27 레지스트리 실측]) |
 
 **base 소속이라고 전부 위에 오는 게 아닙니다.** `StoreBind`는 프로퍼티 세터보다 먼저
 매치돼야 반응형 값이 언랩되므로 `HIGH`고, `Tag`/`Attr`는 백엔드가 통째로 다르게

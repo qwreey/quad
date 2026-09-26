@@ -1,0 +1,14 @@
+g1 process State('nope'):	false	Quad0076 Dispatch: no handler matched key Foo (value: string) — check that the provider for this value (e.g. quad-roblox) is initialized
+g1 after throw, src:Set(1):	true		log:	
+g1 after GC, src:Set(2):	true	log:	
+g1 process 5 at Foo:	true	log:	P 5 @1
+g1 src:Set(3) after Foo replaced:	true	log:	
+g2 process State(13) at Bar:	false	log:	P 13 @2
+g2 src2:Set(4):	true		log:	
+g2 src2:Set(6):	true	log:	
+g2 retractFrom Bar 1:	true	log:	
+g2 src2:Set(7) after retract:	true	log:	
+g3 healthy bind, Set('x') ->	false	Quad0076	log:	P 1 @2
+g3 then Set(9) ->	true		log:	R next=9 retracting=false | P 9 @2
+g3 retract:	true	R next=nil retracting=true
+g3 Set(10) after retract ->	true	
