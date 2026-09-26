@@ -114,7 +114,7 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 `{what}: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances` — `quad-base/src/ModuleIdentity.luau`
 
 - **언제**: 한 quad 모듈 인스턴스가 만든 Observer·Effect·Slot·State를 다른 인스턴스의 트리 자리(숫자 키, 프로퍼티 값, `:List`의 데이터, `Slot`의 원소 자리 등)에 놓았을 때. `{what}`은 그 값이 놓인 자리를 가리키는 이름(`"Observer"`/`"Slot"` 등)입니다.
-- **고치려면**: 값을 만든 인스턴스와 놓는 인스턴스를 같게 맞추세요 — 여러 `quad-base` 사본이 섞이지 않았는지도 확인하세요.
+- **고치려면**: 값을 만든 인스턴스와 놓는 인스턴스를 같게 맞추세요. 메시지의 "a second quad_base copy" 갈래는 실제로는 이 에러로 오지 않습니다 — 사본이 다르면 브랜드가 갈려 `isState`류가 거짓이라 `Quad0076`(빗나간 프로바이더 안내)·`Quad0240`·`Quad0151`류가 납니다([2026-09-27 기준]).
 - **참고**: [`q.New()`](/reference/core/01-quad-module/#qnew)
 
 ### Quad0108

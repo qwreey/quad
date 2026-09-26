@@ -81,7 +81,7 @@ local n = 0     -- 이쪽은 바뀔 수 있다
 
 `require(quad-base)`가 돌려주는 값은 이미 만들어진 기본 모듈 인스턴스이고, Roblox의 `require` 캐시 덕에 **어느 ModuleScript에서 require해도 같은 하나(싱글턴)**입니다. `UseProvider`는 그 싱글턴에 백엔드를 설치하는 것이라, **여러 모듈이 각자 `Quad:UseProvider(QuadRoblox)`를 불러도 됩니다** — 같은 프로바이더면 두 번째부터는 아무 일도 하지 않고(멱등), 다른 프로바이더를 넘길 때만 에러입니다.
 
-이 설정 모듈이 **싱글턴을 그대로 쓴다**는 점이 중요합니다. 같은 게임에 quad를 쓰는 다른 코드(다른 라이브러리, 다른 팀의 화면)가 자기 자리에서 또 `Quad:UseProvider(QuadRoblox)`를 불러도 같은 프로바이더라 아무 일도 안 일어나고, 그쪽이 만든 `State`와 여기서 만든 `State`는 같은 모듈의 것이라 섞어 쓸 수 있습니다.
+이 설정 모듈이 **싱글턴을 그대로 쓴다**는 점이 중요합니다. 같은 게임에 quad를 쓰는 다른 코드(다른 라이브러리, 다른 팀의 화면)가 자기 자리에서 또 `Quad:UseProvider(QuadRoblox)`를 불러도 같은 프로바이더라 아무 일도 안 일어나고, 그쪽이 만든 `State`와 여기서 만든 `State`는 같은 모듈의 것이라 섞어 쓸 수 있습니다. 단, 그 라이브러리가 **같은 설치본의** `quad_base`/`quad_roblox`로 해석될 때 이야기입니다 — `quad_roblox`만 다른 사본이면 늦게 로드된 쪽이 `Quad0213`으로 막히고, `quad_base` 사본이 다르면 값이 아예 섞이지 않습니다([모듈 레퍼런스](/reference/core/01-quad-module/)).
 
 </details>
 

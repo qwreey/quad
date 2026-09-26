@@ -570,7 +570,7 @@ dispose: (value: any) -> ()
 - `Quad0178 dispose: value must not be nil`
 - `Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key)`
 - `Quad0180 dispose: this backend cannot dispose this value`
-- `Quad0106 dispose: this value was made by another quad module instance …` — 다른 quad 인스턴스가 만든 `Slot`/`State`(`q.New()`를 따로 부른 코드나 `quad_base` 사본이 둘인 프로젝트).
+- `Quad0106 dispose: this value was made by another quad module instance …` — 다른 quad 인스턴스가 만든 `Slot`/`State`(`q.New()`를 따로 부른 코드 — `quad_base` 사본이 둘인 프로젝트는 브랜드가 갈려 이 에러 대신 `Quad0180`/`Quad0240`류가 납니다).
 
 **소유는 검사하지 않습니다.** `dispose`의 계약은 "이 값을 지워도 quad의 부기가 깨지지 않는가"이지 "우리가 만든 값인가"가 아닙니다 — 그래서 `Instance.new`나 `:Clone()`으로 만들어 어느 자리에도 놓지 않은 Instance도 지웁니다. 다른 quad 인스턴스가 자기 자리에 앉힌 Instance는 이쪽 부기에 없어 거부되지 않으니, 인스턴스끼리 값을 섞지 마세요([`q` 모듈](/reference/core/01-quad-module/)의 교차 인스턴스 규칙 — 정의되지 않은 동작).
 

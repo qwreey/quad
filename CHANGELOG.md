@@ -95,7 +95,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 - `slot:List`의 `data`에 배열이 아닌 테이블(id로 키잉한 맵, 디코드한 JSON 오브젝트, 해시 키가 섞인 배열)을 주면 에러 없이 목록이 통째로 비워지고 원소가 파괴되던 것 — 이제 `Slot:List: data must be a plain array — key "…" is not an array position`으로 거부하고 아무것도 건드리지 않습니다(생성자 `initial`과 같은 규칙). `updateFn`이 `q.KeyGone`을 돌려주면(`nil` 대신) 안내 문구로 거부합니다.
 - 서로를 담은 `State` 사슬(`a:Set(b); b:Set(a)`, `s:Set(s)`)을 자리에 놓으면 내부 파일을 가리키는 stack overflow로 죽던 것 — 이제 `StoreBind: the State's value chain is circular …`입니다.
 - Roblox 기본 Deferred 시그널 모드에서, 인스턴스가 파괴된 뒤 **같은 프레임 안에** 같은 `Effect`/훅 핸들을 다른 인스턴스에 다시 놓으면(행 캐시가 핸들을 재사용하는 목록) 옛 인스턴스의 지연된 Destroying 콜백이 새 바인딩을 끊어 cleanup이 살아 있는 인스턴스에서 돌고 그 뒤 fn이 영영 다시 안 돌던 것 — 이제 더 이상 자기 것이 아닌 바인딩의 콜백은 무시됩니다.
-- 모듈에 `is`로 시작하는 평범한 헬퍼(`q.isEmpty`, 인자를 무시하는 플러그인 `isMobile`)가 얹히면 그 뒤로 모든 `D.<Class>{}`가 `Dispatch.drive: props must be a plain { ... } table …`로 죽던 것 — 브랜드 술어답지 않은 함수(빈 테이블·비테이블에 `true`)는 브랜드 스캔에서 걸러냅니다.
+- 모듈에 `is`로 시작하는 평범한 헬퍼(`q.isEmpty`, 인자를 무시하는 플러그인 `isMobile`)가 얹히면 그 뒤로 모든 `D.<Class>{}`가 `Dispatch.drive: props must be a plain { ... } table …`로 죽던 것 — 브랜드 술어답지 않은 함수(빈 테이블 `{}`이나 숫자 `0`에 `true`를 돌려주는 것)는 브랜드 스캔에서 걸러냅니다 — 비어 있지 않은 테이블에만 `true`를 주는 헬퍼(`isNonEmptyList` 등)는 여전히 걸리니 모듈 표면의 `is*` 이름은 브랜드 술어에만 쓰세요.
 - `PreRef`/`PostRef`를 문자 키나 State에 담아 잘못 놓았을 때의 에러 주어가 설치한 백엔드에 따라 `Ref:`로 나오기도 하던 것 — 이제 항상 실제 종류(`PreRef:`/`PostRef:`)로 나옵니다.
 - `tostring(store)`가 `rawset`으로 넣은 숫자 키가 섞여 있으면 "attempt to compare string < number"로 던지던 것 — 이제 키를 문자열로 비교해 항상 찍힙니다.
 - `Context`/`Provider` 값을 `Declaration` 자리에 잘못 놓으면 "프로바이더가 초기화됐는지 확인하라"는 엉뚱한 안내가 붙던 것 — 이제 다른 quad-base 값과 같은 위치 힌트("숫자 키 자리에 두라")가 나옵니다.
