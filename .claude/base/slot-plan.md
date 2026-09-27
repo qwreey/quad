@@ -2404,7 +2404,7 @@ nil/None 금지)는 그대로.
 필요 없다.
 
 `base/dispatch-core-plan.md`의 "Length/Offset" 절이 이미 확정해둔 두 함수는
-owner 키(`inst`)가 물리 Instance일 필요가 없음(`Relate`가 아무 테이블이나
+owner 키(`inst`)가 물리 Instance일 필요가 없음(**[2026-09-27 정정 — round13 `H-830`]** "아무 테이블"은 아님 — `getBookkeeping`의 `bindLifetime`이 요소(claim된 Instance)나 Slot만 받는다, `dispatch-core-plan.md`의 `H-820` 정정 문장이 소스; 아래 Slot 재사용 논지는 그대로 유효)(`Relate`가 아무 테이블이나
 weak 키로 받음) — **Slot 자신을 owner 키로 재사용하면 최상위 마운트와
 중첩 마운트가 완전히 같은 함수 호출**이 됩니다.
 
