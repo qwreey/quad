@@ -1234,8 +1234,6 @@ do
 	print("PASS")
 end
 
-print("=== ALL PASS ===")
-
 print()
 print("=== 38. round11 Q61 (2026-09-18) — OwnsElements=false Slot을 dispose하거나 소유하는 부모가 Remove하면 자기 원소의 소유권을 놓고 비운다(원소는 자유, Slot은 빈 채 재사용 가능); Extract 경로는 원소째 옮겨간다 ===")
 do
@@ -1310,3 +1308,5 @@ do
 	Slot():Add(inner) -- used to raise "already mounted"
 	print("PASS")
 end
+
+print("=== ALL PASS ===")

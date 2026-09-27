@@ -489,9 +489,10 @@ do
 	local handle = bare.Ref(nil :: GateHandle?)
 	local g: State<number> = s:Apply(bare.Debounce({ Time = 1, Handle = handle }))
 	assert(g:Get() == 0, "Apply itself needs no timer")
-	pcall(function()
+	local firstOk = pcall(function()
 		s:Set(1) -- first signal: setTimeout stub throws (spec 11) — the signal stays merged
 	end)
+	assert(not firstOk, "first signal still hits the unstubbed backend (this section relies on that throw)")
 	local ok, err = pcall(function()
 		(handle.Value :: GateHandle):Flush() -- something withheld → emit → reopen → setTimeout stub throws
 	end)
