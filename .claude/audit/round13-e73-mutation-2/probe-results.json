@@ -1,0 +1,335 @@
+{
+ "CL06": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "FAIL CL06 hash-key descriptor: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Claim.luau:133: attempt to compare string < number"
+  ]
+ },
+ "CL07": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "FAIL CL07 fractional key: ./quad-roblox/test/probe.e73r.luau:106: Quad0085 Dispatch.drive: array keys must be positive integers (got 1.5)",
+   "FAIL CL07b root not claimed after a pass-1 failure"
+  ]
+ },
+ "CL11": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "CL15": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "FAIL CL15 plain table desc: <no error>"
+  ]
+ },
+ "CL16": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "FAIL CL16 empty className: <no error>"
+  ]
+ },
+ "CL17": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "FAIL CL17 drive order: root,child"
+  ]
+ },
+ "FB05": {
+  "base": [
+   "FAIL PFB05 trace first frame: ./quad-base/src/Fallback.luau:53"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "NO05": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "MD04": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "MD27": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "MD34": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "EL02": {
+  "base": [
+   "FAIL PEL02 Modifier element: ./quad-base/test/probe.e73.luau:123: Quad0240 Slot: this backend cannot mount this value"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "EL04": {
+  "base": [
+   "FAIL PEL04 None element: ./quad-base/test/probe.e73.luau:125: Quad0240 Slot: this backend cannot mount this value"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "SH01": {
+  "base": [
+   "FAIL PSH01 zero key: ./quad-base/src/Slot/Tree.luau:49: Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got 0)"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "SH02": {
+  "base": [
+   "FAIL PSH02 fractional key: ./quad-base/src/Slot/Tree.luau:49: Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got 1.5)"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "SH03": {
+  "base": [
+   "FAIL PSH03 destroyed Slot mount: ./quad-base/test/probe.e73.luau:68: Quad0164 Slot: destroyed Slot cannot be mounted"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "SH05": {
+  "base": [
+   "FAIL PSH05a re-drive raised: ./quad-base/test/probe.e73.luau:84: Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "SH06": {
+  "base": [
+   "FAIL PSH05b re-drive re-inserted elements: 2"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "SH08": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "AK04": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "AK07": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "EO12": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "FAIL EO12 NaN delay: <no error>"
+  ]
+ },
+ "LR02": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "LR03": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "FAIL LR03 isClaimed(nil)"
+  ]
+ },
+ "LR05": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "LR06": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "FAIL LR06 isHeld(nil)"
+  ]
+ },
+ "LR08": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "FAIL LR08 isHeldBy(unheld, unclaimed) must be false"
+  ]
+ },
+ "LR10": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "FAIL LR10 bound observer survived GC and fired: 0"
+  ]
+ },
+ "LR12": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "FAIL LR12 unbound value collectible while inst lives"
+  ]
+ },
+ "LR13": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "FAIL LR13 isHeldBy after unbind must be false"
+  ]
+ },
+ "DC02": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "FAIL DC02 GuiObject():AsScrollingFrame(): ./quad-roblox/test/probe.e73r.luau:89: Quad0056 Modifier: cannot cast a \"GuiObject\" modifier to \"ScrollingFrame\" — not an ancestor (use :As(name) to force)"
+  ]
+ },
+ "PR10": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "FAIL PR10a engine tween created for Time=0+Reverses: 0",
+   "FAIL PR10b no snap (mock does not interpolate): 5"
+  ]
+ },
+ "BK02": {
+  "base": [
+   "FAIL PBK2 OF2 re-published after rewind (BK04/BK02): 2",
+   "FAIL PBK3 OF4 = 218 (BK02): 213",
+   "FAIL PBK4 getOffsetAt(4) = 218: 213",
+   "FAIL PBK5 getOffsetAt(2) = 7: 2",
+   "FAIL PBKb getOffsetAt(3) after in-fill lowering = 206: 201",
+   "FAIL PBKb2 after batch close: 201"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "BK04": {
+  "base": [
+   "FAIL PBK2 OF2 re-published after rewind (BK04/BK02): 2"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "BK06": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "BK02+BK04": {
+  "base": [
+   "FAIL PBK2 OF2 re-published after rewind (BK04/BK02): 2",
+   "FAIL PBK3 OF4 = 218 (BK02): 213",
+   "FAIL PBK4 getOffsetAt(4) = 218: 213",
+   "FAIL PBK5 getOffsetAt(2) = 7: 2",
+   "FAIL PBKb getOffsetAt(3) after in-fill lowering = 206: 201",
+   "FAIL PBKb2 after batch close: 201"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "BK04+BK06": {
+  "base": [
+   "FAIL PBK2 OF2 re-published after rewind (BK04/BK02): 2"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "ST04": {
+  "base": [
+   "FAIL PST04 fn runs after the reentrant generation: 4"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "SR05": {
+  "base": [
+   "PROBE ALL OK"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ },
+ "ST09": {
+  "base": [
+   "FAIL PST09a lower gate reports nothing pending",
+   "FAIL PST09 notifications 1/2/1/1"
+  ],
+  "roblox": [
+   "PROBE ALL OK"
+  ]
+ }
+}

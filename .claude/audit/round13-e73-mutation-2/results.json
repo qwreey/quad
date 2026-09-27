@@ -1,0 +1,2707 @@
+[
+ {
+  "id": "BR01",
+  "file": "quad-base/src/Brand.luau",
+  "line": 127,
+  "old": "isSource(x) or StateBrand:Is(x)",
+  "new": "StateBrand:Is(x)",
+  "orig": "return isSource(x) or StateBrand:Is(x) -- Source structurally satisfies State",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.attribute.luau",
+   "quad-base/test/spec.blocker.luau",
+   "quad-base/test/spec.brand.luau",
+   "quad-base/test/spec.debounce.luau",
+   "quad-base/test/spec.dispatch.luau",
+   "quad-base/test/spec.effect.luau",
+   "quad-base/test/spec.flatten.luau",
+   "quad-base/test/spec.gate.luau",
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.inputgates.luau",
+   "quad-base/test/spec.lengthoffset.luau",
+   "quad-base/test/spec.modifier.luau",
+   "quad-base/test/spec.moduleidentity.luau",
+   "quad-base/test/spec.observer.luau",
+   "quad-base/test/spec.operator.luau",
+   "quad-base/test/spec.ref.luau",
+   "quad-base/test/spec.refhandlers.luau",
+   "quad-base/test/spec.slot.luau",
+   "quad-base/test/spec.source.luau",
+   "quad-base/test/spec.state.luau",
+   "quad-base/test/spec.store.luau",
+   "quad-base/test/spec.storebind.luau",
+   "quad-base/test/spec.tag.luau",
+   "quad-base/test/spec.tostring.luau",
+   "quad-roblox/test/spec.animate.luau",
+   "quad-roblox/test/spec.claim.luau",
+   "quad-roblox/test/spec.component.luau",
+   "quad-roblox/test/spec.events.luau",
+   "quad-roblox/test/spec.handlers.luau",
+   "quad-roblox/test/spec.shorthand.luau",
+   "quad-roblox/test/spec.tagattribute.luau",
+   "quad-roblox/test/spec.timers.luau",
+   "quad-roblox/test/spec.tween.luau",
+   "quad-roblox/test/spec.tweenproperty.luau"
+  ],
+  "sample": "Attr/init.luau:138 function flattenArg\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Attr/init.luau:156 function __call\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:76\n",
+  "secs": 0.44
+ },
+ {
+  "id": "BR02",
+  "file": "quad-base/src/Brand.luau",
+  "line": 139,
+  "old": "isPreRef(x) or isPostRef(x) or RefBrand:Is(x)",
+  "new": "RefBrand:Is(x)",
+  "orig": "return isPreRef(x) or isPostRef(x) or RefBrand:Is(x)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.brand.luau"
+  ],
+  "sample": "-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.brand.luau:64: isRef passes {Ref, PreRef, PostRef}\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.brand.luau:64\n",
+  "secs": 0.45
+ },
+ {
+  "id": "BR03",
+  "file": "quad-base/src/Brand.luau",
+  "line": 139,
+  "old": "isPreRef(x) or isPostRef(x) or ",
+  "new": "isPreRef(x) or ",
+  "orig": "return isPreRef(x) or isPostRef(x) or RefBrand:Is(x)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.brand.luau"
+  ],
+  "sample": "-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.brand.luau:64: isRef passes {Ref, PreRef, PostRef}\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.brand.luau:64\n",
+  "secs": 0.48
+ },
+ {
+  "id": "BR04",
+  "file": "quad-base/src/Brand.luau",
+  "line": 120,
+  "old": "isAttrKey(x) or isMapperDescriptor(x)",
+  "new": "isAttrKey(x)",
+  "orig": "return isAttrKey(x) or isMapperDescriptor(x)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "ts-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:357: MapperDescriptor is not a field table: nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:357\n",
+  "secs": 0.45
+ },
+ {
+  "id": "BR05",
+  "file": "quad-base/src/Brand.luau",
+  "line": 120,
+  "old": "isAttrKey(x) or isMapperDescriptor(x)",
+  "new": "isMapperDescriptor(x)",
+  "orig": "return isAttrKey(x) or isMapperDescriptor(x)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.attribute.luau",
+   "quad-base/test/spec.modifier.luau",
+   "quad-base/test/spec.store.luau",
+   "quad-base/test/spec.tag.luau"
+  ],
+  "sample": "-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:62: an AttrKey (brand, no metatable) is not a plain table: nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:62\n",
+  "secs": 0.46
+ },
+ {
+  "id": "BR06",
+  "file": "quad-base/src/Brand.luau",
+  "line": 70,
+  "old": "return EpochBrand:Is(x)",
+  "new": "return SourceBrand:Is(x)",
+  "orig": "return EpochBrand:Is(x)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.brand.luau",
+   "quad-base/test/spec.effect.luau",
+   "quad-base/test/spec.epochmap.luau",
+   "quad-base/test/spec.preref.luau",
+   "quad-base/test/spec.ref.luau"
+  ],
+  "sample": "de-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.brand.luau:103: isEpoch true after registration\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.brand.luau:103\n",
+  "secs": 0.47
+ },
+ {
+  "id": "BR07",
+  "file": "quad-base/src/Brand.luau",
+  "line": 82,
+  "old": "return EffectBrand:Is(x)",
+  "new": "return EffectBrand:Is(x) or ObserverBrand:Is(x)",
+  "orig": "return EffectBrand:Is(x)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.attribute.luau",
+   "quad-base/test/spec.dispatch.luau",
+   "quad-base/test/spec.effect.luau",
+   "quad-base/test/spec.flatten.luau",
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.inputgates.luau",
+   "quad-base/test/spec.integration.luau",
+   "quad-base/test/spec.leaf.luau",
+   "quad-base/test/spec.lengthoffset.luau",
+   "quad-base/test/spec.moduleidentity.luau",
+   "quad-base/test/spec.observer.luau",
+   "quad-base/test/spec.ref.luau",
+   "quad-base/test/spec.refhandlers.luau",
+   "quad-base/test/spec.slot.luau",
+   "quad-base/test/spec.storebind.luau",
+   "quad-base/test/spec.tag.luau",
+   "quad-base/test/spec.tostring.luau",
+   "quad-roblox/test/spec.claim.luau",
+   "quad-roblox/test/spec.component.luau",
+   "quad-roblox/test/spec.events.luau",
+   "quad-roblox/test/spec.handlers.luau",
+   "quad-roblox/test/spec.robloxfactory.luau",
+   "quad-roblox/test/spec.shorthand.luau",
+   "quad-roblox/test/spec.tagattribute.luau",
+   "quad-roblox/test/spec.tween.luau",
+   "quad-roblox/test/spec.tweenproperty.luau"
+  ],
+  "sample": "atch/init.luau:371 function process\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Dispatch/init.luau:522 function drive\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:87\n",
+  "secs": 0.48
+ },
+ {
+  "id": "BR08",
+  "file": "quad-base/src/Brand.luau",
+  "line": 79,
+  "old": "return ObserverBrand:Is(x)",
+  "new": "return ObserverBrand:Is(x) or EffectBrand:Is(x)",
+  "orig": "return ObserverBrand:Is(x)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.effect.luau",
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.integration.luau",
+   "quad-base/test/spec.leaf.luau",
+   "quad-base/test/spec.moduleidentity.luau",
+   "quad-base/test/spec.slot.luau",
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "s 강한 주인, 브랜드 ===\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.effect.luau:32: brand\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.effect.luau:32\n",
+  "secs": 0.46
+ },
+ {
+  "id": "RL01",
+  "file": "quad-base/src/Relate.luau",
+  "line": 46,
+  "old": "if inst == nil or key == nil then",
+  "new": "if false then",
+  "orig": "if inst == nil or key == nil then checkArgs(\"SetStrong\", inst, key) end",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.relate.luau"
+  ],
+  "sample": "ng inst: /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Relate.luau:40: table index is nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.relate.luau:101\n",
+  "secs": 0.45
+ },
+ {
+  "id": "RL02",
+  "file": "quad-base/src/Relate.luau",
+  "line": 59,
+  "old": "if inst == nil or key == nil then",
+  "new": "if false then",
+  "orig": "if inst == nil or key == nil then checkArgs(\"GetStrong\", inst, key) end",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.relate.luau"
+  ],
+  "sample": "\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.relate.luau:101: GetStrong inst: nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.relate.luau:101\n",
+  "secs": 0.46
+ },
+ {
+  "id": "RL03",
+  "file": "quad-base/src/Relate.luau",
+  "line": 87,
+  "old": "if inst == nil or key == nil then",
+  "new": "if false then",
+  "orig": "if inst == nil or key == nil then checkArgs(\"GetWeak\", inst, key) end",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.relate.luau"
+  ],
+  "sample": "==\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.relate.luau:101: GetWeak inst: nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.relate.luau:101\n",
+  "secs": 0.46
+ },
+ {
+  "id": "RL04",
+  "file": "quad-base/src/Relate.luau",
+  "line": 28,
+  "old": "if inst == nil then",
+  "new": "if false then",
+  "orig": "if inst == nil then error(`Quad0138 Relate:{method}: inst must not be nil`, 3) end",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.relate.luau"
+  ],
+  "sample": "ts-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.relate.luau:100: Quad0139 Relate:SetStrong: key must not be nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.relate.luau:101\n",
+  "secs": 0.46
+ },
+ {
+  "id": "RL05",
+  "file": "quad-base/src/Relate.luau",
+  "line": 52,
+  "old": "newMap[key] = value",
+  "new": null,
+  "orig": "newMap[key] = value",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/smoke.plugin.luau",
+   "quad-base/test/spec.attribute.luau",
+   "quad-base/test/spec.refhandlers.luau",
+   "quad-base/test/spec.relate.luau",
+   "quad-base/test/spec.tag.luau",
+   "quad-roblox/test/spec.shorthand.luau",
+   "quad-roblox/test/spec.tagattribute.luau",
+   "quad-roblox/test/spec.tweenproperty.luau"
+  ],
+  "sample": "/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/smoke.plugin.luau:79: 같은 pluginFn은 한 번만 실행돼야 함\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/smoke.plugin.luau:79\n",
+  "secs": 0.44
+ },
+ {
+  "id": "RL06",
+  "file": "quad-base/src/Relate.luau",
+  "line": 55,
+  "old": "strongMap[key] = value",
+  "new": null,
+  "orig": "strongMap[key] = value",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/smoke.init.luau",
+   "quad-base/test/spec.attribute.luau",
+   "quad-base/test/spec.dispatch.luau",
+   "quad-base/test/spec.effect.luau",
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.inputgates.luau",
+   "quad-base/test/spec.integration.luau",
+   "quad-base/test/spec.leaf.luau",
+   "quad-base/test/spec.moduleidentity.luau",
+   "quad-base/test/spec.observer.luau",
+   "quad-base/test/spec.ref.luau",
+   "quad-base/test/spec.refhandlers.luau",
+   "quad-base/test/spec.slot.luau",
+   "quad-base/test/spec.tag.luau",
+   "quad-base/test/spec.tostring.luau",
+   "quad-roblox/test/spec.claim.luau",
+   "quad-roblox/test/spec.component.luau",
+   "quad-roblox/test/spec.handlers.luau",
+   "quad-roblox/test/spec.shorthand.luau",
+   "quad-roblox/test/spec.tagattribute.luau",
+   "quad-roblox/test/spec.tweenproperty.luau"
+  ],
+  "sample": "code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/smoke.init.luau:22: 같은 initFn을 여러 번 RunInit해도 실제 실행은 1회여야 함\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/smoke.init.luau:22\n",
+  "secs": 0.47
+ },
+ {
+  "id": "RL07",
+  "file": "quad-base/src/Relate.luau",
+  "line": 83,
+  "old": "weakMap[key] = value",
+  "new": null,
+  "orig": "weakMap[key] = value",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.attribute.luau",
+   "quad-base/test/spec.dispatch.luau",
+   "quad-base/test/spec.effect.luau",
+   "quad-base/test/spec.flatten.luau",
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.integration.luau",
+   "quad-base/test/spec.leaf.luau",
+   "quad-base/test/spec.lengthoffset.luau",
+   "quad-base/test/spec.lifetime.luau",
+   "quad-base/test/spec.observer.luau",
+   "quad-base/test/spec.ref.luau",
+   "quad-base/test/spec.refhandlers.luau",
+   "quad-base/test/spec.slot.luau",
+   "quad-base/test/spec.storebind.luau",
+   "quad-base/test/spec.tag.luau",
+   "quad-roblox/test/spec.claim.luau",
+   "quad-roblox/test/spec.component.luau",
+   "quad-roblox/test/spec.events.luau",
+   "quad-roblox/test/spec.handlers.luau",
+   "quad-roblox/test/spec.robloxfactory.luau",
+   "quad-roblox/test/spec.shorthand.luau",
+   "quad-roblox/test/spec.tagattribute.luau",
+   "quad-roblox/test/spec.tweenproperty.luau"
+  ],
+  "sample": "\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:92: reactive update\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:92\n",
+  "secs": 0.42
+ },
+ {
+  "id": "RL08",
+  "file": "quad-base/src/Relate.luau",
+  "line": 18,
+  "old": "{ __mode = \"v\" }",
+  "new": "{}",
+  "orig": "local WEAK_VALUE_MT = { __mode = \"v\" }",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.dispatch.luau",
+   "quad-base/test/spec.integration.luau",
+   "quad-base/test/spec.lengthoffset.luau",
+   "quad-base/test/spec.lifetime.luau",
+   "quad-base/test/spec.relate.luau"
+  ],
+  "sample": "2ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.dispatch.luau:414: after Destroy the whole chain graph is collectable — no retract call needed\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.dispatch.luau:414\n",
+  "secs": 0.43
+ },
+ {
+  "id": "RL09",
+  "file": "quad-base/src/Relate.luau",
+  "line": 101,
+  "old": "{ __mode = \"k\" }",
+  "new": "{}",
+  "orig": "buckets = setmetatable({}, { __mode = \"k\" }) :: { [any]: Bucket },",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.dispatch.luau",
+   "quad-base/test/spec.init.luau",
+   "quad-base/test/spec.integration.luau",
+   "quad-base/test/spec.lengthoffset.luau",
+   "quad-base/test/spec.lifetime.luau",
+   "quad-base/test/spec.relate.luau",
+   "quad-base/test/spec.storebind.luau"
+  ],
+  "sample": "2ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.dispatch.luau:414: after Destroy the whole chain graph is collectable — no retract call needed\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.dispatch.luau:414\n",
+  "secs": 0.45
+ },
+ {
+  "id": "CL01",
+  "file": "quad-base/src/Claim.luau",
+  "line": 98,
+  "old": "if desc._fired or seen[desc] then",
+  "new": "if desc._fired then",
+  "orig": "if desc._fired or seen[desc] then -- `seen`: the same descriptor at two slots of one tree",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau"
+  ],
+  "sample": "/test/spec.claim.luau:264: Quad0028 Claim: two mapper descriptors resolved to the same Instance Title — each child needs exactly one descriptor\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:266\n",
+  "secs": 0.43
+ },
+ {
+  "id": "CL02",
+  "file": "quad-base/src/Claim.luau",
+  "line": 98,
+  "old": "if desc._fired or seen[desc] then",
+  "new": "if seen[desc] then",
+  "orig": "if desc._fired or seen[desc] then -- `seen`: the same descriptor at two slots of one tree",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau"
+  ],
+  "sample": "0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:97: descriptor reuse must error: nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:97\n",
+  "secs": 0.45
+ },
+ {
+  "id": "CL03",
+  "file": "quad-base/src/Claim.luau",
+  "line": 102,
+  "old": "if seen[inst] then",
+  "new": "if false then",
+  "orig": "if seen[inst] then",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau"
+  ],
+  "sample": "3bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:286: Quad0225 nativeClaim: Instance is already claimed by quad\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:288\n",
+  "secs": 0.45
+ },
+ {
+  "id": "CL04",
+  "file": "quad-base/src/Claim.luau",
+  "line": 114,
+  "old": "if module.Backend.isClaimed(inst) then",
+  "new": "if false then",
+  "orig": "if module.Backend.isClaimed(inst) then",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau"
+  ],
+  "sample": "3bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:322: Quad0225 nativeClaim: Instance is already claimed by quad\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:324\n",
+  "secs": 0.47
+ },
+ {
+  "id": "CL05",
+  "file": "quad-base/src/Claim.luau",
+  "line": 120,
+  "old": "if type(desc._props) ~= \"table\" then",
+  "new": "if false then",
+  "orig": "if type(desc._props) ~= \"table\" then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.lifetime.luau"
+  ],
+  "sample": "/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Claim.luau:128: attempt to iterate over a string value\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.lifetime.luau:279\n",
+  "secs": 0.47
+ },
+ {
+  "id": "CL06",
+  "file": "quad-base/src/Claim.luau",
+  "line": 129,
+  "old": "type(i) == \"number\" and ",
+  "new": "",
+  "orig": "if type(i) == \"number\" and Brand.isMapperDescriptor(v) then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.46
+ },
+ {
+  "id": "CL07",
+  "file": "quad-base/src/Claim.luau",
+  "line": 133,
+  "old": "if i < 1 or i % 1 ~= 0 then",
+  "new": "if i < 1 then",
+  "orig": "if i < 1 or i % 1 ~= 0 then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.47
+ },
+ {
+  "id": "CL08",
+  "file": "quad-base/src/Claim.luau",
+  "line": 133,
+  "old": "if i < 1 or i % 1 ~= 0 then",
+  "new": "if i % 1 ~= 0 then",
+  "orig": "if i < 1 or i % 1 ~= 0 then",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau"
+  ],
+  "sample": "3-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:295: Quad0085 Dispatch.drive: array keys must be positive integers (got 0)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:297\n",
+  "secs": 0.44
+ },
+ {
+  "id": "CL09",
+  "file": "quad-base/src/Claim.luau",
+  "line": 146,
+  "old": "v._key, v._className)",
+  "new": "v._key, nil)",
+  "orig": "local child = module.Backend.nativeFindChild(inst, v._key, v._className)",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau"
+  ],
+  "sample": "ts-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:237: class mismatch is a fail-fast absence: Frame\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:237\n",
+  "secs": 0.44
+ },
+ {
+  "id": "CL10",
+  "file": "quad-base/src/Claim.luau",
+  "line": 147,
+  "old": "if child == nil then",
+  "new": "if false then",
+  "orig": "if child == nil then",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau"
+  ],
+  "sample": "4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Claim.luau:107: table index is nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:210\n",
+  "secs": 0.44
+ },
+ {
+  "id": "CL11",
+  "file": "quad-base/src/Claim.luau",
+  "line": 162,
+  "old": "for i = #plan, 1, -1 do",
+  "new": "for i = 1, #plan do",
+  "orig": "for i = #plan, 1, -1 do",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.44
+ },
+ {
+  "id": "CL12",
+  "file": "quad-base/src/Claim.luau",
+  "line": 168,
+  "old": "step.desc._fired = true",
+  "new": null,
+  "orig": "step.desc._fired = true",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau"
+  ],
+  "sample": "0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:97: descriptor reuse must error: nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:97\n",
+  "secs": 0.43
+ },
+ {
+  "id": "CL13",
+  "file": "quad-base/src/Claim.luau",
+  "line": 176,
+  "old": "props[i] = child",
+  "new": null,
+  "orig": "props[i] = child",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau"
+  ],
+  "sample": "e-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Claim.luau:200 function Claim\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:49\n",
+  "secs": 0.46
+ },
+ {
+  "id": "CL14",
+  "file": "quad-base/src/Claim.luau",
+  "line": 187,
+  "old": "if not module.Backend.isInst(inst) then",
+  "new": "if false then",
+  "orig": "if not module.Backend.isInst(inst) then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.lifetime.luau"
+  ],
+  "sample": "error: /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Claim.luau:107: table index is nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.lifetime.luau:272\n",
+  "secs": 0.42
+ },
+ {
+  "id": "CL15",
+  "file": "quad-base/src/Claim.luau",
+  "line": 190,
+  "old": "if not Brand.isMapperDescriptor(desc) then",
+  "new": "if false then",
+  "orig": "if not Brand.isMapperDescriptor(desc) then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.46
+ },
+ {
+  "id": "CL16",
+  "file": "quad-base/src/Claim.luau",
+  "line": 62,
+  "old": " or className == \"\"",
+  "new": "",
+  "orig": "if type(className) ~= \"string\" or className == \"\" then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.48
+ },
+ {
+  "id": "CL17",
+  "file": "quad-base/src/Claim.luau",
+  "line": 154,
+  "old": "table.insert(plan, {",
+  "new": "table.insert(plan, 1, {",
+  "orig": "table.insert(plan, { inst = inst, desc = desc, children = children }) -- children first: the drive order is bottom-up",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.46
+ },
+ {
+  "id": "CL18",
+  "file": "quad-base/src/Claim.luau",
+  "line": 101,
+  "old": "seen[desc] = true",
+  "new": null,
+  "orig": "seen[desc] = true",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau"
+  ],
+  "sample": "/test/spec.claim.luau:264: Quad0028 Claim: two mapper descriptors resolved to the same Instance Title — each child needs exactly one descriptor\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:266\n",
+  "secs": 0.43
+ },
+ {
+  "id": "FB01",
+  "file": "quad-base/src/Fallback.luau",
+  "line": 29,
+  "old": "if type(base) ~= \"function\" then",
+  "new": "if false then",
+  "orig": "if type(base) ~= \"function\" then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.fallback.luau"
+  ],
+  "sample": "e-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.fallback.luau:18: function: 0x000059f78f6fe070\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.fallback.luau:18\n",
+  "secs": 0.42
+ },
+ {
+  "id": "FB02",
+  "file": "quad-base/src/Fallback.luau",
+  "line": 32,
+  "old": "if type(onError) ~= \"function\" then",
+  "new": "if false then",
+  "orig": "if type(onError) ~= \"function\" then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.fallback.luau"
+  ],
+  "sample": "e-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.fallback.luau:23: function: 0x00006058ba9d7070\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.fallback.luau:23\n",
+  "secs": 0.43
+ },
+ {
+  "id": "FB03",
+  "file": "quad-base/src/Fallback.luau",
+  "line": 44,
+  "old": "return onError(resultOrErr)",
+  "new": "return nil",
+  "orig": "return onError(resultOrErr)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.errorcodes.luau",
+   "quad-base/test/spec.fallback.luau"
+  ],
+  "sample": "ad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.errorcodes.luau:37: Fallback hands the tagged string through: nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.errorcodes.luau:37\n",
+  "secs": 0.44
+ },
+ {
+  "id": "FB04",
+  "file": "quad-base/src/Fallback.luau",
+  "line": 40,
+  "old": "pcall(base, ...)",
+  "new": "pcall(base)",
+  "orig": "local ok, resultOrErr = pcall(base, ...)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.fallback.luau"
+  ],
+  "sample": ") ===\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.fallback.luau:41: pass-through\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.fallback.luau:41\n",
+  "secs": 0.52
+ },
+ {
+  "id": "FB05",
+  "file": "quad-base/src/Fallback.luau",
+  "line": 53,
+  "old": "debug.traceback(nil, 2)",
+  "new": "debug.traceback(nil, 1)",
+  "orig": "trace = debug.traceback(nil, 2)",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.52
+ },
+ {
+  "id": "FB06",
+  "file": "quad-base/src/Fallback.luau",
+  "line": 59,
+  "old": "onError(resultOrErr, trace :: string)",
+  "new": "onError(resultOrErr, \"\")",
+  "orig": "return onError(resultOrErr, trace :: string)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.fallback.luau"
+  ],
+  "sample": "e-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.fallback.luau:78: trace names the throw site: \nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.fallback.luau:78\n",
+  "secs": 0.55
+ },
+ {
+  "id": "FB07",
+  "file": "quad-base/src/Fallback.luau",
+  "line": 55,
+  "old": "end, ...)",
+  "new": "end)",
+  "orig": "end, ...)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.fallback.luau"
+  ],
+  "sample": "jects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.fallback.luau:86: normal path: args and result pass through\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.fallback.luau:86\n",
+  "secs": 0.55
+ },
+ {
+  "id": "FB08",
+  "file": "quad-base/src/Fallback.luau",
+  "line": 57,
+  "old": "return resultOrErr",
+  "new": "return nil",
+  "orig": "return resultOrErr",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.fallback.luau"
+  ],
+  "sample": "jects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.fallback.luau:86: normal path: args and result pass through\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.fallback.luau:86\n",
+  "secs": 0.54
+ },
+ {
+  "id": "LC01",
+  "file": "quad-base/src/LifecycleHooks.luau",
+  "line": 34,
+  "old": "if type(fn) ~= \"function\" then",
+  "new": "if false then",
+  "orig": "if type(fn) ~= \"function\" then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.hooks.luau"
+  ],
+  "sample": " 브랜드 없음) ===\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:22: PreRef(nil)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:22\n",
+  "secs": 0.56
+ },
+ {
+  "id": "LC02",
+  "file": "quad-base/src/LifecycleHooks.luau",
+  "line": 41,
+  "old": "if v ~= nil then",
+  "new": "if true then",
+  "orig": "if v ~= nil then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.hooks.luau"
+  ],
+  "sample": "mp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:42: no fn(nil) at registration\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:42\n",
+  "secs": 0.53
+ },
+ {
+  "id": "LC03",
+  "file": "quad-base/src/LifecycleHooks.luau",
+  "line": 42,
+  "old": "fn(v, r)",
+  "new": "fn(v)",
+  "orig": "fn(v, r)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.hooks.luau"
+  ],
+  "sample": "H-107) ===\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:45: fn(inst, ref)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:45\n",
+  "secs": 0.53
+ },
+ {
+  "id": "LC04",
+  "file": "quad-base/src/LifecycleHooks.luau",
+  "line": 52,
+  "old": "module.PreRef(nil)",
+  "new": "module.PostRef(nil)",
+  "orig": "return module.PreRef(nil):Callback(guard(fn))",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.hooks.luau"
+  ],
+  "sample": ") ===\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:28: OnCreated → PreRef\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:28\n",
+  "secs": 0.51
+ },
+ {
+  "id": "LC05",
+  "file": "quad-base/src/LifecycleHooks.luau",
+  "line": 56,
+  "old": "module.PostRef(nil)",
+  "new": "module.PreRef(nil)",
+  "orig": "return module.PostRef(nil):Callback(guard(fn))",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.hooks.luau"
+  ],
+  "sample": "===\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:29: OnRendered → PostRef\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:29\n",
+  "secs": 0.53
+ },
+ {
+  "id": "LC06",
+  "file": "quad-base/src/LifecycleHooks.luau",
+  "line": 62,
+  "old": "if dying then",
+  "new": "if true then",
+  "orig": "if dying then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.hooks.luau"
+  ],
+  "sample": "/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:122: no run on leaving the seat\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:122\n",
+  "secs": 0.55
+ },
+ {
+  "id": "NO01",
+  "file": "quad-base/src/Dispatch/None.luau",
+  "line": 71,
+  "old": "return v == sent",
+  "new": "return false",
+  "orig": "return v == sent",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.flatten.luau",
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.refhandlers.luau",
+   "quad-roblox/test/spec.claim.luau",
+   "quad-roblox/test/spec.component.luau",
+   "quad-roblox/test/spec.handlers.luau"
+  ],
+  "sample": "spatch/init.luau:340 function process\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Dispatch/init.luau:522 function drive\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.flatten.luau:65\n",
+  "secs": 0.54
+ },
+ {
+  "id": "NO02",
+  "file": "quad-base/src/Dispatch/None.luau",
+  "line": 75,
+  "old": "bookkeeping.setEmpty(inst, k, inst)",
+  "new": null,
+  "orig": "bookkeeping.setEmpty(inst, k, inst) -- canon block: offsetSource → length 0 (`H-35`)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.flatten.luau",
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.refhandlers.luau",
+   "quad-roblox/test/spec.claim.luau",
+   "quad-roblox/test/spec.component.luau",
+   "quad-roblox/test/spec.handlers.luau"
+  ],
+  "sample": "spatch/init.luau:371 function process\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Dispatch/init.luau:522 function drive\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.flatten.luau:65\n",
+  "secs": 0.55
+ },
+ {
+  "id": "NO03",
+  "file": "quad-base/src/Dispatch/None.luau",
+  "line": 100,
+  "old": "index + 1",
+  "new": "index",
+  "orig": "dispatch.process(inst, k, nil, index + 1)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.nonenil.luau"
+  ],
+  "sample": "4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.nonenil.luau:50: hash None reaches the key's own handler as nil (got prop:Text:nil@1)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.nonenil.luau:50\n",
+  "secs": 0.48
+ },
+ {
+  "id": "NO04",
+  "file": "quad-base/src/Dispatch/None.luau",
+  "line": 100,
+  "old": "dispatch.process(inst, k, nil, index + 1)",
+  "new": null,
+  "orig": "dispatch.process(inst, k, nil, index + 1)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.attribute.luau",
+   "quad-base/test/spec.flatten.luau",
+   "quad-base/test/spec.integration.luau",
+   "quad-base/test/spec.nonenil.luau",
+   "quad-base/test/spec.storebind.luau",
+   "quad-roblox/test/spec.claim.luau",
+   "quad-roblox/test/spec.component.luau",
+   "quad-roblox/test/spec.handlers.luau",
+   "quad-roblox/test/spec.shorthand.luau",
+   "quad-roblox/test/spec.tweenproperty.luau"
+  ],
+  "sample": "rojects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:95: None deletes via the same key handler\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:95\n",
+  "secs": 0.56
+ },
+ {
+  "id": "NO05",
+  "file": "quad-base/src/Dispatch/None.luau",
+  "line": 108,
+  "old": "type(k) == \"number\" and v == nil",
+  "new": "v == nil",
+  "orig": "return type(k) == \"number\" and v == nil",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.5
+ },
+ {
+  "id": "NO06",
+  "file": "quad-base/src/Dispatch/None.luau",
+  "line": 113,
+  "old": "bookkeeping.setEmpty(inst, k)",
+  "new": null,
+  "orig": "bookkeeping.setEmpty(inst, k)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.integration.luau",
+   "quad-base/test/spec.nonenil.luau",
+   "quad-base/test/spec.storebind.luau",
+   "quad-roblox/test/spec.claim.luau",
+   "quad-roblox/test/spec.component.luau"
+  ],
+  "sample": "ch/init.luau:371 function process\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Dispatch/init.luau:522 function drive\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.integration.luau:52\n",
+  "secs": 0.45
+ },
+ {
+  "id": "NO07",
+  "file": "quad-base/src/Dispatch/None.luau",
+  "line": 95,
+  "old": "dispatch.HANDLER_PRIORITY_HIGH",
+  "new": "dispatch.HANDLER_PRIORITY_FALLBACK",
+  "orig": "priority = dispatch.HANDLER_PRIORITY_HIGH,",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.flatten.luau",
+   "quad-base/test/spec.nonenil.luau",
+   "quad-roblox/test/spec.events.luau",
+   "quad-roblox/test/spec.handlers.luau",
+   "quad-roblox/test/spec.shorthand.luau",
+   "quad-roblox/test/spec.tweenproperty.luau"
+  ],
+  "sample": "375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.flatten.luau:82: None field reaches the key's handler as nil: Size=None\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.flatten.luau:82\n",
+  "secs": 0.45
+ },
+ {
+  "id": "SB01",
+  "file": "quad-base/src/Dispatch/StoreBind.luau",
+  "line": 60,
+  "old": "return isState(v)",
+  "new": "return Brand.isSource(v)",
+  "orig": "return isState(v)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.dispatch.luau",
+   "quad-roblox/test/spec.shorthand.luau",
+   "quad-roblox/test/spec.tweenproperty.luau"
+  ],
+  "sample": "ad0076 Dispatch: no handler matched key Name (value: table, brand: State) — a quad value at a string key: it belongs in a numeric (array) slot\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.dispatch.luau:527\n",
+  "secs": 0.45
+ },
+ {
+  "id": "SB02",
+  "file": "quad-base/src/Dispatch/StoreBind.luau",
+  "line": 67,
+  "old": "ModuleIdentity.assertOwnAtDispatch(module, state, \"State\")",
+  "new": null,
+  "orig": "ModuleIdentity.assertOwnAtDispatch(module, state, \"State\") -- before the registration fire subscribes here",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.moduleidentity.luau"
+  ],
+  "sample": "C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.moduleidentity.luau:20 function expectCross\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.moduleidentity.luau:45\n",
+  "secs": 0.45
+ },
+ {
+  "id": "SB03",
+  "file": "quad-base/src/Dispatch/StoreBind.luau",
+  "line": 70,
+  "old": "if isState(realv) then",
+  "new": "if false then",
+  "orig": "if isState(realv) then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.storebind.luau"
+  ],
+  "sample": ".luau:266: /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Brand.luau:73: stack overflow\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.storebind.luau:266\n",
+  "secs": 0.49
+ },
+ {
+  "id": "SB04",
+  "file": "quad-base/src/Dispatch/StoreBind.luau",
+  "line": 84,
+  "old": "index + 1",
+  "new": "index",
+  "orig": "dispatch.process(inst, k, realv, index + 1)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.attribute.luau",
+   "quad-base/test/spec.effect.luau",
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.ref.luau",
+   "quad-base/test/spec.refhandlers.luau",
+   "quad-base/test/spec.slot.luau",
+   "quad-base/test/spec.storebind.luau",
+   "quad-base/test/spec.tag.luau",
+   "quad-roblox/test/spec.events.luau",
+   "quad-roblox/test/spec.handlers.luau",
+   "quad-roblox/test/spec.shorthand.luau",
+   "quad-roblox/test/spec.tagattribute.luau",
+   "quad-roblox/test/spec.tweenproperty.luau"
+  ],
+  "sample": "Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:138: old subscription is dead (no leak)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:138\n",
+  "secs": 0.51
+ },
+ {
+  "id": "SB05",
+  "file": "quad-base/src/Dispatch/StoreBind.luau",
+  "line": 86,
+  "old": "module.Backend.bindLifetime(inst, observer)",
+  "new": null,
+  "orig": "module.Backend.bindLifetime(inst, observer)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.attribute.luau",
+   "quad-base/test/spec.effect.luau",
+   "quad-base/test/spec.flatten.luau",
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.ref.luau",
+   "quad-base/test/spec.refhandlers.luau",
+   "quad-base/test/spec.slot.luau",
+   "quad-base/test/spec.storebind.luau",
+   "quad-base/test/spec.tag.luau",
+   "quad-roblox/test/spec.claim.luau",
+   "quad-roblox/test/spec.events.luau",
+   "quad-roblox/test/spec.handlers.luau",
+   "quad-roblox/test/spec.shorthand.luau",
+   "quad-roblox/test/spec.tagattribute.luau",
+   "quad-roblox/test/spec.tweenproperty.luau"
+  ],
+  "sample": "\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:92: reactive update\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:92\n",
+  "secs": 0.49
+ },
+ {
+  "id": "SB06",
+  "file": "quad-base/src/Dispatch/StoreBind.luau",
+  "line": 90,
+  "old": "module.Backend.unbindLifetime(observer)",
+  "new": null,
+  "orig": "module.Backend.unbindLifetime(observer)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.attribute.luau",
+   "quad-base/test/spec.storebind.luau",
+   "quad-roblox/test/spec.handlers.luau"
+  ],
+  "sample": "base/src/Source.luau:71 function bumpAndEmit\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Source.luau:87 function Set\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:137\n",
+  "secs": 0.54
+ },
+ {
+  "id": "SB07",
+  "file": "quad-base/src/Dispatch/StoreBind.luau",
+  "line": 62,
+  "old": "dispatch.HANDLER_PRIORITY_HIGH",
+  "new": "dispatch.HANDLER_PRIORITY_NORMAL",
+  "orig": "priority = dispatch.HANDLER_PRIORITY_HIGH,",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.handlers.luau",
+   "quad-roblox/test/spec.shorthand.luau"
+  ],
+  "sample": "riority tie between \"StoreBind\" (priority 0) and \"Property\" (priority 0) — ties have no defined order; offset from a HANDLER_PRIORITY_* band\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.handlers.luau:333\n",
+  "secs": 0.52
+ },
+ {
+  "id": "DR01",
+  "file": "quad-base/src/Dispatch/Ref.luau",
+  "line": 51,
+  "old": "if v._fired then",
+  "new": "if false then",
+  "orig": "if v._fired then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.refhandlers.luau"
+  ],
+  "sample": "s-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.refhandlers.luau:150: fired PreRef placed again errors: nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.refhandlers.luau:150\n",
+  "secs": 0.49
+ },
+ {
+  "id": "DR02",
+  "file": "quad-base/src/Dispatch/Ref.luau",
+  "line": 54,
+  "old": "v._fired = true",
+  "new": null,
+  "orig": "v._fired = true",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.refhandlers.luau"
+  ],
+  "sample": "ude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.refhandlers.luau:145: one-shot guard set\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.refhandlers.luau:145\n",
+  "secs": 0.53
+ },
+ {
+  "id": "DR03",
+  "file": "quad-base/src/Dispatch/Ref.luau",
+  "line": 66,
+  "old": "v:Set(inst)",
+  "new": null,
+  "orig": "v:Set(inst) -- fire, then consume (canon order — bind-system pipeline (a))",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.refhandlers.luau"
+  ],
+  "sample": "d/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:77: PreRefs first, in array order: rendered1:Frame,rendered2\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:77\n",
+  "secs": 0.51
+ },
+ {
+  "id": "DR04",
+  "file": "quad-base/src/Dispatch/Ref.luau",
+  "line": 67,
+  "old": "flattened[i] = ProcessedPreRef",
+  "new": null,
+  "orig": "flattened[i] = ProcessedPreRef",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.refhandlers.luau"
+  ],
+  "sample": "Dispatch/init.luau:371 function process\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Dispatch/init.luau:522 function drive\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:61\n",
+  "secs": 0.54
+ },
+ {
+  "id": "DR05",
+  "file": "quad-base/src/Dispatch/Ref.luau",
+  "line": 74,
+  "old": "flattened[i] = ProcessedPostRef",
+  "new": null,
+  "orig": "flattened[i] = ProcessedPostRef",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.refhandlers.luau"
+  ],
+  "sample": "Dispatch/init.luau:371 function process\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Dispatch/init.luau:522 function drive\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:61\n",
+  "secs": 0.56
+ },
+ {
+  "id": "DR06",
+  "file": "quad-base/src/Dispatch/Ref.luau",
+  "line": 73,
+  "old": "table.insert(postRefList :: { any }, v)",
+  "new": "table.insert(postRefList :: { any }, 1, v)",
+  "orig": "table.insert(postRefList :: { any }, v) -- push, then consume (canon order)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.refhandlers.luau"
+  ],
+  "sample": "f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:78: PostRefs last, in array order: created1:Frame,created2,rendered2,rendered1:Frame\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:78\n",
+  "secs": 0.55
+ },
+ {
+  "id": "DR07",
+  "file": "quad-base/src/Dispatch/Ref.luau",
+  "line": 59,
+  "old": "for i = 1, #flattened do",
+  "new": "for i = 2, #flattened do",
+  "orig": "for i = 1, #flattened do",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.refhandlers.luau"
+  ],
+  "sample": "Dispatch/init.luau:371 function process\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Dispatch/init.luau:522 function drive\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:61\n",
+  "secs": 0.51
+ },
+ {
+  "id": "DR08",
+  "file": "quad-base/src/Dispatch/Ref.luau",
+  "line": 82,
+  "old": "v:Set(inst)",
+  "new": null,
+  "orig": "v:Set(inst)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.refhandlers.luau"
+  ],
+  "sample": "uad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:77: PreRefs first, in array order: created1:Frame,created2\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:77\n",
+  "secs": 0.54
+ },
+ {
+  "id": "DR09",
+  "file": "quad-base/src/Dispatch/Ref.luau",
+  "line": 96,
+  "old": "NoneModule.addProcessedHandler(dispatch, bookkeeping, \"ProcessedPostRefHandler\", ProcessedPostRef)",
+  "new": null,
+  "orig": "NoneModule.addProcessedHandler(dispatch, bookkeeping, \"ProcessedPostRefHandler\", ProcessedPostRef)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.refhandlers.luau"
+  ],
+  "sample": "Dispatch/init.luau:340 function process\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Dispatch/init.luau:522 function drive\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:61\n",
+  "secs": 0.58
+ },
+ {
+  "id": "PF01",
+  "file": "quad-base/src/Ref/PreRef.luau",
+  "line": 30,
+  "old": "Brand.PreRefBrand",
+  "new": "Brand.RefBrand",
+  "orig": "return tagged(default, Brand.PreRefBrand, \"__quadPreRef\") :: PreRef<T>",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.preref.luau",
+   "quad-base/test/spec.refhandlers.luau"
+  ],
+  "sample": ") ===\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:28: OnCreated → PreRef\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:28\n",
+  "secs": 0.53
+ },
+ {
+  "id": "PF02",
+  "file": "quad-base/src/Ref/PostRef.luau",
+  "line": 31,
+  "old": "Brand.PostRefBrand",
+  "new": "Brand.PreRefBrand",
+  "orig": "return tagged(default, Brand.PostRefBrand, \"__quadPostRef\") :: PostRef<T>",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.hooks.luau",
+   "quad-base/test/spec.preref.luau",
+   "quad-base/test/spec.refhandlers.luau"
+  ],
+  "sample": "===\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:29: OnRendered → PostRef\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.hooks.luau:29\n",
+  "secs": 0.55
+ },
+ {
+  "id": "MH01",
+  "file": "quad-base/src/Dispatch/Modifier/Handler.luau",
+  "line": 26,
+  "old": "NoneModule.addProcessedHandler(dispatch, bookkeeping, \"ProcessedModifierHandler\", ProcessedModifier)",
+  "new": null,
+  "orig": "NoneModule.addProcessedHandler(dispatch, bookkeeping, \"ProcessedModifierHandler\", ProcessedModifier)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.flatten.luau",
+   "quad-roblox/test/spec.claim.luau",
+   "quad-roblox/test/spec.component.luau",
+   "quad-roblox/test/spec.handlers.luau"
+  ],
+  "sample": "spatch/init.luau:340 function process\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Dispatch/init.luau:522 function drive\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.flatten.luau:65\n",
+  "secs": 0.54
+ },
+ {
+  "id": "MD01",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 104,
+  "old": " or Brand.isSlot(v)",
+  "new": "",
+  "orig": "return isRef(v) or isObserver(v) or isEffect(v) or Brand.isSlot(v) or isModifier(v)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "laude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:154: literal rejected: Slot\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:154\n",
+  "secs": 0.53
+ },
+ {
+  "id": "MD02",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 104,
+  "old": " or isModifier(v)",
+  "new": "",
+  "orig": "return isRef(v) or isObserver(v) or isEffect(v) or Brand.isSlot(v) or isModifier(v)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "e-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:154: literal rejected: Modifier\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:154\n",
+  "secs": 0.45
+ },
+ {
+  "id": "MD03",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 131,
+  "old": "return table.freeze(mod)",
+  "new": "return mod",
+  "orig": "return table.freeze(mod)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:29: outer table frozen\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:29\n",
+  "secs": 0.46
+ },
+ {
+  "id": "MD04",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 146,
+  "old": "if ancestor == name then",
+  "new": "if false then",
+  "orig": "if ancestor == name then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.46
+ },
+ {
+  "id": "MD05",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 175,
+  "old": " or key == \"\"",
+  "new": "",
+  "orig": "if type(key) ~= \"string\" or key == \"\" then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "ude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:386: Peek bad key errors: nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:386\n",
+  "secs": 0.47
+ },
+ {
+  "id": "MD06",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 186,
+  "old": "if type(factory) ~= \"function\" then",
+  "new": "if false then",
+  "orig": "if type(factory) ~= \"function\" then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.inputgates.luau"
+  ],
+  "sample": "cktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.inputgates.luau:15 function failsWith\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.inputgates.luau:38\n",
+  "secs": 0.45
+ },
+ {
+  "id": "MD07",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 197,
+  "old": "if name == nil then",
+  "new": "if false then",
+  "orig": "if name == nil then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "3 function errorBeforeNearest\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Dispatch/Modifier/init.luau:201 function As\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:311\n",
+  "secs": 0.46
+ },
+ {
+  "id": "MD08",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 203,
+  "old": "if not known[name] then",
+  "new": "if false then",
+  "orig": "if not known[name] then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "laude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:323: rejected: unknown name\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:323\n",
+  "secs": 0.41
+ },
+ {
+  "id": "MD09",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 215,
+  "old": "if n == 0 then",
+  "new": "if false then",
+  "orig": "if n == 0 then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "aude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:136: zero arguments rejected\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:136\n",
+  "secs": 0.41
+ },
+ {
+  "id": "MD10",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 221,
+  "old": "if not isModifier(arg) then",
+  "new": "if false then",
+  "orig": "if not isModifier(arg) then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/mock.luau:842 function assertBlamesUser\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:132\n",
+  "secs": 0.41
+ },
+ {
+  "id": "MD11",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 247,
+  "old": "if not known[target] then",
+  "new": "if false then",
+  "orig": "if not known[target] then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:336: unknown As<Name> errors instead of minting a field\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:336\n",
+  "secs": 0.44
+ },
+ {
+  "id": "MD12",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 251,
+  "old": "tag ~= true and ",
+  "new": "",
+  "orig": "if tag ~= true and tag ~= target and not isAncestorOrSelf(tag, target) then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "init.luau:193 function errorBeforeNearest\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Dispatch/Modifier/init.luau:252\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:288\n",
+  "secs": 0.45
+ },
+ {
+  "id": "MD13",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 251,
+  "old": " and not isAncestorOrSelf(tag, target)",
+  "new": "",
+  "orig": "if tag ~= true and tag ~= target and not isAncestorOrSelf(tag, target) then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau",
+   "quad-roblox/test/spec.d.luau"
+  ],
+  "sample": "init.luau:193 function errorBeforeNearest\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Dispatch/Modifier/init.luau:252\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:255\n",
+  "secs": 0.46
+ },
+ {
+  "id": "MD14",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 282,
+  "old": "if isState(old) then",
+  "new": "if false then",
+  "orig": "if isState(old) then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:77: State + function → old:Compute(fn), a derived State\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:77\n",
+  "secs": 0.43
+ },
+ {
+  "id": "MD15",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 290,
+  "old": "if isHandlerLayerValue(value) then",
+  "new": "if false then",
+  "orig": "if isHandlerLayerValue(value) then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau",
+   "quad-base/test/spec.preref.luau"
+  ],
+  "sample": "e-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:154: literal rejected: Observer\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:154\n",
+  "secs": 0.41
+ },
+ {
+  "id": "MD16",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 297,
+  "old": "selfArg.__quadModifier",
+  "new": "true",
+  "orig": "return newModifier(newFields, selfArg.__quadModifier) -- setters keep the tag",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:246: setters keep the tag\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:246\n",
+  "secs": 0.5
+ },
+ {
+  "id": "MD17",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 308,
+  "old": "if type(key) == \"string\" and string.match(key, \"^As%u\") ~= nil then",
+  "new": "if false then",
+  "orig": "if type(key) == \"string\" and string.match(key, \"^As%u\") ~= nil then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau",
+   "quad-roblox/test/spec.component.luau",
+   "quad-roblox/test/spec.d.luau"
+  ],
+  "sample": "Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:255: descent through the interface parent\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:255\n",
+  "secs": 0.48
+ },
+ {
+  "id": "MD18",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 314,
+  "old": "if type(key) == \"string\" and string.sub(key, 1, 2) == \"__\" then",
+  "new": "if false then",
+  "orig": "if type(key) == \"string\" and string.sub(key, 1, 2) == \"__\" then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "jects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:397: no setter for a metamethod-looking name\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:397\n",
+  "secs": 0.46
+ },
+ {
+  "id": "MD19",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 351,
+  "old": " and not isPlainBranded(arg)",
+  "new": "",
+  "orig": "return type(arg) == \"table\" and getmetatable(arg) == nil and not isPlainBranded(arg)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "de-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:351: AttrKey is not a field table: nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:351\n",
+  "secs": 0.45
+ },
+ {
+  "id": "MD20",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 366,
+  "old": " or k == \"\"",
+  "new": "",
+  "orig": "if type(k) ~= \"string\" or k == \"\" then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "rojects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:375: construct rejects: Modifier(1 fields)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:375\n",
+  "secs": 0.43
+ },
+ {
+  "id": "MD21",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 372,
+  "old": "if methods[k] ~= nil then",
+  "new": "if false then",
+  "orig": "if methods[k] ~= nil then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "rojects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:375: construct rejects: Modifier(1 fields)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:375\n",
+  "secs": 0.46
+ },
+ {
+  "id": "MD22",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 375,
+  "old": "if string.match(k, \"^As%u\") ~= nil then",
+  "new": "if false then",
+  "orig": "if string.match(k, \"^As%u\") ~= nil then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "rojects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:375: construct rejects: Modifier(1 fields)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:375\n",
+  "secs": 0.44
+ },
+ {
+  "id": "MD23",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 378,
+  "old": "if string.sub(k, 1, 2) == \"__\" then",
+  "new": "if false then",
+  "orig": "if string.sub(k, 1, 2) == \"__\" then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "75233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:406: construct refuses the same keys: Modifier(1 fields)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:406\n",
+  "secs": 0.44
+ },
+ {
+  "id": "MD24",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 384,
+  "old": "if type(v) == \"function\" then",
+  "new": "if false then",
+  "orig": "if type(v) == \"function\" then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "ude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:225: rejected: function value\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:225\n",
+  "secs": 0.43
+ },
+ {
+  "id": "MD25",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 390,
+  "old": "if isHandlerLayerValue(v) then",
+  "new": "if false then",
+  "orig": "if isHandlerLayerValue(v) then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:225: rejected: handler-layer value\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:225\n",
+  "secs": 0.47
+ },
+ {
+  "id": "MD26",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 417,
+  "old": "if existing ~= nil then",
+  "new": "if false then",
+  "orig": "if existing ~= nil then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau",
+   "quad-roblox/test/spec.d.luau"
+  ],
+  "sample": "cts-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:247: TypedFactory dedup: same name → same ctor\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:247\n",
+  "secs": 0.46
+ },
+ {
+  "id": "MD27",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 437,
+  "old": "parent == subtype or ",
+  "new": "",
+  "orig": "if parent == subtype or isAncestorOrSelf(subtype, parent) then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.46
+ },
+ {
+  "id": "MD28",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 437,
+  "old": " or isAncestorOrSelf(subtype, parent)",
+  "new": "",
+  "orig": "if parent == subtype or isAncestorOrSelf(subtype, parent) then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau"
+  ],
+  "sample": "\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:272: rejected: cycle\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:272\n",
+  "secs": 0.47
+ },
+ {
+  "id": "MD29",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 489,
+  "old": "if n > 0 then n else nil",
+  "new": "nil",
+  "orig": "local k: any = if n > 0 then n else nil",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.flatten.luau",
+   "quad-roblox/test/spec.claim.luau",
+   "quad-roblox/test/spec.component.luau",
+   "quad-roblox/test/spec.handlers.luau"
+  ],
+  "sample": "u:183 function errorBefore\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Dispatch/Modifier/init.luau:497 function flatten\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.flatten.luau:29\n",
+  "secs": 0.45
+ },
+ {
+  "id": "MD30",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 496,
+  "old": "if isModifier(v) then",
+  "new": "if false then",
+  "orig": "if isModifier(v) then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.flatten.luau"
+  ],
+  "sample": "code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.flatten.luau:111: Modifier at a hash key must error\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.flatten.luau:111\n",
+  "secs": 0.44
+ },
+ {
+  "id": "MD31",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 500,
+  "old": "for i = n, 1, -1 do",
+  "new": "for i = 1, n do",
+  "orig": "for i = n, 1, -1 do -- ⚠️ reverse: the LAST modifier must write first",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.flatten.luau"
+  ],
+  "sample": "0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.flatten.luau:34: later modifier wins (m2 over m1)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.flatten.luau:34\n",
+  "secs": 0.45
+ },
+ {
+  "id": "MD32",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 507,
+  "old": "if input[key] ~= nil then",
+  "new": "if false then",
+  "orig": "if input[key] ~= nil then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.flatten.luau",
+   "quad-roblox/test/spec.claim.luau",
+   "quad-roblox/test/spec.component.luau",
+   "quad-roblox/test/spec.handlers.luau"
+  ],
+  "sample": "0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.flatten.luau:34: later modifier wins (m2 over m1)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.flatten.luau:34\n",
+  "secs": 0.45
+ },
+ {
+  "id": "MD33",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 505,
+  "old": "input[i] = ProcessedModifier",
+  "new": null,
+  "orig": "input[i] = ProcessedModifier -- consume the slot, keep the array hole-free",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.flatten.luau",
+   "quad-roblox/test/spec.claim.luau",
+   "quad-roblox/test/spec.component.luau",
+   "quad-roblox/test/spec.handlers.luau"
+  ],
+  "sample": "cts-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.flatten.luau:31: consumed slots become the sentinel (no holes)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.flatten.luau:31\n",
+  "secs": 0.49
+ },
+ {
+  "id": "MD34",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 157,
+  "old": "if not seen[parent] then",
+  "new": "if true then",
+  "orig": "if not seen[parent] then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.46
+ },
+ {
+  "id": "MD35",
+  "file": "quad-base/src/Dispatch/Modifier/init.luau",
+  "line": 225,
+  "old": "merged[k] = v",
+  "new": null,
+  "orig": "merged[k] = v -- baked values only — no State/function branching (9절)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.modifier.luau",
+   "quad-roblox/test/spec.component.luau"
+  ],
+  "sample": "5233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:116: later wins field by field; None wins as a real value\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.modifier.luau:116\n",
+  "secs": 0.46
+ },
+ {
+  "id": "EL01",
+  "file": "quad-base/src/Slot/Elements.luau",
+  "line": 20,
+  "old": "if S.isSlot(element) then",
+  "new": "if false then",
+  "orig": "if S.isSlot(element) then S.destroySlotTree(element) else module.Backend.nativeDispose(element) end",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "quad-base/src/Source.luau:71 function bumpAndEmit\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Source.luau:87 function Set\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:295\n",
+  "secs": 0.5
+ },
+ {
+  "id": "EL02",
+  "file": "quad-base/src/Slot/Elements.luau",
+  "line": 37,
+  "old": " or module.isModifier(v) then",
+  "new": " then",
+  "orig": "or module.isObserver(v) or module.isEffect(v) or module.isModifier(v) then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.46
+ },
+ {
+  "id": "EL03",
+  "file": "quad-base/src/Slot/Elements.luau",
+  "line": 36,
+  "old": "module.isRef(v) or ",
+  "new": "",
+  "orig": "if module.isRef(v) or module.isPreRef(v) or module.isPostRef(v)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:1091: Quad0240 Slot: this backend cannot mount this value\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:1092\n",
+  "secs": 0.47
+ },
+ {
+  "id": "EL04",
+  "file": "quad-base/src/Slot/Elements.luau",
+  "line": 40,
+  "old": "if v == nil or v == S.None then",
+  "new": "if v == nil then",
+  "orig": "if v == nil or v == S.None then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.45
+ },
+ {
+  "id": "EL05",
+  "file": "quad-base/src/Slot/Elements.luau",
+  "line": 43,
+  "old": "if not module.Backend.isInst(v) then",
+  "new": "if false then",
+  "orig": "if not module.Backend.isInst(v) then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.lifetime.luau",
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "ed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.lifetime.luau:75\n",
+  "secs": 0.45
+ },
+ {
+  "id": "EL06",
+  "file": "quad-base/src/Slot/Elements.luau",
+  "line": 51,
+  "old": "if not module.Backend.isClaimed(v) then",
+  "new": "if false then",
+  "orig": "if not module.Backend.isClaimed(v) then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau",
+   "quad-roblox/test/spec.handlers.luau"
+  ],
+  "sample": "aude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:1057: unclaimed element rejected: 1\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:1057\n",
+  "secs": 0.44
+ },
+ {
+  "id": "EL07",
+  "file": "quad-base/src/Slot/Elements.luau",
+  "line": 60,
+  "old": "if S.isSlot(v) or S.isState(v) then",
+  "new": "if S.isSlot(v) then",
+  "orig": "if S.isSlot(v) or S.isState(v) then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.moduleidentity.luau"
+  ],
+  "sample": "C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.moduleidentity.luau:21 function expectCross\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.moduleidentity.luau:84\n",
+  "secs": 0.45
+ },
+ {
+  "id": "EL08",
+  "file": "quad-base/src/Slot/Elements.luau",
+  "line": 67,
+  "old": "if v._destroyed then",
+  "new": "if false then",
+  "orig": "if v._destroyed then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "=\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:694: batch gate NOT left On\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:694\n",
+  "secs": 0.44
+ },
+ {
+  "id": "EL09",
+  "file": "quad-base/src/Slot/Elements.luau",
+  "line": 77,
+  "old": "OwnsElements = false",
+  "new": "OwnsElements = true",
+  "orig": "sub:Single(v, nil, { OwnsElements = false })",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:523: OwnsElements=false wrapper: Remove unmounts, does not destroy\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:523\n",
+  "secs": 0.45
+ },
+ {
+  "id": "EL10",
+  "file": "quad-base/src/Slot/Elements.luau",
+  "line": 78,
+  "old": "sub._wrapped = v",
+  "new": null,
+  "orig": "sub._wrapped = v",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "de-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:509: state element mounted via wrapper\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:509\n",
+  "secs": 0.45
+ },
+ {
+  "id": "EL11",
+  "file": "quad-base/src/Slot/Elements.luau",
+  "line": 84,
+  "old": "return el._wrapped or el",
+  "new": "return el",
+  "orig": "if S.isSlot(el) then return el._wrapped or el end",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "de-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:509: state element mounted via wrapper\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:509\n",
+  "secs": 0.46
+ },
+ {
+  "id": "EL12",
+  "file": "quad-base/src/Slot/Elements.luau",
+  "line": 95,
+  "old": "if S.isSlot(element) then",
+  "new": "if false then",
+  "orig": "if S.isSlot(element) then collectLeaves(element, acc)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:168: 3 physical leaves (header + i1 + i2): 1\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:168\n",
+  "secs": 0.43
+ },
+ {
+  "id": "EL13",
+  "file": "quad-base/src/Slot/Elements.luau",
+  "line": 104,
+  "old": "if S.isSlot(element) then collectLeaves(element) else { element }",
+  "new": "{ element }",
+  "orig": "return if S.isSlot(element) then collectLeaves(element) else { element }",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "33bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:445: elements = flattened leaves of the nested Slot (collectLeaves)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:445\n",
+  "secs": 0.43
+ },
+ {
+  "id": "SH01",
+  "file": "quad-base/src/Slot/Handler.luau",
+  "line": 29,
+  "old": "k >= 1 and ",
+  "new": "",
+  "orig": "return type(k) == \"number\" and k >= 1 and k % 1 == 0 and internal.isSlot(v)",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.46
+ },
+ {
+  "id": "SH02",
+  "file": "quad-base/src/Slot/Handler.luau",
+  "line": 29,
+  "old": "k % 1 == 0 and ",
+  "new": "",
+  "orig": "return type(k) == \"number\" and k >= 1 and k % 1 == 0 and internal.isSlot(v)",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.43
+ },
+ {
+  "id": "SH03",
+  "file": "quad-base/src/Slot/Handler.luau",
+  "line": 36,
+  "old": "if slotValue._destroyed then",
+  "new": "if false then",
+  "orig": "if slotValue._destroyed then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.46
+ },
+ {
+  "id": "SH04",
+  "file": "quad-base/src/Slot/Handler.luau",
+  "line": 39,
+  "old": "ModuleIdentity.assertOwnAtDispatch(module, slotValue, \"Slot\")",
+  "new": null,
+  "orig": "ModuleIdentity.assertOwnAtDispatch(module, slotValue, \"Slot\") -- before claim/bind commit (same reason as above)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.moduleidentity.luau"
+  ],
+  "sample": "C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.moduleidentity.luau:19 function expectCross\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.moduleidentity.luau:42\n",
+  "secs": 0.45
+ },
+ {
+  "id": "SH05",
+  "file": "quad-base/src/Slot/Handler.luau",
+  "line": 40,
+  "old": "if internal.claimOwnerAt(slotValue, inst, k) then",
+  "new": "if internal.claimOwnerAt(slotValue, inst, k) or true then",
+  "orig": "if internal.claimOwnerAt(slotValue, inst, k) then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.44
+ },
+ {
+  "id": "SH06",
+  "file": "quad-base/src/Slot/Handler.luau",
+  "line": 46,
+  "old": "if slotValue == nextValue then return end",
+  "new": null,
+  "orig": "if slotValue == nextValue then return end",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.44
+ },
+ {
+  "id": "SH07",
+  "file": "quad-base/src/Slot/Handler.luau",
+  "line": 47,
+  "old": "internal.unmountSlotTree(slotValue)",
+  "new": null,
+  "orig": "internal.unmountSlotTree(slotValue)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "), 재마운트 가능 ===\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:104: unmounted\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:104\n",
+  "secs": 0.44
+ },
+ {
+  "id": "SH08",
+  "file": "quad-base/src/Slot/Handler.luau",
+  "line": 48,
+  "old": "module.Bookkeeping.setEmpty(inst, k)",
+  "new": null,
+  "orig": "module.Bookkeeping.setEmpty(inst, k) -- `H-39` (한 본문 — Bookkeeping `setEmpty`)",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.55
+ },
+ {
+  "id": "SH09",
+  "file": "quad-base/src/Slot/Handler.luau",
+  "line": 49,
+  "old": "module.Backend.unbindLifetime(slotValue)",
+  "new": null,
+  "orig": "module.Backend.unbindLifetime(slotValue)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "quad-base/src/Source.luau:71 function bumpAndEmit\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Source.luau:87 function Set\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:107\n",
+  "secs": 0.55
+ },
+ {
+  "id": "SH10",
+  "file": "quad-base/src/Slot/Handler.luau",
+  "line": 50,
+  "old": "internal.releaseOwner(slotValue, inst)",
+  "new": null,
+  "orig": "internal.releaseOwner(slotValue, inst)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": " ===\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:108: remounted same slot\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.slot.luau:108\n",
+  "secs": 0.46
+ },
+ {
+  "id": "SH11",
+  "file": "quad-base/src/Slot/Handler.luau",
+  "line": 57,
+  "old": "return internal.isSlot(v)",
+  "new": "return false",
+  "orig": "return internal.isSlot(v)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.dispatch.luau"
+  ],
+  "sample": "076 Dispatch: no handler matched key Children (value: table, brand: Slot) — a quad value at a string key: it belongs in a numeric (array) slot\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.dispatch.luau:658\n",
+  "secs": 0.46
+ },
+ {
+  "id": "AK01",
+  "file": "quad-base/src/Attr/Key.luau",
+  "line": 57,
+  "old": " or name == \"\"",
+  "new": "",
+  "orig": "if type(name) ~= \"string\" or name == \"\" then -- `H-417`: an empty name is not an attribute name either",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.attribute.luau"
+  ],
+  "sample": "quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:35: an empty attribute name is rejected (`H-417`)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:35\n",
+  "secs": 0.46
+ },
+ {
+  "id": "AK02",
+  "file": "quad-base/src/Attr/Key.luau",
+  "line": 61,
+  "old": "if cached ~= nil then",
+  "new": "if false then",
+  "orig": "if cached ~= nil then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.attribute.luau"
+  ],
+  "sample": "Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:24: same name = same object (weak cache)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:24\n",
+  "secs": 0.44
+ },
+ {
+  "id": "AK03",
+  "file": "quad-base/src/Attr/Key.luau",
+  "line": 65,
+  "old": "cache[name] = key",
+  "new": null,
+  "orig": "cache[name] = key",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.attribute.luau"
+  ],
+  "sample": "Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:24: same name = same object (weak cache)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:24\n",
+  "secs": 0.46
+ },
+ {
+  "id": "AK04",
+  "file": "quad-base/src/Attr/Key.luau",
+  "line": 108,
+  "old": "if cur ~= nil and cur ~= k then",
+  "new": "if cur ~= nil then",
+  "orig": "if cur ~= nil and cur ~= k then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.46
+ },
+ {
+  "id": "AK05",
+  "file": "quad-base/src/Attr/Key.luau",
+  "line": 108,
+  "old": "if cur ~= nil and cur ~= k then",
+  "new": "if false then",
+  "orig": "if cur ~= nil and cur ~= k then",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.attribute.luau"
+  ],
+  "sample": "-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:169: cross-owner claim must error\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:169\n",
+  "secs": 0.48
+ },
+ {
+  "id": "AK06",
+  "file": "quad-base/src/Attr/Key.luau",
+  "line": 114,
+  "old": "nameClaims:SetStrong(inst, k.Name, k)",
+  "new": null,
+  "orig": "nameClaims:SetStrong(inst, k.Name, k)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.attribute.luau"
+  ],
+  "sample": "-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:169: cross-owner claim must error\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:169\n",
+  "secs": 0.46
+ },
+ {
+  "id": "AK07",
+  "file": "quad-base/src/Attr/Key.luau",
+  "line": 121,
+  "old": "if nameClaims:GetStrong(inst, k.Name) == k then",
+  "new": "if true then",
+  "orig": "if nameClaims:GetStrong(inst, k.Name) == k then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.48
+ },
+ {
+  "id": "AK08",
+  "file": "quad-base/src/Attr/Key.luau",
+  "line": 122,
+  "old": "nameClaims:SetStrong(inst, k.Name, nil)",
+  "new": null,
+  "orig": "nameClaims:SetStrong(inst, k.Name, nil)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.attribute.luau"
+  ],
+  "sample": "r/init.luau:276 function process\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/src/Dispatch/init.luau:355 function process\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:236\n",
+  "secs": 0.45
+ },
+ {
+  "id": "AK09",
+  "file": "quad-base/src/Attr/Key.luau",
+  "line": 116,
+  "old": "quad.Backend.setAttr(inst, k.Name, v)",
+  "new": null,
+  "orig": "quad.Backend.setAttr(inst, k.Name, v) -- unconditional, nil included (late read `H-174`)",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.attribute.luau",
+   "quad-roblox/test/spec.tagattribute.luau"
+  ],
+  "sample": "jects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:89: both set (store unwrapped by StoreBind)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:89\n",
+  "secs": 0.43
+ },
+ {
+  "id": "AK10",
+  "file": "quad-base/src/Attr/Key.luau",
+  "line": 46,
+  "old": "table.freeze({ Name = name })",
+  "new": "{ Name = name }",
+  "orig": "local key = table.freeze({ Name = name })",
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.attribute.luau"
+  ],
+  "sample": " 10절) ===\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:26: frozen\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-base/test/spec.attribute.luau:26\n",
+  "secs": 0.44
+ },
+ {
+  "id": "EO01",
+  "file": "quad-roblox/src/EngineOps.luau",
+  "line": 48,
+  "old": "element.Parent = target",
+  "new": null,
+  "orig": "element.Parent = target",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.component.luau",
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "rojects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.component.luau:112: flattened between siblings: H,F\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.component.luau:112\n",
+  "secs": 0.46
+ },
+ {
+  "id": "EO02",
+  "file": "quad-roblox/src/EngineOps.luau",
+  "line": 54,
+  "old": "element.Parent = nil",
+  "new": null,
+  "orig": "element.Parent = nil -- keep alive, out of the tree",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "5233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.robloxfactory.luau:179: nativeExtract detaches but keeps alive\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.robloxfactory.luau:179\n",
+  "secs": 0.45
+ },
+ {
+  "id": "EO03",
+  "file": "quad-roblox/src/EngineOps.luau",
+  "line": 58,
+  "old": "element.Parent = target",
+  "new": null,
+  "orig": "element.Parent = target",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.robloxfactory.luau:183: nativeExtract with replacement inserts newElements\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.robloxfactory.luau:183\n",
+  "secs": 0.44
+ },
+ {
+  "id": "EO04",
+  "file": "quad-roblox/src/EngineOps.luau",
+  "line": 65,
+  "old": "element:Destroy()",
+  "new": "element.Parent = nil",
+  "orig": "element:Destroy()",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.robloxfactory.luau:190: nativeRemove destroys and inserts the replacement\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.robloxfactory.luau:190\n",
+  "secs": 0.45
+ },
+ {
+  "id": "EO05",
+  "file": "quad-roblox/src/EngineOps.luau",
+  "line": 69,
+  "old": "element.Parent = target",
+  "new": null,
+  "orig": "element.Parent = target",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.robloxfactory.luau:190: nativeRemove destroys and inserts the replacement\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.robloxfactory.luau:190\n",
+  "secs": 0.47
+ },
+ {
+  "id": "EO06",
+  "file": "quad-roblox/src/EngineOps.luau",
+  "line": 83,
+  "old": "element:Destroy()",
+  "new": null,
+  "orig": "element:Destroy()",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.robloxfactory.luau:205: onDestroying fires exactly once via nativeDispose(Destroy)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.robloxfactory.luau:205\n",
+  "secs": 0.44
+ },
+ {
+  "id": "EO07",
+  "file": "quad-roblox/src/EngineOps.luau",
+  "line": 94,
+  "old": "return inst.Destroying:Connect(fn)",
+  "new": "return nil",
+  "orig": "return inst.Destroying:Connect(fn)",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.robloxfactory.luau:205: onDestroying fires exactly once via nativeDispose(Destroy)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.robloxfactory.luau:205\n",
+  "secs": 0.43
+ },
+ {
+  "id": "EO08",
+  "file": "quad-roblox/src/EngineOps.luau",
+  "line": 103,
+  "old": " and not child:IsA(className)",
+  "new": " and false",
+  "orig": "if child ~= nil and className ~= nil and not child:IsA(className) then",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau"
+  ],
+  "sample": "ts-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:237: class mismatch is a fail-fast absence: Frame\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:237\n",
+  "secs": 0.46
+ },
+ {
+  "id": "EO09",
+  "file": "quad-roblox/src/EngineOps.luau",
+  "line": 126,
+  "old": "cs:AddTag(inst, name)",
+  "new": null,
+  "orig": "cs:AddTag(inst, name)",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.tagattribute.luau"
+  ],
+  "sample": "233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.tagattribute.luau:55: initial tags via CollectionService:AddTag: \nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.tagattribute.luau:55\n",
+  "secs": 0.47
+ },
+ {
+  "id": "EO10",
+  "file": "quad-roblox/src/EngineOps.luau",
+  "line": 133,
+  "old": "cs:RemoveTag(inst, name)",
+  "new": null,
+  "orig": "cs:RemoveTag(inst, name)",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.tagattribute.luau"
+  ],
+  "sample": "-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.tagattribute.luau:57: diffed to b,c: a,b,c\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.tagattribute.luau:57\n",
+  "secs": 0.45
+ },
+ {
+  "id": "EO11",
+  "file": "quad-roblox/src/EngineOps.luau",
+  "line": 138,
+  "old": "inst:SetAttribute(name, v)",
+  "new": null,
+  "orig": "inst:SetAttribute(name, v) -- nil deletes natively",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.tagattribute.luau"
+  ],
+  "sample": "/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.tagattribute.luau:71: single keys written\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.tagattribute.luau:71\n",
+  "secs": 0.47
+ },
+ {
+  "id": "EO12",
+  "file": "quad-roblox/src/EngineOps.luau",
+  "line": 148,
+  "old": " or delay ~= delay",
+  "new": "",
+  "orig": "if type(delay) ~= \"number\" or delay ~= delay or delay < 0 then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.45
+ },
+ {
+  "id": "EO13",
+  "file": "quad-roblox/src/EngineOps.luau",
+  "line": 148,
+  "old": " or delay < 0",
+  "new": "",
+  "orig": "if type(delay) ~= \"number\" or delay ~= delay or delay < 0 then",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.timers.luau"
+  ],
+  "sample": "aude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.timers.luau:80: table: 0x0000620f9df67d40\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.timers.luau:80\n",
+  "secs": 0.53
+ },
+ {
+  "id": "EO14",
+  "file": "quad-roblox/src/EngineOps.luau",
+  "line": 155,
+  "old": " or timeout.__quadTimeout ~= true",
+  "new": "",
+  "orig": "if type(timeout) ~= \"table\" or timeout.__quadTimeout ~= true then",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.timers.luau"
+  ],
+  "sample": "c-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.timers.luau:30: invalid argument #1 to 'status' (thread expected, got nil)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.timers.luau:105\n",
+  "secs": 0.55
+ },
+ {
+  "id": "EO15",
+  "file": "quad-roblox/src/EngineOps.luau",
+  "line": 160,
+  "old": "task.cancel(timeout._native)",
+  "new": null,
+  "orig": "task.cancel(timeout._native)",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.timers.luau"
+  ],
+  "sample": "값 거부 ===\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.timers.luau:92: cancelled\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.timers.luau:92\n",
+  "secs": 0.56
+ },
+ {
+  "id": "EO16",
+  "file": "quad-roblox/src/EngineOps.luau",
+  "line": 145,
+  "old": "if type(func) ~= \"function\" then",
+  "new": "if false then",
+  "orig": "if type(func) ~= \"function\" then",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.timers.luau"
+  ],
+  "sample": "ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.timers.luau:23: invalid argument #1 to 'create' (function expected, got number)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.timers.luau:76\n",
+  "secs": 0.55
+ },
+ {
+  "id": "RX01",
+  "file": "quad-roblox/src/RobloxFactory.luau",
+  "line": 45,
+  "old": "installInstanceShorthandHandler(module)",
+  "new": null,
+  "orig": "installInstanceShorthandHandler(module) -- UICorner/UIPadding/UIPaddingOffset/UIScale — PropertyHandler보다 높은 우선순위(H-138)",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.component.luau",
+   "quad-roblox/test/spec.shorthand.luau"
+  ],
+  "sample": "u:4965 function stage\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.component.luau:38 function MaterialButton\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.component.luau:60\n",
+  "secs": 0.53
+ },
+ {
+  "id": "RX02",
+  "file": "quad-roblox/src/RobloxFactory.luau",
+  "line": 46,
+  "old": "OnChangeModule.install(module)",
+  "new": null,
+  "orig": "OnChangeModule.install(module)",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.events.luau",
+   "quad-roblox/test/spec.handlers.luau",
+   "quad-roblox/test/spec.tweenproperty.luau"
+  ],
+  "sample": "/init.luau:522 function drive\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/src/Declaration/init.luau:4965 function stage\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.events.luau:123\n",
+  "secs": 0.52
+ },
+ {
+  "id": "RX03",
+  "file": "quad-roblox/src/RobloxFactory.luau",
+  "line": 44,
+  "old": "installEventHandler(module)",
+  "new": null,
+  "orig": "installEventHandler(module)",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.events.luau",
+   "quad-roblox/test/spec.handlers.luau"
+  ],
+  "sample": "h/init.luau:522 function drive\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/src/Declaration/init.luau:4965 function stage\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.events.luau:56\n",
+  "secs": 0.57
+ },
+ {
+  "id": "LR01",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 63,
+  "old": "if InstData:GetWeak(inst, \"gchold\") ~= nil then",
+  "new": "if false then",
+  "orig": "if InstData:GetWeak(inst, \"gchold\") ~= nil then",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau",
+   "quad-roblox/test/spec.d.luau",
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "ects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:60: root is now quad-owned (double claim errors)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:60\n",
+  "secs": 0.52
+ },
+ {
+  "id": "LR02",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 74,
+  "old": "gchold[1] = gcconn",
+  "new": null,
+  "orig": "gchold[1] = gcconn -- array slot 1 is reserved for gcconn (values go in hash part)",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.52
+ },
+ {
+  "id": "LR03",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 83,
+  "old": "if inst == nil then",
+  "new": "if false then",
+  "orig": "if inst == nil then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.52
+ },
+ {
+  "id": "LR04",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 94,
+  "old": " and gcconn.Connected == true",
+  "new": "",
+  "orig": "return InstData:GetWeak(inst, \"gchold\") ~= nil and gcconn ~= nil and gcconn.Connected == true",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.handlers.luau",
+   "quad-roblox/test/spec.tweenproperty.luau"
+  ],
+  "sample": "cts-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.handlers.luau:381: destroyed: not claimed, before any GC\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.handlers.luau:381\n",
+  "secs": 0.53
+ },
+ {
+  "id": "LR05",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 94,
+  "old": "InstData:GetWeak(inst, \"gchold\") ~= nil and ",
+  "new": "",
+  "orig": "return InstData:GetWeak(inst, \"gchold\") ~= nil and gcconn ~= nil and gcconn.Connected == true",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.53
+ },
+ {
+  "id": "LR06",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 105,
+  "old": "if value == nil then",
+  "new": "if false then",
+  "orig": "if value == nil then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.5
+ },
+ {
+  "id": "LR07",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 109,
+  "old": " and gcconn.Connected == true",
+  "new": "",
+  "orig": "return gcconn ~= nil and gcconn.Connected == true",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.robloxfactory.luau:141: after Destroy the value may not execute (gcconn.Connected)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.robloxfactory.luau:141\n",
+  "secs": 0.55
+ },
+ {
+  "id": "LR08",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 118,
+  "old": "held ~= nil and ",
+  "new": "",
+  "orig": "return held ~= nil and held == InstData:GetWeak(inst, \"gchold\")",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.57
+ },
+ {
+  "id": "LR09",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 125,
+  "old": "if gchold == nil then",
+  "new": "if false then",
+  "orig": "if gchold == nil then",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "ects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/src/LifetimeHandle.luau:137: attempt to index nil with table\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.robloxfactory.luau:125\n",
+  "secs": 0.53
+ },
+ {
+  "id": "LR10",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 137,
+  "old": "gchold[value] = true",
+  "new": null,
+  "orig": "gchold[value] = true -- strong ref: value lives at least as long as inst (contract 1)",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.47
+ },
+ {
+  "id": "LR11",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 141,
+  "old": "BindData:SetWeak(value, \"gcconn\", InstData:GetWeak(inst, \"gcconn\"))",
+  "new": null,
+  "orig": "BindData:SetWeak(value, \"gcconn\", InstData:GetWeak(inst, \"gcconn\"))",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau",
+   "quad-roblox/test/spec.component.luau",
+   "quad-roblox/test/spec.events.luau",
+   "quad-roblox/test/spec.handlers.luau",
+   "quad-roblox/test/spec.robloxfactory.luau",
+   "quad-roblox/test/spec.shorthand.luau",
+   "quad-roblox/test/spec.tagattribute.luau",
+   "quad-roblox/test/spec.tweenproperty.luau"
+  ],
+  "sample": "e-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:146: re-emission reaches the claimed tree (owned like a New-made one)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:146\n",
+  "secs": 0.44
+ },
+ {
+  "id": "LR12",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 148,
+  "old": "gchold[value] = nil",
+  "new": null,
+  "orig": "gchold[value] = nil -- O(1) early release of this one value",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.46
+ },
+ {
+  "id": "LR13",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 150,
+  "old": "BindData:SetWeak(value, \"gchold\", nil)",
+  "new": null,
+  "orig": "BindData:SetWeak(value, \"gchold\", nil)",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.44
+ },
+ {
+  "id": "LR14",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 151,
+  "old": "BindData:SetWeak(value, \"gcconn\", nil)",
+  "new": null,
+  "orig": "BindData:SetWeak(value, \"gcconn\", nil)",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.handlers.luau",
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.handlers.luau:166: dead store cannot overwrite (old observer retracted)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.handlers.luau:166\n",
+  "secs": 0.45
+ },
+ {
+  "id": "DC01",
+  "file": "quad-roblox/src/Declaration/init.luau",
+  "line": 4962,
+  "old": "quad.Backend.nativeClaim(inst)",
+  "new": null,
+  "orig": "quad.Backend.nativeClaim(inst) -- ② 생성 직후 무조건, ③④보다 먼저",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau",
+   "quad-roblox/test/spec.component.luau",
+   "quad-roblox/test/spec.d.luau",
+   "quad-roblox/test/spec.events.luau",
+   "quad-roblox/test/spec.handlers.luau",
+   "quad-roblox/test/spec.shorthand.luau",
+   "quad-roblox/test/spec.tweenproperty.luau"
+  ],
+  "sample": "h/init.luau:522 function drive\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/src/Declaration/init.luau:4965 function stage\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.claim.luau:118\n",
+  "secs": 0.48
+ },
+ {
+  "id": "DC02",
+  "file": "quad-roblox/src/Declaration/init.luau",
+  "line": 5107,
+  "old": "quad.Modifier.DefineSubtype(\"GuiObject\", \"ScrollingFrame\")",
+  "new": null,
+  "orig": "quad.Modifier.DefineSubtype(\"GuiObject\", \"ScrollingFrame\")",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.46
+ },
+ {
+  "id": "DC03",
+  "file": "quad-roblox/src/Declaration/init.luau",
+  "line": 4971,
+  "old": "quad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, stage)",
+  "new": null,
+  "orig": "quad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, stage)",
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.d.luau",
+   "quad-roblox/test/spec.events.luau",
+   "quad-roblox/test/spec.handlers.luau",
+   "quad-roblox/test/spec.tweenproperty.luau"
+  ],
+  "sample": "/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.d.luau:102: aliases must be tagged (stage closures)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut2/quad-roblox/test/spec.d.luau:102\n",
+  "secs": 0.46
+ }
+]

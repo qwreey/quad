@@ -1,0 +1,86 @@
+[
+ {
+  "id": "ST04",
+  "file": "quad-base/src/State.luau",
+  "line": 201,
+  "old": "dep:_track(self._valueEpochMap)",
+  "new": null,
+  "orig": "dep:_track(self._valueEpochMap)",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.77
+ },
+ {
+  "id": "ST09",
+  "file": "quad-base/src/State.luau",
+  "line": 318,
+  "old": "self._emitEpochMap:Sync(batch)",
+  "new": null,
+  "orig": "self._emitEpochMap:Sync(batch) -- (3) BEFORE propagating, all at once",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.74
+ },
+ {
+  "id": "SR05",
+  "file": "quad-base/src/Source.luau",
+  "line": 91,
+  "old": "map:Sync(self)",
+  "new": null,
+  "orig": "map:Sync(self) -- a Source IS an Epoch: it goes into the map directly",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.76
+ },
+ {
+  "id": "BK02",
+  "file": "quad-base/src/Bookkeeping.luau",
+  "line": 207,
+  "old": "if bk.offsetCacheValidUpTo < i then",
+  "new": "if false then",
+  "orig": "if bk.offsetCacheValidUpTo < i then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.69
+ },
+ {
+  "id": "BK04",
+  "file": "quad-base/src/Bookkeeping.luau",
+  "line": 261,
+  "old": "if bk.offsetSetUpTo < entryCursor then",
+  "new": "if false then",
+  "orig": "if bk.offsetSetUpTo < entryCursor then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.67
+ },
+ {
+  "id": "BK06",
+  "file": "quad-base/src/Bookkeeping.luau",
+  "line": 274,
+  "old": "if bk.offsetSetUpTo < i then",
+  "new": "if false then",
+  "orig": "if bk.offsetSetUpTo < i then",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.71
+ },
+ {
+  "id": "PR10",
+  "file": "quad-roblox/src/Handlers/Property.luau",
+  "line": 278,
+  "old": "and v.Reverses ~= true",
+  "new": "and true",
+  "orig": "and v.Reverses ~= true",
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": "",
+  "secs": 0.79
+ }
+]

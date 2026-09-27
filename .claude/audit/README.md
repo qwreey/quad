@@ -87,4 +87,5 @@
 - `round13-e65-internal-ds-fuzz/` — **[2026-09-27 자율 루프 E65]** EpochMap·Relate·ImplRegistry·Void·Bookkeeping·소유권 차등 퍼저(7만5천 시드·변이 16·`axes.luau`·프로브 넷·`perf.luau`) — 차등 0, `H-817`~`H-820`, `Q151`·`Q152`, Q94/Q90 보강.
 - `round13-e70-howto-examples/` — **[2026-09-27 자율 루프 E70]** how-to·오버뷰·quadnomicon·랜딩 `luau` 펜스 105개 mock+strict(E58 하네스, `probes/` 다섯) — mock 74/75·strict 65/75, `H-824`~`H-828`, `Q153`(8.35).
 - `round13-e69-mutation/` — **[2026-09-27 자율 루프 E69]** 변이 테스트(243 변이·`mutants.py`/`run_mutants.py`·`results.json`·판별 프로브 `probe.e69.luau` P1~P19·`coverage.txt`) — 죽음 195/생존 48(실제 공백 25), `Q154`.
+- `round13-e73-mutation-2/` — **[2026-09-27 자율 루프 E73]** 변이 테스트 2차(E69 제외 모듈 180 변이·E69 미결 셋·차등 퍼즈 `fuzz.e73.luau`) — 죽음 149/생존 31(공백 21), 합산 보정 87.5%, `Q154` 보강.
 
