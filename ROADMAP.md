@@ -100,6 +100,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 - [ ] **[2026-09-06 신설, 사용자 결정 백로그]** 컴포넌트 경계 flatten 슈거(`research/component-flatten-sugar-plan.md`) — round21 §4 Q2·`H-340`의 후속. 순수 슈거, 코어 변경 없음. 스캐폴딩 계획만 있고 사용자 답 대기.
 - [ ] 범용 렌더 디버깅 도구로서의 quad-mock(Tween mock 등 동적 동작 포함,
       M1의 quad-base 테스트용 mock과는 별개)
+- [ ] **[2026-08-18 신설 — 사용자 아이디어, "아주 나중"]** 스크롤 최적화 외부 유틸 `quad-roblox-fastscroll`(`research/fastscroll-plan.md` — 선행 실측: `Visible=false`일 때 `AbsoluteSize`/`AbsolutePosition` 갱신 여부)과 스프링 물리 지속 업데이트 프리미티브 `quad-spring`(`research/spring-plan.md` — 참고 구현 `qwreey/spring.lua` 사용 가능성 확인). 둘 다 아이디어 단계, 설계 논의 전. **[2026-09-27 추가]** `todos.md` 4번·`project-context.md`는 이 둘을 quad-mock/quad-debug와 같은 급 백로그로 나열해 왔는데 여기엔 줄이 없었다(round13 E68).
 - [ ] `quad-debug`/`quad-debug-roblox-plugin` — 실물 Instance→코드 위치
       역추적 Studio 플러그인(`research/debug-tooling-plan.md`). 위
       quad-mock과 목적이 다름(오프라인 검증 vs 실시간 라이브 관찰) —
