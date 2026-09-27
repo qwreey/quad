@@ -1,0 +1,522 @@
+[
+ {
+  "id": "EF17",
+  "round": "E69",
+  "file": "quad-base/src/Effect.luau",
+  "line": 399,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.effect.luau"
+  ],
+  "sample": "pad/mut3/quad-base/test/spec.effect.luau:631: Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.effect.luau:633\n"
+ },
+ {
+  "id": "EF18",
+  "round": "E69",
+  "file": "quad-base/src/Effect.luau",
+  "line": 404,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.effect.luau"
+  ],
+  "sample": "rojects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.effect.luau:634: re-drive ran cleanup/fn: cleans 1, runs 1\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.effect.luau:634\n"
+ },
+ {
+  "id": "EF11",
+  "round": "E69",
+  "file": "quad-base/src/Effect.luau",
+  "line": 236,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.effect.luau"
+  ],
+  "sample": "claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.effect.luau:652: double WeakSubscribe: nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.effect.luau:652\n"
+ },
+ {
+  "id": "OB06",
+  "round": "E69",
+  "file": "quad-base/src/Observer.luau",
+  "line": 179,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.tostring.luau"
+  ],
+  "sample": "quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.tostring.luau:116: after Subscribe → Unsubscribe: Observer(weak)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.tostring.luau:116\n"
+ },
+ {
+  "id": "DI07",
+  "round": "E69",
+  "file": "quad-base/src/Dispatch/init.luau",
+  "line": 328,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.dispatch.luau"
+  ],
+  "sample": "claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.dispatch.luau:697: gap in the chain: nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.dispatch.luau:697\n"
+ },
+ {
+  "id": "DI10",
+  "round": "E69",
+  "file": "quad-base/src/Dispatch/init.luau",
+  "line": 354,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.dispatch.luau"
+  ],
+  "sample": "e-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.dispatch.luau:733: explicit retract must not call the consumed retractor again: 2\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.dispatch.luau:733\n"
+ },
+ {
+  "id": "SW04",
+  "round": "E69",
+  "file": "quad-base/src/Slot/Raw.luau",
+  "line": 97,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "de-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1347: removed element has no index: 1\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1347\n"
+ },
+ {
+  "id": "SW07",
+  "round": "E69",
+  "file": "quad-base/src/Slot/Raw.luau",
+  "line": 198,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1350: replaced-out element has no index: 1\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1350\n"
+ },
+ {
+  "id": "SW14",
+  "round": "E69",
+  "file": "quad-base/src/Slot/Raw.luau",
+  "line": 401,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "c-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1373: a held element dropped with nil is destroyed by the owning Slot\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1373\n"
+ },
+ {
+  "id": "SL04",
+  "round": "E69",
+  "file": "quad-base/src/Slot/List.luau",
+  "line": 116,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "te key: /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/src/Slot/Raw.luau:33: table index is nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1385\n"
+ },
+ {
+  "id": "SL06",
+  "round": "E69",
+  "file": "quad-base/src/Slot/List.luau",
+  "line": 151,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "rojects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1404: second cycle sees the first return: nil/nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1404\n"
+ },
+ {
+  "id": "SL10",
+  "round": "E69",
+  "file": "quad-base/src/Slot/List.luau",
+  "line": 124,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1424: Length emitted once per reconcile cycle: 5\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1424\n"
+ },
+ {
+  "id": "BK10",
+  "round": "E69",
+  "file": "quad-base/src/Bookkeeping.luau",
+  "line": 323,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1424: Length emitted once per reconcile cycle: 5\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1424\n"
+ },
+ {
+  "id": "SN01",
+  "round": "E69",
+  "file": "quad-base/src/Slot/Owner.luau",
+  "line": 27,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1438: double mount via :List: nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1438\n"
+ },
+ {
+  "id": "SN03",
+  "round": "E69",
+  "file": "quad-base/src/Slot/Owner.luau",
+  "line": 69,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "mp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1451: wrong-owner release: nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1451\n"
+ },
+ {
+  "id": "BK16",
+  "round": "E69",
+  "file": "quad-base/src/Bookkeeping.luau",
+  "line": 170,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "ects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1327: grandchild Slot carries its parent's base 1: 0\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1327\n"
+ },
+ {
+  "id": "SE01",
+  "round": "E69",
+  "file": "quad-base/src/Slot/Tree.luau",
+  "line": 28,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1332: inner follows the uncle's growth: 2\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1332\n"
+ },
+ {
+  "id": "SI09",
+  "round": "E69",
+  "file": "quad-base/src/Slot/init.luau",
+  "line": 328,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/src/Slot/Raw.luau:170: Quad0161 Bookkeeping.releaseOwner: element must not be nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1463\n"
+ },
+ {
+  "id": "TG08",
+  "round": "E69",
+  "file": "quad-base/src/Tag.luau",
+  "line": 113,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.tag.luau"
+  ],
+  "sample": "ad0201 ===\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.tag.luau:267: depth gate: nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.tag.luau:267\n"
+ },
+ {
+  "id": "DB01",
+  "round": "E69",
+  "file": "quad-base/src/Debounce.luau",
+  "line": 86,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.debounce.luau"
+  ],
+  "sample": "5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.debounce.luau:570: setTimeout: delay must be a non-negative number (got number)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.debounce.luau:572\n"
+ },
+ {
+  "id": "OP03",
+  "round": "E69",
+  "file": "quad-base/src/Operator.luau",
+  "line": 161,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.operator.luau"
+  ],
+  "sample": "d7b9d5c7/scratchpad/mut3/quad-base/test/spec.operator.luau:208: Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 3, max 3)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.operator.luau:210\n"
+ },
+ {
+  "id": "OP05",
+  "round": "E69",
+  "file": "quad-base/src/Operator.luau",
+  "line": 151,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.operator.luau"
+  ],
+  "sample": "75233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.operator.luau:213: logical right shift of a high-bit value: 4160749568\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.operator.luau:213\n"
+ },
+ {
+  "id": "PR10",
+  "round": "E69",
+  "file": "quad-roblox/src/Handlers/Property.luau",
+  "line": 278,
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.tweenproperty.luau"
+  ],
+  "sample": "5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.tweenproperty.luau:422: Time = 0 + Reverses creates an engine tween: 0\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.tweenproperty.luau:422\n"
+ },
+ {
+  "id": "BK02",
+  "round": "E69",
+  "file": "quad-base/src/Bookkeeping.luau",
+  "line": 207,
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": ""
+ },
+ {
+  "id": "BK04",
+  "round": "E69",
+  "file": "quad-base/src/Bookkeeping.luau",
+  "line": 261,
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": ""
+ },
+ {
+  "id": "ST04",
+  "round": "E69",
+  "file": "quad-base/src/State.luau",
+  "line": 201,
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": ""
+ },
+ {
+  "id": "ST09",
+  "round": "E69",
+  "file": "quad-base/src/State.luau",
+  "line": 318,
+  "status": "SURVIVED",
+  "killers": [],
+  "sample": ""
+ },
+ {
+  "id": "LR03",
+  "round": "E73",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 83,
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/src/LifetimeHandle.luau:93: Quad0138 Relate:GetWeak: inst must not be nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.robloxfactory.luau:318\n"
+ },
+ {
+  "id": "LR06",
+  "round": "E73",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 105,
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "33bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/src/LifetimeHandle.luau:108: Quad0138 Relate:GetWeak: inst must not be nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.robloxfactory.luau:322\n"
+ },
+ {
+  "id": "LR08",
+  "round": "E73",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 118,
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.robloxfactory.luau:324: never-bound value vs unclaimed inst: false\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.robloxfactory.luau:324\n"
+ },
+ {
+  "id": "LR10",
+  "round": "E73",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 137,
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.robloxfactory.luau:349: the bound Observer survived GC (held by the inst) and fired: 0\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.robloxfactory.luau:349\n"
+ },
+ {
+  "id": "LR12",
+  "round": "E73",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 148,
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "d5c7/scratchpad/mut3/quad-roblox/test/spec.robloxfactory.luau:362: an unbound value is collectible while the inst lives (early release)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.robloxfactory.luau:362\n"
+ },
+ {
+  "id": "LR13",
+  "round": "E73",
+  "file": "quad-roblox/src/LifetimeHandle.luau",
+  "line": 150,
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.robloxfactory.luau"
+  ],
+  "sample": "33bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.robloxfactory.luau:357: no longer held by this inst after unbind\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.robloxfactory.luau:357\n"
+ },
+ {
+  "id": "CL06",
+  "round": "E73",
+  "file": "quad-base/src/Claim.luau",
+  "line": 129,
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau"
+  ],
+  "sample": "b9d5c7/scratchpad/mut3/quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Claim.luau:133: attempt to compare string < number\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.claim.luau:362\n"
+ },
+ {
+  "id": "CL07",
+  "round": "E73",
+  "file": "quad-base/src/Claim.luau",
+  "line": 133,
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau"
+  ],
+  "sample": "af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.claim.luau:344: Quad0085 Dispatch.drive: array keys must be positive integers (got 1.5)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.claim.luau:346\n"
+ },
+ {
+  "id": "CL15",
+  "round": "E73",
+  "file": "quad-base/src/Claim.luau",
+  "line": 190,
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau"
+  ],
+  "sample": "0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.claim.luau:352: plain table as descriptor: nil\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.claim.luau:352\n"
+ },
+ {
+  "id": "CL16",
+  "round": "E73",
+  "file": "quad-base/src/Claim.luau",
+  "line": 62,
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau"
+  ],
+  "sample": "s-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.claim.luau:357: empty className: function: 0x00005f968f866d70\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.claim.luau:357\n"
+ },
+ {
+  "id": "CL17",
+  "round": "E73",
+  "file": "quad-base/src/Claim.luau",
+  "line": 154,
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.claim.luau"
+  ],
+  "sample": "code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.claim.luau:383: bottom-up drive order: root,child\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.claim.luau:383\n"
+ },
+ {
+  "id": "SH05",
+  "round": "E73",
+  "file": "quad-base/src/Slot/Handler.luau",
+  "line": 40,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "chpad/mut3/quad-base/test/spec.slot.luau:1483: Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1485\n"
+ },
+ {
+  "id": "SH06",
+  "round": "E73",
+  "file": "quad-base/src/Slot/Handler.luau",
+  "line": 46,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "e-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1486: re-drive re-inserted elements: 2\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1486\n"
+ },
+ {
+  "id": "SH03",
+  "round": "E73",
+  "file": "quad-base/src/Slot/Handler.luau",
+  "line": 36,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "cts-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1502: Quad0164 Slot: destroyed Slot cannot be mounted\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1503\n"
+ },
+ {
+  "id": "EL02",
+  "round": "E73",
+  "file": "quad-base/src/Slot/Elements.luau",
+  "line": 37,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1512: Quad0240 Slot: this backend cannot mount this value\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1513\n"
+ },
+ {
+  "id": "EL04",
+  "round": "E73",
+  "file": "quad-base/src/Slot/Elements.luau",
+  "line": 40,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1514: Quad0240 Slot: this backend cannot mount this value\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1515\n"
+ },
+ {
+  "id": "SH01",
+  "round": "E73",
+  "file": "quad-base/src/Slot/Handler.luau",
+  "line": 29,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "f-62ebd7b9d5c7/scratchpad/mut3/quad-base/src/Slot/Tree.luau:49: Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got 0)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1526\n"
+ },
+ {
+  "id": "SH02",
+  "round": "E73",
+  "file": "quad-base/src/Slot/Handler.luau",
+  "line": 29,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.slot.luau"
+  ],
+  "sample": "62ebd7b9d5c7/scratchpad/mut3/quad-base/src/Slot/Tree.luau:49: Quad0019 Bookkeeping.setOffsetSource: position must be a positive integer (got 1.5)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.slot.luau:1528\n"
+ },
+ {
+  "id": "EO12",
+  "round": "E73",
+  "file": "quad-roblox/src/EngineOps.luau",
+  "line": 148,
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.timers.luau"
+  ],
+  "sample": "Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.timers.luau:140: NaN delay: table: 0x0000648dd74094b0\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.timers.luau:140\n"
+ },
+ {
+  "id": "FB05",
+  "round": "E73",
+  "file": "quad-base/src/Fallback.luau",
+  "line": 53,
+  "status": "KILLED",
+  "killers": [
+   "quad-base/test/spec.fallback.luau"
+  ],
+  "sample": "w site, not the handler: /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/src/Fallback.luau:53\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-base/test/spec.fallback.luau:128\n"
+ },
+ {
+  "id": "DC02",
+  "round": "E73",
+  "file": "quad-roblox/src/Declaration/init.luau",
+  "line": 5107,
+  "status": "KILLED",
+  "killers": [
+   "quad-roblox/test/spec.d.luau"
+  ],
+  "sample": "d-roblox/test/spec.d.luau:144: Quad0056 Modifier: cannot cast a \"GuiObject\" modifier to \"ScrollingFrame\" — not an ancestor (use :As(name) to force)\nstacktrace:\n[C] function assert\n/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/mut3/quad-roblox/test/spec.d.luau:146\n"
+ }
+]

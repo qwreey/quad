@@ -1,0 +1,57 @@
+@@E75	Quad0001	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:19: Quad0001 AttrKey: name must be a non-empty string	FIX=ok	Hp=5
+@@E75	Quad0002	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:26: Quad0002 AttrKey: attribute "Hp" is already bound by another owner	FIX=ok	Overridden Hp=9
+@@E75	Quad0002	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:36: Quad0002 AttrKey: attribute "Hp" is already bound by another owner	FIX=ok	Hp=9
+@@E75	Quad0002	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:47: Quad0002 AttrKey: attribute "Hp" is already bound by another owner	FIX=skip	
+@@E75	Quad0003	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:52: Quad0003 Attr: attribute name cannot be empty	FIX=ok	a=1 b=2
+@@E75	Quad0005	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:61: Quad0005 Attr.Merged: attribute name "Hp" appears more than once	FIX=ok	merged Mp, overridden Hp=2
+@@E75	Quad0006	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:69: Quad0006 Attr: plain-table keys must be non-empty strings	FIX=ok	
+@@E75	Quad0007	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:72: Quad0007 Attr: attribute "Hp" cannot be a function — attribute values are raw values or State	FIX=ok	Hp=6
+@@E75	Quad0008	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:80: Quad0008 Attr: attribute "Pos" cannot be a table — attribute values are raw values, None or State (got table)	FIX=ok	
+@@E75	Quad0010	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:83: Quad0010 Attr: arguments must be Stores, Attr values or plain tables	FIX=ok	
+@@E75	Quad0011	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:86: Quad0011 Attr.Merged: arguments must be Attr values	FIX=ok	
+@@E75	Quad0012	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:89: Quad0012 Attr.Overridden: arguments must be Attr values	FIX=ok	
+@@E75	Quad0013	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:92: Quad0013 NumberAttr: name must be a non-empty string	FIX=ok	
+@@E75	Quad0014	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:95: Quad0014 StringAttr: value of "Name" must not be nil — use None to delete	FIX=ok	None accepted, deletes
+@@E75	Quad0015	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:102: Quad0015 BooleanAttr: value of "On" must be a boolean, State or None (got number)	FIX=ok	
+@@E75	Quad0016	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:110: Quad0016 Attr: the same group value is placed at two positions of this instance	FIX=intent-fail	separate calls, same name -> ./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:113: Quad0002 AttrKey: attribute "Hp" is already bound by another owner
+@@E75	Quad0016	TRIG=skip	separate calls with DIFFERENT names (what the user may have wanted: same group twice)	FIX=ok	distinct names fine
+@@E75	Quad0199	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:126: Quad0199 Tag: names must be strings — an empty string is not a tag name	FIX=ok	
+@@E75	Quad0200	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:129: Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)	FIX=ok	
+@@E75	Quad0201	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:132: Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)	FIX=ok	
+@@E75	Quad0202	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:135: Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table	FIX=ok	
+@@E75	Quad0203	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:138: Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes	FIX=ok	
+@@E75	Quad0204	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:141: Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got number)	FIX=ok	
+@@E75	Quad0205	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:144: Quad0205 Tag:Contains: names must be strings (got number at argument 2)	FIX=ok	
+@@E75	Quad0205	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:147: Quad0205 Tag:Contains: names must be strings (got nil at argument 1)	FIX=skip	
+@@E75	Quad0206	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:149: Quad0206 Tag: Apply factory must be a function (got string)	FIX=ok	
+@@E75	Quad0207	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:152: Quad0207 Tag.Merged: arguments must be Tag values	FIX=ok	
+@@E75	Quad0237	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:159: Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)	FIX=intent-fail	literal follows state=false; State<Tag> route works=true
+@@E75	Quad0237	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:172: Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)	FIX=ok	
+@@E75	Quad0026	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:177: Quad0026 newMapperClass: className must be a non-empty string (got string)	FIX=ok	Visible=false
+@@E75	Quad0027	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:188: Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)	FIX=ok	
+@@E75	Quad0028	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:204: Quad0028 Claim: two mapper descriptors resolved to the same Instance Title — each child needs exactly one descriptor	FIX=ok	
+@@E75	Quad0029	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:216: Quad0029 Claim: Title is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)	FIX=ok	a text=y b=z
+@@E75	Quad0030	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:235: Quad0030 Claim: mapper props must be a table (got number)	FIX=ok	
+@@E75	Quad0031	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:240: Quad0031 Claim: array keys must be positive integers (got 0)	FIX=ok	
+@@E75	Quad0032	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:248: Quad0032 Claim: no child matched key Titel under Frame (mapper TextLabel) — a child with that name must also be a TextLabel	FIX=ok	
+@@E75	Quad0032	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:251: Quad0032 Claim: no child matched key Title under Frame (mapper Frame) — a child with that name must also be a Frame	FIX=skip	
+@@E75	Quad0033	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:253: Quad0033 Claim: first argument must be an Instance of the installed backend (got table)	FIX=ok	
+@@E75	Quad0034	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:256: Quad0034 Claim: second argument must be a D.Mapper descriptor	FIX=ok	
+@@E75	Quad0102	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:261: Quad0102 bindLifetime: inst must not be nil	FIX=ok	
+@@E75	Quad0103	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:264: Quad0103 bindLifetime: value must not be nil	FIX=ok	Effect bound runs n=1
+@@E75	Quad0104	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:272: Quad0104 bindLifetime: value is already subscribed	FIX=ok	n=2
+@@E75	Quad0105	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:281: Quad0105 unbindLifetime: value must not be nil	FIX=ok	
+@@E75	Quad0232	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:284: Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)	FIX=ok	n=2
+@@E75	Quad0233	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:293: Quad0233 bindLifetime: value is already bound to another Instance	FIX=ok	n=2
+@@E75	Quad0138	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:303: Quad0138 Relate:SetStrong: inst must not be nil	FIX=ok	
+@@E75	Quad0139	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:306: Quad0139 Relate:GetWeak: key must not be nil	FIX=ok	
+@@E75	Quad0106	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:311: Quad0106 Effect: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances	FIX=ok	same instance n=1
+@@E75	Quad0106	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:319: Quad0106 State: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances	FIX=skip	
+@@E75	Quad0108	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:321: Quad0108 quad: isInst is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)	FIX=ok	
+@@E75	Quad0208	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:330: Quad0208 Quad:RunInit: initFn must be a function (got number)	FIX=ok	ret=nil
+@@E75	Quad0209	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:333: Quad0209 UseProvider: the function must return its extension table (got nil — return an empty table if it adds nothing)	FIX=ok	
+@@E75	Quad0210	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:336: Quad0210 AddPlugin: plugin must be a function (got number)	FIX=ok	Hello=1
+@@E75	Quad0211	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:339: Quad0211 AddPlugin: the function must return its extension table (got nil — return an empty table if it adds nothing)	FIX=ok	X=1
+@@E75	Quad0212	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:346: Quad0212 UseProvider: provider must be a function (got nil)	FIX=ok	
+@@E75	Quad0213	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/E.luau:349: Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends	FIX=ok	q.New() on instance ok
+<<END>>	56

@@ -1,0 +1,22 @@
+# ./scripts/test.sh (drafts applied, worktree at HEAD 0dc431dd) — analyzer sections + tail; exit code 0
+=== luau-analyze (engine-agnostic) quad-base/src quad-types/src quad-error/src quad-base/test/spec.*.luau quad-base/test/mock.luau
+./quad-base/test/spec.slot.luau(1275,79): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+./quad-base/test/spec.slot.luau(1287,80): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+./quad-base/test/spec.slot.luau(1302,76): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+=== luau-lsp analyze --flag:LuauSolverV2=true (new solver, engine-agnostic) quad-base/src quad-types/src quad-error/src type-version-check/src quad-base/test/spec.*.luau quad-base/test/mock.luau
+[WARN] No definitions file provided by client
+quad-base/test/spec.slot.luau(1275,79): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+quad-base/test/spec.slot.luau(1287,80): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+quad-base/test/spec.slot.luau(1302,76): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+=== luau-lsp analyze --definitions=scripts/roblox-defs/globalTypes.d.luau quad-roblox/src quad-roblox/test/spec.*.luau
+=== quad-base/test/smoke.init.luau
+...
+doc-coverage: 202/202 symbols have a heading in docs/reference
+=== type-surface-check (input positions use markers)
+type-surface-check: 0 input-position State/Source
+type-surface-check: 0 unprimed exported type function
+=== error-codes (every raise carries a QuadNNNN id with a docs/reference/errors section)
+error-codes: 248 ids, 242 raise sites, 0 untagged, 0 errors, 0 warnings
+=== check-version
+check-version: canonical 3.2.0 (quad-base/pesde.toml), VERSION_PATTERN 3.2^.0^
+# exit 0 (baseline analyzer output identical: the 3 SameLineStatement lints on spec.slot 1275/1287/1302 are pre-existing)

@@ -1,0 +1,12 @@
+Terminated                 cat > /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/p.luau 2> /dev/null
+Observer	false	./.claude/audit/round13-e75-error-prescriptions/cases/B_probe.luau:5: Quad0116 Observer: must be an array item, not the value of a string key
+Slot	false	./.claude/audit/round13-e75-error-prescriptions/cases/B_probe.luau:5: Quad0141 Slot: must be an array item, not the value of a string key
+Store	false	./.claude/audit/round13-e75-error-prescriptions/cases/B_probe.luau:5: Quad0076 Dispatch: no handler matched key Foo (value: table, brand: Store) — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))
+Ref	false	./.claude/audit/round13-e75-error-prescriptions/cases/B_probe.luau:5: Quad0137 Ref: must be an array item, not the value of a string key
+Context	false	./.claude/audit/round13-e75-error-prescriptions/cases/B_probe.luau:5: Quad0076 Dispatch: no handler matched key Foo (value: table, brand: Context) — a quad value at a string key: it belongs in a numeric (array) slot
+Tag	false	./.claude/audit/round13-e75-error-prescriptions/cases/B_probe.luau:5: Quad0076 Dispatch: no handler matched key Foo (value: table, brand: Tag) — a quad value at a string key: it belongs in a numeric (array) slot
+storeArr	false	./.claude/audit/round13-e75-error-prescriptions/cases/B_probe.luau:7: Quad0076 Dispatch: no handler matched key 1 (value: table, brand: Store) — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))
+srcArr	false	./.claude/audit/round13-e75-error-prescriptions/cases/B_probe.luau:8: Quad0076 Dispatch: no handler matched key 1 (value: number) — check that the provider for this value (e.g. quad-roblox) is initialized
+srcStrArr	false	./.claude/audit/round13-e75-error-prescriptions/cases/B_probe.luau:9: Quad0076 Dispatch: no handler matched key 1 (value: string) — check that the provider for this value (e.g. quad-roblox) is initialized
+
+[exited with code 0]

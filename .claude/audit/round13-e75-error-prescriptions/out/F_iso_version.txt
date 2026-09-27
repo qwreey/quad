@@ -1,0 +1,5 @@
+@@E75	Quad0228	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F_iso_version.luau:14: Quad0228 quad-roblox: requires a quad-base matching version pattern '3.2^.0^' (got '3.1.0')	FIX=ok	3.2.0 accepted
+@@E75	Quad0228	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F_iso_version.luau:21: Quad0228 quad-roblox: requires a quad-base matching version pattern '3.2^.0^' (got '4.0.0')	FIX=ok	3.2.5=true 3.4.0=true 3.10.1=true
+@@E75	Quad0228	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F_iso_version.luau:29: Quad0228 quad-roblox: requires a quad-base matching version pattern '3.2^.0^' (got '3.3.0-rc.1')	FIX=ok	exact=true rc^=true
+New exists:	true
+<<END>>	3

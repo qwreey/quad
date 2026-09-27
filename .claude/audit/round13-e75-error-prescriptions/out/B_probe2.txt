@@ -1,0 +1,6 @@
+trig	false	./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Bookkeeping.luau:248: Quad0023 Bookkeeping.recompute: sourceList[2] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay 
+a.Parent	Frame	b.Parent	Frame
+retry same children	false	./.claude/audit/round13-e75-error-prescriptions/cases/B_probe2.luau:8: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and can
+trig2	false	./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Bookkeeping.luau:248: Quad0023 Bookkeeping.recompute: sourceList[2] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay
+after dispose a2.Parent	nil
+retry after dispose same children	false	./.claude/audit/round13-e75-error-prescriptions/cases/B_probe2.luau:14: Quad0219 InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts 

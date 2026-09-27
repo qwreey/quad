@@ -130,7 +130,7 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
 `Attr: the same group value is placed at two positions of this instance` — `quad-base/src/Attr/init.luau`
 
 - **언제**: 같은 `Attr` 그룹 값 객체(테이블 신원 기준)를 한 인스턴스의 서로 다른 두 props 자리에 동시에 놓았을 때.
-- **고치려면**: 자리마다 별도의 `q.Attr(...)` 호출로 새 값을 만드세요.
+- **고치려면**: 그 그룹은 한 자리에만 놓으세요. 자리마다 새 `q.Attr(...)`를 만들어 놓는 것은 답이 아닙니다 — 같은 이름을 두 그룹이 주장하게 돼 곧바로 `Quad0002`(다른 owner가 이미 묶음)가 납니다([2026-09-27 mock 실측]).
 - **참고**: [`q.Attr(...)`](/reference/core/09-tag-attr/#qattr)
 
 ### Quad0199
@@ -210,5 +210,5 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
 `Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)` — `quad-base/src/Tag.luau`
 
 - **언제**: 이름 자리에 메타테이블이 달린 테이블을 넘겼을 때 — `State`나 `Attr` 같은 quad 값도 포함되고(`q.Tag(state)`도 이 에러입니다), `q.None`도 그렇습니다(`q.Tag(q.None)`·`tag:Added(q.None)` — `None`은 "없음" 인자가 아니라 메타테이블 있는 테이블; "없음"은 `nil`로; 메타테이블이 없는 `AttrKey`/Mapper 디스크립터는 Quad0200). `q.Tag(...)`의 `__call` 인자는 타입 검사가 없어 strict도 잡지 못합니다. 문자열도, `Tag`도, 평범한 리스트도 아닙니다.
-- **고치려면**: 문자열, `Tag`, 또는 그것들의 평범한(메타테이블 없는) `{...}` 리스트를 넘기세요.
+- **고치려면**: 문자열, `Tag`, 또는 그것들의 평범한(메타테이블 없는) `{...}` 리스트를 넘기세요. `State`를 따라가는 태그가 목적이었다면 문자열로 바꾸는 건 답이 아닙니다 — `state:Compute(function(v) return q.Tag(v) end)`를 숫자 키 자리에 놓으세요([2026-09-27 mock 실측]).
 - **참고**: [`q.Tag(...names)`](/reference/core/09-tag-attr/#qtagnames)

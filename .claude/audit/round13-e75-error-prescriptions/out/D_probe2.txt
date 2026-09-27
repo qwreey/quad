@@ -1,0 +1,9 @@
+bound n	1
+Unsubscribe ->	false	D_probe2.luau:9: Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()
+WeakUnsubscribe ->	true
+after Set n	2	cleaned	1	Subscribed	false
+after Destroy cleaned	2
+O WeakUnsubscribe ->	true
+O still fires	true
+State seat -> nil stops Effect:	true
+unbindLifetime stops Effect:	true

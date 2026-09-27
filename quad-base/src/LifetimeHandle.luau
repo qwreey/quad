@@ -76,7 +76,7 @@ local isObserver, isEffect = Brand.isObserver, Brand.isEffect
 -- the loud stub factory (`NotInstalled.luau` — one body for the three modules, Q3 ②;
 -- the blame reasoning above is repeated in that file's header)
 local function notInstalled(name: string): (...any) -> ...any
-	return NotInstalled(name, "the lifetime primitives / engine ops", "; tests use mock.installLifetime")
+	return NotInstalled(name, "the lifetime primitives / engine ops", "; headless tests install their own provider the same way")
 end
 
 local function Init(module: any)

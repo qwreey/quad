@@ -100,6 +100,11 @@
 
 1. (E73, Q154 `LR02`) `quad-roblox/src/LifetimeHandle.luau` 74 `gchold[1] = gcconn`을 지우면 Roblox가 `Destroying` 연결 래퍼를 수거해 hold가 풀리는지 — CLI mock 신호는 연결을 강하게 잡아 판정 불가.
 
+### 2-E75 추가
+
+1. (E75, `H-841`) `D.Frame({ outer })` 마운트가 `Quad0167`로 던진 뒤 엔진에서 호스트 Instance가 어떤 상태로 남는지(mock: 반쯤 지어진 채 반환 없음).
+2. (E75, Q155) 리터럴 정적 자식에 `el.Parent = nil`을 했을 때 엔진 쪽 거동(레지스트리는 그대로 — 다른 자리 `Quad0172` 재현 여부).
+
 ## 3. HUMAN_TODO 편입 제안 (결정은 메인)
 
 - **1절 다섯 항목(float32·프레임당 신호·같은 프레임 순서·b2 통지·IsA 상속)은 이미 서로 얽혀 있어(§0 "문항 사이 의존" 절) 기존 C 섹션 스타일대로 "Tween 실기기 프로브 팩" 하나로 묶는 게 자연스럽다** — 기존 프로브 팩 형식(`.claude/audit/studio-editor-probe-2026-09-26/`처럼 `rojo serve` + 관측표)과 같은 모양, 결과 하나가 Q78·Q81·Q91·Q97·Q99 다섯 문항의 처방을 동시에 좌우한다.

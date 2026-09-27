@@ -34,7 +34,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 `Bookkeeping.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) — or a leaf handler skipped its position registration: position {i} is not registered` — `quad-base/src/Bookkeeping.luau`
 
 - **언제**: `q.Bookkeeping.getOffsetAt(ownerKey, at)`으로 조회한 `at`이 등록된 마지막 위치(`N`) + 1보다 클 때 — 범위 밖 조회입니다. (같은 자리에서 중간의 어떤 위치가 등록 자체를 건너뛴 경우도 이 갈래로 잡힙니다 — 두 원인을 코드가 구분할 수 없어 메시지가 둘 다 말합니다.) `q.Bookkeeping.setOffsetSource(ownerKey, i, source)`도 내부에서 `getOffsetAt(ownerKey, i)`를 부르므로, `i` 앞 위치들이 아직 등록되지 않았으면 같은 메시지가 납니다 — 이때 메시지는 직접 부르지 않은 `getOffsetAt`을 말합니다.
-- **고치려면**: 등록된 범위(`1..N+1`) 안에서 조회하세요. 조회나 `setOffsetSource` 전에 그 앞 위치들을 `setLength`(또는 `setEmpty`)로 먼저 등록하세요 — 위치를 등록하는 것은 이 둘뿐이고, `setOffsetSource`는 등록하지 않고 앞 위치를 조회합니다.
+- **고치려면**: 등록된 범위(`1..N+1`) 안에서 조회하세요. 조회나 `setOffsetSource` 전에 그 앞 위치들을 **계약 순서대로**(위치마다 `setOffsetSource` → `setLength`, 또는 `setEmpty` 하나) 먼저 등록하세요 — 위치를 등록하는 것은 `setLength`/`setEmpty`뿐이고 `setOffsetSource`는 등록하지 않고 앞 위치를 조회합니다. 앞 위치를 `setLength`만으로 등록하면 이 에러 대신 `Quad0023`(그 위치의 발행 채널이 없음)이 납니다([2026-09-27 mock 실측]).
 - **참고**: [`q.Bookkeeping.getOffsetAt(ownerKey, at)`](/reference/extend/02-dispatch-handler-contract/#qbookkeepinggetoffsetatownerkey-at)
 
 ### Quad0023
@@ -42,7 +42,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 `Bookkeeping.recompute: sourceList[{i}] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)` — `quad-base/src/Bookkeeping.luau`
 
 - **언제**: 재계산 도중 위치 `i`의 오프셋 발행 채널(`sourceList[i]`)이 `nil`일 때 — 대표 원인은 배열 리터럴 중간에 `nil`이 낀 props(`{ a, nil, b }`)이고, 핸들러를 직접 쓰는 입장이면 `setOffsetSource`(또는 `setEmpty`) 등록을 빠뜨린 경우입니다.
-- **고치려면**: 사용자라면 그 옵셔널 자리를 `q.None`으로 채우세요. 핸들러 작성자라면 그 자리의 `setOffsetSource` 등록을 빠뜨리지 않았는지 확인하세요.
+- **고치려면**: 사용자라면 그 옵셔널 자리를 `q.None`으로 채우세요. 핸들러 작성자라면 그 자리의 `setOffsetSource` 등록을 빠뜨리지 않았는지 확인하세요. 이 에러가 난 뒤 그 Instance는 반쯤 지어진 채(구멍 뒤 자식까지 붙어 있음 — 메시지의 "children placed before this raise"보다 넓음) 남습니다 — 같은 자식 값으로 다시 만들면 `Quad0160`, 그 Instance를 dispose한 뒤 다시 쓰면 `Quad0219`가 나니, 호스트를 dispose하고 자식도 새로 만들어 처음부터 하세요([2026-09-27 mock 실측]).
 - **참고**: [Length/Offset 부기](/reference/extend/02-dispatch-handler-contract/#lengthoffset-부기)
 
 ### Quad0024
@@ -249,8 +249,8 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken` — `quad-base/src/Dispatch/init.luau`
 
-- **언제**: `retractFrom`이 체인 배열을 되감다가 구멍(`nil` 슬롯)을 만났을 때 — 정상 경로로는 나지 않는 내부 불변식 위반입니다.
-- **고치려면**: (문서 미정) — 사용자 코드가 손볼 여지가 없는 내부 버그 신호입니다. 재현되면 리포트하세요.
+- **언제**: `retractFrom`이 체인 배열을 되감다가 구멍(`nil` 슬롯)을 만났을 때 — 정상 경로로는 나지 않는 내부 불변식 위반입니다. 공개 API로 닿는 길이 하나 있습니다 — 위임 핸들러의 안쪽 retractor가 같은 `(inst, key)`에 `retractFrom`을 다시 부르는 **간접 재진입**(정의되지 않은 동작 — [2026-09-27 mock 실측]).
+- **고치려면**: retractor 안에서 같은 자리를 다시 철거하지 마세요(재진입은 계약 밖). 그런 코드가 없는데 났다면 내부 버그 신호입니다 — 재현되면 리포트하세요.
 - **참고**: [`q.Dispatch.retractFrom(inst, key, index)`](/reference/extend/02-dispatch-handler-contract/#qdispatchretractfrominst-key-index)
 
 ### Quad0072
@@ -292,7 +292,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 꼬리 힌트는 넷 중 하나입니다 — 값에 브랜드가 없거나 백엔드(프로바이더) 브랜드면 ` — check that the provider for this value (e.g. quad-roblox) is initialized`; quad-base 브랜드(`Slot`/`Ref`/`State`/`Tag`/`Attr`/`Context`/`Provider`/`MapperDescriptor` 등)이면 `Store`일 때 ` — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))`, 문자 키일 때 ` — a quad value at a string key: it belongs in a numeric (array) slot`, 숫자 키일 때 ` — this quad value has no handler at an array position`. 값이 `nil`이면 그 뒤에 ` (a nil at this depth may be an unwrapped None or a reactive nil — the key's own handler must accept nil)`이 더 붙습니다. `brand: …` 조각은 브랜드를 알아낼 수 있을 때만 들어갑니다.
 
 - **언제**: 그 값을 받아줄 핸들러가 하나도 없을 때. `noMatchMessage` 헬퍼가 만드는 문구이고, `Dispatch.process`의 매치 실패 raise가 이 헬퍼를 부릅니다.
-- **고치려면**: 프로바이더(quad-roblox 등)가 설치돼 있다면 가장 흔한 원인은 문자 키 쪽입니다 — 그 클래스에 없는(오타 난) 프로퍼티·이벤트 이름, 읽기 전용 프로퍼티(`AbsoluteSize` 등 — 읽으려면 `q.OnChange`), 그리고 `Parent`(props가 아니라 만든 뒤 밖에서 `inst.Parent = …`로 붙입니다)를 확인하세요. quad 값이라면 올바른 종류의 키(숫자/문자) 자리에 놓으세요. 설치 전이라면 그 값을 다루는 프로바이더가 설치돼 있는지 확인하세요.
+- **고치려면**: 프로바이더(quad-roblox 등)가 설치돼 있다면 가장 흔한 원인은 문자 키 쪽입니다 — 그 클래스에 없는(오타 난) 프로퍼티·이벤트 이름, 읽기 전용 프로퍼티(`AbsoluteSize` 등 — 읽으려면 `q.OnChange`), 그리고 `Parent`(props가 아니라 만든 뒤 밖에서 `inst.Parent = …`로 붙입니다)를 확인하세요. quad 값이라면 올바른 종류의 키(숫자/문자) 자리에 놓으세요 — 단 `Store`는 어느 키에도 그대로 놓이지 않으니(숫자 키로 옮겨도 같은 에러) 메시지 꼬리대로 `store.Name` 같은 필드를 놓거나 `q.Attr(store)`로 감싸세요. 설치 전이라면 그 값을 다루는 프로바이더가 설치돼 있는지 확인하세요.
 - **참고**: [`q.Dispatch.process(inst, key, value, index)`](/reference/extend/02-dispatch-handler-contract/#qdispatchprocessinst-key-value-index)
 
 ### Quad0077
@@ -340,7 +340,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 `Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got {brandNameOf(flattened) or "a table with a metatable"})` — `quad-base/src/Dispatch/init.luau`
 
 - **언제**: `flattened` 자체가 메타테이블을 가진 값이거나, 메타테이블이 없는 quad 브랜드 값(`q.AttrKey(...)` 등)일 때 — `D.Frame(q.Source(1))`처럼 중괄호를 잊어 quad 값 하나를 그대로 props로 넘긴 흔한 실수를 잡습니다.
-- **고치려면**: 항상 중괄호로 감싼 평범한 테이블을 넘기세요 — `D.Frame { q.Source(1) }`.
+- **고치려면**: 항상 중괄호로 감싼 평범한 테이블을 넘기세요 — `D.Frame { Name = q.Source("x") }`, `D.Frame { q.Attr{...} }`, `D.Frame { child }`처럼. (`D.Frame { q.Source(1) }`은 감싸도 `Quad0076`입니다 — 숫자 키에 놓인 `Source<number>`를 받는 핸들러가 없습니다.)
 - **참고**: [`q.Dispatch.drive(inst, flattened)`](/reference/extend/02-dispatch-handler-contract/#qdispatchdriveinst-flattened)
 
 ### Quad0084

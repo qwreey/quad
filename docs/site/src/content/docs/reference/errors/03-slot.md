@@ -138,7 +138,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 `Slot: this element is already mounted — multiple mounts are not allowed` — `quad-base/src/Slot/Owner.luau`
 
 - **언제**: `:List`/`:Single`의 `updateFn`이 돌려준 값이 이미 다른 자리에 마운트돼 있을 때(레지스트리는 Slot 원소·정적 자식·숏핸드 관리 자식이 하나를 같이 쓰지만, 정적 자식 자리는 Quad0160, 수동 Slot CRUD는 Quad0172가 냅니다 — [2026-09-27 실측]). `updateFn`이 같은 원소를 두 키에 돌려주거나 자기 Slot을 돌려준 경우도 중복·순환 문구가 아니라 이 문구가 납니다. 런타임 메시지 끝에는 "if its owner was destroyed outside quad …" 꼬리가 붙습니다.
-- **고치려면**: 그 값을 먼저 옛 자리에서 빼세요(`Extract`, 데이터 키 삭제 등). 다만 그 값의 원래 owner가 quad 밖에서(`inst:Destroy()`) 파괴됐다면 되살릴 수 없습니다.
+- **고치려면**: 그 값을 먼저 옛 자리에서 빼세요(`Extract`, 데이터 키 삭제 등). "언제"의 두 변형은 빼는 것으로 안 풀립니다 — 같은 원소를 두 키에 돌려줬다면 `Extract`는 `Quad0166`을 내니 `updateFn`이 키마다 다른 원소를 돌려주게 고치고, 자기 Slot을 돌려준 경우는 뺄 옛 자리가 없으니 반환값을 고치세요([2026-09-27 mock 실측]). 다만 그 값의 원래 owner가 quad 밖에서(`inst:Destroy()`) 파괴됐다면 되살릴 수 없습니다.
 - **참고**: [죽은 Slot과 마운트 규칙](/reference/core/06-slot/#죽은-slot과-마운트-규칙)
 
 ### Quad0157
@@ -170,7 +170,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 `Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed` (+ 런타임엔 "if its owner was destroyed outside quad …" 꼬리) — `quad-base/src/Slot/Owner.luau`
 
 - **언제**: `claimOwnerAt`이 등록하려는 값이 이미 다른 자리에 등록돼 있을 때(정확히 같은 자리의 재확인은 예외 — 던지지 않고 `false`를 돌려줍니다).
-- **고치려면**: Quad0156과 같습니다 — 먼저 옛 자리에서 빼세요.
+- **고치려면**: Quad0156과 같습니다 — 먼저 옛 자리에서 빼세요. 다만 리터럴 정적 자식(`D.Frame({ el })`)으로 앉은 값은 뺄 공개 경로가 없습니다(`el.Parent = nil`로도 안 풀림) — 옮겨 다닐 값은 State 자리나 Slot에 두세요([2026-09-27 mock 실측]).
 - **참고**: [죽은 Slot과 마운트 규칙](/reference/core/06-slot/#죽은-slot과-마운트-규칙), [`q.Bookkeeping.claimOwnerAt(element, inst, k)`](/reference/extend/02-dispatch-handler-contract/#qbookkeepingclaimowneratelement-inst-k)
 
 ### Quad0161
@@ -227,7 +227,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 `Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)` — `quad-base/src/Slot/init.luau`
 
 - **언제**: 이 `Slot`의 마운트 walk이 스택에 있는 동안(`_materializing`) 이 `Slot`에 CRUD나 `:List`/`:Single` 설치를 쓰려고 할 때 — 중첩된 `:List`의 첫 `updateFn`이나 그 안에서 도는 `Observer`가 조상 `Slot`을 건드리면 여기 걸립니다.
-- **고치려면**: 마운트가 끝난 뒤(`Observer`에서) 하세요. 이미 이 에러가 났다면 이전 마운트가 도중에 던진 것이라 이 `Slot`은 계속 쓸 수 없습니다 — 호스트 Instance를 `q.dispose`하세요.
+- **고치려면**: 마운트가 끝난 뒤 하세요 — "`Observer`에서"라도 그 `Observer`가 마운트 중에 동기로 발화하면 같은 에러입니다(마운트 뒤에 오는 변화에만 반응하게). 이미 이 에러가 났다면 이전 마운트가 도중에 던진 것이라 이 `Slot`은 계속 쓸 수 없습니다 — 호스트 Instance를 `q.dispose`하세요. `D.Frame({ outer })`처럼 호스트를 만드는 호출 자체가 던진 경우엔 호스트가 반환되지 않아 dispose할 손잡이가 없습니다 — 그 `Slot`은 버리고 새로 만드세요(`Dispatch.drive` 형태면 호스트 dispose가 됩니다 — [2026-09-27 mock 실측]).
 - **참고**: [`slot:List(data, updateFn, keyFn?, opts?)`](/reference/core/06-slot/#slotlistdata-updatefn-keyfn-opts)
 
 ### Quad0168
@@ -275,7 +275,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 `{surface}: this element is already mounted — multiple mounts are not allowed` (+ 같은 꼬리) — `quad-base/src/Slot/init.luau`
 
 - **언제**: 이미 다른 곳(다른 `Slot`의 원소, 정적 자식, 숏핸드가 만드는 관리 자식 등)에 마운트된 값을 원소로 넣으려 할 때(`prepareElements`의 배치 사전검사).
-- **고치려면**: Quad0156과 같습니다 — 먼저 옛 자리에서 빼세요.
+- **고치려면**: Quad0156과 같습니다 — 먼저 옛 자리에서 빼세요(Slot 원소는 `Extract`, State 자리는 `Set(nil)`). 리터럴 정적 자식(`D.Frame({ el })`)으로 앉은 값은 뺄 공개 경로가 없습니다(`el.Parent = nil`로도 안 풀림) — 옮겨 다닐 값은 처음부터 State 자리나 Slot에 두세요([2026-09-27 mock 실측]).
 - **참고**: [죽은 Slot과 마운트 규칙](/reference/core/06-slot/#죽은-slot과-마운트-규칙)
 
 ### Quad0173
@@ -331,7 +331,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 ``dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)`` — `quad-base/src/Slot/init.luau`
 
 - **언제**: 아직 어떤 `Slot`의 원소이거나 마운트된 자리(정적 자식·숏핸드 관리 자식 포함)를 차지하고 있는 값을 `dispose`하려 할 때.
-- **고치려면**: 먼저 그 자리에서 빼세요 — 수동 `Slot`이면 `Remove`/`Extract`, `:List` `Slot`이면 데이터에서 그 키 제거(또는 owner `Slot` 자체를 파괴), 숫자 키 자리면 그 자리를 쥔 `State`를 `Set(nil)`, 숏핸드 관리 자식이면 그 키를 `nil`로.
+- **고치려면**: 먼저 그 자리에서 빼세요 — 수동 `Slot`이면 `Remove`/`Extract`, `:List` `Slot`이면 데이터에서 그 키 제거, 숫자 키 자리면 그 자리를 쥔 `State`를 `Set(nil)`, 숏핸드 관리 자식이면 그 키를 `nil`로. owner `Slot` 자체를 파괴해서 풀려면 그 Slot이 State 자리에 있을 때 `Set(nil)` 뒤 dispose하거나 호스트를 dispose하세요 — 숫자 키 리터럴 자리에 앉은 Slot에 `q.dispose(slot)`을 부르면 같은 에러가 납니다(리터럴 정적 자식은 뺄 공개 경로가 없음 — Quad0172 — [2026-09-27 mock 실측]).
 - **참고**: [`q.dispose(value)`](/reference/core/10-lifetime-sentinels/#qdisposevalue)
 
 ### Quad0180

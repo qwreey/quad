@@ -4,7 +4,7 @@ description: 값을 직접 쓸 수 있는 반응형 루트 노드 — Set/Emit/R
 ---
 `Source`는 **값을 직접 쓸 수 있는 유일한 반응형 노드**입니다. 파생 노드인 [`State`](/reference/core/03-state/)는 읽기 전용이고, 전파는 언제나 어떤 `Source`의 `:Set`/`:Emit`에서 시작합니다.
 
-이 페이지의 심볼: [`q.Source(value)`](#qsourcevalue) · [`source:Set(v)`](#sourcesetv) · [`source:Emit()`](#sourceemit) · [`source.Revision`](#sourcerevision) · [Source가 물려받는 State 메소드](#source가-물려받는-state-메소드)
+이 페이지의 심볼: [`q.Source(v)`](#qsourcev) · [`source:Set(v)`](#sourcesetv) · [`source:Emit()`](#sourceemit) · [`source.Revision`](#sourcerevision) · [Source가 물려받는 State 메소드](#source가-물려받는-state-메소드)
 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)

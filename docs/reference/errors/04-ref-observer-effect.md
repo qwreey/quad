@@ -84,7 +84,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 `Effect: not subscribed strongly; use :WeakUnsubscribe()` — `quad-base/src/Effect.luau`
 
 - **언제**: `effect:Unsubscribe()`를 부를 때 그 핸들이 강하게 구독된 적이 없을 때(약한 구독뿐이거나, 자리에만 묶여 있거나, 이미 `:Unsubscribe()`로 한 번 풀린 뒤 다시 부른 경우).
-- **고치려면**: 약한 구독을 풀려면 `:WeakUnsubscribe()`를 쓰세요. 강한 구독을 이미 한 번 풀었다면 다시 부르지 마세요.
+- **고치려면**: 약한 구독을 풀려면 `:WeakUnsubscribe()`를 쓰세요. 강한 구독을 이미 한 번 풀었다면 다시 부르지 마세요. **자리에만 묶인** 핸들(숫자 키 자리에 놓인 Effect)에는 `:WeakUnsubscribe()`가 에러 없이 통과하지만 아무것도 풀지 않습니다 — 멈추려면 그 자리를 쥔 `State`를 `Set(nil)`하거나 `q.Backend.unbindLifetime(handle)`로 수명을 푸세요([2026-09-27 mock 실측]).
 - **참고**: [`effect:Unsubscribe()`](../core/05-observer-effect.md#effectunsubscribe)
 
 ### Quad0094
@@ -188,7 +188,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 `Observer: not subscribed strongly; use :WeakUnsubscribe()` — `quad-base/src/Observer.luau`
 
 - **언제**: `observer:Unsubscribe()`를 부를 때 그 핸들이 강하게 구독된 적이 없을 때(약한 구독뿐이거나, 자리에만 묶여 있거나, 이미 한 번 풀린 뒤 다시 부른 경우).
-- **고치려면**: 약한 구독을 풀려면 `:WeakUnsubscribe()`를 쓰세요.
+- **고치려면**: 약한 구독을 풀려면 `:WeakUnsubscribe()`를 쓰세요. **자리에만 묶인** 핸들(숫자 키 자리에 놓인 Observer)에는 그 호출이 에러 없이 통과하지만 아무것도 풀지 않습니다 — 멈추려면 그 자리를 쥔 `State`를 `Set(nil)`하거나 `q.Backend.unbindLifetime(handle)`로 수명을 푸세요([2026-09-27 mock 실측]).
 - **참고**: [`observer:Unsubscribe()`](../core/05-observer-effect.md#observerunsubscribe)
 
 ### Quad0116

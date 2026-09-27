@@ -1,0 +1,37 @@
+@@E75	Quad0215	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:20: Quad0215 setTimeout: func must be a function (got nil)	FIX=ok	fired=true
+@@E75	Quad0216	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:28: Quad0216 setTimeout: delay must be a non-negative number (got number)	FIX=ok	delay 0 fired=true
+@@E75	Quad0216	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:36: Quad0216 setTimeout: delay must be a non-negative number (got number)	FIX=skip	
+@@E75	Quad0216	TRIG=miss	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:44: Quad0039 Debounce: Time must be a non-negative number (got number)	FIX=skip	
+@@E75	Quad0217	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:47: Quad0217 clearTimeout: expected a Timeout from setTimeout (got table)	FIX=ok	cancelled, fired=false
+@@E75	Quad0218	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:58: Quad0218 Event: handler for "Activated" must be a function (got string)	FIX=ok	fn fired n=1; None/nil accepted
+@@E75	Quad0218	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:68: Quad0218 Event: handler for "Activated" must be a function (got number)	FIX=skip	
+@@E75	Quad0219	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:74: Quad0219 InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)	FIX=ok	claimed child parented=true
+@@E75	Quad0219	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:86: Quad0219 InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)	FIX=skip	
+@@E75	Quad0219	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:90: Quad0219 InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)	FIX=skip	
+@@E75	Quad0220	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:98: Quad0220 InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)	FIX=ok	restructured: other under host
+@@E75	Quad0220	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:112: Quad0220 InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)	FIX=skip	
+@@E75	Quad0221	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:117: Quad0221 OnChange: property name must be a non-empty string	FIX=ok	got=hi
+@@E75	Quad0221	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:125: Quad0221 OnChange: property name must be a non-empty string	FIX=skip	
+@@E75	Quad0222	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:127: Quad0222 OnChange: callback for "Text" must be a function (got string)	FIX=ok	got=yo
+@@E75	Quad0223	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:136: Quad0223 Out: property name must be a non-empty string	FIX=ok	src=abc
+@@E75	Quad0224	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:144: Quad0224 Out: second argument for "Text" must be a Source to write back into (got a read-only State (a :Compute result?))	FIX=ok	src=zz
+@@E75	Quad0225	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:156: Quad0225 nativeClaim: Instance is already claimed by quad	FIX=ok	claimed once
+@@E75	Quad0225	TRIG=miss	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:166: Quad0029 Claim: Frame is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)	FIX=skip	
+@@E75	Quad0226	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:173: Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)	FIX=ok	claimed; effect ran=1
+@@E75	Quad0226	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:184: Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)	FIX=ok	bound after Claim
+@@E75	Quad0226	TRIG=noerr	nil	FIX=skip	
+@@E75	Quad0214	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:196: Quad0214 Animate: expected an options table (Animate{ Time = ... })	FIX=ok	1
+@@E75	Quad0227	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:205: Quad0227 Tween:Mapped: fn must be a function (got number)	FIX=ok	Value=2
+@@E75	Quad0243	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:211: Quad0243 Tween: Time must be a number	FIX=ok	
+@@E75	Quad0243	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:216: Quad0243 Tween: Time must be a number	FIX=ok	1
+@@E75	Quad0244	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:226: Quad0244 Tween: Reverses must be a boolean	FIX=ok	
+@@E75	Quad0245	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:229: Quad0245 Tween: Dedup must be a boolean	FIX=ok	
+@@E75	Quad0246	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:232: Quad0246 Tween: Completed must be a function	FIX=ok	Completed fired=true
+@@E75	Quad0247	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:240: Quad0247 Tween: Override must be "Cancel" or "Finish"	FIX=ok	omitted Override field=nil
+@@E75	Quad0248	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:247: Quad0248 Tween: expected an options table (Tween{ Value = ... })	FIX=ok	
+@@E75	Quad0249	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:250: Quad0249 Tween: Value is required	FIX=ok	
+@@E75	Quad0249	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:253: Quad0249 Tween: Value is required	FIX=skip	
+@@E75	Quad0250	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:255: Quad0250 Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))	FIX=ok	a=1 b=1
+@@E75	Quad0251	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:270: Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)	FIX=ok	before=0.5 after None=nil
+@@E75	Quad0251	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/F.luau:279: Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)	FIX=skip	
+<<END>>	36

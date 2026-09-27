@@ -1,0 +1,39 @@
+@@E75	Quad0086	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:11: Quad0086 Effect: fn must return a cleanup function or nothing (got table)	FIX=ok	cleanup disconnected=true
+@@E75	Quad0086	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:25: Quad0086 Effect: fn must return a cleanup function or nothing (got number)	FIX=skip	
+@@E75	Quad0087	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:35: Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup	FIX=ok	rebind after dispose ok n=2
+  dead: unsubscribe ->	true
+@@E75	Quad0087	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:54: Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup	FIX=ok	new Effect n=1
+@@E75	Quad0088	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:67: Quad0088 Effect: cannot change subscription from inside fn or cleanup	FIX=ok	weak-subscribed outside fn, reruns n=2
+@@E75	Quad0089	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:81: Quad0089 Effect: already subscribed	FIX=ok	strong->weak: Subscribed=true n=3
+@@E75	Quad0230	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:90: Quad0230 Effect: already bound to an Instance	FIX=ok	
+@@E75	Quad0090	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:95: Quad0090 Effect: cannot change subscription from inside fn or cleanup	FIX=ok	n=2
+@@E75	Quad0090	TRIG=skip	Subscribe from inside fn while strongly subscribed (the 'unsubscribe inside' allowed?)	FIX=ok	unsubscribe inside fn ok: n=2 Subscribed=false
+@@E75	Quad0091	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:113: Quad0091 Effect: already subscribed	FIX=ok	weak->strong ok
+@@E75	Quad0231	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:120: Quad0231 Effect: already bound to an Instance	FIX=ok	
+@@E75	Quad0092	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:123: Quad0092 Effect: subscribed strongly; use :Unsubscribe()	FIX=ok	
+@@E75	Quad0093	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:126: Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()	FIX=ok	
+@@E75	Quad0093	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:129: Quad0093 Effect: not subscribed strongly; use :WeakUnsubscribe()	FIX=ok	WeakUnsubscribe on seat-bound ok
+@@E75	Quad0094	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:136: Quad0094 Effect: fn must be a function	FIX=ok	
+@@E75	Quad0095	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:139: Quad0095 Effect: dep #1 is nil	FIX=ok	n=2
+@@E75	Quad0096	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:142: Quad0096 Effect: dep #1 is not a State/Source/Ref	FIX=ok	Ref dep n=2
+@@E75	Quad0097	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:145: Quad0097 Effect: must be an array item, not the value of a string key	FIX=ok	
+@@E75	Quad0097	TRIG=noerr	nil	FIX=skip	
+@@E75	Quad0101	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:150: Quad0101 OnDestroyed: fn must be a function (got number)	FIX=ok	OnDestroyed fired=true
+@@E75	Quad0109	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:165: Quad0109 Observer: cannot bind an Observer from inside its own fn	FIX=ok	rebind after dispose ok, fires=true
+@@E75	Quad0110	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:180: Quad0110 Observer: cannot change subscription from inside its own fn	FIX=ok	fires after Set: 1->2
+@@E75	Quad0111	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:189: Quad0111 Observer: already subscribed	FIX=ok	strong->weak 1->2 Subscribed=true
+@@E75	Quad0112	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:196: Quad0112 Observer: subscribed strongly; use :Unsubscribe()	FIX=ok	
+@@E75	Quad0113	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:201: Quad0113 Observer: cannot change subscription from inside its own fn	FIX=ok	1->2
+@@E75	Quad0114	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:206: Quad0114 Observer: already subscribed	FIX=ok	weak->strong 1->2
+@@E75	Quad0115	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:213: Quad0115 Observer: not subscribed strongly; use :WeakUnsubscribe()	FIX=ok	
+@@E75	Quad0116	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:216: Quad0116 Observer: must be an array item, not the value of a string key	FIX=ok	1->2
+@@E75	Quad0234	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:219: Quad0234 Observer: already bound to an Instance	FIX=ok	
+@@E75	Quad0235	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:222: Quad0235 Observer: already bound to an Instance	FIX=ok	
+@@E75	Quad0130	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:231: Quad0130 Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a running coroutine)	FIX=ok	unrelated coroutine Set woke waiter got=42
+@@E75	Quad0132	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:243: Quad0132 Ref:Callback: callback must be a function (got number)	FIX=ok	got=3
+@@E75	Quad0133	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:246: Quad0133 Ref: Wait(thread) expects a thread (got number)	FIX=ok	registered thread resumed with=Ref(9)
+@@E75	Quad0134	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:257: Quad0134 Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)	FIX=ok	got=5
+@@E75	Quad0135	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:269: Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed	FIX=ok	Unwrap inside event after PreRef filled
+@@E75	Quad0136	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:280: Quad0136 PreRef: must be a literal array item — it reached array index 1 through a State/Store value, which the pre-pass cannot see	FIX=ok	
+@@E75	Quad0137	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/D.luau:283: Quad0137 Ref: must be an array item, not the value of a string key	FIX=ok	
+<<END>>	37

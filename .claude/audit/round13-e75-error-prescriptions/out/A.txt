@@ -1,0 +1,66 @@
+@@E75	Quad0017	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:20: Quad0017 Blocker: Policy emit must be a function (got number)	FIX=ok	seen during=1 after=2 last=2
+@@E75	Quad0018	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:37: Quad0018 Blocker: Apply target must be a State (got number)	FIX=ok	during=1 after=2
+@@E75	Quad0035	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:52: Quad0035 Context.Provider: name must be a string (got number)	FIX=ok	Provider(Theme)/Provider
+@@E75	Quad0036	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:61: Quad0036 Context:Set: key must be a Provider from Context.Provider() (got string)	FIX=ok	Get=dark
+@@E75	Quad0037	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:71: Quad0037 Context:Set: value for Provider(Theme) must not be nil (absence is "not set")	FIX=ok	Peek=nil
+@@E75	Quad0037	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:83: Quad0037 Context:Set: value for Provider(Theme) must not be nil (absence is "not set")	FIX=intent-fail	after not calling :Set, Peek=dark (value still there — no removal path on this page)
+@@E75	Quad0038	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:95: Quad0038 Context:Get: no value for Provider(Locale) — the creator of this Context did not :Set it (use :Peek to test)	FIX=ok	Get=ko
+@@E75	Quad0038	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:105: Quad0038 Context:Get: no value for Provider(Locale) — the creator of this Context did not :Set it (use :Peek to test)	FIX=ok	Peek-or-default=en
+@@E75	Quad0039	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:121: Quad0039 Debounce: Time must be a non-negative number (got string)	FIX=ok	mid=1 after=2 last=2
+@@E75	Quad0040	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:135: Quad0040 Debounce: Time is required (a number of seconds or a State<number>)	FIX=ok	after=2
+@@E75	Quad0041	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:145: Quad0041 Throttle: Time must be a non-negative number or a State<number> (got number)	FIX=ok	after=2
+@@E75	Quad0042	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:155: Quad0042 Debounce: Leading must be a boolean (got string)	FIX=ok	leading passes immediately, seen=2
+@@E75	Quad0043	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:167: Quad0043 Debounce: Apply target must be a State (got number)	FIX=ok	after=2
+@@E75	Quad0044	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:183: Quad0044 Debounce: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)	FIX=ok	a=2 b=1
+@@E75	Quad0044	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:201: Quad0044 Debounce: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)	FIX=ok	a=2 b=2
+@@E75	Quad0044	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:214: Quad0044 Debounce: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)	FIX=ok	seen=2
+@@E75	Quad0045	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:225: Quad0045 Debounce: options table expected (got number)	FIX=ok	seen=2
+@@E75	Quad0046	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:234: Quad0046 Throttle: MaxTime is Debounce-only (a throttle already passes every Time)	FIX=ok	seen=2
+@@E75	Quad0047	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:243: Quad0047 Debounce: Handle must be a Ref (got table)	FIX=ok	seen=2
+@@E75	Quad0048	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:253: Quad0048 Debounce: Leading and Trailing both false would pass nothing through	FIX=ok	seen=2 last=1
+@@E75	Quad0048	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:261: Quad0048 Throttle: Leading and Trailing both false would pass nothing through	FIX=ok	seen=2
+@@E75	Quad0118	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:271: Quad0118 Operator.Sum: argument #2 is nil	FIX=ok	Get=4
+@@E75	Quad0119	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:278: Quad0119 Operator.Sum: argument #1 must be a number or a State<number> (got string)	FIX=ok	Get=3
+@@E75	Quad0120	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:287: Quad0120 Operator.Sum: argument #1 is a State whose current value is nil	FIX=ok	Get=3
+@@E75	Quad0120	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:298: Quad0120 Operator.Sum: argument #1 is a State whose current value is nil	FIX=ok	v1=1 v2=6
+@@E75	Quad0121	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:310: Quad0121 Operator.Sum: argument #1 is a State whose current value must be a number (got string)	FIX=ok	Get=3
+@@E75	Quad0122	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:317: Quad0122 Operator.Sum: the Apply target's current value must be a number (got string)	FIX=ok	Get=2
+@@E75	Quad0123	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:324: Quad0123 Operator.Not: Apply target must be a State (got number)	FIX=ok	Get=false
+@@E75	Quad0123	TRIG=ok	./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Tag.luau:195: Quad0123 Operator.Not: Apply target must be a State (got table)	FIX=skip	same prescription as a (state:Apply only); intent of negating a Tag has no State equivalent — n/a
+@@E75	Quad0123	TRIG=ok	./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/Modifier/init.luau:189: Quad0123 Operator.Bnot: Apply target must be a State (got table)	FIX=skip	n/a (see b)
+@@E75	Quad0124	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:344: Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 20, max 10)	FIX=ok	after hi moves: ok=true v=20
+@@E75	Quad0124	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:357: Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 10, max 0)	FIX=ok	Get=3
+@@E75	Quad0125	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:364: Quad0125 Operator.Indexed: key must not be nil	FIX=ok	Get=3
+@@E75	Quad0126	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:371: Quad0126 Operator.Indexed: key must be a plain value, not a State (the key is not reactive)	FIX=ok	Get=3 (a reactive key needs :Compute — page does not say)
+@@E75	Quad0127	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:378: Quad0127 Operator.Indexed: value is not a table (got number) — cannot read [hp]	FIX=ok	Get=5
+@@E75	Quad0128	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:385: Quad0128 Operator.Alternative: default must not be nil	FIX=ok	Get=0
+@@E75	Quad0129	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:394: Quad0129 Operator.Alternative: the default State's current value is nil	FIX=ok	Get=7
+@@E75	Quad0181	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:404: Quad0181 Source: cannot Set a Modifier as a Source value	FIX=ok	Get=5
+@@E75	Quad0182	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:410: Quad0182 Source: cannot hold a Modifier as a Source value	FIX=ok	Get=5
+@@E75	Quad0183	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:418: Quad0183 State: dep #2 is not a State/Source	FIX=ok	Get=3
+@@E75	Quad0183	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:424: Quad0183 State: dep #2 is not a State/Source	FIX=ok	Get=1 seen=2
+@@E75	Quad0184	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:438: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)	FIX=ok	a=1 b=3
+@@E75	Quad0184	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:457: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)	FIX=ok	v=1
+@@E75	Quad0184	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:475: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)	FIX=ok	Get=5
+@@E75	Quad0185	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:490: Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers	FIX=ok	Get=2
+@@E75	Quad0185	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:496: Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers	FIX=ok	Get=0
+@@E75	Quad0186	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:505: Quad0186 State: dep #2 is nil	FIX=ok	Get=3
+@@E75	Quad0187	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:513: Quad0187 State: Compute fn must be a function	FIX=ok	Get=2
+@@E75	Quad0188	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:520: Quad0188 State: Gate setup must be a function (emit) -> onUpstreamEmit	FIX=ok	seen=2
+@@E75	Quad0189	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:530: Quad0189 State: Gate setup must return the onUpstreamEmit function	FIX=ok	seen=2
+@@E75	Quad0190	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:540: Quad0190 State: Observer fn must be a function (or nil for the always-observe utility)	FIX=ok	calls=2
+@@E75	Quad0191	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:551: Quad0191 State: Apply factory must be a function or an object with an __apply method	FIX=ok	Get=10
+@@E75	Quad0192	TRIG=skip	unreachable via public API (E28): only caller Source.luau Init runs State Init first	FIX=skip	page says (문서 미정)
+@@E75	Quad0193	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:563: Quad0193 Store: key must be a non-empty string (got "")	FIX=ok	hp=1
+@@E75	Quad0193	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:569: Quad0193 Store: Of name must be a non-empty string (got number)	FIX=ok	slot5=1
+@@E75	Quad0194	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:578: Quad0194 Store: "Names" is a reserved store key	FIX=ok	Names=1
+@@E75	Quad0194	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:585: Quad0194 Store: "__x" is a reserved store key	FIX=ok	ok
+@@E75	Quad0195	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:592: Quad0195 Store: defaults must be a table of Sources (got number)	FIX=ok	ok
+@@E75	Quad0196	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:600: Quad0196 Store: defaults must be a plain table without a metatable (a bare Source instead of { name = Source }?)	FIX=ok	ok
+@@E75	Quad0197	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:608: Quad0197 Store: defaults must be a plain { name = Source } table (got an AttrKey/Mapper descriptor)	FIX=ok	ok
+@@E75	Quad0198	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:615: Quad0198 Store: default for "hp" is not a Source (got number)	FIX=ok	ok
+@@E75	Quad0099	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:624: Quad0099 Fallback: base must be a function (got nil)	FIX=ok	ok
+@@E75	Quad0100	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:631: Quad0100 Traceback: onError must be a function (got string)	FIX=ok	ok
+@@E75	Quad0044	TRIG=ok	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:641: Quad0044 Debounce: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)	FIX=ok	opts-alias route filled r2=true
+@@E75	Quad0124	TRIG=miss	./.claude/audit/round13-e75-error-prescriptions/cases/A.luau:659: Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)	FIX=skip	probe only — trigger line shows which id the re-read raises
+<<END>>	65

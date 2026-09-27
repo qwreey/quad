@@ -89,4 +89,6 @@
 - `round13-e69-mutation/` — **[2026-09-27 자율 루프 E69]** 변이 테스트(243 변이·`mutants.py`/`run_mutants.py`·`results.json`·판별 프로브 `probe.e69.luau` P1~P19·`coverage.txt`) — 죽음 195/생존 48(실제 공백 25), `Q154`.
 - `round13-e73-mutation-2/` — **[2026-09-27 자율 루프 E73]** 변이 테스트 2차(E69 제외 모듈 180 변이·E69 미결 셋·차등 퍼즈 `fuzz.e73.luau`) — 죽음 149/생존 31(공백 21), 합산 보정 87.5%, `Q154` 보강.
 - `round13-e72-nested-slot-fuzz/` — **[2026-09-27 자율 루프 E72]** 중첩 Slot 오프셋·길이·물리 순서 차등 퍼저(5만 시드·reent 모드·변이 여섯·`probe-q75.luau`·`perf*.luau`) — 논리 차등 0, Q75 보강 넷째, `H-834`·`H-835`.
+- `round13-e75-error-prescriptions/` — **[2026-09-27 자율 루프 E75]** 에러 레퍼런스 248절 "고치려면" 처방 mock 실측(`cases/A~F.luau`·`scripts/anchors.py`) — 정확 228·불충분 14·틀림 0, `H-836`~`H-851`, `Q155`.
+- `round13-drafts-2026-09-27/spec-drafts/` — **[2026-09-27 자율 루프 E76]** 변이 공백 48 → spec 초안(`*.additions.luau` 13·`apply.py`·`run48-results.json`) — 44 죽음, `Q154` (a) 채택 시 `apply.py` 한 번; 남은 넷은 `Q156`.
 

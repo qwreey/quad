@@ -1,0 +1,3 @@
+BADANCHOR	01-core-reactive.md:248	Quad0182	../core/02-source.md#qsourcevalue	near=['qsourcev']
+MISSINGFILE	02-dispatch-bookkeeping.md:150	Quad0058	...
+links=280 bad=2

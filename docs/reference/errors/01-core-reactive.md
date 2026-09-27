@@ -44,7 +44,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 `Context:Set: value for {tostring(provider)} must not be nil (absence is "not set")` — `quad-base/src/Context.luau`
 
 - **언제**: `ctx:Set(provider, value)`의 `value`로 `nil`을 넘겼을 때 — 부재는 애초에 `:Set`을 하지 않는 것으로 표현합니다.
-- **고치려면**: 지우려는 의도라면 `:Set`을 아예 부르지 마세요 — `nil` 대신 실제 값을 넘기세요.
+- **고치려면**: 지우려는 의도라면 `:Set`을 아예 부르지 마세요 — `nil` 대신 실제 값을 넘기세요. 이미 `:Set`한 값을 되돌리는 것은 지원하지 않습니다(값이 그대로 남음) — 필요한 키만 다시 `:Set`한 새 `q.Context()`를 만드세요.
 - **참고**: [`ctx:Set(provider, value)`](../sugar/01-context.md#ctxsetprovider-value)
 
 ### Quad0038
@@ -100,7 +100,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 `{name}: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)` — `quad-base/src/Debounce.luau`
 
 - **언제**: `opts.Handle`로 넘긴 `Ref`가 이미 다른 `:Apply` 호출의 제어 핸들로 채워져 있을 때(또는 기본값이 `nil`이 아닌 `Ref`를 애초에 줬을 때) — 하나의 `Ref`는 하나의 `:Apply`만 가리킬 수 있습니다.
-- **고치려면**: 새 `Ref`를 만들거나, `Handle`을 빼고 팩토리의 `:Flush()`/`:Cancel()` 브로드캐스트를 쓰세요.
+- **고치려면**: 새 `Ref`를 **새 팩토리와 함께** 만들거나(`Handle`은 팩토리 옵션이라 팩토리를 재사용하면 새 `Ref`가 붙지 않습니다 — [2026-09-27 mock 실측]), `Handle`을 빼고 팩토리의 `:Flush()`/`:Cancel()` 브로드캐스트를 쓰세요.
 - **참고**: [제어 핸들(`GateHandle`)](../sugar/03-debounce-throttle.md#제어-핸들-gatehandle)
 
 ### Quad0045
@@ -245,7 +245,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 - **언제**: `q.Source(default)`를 만들 때 초기값으로 `Modifier`를 넘겼을 때.
 - **고치려면**: `Modifier`가 아닌 값을 초기값으로 주세요.
-- **참고**: [`q.Source(value)`](../core/02-source.md#qsourcevalue)
+- **참고**: [`q.Source(v)`](../core/02-source.md#qsourcev)
 
 ### Quad0183
 
