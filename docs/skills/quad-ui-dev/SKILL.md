@@ -482,7 +482,7 @@ end
   do not read `AbsoluteSize`/`AbsolutePosition` there.
 - `q.OnDestroyed(fn)` → an `Effect`: runs on leaf death.
 
-All three go in the array part; multiple `OnCreated`/`OnRendered` registrations fire in array order, but the relative order of several `OnDestroyed` on one instance is NOT defined (each is its own `Destroying` connection — the backend signal decides). Give the two
+All three go in the array part; several `OnCreated` fire in array order and several `OnRendered` fire in array order, but when the two kinds are mixed every `OnCreated` runs before every `OnRendered` regardless of array position (PreRef pre-pass, then PostRef pass); their callbacks receive `(inst, ref)` — the second argument is the `PreRef`/`PostRef` handle the hook made; and the relative order of several `OnDestroyed` on one instance is NOT defined (each is its own `Destroying` connection — the backend signal decides). Give the two
 Ref-returning hooks their element type explicitly (`q.OnCreated<<Frame>>(...)`) —
 without it `--!strict` fails with `Type functions do not currently support types of the form '*error-type*'` whenever the callback annotates or uses `inst`.
 
