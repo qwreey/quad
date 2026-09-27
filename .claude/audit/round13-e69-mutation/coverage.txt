@@ -1,0 +1,65 @@
+ 15.6%    7/45   quad-base/luau_packages/.pesde/qwreey+type_version_check/3.2.0/type_version_check/src/init.luau
+ 75.0%    3/4    quad-roblox/src/types.luau
+ 83.3%   40/48   quad-roblox/luau_packages/.pesde/qwreey+quad_error/3.2.0/quad_error/src/init.luau
+ 84.4%   38/45   quad-roblox/luau_packages/.pesde/qwreey+type_version_check/3.2.0/type_version_check/src/init.luau
+ 90.1%  100/111  quad-base/src/Slot/Tree.luau
+ 91.3%  147/161  quad-base/src/Slot/List.luau
+ 92.5%   49/53   quad-roblox/src/LifetimeHandle.luau
+ 93.4%  171/183  quad-base/src/Bookkeeping.luau
+ 93.5%   29/31   quad-base/src/Slot/Handler.luau
+ 94.6%   35/37   quad-base/src/Slot/Owner.luau
+ 95.1%  234/246  quad-base/src/Slot/Raw.luau
+ 96.2%   51/53   quad-roblox/src/Handlers/InstanceShorthand.luau
+ 96.6%   57/59   quad-base/src/Relate.luau
+ 97.1%  132/136  quad-base/src/Attr/init.luau
+ 97.1%  202/208  quad-base/src/Effect.luau
+ 97.3%   72/74   quad-base/src/Claim.luau
+ 98.1%  157/160  quad-base/src/Debounce.luau
+ 98.2%  168/171  quad-base/src/State.luau
+ 98.3%   57/58   quad-base/src/EpochMap.luau
+ 98.4%  126/128  quad-base/src/Ref/init.luau
+ 98.5%  131/133  quad-base/src/Observer.luau
+ 99.2%  250/252  quad-base/src/Slot/init.luau
+ 99.5%  212/213  quad-base/src/Dispatch/Modifier/init.luau
+ 99.6%  228/229  quad-base/src/Dispatch/init.luau
+100.0%  139/139  quad-base/src/init.luau
+100.0%   48/48   quad-base/luau_packages/.pesde/qwreey+quad_error/3.2.0/quad_error/src/init.luau
+100.0%    2/2    quad-base/src/ErrorNamespace.luau
+100.0%   97/97   quad-base/src/Brand.luau
+100.0%    2/2    quad-base/src/Void.luau
+100.0%   54/54   quad-base/src/Blocker.luau
+100.0%   33/33   quad-base/src/Dispatch/None.luau
+100.0%   29/29   quad-base/src/Dispatch/StoreBind.luau
+100.0%   13/13   quad-base/src/ModuleIdentity.luau
+100.0%    8/8    quad-base/src/Dispatch/Modifier/Handler.luau
+100.0%   40/40   quad-base/src/Dispatch/Ref.luau
+100.0%    2/2    quad-base/src/Dispatch/Handler.luau
+100.0%    9/9    quad-base/src/Ref/PreRef.luau
+100.0%    9/9    quad-base/src/Ref/PostRef.luau
+100.0%    3/3    quad-base/src/Debug/init.luau
+100.0%   74/74   quad-base/src/LifetimeHandle.luau
+100.0%   12/12   quad-base/src/NotInstalled.luau
+100.0%    8/8    quad-base/src/ImplRegistry.luau
+100.0%   45/45   quad-base/src/Source.luau
+100.0%   58/58   quad-base/src/Store.luau
+100.0%    1/1    quad-base/src/Slot/types.luau
+100.0%  141/141  quad-base/src/Tag.luau
+100.0%   50/50   quad-base/src/Attr/Key.luau
+100.0%   28/28   quad-base/src/LifecycleHooks.luau
+100.0%   27/27   quad-base/src/Fallback.luau
+100.0%   54/54   quad-base/src/Context.luau
+100.0%  121/121  quad-base/src/Operator.luau
+100.0%   47/47   quad-base/src/Slot/Elements.luau
+100.0%   16/16   quad-roblox/src/init.luau
+100.0%   27/27   quad-roblox/src/RobloxFactory.luau
+100.0%   70/70   quad-roblox/src/Tween.luau
+100.0%    7/7    quad-roblox/src/Brand.luau
+100.0%   73/73   quad-roblox/src/EngineOps.luau
+100.0%  171/171  quad-roblox/src/Declaration/init.luau
+100.0%  116/116  quad-roblox/src/Handlers/Property.luau
+100.0%   14/14   quad-roblox/src/Reflection.luau
+100.0%   29/29   quad-roblox/src/Handlers/InstanceChild.luau
+100.0%   22/22   quad-roblox/src/Handlers/Event.luau
+100.0%   50/50   quad-roblox/src/Handlers/OnChange.luau
+100.0%   47/47   quad-roblox/src/Animate.luau
+100.0%   45/45   type-version-check/src/init.luau

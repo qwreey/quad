@@ -1,0 +1,151 @@
+{
+ "ST04": [
+  "PROBE ALL OK"
+ ],
+ "ST05": [
+  "PROBE ALL OK"
+ ],
+ "ST09": [
+  "PROBE ALL OK"
+ ],
+ "SR05": [
+  "PROBE ALL OK"
+ ],
+ "EF02": [
+  "PROBE ALL OK"
+ ],
+ "EF11": [
+  "FAIL P4 double WeakSubscribe did not raise"
+ ],
+ "EF16": [
+  "PROBE ALL OK"
+ ],
+ "EF17": [
+  "FAIL P2a re-drive same Effect/Observer raised: ./quad-base/test/probe.e69.luau:35: Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)"
+ ],
+ "EF18": [
+  "FAIL P2b re-drive ran the cleanup: 1",
+  "FAIL P2d effect reruns after re-drive: 3"
+ ],
+ "OB06": [
+  "FAIL P8 tostring after Unsubscribe: Observer(weak)"
+ ],
+ "OB10": [
+  "PROBE ALL OK"
+ ],
+ "DI07": [
+  "FAIL P10 gap error: nil"
+ ],
+ "DI10": [
+  "FAIL P19 old retractor calls: 2"
+ ],
+ "SW02": [
+  "PROBE ALL OK"
+ ],
+ "SW03": [
+  "PROBE ALL OK"
+ ],
+ "SW04": [
+  "FAIL P3a IndexOf(removed) = 1"
+ ],
+ "SW07": [
+  "FAIL P3b IndexOf(replaced-out) = 1"
+ ],
+ "SW14": [
+  "FAIL P7 detached element not destroyed"
+ ],
+ "SW16": [
+  "PROBE ALL OK"
+ ],
+ "SL04": [
+  "FAIL P5 duplicate key: ./quad-base/src/Slot/Raw.luau:33: table index is nil"
+ ],
+ "SL06": [
+  "FAIL P6 UserData round trip: nil"
+ ],
+ "SL10": [
+  "FAIL P17 Length emits per reconcile: 5"
+ ],
+ "SN01": [
+  "FAIL P11 double mount via List did not raise"
+ ],
+ "SN03": [
+  "FAIL P12 wrong-owner release: nil"
+ ],
+ "SN04": [
+  "PROBE ALL OK"
+ ],
+ "SE01": [
+  "FAIL P1c inner offset follows uncle growth: 2",
+  "FAIL P1d getOffsetAt(inner,1) == 3: 2"
+ ],
+ "SE02": [
+  "PROBE ALL OK"
+ ],
+ "SE03": [
+  "PROBE ALL OK"
+ ],
+ "SI09": [
+  "FAIL P9 Splice range error: ./quad-base/src/Slot/Raw.luau:170: Quad0161 Bookkeeping.releaseOwner: element must not be nil"
+ ],
+ "BK01": [
+  "PROBE ALL OK"
+ ],
+ "BK02": [
+  "PROBE ALL OK"
+ ],
+ "BK04": [
+  "PROBE ALL OK"
+ ],
+ "BK06": [
+  "PROBE ALL OK"
+ ],
+ "BK07": [
+  "PROBE ALL OK"
+ ],
+ "BK10": [
+  "FAIL P17 Length emits per reconcile: 5"
+ ],
+ "BK11": [
+  "PROBE ALL OK"
+ ],
+ "BK13": [
+  "PROBE ALL OK"
+ ],
+ "BK16": [
+  "FAIL P1a inner offset at base 1: 0",
+  "FAIL P1b inner offset after insert before it: 1",
+  "FAIL P1c inner offset follows uncle growth: 1",
+  "FAIL P1d getOffsetAt(inner,1) == 3: 0"
+ ],
+ "LH06": [
+  "PROBE ALL OK"
+ ],
+ "TG04": [
+  "PROBE ALL OK"
+ ],
+ "TG08": [
+  "FAIL P13 depth gate: nil"
+ ],
+ "AT01": [
+  "PROBE ALL OK"
+ ],
+ "DB01": [
+  "FAIL P14 negative State Time: ./quad-base/test/probe.e69.luau:140: setTimeout: delay must be a non-negative number (got number)"
+ ],
+ "OP03": [
+  "FAIL P15a Clamp(3,3): ./quad-base/test/probe.e69.luau:147: Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 3, max 3)"
+ ],
+ "OP05": [
+  "FAIL P15b Shr logical: 4160749568"
+ ],
+ "PR10": [
+  "PROBE ALL OK"
+ ],
+ "PR12": [
+  "PROBE ALL OK"
+ ],
+ "PR13": [
+  "PROBE ALL OK"
+ ]
+}
