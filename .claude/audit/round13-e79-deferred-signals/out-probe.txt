@@ -1,0 +1,186 @@
+====================================================================================================
+(1a) q.Out mount + user types 'a','ab' in one frame
+  [mock] after mount: emits=1 box.Text=quad deliveries=0
+         before flush: src=ab emits=3
+         after flush: src=ab box.Text=ab emits=3 seen=[quad,a,ab] deliveries=0
+  [imm] after mount: emits=1 box.Text=quad deliveries=0
+         before flush: src=ab emits=3
+         after flush: src=ab box.Text=ab emits=3 seen=[quad,a,ab] deliveries=0
+  [def] after mount: emits=1 box.Text=quad deliveries=1
+         before flush: src=quad emits=1
+         after flush: src=ab box.Text=ab emits=2 seen=[quad,ab] deliveries=2
+====================================================================================================
+(1b) OnChange transform (upper) into the Source driving Text; user types 'a','ab'
+  [mock] SCENARIO THREW: ./quad-roblox/src/Handlers/OnChange.luau:130: C stack overflow
+  [imm] src=AB box.Text=AB callbacks=4 emits=4 seen=[A,A,AB,AB] deliveries=0
+  [def] src=AB box.Text=AB callbacks=3 emits=3 seen=[AB,AB,AB] deliveries=3
+====================================================================================================
+(1c) two TextBoxes, both Text=src + q.Out(src); engine writes box1='one' then box2='two' in one frame
+  [mock] src=two b1=two b2=two deliveries=0
+  [imm] src=two b1=two b2=two deliveries=0
+  [def] src=one b1=one b2=one deliveries=3
+====================================================================================================
+(1d) same frame: user types 'xyz' then program src:Set('reset') / reverse
+  [mock] type→Set: src=reset box=reset
+         Set→type: src=progX box=progX
+  [imm] type→Set: src=reset box=reset
+         Set→type: src=progX box=progX
+  [def] type→Set: src=reset box=reset
+         Set→type: src=progX box=progX
+====================================================================================================
+(1e) non-idempotent OnChange (v..'!') into the Source driving Text — runaway (callback self-limits at 300)
+  [mock] mount-sync calls=1, calls after first flush=1, len(Text)=0, len(src)=1, deliveries=0, maxQueue=0
+         after mount, user types 'k': ERR RAW:./quad-roblox/src/Handlers/OnChange.luau:130: C stack overflow :: ./quad-roblox/src/Handlers/OnChange.luau:130: C stack overflow calls=197 len(Text)=198 len(src)=198
+  [imm] mount-sync calls=1, calls after first flush=1, len(Text)=0, len(src)=1, deliveries=0, maxQueue=0
+         after mount, user types 'k': ERR RAW:./quad-roblox/src/Handlers/OnChange.luau:130: C stack overflow :: ./quad-roblox/src/Handlers/OnChange.luau:130: C stack overflow calls=197 len(Text)=198 len(src)=198
+  [def] mount-sync calls=0, calls after first flush=300, len(Text)=299, len(src)=299, deliveries=300, maxQueue=1
+         after mount, user types 'k': ok calls=300 len(Text)=300 len(src)=300
+====================================================================================================
+(1f) plain OnChange (no guard) → scrollY:Set(v); engine writes CanvasPosition-like prop 3 times in one frame
+  [mock] scrollY emits seen=[1,2,3] deliveries=0
+  [imm] scrollY emits seen=[1,2,3] deliveries=0
+  [def] scrollY emits seen=[3,3,3] deliveries=3
+====================================================================================================
+(1g) same frame: reset button Activated (name:Set('quad')) queued, THEN user keystroke box.Text='ab'
+  [mock] name=ab box.Text=ab deliveries=0
+  [imm] name=ab box.Text=ab deliveries=0
+  [def] name=quad box.Text=quad deliveries=3
+====================================================================================================
+(1h) OnChange callback throws on 'bad'; program src:Set('bad') then src:Set('good') (Q149 path)
+  [mock] Set('bad'): ERR RAW:./.claude/audit/round13-e79-deferred-signals/probe.luau:129: onchange boom :: ./.claude/audit/round13-e79-deferred-signals/probe.luau:129: onchange boom | Set('good'): ok | box.Text=good got=[bad,good]
+  [imm] Set('bad'): ERR RAW:./.claude/audit/round13-e79-deferred-signals/probe.luau:129: onchange boom :: ./.claude/audit/round13-e79-deferred-signals/probe.luau:129: onchange boom | Set('good'): ok | box.Text=good got=[bad,good]
+  [def] Set('bad'): ok | Set('good'): ok | box.Text=good got=[bad,good]
+         listener errors (isolated): RAW:./.claude/audit/round13-e79-deferred-signals/probe.luau:129: onchange boom :: ./.claude/audit/round13-e79-deferred-signals/probe.luau:129: onchange boom
+====================================================================================================
+(2) Text = src:Compute(truncate 3) + q.Out('Text', src)
+  [mock] mount, before flush: src=hel Text=hel emits=2
+         mount, after flush:  src=hel Text=hel emits=2
+         Set('world!!'), read right after: src=wor Text=wor
+         …after flush: src=wor Text=wor emits=4
+         user types 'abcdef': src=abc Text=abc emits=6
+         two Sets in one frame: src=yyy Text=yyy emits=10
+  [imm] mount, before flush: src=hel Text=hel emits=2
+         mount, after flush:  src=hel Text=hel emits=2
+         Set('world!!'), read right after: src=wor Text=wor
+         …after flush: src=wor Text=wor emits=4
+         user types 'abcdef': src=abc Text=abc emits=6
+         two Sets in one frame: src=yyy Text=yyy emits=10
+  [def] mount, before flush: src=hello Text=hel emits=1
+         mount, after flush:  src=hel Text=hel emits=2
+         Set('world!!'), read right after: src=world!! Text=wor
+         …after flush: src=wor Text=wor emits=4
+         user types 'abcdef': src=abc Text=abc emits=6
+         two Sets in one frame: src=yyy Text=yyy emits=9
+====================================================================================================
+(3) Activated → count:Set → Text → OnChange → lvl2:Set → label Text → OnChange → lvl3 …(4 hops)
+  [mock] inside Activated after Set: btn.Text=1 lv1=1 lv3=1
+         after fire, before flush: log=[b:1,l1:1,l2:1,l3:1] lv3=1
+         after flush: log=[b:1,l1:1,l2:1,l3:1] lv3=1 deliveries=0 maxQueue=0
+         inside Activated after Set (read after flush): btn.Text=1 lv1=1 lv3=1
+  [imm] inside Activated after Set: btn.Text=1 lv1=1 lv3=1
+         after fire, before flush: log=[b:1,l1:1,l2:1,l3:1] lv3=1
+         after flush: log=[b:1,l1:1,l2:1,l3:1] lv3=1 deliveries=0 maxQueue=0
+         inside Activated after Set (read after flush): btn.Text=1 lv1=1 lv3=1
+  [def] inside Activated after Set: (not run yet)
+         after fire, before flush: log=[] lv3=0
+         after flush: log=[b:1,l1:1,l2:1,l3:1] lv3=1 deliveries=5 maxQueue=4
+         inside Activated after Set (read after flush): btn.Text=1 lv1=0 lv3=0
+====================================================================================================
+(4a) Debounce(0.3) fed by q.Out; 'a'@0, 'ab'@0.29, delivery BEFORE the 0.3 timer
+  [mock] emits=[ab@0.59] src=ab pendingTimers=0
+  [imm] emits=[ab@0.59] src=ab pendingTimers=0
+  [def] emits=[ab@0.59] src=ab pendingTimers=0
+====================================================================================================
+(4b) Debounce(0.3) fed by q.Out; 'a'@0, 'ab'@0.29, 0.3 timer runs BEFORE the delivery
+  [mock] emits=[ab@0.59] src=ab pendingTimers=0
+  [imm] emits=[ab@0.59] src=ab pendingTimers=0
+  [def] emits=[a@0.30,ab@0.60] src=ab pendingTimers=0
+====================================================================================================
+(4c) Throttle(0.3) fed by q.Out; delivery BEFORE timer
+  [mock] emits=[a@0.00,ab@0.30] src=ab pendingTimers=0
+  [imm] emits=[a@0.00,ab@0.30] src=ab pendingTimers=0
+  [def] emits=[a@0.00,ab@0.30] src=ab pendingTimers=0
+====================================================================================================
+(4d) Throttle(0.3) fed by q.Out; timer BEFORE delivery
+  [mock] emits=[a@0.00,ab@0.30] src=ab pendingTimers=0
+  [imm] emits=[a@0.00,ab@0.30] src=ab pendingTimers=0
+  [def] emits=[a@0.00,ab@0.30] src=ab pendingTimers=0
+====================================================================================================
+(5a) Activated destroys host; same frame src:Set('y') queued Text OnChanges; deliverAfterDestroy=true (H-291)
+  [mock] log=[act,OnDestroyed]
+         mirror=x other.Text=x src=y destroyed=true slot:Length=1
+         later src:Set('z'): ok log+=2
+  [imm] log=[act,OnDestroyed]
+         mirror=x other.Text=x src=y destroyed=true slot:Length=1
+         later src:Set('z'): ok log+=2
+  [def] log=[act,childOnChange:y,slotAdd:ok,btnOnChange:y,OnDestroyed]
+         mirror=y other.Text=y src=y destroyed=true slot:Length=2
+         later src:Set('z'): ok log+=5
+====================================================================================================
+(5b) same, deliverAfterDestroy=false (sensitivity — engine rule for non-Destroying signals unmeasured)
+  [mock] log=[act,OnDestroyed]
+         mirror=x other.Text=x src=y destroyed=true slot:Length=1
+         later src:Set('z'): ok log+=2
+  [imm] log=[act,OnDestroyed]
+         mirror=x other.Text=x src=y destroyed=true slot:Length=1
+         later src:Set('z'): ok log+=2
+  [def] log=[act]
+         mirror=x other.Text=x src=y destroyed=true slot:Length=1
+         later src:Set('z'): ok log+=1
+====================================================================================================
+(6) :List updateFn makes a TextLabel with OnChange('Text') that Sets the list data (Q52 gate)
+  [mock] mount: ok | callback during mount: ok
+         after flush: callback=ok outer.Length=1 later Set: ok
+         final outer.Length=3 data=3 host children=3
+  [imm] mount: ok | callback during mount: ok
+         after flush: callback=ok outer.Length=1 later Set: ok
+         final outer.Length=3 data=3 host children=3
+  [def] mount: ok | callback during mount: not run
+         after flush: callback=ok outer.Length=2 later Set: ok
+         final outer.Length=3 data=3 host children=3
+====================================================================================================
+(7a) natural finish, then flush)
+  [mock] before flush: [S,C]
+         log=[S,C] tweens=1 isClaimed(f)=true
+  [imm] before flush: [S,C]
+         log=[S,C] tweens=1 isClaimed(f)=true
+  [def] before flush: [S]
+         log=[S,C] tweens=1 isClaimed(f)=true
+====================================================================================================
+(7b) natural finish, then host Destroy in the same frame, then flush (H-594))
+  [mock] log=[S,C] tweens=1 isClaimed(f)=false
+  [imm] log=[S,C] tweens=1 isClaimed(f)=false
+  [def] log=[S] tweens=1 isClaimed(f)=false
+====================================================================================================
+(7c) host Destroy, then natural finish (tween keeps running on corpse), then flush)
+  [mock] log=[S] tweens=1 isClaimed(f)=false
+  [imm] log=[S] tweens=1 isClaimed(f)=false
+  [def] log=[S] tweens=1 isClaimed(f)=false
+====================================================================================================
+(7d) natural finish, then size:Set(new tween) in the same frame (deferred-window path), then flush)
+  [mock] log=[S,C,S] tweens=2 isClaimed(f)=true
+  [imm] log=[S,C,S] tweens=2 isClaimed(f)=true
+  [def] log=[S,C,S] tweens=2 isClaimed(f)=true
+====================================================================================================
+(7e) replace while running (quad Cancel → engine Cancelled notice queued), then flush)
+  [mock] log=[S,X,S] tweens=2 isClaimed(f)=true
+  [imm] log=[S,X,S] tweens=2 isClaimed(f)=true
+  [def] log=[S,X,S] tweens=2 isClaimed(f)=true
+====================================================================================================
+(7f) Completed chains the next tween (Set inside Completed), natural finish, flush)
+  [mock] last tween PlaybackState=Playing
+         log=[S,X,C30,S40] tweens=3 isClaimed(f)=true
+  [imm] last tween PlaybackState=Playing
+         log=[S,X,C30,S40] tweens=3 isClaimed(f)=true
+  [def] last tween PlaybackState=Playing
+         log=[S,X,C30,S40] tweens=3 isClaimed(f)=true
+====================================================================================================
+(7g) natural finish, host Destroy, deliverAfterDestroy=false)
+  [mock] log=[S,C] tweens=1 isClaimed(f)=false
+  [imm] log=[S,C] tweens=1 isClaimed(f)=false
+  [def] log=[S] tweens=1 isClaimed(f)=false
+====================================================================================================
+(5c) direct: host with a Slot destroyed, then slot:Add (no deferral involved)
+  [mock] slot:Add after Destroy: ok Length=1 fr.Parent=Frame fr claimed=true
+  [imm] slot:Add after Destroy: ok Length=1 fr.Parent=Frame fr claimed=true
+  [def] slot:Add after Destroy: ok Length=1 fr.Parent=Frame fr claimed=true
