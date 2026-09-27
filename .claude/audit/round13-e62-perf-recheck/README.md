@@ -8,7 +8,7 @@
 
 - 트리 셋(스크래치, `cp -rL` 한 워킹트리에 `git archive <sha>`의 `*/src`·`quad-base/test`·`quad-roblox/test`를 덮고,
   `luau_packages/.pesde/*/{quad_base,quad_types,quad_error,type_version_check}/src`도 같은 sha로 덮음 — 세 트리 모두 `relink.sh` 뒤의 같은 모양):
-  - **base** = `85383454`(P1/P6/p2-trace가 커밋된 커밋. REPORT에 sha가 없어 커밋 시점으로 추정 — 아래 (a)1),
+  - **base** = `85383454`(P1/P6이 커밋된 커밋 — **[2026-09-27 정정]** p2-trace는 `6f3da255` 소스인데 이 base로 대조했다; 그 사이 `Dispatch/init.luau` 변경 둘은 p2-trace 경로에 무영향으로 보이나 `base0`로 p2-trace를 따로 대조하진 않았다. REPORT에 sha가 없어 커밋 시점으로 추정 — 아래 (a)1),
   - **base0** = `6f3da255`(P2/P3가 커밋된 커밋, `9afd271e`·`a38f4a00`의 Dispatch 변경 전 — p2/p3만),
   - **head** = `36db81c6`.
   `base..head`의 런타임 차이는 `Effect.luau`(`H-707`)·`Ref/init.luau`(`H-681`)·`Store.luau`(`H-671`)·`Debounce.luau`(주석)·`Claim.luau`(주석)·
@@ -83,7 +83,7 @@ GC 시점 모드)이고 최솟값은 같다.
 ## 발견
 
 **(a) 문서 오류**
-1. REPORT는 측정한 커밋 sha를 적지 않았다. P2·P3는 `6f3da255`(21:28)에, P1·P6·p2-trace는 `85383454`(22:28)에 커밋됐고 그 사이
+1. REPORT는 측정한 커밋 sha를 적지 않았다. P2·P3·p2-trace는 `6f3da255`(21:28)에, P1·P6은 `85383454`(22:28)에 커밋됐고(**[2026-09-27 정정]** 처음엔 p2-trace를 뒤쪽에 넣었다 — `git log -- p2-trace.luau`가 소스) 그 사이
    `9afd271e`·`a38f4a00`이 `Dispatch/init.luau`를 바꿨으므로 두 반쪽의 코드 상태가 다를 수 있다. 이번엔 두 커밋을 다 재측정해 결과가 같음을
    확인했다(p2·p3 수 동일, 시간 ±3%).
 2. REPORT P3 표의 d=1·f=10 gcΔ `14`KB는 어느 커밋(`6f3da255`·`85383454`·HEAD)에서도 재현되지 않는다(15회 전부 28~29KB). d=10·f=1이
