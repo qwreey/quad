@@ -1,0 +1,15 @@
+bookkeeping mutant=offBy1 seeds=2000 diffSeeds=1842 ops=65381 diffs=114436 stateSets=8580 skipped=0 batches=2900 frozenOwnersAtEnd=557 cacheChecks=176727 frozenStaleObs=11902 time=0.78s
+bookkeeping mutant=noFreeze seeds=2000 diffSeeds=511 ops=65381 diffs=20260 stateSets=8355 skipped=225 batches=2900 frozenOwnersAtEnd=0 cacheChecks=207218 frozenStaleObs=0 time=0.75s
+bookkeeping mutant=nilSkip seeds=2000 diffSeeds=491 ops=65381 diffs=12508 stateSets=8481 skipped=99 batches=2900 frozenOwnersAtEnd=272 cacheChecks=193672 frozenStaleObs=14 time=0.76s
+bookkeeping mutant=rangeMsg seeds=2000 diffSeeds=222 ops=65381 diffs=712 stateSets=8580 skipped=0 batches=2900 frozenOwnersAtEnd=557 cacheChecks=176727 frozenStaleObs=269 time=0.73s
+bookkeeping mutant=batchEager seeds=2000 diffSeeds=1053 ops=65381 diffs=16601 stateSets=8580 skipped=0 batches=2900 frozenOwnersAtEnd=652 cacheChecks=171339 frozenStaleObs=269 time=0.78s
+mode=epoch mutant=updEarly seeds=2000 ops=79421 gcDrops=3304 diffs=281844 time=0.27s
+mode=epoch mutant=peekWrites seeds=2000 ops=79421 gcDrops=3304 diffs=48484 time=0.26s
+mode=epoch mutant=trackCopies seeds=2000 ops=79421 gcDrops=3304 diffs=22403 time=0.25s
+mode=relate mutant=sharedMap seeds=2000 ops=79799 gcDrops=4031 diffs=2690 time=0.30s
+mode=relate mutant=setNilNoop seeds=2000 ops=79799 gcDrops=4031 diffs=55 time=0.29s
+mode=relate mutant=weakFallback seeds=2000 ops=79799 gcDrops=4031 diffs=1224 time=0.30s
+mode=impl mutant=freshEach seeds=2000 ops=39623 gcDrops=0 diffs=39623 time=0.02s
+owner mutant=posIgnored seeds=2000 ops=49563 diffSeeds=1756 diffs=6184
+owner mutant=releaseChecksNothing seeds=2000 ops=49563 diffSeeds=1952 diffs=13176
+owner mutant=disposeIgnoresHold seeds=2000 ops=49563 diffSeeds=1692 diffs=3938

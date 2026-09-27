@@ -1,0 +1,16 @@
+[mock]
+  setEmpty({}, 1):	bindLifetime: inst is not a mock instance
+  getBookkeeping('str'):	bindLifetime: inst is not a mock instance
+  getBlocker(0/0):	table index is NaN
+  getBookkeeping(0/0):	bindLifetime: inst is not a mock instance
+  setEmpty(foreign unclaimed Instance, 1):	bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad (mock: Instance.f
+  claimOwnerAt(e, inst, 0/0):	ok
+  claimOwnerAt(0/0, inst, 1):	table index is NaN
+[roblox]
+  setEmpty({}, 1):	Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it h
+  getBookkeeping('str'):	Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it h
+  getBlocker(0/0):	table index is NaN
+  getBookkeeping(0/0):	Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it h
+  setEmpty(foreign unclaimed Instance, 1):	Quad0226 bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it h
+  claimOwnerAt(e, inst, 0/0):	ok
+  claimOwnerAt(0/0, inst, 1):	table index is NaN

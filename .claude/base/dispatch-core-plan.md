@@ -1590,7 +1590,7 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
 숫자만 필요한 쪽(물리 삽입 위치 등)이 쓰는 pull 경로.
 
 **[2026-08-11 세션] 첫 인자(`inst`)는 물리 Instance일 필요가 없음 —
-`Relate`가 weak table 기반이라 아무 테이블이나 키로 가능.** 이 사실을
+`Relate`가 weak table 기반이라 아무 테이블이나 키로 가능.** **[2026-09-27 정정 — round13 E65 실측]** "아무 테이블"은 지금 코드와 다르다 — `getBookkeeping`이 anchor 수명을 `bindLifetime`으로 묶으므로 owner 키는 **요소(claim된 Instance)이거나 Slot**이어야 하고, 평범한 테이블·문자열은 실 프로바이더에서 `Quad0226`(문구는 "Instance is not claimed" — 비-Instance에도 그렇게 말함, Q90 ⑳), mock에서는 ID 없는 메시지로 거부된다(공개 레퍼런스 extend/02 "요소이거나 Slot"이 맞음). 아래 Slot 재사용 논지 자체는 그대로 유효. 이 사실을
 재사용해 **Slot 자신을 owner 키로 써서 같은 두 함수를 한 번 더
 부르면, 최상위(Dispatch.drive의 리터럴 배열)와 중첩(Slot이 자기
 자신의 요소들에 대해)이 완전히 같은 메커니즘으로 재귀됨** — 새 함수를

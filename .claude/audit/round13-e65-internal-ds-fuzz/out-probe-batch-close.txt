@@ -1,0 +1,3 @@
+  close by Off                    sources 0,2,4,6   (true 0,5,7,9)  recomputeBlocker=false
+  close by OffWithoutEmit         sources 0,2,4,6   (true 0,5,7,9)  recomputeBlocker=false
+  close by Off+setLength(1,same)  sources 0,5,7,9   (true 0,5,7,9)  recomputeBlocker=false

@@ -1,0 +1,2 @@
+owner mutant=- seeds=10000 ops=249123 diffSeeds=0 diffs=0
+errors: Quad0157=3655 Quad0158=3628 Quad0159=3481 Quad0160=60895 Quad0161=2588 Quad0162=2545 Quad0163=51871 Quad0179=23289

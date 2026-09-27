@@ -1,0 +1,2 @@
+mode=relate mutant=- seeds=20000 ops=801179 gcDrops=40248 diffs=0 time=3.00s
+errors: Quad0138=22869 Quad0139=22064

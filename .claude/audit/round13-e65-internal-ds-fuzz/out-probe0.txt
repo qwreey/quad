@@ -1,0 +1,5 @@
+keys	_recompute,claimOwnerAt,getBlocker,getBookkeeping,getOffsetAt,releaseOwner,setEmpty,setLength,setOffsetSource
+s2	2	off3	3
+after replace s2	5
+stale observer Set(-1) before GC:	true	
+stale observer Set(-2) after GC:	true	

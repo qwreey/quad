@@ -84,4 +84,5 @@
 - `round13-e63-deps-fuzz/` — **[2026-09-27 자율 루프 E63]** 의존성 집합 계약 퍼저(규칙 18·10만 시드·축 A1~A20·`types-pos`·`out-lifecycle-ids`) — 차등 0, `H-809`.
 - `round13-e64-dispatch-fuzz/` — **[2026-09-27 자율 루프 E64]** `q.Dispatch` 핸들러 계약 차등 퍼저(규칙 15·5만 시드·`axes.luau` a~i·`out-p0-list`) — 차등 0, `H-810`, `Q148`(`0077` 게이트 구멍).
 - `round13-e66-handlers-fuzz/` — **[2026-09-27 자율 루프 E66]** quad-roblox 핸들러 다섯 연결/쓰기 부기 차등 퍼저(규칙 10·2만5천 시드·`axes.luau` a~h·`perf.luau`) — 차등 0, `H-814`, `Q149`·`Q150`.
+- `round13-e65-internal-ds-fuzz/` — **[2026-09-27 자율 루프 E65]** EpochMap·Relate·ImplRegistry·Void·Bookkeeping·소유권 차등 퍼저(7만5천 시드·변이 16·`axes.luau`·프로브 넷·`perf.luau`) — 차등 0, `H-817`~`H-820`, `Q151`·`Q152`, Q94/Q90 보강.
 

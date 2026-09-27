@@ -1,0 +1,2 @@
+bookkeeping mutant=- seeds=20000 diffSeeds=0 ops=650063 diffs=0 stateSets=84408 skipped=0 batches=29469 frozenOwnersAtEnd=5515 cacheChecks=1748516 frozenStaleObs=2220 time=7.97s
+errors: Quad0019=15054 Quad0020=32627 Quad0021=3721 Quad0022=8819 Quad0023=5321 Quad0024=194 Quad0025=4159 Quad0229=6444

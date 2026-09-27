@@ -1,0 +1,66 @@
+== (a) State length with an invalid INITIAL value (H-445 path)
+  setOffsetSource(2,None):	ok
+  setLength(2, Source(-1)):	Quad0021
+  after raise: lengthList[2] is the State:	true	 N =	2	 frozen =	false
+  setOffsetSource(3,src):	ok	 src3 =	-1	(true offset with len2=-1 is -1)
+  setLength(3,1):	ok	 offsets 1..4 =	0,0,-1,0
+  L:Set(5) -> offsets 1..4 =	0,0,-1,0	 src3 =	-1	(true: 0,0,5,6 / src3 5)
+  after GC, L:Set(2) -> offsets =	0,0,-1,0	 src3 =	-1	(true: 0,0,2,3 / src3 2)
+  observers[2] =	nil
+== (b) registered State length later :Set(-1), then back
+  before: offsets	0,2,3	 s2 =	2
+  L:Set(-1):	Quad0021	 offsets	0,2,3	 s2 =	2	 frozen	false
+  a later unrelated setLength(3,0) with source None:	ok	 offsets	0,2,3	 s2 =	2
+  L:Set(4):	ok	 offsets	0,4,5	 s2 =	4	(true 0,4,5 / 4)
+== (c) owner frozen by Quad0023 raised inside a State-length observer's first run
+  setLength(1, State) w/o source:	Quad0023	 frozen	true
+  offsets 1..2 =	0,3
+  L:Set(7) -> offsets 1..2 =	0,3	(true 0,7) observers[1] =	nil
+== (d) one element passed at two positions (single-mount contract broken by a handler)
+  offsets	0,1,2,3,4	 (elem now indexed at	3	)
+  L(pos1):Set(10) -> offsets	0,1,2,3,4	 sources	1	2	3	(true 0,10,11,12,13 / 10,11,12)
+== (e1) re-entrancy: an offset Source's subscriber rewrites an EARLIER length mid-recompute (rewind path)
+  trial 1: setup ok; offsets 0,0,1,2,3,4,5 fired 2
+    setLength(1,2):	ok
+    after: sources 4,5,6,7,8 offsets 0,4,5,6,7,8,9 fired 4  (true offsets: pos1 len 4 -> recomputed by hand below)
+    true offsets 1..7: 0,4,5,6,7,8,9
+  trial 2: setup ok; offsets 0,0,1,2,3,4,5 fired 2
+    setLength(1,2):	ok
+    after: sources 2,6,7,8,9 offsets 0,2,6,7,8,9,10 fired 4  (true offsets: pos2 len 4 -> recomputed by hand below)
+    true offsets 1..7: 0,2,6,7,8,9,10
+  trial 3: setup ok; offsets 0,0,1,2,3,4,5 fired 2
+    setLength(1,2):	ok
+    after: sources 2,3,7,8,9 offsets 0,2,3,7,8,9,10 fired 4  (true offsets: pos3 len 4 -> recomputed by hand below)
+    true offsets 1..7: 0,2,3,7,8,9,10
+== (e2) cycle: an offset Source is also an EARLIER position's length State
+  X at length(2) and offset(4); setOffsetSource(4, X):	ok	 X =	2
+  setLength(4,0):	RAW:./.claude/audit/round13-e65-internal-ds-fuzz/axes.luau:122: CYCLE-CAP	 X =	2001	 observer runs	2001	 frozen	true
+== (f) extreme positions
+  getOffsetAt(nan):	Quad0019	 setLength:	Quad0019
+  getOffsetAt(inf):	Quad0019	 setLength:	Quad0019
+  getOffsetAt(-inf):	Quad0019	 setLength:	Quad0019
+  getOffsetAt(9007199254740992):	Quad0022	 setLength:	Quad0023
+  getOffsetAt(2147483648):	Quad0229	 setLength:	ok
+  getOffsetAt(1e+300):	Quad0022	 setLength:	ok
+  N after the setLength sweep =	1e+300
+  setEmpty(inst, 2^20+1) (sparse far position):	ok	0.000s
+== (g) EpochMap revision edge (uint32 wrap) and non-epoch set members
+  Revision forced to 0; Update ->	false
+  Set once from 0: Revision =	4294967295	 Update ->	true
+  same revision rewritten; Update ->	false
+  a (non-epoch) State inside an EpochSet: Update ->	ok	 stored =	nil
+  Update({}) ->	false	 Peek({}) ->	false
+== (h) Relate NaN / odd keys
+  SetStrong(inst, NaN key):	RAW:./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Relate.luau:52: table index is NaN
+  SetWeak(NaN inst):	RAW:./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Relate.luau:40: table index is NaN
+  GetStrong(NaN inst):	ok
+  GetWeak(inst, NaN key) with WeakMap present:	ok
+  nil inst + nil key ->	Quad0138	(inst checked first)
+  public q.Relate is the same constructor:	true
+  inner-key back-reference leaks (H-77, documented):	50	/ 50
+== (i) ImplRegistry on frozen / proxied modules
+  implsOf(frozen table):	RAW:attempt to modify a readonly table
+  table.isfrozen(Quad.New()) =	false	 implsOf twice same:	true
+  implsOf(nil):	RAW:./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/ImplRegistry.luau:19: invalid argument #1 to 'rawget' (table expected, got nil)	 implsOf('str'):	RAW:./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/ImplRegistry.luau:19: invalid argument #1 to 'rawget' (table expected, got string)
+== (j) Void identity
+  q.Void == Void module:	true	 returns nothing:	0
