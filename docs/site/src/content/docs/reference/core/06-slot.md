@@ -126,7 +126,7 @@ read Offset: State<number>
 `Offset`을 구독한 콜백(`:Observer`·`Effect`·`Compute`)은 **던지면 안 됩니다.** 이 값은 부모의 자리 부기가 다시 계산되는 창 안에서 `:Set`되므로, 거기서 던지면 그 부모의 부기가 영구히 멈춥니다(`Length`는 그 창 밖에서 발행되므로 구독 콜백이 던져도 다음 변경에서 회복됩니다) — 이후 에러는 나지 않지만 형제 Slot의 자식이 옛 오프셋에 앉습니다. 던질 수 있는 일은 콜백 밖에서 끝내세요(`updateFn`과 같은 계약).
 :::
 
-**동작** — 마운트 대상 안에서 이 Slot의 첫 원소 **앞에 놓인 숫자 키 자리들의 길이 합**(0부터 센 절대 위치 — 앞에 아무것도 없으면 0, 첫 원소는 `Offset + 1`번째; 문자 키 숏핸드가 만든 관리 자식(`UICorner = 8`의 `UICorner`)은 물리 자식이지만 여기 세지 않습니다 — Roblox에서 자식의 물리 순서는 계약이 아닙니다)를 싣는 읽기 전용 `State<number>`입니다. 형제가 앞에서 길이를 바꾸면 이 값이 따라 움직입니다. `Length`와 짝을 이루어 접두합을 만들고, `:List`/`:Single`의 `updateFn`이 `ctx.Offset`으로 받는 것도 이 State입니다.
+**동작** — 마운트 대상 안에서 이 Slot의 첫 원소 **앞에 놓인 숫자 키 자리들의 길이 합**(0부터 센 절대 위치 — 앞에 아무것도 없으면 0, 첫 원소는 `Offset + 1`번째; 문자 키 숏핸드가 만든 관리 자식(`UICorner = 8`의 `UICorner`)은 물리 자식이지만 여기 세지 않습니다 — Roblox에서 자식의 물리 순서는 계약이 아닙니다)를 싣는 읽기 전용 `State<number>`입니다. 형제가 앞에서 길이를 바꾸면 이 값이 따라 움직입니다. 앞 형제가 **`State<Slot>` 자리의 교체**로 바뀌면(옛 Slot 철거 → 새 Slot 처리) 이 값은 두 번 통지됩니다 — 한 번은 자리가 비는 순간(0 쪽으로), 한 번은 새 Slot이 앉은 뒤 최종값으로; 같은 길이여도 그렇습니다(수동 `Replace`는 한 번도 안 통지 — [2026-09-27 mock 실측]). `Length`와 짝을 이루어 접두합을 만들고, `:List`/`:Single`의 `updateFn`이 `ctx.Offset`으로 받는 것도 이 State입니다.
 
 Roblox 백엔드는 자식 순서를 물리 속성으로 갖지 않으므로 이 값은 부기용입니다 — 순서가 물리인 백엔드(DOM 등)와 계약을 공유하려고 존재합니다.
 
@@ -374,7 +374,7 @@ type SlotListOpts = { read OwnsElements: boolean? }
 
 두 번째 반환값은 이 키의 다음 `ctx.UserData`가 됩니다.
 
-`updateFn`은 항목 하나를 원소로 바꾸는 함수입니다 — 자기가 만드는 자식 Slot을 채우는 것은 되지만, **이 Slot의 조상을 CRUD하면 안 됩니다.** 첫 `updateFn`은 이 Slot이 트리에 붙는 순간(부모와 함께 마운트될 때, 또는 이미 마운트된 부모에 `Add`/`Splice`/`Replace`로 들어갈 때) 그 부모들의 마운트 작업 안에서 불리므로 그 자리에서 던집니다(아래 문구). 조상을 바꿔야 하면 마운트 뒤 Observer에서 하세요.
+`updateFn`은 항목 하나를 원소로 바꾸는 함수입니다 — 자기가 만드는 자식 Slot을 채우는 것은 되지만, **이 Slot의 조상을 CRUD하면 안 됩니다.** 첫 `updateFn`은 이 Slot이 트리에 붙는 순간(부모와 함께 마운트될 때, 또는 이미 마운트된 부모에 `Add`/`Splice`/`Replace`로 들어갈 때) 그 부모들의 마운트 작업 안에서 불리므로 그 자리에서 던집니다(아래 문구). 조상을 바꿔야 하면 마운트 뒤 Observer에서 하세요. 또 **한 Slot의 `Length`가 자기 앞 자리의 길이에 다시 영향을 주는 고리**(길이 `State`의 Compute가 뒤 Slot의 `Length`/`Offset`을 읽는 모양)는 방어하지 않습니다 — 수렴하면 고정점에 닿지만, 발산하면 번호 없는 스택 오버플로로 끝나고 그 Slot은 이후 CRUD에 `Quad0167`을 냅니다([2026-09-27 mock 실측]; 무한 루프 방어를 두지 않는 것은 설계 결정).
 
 ```
 Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)

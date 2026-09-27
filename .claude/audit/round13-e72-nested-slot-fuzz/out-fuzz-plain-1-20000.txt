@@ -1,0 +1,5 @@
+E72 fuzz mutant=none flags= seeds=20000 steps=600000 checks=620000 diffs=0 diffSeeds=0 time=14.6s
+  maxDepth=5 creates=43857 detach=8565 reattach=915 catchUp=1558 seatSwaps=33213 disposeOk=10269 gc=11967 reentFired=0 staleOffsets(Q75)=987 oracleViol=0
+  expectedErrors Quad0140=3051 Quad0160=6041 Quad0165=3401 Quad0166=4452 Quad0168=2182 Quad0170=6903 Quad0172=6684 Quad0173=3584 Quad0179=9455 Quad0236=6437 Quad0241=5543 Quad0242=1074
+  staleOffsetSteps(by op/native) ListSet/extract=687
+  q75phys=0 catchUpTransient=135 transientFire(a->b->a) 

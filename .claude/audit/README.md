@@ -88,4 +88,5 @@
 - `round13-e70-howto-examples/` — **[2026-09-27 자율 루프 E70]** how-to·오버뷰·quadnomicon·랜딩 `luau` 펜스 105개 mock+strict(E58 하네스, `probes/` 다섯) — mock 74/75·strict 65/75, `H-824`~`H-828`, `Q153`(8.35).
 - `round13-e69-mutation/` — **[2026-09-27 자율 루프 E69]** 변이 테스트(243 변이·`mutants.py`/`run_mutants.py`·`results.json`·판별 프로브 `probe.e69.luau` P1~P19·`coverage.txt`) — 죽음 195/생존 48(실제 공백 25), `Q154`.
 - `round13-e73-mutation-2/` — **[2026-09-27 자율 루프 E73]** 변이 테스트 2차(E69 제외 모듈 180 변이·E69 미결 셋·차등 퍼즈 `fuzz.e73.luau`) — 죽음 149/생존 31(공백 21), 합산 보정 87.5%, `Q154` 보강.
+- `round13-e72-nested-slot-fuzz/` — **[2026-09-27 자율 루프 E72]** 중첩 Slot 오프셋·길이·물리 순서 차등 퍼저(5만 시드·reent 모드·변이 여섯·`probe-q75.luau`·`perf*.luau`) — 논리 차등 0, Q75 보강 넷째, `H-834`·`H-835`.
 

@@ -1,0 +1,13 @@
+E72 fuzz mutant=none flags=reent seeds=5000 steps=400000 checks=405000 diffs=0 diffSeeds=0 time=8.7s
+  maxDepth=4 creates=17845 detach=4892 reattach=968 catchUp=1515 seatSwaps=22345 disposeOk=8501 gc=8066 reentFired=13105 staleOffsets(Q75)=405 oracleViol=0
+  expectedErrors Quad0140=3775 Quad0160=4072 Quad0165=4209 Quad0166=3044 Quad0168=1462 Quad0170=4865 Quad0172=4958 Quad0173=3466 Quad0179=6263 Quad0236=4485 Quad0241=4297 Quad0242=1061
+  ops Add=55951 Clear=8114 Extract=39671 ExtractAll=11950 GC=8066 ListSet=60202 MoveSwap=23880 Remove=32209 Replace=23822 SeatSet=23997 SeatSetHeld=4072 Splice=23966 dispose=12005 err:addDestroyed=7175 err:cycle=7305 err:destroyedSlotCrud=7164 err:disposeHeld=7189 err:heldAdd=7198 err:heldLeafProbe=7274 err:index=7174 err:listCrud=7162 err:sameAdd=7213 err:seatDestroyed=7241
+  q75phys=20 catchUpTransient=164 transientFire(a->b->a) SeatSet=100
+  Q75 seed 60611 step 8 [Splice] reent=true: expected Frame,f3,lk,s3 got Frame,lk,f3,s3
+  Q75 seed 60787 step 75 [Splice] reent=true: expected Frame,Frame,Frame,f34,f36,f44,f37,f39,f40,f41,f22,f27,f32,f30,lk,f23,f33 got Frame,Frame,Frame,f34,f36,f44,f37,f39,f40,f41,f22,f27,f32,lk,f30,f23,f33
+  Q75 seed 60821 step 13 [Splice] reent=true: expected Frame,s2,f3,f2,lk,lk got Frame,s2,f3,lk,lk,f2
+  Q75 seed 60859 step 38 [Splice] reent=true: expected Frame,Frame,Frame,Frame,Frame,f18 got Frame,Frame,Frame,Frame,f18,Frame
+  Q75 seed 60948 step 2 [Splice] reent=true: expected Frame,lf,f2,f3,lf,lf got Frame,f2,f3,lf,lf,lf
+  Q75 seed 60981 step 6 [Splice] reent=true: expected Frame,f11,f2,f5,f6,f7,f9 got f11,f2,Frame,f5,f6,f7,f9
+  Q75 seed 61216 step 80 [Splice] reent=true: expected Frame,Frame,Frame,Frame,Frame,Frame,f27 got Frame,Frame,Frame,Frame,Frame,f27,Frame
+  Q75 seed 61451 step 28 [Splice] reent=true: expected Frame,f6,f7 got Frame,f7,f6

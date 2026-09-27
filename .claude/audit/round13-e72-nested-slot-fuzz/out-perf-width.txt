@@ -1,0 +1,19 @@
+# frontAdd best-of-5 (us) and per-Slot cost (ns) — mock native ops (offsets ignored)
+## D=1 (W chains as host seats)
+W=16 slots=16 mount 0.3 ms | frontAdd 37 us = 2316 ns/slot
+W=64 slots=64 mount 0.9 ms | frontAdd 118 us = 1848 ns/slot
+W=256 slots=256 mount 3.6 ms | frontAdd 467 us = 1823 ns/slot
+W=1024 slots=1024 mount 18.1 ms | frontAdd 2382 us = 2326 ns/slot
+W=2048 slots=2048 mount 39.9 ms | frontAdd 7391 us = 3609 ns/slot
+## D=6 (W chains as host seats)
+W=16 slots=96 mount 1.8 ms | frontAdd 419 us = 4359 ns/slot
+W=64 slots=384 mount 5.5 ms | frontAdd 1580 us = 4114 ns/slot
+W=256 slots=1536 mount 21.0 ms | frontAdd 5702 us = 3712 ns/slot
+W=1024 slots=6144 mount 91.3 ms | frontAdd 28428 us = 4627 ns/slot
+W=2048 slots=12288 mount 185.2 ms | frontAdd 60622 us = 4933 ns/slot
+## D=6 (W chains inside ONE wrapper Slot)
+W=16 slots=96 mount 1.8 ms | frontAdd 624 us = 6496 ns/slot
+W=64 slots=384 mount 7.2 ms | frontAdd 2209 us = 5752 ns/slot
+W=256 slots=1536 mount 25.3 ms | frontAdd 8040 us = 5235 ns/slot
+W=1024 slots=6144 mount 91.9 ms | frontAdd 30241 us = 4922 ns/slot
+W=2048 slots=12288 mount 189.5 ms | frontAdd 60645 us = 4935 ns/slot

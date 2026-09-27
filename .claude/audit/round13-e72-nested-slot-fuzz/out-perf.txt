@@ -1,0 +1,30 @@
+# depth sweep (k=2 leaves per level, deepest 2 leaves, W=1)
+D | mount us | frontAdd us (L,O notifs) | deepAdd us (L,O) | extract+reAdd lvl2 us (L,O) | orderOk
+2 | 59 | 15 (0,2) | 10 (2,0) | 26 (2,0) | true
+4 | 72 | 18 (0,4) | 15 (4,0) | 44 (2,0) | true
+6 | 89 | 20 (0,6) | 18 (6,0) | 58 (2,0) | true
+8 | 132 | 27 (0,8) | 23 (8,0) | 88 (2,0) | true
+16 | 496 | 48 (0,16) | 37 (16,0) | 157 (2,0) | true
+32 | 350 | 80 (0,32) | 64 (32,0) | 304 (2,0) | true
+64 | 702 | 196 (0,64) | 124 (64,0) | 638 (2,0) | true
+128 | 1782 | 344 (0,128) | 256 (128,0) | 1338 (2,0) | true
+# deepest-leaf count sweep (D=8, k=2): deepAdd = recompute of the deepest Slot from position 1 + D-level climb
+N=100 | mount 230 us | deepAdd 57 us (8,0) | frontAdd 47 us | orderOk true
+N=200 | mount 344 us | deepAdd 82 us (8,0) | frontAdd 58 us | orderOk true
+N=400 | mount 518 us | deepAdd 249 us (8,0) | frontAdd 82 us | orderOk true
+N=800 | mount 976 us | deepAdd 276 us (8,0) | frontAdd 148 us | orderOk true
+N=1600 | mount 2285 us | deepAdd 606 us (8,0) | frontAdd 283 us | orderOk true
+N=3200 | mount 3949 us | deepAdd 1164 us (8,0) | frontAdd 467 us | orderOk true
+# width sweep (W chains of D=6, k=2): frontAdd shifts W*D Offsets
+W=1 slots=6 | mount 113 us | frontAdd 23 us (0,6) | deepAdd(chain1) 17 us (6,0) | orderOk true
+W=4 slots=24 | mount 295 us | frontAdd 63 us (0,24) | deepAdd(chain1) 56 us (6,18) | orderOk true
+W=16 slots=96 | mount 1055 us | frontAdd 228 us (0,96) | deepAdd(chain1) 214 us (6,90) | orderOk true
+W=64 slots=384 | mount 4683 us | frontAdd 1031 us (0,384) | deepAdd(chain1) 893 us (6,378) | orderOk true
+W=256 slots=1536 | mount 24826 us | frontAdd 7965 us (0,1536) | deepAdd(chain1) 7730 us (6,1530) | orderOk true
+# stack limit probe (k=1, deepest 1): does mount / deepest Add survive?
+D=100 ok mount 1165 us deepAdd 191 us len 101 orderOk true
+D=150 ok mount 1847 us deepAdd 301 us len 151 orderOk true
+D=200 ok mount 2255 us deepAdd 390 us len 201 orderOk true
+D=300 ok mount 3723 us deepAdd 621 us len 301 orderOk true
+D=400 ok mount 5705 us deepAdd 876 us len 401 orderOk true
+D=800 ok mount 8050 us deepAdd 1602 us len 801 orderOk true

@@ -1,0 +1,5 @@
+init	a1,b1,b2,a2,x,y	a.L	4	a.O	0	c.L	2	c.O	4	viol	0	stale	0
+seat nil	x,y	a.L	4	a.O	0	c.L	2	c.O	0	viol	0	stale	0
+seat a	a1,b1,b2,a2,x,y	a.L	4	a.O	0	c.L	2	c.O	4	viol	0	stale	0
+b3 front	a1,b3,b1,b2,a2,x,y	a.L	5	a.O	0	c.L	2	c.O	5	viol	0	stale	0
+false	./.claude/audit/round13-e72-nested-slot-fuzz/probe0.luau:25: Quad0172 Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)

@@ -1,0 +1,5 @@
+E72 fuzz mutant=none flags= seeds=5000 steps=400000 checks=405000 diffs=0 diffSeeds=0 time=7.6s
+  maxDepth=5 creates=18106 detach=5302 reattach=1096 catchUp=1484 seatSwaps=22662 disposeOk=8661 gc=7905 reentFired=0 staleOffsets(Q75)=481 oracleViol=0
+  expectedErrors Quad0140=3667 Quad0160=4106 Quad0165=4203 Quad0166=3245 Quad0168=1510 Quad0170=4809 Quad0172=4874 Quad0173=3469 Quad0179=6272 Quad0236=4521 Quad0241=4427 Quad0242=987
+  ops Add=55954 Clear=7984 Extract=40112 ExtractAll=12034 GC=7905 ListSet=60062 MoveSwap=23914 Remove=31735 Replace=23884 SeatSet=24185 SeatSetHeld=4106 Splice=24289 dispose=12065 err:addDestroyed=7187 err:cycle=7183 err:destroyedSlotCrud=7223 err:disposeHeld=7251 err:heldAdd=7169 err:heldLeafProbe=7154 err:index=7166 err:listCrud=7233 err:sameAdd=7110 err:seatDestroyed=7095
+  q75phys=0 catchUpTransient=199 transientFire(a->b->a) 

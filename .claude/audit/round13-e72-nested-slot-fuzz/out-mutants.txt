@@ -1,0 +1,6 @@
+E72 fuzz mutant=unmountZero flags= seeds=2000 steps=60000 checks=62000 diffs=65872 diffSeeds=1406 time=1.5s
+E72 fuzz mutant=detachCounts flags= seeds=2000 steps=60000 checks=62000 diffs=12238 diffSeeds=272 time=1.5s
+E72 fuzz mutant=leafSeatFree flags= seeds=2000 steps=60000 checks=62000 diffs=58158 diffSeeds=697 time=1.5s
+E72 fuzz mutant=noCatchUp flags= seeds=2000 steps=59952 checks=61948 diffs=4187 diffSeeds=109 time=1.5s
+E72 fuzz mutant=cycleAs0172 flags= seeds=2000 steps=60000 checks=62000 diffs=350 diffSeeds=303 time=1.5s
+E72 fuzz mutant=extractDestroys flags= seeds=2000 steps=60000 checks=62000 diffs=250243 diffSeeds=1626 time=1.5s

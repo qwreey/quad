@@ -1,0 +1,13 @@
+E72 fuzz mutant=none flags=reent seeds=20000 steps=600000 checks=620000 diffs=0 diffSeeds=0 time=16.5s
+  maxDepth=5 creates=43787 detach=8467 reattach=886 catchUp=1571 seatSwaps=33289 disposeOk=10274 gc=12031 reentFired=26185 staleOffsets(Q75)=919 oracleViol=0
+  expectedErrors Quad0140=3048 Quad0160=6030 Quad0165=3337 Quad0166=4530 Quad0168=2203 Quad0170=6849 Quad0172=6811 Quad0173=3666 Quad0179=9481 Quad0236=6406 Quad0241=5429 Quad0242=1115
+  staleOffsetSteps(by op/native) ListSet/extract=666 Splice/extract=9
+  q75phys=48 catchUpTransient=124 transientFire(a->b->a) SeatSet=173
+  Q75 seed 434 step 5 [Splice] reent=true: expected Frame,lf,lf,f2 got Frame,lf,f2,lf
+  Q75 seed 1067 step 17 [Splice] reent=true: expected Frame,f5,f6,f10,f4,f12,f3 got Frame,f5,f6,f10,f12,f4,f3
+  Q75 seed 1464 step 7 [ListSet] reent=true: expected Frame,lf,lf,f12,f15,f16,f13 got lf,Frame,lf,f12,f15,f16,f13
+  Q75 seed 1689 step 19 [Splice] reent=true: expected Frame,f2,lk,lk,lk,lk,f28,f33,f16,f6,f14,f15,f8,f13,f9,f29 got Frame,f2,lk,lk,lk,f28,f33,lk,f16,f6,f14,f15,f8,f13,f9,f29
+  Q75 seed 2082 step 23 [Splice] reent=true: expected Frame,Frame,Frame,Frame,f2,f3,f25,f26,lk,lk,f29 got Frame,Frame,Frame,Frame,f2,f3,f25,lk,lk,f29,f26
+  Q75 seed 2111 step 8 [Splice] reent=true: expected Frame,s2,f6,f2,f5 got Frame,s2,f2,f5,f6
+  Q75 seed 2302 step 6 [Splice] reent=true: expected Frame,f6,lk,lk,f11,f3,f4,f7 got Frame,lk,lk,f11,f3,f4,f6,f7
+  Q75 seed 2864 step 20 [Splice] reent=true: expected Frame,f11,f8,f7,f12 got Frame,f8,f7,f12,f11
