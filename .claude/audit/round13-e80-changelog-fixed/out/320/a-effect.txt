@@ -1,0 +1,29 @@
+--- F1: fn이 던져 죽은 Effect를 Unsubscribe로 놓을 수 있다 ---
+[FAIL] F1 dead Effect Unsubscribe ok — ./.claude/audit/round13-e80-changelog-fixed/probes/a-effect.luau:12: Effect: cannot change subscription from inside fn or cleanup
+[FAIL] F1 dead Effect WeakUnsubscribe ok — ./.claude/audit/round13-e80-changelog-fixed/probes/a-effect.luau:18: Effect: cannot change subscription from inside fn or cleanup
+[CRASH] ./.claude/audit/round13-e80-changelog-fixed/probes/a-effect.luau:27: Effect: cannot change subscription from inside fn or cleanup
+--- F2: fn 도중 실행 자격 상실 → 돌려준 cleanup 즉시 소진 (yield + host death → dying=true) ---
+[FAIL] F2 cleanup consumed at once with dying=true — cl 1→1 dying=nil
+[CRASH] ./.claude/audit/round13-e80-changelog-fixed/probes/a-effect.luau:70: Effect: cannot change subscription from inside fn or cleanup
+--- F13: Deferred — 파괴 뒤 같은 프레임 안 다른 인스턴스에 재바인드, 옛 콜백 무시 ---
+[FAIL] F13 rebound Effect survives stale Destroying — runs=1 cleanups=0
+[FAIL] F13 real death consumes once dying=true — #cls=0
+--- F15: Deferred — 호스트 파괴 직후 :Subscribe()로 되살림, 늦은 Destroying 무시 ---
+[FAIL] F15 revived Effect keeps running — runs=1 #cls=0
+[FAIL] F15 WeakSubscribe revive keeps running — runs2=1
+--- F22: Ref :Wait() 대기자가 철거의 nil에 깨어나 던져도 되꽂으면 채워진다 ---
+  F22 retract wakes waiter that throws: ./.claude/audit/round13-e80-changelog-fixed/probes/a-effect.luau:129: Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
+[FAIL] F22 re-placed Ref is filled — ref.Value=nil
+--- F29: OnDestroyed를 State 자리에 담아 None으로 뺐다 되꽂기 → 죽을 때 한 번 ---
+[FAIL] F29 removing does not fire — n=1
+[FAIL] F29 death fires exactly once — n=2
+[FAIL] F29 removed then died: no fire — n2=1
+--- F32: cleanup 안의 dep :Set → 한 사이클 ---
+[FAIL] F32 one cycle — fn1 cl fn99 cl fn99
+[PASS] F32 Set inside fn still reruns — fn1 fn5
+--- C63: Effect fn이 함수/nil 아닌 값을 돌려주면 즉시 에러 ---
+  C63 return number: NO ERROR
+[FAIL] C63 message 
+[FAIL] C63 blame user file 
+  C63 return table (connection): NO ERROR
+<<END>> pass=1 fail=16

@@ -664,7 +664,7 @@ do
 	local okCtx, errCtx = pcall(function()
 		q.Dispatch.drive(Instance.new("Frame"), { Thing = q.Context() })
 	end)
-	assert(not okCtx and string.find(tostring(errCtx), "brand: Context", 1, true) ~= nil and string.find(tostring(errCtx), "belongs in a numeric (array) slot", 1, true) ~= nil and string.find(tostring(errCtx), "provider", 1, true) == nil, "base brand hint (Context): " .. tostring(errCtx))
+	assert(not okCtx and string.find(tostring(errCtx), "brand: Context", 1, true) ~= nil and string.find(tostring(errCtx), "a Context is not a value for any key", 1, true) ~= nil and string.find(tostring(errCtx), "provider", 1, true) == nil, "base brand hint (Context, round13 E80: its own tail — the numeric-slot hint raised again): " .. tostring(errCtx))
 	local okU, errU = pcall(function()
 		q.Dispatch.drive(Instance.new("Frame"), { q.Store({ x = q.Source(1) }) })
 	end)

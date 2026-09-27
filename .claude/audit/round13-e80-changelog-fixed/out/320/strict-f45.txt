@@ -1,0 +1,2 @@
+strict/Quad.luau(15,22): TypeError: Unknown type 'QuadTypes.Effect'
+strict/f45.luau(16,33): TypeError: Expected this to be 'DebounceOptions', but got 'opts'

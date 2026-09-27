@@ -1,0 +1,91 @@
+--- F5: 정적 자식 자리에 부모 자신/조상 → InstanceChild 거부 ---
+  F5 Set(host): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:11: Quad0220 InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)
+[PASS] F5 message — Quad0220
+  F5 Set(ancestor): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:17: Quad0220 InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)
+[PASS] F5 ancestor rejected — Quad0220
+[PASS] F5 seat usable after rejection (no stuck owner) — ok
+[PASS] F5 old child already retracted — nil
+--- F7: claimOwnerAt/releaseOwner nil → must not be nil ---
+  F7 claimOwnerAt(nil,…): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:32: Quad0157 Bookkeeping.claimOwnerAt: element must not be nil
+  F7 claimOwnerAt(e,nil,…): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:33: Quad0158 Bookkeeping.claimOwnerAt: inst (ownerKey) must not be nil
+  F7 claimOwnerAt(e,i,nil): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:34: Quad0159 Bookkeeping.claimOwnerAt: k (seat key — a position or a shorthand child name) must not be nil
+  F7 releaseOwner(nil,…): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:35: Quad0161 Bookkeeping.releaseOwner: element must not be nil
+  F7 releaseOwner(e,nil): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:36: Quad0162 Bookkeeping.releaseOwner: ownerKey must not be nil
+[PASS] F7 all five 'must not be nil' at user line — Quad0157,Quad0158,Quad0159,Quad0161,Quad0162
+--- F12: 서로를 담은 State 사슬 → StoreBind circular ---
+  F12 a<->b in slot: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:44: Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle
+[PASS] F12 message — Quad0070
+  F12 s:Set(s) in slot: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:47: Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle
+[PASS] F12 self chain — Quad0070
+  F12 self chain at string key: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:50: Quad0070 StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle
+--- F14: is* 헬퍼가 얹혀도 D.<Class>{}가 죽지 않는다 ---
+[PASS] F14 isEmpty/isMobile ignored — ok
+[PASS] F14 caveat: isNonEmptyList still breaks (as the bullet says) — ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:61: Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got NonEmptyList)
+--- F16: PreRef/PostRef 잘못 놓았을 때 주어 ---
+  F16 PreRef at string key: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:68: Quad0137 PreRef: must be an array item, not the value of a string key
+  F16 PostRef at string key: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:69: Quad0137 PostRef: must be an array item, not the value of a string key
+  F16 PreRef in State: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:70: Quad0136 PreRef: must be a literal array item — it reached array index 1 through a State/Store value, which the pre-pass cannot see
+  F16 PostRef in State: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:71: Quad0136 PostRef: must be a literal array item — it reached array index 1 through a State/Store value, which the pre-pass cannot see
+[PASS] F16 subjects are PreRef:/PostRef: — 
+--- F17: tostring(store) with rawset numeric key ---
+[PASS] F17 tostring does not throw — Store{1, a}
+--- F18/F19: Context/Provider·Slot/Ref at wrong seat hints ---
+  F18 Context at string key: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:85: Quad0076 Dispatch: no handler matched key Thing (value: table, brand: Context) — a quad value at a string key: it belongs in a numeric (array) slot
+  F18 Provider at string key: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:86: Quad0076 Dispatch: no handler matched key Thing (value: table, brand: Provider) — a quad value at a string key: it belongs in a numeric (array) slot
+  F18 Context at numeric key: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:87: Quad0076 Dispatch: no handler matched key 1 (value: table, brand: Context) — this quad value has no handler at an array position
+[PASS] F18 no provider-init hint — 
+  F19 Children = slot: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:89: Quad0141 Slot: must be an array item, not the value of a string key
+  F19 Ref = ref: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:90: Quad0137 Ref: must be an array item, not the value of a string key
+  F19 Tag at string key: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:91: Quad0076 Dispatch: no handler matched key Thing (value: table, brand: Tag) — a quad value at a string key: it belongs in a numeric (array) slot
+[PASS] F19 Slot message — Quad0141
+[PASS] F19 Ref same shape — Quad0137
+[PASS] F19 Tag: numeric hint, no provider hint — 
+--- F20: process index gap / nil key / NaN priority / mapper name / addHandler dedup / getHandler nil ---
+  F20 index gap: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:101: Quad0075 Dispatch.process: index 3 would leave a gap in the chain (the chain has 0 slots — a delegating handler passes index + 1)
+[PASS] F20 gap message — Quad0075
+  F20 process nil key: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:103: Quad0074 Dispatch.process: key must not be nil
+  F20 retractFrom nil key: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:104: Quad0074 Dispatch.retractFrom: key must not be nil
+  F20 NaN priority: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:105: Quad0080 Dispatch.addHandler: priority must be a finite number (got nan)
+  F20 inf priority: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:106: Quad0080 Dispatch.addHandler: priority must be a finite number (got inf)
+  F20 newMapperClass(5): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:107: Quad0026 newMapperClass: className must be a non-empty string (got number)
+[PASS] F20 dedup — 1
+  F20 getHandler(nil, k): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:112: Quad0072 Dispatch.getHandler: inst must not be nil
+  F20 getHandler(inst, nil): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:113: Quad0074 Dispatch.getHandler: key must not be nil
+[PASS] F20 getHandler nil gates are quad messages at user line — Quad0072 Quad0074
+[PASS] F20 all gated — 
+--- F21: RunInit(nil)/RunInit(5) ---
+  F21 RunInit(nil): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:120: Quad0208 Quad:RunInit: initFn must be a function (got nil)
+  F21 RunInit(5): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:121: Quad0208 Quad:RunInit: initFn must be a function (got number)
+[PASS] F21 message — Quad0208
+--- F42: 인자 모양 검사 입구 ---
+  F42 process index 0: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:128: Quad0073 Dispatch.process: index must be a positive integer (got 0)
+  F42 retractFrom index 1.5: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:129: Quad0073 Dispatch.retractFrom: index must be a positive integer (got 1.5)
+  F42 Modifier:Apply(5): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:130: Quad0050 Modifier:Apply: factory must be a function (got number)
+  F42 :List opts string: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:132: Quad0153 Slot:List: opts must be a table (got string)
+  F42 AddPlugin(5): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:133: Quad0210 AddPlugin: plugin must be a function (got number)
+  F42 AddPlugin returns 5: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:134: Quad0211 AddPlugin: the function must return its extension table (got number — return an empty table if it adds nothing)
+  F42 UseProvider(nil): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:135: Quad0212 UseProvider: provider must be a function (got nil)
+  F42 UseProvider returns 5: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:136: Quad0209 UseProvider: the function must return its extension table (got number — return an empty table if it adds nothing)
+[PASS] F42 UseProvider(nil) now errors — Quad0212
+[PASS] F42 opts string rejected — ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:132: Quad0153 Slot:List: opts must be a table (got string)
+--- C25: Tag 인자 nil = 없음 ---
+[PASS] C25 Added(nil) ok — ok
+[PASS] C25 Tag(nil)/Removed(nil)/Merged(…,nil) ok — truetruetrue
+  C25 list hole still errors: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:150: Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes
+  C25 Contains(nil) still errors: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:151: Quad0205 Tag:Contains: names must be strings (got nil at argument 1)
+[PASS] C25 hole & Contains(nil) error — 
+--- C38: Event/OnChange 우선순위, debug tie 안내 사라짐 ---
+[PASS] C38 Event/OnChange = NORMAL-1 — -1/-1
+  C38 control tie lines captured: 1
+[PASS] C38 no priority tie lines at install — ties=0 lines=1
+--- C56: 다른 quad 인스턴스 값 → 교차 거부 ---
+  C56 other Observer in numeric slot: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:184: Quad0106 Observer: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+  C56 other Effect: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:185: Quad0106 Effect: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+  C56 other State as property: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:186: Quad0106 State: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+  C56 :List data other State: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:187: Quad0106 Slot:List: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+[PASS] C56 all cross-instance — Quad0106
+[PASS] C56 cross-instance dep edge still works — 2
+--- C64: AddPlugin dedup, 던진 플러그인은 설치 안 된 것으로 ---
+[PASS] C64 dedup — 1
+[PASS] C64 thrown plugin reruns — 2
+<<END>> pass=31 fail=0

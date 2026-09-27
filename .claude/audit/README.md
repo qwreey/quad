@@ -92,5 +92,6 @@
 - `round13-e75-error-prescriptions/` — **[2026-09-27 자율 루프 E75]** 에러 레퍼런스 248절 "고치려면" 처방 mock 실측(`cases/A~F.luau`·`scripts/anchors.py`) — 정확 228·불충분 14·틀림 0, `H-836`~`H-851`, `Q155`.
 - `round13-e79-deferred-signals/` — **[2026-09-27 자율 루프 E79]** Roblox Deferred 신호 전달 셔임(`env.luau`·`probe.luau` 일곱 축 × 세 모드) — 왕복 수렴·Tween 동일, 차이 셋 → `Q157`, `H-855`.
 - `round13-e77-teardown-invariants/` — **[2026-09-27 자율 루프 E77]** 전 서브시스템 혼합 앱 생성·13 해체 경로·불변식 다섯(1만4천 시드·파손 여섯 검출·`axes-dispose-sites.luau`·perf 넷) — 위반 0, `H-856`.
+- `round13-e80-changelog-fixed/` — **[2026-09-27 자율 루프 E80]** CHANGELOG `[Unreleased]` Fixed·Changed 불릿 55를 HEAD·3.2.0 사본 양쪽 재현(`probes/a~h`, `run320.sh`, `compare.py`) — 수정 실재 106 검사, `H-857`~`H-865`.
 - `round13-drafts-2026-09-27/spec-drafts/` — **[2026-09-27 자율 루프 E76]** 변이 공백 48 → spec 초안(`*.additions.luau` 13·`apply.py`·`run48-results.json`) — 44 죽음, `Q154` (a) 채택 시 `apply.py` 한 번; 남은 넷은 `Q156`.
 

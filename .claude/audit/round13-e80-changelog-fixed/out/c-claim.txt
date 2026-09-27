@@ -1,0 +1,44 @@
+--- F8: Claim 실패(키 부재·클래스 불일치·재사용·같은 자식 둘)가 아무것도 안 남김, 고친 재시도 성공 ---
+  F8 missing key: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:26: Quad0032 Claim: no child matched key Nope under Frame (mapper Frame) — a child with that name must also be a Frame
+[PASS] F8 missing key: no residue — Quad0032
+[PASS] F8 missing key: fixed retry ok — ok
+  F8 class mismatch: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:26: Quad0032 Claim: no child matched key Kid under Frame (mapper TextLabel) — a child with that name must also be a TextLabel
+[PASS] F8 class mismatch: no residue — Quad0032
+[PASS] F8 class mismatch: fixed retry ok — ok
+  F8 descriptor reuse: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:26: Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)
+[PASS] F8 descriptor reuse: no residue — Quad0027
+[PASS] F8 descriptor reuse: fixed retry ok — ok
+  F8 two descs same child: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:26: Quad0028 Claim: two mapper descriptors resolved to the same Instance Title — each child needs exactly one descriptor
+[PASS] F8 two descs same child: no residue — Quad0028
+[PASS] F8 two descs same child: fixed retry ok — ok
+  F8 claimed root: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:34: Quad0029 Claim: Frame is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+[PASS] F8 claimed root: child untouched — Quad0029
+--- F9: [0]/[-1]/[1.5] 디스크립터 → 해석 단계 거부 ---
+  F9 key 0: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:41: Quad0031 Claim: array keys must be positive integers (got 0)
+[PASS] F9 key 0 message — Quad0031
+[PASS] F9 key 0 nothing left — 
+  F9 key -1: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:41: Quad0031 Claim: array keys must be positive integers (got -1)
+[PASS] F9 key -1 message — Quad0031
+[PASS] F9 key -1 nothing left — 
+  F9 key 1.5: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:41: Quad0031 Claim: array keys must be positive integers (got 1.5)
+[PASS] F9 key 1.5 message — Quad0031
+[PASS] F9 key 1.5 nothing left — 
+--- F35: 매퍼 키 부재 → Claim: no child matched key; 클래스 다른 자식도 같은 에러 ---
+  F35 missing: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:49: Quad0032 Claim: no child matched key Nope under Frame (mapper Frame) — a child with that name must also be a Frame
+[PASS] F35 message names key — Quad0032
+  F35 class mismatch (Kid is ImageLabel): ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:52: Quad0032 Claim: no child matched key Kid under Frame (mapper TextLabel) — a child with that name must also be a TextLabel
+[PASS] F35 class mismatch same error — Quad0032
+[PASS] F35 nativeFindChild receives className — TextLabel
+--- F41: q.debug가 켜지면 Claim이 두 실수를 print ---
+  debug: Claim: the root descriptor's key Name is ignored — the root takes M.Root; put a keyed descriptor in the root's props instead
+  debug: Claim: child descriptor key is a table — M.Root is only for the root descriptor; a child key is a name
+[PASS] F41 root string key noted — Claim: the root descriptor's key Name is ignored — the root takes M.Root; put a keyed descriptor in the root's props instead
+[PASS] F41 non-string child key noted — Claim: child descriptor key is a table — M.Root is only for the root descriptor; a child key is a name
+--- C28: 이미 quad 소유인 자식/루트 거부, 루트·형제 무손상, 빼면 재시도 가능 ---
+  C28 owned child: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:86: Quad0029 Claim: Widget is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+[PASS] C28 message shape — Quad0029
+[PASS] C28 root/sibling untouched — 
+[PASS] C28 retry without it ok — 
+  C28 owned root: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:92: Quad0029 Claim: Frame is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)
+[PASS] C28 owned root message — Quad0029
+<<END>> pass=24 fail=0

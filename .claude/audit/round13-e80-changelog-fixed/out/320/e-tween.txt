@@ -1,0 +1,26 @@
+--- F27/F3: 철거 때 진행 중 Tween 취소; 같은 목표 재선언 재생; 첫 설정 기준 ---
+[PASS] F27 engine tween running — 1
+[FAIL] F27 retract cancels running tween — 0
+[FAIL] F27 same target after retract replays — 1
+[PASS] F27 after retract of a written prop, Tween animates — #log=1 Size=1
+  managed child:	table: 0x000062362ec5f310
+[PASS] F3 teardown after GC window cancelled — 1
+  caveat run: #log=1
+--- F28: 미claim 거부 문구 꼬리 구절 ---
+  F28 Slot: NO ERROR
+  F28 InstanceChild: NO ERROR
+[FAIL] F28 both carry cross-instance tail — 
+--- F40: Animate State에 Tween/State를 넣으면 blame이 호출 줄 ---
+  F40 Set(Tween): ./quad-roblox/src/Animate.luau:101: Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)
+[FAIL] F40 blame user line 
+  F40 Set(State): ./quad-roblox/src/Animate.luau:101: Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))
+[FAIL] F40 State blame user line 
+--- C26: Info 없이 Time=0 Tween은 엔진 트윈 없이 스냅; DelayTime 등 있으면 전과 같음 ---
+[FAIL] C26 Time=0 snaps without engine tween — #log=1 Size=0
+[FAIL] C26 DelayTime → engine tween — 2
+[PASS] C26 RepeatCount → engine tween — 1
+[PASS] C26 Reverses → engine tween — 1
+  C26 DelayTime = 0 explicit: #log=1 Size=0
+  C26 Reverses = false explicit: #log=1 Size=0
+  C26 RepeatCount = 0 explicit: #log=1 Size=0
+<<END>> pass=5 fail=7

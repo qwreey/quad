@@ -1,0 +1,32 @@
+--- F10: Modifier({ __apply = … }) 생성 줄 거부 ---
+  F10 __apply field: ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:9: Quad0062 Modifier: field "__apply" starts with "__" — metamethod-looking names are never properties
+[PASS] F10 message — Quad0062
+  F10 __foo field: ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:11: Quad0062 Modifier: field "__foo" starts with "__" — metamethod-looking names are never properties
+--- F24: state:Apply(modifier) → Apply가 비팩토리 값과 같은 문구로 거부 ---
+  F24 Apply(modifier): ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:17: Quad0191 State: Apply factory must be a function or an object with an __apply method
+  F24 Apply(5) control: ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:18: Quad0191 State: Apply factory must be a function or an object with an __apply method
+[PASS] F24 same wording as non-factory — Quad0191 vs Quad0191
+--- F36: Modifier 초기 필드 함수 안내 ---
+  F36 Modifier({ Activated = fn }): ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:24: Quad0063 Modifier: field "Activated" in an initial-field table cannot be a function — a transform goes through mod:Activated(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)
+[PASS] F36 guidance mentions inline key or State for events — Quad0063
+--- F25: Operator.Clamp min>max/NaN → 읽는 줄 에러; Indexed(State) → 팩토리 줄 거부 ---
+  F25 Clamp min>max read: ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:32: Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 10, max 1)
+[PASS] F25 Clamp message at reading line — Quad0124
+  F25 Clamp NaN read: ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:35: Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min nan, max 1)
+  F25 Indexed(State): ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:36: Quad0126 Operator.Indexed: key must be a plain value, not a State (the key is not reactive)
+[PASS] F25 Indexed(State) rejected at factory line — Quad0126
+--- F37: Operator Sum 등 nil 값 State 인자 → 읽는 시점 에러 ---
+  F37 Sum nil State: ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:44: Quad0120 Operator.Sum: argument #1 is a State whose current value is nil
+[PASS] F37 message — Quad0120
+  F37 Product: ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:48: Quad0120 Operator.Product: argument #1 is a State whose current value is nil
+  F37 Min: ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:48: Quad0120 Operator.Min: argument #1 is a State whose current value is nil
+  F37 Max: ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:48: Quad0120 Operator.Max: argument #1 is a State whose current value is nil
+  F37 Band: ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:48: Quad0120 Operator.Band: argument #1 is a State whose current value is nil
+  F37 Bor: ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:48: Quad0120 Operator.Bor: argument #1 is a State whose current value is nil
+  F37 Bxor: ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:48: Quad0120 Operator.Bxor: argument #1 is a State whose current value is nil
+  F37 Clamp nil State: ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:51: Quad0120 Operator.Clamp: argument #1 is a State whose current value is nil
+  F37 Shl nil State: ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:53: Quad0120 Operator.Shl: argument #1 is a State whose current value is nil
+--- F39: Blocker __apply non-State ---
+  F39 b:__apply(5): ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:59: Quad0018 Blocker: Apply target must be a State (got number)
+[PASS] F39 message — Quad0018
+<<END>> pass=7 fail=0

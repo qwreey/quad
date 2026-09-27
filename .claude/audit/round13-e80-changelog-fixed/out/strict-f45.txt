@@ -1,0 +1,4 @@
+strict/f45.luau(7,42): TypeError: Expected this to be 'StateMarker<number> | number', but got 'string'
+strict/f45.luau(8,58): TypeError: Expected this to be '(StateMarker<number> | number)?', but got 'string'
+strict/f45.luau(11,43): TypeError: Expected this to be 'StateMarker<number> | number', but got 'string'
+strict/f45.luau(13,22): TypeError: Expected this to be 'string', but got 'number'

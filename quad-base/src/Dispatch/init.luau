@@ -201,6 +201,7 @@ local function Init(module: any)
 		local hint = if not isBase
 			then " — check that the provider for this value (e.g. quad-roblox) is initialized"
 			elseif brand == "Store" then " — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))" -- 탐사 I′ 3
+			elseif brand == "Context" or brand == "Provider" then ` — a {brand} is not a value for any key: read the value you need out of it first` -- round13 E80 (the old hint sent it to a numeric slot, which raises Quad0076 again)
 			elseif type(k) == "string" then " — a quad value at a string key: it belongs in a numeric (array) slot"
 			else " — this quad value has no handler at an array position"
 		return `Quad0076 Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})` .. hint

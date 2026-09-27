@@ -1,0 +1,71 @@
+--- F4: 파괴된 quad Instance를 slot:Add → 즉시 not claimed ---
+  F4 Add(destroyed): ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:15: Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+[PASS] F4 rejected as not claimed — Quad0241
+[PASS] F4 nothing added — 0
+--- F11: :List data가 배열이 아니면 거부, 아무것도 안 건드림; updateFn이 KeyGone을 돌려주면 안내 ---
+  F11 map data: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:30: Quad0143 Slot:List: data must be a plain array — key "a" is not an array position
+[PASS] F11 message — Quad0143
+[PASS] F11 untouched — len=2 kids=2
+  F11 array with hash key: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:33: Quad0143 Slot:List: data must be a plain array — key "extra" is not an array position
+[PASS] F11 hash key message — ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:33: Quad0143 Slot:List: data must be a plain array — key "extra" is not an array position
+  F11 updateFn returns KeyGone: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:38: Quad0146 Slot:List: updateFn returned q.KeyGone — it is the marker updateFn RECEIVES when a key disappears; return nil/q.None to drop the element or q.Detach to hold it
+[PASS] F11 KeyGone guidance — Quad0146
+  F11 constructor initial map: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:42: Quad0177 Slot: initial elements must be an array — key "a" is not an array position
+--- F30: 중첩 :List updateFn이 첫 마운트 중 조상 Slot CRUD → 거부 ---
+  F30 inner updateFn CRUD on ancestor: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:53: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)
+[PASS] F30 rejected with mounting message — Quad0167
+[PASS] F30 ancestor usable after mount — 2
+[PASS] F30 own child Slot fill unaffected — ok
+  F30 Add(x, 1) inside nested updateFn during mount: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:80: Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)
+[PASS] F30 spec shape rejected with mounting message — Quad0167
+--- F33: State에 담은 원소의 검사가 삽입 전, 실패한 호출은 아무것도 안 바꿈 ---
+  F33 Add(State(unclaimed)): ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:93: Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+[PASS] F33 rejected, unchanged — len=1 elems=1
+[PASS] F33 slot still reconciles after rejection — len=2 kids=2
+  F33 Add(State(5)) non-mountable: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:98: Quad0240 Slot: this backend cannot mount this value
+[PASS] F33 non-mountable State rejected before insert — 2
+  F33 Add(State(disposed Slot)): ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:102: Quad0169 Slot:Add: destroyed Slot cannot be an element
+[PASS] F33 disposed Slot in State rejected — ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:102: Quad0169 Slot:Add: destroyed Slot cannot be an element
+  F33 pre-mount Add(State(unclaimed)): ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:106: Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+[PASS] F33 pre-mount rejects at call — ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:106: Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+--- F38: 다른 quad 인스턴스가 만든 Slot을 원소로/ dispose → 거부 ---
+  F38 Add(other Slot): ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:115: Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+[PASS] F38 Add rejected — Quad0106
+  F38 dispose(other Slot): ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:117: Quad0106 dispose: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+[PASS] F38 dispose rejected — Quad0106
+  F38 Add(State(other Slot)): ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:119: Quad0106 Slot:Add: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+  F38 Add(other State) — same wording as Slot: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:121: Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+[PASS] F38 State & Slot same wording — Quad0106 vs Quad0106
+  F38 :List returns other Slot: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Slot/List.luau:200: Quad0106 Slot: this value was made by another quad module instance (a second quad_base copy, or q.New()) — values cannot cross instances
+[PASS] F38 :List return rejected — Quad0106
+--- F43: 검증 실패한 CRUD가 Slot을 수동으로 표시하지 않는다 ---
+  F43 Add(nil): ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:132: Quad0239 Slot: nil/None cannot be an element — only actually mountable values
+[PASS] F43 :List after failed Add ok — ok
+  F43 control: real Add then :List: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:140: Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)
+[PASS] F43 control still rejected — Quad0149
+--- F44: Splice 되넣기/Replace(i, Get(i)) 문구, keyFn NaN, Tag 자기 참조 ---
+  F44 Splice re-insert removed: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:150: Quad0170 Slot:Splice: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+[PASS] F44 Splice says already in this Slot / Move/Swap — ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:150: Quad0170 Slot:Splice: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+  F44 Replace(1, Get(1)): ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:152: Quad0170 Slot:Replace: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+[PASS] F44 Replace says already in this Slot / Move/Swap — ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:152: Quad0170 Slot:Replace: this element is already in this Slot — reorder with Move/Swap instead of adding it again
+[PASS] F44 slot unchanged — true true n=2
+  F44 keyFn NaN: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:158: Quad0144 Slot:List: keyFn returned NaN for item #1
+  F44 keyFn nil (control): ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:163: Quad0144 Slot:List: keyFn returned nil for item #1
+[PASS] F44 NaN same domain error as nil — Quad0144 vs Quad0144
+  F44 Tag self-containing list: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:168: Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)
+[PASS] F44 Tag self list domain error (not stack overflow) — ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:168: Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)
+--- F31: Dispatch.process(inst, 0, child, 1) → no handler matched, 아무것도 안 남김 ---
+  F31 process key 0: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:176: Quad0076 Dispatch: no handler matched key 0 (value: table) — check that the provider for this value (e.g. quad-roblox) is initialized
+[PASS] F31 no handler matched — Quad0076
+[PASS] F31 child placeable afterwards — Frame
+  F31 process key 1.5 Slot: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:181: Quad0141 Slot: must be an array item, not the value of a number key
+[FAIL] F31 Slot no handler matched (bullet wording) — Quad0141
+  F31 process key 0 Slot: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:183: Quad0141 Slot: must be an array item, not the value of a number key
+[PASS] F31 Slot placeable afterwards — 
+--- C30: OwnsElements=false Slot dispose → 원소 소유권 풀림, Slot 재사용 ---
+[PASS] C30 elements not destroyed — 
+[PASS] C30 element can join another Slot — ok
+[PASS] C30 element can be disposed — ok
+[PASS] C30 Slot reusable, reconciles from data — len=2
+[PASS] C30 parent Remove releases elements — ok
+<<END>> pass=34 fail=1

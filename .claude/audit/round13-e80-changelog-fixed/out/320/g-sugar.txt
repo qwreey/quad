@@ -1,0 +1,32 @@
+--- F10: Modifier({ __apply = … }) 생성 줄 거부 ---
+  F10 __apply field: NO ERROR
+[FAIL] F10 message 
+  F10 __foo field: NO ERROR
+--- F24: state:Apply(modifier) → Apply가 비팩토리 값과 같은 문구로 거부 ---
+  F24 Apply(modifier): NO ERROR
+  F24 Apply(5) control: ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:18: State: Apply factory must be a function or an object with an __apply method
+[FAIL] F24 same wording as non-factory — nil vs nil
+--- F36: Modifier 초기 필드 함수 안내 ---
+  F36 Modifier({ Activated = fn }): ./.claude/audit/round13-e80-changelog-fixed/probes/g-sugar.luau:24: Modifier: field "Activated" in an initial-field table cannot be a function — use mod:Activated(fn) for a transform
+[FAIL] F36 guidance mentions inline key or State for events 
+--- F25: Operator.Clamp min>max/NaN → 읽는 줄 에러; Indexed(State) → 팩토리 줄 거부 ---
+  F25 Clamp min>max read: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Operator.luau:141: invalid argument #3 to 'clamp' (max must be greater than or equal to min)
+[FAIL] F25 Clamp message at reading line 
+  F25 Clamp NaN read: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Operator.luau:141: invalid argument #3 to 'clamp' (max must be greater than or equal to min)
+  F25 Indexed(State): NO ERROR
+[FAIL] F25 Indexed(State) rejected at factory line 
+--- F37: Operator Sum 등 nil 값 State 인자 → 읽는 시점 에러 ---
+  F37 Sum nil State: NO ERROR
+[FAIL] F37 message 
+  F37 Product: NO ERROR
+  F37 Min: NO ERROR
+  F37 Max: NO ERROR
+  F37 Band: NO ERROR
+  F37 Bor: NO ERROR
+  F37 Bxor: NO ERROR
+  F37 Clamp nil State: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Operator.luau:141: invalid argument #2 to 'clamp' (number expected, got nil)
+  F37 Shl nil State: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Operator.luau:103: invalid argument #2 to 'lshift' (number expected, got nil)
+--- F39: Blocker __apply non-State ---
+  F39 b:__apply(5): ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Blocker.luau:117: attempt to index number with 'Gate'
+[FAIL] F39 message 
+<<END>> pass=0 fail=7

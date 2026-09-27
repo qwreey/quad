@@ -1,0 +1,71 @@
+--- F4: 파괴된 quad Instance를 slot:Add → 즉시 not claimed ---
+  F4 Add(destroyed): NO ERROR
+[FAIL] F4 rejected as not claimed 
+[FAIL] F4 nothing added — 1
+--- F11: :List data가 배열이 아니면 거부, 아무것도 안 건드림; updateFn이 KeyGone을 돌려주면 안내 ---
+  F11 map data: NO ERROR
+[FAIL] F11 message 
+[FAIL] F11 untouched — len=0 kids=0
+  F11 array with hash key: NO ERROR
+[FAIL] F11 hash key message 
+  F11 updateFn returns KeyGone: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:38: Slot: this backend cannot mount this value
+[FAIL] F11 KeyGone guidance 
+  F11 constructor initial map: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:42: Slot: initial elements must be an array — key "a" is not an array position
+--- F30: 중첩 :List updateFn이 첫 마운트 중 조상 Slot CRUD → 거부 ---
+  F30 inner updateFn CRUD on ancestor: nil
+[FAIL] F30 rejected with mounting message 
+[PASS] F30 ancestor usable after mount — 3
+[PASS] F30 own child Slot fill unaffected — ok
+  F30 Add(x, 1) inside nested updateFn during mount: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:82: bindLifetime: value is already bound to this Instance (the same handle at two positions?)
+[FAIL] F30 spec shape rejected with mounting message 
+--- F33: State에 담은 원소의 검사가 삽입 전, 실패한 호출은 아무것도 안 바꿈 ---
+  F33 Add(State(unclaimed)): ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:93: Slot: this backend cannot mount this value
+[FAIL] F33 rejected, unchanged — len=1 elems=2
+[PASS] F33 slot still reconciles after rejection — len=2 kids=2
+  F33 Add(State(5)) non-mountable: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:98: Slot: this backend cannot mount this value
+[PASS] F33 non-mountable State rejected before insert — 2
+  F33 Add(State(disposed Slot)): ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:102: Slot: this backend cannot mount this value
+[PASS] F33 disposed Slot in State rejected — ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:102: Slot: this backend cannot mount this value
+  F33 pre-mount Add(State(unclaimed)): NO ERROR
+[FAIL] F33 pre-mount rejects at call 
+--- F38: 다른 quad 인스턴스가 만든 Slot을 원소로/ dispose → 거부 ---
+  F38 Add(other Slot): NO ERROR
+[FAIL] F38 Add rejected 
+  F38 dispose(other Slot): ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:117: dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, or destroy the owner Slot (a detached element goes with its owner) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+[FAIL] F38 dispose rejected 
+  F38 Add(State(other Slot)): ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:119: Slot:Add: the same element appears twice
+  F38 Add(other State) — same wording as Slot: NO ERROR
+[FAIL] F38 State & Slot same wording — nil vs nil
+  F38 :List returns other Slot: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:125: Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+[FAIL] F38 :List return rejected 
+--- F43: 검증 실패한 CRUD가 Slot을 수동으로 표시하지 않는다 ---
+  F43 Add(nil): ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:132: Slot: nil/None cannot be an element — only actually mountable values
+[FAIL] F43 :List after failed Add ok — ./.claude/audit/round13-e80-changelog-fixed/harness.luau:117: Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)
+  F43 control: real Add then :List: ./.claude/audit/round13-e80-changelog-fixed/harness.luau:117: Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)
+[PASS] F43 control still rejected 
+--- F44: Splice 되넣기/Replace(i, Get(i)) 문구, keyFn NaN, Tag 자기 참조 ---
+  F44 Splice re-insert removed: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:150: Slot:Splice: the same element appears twice
+[FAIL] F44 Splice says already in this Slot / Move/Swap — ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:150: Slot:Splice: the same element appears twice
+  F44 Replace(1, Get(1)): ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:152: Slot:Replace: the same element appears twice
+[FAIL] F44 Replace says already in this Slot / Move/Swap — ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:152: Slot:Replace: the same element appears twice
+[PASS] F44 slot unchanged — true true n=2
+  F44 keyFn NaN: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Slot/List.luau:109: table index is NaN
+  F44 keyFn nil (control): ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:163: Slot:List: keyFn returned nil for item #1
+[FAIL] F44 NaN same domain error as nil — nil vs nil
+  F44 Tag self-containing list: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Brand.luau:104: stack overflow
+[FAIL] F44 Tag self list domain error (not stack overflow) — ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Brand.luau:104: stack overflow
+--- F31: Dispatch.process(inst, 0, child, 1) → no handler matched, 아무것도 안 남김 ---
+  F31 process key 0: ./quad-roblox/src/Handlers/InstanceChild.luau:43: Dispatch.setOffsetSource: position must be a positive integer (got 0)
+[FAIL] F31 no handler matched 
+[PASS] F31 child placeable afterwards — table: 0x000055fe80ad4940
+  F31 process key 1.5 Slot: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Slot/Tree.luau:41: Dispatch.setOffsetSource: position must be a positive integer (got 1.5)
+[FAIL] F31 Slot no handler matched (bullet wording) 
+  F31 process key 0 Slot: ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:183: Slot: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+[FAIL] F31 Slot placeable afterwards — 
+--- C30: OwnsElements=false Slot dispose → 원소 소유권 풀림, Slot 재사용 ---
+[PASS] C30 elements not destroyed — 
+[FAIL] C30 element can join another Slot — ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:204: Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+[FAIL] C30 element can be disposed — ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:206: dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, or destroy the owner Slot (a detached element goes with its owner) (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+[PASS] C30 Slot reusable, reconciles from data — len=2
+[FAIL] C30 parent Remove releases elements — ./.claude/audit/round13-e80-changelog-fixed/probes/b-slot.luau:221: Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+<<END>> pass=10 fail=25

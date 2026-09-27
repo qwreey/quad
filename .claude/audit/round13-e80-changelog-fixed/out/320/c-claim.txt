@@ -1,0 +1,42 @@
+--- F8: Claim 실패(키 부재·클래스 불일치·재사용·같은 자식 둘)가 아무것도 안 남김, 고친 재시도 성공 ---
+  F8 missing key: ./quad-roblox/src/LifetimeHandle.luau:59: Relate:GetWeak: inst must not be nil
+[FAIL] F8 missing key: no residue 
+[FAIL] F8 missing key: fixed retry ok — ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:28: nativeClaim: Instance is already claimed by quad
+  F8 class mismatch: NO ERROR
+[FAIL] F8 class mismatch: no residue 
+[FAIL] F8 class mismatch: fixed retry ok — ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:28: nativeClaim: Instance is already claimed by quad
+  F8 descriptor reuse: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:26: Claim: mapper descriptor was already used (descriptors are one-shot)
+[FAIL] F8 descriptor reuse: no residue 
+[FAIL] F8 descriptor reuse: fixed retry ok — ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:28: nativeClaim: Instance is already claimed by quad
+  F8 two descs same child: ./quad-roblox/src/LifetimeHandle.luau:59: Relate:GetWeak: inst must not be nil
+[FAIL] F8 two descs same child: no residue 
+[FAIL] F8 two descs same child: fixed retry ok — ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:28: nativeClaim: Instance is already claimed by quad
+  F8 claimed root: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:34: nativeClaim: Instance is already claimed by quad
+[PASS] F8 claimed root: child untouched 
+--- F9: [0]/[-1]/[1.5] 디스크립터 → 해석 단계 거부 ---
+  F9 key 0: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:41: Dispatch.drive: array keys must be positive integers (got 0)
+[FAIL] F9 key 0 message 
+[FAIL] F9 key 0 nothing left — 
+  F9 key -1: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:41: Dispatch.drive: array keys must be positive integers (got -1)
+[FAIL] F9 key -1 message 
+[FAIL] F9 key -1 nothing left — 
+  F9 key 1.5: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:41: Dispatch.drive: array keys must be positive integers (got 1.5)
+[FAIL] F9 key 1.5 message 
+[FAIL] F9 key 1.5 nothing left — 
+--- F35: 매퍼 키 부재 → Claim: no child matched key; 클래스 다른 자식도 같은 에러 ---
+  F35 missing: ./quad-roblox/src/LifetimeHandle.luau:59: Relate:GetWeak: inst must not be nil
+[FAIL] F35 message names key 
+  F35 class mismatch (Kid is ImageLabel): NO ERROR
+[FAIL] F35 class mismatch same error 
+[FAIL] F35 nativeFindChild receives className — nil
+--- F41: q.debug가 켜지면 Claim이 두 실수를 print ---
+[FAIL] F41 root string key noted 
+[FAIL] F41 non-string child key noted 
+--- C28: 이미 quad 소유인 자식/루트 거부, 루트·형제 무손상, 빼면 재시도 가능 ---
+  C28 owned child: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:86: nativeClaim: Instance is already claimed by quad
+[FAIL] C28 message shape 
+[FAIL] C28 root/sibling untouched — 
+[FAIL] C28 retry without it ok — 
+  C28 owned root: ./.claude/audit/round13-e80-changelog-fixed/probes/c-claim.luau:92: nativeClaim: Instance is already claimed by quad
+[PASS] C28 owned root message 
+<<END>> pass=2 fail=22

@@ -1,0 +1,93 @@
+--- F5: 정적 자식 자리에 부모 자신/조상 → InstanceChild 거부 ---
+  F5 Set(host): NO ERROR
+[FAIL] F5 message 
+  F5 Set(ancestor): NO ERROR
+[PASS] F5 ancestor rejected 
+[PASS] F5 seat usable after rejection (no stuck owner) — ok
+[PASS] F5 old child already retracted — nil
+--- F7: claimOwnerAt/releaseOwner nil → must not be nil ---
+  F7 claimOwnerAt(nil,…): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:32: attempt to call a nil value
+  F7 claimOwnerAt(e,nil,…): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:33: attempt to call a nil value
+  F7 claimOwnerAt(e,i,nil): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:34: attempt to call a nil value
+  F7 releaseOwner(nil,…): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:35: attempt to call a nil value
+  F7 releaseOwner(e,nil): ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:36: attempt to call a nil value
+[FAIL] F7 all five 'must not be nil' at user line — -,-,-,-,-
+--- F12: 서로를 담은 State 사슬 → StoreBind circular ---
+  F12 a<->b in slot: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Brand.luau:71: stack overflow
+[FAIL] F12 message 
+  F12 s:Set(s) in slot: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Brand.luau:71: stack overflow
+[PASS] F12 self chain 
+  F12 self chain at string key: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Brand.luau:71: stack overflow
+--- F14: is* 헬퍼가 얹혀도 D.<Class>{}가 죽지 않는다 ---
+[FAIL] F14 isEmpty/isMobile ignored — ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:57: Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got Mobile)
+[PASS] F14 caveat: isNonEmptyList still breaks (as the bullet says) — ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:61: Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got NonEmptyList)
+--- F16: PreRef/PostRef 잘못 놓았을 때 주어 ---
+  F16 PreRef at string key: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:68: PreRef: must be an array item, not the value of a string key
+  F16 PostRef at string key: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:69: PostRef: must be an array item, not the value of a string key
+  F16 PreRef in State: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:70: PreRef: must be a literal array item — it reached array index 1 through a State/Store value, which the pre-pass cannot see
+  F16 PostRef in State: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:71: PostRef: must be a literal array item — it reached array index 1 through a State/Store value, which the pre-pass cannot see
+[PASS] F16 subjects are PreRef:/PostRef: — 
+--- F17: tostring(store) with rawset numeric key ---
+[FAIL] F17 tostring does not throw — attempt to compare string < number
+--- F18/F19: Context/Provider·Slot/Ref at wrong seat hints ---
+  F18 Context at string key: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:85: Dispatch: no handler matched key Thing (value: table, brand: Context) — check that the provider for this value (e.g. quad-roblox) is initialized
+  F18 Provider at string key: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:86: Dispatch: no handler matched key Thing (value: table, brand: Provider) — check that the provider for this value (e.g. quad-roblox) is initialized
+  F18 Context at numeric key: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:87: Dispatch: no handler matched key 1 (value: table, brand: Context) — check that the provider for this value (e.g. quad-roblox) is initialized
+[FAIL] F18 no provider-init hint — 
+  F19 Children = slot: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:89: Dispatch: no handler matched key Children (value: table, brand: Slot) — check that the provider for this value (e.g. quad-roblox) is initialized
+  F19 Ref = ref: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:90: Dispatch: no handler matched key Ref (value: table, brand: Ref) — check that the provider for this value (e.g. quad-roblox) is initialized
+  F19 Tag at string key: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:91: Dispatch: no handler matched key Thing (value: table, brand: Tag) — check that the provider for this value (e.g. quad-roblox) is initialized
+[FAIL] F19 Slot message 
+[FAIL] F19 Ref same shape 
+[FAIL] F19 Tag: numeric hint, no provider hint — 
+--- F20: process index gap / nil key / NaN priority / mapper name / addHandler dedup / getHandler nil ---
+  F20 index gap: NO ERROR
+[FAIL] F20 gap message 
+  F20 process nil key: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:258: Relate:GetWeak: key must not be nil
+  F20 retractFrom nil key: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:219: Relate:GetWeak: key must not be nil
+  F20 NaN priority: NO ERROR
+  F20 inf priority: NO ERROR
+  F20 newMapperClass(5): NO ERROR
+[FAIL] F20 dedup — 2
+  F20 getHandler(nil, k): ./quad-roblox/src/Handlers/Property.luau:119: attempt to index nil with 'ClassName'
+  F20 getHandler(inst, nil): NO ERROR
+[FAIL] F20 getHandler nil gates are quad messages at user line — nil nil
+[FAIL] F20 all gated — 
+--- F21: RunInit(nil)/RunInit(5) ---
+  F21 RunInit(nil): ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/init.luau:117: Relate:GetStrong: key must not be nil
+  F21 RunInit(5): ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/init.luau:121: attempt to call a number value
+[FAIL] F21 message 
+--- F42: 인자 모양 검사 입구 ---
+  F42 process index 0: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:226: Dispatch.retractFrom: no slot at index 0 — the chain array has a hole, bookkeeping is broken
+  F42 retractFrom index 1.5: NO ERROR
+  F42 Modifier:Apply(5): ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/Modifier/init.luau:184: attempt to call a number value
+  F42 :List opts string: NO ERROR
+  F42 AddPlugin(5): ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/init.luau:134: attempt to call a number value
+  F42 AddPlugin returns 5: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/init.luau:128: attempt to iterate over a number value
+  F42 UseProvider(nil): NO ERROR
+  F42 UseProvider returns 5: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/init.luau:128: attempt to iterate over a number value
+[FAIL] F42 UseProvider(nil) now errors 
+[FAIL] F42 opts string rejected 
+--- C25: Tag 인자 nil = 없음 ---
+[FAIL] C25 Added(nil) ok — ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:144: Tag: names must be strings, Tags, or a plain {...} list of those (got nil)
+[FAIL] C25 Tag(nil)/Removed(nil)/Merged(…,nil) ok — falsefalsefalse
+  C25 list hole still errors: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:150: Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes
+  C25 Contains(nil) still errors: ./.claude/audit/round13-e80-changelog-fixed/probes/d-dispatch.luau:151: Tag:Contains: names must be strings (got nil at argument 1)
+[PASS] C25 hole & Contains(nil) error — 
+--- C38: Event/OnChange 우선순위, debug tie 안내 사라짐 ---
+[FAIL] C38 Event/OnChange = NORMAL-1 — 0/0
+  C38 control tie lines captured: 1
+  tie: Dispatch.addHandler: handler priority tie between "Property" (priority 0) and "Event" (priority 0) — ties have no defined order; offset from a HANDLER_PRIORITY_* band
+  tie: Dispatch.addHandler: handler priority tie between "InstanceChild" (priority 0) and "OnChange" (priority 0) — ties have no defined order; offset from a HANDLER_PRIORITY_* band
+[FAIL] C38 no priority tie lines at install — ties=2 lines=3
+--- C56: 다른 quad 인스턴스 값 → 교차 거부 ---
+  C56 other Observer in numeric slot: NO ERROR
+  C56 other Effect: NO ERROR
+  C56 other State as property: NO ERROR
+  C56 :List data other State: NO ERROR
+[FAIL] C56 all cross-instance 
+[PASS] C56 cross-instance dep edge still works — 2
+--- C64: AddPlugin dedup, 던진 플러그인은 설치 안 된 것으로 ---
+[FAIL] C64 dedup — 2
+[PASS] C64 thrown plugin reruns — 2
+<<END>> pass=9 fail=22

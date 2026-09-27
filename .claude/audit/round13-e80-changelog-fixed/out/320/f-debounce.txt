@@ -1,0 +1,21 @@
+--- F6: Trailing=false Debounce는 MaxTime을 읽지 않는다; 게이트 핸들 Flush blame ---
+[PASS] F6 MaxTime Compute never ran — 0
+[PASS] F6 invalid unused MaxTime does not throw — ok
+  F6 handle Flush on backend-less quad: ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Debounce.luau:169: quad: setTimeout is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+[FAIL] F6 Flush blame user line 
+--- F23: 창 끝 통과 도중 하류 Cancel → 창을 다시 열지 않음 ---
+[FAIL] F23 next leading passes immediately — 1,2
+--- F34: Time이 State이고 값이 잘못되면 게이트가 굳지 않는다; 신호 진입 때 한 번 읽음 ---
+  F34 bad Time on signal: ./.claude/audit/round13-e80-changelog-fixed/probes/f-debounce.luau:59: Debounce: Time must be a non-negative number (got number)
+[PASS] F34 gate not left blocked after the throw (g follows s) — g=1 s=1
+[PASS] F34 not stuck after bad Time (next signal works, trailing flushes) —  seen=2
+  [task error] ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Debounce.luau:71: Throttle: Time must be a non-negative number (got number)
+  F34 next signal with the bad Time (HEAD: throws at the :Set line): ./.claude/audit/round13-e80-changelog-fixed/probes/f-debounce.luau:75: Throttle: Time must be a non-negative number (got number)
+  F34 throttle seen after bad Time mid-window: 1,2,4
+[PASS] F34 bad Time mid-window: gate recovers once Time is valid (4 passes) — 1,2,4
+[PASS] F34 running window uses the value read at the signal — 1
+  F34 invalid MaxTime: ./.claude/audit/round13-e80-changelog-fixed/probes/f-debounce.luau:99: Debounce: MaxTime must be a non-negative number (got number)
+[PASS] F34 MaxTime throws at user line 
+[PASS] F34 gate fine after MaxTime fix — 2
+[FAIL] F34 Flush on never-opened gate passes pending — ./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Debounce.luau:71: Debounce: Time must be a non-negative number (got string) seen=7
+<<END>> pass=8 fail=3

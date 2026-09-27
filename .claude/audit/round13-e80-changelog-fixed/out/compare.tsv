@@ -1,0 +1,145 @@
+probe	label	HEAD	3.2.0	verdict
+a-effect	F1 dead Effect Unsubscribe ok	PASS	FAIL	fixed
+a-effect	F1 dead Effect WeakUnsubscribe ok	PASS	FAIL	fixed
+a-effect	F1 released dead Effect is collected	PASS	ABSENT(절 크래시)	fixed
+a-effect	F1 frozen Observer keeps firing	PASS	ABSENT(절 크래시)	fixed
+a-effect	F1 frozen Observer Unsubscribe ok	PASS	ABSENT(절 크래시)	fixed
+a-effect	F1 self-Unsubscribe inside fn ok, fn not re-called	PASS	ABSENT(절 크래시)	fixed
+a-effect	F2 cleanup consumed at once with dying=true	PASS	FAIL	fixed
+a-effect	F2 self-unsubscribe: returned cleanup consumed	PASS	ABSENT(절 크래시)	fixed
+a-effect	F13 rebound Effect survives stale Destroying	PASS	FAIL	fixed
+a-effect	F13 real death consumes once dying=true	PASS	FAIL	fixed
+a-effect	F15 revived Effect keeps running	PASS	FAIL	fixed
+a-effect	F15 WeakSubscribe revive keeps running	PASS	FAIL	fixed
+a-effect	F22 re-placed Ref is filled	PASS	FAIL	fixed
+a-effect	F29 removing does not fire	PASS	FAIL	fixed
+a-effect	F29 death fires exactly once	PASS	FAIL	fixed
+a-effect	F29 removed then died: no fire	PASS	FAIL	fixed
+a-effect	F32 one cycle	PASS	FAIL	fixed
+a-effect	F32 Set inside fn still reruns	PASS	PASS	same
+a-effect	C63 message	PASS	FAIL	fixed
+a-effect	C63 blame user file	PASS	FAIL	fixed
+b-slot	F4 rejected as not claimed	PASS	FAIL	fixed
+b-slot	F4 nothing added	PASS	FAIL	fixed
+b-slot	F11 message	PASS	FAIL	fixed
+b-slot	F11 untouched	PASS	FAIL	fixed
+b-slot	F11 hash key message	PASS	FAIL	fixed
+b-slot	F11 KeyGone guidance	PASS	FAIL	fixed
+b-slot	F30 rejected with mounting message	PASS	FAIL	fixed
+b-slot	F30 ancestor usable after mount	PASS	PASS	same
+b-slot	F30 own child Slot fill unaffected	PASS	PASS	same
+b-slot	F30 spec shape rejected with mounting message	PASS	FAIL	fixed
+b-slot	F33 rejected, unchanged	PASS	FAIL	fixed
+b-slot	F33 slot still reconciles after rejection	PASS	PASS	same
+b-slot	F33 non-mountable State rejected before insert	PASS	PASS	same
+b-slot	F33 disposed Slot in State rejected	PASS	PASS	same
+b-slot	F33 pre-mount rejects at call	PASS	FAIL	fixed
+b-slot	F38 Add rejected	PASS	FAIL	fixed
+b-slot	F38 dispose rejected	PASS	FAIL	fixed
+b-slot	F38 State & Slot same wording	PASS	FAIL	fixed
+b-slot	F38 :List return rejected	PASS	FAIL	fixed
+b-slot	F43 :List after failed Add ok	PASS	FAIL	fixed
+b-slot	F43 control still rejected	PASS	PASS	same
+b-slot	F44 Splice says already in this Slot / Move/Swap	PASS	FAIL	fixed
+b-slot	F44 Replace says already in this Slot / Move/Swap	PASS	FAIL	fixed
+b-slot	F44 slot unchanged	PASS	PASS	same
+b-slot	F44 NaN same domain error as nil	PASS	FAIL	fixed
+b-slot	F44 Tag self list domain error (not stack overflow)	PASS	FAIL	fixed
+b-slot	F31 no handler matched	PASS	FAIL	fixed
+b-slot	F31 child placeable afterwards	PASS	PASS	same
+b-slot	F31 Slot no handler matched (bullet wording)	FAIL	FAIL	same
+b-slot	F31 Slot placeable afterwards	PASS	FAIL	fixed
+b-slot	C30 elements not destroyed	PASS	PASS	same
+b-slot	C30 element can join another Slot	PASS	FAIL	fixed
+b-slot	C30 element can be disposed	PASS	FAIL	fixed
+b-slot	C30 Slot reusable, reconciles from data	PASS	PASS	same
+b-slot	C30 parent Remove releases elements	PASS	FAIL	fixed
+c-claim	F8 missing key: no residue	PASS	FAIL	fixed
+c-claim	F8 missing key: fixed retry ok	PASS	FAIL	fixed
+c-claim	F8 class mismatch: no residue	PASS	FAIL	fixed
+c-claim	F8 class mismatch: fixed retry ok	PASS	FAIL	fixed
+c-claim	F8 descriptor reuse: no residue	PASS	FAIL	fixed
+c-claim	F8 descriptor reuse: fixed retry ok	PASS	FAIL	fixed
+c-claim	F8 two descs same child: no residue	PASS	FAIL	fixed
+c-claim	F8 two descs same child: fixed retry ok	PASS	FAIL	fixed
+c-claim	F8 claimed root: child untouched	PASS	PASS	same
+c-claim	F9 key 0 message	PASS	FAIL	fixed
+c-claim	F9 key 0 nothing left	PASS	FAIL	fixed
+c-claim	F9 key -1 message	PASS	FAIL	fixed
+c-claim	F9 key -1 nothing left	PASS	FAIL	fixed
+c-claim	F9 key 1.5 message	PASS	FAIL	fixed
+c-claim	F9 key 1.5 nothing left	PASS	FAIL	fixed
+c-claim	F35 message names key	PASS	FAIL	fixed
+c-claim	F35 class mismatch same error	PASS	FAIL	fixed
+c-claim	F35 nativeFindChild receives className	PASS	FAIL	fixed
+c-claim	F41 root string key noted	PASS	FAIL	fixed
+c-claim	F41 non-string child key noted	PASS	FAIL	fixed
+c-claim	C28 message shape	PASS	FAIL	fixed
+c-claim	C28 root/sibling untouched	PASS	FAIL	fixed
+c-claim	C28 retry without it ok	PASS	FAIL	fixed
+c-claim	C28 owned root message	PASS	PASS	same
+d-dispatch	F5 message	PASS	FAIL	fixed
+d-dispatch	F5 ancestor rejected	PASS	PASS	same
+d-dispatch	F5 seat usable after rejection (no stuck owner)	PASS	PASS	same
+d-dispatch	F5 old child already retracted	PASS	PASS	same
+d-dispatch	F7 all five 'must not be nil' at user line	PASS	FAIL	fixed
+d-dispatch	F12 message	PASS	FAIL	fixed
+d-dispatch	F12 self chain	PASS	PASS	same
+d-dispatch	F14 isEmpty/isMobile ignored	PASS	FAIL	fixed
+d-dispatch	F14 caveat: isNonEmptyList still breaks (as the bullet says)	PASS	PASS	same
+d-dispatch	F16 subjects are PreRef:/PostRef:	PASS	PASS	same
+d-dispatch	F17 tostring does not throw	PASS	FAIL	fixed
+d-dispatch	F18 no provider-init hint	PASS	FAIL	fixed
+d-dispatch	F19 Slot message	PASS	FAIL	fixed
+d-dispatch	F19 Ref same shape	PASS	FAIL	fixed
+d-dispatch	F19 Tag: numeric hint, no provider hint	PASS	FAIL	fixed
+d-dispatch	F20 gap message	PASS	FAIL	fixed
+d-dispatch	F20 dedup	PASS	FAIL	fixed
+d-dispatch	F20 getHandler nil gates are quad messages at user line	PASS	FAIL	fixed
+d-dispatch	F20 all gated	PASS	FAIL	fixed
+d-dispatch	F21 message	PASS	FAIL	fixed
+d-dispatch	F42 UseProvider(nil) now errors	PASS	FAIL	fixed
+d-dispatch	F42 opts string rejected	PASS	FAIL	fixed
+d-dispatch	C25 Added(nil) ok	PASS	FAIL	fixed
+d-dispatch	C25 Tag(nil)/Removed(nil)/Merged(…,nil) ok	PASS	FAIL	fixed
+d-dispatch	C25 hole & Contains(nil) error	PASS	PASS	same
+d-dispatch	C38 Event/OnChange = NORMAL-1	PASS	FAIL	fixed
+d-dispatch	C38 no priority tie lines at install	PASS	FAIL	fixed
+d-dispatch	C56 all cross-instance	PASS	FAIL	fixed
+d-dispatch	C56 cross-instance dep edge still works	PASS	PASS	same
+d-dispatch	C64 dedup	PASS	FAIL	fixed
+d-dispatch	C64 thrown plugin reruns	PASS	PASS	same
+e-tween	F27 engine tween running	PASS	PASS	same
+e-tween	F27 retract cancels running tween	PASS	FAIL	fixed
+e-tween	F27 same target after retract replays	PASS	FAIL	fixed
+e-tween	F27 after retract of a written prop, Tween animates	PASS	PASS	same
+e-tween	F3 teardown after GC window cancelled	PASS	PASS	same
+e-tween	F28 both carry cross-instance tail	PASS	FAIL	fixed
+e-tween	F40 blame user line	PASS	FAIL	fixed
+e-tween	F40 State blame user line	PASS	FAIL	fixed
+e-tween	C26 Time=0 snaps without engine tween	PASS	FAIL	fixed
+e-tween	C26 DelayTime → engine tween	PASS	FAIL	fixed
+e-tween	C26 RepeatCount → engine tween	PASS	PASS	same
+e-tween	C26 Reverses → engine tween	PASS	PASS	same
+f-debounce	F6 MaxTime Compute never ran	PASS	PASS	same
+f-debounce	F6 invalid unused MaxTime does not throw	PASS	PASS	same
+f-debounce	F6 Flush blame user line	PASS	FAIL	fixed
+f-debounce	F23 next leading passes immediately	PASS	FAIL	fixed
+f-debounce	F34 gate not left blocked after the throw (g follows s)	PASS	PASS	same
+f-debounce	F34 not stuck after bad Time (next signal works, trailing flushes)	PASS	PASS	same
+f-debounce	F34 bad Time mid-window: gate recovers once Time is valid (4 passes)	PASS	PASS	same
+f-debounce	F34 running window uses the value read at the signal	PASS	PASS	same
+f-debounce	F34 MaxTime throws at user line	PASS	PASS	same
+f-debounce	F34 gate fine after MaxTime fix	PASS	PASS	same
+f-debounce	F34 Flush on never-opened gate passes pending	PASS	FAIL	fixed
+g-sugar	F10 message	PASS	FAIL	fixed
+g-sugar	F24 same wording as non-factory	PASS	FAIL	fixed
+g-sugar	F36 guidance mentions inline key or State for events	PASS	FAIL	fixed
+g-sugar	F25 Clamp message at reading line	PASS	FAIL	fixed
+g-sugar	F25 Indexed(State) rejected at factory line	PASS	FAIL	fixed
+g-sugar	F37 message	PASS	FAIL	fixed
+g-sugar	F39 message	PASS	FAIL	fixed
+h-version	C65 3.3.0 & 3.9.1 accepted, 3.1.9/4.0.0 rejected	PASS	PASS	same
+h-version	C65 prerelease pattern takes only that build	PASS	PASS	same
+h-version	C65 UseProvider accepts quad_base 3.7.0	PASS	FAIL	fixed
+h-version	C65 4.0.0 rejected	PASS	FAIL	fixed

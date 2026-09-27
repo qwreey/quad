@@ -1,0 +1,26 @@
+--- F27/F3: 철거 때 진행 중 Tween 취소; 같은 목표 재선언 재생; 첫 설정 기준 ---
+[PASS] F27 engine tween running — 1
+[PASS] F27 retract cancels running tween — 1
+[PASS] F27 same target after retract replays — 2
+[PASS] F27 after retract of a written prop, Tween animates — #log=1 Size=1
+  managed child:	_quad_round
+[PASS] F3 teardown after GC window cancelled — 1
+  caveat run: #log=1
+--- F28: 미claim 거부 문구 꼬리 구절 ---
+  F28 Slot: ./.claude/audit/round13-e80-changelog-fixed/probes/e-tween.luau:52: Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+  F28 InstanceChild: ./.claude/audit/round13-e80-changelog-fixed/probes/e-tween.luau:53: Quad0219 InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)
+[PASS] F28 both carry cross-instance tail — 
+--- F40: Animate State에 Tween/State를 넣으면 blame이 호출 줄 ---
+  F40 Set(Tween): ./.claude/audit/round13-e80-changelog-fixed/probes/e-tween.luau:62: Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)
+[PASS] F40 blame user line — Quad0251
+  F40 Set(State): ./.claude/audit/round13-e80-changelog-fixed/probes/e-tween.luau:66: Quad0250 Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))
+[PASS] F40 State blame user line — Quad0250
+--- C26: Info 없이 Time=0 Tween은 엔진 트윈 없이 스냅; DelayTime 등 있으면 전과 같음 ---
+[PASS] C26 Time=0 snaps without engine tween — #log=0 Size=9
+[PASS] C26 DelayTime → engine tween — 1
+[PASS] C26 RepeatCount → engine tween — 1
+[PASS] C26 Reverses → engine tween — 1
+  C26 DelayTime = 0 explicit: #log=0 Size=7
+  C26 Reverses = false explicit: #log=0 Size=8
+  C26 RepeatCount = 0 explicit: #log=0 Size=9
+<<END>> pass=12 fail=0
