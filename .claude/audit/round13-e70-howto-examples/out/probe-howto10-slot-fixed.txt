@@ -1,0 +1,2 @@
+TextLabel kids	2	a
+Frame+Text:	./probes/howto10-slot-fixed.luau:12: Quad0076 Dispatch: no handler matched key Text (value: string) — check that the provider for this value (e.g. quad-roblox) is initialized	0

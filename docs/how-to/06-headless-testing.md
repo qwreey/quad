@@ -131,6 +131,8 @@ gate:Off()          -- 여기서 밀린 전파가 정확히 한 번
 `Observer`/`Effect`/`Slot`은 **인스턴스 수명**에 묶여 동작하므로, 생명주기 op를
 심는 프로바이더가 있어야 §2에서 못 본 나머지가 돕니다. 설치 표면은 하나입니다.
 
+> **strict 한 줄** — 자기 프로바이더 함수의 **반환 타입을 `any`나 인덱서 테이블(`{ [any]: any }`)로 주석하지 마세요.** `:UseProvider`는 `Self & P`를 돌려주므로(`P`가 프로바이더 반환 타입) 그 뒤 모든 `q.<멤버>` 호출이 strict에서 `Cannot call a value of type *error-type* in union`으로 죽습니다(`{}`·구체 필드 테이블·실 프로바이더는 문제없음 — [2026-09-27 실측]). 이 저장소의 `mock.luau` 프로바이더가 바로 그 인덱서 모양이라 본보기로 옮길 때 주석은 떼거나 구체 타입으로 바꾸세요.
+
 ```luau
 local q = Quad.New():UseProvider(myProvider)
 ```

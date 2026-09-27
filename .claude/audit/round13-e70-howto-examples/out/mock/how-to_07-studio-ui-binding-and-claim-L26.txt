@@ -1,0 +1,3 @@
+클릭 횟수: 0
+클릭 횟수: 2	검	rbxassetid://1	true
+<<END>>

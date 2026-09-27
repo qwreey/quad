@@ -1,0 +1,3 @@
+content kids	2
+no children ok	2
+<<END>>

@@ -1,0 +1,2 @@
+L96 asserts ok	2
+<<END>>

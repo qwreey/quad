@@ -96,7 +96,7 @@ export type SlotMarker<T> = { read __quadSlot: true, read __quadSlotValue: T }
 ## 4. 성과: 슬롯 유니언이 네 팔로 통일되다
 
 ```luau
--- 생성된 D/init.luau의 실제 한 줄
+-- 생성된 Declaration/init.luau(quad-roblox/src)의 실제 한 줄
 type PV2 = number | TweenData<number> | StateMarker<number | Tween<number>> | None -- number
 ```
 

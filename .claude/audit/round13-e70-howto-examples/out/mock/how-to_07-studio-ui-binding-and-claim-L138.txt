@@ -1,0 +1,5 @@
+claim ok	true	
+검
+방패
+Selected:	s
+<<END>>

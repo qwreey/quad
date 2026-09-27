@@ -1,0 +1,4 @@
+true	true
+empty Get:	false	./mock/how-to_05-theme-and-dynamic-styling-L36.luau:97: Quad0038 Context:Get: no value for Provider(Theme) — the creator of this Context did not :Set it (use :Peek to test)
+empty Peek:	nil
+<<END>>

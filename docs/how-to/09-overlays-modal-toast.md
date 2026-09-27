@@ -119,16 +119,20 @@ local function openConfirmDialog()
         Open = q.Source(true), -- 이 갈래에서는 열림 자체가 "만들어져 있는가"이므로 별도 Open이 꼭 필요하지는 않습니다
         Title = "정말 삭제할까요?",
         OnConfirm = function()
+            local old = activeModal:Get()
             activeModal:Set(nil)
+            if old then q.dispose(old) end -- 다시 쓸 일이 없으니 떼어낸 뒤 정리
         end,
         OnCancel = function()
+            local old = activeModal:Get()
             activeModal:Set(nil)
+            if old then q.dispose(old) end
         end,
     })
 end
 ```
 
-`activeModal`을 다른 값으로 갈아 끼우면 **옛 인스턴스는 파괴되지 않고 트리에서 떼어지기만 합니다**([시작하기 11 §6](../getting-started/11-slot.md#6-하나만-갈아-끼우기--state를-자리에-놓기)) — 다시 쓸 일이 없으면 `q.dispose`로 직접 정리하세요. 그래서 매번 새로 만드는 이 모양은 열 때마다 확실히 버릴 생각이 있을 때 씁니다.
+`activeModal`을 다른 값으로 갈아 끼우면 **옛 인스턴스는 파괴되지 않고 트리에서 떼어지기만 합니다**([시작하기 11 §6](../getting-started/11-slot.md#6-하나만-갈아-끼우기--state를-자리에-놓기)) — 다시 쓸 일이 없으면 위처럼 `q.dispose`로 직접 정리하세요(빼면 열 때마다 떼어진 모달이 하나씩 남습니다 — [2026-09-27 mock 실측]). 그래서 매번 새로 만드는 이 모양은 열 때마다 확실히 버릴 생각이 있을 때 씁니다.
 
 </details>
 

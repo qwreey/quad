@@ -1,0 +1,4 @@
+conns	1
+10	20
+conns after destroy	0
+<<END>>

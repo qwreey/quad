@@ -1,0 +1,268 @@
+strict/ModalContext.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/ModalContext.luau(7,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+strict/ModalContext.luau(8,7): LocalUnused: Variable 'None' is never used; prefix with '_' to silence
+strict/ModalContext.luau(11,7): LocalShadow: Variable 'q' shadows previous declaration at line 6
+strict/PlayerProfileState.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/PlayerProfileState.luau(7,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+strict/PlayerProfileState.luau(11,7): LocalShadow: Variable 'q' shadows previous declaration at line 6
+strict/Styles.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/Styles.luau(9,7): ImportUnused: Import 'RobloxModule' is never used; prefix with '_' to silence
+strict/Theme.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/Theme.luau(7,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+strict/Theme.luau(9,7): ImportUnused: Import 'RobloxModule' is never used; prefix with '_' to silence
+strict/ThemedButton.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L126.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L126.luau(22,16): FunctionUnused: Function 'CustomButton' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L161.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L161.luau(45,7): LocalUnused: Variable 'btn1' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L161.luau(48,7): LocalUnused: Variable 'btn2' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L186.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L186.luau(11,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L186.luau(13,7): ImportUnused: Import 'RobloxModule' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L186.luau(15,16): FunctionUnused: Function 'ModalDialog' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L228.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L228.luau(8,7): LocalUnused: Variable 'None' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L228.luau(11,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L228.luau(13,7): ImportUnused: Import 'RobloxModule' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L228.luau(23,7): LocalUnused: Variable 'list' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L250.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L250.luau(8,7): LocalUnused: Variable 'None' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L250.luau(13,7): ImportUnused: Import 'RobloxModule' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L250.luau(15,16): FunctionUnused: Function 'CharacterBadge' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L290.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L290.luau(7,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L290.luau(8,7): LocalUnused: Variable 'None' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L290.luau(11,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L290.luau(13,7): ImportUnused: Import 'RobloxModule' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L290.luau(30,7): LocalUnused: Variable 'left' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L290.luau(30,13): LocalUnused: Variable 'right' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L34.luau(23,42): TypeError: Expected this to be
+	'(StateData<boolean>, Color3?, ...any) -> Color3'
+but got
+	'(t1) -> Color3 where t1 = { read Get: (t1) -> (unknown, ...unknown) }'; 
+this is because 
+	 * `Get` is a read-only property in the latter type, but the former type requires a read-write property
+	 * it takes the 1st entry in the type pack, accessing `Get`, takes the 1st entry in the type pack, accessing `Get`, returns a tail of `...unknown` and it takes the 1st entry in the type pack, accessing `Get`, takes the 1st entry in the type pack, accessing `Get`, returns `boolean`, and `...unknown` is not a subtype of `boolean`
+strict/how-to_01-component-conventions-L34.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L34.luau(8,7): LocalUnused: Variable 'None' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L34.luau(11,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L34.luau(13,7): ImportUnused: Import 'RobloxModule' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L74.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L74.luau(11,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L74.luau(15,16): FunctionUnused: Function 'MaterialButton' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L93.luau(18,16): TypeError: Expected this to be
+	'Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | AttrMarker | ObserverMarker | EffectMarker | ModifierMarker | { Callback: (boolean) -> (), Name: "Active" } | { Callback: (Vector2) -> (), Name: "AnchorPoint" } | { Callback: (boolean) -> (), Name: "Archivable" } | { Callback: (boolean) -> (), Name: "AutoButtonColor" } | { Callback: (boolean) -> (), Name: "AutoLocalize" } | { Callback: (Enum.AutomaticSize) -> (), Name: "AutomaticSize" }... *TRUNCATED*'
+but got
+	'TextButtonModifier?'; 
+the 2nd component of the union is `nil`, which is not a subtype of `Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | AttrMarker | ObserverMarker | EffectMarker | ModifierMarker | { Callback: (boolean) -> (), Name: "Active" } | { Callback: (Vector2) -> (), Name: "AnchorPoint" } | { Callback: (boolean) -> (), Name: "Archivable" } | { Callback: (boolean) -> (), Name: "AutoButtonColor" } | { Callback: (boolean) -> (), Name: "AutoLocalize" } | { Callback: (Enum.AutomaticSize) -> (), Name: "AutomaticSize" }... *TRUNCATED*`
+strict/how-to_01-component-conventions-L93.luau(18,32): TypeError: Expected this to be
+	'Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | AttrMarker | ObserverMarker | EffectMarker | ModifierMarker | { Callback: (boolean) -> (), Name: "Active" } | { Callback: (Vector2) -> (), Name: "AnchorPoint" } | { Callback: (boolean) -> (), Name: "Archivable" } | { Callback: (boolean) -> (), Name: "AutoButtonColor" } | { Callback: (boolean) -> (), Name: "AutoLocalize" } | { Callback: (Enum.AutomaticSize) -> (), Name: "AutomaticSize" }... *TRUNCATED*'
+but got
+	'Ref<TextButton?>?'; 
+the 2nd component of the union is `nil`, which is not a subtype of `Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | AttrMarker | ObserverMarker | EffectMarker | ModifierMarker | { Callback: (boolean) -> (), Name: "Active" } | { Callback: (Vector2) -> (), Name: "AnchorPoint" } | { Callback: (boolean) -> (), Name: "Archivable" } | { Callback: (boolean) -> (), Name: "AutoButtonColor" } | { Callback: (boolean) -> (), Name: "AutoLocalize" } | { Callback: (Enum.AutomaticSize) -> (), Name: "AutomaticSize" }... *TRUNCATED*`
+strict/how-to_01-component-conventions-L93.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_01-component-conventions-L93.luau(11,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+strict/how-to_02-form-validation-pattern-L112.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_02-form-validation-pattern-L112.luau(7,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+strict/how-to_02-form-validation-pattern-L179.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_02-form-validation-pattern-L179.luau(7,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+strict/how-to_02-form-validation-pattern-L179.luau(14,7): LocalUnused: Variable 'canSubmit' is never used; prefix with '_' to silence
+strict/how-to_02-form-validation-pattern-L196.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_02-form-validation-pattern-L196.luau(49,16): FunctionUnused: Function 'RegistrationForm' is never used; prefix with '_' to silence
+strict/how-to_02-form-validation-pattern-L283.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_02-form-validation-pattern-L283.luau(114,7): LocalUnused: Variable 'screen' is never used; prefix with '_' to silence
+strict/how-to_02-form-validation-pattern-L324.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_02-form-validation-pattern-L324.luau(7,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+strict/how-to_02-form-validation-pattern-L324.luau(52,16): FunctionUnused: Function 'submit' is never used; prefix with '_' to silence
+strict/how-to_02-form-validation-pattern-L39.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_02-form-validation-pattern-L39.luau(10,16): FunctionUnused: Function 'Checkbox' is never used; prefix with '_' to silence
+strict/how-to_02-form-validation-pattern-L65.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_02-form-validation-pattern-L65.luau(45,7): LocalUnused: Variable 'panel' is never used; prefix with '_' to silence
+strict/how-to_03-long-lists-and-windowing-L110.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_03-long-lists-and-windowing-L110.luau(12,16): FunctionUnused: Function 'VirtualList' is never used; prefix with '_' to silence
+strict/how-to_03-long-lists-and-windowing-L194.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_03-long-lists-and-windowing-L194.luau(7,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+strict/how-to_03-long-lists-and-windowing-L194.luau(15,7): LocalUnused: Variable 'window' is never used; prefix with '_' to silence
+strict/how-to_03-long-lists-and-windowing-L59.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_03-long-lists-and-windowing-L59.luau(9,16): FunctionUnused: Function 'updateFn' is never used; prefix with '_' to silence
+strict/how-to_04-network-and-input-bridge-L111.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_04-network-and-input-bridge-L111.luau(22,16): FunctionUnused: Function 'InventoryModal' is never used; prefix with '_' to silence
+strict/how-to_04-network-and-input-bridge-L151.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_04-network-and-input-bridge-L151.luau(22,16): FunctionUnused: Function 'InventoryModal' is never used; prefix with '_' to silence
+strict/how-to_04-network-and-input-bridge-L151.luau(39,16): FunctionUnused: Function 'CrosshairOverlay' is never used; prefix with '_' to silence
+strict/how-to_04-network-and-input-bridge-L197.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_04-network-and-input-bridge-L197.luau(11,16): FunctionUnused: Function 'StatusPanel' is never used; prefix with '_' to silence
+strict/how-to_04-network-and-input-bridge-L63.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_04-network-and-input-bridge-L63.luau(7,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+strict/how-to_04-network-and-input-bridge-L63.luau(10,7): LocalShadow: Variable 'q' shadows previous declaration at line 6
+strict/how-to_04-network-and-input-bridge-L63.luau(11,7): LocalShadow: Variable 'D' shadows previous declaration at line 7
+strict/how-to_04-network-and-input-bridge-L63.luau(23,16): FunctionUnused: Function 'GoldDisplay' is never used; prefix with '_' to silence
+strict/how-to_05-theme-and-dynamic-styling-L227.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_05-theme-and-dynamic-styling-L227.luau(9,7): ImportUnused: Import 'RobloxModule' is never used; prefix with '_' to silence
+strict/how-to_05-theme-and-dynamic-styling-L227.luau(15,16): FunctionUnused: Function 'SettingsCard' is never used; prefix with '_' to silence
+strict/how-to_05-theme-and-dynamic-styling-L36.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_05-theme-and-dynamic-styling-L36.luau(7,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+strict/how-to_05-theme-and-dynamic-styling-L36.luau(9,7): ImportUnused: Import 'RobloxModule' is never used; prefix with '_' to silence
+strict/how-to_05-theme-and-dynamic-styling-L36.luau(19,7): LocalUnused: Variable 'theme' is never used; prefix with '_' to silence
+strict/how-to_05-theme-and-dynamic-styling-L36.luau(20,7): LocalUnused: Variable 'maybe' is never used; prefix with '_' to silence
+strict/how-to_06-headless-testing-L134.luau(20,7): LocalUnused: Variable 'q' is never used; prefix with '_' to silence
+strict/how-to_06-headless-testing-L149.luau(24,12): TypeError: Cannot call a value of type *error-type* in union:
+  (<T>(T) -> t1) | *error-type* where t1 = t2 & { Emit: (t1) -> t1, read Revision: number, Set: (t1, T) -> t1 } ; t2 = { Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue: T } & { Apply: (({ Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue: T }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue: T }, (t2) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue: T }, ({ Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue: T }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue... *TRUNCATED*
+strict/how-to_06-headless-testing-L149.luau(34,1): TypeError: Cannot call a value of type *error-type* in union:
+  ((any, any) -> ()) | *error-type*
+strict/how-to_06-headless-testing-L149.luau(40,1): TypeError: Cannot call a value of type *error-type* in union:
+  ((any) -> ()) | *error-type*
+strict/how-to_06-headless-testing-L180.luau(25,14): TypeError: Cannot call a value of type *error-type* in union:
+  (<T>(T) -> t1) | *error-type* where t1 = t2 & { Emit: (t1) -> t1, read Revision: number, Set: (t1, T) -> t1 } ; t2 = { Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue: T } & { Apply: (({ Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue: T }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue: T }, (t2) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue: T }, ({ Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue: T }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> T, read __quadState: true, read __quadStateValue... *TRUNCATED*
+strict/how-to_06-headless-testing-L180.luau(27,14): TypeError: Cannot instantiate type parameters on something without type parameters.
+strict/how-to_06-headless-testing-L180.luau(27,14): TypeError: Cannot call a value of type *error-type* in union:
+  (<T>({read SlotMarker<T> | StateMarker<T> | T}?) -> Slot<T>) | *error-type*
+strict/how-to_06-headless-testing-L180.luau(36,1): TypeError: Cannot call a value of type *error-type* in union:
+  ((any, { [any]: any }) -> ()) | *error-type*
+strict/how-to_06-headless-testing-L77.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_06-headless-testing-L96.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_07-studio-ui-binding-and-claim-L121.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_07-studio-ui-binding-and-claim-L121.luau(8,7): LocalUnused: Variable 'M' is never used; prefix with '_' to silence
+strict/how-to_07-studio-ui-binding-and-claim-L121.luau(11,7): LocalUnused: Variable 'ItemTemplate' is never used; prefix with '_' to silence
+strict/how-to_07-studio-ui-binding-and-claim-L138.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_07-studio-ui-binding-and-claim-L138.luau(22,16): FunctionUnused: Function 'ItemCard' is never used; prefix with '_' to silence
+strict/how-to_07-studio-ui-binding-and-claim-L201.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_07-studio-ui-binding-and-claim-L228.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_07-studio-ui-binding-and-claim-L248.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_07-studio-ui-binding-and-claim-L248.luau(12,16): FunctionUnused: Function 'ShopWindow' is never used; prefix with '_' to silence
+strict/how-to_07-studio-ui-binding-and-claim-L26.luau(10,18): TypeError: Value of type 'Instance?' could be nil
+strict/how-to_07-studio-ui-binding-and-claim-L26.luau(10,18): TypeError: Expected this to be 'Instance', but got 'nil'
+strict/how-to_07-studio-ui-binding-and-claim-L26.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_07-studio-ui-binding-and-claim-L75.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_07-studio-ui-binding-and-claim-L75.luau(29,7): LocalUnused: Variable 'rows' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L103.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L103.luau(9,7): ImportUnused: Import 'QuadTypes' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L103.luau(23,7): LocalUnused: Variable 'frame' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L130.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L130.luau(7,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L130.luau(13,7): LocalUnused: Variable 'total' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L130.luau(17,7): LocalUnused: Variable 'shown' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L130.luau(21,7): LocalUnused: Variable 'primary' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L130.luau(26,7): LocalUnused: Variable 'moved' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L166.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L166.luau(21,7): LocalUnused: Variable 'frame' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L204.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L238.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L238.luau(42,7): LocalUnused: Variable 'list' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L293.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L293.luau(14,7): LocalUnused: Variable 'button' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L342.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L342.luau(16,7): LocalUnused: Variable 'card' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L82.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_08-migrating-from-v1-L82.luau(18,7): LocalUnused: Variable 'label' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L114.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L114.luau(55,16): FunctionUnused: Function 'openConfirmDialog' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L154.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L154.luau(63,7): LocalUnused: Variable 'screen' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L174.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L174.luau(8,7): LocalUnused: Variable 'None' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L174.luau(13,16): FunctionUnused: Function 'DeleteButton' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L196.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L196.luau(8,7): LocalUnused: Variable 'None' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L196.luau(34,16): FunctionUnused: Function 'pushToast' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L196.luau(54,7): LocalUnused: Variable 'toastHost' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L259.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L259.luau(8,7): LocalUnused: Variable 'None' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L259.luau(27,7): LocalUnused: Variable 'SafeCard' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L282.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L282.luau(8,7): LocalUnused: Variable 'None' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L282.luau(10,16): FunctionUnused: Function 'ErrorModal' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L324.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L324.luau(8,7): LocalUnused: Variable 'None' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L324.luau(67,7): LocalUnused: Variable 'screen' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L35.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L35.luau(7,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L35.luau(8,7): LocalUnused: Variable 'None' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L35.luau(10,7): LocalUnused: Variable 'open' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L46.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L46.luau(10,16): FunctionUnused: Function 'Modal' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L98.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_09-overlays-modal-toast-L98.luau(55,7): LocalUnused: Variable 'confirmDialog' is never used; prefix with '_' to silence
+strict/how-to_10-debugging-and-troubleshooting-L111.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_10-debugging-and-troubleshooting-L111.luau(10,16): FunctionUnused: Function 'CustomInput' is never used; prefix with '_' to silence
+strict/how-to_10-debugging-and-troubleshooting-L141.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_10-debugging-and-troubleshooting-L141.luau(12,7): LocalUnused: Variable 'dynamicStyle' is never used; prefix with '_' to silence
+strict/how-to_10-debugging-and-troubleshooting-L141.luau(15,7): LocalUnused: Variable 'dynamicStyle2' is never used; prefix with '_' to silence
+strict/how-to_10-debugging-and-troubleshooting-L164.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_10-debugging-and-troubleshooting-L164.luau(7,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+strict/how-to_10-debugging-and-troubleshooting-L164.luau(10,7): LocalUnused: Variable 'primary' is never used; prefix with '_' to silence
+strict/how-to_10-debugging-and-troubleshooting-L176.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_10-debugging-and-troubleshooting-L176.luau(7,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+strict/how-to_10-debugging-and-troubleshooting-L176.luau(9,16): FunctionUnused: Function 'resetForm' is never used; prefix with '_' to silence
+strict/how-to_10-debugging-and-troubleshooting-L205.luau(14,46): TypeError: Expected this to be 'number', but got '"Text"'
+strict/how-to_10-debugging-and-troubleshooting-L205.luau(14,53): TypeError: Expected this to be 'Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | AttrMarker | ObserverMarker | EffectMarker | ModifierMarker | { Callback: (boolean) -> (), Name: "Active" } | { Callback: (Vector2) -> (), Name: "AnchorPoint" } | { Callback: (boolean) -> (), Name: "Archivable" } | { Callback: (boolean) -> (), Name: "AutoLocalize" } | { Callback: (Enum.AutomaticSize) -> (), Name: "AutomaticSize" } | ... *TRUNCATED*', but got 'unknown'
+strict/how-to_10-debugging-and-troubleshooting-L205.luau(18,47): TypeError: Expected this to be 'number', but got '"Text"'
+strict/how-to_10-debugging-and-troubleshooting-L205.luau(18,54): TypeError: Expected this to be 'Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | AttrMarker | ObserverMarker | EffectMarker | ModifierMarker | { Callback: (boolean) -> (), Name: "Active" } | { Callback: (Vector2) -> (), Name: "AnchorPoint" } | { Callback: (boolean) -> (), Name: "Archivable" } | { Callback: (boolean) -> (), Name: "AutoLocalize" } | { Callback: (Enum.AutomaticSize) -> (), Name: "AutomaticSize" } | ... *TRUNCATED*', but got 'unknown'
+strict/how-to_10-debugging-and-troubleshooting-L205.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_10-debugging-and-troubleshooting-L64.luau(13,11): TypeError: Expected this to be
+	'Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | AttrMarker | ObserverMarker | EffectMarker | ModifierMarker | { Callback: (boolean) -> (), Name: "Active" } | { Callback: (Vector2) -> (), Name: "AnchorPoint" } | { Callback: (boolean) -> (), Name: "Archivable" } | { Callback: (boolean) -> (), Name: "AutoLocalize" } | { Callback: (Enum.AutomaticSize) -> (), Name: "AutomaticSize" } | ... *TRUNCATED*'
+but got
+	'FrameModifier?'; 
+the 2nd component of the union is `nil`, which is not a subtype of `Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | AttrMarker | ObserverMarker | EffectMarker | ModifierMarker | { Callback: (boolean) -> (), Name: "Active" } | { Callback: (Vector2) -> (), Name: "AnchorPoint" } | { Callback: (boolean) -> (), Name: "Archivable" } | { Callback: (boolean) -> (), Name: "AutoLocalize" } | { Callback: (Enum.AutomaticSize) -> (), Name: "AutomaticSize" } | ... *TRUNCATED*`
+strict/how-to_10-debugging-and-troubleshooting-L64.luau(13,27): TypeError: Expected this to be
+	'Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | AttrMarker | ObserverMarker | EffectMarker | ModifierMarker | { Callback: (boolean) -> (), Name: "Active" } | { Callback: (Vector2) -> (), Name: "AnchorPoint" } | { Callback: (boolean) -> (), Name: "Archivable" } | { Callback: (boolean) -> (), Name: "AutoLocalize" } | { Callback: (Enum.AutomaticSize) -> (), Name: "AutomaticSize" } | ... *TRUNCATED*'
+but got
+	'Ref<Frame?>?'; 
+the 2nd component of the union is `nil`, which is not a subtype of `Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | AttrMarker | ObserverMarker | EffectMarker | ModifierMarker | { Callback: (boolean) -> (), Name: "Active" } | { Callback: (Vector2) -> (), Name: "AnchorPoint" } | { Callback: (boolean) -> (), Name: "Archivable" } | { Callback: (boolean) -> (), Name: "AutoLocalize" } | { Callback: (Enum.AutomaticSize) -> (), Name: "AutomaticSize" } | ... *TRUNCATED*`
+strict/how-to_10-debugging-and-troubleshooting-L64.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_10-debugging-and-troubleshooting-L82.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/how-to_10-debugging-and-troubleshooting-L82.luau(13,7): LocalUnused: Variable 'inst' is never used; prefix with '_' to silence
+strict/landing_index-L58.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/landing_index-L58.luau(18,7): LocalUnused: Variable 'card' is never used; prefix with '_' to silence
+strict/overview_01-why-quad-L116.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/overview_01-why-quad-L116.luau(7,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence
+strict/overview_01-why-quad-L116.luau(13,7): LocalUnused: Variable 'both' is never used; prefix with '_' to silence
+strict/overview_01-why-quad-L31.luau(14,42): TypeError: Expected this to be
+	'(StateData<boolean>, Color3?, ...any) -> Color3'
+but got
+	'(t1) -> Color3 where t1 = { read Get: (t1) -> (unknown, ...unknown) }'; 
+this is because 
+	 * `Get` is a read-only property in the latter type, but the former type requires a read-write property
+	 * it takes the 1st entry in the type pack, accessing `Get`, takes the 1st entry in the type pack, accessing `Get`, returns a tail of `...unknown` and it takes the 1st entry in the type pack, accessing `Get`, takes the 1st entry in the type pack, accessing `Get`, returns `boolean`, and `...unknown` is not a subtype of `boolean`
+strict/overview_01-why-quad-L31.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/quadnomicon_05-non-destructive-portal-and-ownership-L92.luau(12,26): TypeError: Expected this to be
+	'Instance | SlotMarker<Instance> | StateMarker<Instance>'
+but got
+	't1 where t1 = t2 & { Emit: (t1) -> t1, read Revision: number, Set: (t1, Instance?) -> t1 } ; t2 = { Get: (*CYCLE*) -> Instance?, read __quadState: true, read __quadStateValue: Instance? } & { Apply: (({ Get: (*CYCLE*) -> Instance?, read __quadState: true, read __quadStateValue: Instance? }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> Instance?, read __quadState: true, read __quadStateValue: Instance? }, (t2) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> Instance?, read __quadState: true, read __quadStateValue: Instance? }, ({ Get: (*CYCLE*) -> Instance?, read __quadState: true, read __quadStateValue: Instance? }, U?, ...any) -> U, ...any) -> *error-type*, Depend... *TRUNCATED*'
+strict/quadnomicon_05-non-destructive-portal-and-ownership-L92.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/quadnomicon_07-instance-identity-and-gc-philosophy-L106.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/quadnomicon_07-instance-identity-and-gc-philosophy-L106.luau(13,7): LocalUnused: Variable 'root' is never used; prefix with '_' to silence
+strict/quadnomicon_09-fragment-breakthrough-and-domless-slot-L139.luau(31,3): TypeError: Key 'order' is missing from 'table' in the type '{ read order: t1 } & ~(false?) where t1 = { read Set: (t1, a) -> (b...) }'
+strict/quadnomicon_09-fragment-breakthrough-and-domless-slot-L139.luau(36,10): TypeError: Operator '+' could not be applied to operands of types number and unknown; there is no corresponding overload for __add
+strict/quadnomicon_09-fragment-breakthrough-and-domless-slot-L139.luau(38,9): TypeError: Expected this to be 'nil', but got 'TextButton'
+strict/quadnomicon_09-fragment-breakthrough-and-domless-slot-L139.luau(38,90): TypeError: Expected this to be
+	't1 where t1 = { read Set: (t1, a) -> (b...) }'
+but got
+	't1 where t1 = t2 & { Emit: (t1) -> t1, read Revision: number, Set: (t1, a) -> t1 } ; t2 = { Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a } & { Apply: (({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, (t2) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, ({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue... *TRUNCATED*'; 
+this is because 
+	 * `Set` is a read-only property in the latter type, but the former type requires a read-write property
+	 * in the 3rd component of the intersection, accessing `Set`, returns the portion of the type pack starting at index 0 to the end`t2 where t1 = { Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a } & { Apply: (({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, ({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue... *TRUNCATED*` and accessing `Set`, returns a tail of `a...`, and `t2 where t1 = { Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a } & { Apply: (({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, ({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue... *TRUNCATED*` is not a subtype of `a...`
+	 * in the 3rd component of the intersection, accessing `Set`, takes the 1st entry in the type pack has the 1st component of the intersection as `StateData<a>` and accessing `Set`, takes the 1st entry in the type pack is `t1 where t1 = { read Set: (t1, a) -> (b...) }`, and `StateData<a>` is not a supertype of `t1 where t1 = { read Set: (t1, a) -> (b...) }`
+	 * in the 3rd component of the intersection, accessing `Set`, takes the 1st entry in the type pack has the 2nd component of the intersection as `t1 where t1 = { Apply: (({ Get: (*CYCLE*) -> b, read __quadState: true, read __quadStateValue: b }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> b, read __quadState: true, read __quadStateValue: b }, (t1 & { Get: (*CYCLE*) -> b, read __quadState: true, read __quadStateValue: b }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> b, read __quadState: true, read __quadStateValue: b }, ({ Get: (*CYCLE*) -> b, read __quadState: true, read __quadStateValue: b }, U?, ...any) -> U, ...... *TRUNCATED*` and accessing `Set`, takes the 1st entry in the type pack is `t1 where t1 = { read Set: (t1, a) -> (b...) }`, and `t1 where t1 = { Apply: (({ Get: (*CYCLE*) -> b, read __quadState: true, read __quadStateValue: b }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> b, read __quadState: true, read __quadStateValue: b }, (t1 & { Get: (*CYCLE*) -> b, read __quadState: true, read __quadStateValue: b }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> b, read __quadState: true, read __quadStateValue: b }, ({ Get: (*CYCLE*) -> b, read __quadState: true, read __quadStateValue: b }, U?, ...any) -> U, ...... *TRUNCATED*` is not a supertype of `t1 where t1 = { read Set: (t1, a) -> (b...) }`
+	 * in the 3rd component of the intersection, accessing `Set`, takes the 1st entry in the type pack has the 3rd component of the intersectionSet`, returns the portion of the type pack starting at index 0 to the end`t2 where t1 = { Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a } & { Apply: (({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, ({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue... *TRUNCATED*` and accessing `Set`, takes the 1st entry in the type pack, accessing `Set`, returns a tail of `a...`, and `t2 where t1 = { Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a } & { Apply: (({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, ({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue: a }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> a, read __quadState: true, read __quadStateValue... *TRUNCATED*` is not a supertype of `a...`
+	 * the 1st component of the intersection is `StateData<a>`, which is not a subtype of `t1 where t1 = { read Set: (t1, a) -> (b...) }`
+	 * the 2nd component of the intersection is `t1 where t1 = { Apply: (({ Get: (*CYCLE*) -> b, read __quadState: true, read __quadStateValue: b }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> b, read __quadState: true, read __quadStateValue: b }, (t1 & { Get: (*CYCLE*) -> b, read __quadState: true, read __quadStateValue: b }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> b, read __quadState: true, read __quadStateValue: b }, ({ Get: (*CYCLE*) -> b, read __quadState: true, read __quadStateValue: b }, U?, ...any) -> U, ...... *TRUNCATED*`, which is not a subtype of `t1 where t1 = { read Set: (t1, a) -> (b...) }`
+strict/quadnomicon_09-fragment-breakthrough-and-domless-slot-L139.luau(26,17): TypeError: Expected this to be
+	'({ Index: number, Item: KeyGone | string, Offset: t2, Prev: (Instance | Slot<Instance> | t3)?, UserData: { read order: t1 }? }) -> (any, { read order: t1 }?) where t1 = { read Set: (t1, number) -> (...unknown) } ; t2 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t2) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*'
+but got
+	'<a, b...>({ read Index: a, read Item: unknown, read Offset: t1, read Prev: nil, read UserData: { read order: t2 } }) -> (nil, { read order: t2 }) where t1 = *error-type* | { read Get: (t1) -> (unknown, ...unknown) } ; t2 = { read Set: (t2, a) -> (b...) }'; 
+this is because 
+	 * it takes the 1st entry in the type pack, accessing `Offset` results in `t1 where t1 = *error-type* | { read Get: (t1) -> (unknown, ...unknown) }` in the latter type and `t1 where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*` in the former type, and `t1 where t1 = *error-type* | { read Get: (t1) -> (unknown, ...unknown) }` is not a supertype of `t1 where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get: (*CYCLE*) -> ... *TRUNCATED*`
+	 * it takes the 1st entry in the type pack, accessing `Prev` results in `nil` and it takes the 1st entry in the type pack, accessing `Prev` has the 1st component of the union as `Instance`, and `nil` is not a supertype of `Instance`
+	 * it takes the 1st entry in the type pack, accessing `Prev` results in `nil` and it takes the 1st entry in the type pack, accessing `Prev` has the 2nd component of the unionthe 1st component of the intersection is `StateData<Instance>`, and `nil` is not a supertype of `StateData<Instance>`
+	 * it takes the 1st entry in the type pack, accessing `Prev` results in `nil` and it takes the 1st entry in the type pack, accessing `Prev` has the 2nd component of the unionthe 2nd component of the intersection is `t1 where t1 = { Apply: (({ Get: (*CYCLE*) -> Instance, read __quadState: true, read __quadStateValue: Instance }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> Instance, read __quadState: true, read __quadStateValue: Instance }, (t1 & { Get: (*CYCLE*) -> Instance, read __quadState: true, read __quadStateValue: Instance }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> Instance, read __quadState: true, read __quadStateValue: Instance }, ({ Get: (*CYCLE*) -> Instance, read __quadState... *TRUNCATED*`, and `nil` is not a supertype of `t1 where t1 = { Apply: (({ Get: (*CYCLE*) -> Instance, read __quadState: true, read __quadStateValue: Instance }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> Instance, read __quadState: true, read __quadStateValue: Instance }, (t1 & { Get: (*CYCLE*) -> Instance, read __quadState: true, read __quadStateValue: Instance }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> Instance, read __quadState: true, read __quadStateValue: Instance }, ({ Get: (*CYCLE*) -> Instance, read __quadState... *TRUNCATED*`
+	 * it takes the 1st entry in the type pack, accessing `Prev` results in `nil` and it takes the 1st entry in the type pack, accessing `Prev` has the 3rd component of the union as `Slot<Instance>`, and `nil` is not a supertype of `Slot<Instance>`
+	 * it takes the 1st entry in the type pack, accessing `UserData` results in `{ read order: t1 } where t1 = { read Set: (t1, a) -> (b...) }` and it takes the 1st entry in the type pack, accessing `UserData` has the 2nd component of the union as `nil`, and `{ read order: t1 } where t1 = { read Set: (t1, a) -> (b...) }` is not a supertype of `nil`
+strict/quadnomicon_09-fragment-breakthrough-and-domless-slot-L139.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/quadnomicon_09-fragment-breakthrough-and-domless-slot-L139.luau(8,7): LocalUnused: Variable 'Slot' is never used; prefix with '_' to silence
+strict/quadnomicon_09-fragment-breakthrough-and-domless-slot-L139.luau(17,7): LocalUnused: Variable 'root' is never used; prefix with '_' to silence
+strict/quadnomicon_09-fragment-breakthrough-and-domless-slot-L79.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/quadnomicon_09-fragment-breakthrough-and-domless-slot-L79.luau(8,7): LocalUnused: Variable 'Slot' is never used; prefix with '_' to silence
+strict/quadnomicon_09-fragment-breakthrough-and-domless-slot-L79.luau(17,7): LocalUnused: Variable 'root' is never used; prefix with '_' to silence
+strict/quadnomicon_11-static-grepability-and-error-architecture-L19.luau(3,7): LocalUnused: Variable 'H' is never used; prefix with '_' to silence
+strict/quadnomicon_11-static-grepability-and-error-architecture-L19.luau(7,7): LocalUnused: Variable 'D' is never used; prefix with '_' to silence

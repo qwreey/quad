@@ -1,0 +1,3 @@
+Interactable,PlayerBadge	3	Alpha	n
+4
+<<END>>

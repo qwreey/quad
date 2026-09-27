@@ -1,0 +1,1 @@
+-- {[inst(weak)] = {[k] = {[index] = {handler, retractor}}(weak value)}}

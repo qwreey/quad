@@ -1221,3 +1221,8 @@ GS 14 §3(`14-lists.md` 181행) `const nextRows = table.clone(props.Rows:Get())`
 
 스크래치 하네스가 `quad-base/src`(그 안의 `luau_packages/quad_types`)와 `quad-types/src`를 따로 require하면 `Slot:List`의 `ctx: q.ListCtx<…>` 같은 주석이 *"No valid instantiation … Item"*으로 죽는다 — SKILL §4.2·recipes §2·core/06 예제·`spec.slottypes` 몸통까지 전부(같은 이름의 타입이 서로 다른 파일에서 와 신원이 다름; `relink.sh` 2.5단계가 잡는 "중첩 사본 둘" 문제와 같은 뿌리). 한 설치본(`quad-roblox/luau_packages` 한 벌)으로 돌리면 통과(`audit/round13-e31-skill-walkthrough/probe-req1~3`). 실사용자 환경(pesde 설치)엔 해당 없음. **스크래치 하네스는 한 `luau_packages` 벌에서만 require할 것** — ~~S10·E27 하네스는 s10-config 사본으로 한 벌을 썼으므로~~ **[2026-09-27 E56 정정]** S10·E27의 `s10-config.luau`·`strict-mod/Quad.luau`는 `quad-base/src`와 `quad-types/src`를 직접 require해 **섞은 판**이었다 — 다만 한 벌로 바꿔도 bare 진단 자리가 같고 반환 팩만 다는 경로도 섞은 판에서 클린이라 결과엔 영향이 없었다(`audit/round13-e56-gs-strict-path/probes/mixed/`), 그러므로 그 판정은 유효(E31이 의심한 "S10 오판"은 GS 14 §5가 한 벌 하네스에서도 같은 진단이라 성립하지 않음).
 
+
+
+## 8.35. `:UseProvider(p)`에 넘기는 프로바이더의 반환 타입이 `any`/`{ [any]: any }`면 그 뒤 모든 `q.<멤버>` 호출이 strict에서 `*error-type* in union`으로 죽는다 (2026-09-27 round13 E70 실측)
+
+`quad-types/src/init.luau` 653의 `UseProvider: <Self, P>(self: Self, (Self) -> P) -> Self & P`가 프로바이더 반환 `P`를 교집합에 넣으므로, `P`가 `any`나 인덱서 테이블이면 `Self & P`의 모든 멤버 접근이 오류 타입 유니언이 된다. `{}`·구체 필드 테이블(`{ Foo: number }`)·실 `QuadRoblox`는 진단 0(`audit/round13-e70-howto-examples/probes/strict-useprovider.luau`). 이 저장소의 `quad-base/test/mock.luau` 645 `mockProvider(quad: any): { [any]: any }`가 정확히 그 모양이고, how-to 06이 이걸 본보기로 권하므로 06 §3에 한 줄 경고를 넣었다(`H-826`). `mockProvider` 주석 자체를 바꿀지는 `Q153`(테스트 코드 변경 — 사용자 결정). 솔버 수준 원인은 좁히지 않았다.

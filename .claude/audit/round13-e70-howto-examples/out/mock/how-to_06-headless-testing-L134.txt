@@ -1,0 +1,4 @@
+true
+same provider again:	true	table: 0x0000576e17e5c9b0
+other provider:	./mock/how-to_06-headless-testing-L134.luau:25: Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends
+<<END>>

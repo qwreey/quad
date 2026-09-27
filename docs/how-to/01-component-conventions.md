@@ -91,7 +91,7 @@ end
 그래서 구멍 있는 props 테이블은 **계약 밖**입니다 — 꼬리 구멍이 통과하는 것은 우연이지 보장이 아닙니다. 증상과 에러 메시지는 [10. 부록 — quad 에러 읽는 법](./10-debugging-and-troubleshooting.md)의 함정 1에 정리돼 있습니다.
 
 ```luau
--- ❌ props.Modifier가 없으면 1번 자리가 구멍이 된다 — 그 자리에서 에러
+-- ❌ props.Modifier가 없으면 1번 자리가 구멍이 된다 — 뒤에 값(props.Ref)이 오면 그 자리에서 에러, 둘 다 없으면 꼬리 구멍이라 우연히 통과(어느 쪽도 계약 밖)
 D.TextButton { props.Modifier, props.Ref, Text = "x" }
 
 -- ✅ None이 자리를 지킨다 — 기여는 0이지만 위치는 그대로

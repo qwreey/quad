@@ -1,0 +1,2 @@
+0.25	Hello	true	nil
+<<END>>

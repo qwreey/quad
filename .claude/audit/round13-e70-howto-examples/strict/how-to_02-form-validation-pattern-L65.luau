@@ -1,0 +1,55 @@
+--!strict
+-- E70 strict (generated) — how-to_02-form-validation-pattern-L65
+local H: any = nil -- [E70] mock 보강 식이 strict에서 any로 읽히게
+-- ==== page prologue (how-to_02-form-validation-pattern-L27) ====
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+local q = require("./Quad")
+local D = q.Declaration
+-- ==== with how-to/02-form-validation-pattern.md:39 ====
+-- 재사용 컴포넌트(예: ReplicatedStorage/Client/UI/Checkbox)
+local function Checkbox(props: { read Value: q.Source<boolean>, read Label: string }): TextButton
+    local checked = props.Value
+
+    -- 파생은 props 테이블 밖에서 만들어 둔다(§4의 주의 참고)
+    local labelText: q.State<string> = checked:Compute(function(c)
+        return `{if c:Get() then "☑" else "☐"} {props.Label}`
+    end)
+
+    return D.TextButton {
+        Size = UDim2.new(1, 0, 0, 32),
+        BackgroundTransparency = 1,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        Text = labelText,
+
+        Activated = function()
+            checked:Set(not checked:Get())
+        end,
+    }
+end
+-- ==== doc block how-to/02-form-validation-pattern.md:65 ====
+-- 부르는 쪽 — 원천을 만들고, 그 위에 판정을 얹는다
+local agreed = q.Source(false)
+
+-- 약관에 동의해야만 제출할 수 있다(지금은 동의 여부 그대로지만, 폼이 커지면 조건이 여기에 늘어난다)
+local canSubmit: q.State<boolean> = agreed:Compute(function(c)
+    return c:Get()
+end)
+
+local submitColor: q.State<Color3> = canSubmit:Compute(function(enabled)
+    return if enabled:Get()
+        then Color3.fromRGB(0, 170, 255)
+        else Color3.fromRGB(80, 80, 90)
+end)
+
+local panel = D.Frame {
+    D.UIListLayout { Padding = UDim.new(0, 8) },
+
+    Checkbox { Label = "약관에 동의합니다", Value = agreed },
+
+    D.TextButton {
+        Text = "가입하기",
+        Interactable = canSubmit, -- false면 눌리지 않는다
+        BackgroundColor3 = submitColor,
+    },
+}

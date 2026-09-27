@@ -1,0 +1,44 @@
+--!strict
+-- E70 strict (generated) — how-to_09-overlays-modal-toast-L282
+local H: any = nil -- [E70] mock 보강 식이 strict에서 any로 읽히게
+-- ==== page prologue (how-to_09-overlays-modal-toast-L10) ====
+-- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
+const q = require("./Quad")
+const D = q.Declaration
+const None = q.None
+-- ==== doc block how-to/09-overlays-modal-toast.md:282 ====
+local function ErrorModal(props: {
+    read Error: q.State<any>,
+    read OnReport: (err: any) -> (),
+    read OnConfirm: () -> (),
+}): Frame
+    -- 파생 상태는 props 테이블 밖에서 만들어 둔다(아래 주의 참고)
+    const visible: q.State<boolean> = props.Error:Compute(function(e)
+        return e:Get() ~= nil
+    end)
+    const text: q.State<string> = props.Error:Compute(function(e)
+        const value = e:Get()
+        return if value == nil then "" else tostring(value)
+    end)
+
+    return D.Frame {
+        Visible = visible,
+
+        D.TextLabel {
+            Text = text,
+        },
+
+        D.TextButton {
+            Text = "신고",
+            Activated = function()
+                props.OnReport(props.Error:Get())
+            end,
+        },
+        D.TextButton {
+            Text = "확인",
+            Activated = function()
+                props.OnConfirm()
+            end,
+        },
+    }
+end

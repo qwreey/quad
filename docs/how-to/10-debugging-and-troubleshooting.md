@@ -56,9 +56,9 @@ ReplicatedStorage.Client.UI.UserProfile:42: Quad0218 Event: handler for "Activat
   구멍 없는 시퀀스로 전제하고(순회에서 그 자리가 빠지고, 부기 쪽은 길이 `#`에
   기대는데 구멍 있는 테이블의 `#`는 명세되지 않음) 따라서 배열 구멍은
   **정의되지 않은 동작(UB)** 입니다. 실제 결과는 구멍의 위치에 따라 갈립니다 —
-  1번 자리나 중간이 구멍이면 위치 부기가 어긋나 그 자리에서 에러가 나고
+  구멍 **뒤에 값이 오면**(1번 자리나 중간이 구멍) 위치 부기가 어긋나 그 자리에서 에러가 나고
   (`Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; …` — 물음표까지가 사용자에게 하는 말이고 세미콜론 뒤는 핸들러 작성자용입니다),
-  꼬리 구멍은 우연히 통과합니다.
+  꼬리 구멍은 우연히 통과합니다 — 선택적 값이 **전부** 빠져 `{ nil, nil, Text = "x" }`가 되면 숫자 부분이 비어 있어 잡을 것이 없으므로 에러 없이 지나갑니다(그래도 계약 밖 — [2026-09-27 mock 실측]).
 - **해결책**: 선택적 값 뒤에는 **`or None`**을 붙입니다.
 
 ```luau
@@ -206,11 +206,11 @@ end
 -- ❌ 수동으로 시작했다가 나중에 :List로 갈아타기
 local s = q.Slot()
 s:Add(D.Frame {})
-s:List(items, function(ctx) return D.Frame { Text = ctx.Item } end) -- 에러
+s:List(items, function(ctx) return D.TextLabel { Text = ctx.Item :: string } end) -- 에러
 
 -- ✅ 데이터 배열이 있다면 처음부터 :List
 local s2 = q.Slot()
-s2:List(items, function(ctx) return D.Frame { Text = ctx.Item } end)
+s2:List(items, function(ctx) return D.TextLabel { Text = ctx.Item :: string } end)
 ```
 
 ---

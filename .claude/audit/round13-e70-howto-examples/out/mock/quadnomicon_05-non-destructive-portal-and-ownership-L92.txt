@@ -1,0 +1,3 @@
+true
+x destroyed with host?	true
+<<END>>

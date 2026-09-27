@@ -1,0 +1,4 @@
+both-nil ❌ line:	true	TextButton
+mod-nil+ref ❌ shape:	../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Bookkeeping.luau:248: Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)
+✅ ok
+<<END>>

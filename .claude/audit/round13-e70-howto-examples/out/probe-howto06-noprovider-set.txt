@@ -1,0 +1,4 @@
+register ok	true	runs	1
+Set ok	false	./probes/howto06-noprovider-set.luau:9: Quad0108 quad: isHeld is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+value after throw	90	runs	1
+plain set	2

@@ -1,0 +1,3 @@
+blocked-while-invalid
+sub	abcd
+<<END>>

@@ -1,0 +1,3 @@
+0 sec	0
+plain default:	./mock/how-to_08-migrating-from-v1-L82.luau:31: Quad0198 Store: default for "Color" is not a Source (got number)
+<<END>>

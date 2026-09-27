@@ -1,0 +1,21 @@
+./mock/how-to_10-debugging-and-troubleshooting-L205.luau:30: Quad0076 Dispatch: no handler matched key Text (value: string) — check that the provider for this value (e.g. quad-roblox) is initialized
+stacktrace:
+[C] function error
+../../../quad-roblox/luau_packages/.pesde/qwreey+quad_error/3.2.0/quad_error/src/init.luau:183 function errorBefore
+../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:340 function process
+../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:522 function drive
+../../../quad-roblox/src/Declaration/init.luau:4965 function stage
+./mock/how-to_10-debugging-and-troubleshooting-L205.luau:28
+../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Slot/List.luau:135 function reconcile
+../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Slot/List.luau:200
+../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Observer.luau:199 function new
+../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/State.luau:352 function Observer
+../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Slot/List.luau:200 function _activateList
+../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Slot/Tree.luau:53 function materializeSlotTree
+../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Slot/Tree.luau:94 function attachSlot
+../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Slot/Handler.luau:42 function process
+../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:371 function process
+../../../quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Dispatch/init.luau:522 function drive
+../../../quad-roblox/src/Declaration/init.luau:4965 function stage
+./mock/how-to_10-debugging-and-troubleshooting-L205.luau:30
+❌ :List after :Add →	./mock/how-to_10-debugging-and-troubleshooting-L205.luau:24: Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)

@@ -1,0 +1,6 @@
+누르기
+TextButton
+1	1	false
+hi
+bye
+<<END>>
