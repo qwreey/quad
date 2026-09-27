@@ -1,0 +1,15 @@
+canon same-q  :	obs=5 eff=2 cl=1 chg=3 wr=4 list=3 thr=3 ext=2 lo=10 z=10 tags=T1,T2 A1=10 A2=7 kids=3 tw=4 pend=0 extconns=1 postObs=5 postCl=2 postExt=2 pendAfter=0 extconnsAfter=0
+canon fresh-q :	obs=5 eff=2 cl=1 chg=3 wr=4 list=3 thr=3 ext=2 lo=10 z=10 tags=T1,T2 A1=10 A2=7 kids=3 tw=4 pend=0 extconns=1 postObs=5 postCl=2 postExt=2 pendAfter=0 extconnsAfter=0
+canon equal   :	true
+
+== E77 seeds 8001..14000 mutation=none  (25.8s)
+seeds=6000 nodes=93534 (max 68/seed) steps=151384
+teardowns:	clear=454 destroy=464 dispose=467 extractAll=480 fromCallback=438 fromCleanup=452 fromEvent=474 fromOnChange=467 fromOnRendered=462 fromTimer=469 fromTween=460 remove=438 seatNil=475
+teardown trigger missed (root not destroyed by the path; disposed after):	59	fromCleanup=59
+tracked objects (pre-GC, total):	615024
+(1) GC survivors: seeds=0 kinds{} firstSeeds=
+(2) live ext conns seeds=0 | inst signal conns=0 | post-teardown callbacks seeds=0 {} | pending timers=0 | live tween Completed conns=0
+(3) errors total=19686 user=19686 quad{} noid-handler seeds=0
+(4) effect run~=cleanup=0 dying~=1=0 onDestroyed~=1=0 tween end>start=0 not-destroyed=0 | effRuns=111175 odHooks=44537 tweenCb S=18667 C=17781 X=98
+(5) canon diff seeds=0
+fallback throws:	3216

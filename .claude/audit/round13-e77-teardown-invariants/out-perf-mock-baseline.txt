@@ -1,0 +1,4 @@
+mock-only Destroy n=   100      0.09 ms  per unit   0.89 us
+mock-only Destroy n=   400      0.40 ms  per unit   1.00 us
+mock-only Destroy n=  1600      2.59 ms  per unit   1.62 us
+mock-only Destroy n=  6400     18.42 ms  per unit   2.88 us

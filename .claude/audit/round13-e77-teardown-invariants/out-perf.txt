@@ -1,0 +1,16 @@
+wide   dispose  n=   100  build    11.65 ms  teardown     0.19 ms  teardown/unit   1.87 us
+wide   dispose  n=   400  build    48.03 ms  teardown     1.01 ms  teardown/unit   2.54 us
+wide   dispose  n=  1600  build   252.75 ms  teardown    10.08 ms  teardown/unit   6.30 us
+wide   dispose  n=  6400  build  1076.91 ms  teardown    49.35 ms  teardown/unit   7.71 us
+deep   dispose  n=    50  build     1.68 ms  teardown     0.06 ms  teardown/unit   1.28 us
+deep   dispose  n=   200  build     4.36 ms  teardown     0.13 ms  teardown/unit   0.64 us
+deep   dispose  n=   800  build    17.91 ms  teardown     0.88 ms  teardown/unit   1.09 us
+deep   dispose  n=  3200  build    86.60 ms  teardown     6.61 ms  teardown/unit   2.07 us
+wide   destroy  n=   100  build    12.62 ms  teardown     0.33 ms  teardown/unit   3.25 us
+wide   destroy  n=   400  build    45.36 ms  teardown     1.64 ms  teardown/unit   4.10 us
+wide   destroy  n=  1600  build   254.00 ms  teardown    11.00 ms  teardown/unit   6.87 us
+wide   destroy  n=  6400  build  1091.00 ms  teardown    49.69 ms  teardown/unit   7.76 us
+deep   destroy  n=    50  build     1.62 ms  teardown     0.06 ms  teardown/unit   1.19 us
+deep   destroy  n=   200  build     4.38 ms  teardown     0.13 ms  teardown/unit   0.64 us
+deep   destroy  n=   800  build    17.98 ms  teardown     0.97 ms  teardown/unit   1.21 us
+deep   destroy  n=  3200  build    89.17 ms  teardown     7.02 ms  teardown/unit   2.20 us

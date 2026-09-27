@@ -1,0 +1,12 @@
+static n=   100  dispose     0.13 ms  per unit   1.29 us
+static n=   400  dispose     0.55 ms  per unit   1.37 us
+static n=  1600  dispose     5.61 ms  per unit   3.50 us
+static n=  6400  dispose    25.40 ms  per unit   3.97 us
+slot   n=   100  dispose     0.13 ms  per unit   1.25 us
+slot   n=   400  dispose     0.75 ms  per unit   1.87 us
+slot   n=  1600  dispose     3.43 ms  per unit   2.15 us
+slot   n=  6400  dispose    26.42 ms  per unit   4.13 us
+list   n=   100  dispose     0.13 ms  per unit   1.32 us
+list   n=   400  dispose     0.52 ms  per unit   1.30 us
+list   n=  1600  dispose     3.72 ms  per unit   2.32 us
+list   n=  6400  dispose    25.04 ms  per unit   3.91 us

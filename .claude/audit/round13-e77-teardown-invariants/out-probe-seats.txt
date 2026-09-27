@@ -1,0 +1,23 @@
+T2
+0
+tag seat	ok
+1	2
+attr seat	ok
+22
+obs seat	ok
+false
+eff seat	ok
+1
+onchange seat	ok
+1
+2
+detach	ok
+true	2
+0
+debounce handle	ok
+destroyed	true
+tween completed dispose	ok
+destroyed	true
+event dispose	ok
+destroyed	true
+onchange dispose	ok

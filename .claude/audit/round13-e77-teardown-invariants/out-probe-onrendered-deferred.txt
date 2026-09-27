@@ -1,0 +1,12 @@
+immed    plain      destroyed=true  run onDestroyed cleanup(true) kidOD kidCleanup(true) |flush
+deferred plain      destroyed=true  run |flush onDestroyed cleanup(true) kidOD kidCleanup(true)
+immed    drive      destroyed=true  run onDestroyed cleanup(true) kidOD kidCleanup(true) |flush
+deferred drive      destroyed=true  run |flush onDestroyed cleanup(true) kidOD kidCleanup(true)
+immed    slotAdd    destroyed=true  run onDestroyed cleanup(true) kidOD kidCleanup(true) |flush
+deferred slotAdd    destroyed=true  run |flush onDestroyed cleanup(true) kidOD kidCleanup(true)
+immed    listUpdate destroyed=true  run onDestroyed cleanup(true) kidOD kidCleanup(true) |flush
+deferred listUpdate destroyed=true  run |flush onDestroyed cleanup(true) kidOD kidCleanup(true)
+immed    slotInProps destroyed=true  run onDestroyed cleanup(true) kidOD kidCleanup(true) |flush
+deferred slotInProps destroyed=true  run |flush onDestroyed cleanup(true) kidOD kidCleanup(true)
+immed    listInProps destroyed=true  run onDestroyed cleanup(true) kidOD kidCleanup(true) |flush
+deferred listInProps destroyed=true  run |flush onDestroyed cleanup(true) kidOD kidCleanup(true)

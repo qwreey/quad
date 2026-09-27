@@ -1,0 +1,55 @@
+### mutation skipCleanup
+== E77 seeds 1..500 mutation=skipCleanup  (3.0s)
+tracked objects (pre-GC, total):	53465
+(1) GC survivors: seeds=0 kinds{} firstSeeds=
+(2) live ext conns seeds=497 | inst signal conns=0 | post-teardown callbacks seeds=497 {extSig=9578} | pending timers=0 | live tween Completed conns=0
+(3) errors total=1708 user=1708 quad{} noid-handler seeds=0
+(4) effect run~=cleanup=0 dying~=1=0 onDestroyed~=1=0 tween end>start=0 not-destroyed=0 | effRuns=9578 odHooks=3868 tweenCb S=1643 C=1564 X=8
+(5) canon diff seeds=500
+### mutation holdStrong
+== E77 seeds 1..500 mutation=holdStrong  (2.1s)
+tracked objects (pre-GC, total):	53466
+(1) GC survivors: seeds=489 kinds{inst=489} firstSeeds=1,2,3,4,5,6,7,8,9,10,11,12
+(2) live ext conns seeds=0 | inst signal conns=0 | post-teardown callbacks seeds=0 {} | pending timers=0 | live tween Completed conns=0
+(3) errors total=1708 user=1708 quad{} noid-handler seeds=0
+(4) effect run~=cleanup=0 dying~=1=0 onDestroyed~=1=0 tween end>start=0 not-destroyed=0 | effRuns=9511 odHooks=3868 tweenCb S=1643 C=1564 X=8
+(5) canon diff seeds=0
+### mutation noDestroying
+== E77 seeds 1..500 mutation=noDestroying  (2.2s)
+tracked objects (pre-GC, total):	53465
+(1) GC survivors: seeds=2 kinds{Effect=1 Source=1 inst=2} firstSeeds=183,445
+(2) live ext conns seeds=496 | inst signal conns=0 | post-teardown callbacks seeds=496 {extSig=4247} | pending timers=0 | live tween Completed conns=0
+(3) errors total=568 user=568 quad{} noid-handler seeds=0
+(4) effect run~=cleanup=496 dying~=1=496 onDestroyed~=1=497 tween end>start=0 not-destroyed=2 | effRuns=9602 odHooks=3868 tweenCb S=1643 C=1564 X=8
+(5) canon diff seeds=500
+### mutation claimedAlways
+== E77 seeds 1..500 mutation=claimedAlways  (1.5s)
+tracked objects (pre-GC, total):	52862
+(1) GC survivors: seeds=0 kinds{} firstSeeds=
+(2) live ext conns seeds=0 | inst signal conns=0 | post-teardown callbacks seeds=62 {tweenCompleted=69} | pending timers=0 | live tween Completed conns=0
+(3) errors total=1708 user=1708 quad{} noid-handler seeds=0
+(4) effect run~=cleanup=0 dying~=1=0 onDestroyed~=1=0 tween end>start=0 not-destroyed=0 | effRuns=9670 odHooks=3868 tweenCb S=1643 C=1635 X=8
+(5) canon diff seeds=0
+### mutation strongSub
+== E77 seeds 1..500 mutation=strongSub  (191.5s)
+tracked objects (pre-GC, total):	40823
+(1) GC survivors: seeds=488 kinds{Observer=2890} firstSeeds=1,2,3,4,5,6,8,9,10,11,13,14
+(2) live ext conns seeds=0 | inst signal conns=0 | post-teardown callbacks seeds=488 {debObserver=2890} | pending timers=0 | live tween Completed conns=0
+(3) errors total=1724 user=1724 quad{} noid-handler seeds=0
+(4) effect run~=cleanup=0 dying~=1=0 onDestroyed~=1=0 tween end>start=0 not-destroyed=0 | effRuns=9955 odHooks=3759 tweenCb S=1598 C=1522 X=7
+(5) canon diff seeds=500
+### mutation plainError
+== E77 seeds 1..500 mutation=plainError  (163.4s)
+tracked objects (pre-GC, total):	5947
+(1) GC survivors: seeds=44 kinds{Effect=75 Observer=111 Ref=40 Slot=45 Source=135 ctxValue=7 gate=23 inst=93 onchange=4 tween=21} firstSeeds=1,12,13,44,61,73,75,86,90,92,94,138
+(2) live ext conns seeds=43 | inst signal conns=29 | post-teardown callbacks seeds=47 {debObserver=47 effectFn=52 extSig=98 observer=3572 onchange=6 seatObserver=304 tweenCompleted=1} | pending timers=0 | live tween Completed conns=0
+(3) errors total=830 user=390 quad{} noid-handler seeds=0
+    noid:	1	hseatSwap: engine rejected tag
+    noid:	4	single: engine rejected tag
+    noid:	9	td: attempt to index nil with 'v'
+    noid:	4	listChurn: engine rejected tag
+    noid:	387	build: engine rejected tag
+    noid:	9	buildSeat: engine rejected tag
+    noid:	26	slotAdd: engine rejected tag
+(4) effect run~=cleanup=43 dying~=1=43 onDestroyed~=1=43 tween end>start=0 not-destroyed=29 | effRuns=159358 odHooks=1765 tweenCb S=490 C=475 X=2
+(5) canon diff seeds=113

@@ -1,0 +1,9 @@
+none         n=100 1.48us  n=1600 2.92us  n=6400 3.96us
+tween        n=100 1.28us  n=1600 2.35us  n=6400 4.17us
+tag          n=100 1.36us  n=1600 2.58us  n=6400 4.30us
+attr         n=100 2.05us  n=1600 2.78us  n=6400 4.90us
+effect       n=100 2.43us  n=1600 4.49us  n=6400 5.47us
+onDestroyed  n=100 1.34us  n=1600 3.63us  n=6400 5.28us
+ref          n=100 1.50us  n=1600 3.00us  n=6400 4.43us
+observer     n=100 1.07us  n=1600 2.86us  n=6400 4.10us
+debounce     n=100 2.29us  n=1600 3.16us  n=6400 4.51us

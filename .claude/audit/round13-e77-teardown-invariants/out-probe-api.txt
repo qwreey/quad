@@ -1,0 +1,35 @@
+modseat	ERR ./.claude/audit/round13-e77-teardown-invariants/probe-api.luau:7: Quad0182 Source: cannot hold a Modifier as a Source value
+ n	1	b
+single	ok
+ n	3
+nested slot	ok
+ text	x
+ctx	ok
+ log	S,C,S	1
+ after	S,C,S
+ conns on tween.Completed	0
+tween	ok
+ tweens	2
+animate	ok
+ src	zz	3
+out/onchange	ok
+ n	1	1
+event	ok
+ seen	2	0
+debounce	ok
+ lo	2	0
+throttle	ok
+ lo	0
+ lo	5
+blocker	ok
+ 	crd
+hooks	ok
+ 	fb
+fallback	ok
+ 	3	0	T1
+attrkey	ok
+ 	false,true
+effect	ok
+ c1 parent	nil	false
+seat inst	ok
+dispose from callback	ERR ./.claude/audit/round13-e77-teardown-invariants/probe-api.luau:99: Quad0178 dispose: value must not be nil

@@ -1,0 +1,5 @@
+fallback got:	./.claude/audit/round13-e77-teardown-invariants/probe-orphan-live.luau:14: Quad0002 AttrKey: attribute "A" is already bound by another owner
+returned	fallbackUI
+orphan Observer fires after swallow:	3	(3 Sets)
+flag:Set #1 ok	true	1	reruns
+flag:Set #2 (orphan cleanup throws) ok	false	./.claude/audit/round13-e77-teardown-invariants/probe-orphan-live.luau:11: boom-from-orphan
