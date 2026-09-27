@@ -10,7 +10,7 @@ description: "시간 기반 전파 게이트의 옵션·제어 핸들·브로드
 둘 다 `quad-base`에 있지만 **동작하려면 백엔드가 필요합니다** — 순수 Luau엔 스케줄러가 없어 base가 시간 op를 기본 구현할 수 없습니다. 백엔드 없이 게이트가 타이머를 걸려는 순간(첫 상류 신호) 이렇게 죽습니다.
 
 ```
-Quad0108 quad: setTimeout is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+Quad0108 quad: setTimeout is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; headless tests install their own provider the same way)
 ```
 
 `quad-roblox`는 `task.delay`/`task.cancel`로 이 둘을 채웁니다.

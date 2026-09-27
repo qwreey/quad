@@ -242,7 +242,7 @@ local q = Quad.New():UseProvider(CustomProvider)
 quad-base는 위 20슬롯 전부에 **안내 스텁**을 깔아둡니다. 백엔드 없이 부르면 nil 호출 크래시가 아니라 이름이 박힌 에러가 호출자 줄에서 납니다.
 
 ```
-Quad0108 quad: nativeInsert is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; tests use mock.installLifetime)
+Quad0108 quad: nativeInsert is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; headless tests install their own provider the same way)
 ```
 
 이 스텁은 프로바이더가 덮어쓸 때까지만 공개 표면에 앉아 있습니다. 즉 **백엔드가 슬롯 하나를 빠뜨리면 그 op를 처음 쓰는 순간 그 이름이 그대로 에러 메시지에 나옵니다** — 조합으로 대신 만들어 주는 폴백은 없습니다.

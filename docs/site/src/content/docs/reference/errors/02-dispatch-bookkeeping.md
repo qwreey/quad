@@ -249,7 +249,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken` — `quad-base/src/Dispatch/init.luau`
 
-- **언제**: `retractFrom`이 체인 배열을 되감다가 구멍(`nil` 슬롯)을 만났을 때 — 정상 경로로는 나지 않는 내부 불변식 위반입니다. 공개 API로 닿는 길이 하나 있습니다 — 위임 핸들러의 안쪽 retractor가 같은 `(inst, key)`에 `retractFrom`을 다시 부르는 **간접 재진입**(정의되지 않은 동작 — [2026-09-27 mock 실측]).
+- **언제**: `retractFrom`이 체인 배열을 되감다가 구멍(`nil` 슬롯)을 만났을 때 — 계약을 지키는 호출로는 나지 않는 내부 불변식 위반입니다. 다만 계약을 어긴 호출은 공개 함수 `retractFrom`을 거쳐 이 상태에 닿을 수 있습니다 — 위임 핸들러의 안쪽 retractor가 같은 `(inst, key)`에 `retractFrom`을 다시 부르는 **간접 재진입**(정의되지 않은 동작 — [2026-09-27 mock 실측]).
 - **고치려면**: retractor 안에서 같은 자리를 다시 철거하지 마세요(재진입은 계약 밖). 그런 코드가 없는데 났다면 내부 버그 신호입니다 — 재현되면 리포트하세요.
 - **참고**: [`q.Dispatch.retractFrom(inst, key, index)`](/reference/extend/02-dispatch-handler-contract/#qdispatchretractfrominst-key-index)
 
