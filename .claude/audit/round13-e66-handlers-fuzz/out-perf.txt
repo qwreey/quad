@@ -1,0 +1,13 @@
+baseline Source:Set (no seat)      0.13 us/emit
+Property Text (plain, new value)   1.62 us/emit
+Property Text (same value)         1.61 us/emit
+Event Activated (alternate fn)     1.84 us/emit
+Event Activated (same fn)          1.76 us/emit
+OnChange swap (new descriptor)     3.44 us/emit
+InstanceChild swap (2 kids)        4.92 us/emit
+InstanceChild same kid (dedup)     1.85 us/emit
+Shorthand UIScale number           2.33 us/emit
+Shorthand UIScale nil<->number     8.53 us/emit
+OnChange swap with 1 sibling conns 3.80 us/emit
+OnChange swap with 100 sibling conns 4.45 us/emit
+OnChange swap with 1000 sibling conns 7.65 us/emit

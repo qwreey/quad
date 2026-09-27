@@ -1,0 +1,12 @@
+E66 fuzz mutant=evdedup seeds=1..2000 ops=72404 fires=6431 extwrites=5063 conn-samples=80481 diffSeeds=384 time=1.9s
+sample: s7#11 process i3 Activated conn changed without re-process
+E66 fuzz mutant=retractkeeps seeds=1..2000 ops=69730 fires=6226 extwrites=4849 conn-samples=79821 diffSeeds=556 time=1.9s
+sample: s4#41 retract i2 MouseEnter conns 0 want 1
+E66 fuzz mutant=shdestroy seeds=1..2000 ops=74558 fires=6630 extwrites=5190 conn-samples=85955 diffSeeds=304 time=1.9s
+sample: s4#47 retract i3 managed child exists=true want false
+E66 fuzz mutant=propdedup seeds=1..2000 ops=74947 fires=6660 extwrites=5253 conn-samples=86626 diffSeeds=279 time=1.9s
+sample: s8#8 process i2 Text writes 3 want 2
+E66 fuzz mutant=evnilkeeps seeds=1..2000 ops=68129 fires=6070 extwrites=4745 conn-samples=77862 diffSeeds=672 time=1.8s
+sample: s4#43 process i2 Activated conns 0 want 1
+E66 fuzz mutant=hashfirst seeds=1..2000 ops=71740 fires=6356 extwrites=5032 conn-samples=79640 diffSeeds=452 time=1.9s
+sample: s1#24 rebuild callbacks got [d2=v2] want []

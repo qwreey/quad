@@ -1,0 +1,3 @@
+E66 fuzz mutant=nil seeds=1..25000 ops=1000518 fires=88950 extwrites=70948 conn-samples=1189397 diffSeeds=0 time=27.5s
+ops: destroy=35623 extwrite=70948 fire=88950 noop=26868 process=356735 rebuild=27147 retract=106914 set=287333
+errors: Quad0218=3976

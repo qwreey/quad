@@ -1,0 +1,68 @@
+== (a) throwing Event callback
+fire ok	false	raw	./.claude/audit/round13-e66-handlers-fuzz/axes.luau:13: user boom	conns	2	raw-other fired	1
+second fire ok	false	(connection survives in mock = still throws)
+OnChange throw via Set ok	false	./.claude/audit/round13-e66-handlers-fuzz/axes.luau:21: onchange boom	Text=	bad
+next Set ok	true	ok	Text=	fine
+== (b) callback re-seats itself
+log	A,B	conns	1
+chain log	1,2,3,4,5,5	conns	1
+self-nil fired	1	conns	0
+== (c) destroy while pending
+after destroy + Set conns	0	observers of s	?
+destroy-in-callback ok	true	nil	conns	0
+process Event on destroyed ok	true	nil	conns	1
+process OnChange on destroyed ok	true	nil
+process Property on destroyed ok	true	nil
+process Shorthand on destroyed ok	true	nil
+== (d) feedback loops
+d1 clamp guarded ok	true	nil	ZIndex	5	src	5	calls	3
+d2 after bind calls	1
+d2 unguarded Set ok	false	RAW:./quad-roblox/src/Handlers/OnChange.luau:130: C stack overflow	calls	198	ZIndex	3
+d3 Out: src	typed	emits(bind+typing)	0
+d4 Out a	7	Visible	true
+== (e) rapid replace + GC
+State path: conns	1	closures alive	1
+direct process path: conns	1	closures alive	1
+OnChange swap: Text conns	1	alive	1
+after retract conns	0	0	0
+Set after retract conns	0	0
+== (f) missing signal
+Frame.Activated	false	Quad0076	./.claude/audit/round13-e66-handlers-fuzz/axes.luau:152: Quad0076 Dispatch: no handler matched key Activated (value: function) — check that the provider for this value (e.g. quad-roblox) is initialized
+Frame.Activated nil	false	Quad0076	./.claude/audit/round13-e66-handlers-fuzz/axes.luau:154: Quad0076 Dispatch: no handler matched key Activated (value: nil) — check that the provider for this value (e.g. quad-roblox) is initialized (a nil at this depth may be an unwrapped None or a reactive nil — the key's own handler must accept nil)
+callable table	false	Quad0218
+None	true	ok	0
+OnChange(event name) mock	true	ok	(engine: GetPropertyChangedSignal raises — unmeasured here)
+== (g) seated child destroyed
+c1 parent after destroy	nil
+swap after child destroyed	true	nil	c2.Parent==p	true	c1.Parent	nil
+re-seat destroyed c1	false	Quad0219
+retractFrom after destroyed child	true	nil
+dispose parent	true	nil
+== (h) external reparent + same-value re-emit
+after same re-emit c.Parent==p	false	==other	true
+after nil c.Parent	nil	(other lost its child)
+== (i) Property write count
+4 Sets (1,1,2,2) writes	4
+shorthand writes	2
+shorthand nil destroyed	true	nil
+recreated	true	4
+== (j) Out/OnChange after destroy
+Text conns after destroy	0
+src after corpse write	a
+== (k) one descriptor in two seats
+fired	2	conns	2
+same fn re-process conns	1
+== (g2) seated child destroyed, Parent-lock variant = all
+swap after child destroyed	false	./quad-roblox/src/Handlers/InstanceChild.luau:89: The Parent property of c1 is locked, current parent: NULL, new parent NULL	c2.Parent==p	false
+second Set(nil)	false	RAW:./quad-roblox/src/Handlers/InstanceChild.luau:89: The Parent property of c1 is locked, current parent: NULL, new parent NULL
+dispose parent	true	ok	nil
+parent Destroy after child destroyed (no retract path)	true	nil
+retractFrom	false	./quad-roblox/src/Handlers/InstanceChild.luau:89: The Parent property of c4 is locked, current parent: NULL, new parent NULL
+retractFrom again	false	RAW:./quad-roblox/src/Handlers/InstanceChild.luau:89: The Parent property of c4 is locked, current parent: NULL, new parent NULL
+== (g2) seated child destroyed, Parent-lock variant = nonnil
+swap after child destroyed	true	nil	c2.Parent==p	true
+second Set(nil)	true	ok
+dispose parent	true	ok	nil
+parent Destroy after child destroyed (no retract path)	true	nil
+retractFrom	true	nil
+retractFrom again	true	ok

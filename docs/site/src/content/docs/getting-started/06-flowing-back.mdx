@@ -9,7 +9,7 @@ import { Quiz, QuizResults } from 'starlight-quiz/components';
 > **목표**: 엔진이 스스로 바꾸는 프로퍼티(입력창의 `Text`)를 다시 `Source`로 끌어올리기
 
 :::caution
-**[2026-09-27 기준] `q.Out`은 게시된 3.2.0에는 없습니다** — 다음 릴리즈부터 들어갑니다([변경 이력](/changelog/)의 `[Unreleased]`). 3.2.0을 쓰고 있다면 이 장의 `q.Out(...)` 자리를 `q.OnChange(name, function(v) src:Set(v) end)`로 읽으세요(동작은 같고, 값 비교로 왕복을 끊는 부분만 직접 `if v ~= src:Get() then` 한 줄이 필요합니다).
+**[2026-09-27 기준] `q.Out`은 게시된 3.2.0에는 없습니다** — 다음 릴리즈부터 들어갑니다([변경 이력](/changelog/)의 `[Unreleased]`). 3.2.0을 쓰고 있다면 이 장의 `q.Out(...)` 자리를 `q.OnChange(name, function(v) if v ~= src:Get() then src:Set(v) end end)`로 읽으세요(동작은 같습니다 — `if v ~= src:Get()` 비교는 왕복을 끊기 위한 게 아니라(엔진은 같은 값 재대입에 신호를 내지 않아 고리는 저절로 멈춥니다) 첫 쓰기의 메아리로 구독자가 한 번 더 도는 것을 건너뛰기 위한 것입니다 — 자세한 이유는 레퍼런스 [`q.OnChange`](/reference/roblox/05-onchange/)의 "동작").
 :::
 
 01장부터 지금까지 값은 늘 한 방향으로만 흘렀습니다 — 원천에서 인스턴스로 **내려가는**
