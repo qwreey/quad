@@ -93,5 +93,6 @@
 - `round13-e79-deferred-signals/` — **[2026-09-27 자율 루프 E79]** Roblox Deferred 신호 전달 셔임(`env.luau`·`probe.luau` 일곱 축 × 세 모드) — 왕복 수렴·Tween 동일, 차이 셋 → `Q157`, `H-855`.
 - `round13-e77-teardown-invariants/` — **[2026-09-27 자율 루프 E77]** 전 서브시스템 혼합 앱 생성·13 해체 경로·불변식 다섯(1만4천 시드·파손 여섯 검출·`axes-dispose-sites.luau`·perf 넷) — 위반 0, `H-856`.
 - `round13-e80-changelog-fixed/` — **[2026-09-27 자율 루프 E80]** CHANGELOG `[Unreleased]` Fixed·Changed 불릿 55를 HEAD·3.2.0 사본 양쪽 재현(`probes/a~h`, `run320.sh`, `compare.py`) — 수정 실재 106 검사, `H-857`~`H-865`.
+- `round13-tween-callback-structure-spike/` — **[2026-09-28 회신 단계, opus 워크트리]** Tween 콜백 "모으고 → 쓰고 → 부른다" 변형(Property 층 콜백을 슬롯 쓰기·`Play` 뒤로 모아 부르고 대체됐으면 새 값 콜백 생략) — test.sh 네 설정 exit 0, Q91 고아 0, `H-589` 재진입 일관, 남는 것은 한 값을 여러 자리로 퍼뜨리는 층(숏핸드 루프·StoreBind None 전환)의 바깥 프레임. 판정·경위는 `research/tween-callback-structure.md` §7
 - `round13-drafts-2026-09-27/spec-drafts/` — **[2026-09-27 자율 루프 E76]** 변이 공백 48 → spec 초안(`*.additions.luau` 13·`apply.py`·`run48-results.json`) — 44 죽음, `Q154` (a) 채택 시 `apply.py` 한 번; 남은 넷은 `Q156`.
 

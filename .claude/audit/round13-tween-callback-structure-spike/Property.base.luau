@@ -1,0 +1,351 @@
+--!strict
+--[[
+	PropertyHandler — the plain-property terminal handler (backend-owned:
+	Reflection is an engine concept, `dispatch-core-plan.md` "base가 소유하는
+	핸들러와 주입되는 엔진 op" 절).
+
+	Match rule: string key ∧ key ~= "Parent" (`H-142` — the rejection IS the
+	runtime guard: no handler matches, so `Dispatch.process` raises its
+	regular no-match error; no special wording, `H-148`) ∧ the key is a real
+	property of `inst.ClassName` per `ReflectionService:GetPropertiesOfClass`
+	(descriptor array with `.Name`, inherited included — Studio-measured
+	2026-09-02). Event keys are NOT properties in that API (measured
+	2026-09-03: `GetEventsOfClass` and `GetPropertiesOfClass` are disjoint),
+	so they fall through to `Handlers/Event.luau` — a separate handler one
+	band step below (`NORMAL - 1`, round10 Q58 (나); it was the same NORMAL
+	value until 2026-09-17). A string key that is neither raises the
+	regular no-match error.
+
+	process is one line (`inst[k] = v`) — hash keys touch no Length/Offset
+	bookkeeping (`H-39` is about ARRAY positions only). A property cannot be
+	"unset", and a descending-diff replacement simply writes the next value — so
+	the retractor does nothing on a value swap. [round10 Q53 (a), user decision
+	2026-09-17; round11 `H-547` widened it from "a chain that has carried a Tween"
+	to EVERY chain] the per-(inst, k) retractor is returned by every path —
+	on teardown (`retracting == true`: `Dispatch.retractFrom`, the shorthand's
+	managed-child destroy, AND Dispatch's handler-switch branch) it `Cancel`s the
+	running engine tween and downgrades that record to `true` (round11 Q65: the
+	record is per (inst, k) for the Instance's life — never reset to nil, so "first
+	set = snap" is quad's first write to that property); on a value swap (`retracting == false`) it does nothing,
+	because `process` already cancels/Finish-snaps by the INCOMING tween's
+	`Override`. Before: the engine tween ran on into the destroyed child (Studio:
+	the corner just vanished) and the stale slot deduped a re-declared same-target
+	tween away (G-7). One closure per (inst, k), cached — not one per emit. `v == nil` (a `None` re-dispatch, or a
+	State that computed nil) WRITES nil — [Q33 (a), 2026-09-08] object
+	references (Adornee/Part0/NextSelection*) are released only this way; a
+	property that cannot take nil raises in the engine, and that raise is the
+	user's error to see (the old M10 skip-defense, `H-352`, swallowed None
+	silently — reversed). An active tween on that key is cancelled first
+	(plain-value path), spec.tweenproperty 6절.
+
+	M11 unit ② (round19, `tween-plan.md` "3-상태 저장" / "override 정책" /
+	"옵션 값 모양"): `isTween(realv)` is a branch INSIDE process, not a
+	handler — the 3-state relation slot per (inst, propName):
+	  nil                            never processed here → first set SNAPS
+	                                 (even a Tween writes `Value` directly —
+	                                 no engine tween, no entry animation)
+	  true                           set before (plain value), no active engine tween
+	  { Value }                      [Q26 (a), 2026-09-08] a Tween SNAPPED here (first set) —
+	                                 no engine tween, the target is kept for the dedup below
+	  { Tween = TweenBase, Value }   an engine tween is running toward Value
+	Dedup ([2026-09-08 user decision, round3 Q25] — replaces the 2026-09-07 Q12 object-identity
+	check): an incoming Tween whose `Value` EQUALS the recorded target does nothing — the
+	active tween keeps running, a finished one is not re-triggered. Only `Value` is compared
+	(user: Time/Style/… are not comparison targets, as option changes never re-animated);
+	`Tween{ Dedup = false }` opts out. Value equality is the engine's (`UDim.new(0, 8)` twice
+	is equal), which is why the shorthand handler's `Mapped` copies fold too. A plain-value
+	slot (`true`) records no value, so a Tween arriving there always plays.
+	Order invariant: an active tween is cancelled BEFORE the new value is
+	written (the engine keeps writing the property asynchronously). The
+	override policy consulted is the INCOMING Tween's `Override` (`H-328`):
+	`"Finish"` snaps the previous target first; `"Cancel"` (default, `H-343`)
+	and a plain incoming value continue from the interpolated value as-is.
+	`TweenInfo`: `Info` wins; otherwise the convenience fields go to
+	`TweenInfo.new` positionally with the engine's own defaults filled in for
+	absent fields (`H-333` — an explicit nil is rejected by the engine). `TweenService`/`TweenInfo` are read lazily so the
+	CLI spec can shim both through `getfenv` (same seam as Reflection).
+	Engine-typed option misuse (`Style = 3`, wrong `Info`) raises the engine's
+	own error inside process — same class as `inst[k] = wrongValue` (Q5 (a)).
+
+	The `game` global is read lazily inside the cache miss path so the CLI
+	spec can substitute a Reflection shim via `getfenv` (same seam the D
+	pipeline spec uses for `Instance`).
+]]
+
+local QuadTypes = require("../../luau_packages/quad_types")
+local Reflection = require("../Reflection")
+
+local function install(quad: any)
+	local dispatch = quad.Dispatch
+	local isTween = quad.isTween
+
+	-- 3-state slot (header) — weak-keyed by inst through Relate, so a dying
+	-- instance drops its slots (and the engine tween handle) with it
+	local tweenSlots = quad.Relate()
+	-- (inst, k) -> the tween-chain retractor (round10 Q53 (a)). Weak VALUE (`H-71`/`H-229`, checkpoint
+	-- code-review): the closure captures `inst`, so a strong bucket value would back-reference its
+	-- own weak key and pin every tweened Instance for the module's lifetime (Luau has no ephemerons).
+	-- The live chain holds the retractor strongly (`list[index].retractor`); after teardown the
+	-- entry may collect and a later chain simply mints a new one — identity never matters.
+	local tweenRetractors = quad.Relate()
+
+	-- [2026-09-21 사용자 결정 — docs-review 1-5] Tween callbacks `Started`/`Completed`/`Cancelled` (`() -> ()`, no
+	-- arguments: a closure that captured `inst` would sit in the engine tween's connection and pin the
+	-- Instance for as long as the record holds the tween — `audit/tween-completed-2026-09-21/REPORT.md` 7·8;
+	-- Luau weak-key tables are not ephemerons). Where they fire:
+	--   Started   — synchronously right after `engineTween:Play()`; on a snap, right before Completed.
+	--   Completed — from the engine `Completed` signal, only for `PlaybackState.Completed` (a natural finish);
+	--               synchronously on a snap (first write, or an Info-less `Time == 0`). The engine re-fires
+	--               `Completed(Cancelled)` even for a tween that already finished (REPORT 2), so the
+	--               connection disconnects itself on its first fire and the record remembers `Done`.
+	--   Cancelled — synchronously at quad's OWN `:Cancel()` call site (value replacement or teardown), only
+	--               while that tween had not finished. The engine's own Cancelled notice is deferred (REPORT 3)
+	--               and lands AFTER a synchronous replacement's Started (REPORT 4) — so it is never used.
+	-- Order on replacement is therefore fixed: old Cancelled → new Started → (later) new Completed. A
+	-- Writing the SAME property from inside `Started` or `Cancelled` (a `:Set` on the State seated there) is
+	-- same-key re-entry — UB by user decision (dispatch-core-plan Q5 (a); round12 G-23/G-26, `H-589`): `Cancelled`
+	-- fires before this call's own slot write and a snap's `Completed` follows its `Started`, so a nested
+	-- `process` would be overwritten or land out of order. No gate is added (user: no re-entry gates). The
+	-- place to chain the next tween on the same property is `Completed` — on the engine path it fires outside
+	-- `process`, on a snap after the slot write. A Destroy runs no chain retractor (no `Destroying` hook here),
+	-- so a tween keeps running on the destroyed Instance and the engine still sends `Completed` at its natural
+	-- end (REPORT 5·6) — that notice is ignored when the Instance is no longer claimed (round12 Q71, `H-594`;
+	-- gate in the connection below). Dedup-skipped same-target Tween fires nothing (no tween starts) — and the callbacks that stay wired are
+	-- those of the value that actually STARTED the tween (the skipped value's are dropped). A connection and
+	-- the `Cb` field are made only when the value carries Completed or Cancelled (the connection is needed for
+	-- the `Done` bookkeeping even when only Cancelled is given — otherwise a finished tween would get
+	-- Cancelled on teardown); callback-less tweens keep the old record shape and GC profile. `Done` means
+	-- SETTLED (finished or cancelled) and is set before any callback runs, so a throwing callback cannot
+	-- leave the record "running" (code-review 2026-09-21); `Cb` is released as soon as it has fired.
+	local function fire(v: any, name: string)
+		-- annotated on purpose: an unannotated `v[name]` narrowed by `~= nil` comes out as `*error-type* | ~nil`
+		-- under the new solver (2026-09-21 scratch, `typing-limits.md` 8.24)
+		local cb: (() -> ())? = v[name]
+		if cb ~= nil then
+			cb()
+		end
+	end
+	-- Cancel a record's engine tween if it is still running (Cancelled callback), and drop its connection.
+	-- The property keeps whatever value it reached (engine `Cancel` semantics).
+	local function stopRunning(rec: any)
+		local conn = rec.Conn
+		if conn ~= nil then
+			rec.Conn = nil
+			conn:Disconnect()
+		end
+		if rec.Done then
+			return
+		end
+		rec.Done = true -- settle first (header)
+		local cb = rec.Cb
+		rec.Cb = nil
+		-- Deferred-notice window (code-review 2026-09-21; REPORT 1·3): the engine flips `PlaybackState` when the
+		-- tween reaches its target but delivers `Completed` only at the next resumption point — a synchronous
+		-- replacement/teardown inside that window is a FINISH, not a cancel. The pending notice died with the
+		-- connection above, so Completed is fired here instead (once). The engine state is read only for this
+		-- gate; the record's value truth still comes from the property (retractor below).
+		local playback = (Enum :: any).PlaybackState
+		if playback ~= nil and rec.Tween.PlaybackState == playback.Completed then
+			if cb ~= nil then
+				fire(cb, "Completed")
+			end
+			return
+		end
+		rec.Tween:Cancel()
+		if cb ~= nil then
+			fire(cb, "Cancelled")
+		end
+	end
+	-- Snap: write the target now, no engine tween; `{ Value }` keeps the dedup honest (Q26 (a)).
+	local function snap(inst: any, k: any, v: any)
+		inst[k] = v.Value
+		tweenSlots:SetStrong(inst, k, { Value = v.Value })
+		fire(v, "Started")
+		fire(v, "Completed")
+	end
+
+	local function tweenRetractor(inst: any, k: any): (any?, boolean) -> ()
+		local r = tweenRetractors:GetWeak(inst, k)
+		if r == nil then
+			r = function(_nextValue: any?, retracting: boolean)
+				if not retracting then
+					return -- value swap: process handles the previous tween (Override)
+				end
+				-- round11 Q65 (user decision 2026-09-18): teardown does NOT forget that the property was
+				-- written. "First set = snap" means quad's first write to THIS (inst, k) — the record lives
+				-- with the Instance (weak key), not with the chain. Only a record that names a RUNNING tween
+				-- is downgraded: after `Cancel` the property sits at an interpolated value, so its `Value`
+				-- would be a lie the dedup believes (G-7 — a re-declared same-target tween skipped for good).
+				-- `true` = "set before, target unknown" — the next Tween always plays. A `true` / `{ Value }`
+				-- record (nothing running) stays: the property really holds that value. Before this, the
+				-- slot was reset to nil, which also fired on a handler switch (plain ↔ State, via None — the
+				-- (B) branch calls the old retractor with retracting == true) and made the next Tween snap.
+				local slot = tweenSlots:GetStrong(inst, k)
+				if type(slot) == "table" and slot.Tween ~= nil then
+					stopRunning(slot) -- Cancel (if still running) + Cancelled callback + Disconnect
+					-- code-review (2026-09-18): `.Tween` is still set after a tween COMPLETED on its own,
+					-- and then the property really holds `Value` — keep the `{ Value }` snap record so the
+					-- dedup stays right. The record's truth is read from the property itself, not from the
+					-- engine's PlaybackState (engine-agnostic, mock-safe); `Done` only gates the callback.
+					tweenSlots:SetStrong(inst, k, if inst[k] == slot.Value then { Value = slot.Value } else true)
+				end
+			end
+			tweenRetractors:SetWeak(inst, k, r)
+		end
+		return r
+	end
+
+	local tweenService: any = nil
+	local function getTweenService(): any
+		if tweenService == nil then
+			tweenService = game:GetService("TweenService")
+		end
+		return tweenService
+	end
+
+	-- `H-333` (Studio 2026-09-06): `TweenInfo.new` rejects an explicit nil in an
+	-- enum position ("third argument expects Enum.EasingDirection"), so the
+	-- convenience fields cannot be passed through as nil — the defaults are
+	-- spelled out here and equal `TweenInfo.new()`'s own (tween-plan "옵션 값
+	-- 모양" 절의 기본값 표 — 값의 소스는 여전히 엔진이고 여기는 그 사본).
+	local function buildInfo(v: any): any
+		if v.Info ~= nil then
+			return v.Info
+		end
+		return TweenInfo.new(
+			if v.Time ~= nil then v.Time else 1,
+			if v.Style ~= nil then v.Style else Enum.EasingStyle.Quad,
+			if v.Direction ~= nil then v.Direction else Enum.EasingDirection.Out,
+			if v.RepeatCount ~= nil then v.RepeatCount else 0,
+			if v.Reverses ~= nil then v.Reverses else false,
+			if v.DelayTime ~= nil then v.DelayTime else 0
+		)
+	end
+
+	-- className -> { [propName]: true } (inherited included — one Reflection
+	-- call per class, cached for the module's lifetime; `Reflection.luau`
+	-- memoizer, Q3 ④). `game` is read HERE (the getfenv shim seam, header).
+	local isPropertyOf = Reflection.memberSet(function(className: string): { any }
+		return game:GetService("ReflectionService"):GetPropertiesOfClass(className)
+	end, function(d: any): boolean
+		-- `H-302`(리뷰 발견, `H-297` (a)의 런타임판): 쓰기 표면만 매치 —
+		-- 읽기 전용(AbsoluteSize 등)은 `Permits.Write` 키 자체가 없다
+		-- (Studio 실측 2026-09-02). 걸러두지 않으면 대입이 h.process
+		-- 한가운데서 엔진 원시 에러를 내고 `H-103` NOOP 마커가 고착된다.
+		return d.Permits ~= nil and d.Permits.Write ~= nil
+	end)
+
+	dispatch.addHandler({
+		name = "Property",
+		keyType = "string", -- `H-484`: only string keys can match (isHandlable checks it too)
+		isHandlable = function(inst: any, k: any, _v: any): boolean
+			return type(k) == "string" and k ~= "Parent" and isPropertyOf(inst.ClassName, k)
+		end,
+		priority = dispatch.HANDLER_PRIORITY_NORMAL,
+		process = function(inst: any, k: any, v: any, _index: number): (any?, boolean) -> ()
+			-- [Q33 (a), 사용자 결정 2026-09-08 — round3 §11] NO nil skip: nil is a legitimate write
+			-- (object references — Adornee/Part0/NextSelection* — release only this way; the
+			-- engine itself raises on a property that cannot take nil, and that is the user's
+			-- error to see). The old skip-defense (M10, `H-352`) silently swallowed None here.
+			-- A nil takes the plain-value path below: it cancels an active tween and writes nil.
+			local prev = tweenSlots:GetStrong(inst, k)
+			local tweenIn = isTween(v)
+			if tweenIn and type(prev) == "table" and v.Dedup ~= false and prev.Value == v.Value then
+				-- Q25 (사용자 결정 2026-09-08): same target VALUE — the active tween keeps
+				-- running, no cancel + restart (`H-391`); a completed tween is not
+				-- re-triggered either. `Tween{ Dedup = false }` is the re-trigger switch.
+				return tweenRetractor(inst, k) -- still a tween chain: teardown must cancel/clear (Q53)
+			end
+			if prev == nil then
+				-- branch 1: first set — snap, no animation even for a Tween value.
+				-- Q26 (a) (2026-09-08, round3 §4): a Tween keeps `{ Value }` (no engine
+				-- tween) so the value dedup above already holds after the snap.
+				if tweenIn then
+					snap(inst, k, v)
+				else
+					inst[k] = v
+					tweenSlots:SetStrong(inst, k, true)
+				end
+				return tweenRetractor(inst, k) -- `H-547`: every chain, see the plain tail below
+			end
+			-- [2026-09-21] an Info-less `Time == 0` Tween with nothing else to play (no delay, no repeat, no
+			-- reverse) is a snap with callbacks — Animate's CanAnimate=false path hands one over, and a hand-written
+			-- one behaves the same (the only difference from the engine is that the write is synchronous;
+			-- CHANGELOG Changed). Any of those fields set keeps the engine path (code-review 2026-09-21).
+			local zeroTime = tweenIn and v.Info == nil and v.Time == 0
+				and (v.DelayTime == nil or v.DelayTime == 0)
+				and (v.RepeatCount == nil or v.RepeatCount == 0)
+				and v.Reverses ~= true
+			-- 6순회 `H-406` (`H-256` (a) read-then-write, second site): build the NEW
+			-- engine tween before touching the old one — `TweenService:Create` may
+			-- raise on engine-typed options (header), and cancelling first left a
+			-- slot naming a dead tween whose stale target a later `Finish` snapped
+			-- to. The slot is written before `Play` so a raise there leaves at most
+			-- an unplayed tween the slot knows about.
+			local engineTween = if tweenIn and not zeroTime then getTweenService():Create(inst, buildInfo(v), { [k] = v.Value }) else nil
+			if type(prev) == "table" and prev.Tween ~= nil then
+				-- branch 3: an engine tween is active — clean it up before the new value lands
+				-- (a snapped `{ Value }` record has nothing to cancel and nothing to
+				-- Finish-snap to: the property already holds that value)
+				stopRunning(prev) -- settle: Cancel (if still running) + previous Cancelled/Completed + Disconnect
+				if tweenIn and v.Override == "Finish" and not zeroTime then
+					-- (a zero-time snap writes `v.Value` right below — a Finish snap first would be a second
+					-- synchronous write of the same property, visible under Immediate signals; code-review)
+					inst[k] = prev.Value -- Finish: snap to the previous target before continuing
+				end
+			end
+			if zeroTime then
+				snap(inst, k, v)
+				return tweenRetractor(inst, k)
+			end
+			-- branches 2/3 tail: plain → write + `true`; Tween → slot, then play
+			if tweenIn then
+				local rec: any = { Tween = engineTween, Value = v.Value }
+				tweenSlots:SetStrong(inst, k, rec)
+				if v.Completed ~= nil or v.Cancelled ~= nil then
+					-- `Cb` and the connection share this gate (header: Cancelled alone still needs `Done`);
+					-- the closure captures `rec`/`conn` only — never `inst`
+					rec.Cb = v
+					local conn: any
+					conn = engineTween.Completed:Connect(function(state: any)
+						conn:Disconnect()
+						if rec.Conn == conn then
+							rec.Conn = nil
+						end
+						if state == Enum.PlaybackState.Completed and not rec.Done then
+							rec.Done = true
+							local cb = rec.Cb
+							rec.Cb = nil
+							-- round12 Q71 (user decision 2026-09-21, `H-594`): a Destroy runs no chain retractor, so the
+							-- engine tween finishes on the corpse and still sends this notice (REPORT 5·6). Not undone,
+							-- just IGNORED: `isClaimed` reads the gcconn Destroy cuts synchronously (even under
+							-- Deferred), and only a claimed Instance can carry a tween in the first place. The Instance
+							-- is read off the tween (the engine tween holds it anyway) — the closure still captures no
+							-- `inst`.
+							if cb ~= nil and quad.Backend.isClaimed(rec.Tween.Instance) then
+								fire(cb, "Completed")
+							end
+						end
+					end)
+					rec.Conn = conn
+				end
+				engineTween:Play()
+				fire(v, "Started")
+				return tweenRetractor(inst, k)
+			end
+			inst[k] = v
+			tweenSlots:SetStrong(inst, k, true)
+			-- round11 `H-547` (탐사 D′): EVERY chain returns the retractor, not only one that has carried
+			-- a Tween. Two reasons — (1) the checkpoint's `GetWeak(...) or Void` relied on the previous
+			-- chain's `list[index].retractor` keeping the closure alive, but Dispatch parks NOOP there
+			-- before calling `process`, so a GC step inside this function turned it into Void (the
+			-- Tween record then survived teardown: no Cancel, next re-drive animated); (2) a chain that
+			-- never carried a Tween wrote `true` with Void, so after teardown the next Tween skipped
+			-- branch 1 and animated instead of snapping (tween-plan "3-state store"). The retractor is
+			-- cached weakly and re-minted when collected — identity never matters.
+			return tweenRetractor(inst, k)
+		end,
+	} :: QuadTypes.Handler)
+end
+
+return install

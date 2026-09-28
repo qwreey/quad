@@ -1,0 +1,98 @@
+##### variant TEARDOWN_WINDOW_AS=Completed ARM_AT_STARTED=false
+=== 2a Q91 cascade UIPaddingOffset 10->101->102->103 ===
+  UIPaddingOffset: steps 3, Started 14, Completed 8, Cancelled 8, tweens created 16, rounds 2, orphans after each round [0,0], s=Tween(103, 1s) final=103/103/101/101 playing=[] orphans=0
+    after Set(500): playing=[UIPadding.PaddingBottom=500 UIPadding.PaddingLeft=500 UIPadding.PaddingRight=500 UIPadding.PaddingTop=500] orphans=0
+    after Set(nil): playing=[] orphans=0
+  UIPaddingOffset (reverse): steps 3, Started 14, Completed 8, Cancelled 8, tweens created 16, rounds 2, orphans after each round [0,0], s=Tween(103, 1s) final=103/101/101/101 playing=[] orphans=0
+    after Set(500): playing=[UIPadding.PaddingBottom=500 UIPadding.PaddingLeft=500 UIPadding.PaddingRight=500 UIPadding.PaddingTop=500] orphans=0
+    after Set(nil): playing=[] orphans=0
+=== 2b Q91 T5 one Source on two props (Size + BackgroundTransparency) ===
+  Size+BgT: steps 3, Started 7, Completed 6, Cancelled 2, tweens created 8, rounds 3, orphans after each round [0,0,0], s=Tween(103, 1s) final=103/103 playing=[] orphans=0
+    after Set(500): playing=[Frame.BackgroundTransparency=500 Frame.Size=500] orphans=0
+    after Set(nil): playing=[] orphans=0
+  Size+BgT (reverse): steps 3, Started 6, Completed 6, Cancelled 1, tweens created 7, rounds 3, orphans after each round [0,0,0], s=Tween(103, 1s) final=103/103 playing=[] orphans=0
+    after Set(500): playing=[Frame.BackgroundTransparency=500 Frame.Size=500] orphans=0
+    after Set(nil): playing=[] orphans=0
+=== 2c Q91 T6 single prop, window replacement, A.Completed chains C=77 ===
+  engine B               ok=true order=A:C,B:X,C:S s=Tween(77, 1s) Size=0 playing=[Frame.Size=77] orphans=0 | after late notices order=A:C,B:X,C:S
+    follow-up Set(500): playing=[Frame.Size=500] orphans=0
+  zero-time B            ok=true order=A:C,C:S s=Tween(77, 1s) Size=20 playing=[Frame.Size=77] orphans=0 | after late notices order=A:C,C:S
+    follow-up Set(500): playing=[Frame.Size=500] orphans=0
+  plain B                ok=true order=A:C,C:S s=Tween(77, 1s) Size=20 playing=[Frame.Size=77] orphans=0 | after late notices order=A:C,C:S
+    follow-up Set(500): playing=[Frame.Size=500] orphans=0
+  engine B Finish        ok=true order=A:C,B:X,C:S s=Tween(77, 1s) Size=10 playing=[Frame.Size=77] orphans=0 | after late notices order=A:C,B:X,C:S
+    follow-up Set(500): playing=[Frame.Size=500] orphans=0
+=== 3 H-589 same-State re-entry from inside a callback ===
+  R1 engine Started(B) sets C                  ok=true order=A:S,A:X,B:S,B:X,C:S s=Tween(77, 1s) Size=0 playing=[Frame.Size=77] orphans=0
+    follow-up Set(F=500) ok=true order=C:X,F:S playing=[Frame.Size=500] orphans=0
+  R2 old Cancelled(A) sets C (engine B)        ok=true order=A:S,A:X,B:X,C:S s=Tween(77, 1s) Size=0 playing=[Frame.Size=77] orphans=0
+    follow-up Set(F=500) ok=true order=C:X,F:S playing=[Frame.Size=500] orphans=0
+  R2z old Cancelled(A) sets C (zero-time B)    ok=true order=A:S,A:X,C:S s=Tween(77, 1s) Size=20 playing=[Frame.Size=77] orphans=0
+    follow-up Set(F=500) ok=true order=C:X,F:S playing=[Frame.Size=500] orphans=0
+  R2p old Cancelled(A) sets C (plain B)        ok=true order=A:S,A:X,C:S s=Tween(77, 1s) Size=20 playing=[Frame.Size=77] orphans=0
+    follow-up Set(F=500) ok=true order=C:X,F:S playing=[Frame.Size=500] orphans=0
+  R2c old Cancelled(A) sets C=zero-time        ok=true order=A:S,A:X,B:X,C:S,C:C s=Tween(77, 0s) Size=77 playing=[] orphans=0
+    follow-up Set(F=500) ok=true order=F:S playing=[Frame.Size=500] orphans=0
+  R3 snap Started(B) sets C (prev plain)       ok=true order=B:S,C:S s=Tween(77, 1s) Size=20 playing=[Frame.Size=77] orphans=0
+    follow-up Set(F=500) ok=true order=C:X,F:S playing=[Frame.Size=500] orphans=0
+  R3r snap Started(B) sets C (prev running A)  ok=true order=A:S,A:X,B:S,C:S s=Tween(77, 1s) Size=20 playing=[Frame.Size=77] orphans=0
+    follow-up Set(F=500) ok=true order=C:X,F:S playing=[Frame.Size=500] orphans=0
+  R4 snap Completed(B) sets C (prev plain)     ok=true order=B:S,B:C,C:S s=Tween(77, 1s) Size=20 playing=[Frame.Size=77] orphans=0
+    follow-up Set(F=500) ok=true order=C:X,F:S playing=[Frame.Size=500] orphans=0
+  R5 natural Completed(A) sets C               ok=true order=A:S,A:C,C:S s=Tween(77, 1s) Size=0 playing=[Frame.Size=77] orphans=0
+    follow-up Set(F=500) ok=true order=C:X,F:S playing=[Frame.Size=500] orphans=0
+=== 3b first-write snap Started sets C (prev nil) ===
+  first-write snap Started(B) sets C: order=B:S,B:C s=Tween(77, 1s) Size=20 playing=[] orphans=0
+    follow-up order=F:S playing=[Frame.Size=500] orphans=0
+=== 4 Q146 callbacks that throw (then: next value / teardown) ===
+  T1 new Started(B) throws (engine B)    ok=false err=.luau:250: S order=A:X,B:S Size=0 playing=[Frame.Size=20] orphans=0
+    next     ok=true order=B:X,N:S Size=0 playing=[Frame.Size=300] orphans=0
+    teardown ok=true order= Size=0 playing=[Frame.Size=20] orphans=0
+  T2 old Cancelled(A) throws             ok=false err=.luau:251: X order=A:X Size=0 playing=[Frame.Size=20] orphans=0
+    next     ok=true order=B:X,N:S Size=0 playing=[Frame.Size=300] orphans=0
+    teardown ok=true order= Size=0 playing=[Frame.Size=20] orphans=0
+  T3 old window Completed(A) throws      ok=false err=.luau:253: C order=A:C Size=0 playing=[Frame.Size=20] orphans=0
+    next     ok=true order=B:X,N:S Size=0 playing=[Frame.Size=300] orphans=0
+    teardown ok=true order= Size=0 playing=[Frame.Size=20] orphans=0
+  T4 zero-time snap Started(B) throws    ok=false err=.luau:256: S order=A:X,B:S Size=20 playing=[] orphans=0
+    next     ok=true order=N:S Size=20 playing=[Frame.Size=300] orphans=0
+    teardown ok=true order= Size=20 playing=[] orphans=0
+  T5 zero-time snap Completed(B) throws  ok=false err=.luau:258: C order=A:X,B:S,B:C Size=20 playing=[] orphans=0
+    next     ok=true order=N:S Size=20 playing=[Frame.Size=300] orphans=0
+    teardown ok=true order= Size=20 playing=[] orphans=0
+  T6 natural Completed(A) throws         ok=false err=.luau:259: C order=A:C Size=0 playing=[] orphans=0
+    next     ok=true order=N:S Size=0 playing=[Frame.Size=300] orphans=0
+    teardown ok=true order= Size=0 playing=[] orphans=0
+=== 4b Q146 teardown callbacks that throw (then: re-drive the same index) ===
+  teardown running A throws: ok=false err=.luau:268: X order=A:X playing=[] orphans=0
+    re-drive process(N) ok=true order=N:S Size=0 playing=[Frame.Size=300] orphans=0
+  teardown window A throws: ok=false err=.luau:268: C order=A:C playing=[] orphans=0
+    re-drive process(N) ok=true order=N:S Size=0 playing=[Frame.Size=300] orphans=0
+=== 5 order table (the transition only; late notices delivered) ===
+  first-write snap (Tween on fresh)        A:S,A:C
+  replace running A by engine B (+finish)  A:X,B:S,B:C
+  replace running A by zero-time B         A:X,B:S,B:C
+  replace running A by plain               A:X
+  replace window A by engine B             A:C,B:S
+  replace window A by zero-time B          A:C,B:S,B:C
+  replace window A by plain                A:C
+  replace snapped {Value} by engine B      B:S
+  natural finish A                         A:C
+  teardown running A                       A:X
+  teardown window A                        A:C
+  Set(None) window A (handler switch)      A:C
+=== 6 Q99 teardown window, A.Completed chains C=77 ===
+  retractFrom(Size)            ok=true order=A:C,C:S s=Tween(77, 1s) kids= playing=[Frame.Size=77] orphans=0
+    follow-up process(500): playing=[Frame.Size=500] orphans=0
+  s:Set(None)                  ok=true order=A:C,C:S,C:X s=Tween(77, 1s) kids= playing=[] orphans=0
+    follow-up process(500): playing=[Frame.Size=500] orphans=0
+  UIPaddingOffset s:Set(nil)   ok=true order=A:C,C:S,A:C,C:S,A:C,C:S,A:C,C:S,C:X,C:X,C:X s=Tween(77, 1s) kids= playing=[dead.UIPadding.PaddingLeft=77] orphans=1
+=== 4c Q146 after a throw, re-declare the old target (Tween Value=10) — does it play? ===
+  old Cancelled(A) throws on replace       throw=true redeclare ok=true new engine tweens=1 Size=0 playing=[Frame.Size=10] orphans=0
+  teardown Cancelled(A) throws, re-drive A2 throw=true redeclare ok=true new engine tweens=1 Size=0 playing=[Frame.Size=10] orphans=0
+=== 5b property value read inside A's Cancelled/Completed on replacement ===
+  running A -> engine B            X sees 0 (after: Size=0)
+  running A -> engine B Finish     X sees 10 (after: Size=10)
+  running A -> zero-time B         X sees 20 (after: Size=20)
+  running A -> plain 20            X sees 20 (after: Size=20)
+  window A -> plain 20             C sees 20 (after: Size=20)
