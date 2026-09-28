@@ -17,7 +17,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 ### Quad0216
 
-`setTimeout: delay must be a non-negative number (got {typeof(delay)})` — `quad-roblox/src/EngineOps.luau`
+`setTimeout: delay must be a non-negative number (got {if type(delay) == "number" then tostring(delay) else typeof(delay)})` — `quad-roblox/src/EngineOps.luau`
 
 - **언제**: `setTimeout(func, delay)`의 `delay`가 숫자가 아니거나, NaN이거나, 음수일 때.
 - **고치려면**: 0 이상의 숫자를 넘기세요.

@@ -1102,6 +1102,8 @@ function Throttle(opts: ThrottleOptions) return makeGate(false, opts) end
 
 ## 8. 라이프사이클 / GC 분석
 
+> **[2026-09-28 round13 Q100 (a) — 사용자 결정]** 아래 "유계" 분석은 `Time`/`MaxTime`이 **유한**하다는 전제다 — 이제 `math.huge`는 옵션 게이트(`Quad0041`)와 신호 시점 읽기(`Quad0039`)에서 거부된다(`1e308` 같은 유한한 거대값은 통과 — 사용자: 한계는 풀려 하지 않는다). 엔진 `setTimeout`(`Quad0216`)은 유한성을 검사하지 않는다.
+
 `base/lifecycle-pattern.md`의 "정리(`retract`)는 기본적으로 GC에 위임"
 원칙 위에서 확인한 것들:
 

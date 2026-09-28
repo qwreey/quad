@@ -37,7 +37,7 @@ have no ID yet — flagged inline; treat them as a source gap, not a doc error.
 | `Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)` | Circular parenting: `a:Add(b); b:Add(a)` | Keep the slot graph acyclic — this errors immediately, it does not recurse |
 | `Quad0038 Context:Get: no value for Provider(...)` | Reading a provider key the Context never `:Set` | `:Set` it at the root, or probe with `:Peek` |
 | `Quad0037 Context:Set: value for ... must not be nil` | `ctx:Set(provider, nil)` | Absence is "not set" — omit the key |
-| `Quad0041 Debounce: Time must be a non-negative number or a State<number> (got ...)` | Negative or wrong-typed `Time` in `q.Debounce`/`q.Throttle` (`Throttle:` for the throttle) | Pass a non-negative number of seconds or a `State<number>` |
+| `Quad0041 Debounce: Time must be a non-negative number less than math.huge, or a State<number> (got ...)` | Negative or wrong-typed `Time` in `q.Debounce`/`q.Throttle` (`Throttle:` for the throttle) | Pass a non-negative number of seconds or a `State<number>` |
 | `Quad0123 Operator.Sum: Apply target must be a State (got ...)` | Calling an operator factory on a plain value | Use `:Apply` on a State: `myState:Apply(q.Operator.Not)` |
 | `Quad0076 Dispatch: no handler matched key Parent (value: ...)` | `Parent = someInstance` as a prop | `Parent` is not a prop — set `.Parent` from outside after creation |
 | `Quad0023 Bookkeeping.recompute: sourceList[N] is nil - a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; …` | A `nil` hole in the array part of a props table | Use `q.None`: `props.Modifier or q.None` |

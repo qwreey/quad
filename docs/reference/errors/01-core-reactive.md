@@ -57,10 +57,10 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 ### Quad0039
 
-`{name}: {field} must be a non-negative number (got {typeof(v)})` — `quad-base/src/Debounce.luau`
+`{name}: {field} must be a non-negative number less than math.huge (got {if type(v) == "number" then tostring(v) else typeof(v)})` — `quad-base/src/Debounce.luau`
 
-- **언제**: `Time`(또는 `MaxTime`)에 바인딩한 `State`가 상류 신호 시점에 내놓은 값이 숫자가 아니거나 음수/NaN일 때. 생성 시점이 아니라 **신호가 들어오는 시점**에 읽어 검사합니다.
-- **고치려면**: 그 `State`가 항상 0 이상의 숫자를 내놓게 하세요.
+- **언제**: `Time`(또는 `MaxTime`)에 바인딩한 `State`가 상류 신호 시점에 내놓은 값이 숫자가 아니거나 음수/NaN/`math.huge`일 때. 받은 값이 숫자면 꼬리에 그 값(`got -1`·`got inf`)이, 아니면 타입이 실립니다. 생성 시점이 아니라 **신호가 들어오는 시점**에 읽어 검사합니다.
+- **고치려면**: 그 `State`가 항상 0 이상의 유한한 숫자를 내놓게 하세요.
 - **참고**: [`q.Debounce{...}`](../sugar/03-debounce-throttle.md#qdebounce)
 
 ### Quad0040
@@ -73,10 +73,10 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 ### Quad0041
 
-`{name}: {field} must be a non-negative number or a State<number> (got {typeof(t)})` — `quad-base/src/Debounce.luau`
+`{name}: {field} must be a non-negative number less than math.huge, or a State<number> (got {if type(t) == "number" then tostring(t) else typeof(t)})` — `quad-base/src/Debounce.luau`
 
-- **언제**: 옵션 생성 시점에 `Time`/`MaxTime`이 `State`도 숫자도 아니거나, 숫자인데 음수/NaN일 때.
-- **고치려면**: 0 이상의 숫자나 `State<number>`를 넘기세요.
+- **언제**: 옵션 생성 시점에 `Time`/`MaxTime`이 `State`도 숫자도 아니거나, 숫자인데 음수/NaN/`math.huge`일 때(무한 창은 `Flush` 없이는 영원히 보류하므로 거부합니다). 받은 값이 숫자면 꼬리에 그 값이 실립니다.
+- **고치려면**: 0 이상의 유한한 숫자나 `State<number>`를 넘기세요.
 - **참고**: [`q.Debounce{...}`](../sugar/03-debounce-throttle.md#qdebounce)
 
 ### Quad0042
@@ -374,3 +374,11 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 - **언제**: `q.Store(defaults)`의 값 자리가 `Source`가 아닐 때 — 생성자에서만 검사합니다(`store:Of(name)`은 없는 이름에 새 `Source`를 만들 뿐 이 검사를 거치지 않습니다).
 - **고치려면**: 값 자리를 `Source`로 채우세요.
 - **참고**: [`q.Store(defaults)`](../core/04-store.md#qstoredefaults)
+
+### Quad0255
+
+`Context: takes no arguments (got {n}) - create an empty Context and fill it with ctx:Set(provider, value)` — `quad-base/src/Context.luau`
+
+- **언제**: `q.Context(...)`에 인자를 하나라도 줬을 때 — 흔히 `Tag`·`Attr`·`Store`처럼 초기값 테이블을 넘기려는 `q.Context({ [P] = v })`. 전에는 인자를 조용히 버려 나중에 `:Get(P)`에서 [`Quad0038`](#quad0038)로 죽었습니다. `{n}`은 넘긴 인자 개수입니다(`nil` 하나도 1로 셉니다).
+- **고치려면**: `q.Context()`로 빈 가방을 만들고 `ctx:Set(provider, value)`로 채우세요.
+- **참고**: [`q.Context()`](../sugar/01-context.md#qcontext)

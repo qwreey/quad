@@ -106,9 +106,18 @@ Err.setFuncLevel(SURFACE, ContextImpl.Set, ContextImpl.Get, ContextImpl.Peek, Pr
 
 -- callable namespace (the `Tag`/`Attr` idiom — `setmetatable<A, B>` in the types)
 local ContextConstructor = setmetatable({ Provider = Provider }, {
-	__call = function(_self: any)
+	__call = function(_self: any, ...: any)
+		-- round13 Q102 (a) (user decision 2026-09-28): `Tag(...)`/`Attr{...}`/`Store{...}` take initial
+		-- values, so `q.Context({ [P] = v })` reads naturally - it dropped the table silently and failed
+		-- later at `:Get(P)` (Quad0038), far from the cause. The bag is mutable, so the answer is to
+		-- `:Set` from outside, not an initializer (user: an initial-table arm is hard to type).
+		local n = select("#", ...)
+		if n > 0 then
+			Err.errorBeforeNearest(`Quad0255 Context: takes no arguments (got {n}) - create an empty Context and fill it with ctx:Set(provider, value)`, SURFACE)
+		end
 		return Context()
 	end,
 })
+Err.setFuncLevel(SURFACE, getmetatable(ContextConstructor :: any).__call) -- Q102: the Tag/Attr `__call` idiom (blame the user's call line)
 
 return { Context = ContextConstructor }

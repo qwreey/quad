@@ -85,6 +85,8 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Fixed
 
+- `q.Debounce`/`q.Throttle`의 `Time`/`MaxTime`에 `math.huge`를 주면 통과해 게이트가 `Flush` 전까지(Throttle은 첫 통과 뒤 영원히) 값을 붙들던 것 — 이제 음수·NaN과 같이 거부합니다(`Quad0041`, State가 쥔 값은 신호 때 `Quad0039`). 두 에러와 `setTimeout`의 `Quad0216`은 받은 값이 숫자면 타입 대신 그 값(`got -1`·`got inf`)을 보여 줍니다.
+- `q.Context({ [P] = v })`처럼 초기값을 넘기면 조용히 버려 나중 `:Get(P)`에서 엉뚱한 에러로 죽던 것 — `q.Context`는 인자를 받지 않으며, 이제 호출 줄에서 `Quad0255`로 거부합니다(빈 가방을 만들어 `:Set`으로 채우세요).
 - `q.Animate{ … }`를 `State`가 아닌 곳(`mod:Apply`·`tag:Apply`·Modifier setter의 변환 함수 자리)에 붙이면 quad 내부 줄에서 VM 에러(`attempt to index nil with 'Get'` 등)로 죽던 것 — 이제 `Quad0252 Animate: Apply target must be a State …`로 거부합니다.
 - `q.Animate`의 `CanAnimate`에 불리언이 아닌 값(`"no"`·`0`·함수)을 주면 참으로 취급돼 조용히 늘 애니메이션하던 것 — 이제 `Quad0253`으로 거부합니다(`State`가 쥔 값은 실행 때 `Quad0254`, `nil`은 생략과 같음).
 - `q.Animate`의 콜백(`Started`/`Completed`/`Cancelled`)을 `State`로 주면 애니메이션할 때는 동작하고 `CanAnimate = false`일 때만 `Quad0246`으로 죽던 것 — 문서와 타입대로 콜백은 `State`를 받지 않으며, 이제 `Animate{ … }` 호출 줄에서 늘 `Quad0246`으로 거부합니다.

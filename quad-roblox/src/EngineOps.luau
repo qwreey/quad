@@ -146,7 +146,8 @@ local function install(quad: any)
 			Err.errorBefore(`Quad0215 setTimeout: func must be a function (got {typeof(func)})`, SURFACE)
 		end
 		if type(delay) ~= "number" or delay ~= delay or delay < 0 then
-			Err.errorBefore(`Quad0216 setTimeout: delay must be a non-negative number (got {typeof(delay)})`, SURFACE)
+			-- round13 Q90 ⑥ (2026-09-28): a number tail shows the value (-1, nan); inf still passes (Q100 a2 not taken)
+			Err.errorBefore(`Quad0216 setTimeout: delay must be a non-negative number (got {if type(delay) == "number" then tostring(delay) else typeof(delay)})`, SURFACE)
 		end
 		return { __quadTimeout = true :: true, _native = task.delay(delay, func) } -- ⚠️ order flipped vs the op
 	end

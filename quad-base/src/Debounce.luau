@@ -83,9 +83,12 @@ local WEAK_KEY_MT = { __mode = "k" }
 -- `MaxTime` is not read at all when `Trailing = false`, `H-542`).
 local function readTime(name: string, field: string, t: any): number
 	local v = if isState(t) then t:Get() else t
-	if type(v) ~= "number" or v ~= v or v < 0 then
+	-- round13 Q100 (a) (user decision 2026-09-28): `math.huge` is a number, not NaN and >= 0, so it
+	-- passed and the gate held its withheld value until `Flush` (Throttle: forever after the leading
+	-- pass). A number tail shows the value (Q90 ⑥ — `(got number)` said nothing for -1 or inf).
+	if type(v) ~= "number" or v ~= v or v < 0 or v == math.huge then
 		-- reached from emit depth (upstream signal) only — outermost
-		Err.errorBefore(`Quad0039 {name}: {field} must be a non-negative number (got {typeof(v)})`, SURFACE)
+		Err.errorBefore(`Quad0039 {name}: {field} must be a non-negative number less than math.huge (got {if type(v) == "number" then tostring(v) else typeof(v)})`, SURFACE)
 	end
 	return v
 end
@@ -100,8 +103,8 @@ local function checkTime(name: string, field: string, t: any, optional: boolean)
 	if isState(t) then
 		return
 	end
-	if type(t) ~= "number" or t ~= t or t < 0 then
-		Err.errorBeforeNearest(`Quad0041 {name}: {field} must be a non-negative number or a State<number> (got {typeof(t)})`, SURFACE)
+	if type(t) ~= "number" or t ~= t or t < 0 or t == math.huge then -- Q100 (a): finite only
+		Err.errorBeforeNearest(`Quad0041 {name}: {field} must be a non-negative number less than math.huge, or a State<number> (got {if type(t) == "number" then tostring(t) else typeof(t)})`, SURFACE)
 	end
 end
 

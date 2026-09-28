@@ -95,4 +95,21 @@ do
 end
 
 print()
+print("=== round13 Q102 (a) (user decision 2026-09-28) - Context() takes no arguments; an initial table used to be dropped silently ===")
+do
+	local P = Context.Provider()
+	local ok, err = pcall(function()
+		return (Context :: any)({ [P] = 1 })
+	end)
+	assert(not ok and string.find(tostring(err), "Quad0255 Context: takes no arguments (got 1)", 1, true) ~= nil, "initial table refused: " .. tostring(err))
+	mock.assertBlamesUser(err, SPEC_FILE, "Context(args) blames the user's call line")
+	local ok2, err2 = pcall(function()
+		return (Context :: any)(nil)
+	end)
+	assert(not ok2 and string.find(tostring(err2), "(got 1)", 1, true) ~= nil, "an explicit nil counts as an argument: " .. tostring(err2))
+	assert(Quad.isContext(Context()), "no-argument call unchanged")
+	print("PASS")
+end
+
+print()
 print("ALL PASS")

@@ -554,4 +554,27 @@ do
 end
 
 print()
+print("=== round13 Q100 (a) (user decision 2026-09-28) - Time/MaxTime = math.huge is refused (an infinite window only closes on Flush); a number tail shows the value ===")
+do
+	local src = q.Source(0)
+	local ok, err = pcall(function()
+		return src:Apply(q.Debounce({ Time = math.huge }))
+	end)
+	assert(not ok and string.find(tostring(err), "Quad0041 Debounce: Time must be a non-negative number less than math.huge, or a State<number> (got inf)", 1, true) ~= nil, "literal inf: " .. tostring(err))
+	mock.assertBlamesUser(err, SPEC_FILE, "literal inf blame")
+	local ok2, err2 = pcall(function()
+		return src:Apply(q.Debounce({ Time = 1, MaxTime = -1 }))
+	end)
+	assert(not ok2 and string.find(tostring(err2), "MaxTime must be a non-negative number less than math.huge, or a State<number> (got -1)", 1, true) ~= nil, "negative MaxTime shows the value: " .. tostring(err2))
+	local t = q.Source(math.huge)
+	local gated = src:Apply(q.Throttle({ Time = t }))
+	gated:Get()
+	local ok3, err3 = pcall(function()
+		src:Set(1)
+	end)
+	assert(not ok3 and string.find(tostring(err3), "Quad0039 Throttle: Time must be a non-negative number less than math.huge (got inf)", 1, true) ~= nil, "State-held inf read at signal time: " .. tostring(err3))
+	print("PASS")
+end
+
+print()
 print("ALL PASS")

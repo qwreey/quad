@@ -90,7 +90,7 @@ export type ThrottleOptions = {
 
 | 옵션 | 타입 | Debounce 기본값 | Throttle 기본값 | 설명 |
 |---|---|---|---|---|
-| `Time` | `number \| State<number>` | **필수** | **필수** | 창 길이(초). 음수·NaN 거부. `0`은 허용되지만 "즉시"가 아니라 백엔드 타이머의 다음 재개점(Roblox `task.delay(0)`은 다음 프레임 근방)으로 미뤄질 수 있습니다 — mock 백엔드에선 같은 `advanceTime(0)` 안에서 발화합니다 |
+| `Time` | `number \| State<number>` | **필수** | **필수** | 창 길이(초). 음수·NaN·`math.huge` 거부(무한 창은 `Flush`로만 닫혀 쓸모가 없습니다). `0`은 허용되지만 "즉시"가 아니라 백엔드 타이머의 다음 재개점(Roblox `task.delay(0)`은 다음 프레임 근방)으로 미뤄질 수 있습니다 — mock 백엔드에선 같은 `advanceTime(0)` 안에서 발화합니다 |
 | `Leading` | `boolean?` | `false` | `true` | 창이 열릴 때 첫 신호를 즉시 통과시킬지 |
 | `Trailing` | `boolean?` | `true` | `true` | 창이 닫힐 때 보류분을 통과시킬지 |
 | `MaxTime` | `(number \| State<number>)?` | `nil` | **없는 옵션** | 신호가 안 끊겨도, 보류가 시작된 뒤 최대 이만큼 안에 강제 통과. 강제 통과는 창을 다시 열지 않으므로 `MaxTime < Time`이면 통과 간격이 `Time`보다 짧아지고(`Time` 1·`MaxTime` 0.5·0.25초 간격 신호 → 0.5초마다), `MaxTime` 0이면 신호마다 다음 타이머 틱에 통과합니다([2026-09-27 mock 실측]). 걸린 캡은 원래 지연을 유지하고 다음 캡부터 새 `State` 값을 씁니다 |
@@ -111,7 +111,7 @@ export type ThrottleOptions = {
 ```
 Quad0045 Debounce: options must be a table (got nil)
 Quad0040 Debounce: Time is required (a number of seconds or a State<number>)
-Quad0041 Debounce: Time must be a non-negative number or a State<number> (got number)
+Quad0041 Debounce: Time must be a non-negative number less than math.huge, or a State<number> (got -1)
 Quad0042 Debounce: Leading must be a boolean (got number)
 Quad0047 Debounce: Handle must be a Ref (got table)
 Quad0048 Debounce: Leading and Trailing both false would pass nothing through
@@ -121,7 +121,7 @@ Quad0046 Throttle: MaxTime is Debounce-only (a throttle already passes every Tim
 `Time`/`MaxTime`에 State를 준 경우엔 값이 실제로 읽히는 **신호가 들어오는 시점**에 한 번 더 검사합니다(`:Set` 줄에서 던집니다 — 타이머 콜백 안에서는 읽지 않습니다. 던진 신호의 출처는 이미 보류 집합에 들어가 있어 버려지지 않고 다음 통과(다음 신호의 leading·창 끝·`Flush`)에 실려 나가며, 던진 자리가 상류 `:Set`의 전파 파동 안이라 같은 원천의 다른 구독자 중 뒤에 오는 것은 그 신호를 받지 못합니다 — [State](../core/03-state.md)의 "던진 콜백은 감싸지 않는다" 규칙 그대로). 이때의 메시지는 조금 다릅니다(그 자리엔 `State<number>` 갈래가 없으므로).
 
 ```
-Quad0039 Debounce: Time must be a non-negative number (got string)
+Quad0039 Debounce: Time must be a non-negative number less than math.huge (got string)
 ```
 
 `:Apply` 대상이 State가 아니면 그 `:Apply` 줄에서 막습니다.

@@ -30,7 +30,7 @@ Context: ContextConstructor
 
 `q.Context`는 **호출 가능한 네임스페이스**입니다 — `q.Context()`로 부르면 가방을 만들고, `q.Context.Provider`로 키를 만듭니다.
 
-**인자** 없음. **반환** — 빈 `Context`.
+**인자** 없음 — 인자를 주면(`q.Context({ [P] = v })`처럼 초기값을 넘기면) `Quad0255 Context: takes no arguments (got 1) - create an empty Context and fill it with ctx:Set(provider, value)`로 거부합니다. `Tag`·`Attr`·`Store`와 달리 초기값을 받지 않습니다 — 가방은 변경 가능하니 만든 뒤 `:Set`으로 채우세요. strict 타입은 이미 인자 수 불일치로 잡습니다. **반환** — 빈 `Context`.
 
 **동작** — 가방은 자기가 담은 Provider와 값을 **강하게** 붙듭니다(약한 변형은 없습니다). 열거 표면은 일부러 없습니다 — 가방은 하나의 진실이지, 서브트리마다 갈라 쓰는 물건이 아닙니다. `tostring`은 담긴 개수를 보여줍니다(`Context(2)`).
 
