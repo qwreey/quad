@@ -114,16 +114,17 @@ nativeFindChild (inst: any, key: any, className: string?) -> any
 | `local B = QuadTypes.Brand()` | 브랜드 하나(약한 키 집합 하나를 쥔 객체)를 만듭니다 |
 | `B:Register(x)` | `x`를 이 브랜드의 멤버로 등록합니다. 값을 만드는 팩토리가 부릅니다 |
 | `B:Is(x)` | `x`가 등록된 멤버인가. 순수 술어 — 던지지 않고 `nil`에도 거짓 |
-| `QuadTypes.BrandPredicates:Register(isX)` | 브랜드 **술어** `isX`를 등록합니다 — 이 자체가 `Brand()` 인스턴스 하나이고, 디스패치 진단이 믿는 `is*` 함수의 집합입니다(아래) |
+| `quad.BrandPredicates:Register(isX)` | 브랜드 **술어** `isX`를 등록합니다 — 설치 함수가 받은 모듈의 필드이고(`Brand()` 인스턴스 하나), 디스패치 진단이 믿는 `is*` 함수의 집합입니다(아래) |
 
 - 멤버 집합은 **약한 키**입니다 — 값이 GC되면 항목도 사라지고, 등록 해제 op는 없습니다. 역조회(어느 브랜드인가)도 없습니다.
-- 브랜드를 붙였으면 **모듈 표면에 `is<Brand>` 술어를 얹고, 그 술어를 `QuadTypes.BrandPredicates`에 등록**하세요(`q.isTween`이 그 예) — 디스패치가 매치 실패 진단과 props 검사에서 값의 브랜드 이름을 찾을 때 모듈의 `is*` 필드 중 등록된 함수만 봅니다(사용자가 붙인 `is*` 헬퍼를 브랜드 술어로 오인하지 않기 위해서입니다). 등록을 빠뜨려도 동작은 그대로이고, 그 브랜드의 값이 매치 실패 메시지에 브랜드 이름 없이 찍히고 `D.Frame(yourValue)`처럼 중괄호를 빠뜨린 호출을 못 막을 뿐입니다([술어 레퍼런스](../core/11-predicates.md)).
+- 브랜드를 붙였으면 **모듈 표면에 `is<Brand>` 술어를 얹고, 그 술어를 설치 때 받은 모듈의 `quad.BrandPredicates`에 등록**하세요(`q.isTween`이 그 예) — 디스패치가 매치 실패 진단과 props 검사에서 값의 브랜드 이름을 찾을 때 모듈의 `is*` 필드 중 등록된 함수만 봅니다(사용자가 붙인 `is*` 헬퍼를 브랜드 술어로 오인하지 않기 위해서입니다). 등록을 빠뜨려도 동작은 그대로이고, 그 브랜드의 값이 매치 실패 메시지에 브랜드 이름 없이 찍히고 `D.Frame(yourValue)`처럼 중괄호를 빠뜨린 호출을 못 막을 뿐입니다([술어 레퍼런스](../core/11-predicates.md)).
 
   ```luau
   local SpringBrand = QuadTypes.Brand()
   local function isSpring(x: any): boolean return SpringBrand:Is(x) end
-  QuadTypes.BrandPredicates:Register(isSpring) -- 한 번, 술어를 만든 자리에서
-  -- 설치 때: quad.isSpring = isSpring
+  -- 설치 함수 안에서(모듈 인스턴스를 받는 자리):
+  quad.isSpring = isSpring
+  quad.BrandPredicates:Register(isSpring)
   ```
 
 ---

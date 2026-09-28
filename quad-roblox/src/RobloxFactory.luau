@@ -35,6 +35,9 @@ local function RobloxFactory(module: any): any
 	-- FIRST: Property/InstanceShorthand read `quad.Tween`/`quad.isTween` off the module at their
 	-- own install (Animate gets Tween's validator/constructor passed in below) (Tween.luau sets both directly and returns the pair)
 	local tween = installTween(module)
+	-- round13 Q106 (user decision 2026-09-28): register the provider brand predicate in the module
+	-- instance's set — quad-base's diagnostic scan trusts only registered `is*` fields
+	module.BrandPredicates:Register(tween.isTween)
 	installLifetime(module)
 	installEngineOps(module)
 	-- backend-owned handlers (M5 단위 ③ — Property/InstanceChild; M10 —

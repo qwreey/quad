@@ -72,7 +72,7 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 -- brand predicate as a top-level module field named `is<Brand>` (`isTween`,
 -- a future `isSpring`) — no op on Dispatch (user: *"각 프로바이더/플러그인 상 그냥
 -- 필드로 넣는게 맞는 계약같아서"*). [2026-09-28 round13 Q106] and the predicate is
--- registered in `QuadTypes.BrandPredicates` — only registered `is*` fields count.
+-- registered in the module's `BrandPredicates` set — only registered `is*` fields count.
 -- `brandNameOf` scans the module for such fields and tries them BEFORE this
 -- list (a provider value may also carry a base brand, never the reverse).
 -- Order is most-specific-first (`H-220`): `isRef` is a superset of
@@ -159,9 +159,10 @@ local function Init(module: any)
 	-- props table and the `H-470` gate killed EVERY `D.<Class>{}`. The fix then was a probe
 	-- (`{}`/`0` must be false), which still let `isNonEmptyList`-style helpers through
 	-- (round13 `H-698`). round13 Q106 (user decision 2026-09-28): a brand predicate is now
-	-- one REGISTERED in `QuadTypes.BrandPredicates` (each package registers its own —
-	-- quad-base/quad-roblox `Brand.luau`); every other `is*` field is ignored, no probing.
-	local BrandPredicates = QuadTypes.BrandPredicates
+	-- one REGISTERED in the module instance's `BrandPredicates` (a provider registers its own at
+	-- install — quad-roblox `RobloxFactory.luau`); base brands come through `BRAND_PROBES` by name;
+	-- every other `is*` field is ignored, no probing.
+	local BrandPredicates = module.BrandPredicates
 	local function brandNameOf(v: any): string?
 		for name, predicate in module do
 			if type(name) == "string" and string.sub(name, 1, 2) == "is" and not BASE_PROBE[name] and type(predicate) == "function" and BrandPredicates:Is(predicate) then

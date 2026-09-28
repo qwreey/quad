@@ -139,17 +139,6 @@ local function isRef(x: any): boolean
 	return isPreRef(x) or isPostRef(x) or RefBrand:Is(x)
 end
 
--- round13 Q106 (user decision 2026-09-28): every base brand predicate joins the shared
--- `QuadTypes.BrandPredicates` set — Dispatch's diagnostic scan trusts only registered `is*` fields
--- (the base ones are also reached by name through `BRAND_PROBES`; registering them keeps the set
--- complete). `isPlainBranded` is a helper, not a brand predicate — not registered.
-for _, predicate in {
-	isEpoch, isSource, isState, isStore, isObserver, isEffect, isBlocker, isContext, isProvider,
-	isModifier, isRef, isPreRef, isPostRef, isTag, isAttr, isAttrKey, isSlot, isMapperDescriptor,
-} do
-	QuadTypes.BrandPredicates:Register(predicate)
-end
-
 return {
 	Brand = Brand,
 	MapperBrand = MapperBrand,

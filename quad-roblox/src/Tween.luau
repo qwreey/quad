@@ -18,7 +18,7 @@
 	the direct set is what the sibling installers and quad-base's diagnostic
 	brand probe see — `Dispatch/init.luau` scans the module for `is<Brand>`
 	fields (the provider-brand CONTRACT, round3 §4 Q27, 2026-09-08) that are registered in
-	`QuadTypes.BrandPredicates` (round13 Q106 — `Brand.luau` registers `isTween`).
+	the module's `BrandPredicates` (round13 Q106 — `RobloxFactory.luau` registers `isTween` at install).
 	The constructor is per module instance because raises go through the
 	module's shared error namespace (`H-231`).
 

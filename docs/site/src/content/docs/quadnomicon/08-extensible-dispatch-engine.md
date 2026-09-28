@@ -196,7 +196,7 @@ base가 소유하되 **최하위 밴드**에 등록됩니다.
    와서 아무 핸들러도 못 매치하면:
    `Quad0076 Dispatch: no handler matched key 1 (value: boolean) - check
    that the provider for this value (e.g. quad-roblox) is initialized`.
-   브랜드 조회는 매치 실패 진단과 **매 drive의 props 검사**(3.1.0부터)에서 돕니다 — 모듈의 `is<Brand>` 필드 중 `QuadTypes.BrandPredicates`에 등록된 것만
+   브랜드 조회는 매치 실패 진단과 **매 drive의 props 검사**(3.1.0부터)에서 돕니다 — 모듈의 `is<Brand>` 필드 중 모듈의 `BrandPredicates`에 등록된 것만
    훑으므로, 프로바이더는 `isTween` 같은 술어를 모듈에 얹고 그 집합에 등록합니다(등록되지 않은 `is*` 헬퍼는 무시).
    `MapperDescriptor`처럼 quad-base 자신의 브랜드는 이 힌트를 받지 않습니다(프로바이더가
    빠진 게 아니라 그 값 자체가 그 자리에 안 맞는 것이므로) — 같은 숫자 키에 그 값이

@@ -33,7 +33,7 @@ QuadRoblox` 직접 호출형 서술에서 교체됐지만 "런타임 인자 주�
   `quad-roblox`가 게시된 뒤 **소비자 환경엔 dev-dependency가 전파되지
   않아** 그 타입-전용 require가 못 찾고 그 자리에서 런타임 크래시난다.
 
-**해법**: `Quad`의 타입 계약만 담은, 런타임 로직이 없는(**[2026-08-31 `H-230`]** 공유 상수 테이블은 실림 — `HANDLER_PRIORITY_*`/`ERROR_LEVEL_SURFACE`; **[2026-09-07 사용자 결정]** 브랜드 팩토리 `Brand()`도 실림 — enum처럼 타이핑을 돕는 특수 런타임 객체, **[2026-09-28 round13 Q106]** 그리고 공유 브랜드 인스턴스 `BrandPredicates`(브랜드 술어 등록 집합 — `brand-plan.md` Q27 절 배너), 패키지마다 자기 브랜드를 만들 수 있게. `base/brand-plan.md`) 세 번째
+**해법**: `Quad`의 타입 계약만 담은, 런타임 로직이 없는(**[2026-08-31 `H-230`]** 공유 상수 테이블은 실림 — `HANDLER_PRIORITY_*`/`ERROR_LEVEL_SURFACE`; **[2026-09-07 사용자 결정]** 브랜드 팩토리 `Brand()`도 실림 — enum처럼 타이핑을 돕는 특수 런타임 객체, **[2026-09-28 round13 Q106]** (브랜드 술어 등록 집합 `BrandPredicates`는 여기가 아니라 **모듈 인스턴스**에 있다 — [2026-09-28 Q106] `brand-plan.md` Q27 절 배너; quad-types에는 그 타입 필드만), 패키지마다 자기 브랜드를 만들 수 있게. `base/brand-plan.md`) 세 번째
 워크스페이스 패키지 `quad-types`를 두고, `quad-roblox`는 이것만 **일반
 의존성**으로 둔다 — 항상 안전하게 실 의존성으로 넣을 수 있을 만큼
 작고, quad-base 전체를 안 끌고 온다.

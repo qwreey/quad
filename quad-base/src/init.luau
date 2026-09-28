@@ -70,6 +70,11 @@ local function New(): Quad
 		-- [2026-09-15 공개 표면 (30) 사용자 결정] 백엔드가 심는 계약 op(생명주기·엔진·태그/속성·시간)의
 		-- 네임스페이스 — 스텁은 각 Init이 채우고 프로바이더가 덮는다(멤버 이름은 옛 평평한 이름 그대로).
 		Backend = {} :: any,
+		-- [2026-09-28 round13 Q106 — 사용자 결정] 브랜드 술어 등록 집합 — 프로바이더가 설치 때 자기 `is<Brand>`
+		-- 술어를 등록하고 Dispatch의 진단 스캔(`brandNameOf`)은 등록된 `is*` 필드만 본다. 모듈 인스턴스가 원천
+		-- (quad-types 전역이면 사본마다 집합이 갈린다 — 사용자: "런타임 모듈 하나가 원천이다로 보면 깔끔하게 떨어져").
+		-- base 브랜드는 `BRAND_PROBES` 이름 목록으로 닿으므로 등록하지 않는다.
+		BrandPredicates = QuadTypes.Brand(),
 
 		-- M2 공통 기반 — 의존 없는 잎 모듈 재export(`ROADMAP.md` M2 `H-80`)
 		Relate = Relate,

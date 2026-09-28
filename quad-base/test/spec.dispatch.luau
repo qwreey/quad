@@ -116,13 +116,13 @@ do
 	assert(string.find(tostring(err2), "brand: Blocker", 1, true) ~= nil, `message names the brand: {tostring(err2)}`)
 	-- Q27 (2026-09-08): a PROVIDER brand is found by contract — the module-level `is<Brand>`
 	-- field (no Dispatch op); it is tried before the base list. round13 Q106 (2026-09-28): the
-	-- predicate must also be registered in `QuadTypes.BrandPredicates` (unregistered `is*` fields
+	-- predicate must also be registered in the module's `BrandPredicates` (unregistered `is*` fields
 	-- are ignored — a raising helper below is never even called)
 	local spring = setmetatable({}, {})
 	local function isSpring(v: any): boolean
 		return v == spring
 	end
-	QuadTypes.BrandPredicates:Register(isSpring)
+	q.BrandPredicates:Register(isSpring)
 	q.isSpring = isSpring
 	q.isBroken = function(_v: any): boolean -- a helper that raises must not mask the diagnostic
 		error("not a brand predicate")

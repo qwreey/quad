@@ -55,12 +55,17 @@ op(`Dispatch.addBrandProbe` 류 — **Dispatch** 쪽 op)는 두지 않는다(사
 Dispatch 에 오는게 맞는지 모르겠음"*). 하위 모듈이 base를 require하지 못하고 런타임 주입으로 받는
 구조라 `module.isX` 조회가 유일한 길이라는 점도 사용자 진단.
 **[2026-09-28 round13 Q106 — 사용자 제안·결정, 이름 `BrandPredicates`]** 필드 계약은 그대로 두고 **무엇이 브랜드
-술어인가**를 표시로 정한다 — quad-types가 공유 인스턴스 `BrandPredicates = Brand()`를 내보내고, 각 패키지가
-자기 술어를 `:Register`한다(quad-base `Brand.luau`의 base 열여덟, quad-roblox `isTween`). `brandNameOf`는
+술어인가**를 표시로 정한다 — **모듈 인스턴스**가 등록 집합 `q.BrandPredicates = Brand()`를 갖고(`New()`마다),
+프로바이더가 설치 때 자기 술어를 `quad.BrandPredicates:Register(isX)`한다(quad-roblox `RobloxFactory.luau`의 `isTween`).
+base 브랜드는 `BRAND_PROBES` 이름 목록으로 닿으므로 등록하지 않는다. `brandNameOf`는
 `is*` 필드 중 `BrandPredicates:Is(fn)`인 것만 스캔한다 — 옛 `{}`/`0` 시험 호출(`H-563`)은 삭제됐고, 그것이
 못 거르던 `isNonEmptyList`·필드를 보는 헬퍼(`H-698`)도 이제 무시된다. Q27이 기각한 것(Dispatch 등록 op —
 "필드가 계약", "하위 모듈은 런타임 주입")과 부딪히지 않는다: 필드는 계약 그대로이고 표시는 모든 패키지가
-이미 의존하는 quad-types의 `Brand`로 한다. 이름은 sonnet 외부자·내부자 명명 판정 뒤 사용자 결정 — `<X>Brand`
+모듈 인스턴스(프로바이더가 설치 때 받는 바로 그것)에 둔다. **[같은 날 code-review 뒤 사용자 결정]** 처음엔
+quad-types 전역(`QuadTypes.BrandPredicates`)에 두고 base 열여덟도 등록했으나 — quad-types는 구조적으로 사본이 여럿일
+수 있어(서브모듈 등) 원천이 하나가 아니게 된다(사용자: *"런타임 모듈 하나가 원천이다로 보면 깔끔하게 떨어져"*,
+에러 네임스페이스를 모듈로 건넨 `H-231`과 같은 결), base 등록은 Dispatch가 읽지 않는 넷째 목록이었다 → 모듈 인스턴스로
+옮기고 base 등록을 뺐다. 이름은 sonnet 외부자·내부자 명명 판정 뒤 사용자 결정 — `<X>Brand`
 ("X 값의 집합") 꼴의 `PredicateBrand`는 "Predicate라는 값의 브랜드"로 읽혀 모호했다.
 
 **`Brand()`가 브랜드 객체 하나를 만든다.** 그 객체가 weak-key 집합 하나를
