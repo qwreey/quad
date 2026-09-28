@@ -155,7 +155,7 @@ local function Init(module: any)
 		end
 
 		-- the commit: the backend's holder + evidence (contracts 1 and 2). Its own gate
-		-- ("owner must be an Instance claimed by quad" / "not a mock instance") throws here, before
+		-- ("this Instance is not claimed by quad" / "not a mock instance") throws here, before
 		-- anything is written — the same "nothing left behind" promise as the gates above.
 		-- Order (code-review 2026-09-18): the VALUE gates above run before the INSTANCE gate in
 		-- here — a value already bound elsewhere handed to an unclaimed Instance reports "already

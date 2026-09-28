@@ -102,7 +102,7 @@ local function Context(): any
 	return self
 end
 
-Err.setFuncLevel(SURFACE, ContextImpl.Set, ContextImpl.Get, ContextImpl.Peek, Provider) -- `H-231`; `Context` itself is a local direct call inside `__call` (quad-error usage rule: tag only table-field calls) and has no gate
+Err.setFuncLevel(SURFACE, ContextImpl.Set, ContextImpl.Get, ContextImpl.Peek, Provider) -- `H-231`; the local `Context()` builder is a direct call inside `__call` (quad-error usage rule: tag only table-field calls) — the gate (`Quad0255`, round13 Q102) and the SURFACE tag sit on `__call` itself, below
 
 -- callable namespace (the `Tag`/`Attr` idiom — `setmetatable<A, B>` in the types)
 local ContextConstructor = setmetatable({ Provider = Provider }, {
@@ -113,7 +113,7 @@ local ContextConstructor = setmetatable({ Provider = Provider }, {
 		-- `:Set` from outside, not an initializer (user: an initial-table arm is hard to type).
 		local n = select("#", ...)
 		if n > 0 then
-			Err.errorBeforeNearest(`Quad0255 Context: takes no arguments (got {n}) - create an empty Context and fill it with ctx:Set(provider, value)`, SURFACE)
+			Err.errorBeforeNearest(`Quad0255 Context: takes no arguments (got {n} argument{if n == 1 then "" else "s"}) - create an empty Context and fill it with ctx:Set(provider, value)`, SURFACE)
 		end
 		return Context()
 	end,

@@ -97,7 +97,9 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 ### Quad0226
 
-`bindLifetime: owner must be an Instance claimed by quad (got {typeof(inst)}) - it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)` — `quad-roblox/src/LifetimeHandle.luau`
+`bindLifetime: this Instance is not claimed by quad - it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)` — `quad-roblox/src/LifetimeHandle.luau`
+
+`inst`가 Instance가 아니면(평범한 테이블·문자열 키) 이유 절이 `owner must be an Instance claimed by quad (got {typeof(inst)})`로 바뀝니다.
 
 - **언제**: `q.Backend.bindLifetime(inst, value)`의 `inst`가 이 백엔드의 quad 소유 요소가 아닐 때(quad 밖에서 만들어졌거나, 이미 파괴됐을 때). 직접 부르지 않아도 닿습니다 — `q.Dispatch.process`로 quad가 만들지도 `Claim`하지도 않은 Instance의 자리에 `Effect`처럼 수명에 묶이는 값을 놓거나, `q.Backend.holdLifetime`을 그런 Instance에 직접 부르면 같은 메시지가 납니다(메시지는 부르지 않은 `bindLifetime`을 말합니다, [2026-09-27 실측]).
 - **고치려면**: quad가 만들었거나 `Claim`으로 넘겨받은, 아직 살아 있는 Instance에만 값을 놓거나 묶으세요 — 밖에서 만든 Instance는 먼저 `q.Claim`으로 넘겨받으세요.

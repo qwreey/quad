@@ -132,7 +132,12 @@ local function install(quad: any)
 			-- them apart — tried and retracted earlier); one message names both.
 			-- NOT `isClaimed`'s cut-gcconn test (`H-548` note above): a corpse re-claimed pre-GC would
 			-- get a fresh gcconn that never fires and read as alive forever.
-			Err.errorBefore(`Quad0226 bindLifetime: owner must be an Instance claimed by quad (got {typeof(inst)}) - it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)`, SURFACE)
+			-- round13 Q90 ⑳ + code-review (2026-09-28): an Instance gets the "not claimed" reason (a `(got Instance)`
+			-- tail would read as self-contradicting); a non-Instance owner key gets the type tail
+			local detail = if typeof(inst) == "Instance"
+				then "this Instance is not claimed by quad - it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)"
+				else "owner must be an Instance claimed by quad (got " .. typeof(inst) .. ")"
+			Err.errorBefore(`Quad0226 bindLifetime: {detail}`, SURFACE)
 		end
 		gchold[value] = true -- strong ref: value lives at least as long as inst (contract 1)
 		-- the value carries its own liveness evidence (contract 2); both weak —

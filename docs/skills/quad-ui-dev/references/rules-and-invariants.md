@@ -19,7 +19,7 @@ have no ID yet — flagged inline; treat them as a source gap, not a doc error.
 | `Quad0134 Ref: Wait() must be called from a yieldable coroutine` | `ref:Wait()` on a non-yieldable thread | Call it inside `task.spawn`, or pass a thread to register a waiter without yielding |
 | `Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) - not filled yet, or never placed` | `:Unwrap()` before the Ref was filled, or the Ref was never put in an array part | Place the `PreRef` in the children array; unwrap only after the instance exists |
 | `Quad0029 Claim: <instance> is already claimed by quad - a Declaration-made or already-Claimed Instance cannot be claimed again (…)` | `q.Claim` on the same Instance twice, or on something `D.*` produced | Claim only unmanaged instances |
-| `Quad0226 bindLifetime: owner must be an Instance claimed by quad` | A foreign Instance (never created by `D.*` nor claimed), or an already-destroyed one | `q.Claim(inst, descriptor)` first; never reuse a destroyed Instance |
+| `Quad0226 bindLifetime: this Instance is not claimed by quad` | A foreign Instance (never created by `D.*` nor claimed), or an already-destroyed one | `q.Claim(inst, descriptor)` first; never reuse a destroyed Instance |
 | `Quad0034 Claim: second argument must be a D.Mapper descriptor` | `q.Claim(inst)` with one argument | `q.Claim(inst, D.Mapper.<Class>(D.Mapper.Root)({ ... }))` |
 | `Quad0068 Modifier: a Modifier cannot be a value of key "..." - place it in the array part` | `{ Modifier = myMod }` as a hash key | Put it in the array part: `{ myMod }` |
 | `Quad0182 Source: cannot hold a Modifier as a Source value` | `q.Source(someModifier)` | Keep Modifiers out of reactive values |

@@ -615,7 +615,7 @@ local function installTimers(quad: any)
 			Err.errorBefore(`setTimeout: func must be a function (got {typeof(fn)})`, SURFACE)
 		end
 		if type(delay) ~= "number" or delay ~= delay or delay < 0 then
-			Err.errorBefore(`setTimeout: delay must be a non-negative number (got {typeof(delay)})`, SURFACE)
+			Err.errorBefore(`setTimeout: delay must be a non-negative number (got {if type(delay) == "number" then tostring(delay) else typeof(delay)})`, SURFACE)
 		end
 		timerSeq += 1
 		local t: Timer = { at = clock + delay, seq = timerSeq, fn = fn, live = true }
@@ -625,7 +625,7 @@ local function installTimers(quad: any)
 	end
 	local function clearTimeout(timeout: any)
 		if type(timeout) ~= "table" or timeout.__quadTimeout ~= true then
-			Err.errorBefore(`clearTimeout: expected a Timeout from setTimeout (got {typeof(timeout)})`, SURFACE)
+			Err.errorBefore(`clearTimeout: timeout must be a Timeout from setTimeout (got {typeof(timeout)})`, SURFACE)
 		end
 		local t = timeout._native
 		if t.live then
@@ -713,7 +713,7 @@ local function mockProvider(quad: any): { [any]: any }
 		-- 그 근거("mock 인스턴스는 quad 밖에서 만들어지므로")는 Q64가 `Instance.new`를 태어날 때 claim으로
 		-- 바꾼 뒤 사라졸 것이었다. gchold/gcconn 셋업만 첫 hold에 lazy로 남긴다(이미 claim된 인스턴스에 한해).
 		if not getData(inst).claimed then
-			Err.errorBefore("bindLifetime: Instance is not claimed by quad - it was not created or claimed through quad (mock: Instance.foreign needs nativeClaim/Claim first)", SURFACE)
+			Err.errorBefore("bindLifetime: this Instance is not claimed by quad - it was not created or claimed through quad (mock: Instance.foreign needs nativeClaim/Claim first)", SURFACE)
 		end
 		claim(inst)
 

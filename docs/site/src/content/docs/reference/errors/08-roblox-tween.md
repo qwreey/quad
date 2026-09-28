@@ -97,7 +97,7 @@ description: "Tween/Animate가 던지는 에러"
 
 `Animate: Apply target must be a State (got {…}) - put the Animate on the State that feeds the field: state:Apply(q.Animate{ ... })` — `quad-roblox/src/Animate.luau`
 
-- **언제**: `q.Animate{ … }`가 돌려준 팩토리를 `State`가 아닌 것에 붙였을 때 — `mod:Apply(q.Animate{…})`·`tag:Apply(q.Animate{…})`·Modifier setter의 변환 함수 자리(`mod:BackgroundTransparency(q.Animate{…})`). 괄호 안은 `Modifier`·`Tag`나 받은 값의 타입입니다.
+- **언제**: `q.Animate{ … }`가 돌려준 팩토리를 `State`가 아닌 것에 붙였을 때 — `mod:Apply(q.Animate{…})`·`tag:Apply(q.Animate{…})`·Modifier setter의 변환 함수 자리(`mod:BackgroundTransparency(q.Animate{…})` — 그 필드가 비었거나 평범한 값일 때; 필드가 이미 State면 거부되지 않고 State 안의 State가 되는 정의되지 않은 동작). 괄호 안은 `Modifier`·`Tag`나 받은 값(setter 자리면 필드의 옛 값)의 타입입니다.
 - **고치려면**: 그 필드에 흘리는 `State` 쪽에 붙이세요 — `mod:BackgroundTransparency(alpha:Apply(q.Animate{ Time = 0.2 }))`. setter 변환 함수 자리에서 난 경우 blame 줄은 여러분의 줄이 아니라 `Animate.luau`를 가리킬 수 있습니다(그 자리는 태그 없는 클로저를 거칩니다) — 스택 트레이스에서 여러분의 setter 호출을 찾으세요.
 - **참고**: [`q.Animate(info)`](/reference/roblox/06-tween-animate/#qanimateinfo)
 

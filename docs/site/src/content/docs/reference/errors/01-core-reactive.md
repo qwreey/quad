@@ -375,7 +375,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 ### Quad0255
 
-`Context: takes no arguments (got {n}) - create an empty Context and fill it with ctx:Set(provider, value)` — `quad-base/src/Context.luau`
+`Context: takes no arguments (got {n} argument{if n == 1 then "" else "s"}) - create an empty Context and fill it with ctx:Set(provider, value)` — `quad-base/src/Context.luau`
 
 - **언제**: `q.Context(...)`에 인자를 하나라도 줬을 때 — 흔히 `Tag`·`Attr`·`Store`처럼 초기값 테이블을 넘기려는 `q.Context({ [P] = v })`. 전에는 인자를 조용히 버려 나중에 `:Get(P)`에서 [`Quad0038`](#quad0038)로 죽었습니다. `{n}`은 넘긴 인자 개수입니다(`nil` 하나도 1로 셉니다).
 - **고치려면**: `q.Context()`로 빈 가방을 만들고 `ctx:Set(provider, value)`로 채우세요.

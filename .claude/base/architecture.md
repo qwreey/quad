@@ -456,7 +456,7 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
     `quad.Dispatch.setOffsetSource` 셋을 고쳤다), 생성자·불변식은 타입 이름만(`Tween:`·`State:`).
     주어는 이름만이고 인자 값은 이유 쪽에 싣는다(옛 `OnChange("Text"): …` → `OnChange: callback
     for "Text" …`).
-  - **이유**는 영어 한 절, `must be …`/`cannot …` 현재형. 부연은 ` - `(공백-하이픈-공백) 뒤에 — **[2026-09-28 round13 사용자 결정]** 원래 ` — `(em-dash)였으나 메시지는 ASCII만 쓴다(참고 Luau 라이브러리 다섯의 에러 101건이 전부 ASCII, 출력창·외부 로그에서 깨질 여지를 없앰 — `session/2026-09-28-01-round13-batch-reply.md`). 콜론은 주어 구분자, `--`는 주석 기호, 괄호는 `(got X)` 전용이라 쓰지 않는다. 기호(`⊂` 등)도 말로 푼다.
+  - **이유**는 영어 한 절, `must be …`/`cannot …` 현재형. 부연은 ` - `(공백-하이픈-공백) 뒤에 — **[2026-09-28 round13 사용자 결정]** 원래 ` — `(em-dash)였으나 메시지는 ASCII만 쓴다(참고 Luau 라이브러리 다섯의 에러 101건이 전부 ASCII, 출력창·외부 로그에서 깨질 여지를 없앰 — `session/2026-09-28-01-round13-batch-reply.md`). 부연 **구분자**로는 콜론(주어 구분자)·`--`(주석 기호)·괄호를 쓰지 않는다 — 괄호는 `(got X)` 꼬리와 짧은 삽입구(`(a State that eventually holds itself)` 류)에 쓴다. 기호(`⊂` 등)도 말로 푼다.
   - **받은 값**은 문장 끝 `(got {typeof(x)})` — 괄호형만 쓴다(쉼표형 `, got X`·`but got X`
     폐기: Bookkeeping `position` 게이트, Effect/Observer/Ref 배열 자리 가드가 그 잔재였다 — 뒤의
     셋은 정규화하면서 키 타입을 이유 안에 실었다: `must be an array item, not the value of a
