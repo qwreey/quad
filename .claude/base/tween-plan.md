@@ -249,6 +249,12 @@ State<T | Tween<T>>`가 나옴~~ **[2026-09-06 정정]** 실물은 위 배너대
 "too complex"고, 제네릭 factory는 `:Apply`의 인자 자리에 못 들어간다(실측 넷은
 `types.luau` 주석·원장). `CanAnimate = false`의 plain 반환은 그대로다.
 
+**[2026-09-28 round13 Q104·Q115·Q116 (a) — 사용자 결정] 게이트 셋.** (1) factory는 대상이 State가 아니면
+`Quad0252`로 거부한다(`mod:Apply`·`tag:Apply`·setter 변환 팔에서 quad 내부 VM 에러로 죽던 것 — setter 팔
+blame은 `H-250` 제약으로 `Animate.luau`). (2) 아래 "각 필드가 `T | State<T>`"의 **예외** — 콜백 셋
+(`Started`/`Completed`/`Cancelled`)은 State를 받지 않는다(타입·roblox/06대로; 리터럴 검증에서 `Quad0246`).
+(3) `CanAnimate`는 리터럴이면 boolean(`Quad0253`), State면 푼 값이 boolean/nil(`Quad0254`, 실행 때).
+
 **[2026-09-07 회신 3차 — 사용자 확정 셋]** (Q8 (a)) `Animate`의 Compute는 `nil`/`None`을 **그대로 통과**시킨다 —
 Property 핸들러가 nil을 써서 해제한다(**[2026-09-08 Q33]** 옛 skip-defense는 역전 — 아래 `dispatch-core-plan.md` 캐비엇 참조; 옛 코드는 `Tween{ Value = None }`으로 엔진에
 닿았다, `H-379`). (Q12) **`Dedup` 옵션**(`boolean | State<boolean>`, 기본 `true`): 목표 값과 옵션 전부가 이전

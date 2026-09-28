@@ -51,7 +51,7 @@ description: "Tween/Animate가 던지는 에러"
 
 `Tween: {name} must be a function (got {typeof(v)})` — `quad-roblox/src/Tween.luau`
 
-- **언제**: `Started`/`Completed`/`Cancelled` 중 하나가 함수가 아닌 값으로 주어졌을 때. `{name}`은 실제 필드 이름입니다.
+- **언제**: `Started`/`Completed`/`Cancelled` 중 하나가 함수가 아닌 값으로 주어졌을 때. `{name}`은 실제 필드 이름입니다. `q.Animate{ … }`의 콜백 옵션에 `State`를 넣어도 이 에러입니다(콜백은 State 불가 — `Animate` 호출 줄에서 납니다).
 - **고치려면**: 인자 없는 함수를 넘기세요.
 - **참고**: [`q.Tween(opts)`](../roblox/06-tween-animate.md#qtweenopts)
 
@@ -94,3 +94,27 @@ description: "Tween/Animate가 던지는 에러"
 - **언제**: `opts.Value`로 `q.None`이나 다른 `Tween`을 넘겼을 때 — 이 역시 "모든 필드는 평범한 값" 불변식 위반입니다.
 - **고치려면**: 프로퍼티를 풀고 싶으면 `Tween`으로 감싸지 말고 `None` 자체를 그 자리에 방출하세요.
 - **참고**: [`q.Tween(opts)`](../roblox/06-tween-animate.md#qtweenopts)
+
+### Quad0252
+
+`Animate: Apply target must be a State (got {…}) - put the Animate on the State that feeds the field: state:Apply(q.Animate{ ... })` — `quad-roblox/src/Animate.luau`
+
+- **언제**: `q.Animate{ … }`가 돌려준 팩토리를 `State`가 아닌 것에 붙였을 때 — `mod:Apply(q.Animate{…})`·`tag:Apply(q.Animate{…})`·Modifier setter의 변환 함수 자리(`mod:BackgroundTransparency(q.Animate{…})`). 괄호 안은 `Modifier`·`Tag`나 받은 값의 타입입니다.
+- **고치려면**: 그 필드에 흘리는 `State` 쪽에 붙이세요 — `mod:BackgroundTransparency(alpha:Apply(q.Animate{ Time = 0.2 }))`. setter 변환 함수 자리에서 난 경우 blame 줄은 여러분의 줄이 아니라 `Animate.luau`를 가리킬 수 있습니다(그 자리는 태그 없는 클로저를 거칩니다) — 스택 트레이스에서 여러분의 setter 호출을 찾으세요.
+- **참고**: [`q.Animate(info)`](../roblox/06-tween-animate.md#qanimateinfo)
+
+### Quad0253
+
+`Animate: CanAnimate must be a boolean or a State<boolean> (got {typeof(v)})` — `quad-roblox/src/Animate.luau`
+
+- **언제**: `CanAnimate`에 불리언도 `State`도 아닌 값(`"no"`·`0`·함수·`q.None` 등)을 줬을 때 — `Animate(info)` 호출 줄에서 납니다. `State`로 준 경우는 [`Quad0254`](#quad0254). `nil`은 생략과 같아 항상 애니메이션합니다.
+- **고치려면**: `true`/`false`나 `State<boolean>`을 넘기세요. 함수로 조건을 계산하려면 `reduceMotion:Compute(function(s) return not s:Get() end)`처럼 State로 만드세요.
+- **참고**: [`q.Animate(info)`](../roblox/06-tween-animate.md#qanimateinfo)
+
+### Quad0254
+
+`Animate: CanAnimate State must hold a boolean or nil (got {typeof(v)})` — `quad-roblox/src/Animate.luau`
+
+- **언제**: `CanAnimate`로 준 `State`가 불리언도 `nil`도 아닌 값을 쥔 채 `Animate`가 실행될 때 — 애니메이션되는 값을 `Set`하거나 마운트하는 줄에서 납니다. 옵션 State만 바뀌면 재실행하지 않으므로, 나쁜 값은 다음 값 변경 때 드러납니다.
+- **고치려면**: 그 State가 `true`/`false`(또는 `nil` — 생략과 같음)만 쥐게 하세요.
+- **참고**: [`q.Animate(info)`](../roblox/06-tween-animate.md#qanimateinfo)

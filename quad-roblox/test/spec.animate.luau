@@ -160,4 +160,54 @@ do
 	print("PASS")
 end
 
+print()
+print("=== round13 Q104·Q115·Q116 (a) (user decision 2026-09-28) — Animate gates: non-State target, State callbacks, non-boolean CanAnimate ===")
+do
+	-- Q104: a State-only factory; on a Modifier / Tag it used to die inside quad (VM error)
+	local okM, errM = pcall(function()
+		return q.Modifier():Apply(Animate({ Time = 0.2 }))
+	end)
+	assert(not okM and string.find(tostring(errM), "Quad0252 Animate: Apply target must be a State (got Modifier)", 1, true) ~= nil, "Modifier target: " .. tostring(errM))
+	mock.assertBlamesUser(errM, "spec.animate.luau", "Modifier:Apply(Animate) blames the user's :Apply line")
+	local okT, errT = pcall(function()
+		return q.Tag("a"):Apply(Animate({ Time = 0.2 }))
+	end)
+	assert(not okT and string.find(tostring(errT), "(got Tag)", 1, true) ~= nil, "Tag target: " .. tostring(errT))
+	-- a State target is unchanged
+	assert(q.isState(q.Source(1):Apply(Animate({ Time = 0.2 }))), "State target still works")
+
+	-- Q115: a State callback is refused on the user's Animate{} line, whatever CanAnimate says
+	for _, canAnimate in { true, false } do
+		local ok, err = pcall(function()
+			return Animate({ Time = 0.2, CanAnimate = canAnimate, Started = q.Source(function() end) })
+		end)
+		assert(not ok and string.find(tostring(err), "Quad0246 Tween: Started must be a function (got table)", 1, true) ~= nil, "State callback refused (CanAnimate=" .. tostring(canAnimate) .. "): " .. tostring(err))
+		mock.assertBlamesUser(err, "spec.animate.luau", "State callback blame")
+	end
+
+	-- Q116: CanAnimate must be a boolean or a State; a State must hold a boolean or nil
+	local bads: { any } = { "no", 0, function(): boolean return false end }
+	for _, bad in bads do
+		local ok, err = pcall(function()
+			return Animate({ Time = 0.2, CanAnimate = bad })
+		end)
+		assert(not ok and string.find(tostring(err), "Quad0253 Animate: CanAnimate must be a boolean or a State<boolean> (got " .. typeof(bad) .. ")", 1, true) ~= nil, "literal CanAnimate: " .. tostring(err))
+		mock.assertBlamesUser(err, "spec.animate.luau", "literal CanAnimate blame")
+	end
+	local flag = q.Source("yes")
+	local src = q.Source(1)
+	local anim = src:Apply(Animate({ Time = 0.2, CanAnimate = flag }))
+	local okS, errS = pcall(function()
+		return anim:Get()
+	end)
+	assert(not okS and string.find(tostring(errS), "Quad0254 Animate: CanAnimate State must hold a boolean or nil (got string)", 1, true) ~= nil, "State CanAnimate: " .. tostring(errS))
+	flag:Set(nil)
+	src:Set(2)
+	assert(q.isTween(anim:Get()), "a State holding nil = omitted = animate")
+	flag:Set(false)
+	src:Set(3)
+	assert(anim:Get() == 3, "a State holding false = plain value")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

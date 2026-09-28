@@ -41,6 +41,7 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 -- any value transform, e.g. the shorthand handler's `Mapped`).
 -- [2026-09-21] the three callbacks ride along too (functions pass `resolve` untouched — not States).
 local FIELDS = { "Info", "Time", "Style", "Direction", "RepeatCount", "Reverses", "DelayTime", "Override", "Dedup", "Started", "Completed", "Cancelled" }
+local CALLBACK_FIELDS: { [string]: boolean } = { Started = true, Completed = true, Cancelled = true } -- round13 Q115 (a)
 
 local function install(quad: any, validateFields: (any, any?) -> (), tweenOutermost: (any) -> any): any
 	local isState = quad.isState
@@ -78,15 +79,34 @@ local function install(quad: any, validateFields: (any, any?) -> (), tweenOuterm
 		-- `H-464`: validate the LITERAL options here, while the user's line is still on the
 		-- stack — the Tween is built lazily inside Compute, where a raise blamed `Animate.luau`.
 		-- State-valued options are resolved per run and validated by `Tween(opts)` then.
+		-- round13 Q115 (a) (user decision 2026-09-28): the three callbacks never take a State (types and
+		-- roblox/06 say so) — keep them in the literal set so a State fails `Quad0246` here, on the user's
+		-- line. Before, the animating path `resolve`d a State callback into a function while the
+		-- `CanAnimate = false` path handed `info.Started` over raw and died on the same option.
 		local literal: { [string]: any } = {}
 		for _, name in FIELDS do
 			local v = info[name]
-			if v ~= nil and not isState(v) then
+			if v ~= nil and (not isState(v) or CALLBACK_FIELDS[name]) then
 				literal[name] = v
 			end
 		end
 		validateFields(literal)
+		-- round13 Q116 (a) (user decision 2026-09-28): the one option that had no runtime check —
+		-- `"no"`/`0`/a function were truthy and silently animated. Literal here (user's `Animate{}`
+		-- line, like `Quad0243`~`0247`); a State value is checked per run below (outermost blame).
+		local canAnimateOpt = info.CanAnimate
+		if canAnimateOpt ~= nil and not isState(canAnimateOpt) and type(canAnimateOpt) ~= "boolean" then
+			Err.errorBeforeNearest(`Quad0253 Animate: CanAnimate must be a boolean or a State<boolean> (got {typeof(canAnimateOpt)})`, SURFACE)
+		end
 		return function(self: any): any
+			-- round13 Q104 (a) (user decision 2026-09-28): a State-only factory, the Operator `Quad0123`
+			-- shape. Through `mod:Apply` / `tag:Apply` / a Modifier setter's transform arm `self` is not a
+			-- State and `self:Compute` died inside quad (a VM error on `nil:Get`, or a missing method on a
+			-- Tag). Nearest blame: `Modifier:Apply`/`Tag:Apply` are SURFACE-tagged, so the user's `:Apply`
+			-- line; the setter transform arm is untagged (`H-250`), so there it falls back to this line.
+			if not isState(self) then
+				Err.errorBeforeNearest(`Quad0252 Animate: Apply target must be a State (got {if quad.isModifier(self) then "Modifier" elseif quad.isTag(self) then "Tag" else typeof(self)}) - put the Animate on the State that feeds the field: state:Apply(q.Animate\{ ... \})`, SURFACE)
+			end
 			return self:Compute(function(selfH: any): any
 				local v = selfH:Get()
 				if v == nil or v == None then
@@ -98,7 +118,10 @@ local function install(quad: any, validateFields: (any, any?) -> (), tweenOuterm
 
 				local canAnimate = resolve(info.CanAnimate)
 				if canAnimate == nil then
-					canAnimate = true -- omitted ⇒ always animate
+					canAnimate = true -- omitted ⇒ always animate (a State holding nil too)
+				elseif type(canAnimate) ~= "boolean" then
+					-- Q116 (a): a State-valued CanAnimate, resolved per run (its own ID — one raise site, one ID)
+					Err.errorBefore(`Quad0254 Animate: CanAnimate State must hold a boolean or nil (got {typeof(canAnimate)})`, SURFACE)
 				end
 				if not canAnimate then
 					-- [2026-09-21 사용자 결정 — docs-review 1-5 (a)] callbacks must still fire without animation

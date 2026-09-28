@@ -83,6 +83,9 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Fixed
 
+- `q.Animate{ … }`를 `State`가 아닌 곳(`mod:Apply`·`tag:Apply`·Modifier setter의 변환 함수 자리)에 붙이면 quad 내부 줄에서 VM 에러(`attempt to index nil with 'Get'` 등)로 죽던 것 — 이제 `Quad0252 Animate: Apply target must be a State …`로 거부합니다.
+- `q.Animate`의 `CanAnimate`에 불리언이 아닌 값(`"no"`·`0`·함수)을 주면 참으로 취급돼 조용히 늘 애니메이션하던 것 — 이제 `Quad0253`으로 거부합니다(`State`가 쥔 값은 실행 때 `Quad0254`, `nil`은 생략과 같음).
+- `q.Animate`의 콜백(`Started`/`Completed`/`Cancelled`)을 `State`로 주면 애니메이션할 때는 동작하고 `CanAnimate = false`일 때만 `Quad0246`으로 죽던 것 — 문서와 타입대로 콜백은 `State`를 받지 않으며, 이제 `Animate{ … }` 호출 줄에서 늘 `Quad0246`으로 거부합니다.
 - 생성 Modifier setter(`D.Modifier.Frame():LayoutOrder(x)` 등)에 `nil`이나 `number?` 같은 옵셔널 값을 넘기는 호출이 strict에서 타입 에러였던 것 — 문서대로 `nil`은 "그 필드 없음"으로 받습니다(생성자 테이블 `D.Modifier.Frame({ LayoutOrder = maybe })`와 같은 동작). 런타임은 원래 받았습니다.
 - `fn`이 던져 죽은 `Effect`를 `:Unsubscribe()`/`:WeakUnsubscribe()`로 놓아줄 수 있습니다. 전에는 죽은 핸들의 네 진입점이 전부 `cannot change subscription from inside fn or cleanup`으로 거부돼 강한 구독이 그 핸들과 상류를 모듈 수명 동안 붙들었습니다. `Observer`도 같습니다 — 콜백이 던져 굳은 핸들을 해제할 수 있고, 굳은 핸들은 (재)구독·재바인드만 막히지 발화는 계속된다는 것을 문서가 바로 적습니다. 부수로 콜백 안에서 자기를 해제하는 것도 됩니다(해제는 콜백을 다시 부르지 않습니다).
 - `Effect`의 `fn`이 도는 동안 핸들이 실행 자격을 잃으면(fn 안에서 자기를 해제했거나, `fn`이 yield하는 사이 묶인 인스턴스가 죽거나 자리에서 내려간 경우) `fn`이 돌려준 cleanup을 저장하지 않고 **즉시 소진**합니다(인스턴스 죽음이 원인이면 `dying = true`). 전에는 그 cleanup이 아무도 소진하지 않는 핸들에 남아 조용한 영구 누수였습니다. `fn` 안 yield는 여전히 정의되지 않은 동작이지만, 가장 흔한 실수(네트워크 왕복 뒤 연결)의 결과가 "누수"에서 "정리됨"으로 바뀝니다.

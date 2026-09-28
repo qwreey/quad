@@ -208,6 +208,9 @@ local box = D.Frame({ BackgroundTransparency = animated })
 - **리터럴 옵션은 `Animate(info)` 시점에 즉시 검증**됩니다(여러분의 호출 줄을 blame). State로 준
   옵션은 실행할 때마다 풀려서 그때 검증됩니다.
 - 옵션이 테이블이 아니면 `Quad0214 Animate: options must be a table, e.g. Animate{ Time = ... } (got {typeof(info)})`.
+- **콜백 셋(`Started`/`Completed`/`Cancelled`)은 State로 줄 수 없습니다** — `Animate(info)` 줄에서 `Quad0246`으로 거부됩니다(애니메이션 여부와 무관하게 같은 규칙).
+- `CanAnimate`가 불리언도 State도 아니면(`"no"`·`0`·함수 등) `Quad0253 Animate: CanAnimate must be a boolean or a State<boolean> (got {typeof(v)})`로 거부됩니다 — State가 불리언이 아닌 값을 쥐면 그 값으로 실행할 때 `Quad0254`입니다(`nil`은 생략과 같아 항상 애니메이션).
+- `Animate`는 **State의 `:Apply` 전용**입니다. Modifier·Tag의 `:Apply`나 Modifier setter의 변환 함수 자리에 넣으면 `Quad0252 Animate: Apply target must be a State (got Modifier)`로 거부됩니다 — 그 필드에 흘리는 State 쪽에 `:Apply(q.Animate{ … })`를 붙이세요.
 
 ---
 
