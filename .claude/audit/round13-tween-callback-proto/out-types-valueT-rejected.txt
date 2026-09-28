@@ -1,0 +1,47 @@
+=== luau-lsp analyze --definitions=scripts/roblox-defs/globalTypes.d.luau quad-roblox/src quad-roblox/test/spec.*.luau
+quad-roblox/src/Tween.luau(187,4): TypeError: Cannot add indexer to table '{ @metatable t1, {  } } where t1 = { Map: (any, any) -> any, __index: t1 }'
+quad-roblox/src/Tween.luau(187,4): TypeError: Cannot add indexer to table '{ @metatable t1, {  } } where t1 = { Map: (any, any) -> any, __index: t1 }'
+quad-roblox/src/Tween.luau(187,4): TypeError: Cannot add indexer to table '{ @metatable t1, {  } } where t1 = { Map: (any, any) -> any, __index: t1 }'
+quad-roblox/test/spec.shorthandtypes.luau(33,52): TypeError: Expected this to be
+	'(None | StateMarker<(TweenData<T> & t1) | UDim | number> | TweenData<UDim | number> | UDim | number)? where t1 = { Mapped: <T, U>({ read Cancelled: ((Instance, string, T) -> ())?, read Completed: ((Instance, string, T) -> ())?, read Dedup: boolean?, read DelayTime: number?, read Direction: Enum.EasingDirection?, read Info: TweenInfo?, read Override: ("Cancel" | "Finish")?, read RepeatCount: number?, read Reverses: boolean?, read Started: ((Instance, string, T) -> ())?, read Style: Enum.EasingStyle... *TRUNCATED*'
+but got
+	'TweenData<T> & t1 where t1 = { Mapped: <T, U>({ read Cancelled: ((Instance, string, T) -> ())?, read Completed: ((Instance, string, T) -> ())?, read Dedup: boolean?, read DelayTime: number?, read Direction: Enum.EasingDirection?, read Info: TweenInfo?, read Override: ("Cancel" | "Finish")?, read RepeatCount: number?, read Reverses: boolean?, read Started: ((Instance, string, T) -> ())?, read Style: Enum.EasingStyle?, read Time: number?, read Value: T, read __quadTween: true }, (T) -> U, (({ read Cancelled: ((Instance, string, T) -> ())?, read Completed: ((Instance, string, T) -> ())?, read Started: ((Instance, string, T) -> ())? } & { Map: <T, U>({ read Cancelled: ((Instance, string, T) -> ())?, read Completed: ((Instance, string, T) -> ())?, read Started: ((Instance, string, T) -> ())? }, ((Instance, string, T) -> ()) -> ((Instance, string, U) -> ())?) -> { read Cancelled: ((Instance, string, U) -> ())?, read Completed: ((Instance, string, U) -> ())?, read Started: ((Instance, string, U) -> ())? } }... *TRUNCATED*'
+quad-roblox/test/spec.shorthandtypes.luau(68,46): TypeError: Expected this to be
+	'(None | StateMarker<(TweenData<T> & t1) | UDim | number> | TweenData<UDim | number> | UDim | number)? where t1 = { Mapped: <T, U>({ read Cancelled: ((Instance, string, T) -> ())?, read Completed: ((Instance, string, T) -> ())?, read Dedup: boolean?, read DelayTime: number?, read Direction: Enum.EasingDirection?, read Info: TweenInfo?, read Override: ("Cancel" | "Finish")?, read RepeatCount: number?, read Reverses: boolean?, read Started: ((Instance, string, T) -> ())?, read Style: Enum.EasingStyle... *TRUNCATED*'
+but got
+	't2 where t1 = { Mapped: <T, U>({ read Cancelled: ((Instance, string, T) -> ())?, read Completed: ((Instance, string, T) -> ())?, read Dedup: boolean?, read DelayTime: number?, read Direction: Enum.EasingDirection?, read Info: TweenInfo?, read Override: ("Cancel" | "Finish")?, read RepeatCount: number?, read Reverses: boolean?, read Started: ((Instance, string, T) -> ())?, read Style: Enum.EasingStyle?, read Time: number?, read Value: T, read __quadTween: true }, (T) -> U, (({ read Cancelled: ((Instance, string, T) -> ())?, read Completed: ((Instance, string, T) -> ())?, read Started: ((Instance, string, T) -> ())? } & { Map: <T, U>({ read Cancelled: ((Instance, string, T) -> ())?, read Completed: ((Instance, string, T) -> ())?, read Started: ((Instance, string, T) -> ())? }, ((Instance, string, T) -> ()) -> ((Instance, string, U) -> ())?) -> { read Cancelled: ((Instance, string, U) -> ())?, read Completed: ((Instance, string, U) -> ())?, read Started: ((Instance, string, U) -> ())? } }... *TRUNCATED*'
+quad-roblox/test/spec.tween.luau(1,1): TypeError: Type inference failed to complete, you may see some confusing types and type errors.
+quad-roblox/test/spec.tween.luau(115,15): TypeError: Expected this to be
+	'((Instance, string, T | number) -> ())?'
+but got
+	'(Instance, string, number) -> ()'
+quad-roblox/test/spec.tween.luau(115,15): TypeError: Expected this to be
+	'TweenData<T | number>'
+but got
+	't1 where t1 = { Mapped: <T, U>({ read Cancelled: ((Instance, string, T) -> ())?, read Completed: ((Instance, string, T) -> ())?, read Dedup: boolean?, read DelayTime: number?, read Direction: Enum.EasingDirection?, read Info: TweenInfo?, read Override: ("Cancel" | "Finish")?, read RepeatCount: number?, read Reverses: boolean?, read Started: ((Instance, string, T) -> ())?, read Style: Enum.EasingStyle?, read Time: number?, read Value: T, read __quadTween: true }, (T) -> U, (({ read Cancelled: ((Instance, string, T) -> ())?, read Completed: ((Instance, string, T) -> ())?, read Started: ((Instance, string, T) -> ())? } & { Map: <T, U>({ read Cancelled: ((Instance, string, T) -> ())?, read Completed: ((Instance, string, T) -> ())?, read Started: ((Instance, string, T) -> ())? }, ((Instance, string, T) -> ()) -> ((Instance, string, U) -> ())?) -> { read Cancelled: ((Instance, string, U) -> ())?, read Completed: ((Instance, string, U) -> ())?, read Started: ((Instance, string, U) -> ())? } }... *TRUNCATED*'
+quad-roblox/test/spec.tween.luau(115,15): TypeError: Expected this to be
+	'((Instance, string, T | number) -> ())?'
+but got
+	'(Instance, string, number) -> ()'
+quad-roblox/test/spec.tween.luau(115,15): TypeError: Expected this to be
+	'((Instance, string, T | number) -> ())?'
+but got
+	'(Instance, string, number) -> ()'
+quad-roblox/test/spec.tween.luau(115,54): TypeError: Expected this to be
+	'((Instance, string, T | number) -> ())?'
+but got
+	'(Instance, string, number) -> ()'
+quad-roblox/test/spec.tween.luau(115,54): TypeError: Expected this to be
+	'TweenData<T | number>'
+but got
+	't1 where t1 = { Mapped: <T, U>({ read Cancelled: ((Instance, string, T) -> ())?, read Completed: ((Instance, string, T) -> ())?, read Dedup: boolean?, read DelayTime: number?, read Direction: Enum.EasingDirection?, read Info: TweenInfo?, read Override: ("Cancel" | "Finish")?, read RepeatCount: number?, read Reverses: boolean?, read Started: ((Instance, string, T) -> ())?, read Style: Enum.EasingStyle?, read Time: number?, read Value: T, read __quadTween: true }, (T) -> U, (({ read Cancelled: ((Instance, string, T) -> ())?, read Completed: ((Instance, string, T) -> ())?, read Started: ((Instance, string, T) -> ())? } & { Map: <T, U>({ read Cancelled: ((Instance, string, T) -> ())?, read Completed: ((Instance, string, T) -> ())?, read Started: ((Instance, string, T) -> ())? }, ((Instance, string, T) -> ()) -> ((Instance, string, U) -> ())?) -> { read Cancelled: ((Instance, string, U) -> ())?, read Completed: ((Instance, string, U) -> ())?, read Started: ((Instance, string, U) -> ())? } }... *TRUNCATED*'
+quad-roblox/test/spec.tween.luau(115,54): TypeError: Expected this to be
+	'((Instance, string, T | number) -> ())?'
+but got
+	'(Instance, string, number) -> ()'
+quad-roblox/test/spec.tween.luau(115,54): TypeError: Expected this to be
+	'((Instance, string, T | number) -> ())?'
+but got
+	'(Instance, string, number) -> ()'
+=== quad-base/test/smoke.init.luau
+=== 1. New()가 만든 module엔 InitDebug가 이미 반영돼 있음 ===

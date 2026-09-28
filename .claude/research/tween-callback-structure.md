@@ -143,7 +143,20 @@ inst 는 부모(숏핸드 대상) 으로 두고, prop 는 정직하게 두는 �
   뒤 사용자 *"해당 ed 형 나도 동의해"*. 슈거(떼기·인자 고정)는 두지 않는다(내부자 권고 — 떼기는 `wrap`이 `{}`, 인자 고정은 평범한 클로저).
 - **합친 프로토타입 진행 중**(opus, 워크트리) — 결과 `audit/round13-tween-callback-proto/`.
 
-## 9. 다음에 팔 것
+## 9. 합친 프로토타입 결과(2026-09-28, `audit/round13-tween-callback-proto/`)
+
+- test.sh exit 0, 기존 spec 런타임 단정 무수정 통과(새 spec 넷 추가). 패딩 `UIPaddingOffset` 10→101→102→103: 네 변 103·고아 0·콜백
+  단계마다 1회, 인자 `(부모, "UIPaddingOffset", 사용자 값)`; `UIPadding` 같음. 도는 중 동기 새 발행(대표 `Cancelled`에서 `:Set`) —
+  엔진·0초·plain 모두 사용자 콜백 1회·네 변 일치. 엔진 완료 통지 순서 네 가지 모두 같은 결과. T5 두 번·각자 prop. `H-589` 재진입 표·
+  Q146은 스파이크 결론 그대로. Q82: 시체 위 `retractFrom` 콜백 0.
+- **판단이 필요한 것**: (1) **타입** — 저장된 Tween의 콜백에 `value: T`를 두면 `Tween<T>`가 불변이 되어 `Declaration` 슬롯 유니언과
+  `Mapped` 추론이 깨진다 → 정밀한 `T`는 생성자 옵션(`TweenOptions<T>`)에만, 저장 값·핸들·돌려줄 셋·`AnimateInfo`는 `value: any`;
+  (2) **새 에러 ID** 임시 셋 — `wrap`이 함수 아님·반환이 테이블 아님·`cb:Map`의 `g`가 함수 아님(마지막은 빼도 됨); (3) 숏핸드 identity
+  경로가 콜백이 없어도 발행마다 사본을 만든다(옛 최적화 되돌림 — 숏핸드가 콜백 필드 이름을 모르게 한 대가); (4) 재진입으로 대체된
+  새 값은 `Started` 없이 `Cancelled`만(스파이크 관측 그대로); (5) `Mapped(fn)`(wrap 없음)의 콜백은 매핑된 값을 `value`로 받는다.
+- 코드 줄(주석 제외): Property +15, Tween +39, InstanceShorthand +16, types +13. 문서 목록은 프로토 README.
+
+## 10. 다음에 팔 것
 
 1. §3 일반화 스파이크(mock, 스크래치 — `src` 무변경): 모든 콜백을 슬롯 쓰기 뒤로 모으는 변형이 기존 spec을 통과하는가, `H-589`의
    `Started`/`Cancelled` 재진입 케이스가 안전해지는가, 관측 순서 표.

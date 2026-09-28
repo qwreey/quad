@@ -1,0 +1,12 @@
+quad-roblox/test/probe.tweencbtypes.neg.luau(9,31): TypeError: Expected this to be 'string', but got 'number'
+quad-roblox/test/probe.tweencbtypes.neg.luau(11,45): TypeError: Expected this to be
+	'((Instance, string, number) -> ())?'
+but got
+	'(number) -> ()'
+quad-roblox/test/probe.tweencbtypes.neg.luau(13,65): TypeError: Expected this to be 'TweenCallbacks', but got 'number'
+quad-roblox/test/probe.tweencbtypes.neg.luau(15,91): TypeError: Expected this to be '((Instance, string, any) -> ())?', but got 'number'
+quad-roblox/test/probe.tweencbtypes.neg.luau(17,85): TypeError: Expected this to be '((TweenCallbacks & { Map: (TweenCallbacks, ((Instance, string, any) -> ()) -> ((Instance, string, any) -> ())?) -> TweenCallbacks }) -> TweenCallbacks)?', but got 'number'
+quad-roblox/test/probe.tweencbtypes.neg.luau(19,47): TypeError: Expected this to be
+	'((Instance, string, number) -> ())?'
+but got
+	'(Instance, number) -> ()'

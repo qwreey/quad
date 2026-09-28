@@ -1,0 +1,733 @@
+diff --git a/docs/reference/errors/08-roblox-tween.md b/docs/reference/errors/08-roblox-tween.md
+index 70caced6..f4e39895 100644
+--- a/docs/reference/errors/08-roblox-tween.md
++++ b/docs/reference/errors/08-roblox-tween.md
+@@ -23,6 +23,30 @@ description: "Tween/Animate가 던지는 에러"
+ - **고치려면**: 목표 값을 받아 새 목표 값을 돌려주는 함수를 넘기세요.
+ - **참고**: [`tween:Mapped(fn)`](../roblox/06-tween-animate.md#tweenmappedfn)
+ 
++### Quad0256
++
++`Tween:{method}: wrap must be a function (got {typeof(wrap)})` — `quad-roblox/src/Tween.luau`
++
++- **언제**: `tween:Mapped(fn, wrap)`의 둘째 인자나 `tween:Wrapped(wrap)`의 `wrap`이 함수가 아닐 때. `{method}`는 `Mapped` 또는 `Wrapped`입니다.
++- **고치려면**: 콜백 핸들 `cb`를 받아 새 콜백 셋 `{ Started = …, Completed = …, Cancelled = … }`을 돌려주는 함수를 넘기세요. 콜백을 바꿀 필요가 없으면 `Mapped`의 둘째 인자를 빼세요.
++- **참고**: [`tween:Mapped(fn)`](../roblox/06-tween-animate.md#tweenmappedfn)
++
++### Quad0257
++
++`Tween:{method}: wrap must return a callback set table (got {typeof(set)})` — `quad-roblox/src/Tween.luau`
++
++- **언제**: `wrap(cb)`가 테이블이 아닌 값을 돌려줬을 때(흔히 `return`을 빠뜨려 `nil`).
++- **고치려면**: 새 콜백 셋 테이블을 돌려주세요 — `return cb:Map(function(f) return … end)`나 `return { Completed = … }`. 셋에 없는 필드는 "콜백 없음"입니다.
++- **참고**: [`tween:Mapped(fn)`](../roblox/06-tween-animate.md#tweenmappedfn)
++
++### Quad0258
++
++`Tween callbacks:Map: g must be a function (got {typeof(g)})` — `quad-roblox/src/Tween.luau`
++
++- **언제**: `wrap` 안에서 콜백 핸들의 `cb:Map(g)`에 함수가 아닌 값을 넘겼을 때.
++- **고치려면**: 원래 콜백 `f`를 받아 새 콜백(또는 `nil`)을 돌려주는 함수를 넘기세요.
++- **참고**: [`tween:Mapped(fn)`](../roblox/06-tween-animate.md#tweenmappedfn)
++
+ ### Quad0243
+ 
+ `Tween: {name} must be a number (got {typeof(v)})` — `quad-roblox/src/Tween.luau`
+@@ -52,7 +76,7 @@ description: "Tween/Animate가 던지는 에러"
+ `Tween: {name} must be a function (got {typeof(v)})` — `quad-roblox/src/Tween.luau`
+ 
+ - **언제**: `Started`/`Completed`/`Cancelled` 중 하나가 함수가 아닌 값으로 주어졌을 때. `{name}`은 실제 필드 이름입니다. `q.Animate{ … }`의 콜백 옵션에 `State`를 넣어도 이 에러입니다(콜백은 State 불가 — `Animate` 호출 줄에서 납니다).
+-- **고치려면**: 인자 없는 함수를 넘기세요.
++- **고치려면**: 함수를 넘기세요 — `(inst, prop, value)`를 받거나 인자를 무시하는 함수 둘 다 됩니다. `tween:Mapped(fn, wrap)`/`tween:Wrapped(wrap)`의 `wrap`이 돌려준 셋의 값도 같은 검사를 받습니다.
+ - **참고**: [`q.Tween(opts)`](../roblox/06-tween-animate.md#qtweenopts)
+ 
+ ### Quad0247
+diff --git a/quad-roblox/src/Handlers/InstanceShorthand.luau b/quad-roblox/src/Handlers/InstanceShorthand.luau
+index 80b05430..4c68d3a5 100644
+--- a/quad-roblox/src/Handlers/InstanceShorthand.luau
++++ b/quad-roblox/src/Handlers/InstanceShorthand.luau
+@@ -128,9 +128,33 @@ local function install(quad: any)
+ 			-- Tween stays a Tween — only `.Value` is wrapped (`UI-8`, `Tween:Mapped`). The
+ 			-- fresh object per emit is harmless: the Property handler dedups by target VALUE
+ 			-- (round3 Q25, 2026-09-08 — the old object-identity check broke exactly here)
+-			-- identity wrap (UIPadding/UIScale): pass the Tween through — `Mapped`
+-			-- would clone+re-validate+re-freeze an identical value per emit (2차 리뷰)
+-			local mapped = if entry.wrap == identity then v elseif tweenIn then v:Mapped(entry.wrap) else entry.wrap(v)
++			-- PROTO (round13 tween-callback-structure §8-1, user decision 2026-09-28): a Tween becomes ONE mapped
++			-- copy per emit, shared by every delegated chain (identity wrap included — `Wrapped` instead of
++			-- `Mapped`). Its callbacks are wrapped through the handle (`cb:Map` — this handler never names the
++			-- callback fields): each chain's Property reports `(child, prop, mappedValue)`, and only the LAST
++			-- key's report reaches the user, as `(parent, shorthand key, the value the user gave)`. The last key
++			-- matters because the chains run in `entry.props` order (an array — deterministic): a callback that
++			-- re-enters this shorthand synchronously (a snap, a replacement window, a new emit cancelling all
++			-- four) runs when no later chain is left to overwrite with this emit's value. The parent is read at
++			-- fire time (`child.Parent`), never captured — capturing it would pin it for the tween's life (the
++			-- 2026-09-21 "no arguments" GC reason); the managed child's teardown retracts before unparenting.
++			local mapped
++			if tweenIn then
++				local lastProp = entry.props[#entry.props]
++				local shortKey, userValue = k, v.Value
++				local function wrapCallbacks(cb: any): any
++					return cb:Map(function(f: any): any
++						return function(child: any, prop: string, _value: any)
++							if prop == lastProp then
++								f(child.Parent, shortKey, userValue)
++							end
++						end
++					end)
++				end
++				mapped = if entry.wrap == identity then v:Wrapped(wrapCallbacks) else v:Mapped(entry.wrap, wrapCallbacks)
++			else
++				mapped = entry.wrap(v)
++			end
+ 			local child = ensureManagedChild(inst, entry)
+ 			for _, prop in entry.props do
+ 				dispatch.process(child, prop, mapped, 1) -- new chain per (child, prop), index 1
+diff --git a/quad-roblox/src/Handlers/Property.luau b/quad-roblox/src/Handlers/Property.luau
+index a9089459..18ced0b3 100644
+--- a/quad-roblox/src/Handlers/Property.luau
++++ b/quad-roblox/src/Handlers/Property.luau
+@@ -89,52 +89,66 @@ local function install(quad: any)
+ 	-- entry may collect and a later chain simply mints a new one — identity never matters.
+ 	local tweenRetractors = quad.Relate()
+ 
+-	-- [2026-09-21 사용자 결정 — docs-review 1-5] Tween callbacks `Started`/`Completed`/`Cancelled` (`() -> ()`, no
+-	-- arguments: a closure that captured `inst` would sit in the engine tween's connection and pin the
+-	-- Instance for as long as the record holds the tween — `audit/tween-completed-2026-09-21/REPORT.md` 7·8;
+-	-- Luau weak-key tables are not ephemerons). Where they fire:
+-	--   Started   — synchronously right after `engineTween:Play()`; on a snap, right before Completed.
++	-- [2026-09-21 사용자 결정 — docs-review 1-5; PROTO 2026-09-28 round13 tween-callback-structure §8-1] Tween callbacks
++	-- `Started`/`Completed`/`Cancelled`, called `(inst, prop, value)` — the Instance, this property's key, and the
++	-- target of the Tween the event is about. Nothing is CAPTURED for that (a closure holding `inst` in the engine
++	-- tween's connection would pin the Instance while the record holds the tween — `audit/tween-completed-2026-09-21/
++	-- REPORT.md` 7·8; weak-key tables are not ephemerons): the connection reads `rec.Tween.Instance`/`rec.Key`/
++	-- `rec.Value` when it fires, every other site has `inst`/`k` in scope. Where they fire:
++	--   Started   — right after `engineTween:Play()`; on a snap, right before Completed.
+ 	--   Completed — from the engine `Completed` signal, only for `PlaybackState.Completed` (a natural finish);
+-	--               synchronously on a snap (first write, or an Info-less `Time == 0`). The engine re-fires
+-	--               `Completed(Cancelled)` even for a tween that already finished (REPORT 2), so the
+-	--               connection disconnects itself on its first fire and the record remembers `Done`.
+-	--   Cancelled — synchronously at quad's OWN `:Cancel()` call site (value replacement or teardown), only
+-	--               while that tween had not finished. The engine's own Cancelled notice is deferred (REPORT 3)
+-	--               and lands AFTER a synchronous replacement's Started (REPORT 4) — so it is never used.
+-	-- Order on replacement is therefore fixed: old Cancelled → new Started → (later) new Completed. A
+-	-- Writing the SAME property from inside `Started` or `Cancelled` (a `:Set` on the State seated there) is
+-	-- same-key re-entry — UB by user decision (dispatch-core-plan Q5 (a); round12 G-23/G-26, `H-589`): `Cancelled`
+-	-- fires before this call's own slot write and a snap's `Completed` follows its `Started`, so a nested
+-	-- `process` would be overwritten or land out of order. No gate is added (user: no re-entry gates). The
+-	-- place to chain the next tween on the same property is `Completed` — on the engine path it fires outside
+-	-- `process`, on a snap after the slot write. A Destroy runs no chain retractor (no `Destroying` hook here),
+-	-- so a tween keeps running on the destroyed Instance and the engine still sends `Completed` at its natural
+-	-- end (REPORT 5·6) — that notice is ignored when the Instance is no longer claimed (round12 Q71, `H-594`;
+-	-- gate in the connection below). Dedup-skipped same-target Tween fires nothing (no tween starts) — and the callbacks that stay wired are
+-	-- those of the value that actually STARTED the tween (the skipped value's are dropped). A connection and
+-	-- the `Cb` field are made only when the value carries Completed or Cancelled (the connection is needed for
+-	-- the `Done` bookkeeping even when only Cancelled is given — otherwise a finished tween would get
+-	-- Cancelled on teardown); callback-less tweens keep the old record shape and GC profile. `Done` means
+-	-- SETTLED (finished or cancelled) and is set before any callback runs, so a throwing callback cannot
+-	-- leave the record "running" (code-review 2026-09-21); `Cb` is released as soon as it has fired.
+-	local function fire(v: any, name: string)
++	--               on a snap (first write, or an Info-less `Time == 0`); and for a REPLACED tween caught in the
++	--               deferred-notice window (`H-581` — reached its target, notice not yet delivered). The engine
++	--               re-fires `Completed(Cancelled)` even for a finished tween (REPORT 2), so the connection
++	--               disconnects itself on its first fire and the record remembers `Done`.
++	--   Cancelled — at quad's OWN `:Cancel()` site (value replacement) while that tween had not finished, and on
++	--               EVERY teardown of a record naming an engine tween that had not settled — including the
++	--               deferred-notice window (round13 Q99 c: the place is going away, so "it did reach the target"
++	--               is not reported). The engine's own Cancelled notice is deferred (REPORT 3) — never used.
++	-- Collect → write → call (round13 §3/§7): `process` settles the previous record WITHOUT calling the user,
++	-- writes its own record (and `Play`s), and only then calls, in order: previous value's Cancelled / window
++	-- Completed → this value's Started → (snap) Completed. A callback that re-enters the same (inst, k) replaces
++	-- the record; the later callbacks of THIS value are then skipped (`GetStrong(inst, k) ~= rec`). So writing the
++	-- same property from any callback lands in order and leaves one tween — the Property-layer half of `H-589`'s
++	-- UB is gone (the StoreBind None-switch outer frame is not covered). Settle callbacks (the previous value's,
++	-- teardown's) are skipped on an Instance quad no longer claims (round13 Q82 (a) — a corpse under
++	-- `retractFrom`; the engine tween is still cancelled). A Destroy runs no chain retractor, so a tween keeps
++	-- running on the destroyed Instance and the engine still sends `Completed` (REPORT 5·6) — ignored by the same
++	-- `isClaimed` gate (round12 Q71, `H-594`). Dedup-skipped same-target Tween fires nothing (no tween starts) —
++	-- the callbacks that stay wired are those of the value that actually STARTED the tween. A connection and the
++	-- `Cb`/`Key` fields are made only when the value carries Completed or Cancelled (the connection is needed for
++	-- the `Done` bookkeeping even when only Cancelled is given — otherwise a finished tween would get Cancelled
++	-- on teardown); callback-less tweens keep the old record shape and GC profile. `Done` means SETTLED and is set
++	-- before any callback runs, so a throwing callback cannot leave the record "running"; `Cb` is released as
++	-- soon as it has been handed out.
++	local function fire(v: any, name: string, inst: any, k: any, value: any)
+ 		-- annotated on purpose: an unannotated `v[name]` narrowed by `~= nil` comes out as `*error-type* | ~nil`
+ 		-- under the new solver (2026-09-21 scratch, `typing-limits.md` 8.24)
+-		local cb: (() -> ())? = v[name]
++		local cb: ((any, string, any) -> ())? = v[name]
+ 		if cb ~= nil then
+-			cb()
++			cb(inst, k, value)
+ 		end
+ 	end
+-	-- Cancel a record's engine tween if it is still running (Cancelled callback), and drop its connection.
++	-- PROTO: a SETTLE callback (the previous value's Cancelled / window Completed, and teardown's Cancelled) —
++	-- round13 Q82 (a): not on an Instance quad no longer claims (a corpse under `retractFrom`); the Cancel
++	-- itself already happened in `settle`. Same gate as the engine connection's (Q71, `H-594`).
++	local function fireSettled(cb: any?, name: string, inst: any, k: any, value: any)
++		if cb ~= nil and quad.Backend.isClaimed(inst) then
++			fire(cb, name, inst, k, value)
++		end
++	end
++	-- PROTO "collect -> write -> call": settle a record WITHOUT calling the user — Cancel its engine tween if
++	-- it is still running, drop its connection, and hand back the callback holder plus whether it counts as
++	-- FINISHED (deferred-notice window) so the caller fires it after its own slot write.
+ 	-- The property keeps whatever value it reached (engine `Cancel` semantics).
+-	local function stopRunning(rec: any)
++	local function settle(rec: any): (any?, boolean)
+ 		local conn = rec.Conn
+ 		if conn ~= nil then
+ 			rec.Conn = nil
+ 			conn:Disconnect()
+ 		end
+ 		if rec.Done then
+-			return
++			return nil, false
+ 		end
+ 		rec.Done = true -- settle first (header)
+ 		local cb = rec.Cb
+@@ -146,22 +160,32 @@ local function install(quad: any)
+ 		-- gate; the record's value truth still comes from the property (retractor below).
+ 		local playback = (Enum :: any).PlaybackState
+ 		if playback ~= nil and rec.Tween.PlaybackState == playback.Completed then
+-			if cb ~= nil then
+-				fire(cb, "Completed")
+-			end
+-			return
++			return cb, true
+ 		end
+ 		rec.Tween:Cancel()
+-		if cb ~= nil then
+-			fire(cb, "Cancelled")
++		return cb, false
++	end
++	-- PROTO: the call phase of a transition — runs AFTER the slot holds `rec` (and after `Play`). Order:
++	-- previous value's settle (Cancelled / window Completed) → this value's Started → (snap) Completed. A
++	-- callback that re-entered the same (inst, k) and replaced `rec` stops the chain: the later callbacks of
++	-- THIS value are not fired (the Q91 OLD-FIRST `GetStrong` check, generalized). `oldValue` = the previous
++	-- record's target (the value its callbacks were about).
++	local function announce(inst: any, k: any, rec: any, v: any, oldCb: any?, oldFinished: boolean, oldValue: any, snapped: boolean)
++		fireSettled(oldCb, if oldFinished then "Completed" else "Cancelled", inst, k, oldValue)
++		if tweenSlots:GetStrong(inst, k) ~= rec then
++			return
++		end
++		fire(v, "Started", inst, k, v.Value)
++		if snapped and tweenSlots:GetStrong(inst, k) == rec then
++			fire(v, "Completed", inst, k, v.Value)
+ 		end
+ 	end
+ 	-- Snap: write the target now, no engine tween; `{ Value }` keeps the dedup honest (Q26 (a)).
+-	local function snap(inst: any, k: any, v: any)
++	local function snap(inst: any, k: any, v: any, oldCb: any?, oldFinished: boolean, oldValue: any)
+ 		inst[k] = v.Value
+-		tweenSlots:SetStrong(inst, k, { Value = v.Value })
+-		fire(v, "Started")
+-		fire(v, "Completed")
++		local srec = { Value = v.Value }
++		tweenSlots:SetStrong(inst, k, srec)
++		announce(inst, k, srec, v, oldCb, oldFinished, oldValue, true)
+ 	end
+ 
+ 	local function tweenRetractor(inst: any, k: any): (any?, boolean) -> ()
+@@ -182,12 +206,16 @@ local function install(quad: any)
+ 				-- (B) branch calls the old retractor with retracting == true) and made the next Tween snap.
+ 				local slot = tweenSlots:GetStrong(inst, k)
+ 				if type(slot) == "table" and slot.Tween ~= nil then
+-					stopRunning(slot) -- Cancel (if still running) + Cancelled callback + Disconnect
++					local cb = settle(slot) -- Cancel (if still running) + Disconnect; callback held (window or not)
+ 					-- code-review (2026-09-18): `.Tween` is still set after a tween COMPLETED on its own,
+ 					-- and then the property really holds `Value` — keep the `{ Value }` snap record so the
+ 					-- dedup stays right. The record's truth is read from the property itself, not from the
+ 					-- engine's PlaybackState (engine-agnostic, mock-safe); `Done` only gates the callback.
+ 					tweenSlots:SetStrong(inst, k, if inst[k] == slot.Value then { Value = slot.Value } else true)
++					-- PROTO: after this retractor's own record write. round13 Q99 c: a teardown is ALWAYS
++					-- Cancelled, even inside the deferred-notice window (the tween did reach its target, but the
++					-- place is going away — the replacement window keeps Completed, `H-581`).
++					fireSettled(cb, "Cancelled", inst, k, slot.Value)
+ 				end
+ 			end
+ 			tweenRetractors:SetWeak(inst, k, r)
+@@ -261,7 +289,7 @@ local function install(quad: any)
+ 				-- Q26 (a) (2026-09-08, round3 §4): a Tween keeps `{ Value }` (no engine
+ 				-- tween) so the value dedup above already holds after the snap.
+ 				if tweenIn then
+-					snap(inst, k, v)
++					snap(inst, k, v, nil, false, nil)
+ 				else
+ 					inst[k] = v
+ 					tweenSlots:SetStrong(inst, k, true)
+@@ -283,11 +311,14 @@ local function install(quad: any)
+ 			-- to. The slot is written before `Play` so a raise there leaves at most
+ 			-- an unplayed tween the slot knows about.
+ 			local engineTween = if tweenIn and not zeroTime then getTweenService():Create(inst, buildInfo(v), { [k] = v.Value }) else nil
++			-- PROTO: the previous value's settle, fired after our write (with its own target as `value`)
++			local oldCb: any, oldFinished, oldValue: any = nil, false, nil
+ 			if type(prev) == "table" and prev.Tween ~= nil then
+ 				-- branch 3: an engine tween is active — clean it up before the new value lands
+ 				-- (a snapped `{ Value }` record has nothing to cancel and nothing to
+ 				-- Finish-snap to: the property already holds that value)
+-				stopRunning(prev) -- settle: Cancel (if still running) + previous Cancelled/Completed + Disconnect
++				oldCb, oldFinished = settle(prev) -- Cancel (if still running) + Disconnect; callback held
++				oldValue = prev.Value
+ 				if tweenIn and v.Override == "Finish" and not zeroTime then
+ 					-- (a zero-time snap writes `v.Value` right below — a Finish snap first would be a second
+ 					-- synchronous write of the same property, visible under Immediate signals; code-review)
+@@ -295,7 +326,7 @@ local function install(quad: any)
+ 				end
+ 			end
+ 			if zeroTime then
+-				snap(inst, k, v)
++				snap(inst, k, v, oldCb, oldFinished, oldValue)
+ 				return tweenRetractor(inst, k)
+ 			end
+ 			-- branches 2/3 tail: plain → write + `true`; Tween → slot, then play
+@@ -304,8 +335,10 @@ local function install(quad: any)
+ 				tweenSlots:SetStrong(inst, k, rec)
+ 				if v.Completed ~= nil or v.Cancelled ~= nil then
+ 					-- `Cb` and the connection share this gate (header: Cancelled alone still needs `Done`);
+-					-- the closure captures `rec`/`conn` only — never `inst`
++					-- the closure captures `rec`/`conn` only — never `inst`. PROTO: `Key` = the property name the
++					-- connection reports as `prop` (a string — pins nothing); inst/value are read off the record.
+ 					rec.Cb = v
++					rec.Key = k
+ 					local conn: any
+ 					conn = engineTween.Completed:Connect(function(state: any)
+ 						conn:Disconnect()
+@@ -323,18 +356,20 @@ local function install(quad: any)
+ 							-- is read off the tween (the engine tween holds it anyway) — the closure still captures no
+ 							-- `inst`.
+ 							if cb ~= nil and quad.Backend.isClaimed(rec.Tween.Instance) then
+-								fire(cb, "Completed")
++								fire(cb, "Completed", rec.Tween.Instance, rec.Key, rec.Value)
+ 							end
+ 						end
+ 					end)
+ 					rec.Conn = conn
+ 				end
+ 				engineTween:Play()
+-				fire(v, "Started")
++				announce(inst, k, rec, v, oldCb, oldFinished, oldValue, false)
+ 				return tweenRetractor(inst, k)
+ 			end
+ 			inst[k] = v
+ 			tweenSlots:SetStrong(inst, k, true)
++			-- PROTO: plain incoming value — the previous value's settle after the `true` record
++			fireSettled(oldCb, if oldFinished then "Completed" else "Cancelled", inst, k, oldValue)
+ 			-- round11 `H-547` (탐사 D′): EVERY chain returns the retractor, not only one that has carried
+ 			-- a Tween. Two reasons — (1) the checkpoint's `GetWeak(...) or Void` relied on the previous
+ 			-- chain's `list[index].retractor` keeping the closure alive, but Dispatch parks NOOP there
+diff --git a/quad-roblox/src/Tween.luau b/quad-roblox/src/Tween.luau
+index d16a1d8a..5b101450 100644
+--- a/quad-roblox/src/Tween.luau
++++ b/quad-roblox/src/Tween.luau
+@@ -26,7 +26,12 @@
+ 	  Tween{ Value = v, Info = ?, Time = ?, Style = ?, Direction = ?,
+ 	         RepeatCount = ?, Reverses = ?, DelayTime = ?, Override = ?, Dedup = ?,
+ 	         Started = ?, Completed = ?, Cancelled = ? } -> Tween<T>
+-	  tween:Mapped(fn) -> Tween<U>     -- opts cloned, Value replaced by fn(Value)
++	  tween:Mapped(fn, wrap?) -> Tween<U> -- opts cloned, Value replaced by fn(Value); with `wrap`, the
++	                                   -- callbacks too (PROTO 2026-09-28 — one copy for both)
++	  tween:Wrapped(wrap) -> Tween<T>  -- PROTO: same Value, callbacks replaced by wrap(cb)'s set
++	    wrap(cb) -> { Started?, Completed?, Cancelled? }  -- called once per call; the returned set is the
++	                                   -- copy's WHOLE callback set. `cb` = the source's three callbacks
++	                                   -- (function or nil) + `cb:Map(g)` (g applied to each present one)
+ 	  Override = "Cancel" | "Finish"   -- override policy as a string singleton (default "Cancel")
+ 	  Dedup = true | false             -- [2026-09-08 user decision, round3 Q25] default true: the
+ 	                                   -- CONSUMER (Property handler) compares the incoming
+@@ -65,9 +70,11 @@ local TweenBrand = Brand.TweenBrand
+ local isTween = Brand.isTween
+ 
+ local NUMBER_FIELDS = { "Time", "RepeatCount", "DelayTime" }
+--- [2026-09-21 사용자 결정 — docs-review 1-5] three optional `() -> ()` callbacks, plain fields of the value
++-- [2026-09-21 사용자 결정 — docs-review 1-5] three optional callbacks (PROTO 2026-09-28: called `(inst, prop, value)`,
++-- a zero-argument function still fits), plain fields of the value
+ -- (bare names, not `On*` — the `On*` prefix means "a factory called to fill a numeric-key slot" in this
+--- library). WHEN they fire is the consumer's contract: `Handlers/Property.luau` header. `Mapped` carries them.
++-- library). WHEN they fire is the consumer's contract: `Handlers/Property.luau` header. `Mapped(fn)` carries them
++-- unchanged (the copy's value arg is then the MAPPED value); `Mapped(fn, wrap)`/`Wrapped(wrap)` rewrite them.
+ local CALLBACK_FIELDS = { "Started", "Completed", "Cancelled" }
+ 
+ local function install(quad: any): any
+@@ -158,7 +165,44 @@ local function install(quad: any): any
+ 		return table.freeze(self)
+ 	end
+ 
+-	function TweenImpl.Mapped(self: any, fn: any): any
++	-- PROTO (round13 tween-callback-structure §8-1, user decision 2026-09-28): the callback handle `wrap`
++	-- receives — the source Tween's three callbacks as fields (function or nil) plus `cb:Map(g)`, which
++	-- returns a new set with `g(f)` applied to each present one. Frozen: it is a read-only view.
++	local CallbackHandleImpl = {}
++	CallbackHandleImpl.__index = CallbackHandleImpl
++	function CallbackHandleImpl.Map(self: any, g: any): any
++		if type(g) ~= "function" then
++			Err.errorBeforeNearest(`Quad0258 Tween callbacks:Map: g must be a function (got {typeof(g)})`, SURFACE)
++		end
++		local out = {}
++		for _, name in CALLBACK_FIELDS do
++			local f = self[name]
++			if f ~= nil then
++				out[name] = g(f)
++			end
++		end
++		return out
++	end
++	-- `opts` (an unfrozen clone) takes the set `wrap(handle)` returns as its WHOLE callback set: a field the
++	-- set leaves out is no callback. The values are checked by `newTween`'s own validation (Quad0246).
++	local function applyWrap(method: string, self: any, opts: any, wrap: any)
++		if type(wrap) ~= "function" then
++			Err.errorBeforeNearest(`Quad0256 Tween:{method}: wrap must be a function (got {typeof(wrap)})`, SURFACE)
++		end
++		local handle: any = setmetatable({}, CallbackHandleImpl)
++		for _, name in CALLBACK_FIELDS do
++			handle[name] = self[name]
++		end
++		local set = wrap(table.freeze(handle))
++		if type(set) ~= "table" then
++			Err.errorBeforeNearest(`Quad0257 Tween:{method}: wrap must return a callback set table (got {typeof(set)})`, SURFACE)
++		end
++		for _, name in CALLBACK_FIELDS do
++			opts[name] = set[name]
++		end
++	end
++
++	function TweenImpl.Mapped(self: any, fn: any, wrap: any?): any
+ 		if type(fn) ~= "function" then
+ 			Err.errorBeforeNearest(`Quad0227 Tween:Mapped: fn must be a function (got {typeof(fn)})`, SURFACE)
+ 		end
+@@ -166,9 +210,19 @@ local function install(quad: any): any
+ 		-- swapping Value is fine before newTween re-brands and re-freezes it
+ 		local opts = table.clone(self)
+ 		opts.Value = fn(self.Value)
++		if wrap ~= nil then
++			applyWrap("Mapped", self, opts, wrap) -- one copy for both (the fast path the user asked for)
++		end
+ 		return newTween(opts) -- re-validates: fn returning nil is "Value is required"
+ 	end
+ 
++	-- PROTO: `tween:Wrapped(wrap)` — same value, callbacks replaced by `wrap(cb)`'s set
++	function TweenImpl.Wrapped(self: any, wrap: any): any
++		local opts = table.clone(self)
++		applyWrap("Wrapped", self, opts, wrap)
++		return newTween(opts)
++	end
++
+ 	-- Plain generic function (`H-343`): `Tween{...}` constructs, nothing else lives
+ 	-- on it. `H-238`: surface-tagged so validation raises blame the user's line.
+ 	-- [2026-09-15 사용자 결정] unknown keys (typos) are reported only under `q.debug`, execution continues.
+@@ -189,7 +243,7 @@ local function install(quad: any): any
+ 		return newTween(opts)
+ 	end
+ 
+-	Err.setFuncLevel(SURFACE, Tween, TweenImpl.Mapped)
++	Err.setFuncLevel(SURFACE, Tween, TweenImpl.Mapped, TweenImpl.Wrapped, CallbackHandleImpl.Map)
+ 
+ 	quad.Tween = Tween
+ 	quad.isTween = isTween
+diff --git a/quad-roblox/src/types.luau b/quad-roblox/src/types.luau
+index ac1e8889..2e465905 100644
+--- a/quad-roblox/src/types.luau
++++ b/quad-roblox/src/types.luau
+@@ -54,6 +54,19 @@ local QuadTypes = require("../luau_packages/quad_types")
+ -- 타입으로). `Mapped`는 재귀 제네릭(`Tween<U>` 반환)이라 데이터부/메소드부 쪼개기(typing-limits
+ -- §1②) — 파생 자리는 결과 타입을 명시 바인딩할 것(§1①).
+ export type TweenOverride = "Cancel" | "Finish"
++-- PROTO(2026-09-28 사용자 결정 — tween-callback-structure §8-1): 콜백 하나 — 대상 인스턴스, 프로퍼티 이름(숏핸드면 가상 키), 그 Tween의 목표 값
++export type TweenCallback<T> = (inst: Instance, prop: string, value: T) -> ()
++-- `wrap`이 돌려주는 새 콜백 셋(안 채운 필드 = 콜백 없음). 저장된 Tween의 콜백 값 인자는 `any` — T를 반대 극성에 두면
++-- `Tween<T>`가 불변이 되어 D 슬롯 유니언·`Mapped` 추론이 깨진다(PROTO 실측 2026-09-28); 정밀한 T는 생성자 옵션에서만.
++export type TweenCallbacks = {
++	read Started: TweenCallback<any>?,
++	read Completed: TweenCallback<any>?,
++	read Cancelled: TweenCallback<any>?,
++}
++-- `wrap`이 받는 핸들 — 원본 콜백 셋 + `cb:Map(g)`(있는 것마다 `g(f)`를 적용한 새 셋)
++export type TweenCallbackHandle = TweenCallbacks & {
++	Map: (self: TweenCallbacks, g: (f: TweenCallback<any>) -> TweenCallback<any>?) -> TweenCallbacks,
++}
+ -- 옵션 필드는 전부 `read` — 생성자는 읽기만 하고, 미리 만든 테이블 변수를 넘길 때
+ -- 가변 필드면 새 솔버가 `Time: number`를 `number?`에 불변으로 대조해 거부한다(실측).
+ export type TweenOptions<T> = {
+@@ -67,11 +80,12 @@ export type TweenOptions<T> = {
+ 	read DelayTime: number?,
+ 	read Override: TweenOverride?, -- 기본 "Cancel"
+ 	read Dedup: boolean?, -- [2026-09-08 Q25] 기본 true — 소비자(Property 핸들러)가 목표 `Value`만 비교해 같으면 무동작
+-	-- [2026-09-21 사용자 결정 — docs-review 1-5] 콜백 셋(인자 없음): Started는 재생 직후 동기, Completed는 자연 완료(스냅은 동기),
++	-- [2026-09-21 사용자 결정 — docs-review 1-5] 콜백 셋: Started는 재생 직후 동기, Completed는 자연 완료(스냅은 동기),
+ 	-- Cancelled는 quad가 진행 중인 트윈을 교체·철거로 취소하는 자리에서 동기. 발화 계약은 `Handlers/Property.luau` 머리.
+-	read Started: (() -> ())?,
+-	read Completed: (() -> ())?,
+-	read Cancelled: (() -> ())?,
++	-- PROTO(2026-09-28 사용자 결정 — tween-callback-structure §8-1): 인자 `(inst, prop, value)` — 인자 없는 함수도 그대로 들어간다.
++	read Started: TweenCallback<T>?,
++	read Completed: TweenCallback<T>?,
++	read Cancelled: TweenCallback<T>?,
+ }
+ -- 유니언 멤버용 데이터부(`Mapped` 없음) — 재귀 메소드 테이블을 수백 유니언에 직접
+ -- 넣지 않는다(typing-limits 8.8). 실 Tween 값은 구조적으로 만족한다.
+@@ -87,17 +101,22 @@ export type TweenData<T> = {
+ 	read DelayTime: number?,
+ 	read Override: TweenOverride?,
+ 	read Dedup: boolean?,
+-	read Started: (() -> ())?,
+-	read Completed: (() -> ())?,
+-	read Cancelled: (() -> ())?,
++	read Started: TweenCallback<any>?,
++	read Completed: TweenCallback<any>?,
++	read Cancelled: TweenCallback<any>?,
+ }
+ -- `Mapped`는 typing-limits §1③(`typeof(named function)`) — 인라인 `<U>(…) -> Tween<U>`는
+ -- 반환이 `*error-type*`으로 새고 생성자 추론까지 오염된다(2026-09-06 실측, round19).
+-local function tweenMapped<T, U>(_self: TweenData<T>, _fn: (T) -> U): Tween<U>
++local function tweenMapped<T, U>(_self: TweenData<T>, _fn: (T) -> U, _wrap: ((cb: TweenCallbackHandle) -> TweenCallbacks)?): Tween<U>
++	return nil :: any
++end
++-- PROTO: `tween:Wrapped(wrap)` — 같은 값, 콜백 셋만 `wrap(cb)`가 돌려준 것으로
++local function tweenWrapped<T>(_self: TweenData<T>, _wrap: (cb: TweenCallbackHandle) -> TweenCallbacks): Tween<T>
+ 	return nil :: any
+ end
+ export type Tween<T> = TweenData<T> & {
+ 	Mapped: typeof(tweenMapped),
++	Wrapped: typeof(tweenWrapped),
+ }
+ -- 순수 제네릭 함수(`H-343`): 문자열 `Override` 덕에 `Tween`엔 필드가 없어 콜러블 테이블이
+ -- 필요 없다 — 제네릭 `__call`의 `T` 오염(`H-324`, `luau-test/33` A 블록)이 함께 소멸.
+@@ -137,9 +156,9 @@ export type AnimateInfo = {
+ 	read Override: (TweenOverride | QuadTypes.StateMarker<TweenOverride>)?, -- [round3 `H-433`] 형제 여덟과 같이 마커(첫 마커 커밋이 빠뜨림)
+ 	read CanAnimate: (boolean | QuadTypes.StateMarker<boolean>)?,
+ 	-- [2026-09-21] Tween에 그대로 실리는 콜백 셋(State 불가)
+-	read Started: (() -> ())?,
+-	read Completed: (() -> ())?,
+-	read Cancelled: (() -> ())?,
++	read Started: TweenCallback<any>?,
++	read Completed: TweenCallback<any>?,
++	read Cancelled: TweenCallback<any>?,
+ 	read Dedup: (boolean | QuadTypes.StateMarker<boolean>)?, -- [2026-09-08 Q25] Tween의 `Dedup` 필드로 그대로 전달(기본 true — 값 비교는 Property 핸들러)
+ }
+ export type AnimateFn = (info: AnimateInfo) -> (self: any) -> QuadTypes.State<Tween<any>>
+diff --git a/quad-roblox/test/spec.shorthand.luau b/quad-roblox/test/spec.shorthand.luau
+index 5dc6c8ce..8a37405b 100644
+--- a/quad-roblox/test/spec.shorthand.luau
++++ b/quad-roblox/test/spec.shorthand.luau
+@@ -24,7 +24,7 @@ local gameShim = mock.gameShim(REFLECTED)
+ local q: any = Quad.New():UseProvider(QuadRoblox)
+ ;(getfenv(installProperty) :: any).game = gameShim
+ ;(getfenv(installProperty) :: any).TweenInfo = mock.tweenInfoShim
+-;(getfenv(installProperty) :: any).Enum = { EasingStyle = { Quad = "Quad" }, EasingDirection = { Out = "Out" } }
++;(getfenv(installProperty) :: any).Enum = { EasingStyle = { Quad = "Quad" }, EasingDirection = { Out = "Out" }, PlaybackState = { Completed = "Completed", Cancelled = "Cancelled" } }
+ ;(getfenv(installEvent) :: any).game = gameShim
+ ;(getfenv(q.Declaration.New) :: any).Instance = { new = mock.Instance.new }
+ q.Backend.isInst = mock.isMockInstance
+@@ -184,4 +184,49 @@ do
+ 	print("PASS")
+ end
+ 
++print()
++print("=== 10. [PROTO 2026-09-28 round13 tween-callback-structure §8-1] Tween 콜백 — 발행마다 사본 하나를 네 변이 공유, 마지막 키(PaddingBottom)만 (부모, 숏핸드 키, 사용자 값)으로 알린다; Completed 연쇄는 통지 순서와 무관하게 네 변이 한 값 ===")
++do
++	for _, key in { "UIPaddingOffset", "UIPadding" } do
++		for _, reverse in { false, true } do
++			mock.resetTweenLog()
++			local log = mock.tweenLog
++			local mkVal = if key == "UIPadding" then function(n: number): any return UDimNew(0, n) end else function(n: number): any return n end
++			local s = q.Source(mkVal(0))
++			local f = q.Declaration.Frame({ Name = "P", [key] = s }) :: any
++			local step, S, C, X = 0, 0, 0, 0
++			local args: { string } = {}
++			local function mk(n: number): any
++				return Tween({ Value = mkVal(n), Time = 0.2,
++					Started = function() S += 1 end,
++					Cancelled = function() X += 1 end,
++					Completed = function(inst: any, prop: string, v: any)
++						C += 1
++						table.insert(args, `{inst.Name}.{prop}={if type(v) == "table" then v.Offset else v}`)
++						if step < 3 then step += 1; s:Set(mk(100 + step)) end
++					end })
++			end
++			s:Set(mk(10))
++			for _ = 1, 8 do
++				local batch = {}
++				for _, e in log do if e.tween.PlaybackState == "Playing" then table.insert(batch, e) end end
++				if #batch == 0 then break end
++				for _, e in batch do e.tween.PlaybackState = "Completed"; for pk, pv in e.props do e.inst[pk] = pv end end
++				if reverse then for i = #batch, 1, -1 do batch[i].tween.Completed:Fire("Completed") end
++				else for _, e in batch do e.tween.Completed:Fire("Completed") end end
++			end
++			local pad = childNamed(f, "_quad_padding")
++			for _, p in { "PaddingLeft", "PaddingRight", "PaddingTop", "PaddingBottom" } do
++				assert(pad[p].Offset == 103, `{key} {p} reached 103 (reverse={reverse}): {pad[p].Offset}`)
++			end
++			assert(S == 4 and C == 4 and X == 0, `{key}: one callback per step (S {S} C {C} X {X})`)
++			assert(table.concat(args, " ") == `P.{key}=10 P.{key}=101 P.{key}=102 P.{key}=103`, "args = (parent, shorthand key, user value): " .. table.concat(args, " "))
++			local playing = 0
++			for _, e in log do if e.tween.PlaybackState == "Playing" then playing += 1 end end
++			assert(playing == 0, "no orphan tweens")
++		end
++	end
++	print("PASS")
++end
++
+ print("=== ALL PASS ===")
+diff --git a/quad-roblox/test/spec.tween.luau b/quad-roblox/test/spec.tween.luau
+index df5ff6c8..d4145be6 100644
+--- a/quad-roblox/test/spec.tween.luau
++++ b/quad-roblox/test/spec.tween.luau
+@@ -197,5 +197,38 @@ do
+ 	print("PASS")
+ end
+ 
++print()
++print("=== PROTO (2026-09-28 round13 tween-callback-structure §8-1) — tween:Mapped(fn, wrap) / tween:Wrapped(wrap): wrap는 호출마다 한 번, 돌려준 셋이 콜백 셋 전체, cb:Map은 있는 것에만; 값 검증은 Quad0246, wrap·반환·g 게이트는 사용자 줄 blame ===")
++do
++	local S0, C0 = function() end, function() end
++	local base = Tween({ Value = 3, Started = S0, Completed = C0 }) :: any
++	local calls = 0
++	local w = base:Wrapped(function(cb: any): any
++		calls += 1
++		assert(cb.Started == S0 and cb.Completed == C0 and cb.Cancelled == nil, "handle carries the source callbacks")
++		return { Completed = cb.Completed }
++	end)
++	assert(calls == 1 and w.Value == 3 and w.Started == nil and w.Completed == C0 and w.Cancelled == nil and Quad.isTween(w) and table.isfrozen(w), "Wrapped: the returned set is the whole set")
++	local mapped = base:Mapped(function(v: number): number return v * 10 end, function(cb: any): any
++		calls += 1
++		return cb:Map(function(f: any): any return function(...) f(...) end end)
++	end)
++	assert(calls == 2 and mapped.Value == 30 and mapped.Started ~= nil and mapped.Started ~= S0 and mapped.Completed ~= nil and mapped.Cancelled == nil, "Mapped(fn, wrap): one copy, Map only on present callbacks")
++	assert(base:Mapped(function(v: number): number return v end).Completed == C0, "Mapped(fn) keeps the callbacks as-is")
++	local cases: { { any } } = {
++		{ function() return base:Wrapped(5) end, "Quad0256 Tween:Wrapped: wrap must be a function (got number)" },
++		{ function() return base:Mapped(function(v: any): any return v end, "x") end, "Quad0256 Tween:Mapped: wrap must be a function (got string)" },
++		{ function() return base:Wrapped(function(): any return nil end) end, "Quad0257 Tween:Wrapped: wrap must return a callback set table (got nil)" },
++		{ function() return base:Wrapped(function(): any return { Completed = 5 } end) end, "Quad0246 Tween: Completed must be a function (got number)" },
++		{ function() return base:Wrapped(function(cb: any): any return cb:Map(5) end) end, "Quad0258 Tween callbacks:Map: g must be a function (got number)" },
++	}
++	for _, c in cases do
++		local ok, err = pcall(c[1])
++		assert(not ok and string.find(tostring(err), c[2], 1, true) ~= nil, "rejected: " .. tostring(err))
++		mock.assertBlamesUser(err, "spec.tween.luau", c[2])
++	end
++	print("PASS")
++end
++
+ print()
+ print("=== ALL PASS ===")
+diff --git a/quad-roblox/test/spec.tweenproperty.luau b/quad-roblox/test/spec.tweenproperty.luau
+index 689f25c1..a856e539 100644
+--- a/quad-roblox/test/spec.tweenproperty.luau
++++ b/quad-roblox/test/spec.tweenproperty.luau
+@@ -407,5 +407,69 @@ do
+ 	print("PASS")
+ end
+ 
++print()
++print("=== 12. [PROTO 2026-09-28 round13 tween-callback-structure §8-1] 콜백 인자 (inst, prop, value) — 모든 발화 자리; 모으고→쓰고→부른다(옛 정산 콜백은 새 기록 뒤, Cancelled 안 재진입도 순서대로 한 트윈); 철거는 통지 창이어도 Cancelled(Q99 c); 시체 위 retractFrom은 콜백 없음(Q82 (a)) ===")
++do
++	mock.resetTweenLog()
++	local seen: { string } = {}
++	local function tw(tag: string, value: any, extra: any?): any
++		local function mk(ev: string): any
++			return function(inst: any, prop: string, v: any)
++				table.insert(seen, `{tag}:{ev}({inst.Name},{prop},{tostring(v)})`)
++			end
++		end
++		local opts: any = { Value = value, Time = 0.3, Started = mk("S"), Completed = mk("C"), Cancelled = mk("X") }
++		if extra then for k2, v2 in extra do opts[k2] = v2 end end
++		return Tween(opts)
++	end
++	local function take(): string
++		local s = table.concat(seen, " ")
++		table.clear(seen)
++		return s
++	end
++	local src = q.Source(tw("a", 1) :: any)
++	local f = q.Declaration.Frame({ Name = "F", Size = src }) :: any
++	assert(take() == "a:S(F,Size,1) a:C(F,Size,1)", "snap args")
++	src:Set(tw("b", 2))
++	assert(take() == "b:S(F,Size,2)", "engine Started args")
++	src:Set(tw("c", 3))
++	assert(take() == "b:X(F,Size,2) c:S(F,Size,3)", "replacement: old Cancelled carries the OLD target")
++	local c = lastTween()
++	c.PlaybackState = "Completed" -- deferred-notice window
++	src:Set(tw("d", 4))
++	assert(take() == "c:C(F,Size,3) d:S(F,Size,4)", "window replacement: old Completed, then new Started")
++	lastTween():simulateCompleted()
++	assert(take() == "d:C(F,Size,4)", "natural finish args (read off the record)")
++	-- teardown inside the window is Cancelled (Q99 c)
++	src:Set(tw("e", 5))
++	take()
++	lastTween().PlaybackState = "Completed"
++	q.Dispatch.retractFrom(f, "Size", 1)
++	assert(take() == "e:X(F,Size,5)", "teardown in the window reports Cancelled: " .. table.concat(seen, " "))
++	-- re-entry from the old Cancelled: lands after this write, one tween left, final = the inner value
++	mock.resetTweenLog()
++	local s2 = q.Source(0 :: any)
++	local g = q.Declaration.Frame({ Name = "G", Size = s2 }) :: any
++	local once = false
++	s2:Set(Tween({ Value = 10, Time = 0.3, Cancelled = function()
++		if not once then once = true; s2:Set(Tween({ Value = 77, Time = 0.3 })) end
++	end }))
++	s2:Set(Tween({ Value = 20, Time = 0.3 }))
++	local playing = 0
++	for _, e in log do if e.tween.PlaybackState == "Playing" then playing += 1; assert(e.props.Size == 77, "the playing tween is the inner value") end end
++	assert(playing == 1 and s2:Get().Value == 77, "Cancelled re-entry: one tween, toward 77")
++	-- corpse: no callbacks, the engine tween is still cancelled
++	mock.resetTweenLog()
++	local h = q.Declaration.Frame({ Name = "H", Size = 0 }) :: any
++	q.Dispatch.process(h, "Size", tw("z", 9), 1)
++	take()
++	local zt = lastTween()
++	h:Destroy()
++	q.Dispatch.retractFrom(h, "Size", 1)
++	assert(take() == "" and zt.cancels == 1, "corpse retractFrom: Cancel, no callback")
++	local _ = g
++	print("PASS")
++end
++
+ print()
+ print("=== ALL PASS ===")
+diff --git a/quad-roblox/test/spec.tweentypes.luau b/quad-roblox/test/spec.tweentypes.luau
+index 9564e021..b178b958 100644
+--- a/quad-roblox/test/spec.tweentypes.luau
++++ b/quad-roblox/test/spec.tweentypes.luau
+@@ -29,7 +29,7 @@ local function _types()
+ 		BackgroundTransparency = q.Tween({ Value = 0 }):Mapped(function(v: number): number
+ 			return v * 0.5
+ 		end),
+-		-- [2026-09-21] 콜백 셋은 인자 없는 함수 필드
++		-- [2026-09-21] 콜백 셋 — 인자 없는 함수도 들어간다(PROTO 2026-09-28: 호출은 (inst, prop, value))
+ 		Rotation = q.Tween({ Value = 90, Time = 0.2, Started = function() end, Completed = function() end, Cancelled = function() end }),
+ 	})
+ 	local src = q.Source(UDim2.new())
+@@ -45,7 +45,31 @@ local function _types()
+ 	local o: Types.TweenOverride = "Cancel"
+ 	local opts: Types.TweenOptions<number> = { Value = 1, Reverses = true }
+ 	local t2: Types.Tween<number> = q.Tween(opts)
+-	return refined, info, f1, f2, f3, m3, o, t2
++	-- [PROTO 2026-09-28 round13 tween-callback-structure §8-1] 콜백 인자 (inst, prop, value) — 인자 없는 함수도 그대로,
++	-- 세 인자는 생성자 옵션에서 T로 정밀; Wrapped / Mapped(fn, wrap)의 핸들·셋
++	local t3 = q.Tween({ Value = 90, Completed = function(inst: Instance, prop: string, value: number)
++		local _a, _b, _c = inst.Name, prop:upper(), value + 1
++	end })
++	local w: Types.Tween<number> = t3:Wrapped(function(cb)
++		return cb:Map(function(f)
++			return f
++		end)
++	end)
++	local w2: Types.Tween<number> = t3:Wrapped(function(cb)
++		return { Completed = cb.Completed }
++	end)
++	local m4: Types.Tween<UDim> = t3:Mapped(function(v: number): UDim
++		return UDim.new(0, v)
++	end, function(cb)
++		return cb:Map(function(f)
++			return function(inst: Instance, prop: string, _value: any)
++				f(inst, prop, 1)
++			end
++		end)
++	end)
++	local f4 = q.Declaration.Frame({ Rotation = w, BackgroundTransparency = w2 })
++	local c4 = q.Declaration.UICorner({ CornerRadius = m4 })
++	return refined, info, f1, f2, f3, m3, o, t2, f4, c4
+ end
+ 
+ print("=== 1. 런타임 대응 — 타입이 약속한 값이 실제로 있다(H-300) ===")

@@ -1,0 +1,64 @@
+=== A. callback args at every Property fire site (Size on Frame 'F') ===
+  first-write snap:        first:S(G,Size,5) first:C(G,Size,5)
+  engine start:            a:S(F,Size,10)
+  replace running:         a:X(F,Size,10) b:S(F,Size,20)
+  replace window:          b:C(F,Size,20) c:S(F,Size,30)
+  replace by zero-time:    c:X(F,Size,30) z:S(F,Size,40) z:C(F,Size,40)
+  natural finish:          d:S(F,Size,50) d:C(F,Size,50)
+  replace by plain:        e:S(F,Size,60) e:X(F,Size,60)
+  teardown running:        g:S(F,Size,80) g:X(F,Size,80)
+  teardown window (Q99 c): h:S(F,Size,90) h:X(F,Size,90)
+=== A2. Q82 (a) corpse retractFrom — no callback, engine tween still cancelled ===
+  running: callbacks=[] cancels=1 state=Cancelled
+  window : callbacks=[] cancels=0 state=Completed
+=== B (2)(4). UIPaddingOffset 10->101->102->103 from the representative Completed, notice orders ===
+  UIPaddingOffset fwd            steps 3 S 4 C 4 X 0, created 16, final=103/103/103/103 playing=[] orphans=0
+    seen: S:P.UIPaddingOffset=10 C:P.UIPaddingOffset=10 S:P.UIPaddingOffset=101 C:P.UIPaddingOffset=101 S:P.UIPaddingOffset=102 C:P.UIPaddingOffset=102 S:P.UIPaddingOffset=103 C:P.UIPaddingOffset=103
+  UIPaddingOffset rev            steps 3 S 4 C 4 X 0, created 16, final=103/103/103/103 playing=[] orphans=0
+    seen: S:P.UIPaddingOffset=10 C:P.UIPaddingOffset=10 S:P.UIPaddingOffset=101 C:P.UIPaddingOffset=101 S:P.UIPaddingOffset=102 C:P.UIPaddingOffset=102 S:P.UIPaddingOffset=103 C:P.UIPaddingOffset=103
+  UIPaddingOffset rep-first      steps 3 S 4 C 4 X 0, created 16, final=103/103/103/103 playing=[] orphans=0
+    seen: S:P.UIPaddingOffset=10 C:P.UIPaddingOffset=10 S:P.UIPaddingOffset=101 C:P.UIPaddingOffset=101 S:P.UIPaddingOffset=102 C:P.UIPaddingOffset=102 S:P.UIPaddingOffset=103 C:P.UIPaddingOffset=103
+  UIPaddingOffset 2,4,1,3        steps 3 S 4 C 4 X 0, created 16, final=103/103/103/103 playing=[] orphans=0
+    seen: S:P.UIPaddingOffset=10 C:P.UIPaddingOffset=10 S:P.UIPaddingOffset=101 C:P.UIPaddingOffset=101 S:P.UIPaddingOffset=102 C:P.UIPaddingOffset=102 S:P.UIPaddingOffset=103 C:P.UIPaddingOffset=103
+  UIPadding(identity) fwd        steps 3 S 4 C 4 X 0, created 16, final=103/103/103/103 playing=[] orphans=0
+    seen: S:P.UIPadding=10 C:P.UIPadding=10 S:P.UIPadding=101 C:P.UIPadding=101 S:P.UIPadding=102 C:P.UIPadding=102 S:P.UIPadding=103 C:P.UIPadding=103
+  UIPadding(identity) rev        steps 3 S 4 C 4 X 0, created 16, final=103/103/103/103 playing=[] orphans=0
+    seen: S:P.UIPadding=10 C:P.UIPadding=10 S:P.UIPadding=101 C:P.UIPadding=101 S:P.UIPadding=102 C:P.UIPadding=102 S:P.UIPadding=103 C:P.UIPadding=103
+  UIPadding(identity) rep-first  steps 3 S 4 C 4 X 0, created 16, final=103/103/103/103 playing=[] orphans=0
+    seen: S:P.UIPadding=10 C:P.UIPadding=10 S:P.UIPadding=101 C:P.UIPadding=101 S:P.UIPadding=102 C:P.UIPadding=102 S:P.UIPadding=103 C:P.UIPadding=103
+=== C (3). four tweens running, representative callback re-emits synchronously ===
+  B=engine    seen=[X:P.UIPaddingOffset=10] s=Tween(77, 1s) final=0/0/0/0 playing=[UIPadding.PaddingBottom=77 UIPadding.PaddingLeft=77 UIPadding.PaddingRight=77 UIPadding.PaddingTop=77] orphans=0
+  B=zero-time seen=[X:P.UIPaddingOffset=10] s=Tween(77, 1s) final=20/20/20/20 playing=[UIPadding.PaddingBottom=77 UIPadding.PaddingLeft=77 UIPadding.PaddingRight=77 UIPadding.PaddingTop=77] orphans=0
+  B=plain     seen=[X:P.UIPaddingOffset=10] s=Tween(77, 1s) final=20/20/20/20 playing=[UIPadding.PaddingBottom=77 UIPadding.PaddingLeft=77 UIPadding.PaddingRight=77 UIPadding.PaddingTop=77] orphans=0
+  window A, B=engine, rep Completed re-emits: seen=[C:P.UIPaddingOffset=10] s=Tween(77, 1s) final=0/0/0/0 playing=[UIPadding.PaddingBottom=77 UIPadding.PaddingLeft=77 UIPadding.PaddingRight=77 UIPadding.PaddingTop=77] orphans=0
+=== D (5). T5 — one Source on Size + BackgroundTransparency: two callbacks, each its own prop ===
+  start:     t:S(F,BackgroundTransparency,10) t:S(F,Size,10)
+  finish:    t:C(F,BackgroundTransparency,10) t:C(F,Size,10)
+  zero-time: u:S(F,BackgroundTransparency,20) u:C(F,BackgroundTransparency,20) u:S(F,Size,20) u:C(F,Size,20)
+=== E. shorthand callback args, single-key UICorner/UIScale, replace + Set(nil) teardown ===
+  UICorner         start=[a:S(H,UICorner,8)] finish=[a:C(H,UICorner,8)] replace=[b:S(H,UICorner,16)] Set(nil)=[b:X(H,UICorner,16)] kids= playing=[] orphans=0
+  UIScale          start=[a:S(H,UIScale,1.5)] finish=[a:C(H,UIScale,1.5)] replace=[b:S(H,UIScale,3)] Set(nil)=[b:X(H,UIScale,3)] kids= playing=[] orphans=0
+  UIPaddingOffset  start=[a:S(H,UIPaddingOffset,4)] finish=[a:C(H,UIPaddingOffset,4)] replace=[b:S(H,UIPaddingOffset,8)] Set(nil)=[b:X(H,UIPaddingOffset,8)] kids= playing=[] orphans=0
+=== F. Mapped(fn, wrap) / Wrapped — one call, set semantics, validation ===
+  Wrapped: wrap calls 1, Started=nil Completed same=true Cancelled=nil Value=3 frozen=true
+  Mapped(fn,wrap): wrap calls 1, Value=30 all three present=true isTween=true
+  no callbacks + Map: Started=nil Completed=nil
+  Mapped(fn) keeps callbacks as-is: true
+  wrap not fn          ok=false ./test/probe.cbproto.luau:267: Quad0256 Tween:Wrapped: wrap must be a function (got number)
+  wrap returns nil     ok=false ./test/probe.cbproto.luau:268: Quad0257 Tween:Wrapped: wrap must return a callback set table (got nil)
+  set value not fn     ok=false ./test/probe.cbproto.luau:269: Quad0246 Tween: Completed must be a function (got number)
+  Map g not fn         ok=false ./test/probe.cbproto.luau:270: Quad0258 Tween callbacks:Map: g must be a function (got number)
+  Mapped wrap not fn   ok=false ./test/probe.cbproto.luau:271: Quad0256 Tween:Mapped: wrap must be a function (got string)
+=== G. GC — callbacks (and the shorthand's wrapped copy) do not pin a destroyed Instance (claimed ones are held by quad until Destroy) ===
+  Size no callbacks                        alive=1
+  Size Completed cb                        alive=1
+  Size no callbacks +Destroy               alive=0
+  Size Completed cb +Destroy               alive=0
+  UIPaddingOffset no callbacks             alive=1
+  UIPaddingOffset Completed cb             alive=1
+  UIPaddingOffset no callbacks +Destroy    alive=0
+  UIPaddingOffset Completed cb +Destroy    alive=0
+  UICorner no callbacks                    alive=1
+  UICorner Completed cb                    alive=1
+  UICorner no callbacks +Destroy           alive=0
+  UICorner Completed cb +Destroy           alive=0
