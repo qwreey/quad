@@ -70,8 +70,9 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 -- public predicates. Base predicates here, in order; provider brands are found
 -- by CONTRACT (round3 §4 Q27, user decision 2026-09-08): a provider installs its
 -- brand predicate as a top-level module field named `is<Brand>` (`isTween`,
--- a future `isSpring`) — the `isX` convention IS the registration, no op on
--- Dispatch (user: *"각 프로바이더/플러그인 상 그냥 필드로 넣는게 맞는 계약같아서"*).
+-- a future `isSpring`) — no op on Dispatch (user: *"각 프로바이더/플러그인 상 그냥
+-- 필드로 넣는게 맞는 계약같아서"*). [2026-09-28 round13 Q106] and the predicate is
+-- registered in `QuadTypes.BrandPredicates` — only registered `is*` fields count.
 -- `brandNameOf` scans the module for such fields and tries them BEFORE this
 -- list (a provider value may also carry a base brand, never the reverse).
 -- Order is most-specific-first (`H-220`): `isRef` is a superset of
@@ -151,28 +152,19 @@ local function Init(module: any)
 	end
 
 	-- Diagnostics only (cold path): provider `is<Brand>` fields first, then the
-	-- ordered base list. A provider predicate is `pcall`ed — a non-brand `isX` helper
+	-- ordered base list. A provider predicate is `pcall`ed — a buggy predicate
 	-- must not turn a match-failure diagnostic into its own raise.
 	-- round11 `H-563` (탐사 G′ 1): a module-level `is*` helper that is NOT a brand predicate
 	-- (`q.isEmpty`, a plugin's `isMobile` ignoring its argument) answered `true` for a plain
-	-- props table and the `H-470` gate killed EVERY `D.<Class>{}` ("props must be a plain
-	-- table … (got Empty)"). A brand predicate is false on a plain empty table and on a
-	-- non-table — probe once per function identity (weak-keyed cache) and skip the rest.
-	local brandPredicateOk: { [any]: boolean } = setmetatable({}, { __mode = "k" }) :: any
-	local function isBrandPredicate(predicate: any): boolean
-		local cached = brandPredicateOk[predicate]
-		if cached ~= nil then
-			return cached
-		end
-		local ok1, r1 = pcall(predicate, {})
-		local ok2, r2 = pcall(predicate, 0)
-		local verdict = ok1 and ok2 and r1 ~= true and r2 ~= true
-		brandPredicateOk[predicate] = verdict
-		return verdict
-	end
+	-- props table and the `H-470` gate killed EVERY `D.<Class>{}`. The fix then was a probe
+	-- (`{}`/`0` must be false), which still let `isNonEmptyList`-style helpers through
+	-- (round13 `H-698`). round13 Q106 (user decision 2026-09-28): a brand predicate is now
+	-- one REGISTERED in `QuadTypes.BrandPredicates` (each package registers its own —
+	-- quad-base/quad-roblox `Brand.luau`); every other `is*` field is ignored, no probing.
+	local BrandPredicates = QuadTypes.BrandPredicates
 	local function brandNameOf(v: any): string?
 		for name, predicate in module do
-			if type(name) == "string" and string.sub(name, 1, 2) == "is" and not BASE_PROBE[name] and type(predicate) == "function" and isBrandPredicate(predicate) then
+			if type(name) == "string" and string.sub(name, 1, 2) == "is" and not BASE_PROBE[name] and type(predicate) == "function" and BrandPredicates:Is(predicate) then
 				local ok, hit = pcall(predicate, v)
 				if ok and hit == true then
 					return string.sub(name, 3) -- "isTween" -> "Tween"

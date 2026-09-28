@@ -115,11 +115,15 @@ do
 	assert(not ok2, "branded value with no handler -> error")
 	assert(string.find(tostring(err2), "brand: Blocker", 1, true) ~= nil, `message names the brand: {tostring(err2)}`)
 	-- Q27 (2026-09-08): a PROVIDER brand is found by contract — the module-level `is<Brand>`
-	-- field is the registration (no Dispatch op); it is tried before the base list
+	-- field (no Dispatch op); it is tried before the base list. round13 Q106 (2026-09-28): the
+	-- predicate must also be registered in `QuadTypes.BrandPredicates` (unregistered `is*` fields
+	-- are ignored — a raising helper below is never even called)
 	local spring = setmetatable({}, {})
-	q.isSpring = function(v: any): boolean
+	local function isSpring(v: any): boolean
 		return v == spring
 	end
+	QuadTypes.BrandPredicates:Register(isSpring)
+	q.isSpring = isSpring
 	q.isBroken = function(_v: any): boolean -- a helper that raises must not mask the diagnostic
 		error("not a brand predicate")
 	end
@@ -618,12 +622,24 @@ do
 	end
 	local inst = Instance.new("Frame")
 	q.Dispatch.drive(inst, {}) -- used to die with "props must be a plain { ... } table (got Empty)"
+	-- round13 H-698 / Q106 (2026-09-28): helpers that are false on `{}` and `0` slipped past the old
+	-- probe and killed every non-empty props table; only registered predicates count now
+	q.isNonEmptyList = function(t: any): boolean
+		return type(t) == "table" and next(t) ~= nil
+	end
+	q.isHasName = function(t: any): boolean
+		return type(t) == "table" and t.Name ~= nil
+	end
+	local okNE, errNE = pcall(function()
+		q.Dispatch.drive(inst, { Name = "x" })
+	end)
+	assert(okNE or string.find(tostring(errNE), "Quad0083", 1, true) == nil, "a non-empty props table is not mistaken for a quad value: " .. tostring(errNE))
 	local okB, errB = pcall(function()
 		q.Dispatch.drive(inst, q.Source(1))
 	end)
 	assert(not okB and string.find(tostring(errB), "props must be a plain", 1, true) ~= nil, "the H-470 gate still refuses a quad value: " .. tostring(errB))
 	assert(string.find(tostring(errB), "Mobile", 1, true) == nil and string.find(tostring(errB), "Empty", 1, true) == nil, "diagnostics not polluted by the helpers: " .. tostring(errB))
-	q.isEmpty, q.isMobile = nil, nil
+	q.isEmpty, q.isMobile, q.isNonEmptyList, q.isHasName = nil, nil, nil, nil
 	-- H-564: an index that would leave a gap in the chain is refused
 	q.Dispatch.addHandler({
 		name = "OnlyK",

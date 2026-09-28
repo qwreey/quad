@@ -830,8 +830,17 @@ end
 -- quad-error 태그 레이어(`H-231` — 우선 "공개 표면" 하나만, 필요해지면 늘림):
 -- 모든 공개 표면 함수와 `addHandler`가 수령하는 핸들러 함수가 이 레이어로
 -- 태그되고, 사용자 입력·제공자 계약 위반 에러가 이 레이어를 겨냥한다.
+-- [2026-09-28 round13 Q106 (a′) — 사용자 결정·이름] **브랜드 술어 등록 집합.** 진짜 브랜드 술어(`isState`·`isTween`
+-- 같은 `is<Brand>` 모듈 필드 — Q27 계약)를 여기 `:Register`한다. quad-base의 진단 스캔(`brandNameOf` — 매치 실패
+-- 메시지의 브랜드 이름·`Quad0083` 중괄호 게이트)은 모듈의 `is*` 필드 중 이 집합에 든 함수만 브랜드 술어로 본다 —
+-- 사용자 헬퍼(`q.isNonEmptyList`)는 등록되지 않으니 자동으로 빠진다(옛 `{}`/`0` 시험 호출 휴리스틱을 대체).
+-- `<X>Brand`("X 값의 집합")가 아니라 복수형 `BrandPredicates`로 부르는 것은 "Predicate라는 값의 브랜드"로
+-- 읽히는 것을 막기 위해서다(sonnet 외부자·내부자 명명 판정 뒤 사용자 결정).
+local BrandPredicates = Brand()
+
 return {
 	Brand = Brand,
+	BrandPredicates = BrandPredicates,
 	HANDLER_PRIORITY_HIGH = 1000,
 	HANDLER_PRIORITY_NORMAL = 0,
 	HANDLER_PRIORITY_LOW = -1000,

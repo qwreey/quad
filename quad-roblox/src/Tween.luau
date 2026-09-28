@@ -17,7 +17,8 @@
 	(`RobloxExtension` — `q.Tween`/`q.isTween` through `UseProvider`'s `Self & P`);
 	the direct set is what the sibling installers and quad-base's diagnostic
 	brand probe see — `Dispatch/init.luau` scans the module for `is<Brand>`
-	fields (the provider-brand CONTRACT, round3 §4 Q27, 2026-09-08).
+	fields (the provider-brand CONTRACT, round3 §4 Q27, 2026-09-08) that are registered in
+	`QuadTypes.BrandPredicates` (round13 Q106 — `Brand.luau` registers `isTween`).
 	The constructor is per module instance because raises go through the
 	module's shared error namespace (`H-231`).
 

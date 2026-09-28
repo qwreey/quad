@@ -29,6 +29,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Changed
 
+- 프로바이더 계약: 자기 값 타입의 브랜드 술어(`is<Brand>` 모듈 필드)를 새 공유 집합 `QuadTypes.BrandPredicates`에 `:Register(isX)`로 등록하세요 — 디스패치 진단(매치 실패 메시지의 브랜드 이름, 중괄호를 빠뜨린 `D.Frame(value)` 거부)이 등록된 술어만 봅니다. 등록하지 않아도 동작은 그대로이고 그 브랜드의 진단만 약해집니다. quad-roblox의 `isTween`은 등록돼 있습니다.
 - `q.Tag(...)`·`tag:Added`·`tag:Removed`·`q.Tag.Merged`의 **인자 자리 `nil`은 이제 "없음"**입니다(전엔 검증 에러). `base:Added(if even then "Even" else nil)`처럼 조건을 인자 안에 쓰면 결과가 늘 새 `Tag`라 대입을 빠뜨릴 수 없습니다. 리스트 안 nil 구멍(`{ "a", nil, "b" }`)은 여전히 에러이고, `tag:Contains(nil)`도 그대로 에러입니다.
 - `Info` 없이 `Time = 0`이고 `DelayTime`/`RepeatCount`/`Reverses`가 없거나 0·거짓인 `q.Tween{…}`은 이제 엔진 트윈 없이 값을 그 자리에서 씁니다(첫 세팅과 같은 스냅). 전에는 0초짜리 엔진 트윈을 만들어 다음 프레임에 썼습니다. 그 셋 중 하나라도 있으면 전과 같습니다.
 
@@ -100,7 +101,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 - `slot:List`의 `data`에 배열이 아닌 테이블(id로 키잉한 맵, 디코드한 JSON 오브젝트, 해시 키가 섞인 배열)을 주면 에러 없이 목록이 통째로 비워지고 원소가 파괴되던 것 — 이제 `Slot:List: data must be a plain array - key "…" is not an array position`으로 거부하고 아무것도 건드리지 않습니다(생성자 `initial`과 같은 규칙). `updateFn`이 `q.KeyGone`을 돌려주면(`nil` 대신) 안내 문구로 거부합니다.
 - 서로를 담은 `State` 사슬(`a:Set(b); b:Set(a)`, `s:Set(s)`)을 자리에 놓으면 내부 파일을 가리키는 stack overflow로 죽던 것 — 이제 `State: the value chain is circular …`입니다.
 - Roblox 기본 Deferred 시그널 모드에서, 인스턴스가 파괴된 뒤 **같은 프레임 안에** 같은 `Effect`/훅 핸들을 다른 인스턴스에 다시 놓으면(행 캐시가 핸들을 재사용하는 목록) 옛 인스턴스의 지연된 Destroying 콜백이 새 바인딩을 끊어 cleanup이 살아 있는 인스턴스에서 돌고 그 뒤 fn이 영영 다시 안 돌던 것 — 이제 더 이상 자기 것이 아닌 바인딩의 콜백은 무시됩니다.
-- 모듈에 `is`로 시작하는 평범한 헬퍼(`q.isEmpty`, 인자를 무시하는 플러그인 `isMobile`)가 얹히면 그 뒤로 모든 `D.<Class>{}`가 `Dispatch.drive: props must be a plain { ... } table …`로 죽던 것 — 브랜드 술어답지 않은 함수(빈 테이블 `{}`이나 숫자 `0`에 `true`를 돌려주는 것)는 브랜드 스캔에서 걸러냅니다 — 비어 있지 않은 테이블에만 `true`를 주는 헬퍼(`isNonEmptyList` 등)는 여전히 걸리니 모듈 표면의 `is*` 이름은 브랜드 술어에만 쓰세요.
+- 모듈에 `is`로 시작하는 평범한 헬퍼(`q.isEmpty`, `q.isNonEmptyList`, 인자를 무시하는 플러그인 `isMobile`)가 얹히면 그 뒤로 모든 `D.<Class>{}`가 `Dispatch.drive: props must be a plain { ... } table …`로 죽던 것 — 이제 브랜드 스캔은 `QuadTypes.BrandPredicates`에 등록된 술어만 보므로 등록되지 않은 헬퍼는 무시됩니다.
 - 숫자 키 자리에 묶였던 `Effect`의 호스트가 파괴된 직후 같은 프레임 안에서 `:Subscribe()`/`:WeakSubscribe()`로 되살리면, 뒤늦게 배달되는 `Destroying`(Deferred 시그널 기본값)이 살아 있는 구독의 cleanup을 소진하고 fn을 영영 멈추게 하던 것 — 이제 되살릴 때 옛 연결을 끊어 그 콜백을 무시합니다.
 - `tostring(store)`가 `rawset`으로 넣은 숫자 키가 섞여 있으면 "attempt to compare string < number"로 던지던 것 — 이제 키를 문자열로 비교해 항상 찍힙니다.
 - `Context`/`Provider` 값을 `Declaration` 자리에 잘못 놓으면 "프로바이더가 초기화됐는지 확인하라"는 엉뚱한 안내가 붙던 것 — 이제 `Store`처럼 "어느 키에도 그대로 놓이지 않는다 — 필요한 값을 먼저 읽어 내라"는 안내가 나옵니다(전에 이 항목이 말했던 "숫자 키 자리에 두라"는 따라가면 같은 에러가 다시 나는 안내였습니다).

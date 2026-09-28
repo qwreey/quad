@@ -1440,7 +1440,7 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
 검증인데 outermost(`errorBefore`)로 던지는 자리(Q89)가 있다. 사용자 문항이 열려 있다
 (`qa-request/post-implementation-review-round13.md` §4). 본문은 결정 전이라 그대로 둔다.
 
-**0-b. [2026-09-06 신설 — 하루에 세 번 반복: `H-338`·`H-342`] 새 브랜드 술어(`isX`)를 모듈 표면에 얹으면 `Dispatch/init.luau`의 `BRAND_PROBES`에도 넣을 것.** 무매치 진단이 그 값을 `typeof`(`table`)로 보고해 "프로바이더 미초기화"로 오도한다 — 목록은 손 복사라 게이트가 없다. **[2026-09-08 Q27 사용자 결정]** 이 목록은 **base 브랜드만** 적는다 — 프로바이더 브랜드(`isTween`, 장래 `isSpring`)는 모듈 최상위 `is<Brand>` 필드가 곧 계약이고, `brandNameOf`가 진단 시점에 모듈을 스캔해 그 필드들을 base 목록보다 먼저 시도한다(등록 op 없음, `pcall`로 호출 — 브랜드 술어가 아닌 `isX` 헬퍼가 진단을 가리지 않게). 그러니 0-b는 quad-base 안의 새 브랜드에만 해당한다(`spec.dispatch` 2절).
+**0-b. [2026-09-06 신설 — 하루에 세 번 반복: `H-338`·`H-342`] 새 브랜드 술어(`isX`)를 모듈 표면에 얹으면 `Dispatch/init.luau`의 `BRAND_PROBES`에도 넣을 것.** 무매치 진단이 그 값을 `typeof`(`table`)로 보고해 "프로바이더 미초기화"로 오도한다 — 목록은 손 복사라 게이트가 없다. **[2026-09-28 round13 Q106]** 그리고 base `Brand.luau` 끝의 `QuadTypes.BrandPredicates:Register` 목록에도 넣을 것(스캔 집합의 완전성 — base는 이름 목록으로도 닿지만 집합이 "브랜드 술어 전부"여야 한다). **[2026-09-08 Q27 사용자 결정]** 이 목록은 **base 브랜드만** 적는다 — 프로바이더 브랜드(`isTween`, 장래 `isSpring`)는 모듈 최상위 `is<Brand>` 필드가 곧 계약이고, `brandNameOf`가 진단 시점에 모듈을 스캔해 그 필드들을 base 목록보다 먼저 시도한다(Dispatch 등록 op 없음, `pcall`로 호출). **[2026-09-28 round13 Q106 정정]** 스캔은 `QuadTypes.BrandPredicates`에 등록된 `is*` 함수만 본다 — 브랜드 술어가 아닌 `isX` 헬퍼는 등록되지 않았으니 무시되고, 옛 `{}`/`0` 시험 호출(`H-563`)은 삭제됐다. 그러니 0-b는 quad-base 안의 새 브랜드에만 해당한다(`spec.dispatch` 2절).
 
 **1. 클로저는 early-return해도 체인에서 *소비*된다.**
 `Dispatch.retractFrom`은 저장된 retractor를 호출하고 **항상**

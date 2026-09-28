@@ -49,11 +49,19 @@ Store인가/Tag인가" 판별, 또는 PropertyHandler의 `process` 내부에서
 
 **[2026-09-08 사용자 결정 — 프로바이더 브랜드의 계약(round3 §4 Q27)]** 프로바이더·플러그인은 자기
 브랜드 술어를 **모듈 최상위 `is<Brand>` 필드**로 설치한다(`quad.isTween`, 장래 `quad.isSpring`). 그
-필드가 곧 등록이다 — quad-base의 무매치 진단(`Dispatch/init.luau` `brandNameOf`)은 모듈에서 `is*`
+필드가 곧 등록이다 **[2026-09-28 Q106 정정 — 필드는 계약 그대로이되 "무엇이 브랜드 술어인가"의 표시는 아래 배너의 `BrandPredicates` 등록이 한다]** — quad-base의 무매치 진단(`Dispatch/init.luau` `brandNameOf`)은 모듈에서 `is*`
 함수 필드를 스캔해 base 목록보다 먼저 시도하고, 이름의 `is` 뒤를 브랜드 이름으로 쓴다. 별도 등록
-op(`Dispatch.addBrandProbe` 류)는 두지 않는다(사용자: *"저런 헬퍼를 만들 이유는 못 느끼는중 …
+op(`Dispatch.addBrandProbe` 류 — **Dispatch** 쪽 op)는 두지 않는다(사용자: *"저런 헬퍼를 만들 이유는 못 느끼는중 …
 Dispatch 에 오는게 맞는지 모르겠음"*). 하위 모듈이 base를 require하지 못하고 런타임 주입으로 받는
 구조라 `module.isX` 조회가 유일한 길이라는 점도 사용자 진단.
+**[2026-09-28 round13 Q106 — 사용자 제안·결정, 이름 `BrandPredicates`]** 필드 계약은 그대로 두고 **무엇이 브랜드
+술어인가**를 표시로 정한다 — quad-types가 공유 인스턴스 `BrandPredicates = Brand()`를 내보내고, 각 패키지가
+자기 술어를 `:Register`한다(quad-base `Brand.luau`의 base 열여덟, quad-roblox `isTween`). `brandNameOf`는
+`is*` 필드 중 `BrandPredicates:Is(fn)`인 것만 스캔한다 — 옛 `{}`/`0` 시험 호출(`H-563`)은 삭제됐고, 그것이
+못 거르던 `isNonEmptyList`·필드를 보는 헬퍼(`H-698`)도 이제 무시된다. Q27이 기각한 것(Dispatch 등록 op —
+"필드가 계약", "하위 모듈은 런타임 주입")과 부딪히지 않는다: 필드는 계약 그대로이고 표시는 모든 패키지가
+이미 의존하는 quad-types의 `Brand`로 한다. 이름은 sonnet 외부자·내부자 명명 판정 뒤 사용자 결정 — `<X>Brand`
+("X 값의 집합") 꼴의 `PredicateBrand`는 "Predicate라는 값의 브랜드"로 읽혀 모호했다.
 
 **`Brand()`가 브랜드 객체 하나를 만든다.** 그 객체가 weak-key 집합 하나를
 들고, 값은 **자기가 속한 브랜드에 스스로 등록**한다.

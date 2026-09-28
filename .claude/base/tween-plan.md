@@ -475,7 +475,7 @@ roblox 에 있다는 점으로 미루어 볼 때, 슈거의 실 구현체인 Twe
   이동 전과 같다).
 - **quad-base**: Tween을 모른다. **[2026-09-08 Q27 사용자 결정]** `BRAND_PROBES`의 `"isTween"`
   문자열도 지웠다 — 프로바이더 브랜드의 계약은 **모듈 최상위 `is<Brand>` 필드**이고(`quad.isTween`),
-  무매치 진단은 모듈에서 그런 필드를 스캔해 base 목록보다 먼저 시도한다(등록 op 없음 — 사용자:
+  무매치 진단은 모듈에서 그런 필드를 스캔해 base 목록보다 먼저 시도한다(Dispatch 등록 op 없음 — **[2026-09-28 round13 Q106 정정]** 다만 술어는 `QuadTypes.BrandPredicates`에 `:Register`해야 스캔에 든다, quad-roblox `Brand.luau`가 `isTween`을 등록 — `brand-plan.md` Q27 절 배너; 사용자:
   *"isXXX를 최상위에 넣는게 관행인데, 각 프로바이더/플러그인 상 그냥 필드로 넣는게 맞는 계약같아서,
   Dispatch.addBrandProbe 같은게 필요한지는 의문임"*). `base/brand-plan.md` 구현 절.
 
