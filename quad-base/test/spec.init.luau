@@ -60,7 +60,7 @@ do
 	local ok, err = pcall(function()
 		q:RunInit(nil :: any)
 	end)
-	assert(not ok and string.find(tostring(err), "Quad:RunInit: initFn must be a function (got nil)", 1, true) ~= nil, tostring(err))
+	assert(not ok and string.find(tostring(err), "Quad0208 RunInit: initFn must be a function (got nil)", 1, true) ~= nil, tostring(err))
 	assert(string.find(tostring(err), "Relate", 1, true) == nil, "no leaf module: " .. tostring(err))
 	local ok2, err2 = pcall(function()
 		q:RunInit(5 :: any)

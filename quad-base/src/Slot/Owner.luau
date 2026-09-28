@@ -51,7 +51,7 @@ return function(S: Types.SlotInternal, module: any)
 			return false -- exactly this position already holds it — re-confirm, no-op
 		end
 		if current ~= nil then
-			S.Err.errorBefore("Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed" .. S.ZOMBIE_NOTE, S.SURFACE)
+			S.Err.errorBefore("Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — one value takes one seat, so the same element cannot sit in two parent tables, twice in one table, or in two Slots" .. S.ZOMBIE_NOTE, S.SURFACE)
 		end
 		S.elementOwner:SetWeak(element, S.OWNER, inst)
 		S.elementOwner:SetWeak(element, S.OWNER_POS, k)

@@ -325,7 +325,7 @@ Overridden: (...any) -> any
 
 **에러**
 
-- `Quad0053 Modifier.Overridden: expects at least one Modifier`
+- `Quad0053 Modifier.Overridden: must be given at least one Modifier`
 - `Quad0054 Modifier.Overridden: argument #{i} is not a Modifier (got {typeof(arg)})`
 
 **예제**

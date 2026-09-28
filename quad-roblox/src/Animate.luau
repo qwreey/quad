@@ -64,7 +64,7 @@ local function install(quad: any, validateFields: (any, any?) -> (), tweenOuterm
 
 	local function Animate(info: any): any
 		if type(info) ~= "table" then
-			Err.errorBeforeNearest("Quad0214 Animate: expected an options table (Animate{ Time = ... })", SURFACE)
+			Err.errorBeforeNearest(`Quad0214 Animate: options must be a table, e.g. Animate\{ Time = ... \} (got {typeof(info)})`, SURFACE)
 		end
 		-- [2026-09-15 사용자 결정] unknown keys (typos such as `Duration`) are reported only under
 		-- `q.debug`; execution continues with the defaults

@@ -88,13 +88,13 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 - `fn`이 던져 죽은 `Effect`를 `:Unsubscribe()`/`:WeakUnsubscribe()`로 놓아줄 수 있습니다. 전에는 죽은 핸들의 네 진입점이 전부 `cannot change subscription from inside fn or cleanup`으로 거부돼 강한 구독이 그 핸들과 상류를 모듈 수명 동안 붙들었습니다. `Observer`도 같습니다 — 콜백이 던져 굳은 핸들을 해제할 수 있고, 굳은 핸들은 (재)구독·재바인드만 막히지 발화는 계속된다는 것을 문서가 바로 적습니다. 부수로 콜백 안에서 자기를 해제하는 것도 됩니다(해제는 콜백을 다시 부르지 않습니다).
 - `Effect`의 `fn`이 도는 동안 핸들이 실행 자격을 잃으면(fn 안에서 자기를 해제했거나, `fn`이 yield하는 사이 묶인 인스턴스가 죽거나 자리에서 내려간 경우) `fn`이 돌려준 cleanup을 저장하지 않고 **즉시 소진**합니다(인스턴스 죽음이 원인이면 `dying = true`). 전에는 그 cleanup이 아무도 소진하지 않는 핸들에 남아 조용한 영구 누수였습니다. `fn` 안 yield는 여전히 정의되지 않은 동작이지만, 가장 흔한 실수(네트워크 왕복 뒤 연결)의 결과가 "누수"에서 "정리됨"으로 바뀝니다.
 
-- 정적 자식 자리에 그 부모 자신이나 조상을 넣으면(`src:Set(host)`) 엔진의 순환 에러로 죽던 것 — 이제 `InstanceChild: cannot place an Instance inside itself or one of its own descendants …`로 거부합니다(Slot의 같은 규칙과 짝; `State` 자리라면 옛 자식은 거부 전에 이미 내려가 있습니다 — 위 두 거부와 같습니다).
+- 정적 자식 자리에 그 부모 자신이나 조상을 넣으면(`src:Set(host)`) 엔진의 순환 에러로 죽던 것 — 이제 `Dispatch: cannot place an Instance inside itself or one of its own descendants …`로 거부합니다(Slot의 같은 규칙과 짝; `State` 자리라면 옛 자식은 거부 전에 이미 내려가 있습니다 — 위 두 거부와 같습니다).
 - `Debounce`/`Throttle` 게이트 핸들의 `Flush`가 던질 때(백엔드 미설치) blame이 내부 파일이던 것 — 사용자 줄로.
 - `q.Claim`이 자식 키 부재·클래스 불일치·디스크립터 재사용·같은 자식으로 해석되는 디스크립터 둘로 실패할 때 루트와 앞선 형제가 이미 claim된 채 남아, 키를 고친 재시도가 진짜 원인 대신 `nativeClaim: Instance is already claimed by quad`로 죽던 것 — 이제 트리 전체를 먼저 해석한 뒤에 루트부터 claim하고 아래에서 위로 적용하므로 그런 실패(그리고 이미 claim된 루트)는 아무것도 남기지 않습니다. 적용 단계에서 던지는 경우는 전과 같습니다.
 - `q.Claim`에 `[0]`·`[-1]`·`[1.5]` 자리의 디스크립터를 주면 루트와 그 자식이 claim·적용된 뒤에야 `Dispatch.drive: array keys must be positive integers …`로 죽던 것 — 이제 해석 단계에서 `Claim: array keys must be positive integers (got 0)`로 아무것도 남기지 않고 거부합니다.
 - `q.Modifier({ __apply = … })`처럼 `__`로 시작하는 이름을 초기 필드로 주면 조용히 만들어졌다가 나중에 `Dispatch: no handler matched key __apply`로 죽던 것 — 이제 생성 줄에서 `Modifier: field "__apply" starts with "__" …`로 거부합니다(setter 경로와 같은 규칙).
 - `slot:List`의 `data`에 배열이 아닌 테이블(id로 키잉한 맵, 디코드한 JSON 오브젝트, 해시 키가 섞인 배열)을 주면 에러 없이 목록이 통째로 비워지고 원소가 파괴되던 것 — 이제 `Slot:List: data must be a plain array — key "…" is not an array position`으로 거부하고 아무것도 건드리지 않습니다(생성자 `initial`과 같은 규칙). `updateFn`이 `q.KeyGone`을 돌려주면(`nil` 대신) 안내 문구로 거부합니다.
-- 서로를 담은 `State` 사슬(`a:Set(b); b:Set(a)`, `s:Set(s)`)을 자리에 놓으면 내부 파일을 가리키는 stack overflow로 죽던 것 — 이제 `StoreBind: the State's value chain is circular …`입니다.
+- 서로를 담은 `State` 사슬(`a:Set(b); b:Set(a)`, `s:Set(s)`)을 자리에 놓으면 내부 파일을 가리키는 stack overflow로 죽던 것 — 이제 `State: the value chain is circular …`입니다.
 - Roblox 기본 Deferred 시그널 모드에서, 인스턴스가 파괴된 뒤 **같은 프레임 안에** 같은 `Effect`/훅 핸들을 다른 인스턴스에 다시 놓으면(행 캐시가 핸들을 재사용하는 목록) 옛 인스턴스의 지연된 Destroying 콜백이 새 바인딩을 끊어 cleanup이 살아 있는 인스턴스에서 돌고 그 뒤 fn이 영영 다시 안 돌던 것 — 이제 더 이상 자기 것이 아닌 바인딩의 콜백은 무시됩니다.
 - 모듈에 `is`로 시작하는 평범한 헬퍼(`q.isEmpty`, 인자를 무시하는 플러그인 `isMobile`)가 얹히면 그 뒤로 모든 `D.<Class>{}`가 `Dispatch.drive: props must be a plain { ... } table …`로 죽던 것 — 브랜드 술어답지 않은 함수(빈 테이블 `{}`이나 숫자 `0`에 `true`를 돌려주는 것)는 브랜드 스캔에서 걸러냅니다 — 비어 있지 않은 테이블에만 `true`를 주는 헬퍼(`isNonEmptyList` 등)는 여전히 걸리니 모듈 표면의 `is*` 이름은 브랜드 술어에만 쓰세요.
 - 숫자 키 자리에 묶였던 `Effect`의 호스트가 파괴된 직후 같은 프레임 안에서 `:Subscribe()`/`:WeakSubscribe()`로 되살리면, 뒤늦게 배달되는 `Destroying`(Deferred 시그널 기본값)이 살아 있는 구독의 cleanup을 소진하고 fn을 영영 멈추게 하던 것 — 이제 되살릴 때 옛 연결을 끊어 그 콜백을 무시합니다.
@@ -102,7 +102,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 - `Context`/`Provider` 값을 `Declaration` 자리에 잘못 놓으면 "프로바이더가 초기화됐는지 확인하라"는 엉뚱한 안내가 붙던 것 — 이제 `Store`처럼 "어느 키에도 그대로 놓이지 않는다 — 필요한 값을 먼저 읽어 내라"는 안내가 나옵니다(전에 이 항목이 말했던 "숫자 키 자리에 두라"는 따라가면 같은 에러가 다시 나는 안내였습니다).
 - `Frame { Children = slot }`·`Frame { Ref = ref }`처럼 Slot/Ref를 문자 키 값으로 주면 "프로바이더가 초기화됐는지 확인하라"는 엉뚱한 안내가 나오던 것 — 이제 `Slot: must be an array item, not the value of a string key`(Ref도 같은 모양)이고, 다른 quad 값(Tag 등)의 문자 키 no-match 문구도 "숫자 키 자리에 두라"로 바뀝니다.
 - 핸들러 작성자용: `q.Dispatch.process`에 체인 길이보다 큰 `index`를 주면 어떤 철거도 닿지 않는 슬롯이 남고 체인 기록까지 풀리던 것 — 이제 `index {n} would leave a gap in the chain …`으로 거부. `process`/`retractFrom`의 `nil` 키, `addHandler`의 NaN/무한 `priority`, `newMapperClass`의 비문자열 이름도 각각 즉시 거부하고, 같은 핸들러 테이블을 두 번 등록하면 한 번만 등록됩니다. `q.Dispatch.getHandler`도 같은 검사를 받아, `inst`에 `nil`을 넘기면 다른 파일을 가리키는 VM 에러 대신 `process`와 같은 quad 메시지로 거부합니다.
-- `q:RunInit(nil)`/`RunInit(5)`가 내부 파일 줄로 죽던 것 — `Quad:RunInit: initFn must be a function …`.
+- `q:RunInit(nil)`/`RunInit(5)`가 내부 파일 줄로 죽던 것 — `RunInit: initFn must be a function …`.
 - 숫자 키 자리에서 내려가는 `Ref`의 `:Wait()` 대기자가 그 자리에서 던지면(`ref:Wait():Unwrap()`이 철거의 nil에 깨어남) 같은 Ref를 되꽂아도 영영 채워지지 않던 것 — 이제 되꽂으면 채워집니다.
 - `Debounce`/`Throttle` 창 끝 통과 도중 하류가 `handle:Cancel()`을 부르면 취소했는데도 창이 다시 열려 다음 leading 신호가 한 `Time`을 더 기다리던 것.
 - `state:Apply(modifier)`처럼 Modifier를 `Apply` 팩토리 자리에 넣으면 조용히 통과해 `__apply` 필드가 박힌 Modifier가 만들어지고 한참 뒤 `Dispatch: no handler matched key __apply`로 죽던 것 — 이제 `Apply`가 다른 비팩토리 값과 같은 문구로 그 자리에서 거부합니다(Modifier는 `__`로 시작하는 이름에 setter를 만들지 않습니다).

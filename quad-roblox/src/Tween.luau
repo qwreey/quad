@@ -100,19 +100,19 @@ local function install(quad: any): any
 		for _, name in NUMBER_FIELDS do
 			local v = opts[name]
 			if v ~= nil and type(v) ~= "number" then
-				fail(`Quad0243 Tween: {name} must be a number`, SURFACE)
+				fail(`Quad0243 Tween: {name} must be a number (got {typeof(v)})`, SURFACE)
 			end
 		end
 		if opts.Reverses ~= nil and type(opts.Reverses) ~= "boolean" then
-			fail("Quad0244 Tween: Reverses must be a boolean", SURFACE)
+			fail(`Quad0244 Tween: Reverses must be a boolean (got {typeof(opts.Reverses)})`, SURFACE)
 		end
 		if opts.Dedup ~= nil and type(opts.Dedup) ~= "boolean" then
-			fail("Quad0245 Tween: Dedup must be a boolean", SURFACE)
+			fail(`Quad0245 Tween: Dedup must be a boolean (got {typeof(opts.Dedup)})`, SURFACE)
 		end
 		for _, name in CALLBACK_FIELDS do
 			local v = opts[name]
 			if v ~= nil and type(v) ~= "function" then
-				fail(`Quad0246 Tween: {name} must be a function`, SURFACE)
+				fail(`Quad0246 Tween: {name} must be a function (got {typeof(v)})`, SURFACE)
 			end
 		end
 		local override = opts.Override
@@ -128,7 +128,7 @@ local function install(quad: any): any
 	local function validate(opts: any, raise: ((string, number) -> ())?)
 		local fail = raise or Err.errorBeforeNearest
 		if type(opts) ~= "table" then
-			fail("Quad0248 Tween: expected an options table (Tween{ Value = ... })", SURFACE)
+			fail(`Quad0248 Tween: options must be a table, e.g. Tween\{ Value = ... \} (got {typeof(opts)})`, SURFACE)
 		end
 		if opts.Value == nil then
 			fail("Quad0249 Tween: Value is required", SURFACE)

@@ -265,7 +265,7 @@ local function createImpl(module: any)
 		if type(fn) ~= "function" then
 			-- `H-202`: without this the crash lands at the first `Get` deep inside
 			-- `_recompute` — sibling surfaces (Gate/Observer/Apply) all validate here.
-			Err.errorBeforeNearest("Quad0187 State: Compute fn must be a function", SURFACE)
+			Err.errorBeforeNearest(`Quad0187 State: Compute fn must be a function (got {typeof(fn)})`, SURFACE)
 		end
 		return newNode(collectDeps(self, ...), fn) -- one node: edges only, no combining node
 	end
@@ -323,7 +323,7 @@ local function createImpl(module: any)
 	-- `state:Gate(setup)`; `setup(emit) -> onUpstreamEmit`. Returns a State<T> (same T).
 	function Impl.Gate(self: any, setup: any): any
 		if type(setup) ~= "function" then
-			Err.errorBeforeNearest("Quad0188 State: Gate setup must be a function (emit) -> onUpstreamEmit", SURFACE)
+			Err.errorBeforeNearest(`Quad0188 State: Gate setup must be a function (emit) -> onUpstreamEmit (got {typeof(setup)})`, SURFACE)
 		end
 		local node = newNode({ self }, passThrough, GateImpl) -- StateBrand + seeding + `_hold` like any node
 		node._withheld = newWithheld()
@@ -347,7 +347,7 @@ local function createImpl(module: any)
 	-- (`source-state-plan.md` "`state:Observer(fn)`"). Body lives in `Observer.luau`.
 	function Impl.Observer(self: any, fn: any?): any
 		if fn ~= nil and type(fn) ~= "function" then
-			Err.errorBeforeNearest("Quad0190 State: Observer fn must be a function (or nil for the always-observe utility)", SURFACE)
+			Err.errorBeforeNearest(`Quad0190 State: Observer fn must be a function or nil (got {typeof(fn)}) — nil makes the always-observe utility`, SURFACE)
 		end
 		return ObserverImpl.new(self, fn)
 	end
@@ -357,7 +357,7 @@ local function createImpl(module: any)
 			return (factory :: any)(self)
 		end
 		if type(factory) ~= "table" or type(factory.__apply) ~= "function" then
-			Err.errorBeforeNearest("Quad0191 State: Apply factory must be a function or an object with an __apply method", SURFACE)
+			Err.errorBeforeNearest(`Quad0191 State: Apply factory must be a function or an object with an __apply method (got {typeof(factory)})`, SURFACE)
 		end
 		return (factory :: any):__apply(self) -- method form: `self` there is the factory object (`H-158`)
 	end

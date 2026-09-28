@@ -198,7 +198,13 @@ local function Init(module: any)
 		-- round11 `H-567` (탐사 G′ 6): a BASE brand (Slot/Ref/State…) can never be "provider not
 		-- initialized" — that hint only fits a provider brand or an unbranded value
 		local isBase = brand ~= nil and BASE_PROBE["is" .. brand] == true
-		local hint = if not isBase
+		-- round13 Q90 ⑩ (user decision 2026-09-28): at a string key an unbranded / provider-branded
+		-- value misses for two reasons we cannot tell apart here without asking the handler list —
+		-- name both, neutral wording (base knows no engine terms). A provider IS installed in the
+		-- common case, so the provider-only hint pointed the wrong way for `size` / `AbsoluteSize`.
+		local hint = if not isBase and type(k) == "string"
+			then " — this key may not be a field of this element (a typo, a read-only field, or one from another class), or the provider that handles it (e.g. quad-roblox) is not initialized"
+			elseif not isBase
 			then " — check that the provider for this value (e.g. quad-roblox) is initialized"
 			elseif brand == "Store" then " — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))" -- 탐사 I′ 3
 			elseif brand == "Context" or brand == "Provider" then ` — a {brand} is not a value for any key: read the value you need out of it first` -- round13 E80 (the old hint sent it to a numeric slot, which raises Quad0076 again)

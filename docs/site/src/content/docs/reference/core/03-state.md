@@ -76,7 +76,7 @@ Compute: <U>(self: StateData<T>, fn: (self: StateData<T>, previous: U?, ...any) 
   `Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)`
 - 계산 결과로 **Modifier를 돌려줄 수 없습니다**:
   `Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers`
-- 인자 검증: `Quad0187 State: Compute fn must be a function` / `Quad0186 State: dep #{i + 1} is nil` / `Quad0183 State: dep #{i} is not a State/Source`. 번호는 **리시버가 1번**이라, 후행 의존성의 첫 자리가 `#2`입니다. 검사는 `nil`을 먼저 전부 보고 그다음 타입을 보므로 `a:Depend(5, nil)`은 `#2`가 아니라 `dep #3 is nil`을 냅니다(`Effect`는 자리 순서대로 한 번에 봅니다 — `q.Effect(fn, nil, 5)`는 `Quad0095 Effect: dep #1 is nil`, `q.Effect(fn, 5, nil)`은 `Quad0096 Effect: dep #1 is not a State/Source/Ref` — [2026-09-27 mock 실측]).
+- 인자 검증: `Quad0187 State: Compute fn must be a function (got {typeof(fn)})` / `Quad0186 State: dep #{i + 1} is nil` / `Quad0183 State: dep #{i} is not a State/Source`. 번호는 **리시버가 1번**이라, 후행 의존성의 첫 자리가 `#2`입니다. 검사는 `nil`을 먼저 전부 보고 그다음 타입을 보므로 `a:Depend(5, nil)`은 `#2`가 아니라 `dep #3 is nil`을 냅니다(`Effect`는 자리 순서대로 한 번에 봅니다 — `q.Effect(fn, nil, 5)`는 `Quad0095 Effect: dep #1 is nil`, `q.Effect(fn, 5, nil)`은 `Quad0096 Effect: dep #1 is not a State/Source/Ref` — [2026-09-27 mock 실측]).
 
 **strict 캐비엇** — 반환이 `State<U>`로 온전히 추론되지 않는 자리가 있어, **파생 노드를 만드는 줄에는 결과 타입을 주석**하는 것이 이 코퍼스의 관례입니다. 또 `...deps`가 `...any`이므로 콜백 안에서 의존성 파라미터에 타입 주석을 다세요.
 
@@ -153,7 +153,7 @@ Apply: (<U>(self: StateData<T>, factory: (State<T>) -> U) -> U)
 - 함수를 넘기면 `factory(self)`를 그대로 부릅니다.
 - 객체를 넘기면 메소드 형태로 `factory:__apply(self)`를 부릅니다 — 이 자리의 `self`는 팩토리 객체입니다. [`Blocker`](/reference/sugar/06-blocker/)와 `Debounce`/`Throttle`이 이 팔로 붙습니다(`q.Animate { … }`는 함수를 돌려주는 팩토리라 함수 팔입니다).
 - 둘 중 어느 쪽도 아니면
-  `Quad0191 State: Apply factory must be a function or an object with an __apply method`
+  `Quad0191 State: Apply factory must be a function or an object with an __apply method (got {typeof(factory)})`
 
 **strict 캐비엇** — 두 팔은 유니온이 아니라 **교집합 오버로드**입니다(객체가 너비 서브타이핑으로 들어가야 하기 때문). 객체 팔의 반환이 `any`이므로 결과 타입은 호출부에서 명시하세요:
 
@@ -178,7 +178,7 @@ export type ObserverFn<T> = (targetState: StateData<T>, self: Observer, emitFrom
 
 값을 실어주지 않는 leaf 구독 핸들을 만듭니다. 콜백은 **값이 아니라 관측 대상 핸들·자기 자신·출처**를 받고, 등록 시점에 즉시 한 번 발화합니다. 전체 계약(구독 네 진입점, 보류와 캐치업)은 **[05-observer-effect](/reference/core/05-observer-effect/#stateobserverfn)** 가 정본입니다.
 
-인자 검증: `Quad0190 State: Observer fn must be a function (or nil for the always-observe utility)`
+인자 검증: `Quad0190 State: Observer fn must be a function or nil (got {typeof(fn)}) — nil makes the always-observe utility`
 
 ---
 
@@ -207,7 +207,7 @@ export type GateSetup = (emit: GateEmit) -> () -> ()
 - `emit()` 또는 `emit(true)` — 모아둔 배치를 지금 한 번에 내려보냅니다. `emit(false)` — 모아둔 배치를 **버립니다**(전파도, 기록도 없음). 반환값은 "모아둔 게 있었는가"이며, 배치가 비어 있으면 아무 일도 하지 않고 `false`입니다.
 - 유보 중에 여러 번 온 변경은 **한 번의 통지로 합쳐집니다**. 내려가는 출처는 원래 `Source`가 아니라 게이트가 만든 배치(집합)입니다. 게이트가 여럿이면 하류가 받는 횟수는 그래프·순회 순서에 따라 달라질 수 있습니다([Blocker](/reference/sugar/06-blocker/)의 `:Off()` 절) — 횟수가 아니라 값에 기대세요.
 - 게이트 위에 게이트를 얹을 수 있습니다. 위쪽 게이트가 내려보낸 배치는 참조로 들고 있지 않고 풀어서 자기 집합에 합칩니다.
-- 인자 검증: `Quad0188 State: Gate setup must be a function (emit) -> onUpstreamEmit` / `Quad0189 State: Gate setup must return the onUpstreamEmit function`
+- 인자 검증: `Quad0188 State: Gate setup must be a function (emit) -> onUpstreamEmit (got {typeof(setup)})` / `Quad0189 State: Gate setup must return the onUpstreamEmit function`
 
 **예제**
 

@@ -148,7 +148,7 @@ do
 	local ok2, err2 = pcall(function()
 		w:Unsubscribe()
 	end)
-	assert(not ok2 and string.find(tostring(err2), "use :WeakUnsubscribe()", 1, true) ~= nil, "strict: weakly subscribed → error: " .. tostring(err2))
+	assert(not ok2 and string.find(tostring(err2), "released with :WeakUnsubscribe()", 1, true) ~= nil, "strict: weakly subscribed → error: " .. tostring(err2))
 	assert(w.Subscribed == true, "…untouched")
 	assert(o:Unsubscribe() == o and o.Subscribed == false and quad.Backend.canExecute(o) == false, "released both tables")
 	local ok3 = pcall(function()

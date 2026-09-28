@@ -122,7 +122,7 @@ do
 		q.Backend.bindLifetime(unclaimed, {})
 	end)
 	assert(not ok, "binding to an unclaimed inst must error")
-	assert(string.find(tostring(err), "not claimed", 1, true) ~= nil, "message: " .. tostring(err))
+	assert(string.find(tostring(err), "must be an Instance claimed by quad", 1, true) ~= nil, "message: " .. tostring(err))
 	mock.assertBlamesUser(err, SPEC_FILE, "unclaimed bind")
 
 	local inst = Instance.new("Folder")

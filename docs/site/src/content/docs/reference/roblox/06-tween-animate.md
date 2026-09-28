@@ -92,13 +92,13 @@ local panel = D.Frame({ Size = size })
 
 | 상황 | 문구 |
 |---|---|
-| 옵션이 테이블이 아님 | `Quad0248 Tween: expected an options table (Tween{ Value = ... })` |
+| 옵션이 테이블이 아님 | `Quad0248 Tween: options must be a table, e.g. Tween{ Value = ... } (got {typeof(opts)})` |
 | `Value` 없음 | `Quad0249 Tween: Value is required` |
-| `Time`/`RepeatCount`/`DelayTime`이 숫자가 아님 | `Quad0243 Tween: {name} must be a number` |
-| `Reverses`가 불린이 아님 | `Quad0244 Tween: Reverses must be a boolean` |
-| `Dedup`이 불린이 아님 | `Quad0245 Tween: Dedup must be a boolean` |
+| `Time`/`RepeatCount`/`DelayTime`이 숫자가 아님 | `Quad0243 Tween: {name} must be a number (got {typeof(v)})` |
+| `Reverses`가 불린이 아님 | `Quad0244 Tween: Reverses must be a boolean (got {typeof(opts.Reverses)})` |
+| `Dedup`이 불린이 아님 | `Quad0245 Tween: Dedup must be a boolean (got {typeof(opts.Dedup)})` |
 | `Override`가 두 값이 아님 | `Quad0247 Tween: Override must be "Cancel" or "Finish"` |
-| `Started`/`Completed`/`Cancelled`가 함수가 아님 | `Quad0246 Tween: {name} must be a function` |
+| `Started`/`Completed`/`Cancelled`가 함수가 아님 | `Quad0246 Tween: {name} must be a function (got {typeof(v)})` |
 | `Value`가 State | `Quad0250 Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))` |
 | `Value`가 `None`이거나 다른 `Tween` | `Quad0251 Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)` |
 
@@ -207,7 +207,7 @@ local box = D.Frame({ BackgroundTransparency = animated })
   일입니다 — 아래 `Dedup`.
 - **리터럴 옵션은 `Animate(info)` 시점에 즉시 검증**됩니다(여러분의 호출 줄을 blame). State로 준
   옵션은 실행할 때마다 풀려서 그때 검증됩니다.
-- 옵션이 테이블이 아니면 `Quad0214 Animate: expected an options table (Animate{ Time = ... })`.
+- 옵션이 테이블이 아니면 `Quad0214 Animate: options must be a table, e.g. Animate{ Time = ... } (got {typeof(info)})`.
 
 ---
 

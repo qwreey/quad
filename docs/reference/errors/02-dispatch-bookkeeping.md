@@ -105,7 +105,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 ### Quad0053
 
-`Modifier.Overridden: expects at least one Modifier` — `quad-base/src/Dispatch/Modifier/init.luau`
+`Modifier.Overridden: must be given at least one Modifier` — `quad-base/src/Dispatch/Modifier/init.luau`
 
 - **언제**: `q.Modifier.Overridden(...)`을 인자 없이 부를 때. 콜론 형태 `mod:Overridden()`은 `mod` 자신이 첫 인자로 들어가므로 이 에러가 나지 않습니다.
 - **고치려면**: 합칠 Modifier를 최소 하나 넘기세요.
@@ -241,7 +241,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 ### Quad0070
 
-`StoreBind: the State's value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle` — `quad-base/src/Dispatch/StoreBind.luau`
+`State: the value chain is circular (a State that eventually holds itself) — a State may hold another State, but not a cycle` — `quad-base/src/Dispatch/StoreBind.luau`
 
 - **언제**: props 자리에 놓인 State의 값을 따라가다(State가 다른 State를 값으로 들고 있으면 그 State도 마저 벗기는 재귀) 결국 자기 자신으로 돌아오는 순환을 만났을 때(예: `a:Set(b); b:Set(a)`).
 - **고치려면**: State가 다른 State를 값으로 들고 있는 것 자체는 되지만, 그 사슬이 순환하면 안 됩니다 — 순환이 생기지 않게 값 대입을 정리하세요.
@@ -291,7 +291,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}[, brand: {brand}])` + 꼬리 힌트 하나(+ nil 안내) — `brand:`는 브랜드가 있을 때만 붙습니다 — `quad-base/src/Dispatch/init.luau`
 
-꼬리 힌트는 다섯 중 하나입니다 — 값에 브랜드가 없거나 백엔드(프로바이더) 브랜드면 ` — check that the provider for this value (e.g. quad-roblox) is initialized`; quad-base 브랜드(`Slot`/`Ref`/`State`/`Tag`/`Attr`/`Context`/`Provider`/`MapperDescriptor` 등)이면 `Store`일 때 ` — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))`, `Context`/`Provider`일 때 ` — a Context is not a value for any key: read the value you need out of it first`(브랜드 이름이 들어갑니다), 나머지 브랜드가 문자 키일 때 ` — a quad value at a string key: it belongs in a numeric (array) slot`, 숫자 키일 때 ` — this quad value has no handler at an array position`. 값이 `nil`이면 그 뒤에 ` (a nil at this depth may be an unwrapped None or a reactive nil — the key's own handler must accept nil)`이 더 붙습니다. `brand: …` 조각은 브랜드를 알아낼 수 있을 때만 들어갑니다.
+꼬리 힌트는 여섯 중 하나입니다 — 값에 브랜드가 없거나 백엔드(프로바이더) 브랜드이고 키가 **문자 키**면 ` — this key may not be a field of this element (a typo, a read-only field, or one from another class), or the provider that handles it (e.g. quad-roblox) is not initialized`(프로바이더가 설치된 흔한 경우엔 앞쪽 원인 — 오타 난 이름, 읽기 전용 프로퍼티, 다른 클래스의 이름 — 이고, 두 경우를 이 자리에서 가를 수 없어 둘 다 적습니다), 같은 값이 숫자 키면 ` — check that the provider for this value (e.g. quad-roblox) is initialized`; quad-base 브랜드(`Slot`/`Ref`/`State`/`Tag`/`Attr`/`Context`/`Provider`/`MapperDescriptor` 등)이면 `Store`일 때 ` — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))`, `Context`/`Provider`일 때 ` — a Context is not a value for any key: read the value you need out of it first`(브랜드 이름이 들어갑니다), 나머지 브랜드가 문자 키일 때 ` — a quad value at a string key: it belongs in a numeric (array) slot`, 숫자 키일 때 ` — this quad value has no handler at an array position`. 값이 `nil`이면 그 뒤에 ` (a nil at this depth may be an unwrapped None or a reactive nil — the key's own handler must accept nil)`이 더 붙습니다. `brand: …` 조각은 브랜드를 알아낼 수 있을 때만 들어갑니다.
 
 - **언제**: 그 값을 받아줄 핸들러가 하나도 없을 때. `noMatchMessage` 헬퍼가 만드는 문구이고, `Dispatch.process`의 매치 실패 raise가 이 헬퍼를 부릅니다.
 - **고치려면**: 프로바이더(quad-roblox 등)가 설치돼 있다면 가장 흔한 원인은 문자 키 쪽입니다 — 그 클래스에 없는(오타 난) 프로퍼티·이벤트 이름, 읽기 전용 프로퍼티(`AbsoluteSize` 등 — 읽으려면 `q.OnChange`), 그리고 `Parent`(props가 아니라 만든 뒤 밖에서 `inst.Parent = …`로 붙입니다)를 확인하세요. quad 값이라면 올바른 종류의 키(숫자/문자) 자리에 놓으세요 — 단 `Store`·`Context`·`Provider`는 어느 키에도 그대로 놓이지 않으니(숫자 키로 옮겨도 같은 에러) 메시지 꼬리대로 하세요 — `Store`는 `store.Name` 같은 필드를 놓거나 `q.Attr(store)`로 감싸고, `Context`/`Provider`는 필요한 값을 먼저 읽어 내세요. 설치 전이라면 그 값을 다루는 프로바이더가 설치돼 있는지 확인하세요.

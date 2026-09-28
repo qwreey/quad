@@ -103,7 +103,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 ### Quad0045
 
-`{name}: options table expected (got {typeof(opts)})` — `quad-base/src/Debounce.luau`
+`{name}: options must be a table (got {typeof(opts)})` — `quad-base/src/Debounce.luau`
 
 - **언제**: `q.Debounce{...}`/`q.Throttle{...}`에 넘긴 옵션 자체가 테이블이 아닐 때(안 준 경우 포함).
 - **고치려면**: 옵션 테이블을 넘기세요.
@@ -279,7 +279,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 ### Quad0187
 
-`State: Compute fn must be a function` — `quad-base/src/State.luau`
+`State: Compute fn must be a function (got {typeof(fn)})` — `quad-base/src/State.luau`
 
 - **언제**: `:Compute(fn, ...deps)`의 `fn` 자리가 함수가 아닐 때.
 - **고치려면**: 함수를 넘기세요.
@@ -287,7 +287,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 ### Quad0188
 
-`State: Gate setup must be a function (emit) -> onUpstreamEmit` — `quad-base/src/State.luau`
+`State: Gate setup must be a function (emit) -> onUpstreamEmit (got {typeof(setup)})` — `quad-base/src/State.luau`
 
 - **언제**: `:Gate(setup)`의 `setup` 자리가 함수가 아닐 때.
 - **고치려면**: `(emit) -> onUpstreamEmit` 모양의 함수를 넘기세요.
@@ -303,7 +303,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 ### Quad0190
 
-`State: Observer fn must be a function (or nil for the always-observe utility)` — `quad-base/src/State.luau`
+`State: Observer fn must be a function or nil (got {typeof(fn)}) — nil makes the always-observe utility` — `quad-base/src/State.luau`
 
 - **언제**: `:Observer(fn)`의 `fn` 자리가 함수도 `nil`도 아닐 때.
 - **고치려면**: 콜백 함수를 넘기거나, 값 없이 그냥 관측만 하려면 `nil`을 넘기세요.
@@ -311,7 +311,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 ### Quad0191
 
-`State: Apply factory must be a function or an object with an __apply method` — `quad-base/src/State.luau`
+`State: Apply factory must be a function or an object with an __apply method (got {typeof(factory)})` — `quad-base/src/State.luau`
 
 - **언제**: `:Apply(factory)`의 `factory` 자리가 함수도, `__apply` 메소드를 가진 객체도 아닐 때.
 - **고치려면**: 함수를 넘기거나 `__apply`를 구현한 객체(`Blocker`, `Debounce`/`Throttle` 등)를 넘기세요.

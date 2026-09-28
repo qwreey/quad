@@ -70,10 +70,10 @@ print(card.ClassName) --> "Frame"
 `Parent`를 문자 키 자리에 적으면 **그 키를 맡을 핸들러[^handler]가 없어** quad가 그 자리에서 에러를 냅니다.
 
 ```
-Quad0076 Dispatch: no handler matched key Parent (value: Instance) — check that the provider for this value (e.g. quad-roblox) is initialized
+Quad0076 Dispatch: no handler matched key Parent (value: Instance) — this key may not be a field of this element (a typo, a read-only field, or one from another class), or the provider that handles it (e.g. quad-roblox) is not initialized
 ```
 
-일부러 그렇게 두었습니다. `D.…`가 돌려주는 것은 이미 실물 Instance이고, "부모에 붙이는 일"은 만든 쪽이 아니라 **쓰는 쪽**이 정하는 것이기 때문입니다. 그래야 같은 컴포넌트를 어디에 붙일지가 호출 지점에 그대로 보입니다.
+꼬리 힌트는 흔한 두 원인(키 이름이 틀렸거나, 프로바이더가 안 붙었거나)을 적지만 `Parent`는 어느 쪽도 아닙니다. 일부러 막아 두었습니다. `D.…`가 돌려주는 것은 이미 실물 Instance이고, "부모에 붙이는 일"은 만든 쪽이 아니라 **쓰는 쪽**이 정하는 것이기 때문입니다. 그래야 같은 컴포넌트를 어디에 붙일지가 호출 지점에 그대로 보입니다.
 
 </details>
 

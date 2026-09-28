@@ -321,7 +321,7 @@ Wait: <Self>(self: Self, thread: thread?) -> Self
 - 인자 없이 부르려면 yield 가능한 코루틴 안이어야 합니다.
   - `Quad0134 Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)`
 - 명시적 `thread`를 주면 등록만 합니다 — 코루틴은 자기 자신만 멈출 수 있지 남의 코루틴을 대신 멈출 수 없기 때문입니다.
-  - `Quad0133 Ref: Wait(thread) expects a thread (got {typeof(thread)})`
+  - `Quad0133 Ref: Wait(thread) argument must be a thread (got {typeof(thread)})`
 - 대기자는 `Callbacks`에 `thread` 키로 들어가고, `:Set`이 그 키를 소진하며 resume합니다. 중복 등록은 집합이라 무해합니다.
 
 **예제**

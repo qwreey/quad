@@ -23,7 +23,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 ### Quad0217
 
-`clearTimeout: expected a Timeout from setTimeout (got {typeof(timeout)})` — `quad-roblox/src/EngineOps.luau`
+`clearTimeout: timeout must be a Timeout from setTimeout (got {typeof(timeout)})` — `quad-roblox/src/EngineOps.luau`
 
 - **언제**: `clearTimeout(timeout)`에 `setTimeout`이 돌려준 `Timeout` 핸들이 아닌 값을 넘겼을 때 — 마커 필드(`__quadTimeout`)로 신원을 확인합니다.
 - **고치려면**: `setTimeout`이 돌려준 값을 그대로 넘기세요.
@@ -39,7 +39,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 ### Quad0219
 
-`InstanceChild: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)` — `quad-roblox/src/Handlers/InstanceChild.luau`
+`Dispatch: this Instance is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)` — `quad-roblox/src/Handlers/InstanceChild.luau`
 
 - **언제**: 숫자 키 자리에 quad가 소유하지 않은 Instance(`Instance.new`나 다른 라이브러리가 만든 것, 다른 quad 모듈 인스턴스가 만든 것, 또는 이미 파괴된 것)를 놓았을 때.
 - **고치려면**: `D.<Class> { ... }`로 만들었거나 [`Claim`](/reference/roblox/04-claim-mapper/#qclaiminst-desc)으로 넘겨받은 Instance만 자식 자리에 놓으세요.
@@ -47,7 +47,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 ### Quad0220
 
-`InstanceChild: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)` — `quad-roblox/src/Handlers/InstanceChild.luau`
+`Dispatch: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)` — `quad-roblox/src/Handlers/InstanceChild.luau`
 
 - **언제**: 어떤 Instance를 자기 자신이나 자기 자손의 숫자 키 자리에 자식으로 놓으려 할 때 — 놓이는 자리의 Instance에서 조상 사슬을 따라 올라가며 그 Instance를 만나는지 검사합니다.
 - **고치려면**: 순환이 생기지 않게 트리 구조를 바꾸세요.
@@ -95,7 +95,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 ### Quad0226
 
-`bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)` — `quad-roblox/src/LifetimeHandle.luau`
+`bindLifetime: owner must be an Instance claimed by quad (got {typeof(inst)}) — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)` — `quad-roblox/src/LifetimeHandle.luau`
 
 - **언제**: `q.Backend.bindLifetime(inst, value)`의 `inst`가 이 백엔드의 quad 소유 요소가 아닐 때(quad 밖에서 만들어졌거나, 이미 파괴됐을 때). 직접 부르지 않아도 닿습니다 — `q.Dispatch.process`로 quad가 만들지도 `Claim`하지도 않은 Instance의 자리에 `Effect`처럼 수명에 묶이는 값을 놓거나, `q.Backend.holdLifetime`을 그런 Instance에 직접 부르면 같은 메시지가 납니다(메시지는 부르지 않은 `bindLifetime`을 말합니다, [2026-09-27 실측]).
 - **고치려면**: quad가 만들었거나 `Claim`으로 넘겨받은, 아직 살아 있는 Instance에만 값을 놓거나 묶으세요 — 밖에서 만든 Instance는 먼저 `q.Claim`으로 넘겨받으세요.

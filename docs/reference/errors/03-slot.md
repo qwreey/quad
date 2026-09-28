@@ -169,7 +169,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ### Quad0160
 
-`Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed` (+ 런타임엔 "if its owner was destroyed outside quad …" 꼬리) — `quad-base/src/Slot/Owner.luau`
+`Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — one value takes one seat, so the same element cannot sit in two parent tables, twice in one table, or in two Slots` (+ 런타임엔 "if its owner was destroyed outside quad …" 꼬리) — `quad-base/src/Slot/Owner.luau`
 
 - **언제**: `claimOwnerAt`이 등록하려는 값이 이미 다른 자리에 등록돼 있을 때(정확히 같은 자리의 재확인은 예외 — 던지지 않고 `false`를 돌려줍니다).
 - **고치려면**: Quad0156과 같습니다 — 먼저 옛 자리에서 빼세요. 다만 리터럴 정적 자식(`D.Frame({ el })`)으로 앉은 값은 뺄 공개 경로가 없습니다(`el.Parent = nil`로도 안 풀림) — 옮겨 다닐 값은 State 자리나 Slot에 두세요([2026-09-27 mock 실측]).

@@ -263,7 +263,7 @@ do
 	local ok, err = pcall(function()
 		q.Dispatch.drive(Instance.new("Frame"), { a })
 	end)
-	assert(not ok and string.find(tostring(err), "StoreBind: the State's value chain is circular", 1, true) ~= nil, tostring(err))
+	assert(not ok and string.find(tostring(err), "Quad0070 State: the value chain is circular", 1, true) ~= nil, tostring(err))
 	assert(string.find(tostring(err), "stack overflow", 1, true) == nil and string.find(tostring(err), "Brand.luau", 1, true) == nil, "no leaf blame: " .. tostring(err))
 	local s = q.Source(nil :: any)
 	s:Set(s)

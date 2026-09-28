@@ -256,7 +256,7 @@ do
 	local foreign, owned = Instance.new("TextLabel"), Instance.new("TextLabel")
 	q.Backend.nativeClaim(owned)
 	local ok, err = pcall(function() return q.Declaration.Frame({ foreign }) end)
-	assert(not ok and string.find(tostring(err), "InstanceChild: this Instance is not claimed by quad", 1, true) ~= nil, "unclaimed static child rejected: " .. tostring(err))
+	assert(not ok and string.find(tostring(err), "Quad0219 Dispatch: this Instance is not claimed by quad", 1, true) ~= nil, "unclaimed static child rejected: " .. tostring(err))
 	assert(foreign.Parent == nil, "no bookkeeping/parenting happened before the raise")
 	mock.assertBlamesUser(err, "spec.handlers.luau", "static-child gate blames the D.Frame line")
 	local f = q.Declaration.Frame({ owned }) :: any
@@ -347,7 +347,7 @@ do
 	local f = q.Declaration.Frame({ seat }) :: any
 	f.Parent = host
 	local ok, err = pcall(function() seat:Set(f) end)
-	assert(not ok and string.find(tostring(err), "InstanceChild: cannot place an Instance inside itself", 1, true) ~= nil, "self: " .. tostring(err))
+	assert(not ok and string.find(tostring(err), "Quad0220 Dispatch: cannot place an Instance inside itself", 1, true) ~= nil, "self: " .. tostring(err))
 	local ok2, err2 = pcall(function() seat:Set(host) end)
 	assert(not ok2 and string.find(tostring(err2), "cannot place an Instance inside itself or one of its own descendants", 1, true) ~= nil, "ancestor: " .. tostring(err2))
 	assert(f.Parent == host and host.Parent == nil, "tree untouched")

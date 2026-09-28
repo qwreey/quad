@@ -152,7 +152,7 @@ end
 function RefImpl.Wait<T>(self: Ref<T>, thread: thread?): Ref<T>
 	if thread ~= nil then
 		if type(thread) ~= "thread" then
-			Err.errorBeforeNearest(`Quad0133 Ref: Wait(thread) expects a thread (got {typeof(thread)})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0133 Ref: Wait(thread) argument must be a thread (got {typeof(thread)})`, SURFACE)
 		end
 		self.Callbacks[thread] = true
 		return self

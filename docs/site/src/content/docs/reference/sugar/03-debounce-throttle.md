@@ -106,7 +106,7 @@ export type ThrottleOptions = {
 **옵션 게이트(팩토리를 부르는 줄에서 던집니다).** 이름 자리(`Debounce`/`Throttle`)는 부른 쪽에 따라 바뀝니다.
 
 ```
-Quad0045 Debounce: options table expected (got nil)
+Quad0045 Debounce: options must be a table (got nil)
 Quad0040 Debounce: Time is required (a number of seconds or a State<number>)
 Quad0041 Debounce: Time must be a non-negative number or a State<number> (got number)
 Quad0042 Debounce: Leading must be a boolean (got number)

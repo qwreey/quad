@@ -9,7 +9,7 @@ description: "Tween/Animate가 던지는 에러"
 
 ### Quad0214
 
-`Animate: expected an options table (Animate{ Time = ... })` — `quad-roblox/src/Animate.luau`
+`Animate: options must be a table, e.g. Animate{ Time = ... } (got {typeof(info)})` — `quad-roblox/src/Animate.luau`
 
 - **언제**: `q.Animate(info)`의 `info`가 테이블이 아닐 때. 리터럴 옵션은 `Animate(info)` 호출 시점에 즉시 검증되고, `State`로 준 옵션은 실행할 때마다 풀려서 그때 검증됩니다.
 - **고치려면**: `q.Animate{ Time = ... }` 모양으로 테이블을 넘기세요.
@@ -25,7 +25,7 @@ description: "Tween/Animate가 던지는 에러"
 
 ### Quad0243
 
-`Tween: {name} must be a number` — `quad-roblox/src/Tween.luau`
+`Tween: {name} must be a number (got {typeof(v)})` — `quad-roblox/src/Tween.luau`
 
 - **언제**: `Time`/`RepeatCount`/`DelayTime` 중 하나가 숫자가 아닌 값으로 주어졌을 때. `{name}`은 실제 필드 이름입니다.
 - **고치려면**: 숫자를 넘기세요.
@@ -33,7 +33,7 @@ description: "Tween/Animate가 던지는 에러"
 
 ### Quad0244
 
-`Tween: Reverses must be a boolean` — `quad-roblox/src/Tween.luau`
+`Tween: Reverses must be a boolean (got {typeof(opts.Reverses)})` — `quad-roblox/src/Tween.luau`
 
 - **언제**: `Reverses`가 불린이 아닌 값으로 주어졌을 때.
 - **고치려면**: `true`/`false`만 넘기세요.
@@ -41,7 +41,7 @@ description: "Tween/Animate가 던지는 에러"
 
 ### Quad0245
 
-`Tween: Dedup must be a boolean` — `quad-roblox/src/Tween.luau`
+`Tween: Dedup must be a boolean (got {typeof(opts.Dedup)})` — `quad-roblox/src/Tween.luau`
 
 - **언제**: `Dedup`이 불린이 아닌 값으로 주어졌을 때.
 - **고치려면**: `true`/`false`만 넘기세요.
@@ -49,7 +49,7 @@ description: "Tween/Animate가 던지는 에러"
 
 ### Quad0246
 
-`Tween: {name} must be a function` — `quad-roblox/src/Tween.luau`
+`Tween: {name} must be a function (got {typeof(v)})` — `quad-roblox/src/Tween.luau`
 
 - **언제**: `Started`/`Completed`/`Cancelled` 중 하나가 함수가 아닌 값으로 주어졌을 때. `{name}`은 실제 필드 이름입니다.
 - **고치려면**: 인자 없는 함수를 넘기세요.
@@ -65,7 +65,7 @@ description: "Tween/Animate가 던지는 에러"
 
 ### Quad0248
 
-`Tween: expected an options table (Tween{ Value = ... })` — `quad-roblox/src/Tween.luau`
+`Tween: options must be a table, e.g. Tween{ Value = ... } (got {typeof(opts)})` — `quad-roblox/src/Tween.luau`
 
 - **언제**: `q.Tween(opts)`의 `opts`가 테이블이 아닐 때.
 - **고치려면**: `q.Tween{ Value = ... }` 모양으로 테이블을 넘기세요.

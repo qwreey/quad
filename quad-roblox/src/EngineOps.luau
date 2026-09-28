@@ -153,7 +153,7 @@ local function install(quad: any)
 
 	local function clearTimeout(timeout: any)
 		if type(timeout) ~= "table" or timeout.__quadTimeout ~= true then
-			Err.errorBefore(`Quad0217 clearTimeout: expected a Timeout from setTimeout (got {typeof(timeout)})`, SURFACE)
+			Err.errorBefore(`Quad0217 clearTimeout: timeout must be a Timeout from setTimeout (got {typeof(timeout)})`, SURFACE)
 		end
 		-- Studio 2026-09-08 실측: `task.cancel` on an already-fired (dead) thread is a
 		-- silent no-op — a late cancel by a user holding the handle needs no guard.

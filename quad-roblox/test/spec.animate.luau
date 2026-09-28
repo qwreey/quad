@@ -78,7 +78,7 @@ do
 	local ok, err = pcall(function()
 		return Animate(5)
 	end)
-	assert(not ok and string.find(tostring(err), "expected an options table", 1, true) ~= nil, "non-table info: " .. tostring(err))
+	assert(not ok and string.find(tostring(err), "Animate: options must be a table", 1, true) ~= nil, "non-table info: " .. tostring(err))
 	mock.assertBlamesUser(err, "spec.animate.luau", "Animate blame")
 	-- `H-464`: literal options are validated at `Animate(info)` (the user's line is on the stack) —
 	-- lazily, inside Compute, the raise blamed `Animate.luau`

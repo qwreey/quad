@@ -62,7 +62,7 @@ print()
 print("=== 3. 검증 — 테이블·Value 필수·스칼라 타입·Override 멤버십, blame은 사용자 줄 ===")
 do
 	local cases: { { any } } = {
-		{ 5, "expected an options table" },
+		{ 5, "Tween: options must be a table" },
 		{ {}, "Value is required" },
 		{ { Value = 1, Time = "0.3" }, "Time must be a number" },
 		{ { Value = 1, RepeatCount = true }, "RepeatCount must be a number" },

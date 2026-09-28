@@ -102,7 +102,7 @@ do
 	local ok, err = pcall(function()
 		q.Backend.clearTimeout({} :: any)
 	end)
-	assert(not ok and string.find(tostring(err), "clearTimeout: expected a Timeout", 1, true), tostring(err))
+	assert(not ok and string.find(tostring(err), "clearTimeout: timeout must be a Timeout", 1, true), tostring(err))
 	print("PASS")
 end
 

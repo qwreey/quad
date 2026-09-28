@@ -213,7 +213,7 @@ end
 local function Overridden(...: any): any
 	local n = select("#", ...)
 	if n == 0 then
-		Err.errorBeforeNearest("Quad0053 Modifier.Overridden: expects at least one Modifier", SURFACE)
+		Err.errorBeforeNearest("Quad0053 Modifier.Overridden: must be given at least one Modifier", SURFACE)
 	end
 	local merged: { [any]: any } = {}
 	for i = 1, n do

@@ -464,13 +464,25 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
     숫자·정해진 값은 `tostring`으로 그 값을 실어도 된다.
   - 구분자는 콜론 하나 — `Slot:List — …`(em-dash 주어)·`Tween:Mapped expects …`(콜론 없음)
     형태는 폐기.
+  - **[2026-09-28 round13 Q90 사용자 결정 — 지금 관행을 규약으로]** (1) **주어가 타입 이름뿐이어도 되는 자리**:
+    여러 메소드가 공유하는 불변식(`Slot: destroyed Slot cannot be reused` — CRUD 아홉이 한 가드를 부른다)이거나
+    이유 절이 이미 메소드를 말하는 경우(`Ref: Wait(thread) argument must be …`, `State: Compute fn must be …`)는
+    타입 이름만 쓴다 — 코드에 이 모양이 다수이고 옛 정규화 배치 둘(`H-477`·`H-494`)도 건드리지 않았다.
+    (2) **진입점을 모르는 핸들러·op 안의 거부**: 공개 이름이 있으면 그 이름(`Bookkeeping.claimOwnerAt:` — 흔한
+    사용자 경로는 이유 절에 싣는다), 없으면 `Dispatch:`(`Quad0076`·`Quad0219`/`0220` — 진입점은 blame 줄이
+    말한다, round8 O-1). (3) **받은 값과 부연이 둘 다 필요하면 `(got X)`를 먼저, ` — 부연`을 뒤에**
+    (`Quad0142`·`Quad0176`), 가변 인자의 위치는 괄호 안에 실어도 된다(`(got number at argument #2)` —
+    `Quad0059`·`Quad0205`). (4) **옵션 테이블이 통째로 없을 때는 호출 예시를 이유에 실어도 된다**(`Quad0214
+    Animate: options must be a table, e.g. Animate{ Time = ... } (got nil)`). 근거는 외부자·내부자 두 판정과
+    사용자 회신 — `session/2026-09-28-01-round13-batch-reply.md`.
   spec의 메시지 단언은 부분 문자열(`string.find(…, 1, true)`)이라 주어를 붙이거나 꼬리를 괄호로
   바꿔도 대부분 그대로 통과한다 — 모양 자체를 단언한 넷(`spec.leaf`·`spec.refhandlers`·
   `spec.tween`)만 같이 고쳤다.
 
-  **[2026-09-27 round13 Q90 검토 중]** 코드 전수에서 이 규약을 위반하는 자리들이 다시 나왔다 — 정규화를
-  배치로 고칠지가 사용자 문항으로 열려 있다(`qa-request/post-implementation-review-round13.md` §4). 본문은
-  결정 전이라 그대로 둔다.
+  **[2026-09-27 round13 Q90 검토 → 2026-09-28 닫힘]** 코드 전수에서 이 규약을 위반하는 자리들이 다시 나왔고,
+  2026-09-28 사용자 회신으로 배치 정규화와 위 예외 문장이 들어갔다(`qa-request/post-implementation-review-round13.md`
+  §4 Q90 닫힘 문단). 남은 하위 항목은 다른 문항과 같이 간다 — 음수·NaN에서 정보 없는 꼬리(`0039`·`0041`·`0216`)는
+  Q100, `0138`의 내부 이름 주어는 보류, 주체·힌트 어긋남 여섯과 판단 목록은 Q117, `0123`은 Q137.
 - **[2026-09-08 사용자 결정, Gemini 자문 권고 1] 값 프리미티브에 `__tostring`.** `print(v)`가
   `table: 0x…` 대신 상태를 보인다 — `Source(42)`·`State(84)`/`State(?)`(캐시 무효·미계산 —
   **print는 절대 compute를 돌리지 않는다**)·`Gate(…)`·`Store{Health, Name}`·`Slot(len=3, mounted)`·

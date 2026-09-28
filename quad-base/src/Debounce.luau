@@ -323,7 +323,7 @@ local KNOWN_OPTIONS = { Time = true, Leading = true, Trailing = true, MaxTime = 
 
 local function make(module: any, name: string, reset: boolean, opts: any): any
 	if type(opts) ~= "table" then
-		Err.errorBeforeNearest(`Quad0045 {name}: options table expected (got {typeof(opts)})`, SURFACE)
+		Err.errorBeforeNearest(`Quad0045 {name}: options must be a table (got {typeof(opts)})`, SURFACE)
 	end
 	-- [2026-09-15 사용자 결정] unknown keys (typos) are reported only under `q.debug`, and execution
 	-- continues — non-fatal blame with a cost belongs to the debug layer

@@ -160,6 +160,8 @@ process: (inst: any, key: any, value: any, index: number) -> ()
 Quad0076 Dispatch: no handler matched key {키} (value: {typeof}, brand: {브랜드}) — check that the provider for this value (e.g. quad-roblox) is initialized
 ```
 
+꼬리 힌트는 키와 값에 따라 갈립니다 — 위는 숫자 키에 프로바이더 브랜드 값이 온 경우이고, 브랜드 없는 값이나 프로바이더 브랜드 값이 **문자 키**에 오면 키 이름이 틀렸을 가능성과 프로바이더 미설치를 함께 적습니다. 전체 갈래는 [`Quad0076`](/reference/errors/02-dispatch-bookkeeping/#quad0076).
+
 값이 `nil`이면 뒤에 한 줄이 더 붙습니다 — 그 `nil`은 벗겨진 `None`일 수도, 반응형 `nil`일 수도 있고, 그 키를 맡은 핸들러가 `nil`을 받아들여야 한다는 안내입니다.
 
 핸들러가 retractor를 돌려주지 않으면 프로바이더 계약 위반입니다.
@@ -327,7 +329,7 @@ claimOwnerAt: (element: any, inst: any, k: any) -> boolean
 내장 핸들러가 쓰는 자리 종류는 셋입니다 — Slot의 원소(Slot 자신이 owner), 정적 자식(`(inst, 숫자 키)`), 숏핸드 관리 자식(`(inst, 자식 이름)`). 전부 한 레지스트리라 서로 섞이지 않습니다.
 
 ```
-Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — one value takes one seat, so the same element cannot sit in two parent tables, twice in one table, or in two Slots (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
 ```
 
 ## `q.Bookkeeping.releaseOwner(element, ownerKey)`
