@@ -55,7 +55,7 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
 
 ### Quad0007
 
-`{ctx}: attribute "{name}" cannot be a function — attribute values are raw values or State` — `quad-base/src/Attr/init.luau`
+`{ctx}: attribute "{name}" cannot be a function - attribute values are raw values or State` — `quad-base/src/Attr/init.luau`
 
 - **언제**: 평범한 테이블 값 자리에 함수를 뒀을 때 — 속성 값은 원시 값이거나 `State`/`q.None`이어야 합니다.
 - **고치려면**: 함수 대신 값 자체나 `State`를 넘기세요.
@@ -63,7 +63,7 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
 
 ### Quad0008
 
-`{ctx}: attribute "{name}" cannot be a table — attribute values are raw values, None or State (got {typeof(v)})` — `quad-base/src/Attr/init.luau`
+`{ctx}: attribute "{name}" cannot be a table - attribute values are raw values, None or State (got {typeof(v)})` — `quad-base/src/Attr/init.luau`
 
 - **언제**: 평범한 테이블 값 자리에 (`None`도 `State`도 아닌) 또 다른 테이블을 뒀을 때 — 엔진은 그런 테이블을 속성 값으로 저장할 수 없습니다(Slot/Ref/Tween/Modifier 등이 여기 걸립니다).
 - **고치려면**: 원시 값이나 `State`, `q.None`만 값 자리에 두세요.
@@ -111,7 +111,7 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
 
 ### Quad0014
 
-`{fnName}: value of "{name}" must not be nil — use None to delete` — `quad-base/src/Attr/init.luau`
+`{fnName}: value of "{name}" must not be nil - use None to delete` — `quad-base/src/Attr/init.luau`
 
 - **언제**: 타입드 Attr 패밀리(`StringAttr`/`NumberAttr`/`BooleanAttr`)의 값 자리에 리터럴 `nil`을 넘겼을 때 — 평범한 테이블은 `nil`을 담을 수 없어 항목이 조용히 사라지는 것을 막습니다.
 - **고치려면**: `nil` 대신 `q.None`을 쓰세요(지우는 뜻입니다).
@@ -135,7 +135,7 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
 
 ### Quad0199
 
-`Tag: names must be strings — an empty string is not a tag name` — `quad-base/src/Tag.luau`
+`Tag: names must be strings - an empty string is not a tag name` — `quad-base/src/Tag.luau`
 
 - **언제**: `q.Tag(...)`나 `tag:Added`/`tag:Removed`의 이름 자리에 빈 문자열 `""`을 넘겼을 때.
 - **고치려면**: 비어 있지 않은 이름을 쓰세요.
@@ -151,7 +151,7 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
 
 ### Quad0201
 
-`Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)` — `quad-base/src/Tag.luau`
+`Tag: names must be strings, Tags, or a plain {...} list of those - this list nests deeper than 64 levels (does it contain itself?)` — `quad-base/src/Tag.luau`
 
 - **언제**: 이름 리스트가 64단계보다 깊게 중첩됐을 때 — 리스트가 자기 자신을 담아 무한히 중첩되는 경우를 이 한도로 잡습니다.
 - **고치려면**: 리스트가 자기 자신을 참조하지 않는지 확인하세요.
@@ -159,7 +159,7 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
 
 ### Quad0202
 
-`Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table` — `quad-base/src/Tag.luau`
+`Tag: names must be strings, Tags, or a plain {...} list of those - a name list is an array, not a hash table` — `quad-base/src/Tag.luau`
 
 - **언제**: 이름 자리의 리스트가 배열이 아니라 해시 테이블(정수가 아니거나 1 미만인 키를 가짐)일 때.
 - **고치려면**: 배열(1부터 연속된 정수 키)로 주세요.
@@ -167,7 +167,7 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
 
 ### Quad0203
 
-`Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes` — `quad-base/src/Tag.luau`
+`Tag: names must be strings, Tags, or a plain {...} list of those - a name list cannot have nil holes` — `quad-base/src/Tag.luau`
 
 - **언제**: 이름 리스트 중간에 `nil` 구멍이 있을 때(항목 수와 최대 인덱스가 다를 때).
 - **고치려면**: `nil` 대신 그 자리를 빼거나 실제 값을 채우세요.

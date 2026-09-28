@@ -58,7 +58,7 @@ ReplicatedStorage.Client.UI.UserProfile:42: Quad0218 Event: handler for "Activat
   기대는데 구멍 있는 테이블의 `#`는 명세되지 않음) 따라서 배열 구멍은
   **정의되지 않은 동작(UB)** 입니다. 실제 결과는 구멍의 위치에 따라 갈립니다 —
   구멍 **뒤에 값이 오면**(1번 자리나 중간이 구멍) 위치 부기가 어긋나 그 자리에서 에러가 나고
-  (`Quad0023 Bookkeeping.recompute: sourceList[1] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; …` — 물음표까지가 사용자에게 하는 말이고 세미콜론 뒤는 핸들러 작성자용입니다),
+  (`Quad0023 Bookkeeping.recompute: sourceList[1] is nil - a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; …` — 물음표까지가 사용자에게 하는 말이고 세미콜론 뒤는 핸들러 작성자용입니다),
   꼬리 구멍은 우연히 통과합니다 — 선택적 값이 **전부** 빠져 `{ nil, nil, Text = "x" }`가 되면 숫자 부분이 비어 있어 잡을 것이 없으므로 에러 없이 지나갑니다(그래도 계약 밖 — [2026-09-27 mock 실측]).
 - **해결책**: 선택적 값 뒤에는 **`or None`**을 붙입니다.
 
@@ -89,7 +89,7 @@ local inst = if myRef.Value then myRef.Value else myRef:Wait().Value
 호출한 줄에서 던집니다:
 
 ```
-Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed
+Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) - not filled yet, or never placed
 ```
 
 또 `Wait()`는 양보 가능한 코루틴 안에서만 부를 수 있습니다 — 아니면
@@ -129,7 +129,7 @@ end
   claim되므로 그 자식에 다시 걸면 여기서 막힙니다. 자세한 계약은
   [07. Studio에서 만든 UI에 반응성 붙이기](/how-to/07-studio-ui-binding-and-claim/).
 - 이미 파괴된 인스턴스를 다시 쓰면 사촌 격 에러가 납니다 —
-  `Quad0226 bindLifetime: owner must be an Instance claimed by quad (got Instance) — it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)`.
+  `Quad0226 bindLifetime: owner must be an Instance claimed by quad (got Instance) - it was not created or claimed through quad, or it has already been destroyed (a destroyed Instance cannot be reused)`.
 
 ---
 
@@ -169,7 +169,7 @@ local primary: q.State<string> = theme:Apply(q.Operator.Indexed<<string>>("Prima
 ```
 
 값이 테이블이 아니면 읽는 시점에
-`Quad0127 Operator.Indexed: value is not a table (got number) — cannot read [Primary]`.
+`Quad0127 Operator.Indexed: value is not a table (got number) - cannot read [Primary]`.
 
 - **해결책 (b)**: 폼 리셋처럼 스토어를 새로 만들 이유가 없다면, 스토어를 바꾸지
   말고 필드를 리셋하세요.

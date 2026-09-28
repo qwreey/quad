@@ -56,7 +56,7 @@ export type Handler = {
   효과가 없어야 합니다 — 값 검증은 선택된 *뒤* `process` 안에서 합니다.
 - **`process`는 무언가를 반환합니다.** 반환값은 "이 호출이 한 일을 정확히 되돌리는"
   retractor 클로저입니다. 별도의 `retract` 메소드는 없습니다. `nil`을 반환하면 계약 위반이라
-  즉시 error(`… returned no retractor at key …, index … — return Void when there is
+  즉시 error(`… returned no retractor at key …, index … - return Void when there is
   nothing to undo`) — 되돌릴 게 없으면 공유 no-op인 `Void`를 반환하면 됩니다.
 - **retractor는 두 인자를 받습니다.** `retracting`이 참이면 단순 철거(이 자리는 다시
   처리되지 않습니다), 거짓이면 같은 핸들러의 재처리가 바로 뒤따릅니다. `nil`을 값으로
@@ -200,10 +200,10 @@ base가 소유하되 **최하위 밴드**에 등록됩니다.
    훑는 규약이라, 프로바이더가 `isTween` 같은 술어를 얹어 두면 그것이 곧 등록입니다.
    `MapperDescriptor`처럼 quad-base 자신의 브랜드는 이 힌트를 받지 않습니다(프로바이더가
    빠진 게 아니라 그 값 자체가 그 자리에 안 맞는 것이므로) — 같은 숫자 키에 그 값이
-   오면 대신 `… — this quad value has no handler at an array position`가 붙습니다.
+   오면 대신 `… - this quad value has no handler at an array position`가 붙습니다.
 2. **매치는 됐는데 엔진 op이 없으면** 그 op 자리에 심어진 안내 스텁이 던집니다:
-   `Quad0108 quad: addTag is not available — no backend has installed the tag ops (install a
-   provider with quad:UseProvider — a bare Quad.New() has none)`.
+   `Quad0108 quad: addTag is not available - no backend has installed the tag ops (install a
+   provider with quad:UseProvider - a bare Quad.New() has none)`.
    base가 "그럴듯한 기본 동작"(조용한 no-op)을 추측하지 않는 이유는 단순합니다 — 임의의
    엔진에 무엇이 맞는 기본값인지 base는 알 수 없고, 조용한 no-op은 프로바이더 설치를
    잊은 실수를 그대로 가립니다.

@@ -23,7 +23,7 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 ### Quad0028
 
-`Claim: two mapper descriptors resolved to the same Instance {tostring(inst)} — each child needs exactly one descriptor` — `quad-base/src/Claim.luau`
+`Claim: two mapper descriptors resolved to the same Instance {tostring(inst)} - each child needs exactly one descriptor` — `quad-base/src/Claim.luau`
 
 - **언제**: 서로 다른 두 디스크립터가 해석 결과 같은 Instance를 가리켰을 때 — 한 자식에 매퍼가 두 번 걸린 경우입니다.
 - **고치려면**: 자식마다 디스크립터를 하나씩만 두세요.
@@ -31,7 +31,7 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 ### Quad0029
 
-`Claim: {tostring(inst)} is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)` — `quad-base/src/Claim.luau`
+`Claim: {tostring(inst)} is already claimed by quad - a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)` — `quad-base/src/Claim.luau`
 
 - **언제**: 디스크립터가 해석한 Instance가 **같은 quad 모듈 인스턴스**에 이미 소유돼 있을 때 — `D.New`로 만들었거나 먼저 `Claim`된 것(루트도 자식도 해당)입니다. 다른 모듈 인스턴스(`Quad.New()`)가 소유한 것은 여기서 걸리지 않고 그대로 claim됩니다(정의되지 않은 동작 — [Claim 계약 셋](/reference/roblox/04-claim-mapper/)).
 - **고치려면**: 그 자식을 디스크립터에서 빼고 따로 다루거나, `q.dispose`한 뒤 새로 만드세요.
@@ -55,7 +55,7 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 ### Quad0032
 
-`Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)}) — a child with that name must also be a {tostring(v._className)}` — `quad-base/src/Claim.luau`
+`Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)}) - a child with that name must also be a {tostring(v._className)}` — `quad-base/src/Claim.luau`
 
 - **언제**: 매퍼 디스크립터가 지목한 이름의 자식이 없거나, 이름은 맞는데 그 클래스(`IsA`)가 아닐 때.
 - **고치려면**: 템플릿(claim 대상 Instance)에 그 이름·클래스의 자식이 실제로 있는지 확인하세요.
@@ -111,7 +111,7 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 ### Quad0106
 
-`{what}: this value was made by another quad module instance (one made with q.New()) — values cannot cross instances` — `quad-base/src/ModuleIdentity.luau`
+`{what}: this value was made by another quad module instance (one made with q.New()) - values cannot cross instances` — `quad-base/src/ModuleIdentity.luau`
 
 - **언제**: 한 quad 모듈 인스턴스가 만든 Observer·Effect·Slot·State를 다른 인스턴스의 트리 자리(숫자 키, 프로퍼티 값, `:List`의 데이터, `Slot`의 원소 자리 등)에 놓았을 때. `{what}`은 그 값이 놓인 자리를 가리키는 이름(`"Observer"`/`"Slot"` 등)입니다.
 - **고치려면**: 값을 만든 인스턴스와 놓는 인스턴스를 같게 맞추세요. quad_base 사본이 둘 섞인 경우는 이 에러로 오지 않습니다 — 사본이 다르면 브랜드가 갈려 `isState`류가 거짓이라 `Quad0076`(빗나간 프로바이더 안내)·`Quad0240`·`Quad0151`류가 납니다([2026-09-27 기준]).
@@ -119,7 +119,7 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 ### Quad0108
 
-`quad: {name} is not available — no backend has installed {what} (install a provider with quad:UseProvider — a bare Quad.New() has none{hint or ""})` — `quad-base/src/NotInstalled.luau`
+`quad: {name} is not available - no backend has installed {what} (install a provider with quad:UseProvider - a bare Quad.New() has none{hint or ""})` — `quad-base/src/NotInstalled.luau`
 
 - **언제**: 프로바이더를 설치하지 않은 `Quad.New()`에서 백엔드가 채워야 할 op(생명주기 hold op, 엔진 op, 시간 op 등)를 부를 때 — `{name}`은 그 op 이름입니다.
 - **고치려면**: `quad:UseProvider(...)`로 백엔드를 설치하세요. 헤드리스 테스트라면 필요한 op를 채운 자기 프로바이더를 `quad:UseProvider`로 설치하세요 — 이 저장소의 테스트용 mock은 배포되지 않습니다([헤드리스 테스트](/how-to/06-headless-testing/)).
@@ -167,7 +167,7 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 ### Quad0209
 
-`{who}: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)` — `quad-base/src/init.luau`
+`{who}: the function must return its extension table (got {typeof(extension)} - return an empty table if it adds nothing)` — `quad-base/src/init.luau`
 
 - **언제**: `{who}`은 부른 자리 이름입니다 — `q:UseProvider(providerFn)`이 부른 `providerFn(self)`가 테이블을 반환하지 않았을 때(`q:AddPlugin`은 자기 자리에서 먼저 검사하므로 이 문은 사실상 `UseProvider` 경로에서만 닿습니다).
 - **고치려면**: 확장 테이블을 반환하세요 — 아무것도 추가하지 않는다면 빈 테이블 `{}`을 반환하세요.
@@ -183,7 +183,7 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 ### Quad0211
 
-`AddPlugin: the function must return its extension table (got {typeof(extension)} — return an empty table if it adds nothing)` — `quad-base/src/init.luau`
+`AddPlugin: the function must return its extension table (got {typeof(extension)} - return an empty table if it adds nothing)` — `quad-base/src/init.luau`
 
 - **언제**: `pluginFn(self)`가 테이블을 반환하지 않았을 때 — 모듈을 고쳐 쓰기만 하고 아무것도 반환하지 않는 플러그인이 흔한 실수입니다.
 - **고치려면**: 확장 테이블을 반환하세요 — 아무것도 추가하지 않는다면 빈 테이블 `{}`을 반환하세요.
@@ -199,7 +199,7 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 ### Quad0213
 
-`UseProvider: this Quad module already has a provider — a module cannot serve two backends` — `quad-base/src/init.luau`
+`UseProvider: this Quad module already has a provider - a module cannot serve two backends` — `quad-base/src/init.luau`
 
 - **언제**: 이미 다른 프로바이더 함수(identity 기준)로 `UseProvider`를 부른 모듈에 다시 (다른) `providerFn`으로 `UseProvider`를 부를 때 — 같은 함수를 다시 넘기는 것은 멱등 no-op이라 에러가 아닙니다.
 - **고치려면**: 모듈당 프로바이더는 하나입니다 — 새 모듈 인스턴스(`q.New()`)를 만들어 다른 백엔드를 설치하세요.

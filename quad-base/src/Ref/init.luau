@@ -187,7 +187,7 @@ end
 function RefImpl.Unwrap<T>(self: Ref<T>): any
 	local value = self.Value
 	if value == nil then
-		Err.errorBeforeNearest("Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed", SURFACE)
+		Err.errorBeforeNearest("Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) - not filled yet, or never placed", SURFACE)
 	end
 	return value
 end
@@ -272,7 +272,7 @@ local function registerDispatchHandlers(module: any)
 					-- an array slot the pre-pass could not see: the value arrived
 					-- through a State/Store (StoreBind unwrap) — say so instead of
 					-- blaming the key type (review finding, M8 ②)
-					Err.errorBefore(`Quad0136 {kind}: must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see`, SURFACE)
+					Err.errorBefore(`Quad0136 {kind}: must be a literal array item - it reached array index {k} through a State/Store value, which the pre-pass cannot see`, SURFACE)
 				end
 				Err.errorBefore(`Quad0137 {kind}: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
 				return Void -- unreachable; keeps the contract type

@@ -368,7 +368,7 @@ and freshly built `D.*` children may be mixed into the same array.
 ### Invariants of `Claim`
 
 1. **Claim-once**: an Instance can be claimed once. Instances made by `D.*` are already
-   claimed — `Quad0029 Claim: <instance> is already claimed by quad — a Declaration-made or
+   claimed — `Quad0029 Claim: <instance> is already claimed by quad - a Declaration-made or
    already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive
    it separately, or dispose it and rebuild)`. This is `q.Claim`'s own pre-check (it runs
    before any claim in the descriptor tree is committed, root and mapped children alike).
@@ -450,13 +450,13 @@ The first assignment snaps to the value; later emissions run an engine tween.
   the key simply does not exist (no entry, no error); a value that DISAPPEARS from a replaced
   group is NOT unset — the old attribute persists until an explicit `None`/nil. Only the scalar
   sugars (`StringAttr`/`NumberAttr`/`BooleanAttr`) reject `nil`
-  (`Quad0014 {fnName}: value of "X" must not be nil — use None to delete`).
+  (`Quad0014 {fnName}: value of "X" must not be nil - use None to delete`).
 
 ### 6.3 Refs and Lifecycle Hooks
 
 `PreRef` in the array part is filled in a pre-pass, before the rest of the props table
 is driven. `ref:Unwrap()` returns the value or errors when empty
-(`Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed`) — it is
+(`Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) - not filled yet, or never placed`) — it is
 the way to drop `nil` from the type.
 
 ```luau
@@ -536,10 +536,10 @@ the solver can see; `Fallback` returns `Ok | Err`.
 
 | Anti-pattern | Observed result | Correct form |
 | :--- | :--- | :--- |
-| Nil hole in the array part `{ a, nil, b }` | The drive dies on the hole: `Quad0023 Bookkeeping.recompute: sourceList[2] is nil — a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; …` | `{ a, q.None, b }`, or `props.X or q.None` |
-| `Modifier` as a hash key | `Quad0068 Modifier: a Modifier cannot be a value of key "..." — place it in the array part` | Put the value in the array part |
+| Nil hole in the array part `{ a, nil, b }` | The drive dies on the hole: `Quad0023 Bookkeeping.recompute: sourceList[2] is nil - a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None; …` | `{ a, q.None, b }`, or `props.X or q.None` |
+| `Modifier` as a hash key | `Quad0068 Modifier: a Modifier cannot be a value of key "..." - place it in the array part` | Put the value in the array part |
 | `Ref`/`PreRef`/`PostRef`/`Slot`/`Effect`/`Observer` as a hash key | `<Kind>: must be an array item, not the value of a string key` — `Quad0137` for `Ref:`/`PreRef:`/`PostRef:` (one shared raise site), `Quad0141` for `Slot:`, `Quad0097` for `Effect:`, `Quad0116` for `Observer:` | Put the value in the array part |
-| `Tag` as a hash key | `Quad0076 Dispatch: no handler matched key <K> (value: table, brand: Tag) — a quad value at a string key: it belongs in a numeric (array) slot` | Put the value in the array part |
+| `Tag` as a hash key | `Quad0076 Dispatch: no handler matched key <K> (value: table, brand: Tag) - a quad value at a string key: it belongs in a numeric (array) slot` | Put the value in the array part |
 | Reading a `:Compute` dep without `:Get()` | No error for `#handle` (`0`) and `` `{handle}` `` (garbage); `handle .. ""` throws `attempt to concatenate table with string` | `dep:Get()` |
 | `Modifier` inside a `Source` | `Quad0182 Source: cannot hold a Modifier as a Source value` | Keep modifiers out of reactive values |
 | `q.Tween{ Value = someState }` | `Quad0250 Tween: Value must be a plain value, not a State` | `state:Apply(q.Animate{...})`, or build the Tween inside a `:Compute` |

@@ -125,7 +125,7 @@ function module.UseProvider(self, providerFn)
 	end
 	if current ~= nil then
 		Err.errorBeforeNearest(
-			"Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends",
+			"Quad0213 UseProvider: this Quad module already has a provider - a module cannot serve two backends",
 			QuadTypes.ERROR_LEVEL_SURFACE
 		)
 	end

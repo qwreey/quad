@@ -25,7 +25,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 ### Quad0088
 
-`Effect: cannot change subscription from inside fn or cleanup, or after this Effect's fn or cleanup has thrown — a thrown Effect stays dead; create a new one` — `quad-base/src/Effect.luau`
+`Effect: cannot change subscription from inside fn or cleanup, or after this Effect's fn or cleanup has thrown - a thrown Effect stays dead; create a new one` — `quad-base/src/Effect.luau`
 
 - **언제**: `effect:WeakSubscribe()`를 그 `Effect` 자신의 `fn`이나 cleanup 실행 중에 부를 때. [2026-09-27 실측] fn이 한 번 던졌거나 Quad0086으로 멈춘 `Effect`는 "실행 중" 표시가 풀리지 않은 채 남으므로, 그 뒤에는 fn 밖에서 불러도 이 에러가 납니다.
 - **고치려면**: 구독/재구독은 `fn`·cleanup 밖에서 하세요. 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 그 안에서도 됩니다. fn이 던졌던 `Effect`라면 그 핸들은 다시 구독·바인딩할 수 없으니 새 `Effect`를 만드세요.
@@ -49,7 +49,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 ### Quad0090
 
-`Effect: cannot change subscription from inside fn or cleanup, or after this Effect's fn or cleanup has thrown — a thrown Effect stays dead; create a new one` — `quad-base/src/Effect.luau`
+`Effect: cannot change subscription from inside fn or cleanup, or after this Effect's fn or cleanup has thrown - a thrown Effect stays dead; create a new one` — `quad-base/src/Effect.luau`
 
 - **언제**: `effect:Subscribe()`를 그 `Effect` 자신의 `fn`이나 cleanup 실행 중에 부를 때. [2026-09-27 실측] fn이 한 번 던졌거나 Quad0086으로 멈춘 `Effect`는 "실행 중" 표시가 풀리지 않은 채 남으므로, 그 뒤에는 fn 밖에서 불러도 이 에러가 납니다.
 - **고치려면**: 구독/재구독은 `fn`·cleanup 밖에서 하세요. 해제는 그 안에서도 됩니다. fn이 던졌던 `Effect`라면 그 핸들은 다시 구독·바인딩할 수 없으니 새 `Effect`를 만드세요.
@@ -81,7 +81,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 ### Quad0093
 
-`Effect: only a strongly subscribed Effect can be released with :Unsubscribe() — a weakly subscribed one must be released with :WeakUnsubscribe(), and one held only by a seat must be released by clearing that seat` — `quad-base/src/Effect.luau`
+`Effect: only a strongly subscribed Effect can be released with :Unsubscribe() - a weakly subscribed one must be released with :WeakUnsubscribe(), and one held only by a seat must be released by clearing that seat` — `quad-base/src/Effect.luau`
 
 - **언제**: `effect:Unsubscribe()`를 부를 때 그 핸들이 강하게 구독된 적이 없을 때(약한 구독뿐이거나, 자리에만 묶여 있거나, 이미 `:Unsubscribe()`로 한 번 풀린 뒤 다시 부른 경우).
 - **고치려면**: 약한 구독을 풀려면 `:WeakUnsubscribe()`를 쓰세요. 강한 구독을 이미 한 번 풀었다면 다시 부르지 마세요. **자리에만 묶인** 핸들(숫자 키 자리에 놓인 Effect)에는 `:WeakUnsubscribe()`가 에러 없이 통과하지만 아무것도 풀지 않습니다 — 멈추려면 그 자리를 쥔 `State`를 `Set(nil)`하거나 `q.Backend.unbindLifetime(handle)`로 수명을 푸세요([2026-09-27 mock 실측]).
@@ -185,7 +185,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 ### Quad0115
 
-`Observer: only a strongly subscribed Observer can be released with :Unsubscribe() — a weakly subscribed one must be released with :WeakUnsubscribe(), and one held only by a seat must be released by clearing that seat` — `quad-base/src/Observer.luau`
+`Observer: only a strongly subscribed Observer can be released with :Unsubscribe() - a weakly subscribed one must be released with :WeakUnsubscribe(), and one held only by a seat must be released by clearing that seat` — `quad-base/src/Observer.luau`
 
 - **언제**: `observer:Unsubscribe()`를 부를 때 그 핸들이 강하게 구독된 적이 없을 때(약한 구독뿐이거나, 자리에만 묶여 있거나, 이미 한 번 풀린 뒤 다시 부른 경우).
 - **고치려면**: 약한 구독을 풀려면 `:WeakUnsubscribe()`를 쓰세요. **자리에만 묶인** 핸들(숫자 키 자리에 놓인 Observer)에는 그 호출이 에러 없이 통과하지만 아무것도 풀지 않습니다 — 멈추려면 그 자리를 쥔 `State`를 `Set(nil)`하거나 `q.Backend.unbindLifetime(handle)`로 수명을 푸세요([2026-09-27 mock 실측]).
@@ -241,7 +241,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 ### Quad0135
 
-`Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed` — `quad-base/src/Ref/init.luau`
+`Ref:Unwrap: the Ref is empty (Value is nil) - not filled yet, or never placed` — `quad-base/src/Ref/init.luau`
 
 - **언제**: `ref:Unwrap()`을 불렀는데 `.Value`가 아직 `nil`일 때 — 아직 채워지지 않았거나, 애초에 자리에 놓이지 않았습니다.
 - **고치려면**: 런타임 보장이 있는 자리(예: `PreRef`가 채워진 뒤의 이벤트 콜백)에서만 쓰세요. 그렇지 않으면 `.Value`를 직접 읽어 `nil` 검사를 하세요.
@@ -249,7 +249,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 ### Quad0136
 
-`{kind}: must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see` — `quad-base/src/Ref/init.luau`
+`{kind}: must be a literal array item - it reached array index {k} through a State/Store value, which the pre-pass cannot see` — `quad-base/src/Ref/init.luau`
 
 - **언제**: `PreRef`/`PostRef`가 리터럴 숫자 키 자리가 아니라 `State`/`Store` 값에 담겨 숫자 키 자리에 도착했을 때 — pre-pass가 그 경로를 미리 볼 수 없습니다. `{kind}`는 실제 종류(`PreRef`/`PostRef`)입니다. 평범한 `Ref`는 `State`/`Store`를 거쳐 숫자 키 자리에 와도 정상적으로 채워지므로 이 에러가 나지 않습니다.
 - **고치려면**: 리터럴 숫자 키 자리에 직접 놓으세요.

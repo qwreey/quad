@@ -220,7 +220,7 @@ local q = Quad.New():UseProvider(CustomProvider)
 1. **모듈 인스턴스당 프로바이더는 하나**입니다. 슬롯을 점유하는 키는 **프로바이더 함수의 identity**입니다.
 2. **같은 함수를 다시 넘기면 멱등 no-op**입니다. 일반적인 경우엔 require 캐시가 같은 함수 identity를 주므로 자연히 통과합니다.
 3. **다른 identity를 넘기면 에러**입니다 — 다른 백엔드든, 같은 백엔드의 다른 사본/버전이든 똑같이 막힙니다:
-   `Quad0213 UseProvider: this Quad module already has a provider — a module cannot serve two backends`
+   `Quad0213 UseProvider: this Quad module already has a provider - a module cannot serve two backends`
 4. **슬롯 마킹은 프로바이더 함수가 성공적으로 반환한 뒤**에 일어납니다. 설치 도중 던지면 슬롯이 점유되지 않으므로, 원인을 고치고 다시 부를 수 있습니다.
 
 반환된 확장 테이블은 모듈에 키 단위로 병합됩니다(얕은 복사). quad-roblox가 반환하는 확장(`RobloxExtension`)은 여섯 개 키입니다 — `Declaration`(생성된 클래스 네임스페이스), `OnChange`, `Out`, `Animate`, `Tween`, `isTween`. 병합 뒤에는 `q.Declaration`처럼 모듈에서 바로 꺼내 쓰면 되고, 반환 타입이 교집합으로 합쳐지므로 캐스트가 필요 없습니다.
@@ -242,7 +242,7 @@ local q = Quad.New():UseProvider(CustomProvider)
 quad-base는 위 20슬롯 전부에 **안내 스텁**을 깔아둡니다. 백엔드 없이 부르면 nil 호출 크래시가 아니라 이름이 박힌 에러가 호출자 줄에서 납니다.
 
 ```
-Quad0108 quad: nativeInsert is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; headless tests install their own provider the same way)
+Quad0108 quad: nativeInsert is not available - no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider - a bare Quad.New() has none; headless tests install their own provider the same way)
 ```
 
 이 스텁은 프로바이더가 덮어쓸 때까지만 공개 표면에 앉아 있습니다. 즉 **백엔드가 슬롯 하나를 빠뜨리면 그 op를 처음 쓰는 순간 그 이름이 그대로 에러 메시지에 나옵니다** — 조합으로 대신 만들어 주는 폴백은 없습니다.

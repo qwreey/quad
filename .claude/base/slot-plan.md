@@ -474,7 +474,7 @@ local function claimOwner(element, ownerKey, fromDetached)
         -- `fromDetached` 없이 같은 owner라는 것만으로 통과시키면
         -- `Slot{a, a}`가 다시 조용히 새어나간다(2026-08-13 감사가 막은 것).
         if not (fromDetached and cur == ownerKey) then
-            error("Slot: this element is already mounted — multiple mounts are not allowed", 2)
+            error("Slot: this element is already mounted - multiple mounts are not allowed", 2)
         end
         return   -- 이미 내 것이므로 SetWeak도 불필요
     end
@@ -506,7 +506,7 @@ local function releaseOwner(element, ownerKey)
     -- 무시 없이 즉시 error" 원칙과 같은 결로 즉시 error.
     local current = elementOwner:GetWeak(element, OWNER)
     if current ~= ownerKey then
-        error("Bookkeeping.releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken", 1) -- [2026-09-17] 공개 op라 Nearest raise
+        error("Bookkeeping.releaseOwner: this element is not owned by this ownerKey - ownership tracking is broken", 1) -- [2026-09-17] 공개 op라 Nearest raise
     end
     elementOwner:SetWeak(element, OWNER, nil)
     elementOwner:SetWeak(element, OWNER_POS, nil)
@@ -3544,13 +3544,13 @@ local function wrapElement(v)
             error("Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements", 2)
         end
         if v == nil or v == None then
-            error("Slot: nil/None cannot be an element — only actually mountable values", 2)
+            error("Slot: nil/None cannot be an element - only actually mountable values", 2)
         end
         if not isInst(v) then     -- 백엔드 주입 술어(위 `native*` 절)
             error("Slot: this backend cannot mount this value", 2)
         end
         if not isClaimed(v) then  -- [2026-09-16 사용자 결정] 미claim 요소 거부 — 자동 claim은 마법(`claim-plan.md` 14번)
-            error("Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)", 2) -- 꼬리 구절: round10 Q54 (2026-09-17)
+            error("Slot: this element is not claimed by quad - build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one - a destroyed Instance cannot be reused)", 2) -- 꼬리 구절: round10 Q54 (2026-09-17)
         end
         return v
     end
@@ -4130,4 +4130,4 @@ State가 아니라 raw number"라는 설계(위 "왜 `LayoutOrder`를 Slot이 �
 없이 동적으로 바뀜)는 드물 것으로 예상 — 실제로 문제가 되면 그때
 `updateFn`이 자체적으로 방어하는 패턴을 문서화.
 
-**[2026-09-17 round11 `H-554` — 탐사 B″ 2] Q52의 `_materializing` 창은 throw에 비원자적이다 — 중첩 Slot의 attach가 던지면(가장 흔하게는 그 `:List`의 첫 `updateFn`) 부모 Slot의 save/restore가 건너뛰어져 부모가 영구히 "마운트 중"이 되고, 이후 최상위 코드의 `parent:Add(x)`까지 "updateFn이 조상을 CRUD하지 말라"는 문구로 거부된다.** pcall 없이는 못 풀고(architecture "감싸지 않는다"; Q52 항목의 "throw 뒤 플래그는 그대로") 회복 경로는 호스트 Instance의 `q.dispose`뿐이다 — 문구에 그 둘째 원인과 회수 경로를 붙였다("or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance"). Splice 창에서는 물리 상태도 어긋난다(`_elements`에서 빠진 원소가 호스트 자식으로 남음) — 같은 UB.
+**[2026-09-17 round11 `H-554` — 탐사 B″ 2] Q52의 `_materializing` 창은 throw에 비원자적이다 — 중첩 Slot의 attach가 던지면(가장 흔하게는 그 `:List`의 첫 `updateFn`) 부모 Slot의 save/restore가 건너뛰어져 부모가 영구히 "마운트 중"이 되고, 이후 최상위 코드의 `parent:Add(x)`까지 "updateFn이 조상을 CRUD하지 말라"는 문구로 거부된다.** pcall 없이는 못 풀고(architecture "감싸지 않는다"; Q52 항목의 "throw 뒤 플래그는 그대로") 회복 경로는 호스트 Instance의 `q.dispose`뿐이다 — 문구에 그 둘째 원인과 회수 경로를 붙였다("or an earlier mount into this Slot threw mid-way - then this Slot stays unusable: dispose its host Instance"). Splice 창에서는 물리 상태도 어긋난다(`_elements`에서 빠진 원소가 호스트 자식으로 남음) — 같은 UB.

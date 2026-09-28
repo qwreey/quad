@@ -68,8 +68,8 @@ local card = D.Frame({ boxed, D.Modifier.Frame():ZIndex(2) })
 |---|---|
 | 문자열이 아닌 키, 또는 `""` | `Quad0059 Modifier: initial-field table keys must be non-empty field names (got {…} at argument #{i})` |
 | 예약 메소드 이름 | `Quad0060 Modifier: field "{k}" collides with a reserved Modifier method` |
-| `As<Class>` 접두 이름 | `Quad0061 Modifier: field "{k}" matches the reserved cast prefix As<Class> — casts are methods, not fields` |
-| 함수 값 | `Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)` |
+| `As<Class>` 접두 이름 | `Quad0061 Modifier: field "{k}" matches the reserved cast prefix As<Class> - casts are methods, not fields` |
+| 함수 값 | `Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function - a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)` |
 | Modifier도 평범한 테이블도 아닌 인자 | `Quad0065 Modifier: argument #{i} must be a Modifier or a plain field table (got {typeof(arg)})` |
 
 **생성되는 Modifier 클래스는 47개**입니다 — `D`의 별칭 31개보다 많습니다. `GuiObject`/`GuiButton`/
@@ -162,7 +162,7 @@ setter 키는 문자열이어야 합니다. `AttrKey` 같은 비문자열 키는
 직접 넣습니다.
 
 ```
-Quad0058 Modifier: setter keys must be strings (got {typeof(key)}) — put a non-string key in the props table itself (Frame { [key] = value })
+Quad0058 Modifier: setter keys must be strings (got {typeof(key)}) - put a non-string key in the props table itself (Frame { [key] = value })
 ```
 
 `tostring(mod)`은 `Modifier<Frame>(3 fields)` 형태로 클래스 태그와 필드 수를 보여줍니다.
@@ -196,8 +196,8 @@ local frame = base:AsFrame():Style(Enum.FrameStyle.Custom)
 하나여야 합니다.
 
 ```
-Quad0056 Modifier: cannot cast a "{tag}" modifier to "{target}" — not an ancestor (use :As(name) to force)
-Quad0055 Modifier: unknown modifier class "{target}" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)
+Quad0056 Modifier: cannot cast a "{tag}" modifier to "{target}" - not an ancestor (use :As(name) to force)
+Quad0055 Modifier: unknown modifier class "{target}" - Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)
 ```
 
 `As` + 대문자로 시작하는 이름은 **전부 캐스트로 예약**돼 있어 절대 필드 setter가 되지 않습니다.
@@ -228,7 +228,7 @@ local retagged = D.Modifier.TextLabel():As("Frame") -- 태그만 Frame으로(조
 
 ```
 Quad0051 Modifier:As: name must be a class name string (got {typeof(name)})
-Quad0052 Modifier: unknown modifier class "{name}" — Modifier.TypedFactory/DefineSubtype it first
+Quad0052 Modifier: unknown modifier class "{name}" - Modifier.TypedFactory/DefineSubtype it first
 ```
 
 ---
@@ -268,7 +268,7 @@ Themed({ Modifier = D.Modifier.TextButton():TextSize(18) })          -- 자기 �
 `D.Modifier.<Class>`가 쓰는 것과 정확히 같은 등록 경로라, 커스텀 클래스도 **타입 층에서는** `Into<Class>` 자리에
 `FrameModifier`와 같은 지위를 갖습니다. **런타임은 다릅니다** — 검사형 `:AsTextButton()`은 조상 방향으로만 내려받으므로
 `DefineSubtype("TextButton", "MaterialButtonSpec")`으로 만든 **하위** 클래스 값에 부르면 `Quad0056 Modifier: cannot cast a
-"MaterialButtonSpec" modifier to "TextButton" — not an ancestor (use :As(name) to force)`로 던집니다([2026-09-27 mock 실측]).
+"MaterialButtonSpec" modifier to "TextButton" - not an ancestor (use :As(name) to force)`로 던집니다([2026-09-27 mock 실측]).
 커스텀 하위 클래스를 받는 컴포넌트는 `Into<Class>` 대신 `<Class>Modifier?`(같은 클래스만)를 받고, 하위 클래스 값을 꽂을 땐
 비검사 `props.Modifier:As<<RobloxModule.TextButtonModifier>>("TextButton")`을 쓰세요 — `IntoTextButton` 인터페이스에는
 `AsTextButton` 하나뿐이라 그 타입 위에서 `:As(...)`를 부르면 strict가 `Key 'As' not found`로 막고, 타입 인자 없는 `:As(name)`은

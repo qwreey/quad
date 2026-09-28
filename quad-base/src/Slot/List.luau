@@ -92,14 +92,14 @@ return function(S: Types.SlotInternal, module: any)
 			if type(items) ~= "table" or getmetatable(items) ~= nil then
 				-- round3 `H-441`/`H-446` (외부 리뷰 G-11): `#items` on nil/non-table was a VM error blaming Slot.luau —
 				-- reached from State emit depth too, so outermost; branded tables are not arrays either
-				S.Err.errorBefore(`Quad0142 Slot:List: data must be a plain array (got {typeof(items)}) — a data State must hold one too`, S.SURFACE)
+				S.Err.errorBefore(`Quad0142 Slot:List: data must be a plain array (got {typeof(items)}) - a data State must hold one too`, S.SURFACE)
 			end
 			-- round11 `H-571` (탐사 I′ 1, `H-396`의 짝): a dictionary (an id-keyed map, a decoded JSON
 			-- object) passed the table check, `ipairs` saw nothing and the KeyGone pass silently
 			-- destroyed every element. A nil hole still just stops `ipairs` (documented UB).
 			for k in pairs(items) do
 				if type(k) ~= "number" or k % 1 ~= 0 or k < 1 then
-					S.Err.errorBefore(`Quad0143 Slot:List: data must be a plain array — key "{tostring(k)}" is not an array position`, S.SURFACE)
+					S.Err.errorBefore(`Quad0143 Slot:List: data must be a plain array - key "{tostring(k)}" is not an array position`, S.SURFACE)
 				end
 			end
 			local keys, seen = table.create(#items), {}
@@ -135,7 +135,7 @@ return function(S: Types.SlotInternal, module: any)
 				local result, ud = updateFn({ Item = item, Index = physIndex, Offset = offset, Prev = prev, UserData = userdata[key] })
 				if result == S.KeyGone then
 					-- round11 탐사 I′ 5: the third sentinel is an INPUT marker, never a return — it used to die as "cannot mount this value"
-					S.Err.errorBefore("Quad0146 Slot:List: updateFn returned q.KeyGone — it is the marker updateFn RECEIVES when a key disappears; return nil/q.None to drop the element or q.Detach to hold it", S.SURFACE)
+					S.Err.errorBefore("Quad0146 Slot:List: updateFn returned q.KeyGone - it is the marker updateFn RECEIVES when a key disappears; return nil/q.None to drop the element or q.Detach to hold it", S.SURFACE)
 				end
 				if result == S.None then result = nil end
 				local detach = (result == S.Detach)

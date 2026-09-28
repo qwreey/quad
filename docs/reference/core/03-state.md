@@ -75,9 +75,9 @@ Compute: <U>(self: StateData<T>, fn: (self: StateData<T>, previous: U?, ...any) 
 - 예외는 두 번째 인자 `previous`입니다 — 이건 핸들이 아니라 **이 노드가 직전에 계산해 둔 결과값 자체**이고, 아직 한 번도 계산하지 않았으면 `nil`입니다. 노드마다 독립적으로 기억됩니다.
 - 조건에 따라 `self:Get()`을 건너뛰는 계산도 그대로 허용됩니다 — 읽지 않으면 그 회차엔 상류를 계산하지 않습니다.
 - 계산 함수는 **값 한 세대에 한 번만 돕니다.** 계산 함수가 자기 노드의 값을 읽거나(직접, 또는 하류 State를 거쳐 — 의존성 순환), yield하는 사이 다른 코루틴이 같은 노드를 읽으면 그 `:Get()` 줄에서 아래 문구로 에러가 납니다. 순환은 만든 쪽의 실수라 그 자리에서 잡히고, yield는 지원하지 않습니다(계산은 읽는 쪽의 `:Get()` 안에서 동기로 돕니다). 계산 함수가 **던지면** 그 세대의 재읽기도 같은 문구로 에러이고, 상류가 바뀌어 새 세대가 되면 다시 돕니다 — 잘못된 값을 고쳐 `:Set`하면 회복됩니다(그 상류가 `Blocker`·`Debounce` 뒤에서 유보 중이어도 같습니다 — 게이트는 통지만 붙들지 값을 가리지 않습니다). 회복되는 것은 **그 노드**입니다 — 던지는 순간 그 값을 읽던 소비자는 자기 자리의 계약대로 남습니다(읽던 `Effect`는 죽고(`Quad0088`류), 같은 세대에 그 값을 읽은 `:List` 원소가 있으면 그 Slot의 `Length` 발행이 멈춥니다; 어느 소비자가 예외를 받는지는 구독 순회 순서라 정해져 있지 않습니다 — [2026-09-27 mock 실측]). 잡히지 않는 순환 하나: 계산 함수가 자기 의존성을 `:Set`한 **뒤** 자기 값을 읽으면 그 `:Set`이 새 세대를 만들어 재진입으로 보이지 않고 스택 오버플로가 납니다(계산 함수 안에서 자기 의존성을 쓰는 것 자체가 정의되지 않은 동작).
-  `Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)`
+  `Quad0184 State: Compute fn is already running for this value - a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)`
 - 계산 결과로 **Modifier를 돌려줄 수 없습니다**:
-  `Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers`
+  `Quad0185 State: a Compute function returned a Modifier - State/Source cannot hold Modifiers`
 - 인자 검증: `Quad0187 State: Compute fn must be a function (got {typeof(fn)})` / `Quad0186 State: dep #{i + 1} is nil` / `Quad0183 State: dep #{i} is not a State/Source`. 번호는 **리시버가 1번**이라, 후행 의존성의 첫 자리가 `#2`입니다. 검사는 `nil`을 먼저 전부 보고 그다음 타입을 보므로 `a:Depend(5, nil)`은 `#2`가 아니라 `dep #3 is nil`을 냅니다(`Effect`는 자리 순서대로 한 번에 봅니다 — `q.Effect(fn, nil, 5)`는 `Quad0095 Effect: dep #1 is nil`, `q.Effect(fn, 5, nil)`은 `Quad0096 Effect: dep #1 is not a State/Source/Ref` — [2026-09-27 mock 실측]).
 
 **strict 캐비엇** — 반환이 `State<U>`로 온전히 추론되지 않는 자리가 있어, **파생 노드를 만드는 줄에는 결과 타입을 주석**하는 것이 이 코퍼스의 관례입니다. 또 `...deps`가 `...any`이므로 콜백 안에서 의존성 파라미터에 타입 주석을 다세요.
@@ -180,7 +180,7 @@ export type ObserverFn<T> = (targetState: StateData<T>, self: Observer, emitFrom
 
 값을 실어주지 않는 leaf 구독 핸들을 만듭니다. 콜백은 **값이 아니라 관측 대상 핸들·자기 자신·출처**를 받고, 등록 시점에 즉시 한 번 발화합니다. 전체 계약(구독 네 진입점, 보류와 캐치업)은 **[05-observer-effect](./05-observer-effect.md#stateobserverfn)** 가 정본입니다.
 
-인자 검증: `Quad0190 State: Observer fn must be a function or nil (got {typeof(fn)}) — nil makes the always-observe utility`
+인자 검증: `Quad0190 State: Observer fn must be a function or nil (got {typeof(fn)}) - nil makes the always-observe utility`
 
 ---
 

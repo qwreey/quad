@@ -405,7 +405,7 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
   -- Err.errorBeforeNearest(msg, SURFACE)다(아래 워커 문단). 둘째 줄(내부
   -- 불변식, level 1)은 지금도 리터럴 그대로가 맞다.
   error("Effect: dep #3 is not a State/Source/Ref", 2)
-  error("Dispatch.getOffsetAt: lengthList[3] is nil — bookkeeping is broken", 1)
+  error("Dispatch.getOffsetAt: lengthList[3] is nil - bookkeeping is broken", 1)
   ```
 
   내부 불변식 위반은 곧 **quad 자신의 버그**라, 호출부가 아니라 터진 자리를
@@ -456,13 +456,13 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
     `quad.Dispatch.setOffsetSource` 셋을 고쳤다), 생성자·불변식은 타입 이름만(`Tween:`·`State:`).
     주어는 이름만이고 인자 값은 이유 쪽에 싣는다(옛 `OnChange("Text"): …` → `OnChange: callback
     for "Text" …`).
-  - **이유**는 영어 한 절, `must be …`/`cannot …` 현재형. 부연은 ` — `(em-dash) 뒤에.
+  - **이유**는 영어 한 절, `must be …`/`cannot …` 현재형. 부연은 ` - `(공백-하이픈-공백) 뒤에 — **[2026-09-28 round13 사용자 결정]** 원래 ` — `(em-dash)였으나 메시지는 ASCII만 쓴다(참고 Luau 라이브러리 다섯의 에러 101건이 전부 ASCII, 출력창·외부 로그에서 깨질 여지를 없앰 — `session/2026-09-28-01-round13-batch-reply.md`). 콜론은 주어 구분자, `--`는 주석 기호, 괄호는 `(got X)` 전용이라 쓰지 않는다. 기호(`⊂` 등)도 말로 푼다.
   - **받은 값**은 문장 끝 `(got {typeof(x)})` — 괄호형만 쓴다(쉼표형 `, got X`·`but got X`
     폐기: Bookkeeping `position` 게이트, Effect/Observer/Ref 배열 자리 가드가 그 잔재였다 — 뒤의
     셋은 정규화하면서 키 타입을 이유 안에 실었다: `must be an array item, not the value of a
     {typeof(k)} key`. 받은 값이 아니라 잘못 놓인 자리를 서술하는 문장이라 `(got …)` 꼬리가 없다).
     숫자·정해진 값은 `tostring`으로 그 값을 실어도 된다.
-  - 구분자는 콜론 하나 — `Slot:List — …`(em-dash 주어)·`Tween:Mapped expects …`(콜론 없음)
+  - 구분자는 콜론 하나 — `Slot:List — …`(주어 뒤를 콜론 대신 em-dash로 이은 옛 모양)·`Tween:Mapped expects …`(콜론 없음)
     형태는 폐기.
   - **[2026-09-28 round13 Q90 사용자 결정 — 지금 관행을 규약으로]** (1) **주어가 타입 이름뿐이어도 되는 자리**:
     여러 메소드가 공유하는 불변식(`Slot: destroyed Slot cannot be reused` — CRUD 아홉이 한 가드를 부른다)이거나
@@ -470,8 +470,8 @@ quad가 던지는 error 자리는 약 29곳이고(`base/` 전수), **쓰기 전�
     타입 이름만 쓴다 — 코드에 이 모양이 다수이고 옛 정규화 배치 둘(`H-477`·`H-494`)도 건드리지 않았다.
     (2) **진입점을 모르는 핸들러·op 안의 거부**: 공개 이름이 있으면 그 이름(`Bookkeeping.claimOwnerAt:` — 흔한
     사용자 경로는 이유 절에 싣는다), 없으면 `Dispatch:`(`Quad0076`·`Quad0219`/`0220` — 진입점은 blame 줄이
-    말한다, round8 O-1). (3) **받은 값과 부연이 둘 다 필요하면 `(got X)`를 먼저, ` — 부연`을 뒤에**
-    (`Quad0142`·`Quad0176`), 가변 인자의 위치는 괄호 안에 실어도 된다(`(got number at argument #2)` —
+    말한다, round8 O-1). (3) **받은 값과 부연이 둘 다 필요하면 `(got X)`를 먼저, ` - 부연`을 뒤에**
+    (`Quad0142`·`Quad0176` — 구분자는 ` - `), 가변 인자의 위치는 괄호 안에 실어도 된다(`(got number at argument #2)` —
     `Quad0059`·`Quad0205`). (4) **옵션 테이블이 통째로 없을 때는 호출 예시를 이유에 실어도 된다**(`Quad0214
     Animate: options must be a table, e.g. Animate{ Time = ... } (got nil)`). 근거는 외부자·내부자 두 판정과
     사용자 회신 — `session/2026-09-28-01-round13-batch-reply.md`.

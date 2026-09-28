@@ -203,23 +203,23 @@ local function Init(module: any)
 		-- name both, neutral wording (base knows no engine terms). A provider IS installed in the
 		-- common case, so the provider-only hint pointed the wrong way for `size` / `AbsoluteSize`.
 		local hint = if not isBase and type(k) == "string"
-			then " — this key may not be a field of this element (a typo, a read-only field, or one from another class), or the provider that handles it (e.g. quad-roblox) is not initialized"
+			then " - this key may not be a field of this element (a typo, a read-only field, or one from another class), or the provider that handles it (e.g. quad-roblox) is not initialized"
 			elseif not isBase
-			then " — check that the provider for this value (e.g. quad-roblox) is initialized"
-			elseif brand == "Store" then " — a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))" -- 탐사 I′ 3
-			elseif brand == "Context" or brand == "Provider" then ` — a {brand} is not a value for any key: read the value you need out of it first` -- round13 E80 (the old hint sent it to a numeric slot, which raises Quad0076 again)
-			elseif type(k) == "string" then " — a quad value at a string key: it belongs in a numeric (array) slot"
-			else " — this quad value has no handler at an array position"
+			then " - check that the provider for this value (e.g. quad-roblox) is initialized"
+			elseif brand == "Store" then " - a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))" -- 탐사 I′ 3
+			elseif brand == "Context" or brand == "Provider" then ` - a {brand} is not a value for any key: read the value you need out of it first` -- round13 E80 (the old hint sent it to a numeric slot, which raises Quad0076 again)
+			elseif type(k) == "string" then " - a quad value at a string key: it belongs in a numeric (array) slot"
+			else " - this quad value has no handler at an array position"
 		return `Quad0076 Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})` .. hint
 			-- `H-257`: a nil here often started life as the None sentinel (NoneHandler
 			-- recursion erases the provenance) — say so, or the user is told they
 			-- passed the one value None exists to be distinguishable from
-			.. (if v == nil then " (a nil at this depth may be an unwrapped None or a reactive nil — the key's own handler must accept nil)" else "")
+			.. (if v == nil then " (a nil at this depth may be an unwrapped None or a reactive nil - the key's own handler must accept nil)" else "")
 	end
 
 	local function noRetractorMessage(h: Handler, k: any, index: number): string
 		return `Quad0077 Dispatch: handler {describeHandler(h)} returned no retractor at key {tostring(k)}, index {index}`
-			.. " — return Void when there is nothing to undo"
+			.. " - return Void when there is nothing to undo"
 	end
 
 	-- `release` (`H-329`, 사용자 확정 (a) 2026-09-06): a PURE retract that empties
@@ -242,7 +242,7 @@ local function Init(module: any)
 		for i = #list, index, -1 do
 			local slot = list[i]
 			if slot == nil then
-				error(`Quad0071 Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken`, 1)
+				error(`Quad0071 Dispatch.retractFrom: no slot at index {i} - the chain array has a hole, bookkeeping is broken`, 1)
 			end
 			slot.retractor(nil, true)
 			list[i] = nil
@@ -336,7 +336,7 @@ local function Init(module: any)
 			-- round11 `H-564` (탐사 G′ 2, `H-256`'s sibling): a gap index parked a slot no unwind ever
 			-- visits (`retractRange` starts at #list) and `release and #list == 0` then dropped the
 			-- list with a live retractor in it — dispatch-core-plan "list가 구멍 없는 시퀀스"
-			Err.errorBeforeNearest(`Quad0075 Dispatch.process: index {index} would leave a gap in the chain (the chain has {#list} slots — a delegating handler passes index + 1)`, SURFACE)
+			Err.errorBeforeNearest(`Quad0075 Dispatch.process: index {index} would leave a gap in the chain (the chain has {#list} slots - a delegating handler passes index + 1)`, SURFACE)
 		end
 
 		local slot = list[index]
@@ -430,7 +430,7 @@ local function Init(module: any)
 					print(
 						`Dispatch.addHandler: handler priority tie between {describeHandler(existing)}`
 							.. ` and {describeHandler(handler)}`
-							.. " — ties have no defined order; offset from a HANDLER_PRIORITY_* band"
+							.. " - ties have no defined order; offset from a HANDLER_PRIORITY_* band"
 					)
 					break
 				end
@@ -485,7 +485,7 @@ local function Init(module: any)
 			-- (dispatch-core-plan "`flattened`는 항상 평범한 Luau 테이블이다"). Without this the
 			-- value's own fields were dispatched: a frozen `AttrKey("x")` is `{ Name = "x" }`,
 			-- which quad-roblox's Property handler wrote — a silent rename.
-			Err.errorBefore(`Quad0083 Dispatch.drive: props must be a plain \{ ... \} table — a quad value needs the braces (got {brandNameOf(flattened) or "a table with a metatable"})`, SURFACE)
+			Err.errorBefore(`Quad0083 Dispatch.drive: props must be a plain \{ ... \} table - a quad value needs the braces (got {brandNameOf(flattened) or "a table with a metatable"})`, SURFACE)
 		end
 		if inst == nil then
 			Err.errorBefore("Quad0084 Dispatch.drive: inst must not be nil", SURFACE) -- round3 `H-442` (G-12): died in Relate with `table index is nil`

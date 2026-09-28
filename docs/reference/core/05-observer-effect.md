@@ -20,7 +20,7 @@ local D = q.Declaration
 ```
 
 :::note
-**생존 판정의 인스턴스 쪽 절반은 백엔드가 심습니다.** 판정 자체(`canBound`/`canExecute`)와 바인딩(`bindLifetime`)은 quad-base 것이고, 그 아래 "이 값이 살아 있는 인스턴스에 묶여 있는가"만 백엔드의 hold op(`isHeld` 등)에 묻습니다. 프로바이더를 설치하지 않은 맨 `Quad.New()`에서 `:Subscribe()`를 부르면 `quad: {name} is not available — no backend has installed {what}` 로 시작하는 에러(뒤에 프로바이더를 설치하라는 안내가 붙습니다)가 납니다. 판정 자체의 설계는 [Quadnomicon Vol. 6](../../quadnomicon/06-liveness-gate-and-isolation.md).
+**생존 판정의 인스턴스 쪽 절반은 백엔드가 심습니다.** 판정 자체(`canBound`/`canExecute`)와 바인딩(`bindLifetime`)은 quad-base 것이고, 그 아래 "이 값이 살아 있는 인스턴스에 묶여 있는가"만 백엔드의 hold op(`isHeld` 등)에 묻습니다. 프로바이더를 설치하지 않은 맨 `Quad.New()`에서 `:Subscribe()`를 부르면 `quad: {name} is not available - no backend has installed {what}` 로 시작하는 에러(뒤에 프로바이더를 설치하라는 안내가 붙습니다)가 납니다. 판정 자체의 설계는 [Quadnomicon Vol. 6](../../quadnomicon/06-liveness-gate-and-isolation.md).
 :::
 
 ---
@@ -106,7 +106,7 @@ export type Observer = {
   (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Quad0109 Observer: cannot bind an Observer from inside its own fn`). 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 콜백 안에서도 됩니다 — 해제는 콜백을 다시 부르지 않습니다.
 - 콜백이 자기 관측 대상을 `:Set`하면 **재귀**로 돕니다 — `Effect`처럼 다음 사이클로 미루지 않으므로 수렴하지 않는 콜백은 스택이 자라 넘칩니다(CLI 실측 약 4천 단, 그 뒤 핸들은 "던진" 상태). 대상을 되쓰는 콜백은 `Effect`로 옮기거나 수렴 조건을 두세요.
 - 콜백이 예외를 던지면 그 핸들은 **굳습니다** — 이후 (재)구독과 다른 인스턴스에 묶기는 위 문구로 거부됩니다. 발화 자체는 막히지 않아 상류가 바뀌면 콜백은 계속 돕니다(quad는 예외를 잡지 않으므로 "던졌다"는 사실을 따로 기억하지 못합니다). 정리하려면 `:Unsubscribe()`(강한 구독) 또는 묶인 인스턴스의 파괴로 놓아주세요.
-- 인자 검증: `Quad0190 State: Observer fn must be a function or nil (got {typeof(fn)}) — nil makes the always-observe utility`
+- 인자 검증: `Quad0190 State: Observer fn must be a function or nil (got {typeof(fn)}) - nil makes the always-observe utility`
 - 같은 원천을 구독한 Observer·Effect끼리의 **발화 순서는 정해져 있지 않습니다** — 등록 순서도 아닙니다. 순서가 필요하면 한 콜백 안에서 차례대로 부르세요.
 - 콜백 안에서 **yield하지 마세요**(Roblox의 `task.wait` 등) — 정의되지 않은 동작입니다. 파동이 그 자리에서 멈추거나 같은 콜백이 겹쳐 돌 수 있고, 겹치면 나중 값의 콜백이 먼저 끝나 **마지막으로 처리한 값이 낡은 값**이 됩니다. 기다릴 일은 따로 띄운 코루틴으로 떼어 내세요.
 - 숫자 키 자리에 놓여 **묶이는 순간** 보류돼 있던 통지가 한 번 재생되는데, 그 콜백이 던지면 `Declaration`은 에러로 끝나지만 그 핸들은 실패한 인스턴스에 묶인 채 남습니다(정의되지 않은 동작 — `Effect`도 같습니다). 같은 핸들로 다시 놓으면 원인 대신 `Quad0233 bindLifetime: value is already bound to another Instance`가 납니다. 재시도는 새 핸들로 하세요 — `Declaration` 안에서 인라인으로 만드는 보통 코드는 자연히 그렇게 됩니다.
@@ -171,7 +171,7 @@ print(#log) --> 3
 **시그니처** — `Unsubscribe: (self: Observer) -> Observer`
 
 **동작** — 강한 구독을 해제합니다(강·약 등록을 둘 다 지우고 `.Subscribed`를 내립니다). **엄격합니다** — 강하게 구독한 적이 없으면 거절합니다:
-`Quad0115 Observer: only a strongly subscribed Observer can be released with :Unsubscribe() — a weakly subscribed one must be released with :WeakUnsubscribe(), and one held only by a seat must be released by clearing that seat`
+`Quad0115 Observer: only a strongly subscribed Observer can be released with :Unsubscribe() - a weakly subscribed one must be released with :WeakUnsubscribe(), and one held only by a seat must be released by clearing that seat`
 콜백 안에서, 그리고 콜백이 던져 굳은 뒤에도 됩니다 — 해제는 콜백을 부르지 않습니다.
 
 ---
@@ -226,7 +226,7 @@ export type Effect = {
 - cleanup이 도는 자리는 넷입니다 — 다음 `fn` 실행 직전, [`:Unsubscribe()`](#effectunsubscribe), 매달린 인스턴스가 파괴될 때, 그리고 인스턴스는 살아 있는데 **그 숫자 키 자리가 다른 값으로 재구동될 때**(자리를 `State<Effect?>`로 잡아 두고 갈아 끼우는 경우 — 그 자리를 떠나는 `Effect`의 cleanup이 한 번 돕니다). cleanup은 인자 하나 `dying`을 받습니다 — 셋째 자리(**인스턴스가 죽어서**)에서만 `true`이고 나머지 셋에서는 `false`입니다. 죽을 때만 해야 할 정리와 자리를 떠날 때마다 할 정리를 이걸로 가릅니다. 인자를 안 받는 `function() … end`도 그대로 됩니다.
 - 살아나기 전의 의존성 변경은 `Observer`와 같이 **보류**됐다가 살아나는 시점에 한 번 재생됩니다.
 - `fn`이나 cleanup 안에서 자기를 (재)구독할 수 없습니다:
-  `Effect: cannot change subscription from inside fn or cleanup, or after this Effect's fn or cleanup has thrown — a thrown Effect stays dead; create a new one`
+  `Effect: cannot change subscription from inside fn or cleanup, or after this Effect's fn or cleanup has thrown - a thrown Effect stays dead; create a new one`
   (콜백 안에서 만든 핸들을 숫자 키 자리에 놓는 경우는 `Quad0087 Effect: cannot bind an Effect from inside its own fn or cleanup`). 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 `fn` 안에서도 됩니다 — `fn`을 다시 부르지 않고, `fn`이 그 뒤 돌려준 cleanup은 저장되지 않고 즉시 소진됩니다(핸들이 더는 실행 자격이 없으므로).
 - `fn` 안에서 의존성을 `:Set`하면 그 실행이 끝난 뒤 한 번 더 도는 **지연 재실행**이 됩니다.
 - `fn`이 예외를 던지면 그 `Effect`는 **죽습니다** — 이후 재실행과 (재)구독이 막힙니다. **cleanup이 던져도 같습니다** — 재실행·`:Unsubscribe`·호스트 파괴·`:WeakUnsubscribe` 어느 자리에서 던졌든 그 뒤 재실행은 보류되고 (재)구독은 "cannot change subscription from inside fn or cleanup"으로 거부됩니다(던진 자리에 따라 강한 구독이 남거나, 호스트 파괴 자리였다면 재바인드도 막힙니다). 남는 일은 `:Unsubscribe()`(강한 구독을 풀어 핸들과 상류를 놓아줌 — 그때 소진할 cleanup은 없습니다, 던진 `fn`은 돌려준 게 없으니까) 또는 `:WeakUnsubscribe()`뿐입니다. 죽은 핸들을 강한 구독에 둔 채 버리면 모듈 수명 동안 남습니다.
@@ -269,7 +269,7 @@ effect:Unsubscribe() -- 마지막 정리 1회
 
 **동작** — **강한 구독**. 레지스트리가 핸들을 강하게 잡습니다. `.Subscribed`를 올린 뒤, 보류된 변경이 있으면 한 번 재생합니다.
 
-**에러** — `Quad0091 Effect: already subscribed` / `Quad0231 Effect: already bound to an Instance` / `Quad0090 Effect: cannot change subscription from inside fn or cleanup, or after this Effect's fn or cleanup has thrown — a thrown Effect stays dead; create a new one`
+**에러** — `Quad0091 Effect: already subscribed` / `Quad0231 Effect: already bound to an Instance` / `Quad0090 Effect: cannot change subscription from inside fn or cleanup, or after this Effect's fn or cleanup has thrown - a thrown Effect stays dead; create a new one`
 
 ---
 
@@ -279,7 +279,7 @@ effect:Unsubscribe() -- 마지막 정리 1회
 
 **동작** — **약한 구독**. 나머지는 `:Subscribe()`와 같지만 레지스트리가 핸들을 잡아주지 않습니다 — 참조를 놓으면 수거됩니다. 이때 `Effect`가 강하게 쥐고 있던 의존성 등록(`Ref` 콜백, 내부 Observer)도 함께 사라집니다.
 
-**에러** — `Quad0089 Effect: already subscribed` / `Quad0230 Effect: already bound to an Instance` / `Quad0088 Effect: cannot change subscription from inside fn or cleanup, or after this Effect's fn or cleanup has thrown — a thrown Effect stays dead; create a new one`
+**에러** — `Quad0089 Effect: already subscribed` / `Quad0230 Effect: already bound to an Instance` / `Quad0088 Effect: cannot change subscription from inside fn or cleanup, or after this Effect's fn or cleanup has thrown - a thrown Effect stays dead; create a new one`
 
 ---
 
@@ -288,7 +288,7 @@ effect:Unsubscribe() -- 마지막 정리 1회
 **시그니처** — `Unsubscribe: (self: Effect) -> Effect`
 
 **동작** — 강한 구독을 해제하고 **마지막 cleanup을 정확히 한 번 소진합니다**. 엄격합니다:
-`Quad0093 Effect: only a strongly subscribed Effect can be released with :Unsubscribe() — a weakly subscribed one must be released with :WeakUnsubscribe(), and one held only by a seat must be released by clearing that seat`
+`Quad0093 Effect: only a strongly subscribed Effect can be released with :Unsubscribe() - a weakly subscribed one must be released with :WeakUnsubscribe(), and one held only by a seat must be released by clearing that seat`
 (이 문에서 거절당하면 cleanup은 건드려지지 않습니다.) `fn` 안에서도, `fn`이 던져 죽은 뒤에도 됩니다 — `fn`을 부르지 않습니다. cleanup 안에서 자기를 해제하는 것은 그 cleanup이 다음 `fn` 직전·인스턴스 파괴·자리 교체로 소진될 때만 뜻이 있습니다 — **이 메소드가 소진한 cleanup 안에서 다시 `:Unsubscribe()`를 부르면** 강한 구독은 이미 풀린 뒤라 위 문구로 던집니다(이중 해제).
 
 ---

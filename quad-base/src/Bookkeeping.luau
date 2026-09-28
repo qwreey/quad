@@ -198,8 +198,8 @@ local function Init(module: any)
 				-- with a hole below N the range clause called a legal query illegal
 				Err.errorBefore( -- error-code: inline if
 					if at > last + 1
-						then `Quad0022 Bookkeeping.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) — or a leaf handler skipped its position registration: position {i} is not registered`
-						else `Quad0229 Bookkeeping.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not — a leaf handler skipped its position registration`,
+						then `Quad0022 Bookkeeping.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) - or a leaf handler skipped its position registration: position {i} is not registered`
+						else `Quad0229 Bookkeeping.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not - a leaf handler skipped its position registration`,
 					SURFACE
 				)
 			end
@@ -245,7 +245,7 @@ local function Init(module: any)
 			-- None is truthy — must be excluded explicitly; nil means broken
 			-- bookkeeping (`C-6`: the contract says None), never skip quietly.
 			if offset == nil then
-				error(`Quad0023 Bookkeeping.recompute: sourceList[{i}] is nil — a nil hole in the numeric-key part of props (\{ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent — q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)`, 1) -- `H-472`: name the mirror of the lengthList check below
+				error(`Quad0023 Bookkeeping.recompute: sourceList[{i}] is nil - a nil hole in the numeric-key part of props (\{ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent - q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)`, 1) -- `H-472`: name the mirror of the lengthList check below
 			end
 			if offset == None then
 				-- No publish channel (a leaf) — nothing to Set, so no `abs` is needed and
@@ -285,7 +285,7 @@ local function Init(module: any)
 			-- setOffsetSource without setLength) died as an anonymous arithmetic error
 			-- inside recomputeBlocker:On, freezing the owner. Internal invariant.
 			if bk.lengthList[i] == nil then
-				error(`Quad0024 Bookkeeping.recompute: lengthList[{i}] is nil — bookkeeping is broken (setOffsetSource without setLength?)`, 1)
+				error(`Quad0024 Bookkeeping.recompute: lengthList[{i}] is nil - bookkeeping is broken (setOffsetSource without setLength?)`, 1)
 			end
 			sum += contribution(bk, i)
 			-- `H-240` check ② — contribution's own Get window; the possibly

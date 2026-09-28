@@ -188,7 +188,7 @@ local function createImpl(module: any)
 			end
 		end
 		if self._computing == gen then
-			Err.errorBeforeNearest("Quad0184 State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)", SURFACE)
+			Err.errorBeforeNearest("Quad0184 State: Compute fn is already running for this value - a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)", SURFACE)
 		end
 		self._computing = gen
 		local hold = self._hold
@@ -210,7 +210,7 @@ local function createImpl(module: any)
 			-- `_recompute` is lazy, so when dispatch forces it first the nearest tagged
 			-- frame is `StoreBind.luau` (quad internals, `H-416`); the user's entry line
 			-- (their `drive`/creation) is the useful one.
-			Err.errorBefore("Quad0185 State: a Compute function returned a Modifier — State/Source cannot hold Modifiers", SURFACE)
+			Err.errorBefore("Quad0185 State: a Compute function returned a Modifier - State/Source cannot hold Modifiers", SURFACE)
 		end
 		self._cache = result
 		self._cacheCurrCount = gen -- only on success: a thrown fn never marks the cache valid
@@ -347,7 +347,7 @@ local function createImpl(module: any)
 	-- (`source-state-plan.md` "`state:Observer(fn)`"). Body lives in `Observer.luau`.
 	function Impl.Observer(self: any, fn: any?): any
 		if fn ~= nil and type(fn) ~= "function" then
-			Err.errorBeforeNearest(`Quad0190 State: Observer fn must be a function or nil (got {typeof(fn)}) — nil makes the always-observe utility`, SURFACE)
+			Err.errorBeforeNearest(`Quad0190 State: Observer fn must be a function or nil (got {typeof(fn)}) - nil makes the always-observe utility`, SURFACE)
 		end
 		return ObserverImpl.new(self, fn)
 	end

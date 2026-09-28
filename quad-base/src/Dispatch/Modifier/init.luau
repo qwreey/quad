@@ -201,7 +201,7 @@ function methods.As(self: any, name: any): any
 		Err.errorBeforeNearest(`Quad0051 Modifier:As: name must be a class name string (got {typeof(name)})`, SURFACE)
 	end
 	if not known[name] then
-		Err.errorBeforeNearest(`Quad0052 Modifier: unknown modifier class "{name}" — Modifier.TypedFactory/DefineSubtype it first`, SURFACE)
+		Err.errorBeforeNearest(`Quad0052 Modifier: unknown modifier class "{name}" - Modifier.TypedFactory/DefineSubtype it first`, SURFACE)
 	end
 	return retag(self, name)
 end
@@ -245,11 +245,11 @@ local function castClosure(target: string): (any) -> any
 	end
 	local closure = function(selfArg: any): any
 		if not known[target] then
-			Err.errorBeforeNearest(`Quad0055 Modifier: unknown modifier class "{target}" — Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)`, SURFACE)
+			Err.errorBeforeNearest(`Quad0055 Modifier: unknown modifier class "{target}" - Modifier.TypedFactory/DefineSubtype it first (or use :As(name) for an unchecked cast)`, SURFACE)
 		end
 		local tag = selfArg.__quadModifier
 		if tag ~= true and tag ~= target and not isAncestorOrSelf(tag, target) then
-			Err.errorBeforeNearest(`Quad0056 Modifier: cannot cast a "{tag}" modifier to "{target}" — not an ancestor (use :As(name) to force)`, SURFACE)
+			Err.errorBeforeNearest(`Quad0056 Modifier: cannot cast a "{tag}" modifier to "{target}" - not an ancestor (use :As(name) to force)`, SURFACE)
 		end
 		return retag(selfArg, target)
 	end
@@ -324,7 +324,7 @@ function ModifierMT.__index(_self: any, key: any): any
 		-- (`H-310` — the two creation paths must not drift): only string keys become setters;
 		-- `construct` in turn refuses the keys this path can never make into setters (`H-448`).
 		-- Non-string keys (AttrKey/MapperDescriptor) go in the props table directly.
-		Err.errorBeforeNearest("Quad0058 Modifier: setter keys must be strings (got " .. typeof(key) .. ") — put a non-string key in the props table itself (Frame { [key] = value })", SURFACE)
+		Err.errorBeforeNearest("Quad0058 Modifier: setter keys must be strings (got " .. typeof(key) .. ") - put a non-string key in the props table itself (Frame { [key] = value })", SURFACE)
 	end
 	return setterClosure(key)
 end
@@ -373,19 +373,19 @@ local function construct(tag: any, ...: any): any
 					Err.errorBeforeNearest(`Quad0060 Modifier: field "{k}" collides with a reserved Modifier method`, SURFACE)
 				end
 				if string.match(k, "^As%u") ~= nil then
-					Err.errorBeforeNearest(`Quad0061 Modifier: field "{k}" matches the reserved cast prefix As<Class> — casts are methods, not fields`, SURFACE)
+					Err.errorBeforeNearest(`Quad0061 Modifier: field "{k}" matches the reserved cast prefix As<Class> - casts are methods, not fields`, SURFACE)
 				end
 				if string.sub(k, 1, 2) == "__" then
 					-- round11 code-review (`H-561`): the `__index` twin of this gate (`H-552`) — both
 					-- creation paths must refuse the same keys (`H-310`); a `__apply` field here died
 					-- much later in Dispatch with "no handler matched key __apply"
-					Err.errorBeforeNearest(`Quad0062 Modifier: field "{k}" starts with "__" — metamethod-looking names are never properties`, SURFACE)
+					Err.errorBeforeNearest(`Quad0062 Modifier: field "{k}" starts with "__" - metamethod-looking names are never properties`, SURFACE)
 				end
 				if type(v) == "function" then
 					-- [2026-09-16 hunt C] the old hint "use mod:{k}(fn)" pointed an EVENT handler at the
 					-- transform-function arm (the setter would call it once with old=nil and store nil).
 					-- Modifiers carry no events (modifier-plan: the generated <Class>Modifier omits them).
-					Err.errorBeforeNearest(`Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function — a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)`, SURFACE)
+					Err.errorBeforeNearest(`Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function - a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)`, SURFACE)
 				end
 				if isHandlerLayerValue(v) then
 					Err.errorBeforeNearest(`Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, SURFACE)
@@ -435,7 +435,7 @@ local function DefineSubtype(parent: any, subtype: any)
 	checkName("DefineSubtype", "parent", parent)
 	checkName("DefineSubtype", "subtype", subtype)
 	if parent == subtype or isAncestorOrSelf(subtype, parent) then
-		Err.errorBeforeNearest(`Quad0067 Modifier.DefineSubtype: "{subtype}" ⊂ "{parent}" would make a cycle`, SURFACE)
+		Err.errorBeforeNearest(`Quad0067 Modifier.DefineSubtype: cannot make "{subtype}" a subtype of "{parent}" - that would make a cycle`, SURFACE)
 	end
 	known[parent] = true
 	known[subtype] = true
@@ -494,7 +494,7 @@ local function flatten(input: { [any]: any }): { [any]: any }
 			break
 		end
 		if isModifier(v) then
-			Err.errorBefore(`Quad0068 Modifier: a Modifier cannot be a value of key "{tostring(k)}" — place it in the array part`, SURFACE)
+			Err.errorBefore(`Quad0068 Modifier: a Modifier cannot be a value of key "{tostring(k)}" - place it in the array part`, SURFACE)
 		end
 	end
 	for i = n, 1, -1 do -- ⚠️ reverse: the LAST modifier must write first

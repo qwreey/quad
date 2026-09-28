@@ -152,7 +152,7 @@ function FactoryImpl.__apply(self: any, state: any): any
 		-- orphan subscriber on the upstream — the `H-509` ordering rule again) and
 		-- OUTERMOST (`H-517`: this frame is tagged, so Nearest would blame State.luau —
 		-- the quad-error "guard reached only through tagged frames" rule, Q7).
-		Err.errorBefore(`Quad0044 {name}: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)`, SURFACE)
+		Err.errorBefore(`Quad0044 {name}: Handle is already filled - one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)`, SURFACE)
 	end
 
 	-- the per-gate handle: Flush/Cancel + the timer state (fields, not

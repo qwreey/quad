@@ -55,7 +55,7 @@ export type NumOp = (self: StateData<number>) -> State<number>
 |---|---|---|
 | 인자 타입·`nil` 인자 | **팩토리를 부르는 줄** | `Quad0119 Operator.Sum: argument #1 must be a number or a State<number> (got string)`<br />`Quad0118 Operator.Sum: argument #2 is nil` |
 | `:Apply` 대상이 State가 아님 | **`:Apply` 하는 줄**(커링 팩토리를 `Op.Sum(1)`처럼 부른 뒤 넘긴 경우. `tag:Apply(Op.Not)`처럼 단항 팩토리가 다른 `:Apply` 소유자 안에서 불리면 그 소유자의 내부 파일이, 커링 안쪽 팩토리를 `Op.Sum(1)(5)`처럼 직접 부르면 `Operator.luau`가 blame됩니다 — [2026-09-27 기준]) | `Quad0123 Operator.Sum: Apply target must be a State (got table)` |
-| 값이 계약에 안 맞음(`Indexed`만) | **값을 읽는 시점** | `Quad0127 Operator.Indexed: value is not a table (got number) — cannot read [x]` |
+| 값이 계약에 안 맞음(`Indexed`만) | **값을 읽는 시점** | `Quad0127 Operator.Indexed: value is not a table (got number) - cannot read [x]` |
 
 `nil` 인자가 조용히 사라져 뒤 인자를 당겨오는 일은 없습니다 — 자리마다 검사해서 `argument #N is nil`로 던집니다. 인자로 넘긴 `State`의 **현재값**이 `nil`이거나 숫자가 아닌 경우도 마찬가지입니다 — 읽는 시점에 `Quad0120 Operator.Sum: argument #N is a State whose current value is nil`(또는 `… must be a number (got string)`)로 던지고, 그 항을 건너뛰어 틀린 합을 돌려주지 않습니다(`Apply` 대상 자신의 값도 같은 검사). 갓 만든 `store:Of(...)`나 없는 키를 읽은 `Indexed`처럼 값이 아직 `nil`인 State를 연산에 넣으면 그 `:Get()`이 던집니다.
 
@@ -284,7 +284,7 @@ Quad0126 Operator.Indexed: key must be a plain value, not a State (the key is no
 상류 값이 테이블이 아니면 **읽는 시점에** 던집니다(`[...]` 자리엔 그 키가 들어갑니다).
 
 ```
-Quad0127 Operator.Indexed: value is not a table (got number) — cannot read [x]
+Quad0127 Operator.Indexed: value is not a table (got number) - cannot read [x]
 ```
 
 ---

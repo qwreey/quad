@@ -136,7 +136,7 @@ local function install(quad: any): any
 		if isState(opts.Value) then
 			-- Q16 (b) (사용자 결정 2026-09-07): every Tween field is a plain value (tween-plan 불변식) —
 			-- a State here reached the engine as a table (`H-398`). Put the Tween in the State instead.
-			fail("Quad0250 Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))", SURFACE)
+			fail("Quad0250 Tween: Value must be a plain value, not a State (animate the State instead - state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))", SURFACE)
 		end
 		if opts.Value == None or isTween(opts.Value) then
 			-- `H-463`: the same invariant, the other two non-plain quad values — None (the frozen

@@ -60,7 +60,7 @@ Err.errorBeforeNearest(`Quad0186 State: dep #{i + 1} is nil`, SURFACE)
 - **주어**는 사용자가 부른 표면의 이름입니다. 메소드는 `Slot:List`, 네임스페이스 함수는
   `Bookkeeping.setOffsetSource`(`quad.` 접두는 붙이지 않습니다), 생성자·불변식은 타입
   이름만(`State:`, `Tween:`). 인자 값은 주어가 아니라 이유 쪽에 싣습니다.
-- **이유**는 영어 한 절, `must be …`/`cannot …` 현재형. 부연은 em-dash(` — `) 뒤에.
+- **이유**는 영어 한 절, `must be …`/`cannot …` 현재형. 부연은 ` - `(공백-하이픈-공백) 뒤에 — 메시지는 ASCII만 씁니다(2026-09-28까지는 em-dash였습니다).
 - **받은 값**은 문장 끝에 괄호로 — `(got {typeof(x)})`. `, got X` 같은 쉼표형은
   쓰지 않습니다. 받은 값을 서술하지 않는 메시지(이미 claim된 Instance,
   이미 프로바이더가 설치된 모듈 같은 불변식 위반)에는 이 꼬리가 없습니다.
@@ -152,12 +152,12 @@ flowchart TB
 ```luau
 function ns.setFuncLevel(level: number, ...: any)
 	if type(level) ~= "number" then
-		error(`setFuncLevel: level must be a number (got {typeof(level)}) — the signature is setFuncLevel(level, ...fns)`, 2)
+		error(`setFuncLevel: level must be a number (got {typeof(level)}) - the signature is setFuncLevel(level, ...fns)`, 2)
 	end
 	for i = 1, select("#", ...) do
 		local func = select(i, ...)
 		if type(func) ~= "function" then
-			error(`setFuncLevel: argument #{i + 1} must be a function (got {typeof(func)}) — a renamed or missing method?`, 2)
+			error(`setFuncLevel: argument #{i + 1} must be a function (got {typeof(func)}) - a renamed or missing method?`, 2)
 		end
 		funcLevels[func] = level
 	end

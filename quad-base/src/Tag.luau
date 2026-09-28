@@ -73,7 +73,7 @@ end
 -- gates were copies; since the 3절 (b) union every door reaches it through `flattenInto`)
 local function addName(target: { [string]: true }, name: string)
 	if name == "" then -- `H-417` (외부 리뷰 G-01): an empty name reaches the engine op at dispatch depth
-		Err.errorBeforeNearest("Quad0199 Tag: names must be strings — an empty string is not a tag name", SURFACE)
+		Err.errorBeforeNearest("Quad0199 Tag: names must be strings - an empty string is not a tag name", SURFACE)
 	end
 	target[name] = true
 end
@@ -111,12 +111,12 @@ local function flattenInto(target: { [string]: true }, v: any, depth: number)
 		-- depth travels as a parameter, not module state — a counter that only reset on error
 		-- would drift upward across normal calls (hunt F 재검) and misfire on the 64th
 		if depth > 64 then
-			Err.errorBeforeNearest("Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)", SURFACE)
+			Err.errorBeforeNearest("Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those - this list nests deeper than 64 levels (does it contain itself?)", SURFACE)
 		end
 		local count, maxIndex = 0, 0
 		for k, item in pairs(v :: { [any]: any }) do
 			if type(k) ~= "number" or k % 1 ~= 0 or k < 1 then
-				Err.errorBeforeNearest("Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table", SURFACE)
+				Err.errorBeforeNearest("Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those - a name list is an array, not a hash table", SURFACE)
 			end
 			count += 1
 			if k > maxIndex then
@@ -125,7 +125,7 @@ local function flattenInto(target: { [string]: true }, v: any, depth: number)
 			flattenInto(target, item, depth + 1)
 		end
 		if count ~= maxIndex then
-			Err.errorBeforeNearest("Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes", SURFACE)
+			Err.errorBeforeNearest("Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those - a name list cannot have nil holes", SURFACE)
 		end
 	else
 		Err.errorBeforeNearest(`Quad0204 Tag: names must be strings, Tags, or a plain \{...} list of those (got {typeof(v)})`, SURFACE)

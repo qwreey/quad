@@ -46,7 +46,7 @@ type Tag = {
 Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got {typeof(v)})
 ```
 
-빈 문자열은 태그 이름이 아닙니다 — `Quad0199 Tag: names must be strings — an empty string is not a tag name`.
+빈 문자열은 태그 이름이 아닙니다 — `Quad0199 Tag: names must be strings - an empty string is not a tag name`.
 
 **참조 계수로 붙습니다.** 한 인스턴스의 여러 자리에서 같은 이름을 얹으면 자리마다 세어지고, 마지막 자리가 물러날 때 비로소 엔진에서 떨어집니다(엔진 호출은 이름당 정확히 한 번이지만 묶이는 단위는 **한 자리의 한 전이**라, 한 파동이 여러 자리를 건드리면 호출은 자리 수만큼 나뉩니다 — [2026-09-27 mock 관측]). 세는 것은 **quad의 자리뿐**입니다 — `Claim`으로 입양한 트리나 `:Clone()` 사본에 Studio에서 이미 붙어 있던 같은 이름의 태그는 세지 않으므로, 앱의 마지막 자리가 물러나면 그 태그도 함께 떨어집니다(StyleSheet 셀렉터로 쓰던 태그라면 스타일이 빠집니다). 밖에서 붙인 태그와 앱의 자리가 같은 이름을 쓰지 않게 하세요. 같은 불변 `Tag` 객체를 두 자리에 놓아도 두 번으로 셉니다. 엔진 호출은 이름별로 묶여 한 번에 나갑니다.
 
@@ -74,11 +74,11 @@ Tag: setmetatable<{ Merged: (...TagMarker?) -> Tag }, { __call: (self: any, ...T
 - 인자마다 같은 문을 지납니다. `q.Tag(otherTag, "focus", { "a", "b" })`처럼 섞어 쓸 수 있습니다.
 - **인자 자리의 `nil`은 "더할 것 없음"입니다** — 인자 개수는 정확히 세어지므로 뒤 이름이 사라지지 않습니다. `:Added`/`:Removed`/`Merged`도 같습니다.
 - 리스트는 **배열**이어야 합니다 — 정수가 아닌 키가 섞이거나 nil 구멍이 있으면 에러입니다. 인자와 달리 **리스트 안** `nil`은 테이블이 담지 못해 뒤가 조용히 잘리기 때문입니다.
-  - `Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those — a name list is an array, not a hash table`
-  - `Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those — a name list cannot have nil holes`
+  - `Quad0202 Tag: names must be strings, Tags, or a plain {...} list of those - a name list is an array, not a hash table`
+  - `Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those - a name list cannot have nil holes`
   - `Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)`
   - `Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)`
-  - `Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those — this list nests deeper than 64 levels (does it contain itself?)`
+  - `Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those - this list nests deeper than 64 levels (does it contain itself?)`
 
 **예제**
 
@@ -272,8 +272,8 @@ __call: (self: any, ...any) -> Attr
 - `Quad0010 Attr: arguments must be Stores, Attr values or plain tables`
 - `Quad0003 Attr: attribute name cannot be empty`
 - `Quad0006 Attr: plain-table keys must be non-empty strings`
-- `Quad0007 Attr: attribute "{name}" cannot be a function — attribute values are raw values or State`
-- `Quad0008 Attr: attribute "{name}" cannot be a table — attribute values are raw values, None or State (got {typeof(v)})`
+- `Quad0007 Attr: attribute "{name}" cannot be a function - attribute values are raw values or State`
+- `Quad0008 Attr: attribute "{name}" cannot be a table - attribute values are raw values, None or State (got {typeof(v)})`
 
 한 인스턴스의 두 자리에 **같은 그룹 값 객체**를 놓으면 그 자리에서 던집니다 — `Quad0016 Attr: the same group value is placed at two positions of this instance`.
 
@@ -416,7 +416,7 @@ type AttrSugar<T> = (name: string, value: T | StateMarker<T> | None) -> Attr
 **에러**
 
 - `Quad0013 StringAttr: name must be a non-empty string`
-- `Quad0014 StringAttr: value of "{name}" must not be nil — use None to delete`
+- `Quad0014 StringAttr: value of "{name}" must not be nil - use None to delete`
 - `Quad0015 StringAttr: value of "{name}" must be a string, State or None (got {typeof(value)})`
 
 **예제**
@@ -441,7 +441,7 @@ NumberAttr: AttrSugar<number>
 
 **동작** — [`q.StringAttr`](#qstringattrname-value)과 모든 것이 같고 원시 값 타입만 `number`입니다.
 
-**에러** — `Quad0013 NumberAttr: name must be a non-empty string` / `Quad0014 NumberAttr: value of "{name}" must not be nil — use None to delete` / `Quad0015 NumberAttr: value of "{name}" must be a number, State or None (got {typeof(value)})`
+**에러** — `Quad0013 NumberAttr: name must be a non-empty string` / `Quad0014 NumberAttr: value of "{name}" must not be nil - use None to delete` / `Quad0015 NumberAttr: value of "{name}" must be a number, State or None (got {typeof(value)})`
 
 ## `q.BooleanAttr(name, value)`
 
@@ -453,7 +453,7 @@ BooleanAttr: AttrSugar<boolean>
 
 **동작** — [`q.StringAttr`](#qstringattrname-value)과 모든 것이 같고 원시 값 타입만 `boolean`입니다.
 
-**에러** — `Quad0013 BooleanAttr: name must be a non-empty string` / `Quad0014 BooleanAttr: value of "{name}" must not be nil — use None to delete` / `Quad0015 BooleanAttr: value of "{name}" must be a boolean, State or None (got {typeof(value)})`
+**에러** — `Quad0013 BooleanAttr: name must be a non-empty string` / `Quad0014 BooleanAttr: value of "{name}" must not be nil - use None to delete` / `Quad0015 BooleanAttr: value of "{name}" must be a boolean, State or None (got {typeof(value)})`
 
 **예제**
 

@@ -79,7 +79,7 @@ description: "Tween/Animate가 던지는 에러"
 
 ### Quad0250
 
-`Tween: Value must be a plain value, not a State (animate the State instead — state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))` — `quad-roblox/src/Tween.luau`
+`Tween: Value must be a plain value, not a State (animate the State instead - state:Apply(Animate{...}) or state:Compute(function() return Tween{...} end))` — `quad-roblox/src/Tween.luau`
 
 - **언제**: `opts.Value`로 `State`를 그대로 넘겼을 때 — `Tween`의 모든 필드는 평범한 값이어야 한다는 불변식을 어깁니다.
 - **고치려면**: `State` 쪽을 감싸세요 — `state:Apply(q.Animate{...})`, 또는 `Compute` 안에서 `Tween{...}`을 만드세요.

@@ -102,7 +102,7 @@ local function Init(module: any)
 		if seen[inst] then
 			-- round11 `H-551` (탐사 A″ 4): two DIFFERENT descriptors resolving to the same child
 			-- passed pass 1 and the second `nativeClaim` died mid-commit with a leaf message
-			Err.errorBefore(`Quad0028 Claim: two mapper descriptors resolved to the same Instance {tostring(inst)} — each child needs exactly one descriptor`, SURFACE)
+			Err.errorBefore(`Quad0028 Claim: two mapper descriptors resolved to the same Instance {tostring(inst)} - each child needs exactly one descriptor`, SURFACE)
 		end
 		seen[inst] = true
 		-- round11 Q64 (b) (user decision 2026-09-18): ask the backend's `isClaimed` in the validating pass
@@ -112,7 +112,7 @@ local function Init(module: any)
 		-- 여야 Claim 가능한다도 맞는 수순". The root goes through here too, so a double claim of the root
 		-- now carries the Instance's name instead of the provider's bare line.
 		if module.Backend.isClaimed(inst) then
-			Err.errorBefore(`Quad0029 Claim: {tostring(inst)} is already claimed by quad — a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)`, SURFACE)
+			Err.errorBefore(`Quad0029 Claim: {tostring(inst)} is already claimed by quad - a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)`, SURFACE)
 		end
 		-- 7순회 `H-425` (`H-256` (a) third site): a non-table props used to die in the
 		-- `for` below AFTER `nativeClaim`/`_fired` were committed — a fixed retry then
@@ -139,13 +139,13 @@ local function Init(module: any)
 				-- round10 G-5 (§7-1 debug check): a non-string key (M.Root in a child slot, a number) is
 				-- backend-defined — Roblox's FindFirstChild raises its own error on it
 				if module.debug and type(v._key) ~= "string" then
-					print(`Claim: child descriptor key is a {typeof(v._key)} — M.Root is only for the root descriptor; a child key is a name`)
+					print(`Claim: child descriptor key is a {typeof(v._key)} - M.Root is only for the root descriptor; a child key is a name`)
 				end
 				-- round10 Q49 (a) (user decision 2026-09-17): the descriptor's class goes to the backend —
 				-- a same-name child of another class is "not matched" (Roblox: `IsA`; mock: ClassName)
 				local child = module.Backend.nativeFindChild(inst, v._key, v._className)
 				if child == nil then
-					Err.errorBefore(`Quad0032 Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)}) — a child with that name must also be a {tostring(v._className)}`, SURFACE)
+					Err.errorBefore(`Quad0032 Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)}) - a child with that name must also be a {tostring(v._className)}`, SURFACE)
 				end
 				resolve(child, v, plan, seen)
 				children[i] = child
@@ -193,7 +193,7 @@ local function Init(module: any)
 		-- round10 G-4 (claim-plan §7-1: a DEBUG check, not a runtime guard — §3 principle): the root
 		-- descriptor's key is never read, so `M.Frame("SomeName")` at the root claims `inst` itself
 		if module.debug and desc._key ~= MapperRoot then
-			print(`Claim: the root descriptor's key {tostring(desc._key)} is ignored — the root takes M.Root; put a keyed descriptor in the root's props instead`)
+			print(`Claim: the root descriptor's key {tostring(desc._key)} is ignored - the root takes M.Root; put a keyed descriptor in the root's props instead`)
 		end
 		local plan: { Step } = {}
 		resolve(inst, desc, plan, {})

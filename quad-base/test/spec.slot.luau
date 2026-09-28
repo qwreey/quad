@@ -1124,7 +1124,7 @@ do
 	local a, b = mock.Instance.new("Frame"), mock.Instance.new("Frame")
 	local s = q5.Slot({ a, b })
 	local ok2, err2 = pcall(function() return s:Splice(1, 2, b, a) end)
-	assert(not ok2 and string.find(tostring(err2), "already in this Slot — reorder with Move/Swap", 1, true) ~= nil, "re-adding a held element names the real reason: " .. tostring(err2))
+	assert(not ok2 and string.find(tostring(err2), "already in this Slot - reorder with Move/Swap", 1, true) ~= nil, "re-adding a held element names the real reason: " .. tostring(err2))
 	local ok3, err3 = pcall(function() return s:Replace(1, s:Get(1)) end)
 	assert(not ok3 and string.find(tostring(err3), "already in this Slot", 1, true) ~= nil, "Replace with the same element too: " .. tostring(err3))
 	local c = mock.Instance.new("Frame")
@@ -1215,7 +1215,7 @@ do
 	local ok, err = pcall(function()
 		data:Set({ a = { id = "a" }, b = { id = "b" } } :: any) -- an id-keyed map, not an array
 	end)
-	assert(not ok and string.find(tostring(err), "Slot:List: data must be a plain array — key \"", 1, true) ~= nil, tostring(err))
+	assert(not ok and string.find(tostring(err), "Slot:List: data must be a plain array - key \"", 1, true) ~= nil, tostring(err))
 	assert(s.Length:Get() == 2 and childCount(parent) == 2, "nothing was destroyed by the rejected data")
 	local ok2, err2 = pcall(function()
 		data:Set({ { id = "a" }, extra = 1 } :: any)

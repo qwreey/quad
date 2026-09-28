@@ -173,7 +173,7 @@ local function createImpl(module: any)
 	function Impl.Unsubscribe(self: any): any -- no `_running` gate — see WeakUnsubscribe (Q63 (b))
 		-- Symmetric with WeakUnsubscribe's guard: release through the path you subscribed by.
 		if Subscribed[self] == nil then
-			Err.errorBeforeNearest("Quad0115 Observer: only a strongly subscribed Observer can be released with :Unsubscribe() — a weakly subscribed one must be released with :WeakUnsubscribe(), and one held only by a seat must be released by clearing that seat", SURFACE)
+			Err.errorBeforeNearest("Quad0115 Observer: only a strongly subscribed Observer can be released with :Unsubscribe() - a weakly subscribed one must be released with :WeakUnsubscribe(), and one held only by a seat must be released by clearing that seat", SURFACE)
 		end
 		Subscribed[self] = nil
 		WeakSubscribed[self] = nil -- both tables, directly (`H-149`: no delegation)

@@ -12,7 +12,7 @@ description: "시간 기반 전파 게이트의 옵션·제어 핸들·브로드
 둘 다 `quad-base`에 있지만 **동작하려면 백엔드가 필요합니다** — 순수 Luau엔 스케줄러가 없어 base가 시간 op를 기본 구현할 수 없습니다. 백엔드 없이 게이트가 타이머를 걸려는 순간(첫 상류 신호) 이렇게 죽습니다.
 
 ```
-Quad0108 quad: setTimeout is not available — no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider — a bare Quad.New() has none; headless tests install their own provider the same way)
+Quad0108 quad: setTimeout is not available - no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider - a bare Quad.New() has none; headless tests install their own provider the same way)
 ```
 
 `quad-roblox`는 `task.delay`/`task.cancel`로 이 둘을 채웁니다.
@@ -146,7 +146,7 @@ export type GateHandle = {
 **Ref 하나는 `:Apply` 하나를 가리킵니다.** 이미 채워진 Ref를 다시 넘기면 — 팩토리를 재사용하며 같은 Handle을 쓰는 경우가 전형적입니다 — 그 `:Apply` 자리에서 에러가 납니다. 기본값이 `nil`이 아닌 Ref도 같은 이유로 거부됩니다.
 
 ```
-Quad0044 Debounce: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)
+Quad0044 Debounce: Handle is already filled - one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)
 ```
 
 여러 게이트를 한꺼번에 제어하려면 Handle 대신 팩토리 브로드캐스트를 쓰십시오.

@@ -86,7 +86,7 @@ function ContextImpl.Get(self: any, provider: any): any
 	checkProvider("Get", provider)
 	local value = self._values[provider]
 	if value == nil then
-		Err.errorBeforeNearest(`Quad0038 Context:Get: no value for {tostring(provider)} — the creator of this Context did not :Set it (use :Peek to test)`, SURFACE)
+		Err.errorBeforeNearest(`Quad0038 Context:Get: no value for {tostring(provider)} - the creator of this Context did not :Set it (use :Peek to test)`, SURFACE)
 	end
 	return value
 end

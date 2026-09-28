@@ -22,6 +22,8 @@
 
 **em-dash(부수 결정)**: 사용자 *"에러에 non ascii 인 — 가 있는건 괜찮을까 모르겠음. 보통 일반적으론 ascii 만 사용하니까. 이건 내 주관적 의견이라, 객관적 의견을 가지도록 sonnet 에이전트로 확인 해봐도 좋아"* → sonnet 판정: 전부 ASCII 권고(확신도 중간) — 관례 축이 강함(참고 Luau 라이브러리 다섯의 error 101건 중 non-ASCII 0), `error-id-plan.md`의 대괄호 기각(출력창 검색 편의) 전례, 표시 깨짐은 미실측 추정, 비용 작음; 구분자는 ` - `(콜론은 주어 구분자와 겹치고 `--`는 주석 기호, 괄호는 `(got X)` 전용). 메인이 "Q90 커밋 먼저, ASCII 전환은 별도 커밋"을 제안 → 사용자 *"그 순서로 가도 좋음. 구분자로 - 도 나쁘지 않고, 내가 생각했던 것임"*.
 
+반영(ASCII 전환 커밋): 주석을 뺀 문자열 리터럴만 훑는 스캐너로 소스(`quad-base`·`quad-roblox`·`quad-error`/src + mock) non-ASCII 80곳 — em-dash 79 + `⊂` 1(`Quad0067` → "cannot make \"{subtype}\" a subtype of \"{parent}\" - that would make a cycle"). 문서는 각 em-dash 주변 창(좌우 14자)을 키로 치환하고, 말줄임표로 잘린 인용 열두 줄은 손으로. spec 단언 두 줄(`spec.slot` 1127·1218). CHANGELOG는 `[Unreleased]` 절만(릴리즈 절은 그 시점 문구의 기록). 새 CHANGELOG 줄 없음 — 문구는 API가 아니다.
+
 ## 사후 검증 — 처음 묶음 다섯의 정정 커밋 수
 
 (묶음이 닫힐 때마다 채운다: 묶음 이름 / 반영 커밋 / 그 반영을 고친 뒤따른 정정 커밋 수와 누가 잡았나.)

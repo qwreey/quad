@@ -161,7 +161,7 @@ end
   두고, claim하는 것은 언제나 사본입니다.
 - **매핑할 자식에는 `Name`을 주세요.** `D.TextLabel { … }`의 기본 이름은 클래스
   이름이라, 이름을 안 주면 `M.TextLabel("ItemName")`이 찾을 자식이 없어
-  `Quad0032 Claim: no child matched key ItemName under … (mapper TextLabel) — a child with that name must also be a TextLabel`로
+  `Quad0032 Claim: no child matched key ItemName under … (mapper TextLabel) - a child with that name must also be a TextLabel`로
   거부됩니다. 이름은 맞는데 클래스가 다른 자식(`ImageLabel`인데 `M.TextLabel`)도 같은 에러입니다.
 - **템플릿에서 숏핸드 키로 만든 `UI*`는 디스크립터에서 다시 쓰지 마세요.** 위
   템플릿의 `UICorner = UDim.new(0, 8)`이 만든 자식은 사본에도 그대로 있습니다 —
@@ -214,7 +214,7 @@ M.Frame("Footer")({})   -- 자리는 채우되, 이 아래로는 내려가지 �
   키를 같이 쓰면 둘이 생기니 하나만 쓰세요.
 - **이름 중복은 UB, 부재와 클래스 불일치는 즉시 에러입니다.** 같은 이름이 둘이면
   어느 쪽이 잡히는지 정해져 있지 않습니다(`FindFirstChild`가 고르는 쪽). 없는 이름이나
-  클래스가 다른 자식은 `Quad0032 Claim: no child matched key … — a child with that name must also be a …`로
+  클래스가 다른 자식은 `Quad0032 Claim: no child matched key … - a child with that name must also be a …`로
   그 자리에서 거부되니, 템플릿의 자식 이름·클래스와 디스크립터를 맞춰 두세요.
 
 ### 3) `PlayerGui`/`CoreGui`는 대상이 아니다

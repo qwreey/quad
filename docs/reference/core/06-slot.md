@@ -45,9 +45,9 @@ type SlotItem<T> = T | State<T> | Slot<T>
 그 밖은 전부 거부됩니다.
 
 - `Quad0238 Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements`
-- `Quad0239 Slot: nil/None cannot be an element — only actually mountable values`
+- `Quad0239 Slot: nil/None cannot be an element - only actually mountable values`
 - `Quad0240 Slot: this backend cannot mount this value`
-- `Quad0241 Slot: this element is not claimed by quad — build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one — a destroyed Instance cannot be reused)` — quad 밖에서 만든 인스턴스(`Instance.new`, 다른 라이브러리가 만든 트리)는 quad가 소유하고 있지 않아 죽음을 추적할 수 없으므로 원소로 받지 않습니다. 다른 quad 인스턴스가 `Declaration`으로 만든 것도 이쪽 기록에는 없어 같은 거부입니다(꼬리 구절이 그 경우를 가리킵니다 — 인스턴스 간 값 섞기는 정의되지 않은 동작). 먼저 [`Claim`](../roblox/04-claim-mapper.md)으로 넘겨받거나 `Declaration`으로 만드세요. Slot이 대신 claim해 주지는 않습니다 — 소유는 언제나 사용자가 명시적으로 시작합니다.
+- `Quad0241 Slot: this element is not claimed by quad - build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one - a destroyed Instance cannot be reused)` — quad 밖에서 만든 인스턴스(`Instance.new`, 다른 라이브러리가 만든 트리)는 quad가 소유하고 있지 않아 죽음을 추적할 수 없으므로 원소로 받지 않습니다. 다른 quad 인스턴스가 `Declaration`으로 만든 것도 이쪽 기록에는 없어 같은 거부입니다(꼬리 구절이 그 경우를 가리킵니다 — 인스턴스 간 값 섞기는 정의되지 않은 동작). 먼저 [`Claim`](../roblox/04-claim-mapper.md)으로 넘겨받거나 `Declaration`으로 만드세요. Slot이 대신 claim해 주지는 않습니다 — 소유는 언제나 사용자가 명시적으로 시작합니다.
 - `Quad0169 Slot: destroyed Slot cannot be an element`(원소가 State로 감싸여 그 occupant가 파괴된 Slot일 때)/`Quad0242`(원소 자체가 파괴된 Slot일 때) — 둘 다 같은 뜻입니다.
 
 ## `q.Slot<<T>>(initial?)`
@@ -72,9 +72,9 @@ Slot: <T>(initial: { read [number]: SlotElement<T> }?) -> Slot<T>
 <!-- strict 실측 2026-09-11: consumer/P19.luau — q.Slot():Get(1)을 number에 대입하면 'Slot<unknown>'이 유니언에 보인다 --> strict 모드에서는 `q.Slot<<Instance>>()`처럼 **명시적으로 인스턴스화**하세요.
 - `initial`을 주면 — **빈 `Slot{}`이라도** — 그 Slot은 수동 CRUD Slot으로 고정됩니다. 나중에 `:List`를 걸 수 없습니다.
 - `initial`은 **평범한 배열**이어야 합니다. 값 하나를 괄호 없이 넘기거나(`Slot(frame)`) 정수가 아닌 키를 섞으면 에러입니다.
-  - `Quad0176 Slot: initial elements must be a plain { element, ... } array (got {typeof(initial)} — a bare element or quad value needs the braces)`
-  - `Quad0177 Slot: initial elements must be an array — key "{tostring(k)}" is not an array position`
-- 배열 안의 중복(같은 원소 두 번 — `Quad0171 Slot: the same element appears twice`), 이 Slot이 이미 들고 있는 원소를 되넣는 것(`Quad0170 Slot:Splice: this element is already in this Slot — reorder with Move/Swap instead of adding it again` — `Replace(i, slot:Get(i))`도 같습니다), 이미 다른 곳에 마운트된 원소는 원소를 하나도 넣기 전에 한 번에 검사됩니다. `State`에 담긴 원소는 그 **현재값**으로 같은 검사(마운트 가능·소유·파괴된 Slot 아님)를 미리 받습니다 — 실패한 호출은 아무것도 바꾸지 않습니다.
+  - `Quad0176 Slot: initial elements must be a plain { element, ... } array (got {typeof(initial)} - a bare element or quad value needs the braces)`
+  - `Quad0177 Slot: initial elements must be an array - key "{tostring(k)}" is not an array position`
+- 배열 안의 중복(같은 원소 두 번 — `Quad0171 Slot: the same element appears twice`), 이 Slot이 이미 들고 있는 원소를 되넣는 것(`Quad0170 Slot:Splice: this element is already in this Slot - reorder with Move/Swap instead of adding it again` — `Replace(i, slot:Get(i))`도 같습니다), 이미 다른 곳에 마운트된 원소는 원소를 하나도 넣기 전에 한 번에 검사됩니다. `State`에 담긴 원소는 그 **현재값**으로 같은 검사(마운트 가능·소유·파괴된 Slot 아님)를 미리 받습니다 — 실패한 호출은 아무것도 바꾸지 않습니다.
 - 배열 중간의 nil 구멍은 정의되지 않은 동작입니다 — `ipairs`가 거기서 멈추고 뒤는 무시됩니다.
 
 **예제**
@@ -159,7 +159,7 @@ Add: (self: Slot<T>, element: SlotElement<T>, index: number?) -> number
 - 이미 다른 곳에 마운트된 값은 거부됩니다. 문구 뒤에 붙는 꼬리 안내는 아래 "죽은 Slot과 마운트 규칙" 절의 것과 같습니다.
 
   ```
-  Quad0172 Slot:Add: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+  Quad0172 Slot:Add: this element is already mounted - multiple mounts are not allowed (if its owner was destroyed outside quad - `inst:Destroy()` - the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
   ```
 
 - Slot을 자기 자신이나 자기 조상에 넣으면 순환이라 거부됩니다 — `Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)`. **인스턴스를 매개로 한 순환은 거부되지 않습니다(정의되지 않은 동작)** — 이 Slot이 붙어 있는 인스턴스나 그 조상을 원소로 넣는 것(`slot:Add(host)`). quad-base는 인스턴스의 조상 사슬을 모르고, 정적 자식 자리의 같은 검사(`Dispatch: cannot place an Instance inside itself …`)는 백엔드 핸들러가 하는 것입니다. Roblox에서는 엔진이 부모 대입에서 던지는데 그때는 Slot 부기가 이미 끝난 뒤라 그 원소가 자리에 끼인 채 남습니다. 회복은 **`slot:Extract(그 자리)`** 로 자리를 비운 뒤 그 인스턴스를 원래 부모에 다시 붙이는 것입니다 — `Extract`는 그 인스턴스의 `Parent`를 `nil`로 만들고, `Remove`는 그 인스턴스(자기 자신이거나 조상!)를 **파괴**하니 쓰지 마세요. `Splice`로 넣은 경우는 배치 창 안에서 던진 것이라 그 Slot의 `Length`가 더는 갱신되지 않습니다(위 `:Clear` 캐비엇과 같은 동결) — 그 Slot은 버리세요.
@@ -380,7 +380,7 @@ type SlotListOpts = { read OwnsElements: boolean? }
 `updateFn`은 항목 하나를 원소로 바꾸는 함수입니다 — 자기가 만드는 자식 Slot을 채우는 것은 되지만, **이 Slot의 조상을 CRUD하면 안 됩니다.** 첫 `updateFn`은 이 Slot이 트리에 붙는 순간(부모와 함께 마운트될 때, 또는 이미 마운트된 부모에 `Add`/`Splice`/`Replace`로 들어갈 때) 그 부모들의 마운트 작업 안에서 불리므로 그 자리에서 던집니다(아래 문구). 조상을 바꿔야 하면 마운트 뒤 Observer에서 하세요. 또 **한 Slot의 `Length`가 자기 앞 자리의 길이에 다시 영향을 주는 고리**(길이 `State`의 Compute가 뒤 Slot의 `Length`/`Offset`을 읽는 모양)는 방어하지 않습니다 — 수렴하면 고정점에 닿지만, 발산하면 번호 없는 스택 오버플로로 끝나고 그 Slot은 이후 CRUD에 `Quad0167`을 냅니다([2026-09-27 mock 실측]; 무한 루프 방어를 두지 않는 것은 설계 결정).
 
 ```
-Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way — then this Slot stays unusable: dispose its host Instance)
+Quad0167 Slot: cannot mutate a Slot while it is being mounted - a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way - then this Slot stays unusable: dispose its host Instance)
 ```
 
 **동작**
@@ -395,7 +395,7 @@ Quad0167 Slot: cannot mutate a Slot while it is being mounted — a :List/:Singl
 - `KeyGone` 호출에서는 `nil`/`q.None`(파괴)과 `q.Detach`(보관)만 반환할 수 있습니다. 새 원소를 반환하면 `Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)`.
 - 인자 검증 에러: `Quad0150 Slot:List: updateFn must be a function (got {typeof(updateFn)})`, `Quad0151 Slot:List: data must be a plain array or a State of one (got {typeof(data)})`, `Quad0152 Slot:List: keyFn must be a function (got {typeof(keyFn)})`.
 - `keyFn`이 이후 사이클에서 던지면 게이트를 켜기 전이라 아무것도 바뀌지 않고 다음 `data:Set`에서 회복됩니다([2026-09-27 mock 실측] — 첫 사이클이면 아래 `updateFn` 항목과 같습니다).
-- 재조정 중 에러: `Quad0142 Slot:List: data must be a plain array (got {typeof(items)}) — a data State must hold one too`, `Quad0144 Slot:List: keyFn returned nil for item #{i}`(NaN도 같은 모양으로 `returned NaN`), `Quad0145 Slot:List: duplicate key {tostring(key)}`. 인자 검증에 `Quad0153 Slot:List: opts must be a table (got {typeof(opts)})`(`:Single`도 같음)이 더해집니다.
+- 재조정 중 에러: `Quad0142 Slot:List: data must be a plain array (got {typeof(items)}) - a data State must hold one too`, `Quad0144 Slot:List: keyFn returned nil for item #{i}`(NaN도 같은 모양으로 `returned NaN`), `Quad0145 Slot:List: duplicate key {tostring(key)}`. 인자 검증에 `Quad0153 Slot:List: opts must be a table (got {typeof(opts)})`(`:Single`도 같음)이 더해집니다.
 - `updateFn`이 이 Slot의 `data` State를 다시 `:Set` 하는 **재진입**은 정의되지 않은 동작입니다.
 - `KeyGone` 호출끼리의 순서는 정해져 있지 않습니다 — 사라진 키가 데이터에 있던 순서로 온다고 기대하지 마세요.
 - `updateFn`이 도중에 던지면(이미 다른 곳에 마운트된 원소나 claim되지 않은 Instance를 반환해 quad가 대신 던지는 경우 포함) 그 사이클의 배치가 닫히지 않아 **그 Slot의 `Length`가 더 이상 발행되지 않습니다** — **이후 사이클**이라면 재조정 자체는 계속 돌아 항목이 붙고 떨어지지만(**첫 사이클**, 즉 첫 재조정(`:List`를 부르는 그 호출 안, 또는 `D.Frame{ q.Slot():List(...) }`처럼 마운트 때 처음 도는 경우)에서 던지면 데이터 구독이 만들어지기 전이라 그 뒤의 `data:Set`이 전부 조용히 무시됩니다 — 위 재조정 중 에러 `Quad0142`~`0146`도 첫 사이클이면 같습니다 — [2026-09-27 mock 관측]; `:List`를 다시 걸 수도 없으니 그 Slot은 버리세요), 같은 부모 안의 형제 Slot이 옛 오프셋에 자식을 넣게 되고 에러는 나지 않습니다. 사용자 코드의 예외를 감싸 복구하지 않는 계약이라 [`slot:Clear`](#slotclear)와 같이 정의되지 않은 동작으로 둡니다 — 던질 수 있는 일은 `updateFn` 밖에서 끝내세요.
@@ -578,7 +578,7 @@ dispose: (value: any) -> ()
 **마운트 중인 값에는 쓸 수 없습니다.** 먼저 꺼내야 합니다.
 
 - `Quad0178 dispose: value must not be nil`
-- `Quad0179 dispose: this value is still held by a Slot or a mounted position — Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key)`
+- `Quad0179 dispose: this value is still held by a Slot or a mounted position - Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key)`
 - `Quad0180 dispose: this backend cannot dispose this value`
 - `Quad0106 dispose: this value was made by another quad module instance …` — 다른 quad 인스턴스가 만든 `Slot`/`State`(`q.New()`를 따로 부른 코드 — `quad_base` 사본이 둘인 프로젝트는 브랜드가 갈려 이 에러 대신 `Quad0180`/`Quad0240`류가 납니다).
 
@@ -587,7 +587,7 @@ dispose: (value: any) -> ()
 ⚠️ 마운트 대상 인스턴스를 quad 밖에서(`inst:Destroy()`) 파괴하면 그 값은 영구히 죽습니다. 위 넷 가운데 `Quad0179 dispose: this value is still held by …` 하나에만 그 사정을 알리는 안내가 뒤에 붙습니다.
 
 ```
-(if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+(if its owner was destroyed outside quad - `inst:Destroy()` - the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
 ```
 
 **예제**
@@ -609,8 +609,8 @@ q.dispose(temp)                -- 마운트된 적 없는 Slot은 트리째 파�
 - `D.<Class> { … }`가 중간에 던지면(nil 구멍, 잘못된 키) 그 전에 놓인 자식들은 반쯤 지어진 Instance에 앉은 채 남습니다 — 같은 자식으로 다시 시도하면 위의 "already mounted elsewhere"가 납니다. 그 Instance는 호출자에게 돌아오지 않지만 자식의 `Parent`로 닿으므로, 같은 자식을 다시 쓰려면 먼저 `q.dispose(child.Parent)`로 정리하세요(자식들도 같이 파괴됩니다 — 보통은 자식도 새로 만드는 편이 간단합니다).
 
   ```
-  Quad0156 Slot: this element is already mounted — multiple mounts are not allowed (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
-  Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — one value takes one seat, so the same element cannot sit in two parent tables, twice in one table, or in two Slots (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+  Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its owner was destroyed outside quad - `inst:Destroy()` - the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+  Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value takes one seat, so the same element cannot sit in two parent tables, twice in one table, or in two Slots (if its owner was destroyed outside quad - `inst:Destroy()` - the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
   ```
 
 - 파괴된 Slot은 되살아나지 않습니다 — `Quad0165 Slot: destroyed Slot cannot be reused`, 원소로 넣으려 하면 `Quad0169 Slot: destroyed Slot cannot be an element`, 마운트하려 하면 `Quad0164 Slot: destroyed Slot cannot be mounted`.

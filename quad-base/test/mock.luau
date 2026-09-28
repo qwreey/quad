@@ -713,7 +713,7 @@ local function mockProvider(quad: any): { [any]: any }
 		-- 그 근거("mock 인스턴스는 quad 밖에서 만들어지므로")는 Q64가 `Instance.new`를 태어날 때 claim으로
 		-- 바꾼 뒤 사라졸 것이었다. gchold/gcconn 셋업만 첫 hold에 lazy로 남긴다(이미 claim된 인스턴스에 한해).
 		if not getData(inst).claimed then
-			Err.errorBefore("bindLifetime: Instance is not claimed by quad — it was not created or claimed through quad (mock: Instance.foreign needs nativeClaim/Claim first)", SURFACE)
+			Err.errorBefore("bindLifetime: Instance is not claimed by quad - it was not created or claimed through quad (mock: Instance.foreign needs nativeClaim/Claim first)", SURFACE)
 		end
 		claim(inst)
 

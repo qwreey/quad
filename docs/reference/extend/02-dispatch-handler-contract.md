@@ -159,7 +159,7 @@ process: (inst: any, key: any, value: any, index: number) -> ()
 매치되는 핸들러가 없으면 즉시 던지고, 메시지는 사용자의 진입 줄까지 올라갑니다. 값의 브랜드를 알아낼 수 있으면 같이 싣습니다.
 
 ```
-Quad0076 Dispatch: no handler matched key {키} (value: {typeof}, brand: {브랜드}) — check that the provider for this value (e.g. quad-roblox) is initialized
+Quad0076 Dispatch: no handler matched key {키} (value: {typeof}, brand: {브랜드}) - check that the provider for this value (e.g. quad-roblox) is initialized
 ```
 
 꼬리 힌트는 키와 값에 따라 갈립니다 — 위는 숫자 키에 프로바이더 브랜드 값이 온 경우이고, 브랜드 없는 값이나 프로바이더 브랜드 값이 **문자 키**에 오면 키 이름이 틀렸을 가능성과 프로바이더 미설치를 함께 적습니다. 전체 갈래는 [`Quad0076`](../errors/02-dispatch-bookkeeping.md#quad0076).
@@ -169,7 +169,7 @@ Quad0076 Dispatch: no handler matched key {키} (value: {typeof}, brand: {브랜
 핸들러가 retractor를 돌려주지 않으면 프로바이더 계약 위반입니다.
 
 ```
-Quad0077 Dispatch: handler "{이름}" (priority {n}) returned no retractor at key {키}, index {i} — return Void when there is nothing to undo
+Quad0077 Dispatch: handler "{이름}" (priority {n}) returned no retractor at key {키}, index {i} - return Void when there is nothing to undo
 ```
 
 `inst`가 `nil`이면 `Quad0072 Dispatch.process: inst must not be nil`, `index`가 양의 정수가 아니면 `Quad0073 Dispatch.process: index must be a positive integer (got {tostring(index)})`.
@@ -208,7 +208,7 @@ drive: (inst: any, flattened: { [any]: any }) -> ()
 
 ```
 Quad0082 Dispatch.drive: props must be a table (got {typeof})
-Quad0083 Dispatch.drive: props must be a plain { ... } table — a quad value needs the braces (got {브랜드})
+Quad0083 Dispatch.drive: props must be a plain { ... } table - a quad value needs the braces (got {브랜드})
 Quad0084 Dispatch.drive: inst must not be nil
 Quad0085 Dispatch.drive: array keys must be positive integers (got {키})
 ```
@@ -292,8 +292,8 @@ getOffsetAt: (ownerKey: any, at: number) -> number
 조회할 수 있는 최대 자리는 **등록된 마지막 자리 + 1**입니다. 그보다 뒤를 묻거나, 중간 자리가 등록되지 않았으면 던집니다.
 
 ```
-Quad0022 Bookkeeping.getOffsetAt: position {at} is past N+1 (N = {n}, at most {n+1} may be queried) — or a leaf handler skipped its position registration: position {i} is not registered
-Quad0229 Bookkeeping.getOffsetAt: position {at} needs positions 1..{at-1} registered but {i} is not — a leaf handler skipped its position registration
+Quad0022 Bookkeeping.getOffsetAt: position {at} is past N+1 (N = {n}, at most {n+1} may be queried) - or a leaf handler skipped its position registration: position {i} is not registered
+Quad0229 Bookkeeping.getOffsetAt: position {at} needs positions 1..{at-1} registered but {i} is not - a leaf handler skipped its position registration
 ```
 
 ## `q.Bookkeeping.getBlocker(ownerKey)`
@@ -331,7 +331,7 @@ claimOwnerAt: (element: any, inst: any, k: any) -> boolean
 내장 핸들러가 쓰는 자리 종류는 셋입니다 — Slot의 원소(Slot 자신이 owner), 정적 자식(`(inst, 숫자 키)`), 숏핸드 관리 자식(`(inst, 자식 이름)`). 전부 한 레지스트리라 서로 섞이지 않습니다.
 
 ```
-Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — one value takes one seat, so the same element cannot sit in two parent tables, twice in one table, or in two Slots (if its owner was destroyed outside quad — `inst:Destroy()` — the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
+Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value takes one seat, so the same element cannot sit in two parent tables, twice in one table, or in two Slots (if its owner was destroyed outside quad - `inst:Destroy()` - the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)
 ```
 
 ## `q.Bookkeeping.releaseOwner(element, ownerKey)`
@@ -345,7 +345,7 @@ releaseOwner: (element: any, ownerKey: any) -> ()
 **동작** — `claimOwnerAt`으로 등록한 자리를 풉니다. retractor에서, 부기 해제(`setEmpty`)까지 끝낸 **마지막**에 부르는 것이 내장 핸들러의 순서입니다. 그 `ownerKey`가 쥔 값이 아니면 소유권 추적이 깨진 것이므로 던집니다.
 
 ```
-Quad0163 Bookkeeping.releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken
+Quad0163 Bookkeeping.releaseOwner: this element is not owned by this ownerKey - ownership tracking is broken
 ```
 
 ## 예제 — 커스텀 값 타입 하나 붙이기

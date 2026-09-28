@@ -1169,7 +1169,7 @@ function retractRange(inst, k, index, release)
     for i = #list, index, -1 do
         local slot = list[i]
         if slot == nil then
-            error(`Dispatch.retractFrom: no slot at index {i} — the chain array has a hole, bookkeeping is broken`, 1) -- 접두는 `H-477` 규약(`quad.` 없음)
+            error(`Dispatch.retractFrom: no slot at index {i} - the chain array has a hole, bookkeeping is broken`, 1) -- 접두는 `H-477` 규약(`quad.` 없음)
         end
         slot.retractor(nil, true)
         list[i] = nil
@@ -2030,8 +2030,8 @@ function Dispatch.getOffsetAt(ownerKey, at)
             -- 범위 절은 조회가 실제로 N+1 너머일 때만(`H-427`: N 아래 구멍을 불법 조회라 부르던 오류).
             local last = bk.N or 0
             errorBefore(if at > last + 1
-                then `Dispatch.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) — or a leaf handler skipped its position registration (H-39): position {i} is not registered`
-                else `Dispatch.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not — a leaf handler skipped its position registration (H-39)`)
+                then `Dispatch.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) - or a leaf handler skipped its position registration (H-39): position {i} is not registered`
+                else `Dispatch.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not - a leaf handler skipped its position registration (H-39)`)
         end
         cur += contribution(bk, i)             -- lengthList[i](State면 :Get()) ← 사용자 코드 창
         if bk.offsetCacheValidUpTo < i then
@@ -2243,7 +2243,7 @@ local function recompute(ownerKey, bk)
         -- 부르고 `setLength`를 안 부른 제공자의 구멍이 아래 `contribution`에서 익명 산술 에러로
         -- 죽어 recomputeBlocker가 켜진 채 남았다(코드 `Bookkeeping.recompute`).
         if offset == nil then
-            error("Dispatch.recompute: sourceList[" .. i .. "] is nil — bookkeeping is broken (the contract says None)", 1)
+            error("Dispatch.recompute: sourceList[" .. i .. "] is nil - bookkeeping is broken (the contract says None)", 1)
         end
         -- [2026-09-08 `H-483`, 자문 RFC — 사용자 결정] None 자리(발행 채널 없는 리프)는
         -- Set할 대상이 없으니 `abs`도 안 뽑는다 — 진입 스냅샷 이후 사용자 코드 창이

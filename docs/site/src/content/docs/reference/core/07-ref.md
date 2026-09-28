@@ -51,7 +51,7 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 `PreRef`/`PostRef`는 props의 **숫자 키 리터럴 항목**으로만 놓을 수 있습니다. 문자 키의 값으로 두거나 `Source`/`Store` 값에 담아 숫자 키 자리에 닿게 하면 전용 가드가 그 자리에서 던집니다(`PostRef`도 주어만 바뀐 같은 문구) — 단 그 문자 키가 **그 클래스의 반영 프로퍼티 이름**이면 프로퍼티 핸들러가 먼저 받아 가드에 닿지 않습니다(아래 목록).
 
 - `Quad0137 PreRef: must be an array item, not the value of a {typeof(k)} key`
-- `Quad0136 PreRef: must be a literal array item — it reached array index {k} through a State/Store value, which the pre-pass cannot see`
+- `Quad0136 PreRef: must be a literal array item - it reached array index {k} through a State/Store value, which the pre-pass cannot see`
 
 평범한 `Ref`도 같은 가드를 갖습니다(3.2.0부터) — 문자 키에 두면 `Quad0137 Ref: must be an array item, not the value of a string key`. 숫자 키 자리에 닿기만 하면 되므로 `Source`/`Store` 값에 담아 넣어도 그대로 채워지는 것은 `Ref`만이고, `PreRef`/`PostRef`는 State에 담아 숫자 키에 넣어도 `Quad0136`으로 거부됩니다(위 문단).
 
@@ -63,7 +63,7 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 
 `PreRef`/`PostRef`는 그 위에 **일회용**이기까지 합니다.
 
-- `Quad0069 PreRef: already fired — a PreRef is one-shot, make a new one for each instance`
+- `Quad0069 PreRef: already fired - a PreRef is one-shot, make a new one for each instance`
 
 [`Fallback`/`Traceback`](/reference/sugar/05-fallback-traceback/) 경계 **밖**에서 만들어 안에 넘긴 `Ref`류도 이 두 제약을 그대로 받습니다 — 던지기 전에 처리된 자리에 놓였다면 이미 위 두 에러 중 하나로 그대로는 다시 쓸 수 없고(`Ref`/`PreRef`), `PostRef`는 pre-pass가 그 항목에 닿은 뒤 본문 루프나 앞선 `PostRef` 콜백이 던졌으면 **배열에서 던진 항목보다 뒤에 놓였어도** 발화 없이 소진됩니다(`D.Frame { throwingRef, post }`의 `post` — 재사용은 `Quad0069`; 반대로 앞 자리 `PreRef` 콜백이 pre-pass 안에서 던지면 뒤 자리 `PostRef`는 소비되지 않아 다시 쓸 수 있습니다 — [2026-09-27 mock 관측]). `Ref`는 던진 고아 인스턴스(`ref.Value`)를 `q.dispose`하면 풀려 재사용할 수 있고(mock 확인, [2026-09-27 기준]), `PreRef`/`PostRef`는 일회용이라 재시도 때 새로 만들어야 합니다.
 
@@ -355,7 +355,7 @@ Unwrap: (self: Ref<T>) -> StripNil<T> -- StripNil은 T에서 nil 성분만 벗�
 
 **규약이지 강제가 아닙니다** — 런타임 보장이 있는 자리에서만 쓰세요. 비어 있으면 호출한 줄을 blame하며 던집니다.
 
-- `Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) — not filled yet, or never placed`
+- `Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) - not filled yet, or never placed`
 
 `Ref`/`PreRef`/`PostRef` 셋 다 같은 동작입니다.
 

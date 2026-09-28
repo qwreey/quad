@@ -104,7 +104,7 @@ local D = q.Declaration -- 병합된 확장. `Quad.Declaration`으로도 같은 
 - 다른 identity로 부르면 — 다른 백엔드든, 같은 백엔드의 **다른 사본/버전**이든 — 던집니다.
 
   ```
-  UseProvider: this Quad module already has a provider — a module cannot serve two backends
+  UseProvider: this Quad module already has a provider - a module cannot serve two backends
   ```
 
   메시지가 점유자를 이름으로 짚지 않는 것은 identity 잠금에 이름이 없기 때문입니다.

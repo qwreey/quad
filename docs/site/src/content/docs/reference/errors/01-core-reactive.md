@@ -47,7 +47,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 ### Quad0038
 
-`Context:Get: no value for {tostring(provider)} — the creator of this Context did not :Set it (use :Peek to test)` — `quad-base/src/Context.luau`
+`Context:Get: no value for {tostring(provider)} - the creator of this Context did not :Set it (use :Peek to test)` — `quad-base/src/Context.luau`
 
 - **언제**: `ctx:Get(provider)`를 불렀는데 그 `Provider`에 아직 아무도 `:Set`하지 않았을 때.
 - **고치려면**: 먼저 `:Set`을 부르거나, 없을 수도 있는 값이면 `:Get` 대신 `ctx:Peek(provider)`를 쓰세요.
@@ -95,7 +95,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 ### Quad0044
 
-`{name}: Handle is already filled — one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)` — `quad-base/src/Debounce.luau`
+`{name}: Handle is already filled - one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)` — `quad-base/src/Debounce.luau`
 
 - **언제**: `opts.Handle`로 넘긴 `Ref`가 이미 다른 `:Apply` 호출의 제어 핸들로 채워져 있을 때(또는 기본값이 `nil`이 아닌 `Ref`를 애초에 줬을 때) — 하나의 `Ref`는 하나의 `:Apply`만 가리킬 수 있습니다.
 - **고치려면**: 새 `Ref`를 **새 팩토리와 함께** 만들거나(`Handle`은 팩토리 옵션이라 팩토리를 재사용하면 새 `Ref`가 붙지 않습니다 — [2026-09-27 mock 실측]), `Handle`을 빼고 팩토리의 `:Flush()`/`:Cancel()` 브로드캐스트를 쓰세요.
@@ -207,7 +207,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 ### Quad0127
 
-`Operator.Indexed: value is not a table (got {typeof(t)}) — cannot read [{tostring(key)}]` — `quad-base/src/Operator.luau`
+`Operator.Indexed: value is not a table (got {typeof(t)}) - cannot read [{tostring(key)}]` — `quad-base/src/Operator.luau`
 
 - **언제**: 읽는 시점에 `:Apply`한 State의 현재값이 테이블이 아닐 때.
 - **고치려면**: `Indexed`를 붙인 State가 항상 테이블 값을 갖게 하세요.
@@ -255,7 +255,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 ### Quad0184
 
-`State: Compute fn is already running for this value — a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)` — `quad-base/src/State.luau`
+`State: Compute fn is already running for this value - a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)` — `quad-base/src/State.luau`
 
 - **언제**: 계산 함수가 자기 자신의 값을 직접·간접(하류 State를 거쳐)으로 읽는 의존성 순환일 때, 계산 함수 안에서 yield하는 사이 다른 코루틴이 같은 노드를 다시 읽을 때, 또는 직전 계산이 던진 뒤 같은 세대(상류가 그 사이 움직이지 않음)에서 다시 읽을 때.
 - **고치려면**: 계산 함수가 자기 자신을 순환 참조하지 않게 하고, 계산 함수 안에서 yield하지 마세요. 직전 계산이 던졌다면 상류 값을 고쳐 `:Set`하면(새 세대가 되어) 회복됩니다 — 단 회복되는 것은 그 노드이고, 던질 때 그 값을 읽던 `Effect`·`:List` 원소는 각자의 계약대로 죽거나 멈춰 있습니다([State 레퍼런스](/reference/core/03-state/)).
@@ -263,7 +263,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 ### Quad0185
 
-`State: a Compute function returned a Modifier — State/Source cannot hold Modifiers` — `quad-base/src/State.luau`
+`State: a Compute function returned a Modifier - State/Source cannot hold Modifiers` — `quad-base/src/State.luau`
 
 - **언제**: `:Compute`의 계산 함수가 `Modifier` 값을 반환했을 때. Operator 콤비네이터도 내부에서 같은 계산 노드를 쓰므로, `q.Operator.Alternative(default)`가 `Modifier`인 기본값을 내놓거나 `q.Operator.Indexed(key)`가 읽어 낸 값이 `Modifier`일 때도 이 메시지가 납니다(메시지는 "Compute function"이라고 말합니다).
 - **고치려면**: 계산 함수가 평범한 값을 반환하게 하세요 — Operator라면 `Alternative`의 기본값이나 `Indexed`로 읽는 테이블 칸에 `Modifier`를 두지 마세요. `Modifier`는 `:Apply`에 넘기는 것입니다.
@@ -303,7 +303,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 ### Quad0190
 
-`State: Observer fn must be a function or nil (got {typeof(fn)}) — nil makes the always-observe utility` — `quad-base/src/State.luau`
+`State: Observer fn must be a function or nil (got {typeof(fn)}) - nil makes the always-observe utility` — `quad-base/src/State.luau`
 
 - **언제**: `:Observer(fn)`의 `fn` 자리가 함수도 `nil`도 아닐 때.
 - **고치려면**: 콜백 함수를 넘기거나, 값 없이 그냥 관측만 하려면 `nil`을 넘기세요.

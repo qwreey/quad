@@ -187,7 +187,7 @@ function Operator.Indexed(key: any): (any) -> any
 		return self:Compute(function(h: any)
 			local t = h:Get()
 			if type(t) ~= "table" then
-				Err.errorBefore(`Quad0127 Operator.Indexed: value is not a table (got {typeof(t)}) — cannot read [{tostring(key)}]`, SURFACE)
+				Err.errorBefore(`Quad0127 Operator.Indexed: value is not a table (got {typeof(t)}) - cannot read [{tostring(key)}]`, SURFACE)
 			end
 			return t[key]
 		end)

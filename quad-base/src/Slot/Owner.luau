@@ -25,7 +25,7 @@ return function(S: Types.SlotInternal, module: any)
 		local cur = S.elementOwner:GetWeak(element, S.OWNER)
 		if cur ~= nil then
 			if not (fromDetached and cur == ownerKey) then
-				S.Err.errorBefore("Quad0156 Slot: this element is already mounted — multiple mounts are not allowed" .. S.ZOMBIE_NOTE, S.SURFACE)
+				S.Err.errorBefore("Quad0156 Slot: this element is already mounted - multiple mounts are not allowed" .. S.ZOMBIE_NOTE, S.SURFACE)
 			end
 			return
 		end
@@ -44,14 +44,14 @@ return function(S: Types.SlotInternal, module: any)
 			S.Err.errorBeforeNearest("Quad0158 Bookkeeping.claimOwnerAt: inst (ownerKey) must not be nil", S.SURFACE)
 		end
 		if k == nil then -- 탐사 A″ 5: a nil position wrote OWNER_POS = nil and returned true — a seat nobody could re-confirm or release from the handler side
-			S.Err.errorBeforeNearest("Quad0159 Bookkeeping.claimOwnerAt: k (seat key — a position or a shorthand child name) must not be nil", S.SURFACE)
+			S.Err.errorBeforeNearest("Quad0159 Bookkeeping.claimOwnerAt: k (seat key - a position or a shorthand child name) must not be nil", S.SURFACE)
 		end
 		local current = S.elementOwner:GetWeak(element, S.OWNER)
 		if current == inst and S.elementOwner:GetWeak(element, S.OWNER_POS) == k then
 			return false -- exactly this position already holds it — re-confirm, no-op
 		end
 		if current ~= nil then
-			S.Err.errorBefore("Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere — one value takes one seat, so the same element cannot sit in two parent tables, twice in one table, or in two Slots" .. S.ZOMBIE_NOTE, S.SURFACE)
+			S.Err.errorBefore("Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value takes one seat, so the same element cannot sit in two parent tables, twice in one table, or in two Slots" .. S.ZOMBIE_NOTE, S.SURFACE)
 		end
 		S.elementOwner:SetWeak(element, S.OWNER, inst)
 		S.elementOwner:SetWeak(element, S.OWNER_POS, k)
@@ -69,7 +69,7 @@ return function(S: Types.SlotInternal, module: any)
 		if current ~= ownerKey then
 			-- public since Q48 (a): a handler author releasing what they never claimed lands here
 			-- with the same tracking-broken meaning — nearest blame (their retractor line)
-			S.Err.errorBeforeNearest("Quad0163 Bookkeeping.releaseOwner: this element is not owned by this ownerKey — ownership tracking is broken", S.SURFACE)
+			S.Err.errorBeforeNearest("Quad0163 Bookkeeping.releaseOwner: this element is not owned by this ownerKey - ownership tracking is broken", S.SURFACE)
 		end
 		S.elementOwner:SetWeak(element, S.OWNER, nil)
 		S.elementOwner:SetWeak(element, S.OWNER_POS, nil)

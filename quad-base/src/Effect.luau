@@ -231,7 +231,7 @@ local function createImpl(module: any)
 	-- ── four entry points — Effect's OWN bodies (`H-144` (b)) ────
 	function Impl.WeakSubscribe(self: any): any
 		if isRunning(self) then
-			Err.errorBeforeNearest("Quad0088 Effect: cannot change subscription from inside fn or cleanup, or after this Effect's fn or cleanup has thrown — a thrown Effect stays dead; create a new one", SURFACE) -- `H-147`
+			Err.errorBeforeNearest("Quad0088 Effect: cannot change subscription from inside fn or cleanup, or after this Effect's fn or cleanup has thrown - a thrown Effect stays dead; create a new one", SURFACE) -- `H-147`
 		end
 		if not module.Backend.canBound(self) then
 			Err.errorBeforeNearest(if self.Subscribed then "Quad0089 Effect: already subscribed" else "Quad0230 Effect: already bound to an Instance", SURFACE) -- error-code: inline if
@@ -249,7 +249,7 @@ local function createImpl(module: any)
 
 	function Impl.Subscribe(self: any): any
 		if isRunning(self) then
-			Err.errorBeforeNearest("Quad0090 Effect: cannot change subscription from inside fn or cleanup, or after this Effect's fn or cleanup has thrown — a thrown Effect stays dead; create a new one", SURFACE) -- `H-147`
+			Err.errorBeforeNearest("Quad0090 Effect: cannot change subscription from inside fn or cleanup, or after this Effect's fn or cleanup has thrown - a thrown Effect stays dead; create a new one", SURFACE) -- `H-147`
 		end
 		if not module.Backend.canBound(self) then
 			Err.errorBeforeNearest(if self.Subscribed then "Quad0091 Effect: already subscribed" else "Quad0231 Effect: already bound to an Instance", SURFACE) -- error-code: inline if
@@ -282,7 +282,7 @@ local function createImpl(module: any)
 
 	function Impl.Unsubscribe(self: any): any -- no `isRunning` gate — see WeakUnsubscribe (Q63 (b))
 		if Subscribed[self] == nil then -- gate FIRST: never strongly subscribed → error, cleanup untouched
-			Err.errorBeforeNearest("Quad0093 Effect: only a strongly subscribed Effect can be released with :Unsubscribe() — a weakly subscribed one must be released with :WeakUnsubscribe(), and one held only by a seat must be released by clearing that seat", SURFACE)
+			Err.errorBeforeNearest("Quad0093 Effect: only a strongly subscribed Effect can be released with :Unsubscribe() - a weakly subscribed one must be released with :WeakUnsubscribe(), and one held only by a seat must be released by clearing that seat", SURFACE)
 		end
 		Subscribed[self] = nil
 		WeakSubscribed[self] = nil
