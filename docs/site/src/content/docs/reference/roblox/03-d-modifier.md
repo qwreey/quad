@@ -87,7 +87,7 @@ Size: (self: FrameModifier, value: Field<UDim2>) -> FrameModifier
 -- 값의 대수(생성 모듈의 별칭 — 여기의 FieldOut<T>는 Tween을 포함하는 QuadTypes.FieldOut<T | Tween<T>>라,
 -- 변환 함수의 old에는 진행 중인 Tween 값이 올 수 있습니다; core/08의 FieldOut<T>(T | State<T> | None)와 이름만 같습니다)
 export type FieldV<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None
-export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)
+export type Field<T> = FieldV<T>? | ((old: FieldOut<T>?) -> FieldV<T>?) -- nil = 필드 부재
 ```
 
 **반환** — 그 필드만 바뀐 **새 Modifier**. 원본은 그대로입니다(모든 setter가 얕은 복제).
@@ -101,7 +101,7 @@ export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)
 | `Tween` | 트윈 값으로 덮어쓴다(소비는 프로퍼티 핸들러 — [Tween과 Animate](/reference/roblox/06-tween-animate/)) |
 | `State` | State를 통째로 필드에 넣는다(발행될 때마다 프로퍼티가 따라간다) |
 | `q.None` | **언셋** — 그 필드를 명시적으로 `None`으로 만든다 |
-| `nil` | 필드가 **부재**가 된다(언셋이 아니라 "안 적은 것") — 런타임만; strict는 setter 인자의 `nil`을 거부합니다([2026-09-27 기준]) |
+| `nil` | 필드가 **부재**가 된다(언셋이 아니라 "안 적은 것") — `mod:X(if c then v else nil)`·`number?` 인자도 strict에서 그대로 됩니다 |
 | 함수 | **변환 함수** — 아래 |
 
 **보간할 수 없는 타입에는 `Tween` 팔이 없습니다.** 그런 프로퍼티의 setter는 `Field<T>`가 아니라
@@ -112,7 +112,7 @@ export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)
 ```luau
 -- 값 부분에서 Tween 팔이 빠진다(변환 함수의 old도 Tween 없는 전체형)
 export type FieldPV<T> = T | StateMarker<T> | None
-export type FieldP<T> = FieldPV<T> | ((old: FieldOutP<T>?) -> FieldPV<T>?)
+export type FieldP<T> = FieldPV<T>? | ((old: FieldOutP<T>?) -> FieldPV<T>?)
 
 -- 예: Enum.Font는 보간 불가라 FieldP
 Font: (self: TextBoxModifier, value: FieldP<Enum.Font>) -> TextBoxModifier

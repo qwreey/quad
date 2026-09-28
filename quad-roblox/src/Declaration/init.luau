@@ -15,7 +15,7 @@
 	타입·무주석 추론까지, luau-test 30) + 클래스별 <Class>OnChange 유니언이 E에
 	합류(클래스 밖 이름은 생성자 자리에서 거부).
 	Modifier(M7 단위 ③, round17): 클래스별 <Class>Modifier(필드 setter — 값은
-	Field<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None | 변환 함수(H-327 → 마커), 자기 타입 반환; 예약 메소드
+	Field<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None | nil(필드 부재 — round13 Q103) | 변환 함수(H-327 → 마커), 자기 타입 반환; 예약 메소드
 	Apply/Peek/Overridden; 이벤트는 제외 — 함수 인자는 변환 함수라 콜백과 겹친다)
 	+ D.Modifier.<Class>() 타입드 생성자(round17 Q3 (a) — 단위 ③엔 quad.Modifier 캐스트 별칭,
 	단위 ④부터 아래 TypedFactory 태그 생성자)
@@ -51,10 +51,10 @@ type MapperRoot = QuadTypes.MapperRoot
 -- `StateMarker<T | Tween<T>>` 하나로; old(출력)만 전체형 `FieldOut<T>`(State 팔 하나 — Q23 (a) 사용자 확정).
 export type FieldV<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None
 export type FieldOut<T> = Types.FieldOut<T> -- 변환 함수 old·Peek 반환(출력, 전체형 — 정의는 types.luau, 전개는 D 밖에서)
-export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)
+export type Field<T> = FieldV<T>? | ((old: FieldOut<T>?) -> FieldV<T>?) -- round13 Q103 (a): nil = field absent (modifier-plan M-5)
 export type FieldPV<T> = T | StateMarker<T> | None -- 보간 불가 타입의 setter 값(Q34 — Tween 팔 없음)
 export type FieldOutP<T> = QuadTypes.FieldOut<T> -- 보간 불가 타입의 old·Peek(전체형, Tween 없음)
-export type FieldP<T> = FieldPV<T> | ((old: FieldOutP<T>?) -> FieldPV<T>?)
+export type FieldP<T> = FieldPV<T>? | ((old: FieldOutP<T>?) -> FieldPV<T>?)
 
 type PV0 = boolean | TweenData<boolean> | StateMarker<boolean | Tween<boolean>> | None -- boolean
 type PV1 = Instance | StateMarker<Instance> | None -- Instance

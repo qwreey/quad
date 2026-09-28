@@ -343,7 +343,7 @@ def emit():
     L.append("\t타입·무주석 추론까지, luau-test 30) + 클래스별 <Class>OnChange 유니언이 E에")
     L.append("\t합류(클래스 밖 이름은 생성자 자리에서 거부).")
     L.append("\tModifier(M7 단위 ③, round17): 클래스별 <Class>Modifier(필드 setter — 값은")
-    L.append("\tField<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None | 변환 함수(H-327 → 마커), 자기 타입 반환; 예약 메소드")
+    L.append("\tField<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None | nil(필드 부재 — round13 Q103) | 변환 함수(H-327 → 마커), 자기 타입 반환; 예약 메소드")
     L.append("\tApply/Peek/Overridden; 이벤트는 제외 — 함수 인자는 변환 함수라 콜백과 겹친다)")
     L.append("\t+ D.Modifier.<Class>() 타입드 생성자(round17 Q3 (a) — 단위 ③엔 quad.Modifier 캐스트 별칭,")
     L.append("\t단위 ④부터 아래 TypedFactory 태그 생성자)")
@@ -395,12 +395,12 @@ def emit():
     # Q24 후속). ⚠️ 이 파일 안에서 전개하면(인라인이든 `QuadTypes.FieldOut<T | Tween<T>>`든) `export
     # type Declaration`이 솔버 제약 한도를 넘어 "too complex" — 실측 2026-09-07, typing-limits 8.12.
     L.append("export type FieldOut<T> = Types.FieldOut<T> -- 변환 함수 old·Peek 반환(출력, 전체형 — 정의는 types.luau, 전개는 D 밖에서)")
-    L.append("export type Field<T> = FieldV<T> | ((old: FieldOut<T>?) -> FieldV<T>?)")
+    L.append("export type Field<T> = FieldV<T>? | ((old: FieldOut<T>?) -> FieldV<T>?) -- round13 Q103 (a): nil = field absent (modifier-plan M-5)")
     # [Q34 (a)] non-interpolable property types get the Tween-less shape — same three roles
     # (value / transform input / transform old), no Tween arm anywhere
     L.append("export type FieldPV<T> = T | StateMarker<T> | None -- 보간 불가 타입의 setter 값(Q34 — Tween 팔 없음)")
     L.append("export type FieldOutP<T> = QuadTypes.FieldOut<T> -- 보간 불가 타입의 old·Peek(전체형, Tween 없음)")
-    L.append("export type FieldP<T> = FieldPV<T> | ((old: FieldOutP<T>?) -> FieldPV<T>?)")
+    L.append("export type FieldP<T> = FieldPV<T>? | ((old: FieldOutP<T>?) -> FieldPV<T>?)")
     L.append("")
     names = sorted(classes.keys())
     # [2026-09-15 사용자 결정] Declaration/DeclarationMapper 테이블은 클래스 이름과 예약 이름이 같은

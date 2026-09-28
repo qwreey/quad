@@ -49,6 +49,11 @@ local function _neverCalled(custom: MaterialButtonModifier)
 		local _: number | Tween<number> | State<number | Tween<number>> | None | nil = old -- round3 Q23 (a): State 팔 하나
 		return 3
 	end)
+	-- round13 Q103 (a) (user decision 2026-09-28): `nil` is a documented setter arm — "this Modifier
+	-- has no such field" (modifier-plan M-5), same as the constructor table's optional field. Before,
+	-- the generated `Field<T>`/`FieldP<T>` lacked it and these three were strict TypeErrors.
+	local maybeOrder: number? = nil
+	local _nilArms = m:LayoutOrder(nil):LayoutOrder(maybeOrder):LayoutOrder(if maybeOrder then 1 else nil):Style(nil)
 	local m2 = m:Size(size):Size(sizeTween) -- State 필드(4-1: 리터럴 State는 통째 교체) — 둘 다
 	-- Peek<<T>>: 호출부가 T를 명시(정본 9절), 반환은 raw 유니언 그대로
 	local peeked: DeclarationModule.FieldOut<UDim2>? = m2:Peek<<UDim2>>("Size") -- Q24 후속: old와 같은 FieldOut(Tween 팔 포함)
