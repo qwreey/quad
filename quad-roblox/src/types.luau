@@ -54,6 +54,19 @@ local QuadTypes = require("../luau_packages/quad_types")
 -- 타입으로). `Mapped`는 재귀 제네릭(`Tween<U>` 반환)이라 데이터부/메소드부 쪼개기(typing-limits
 -- §1②) — 파생 자리는 결과 타입을 명시 바인딩할 것(§1①).
 export type TweenOverride = "Cancel" | "Finish"
+-- round13 묶음 1(2026-09-28 사용자 결정 — tween-callback-structure §8-1): 콜백 하나 — 대상 인스턴스, 프로퍼티 이름(숏핸드면 가상 키), 그 Tween의 목표 값
+export type TweenCallback<T> = (inst: Instance, prop: string, value: T) -> ()
+-- `wrap`이 돌려주는 새 콜백 셋(안 채운 필드 = 콜백 없음). 저장된 Tween의 콜백 값 인자는 `any` — T를 반대 극성에 두면
+-- `Tween<T>`가 불변이 되어 D 슬롯 유니언·`Mapped` 추론이 깨진다(round13 묶음 1 실측 2026-09-28); 정밀한 T는 생성자 옵션에서만.
+export type TweenCallbacks = {
+	read Started: TweenCallback<any>?,
+	read Completed: TweenCallback<any>?,
+	read Cancelled: TweenCallback<any>?,
+}
+-- `wrap`이 받는 핸들 — 원본 콜백 셋 + `cb:Map(g)`(있는 것마다 `g(f)`를 적용한 새 셋)
+export type TweenCallbackHandle = TweenCallbacks & {
+	Map: (self: TweenCallbacks, g: (f: TweenCallback<any>) -> TweenCallback<any>?) -> TweenCallbacks,
+}
 -- 옵션 필드는 전부 `read` — 생성자는 읽기만 하고, 미리 만든 테이블 변수를 넘길 때
 -- 가변 필드면 새 솔버가 `Time: number`를 `number?`에 불변으로 대조해 거부한다(실측).
 export type TweenOptions<T> = {
@@ -67,11 +80,12 @@ export type TweenOptions<T> = {
 	read DelayTime: number?,
 	read Override: TweenOverride?, -- 기본 "Cancel"
 	read Dedup: boolean?, -- [2026-09-08 Q25] 기본 true — 소비자(Property 핸들러)가 목표 `Value`만 비교해 같으면 무동작
-	-- [2026-09-21 사용자 결정 — docs-review 1-5] 콜백 셋(인자 없음): Started는 재생 직후 동기, Completed는 자연 완료(스냅은 동기),
+	-- [2026-09-21 사용자 결정 — docs-review 1-5] 콜백 셋: Started는 재생 직후 동기, Completed는 자연 완료(스냅은 동기),
 	-- Cancelled는 quad가 진행 중인 트윈을 교체·철거로 취소하는 자리에서 동기. 발화 계약은 `Handlers/Property.luau` 머리.
-	read Started: (() -> ())?,
-	read Completed: (() -> ())?,
-	read Cancelled: (() -> ())?,
+	-- round13 묶음 1(2026-09-28 사용자 결정 — tween-callback-structure §8-1): 인자 `(inst, prop, value)` — 인자 없는 함수도 그대로 들어간다.
+	read Started: TweenCallback<T>?,
+	read Completed: TweenCallback<T>?,
+	read Cancelled: TweenCallback<T>?,
 }
 -- 유니언 멤버용 데이터부(`Mapped` 없음) — 재귀 메소드 테이블을 수백 유니언에 직접
 -- 넣지 않는다(typing-limits 8.8). 실 Tween 값은 구조적으로 만족한다.
@@ -87,17 +101,22 @@ export type TweenData<T> = {
 	read DelayTime: number?,
 	read Override: TweenOverride?,
 	read Dedup: boolean?,
-	read Started: (() -> ())?,
-	read Completed: (() -> ())?,
-	read Cancelled: (() -> ())?,
+	read Started: TweenCallback<any>?,
+	read Completed: TweenCallback<any>?,
+	read Cancelled: TweenCallback<any>?,
 }
 -- `Mapped`는 typing-limits §1③(`typeof(named function)`) — 인라인 `<U>(…) -> Tween<U>`는
 -- 반환이 `*error-type*`으로 새고 생성자 추론까지 오염된다(2026-09-06 실측, round19).
-local function tweenMapped<T, U>(_self: TweenData<T>, _fn: (T) -> U): Tween<U>
+local function tweenMapped<T, U>(_self: TweenData<T>, _fn: (T) -> U, _wrap: ((cb: TweenCallbackHandle) -> TweenCallbacks)?): Tween<U>
+	return nil :: any
+end
+-- round13 묶음 1: `tween:Wrapped(wrap)` — 같은 값, 콜백 셋만 `wrap(cb)`가 돌려준 것으로
+local function tweenWrapped<T>(_self: TweenData<T>, _wrap: (cb: TweenCallbackHandle) -> TweenCallbacks): Tween<T>
 	return nil :: any
 end
 export type Tween<T> = TweenData<T> & {
 	Mapped: typeof(tweenMapped),
+	Wrapped: typeof(tweenWrapped),
 }
 -- 순수 제네릭 함수(`H-343`): 문자열 `Override` 덕에 `Tween`엔 필드가 없어 콜러블 테이블이
 -- 필요 없다 — 제네릭 `__call`의 `T` 오염(`H-324`, `luau-test/33` A 블록)이 함께 소멸.
@@ -137,9 +156,9 @@ export type AnimateInfo = {
 	read Override: (TweenOverride | QuadTypes.StateMarker<TweenOverride>)?, -- [round3 `H-433`] 형제 여덟과 같이 마커(첫 마커 커밋이 빠뜨림)
 	read CanAnimate: (boolean | QuadTypes.StateMarker<boolean>)?,
 	-- [2026-09-21] Tween에 그대로 실리는 콜백 셋(State 불가)
-	read Started: (() -> ())?,
-	read Completed: (() -> ())?,
-	read Cancelled: (() -> ())?,
+	read Started: TweenCallback<any>?,
+	read Completed: TweenCallback<any>?,
+	read Cancelled: TweenCallback<any>?,
 	read Dedup: (boolean | QuadTypes.StateMarker<boolean>)?, -- [2026-09-08 Q25] Tween의 `Dedup` 필드로 그대로 전달(기본 true — 값 비교는 Property 핸들러)
 }
 export type AnimateFn = (info: AnimateInfo) -> (self: any) -> QuadTypes.State<Tween<any>>

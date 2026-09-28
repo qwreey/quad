@@ -8,7 +8,7 @@ description: "값-레벨 트윈 래퍼, 프로퍼티에서의 3-상태 동작(�
 값 대신 놓으면 프로퍼티 핸들러가 엔진 트윈으로 바꿔 재생합니다. `Animate{…}`는 State 하나를
 통째로 트윈으로 감싸는 [`:Apply`](../core/03-state.md) 콤비네이터입니다.
 
-이 페이지의 심볼: [`q.Tween(opts)`](#qtweenopts) · [`tween:Mapped(fn)`](#tweenmappedfn) ·
+이 페이지의 심볼: [`q.Tween(opts)`](#qtweenopts) · [`tween:Mapped(fn)`](#tweenmappedfn) · [`tween:Wrapped(wrap)`](#tweenwrappedwrap) ·
 [`q.isTween(x)`](#qistweenx) · [`q.Animate(info)`](#qanimateinfo) ·
 [프로퍼티에서의 동작](#프로퍼티에서의-동작)
 
@@ -47,10 +47,12 @@ export type TweenOptions<T> = {
 	read DelayTime: number?,
 	read Override: TweenOverride?,       -- 기본 "Cancel"
 	read Dedup: boolean?,                -- 기본 true
-	read Started: (() -> ())?,           -- 콜백 셋(인자 없음) — 뜻은 아래 "프로퍼티에서의 동작"
-	read Completed: (() -> ())?,
-	read Cancelled: (() -> ())?,
+	read Started: TweenCallback<T>?,     -- 콜백 셋 — 뜻은 아래 "프로퍼티에서의 동작"
+	read Completed: TweenCallback<T>?,
+	read Cancelled: TweenCallback<T>?,
 }
+
+export type TweenCallback<T> = (inst: Instance, prop: string, value: T) -> ()
 ```
 
 **반환** — frozen `Tween<T>`. 넘긴 옵션 테이블은 **복제**되므로 호출자의 테이블을 나중에 고쳐도
@@ -81,7 +83,7 @@ local panel = D.Frame({ Size = size })
   기본값이 채워집니다.
 - **`Override`는 문자열**입니다 — `"Cancel"`(기본) 또는 `"Finish"`. 뜻은 [프로퍼티에서의 동작](#프로퍼티에서의-동작)에서.
 - **`Dedup`은 기본 켜짐**입니다(필드를 생략하면 `nil`이고 소비자가 참으로 취급). 끄려면 `Dedup = false`.
-- **`Started`/`Completed`/`Cancelled`는 인자 없는 함수**입니다. 언제 불리는지는 [프로퍼티에서의 동작](#프로퍼티에서의-동작)에서. `:Mapped`로 만든 값에도 그대로 실립니다.
+- **`Started`/`Completed`/`Cancelled`는 `(inst, prop, value)`를 받는 함수**입니다 — 인자가 필요 없으면 `function() … end`로 적어도 됩니다. 언제 불리는지는 [프로퍼티에서의 동작](#프로퍼티에서의-동작)에서. `:Mapped(fn)`로 만든 값에도 그대로 실리고(그때 `value`는 매핑된 값), 콜백만 바꾼 사본은 [`tween:Wrapped`](#tweenwrappedwrap)로 만듭니다.
 - **`Info` 없이 `Time = 0`이고 `DelayTime`/`RepeatCount`/`Reverses`도 없으면(또는 0·거짓) 엔진 트윈을 만들지 않고 값을 그 자리에서 씁니다** — 첫 세팅과 같은 스냅이라 콜백도 스냅 규칙을 따릅니다. 그 셋 중 하나라도 있으면 평소대로 엔진 트윈입니다.
 
 **동작 — 모든 필드는 평범한 값입니다**
@@ -116,10 +118,10 @@ local panel = D.Frame({ Size = size })
 **시그니처**
 
 ```luau
-Mapped: <T, U>(self: TweenData<T>, fn: (T) -> U) -> Tween<U>
+Mapped: <T, U>(self: TweenData<T>, fn: (T) -> U, wrap: ((cb: TweenCallbackHandle) -> TweenCallbacks)?) -> Tween<U>
 ```
 
-옵션은 그대로 두고 **`Value`만 `fn(Value)`로 바꾼** 새 Tween을 돌려줍니다. 원본은 그대로입니다.
+옵션은 그대로 두고 **`Value`만 `fn(Value)`로 바꾼** 새 Tween을 돌려줍니다. 원본은 그대로입니다. 콜백은 그대로 복사됩니다. 둘째 인자 `wrap`을 주면 콜백 셋도 같은 사본에서 바꿉니다 — 뜻은 [`tween:Wrapped`](#tweenwrappedwrap)와 같고, 값과 콜백을 한 번에 바꾸는 빠른 경로입니다(사본 하나).
 결과는 다시 검증되므로 `fn`이 `nil`을 돌려주면 `Quad0249 Tween: Value is required`가 납니다.
 
 옵션 프리셋을 상수로 두고 값만 갈아 끼우는 데 쓰면 좋습니다.
@@ -132,6 +134,47 @@ local b = FADE:Mapped(function(v: number): number return 0.5 end)
 ```
 
 `fn`이 함수가 아니면 `Quad0227 Tween:Mapped: fn must be a function (got {typeof(fn)})`.
+
+---
+
+## `tween:Wrapped(wrap)`
+
+**시그니처**
+
+```luau
+Wrapped: <T>(self: TweenData<T>, wrap: (cb: TweenCallbackHandle) -> TweenCallbacks) -> Tween<T>
+
+export type TweenCallbacks = {
+	read Started: TweenCallback<any>?,
+	read Completed: TweenCallback<any>?,
+	read Cancelled: TweenCallback<any>?,
+}
+export type TweenCallbackHandle = TweenCallbacks & {
+	Map: (self: TweenCallbacks, g: (f: TweenCallback<any>) -> TweenCallback<any>?) -> TweenCallbacks,
+}
+```
+
+값은 그대로 두고 **콜백 셋만 `wrap`이 돌려준 것으로 바꾼** 새 Tween을 돌려줍니다. `wrap`은 한 번 불리고, 원본의 콜백 셋을 보는 핸들 `cb`를 받습니다 — `cb.Started`/`cb.Completed`/`cb.Cancelled`는 원본 함수(없으면 `nil`)이고, `cb:Map(g)`는 있는 콜백마다 `g(f)`를 적용한 새 셋입니다. **돌려준 셋이 사본의 콜백 셋 전체**입니다 — 빠뜨린 필드는 콜백이 없고, 원본에 없던 콜백을 새로 붙일 수도 있습니다. 돌려준 셋이 원본과 같은 함수 셋이면 사본을 만들지 않고 원본을 돌려줍니다(Tween은 값이라 신원에 기대는 곳이 없습니다).
+
+같은 Tween을 여러 자리에 걸면 콜백도 자리마다 불립니다. 한 번만 반응하려면 `prop`으로 거르세요.
+
+```luau
+local fade = q.Tween({
+	Value = 0,
+	Time = 0.2,
+	Completed = function(_inst, _prop, _value) onFaded() end,
+})
+-- BackgroundTransparency와 TextTransparency 둘에 걸되, 완료는 BackgroundTransparency에서만 알린다
+local once = fade:Wrapped(function(cb)
+	return cb:Map(function(f)
+		return function(inst, prop, value)
+			if prop == "BackgroundTransparency" then f(inst, prop, value) end
+		end
+	end)
+end)
+```
+
+`wrap`이 함수가 아니면 `Quad0256`, 테이블이 아닌 것을 돌려주면 `Quad0257`, `cb:Map`의 `g`가 함수가 아니면 `Quad0258`입니다. 돌려준 셋의 값은 `q.Tween`의 콜백과 같은 규칙으로 검사합니다(`Quad0246`).
 
 ---
 
@@ -168,9 +211,9 @@ export type AnimateInfo = {
 	read Override: (TweenOverride | StateMarker<TweenOverride>)?,
 	read CanAnimate: (boolean | StateMarker<boolean>)?, -- 기본 true
 	read Dedup: (boolean | StateMarker<boolean>)?,
-	read Started: (() -> ())?,   -- Tween에 그대로 실린다(State 불가)
-	read Completed: (() -> ())?,
-	read Cancelled: (() -> ())?,
+	read Started: TweenCallback<any>?,   -- Tween에 그대로 실린다(State 불가)
+	read Completed: TweenCallback<any>?,
+	read Cancelled: TweenCallback<any>?,
 }
 ```
 
@@ -261,23 +304,25 @@ local box = D.Frame({ BackgroundTransparency = size })
 
 **시작·완료·취소를 알립니다 — `Started` / `Completed` / `Cancelled`**
 
-세 콜백은 전부 인자가 없고, 부르는 쪽은 프로퍼티 핸들러입니다.
+세 콜백은 `(inst, prop, value)` — 그 트윈이 도는 인스턴스, 프로퍼티 이름, 그 Tween의 목표 값 — 를 받고, 부르는 쪽은 프로퍼티 핸들러입니다. **모든 콜백은 그 자리의 기록을 마친 뒤에 불립니다** — 그래서 콜백 안에서 같은 자리를 다시 써도 순서가 흐트러지지 않습니다(아래). 인스턴스의 프로퍼티 값 자체는 별개입니다 — 엔진 트윈이 막 시작된 `Started` 안이라면 아직 움직이기 전 값입니다.
 
 | 콜백 | 불리는 때 |
 |---|---|
 | `Started` | 엔진 트윈을 재생한 **직후, 동기로**. 스냅(첫 세팅, 또는 `Info` 없는 `Time = 0`)에서는 값을 찍은 뒤 `Completed` 바로 앞에 |
 | `Completed` | 트윈이 **자연히 끝났을 때만**(엔진 `Completed` 시그널의 `PlaybackState.Completed`) — 엔진이 그 시그널을 미루는 만큼 뒤에 옵니다. 스냅에서는 동기로. 도는 사이 인스턴스가 **파괴됐으면 불리지 않습니다**(아래) |
-| `Cancelled` | quad가 **돌고 있던** 트윈을 끊는 그 자리에서 **동기로** — 새 값이 들어와 교체될 때와 자리가 철거될 때. 이미 끝난 트윈에는 불리지 않습니다(엔진이 목표에 닿았지만 통지가 아직 안 온 사이에 교체·철거가 오면 `Completed`가 그 자리에서 불립니다) |
+| `Cancelled` | quad가 **돌고 있던** 트윈을 끊는 그 자리에서 **동기로** — 새 값이 들어와 교체될 때와 자리가 철거될 때. 교체 때 이미 끝난 트윈에는 불리지 않습니다(엔진이 목표에 닿았지만 통지가 아직 안 온 사이에 교체가 오면 `Completed`가 그 자리에서 불립니다). **철거 때는 끝났든 아니든 `Cancelled`입니다** — 사라지는 자리의 트윈이 자연히 끝났는지는 가리지 않습니다 |
 
-그래서 교체 순서는 항상 **이전 `Cancelled` → 새 `Started` → (나중에) 새 `Completed`**입니다. 엔진의 취소 통지는 미뤄져서(다음 yield) 동기 교체에서는 새 트윈이 시작된 **뒤에** 도착하고, 이미 끝난 트윈에 `Cancel`을 해도 한 번 더 납니다 — quad는 그 통지를 쓰지 않고 자기 `Cancel` 호출 자리에서 직접 부르며, `Completed` 연결은 한 번 불린 뒤 스스로 끊습니다. 같은 목표라 건너뛴 `Tween`(`Dedup`)은 아무것도 부르지 않습니다.
+그래서 교체 순서는 항상 **이전 `Cancelled`(통지 대기 중이었으면 이전 `Completed`) → 새 `Started` → (나중에) 새 `Completed`**입니다. 엔진의 취소 통지는 미뤄져서(다음 yield) 동기 교체에서는 새 트윈이 시작된 **뒤에** 도착하고, 이미 끝난 트윈에 `Cancel`을 해도 한 번 더 납니다 — quad는 그 통지를 쓰지 않고 자기 `Cancel` 호출 자리에서 직접 부르며, `Completed` 연결은 한 번 불린 뒤 스스로 끊습니다. 같은 목표라 건너뛴 `Tween`(`Dedup`)은 아무것도 부르지 않습니다.
 
-**인스턴스가 먼저 파괴되면** — 파괴는 자리별 되돌리기를 거치지 않으므로([20장](../../getting-started/20-handlers.md)) 돌던 트윈은 끊기지 않고 파괴된 인스턴스 위에서 끝까지 돕니다. `Cancelled`는 오지 않고, 그 뒤 엔진이 보내는 완료 통지는 인스턴스가 더는 quad의 것이 아니므로 **무시됩니다** — `Completed`도 불리지 않습니다. 새 값으로 교체하거나 자리를 철거할 때만 `Cancelled`입니다. 콜백과 그 클로저가 잡은 값은 트윈이 끝나거나 끊기는 순간 놓입니다 — 다만 **끝나지 않는 트윈**(`RepeatCount = -1`)은 파괴로는 끊기지 않으니, 파괴 전에 값을 바꾸거나 자리를 철거해 끊으세요.
+**인스턴스가 먼저 파괴되면** — 파괴는 자리별 되돌리기를 거치지 않으므로([20장](../../getting-started/20-handlers.md)) 돌던 트윈은 끊기지 않고 파괴된 인스턴스 위에서 끝까지 돕니다. `Cancelled`는 오지 않고, 그 뒤 엔진이 보내는 완료 통지는 인스턴스가 더는 quad의 것이 아니므로 **무시됩니다** — `Completed`도 불리지 않습니다. 파괴된 인스턴스의 자리를 직접 되돌려도(`q.Dispatch.retractFrom`) 콜백은 불리지 않습니다(트윈은 끊깁니다). 새 값으로 교체하거나 자리를 철거할 때만 `Cancelled`입니다. 콜백과 그 클로저가 잡은 값은 트윈이 끝나거나 끊기는 순간 놓입니다 — 다만 **끝나지 않는 트윈**(`RepeatCount = -1`)은 파괴로는 끊기지 않으니, 파괴 전에 값을 바꾸거나 자리를 철거해 끊으세요.
 
-**같은 프로퍼티를 `Started`·`Cancelled` 안에서 다시 쓰지 마세요** — 두 콜백은 프로퍼티 핸들러가 그 자리를 처리하는 **도중에** 불리므로, 거기서 같은 자리에 묶인 State를 `:Set`하면 같은 자리의 재진입이고 정의되지 않은 동작입니다(다른 프로퍼티나 다른 State를 바꾸는 것은 괜찮습니다 — 위 `flash` 모양이 그것입니다). 다음 트윈을 같은 프로퍼티에 잇는 자리는 `Completed`입니다.
+**콜백 안에서 같은 프로퍼티를 다시 써도 됩니다** — 다음 트윈을 잇는 흔한 자리는 `Completed`이지만, 기록을 마친 뒤에 불리므로 `Started`·`Cancelled`에서 같은 자리에 묶인 State를 `:Set`해도 그 쓰기가 마지막으로 남고 끊기지 않는 트윈도 남지 않습니다. 앞선 콜백이 같은 자리를 새 값으로 바꾸면, 바뀌어 버린 값은 `Started` 없이 `Cancelled`만 받거나(엔진 트윈) 아무것도 받지 않습니다(스냅). 예외 하나 — 마운트 중 첫 세팅(스냅)의 `Started` 안에서 같은 State를 `:Set`하면 화면이 따라가지 않을 수 있습니다(정의되지 않은 동작).
 
-**숏핸드 `UIPadding`/`UIPaddingOffset`([02장](./02-d.md#숏핸드-키-넷))에 건 Tween 하나의 콜백은 값 하나에 네 번씩 불립니다** — 그 숏핸드가 관리 자식의 프로퍼티 넷(`PaddingLeft`/`Right`/`Top`/`Bottom`)에 같은 Tween을 각각 적용하기 때문입니다(mock 확인). 같은 Tween/State를 프로퍼티 둘 이상에 걸었을 때도 각각 불립니다 — `Completed` 안에서 같은 State를 `:Set`해 다음 트윈을 잇는 관용구는 이런 자리에서 네 통지가 같은 프레임에 겹쳐 위 재진입 캐비엇에 걸립니다(검토 중).
+**콜백이 던지면** — 에러는 그 콜백을 부른 줄(값을 바꾼 `:Set` 등)로 나옵니다. 그 자리의 기록과 트윈은 이미 정리된 뒤라 다음 값이 오면 정상으로 이어지지만, 같은 전이에서 던진 콜백 뒤에 올 콜백(새 값의 `Started` 등)은 불리지 않습니다. 다음 값보다 철거가 먼저 오면 그 트윈이 끊기지 않고 끝까지 돌 수 있습니다 — 정의되지 않은 동작입니다.
 
-**인자가 없는 이유** — 콜백이 인스턴스를 받으려면 엔진 트윈의 연결이 그 인스턴스를 붙잡아야 하는데, 그 연결은 기록이 트윈을 쥐는 동안 살아 있어 인스턴스가 수거되지 않습니다(Luau의 약한 키 테이블은 ephemeron이 아닙니다). 필요한 값은 클로저로 잡되, 인스턴스를 직접 쥐기보다 [원천을 거쳐 프로퍼티로 흘리는 모양](../../getting-started/17-animation.md#끝났을-때-알기--startedcompletedcancelled)을 권합니다.
+**숏핸드([02장](./02-d.md#숏핸드-키-넷))에 건 Tween의 콜백은 값 하나에 한 번**입니다 — `UIPadding`/`UIPaddingOffset`은 관리 자식의 프로퍼티 넷에 같은 Tween을 걸지만, 마지막 프로퍼티(`PaddingBottom`)가 보고할 때만 `(숏핸드를 건 인스턴스, "UIPadding" 같은 숏핸드 키, 여러분이 준 값)`으로 불립니다. 반면 **같은 Tween/State를 프로퍼티 둘 이상에 직접 걸면 자리마다 한 번씩**, 각자의 `prop`으로 불립니다 — 한 번만 반응하려면 `prop`으로 거르거나 [`tween:Wrapped`](#tweenwrappedwrap)로 감싸세요.
+
+**인자는 부르는 순간 읽습니다** — 엔진 트윈의 연결은 인스턴스를 클로저로 잡지 않고, 발화 때 트윈이 원래 쥔 인스턴스를 읽어 넘깁니다. 그래서 인자를 받는다고 인스턴스 수명이 늘지 않습니다(연결은 기록이 트윈을 쥐는 동안 살아 있고, Luau의 약한 키 테이블은 ephemeron이 아니라서 포획이었다면 인스턴스가 수거되지 않았을 것입니다). 받은 `inst`를 오래 쥐는 것은 여러분 클로저의 일입니다 — 오래 필요한 값은 [원천을 거쳐 프로퍼티로 흘리는 모양](../../getting-started/17-animation.md#끝났을-때-알기--startedcompletedcancelled)을 권합니다.
 
 ---
 

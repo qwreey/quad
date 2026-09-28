@@ -89,52 +89,66 @@ local function install(quad: any)
 	-- entry may collect and a later chain simply mints a new one — identity never matters.
 	local tweenRetractors = quad.Relate()
 
-	-- [2026-09-21 사용자 결정 — docs-review 1-5] Tween callbacks `Started`/`Completed`/`Cancelled` (`() -> ()`, no
-	-- arguments: a closure that captured `inst` would sit in the engine tween's connection and pin the
-	-- Instance for as long as the record holds the tween — `audit/tween-completed-2026-09-21/REPORT.md` 7·8;
-	-- Luau weak-key tables are not ephemerons). Where they fire:
-	--   Started   — synchronously right after `engineTween:Play()`; on a snap, right before Completed.
+	-- [2026-09-21 사용자 결정 — docs-review 1-5; round13 묶음 1 2026-09-28 round13 tween-callback-structure §8-1] Tween callbacks
+	-- `Started`/`Completed`/`Cancelled`, called `(inst, prop, value)` — the Instance, this property's key, and the
+	-- target of the Tween the event is about. Nothing is CAPTURED for that (a closure holding `inst` in the engine
+	-- tween's connection would pin the Instance while the record holds the tween — `audit/tween-completed-2026-09-21/
+	-- REPORT.md` 7·8; weak-key tables are not ephemerons): the connection reads `rec.Tween.Instance`/`rec.Key`/
+	-- `rec.Value` when it fires, every other site has `inst`/`k` in scope. Where they fire:
+	--   Started   — right after `engineTween:Play()`; on a snap, right before Completed.
 	--   Completed — from the engine `Completed` signal, only for `PlaybackState.Completed` (a natural finish);
-	--               synchronously on a snap (first write, or an Info-less `Time == 0`). The engine re-fires
-	--               `Completed(Cancelled)` even for a tween that already finished (REPORT 2), so the
-	--               connection disconnects itself on its first fire and the record remembers `Done`.
-	--   Cancelled — synchronously at quad's OWN `:Cancel()` call site (value replacement or teardown), only
-	--               while that tween had not finished. The engine's own Cancelled notice is deferred (REPORT 3)
-	--               and lands AFTER a synchronous replacement's Started (REPORT 4) — so it is never used.
-	-- Order on replacement is therefore fixed: old Cancelled → new Started → (later) new Completed. A
-	-- Writing the SAME property from inside `Started` or `Cancelled` (a `:Set` on the State seated there) is
-	-- same-key re-entry — UB by user decision (dispatch-core-plan Q5 (a); round12 G-23/G-26, `H-589`): `Cancelled`
-	-- fires before this call's own slot write and a snap's `Completed` follows its `Started`, so a nested
-	-- `process` would be overwritten or land out of order. No gate is added (user: no re-entry gates). The
-	-- place to chain the next tween on the same property is `Completed` — on the engine path it fires outside
-	-- `process`, on a snap after the slot write. A Destroy runs no chain retractor (no `Destroying` hook here),
-	-- so a tween keeps running on the destroyed Instance and the engine still sends `Completed` at its natural
-	-- end (REPORT 5·6) — that notice is ignored when the Instance is no longer claimed (round12 Q71, `H-594`;
-	-- gate in the connection below). Dedup-skipped same-target Tween fires nothing (no tween starts) — and the callbacks that stay wired are
-	-- those of the value that actually STARTED the tween (the skipped value's are dropped). A connection and
-	-- the `Cb` field are made only when the value carries Completed or Cancelled (the connection is needed for
-	-- the `Done` bookkeeping even when only Cancelled is given — otherwise a finished tween would get
-	-- Cancelled on teardown); callback-less tweens keep the old record shape and GC profile. `Done` means
-	-- SETTLED (finished or cancelled) and is set before any callback runs, so a throwing callback cannot
-	-- leave the record "running" (code-review 2026-09-21); `Cb` is released as soon as it has fired.
-	local function fire(v: any, name: string)
+	--               on a snap (first write, or an Info-less `Time == 0`); and for a REPLACED tween caught in the
+	--               deferred-notice window (`H-581` — reached its target, notice not yet delivered). The engine
+	--               re-fires `Completed(Cancelled)` even for a finished tween (REPORT 2), so the connection
+	--               disconnects itself on its first fire and the record remembers `Done`.
+	--   Cancelled — at quad's OWN `:Cancel()` site (value replacement) while that tween had not finished, and on
+	--               EVERY teardown of a record naming an engine tween that had not settled — including the
+	--               deferred-notice window (round13 Q99 c: the place is going away, so "it did reach the target"
+	--               is not reported). The engine's own Cancelled notice is deferred (REPORT 3) — never used.
+	-- Collect → write → call (round13 §3/§7): `process` settles the previous record WITHOUT calling the user,
+	-- writes its own record (and `Play`s), and only then calls, in order: previous value's Cancelled / window
+	-- Completed → this value's Started → (snap) Completed. A callback that re-enters the same (inst, k) replaces
+	-- the record; the later callbacks of THIS value are then skipped (`GetStrong(inst, k) ~= rec`). So writing the
+	-- same property from any callback lands in order and leaves one tween — the Property-layer half of `H-589`'s
+	-- UB is gone (the StoreBind None-switch outer frame is not covered). Settle callbacks (the previous value's,
+	-- teardown's) are skipped on an Instance quad no longer claims (round13 Q82 (a) — a corpse under
+	-- `retractFrom`; the engine tween is still cancelled). A Destroy runs no chain retractor, so a tween keeps
+	-- running on the destroyed Instance and the engine still sends `Completed` (REPORT 5·6) — ignored by the same
+	-- `isClaimed` gate (round12 Q71, `H-594`). Dedup-skipped same-target Tween fires nothing (no tween starts) —
+	-- the callbacks that stay wired are those of the value that actually STARTED the tween. A connection and the
+	-- `Cb`/`Key` fields are made only when the value carries Completed or Cancelled (the connection is needed for
+	-- the `Done` bookkeeping even when only Cancelled is given — otherwise a finished tween would get Cancelled
+	-- on teardown); callback-less tweens keep the old record shape and GC profile. `Done` means SETTLED and is set
+	-- before any callback runs, so a throwing callback cannot leave the record "running"; `Cb` is released as
+	-- soon as it has been handed out.
+	local function fire(v: any, name: string, inst: any, k: any, value: any)
 		-- annotated on purpose: an unannotated `v[name]` narrowed by `~= nil` comes out as `*error-type* | ~nil`
 		-- under the new solver (2026-09-21 scratch, `typing-limits.md` 8.24)
-		local cb: (() -> ())? = v[name]
+		local cb: ((any, string, any) -> ())? = v[name]
 		if cb ~= nil then
-			cb()
+			cb(inst, k, value)
 		end
 	end
-	-- Cancel a record's engine tween if it is still running (Cancelled callback), and drop its connection.
+	-- round13 묶음 1: a SETTLE callback (the previous value's Cancelled / window Completed, and teardown's Cancelled) —
+	-- round13 Q82 (a): not on an Instance quad no longer claims (a corpse under `retractFrom`); the Cancel
+	-- itself already happened in `settle`. Same gate as the engine connection's (Q71, `H-594`).
+	local function fireSettled(cb: any?, name: string, inst: any, k: any, value: any)
+		if cb ~= nil and quad.Backend.isClaimed(inst) then
+			fire(cb, name, inst, k, value)
+		end
+	end
+	-- round13 묶음 1 "collect -> write -> call": settle a record WITHOUT calling the user — Cancel its engine tween if
+	-- it is still running, drop its connection, and hand back the callback holder plus whether it counts as
+	-- FINISHED (deferred-notice window) so the caller fires it after its own slot write.
 	-- The property keeps whatever value it reached (engine `Cancel` semantics).
-	local function stopRunning(rec: any)
+	local function settle(rec: any): (any?, boolean)
 		local conn = rec.Conn
 		if conn ~= nil then
 			rec.Conn = nil
 			conn:Disconnect()
 		end
 		if rec.Done then
-			return
+			return nil, false
 		end
 		rec.Done = true -- settle first (header)
 		local cb = rec.Cb
@@ -146,22 +160,32 @@ local function install(quad: any)
 		-- gate; the record's value truth still comes from the property (retractor below).
 		local playback = (Enum :: any).PlaybackState
 		if playback ~= nil and rec.Tween.PlaybackState == playback.Completed then
-			if cb ~= nil then
-				fire(cb, "Completed")
-			end
-			return
+			return cb, true
 		end
 		rec.Tween:Cancel()
-		if cb ~= nil then
-			fire(cb, "Cancelled")
+		return cb, false
+	end
+	-- round13 묶음 1: the call phase of a transition — runs AFTER the slot holds `rec` (and after `Play`). Order:
+	-- previous value's settle (Cancelled / window Completed) → this value's Started → (snap) Completed. A
+	-- callback that re-entered the same (inst, k) and replaced `rec` stops the chain: the later callbacks of
+	-- THIS value are not fired (the Q91 OLD-FIRST `GetStrong` check, generalized). `oldValue` = the previous
+	-- record's target (the value its callbacks were about).
+	local function announce(inst: any, k: any, rec: any, v: any, oldCb: any?, oldFinished: boolean, oldValue: any, snapped: boolean)
+		fireSettled(oldCb, if oldFinished then "Completed" else "Cancelled", inst, k, oldValue)
+		if tweenSlots:GetStrong(inst, k) ~= rec then
+			return
+		end
+		fire(v, "Started", inst, k, v.Value)
+		if snapped and tweenSlots:GetStrong(inst, k) == rec then
+			fire(v, "Completed", inst, k, v.Value)
 		end
 	end
 	-- Snap: write the target now, no engine tween; `{ Value }` keeps the dedup honest (Q26 (a)).
-	local function snap(inst: any, k: any, v: any)
+	local function snap(inst: any, k: any, v: any, oldCb: any?, oldFinished: boolean, oldValue: any)
 		inst[k] = v.Value
-		tweenSlots:SetStrong(inst, k, { Value = v.Value })
-		fire(v, "Started")
-		fire(v, "Completed")
+		local srec = { Value = v.Value }
+		tweenSlots:SetStrong(inst, k, srec)
+		announce(inst, k, srec, v, oldCb, oldFinished, oldValue, true)
 	end
 
 	local function tweenRetractor(inst: any, k: any): (any?, boolean) -> ()
@@ -182,12 +206,16 @@ local function install(quad: any)
 				-- (B) branch calls the old retractor with retracting == true) and made the next Tween snap.
 				local slot = tweenSlots:GetStrong(inst, k)
 				if type(slot) == "table" and slot.Tween ~= nil then
-					stopRunning(slot) -- Cancel (if still running) + Cancelled callback + Disconnect
+					local cb = settle(slot) -- Cancel (if still running) + Disconnect; callback held (window or not)
 					-- code-review (2026-09-18): `.Tween` is still set after a tween COMPLETED on its own,
 					-- and then the property really holds `Value` — keep the `{ Value }` snap record so the
 					-- dedup stays right. The record's truth is read from the property itself, not from the
 					-- engine's PlaybackState (engine-agnostic, mock-safe); `Done` only gates the callback.
 					tweenSlots:SetStrong(inst, k, if inst[k] == slot.Value then { Value = slot.Value } else true)
+					-- round13 묶음 1: after this retractor's own record write. round13 Q99 c: a teardown is ALWAYS
+					-- Cancelled, even inside the deferred-notice window (the tween did reach its target, but the
+					-- place is going away — the replacement window keeps Completed, `H-581`).
+					fireSettled(cb, "Cancelled", inst, k, slot.Value)
 				end
 			end
 			tweenRetractors:SetWeak(inst, k, r)
@@ -261,7 +289,7 @@ local function install(quad: any)
 				-- Q26 (a) (2026-09-08, round3 §4): a Tween keeps `{ Value }` (no engine
 				-- tween) so the value dedup above already holds after the snap.
 				if tweenIn then
-					snap(inst, k, v)
+					snap(inst, k, v, nil, false, nil)
 				else
 					inst[k] = v
 					tweenSlots:SetStrong(inst, k, true)
@@ -283,11 +311,14 @@ local function install(quad: any)
 			-- to. The slot is written before `Play` so a raise there leaves at most
 			-- an unplayed tween the slot knows about.
 			local engineTween = if tweenIn and not zeroTime then getTweenService():Create(inst, buildInfo(v), { [k] = v.Value }) else nil
+			-- round13 묶음 1: the previous value's settle, fired after our write (with its own target as `value`)
+			local oldCb: any, oldFinished, oldValue: any = nil, false, nil
 			if type(prev) == "table" and prev.Tween ~= nil then
 				-- branch 3: an engine tween is active — clean it up before the new value lands
 				-- (a snapped `{ Value }` record has nothing to cancel and nothing to
 				-- Finish-snap to: the property already holds that value)
-				stopRunning(prev) -- settle: Cancel (if still running) + previous Cancelled/Completed + Disconnect
+				oldCb, oldFinished = settle(prev) -- Cancel (if still running) + Disconnect; callback held
+				oldValue = prev.Value
 				if tweenIn and v.Override == "Finish" and not zeroTime then
 					-- (a zero-time snap writes `v.Value` right below — a Finish snap first would be a second
 					-- synchronous write of the same property, visible under Immediate signals; code-review)
@@ -295,7 +326,7 @@ local function install(quad: any)
 				end
 			end
 			if zeroTime then
-				snap(inst, k, v)
+				snap(inst, k, v, oldCb, oldFinished, oldValue)
 				return tweenRetractor(inst, k)
 			end
 			-- branches 2/3 tail: plain → write + `true`; Tween → slot, then play
@@ -304,8 +335,10 @@ local function install(quad: any)
 				tweenSlots:SetStrong(inst, k, rec)
 				if v.Completed ~= nil or v.Cancelled ~= nil then
 					-- `Cb` and the connection share this gate (header: Cancelled alone still needs `Done`);
-					-- the closure captures `rec`/`conn` only — never `inst`
+					-- the closure captures `rec`/`conn` only — never `inst`. round13 묶음 1: `Key` = the property name the
+					-- connection reports as `prop` (a string — pins nothing); inst/value are read off the record.
 					rec.Cb = v
+					rec.Key = k
 					local conn: any
 					conn = engineTween.Completed:Connect(function(state: any)
 						conn:Disconnect()
@@ -323,18 +356,20 @@ local function install(quad: any)
 							-- is read off the tween (the engine tween holds it anyway) — the closure still captures no
 							-- `inst`.
 							if cb ~= nil and quad.Backend.isClaimed(rec.Tween.Instance) then
-								fire(cb, "Completed")
+								fire(cb, "Completed", rec.Tween.Instance, rec.Key, rec.Value)
 							end
 						end
 					end)
 					rec.Conn = conn
 				end
 				engineTween:Play()
-				fire(v, "Started")
+				announce(inst, k, rec, v, oldCb, oldFinished, oldValue, false)
 				return tweenRetractor(inst, k)
 			end
 			inst[k] = v
 			tweenSlots:SetStrong(inst, k, true)
+			-- round13 묶음 1: plain incoming value — the previous value's settle after the `true` record
+			fireSettled(oldCb, if oldFinished then "Completed" else "Cancelled", inst, k, oldValue)
 			-- round11 `H-547` (탐사 D′): EVERY chain returns the retractor, not only one that has carried
 			-- a Tween. Two reasons — (1) the checkpoint's `GetWeak(...) or Void` relied on the previous
 			-- chain's `list[index].retractor` keeping the closure alive, but Dispatch parks NOOP there

@@ -244,7 +244,7 @@ end
 두면 같은 변환이 다른 숏핸드/백엔드에서 또 복제되므로, 값 타입 자신이 제공하는
 게 맞다는 사용자 판단. 아래 스케치는 그 메소드가 하는 일을 풀어 쓴 것으로만
 읽을 것(`isTween(v)` 분기는 호출부에 남고, `Tween`이면 `v:Mapped(wrap)`, 아니면
-`wrap(v)`): 숏핸드는
+`wrap(v)` — **[2026-09-28 Q92]** 지금은 `Tween`이면 콜백 감싸기와 함께 `v:Mapped(wrap, cbWrap)`/`v:Wrapped(cbWrap)`, 아래 배너): 숏핸드는
 "스칼라를 받아 자식 프로퍼티 타입으로 감싸는" 변환을 갖고 있음(`UICorner = 8`
 → `CornerRadius = UDim.new(0, 8)`, 열린 질문 절의 룩업 테이블 `wrap=fn`).
 `v`가 `Tween<number>`면 그 변환을 **`Tween`을 벗기지 않고 `.Value`에만**
@@ -270,10 +270,13 @@ end
   따로 부름 — 각자 독립된 `(child, prop)` 체인이 되고, PropertyHandler의
   트윈 슬롯도 프로퍼티별로 따로 잡혀서 자연스럽게 4개가 같이 애니메이션됨.
   **[2026-09-26 round13 E2-2, `H-630`]** 이 "4개가 같이" 자체가 Tween 콜백을
-  네 배로 만든다(`Started`/`Completed`/`Cancelled`가 값 하나에 네 번씩) —
+  네 배로 만들었다(`Started`/`Completed`/`Cancelled`가 값 하나에 네 번씩 — 2026-09-28 Q92로 한 번이 됨, 아래 배너) —
   `base/tween-plan.md` 콜백 절 포인터, 레퍼런스는 roblox/02·roblox/06.
-  **[2026-09-27 round13 Q92 검토 중]** 이 콜백 4회를 1회로 줄일지가 사용자 문항으로 열려 있다
-  (`qa-request/post-implementation-review-round13.md` §4). 본문은 결정 전이라 그대로 둔다.
+  **[2026-09-28 round13 Q92 닫힘 — 사용자 결정, `research/tween-callback-structure.md` §8-1]** 콜백은 값 하나에
+  **한 번**: 숏핸드는 발행마다 Tween 사본 **하나**(`v:Mapped(wrap, cbWrap)`, identity 경로는 `v:Wrapped(cbWrap)`)를 네 체인이
+  공유하고, 그 사본의 콜백은 `cb:Map`으로 감싸 **마지막 프로퍼티(`PaddingBottom`)에서만** `(child.Parent, 숏핸드 키, 준 값)`으로
+  부른다(부모는 포획하지 않고 발화 때 읽음 — 숏핸드는 콜백 필드 이름을 모른다). 마지막 키라 그 콜백 안의 `:Set`이 바깥 루프에
+  덮이지 않는다.
 - **`Tween` 값과 이 숏핸드 Handler는 둘 다 `quad-roblox`**(**[2026-09-07]** Tween이
   quad-base에서 이동 — `tween-plan.md` "패키지 경계" 절) — 핸들러는 설치 시점에
   모듈의 `isTween`을 읽는다(Tween 설치가 먼저, `RobloxFactory.luau`).

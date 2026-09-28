@@ -26,7 +26,12 @@
 	  Tween{ Value = v, Info = ?, Time = ?, Style = ?, Direction = ?,
 	         RepeatCount = ?, Reverses = ?, DelayTime = ?, Override = ?, Dedup = ?,
 	         Started = ?, Completed = ?, Cancelled = ? } -> Tween<T>
-	  tween:Mapped(fn) -> Tween<U>     -- opts cloned, Value replaced by fn(Value)
+	  tween:Mapped(fn, wrap?) -> Tween<U> -- opts cloned, Value replaced by fn(Value); with `wrap`, the
+	                                   -- callbacks too (round13 묶음 1 2026-09-28 — one copy for both)
+	  tween:Wrapped(wrap) -> Tween<T>  -- round13 묶음 1: same Value, callbacks replaced by wrap(cb)'s set
+	    wrap(cb) -> { Started?, Completed?, Cancelled? }  -- called once per call; the returned set is the
+	                                   -- copy's WHOLE callback set. `cb` = the source's three callbacks
+	                                   -- (function or nil) + `cb:Map(g)` (g applied to each present one)
 	  Override = "Cancel" | "Finish"   -- override policy as a string singleton (default "Cancel")
 	  Dedup = true | false             -- [2026-09-08 user decision, round3 Q25] default true: the
 	                                   -- CONSUMER (Property handler) compares the incoming
@@ -65,9 +70,11 @@ local TweenBrand = Brand.TweenBrand
 local isTween = Brand.isTween
 
 local NUMBER_FIELDS = { "Time", "RepeatCount", "DelayTime" }
--- [2026-09-21 사용자 결정 — docs-review 1-5] three optional `() -> ()` callbacks, plain fields of the value
+-- [2026-09-21 사용자 결정 — docs-review 1-5] three optional callbacks (round13 묶음 1 2026-09-28: called `(inst, prop, value)`,
+-- a zero-argument function still fits), plain fields of the value
 -- (bare names, not `On*` — the `On*` prefix means "a factory called to fill a numeric-key slot" in this
--- library). WHEN they fire is the consumer's contract: `Handlers/Property.luau` header. `Mapped` carries them.
+-- library). WHEN they fire is the consumer's contract: `Handlers/Property.luau` header. `Mapped(fn)` carries them
+-- unchanged (the copy's value arg is then the MAPPED value); `Mapped(fn, wrap)`/`Wrapped(wrap)` rewrite them.
 local CALLBACK_FIELDS = { "Started", "Completed", "Cancelled" }
 
 local function install(quad: any): any
@@ -158,7 +165,44 @@ local function install(quad: any): any
 		return table.freeze(self)
 	end
 
-	function TweenImpl.Mapped(self: any, fn: any): any
+	-- round13 묶음 1 (research/tween-callback-structure §8-1, user decision 2026-09-28): the callback handle `wrap`
+	-- receives — the source Tween's three callbacks as fields (function or nil) plus `cb:Map(g)`, which
+	-- returns a new set with `g(f)` applied to each present one. Frozen: it is a read-only view.
+	local CallbackHandleImpl = {}
+	CallbackHandleImpl.__index = CallbackHandleImpl
+	function CallbackHandleImpl.Map(self: any, g: any): any
+		if type(g) ~= "function" then
+			Err.errorBeforeNearest(`Quad0258 Tween callbacks:Map: g must be a function (got {typeof(g)})`, SURFACE)
+		end
+		local out = {}
+		for _, name in CALLBACK_FIELDS do
+			local f = self[name]
+			if f ~= nil then
+				out[name] = g(f)
+			end
+		end
+		return out
+	end
+	-- `opts` (an unfrozen clone) takes the set `wrap(handle)` returns as its WHOLE callback set: a field the
+	-- set leaves out is no callback. The values are checked by `newTween`'s own validation (Quad0246).
+	local function applyWrap(method: string, self: any, opts: any, wrap: any)
+		if type(wrap) ~= "function" then
+			Err.errorBeforeNearest(`Quad0256 Tween:{method}: wrap must be a function (got {typeof(wrap)})`, SURFACE)
+		end
+		local handle: any = setmetatable({}, CallbackHandleImpl)
+		for _, name in CALLBACK_FIELDS do
+			handle[name] = self[name]
+		end
+		local set = wrap(table.freeze(handle))
+		if type(set) ~= "table" then
+			Err.errorBeforeNearest(`Quad0257 Tween:{method}: wrap must return a callback set table (got {typeof(set)})`, SURFACE)
+		end
+		for _, name in CALLBACK_FIELDS do
+			opts[name] = set[name]
+		end
+	end
+
+	function TweenImpl.Mapped(self: any, fn: any, wrap: any?): any
 		if type(fn) ~= "function" then
 			Err.errorBeforeNearest(`Quad0227 Tween:Mapped: fn must be a function (got {typeof(fn)})`, SURFACE)
 		end
@@ -166,7 +210,25 @@ local function install(quad: any): any
 		-- swapping Value is fine before newTween re-brands and re-freezes it
 		local opts = table.clone(self)
 		opts.Value = fn(self.Value)
+		if wrap ~= nil then
+			applyWrap("Mapped", self, opts, wrap) -- one copy for both (the fast path the user asked for)
+		end
 		return newTween(opts) -- re-validates: fn returning nil is "Value is required"
+	end
+
+	-- round13 묶음 1 (user decision 2026-09-28): `tween:Wrapped(wrap)` — same value, callbacks replaced by
+	-- `wrap(cb)`'s set. When the set is exactly the source's (the same three functions, e.g. a Tween with no
+	-- callbacks through the shorthand's filtering wrap), the frozen source itself is returned — no copy. Nothing
+	-- keys on a Tween's identity (the Property dedup compares the target `Value`, round3 Q25), and before this
+	-- method the shorthand's identity path passed the source through unchanged anyway. `wrap` is still called:
+	-- it may ADD callbacks to a Tween that had none.
+	function TweenImpl.Wrapped(self: any, wrap: any): any
+		local opts = table.clone(self)
+		applyWrap("Wrapped", self, opts, wrap)
+		if rawequal(opts.Started, self.Started) and rawequal(opts.Completed, self.Completed) and rawequal(opts.Cancelled, self.Cancelled) then
+			return self
+		end
+		return newTween(opts)
 	end
 
 	-- Plain generic function (`H-343`): `Tween{...}` constructs, nothing else lives
@@ -189,7 +251,7 @@ local function install(quad: any): any
 		return newTween(opts)
 	end
 
-	Err.setFuncLevel(SURFACE, Tween, TweenImpl.Mapped)
+	Err.setFuncLevel(SURFACE, Tween, TweenImpl.Mapped, TweenImpl.Wrapped, CallbackHandleImpl.Map)
 
 	quad.Tween = Tween
 	quad.isTween = isTween

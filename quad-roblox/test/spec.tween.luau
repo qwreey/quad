@@ -198,4 +198,45 @@ do
 end
 
 print()
+print("=== round13 묶음 1 (2026-09-28, research/tween-callback-structure §8-1) — tween:Mapped(fn, wrap) / tween:Wrapped(wrap): wrap는 호출마다 한 번, 돌려준 셋이 콜백 셋 전체, cb:Map은 있는 것에만; 값 검증은 Quad0246, wrap·반환·g 게이트는 사용자 줄 blame ===")
+do
+	local S0, C0 = function() end, function() end
+	local base = Tween({ Value = 3, Started = S0, Completed = C0 }) :: any
+	local calls = 0
+	local w = base:Wrapped(function(cb: any): any
+		calls += 1
+		assert(cb.Started == S0 and cb.Completed == C0 and cb.Cancelled == nil, "handle carries the source callbacks")
+		return { Completed = cb.Completed }
+	end)
+	assert(calls == 1 and w.Value == 3 and w.Started == nil and w.Completed == C0 and w.Cancelled == nil and Quad.isTween(w) and table.isfrozen(w), "Wrapped: the returned set is the whole set")
+	local mapped = base:Mapped(function(v: number): number return v * 10 end, function(cb: any): any
+		calls += 1
+		return cb:Map(function(f: any): any return function(...) f(...) end end)
+	end)
+	assert(calls == 2 and mapped.Value == 30 and mapped.Started ~= nil and mapped.Started ~= S0 and mapped.Completed ~= nil and mapped.Cancelled == nil, "Mapped(fn, wrap): one copy, Map only on present callbacks")
+	assert(base:Mapped(function(v: number): number return v end).Completed == C0, "Mapped(fn) keeps the callbacks as-is")
+	local cases: { { any } } = {
+		{ function() return base:Wrapped(5) end, "Quad0256 Tween:Wrapped: wrap must be a function (got number)" },
+		{ function() return base:Mapped(function(v: any): any return v end, "x") end, "Quad0256 Tween:Mapped: wrap must be a function (got string)" },
+		{ function() return base:Wrapped(function(): any return nil end) end, "Quad0257 Tween:Wrapped: wrap must return a callback set table (got nil)" },
+		{ function() return base:Wrapped(function(): any return { Completed = 5 } end) end, "Quad0246 Tween: Completed must be a function (got number)" },
+		{ function() return base:Wrapped(function(cb: any): any return cb:Map(5) end) end, "Quad0258 Tween callbacks:Map: g must be a function (got number)" },
+	}
+	for _, c in cases do
+		local ok, err = pcall(c[1])
+		assert(not ok and string.find(tostring(err), c[2], 1, true) ~= nil, "rejected: " .. tostring(err))
+		mock.assertBlamesUser(err, "spec.tween.luau", c[2])
+	end
+	-- the no-change fast path (user decision 2026-09-28): an unchanged set returns the frozen source itself
+	-- (nothing keys on a Tween's identity — the Property dedup compares the target Value), but `wrap` still
+	-- runs and may ADD callbacks to a Tween that had none
+	local plain = Tween({ Value = 1 }) :: any
+	assert(plain:Wrapped(function(cb: any): any return cb:Map(function(f: any): any return f end) end) == plain, "no callbacks, unchanged set -> the source itself")
+	assert(base:Wrapped(function(cb: any): any return { Started = cb.Started, Completed = cb.Completed } end) == base, "same three functions -> the source itself")
+	local added = plain:Wrapped(function(): any return { Completed = C0 } end)
+	assert(added ~= plain and added.Completed == C0 and plain.Completed == nil, "wrap may add callbacks -> a copy")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

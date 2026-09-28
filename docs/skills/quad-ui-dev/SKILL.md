@@ -403,7 +403,7 @@ local positionState = targetSrc:Compute(function(self)
         Time = 0.5,
         Override = "Cancel",  -- "Cancel" (default) or "Finish"
         Dedup = true,         -- skip when the target equals the recorded one
-        Started = function() flash:Set(true) end,     -- all three: () -> (), no args
+        Started = function() flash:Set(true) end,     -- all three: (inst, prop, value) -> (); args optional
         Completed = function() flash:Set(false) end,
         Cancelled = function() flash:Set(false) end,
     }
@@ -412,27 +412,35 @@ end)
 
 The first assignment snaps to the value; later emissions run an engine tween.
 
-- `Started`/`Completed`/`Cancelled` are always **`() -> ()`** — no Instance is passed. A
-  callback that captured the Instance would sit in the engine tween's connection and pin it
-  alive for as long as that (inst, property) record holds a tween. Route state through a
-  `Source` and drive `Visible`/etc. from it as a prop instead of writing the Instance directly
-  in the callback.
+- `Started`/`Completed`/`Cancelled` receive **`(inst, prop, value)`** — the Instance the tween
+  runs on, the property name, and that Tween's target value (a zero-argument function is fine).
+  The args are read at fire time, so nothing pins the Instance; holding `inst` long-term is the
+  callback's own business. Still prefer routing state through a `Source` and driving
+  `Visible`/etc. from it as a prop over writing the Instance directly in the callback.
+- One Tween bound to several properties fires its callbacks **once per property**, each with its
+  own `prop` — filter on `prop`, or wrap with `tween:Wrapped(function(cb) return cb:Map(...) end)`
+  (`tween:Mapped(fn, wrap)` does value + callbacks in one copy). The padding shorthands are the
+  exception: `UIPadding`/`UIPaddingOffset` fire once per value, from the last side, as
+  `(host Instance, "UIPadding"/"UIPaddingOffset", the value you gave)`.
 - `Started` fires synchronously right after the engine tween is played (or, on a snap, right
   before `Completed`).
 - `Completed` fires only on a **natural finish** (the engine's `Completed` signal with
   `PlaybackState.Completed`) — never for a cancelled tween, and not when the Instance was
   destroyed while the tween ran (a Destroy does not cancel the tween; its late notice is ignored).
 - `Cancelled` fires synchronously at the moment quad cancels a still-running tween — a new
-  value replaces it, or the slot is torn down. On replacement the order is always: old
-  `Cancelled` → new `Started` → (later) new `Completed`.
+  value replaces it, or the slot is torn down (a teardown always reports `Cancelled`, even if
+  the tween had just reached its target). On replacement the order is always: old
+  `Cancelled` (or old `Completed`, if it had reached its target and the notice was pending) →
+  new `Started` → (later) new `Completed`. All callbacks fire after the slot is recorded.
 - A `Tween` skipped by `Dedup` (same target as the recorded one) fires none of the three.
 - A snap — the very first write to that (Instance, property), or an `Info`-less
   `Tween{ Time = 0 }` with no `DelayTime`/`RepeatCount`/`Reverses` — writes the value
   synchronously and fires `Started` then `Completed` back to back.
-- Do **not** write the same property again from inside `Started` or `Cancelled` (a `:Set` on
-  the State seated there): both fire while the property handler is still processing that
-  slot, so it is same-key re-entry — undefined behaviour. Changing other States/properties is
-  fine (the `flash` pattern above). Chain the next tween on the same property from `Completed`.
+- Writing the same property again from inside a callback (a `:Set` on the State seated there)
+  is fine — callbacks fire after the slot is recorded, so the last write wins and no tween is
+  orphaned. A value replaced that way gets `Cancelled` without `Started` (engine tween) or
+  nothing (snap). One exception: a `:Set` from inside the `Started` of the very first write
+  during mount may not reach the screen — undefined. `Completed` stays the usual place to chain.
 - `q.Animate{...}` accepts the same three fields and passes them through to the `Tween` it
   builds. With `CanAnimate = false` **and** any callback present, the property is still
   written synchronously, and `Started`+`Completed` fire together (so "motion off" does not

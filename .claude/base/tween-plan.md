@@ -593,6 +593,8 @@ Tween(opts: {
 
 ## `Tween<T>:Mapped(fn)` — 값만 갈아끼운 새 `Tween`을 반환 (2026-08-20 구현 전 QA 4라운드 `UI-8` 신설, 이름은 2026-08-21 5라운드 확정)
 
+> **[2026-09-28 round13 묶음 1 — 사용자 결정]** 둘째 인자 `wrap`(콜백 셋도 같은 사본에서 — 빠른 경로)과 짝 메소드 `tween:Wrapped(wrap)`(값 그대로, 콜백 셋만; 이름은 sonnet 두 시선 뒤 과거분사 관례로 사용자 확정)가 생겼다 — 콜백 절 머리 배너 (4), `research/tween-callback-structure.md` §8-1.
+
 **동기**: `base/ui-shorthand-plan.md`의 숏핸드가 스칼라를 자식 프로퍼티 타입으로
 감싸야 하는데(`UICorner = 8` → `CornerRadius = UDim.new(0, 8)`), 값이
 `Tween<number>`면 그 변환을 **`Tween`을 벗기지 않고 `.Value`에만** 적용해야 한다.
@@ -687,12 +689,23 @@ process될 때 위 "3-상태 저장"의 `prev`가 `{Tween, Value}` 테이블 분
 
 ## [2026-09-21 사용자 결정 — docs-review 1-5] 콜백 셋 `Started` / `Completed` / `Cancelled` — 발화 자리는 quad의 `Cancel`/`Play` 호출부, 엔진 시그널은 `Completed`에만
 
+> **[2026-09-28 round13 묶음 1 — 사용자 결정, 이 절의 여러 문장을 고친다; 경위·실측은 `research/tween-callback-structure.md`]**
+> (1) **인자 `(inst, prop, value)`** — 발화 때 읽는다(엔진 연결은 여전히 `rec`·`conn`만 포획, `rec.Tween.Instance`·`rec.Key`·`rec.Value`),
+> 인자 없는 함수도 타입에 들어간다(신 솔버 실측). 아래 "인자 없음(사용자 결정 2)"는 **포획** 금지로 좁혀 유지된다. (2) **모으고 → 쓰고 →
+> 부른다** — Property는 콜백을 슬롯 쓰기·`Play` 뒤 정해진 순서로 부르고, 앞선 콜백이 같은 자리를 대체했으면 뒤의 새 값 콜백은 생략(Q91
+> (b) OLD-FIRST의 일반화) → 아래 `H-589` 문단의 `Started`·`Cancelled` 재진입 UB는 **Property 층에선 풀렸다**(예외: 마운트 중 첫 스냅의
+> `Started` 안 `:Set` — StoreBind 등록 프레임, UB 유지). (3) **철거 창은 늘 `Cancelled`**(Q99 c — `H-581`의 철거 쪽 부분 역전, 교체 창의
+> `Completed`는 유지), 시체 위 `retractFrom`은 콜백 무발화(Q82 (a) `isClaimed` 게이트). (4) `tween:Mapped(fn, wrap?)`·`tween:Wrapped(wrap)`
+> (핸들 `cb` — 필드 셋 + `cb:Map(g)`; 변경 없는 셋이면 `Wrapped`는 원본을 돌려줌), 숏핸드는 마지막 키 대표(`ui-shorthand-plan.md` Q92
+> 배너). 새 ID `Quad0256`~`0258`. 콜백 타입: 생성자 옵션은 `TweenCallback<T>`, 저장된 Tween·핸들·셋은 `TweenCallback<any>`(`T`를
+> 반대 극성에 두면 `Tween<T>`가 불변이 되어 D 슬롯 유니언·`Mapped` 추론이 깨짐).
+
 **계기**: `research/docs-review-2026-09-14.md` 1-5(문서 어디에도 "트윈 완료 신호가 없다"는 말이 없다) — 사용자: *"흔한 요소이고 breaking 없이
 추가해줄 수 있는 부분임 … Tween 안에 OnCancelled 나 OnCompleted 를 넣고 … OnStarted 를 두어 OnCancelled 가 먼저 나고, OnStarted 가
 난 다음, OnCompleted 가 나서 Dialog 의 Visible 을 트윈에 맞게 처리하는 방법이 가능한가 보고싶음"*, 실측 세 가지를 먼저 요구(연결 자동
 해제 / 끝난 트윈의 Cancel / Deferred 순서). 실측은 `audit/tween-completed-2026-09-21/REPORT.md`(사실 1~8).
 
-**모양**: `Tween{ …, Started = fn?, Completed = fn?, Cancelled = fn? }` — 전부 `() -> ()`, 인자 없음. `Animate{…}`도 같은 세 필드를
+**모양**: `Tween{ …, Started = fn?, Completed = fn?, Cancelled = fn? }` — ~~전부 `() -> ()`, 인자 없음~~ **[2026-09-28]** 전부 `(inst, prop, value) -> ()`(인자 없는 함수도 됨). `Animate{…}`도 같은 세 필드를
 받아 그대로 싣고(`FIELDS`), `:Mapped`는 복사한다. 추가라 BREAKING 아님. 이름은 sonnet 둘(외부자·내부자) 판정 뒤 사용자 결정 —
 내부자: `On*` 접두는 이 코퍼스에서 "숫자 키 자리에 놓을 값을 만드는 팩토리"(`q.OnChange`·`q.OnCreated`)라 문자 키 필드에 쓰면 관용구
 충돌, 맨 파스칼이 `Time`/`Override`와 결이 같다; 외부자: 엔진 `Completed`가 취소 때도 나서 `OnCompleted`는 오해를 산다 → 레퍼런스가
@@ -702,10 +715,10 @@ process될 때 위 "3-상태 저장"의 `prev`가 `{Tween, Value}` 테이블 분
 - `Started` — quad가 `engineTween:Play()`를 부른 **직후 동기**. 스냅(첫 세팅·`Info` 없는 `Time == 0`)에서는 값을 쓴 뒤 `Completed` 직전.
 - `Completed` — 엔진 `Completed` 시그널에서 `PlaybackState.Completed`일 때만. 연결은 첫 발화에서 스스로 끊고 레코드에 `Done`을
   세운다(사실 2: 끝난 트윈에 `Cancel`하면 엔진이 `Completed(Cancelled)`를 **한 번 더** 낸다). 스냅에서는 동기.
-- `Cancelled` — quad가 **돌고 있던** 트윈에 `:Cancel()`을 부르는 그 자리(값 교체 branch 3·철거 retractor)에서 **동기**, `Done`이 아닐
+- `Cancelled` — quad가 **돌고 있던** 트윈에 `:Cancel()`을 부르는 그 자리(값 교체 branch 3·철거 retractor)에서 **동기**, `Done`이 아닐 **[2026-09-28 round13 묶음 1]** 지금은 슬롯 쓰기 뒤에 부르고, `Done` 조건은 교체(branch 3)에만 — 철거는 늘 `Cancelled`(Q99 c).
   때만. 엔진의 Cancelled 통지는 deferred라(사실 3) yield 없는 교체에서 새 트윈 `Started` **뒤에** 온다(사실 4 — 사용자가 우려한
   역전이 실재) → 쓰지 않는다.
-- 순서 불변식: 교체 시 **이전 `Cancelled` → 새 `Started` → (나중) 새 `Completed`**. Dedup 스킵은 무발화(트윈이 시작되지 않음).
+- 순서 불변식: 교체 시 **이전 `Cancelled` → 새 `Started` → (나중) 새 `Completed`** **[2026-09-28]**(창 교체면 이전 `Completed`; 전부 슬롯 쓰기 뒤). Dedup 스킵은 무발화(트윈이 시작되지 않음).
 - 연결은 값에 `Completed`나 `Cancelled`가 있을 때만 만든다 — 콜백 없는 트윈은 레코드 모양·GC 프로파일이 전과 같다.
 
 **인자 없음(사용자 결정 2)** — 연결 클로저가 `inst`를 잡으면 레코드가 트윈을 쥐는 동안 인스턴스가 고정된다(사실 7·8: 약한 키
@@ -716,14 +729,14 @@ process될 때 위 "3-상태 저장"의 `prev`가 `{Tween, Value}` 테이블 분
 돌려주고, Property 핸들러는 `Info` 없는 `Time == 0`을 **엔진 트윈 없는 스냅**으로 처리해 `Started`·`Completed`를 동기로 부른다(콜백이
 없으면 전처럼 plain 값). 기각한 (b) "Animate가 Compute 안에서 직접 부름"은 프로퍼티가 써지기 전에 완료를 알리는 꼴.
 
-**철거** — `stopRunning(rec)`: 연결 `Disconnect` → `Done`이 아니면 `Cancel` + `Cancelled`. ~~파괴된 인스턴스에서 트윈이 끝까지 돌아
+**철거** — ~~`stopRunning(rec)`: 연결 `Disconnect` → `Done`이 아니면 `Cancel` + `Cancelled`.~~ **[2026-09-28 round13 묶음 1]** `settle(rec)`: 연결 `Disconnect` → `Done`이 아니면 `Cancel`(콜백은 부르지 않고 돌려준다) → retractor가 기록을 고친 뒤 `Cancelled`(철거는 통지 대기 창이어도 늘 `Cancelled` — Q99 c, 시체면 무발화 — Q82). ~~파괴된 인스턴스에서 트윈이 끝까지 돌아
 `Completed`를 내는 엔진 동작(사실 5·6)은 연결이 먼저 끊겨 콜백에 닿지 않는다.~~ **[2026-09-21 round12 `H-593` 정정]** 그 문장은 철거가
 retractor를 거칠 때만 참이다 — **파괴 경로(`Destroy`/`q.dispose`/Slot 트리 파괴)는 프로퍼티 체인의 retractor를 돌리지 않는다**(Dispatch·
 Bookkeeping 어디에도 `Destroying` 훅이 없다, GS 19 "`Destroy()`할 때도 이 되돌리기가 도나요?" 그대로). 그래서 콜백을 실은 트윈은 파괴된
 인스턴스 위에서 끝까지 돌고 엔진은 `Completed` 통지를 그대로 보낸다(`Cancelled`는 안 온다). **[같은 날 저녁 Q71 닫힘 — 사용자 결정, `H-594`] 되돌리지 않고 무시한다**: `Completed` 연결이 `Backend.isClaimed(tween.Instance)`가 거짓이면 콜백을 안 부른다 — 사용자: *"isClaimed 를 통해서 완료 이후 inst 가 gcconn 이 disconnected 상태라면 무시할 수 있다고 봐. claim 이 안 돌면 tween 자체를 못 굴려서, 판정대상으로 쓸 수 있어. 되돌리지는 않지만, 무시할 수는 있는것 같음. defer 이여도 gcconn 판정 자체는 싱크로 돌거야"*. 근거 셋이 다 기실측이다: `Destroy`는 gcconn을 동기로 끊고(`H-548`·`H-574`), 프로퍼티 핸들러는 claim된 인스턴스에서만 돌며, 인스턴스는 `tween.Instance`로 읽어 클로저가 `inst`를 새로 잡지 않는다(엔진 트윈이 어차피 쥔다). 스펙 11 마지막 케이스(mock `Destroy` → `simulateCompleted` 무발화·무취소). 실기기 배선 확인은 여전히 rojo 재기동 뒤 사람 몫. **GC(사용자 후속 우려 *"두 클로저를 nil로 필드를 지워? … gc가 순환되지 않아서 inst/callback 이 gc되지 않는 문제가 없어?"*)**: 정착 자리 넷(자연 완료 핸들러·`stopRunning` 두 갈래·`H-594` 무시 갈래) 전부 `rec.Cb = nil`·`rec.Conn = nil`·`Disconnect`라 콜백과 포획은 정착 즉시 놓이고, 순환(레코드 ↔ 연결 클로저)은 연결이 끊기면 루트를 잃어 수거된다 — mock 프로브 다섯 경로 × 콜백 유무에서 콜백이 있어도 생존 집합이 같았다(`audit/tween-completed-2026-09-21/REPORT.md` 끝 절, `gc-probe.luau`). 잔여 하나(같은 날 밤 sonnet Studio 실측 `audit/tween-completed-2026-09-21/infinite-tween-probe.md`): 엔진은 트윈의 Lua 핸들을 붙잡지 않으므로 사슬을 살리는 건 콜백 연결뿐이다 — 콜백이 있으면 통지가 올 때까지(유한이면 `Time` 상한), 없으면 인스턴스 수거와 함께 끝. `RepeatCount = -1`은 파괴로 안 끊기고(`Parent = nil`도 동일) 핸들이 수거되면 더는 취소할 수 없어 엔진 작업이 영원히 남는다 — 레퍼런스 캐비엇 한 줄(파괴 전에 끊을 것).
 
 **[2026-09-21 round12(Gemini 합본) 판정 — `qa-request/post-implementation-review-round12.md` 머리 배너가 소스]** (1) **`H-589`** 콜백 안
-같은 자리 재진입: `Started`·`Cancelled` 안에서 같은 프로퍼티에 묶인 State를 `:Set`하면 branch 3의 `Cancelled`가 이 호출의 슬롯 쓰기
+**[2026-09-28 — 이 문장의 순서 서술·UB 판정은 round13 이전 원문이다. 지금은 콜백이 슬롯 쓰기 **뒤**에 불리고(모으고→쓰고→부른다) Property 층 재진입은 UB가 아니다 — 위 절 머리 배너 (2)가 정본; 아래 원문에서 유효한 것은 G-27 기각과 (3)(4)의 포인터뿐]** 같은 자리 재진입: `Started`·`Cancelled` 안에서 같은 프로퍼티에 묶인 State를 `:Set`하면 branch 3의 `Cancelled`가 이 호출의 슬롯 쓰기
 **전에** 불리고 스냅의 `Completed`가 `Started` **뒤에** 따라오므로, 안쪽 `process`가 쓴 레코드를 바깥이 덮거나(G-23) 옛 `Completed`가 새
 `Started` 뒤에 난다(G-26). 이건 `dispatch-core-plan.md`의 "같은 `(inst, k)`의 간접 재진입도 UB"(Q5 (a), 사용자: 재진입 게이트 안 둠) 그대로라
 Gemini의 재진입 가드는 안 넣고 UB로 문서화 — 코드 머리·레퍼런스 roblox/06 한 문단("다음 트윈을 잇는 자리는 `Completed`" — 엔진 경로의
@@ -750,9 +763,8 @@ Gemini 스스로 기각, 확인 기록; "슬롯이 영구 고착"은 틀렸다 �
 **[2026-09-26 round13 E2-2]** 패딩 숏핸드(`UIPadding`/`UIPaddingOffset`)에 건 Tween 하나의
 콜백이 값 하나에 네 번씩 불리는 것은 `H-630`(레퍼런스 캐비엇 반영). 그 창(완료 통지가 아직
 안 온 사이 같은 자리가 재진입되는 경로)이 실제 결함일 수 있다는 진단은 **Q91**
-(`post-implementation-review-round13.md`) — 여기 확정 서술로 승격하지 말 것, 사용자 결정 전.
+(`post-implementation-review-round13.md`) — **[2026-09-28 닫힘]** 콜백 절 머리 배너.
 
-**[2026-09-27 round13 Q91·Q92 검토 중]** Q91 프로토타입은 `audit/round13-q91-proto/`(완료 통지가
+**[2026-09-27 round13 Q91·Q92 검토 중 → 2026-09-28 닫힘 — 콜백 절 머리 배너, 구조 조사는 `research/tween-callback-structure.md`]** Q91 프로토타입은 `audit/round13-q91-proto/`(완료 통지가
 `process` 안에서 불려 "Completed에서 다음 트윈 잇기"가 재진입이 되고 엔진 트윈이 고아가 되는 경로).
-**Q92 추가** — 패딩 숏핸드의 콜백 4회를 한 번으로 줄일지도 같은 §4에 열려 있다. 둘 다 사용자 결정 전이라
-본문은 그대로 둔다.
+**Q92 추가** — 패딩 숏핸드의 콜백 4회를 한 번으로 줄일지(닫힘 — 마지막 키 대표로 한 번).

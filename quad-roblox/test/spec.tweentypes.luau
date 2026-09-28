@@ -29,7 +29,7 @@ local function _types()
 		BackgroundTransparency = q.Tween({ Value = 0 }):Mapped(function(v: number): number
 			return v * 0.5
 		end),
-		-- [2026-09-21] 콜백 셋은 인자 없는 함수 필드
+		-- [2026-09-21] 콜백 셋 — 인자 없는 함수도 들어간다(round13 묶음 1 2026-09-28: 호출은 (inst, prop, value))
 		Rotation = q.Tween({ Value = 90, Time = 0.2, Started = function() end, Completed = function() end, Cancelled = function() end }),
 	})
 	local src = q.Source(UDim2.new())
@@ -45,7 +45,31 @@ local function _types()
 	local o: Types.TweenOverride = "Cancel"
 	local opts: Types.TweenOptions<number> = { Value = 1, Reverses = true }
 	local t2: Types.Tween<number> = q.Tween(opts)
-	return refined, info, f1, f2, f3, m3, o, t2
+	-- [round13 묶음 1 2026-09-28 round13 tween-callback-structure §8-1] 콜백 인자 (inst, prop, value) — 인자 없는 함수도 그대로,
+	-- 세 인자는 생성자 옵션에서 T로 정밀; Wrapped / Mapped(fn, wrap)의 핸들·셋
+	local t3 = q.Tween({ Value = 90, Completed = function(inst: Instance, prop: string, value: number)
+		local _a, _b, _c = inst.Name, prop:upper(), value + 1
+	end })
+	local w: Types.Tween<number> = t3:Wrapped(function(cb)
+		return cb:Map(function(f)
+			return f
+		end)
+	end)
+	local w2: Types.Tween<number> = t3:Wrapped(function(cb)
+		return { Completed = cb.Completed }
+	end)
+	local m4: Types.Tween<UDim> = t3:Mapped(function(v: number): UDim
+		return UDim.new(0, v)
+	end, function(cb)
+		return cb:Map(function(f)
+			return function(inst: Instance, prop: string, _value: any)
+				f(inst, prop, 1)
+			end
+		end)
+	end)
+	local f4 = q.Declaration.Frame({ Rotation = w, BackgroundTransparency = w2 })
+	local c4 = q.Declaration.UICorner({ CornerRadius = m4 })
+	return refined, info, f1, f2, f3, m3, o, t2, f4, c4
 end
 
 print("=== 1. 런타임 대응 — 타입이 약속한 값이 실제로 있다(H-300) ===")

@@ -408,4 +408,68 @@ do
 end
 
 print()
+print("=== 12. [round13 묶음 1 2026-09-28 round13 tween-callback-structure §8-1] 콜백 인자 (inst, prop, value) — 모든 발화 자리; 모으고→쓰고→부른다(옛 정산 콜백은 새 기록 뒤, Cancelled 안 재진입도 순서대로 한 트윈); 철거는 통지 창이어도 Cancelled(Q99 c); 시체 위 retractFrom은 콜백 없음(Q82 (a)) ===")
+do
+	mock.resetTweenLog()
+	local seen: { string } = {}
+	local function tw(tag: string, value: any, extra: any?): any
+		local function mk(ev: string): any
+			return function(inst: any, prop: string, v: any)
+				table.insert(seen, `{tag}:{ev}({inst.Name},{prop},{tostring(v)})`)
+			end
+		end
+		local opts: any = { Value = value, Time = 0.3, Started = mk("S"), Completed = mk("C"), Cancelled = mk("X") }
+		if extra then for k2, v2 in extra do opts[k2] = v2 end end
+		return Tween(opts)
+	end
+	local function take(): string
+		local s = table.concat(seen, " ")
+		table.clear(seen)
+		return s
+	end
+	local src = q.Source(tw("a", 1) :: any)
+	local f = q.Declaration.Frame({ Name = "F", Size = src }) :: any
+	assert(take() == "a:S(F,Size,1) a:C(F,Size,1)", "snap args")
+	src:Set(tw("b", 2))
+	assert(take() == "b:S(F,Size,2)", "engine Started args")
+	src:Set(tw("c", 3))
+	assert(take() == "b:X(F,Size,2) c:S(F,Size,3)", "replacement: old Cancelled carries the OLD target")
+	local c = lastTween()
+	c.PlaybackState = "Completed" -- deferred-notice window
+	src:Set(tw("d", 4))
+	assert(take() == "c:C(F,Size,3) d:S(F,Size,4)", "window replacement: old Completed, then new Started")
+	lastTween():simulateCompleted()
+	assert(take() == "d:C(F,Size,4)", "natural finish args (read off the record)")
+	-- teardown inside the window is Cancelled (Q99 c)
+	src:Set(tw("e", 5))
+	take()
+	lastTween().PlaybackState = "Completed"
+	q.Dispatch.retractFrom(f, "Size", 1)
+	assert(take() == "e:X(F,Size,5)", "teardown in the window reports Cancelled: " .. table.concat(seen, " "))
+	-- re-entry from the old Cancelled: lands after this write, one tween left, final = the inner value
+	mock.resetTweenLog()
+	local s2 = q.Source(0 :: any)
+	local g = q.Declaration.Frame({ Name = "G", Size = s2 }) :: any
+	local once = false
+	s2:Set(Tween({ Value = 10, Time = 0.3, Cancelled = function()
+		if not once then once = true; s2:Set(Tween({ Value = 77, Time = 0.3 })) end
+	end }))
+	s2:Set(Tween({ Value = 20, Time = 0.3 }))
+	local playing = 0
+	for _, e in log do if e.tween.PlaybackState == "Playing" then playing += 1; assert(e.props.Size == 77, "the playing tween is the inner value") end end
+	assert(playing == 1 and s2:Get().Value == 77, "Cancelled re-entry: one tween, toward 77")
+	-- corpse: no callbacks, the engine tween is still cancelled
+	mock.resetTweenLog()
+	local h = q.Declaration.Frame({ Name = "H", Size = 0 }) :: any
+	q.Dispatch.process(h, "Size", tw("z", 9), 1)
+	take()
+	local zt = lastTween()
+	h:Destroy()
+	q.Dispatch.retractFrom(h, "Size", 1)
+	assert(take() == "" and zt.cancels == 1, "corpse retractFrom: Cancel, no callback")
+	local _ = g
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

@@ -24,7 +24,7 @@ local gameShim = mock.gameShim(REFLECTED)
 local q: any = Quad.New():UseProvider(QuadRoblox)
 ;(getfenv(installProperty) :: any).game = gameShim
 ;(getfenv(installProperty) :: any).TweenInfo = mock.tweenInfoShim
-;(getfenv(installProperty) :: any).Enum = { EasingStyle = { Quad = "Quad" }, EasingDirection = { Out = "Out" } }
+;(getfenv(installProperty) :: any).Enum = { EasingStyle = { Quad = "Quad" }, EasingDirection = { Out = "Out" }, PlaybackState = { Completed = "Completed", Cancelled = "Cancelled" } }
 ;(getfenv(installEvent) :: any).game = gameShim
 ;(getfenv(q.Declaration.New) :: any).Instance = { new = mock.Instance.new }
 q.Backend.isInst = mock.isMockInstance
@@ -181,6 +181,51 @@ do
 	assert(g.Size == 7 and #log == 0, "same target after teardown: dedup holds (the property holds 7, nothing was running)")
 	q.Dispatch.process(g, "Size", q.Tween({ Value = 9, Time = 0.1 }), 1)
 	assert(#log == 1, "and the next value animates")
+	print("PASS")
+end
+
+print()
+print("=== 10. [round13 묶음 1 2026-09-28 round13 tween-callback-structure §8-1] Tween 콜백 — 발행마다 사본 하나를 네 변이 공유, 마지막 키(PaddingBottom)만 (부모, 숏핸드 키, 사용자 값)으로 알린다; Completed 연쇄는 통지 순서와 무관하게 네 변이 한 값 ===")
+do
+	for _, key in { "UIPaddingOffset", "UIPadding" } do
+		for _, reverse in { false, true } do
+			mock.resetTweenLog()
+			local log = mock.tweenLog
+			local mkVal = if key == "UIPadding" then function(n: number): any return UDimNew(0, n) end else function(n: number): any return n end
+			local s = q.Source(mkVal(0))
+			local f = q.Declaration.Frame({ Name = "P", [key] = s }) :: any
+			local step, S, C, X = 0, 0, 0, 0
+			local args: { string } = {}
+			local function mk(n: number): any
+				return Tween({ Value = mkVal(n), Time = 0.2,
+					Started = function() S += 1 end,
+					Cancelled = function() X += 1 end,
+					Completed = function(inst: any, prop: string, v: any)
+						C += 1
+						table.insert(args, `{inst.Name}.{prop}={if type(v) == "table" then v.Offset else v}`)
+						if step < 3 then step += 1; s:Set(mk(100 + step)) end
+					end })
+			end
+			s:Set(mk(10))
+			for _ = 1, 8 do
+				local batch = {}
+				for _, e in log do if e.tween.PlaybackState == "Playing" then table.insert(batch, e) end end
+				if #batch == 0 then break end
+				for _, e in batch do e.tween.PlaybackState = "Completed"; for pk, pv in e.props do e.inst[pk] = pv end end
+				if reverse then for i = #batch, 1, -1 do batch[i].tween.Completed:Fire("Completed") end
+				else for _, e in batch do e.tween.Completed:Fire("Completed") end end
+			end
+			local pad = childNamed(f, "_quad_padding")
+			for _, p in { "PaddingLeft", "PaddingRight", "PaddingTop", "PaddingBottom" } do
+				assert(pad[p].Offset == 103, `{key} {p} reached 103 (reverse={reverse}): {pad[p].Offset}`)
+			end
+			assert(S == 4 and C == 4 and X == 0, `{key}: one callback per step (S {S} C {C} X {X})`)
+			assert(table.concat(args, " ") == `P.{key}=10 P.{key}=101 P.{key}=102 P.{key}=103`, "args = (parent, shorthand key, user value): " .. table.concat(args, " "))
+			local playing = 0
+			for _, e in log do if e.tween.PlaybackState == "Playing" then playing += 1 end end
+			assert(playing == 0, "no orphan tweens")
+		end
+	end
 	print("PASS")
 end
 

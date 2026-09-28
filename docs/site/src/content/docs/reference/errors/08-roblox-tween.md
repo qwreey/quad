@@ -21,6 +21,30 @@ description: "Tween/Animate가 던지는 에러"
 - **고치려면**: 목표 값을 받아 새 목표 값을 돌려주는 함수를 넘기세요.
 - **참고**: [`tween:Mapped(fn)`](/reference/roblox/06-tween-animate/#tweenmappedfn)
 
+### Quad0256
+
+`Tween:{method}: wrap must be a function (got {typeof(wrap)})` — `quad-roblox/src/Tween.luau`
+
+- **언제**: `tween:Mapped(fn, wrap)`의 둘째 인자나 `tween:Wrapped(wrap)`의 `wrap`이 함수가 아닐 때. `{method}`는 `Mapped` 또는 `Wrapped`입니다.
+- **고치려면**: 콜백 핸들 `cb`를 받아 새 콜백 셋 `{ Started = …, Completed = …, Cancelled = … }`을 돌려주는 함수를 넘기세요. 콜백을 바꿀 필요가 없으면 `Mapped`의 둘째 인자를 빼세요.
+- **참고**: [`tween:Mapped(fn)`](/reference/roblox/06-tween-animate/#tweenmappedfn)
+
+### Quad0257
+
+`Tween:{method}: wrap must return a callback set table (got {typeof(set)})` — `quad-roblox/src/Tween.luau`
+
+- **언제**: `wrap(cb)`가 테이블이 아닌 값을 돌려줬을 때(흔히 `return`을 빠뜨려 `nil`).
+- **고치려면**: 새 콜백 셋 테이블을 돌려주세요 — `return cb:Map(function(f) return … end)`나 `return { Completed = … }`. 셋에 없는 필드는 "콜백 없음"입니다.
+- **참고**: [`tween:Mapped(fn)`](/reference/roblox/06-tween-animate/#tweenmappedfn)
+
+### Quad0258
+
+`Tween callbacks:Map: g must be a function (got {typeof(g)})` — `quad-roblox/src/Tween.luau`
+
+- **언제**: `wrap` 안에서 콜백 핸들의 `cb:Map(g)`에 함수가 아닌 값을 넘겼을 때.
+- **고치려면**: 원래 콜백 `f`를 받아 새 콜백(또는 `nil`)을 돌려주는 함수를 넘기세요.
+- **참고**: [`tween:Mapped(fn)`](/reference/roblox/06-tween-animate/#tweenmappedfn)
+
 ### Quad0243
 
 `Tween: {name} must be a number (got {typeof(v)})` — `quad-roblox/src/Tween.luau`
@@ -50,7 +74,7 @@ description: "Tween/Animate가 던지는 에러"
 `Tween: {name} must be a function (got {typeof(v)})` — `quad-roblox/src/Tween.luau`
 
 - **언제**: `Started`/`Completed`/`Cancelled` 중 하나가 함수가 아닌 값으로 주어졌을 때. `{name}`은 실제 필드 이름입니다. `q.Animate{ … }`의 콜백 옵션에 `State`를 넣어도 이 에러입니다(콜백은 State 불가 — `Animate` 호출 줄에서 납니다).
-- **고치려면**: 인자 없는 함수를 넘기세요.
+- **고치려면**: 함수를 넘기세요 — `(inst, prop, value)`를 받거나 인자를 무시하는 함수 둘 다 됩니다. `tween:Mapped(fn, wrap)`/`tween:Wrapped(wrap)`의 `wrap`이 돌려준 셋의 값도 같은 검사를 받습니다.
 - **참고**: [`q.Tween(opts)`](/reference/roblox/06-tween-animate/#qtweenopts)
 
 ### Quad0247

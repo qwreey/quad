@@ -8,7 +8,8 @@
 	as-is: `v == nil` destroys the managed child after `retractFrom` — `H-218`;
 	the retractor is `Void` — `H-135`; Tween values are mapped with
 	`:Mapped(wrap)` so the Tween wrapper survives and PropertyHandler stays
-	the only Tween interpreter), "결론" (`UI` prefix — keys never collide with
+	the only Tween interpreter — [2026-09-28 round13 Q92] now ONE copy per emit,
+	`:Mapped(wrap, cbWrap)` / `:Wrapped(cbWrap)`, callbacks from the last key only; see process), "결론" (`UI` prefix — keys never collide with
 	real properties, `H-138`).
 
 	One lookup table drives all four keys (the canon's "단순화 후보", round20
@@ -128,9 +129,33 @@ local function install(quad: any)
 			-- Tween stays a Tween — only `.Value` is wrapped (`UI-8`, `Tween:Mapped`). The
 			-- fresh object per emit is harmless: the Property handler dedups by target VALUE
 			-- (round3 Q25, 2026-09-08 — the old object-identity check broke exactly here)
-			-- identity wrap (UIPadding/UIScale): pass the Tween through — `Mapped`
-			-- would clone+re-validate+re-freeze an identical value per emit (2차 리뷰)
-			local mapped = if entry.wrap == identity then v elseif tweenIn then v:Mapped(entry.wrap) else entry.wrap(v)
+			-- round13 묶음 1 (round13 tween-callback-structure §8-1, user decision 2026-09-28): a Tween becomes ONE mapped
+			-- copy per emit, shared by every delegated chain (identity wrap included — `Wrapped` instead of
+			-- `Mapped`). Its callbacks are wrapped through the handle (`cb:Map` — this handler never names the
+			-- callback fields): each chain's Property reports `(child, prop, mappedValue)`, and only the LAST
+			-- key's report reaches the user, as `(parent, shorthand key, the value the user gave)`. The last key
+			-- matters because the chains run in `entry.props` order (an array — deterministic): a callback that
+			-- re-enters this shorthand synchronously (a snap, a replacement window, a new emit cancelling all
+			-- four) runs when no later chain is left to overwrite with this emit's value. The parent is read at
+			-- fire time (`child.Parent`), never captured — capturing it would pin it for the tween's life (the
+			-- 2026-09-21 "no arguments" GC reason); the managed child's teardown retracts before unparenting.
+			local mapped
+			if tweenIn then
+				local lastProp = entry.props[#entry.props]
+				local shortKey, userValue = k, v.Value
+				local function wrapCallbacks(cb: any): any
+					return cb:Map(function(f: any): any
+						return function(child: any, prop: string, _value: any)
+							if prop == lastProp then
+								f(child.Parent, shortKey, userValue)
+							end
+						end
+					end)
+				end
+				mapped = if entry.wrap == identity then v:Wrapped(wrapCallbacks) else v:Mapped(entry.wrap, wrapCallbacks)
+			else
+				mapped = entry.wrap(v)
+			end
 			local child = ensureManagedChild(inst, entry)
 			for _, prop in entry.props do
 				dispatch.process(child, prop, mapped, 1) -- new chain per (child, prop), index 1
