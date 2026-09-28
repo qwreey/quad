@@ -472,4 +472,25 @@ do
 end
 
 print()
+print("=== 13. [code-review 2026-09-28] 콜백 게이트는 하나 — 시체 위 process에서 새 값의 Started·스냅 Completed도 무발화; 프로바이더 브랜드 isTween은 모듈 BrandPredicates에 등록돼 있다(Q106 후속) ===")
+do
+	local fired: { string } = {}
+	local g = q.Declaration.Frame({ Name = "G", Size = 0 }) :: any
+	g:Destroy()
+	pcall(function()
+		q.Dispatch.process(g, "Size", Tween({ Value = 5, Time = 0.3, Started = function() table.insert(fired, "S") end }), 1)
+	end)
+	pcall(function()
+		q.Dispatch.process(g, "Size", Tween({ Value = 6, Time = 0, Started = function() table.insert(fired, "S0") end, Completed = function() table.insert(fired, "C0") end }), 1)
+	end)
+	assert(#fired == 0, "no callback on an Instance quad no longer claims: " .. table.concat(fired, ","))
+	assert(q.BrandPredicates:Is(q.isTween), "RobloxFactory registers isTween in the module's BrandPredicates")
+	local okT, errT = pcall(function()
+		q.Dispatch.drive(q.Declaration.Frame({}), Tween({ Value = 1 }) :: any)
+	end)
+	assert(not okT and string.find(tostring(errT), "Quad0083", 1, true) ~= nil and string.find(tostring(errT), "got Tween", 1, true) ~= nil, "braces-forgotten Tween is refused and named: " .. tostring(errT))
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

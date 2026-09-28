@@ -170,9 +170,13 @@ local function install(quad: any): any
 	-- returns a new set with `g(f)` applied to each present one. Frozen: it is a read-only view.
 	local CallbackHandleImpl = {}
 	CallbackHandleImpl.__index = CallbackHandleImpl
+	local EMPTY_HANDLE: any, EMPTY_SET: any
 	function CallbackHandleImpl.Map(self: any, g: any): any
 		if type(g) ~= "function" then
 			Err.errorBeforeNearest(`Quad0258 Tween callbacks:Map: g must be a function (got {typeof(g)})`, SURFACE)
+		end
+		if self == EMPTY_HANDLE then
+			return EMPTY_SET -- code-review (2026-09-28): no callbacks, nothing to map — no allocation
 		end
 		local out = {}
 		for _, name in CALLBACK_FIELDS do
@@ -183,20 +187,33 @@ local function install(quad: any): any
 		end
 		return out
 	end
+	-- shared, frozen: the handle of a Tween with no callbacks and the empty set `Map` returns for it — the
+	-- shorthand wraps EVERY Tween it forwards, so a callback-less one must not allocate per emit
+	EMPTY_HANDLE = table.freeze(setmetatable({}, CallbackHandleImpl))
+	EMPTY_SET = table.freeze({})
 	-- `opts` (an unfrozen clone) takes the set `wrap(handle)` returns as its WHOLE callback set: a field the
 	-- set leaves out is no callback. The values are checked by `newTween`'s own validation (Quad0246).
-	local function applyWrap(method: string, self: any, opts: any, wrap: any)
+	local function callWrap(method: string, self: any, wrap: any): any
 		if type(wrap) ~= "function" then
 			Err.errorBeforeNearest(`Quad0256 Tween:{method}: wrap must be a function (got {typeof(wrap)})`, SURFACE)
 		end
-		local handle: any = setmetatable({}, CallbackHandleImpl)
-		for _, name in CALLBACK_FIELDS do
-			handle[name] = self[name]
+		local handle: any
+		if self.Started == nil and self.Completed == nil and self.Cancelled == nil then
+			handle = EMPTY_HANDLE
+		else
+			handle = setmetatable({}, CallbackHandleImpl)
+			for _, name in CALLBACK_FIELDS do
+				handle[name] = self[name]
+			end
+			table.freeze(handle)
 		end
-		local set = wrap(table.freeze(handle))
+		local set = wrap(handle)
 		if type(set) ~= "table" then
 			Err.errorBeforeNearest(`Quad0257 Tween:{method}: wrap must return a callback set table (got {typeof(set)})`, SURFACE)
 		end
+		return set
+	end
+	local function applySet(opts: any, set: any)
 		for _, name in CALLBACK_FIELDS do
 			opts[name] = set[name]
 		end
@@ -208,10 +225,11 @@ local function install(quad: any): any
 		end
 		-- `table.clone` copies the metatable too; the clone is not frozen, so
 		-- swapping Value is fine before newTween re-brands and re-freezes it
+		local set = if wrap ~= nil then callWrap("Mapped", self, wrap) else nil
 		local opts = table.clone(self)
 		opts.Value = fn(self.Value)
-		if wrap ~= nil then
-			applyWrap("Mapped", self, opts, wrap) -- one copy for both (the fast path the user asked for)
+		if set ~= nil then
+			applySet(opts, set) -- one copy for both (the fast path the user asked for)
 		end
 		return newTween(opts) -- re-validates: fn returning nil is "Value is required"
 	end
@@ -223,11 +241,12 @@ local function install(quad: any): any
 	-- method the shorthand's identity path passed the source through unchanged anyway. `wrap` is still called:
 	-- it may ADD callbacks to a Tween that had none.
 	function TweenImpl.Wrapped(self: any, wrap: any): any
-		local opts = table.clone(self)
-		applyWrap("Wrapped", self, opts, wrap)
-		if rawequal(opts.Started, self.Started) and rawequal(opts.Completed, self.Completed) and rawequal(opts.Cancelled, self.Cancelled) then
-			return self
+		local set = callWrap("Wrapped", self, wrap)
+		if rawequal(set.Started, self.Started) and rawequal(set.Completed, self.Completed) and rawequal(set.Cancelled, self.Cancelled) then
+			return self -- compared before cloning: the unchanged path allocates nothing here
 		end
+		local opts = table.clone(self)
+		applySet(opts, set)
 		return newTween(opts)
 	end
 

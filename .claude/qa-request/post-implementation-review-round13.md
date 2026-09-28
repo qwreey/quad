@@ -344,6 +344,14 @@
 - **`H-871` [같은 리뷰, LOW] mock 백엔드 게이트 문구가 새 백엔드 문구를 따라가지 않았다(`bindLifetime`·`setTimeout` 값 꼬리·`clearTimeout` 동사)** — 문자열만 맞춤(mock 동작·주석 변경 아님 — Q149/Q153 보류와 무관).
 - **`H-872` [같은 리뷰, LOW] CHANGELOG가 `Quad0216`도 `got inf`를 보인다고 묶어 적었다** — `setTimeout`은 `math.huge`를 받으므로(Q100 한계) `got -1`·`got nan`만, 문장 정정.
 - **`H-873` [같은 리뷰, LOW] `Context.luau` 105행 주석이 "`Context`에는 게이트가 없다"고 남아 있었다** — `__call`에 게이트·태그가 있다고 정정.
+- **`H-874` [2026-09-28 묶음 1 `/code-review`(범위 `98c0a637..190fe490`), MED] "모으고→쓰고→부른다"로 옛 트윈의 정산 콜백이 인스턴스 쓰기 뒤로 밀려, 쓰기가 던지면(엔진이 nil·틀린 타입을 거부) 이미 취소된 옛 트윈의 `Cancelled`/`Completed`가 사라지고 Done 기록이 남아 같은 목표 재선언이 dedup으로 막혔다** — 평범한 값·0초 스냅 경로에서 인스턴스 쓰기를 정산보다 **먼저**(던지면 아무것도 정산 안 됨 — 옛 트윈이 기록·콜백째 계속 돎). 엔진 트윈 경로의 `Play` 예외만 남는 구멍(`Finish`가 옛 기록을 먼저 필요로 함 — 주석). mock은 쓰기 거부를 흉내내지 않아 spec 없음.
+- **`H-875` [같은 리뷰, LOW] 스킬·CHANGELOG가 `(부모, 숏핸드 키, 준 값)` 보고를 패딩 숏핸드만의 예외라 적었는데 코드는 네 숏핸드 모두** — 두 문서를 네 키로.
+- **`H-876` [같은 리뷰, LOW] roblox/06 "철거 때는 끝났든 아니든 `Cancelled`"가 과장** — 이미 `Completed`를 받은 트윈은 철거 때 무발화; "목표에 닿고 통지만 남은 트윈도 `Cancelled`"로 좁힘(CHANGELOG 같이).
+- **`H-877` [같은 리뷰, LOW] Q82 `isClaimed` 게이트가 정산 콜백에만 걸려 시체 위 `process`에서 새 값 `Started`(끝이 안 옴)·스냅 `Completed`가 불렸다** — `announce`에서 새 값 콜백도 같은 게이트(한 규칙); spec `spec.tweenproperty` 13절 + 음성 대조(게이트를 빼면 `S,S0,C0`).
+- **`H-878` [같은 리뷰, LOW] `isTween` 등록이 `RobloxFactory`로 옮겨졌는데 확인하는 spec이 없었다** — 13절에 `q.BrandPredicates:Is(q.isTween)`·중괄호를 빠뜨린 `drive(inst, Tween)`의 `Quad0083 … (got Tween)`.
+- **`H-879` [같은 리뷰, LOW] CHANGELOG가 콜백 안 연쇄를 조건 없이 약속** — 마운트 중 첫 세팅 `Started` 예외를 적음.
+- **`H-880` [같은 리뷰, LOW] 콜백 없는 Tween도 숏핸드를 지날 때마다 핸들·결과 테이블·사본 비교 전 clone을 할당** — Tween 안에서만: 콜백 없으면 공유 빈 핸들·`cb:Map`은 공유 빈 셋, `Wrapped`는 비교를 clone 앞으로(숏핸드는 여전히 필드 이름을 모름). 남는 건 숏핸드의 발행당 감싸기 클로저 하나.
+- **`H-881` [같은 리뷰, LOW] errors/08 `Quad0256`~`0258`의 참고 링크가 `Mapped` 절만 가리킴** — `Wrapped` 절 링크 추가.
 - **`H-856` [2026-09-27 E77, LOW] extend/02 195 `drive` 절이 재호출 의미를 안 적음** — `D`가 만든 요소에 다시 `drive(inst, {a, b})`하면 숫자 키 1, 2, …를 재처리해 앉아 있던 것이 철거됨(Effect `cleanup(false)`, `OnDestroyed` 무발화, 3번 자식은 잔존 — `probe-redrive.luau`; 자리 교체 규칙(66행)의 귀결이라 결함 아님, 퍼저 하네스 함정으로 25 시드에서 발견) → 한 문장 + "자식 덧붙이기는 Slot에 Add".
 - **`H-855` [2026-09-27 E79, LOW] roblox/05 84 주석 `seen[1] == "a"`가 동기 전달을 전제** — Deferred(새 경험 기본)에서는 프레임 끝에야 채워짐(셔임 실측) → 괄호 단서 한 줄. Deferred 관련 나머지 서술 갈래는 `Q157`.
 - **`H-854` [2026-09-27 감사 28라운드, LOW] `H-850`이 코드 힌트 문자열만 바꾸고 그 문구를 리터럴로 실은 문서 셋을 빠뜨렸다** — core/10 169·sugar/03 15·extend/01 245의 예시 코드블록("Quad0108 quad: isHeld/setTimeout/nativeInsert …; tests use mock.installLifetime)"); `LifetimeHandle.luau`의 `notInstalled(name)`가 이름과 무관하게 같은 힌트를 붙이므로 그 파일이 대는 모든 op가 영향(감사 지시문의 "hint 없는 op" 전제가 틀림) → 셋 갱신. 부수 정리: errors/02 `Quad0071` "언제"의 "안 남/닿음" 병치를 "계약을 지키는 호출로는 안 남 / 계약을 어긴 호출은 공개 함수를 거쳐 닿음"으로 풀어쓰고, `dispatch-core-plan.md` 1593 태그에 `H-820`을 넣어 `slot-plan.md` 2407 포인터가 grep으로 닿게.

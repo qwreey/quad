@@ -419,9 +419,9 @@ The first assignment snaps to the value; later emissions run an engine tween.
   `Visible`/etc. from it as a prop over writing the Instance directly in the callback.
 - One Tween bound to several properties fires its callbacks **once per property**, each with its
   own `prop` — filter on `prop`, or wrap with `tween:Wrapped(function(cb) return cb:Map(...) end)`
-  (`tween:Mapped(fn, wrap)` does value + callbacks in one copy). The padding shorthands are the
-  exception: `UIPadding`/`UIPaddingOffset` fire once per value, from the last side, as
-  `(host Instance, "UIPadding"/"UIPaddingOffset", the value you gave)`.
+  (`tween:Mapped(fn, wrap)` does value + callbacks in one copy). The shorthand keys are the
+  exception: `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale` fire once per value as
+  `(host Instance, the shorthand key, the value you gave)` — the padding pair from its last side.
 - `Started` fires synchronously right after the engine tween is played (or, on a snap, right
   before `Completed`).
 - `Completed` fires only on a **natural finish** (the engine's `Completed` signal with

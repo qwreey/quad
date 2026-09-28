@@ -175,6 +175,12 @@ local function install(quad: any)
 		if tweenSlots:GetStrong(inst, k) ~= rec then
 			return
 		end
+		-- code-review (2026-09-28): the Q82 `isClaimed` gate covers this value's callbacks too — one rule for every
+		-- callback (a `process` on an Instance quad no longer claims is `H-293` UB; without the gate it fired
+		-- Started with no Completed/Cancelled ever to follow). Read only when there is something to fire.
+		if (v.Started == nil and not (snapped and v.Completed ~= nil)) or not quad.Backend.isClaimed(inst) then
+			return
+		end
 		fire(v, "Started", inst, k, v.Value)
 		if snapped and tweenSlots:GetStrong(inst, k) == rec then
 			fire(v, "Completed", inst, k, v.Value)
@@ -311,26 +317,49 @@ local function install(quad: any)
 			-- to. The slot is written before `Play` so a raise there leaves at most
 			-- an unplayed tween the slot knows about.
 			local engineTween = if tweenIn and not zeroTime then getTweenService():Create(inst, buildInfo(v), { [k] = v.Value }) else nil
-			-- round13 묶음 1: the previous value's settle, fired after our write (with its own target as `value`)
+			-- round13 묶음 1: the previous value's settle, fired after our write (with its own target as `value`).
+			-- code-review (2026-09-28): on the plain and zero-time paths the INSTANCE WRITE goes first — if the engine
+			-- rejects the value (a nil the property cannot take, a wrong type), nothing is settled yet and the running
+			-- tween keeps its record and callbacks. The engine-tween path settles before its slot write (a `Finish`
+			-- needs the previous target first); a raise from `Play` there drops the previous value's callback — the
+			-- one remaining hole, an engine-level error.
+			local prevActive = type(prev) == "table" and prev.Tween ~= nil
+			if not tweenIn then
+				inst[k] = v
+				local oldCb, oldFinished = nil, false
+				if prevActive then
+					oldCb, oldFinished = settle(prev)
+				end
+				tweenSlots:SetStrong(inst, k, true)
+				fireSettled(oldCb, if oldFinished then "Completed" else "Cancelled", inst, k, if prevActive then prev.Value else nil)
+				return tweenRetractor(inst, k) -- `H-547`: every chain (see the note at the end)
+			end
+			if zeroTime then
+				inst[k] = v.Value
+				local oldCb, oldFinished = nil, false
+				if prevActive then
+					oldCb, oldFinished = settle(prev)
+				end
+				local srec = { Value = v.Value }
+				tweenSlots:SetStrong(inst, k, srec)
+				announce(inst, k, srec, v, oldCb, oldFinished, if prevActive then prev.Value else nil, true)
+				return tweenRetractor(inst, k)
+			end
 			local oldCb: any, oldFinished, oldValue: any = nil, false, nil
-			if type(prev) == "table" and prev.Tween ~= nil then
+			if prevActive then
 				-- branch 3: an engine tween is active — clean it up before the new value lands
 				-- (a snapped `{ Value }` record has nothing to cancel and nothing to
 				-- Finish-snap to: the property already holds that value)
 				oldCb, oldFinished = settle(prev) -- Cancel (if still running) + Disconnect; callback held
 				oldValue = prev.Value
-				if tweenIn and v.Override == "Finish" and not zeroTime then
-					-- (a zero-time snap writes `v.Value` right below — a Finish snap first would be a second
+				if v.Override == "Finish" then
+					-- (a zero-time snap took its own path above — a Finish snap first would be a second
 					-- synchronous write of the same property, visible under Immediate signals; code-review)
 					inst[k] = prev.Value -- Finish: snap to the previous target before continuing
 				end
 			end
-			if zeroTime then
-				snap(inst, k, v, oldCb, oldFinished, oldValue)
-				return tweenRetractor(inst, k)
-			end
-			-- branches 2/3 tail: plain → write + `true`; Tween → slot, then play
-			if tweenIn then
+			-- branches 2/3 tail (engine tween): slot, then play
+			do
 				local rec: any = { Tween = engineTween, Value = v.Value }
 				tweenSlots:SetStrong(inst, k, rec)
 				if v.Completed ~= nil or v.Cancelled ~= nil then
@@ -364,12 +393,7 @@ local function install(quad: any)
 				end
 				engineTween:Play()
 				announce(inst, k, rec, v, oldCb, oldFinished, oldValue, false)
-				return tweenRetractor(inst, k)
 			end
-			inst[k] = v
-			tweenSlots:SetStrong(inst, k, true)
-			-- round13 묶음 1: plain incoming value — the previous value's settle after the `true` record
-			fireSettled(oldCb, if oldFinished then "Completed" else "Cancelled", inst, k, oldValue)
 			-- round11 `H-547` (탐사 D′): EVERY chain returns the retractor, not only one that has carried
 			-- a Tween. Two reasons — (1) the checkpoint's `GetWeak(...) or Void` relied on the previous
 			-- chain's `list[index].retractor` keeping the closure alive, but Dispatch parks NOOP there
