@@ -287,6 +287,30 @@ do
 	assert(not okR and string.find(tostring(errR), "already claimed", 1, true) ~= nil, "first: real cause: " .. tostring(errR))
 	local okR2, errR2 = pcall(function() quad.Claim(root4, desc4) end)
 	assert(not okR2 and string.find(tostring(errR2), "already claimed", 1, true) ~= nil and string.find(tostring(errR2), "already used", 1, true) == nil, "retry: same real cause, not 'already used': " .. tostring(errR2))
+	-- round13 Q89: checks inside a `q.Claim` call made from a callback blame THAT line (nearest),
+	-- not the `:Set` that woke the callback — an argument check and a pass-1 check
+	for _, which in { "arg", "pass1" } do
+		local trigger = quad.Source(0)
+		local lineClaim = 0
+		local o = trigger:Observer(function()
+			if trigger:Get() == 0 then
+				return
+			end
+			if which == "arg" then
+				lineClaim = (debug.info(1, "l") :: number) + 1
+				quad.Claim(nil, M("Frame")(quad.MapperRoot)({}))
+			else
+				lineClaim = (debug.info(1, "l") :: number) + 1
+				quad.Claim(Instance.foreign("Frame"), M("Frame")(quad.MapperRoot)("oops" :: any))
+			end
+		end)
+		o:Subscribe()
+		local okQ, errQ = pcall(function()
+			trigger:Set(1)
+		end)
+		assert(not okQ and string.find(tostring(errQ), if which == "arg" then "Quad0033" else "Quad0030", 1, true) ~= nil, which .. " gate fired: " .. tostring(errQ))
+		assert(string.find(tostring(errQ), `spec.lifetime.luau:{lineClaim}:`, 1, true) ~= nil, which .. ": Claim inside a callback blames its own line, not the :Set: " .. tostring(errQ))
+	end
 	print("PASS")
 end
 

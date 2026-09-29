@@ -467,4 +467,59 @@ do
 end
 
 print()
+print("=== 16. round13 Q93 (a)·Q98 (a″) (2026-09-29) — 멈췄다 돌아온 계산은 자기 세대일 때만 스탬프를 지우고, 이미 유효한 새 세대 캐시는 덮지 않는다(yield는 UB — 세대당 한 번만 지킨다) ===")
+do
+	local function mk()
+		local src = Source(0)
+		local st = { runs = 0, park = true }
+		local c = src:Compute(function(self)
+			local v = self:Get()
+			st.runs += 1
+			if st.park and coroutine.isyieldable() then
+				coroutine.yield()
+			end
+			return v * 10
+		end)
+		return src, c, st
+	end
+	-- Q93: A parks in gen 1, upstream moves, B parks in gen 2; A returns — it must NOT erase
+	-- B's stamp (which let gen 2's fn start a second time on top of the parked B)
+	do
+		local src, c, st = mk()
+		local A = coroutine.create(function()
+			return c:Get()
+		end)
+		coroutine.resume(A)
+		src:Set(1)
+		local B = coroutine.create(function()
+			return c:Get()
+		end)
+		coroutine.resume(B)
+		st.park = false
+		local okA, errA = coroutine.resume(A)
+		assert(okA == false and string.find(tostring(errA), "Quad0184", 1, true) ~= nil, "the returning gen-1 read meets gen 2 still parked: Quad0184 (was: gen 2's fn ran again): " .. tostring(errA))
+		assert(st.runs == 2, `gen 2's fn ran once, not twice (runs {st.runs})`)
+		local okB, vB = coroutine.resume(B)
+		assert(okB and vB == 10, "B finishes gen 2: " .. tostring(vB))
+		assert(c:Get() == 10 and st.runs == 2, `later reads use B's cache (runs {st.runs})`)
+	end
+	-- Q98: B finishes gen 2 while A (gen 1) is parked; A returns — its stale result must not
+	-- overwrite gen 2's valid cache (which made the next read run gen 2's fn again)
+	do
+		local src, c, st = mk()
+		local A = coroutine.create(function()
+			return c:Get()
+		end)
+		coroutine.resume(A)
+		src:Set(1)
+		st.park = false
+		assert(c:Get() == 10 and st.runs == 2, "B (main thread) computes gen 2")
+		local okA, vA = coroutine.resume(A)
+		assert(okA and vA == 10, "A's Get loop returns the valid gen-2 value: " .. tostring(vA))
+		assert(c:Get() == 10 and st.runs == 2, `gen 2's fn ran once, not again after A returned (runs {st.runs})`)
+	end
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

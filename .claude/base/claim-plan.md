@@ -98,7 +98,9 @@ local cloned = Claim(template:Clone(), M.Frame(M.Root) {   -- 루트는 이름 �
 - **디스크립터는 1회용** — `PreRef`의 `_fired`처럼 **디스크립터 객체에 소진
   플래그**를 세우고 재사용이면 error(**[2026-09-02 정정, 단위 ④]** 여기
   `error(…, 2)`라 적혀 있었으나 실 구현은 §7-9/-10 정정과 같은 이유로
-  `errorBefore(SURFACE)`다 — 재사용 검사가 DFS 재귀 안이라 더더욱). **[2026-08-28 `/code-review` 정정]**
+  `errorBefore(SURFACE)`다 — 재사용 검사가 DFS 재귀 안이라 더더욱; **[2026-09-29 round13 Q89 사용자 결정]** 이제
+  `errorBeforeNearest(SURFACE)` — DFS 재귀는 태그 없는 로컬(`resolve`)이라 태그 프레임은 `Claim` 하나뿐이고, Outermost는
+  콜백 안에서 부른 `q.Claim`을 건너뛰어 콜백을 깨운 `:Set` 줄을 가리켰다. `q.Claim` 한 호출 안 검사 여덟(`Quad0027`~`0034`) 전부 같다). **[2026-08-28 `/code-review` 정정]**
   `PreRef` 관용구의 다른 절반(배열 슬롯을 `ProcessedPreRef` 센티널로 교체)은
   **가져오지 않는다** — 매핑 자식의 배열 슬롯은 §4대로 **해석된 Instance로 교체**돼야
   `InstanceChildHandler`에 닿고, 루트 디스크립터는 배열에 있지도 않다. 사용자

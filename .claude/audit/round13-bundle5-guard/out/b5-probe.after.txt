@@ -1,0 +1,149 @@
+ A1	PARKED	curr=nil target=0 stamp=0 cache=nil
+ B 	ERR boom	curr=nil target=1 stamp=1 cache=nil
+ A2	ERR Quad0184	runs	2	curr=0 target=1 stamp=1 cache=0
+ C 	ERR Quad0184	runs	2	curr=0 target=1 stamp=1 cache=0
+ D 	ok 20	runs	3	curr=2 target=2 stamp=none cache=20
+ log	v=0 prev=nil co | v=1 prev=nil main | v=2 prev=0 main
+--- N1a A parks gen0; Set; B (main) throws at gen1 (always); A returns late: ok
+ A1	PARKED
+ B 	ERR boom	curr=nil target=1 stamp=1 cache=nil
+ A2	ERR Quad0184	runs	2	curr=0 target=1 stamp=1 cache=0
+ C 	ERR Quad0184	runs	2	curr=0 target=1 stamp=1 cache=0
+ D 	ok 20	runs	3	curr=2 target=2 stamp=none cache=20
+ log	v=0 prev=nil co | v=1 prev=nil main | v=2 prev=0 main
+--- N1b same, but gen1 throw is TRANSIENT (throws once): ok
+ A1	PARKED
+ B1	PARKED	curr=nil target=1 stamp=1 cache=nil
+ A2	ERR boom	curr=nil target=1 stamp=1 cache=nil
+ C 	ERR Quad0184	runs	2	curr=nil target=1 stamp=1 cache=nil
+ B2	ok 10	runs	2	curr=1 target=1 stamp=none cache=10
+ D 	ok 10	runs	2	curr=1 target=1 stamp=none cache=10
+ log	v=0 prev=nil co | v=1 prev=nil co
+--- N1c A parks gen0 then THROWS late while B parked at gen1: ok
+ A1	PARKED
+ B1	PARKED	curr=nil target=1 stamp=1 cache=nil
+ A2	ERR Quad0185	curr=nil target=1 stamp=1 cache=nil
+ C 	ERR Quad0184	runs	2	curr=nil target=1 stamp=1 cache=nil
+ B2	ok 10	runs	2	curr=1 target=1 stamp=none cache=10
+ D 	ok 10	runs	2	curr=1 target=1 stamp=none cache=10
+--- N2a A parks gen0 and returns a Modifier late while B parked at gen1: ok
+ A1	PARKED
+ B 	ERR Quad0185	curr=nil target=1 stamp=none cache=nil
+ A2	ERR Quad0185	runs	3	curr=0 target=1 stamp=none cache=0
+ C 	ERR Quad0185	runs	4	curr=0 target=1 stamp=none cache=0
+--- N2b A parks gen0; Set; B (main) returns a Modifier at gen1; A returns late: ok
+ G1	ERR Quad0185	curr=nil target=0 stamp=none cache=nil
+ G2	ERR Quad0185	runs	2	curr=nil target=0 stamp=none cache=nil
+ G3	ok 10	runs	3	curr=1 target=1 stamp=none cache=10
+ log	v=0 prev=nil main | v=0 prev=nil main | v=1 prev=nil main
+--- N2c defined path: Modifier return, no yield, then a Set recovers: ok
+ A1	PARKED	curr=0 target=1 stamp=1 cache=0
+ B1	PARKED	curr=0 target=2 stamp=2 cache=0
+ A2	ERR Quad0184	runs	3	curr=1 target=2 stamp=2 cache=10
+ B2	ok 20	runs	3	curr=2 target=2 stamp=none cache=20
+ Off	ok nil	runs	3	curr=2 target=2 stamp=none cache=20
+ D 	ok 20	runs	3	curr=2 target=2 stamp=none cache=20
+ observer saw	0,20
+ log	v=0 prev=nil main | v=1 prev=0 co | v=2 prev=0 co
+--- N3 Blocker closed: drift branch opens gen1 (A) and gen2 (B), A returns late, then Off: ok
+ warm	ok 0
+ A1	PARKED
+ B1	PARKED
+ A2	ERR Quad0184	curr=1 target=2 stamp=2 cache=10
+ C 	ERR Quad0184	curr=1 target=2 stamp=2 cache=10
+ Off	ok nil
+ D 	ERR Quad0184	runs	3	curr=1 target=2 stamp=2 cache=10
+ E (gated Set)	ok 30	runs	4	curr=3 target=3 stamp=none cache=30
+--- N3b Blocker closed: B parked at drift gen2, A returns late, B ABANDONED, then Off / upstream Set: ok
+ Get	ok 20	runs	3	curr=2 target=2 stamp=none cache=20
+ log	v=0 prev=nil | v=1 prev=nil | v=2 prev=nil | v=1 inner=20 | v=0 inner=20
+ after Set(5)	ok 50	runs	4	curr=3 target=3 stamp=none cache=50
+ log	v=5 prev=20
+--- N4a nested: fn Sets own dep then reads self, 3 levels (gen0→gen1→gen2): ok
+ Get	ERR Quad0184	runs	3	curr=0 target=2 stamp=2 cache=0
+ Get2	ERR Quad0184	runs	3	curr=0 target=2 stamp=2 cache=0
+ after Set(7)	ok 70	runs	4	curr=3 target=3 stamp=none cache=70
+ log	v=0 prev=nil | v=1 prev=nil | v=2 prev=nil | v=1 inner=ERR boom-inner | v=0 inner=ERR Quad0184 | v=7 prev=0
+--- N4b nested 3 levels; innermost (gen2) throws, middle pcall-swallows: ok
+ Get	ok 2	runs	3	curr=2 target=2 stamp=none cache=2
+ observer	ok 2
+ log	v=0 prev=nil | v=1 prev=0 | v=2 prev=1
+--- N4c nested via Observer (P14 shape, 3 gens): Compute clamps its dep twice, Observer reads inside: ok
+ order CBA:	C:ok 20 B:ok 20 A:ok 20 M:ok 20	runs	3	curr=2 target=2 stamp=none cache=20
+ order BCA:	B:ERR Quad0184 C:ok 20 A:ok 20 M:ok 20	runs	3	curr=2 target=2 stamp=none cache=20
+ order ABC:	A:ERR Quad0184 B:ERR Quad0184 C:ok 20 M:ok 20	runs	3	curr=2 target=2 stamp=none cache=20
+ order BAC:	B:ERR Quad0184 A:ERR Quad0184 C:ok 20 M:ok 20	runs	3	curr=2 target=2 stamp=none cache=20
+--- N4d three coroutines, three generations, return orders: ok
+ race	A1=PARKED B1=PARKED a=3 b=3 c=3 d=3
+ B2	ok 318	a=3 b=3 c=3 d=3
+ A2	ok 318	a=3 b=3 c=3 d=3
+ M 	ok 318	a=3 b=3 c=3 d=3
+ b	curr=2 target=2 stamp=none cache=6	| c	curr=2 target=2 stamp=none cache=106	| d	curr=2 target=2 stamp=none cache=318
+ after Set(3)	a=4 b=4 c=4 d=4	vals	ok 306,ok 318,ok 324	notes	3
+--- N5a chain s→a→b(yields)→c→d: A parks gen1 inside b, B parks gen2; B finishes first; A returns: ok
+ race	A1=PARKED B1=PARKED a=3 b=3 c=3 d=3
+ A2	ERR Quad0184	a=3 b=3 c=3 d=3
+ b	curr=1 target=2 stamp=2 cache=4	| c	curr=0 target=2 stamp=2 cache=102	| d	curr=0 target=2 stamp=2 cache=306
+ M1	ERR Quad0184	a=3 b=3 c=3 d=3
+ B2	ok 318	a=3 b=3 c=3 d=3
+ M2	ok 318	a=3 b=3 c=3 d=3	d	curr=2 target=2 stamp=none cache=318
+ after Set(3)	a=4 b=4 c=4 d=4	vals	ok 306,ok 318,ok 324	notes	3
+--- N5b chain: A returns first while B still parked inside b: ok
+ race	A1=PARKED B1=PARKED a=3 b=3 c=3 d=3
+ A2	ERR Quad0184	a=3 b=3 c=3 d=3
+ M1	ERR Quad0184	a=3 b=3 c=3 d=3
+ c direct	ERR Quad0184	b direct	ERR Quad0184
+ b	curr=1 target=2 stamp=2 cache=4	| c	curr=0 target=2 stamp=2 cache=102	| d	curr=0 target=2 stamp=2 cache=306
+ M2 after Set(3)	ok 324	a=4 b=4 c=4 d=4
+--- N5c chain: B ABANDONED inside b after A returned (orphan stamp propagates down the chain?): ok
+ race	A1=PARKED B1=PARKED A2=ERR Quad0184	curr=1 target=2 stamp=2 cache=10
+ Off	ERR Quad0184	seen	0	running	true
+ B2	ok 20	curr=2 target=2 stamp=none cache=20
+ Set(3) seen	0,30	running	true	runs	4
+--- N6a Observer behind a Blocker reads the node while B is parked at the current gen: ok
+ race	A1=PARKED B1=PARKED A2=ERR Quad0184
+ Off	ERR Quad0184	seen	0
+ B2	ok 20
+ Set(3)	ok nil	seen	0	runs	3
+--- N6b Effect behind a Blocker, same race: ok
+ mounted log	set:Title=0
+ race	A1=PARKED B1=PARKED A2=ERR Quad0184
+ Off	ERR Quad0184	log	set:Title=0
+ B2	ok 20
+ Set(3)	ok nil	log	set:Title=0 | set:Title=30	runs	4
+--- N6c StoreBind (drive) behind a Blocker, same race: ok
+ A1	PARKED
+ B 	ok 10	curr=1 target=1 stamp=none cache=10
+ A2	ok 10	curr=1 target=1 stamp=none cache=10
+ A3	ERR cannot resume dead coroutine	curr=1 target=1 stamp=none cache=10
+ M 	ok 20	curr=2 target=2 stamp=none cache=20
+ log	v=0 prev=nil co | v=1 prev=nil main | v=2 prev=10 main
+--- N7a A parks gen0; Set; B (main) finishes gen1; A returns (rerun parks once more), Set, read: ok
+ A1	PARKED
+ B 	ok 10
+ A2	ok 10	curr=1 target=1 stamp=none cache=10
+ M 	ok 20	curr=2 target=2 stamp=none cache=20
+ log	v=0 prev=nil co | v=1 prev=nil main | v=2 prev=10 main
+--- N7b A parks gen0; Set; B (main) finishes gen1; A returns; NO read; Set; read: ok
+ A1	PARKED	curr=0 target=1 stamp=1 cache=0
+ B1	PARKED	curr=0 target=2 stamp=2 cache=0
+ A2	ERR Quad0184	curr=1 target=2 stamp=2 cache=10
+ after timer seen	ok 0,ERR Quad0184	curr=1 target=2 stamp=2 cache=10
+ B2	ok 20	curr=2 target=2 stamp=none cache=20
+ M 	ok 20	runs	3	curr=2 target=2 stamp=none cache=20
+--- N8 Debounce: upstream moves inside the debounce window while a coroutine is parked: ok
+ Get	ok 1 ERR Quad0184	runs	1	curr=0 target=0 stamp=none cache=1 ERR Quad0184
+ Get2	ok 1 ERR Quad0184	runs	1
+ Get3	ok 2 ERR Quad0184	runs	2	curr=1 target=1 stamp=none cache=2 ERR Quad0184
+--- N9 defined cycle error swallowed by fn (pcall), then fn returns normally: ok
+ A1	PARKED	B1	PARKED	Off	ERR Quad0184	seen	0
+ A2	ERR Quad0184	B2	ok 20
+ Set(3)	ok nil	seen	0	runs	3
+--- N6d control: Effect behind a Blocker, Off while A and B are both still parked: ok
+ warm	ok 0
+ A1	PARKED	g	curr=0 target=1 stamp=1 cache=0
+ B1	PARKED	g	curr=0 target=2 stamp=2 cache=0
+ A2	ERR Quad0184	g	curr=0 target=2 stamp=2 cache=0	| c	curr=1 target=2 stamp=2 cache=10
+ B2	ok 20	g	curr=2 target=2 stamp=none cache=20	| c	curr=2 target=2 stamp=none cache=20
+ M 	ok 20	runs	3
+--- N10 reader parks INSIDE a gate node's passThrough (Blocker between c and reader): ok

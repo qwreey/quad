@@ -1,0 +1,12 @@
+ A1 (anim)	PARKED
+ B1 (c)   	PARKED
+ A2 (anim)	ERR ../src/Animate.luau:111 Quad0184	runs	2
+ M1 (anim)	ERR ../src/Animate.luau:111 Quad0184	runs	2
+ B2 (c)   	ok 10	runs	2
+ M2 (anim)	ERR ./b5-roblox.luau:42 Quad0184	runs	2
+--- R1 Animate internal reader, A (via anim) returns late while B parked in c: done
+ G0	ok Tween(0)	1
+ G1	ERR ./b5-roblox.luau:51 ./b5-roblox.luau:51: boom	2
+ G1b	ERR ./b5-roblox.luau:58 Quad0184	2
+ G2	ok Tween(2)	3
+--- R2 defined path: Animate over a throwing node: done

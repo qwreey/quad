@@ -1435,10 +1435,7 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
 
 **0. [2026-09-06 신설 — 세 번 반복: `H-272`·`H10-2`·`H-330`] 디스패치·발행 깊이에서 raise할 땐 `errorBefore`, 직접 호출 표면에서만 `errorBeforeNearest`.** `process`/retractor/reconcile 안(또는 `Source:Set`의 파동 안)에서 `errorBeforeNearest`를 쓰면 최근접 태그 프레임이 핸들러 자신이라 `Dispatch/init.luau`나 `Source.luau`가 blame된다. 판별: 그 raise가 사용자의 `drive`/`:Set` 줄에서 시작한 스택 안이면 `errorBefore`.
 
-**[2026-09-27 round13 Q88·Q89 검토 중]** 위 판별 규칙이 실제 코드 전수에서 반증됐다 — 내부 경로가 읽을 때
-`Quad0184`(같은 세대 재읽기 금지)와 핸들러 `:Set`의 `Quad0130`이 잎 모듈을 가리키는 경우(Q88), 인자
-검증인데 outermost(`errorBefore`)로 던지는 자리(Q89)가 있다. 사용자 문항이 열려 있다
-(`qa-request/post-implementation-review-round13.md` §4). 본문은 결정 전이라 그대로 둔다.
+**[2026-09-29 round13 Q88·Q89 닫힘 — 사용자 결정]** 위 판별 규칙은 유지하고 두 부류를 정리했다. (Q89) 사용자만 부르고 quad 안에서 재진입하지 않는 직접 호출 표면은 인자·모양 검사를 `errorBeforeNearest`로 — `q.Claim` 한 호출 안의 `Quad0027`~`0034` 여덟이 `errorBefore`였어서 콜백 안에서 부르면 콜백을 깨운 `:Set` 줄이 blame됐다(`Claim`은 `resolve`/`commit`이 태그 없는 로컬이라 태그 프레임이 자기 하나뿐 — Nearest가 구조적으로 맞다). `drive`·`bindLifetime`·`getOffsetAt`처럼 태그된 핸들러 층을 여러 겹 거쳐 닿는 자리는 이 규칙 그대로 `errorBefore`. 사용자: *"통일된 라인 blame 규칙이 있다면 … 덜 헷갈릴 것 같아"* → how-to 10 "기대할 수 있는 것"의 한 문장 규칙. (Q88) quad 내부가 State를 읽다 나는 `Quad0184`·`Ref:Wait` 등록 코루틴 마운트의 `Quad0130`이 잎 파일을 가리키는 것은 코드로 쫓지 않고 how-to 10 "알려진 한계" 3으로 문서화 — 사용자: blame은 *"한 눈에 문제 위치를 볼 수 있다는 편의일 뿐"*이고 traceback이 늘 나온다. 원문은 원장 round13 §4 Q88·Q89 닫힘 문단.
 
 **0-b. [2026-09-06 신설 — 하루에 세 번 반복: `H-338`·`H-342`] 새 브랜드 술어(`isX`)를 모듈 표면에 얹으면 `Dispatch/init.luau`의 `BRAND_PROBES`에도 넣을 것.** 무매치 진단이 그 값을 `typeof`(`table`)로 보고해 "프로바이더 미초기화"로 오도한다 — 목록은 손 복사라 게이트가 없다. **[2026-09-28 round13 Q106]** base 브랜드는 등록 집합(`q.BrandPredicates`)에 넣지 않는다 — 이 이름 목록으로 닿는다(등록 집합은 프로바이더 술어 전용). **[2026-09-08 Q27 사용자 결정]** 이 목록은 **base 브랜드만** 적는다 — 프로바이더 브랜드(`isTween`, 장래 `isSpring`)는 모듈 최상위 `is<Brand>` 필드가 곧 계약이고, `brandNameOf`가 진단 시점에 모듈을 스캔해 그 필드들을 base 목록보다 먼저 시도한다(Dispatch 등록 op 없음, `pcall`로 호출). **[2026-09-28 round13 Q106 정정]** 스캔은 모듈 인스턴스의 `BrandPredicates`에 등록된 `is*` 함수만 본다 — 브랜드 술어가 아닌 `isX` 헬퍼는 등록되지 않았으니 무시되고, 옛 `{}`/`0` 시험 호출(`H-563`)은 삭제됐다. 그러니 0-b는 quad-base 안의 새 브랜드에만 해당한다(`spec.dispatch` 2절).
 

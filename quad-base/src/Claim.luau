@@ -96,13 +96,13 @@ local function Init(module: any)
 	type Step = { inst: any, desc: any, children: { [number]: any } }
 	local function resolve(inst: any, desc: any, plan: { Step }, seen: { [any]: boolean })
 		if desc._fired or seen[desc] then -- `seen`: the same descriptor at two slots of one tree
-			Err.errorBefore("Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)", SURFACE)
+			Err.errorBeforeNearest("Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)", SURFACE)
 		end
 		seen[desc] = true
 		if seen[inst] then
 			-- round11 `H-551` (탐사 A″ 4): two DIFFERENT descriptors resolving to the same child
 			-- passed pass 1 and the second `nativeClaim` died mid-commit with a leaf message
-			Err.errorBefore(`Quad0028 Claim: two mapper descriptors resolved to the same Instance {tostring(inst)} - each child needs exactly one descriptor`, SURFACE)
+			Err.errorBeforeNearest(`Quad0028 Claim: two mapper descriptors resolved to the same Instance {tostring(inst)} - each child needs exactly one descriptor`, SURFACE)
 		end
 		seen[inst] = true
 		-- round11 Q64 (b) (user decision 2026-09-18): ask the backend's `isClaimed` in the validating pass
@@ -112,13 +112,13 @@ local function Init(module: any)
 		-- 여야 Claim 가능한다도 맞는 수순". The root goes through here too, so a double claim of the root
 		-- now carries the Instance's name instead of the provider's bare line.
 		if module.Backend.isClaimed(inst) then
-			Err.errorBefore(`Quad0029 Claim: {tostring(inst)} is already claimed by quad - a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)`, SURFACE)
+			Err.errorBeforeNearest(`Quad0029 Claim: {tostring(inst)} is already claimed by quad - a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)`, SURFACE)
 		end
 		-- 7순회 `H-425` (`H-256` (a) third site): a non-table props used to die in the
 		-- `for` below AFTER `nativeClaim`/`_fired` were committed — a fixed retry then
 		-- hit "already claimed". `drive`'s own gate (`H-419`) comes too late for Claim.
 		if type(desc._props) ~= "table" then
-			Err.errorBefore(`Quad0030 Claim: mapper props must be a table (got {typeof(desc._props)})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0030 Claim: mapper props must be a table (got {typeof(desc._props)})`, SURFACE)
 		end
 		-- `drive`와 같은 일반화 순회(H-304) — `ipairs`는 nil 구멍에서 멈춰
 		-- 구멍 뒤의 디스크립터가 미해석으로 drive에 새는 순회 불일치를 만든다
@@ -131,7 +131,7 @@ local function Init(module: any)
 				-- used to be asked only by `drive` — after the root and this child were claimed and the
 				-- child driven. A pure predicate belongs in the validating pass (`H-30`/`H-31`).
 				if i < 1 or i % 1 ~= 0 then
-					Err.errorBefore(`Quad0031 Claim: array keys must be positive integers (got {i})`, SURFACE)
+					Err.errorBeforeNearest(`Quad0031 Claim: array keys must be positive integers (got {i})`, SURFACE)
 				end
 				-- 이름 중복은 UB(§3 — debug 검사는 debug 도구 몫). 부재는 [2026-09-16 hunt C] fail-fast:
 				-- 옛 "자연 크래시"는 `LifetimeHandle.luau:59: Relate:GetWeak: inst must not be nil`로 죽어
@@ -145,7 +145,7 @@ local function Init(module: any)
 				-- a same-name child of another class is "not matched" (Roblox: `IsA`; mock: ClassName)
 				local child = module.Backend.nativeFindChild(inst, v._key, v._className)
 				if child == nil then
-					Err.errorBefore(`Quad0032 Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)}) - a child with that name must also be a {tostring(v._className)}`, SURFACE)
+					Err.errorBeforeNearest(`Quad0032 Claim: no child matched key {tostring(v._key)} under {tostring(inst)} (mapper {tostring(v._className)}) - a child with that name must also be a {tostring(v._className)}`, SURFACE)
 				end
 				resolve(child, v, plan, seen)
 				children[i] = child
@@ -180,15 +180,21 @@ local function Init(module: any)
 	end
 
 	local function Claim(inst: any, desc: any): any
+		-- round13 Q89 (user decision 2026-09-29): every check inside ONE `q.Claim` call (these
+		-- two and pass 1's `Quad0027`~`0032`) blames NEAREST. Nothing in quad re-enters `Claim` —
+		-- `resolve`/`commit` are untagged locals — so its own frame is the only tagged one below
+		-- the user's line; OUTERMOST skipped it and named the `:Set` that woke a callback calling
+		-- `Claim`. (`drive`/`bindLifetime`/`getOffsetAt` stay OUTERMOST: reached through tagged
+		-- handler layers, where the nearest frame is quad's own.)
 		-- `H-418` (외부 리뷰 G-06): the first argument was never checked — a nil or
 		-- non-Instance reached the backend's `nativeClaim`, whose first line indexes
 		-- it (raw VM error blaming `LifetimeHandle.luau`). `isInst` is the backend's
 		-- own predicate (the base stub raises a clear "not installed" error).
 		if not module.Backend.isInst(inst) then
-			Err.errorBefore(`Quad0033 Claim: first argument must be an Instance of the installed backend (got {typeof(inst)})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0033 Claim: first argument must be an Instance of the installed backend (got {typeof(inst)})`, SURFACE)
 		end
 		if not Brand.isMapperDescriptor(desc) then
-			Err.errorBefore("Quad0034 Claim: second argument must be a D.Mapper descriptor", SURFACE)
+			Err.errorBeforeNearest("Quad0034 Claim: second argument must be a D.Mapper descriptor", SURFACE)
 		end
 		-- round10 G-4 (claim-plan §7-1: a DEBUG check, not a runtime guard — §3 principle): the root
 		-- descriptor's key is never read, so `M.Frame("SomeName")` at the root claims `inst` itself

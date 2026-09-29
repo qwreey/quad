@@ -1,0 +1,24 @@
+ A	true 10
+ B	true 10
+ C	true 10	runs	3	_computing	-1
+--- X1 B1 then B finishes: reads recover: ok
+ B	true 10
+ A	true 10	runs	3
+ C	true 10	runs	3
+--- X2 B finishes BEFORE A returns (A's late gen1 result clobbers curr): ok
+ A	true 10
+ C	true 10	runs	3
+ C after Set(2)	true 20	runs	4
+--- X3 B abandoned (never resumed): A errors; reads blocked until upstream Set: ok
+ A	true 11
+ B	true 10	runs	3
+ o	true 11
+--- X4 A's read goes through an internal reader (Operator) — blame: ok
+ Get	true 99	runs	3	_computing	-1
+ Get2	true 99	runs	3
+ after Set(5)	true 5	runs	4
+--- X5 same-coroutine UB: fn Sets its own dep, inner read throws, fn pcall-swallows: ok
+ A	true 0	runs	1	_computing	-1
+--- X6 fn yields, nothing moves, same coroutine resumes (plain yield OK): ok
+ A	true 30	runs	2	_computing	-1
+--- X7 fn yields, upstream Set, NO other reader, A resumes (H-85 drift rerun): ok

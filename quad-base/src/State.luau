@@ -203,7 +203,9 @@ local function createImpl(module: any)
 		-- `fn(self, previous?, ...deps)` — `self` is the RECEIVER's lazy handle
 		-- (`hold[1]`), never this result node.
 		local result = self._fn(hold[1], self._cache, table.unpack(hold, 2))
-		self._computing = -1 -- fn returned (the Modifier raise below is ours, not a stuck fn)
+		if self._computing == gen then -- round13 Q93 (a): clear only OUR stamp (a newer one belongs to a run still parked or thrown)
+			self._computing = -1 -- fn returned (the Modifier raise below is ours, not a stuck fn)
+		end
 		if isModifier(result) then
 			-- `H-205` history: this used to be a hand-counted level 3; the walker
 			-- (`H-231`) picks the frame. Q7 셋째 (a) (사용자 결정 2026-09-07): OUTERMOST —
@@ -212,8 +214,12 @@ local function createImpl(module: any)
 			-- (their `drive`/creation) is the useful one.
 			Err.errorBefore("Quad0185 State: a Compute function returned a Modifier - State/Source cannot hold Modifiers", SURFACE)
 		end
-		self._cache = result
-		self._cacheCurrCount = gen -- only on success: a thrown fn never marks the cache valid
+		-- round13 Q98 (a″): never clobber a cache already valid for the current target (a newer run
+		-- finished while this one was parked or nested); otherwise write as before, stale or not.
+		if gen == self._cacheTargetCount or self._cacheCurrCount ~= self._cacheTargetCount then
+			self._cache = result
+			self._cacheCurrCount = gen -- only on success: a thrown fn never marks the cache valid
+		end
 	end
 
 	function Impl.Get(self: any): any

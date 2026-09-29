@@ -34,16 +34,25 @@ ReplicatedStorage.Client.UI.UserProfile:42: Quad0218 Event: handler for "Activat
   띄는 조각을 소스에서 `grep`하면 던진 자리가 바로 나옵니다. 보간은 값
   부분에만 들어갑니다.
 - 대부분의 경우 `파일:줄` 접두는 **사용자의 선언 줄**을 가리킵니다.
+- **어느 줄을 가리키는지의 규칙** — 인자를 직접 검증하는 표면은 늘 그 호출 줄을 가리킵니다(콜백 안에서 불렀다면 콜백 안의
+  그 줄). quad가 대신 불러 주는 핸들러를 여러 겹 거쳐야 판정되는 소수의 자리(선언의 디스패치 — `D.Frame {}`·`q.Dispatch.drive`,
+  그리고 핸들러 작성자용 `bindLifetime`·`getOffsetAt`)만 콜백을 깨운 가장 바깥 진입 줄을 가리킵니다(아래 한계 2).
 
-### 기대하면 안 되는 것 — 알려진 한계 둘
+### 기대하면 안 되는 것 — 알려진 한계 셋
 
 1. **C 프레임이 태그된 표면을 직접 부르면 `파일:줄` 접두가 사라집니다**
    (`pcall(quad함수, ...)`처럼 quad 함수를 그대로 넘기는 경우). 메시지는 살아남습니다 —
    접두가 필요하면 `pcall(function() ... end)`으로 감싸세요.
 2. **콜백 안에서 일어난 디스패치는 바깥 진입 줄이 blame됩니다.** `Observer`·`Compute`·`Effect`·`slot:List`의 `updateFn` 안에서
-   `D.Frame {}`을 만들거나 `Claim`·`q.Dispatch.drive`처럼 최외곽 스캔으로 던지는 표면을 부르면, 콜백 안의 그 줄이 아니라
-   그 콜백을 깨운 바깥 줄(`:Set`·`:Get`·마운트 줄)이 blame됩니다. 인자 검증 계열(`Slot:Add(nil)`·`q.Tag("")` 등)은 콜백 안에서도
+   `D.Frame {}`을 만들거나 `q.Dispatch.drive`처럼 최외곽 스캔으로 던지는 표면을 부르면, 콜백 안의 그 줄이 아니라
+   그 콜백을 깨운 바깥 줄(`:Set`·`:Get`·마운트 줄)이 blame됩니다. 인자 검증 계열(`Slot:Add(nil)`·`q.Tag("")`·`q.Claim(...)` 안의 검사 등)은 콜백 안에서도
    그 줄을 정확히 가리킵니다.
+3. **quad가 대신 읽거나 쓰는 자리에서 난 에러는 quad 내부 파일을 가리킬 수 있습니다.** 계산 함수가 던졌거나 yield해서
+   같은 세대의 재읽기가 막힌 State(`Quad0184`)를 여러분의 코드가 아니라 quad가 읽으면 — 프로퍼티 바인딩, `Animate`,
+   Operator, `slot:List`·`:Single`, `Debounce`의 `Time` 같은 자리 — `파일:줄` 접두가 `StoreBind.luau` 같은 quad 파일을
+   가리킵니다. `ref:Wait(thread)`로 지금 코루틴을 등록한 채 같은 코루틴에서 그 Ref를 마운트해 난 `Quad0130`도 같습니다.
+   메시지와 traceback은 그대로 나오니 traceback에서 여러분 파일의 가장 가까운 줄을 보세요 — 원인은 대개 그 State의
+   계산 함수(`Quad0184`)나 `Wait` 등록(`Quad0130`)입니다.
 
 ---
 

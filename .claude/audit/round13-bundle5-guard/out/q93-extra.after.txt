@@ -1,0 +1,24 @@
+ A	false ./q93-extra.luau:26: Quad0184 State: Compute fn is already running for
+ B	true 10
+ C	true 10	runs	2	_computing	-1
+--- X1 B1 then B finishes: reads recover: ok
+ B	true 10
+ A	true 10	runs	2
+ C	true 10	runs	2
+--- X2 B finishes BEFORE A returns (A's late gen1 result clobbers curr): ok
+ A	false ./q93-extra.luau:52: Quad0184 State: Compute fn is already running for
+ C	false ./q93-extra.luau:59: Quad0184 State: Compute fn is already running for	runs	2
+ C after Set(2)	true 20	runs	3
+--- X3 B abandoned (never resumed): A errors; reads blocked until upstream Set: ok
+ A	false ../src/Operator.luau:53: Quad0184 State: Compute fn is already running
+ B	true 10	runs	2
+ o	true 11
+--- X4 A's read goes through an internal reader (Operator) — blame: ok
+ Get	false ./q93-extra.luau:92: Quad0184 State: Compute fn is already running for	runs	2	_computing	4294967295
+ Get2	false ./q93-extra.luau:93: Quad0184 State: Compute fn is already running for	runs	2
+ after Set(5)	true 5	runs	3
+--- X5 same-coroutine UB: fn Sets its own dep, inner read throws, fn pcall-swallows: ok
+ A	true 0	runs	1	_computing	-1
+--- X6 fn yields, nothing moves, same coroutine resumes (plain yield OK): ok
+ A	true 30	runs	2	_computing	-1
+--- X7 fn yields, upstream Set, NO other reader, A resumes (H-85 drift rerun): ok

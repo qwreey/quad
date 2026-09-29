@@ -1,0 +1,9 @@
+before1 exit=0
+before2 exit=0
+after exit=0
+noise (before1 vs before2) differing seeds: 48
+guard (before1 vs after)   differing seeds: 2457
+mode ub seeds 5000 fnRuns 101006 consumerFires 100248 steps 174804 reads 43662 errLines 47760 crash 0
+raw error codes (order-dependent split, tally only): Quad0184=36497 Quad0185=2865 boom=8398
+mode ub seeds 5000 fnRuns 97483 consumerFires 100230 steps 174804 reads 43662 errLines 46707 crash 0
+raw error codes (order-dependent split, tally only): Quad0184=35725 Quad0185=2827 boom=8155

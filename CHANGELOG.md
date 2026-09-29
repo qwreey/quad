@@ -125,6 +125,8 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 - 다른 quad 모듈 인스턴스가 만든 `Slot`을 `Slot`의 원소 자리(`Add`/생성자/`Replace`/`Extract`/`Splice`, `State`에 담아서, `:List`의 반환값으로)에 넣거나 `q.dispose`에 넘기면 이제 거부합니다 — 전에는 통과해 다른 인스턴스의 트리를 조용히 망가뜨릴 수 있었습니다(같은 자리의 `State`도 같은 문구로 거부합니다).
 - `q.Blocker()`를 `__apply`로 State가 아닌 값에 걸면 내부 에러가 나던 것 — `Blocker: Apply target must be a State …`.
 - `Animate`가 건 `State`에 `Tween`이나 `State`를 넣었을 때 나는 검증 에러가 quad 내부 줄(`Animate.luau`)을 가리키던 것 — 호출한 줄을 가리킵니다.
+- yield하는 `:Compute` 계산 함수(지원하지 않는 사용)가 돌아올 때 다른 코루틴이 계산 중인 더 새 세대의 표시를 지우거나 이미 계산된 새 값을 옛 결과로 덮어, 같은 세대의 계산 함수가 두 번 돌던 것 — 이제 세대당 한 번만 돕니다. 대신 겹치던 자리는 돌아온 쪽의 읽기가 `State: Compute fn is already running …` 에러를 받습니다. yield하지 않는 계산 함수는 영향이 없습니다.
+- `Observer`·`Compute` 같은 콜백 안에서 부른 `q.Claim(...)`의 인자·모양 검사 에러가 그 `q.Claim` 줄이 아니라 콜백을 깨운 바깥 줄(`:Set` 등)을 가리키던 것 — 이제 다른 인자 검증처럼 `q.Claim`을 부른 줄을 가리킵니다.
 - 인자 모양을 검사하지 않던 입구에 검사를 넣었습니다(전부 호출한 줄을 가리킵니다): `Dispatch.process`/`retractFrom`의 `index`(양의 정수), `Modifier:Apply`의 factory(함수), `slot:List`/`:Single`의 `opts`(테이블 — 문자열은 조용히 무시됐습니다), `AddPlugin`/`UseProvider`의 인자(함수)와 반환값(확장 테이블). `UseProvider(nil)`이 아무 일도 없이 성공하던 것도 이제 에러입니다.
 - 검증에 실패한 CRUD 호출(`Add(nil)` 등)이 Slot을 수동 모드로 표시해 뒤의 `:List`가 "CRUD를 썼다"고 거부하던 것 — 실제로 바꾼 호출만 표시합니다.
 - `Slot:Splice`가 같은 호출에서 빼는 원소를 되넣거나 `Replace(i, slot:Get(i))`를 하면 "같은 원소가 두 번"이라던 것 — "이미 이 Slot에 있다, Move/Swap을 쓰라"로 바르게 말합니다. `keyFn`이 NaN을 돌려주면 nil과 같은 도메인 에러입니다. `Tag`에 자기를 담은 리스트를 주면 내부 스택 오버플로 대신 도메인 에러입니다.

@@ -1,0 +1,87 @@
+build
+
+R 
+obs
+obs 7 false 8
+R 
+obs
+obs 6 false 33
+run 4 x=20 prev=nil
+run 5 x=33 prev=nil
+R 4:1,5:1
+set
+set 1 ok
+R 
+set
+set 1 ok
+R 
+get
+get 8 22
+run 8 x=22 prev=nil
+R 8:1
+time
+obs 7 true 7
+time ok
+R 
+blk
+blk false ok
+R 
+set
+set 1 ok
+R 
+time
+obs 6 true 63
+run 4 x=40 prev=20
+run 5 x=63 prev=33
+time ok
+R 4:1,5:1
+set
+set 1 ok
+R 
+get
+get 7 6
+R 
+blk
+blk true ok
+R 
+set
+set 1 ok
+R 
+blk
+blk true ok
+R 
+get
+get 1 3
+R 
+blk
+blk true ok
+R 
+fin
+fin 1 3
+R 
+fin
+fin 2 3
+R 
+fin
+fin 3 3
+R 
+fin
+fin 4 10
+run 4 x=10 prev=40
+R 4:1
+fin
+fin 5 18
+run 5 x=18 prev=63
+R 5:1
+fin
+fin 6 18
+R 
+fin
+fin 7 3
+R 
+fin
+fin 8 14
+run 8 x=14 prev=22
+R 8:1
+mode defined seeds 3381 fnRuns 59591 consumerFires 63734 steps 117878 reads 29547 errLines 27107 crash 0
+raw error codes (order-dependent split, tally only): Quad0184=20490 Quad0185=1747 boom=4870

@@ -213,7 +213,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 - **언제**: `ref:Wait(thread)`로 등록해 둔 코루틴이 지금 `:Set`을 부르는 바로 그 코루틴이거나, 지금 코루틴을 resume한(바깥의) 코루틴일 때 — 대기자를 resume하는 것이 이 `:Set`인데, 실행 중인 코루틴은 resume할 수 없습니다. 인자 없는 `ref:Wait()`로 yield한 코루틴은 멈춰 있는 동안 `:Set`을 부를 수 없으므로 이 경우에 해당하지 않습니다.
 - **고치려면**: `ref:Wait(thread)`에 지금 실행 중인 코루틴이나 그 바깥 코루틴을 등록하지 마세요 — `:Set`은 등록된 대기자와 무관한 코루틴에서 부르세요.
-- **참고**: [`ref:Set(value)`](../core/07-ref.md#refsetvalue)
+- **참고**: [`ref:Set(value)`](../core/07-ref.md#refsetvalue) · 그 Ref를 마운트하다 나면 `파일:줄` 접두가 quad 파일을 가리킵니다 — [디버깅 부록](../../how-to/10-debugging-and-troubleshooting.md)의 알려진 한계 3
 
 ### Quad0132
 
