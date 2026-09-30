@@ -1,0 +1,27 @@
+== U1 gate withholding at creation: Blocker On, s:Set(1) withheld, THEN create handle on gate; Off
+  Observer: runs [1,1] (gate contract says the flush re-runs: expect [1,1])
+  Effect: runs [1,1] (gate contract says the flush re-runs: expect [1,1])
+== U2 throw liveness: subscribed Observer throws on value 1; then Set(2)
+  Observer: threw=true runs [0,1] running=true pending=true
+== U3 from per run: Observer on s, fn Sets s once (from the first delivery)
+  Observer: [s@1,nil@2]
+== U4 order in one wave: O1 Sets s=2 when s==1; O2 logs; event sequence (hist over 40 trials)
+  17x  O2:1 O1:1< O2:2 O1:2> O1:2< O1:2>
+  23x  O1:1< O2:2 O1:2> O1:2< O1:2>
+== U5 deep self-Set: Observer counts its own Source up to N (HEAD nests one wave per step)
+  N=100: ok=true final=100 runs=101 
+  N=1000: ok=true final=1000 runs=1001 
+  N=10000: ok=true final=10000 runs=10001 
+== U6 Effect cross-dep: X on A Sets B; Effect(fn, A, B); runs per A:Set (hist over 40)
+  Effect runs per A:Set: 1x17 2x23
+== U7 fn unsubscribes itself, then Sets its own State; later Subscribe
+  after Set(1): [0,1] subscribed=false held=true
+  after re-Subscribe: [0,1,5]
+== U8 explicit Rerun mid-wave, then the same wave reaches the Effect (hist over 40)
+  Effect runs per Set: 1x26 2x14
+== U9 install throws; GC; subs cleared
+  Observer: threw=true collected=true subs=0
+== U10 Effect object count per State dep (internal Observer vs direct _subs)
+  s._subs=2 c._subs=1 _deps values=[boolean,boolean]
+== U11 Observer on a Compute whose fn Sets the upstream (clamp through a derived State)
+  c=0 last=0 OK

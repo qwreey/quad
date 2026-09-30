@@ -1,0 +1,70 @@
+== C1 install: fn Sets its own dep once (A1)
+  Observer: install runs [0,1] now=1 rerunReq=false
+  Observer: after Subscribe runs [0,1]
+  Effect: install runs [0,1] now=1 rerunReq=false
+  Effect: after Subscribe runs [0,1]
+== C2 install: fn's side effect makes ANOTHER subscribed Observer Set the dep (B)
+  Observer: install runs [0,1] now=1
+  Observer: after Subscribe runs [0,1]
+  Effect: install runs [0,1] now=1
+  Effect: after Subscribe runs [0,1]
+== C3 install: explicit self:Rerun() inside fn (Effect only; Q110)
+  Effect: install runs 2 cleanups [false]
+  Effect: after Subscribe runs 2
+  Effect: after Unsubscribe cleanups [false,false]
+== C4 held: two Sets while unexecutable, then Subscribe / bind
+  Observer: before Subscribe [0]
+  Observer: after Subscribe [0,2]
+  Observer: after Set(3) [0,2,3]
+  Observer: bind catch-up [0,5]
+  Observer: after host Destroy + Set(6) [0,5]
+  Effect: before Subscribe [0]
+  Effect: after Subscribe [0,2]
+  Effect: after Set(3) [0,2,3]
+  Effect: bind catch-up [0,5]
+  Effect: after host Destroy + Set(6) [0,5]
+== C5 subscribed: fn clamps its own dep (reads v, Sets 0 if v<0, then records v) — last recorded vs current
+  Observer: s=0 last recorded=0  OK
+  Effect: s=0 last recorded=0  OK
+== C6 subscribed, nested wave: A (subscribed) Sets s=2 when s==1; how many runs does sibling B do on Set(1)?
+  Observer: B runs per Set(1) over 50 trials: [1,2]x29 [2]x21
+  Effect: B runs per Set(1) over 50 trials: [1,2]x28 [2]x22
+== C7 gate: handle on s:Apply(blocker), blocker On — install Sets s; then Off (flush must still arrive)
+  Observer: install [0]
+  Observer: after Subscribe [0]
+  Observer: after Off [0,1]
+  Effect: install [0]
+  Effect: after Subscribe [0]
+  Effect: after Off [0,1]
+== C8 gate + held: unsubscribed handle on gated node, blocker On, s:Set(1); Subscribe; Off
+  Observer: after Subscribe [0,2]
+  Observer: after Off [0,2,2] (gate contract: flush re-runs)
+  Effect: after Subscribe [0,2]
+  Effect: after Off [0,2,2] (gate contract: flush re-runs)
+== C9 oscillation: fn toggles its own dep, stops itself after 40 runs
+  Observer: install runs 40
+  Observer: subscribed Set runs 40
+  Effect: install runs 40
+  Effect: subscribed Set runs 40
+== C10 install fire throws (after Setting its own dep)
+  Observer: threw=true runs=1 subsOfS=1 running=true rerunReq=false
+  Observer: after Set(99) runs=1
+  Observer: collected=true subsOfS=0
+  Effect: threw=true runs=1 subsOfS=1 running=true rerunReq=false
+  Effect: after Set(99) runs=1
+  Effect: collected=true subsOfS=0
+== C11 revive mid-wave (Q109): held older change, sibling Subscribes it during the wave that will also reach it
+  Observer: runs in wave: 1x100
+  Effect: runs in wave: 1x100
+== C12 Observer on a Compute: install fn Sets the upstream Source (derived-state Q73)
+  Observer: install [0,10] now=10
+  Effect: install [0,10] now=10
+== C6c same as C6 but B observes a Compute over s
+  Observer: B runs per Set(1) over 50 trials: [1,2]x30 [2]x20
+  Effect: B runs per Set(1) over 50 trials: [1,2]x25 [2]x25
+== C11c revive mid-wave, handle on a Compute over src
+  Observer: runs in wave: 1x51 2x49
+  Effect: runs in wave: 1x47 2x53
+== C13 H-68 same-value Set on a Source still re-runs (each Set is a new revision)
+  Observer: runs [1,1,1]
+  Effect: runs [1,1,1]

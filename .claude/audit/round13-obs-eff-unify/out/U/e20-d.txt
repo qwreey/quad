@@ -1,0 +1,24 @@
+== D1 weak-subscribed Observer/Effect dropped → collected, _subs shrinks
+   before gc subs:	2
+   alive o/e:	0	0	subs after gc:	0	weak Effect cleanup ran on collection?	false
+== D2 strong-subscribed Observer holds its upstream (source not collected while subscribed)
+   source alive while strong:	1
+   source alive after Unsubscribe+drop:	0
+== D3 strong-subscribed Effect that threw (dead) — Unsubscribe releases upstream
+   dead+strong: source alive	1	running	true
+   after Unsubscribe+drop:	1
+== D4 tree-bound handles: host destroyed + dropped → collected (Immediate mock)
+   alive o/e after host Destroy+drop:	0	0	src subs:	0
+== D5 tree-bound, host destroyed but host variable still referenced
+   alive o/e (host still referenced, destroyed):	0	0
+   alive after host dropped:	0	0
+== D6 Deferred Destroying (queue shim): bound Effect collected only after the queued callback runs
+   before flush alive:	1	cleanups	
+   after flush alive:	0	cleanups	true
+== D7 bound handle whose host is never destroyed but dropped (unparented) — mock
+   alive (mock, unparented host dropped):	1	cleanup ran:	false
+== D8 weak Effect: .Subscribed remains true on a handle that is still referenced while its deps are dropped? (deps held by _deps)
+   dep alive while weak effect referenced:	1	Sub	true
+   dep alive after effect dropped:	0
+== D9 Unsubscribed-but-referenced Observer keeps receiving _rerunRequired (stays in _subs), upstream held
+   in _subs:	true	held:	true

@@ -1,0 +1,4 @@
+  pure-core stale seed	8	node 4 kind M T0 seed-stale after install: saw 4 now 8
+  pure-core stale seed	10	node 10 kind C T0 seed-stale after install: saw 8 now 2
+  pure-core stale seed	16	node 11 kind C T0 seed-stale after install: saw 16 now 13
+pureCoreInstallStale	222	installStaleSeeds	289	installStaleTotal	379	fails	0	seeds	3000

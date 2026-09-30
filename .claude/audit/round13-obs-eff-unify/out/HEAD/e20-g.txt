@@ -1,0 +1,4 @@
+dispose(observer):	Quad0180 dispose: this backend cannot dispose this value
+dispose(effect):	Quad0180 dispose: this backend cannot dispose this value
+observer disposes own host in fn:	ok	runs	1	exe	false	running	false
+  next Set runs	1

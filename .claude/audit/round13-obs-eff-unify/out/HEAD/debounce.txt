@@ -1,0 +1,4 @@
+Debounce	Observer	install	0	| subscribe	0	| after timers	0,1
+Debounce	Effect	install	0	| subscribe	0	| after timers	0,1
+Throttle	Observer	install	0	| subscribe	0	| after timers	0
+Throttle	Effect	install	0,1	| subscribe	0,1	| after timers	0,1

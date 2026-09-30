@@ -1,0 +1,159 @@
+--- a/quad-base/src/Observer.luau
++++ b/quad-base/src/Observer.luau
+@@ -29,12 +29,25 @@
+ 	    point runs its own `canBound` gate exactly once and throws with
+ 	    `level 2` from its own body (`H-104`).
+ 
+-	An Observer is NOT an `Epoch` and carries no epoch bookkeeping — it only
+-	forwards the source it received. `Effect` does NOT reuse these
+-	bodies (heterogeneous types; `conventions.md` 설계 원칙).
++	PROTOTYPE obs-eff-unify U′ (2026-09-30): the Observer follows Effect's rerun
++	PROTOCOL — the same field vocabulary with the same meanings, its OWN bodies:
++	  `_epochs`        what fn has seen (EpochMap; written by `Update` on delivery and
++	                   `Sync` of a direct Epoch dep right before fn — see `rawRerun`)
++	  `_rerunRequired` a change arrived while not executable — held, replayed on bind/subscribe
++	  `_pending`       a change arrived while fn was running UNEXECUTABLY (install window,
++	                   released inside fn) — the loop runs fn again or holds (U′: an executable
++	                   change during a run still nests — see `rawRerun`)
++	  `_running`       fn is on the stack (H-183 gate; a throw leaves it up — not dead, U′)
++	  `force`          the install run — may run while unexecutable (and keeps looping)
++	An Observer is still NOT an `Epoch` (it has no Revision of its own) — it only
++	RECORDS the epochs delivered to it (user 2026-08-26: "observer 에는 epoch 란게
++	존재하지 않음. emit 으로 온 epoch 를 넘겨줄 뿐" — identity, not bookkeeping).
++	`Effect` does NOT reuse these bodies (heterogeneous types; `conventions.md` 설계 원칙) —
++	what the two share is data (EpochMap, the registries) and this written protocol.
+ ]]
+ 
+ local Brand = require("./Brand")
++local EpochMap = require("./EpochMap")
+ local ImplRegistry = require("./ImplRegistry")
+ local Err = require("./ErrorNamespace")
+ local Relate = require("./Relate")
+@@ -45,6 +58,7 @@
+ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
+ 
+ local ObserverBrand = Brand.ObserverBrand
++local isEpoch = Brand.isEpoch
+ 
+ local WEAK_KEY_MT = { __mode = "k" }
+ 
+@@ -77,21 +91,65 @@
+ 		return `Observer({subscriptionOf(self)})`
+ 	end
+ 
++	-- ── the rerun body (Observer's own — Effect has its own `rawRerun`) ──
++	-- PROTOTYPE U. `force` means exactly one thing, as in Effect: "may run ignoring canExecute" —
++	-- the install from the constructor. `from` is the delivery's source for the FIRST run only;
++	-- a re-run for a change that arrived while fn ran passes `nil` ("read the value", `H-164` —
++	-- the source is not stored: several changes may have arrived).
++	local function rawRerun(self: any, force: boolean, from: any)
++		-- PROTOTYPE U′ (Unest): Effect's protocol with ONE deliberate difference — an EXECUTABLE
++		-- change that arrives while fn runs runs fn again right there (nested, as HEAD), instead of
++		-- `_pending`. Reason: without pcall a deferred re-run cannot tell "fn is on the stack" from
++		-- "fn threw earlier", so deferral makes a thrown Observer dead; nesting keeps HEAD's
++		-- self-heal (the next change still runs fn — spec.observer 9, H-445, H-569, H-571 …).
++		-- `_pending` therefore only carries changes that arrive while fn runs UNEXECUTABLY: the
++		-- install window (Q73) and an fn that has just released itself (Q63 (b)).
++		-- (`force` first: the install never asks the gate — a bare quad has no backend yet)
++		if not force and not module.Backend.canExecute(self) then -- read at fire time (`H-174`)
++			if self._running then
++				self._pending = true -- install window / released inside fn: the loop decides (run or hold)
++			else
++				self._rerunRequired = true -- `H-159`: unexecutable → HOLD, replayed once on bind/subscribe
++			end
++			return
++		end
++		-- `H-183`: fn may not change its own lifecycle. Save/restore, not true/false (`H-332`): a
++		-- nested run must not lower the guard for the outer fn's tail. A throw leaves the flag up —
++		-- NOT dead: the next executable change still runs fn (round11 Q63 wording).
++		local outer = self._running
++		self._running = true
++		local state = self._state
++		repeat
++			self._pending = false
++			self._rerunRequired = false -- the only place the hold goes down: fn really runs
++			-- fn reads its State live; a direct Source's live revision is exactly what its next
++			-- delivery would carry — mark it seen, so a same-wave delivery that reaches us after this
++			-- run (a nested wave already ran us; catch-up mid-wave, Q109) is not a new change.
++			-- A derived State is not touched: a Gate below it may be withholding (`H-151`).
++			if from == nil and isEpoch(state) then -- a run a delivery started already has it (`Update`)
++				self._epochs:Sync(state)
++			end
++			self.fn(state, self, from)
++			from = nil
++			if not force and not module.Backend.canExecute(self) then
++				-- lost executability inside fn (it released itself — Q63 (b)): a change that
++				-- arrived meanwhile is held, not run on the released handle
++				if self._pending then
++					self._pending = false
++					self._rerunRequired = true
++				end
++				break
++			end
++		until not self._pending
++		self._running = outer
++	end
++
+ 	-- ── EmitReceive ──────────────────────────────────────────────────
++	-- `Update` first, always (bound or not — Effect's `fire`): a revision already seen is
++	-- not a change (a stale outer-wave delivery after a nested wave, a diamond).
+ 	function Impl._receive(self: any, from: any)
+-		if module.Backend.canExecute(self) then -- read at fire time (`H-174`)
+-			-- `H-183`: fn may not change its own lifecycle (`H-147` symmetric). An fn
+-			-- that throws leaves the flag set — NOT "dead": this gate does not read it, so
+-			-- the Observer keeps firing; what the stuck flag blocks is (re)subscribing and
+-			-- (re)binding (`_assertBindable`) — round11 Q63 corrected the old "dead by
+-			-- contract" wording. Save/restore, not true/false: a reentrant wave (fn sets
+-			-- its own State) must not lower the guard for the outer fn's tail (`H-332`)
+-			local outer = self._running
+-			self._running = true
+-			self.fn(self._state, self, from)
+-			self._running = outer
+-		else
+-			self._rerunRequired = true -- `H-159`: change before binding is held — replayed once when bound
++		if self._epochs:Update(from) then
++			rawRerun(self, false, from)
+ 		end
+ 	end
+ 
+@@ -99,11 +157,7 @@
+ 	-- The only caller set: `bindLifetime`, `Subscribe`, `WeakSubscribe`.
+ 	function Impl._catchUp(self: any)
+ 		if self._rerunRequired then
+-			self._rerunRequired = false
+-			local outer = self._running -- `H-183` (save/restore — `H-332`)
+-			self._running = true
+-			self.fn(self._state, self, nil)
+-			self._running = outer
++			rawRerun(self, false, nil)
+ 		end
+ 	end
+ 
+@@ -190,17 +244,20 @@
+ 		local o: any = setmetatable({
+ 			fn = fn or alwaysObserve,
+ 			_state = state, -- strong: the handle holds its upstream (`_hold` equivalent, `H-110`)
+-			_rerunRequired = true,
++			_epochs = EpochMap(), -- PROTOTYPE U: what fn has seen (Effect's field, same meaning)
++			_rerunRequired = false,
++			_pending = false, -- PROTOTYPE U: a change arrived while fn ran (Effect's field, same meaning)
+ 			_running = false, -- `H-183`: raised around every fn run; the subscribe entries + `_assertBindable` refuse while up (Q63 (b): releasing passes)
+ 			Subscribed = false, -- the shared flag both handle types carry (`H-111`)
+ 		}, Impl)
+ 		ObserverBrand:Register(o)
+-		o._running = true -- `H-183`: the install fire is an fn run like any other
+-		o.fn(state, o, nil) -- (1) fire once at registration — no source (`nil`)
+-		o._running = false
+-		o._rerunRequired = false -- (2) the install fire lowers the flag
+-		state._subs[o] = true -- (3) only THEN join the subscriber set — reversed, (1) Setting its own
+-		return o --     State would land in this Observer's `_receive` and raise the flag
++		-- PROTOTYPE U — Effect's constructor order: seed, register, install.
++		-- no seeding (as Effect, U): the install's pre-fn `Sync` marks a Source; a derived State
++		-- is never marked — a Gate's withheld revision must still re-run us when flushed
++		state._subs[o] = true -- join BEFORE the install run (Q73): a change inside the install window —
++		o._rerunRequired = true --   fn's own Set or anyone else's — reaches `_receive` → `_pending` → fn again
++		rawRerun(o, true, nil) -- install: fire once at registration — no source (`nil`)
++		return o
+ 	end
+ 
+ 	-- `H-231`: public surface joins the shared error-namespace tag layer

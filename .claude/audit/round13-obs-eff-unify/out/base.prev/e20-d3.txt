@@ -1,0 +1,4 @@
+E	Set threw:	true	src alive:	1	handle running:	true
+E	after Unsubscribe+drop: src alive	0	handle alive	0
+O	Set threw:	true	src alive:	1	handle running:	true
+O	after Unsubscribe+drop: src alive	0	handle alive	0

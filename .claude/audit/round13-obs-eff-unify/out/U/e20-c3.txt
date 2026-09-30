@@ -1,0 +1,10 @@
+   N=100 Observer: ok maxDepth=1 final=2 running-after=false
+   N=1000 Observer: ok maxDepth=1 final=2 running-after=false
+   N=5000 Observer: ok maxDepth=1 final=2 running-after=false
+   N=20000 Observer: ok maxDepth=1 final=2 running-after=false
+   N=100000 Observer: ok maxDepth=1 final=2 running-after=false
+== install-time: fn Sets its own dep once / calls self:Rerun() once, while unbound
+   dep Set in install fn: runs before bind =	2	cleanups =	false	rerunRequired =	false
+   after Subscribe runs =	2
+   self:Rerun() in install fn: runs before bind =	2	rerunRequired =	false
+   control: Rerun() outside fn on an unbound Effect: runs =	1	rerunRequired =	true

@@ -1,0 +1,2 @@
+Observer	ran	1	times in one wave:	200	trials; values seen	[2]
+Effect	ran	1	times in one wave:	200	trials; values seen	[2]

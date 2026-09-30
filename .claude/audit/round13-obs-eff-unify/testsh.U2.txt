@@ -1,0 +1,1547 @@
+relink: 0 symlink(s) replaced, 107 copy/copies refreshed
+relink: 6 nested cop(y/ies) hoisted to top-level
+Created sourcemap at sourcemap.json
+check: 31 classes, generated Declaration is up to date
+=== luau-analyze (engine-agnostic) quad-base/src quad-types/src quad-error/src quad-base/test/spec.*.luau quad-base/test/mock.luau
+./quad-base/test/spec.slot.luau(1275,79): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+./quad-base/test/spec.slot.luau(1287,80): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+./quad-base/test/spec.slot.luau(1302,76): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+=== luau-lsp analyze --flag:LuauSolverV2=true (new solver, engine-agnostic) quad-base/src quad-types/src quad-error/src type-version-check/src quad-base/test/spec.*.luau quad-base/test/mock.luau
+[WARN] No definitions file provided by client
+quad-base/test/spec.slot.luau(1275,79): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+quad-base/test/spec.slot.luau(1287,80): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+quad-base/test/spec.slot.luau(1302,76): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+=== luau-lsp analyze --definitions=scripts/roblox-defs/globalTypes.d.luau quad-roblox/src quad-roblox/test/spec.*.luau
+=== quad-base/test/smoke.init.luau
+=== 1. New()가 만든 module엔 InitDebug가 이미 반영돼 있음 ===
+PASS
+
+=== 2. RunInit은 같은 함수를 다시 넘겨도 재실행하지 않음 ===
+PASS: 1회 호출 중 실제 실행 1회
+
+=== 3. New()로 만든 서로 다른 module은 RunInit 기록을 공유하지 않음 ===
+PASS: 독립 인스턴스 2개 각각 1회씩, 총 2회
+
+=== 4. 서로 다른 initFn은 서로의 실행 여부에 영향을 안 줌 ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/smoke.mock.luau
+=== 1. property bag + changed signal ===
+PASS
+
+=== 2. parent/children tree ===
+PASS
+
+=== 3. Destroy fires Destroying + detaches ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/smoke.plugin.luau
+=== 1. Version 필드가 pesde.toml과 맞음 ===
+PASS
+
+=== 2. AddPlugin이 원본 identity를 유지한 채(mutate) 확장 필드를 추가함 ===
+PASS
+
+=== 3. 체이닝 — 여러 플러그인을 연속으로 추가해도 전부 누적됨 ===
+PASS
+
+=== 4. 기존 필드 덮어쓰기 — 허용하되 debug일 때 경고(2026-09-15 사용자 결정) ===
+(아래 AddPlugin 덮어쓰기 경고 한 줄은 의도된 출력이다 — print 캡처가 안 돼 육안 확인)
+AddPlugin: plugin overwrites existing module field "Effect" - intended if the plugin extends a core part on purpose; otherwise rename the plugin's field
+PASS
+
+=== 5. 같은 플러그인 두 번 — identity dedup, 표시는 성공 후(2026-09-15 사용자 결정) ===
+PASS
+
+=== 6. debug 층 — 모르는 옵션 키는 경고만 하고 실행은 계속(2026-09-15 사용자 결정) ===
+(아래 unknown option 경고 셋은 의도된 출력이다 — print 캡처가 안 돼 육안 확인)
+Debounce: unknown option "leading" is ignored (known: Time, Leading, Trailing, MaxTime, Handle)
+Throttle: unknown option "trailing" is ignored (known: Time, Leading, Trailing, MaxTime, Handle)
+Slot:List/:Single: unknown option "Owned" is ignored (known: OwnsElements)
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.attribute.luau
+=== 1. AttrKey — 이름별 캐시 동일성, 브랜드 (패밀리는 이제 키가 아니다 — 10절) ===
+PASS
+
+=== 1b. 생성자 — plain 테이블만 (핸드오버 리뷰 `H-345`, Modifier `H-310`의 거울) ===
+=== 2. 단일 키 왕복 — 무조건 set, store-bind, None → nil 삭제 ===
+PASS
+
+=== 3. 그룹 — Store 평탄화 반영, 필드 변경은 그룹 재진입 없이 단일 키 경로 ===
+PASS
+
+=== 4. 그룹 교체 — 값은 잔존(클로저는 setAttr 안 부름), 구독은 끊김 ===
+PASS
+
+=== 5. 합성 정책 — 생성자·Overridden은 뒤가 이김, Merged는 겹치면 error ===
+PASS
+
+=== 6. 이름 claim — 그룹이 잡은 이름을 직접 쓰기가 노리면 즉시 error ===
+PASS
+
+=== 7. groupClaimKeys — 같은 그룹 객체를 두 위치에 놓으면 즉시 error ===
+PASS
+
+=== 8. H-39 부기 + 미주입 스텁 안내 ===
+PASS
+
+=== 9. 통합 리뷰(H10-8) — 같은 그룹 객체 재발행은 엔진 호출 0·claim 유지 ===
+PASS
+
+=== 10. 타입드 스칼라 슈가(2026-09-03 사용자 확정) — 단일 항목 그룹, 값 검증, 이름 claim·위치 claim은 그룹 그대로 ===
+PASS
+
+
+=== 11. 2026-09-08 2차 감사 H-498 — 그룹 값이 테이블(Slot/Ref/메타테이블 테이블)이면 거부, None/State/raw는 통과 ===
+PASS
+=== ALL PASS ===
+=== quad-base/test/spec.blocker.luau
+=== 1. 생성·상태 — On/Off/OffWithoutEmit은 self 반환, `Blocking` 필드(2026-09-15 옛 상태 필드·접근자 쌍 대체), 브랜드, 단순 불리언(카운터 아님) ===
+PASS
+
+=== 2. state:Apply(blocker) — __apply 메소드형(H-158)으로 GateNode 하나, 열려 있으면 투명 통과 ===
+PASS
+
+=== 3. On → 유보(HasBlockedEmit = withheld 비어있지 않음), Off → 정확히 1회 flush, 이미 비었으면 no-op ===
+PASS
+
+=== 4. OffWithoutEmit — 밀린 전파를 버리며 끈다, 다음 진짜 emit은 정상 ===
+PASS
+
+=== 5. 하나의 Blocker가 여러 gated state를 — Off가 전부 풀고, 순회는 스냅샷(풀리는 중 새 등록 안전) ===
+PASS
+
+=== 6. H-63 — 핸들은 weak-key, 강한 주인은 게이트의 onUpstreamEmit 클로저: 게이트가 죽으면 핸들도 사라진다 ===
+PASS
+
+=== 7. Policy(emit)를 직접 Gate에 배선 — Apply와 같은 모양, 여러 노드가 정책을 공유 ===
+PASS
+
+=== 8. H-203 — Off 순회 중 재차단: 남은 핸들은 유보 유지, Blocking true인 채 통지가 새지 않는다 ===
+PASS
+
+
+=== 9. 2026-09-08 2차 감사 H-492 — Policy(emit)의 emit 게이트: 비함수는 등록 줄에서 표면 에러(옛: Off()에서 Blocker.luau VM 에러) ===
+PASS
+
+=== 10. round10 H-2 — Blocker:__apply의 대상 게이트(형제 Apply와 같은 모양) ===
+PASS
+=== ALL PASS ===
+=== quad-base/test/spec.brand.luau
+=== 1. register/is — 등록한 값만 통과 ===
+PASS
+
+=== 2. 다중 태깅 — 한 값이 여러 브랜드에 동시에 ===
+PASS
+
+=== 3. 브랜드 간 독립 — 한 브랜드 등록이 다른 브랜드에 안 샘 ===
+PASS
+
+=== 4. weak-key — 등록만으로는 값이 살아남지 않음 ===
+PASS
+
+=== 5. isRef 계층 — PreRef/PostRef는 Ref의 한 종류, 서로는 배타 ===
+PASS
+
+=== 6. isState 계층 — Source는 State를 구조적으로 만족 ===
+PASS
+
+=== 7. 단순 항등 술어 + Quad 탑레벨 재export ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.context.luau
+=== 1. 생성·브랜드·tostring — Context()는 콜러블 네임스페이스, Provider는 frozen 신원 키(이름은 선택) ===
+PASS
+
+=== 2. Set/Get/Peek — 타입은 Provider<T>의 팬텀 T로 추론; Get은 없으면 에러(호출 줄 blame), Peek은 nil ===
+PASS
+
+=== 3. 게이트 — 키는 Provider만, nil 값 거부; Set은 덮어쓰기 ===
+PASS
+
+=== 4. 중간 계층 — 스키마를 모르는 셸이 가방을 그대로 내리고, 깊은 자식이 자기 키만 읽는다 ===
+PASS
+
+=== round13 Q102 (a) (user decision 2026-09-28) - Context() takes no arguments; an initial table used to be dropped silently ===
+PASS
+
+ALL PASS
+=== quad-base/test/spec.debounce.luau
+=== 1. 생성 게이트 — Time 필수·음수 거부, Leading/Trailing 둘 다 false 거부, Throttle MaxTime 거부, Handle은 Ref, Apply 대상은 State ===
+PASS
+
+=== 2. Debounce 기본(Leading=false, Trailing=true) — 버스트 중 침묵, 조용해지고 Time 뒤 1회; 창 안 :Get()은 최신값((A) emit-gate) ===
+PASS
+
+=== 3. Debounce 한 비트 — 신호가 창을 민다: 0/0.2/0.4에 신호, Time 0.3이면 0.7에 한 번 ===
+PASS
+
+=== 4. Throttle 사용자 시나리오(1-1절) — 0.0 즉시(leading), 0.1 눌러둠, 1.0 통과(trailing)+창 재개방, 1.05 눌러둠, 2.0 통과, 3.0 idle, 3.5 즉시 ===
+PASS
+
+=== 5. Leading=true, Trailing=false — 버스트 시작에 한 번, 나머지는 창 끝에 버려진다(emit(false) — 집합이 빈다) ===
+PASS
+
+=== 6. MaxTime(Debounce 전용) — 신호가 안 끊겨도 MaxTime마다 통과, 창은 통과 뒤 재개방 ===
+PASS
+
+=== 7. 제어 핸들 — Handle Ref가 Apply 시점에 채워짐; Flush는 즉시 커밋(+창 재개방)·idle이면 no-op, Cancel은 버림 ===
+PASS
+
+=== 7b. Flush는 Trailing과 무관(배너 (4)) — Trailing=false 게이트도 명시적 Flush면 보류분을 통과; 창 안 Time 오류는 상태를 안 남긴다(H-509) ===
+PASS
+
+=== 7d. H-509 호출자 층 — Leading=false idle과 Debounce 재개방에서 Time 오류가 Blocker On/창 없음을 안 남긴다(hunt B) ===
+PASS
+
+=== 7c. (j) 같은 Handle Ref로 두 번 :Apply — 둘째가 조용히 덮어쓰지 않고 에러(사용자 결정, round9) ===
+PASS
+
+=== 8. 팩토리 브로드캐스트 — factory:Flush()/Cancel()은 그 팩토리로 만든 게이트 전부에; 레지스트리는 weak ===
+PASS
+
+=== 9. Time = State<number> — 신호가 들어올 때 읽는다(round10 Q55 (b), 2026-09-17): 바꿔도 진행 중인 창은 그대로, 다음 신호가 여는 창부터 ===
+PASS
+
+=== 10. 재진입 — flush 도중 하류가 상류를 :Set해도 창은 하나(타이머 하나), 두 번째 신호는 새 창으로 ===
+PASS
+
+=== 10b. 타이머 경로 재진입 — 창 끝 flush 중 하류가 상류를 :Set하면 보류되고(창 하나), 다음 창에서 통과 ===
+PASS
+
+=== 11. 미주입 백엔드 — 맨 Quad.New()에선 setTimeout 스텁이 안내 에러(첫 신호 때) ===
+PASS
+
+=== 12. round11 H-541/H-542 (2026-09-17) — 게이트 핸들 Flush의 blame은 사용자 줄; Trailing = false Debounce는 MaxTime을 읽지도 않는다 ===
+PASS
+
+=== 13. round11 H-570 (2026-09-17) — flush 도중 하류가 handle:Cancel()을 재진입으로 부르면 창을 다시 열지 않는다(다음 leading 신호가 즉시 통과) ===
+PASS
+
+=== round13 Q100 (a) (user decision 2026-09-28) - Time/MaxTime = math.huge is refused (an infinite window only closes on Flush); a number tail shows the value ===
+PASS
+
+ALL PASS
+=== quad-base/test/spec.dispatch.luau
+=== 1. getHandler — 우선순위 스캔·첫 매치, 매치 없으면 nil (순수 조회) ===
+PASS
+
+=== 2. process 매치 실패 — 즉시 error, typeof + (있으면) 브랜드 + provider 안내 ===
+PASS
+
+=== 3. (B) 설치·교체 — 다른 핸들러가 오면 그 자리 retract(nil) 후 새로 설치 ===
+PASS
+
+=== 4. (A) 같은 핸들러 재프로세스 — retractor가 **새 값**을 받고, 그 다음 process ===
+PASS
+
+=== 5. retractor 반환 생략 — (B) 신규 설치·(A) 재프로세스 양쪽에서 즉시 error ===
+PASS
+
+=== 6. retractFrom — 꼬리(깊은 인덱스)부터 역순, 항상 소비, 재설치 가능 ===
+PASS
+
+=== 7. 깊은 체인의 (A) 연쇄 — 아무것도 철거되지 않고 각 레벨이 자기 힌트를 받음 ===
+PASS
+
+=== 8. 조건부 재위임 핸들러 — 재위임을 건너뛰는 자리에서 retractFrom(index+1) 직접 호출 ===
+PASS
+
+=== 9. 다른 키로 위임 — 그 키에선 항상 인덱스 1, 정리는 위임한 클로저 몫 ===
+PASS
+
+=== 10. addHandler 동률 — 규칙 없음(에러 아님), 경고 print는 debug일 때만 ===
+(아래 quad.Dispatch 동률 경고 한 줄은 의도된 출력이다 — print 캡처가 안 돼 육안 확인)
+Dispatch.addHandler: handler priority tie between (priority 0) and (priority 0) - ties have no defined order; offset from a HANDLER_PRIORITY_* band
+PASS
+
+=== 11. listHandlers — 항상 호출 가능, 우선순위순 반환만(출력 없음), 사본 ===
+PASS
+
+=== 12. 인스턴스 격리 — New() 둘은 레지스트리·chains를 공유하지 않음 ===
+PASS
+
+=== 13. H-229 — 체인은 inst의 bind 수명에 앵커: Destroy 후 GC로 통째로 회수 ===
+PASS
+
+=== 14. H-258 — retractor 2번째 인자: retractFrom는 (nil, true), (A) 재프로세스는 (v, false) ===
+PASS
+
+=== 15. H-329 (a) — 순수 철거로 비워진 체인은 chains·gchold에서 놓인다(새 키마다 누적 없음); (B) 재설치 경로는 같은 리스트 유지 ===
+PASS
+
+
+=== 16. H-419 (외부 리뷰 G-07) — drive의 props가 테이블이 아니면 표면 에러(flatten 안 VM 에러가 Dispatch/Modifier/init.luau를 blame하던 것) ===
+PASS
+=== 17. round3 H-442 (외부 리뷰 G-12) — drive(nil, props)는 표면 에러(Relate의 `table index is nil` 대신), 사용자 줄 blame ===
+PASS
+=== 18. round3 H-452 (Q7 셋째 (a), H-416 재현) — 디스패치가 lazy Compute를 처음 강제해 Modifier가 나오면 blame은 사용자 drive 줄(outermost), StoreBind 내부가 아니다 ===
+PASS
+
+=== 19. round7 Q37 (a) H-484 — keyType 버킷: 선언한 타입의 키에서만 물어보고, 미선언은 모든 버킷, 버킷 안 순서는 priority, 잘못된 선언은 등록 시 표면 에러 ===
+PASS
+
+
+=== 20. 2026-09-08 2차 감사 H-493/H-495 — addHandler 모양 게이트, drive 배열 키 도메인([0]/[1.5]/[-1]) ===
+PASS
+
+=== 21. round11 H-563/H-564/H-565/H-567/H-568 (2026-09-17) — 비브랜드 is* 헬퍼 무시·체인 구멍 index 거부·nil 키 게이트·base 브랜드 no-match 안내·priority NaN·addHandler dedup ===
+PASS
+=== ALL PASS ===
+=== quad-base/test/spec.drive.luau
+=== 1. 배열 파트 전체가 해시 파트보다 먼저 + 배열 안에서는 index 순서 ===
+PASS
+
+=== 2. 모든 진입은 체인 인덱스 1 ===
+PASS
+
+=== 3. 빈 props — no-op (아무 핸들러도 안 불림) ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.effect.luau
+=== 1. 생성 — deps 검증(H-70), 설치 즉시 1회(force), _deps 강한 주인, 브랜드 ===
+PASS
+
+=== 2. 발화 — 안 묶이면 홀드(H-159), 묶이면 dep 변경마다 1회; Ref dep도 같은 경로 ===
+PASS
+
+=== 3. 다이아몬드 — 공통 상류가 한 번 바뀌면 fn은 한 번 (H-107: 클로저를 나눠도 dedup은 _epochs) ===
+PASS
+
+=== 4. cleanup — fn의 반환이 cleanup, 다음 fn 전에 1회, Unsubscribe가 소진, 파괴가 소진 ===
+PASS
+
+=== 5. cleanup 없는 fn — 바인드/재마운트마다 재실행되지 않는다 (_rerunRequired 판정, H-58 회귀 방지) ===
+PASS
+
+=== 6. 재진입 — fn 안의 dep:Set은 지연 재실행(_pending); fn/cleanup은 자기 구독을 못 바꾼다 (H-147) ===
+PASS
+
+=== 7. 네 진입점 — 게이트·관대/엄격·강한 킵 뒤 꼬리, canExecute 연동 ===
+PASS
+
+=== 8. error — fn이 던지면 그 Effect는 죽는다(_running 남음), 재실행·(재)구독은 차단; round11 Q63 (b): 해제(Unsubscribe/WeakUnsubscribe)는 통과해 강한 킵이 풀린다 ===
+PASS
+
+=== 9. GC — Effect가 강한 주인: 핸들을 놓으면 Ref 콜백·내부 Observer도 같이 사라진다 ===
+PASS
+
+=== 10. H-182 — Destroy 파동 안 cleanup 소진 뒤의 dep 변경은 홀드(_dying); H-184 — 거부된 bind는 아무것도 커밋 안 함 ===
+PASS
+
+
+=== 4순회 H-384 — fn 안에서 자기 자신을 drive로 바인드하려는 오용(H-147 (A)) — blame은 사용자의 Effect 생성 줄 (fn은 생성 시 즉시 돈다; drive → process → bindLifetime → _assertBindable, 최외곽) ===
+PASS
+
+=== 공개 표면 (18) 2026-09-15 — fn이 함수도 nil도 아닌 값을 돌려주면 그 자리에서 던진다(사용자 줄 blame) ===
+PASS
+
+=== round10 Q51 (a) (2026-09-17) — cleanup 안의 dep Set은 뒤따르는 fn이 소비한다: 사이클 하나(cl fn), 옛 순서의 cl fn cl fn이 아니다 ===
+PASS
+
+=== round10 Q57 (2026-09-17, 사용자 제안) — cleanup(dying): 잎 사망 소진만 true, 재실행 직전·Unsubscribe·자리 교체는 false; () -> () cleanup은 그대로 ===
+PASS
+
+=== 11. round11 H-574 (2026-09-17, Deferred 실측) — 호스트가 죽은 뒤 같은 청크에서 다른 인스턴스에 다시 묶인 핸들은 옛 Destroying 콜백(지연 배달)에 죽지 않는다 ===
+PASS
+
+
+=== 12. round11 Q68 (b) (2026-09-18) — fn이 yield하는 사이 leaf가 죽으면(_dying) fn이 돌려준 cleanup을 저장하지 않고 즉시 dying=true로 소진(전엔 죽은 핸들에 남는 영구 누수); 자리 철거로 실행 자격을 잃은 경우도 같다 ===
+PASS
+=== ALL PASS ===
+=== quad-base/test/spec.epochmap.luau
+=== 1. Update — 읽고 비교하고 덮는다, 하나라도 달랐으면 true ===
+PASS
+
+=== 2. EpochSet — 집합({[Epoch]: true})을 받는다, 배열이 아니다 ===
+PASS
+
+=== 3. Peek — 비교만, 덮지 않음 ===
+PASS
+
+=== 4. Sync — 읽지 않고 쓰기만, 반환값 없음 ===
+PASS
+
+=== 5. Refresh — 인자 없는 Update: 추적 중인 키 전부를 라이브로 ===
+PASS
+
+=== 6. TrackFrom — other의 키를 넘겨받아 라이브 리비전으로, other는 안 건드림 ===
+PASS
+
+=== 7. 키는 weak — Epoch가 죽으면 항목이 사라짐 ===
+PASS
+
+=== 8. Source/Ref는 Epoch로서 그대로 들어간다 ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.errorcodes.luau
+=== 1. 던진 문자열은 `파일:줄: QuadNNNN 주어: …` 모양이다 ===
+PASS	Quad0013
+
+=== 2. Fallback의 err에서 번호로 분기할 수 있다(문자열일 때) ===
+PASS	Quad0013
+
+=== ALL PASS ===
+=== quad-base/test/spec.errorutil.luau
+=== 1. errorAt — 태그된 프레임 **안**의 줄을 blame ===
+PASS
+
+=== 2. errorBefore — 태그된 프레임의 **호출부**를 blame ===
+PASS
+
+=== 3. 최상단부터 스캔 — 같은 태그가 겹치면 **바깥쪽**이 이긴다(샌드위치에 강건) ===
+PASS
+
+=== 4. 무태그 기본 — 매치 없으면 raise 자리로 폴백, 등록 안 된 함수는 level 0 ===
+PASS
+
+=== 5. 태그 맵은 weak — 죽은 함수의 태그가 맵을 붙잡지 않는다 ===
+PASS
+
+=== V. setFuncLevel(level, ...fns) — 가변인자 계약(2026-09-08 사용자 결정) ===
+=== ALL PASS ===
+=== quad-base/test/spec.fallback.luau
+=== 1. 인자 게이트 — base/onError는 함수(blame은 호출 줄) ===
+PASS
+
+=== 2. Fallback — 정상이면 결과 그대로(인자 전달), 에러면 onError(err); err는 any(테이블도 손실 없이) ===
+PASS
+
+=== 3. Traceback — onError(err, trace); trace는 항상 string이고 던진 지점을 담는다; 정상 경로엔 비용 없음 ===
+PASS
+
+=== 4. 커링된 onError/중첩 — 바깥 Fallback이 안쪽 실패 컴포넌트의 placeholder를 그대로 받는다 ===
+PASS
+
+ALL PASS
+=== quad-base/test/spec.flatten.luau
+=== 1. 순수 flatten — in-place, 나중 modifier 우선, 인라인(None 포함) 무조건 우선, 비Modifier 항목 통과 ===
+PASS
+
+=== 2. drive 경유 — 센티널 자리는 길이 0(H-39), 형제 오프셋 무영향, 병합 필드는 해시 핸들러로 ===
+PASS
+
+=== 3. 센티널 핸들러 — 등록됨(HIGH), 철거는 Void(no-op), 배열 밖 값은 안 잡음 ===
+PASS
+
+=== 4. H-312(사용자 확정) — 해시 키 자리의 Modifier는 flatten이 즉시 error(사용자 줄 blame), 슬롯 소진 전 ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.gate.luau
+=== 1. 조립 — setup은 생성 시 1회, StateBrand 등록, State 노드로 위임(Get은 pass-through) ===
+PASS
+
+=== 2. 열린 게이트 — 통과하되 출처는 게이트의 배치(집합)로 바뀐다 ===
+PASS
+
+=== 3. 닫힌 게이트 — 유보: 통지 없음, 값은 Get으로 보인다(3번), 풀면 배치 1회 ===
+PASS
+
+=== 4. emit(false) — 배치를 버린다: 전파도 Sync도 없음, 다음 진짜 emit이 스스로 낫는다 ===
+PASS
+
+=== 5. 규칙 3 — 같은 리비전이 두 경로로 와도 정책은 한 번(다이아몬드), 유보 중엔 Peek이라 재도착은 정책 재실행(무해) ===
+PASS
+
+=== 6. flush 순서 — 스왑 → Sync(배치) → 전파: 전파 중 재진입 flush는 새 테이블에 쌓인다 ===
+PASS
+
+=== 7. 게이트 안 게이트 — 받은 배치를 풀어 자기 집합에 합친다(참조를 들고 있지 않는다) ===
+PASS
+
+=== 8. 유보 중 Get으로 앞당겨 읽은 하류 — 풀릴 때 통지만 오고 재계산 없음(규칙 2) ===
+PASS
+
+=== 9. 흡수 집합은 weak-key, 스왑된 새 테이블도 weak (H-9) ===
+PASS
+
+=== 10. H-198 — 닫힌 게이트 너머 fn 도중의 Set: 같은 Get 안에서 재시작해 최신으로 수렴, flush는 통지만 ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.hooks.luau
+=== 1. 팩토리 — fn 게이트(blame은 호출 줄), 반환은 PreRef/PostRef/Effect 인스턴스 그 자체(새 브랜드 없음) ===
+PASS
+
+=== 2. nil 가드(H-120) — 생성 시점 fn(nil) 호출이 없다; 채워지면 fn(inst, ref) 2-인자(H-107) ===
+PASS
+
+=== 3. drive 통합 — OnCreated는 pre-pass(다른 어떤 것보다 먼저), OnRendered는 두 패스 뒤; 같은 계열은 배열 순서 ===
+PASS
+
+=== 4. OnDestroyed — 설치 때 fn은 안 돈다; 묶인 inst가 죽을 때 정확히 1회; 죽은 뒤 unbindLifetime은 다시 안 돌린다 ===
+PASS
+
+=== 5. round10 Q57 — State 자리에 담아 뺐다 되꽂아도 OnDestroyed는 살아 있는 인스턴스에서 안 돌고, 죽을 때 정확히 한 번 ===
+PASS
+
+ALL PASS
+=== quad-base/test/spec.init.luau
+=== 1. New()마다 M2 첫 단위 탑레벨 값이 실려 있음 ===
+PASS
+
+=== 2. [H-181] New() 인스턴스는 참조를 놓으면 수거된다 — 임플을 모듈 비공개 필드에 두므로 순환이 자기완결 ===
+PASS
+
+=== 3. round11 H-566 (2026-09-17) — RunInit 인자 게이트(형제 AddPlugin/UseProvider와 같은 모양) ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.inputgates.luau
+=== 1. Dispatch.process/retractFrom — index는 양의 정수(hunt F 1) ===
+PASS
+
+=== 2. Modifier:Apply — factory는 함수(hunt F 2, H-497 형제) ===
+PASS
+
+=== 3. Slot:List/:Single opts는 테이블(hunt F 3) — 문자열도 조용히 안 지나간다 ===
+PASS
+
+=== 4. AddPlugin/UseProvider — 함수가 아니면 거부, 확장 테이블을 안 돌려주면 거부(hunt F 4) ===
+PASS
+
+=== 5. 자기 검증에 실패한 CRUD는 Slot을 수동으로 표시하지 않는다(hunt F 5, H-386 형제) ===
+PASS
+
+=== 6. Tag — 자기를 담은 리스트는 도메인 메시지(hunt F 7) ===
+PASS
+=== ALL PASS ===
+=== quad-base/test/spec.integration.luau
+=== 1. 혼합 drive — 해시 프로퍼티 + 배열(문자열/Observer/None/Effect)이 한 트리에서 ===
+PASS
+
+=== 2. 자리 타입 교대 — Observer 자리에 문자열: 철거(unbind) + 오프셋 이동 ===
+PASS
+
+=== 3. Destroy — retract는 계약상 안 불린다(메모리 해제지 teardown 아님), 발화만 멎는다 ===
+PASS
+
+=== 4. GC — Destroy 후 참조를 놓으면 leaf 값·체인 그래프가 회수된다(H-229 end-to-end) ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.leaf.luau
+=== 1. Observer leaf — 배열 자리 바인딩: H-39 부기(None/0) + gchold로 실행 가능해진다 ===
+PASS
+
+=== 2. Effect leaf — 바인딩 후 dep 변경마다 재실행 ===
+PASS
+
+=== 3. dedup — 같은 값 재발행에 bindLifetime 재호출 없음(있으면 already-bound error가 난다) ===
+PASS
+
+=== 4. 값 교체 — 옛 값 unbind(발화 중단), Effect는 cleanup 소진(H-57) ===
+PASS
+
+=== 5. nil로 철거 — (B) 분기: NilHandler로 교대, leaf retractor가 unbind+cleanup ===
+PASS
+
+=== 6. 동적 경로 가드 — named 자리로 흘러온 Observer/Effect는 typeof(k)를 실은 error ===
+PASS
+
+=== 7. FALLBACK 의미론 — 평범한 우선순위 핸들러가 가드를 덮어쓴다 ===
+PASS
+
+=== 8. 이중 배치 — 디스패치 경유 designed error가 quad 내부가 아니라 사용자를 blame(H-272) ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.lengthoffset.luau
+./quad-base/test/spec.lengthoffset.luau:398: offsets keep flowing after the rejected value
+stacktrace:
+[C] function assert
+./quad-base/test/spec.lengthoffset.luau:398
+=== 1. 등록 + 즉시 계산 — 배치 밖 순차 등록에서 각 자리 offset이 그 자리에서 맞는다 ===
+PASS
+
+=== 2. None 자리 — 발행 채널 없음일 뿐 참여는 setLength가 답, 숫자는 pull ===
+PASS
+
+=== 3. State 길이 — Observer가 recompute를 몰고, 뒤 형제 offset만 갱신된다 ===
+PASS
+
+=== 4. drive 배치 게이팅 — 등록 중 recompute 0회, 닫힌 뒤 한 번(offset은 즉시 계산이 이미 정확) ===
+PASS
+
+=== 5. 되감기 + 재진입 게이트 — offset:Set 콜백이 앞자리를 바꾸면 그 자리부터 다시 돈다 ===
+PASS
+
+=== 6. 캐시 무효화 — setLength(i)는 i까지 당기고, i 이전 캐시는 산다 ===
+PASS
+
+=== 7. H-229 패턴 — bk도 gchold 앵커: Destroy 후 부기 그래프 전체가 회수된다 ===
+PASS
+
+=== 8. anchor 인자 — 길이 Observer의 생명주기는 부기 키가 아니라 앵커를 따른다 ===
+PASS
+
+=== 9. H-256 — 부기 진입점의 양의 정수 검증: 소수·음수·0·비숫자는 즉시 error ===
+PASS
+
+=== 10. H-240의 원 재현(길이 Compute의 fn이 같은 owner의 앞자리를 setLength)은 round10 Q50 (a)부터 Compute 재진입 error다 — 그 fn이 중첩 recompute를 통해 자기 값을 다시 읽으므로 ===
+PASS
+
+
+=== 11. 5순회 H-392/H-397 — setOffsetSource는 부기를 만지기 전에 source를 읽는다(H-256 (a)); getOffsetAt은 N+1 너머를 사용자 입력 에러로 ===
+PASS
+=== 12. 회신 3차(2026-09-07) — Q13 (b) setOffsetSource의 source 게이트(Source | None), Q15 (a) setLength 길이 도메인: 상수는 등록 시, State는 읽을 때(비음수 정수) ===
+=== quad-base/test/spec.lifetime.luau
+=== 1. 미주입 스텁 — hold op 넷(holdLifetime/releaseLifetime/isHeld/isHeldBy, round11 Q59) + 조합 불가 엔진 op 다섯(onDestroying/isInst/nativeClaim/isClaimed/nativeFindChild, 2순회 H-373 + 2026-09-16) 전부 영어 메시지로 error, 호출부를 가리킴 ===
+PASS
+
+=== 1a. 생명주기 넷은 quad-base 것(round11 Q59, 2026-09-18) — 백엔드 없이도 함수이고, 부르면 hold op 스텁에 닿아 그 op 이름으로 error, blame은 호출부 ===
+PASS
+
+=== 1b. 스텁의 에러 깊이 — 아홉 전부 errorBefore(최외곽): 태그된 래퍼(핸들러 프레임 상당)를 타넘어 그 호출자를 blame (H-348, 3순회 H-378로 복원) ===
+PASS
+
+=== 2. 주입 후 — bind 전엔 canBound/‖canExecute, bind 후엔 반대 ===
+PASS
+
+=== 3. Destroy → canExecute false / canBound true (gcconn.Connected 전환) ===
+PASS
+
+=== 4. 이중 바인딩 게이트 — `if not canBound(v) then error(...)` 모양, level 2 ===
+PASS
+
+=== 5. unbindLifetime — 특정 값 하나만 조기 해제, inst는 그대로 ===
+PASS
+
+=== 6. gchold — inst가 사는 동안 value 생존 보장(계약 1), inst가 죽고 놓이면 같이 회수 ===
+PASS
+
+=== 6b. 이미 Destroy된 inst에 bind — GC 여부와 무관하게 죽은 상태로 시작 (H-171) ===
+PASS
+
+=== 6c. 조상 Destroy — 자손에 묶인 값도 같이 죽는다 (H-172) ===
+PASS
+
+=== 7. 첫 인자는 mock Instance여야 함 ===
+PASS
+
+=== 8. installLifetime은 quad 인스턴스별 — 다른 New()엔 안 퍼짐, 두 번 불러도 무시 ===
+PASS
+
+=== 9. mock 프로바이더도 nativeClaim/nativeFindChild를 심는다 — 실 프로바이더와 같은 형태 (2순회 H-374, H-305 (d′)) ===
+PASS
+=== 10. round3 H-444 (외부 리뷰 G-14) — nil 인자: unbindLifetime(nil)은 표면 에러(H-474, Q31 — H-444의 no-op 역전), canExecute(nil) false, canBound(nil) true, bindLifetime(nil, v)는 표면 에러 ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.modifier.luau
+=== 1. Modifier() — 빈 인스턴스, 브랜드, frozen, 예약 메소드 ===
+PASS
+
+=== 2. setter 체이닝 — 리터럴/함수, 원본 불변, 형제 분기, 재호출(스파이크 17 재현) ===
+PASS
+
+=== 3. State 필드 — 리터럴은 반응성을 끊고, 함수는 :Compute 파생으로 반응성 유지 (4-1) ===
+PASS
+
+=== 4. Peek — raw 그대로(State 핸들·None·nil 구별), Apply = factory(self) ===
+PASS
+
+=== 5. Overridden — 닷·콜론, 뒤가 필드 단위로 이김, 입력 불변, baked 값 그대로, 비Modifier 인자 error ===
+PASS
+
+=== 6. 핸들러 계층 값은 필드에 못 든다 — 리터럴·변환 반환 둘 다 즉시 error, State는 통과 ===
+PASS
+
+=== 7. M2 가드 재확인(7절) — Modifier는 State/Source의 값이 될 수 없다 ===
+PASS
+
+=== 8. Modifier(...) 인자(H-310, 사용자 확정) — Modifier/필드 테이블 혼합, 뒤가 덮어씀, 검증 셋 ===
+PASS
+
+=== 9. TypedFactory(name) / DefineSubtype(parent, subtype) — 한 함수에 한 일, dedup, 부모 여럿, 순환 거부 (11절) ===
+PASS
+
+=== 10. As<Class>() — 검사형 하강: 무타입·자기·조상 태그만 통과, 미등록·비조상은 사용자 줄 error ===
+PASS
+
+=== 11. As() / As(name) — 무검사: 인자 없으면 self, 이름은 존재 검사만(조상 무관), 잘못된 이름은 error ===
+PASS
+
+=== 12. 예약 캐스트 접두 — As+대문자는 setter가 되지 않는다(오타가 필드로 새지 않음), As+소문자는 setter ===
+PASS
+
+
+=== 13. 3순회 H-377 — 브랜드는 메타테이블이 아니다: AttrKey/MapperDescriptor는 필드 테이블이 아니다(Name이 필드로 병합돼 조용히 rename되던 것) ===
+PASS
+=== 14. 회신 3차 Q11 (a) — 제네릭 setter도 construct처럼 문자열 키만(H-310 거울): m[AttrKey]는 즉시 error, 사용자 줄 blame ===
+PASS
+=== 15. Gemini 5차 G-21 — Peek(nil)/Peek("")는 에러(Q32, H-469): 없는 필드의 nil과 구분되게 ===
+PASS
+
+=== 16. round11 H-552 (2026-09-17) — `__` 접두 이름은 setter가 아니다: state:Apply(modifier)는 팩토리 검사에서 거부 ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.moduleidentity.luau
+=== 1. moduleIdentity — an empty table per instance, never the module ===
+PASS
+
+=== 2. handles/Slot/State placed into another instance's tree raise at the placement ===
+PASS
+
+=== 3. same-instance placement is untouched; reactive links across instances are not guarded ===
+PASS
+
+
+=== 4. round10 H-537 — Slot 요소 문(Add/생성자/Replace/Extract/Splice, State 안의 점유자, :List 반환값)과 dispose(quad 값)도 교차 인스턴스 문이다 ===
+PASS
+=== ALL PASS ===
+=== quad-base/test/spec.nonenil.luau
+=== 1. None 값 — 단일 센티널, frozen, tostring ===
+PASS
+
+=== 2. 해시 자리 None — NoneHandler가 nil로 재귀(index+1), 키 담당 핸들러가 받는다 ===
+PASS
+
+=== 3. 배열 자리 None/nil — NilHandler가 setOffsetSource(None)→setLength(0) 등록 ===
+PASS
+
+=== 4. 전환 — 값 → None(철거+0 등록), None → 값(복원) — 하강 diff가 잇는다 ===
+PASS
+
+=== 5. 매치 경계 — NilHandler는 숫자 키의 nil만, None은 어디서든 NoneHandler ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.observer.luau
+./quad-base/test/spec.observer.luau:306: firing itself is not gated by the flag (next Set still runs fn)
+stacktrace:
+[C] function assert
+./quad-base/test/spec.observer.luau:306
+=== 1. 생성 — 등록 즉시 1회(emitFrom = nil), _state 강참조, 브랜드, 순서(fn → _subs) ===
+PASS
+
+=== 2. _receive — canExecute 게이팅: 안 묶이면 홀드, 묶이면 fn(state, self, from) ===
+PASS
+
+=== 3. 무인자 state:Observer() — 항상 관측 유틸(호출 즉시 Get) ===
+PASS
+
+=== 4. WeakSubscribe(프리미티브) — .Subscribed=true, 약한 등록, 캐치업; canExecute true ===
+PASS
+
+=== 5. WeakUnsubscribe — 관대(H-133), 단 강한 킵이 있으면 error ===
+PASS
+
+=== 6. Subscribe/Unsubscribe — 인라인 게이트(H-149), 강한 킵, 엄격 해제 ===
+PASS
+
+=== 7. GC — 강한 구독은 참조를 안 들어도 산다, 약한 구독은 놓으면 수거 ===
+PASS
+
+=== 8. 파동 중 새 구독자 — 스냅샷 계약(다음 파동부터) + 인스턴스별 레지스트리 ===
+PASS
+
+=== 9a. H-332 — 재진입 파동(fn 안에서 자기 Source를 Set)이 바깥 fn 꼬리의 _running 가드를 풀지 않는다 ===
+PASS
+
+=== 9. H-183 — fn은 자기 생명주기를 못 바꾼다(_running 가드, H-147 대칭); H-184 — 거부돼도 반쯤 묶이지 않음 ===
+=== quad-base/test/spec.operator.luau
+=== 1. Not — 0항 팩토리 그 자체를 :Apply; 파생 State, 반응 ===
+PASS
+
+=== 2. Sum/Product — self + deps(State), 이름 붙여 재사용해도 deps가 따라간다(왜 :Apply인가 1번); plain 숫자 혼용 ===
+PASS
+
+=== 3. Min/Max/Clamp/비트 — bit32 위의 얇은 층, Shl/Shr는 인자 하나 ===
+PASS
+
+=== 4. Alternative — nil이면 default(plain 또는 State), 아니면 값 ===
+PASS
+
+=== 4b. Indexed<<V>>(key) — 반응형 필드 읽기, 결과 타입은 호출자가 직접 지정; 테이블이 아니면 에러 ===
+PASS
+
+=== 5. 게이트 — 인자 타입·nil 인자(H-199 관용구)는 팩토리 호출 즉시 에러(blame은 그 줄), Apply 대상 State(직접 호출 폴백), Alternative nil default ===
+PASS
+
+=== 6. round10 H-1 — 인자 State의 현재값이 nil/비숫자면 조용히 건너뛰지 않고 읽는 줄을 blame ===
+PASS
+
+=== 7. round11 H-553 (2026-09-17) — Clamp 경계 엇갈림은 사용자 줄 blame의 Operator 메시지; Indexed 키에 State는 거부 ===
+PASS
+
+ALL PASS
+=== quad-base/test/spec.preref.luau
+=== 1. 브랜드 삼분 — isRef는 셋 다 참, isPreRef/isPostRef는 서로소, Epoch도 그대로 ===
+PASS
+
+=== 2. 런타임은 Ref 그대로 — Value/Set/Callback/Wait, 마커 필드(H-300), _fired 초기 false ===
+PASS
+
+=== 3. 값 자리 — Modifier 필드는 Ref 계열 전부 거부(modifier-plan 4절, isRef), Source 값은 런타임에선 통과(타입·디스패치 가드 몫) ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.ref.luau
+./quad-base/test/spec.ref.luau:399: re-placed and filled again
+stacktrace:
+[C] function assert
+./quad-base/test/spec.ref.luau:399
+=== 1. 생성 — Value/Revision 초기값, 브랜드(isRef + isEpoch), Callback 테이블 둘 ===
+PASS
+
+=== 2. :Set 순서 — 콜백이 볼 때 .Value와 .Revision이 이미 새 것, fn(value, ref) ===
+PASS
+
+=== 3. 리비전 — bit32.bnot(-rev) 랩어라운드 감소: 0 → 4294967295 → 4294967294, 매번 다름 ===
+PASS
+
+=== 4. 즉시 1회 호출 — nil/미설정이어도 그 상태 그대로 (H-120), Weak도 동일 ===
+PASS
+
+=== 5. 중복 등록은 dedup — 같은 fn을 여러 번/양쪽에 걸어도 Set당 1회 ===
+PASS
+
+=== 6. :Uncallback — 양쪽 테이블에서 뗌, self 반환, 안 걸린 fn은 no-op ===
+PASS
+
+=== 7. WeakCallback — 다른 곳에서 안 잡으면 GC 뒤 침묵, Callback은 살아남음 ===
+PASS
+
+=== 8. 발화 중 Uncallback/Callback 안전 — 스냅샷 순회, 순회 중 해제된 건 skip ===
+PASS
+
+=== 9. thread 키 — 대기자는 1회 소진, resume 인자는 Ref 자신 (M8 :Wait의 기반) ===
+PASS
+
+=== 10. [H-170] 대기자 안의 에러는 :Set 호출부로 올라온다 (즉시 반환된 false 확인) ===
+PASS
+
+=== 11. [H-169] 재진입 :Set — 순회는 자기 리비전이 바뀌면 놓고, 후행 Set이 전부 호출 ===
+PASS
+
+=== 12. [M8 단위 ①] :Wait() — 자기 코루틴을 대기자로 넣고 yield, 다음 :Set에 self로 재개, 채워져 있어도 기다린다 (Q5 (a)) ===
+PASS
+
+=== 13. :Wait(thread) — 남의 thread는 등록만, 즉시 self 반환, 정지시키지 않는다; thread가 아니면 error ===
+PASS
+
+=== 14. Wait 대기자와 Callback 공존 — 같은 :Set이 콜백을 호출하고 대기자를 소진, 콜백은 유지 ===
+PASS
+
+
+=== 15. 7순회 H-426 — Wait(thread)로 등록된 스레드가 resume한 코루틴 안의 :Set은 위치 있는 에러 (running/normal 둘 다) ===
+PASS
+=== 16. Gemini 5차 G-22 (H-473) — Callback/WeakCallback/Uncallback은 함수만: nil은 VM 에러, 숫자는 call 에러였다 ===
+PASS
+
+=== U. :Unwrap() (2026-09-08, ref-plan) — 비어 있으면 호출 줄 에러, 아니면 값; 타입은 StripNil<T>로 nil이 벗겨진다 ===
+PASS
+
+=== 17. round11 H-569 (2026-09-17) — 철거의 Set(nil)에 깨어난 대기자가 던져도 dedup 기록은 이미 지워져 같은 Ref를 되꽂으면 채워진다 ===
+=== quad-base/test/spec.refhandlers.luau
+=== 1. Ref leaf — 배열 자리 바인딩: :Set(inst), H-39 부기(None/0), gchold로 묶임 ===
+PASS
+
+=== 2. 이중 배치 방지 — 같은 Ref를 두 인스턴스에 놓으면 두 번째 자리에서 즉시 error(사용자 줄 blame) ===
+PASS
+
+=== 3. State<Ref> 재바인드 — retractor가 언바인딩(nil 통지·gchold 해제), process가 새 Ref 바인딩; 같은 Ref 재발행은 둘 다 skip ===
+PASS
+
+=== 4. [Q4 (a)] 재진입 — 콜백이 같은 자리를 같은 Ref로 재드라이브해도 dedup(SetWeak가 Set 앞) ===
+PASS
+
+=== 5. PreRef — 호이스팅(위치 무관, 프로퍼티보다 먼저), 계열 안 index 순서, 슬롯 소진 부기 None/0 ===
+PASS
+
+=== 6. PostRef — 본체 루프·배치 종료 뒤 fire, 계열 안 index 순서, 부모 부착은 무보장(mock: nil), 재사용 error ===
+PASS
+
+=== 7. 동적 경로 가드 — named 자리의 PreRef/PostRef는 typeof(k)를 실은 error; named 자리의 Ref도 같은 가드(round11 H-567) ===
+PASS
+
+=== 8. Processed* 슬롯의 retract는 Void(no-op) — 소진된 자리를 철거해도 아무 일 없음, Ref leaf 철거는 nil 통지 ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.relate.luau
+=== 1. 네 메서드 — Strong/Weak는 서로 다른 슬롯, 같은 키라도 안 섞임 ===
+PASS
+
+=== 2. lazy 서브테이블 — 읽기는 쓰기를 유발하지 않음, Set이 처음 불릴 때만 생성 ===
+PASS
+
+=== 3. 공유 메타테이블 — 모든 WeakMap이 같은 {__mode='v'} 객체 ===
+PASS
+
+=== 4. Weak 값은 다른 곳에서 안 잡으면 GC됨, Strong 값은 살아남음 ===
+PASS
+
+=== 5. inst는 항상 weak — inst를 놓으면 버킷째 사라짐 ===
+PASS
+
+=== 6. 비싱글톤 — 인스턴스마다 독립 ===
+PASS
+
+
+=== 7. 2026-09-08 2차 감사 H-499 — nil inst/key는 호출 줄을 blame하는 표면 에러(옛: Relate.luau 'table index is nil') ===
+PASS
+=== ALL PASS ===
+=== quad-base/test/spec.slot.luau
+=== 1. 생성 — 빈 Slot, 브랜드, Length 0 ===
+PASS
+
+=== 2. Slot 마운트 — Frame { slot }, 요소가 물리 자식이 된다 ===
+PASS
+
+=== 3. 마운트 후 Add/Remove가 물리에 반영 ===
+PASS
+
+=== 4. 형제 순서 — Frame { slotA, static, slotB }, Offset 누적 ===
+PASS
+
+=== 5. State<Slot> 교체 = 언마운트(파괴 아님), 재마운트 가능 ===
+PASS
+
+=== 6. dispose — 마운트 중이면 거부, 뗀 뒤엔 파괴 ===
+PASS
+
+=== 7. 타입 가드 — nil/None·핸들러 계층 값 거부 (State는 :List 슬라이스) ===
+PASS
+
+=== 7b. 디스패치 깊이의 Slot 오류는 사용자 줄을 blame(H-330 — errorBefore) ===
+PASS
+
+=== 8. Slot-in-Slot 중첩 — 재귀 마운트, Length = 기여도 합 ===
+PASS
+
+=== 9. 중첩 언마운트 — outer 언마운트가 inner까지 재귀로 뗀다 ===
+PASS
+
+=== 10. :List — 키 기반 재조정(추가/갱신/제거/필터) ===
+PASS
+
+=== 11. :Single(state) + Slot:Add(state) — State 요소 래핑 ===
+PASS
+
+=== 12. Detach — 파괴 없이 뗐다 되붙임(재사용) ===
+PASS
+
+=== 12b. 5순회 H-393 — Detach된 OwnsElements=false 요소 Slot을 settle이 nil로 버릴 때 소유권을 먼저 놓는다(죽은 owner가 영구히 남던 것) ===
+PASS
+
+=== 13. :List 상호배타 가드 — CRUD 후 :List, :List 후 CRUD 금지 ===
+PASS
+
+=== 14. :List 리오더 — State 요소(래퍼 Slot)의 Offset이 자기 자리를 따라간다 ===
+PASS
+
+=== 15. :List Slot의 언마운트→재마운트(H-163) — 상태 보존 + 캐치업 1회 ===
+PASS
+
+=== 16. 통합 리뷰 — 이름 키의 Slot은 매치 안 됨(H-52, 소유권·생명주기 고아 없음) + :List keyFn nil은 도메인 에러 ===
+PASS
+
+=== 17. Move/Swap — 중첩 Slot 요소의 리프가 native*에 배열로 넘어가고(collectLeaves) 부기가 따라간다 ===
+PASS
+
+=== 18. Extract/Replace — 비파괴 추출(소유권 반납), 제자리 교체, 파괴 교체, State 요소 언래핑 ===
+PASS
+
+=== 19. Splice — 구간 비파괴 추출 + 삽입, recompute 1회, 검증 선행 패스(반쪽 상태 없음) ===
+PASS
+
+=== 20. KeyGone 처분 세 갈래 — nil(파괴) / Detach(홀드→재마운트) / 새 값(error), OwnsElements=false는 언마운트만 ===
+PASS
+
+=== 21. 실체화 전 CRUD — Move/Swap/Splice/Extract가 _elements만 만지고, 마운트 때 그 순서대로 선다 ===
+PASS
+
+=== 22. 통합 리뷰(H6-19) — 선행 검증이 raw 값을 본다·파괴된 Slot 요소·언마운트 부기 리셋·생성자 blame ===
+PASS
+
+=== 22b. 4순회 H-386 — Slot(initial)의 컨테이너 모양 게이트: 잊은 {}·quad 값·해시 테이블이 요소 0개로 통과해 :List를 잠그던 것 ===
+PASS
+
+=== 23. 회신 반영 리뷰(H6-24) — 점유자 단위 dedup: 같은 Instance를 든 State 둘·raw+State, 마운트 전 aliasing, 미실체화 Extract(i,new)의 래퍼 반납 ===
+PASS
+=== 24. 회신 3차(2026-09-07) — Q9 (b) 마운트 대상이 quad 밖에서 Destroy된 Slot은 죽은 것(메시지가 그렇게 말한다), Q14 (a) destroySlotTree가 OwnsElements=false 자식의 소유권을 놓는다, G-11 List 인자 게이트 ===
+PASS
+=== 25. Gemini 5차 G-16/G-20 — :Single의 None은 nil과 같다(Q30, H-467): KeyGone 언마운트; Slot:Get(nil)은 에러(Q32, H-468), 범위 밖은 여전히 nil ===
+PASS
+
+=== 26. 자문 RFC(2026-09-08) — Clear/ExtractAll은 배치 한 번의 recompute(H-479), IndexOf는 역맵 경유·State 요소는 언랩 폴백(H-481), List의 KeyGone 사이클(H-480 clone 제거, H-485 증분 집합 유지) ===
+PASS
+
+
+=== 27. 2026-09-08 2차 감사 H-500 — 자기 자신·조상을 요소로 넣는 순환은 선행 검증이 거부(옛: 다음 CRUD에서 스택오버플로/내부 불변식 에러) ===
+PASS
+
+=== 28. 2026-09-08 round8 H-505/H-506 — Move 뒤 역맵은 회전 구간만 다시 쓰고도 정확, 생성자는 배치 선행 패스 한 번(Slot{ a, a } 거부 유지) ===
+PASS
+
+=== 29. 미claim 요소 거부 — isClaimed 게이트(2026-09-16 사용자 결정, question.md §2) ===
+PASS
+
+=== 30. State 요소의 현재값도 pre-pass 게이트(hunt A) — 마운트 ./quad-base/test/spec.slot.luau:1223: nil
+stacktrace:
+[C] function assert
+./quad-base/test/spec.slot.luau:1223
+전후 모두 삽입 전에 거부, Replace는 옛 요소를 살려 둔다 ===
+PASS
+
+=== 31. keyFn NaN은 nil과 같은 도메인 에러(hunt A); 같은 Slot의 요소를 되넣으면 '이미 이 Slot에 있다'(Move/Swap 안내) ===
+PASS
+
+=== 32. round10 Q52 (a) (2026-09-17) — 마운트 walk 중인 조상 Slot의 CRUD는 즉시 error(사용자 줄 blame); 정상 사용(자기 자식 Slot 구성·마운트 뒤 Observer CRUD·형제 CRUD)은 그대로 ===
+PASS
+
+=== 33. round11 H-571 (2026-09-17) — :List data가 배열이 아니면(딕셔너리·해시 키 혼입) 조용히 비우지 않고 거부; updateFn이 q.KeyGone을 돌려주면 안내 에러 ===
+=== quad-base/test/spec.source.luau
+=== 1. 생성 — 값, Revision 0, SourceBrand+EpochBrand 다중 태깅, StateBrand엔 미등록 ===
+PASS
+
+=== 2. :Set — 값 갱신 + 리비전 감소 랩 + self 반환; 동일값도 항상 (H-68) ===
+PASS
+
+=== 3. :Emit — 값은 그대로, 리비전만 갱신, self 반환 ===
+PASS
+
+=== 4. Modifier 가드 — 생성자와 Set 둘 다, level 2 ===
+PASS
+
+=== 5. State 메소드 위임 — Source에서 Depend/Compute/Apply가 바로 됨 ===
+PASS
+
+=== 6. 인스턴스별 팩토리 (H-174) — 다른 New()의 Source는 다른 임플, 브랜드는 공유 ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.state.luau
+=== 1. Compute — lazy: 아무도 Get 안 하면 fn이 안 돈다, Get마다 재계산 안 함 ===
+PASS
+
+=== 2. 전파 루프 — 출처(Source 자신)를 그대로 넘긴다, 스냅샷 순회 (H-23), 브랜드 ===
+PASS
+
+=== 3. 다이아몬드 — 같은 리비전이 두 경로로 와도 두 번째는 삼킨다 (규칙 3) ===
+PASS
+
+=== 4. 순회(Refresh) — 놓친 emit을 Get에서 값만 앞당기고 통지는 안 한다 ===
+PASS
+
+=== 5. 규칙 2 — 값은 이미 최신(앞당겨 읽음)인데 emit이 오면 통지만 하고 재계산 없음 ===
+PASS
+
+=== 6. 캐시 카운터 쌍 (H-85) + Get 재시작 루프 (H-198) — 재계산 도중 온 무효화는 같은 Get이 수렴할 때까지 다시 계산 ===
+PASS
+
+=== 7. :Depend — pass-through 새 노드, 구독만 넓힘; :Compute(fn, ...deps) — 노드 1개, positional lazy deps ===
+PASS
+
+=== 8. previous — 직전 결과가 두 번째 인자로, 노드마다 독립 ===
+PASS
+
+=== 9. self는 리시버의 lazy 핸들 — 결과 노드가 아니다; 조건부로 self:Get을 건너뛰면 계산 안 됨 ===
+PASS
+
+=== 10. Apply — 함수 / 메소드형 __apply, 반환은 열려 있음 ===
+PASS
+
+=== 11. _hold — 하류가 상류를 강하게, 상류는 하류를 weak로 ===
+PASS
+
+=== 12. 가드 — Compute 결과가 Modifier면 캐싱 전에 error(level 3, H-205); dep이 State가 아니면 error ===
+PASS
+
+=== 13. 가드 (H-199/H-202) — nil dep은 조용히 사라지지 않고 error, Compute fn은 함수여야 ===
+PASS
+
+=== 14. round10 Q50 (a) (2026-09-17) — Compute 재진입 가드: 순환은 사용자 줄 blame으로 즉시 error; fn이 던지면 같은 세대의 재읽기도 error, 상류가 바뀌면 다시 돈다 ===
+PASS
+
+=== 15. round11 H-540 (2026-09-17) — fn이 던진 뒤 닫힌 게이트 너머의 상류 변경(드리프트)도 새 세대: 고친 값으로 다시 돈다 ===
+PASS
+
+=== 16. round13 Q93 (a)·Q98 (a″) (2026-09-29) — 멈췄다 돌아온 계산은 자기 세대일 때만 스탬프를 지우고, 이미 유효한 새 세대 캐시는 덮지 않는다(yield는 UB — 세대당 한 번만 지킨다) ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.store.luau
+=== 1. 명시적 초기화 — store.key는 넣은 Source 그 자체, 평범한 레코드 필드 ===
+PASS
+
+=== 2. defaults 검증 (H-122) — isSource 화이트리스트, level 2, 영어 ===
+PASS
+
+=== 3. 예약 이름 (H-153) — 생성자 순회와 Of 둘 다 error(level 2) ===
+PASS
+
+=== 4. :Of — 없는 이름은 그 자리에서 만들어 저장(lazy가 남는 유일한 자리), 있으면 그것 ===
+PASS
+
+=== 5. :Names — defaults 키 + Of가 만든 키, 메소드는 안 셈, 팬텀 필드도 없음 ===
+PASS
+
+=== 6. 빈 Store (H-83/H-157) — 무인자도 유효 ===
+PASS
+
+=== 7. 인스턴스별 팩토리 (H-174) — Of가 자기 quad의 Source를 만든다 ===
+PASS
+
+
+=== 8. 4순회 H-390 — defaults가 메타테이블 없는 브랜드 값(AttrKey)이면 plain 테이블 문에서 거부 ===
+PASS
+=== 9. round3 H-443 (외부 리뷰 G-13, H-421 자매) — 빈 문자열 키는 생성자·Of 둘 다 거부(Attr(store)로 setAttr("")에 닿던 경로) ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.storebind.luau
+=== 1. 첫 end-to-end — store 값 변경이 process를 다시 부르고, 첫 재발행에서 인덱스 2 retractor가 실제로 불린다 ===
+PASS
+
+=== 2. 타입 교대 — 이전 process가 반환했던 retractor가 (nil, true)로 정확히 불리고 새 핸들러 설치 ===
+PASS
+
+=== 3. State<State<T>> — 인덱스 N/N+1 비충돌: 안쪽 재발행은 안쪽 슬롯만, 바깥 재발행은 구독을 갈아탄다 ===
+PASS
+
+=== 4. 실제 StoreBind 경유 (B) — 깊은 인덱스부터 정리 + 효과 수준: 옛 구독 0, 죽은 store가 값을 못 덮는다 ===
+PASS
+
+=== 5. 스파이크 03 몫 — 배열 자리에서 None→nil 핸드오프, 재귀 종료, 부기까지 반응형으로 움직인다 ===
+PASS
+
+=== 6. 단순 철거와 사후 발화 — retractFrom이 구독을 끊고, Destroy된 inst로는 발화가 무시된다 ===
+PASS
+
+=== 7. round11 H-573 (2026-09-17) — 순환하는 State 사슬은 stack overflow 대신 StoreBind 메시지 ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.tag.luau
+=== 1. 값 API — immutable clone 체이닝, Merged 합집합, 빈 Tag 유효 ===
+PASS
+
+=== 2. 미주입 스텁 — 백엔드 없는 quad에서 Tag를 걸면 안내 에러(blame은 사용자 줄) ===
+PASS
+
+=== 3. process/retractor 왕복 — Tag(A)→Tag(B) 깜빡임 방지, Tag(A)→nil 전량 제거 ===
+PASS
+
+=== 4. 참조 카운트 — 겹친 이름·같은 객체 재사용(위치 기준)이 합집합으로 안전 ===
+PASS
+
+=== 5. H-39 부기 — Tag를 자식보다 앞에 둬도 recompute가 죽지 않는다 ===
+PASS
+
+=== 6. 같은 객체 재발행(no-op emit) — 홀더 유지, 엔진 호출 0 ===
+PASS
+=== Gemini 5차 G-20 — Contains는 가변인자(전부 있으면 true, 0개는 true), nil/비문자열은 에러(Q32, H-468) ===
+PASS
+
+
+=== 7. 2026-09-08 2차 감사 H-497 — Tag:Apply(비함수)는 표면 에러(옛: Tag.luau VM 에러) ===
+PASS
+=== ALL PASS ===
+=== quad-base/test/spec.tostring.luau
+=== 1. Source / State / Gate — 값, 캐시 무효면 `?`, print가 compute를 돌리지 않음 ===
+=== 2. Store / Tag / Attr — 키·이름 집합, 정렬 ===
+=== 3. Ref / PreRef / PostRef / Slot / Modifier ===
+=== 4. Observer / Effect / Blocker — 구독·차단 상태 ===
+=== ALL PASS ===
+=== quad-base/test/spec.versioncheck.luau
+=== 1. core 자리 — 정확 일치 / 와일드카드 / 사전식 caret ===
+PASS
+
+=== 2. [2026-09-15 사용자 결정] 프리릴리즈와 릴리즈는 섞이지 않는다 — 꼬리 유무가 같아야 한다(옛 2026-09-10 '무시' 규칙 철회) ===
+PASS
+
+=== 3. [2026-09-15] 프리릴리즈 자리 — 글자는 정확 일치, 숫자는 `*`/사전식 `^`, core와 따로 판정 ===
+PASS
+
+=== 4. [2026-09-15 사용자 설계] `|` 대안 — 하나라도 맞으면 통과(메이저 여럿과 호환되는 소비자) ===
+PASS
+
+=== 5. build(`+` 뒤)는 양쪽 다 항상 무시 ===
+PASS
+
+=== 6. 깨진 입력은 그대로 false(별도 방어 없음) ===
+PASS
+
+=== 7. 컴파일 타임 CheckVersion — 같은 규칙(양성만, luau-analyze가 실제로 평가) ===
+PASS
+
+=== ALL PASS ===
+=== quad-base/test/spec.void.luau
+=== 1. 항등 — Quad.Void와 Void.luau가 같은 함수, 매 require도 같음 ===
+PASS
+
+=== 2. no-op — 어떤 인자로 불러도 아무것도 반환하지 않음 ===
+PASS
+
+=== ALL PASS ===
+=== quad-roblox/test/spec.animate.luau
+=== 1. 기본 — :Apply(Animate{…}) → State<Tween<T>>, 옵션은 plain으로 실림, Value는 소스 값 ===
+PASS
+
+=== 2. CanAnimate — 생략은 true, false면 plain 값 그대로, State<boolean>로 토글(다음 Value 변경 때 반영) ===
+PASS
+
+=== 3. 옵션 State는 deps가 아니다 — Style State가 바뀌어도 재계산 0, Value 변경 때만 최신 반영 ===
+PASS
+
+=== 4. 검증 — info가 테이블이 아니면 error(blame은 사용자 줄); Tween 검증도 그대로 산다 ===
+PASS
+=== 5. Q25 (2026-09-08) — Dedup은 Tween 필드로 전달될 뿐(값 비교는 Property 핸들러): 리터럴은 즉시 검증, State는 실행마다 resolve ===
+PASS
+
+=== 6. debug 층(2026-09-15 사용자 결정) — 모르는 옵션 키는 경고만, Animate는 그대로 돈다 ===
+(아래 Animate unknown option 경고 한 줄은 의도된 출력이다 — 육안 확인)
+Animate: unknown option "Duration" is ignored (known: Info, Time, Style, Direction, RepeatCount, Reverses, DelayTime, Override, Dedup, Started, Completed, Cancelled, CanAnimate)
+PASS
+
+
+=== 7. round10 G-1 — Animate가 건 State에 Tween/State를 넣으면 Tween 검증이 사용자 줄을 blame(옛: Animate.luau:115) ===
+PASS
+
+=== round13 Q104·Q115·Q116 (a) (user decision 2026-09-28) — Animate gates: non-State target, State callbacks, non-boolean CanAnimate ===
+PASS
+=== ALL PASS ===
+=== quad-roblox/test/spec.claim.luau
+=== 1. 기본 Claim — 소유 + 매핑 자식 props 적용 + 배열 슬롯 교체·부기 ===
+PASS
+
+=== 2. 중첩 매핑 — DFS bottom-up, 안쪽 먼저 drive ===
+PASS
+
+=== 3. 1회용 디스크립터 — 재사용은 error(PreRef _fired 관용구) ===
+PASS
+
+=== 4. 인자 검증 — 디스크립터가 아니면 즉시 error ===
+PASS
+
+=== 5. New 자식 혼입(§7-3) — 매핑과 생성이 한 배열에 ===
+PASS
+
+=== 6. 반응형 — claim된 트리에서 store-bind가 그대로 돈다 ===
+PASS
+
+=== 7. 탐사자 승격 — New 배열의 디스크립터 no-match / Claim 표면 이중 claim / 깊이 2 반응형+혼입 ===
+PASS
+
+=== 8. Modifier 혼입(M7 단위 ②) — 루트·매핑 자식 props의 Modifier가 drive 안 flatten으로 소진된다 ===
+PASS
+
+
+=== 9. 없는 키 — leaf 모듈 크래시 대신 Claim 메시지(hunt C F7, H-418/H-442/H-504 부류) ===
+PASS
+
+=== 10. 루트 디스크립터의 문자열 키·자식 자리의 M.Root — claim-plan §7-1대로 런타임 가드 없음(debug 검사만), 자식 M.Root는 '부재' 메시지(round10 G-4·G-5 축소) ===
+PASS
+
+=== 11. round10 Q49 (a) (2026-09-17) — 이름은 맞고 클래스가 다른 자식은 '부재'로 거부(엔진 IsA / mock ClassName); 맞는 클래스는 그대로 ===
+PASS
+
+=== 12. round11 H-539 (2026-09-17) — 해석은 두 패스: 자식 부재/클래스 불일치/재사용은 아무것도 claim하기 전에 던지고, 고친 재시도가 그대로 통한다 ===
+PASS
+
+=== 13. round11 H-551 (2026-09-17) — 이미 claim된 루트는 첫 mutation에서 던져 자식을 건드리지 않는다; 서로 다른 디스크립터가 같은 자식으로 해석되면 1패스에서 거부 ===
+PASS
+
+=== 14. round11 H-568 (2026-09-17) — newMapperClass 이름 게이트 ===
+PASS
+
+=== 16. round11 Q64 (b) (2026-09-18) — 이미 quad 소유인 자식은 1패스의 isClaimed 게이트에서 거부: 인스턴스 이름을 실은 Claim: 문구, 루트·형제는 무손상, 그 자식을 뺀 재시도는 통한다 ===
+PASS
+=== ALL PASS ===
+=== quad-roblox/test/spec.component.luau
+=== 1. 단일 루트 — Modifier/Ref/자식이 named parameter로 경계를 넘어 내부 루트에 꽂힌다 ===
+PASS
+
+=== 2. 생략 — Modifier/Ref/Content를 안 넘겨도 `or None`이 그 자리를 기여 0으로 만든다(nil-hole 없음) ===
+PASS
+
+=== 3. Modifier.Overridden — caller가 여러 modifier를 한 슬롯에 밀어넣는다(뒤가 이김) ===
+PASS
+
+=== 4. Slot 반환 컴포넌트 — 형제 레벨에 래퍼 없이 펼쳐지고, 추가 항목이 그 자리에 끼어든다 ===
+PASS
+
+=== 5. 커스텀 클래스 Modifier — 컴포넌트가 자기 필드를 소비한 뒤 무검사 As(name)로 부모 클래스에 꽂는다(11절: 검사형 As는 하강만) ===
+PASS
+
+=== ALL PASS ===
+=== quad-roblox/test/spec.componenttypes.luau
+=== ALL PASS ===
+=== quad-roblox/test/spec.d.luau
+=== 1. Declaration 설치(H-299) — module.Declaration, 별칭 전부 함수, New 포함 ===
+PASS (31 aliases + New + Mapper + Modifier)
+
+=== 2. 범위 관찰 계약 — H-296 (a) 화이트리스트 트리오 존재, defs-드롭 클래스 부재 ===
+PASS
+
+=== 3. 커링 계약 — New(name)은 함수(2단계 호출), 별칭은 이미 1회 적용된 것 ===
+PASS
+
+=== 4. H-238 — Declaration의 함수 전부 SURFACE 태그(리뷰 발견 반영 — 실제 태그 레벨 조회) ===
+PASS
+
+=== 5. 파이프라인 CLI e2e(탐사자 관측 반영) — getfenv 주입으로 ①~④ 실주행 ===
+PASS
+
+=== ALL PASS ===
+=== quad-roblox/test/spec.events.luau
+=== 1. Event — 리플렉션 매치로 Connect, 엔진 인자만 그대로(self 없음) ===
+PASS
+
+=== 2. 클래스별 판별 — 다른 클래스의 이벤트 이름은 매치 안 됨(no-match error, 사용자 blame) ===
+PASS
+
+=== 3. Event store-bind — None으로 끄면 Connect 안 함(nil 매치), 다시 켜면 재연결 ===
+PASS
+
+=== 4. OnChange — 배열부 디스크립터, 초기값 발화 계약(배열→해시 순서), 같은 이름 둘 ===
+PASS
+
+=== 4b. Out — Source에 되쓰는 슈거(OnChange 위): 초기 echo·같은 값 건너뜀, Source만 받음 ===
+PASS
+
+=== 5. OnChange store-bind — State<디스크립터> 교체·None으로 끄기·재연결·철거 ===
+PASS
+
+=== 6. 교대 — 같은 이벤트 자리의 평문/State 교체가 연결을 하나로 유지, OnChange 팩토리는 quad 간 공유 ===
+PASS
+=== 7. round3 H-440 (외부 리뷰 G-10, H-417 짝) — OnChange("", fn)은 생성자에서 거부(엔진 GetPropertyChangedSignal에 디스패치 깊이로 닿던 것) ===
+PASS
+
+
+=== 8. round8 H-507 (Studio 실측 2026-09-08) — 비함수 핸들러는 quad가 거부(엔진은 던지지 않고 콘솔에만 남긴다) ===
+PASS
+=== ALL PASS ===
+=== quad-roblox/test/spec.handlers.luau
+./quad-roblox/test/spec.handlers.luau:352: ancestor: nil
+stacktrace:
+[C] function assert
+./quad-roblox/test/spec.handlers.luau:352
+=== 1. Property — Reflection 멤버십 매치로 실프로퍼티만 세팅 ===
+PASS
+
+=== 2. 비프로퍼티 문자열 키·Parent 키 — 매치 핸들러 없음 error(H-142 배선) ===
+PASS
+
+=== 3. InstanceChild — 마운트 + H-134 부기(오프셋 산술이 실제로 선다) ===
+PASS
+
+=== 4. 교체·철거 — 옛 자식은 내림(파괴 아님), H-154 dedup은 detach를 접는다 ===
+PASS
+
+=== 5. 반응형 자식 — State<Instance>가 StoreBind → InstanceChild로 흐른다 ===
+PASS
+
+=== 6. 반응형 프로퍼티(탐사자 🟡-1 승격) — StoreBind(HIGH)>Property(NORMAL)가 load-bearing ===
+PASS
+
+=== 7. Reflection 캐시(탐사자 🟡-2a·b 승격) — 클래스당 정확히 1회 + 멤버십 분리 ===
+PASS
+
+=== 8. 타입 교대(탐사자 🟡-2c·d 승격) — child↔None↔nil에서 형제 오프셋 추적 + StoreBind 경유 dedup ===
+PASS
+
+=== 9. Property nil 쓰기(Q33 (a), 2026-09-08 — M10 skip-defense 역전) — None/nil 재발행은 nil을 쓴다(오브젝트 참조 해제 경로; 못 받는 타입은 엔진이 에러) ===
+PASS
+
+=== 10. Modifier(M7 단위 ②) — D.Frame { mod, … }: flatten이 drive 안에서 돌아 필드가 프로퍼티로 앉는다 ===
+PASS
+
+
+=== 11. 미claim 정적 자식 거부 — Slot 게이트와 대칭(2026-09-16 사용자 결정, question.md §2) ===
+PASS
+
+=== 12. 정적 자식 소유권 자리(round10 Q48 (a), 2026-09-17 사용자 결정) — Slot과 같은 레지스트리, 한 값은 한 자리 ===
+PASS
+
+=== 13. round10 Q58 (나) (2026-09-17) — quad-roblox 핸들러끼리는 우선순위 동률이 없다(q.debug 설치 시 tie 출력 0): Event·OnChange는 NORMAL - 1 ===
+PASS
+
+=== 14. round11 H-544/H-545/H-546/H-548 (2026-09-17) — 정적 자리 순환 가드·소유권 op nil 게이트·파괴된 인스턴스는 즉시 미claim·nil 구멍 메시지의 회수 경로 ===
+=== quad-roblox/test/spec.modifiertypes.luau
+=== ALL PASS ===
+=== quad-roblox/test/spec.onchangetypes.luau
+=== ALL PASS ===
+=== quad-roblox/test/spec.reftypes.luau
+=== ALL PASS ===
+=== quad-roblox/test/spec.robloxfactory.luau
+=== 1. 진입점 — UseProvider identity 락: 같은 fn no-op·다른 identity error (H-305 d′) ===
+PASS
+
+=== 2. nativeClaim — 1회 셋업, 이중 claim은 셋업 유무만으로 error ===
+PASS
+
+=== 3. bindLifetime — 미claim inst는 error(H-290), claim 후 정상 경로 ===
+PASS
+
+=== 4. unbindLifetime — O(1) 개별 해제, 같은 inst 다른 값 무영향, no-op 관대 ===
+PASS
+
+=== 5. EngineOps — native* 여섯 + 판정/훅/조회 셋 (mock instance 구조 대역) ===
+PASS
+
+=== 6. 주입 op 스코프 — Tag/Attr 셋은 M10 엔진 축에서 채워짐, 시간 op 둘은 백로그(미설치) ===
+PASS
+
+=== 7. 반응형 통합 — Observer가 roblox 생명주기로 게이팅됨 ===
+PASS
+
+=== 8. 탐사자 보강(🟡-5) — Effect 배선·훅 가드·재바인드 캐치업이 roblox 전사본 경유로 ===
+PASS
+
+=== ALL PASS ===
+=== quad-roblox/test/spec.rootexports.luau
+=== ALL PASS ===
+=== quad-roblox/test/spec.shorthand.luau
+=== 1. UICorner = 8 — 관리 자식 _quad_round 생성·부착, CornerRadius = UDim(0, 8); UDim은 그대로 ===
+PASS
+
+=== 2. 반응형 — State<number> 변경은 자식을 재생성하지 않고 프로퍼티만 갱신(Relate 조회) ===
+PASS
+
+=== 3. nil — 자식 파괴(retractFrom 뒤), 다시 숫자면 재생성(첫 값 스냅); None 경유도 같은 경로 ===
+PASS
+
+=== 4. Tween — Tween<number>이 Mapped로 UDim Tween이 되어 (child, CornerRadius) 슬롯에서 애니메이션(첫 값은 스냅) ===
+PASS
+
+=== 5. UIPadding(UDim)·UIPaddingOffset(number) — 같은 _quad_padding 자식, 네 프로퍼티; UIScale ===
+PASS
+
+=== 6. 우선순위가 Property보다 높다 (Q17 (a), 2026-09-07: 옛 `numberOnly` 값 게이트는 제거 — 타입이 1차 방어, 최종 프로퍼티 대입이 다른 프로퍼티처럼 raise) ===
+PASS
+
+=== 7. Q25 (2026-09-08) — Animate 아래 같은 값 재발행: Mapped가 매번 새 Tween을 만들어도 Property 핸들러가 목표 Value로 접는다(취소·재시작 0) ===
+PASS
+
+=== 8. 관리 자식 소유권 자리(round10 Q48 (a)·G-6) — dispose 거부, nil로 내리면 자리도 풀린다 ===
+PASS
+
+=== 9. round10 Q53 (a) (2026-09-17) — 체인 철거는 진행 중 엔진 Tween을 Cancel한다(Q65: 그 기록만 true로 — 진행 중이 아니던 { Value } 스냅 기록은 남아 같은 타깃은 dedup, 다음 타깃은 애니메이션): 관리 자식 파괴 전 취소(G-7) ===
+PASS
+
+=== 10. [round13 묶음 1 2026-09-28 round13 tween-callback-structure §8-1] Tween 콜백 — 발행마다 사본 하나를 네 변이 공유, 마지막 키(PaddingBottom)만 (부모, 숏핸드 키, 사용자 값)으로 알린다; Completed 연쇄는 통지 순서와 무관하게 네 변이 한 값 ===
+PASS
+=== ALL PASS ===
+=== quad-roblox/test/spec.shorthandtypes.luau
+=== 1. 런타임 대응 — 생성 D의 숏핸드 키가 실제 핸들러에 닿는다(mock 없이 타입만 — 본문은 실행하지 않음) ===
+PASS
+
+=== ALL PASS ===
+=== quad-roblox/test/spec.slottypes.luau
+=== ALL PASS ===
+=== quad-roblox/test/spec.tagattribute.luau
+=== 1. 설치 — 프로바이더가 세 op을 심는다(스텁 아님), H-238 태깅 ===
+PASS
+
+=== 2. Tag — 배치 addTag / 깜빡임 없는 diff / nil로 전량 제거 (CollectionService 경유) ===
+PASS
+
+=== 3. Attr — 단일 키·그룹·반응형 값·nil 삭제 (inst:SetAttribute 경유) ===
+PASS
+
+=== 4. 실물 계약 경계 — 태그 이름은 문자열만 (CollectionService가 거부하는 값은 base 검증이 먼저 막는다) ===
+PASS
+
+=== ALL PASS ===
+=== quad-roblox/test/spec.timers.luau
+=== 1. setTimeout — 인자 순서 뒤집어 task.delay로; Timeout 마커; 게이트(함수/음수) ===
+PASS
+
+=== 2. clearTimeout — task.cancel; 이미 발화한 핸들도 그냥 넘긴다(dead thread cancel은 무해 — Studio 실측); 마커 없는 값 거부 ===
+PASS
+
+=== 3. Debounce 끝까지 — base 슈거가 이 배선 위에서 돈다(Time 0.3, 신호 둘 → 0.3 뒤 1회) ===
+PASS
+
+ALL PASS
+=== quad-roblox/test/spec.tween.luau
+=== 1. 생성 — 브랜드·마커·frozen·옵션 보존·호출자 테이블 비-aliasing ===
+PASS
+
+=== 2. Override — 문자열 싱글톤 "Cancel"/"Finish"(H-343), Tween은 순수 함수 ===
+PASS
+
+=== 3. 검증 — 테이블·Value 필수·스칼라 타입·Override 멤버십, blame은 사용자 줄 ===
+PASS
+
+=== 4. Mapped — 원본 불변·옵션 보존·Value만 교체·재검증·재브랜드 ===
+PASS
+
+=== 4b. __tostring (2026-09-08 권고 1) — 목표 값 + Time ===
+=== 5. 경계 — StoreBind는 Tween을 언랩하지 않는다(값 그대로 도착), Source 안의 Tween ===
+PASS
+=== 6. 회신 3차 Q16 (b) — Tween{ Value = State }는 생성 시점에 거부(모든 필드는 plain — tween-plan 불변식), 사용자 줄 blame ===
+PASS
+=== 7. Q25 (2026-09-08) — `Dedup` 필드: boolean만, 값에 그대로 실림(기본은 nil = true 취급, 비교는 Property 핸들러) ===
+PASS
+
+=== 8. debug 층(2026-09-15 사용자 결정) — 모르는 옵션 키는 경고만, Tween은 그대로 만들어진다 ===
+(아래 Tween unknown option 경고 한 줄은 의도된 출력이다 — 육안 확인)
+Tween: unknown option "Duraton" is ignored (known: Value, Info, Time, Style, Direction, RepeatCount, Reverses, DelayTime, Override, Dedup, Started, Completed, Cancelled)
+PASS
+
+=== round13 묶음 1 (2026-09-28, research/tween-callback-structure §8-1) — tween:Mapped(fn, wrap) / tween:Wrapped(wrap): wrap는 호출마다 한 번, 돌려준 셋이 콜백 셋 전체, cb:Map은 있는 것에만; 값 검증은 Quad0246, wrap·반환·g 게이트는 사용자 줄 blame ===
+PASS
+
+=== ALL PASS ===
+=== quad-roblox/test/spec.tweenproperty.luau
+./quad-roblox/test/spec.tweenproperty.luau:374: settled record is not cancelled again; new tween created
+stacktrace:
+[C] function assert
+./quad-roblox/test/spec.tweenproperty.luau:374
+=== 1. 첫 세팅 스냅 — Tween 값이어도 엔진 트윈 없이 즉시 Value, plain도 동일 ===
+PASS
+
+=== 2. 세팅된 뒤 Tween — Create·Play 1회, 슬롯에 {Tween, Value}; Info 우선·편의 필드 기본값 채움(H-333) ===
+PASS
+
+=== 3. Tween→Tween 기본(Cancel) — 이전 Cancel 1, 스냅 없음, 새 Create ===
+PASS
+
+=== 4. Tween→Tween Finish — 이전 Cancel 뒤 prev.Value로 스냅, 그 다음 새 Create ===
+PASS
+
+=== 5. Tween→plain — Cancel 뒤 즉시 덮어쓰기, Create 없음; plain→plain은 슬롯 true 유지 ===
+PASS
+
+=== 6. Mapped 값·None 재디스패치(nil 쓰기 + 활성 트윈 취소 — Q33, H-352 역전)·다른 프로퍼티는 독립 슬롯 ===
+PASS
+=== 7. Q8 (a) Animate 아래 nil/None 통과(해제 가능); Q25 (2026-09-08, 옛 Q12 신원 모델 대체) 값 dedup: 같은 목표 Value면 무동작(취소·재시작 0 — 새 객체여도), Dedup=false면 재시작 ===
+PASS
+
+=== 8. Q26 (a) (2026-09-08) — 첫 스냅도 { Value }: 같은 목표 재발행은 엔진 트윈 0, 다른 목표는 Create 1, plain은 여전히 true ===
+PASS
+
+=== 9. 2026-09-08 round8 H-502/K-9 — Animate의 State 옵션 오류는 drive 깊이에서도 사용자 줄(D.Frame)을 blame ===
+PASS
+
+=== 10. round11 H-547 (2026-09-17) → Q65 (2026-09-18) — 기록은 (inst, k)에 인스턴스 수명 동안 남는다: 철거·핸들러 교체 뒤에도 '쓴 적 있음'이라 다음 Tween은 애니메이션; 진행 중이던 트윈만 Cancel 뒤 true; retractor는 GC를 견딘다 ===
+PASS
+=== 11. [2026-09-21 docs-review 1-5] 콜백 Started/Completed/Cancelled — 스냅은 Started→Completed 동기, 교체는 이전 Cancelled→새 Started, 자연 완료는 엔진 Completed(Completed)에서만, 끝난 트윈의 Cancel(엔진 재발화)은 무시, 철거는 진행 중일 때만 Cancelled, Dedup 스킵은 무발화, Time=0은 엔진 트윈 없는 스냅 ===
+=== quad-roblox/test/spec.tweentypes.luau
+=== 1. 런타임 대응 — 타입이 약속한 값이 실제로 있다(H-300) ===
+PASS
+
+=== ALL PASS ===
+=== doc-coverage (docs/reference)
+doc-coverage: 203/203 symbols have a heading in docs/reference
+=== type-surface-check (input positions use markers)
+type-surface-check: 0 input-position State/Source
+type-surface-check: 0 unprimed exported type function
+=== error-codes (every raise carries a QuadNNNN id with a docs/reference/errors section)
+error-codes: 255 ids, 249 raise sites, 0 untagged, 0 errors, 0 warnings
+=== check-version
+check-version: canonical 3.2.0 (quad-base/pesde.toml), VERSION_PATTERN 3.2^.0^

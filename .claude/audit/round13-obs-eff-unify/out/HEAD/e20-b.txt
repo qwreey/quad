@@ -1,0 +1,7 @@
+Subscribe          set-before-flush fn+1 | after stale callback: Sub=true dying=false exe=true cl=[false,false,false] | 2 more Sets fn+2
+    then Unsubscribe:	true	nil	cl=	false,false,false,false
+WeakSubscribe      set-before-flush fn+1 | after stale callback: Sub=true dying=false exe=true cl=[false,false,false] | 2 more Sets fn+2
+rebind             set-before-flush fn+1 | after stale callback: Sub=false dying=false exe=true cl=[false,false,false] | 2 more Sets fn+2
+unbind+Subscribe   set-before-flush fn+1 | after stale callback: Sub=true dying=false exe=true cl=[false,false,false] | 2 more Sets fn+2
+    then Unsubscribe:	true	nil	cl=	false,false,false,false
+Observer control: Subscribe in window then flush → Set fn+1
