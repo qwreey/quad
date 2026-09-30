@@ -4,7 +4,9 @@
 	`.claude/base/state-epoch-plan.md` §3 "`EpochMap` — 컴포지션 가능한 부기 객체",
 	as-is. `State` composes two of these (`valueEpochMap` / `emitEpochMap`),
 	`GateNode` and `Effect` use the same object (§6) — so it lives in its own
-	leaf module, not inside `State.luau`.
+	leaf module, not inside `State.luau`. `Observer` keeps the same record for
+	its single node as one number (`_seenRevision`, round13 3′ — Q109): an
+	entry of this map specialised to one key, never a second meaning.
 
 	  EpochMap:Update(Epoch | EpochSet) -> boolean  -- "does this need to propagate?"
 	                                                --   read, compare, overwrite; true if any differed

@@ -111,6 +111,10 @@ D.TextBox {
   `:Subscribe()` on an unbound handle (replays the held change once; calling it on a bound
   handle errors `Quad0235 Observer: already bound to an Instance`). Silent "my observer never fires" bugs are
   almost always this.
+- A change that happens *during* that registration fire is the exception: the handle has already
+  joined its target's subscribers, so the callback runs again on the spot (with `emitFrom = nil`) until
+  the target stops changing — nothing is held for later. `Effect`'s first run follows the same rule
+  (an `fn`-internal `Rerun()` or dep `:Set` re-runs it before any binding).
 - `slot:List(data, updateFn, keyFn?, opts?)` → `updateFn(ctx) -> (result, userdata)`, `ctx = { Item, Index, Offset, Prev, UserData }`
   (a fresh table per call — closures may capture `ctx`; `Index` is `0` on a `KeyGone` call).
 - `slot:Single(state, updateFn?, opts?)` → the same `updateFn(ctx)` shape, `Index` included (one `updateFn` can serve both).

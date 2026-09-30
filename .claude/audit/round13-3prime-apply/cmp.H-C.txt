@@ -1,0 +1,179 @@
+## debounce
+3c3
+< Throttle	Observer	install	0	| subscribe	0	| after timers	0
+---
+> Throttle	Observer	install	0,1	| subscribe	0,1	| after timers	0,1
+## e3
+11,13c11,13
+<  seen	0	s now	1	rerunReq	false
+<  after Subscribe seen	0
+<  after Set(10) seen	0,10
+---
+>  seen	0,1	s now	1	rerunReq	false
+>  after Subscribe seen	0,1
+>  after Set(10) seen	0,1,10
+21c21
+<  log	a1,b99
+---
+>  log	b2,a1,b99
+## osc
+1,2c1,2
+<  runs 1 s 1 rerunReq false
+<  after Subscribe runs 1
+---
+>  runs 100000 s 99999 rerunReq false
+>  after Subscribe runs 100000
+4c4
+<  runs 1 s 1
+---
+>  runs 100000 s 1
+6c6
+<  runs 1 s 1 t 1
+---
+>  runs 100000 s 99999 t 99999
+8c8
+<  runs 1 s 10
+---
+>  runs 2 s 10
+## throw
+1c1,2
+< ok	false	./xr_throw.luau:6: boom	in _subs	false	calls	1
+---
+> ok	false	./xr_throw.luau:6: boom	in _subs	true	calls	1
+> after Sets calls	1	rerunReq	false	installing	nil	emitted	nil	running	true
+## q109
+2,9c2,9
+<    Effect   dep=Source  revive=Subscribe runs-per-wave: 1x95 2x105
+<    Effect   dep=Source  revive=drive     runs-per-wave: 1x82 2x118
+<    Effect   dep=Compute revive=Subscribe runs-per-wave: 1x87 2x113
+<    Effect   dep=Compute revive=drive     runs-per-wave: 1x77 2x123
+<    Observer dep=Source  revive=Subscribe runs-per-wave: 1x88 2x112
+<    Observer dep=Source  revive=drive     runs-per-wave: 1x94 2x106
+<    Observer dep=Compute revive=Subscribe runs-per-wave: 1x93 2x107
+<    Observer dep=Compute revive=drive     runs-per-wave: 1x88 2x112
+---
+>    Effect   dep=Source  revive=Subscribe runs-per-wave: 1x200
+>    Effect   dep=Source  revive=drive     runs-per-wave: 1x200
+>    Effect   dep=Compute revive=Subscribe runs-per-wave: 1x98 2x102
+>    Effect   dep=Compute revive=drive     runs-per-wave: 1x103 2x97
+>    Observer dep=Source  revive=Subscribe runs-per-wave: 1x200
+>    Observer dep=Source  revive=drive     runs-per-wave: 1x200
+>    Observer dep=Compute revive=Subscribe runs-per-wave: 1x76 2x124
+>    Observer dep=Compute revive=drive     runs-per-wave: 1x92 2x108
+11,14c11,12
+<    seen [2,2,3 final=3]:	32
+<    seen [2,2 final=2]:	46
+<    seen [2,3 final=3]:	59
+<    seen [2 final=2]:	63
+---
+>    seen [2,3 final=3]:	88
+>    seen [2 final=2]:	112
+## e79
+14,15c14,15
+<   [mock] SCENARIO THREW: ./quad-roblox/src/Handlers/OnChange.luau:130: C stack overflow
+<   [imm] src=AB box.Text=AB callbacks=4 emits=4 seen=[A,A,AB,AB] deliveries=0
+---
+>   [mock] SCENARIO THREW: ./.claude/audit/round13-e79-deferred-signals/probe.luau:51: table overflow
+>   [imm] src=AB box.Text=AB callbacks=4 emits=2 seen=[A,AB] deliveries=0
+32c32
+<   [mock] mount-sync calls=1, calls after first flush=1, len(Text)=0, len(src)=1, deliveries=0, maxQueue=0
+---
+>   [mock] mount-sync calls=300, calls after first flush=300, len(Text)=299, len(src)=299, deliveries=0, maxQueue=0
+34c34
+<   [imm] mount-sync calls=1, calls after first flush=1, len(Text)=0, len(src)=1, deliveries=0, maxQueue=0
+---
+>   [imm] mount-sync calls=300, calls after first flush=300, len(Text)=299, len(src)=299, deliveries=0, maxQueue=0
+59,61c59,61
+<          …after flush: src=wor Text=wor emits=4
+<          user types 'abcdef': src=abc Text=abc emits=6
+<          two Sets in one frame: src=yyy Text=yyy emits=10
+---
+>          …after flush: src=wor Text=wor emits=3
+>          user types 'abcdef': src=abc Text=abc emits=4
+>          two Sets in one frame: src=yyy Text=yyy emits=6
+116c116
+<   [def] log=[act,btnOnChange:y,childOnChange:y,slotAdd:ok,OnDestroyed]
+---
+>   [def] log=[act,childOnChange:y,slotAdd:ok,btnOnChange:y,OnDestroyed]
+133c133
+<          after flush: callback=ok outer.Length=1 later Set: ok
+---
+>          after flush: callback=ok outer.Length=2 later Set: ok
+136c136
+<          after flush: callback=ok outer.Length=1 later Set: ok
+---
+>          after flush: callback=ok outer.Length=2 later Set: ok
+## e20-c
+2c2
+<    sibling fired before being unsubscribed:	125	 held (not fired):	75
+---
+>    sibling fired before being unsubscribed:	124	 held (not fired):	76
+4,5c4
+<    sibling ran	1	times in one wave:	85	trials
+<    sibling ran	2	times in one wave:	115	trials
+---
+>    sibling ran	1	times in one wave:	200	trials
+7,8c6
+<    effect sibling ran	1	times in one wave:	101	trials
+<    effect sibling ran	2	times in one wave:	99	trials
+---
+>    effect sibling ran	1	times in one wave:	200	trials
+10,14c8,12
+<    N=100 Observer: ok maxDepth=1 final=1 | Effect: ok final=100
+<    N=1000 Observer: ok maxDepth=1 final=1 | Effect: ok final=1000
+<    N=5000 Observer: ok maxDepth=1 final=1 | Effect: ok final=5000
+<    N=20000 Observer: ok maxDepth=1 final=1 | Effect: ok final=20000
+<    N=100000 Observer: ok maxDepth=1 final=1 | Effect: ok final=100000
+---
+>    N=100 Observer: ok maxDepth=1 final=100 | Effect: ok final=100
+>    N=1000 Observer: ok maxDepth=1 final=1000 | Effect: ok final=1000
+>    N=5000 Observer: ok maxDepth=1 final=5000 | Effect: ok final=5000
+>    N=20000 Observer: ok maxDepth=1 final=20000 | Effect: ok final=20000
+>    N=100000 Observer: ok maxDepth=1 final=100000 | Effect: ok final=100000
+23,24c21,22
+<    order	2	desc,killer	effRuns	1
+<    order	3	sib(exe=false),desc,killer	effRuns	0
+---
+>    order	2	sib(exe=false),desc,killer	effRuns	0
+>    order	3	desc,killer	effRuns	1
+## e20-c2b
+1,4c1,2
+< Observer	ran	1	times in one wave:	91	trials; values seen	[2] [2,2]
+< Observer	ran	2	times in one wave:	109	trials; values seen	[2] [2,2]
+< Effect	ran	1	times in one wave:	91	trials; values seen	[2,2] [2]
+< Effect	ran	2	times in one wave:	109	trials; values seen	[2,2] [2]
+---
+> Observer	ran	1	times in one wave:	200	trials; values seen	[2]
+> Effect	ran	1	times in one wave:	200	trials; values seen	[2]
+## e20-h
+1,2c1,2
+< EffectCleanup	→	obsHost(parent=nil), effSib-fn, obsChild
+< OnDestroyed	→	obsChild, effSib-fn, obsHost(parent=nil)
+---
+> EffectCleanup	→	obsHost(parent=nil), obsChild, effSib-fn
+> OnDestroyed	→	obsHost(parent=nil), obsChild, effSib-fn
+## e1b
+1,23d0
+< [A1 fn Sets own State (install)] LOSS | runs 1 seen 0 s 1 rerunReq false
+< [A1' after Subscribe] LOSS | runs 1 seen 0
+< [A2 clamp own State (install)] runs | runs 1 s 10 rerunReq false
+< [A2' after Subscribe] runs | runs 1
+< [B other Observer Sets (install)] LOSS | seen 0 s 1 rerunReq false
+< [B' after Subscribe] LOSS (Subscribe catch-up does not recover) | seen 0
+< [C1 setLength nested (sibling Offset obs → grandchild Add)] LOSS | fired true S1.Length 1 leaves 2 R2.Offset 1 (want 2)
+< [C2 setLength top-level holder:Set(R)] LOSS | fired true R.Length 2 R2.Offset 1 (want 2)
+< [C3x oscillator (badge on list.Length==1)] LOSS | ok true  list.Length 1 leaves 2 footer Offset 1
+< [C3a first Add] no-loss | list.Length 1 leaves 1 footer Offset 1
+< [C3b natural: per-row delete button on list.Length>1, second Add] no-loss | ok true  list.Length 4 leaves 4 footer Offset 4 children footer,r1,r1-del,r2,r2-del
+< [C3c row button on list.Length>0, first Add] LOSS | ok true  list.Length 1 leaves 2 footer Offset 1
+< [C3d new row: separator shown when list.Length>1 (older rows plain)] LOSS | ok true  list.Length 2 leaves 3 footer Offset 2
+< [C5 new row: hint on footer.Offset>0 (Compute only, no user Observer)] LOSS | ok true  list.Length 1 leaves 2 footer Offset 1
+< [C4 natural: divider on own row.Offset>0, prepend] no-loss | ok true  list.Length 3 leaves 3 footer Offset 3
+< [C4' append (new row's own Offset>0)] no-loss | ok true  list.Length 5 leaves 5 footer Offset 5
+< [D StoreBind install (value's mount Sets holder)] LOSS | fired true holder==B true A mounted true B mounted false children x,A
+< [E Tree makeBaseObserver] no user code in window | _rerunRequired false (install fire returns before any Set)
+< [F List data install (updateFn Sets data — UB)] LOSS | ok true  list.Length 1 data# 2
+< [Q74 T6 grandparent Remove in attach window] GHOST | remove ok true  add ok true  sub destroyed true mounted true f.Parent==parent true #children 1
+< [Q74 depth-4 ancestor Clear in attach window] GHOST | clear ok true  sub destroyed true mounted true #children 1
+< [Q74 control sibling Add in attach window] passes | ok true  outer.Length 3 leaves 3
+< PATCH_STATS	(unpatched)

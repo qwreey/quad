@@ -265,7 +265,7 @@ do
 end
 
 print()
-print("=== 9. GC — Effect가 강한 주인: 핸들을 놓으면 Ref 콜백·내부 Observer도 같이 사라진다 ===")
+print("=== 9. GC — Effect가 강한 주인: 핸들을 놓으면 Ref 콜백·dep `_subs` 멤버십도 같이 사라진다(round13 3′ — 내부 Observer 없음) ===")
 do
 	local s, r = Source(1), Ref(1)
 	local weak = setmetatable({}, { __mode = "v" }) :: { any }
@@ -277,7 +277,7 @@ do
 	collectgarbage()
 	assert(weak[1] == nil, "an unowned Effect is collectable")
 	assert(next(r.WeakCallbacks) == nil, "its Ref callback went with it")
-	assert(next((s :: any)._subs) == nil, "and its internal Observer left the State's subscriber set")
+	assert(next((s :: any)._subs) == nil, "and the Effect itself left the Source's weak-keyed subscriber set")
 	-- 강한 구독은 살려둔다
 	local calls = 0
 	local function makeStrong()
@@ -605,4 +605,51 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 13. round13 3′ (2026-09-30) — State/Source dep의 `_subs`엔 Effect 자신이 든다(내부 Observer 없음); 게이트가 막는 중에 만든 Effect도 게이트가 열린 뒤의 flush를 받는다(옛 생성자 시딩이 삼키던 것) ===")
+do
+	local s = Source(0)
+	local e = Effect(function() end, s)
+	assert((s :: any)._subs[e] == true and (e :: any)._deps[s] == true, "the dep's subscriber set holds the Effect itself; `_deps[State|Source] = true`")
+	local src = Source(0)
+	local b = quad.Blocker()
+	local g = src:Apply(b)
+	b:On()
+	src:Set(1) -- withheld by the gate
+	local seen: { number } = {}
+	local eff = Effect(function()
+		table.insert(seen, g:Get() :: number)
+	end, g):Subscribe()
+	assert(table.concat(seen, ",") == "1", "installed once (the withheld value is readable)")
+	b:Off() -- flush: the gate's batch reaches the Effect
+	assert(table.concat(seen, ",") == "1,1", "the flush re-ran the Effect created while the gate withheld: " .. table.concat(seen, ","))
+	eff:Unsubscribe()
+	print("PASS")
+end
+
+print()
+print("=== 14. round13 Q110 (b) (2026-09-30) — 설치 실행 중 fn 안의 Rerun·자기 dep Set은 그 자리에서 한 번 더 돈다(묶이기 전, 2회): 실행 자격은 의존성 관측의 자격이지 명시적 Rerun을 미루는 장치가 아니다 ===")
+do
+	local n = 0
+	local e = Effect(function(self)
+		n += 1
+		if n == 1 then
+			self:Rerun()
+		end
+	end)
+	assert(n == 2 and e.Subscribed == false, "Rerun inside the install run: fn ran twice before any binding")
+	local s = Source(0)
+	local seen: { number } = {}
+	local e2 = Effect(function()
+		table.insert(seen, s:Get())
+		if s:Get() == 0 then
+			s:Set(1)
+		end
+	end, s)
+	assert(table.concat(seen, ",") == "0,1", "own dep Set inside the install run: re-ran in place with the new value: " .. table.concat(seen, ","))
+	assert((e2 :: any)._rerunRequired == false, "nothing held for the later bind")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

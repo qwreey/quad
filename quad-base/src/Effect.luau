@@ -4,15 +4,16 @@
 	and a cleanup contract. `Effect(fn, ...deps)`; `fn(self) -> ...cleanup`.
 	`.claude/base/effect-plan.md`, transcribed as-is:
 	  - "확정 구조": the strong owner is ALWAYS the Effect (`_deps` map);
-	    registrations at the deps are weak (`ref:WeakCallback`, internal
-	    `observer:WeakSubscribe()`); the single fire gate is `canExecute`.
+	    registrations at the deps are weak (`ref:WeakCallback`, the dep's
+	    weak-keyed `_subs`); the single fire gate is `canExecute`.
 	  - "의사코드 — 생성자": deps validated once (`select("#")`, nil → error,
-	    non State/Source/Ref → error, duplicates ignored — `H-70`); one
-	    closure PER DEP KIND (`onRefFire(_, ref)` / `onStateFire(_, _, from)`,
-	    `H-107`); `fire`: `from == nil` (the internal Observer's install fire)
-	    is dropped, else `_epochs:Update(from)` → `Rerun` (`H-151`: the only
-	    place `_epochs` is written; no `_blocker`, `H-150`); `_epochs` seeded
-	    `Sync`/`TrackFrom` by `isEpoch`; install = `_rerunRequired = true` +
+	    non State/Source/Ref → error, duplicates ignored — `H-70`); round13
+	    3′ (user decision 2026-09-30): a State/Source dep's `_subs` holds the
+	    Effect itself (`_receive` — no internal Observer), a Ref dep keeps
+	    `onRefFire(_, ref)` (`H-107`); `_receive`: `_epochs:Update(from)` →
+	    `Rerun` (`H-151`; the one other writer is the pre-fn `Sync` of direct
+	    Epoch deps in `rawRerun`, Q109; no `_blocker`, `H-150`); `_epochs`
+	    NOT seeded (see the constructor); install = `_rerunRequired = true` +
 	    `rawRerun(self, true)`.
 	  - `_bindDestroying(inst)` (guard `isRunning`; `_unbindDestroying` first;
 	    injected `onDestroying(inst, fn)`; replay once if `_rerunRequired`),
@@ -80,6 +81,8 @@ local function createImpl(module: any)
 
 	-- The body. `force` means exactly one thing: "may be called ignoring
 	-- canExecute" — the install from the constructor, not yet bound.
+	-- Observer.luau follows this same protocol (`_pending` / `_rerunRequired` / `force`) with its own
+	-- body (round13 3′) — except that an executable Observer delivery nests instead of deferring.
 	local function rawRerun(self: any, force: boolean)
 		if self._running then
 			self._pending = true -- re-entered while running → deferred re-run
@@ -106,6 +109,15 @@ local function createImpl(module: any)
 			-- Requests that arrive DURING fn still re-run (`_pending` = a request while running).
 			self._pending = false
 			self._rerunRequired = false -- the ONLY place the flag goes down: fn really runs
+			-- round13 3′ (Q109, user decision 2026-09-30 — every run): fn is about to read every dep
+			-- live; a direct Epoch dep's (Source/Ref) live revision is exactly what its next delivery
+			-- would carry — mark it seen, so a same-wave delivery that reaches us after this run is not
+			-- a new change. State deps are not touched: a Gate below them may be withholding (`H-151`).
+			for d in self._deps do
+				if isEpoch(d) then
+					self._epochs:Sync(d)
+				end
+			end
 			-- `H-185` (user, 2026-08-31): the cleanup is ONE function — wrap several
 			-- teardowns in one closure (`function() a() b() end`); extra returns are
 			-- deliberately not collected (a list would widen the re-entry surface).
@@ -196,7 +208,7 @@ local function createImpl(module: any)
 			self._destroyConn:Disconnect()
 			self._destroyConn = nil
 		end
-		-- Ref callbacks and the internal Observers stay (weakly registered; the gate
+		-- Ref callbacks and the `_subs` memberships stay (weakly registered; the gate
 		-- silences them). `_cleanup` is NOT run here.
 	end
 
@@ -220,6 +232,15 @@ local function createImpl(module: any)
 			self._cleanupRunning = true -- `H-160`: cleanup runs outside `_running` in two of its three sites
 			(c :: (boolean) -> ())(self._dying == true)
 			self._cleanupRunning = outer
+		end
+	end
+
+	-- The EmitReceive every dep delivers to (State/Source through `_subs`, Ref through its callback —
+	-- round13 3′). `Update` first, always — `H-151`: written here (and by the pre-fn `Sync`, Q109).
+	-- Observer keeps the same record as one number (`_seenRevision`); the two must mean the same.
+	function Impl._receive(self: any, from: any)
+		if self._epochs:Update(from) then
+			self:Rerun() -- unexecutable → rawRerun holds it (`H-159`)
 		end
 	end
 
@@ -330,37 +351,25 @@ local function createImpl(module: any)
 			seen[d] = true -- duplicates are silently ignored (dedup lives in `_deps`/`_epochs`)
 		end
 
-		-- (1) register deps — HERE, ONCE. One closure per dep kind (`H-107`).
-		local function fire(from: any)
-			if from == nil then
-				return -- the internal Observer's install fire (no source) cannot `Update(nil)`
-			end
-			if self._epochs:Update(from) then -- `H-151`: the only place `_epochs` is written
-				self:Rerun() -- unexecutable → rawRerun holds it (`H-159`)
-			end
-		end
+		-- (1) register deps — HERE, ONCE. round13 3′: a State/Source dep's `_subs` holds the
+		-- Effect ITSELF (an `EmitReceive`, `Impl._receive` below) — no internal Observer; a Ref dep
+		-- keeps its callback (`H-107`: the Ref's 2nd arg is the source).
 		local function onRefFire(_value: any, ref: any)
-			fire(ref) -- Ref: the 2nd arg is the source
-		end
-		local function onStateFire(_targetState: any, _observer: any, from: any)
-			fire(from) -- Observer: the 3rd arg is the source
+			self:_receive(ref)
 		end
 		for d in seen do
 			if isRef(d) then
 				self._deps[d] = onRefFire -- strong owner = Effect
 				d:WeakCallback(onRefFire) -- the Ref side is weak
 			else
-				local o = d:Observer(onStateFire)
-				self._deps[d] = o -- strong owner = Effect
-				o:WeakSubscribe() -- the global registry side is weak
+				(self._deps :: any)[d] = true -- strong owner = Effect
+				d._subs[self] = true -- the dep side is weak (`_subs` is weak-keyed)
 			end
-			-- seeding by "is it an Epoch" — Source/Ref are (`Sync`), a State hands over
-			-- what it tracks (`_track` → `TrackFrom`, same polymorphic hook `_recompute` uses)
-			if isEpoch(d) then
-				self._epochs:Sync(d)
-			else
-				d:_track(self._epochs)
-			end
+			-- round13 3′: no seeding. It fed the old `_epochs:Refresh()` catch-up (gone since
+			-- `H-151`); what it still did was mark a Gate dep's WITHHELD revision as seen (a State
+			-- dep handed over its VALUE map), so an Effect created while the gate withheld swallowed
+			-- the later flush — against the gate contract. A direct Epoch dep is marked by the pre-fn
+			-- `Sync` in `rawRerun` (the install included); a Ref's registration call `Update`s it.
 		end
 
 		-- (2) install — once, immediately; cannot be deferred to bind.

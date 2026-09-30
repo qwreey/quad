@@ -477,7 +477,8 @@ end
    내부 플래그"도 그 뒤의 사적 `Blocker`도 아니라 Effect 핸들 쪽 가드다 — **[2026-08-29
    `H-192` 정정]** 정확히는 `fire`의 `from == nil` 가드가 설치 발화를 거른다(`canExecute`는
    `H-159` 뒤 버리지 않고 홀드하므로 그게 주체였다면 첫 바인드에서 `fn`이 한 번 더 돈다),
-   `base/effect-plan.md` 생성자 의사코드). `base/effect-plan.md`의 그
+   `base/effect-plan.md` 생성자 의사코드). **[2026-09-30 round13 3′]** 그 가드는 사라졌다 — `Effect`의 내부
+   Observer가 없어져(dep의 `_subs`에 `Effect` 자신) 거를 설치 발화 자체가 없다(`base/effect-plan.md` 생성자 배너). `base/effect-plan.md`의 그
    항목에 달려 있던 "⚠️ `Gate` 설계에 딸려 있다"도 같이 해소됐다. 아래는
    원 서술:
    2026-08-21 5라운드 `C-6`에서 확정된 다중 의존성 `Effect`는, 의존성마다 구독을
@@ -533,7 +534,8 @@ end
   안의 `gated:Get()`은 최신값이다.
 - 유보됐던 emit이 나중에 풀려 들어오면 그냥 재실행 — 생성 직후 유보분이 들어오는
   것과 같은 경로. `Effect`의 `_epochs`는 emit을 받을 때만 갱신된다(Observer·중간
-  State와 같다).
+  State와 같다) — **[2026-09-30 round13 3′]** 예외 하나: 직접 Source/`Ref` dep은 fn 직전에도 `Sync`된다(Q109,
+  `H-151` 예외); 게이트 뒤의 State dep은 그대로 emit 때만이라 이 계약은 안 바뀐다.
 
 **사용자 원문**: *"block 은 단지 유보만 해줄뿐이라서. - Effect 도 observer 랑
 똑같게, 중간 state 랑 똑같게, emit 받을때에만 epoch 맵을 업데이트 하면 돼. 계약

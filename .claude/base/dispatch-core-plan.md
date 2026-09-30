@@ -1396,6 +1396,9 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
   anchor, 설치 발화 recompute 안 사용자 Observer의 throw) 그 자리의 길이 State는 고아로 남는다. 에러로
   죽은 뒤의 무결성은 보장하지 않는다(사용자: *"에러로 죽은 다음 우린 데이터의 무결이 깨져도 상관이
   없고"*). 사전 검사(옛 (a))는 `research/deferred-hardening-plan.md`에 후보로.
+  **[2026-09-30 round13 3′ Q73 (a)]** 던지지 않는 쪽 — 설치 발화 창 안에서 온 길이 변경(사용자 Observer가 방금 붙는
+  서브트리를 CRUD)은 이제 유실되지 않는다: Observer가 `_subs`에 먼저 합류하고 설치 실행이 그 변경을 그 자리에서 다시
+  돈다(`source-state-plan.md`의 "전파 루프 — 확정 의사코드" 절). throw의 UB 입장은 그대로다.
 - **`State<State<T>>`는 정상 지원 대상** (2026-08-13 다섯 번째 세션
   재정정, 열네 번째 세션에 힌트까지 보강). 원래(같은 날 두 번째 세션)
   `store.key = a`(State), `a:Get() = b`(State)일 때 같은 `StoreBind`

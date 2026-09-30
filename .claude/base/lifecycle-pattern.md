@@ -363,6 +363,8 @@ local function isBoundAlive(value)
     --     세운 것"이라고만 적혀 있었고, 그대로 읽으면 WeakSubscribe로만
     --     등록되는 Effect의 내부 Observer가 이 게이트를 영영 못 통과해
     --     Effect의 State dep 전량이 조용히 침묵한다.
+    --     [2026-09-30 round13 3′] 그 예의 내부 Observer는 없어졌다(Effect가 dep의 _subs에
+    --     직접 든다 — 게이트는 핸들 자신의 이 필드) — 필드 뜻은 그대로.
     if isObserver(value) or isEffect(value) then
         return value.Subscribed == true
     end
@@ -434,7 +436,8 @@ function bindLifetime(inst, value)
     -- 바인드)이라 **호출부 쪽에 두면 반드시 한쪽이 샌다.**
     --
     -- ⭐⭐ [2026-08-25 정정, 7라운드 `H-58`/`H-59`] **내부 Observer로 cascade하지
-    --   않는다.** 여기 원래 `for _, observer in ipairs(value._observers) do
+    --   않는다.** (**[2026-09-30 round13 3′]** 내부 Observer 자체가 없어졌다 — `Effect`가 dep의 `_subs`에
+    --   직접 든다. 아래 근거는 도입 당시 것.) 여기 원래 `for _, observer in ipairs(value._observers) do
     --   bindLifetime(inst, observer) end`가 있었는데, 그 필드 자체가 폐기됐고
     --   (`_deps` 하나로 통합) dep 등록은 **생성자에서 한 번만** 일어난다
     --   (`WeakSubscribe`/`WeakCallback`). 그대로 두면 `_observers`가 `nil`이라
@@ -466,8 +469,9 @@ function unbindLifetime(value)
     -- cleanup을 여기서 부르면 `destroySlotTree`가 `_detachCleanup`을 손으로
     -- 비운 뒤 unbind하는 경로에서 이중 호출이 된다(`base/effect-plan.md`).
     --
-    -- ⭐⭐ [2026-08-25 정정, 7라운드 `H-58`] **`Ref` 콜백도 내부 Observer도
-    --   안 뗀다.** 둘 다 생성자에서 `Weak*`로 걸려 있고 발화는 `canExecute`가
+    -- ⭐⭐ [2026-08-25 정정, 7라운드 `H-58`] **`Ref` 콜백도 dep 쪽 등록도
+    --   안 뗀다**(**[2026-09-30 round13 3′]** 옛 "내부 Observer" → 지금은 State/Source dep의 `_subs`에 든
+    --   `Effect` 자신). 둘 다 생성자에서 약하게 걸려 있고 발화는 `canExecute`가
     --   막는다 — 떼었다 붙이는 그 춤이 `H-58`의 원인이었다. 포탈은 이제
     --   "떼고 다시 걸기"가 아니라 **재바인드 시 조건부 캐치업 1회**로
     --   성립한다(`_bindDestroying`).
@@ -678,6 +682,7 @@ function Observer:Unsubscribe()
     --   등록된 값에 `Unsubscribe`가 **조용히 성공**해서, 범용 정리 코드가
     --   `Effect`의 내부 Observer(오직 `WeakSubscribe`로만 등록된다)를 죽이고
     --   **State dep 전량이 침묵**한다. 계약은 한 줄로: **건 경로로 푼다.**
+    --   ([2026-09-30 round13 3′] 그 내부 Observer는 없어졌다 — 가드와 계약은 그대로.)
     if Subscribed[self] == nil then
         error("...: not subscribed strongly; use :WeakUnsubscribe()", 2)
     end
@@ -700,7 +705,7 @@ end
   강하게 구독된 값에 `WeakUnsubscribe`를 부르면 error, 약하게만 구독된 값에
   `Unsubscribe`를 부르면 error. 후자가 없으면 **조용히 성공**해서 범용 정리
   코드가 `Effect`의 내부 Observer(오직 `WeakSubscribe`로만 등록)를 죽이고
-  State dep 전량이 침묵한다. **"둘 중 뭐든 풀어주는" 범용 해제는 없다** —
+  State dep 전량이 침묵한다(**[2026-09-30 round13 3′]** 그 예는 지금은 없다 — 내부 Observer 제거; 가드는 그대로). **"둘 중 뭐든 풀어주는" 범용 해제는 없다** —
   필요하면 호출부가 `.Subscribed`가 아니라 어느 경로로 걸었는지를 알고 있어야
   한다(핸들을 만든 쪽이 안다).
 - **⭐ [2026-08-27 확정, 9라운드 `H-133`] 그 대칭은 *경로 교차*만 막는다 —

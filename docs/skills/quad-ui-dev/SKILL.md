@@ -515,7 +515,11 @@ Ref-returning hooks their element type explicitly (`q.OnCreated<<Frame>>(...)`) 
 without it `--!strict` fails with `Type functions do not currently support types of the form '*error-type*'` whenever the callback annotates or uses `inst`.
 
 `state:Observer(fn)` fires once at registration and then **holds** further changes — a
-fresh Observer has `Subscribed == false`. Bind it by putting the handle in an array part
+fresh Observer has `Subscribed == false`. A change made *during* that first fire (by the
+callback itself or by anything it triggers) is not held: the callback runs again on the spot
+until the target stops changing (a first fire that never converges is undefined behavior).
+Once alive, a callback that `:Set`s its own target recurses in place — unlike `Effect`, which
+re-runs after `fn` returns — so after writing the target back, `return` or re-read it. Bind it by putting the handle in an array part
 (it then lives and dies with that instance), or call `:Subscribe()` (strong keep) /
 `:WeakSubscribe()` (the registry does not keep the handle alive — a dropped reference is
 collected). `q.Effect(fn, ...deps)` behaves the same way; its cleanup return is optional.

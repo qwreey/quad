@@ -975,6 +975,13 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   **[2026-09-27 round13 Q73·Q74 검토 중]** 이 절의 "별도 가드 불필요" 서술과 Q52 `_materializing` 가드가
   실행 탐사에서 반증됐다 — 설치 발화 중 CRUD로 형제 `Offset`이 조용히 stale로 남는 경우(Q73), Q52 가드가
   런타임 `Add`의 attach 창에서 조부모 이상을 덮지 않는 경우(Q74)가 있다 — 사용자 문항이 열려 있다(`qa-request/post-implementation-review-round13.md` §4). 본문은 결정 전이라 그대로 둔다.
+  **[2026-09-30 round13 3′ — Q73 닫힘, Q74는 열림]** Q73은 Slot 쪽이 아니라 Observer 쪽에서 닫혔다(사용자 결정 Q73 (a)) —
+  `state:Observer(fn)`가 이제 **`_subs`에 먼저 합류한 뒤** 설치 실행을 하고, 그 실행 도중 온 emit은 `_pending`으로
+  잡아 fn을 그 자리에서 다시 돌린다(`source-state-plan.md`의 "전파 루프 — 확정 의사코드" 절). 그래서 `setLength`
+  State 팔의 설치 발화 창 안에서 형제 `Offset` Observer가 새 서브트리를 CRUD해도 길이 변경이 유실되지 않는다
+  (`spec.slot` "round13 3′ Q73 (a)" 절 — 원장 재현 `S1:Add(S12)` / `holder:Set(R)` 둘 다). 같은 이유로 `:List`의
+  첫 재조정(목록 Observer의 설치 실행) 안에서 `data`가 바뀌는 경우도 한 번 더 재조정한다(core/06 재진입 항목,
+  `spec.events` 9). Q74(attach 창의 조부모 CRUD)는 여전히 사용자 문항이다 — 위 문단의 그 절반은 그대로.
 - **`Slot(initial?: {T})` 생성자 — [정정, 2026-08-11 세션] "인자 없는
   빈 생성자로 확정"을 뒤집고 초기 배열을 받는 옵션 생성자를 다시 엶.**
   단, 새 마운트 로직이 아니라 **순수하게 `:Add`를 반복 호출하는

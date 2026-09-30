@@ -260,4 +260,36 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 9. round13 3′ (2026-09-30) — :List updateFn이 만든 원소의 OnChange가 마운트 창 안에서 동기 발화해 data를 Set해도 유실되지 않는다(목록 Observer의 설치 발화 창 — Immediate 시그널과 같은 동기 전달) ===")
+do
+	local data = q.Source({ "a" })
+	local outer = q.Slot()
+	local fired = false
+	outer:List(data, function(ctx)
+		if ctx.Item == q.KeyGone then
+			return nil
+		end
+		if ctx.Prev ~= nil then
+			return ctx.Prev
+		end
+		return q.Declaration.TextButton({
+			Text = ctx.Item,
+			q.OnChange("Text", function(v)
+				if v == "a" and not fired then
+					fired = true
+					data:Set({ "a", "b" }) -- inside the mount (initial-value firing, synchronous)
+				end
+			end),
+		})
+	end, function(item)
+		return item
+	end)
+	local host = q.Declaration.Frame({ outer })
+	assert(fired, "the OnChange fired during the mount")
+	assert(outer.Length:Get() == 2 and #host:GetChildren() == 2, `the Set made inside the mount window is applied (Length {outer.Length:Get()}, children {#host:GetChildren()})`)
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

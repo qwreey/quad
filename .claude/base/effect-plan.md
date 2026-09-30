@@ -173,12 +173,14 @@ gcconn/gchold 복사가 전부다 — **`Destroying`도, cleanup 저장도, 그�
 ### 확정 구조 — 강한 주인은 항상 `Effect`, 발화 게이트는 `canExecute` 하나
 
 ```
-Effect ──강──▶ _deps = { [Ref | State] = fn | Observer }   ← 강한 주인은 언제나 Effect
+Effect ──강──▶ _deps = { [Ref] = fn, [State | Source] = true }   ← 강한 주인은 언제나 Effect
 Ref.WeakCallbacks        ──약──▶ fn        (`ref:WeakCallback(fn)`)
   ⚠️ [2026-08-26 `/code-review high` 7차] 한때 여기 `Ref.Callbacks`(강한 셋)라
      적혀 있었다 — 그대로 읽으면 `Effect`의 클로저가 강한 셋에 들어가
      **`Ref`가 그 `Effect`를 영원히 붙들어** `H-58`의 약한 설계가 통째로 죽는다.
-Observer 전역 레지스트리 ──약──▶ Observer  (`observer:WeakSubscribe()`)
+dep._subs (weak-키)      ──약──▶ Effect 자신  (`Effect:_receive(from)` — `EmitReceive`)
+  [2026-09-30 round13 3′] 옛 줄 "Observer 전역 레지스트리 ──약──▶ Observer(`observer:WeakSubscribe()`)" —
+     dep마다 내부 Observer를 만들어 약하게 구독하던 모양은 사라졌다(아래 생성자 배너).
 발화 게이트: 전부 `canExecute(handle)` 하나로
 ```
 
@@ -187,10 +189,15 @@ WeakSub/WeakUnsub 를 WeakCallback 처럼 넣어줍시다. 의미론은 같습�
 callback 을 잡고 있지 않거나, sub 대상인 observer 를 잡고 있지 않으면 gc 될
 수 있다. **그러면 bindLifetime 은 effect 하나 구현을 한 이후 canExecute 로
 모두 처리한다. 간단해집니다.**"*
+**[2026-09-30 round13 3′ — 갈라 적기]** 이 인용이 승인한 것은 "강한 맵은 `Effect`가, 등록처는 약하게 —
+발화는 `canExecute` 하나"이고, 그 약한 등록처가 **dep마다 만든 내부 Observer**에서 **dep의 `_subs`에 든 `Effect`
+자신**으로 바뀐 것은 별개의 사용자 결정이다(통합안 평가 U′ 채택 — 사용자: *"그렇게 가자."*; 경위는
+`session/2026-09-28-01-round13-batch-reply.md` 2026-09-30 묶음 3′ 절 셋). `_emitDown`이 `sub:_receive(from)`만 부르게
+된 뒤(`H-163`)라 `Effect`가 자기 `_receive`를 가지면 `_subs`에 직접 들어갈 수 있다. 약함은 `_subs`의 weak-키가 준다.
 
 - **dep마다 바인드/언바인드에서 등록·해제하던 춤이 통째로 사라진다.**
   `bindLifetime`/`unbindLifetime`은 **`Effect` 핸들 하나**에만 적용되고,
-  내부 Observer와 `Ref` 콜백의 발화 여부는 `canExecute(handle)`이 전담한다.
+  dep 쪽 등록(**[2026-09-30 round13 3′]** State/Source의 `_subs`에 든 핸들 자신 — 옛 내부 Observer)과 `Ref` 콜백의 발화 여부는 `canExecute(handle)`이 전담한다.
 - 그래서 아래 `H-7` 절이 확정한 *"`unbindLifetime`과 `:Unsubscribe()`에서
   `:Uncallback`한다"*는 **더 이상 필요 없다** — `ref-plan.md`의
   *"해제는 누수를, 게이팅은 발화를 막는다"* 중 **앞쪽 절반을 `Weak*`가
@@ -223,41 +230,21 @@ function Effect(fn, ...)
         if not seen[d] then seen[d] = true end   -- 중복 dep은 조용히 무시(error 아님)
     end
 
-    -- (1) dep 등록 — **여기서 한 번만**. 즉시-1회 호출(설치 발화)은 `fire`의 `from == nil`
-    --     가드가 거른다(**[2026-08-28]** 옛 `Blocker`/`canExecute` 억제 서술은 폐기).
-    --     ⭐⭐ [2026-08-26 재확정, 8라운드 `H-107`] dep 종류마다 **클로저를
-    --     따로** 단다. 여기 한때 "클로저는 하나로 통일한다"고 적혀 있었으나,
-    --     그 통일을 시도할 근거 자체가 없었다 — **사용자 확정**:
-    --     *"Ref 의 callback 과 observer 의 콜백이 아주 헤테로지니어스한
-    --     개념이라, 둘을 전혀 합치고자 한 적 없고 … observer 에는 epoch 란게
-    --     존재하지 않음. emit 으로 온 epoch 를 넘겨줄 뿐, 그러나 ref 는 그
-    --     자체로 epoch임."* 실제로 두 계약은 자리 수부터 다르다 —
-    --     `Ref` 콜백은 `fn(value, ref)`(2번째가 곧 출처 `Epoch`),
-    --     Observer는 `fn(targetState, self, emitFrom)`(3번째가 출처).
-    --     ⚠️ dedup을 클로저 identity가 하는 게 아니다 — `_deps`(중복 dep 무시)와
-    --     `_epochs`(다이아몬드 판정)가 한다. 그래서 클로저를 나눠도
-    --     "공통 상류를 공유해도 한 파동에 fn은 한 번만"이 그대로 성립한다
-    --     (그게 아니었으면 `A → b`, `A → c`, `Effect(fn, b, c)`에서
-    --     `A:Set()` 한 번에 `fn`이 두 번 돈다 — 2026-08-21에 닫은 그 버그).
-    -- ⭐ [2026-08-28 확정, 10라운드 `H-150`] 사적 `Blocker`(`_blocker:On()` …
-    --   `OffWithoutEmit()`)는 **제거** — 실측(10라운드 `t18`)상 어떤 경로에서도 판정에
-    --   닿지 않는 죽은 부품이었다(사용자 확정: *"Effect 의 canExecute 를 보겠다는거지?
-    --   그럼 그건 맞는것 같아"*). 설치 발화의 억제는 아래 `from == nil` 가드가, 실행
-    --   가능 여부는 `rawRerun`이 한 곳에서 본다(**[같은 날 `H-159`]** `fire` 자신은
-    --   상태를 판정하지 않는다 — 사용자: *"fire 는 그냥 rerun 을 호출해도 될것"*).
-    local function fire(from)                          -- 공통 본문
-        if from == nil then return end                 -- 내부 Observer의 **설치 발화**(등록 즉시 1회,
-                                                       --   `emitFrom == nil` — `source-state-plan.md`)는
-                                                       --   출처가 없어 `Update(nil)`을 못 한다. ⚠️ `Ref`
-                                                       --   값이 `nil`인 것과 무관 — `Ref` 경로의 `from`은
-                                                       --   항상 그 `ref` 객체다(`onRefFire`).
-        if self._epochs:Update(from) then              -- ⭐ [`H-151`] `_epochs`가 갱신되는 **유일한** 자리 —
-            self:Rerun()                               --   묶여 있든 아니든 항상. 실행 불가면 `rawRerun`이
-                                                       --   `_rerunRequired`로 홀드한다(`H-159`).
-        end
-    end
-    local function onRefFire(_, ref) fire(ref) end            -- Ref: 2번째가 출처
-    local function onStateFire(_, _, from) fire(from) end     -- Observer: 3번째가 출처
+    -- (1) dep 등록 — **여기서 한 번만**.
+    -- ⭐⭐ [2026-09-30 round13 묶음 3′, 사용자 결정 — U′] **내부 Observer를 없앴다.** State/Source dep의
+    --   `_subs`(weak-키)에 **`Effect` 자신**이 든다 — `_emitDown`이 구독자마다 `sub:_receive(from)`만 부르므로
+    --   (`H-163` `EmitReceive`) `Effect`가 자기 `_receive`를 가지면 그걸로 족하다. `Ref` dep은 콜백 그대로(`H-107` —
+    --   두 콜백 계약은 여전히 합치지 않는다). `_deps[d]`는 `Ref`면 콜백, State/Source면 `true`(강한 주인 표시).
+    --   옛 모양 — `fire(from)` 공통 본문 + `onStateFire(_, _, from)` 클로저로 `d:Observer(onStateFire)`를 만들어
+    --   `WeakSubscribe`, 설치 발화(`from == nil`)는 `fire` 첫 줄이 드롭 — 은 이 결정으로 사라졌다(내부 Observer가 없으니
+    --   떨어뜨릴 설치 발화도 없다). 그 옛 블록이 담던 `H-107` 사용자 인용(*"… observer 에는 epoch 란게 존재하지 않음
+    --   …"*)은 `source-state-plan.md`의 같은 인용 옆 **2026-09-30 정정**을 볼 것 — 적대가 아니라 필요 부재였다.
+    --   ⚠️ dedup을 클로저 identity가 하는 게 아니다 — `_deps`(중복 dep 무시)와 `_epochs`(다이아몬드 판정)가
+    --   한다. 그래서 "공통 상류를 공유해도 한 파동에 fn은 한 번만"이 그대로 성립한다(`A → b`, `A → c`,
+    --   `Effect(fn, b, c)`에서 `A:Set()` 한 번에 fn 한 번 — 2026-08-21에 닫은 그 버그).
+    -- ⭐ [2026-08-28 확정, 10라운드 `H-150`] 사적 `Blocker`는 **제거**(죽은 부품이었다) — 실행 가능 여부는
+    --   `rawRerun`이 한 곳에서 본다(`H-159` — `_receive`는 상태를 판정하지 않고 `Update → Rerun`만).
+    local function onRefFire(_, ref) self:_receive(ref) end    -- Ref: 2번째가 출처(`H-107`)
     for d in pairs(seen) do    -- 스타일 통일(`pairs` 명시). **[2026-08-27 9라운드
                                --   `H-131`]** 옛 근거 *"`for d in seen`은 테이블을
                                --   호출하려 들어 죽는다"*는 **거짓** — Luau의 일반화
@@ -266,19 +253,14 @@ function Effect(fn, ...)
             self._deps[d] = onRefFire                  -- ⭐ 강한 주인 = Effect
             d:WeakCallback(onRefFire)                  -- Ref 쪽은 약함
         else
-            local o = d:Observer(onStateFire)
-            self._deps[d] = o                          -- ⭐ 강한 주인 = Effect
-            o:WeakSubscribe()                          -- 전역 레지스트리는 약함
+            self._deps[d] = true                       -- ⭐ 강한 주인 = Effect
+            d._subs[self] = true                       -- dep 쪽은 약함(`_subs`는 weak-키)
         end
-        -- ⭐ dep이 `Epoch`인지로 갈린다 — `state-epoch-plan.md` §4의 시딩 규칙
-        --   그대로다. **`Source`/`Ref`는 `Epoch`지만 `State`는 아니다**(§2·§8) —
-        --   무조건 `Sync`하면 State dep이 `.Revision` 없는 키로 들어가
-        --   `Update(from)`이 그 원천의 리비전을 영영 못 본다.
-        if isEpoch(d) then
-            self._epochs:Sync(d)
-        else
-            self._epochs:TrackFrom(d.valueEpochMap)
-        end
+        -- ⭐ [2026-09-30 round13 3′] **시딩 없음.** 옛 `isEpoch(d) → Sync / else TrackFrom(값 맵)` 시딩은 폐기된
+        --   `_epochs:Refresh()` 캐치업(`H-151`)을 위한 것이었고, 남은 효과는 **게이트 dep의 유보 중 리비전을 본 것으로
+        --   기록**하는 것뿐이었다 — 게이트가 막는 중에 만든 `Effect`가 나중 flush를 삼켰다(게이트 계약 위반; 시딩 줄은
+        --   도입 뒤 `H-151`/`H-159`가 건드리지 않고 지나간 방치 코드 — `git log -S` 확인). 직접 Epoch dep은 아래
+        --   `rawRerun`의 fn 직전 `Sync`가(설치 실행 포함), `Ref`는 `WeakCallback` 등록 즉시 1회 호출의 `_receive`가 기록한다.
     end
 
     -- (2) 설치 — 생성 즉시 1회. **바인드로 미룰 수 없다**(아래 캐비엇).
@@ -353,7 +335,8 @@ function EffectHandle:_bindDestroying(inst)
 
     -- (2) 캐치업 — **`_rerunRequired`가 서 있으면 1회**. dep 등록은 이미 생성자에서
     --     끝났다. ⭐ [2026-08-28 `H-151`→`H-159`] `_epochs:Refresh()`는 폐기(`_epochs`는
-    --     `fire`의 `Update(from)`에서만 갱신 — 사용자: *"우린 애초에 Refersh 를 할
+    --     `fire`의 `Update(from)`에서만 갱신(**[2026-09-30 round13 3′]** 지금은 `_receive`의 `Update` + 예외 하나, `rawRerun`의
+    --     fn 직전 직접 Epoch dep `Sync` — Q109) — 사용자: *"우린 애초에 Refersh 를 할
     --     필요가 없는거야"*), 대신 **실행 불가 상태(안 묶임·죽음·cleanup 중)에 온
     --     변경은 `rawRerun`이 `_rerunRequired`로 홀드**해 두고 여기서 한 번 돌린다
     --     (Gate의 유보와 같은 그림 — Effect는 "한 번 다시 돌면 된다"라 불리언 하나).
@@ -401,7 +384,7 @@ function EffectHandle:_unbindDestroying()
         self._destroyConn:Disconnect()
         self._destroyConn = nil
     end
-    -- **`Ref` 콜백도 Observer도 안 뗀다** — `Weak*`로 걸려 있고 발화는
+    -- **`Ref` 콜백도 dep 쪽 등록도 안 뗀다**(**[2026-09-30 round13 3′]** 옛 "Observer" — 지금은 dep `_subs`에 든 핸들 자신) — 약하게 걸려 있고 발화는
     -- `canExecute`가 막는다. **`_cleanup`도 안 부른다**(아래 2번 계약).
 end
 
@@ -486,6 +469,12 @@ local function rawRerun(self, force: boolean)
                                        --   소비된게 맞아서 순서의 문제라 a가 맞는것 같아"*. fn **중**에 온 요청은 그대로
                                        --   한 바퀴 더 돈다(아래 `until`).
         self._rerunRequired = false    -- ⭐ 실제로 돈다 — 이 플래그가 내려가는 **유일한** 자리
+        for d in self._deps do         -- ⭐ [2026-09-30 round13 3′ Q109, 사용자 결정 — 실행마다] fn은 dep을 전부
+            if isEpoch(d) then         --   라이브로 읽는다 — 직접 Epoch dep(Source/Ref)의 지금 리비전이 곧 다음 배달이
+                self._epochs:Sync(d)   --   실어 올 값이니 본 것으로 기록해, 이 실행 뒤 같은 파동의 배달이 새 변경으로
+            end                        --   보이지 않게 한다. State dep은 건드리지 않는다(아래 게이트가 유보 중일 수 있음).
+        end                            --   사용자: *"같은 값 중복 사라지는건 오히려 실행 전 기록 맞추는 비용 대비 좋은것 같아.
+                                       --   effect 에 기록 맞추기는 괜찮다고 봐"*. `_epochs`의 **두 번째 갱신 자리**(`H-151` 예외).
         self._cleanup = self.fn(self)  -- ⭐ [2026-08-31 `H-185`, 사용자 확정] cleanup은 **첫 반환 하나뿐** —
                                        --   여러 정리는 `function() a() b() end`로 묶는 게 계약. 반환 전부를
                                        --   목록으로 소진하는 안은 기각(재진입·`_rerunRequired`·`_pending`과
@@ -498,6 +487,14 @@ end
 function EffectHandle:Rerun()          -- 공개 메소드, 무인자 — 항상 게이트
     rawRerun(self, false)
     return self
+end
+
+-- ⭐ [2026-09-30 round13 3′] dep이 배달하는 `EmitReceive` — State/Source는 `_subs`로, `Ref`는 콜백으로 여기 온다.
+-- `Update`가 먼저, 항상(`H-151`). 실행 불가면 `rawRerun`이 홀드한다(`H-159`).
+function EffectHandle:_receive(from)
+    if self._epochs:Update(from) then
+        self:Rerun()
+    end
 end
 ```
 
@@ -521,7 +518,16 @@ end
   뭔가 수행되어 rerun 해야할 상황이 발생하면, 지연해 두었다 나중에 재실행
   하는건 어떤지(실행이 끝나고 나서). 실제로 Effect 안에서 state 등을 바꾸는
   상황은 react 등지에서 흔함."*
-- **`canExecute` 확인은 `rawRerun` 진입에서 한 번** — **[2026-08-28 `H-159`]** `fire`는
+  - **[2026-09-30 round13 Q110 (b), 사용자 결정 — 문서를 코드 쪽으로] 설치 실행(`force`) 안에서도 같다** — 생성자의
+    첫 실행 도중 fn 안의 `self:Rerun()`이나 자기 dep `Set`은 `_pending`으로 잡혀, 아직 묶이기 전이어도 그 실행이
+    끝난 자리에서 한 번 더 돈다(루프의 `until not self._pending`은 `force`든 아니든 같다; `spec.effect` 14). 같은
+    `Rerun`을 fn **밖**에서 묶이기 전에 부르면 보류다. 사용자: *"명시적으로 rerun 을 요청한것이고, 가장 깔끔한 설계로
+    보임. 실행 자격은 오직 deps 의 옵저빙 영역으로 생각했었어. 디펜던시로 인해 실행될 수 있냐이지, 명시적으로
+    실행하자 밀어넣는걸 지연시키거나 하는 방법을 넣고자 한건 아녔어."* — 실행 자격(`canExecute`)은 "의존성 관측으로
+    실행될 수 있는가"이지 명시적 재실행 요청을 미루는 장치가 아니다. Observer 설치도 같은 날 같은 규칙이 됐다
+    (Q73 (a) — `source-state-plan.md`의 "전파 루프 — 확정 의사코드" 절). 차이는 하나 — 자격 있는 배달에서 Observer는
+    중첩, `Effect`는 이 지연 재실행이다(자가치유 — 같은 절 배너).
+- **`canExecute` 확인은 `rawRerun` 진입에서 한 번** — **[2026-08-28 `H-159`]** `fire`(**[2026-09-30 round13 3′]** 지금은 `_receive`)는
   판정하지 않고 `Update → Rerun`만 하며, 실행 불가(안 묶임·죽음·cleanup 중)면
   `rawRerun`이 `_rerunRequired`로 **홀드**한다(no-op이 아니다 — 다음 바인드에서 1회).
   그래서 루프 안엔 판정이 없다. (한때 "`fire` 첫 줄에서 보고 죽은 핸들은 no-op"
@@ -624,7 +630,7 @@ end
 `Ref` 경로엔 그 게이트가 아예 없었다. 해제가 늦거나 누락되는 창이 실재한다 —
 예컨대 `unbindLifetime`으로 조용히 끊긴 상태(포탈 언마운트)는 `Destroying`이
 안 도는데도 `canExecute`가 거짓이다. **확정된 형태(`H-159`로 갱신)**: `Effect`가 거는
-`Ref` 콜백(`onRefFire`)은 판정하지 않고 `fire → _epochs:Update → Rerun`만 하며,
+`Ref` 콜백(`onRefFire`)은 판정하지 않고 `fire → _epochs:Update → Rerun`만 하며(**[2026-09-30 round13 3′]** `fire` → `_receive`, State/Source dep도 같은 `_receive`로 온다),
 **`rawRerun` 진입**이 자기 핸들에 대해 `canExecute(handle)`를 보고 거짓이면 **홀드**
 (`_rerunRequired`, 다음 바인드/구독 때 1회)한다 — 한때 여기 *"콜백 본문 맨 앞에서 확인하고
 거짓이면 그대로 리턴"*이라 적혀 있었다(`H-191`; 버리기와 홀드는 관측이 다르다 —
@@ -718,7 +724,7 @@ Observer 쪽 의사코드는 가드가 첫 줄이라 이 문제가 없었다.
 -- 유의하자' — 이것도 마찬가지야. 버그를 유발하기 좋은 포인트였고"* —
 -- Observer와 Effect는 이질적 타입이라(생성 방법부터 다르다) 본문을 섞지 않는다
 -- (`conventions.md`의 "설계 원칙" 절에 원칙으로 승격). 등록되는 건 **핸들
--- 자신뿐**(내부 Observer·`Ref` 콜백은 생성자에서 이미 `Weak*`로 걸려 있다,
+-- 자신뿐**(dep 쪽 등록 — **[2026-09-30 round13 3′]** 옛 내부 Observer, 지금은 dep `_subs`의 핸들 자신 — 과 `Ref` 콜백은 생성자에서 이미 약하게 걸려 있다,
 -- `H-59`). 레지스트리 두 테이블을 `Effect.luau`가 어떻게 받는지(모듈 내부
 -- export, 공개 API 아님)는 구현 세부 — 이름은 구현 시.
 
@@ -728,10 +734,16 @@ Observer 쪽 의사코드는 가드가 첫 줄이라 이 문제가 없었다.
 -- 안 돌아, deps 없는 Effect는 레지스트리가 살려두는 죽은 핸들(누수)이 되고
 -- deps 있는 것은 다음 emit까지 죽어 있었다. **[2026-08-28 `H-151`]** 한때 여기
 -- `_epochs:Refresh()`를 먼저 불러 "dep이 변했으면"까지 재실행했는데 폐기 —
--- `_epochs`는 emit을 받을 때만 갱신한다(`_bindDestroying`의 같은 주석). 재구독 뒤
+-- `_epochs`는 emit을 받을 때만 갱신한다(`_bindDestroying`의 같은 주석; **[2026-09-30 Q109]** 예외 하나 — fn 직전 직접
+-- Epoch dep `Sync`, `Refresh`의 부활은 아니다: 재실행 여부를 판정하지 않고 도는 실행의 기록만 맞춘다). 재구독 뒤
 -- 게이트 유보가 풀리며 같은 값으로 `fn`이 한 번 더 도는 것은 **정상 재실행**
 -- (사용자: *"처음 생성할 때에도 Block 되어있던게 나중에 다시 들어오는 경로가
--- 있어. 그 경우도 그냥 재실행 해주지."*). Blocker는 안 쓴다 — dep을 다시
+-- 있어. 그 경우도 그냥 재실행 해주지."*). **[2026-09-30 round13 3′]** 이 인용의 앞 절반("처음 생성할 때에도 Block
+-- 되어있던게")은 옛 생성자 시딩이 어기고 있었다 — 막는 중에 만든 `Effect`는 flush를 삼켰다. 시딩 제거로 이제 성립한다
+-- (`spec.effect` 13). 같은 날의 Q109(fn 직전 직접 Epoch dep `Sync`)와도 충돌하지 않는다 — 그 `Sync`는 Source/Ref만
+-- 기록하고 **State(게이트) dep은 건드리지 않으므로** 유보 뒤 flush는 여전히 한 번 더 돈다. 사라진 것은 **Source를
+-- 직접 보는 dep**이 파동 도중 되살아난 경우의 같은 리비전 두 번째 실행뿐이다(사용자: *"같은 값 중복 사라지는건
+-- 오히려 실행 전 기록 맞추는 비용 대비 좋은것 같아"*). Blocker는 안 쓴다 — dep을 다시
 -- 등록하지 않으므로(생성자에서 한 번, `_deps` 강참조 유지) 억제할 발화가 없다.
 local function resubscribeTail(self)
     if self._rerunRequired then        -- 소진됐거나 죽어 있는 동안 변경이 홀드됐으면 1회(`H-159`).
@@ -832,7 +844,7 @@ end
     등록하면 (a) `handle.Subscribed`가 안 세워져 `canExecute(handle)`이
     영원히 거짓이고, (b) deps 없는 `Effect(fn):Subscribe()`는 등록할 게
     아예 없어 핸들이 GC되고 cleanup이 유실된다.
-  - **`:Subscribe()`가 등록하는 것은 그것 하나뿐이다** — 내부 Observer와 `Ref`
+  - **`:Subscribe()`가 등록하는 것은 그것 하나뿐이다** — dep 쪽 등록(**[2026-09-30 round13 3′]** 옛 내부 Observer → 지금은 State/Source `_subs`의 핸들 자신)과 `Ref`
     콜백은 **생성자에서 이미 `Weak*`로 걸려 있다**(위 "확정 구조" 절).
     `Subscribed = true`가 서는 순간 `canExecute(handle)`이 참이 되어 그
     경로들이 살아난다. **[2026-08-27 `H-144`]** 등록 뒤 꼬리로 `_rerunRequired →
@@ -917,7 +929,7 @@ end
   2. **강한 킵 해제 + `handle.Subscribed = false`.** 이것만으로 향후 재실행이
      끊긴다 — `canExecute(handle)` 게이트가 곧바로 거짓이 되므로. **[2026-08-25
      정정, 7라운드 `H-58`/`H-59`]** 옛 문장 *"`state`가 있으면 내부 Observer도
-     `:Unsubscribe()`해서"*는 틀렸다 — 내부 Observer는 생성자에서
+     `:Unsubscribe()`해서"*는 틀렸다(**[2026-09-30 round13 3′]** 이제 내부 Observer 자체가 없다 — dep `_subs`의 핸들 자신도 해제하지 않는다) — 내부 Observer는 생성자에서
      `:WeakSubscribe()`로 걸리고 **해제하지 않는다**(위 "확정 구조" 절), 단수
      `state` 전제도 `...deps`로 대체됐다.
   3. **직전(또는 유일한) cleanup을 정확히 1회 호출** — leaf가 죽을 때
@@ -1015,7 +1027,7 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
   플래그로 한다"*고 적혀 있었고 그 플래그는 생성자 구간만 덮어 바인드 구간을
   놓쳤다(`H-58`). 그 자리에 `self._blocker:On()` … `:OffWithoutEmit()`이 들어왔는데,
   생성자 안의 핸들은 아직 어디에도 안 묶여 있어 설치 발화가 전부 떨어지므로(**[2026-08-29
-  `H-192` 정정]** 떨어뜨리는 건 `fire`의 `from == nil` 가드다 — `canExecute`는 `H-159` 뒤
+  `H-192` 정정]** 떨어뜨리는 건 `fire`의 `from == nil` 가드다(**[2026-09-30 round13 3′]** 내부 Observer가 없어져 떨어뜨릴 설치 발화 자체가 없다 — 가드도 사라졌다) — `canExecute`는 `H-159` 뒤
   버리지 않고 홀드하므로 그리로 갔다면 `H-58`이 되살아난다; 실측 `Effect(fn, s1, s2, s3)`
   생성 직후 `runs == 1`·`_rerunRequired == false`) `_blocker`는 **한 번도 판정에 닿지 않았다**
   (실측 `t18`). 위 생성자 의사코드가 소스다. **`_installing`도 `_blocker`도 폐기된
@@ -1031,7 +1043,8 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
   없고**, 둘 다 §4의 1번 규칙에 정당하게 걸린다(`base/state-epoch-plan.md`).
   위의 "설치 구간 억제"도 이건 안 덮는다(그건 등록 시점만).
   - **확정된 해법**: `EffectHandle`이 `EpochMap`을 **하나** 들고, 각 내부
-    Observer의 클로저가 받은 `from`으로 그걸 `Update`한다. **`true`일 때만
+    Observer의 클로저가 받은 `from`으로 그걸 `Update`한다(**[2026-09-30 round13 3′]** 지금은 핸들 자신의
+    `_receive(from)` — 내부 Observer 제거). **`true`일 때만
     `fn`을 부른다.** `Effect`가 곧 그 dep들의 **공통 하류**가 되므로, 한
     파동에 몇 개가 깨우든 첫 번째만 통과한다.
     > **⛔⛔ [2026-08-26 폐기, 8라운드 `H-107`/Q2-후속] 아래 "공통으로 거는
@@ -1042,7 +1055,8 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
     > 의사코드는 위 "확정 구조 — 강한 주인은 항상 `Effect`" 절의 생성자
     > 블록이 소스. **이 절이 확정한 것 중 살아 있는 것은 `EpochMap` 하나로
     > 다이아몬드를 접는다는 결론과, 바로 아래 ⚠️의 순서 제약뿐이다**(그
-    > 본문은 지금 `fire(from)` 공통 함수 안에 그대로 들어가 있다).
+    > 본문은 지금 `fire(from)` 공통 함수 안에 그대로 들어가 있다 — **[2026-09-30 round13 3′]** `fire`도 없어져
+    > 지금은 `EffectHandle:_receive(from)` 안이다).
     ```lua
     -- ⛔ 옛 모델(2026-08-21). 지금은 dep 종류별로 클로저가 둘이다.
     function(self, from)
@@ -1061,13 +1075,16 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
     `_blocker:IsOn()`으로 바뀌었을 뿐 순서 제약은 그대로였고, **[2026-08-28
     `H-150`→`H-159`]** 지금은 `fire`가 `Update`를 **먼저** 하므로 설치 발화는
     명시적 `from == nil` 가드가 `Update` 앞에서 거른다(같은 제약, 자리만 바뀜).
+    **[2026-09-30 round13 3′]** 이 제약은 대상이 사라졌다 — 내부 Observer가 없으니 `from = nil` 설치 발화가
+    `_receive`에 오지 않는다(`_receive`에 오는 것은 dep의 진짜 배달뿐이고, `Ref` 등록 즉시 1회도 `from = ref`다).
   - **⭐ [2026-08-25 정정, 7라운드 `H-58`] `Ref` 의존성도 이 맵에 낀다** —
     여기 한때 *"`Ref`는 `Epoch`가 아니고 `:Callback`으로 발화하므로 `from`이
     없다"*고 적혀 있었는데, **`Ref`가 `Epoch`로 승격**되며(`base/ref-plan.md`)
     공개 `.Revision`을 갖게 됐다. 그래서 `_epochs`가 State/Source/`Ref`를
     **같은 방식으로** 담고(**⚠️ [2026-08-25 정정]** 한때 여기 "State/Source/
     `Ref`를 균일하게"라 적었는데 **`State`는 `Epoch`가 아니다** — 등록이
-    `isEpoch`로 갈려 `Source`/`Ref`는 `:Sync`, `State`는 `:TrackFrom`이다,
+    `isEpoch`로 갈려 `Source`/`Ref`는 `:Sync`, `State`는 `:TrackFrom`이다 — **[2026-09-30 round13 3′]** 이 생성자
+    시딩은 폐기됐다(생성자 의사코드 배너 — 게이트 flush를 삼키던 방치 코드), 지금 `Sync`는 `rawRerun`의 fn 직전 직접 Epoch dep만,
     `base/state-epoch-plan.md` §4·§8), 같은 `Ref`를 두 번 dep으로 넣어도 키 dedup으로 접힌다
     (`H-70`). `Ref`가 반복 재설정마다 도는 계약 자체는 안 바뀐다 — 리비전이
     매번 갱신되므로 `Update`가 매번 `true`다.
@@ -1077,7 +1094,7 @@ Effect의 의존성이 될 방법이 아예 없다.** 사용자 제기: *"Effect
     두는 선택지도 있었으나, 접는 비용이 맵 하나뿐이라 채택 안 함.
   - 근거 기록은 `reference/epoch-brand-composition.md`(이 갭이 `EpochMap`
     분리의 직접 발단이었다).
-- **leaf dedup/cascade가 전부를 덮어야 한다** — 의존성이 N개면 내부 Observer도
+- **leaf dedup/cascade가 전부를 덮어야 한다** — (**[2026-09-30 round13 3′]** 내부 Observer는 없어졌다 — 아래는 도입 당시 서술) 의존성이 N개면 내부 Observer도
   N개다(위 `E-10`/`EF-5`와 같은 함정). 사용자 확인: *"어차피 모든 옵져버들이
   내부에 들어가 있을것이므로 가능하다."*
   **⭐ [2026-08-25 정정, 7라운드 `H-58`/`H-59`] 다만 그 "전부"를 덮는 주체는

@@ -268,22 +268,66 @@ function State:_emitDown(from)
 end
 
 -- Observer 쪽 `EmitReceive` 구현(`Observer.luau`). 판정과 홀드가 **여기** 산다.
--- ⭐ [2026-08-31 `H-183`] 아래 세 자리의 `fn` 호출은 실제 코드에선 전부
---   `_running` 플래그로 둘러싼다(설치 발화 포함) — `fn`이 자기 생명주기를 못
---   바꾼다는 `H-147`의 Observer 대칭. 근거·가드 목록은 `lifecycle-pattern.md`
---   (2) 배너, 실제 코드는 `Observer.luau`.
+-- ⭐ [2026-08-31 `H-183`] 아래 `fn` 호출은 실제 코드에선 전부 `_running` 플래그로 둘러싼다(설치 실행
+--   포함) — `fn`이 자기 생명주기를 못 바꾼다는 `H-147`의 Observer 대칭. 근거·가드 목록은
+--   `lifecycle-pattern.md` (2) 배너, 실제 코드는 `Observer.luau`.
 -- ⭐ [2026-09-06 fable 탐사 `H-332`] 플래그는 true/false가 아니라 **save/restore**다 —
 --   `fn` 안에서 자기 State를 `Set`하면 중첩 `_receive`가 `false`로 내려 바깥 `fn`의
---   꼬리가 가드 없이 진행했다(spec.observer 9a). 아래 의사코드에 그대로 반영.
-function Observer:_receive(from)
-    if canExecute(self) then
-        local outer = self._running        -- `H-332` save
-        self._running = true               -- `H-183`
+--   꼬리가 가드 없이 진행했다(spec.observer 9a).
+-- ⭐⭐ [2026-09-30 round13 묶음 3′, 사용자 결정 — Q73 (a)·Q109·Q110 (b)] Effect의 어휘를 그대로 쓴다(새 이름 없음):
+--   `_rerunRequired` = "실행 자격이 없을 때 온 변경"(보류, 살아날 때 1회 재생) **한 뜻** — 시드 `false`(옛 `true`);
+--   `_pending` = "실행 중에 왔는데 그 자리에서 못 돈 배달"(Effect와 같은 뜻 — 설치 창, 또는 fn이 자기를
+--   해제한 뒤); `force` = 설치 실행(Effect와 같은 뜻). 자격 있는 배달은 **여전히 중첩**이다 — Effect의 지연
+--   재실행과 다른 이 한 점은 의도다: 던진 Observer가 다음 변경에 다시 도는 자가치유(`H-445`/`H-545` 등 스펙
+--   고정)를 pcall 없이 지키려면 중첩이어야 한다(사용자: *"자가 치유적 성질이 옵져버에 있다 - 이건 버리기
+--   싫은 부분중 하나야"*). 그 대가로 대상을 되써서 수렴시키는 fn(clamp)은 바깥 fn의 꼬리가 옛 값을 본다 —
+--   문서화로 둔다(core/05 재귀 항목).
+--   `_seenRevision`(Q109) = 이 핸들이 마지막으로 돈 Source 리비전 숫자 하나. **Effect의 `_epochs` 맵 항목과 같은
+--   뜻의 기록을 대상 하나에 특수화한 것**이다(Effect: fn 직전 `Sync`, 배달 때 `Update`) — 외부자 검토가 든
+--   Preact signals·Vue 3.4+의 "간선 하나당 버전 숫자 하나"와 같은 모양. 비교는 대상이 **Source일 때만**
+--   (`from == self._state`); 게이트 배치(EpochSet)는 건너뛰지 않는다.
+--   ⚠️ [2026-09-30 mock 실측] 파생 State 대상은 이 비교 밖이라, 파동 도중 되살아난 핸들(Q109 모양)과 중첩
+--   파동(C6 모양)에서 **같은 값으로 두 번 돌 수 있다**(해시 순서에 따라 약 절반) — "파생 State는 자기 emit 맵이
+--   이미 거른다"는 전제는 이 두 경우엔 성립하지 않는다(emit 맵은 노드 입구에서 거를 뿐, 이미 도는 스냅샷
+--   순회의 뒤쪽 구독자에게 가는 바깥 배달은 막지 않는다). Effect는 `from`(원천 Source)을 `_epochs`에 기록하므로
+--   파생 dep의 중첩 파동은 거르지만, 되살림 경우는 같이 두 번 돈다(fn 직전 `Sync`는 직접 Epoch dep만).
+local function runLoop(self, from, force)  -- 설치(force)와 캐치업(_catchUp)이 쓰는 본체
+    local outer = self._running            -- `H-183`/`H-332` save
+    self._running = true
+    repeat
+        self._pending = false
+        self._seenRevision = rawget(self._state, "Revision")  -- 파생 State면 nil
         self.fn(self._state, self, from)   -- ⭐ (리시버 State, Observer 자신, 출처)
-        self._running = outer              -- `H-332` restore
+        from = nil                         -- 재실행은 "값을 읽어라"(`H-164`)
+    until not (self._pending and (force or canExecute(self)))
+    if self._pending then                  -- fn 안에서 실행 자격을 잃고 변경이 왔다: 보류로
+        self._pending = false
+        self._rerunRequired = true
+    end
+    self._running = outer                  -- `H-332` restore
+end
+
+function Observer:_receive(from)
+    local rev = nil
+    if from == self._state then            -- 자기 자신을 `from`으로 내는 것은 Source뿐
+        rev = from.Revision
+        if self._seenRevision == rev then return end   -- Q109: 이미 돈 리비전 — 새 변경이 아니다
+    end
+    if canExecute(self) then               -- 발화 시점에 읽는다(`H-174`)
+        local outer = self._running
+        self._running = true               -- `H-183`
+        if rev ~= nil then self._seenRevision = rev end
+        self.fn(self._state, self, from)   -- 자격 있는 배달은 **중첩**(위 배너)
+        self._running = outer              -- `H-332`
+        if self._pending and not outer then    -- fn이 자기를 해제한 뒤 대상을 바꿨다: 보류로
+            self._pending = false
+            self._rerunRequired = true
+        end
+    elseif self._running then
+        self._pending = true               -- 제자리에서 못 도는 실행 중(설치 창) — runLoop가 다시 돈다
     else
         self._rerunRequired = true         -- [2026-08-28 `H-159`] 묶이기 전의 변경은 홀드 — 묶일 때 1회
-    end                                    --   (Effect의 내부 Observer도 이 경로 — `fire`가 `fn`이다)
+    end
 end
 
 -- ⭐ [2026-08-28 확정] 캐치업 — 묶이거나 구독될 때 홀드가 있었으면 1회. 출처 없음(`nil`)이라
@@ -293,25 +337,29 @@ end
 function Observer:_catchUp()
     if self._rerunRequired then
         self._rerunRequired = false
-        local outer = self._running        -- `H-183`/`H-332` — _receive와 같은 save/restore
-        self._running = true
-        self.fn(self._state, self, nil)
-        self._running = outer
+        runLoop(self, nil, false)          -- 3′: 재생도 `_seenRevision`을 찍는다(Q109)
     end
 end
 
 -- `EmitReceive` — 구독자 집합 `_subs`의 원소가 만족하는 인터페이스(`Epoch`처럼 구조적).
 type EmitReceive = { _receive: (self: any, from: Epoch | EpochSet) -> () }
--- 구현: `ComputeNode`/`GateNode`(state-epoch-plan.md §4 규칙 1~3 / gate-plan.md 조립 절), `Observer`(위).
+-- 구현: `ComputeNode`/`GateNode`(state-epoch-plan.md §4 규칙 1~3 / gate-plan.md 조립 절), `Observer`(위),
+--   **[2026-09-30 round13 3′]** `Effect`(자기 `_receive` — `_epochs:Update(from)`이 참이면 `Rerun`; effect-plan.md).
 
--- `state:Observer(fn)` 생성자 — 순서가 계약이다(**[2026-08-28 `H-159`/`H-164`]**).
+-- `state:Observer(fn)` 생성자 — **[2026-09-30 round13 3′, Q73 (a) 사용자 결정] 합류가 먼저다.**
+--   옛 순서(`H-159`/`H-164` — (1) fn 1회 → (2) 플래그 내림 → (3) `_subs` 합류, "순서가 계약")는 설치 발화 도중 온
+--   emit을 버렸다(Q73: `setLength` 설치 발화 창의 형제 `Offset` stale, Q157 F6: `:List` 첫 재조정 안의 `data:Set`).
+--   사용자: *"첫 발화든 어느 발화든 자기 state 가 set 된다면 다시 실행되어도 됨. 그거는 내가 가정했던 부분인데,
+--   의도치 않게 막게 된것 같음."* — 옛 순서는 의도가 아니라 부수적으로 굳은 것. 진동 상한 없음 — 수렴하지 않는
+--   설치 fn은 UB(Effect 설치와 대칭). 설치 fn이 던지면 핸들이 `_subs`에 남는다(weak-키라 핸들과 같이 사라지고,
+--   그동안 `_running`이 선 채라 받기만 하고 안 돈다).
 function State:Observer(fn)
-    local o = setmetatable({ fn = fn, _state = self, _rerunRequired = true }, Observer)
+    local o = setmetatable({ fn = fn, _state = self, _rerunRequired = false,
+        _seenRevision = false, _pending = false, _running = false }, Observer)
     ObserverBrand:register(o)
-    o.fn(self, o, nil)                 -- (1) 등록 시점 즉시 1회 — 출처 없음(`nil`)
-    o._rerunRequired = false           -- (2) 설치 발화가 플래그를 내린다(사용자 확인)
-    self._subs[o] = true               -- (3) 그다음 구독자 집합에 — 순서를 뒤집으면 (1)이 자기
-    return o                           --     State를 Set할 때 그 emit이 자신의 _receive에 와 플래그가 선다
+    self._subs[o] = true               -- (1) 먼저 구독자 집합에
+    runLoop(o, nil, true)              -- (2) 설치 실행(force) — 창 안 emit은 `_pending` → 그 자리에서 재실행
+    return o
 end
 ```
 
@@ -340,15 +388,28 @@ end
     개념이다: *"observer 에는 epoch 란게 존재하지 않음. emit 으로 온 epoch 를
     넘겨줄 뿐, 그러나 ref 는 그 자체로 epoch임"*. 그래서 `Effect`는 dep
     종류별로 클로저를 **따로** 단다(`base/effect-plan.md`).
+    **[2026-09-30 정정 — 사용자]** 이 인용이 승인한 것은 "두 콜백 계약을 합치지 않는다"이지 "Observer는 기록을
+    가지면 안 된다"가 아니었다 — 사용자: *"내가 그 부분을 적대적으로 본게 아니라, 필요를 못 찾았다는거임. 근데
+    필요가 성립하면 재검토해볼 여지가 있음."* 필요는 round13 Q109(파동 도중 되살린 핸들의 이중 처리)·C6(Source 직접
+    대상의 중첩 파동 이중 실행)으로 성립했고, 그래서 Observer는 **리비전 숫자 하나**(`_seenRevision`)를 갖게 됐다
+    (위 의사코드 배너 — 맵이 아니라 숫자인 근거는 사용자: *"옵저버는 … 부모 쪽에서 알아서 state 가 존재하고 거기에
+    epochmap 이 있어서 일을 두번 하는거구나. emit 자체는 순번으로 오는것으로 처리 가능"*). 이 기록은 **새
+    메커니즘이고 위 인용이 승인한 것이 아니다** — 결정 원문은 `session/2026-09-28-01-round13-batch-reply.md`의
+    2026-09-30 묶음 3′ 절 셋. 같은 날 `Effect`의 dep 등록도 바뀌었다(State/Source dep은 클로저 없이 `Effect` 자신이
+    `_subs`에 든다 — 아래 정정); "`Ref` 콜백과 Observer 콜백을 합치지 않는다"는 그대로다.
 - **⚠️ [2026-08-26 주석 정정, `/code-review high`] 위 `elseif` 가지의 주석이
   한때 "Observer / Effect"였는데, `_state`는 **Observer에만** 있다** —
-  `Effect` 핸들의 강한 상류는 `_deps`이고 `_state` 필드가 없다. `Effect`는
+  `Effect` 핸들의 강한 상류는 `_deps`이고 `_state` 필드가 없다. ~~`Effect`는
   `_subs`에 직접 들어가지 않고 **자기 내부 Observer를 통해** 이 루프에
   닿는다(생성자가 dep마다 `d:Observer(onStateFire)` + `WeakSubscribe`).
   주석대로 `Effect`를 `_subs`에 직접 넣으면 사용자 `fn`이 리시버 자리에
-  `nil`을 받는다.
+  `nil`을 받는다.~~ **[2026-09-30 round13 3′ — 반대가 됐다]** 이 경고는 `_emitDown`이 구독자의 `fn`을 직접
+  부르던 시절(`EmitReceive` 이전)의 것이다. 지금 루프는 `sub:_receive(from)`만 부르므로(`H-163`), `Effect`가 자기
+  `_receive`(`_epochs:Update(from)` → `Rerun`)를 가지면 `_subs`에 **직접** 들어가도 리시버 문제가 없다 — 그래서
+  내부 Observer를 없애고 State/Source dep의 `_subs`에 `Effect` 자신을 넣었다(사용자 결정, `base/effect-plan.md`의
+  "확정 구조" 절). `_state`가 Observer에만 있다는 요지는 그대로다.
 - **구독자 집합은 하나**(`self._subs`, weak-키)이고 **원소는 Observer
-  값**이다 — emit 클로저가 아니다. `bindLifetime(inst, observer)`가 Observer
+  값**이다(**[2026-09-30 round13 3′]** 과 `Effect` 값, 그리고 자식 State 노드 — 원소는 `EmitReceive`) — emit 클로저가 아니다. `bindLifetime(inst, observer)`가 Observer
   **값**을 키로 `BindData`에 gcconn을 복사하므로, 집합에 클로저를 담으면
   `canExecute(클로저)`가 identity가 달라 **항상 거짓**이 된다.
   `base/lifecycle-pattern.md` (4)의 *"Observer의 emit 클로저"* 표현은 이
@@ -1227,7 +1288,13 @@ retract/Destroy되면 자동으로 정리됨.
   **[2026-09-27 round13 Q73 검토 중]** 이 순서(`fn` 1회 실행 → `_subs` 삽입) 자체가, 그 설치 발화 창 안에서
   남이 `Set`한 변경을 이 Observer가 구조적으로 못 받아 형제가 영구 stale로 남는 사례를 실행 탐사가
   보강했다(E3) — 사용자 문항이 열려 있다(`qa-request/post-implementation-review-round13.md` §4). 본문은
-  결정 전이라 그대로 둔다. 근거: (1) 이미 채워진
+  결정 전이라 그대로 둔다.
+  **[2026-09-30 round13 3′ — Q73 (a) 닫힘, 위 괄호의 순서 서술은 뒤집혔다]** 지금 생성자는 **`_subs` 삽입 → 설치
+  실행(force)**이고, 설치 창 안에서 온 emit(자기 `Set`이든 남의 것이든)은 플래그를 세우는 대신 `_pending`으로 잡혀
+  fn을 그 자리에서 한 번 더 돌린다 — 그래서 위 괄호가 걱정한 "첫 바인드에서 한 번 더"는 일어나지 않고(`_rerunRequired`는
+  시드 `false`, 설치 뒤에도 `false`) 남의 변경도 유실되지 않는다. `Effect`의 내부 Observer와 `from == nil` 거르기는 같은
+  날 사라졌다. 의사코드는 "전파 루프 — 확정 의사코드" 절이 소스. 아래 "즉시 1회"의 근거 (1)~(3)은 그대로다(첫 발화는
+  여전히 무조건 한 번 — 바뀐 것은 그 창 안 변경의 처리). 근거: (1) 이미 채워진
   State를 나중에 구독하면 그 값을 반영하는 연산이 아예 한 번도 안
   일어나는 문제가 생겨 초기화 순서에 디버깅 부담이 생김. (2) 초회
   실행을 하지 말아야 할 구체적 근거가 약함. (3) **이 결정 덕에
@@ -1261,6 +1328,7 @@ retract/Destroy되면 자동으로 정리됨.
     소비자라면 `nil`을 **"출처 없음 — 값을 읽어라"**로 다뤄야 한다. **[2026-08-28
     `H-164` 확정]** `nil`은 설치 발화 **또는** 묶일 때의 캐치업(`H-159` 홀드 발화)
     둘 다다 — 둘 다 "특정 출처의 통지"가 아니라 "지금 값을 반영하라"라 같은 종류.
+    **[2026-09-30 round13 3′]** 설치·캐치업 실행 도중 온 변경으로 그 자리에서 한 번 더 도는 재실행(`_pending`)도 `nil`이다.
     홀드된 출처를 보관해 넘기는 안은 기각(사용자: *"_rerunRequired 를 from 으로
     저장하면 여러 홀드 변경이 오면 from 이 날아가지 않아? 애초에 from 을 저장할
     이유가 왜 있어?"*). `nil`을 "초기화 전용"으로 분기하는 소비자 패턴은 계약이
@@ -1271,7 +1339,8 @@ retract/Destroy되면 자동으로 정리됨.
     `fn`이 없으니 인자 얘기가 아예 안 나온다.
   - **`from`을 실제로 쓰는 첫 소비자는 `Effect`다** — 자기 `EpochMap`을
     들고 각 내부 Observer가 그걸 `Update`해서 다중 의존성 중복 발화를
-    접는다(`base/effect-plan.md`의 "`Effect(fn, ...deps)`" 절).
+    접는다(`base/effect-plan.md`의 "`Effect(fn, ...deps)`" 절). **[2026-09-30 round13 3′]** 내부 Observer는
+    없어졌다 — `Effect` 자신이 dep의 `_subs`에 들어 자기 `_receive(from)`에서 `Update`한다.
 - **값을 안 실어줌 — 반드시 `Get()`을 다시 해야 함.** 기존 "emit은
   무효화 신호 하나로 좁혀짐 — 값을 안 실어보내므로 저렴함" 원칙(위
   "전파 모델 확정" 절)이 그대로 적용됨: `fn`은 "뭔가
@@ -1458,7 +1527,8 @@ state를 옵저빙해서 나온 결과로 slot에 `clear`/`add` 같은 연산을
   쪽으로 읽으면 `Observer:_receive`의 `canExecute(sub)` 게이트(**[2026-08-28 `EmitReceive`]** 옛 표현 "전파 루프의")가 항상 거짓이 되어
   **`Effect`의 State dep 전량이 조용히 침묵**한다(`Effect`의 내부 Observer는
   `WeakSubscribe`로만 등록되고, gcconn 경로는 핸들에만 있으므로 남는 판정
-  근거가 `.Subscribed`뿐이다). 사용자 원문 *"구현이 한 벌"*과도 이쪽이
+  근거가 `.Subscribed`뿐이다 — **[2026-09-30 round13 3′]** 그 내부 Observer는 없어졌고 지금은 `_subs`에 든
+  `Effect` 자신의 `canExecute`가 같은 필드를 읽으므로 논거는 그대로다). 사용자 원문 *"구현이 한 벌"*과도 이쪽이
   정합하다. 따라서:
   - `WeakSubscribe()` = 가드 + `.Subscribed = true` + 약한 레지스트리 등록
   - `Subscribe()` = 그 위에 **강한 킵 하나만** 추가
@@ -1467,7 +1537,7 @@ state를 옵저빙해서 나온 결과로 slot에 `clear`/`add` 같은 연산을
     강하게 구독된 값에 `WeakUnsubscribe`, 약하게만 구독된 값에 `Unsubscribe`는
     **둘 다 error**다(양방향 fail-fast, 사용자 확정). 후자를 안 막으면 조용히
     성공해서 범용 정리 코드가 `Effect`의 내부 Observer(오직 `WeakSubscribe`로만
-    등록된다)를 죽이고 **State dep 전량이 침묵**한다. 의사코드는
+    등록된다 — **[2026-09-30 round13 3′]** 지금은 그 자리에 `Effect` 자신)를 죽이고 **State dep 전량이 침묵**한다. 의사코드는
     `base/lifecycle-pattern.md`의 "(2) 전역 경로" 절이 소스.
   - `base/lifecycle-pattern.md`의 `isBoundAlive` (b) 경로 주석이 이에 맞춰
     "전역 경로: `:Subscribe()`가 세운 것"에서 "구독 경로(강/약)가 세운 것"
@@ -1476,13 +1546,17 @@ state를 옵저빙해서 나온 결과로 slot에 `clear`/`add` 같은 연산을
     테이블을 지워야 하는 대칭 요구가 새로 생긴다.
 - **자료구조**: 전역 레지스트리에 **약하게** 들어간다. 살려두는 책임은
   **잡고 있는 쪽**에 있다 — `Effect`가 자기 내부 Observer를 `_deps`에
-  강하게 들고 있는 게 그 예다(`base/effect-plan.md`의
+  강하게 들고 있는 게 그 예다(**[2026-09-30 round13 3′]** 내부 Observer는 없어졌고 지금은 `Effect`가 dep을 `_deps`에 강하게, dep의 약한 `_subs`에 자기 자신 — `base/effect-plan.md`의
   "확정 구조 — 강한 주인은 항상 `Effect`" 절).
 - **왜 필요한가**: `Effect`가 dep마다 Observer를 만들 때 평범한
   `:Subscribe()`를 쓰면 전역 레지스트리가 그 Observer를(따라서 `Effect`를)
   영원히 붙든다. 그렇다고 바인드/언바인드마다 등록·해제하면
   *"등록 시점에 즉시 1회 실행"*에 걸려 **바인드마다 `Rerun`이 dep 수만큼
   돈다**. `WeakSubscribe`면 둘 다 사라진다.
+- **[2026-09-30 round13 3′]** 위 두 항목(과 이 절의 `H-111` 항목)이 예로 든 "`Effect`의 내부 Observer"는 없어졌다 —
+  `Effect`는 State/Source dep의 `_subs`(weak-키)에 **자신**을 넣고 `_deps[d] = true`로 강하게 쥔다(`base/effect-plan.md`의
+  "확정 구조" 절). "등록처는 약하게, 살려두는 책임은 잡고 있는 쪽" 원칙과 `WeakSubscribe`의 공개 계약은 그대로이고,
+  이 예시들은 도입 당시의 근거로 남는다.
 - `Ref` 쪽의 짝은 `ref:WeakCallback(fn)`이다(`base/ref-plan.md`).
 
 **해결**: 명시적 `:Subscribe()`/`:Unsubscribe()`를 추가로 지원. 이건 새
@@ -1641,7 +1715,7 @@ end
 > 네 진입점 의사코드가 소스). **`bindLifetime`/`unbindLifetime`이 이 필드를
 > 읽지도 쓰지도 않는다는 요지는 그대로 유효하다** — 바뀐 건 "구독 쪽에서
 > 누가 세우는가"뿐이다. 옛 에러 문구 *"이미 `:Subscribe()`로 전역 바인딩된
-> 값"*은 `WeakSubscribe`로만 등록된 값(예: `Effect`의 내부 Observer)까지
+> 값"*은 `WeakSubscribe`로만 등록된 값(예: `Effect`의 내부 Observer — **[2026-09-30 round13 3′]** 지금은 없는 예)까지
 > 가리키므로 **틀린 원인을 지목한다** — 위 스니펫처럼 넓혔다(실제 문구는
 > 영어, `base/architecture.md`의 error 계약).
 
@@ -1692,7 +1766,7 @@ Observer가 **안 묶인 것으로 오판**됨"은 실제로는 안 일어남 �
   내부적으로 Observer를 조합하는 경우든, `state` 없는 경우든 같은
   `canBound` 게이트를 그대로 재사용(`base/effect-plan.md`) — **[2026-08-28
   정정]** 여기 한때 "Effect 자신이 아니라 내부 Observer가 게이트를 갖고 있어서
-  자동으로 커버됨"이라 적혀 있었는데 틀렸다: 내부 Observer는 생성자에서
+  자동으로 커버됨"이라 적혀 있었는데 틀렸다(**[2026-09-30 round13 3′]** 이제는 내부 Observer 자체가 없다 — 결론은 그대로): 내부 Observer는 생성자에서
   `Weak*`로만 걸리고 발화는 `canExecute(handle)`이 막으므로(`H-58`/`H-59`) 그
   게이트는 핸들의 이중 바인드를 막지 못한다. `EffectHandle`이 **자기 네
   진입점에서 `canBound(self)`를 직접 돈다**(`H-144` (b)). 이전에 그 문서에 적어뒀던 "leaf

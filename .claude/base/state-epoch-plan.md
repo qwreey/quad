@@ -488,6 +488,12 @@ if self.cacheCurrCount ~= self.cacheTargetCount then 재계산 end
 `EpochMap`을 떼어낸 실익이 여기서 나온다. **`Effect`가 자기 `EpochMap`을 하나
 들고** 각 의존성의 내부 Observer가 그걸 `Update`하면, 한 파동에 여러 dep가
 깨워도 **첫 번째만 `true`** 라 `fn`이 한 번만 돈다.
+**[2026-09-30 round13 3′]** 내부 Observer는 없어졌다 — `Effect` 자신이 State/Source dep의 `_subs`에 들어
+자기 `_receive(from)`에서 `Update`한다(Ref dep은 콜백). 갱신 자리도 하나 늘었다: `fn` 직전에 직접 Epoch dep
+(Source/Ref)을 `Sync`한다(Q109 — 파동 도중 되살아난 핸들이 같은 리비전을 두 번 처리하지 않게). 생성자 시딩은
+없앴다 — State dep의 값 맵을 넘겨받던 옛 시딩이 게이트가 **유보 중인** 리비전까지 본 것으로 기록해, 막는 중에
+만든 `Effect`가 나중 flush를 삼켰다(게이트 계약 위반). `Observer`도 같은 뜻의 기록을 숫자 하나로 갖는다
+(`_seenRevision` — 대상이 Source일 때만 비교; `base/source-state-plan.md`의 "전파 루프 — 확정 의사코드" 절).
 
 이건 `A → b`, `A → c`, `Effect(fn, b, c)`에서 **접어줄 공통 하류가 없어**
 State 층 dedup이 못 닫던 갭이다 — `Effect`가 자기 맵을 들면 그 지점이 곧

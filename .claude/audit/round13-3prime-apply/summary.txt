@@ -1,0 +1,13 @@
+C test.sh exit 0
+done C
+fails	0
+pureCoreInstallStale	0	installStaleSeeds	438	installStaleTotal	475	fails	0	seeds	20000
+obsOps	213170	rej0167	0	fails	0	physBad	23375	seeds	
+obsOps	224173	rej0167	9187	fails	0	physBad	23262	seeds	
+done H
+fails	0
+pureCoreInstallStale	1520	installStaleSeeds	1971	installStaleTotal	2523	fails	1	seeds	20000
+obsOps	213145	rej0167	0	fails	0	physBad	23292	seeds	
+obsOps	223816	rej0167	9173	fails	22	physBad	22927	seeds	219,555,622,833,841,901,1010,1209,1325,1553,1719,2166,2469,2640,3057,3697,3798,4247,4638,4657,5503,5758
+reapplied
+ALLDONE

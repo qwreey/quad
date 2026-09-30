@@ -1331,4 +1331,63 @@ do
 	print("PASS")
 end
 
+print()
+print("=== round13 3′ Q73 (a) (2026-09-30) — 설치 발화 창 유실 없음: 길이 Observer의 설치 발화 도중 형제 Offset Observer가 새 서브트리를 CRUD해도 형제 Offset이 stale로 남지 않는다 ===")
+do
+	local function F(n)
+		local f = Instance.new("Frame")
+		f.Name = n
+		return f
+	end
+	local function leaves(s, out)
+		out = out or {}
+		for _, e in ipairs(s._elements) do
+			if q.isSlot(e) then
+				leaves(e, out)
+			else
+				table.insert(out, e)
+			end
+		end
+		return out
+	end
+	-- (1) nested runtime Add: S1:Add(S12), S12 = Slot{ S14, f36 }, sibling R2 = Slot{ S22, f58 };
+	-- S22.Offset's Observer adds to S14 inside the install fire of S12's length Observer
+	local S1, S22 = Slot(), Slot()
+	local R2 = Slot({ S22, F("f58") })
+	dispatch.drive(Instance.new("Folder"), { S1, R2 })
+	local S14 = Slot()
+	local S12 = Slot({ S14, F("f36") })
+	local fired = false
+	local ob = S22.Offset:Observer(function()
+		if not fired and S22.Offset:Get() > 0 then
+			fired = true
+			S14:Add(F("new"))
+		end
+	end):Subscribe()
+	S1:Add(S12, 1)
+	assert(fired, "the sibling Offset Observer ran inside the install window")
+	assert(S1.Length:Get() == 2 and #leaves(S1) == 2, `S1.Length follows the grandchild Add ({S1.Length:Get()})`)
+	assert(R2.Offset:Get() == 2, `the sibling R2.Offset is not stale (got {R2.Offset:Get()}, want 2)`)
+	ob:Unsubscribe()
+	-- (2) top level: a State<Slot> seat swapped in, the sibling's Offset Observer adds to the new subtree
+	local child = Slot()
+	local R = Slot({ child, F("r") })
+	local Z = Slot({ F("z") })
+	local holder = q.Source(nil)
+	dispatch.drive(Instance.new("Folder"), { holder, Z })
+	local fired2 = false
+	local ob2 = Z.Offset:Observer(function()
+		if not fired2 and Z.Offset:Get() > 0 then
+			fired2 = true
+			child:Add(F("new"))
+		end
+	end):Subscribe()
+	holder:Set(R)
+	assert(fired2 and R.Length:Get() == 2, `R.Length follows ({R.Length:Get()})`)
+	assert(Z.Offset:Get() == 2, `the sibling Z.Offset is not stale (got {Z.Offset:Get()}, want 2)`)
+	ob2:Unsubscribe()
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

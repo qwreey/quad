@@ -180,7 +180,8 @@ local function Init(module: any)
 			Err.errorBeforeNearest("Quad0105 unbindLifetime: value must not be nil", SURFACE)
 		end
 		-- symmetric teardown — never calls cleanup, never detaches Ref
-		-- callbacks or inner Observers (lifecycle-pattern (1))
+		-- callbacks or dep `_subs` memberships (lifecycle-pattern (1); an
+		-- Effect has no inner Observers since round13 3′)
 		if isEffect(value) then
 			value:_unbindDestroying()
 		end

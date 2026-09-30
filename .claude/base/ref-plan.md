@@ -501,7 +501,8 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
     담는다(**⚠️ [2026-08-25 정정]** 한때 "State/Source/`Ref`를 균일하게"라
     적었는데 **`State`는 `Epoch`가 아니다** — 등록이 `isEpoch`로 갈려
     `Source`/`Ref`는 `:Sync`, `State`는 `:TrackFrom`, `base/state-epoch-plan.md`
-    §4·§8. 균일해지는 건 **판정 쪽**이다).
+    §4·§8 — **[2026-09-30 round13 3′]** 이 생성자 시딩은 폐기됐다(`effect-plan.md` 생성자 의사코드
+    배너 — 게이트 flush를 삼키던 방치 코드); 지금 `Sync`는 `rawRerun`의 fn 직전 직접 Epoch dep만. 균일해지는 건 **판정 쪽**이다).
     그래서 포탈 재마운트의 캐치업이 dep 종류에 따라 갈리던 것(`H-64`)이
     **대칭**이 되고, 판정이 `fire`의 `_epochs:Update(from)` 하나로 균일해진다
     (**[2026-08-28 `H-151`]** 재바인드 캐치업의 `Refresh()`는 폐기 — `_epochs`는
