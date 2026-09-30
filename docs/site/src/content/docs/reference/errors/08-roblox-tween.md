@@ -114,7 +114,7 @@ description: "Tween/Animate가 던지는 에러"
 `Tween: Value must be a plain value, not None or another Tween (emit None itself to release the property)` — `quad-roblox/src/Tween.luau`
 
 - **언제**: `opts.Value`로 `q.None`이나 다른 `Tween`을 넘겼을 때 — 이 역시 "모든 필드는 평범한 값" 불변식 위반입니다.
-- **고치려면**: 프로퍼티를 풀고 싶으면 `Tween`으로 감싸지 말고 `None` 자체를 그 자리에 방출하세요.
+- **고치려면**: 프로퍼티를 풀고 싶으면 `Tween`으로 감싸지 말고 `None` 자체를 그 자리에 방출하세요 — 단 `nil` 쓰기를 엔진이 받는 자리(숏핸드 `UICorner`·`UIPadding` 등, 객체 참조)에서만 됩니다. `Tween`을 받는 보간 가능 프로퍼티(`Size`·`BackgroundTransparency` 등)는 엔진이 `nil`을 거부하니, 되돌리려면 원하는 값으로 `Tween`을 다시 방출하세요.
 - **참고**: [`q.Tween(opts)`](/reference/roblox/06-tween-animate/#qtweenopts)
 
 ### Quad0252

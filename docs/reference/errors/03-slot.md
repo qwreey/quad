@@ -383,3 +383,19 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 - **언제**: 이미 파괴된 `Slot`을 다른 `Slot`의 원소로 직접 넣으려 할 때(`wrapElement`의 원소 자체가 파괴된 Slot인 경우 — 같은 뜻: Quad0169, 그쪽은 State로 감싸인 occupant가 파괴된 Slot인 경우).
 - **고치려면**: 파괴된 `Slot`은 원소로 쓸 수 없습니다 — 새 `Slot`을 만드세요.
 - **참고**: [죽은 Slot과 마운트 규칙](../core/06-slot.md#죽은-slot과-마운트-규칙)
+
+### Quad0259
+
+`Slot:List: opts.OwnsElements must be a boolean (got {typeof(opts.OwnsElements)})` — `quad-base/src/Slot/List.luau`
+
+- **언제**: `:List`/`:Single`의 `opts.OwnsElements`에 불리언이 아닌 값(`"false"`, `0` 등)을 줬을 때. 전에는 `false`와 정확히 같을 때만 비소유였어서 이런 값은 조용히 소유로 처리됐습니다.
+- **고치려면**: `true`나 `false`를 주거나 옵션을 생략하세요(생략하면 소유).
+- **참고**: [`slot:List(data, updateFn, keyFn?, opts?)`](../core/06-slot.md#slotlistdata-updatefn-keyfn-opts)
+
+### Quad0260
+
+`Slot:List: data item #{i} is q.KeyGone - it is the marker updateFn receives when a key disappears, not a data value` — `quad-base/src/Slot/List.luau`
+
+- **언제**: `:List`의 데이터 배열 항목 자체가 `q.KeyGone`일 때. 전에는 그 항목이 `Item = q.KeyGone`인 평범한 호출로 `updateFn`에 들어가 관용구 첫 줄(`if ctx.Item == q.KeyGone then …`)에서 조용히 빠졌습니다.
+- **고치려면**: 데이터에는 실제 값만 두세요 — 항목을 없애려면 배열에서 빼면 됩니다. `q.KeyGone`은 키가 사라질 때 `updateFn`이 **받는** 표시입니다.
+- **참고**: [`slot:List(data, updateFn, keyFn?, opts?)`](../core/06-slot.md#slotlistdata-updatefn-keyfn-opts)

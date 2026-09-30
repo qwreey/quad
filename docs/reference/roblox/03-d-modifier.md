@@ -118,6 +118,11 @@ export type FieldP<T> = FieldPV<T>? | ((old: FieldOutP<T>?) -> FieldPV<T>?)
 
 -- 예: Enum.Font는 보간 불가라 FieldP
 Font: (self: TextBoxModifier, value: FieldP<Enum.Font>) -> TextBoxModifier
+
+-- nil 쓰기를 엔진이 받는 자리는 State 팔이 nil/None까지 받는다 — 숏핸드(UICorner 등)는 FieldN,
+-- 값이 Instance인 객체 참조(Adornee·NextSelection* 등)는 FieldPN
+export type FieldNV<T> = T | Tween<T> | StateMarker<(T | Tween<T> | None)?> | None
+export type FieldPNV<T> = T | StateMarker<(T | None)?> | None
 ```
 
 **변환 함수**
@@ -230,6 +235,13 @@ local retagged = D.Modifier.TextLabel():As("Frame") -- 태그만 Frame으로(조
 Quad0051 Modifier:As: name must be a class name string (got {typeof(name)})
 Quad0052 Modifier: unknown modifier class "{name}" - Modifier.TypedFactory/DefineSubtype it first
 ```
+
+**넷째 무검사 경로 — 클래스 생성자에 다른 클래스의 Modifier를 넘기기.** `D.Modifier.<Class>(...)`는 base `Modifier(...)`와
+같은 병합 본문에 그 클래스 태그를 심는 생성자라, 인자로 받은 Modifier의 태그를 보지 않습니다. 그래서
+`D.Modifier.Frame(D.Modifier.TextButton({ TextSize = 3 }))`은 `TextSize` 필드를 든 채 `Frame`으로 다시 태그된
+Modifier가 되고, strict도 통과합니다(시그니처의 `{ [string]: any }` 팔로 들어갑니다 — [2026-09-27 mock·strict 실측]).
+검사형 `As<Class>()`라면 형제 클래스로 가는 순간 `Quad0056`으로 막히는 이동이므로, 클래스를 바꿀 뜻이 없다면
+생성자에는 같은 클래스(또는 조상 클래스)의 Modifier만 넘기세요.
 
 ---
 

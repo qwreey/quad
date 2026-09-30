@@ -70,7 +70,7 @@ label:Set("카운트: 1")                 -- ③ 원천의 값을 바꾼다
 -- … 위쪽 코드에 이어집니다(방금 만든 label을 count/countText로 갈아 끼웁니다)
 const count = q.Source(0)                      -- ① 원천은 숫자
 
-const countText = count:Compute(function(c)    -- ② 파이프: 숫자를 글자로 처리한다
+const countText: q.State<string> = count:Compute(function(c)    -- ② 파이프: 숫자를 글자로 처리한다
     return `카운트: {c:Get()}`
 end)
 

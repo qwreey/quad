@@ -84,6 +84,9 @@ local D = q.Declaration
 Snippets below assume this prologue.
 
 - `require(quad-base)` **is** the default instance; `Quad.New()` only for isolated ones.
+- Mounting the root: build a `D.ScreenGui { ResetOnSpawn = false, … }` in a client script and assign
+  `screen.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")` from outside — `Parent` is never a prop
+  (`getting-started/01-setup` has the full entry script). Never `q.Claim` the `PlayerGui` itself (§5).
 - `UseProvider` is one slot per module: a *different* provider function errors
   (`Quad0213 UseProvider: this Quad module already has a provider`); the same one is a no-op.
 - Types come from `quad-types` (`QuadTypes.State<T>`, `Source<T>`, `Slot<T>`, `Store<T>`,
@@ -108,6 +111,11 @@ Snippets below assume this prologue.
 | **`Debounce`/`Throttle`** | `q.Debounce{ Time = 0.3 }` | Time gate | `state:Apply(q.Debounce{...})`. Optional `Handle = q.Ref(nil)`. |
 | **`Operator`** | `q.Operator.*` | Named combinators | `Not`, `Sum`, `Product`, `Min`, `Max`, `Clamp`, `Band`/`Bor`/`Bxor`/`Bnot`/`Shl`/`Shr`, `Alternative`, `Indexed`. |
 | **`Claim`** | `q.Claim(inst, desc)` | Prefab binding | Takes an existing tree into quad ownership. Two args — the descriptor is required. |
+
+`source:Set(v)` has **no `==` dedup**: it always bumps the revision and propagates, even for an equal value
+(deduplication is the downstream's call). Re-`:Set`ting the same table after mutating it in place works; so does
+mutating in place and calling `:Emit()`, which signals without replacing the value (Sources only — a derived
+`State` has no `:Emit`).
 
 Values that belong in the **array part** of a props table, never as hash keys:
 `Ref`/`PreRef`/`PostRef`, `Observer`, `Effect`, `Slot`, `Modifier`, `Tag`, `Attr`,
@@ -209,6 +217,13 @@ end
 `props.Modifier or q.None` is mandatory: a `nil` in the array part is a hole that breaks
 the array walk, and the drive dies inside bookkeeping rather than at the author's line.
 
+A component that takes children receives a **`Slot`** (the convention in `how-to/01-component-conventions`):
+declare `read Children: QuadTypes.Slot<Instance>?` in the props type, put `props.Children or q.None` in the
+array part, and callers pass `Children = q.Slot<<Instance>>({ D.TextLabel { … }, … })`. `initial` is a plain
+array — braces even for one element (a bare element raises `Quad0176`) — and a Slot built with `initial`
+(even `{}`) is a manual-CRUD Slot, so `:List`/`:Single` cannot be installed on it later. Do not forward a
+`{ table.unpack(children) }` array in new code; that shape is only the v1 translation in `references/v1-migration.md`.
+
 ### 3.2 3-Tier Modifier Priority
 
 1. **Inline properties** on the element table always win.
@@ -235,6 +250,11 @@ local unchecked = base:As<<RobloxModule.TextLabelModifier>>()     -- UNCHECKED: 
 registered Modifier class name (`Modifier.TypedFactory`/`DefineSubtype`); an unknown name raises
 `Quad0052 Modifier: unknown modifier class "..."`, and a known one only retags. Prefer the generated
 `:As<Class>()` methods — their existence is the check.
+
+A reusable style is a plain function that returns a Modifier; annotate its return with the generated class
+type from the module root (`: RobloxModule.GuiObjectModifier`, `: RobloxModule.TextButtonModifier`, …).
+Chain setters take a `State` as well as a plain value — `:BackgroundColor3(accentState)` stays reactive
+(the property follows every publish).
 
 ### 3.4 Multi-Store Prop Passing via `Context`
 

@@ -195,5 +195,21 @@ do
 	print("PASS")
 end
 
+print("=== round13 Q141 ①② (2026-09-30) — 인자 0개 비트 fold도 bit32 규칙으로 정규화, 인자 수가 정해진 팩토리는 넘치는 인자를 거부 ===")
+do
+	local neg = Source(-1)
+	assert(neg:Apply(Operator.Band()):Get() == 4294967295, "Band() normalizes like Band(x) and Bnot")
+	assert(neg:Apply(Operator.Bor()):Get() == 4294967295 and neg:Apply(Operator.Bxor()):Get() == 4294967295, "Bor()/Bxor() too")
+	assert(neg:Apply(Operator.Band(-1)):Get() == 4294967295, "one argument unchanged")
+	assert(Source(3):Apply(Operator.Sum()):Get() == 3, "arithmetic folds untouched")
+	for label, call in { clamp = function() return (Operator.Clamp :: any)(0, 1, "junk") end, shl = function() return (Operator.Shl :: any)(1, 2) end, shr = function() return (Operator.Shr :: any)(1, 2) end } :: { [string]: () -> any } do
+		local ok, err = pcall(call)
+		assert(not ok and string.find(tostring(err), "Quad0261", 1, true) ~= nil, label .. " extra argument rejected: " .. tostring(err))
+		mock.assertBlamesUser(err, SPEC_FILE, label .. " blame")
+	end
+	assert(Source(5):Apply(Operator.Clamp(0, 3)):Get() == 3 and Source(1):Apply(Operator.Shl(2)):Get() == 4, "exact arity still works")
+	print("PASS")
+end
+
 print()
 print("ALL PASS")

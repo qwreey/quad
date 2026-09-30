@@ -24,7 +24,7 @@ description: "인스턴스에서 상태로 거슬러 올라오는 흐름을 q.Ou
 -- (Main.client.luau 계속 — 05장에서 더한 태그·속성 자리는 그대로 두고 여기선 생략합니다.
 --  card는 02장에서 이미 screen에 붙였습니다: card.Parent = screen)
 const count = q.Source(0)
-const countText = count:Compute(function(c) return `카운트: {c:Get()}` end)
+const countText: q.State<string> = count:Compute(function(c) return `카운트: {c:Get()}` end)
 const active = q.Source(true)
 
 const card = D.Frame {
@@ -135,7 +135,7 @@ print(emits)          --> 1   (등록 즉시 한 번)
 **엔진이 같은 값을 다시 대입해도 변경 신호를 내지 않기 때문**입니다(Studio 실측
 2026-09-10) — `Source`가 되쓴 값은 입력창이 이미 갖고 있는 값이라, 그 대입이 신호를 내지
 않고 고리가 끊깁니다.
-<!-- 2026-09-10 Studio 실측: `.claude/audit/studio-docs-2026-09-10.md` A절, `.claude/base/onchange-plan.md` H-429 -->
+<!-- 근거: 2026-09-10 Studio 실측(저장소 내부 기록) -->
 
 그럼 `q.Out`이 "새 값이 `src:Get()`과 같으면 `:Set`을 건너뛴다"는 건 왜 있을까요? 왕복을
 끊으려는 게 아니라 **첫 바인딩의 메아리**를 막기 위해서입니다 — 숫자 키가 문자 키보다 먼저

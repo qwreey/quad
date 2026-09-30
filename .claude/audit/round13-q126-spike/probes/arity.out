@@ -1,0 +1,5 @@
+spike-q126/arity.luau(6,39): TypeError: Expected this to be '(((InputObject, number) -> ()) | None | StateMarker<(((InputObject, number) -> ()) | None)?>)?', but got '() -> ()'
+spike-q126/arity.luau(7,39): TypeError: Expected this to be
+	'(((InputObject, number) -> ()) | None | StateMarker<(((InputObject, number) -> ()) | None)?>)?'
+but got
+	't1 where t1 = t2 & { Emit: (t1) -> t1, read Revision: number, Set: (t1, () -> ()) -> t1 } ; t2 = { Get: (*CYCLE*) -> () -> (), read __quadState: true, read __quadStateValue: () -> () } & { Apply: (({ Get: (*CYCLE*) -> () -> (), read __quadState: true, read __quadStateValue: () -> () }, { __apply: (any, any) -> any }) -> any) & (<U>({ Get: (*CYCLE*) -> () -> (), read __quadState: true, read __quadStateValue: () -> () }, (t2) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> () -> (), read __quadState: true, read __quadStateValue: () -> () }, ({ Get: (*CYCLE*) -> () -> (), read __quadState: true, read __quadStateValue: () -> () }, U?, ...any) -> U, ...any) -> *error-type*, Depend: ({ Get... *TRUNCATED*'

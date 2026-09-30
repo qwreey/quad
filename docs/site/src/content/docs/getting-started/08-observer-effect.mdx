@@ -175,7 +175,7 @@ logger:Set(nil)     -- 이 시점부터 위 print는 더 이상 돌지 않는다
 ```luau
 -- … 위쪽 코드에 이어집니다(buttonRef는 07장 3절에서 만든 그 상자 그대로)
 const GuiService = game:GetService("GuiService")
-const isBig = count:Compute(function(c) return c:Get() >= 10 end)
+const isBig: q.State<boolean> = count:Compute(function(c) return c:Get() >= 10 end)
 
 const card = D.Frame {
     -- …생략…

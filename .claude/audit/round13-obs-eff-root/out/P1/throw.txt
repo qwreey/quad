@@ -1,0 +1,2 @@
+ok	false	./xr_throw.luau:6: boom	in _subs	true	calls	1
+after Sets calls	1	rerunReq	false	installing	nil	emitted	nil	running	true

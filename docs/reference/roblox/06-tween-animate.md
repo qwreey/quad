@@ -63,7 +63,7 @@ export type TweenCallback<T> = (inst: Instance, prop: string, value: T) -> ()
 ```luau
 local open = q.Source(false)
 
-local size = open:Compute(function(self: q.StateData<boolean>): RobloxModule.Tween<UDim2>
+local size: q.State<RobloxModule.Tween<UDim2>> = open:Compute(function(self: q.StateData<boolean>): RobloxModule.Tween<UDim2>
 	return q.Tween({
 		Value = if self:Get() then UDim2.fromOffset(320, 200) else UDim2.fromOffset(320, 0),
 		Time = 0.25,
@@ -224,7 +224,7 @@ export type AnimateInfo = {
 
 ```luau
 local alpha = q.Source(0)
-local animated = alpha:Apply(q.Animate({ Time = 0.3, Style = Enum.EasingStyle.Quad }))
+local animated: q.State<RobloxModule.Tween<number>> = alpha:Apply(q.Animate({ Time = 0.3, Style = Enum.EasingStyle.Quad }))
 
 local reduceMotion = q.Source(false)
 local guarded = alpha:Apply(q.Animate({

@@ -91,7 +91,7 @@ local DARK: ColorPalette = {
 local isDark = q.Source(true)
 
 -- 지금 쓸 팔레트를 고르는 것은 한 번이면 된다
-local palette = isDark:Compute(function(dark)
+local palette: q.State<ColorPalette> = isDark:Compute(function(dark)
     return if dark:Get() then DARK else LIGHT
 end)
 

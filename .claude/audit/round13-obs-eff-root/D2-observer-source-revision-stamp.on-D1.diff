@@ -1,0 +1,45 @@
+--- a/quad-base/src/Observer.luau
++++ b/quad-base/src/Observer.luau
+@@ -93,6 +93,7 @@
+ 		self._running = true
+ 		repeat
+ 			self._pending = false
++			self._seenRevision = rawget(self._state, "Revision") -- PROTOTYPE P3 (nil for a derived State)
+ 			self.fn(self._state, self, from)
+ 			from = nil
+ 		until not (self._pending and (force or module.Backend.canExecute(self)))
+@@ -104,6 +105,16 @@
+ 	end
+ 
+ 	function Impl._receive(self: any, from: any)
++		-- PROTOTYPE P3: a direct Source delivery whose revision this handle already ran on (a catch-up or a
++		-- nested run in the same wave read it) is not a new change — skip. Only `from == _state` (a Source):
++		-- a derived State dedups stale/nested deliveries itself (emit map), and a gate batch is never skipped.
++		local rev = nil
++		if from == self._state then -- only a Source emits itself as `from`
++			rev = from.Revision
++			if self._seenRevision == rev then
++				return
++			end
++		end
+ 		if module.Backend.canExecute(self) then -- read at fire time (`H-174`)
+ 			-- `H-183`: fn may not change its own lifecycle (`H-147` symmetric). An fn
+ 			-- that throws leaves the flag set — NOT "dead": this gate does not read it, so
+@@ -113,6 +124,9 @@
+ 			-- its own State) must not lower the guard for the outer fn's tail (`H-332`)
+ 			local outer = self._running
+ 			self._running = true
++			if rev ~= nil then
++				self._seenRevision = rev -- PROTOTYPE P3
++			end
+ 			self.fn(self._state, self, from)
+ 			self._running = outer
+ 			if self._pending and not outer then -- fn unsubscribed itself, then changed its State: hold
+@@ -219,6 +233,7 @@
+ 			fn = fn or alwaysObserve,
+ 			_state = state, -- strong: the handle holds its upstream (`_hold` equivalent, `H-110`)
+ 			_rerunRequired = false, -- PROTOTYPE P1: one meaning — "held while unexecutable"
++			_seenRevision = false, -- PROTOTYPE P3: the state's Revision at this handle's last fn start (Source only)
+ 			_pending = false, -- PROTOTYPE P1: "a delivery arrived during this run" (Effect's field, same meaning)
+ 			_running = false, -- `H-183`: raised around every fn run; the subscribe entries + `_assertBindable` refuse while up (Q63 (b): releasing passes)
+ 			Subscribed = false, -- the shared flag both handle types carry (`H-111`)

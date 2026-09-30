@@ -137,6 +137,7 @@ UseProvider: <Self, P>(self: Self, providerFn: (Self) -> P) -> Self & P
   Quad0213 UseProvider: this Quad module already has a provider - a module cannot serve two backends
   ```
 
+- 프로바이더 함수는 모듈을 약한 키로 하는 테이블에 값으로 남습니다 — `AddPlugin`과 같은 이유로, `providerFn`이 그 모듈(`q`) 자체를 캡처한 인라인 클로저면 모듈이 수거되지 않습니다(Luau에는 키가 죽으면 값도 놓는 ephemeron 테이블이 없어 순환이 끊기지 않습니다 — [2026-09-27 mock 실측]은 `AddPlugin` 쪽이고, 프로바이더는 같은 저장 모양입니다). 모듈을 만들고 버리는 코드(테스트 하네스)에서는 인자로 받는 모듈만 쓰는 최상위 함수로 두세요.
 - 슬롯 표시는 **성공한 뒤에** 찍습니다. `providerFn`이 도중에 던지면 슬롯은 비어 있는 채로 남아 다시 시도할 수 있습니다(표시를 먼저 찍었다면 재시도가 멱등 no-op에 삼켜져 확장이 영영 병합되지 않는 좀비가 됩니다).
 - 인자 모양은 먼저 검사합니다 — `Quad0212 UseProvider: provider must be a function (got {typeof(providerFn)})`(`UseProvider(nil)`은 전에 조용히 통과했습니다), 프로바이더가 확장 테이블을 돌려주지 않으면 `Quad0209 UseProvider: the function must return its extension table (got {typeof(extension)} - return an empty table if it adds nothing)`.
 

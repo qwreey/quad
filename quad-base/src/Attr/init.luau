@@ -92,6 +92,21 @@ end
 -- Flatten one constructor argument into the map. Later writes win at the
 -- CALLER's discretion (constructor/Overridden pass overwrite=true; Merged
 -- passes false and errors on overlap).
+-- round13 Q147 ③ (user decision 2026-09-30): the value check both the plain-table path and the
+-- Store path run — a function/table assigned straight into a Store field used to pass `q.Attr(store)`
+-- and die at dispatch depth without an id (`Attr/Key.luau`)
+local function checkAttrValue(ctx: string, name: string, v: any)
+	if type(v) == "function" then
+		Err.errorBeforeNearest(`Quad0007 {ctx}: attribute "{name}" cannot be a function - attribute values are raw values or State`, SURFACE)
+	end
+	if type(v) == "table" and v ~= None and not Brand.isState(v) then
+		-- `H-498` (2026-09-08 2차 감사 I-5/H-3): the engine stores no table at all — a
+		-- Slot/Ref/Tween/Modifier or any metatable'd table reached `setAttr` at dispatch
+		-- depth (the `H-368` family: brands are not metatables, so nothing caught them)
+		Err.errorBeforeNearest(`Quad0008 {ctx}: attribute "{name}" cannot be a table - attribute values are raw values, None or State (got {typeof(v)})`, SURFACE)
+	end
+end
+
 local function flattenArg(map: { [string]: any }, arg: any, overwrite: boolean, ctx: string)
 	if isStore(arg) then
 		for _, name in ipairs(arg:Names()) do
@@ -101,7 +116,9 @@ local function flattenArg(map: { [string]: any }, arg: any, overwrite: boolean, 
 			if not overwrite and map[name] ~= nil then
 				Err.errorBeforeNearest(`Quad0004 {ctx}: attribute name "{name}" appears more than once`, SURFACE)
 			end
-			map[name] = arg[name] -- the declared Source slot (H-79)
+			local v = arg[name] -- the declared Source slot (H-79), or a value assigned straight into the field
+			checkAttrValue(ctx, name, v) -- error-code: via checkAttrValue
+			map[name] = v
 		end
 	elseif isAttr(arg) then
 		for name, v in pairs(arg:NameMap()) do
@@ -128,15 +145,7 @@ local function flattenArg(map: { [string]: any }, arg: any, overwrite: boolean, 
 				Err.errorBeforeNearest(`Quad0006 {ctx}: plain-table keys must be non-empty strings`, SURFACE)
 			end
 			local name = rawName :: string
-			if type(v) == "function" then
-				Err.errorBeforeNearest(`Quad0007 {ctx}: attribute "{name}" cannot be a function - attribute values are raw values or State`, SURFACE)
-			end
-			if type(v) == "table" and v ~= None and not Brand.isState(v) then
-				-- `H-498` (2026-09-08 2차 감사 I-5/H-3): the engine stores no table at all — a
-				-- Slot/Ref/Tween/Modifier or any metatable'd table reached `setAttr` at dispatch
-				-- depth (the `H-368` family: brands are not metatables, so nothing caught them)
-				Err.errorBeforeNearest(`Quad0008 {ctx}: attribute "{name}" cannot be a table - attribute values are raw values, None or State (got {typeof(v)})`, SURFACE)
-			end
+			checkAttrValue(ctx, name, v) -- error-code: via checkAttrValue
 			if not overwrite and map[name] ~= nil then
 				Err.errorBeforeNearest(`Quad0009 {ctx}: attribute name "{name}" appears more than once`, SURFACE)
 			end

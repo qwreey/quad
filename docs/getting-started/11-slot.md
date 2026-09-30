@@ -58,7 +58,7 @@ const items = q.Slot<<Instance>>({
 
 :::caution
 `?`를 붙인 옵셔널 자리(`q.Slot<Instance>?`)는 [2026-09-26 기준] 신 솔버가 타입 인자를 검사하지 않습니다 — 다른 `T`의 `Slot`(예: `q.Slot<<TextLabel>>()`)도 타입 검사를 통과합니다. Luau 쪽 한계이고, 런타임 가드는 그대로 동작합니다.
-<!-- .claude/base/typing-limits.md 8.26 -->
+<!-- 근거: 2026-09-26 신 솔버 실측(저장소 내부 기록) -->
 :::
 
 </details>

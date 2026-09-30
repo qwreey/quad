@@ -106,7 +106,7 @@ local width = q.Source(200)
 local topbar = q.Source(60)
 
 -- v1: myStore "width,topbar":With(function(w, tb) ... end)
-local size = width:Compute(function(
+local size: q.State<UDim2> = width:Compute(function(
 	self: q.StateData<number>,
 	_prev: UDim2?,
 	tb: q.StateData<number>
@@ -397,7 +397,7 @@ v1 코드를 직역하면 아래 열아홉 가지에서 막힙니다. 진단 문
 | 자식 배열 변수를 `D.ScreenGui(children)` | 같은 계열의 파라미터 불일치 | `D.ScreenGui { table.unpack(children) }` — 리터럴의 **마지막** 원소일 때만 전부 펼쳐집니다 |
 | `q.Store()` 뒤 `store.Text = v` | `Cannot add property 'Text' to table '{ } & { Names: …, Of: … }'` | `defaults`에 선언하거나 `store:Of<<string>>("Text")` |
 | `State<Frame>`을 `State<Instance>` 파라미터에 | `'Frame' is not exactly 'Instance'` (수백 줄) | `State<T>`는 불변입니다. 입력 자리는 생성 prop 타입(공변 마커)으로 선언하세요. **지역 변수 주석만으론 안 됩니다** — 불변 `State`라 `Source<Frame>` 추론이 먼저 굳습니다. 생성자에 타입 인자를 주세요: `q.Source<<Instance>>(D.Frame{})` |
-| `Slot:List` updateFn이 먼저 `return nil` | `Expected this to be 'nil', but got 'TextLabel'` | 반환 팩을 주석하세요: `): (any, UD?)` |
+| `Slot:List` updateFn이 먼저 `return nil` | `Expected this to be 'nil', but got 'TextLabel'` | `ctx` 파라미터와 반환 팩을 같이 주석하세요: `function(ctx: RowCtx): (any, RowUD?)`(§5 예제·[레퍼런스 `slot:List`](/reference/core/06-slot/#slotlistdata-updatefn-keyfn-opts)와 같은 모양). 진단은 반환 팩만으로도 사라지지만 그러면 `ctx.Item`의 필드 오타가 검사되지 않습니다. `ctx.Item == q.KeyGone` 검사가 타입을 좁히지 않으므로 그 뒤에서 `ctx.Item :: Row`로 캐스트합니다 |
 | `q.Context.Provider("Theme")` 무캐스트 | prop 자리에서 `Get()` 결과가 `unknown` | `q.Context.Provider<<Theme>>("Theme")` |
 | `q.Ref(nil)` | `… but got 'Ref<nil>'` | `q.Ref<<Frame?>>(nil)` — 타입 인자로 넓힙니다 |
 | `[q.AttrKey("Hp")] = v` (문자 키) | `Expected this to be 'number', but got 'AttrKeyObject'` | 런타임은 정상이지만 타입이 안 열립니다. 숫자 키 자리의 `q.Attr{ Hp = v }` / `q.NumberAttr("Hp", v)`를 쓰세요 |

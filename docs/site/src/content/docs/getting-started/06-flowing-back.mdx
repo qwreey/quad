@@ -25,7 +25,7 @@ import { Quiz, QuizResults } from 'starlight-quiz/components';
 -- (Main.client.luau 계속 — 05장에서 더한 태그·속성 자리는 그대로 두고 여기선 생략합니다.
 --  card는 02장에서 이미 screen에 붙였습니다: card.Parent = screen)
 const count = q.Source(0)
-const countText = count:Compute(function(c) return `카운트: {c:Get()}` end)
+const countText: q.State<string> = count:Compute(function(c) return `카운트: {c:Get()}` end)
 const active = q.Source(true)
 
 const card = D.Frame {

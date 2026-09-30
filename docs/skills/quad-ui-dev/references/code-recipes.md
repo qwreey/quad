@@ -22,11 +22,11 @@ local D = q.Declaration
 local function Counter()
     local count = q.Source(0)
 
-    local countText = count:Compute(function(self)
+    local countText: QuadTypes.State<string> = count:Compute(function(self)
         return `Count: {self:Get()}`
     end)
 
-    local frameBg = count:Compute(function(self)
+    local frameBg: QuadTypes.State<RobloxModule.Tween<Color3>> = count:Compute(function(self)
         return if self:Get() > 5 then Color3.fromRGB(220, 50, 50) else Color3.fromRGB(50, 120, 220)
     end):Apply(q.Animate {
         Time = 0.2,
@@ -167,10 +167,10 @@ local function BindPlayerCard(
     prefab: Instance,
     playerState: QuadTypes.State<{ Name: string, Level: number }>
 )
-    local nameText = playerState:Compute(function(self)
+    local nameText: QuadTypes.State<string> = playerState:Compute(function(self)
         return self:Get().Name
     end)
-    local levelText = playerState:Compute(function(self)
+    local levelText: QuadTypes.State<string> = playerState:Compute(function(self)
         return `Lv. {self:Get().Level}`
     end)
 
@@ -200,11 +200,11 @@ local function RegistrationForm()
     }
 
     -- one compute node; both deps arrive as State handles
-    local isValid = form.Username:Compute(function(self, prev, pwd)
+    local isValid: QuadTypes.State<boolean> = form.Username:Compute(function(self, prev, pwd)
         return #self:Get() >= 3 and #pwd:Get() >= 6
     end, form.Password)
 
-    local submitColor = isValid:Compute(function(self)
+    local submitColor: QuadTypes.State<Color3> = isValid:Compute(function(self)
         return if self:Get() then Color3.fromRGB(0, 180, 80) else Color3.fromRGB(80, 80, 80)
     end)
 
@@ -255,7 +255,7 @@ local function SearchBar(onSearch: (string) -> ())
         MaxTime = 1.2, -- Debounce-only: force a pass after 1.2s of continuous input
     })
 
-    local hasQuery = rawQuery:Compute(function(self)
+    local hasQuery: QuadTypes.State<boolean> = rawQuery:Compute(function(self)
         return #self:Get() > 0
     end)
 
@@ -324,7 +324,7 @@ local function CoinDisplay(props: { Context: QuadTypes.Context })
     local inventory = props.Context:Get(InventoryProvider) -- errors when unset; :Peek gives nil
     local theme = props.Context:Get(ThemeProvider)
 
-    local coinText = inventory.Coins:Compute(function(self)
+    local coinText: QuadTypes.State<string> = inventory.Coins:Compute(function(self)
         return `Coins: {self:Get()}`
     end)
 

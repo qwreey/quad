@@ -22,7 +22,7 @@ local D = q.Declaration
 
 ```luau
 -- 입력 자리(생성자 initial, Add/Replace/Extract의 새 원소, Splice, IndexOf)
-type SlotElement<T> = T | StateMarker<T> | SlotMarker<T>
+type SlotElement<T> = T | StateMarker<(T | None)?> | SlotMarker<T> -- State가 nil/None을 내놓으면 그 원소를 내린다
 -- 출력 자리(Get/Extract/ExtractAll/Splice의 반환, updateFn의 ctx.Prev)
 type SlotItem<T> = T | State<T> | Slot<T>
 ```
@@ -106,7 +106,7 @@ read Length: State<number>
 
 ```luau
 local slot = q.Slot<<Instance>>()
-local empty = slot.Length:Compute(function(self)
+local empty: q.State<boolean> = slot.Length:Compute(function(self)
     return self:Get() == 0
 end)
 local view = D.Frame { slot, D.TextLabel { Text = "비었음", Visible = empty } }
@@ -344,10 +344,10 @@ type SlotListOpts = { read OwnsElements: boolean? }
 
 | 이름 | 타입 | 설명 |
 |---|---|---|
-| `data` | `{ Item }` 또는 그걸 담은 State | 재조정의 원본. State면 값이 바뀔 때마다 다시 돕니다 |
+| `data` | `{ Item }` 또는 그걸 담은 State | 재조정의 원본. State면 값이 바뀔 때마다 다시 돕니다. 항목 자체가 `q.KeyGone`이면 `Quad0260`입니다 — `KeyGone`은 `updateFn`이 받는 표시지 데이터 값이 아닙니다 |
 | `updateFn` | 함수 | 항목 하나를 어떻게 만들/유지/버릴지 결정합니다(아래 계약) |
-| `keyFn` | `((item, index) -> any)?` | 항목의 신원. 기본값은 **인덱스**입니다 |
-| `opts` | `{ read OwnsElements: boolean? }?` | `OwnsElements = false`면 이 Slot이 원소를 파괴하지 않습니다 |
+| `keyFn` | `((item, index) -> any)?` | 항목의 신원. 기본값은 **인덱스**입니다. 같은 항목에는 사이클마다 **같은 키**를 돌려줘야 합니다(아래 "동작") |
+| `opts` | `{ read OwnsElements: boolean? }?` | `OwnsElements = false`면 이 Slot이 원소를 파괴하지 않습니다. 불리언이 아닌 값(`"false"`, `0`)은 `Quad0259`로 거부합니다 |
 
 **반환** — `self`(체이닝용).
 
@@ -359,7 +359,7 @@ type SlotListOpts = { read OwnsElements: boolean? }
 |---|---|
 | `ctx.Item` | 이번 사이클의 데이터 항목. 지난 사이클에 있었는데 이번엔 사라진 키에는 `q.KeyGone`이 옵니다 |
 | `ctx.Index` | 이 Slot 안에서의 물리 위치(`Offset` 기준 1부터). 중첩 Slot이 섞여 있으면 데이터 배열의 인덱스와 다릅니다. `KeyGone` 호출에서는 `0`입니다 |
-| `ctx.Offset` | 이 Slot의 `Offset` State 자체 — 값이 아니라 핸들입니다 |
+| `ctx.Offset` | 이 Slot의 `Offset` State 자체 — 값이 아니라 핸들입니다. 여기에 `:Observer`를 만들었다면 원소의 숫자 키 자리에 묶거나 `:Subscribe()` 해야 계속 발화합니다 — 만들기만 하면 처음 한 번 돌고 그 뒤로는 불리지 않습니다([2026-09-27 mock 실측]; Observer 일반 규칙 — [핸들은 두 가지로 살아난다](/reference/core/05-observer-effect/#핸들은-두-가지로-살아난다)) |
 | `ctx.Prev` | 이 키가 지난번에 만든 원소(언래핑됨). 처음이면 `nil` |
 | `ctx.UserData` | 지난 호출이 두 번째로 반환한 값. 키마다 따로 보관됩니다 |
 
@@ -372,7 +372,7 @@ type SlotListOpts = { read OwnsElements: boolean? }
 | `nil` 또는 `q.None` | 이 키를 버립니다(소유 Slot이면 파괴) |
 | `q.Detach` | 트리에서 떼되 **파괴하지 않고** 보관합니다. 다음에 `ctx.Prev`를 반환하면 그대로 다시 붙습니다(`OwnsElements = false`면 보관이 아니라 해제 — 아래 옵션 절) |
 
-두 번째 반환값은 이 키의 다음 `ctx.UserData`가 됩니다.
+두 번째 반환값은 이 키의 다음 `ctx.UserData`가 됩니다. `KeyGone` 호출에서 돌려준 두 번째 값도 그대로 이 키에 남습니다 — 같은 키가 나중에 다시 나타나면 `Prev = nil`·`UserData = <그 값>`으로 오고, 다시 오지 않는 키라면 그 값은 이 `:List`가 사는 동안 계속 붙잡혀 있습니다([2026-09-27 mock 실측]). 버리는 키에서는 두 번째 값을 돌려주지 마세요.
 
 `updateFn`은 항목 하나를 원소로 바꾸는 함수입니다 — 자기가 만드는 자식 Slot을 채우는 것은 되지만, **이 Slot의 조상을 CRUD하면 안 됩니다.** 첫 `updateFn`은 이 Slot이 트리에 붙는 순간(부모와 함께 마운트될 때, 또는 이미 마운트된 부모에 `Add`/`Splice`/`Replace`로 들어갈 때) 그 부모들의 마운트 작업 안에서 불리므로 그 자리에서 던집니다(아래 문구). 조상을 바꿔야 하면 마운트 뒤 Observer에서 하세요. 또 **한 Slot의 `Length`가 자기 앞 자리의 길이에 다시 영향을 주는 고리**(길이 `State`의 Compute가 뒤 Slot의 `Length`/`Offset`을 읽는 모양)는 방어하지 않습니다 — 수렴하면 고정점에 닿지만, 발산하면 번호 없는 스택 오버플로로 끝나고 그 Slot은 이후 CRUD에 `Quad0167`을 냅니다([2026-09-27 mock 실측]; 무한 루프 방어를 두지 않는 것은 설계 결정).
 
@@ -391,6 +391,9 @@ Quad0167 Slot: cannot mutate a Slot while it is being mounted - a :List/:Single 
 - 사이클 순서는 (1) 데이터 순서대로 키를 계산해 중복/누락을 먼저 검사, (2) 항목마다 `updateFn`, (3) 지난 사이클에 있었지만 이번엔 없는 키에 `q.KeyGone`으로 `updateFn`을 한 번 더 — 입니다.
 - `KeyGone` 호출에서는 `nil`/`q.None`(파괴)과 `q.Detach`(보관)만 반환할 수 있습니다. 새 원소를 반환하면 `Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)`.
 - 인자 검증 에러: `Quad0150 Slot:List: updateFn must be a function (got {typeof(updateFn)})`, `Quad0151 Slot:List: data must be a plain array or a State of one (got {typeof(data)})`, `Quad0152 Slot:List: keyFn must be a function (got {typeof(keyFn)})`.
+- 키 비교는 Luau 테이블 키 규칙 그대로입니다 — `0`과 `-0`은 같은 키이고, `1`과 `"1"`은 다른 키입니다.
+- `keyFn`은 **안정적**이어야 합니다. 같은 항목에 사이클마다 다른 키를 돌려주면(매번 새 테이블, 난수 등) 에러는 나지 않지만 매 사이클 모든 원소가 새로 만들어지고 옛 원소는 전부 `KeyGone`으로 버려집니다([2026-09-27 mock 실측]).
+- **원소를 다른 키로 옮기는 경로는 없습니다** — 키가 곧 신원이라, 키가 바뀐 항목은 새 원소를 만들어야 합니다. 옛 키의 원소(`OwnsElements = true`에서 `q.Detach`로 보관 중인 원소 포함)를 새 키의 `updateFn`이 반환하면, 옛 키의 `KeyGone` 처리가 새 키보다 뒤라 그 원소가 아직 이 Slot 것이므로 `Quad0156`이 납니다(문구는 "already mounted"지만 보관 중인 원소도 여기 걸립니다). 그 사이클은 아래 `updateFn`이 던진 경우와 같아 `Length`가 멈추고, 같은 데이터로 다시 `:Set`해도 같은 에러가 납니다([2026-09-27 mock 실측]). `OwnsElements = false`에서는 `Detach`가 보관이 아니라 해제라, 떼어 둔 원소를 다른 키가 반환하면 옮겨집니다.
 - `keyFn`이 이후 사이클에서 던지면 게이트를 켜기 전이라 아무것도 바뀌지 않고 다음 `data:Set`에서 회복됩니다([2026-09-27 mock 실측] — 첫 사이클이면 아래 `updateFn` 항목과 같습니다).
 - 재조정 중 에러: `Quad0142 Slot:List: data must be a plain array (got {typeof(items)}) - a data State must hold one too`, `Quad0144 Slot:List: keyFn returned nil for item #{i}`(NaN도 같은 모양으로 `returned NaN`), `Quad0145 Slot:List: duplicate key {tostring(key)}`. 인자 검증에 `Quad0153 Slot:List: opts must be a table (got {typeof(opts)})`(`:Single`도 같음)이 더해집니다.
 - `updateFn`이 이 Slot의 `data` State를 다시 `:Set` 하는 **재진입**은 정의되지 않은 동작입니다.

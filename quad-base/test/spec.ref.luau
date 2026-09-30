@@ -218,14 +218,12 @@ do
 	end)
 	assert(not ok and string.find(tostring(err), "waiter exploded", 1, true) ~= nil, "resume failure must surface: " .. tostring(err))
 	assert(r.Callbacks[co] == nil and r.Value == 1, "the waiter was still consumed and the value settled before the error")
-	-- 이미 죽은 thread를 대기자로 넣는 것도 같은 경로로 드러난다
+	-- round13 Q136 ① (2026-09-30 사용자 결정): 이미 죽은 thread는 에러가 아니라 건너뛴다(등록만 소진)
 	local dead = coroutine.create(function() end)
 	coroutine.resume(dead)
 	r.Callbacks[dead] = true
-	local ok2 = pcall(function()
-		r:Set(2)
-	end)
-	assert(not ok2, "resuming a dead waiter surfaces as an error")
+	r:Set(2)
+	assert(r.Callbacks[dead] == nil and r.Value == 2, "a dead waiter is skipped and its registration spent")
 	print("PASS")
 end
 
@@ -397,6 +395,32 @@ do
 	assert(not ok and string.find(tostring(err), "Unwrap", 1, true) ~= nil, "the waiter's error propagates through the retract: " .. tostring(err))
 	seat:Set(ref) -- re-place the SAME Ref: used to hit the dedup record and never fill
 	assert(ref.Value == host, "re-placed and filled again")
+	print("PASS")
+end
+
+print("=== round13 Q136 ① (2026-09-30) — 이미 끝났거나 close된 대기 스레드는 건너뛴다(\"둘 중 먼저\" 관용구) ===")
+do
+	local a, b = Ref(0), Ref(0)
+	local woke = 0
+	local co = coroutine.create(function()
+		woke += 1
+	end)
+	a:Wait(co)
+	b:Wait(co)
+	local seen = {}
+	b:Callback(function(v)
+		table.insert(seen, v)
+	end)
+	a:Set(1) -- wakes co, which finishes
+	assert(woke == 1 and coroutine.status(co) == "dead", "co ran once and is dead")
+	b:Set(2) -- was: "cannot resume dead coroutine" and the walk stopped before b's callback
+	assert(woke == 1, "the dead waiter is not resumed again")
+	assert(seen[#seen] == 2, "b's callbacks still receive the new value")
+	local closed = coroutine.create(function() end)
+	local r = Ref(0)
+	r:Wait(closed)
+	coroutine.close(closed)
+	r:Set(3) -- no raise
 	print("PASS")
 end
 

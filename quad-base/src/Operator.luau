@@ -87,13 +87,27 @@ local function checkSelf(name: string, self: any)
 end
 
 -- N-ary numeric fold: self first, then the args in order.
-local function fold(name: string, op: (number, number) -> number): (...any) -> (any) -> any
+-- round13 Q141 ② (user decision 2026-09-30 — cheap entry gate): fixed-arity factories dropped extra
+-- arguments silently (`Clamp(0, 1, "junk")`, `Shl(1, "junk")`); the `Sum` family checks every one
+local function checkArity(name: string, want: number, got: number)
+	if got > want then
+		Err.errorBeforeNearest(`Quad0261 Operator.{name}: takes {want} argument{if want == 1 then "" else "s"} (got {got})`, SURFACE)
+	end
+end
+
+-- `normalize` (round13 Q141 ①, user decision 2026-09-30): the bitwise folds start from the target,
+-- so with NO arguments `Band()` returned it untouched (-1 → -1) while one argument and `Bnot` gave
+-- the `bit32` result (-1 → 4294967295); normalizing the start makes zero arguments agree
+local function fold(name: string, op: (number, number) -> number, normalize: ((number) -> number)?): (...any) -> (any) -> any
 	return function(...: any)
 		local deps, read = splitArgs(name, { ... }, select("#", ...), "number")
 		return function(self: any): any
 			checkSelf(name, self)
 			return self:Compute(function(h: any, _prev: any, ...: any)
 				local acc = checkTarget(name, h:Get(), "number")
+				if normalize then
+					acc = normalize(acc)
+				end
 				for _, v in read(...) do
 					acc = op(acc, v)
 				end
@@ -115,7 +129,8 @@ end
 
 -- unary with one numeric argument (shift amounts): `Shl(n)`
 local function withArg(name: string, op: (number, number) -> number): (any) -> (any) -> any
-	return function(n: any)
+	return function(n: any, ...: any)
+		checkArity(name, 1, 1 + select("#", ...)) -- error-code: via checkArity
 		local deps, read = splitArgs(name, { n }, 1, "number")
 		return function(self: any): any
 			checkSelf(name, self)
@@ -141,9 +156,9 @@ local Operator = {
 	Min = fold("Min", math.min),
 	Max = fold("Max", math.max),
 	-- bitwise (Luau has no operators — `bit32`)
-	Band = fold("Band", bit32.band),
-	Bor = fold("Bor", bit32.bor),
-	Bxor = fold("Bxor", bit32.bxor),
+	Band = fold("Band", bit32.band, bit32.band),
+	Bor = fold("Bor", bit32.bor, bit32.bor),
+	Bxor = fold("Bxor", bit32.bxor, bit32.bxor),
 	Bnot = unary("Bnot", function(v: any): number
 		return bit32.bnot(checkTarget("Bnot", v, "number"))
 	end),
@@ -152,7 +167,8 @@ local Operator = {
 }
 
 -- Clamp(lo, hi): both may be numbers or States
-function Operator.Clamp(lo: any, hi: any): (any) -> any
+function Operator.Clamp(lo: any, hi: any, ...: any): (any) -> any
+	checkArity("Clamp", 2, 2 + select("#", ...)) -- error-code: via checkArity
 	local deps, read = splitArgs("Clamp", { lo, hi }, 2, "number")
 	return function(self: any): any
 		checkSelf("Clamp", self)

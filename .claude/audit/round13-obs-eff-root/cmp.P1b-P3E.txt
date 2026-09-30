@@ -1,0 +1,143 @@
+## e3fuzz
+## e3counters
+1c1
+< pureCoreInstallStale	0	installStaleSeeds	66	installStaleTotal	74	fails	0	seeds	3000
+---
+> pureCoreInstallStale	0	installStaleSeeds	67	installStaleTotal	77	fails	0	seeds	3000
+## e1reent_excl
+1c1
+< obsOps	70975	rej0167	0	fails	0	physBad	7764	seeds	
+---
+> obsOps	70975	rej0167	0	fails	0	physBad	7768	seeds	
+## throw
+## e1reent_unm
+obsOps	74532	rej0167	3082	fails	0	physBad	7693	seeds	
+obsOps	74543	rej0167	3085	fails	0	physBad	7694	seeds	
+## e1reent_anc
+obsOps	118866	rej0167	6559	fails	153	physBad	9078	seeds	5,18,21,42,51,52,62,74,78,80,94,98,102,104,117,127,129,150,153,174,191,224,240,243,259,265,268,276,280,285,314,320,369,378,389,391,404,427,430,435,463,466,493,519,5
+obsOps	118876	rej0167	6557	fails	150	physBad	9089	seeds	5,18,21,42,51,52,62,74,78,80,94,98,102,104,117,127,129,150,153,174,191,224,240,243,259,265,268,276,280,285,314,320,339,369,378,389,391,404,427,430,435,463,466,493,5
+## obseff
+30,31c30,31
+<   Observer: B runs per Set(1) over 50 trials: [1,2]x27 [2,2]x23
+<   Effect: B runs per Set(1) over 50 trials: [1,2]x20 [2]x30
+---
+>   Observer: B runs per Set(1) over 50 trials: [1,2]x25 [2]x25
+>   Effect: B runs per Set(1) over 50 trials: [1,2]x28 [2]x22
+57,58c57,58
+<   Observer: runs in wave: 1x46 2x54
+<   Effect: runs in wave: 1x40 2x60
+---
+>   Observer: runs in wave: 1x100
+>   Effect: runs in wave: 1x100
+63,64c63,64
+<   Observer: B runs per Set(1) over 50 trials: [1,2]x23 [2]x27
+<   Effect: B runs per Set(1) over 50 trials: [1,2]x25 [2]x25
+---
+>   Observer: B runs per Set(1) over 50 trials: [1,2]x22 [2]x28
+>   Effect: B runs per Set(1) over 50 trials: [1,2]x16 [2]x34
+66,67c66,67
+<   Observer: runs in wave: 1x37 2x63
+<   Effect: runs in wave: 1x51 2x49
+---
+>   Observer: runs in wave: 1x36 2x64
+>   Effect: runs in wave: 1x46 2x54
+## e1b
+## e3
+21c21
+<  log	a1,b99
+---
+>  log	b2,a1,b99
+## osc
+## q109
+2,8c2,8
+<    Effect   dep=Source  revive=Subscribe runs-per-wave: 1x90 2x110
+<    Effect   dep=Source  revive=drive     runs-per-wave: 1x97 2x103
+<    Effect   dep=Compute revive=Subscribe runs-per-wave: 1x99 2x101
+<    Effect   dep=Compute revive=drive     runs-per-wave: 1x79 2x121
+<    Observer dep=Source  revive=Subscribe runs-per-wave: 1x85 2x115
+<    Observer dep=Source  revive=drive     runs-per-wave: 1x89 2x111
+<    Observer dep=Compute revive=Subscribe runs-per-wave: 1x91 2x109
+---
+>    Effect   dep=Source  revive=Subscribe runs-per-wave: 1x200
+>    Effect   dep=Source  revive=drive     runs-per-wave: 1x200
+>    Effect   dep=Compute revive=Subscribe runs-per-wave: 1x89 2x111
+>    Effect   dep=Compute revive=drive     runs-per-wave: 1x98 2x102
+>    Observer dep=Source  revive=Subscribe runs-per-wave: 1x200
+>    Observer dep=Source  revive=drive     runs-per-wave: 1x200
+>    Observer dep=Compute revive=Subscribe runs-per-wave: 1x82 2x118
+11,14c11,12
+<    seen [2,2,3 final=3]:	28
+<    seen [2,2 final=2]:	52
+<    seen [2,3 final=3]:	60
+<    seen [2 final=2]:	60
+---
+>    seen [2,3 final=3]:	89
+>    seen [2 final=2]:	111
+## q110
+## e79
+15c15
+<   [imm] src=AB box.Text=AB callbacks=4 emits=4 seen=[A,A,AB,AB] deliveries=0
+---
+>   [imm] src=AB box.Text=AB callbacks=4 emits=2 seen=[A,AB] deliveries=0
+59,61c59,61
+<          …after flush: src=wor Text=wor emits=4
+<          user types 'abcdef': src=abc Text=abc emits=6
+<          two Sets in one frame: src=yyy Text=yyy emits=10
+---
+>          …after flush: src=wor Text=wor emits=3
+>          user types 'abcdef': src=abc Text=abc emits=4
+>          two Sets in one frame: src=yyy Text=yyy emits=6
+65,67c65,67
+<          …after flush: src=wor Text=wor emits=4
+<          user types 'abcdef': src=abc Text=abc emits=6
+<          two Sets in one frame: src=yyy Text=yyy emits=10
+---
+>          …after flush: src=wor Text=wor emits=3
+>          user types 'abcdef': src=abc Text=abc emits=4
+>          two Sets in one frame: src=yyy Text=yyy emits=6
+116c116
+<   [def] log=[act,btnOnChange:y,childOnChange:y,slotAdd:ok,OnDestroyed]
+---
+>   [def] log=[act,childOnChange:y,slotAdd:ok,btnOnChange:y,OnDestroyed]
+## e20-a
+## e20-b
+## e20-c
+2c2
+<    sibling fired before being unsubscribed:	106	 held (not fired):	94
+---
+>    sibling fired before being unsubscribed:	118	 held (not fired):	82
+4,5c4
+<    sibling ran	1	times in one wave:	85	trials
+<    sibling ran	2	times in one wave:	115	trials
+---
+>    sibling ran	1	times in one wave:	200	trials
+7,8c6
+<    effect sibling ran	1	times in one wave:	91	trials
+<    effect sibling ran	2	times in one wave:	109	trials
+---
+>    effect sibling ran	1	times in one wave:	200	trials
+22,23c20,21
+<    order	1	sib(exe=false),desc,killer	effRuns	1
+<    order	2	desc,sib(exe=false),killer	effRuns	1
+---
+>    order	1	desc,killer	effRuns	0
+>    order	2	killer	effRuns	1
+## e20-c2b
+1,4c1,2
+< Observer	ran	1	times in one wave:	94	trials; values seen	[2,2] [2]
+< Observer	ran	2	times in one wave:	106	trials; values seen	[2,2] [2]
+< Effect	ran	1	times in one wave:	87	trials; values seen	[2,2] [2]
+< Effect	ran	2	times in one wave:	113	trials; values seen	[2,2] [2]
+---
+> Observer	ran	1	times in one wave:	200	trials; values seen	[2]
+> Effect	ran	1	times in one wave:	200	trials; values seen	[2]
+## e20-c3
+## e20-d
+## e20-d3
+## e20-e
+## e20-g
+## e20-h
+2c2
+< OnDestroyed	→	obsChild, obsHost(parent=nil), effSib-fn
+---
+> OnDestroyed	→	obsHost(parent=nil), obsChild, effSib-fn

@@ -122,17 +122,17 @@ local function makeFormState()
     })
 
     -- [2] 필드별 판정 — 순수 파생 상태
-    local isUsernameValid = store.Username:Compute(function(self)
+    local isUsernameValid: q.State<boolean> = store.Username:Compute(function(self)
         return #self:Get() >= 4
     end)
 
-    local isPasswordValid = store.Password:Compute(function(self)
+    local isPasswordValid: q.State<boolean> = store.Password:Compute(function(self)
         local text = self:Get()
         return #text >= 8 and string.find(text, "%d") ~= nil
     end)
 
     -- [3] 둘을 하나로 — 후행 의존성으로 노드 하나만 더 만든다
-    local canSubmit = isUsernameValid:Compute(function(validUser, _previous, validPass)
+    local canSubmit: q.State<boolean> = isUsernameValid:Compute(function(validUser, _previous, validPass)
         return validUser:Get() and validPass:Get()
     end, isPasswordValid)
 

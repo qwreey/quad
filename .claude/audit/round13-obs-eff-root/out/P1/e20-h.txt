@@ -1,0 +1,2 @@
+EffectCleanup	→	effSib-fn, obsHost(parent=nil), obsChild
+OnDestroyed	→	obsHost(parent=nil), obsChild, effSib-fn

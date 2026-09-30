@@ -319,4 +319,20 @@ do
 	print("PASS")
 end
 
+print("=== round13 Q147 ③ (2026-09-30) — q.Attr(store)도 평범한 테이블 경로와 같은 값 검사(함수·테이블 거부) ===")
+do
+	local q = newAttrQuad()
+	local storeF = q.Store({ Hp = q.Source(5) })
+	;(storeF :: any).Hp = function() end
+	local okF, errF = pcall(function() return q.Attr(storeF) end)
+	assert(not okF and string.find(tostring(errF), "Quad0007", 1, true) ~= nil, "a function assigned into a Store field is refused at Attr: " .. tostring(errF))
+	mock.assertBlamesUser(errF, "spec.attribute.luau", "Quad0007 via Store blame")
+	local storeT = q.Store({ Hp = q.Source(5) })
+	;(storeT :: any).Hp = {}
+	local okT, errT = pcall(function() return q.Attr(storeT) end)
+	assert(not okT and string.find(tostring(errT), "Quad0008", 1, true) ~= nil, "a table assigned into a Store field is refused at Attr: " .. tostring(errT))
+	q.Attr(q.Store({ Hp = q.Source(5), Name = q.Source("x") })) -- declared Sources still pass
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

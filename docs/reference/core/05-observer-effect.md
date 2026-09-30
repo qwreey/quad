@@ -224,6 +224,7 @@ export type Effect = {
   - `Quad0086 Effect: fn must return a cleanup function or nothing (got {typeof(cleanup)})`
 - cleanup 안에서 의존성을 `:Set`해도 됩니다 — 바로 뒤에 도는 `fn`이 그 새 값을 읽고, 그것으로 한 사이클입니다(같은 입력으로 한 번 더 돌지 않습니다). `fn` 안에서 의존성을 `:Set`하면 한 번 더 돕니다.
 - cleanup이 도는 자리는 넷입니다 — 다음 `fn` 실행 직전, [`:Unsubscribe()`](#effectunsubscribe), 매달린 인스턴스가 파괴될 때, 그리고 인스턴스는 살아 있는데 **그 숫자 키 자리가 다른 값으로 재구동될 때**(자리를 `State<Effect?>`로 잡아 두고 갈아 끼우는 경우 — 그 자리를 떠나는 `Effect`의 cleanup이 한 번 돕니다). cleanup은 인자 하나 `dying`을 받습니다 — 셋째 자리(**인스턴스가 죽어서**)에서만 `true`이고 나머지 셋에서는 `false`입니다. 죽을 때만 해야 할 정리와 자리를 떠날 때마다 할 정리를 이걸로 가릅니다. 인자를 안 받는 `function() … end`도 그대로 됩니다.
+  - **Immediate 시그널 설정에서 파괴 파동 도중 그 자리를 갈아 끼우는 것은 정의되지 않은 동작입니다.** 같은 파괴 파동 안에서 다른 파괴 처리(형제의 cleanup이나 `OnDestroyed`)가 죽어 가는 인스턴스의 `State<Effect?>` 자리를 **다른** 값으로 `Set`하면, 떠나는 옛 값의 cleanup은 "자리를 떠남"으로 처리돼 `dying = false`를 받고, 새 값은 이미 죽어 가는 인스턴스에 막 묶여 그 파괴 통지를 놓치므로 cleanup(과 `OnDestroyed`)이 **한 번도 돌지 않습니다**([2026-09-27 mock 실측]). 기본 Deferred 설정(Roblox 기본값)에서는 파괴 처리가 돌기 전에 자리의 구독이 먼저 끊겨 이 창이 없습니다.
 - 살아나기 전의 의존성 변경은 `Observer`와 같이 **보류**됐다가 살아나는 시점에 한 번 재생됩니다.
 - `fn`이나 cleanup 안에서 자기를 (재)구독할 수 없습니다:
   `Effect: cannot change subscription from inside fn or cleanup, or after this Effect's fn or cleanup has thrown - a thrown Effect stays dead; create a new one`

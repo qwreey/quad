@@ -95,8 +95,15 @@ function RefImpl.Set<T>(self: Ref<T>, value: T): Ref<T>
 			-- yield's fate is out of our hands), per the "no pcall" contract.
 			-- 6순회 `H-411`: `Wait(thread)` may have registered the CURRENT coroutine,
 			-- and resuming a running coroutine is a raw VM error with no position —
-			-- say what happened instead (a dead thread stays UB, `H-170`/`H-339`)
+			-- say what happened instead
 			local status = coroutine.status(k)
+			if status == "dead" then
+				-- round13 Q136 ① (user decision 2026-09-30): the thread finished or was
+				-- `coroutine.close`d since it registered — e.g. `a:Wait(co); b:Wait(co)` ("whichever
+				-- first") after `a` woke it. The registration is simply spent (consumed above);
+				-- resuming raised an id-less "cannot resume dead coroutine" and cut this walk short.
+				continue
+			end
 			if status == "running" or status == "normal" then -- 7순회 `H-426`: "normal" = the waiter resumed us
 				Err.errorBeforeNearest(`Quad0130 Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a {status} coroutine)`, SURFACE)
 			end

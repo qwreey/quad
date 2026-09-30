@@ -148,7 +148,7 @@ list:List(data, function(ctx)
 		return ctx.Prev, ctx.UserData
 	end
 	local order = q.Source(ctx.Index)
-	local layoutOrder = order:Depend(ctx.Offset):Compute(function(i: q.StateData<number>): number
+	local layoutOrder: q.State<number> = order:Depend(ctx.Offset):Compute(function(i: q.StateData<number>): number
 		return i:Get() + ctx.Offset:Get()
 	end)
 	return D.TextButton { Text = ctx.Item :: string, LayoutOrder = layoutOrder }, { order = order }

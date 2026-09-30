@@ -416,7 +416,12 @@ Instance를 직접 받으므로 — `base/dispatch-core-plan.md` "확정된 디�
     "`PostRef`" 절, `base/dispatch-core-plan.md`는 2026-08-14에 이미 이렇게
     정정돼 있었고 이 문장만 갱신에서 빠졌음). `sourceList`가 `None`인 것은
     맞음.
-  - **주의(문서화 대상, 방어 로직 없음)**: 이미 죽은(완료/에러난) thread를
+  - **[2026-09-30 round13 Q136 ① 사용자 결정 — 아래 문단 역전] 죽은 대기자는 건너뛴다.** `:Set`은 resume 직전
+    `coroutine.status`가 `"dead"`면 그 등록을 소진만 하고 넘어간다 — `a:Wait(co); b:Wait(co)`("둘 중 먼저")에서
+    `a`가 깨워 끝낸 co, 사용자가 `coroutine.close`로 닫은 co가 대표 경우(사용자: *"사용자가 코루틴을 close 해버릴
+    수 있는 핸들이 있는게 luau 기도 하고, 막는게 아주아주 싼것들이"*). 옛 동작은 번호 없는 `cannot resume dead
+    coroutine`을 던지고 그 Ref의 남은 콜백 순회를 끊었다. 아래 옛 문단은 경위로만 남긴다.
+  - **[옛 서술 — 위 결정으로 역전]** 이미 죽은(완료/에러난) thread를
     `:Wait(thread)`에 넘기면 나중에 `:Set`이 그 thread를 resume할 때 실패한다
     (**[2026-08-28 `H-170` 정정]** `coroutine.resume` 자체는 에러를 던지지 않고
     `(false, "cannot resume dead coroutine")`를 돌려주므로, `:Set`이 그 실패를
@@ -649,7 +654,7 @@ end
   `Destroy()`되는 것과는 별개 — Ref 자신은 Destroy를 감지하지도, 반응하지도
   않음. `Ref<Frame?>`가 이미 Destroy된 Frame을 계속 들고 있는 채로 남는 건
   정상적으로 가능하고, 그 이후 읽고 쓰는 건 그냥 UB(라이브러리가 방어
-  안 함 — `:Wait(thread)`에 이미 죽은 thread를 넘기는 기존 UB와 같은 결).
+  안 함 — ~~`:Wait(thread)`에 이미 죽은 thread를 넘기는 기존 UB와 같은 결~~ **[2026-09-30]** 그 비교 대상은 Q136 ①로 정의된 동작(건너뜀)이 됐다).
   Destroy 시점에 실제로 정리가 필요하면 `Effect`(내부적으로 `bindLifetime`/
   `Observer` 위에서 동작, 또는 Roblox가 Destroy 시 알아서 `Disconnect`해주는
   이벤트 안에 로직을 두는 기존 관례)를 쓰도록 문서가 유도할 것 — Ref

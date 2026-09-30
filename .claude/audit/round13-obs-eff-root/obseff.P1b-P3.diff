@@ -1,0 +1,22 @@
+30,31c30,31
+<   Observer: B runs per Set(1) over 50 trials: [1,2]x27 [2,2]x23
+<   Effect: B runs per Set(1) over 50 trials: [1,2]x20 [2]x30
+---
+>   Observer: B runs per Set(1) over 50 trials: [1,2]x27 [2]x23
+>   Effect: B runs per Set(1) over 50 trials: [1,2]x23 [2]x27
+57,58c57,58
+<   Observer: runs in wave: 1x46 2x54
+<   Effect: runs in wave: 1x40 2x60
+---
+>   Observer: runs in wave: 1x100
+>   Effect: runs in wave: 1x54 2x46
+63,64c63,64
+<   Observer: B runs per Set(1) over 50 trials: [1,2]x23 [2]x27
+<   Effect: B runs per Set(1) over 50 trials: [1,2]x25 [2]x25
+---
+>   Observer: B runs per Set(1) over 50 trials: [1,2]x28 [2]x22
+>   Effect: B runs per Set(1) over 50 trials: [1,2]x23 [2]x27
+66c66
+<   Observer: runs in wave: 1x37 2x63
+---
+>   Observer: runs in wave: 1x48 2x52

@@ -1,0 +1,109 @@
+## e3fuzz
+## e3counters
+1c1
+< pureCoreInstallStale	0	installStaleSeeds	67	installStaleTotal	77	fails	0	seeds	3000
+---
+> pureCoreInstallStale	0	installStaleSeeds	69	installStaleTotal	77	fails	0	seeds	3000
+## e1reent_excl
+1c1
+< obsOps	70975	rej0167	0	fails	0	physBad	7768	seeds	
+---
+> obsOps	70966	rej0167	0	fails	0	physBad	7741	seeds	
+## throw
+## e1reent_unm
+obsOps	74543	rej0167	3085	fails	0	physBad	7694	seeds	
+obsOps	74532	rej0167	3082	fails	0	physBad	7765	seeds	
+## e1reent_anc
+obsOps	118876	rej0167	6557	fails	150	physBad	9089	seeds	5,18,21,42,51,52,62,74,78,80,94,98,102,104,117,127,129,150,153,174,191,224,240,243,259,265,268,276,280,285,314,320,339,369,378,389,391,404,427,430,435,463,466,493,5
+obsOps	118857	rej0167	6569	fails	151	physBad	9118	seeds	5,18,42,51,52,62,74,78,80,94,98,102,104,117,127,129,150,153,174,191,224,240,243,259,265,268,276,280,285,314,320,339,369,378,389,391,404,427,430,435,463,466,493,519,
+## obseff
+30,31c30,31
+<   Observer: B runs per Set(1) over 50 trials: [1,2]x25 [2]x25
+<   Effect: B runs per Set(1) over 50 trials: [1,2]x28 [2]x22
+---
+>   Observer: B runs per Set(1) over 50 trials: [1,2]x21 [2]x29
+>   Effect: B runs per Set(1) over 50 trials: [1,2]x24 [2]x26
+63,64c63,64
+<   Observer: B runs per Set(1) over 50 trials: [1,2]x22 [2]x28
+<   Effect: B runs per Set(1) over 50 trials: [1,2]x16 [2]x34
+---
+>   Observer: B runs per Set(1) over 50 trials: [1,2]x32 [2]x18
+>   Effect: B runs per Set(1) over 50 trials: [1,2]x29 [2]x21
+66,67c66,67
+<   Observer: runs in wave: 1x36 2x64
+<   Effect: runs in wave: 1x46 2x54
+---
+>   Observer: runs in wave: 1x54 2x46
+>   Effect: runs in wave: 1x55 2x45
+## e1b
+## e3
+## osc
+## q109
+4,5c4,5
+<    Effect   dep=Compute revive=Subscribe runs-per-wave: 1x89 2x111
+<    Effect   dep=Compute revive=drive     runs-per-wave: 1x98 2x102
+---
+>    Effect   dep=Compute revive=Subscribe runs-per-wave: 1x100 2x100
+>    Effect   dep=Compute revive=drive     runs-per-wave: 1x87 2x113
+8,9c8,9
+<    Observer dep=Compute revive=Subscribe runs-per-wave: 1x82 2x118
+<    Observer dep=Compute revive=drive     runs-per-wave: 1x91 2x109
+---
+>    Observer dep=Compute revive=Subscribe runs-per-wave: 1x88 2x112
+>    Observer dep=Compute revive=drive     runs-per-wave: 1x85 2x115
+11,12c11,12
+<    seen [2,3 final=3]:	89
+<    seen [2 final=2]:	111
+---
+>    seen [2 final=2]:	103
+>    seen [2,3 final=3]:	97
+## q110
+## e79
+59,61c59,61
+<          …after flush: src=wor Text=wor emits=3
+<          user types 'abcdef': src=abc Text=abc emits=4
+<          two Sets in one frame: src=yyy Text=yyy emits=6
+---
+>          …after flush: src=wor Text=wor emits=4
+>          user types 'abcdef': src=abc Text=abc emits=6
+>          two Sets in one frame: src=yyy Text=yyy emits=10
+65,67c65,67
+<          …after flush: src=wor Text=wor emits=3
+<          user types 'abcdef': src=abc Text=abc emits=4
+<          two Sets in one frame: src=yyy Text=yyy emits=6
+---
+>          …after flush: src=wor Text=wor emits=4
+>          user types 'abcdef': src=abc Text=abc emits=6
+>          two Sets in one frame: src=yyy Text=yyy emits=10
+116c116
+<   [def] log=[act,childOnChange:y,slotAdd:ok,btnOnChange:y,OnDestroyed]
+---
+>   [def] log=[act,btnOnChange:y,childOnChange:y,slotAdd:ok,OnDestroyed]
+## e20-a
+## e20-b
+## e20-c
+2c2
+<    sibling fired before being unsubscribed:	118	 held (not fired):	82
+---
+>    sibling fired before being unsubscribed:	119	 held (not fired):	81
+20,22c20,22
+<    order	1	desc,killer	effRuns	0
+<    order	2	killer	effRuns	1
+<    order	3	sib(exe=false),killer	effRuns	0
+---
+>    order	1	killer	effRuns	1
+>    order	2	killer	effRuns	0
+>    order	3	desc,sib(exe=false),killer	effRuns	1
+## e20-c2b
+## e20-c3
+## e20-d
+## e20-d3
+## e20-e
+## e20-g
+## e20-h
+1,2c1,2
+< EffectCleanup	→	obsChild, effSib-fn, obsHost(parent=nil)
+< OnDestroyed	→	obsHost(parent=nil), obsChild, effSib-fn
+---
+> EffectCleanup	→	obsHost(parent=nil), effSib-fn, obsChild
+> OnDestroyed	→	effSib-fn, obsChild, obsHost(parent=nil)

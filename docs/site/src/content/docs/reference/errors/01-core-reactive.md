@@ -380,3 +380,11 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 - **언제**: `q.Context(...)`에 인자를 하나라도 줬을 때 — 흔히 `Tag`·`Attr`·`Store`처럼 초기값 테이블을 넘기려는 `q.Context({ [P] = v })`. 전에는 인자를 조용히 버려 나중에 `:Get(P)`에서 [`Quad0038`](#quad0038)로 죽었습니다. `{n}`은 넘긴 인자 개수입니다(`nil` 하나도 1로 셉니다).
 - **고치려면**: `q.Context()`로 빈 가방을 만들고 `ctx:Set(provider, value)`로 채우세요.
 - **참고**: [`q.Context()`](/reference/sugar/01-context/#qcontext)
+
+### Quad0261
+
+`Operator.{name}: takes {want} argument{if want == 1 then "" else "s"} (got {got})` — `quad-base/src/Operator.luau`
+
+- **언제**: 인자 수가 정해진 연산자 팩토리에 인자를 더 줬을 때 — `q.Operator.Clamp(lo, hi)`는 둘, `Shl(n)`·`Shr(n)`은 하나입니다. 전에는 넘치는 인자를 조용히 버렸습니다. `{name}`은 연산자 이름입니다.
+- **고치려면**: 정해진 수만큼만 넘기세요. 여러 값을 모으려면 인자 수가 자유로운 `Sum`/`Min`/`Max`류를 쓰세요.
+- **참고**: [`q.Operator.Clamp(lo, hi)`](/reference/sugar/02-operator/#qoperatorclamplo-hi), [공통 계약](/reference/sugar/02-operator/#공통-계약)

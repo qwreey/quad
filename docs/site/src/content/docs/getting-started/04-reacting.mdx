@@ -19,7 +19,7 @@ import { Quiz, QuizResults } from 'starlight-quiz/components';
 --  03장 §2의 count:Set(7)과 §3에서 확인용으로 만든 suffix/both 줄은 지웁니다)
 const count = q.Source(0)
 
-const countText = count:Compute(function(c)
+const countText: q.State<string> = count:Compute(function(c)
     return `카운트: {c:Get()}`
 end)
 
@@ -38,6 +38,13 @@ const card = D.Frame {
     },
 }
 ```
+
+<details>
+<summary><strong><code>countText</code> 뒤의 <code>: q.State&lt;string&gt;</code>은 왜 붙어 있나요?</strong></summary>
+
+`--!strict`로 쓸 때를 위한 **결과 타입 주석**입니다. `const countText = count:Compute(...)`처럼 타입 없이 받으면 Luau의 현재 한계로 그 결과의 타입이 비어 버려, `countText`를 쓰는 **이후 모든 코드**의 타입 검사가 조용히 사라집니다 — `Text`에 숫자를 넣어도 진단이 뜨지 않으니 "strict를 통과했으니 타입이 맞다"고 믿게 되지만, 실제로는 그 지점부터 무검사입니다. 파생 State를 만드는 줄에 결과 타입을 적으면(`: q.State<string>`) 다시 검사가 살아납니다. 콜백 파라미터에 다는 주석(08·10장)과는 다른 자리입니다 — 이건 바인딩 그 자체입니다. 이 문서의 화면 코드는 기본 모드(`--!nonstrict`)라 지금 당장 필요하지는 않지만, 이 튜토리얼도 프로퍼티에 꽂는 파생 State에는 대개 이렇게 적어 둡니다(`print`로 확인만 하는 예제는 생략합니다).
+
+</details>
 
 ---
 

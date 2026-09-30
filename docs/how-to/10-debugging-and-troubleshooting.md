@@ -236,6 +236,7 @@ s2:List(items, function(ctx) return D.TextLabel { Text = ctx.Item :: string } en
 | **부모 붙이기** | `Parent`는 props가 아니다 — 만든 뒤 밖에서 `inst.Parent = ...` |
 | **이벤트 콜백** | 엔진 인자만 온다(self 없음). self가 필요하면 `PreRef`로 인스턴스를 잡아둘 것 |
 | **조건부 자식** | 숫자 키 자리에 `(if cond then D.TextLabel { ... } else q.None)`(12장·how-to 08의 `(cond and child) or q.None`도 같은 뜻) — 끝이 `nil`이면 안 된다, `nil`은 그 자리를 구멍으로 만든다 |
+| **파생 State의 결과 타입(`--!strict`)** | 다른 값에 쓰이는 파생 State는 만드는 줄에 결과 타입을 적는다 — `local label: q.State<string> = count:Compute(...)`. 주석 없이 받은 `:Compute` 결과는 그 변수를 쓰는 이후 코드 전체가 **조용히 무검사**다(있어야 할 진단이 **안 뜨는** 것이 증상 — `label:NoSuchMethod()`를 일부러 넣어 봐도 조용하면 이 구멍). 콜백 파라미터·반환 타입 주석으로는 메워지지 않는다. `:Apply`는 타입을 유지하는 연산자(`Op.Sum`·`Op.Clamp` 등)면 구멍이 없고, 타입을 바꾸거나 자기 상태를 가진 팩토리(`Op.Not`·`Op.Indexed`·`q.Animate`·`q.Blocker`·`q.Debounce`·`q.Throttle`)면 같은 구멍이 있다([2026-09-27 실측]; [시작하기 04](../getting-started/04-reacting.md)의 접힌 설명) |
 
 ---
 

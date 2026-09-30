@@ -52,8 +52,11 @@ export type Store<T> = T & {
   | 키가 문자열이 아니거나 빈 문자열 | `Quad0193 Store: {what} must be a non-empty string (got {if name == "" then '""' else typeof(name)})` (`{what}`은 생성자에서 `key`, `:Of`에서 `Of name`) |
   | 예약된 이름 | `Quad0194 Store: "{name}" is a reserved store key` |
 
+  틀린 항목이 여럿이어도 에러는 **하나만** 납니다. 어느 항목의 어느 문구가 나는지는 테이블 순회(해시) 순서가 정해 **정해져 있지 않습니다** — 같은 내용의 테이블로 여러 번 만들어도 매번 다를 수 있습니다([2026-09-27 mock 실측]). 하나를 고쳤더니 다른 문구가 새로 나면 남은 항목도 같이 확인하세요.
+
 - `Source`의 값 제약이 그대로 따라옵니다 — Modifier는 담을 수 없습니다. 이 검사는 `Source` 생성자가 하므로 `:Of`로 만든 필드에도 적용됩니다.
 - `print(store)`는 정렬된 키 목록으로 `Store{hp, mp}` 모양입니다.
+- `table.clone(store)`로 만든 사본은 Store가 아닙니다 — `q.isStore`가 거짓이고, `q.Attr`에 넘기면 `Quad0010`으로 거부됩니다([2026-09-27 mock 실측]). 같은 모양의 Store가 하나 더 필요하면 `q.Store`로 새로 만드세요.
 
 **예제**
 
@@ -76,7 +79,7 @@ store.hp:Set(80)
 **동작**
 
 - 선언한 키는 **평범한 레코드 필드**입니다 — 넣은 `Source`가 그 자리에 그대로 있고, 타입도 넘긴 레코드 타입 그대로 붙습니다. `store.hp`는 `Source<number>`이지 래퍼가 아닙니다.
-- **선언하지 않은 키를 점으로 읽으면 `nil`입니다.** 점 접근에는 지연 생성이 없습니다 — 없는 이름을 그 자리에서 만들어주는 문은 [`:Of`](#storeofuname) 하나뿐입니다.
+- **선언하지 않은 키를 점으로 읽으면 `nil`입니다.** 점 접근에는 지연 생성이 없습니다 — 없는 이름을 그 자리에서 만들어주는 문은 [`:Of`](#storeofuname) 하나뿐입니다. 예외는 `__`로 시작하는 예약 이름입니다 — `store.__index`·`store.__tostring`처럼 점으로 읽으면 내부 값(공유 메소드 테이블, 함수)이 나오지만, 사용 범위 밖이니 읽거나 고치는 코드에 기대지 마세요.
 
 ```luau
 local store = q.Store({ hp = q.Source(100) })

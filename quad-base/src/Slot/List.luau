@@ -104,6 +104,12 @@ return function(S: Types.SlotInternal, module: any)
 			end
 			local keys, seen = table.create(#items), {}
 			for i, item in ipairs(items) do
+				if item == S.KeyGone then
+					-- round13 Q134 ③ (user decision 2026-09-30): a data item that IS the marker reached
+					-- updateFn as `Item = KeyGone` with a nonzero Index and vanished in the idiom's first
+					-- line (no `Quad0147` limit either). Outermost: same depth as the raises below.
+					S.Err.errorBefore(`Quad0260 Slot:List: data item #{i} is q.KeyGone - it is the marker updateFn receives when a key disappears, not a data value`, S.SURFACE)
+				end
 				local key = keyFn(item, i)
 				if key == nil or key ~= key then -- [2026-09-16 hunt A] NaN is the same raw "table index is NaN" trap
 					-- fail-fast domain error instead of Luau's raw "table index is nil"
@@ -236,6 +242,11 @@ return function(S: Types.SlotInternal, module: any)
 		-- indexed to nil and silently dropped the option.
 		if opts ~= nil and type(opts) ~= "table" then
 			S.Err.errorBeforeNearest(`Quad0153 Slot:List: opts must be a table (got {typeof(opts)})`, S.SURFACE)
+		end
+		-- round13 Q134 ④ (user decision 2026-09-30 — cheap entry gate): only `== false` meant "not owned",
+		-- so "false"/0 silently OWNED; the option is a boolean
+		if opts ~= nil and opts.OwnsElements ~= nil and type(opts.OwnsElements) ~= "boolean" then
+			S.Err.errorBeforeNearest(`Quad0259 Slot:List: opts.OwnsElements must be a boolean (got {typeof(opts.OwnsElements)})`, S.SURFACE)
 		end
 		self._listed = true
 		self._listData = data

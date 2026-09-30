@@ -1,0 +1,237 @@
+## e3fuzz
+## e3counters
+1,4c1
+<   pure-core stale seed	8	node 4 kind M T0 seed-stale after install: saw 4 now 8
+<   pure-core stale seed	10	node 10 kind C T0 seed-stale after install: saw 8 now 2
+<   pure-core stale seed	16	node 11 kind C T0 seed-stale after install: saw 16 now 13
+< pureCoreInstallStale	222	installStaleSeeds	289	installStaleTotal	379	fails	0	seeds	3000
+---
+> pureCoreInstallStale	0	installStaleSeeds	66	installStaleTotal	74	fails	0	seeds	3000
+## e1reent_excl
+1c1
+< obsOps	70989	rej0167	0	fails	0	physBad	7798	seeds	
+---
+> obsOps	70975	rej0167	0	fails	0	physBad	7764	seeds	
+## throw
+1c1,2
+< ok	false	./xr_throw.luau:6: boom	in _subs	false	calls	1
+---
+> ok	false	./xr_throw.luau:6: boom	in _subs	true	calls	1
+> after Sets calls	1	rerunReq	false	installing	nil	emitted	nil	running	true
+## e1reent_unm
+obsOps	74366	rej0167	3077	fails	11	physBad	7659	seeds	219,555,622,833,841,901,1010,1209,1325,1553,1719
+obsOps	74532	rej0167	3082	fails	0	physBad	7693	seeds	
+## e1reent_anc
+obsOps	118909	rej0167	6539	fails	155	physBad	9036	seeds	5,18,21,42,51,52,62,74,78,80,94,98,102,117,127,129,150,153,174,191,224,240,243,259,265,268,276,280,285,314,320,369,378,389,391,404,427,430,435,463,466,493,519,531,5
+obsOps	118866	rej0167	6559	fails	153	physBad	9078	seeds	5,18,21,42,51,52,62,74,78,80,94,98,102,104,117,127,129,150,153,174,191,224,240,243,259,265,268,276,280,285,314,320,369,378,389,391,404,427,430,435,463,466,493,519,5
+## obseff
+2,3c2,3
+<   Observer: install runs [0] now=1 rerunReq=false
+<   Observer: after Subscribe runs [0]
+---
+>   Observer: install runs [0,1] now=1 rerunReq=false
+>   Observer: after Subscribe runs [0,1]
+7,8c7,8
+<   Observer: install runs [0] now=1
+<   Observer: after Subscribe runs [0]
+---
+>   Observer: install runs [0,1] now=1
+>   Observer: after Subscribe runs [0,1]
+30,31c30,31
+<   Observer: B runs per Set(1) over 50 trials: [1,2]x26 [2,2]x24
+<   Effect: B runs per Set(1) over 50 trials: [1,2]x25 [2]x25
+---
+>   Observer: B runs per Set(1) over 50 trials: [1,2]x23 [2,2]x27
+>   Effect: B runs per Set(1) over 50 trials: [1,2]x28 [2]x22
+45c45
+<   Observer: install runs 1
+---
+>   Observer: install runs 40
+50c50
+<   Observer: threw=true runs=1 subsOfS=0 running=true rerunReq=true
+---
+>   Observer: threw=true runs=1 subsOfS=1 running=true rerunReq=false
+57,58c57,58
+<   Observer: runs in wave: 1x43 2x57
+<   Effect: runs in wave: 1x44 2x56
+---
+>   Observer: runs in wave: 1x47 2x53
+>   Effect: runs in wave: 1x37 2x63
+60c60
+<   Observer: install [0] now=10
+---
+>   Observer: install [0,10] now=10
+## e1b
+1,23c1,3
+< [A1 fn Sets own State (install)] LOSS | runs 1 seen 0 s 1 rerunReq false
+< [A1' after Subscribe] LOSS | runs 1 seen 0
+< [A2 clamp own State (install)] runs | runs 1 s 10 rerunReq false
+< [A2' after Subscribe] runs | runs 1
+< [B other Observer Sets (install)] LOSS | seen 0 s 1 rerunReq false
+< [B' after Subscribe] LOSS (Subscribe catch-up does not recover) | seen 0
+< [C1 setLength nested (sibling Offset obs → grandchild Add)] LOSS | fired true S1.Length 1 leaves 2 R2.Offset 1 (want 2)
+< [C2 setLength top-level holder:Set(R)] LOSS | fired true R.Length 2 R2.Offset 1 (want 2)
+< [C3x oscillator (badge on list.Length==1)] LOSS | ok true  list.Length 1 leaves 2 footer Offset 1
+< [C3a first Add] no-loss | list.Length 1 leaves 1 footer Offset 1
+< [C3b natural: per-row delete button on list.Length>1, second Add] LOSS | ok true  list.Length 3 leaves 4 footer Offset 3 children footer,r1,r1-del,r2,r2-del
+< [C3c row button on list.Length>0, first Add] LOSS | ok true  list.Length 1 leaves 2 footer Offset 1
+< [C3d new row: separator shown when list.Length>1 (older rows plain)] LOSS | ok true  list.Length 2 leaves 3 footer Offset 2
+< [C5 new row: hint on footer.Offset>0 (Compute only, no user Observer)] LOSS | ok true  list.Length 1 leaves 2 footer Offset 1
+< [C4 natural: divider on own row.Offset>0, prepend] no-loss | ok true  list.Length 3 leaves 3 footer Offset 3
+< [C4' append (new row's own Offset>0)] no-loss | ok true  list.Length 5 leaves 5 footer Offset 5
+< [D StoreBind install (value's mount Sets holder)] LOSS | fired true holder==B true A mounted true B mounted false children x,A
+< [E Tree makeBaseObserver] no user code in window | _rerunRequired false (install fire returns before any Set)
+< [F List data install (updateFn Sets data — UB)] LOSS | ok true  list.Length 1 data# 2
+< [Q74 T6 grandparent Remove in attach window] GHOST | remove ok true  add ok true  sub destroyed true mounted true f.Parent==parent true #children 1
+< [Q74 depth-4 ancestor Clear in attach window] GHOST | clear ok true  sub destroyed true mounted true #children 1
+< [Q74 control sibling Add in attach window] passes | ok true  outer.Length 3 leaves 3
+< PATCH_STATS	(unpatched)
+---
+> ./xr_e1b.luau:2: attempt to modify a readonly table
+> stacktrace:
+> ./xr_e1b.luau:2
+## e3
+11,13c11,13
+<  seen	0	s now	1	rerunReq	false
+<  after Subscribe seen	0
+<  after Set(10) seen	0,10
+---
+>  seen	0,1	s now	1	rerunReq	false
+>  after Subscribe seen	0,1
+>  after Set(10) seen	0,1,10
+21c21
+<  log	b2,a1,b99
+---
+>  log	a1,b99
+## osc
+1,2c1,2
+<  runs 1 s 1 rerunReq false
+<  after Subscribe runs 1
+---
+>  runs 100000 s 99999 rerunReq false
+>  after Subscribe runs 100000
+4c4
+<  runs 1 s 1
+---
+>  runs 100000 s 1
+6c6
+<  runs 1 s 1 t 1
+---
+>  runs 100000 s 99999 t 99999
+8c8
+<  runs 1 s 10
+---
+>  runs 2 s 10
+## q109
+2,3c2,3
+<    Effect   dep=Source  revive=Subscribe runs-per-wave: 1x84 2x116
+<    Effect   dep=Source  revive=drive     runs-per-wave: 1x99 2x101
+---
+>    Effect   dep=Source  revive=Subscribe runs-per-wave: 1x90 2x110
+>    Effect   dep=Source  revive=drive     runs-per-wave: 1x97 2x103
+5,9c5,9
+<    Effect   dep=Compute revive=drive     runs-per-wave: 1x83 2x117
+<    Observer dep=Source  revive=Subscribe runs-per-wave: 1x79 2x121
+<    Observer dep=Source  revive=drive     runs-per-wave: 1x86 2x114
+<    Observer dep=Compute revive=Subscribe runs-per-wave: 1x79 2x121
+<    Observer dep=Compute revive=drive     runs-per-wave: 1x98 2x102
+---
+>    Effect   dep=Compute revive=drive     runs-per-wave: 1x79 2x121
+>    Observer dep=Source  revive=Subscribe runs-per-wave: 1x85 2x115
+>    Observer dep=Source  revive=drive     runs-per-wave: 1x89 2x111
+>    Observer dep=Compute revive=Subscribe runs-per-wave: 1x91 2x109
+>    Observer dep=Compute revive=drive     runs-per-wave: 1x91 2x109
+11,14c11,14
+<    seen [2,2,3 final=3]:	30
+<    seen [2,2 final=2]:	41
+<    seen [2 final=2]:	63
+<    seen [2,3 final=3]:	66
+---
+>    seen [2,2,3 final=3]:	28
+>    seen [2,2 final=2]:	52
+>    seen [2,3 final=3]:	60
+>    seen [2 final=2]:	60
+## q110
+## e79
+14c14
+<   [mock] SCENARIO THREW: ./quad-roblox/src/Handlers/OnChange.luau:130: C stack overflow
+---
+>   [mock] SCENARIO THREW: ./.claude/audit/round13-e79-deferred-signals/probe.luau:51: table overflow
+32c32
+<   [mock] mount-sync calls=1, calls after first flush=1, len(Text)=0, len(src)=1, deliveries=0, maxQueue=0
+---
+>   [mock] mount-sync calls=300, calls after first flush=300, len(Text)=299, len(src)=299, deliveries=0, maxQueue=0
+34c34
+<   [imm] mount-sync calls=1, calls after first flush=1, len(Text)=0, len(src)=1, deliveries=0, maxQueue=0
+---
+>   [imm] mount-sync calls=300, calls after first flush=300, len(Text)=299, len(src)=299, deliveries=0, maxQueue=0
+133c133
+<          after flush: callback=ok outer.Length=1 later Set: ok
+---
+>          after flush: callback=ok outer.Length=2 later Set: ok
+136c136
+<          after flush: callback=ok outer.Length=1 later Set: ok
+---
+>          after flush: callback=ok outer.Length=2 later Set: ok
+## e20-a
+## e20-b
+## e20-c
+2c2
+<    sibling fired before being unsubscribed:	102	 held (not fired):	98
+---
+>    sibling fired before being unsubscribed:	106	 held (not fired):	94
+4,5c4,5
+<    sibling ran	1	times in one wave:	91	trials
+<    sibling ran	2	times in one wave:	109	trials
+---
+>    sibling ran	1	times in one wave:	85	trials
+>    sibling ran	2	times in one wave:	115	trials
+7,8c7,8
+<    effect sibling ran	1	times in one wave:	87	trials
+<    effect sibling ran	2	times in one wave:	113	trials
+---
+>    effect sibling ran	1	times in one wave:	91	trials
+>    effect sibling ran	2	times in one wave:	109	trials
+10,14c10,14
+<    N=100 Observer: ok maxDepth=1 final=1 | Effect: ok final=100
+<    N=1000 Observer: ok maxDepth=1 final=1 | Effect: ok final=1000
+<    N=5000 Observer: ok maxDepth=1 final=1 | Effect: ok final=5000
+<    N=20000 Observer: ok maxDepth=1 final=1 | Effect: ok final=20000
+<    N=100000 Observer: ok maxDepth=1 final=1 | Effect: ok final=100000
+---
+>    N=100 Observer: ok maxDepth=1 final=100 | Effect: ok final=100
+>    N=1000 Observer: ok maxDepth=1 final=1000 | Effect: ok final=1000
+>    N=5000 Observer: ok maxDepth=1 final=5000 | Effect: ok final=5000
+>    N=20000 Observer: ok maxDepth=1 final=20000 | Effect: ok final=20000
+>    N=100000 Observer: ok maxDepth=1 final=100000 | Effect: ok final=100000
+22,24c22,24
+<    order	1	desc,sib(exe=false),killer	effRuns	1
+<    order	2	desc,sib(exe=false),killer	effRuns	0
+<    order	3	killer	effRuns	0
+---
+>    order	1	sib(exe=false),desc,killer	effRuns	1
+>    order	2	desc,sib(exe=false),killer	effRuns	1
+>    order	3	sib(exe=false),killer	effRuns	0
+## e20-c2b
+1,4c1,4
+< Observer	ran	1	times in one wave:	83	trials; values seen	[2] [2,2]
+< Observer	ran	2	times in one wave:	117	trials; values seen	[2] [2,2]
+< Effect	ran	1	times in one wave:	79	trials; values seen	[2,2] [2]
+< Effect	ran	2	times in one wave:	121	trials; values seen	[2,2] [2]
+---
+> Observer	ran	1	times in one wave:	94	trials; values seen	[2,2] [2]
+> Observer	ran	2	times in one wave:	106	trials; values seen	[2,2] [2]
+> Effect	ran	1	times in one wave:	87	trials; values seen	[2,2] [2]
+> Effect	ran	2	times in one wave:	113	trials; values seen	[2,2] [2]
+## e20-c3
+## e20-d
+## e20-d3
+## e20-e
+## e20-g
+## e20-h
+1,2c1,2
+< EffectCleanup	→	effSib-fn, obsHost(parent=nil), obsChild
+< OnDestroyed	→	obsHost(parent=nil), effSib-fn, obsChild
+---
+> EffectCleanup	→	obsChild, effSib-fn, obsHost(parent=nil)
+> OnDestroyed	→	obsChild, obsHost(parent=nil), effSib-fn

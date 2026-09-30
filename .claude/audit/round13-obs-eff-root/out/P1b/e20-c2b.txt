@@ -1,0 +1,4 @@
+Observer	ran	1	times in one wave:	94	trials; values seen	[2,2] [2]
+Observer	ran	2	times in one wave:	106	trials; values seen	[2,2] [2]
+Effect	ran	1	times in one wave:	87	trials; values seen	[2,2] [2]
+Effect	ran	2	times in one wave:	113	trials; values seen	[2,2] [2]

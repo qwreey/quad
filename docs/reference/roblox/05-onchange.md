@@ -120,7 +120,7 @@ q.OnChange("TextBounds", function(v: Vector2) end)       -- OK
 클래스 간 타입이 충돌하는 이름 여섯(`CanvasSize`/`Color`/`Offset`/`Padding`/`Style`/`Transparency`)은 생성
 `PropTypesRead`에서 `any`라 콜백 인자 타입이 검사되지 않습니다 — `q.OnChange("Color", function(v: number) end)`처럼
 엉뚱한 타입을 주석해도 통과합니다. 런타임은 그대로 엔진 값을 넘기므로 값 자체는 맞지만, 주석 오타를 타입이 못 잡아 줍니다.
-<!-- .claude/qa-request/post-implementation-review-round13.md H-623 -->
+<!-- 근거: 2026-09-26 신 솔버 실측(저장소 내부 기록) -->
 
 **에러**
 
@@ -185,7 +185,7 @@ local box = D.TextBox({
 
 :::caution
 위 충돌 이름 여섯(`CanvasSize`/`Color`/`Offset`/`Padding`/`Style`/`Transparency`)에서는 [2026-09-26 기준] **올바른 `Source`도 타입에서 거부됩니다**(거짓 양성 — 처방 검토 중, 실측으로 확인됨). 그동안은 `q.OnChange(name, function(v) if v ~= src:Get() then src:Set(v) end end)`로 손으로 되쓰세요(같은 값 비교는 위 "동작"의 메아리 건너뛰기 — 빼면 바인딩마다 구독자가 한 번 더 돌고, 같은 값 대입에도 신호를 내는 환경(mock)에서는 무한 재귀합니다 — [2026-09-27 mock 실측]). 또 `Source<T?>`(nilable)는 어느 이름에서도 `q.Out`에 들어가지 않습니다(쓰기 표면이 `non-nil`이라 — `Adornee`처럼 nilable을 되쓰고 싶으면 이 우회를 쓰세요).
-<!-- .claude/qa-request/post-implementation-review-round13.md H-623 / Q87 -->
+<!-- 근거: 2026-09-26 신 솔버 실측(저장소 내부 기록) — 처방은 검토 중 -->
 :::
 
 ---

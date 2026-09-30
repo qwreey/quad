@@ -29,7 +29,7 @@ return function(props)
     -- 상태는 컴포넌트 안에서 만든다 — 부른 쪽마다 자기 것을 갖는다
     const count = q.Source(props.Start or 0)
 
-    const countText = count:Compute(function(c)
+    const countText: q.State<string> = count:Compute(function(c)
         return `{props.Label}: {c:Get()}`
     end)
 
@@ -107,7 +107,7 @@ return function(props)
     -- 상태는 컴포넌트 안에서 만든다 — 부른 쪽마다 자기 것을 갖는다
     const count = q.Source(props.Start or 0)
 
-    const countText = count:Compute(function(c)
+    const countText: q.State<string> = count:Compute(function(c)
         return `{props.Label}: {c:Get()}`
     end)
 
@@ -193,7 +193,7 @@ return function(props)
     -- 상태를 만들지 않는다 — 받은 원천을 읽어 그리고, 눌리면 되돌려 쓴다
     const checked = props.Value
 
-    const labelText = checked:Compute(function(c)
+    const labelText: q.State<string> = checked:Compute(function(c)
         return `{if c:Get() then "☑" else "☐"} {props.Label}`
     end)
 
@@ -219,7 +219,7 @@ const Checkbox = require("@game/ReplicatedStorage/Client/UI/Checkbox")
 
 const agreed = q.Source(false)
 
-const statusText = agreed:Compute(function(c)
+const statusText: q.State<string> = agreed:Compute(function(c)
     return if c:Get() then "켜짐" else "꺼짐"
 end)
 

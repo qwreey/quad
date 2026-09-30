@@ -389,7 +389,7 @@ export type AttrKeyObject = { read Name: string }
 export type AttrKeyConstructor = (name: string) -> AttrKeyObject
 -- 타입드 스칼라 슈가 — 배열부 값(단일 항목 그룹 `Attr({ [name] = value })`).
 -- 값은 T | State<T> | None(삭제); nil은 거부(런타임 검증). State 자리는 마커(입력 자리 규칙, `StateMarker`)
-export type AttrSugar<T> = (name: string, value: T | StateMarker<T> | None) -> Attr
+export type AttrSugar<T> = (name: string, value: T | StateMarker<(T | None)?> | None) -> Attr -- [Q126] State의 nil/None = 삭제
 
 -- ── Modifier (M7 단위 ①·④) — `base/modifier-plan.md` ───────────────────
 -- 런타임 표면만(예약 메소드 넷). 클래스별 필드 setter 타입(`<Class>Modifier`)은
@@ -512,7 +512,7 @@ export type Store<T> = T & {
 -- `initial`)는 마커 — `Slot<Frame>`·`State<Frame>`이 `Slot<Instance>` 요소 자리에 공변으로
 -- 들어간다. 출력(`Get`/`Extract`/`ExtractAll`/`Splice` 반환, `updateFn`의 `prev`)은 "언래핑된
 -- 원래 값"이라 전체형 `SlotItem<T>` — 같은 값의 두 역할이라 별칭이 둘이다.
-export type SlotElement<T> = T | StateMarker<T> | SlotMarker<T>
+export type SlotElement<T> = T | StateMarker<(T | None)?> | SlotMarker<T> -- [Q126] State의 nil/None = 원소 내림
 export type SlotItem<T> = T | State<T> | Slot<T>
 export type SlotListOpts = { read OwnsElements: boolean? }
 -- `updateFn(ctx) -> (result, userdata)` — [2026-09-15 사용자 결정] 옛 위치 인자 다섯을 매 호출 새 테이블 하나로

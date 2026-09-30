@@ -105,7 +105,7 @@ export type ThrottleOptions = {
 
 :::caution
 옵셔널 자리의 `Handle: Ref<GateHandle?>?`는 [2026-09-26 기준] 신 솔버가 타입 인자를 검사하지 않습니다 — 다른 `T`의 `Ref`(예: `q.Ref<<Frame?>>(nil)`)도 타입 검사를 통과합니다. Luau 쪽 한계이고, 런타임 가드(위 `Quad0047`)는 그대로 동작합니다.
-<!-- .claude/base/typing-limits.md 8.26 -->
+<!-- 근거: 2026-09-26 신 솔버 실측(저장소 내부 기록) -->
 :::
 
 **옵션 게이트(팩토리를 부르는 줄에서 던집니다).** 이름 자리(`Debounce`/`Throttle`)는 부른 쪽에 따라 바뀝니다.

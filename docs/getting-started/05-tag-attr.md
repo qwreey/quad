@@ -18,7 +18,7 @@ description: "인스턴스에 CollectionService 태그와 Attribute를 숫자 �
 ```luau
 -- (Main.client.luau 계속 — 배치 프로퍼티는 생략합니다)
 const count = q.Source(0)
-const countText = count:Compute(function(c) return `카운트: {c:Get()}` end)
+const countText: q.State<string> = count:Compute(function(c) return `카운트: {c:Get()}` end)
 
 const card = D.Frame {
     Size = UDim2.fromOffset(240, 160),
@@ -150,7 +150,7 @@ count:Set(3)   -- 짝수 → 홀수: 집합이 {Card}가 되어 removeTag:Even �
 
 ```luau
 -- … 위쪽 코드에 이어집니다
-const active = q.Source(true)
+const active = q.Source<<boolean | typeof(q.None)>>(true) -- 뒤에서 q.None을 넣어 속성을 지울 것이라 타입에 None을 넣는다
 
 const card = D.Frame {
     q.Tag("Card"),

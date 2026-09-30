@@ -32,6 +32,10 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Changed
 
+- strict 타입: `nil`을 기능으로 받는 입력 자리가 이제 `nil`이나 `q.None`을 내놓을 수 있는 `State`도 받습니다 — 객체 참조 프로퍼티(`Adornee`·`NextSelectionUp`·`PrimaryPart` 등 값이 Instance인 것), 이벤트, 숏핸드(`UICorner`·`UIPadding`·`UIScale` 등)와 그 Modifier setter, 타입드 Attr 슈거(`StringAttr` 등), `Slot` 원소 입력, 숫자 키 자리의 `State<OnChange 디스크립터?>`·`State<Ref?>`. 런타임은 원래 받던 것이라 동작은 같고 타입만 넓어집니다. `Text`처럼 엔진이 `nil` 쓰기를 거부하는 프로퍼티는 그대로 거부합니다. 속성을 지우려고 `:Set(q.None)`하는 State는 `q.Source<<boolean | typeof(q.None)>>(true)`처럼 `None`을 타입에 넣어 선언하세요.
+- 조용히 받아들이던 잘못된 입력 몇 가지를 이제 그 자리에서 거부합니다: `:List`/`:Single`의 `opts.OwnsElements`에 불리언이 아닌 값(`"false"`, `0` — 전에는 소유로 처리), `:List` 데이터 항목 자체가 `q.KeyGone`인 것(전에는 조용히 빠짐), `q.Operator.Clamp`·`Shl`·`Shr`에 넘친 인자(전에는 버림), `q.Attr(store)`에서 Store 필드에 직접 넣은 함수·테이블 값(전에는 적용할 때 번호 없는 에러).
+- `q.Operator.Band()`·`Bor()`·`Bxor()`를 인자 없이 쓰면 이제 값을 `bit32` 규칙으로 정규화합니다(`-1` → `4294967295`) — 인자 하나일 때와 `Bnot`과 같아졌습니다. 전에는 값을 그대로 돌려줬습니다.
+
 - 프로바이더 계약: 자기 값 타입의 브랜드 술어(`is<Brand>` 모듈 필드)를 설치 때 받은 모듈의 새 집합 `quad.BrandPredicates`에 `:Register(isX)`로 등록하세요 — 디스패치 진단(매치 실패 메시지의 브랜드 이름, 중괄호를 빠뜨린 `D.Frame(value)` 거부)이 등록된 술어만 봅니다. 등록하지 않아도 동작은 그대로이고 그 브랜드의 진단만 약해집니다. quad-roblox의 `isTween`은 등록돼 있습니다.
 - `q.Tag(...)`·`tag:Added`·`tag:Removed`·`q.Tag.Merged`의 **인자 자리 `nil`은 이제 "없음"**입니다(전엔 검증 에러). `base:Added(if even then "Even" else nil)`처럼 조건을 인자 안에 쓰면 결과가 늘 새 `Tag`라 대입을 빠뜨릴 수 없습니다. 리스트 안 nil 구멍(`{ "a", nil, "b" }`)은 여전히 에러이고, `tag:Contains(nil)`도 그대로 에러입니다.
 - `Info` 없이 `Time = 0`이고 `DelayTime`/`RepeatCount`/`Reverses`가 없거나 0·거짓인 `q.Tween{…}`은 이제 엔진 트윈 없이 값을 그 자리에서 씁니다(첫 세팅과 같은 스냅). 전에는 0초짜리 엔진 트윈을 만들어 다음 프레임에 썼습니다. 그 셋 중 하나라도 있으면 전과 같습니다.
@@ -87,6 +91,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Fixed
 
+- `ref:Wait(thread)`로 등록해 둔 코루틴이 그 사이 끝났거나 `coroutine.close`로 닫혔으면 이제 `:Set`이 그 대기자를 건너뜁니다. `a:Wait(co); b:Wait(co)`처럼 "둘 중 먼저"를 기다리던 코드에서, 뒤의 `b:Set`이 번호 없는 `cannot resume dead coroutine`으로 던지고 `b`의 나머지 콜백을 건너뛰던 것이 고쳐졌습니다.
 - `q.Debounce`/`q.Throttle`의 `Time`/`MaxTime`에 `math.huge`를 주면 통과해 게이트가 `Flush` 전까지(Throttle은 첫 통과 뒤 영원히) 값을 붙들던 것 — 이제 음수·NaN과 같이 거부합니다(`Quad0041`, State가 쥔 값은 신호 때 `Quad0039`). 두 에러는 받은 값이 숫자면 타입 대신 그 값(`got -1`·`got inf`)을 보여 주고, `setTimeout`의 `Quad0216`도 같은 꼬리(`got -1`·`got nan`)를 씁니다 — 단 `setTimeout`은 `math.huge`를 여전히 받습니다.
 - `q.Context({ [P] = v })`처럼 초기값을 넘기면 조용히 버려 나중 `:Get(P)`에서 엉뚱한 에러로 죽던 것 — `q.Context`는 인자를 받지 않으며, 이제 호출 줄에서 `Quad0255`로 거부합니다(빈 가방을 만들어 `:Set`으로 채우세요).
 - `q.Animate{ … }`를 `State`가 아닌 곳(`mod:Apply`·`tag:Apply`·필드가 비었거나 평범한 값인 Modifier setter의 변환 함수 자리)에 붙이면 quad 내부 줄에서 VM 에러(`attempt to index nil with 'Get'` 등)로 죽던 것 — 이제 `Quad0252 Animate: Apply target must be a State …`로 거부합니다.

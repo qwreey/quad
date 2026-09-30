@@ -1,0 +1,131 @@
+diff --git a/scripts/gen-d.py b/scripts/gen-d.py
+index 444275c0..b70e31f3 100644
+--- a/scripts/gen-d.py
++++ b/scripts/gen-d.py
+@@ -94,7 +94,9 @@ def legacy_note(p):
+     return f" -- @deprecated (Roblox {'/'.join(tags)})" if tags else ""
+ 
+ 
+-def field_alias(t):
++def field_alias(t, nilable=False):
++    if nilable or t in CLASS_VALUE_TYPES:
++        return "FieldN" if tweenable(t) else "FieldPN"
+     return "Field" if tweenable(t) else "FieldP"
+ PRIMITIVES = {
+     "int": "number", "int64": "number", "float": "number", "double": "number",
+@@ -107,6 +109,15 @@ PRIMITIVES = {
+ # defs에서 읽어 `string`으로 — QDir/QFont/BinaryString/ProtectedString도 같은 규칙(SKIP 해제).
+ DATATYPE_RENAME = {"OptionalCoordinateFrame": "CFrame"}
+ DATATYPE_SKIP = {"SystemAddress"}
++# [Q126] object-reference value types (defs types whose `extends` chain reaches Instance — filled
++# by emit()). The engine accepts a nil write there, so the State arm also carries nil/None.
++CLASS_VALUE_TYPES = set()
++
++
++def nil_marker(inner):
++    """State arm of a slot whose runtime takes a State's nil/None as a feature (nil write, disconnect,
++    destroy, detach) — NewChild's shape: `StateMarker<(X | None)?>`."""
++    return f"StateMarker<({inner} | None)?>"
+ _STRING_ALIASES = None
+ 
+ 
+@@ -324,6 +335,18 @@ def luau_event_sig(ev):
+ 
+ def emit():
+     data = json.loads(SURFACE.read_text())
++    # [Q126] object-reference value types = defs types whose `extends` chain reaches Instance
++    # (the normalized surface keeps only the Luau type string, not the Dump's Category)
++    ext = dict(re.findall(r"^declare extern type (\w+) extends (\w+) with", DEFS.read_text(), re.M))
++    def reaches_instance(n):
++        while n:
++            if n == "Instance":
++                return True
++            n = ext.get(n)
++        return False
++    for cname in set(ext) | {"Instance"}:
++        if reaches_instance(cname):
++            CLASS_VALUE_TYPES.add(cname)
+     classes = data["classes"]
+     L = []
+     L.append("--!strict")
+@@ -401,6 +424,11 @@ def emit():
+     L.append("export type FieldPV<T> = T | StateMarker<T> | None -- 보간 불가 타입의 setter 값(Q34 — Tween 팔 없음)")
+     L.append("export type FieldOutP<T> = QuadTypes.FieldOut<T> -- 보간 불가 타입의 old·Peek(전체형, Tween 없음)")
+     L.append("export type FieldP<T> = FieldPV<T>? | ((old: FieldOutP<T>?) -> FieldPV<T>?)")
++    # [Q126] nil-accepting setters (object references, shorthand keys): the State arm carries nil/None
++    L.append(f"export type FieldNV<T> = T | Tween<T> | {nil_marker('T | Tween<T>')} | None -- [Q126] nil을 받는 자리(숏핸드)")
++    L.append("export type FieldN<T> = FieldNV<T>? | ((old: FieldOut<T>?) -> FieldNV<T>?)")
++    L.append(f"export type FieldPNV<T> = T | {nil_marker('T')} | None -- [Q126] nil을 받는 자리(객체 참조)")
++    L.append("export type FieldPN<T> = FieldPNV<T>? | ((old: FieldOutP<T>?) -> FieldPNV<T>?)")
+     L.append("")
+     names = sorted(classes.keys())
+     # [2026-09-15 사용자 결정] Declaration/DeclarationMapper 테이블은 클래스 이름과 예약 이름이 같은
+@@ -456,9 +484,7 @@ def emit():
+         for p in classes[name]["props"]:
+             if p["type"] not in prop_types:
+                 prop_types.append(p["type"])
+-    for _, t in SHORTHAND:
+-        if t not in prop_types:
+-            prop_types.append(t)
++    # [Q126] shorthand value types no longer need a PVn — they get their own PSn below
+     def union_members(t):
+         return [m.strip() for m in t.split("|")]
+     # [2026-09-07 마커 — 사용자 결정] 슬롯 값 유니언은 `T | TweenData<T> | StateMarker<T | Tween<T>> | None`
+@@ -471,14 +497,23 @@ def emit():
+     # interpolate (engine docs: number/boolean/CFrame/Rect/Color3/UDim/UDim2/Vector2/Vector2int16/Vector3).
+     # string/Instance/Enum/Content/Font/…Sequence used to accept `Tween{…}` in strict and die in
+     # `TweenService:Create` at runtime (H-103 NOOP marker); the plain arms are also far lighter.
+-    def pv_arms(t):
++    def pv_arms(t, nilable=False):
++        nilable = nilable or t in CLASS_VALUE_TYPES
+         if tweenable(t):
+-            return [t, f"TweenData<{t}>", f"StateMarker<{t} | Tween<{t}>>", "None"]
+-        return [t, f"StateMarker<{t}>", "None"]
++            st = nil_marker(f"{t} | Tween<{t}>") if nilable else f"StateMarker<{t} | Tween<{t}>>"
++            return [t, f"TweenData<{t}>", st, "None"]
++        return [t, nil_marker(t) if nilable else f"StateMarker<{t}>", "None"]
+     pv_name = {}
+     for i, t in enumerate(prop_types):
+         pv_name[t] = f"PV{i}"
+         L.append(f"type PV{i} = {' | '.join(pv_arms(t))} -- {t}")
++    # [Q126] shorthand keys destroy the managed child on nil/None — their own aliases (the
++    # value types are shared with real properties that the engine refuses nil on)
++    ps_name = {}
++    for i, (_, t) in enumerate(SHORTHAND):
++        if t not in ps_name:
++            ps_name[t] = f"PS{len(ps_name)}"
++            L.append(f"type {ps_name[t]} = {' | '.join(pv_arms(t, True))} -- {t} (숏핸드)")
+     L.append("")
+     for name in names:
+         c = classes[name]
+@@ -490,10 +525,10 @@ def emit():
+             L.append(f"\t{p['name']}: {pv_name[t]}?,{legacy_note(p)}")
+         if is_gui_object(name):
+             for sname, t in SHORTHAND:
+-                L.append(f"\t{sname}: {pv_name[t]}?, -- 숏핸드(H-336)")
++                L.append(f"\t{sname}: {ps_name[t]}?, -- 숏핸드(H-336)")
+         for ev in c["events"]:
+             sig = luau_event_sig(ev)
+-            L.append(f"\t{ev['name']}: (({sig}) | StateMarker<{sig}> | None)?,")
++            L.append(f"\t{ev['name']}: (({sig}) | {nil_marker(f'({sig})')} | None)?,")
+         L.append("}")
+         L.append("")
+     # OnChange 타이핑(onchange-plan 2026-09-03 역전, luau-test 30 실측):
+@@ -673,7 +708,7 @@ def emit():
+             L.append(f"\t{p['name']}: (self: {node}Modifier, value: {field_alias(t)}<{t}>) -> {node}Modifier,{legacy_note(p)}")
+         if is_gui_object(node):
+             for sname, t in SHORTHAND:
+-                L.append(f"\t{sname}: (self: {node}Modifier, value: {field_alias(t)}<{t}>) -> {node}Modifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)")
++                L.append(f"\t{sname}: (self: {node}Modifier, value: {field_alias(t, True)}<{t}>) -> {node}Modifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)")
+         L.append("}")
+         # Into<Class> — "이 클래스로 갈 수 있는 모든 것"(상위·자기·커스텀 구현체).
+         # self는 any여야 한다: self를 인터페이스 타입으로 두면 반공변 때문에
+@@ -711,7 +746,7 @@ def emit():
+         L.append(f"export type {name}RefMarker = {{ read __quadRefAccepts: ({name}) -> () }}")
+         # [2026-09-07 마커] State 팔은 StateMarker — `State<Ref<Frame?>>`가 캐스트 없이 `StateMarker<FrameRefMarker>`에
+         # 든다(공변 + Ref의 반공변 팬텀이 폭 서브타이핑으로 대조됨), 8.7 캐비엇 5의 캐스트 관용구는 불필요
+-        L.append(f"export type {name}Elem = NewChild | {name}OnChange | StateMarker<{name}OnChange> | {{ read __quadModifier: {marker} }} | {name}RefMarker | StateMarker<{name}RefMarker>")
++        L.append(f"export type {name}Elem = NewChild | {name}OnChange | {nil_marker(f"{name}OnChange")} | {{ read __quadModifier: {marker} }} | {name}RefMarker | {nil_marker(f"{name}RefMarker")}")
+         L.append(f"export type {name}MapperElem = {name}Elem | MapperDescriptor")
+         L.append("")
+     L.append("-- Declaration 네임스페이스 타입(H-305 (d′)) — `UseProvider` 확장 `RobloxExtension`이")

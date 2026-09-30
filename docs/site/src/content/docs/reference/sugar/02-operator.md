@@ -59,6 +59,12 @@ export type NumOp = (self: StateData<number>) -> State<number>
 
 `nil` 인자가 조용히 사라져 뒤 인자를 당겨오는 일은 없습니다 — 자리마다 검사해서 `argument #N is nil`로 던집니다. 인자로 넘긴 `State`의 **현재값**이 `nil`이거나 숫자가 아닌 경우도 마찬가지입니다 — 읽는 시점에 `Quad0120 Operator.Sum: argument #N is a State whose current value is nil`(또는 `… must be a number (got string)`)로 던지고, 그 항을 건너뛰어 틀린 합을 돌려주지 않습니다(`Apply` 대상 자신의 값도 같은 검사). 갓 만든 `store:Of(...)`나 없는 키를 읽은 `Indexed`처럼 값이 아직 `nil`인 State를 연산에 넣으면 그 `:Get()`이 던집니다.
 
+**한 번 읽을 때 둘 이상이 동시에 틀렸으면 어느 에러가 나는지는 연산마다 다릅니다.** `Clamp`는 경계를 먼저 봐서, 대상 값이 `nil`이고 경계도 역전돼 있으면 `Quad0124`입니다. `Sum`/`Product`/`Min`/`Max`와 비트 연산은 대상을 먼저 봐서, 대상 값과 인자 State의 값이 둘 다 `nil`이면 `Quad0122`입니다([2026-09-27 mock 실측]). 에러 하나를 고쳤더니 다른 에러가 새로 나는 것은 이 순서 때문일 수 있습니다.
+
+**연산자를 이어 붙인 체인에서 안쪽이 던지면, 바깥의 인자만 바꿔서는 풀리지 않습니다.** 안쪽 연산자가 읽는 시점에 던진 뒤 바깥 연산자의 인자 State만 `:Set`하면, 바깥이 다시 읽는 안쪽 노드는 아직 같은 세대라 원래 원인 대신 `Quad0184`가 납니다 — 던진 노드는 **자기** 상류가 바뀌어야 다시 돕니다([`state:Compute`](/reference/core/03-state/#statecomputefn-deps)의 규칙 그대로). 안쪽 연산자의 대상이나 인자를 고쳐 `:Set`하면 회복됩니다([2026-09-27 mock 실측]). 아래 [`Clamp`](#qoperatorclamplo-hi)의 경계 역전이 가장 흔한 예입니다.
+
+**부호 있는 0과 무한대.** `0`과 `-0`처럼 값이 같은 두 수 사이에서는 앞 피연산자(대상 쪽)가 남습니다 — 대상이 `0`이고 인자가 `-0`이면 `Min`은 `0`, 대상이 `-0`이고 인자가 `0`이면 `-0`이고, 대상 `-0`에 `Clamp(0, 1)`을 걸면 `-0`입니다. `Sum`/`Product`는 결과가 `NaN`이 되는 것(`inf`와 `-inf`의 합, `0`과 `inf`의 곱)을 막지 않습니다([2026-09-27 mock 실측]).
+
 **산술·비트 연산자는 숫자 전용입니다.** `Sum`/`Product`/`Min`/`Max`/`Clamp`와 `Band`~`Shr`는 인자뿐 아니라 **`:Apply`를 받는 State의 값도** 숫자여야 합니다. `UDim2`나 `Color3` 같은 타입에 쓰면 타입 검사에서 `None of the overloads for function that accept 2 arguments are compatible.`로 막힙니다 — 그런 연산은 `state:Compute`로 직접 쓰십시오. 값 타입을 가리지 않는 것은 `Not`·`Alternative`·`Indexed` 셋입니다.
 
 ---
@@ -153,7 +159,7 @@ self와 인자들의 최대값(`math.max` 폴딩).
 Clamp: (lo: NumArg, hi: NumArg) -> NumOp
 ```
 
-`math.clamp(self, lo, hi)`. 인자가 정확히 둘이라 하나만 주면 `Quad0118 Operator.Clamp: argument #2 is nil`입니다. 읽는 시점에 `lo > hi`이면(반응형 경계가 한 프레임 엇갈림) 그 `:Get()` 줄에서 `Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 0, max -5)`로 던지고, 경계가 돌아오면 다음 세대에 회복됩니다(노드만 — 던질 때 읽던 `Effect`는 죽은 채, 그 사이 재읽기는 `Quad0184`). 경계가 `NaN`(`0/0` — 나누기 결과가 흔한 원인)이어도 같은 문구입니다.
+`math.clamp(self, lo, hi)`. 인자가 정확히 둘이라 하나만 주면 `Quad0118 Operator.Clamp: argument #2 is nil`이고, 셋 이상 주면 `Quad0261 Operator.Clamp: takes 2 arguments (got 3)`입니다(`Shl`·`Shr`도 하나를 넘으면 같은 에러). 읽는 시점에 `lo > hi`이면(반응형 경계가 한 프레임 엇갈림) 그 `:Get()` 줄에서 `Quad0124 Operator.Clamp: min must be <= max and neither NaN (got min 0, max -5)`로 던지고, 경계가 돌아오면 다음 세대에 회복됩니다(노드만 — 던질 때 읽던 `Effect`는 죽은 채, 그 사이 재읽기는 `Quad0184`). 경계가 `NaN`(`0/0` — 나누기 결과가 흔한 원인)이어도 같은 문구입니다.
 
 ```luau
 local posX, maxX = q.Source(150), q.Source(100)
@@ -168,7 +174,7 @@ local boundX: State<number> = posX:Apply(Op.Clamp(0, maxX)) -- 100
 Band: (...NumArg) -> NumOp
 ```
 
-`bit32.band` 폴딩. Luau엔 비트 연산자가 없어 `bit32` 위의 얇은 층입니다.
+`bit32.band` 폴딩. Luau엔 비트 연산자가 없어 `bit32` 위의 얇은 층입니다. 인자 없이 `Op.Band()`로 써도 값을 `bit32` 규칙으로 정규화합니다(`-1` → `4294967295` — 인자 하나일 때·`Bnot`과 같음; `Bor()`·`Bxor()`도 같습니다).
 
 비트 계열 여섯(`Band`/`Bor`/`Bxor`/`Bnot`/`Shl`/`Shr`)은 `bit32` 계약을 그대로 물려받고 게이트를 두지 않습니다 — 소수는 잘리고(`1.5` → `1`), 음수는 2^32 모듈로(`-1` → `4294967295`), 2^32 이상은 **2^63 미만까지만** 접히며(`2^53+2` → `2`; Luau VM이 `(unsigned)(long long)n` C 캐스트로 변환하므로(`luau-lang/luau@3fc82b1:VM/src/lnumutils.h`·`VM/src/lapi.cpp`) 절댓값 2^63 이상·`NaN`·`±inf`는 C에서 정의되지 않은 변환이라 **플랫폼에 달립니다** — x86에선 `0`(`Bnot(NaN)`은 `4294967295`), ARM64는 포화 변환이라 `+inf`가 `4294967295`가 될 수 있음, 미실측), 이동량도 같은 캐스트를 거쳐 32 이상이면 `0`(`NaN`·`inf`·2^31 이상은 플랫폼 의존), 음수 이동량은 방향이 뒤집힙니다. 수치 계열의 `NaN`도 검사하지 않습니다 — `Clamp`는 **경계**의 NaN만 거부하고 대상이 NaN이면 NaN을 그대로 돌려주며, `Min`/`Max`는 어느 쪽이 NaN이냐에 따라 결과가 갈립니다(대상이 NaN이면 NaN, 인자가 NaN이면 대상 값).
 

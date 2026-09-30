@@ -1309,4 +1309,26 @@ do
 	print("PASS")
 end
 
+print("=== round13 Q134 ③④ (2026-09-30) — OwnsElements는 불리언만, 데이터 항목 자체가 q.KeyGone이면 거부 ===")
+do
+	for _, bad in { "false", 0 } :: { any } do
+		local okO, errO = pcall(function()
+			Slot():List(q.Source({}), function(ctx) return nil end, nil, { OwnsElements = bad })
+		end)
+		assert(not okO and string.find(tostring(errO), "Quad0259", 1, true) ~= nil, "non-boolean OwnsElements rejected: " .. tostring(errO))
+		mock.assertBlamesUser(errO, "spec.slot.luau", "Quad0259 blame")
+	end
+	Slot():List(q.Source({}), function(ctx) return nil end, nil, { OwnsElements = false }) -- booleans pass
+	local s = Slot()
+	s:List(q.Source({ 1, q.KeyGone }), function(ctx)
+		if ctx.Item == q.KeyGone then return nil end
+		return Instance.new("Frame")
+	end)
+	local okK, errK = pcall(function()
+		dispatch.drive(Instance.new("Folder"), { s })
+	end)
+	assert(not okK and string.find(tostring(errK), "Quad0260", 1, true) ~= nil and string.find(tostring(errK), "item #2", 1, true) ~= nil, "a KeyGone data item is refused, not silently dropped: " .. tostring(errK))
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

@@ -57,7 +57,7 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
 
 `{ctx}: attribute "{name}" cannot be a function - attribute values are raw values or State` — `quad-base/src/Attr/init.luau`
 
-- **언제**: 평범한 테이블 값 자리에 함수를 뒀을 때 — 속성 값은 원시 값이거나 `State`/`q.None`이어야 합니다.
+- **언제**: 평범한 테이블 값 자리에 함수를 뒀을 때, 또는 `q.Attr(store)`로 넘긴 `Store`의 필드에 함수를 직접 넣었을 때 — 속성 값은 원시 값이거나 `State`/`q.None`이어야 합니다.
 - **고치려면**: 함수 대신 값 자체나 `State`를 넘기세요.
 - **참고**: [`q.Attr(...)`](/reference/core/09-tag-attr/#qattr)
 
@@ -65,7 +65,7 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
 
 `{ctx}: attribute "{name}" cannot be a table - attribute values are raw values, None or State (got {typeof(v)})` — `quad-base/src/Attr/init.luau`
 
-- **언제**: 평범한 테이블 값 자리에 (`None`도 `State`도 아닌) 또 다른 테이블을 뒀을 때 — 엔진은 그런 테이블을 속성 값으로 저장할 수 없습니다(Slot/Ref/Tween/Modifier 등이 여기 걸립니다).
+- **언제**: 평범한 테이블 값 자리에 (`None`도 `State`도 아닌) 또 다른 테이블을 뒀을 때, 또는 `q.Attr(store)`로 넘긴 `Store`의 필드에 그런 테이블을 직접 넣었을 때 — 엔진은 그런 테이블을 속성 값으로 저장할 수 없습니다(Slot/Ref/Tween/Modifier 등이 여기 걸립니다).
 - **고치려면**: 원시 값이나 `State`, `q.None`만 값 자리에 두세요.
 - **참고**: [`q.Attr(...)`](/reference/core/09-tag-attr/#qattr)
 

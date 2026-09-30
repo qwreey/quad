@@ -211,7 +211,7 @@ end
 
 :::caution
 옵셔널(`?`) 자리의 `Slot<T>`/`Modifier`/`Ref<T>`는 [2026-09-26 기준] 신 솔버가 타입 인자를 검사하지 않습니다 — 위 `read Children: q.Slot<Instance>?`에 `q.Slot<<TextLabel>>()`처럼 다른 `T`의 값을 넘겨도 타입 검사가 통과합니다. Luau 쪽 한계이고 런타임 가드는 그대로 돕니다(엔진에 안 맞는 값을 실제로 넣으면 그때 에러가 납니다).
-<!-- .claude/base/typing-limits.md 8.26 -->
+<!-- 근거: 2026-09-26 신 솔버 실측(저장소 내부 기록) -->
 :::
 
 ### 자식 **배열**을 그대로 넘기지 않는 이유
@@ -306,7 +306,7 @@ end
 local left, right = newCounter(0), newCounter(10)
 ```
 
-Getting Started의 예제들은 Roblox 기본 모드(`--!nonstrict`)를 가정합니다. `--!strict`로 쓸 때 손이 더 가는 자리는 둘입니다 — **콜백 파라미터**(위 예제의 `q.StateData<number>`처럼 `:Compute`/`:Observer`의 파라미터에 주석)와 **파생 노드를 만드는 줄의 결과 타입**(`local isEven: q.State<boolean> = ...`). 이 둘은 진단을 없애기보다 **무검사 구멍을 막기** 위한 것입니다(주석 없는 `:Compute` 결과는 어떤 타입이든 받아 `Text`에 숫자를 넣어도 진단이 없습니다). 진단을 실제로 없애는 데 자주 필요한 것은 따로 있습니다 — props 테이블 타입(§4), `q.Slot<<Instance>>`와 `:List` 람다의 반환 팩·keyFn 파라미터 타입([08 §7](./08-migrating-from-v1.md)), Store/Settings 열쇠 타입, `ref:Unwrap()`([2026-09-27 실측]). 자세한 캐비엇은 [레퍼런스: `State`](../reference/core/03-state.md)에 있습니다. `--!strict`에서 실제로 뜨는 진단과 그 처방을 한 표로 모은 것은 [08. quad v1에서 v2로 옮기기](./08-migrating-from-v1.md) §7에 있습니다 — 표지는 이관 문서지만 항목 대부분은 v1 고유가 아니라 quad 일반 진단입니다.
+Getting Started의 예제들은 Roblox 기본 모드(`--!nonstrict`)를 가정합니다. `--!strict`로 쓸 때 손이 더 가는 자리는 둘입니다 — **콜백 파라미터**(위 예제의 `q.StateData<number>`처럼 `:Compute`/`:Observer`의 파라미터에 주석)와 **파생 노드를 만드는 줄의 결과 타입**(`local isEven: q.State<boolean> = ...`). 이 둘은 진단을 없애기보다 **무검사 구멍을 막기** 위한 것입니다(주석 없는 `:Compute` 결과는 어떤 타입이든 받아 `Text`에 숫자를 넣어도 진단이 없습니다). 진단을 실제로 없애는 데 자주 필요한 것은 따로 있습니다 — props 테이블 타입(§4), `q.Slot<<Instance>>`와 `:List` 람다의 `ctx` 타입·반환 팩·keyFn 파라미터 타입([08 §7](./08-migrating-from-v1.md)), Store/Settings 열쇠 타입, `ref:Unwrap()`([2026-09-27 실측]). 자세한 캐비엇은 [레퍼런스: `State`](../reference/core/03-state.md)에 있습니다. `--!strict`에서 실제로 뜨는 진단과 그 처방을 한 표로 모은 것은 [08. quad v1에서 v2로 옮기기](./08-migrating-from-v1.md) §7에 있습니다 — 표지는 이관 문서지만 항목 대부분은 v1 고유가 아니라 quad 일반 진단입니다.
 
 > [!TIP]
 > 상태 위에 얹는 연산 조합자는 `q.Operator` 네임스페이스에 있고, `:Apply`로 붙입니다 — 예: `price:Apply(q.Operator.Sum(tax, shipping))`, `reduceMotion:Apply(q.Operator.Not)`. 인자는 리터럴이어도 State여도 됩니다.

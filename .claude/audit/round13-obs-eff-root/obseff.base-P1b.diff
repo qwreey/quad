@@ -1,0 +1,48 @@
+2,3c2,3
+<   Observer: install runs [0] now=1 rerunReq=false
+<   Observer: after Subscribe runs [0]
+---
+>   Observer: install runs [0,1] now=1 rerunReq=false
+>   Observer: after Subscribe runs [0,1]
+7,8c7,8
+<   Observer: install runs [0] now=1
+<   Observer: after Subscribe runs [0]
+---
+>   Observer: install runs [0,1] now=1
+>   Observer: after Subscribe runs [0,1]
+30,31c30,31
+<   Observer: B runs per Set(1) over 50 trials: [1,2]x26 [2,2]x24
+<   Effect: B runs per Set(1) over 50 trials: [1,2]x26 [2]x24
+---
+>   Observer: B runs per Set(1) over 50 trials: [1,2]x27 [2,2]x23
+>   Effect: B runs per Set(1) over 50 trials: [1,2]x20 [2]x30
+45c45
+<   Observer: install runs 1
+---
+>   Observer: install runs 40
+50c50
+<   Observer: threw=true runs=1 subsOfS=0 running=true rerunReq=true
+---
+>   Observer: threw=true runs=1 subsOfS=1 running=true rerunReq=false
+57,58c57,58
+<   Observer: runs in wave: 1x48 2x52
+<   Effect: runs in wave: 1x49 2x51
+---
+>   Observer: runs in wave: 1x46 2x54
+>   Effect: runs in wave: 1x40 2x60
+60c60
+<   Observer: install [0] now=10
+---
+>   Observer: install [0,10] now=10
+63,64c63,64
+<   Observer: B runs per Set(1) over 50 trials: [1,2]x24 [2]x26
+<   Effect: B runs per Set(1) over 50 trials: [1,2]x28 [2]x22
+---
+>   Observer: B runs per Set(1) over 50 trials: [1,2]x23 [2]x27
+>   Effect: B runs per Set(1) over 50 trials: [1,2]x25 [2]x25
+66,67c66,67
+<   Observer: runs in wave: 1x41 2x59
+<   Effect: runs in wave: 1x38 2x62
+---
+>   Observer: runs in wave: 1x37 2x63
+>   Effect: runs in wave: 1x51 2x49

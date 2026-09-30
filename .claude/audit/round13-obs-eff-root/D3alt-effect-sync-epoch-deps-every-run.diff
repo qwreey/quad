@@ -1,0 +1,18 @@
+--- a/quad-base/src/Effect.luau
++++ b/quad-base/src/Effect.luau
+@@ -106,6 +106,15 @@
+ 			-- Requests that arrive DURING fn still re-run (`_pending` = a request while running).
+ 			self._pending = false
+ 			self._rerunRequired = false -- the ONLY place the flag goes down: fn really runs
++			-- PROTOTYPE P3E: fn is about to read every dep live; a direct Epoch dep's (Source/Ref) live
++			-- revision is exactly what its next delivery would carry, so mark it seen — a same-wave delivery
++			-- arriving after this run (revival mid-wave, explicit Rerun) then fails `Update`. State deps are
++			-- not touched: a Gate below them may be withholding (`H-151`).
++			for d in self._deps do
++				if isEpoch(d) then
++					self._epochs:Sync(d)
++				end
++			end
+ 			-- `H-185` (user, 2026-08-31): the cleanup is ONE function — wrap several
+ 			-- teardowns in one closure (`function() a() b() end`); extra returns are
+ 			-- deliberately not collected (a list would widen the re-entry surface).

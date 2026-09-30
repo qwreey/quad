@@ -217,7 +217,7 @@ local same = q.Tag(a, b)           -- 같은 결과, 느슨한 철자
 
 ## Attr
 
-`Attr`은 **이름 → 값 맵**입니다. 값은 원시 값이거나 `State`/`Source`이거나 `q.None`입니다.
+`Attr`은 **이름 → 값 맵**입니다. 값은 원시 값이거나 `State`/`Source`이거나 `q.None`입니다. 함수와 (State·`None`이 아닌) 테이블은 만들 때 거부합니다(`Quad0007`/`Quad0008`) — `Store`를 넘길 때도 같아서, Store 필드에 직접 넣은 함수·테이블 값도 `q.Attr(store)` 줄에서 걸립니다. 다만 필드가 `State`이고 그 **현재 값**이 테이블(예: `Store`를 담은 `Source`)이면 만들 때는 모르고, 적용할 때 번호 없는 에러로 죽습니다 — 속성에 묶을 State에는 원시 값만 담으세요([2026-09-27 mock 실측]).
 
 ```luau
 type Attr = {
@@ -397,7 +397,7 @@ local marker = D.Frame {
 
 ```luau
 StringAttr: AttrSugar<string>
-type AttrSugar<T> = (name: string, value: T | StateMarker<T> | None) -> Attr
+type AttrSugar<T> = (name: string, value: T | StateMarker<(T | None)?> | None) -> Attr
 ```
 
 **인자**
@@ -405,7 +405,7 @@ type AttrSugar<T> = (name: string, value: T | StateMarker<T> | None) -> Attr
 | 이름 | 타입 | 설명 |
 |---|---|---|
 | `name` | `string` | 속성 이름(빈 문자열 불가) |
-| `value` | `string` / `State<string>` / `q.None` | 값. `nil`은 거부됩니다 |
+| `value` | `string` / `State<string>`(`nil`·`None`을 내놓아도 됨 — 그때 속성 삭제) / `q.None` | 값. 리터럴 `nil`은 거부됩니다 |
 
 **반환** — 항목이 하나뿐인 `Attr`(즉 `q.Attr({ [name] = value })`).
 

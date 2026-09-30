@@ -1,0 +1,84 @@
+--- a/quad-base/src/Observer.luau
++++ b/quad-base/src/Observer.luau
+@@ -78,6 +78,31 @@
+ 	end
+ 
+ 	-- ── EmitReceive ──────────────────────────────────────────────────
++	-- PROTOTYPE obs-eff-root P1 (Q73 (a) + Q110 (b) rule, 2026-09-30) — Effect's vocabulary, no new name:
++	--   `_pending`       = "a delivery arrived while fn was running and could not run in place" (Effect's
++	--                      field, same meaning); only possible while the handle is NOT executable — the
++	--                      install window, or an fn that has just unsubscribed itself;
++	--   `_rerunRequired` = "a change arrived while not executable" (held; replayed once on bind/subscribe);
++	--   `force`          = the install run, which may run while unexecutable (Effect's parameter, same meaning).
++	-- A forced run re-runs fn while `_pending` (the install window takes changes in place — Q73 (a), and
++	-- Effect's install already did); an unforced run turns a leftover `_pending` into a hold. Executable
++	-- deliveries still nest (unchanged, `_receive` inline — no extra stack frame per nesting level).
++	-- Re-runs pass `from = nil` ("read the value", `H-164`).
++	local function runLoop(self: any, from: any, force: boolean)
++		local outer = self._running -- `H-183` (save/restore — `H-332`)
++		self._running = true
++		repeat
++			self._pending = false
++			self.fn(self._state, self, from)
++			from = nil
++		until not (self._pending and (force or module.Backend.canExecute(self)))
++		if self._pending then
++			self._pending = false
++			self._rerunRequired = true -- lost executability inside fn: hold, replay on the next bind/subscribe
++		end
++		self._running = outer
++	end
++
+ 	function Impl._receive(self: any, from: any)
+ 		if module.Backend.canExecute(self) then -- read at fire time (`H-174`)
+ 			-- `H-183`: fn may not change its own lifecycle (`H-147` symmetric). An fn
+@@ -90,6 +115,12 @@
+ 			self._running = true
+ 			self.fn(self._state, self, from)
+ 			self._running = outer
++			if self._pending and not outer then -- fn unsubscribed itself, then changed its State: hold
++				self._pending = false
++				self._rerunRequired = true
++			end
++		elseif self._running then
++			self._pending = true -- PROTOTYPE P1: inside a run that cannot take it in place (install window)
+ 		else
+ 			self._rerunRequired = true -- `H-159`: change before binding is held — replayed once when bound
+ 		end
+@@ -100,10 +131,7 @@
+ 	function Impl._catchUp(self: any)
+ 		if self._rerunRequired then
+ 			self._rerunRequired = false
+-			local outer = self._running -- `H-183` (save/restore — `H-332`)
+-			self._running = true
+-			self.fn(self._state, self, nil)
+-			self._running = outer
++			runLoop(self, nil, false)
+ 		end
+ 	end
+ 
+@@ -190,17 +218,17 @@
+ 		local o: any = setmetatable({
+ 			fn = fn or alwaysObserve,
+ 			_state = state, -- strong: the handle holds its upstream (`_hold` equivalent, `H-110`)
+-			_rerunRequired = true,
++			_rerunRequired = false, -- PROTOTYPE P1: one meaning — "held while unexecutable"
++			_pending = false, -- PROTOTYPE P1: "a delivery arrived during this run" (Effect's field, same meaning)
+ 			_running = false, -- `H-183`: raised around every fn run; the subscribe entries + `_assertBindable` refuse while up (Q63 (b): releasing passes)
+ 			Subscribed = false, -- the shared flag both handle types carry (`H-111`)
+ 		}, Impl)
+ 		ObserverBrand:Register(o)
+-		o._running = true -- `H-183`: the install fire is an fn run like any other
+-		o.fn(state, o, nil) -- (1) fire once at registration — no source (`nil`)
+-		o._running = false
+-		o._rerunRequired = false -- (2) the install fire lowers the flag
+-		state._subs[o] = true -- (3) only THEN join the subscriber set — reversed, (1) Setting its own
+-		return o --     State would land in this Observer's `_receive` and raise the flag
++		-- PROTOTYPE P1: join FIRST, then the forced install run — an emit inside the install window
++		-- (fn's own Set, or anyone else's) lands in `_receive` → `_pending` → the loop runs fn again.
++		state._subs[o] = true
++		runLoop(o, nil, true)
++		return o
+ 	end
+ 
+ 	-- `H-231`: public surface joins the shared error-namespace tag layer
