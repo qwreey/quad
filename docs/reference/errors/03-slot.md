@@ -386,7 +386,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ### Quad0259
 
-`Slot:List: opts.OwnsElements must be a boolean (got {typeof(opts.OwnsElements)})` — `quad-base/src/Slot/List.luau`
+`{surface}: opts.OwnsElements must be a boolean (got {typeof(opts.OwnsElements)})` — `quad-base/src/Slot/List.luau`(`{surface}`는 부른 표면 — `Slot:List` 또는 `Slot:Single`)
 
 - **언제**: `:List`/`:Single`의 `opts.OwnsElements`에 불리언이 아닌 값(`"false"`, `0` 등)을 줬을 때. 전에는 `false`와 정확히 같을 때만 비소유였어서 이런 값은 조용히 소유로 처리됐습니다.
 - **고치려면**: `true`나 `false`를 주거나 옵션을 생략하세요(생략하면 소유).

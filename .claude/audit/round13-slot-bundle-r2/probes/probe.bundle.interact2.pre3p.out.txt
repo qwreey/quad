@@ -1,0 +1,7 @@
+######## pre3p
+I5	set	stack overflow	len	1	kids	
+   recover	Quad0161	len	1	kids	
+I7/depth1	add	boom	mat(inner..top)	true,false	| top:Add	ok	inner:Add	Quad0167	kids	after
+I7/depth3	add	boom	mat(inner..top)	true,false,false,false	| top:Add	ok	inner:Add	Quad0167	kids	after
+I8	add	stack overflow	mat	true	false	| outer:Add	ok	kids	after
+I9	pre	ok	drive	Quad0160	mat	false	false	after	ok

@@ -1,0 +1,22 @@
+######## pre3p
+I1/nil	fired	true	set	ok	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	1	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	2	kids	head,leaf,after
+I1/cycle-outer	fired	true	set	Quad0156	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	1	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	2	kids	head,leaf,after
+I1/self	fired	true	set	stack overflow	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	2	kids	head,leaf	outer.mat	false
+   after-add	ok	outerLen	3	kids	head,leaf,after
+I1/otherleaf	fired	true	set	ok	add	ok	| inner.d	nil	sub.d/m	nil	true	leafDead	false	leafParent	host	| outerLen	2	kids	head,other,leaf	outer.mat	false
+   after-add	ok	outerLen	3	kids	head,other,leaf,after
+I2/leaf	set	Quad0156	log	a b	len	1	kids	x
+   S1:Set(y)	ok	len	1	kids	y
+I2/nil	set	ok	log	a b gone	len	0	kids	
+   S1:Set(y)	ok	len	1	kids	y
+I2/slot	set	Quad0156	log	a b	len	1	kids	x
+   S1:Set(y)	ok	len	1	kids	y
+I2c	set	Quad0156	len	2	kids	x2
+I3	set	Quad0172	X.d	nil	len	1	kids	x
+I3	set	Quad0172	X.d	nil	len	1	kids	x
+I4	set	ok	len	1	kids	a
+I5	!! Quad0150
+I6	set	Quad0156	add	ok	len	2	kids	z,leaf
+   recover	ok	len	2	kids	leaf,w

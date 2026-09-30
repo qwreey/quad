@@ -1,0 +1,15 @@
+base anc (6000 seeds) fails=433 rej0167=19264 physBad=27188
+base unm (6000 seeds) fails=0 rej0167=9188 physBad=23152
+base excl (6000 seeds) fails=0 rej0167=0 physBad=23517
+q74 anc (6000 seeds) fails=0 rej0167=23898 physBad=27185
+q74 unm (6000 seeds) fails=0 rej0167=9181 physBad=23225
+q74 excl (6000 seeds) fails=0 rej0167=0 physBad=23412
+q76 anc (6000 seeds) fails=427 rej0167=19267 physBad=27089
+q76 unm (6000 seeds) fails=0 rej0167=9185 physBad=23087
+q76 excl (6000 seeds) fails=0 rej0167=0 physBad=23337
+A anc (6000 seeds) fails=0 rej0167=23903 physBad=27079
+A unm (6000 seeds) fails=0 rej0167=9183 physBad=23023
+A excl (6000 seeds) fails=0 rej0167=0 physBad=23209
+Ap anc (6000 seeds) fails=0 rej0167=23914 physBad=26982
+Ap unm (6000 seeds) fails=0 rej0167=9188 physBad=23232
+Ap excl (6000 seeds) fails=0 rej0167=0 physBad=23324

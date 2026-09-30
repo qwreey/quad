@@ -1,0 +1,30 @@
+######## base
+newItem	threw	true	children	a,b,x	#_elements	3	Length	2	blocking	true
+newItem	 after recover: children	x,z	Length	2
+keyGone	threw	true	children	a,b,boom,x	#_elements	4	Length	2	blocking	true
+keyGone	 after recover: children	x,z	Length	2
+[exit 0]
+######## q74
+newItem	threw	true	children	a,b,x	#_elements	3	Length	2	blocking	true
+newItem	 after recover: children	x,z	Length	2
+keyGone	threw	true	children	a,b,boom,x	#_elements	4	Length	2	blocking	true
+keyGone	 after recover: children	x,z	Length	2
+[exit 0]
+######## q76
+newItem	threw	true	children	x	#_elements	1	Length	2	blocking	true
+newItem	 after recover: children	x,z	Length	2
+keyGone	threw	true	children	a	#_elements	1	Length	2	blocking	true
+keyGone	 after recover: children	x,z	Length	2
+[exit 0]
+######## A
+newItem	threw	true	children	x	#_elements	1	Length	2	blocking	true
+newItem	 after recover: children	x,z	Length	2
+keyGone	threw	true	children	a	#_elements	1	Length	2	blocking	true
+keyGone	 after recover: children	x,z	Length	2
+[exit 0]
+######## Ap
+newItem	threw	true	children	x	#_elements	1	Length	2	blocking	true
+newItem	 after recover: children	x,z	Length	2
+keyGone	threw	true	children	a	#_elements	1	Length	2	blocking	true
+keyGone	 after recover: children	x,z	Length	2
+[exit 0]

@@ -133,6 +133,9 @@ local function createImpl(module: any)
 			end
 		end
 		if module.Backend.canExecute(self) then -- read at fire time (`H-174`)
+			-- Deliberately inline, not `runLoop(self, from, false)` (same result — code-review 2026-09-30
+			-- suggested merging): every nesting level of a self-Setting fn passes through here, and a
+			-- call adds a stack frame per level, lowering the recursion depth before overflow.
 			-- `H-183`: fn may not change its own lifecycle (`H-147` symmetric). An fn
 			-- that throws leaves the flag set — NOT "dead": this gate does not read it, so
 			-- the Observer keeps firing; what the stuck flag blocks is (re)subscribing and

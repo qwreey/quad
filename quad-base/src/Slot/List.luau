@@ -214,6 +214,15 @@ return function(S: Types.SlotInternal, module: any)
 	-- 4순회 `H-385`: the install gates run at the PUBLIC entry — `Single` is tagged
 	-- and delegates to `List`, so a gate raised inside `List` was nearest to
 	-- `Single`'s own delegation line (`Slot/List.luau`), not the user's `:Single(...)`.
+	-- round13 Q134 ④ (user decision 2026-09-30 — cheap entry gate): only `== false` meant "not owned",
+	-- so "false"/0 silently OWNED; the option is a boolean. A helper so `:Single` gates at its own entry
+	-- too (code-review 2026-09-30 — `H-385`: blame the user's call and name the surface they called).
+	local function checkOwnsElements(opts: any, surface: string)
+		if opts ~= nil and opts.OwnsElements ~= nil and type(opts.OwnsElements) ~= "boolean" then
+			S.Err.errorBeforeNearest(`Quad0259 {surface}: opts.OwnsElements must be a boolean (got {typeof(opts.OwnsElements)})`, S.SURFACE)
+		end
+	end
+
 	local function checkListInstall(self: any)
 		S.assertLive(self)
 		S.assertNotMounting(self) -- round10 Q52 (a)
@@ -243,11 +252,7 @@ return function(S: Types.SlotInternal, module: any)
 		if opts ~= nil and type(opts) ~= "table" then
 			S.Err.errorBeforeNearest(`Quad0153 Slot:List: opts must be a table (got {typeof(opts)})`, S.SURFACE)
 		end
-		-- round13 Q134 ④ (user decision 2026-09-30 — cheap entry gate): only `== false` meant "not owned",
-		-- so "false"/0 silently OWNED; the option is a boolean
-		if opts ~= nil and opts.OwnsElements ~= nil and type(opts.OwnsElements) ~= "boolean" then
-			S.Err.errorBeforeNearest(`Quad0259 Slot:List: opts.OwnsElements must be a boolean (got {typeof(opts.OwnsElements)})`, S.SURFACE)
-		end
+		checkOwnsElements(opts, "Slot:List") -- round13 Q134 ④
 		self._listed = true
 		self._listData = data
 		self._updateFn = updateFn
@@ -278,6 +283,7 @@ return function(S: Types.SlotInternal, module: any)
 		if opts ~= nil and type(opts) ~= "table" then -- [2026-09-16 hunt F] same gate at this entry so the blame is this call
 			S.Err.errorBeforeNearest(`Quad0155 Slot:Single: opts must be a table (got {typeof(opts)})`, S.SURFACE)
 		end
+		checkOwnsElements(opts, "Slot:Single") -- round13 Q134 ④ at this entry too (code-review 2026-09-30)
 		if S.isState(state) then
 			-- [2026-09-15 code-review] cross-instance gate at the PUBLIC entry (`H-385` reasoning): inside `List`
 			-- it would name "Slot:List" and blame this file's delegation line, not the user's `:Single(...)`

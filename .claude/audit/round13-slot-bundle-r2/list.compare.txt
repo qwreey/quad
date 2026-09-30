@@ -1,0 +1,90 @@
+== plain base vs A
+junk 0 0 ['']
+seeds 2000 steps 50698
+MISMATCH per field (fin=logical final state; ph=physical order; viol/stale=offset-validator counts): {'stale': 9451} {'stale': (1, 1)}
+plainbase steps physWrong 0
+plainA steps physWrong 0
+op totals {'plainbase': {'I': 319321, 'X': 204643, 'R': 104906, 'M': 843209, 'W': 0, 'D': 34713}, 'plainA': {'I': 319321, 'X': 204643, 'R': 104906, 'M': 409397, 'W': 0, 'D': 34713}}
+steps with stale offsets {'plainbase': 9651, 'plainA': 200}
+del {'dordDiffers': 2532, 'gordDiffers': 4582, 'plainA.D': 7037, 'plainA.I': 0, 'plainA.M': 0, 'plainA.R': 21649, 'plainA.W': 0, 'plainA.X': 41847, 'plainA.desc.y': 5293, 'plainA.dordDiffers': 0, 'plainA.pat.GU': 5280, 'plainA.pat.noG': 3150, 'plainA.pat.onlyG': 13, 'plainA.stale': 0, 'plainA.viol': 0, 'plainbase.D': 7037, 'plainbase.I': 0, 'plainbase.M': 305517, 'plainbase.R': 21649, 'plainbase.W': 0, 'plainbase.X': 41847, 'plainbase.desc.n': 4580, 'plainbase.desc.y': 713, 'plainbase.dordDiffers': 0, 'plainbase.oldAlive>0': 5186, 'plainbase.pat.UG': 5280, 'plainbase.pat.noG': 3150, 'plainbase.pat.onlyG': 13, 'plainbase.stale': 13635, 'plainbase.viol': 0, 'steps': 8443, 'toggleDestroyOrderDiffers': 135}
+== plain base vs q76
+junk 0 0 ['']
+seeds 2000 steps 50698
+MISMATCH per field (fin=logical final state; ph=physical order; viol/stale=offset-validator counts): {'stale': 9451} {'stale': (1, 1)}
+plainbase steps physWrong 0
+plainq76 steps physWrong 0
+op totals {'plainbase': {'I': 319321, 'X': 204643, 'R': 104906, 'M': 843209, 'W': 0, 'D': 34713}, 'plainq76': {'I': 319321, 'X': 204643, 'R': 104906, 'M': 409397, 'W': 0, 'D': 34713}}
+steps with stale offsets {'plainbase': 9651, 'plainq76': 200}
+del {'dordDiffers': 2532, 'gordDiffers': 4582, 'plainbase.D': 7037, 'plainbase.I': 0, 'plainbase.M': 305517, 'plainbase.R': 21649, 'plainbase.W': 0, 'plainbase.X': 41847, 'plainbase.desc.n': 4580, 'plainbase.desc.y': 713, 'plainbase.dordDiffers': 0, 'plainbase.oldAlive>0': 5186, 'plainbase.pat.UG': 5280, 'plainbase.pat.noG': 3150, 'plainbase.pat.onlyG': 13, 'plainbase.stale': 13635, 'plainbase.viol': 0, 'plainq76.D': 7037, 'plainq76.I': 0, 'plainq76.M': 0, 'plainq76.R': 21649, 'plainq76.W': 0, 'plainq76.X': 41847, 'plainq76.desc.y': 5293, 'plainq76.dordDiffers': 0, 'plainq76.pat.GU': 5280, 'plainq76.pat.noG': 3150, 'plainq76.pat.onlyG': 13, 'plainq76.stale': 0, 'plainq76.viol': 0, 'steps': 8443, 'toggleDestroyOrderDiffers': 135}
+== plain q76 vs A
+junk 0 0 ['']
+seeds 2000 steps 50698
+MISMATCH per field (fin=logical final state; ph=physical order; viol/stale=offset-validator counts): {} {}
+plainq76 steps physWrong 0
+plainA steps physWrong 0
+op totals {'plainq76': {'I': 319321, 'X': 204643, 'R': 104906, 'M': 409397, 'W': 0, 'D': 34713}, 'plainA': {'I': 319321, 'X': 204643, 'R': 104906, 'M': 409397, 'W': 0, 'D': 34713}}
+steps with stale offsets {'plainq76': 200, 'plainA': 200}
+del {'plainA.D': 7037, 'plainA.I': 0, 'plainA.M': 0, 'plainA.R': 21649, 'plainA.W': 0, 'plainA.X': 41847, 'plainA.desc.y': 5293, 'plainA.dordDiffers': 0, 'plainA.pat.GU': 5280, 'plainA.pat.noG': 3150, 'plainA.pat.onlyG': 13, 'plainA.stale': 0, 'plainA.viol': 0, 'plainq76.D': 7037, 'plainq76.I': 0, 'plainq76.M': 0, 'plainq76.R': 21649, 'plainq76.W': 0, 'plainq76.X': 41847, 'plainq76.desc.y': 5293, 'plainq76.dordDiffers': 0, 'plainq76.pat.GU': 5280, 'plainq76.pat.noG': 3150, 'plainq76.pat.onlyG': 13, 'plainq76.stale': 0, 'plainq76.viol': 0, 'steps': 8443}
+== plain A vs Ap
+junk 0 0 ['']
+seeds 2000 steps 50698
+MISMATCH per field (fin=logical final state; ph=physical order; viol/stale=offset-validator counts): {} {}
+plainA steps physWrong 0
+plainAp steps physWrong 0
+op totals {'plainA': {'I': 319321, 'X': 204643, 'R': 104906, 'M': 409397, 'W': 0, 'D': 34713}, 'plainAp': {'I': 319321, 'X': 204643, 'R': 104906, 'M': 409397, 'W': 0, 'D': 34713}}
+steps with stale offsets {'plainA': 200, 'plainAp': 200}
+del {'plainA.D': 7037, 'plainA.I': 0, 'plainA.M': 0, 'plainA.R': 21649, 'plainA.W': 0, 'plainA.X': 41847, 'plainA.desc.y': 5293, 'plainA.dordDiffers': 0, 'plainA.pat.GU': 5280, 'plainA.pat.noG': 3150, 'plainA.pat.onlyG': 13, 'plainA.stale': 0, 'plainA.viol': 0, 'plainAp.D': 7037, 'plainAp.I': 0, 'plainAp.M': 0, 'plainAp.R': 21649, 'plainAp.W': 0, 'plainAp.X': 41847, 'plainAp.desc.y': 5293, 'plainAp.dordDiffers': 0, 'plainAp.pat.GU': 5280, 'plainAp.pat.noG': 3150, 'plainAp.pat.onlyG': 13, 'plainAp.stale': 0, 'plainAp.viol': 0, 'steps': 8443}
+== plain base vs q74
+junk 0 0 ['']
+seeds 2000 steps 50698
+MISMATCH per field (fin=logical final state; ph=physical order; viol/stale=offset-validator counts): {} {}
+plainbase steps physWrong 0
+plainq74 steps physWrong 0
+op totals {'plainbase': {'I': 319321, 'X': 204643, 'R': 104906, 'M': 843209, 'W': 0, 'D': 34713}, 'plainq74': {'I': 319321, 'X': 204643, 'R': 104906, 'M': 843209, 'W': 0, 'D': 34713}}
+steps with stale offsets {'plainbase': 9651, 'plainq74': 9651}
+del {'plainbase.D': 7037, 'plainbase.I': 0, 'plainbase.M': 305517, 'plainbase.R': 21649, 'plainbase.W': 0, 'plainbase.X': 41847, 'plainbase.desc.n': 4580, 'plainbase.desc.y': 713, 'plainbase.dordDiffers': 0, 'plainbase.oldAlive>0': 5186, 'plainbase.pat.UG': 5280, 'plainbase.pat.noG': 3150, 'plainbase.pat.onlyG': 13, 'plainbase.stale': 13635, 'plainbase.viol': 0, 'plainq74.D': 7037, 'plainq74.I': 0, 'plainq74.M': 305517, 'plainq74.R': 21649, 'plainq74.W': 0, 'plainq74.X': 41847, 'plainq74.desc.n': 4580, 'plainq74.desc.y': 713, 'plainq74.dordDiffers': 0, 'plainq74.oldAlive>0': 5186, 'plainq74.pat.UG': 5280, 'plainq74.pat.noG': 3150, 'plainq74.pat.onlyG': 13, 'plainq74.stale': 13635, 'plainq74.viol': 0, 'steps': 8443}
+== rowgrow base vs A
+junk 0 0 ['']
+seeds 2000 steps 50698
+MISMATCH per field (fin=logical final state; ph=physical order; viol/stale=offset-validator counts): {'ph': 8481, 'viol': 5757, 'stale': 13492} {'ph': (1, 1), 'viol': (1, 1), 'stale': (1, 1)}
+rowgrowbase steps physWrong 16270
+rowgrowA steps physWrong 21250
+op totals {'rowgrowbase': {'I': 480256, 'X': 204643, 'R': 258060, 'M': 843209, 'W': 0, 'D': 36956}, 'rowgrowA': {'I': 480256, 'X': 204643, 'R': 258060, 'M': 409397, 'W': 0, 'D': 36956}}
+steps with stale offsets {'rowgrowbase': 28753, 'rowgrowA': 26842}
+del {'dordDiffers': 3181, 'gordDiffers': 4582, 'rowgrowA.D': 7453, 'rowgrowA.I': 25552, 'rowgrowA.M': 0, 'rowgrowA.R': 45832, 'rowgrowA.W': 0, 'rowgrowA.X': 41847, 'rowgrowA.desc.y': 5293, 'rowgrowA.dordDiffers': 0, 'rowgrowA.pat.GU': 5280, 'rowgrowA.pat.noG': 3150, 'rowgrowA.pat.onlyG': 13, 'rowgrowA.physWrong': 4390, 'rowgrowA.stale': 29493, 'rowgrowA.viol': 4832, 'rowgrowbase.D': 7453, 'rowgrowbase.I': 25552, 'rowgrowbase.M': 305517, 'rowgrowbase.R': 45832, 'rowgrowbase.W': 0, 'rowgrowbase.X': 41847, 'rowgrowbase.desc.n': 4580, 'rowgrowbase.desc.y': 713, 'rowgrowbase.dordDiffers': 0, 'rowgrowbase.oldAlive>0': 5185, 'rowgrowbase.pat.UG': 5280, 'rowgrowbase.pat.noG': 3150, 'rowgrowbase.pat.onlyG': 13, 'rowgrowbase.physWrong': 764, 'rowgrowbase.stale': 56615, 'rowgrowbase.viol': 9932, 'steps': 8443, 'toggleDestroyOrderDiffers': 144}
+== rowgrow base vs q76
+junk 0 0 ['']
+seeds 2000 steps 50698
+MISMATCH per field (fin=logical final state; ph=physical order; viol/stale=offset-validator counts): {'ph': 8481, 'viol': 5757, 'stale': 13492} {'ph': (1, 1), 'viol': (1, 1), 'stale': (1, 1)}
+rowgrowbase steps physWrong 16270
+rowgrowq76 steps physWrong 21250
+op totals {'rowgrowbase': {'I': 480256, 'X': 204643, 'R': 258060, 'M': 843209, 'W': 0, 'D': 36956}, 'rowgrowq76': {'I': 480256, 'X': 204643, 'R': 258060, 'M': 409397, 'W': 0, 'D': 36956}}
+steps with stale offsets {'rowgrowbase': 28753, 'rowgrowq76': 26842}
+del {'dordDiffers': 3181, 'gordDiffers': 4582, 'rowgrowbase.D': 7453, 'rowgrowbase.I': 25552, 'rowgrowbase.M': 305517, 'rowgrowbase.R': 45832, 'rowgrowbase.W': 0, 'rowgrowbase.X': 41847, 'rowgrowbase.desc.n': 4580, 'rowgrowbase.desc.y': 713, 'rowgrowbase.dordDiffers': 0, 'rowgrowbase.oldAlive>0': 5185, 'rowgrowbase.pat.UG': 5280, 'rowgrowbase.pat.noG': 3150, 'rowgrowbase.pat.onlyG': 13, 'rowgrowbase.physWrong': 764, 'rowgrowbase.stale': 56615, 'rowgrowbase.viol': 9932, 'rowgrowq76.D': 7453, 'rowgrowq76.I': 25552, 'rowgrowq76.M': 0, 'rowgrowq76.R': 45832, 'rowgrowq76.W': 0, 'rowgrowq76.X': 41847, 'rowgrowq76.desc.y': 5293, 'rowgrowq76.dordDiffers': 0, 'rowgrowq76.pat.GU': 5280, 'rowgrowq76.pat.noG': 3150, 'rowgrowq76.pat.onlyG': 13, 'rowgrowq76.physWrong': 4390, 'rowgrowq76.stale': 29493, 'rowgrowq76.viol': 4832, 'steps': 8443, 'toggleDestroyOrderDiffers': 144}
+== rowgrow q76 vs A
+junk 0 0 ['']
+seeds 2000 steps 50698
+MISMATCH per field (fin=logical final state; ph=physical order; viol/stale=offset-validator counts): {} {}
+rowgrowq76 steps physWrong 21250
+rowgrowA steps physWrong 21250
+op totals {'rowgrowq76': {'I': 480256, 'X': 204643, 'R': 258060, 'M': 409397, 'W': 0, 'D': 36956}, 'rowgrowA': {'I': 480256, 'X': 204643, 'R': 258060, 'M': 409397, 'W': 0, 'D': 36956}}
+steps with stale offsets {'rowgrowq76': 26842, 'rowgrowA': 26842}
+del {'rowgrowA.D': 7453, 'rowgrowA.I': 25552, 'rowgrowA.M': 0, 'rowgrowA.R': 45832, 'rowgrowA.W': 0, 'rowgrowA.X': 41847, 'rowgrowA.desc.y': 5293, 'rowgrowA.dordDiffers': 0, 'rowgrowA.pat.GU': 5280, 'rowgrowA.pat.noG': 3150, 'rowgrowA.pat.onlyG': 13, 'rowgrowA.physWrong': 4390, 'rowgrowA.stale': 29493, 'rowgrowA.viol': 4832, 'rowgrowq76.D': 7453, 'rowgrowq76.I': 25552, 'rowgrowq76.M': 0, 'rowgrowq76.R': 45832, 'rowgrowq76.W': 0, 'rowgrowq76.X': 41847, 'rowgrowq76.desc.y': 5293, 'rowgrowq76.dordDiffers': 0, 'rowgrowq76.pat.GU': 5280, 'rowgrowq76.pat.noG': 3150, 'rowgrowq76.pat.onlyG': 13, 'rowgrowq76.physWrong': 4390, 'rowgrowq76.stale': 29493, 'rowgrowq76.viol': 4832, 'steps': 8443}
+== rowgrow A vs Ap
+junk 0 0 ['']
+seeds 2000 steps 50698
+MISMATCH per field (fin=logical final state; ph=physical order; viol/stale=offset-validator counts): {} {}
+rowgrowA steps physWrong 21250
+rowgrowAp steps physWrong 21250
+op totals {'rowgrowA': {'I': 480256, 'X': 204643, 'R': 258060, 'M': 409397, 'W': 0, 'D': 36956}, 'rowgrowAp': {'I': 480256, 'X': 204643, 'R': 258060, 'M': 409397, 'W': 0, 'D': 36956}}
+steps with stale offsets {'rowgrowA': 26842, 'rowgrowAp': 26842}
+del {'rowgrowA.D': 7453, 'rowgrowA.I': 25552, 'rowgrowA.M': 0, 'rowgrowA.R': 45832, 'rowgrowA.W': 0, 'rowgrowA.X': 41847, 'rowgrowA.desc.y': 5293, 'rowgrowA.dordDiffers': 0, 'rowgrowA.pat.GU': 5280, 'rowgrowA.pat.noG': 3150, 'rowgrowA.pat.onlyG': 13, 'rowgrowA.physWrong': 4390, 'rowgrowA.stale': 29493, 'rowgrowA.viol': 4832, 'rowgrowAp.D': 7453, 'rowgrowAp.I': 25552, 'rowgrowAp.M': 0, 'rowgrowAp.R': 45832, 'rowgrowAp.W': 0, 'rowgrowAp.X': 41847, 'rowgrowAp.desc.y': 5293, 'rowgrowAp.dordDiffers': 0, 'rowgrowAp.pat.GU': 5280, 'rowgrowAp.pat.noG': 3150, 'rowgrowAp.pat.onlyG': 13, 'rowgrowAp.physWrong': 4390, 'rowgrowAp.stale': 29493, 'rowgrowAp.viol': 4832, 'steps': 8443}
+== rowgrow base vs q74
+junk 0 0 ['']
+seeds 2000 steps 50698
+MISMATCH per field (fin=logical final state; ph=physical order; viol/stale=offset-validator counts): {} {}
+rowgrowbase steps physWrong 16270
+rowgrowq74 steps physWrong 16270
+op totals {'rowgrowbase': {'I': 480256, 'X': 204643, 'R': 258060, 'M': 843209, 'W': 0, 'D': 36956}, 'rowgrowq74': {'I': 480256, 'X': 204643, 'R': 258060, 'M': 843209, 'W': 0, 'D': 36956}}
+steps with stale offsets {'rowgrowbase': 28753, 'rowgrowq74': 28753}
+del {'rowgrowbase.D': 7453, 'rowgrowbase.I': 25552, 'rowgrowbase.M': 305517, 'rowgrowbase.R': 45832, 'rowgrowbase.W': 0, 'rowgrowbase.X': 41847, 'rowgrowbase.desc.n': 4580, 'rowgrowbase.desc.y': 713, 'rowgrowbase.dordDiffers': 0, 'rowgrowbase.oldAlive>0': 5185, 'rowgrowbase.pat.UG': 5280, 'rowgrowbase.pat.noG': 3150, 'rowgrowbase.pat.onlyG': 13, 'rowgrowbase.physWrong': 764, 'rowgrowbase.stale': 56615, 'rowgrowbase.viol': 9932, 'rowgrowq74.D': 7453, 'rowgrowq74.I': 25552, 'rowgrowq74.M': 305517, 'rowgrowq74.R': 45832, 'rowgrowq74.W': 0, 'rowgrowq74.X': 41847, 'rowgrowq74.desc.n': 4580, 'rowgrowq74.desc.y': 713, 'rowgrowq74.dordDiffers': 0, 'rowgrowq74.oldAlive>0': 5185, 'rowgrowq74.pat.UG': 5280, 'rowgrowq74.pat.noG': 3150, 'rowgrowq74.pat.onlyG': 13, 'rowgrowq74.physWrong': 764, 'rowgrowq74.stale': 56615, 'rowgrowq74.viol': 9932, 'steps': 8443}

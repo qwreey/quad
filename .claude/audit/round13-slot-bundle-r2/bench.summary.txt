@@ -1,0 +1,17 @@
+case (min of 3 runs, ms, -O2)                                           base       q74       q76         A        Ap    A/base  Ap/base | old base  old bundle  old bundle/base
+B1 leaf Add x1000, mounted                                            91.408    94.397    90.975    88.362    88.561    0.97x   0.97x |   88.123      86.748  0.98x
+B2 State(leaf) Add x1000, mounted                                    209.883   214.426   208.980   243.416   243.532    1.16x   1.16x |  207.142     237.125  1.14x
+B3 nil State Add x1000, unmounted                                     48.571    49.355    48.356    64.932    63.456    1.34x   1.31x |   47.330      63.816  1.35x
+B4 :List full replace (1000 -> 1000 new keys), one :Set               90.164    91.887     8.785     8.610     8.589    0.10x   0.10x |   90.217       8.301  0.09x
+B5 :List full reverse (1000), one :Set                                73.283    73.577    73.325    74.071    73.488    1.01x   1.00x |   71.991      71.801  1.00x
+B6 :List half replace (odd keys new), one :Set                        51.645    53.301    19.497    20.096    19.745    0.39x   0.38x |   50.282      19.180  0.38x
+B7 :List end-insert 1 (1000), one :Set                                 1.084     1.141     1.017     0.833     0.968    0.77x   0.89x |    0.740       0.809  1.09x
+B8 :List middle-delete 1 (1000), one :Set                              1.426     1.608     1.095     0.844     0.907    0.59x   0.64x |    1.292       0.863  0.67x
+B9 nested Set: st:Set(fresh Slot{leaf}) x1000, mounted State eleme    13.238    14.074    13.669    15.168    15.172    1.15x   1.15x |   12.377      14.356  1.16x
+B10 nested Set: Slot{State<State<leaf>> x1000}, inner:Set x1000       10.095    10.058    10.453    12.899    12.296    1.28x   1.22x |    9.183      10.705  1.17x
+B11 nested Set: Slot{State<Frame> x1000}, each :Set(new leaf)          9.012     9.430     9.359     9.567    10.045    1.06x   1.11x |    7.474       8.239  1.10x
+B12 Add+Extract of Slot{leaf} x1000 at depth 1, mounted               17.701    18.311    17.833    15.089    15.762    0.85x   0.89x |   13.303      14.491  1.09x
+B12 Add+Extract of Slot{leaf} x1000 at depth 10, mounted              33.035    35.841    33.712    35.206    35.589    1.07x   1.08x |   31.527      33.940  1.08x
+B12 Add+Extract of Slot{leaf} x1000 at depth 100, mounted            203.988   222.819   214.697   230.530   227.744    1.13x   1.12x |  209.755     219.825  1.05x
+B13 chain: 1000 nested unmounted Slots built bottom-up                 1.925     1.992     2.061   102.502   102.211    53.25x   53.10x |    1.685     100.467  59.62x
+B14 chain via States: 1000 levels Slot{State(prev)}                    8.001     8.202     7.470   300.770   301.156    37.59x   37.64x |    8.322     297.331  35.73x

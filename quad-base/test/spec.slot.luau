@@ -1317,6 +1317,12 @@ do
 		end)
 		assert(not okO and string.find(tostring(errO), "Quad0259", 1, true) ~= nil, "non-boolean OwnsElements rejected: " .. tostring(errO))
 		mock.assertBlamesUser(errO, "spec.slot.luau", "Quad0259 blame")
+		-- code-review 2026-09-30: `:Single` gates at its own entry — names Slot:Single, blames this line
+		local okS, errS = pcall(function()
+			Slot():Single(q.Source(1), nil, { OwnsElements = bad })
+		end)
+		assert(not okS and string.find(tostring(errS), "Quad0259 Slot:Single:", 1, true) ~= nil, ":Single names itself: " .. tostring(errS))
+		mock.assertBlamesUser(errS, "spec.slot.luau", "Quad0259 :Single blame")
 	end
 	Slot():List(q.Source({}), function(ctx) return nil end, nil, { OwnsElements = false }) -- booleans pass
 	local s = Slot()

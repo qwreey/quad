@@ -1,0 +1,18 @@
+base  fuzz.e19.plain   ok=5999 | op=ErrCycleViaST ERR-MISSING x1
+A     fuzz.e19.plain   ok=6000
+Ap    fuzz.e19.plain   ok=6000
+base  fuzz.e19.ss      ok=6000
+A     fuzz.e19.ss      ok=6000
+Ap    fuzz.e19.ss      ok=6000
+base  fuzz.q111.plain   ok=5999 | op=ErrCycleViaST ERR-MISSING x1
+A     fuzz.q111.plain   ok=6000
+Ap    fuzz.q111.plain   ok=6000
+base  fuzz.q111.ss      ok=6000
+A     fuzz.q111.ss      ok=6000
+Ap    fuzz.q111.ss      ok=6000
+base  fuzz.q111.q111    ok=5799 | op=ErrStCycle ERR-ID want Quad0173 got Quad0156 x109 | op=ErrStSeat ERR-MISSING x81 | op=ErrStSeat ERR-ID want Quad0172 got Quad0173 x9 | op=ErrCycleViaST ERR-MISSING x2
+A     fuzz.q111.q111    ok=6000
+Ap    fuzz.q111.q111    ok=6000
+base  fuzz.q111.q111ss  ok=5898 | op=ErrStCycle ERR-ID want Quad0173 got Quad0156 x53 | op=ErrStSeat ERR-MISSING x48 | op=ErrStSeat ERR-ID want Quad0172 got Quad0173 x1
+A     fuzz.q111.q111ss  ok=6000
+Ap    fuzz.q111.q111ss  ok=6000

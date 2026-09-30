@@ -1,0 +1,194 @@
+## base e2
+  r1 a2,b2,b2	51
+  r1 a2,b2	90
+  r1 b2,b2	122
+  r1 b2	37
+  r1   write	a2	outer:Get()==b	true
+  r1   write	b2	outer:Get()==b	true
+  r2 a2,b2,b2	58
+  r2 a2,b2	82
+  r2 b2,b2	107
+  r2 b2	53
+  r2   write	b2	outer:Get()==b	true
+  r2   write	b2	outer:Get()==b	true
+  r3 a2,b2,b2	52
+  r3 a2,b2	79
+  r3 b2	55
+  r3 b2,b2	114
+  r3   write	a2	outer:Get()==b	true
+  r3   write	b2	outer:Get()==b	true
+## base e3
+  r1 129	ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value takes one seat, so th | host[] Z.Parent=other
+  r1 171	ok | host[Y] Z.Parent=other
+  r2 145	ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value takes one seat, so th | host[] Z.Parent=other
+  r2 155	ok | host[Y] Z.Parent=other
+  r3 135	ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value takes one seat, so th | host[] Z.Parent=other
+  r3 165	ok | host[Y] Z.Parent=other
+## base e4
+  r1 --- child
+  r1 127	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t [] || back: ok [X] || again: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t []
+  r1 173	ok [Y] || back: ok [X] || again: ok [Y]
+  r1 --- slot
+  r1 139	Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X] len=1 || back: ok [X] || again: Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X]
+  r1 161	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r2 --- child
+  r2 133	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t [] || back: ok [X] || again: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t []
+  r2 167	ok [Y] || back: ok [X] || again: ok [Y]
+  r2 --- slot
+  r2 152	Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X] len=1 || back: ok [X] || again: Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X]
+  r2 148	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r3 --- child
+  r3 143	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t [] || back: ok [X] || again: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t []
+  r3 157	ok [Y] || back: ok [X] || again: ok [Y]
+  r3 --- slot
+  r3 130	Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X] len=1 || back: ok [X] || again: Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X]
+  r3 170	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+## q74 e2
+  r1 a2,b2,b2	54
+  r1 a2,b2	92
+  r1 b2,b2	107
+  r1 b2	47
+  r1   write	a2	outer:Get()==b	true
+  r1   write	b2	outer:Get()==b	true
+  r1   write	b2	outer:Get()==b	true
+  r2 a2,b2,b2	47
+  r2 a2,b2	90
+  r2 b2,b2	119
+  r2 b2	44
+  r2   write	a2	outer:Get()==b	true
+  r2   write	b2	outer:Get()==b	true
+  r3 a2,b2,b2	66
+  r3 a2,b2	77
+  r3 b2,b2	117
+  r3 b2	40
+  r3   write	b2	outer:Get()==b	true
+  r3   write	b2	outer:Get()==b	true
+## q74 e3
+  r1 140	ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value takes one seat, so th | host[] Z.Parent=other
+  r1 160	ok | host[Y] Z.Parent=other
+  r2 135	ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value takes one seat, so th | host[] Z.Parent=other
+  r2 165	ok | host[Y] Z.Parent=other
+  r3 142	ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value takes one seat, so th | host[] Z.Parent=other
+  r3 158	ok | host[Y] Z.Parent=other
+## q74 e4
+  r1 --- child
+  r1 147	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t [] || back: ok [X] || again: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t []
+  r1 153	ok [Y] || back: ok [X] || again: ok [Y]
+  r1 --- slot
+  r1 135	Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X] len=1 || back: ok [X] || again: Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X]
+  r1 165	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r2 --- child
+  r2 136	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t [] || back: ok [X] || again: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t []
+  r2 164	ok [Y] || back: ok [X] || again: ok [Y]
+  r2 --- slot
+  r2 134	Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X] len=1 || back: ok [X] || again: Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X]
+  r2 166	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r3 --- child
+  r3 167	ok [Y] || back: ok [X] || again: ok [Y]
+  r3 133	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t [] || back: ok [X] || again: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t []
+  r3 --- slot
+  r3 125	Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X] len=1 || back: ok [X] || again: Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X]
+  r3 175	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+## q76 e2
+  r1 a2,b2,b2	48
+  r1 a2,b2	85
+  r1 b2	53
+  r1 b2,b2	114
+  r1   write	b2	outer:Get()==b	true
+  r1   write	b2	outer:Get()==b	true
+  r2 a2,b2,b2	58
+  r2 a2,b2	79
+  r2 b2,b2	118
+  r2 b2	45
+  r2   write	b2	outer:Get()==b	true
+  r2   write	b2	outer:Get()==b	true
+  r3 a2,b2,b2	60
+  r3 a2,b2	67
+  r3 b2	57
+  r3 b2,b2	116
+  r3   write	b2	outer:Get()==b	true
+## q76 e3
+  r1 126	ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value takes one seat, so th | host[] Z.Parent=other
+  r1 174	ok | host[Y] Z.Parent=other
+  r2 133	ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value takes one seat, so th | host[] Z.Parent=other
+  r2 167	ok | host[Y] Z.Parent=other
+  r3 138	ERR Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value takes one seat, so th | host[] Z.Parent=other
+  r3 162	ok | host[Y] Z.Parent=other
+## q76 e4
+  r1 --- child
+  r1 129	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t [] || back: ok [X] || again: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t []
+  r1 171	ok [Y] || back: ok [X] || again: ok [Y]
+  r1 --- slot
+  r1 144	Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X] len=1 || back: ok [X] || again: Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X]
+  r1 156	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r2 --- child
+  r2 168	ok [Y] || back: ok [X] || again: ok [Y]
+  r2 132	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t [] || back: ok [X] || again: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t []
+  r2 --- slot
+  r2 141	Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X] len=1 || back: ok [X] || again: Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X]
+  r2 159	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r3 --- child
+  r3 164	ok [Y] || back: ok [X] || again: ok [Y]
+  r3 136	Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t [] || back: ok [X] || again: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value t []
+  r3 --- slot
+  r3 124	Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X] len=1 || back: ok [X] || again: Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its o [X]
+  r3 176	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+## A e2
+  r1 b2,b2	173
+  r1 b2	127
+  r1   write	b2	outer:Get()==b	true
+  r1   write	b2	outer:Get()==b	true
+  r2 b2,b2	188
+  r2 b2	112
+  r2   write	b2	outer:Get()==b	true
+  r3 b2,b2	164
+  r3 b2	136
+  r3   write	b2	outer:Get()==b	true
+  r3   write	b2	outer:Get()==b	true
+## A e3
+  r1 300	ok | host[Y] Z.Parent=other
+  r2 300	ok | host[Y] Z.Parent=other
+  r3 300	ok | host[Y] Z.Parent=other
+## A e4
+  r1 --- child
+  r1 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r1 --- slot
+  r1 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r2 --- child
+  r2 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r2 --- slot
+  r2 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r3 --- child
+  r3 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r3 --- slot
+  r3 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+## Ap e2
+  r1 b2	134
+  r1 b2,b2	166
+  r1   write	b2	outer:Get()==b	true
+  r1   write	b2	outer:Get()==b	true
+  r2 b2	129
+  r2 b2,b2	171
+  r2   write	b2	outer:Get()==b	true
+  r2   write	b2	outer:Get()==b	true
+  r3 b2,b2	170
+  r3 b2	130
+  r3   write	b2	outer:Get()==b	true
+  r3   write	b2	outer:Get()==b	true
+## Ap e3
+  r1 300	ok | host[Y] Z.Parent=other
+  r2 300	ok | host[Y] Z.Parent=other
+  r3 300	ok | host[Y] Z.Parent=other
+## Ap e4
+  r1 --- child
+  r1 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r1 --- slot
+  r1 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r2 --- child
+  r2 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r2 --- slot
+  r2 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
+  r3 --- child
+  r3 300	ok [Y] || back: ok [X] || again: ok [Y]
+  r3 --- slot
+  r3 300	ok [Y] len=1 || back: ok [X] || again: ok [Y]
