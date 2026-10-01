@@ -702,8 +702,8 @@ export type Quad = {
 	Bookkeeping: Bookkeeping,
 	Backend: Backend,
 	-- [2026-09-28 round13 Q106 — 사용자 결정] 브랜드 술어 등록 집합(`Brand()` 인스턴스 하나, 모듈 인스턴스마다).
-	-- 프로바이더가 설치 때 자기 `is<Brand>` 술어를 `:Register`한다; Dispatch의 진단 스캔은 모듈의 `is*` 필드 중
-	-- 여기 등록된 것만 브랜드 술어로 본다. quad-types 전역이 아니라 모듈 인스턴스에 두는 것은 quad-types 사본이
+	-- 프로바이더가 설치 때 자기 `is<Brand>` 술어를 `:Register`한다([2026-10-01] base 술어도 `New()`가 같은 집합에 등록);
+	-- Dispatch의 진단 스캔은 모듈의 `is*` 필드 중 여기 등록된 것만 브랜드 술어로 보고, 걸린 이름을 전부 보고한다. quad-types 전역이 아니라 모듈 인스턴스에 두는 것은 quad-types 사본이
 	-- 여럿일 수 있어서다(사용자: 런타임 모듈 하나가 원천).
 	BrandPredicates: Brand,
 

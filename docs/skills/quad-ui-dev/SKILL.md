@@ -523,16 +523,11 @@ without it `--!strict` fails with `Type functions do not currently support types
 fresh Observer has `Subscribed == false`. A change made *during* that first fire is held too:
 the callback does not re-run inside the first fire; it runs once more (with `emitFrom = nil`)
 when the handle is bound or subscribed. An Observer is a **final consumer**: setting OTHER
-targets from its callback is normal, but feeding its own upstream (re-`:Set` what it observes or
-that target's source, directly or through other handles) is **undefined behavior** — like `:Set`
-inside `:Compute`; how many times, in what order and with which values the handles sharing that
-upstream re-run is not defined (today a live callback that writes its own target recurses in place —
-an observation, not a contract). A write that must correct its own input belongs in an `Effect`
-(its deferred re-run is the defined path). The engine round trip through `q.Out`/`OnChange` is not
-this case (the engine stays silent on a same-value write and `q.Out` drops equal values), and
-neither is a callback watching a Slot's `Offset`/`Length` that CRUDs a Slot so that value moves again —
-that loop goes through the Slot's own position math, which re-runs until it settles (defined). With
-`q.debug` on, a change reaching an Observer while its own callback runs prints one line per handle.
+targets from its callback is normal, but feeding its own upstream is **undefined behavior** (like `:Set`
+inside `:Compute`), except two defined loops — the `q.Out`/`OnChange` engine round trip and a Slot
+`Offset`/`Length` callback that CRUDs a Slot. The full rule is `reference/core/05` ("Observer는 최종 소비자").
+A write that must correct its own input belongs in an `Effect`; trimming a text input is how-to 02 §6.
+With `q.debug` on, a change reaching an Observer while its own callback runs prints one line per handle.
 To build a value from others, derive it with `:Compute` (`...deps` + `:Get()`). Bind it by putting the handle in an array part
 (it then lives and dies with that instance), or call `:Subscribe()` (strong keep) /
 `:WeakSubscribe()` (the registry does not keep the handle alive — a dropped reference is

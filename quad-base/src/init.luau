@@ -61,6 +61,14 @@ local providerRelate = Relate()
 local pluginRelate = Relate()
 
 local function New(): Quad
+	-- [2026-10-01 user decision] base brand predicates take the provider path: every `is*` field below is
+	-- registered in this instance's `BrandPredicates` right where it is set — a public `is*` predicate IS a
+	-- registered brand predicate, and Dispatch's diagnostics scan (`brandNameOf`) needs no base list.
+	local brandPredicates = QuadTypes.Brand()
+	local function brandPredicate(predicate: (any) -> boolean): (any) -> boolean
+		brandPredicates:Register(predicate)
+		return predicate
+	end
 	local module = {
 		New = New,
 		Version = "3.2.0",
@@ -74,8 +82,8 @@ local function New(): Quad
 		-- [2026-09-28 round13 Q106 — 사용자 결정] 브랜드 술어 등록 집합 — 프로바이더가 설치 때 자기 `is<Brand>`
 		-- 술어를 등록하고 Dispatch의 진단 스캔(`brandNameOf`)은 등록된 `is*` 필드만 본다. 모듈 인스턴스가 원천
 		-- (quad-types 전역이면 사본마다 집합이 갈린다 — 사용자: "런타임 모듈 하나가 원천이다로 보면 깔끔하게 떨어져").
-		-- base 브랜드는 `BRAND_PROBES` 이름 목록으로 닿으므로 등록하지 않는다.
-		BrandPredicates = QuadTypes.Brand(),
+		-- [2026-10-01] base 브랜드도 같은 경로 — 아래 `is*` 필드가 달리는 자리에서 `brandPredicate`로 등록된다.
+		BrandPredicates = brandPredicates,
 
 		-- M2 공통 기반 — 의존 없는 잎 모듈 재export(`ROADMAP.md` M2 `H-80`)
 		Relate = Relate,
@@ -88,24 +96,24 @@ local function New(): Quad
 		PreRef = PreRef, -- M8 단위 ① — 런타임은 Ref, 브랜드·_fired만 다름
 		PostRef = PostRef,
 		Blocker = Blocker, -- 단위 4 — 게이트 정책 잎 모듈(인스턴스 간 공유)
-		isEpoch = Brand.isEpoch,
-		isSource = Brand.isSource,
-		isState = Brand.isState,
-		isStore = Brand.isStore,
-		isObserver = Brand.isObserver,
-		isEffect = Brand.isEffect,
-		isBlocker = Brand.isBlocker,
-		isContext = Brand.isContext,
-		isProvider = Brand.isProvider,
-		isModifier = Brand.isModifier,
-		isRef = Brand.isRef,
-		isPreRef = Brand.isPreRef,
-		isPostRef = Brand.isPostRef,
-		isMapperDescriptor = Brand.isMapperDescriptor, -- M5 단위 ④(Claim)
-		isSlot = Brand.isSlot, -- `H-403` (was installed by Slot.Init — still is, same function)
-		isTag = Brand.isTag, -- M10 (round16)
-		isAttr = Brand.isAttr,
-		isAttrKey = Brand.isAttrKey,
+		isEpoch = brandPredicate(Brand.isEpoch),
+		isSource = brandPredicate(Brand.isSource),
+		isState = brandPredicate(Brand.isState),
+		isStore = brandPredicate(Brand.isStore),
+		isObserver = brandPredicate(Brand.isObserver),
+		isEffect = brandPredicate(Brand.isEffect),
+		isBlocker = brandPredicate(Brand.isBlocker),
+		isContext = brandPredicate(Brand.isContext),
+		isProvider = brandPredicate(Brand.isProvider),
+		isModifier = brandPredicate(Brand.isModifier),
+		isRef = brandPredicate(Brand.isRef),
+		isPreRef = brandPredicate(Brand.isPreRef),
+		isPostRef = brandPredicate(Brand.isPostRef),
+		isMapperDescriptor = brandPredicate(Brand.isMapperDescriptor), -- M5 단위 ④(Claim)
+		isSlot = brandPredicate(Brand.isSlot), -- `H-403` (was installed by Slot.Init — still is, same function)
+		isTag = brandPredicate(Brand.isTag), -- M10 (round16)
+		isAttr = brandPredicate(Brand.isAttr),
+		isAttrKey = brandPredicate(Brand.isAttrKey),
 		-- M10 값 네임스페이스 — 리터럴 모양이 곧 `Quad` 타입이라 여기 직접
 		-- 싣는다(핸들러·스텁 설치는 아래 RunInit들이 함).
 		-- [H10-3/H10-4 (d), 2026-09-02 사용자 확정] 콜러블 테이블은

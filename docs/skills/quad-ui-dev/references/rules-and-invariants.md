@@ -114,11 +114,9 @@ D.TextBox {
 - A change that happens *during* an Observer's registration fire is held like any other (the handle
   has already joined its target's subscribers, so it is not lost): the callback does not re-run there,
   it runs once (with `emitFrom = nil`) on bind/subscribe. Only the callback itself can cause such a
-  change, and an Observer feeding its own upstream is undefined behavior — it is a final consumer; set
-  other targets, or move a self-correcting write into an `Effect`. `Effect`'s first run is different
-  and defined: an `fn`-internal `Rerun()` or dep `:Set` re-runs it after `fn` returns, before any binding.
-  The `q.Out`/`OnChange` engine round trip is normal, not feedback; so is a callback on a Slot's
-  `Offset`/`Length` that CRUDs a Slot (the Slot's position math re-runs until it settles).
+  change, and an Observer feeding its own upstream is undefined behavior — it is a final consumer (rule
+  and its two defined exceptions: SKILL.md "final consumer" / `reference/core/05`). `Effect`'s first run is
+  different and defined: an `fn`-internal `Rerun()` or dep `:Set` re-runs it after `fn` returns, before any binding.
 - `slot:List(data, updateFn, keyFn?, opts?)` → `updateFn(ctx) -> (result, userdata)`, `ctx = { Item, Index, Offset, Prev, UserData }`
   (a fresh table per call — closures may capture `ctx`; `Index` is `0` on a `KeyGone` call).
 - `slot:Single(state, updateFn?, opts?)` → the same `updateFn(ctx)` shape, `Index` included (one `updateFn` can serve both).

@@ -30,7 +30,7 @@ hold → after / before → release) 그대로, 훅 안 같은 값 재bind는 `c
 | (E) | `isBoundAlive`(= `canExecute`, 매 통지 — 핫 패스) | `isObserver or isEffect`면 `value.Subscribed == true`(`H-111` 공용 플래그) |
 | (F) | `bindLifetime` 거부 메시지 | `Quad0104` 대 `0232`/`0233` 고를 때 같은 `.Subscribed` 지식 |
 
-이력: 이 지식이 base에 있는 것은 Q59(2026-09-18, 백엔드 사본 통합 — *"base 가 아는 경계랑 각 백엔드가 아는 경계가 섞여있다는 점이 문제"*)의 부수 결과이고, "Observer/Effect 모듈 밖에 둔다"를 택한 기록은 없다. 제안은 `H-278`(*각 객체를 아는 곳은 각 객체가 선언된 곳*, `architecture.md`)·`H-229`(모르는 타입은 훅 없음, `lifecycle-pattern.md` (0.5))의 연장이고 Q106 `q.BrandPredicates`가 선례. bindLifetime 밖에서 O/E를 아는 자리(`Slot/Elements.luau` 요소 허용 목록, `Dispatch/Modifier` 목록, `BRAND_PROBES`, `init.luau` 재노출)는 성격이 달라 범위 밖.
+이력: 이 지식이 base에 있는 것은 Q59(2026-09-18, 백엔드 사본 통합 — *"base 가 아는 경계랑 각 백엔드가 아는 경계가 섞여있다는 점이 문제"*)의 부수 결과이고, "Observer/Effect 모듈 밖에 둔다"를 택한 기록은 없다. 제안은 `H-278`(*각 객체를 아는 곳은 각 객체가 선언된 곳*, `architecture.md`)·`H-229`(모르는 타입은 훅 없음, `lifecycle-pattern.md` (0.5))의 연장이고 Q106 `q.BrandPredicates`가 선례. bindLifetime 밖에서 O/E를 아는 자리(`Slot/Elements.luau` 요소 허용 목록, `Dispatch/Modifier` 목록, `BRAND_PROBES` — **[2026-10-01]** 삭제됨, base 술어도 `q.BrandPredicates` 등록으로, `init.luau` 재노출)는 성격이 달라 범위 밖.
 
 ## 3. 두 검토의 수렴과 갈림
 

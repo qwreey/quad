@@ -507,6 +507,7 @@ local function Init(module: any)
 	module.KeyGone = KeyGone
 	module.dispose = dispose
 	module.isSlot = isSlot
+	module.BrandPredicates:Register(isSlot) -- [2026-10-01] a public `is*` field is a registered brand predicate (same function as init.luau's — idempotent)
 	-- internal surface the SlotHandler needs
 	module._slotInternal = {
 		claimOwnerAt = S.claimOwnerAt,

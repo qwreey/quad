@@ -201,8 +201,11 @@ base가 소유하되 **최하위 밴드**에 등록됩니다.
    **[2026-10-01 기준] 다음 릴리즈부터는 `q.debug`가 켜져 있을 때만** 이 전체 조회를 돌고(평소엔 메타테이블 유무와
    quad-base의 메타테이블 없는 브랜드만 봅니다), 실패한 뒤 이름을 붙일 때는 여전히 씁니다. 모듈의 `is<Brand>` 필드 중 모듈의 `BrandPredicates`에 등록된 것만
    훑으므로, 프로바이더는 `isTween` 같은 술어를 모듈에 얹고 그 집합에 등록합니다(등록되지 않은 `is*` 헬퍼는 무시).
-   `MapperDescriptor`처럼 quad-base 자신의 브랜드는 이 힌트를 받지 않습니다(프로바이더가
-   빠진 게 아니라 그 값 자체가 그 자리에 안 맞는 것이므로) — 같은 숫자 키에 그 값이
+   quad-base 자신의 `q.isX` 술어도 모듈이 만들어질 때 같은 집합에 등록되니, 디스패치는
+   코어 브랜드를 이름으로 따로 알지 않고, 값이 답하는 브랜드를 전부 이름순으로 싣습니다(`Epoch, PreRef, Ref`).
+   등록된 술어에 하나라도 걸린 값(`MapperDescriptor` 같은 quad-base 브랜드, 설치된 프로바이더의
+   `Tween`)은 이 힌트를 받지 않습니다 — 등록됐다는 것이 곧 그 브랜드의 주인이 설치됐다는 뜻이라,
+   프로바이더가 빠진 게 아니라 그 값 자체가 그 자리에 안 맞는 것입니다. 같은 숫자 키에 그런 값이
    오면 대신 `… - this quad value has no handler at an array position`가 붙습니다.
 2. **매치는 됐는데 엔진 op이 없으면** 그 op 자리에 심어진 안내 스텁이 던집니다:
    `Quad0108 quad: addTag is not available - no backend has installed the tag ops (install a

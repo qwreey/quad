@@ -115,7 +115,7 @@ do
 	assert(not ok2, "branded value with no handler -> error")
 	assert(string.find(tostring(err2), "brand: Blocker", 1, true) ~= nil, `message names the brand: {tostring(err2)}`)
 	-- Q27 (2026-09-08): a PROVIDER brand is found by contract — the module-level `is<Brand>`
-	-- field (no Dispatch op); it is tried before the base list. round13 Q106 (2026-09-28): the
+	-- field (no Dispatch op). round13 Q106 (2026-09-28): the
 	-- predicate must also be registered in the module's `BrandPredicates` (unregistered `is*` fields
 	-- are ignored — a raising helper below is never even called)
 	local spring = setmetatable({}, {})
@@ -131,6 +131,64 @@ do
 		q.Dispatch.process(inst, "Size", spring, 1)
 	end)
 	assert(not ok3 and string.find(tostring(err3), "brand: Spring", 1, true) ~= nil, `provider brand named by contract: {tostring(err3)}`)
+	-- [2026-10-01 user decision] base predicates take the same registered path (no base list in Dispatch):
+	-- every public `is*` field of a fresh module is a registered brand predicate — a base `is*` added
+	-- without its `brandPredicate(...)` registration fails here, not silently in a diagnostic
+	local qFresh: any = newQuad()
+	local baseIs = 0
+	for name, predicate in qFresh do
+		if type(name) == "string" and string.sub(name, 1, 2) == "is" then
+			assert(qFresh.BrandPredicates:Is(predicate), `base {name} is registered in BrandPredicates`)
+			baseIs += 1
+		end
+	end
+	assert(baseIs == 18, `the eighteen base brand predicates (got {baseIs})`)
+	-- every hit is named, sorted by name: a value answering a base AND a provider predicate names both
+	local function isZeta(v: any): boolean
+		return v == blocker
+	end
+	q.BrandPredicates:Register(isZeta)
+	q.isZeta = isZeta
+	q.isAnything = function(_v: any): boolean -- an UNREGISTERED helper that says yes to everything: ignored
+		return true
+	end
+	local function isFaulty(_v: any): boolean -- a REGISTERED predicate that raises: pcall'd, counts as a miss
+		error("buggy brand predicate")
+	end
+	q.BrandPredicates:Register(isFaulty)
+	q.isFaulty = isFaulty
+	local ok4, err4 = pcall(function()
+		q.Dispatch.process(inst, 2, blocker, 1)
+	end)
+	assert(not ok4 and string.find(tostring(err4), "(value: table, brand: Blocker, Zeta)", 1, true) ~= nil, `all hits, sorted, unregistered helper ignored: {tostring(err4)}`)
+	assert(string.find(tostring(err4), "Anything", 1, true) == nil, `unregistered is* never named: {tostring(err4)}`)
+	-- Ref subtypes answer their union predicates too — the whole set, not the most specific one
+	local okR, errR = pcall(function()
+		q.Dispatch.drive(Instance.new("Frame"), q.PreRef())
+	end)
+	assert(not okR and string.find(tostring(errR), "(got Epoch, PreRef, Ref)", 1, true) ~= nil, `PreRef names every brand it carries: {tostring(errR)}`)
+	-- the hint follows the registration: a hit on a registered PROVIDER predicate means its owner is
+	-- installed, so the value gets the quad-value hints, never "provider not initialized"
+	local okP1, errP1 = pcall(function()
+		q.Dispatch.process(inst, "Size", spring, 1)
+	end)
+	assert(not okP1 and string.find(tostring(errP1), "belongs in a numeric (array) slot", 1, true) ~= nil
+		and string.find(tostring(errP1), "provider", 1, true) == nil, `provider brand at a string key: quad-value hint: {tostring(errP1)}`)
+	local okP2, errP2 = pcall(function()
+		q.Dispatch.process(inst, 3, spring, 1)
+	end)
+	assert(not okP2 and string.find(tostring(errP2), "no handler at an array position", 1, true) ~= nil
+		and string.find(tostring(errP2), "provider", 1, true) == nil, `provider brand at a numeric key: quad-value hint: {tostring(errP2)}`)
+	-- no registered brand at all: the typo / provider-not-installed hints (string key / numeric key)
+	local okN1, errN1 = pcall(function()
+		q.Dispatch.process(inst, "Size", setmetatable({}, {}), 1)
+	end)
+	assert(not okN1 and string.find(tostring(errN1), "(value: table)", 1, true) ~= nil
+		and string.find(tostring(errN1), "a typo, a read-only field", 1, true) ~= nil, `unbranded at a string key: typo/provider hint: {tostring(errN1)}`)
+	local okN2, errN2 = pcall(function()
+		q.Dispatch.process(inst, 4, setmetatable({}, {}), 1)
+	end)
+	assert(not okN2 and string.find(tostring(errN2), "check that the provider for this value", 1, true) ~= nil, `unbranded at a numeric key: provider hint: {tostring(errN2)}`)
 	print("PASS")
 end
 

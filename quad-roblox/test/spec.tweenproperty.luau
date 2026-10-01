@@ -489,6 +489,14 @@ do
 		q.Dispatch.drive(q.Declaration.Frame({}), Tween({ Value = 1 }) :: any)
 	end)
 	assert(not okT and string.find(tostring(errT), "Quad0083", 1, true) ~= nil and string.find(tostring(errT), "got Tween", 1, true) ~= nil, "braces-forgotten Tween is refused and named: " .. tostring(errT))
+	-- [2026-10-01 user decision] a registered brand means its owner is installed: a Tween with no handler
+	-- gets the quad-value hint, not "the provider (e.g. quad-roblox) is not initialized" — quad-roblox IS
+	local okA, errA = pcall(function()
+		q.Dispatch.process(q.Declaration.Frame({}), 1, Tween({ Value = 1 }), 1)
+	end)
+	assert(not okA and string.find(tostring(errA), "brand: Tween)", 1, true) ~= nil
+		and string.find(tostring(errA), "no handler at an array position", 1, true) ~= nil
+		and string.find(tostring(errA), "provider", 1, true) == nil, "Tween at an array position: quad-value hint: " .. tostring(errA))
 	print("PASS")
 end
 

@@ -42,6 +42,8 @@ local Brand = QuadTypes.Brand
 -- so that the set of base brands has one source; their `is*` predicates are
 -- added with the type. Backend value types brand themselves in their own
 -- package (`Tween` → quad-roblox `Brand.luau`, 2026-09-07).
+-- Diagnostics name a value by the predicates REGISTERED in the module instance's `BrandPredicates`
+-- (`init.luau` registers the public base `is*` fields — 2026-10-01), not by this list.
 local ObserverBrand = Brand()
 local EffectBrand = Brand()
 local TagBrand = Brand()

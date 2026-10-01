@@ -50,14 +50,14 @@ Store인가/Tag인가" 판별, 또는 PropertyHandler의 `process` 내부에서
 **[2026-09-08 사용자 결정 — 프로바이더 브랜드의 계약(round3 §4 Q27)]** 프로바이더·플러그인은 자기
 브랜드 술어를 **모듈 최상위 `is<Brand>` 필드**로 설치한다(`quad.isTween`, 장래 `quad.isSpring`). 그
 필드가 곧 등록이다 **[2026-09-28 Q106 정정 — 필드는 계약 그대로이되 "무엇이 브랜드 술어인가"의 표시는 아래 배너의 `BrandPredicates` 등록이 한다]** — quad-base의 무매치 진단(`Dispatch/init.luau` `brandNameOf`)은 모듈에서 `is*`
-함수 필드를 스캔해 base 목록보다 먼저 시도하고, 이름의 `is` 뒤를 브랜드 이름으로 쓴다. 별도 등록
+함수 필드를 스캔해 ~~base 목록보다 먼저 시도하고~~(**[2026-10-01]** base 목록은 없어졌다 — 아래 2026-10-01 배너), 이름의 `is` 뒤를 브랜드 이름으로 쓴다. 별도 등록
 op(`Dispatch.addBrandProbe` 류 — **Dispatch** 쪽 op)는 두지 않는다(사용자: *"저런 헬퍼를 만들 이유는 못 느끼는중 …
 Dispatch 에 오는게 맞는지 모르겠음"*). 하위 모듈이 base를 require하지 못하고 런타임 주입으로 받는
 구조라 `module.isX` 조회가 유일한 길이라는 점도 사용자 진단.
 **[2026-09-28 round13 Q106 — 사용자 제안·결정, 이름 `BrandPredicates`]** 필드 계약은 그대로 두고 **무엇이 브랜드
 술어인가**를 표시로 정한다 — **모듈 인스턴스**가 등록 집합 `q.BrandPredicates = Brand()`를 갖고(`New()`마다),
 프로바이더가 설치 때 자기 술어를 `quad.BrandPredicates:Register(isX)`한다(quad-roblox `RobloxFactory.luau`의 `isTween`).
-base 브랜드는 `BRAND_PROBES` 이름 목록으로 닿으므로 등록하지 않는다. `brandNameOf`는
+~~base 브랜드는 `BRAND_PROBES` 이름 목록으로 닿으므로 등록하지 않는다~~(**[2026-10-01 역전]** base 술어도 등록하고 그 목록은 지웠다 — 아래 배너). `brandNameOf`는
 `is*` 필드 중 `BrandPredicates:Is(fn)`인 것만 스캔한다 — 옛 `{}`/`0` 시험 호출(`H-563`)은 삭제됐고, 그것이
 못 거르던 `isNonEmptyList`·필드를 보는 헬퍼(`H-698`)도 이제 무시된다. Q27이 기각한 것(Dispatch 등록 op —
 "필드가 계약", "하위 모듈은 런타임 주입")과 부딪히지 않는다: 필드는 계약 그대로이고 표시는 모든 패키지가
@@ -67,6 +67,19 @@ quad-types 전역(`QuadTypes.BrandPredicates`)에 두고 base 열여덟도 등�
 에러 네임스페이스를 모듈로 건넨 `H-231`과 같은 결), base 등록은 Dispatch가 읽지 않는 넷째 목록이었다 → 모듈 인스턴스로
 옮기고 base 등록을 뺐다. 이름은 sonnet 외부자·내부자 명명 판정 뒤 사용자 결정 — `<X>Brand`
 ("X 값의 집합") 꼴의 `PredicateBrand`는 "Predicate라는 값의 브랜드"로 읽혀 모호했다.
+**[2026-10-01 사용자 결정 — base 술어도 같은 경로, 손 목록 `BRAND_PROBES` 삭제]** quad-base가 `q.isX` 필드를 모듈에
+다는 바로 그 자리(`init.luau` 모듈 리터럴의 `brandPredicate(...)`, `Slot/init.luau`의 `module.isSlot`)에서 같은
+`module.BrandPredicates`에 `:Register`한다 — **공개된 `is*` 술어 = 등록된 브랜드 술어**(열여덟, `spec.dispatch` 2절이
+"새 `q`의 `is*` 필드는 전부 등록돼 있다"로 지킨다). Dispatch는 base 브랜드를 이름으로 알지 않는다(`H-278` — 같은 날
+`None`/`StoreBind`를 Dispatch 밖으로 옮긴 것과 같은 방향): `brandNameOf`는 등록된 `is*` 필드를 전부 `pcall`로 묻고
+**걸린 이름을 전부 이름순으로** 모은다(`Epoch, PreRef, Ref` — 옛 most-specific-first 순서 `H-220`은 첫 하나만 고르던
+때의 규칙이라 필요 없어졌다). 무매치 힌트도 등록이 가른다 — 하나라도 걸리면 그 브랜드의 주인이 설치됐다는 뜻이라
+quad 값 힌트(`Store`/`Context`/`Provider` 전용 힌트는 이름이 목록에 있으면), 아무것도 안 걸리면 오타·프로바이더 미설치
+힌트; 그래서 Tween 같은 프로바이더 브랜드에 붙던 "provider not initialized" 힌트도 바로잡혔다. 사용자: *"어차피 에러
+보여주기 경로라면 isRef 와 isPreRef 는 상관이 없는것 같음. 그냥 T 인데 A, B, C 를 impl하는 요소라고 알려주는게 문제가
+없는것 같음 … 프로바이더가 등록되었다는 말은 … 존재하는 impl 경로를 해결(리졸브) 하는게 있다면 닫아져. 따라서 에러가 더
+정보성 있으려면 전부 보여주는게 문제는 없는것 같아."* 위 2026-09-28 code-review 뒤 결정이 base 등록을 뺀 이유("Dispatch가
+읽지 않는 넷째 목록")는 Dispatch가 이제 그 등록만 읽으므로 사라졌다 — 목록이 넷에서 하나 줄었다.
 
 **`Brand()`가 브랜드 객체 하나를 만든다.** 그 객체가 weak-key 집합 하나를
 들고, 값은 **자기가 속한 브랜드에 스스로 등록**한다.

@@ -63,47 +63,18 @@ local HANDLER_PRIORITY_LOW = QuadTypes.HANDLER_PRIORITY_LOW
 local HANDLER_PRIORITY_FALLBACK = QuadTypes.HANDLER_PRIORITY_FALLBACK
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
--- Probed to name a value's brand in the match-failure message, and by the `H-470`
--- props gate in `drive` — its full scan only with `q.debug` on (2026-10-01; it was ~12% of
--- drive on every call — round11 L′ 7) — there is deliberately no reverse lookup on Brand
--- (`archive/brand-shared-registry-reversed.md`), so we ask the module's own
--- public predicates. Base predicates here, in order; provider brands are found
--- by CONTRACT (round3 §4 Q27, user decision 2026-09-08): a provider installs its
--- brand predicate as a top-level module field named `is<Brand>` (`isTween`,
--- a future `isSpring`) — no op on Dispatch (user: *"각 프로바이더/플러그인 상 그냥
--- 필드로 넣는게 맞는 계약같아서"*). [2026-09-28 round13 Q106] and the predicate is
--- registered in the module's `BrandPredicates` set — only registered `is*` fields count.
--- `brandNameOf` scans the module for such fields and tries them BEFORE this
--- list (a provider value may also carry a base brand, never the reverse).
--- Order is most-specific-first (`H-220`): `isRef` is a superset of
--- `isPreRef`/`isPostRef` (`brand-plan.md` predicate composition) and
--- `isState` of `isSource`, so subtypes must come before their union
--- predicates or they are unreachable; `isEpoch` last (most generic).
--- ⚠️ This is a hand-copied predicate list (alongside Brand.luau/init.luau/
--- quad-types) — when a milestone adds `isTag`/`isTween`/`isSlot` etc. to the
--- module surface, extend this list too or the new brand silently falls back
--- to typeof (the `type(predicate) == "function"` guard hides omissions).
-local BRAND_PROBES = {
-	"isMapperDescriptor", -- M5 Claim (핸드오버 리뷰 `H-346` — 체크리스트 0-b의 마지막 누락)
-	-- (`isTween` left this list 2026-09-08 — quad-roblox's brand, found by the contract above)
-	"isTag", -- M10 (2차 리뷰 `H-342` — 같은 결함 클래스 넷)
-	"isAttrKey", -- most-specific-first: 키 객체가 그룹보다 먼저
-	"isAttr",
-	"isSlot",
-	"isPreRef",
-	"isPostRef",
-	"isRef",
-	"isSource",
-	"isStore",
-	"isState",
-	"isObserver",
-	"isEffect",
-	"isBlocker",
-	"isContext", -- `H-613`: base leaves, not providers — must not get the "provider not initialized" hint
-	"isProvider",
-	"isModifier",
-	"isEpoch",
-}
+-- Brand names for the match-failure message and the `H-470` props gate in `drive` (its full scan only
+-- with `q.debug` on — 2026-10-01; it was ~12% of drive on every call, round11 L′ 7). There is
+-- deliberately no reverse lookup on Brand (`archive/brand-shared-registry-reversed.md`), so we ask the
+-- module's own public predicates. A brand predicate is found by CONTRACT (round3 §4 Q27, user decision
+-- 2026-09-08 — no op on Dispatch, user: *"각 프로바이더/플러그인 상 그냥 필드로 넣는게 맞는 계약같아서"*):
+-- a top-level module field named `is<Brand>` whose function is registered in the module's
+-- `BrandPredicates` set (round13 Q106, 2026-09-28 — only registered `is*` fields count). [2026-10-01 user
+-- decision] base brands take the same path: `init.luau` / `Slot/init.luau` register every base `is*`
+-- field where they set it, and the hand-kept base probe list that used to live here is gone — Dispatch
+-- names no core object (`H-278`). A value answers EVERY predicate it satisfies, so the names are all
+-- reported, sorted (`PreRef, Ref`) — user: *"그냥 T 인데 A, B, C 를 impl하는 요소라고 알려주는게 문제가
+-- 없는것 같음"*; the old most-specific-first order (`H-220`) is no longer needed.
 
 -- Diagnostics label for a handler in error/warning messages — uses the
 -- optional `name` contract field (`H-214` (a)); when absent, only the
@@ -136,8 +107,8 @@ local function propsNotPlainMessage(what: string): string
 end
 
 -- [2026-10-01 user decision — "debug 로 내리기에 동의해"] the braces-forgotten gate's FULL brand scan
--- (`brandNameOf`: every registered provider `is<Brand>` field, pcall'd, then the base probe list — ~12% of
--- drive, round11 L′ 7) runs only with `q.debug` on. The every-call half in `drive` is O(1): a metatable or a
+-- (`brandNameOf`: every registered `is<Brand>` field of the module, each pcall'd — ~12% of drive,
+-- round11 L′ 7) runs only with `q.debug` on. The every-call half in `drive` is O(1): a metatable or a
 -- metatable-less base brand (`Brand.isPlainBranded`). What only this scan catches: a value branded by a
 -- PROVIDER predicate that carries no metatable — with debug off its fields are dispatched like props and
 -- fail (or land) wherever their keys lead.
@@ -240,39 +211,34 @@ local function Init(module: any)
 	end
 	local NOOP = Void -- `H-162`: the single exported no-op, never a fresh closure
 
-	local BASE_PROBE = {} :: { [string]: true }
-	for _, probeName in BRAND_PROBES do
-		BASE_PROBE[probeName] = true
-	end
-
-	-- Diagnostics only (cold path): provider `is<Brand>` fields first, then the
-	-- ordered base list. A provider predicate is `pcall`ed — a buggy predicate
-	-- must not turn a match-failure diagnostic into its own raise.
+	-- Diagnostics only (cold path): every registered `is<Brand>` field of the module, base and provider
+	-- alike, each `pcall`ed — a buggy predicate must not turn a match-failure diagnostic into its own raise.
 	-- round11 `H-563` (탐사 G′ 1): a module-level `is*` helper that is NOT a brand predicate
 	-- (`q.isEmpty`, a plugin's `isMobile` ignoring its argument) answered `true` for a plain
 	-- props table and the `H-470` gate killed EVERY `D.<Class>{}`. The fix then was a probe
 	-- (`{}`/`0` must be false), which still let `isNonEmptyList`-style helpers through
-	-- (round13 `H-698`). round13 Q106 (user decision 2026-09-28): a brand predicate is now
-	-- one REGISTERED in the module instance's `BrandPredicates` (a provider registers its own at
-	-- install — quad-roblox `RobloxFactory.luau`); base brands come through `BRAND_PROBES` by name;
-	-- every other `is*` field is ignored, no probing.
+	-- (round13 `H-698`). round13 Q106 (user decision 2026-09-28): a brand predicate is one
+	-- REGISTERED in the module instance's `BrandPredicates` (a provider registers its own at install —
+	-- quad-roblox `RobloxFactory.luau`; base ones at `init.luau` / `Slot/init.luau`, 2026-10-01); every
+	-- other `is*` field is ignored, no probing. Returns every brand the value carries, sorted by name.
 	local BrandPredicates = module.BrandPredicates
-	local function brandNameOf(v: any): string?
+	local function brandNamesOf(v: any): { string }
+		local names = {} :: { string }
 		for name, predicate in module do
-			if type(name) == "string" and string.sub(name, 1, 2) == "is" and not BASE_PROBE[name] and type(predicate) == "function" and BrandPredicates:Is(predicate) then
+			if type(name) == "string" and string.sub(name, 1, 2) == "is" and type(predicate) == "function" and BrandPredicates:Is(predicate) then
 				local ok, hit = pcall(predicate, v)
 				if ok and hit == true then
-					return string.sub(name, 3) -- "isTween" -> "Tween"
+					table.insert(names, string.sub(name, 3)) -- "isTween" -> "Tween"
 				end
 			end
 		end
-		for _, probeName in BRAND_PROBES do
-			local predicate = module[probeName]
-			if type(predicate) == "function" and (predicate :: (any) -> boolean)(v) then
-				return string.sub(probeName, 3) -- "isSource" -> "Source"
-			end
-		end
-		return nil
+		table.sort(names)
+		return names
+	end
+	-- The same names as one message fragment (`"PreRef, Ref"`), nil when the value carries no registered brand.
+	local function brandNameOf(v: any): string?
+		local names = brandNamesOf(v)
+		return if #names > 0 then table.concat(names, ", ") else nil
 	end
 
 	-- Subject `Dispatch:` (namespace, no function — round8 O-1): both raises are OUTERMOST
@@ -281,20 +247,23 @@ local function Init(module: any)
 	-- `H-494`, `process:` in K-3) was wrong for the others. The blame line already says
 	-- where the user entered.
 	local function noMatchMessage(k: any, v: any): string
-		local brand = brandNameOf(v)
-		-- round11 `H-567` (탐사 G′ 6): a BASE brand (Slot/Ref/State…) can never be "provider not
-		-- initialized" — that hint only fits a provider brand or an unbranded value
-		local isBase = brand ~= nil and BASE_PROBE["is" .. brand] == true
-		-- round13 Q90 ⑩ (user decision 2026-09-28): at a string key an unbranded / provider-branded
-		-- value misses for two reasons we cannot tell apart here without asking the handler list —
-		-- name both, neutral wording (base knows no engine terms). A provider IS installed in the
-		-- common case, so the provider-only hint pointed the wrong way for `size` / `AbsoluteSize`.
-		local hint = if not isBase and type(k) == "string"
+		local names = brandNamesOf(v)
+		local brand = if #names > 0 then table.concat(names, ", ") else nil
+		-- [2026-10-01 user decision] a hit on ANY registered predicate means the brand's owner is installed
+		-- (base always; a provider registers at install), so "provider not initialized" can only fit a value
+		-- that carries no registered brand (round11 `H-567` / `H-613` asked this for base brands one by one —
+		-- a provider brand such as Tween got the wrong hint until the registration became the test).
+		-- round13 Q90 ⑩ (user decision 2026-09-28): at a string key an unbranded value misses for two
+		-- reasons we cannot tell apart here without asking the handler list — name both, neutral wording
+		-- (base knows no engine terms). A provider IS installed in the common case, so the provider-only
+		-- hint pointed the wrong way for `size` / `AbsoluteSize`.
+		local contextName = if table.find(names, "Context") then "Context" elseif table.find(names, "Provider") then "Provider" else nil
+		local hint = if brand == nil and type(k) == "string"
 			then " - this key may not be a field of this element (a typo, a read-only field, or one from another class), or the provider that handles it (e.g. quad-roblox) is not initialized"
-			elseif not isBase
+			elseif brand == nil
 			then " - check that the provider for this value (e.g. quad-roblox) is initialized"
-			elseif brand == "Store" then " - a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))" -- 탐사 I′ 3
-			elseif brand == "Context" or brand == "Provider" then ` - a {brand} is not a value for any key: read the value you need out of it first` -- round13 E80 (the old hint sent it to a numeric slot, which raises Quad0076 again)
+			elseif table.find(names, "Store") then " - a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))" -- 탐사 I′ 3
+			elseif contextName ~= nil then ` - a {contextName} is not a value for any key: read the value you need out of it first` -- round13 E80 (the old hint sent it to a numeric slot, which raises Quad0076 again)
 			elseif type(k) == "string" then " - a quad value at a string key: it belongs in a numeric (array) slot"
 			else " - this quad value has no handler at an array position"
 		return `Quad0076 Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})` .. hint
