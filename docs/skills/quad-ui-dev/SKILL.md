@@ -147,7 +147,8 @@ end, lastName)
 A `:Compute` fn only reads and combines: it never `:Set`s/`:Emit`s any Source and never yields — both are
 undefined behavior (reactive callbacks do not yield mid-wave and do not feed their own inputs back where nothing
 untangles the wave; the one defined exception is an `Effect` setting its own dependency, which re-runs once after
-`fn` returns). With `q.debug = true` a write during a Compute fn and a new run over a parked one each print a warning.
+`fn` returns — set only when the value differs, since a Source propagates an equal value too; a loop that re-runs
+more than 10,000 times stops with `Quad0263`, debug or not). With `q.debug = true` a write during a Compute fn and a new run over a parked one each print a warning.
 
 `state:Depend(...)` is supported (it mints one extra node that passes the receiver's value through and
 also re-publishes when the given deps change — no callback, no values passed) — not prohibited.

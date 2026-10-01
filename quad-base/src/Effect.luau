@@ -59,20 +59,13 @@ local isEpoch = Brand.isEpoch
 -- One implementation per quad instance (`H-174`); storage scheme in `ImplRegistry.luau`.
 local implsOf = ImplRegistry.implsOf
 
--- ── debug-only checks (`architecture.md` "debug 층"; kept out of the logic below) ──
--- 2026-10-01 (user decision): `rawRerun`'s deferred re-run loop has no cap by contract — an fn that
--- keeps setting one of its own deps never settles, and since a Source propagates even an equal value
--- (`H-68`) an unconditional `Set` is enough (install or not — the re-run is deferred, never nested).
--- With `q.debug` on, the loop counts and raises past this limit.
-local DEBUG_RERUN_LIMIT = 10000
-local function checkReruns(count: number)
-	if count > DEBUG_RERUN_LIMIT then
-		Err.errorBefore(
-			`Quad0263 Effect: fn re-ran {DEBUG_RERUN_LIMIT} times in one loop - the fn keeps setting one of its own deps (a Source propagates even an equal value; set only when the value differs)`,
-			SURFACE
-		)
-	end
-end
+-- ── re-run loop limit (always on — not a debug-layer check) ──
+-- 2026-10-01 (user decision): `rawRerun`'s deferred re-run loop is capped. An fn that keeps setting
+-- one of its own deps never settles, and since a Source propagates even an equal value (`H-68`) an
+-- unconditional `Set` is enough (install or not — the re-run is deferred, never nested, so no stack
+-- overflow would ever stop it). Like React/Vue/Svelte's effect re-run limits, the loop counts in a
+-- local and raises past this generous limit; below it the deferred re-run is the defined behaviour.
+local RERUN_LIMIT = 10000
 
 local function createImpl(module: any)
 	module:RunInit(Observer.Init) -- registries live there (`H-99`)
@@ -114,7 +107,7 @@ local function createImpl(module: any)
 			return --   → HOLD, replayed once on the next bind/subscribe
 		end
 		self._running = true
-		local count = if module.debug then 0 else nil -- debug only: this loop's fn-run count
+		local count = 0 -- this loop's fn-run count (`RERUN_LIMIT`)
 		repeat
 			self:_consumeCleanup() -- sets `_rerunRequired = true`
 			-- round11 code-review (2026-09-18, after Q63 (b)): the cleanup just run may have UNSUBSCRIBED
@@ -131,9 +124,12 @@ local function createImpl(module: any)
 			-- Requests that arrive DURING fn still re-run (`_pending` = a request while running).
 			self._pending = false
 			self._rerunRequired = false -- the ONLY place the flag goes down: fn really runs
-			if count then
-				count += 1
-				checkReruns(count)
+			count += 1
+			if count > RERUN_LIMIT then
+				Err.errorBefore(
+					`Quad0263 Effect: fn re-ran {RERUN_LIMIT} times in one loop - the fn keeps setting one of its own deps (a Source propagates even an equal value; set only when the value differs)`,
+					SURFACE
+				)
 			end
 			-- round13 3′ (Q109, user decision 2026-09-30 — every run): fn is about to read every dep
 			-- live; a direct Epoch dep's (Source/Ref) live revision is exactly what its next delivery

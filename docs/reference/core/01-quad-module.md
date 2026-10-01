@@ -197,7 +197,6 @@ debug: boolean
 
 **비용이 드는 검사** — 평소 경로에 두기엔 자주 도는 자리라 꺼 두면 검사하지 않고, 켜면 그 자리에서 **에러로 멈춥니다**(꺼진 채로는 정지하거나 나중에 엉뚱한 자리에서 죽는 실수들입니다). **[2026-10-01 기준]** 전부 다음 릴리즈부터입니다 — 뒤의 넷은 3.2.0까지 늘 돌던 검사를 이 층으로 내린 것입니다.
 
-- `Effect`의 지연 재실행이 한 번의 반복 안에서 1만 번 넘게 돌 때 — `Quad0263`([05-observer-effect](./05-observer-effect.md#qeffectfn-deps)).
 - 디스패치 핸들러의 `process`가 함수가 아닌 retractor(`true`·숫자·테이블)를 돌려줄 때 — `Quad0077`([핸들러 계약](../extend/02-dispatch-handler-contract.md#handler-레코드); 꺼져 있어도 `nil`은 늘 검사합니다).
 - 중괄호를 잊은 `D.Frame(value)`에서 그 값이 메타테이블 없는 **프로바이더 브랜드** 값일 때 — `Quad0083`(모듈에 등록된 브랜드 술어를 전부 훑는 검사; 메타테이블이 있는 값과 quad-base 값은 꺼져 있어도 늘 잡습니다 — [핸들러 계약](../extend/02-dispatch-handler-contract.md#qdispatchdriveinst-flattened)).
 - `slot:List`의 `data` 배열에 배열이 아닌 키가 **덧붙어** 있을 때 — `Quad0143`(재조정마다 키 전수 검사; 배열 부분이 비어 있는 딕셔너리는 꺼져 있어도 늘 잡습니다 — [06-slot](./06-slot.md#slotlistdata-updatefn-keyfn-opts)).
