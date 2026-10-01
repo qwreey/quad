@@ -368,4 +368,50 @@ do
 end
 
 print()
+print("=== 2026-10-01 BindableBrand — bindLifetime/unbindLifetime know no type: the hooks come through the internal brand (research/bindable-hooks-plan.md) ===")
+do
+	-- (a) unbindLifetime runs Effect's `_beforeUnbind`: the Destroying connection goes, so the OLD host's
+	--     death consumes nothing (no other spec pinned this arm — dropping it left every spec green)
+	local inst = Instance.new("Frame")
+	local s = quad.Source(0)
+	local log: { string } = {}
+	local e = quad.Effect(function()
+		table.insert(log, "run")
+		return function()
+			table.insert(log, "clean")
+		end
+	end, s)
+	quad.Backend.bindLifetime(inst, e)
+	assert((e :: any)._destroyConn ~= nil, "bind hooked Destroying (_afterBind)")
+	quad.Backend.unbindLifetime(e)
+	assert((e :: any)._destroyConn == nil, "unbind dropped the connection (_beforeUnbind)")
+	inst:Destroy()
+	assert(table.concat(log, ",") == "run", "the old host's death consumed nothing: " .. table.concat(log, ","))
+	-- (b) a brandless table carrying the hook names is NOT asked (it used to be for `_assertBindable`, by
+	--     duck typing — a private `_` name, not BREAKING): pure GC relation (`H-229`)
+	local inst2 = Instance.new("Frame")
+	local called = 0
+	local plain = {
+		_assertBindable = function()
+			called += 1
+			error("must not be asked")
+		end,
+		_afterBind = function()
+			called += 1
+		end,
+		_beforeUnbind = function()
+			called += 1
+		end,
+	}
+	quad.Backend.bindLifetime(inst2, plain)
+	assert(quad.Backend.isHeld(plain), "bound as a plain value")
+	quad.Backend.unbindLifetime(plain)
+	assert(called == 0 and not quad.Backend.isHeld(plain), "no hook ran: " .. called)
+	-- (c) the `Subscribed` data arm is brand-gated: a brandless table with the field is not alive
+	local fake = { Subscribed = true }
+	assert(quad.Backend.canBound(fake) and not quad.Backend.canExecute(fake), "a brandless `Subscribed` is not the global path")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

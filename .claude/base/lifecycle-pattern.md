@@ -331,6 +331,16 @@ gcconn 참조 복사, 타입별 후처리(`Observer:_catchUp`/`Effect:_bindDestr
 수명에 묶는다"는 원래 일과 같은 일이라 별도 앵커 표면을 만들지 않는다
 (표면이 커지는 대안을 사용자가 명시적으로 피함).
 
+**[2026-10-01 내부 정리 — 사용자 결정] "알려진 타입"은 이제 타입 목록이 아니라 내부 능력 브랜드 `BindableBrand`다**
+(`quad-base/src/Brand.luau`, `q.`에 노출 안 함). `bindLifetime`/`unbindLifetime`은 `isObserver`/`isEffect`로 분기하지
+않고, 값이 `BindableBrand` 회원이면 그 값의 비공개 훅 셋 — `_assertBindable()`(커밋 전)·`_afterBind(inst)`(커밋 뒤)·
+`_beforeUnbind()`(해제 전) — 을 **있는 것만** 부른다(nil이면 건너뜀). 위 "타입별 후처리"는 각 타입 `Impl`의 자기
+본문이다: Observer `_afterBind` = `_catchUp()`(`_beforeUnbind` 없음), Effect `_afterBind` = `_bindDestroying(inst)`·
+`_beforeUnbind` = `_unbindDestroying()`. 그래서 이 절의 규칙은 **"`BindableBrand`가 아니면 훅 없음 — 순수 GC
+릴레이션"**으로 읽는다. 바뀐 것 하나: 예전엔 브랜드 없는 테이블이라도 `_assertBindable` 필드가 있으면 불렸는데(덕
+타이핑) 이제 안 불린다 — 비공개 `_` 이름이라 공개 약속이 아니어서 BREAKING 아님. 훅을 공개 등록 표면으로 여는
+것은 백로그(`research/bindable-hooks-plan.md`).
+
 **[2026-09-27 round13 Q94 검토 중]** `bindLifetime`이 원시값(숫자 등)을 받았을 때의 동작이 실행 탐사에서
 반증됐다 — 숫자 `1`이 gchold의 gcconn 자리를 덮어쓰는 경우가 나왔다(엔진 가정 하나 포함). 사용자 문항이
 열려 있다(`qa-request/post-implementation-review-round13.md` §4). 본문은 결정 전이라 그대로 둔다.
@@ -370,10 +380,9 @@ local function isBoundAlive(value)
     --     Effect의 State dep 전량이 조용히 침묵한다.
     --     [2026-09-30 round13 3′] 그 예의 내부 Observer는 없어졌다(Effect가 dep의 _subs에
     --     직접 든다 — 게이트는 핸들 자신의 이 필드) — 필드 뜻은 그대로.
-    if isObserver(value) or isEffect(value) then
-        return value.Subscribed == true
-    end
-    return false
+    --     [2026-10-01 내부 정리] 타입 분기 대신 `BindableBrand` 조회 하나 — 브랜드 회원은 불리언
+    --     `Subscribed`를 반드시 가진다(계약 필드). 핫 패스라 훅이 아니라 데이터로 읽는다.
+    return BindableBrand:Is(value) and value.Subscribed == true
 end
 
 function bindLifetime(inst, value)
@@ -384,8 +393,7 @@ function bindLifetime(inst, value)
         -- 어느 경로로 묶여있는지만 메시지에 실어줌. `.Subscribed`를 무조건
         -- 인덱싱하면 안 됨 — 게이트는 값 타입을 안 가려서 value가 평범한
         -- 클로저일 수도 있음(그 경우 필드 접근 자체가 에러).
-        local isGlobal = isObserver(value) or isEffect(value)
-        if isGlobal then isGlobal = value.Subscribed == true end
+        local isGlobal = BindableBrand:Is(value) and value.Subscribed == true -- [2026-10-01] 브랜드가 필드를 보장
         -- [2026-08-31 M3 단위 4 `H-272`] 리터럴 error(level 2)가 아니라 워커의
         -- 최외곽 스캔 — 단위 4 이후 bindLifetime의 주 호출부가 디스패치 깊이
         -- (Leaf.process)라 level 2는 quad 내부를 blame한다. errorBefore면 직접
@@ -418,7 +426,12 @@ function bindLifetime(inst, value)
     -- 인해 자료가 깨지는건 일반적이고, 그에 비해 에러를 내는 조건이 어려워서 UB에
     -- 가까운것"*. 재시도는 새 핸들로(Declaration 안에서 인라인으로 만드는 보통 코드는
     -- 자연히 그렇다).
-    if type(value) == "table" and value._assertBindable ~= nil then
+    -- ⭐ [2026-10-01 내부 정리 — 사용자 결정] 훅은 `BindableBrand` 회원에게만, 있는 것만 부른다
+    -- (위 (0.5) 배너). UB는 훅 일반으로 넓어졌다 — 사용자: *"훅이 던지는건 UB 맞아."* — 커밋 뒤
+    -- `_afterBind`가 던지면 묶인 채, `_beforeUnbind`가 던지면 쥔 채 남는다. 훅 안에서 같은 값을
+    -- 다시 bind하면 `canBound`가 거부하고(이미 쥐어져 있다), 다른 값의 bind/unbind 재진입은 UB.
+    local bindable = BindableBrand:Is(value)
+    if bindable and value._assertBindable ~= nil then
         value:_assertBindable()
     end
 
@@ -449,24 +462,26 @@ function bindLifetime(inst, value)
     --   순회에서 죽고, 피해 가도 **바인드마다 `Rerun`이 도는 `H-58`이
     --   되살아난다.** 발화 게이팅은 전부 `canExecute(handle)` 하나가 맡는다 —
     --   `base/effect-plan.md`의 "확정 구조" 절이 소스.
-    if isObserver(value) then
-        -- ⭐ [2026-08-28 `H-159`] Observer도 대칭 — 묶이기 전(생성~바인드 사이)에 온 emit은
-        --   Observer 자신의 `_receive`가 `_rerunRequired`로 홀드해 두고(`source-state-plan.md`의
-        --   `Observer:_receive` — 전파 루프는 `EmitReceive`로만 본다),
-        --   묶이는 순간 1회 발화(출처 없음 — 설치 발화와 같은 모양). Observer엔 epoch가
-        --   없으니 dedup은 없고 "놓친 게 있었다"만 기록된다. 본문은 `Observer:_catchUp`
-        --   (같은 문서) — `Subscribe`/`WeakSubscribe`와 같은 한 곳.
-        value:_catchUp()
+    -- [2026-10-01 내부 정리] 타입 분기 대신 `BindableBrand` 훅 하나 — 아래 두 본문은 각 타입 `Impl`의
+    -- 자기 `_afterBind(inst)`다(같은 함수 객체를 두 타입에 배정하지 않는다 — `H-144`).
+    if bindable and value._afterBind ~= nil then
+        value:_afterBind(inst)
     end
-    if isEffect(value) then
-        value:_bindDestroying(inst)   -- Destroying 연결 + **홀드된 변경 캐치업 1회**
-                                      -- (`if self._rerunRequired then self:Rerun() end` —
-                                      --   [2026-08-28 `H-151`/`H-159`] 옛 `_epochs:Refresh()`는 폐기,
-                                      --   실행 불가 상태에 온 변경은 홀드됐다가 여기서 1회)
-                                      -- 의사코드는 `base/effect-plan.md`가 소스.
-                                      -- 그 안에서 주입 op `onDestroying(inst, fn)`을
-                                      -- 부른다(base는 Instance를 모른다).
-    end
+    -- Observer의 `_afterBind` = `self:_catchUp()`.
+    --   ⭐ [2026-08-28 `H-159`] Observer도 대칭 — 묶이기 전(생성~바인드 사이)에 온 emit은
+    --   Observer 자신의 `_receive`가 `_rerunRequired`로 홀드해 두고(`source-state-plan.md`의
+    --   `Observer:_receive` — 전파 루프는 `EmitReceive`로만 본다),
+    --   묶이는 순간 1회 발화(출처 없음 — 설치 발화와 같은 모양). Observer엔 epoch가
+    --   없으니 dedup은 없고 "놓친 게 있었다"만 기록된다. 본문은 `Observer:_catchUp`
+    --   (같은 문서) — `Subscribe`/`WeakSubscribe`와 같은 한 곳.
+    -- Effect의 `_afterBind` = `self:_bindDestroying(inst)`.
+    --   Destroying 연결 + **홀드된 변경 캐치업 1회**
+    --   (`if self._rerunRequired then self:Rerun() end` —
+    --   [2026-08-28 `H-151`/`H-159`] 옛 `_epochs:Refresh()`는 폐기,
+    --   실행 불가 상태에 온 변경은 홀드됐다가 여기서 1회)
+    --   의사코드는 `base/effect-plan.md`가 소스.
+    --   그 안에서 주입 op `onDestroying(inst, fn)`을
+    --   부른다(base는 Instance를 모른다).
 end
 
 function unbindLifetime(value)
@@ -480,8 +495,11 @@ function unbindLifetime(value)
     --   막는다 — 떼었다 붙이는 그 춤이 `H-58`의 원인이었다. 포탈은 이제
     --   "떼고 다시 걸기"가 아니라 **재바인드 시 조건부 캐치업 1회**로
     --   성립한다(`_bindDestroying`).
-    if isEffect(value) then
-        value:_unbindDestroying()     -- Destroying 연결만 끊는다
+    -- [2026-10-01 내부 정리] 타입 분기 대신 `BindableBrand` 훅 — Effect의 `_beforeUnbind`가
+    -- `_unbindDestroying()`을 부른다(Observer는 `_beforeUnbind`가 없어 건너뜀). 해제 전 훅 →
+    -- release 순서는 bind의 커밋 → `_afterBind`와 대칭.
+    if BindableBrand:Is(value) and value._beforeUnbind ~= nil then
+        value:_beforeUnbind()         -- Effect: Destroying 연결만 끊는다
     end
 
     local gchold = BindData:GetWeak(value, "gchold")
@@ -537,10 +555,11 @@ isHeld(value): boolean           -- BindData의 gcconn.Connected — 옛 isBound
 isHeldBy(value, inst): boolean   -- 홀더가 이 inst 것인가 — `H-395` 메시지 팔 하나용
 
 -- quad-base가 조립
-isBoundAlive(v) = v ~= nil and (Backend.isHeld(v) or ((isObserver(v) or isEffect(v)) and v.Subscribed == true))
+-- [2026-10-01 내부 정리] 타입 분기(isObserver/isEffect)가 BindableBrand 하나로 — 위 (0.5) 배너
+isBoundAlive(v) = v ~= nil and (Backend.isHeld(v) or (BindableBrand:Is(v) and v.Subscribed == true))
 canBound(v) = not isBoundAlive(v);  canExecute(v) = isBoundAlive(v)
-bindLifetime(inst, v): nil 게이트 → canBound 거부 세 팔(isHeldBy로 같은-inst 팔) → _assertBindable → Backend.holdLifetime → _catchUp / _bindDestroying
-unbindLifetime(v): nil 게이트 → _unbindDestroying → Backend.releaseLifetime
+bindLifetime(inst, v): nil·원시값 게이트 → canBound 거부 세 팔(isHeldBy로 같은-inst 팔) → _assertBindable? → Backend.holdLifetime → _afterBind?(inst)
+unbindLifetime(v): nil·원시값 게이트 → _beforeUnbind? → Backend.releaseLifetime     -- `?` = BindableBrand 회원이고 훅이 있을 때만
 ```
 
 **이름**(사용자 결정, sonnet 둘의 독립 의견이 일치): `hold`는 기존 명사 `gchold`의 동사이고
@@ -748,7 +767,9 @@ end
 `.Subscribed` 필드와 레지스트리 테이블이 **따로** 있는 이유: 테이블은
 참조 루트(강한 쪽은 생존 보장, 약한 쪽은 멤버십 기록), 필드는
 `canBound`/`canExecute`가 매번 읽는 O(1) 경로 + 에러 메시지에서 "구독이냐
-leaf냐"를 가르는 판별자.
+leaf냐"를 가르는 판별자. **[2026-10-01 내부 정리]** 그 읽기는 타입 분기 없이
+`BindableBrand:Is(v) and v.Subscribed == true`다 — `BindableBrand` 회원은 이 불리언을 반드시
+가진다(계약 필드; 훅이 아니라 데이터인 이유는 핫 패스에 던질 수 있는 코드를 두지 않기 위해).
 
 **⭐ [2026-08-26 정정, 8라운드 `H-111`] 필드와 *강한* 테이블은 한 세트가
 아니다.** 여기 한때 *"둘은 항상 같이 쓰고 같이 지우는 한 세트"*라고 적혀
@@ -774,7 +795,8 @@ emitFrom)`), `_state`(리시버 State — `_hold`로 강참조, `source-state-pl
 모든 `fn` 실행(설치 발화·`_receive`·`_catchUp`) 둘레에 서는 재진입 플래그 — 구독 쪽 두 진입점과
 `_assertBindable`이 거부에 쓴다(해제 둘은 안 봄 — **[2026-09-18 Q63 (b)]**), 위 (2) 배너), **`_receive(from)`**(`EmitReceive` —
 `source-state-plan.md`의 `_emitDown` 아래), **`_catchUp()`**(홀드가 있었으면 출처 없이 1회 —
-`bindLifetime`·`Subscribe`·`WeakSubscribe`가 부름, 내부 메소드). 레지스트리 두 테이블은 Observer 인스턴스의
+`bindLifetime`(**[2026-10-01]** `BindableBrand` 훅 `_afterBind` 경유)·`Subscribe`·`WeakSubscribe`가 부름, 내부 메소드),
+**`_assertBindable()`/`_afterBind(inst)`**(**[2026-10-01]** `BindableBrand` 수명 훅 — Observer는 `_beforeUnbind`가 없다). 레지스트리 두 테이블은 Observer 인스턴스의
 필드가 아니라 **quad 인스턴스별 임플의 클로저 로컬**(`Observer.Init(module)`이 만든다, `H-174`;
 **[2026-08-29 `H-194`]** 한때 "`Observer.luau`의 모듈 로컬"). Effect와 달리 epoch 맵·cleanup은 없다
 (**[2026-08-31 정정]** 재진입 플래그는 `H-183`으로 생겼다 — 위 `_running`).
@@ -824,7 +846,7 @@ isBoundAlive(v)`. 열한 번째 세션은 "판정 로직도 같고 값도 항상
 
 **해법 — 이름은 둘, 판정 로직은 하나(사용자 제안).** 실제 gcconn/
 `.Subscribed` 체크는 비공개 헬퍼 `isBoundAlive(value)`(위 (1) 코드
-블록) 하나에만 있고, `canBound`/`canExecute`는 그 헬퍼를 각각 부정해서/
+블록 — **[2026-10-01]** `.Subscribed` 팔은 `BindableBrand` 회원에게만) 하나에만 있고, `canBound`/`canExecute`는 그 헬퍼를 각각 부정해서/
 그대로 감싸는 얇은 진입점 — 코드 중복 없이 호출부의 의미만 분리됨.
 **바뀐 호출부**: `bindLifetime`의 가드(위 (1))와 `Observer:Subscribe()`의
 가드(위 (2))는 이제 `canBound`를 씀 — 형태는 항상 **`if not canBound(v)

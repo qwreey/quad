@@ -19,6 +19,8 @@
 	    injected `onDestroying(inst, fn)`; replay once if `_rerunRequired`),
 	    `_unbindDestroying()` (idempotent), `_consumeCleanup()` (read → clear →
 	    `_rerunRequired = true` → run under `_cleanupRunning`, `H-160`).
+	    `bindLifetime`/`unbindLifetime` reach the first two through the
+	    `BindableBrand` hooks `_afterBind(inst)`/`_beforeUnbind()` (2026-10-01).
 	  - `rawRerun(self, force)` + public `Rerun()`: re-entrancy is deferred
 	    (`_pending`), an unexecutable state HOLDS the request (`H-159`), the
 	    loop has no death judgement (`H-147`); errors leave `_running` /
@@ -47,6 +49,7 @@ local InitDispatch = require("./Dispatch")
 local ModuleIdentity = require("./ModuleIdentity")
 
 local EffectBrand = Brand.EffectBrand
+local BindableBrand = Brand.BindableBrand
 local isState = Brand.isState
 local isSource = Brand.isSource
 local isRef = Brand.isRef
@@ -189,9 +192,23 @@ local function createImpl(module: any)
 		end
 	end
 
+	-- ── lifetime hooks (`BindableBrand`, 2026-10-01 — `research/bindable-hooks-plan.md`) ──
+	-- `bindLifetime`/`unbindLifetime` know no Effect: they call these on any `BindableBrand` member
+	-- (`_assertBindable` above runs before the commit). Effect's own bodies — not Observer's
+	-- (conventions: heterogeneous types share no body, `H-144`); thin, so the named bodies below
+	-- keep their other callers (`WeakSubscribe`/`Subscribe` drop the connection through
+	-- `_unbindDestroying` directly).
+	function Impl._afterBind(self: any, inst: any)
+		self:_bindDestroying(inst) -- Destroying hookup + held-change catch-up
+	end
+
+	function Impl._beforeUnbind(self: any)
+		self:_unbindDestroying() -- the Destroying connection only — never the cleanup (lifecycle-pattern (1))
+	end
+
 	function Impl._bindDestroying(self: any, inst: any)
-		-- `H-147`'s guard moved to `_assertBindable` (`H-184`) — `bindLifetime` is the
-		-- only caller and has already asked it before committing the binding.
+		-- `H-147`'s guard moved to `_assertBindable` (`H-184`) — `bindLifetime` (through `_afterBind`)
+		-- is the only caller and has already asked it before committing the binding.
 		self:_unbindDestroying() -- rebind (portal remount): drop the old connection first — idempotent
 		self._dying = false -- `H-182`: rebinding a survivor of a Destroy wave re-arms it
 		-- (1) leaf dies → cleanup exactly once. The one hook point (`LP-2`).
@@ -351,6 +368,7 @@ local function createImpl(module: any)
 			Subscribed = false,
 		}, Impl)
 		EffectBrand:Register(self)
+		BindableBrand:Register(self) -- lifetime hooks + `Subscribed` (`LifetimeHandle.luau`)
 
 		-- (0) deps validation — once, in the constructor. `select("#")` so a nil hole
 		--     does not silently truncate the list.

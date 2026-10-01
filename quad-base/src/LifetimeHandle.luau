@@ -19,6 +19,23 @@
 	백엔드 전부 코드 개편이 불가피함". Now the backend injects only what it alone
 	knows — the four hold ops below — and this file composes the primitives on top.
 
+	[2026-10-01 user decision — internal only] This file knows no value TYPE either. Until then
+	it branched on `isObserver`/`isEffect` in five places (the post-commit `_catchUp` /
+	`_bindDestroying`, the pre-release `_unbindDestroying`, the `.Subscribed` arm of the liveness
+	predicate and of the refusal message) — extending the set meant editing the core. Now one
+	internal capability brand, `BindableBrand` (`Brand.luau`, not on `q.`), carries it:
+	  - hooks (methods on the member, each OPTIONAL — nil = skipped; each type owns its bodies):
+	      `_assertBindable()`  before the commit (may refuse — nothing written yet, `H-184`)
+	      `_afterBind(inst)`   after `holdLifetime`        (Observer: catch-up; Effect: Destroying hookup)
+	      `_beforeUnbind()`    before `releaseLifetime`    (Effect: drop the Destroying connection)
+	  - data, NOT a hook: a member carries the boolean `Subscribed` (`H-111`) — the global-path
+	    arm of `isBoundAlive` (`canExecute`, every delivery: no user code on that path) and of
+	    the refusal message read it directly.
+	A value outside the brand has no hooks — pure GC relation (`H-229`, lifecycle-pattern (0.5)).
+	A brandless table that happens to carry `_assertBindable` is no longer asked (it used to be,
+	by duck typing) — a private `_` name, not a public promise, so not BREAKING. A public
+	registration surface is backlog (`research/bindable-hooks-plan.md`).
+
 	Contract (types in `quad-types`):
 	  -- quad-base implements (this file):
 	  bindLifetime(inst, value)   -- inst is needed here and only here
@@ -61,7 +78,7 @@ local Err = require("./ErrorNamespace")
 local NotInstalled = require("./NotInstalled")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
-local isObserver, isEffect = Brand.isObserver, Brand.isEffect
+local BindableBrand = Brand.BindableBrand
 
 -- Error depth (checklist 0): `errorBefore` (outermost) for EVERY stub — `H-348`,
 -- restored by 3순회 `H-378` after `H-370`/`H-373` gave `canBound`/`canExecute`/
@@ -110,7 +127,9 @@ local function Init(module: any)
 	-- private predicate shared by both public entry points (lifecycle-pattern (3)):
 	-- "does this value have a structurally live binding?" — (a) the inst-scoped
 	-- path the backend answers, (b) the global subscription path (strong or weak —
-	-- `H-111`: `WeakSubscribe` raises the flag too) that only Observer/Effect have.
+	-- `H-111`: `WeakSubscribe` raises the flag too) that only `BindableBrand` members have.
+	-- Hot path (`canExecute` runs on every delivery): (b) is one brand lookup + one field
+	-- read — data, never a hook (no user code here).
 	local function isBoundAlive(value: any): boolean
 		if value == nil then
 			return false -- round3 `H-444` (G-14): `canExecute(nil)`/`canBound(nil)` died in Relate
@@ -118,10 +137,7 @@ local function Init(module: any)
 		if Backend.isHeld(value) then
 			return true
 		end
-		if isObserver(value) or isEffect(value) then
-			return value.Subscribed == true
-		end
-		return false
+		return BindableBrand:Is(value) and value.Subscribed == true
 	end
 
 	local function canBound(value: any): boolean
@@ -142,11 +158,8 @@ local function Init(module: any)
 		checkIdentityValue("bindLifetime", value, Err.errorBefore) -- error-code: via checkIdentityValue
 		if not canBound(value) then
 			-- Only report which path holds the value. Never index `.Subscribed`
-			-- unconditionally — value may be a plain closure.
-			local isGlobal = isObserver(value) or isEffect(value)
-			if isGlobal then
-				isGlobal = value.Subscribed == true
-			end
+			-- unconditionally — value may be a plain closure; the brand guarantees the field.
+			local isGlobal = BindableBrand:Is(value) and value.Subscribed == true
 			-- 5순회 `H-395`: say WHICH Instance holds it — the same handle at two
 			-- positions of one Instance (`D.Frame { eff, eff }`) is not "another"
 			Err.errorBefore( -- error-code: inline if
@@ -159,14 +172,21 @@ local function Init(module: any)
 		end
 		-- `H-184`: ask the value's own hook guard BEFORE committing bookkeeping —
 		-- if it throws we must not leave a half-bound handle behind. That promise covers
-		-- `_assertBindable` ONLY: the catch-up / Destroying hookup below run user callbacks
-		-- AFTER the commit, and a throw there leaves the handle bound to this inst (a retry
-		-- with the same handle says "already bound to another Instance"). Documented UB —
-		-- round10 Q56 (b), user decision 2026-09-17 ("에러로 인해 자료가 깨지는건 일반적이고 …
-		-- UB에 가까운것"); no pcall (architecture "예외 안전성 계약 — 감싸지 않는다").
-		-- (0.5) `H-229`: a value of no known type has no hooks — pure GC relation.
-		if type(value) == "table" and (value :: any)._assertBindable ~= nil then
-			(value :: any):_assertBindable()
+		-- `_assertBindable` ONLY. No hook is wrapped (architecture "예외 안전성 계약 — 감싸지
+		-- 않는다"): a throw from `_afterBind` (after the commit — Observer's catch-up / Effect's
+		-- Destroying hookup run user callbacks) leaves the handle bound to this inst (a retry with
+		-- the same handle says "already bound …"), and a throw from `_beforeUnbind` leaves it held.
+		-- Documented UB — round10 Q56 (b), user decision 2026-09-17 ("에러로 인해 자료가 깨지는건
+		-- 일반적이고 … UB에 가까운것"), widened to every lifetime hook 2026-10-01 ("훅이 던지는건
+		-- UB 맞아"). Inside a hook: binding the same value again is refused by `canBound` (it is
+		-- held by then); re-entering bind/unbind for another value is UB.
+		-- (0.5) `H-229`: a value outside `BindableBrand` has no hooks — pure GC relation.
+		local bindable = BindableBrand:Is(value)
+		if bindable then
+			local assertBindable: ((any) -> ())? = (value :: any)._assertBindable
+			if assertBindable ~= nil then
+				assertBindable(value)
+			end
 		end
 
 		-- the commit: the backend's holder + evidence (contracts 1 and 2). Its own gate
@@ -179,11 +199,11 @@ local function Init(module: any)
 		-- semantics, `H-548`), so the split fixes this order.
 		Backend.holdLifetime(inst, value)
 
-		if isObserver(value) then
-			value:_catchUp() -- `H-159`: one catch-up for emits held before binding
-		end
-		if isEffect(value) then
-			value:_bindDestroying(inst) -- Destroying hookup + held-change catch-up
+		if bindable then
+			local afterBind: ((any, any) -> ())? = (value :: any)._afterBind
+			if afterBind ~= nil then
+				afterBind(value, inst) -- Observer: `H-159` catch-up; Effect: Destroying hookup + catch-up
+			end
 		end
 	end
 
@@ -197,9 +217,13 @@ local function Init(module: any)
 		checkIdentityValue("unbindLifetime", value, Err.errorBeforeNearest) -- error-code: via checkIdentityValue
 		-- symmetric teardown — never calls cleanup, never detaches Ref
 		-- callbacks or dep `_subs` memberships (lifecycle-pattern (1); an
-		-- Effect has no inner Observers since round13 3′)
-		if isEffect(value) then
-			value:_unbindDestroying()
+		-- Effect has no inner Observers since round13 3′). Hook before release —
+		-- the mirror of bind's commit → `_afterBind`; a throw here is UB (see bind).
+		if BindableBrand:Is(value) then
+			local beforeUnbind: ((any) -> ())? = (value :: any)._beforeUnbind
+			if beforeUnbind ~= nil then
+				beforeUnbind(value) -- Effect: drop the Destroying connection; Observer: none
+			end
 		end
 		Backend.releaseLifetime(value) -- O(1) early release of this one value; inst untouched
 	end

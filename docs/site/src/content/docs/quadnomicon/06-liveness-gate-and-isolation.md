@@ -98,11 +98,13 @@ BindData:SetWeak(value, "gcconn", InstData:GetWeak(inst, "gcconn"))
 ```luau
 -- quad-base: bindLifetime
 if not canBound(value) then error(...) end             -- 거부 메시지 세 팔은 여기
-if value._assertBindable then value:_assertBindable() end -- 커밋 전 훅
+local bindable = BindableBrand:Is(value)               -- 내부 능력 브랜드 (Observer/Effect가 등록)
+if bindable and value._assertBindable then value:_assertBindable() end -- 커밋 전 훅
 Backend.holdLifetime(inst, value)                      -- 커밋
-if isObserver(value) then value:_catchUp() end
-if isEffect(value) then value:_bindDestroying(inst) end
+if bindable and value._afterBind then value:_afterBind(inst) end      -- 커밋 뒤 훅
 ```
+
+`bindLifetime` 자신은 값의 타입을 모릅니다. 값이 내부 브랜드 `BindableBrand`에 속하면 그 값이 가진 훅만 부를 뿐이고, 훅 본문은 각 타입의 것입니다 — `Observer`의 `_afterBind`는 바인딩 전에 보류된 변경을 한 번 따라잡고(`_catchUp`), `Effect`의 `_afterBind`는 `Destroying` 훅업을 겁니다(`_bindDestroying`). 풀 때는 대칭으로 `_beforeUnbind`(Effect만 가짐) → `releaseLifetime` 순입니다. 브랜드에 없는 값(평범한 테이블·클로저)은 훅 없이 GC 관계만 맺습니다(2026-10-01).
 
 한때 `bindLifetime` 전체를 백엔드가 구현했고 두 백엔드가 같은 40줄을 복제했습니다 — 그 절반 이상이 base의 값 타입 지식이었고, 밑줄 훅 셋이 프로바이더 계약으로 새어 나왔습니다. 경계를 다시 그은 것이 이 모양입니다(2026-09-18).
 
@@ -127,10 +129,7 @@ local function isBoundAlive(value: any): boolean
     if Backend.isHeld(value) then
         return true
     end
-    if isObserver(value) or isEffect(value) then
-        return value.Subscribed == true
-    end
-    return false
+    return BindableBrand:Is(value) and value.Subscribed == true -- 브랜드 회원은 이 불리언을 반드시 가진다
 end
 
 local function canBound(value: any): boolean

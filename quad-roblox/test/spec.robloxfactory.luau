@@ -248,7 +248,7 @@ end
 print()
 print("=== 8. 탐사자 보강(🟡-5) — Effect 배선·훅 가드·재바인드 캐치업이 roblox 전사본 경유로 ===")
 do
-	-- (a) isEffect 분기: _bindDestroying이 EngineOps.onDestroying과 실배선돼
+	-- (a) Effect의 `_afterBind` 훅(BindableBrand, 2026-10-01): _bindDestroying이 EngineOps.onDestroying과 실배선돼
 	--     leaf 사망 시 cleanup이 정확히 1회 소진되는가
 	local inst = Instance.new("Folder")
 	q.Backend.nativeClaim(inst)

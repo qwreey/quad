@@ -97,7 +97,7 @@ local function install(quad: any)
 	-- ── the four hold ops (round11 Q59, 2026-09-18) — the only lifetime code a backend owns ──
 	-- quad-base composes `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute` on top of
 	-- these (`quad-base/src/LifetimeHandle.luau`): the nil gates, the refusal messages, the
-	-- Observer/Effect hooks and the `.Subscribed` arm live there. Here: gchold/gcconn only.
+	-- lifetime hooks and the `.Subscribed` arm (`BindableBrand`, 2026-10-01) live there. Here: gchold/gcconn only.
 
 	-- `isHeld(value)` — (a) inst-scoped liveness: the gcconn copy holdLifetime left on the
 	-- value. inst destroyed → Connected false at once; GC clears the weak entry later.

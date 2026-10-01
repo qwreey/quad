@@ -105,7 +105,12 @@ gcconn/gchold 복사가 전부다 — **`Destroying`도, cleanup 저장도, 그�
 
 **확정(사용자, 2026-08-24)**:
 
-1. **`bindLifetime`/`unbindLifetime`이 `isEffect(value)`를 보고 직접 처리한다.**
+1. **`bindLifetime`/`unbindLifetime`이 ~~`isEffect(value)`를 보고~~ 직접 처리한다.**
+   **[2026-10-01 내부 정리 — 사용자 결정]** 타입 분기 `isEffect(value)`는 없어졌다 — 두 함수는 값이 내부 능력
+   브랜드 `BindableBrand` 회원이면 그 값의 훅 `_afterBind(inst)`/`_beforeUnbind()`를 부르고, Effect의 그 두 본문이
+   `_bindDestroying(inst)`/`_unbindDestroying()`을 부른다(`base/lifecycle-pattern.md`의 "(0.5)" 절 배너,
+   `research/bindable-hooks-plan.md`). **결론(`Destroying` 배선은 `bindLifetime` 경로에서 건다)은 그대로** — 아래
+   "`isEffect`를 보고"라는 서술은 그날 이전의 모양이고, 지금은 "브랜드 훅을 통해"로 읽는다.
    **[2026-08-24 재결정, `/code-review high` 지적]** 여기 한때 *"`EffectHandle`
    쪽이 자기 `bindLifetime` 직후에 건다"*고 적었는데 **그 호출부가 실재하지
    않는다** — 핸들은 남이 자기를 `bindLifetime`하는 걸 관측할 수 없다. 게다가
@@ -128,16 +133,17 @@ gcconn/gchold 복사가 전부다 — **`Destroying`도, cleanup 저장도, 그�
    > `handle._observers`를 `_deps`로 **이름만** 고치는 바람에, 폐기된 동작
    > 주장이 오히려 갓 정비된 것처럼 보이게 됐다. **결론(`Destroying` 배선을
    > `bindLifetime` 옆에 둔다)은 그대로 유효하다** — 근거만 바뀐다: 그 함수가
-   > `isEffect`를 보고 `_bindDestroying`을 부르는 훅 자리이기 때문이다(`H-11`).
+   > ~~`isEffect`를 보고~~ `_bindDestroying`을 부르는 훅 자리이기 때문이다(`H-11`; **[2026-10-01]** 지금은
+   > `BindableBrand` 훅 `_afterBind` 경유).
    - **한때 근거로 든 *"게이트는 값 타입을 안 가린다"*는 이 자리에 안 맞는
      인용이었다** — `base/source-state-plan.md`의 그 절이 말하는 건
      **`canBound` 판정**이 `:Subscribe()`/`bindLifetime` 두 진입점에서 같다는
      것이지, `bindLifetime`의 **부수 배선**이 값 종류를 못 본다는 게 아니다.
-     실제로 그 함수는 `isEffect(value)`를 보고 `_bindDestroying`을 부른다
+     실제로 그 함수는 ~~`isEffect(value)`를 보고~~ **[2026-10-01]** `BindableBrand` 훅 `_afterBind`를 통해 `_bindDestroying`을 부른다
      (**[2026-08-26 재정정, `/code-review high`]** 여기 한때 *"`Effect`면 내부
      Observer로 cascade한다"*고 적혀 있었으나 그 cascade는 `H-58`이 폐기했다 —
      위 ⚠️⚠️ 배너가 소스. 이 항목이 말하려는 것(그 함수가 값 종류를 본다)은
-     `isEffect` 분기로 그대로 성립한다).
+     ~~`isEffect` 분기로~~ **[2026-10-01]** 브랜드 조회 + 값의 훅으로 그대로 성립한다).
 2. **`unbindLifetime`은 cleanup을 부르지 않는다.**
    > **⚠️ [2026-08-26 정정, 8라운드 `H-114`] 아래 두 문장 중 "`Ref` 콜백도
    > 같이 해제" / "언마운트가 콜백을 떼고 재마운트가 다시 건다"는 **폐기됐다.**
@@ -301,7 +307,9 @@ end
 --   이 줄의 옛 "level 3"은 nearest 의미였다. Compute가 Modifier를 돌려준 에러도 같은
 --   방향(Q7 셋째)). Observer도 같은
 --   이름의 훅을 가진다(`H-183` — 자기 `_running`을 본다). 값이 훅을 안 가지면
---   (평범한 클로저 등) `bindLifetime`은 물을 것이 없다.
+--   (평범한 클로저 등) `bindLifetime`은 물을 것이 없다. **[2026-10-01 내부 정리]** 묻는 대상은
+--   `BindableBrand` 회원뿐이고(덕 타이핑 아님), 커밋 뒤 `_bindDestroying`·해제 전 `_unbindDestroying`도
+--   같은 브랜드 훅 `_afterBind(inst)`/`_beforeUnbind()`(Effect 자기 본문)을 거쳐 불린다.
 function EffectHandle:_assertBindable()
     if isRunning(self) then
         error("cannot bind an Effect from inside its own fn or cleanup", 3)

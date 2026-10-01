@@ -2,6 +2,19 @@
 
 **[2026-10-01 신설 — 사용자 제안]** 상태: **[2026-10-01 결정]** 내부 정리만 지금(사용자: *"bindableTarget 는 우선은 내부 정리로 하자. 공개 관해서는 나중 해볼 일로 잡아두면 될것 같고. 이름은 셋 다 괜찮은것 같음. 훅이 던지는건 UB 맞아."*) — 내부 `BindableBrand` + `_assertBindable`/`_afterBind`/`_beforeUnbind`, 생존 판정은 데이터(브랜드 + `Subscribed`), 묶은 뒤 훅 throw는 UB. **공개 등록 표면은 백로그**(5절 1번의 "공개까지"는 나중 할 일). 아래 5절은 결정 전 기록.
 
+**[2026-10-01 내부 정리 반영]** 2절 표 (A)~(F)가 전부 코드에서 빠졌다 — `quad-base/src/Brand.luau`에 내부 `BindableBrand`(`q.` 미노출,
+술어 없음), Observer/Effect가 생성 시 자기 브랜드 옆에서 등록, 각 `Impl`에 자기 본문 `_afterBind`(Observer → `_catchUp()`, Effect →
+`_bindDestroying(inst)`)·`_beforeUnbind`(Effect만 → `_unbindDestroying()`), `quad-base/src/LifetimeHandle.luau`는 브랜드 회원의 훅을
+있는 것만 부르고 (E)(F)는 `BindableBrand:Is(v) and v.Subscribed == true` 한 줄. (A)의 덕 타이핑은 브랜드 게이트로 바뀌었다(비공개
+`_` 이름이라 BREAKING 아님 — 공개 표면 무변, CHANGELOG 없음). 동작 변경 0 — 기존 스펙 그대로 통과, 기존 스펙이 안 덮던 (D) 팔
+(unbind가 Destroying 연결을 끊는다)과 브랜드 게이트는 `spec.lifetime`의 2026-10-01 절이 덮는다. 3절 "함정"의 처리: 순서 대칭(assert →
+hold → after / before → release) 그대로, 훅 안 같은 값 재bind는 `canBound` 거부·다른 값 재진입과 훅 throw는 UB(`LifetimeHandle.luau`
+주석), 생성 비용은 약한 테이블 쓰기 하나 — 실측(mock, `luau -O2`, HEAD↔변경 교대 6회 최소값, 개당 µs): Observer 생성
+0.348 → 0.377, Effect 생성(dep 셋) 1.535 → 1.759로 늘고, `canExecute`는 0.102 → 0.091(평범한 값 0.130 → 0.087 — 브랜드 조회 둘이 하나로),
+구독된 Effect 100개에 `Set` 83 → 69, bind+unbind 한 쌍 Effect 1.14 → 1.04; 요소마다 Effect+Observer leaf를 단 `Slot:List` 1000개 생성
+22.4 → 21.9ms·전체 교체 111.9 → 110.9ms(잡음 범위). **남은 것: 공개 등록 표면(4절 외부자 열·5절 1번 "공개까지")은
+서드파티 수요가 생길 때 — 백로그.**
+
 ## 1. 제안 (사용자 원문)
 
 *"bindlifetime 에서, 즉 코어에서 코어의 다른 부분을 알고 작업하는 부분이 있는데, 그건 확장 시 거기를 건들여야해서 나는 bindableTargetBrand 같은걸 만들어서, binelifetime 을 들어갈 때 assert 나 바인드 전후 처리나 바인드 끊기는 처리를 할 수 있게 도와주는게 어떤지 싶어. bindableTargetBrand(가칭) 에 있으면 메서드들이 있는지 보고, nil이면 안 하고, 함수면 수행해주는것. 그렇게 effect 처리나 observer 처리 등을 빼두면 확장성이 오를 표면으로 보여."* — 이어서 *"이것도 네이밍에서 잘 먹었던 외부자 내부자 시선에서 조언을 받아보자."* (`session/2026-09-28-01-round13-batch-reply.md` 2026-10-01 절)

@@ -703,7 +703,7 @@ local function mockProvider(quad: any): { [any]: any }
 	end
 
 	-- `holdLifetime(inst, value)` — 커밋. base가 자기 게이트(nil·canBound·`_assertBindable`) 뒤,
-	-- 값의 커밋 뒤 훅(`_catchUp`/`_bindDestroying`) 앞에 부른다.
+	-- 값의 커밋 뒤 훅(`_afterBind` — `BindableBrand`, 2026-10-01) 앞에 부른다.
 	local function holdLifetime(inst: any, value: any)
 		if not isMockInstance(inst) then
 			Err.errorBefore("bindLifetime: inst is not a mock instance", SURFACE) -- 사용자가 부른 프리미티브 이름으로

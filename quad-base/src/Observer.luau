@@ -51,6 +51,7 @@ local QuadTypes = require("../luau_packages/quad_types")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local ObserverBrand = Brand.ObserverBrand
+local BindableBrand = Brand.BindableBrand
 
 local WEAK_KEY_MT = { __mode = "k" }
 
@@ -180,7 +181,7 @@ local function createImpl(module: any)
 	end
 
 	-- Catch-up: bind/subscribe replays a held change once, with no source.
-	-- The only caller set: `bindLifetime`, `Subscribe`, `WeakSubscribe`.
+	-- The only caller set: `bindLifetime` (through `_afterBind`), `Subscribe`, `WeakSubscribe`.
 	function Impl._catchUp(self: any)
 		if self._rerunRequired then
 			self._rerunRequired = false
@@ -198,6 +199,15 @@ local function createImpl(module: any)
 		if self._running then
 			Err.errorBefore("Quad0109 Observer: cannot bind an Observer from inside its own fn", SURFACE) -- `H-183`
 		end
+	end
+
+	-- ── lifetime hooks (`BindableBrand`, 2026-10-01 — `research/bindable-hooks-plan.md`) ──
+	-- `bindLifetime` knows no Observer: it calls `_assertBindable` (above, before the commit) and this
+	-- one (after the commit) on any `BindableBrand` member. Observer's own body — Effect has its own
+	-- (conventions: heterogeneous types share no body, `H-144`). No `_beforeUnbind`: unbinding an
+	-- Observer has nothing of its own to tear down, so `unbindLifetime` skips it.
+	function Impl._afterBind(self: any, _inst: any)
+		self:_catchUp() -- `H-159`: one catch-up for emits held before binding
 	end
 
 	-- ── four entry points (`lifecycle-pattern.md` (2)) ───────────────
@@ -278,6 +288,7 @@ local function createImpl(module: any)
 			Subscribed = false, -- the shared flag both handle types carry (`H-111`)
 		}, Impl)
 		ObserverBrand:Register(o)
+		BindableBrand:Register(o) -- lifetime hooks + `Subscribed` (`LifetimeHandle.luau`)
 		-- round13 3′ (Q73 (a), user decision 2026-09-30): join FIRST, then the forced install run — an
 		-- emit inside the install window (fn's own Set, or anyone else's) lands in `_receive` →
 		-- `_pending` → the loop runs fn again. The old order (fire → join) was incidental, not intended

@@ -11,7 +11,7 @@
 	needs no quad-base to brand its values. Semantics unchanged: one weak-key
 	member set per brand, a value registers itself into the brand(s) it
 	belongs to (multi-tagging is the point — `Source` is both `SourceBrand`
-	and `EpochBrand`), no reverse lookup (`Brand.get(x) -> tag` was reversed,
+	and `EpochBrand`; Observer/Effect are also `BindableBrand`), no reverse lookup (`Brand.get(x) -> tag` was reversed,
 	see `archive/brand-shared-registry-reversed.md`).
 
 	Every quad-base brand instance lives in this leaf file (M2 first-unit plan,
@@ -64,6 +64,14 @@ local MapperBrand = Brand() -- M5 단위 ④ — Claim의 MapperDescriptor(claim
 -- one marks the hash-part KEY objects (`AttrKey "name"` and the group's
 -- private per-name keys — both must reach the same AttrKeyFallbackHandler)
 local AttrKeyBrand = Brand()
+-- [2026-10-01 user decision — internal only, NOT on `q.`] the lifetime-hook capability brand.
+-- `bindLifetime`/`unbindLifetime` (`LifetimeHandle.luau`) know no value TYPE: a member of this brand
+-- may carry the private hooks `_assertBindable` / `_afterBind(inst)` / `_beforeUnbind()` (each
+-- optional — nil = skipped) and MUST carry the boolean `Subscribed` (the global-path arm of the
+-- liveness predicate, `H-111`). A capability brand like `EpochBrand`: Observer and Effect each
+-- register into it next to their own brand at construction (`research/bindable-hooks-plan.md`).
+-- A public registration surface is backlog (same document) — until then only quad-base types join.
+local BindableBrand = Brand()
 
 -- Plain identity predicates.
 local function isEpoch(x: any): boolean
@@ -161,6 +169,7 @@ return {
 	ModifierBrand = ModifierBrand,
 	EpochBrand = EpochBrand,
 	AttrKeyBrand = AttrKeyBrand,
+	BindableBrand = BindableBrand, -- internal (no `is*` predicate, not re-exported on `q.`)
 
 	isEpoch = isEpoch,
 	isSource = isSource,

@@ -109,6 +109,13 @@ EpochBrand:Register(source)
 직접 해당 브랜드를 가져와 등록하면 … `isXXXX`에서 각각의 구현을 넣을 필요가
 없어짐. 따라서 외부 확장도 쉬워진다."*
 
+**[2026-10-01 내부 정리 — 사용자 결정] 두 번째 능력 브랜드 `BindableBrand`**(`EpochBrand`처럼 여러 타입이 자기
+브랜드 옆에서 같이 등록 — 지금은 Observer/Effect). `bindLifetime`/`unbindLifetime`/`canExecute`가 타입 분기 대신
+이 멤버십 하나만 보고, 회원의 훅(`_assertBindable`/`_afterBind`/`_beforeUnbind`)과 계약 필드 `Subscribed`를 쓴다
+(`base/lifecycle-pattern.md`의 "(0.5)" 절 배너). **내부 전용이라 `isX` wrapper도 `q.` 재노출도 없다** — 아래
+"`isX` wrapper" 절의 예외이고, 쓰는 자리가 `LifetimeHandle.luau` 하나라 `:Is`를 직접 부른다. 공개 등록 표면은
+백로그(`research/bindable-hooks-plan.md`).
+
 **역조회는 없다** — "이 값이 대체 무엇인가"를 되묻는 창구는 제공하지 않는다.
 코퍼스가 실제로 쓰는 건 전부 `isX` 형태의 **멤버십 질문**뿐이고, 역조회를 하는
 자리는 전수 조사에서 하나도 없었다(사용자 확인: *"확실히 의미가 없어진것 같습니다
