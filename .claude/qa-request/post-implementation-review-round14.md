@@ -36,7 +36,7 @@
 
 ## §1 원칙 감사 결과
 
-(감사 진행 중 — `audit/round14-principle-audit/`)
+**[2026-10-01 완료]** 감사 넷(opus 읽기 전용, 판정 기준 `audit/round14-principle-audit/PRINCIPLES.md`)의 요지는 같은 폴더 `reactive-core.md`·`dispatch-slot.md`·`roblox.md`·`docs-spec-history.md`가 소스. 건수: 반응형 코어 (가) 2·(나) 3·(다) 1·작은 항목 5·(라) 약 130 / 디스패치·Slot (가) 3·(나) 2·(다) 4·(라) 약 80 / quad-roblox (가) 2·(다) 2·(라) 약 73 / 공개 약속·spec·이력 — 레퍼런스 약속 10, spec 4, 이력 표류 6, CHANGELOG 정정 3. 사용자에게 주제별로 제시(같은 날 세션 파일) — 결정은 §2·§4에.
 
 ## §2 재검토
 

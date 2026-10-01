@@ -259,6 +259,9 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 한 가지가 앞 절들과 다릅니다. **갈아 끼운 옛 원소는 파괴되지 않습니다** — 트리에서 떼어지기만 하고(`a.Parent`가 `nil`이 됩니다) 값 자체는 살아 있습니다. 실제로 `cur:Set(a)`를 다시 하면 그 인스턴스가 그대로 돌아옵니다. 그러니 **떼어 낸 옛 것은 여러분 소유**입니다 — 더 쓸 일이 없으면 `q.dispose(a)`로 파괴하세요. quad가 관리하는 값을 버리는 정본 경로가 `q.dispose`이고, `Slot`이 들고 있는 값이면 파괴 대신 에러로 알려 줍니다(`inst:Destroy()`는 그 확인 없이 지웁니다). 이 절처럼 `State` 자리에 **지금 놓여 있는** 원소도 같은 에러(`Quad0179`)로 막히고 원소는 붙은 채 남으니, 버리기 전에 먼저 다른 값으로 갈아 끼우세요(갈아 끼워 떼어진 옛 원소는 이미 내려와 있어 바로 버릴 수 있습니다).
 <!-- mock 실측 2026-09-14: gs.dispose2.luau — cur:Set(b) 뒤 a.Parent nil, q.dispose(a) 성공 -->
 
+갈아 끼우면서 옛 것은 더 쓰지 않을 거라면 두 줄을 한 줄로 줄일 수 있습니다. `cur:SetAndDispose(b)`는 `cur:Set(b)`를 한 뒤, 떼어진 옛 원소(`a`)를 `q.dispose`로 파괴합니다 — 순서가 "갈아 끼우기 → 버리기"라 위 에러에 걸리지 않고, 처음 채울 때처럼 옛 값이 `nil`이면 지울 것이 없어 그냥 넘어갑니다. `cur:SetAndDispose(nil)`은 자리를 비우면서 마지막 원소까지 버립니다. 자세한 규칙은 [레퍼런스: `source:SetAndDispose(v)`](../reference/core/02-source.md#sourcesetanddisposev)에 있습니다. **[2026-10-01 기준]** `:SetAndDispose`는 게시된 3.2.0에는 없습니다 — 다음 릴리즈부터([변경 이력](../../CHANGELOG.md)의 `[Unreleased]`). 3.2.0에서는 위처럼 `:Set` 뒤에 `q.dispose`를 직접 부르세요.
+<!-- mock 실측 2026-10-01: cur:SetAndDispose(b) 뒤 a 파괴·b가 자리에, cur:SetAndDispose(nil) 뒤 b 파괴·자리 빔 -->
+
 <details>
 <summary><strong>이 자리도 진짜 <code>Slot</code>인가요?</strong></summary>
 
