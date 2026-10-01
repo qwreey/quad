@@ -1,0 +1,16 @@
+-- round 1 done, heap 2824 KB
+-- round 2 done, heap 2824 KB
+-- round 3 done, heap 2825 KB
+-- round 4 done, heap 2825 KB
+-- round 5 done, heap 2827 KB
+case (us/op, median of 5)                       before         F F/before
+mount Frame, 5 string props                     22.308    22.608    1.013
+mount Frame, 5 props + 4 inst children          59.183    59.432    1.004
+mount Frame, 3 State string props               22.380    22.718    1.015
+emit: Name Source:Set (string key)               1.395     1.470    1.054
+emit: Text on 8 frames (string key)             10.789    11.306    1.048
+emit: Event Activated swap (NORMAL-1)            1.728     1.827    1.057
+emit: InstanceChild swap (number key)            4.279     4.428    1.035
+emit: OnChange swap (number key)                 3.224     3.318    1.029
+emit: Tag swap (number key, FALLBACK)            3.644     4.226    1.160
+emit: Ref swap (number key, HIGH)                3.731     3.715    0.996

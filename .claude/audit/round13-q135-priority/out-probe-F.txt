@@ -1,0 +1,178 @@
+== A. misuse at string keys (literal) ==
+Ref @Name(prop)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:27: Quad0137 Ref: must be an array item, not the value of a string key
+Ref @Size(prop)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:28: Quad0137 Ref: must be an array item, not the value of a string key
+Ref @Visible(prop)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:29: Quad0137 Ref: must be an array item, not the value of a string key
+Ref @Activated(event)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:30: Quad0137 Ref: must be an array item, not the value of a string key
+Ref @UICorner(shorthand)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:31: Quad0137 Ref: must be an array item, not the value of a string key
+Ref @Parent	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:32: Quad0137 Ref: must be an array item, not the value of a string key
+Ref @Foo(unknown)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:33: Quad0137 Ref: must be an array item, not the value of a string key
+PreRef @Name(prop)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:27: Quad0137 PreRef: must be an array item, not the value of a string key
+PreRef @Size(prop)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:28: Quad0137 PreRef: must be an array item, not the value of a string key
+PreRef @Visible(prop)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:29: Quad0137 PreRef: must be an array item, not the value of a string key
+PreRef @Activated(event)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:30: Quad0137 PreRef: must be an array item, not the value of a string key
+PreRef @UICorner(shorthand)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:31: Quad0137 PreRef: must be an array item, not the value of a string key
+PreRef @Parent	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:32: Quad0137 PreRef: must be an array item, not the value of a string key
+PreRef @Foo(unknown)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:33: Quad0137 PreRef: must be an array item, not the value of a string key
+PostRef @Name(prop)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:27: Quad0137 PostRef: must be an array item, not the value of a string key
+PostRef @Size(prop)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:28: Quad0137 PostRef: must be an array item, not the value of a string key
+PostRef @Visible(prop)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:29: Quad0137 PostRef: must be an array item, not the value of a string key
+PostRef @Activated(event)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:30: Quad0137 PostRef: must be an array item, not the value of a string key
+PostRef @UICorner(shorthand)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:31: Quad0137 PostRef: must be an array item, not the value of a string key
+PostRef @Parent	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:32: Quad0137 PostRef: must be an array item, not the value of a string key
+PostRef @Foo(unknown)	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:33: Quad0137 PostRef: must be an array item, not the value of a string key
+Observer @Name(prop)	Quad0116  | ./.claude/audit/round13-q135-priority/probe.luau:27: Quad0116 Observer: must be an array item, not the value of a string key
+Observer @Size(prop)	Quad0116  | ./.claude/audit/round13-q135-priority/probe.luau:28: Quad0116 Observer: must be an array item, not the value of a string key
+Observer @Visible(prop)	Quad0116  | ./.claude/audit/round13-q135-priority/probe.luau:29: Quad0116 Observer: must be an array item, not the value of a string key
+Observer @Activated(event)	Quad0116  | ./.claude/audit/round13-q135-priority/probe.luau:30: Quad0116 Observer: must be an array item, not the value of a string key
+Observer @UICorner(shorthand)	Quad0116  | ./.claude/audit/round13-q135-priority/probe.luau:31: Quad0116 Observer: must be an array item, not the value of a string key
+Observer @Parent	Quad0116  | ./.claude/audit/round13-q135-priority/probe.luau:32: Quad0116 Observer: must be an array item, not the value of a string key
+Observer @Foo(unknown)	Quad0116  | ./.claude/audit/round13-q135-priority/probe.luau:33: Quad0116 Observer: must be an array item, not the value of a string key
+Effect @Name(prop)	Quad0097  | ./.claude/audit/round13-q135-priority/probe.luau:27: Quad0097 Effect: must be an array item, not the value of a string key
+Effect @Size(prop)	Quad0097  | ./.claude/audit/round13-q135-priority/probe.luau:28: Quad0097 Effect: must be an array item, not the value of a string key
+Effect @Visible(prop)	Quad0097  | ./.claude/audit/round13-q135-priority/probe.luau:29: Quad0097 Effect: must be an array item, not the value of a string key
+Effect @Activated(event)	Quad0097  | ./.claude/audit/round13-q135-priority/probe.luau:30: Quad0097 Effect: must be an array item, not the value of a string key
+Effect @UICorner(shorthand)	Quad0097  | ./.claude/audit/round13-q135-priority/probe.luau:31: Quad0097 Effect: must be an array item, not the value of a string key
+Effect @Parent	Quad0097  | ./.claude/audit/round13-q135-priority/probe.luau:32: Quad0097 Effect: must be an array item, not the value of a string key
+Effect @Foo(unknown)	Quad0097  | ./.claude/audit/round13-q135-priority/probe.luau:33: Quad0097 Effect: must be an array item, not the value of a string key
+Slot @Name(prop)	Quad0141  | ./.claude/audit/round13-q135-priority/probe.luau:27: Quad0141 Slot: must be an array item, not the value of a string key
+Slot @Size(prop)	Quad0141  | ./.claude/audit/round13-q135-priority/probe.luau:28: Quad0141 Slot: must be an array item, not the value of a string key
+Slot @Visible(prop)	Quad0141  | ./.claude/audit/round13-q135-priority/probe.luau:29: Quad0141 Slot: must be an array item, not the value of a string key
+Slot @Activated(event)	Quad0141  | ./.claude/audit/round13-q135-priority/probe.luau:30: Quad0141 Slot: must be an array item, not the value of a string key
+Slot @UICorner(shorthand)	Quad0141  | ./.claude/audit/round13-q135-priority/probe.luau:31: Quad0141 Slot: must be an array item, not the value of a string key
+Slot @Parent	Quad0141  | ./.claude/audit/round13-q135-priority/probe.luau:32: Quad0141 Slot: must be an array item, not the value of a string key
+Slot @Foo(unknown)	Quad0141  | ./.claude/audit/round13-q135-priority/probe.luau:33: Quad0141 Slot: must be an array item, not the value of a string key
+Tag @Name(prop)	Quad0266  | ./.claude/audit/round13-q135-priority/probe.luau:27: Quad0266 Tag: must be an array item, not the value of a string key
+Tag @Size(prop)	Quad0266  | ./.claude/audit/round13-q135-priority/probe.luau:28: Quad0266 Tag: must be an array item, not the value of a string key
+Tag @Visible(prop)	Quad0266  | ./.claude/audit/round13-q135-priority/probe.luau:29: Quad0266 Tag: must be an array item, not the value of a string key
+Tag @Activated(event)	Quad0266  | ./.claude/audit/round13-q135-priority/probe.luau:30: Quad0266 Tag: must be an array item, not the value of a string key
+Tag @UICorner(shorthand)	Quad0266  | ./.claude/audit/round13-q135-priority/probe.luau:31: Quad0266 Tag: must be an array item, not the value of a string key
+Tag @Parent	Quad0266  | ./.claude/audit/round13-q135-priority/probe.luau:32: Quad0266 Tag: must be an array item, not the value of a string key
+Tag @Foo(unknown)	Quad0266  | ./.claude/audit/round13-q135-priority/probe.luau:33: Quad0266 Tag: must be an array item, not the value of a string key
+Attr @Name(prop)	Quad0267  | ./.claude/audit/round13-q135-priority/probe.luau:27: Quad0267 Attr: must be an array item, not the value of a string key
+Attr @Size(prop)	Quad0267  | ./.claude/audit/round13-q135-priority/probe.luau:28: Quad0267 Attr: must be an array item, not the value of a string key
+Attr @Visible(prop)	Quad0267  | ./.claude/audit/round13-q135-priority/probe.luau:29: Quad0267 Attr: must be an array item, not the value of a string key
+Attr @Activated(event)	Quad0267  | ./.claude/audit/round13-q135-priority/probe.luau:30: Quad0267 Attr: must be an array item, not the value of a string key
+Attr @UICorner(shorthand)	Quad0267  | ./.claude/audit/round13-q135-priority/probe.luau:31: Quad0267 Attr: must be an array item, not the value of a string key
+Attr @Parent	Quad0267  | ./.claude/audit/round13-q135-priority/probe.luau:32: Quad0267 Attr: must be an array item, not the value of a string key
+Attr @Foo(unknown)	Quad0267  | ./.claude/audit/round13-q135-priority/probe.luau:33: Quad0267 Attr: must be an array item, not the value of a string key
+== A2. misuse at string keys via State / Store ==
+Ref Source @Name	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:39: Quad0137 Ref: must be an array item, not the value of a string key
+Ref Source @Size	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:40: Quad0137 Ref: must be an array item, not the value of a string key
+Ref Source @Activated	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:41: Quad0137 Ref: must be an array item, not the value of a string key
+Ref Store field @Name	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:42: Quad0137 Ref: must be an array item, not the value of a string key
+Ref Source("x")->Set(v) @Name	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:43: Quad0137 Ref: must be an array item, not the value of a string key
+PreRef Source @Name	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:39: Quad0137 PreRef: must be an array item, not the value of a string key
+PreRef Source @Size	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:40: Quad0137 PreRef: must be an array item, not the value of a string key
+PreRef Source @Activated	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:41: Quad0137 PreRef: must be an array item, not the value of a string key
+PreRef Store field @Name	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:42: Quad0137 PreRef: must be an array item, not the value of a string key
+PreRef Source("x")->Set(v) @Name	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:43: Quad0137 PreRef: must be an array item, not the value of a string key
+PostRef Source @Name	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:39: Quad0137 PostRef: must be an array item, not the value of a string key
+PostRef Source @Size	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:40: Quad0137 PostRef: must be an array item, not the value of a string key
+PostRef Source @Activated	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:41: Quad0137 PostRef: must be an array item, not the value of a string key
+PostRef Store field @Name	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:42: Quad0137 PostRef: must be an array item, not the value of a string key
+PostRef Source("x")->Set(v) @Name	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:43: Quad0137 PostRef: must be an array item, not the value of a string key
+Observer Source @Name	Quad0116  | ./.claude/audit/round13-q135-priority/probe.luau:39: Quad0116 Observer: must be an array item, not the value of a string key
+Observer Source @Size	Quad0116  | ./.claude/audit/round13-q135-priority/probe.luau:40: Quad0116 Observer: must be an array item, not the value of a string key
+Observer Source @Activated	Quad0116  | ./.claude/audit/round13-q135-priority/probe.luau:41: Quad0116 Observer: must be an array item, not the value of a string key
+Observer Store field @Name	Quad0116  | ./.claude/audit/round13-q135-priority/probe.luau:42: Quad0116 Observer: must be an array item, not the value of a string key
+Observer Source("x")->Set(v) @Name	Quad0116  | ./.claude/audit/round13-q135-priority/probe.luau:43: Quad0116 Observer: must be an array item, not the value of a string key
+Effect Source @Name	Quad0097  | ./.claude/audit/round13-q135-priority/probe.luau:39: Quad0097 Effect: must be an array item, not the value of a string key
+Effect Source @Size	Quad0097  | ./.claude/audit/round13-q135-priority/probe.luau:40: Quad0097 Effect: must be an array item, not the value of a string key
+Effect Source @Activated	Quad0097  | ./.claude/audit/round13-q135-priority/probe.luau:41: Quad0097 Effect: must be an array item, not the value of a string key
+Effect Store field @Name	Quad0097  | ./.claude/audit/round13-q135-priority/probe.luau:42: Quad0097 Effect: must be an array item, not the value of a string key
+Effect Source("x")->Set(v) @Name	Quad0097  | ./.claude/audit/round13-q135-priority/probe.luau:43: Quad0097 Effect: must be an array item, not the value of a string key
+Slot Source @Name	Quad0141  | ./.claude/audit/round13-q135-priority/probe.luau:39: Quad0141 Slot: must be an array item, not the value of a string key
+Slot Source @Size	Quad0141  | ./.claude/audit/round13-q135-priority/probe.luau:40: Quad0141 Slot: must be an array item, not the value of a string key
+Slot Source @Activated	Quad0141  | ./.claude/audit/round13-q135-priority/probe.luau:41: Quad0141 Slot: must be an array item, not the value of a string key
+Slot Store field @Name	Quad0141  | ./.claude/audit/round13-q135-priority/probe.luau:42: Quad0141 Slot: must be an array item, not the value of a string key
+Slot Source("x")->Set(v) @Name	Quad0141  | ./.claude/audit/round13-q135-priority/probe.luau:43: Quad0141 Slot: must be an array item, not the value of a string key
+Tag Source @Name	Quad0266  | ./.claude/audit/round13-q135-priority/probe.luau:39: Quad0266 Tag: must be an array item, not the value of a string key
+Tag Source @Size	Quad0266  | ./.claude/audit/round13-q135-priority/probe.luau:40: Quad0266 Tag: must be an array item, not the value of a string key
+Tag Source @Activated	Quad0266  | ./.claude/audit/round13-q135-priority/probe.luau:41: Quad0266 Tag: must be an array item, not the value of a string key
+Tag Store field @Name	Quad0266  | ./.claude/audit/round13-q135-priority/probe.luau:42: Quad0266 Tag: must be an array item, not the value of a string key
+Tag Source("x")->Set(v) @Name	Quad0266  | ./.claude/audit/round13-q135-priority/probe.luau:43: Quad0266 Tag: must be an array item, not the value of a string key
+Attr Source @Name	Quad0267  | ./.claude/audit/round13-q135-priority/probe.luau:39: Quad0267 Attr: must be an array item, not the value of a string key
+Attr Source @Size	Quad0267  | ./.claude/audit/round13-q135-priority/probe.luau:40: Quad0267 Attr: must be an array item, not the value of a string key
+Attr Source @Activated	Quad0267  | ./.claude/audit/round13-q135-priority/probe.luau:41: Quad0267 Attr: must be an array item, not the value of a string key
+Attr Store field @Name	Quad0267  | ./.claude/audit/round13-q135-priority/probe.luau:42: Quad0267 Attr: must be an array item, not the value of a string key
+Attr Source("x")->Set(v) @Name	Quad0267  | ./.claude/audit/round13-q135-priority/probe.luau:43: Quad0267 Attr: must be an array item, not the value of a string key
+== A3. Q137 ② Modifier fields ==
+Modifier{Name=Tag} create	Quad0064  | ./.claude/audit/round13-q135-priority/probe.luau:47: Quad0064 Modifier: field "Name" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Tag/Attr/Modifier/mapper descriptor)
+Modifier{Name=Tag} mount	Quad0064  | ./.claude/audit/round13-q135-priority/probe.luau:48: Quad0064 Modifier: field "Name" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Tag/Attr/Modifier/mapper descriptor)
+Modifier{Size=Tag} mount	Quad0064  | ./.claude/audit/round13-q135-priority/probe.luau:49: Quad0064 Modifier: field "Size" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Tag/Attr/Modifier/mapper descriptor)
+Modifier():Name(Attr) create	Quad0057  | ./.claude/audit/round13-q135-priority/probe.luau:50: Quad0057 Modifier: field "Name" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Tag/Attr/Modifier/mapper descriptor)
+Modifier():Name(Attr) mount	Quad0057  | ./.claude/audit/round13-q135-priority/probe.luau:51: Quad0057 Modifier: field "Name" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Tag/Attr/Modifier/mapper descriptor)
+Modifier{Foo=Tag} mount	Quad0064  | ./.claude/audit/round13-q135-priority/probe.luau:52: Quad0064 Modifier: field "Foo" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Tag/Attr/Modifier/mapper descriptor)
+Modifier{Name=Source(Tag)} mount	Quad0266  | ./.claude/audit/round13-q135-priority/probe.luau:53: Quad0266 Tag: must be an array item, not the value of a string key
+Modifier{Name=Ref} create (control)	Quad0064  | ./.claude/audit/round13-q135-priority/probe.luau:54: Quad0064 Modifier: field "Name" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Tag/Attr/Modifier/mapper descriptor)
+Modifier{Name=Source(Ref)} mount	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:55: Quad0137 Ref: must be an array item, not the value of a string key
+== B. normal paths (must stay ok) ==
+B1 Ref literal numeric	true
+B2 PreRef literal numeric	true
+B3 PostRef literal numeric	true
+B4 Ref via Source numeric	true
+B5 Ref via Store numeric	true
+B6 Observer literal numeric fires	2
+B7 Observer via Source numeric	2
+B8 Effect literal numeric	2
+B9 Effect via Source numeric	2
+B10 Tag literal numeric	true	true
+B11 Tag via Source numeric	true	false	true
+B12 Attr literal numeric	5
+B13 Attr via Source numeric	2
+B14 AttrKey literal	100
+B15 AttrKey via Source	7
+B16 StringAttr	v
+B17 Slot literal numeric	true
+B18 Slot via Source numeric	true
+B19 Modifier normal field	mod
+B20 Modifier State field	m2
+B21 Event literal fn	1
+B22 Event via Source fn	1
+B23 Property via Source	n2	true
+B24 Shorthand	true
+B25 Shorthand None->4 via Source	true
+B26 Instance child + prop	true
+B27 OnChange	1
+== C. other-key misuse (message must stay as before or improve) ==
+PreRef via Source numeric	Quad0136  | ./.claude/audit/round13-q135-priority/probe.luau:89: Quad0136 PreRef: must be a literal array item - it reached array index 1 through a State/Store value, which the pre-pass cannot see
+PostRef via Source numeric	Quad0136  | ./.claude/audit/round13-q135-priority/probe.luau:90: Quad0136 PostRef: must be a literal array item - it reached array index 1 through a State/Store value, which the pre-pass cannot see
+Slot at [0] raw process	Quad0141  | ./.claude/audit/round13-q135-priority/probe.luau:91: Quad0141 Slot: must be an array item, not the value of a number key
+Ref at AttrKey key	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:92: Quad0137 Ref: must be an array item, not the value of a table key
+Tag at AttrKey key	Quad0266  | ./.claude/audit/round13-q135-priority/probe.luau:93: Quad0266 Tag: must be an array item, not the value of a table key
+Ref at boolean key	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:94: Quad0137 Ref: must be an array item, not the value of a boolean key
+PreRef at AttrKey key	Quad0137  | ./.claude/audit/round13-q135-priority/probe.luau:95: Quad0137 PreRef: must be an array item, not the value of a table key
+Observer at AttrKey key	Quad0116  | ./.claude/audit/round13-q135-priority/probe.luau:96: Quad0116 Observer: must be an array item, not the value of a table key
+Effect at AttrKey key	Quad0097  | ./.claude/audit/round13-q135-priority/probe.luau:97: Quad0097 Effect: must be an array item, not the value of a table key
+Attr at AttrKey key	Quad0267  | ./.claude/audit/round13-q135-priority/probe.luau:98: Quad0267 Attr: must be an array item, not the value of a table key
+Modifier transform returns Tag	Quad0057  | ./.claude/audit/round13-q135-priority/probe.luau:99: Quad0057 Modifier: field "Name" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Tag/Attr/Modifier/mapper descriptor)
+== D. handler order ==
+1	NoneHandler	1000	nil
+2	ProcessedModifierHandler	1000	nil
+3	EffectLeafHandler	1000	number
+4	RefLeafHandler	1000	number
+5	ObserverLeafHandler	1000	number
+6	SlotHandler	1000	number
+7	NilHandler	1000	number
+8	StoreBind	1000	nil
+9	ProcessedPreRefHandler	1000	nil
+10	ProcessedPostRefHandler	1000	nil
+11	EarlyGuardFilter	999	nil
+12	InstanceShorthand	1	string
+13	InstanceChild	0	number
+14	Property	0	string
+15	Event	-1	string
+16	OnChange	-1	number
+17	PostRefDynamicPathGuard	-1000000	nil
+18	SlotDynamicPathGuard	-1000000	nil
+19	AttrDynamicPathGuard	-1000000	nil
+20	PreRefDynamicPathGuard	-1000000	nil
+21	RefDynamicPathGuard	-1000000	nil
+22	AttrKeyFallbackHandler	-1000000	nil
+23	TagDynamicPathGuard	-1000000	nil
+24	EffectDynamicPathGuard	-1000000	nil
+25	AttrGroupFallbackHandler	-1000000	number
+26	ObserverDynamicPathGuard	-1000000	nil
+27	TagFallbackHandler	-1000000	number
+== E. provider override at NORMAL (spec.leaf §7 shape — the FALLBACK contract) ==
+NORMAL override for Observer@MyThing	Quad0116  | ./.claude/audit/round13-q135-priority/probe.luau:115: Quad0116 Observer: must be an array item, not the value of a string key

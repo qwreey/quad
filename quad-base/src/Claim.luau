@@ -126,15 +126,14 @@ local function Init(module: any)
 		-- drive가 보는 모든 배열 자리를 똑같이 본다.
 		local children: { [number]: any } = {}
 		for i, v in desc._props :: { [any]: any } do
-			-- round11 code-review (`H-560`): Dispatch's array-key domain (`H-495`, positive integers)
-			-- used to be asked only by `drive` — after the root and this child were claimed and the
-			-- child driven. A pure predicate belongs in the validating pass (`H-30`/`H-31`).
-			-- round13 Q85 (i) (user decision 2026-10-01): EVERY numeric key, not only a descriptor's —
-			-- `{ M.TextLabel("Title")({…}), [0] = D.Frame({}) }` claimed and drove the tree, then died in
-			-- `drive` with `Quad0085`, and the fixed retry hit `Quad0029` (already claimed). Same loop.
-			if type(i) == "number" and (i < 1 or i % 1 ~= 0) then
-				Err.errorBeforeNearest(`Quad0031 Claim: array keys must be positive integers (got {i})`, SURFACE)
-			end
+			-- [2026-10-01 user decision — withdrawn] No array-key domain check here. Pass 1 is a pure
+			-- MAPPING pass: find the descriptors among the props, resolve them to Instances and stack
+			-- the plan so the drive order matches `New`'s. User: "claim 은 그냥 다른 디스크립터를 해석해서
+			-- 실제 instance 를 얻어오고 거기 붙이는 작업을 돌려주는 경로 … 에러가 derive 에 나는것도
+			-- 정직한 경로". A bad array key (`[0]`, `[1.5]`, descriptor or not) is `drive`'s `Quad0085`,
+			-- raised after claim/drive of what precedes it — documented (roblox/04). Both earlier checks
+			-- are withdrawn: round11 `H-560` (descriptor slots) and round13 Q85 (i) (every numeric key);
+			-- `Quad0031` is retired.
 			if type(i) == "number" and Brand.isMapperDescriptor(v) then
 				-- 이름 중복은 UB(§3 — debug 검사는 debug 도구 몫). 부재는 [2026-09-16 hunt C] fail-fast:
 				-- 옛 "자연 크래시"는 `LifetimeHandle.luau:59: Relate:GetWeak: inst must not be nil`로 죽어
@@ -184,7 +183,7 @@ local function Init(module: any)
 
 	local function Claim(inst: any, desc: any): any
 		-- round13 Q89 (user decision 2026-09-29): every check inside ONE `q.Claim` call (these
-		-- two and pass 1's `Quad0027`~`0032`) blames NEAREST. Nothing in quad re-enters `Claim` —
+		-- two and pass 1's `Quad0027`~`0030`/`0032`; `0031` retired) blames NEAREST. Nothing in quad re-enters `Claim` —
 		-- `resolve`/`commit` are untagged locals — so its own frame is the only tagged one below
 		-- the user's line; OUTERMOST skipped it and named the `:Set` that woke a callback calling
 		-- `Claim`. (`drive`/`bindLifetime`/`getOffsetAt` stay OUTERMOST: reached through tagged

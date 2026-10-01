@@ -289,15 +289,15 @@ do
 	assert(title2.Name == "Title", "nothing driven")
 	q.Claim(root2, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "c" }) })) -- nothing was claimed by the rejected call
 	assert(title2.Name == "c")
-	-- array-key domain (H-560): a [0] descriptor is refused in pass 1, before any claim
+	-- array-key domain: [2026-10-01 user decision — round11 H-560 withdrawn] pass 1 is a pure mapping pass.
+	-- A [0] descriptor is resolved, claimed and driven like any other; the bad key is drive's Quad0085 on
+	-- the parent, AFTER the claims (documented in roblox/04 — the honest path, not a pass-1 check).
 	local root3, title3 = makeTemplate()
 	local ok3, err3 = pcall(function()
 		return q.Claim(root3, M.Frame(M.Root)({ [0] = M.TextLabel("Title")({ Name = "z" }) }))
 	end)
-	assert(not ok3 and string.find(tostring(err3), "Claim: array keys must be positive integers (got 0)", 1, true) ~= nil, tostring(err3))
-	assert(title3.Name == "Title", "not driven")
-	q.Claim(root3, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "ok" }) }))
-	assert(title3.Name == "ok", "not claimed either")
+	assert(not ok3 and string.find(tostring(err3), "Quad0085 Dispatch.drive: array keys must be positive integers (got 0)", 1, true) ~= nil, tostring(err3))
+	assert(q.Backend.isClaimed(root3) and q.Backend.isClaimed(title3) and title3.Name == "z", "the claims (and the child's drive) already happened")
 	print("PASS")
 end
 
@@ -330,18 +330,21 @@ do
 end
 
 print()
-print("=== 17. round13 Q85 (i)·(a′) (2026-10-01) — 1패스가 디스크립터가 아닌 값의 숫자 키도 도메인 검사(claim 0); Modifier 필드의 디스크립터는 만드는 줄에서 거부 ===")
+print("=== 17. round13 Q85 (a′) (2026-10-01) — Modifier 필드의 디스크립터는 만드는 줄에서 거부; 같은 날 (i) 1패스 숫자 키 검사는 철회 — 디스크립터가 아닌 값의 나쁜 숫자 키는 claim·drive 뒤 drive의 Quad0085 ===")
 do
 	for _, badKey in { 0, 2.5, -1 } do
 		local root, title = makeTemplate()
 		local ok, err = pcall(function()
 			return q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "t" }), [badKey] = q.Declaration.Frame({}) }))
 		end)
-		assert(not ok and string.find(tostring(err), `Quad0031 Claim: array keys must be positive integers (got {badKey})`, 1, true) ~= nil, tostring(err))
-		assert(not q.Backend.isClaimed(root) and not q.Backend.isClaimed(title) and title.Name == "Title", "nothing claimed nor driven")
-		-- the fixed retry goes through (it used to hit Quad0029 — the root stayed claimed)
-		q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "t" }) }))
-		assert(title.Name == "t" and q.Backend.isClaimed(root), "retry works")
+		assert(not ok and string.find(tostring(err), `Quad0085 Dispatch.drive: array keys must be positive integers (got {badKey})`, 1, true) ~= nil, tostring(err))
+		-- pass 1 is a mapping pass (user decision 2026-10-01): the root and the mapped child are claimed and
+		-- the child driven before the root's drive refuses the key — so a retry on the same root is Quad0029
+		assert(q.Backend.isClaimed(root) and q.Backend.isClaimed(title) and title.Name == "t", "claimed and the child driven before drive's Quad0085")
+		local okR, errR = pcall(function()
+			return q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "t" }) }))
+		end)
+		assert(not okR and string.find(tostring(errR), "Quad0029", 1, true) ~= nil, tostring(errR))
 	end
 	-- a mapper descriptor inside a Modifier field: refused where the Modifier is made (initial table / setter)
 	local okA, errA = pcall(function()

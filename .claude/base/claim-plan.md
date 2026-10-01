@@ -100,7 +100,7 @@ local cloned = Claim(template:Clone(), M.Frame(M.Root) {   -- 루트는 이름 �
   `error(…, 2)`라 적혀 있었으나 실 구현은 §7-9/-10 정정과 같은 이유로
   `errorBefore(SURFACE)`다 — 재사용 검사가 DFS 재귀 안이라 더더욱; **[2026-09-29 round13 Q89 사용자 결정]** 이제
   `errorBeforeNearest(SURFACE)` — DFS 재귀는 태그 없는 로컬(`resolve`)이라 태그 프레임은 `Claim` 하나뿐이고, Outermost는
-  콜백 안에서 부른 `q.Claim`을 건너뛰어 콜백을 깨운 `:Set` 줄을 가리켰다. `q.Claim` 한 호출 안 검사 여덟(`Quad0027`~`0034`) 전부 같다). **[2026-08-28 `/code-review` 정정]**
+  콜백 안에서 부른 `q.Claim`을 건너뛰어 콜백을 깨운 `:Set` 줄을 가리켰다. `q.Claim` 한 호출 안 검사 여덟(`Quad0027`~`0034`) 전부 같다 — **[2026-10-01]** `Quad0031` 폐기로 지금은 일곱). **[2026-08-28 `/code-review` 정정]**
   `PreRef` 관용구의 다른 절반(배열 슬롯을 `ProcessedPreRef` 센티널로 교체)은
   **가져오지 않는다** — 매핑 자식의 배열 슬롯은 §4대로 **해석된 Instance로 교체**돼야
   `InstanceChildHandler`에 닿고, 루트 디스크립터는 배열에 있지도 않다. 사용자
@@ -389,10 +389,19 @@ derive 를 걸어야해. 이건 derive 에선 구현하지 않고, 그 위의 �
 
 19. **[2026-09-17 round11 `H-539`] `Claim`은 두 패스다 — 해석(검증)이 끝난 뒤에야 claim·drive.** **[같은 날 21번·code-review 정정 — 이 항목의 "계획 순서대로 nativeClaim"은 루트부터로 바뀌었고, "남는 비원자성은 drive 단계뿐"은 "drive 단계 + 자식이 이미 claim된 경우"다(Q64).]** round10 §5가 이월한 잔여("부재 raise가 `nativeClaim`/`_fired` 뒤라 고친 재시도가 already claimed")를 탐사 E′가 가짜 프로바이더로 재현했다: `nativeClaim(root)`이 자식 조회보다 먼저 무조건 커밋돼, 자식 부재·클래스 불일치(15·17번)·디스크립터 재사용 어느 실패에서도 루트와 앞선 형제가 claim된 채 남고 같은 루트로 고쳐 재시도하면 `nativeClaim: Instance is already claimed by quad`가 진짜 원인을 가렸다 — `H-425`/`H-471`이 props 게이트에 세운 원칙("디스크립터는 그대로 남아 재시도가 진짜 원인을 보고한다")과 어긋난다. 처방은 새 메커니즘이 아니라 `slot-plan.md`의 선행 패스 원칙(`H-30`/`H-31` — 여러 요소를 받는 연산은 mutate 전에 검증을 전부 통과)을 Claim에 적용한 것: 1패스 `resolve`가 `_fired`·`seen`(같은 디스크립터가 한 트리의 두 자리)·props 테이블·`nativeFindChild`를 트리 전체에 걸쳐 검사만 하고 `{ inst, desc, children }` 계획을 자식 먼저(bottom-up) 쌓는다, 2패스 `commit`이 계획 순서대로 `nativeClaim` → `_fired = true` → 배열 슬롯을 해석된 Instance로 교체 → `drive`. §4의 "claim은 그 inst의 drive 앞"(②가 ③④에 앞선다)은 그대로다 — 바뀐 것은 "루트 claim이 자식 조회에 앞선다"는 순서뿐이고 그건 §4가 요구한 적 없다. 남는 비원자성은 drive 단계(핸들러 throw)뿐 — Declaration 중간 throw의 일반 UB로 레퍼런스 roblox/04에 적었다. 스펙 `spec.claim` 12.
 
-**[2026-09-27 round13 Q84·Q85 검토 중]** 위 1패스 `resolve`가 검증하는 범위가 실행 탐사에서 좁다고 나왔다 —
-Claim이 루트 디스크립터의 클래스를 대조하지 않는 경우(Q84), 1패스 검증이 디스크립터가 든 자리만 보는
-범위 문제(Q85)가 있다. 사용자 문항이 열려 있다(`qa-request/post-implementation-review-round13.md` §4).
-본문은 결정 전이라 그대로 둔다.
+**[2026-10-01 round13 Q84·Q85 닫힘 — 1패스는 순수 매핑 패스]** Q84는 문서 한 줄(루트 클래스 무대조 —
+roblox/04). Q85는 같은 날 두 번 갈렸다: 처음엔 "싼 검사"로 1패스가 모든 숫자 키의 도메인을 보게
+넓혔다가(`Quad0031`), 사용자가 **round11 `H-560`(디스크립터 자리의 배열 키 도메인 검사)까지 함께 철회**했다 —
+1패스 `resolve`는 디스크립터를 찾아 실제 Instance로 해석하고 `New`와 같은 drive 순서로 계획을 쌓는
+**매핑 패스**일 뿐이고, 잘못된 배열 키는 claim·drive 뒤 `drive`의 `Quad0085`가 정직한 경로다. 사용자:
+*"claim 은 그냥 다른 디스크립터를 해석해서 실제 instance 를 얻어오고 거기 붙이는 작업을 돌려주는 경로 …
+에러가 derive 에 나는것도 정직한 경로라고 생각해 … 계약이 확대 해석된것 같은데. 배열 키 검사 까지 강하게
+하는건 아님. 단지 매핑 경로야. props 안에 다른 처리할 디스크립터가 있나 보고 처리 스택을 쌓고, 실제 New
+처럼 처리되도록 순서를 맞춰주는것 뿐이였어."* + *"H-560도 빼고 순수 매핑으로 되돌리자."* 그래서 19번이
+인용하는 `H-30`/`H-31` 선행 패스 원칙은 Claim에선 "매핑에 필요한 검사"(1회용·props 테이블·부재/클래스·
+같은 자식·이미 소유)까지만 적용된다 — props 일반 검증까지 1패스로 끌어오지 않는다. `Quad0031`은 폐기
+(errors/06 `(폐기)` 헤딩, 번호 재사용 금지). Modifier 생성 시점의 디스크립터 거부(Q85 (a′), `Quad0057`/
+`0064`)는 받지 않는 값의 입구 검사라 유지. 스펙 `spec.claim` 13·17이 drive `Quad0085`·claim 잔류를 고정.
 
 20. **[2026-09-17 round11 탐사 A′ — `H-544`·`H-545`·`H-546`, Q60] 공유 레지스트리의 산술·부기는 정합(모델 기반 퍼즈 1200시드 × 500스텝 + 400 × 200 무발견); 남은 것은 "거부·예외 뒤에 남는 상태" 축.** (1) **`H-544`** `D.<Class> { … }`가 중간에 던지면(nil 구멍·프로퍼티 오타) 그 전에 앉힌 정적 자식은 반쯤 지어진 Instance에 자리를 잡은 채 남고, 그 Instance는 호출자에게 안 돌아오므로 nil 구멍 메시지가 시키는 재시도가 "already mounted elsewhere"로 실패했다 — `dispose`도 거부, `retractFrom`도 NOOP retractor라 빠져나갈 길이 없었다. 원자성은 pcall 없이는 못 만드니(architecture "감싸지 않는다") 회수 경로를 문서화한다: 반쯤 지어진 Instance는 `child.Parent`로 닿으니 `q.dispose`하면 자식들이 같이 파괴된다(메시지에 구절 추가, 레퍼런스 core/06 캐비엇). (2) **`H-545`** 정적 자리에 Slot의 `H-500` 순환 가드 짝이 없어 mock에서 `src:Set(host)`가 `host.Parent == host`를 만들었고, 실기기라면 엔진의 circular-reference raise가 `claimOwnerAt`/`setOffsetSource` 뒤에 와 (1)의 모양이 됐을 것 — `InstanceChild.process` 머리에서 `inst`의 조상 사슬을 걸어 `v`를 만나면 `Dispatch: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)`(생성 경로는 `Parent`가 nil이라 O(1)). (3) **`H-546`** 공개된 `claimOwnerAt`/`releaseOwner`만 형제 여섯의 nil 게이트(`H-504`)가 없었다 — `claimOwnerAt(nil, …)`이 `Relate:GetWeak: inst must not be nil`(leaf blame)로 죽고, `claimOwnerAt(v, nil, k)`는 OWNER nil·OWNER_POS k를 쓰고 **true를 돌려줘** 프로바이더가 nil 소유자 아래 자식을 붙였다 — 넷 다 `Bookkeeping.<op>: … must not be nil`. 곁들여 F5(공개 `releaseOwner`에 남의 ownerKey를 넘기면 통과해 Slot 원소가 풀리고 그 Slot은 다음 CRUD에서 동결): 구조적으로 못 가르는 자리라 extend/02에 "자기가 잡은 자리만 푼다" 계약 한 줄. (4) **Q60(문항)** 정적 자식 State가 거부될 값(다른 자리에 앉은 인스턴스·미claim)을 받으면 옛 점유자가 **거부 전에** 이미 내려간다 — Dispatch가 옛 retractor를 돌린 뒤에야 새 `process`의 게이트에 닿기 때문. CHANGELOG는 미claim 팔에 대해 이미 그렇게 적었고 `claimOwnerAt` 팔에도 같은 구절을 붙였다; 거부 전 검증은 핸들러 계약에 검증 단계를 더하는 새 메커니즘이라 문항. 스펙 `spec.handlers` 14.
 

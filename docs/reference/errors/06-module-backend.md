@@ -47,12 +47,11 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 - **고치려면**: props에 테이블을 넘기세요.
 - **참고**: [`q.Claim(inst, desc)`](../roblox/04-claim-mapper.md#qclaiminst-desc)
 
-### Quad0031
+### Quad0031 (폐기)
 
-`Claim: array keys must be positive integers (got {i})` — `quad-base/src/Claim.luau`
+`Claim: array keys must be positive integers (got {i})` — 폐기
 
-- **언제**: 디스크립터 props의 숫자 키 중 양의 정수가 아닌 것(`[0]`, `[2.5]`, 음수)이 있을 때 — 그 자리의 값이 무엇이든 봅니다([2026-10-01 기준] 다음 릴리즈부터; 전에는 다른 매퍼 디스크립터를 담은 자리만 봐서, 다른 값이면 트리를 claim하고 적용한 뒤에야 `Quad0085`로 죽었습니다). 아무것도 claim하기 전에 납니다.
-- **고치려면**: 숫자 키는 1부터 시작하는 정수로 쓰세요.
+- **[2026-10-01 폐기]** 이제 던지지 않습니다. `q.Claim`이 해석 단계에서 디스크립터 props의 숫자 키 도메인을 잠깐 검사했다가, 해석 단계를 디스크립터를 찾아 실제 Instance로 바꾸는 매핑만 하는 단계로 되돌렸습니다. 양의 정수가 아닌 숫자 키(`[0]`, `[2.5]`, 음수)는 그 자리 값이 디스크립터든 아니든 [`Quad0085`](./02-dispatch-bookkeeping.md#quad0085)가 그 props를 적용하는 단계에서 거부합니다 — claim은 이미 일어난 뒤입니다. 이 번호는 다른 에러에 다시 쓰지 않습니다.
 - **참고**: [`q.Claim(inst, desc)`](../roblox/04-claim-mapper.md#qclaiminst-desc)
 
 ### Quad0032

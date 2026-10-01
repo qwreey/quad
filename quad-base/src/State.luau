@@ -222,6 +222,10 @@ local function createImpl(module: any)
 		-- Always true on every defined path (no yield / reentrant Compute) — byte-identical there; it only
 		-- narrows the damage of that UB, not a contract (Q159: a newer cache already invalid again can
 		-- still be overwritten — yield Compute is UB).
+		-- Why a stale result is still written (user 2026-10-01): `_cache` does two jobs — the cached value
+		-- while valid, AND the next run's `previous` (the last finished result). Writing while invalid serves
+		-- the second: branch (a) "drop it unless current" left `previous` one value behind / nil (round13 Q98
+		-- measurement). Validity itself is held by the two counters, not by `_cache`.
 		if gen == self._cacheTargetCount or self._cacheCurrCount ~= self._cacheTargetCount then
 			self._cache = result
 			self._cacheCurrCount = gen -- only on success: a thrown fn never marks the cache valid

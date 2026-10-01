@@ -1,0 +1,272 @@
+diff --git a/docs/reference/errors/05-tag-attr.md b/docs/reference/errors/05-tag-attr.md
+index b3bca0f0..ef58f809 100644
+--- a/docs/reference/errors/05-tag-attr.md
++++ b/docs/reference/errors/05-tag-attr.md
+@@ -214,3 +214,19 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
+ - **언제**: 이름 자리에 메타테이블이 달린 테이블을 넘겼을 때 — `State`나 `Attr` 같은 quad 값도 포함되고(`q.Tag(state)`도 이 에러입니다), `q.None`도 그렇습니다(`q.Tag(q.None)`·`tag:Added(q.None)` — `None`은 "없음" 인자가 아니라 메타테이블 있는 테이블; "없음"은 `nil`로; 메타테이블이 없는 `AttrKey`/Mapper 디스크립터는 Quad0200). `q.Tag(...)`의 `__call` 인자는 타입 검사가 없어 strict도 잡지 못합니다. 문자열도, `Tag`도, 평범한 리스트도 아닙니다.
+ - **고치려면**: 문자열, `Tag`, 또는 그것들의 평범한(메타테이블 없는) `{...}` 리스트를 넘기세요. `State`를 따라가는 태그가 목적이었다면 문자열로 바꾸는 건 답이 아닙니다 — `state:Compute(function(v) return q.Tag(v) end)`를 숫자 키 자리에 놓으세요([2026-09-27 mock 실측]).
+ - **참고**: [`q.Tag(...names)`](../core/09-tag-attr.md#qtagnames)
++
++### Quad0266
++
++`Tag: must be an array item, not the value of a {typeof(k)} key` — `quad-base/src/Tag.luau`
++
++- **언제**: (Q135 프로토타입) `Tag` 값을 props의 문자 키 값 자리에 두었을 때 — 반영 프로퍼티·이벤트·숏핸드 이름이어도, `Source`/`Store`/Modifier 필드를 거쳐 닿아도 같습니다.
++- **고치려면**: 숫자 키(배열부) 자리에 놓으세요.
++- **참고**: [`q.Tag(...names)`](../core/09-tag-attr.md#qtagnames)
++
++### Quad0267
++
++`Attr: must be an array item, not the value of a {typeof(k)} key` — `quad-base/src/Attr/init.luau`
++
++- **언제**: (Q135 프로토타입) `Attr` 그룹 값을 props의 문자 키 값 자리에 두었을 때 — 경로는 `Quad0266`과 같습니다.
++- **고치려면**: 숫자 키(배열부) 자리에 놓으세요. 이름 하나만 쓰려면 `[q.AttrKey("Hp")] = v`(키 자리)나 `q.NumberAttr("Hp", v)` 계열.
++- **참고**: [`q.Attr(...)`](../core/09-tag-attr.md#qattr)
+diff --git a/quad-base/src/Attr/init.luau b/quad-base/src/Attr/init.luau
+index 0c8c203f..3c896401 100644
+--- a/quad-base/src/Attr/init.luau
++++ b/quad-base/src/Attr/init.luau
+@@ -304,6 +304,21 @@ local function Init(quad: any)
+ 			end
+ 		end,
+ 	} :: QuadTypes.Handler)
++	-- Q135 proto (variant T): string/other-key guard for the group value (see TagDynamicPathGuard —
++	-- number keys excluded, the group handler above sits at FALLBACK)
++	local guard = {
++		name = "AttrDynamicPathGuard",
++		isHandlable = function(_inst: any, k: any, v: any): boolean
++			return type(k) ~= "number" and isAttr(v)
++		end,
++		priority = dispatch.HANDLER_PRIORITY_FALLBACK, -- reached first through Dispatch's EarlyGuardFilter (variant F)
++		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
++			Err.errorBefore(`Quad0267 Attr: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
++			return quad.Void -- unreachable; keeps the contract type
++		end,
++	} :: QuadTypes.Handler
++	dispatch.addHandler(guard)
++	table.insert(quad._earlyGuards, guard)
+ end
+ 
+ return {
+diff --git a/quad-base/src/Dispatch/init.luau b/quad-base/src/Dispatch/init.luau
+index b27b34a2..899fef9a 100644
+--- a/quad-base/src/Dispatch/init.luau
++++ b/quad-base/src/Dispatch/init.luau
+@@ -599,6 +599,39 @@ local function Init(module: any)
+ 	-- `H-278`'s scope was leaf handlers for one value type). It needs `module`
+ 	-- too: lifetime fields are read at fire time (`H-174`).
+ 	StoreBindModule.register(Dispatch, module)
++	-- Q135 proto (variant F — "one filter between NORMAL and HIGH"): Dispatch owns ONE slot and NO brand
++	-- knowledge. Value modules keep their dynamic-path guards (`H-278`: registered at FALLBACK from their
++	-- own Init, messages and ids unchanged) and ALSO hand the same guard table to `module._earlyGuards`;
++	-- this filter runs those guards' predicates for non-number keys ahead of the NORMAL band (Property/
++	-- Event/Shorthand), so a quad value at a reflected key meets its own guard. Number keys are left to
++	-- the chain as before (leaf handlers at HIGH, the FALLBACK guards for Quad0136 / a raw `[0]`).
++	-- Fast path: a non-table value (strings, numbers, booleans, engine userdata — most property values)
++	-- costs one call + two `type` checks; only tables walk the guard list.
++	local earlyGuards: { Handler } = {}
++	module._earlyGuards = earlyGuards
++	local function matchEarly(inst: any, k: any, v: any): Handler?
++		if type(k) == "number" or type(v) ~= "table" then
++			return nil
++		end
++		for _, g in earlyGuards do
++			if g.isHandlable(inst, k, v) then
++				return g
++			end
++		end
++		return nil
++	end
++	Dispatch.addHandler({
++		name = "EarlyGuardFilter",
++		isHandlable = function(inst: any, k: any, v: any): boolean
++			return matchEarly(inst, k, v) ~= nil
++		end,
++		priority = HANDLER_PRIORITY_HIGH - 1,
++		process = function(inst: any, k: any, v: any, index: number): (any?, boolean) -> ()
++			-- the guard throws its own Quad01xx (errorBefore — user's line); matchEarly cannot be nil here
++			local g = matchEarly(inst, k, v) :: Handler
++			return g.process(inst, k, v, index)
++		end,
++	})
+ 	-- M3 unit 4 leaf handlers + guards: registered by their OWNING modules
+ 	-- (`H-278`, user-directed — Observer.luau/Effect.luau pull InitDispatch
+ 	-- via RunInit and addHandler in their own Init; "각 객체를 아는 곳은 각
+diff --git a/quad-base/src/Effect.luau b/quad-base/src/Effect.luau
+index ef4270e0..5982d850 100644
+--- a/quad-base/src/Effect.luau
++++ b/quad-base/src/Effect.luau
+@@ -444,7 +444,7 @@ local function registerDispatchHandlers(module: any)
+ 			end
+ 		end,
+ 	})
+-	dispatch.addHandler({
++	local guard: QuadTypes.Handler = {
+ 		name = "EffectDynamicPathGuard",
+ 		isHandlable = function(_inst: any, _k: any, v: any): boolean
+ 			return Brand.isEffect(v)
+@@ -454,7 +454,9 @@ local function registerDispatchHandlers(module: any)
+ 			Err.errorBefore(`Quad0097 Effect: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
+ 			return Void -- unreachable; keeps the contract type
+ 		end,
+-	})
++	}
++	dispatch.addHandler(guard)
++	table.insert(module._earlyGuards, guard) -- Q135 proto (variant F): see Dispatch EarlyGuardFilter
+ end
+ 
+ local function Init(module: any)
+diff --git a/quad-base/src/Observer.luau b/quad-base/src/Observer.luau
+index 9f4324bd..0d626b88 100644
+--- a/quad-base/src/Observer.luau
++++ b/quad-base/src/Observer.luau
+@@ -350,7 +350,7 @@ local function registerDispatchHandlers(module: any)
+ 			end
+ 		end,
+ 	})
+-	dispatch.addHandler({
++	local guard: QuadTypes.Handler = {
+ 		name = "ObserverDynamicPathGuard",
+ 		isHandlable = function(_inst: any, _k: any, v: any): boolean
+ 			return Brand.isObserver(v)
+@@ -360,7 +360,9 @@ local function registerDispatchHandlers(module: any)
+ 			Err.errorBefore(`Quad0116 Observer: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
+ 			return Void -- unreachable; keeps the contract type
+ 		end,
+-	})
++	}
++	dispatch.addHandler(guard)
++	table.insert(module._earlyGuards, guard) -- Q135 proto (variant F): see Dispatch EarlyGuardFilter
+ end
+ 
+ local function Init(module: any)
+diff --git a/quad-base/src/Ref/init.luau b/quad-base/src/Ref/init.luau
+index 3bfcd075..785e24a5 100644
+--- a/quad-base/src/Ref/init.luau
++++ b/quad-base/src/Ref/init.luau
+@@ -267,7 +267,7 @@ local function registerDispatchHandlers(module: any)
+ 		end,
+ 	})
+ 	local function addGuard(name: string, predicate: (any) -> boolean, kind: string)
+-		dispatch.addHandler({
++		local guard: QuadTypes.Handler = {
+ 			name = name,
+ 			isHandlable = function(_inst: any, _k: any, v: any): boolean
+ 				return predicate(v) -- k-agnostic on purpose: the literal array path is
+@@ -284,7 +284,9 @@ local function registerDispatchHandlers(module: any)
+ 				Err.errorBefore(`Quad0137 {kind}: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
+ 				return Void -- unreachable; keeps the contract type
+ 			end,
+-		})
++		}
++		dispatch.addHandler(guard)
++		table.insert(module._earlyGuards, guard) -- Q135 proto (variant F): Dispatch's EarlyGuardFilter runs it ahead of NORMAL
+ 	end
+ 	addGuard("PreRefDynamicPathGuard", Brand.isPreRef, "PreRef")
+ 	addGuard("PostRefDynamicPathGuard", Brand.isPostRef, "PostRef")
+diff --git a/quad-base/src/Slot/Handler.luau b/quad-base/src/Slot/Handler.luau
+index b73465e7..b6e00e7d 100644
+--- a/quad-base/src/Slot/Handler.luau
++++ b/quad-base/src/Slot/Handler.luau
+@@ -51,7 +51,7 @@ local function register(dispatch: any, module: any)
+ 			end
+ 		end,
+ 	} :: QuadTypes.Handler)
+-	dispatch.addHandler({
++	local guard = {
+ 		name = "SlotDynamicPathGuard", -- round11 `H-567`: the family's fifth guard — `Frame { Children = slot }`
+ 		isHandlable = function(_inst: any, _k: any, v: any): boolean
+ 			return internal.isSlot(v)
+@@ -61,7 +61,9 @@ local function register(dispatch: any, module: any)
+ 			Err.errorBefore(`Quad0141 Slot: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
+ 			return module.Void -- unreachable; keeps the contract type
+ 		end,
+-	} :: QuadTypes.Handler)
++	} :: QuadTypes.Handler
++	dispatch.addHandler(guard)
++	table.insert(module._earlyGuards, guard) -- Q135 proto (variant F): see Dispatch EarlyGuardFilter
+ end
+ 
+ return { register = register }
+diff --git a/quad-base/src/Tag.luau b/quad-base/src/Tag.luau
+index 39e62a79..f51d88ff 100644
+--- a/quad-base/src/Tag.luau
++++ b/quad-base/src/Tag.luau
+@@ -328,6 +328,22 @@ local function Init(module: any)
+ 			end
+ 		end,
+ 	} :: QuadTypes.Handler)
++	-- Q135 proto (variant T): the Ref/Observer/Effect/Slot guards' sibling for Tag. Unlike theirs this
++	-- predicate MUST exclude number keys — the real Tag handler above sits at the same FALLBACK (a tie the
++	-- sort may resolve either way; variant A put this guard at HIGH - 1, above it).
++	local guard = {
++		name = "TagDynamicPathGuard",
++		isHandlable = function(_inst: any, k: any, v: any): boolean
++			return type(k) ~= "number" and isTag(v)
++		end,
++		priority = dispatch.HANDLER_PRIORITY_FALLBACK, -- reached first through Dispatch's EarlyGuardFilter (variant F)
++		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
++			Err.errorBefore(`Quad0266 Tag: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
++			return module.Void -- unreachable; keeps the contract type
++		end,
++	} :: QuadTypes.Handler
++	dispatch.addHandler(guard)
++	table.insert(module._earlyGuards, guard)
+ end
+ 
+ return { Tag = Tag, Init = Init }
+diff --git a/quad-base/test/spec.dispatch.luau b/quad-base/test/spec.dispatch.luau
+index 229eadfb..9ffdddd5 100644
+--- a/quad-base/test/spec.dispatch.luau
++++ b/quad-base/test/spec.dispatch.luau
+@@ -672,10 +672,16 @@ do
+ 		q.Dispatch.drive(Instance.new("Frame"), { Children = q.Slot() })
+ 	end)
+ 	assert(not okS and string.find(tostring(errS), "Slot: must be an array item, not the value of a string key", 1, true) ~= nil, "Slot guard: " .. tostring(errS))
++	-- Q135 proto (variant T): a Tag at a string key now meets its own guard (Quad0266); the generic
++	-- base-brand hint is still reached by brands with no guard — a Blocker here
+ 	local okT, errT = pcall(function()
+ 		q.Dispatch.drive(Instance.new("Frame"), { Thing = q.Tag() })
+ 	end)
+-	assert(not okT and string.find(tostring(errT), "brand: Tag", 1, true) ~= nil and string.find(tostring(errT), "belongs in a numeric (array) slot", 1, true) ~= nil and string.find(tostring(errT), "provider", 1, true) == nil, "base brand hint: " .. tostring(errT))
++	assert(not okT and string.find(tostring(errT), "Quad0266 Tag: must be an array item, not the value of a string key", 1, true) ~= nil, "Tag guard: " .. tostring(errT))
++	local okBl, errBl = pcall(function()
++		q.Dispatch.drive(Instance.new("Frame"), { Thing = q.Blocker() })
++	end)
++	assert(not okBl and string.find(tostring(errBl), "brand: Blocker", 1, true) ~= nil and string.find(tostring(errBl), "belongs in a numeric (array) slot", 1, true) ~= nil and string.find(tostring(errBl), "provider", 1, true) == nil, "base brand hint: " .. tostring(errBl))
+ 	-- H-613: Context/Provider are base leaves too — must not get the "provider not initialized" hint
+ 	local okCtx, errCtx = pcall(function()
+ 		q.Dispatch.drive(Instance.new("Frame"), { Thing = q.Context() })
+diff --git a/quad-base/test/spec.leaf.luau b/quad-base/test/spec.leaf.luau
+index 508d3f1c..d4633792 100644
+--- a/quad-base/test/spec.leaf.luau
++++ b/quad-base/test/spec.leaf.luau
+@@ -182,8 +182,26 @@ do
+ 			return Quad.Void
+ 		end,
+ 	} :: QuadTypes.Handler)
+-	q.Dispatch.drive(inst, { MyThing = o })
+-	assert(#log == 1 and log[1] == "named:MyThing", "the NORMAL handler wins over the FALLBACK guard")
++	-- Q135 proto: the guard now sits at HIGH - 1, ABOVE the NORMAL band — a NORMAL handler no longer
++	-- overrides it (the old "FALLBACK 의미론"); an override must sit above the guard (here HIGH).
++	local okN, errN = pcall(function()
++		q.Dispatch.drive(inst, { MyThing = o })
++	end)
++	assert(not okN and string.find(tostring(errN), "Quad0116", 1, true) ~= nil and #log == 0,
++		`the raised guard wins over a NORMAL handler: {tostring(errN)}`)
++	q.Dispatch.addHandler({
++		name = "NamedObserverOverrideHigh",
++		isHandlable = function(_inst: any, k: any, v: any): boolean
++			return type(k) == "string" and q.isObserver(v)
++		end,
++		priority = q.Dispatch.HANDLER_PRIORITY_HIGH,
++		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
++			table.insert(log, `high:{k}`)
++			return Quad.Void
++		end,
++	} :: QuadTypes.Handler)
++	q.Dispatch.drive(Instance.new("Frame"), { MyThing = o })
++	assert(#log == 1 and log[1] == "high:MyThing", "a handler above the guard still overrides it")
+ 	print("PASS")
+ end
+ 

@@ -1,0 +1,85 @@
+diff --git a/quad-base/src/Effect.luau b/quad-base/src/Effect.luau
+index ef4270e0..87deae81 100644
+--- a/quad-base/src/Effect.luau
++++ b/quad-base/src/Effect.luau
+@@ -449,7 +449,7 @@ local function registerDispatchHandlers(module: any)
+ 		isHandlable = function(_inst: any, _k: any, v: any): boolean
+ 			return Brand.isEffect(v)
+ 		end,
+-		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
++		priority = dispatch.HANDLER_PRIORITY_HIGH - 1, -- Q135 proto (see Ref/init.luau addGuard)
+ 		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
+ 			Err.errorBefore(`Quad0097 Effect: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
+ 			return Void -- unreachable; keeps the contract type
+diff --git a/quad-base/src/Observer.luau b/quad-base/src/Observer.luau
+index 9f4324bd..52ee284c 100644
+--- a/quad-base/src/Observer.luau
++++ b/quad-base/src/Observer.luau
+@@ -355,7 +355,7 @@ local function registerDispatchHandlers(module: any)
+ 		isHandlable = function(_inst: any, _k: any, v: any): boolean
+ 			return Brand.isObserver(v)
+ 		end,
+-		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
++		priority = dispatch.HANDLER_PRIORITY_HIGH - 1, -- Q135 proto (see Ref/init.luau addGuard)
+ 		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
+ 			Err.errorBefore(`Quad0116 Observer: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
+ 			return Void -- unreachable; keeps the contract type
+diff --git a/quad-base/src/Ref/init.luau b/quad-base/src/Ref/init.luau
+index 3bfcd075..1dc7aa51 100644
+--- a/quad-base/src/Ref/init.luau
++++ b/quad-base/src/Ref/init.luau
+@@ -273,7 +273,7 @@ local function registerDispatchHandlers(module: any)
+ 				return predicate(v) -- k-agnostic on purpose: the literal array path is
+ 				-- consumed by the pre-pass, so a match here is a type-check bypass
+ 			end,
+-			priority = dispatch.HANDLER_PRIORITY_FALLBACK,
++			priority = dispatch.HANDLER_PRIORITY_HIGH - 1, -- Q135 proto: above Property/Event/Shorthand (NORMAL band), below the HIGH leaf handlers
+ 			process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
+ 				if type(k) == "number" then
+ 					-- an array slot the pre-pass could not see: the value arrived
+diff --git a/quad-base/src/Slot/Handler.luau b/quad-base/src/Slot/Handler.luau
+index b73465e7..3f1f0bae 100644
+--- a/quad-base/src/Slot/Handler.luau
++++ b/quad-base/src/Slot/Handler.luau
+@@ -56,7 +56,7 @@ local function register(dispatch: any, module: any)
+ 		isHandlable = function(_inst: any, _k: any, v: any): boolean
+ 			return internal.isSlot(v)
+ 		end,
+-		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
++		priority = dispatch.HANDLER_PRIORITY_HIGH - 1, -- Q135 proto (see Ref/init.luau addGuard)
+ 		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
+ 			Err.errorBefore(`Quad0141 Slot: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
+ 			return module.Void -- unreachable; keeps the contract type
+diff --git a/quad-base/test/spec.leaf.luau b/quad-base/test/spec.leaf.luau
+index 508d3f1c..d4633792 100644
+--- a/quad-base/test/spec.leaf.luau
++++ b/quad-base/test/spec.leaf.luau
+@@ -182,8 +182,26 @@ do
+ 			return Quad.Void
+ 		end,
+ 	} :: QuadTypes.Handler)
+-	q.Dispatch.drive(inst, { MyThing = o })
+-	assert(#log == 1 and log[1] == "named:MyThing", "the NORMAL handler wins over the FALLBACK guard")
++	-- Q135 proto: the guard now sits at HIGH - 1, ABOVE the NORMAL band — a NORMAL handler no longer
++	-- overrides it (the old "FALLBACK 의미론"); an override must sit above the guard (here HIGH).
++	local okN, errN = pcall(function()
++		q.Dispatch.drive(inst, { MyThing = o })
++	end)
++	assert(not okN and string.find(tostring(errN), "Quad0116", 1, true) ~= nil and #log == 0,
++		`the raised guard wins over a NORMAL handler: {tostring(errN)}`)
++	q.Dispatch.addHandler({
++		name = "NamedObserverOverrideHigh",
++		isHandlable = function(_inst: any, k: any, v: any): boolean
++			return type(k) == "string" and q.isObserver(v)
++		end,
++		priority = q.Dispatch.HANDLER_PRIORITY_HIGH,
++		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
++			table.insert(log, `high:{k}`)
++			return Quad.Void
++		end,
++	} :: QuadTypes.Handler)
++	q.Dispatch.drive(Instance.new("Frame"), { MyThing = o })
++	assert(#log == 1 and log[1] == "high:MyThing", "a handler above the guard still overrides it")
+ 	print("PASS")
+ end
+ 

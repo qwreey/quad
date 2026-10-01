@@ -519,7 +519,10 @@ fresh Observer has `Subscribed == false`. A change made *during* that first fire
 callback itself or by anything it triggers) is not held: the callback runs again on the spot
 until the target stops changing (a first fire that never converges is undefined behavior).
 Once alive, a callback that `:Set`s its own target recurses in place — unlike `Effect`, which
-re-runs after `fn` returns — so after writing the target back, `return` or re-read it. Bind it by putting the handle in an array part
+re-runs after `fn` returns — so after writing the target back, `return` or re-read it. An Observer is a **final consumer**:
+do not use its callback to feed values back upstream (re-`:Set` what it observes or that target's source) — a discouraged path, like
+`:Set` inside `:Compute`; how many times and in what order the handles sharing that upstream re-run (same-value duplicates included)
+is undefined. To build a value from others, derive it with `:Compute` (`...deps` + `:Get()`). Bind it by putting the handle in an array part
 (it then lives and dies with that instance), or call `:Subscribe()` (strong keep) /
 `:WeakSubscribe()` (the registry does not keep the handle alive — a dropped reference is
 collected). `q.Effect(fn, ...deps)` behaves the same way; its cleanup return is optional.

@@ -61,6 +61,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
         core/06:391 근처)을 "사라진 키 먼저(뒤에서부터), 그다음 항목마다"로 고치는 Changed가 같이 간다(새 항목 `updateFn` 시점에 옛 원소가 이미
         파괴됨, 던진 뒤 남는 상태가 달라짐 — 원장 round13 Q76 프로토타입 문단). 큰 틀을 본 뒤 `rawPermute`와 같이 판단.
         가운데 한 개 삭제의 O(N²)는 `H-505`(`reindexRange`)로 닫음.
+      - **[2026-10-01 round13 Q137 ② — 사용자 질문, 새 기능 후보]** Modifier가 배열 원소(Tag·Attr 묶음 등)를 실어 나르기 — 지금 Modifier는 속성 묶음이라 필드가 선언의 문자 키 쪽으로만 합쳐지고, 필드에 넣은 Tag는 받는 핸들러가 없는 문자 키에 놓여 마운트 때 에러. 사용자: *"Modifier 를 커스텀해서 클래스에 실어 보낼 수 있다면 Tag도 필드일 수 있을텐데, Tag 는 immutable 경로라 없어야할 이유가 분명하지 않아보여."* — 그래서 생성 시점 거부는 넣지 않았다(수명 있는 핸들 Ref·Slot·Effect·Observer와 달리 Tag는 불변 값). 착수는 Modifier 평탄화(`Dispatch.drive` flatten)의 배열부 의미를 정하는 설계부터.
       - **[2026-09-08 round8 L-3]** 마운트된 Slot의 **단발 CRUD**(Add/Remove/Swap/Move/Replace/Extract)는 꼬리 `recompute`가 `i = 1`부터
         전 자리를 훑어 호출당 O(N)(5000자리 `Swap(1,2)` 한 번 0.63ms; N회 반복 O(N²)) — `Splice`/`Clear`/reconcile은 배치 Blocker로
         1회라 선형. 후보: recompute를 `offsetSetUpTo` 커서부터 재개(캐시된 접두합 신뢰 — `H-240`/`H-124` 되감기 계약과 대조 필요, 설계 판단).
