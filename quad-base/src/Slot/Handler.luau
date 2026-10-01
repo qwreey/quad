@@ -16,7 +16,7 @@ local DebugKeyFilter = require("../DebugKeyFilter")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local function register(dispatch: any, module: any)
-	local internal = module._slotInternal -- the five-key surface init exposes (not the split's `S`)
+	local internal = module._slotInternal -- the internal surface init exposes (not the split's `S`)
 	dispatch.addHandler({
 		name = "SlotHandler",
 		keyType = "number", -- `H-484`: only number keys can match (isHandlable checks it too)

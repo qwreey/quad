@@ -14,6 +14,8 @@
 	    paragraph adds the opt-in `:SetIfChanged(v)`),
 	    "Source 값을 직접 mutate한 뒤 전파 — `:Emit()`" (root only),
 	    "따름정리 — `Store<T>`/`Source<T>`의 `T`는 Modifier가 될 수 없음".
+	  - `.claude/base/slot-plan.md` "`SetAndDispose` 류" item (`SL-74`, implemented
+	    2026-10-01): `:SetAndDispose(v)` — `Set`, then `dispose` the replaced value.
 	  - `.claude/base/modifier-plan.md` 7번: `isModifier` guard at the
 	    constructor and at `:Set` (the constructor also covers `store:Of`).
 	  - `.claude/base/state-epoch-plan.md` §2: `Revision` bump is
@@ -126,6 +128,31 @@ local function Init(module: any)
 		return bumpAndEmit(self) -- direct local call, as in `Set`
 	end
 
+	-- 2026-10-01 (decided 2026-08-20 `SL-74`, `slot-plan.md` "`SetAndDispose` 류" item): `Set`, then
+	-- `dispose` the value it replaced — slot-plan's "Set (unmount) → then clean up" order in one call,
+	-- so the caller no longer holds the old value via `Get()` first. Same value gate as `Set`, run
+	-- FIRST (a rejected value leaves both values alone). The wave runs to completion before the
+	-- dispose, so a synchronous seat downstream has already unmounted the old value. Skipped:
+	-- the old value is `nil` or `None` (an empty seat — nothing to dispose), or the very value just
+	-- written (`rawequal` — disposing it would destroy what was just put in; the write itself still
+	-- happens, `H-68`). Anything else goes to `q.dispose`'s body as-is: a value it cannot dispose
+	-- (a number, a plain table) or one still held elsewhere (a Gate/Debounce/Blocker between the
+	-- Source and the seat holds the old value past the wave) raises dispose's own error AFTER the
+	-- write — never wrapped in pcall (the write is not rolled back; `dispose`'s contract decides).
+	-- The body is reached through the untagged `_slotInternal.disposeValue`, so its raises blame the
+	-- user's `SetAndDispose` line (the tagged `dispose` would be the nearest frame and blame here).
+	-- Returns self, as `Set`.
+	function Impl.SetAndDispose(self: any, value: any): any
+		checkSettable(value)
+		local old = self._value
+		self._value = value
+		bumpAndEmit(self) -- direct local call, as in `Set`
+		if old ~= nil and not rawequal(old, module.None) and not rawequal(old, value) then
+			module._slotInternal.disposeValue(old)
+		end
+		return self
+	end
+
 	function Impl._track(self: any, map: any)
 		map:Sync(self) -- a Source IS an Epoch: it goes into the map directly
 	end
@@ -145,7 +172,7 @@ local function Init(module: any)
 	end
 
 	-- `H-231`: public surface joins the shared error-namespace tag layer
-	Err.setFuncLevel(SURFACE, Impl.Get, Impl.Emit, Impl.Set, Impl.SetIfChanged, Source)
+	Err.setFuncLevel(SURFACE, Impl.Get, Impl.Emit, Impl.Set, Impl.SetIfChanged, Impl.SetAndDispose, Source)
 
 	module.Source = Source
 end

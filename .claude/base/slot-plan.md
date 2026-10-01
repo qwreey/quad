@@ -3976,11 +3976,21 @@ state 가 안전히 성립 못해서, Apply 라는 이름을 그대로 쓰지는
   이름이 리시버 타입에 따라 다른 걸 넘기게 된다. `Source<T>`가 `State<T>`를
   **단방향으로만** 만족하므로 그 반대 방향(넘겨받은 게 `Source`임을 보장)은
   안전하게 성립하지 않는다 — 이름을 그대로 재사용할 수가 없음.
-- **확정 형태**(**[2026-10-01 기준] 소스에 아직 없음** — 사용자: 부작용 없는 추가라 지금 일이 끝난 뒤 구현, ROADMAP 백로그): `source:SetAndDispose(value)` — `:Set(value)`와 **한 세트로
+- **확정 형태**(**[2026-10-01 구현됨]** `quad-base/src/Source.luau`, 레퍼런스 core/02 — 사용자: *"SetAndDispose 는 3줄 10줄 정도 내라 그냥 지금 해도 될것 같아보임."* 구현이 정한 칸은 아래 "구현이 정한 칸" 줄): `source:SetAndDispose(value)` — `:Set(value)`와 **한 세트로
   묶인 `Source` 전용 콜론 메서드**. `Set`(언마운트) → 옛 값 `dispose` 순서를
   안에서 수행하므로 호출부가 `Get()`으로 옛 값을 미리 잡아둘 필요가 없다.
 - **`state:Apply`는 손대지 않는다** — 시그니처 영향이 없으므로 M2 착수 전
   결론이 필요하던 항목에서 빠진다(`question.md`/`.claude/todos.md`에서 제거).
+- **[2026-10-01] 구현이 정한 칸**(이 항목이 안 정했던 것 — 새 메커니즘 없이 가장 단순하게, 메인 검토 대상):
+  (1) 값 검사(`Quad0181`)는 `:Set`과 같은 경로로 **쓰기 전에** — 거부되면 값도 옛 값도 그대로. (2) 옛 값이
+  `nil`·`None`이면 dispose를 건너뛴다(빈 자리 — 처음 채우는 호출이 에러가 나지 않게). (3) 옛 값이 새 값과
+  `rawequal`이면 건너뛴다(방금 넣은 걸 지우지 않음; 쓰기·전파는 `H-68` 그대로 일어남). (4) 그 밖의 옛 값은
+  `dispose` 본문에 그대로 — 파괴할 수 없는 값(`Quad0180`)이나 아직 다른 자리가 쥔 값(`Quad0179`, 사이의
+  `Debounce`·`Blocker`가 전파를 늦춘 경우 포함 — mock 실측)은 **쓰기가 끝난 뒤** 그 에러가 그대로 난다(pcall로
+  감싸지 않음, 되돌리지 않음). (5) self 반환. (6) blame: `dispose`의 본문을 태그 없는 지역 함수
+  `disposeValue`로 갈라 `_slotInternal.disposeValue`로 노출했다 — 태그된 `dispose`를 부르면 그게 가장 가까운
+  태그 프레임이 되어 `Source.luau`를 blame한다(음성 대조로 확인). spec: `spec.source.luau` 8절,
+  `quad-roblox/test/spec.handlers.luau` 12절 (7).
 
 #### 구현상 바뀌어야 하는 것
 

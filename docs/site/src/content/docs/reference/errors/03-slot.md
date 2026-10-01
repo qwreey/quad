@@ -330,7 +330,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ``dispose: this value is still held by a Slot or a mounted position - Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key) (if its owner was destroyed outside quad - `inst:Destroy()` - the value went with it and cannot be reused after its parent is destroyed; extract it before destroying, as with an Instance)`` — `quad-base/src/Slot/init.luau`
 
-- **언제**: 아직 어떤 `Slot`의 원소이거나 마운트된 자리(정적 자식·숏핸드 관리 자식 포함)를 차지하고 있는 값을 `dispose`하려 할 때.
+- **언제**: 아직 어떤 `Slot`의 원소이거나 마운트된 자리(정적 자식·숏핸드 관리 자식 포함)를 차지하고 있는 값을 `dispose`하려 할 때. [`source:SetAndDispose(v)`](/reference/core/02-source/#sourcesetanddisposev)가 옛 값을 파괴하려 할 때도 같습니다 — 그 `Source`가 아닌 다른 자리가 옛 값을 쥐고 있거나, 둘 사이의 `Debounce`·`Blocker`가 전파를 늦춰 옛 값이 아직 자리에 있을 때입니다(새 값은 이미 들어간 뒤).
 - **고치려면**: 먼저 그 자리에서 빼세요 — 수동 `Slot`이면 `Remove`/`Extract`, `:List` `Slot`이면 데이터에서 그 키 제거, 숫자 키 자리면 그 자리를 쥔 `State`를 `Set(nil)`, 숏핸드 관리 자식이면 그 키를 `nil`로. owner `Slot` 자체를 파괴해서 풀려면 그 Slot이 State 자리에 있을 때 `Set(nil)` 뒤 dispose하거나 호스트를 dispose하세요 — 숫자 키 리터럴 자리에 앉은 Slot에 `q.dispose(slot)`을 부르면 같은 에러가 납니다(리터럴 정적 자식은 뺄 공개 경로가 없음 — Quad0172 — [2026-09-27 mock 실측]).
 - **참고**: [`q.dispose(value)`](/reference/core/10-lifetime-sentinels/#qdisposevalue)
 
@@ -338,8 +338,8 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `dispose: this backend cannot dispose this value` — `quad-base/src/Slot/init.luau`
 
-- **언제**: `dispose`에 준 값이 `Slot`도 아니고 백엔드가 요소로 인정하는 값(`q.Backend.isInst`가 참)도 아닐 때 — 백엔드가 아예 설치되지 않은 모듈에서는 그 전에 `q.Backend.isInst` 스텁이 먼저 던집니다.
-- **고치려면**: `Slot`이거나 `q.Backend.isInst`가 참인 값을 넘기세요.
+- **언제**: `dispose`에 준 값이 `Slot`도 아니고 백엔드가 요소로 인정하는 값(`q.Backend.isInst`가 참)도 아닐 때 — 백엔드가 아예 설치되지 않은 모듈에서는 그 전에 `q.Backend.isInst` 스텁이 먼저 던집니다. [`source:SetAndDispose(v)`](/reference/core/02-source/#sourcesetanddisposev)의 옛 값이 그런 값(숫자·문자열·평범한 테이블)일 때도 납니다(새 값은 이미 들어간 뒤).
+- **고치려면**: `Slot`이거나 `q.Backend.isInst`가 참인 값을 넘기세요. 파괴할 것이 없는 `Source`에는 `SetAndDispose` 대신 `:Set`을 쓰세요.
 - **참고**: [`q.dispose(value)`](/reference/core/10-lifetime-sentinels/#qdisposevalue)
 
 ### Quad0238

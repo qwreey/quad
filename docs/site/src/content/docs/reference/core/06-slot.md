@@ -575,7 +575,7 @@ dispose: (value: any) -> ()
 
 **동작** — quad가 관리하는 값을 지우는 **유일한 안전 경로**입니다. Slot을 주면 그 트리를 통째로 무너뜨리고(중첩 Slot 재귀, 원소 파괴), 백엔드 값을 주면 백엔드의 파괴 op로 넘깁니다.
 
-**마운트 중인 값에는 쓸 수 없습니다.** 먼저 꺼내야 합니다.
+**마운트 중인 값에는 쓸 수 없습니다.** 먼저 꺼내야 합니다. 값을 쥔 것이 숫자 키 자리의 `Source`라면 [`source:SetAndDispose(v)`](/reference/core/02-source/#sourcesetanddisposev)가 꺼내기(`:Set`)와 파괴를 이 순서로 한 번에 합니다.
 
 - `Quad0178 dispose: value must not be nil`
 - `Quad0179 dispose: this value is still held by a Slot or a mounted position - Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner), or take it off its numeric-key seat first (Set(nil) the State holding it; a shorthand-managed child goes with its key)`

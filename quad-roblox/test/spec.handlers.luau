@@ -315,6 +315,15 @@ do
 	assert(not ok7, "key 0 matches no handler")
 	local host6 = q.Declaration.Frame({ c5 }) :: any
 	assert(c5.Parent == host6, "no seat leaked from the rejected call")
+	-- (7) 2026-10-01 `source:SetAndDispose`: the (4) sequence in one call — the retractor releases
+	-- the seat during the Set, then the replaced child is disposed; the new one takes the seat
+	local o1, o2 = q.Declaration.TextLabel({}) :: any, q.Declaration.TextLabel({}) :: any
+	local st7 = q.Source(o1)
+	local p7 = q.Declaration.Frame({ st7 }) :: any
+	st7:SetAndDispose(o2)
+	assert(mock.isDestroyed(o1) and o2.Parent == p7, "old child disposed after its seat was released; new child seated")
+	st7:SetAndDispose(nil)
+	assert(mock.isDestroyed(o2) and st7:Get() == nil, "Set(nil) then dispose")
 	print("PASS")
 end
 

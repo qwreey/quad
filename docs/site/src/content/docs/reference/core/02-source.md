@@ -1,14 +1,15 @@
 ---
 title: Source
-description: 값을 직접 쓸 수 있는 반응형 루트 노드 — Set/SetIfChanged/Emit/Revision, 그리고 State 메소드 전부
+description: 값을 직접 쓸 수 있는 반응형 루트 노드 — Set/SetIfChanged/SetAndDispose/Emit/Revision, 그리고 State 메소드 전부
 ---
 `Source`는 **값을 직접 쓸 수 있는 유일한 반응형 노드**입니다. 파생 노드인 [`State`](/reference/core/03-state/)는 읽기 전용이고, 전파는 언제나 어떤 `Source`의 `:Set`/`:Emit`에서 시작합니다.
 
-이 페이지의 심볼: [`q.Source(v)`](#qsourcev) · [`source:Set(v)`](#sourcesetv) · [`source:SetIfChanged(v)`](#sourcesetifchangedv) · [`source:Emit()`](#sourceemit) · [`source.Revision`](#sourcerevision) · [Source가 물려받는 State 메소드](#source가-물려받는-state-메소드)
+이 페이지의 심볼: [`q.Source(v)`](#qsourcev) · [`source:Set(v)`](#sourcesetv) · [`source:SetIfChanged(v)`](#sourcesetifchangedv) · [`source:SetAndDispose(v)`](#sourcesetanddisposev) · [`source:Emit()`](#sourceemit) · [`source.Revision`](#sourcerevision) · [Source가 물려받는 State 메소드](#source가-물려받는-state-메소드)
 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
+local D = q.Declaration
 ```
 
 `Source`의 생성·읽기·쓰기와 `:Compute`/`:Depend` 같은 파생 자체는 백엔드가 없어도 동작합니다. 백엔드가 필요한 것은 이 노드에 붙는 **구독 핸들의 생명주기**입니다 — `:Observer`로 만든 핸들을 실제로 살리는 것(`:Subscribe`, 인스턴스 바인딩)부터가 백엔드 몫입니다([05-observer-effect](/reference/core/05-observer-effect/) 참고).
@@ -26,6 +27,7 @@ export type Source<T> = State<T> & {
 	read Revision: number,
 	Set: (self: Source<T>, v: T) -> Source<T>,
 	SetIfChanged: (self: Source<T>, v: T) -> Source<T>,
+	SetAndDispose: (self: Source<T>, v: T) -> Source<T>,
 	Emit: (self: Source<T>) -> Source<T>,
 }
 ```
@@ -129,6 +131,51 @@ q.Effect(function()
 	hp:SetIfChanged(math.clamp(hp:Get(), 0, 100)) -- 100으로 자리 잡으면 더 쓰지 않는다
 end, hp)
 print(hp:Get()) --> 100
+```
+
+---
+
+## `source:SetAndDispose(v)`
+
+> **[2026-10-01 기준]** `:SetAndDispose`는 게시된 3.2.0에는 없습니다 — 다음 릴리즈부터([변경 이력](/changelog/) `[Unreleased]`). 그전엔 `local old = src:Get(); src:Set(v); q.dispose(old)`가 같은 일을 합니다(옛 값이 `nil`이 아닐 때).
+
+**시그니처**
+
+```luau
+SetAndDispose: (self: Source<T>, v: T) -> Source<T>
+```
+
+**인자**
+
+| 이름 | 타입 | 설명 |
+|---|---|---|
+| `v` | `T` | 새 값. Modifier는 거부됩니다(`:Set`과 같은 검사). |
+
+**반환** — `self`(체이닝 가능).
+
+**동작**
+
+- [`:Set(v)`](#sourcesetv)을 한 뒤, **바뀌기 전 값**을 [`q.dispose`](/reference/core/10-lifetime-sentinels/#qdisposevalue)로 파괴합니다. 옛 값을 `:Get()`으로 미리 잡아 둘 필요가 없습니다.
+- 순서가 이 메서드의 요점입니다. 전파가 끝나야 그 값을 앉혀 두었던 하류(숫자 키 자리, Slot)가 자리를 놓아 주고, 그 뒤라야 `dispose`가 받아 줍니다 — 앉아 있는 값을 먼저 `q.dispose`하면 `Quad0179`로 거부되고, `:Set` 전에 `inst:Destroy()`로 직접 지우는 것은 정의되지 않은 동작입니다.
+- 값 검사는 쓰기보다 **먼저** 합니다 — Modifier를 넣으면 `Quad0181 Source: cannot Set a Modifier as a Source value`이고, 값도 옛 값도 그대로입니다.
+- 쓰기는 `:Set`과 같아서 같은 값도 전파합니다.
+- 옛 값을 파괴하지 않고 넘어가는 경우는 둘입니다.
+  - 옛 값이 `nil`이나 [`q.None`](/reference/core/10-lifetime-sentinels/#qnone)일 때 — 빈 자리라 지울 것이 없습니다. 처음 채우는 호출도 그대로 쓸 수 있습니다.
+  - 옛 값이 방금 넣은 `v`와 **같은 참조**일 때 — 지우면 방금 넣은 값을 지우게 됩니다.
+- 그 밖의 옛 값은 `q.dispose`의 계약 그대로입니다. Slot이면 트리째, 백엔드 요소(Roblox면 Instance)면 파괴합니다. `dispose`가 받지 않는 값이면 그 에러가 그대로 납니다 — 숫자·문자열·평범한 테이블처럼 파괴할 수 없는 값이면 `Quad0180 dispose: this backend cannot dispose this value`, 아직 다른 자리가 쥐고 있으면 `Quad0179 dispose: this value is still held by …`.
+- ⚠️ 이 에러들은 **쓰기가 이미 끝난 뒤에** 납니다. 새 값은 들어가 있고 하류도 전파를 받았으며, 되돌리지 않습니다.
+- ⚠️ `Source`와 값이 놓인 자리 사이에 [`Debounce`](/reference/sugar/03-debounce-throttle/)나 [`Blocker`](/reference/sugar/06-blocker/)처럼 전파를 늦추거나 막는 것이 있으면, `:SetAndDispose`가 돌아올 때 옛 값은 아직 자리에 있어 `Quad0179`가 납니다. 그런 경로에서는 자리가 실제로 빈 뒤에 `q.dispose`를 직접 부르세요.
+- [`q.Store`](/reference/core/04-store/)의 필드도 `Source`이므로 `store.panel:SetAndDispose(v)`처럼 그대로 씁니다.
+
+**예제**
+
+```luau
+local panel = q.Source<<Instance?>>(nil)
+local screen = D.Frame { panel } -- panel이 쥔 Frame이 이 자리에 앉는다
+
+panel:SetAndDispose(D.Frame {}) -- 처음: 옛 값이 nil이라 지울 것이 없다
+panel:SetAndDispose(D.Frame {}) -- 바꾸기: 새 Frame이 앉은 뒤 옛 Frame이 파괴된다
+panel:SetAndDispose(nil)        -- 비우기: 자리를 비운 뒤 마지막 Frame을 파괴한다
 ```
 
 ---

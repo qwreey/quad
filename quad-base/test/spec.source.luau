@@ -221,4 +221,110 @@ do
 end
 
 print()
+print("=== 8. :SetAndDispose (2026-08-20 SL-74 확정, 2026-10-01 구현) — Set 전파가 먼저, 그 뒤 옛 값 dispose ===")
+do
+	local mock = require("./mock")
+	local dq = mock.newQuad()
+	local function body(e: any, code: string): string
+		local str = tostring(e)
+		return string.sub(str, (string.find(str, code, 1, true) or 1))
+	end
+
+	-- a. order: the wave (unmount at the seat) runs to completion, THEN the old value is disposed
+	local host = mock.Instance.new("Frame")
+	local f1 = mock.Instance.new("Frame")
+	local s1 = dq.Slot({ f1 })
+	local seat = dq.Source(s1 :: any)
+	dq.Dispatch.drive(host, { seat })
+	assert(f1.Parent == host, "precondition: the old Slot's element is seated")
+	-- negative control — the order matters: disposing the seated value BEFORE the Set is refused
+	local okEarly, errEarly = pcall(function()
+		dq.dispose(s1)
+	end)
+	assert(not okEarly and string.find(tostring(errEarly), "Quad0179", 1, true) ~= nil, "dispose before the Set is refused: " .. tostring(errEarly))
+	local seenDuringWave: { boolean } = {}
+	local obs = seat:Observer(function()
+		table.insert(seenDuringWave, s1._destroyed == true or mock.isDestroyed(f1))
+	end):Subscribe()
+	local f2 = mock.Instance.new("Frame")
+	local s2 = dq.Slot({ f2 })
+	local r0 = seat.Revision
+	assert(seat:SetAndDispose(s2) == seat, "returns self")
+	assert(rawequal(seat:Get(), s2) and seat.Revision ~= r0, "Set's write (value + revision)")
+	assert(#seenDuringWave == 2 and seenDuringWave[2] == false, "the wave saw the old value still alive (dispose comes after)")
+	assert(s1._destroyed and mock.isDestroyed(f1), "old Slot disposed after the wave (its element with it)")
+	assert(f2.Parent == host and not mock.isDestroyed(f2), "new value seated")
+	local _ = obs
+
+	-- b. same reference: Set still happens (H-68), nothing is disposed
+	local r1 = seat.Revision
+	seat:SetAndDispose(s2)
+	assert(seat.Revision ~= r1, "same value: the write still propagates (H-68)")
+	assert(not s2._destroyed and not mock.isDestroyed(f2) and f2.Parent == host, "same value: not disposed, still seated")
+
+	-- c. new value nil: the seat empties and the old value is disposed (remove-and-destroy in one call)
+	seat:SetAndDispose(nil)
+	assert(seat:Get() == nil and s2._destroyed and mock.isDestroyed(f2), "Set(nil) then dispose the old Slot")
+
+	-- d. old value nil / None: an empty seat — nothing to dispose, no error
+	local n = dq.Source(nil :: any)
+	local f3 = mock.Instance.new("Frame")
+	n:SetAndDispose(f3)
+	assert(rawequal(n:Get(), f3), "from nil: written, nothing disposed")
+	local nn = dq.Source(dq.None :: any)
+	nn:SetAndDispose(1)
+	assert(nn:Get() == 1, "from None: written, nothing disposed")
+
+	-- e. an unseated Instance + chaining: the replaced Instance is destroyed
+	local fa, fb = mock.Instance.new("Frame"), mock.Instance.new("Frame")
+	local free = dq.Source(fa :: any)
+	free:SetAndDispose(fb):SetAndDispose(nil)
+	assert(mock.isDestroyed(fa) and mock.isDestroyed(fb) and free:Get() == nil, "chain: each replaced Instance destroyed")
+
+	-- f. old value dispose cannot take (a number): dispose's own error AFTER the write, blaming the user line
+	local num = dq.Source(5 :: any)
+	local rn = num.Revision
+	local okN, errN = pcall(function()
+		num:SetAndDispose(6)
+	end)
+	assert(not okN and string.find(body(errN, "Quad0180"), "Quad0180 dispose: this backend cannot dispose this value", 1, true) == 1, "dispose's error: " .. tostring(errN))
+	assert(num:Get() == 6 and num.Revision ~= rn, "the write already happened (no rollback, no pcall)")
+	mock.assertBlamesUser(errN, "spec.source.luau", "SetAndDispose dispose-error blame")
+
+	-- g. old value still held elsewhere (a manual Slot): Quad0179 after the write, value not destroyed, user line blamed
+	local held = mock.Instance.new("Frame")
+	dq.Dispatch.drive(mock.Instance.new("Frame"), { dq.Slot({ held }) })
+	local h = dq.Source(held :: any)
+	local okH, errH = pcall(function()
+		h:SetAndDispose(nil)
+	end)
+	assert(not okH and string.find(tostring(errH), "Quad0179", 1, true) ~= nil, "held elsewhere: " .. tostring(errH))
+	assert(h:Get() == nil and not mock.isDestroyed(held), "written; the held value survives")
+	mock.assertBlamesUser(errH, "spec.source.luau", "SetAndDispose held blame")
+
+	-- h. Modifier: the same gate as Set, run FIRST — nothing written, nothing disposed, user line blamed
+	local mod = {}
+	Brand.ModifierBrand:Register(mod)
+	local fm = mock.Instance.new("Frame")
+	local g = dq.Source(fm :: any)
+	local rg = g.Revision
+	local okS, errS = pcall(function()
+		g:Set(mod :: any)
+	end)
+	local okD, errD = pcall(function()
+		g:SetAndDispose(mod :: any)
+	end)
+	assert(not okS and not okD and body(errD, "Quad0181") == body(errS, "Quad0181"), "same error as Set: " .. tostring(errD))
+	assert(rawequal(g:Get(), fm) and g.Revision == rg and not mock.isDestroyed(fm), "rejected: value, revision and old value untouched")
+	mock.assertBlamesUser(errD, "spec.source.luau", "SetAndDispose Modifier blame")
+
+	-- i. a Store field is a Source — the method is there as-is
+	local fs = mock.Instance.new("Frame")
+	local store = dq.Store({ panel = dq.Source(fs :: any) })
+	store.panel:SetAndDispose(nil)
+	assert(store.panel:Get() == nil and mock.isDestroyed(fs), "Store field: Set then dispose")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

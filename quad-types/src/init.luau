@@ -221,6 +221,8 @@ export type Source<T> = State<T> & {
 	Set: (self: Source<T>, v: T) -> Source<T>,
 	-- 2026-10-01 (사용자 결정): `v == 현재 값`(Luau `==`, 공유 `__eq`)이면 아무것도 안 함, 다르면 `Set`과 같다 — self 반환
 	SetIfChanged: (self: Source<T>, v: T) -> Source<T>,
+	-- 2026-10-01 (2026-08-20 `SL-74` 확정): `Set(v)` 뒤 바뀌기 전 값을 `dispose`(nil/None/같은 참조는 건너뜀) — self 반환
+	SetAndDispose: (self: Source<T>, v: T) -> Source<T>,
 	Emit: (self: Source<T>) -> Source<T>,
 }
 

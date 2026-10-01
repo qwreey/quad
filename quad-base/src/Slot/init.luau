@@ -475,8 +475,11 @@ local function Init(module: any)
 
 	S.Slot = Slot -- `wrapElement` (Slot/Elements.luau) mints wrapper Slots through this
 
-	-- dispose(value) — the one safe path to destroy a quad-managed value.
-	local function dispose(value: any)
+	-- dispose(value) — the one safe path to destroy a quad-managed value. The body is an UNTAGGED
+	-- local (`disposeValue`) so another tagged surface can run it and keep the blame on ITS caller:
+	-- `Source:SetAndDispose` (2026-10-01) reaches it through `_slotInternal.disposeValue` — calling the
+	-- tagged `dispose` from there would make `dispose` the nearest tagged frame and blame Source.luau.
+	local function disposeValue(value: any)
 		if value == nil then
 			Err.errorBeforeNearest("Quad0178 dispose: value must not be nil", SURFACE) -- `H-474` (Q31): say nil, not "cannot dispose this value"
 		end
@@ -499,6 +502,9 @@ local function Init(module: any)
 		elseif module.Backend.isInst(value) then module.Backend.nativeDispose(value)
 		else Err.errorBeforeNearest("Quad0180 dispose: this backend cannot dispose this value", SURFACE) end
 	end
+	local function dispose(value: any)
+		disposeValue(value) -- the tagged public door (a statement call — the tag is on THIS frame)
+	end
 
 	-- Expose to module + the SlotHandler (Slot/Handler.luau reaches these
 	-- through module).
@@ -515,6 +521,7 @@ local function Init(module: any)
 		attachSlot = S.attachSlot,
 		unmountSlotTree = S.unmountSlotTree,
 		isSlot = isSlot,
+		disposeValue = disposeValue, -- 2026-10-01: Source:SetAndDispose's untagged route (see `dispose` above)
 	}
 	-- [2026-09-17 round10 Q48 (a) — user decision] the seat ops are public on the bookkeeping
 	-- namespace: a provider's numeric-key handler that parents a value (quad-roblox's

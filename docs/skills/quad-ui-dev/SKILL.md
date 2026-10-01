@@ -99,7 +99,7 @@ Snippets below assume this prologue.
 
 | Concept | Constructor / Type | Mutability | Key Methods & Rules |
 | :--- | :--- | :--- | :--- |
-| **`Source<T>`** | `q.Source(init)` | Writable root | `:Get()`, `:Set(v)`, `:SetIfChanged(v)`, `:Emit()`. Propagates synchronously; `:Set` propagates even an equal value, `:SetIfChanged` skips it. |
+| **`Source<T>`** | `q.Source(init)` | Writable root | `:Get()`, `:Set(v)`, `:SetIfChanged(v)`, `:SetAndDispose(v)`, `:Emit()`. Propagates synchronously; `:Set` propagates even an equal value, `:SetIfChanged` skips it. |
 | **`State<T>`** | Return of `:Compute`/`:Apply`/`:Gate` | Read-only derived | `:Get()`, `:Compute(fn, ...deps)`, `:Depend(...)`, `:Apply(f)`, `:Observer(fn)` (see 6.3). |
 | **`Store`** | `q.Store{ key = q.Source(v) }` | Bag of Sources | Reset per field: `store.Field:Set(v)`. |
 | **`Context`** | `q.Context()` | Explicit value bag | Keys are `q.Context.Provider(name?)`. Passed through props — no tree walk. |
@@ -119,6 +119,11 @@ mutating in place and calling `:Emit()`, which signals without replacing the val
 shared `__eq` decides; NaN always writes) it does nothing — no revision, no propagation — otherwise it is `:Set(v)`;
 returns self either way. Use it only where a feedback loop must be cut (an `Effect` trimming its own dep, an
 engine → Source bridge, an input handler); an Observer writing its own upstream stays undefined even with it (rule: `reference/core/05` "final consumer").
+`source:SetAndDispose(v)` is `:Set(v)` and then `q.dispose` of the value it replaced — the wave runs first, so a
+numeric-key seat has already let go of the old Instance/Slot (disposing a seated value first is refused). It skips
+the dispose when the old value is `nil`/`q.None` or the same reference as `v`; any other old value goes to `dispose`
+as-is, and its errors (not disposable, still held elsewhere — e.g. a `Debounce`/`Blocker` between the Source and the
+seat) are raised AFTER the write. Returns self.
 
 Values that belong in the **array part** of a props table, never as hash keys:
 `Ref`/`PreRef`/`PostRef`, `Observer`, `Effect`, `Slot`, `Modifier`, `Tag`, `Attr`,
