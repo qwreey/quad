@@ -576,16 +576,8 @@ local function Init(module: any)
 		-- fields merged into the hash part. Owned HERE, not by `New` (round17
 		-- §0 Q4 (a), 2026-09-04): one call site serves `New` and `Claim` alike.
 		-- Runs before the batching test — it never changes the array length.
-		-- `H-495` (2026-09-08 2차 감사 H-1): array-position domain, BEFORE any handler
-		-- touches bookkeeping (`H-256` (a)) — `{ [0] = child }`/`[1.5]`/`[-1]` used to
-		-- die in the leaf handler's `setOffsetSource`/`setEmpty` with an internal line,
-		-- while the same key with an unmatched value blamed the user. Siblings: the Slot
-		-- constructor (`H-396`) and Tag's list gate. Sparse holes (`{ nil, x }`) stay UB.
-		for k in pairs(flattened) do
-			if type(k) == "number" and (k < 1 or k % 1 ~= 0) then
-				Err.errorBefore(`Quad0085 Dispatch.drive: array keys must be positive integers (got {k})`, SURFACE)
-			end
-		end
+		-- flatten's hash-part walk also carries the array-key domain check
+		-- (`Quad0085`, `H-495`) — no separate full pass here (2026-10-02 사용자).
 		flatten(flattened)
 		local batching = flattened[1] ~= nil
 		local blocker = if batching then bookkeeping._getBlocker(inst) else nil

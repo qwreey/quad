@@ -11,17 +11,19 @@
 	Canonical source: `.claude/base/lifecycle-pattern.md` (0)/(1)/(3) — this
 	file transcribes those sketches onto real Roblox Instances. The mock
 	backend (`quad-base/test/mock.luau` `installLifetime`) is the same shape;
-	the deliberate divergences are exactly two:
-	  1. claim is NOT lazy here — `nativeClaim(inst)` runs once at Instance
-	     creation (`New` step ②) or `Claim` time. Lazy claim at bind time
-	     would reopen the userdata-identity hole the (0) section exists to
-	     close (measured: an unclaimed inst's userdata is collected within
-	     one GC cycle even while alive in the tree —
-	     `.claude/audit/spike10-full-run-2026-09-01.md` A-6).
-	  2. therefore `holdLifetime` on an unclaimed inst is an error here
-	     (round14 `H-290`, message still says `bindLifetime:` — that is the
-	     primitive the user called) — the mock lazily claims instead because
-	     mock instances are created outside quad.
+	the one deliberate divergence is WHEN the gchold/gcconn setup happens:
+	  - here `nativeClaim(inst)` sets it up once at Instance creation (`New`
+	    step ②) or `Claim` time. Doing it lazily at bind time would reopen the
+	    userdata-identity hole the (0) section exists to close (measured: an
+	    unclaimed inst's userdata is collected within one GC cycle even while
+	    alive in the tree — `.claude/audit/spike10-full-run-2026-09-01.md` A-6);
+	  - the mock sets it up lazily at the first hold of an ALREADY-claimed
+	    instance (setup only).
+	Ownership is the same gate on both: `holdLifetime` on an unclaimed inst is
+	an error (round14 `H-290`, message still says `bindLifetime:` — that is the
+	primitive the user called). The mock used to claim lazily instead; since
+	round11 Q64 (`Instance.new` is born claimed, `Instance.foreign` is not) and
+	round13 `H-658` it throws the same "not claimed" error.
 
 	`nativeClaim` lives in this file (not EngineOps.luau) because the
 	gcconn/gchold path shares `InstData` with `isHeld`/`holdLifetime` — the user

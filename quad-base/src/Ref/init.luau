@@ -289,15 +289,13 @@ local function registerDispatchHandlers(module: any)
 	end
 	addGuard("PreRefDynamicPathGuard", Brand.isPreRef, "PreRef")
 	addGuard("PostRefDynamicPathGuard", Brand.isPostRef, "PostRef")
-	-- round11 `H-567`: `Frame { Ref = ref }` got the no-match message. [2026-09-27 round13 E16 `H-681`]
-	-- `isRef` is also true for PreRef/PostRef, and all three guards sit at the same FALLBACK
-	-- priority — ties have no defined order, so the error's subject ("Ref:" vs "PreRef:") depended
-	-- on the install environment (quad-roblox said "Ref", the mock said "PostRef"). Exclude the
-	-- tagged kinds here so exactly one guard matches.
-	addGuard("RefDynamicPathGuard", function(v: any): boolean
-		return Brand.isRef(v) and not Brand.isPreRef(v) and not Brand.isPostRef(v)
-	end, "Ref")
-	-- round13 Q135 (debug layer): one string-key filter for the family (the three guards above stay as they are)
+	-- No guard for the plain Ref (2026-10-02 사용자 *"중복은 그냥 덜어내는게 맞는것 같음"*): round11
+	-- `H-567`'s `RefDynamicPathGuard` repeated what Dispatch's no-match message already says for a
+	-- branded value at a string key (`Quad0076` "a quad value at a string key: it belongs in a numeric
+	-- (array) slot"); `RefLeafHandler` takes every number key, so its `Quad0136` branch was unreachable.
+	-- The PreRef/PostRef guards above predate it and stay — their literal-array-only rule (the pre-pass
+	-- cannot see a State/Store-delivered PreRef/PostRef) is not something the no-match message knows.
+	-- round13 Q135 (debug layer): one string-key filter for the family (the two guards above stay as they are)
 	DebugKeyFilter.register(dispatch, "RefStringKeyDebugFilter", function(v: any): string?
 		if not Brand.isRef(v) then
 			return nil

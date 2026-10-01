@@ -55,10 +55,10 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 - `Quad0137 PreRef: must be an array item, not the value of a {typeof(k)} key`
 - `Quad0136 PreRef: must be a literal array item - it reached array index {k} through a State/Store value, which the pre-pass cannot see`
 
-평범한 `Ref`도 같은 가드를 갖습니다(3.2.0부터) — 문자 키에 두면 `Quad0137 Ref: must be an array item, not the value of a string key`. 숫자 키 자리에 닿기만 하면 되므로 `Source`/`Store` 값에 담아 넣어도 그대로 채워지는 것은 `Ref`만이고, `PreRef`/`PostRef`는 State에 담아 숫자 키에 넣어도 `Quad0136`으로 거부됩니다(위 문단).
+평범한 `Ref`는 전용 가드가 없습니다 — 문자 키에 두면 `Quad0076 Dispatch: no handler matched key … (value: table, brand: Epoch, Ref) - a quad value at a string key: it belongs in a numeric (array) slot`(3.2.0엔 같은 안내를 `Quad0137 Ref: …`로 냈는데 겹치는 가드라 걷어냈습니다). 숫자 키 자리에 닿기만 하면 되므로 `Source`/`Store` 값에 담아 넣어도 그대로 채워지는 것은 `Ref`만이고, `PreRef`/`PostRef`는 State에 담아 숫자 키에 넣어도 `Quad0136`으로 거부됩니다(위 문단).
 
 - Modifier 필드 — `Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`
-- 문자 키(반영 프로퍼티·이벤트가 **아닌** 이름 — `Parent`·오타 등) — `Quad0137 Ref: must be an array item, not the value of a string key`(3.2.0부터 — 그 전엔 `Quad0076`의 프로바이더 안내가 나왔습니다)
+- 문자 키(반영 프로퍼티·이벤트가 **아닌** 이름 — `Parent`·오타 등) — `Quad0076`의 문자 키 꼬리 ` - a quad value at a string key: it belongs in a numeric (array) slot`(3.2.0엔 `Quad0137 Ref: …`, 그 전엔 `Quad0076`의 프로바이더 안내가 나왔습니다)
 - 반영 프로퍼티 키 — 생성된 props 타입이 그 값 자리에서 `Ref`를 거부합니다. 타입 검사 없이 넘기면 가드가 아니라 **프로퍼티 핸들러**가 먼저 받아 `inst[k] = ref`로 대입합니다 — mock에서는 `Name = ref`가 번호 없는 `Name must be a string`(핸들러 줄 blame), `Size`/`Visible`은 에러 없이 `Ref` 테이블이 들어가고 `PostRef`는 소비도 발화도 되지 않습니다; 실엔진은 엔진 대입 에러로 추정(미실측, [2026-09-27 기준]). 이벤트 키(`Activated = ref`)는 `Quad0218 Event: handler … must be a function (got table)`. `q.debug`가 켜져 있으면 어느 쪽이든 그 앞에 `Ref: found at string key "Size" - must be an array item (…)` 경고 한 줄이 먼저 나옵니다.
 
 하나의 `Ref`는 **한 자리에만** 놓을 수 있습니다. 생명주기 결합이 그 자리에서 던집니다 — 같은 인스턴스의 두 자리면 `Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)`, 다른 인스턴스면 `Quad0233 bindLifetime: value is already bound to another Instance`(이 두 문구는 quad-base의 것이라 어느 백엔드에서나 같습니다).
@@ -67,7 +67,7 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 
 - `Quad0069 PreRef: already used - a PreRef is one-shot (used up once quad places it, fired or not); make a new one for each instance`
 
-[`Fallback`/`Traceback`](../sugar/05-fallback-traceback.md) 경계 **밖**에서 만들어 안에 넘긴 `Ref`류도 이 두 제약을 그대로 받습니다 — 던지기 전에 처리된 자리에 놓였다면 이미 위 두 에러 중 하나로 그대로는 다시 쓸 수 없고(`Ref`/`PreRef`), `PostRef`는 pre-pass가 그 항목에 닿은 뒤 본문 루프나 앞선 `PostRef` 콜백이 던졌으면 **배열에서 던진 항목보다 뒤에 놓였어도** 발화 없이 소진됩니다(`D.Frame { throwingRef, post }`의 `post` — 재사용은 `Quad0069`; 반대로 앞 자리 `PreRef` 콜백이 pre-pass 안에서 던지면 뒤 자리 `PostRef`는 소비되지 않아 다시 쓸 수 있습니다 — [2026-09-27 mock 관측]). `Ref`는 던진 고아 인스턴스(`ref.Value`)를 `q.dispose`하면 풀려 재사용할 수 있고(mock 확인, [2026-09-27 기준]), `PreRef`/`PostRef`는 일회용이라 재시도 때 새로 만들어야 합니다.
+[`Fallback`/`Traceback`](../sugar/05-fallback-traceback.md) 경계 **밖**에서 만들어 안에 넘긴 `Ref`류도 이 두 제약을 그대로 받습니다. 던진 뒤의 상태는 계약이 아니고, 아래는 지금의 관측입니다 — 던지기 전에 처리된 자리에 놓였다면 이미 위 두 에러 중 하나로 그대로는 다시 쓸 수 없고(`Ref`/`PreRef`), `PostRef`는 pre-pass가 그 항목에 닿은 뒤 본문 루프나 앞선 `PostRef` 콜백이 던졌으면 **배열에서 던진 항목보다 뒤에 놓였어도** 발화 없이 소진됩니다(`D.Frame { throwingRef, post }`의 `post` — 재사용은 `Quad0069`; 반대로 앞 자리 `PreRef` 콜백이 pre-pass 안에서 던지면 뒤 자리 `PostRef`는 소비되지 않아 다시 쓸 수 있습니다 — [2026-09-27 mock 관측]). `Ref`는 던진 고아 인스턴스(`ref.Value`)를 `q.dispose`하면 풀려 재사용할 수 있었고(관측 — 계약 아님, mock 확인 [2026-09-27 기준]), `PreRef`/`PostRef`는 일회용이라 재시도 때 새로 만들어야 합니다.
 
 ## `q.Ref<<T>>(default)`
 
@@ -91,7 +91,7 @@ Ref: <T>(default: T) -> Ref<T>
 - 숫자 키 자리에 놓으면, **그 자리가 처리되는 시점**에 `:Set(inst)`가 불립니다. 디스패치는 숫자 키를 인덱스 순서로 돌기 때문에, 앞 자리의 자식이 먼저 놓인 뒤 이 `Ref`가 채워지고, 뒤 자리는 그다음입니다. **그 숫자 키 자리 자체가 다른 값으로 재구동되면**(재바인드/retract 경로) `:Set(nil)`로 되돌아갑니다.
 - **인스턴스가 `Destroy()`되는 것과는 무관합니다.** `Ref`는 대상 인스턴스의 `Destroy`를 감지하지도, 반응하지도 않습니다 — 이미 파괴된 인스턴스를 계속 가리킨 채로 남는 것도 정상적으로 가능하고, 그 이후 `.Value`를 읽고 쓰는 것은 UB입니다. 파괴 시점 정리가 필요하면 `Effect`나 이벤트 쪽에서 하세요.
 - 인스턴스를 `q.dispose`해도 같습니다 — 묶임만 풀고 `.Value`는 그대로 둡니다([2026-09-27 mock 실측]).
-- `Ref`를 **State에 담아** 숫자 키 자리에 넣었을 때(`st = q.Source(ref)`), 그 인스턴스를 `Destroy`한 뒤의 `st:Set(b)`는 아무것도 하지 않습니다 — 에러 없이 `b`는 채워지지 않고, 옛 `Ref`는 파괴된 인스턴스를 쥔 채 남습니다. 인스턴스가 살아 있을 때 `st:Set(b)`의 `b`가 이미 다른 자리에 묶여 있으면 `Quad0233`이 그 `Set` 줄에서 나는데, 그 시점에 옛 `Ref`는 이미 `:Set(nil)`로 풀린 뒤입니다(자리는 그 뒤 정상으로 다시 쓸 수 있습니다 — [2026-09-27 mock 실측]).
+- `Ref`를 **State에 담아** 숫자 키 자리에 넣었을 때(`st = q.Source(ref)`), 그 인스턴스를 `Destroy`한 뒤의 `st:Set(b)`는 파괴된 인스턴스 위의 동작이라 정해져 있지 않습니다 — 관측(계약 아님)으로는 아무것도 하지 않아, 에러 없이 `b`는 채워지지 않고 옛 `Ref`는 파괴된 인스턴스를 쥔 채 남았습니다. 인스턴스가 살아 있을 때 `st:Set(b)`의 `b`가 이미 다른 자리에 묶여 있으면 `Quad0233`이 그 `Set` 줄에서 납니다. 그 뒤의 상태도 관측일 뿐입니다 — 옛 `Ref`는 이미 `:Set(nil)`로 풀린 뒤였고 자리는 그 뒤 다시 쓸 수 있었습니다([2026-09-27 mock 실측]).
 - `Ref`는 `Epoch`이기도 합니다(다중 태깅) — `q.isRef`와 `q.isEpoch`가 둘 다 참입니다.
 
 **예제**
@@ -120,7 +120,7 @@ PreRef: <T>(default: T) -> PreRef<T>
 
 일회용입니다 — 한 번 발화한 `PreRef`를 다른 인스턴스에 다시 놓으면 에러입니다. 인스턴스마다 새로 만드세요.
 
-`PreRef` 콜백 안에서 그 인스턴스를 `Destroy`하는 것은 정의되지 않은 동작입니다 — drive는 멈추지 않고 끝까지 돌아, 같은 인스턴스의 `PostRef`가 파괴된 인스턴스로 발화하고 `Declaration`도 파괴된 인스턴스를 돌려줍니다([2026-09-27 mock 관측]).
+`PreRef` 콜백 안에서 그 인스턴스를 `Destroy`하는 것은 정의되지 않은 동작입니다 — drive는 멈추지 않고 끝까지 돌아, 같은 인스턴스의 `PostRef`가 파괴된 인스턴스로 발화하고 `Declaration`도 파괴된 인스턴스를 돌려줍니다([2026-09-27 mock 관측 — 계약 아님]).
 
 **예제**
 
@@ -352,7 +352,7 @@ ref:Set("hello")
 - 대기자는 그 Ref를 채우는 **`:Set` 안에서** 곧바로 깨어나 그 자리에서 돕니다 — Declaration이 자리를 채우는 마운트 파동, 자리를 비우는 철거 파동 안입니다. 대기자 본문이 던지면 그 에러는 그 `:Set`(마운트/철거)로 되돌아갑니다 — `task.spawn`으로 띄웠어도 `:Wait()`에 멈춘 순간 그 격리는 사라집니다.
 - 숫자 키 자리가 철거되면 `:Set(nil)`이 오므로 대기자는 **nil로도 깨어납니다.** `ref:Wait():Unwrap()`은 그때 던집니다 — 철거 뒤에 깨어날 수 있는 대기자는 `ref:Wait().Value`를 nil 검사하세요.
 - 영영 채워지지 않는 대기자는 그 Ref가 사는 동안 `Callbacks`에 남습니다(취소 수단 없음). 인스턴스가 파괴돼도 `:Set`이 오지 않으면 남습니다.
-- **다른 Ref의 `:Wait()`에 멈춰 있는 코루틴을 `:Wait(thread)`로 등록하는 것은 정의되지 않은 동작입니다.** `r2:Wait(thread)`로 등록한 코루틴이 실은 `r1:Wait()`에 멈춰 있었다면, `r2:Set`이 그 코루틴을 깨울 때 `r1:Wait().Value`가 **r1의 옛 값**을 조용히 돌려주고, r1에는 그 코루틴의 등록이 그대로 남습니다([2026-09-27 mock 실측]).
+- **다른 Ref의 `:Wait()`에 멈춰 있는 코루틴을 `:Wait(thread)`로 등록하는 것은 정의되지 않은 동작입니다.** `r2:Wait(thread)`로 등록한 코루틴이 실은 `r1:Wait()`에 멈춰 있었다면, `r2:Set`이 그 코루틴을 깨울 때 `r1:Wait().Value`가 **r1의 옛 값**을 조용히 돌려주고, r1에는 그 코루틴의 등록이 그대로 남습니다([2026-09-27 mock 실측 — 관측, 계약 아님]).
 :::
 
 ## `ref:Unwrap()`

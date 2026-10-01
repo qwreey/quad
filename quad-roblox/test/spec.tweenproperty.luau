@@ -362,7 +362,9 @@ do
 	w.Completed:Fire("Completed") -- the late notice
 	assert(#order == 0, "late notice ignored")
 	-- code-review (b): a throwing Cancelled callback settles the record first — the next write does not
-	-- Cancel/fire the same tween again, and the new tween still starts
+	-- Cancel/fire the same tween again, and the new tween still starts.
+	-- [관측 — 계약 아님] (2026-10-02 user decision, `architecture.md` "예외 안전성 계약"): the state after a
+	-- throwing callback is pinned here as the current observation, not promised (roblox/06 says so too).
 	mock.resetTweenLog()
 	local src5 = q.Source(0 :: any)
 	local _k = q.Declaration.Frame({ Size = src5 }) :: any

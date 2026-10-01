@@ -48,7 +48,7 @@ type State<T> = q.State<T>
 ---
 
 :::caution
-**타이머가 통과시키는 순간 하류가 던지면 leading edge 하나가 사라집니다.** 창 끝(또는 `MaxTime`)의 통과는 창을 닫은 뒤 하류로 보내므로, 그 통지를 받은 Observer가 던지면 게이트는 "창 없음·상류 차단 중" 상태로 다음 신호까지 남습니다. 다음 신호는 `Leading = true`여도 즉시 통과하지 못하고 보류돼 `Time` 뒤에 trailing으로 나갑니다 — 그 한 번뿐이고 이후는 정상입니다(`Leading = false`면 겉으로 차이가 없습니다). quad는 던진 사용자 콜백을 복구하지 않습니다([공통 계약](#공통-계약)).
+**타이머가 통과시키는 순간 하류가 던진 뒤의 게이트 상태는 정해져 있지 않습니다** — quad는 던진 사용자 콜백을 복구하지 않습니다([공통 계약](#공통-계약)). 지금의 동작은 관측일 뿐 계약이 아닙니다: 창 끝(또는 `MaxTime`)의 통과는 창을 닫은 뒤 하류로 보내므로, 그 통지를 받은 Observer가 던지면 게이트는 "창 없음·상류 차단 중" 상태로 다음 신호까지 남고, 다음 신호는 `Leading = true`여도 즉시 통과하지 못하고 보류돼 `Time` 뒤에 trailing으로 나갑니다 — leading edge 하나가 사라지는 셈이고, 관측된 범위에서는 그 한 번뿐이고 이후는 정상으로 돌아왔습니다(`Leading = false`면 겉으로 차이가 없습니다).
 :::
 
 ## `q.Debounce{...}`
@@ -122,7 +122,7 @@ Quad0048 Debounce: Leading and Trailing both false would pass nothing through
 Quad0046 Throttle: MaxTime is Debounce-only (a throttle already passes every Time)
 ```
 
-`Time`/`MaxTime`에 State를 준 경우엔 값이 실제로 읽히는 **신호가 들어오는 시점**에 한 번 더 검사합니다(`:Set` 줄에서 던집니다 — 타이머 콜백 안에서는 읽지 않습니다. 던진 신호의 출처는 이미 보류 집합에 들어가 있어 버려지지 않고 다음 통과(다음 신호의 leading·창 끝·`Flush`)에 실려 나가며, 던진 자리가 상류 `:Set`의 전파 파동 안이라 같은 원천의 다른 구독자 중 뒤에 오는 것은 그 신호를 받지 못합니다 — [State](../core/03-state.md)의 "던진 콜백은 감싸지 않는다" 규칙 그대로). 이때의 메시지는 조금 다릅니다(그 자리엔 `State<number>` 갈래가 없으므로).
+`Time`/`MaxTime`에 State를 준 경우엔 값이 실제로 읽히는 **신호가 들어오는 시점**에 한 번 더 검사합니다(`:Set` 줄에서 던집니다 — 타이머 콜백 안에서는 읽지 않습니다. 던진 뒤의 상태는 계약이 아니고 관측입니다: 던진 신호의 출처는 이미 보류 집합에 들어가 있어 버려지지 않고 다음 통과(다음 신호의 leading·창 끝·`Flush`)에 실려 나가며, 던진 자리가 상류 `:Set`의 전파 파동 안이라 같은 원천의 다른 구독자 중 뒤에 오는 것은 그 신호를 받지 못합니다 — [State](../core/03-state.md)의 "던진 콜백은 감싸지 않는다" 규칙 그대로). 이때의 메시지는 조금 다릅니다(그 자리엔 `State<number>` 갈래가 없으므로).
 
 ```
 Quad0039 Debounce: Time must be a non-negative number less than math.huge (got string)

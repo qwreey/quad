@@ -663,7 +663,9 @@ end
     **[같은 날 `H-495`]** `drive`는 props의 숫자 키가 양의 정수가 아니면(`[0]`/`[-1]`/`[1.5]`)
     말단 핸들러가 부기를 만지기 전에 표면 에러(`H-256` (a); 옛: 값이 매치되면 `setOffsetSource`/
     `setEmpty`의 내부 줄, 매치 안 되면 사용자 줄 — 같은 키인데 blame이 값에 따라 갈렸다).
-    희소 구멍(`{ nil, x }`)은 그대로 UB(`H-396`). `Dispatch.process`/`getHandler`와 마찬가지로 base엔 인터페이스만
+    희소 구멍(`{ nil, x }`)은 그대로 UB(`H-396`). **[2026-10-02 사용자 — *"검사를 이미 있는 for 루프, flatten 에
+    실어준다 이건 동의."*]** 따로 돌던 `pairs` 전수 패스는 지웠고 같은 판정(같은 ID·문구·blame)을 flatten의 해시
+    부분 루프(`next(input, #input)`부터)가 한다 — 배열 부분 키는 정의상 양의 정수라 해시 부분만 보면 된다. `Dispatch.process`/`getHandler`와 마찬가지로 base엔 인터페이스만
     있고, quad-roblox의 concrete Handler들(PropertyHandler/EventHandler/
     OnChangeHandler/UICornerHandler 등)은 팩토리가 `BaseModule`을
     뮤테이션하는 시점에 이걸로 등록됨(아래 "base 유틸은 인터페이스" 절과
@@ -1439,7 +1441,7 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
   len Observer를 만든 직후의 `bindLifetime(anchor, …)`이 한 번 따라잡는다(사용자 *"설치 중 즉시 도는거 아님"*). 이 장면은
   **정의된 경로다** — Slot의 `Offset`/`Length`를 보는 콜백의 CRUD가 그 값으로 다시 돌아오는 고리는 State 의존이 아니라 부기
   재계산(`recompute`)을 거치고, 부기가 Effect처럼 되감아 수렴시킨다(Set 창 되감기 `H-101`/`H-113`/`H-124` 유지). (사용자 결정 원문은 `source-state-plan.md`의 "Compute 순수성" 절 2026-10-01 문단, 규칙·예외의 정본 서술은 레퍼런스 core/05 "Observer는 최종 소비자" 문단) (같은 날
-  앞서 "UB이지만 잘 돈다"로 적었던 것을 이 회신이 바로잡았다.) throw의 UB 입장은 그대로다.
+  앞서 "UB이지만 잘 돈다"로 적었던 것을 이 회신이 바로잡았다.) throw의 UB 입장은 그대로다. **[2026-10-02 사용자 결정 — Effect와 같은 한도]** 수렴하지 않는 고리를 위해 `recompute` 한 패스의 되감기는 1만 번까지 — 넘으면 `Quad0267`(아래 `recompute` 의사코드 (d)). 
 - **`State<State<T>>`는 정상 지원 대상** (2026-08-13 다섯 번째 세션
   재정정, 열네 번째 세션에 힌트까지 보강). 원래(같은 날 두 번째 세션)
   `store.key = a`(State), `a:Get() = b`(State)일 때 같은 `StoreBind`
@@ -2263,6 +2265,13 @@ local function recompute(ownerKey, bk)
     --       재진입이 끝에 붙인 자리를 바깥 루프가 아예 안 본다.
     --   (c) `bk.offsetSetUpTo`가 낮아지면 **그 지점 다음부터 되감는다**.
     --       접두합을 남겨두면 되감기 지점의 `sum`이 공짜로 복원된다.
+    --   (d) **[2026-10-02 사용자 결정 — *"부기 되감기에 상한 두는거, effect 랑 동일하게
+    --       일관적이게 둬도 될 것 같아. 같은 한도로."*]** 한 패스의 **되감기** 횟수를 루프
+    --       지역 카운터로 세어 1만 번(`Effect`의 `RERUN_LIMIT`과 같은 수 — 상수는 각자,
+    --       본문 공유 없음)을 넘으면 `Quad0267`로 던진다(outermost blame = 패스를 시작한
+    --       사용자 줄). 반복이 아니라 되감기를 세므로 N이 아무리 커도 정상 패스는 0회.
+    --       세 되감기 자리(아래 ①·`H-124`·②)가 전부 센다. 던지는 자리는 On/Off 창 안이라
+    --       그 owner는 동결된다(예외 안전성 계약 — 무결 약속 없음).
     bk.recomputeBlocker:On()
     local prefix, i = {}, 1
     while i <= (bk.N or 0) do
@@ -3035,4 +3044,4 @@ Slot이 store 바인드로 넘어오는 경우도 이 래핑 방식과 자연스
 `State<Slot>` 교체는 `Dispatch.process`가 (A)/(B) 분기로 판정하고, 그 자리
 클로저가 이전 Slot을 언마운트한다(파괴가 아님 — `base/slot-plan.md`).
 
-**[2026-09-17 round11 3차 탐사 G′ — `H-563`·`H-564`·`H-565`·`H-567`·`H-568`; Dispatch 코어 차등 퍼즈 1500시드·flatten 3000시드 발산 0]** 산술은 깨끗했고 남은 것은 입력 게이트와 이름 공간. **`H-563`** `brandNameOf`의 모듈 `is*` 스캔(Q27 계약)이 비브랜드 헬퍼(`q.isEmpty`, 인자를 무시하는 플러그인 `isMobile`)를 브랜드 술어로 믿어 `H-470` 게이트가 모든 `D.<Class>{}`를 "props must be a plain table (got Empty)"로 죽였다 — 브랜드 술어는 빈 평범 테이블과 비테이블에 거짓이어야 하므로 함수 신원당 한 번 프로브해(weak 캐시) 아니면 스캔에서 뺀다(Q27 계약은 그대로: `is<Brand>` 필드가 등록이되 "브랜드 술어답게 행동하는 것"만 센다 — 레퍼런스 core/11·core/01 캐비엇). **`H-564`** `checkIndex`가 `#list + 1`보다 큰 정수를 안 막아 구멍에 앉은 슬롯을 어떤 철거도 못 닿고 `release and #list == 0`이 살아 있는 retractor를 든 리스트를 놓아버렸다(`H-256`의 형제 — "list가 구멍 없는 시퀀스") → `process`가 리스트를 얻은 직후 `index > #list + 1` 거부. **`H-565`** `process`/`retractFrom`의 nil 키가 `Relate:GetWeak: key must not be nil`로 죽던 것(`H-504`의 나머지 반) → `checkKey`. **`H-567`** Slot·Ref에 동적 경로 가드 가족의 다섯째·여섯째(`Frame { Children = slot }`·`{ Ref = ref }`가 "provider … initialized"를 받던 것) + base 브랜드의 no-match 꼬리는 "a quad value at a string key: it belongs in a numeric (array) slot"(프로바이더 안내는 base 브랜드에 구조적으로 틀림). **`H-568`** `addHandler` priority NaN/±inf 거부(`H-553`의 NaN 선례; NaN은 정렬 어디든 앉고 동률 경고를 무력화)·같은 핸들러 테이블 identity dedup(형제 셋과 같이)·`newMapperClass` 이름 게이트. 스펙 `spec.dispatch` 21, `spec.refhandlers` 7 갱신(named 자리 Ref는 이제 가드), `spec.claim` 14. 확인: 교차 모듈 인스턴스 가드는 인스턴스별 상태가 있는 값(StoreBind·Observer/Effect/Slot 자리·`slot:Add`/`List`/`Single`·`dispose`)에만 있고 나머지(Ref·PreRef·PostRef·Blocker·Tag·Attr·AttrKey·Modifier·Context·Provider)는 잎 값이라 교차해도 멀쩡 — 새는 것이 아니라 가드할 것이 없음. `AddPlugin(provider)`로 `UseProvider` 1슬롯 락을 지나칠 수 있는 것은 문서화된 오용(core/01 권고) — 그대로. props 테이블 재사용은 **Q67**.
+**[2026-09-17 round11 3차 탐사 G′ — `H-563`·`H-564`·`H-565`·`H-567`·`H-568`; Dispatch 코어 차등 퍼즈 1500시드·flatten 3000시드 발산 0]** 산술은 깨끗했고 남은 것은 입력 게이트와 이름 공간. **`H-563`** `brandNameOf`의 모듈 `is*` 스캔(Q27 계약)이 비브랜드 헬퍼(`q.isEmpty`, 인자를 무시하는 플러그인 `isMobile`)를 브랜드 술어로 믿어 `H-470` 게이트가 모든 `D.<Class>{}`를 "props must be a plain table (got Empty)"로 죽였다 — 브랜드 술어는 빈 평범 테이블과 비테이블에 거짓이어야 하므로 함수 신원당 한 번 프로브해(weak 캐시) 아니면 스캔에서 뺀다(Q27 계약은 그대로: `is<Brand>` 필드가 등록이되 "브랜드 술어답게 행동하는 것"만 센다 — 레퍼런스 core/11·core/01 캐비엇). **`H-564`** `checkIndex`가 `#list + 1`보다 큰 정수를 안 막아 구멍에 앉은 슬롯을 어떤 철거도 못 닿고 `release and #list == 0`이 살아 있는 retractor를 든 리스트를 놓아버렸다(`H-256`의 형제 — "list가 구멍 없는 시퀀스") → `process`가 리스트를 얻은 직후 `index > #list + 1` 거부. **`H-565`** `process`/`retractFrom`의 nil 키가 `Relate:GetWeak: key must not be nil`로 죽던 것(`H-504`의 나머지 반) → `checkKey`. **`H-567`** Slot·Ref에 동적 경로 가드 가족의 다섯째·여섯째(`Frame { Children = slot }`·`{ Ref = ref }`가 "provider … initialized"를 받던 것) + base 브랜드의 no-match 꼬리는 "a quad value at a string key: it belongs in a numeric (array) slot"(프로바이더 안내는 base 브랜드에 구조적으로 틀림). **[2026-10-02 사용자 — *"중복은 그냥 덜어내는게 맞는것 같음"*]** 그 다섯째·여섯째 가드(`SlotDynamicPathGuard` `Quad0141`, `RefDynamicPathGuard`)는 걷었다 — 같은 `H-567`이 단 no-match 꼬리가 이미 같은 안내를 하고, 2026-10-01 `debugOnly` 문자 키 필터가 반영 프로퍼티 이름 자리를 덮는다; `Quad0141`은 폐기. PreRef/PostRef·Observer/Effect 가드는 더 오래된 정본이라 그대로. **`H-568`** `addHandler` priority NaN/±inf 거부(`H-553`의 NaN 선례; NaN은 정렬 어디든 앉고 동률 경고를 무력화)·같은 핸들러 테이블 identity dedup(형제 셋과 같이)·`newMapperClass` 이름 게이트. 스펙 `spec.dispatch` 21, `spec.refhandlers` 7 갱신(named 자리 Ref는 이제 가드), `spec.claim` 14. 확인: 교차 모듈 인스턴스 가드는 인스턴스별 상태가 있는 값(StoreBind·Observer/Effect/Slot 자리·`slot:Add`/`List`/`Single`·`dispose`)에만 있고 나머지(Ref·PreRef·PostRef·Blocker·Tag·Attr·AttrKey·Modifier·Context·Provider)는 잎 값이라 교차해도 멀쩡 — 새는 것이 아니라 가드할 것이 없음. `AddPlugin(provider)`로 `UseProvider` 1슬롯 락을 지나칠 수 있는 것은 문서화된 오용(core/01 권고) — 그대로. props 테이블 재사용은 **Q67**.

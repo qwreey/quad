@@ -43,6 +43,22 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 local FIELDS = { "Info", "Time", "Style", "Direction", "RepeatCount", "Reverses", "DelayTime", "Override", "Dedup", "Started", "Completed", "Cancelled" }
 local CALLBACK_FIELDS: { [string]: boolean } = { Started = true, Completed = true, Cancelled = true } -- round13 Q115 (a)
 
+-- ── debug layer: unknown option keys ──
+-- [2026-09-15 사용자 결정] unknown keys (typos such as `Duration`) are reported only under `q.debug`;
+-- execution continues with the defaults. Body kept out of `Animate` (`architecture.md` "debug 층": the
+-- logic carries one line).
+local KNOWN_OPTIONS: { [string]: boolean } = { CanAnimate = true }
+for _, name in FIELDS do
+	KNOWN_OPTIONS[name] = true
+end
+local function warnUnknownOptions(info: { [any]: any })
+	for key in info do
+		if not KNOWN_OPTIONS[key] then
+			print(`Animate: unknown option "{tostring(key)}" is ignored (known: {table.concat(FIELDS, ", ")}, CanAnimate)`)
+		end
+	end
+end
+
 local function install(quad: any, validateFields: (any, any?) -> (), tweenOutermost: (any) -> any): any
 	local isState = quad.isState
 	local None = quad.None
@@ -58,23 +74,12 @@ local function install(quad: any, validateFields: (any, any?) -> (), tweenOuterm
 		end
 	end
 
-	local KNOWN_OPTIONS: { [string]: boolean } = { CanAnimate = true }
-	for _, name in FIELDS do
-		KNOWN_OPTIONS[name] = true
-	end
-
 	local function Animate(info: any): any
 		if type(info) ~= "table" then
 			Err.errorBeforeNearest(`Quad0214 Animate: options must be a table, e.g. Animate\{ Time = ... \} (got {typeof(info)})`, SURFACE)
 		end
-		-- [2026-09-15 사용자 결정] unknown keys (typos such as `Duration`) are reported only under
-		-- `q.debug`; execution continues with the defaults
 		if quad.debug then
-			for key in info do
-				if not KNOWN_OPTIONS[key] then
-					print(`Animate: unknown option "{tostring(key)}" is ignored (known: {table.concat(FIELDS, ", ")}, CanAnimate)`)
-				end
-			end
+			warnUnknownOptions(info) -- debug layer (top of file)
 		end
 		-- `H-464`: validate the LITERAL options here, while the user's line is still on the
 		-- stack — the Tween is built lazily inside Compute, where a raise blamed `Animate.luau`.

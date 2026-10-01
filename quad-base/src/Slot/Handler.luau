@@ -52,17 +52,10 @@ local function register(dispatch: any, module: any)
 			end
 		end,
 	} :: QuadTypes.Handler)
-	dispatch.addHandler({
-		name = "SlotDynamicPathGuard", -- round11 `H-567`: the family's fifth guard — `Frame { Children = slot }`
-		isHandlable = function(_inst: any, _k: any, v: any): boolean
-			return internal.isSlot(v)
-		end,
-		priority = dispatch.HANDLER_PRIORITY_FALLBACK,
-		process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
-			Err.errorBefore(`Quad0141 Slot: must be an array item, not the value of a {typeof(k)} key`, SURFACE)
-			return module.Void -- unreachable; keeps the contract type
-		end,
-	} :: QuadTypes.Handler)
+	-- No FALLBACK guard (2026-10-02 사용자 *"중복은 그냥 덜어내는게 맞는것 같음"*): round11 `H-567`'s
+	-- `SlotDynamicPathGuard` (`Quad0141`, retired) repeated what Dispatch's no-match message already says
+	-- for a branded value at a string key (`Quad0076` "a quad value at a string key: it belongs in a numeric
+	-- (array) slot"), and the debug filter below covers the key that names a real property.
 	DebugKeyFilter.register(dispatch, "SlotStringKeyDebugFilter", function(v: any): string?
 		return if internal.isSlot(v) then "Slot" else nil
 	end)

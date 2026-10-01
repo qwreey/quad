@@ -1009,7 +1009,7 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   Q73 장면 자체 — 형제 `Offset` Observer의 CRUD가 그 Observer가 보는 `Offset`을 다시 바꾸는 것 — 는 **정의된 경로다**: 그 고리는
   State 의존이 아니라 부기 재계산을 거치고, 이 항목이 적는 Set 창 되감기(`H-101`/`H-113`/`H-124`)가 Effect의 지연 재실행처럼
   수렴시킨다. 되감기는 유지한다. (사용자 결정 원문은 `source-state-plan.md`의 "Compute 순수성" 절 2026-10-01 문단, 규칙·예외의 정본 서술은 레퍼런스 core/05 "Observer는 최종 소비자" 문단) (같은 날 앞서 "UB이지만 잘 돈다"로 적었던 것을 이 회신이 바로잡았다.) 수렴하지 않는 CRUD
-  (값마다 넣고 빼기를 뒤집는 것)는 끝나지 않는다(**[2026-10-01]** Effect의 무한 재실행은 늘 켜진 1만 회 한도 `Quad0263`으로 멈추지만 이 고리엔 그런 한도가 없다 — `effect-plan.md`). 위 F6(`updateFn`이 만든 원소가 `data`를 바꿈)은 이와 다르다 —
+  (값마다 넣고 빼기를 뒤집는 것)는 끝나지 않는다 — **[2026-10-02 사용자 결정 — *"부기 되감기에 상한 두는거, effect 랑 동일하게 일관적이게 둬도 될 것 같아. 같은 한도로."*]** 그래서 `recompute` 한 패스가 1만 번 넘게 되감으면 `Quad0267`로 멈춘다(Effect의 `Quad0263`과 같은 수, 늘 켜짐; 세는 것은 반복이 아니라 되감기라 긴 목록의 정상 패스는 걸리지 않는다 — `Bookkeeping.luau` `REWIND_LIMIT`, `spec.lengthoffset` round14 절). 옛 줄(**[2026-10-01]** "이 고리엔 그런 한도가 없다")은 이 결정으로 닫혔다. 위 F6(`updateFn`이 만든 원소가 `data`를 바꿈)은 이와 다르다 —
   `updateFn` 재진입은 처음부터 UB였다(바로 위 정정). quad 내부
   Observer(len·목록·base Offset·StoreBind)는 debug 되먹임 감지기에서 빠진다(비공개 `_internal` 표시 — `source-state-plan.md`의
   "전파 루프 — 확정 의사코드" 절).

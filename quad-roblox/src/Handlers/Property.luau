@@ -119,8 +119,9 @@ local function install(quad: any)
 	-- `Cb`/`Key` fields are made only when the value carries Completed or Cancelled (the connection is needed for
 	-- the `Done` bookkeeping even when only Cancelled is given — otherwise a finished tween would get Cancelled
 	-- on teardown); callback-less tweens keep the old record shape and GC profile. `Done` means SETTLED and is set
-	-- before any callback runs, so a throwing callback cannot leave the record "running"; `Cb` is released as
-	-- soon as it has been handed out.
+	-- before any callback runs (a cost-free order — a throwing callback then does not leave the record "running",
+	-- but the state after a throw is an observation, not a promise: `architecture.md` "예외 안전성 계약", 2026-10-02);
+	-- `Cb` is released as soon as it has been handed out.
 	local function fire(v: any, name: string, inst: any, k: any, value: any)
 		-- annotated on purpose: an unannotated `v[name]` narrowed by `~= nil` comes out as `*error-type* | ~nil`
 		-- under the new solver (2026-09-21 scratch, `typing-limits.md` 8.24)
@@ -310,19 +311,18 @@ local function install(quad: any)
 				and (v.DelayTime == nil or v.DelayTime == 0)
 				and (v.RepeatCount == nil or v.RepeatCount == 0)
 				and v.Reverses ~= true
-			-- 6순회 `H-406` (`H-256` (a) read-then-write, second site): build the NEW
-			-- engine tween before touching the old one — `TweenService:Create` may
-			-- raise on engine-typed options (header), and cancelling first left a
-			-- slot naming a dead tween whose stale target a later `Finish` snapped
-			-- to. The slot is written before `Play` so a raise there leaves at most
-			-- an unplayed tween the slot knows about.
+			-- Two orderings below cost nothing, so they are kept — NOT a promise about the state after a
+			-- throw (`architecture.md` "예외 안전성 계약": after a raise the bookkeeping is undefined).
+			-- 6순회 `H-406` (`H-256` (a) read-then-write, second site): the NEW engine tween is built
+			-- before the old one is touched — `TweenService:Create` may raise on engine-typed options
+			-- (header), and cancelling first left a slot naming a dead tween whose stale target a later
+			-- `Finish` snapped to. The slot is written before `Play`.
 			local engineTween = if tweenIn and not zeroTime then getTweenService():Create(inst, buildInfo(v), { [k] = v.Value }) else nil
 			-- round13 묶음 1: the previous value's settle, fired after our write (with its own target as `value`).
-			-- code-review (2026-09-28): on the plain and zero-time paths the INSTANCE WRITE goes first — if the engine
-			-- rejects the value (a nil the property cannot take, a wrong type), nothing is settled yet and the running
-			-- tween keeps its record and callbacks. The engine-tween path settles before its slot write (a `Finish`
-			-- needs the previous target first); a raise from `Play` there drops the previous value's callback — the
-			-- one remaining hole, an engine-level error.
+			-- code-review (2026-09-28): on the plain and zero-time paths the INSTANCE WRITE goes first, so an engine
+			-- rejection of the value (a nil the property cannot take, a wrong type) comes before anything is settled.
+			-- The engine-tween path settles before its slot write (a `Finish` needs the previous target first).
+			-- Observed, not contract: what a raise in either path leaves behind is not something callers may rely on.
 			local prevActive = type(prev) == "table" and prev.Tween ~= nil
 			if not tweenIn then
 				inst[k] = v

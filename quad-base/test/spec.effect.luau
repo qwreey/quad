@@ -537,7 +537,9 @@ print()
 print()
 print("=== 12. round11 Q68 (b) (2026-09-18) — fn이 yield하는 사이 leaf가 죽으면(_dying) fn이 돌려준 cleanup을 저장하지 않고 즉시 dying=true로 소진(전엔 죽은 핸들에 남는 영구 누수); 자리 철거로 실행 자격을 잃은 경우도 같다 ===")
 do
-	-- (1) yield + host death
+	-- (1) yield + host death — [관측 — 계약 아님] (2026-10-02): yielding inside fn is UB (core/05); this half
+	-- pins today's outcome of that scene, it is not a promise. Q68 (b) itself (a cleanup returned by a fn that
+	-- lost its right to run is consumed with dying = true) is the user decision; the yield is just how (1) gets there.
 	local s = Source(0)
 	local host = Instance.new("Frame")
 	local cleaned, dyingArg = 0, nil
@@ -556,7 +558,8 @@ do
 	assert(coroutine.resume(co), "fn resumes and returns its cleanup")
 	assert(cleaned == 2 and dyingArg == true and (e :: any)._cleanup == nil, "consumed at once with dying = true, not stored: cleaned=" .. cleaned)
 	assert(not quad.Backend.canExecute(e), "dead handle")
-	-- (2) yield + position retract (unbind, host alive): consumed with dying = false
+	-- (2) yield + position retract (unbind, host alive): consumed with dying = false — same mark as (1): the yield
+	-- scene is [관측 — 계약 아님], the asserted consumption is Q68 (b)
 	local s2 = Source(0)
 	local host2 = Instance.new("Frame")
 	local cleaned2, dying2 = 0, nil

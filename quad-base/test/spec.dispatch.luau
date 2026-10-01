@@ -684,6 +684,25 @@ do
 		assert(not ok and string.find(tostring(err), "Dispatch.drive: array keys must be positive integers (got " .. tostring(k) .. ")", 1, true) ~= nil, "key " .. tostring(k) .. ": " .. tostring(err))
 		mock.assertBlamesUser(err, "spec.dispatch.luau", "drive key domain " .. tostring(k))
 	end
+	-- 2026-10-02: the check rides flatten's hash-part walk (`next(t, #t)`) instead of a
+	-- separate `pairs` pass — a bad key next to a real array part, in a literal or
+	-- assigned afterwards, is still caught with the same id and blame.
+	local mixed: { { any } } = {
+		{ "literal", function() return { q.Slot(), q.Slot(), [0] = q.Slot() } end },
+		{ "assigned", function()
+			local t: { [any]: any } = { q.Slot() }
+			t[-1] = q.Slot()
+			return t
+		end },
+		{ "explicit [1]", function() return { [1] = q.Slot(), [1.5] = q.Slot() } end },
+	}
+	for _, pair in mixed do
+		local label, make = pair[1], pair[2]
+		local inst2 = Instance.new("Frame")
+		local ok, err = pcall(function() q.Dispatch.drive(inst2, make()) end)
+		assert(not ok and string.find(tostring(err), "Quad0085 Dispatch.drive: array keys must be positive integers", 1, true) ~= nil, label .. ": " .. tostring(err))
+		mock.assertBlamesUser(err, "spec.dispatch.luau", "drive key domain (" .. label .. ")")
+	end
 	local s = q.Slot()
 	q.Dispatch.drive(inst, { s }) -- positive integer keys unaffected
 	assert(s.Length:Get() == 0 and #inst:GetChildren() == 0, "normal drive still works")
@@ -754,11 +773,15 @@ do
 		q.Dispatch.retractFrom(inst, nil, 1)
 	end)
 	assert(not okR and string.find(tostring(errR), "Dispatch.retractFrom: key must not be nil", 1, true) ~= nil, tostring(errR))
-	-- H-567: a BASE brand at a string key does not blame the provider
+	-- H-567: a BASE brand at a string key does not blame the provider. [2026-10-02] The Slot's own
+	-- FALLBACK guard (Quad0141) is retired — the no-match message's string-key tail says the same thing.
 	local okS, errS = pcall(function()
 		q.Dispatch.drive(Instance.new("Frame"), { Children = q.Slot() })
 	end)
-	assert(not okS and string.find(tostring(errS), "Slot: must be an array item, not the value of a string key", 1, true) ~= nil, "Slot guard: " .. tostring(errS))
+	assert(not okS and string.find(tostring(errS), "Quad0076 Dispatch: no handler matched key Children", 1, true) ~= nil and string.find(tostring(errS), "brand: Slot", 1, true) ~= nil and string.find(tostring(errS), "belongs in a numeric (array) slot", 1, true) ~= nil and string.find(tostring(errS), "provider", 1, true) == nil, "Slot at a string key: " .. tostring(errS))
+	mock.assertBlamesUser(errS, "spec.dispatch.luau", "Slot at a string key")
+	-- negative control: the retired guard's message is gone
+	assert(string.find(tostring(errS), "Quad0141", 1, true) == nil, tostring(errS))
 	local okT, errT = pcall(function()
 		q.Dispatch.drive(Instance.new("Frame"), { Thing = q.Tag() })
 	end)

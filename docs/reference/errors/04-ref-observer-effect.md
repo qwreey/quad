@@ -259,7 +259,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 `{kind}: must be an array item, not the value of a {typeof(k)} key` — `quad-base/src/Ref/init.luau`
 
-- **언제**: `PreRef`/`PostRef`/`Ref`를 props의 문자 키 값 자리에 두었을 때 — 단 그 키가 클래스의 반영 프로퍼티나 이벤트 이름이면 프로퍼티·이벤트 핸들러가 먼저 받아 이 가드에 닿지 않습니다(`Name = ref`는 핸들러의 번호 없는 타입 에러, `Size = ref`는 조용히 대입, `Activated = ref`는 `Quad0218` — [2026-09-27 mock 관측]; 생성 props 타입이 strict에서 이 자리를 거부합니다). 그런 자리는 [`q.debug`](../core/01-quad-module.md#qdebug)를 켜면 경고 한 줄(`{kind}: found at string key …`)로 드러납니다.
+- **언제**: `PreRef`/`PostRef`를 props의 문자 키 값 자리에 두었을 때(평범한 `Ref`는 이 가드가 없습니다 — 2026-10-02부터 [`Quad0076`](./02-dispatch-bookkeeping.md#quad0076)이 문자 키 꼬리로 같은 안내를 합니다) — 단 그 키가 클래스의 반영 프로퍼티나 이벤트 이름이면 프로퍼티·이벤트 핸들러가 먼저 받아 이 가드에 닿지 않습니다(`Name = ref`는 핸들러의 번호 없는 타입 에러, `Size = ref`는 조용히 대입, `Activated = ref`는 `Quad0218` — [2026-09-27 mock 관측]; 생성 props 타입이 strict에서 이 자리를 거부합니다). 그런 자리는 [`q.debug`](../core/01-quad-module.md#qdebug)를 켜면 경고 한 줄(`{kind}: found at string key …`)로 드러납니다.
 - **고치려면**: 숫자 키(배열부) 자리에만 놓으세요.
 - **참고**: [숫자 키 자리에만 놓는다](../core/07-ref.md#숫자-키-자리에만-놓는다)
 

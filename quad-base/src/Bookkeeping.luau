@@ -30,6 +30,32 @@ local QuadTypes = require("../luau_packages/quad_types")
 
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
+-- ── rewind limit (always on — not a debug-layer check) ──
+-- 2026-10-02 (user decision — *"부기 되감기에 상한 두는거, effect 랑 동일하게 일관적이게 둬도 될 것
+-- 같아. 같은 한도로."*): `recompute`'s rewinds are capped like `Effect.luau`'s deferred re-run loop
+-- (`RERUN_LIMIT`, `Quad0263`). The Slot `Offset`/`Length` CRUD loop is a defined path because the
+-- rewind converges it; a subscriber that flips a length before the cursor on every value it sees
+-- never converges, and the rewind is a `continue` in one `while` — no stack overflow would ever stop
+-- it. The pass counts REWINDS, not iterations: an ordinary pass over a long list (any N) rewinds 0
+-- times. Its own constant with the same number (`B2` — two different loops, no shared body): keep the
+-- two in step by hand.
+local REWIND_LIMIT = 10000
+
+-- One rewind more; raises past `REWIND_LIMIT`. Outermost blame: the user's line that started the pass
+-- (the CRUD / `:Set` / `setLength` that reached `recompute`). Raised inside the
+-- `recomputeBlocker:On`/`Off` window, so the owner stays frozen afterwards — like any throw there
+-- (`architecture.md` "예외 안전성 계약": no integrity after a throw).
+local function countRewind(rewinds: number): number
+	rewinds += 1
+	if rewinds > REWIND_LIMIT then
+		Err.errorBefore(
+			`Quad0267 Bookkeeping.recompute: rewound {REWIND_LIMIT} times in one pass - a subscriber keeps changing a length before the position it is told about (a Slot Offset callback that adds and removes on every value never settles)`,
+			SURFACE
+		)
+	end
+	return rewinds
+end
+
 local function Init(module: any)
 	local None = module.None -- sentinel set by the top-level entry before Inits run
 
@@ -223,7 +249,8 @@ local function Init(module: any)
 	end
 
 	-- Full pass: reentry blocked by bk.recomputeBlocker, upper bound re-read
-	-- every iteration, rewind when someone lowered offsetSetUpTo mid-pass.
+	-- every iteration, rewind when someone lowered offsetSetUpTo mid-pass (at most
+	-- `REWIND_LIMIT` rewinds per pass — `Quad0267`, 2026-10-02).
 	-- `H-240` (a) reinforcement (2026-09-01): the ORIGINAL check guarded only
 	-- the offset:Set window (`H-101`/`H-113`/`H-124`); user code can also run
 	-- inside the `:Get()` reads (getOffsetAt above, contribution below), and
@@ -235,6 +262,7 @@ local function Init(module: any)
 		local sum = 0
 		bk.recomputeBlocker:On()
 		local prefix, i = {} :: { number }, 1
+		local rewinds = 0 -- this pass's rewind count (`REWIND_LIMIT`)
 		while i <= (bk.N or 0) do
 			prefix[i] = sum
 			-- entry snapshot: the read window below may lower the cursor; the
@@ -259,6 +287,7 @@ local function Init(module: any)
 				local abs = getOffsetAt(ownerKey, i)
 				-- `H-240` check ① — BEFORE the write below stomps the signal
 				if bk.offsetSetUpTo < entryCursor then
+					rewinds = countRewind(rewinds)
 					i = math.max(bk.offsetSetUpTo, 1)
 					sum = prefix[i]
 					continue
@@ -275,6 +304,7 @@ local function Init(module: any)
 				-- resume AT the lowered slot (`+1` was wrong: prefix[j+1] was
 				-- accumulated with the OLD lengthList[j]); clamp to 1 —
 				-- offsetSetUpTo can legally be 0 ("1번부터 전부 다시").
+				rewinds = countRewind(rewinds)
 				i = math.max(bk.offsetSetUpTo, 1)
 				sum = prefix[i]
 				continue
@@ -291,6 +321,7 @@ local function Init(module: any)
 			-- `H-240` check ② — contribution's own Get window; the possibly
 			-- stale += above is discarded by the rewind's prefix restore.
 			if bk.offsetSetUpTo < i then
+				rewinds = countRewind(rewinds)
 				i = math.max(bk.offsetSetUpTo, 1)
 				sum = prefix[i]
 				continue

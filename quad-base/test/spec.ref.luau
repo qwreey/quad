@@ -375,7 +375,10 @@ do
 end
 
 print()
-print("=== 17. round11 H-569 (2026-09-17) — 철거의 Set(nil)에 깨어난 대기자가 던져도 dedup 기록은 이미 지워져 같은 Ref를 되꽂으면 채워진다 ===")
+print("=== 17. round11 H-569 (2026-09-17) — 철거의 Set(nil)에 깨어난 대기자가 던져도 dedup 기록은 이미 지워져 같은 Ref를 되꽂으면 채워진다 [관측 — 계약 아님: 던진 뒤의 상태, 2026-10-02 사용자] ===")
+-- Observation, not contract (2026-10-02 user decision, `architecture.md` "예외 안전성 계약"): what the
+-- slot looks like after a throwing waiter is pinned here to notice changes, not promised. The clear-before-Set
+-- order costs nothing, so it stays; a change that alters this outcome is not a regression by itself.
 do
 	local mock = require("./mock")
 	local q: any = mock.newQuad()

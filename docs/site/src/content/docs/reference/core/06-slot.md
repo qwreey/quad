@@ -123,10 +123,12 @@ read Offset: State<number>
 ```
 
 :::caution
-`Offset`을 구독한 콜백(`:Observer`·`Effect`·`Compute`)은 **던지면 안 됩니다.** 이 값은 부모의 자리 부기가 다시 계산되는 창 안에서 `:Set`되므로, 거기서 던지면 그 부모의 부기가 영구히 멈춥니다(`Length`는 그 창 밖에서 발행되므로 구독 콜백이 던져도 다음 변경에서 회복됩니다) — 이후 에러는 나지 않지만 형제 Slot의 자식이 옛 오프셋에 앉습니다. 던질 수 있는 일은 콜백 밖에서 끝내세요(`updateFn`과 같은 계약).
+`Offset`을 구독한 콜백(`:Observer`·`Effect`·`Compute`)은 **던지면 안 됩니다.** 이 값은 부모의 자리 부기가 다시 계산되는 창 안에서 `:Set`되므로, 거기서 던지면 그 부모의 부기가 영구히 멈춥니다(`Length`는 그 창 밖에서 발행되므로 이 동결은 없습니다 — 구독 콜백이 던진 뒤 다음 변경에서 다시 맞는 것은 관측일 뿐 계약이 아닙니다) — 이후 에러는 나지 않지만 형제 Slot의 자식이 옛 오프셋에 앉습니다. 던질 수 있는 일은 콜백 밖에서 끝내세요(`updateFn`과 같은 계약).
 :::
 
 **동작** — 마운트 대상 안에서 이 Slot의 첫 원소 **앞에 놓인 숫자 키 자리들의 길이 합**(0부터 센 절대 위치 — 앞에 아무것도 없으면 0, 첫 원소는 `Offset + 1`번째; 문자 키 숏핸드가 만든 관리 자식(`UICorner = 8`의 `UICorner`)은 물리 자식이지만 여기 세지 않습니다 — Roblox에서 자식의 물리 순서는 계약이 아닙니다)를 싣는 읽기 전용 `State<number>`입니다. 형제가 앞에서 길이를 바꾸면 이 값이 따라 움직입니다. 앞 형제가 **`State<Slot>` 자리의 교체**로 바뀌면(옛 Slot 철거 → 새 Slot 처리) 이 값은 두 번 통지됩니다 — 한 번은 자리가 비는 순간(0 쪽으로), 한 번은 새 Slot이 앉은 뒤 최종값으로; 같은 길이여도 그렇습니다(수동 `Replace`는 한 번도 안 통지 — [2026-09-27 mock 실측]). `Length`와 짝을 이루어 접두합을 만들고, `:List`/`:Single`의 `updateFn`이 `ctx.Offset`으로 받는 것도 이 State입니다.
+
+**`Offset`/`Length`를 보는 콜백이 Slot을 CRUD해 그 값이 다시 바뀌는 고리**는 정의된 경로입니다 — 부모의 자리 계산이 바뀐 자리부터 다시 돌아(되감기) 맞춥니다(예: 옆 Slot의 길이에 따라 헤딩·그리드 칸을 넣고 빼기). 다만 `Offset`을 보고 값마다 넣고 빼기를 뒤집는 콜백처럼 끝나지 않는 고리는, 한 번의 자리 계산이 **1만 번 넘게 되감으면 `Quad0267`로 멈추고** 그 계산을 시작한 줄(CRUD나 `:Set`)에서 던집니다 — 늘 켜진 한도이고([`q.debug`](/reference/core/01-quad-module/#qdebug)와 무관) [`Effect`의 지연 재실행 한도](/reference/core/05-observer-effect/#qeffectfn-deps)와 같은 수입니다. 던진 자리는 위 caution의 창 안이라 그 부모의 부기는 멈춘 채 남습니다.
 
 Roblox 백엔드는 자식 순서를 물리 속성으로 갖지 않으므로 이 값은 부기용입니다 — 순서가 물리인 백엔드(DOM 등)와 계약을 공유하려고 존재합니다.
 
@@ -384,7 +386,7 @@ Quad0167 Slot: cannot mutate a Slot while it is being mounted (it, or a Slot ins
 **동작**
 
 - `:List`는 **설치**입니다. 한 Slot에 한 번만 걸 수 있고, 수동 CRUD를 이미 쓴 Slot(빈 `Slot{}` 포함)에는 걸 수 없습니다.
-- 데이터 배열 중간의 `nil` 구멍은 **정의되지 않은 동작**입니다 — `initial`과 같은 이유로 `ipairs`가 거기서 멈추고, 구멍 뒤에 아직 있는 항목의 원소까지 `KeyGone` 경로로 **파괴**됩니다(`{"a","b","c"}` → `{"a", nil, "c"}`를 `:Set`하면 Length 1, `"c"`의 원소 파괴 — [2026-09-27 mock 관측]). 항목을 빼려면 `table.remove`로 배열을 다시 채우세요.
+- 데이터 배열 중간의 `nil` 구멍은 **정의되지 않은 동작**입니다 — `initial`과 같은 이유로 `ipairs`가 거기서 멈추고, 구멍 뒤에 아직 있는 항목의 원소까지 `KeyGone` 경로로 **파괴**됩니다(`{"a","b","c"}` → `{"a", nil, "c"}`를 `:Set`하면 Length 1, `"c"`의 원소 파괴 — [2026-09-27 mock 관측 — 계약 아님]). 항목을 빼려면 `table.remove`로 배열을 다시 채우세요.
   - `Quad0148 Slot: already has :List/:Single installed`
   - `Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)`
   - 반대로 `:List`를 건 뒤의 수동 CRUD는 `Quad0166 Slot: manual CRUD is not allowed after :List/:Single`.
@@ -395,11 +397,11 @@ Quad0167 Slot: cannot mutate a Slot while it is being mounted (it, or a Slot ins
 - 키 비교는 Luau 테이블 키 규칙 그대로입니다 — `0`과 `-0`은 같은 키이고, `1`과 `"1"`은 다른 키입니다.
 - `keyFn`은 **안정적**이어야 합니다. 같은 항목에 사이클마다 다른 키를 돌려주면(매번 새 테이블, 난수 등) 에러는 나지 않지만 매 사이클 모든 원소가 새로 만들어지고 옛 원소는 전부 `KeyGone`으로 버려집니다([2026-09-27 mock 실측]).
 - **원소를 다른 키로 옮기는 경로는 없습니다** — 키가 곧 신원이라, 키가 바뀐 항목은 새 원소를 만들어야 합니다. 옛 키의 원소(`OwnsElements = true`에서 `q.Detach`로 보관 중인 원소 포함)를 새 키의 `updateFn`이 반환하면, 옛 키의 `KeyGone` 처리가 새 키보다 뒤라 그 원소가 아직 이 Slot 것이므로 `Quad0156`이 납니다(문구는 "already mounted"지만 보관 중인 원소도 여기 걸립니다). 그 사이클은 아래 `updateFn`이 던진 경우와 같아 `Length`가 멈추고, 같은 데이터로 다시 `:Set`해도 같은 에러가 납니다([2026-09-27 mock 실측]). `OwnsElements = false`에서는 `Detach`가 보관이 아니라 해제라, 떼어 둔 원소를 다른 키가 반환하면 옮겨집니다.
-- `keyFn`이 이후 사이클에서 던지면 게이트를 켜기 전이라 아무것도 바뀌지 않고 다음 `data:Set`에서 회복됩니다([2026-09-27 mock 실측] — 첫 사이클이면 아래 `updateFn` 항목과 같습니다).
+- `keyFn`이 이후 사이클에서 던진 뒤의 상태도 계약이 아닙니다 — 관측으로는 게이트를 켜기 전이라 아무것도 바뀌지 않고 다음 `data:Set`에서 회복됐습니다([2026-09-27 mock 실측] — 첫 사이클이면 아래 `updateFn` 항목과 같습니다).
 - 재조정 중 에러: `Quad0142 Slot:List: data must be a plain array (got {typeof(items)}) - a data State must hold one too`, `Quad0143 Slot:List: data must be a plain array - key "{k}" is not an array position`(배열 부분이 비어 있는데 다른 키가 있을 때 — 아이디 맵·JSON 오브젝트; **[2026-10-01 기준, 다음 릴리즈부터]** 배열에 덧붙은 키까지 보는 전수 검사는 [`q.debug`](/reference/core/01-quad-module/#qdebug)일 때만이고, 꺼져 있으면 덧붙은 키는 무시됩니다), `Quad0144 Slot:List: keyFn returned nil for item #{i}`(NaN도 같은 모양으로 `returned NaN`), `Quad0145 Slot:List: duplicate key {tostring(key)}`. 인자 검증에 `Quad0153 Slot:List: opts must be a table (got {typeof(opts)})`(`:Single`도 같음)이 더해집니다.
 - `updateFn`이 이 Slot의 `data` State를 다시 `:Set` 하는 **재진입**은 정의되지 않은 동작입니다 — 첫 재조정이든 그 뒤든 같습니다. `updateFn`은 항목 하나로 원소(컴포넌트)를 만드는 자리이고, 자기가 만든 것 밖의 State를 바꾸는 곳이 아닙니다. `updateFn`이 만든 원소의 `OnChange`가 Immediate 시그널에서 초기값으로 동기 발화해 `data`를 `:Set`하는 경우도 마찬가지로 정의되지 않습니다 — 지금은 첫 재조정 안에서라면 `Observer` 첫 발화 규칙([05-observer-effect](/reference/core/05-observer-effect/))의 귀결로 그 재조정이 끝난 뒤 새 데이터로 한 번 더 재조정되는 것이 관측되지만([2026-09-30 mock 실측]), 보장하는 동작은 아닙니다.
 - `KeyGone` 호출끼리의 순서는 정해져 있지 않습니다 — 사라진 키가 데이터에 있던 순서로 온다고 기대하지 마세요.
-- `updateFn`이 도중에 던지면(이미 다른 곳에 마운트된 원소나 claim되지 않은 Instance를 반환해 quad가 대신 던지는 경우 포함) 그 사이클의 배치가 닫히지 않아 **그 Slot의 `Length`가 더 이상 발행되지 않습니다** — **이후 사이클**이라면 재조정 자체는 계속 돌아 항목이 붙고 떨어지지만(**첫 사이클**, 즉 첫 재조정(`:List`를 부르는 그 호출 안, 또는 `D.Frame{ q.Slot():List(...) }`처럼 마운트 때 처음 도는 경우)에서 던지면 데이터 구독이 살아나기 전에 던진 것이라 그 뒤의 `data:Set`이 전부 조용히 무시됩니다 — 위 재조정 중 에러 `Quad0142`~`0146`도 첫 사이클이면 같습니다 — [2026-09-27 mock 관측]; `:List`를 다시 걸 수도 없으니 그 Slot은 버리세요), 같은 부모 안의 형제 Slot이 옛 오프셋에 자식을 넣게 되고 에러는 나지 않습니다. 사용자 코드의 예외를 감싸 복구하지 않는 계약이라 [`slot:Clear`](#slotclear)와 같이 정의되지 않은 동작으로 둡니다 — 던질 수 있는 일은 `updateFn` 밖에서 끝내세요. 이 항목에는 두 경우가 더 포함됩니다 — `updateFn`이 마운트할 수 없는 값을 담은 `State`(`q.Source({})` 등)를 돌려주면 그 `State`를 감싼 자리가 먼저 들어간 뒤 `Quad0240`으로 던져, 그 자리가 이후 `KeyGone`으로도 빠지지 않고 남습니다(원시 값을 바로 돌려줬다면 넣기 전에 던집니다). 그리고 첫 사이클의 quad 자체 검사(`Quad0142`~`0146`)가 던진 뒤 그 Slot이 데이터 변경에 반응하지 않는 것도 같은 정의되지 않은 동작입니다.
+- `updateFn`이 도중에 던진 뒤의 상태는 정의되지 않은 동작입니다(이미 다른 곳에 마운트된 원소나 claim되지 않은 Instance를 반환해 quad가 대신 던지는 경우 포함). 아래는 관측이지 계약이 아닙니다 — 그 사이클의 배치가 닫히지 않아 **그 Slot의 `Length`가 더 이상 발행되지 않습니다** — **이후 사이클**이라면 재조정 자체는 계속 돌아 항목이 붙고 떨어지지만(**첫 사이클**, 즉 첫 재조정(`:List`를 부르는 그 호출 안, 또는 `D.Frame{ q.Slot():List(...) }`처럼 마운트 때 처음 도는 경우)에서 던지면 데이터 구독이 살아나기 전에 던진 것이라 그 뒤의 `data:Set`이 전부 조용히 무시됩니다 — 위 재조정 중 에러 `Quad0142`~`0146`도 첫 사이클이면 같습니다 — [2026-09-27 mock 관측 — 계약 아님]; `:List`를 다시 걸 수도 없으니 그 Slot은 버리세요), 같은 부모 안의 형제 Slot이 옛 오프셋에 자식을 넣게 되고 에러는 나지 않습니다. 사용자 코드의 예외를 감싸 복구하지 않는 계약이라 [`slot:Clear`](#slotclear)와 같이 정의되지 않은 동작으로 둡니다 — 던질 수 있는 일은 `updateFn` 밖에서 끝내세요. 이 항목에는 두 경우가 더 포함됩니다 — `updateFn`이 마운트할 수 없는 값을 담은 `State`(`q.Source({})` 등)를 돌려주면 그 `State`를 감싼 자리가 먼저 들어간 뒤 `Quad0240`으로 던져, 그 자리가 이후 `KeyGone`으로도 빠지지 않고 남습니다(원시 값을 바로 돌려줬다면 넣기 전에 던집니다). 그리고 첫 사이클의 quad 자체 검사(`Quad0142`~`0146`)가 던진 뒤 그 Slot이 데이터 변경에 반응하지 않는 것도 같은 정의되지 않은 동작입니다.
 
 **`OwnsElements = false`**
 
@@ -614,5 +616,5 @@ q.dispose(temp)                -- 마운트된 적 없는 Slot은 트리째 파�
   ```
 
 - 파괴된 Slot은 되살아나지 않습니다 — `Quad0165 Slot: destroyed Slot cannot be reused`, 원소로 넣으려 하면 `Quad0169 Slot: destroyed Slot cannot be an element`, 마운트하려 하면 `Quad0164 Slot: destroyed Slot cannot be mounted`.
-- 마운트 대상이 파괴된 Slot은 그 사실을 모릅니다(정의되지 않은 동작 — 예외는 `q.Detach`로 보관 중인 원소로, 이것만은 호스트와 함께 파괴됩니다) — 부모를 `inst:Destroy()`로 지웠든 `q.dispose(부모)`로 지웠든 같습니다(`q.dispose`는 Instance에 대해 백엔드의 파괴 op만 부릅니다) — `Add`/`Replace`/`Splice`는 계속 성공하고 새 원소는 죽은 인스턴스에 붙으며, `:List` 모드는 데이터가 바뀌어도 조용히 재조정을 멈춥니다(`updateFn`이 더는 불리지 않음 — [2026-09-27 mock 관측]). 알아채는 자리는 `q.dispose`(`… cannot be reused after its parent is destroyed`)와 뽑아낸 원소의 재사용(`… a destroyed Instance cannot be reused`)뿐입니다. 화면을 quad 밖에서 지웠다면 그 Slot도 버리세요.
+- 마운트 대상이 파괴된 Slot은 그 사실을 모릅니다(정의되지 않은 동작 — 예외는 `q.Detach`로 보관 중인 원소로, 이것만은 호스트와 함께 파괴됩니다) — 부모를 `inst:Destroy()`로 지웠든 `q.dispose(부모)`로 지웠든 같습니다(`q.dispose`는 Instance에 대해 백엔드의 파괴 op만 부릅니다) — `Add`/`Replace`/`Splice`는 계속 성공하고 새 원소는 죽은 인스턴스에 붙으며, `:List` 모드는 데이터가 바뀌어도 조용히 재조정을 멈춥니다(`updateFn`이 더는 불리지 않음 — [2026-09-27 mock 관측 — 계약 아님]). 알아채는 자리는 `q.dispose`(`… cannot be reused after its parent is destroyed`)와 뽑아낸 원소의 재사용(`… a destroyed Instance cannot be reused`)뿐입니다. 화면을 quad 밖에서 지웠다면 그 Slot도 버리세요.
 - Slot을 자기 자신이나 자기 조상에 넣는 순환은 [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있으면 넣는 시점에 거부됩니다(꺼져 있으면 다음 CRUD에서 죽습니다). 인스턴스를 매개로 한 순환(이 Slot의 마운트 대상이나 그 조상을 원소로)은 거부되지 않고 정의되지 않은 동작입니다 — 위 `Slot:Add` 절.

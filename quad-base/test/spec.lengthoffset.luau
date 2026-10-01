@@ -478,4 +478,101 @@ do
 end
 
 print()
+print("=== round14 (2026-10-02 사용자 — Effect와 같은 한도) — 부기 되감기 한 패스 1만 회 상한(Quad0267): 발산하는 고리는 멈추고, 수렴하는 고리·긴 목록은 그대로 ===")
+do
+	-- (a) divergent: position 2's offset subscriber flips position 1's length on every value it
+	-- sees — each flip lowers the cursor below 2, the pass rewinds, re-Sets position 2, and so on.
+	local q = newQuad()
+	local inst = Instance.new("Frame")
+	local s1, s2, s3 = q.Source(-1), q.Source(-1), q.Source(-1)
+	q.Bookkeeping.setOffsetSource(inst, 1, s1)
+	q.Bookkeeping.setLength(inst, 1, 1)
+	q.Bookkeeping.setOffsetSource(inst, 2, s2)
+	q.Bookkeeping.setLength(inst, 2, 1)
+	q.Bookkeeping.setOffsetSource(inst, 3, s3)
+	q.Bookkeeping.setLength(inst, 3, 1)
+	local armed, runs = false, 0
+	local obs = (s2 :: any):Observer(function()
+		if armed then
+			runs += 1
+			q.Bookkeeping.setLength(inst, 1, if s2:Get() == 2 then 1 else 2)
+		end
+	end):Subscribe()
+	local _ = obs
+	armed = true
+	local ok, err = pcall(function()
+		q.Bookkeeping.setLength(inst, 1, 2) -- the user line that starts the pass
+	end)
+	assert(not ok and string.find(tostring(err), "Quad0267 Bookkeeping.recompute: rewound 10000 times in one pass", 1, true) ~= nil, tostring(err))
+	mock.assertBlamesUser(err, "spec.lengthoffset.luau", "blames the line that started the pass")
+	-- negative control on the count: the subscriber ran past the limit, not earlier
+	assert(runs > 10000 and runs <= 10002, `stopped at the limit (subscriber runs: {runs})`)
+end
+do
+	-- (b) convergent: a subscriber that adjusts a length a few hundred times and then settles —
+	-- every rewind below the limit is the defined path, the pass completes.
+	local q = newQuad()
+	local inst = Instance.new("Frame")
+	local s1, s2 = q.Source(-1), q.Source(-1)
+	q.Bookkeeping.setOffsetSource(inst, 1, s1)
+	q.Bookkeeping.setLength(inst, 1, 1)
+	q.Bookkeeping.setOffsetSource(inst, 2, s2)
+	q.Bookkeeping.setLength(inst, 2, 1)
+	local armed, runs = false, 0
+	local obs = (s2 :: any):Observer(function()
+		if armed and s2:Get() < 500 then
+			runs += 1
+			q.Bookkeeping.setLength(inst, 1, s2:Get() + 1)
+		end
+	end):Subscribe()
+	local _ = obs
+	armed = true
+	q.Bookkeeping.setLength(inst, 1, 2)
+	assert(s2:Get() == 500 and runs == 498, `converged after {runs} rewinds at offset {s2:Get()}`)
+	assert(not q.Bookkeeping.getBookkeeping(inst).recomputeBlocker.Blocking, "pass completed")
+end
+do
+	-- (c) iterations are not rewinds: one batched pass over 12000 positions raises nothing.
+	local q = newQuad()
+	local inst = Instance.new("Frame")
+	local blocker = (q.Bookkeeping :: any)._getBlocker(inst)
+	blocker:On()
+	local last: any
+	for i = 1, 12000 do
+		last = q.Source(-1)
+		q.Bookkeeping.setOffsetSource(inst, i, last)
+		q.Bookkeeping.setLength(inst, i, 1)
+	end
+	blocker:OffWithoutEmit()
+	local bk = q.Bookkeeping.getBookkeeping(inst)
+	;(q.Bookkeeping :: any)._recompute(inst, bk)
+	assert(last:Get() == 11999 and bk.offsetSetUpTo == 12000, "a long ordinary pass is not capped")
+end
+do
+	-- (d) the user-level shape: a sibling Slot's Offset observer flips the Slot before it on every value
+	local q: any = newQuad()
+	local a, b = q.Slot(), q.Slot()
+	local host = Instance.new("Frame")
+	q.Dispatch.drive(host, { a, b })
+	local armed = false
+	local obs = b.Offset:Observer(function()
+		if armed then
+			if b.Offset:Get() == 0 then
+				a:Add(Instance.new("Frame"))
+			else
+				a:Remove(1)
+			end
+		end
+	end):Subscribe()
+	local _ = obs
+	armed = true
+	local ok, err = pcall(function()
+		a:Add(Instance.new("Frame")) -- the user's CRUD line
+	end)
+	assert(not ok and string.find(tostring(err), "Quad0267", 1, true) ~= nil, tostring(err))
+	mock.assertBlamesUser(err, "spec.lengthoffset.luau", "Slot Offset flip blames the CRUD line")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

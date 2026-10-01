@@ -196,7 +196,7 @@ do
 end
 
 print()
-print("=== 7. 동적 경로 가드 — named 자리의 PreRef/PostRef는 typeof(k)를 실은 error; named 자리의 Ref도 같은 가드(round11 H-567) ===")
+print("=== 7. 동적 경로 가드 — named 자리의 PreRef/PostRef는 typeof(k)를 실은 error; named 자리의 평범한 Ref는 Quad0076의 문자 키 꼬리(2026-10-02 — round11 H-567의 Ref 가드 제거) ===")
 do
 	local q = newQuad()
 	for _, mk in { q.PreRef, q.PostRef } do
@@ -218,7 +218,9 @@ do
 	local ok3, err3 = pcall(function()
 		q.Dispatch.drive(Instance.new("Frame"), { Hook = q.Ref(nil :: any) })
 	end)
-	assert(not ok3 and string.find(tostring(err3), "Ref: must be an array item, not the value of a string key", 1, true) ~= nil, "plain Ref at a named key hits the family's guard (round11 H-567): " .. tostring(err3))
+	assert(not ok3 and string.find(tostring(err3), "Quad0076 Dispatch: no handler matched key Hook", 1, true) ~= nil and string.find(tostring(err3), "Ref", 1, true) ~= nil and string.find(tostring(err3), "belongs in a numeric (array) slot", 1, true) ~= nil, "plain Ref at a named key gets the no-match message's string-key tail: " .. tostring(err3))
+	assert(string.find(tostring(err3), "Quad0137", 1, true) == nil, "the retired Ref guard no longer answers: " .. tostring(err3))
+	assertBlamesUser(err3, SPEC, "plain Ref at a named key")
 	print("PASS")
 end
 

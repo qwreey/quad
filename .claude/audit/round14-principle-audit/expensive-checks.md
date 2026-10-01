@@ -1,0 +1,57 @@
+# 비싼 검사 전수 — 평소 경로에 남은 입구 한 줄보다 비싼 검사 (2026-10-02, opus 읽기 전용)
+
+사용자 질문(2026-10-02): *"이런 비싼 검사가 자율로 들어간거 같은데, 다른 곳에서도 비싼 검사가 자율로 들어간게 있나 모르겠어."* 기준은 같은 폴더 `PRINCIPLES.md`의 E(검사의 층)와 A1(자율 반영). 범위는 `quad-base/src/**`·`quad-roblox/src/**` 전체(생성 `Declaration`은 런타임 꼬리만). 같은 폴더 `dispatch-slot.md`·`reactive-core.md`·`roblox.md`와 `audit/round13-guard-inventory-2026-10-01/`이 이미 짚은 것, 2026-10-01에 debug로 내린 `Quad0083`/`0143`/`0173`/`0220`은 표에 "기존"으로만 두고 새로 실측한 수치가 있으면 덧붙였다. 2026-10-02 워킹트리에서 진행 중인 변경(`Quad0085`를 flatten 해시 루프에 싣기, `SlotDynamicPathGuard`·`RefDynamicPathGuard` 철거)은 커밋 전이라 HEAD(`6aa3c256`) 기준으로 보았다.
+
+실측 방법: HEAD 사본(스크래치)에서 검사를 뺀 변형 여섯을 만들어 같은 벤치(`luau -O2`, mock 백엔드, 9회 중 최솟값)를 돌렸다. 수치는 CLI mock이라 Roblox 실기기의 절대값과 다르고, 엔진 호출(Instance 생성·Parent 대입)이 빠진 만큼 검사의 몫이 실기기보다 크게 보인다 — 비율은 "상한" 쪽으로 읽을 것. 결론부터: **새로 찾은 것 중 "자율로 들어온 비싼 검사"는 크지 않다.** 상대 비용이 큰 새 항목 둘(Modifier 필드 검사, `Source:Set`의 Modifier 검사)은 사용자 결정에서 나왔고, 둘 다 층을 바꾸지 않고 술어 앞에 `type(v) == "table"` 한 줄을 두면 비용이 거의 사라진다(동작·spec 동일 확인). 자율로 들어온 새 항목은 비용이 작다. 큰 비용은 여전히 기존 항목(가-3 사전 스캔, flatten 해시 스캔)에 있다.
+
+## 표 (비용 큰 순)
+
+| 순 | 구분 | 자리 | 무엇을 막나 | 경로·빈도 | 복잡도 | 실측 | 출처 | 판정·처방 요지 |
+|---|---|---|---|---|---|---|---|---|
+| 1 | 기존(가-3) | `Slot/init.luau` `prepareElements` 사전 스캔 | 이미 든 원소 재추가(`Quad0170`)·래퍼 둘의 같은 점유자 | 원소를 받는 CRUD마다 | O(현재 길이), State 원소면 `:Get()` | 새 수치: 마운트된 Slot, 길이 1000에서 Add+제거 한 쌍 State 635→529us(−17%), Instance 300→231us(−23%); 길이 100 Instance −15% | `H6-24` 자율 | 기존 판정 그대로 |
+| 2 | 기존(나-2·다-1) | flatten 해시 키 Modifier 스캔·drive `Quad0085` | 해시 키 Modifier·나쁜 배열 키 | 매 drive | O(해시 키) | 미측정 | `H-312` 사용자 / `H-495` 자율 | `Quad0085`는 2026-10-02 flatten 루프에 싣는 중. **새 처방 후보**: 해시 스캔도 `type(v) == "table"` 먼저 — 아래 2번과 같은 모양 |
+| 3 | 기존(debug) | `Quad0083`·`Quad0143`·`Quad0173`·`Quad0220` | — | debug만 | — | — | 2026-10-01 사용자 | 이미 debug 층 |
+| 4 | 기존(다-2·다-3, 회고 A (8)(9)) | `Dispatch.process` 입구 겹침, 부기 내부 루프의 공개 게이트, `getOffsetAt` 재시작·recompute 되감기 | — | 매 process / 매 recompute | O(1)×위치 수 | 미측정 | 여러 자율 | 기존 판정 그대로 |
+| 5 | **새 1** | `Dispatch/Modifier/init.luau` setter·생성자 필드 검사 | 핸들러 계층 값(`Quad0057`/`0064`)·함수(`Quad0264`/`0063`)·예약 이름(`Quad0060`~`0062`)·키 타입(`Quad0059`) | Modifier를 만들 때(setter 호출마다, 생성자 필드마다) — 컴포넌트 인스턴스마다 도는 생성 경로, emit·drive엔 없음 | 필드당 브랜드 술어 여섯 + 문자열 검사 셋 | setter 0.71→0.34us(−52%), 10필드 생성자 4.39→0.91us(−79%); `type` 먼저 두면 0.38 / 1.80us | 핸들러 계층 거부는 사용자(2026-08-09, 근거에 "거의 공짜"), `Quad0264` 사용자 Q79 (a), `Quad0062` `H-552`/`H-561` | (나) 경미 — 전제 "거의 공짜"가 상대 비용으론 틀림. 층은 그대로, 술어 앞 `type(v) == "table"` |
+| 6 | **새 2** | `Source.luau` `checkSettable`(Set·SetIfChanged·SetAndDispose)·`Source()`·`State.luau` recompute 결과 | Source/State 값에 Modifier(`Quad0181`/`0182`/`0185`) | **매 Set·매 recompute·`q.Out` 엔진 변경마다**(핫 패스) | O(1), 브랜드 조회 한 번 | 구독자 없는 Set 0.107→0.062us(−42%), Observer 하나 달린 Set 0.317→0.264us(−17%); `type` 먼저 두면 0.069us | 사용자(modifier-plan 2026-08-09 "명시적 `error`로 확정" 절) | (다) 경계 — 입구 한 줄이지만 E3 핫 패스. `type(v) == "table"` 먼저로 해소 |
+| 7 | 기존(다-4) | `Slot/Elements.luau` `checkRawElement` 술어 여섯이 `isInst` 앞 | 핸들러 계층 값 원소 | 원소 게이트마다(CRUD·재조정·State 원소 값 교체) | O(1)×6 | 새 수치: `Slot{ 200 }` 322→266us(−17%), State 원소 값 교체 5.10→4.83us(−5%), 빈 Slot Add+Extract −6% | `H-40` 진단 갈래 | 기존 처방(`isInst` 거짓일 때만) 확인 — 실기기는 Instance가 userdata라 `type` 먼저도 같은 효과 |
+| 8 | 기존(roblox 다-1) | Animate·숏핸드가 발행마다 Tween 재검증 | — | 매 recompute / 매 emit | O(필드) | 기존 수치 ~160ns(15%) | `H-464` 등 | 기존 판정 그대로 |
+| 9 | 기존(reactive 5)·사용자 Q113 | StoreBind 매 방출 `Quad0070` 사슬 걷기, Slot 원소 경로 셋(`wrapElement`·identity 재조정) | State 값 사슬 순환 | 매 방출(StoreBind) / State 원소 래핑·재조정마다(Slot) | 평소 O(1), `State<State>`면 표 할당 + 사슬 길이만큼 `:Get()` | 미측정 | `H-573` 자율 → Q113 (a) 사용자 | Slot 경로는 사용자 결정. 평소 값이 State가 아니면 브랜드 조회 둘뿐 |
+| 10 | **새 3** | `Dispatch/Modifier/init.luau` `isAncestorOrSelf`(checked 캐스트 `mod:As<Class>()`) | 조상이 아닌 클래스로의 캐스트(`Quad0056`) | 캐스트 호출마다 | O(조상 깊이) + 노드마다 표 할당 | 깊이 5: 0.79us(무검사 `:As(name)` 0.22us) | 사용자 설계(modifier-plan 11절) | (라) 경미 — 검사가 곧 API 의미. 양성 결과 캐시로 싸게 |
+| 11 | 사용자 Q74 | `Slot/Raw.luau` `raiseChain`/`restoreChain` | 마운트 창 중 조상 CRUD(`Quad0167`) | Slot 원소 attach마다 | O(owner 사슬) + 표 둘 | 기존 수치 한 칸 ~0.14us(깊이 10 ~5%) | Q74 (a) 사용자(비용 보고 뒤 채택) | (라) |
+| 12 | **새 4** | `Slot/init.luau` `prepareElements`의 State 원소 현재값 사전 게이트 | State가 든 값이 마운트 불가·미claim·다른 인스턴스·파괴된 Slot | State 원소를 받는 CRUD마다 | 검사용 `:Get()` + 술어 여섯·`isInst`·`isClaimed` | 빈 마운트 Slot Add+Remove 25.3→23.7us(−6%), 길이 10 이상 잡음 | `H-517`(round10 탐사 A, 자율 ①) — 근거 `H-30`/`H-31`(2026-08-24) | (나) 경미 — 가-3과 같은 뿌리(D2 이전 "선행 패스" 계약). 래퍼 재조정이 같은 게이트를 한 번 더 돈다 |
+| 13 | **새 5** | `Slot/init.luau` 생성자 `Quad0177` 키 도메인 `pairs` | `Slot{ [0] = x }` 등 | `Slot{…}`마다 | O(N) 한 바퀴 추가(생성자는 이미 세 바퀴) | 200원소 생성자 322us 중 ~1% | `H-396` 자율(5순회) | (라) |
+| 14 | **새 6** | 내부 경로가 공개 게이트를 지남(다-3에 없는 자리) | — | 체인 리스트 생성마다(Instance 키마다, 마운트) / 원소 제거마다 | O(1) 조회 셋~넷 | 미측정 | 자율(`H-504`·`H-546` 계열) | 다-3과 같은 처방 |
+| 15 | **새 7** | `Operator.luau` recompute마다 인자 값 타입 검사(`Quad0120`~`0122`) | State 인자에 숫자 아닌 값 | 매 recompute | O(인자 수) | `Sum` 인자 둘 1.11→1.05us(−5%) | 구현 때 자율(2026-09-08) | (라) — 그 자리 말고 잡을 곳이 없다 |
+| 16 | **새 8** | `quad-roblox/src/EngineOps.luau` `setTimeout`/`clearTimeout` 인자 검사 | 잘못된 delay·Timeout | Debounce/Throttle 신호마다 | O(1) | 미측정(수 ns) | 자율 | (라) — Debounce `readTime`(`Quad0039`)이 이미 본 값을 다시 봄 |
+| 17 | debug 층(참고) | `Source` 쓰기마다 Compute 안 쓰기 감지(스택 걷기), Observer 배달마다 되먹임 감지(스택 걷기), State 겹친 실행 감지 | — | debug 켰을 때만 | O(스택 깊이)×매 Set/배달 | 미측정 | 2026-10-01 사용자 | E2 그대로 — debug를 켠 개발 중엔 Set·배달마다 `debug.info` 루프가 돈다는 것만 알아 둘 것 |
+
+## 새 항목 설명
+
+**새 1. Modifier 필드 검사가 Modifier를 만드는 비용의 절반 이상이다.** 상황: 생성자 `Modifier({ … })`는 필드마다 키 타입, 예약 메소드 이름(`methods[k]`), `As` 접두(`string.match`), `__` 접두(`string.sub`), 함수 값, 핸들러 계층 값(브랜드 술어 여섯 — 그중 `isRef` 하나가 내부에서 브랜드 셋을 물어 조회는 최대 여덟)을 보고, setter `mod:Field(v)`는 저장 직전 값에 핸들러 계층 술어 여섯과 함수 검사를 한다. 이 경로는 emit이나 drive에선 돌지 않고 Modifier를 만들 때만 돈다 — 다만 문서의 관용구가 컴포넌트 함수 안에서 `base:Size(props.Size)`처럼 setter를 부르므로 컴포넌트 인스턴스 하나마다 돈다. 실측으로 setter는 검사가 몸값의 52%, 10필드 생성자는 79%였다. 출처: 핸들러 계층 거부는 사용자 결정(2026-08-09, `base/modifier-plan.md`의 "Modifier 필드에 핸들러 계층 값" 절)이고 근거 문장에 *"판별 비용도 이미 있는 `Brand` 기반 predicate를 그대로 재사용하면 되므로 거의 공짜"*가 들어 있다 — 절대값(필드당 0.35us)은 작지만 상대값으로는 공짜가 아니었다. 함수 거부는 사용자 Q79 (a), mapper 디스크립터 추가는 사용자 Q85, `__` 접두는 `H-552`/`H-561`(기존 경계선). 싸게 바꾸는 법: 핸들러 계층 값은 전부 테이블이므로 `isHandlerLayerValue` 맨 앞에 `type(v) == "table" and`를 두면 숫자·문자열·불리언·(실기기의) UDim2·Color3 같은 userdata는 술어 여섯을 건너뛴다. 스크래치에서 이렇게 고친 사본은 `spec.modifier` 통과, setter 0.38us·생성자 1.80us로 돌아왔다(생성자에 남은 0.9us는 예약 이름 문자열 검사 셋 — 이건 문자열 키마다 한 번이라 그대로 둘 만함). debug로 내릴 이유는 없다. 만약 내리면 debug 끈 사용자에겐 그 필드가 해시 키로 합쳐져 마운트 때 FALLBACK 가드(Observer/Effect/PreRef/PostRef)나 `Quad0076`(Slot/Ref/Tag), 프로퍼티 자리면 엔진 대입 에러로 드러나고, blame이 Modifier를 만든 줄이 아니라 `D.Frame` 줄이 된다.
+
+**새 2. `Source:Set`의 Modifier 검사가 핫 패스에 상시로 있다.** 상황: `Set`·`SetIfChanged`·`SetAndDispose`가 매번 `isModifier(value)`를 묻고(`Quad0181`), State의 recompute도 결과마다 묻는다(`Quad0185`); `q.Out`은 엔진 프로퍼티가 바뀔 때마다 `SetIfChanged`를 부르므로 그 경로도 같다. 비용은 브랜드 조회 한 번(약 45ns)인데 Set 자체가 싸서 구독자 없는 Set의 42%, Observer 하나 달린 Set의 17%다(하류가 무거울수록 비율은 작아진다). 출처는 사용자 결정 계열이다 — modifier-plan "[정정, 2026-08-09 세션] … 명시적 `error`로 확정" 절이 적용 지점을 생성자·`:Set`·Compute 결과로 정했고, 생성자로 옮겨 `Of` 경로를 덮은 것은 "사용자 확정"으로 적혀 있다. 원칙상 입구 한 줄 검사(E1)와 핫 패스 상시 가드 금지(E3)가 정면으로 겹치는 자리인데, 여기도 `type(value) == "table" and isModifier(value)`로 바꾸면 둘 다 만족한다 — 실측 0.069us(검사 없음 0.062us), `spec.source` 통과. 내리면 debug 끈 사용자에겐 Modifier가 Source 값으로 저장되고, 바인드된 자리에서 StoreBind가 그 Modifier를 아래로 넘겨 `Quad0076 … brand: Modifier`(배열 자리)나 엔진 대입 에러(프로퍼티 자리)로 늦게, Set 줄이 아닌 곳에서 드러난다. 같은 처방이 기존 나-2(flatten 해시 키 Modifier 스캔)에도 그대로 맞는다 — 프롭 값 대부분이 userdata·원시값이라 테이블일 때만 술어를 물으면 drive당 해시 키 수만큼의 브랜드 조회가 거의 사라진다(미측정, 같은 모양이라 같은 크기의 절감 예상).
+
+**새 3. checked 캐스트가 부를 때마다 조상 그래프를 할당하며 걷는다.** `mod:AsTextButton()`의 클로저가 `isAncestorOrSelf(tag, target)`를 부르는데, 호출마다 `seen`·`stack` 표를 만들고 노드마다 `parents[node] or {}`로 빈 표를 하나 더 만든다. 생성 클래스 트리 깊이 5에서 0.79us(검사 없는 `:As(name)` 0.22us). 캐스트 검사 자체가 API의 의미(사용자 설계, modifier-plan 11절)라 debug로 내릴 대상은 아니다. 싸게: `DefineSubtype`은 간선을 더하기만 하므로 "조상이다"라는 답은 한 번 참이면 영원히 참이다 — 양성 결과를 `(tag, target)`으로 캐시하면 두 번째부터 O(1). 빈 표 할당은 공유 상수로 바꾸면 사라진다. 경로는 컴포넌트 생성 쪽이라 실익은 작다.
+
+**새 4. State 원소의 현재값 사전 게이트(`H-517`).** 상황: `prepareElements`가 State 원소마다 `raw:Get()`으로 현재값을 읽어 다른 인스턴스 값(`Quad0106`)·파괴된 Slot(`Quad0169`)·`checkRawElement`(핸들러 계층·nil·`isInst`·`isClaimed`)를 CRUD 줄에서 미리 본다. 같은 검사가 래퍼 Slot이 마운트·재조정할 때 `wrapElement`에서 한 번 더 돈다. 비용은 작다 — 빈 마운트 Slot의 State Add+Remove에서 6%, 길이 10 이상에선 잡음. `raw:Get()`은 검사용이지만 `H6-24` 점유자 중복 검사도 같은 값을 쓰므로 이 게이트만 걷어선 Get이 사라지지 않는다. 출처: round10 탐사 A의 ① 자율 반영(HIGH로 판정), 근거는 `slot-plan.md`의 `H-30`/`H-31`("여러 요소를 받는 CRUD는 검증을 선행 패스로", 2026-08-24) — 예외 안전성 계약(round3 Q18 (c), 2026-09-07)보다 앞선 "반쪽 상태 방지" 약속이다. 고정 spec: `spec.slot` 29절 1077~1080행과 30절. 걷으면 마운트된 Slot은 래퍼 재조정에서 같은 문구의 에러가 outermost blame으로 나고(래퍼가 `_elements`에 남고 Blocker가 켜진 채 — D2가 허용하는 결과), 마운트 전 Slot은 Add가 통과하고 drive 때 에러가 난다(스크래치에서 29절이 바로 그 자리에서 실패하는 것을 확인). 비용 때문이 아니라 가-3과 같은 뿌리(D2 이전 선행 패스 계약을 자율 반영이 넓힌 것)로 함께 재검토할 거리다.
+
+**새 5. Slot 생성자의 키 도메인 `pairs`(`Quad0177`).** `Slot{…}`가 `pairs`로 배열 키 도메인을 보고, `ipairs`로 복사하고, 선행 패스를 도는 세 바퀴 중 첫 바퀴다. 200원소 생성자 322us 중 1% 안팎. 출처 `H-396`(5순회 자율), 컨테이너 모양 게이트는 `H-386`. 생성 경로·작업과 같은 차수라 걷을 실익은 없다. 합치고 싶다면 복사 루프 뒤 "복사한 개수 == 키 개수"로 한 바퀴를 줄일 수 있다.
+
+**새 6. 다-3에 안 적힌 내부 경로의 공개 게이트.** (a) `Dispatch.process`는 (inst, 키)마다 새 체인 리스트를 만들 때 공개 `bindLifetime`을 부르고, 그 안의 `canBound`(→ `isHeld`의 Relate 조회)·`BindableBrand` 조회 둘·`checkIdentityValue`가 방금 만든 테이블에 대해 돈다 — 절대 걸리지 않는 검사이고 Instance 하나의 프롭 키마다 한 번(마운트). (b) Slot 내부의 원소 제거·교체는 공개 `releaseOwner`를 지나 nil 검사 둘과 `Quad0163`("ownership tracking is broken") 불변식 단언을 원소마다 돈다. 둘 다 O(1)이고 미측정. 처방은 다-3과 같다(무검사 본문과 공개 래퍼를 가르기 — 구조 변경이라 사용자 판단).
+
+**새 7. Operator의 recompute마다 값 타입 검사.** `Sum`/`Clamp` 등이 State 인자의 현재값과 Apply 대상 값을 recompute마다 본다(`Quad0120`~`0122`). 인자 둘짜리 `Sum`에서 5%. 반응형 값은 생성 때 볼 수 없어 이 자리 말고 잡을 곳이 없고, 빼면 Luau 산술 VM 에러가 `Operator.luau`를 blame한다. 그대로 둘 것.
+
+**새 8. 엔진 op `setTimeout`/`clearTimeout`의 인자 검사.** Debounce/Throttle이 신호마다 `setTimeout`을 부르는데, 그 delay는 직전 `readTime`이 이미 `Quad0039`로 검증한 값이다. 수 ns라 그대로 둬도 된다 — 공개 op라 서드파티 호출자에 대한 입구 검사이기도 하다.
+
+## 기존 항목에 보탠 것
+
+가-3(사전 스캔)은 이번에 처음 실측했다 — 길이 1000에서 CRUD 한 쌍의 17~23%, 길이 100에서 15%. 남는 비용의 대부분은 검사가 아니라 마운트된 Slot의 recompute가 위치 1부터 N까지 다시 걷는 설계 비용이다(`Bookkeeping.recompute`가 늘 `i = 1`에서 시작하고 위치마다 `contribution`의 브랜드 조회, 거기에 다-3의 공개 게이트) — 검사 감사의 범위 밖이라 확인만 했다. 다-4(술어 순서)는 `Slot{ 200 }` 17%로 실측했고, 실기기에선 Instance가 userdata라 `type(v) == "table"` 먼저도 같은 효과를 낸다. 나-2·다-1에는 새 2의 `type` 먼저 처방이 그대로 맞는다.
+
+## 확인만 한 것 — 문제없음
+
+검사이지만 입구 한 줄이거나 생성 때 한 번 도는 것: Dispatch `addHandler`(dedup·동률 출력은 debug), drive `Quad0082`/`Quad0084`·props O(1) 게이트(2026-10-01 사용자), Store·Attr·Tag·Context·Blocker·Effect·State(`newNode` 의존 검사)·LifecycleHooks·Fallback·Claim(콜드)·`Ref` 콜백 검사, Tag 이름 목록 검사(같은 루프 안), Debounce `readTime`(Q55 (b) 사용자), Effect `Quad0263` 카운터(사용자), Property·Event·InstanceChild·OnChange 핸들러 검사(`isClaimed`는 2026-09-16 사용자 대칭 게이트), AddPlugin·Tween·Animate·Debounce·`:List`의 모르는 옵션 키 스캔(debug만). `pcall`·`debug.info`를 쓰는 검사는 평소 경로에 없다(매치 실패 메시지와 debug 층뿐). 검사가 아니라 설계인 것(`canExecute`의 `gcconn.Connected` 읽기, Property의 `inst.ClassName` 읽기, `Ref:Set` 스냅샷, emitDown 스냅샷)은 범위 밖.
+
+## 미완
+
+실측은 CLI mock뿐(Roblox 실기기 없음 — 엔진 호출이 빠져 검사 비율이 실제보다 크게 나온다). 새 6·새 8, 기존 나-2의 `type` 먼저 처방은 미측정. `type` 먼저 처방은 `spec.modifier`·`spec.source`·`spec.slot`만 돌려 확인했고 test.sh 전체는 안 돌렸다. 출처 추적은 원장 grep 수준이고 `Quad0060`/`0061`·`Quad0177`·Operator 검사의 원문 결정은 찾지 않았다. 벤치·변형 사본은 스크래치에만 있다.

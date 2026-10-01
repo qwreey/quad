@@ -568,7 +568,11 @@ RefLeafHandler.isHandlable(inst, k, v) =
     -- 흘러온 Ref까지 삼킨다 — [2026-09-06 리뷰 정정] plain Ref엔 FALLBACK 가드가 없다
     -- (등록된 가드는 PreRef/PostRef뿐 — named 자리의 plain Ref는 일반 no-match error,
     -- spec.refhandlers 7절 — **[2026-09-17 round11 `H-567`]** 이제 Ref에도 같은 가드가 있어
-    -- "Ref: must be an array item …"); 이 검사는 그 가드가 살아 있게 하는 자리다.
+    -- "Ref: must be an array item …"); 이 검사는 FALLBACK 가드(지금은 PreRef/PostRef 둘)가 살아 있게 하는 자리다.
+    -- **[2026-10-02 사용자 — "중복은 그냥 덜어내는게 맞는것 같음"]** `H-567`의 Ref 가드는
+    -- 걷었다 — named 자리의 plain Ref는 다시 일반 no-match(`Quad0076`)이고, 그 꼬리가 base
+    -- 브랜드에 "a quad value at a string key: it belongs in a numeric (array) slot"을 단다.
+    -- 이 검사는 여전히 HIGH leaf가 named 자리의 Ref를 삼키지 않게 하는 자리다.
 
 function RefLeafHandler.process(inst, k, v, index)
     -- [2026-08-24 6라운드 `H-39`] **말단 핸들러의 배열 자리 부기** — 빠져 있었다.

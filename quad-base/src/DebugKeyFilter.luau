@@ -5,7 +5,8 @@
 
 	Round13 Q135: an array-only quad value (Ref family, Observer, Effect, Slot, Tag, Attr) placed at a
 	string key that names a real property is taken by the NORMAL Property handler (or the NORMAL + 1
-	shorthand) before its own FALLBACK guard can see it — silently assigned, or an engine error.
+	shorthand) before its own FALLBACK guard (or, for the plain Ref, Slot and Tag, which have no
+	string-key guard, Dispatch's no-match message) can see it — silently assigned, or an engine error.
 	Strict typing is the first defense (round1 Q4 (a)); this is the debug layer
 	(`architecture.md` "debug 층"): a `debugOnly` handler between NORMAL + 1 and HIGH that prints one
 	line and answers `false`, so the scan goes on exactly as without it — behavior and the FALLBACK

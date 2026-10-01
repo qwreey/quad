@@ -44,7 +44,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 `Bookkeeping.recompute: sourceList[{i}] is nil - a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent - q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)` — `quad-base/src/Bookkeeping.luau`
 
 - **언제**: 재계산 도중 위치 `i`의 오프셋 발행 채널(`sourceList[i]`)이 `nil`일 때 — 대표 원인은 배열 리터럴 중간에 `nil`이 낀 props(`{ a, nil, b }`)이고, 핸들러를 직접 쓰는 입장이면 `setOffsetSource`(또는 `setEmpty`) 등록을 빠뜨린 경우입니다.
-- **고치려면**: 사용자라면 그 옵셔널 자리를 `q.None`으로 채우세요. 핸들러 작성자라면 그 자리의 `setOffsetSource` 등록을 빠뜨리지 않았는지 확인하세요. 이 에러가 난 뒤 그 Instance는 반쯤 지어진 채(구멍 뒤 자식까지 붙어 있음 — 메시지의 "children placed before this raise"보다 넓음) 남습니다 — 같은 자식 값으로 다시 만들면 `Quad0160`, 그 Instance를 dispose한 뒤 다시 쓰면 `Quad0219`가 나니, 호스트를 dispose하고 자식도 새로 만들어 처음부터 하세요([2026-09-27 mock 실측]).
+- **고치려면**: 사용자라면 그 옵셔널 자리를 `q.None`으로 채우세요. 핸들러 작성자라면 그 자리의 `setOffsetSource` 등록을 빠뜨리지 않았는지 확인하세요. 이 에러가 난 뒤 그 Instance는 반쯤 지어진 채(구멍 뒤 자식까지 붙어 있음 — 메시지의 "children placed before this raise"보다 넓음) 남습니다 — 같은 자식 값으로 다시 만들면 `Quad0160`, 그 Instance를 dispose한 뒤 다시 쓰면 `Quad0219`가 나니, 호스트를 dispose하고 자식도 새로 만들어 처음부터 하세요([2026-09-27 mock 실측 — 관측, 계약 아님]).
 - **참고**: [Length/Offset 부기](../extend/02-dispatch-handler-contract.md#lengthoffset-부기)
 
 ### Quad0024
@@ -243,7 +243,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `State: the value chain is circular (a State that eventually holds itself) - a State may hold another State, but not a cycle` — `quad-base/src/StoreBind.luau`
 
-- **언제**: props 자리에 놓인 State의 값을 따라가다(State가 다른 State를 값으로 들고 있으면 그 State도 마저 벗기는 재귀) 결국 자기 자신으로 돌아오는 순환을 만났을 때(예: `a:Set(b); b:Set(a)`). **[2026-10-01]** Slot에 넣은 State도 같습니다 — 원소 State의 값 사슬이 순환하면(`st:Set(st)` 등) 넣는 줄이나 그 `:Set` 줄에서 던지고, Slot은 이전 원소를 유지한 채 다음 정상 `:Set`으로 회복합니다.
+- **언제**: props 자리에 놓인 State의 값을 따라가다(State가 다른 State를 값으로 들고 있으면 그 State도 마저 벗기는 재귀) 결국 자기 자신으로 돌아오는 순환을 만났을 때(예: `a:Set(b); b:Set(a)`). **[2026-10-01]** Slot에 넣은 State도 같습니다 — 원소 State의 값 사슬이 순환하면(`st:Set(st)` 등) 넣는 줄이나 그 `:Set` 줄에서 던집니다(그 뒤 Slot의 상태는 계약이 아닙니다 — 지금은 이전 원소를 유지한 채 다음 정상 `:Set`으로 이어지는 것이 관측됨).
 - **고치려면**: State가 다른 State를 값으로 들고 있는 것 자체는 되지만, 그 사슬이 순환하면 안 됩니다 — 순환이 생기지 않게 값 대입을 정리하세요.
 - **참고**: [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진](../../quadnomicon/08-extensible-dispatch-engine.md) · [`slot:Add`](../core/06-slot.md#slotaddelement-index)
 
@@ -357,7 +357,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 ### Quad0085
 
-`Dispatch.drive: array keys must be positive integers (got {k})` — `quad-base/src/Dispatch/init.luau`
+`Dispatch.drive: array keys must be positive integers (got {k})` — `quad-base/src/Dispatch/Modifier/init.luau`
 
 - **언제**: `flattened`의 숫자 키 중 하나가 1 이상의 정수가 아닐 때(0, 음수, 소수 등) — 어떤 핸들러가 부기를 만지기 전에 먼저 봅니다.
 - **고치려면**: 배열부 키는 1부터 시작하는 정수만 쓰세요(중간의 `nil` 구멍은 별개로 정의되지 않은 동작입니다).
@@ -378,3 +378,11 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 - **언제**: `handler.debugOnly`가 `true`/`false`/`nil`이 아닐 때 — `"yes"`나 `1`처럼 참 같은 값이 그대로 통과하면 그 핸들러가 조용히 평소(debug 아님) 스캔 목록에 남습니다(`== true`만 debug 전용 목록으로 옮겨지므로).
 - **고치려면**: `debugOnly`는 생략하거나 `true`/`false`로 쓰세요.
 - **참고**: [`q.Dispatch.addHandler(handler)`](../extend/02-dispatch-handler-contract.md#qdispatchaddhandlerhandler)
+
+### Quad0267
+
+`Bookkeeping.recompute: rewound 10000 times in one pass - a subscriber keeps changing a length before the position it is told about (a Slot Offset callback that adds and removes on every value never settles)` — `quad-base/src/Bookkeeping.luau`
+
+- **언제**: 한 번의 자리 계산이 1만 번 넘게 되감았을 때 — 자리 계산 도중 발행된 `Offset`을 받은 콜백이 그 앞자리의 길이를 바꿔 계산이 그 자리부터 다시 돌기를 끝없이 되풀이하는 경우입니다. 흔한 모양은 `slot.Offset`을 보는 Observer·Effect가 값마다 옆 Slot의 원소를 넣었다 뺐다 하는 것입니다. 이 한도는 늘 켜져 있고([`q.debug`](../core/01-quad-module.md#qdebug)와 무관) [`Quad0263`](./04-ref-observer-effect.md#quad0263)(`Effect`의 지연 재실행)과 같은 수입니다 — 1만 번 전까지의 되감기는 정의된 동작이고, 목록이 아무리 길어도 되감기가 없으면 걸리지 않습니다. **[2026-10-02 기준]** 게시된 3.2.0에는 이 한도가 없어 같은 코드가 에러 없이 끝나지 않습니다. 에러는 그 계산을 시작한 줄(CRUD·`:Set`·`setLength`)을 가리킵니다.
+- **고치려면**: 콜백이 넣고 빼는 조건이 한 값에서 멈추게 하세요 — 받은 값에 따라 넣기와 빼기가 번갈아 참이 되면 끝나지 않습니다. 넣을지 말지를 콜백이 바꾸는 그 길이에 기대지 않는 값(데이터 개수 등)으로 정하세요. 이 에러는 자리 계산 도중에 나므로 그 부모의 부기는 멈춘 채 남습니다([`slot.Offset`](../core/06-slot.md#slotoffset)의 caution) — 그 부모는 새로 만드세요.
+- **참고**: [`slot.Offset`](../core/06-slot.md#slotoffset), [Length/Offset 부기](../extend/02-dispatch-handler-contract.md#lengthoffset-부기)

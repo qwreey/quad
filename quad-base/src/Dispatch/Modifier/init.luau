@@ -499,6 +499,15 @@ local function flatten(input: { [any]: any }): { [any]: any }
 	-- twice on every drive): `next` continued from the last array key skips
 	-- the hole-free array part; sparse numeric keys live in the hash part and
 	-- are caught too (a Modifier at `[5]` beyond `#input` is not consumed).
+	-- The same walk carries `drive`'s array-key domain check (`Quad0085`,
+	-- `H-495`; moved here from a separate `pairs` pass in `drive` — 2026-10-02
+	-- 사용자 *"검사를 이미 있는 for 루프, flatten 에 실어준다"*): array-part keys
+	-- are positive integers by definition, so a `[0]`/`[-1]`/`[1.5]` key can only
+	-- sit in the hash part. It must fire BEFORE any handler touches bookkeeping
+	-- (`H-256` (a)) — such keys used to die in the leaf handler's
+	-- `setOffsetSource`/`setEmpty` with an internal line. Positive integer keys
+	-- past a hole stay as before (sparse holes are UB; no `Quad0085`). The
+	-- message keeps its `Dispatch.drive:` prefix — flatten has one caller, `drive`.
 	local n = #input
 	local k: any = if n > 0 then n else nil
 	while true do
@@ -506,6 +515,9 @@ local function flatten(input: { [any]: any }): { [any]: any }
 		k, v = next(input, k)
 		if k == nil then
 			break
+		end
+		if type(k) == "number" and (k < 1 or k % 1 ~= 0) then
+			Err.errorBefore(`Quad0085 Dispatch.drive: array keys must be positive integers (got {k})`, SURFACE)
 		end
 		if isModifier(v) then
 			Err.errorBefore(`Quad0068 Modifier: a Modifier cannot be a value of key "{tostring(k)}" - place it in the array part`, SURFACE)
