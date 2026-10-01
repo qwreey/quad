@@ -155,7 +155,7 @@ end)
 ([2026-09-27 mock 실측]; 소스 주석도 `State<Ref>` 안쪽을 UB로 둡니다).
 
 ```
-Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)
+Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)
 ```
 
 `State`/`Source`는 통과합니다. 이 값들은 필드가 아니라 **props의 숫자 키 자리**에 놓는 것이 자리입니다

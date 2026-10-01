@@ -11,7 +11,7 @@
 	None), so the top-level SlotHandler and this file share one registry.
 
 	Canonical: `base/slot-plan.md`. Bookkeeping (setLength/setOffsetSource/
-	getOffsetAt/recompute/getBlocker/getBookkeeping) is `module.Dispatch.*`.
+	getOffsetAt/recompute/_getBlocker/getBookkeeping) is `module.Bookkeeping.*`.
 
 	[2026-09-07 split] What was one ~1200줄 `Slot.luau` is now this init plus five
 	siblings, installed from here as `require("@self/X")(S, module)` in this order:
@@ -143,9 +143,11 @@ local function Init(module: any)
 	-- stack — the `:List` updateFn is a pure item→element function, and an ancestor CRUD from
 	-- inside it broke the walk (slot-plan "재진입성" 절의 예외). User: "compute 든 slot 이든
 	-- 순수성 제약을 크게 풀어줄 이유가 없어서, 계약 상 조상 건들이기 등은 던져도 될것 같아".
+	-- round13 Q74 (a) (2026-10-01): a runtime attach raises the flag on the whole owner chain
+	-- (`Slot/Raw.luau` raiseChain), so "an ancestor" means every Slot above the one being attached.
 	local function assertNotMounting(self: any)
 		if self._materializing then
-			Err.errorBeforeNearest("Quad0167 Slot: cannot mutate a Slot while it is being mounted - a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way - then this Slot stays unusable: dispose its host Instance)", SURFACE)
+			Err.errorBeforeNearest("Quad0167 Slot: cannot mutate a Slot while it is being mounted (it, or a Slot inside it, is mid-mount) - a :List/:Single updateFn (or an Observer that fires during that mount) must not CRUD an ancestor Slot; do it after the mount has returned, outside the updateFn (or an earlier mount into this Slot or a Slot inside it threw mid-way - then this Slot stays unusable: dispose its host Instance)", SURFACE)
 		end
 	end
 	-- every public CRUD entry: live AND manual (Q3 ⑥ — nine hand copies folded) AND not mid-mount
@@ -390,7 +392,7 @@ local function Init(module: any)
 	function Slot_mt.Clear(self: any)
 		assertMutable(self)
 		markManual(self)
-		local gate = if self._physicalTarget ~= nil then S.BK.getBlocker(self) else nil
+		local gate = if self._physicalTarget ~= nil then S.BK._getBlocker(self) else nil
 		local ownsGate = gate ~= nil and not gate.Blocking
 		if ownsGate then gate:On() end
 		for i = #self._elements, 1, -1 do

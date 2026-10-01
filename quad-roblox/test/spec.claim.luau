@@ -329,4 +329,32 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 17. round13 Q85 (i)·(a′) (2026-10-01) — 1패스가 디스크립터가 아닌 값의 숫자 키도 도메인 검사(claim 0); Modifier 필드의 디스크립터는 만드는 줄에서 거부 ===")
+do
+	for _, badKey in { 0, 2.5, -1 } do
+		local root, title = makeTemplate()
+		local ok, err = pcall(function()
+			return q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "t" }), [badKey] = q.Declaration.Frame({}) }))
+		end)
+		assert(not ok and string.find(tostring(err), `Quad0031 Claim: array keys must be positive integers (got {badKey})`, 1, true) ~= nil, tostring(err))
+		assert(not q.Backend.isClaimed(root) and not q.Backend.isClaimed(title) and title.Name == "Title", "nothing claimed nor driven")
+		-- the fixed retry goes through (it used to hit Quad0029 — the root stayed claimed)
+		q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "t" }) }))
+		assert(title.Name == "t" and q.Backend.isClaimed(root), "retry works")
+	end
+	-- a mapper descriptor inside a Modifier field: refused where the Modifier is made (initial table / setter)
+	local okA, errA = pcall(function()
+		return q.Modifier({ Title = M.TextLabel("Title")({}) })
+	end)
+	assert(not okA and string.find(tostring(errA), "Quad0064", 1, true) ~= nil and string.find(tostring(errA), "mapper descriptor", 1, true) ~= nil, tostring(errA))
+	mock.assertBlamesUser(errA, "spec.claim.luau", "Quad0064 blame")
+	local okB, errB = pcall(function()
+		return (q.Modifier() :: any):Title(M.TextLabel("Title")({}))
+	end)
+	assert(not okB and string.find(tostring(errB), "Quad0057", 1, true) ~= nil, tostring(errB))
+	mock.assertBlamesUser(errB, "spec.claim.luau", "Quad0057 blame")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

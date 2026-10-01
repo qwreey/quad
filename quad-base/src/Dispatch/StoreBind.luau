@@ -48,6 +48,31 @@ local isState = Brand.isState
 
 local StoreBind = {}
 
+-- round11 `H-573` (탐사 I′ 4) + round13 Q113 (a) (user decision 2026-10-01): a State whose value chain
+-- loops back on itself (`a:Set(b); b:Set(a)`, or `s:Set(s)`) recursed through `index + 1` (here) or
+-- wrapped itself forever (the Slot element path) until a stack overflow in Brand/Relate — walk the chain
+-- once with a visited set. The one Quad0070 literal (one id, one raise site), shared by the StoreBind
+-- observer below and the Slot element path (`Slot/Elements.luau` wrapElement, `Slot/List.luau`'s identity
+-- reconcile). `first` is the value to walk from; `seed` (optional) is a State already on the chain
+-- (StoreBind's own); `raise` is the caller's depth. Subject `State:` everywhere (round13 Q90).
+function StoreBind.assertAcyclicChain(first: any, seed: any?, raise: (string, any) -> ())
+	if not isState(first) then
+		return
+	end
+	local visited = {}
+	if seed ~= nil then
+		visited[seed] = true
+	end
+	local cur = first
+	while isState(cur) do
+		if visited[cur] then
+			raise("Quad0070 State: the value chain is circular (a State that eventually holds itself) - a State may hold another State, but not a cycle", SURFACE)
+		end
+		visited[cur] = true
+		cur = cur:Get()
+	end
+end
+
 -- Called by InitDispatch once per module instance, after the Dispatch table
 -- is assembled (the factory pattern, `H-174`). addHandler tags the received
 -- functions into the shared error namespace itself.
@@ -67,20 +92,7 @@ function StoreBind.register(dispatch: QuadTypes.Dispatch, module: any)
 			ModuleIdentity.assertOwnAtDispatch(module, state, "State") -- before the registration fire subscribes here
 			local observer = state:Observer(function()
 				local realv = state:Get()
-				if isState(realv) then
-					-- round11 `H-573` (탐사 I′ 4): a State whose value chain loops back on itself
-					-- (`a:Set(b); b:Set(a)`, or `s:Set(s)`) recursed through `index + 1` until
-					-- "Brand.luau: stack overflow" — walk the chain once with a visited set
-					local visited = { [state] = true }
-					local cur = realv
-					while isState(cur) do
-						if visited[cur] then
-							Err.errorBefore("Quad0070 State: the value chain is circular (a State that eventually holds itself) - a State may hold another State, but not a cycle", SURFACE)
-						end
-						visited[cur] = true
-						cur = cur:Get()
-					end
-				end
+				StoreBind.assertAcyclicChain(realv, state, Err.errorBefore) -- error-code: via assertAcyclicChain
 				dispatch.process(inst, k, realv, index + 1)
 			end)
 			module.Backend.bindLifetime(inst, observer)

@@ -54,6 +54,20 @@ local ObserverBrand = Brand.ObserverBrand
 
 local WEAK_KEY_MT = { __mode = "k" }
 
+-- ── debug-only checks (`architecture.md` "debug 층"; kept out of the logic below) ──
+-- 2026-10-01 (user decision): the install loop has no cap by contract — an fn that keeps setting its
+-- own target never settles, and since a Source propagates even an equal value (`H-68`) an unconditional
+-- `Set` (a same-value clamp) is enough. With `q.debug` on, the loop counts and raises past this limit.
+local DEBUG_RERUN_LIMIT = 10000
+local function checkInstallReruns(count: number)
+	if count > DEBUG_RERUN_LIMIT then
+		Err.errorBefore(
+			`Quad0262 Observer: the first run did not settle after {DEBUG_RERUN_LIMIT} re-runs - the fn keeps setting its own target (a Source propagates even an equal value; set only when the value differs)`,
+			SURFACE
+		)
+	end
+end
+
 -- One implementation (and registry pair) per quad instance (`H-174`);
 -- storage scheme in `ImplRegistry.luau`.
 local implsOf = ImplRegistry.implsOf
@@ -107,7 +121,12 @@ local function createImpl(module: any)
 	local function runLoop(self: any, from: any, force: boolean)
 		local outer = self._running -- `H-183` (save/restore — `H-332`)
 		self._running = true
+		local count = if force and module.debug then 0 else nil -- debug only: the install loop's re-run count
 		repeat
+			if count then
+				count += 1
+				checkInstallReruns(count)
+			end
 			self._pending = false
 			self._seenRevision = rawget(self._state, "Revision") -- nil for a derived State
 			self.fn(self._state, self, from)

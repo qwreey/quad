@@ -19,7 +19,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Bookkeeping.{fnName}: ownerKey must not be nil` — `quad-base/src/Bookkeeping.luau`
 
-- **언제**: `q.Bookkeeping`의 부기 함수(`getBlocker`/`getBookkeeping`/`getOffsetAt`/`setLength`/`setOffsetSource`/`setEmpty`)에 `ownerKey`(부기의 주인 — 요소 또는 Slot)로 `nil`을 넘겼을 때. `{fnName}`은 부른 함수 이름입니다. 같은 조건이라도 `claimOwnerAt`은 Quad0158, `releaseOwner`는 Quad0162로 따로 던집니다.
+- **언제**: `q.Bookkeeping`의 부기 함수(`getBookkeeping`/`getOffsetAt`/`setLength`/`setOffsetSource`/`setEmpty`)에 `ownerKey`(부기의 주인 — 요소 또는 Slot)로 `nil`을 넘겼을 때. `{fnName}`은 부른 함수 이름입니다. 같은 조건이라도 `claimOwnerAt`은 Quad0158, `releaseOwner`는 Quad0162로 따로 던집니다.
 - **고치려면**: 실제 owner를 넘기세요.
 - **참고**: [Length/Offset 부기](../extend/02-dispatch-handler-contract.md#lengthoffset-부기)
 
@@ -27,7 +27,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Bookkeeping.{fnName}: length must be a non-negative integer (got {tostring(n)})` — `quad-base/src/Bookkeeping.luau`
 
-- **언제**: `q.Bookkeeping.setLength(ownerKey, i, len, ...)`의 `len`(상수인 경우) 또는 그 값에 바인딩된 `State`가 내놓은 값이 음수/소수/숫자가 아닐 때.
+- **언제**: `q.Bookkeeping.setLength(ownerKey, i, len, ...)`의 `len`(상수인 경우), `State`인 경우 등록하는 순간의 현재 값(그 `setLength` 줄에서, 부기를 쓰기 전에), 또는 그 뒤 그 `State`가 내놓은 값(그 `:Set` 줄에서)이 음수/소수/숫자가 아닐 때.
 - **고치려면**: 0 이상의 정수를 쓰세요.
 - **참고**: [`q.Bookkeeping.setLength(ownerKey, i, len, anchor, element)`](../extend/02-dispatch-handler-contract.md#qbookkeepingsetlengthownerkey-i-len-anchor-element)
 
@@ -67,7 +67,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Bookkeeping.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not - a leaf handler skipped its position registration` — `quad-base/src/Bookkeeping.luau`
 
-- **언제**: 조회한 `at`은 등록 범위 안(`N+1` 이하)인데, 그 앞의 어떤 위치 `i`가 등록되지 않았을 때 — 어떤 leaf 핸들러가 자기 자리의 위치 등록(`setLength`/`setOffsetSource`)을 건너뛴 경우입니다. `getOffsetAt`의 if/else 두 갈래 중 하나로, 같은 조건문의 다른 갈래가 Quad0022입니다. [2026-09-27 실측] 실제로는 부기 차단기(`q.Bookkeeping.getBlocker(ownerKey)`)가 켜져 재계산이 미뤄진 동안에만 이 갈래가 보입니다 — 차단기 밖에서 구멍이 생기면 `setLength`/`setEmpty` 끝의 재계산이 Quad0023/Quad0024로 먼저 던집니다.
+- **언제**: 조회한 `at`은 등록 범위 안(`N+1` 이하)인데, 그 앞의 어떤 위치 `i`가 등록되지 않았을 때 — 어떤 leaf 핸들러가 자기 자리의 위치 등록(`setLength`/`setOffsetSource`)을 건너뛴 경우입니다. `getOffsetAt`의 if/else 두 갈래 중 하나로, 같은 조건문의 다른 갈래가 Quad0022입니다. [2026-09-27 실측] 실제로는 배치 차단기(`drive`·Slot 내부가 켜는 것)가 켜져 재계산이 미뤄진 동안에만 이 갈래가 보입니다 — 차단기 밖에서 구멍이 생기면 `setLength`/`setEmpty` 끝의 재계산이 Quad0023/Quad0024로 먼저 던집니다.
 - **고치려면**: 그 자리를 담당한 핸들러가 반드시 `setLength`와 `setOffsetSource`(또는 그 둘을 한 번에 하는 `setEmpty`)를 부르게 하세요.
 - **참고**: [`q.Bookkeeping.getOffsetAt(ownerKey, at)`](../extend/02-dispatch-handler-contract.md#qbookkeepinggetoffsetatownerkey-at)
 
@@ -137,9 +137,9 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 ### Quad0057
 
-`Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)` — `quad-base/src/Dispatch/Modifier/init.luau`
+`Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)` — `quad-base/src/Dispatch/Modifier/init.luau`
 
-- **언제**: `mod:Field(value)`의 `value`(리터럴이든 변환 함수의 반환이든)가 `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier` 같은 핸들러 계층 값일 때. `State`/`Source`는 통과합니다.
+- **언제**: `mod:Field(value)`의 `value`(리터럴이든 변환 함수의 반환이든)가 `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier` 같은 핸들러 계층 값이거나 `Claim`/`Mapper`의 디스크립터(`M.Frame("Title")` 등 — 숫자 키 자리에서만 해석되는 값)일 때. `State`/`Source`는 통과합니다(`State`가 디스크립터를 담은 경우는 만들 때 값을 읽지 않으므로 여기서 걸리지 않습니다).
 - **고치려면**: 그 값은 필드가 아니라 props의 숫자 키 자리에 놓으세요.
 - **참고**: [`mod:<Field>(value)`](../core/08-modifier.md#modfieldvalue)
 
@@ -193,9 +193,9 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 ### Quad0064
 
-`Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)` — `quad-base/src/Dispatch/Modifier/init.luau`
+`Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)` — `quad-base/src/Dispatch/Modifier/init.luau`
 
-- **언제**: 초기 필드 테이블의 값이 핸들러 계층 값(`Ref`/`Observer`/`Effect`/`Slot`/`Modifier`)일 때 — setter 경로(Quad0057)와 같은 규칙을 생성자에도 적용합니다.
+- **언제**: 초기 필드 테이블의 값이 핸들러 계층 값(`Ref`/`Observer`/`Effect`/`Slot`/`Modifier`)이거나 `Claim`/`Mapper`의 디스크립터일 때 — setter 경로(Quad0057)와 같은 규칙을 생성자에도 적용합니다.
 - **고치려면**: 그 값은 필드가 아니라 props의 숫자 키 자리에 놓으세요.
 - **참고**: [`q.Modifier(...)`](../core/08-modifier.md#qmodifier)
 
@@ -233,7 +233,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 ### Quad0069
 
-`{kind}: already fired - a {kind} is one-shot, make a new one for each instance` — `quad-base/src/Dispatch/Ref.luau`
+`{kind}: already used - a {kind} is one-shot (used up once quad places it, fired or not); make a new one for each instance` — `quad-base/src/Dispatch/Ref.luau`
 
 - **언제**: 이미 한 번 props 숫자 키 자리에 놓여 처리된 `PreRef`/`PostRef`를 또 놓았을 때 — 다른 인스턴스의 props든, 같은 props 안의 두 자리(`{ p, p }`)든 마찬가지입니다. 표시는 quad가 자리에 놓인 값을 처리하는 순간 붙으므로 `PostRef`는 아직 발화하기 전이어도 해당하고, 사용자가 직접 `ref:Set(inst)`만 한 값은 해당하지 않습니다. `{kind}`는 `PreRef` 또는 `PostRef`입니다.
 - **고치려면**: 인스턴스마다 새 `PreRef`/`PostRef`를 만드세요 — 하나를 재사용하지 마세요.
@@ -243,9 +243,9 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `State: the value chain is circular (a State that eventually holds itself) - a State may hold another State, but not a cycle` — `quad-base/src/Dispatch/StoreBind.luau`
 
-- **언제**: props 자리에 놓인 State의 값을 따라가다(State가 다른 State를 값으로 들고 있으면 그 State도 마저 벗기는 재귀) 결국 자기 자신으로 돌아오는 순환을 만났을 때(예: `a:Set(b); b:Set(a)`).
+- **언제**: props 자리에 놓인 State의 값을 따라가다(State가 다른 State를 값으로 들고 있으면 그 State도 마저 벗기는 재귀) 결국 자기 자신으로 돌아오는 순환을 만났을 때(예: `a:Set(b); b:Set(a)`). **[2026-10-01]** Slot에 넣은 State도 같습니다 — 원소 State의 값 사슬이 순환하면(`st:Set(st)` 등) 넣는 줄이나 그 `:Set` 줄에서 던지고, Slot은 이전 원소를 유지한 채 다음 정상 `:Set`으로 회복합니다.
 - **고치려면**: State가 다른 State를 값으로 들고 있는 것 자체는 되지만, 그 사슬이 순환하면 안 됩니다 — 순환이 생기지 않게 값 대입을 정리하세요.
-- **참고**: [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진](../../quadnomicon/08-extensible-dispatch-engine.md)
+- **참고**: [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진](../../quadnomicon/08-extensible-dispatch-engine.md) · [`slot:Add`](../core/06-slot.md#slotaddelement-index)
 
 ### Quad0071
 
@@ -299,10 +299,10 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 ### Quad0077
 
-`Dispatch: handler {describeHandler(h)} returned no retractor at key {tostring(k)}, index {index} - return Void when there is nothing to undo` — `quad-base/src/Dispatch/init.luau`
+`Dispatch: handler {describeHandler(h)} must return a retractor function at key {tostring(k)}, index {index} (got {typeof(retractor)}) - return Void when there is nothing to undo` — `quad-base/src/Dispatch/init.luau`
 
-- **언제**: 매치된 핸들러의 `process`가 retractor(되돌리는 함수)를 돌려주지 않았을 때 — 프로바이더 계약 위반입니다. `noRetractorMessage` 헬퍼가 만드는 문구이고, `process`의 두 갈래(같은 핸들러 재처리 / 다른 핸들러로 교체) raise가 모두 이 헬퍼를 부릅니다.
-- **고치려면**: 그 핸들러를 만든 쪽이 `process`에서 항상 함수(할 일이 없으면 `q.Void`)를 돌려주게 고치세요.
+- **언제**: 매치된 핸들러의 `process`가 retractor(되돌리는 함수)를 돌려주지 않았을 때 — 프로바이더 계약 위반입니다. `nil`은 늘 검사하고, 함수가 아닌 다른 값(`true`·숫자·테이블, `__call` 테이블 포함 — `addHandler`가 `process` 자체에 거는 [`Quad0079`](#quad0079)와 같은 기준)은 [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때만 검사합니다(매 `process`마다 도는 경로라 평소 비용을 더하지 않습니다). `q.debug`가 꺼져 있으면 그런 값은 저장됐다가 그 자리를 무를 때 quad 안에서 번호 없는 에러로 죽습니다. `noRetractorMessage` 헬퍼가 만드는 문구이고, `process`의 두 갈래(같은 핸들러 재처리 / 다른 핸들러로 교체)의 `nil` 검사와 debug 검사가 모두 이 헬퍼를 부릅니다.
+- **고치려면**: 그 핸들러를 만든 쪽이 `process`에서 항상 함수(할 일이 없으면 `q.Void`)를 돌려주게 고치세요. 프로바이더를 만들 때는 `q.debug`를 켜고 시험하세요.
 - **참고**: [`q.Dispatch.addHandler(handler)`](../extend/02-dispatch-handler-contract.md#qdispatchaddhandlerhandler)
 
 ### Quad0079
@@ -360,3 +360,11 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 - **언제**: `flattened`의 숫자 키 중 하나가 1 이상의 정수가 아닐 때(0, 음수, 소수 등) — 어떤 핸들러가 부기를 만지기 전에 먼저 봅니다.
 - **고치려면**: 배열부 키는 1부터 시작하는 정수만 쓰세요(중간의 `nil` 구멍은 별개로 정의되지 않은 동작입니다).
 - **참고**: [`q.Dispatch.drive(inst, flattened)`](../extend/02-dispatch-handler-contract.md#qdispatchdriveinst-flattened)
+
+### Quad0264
+
+`Modifier: the transform for field "{key}" returned a function - a field cannot hold a function (an event handler does not belong in a Modifier; put it as an inline key on the Declaration, or wrap it in a State)` — `quad-base/src/Dispatch/Modifier/init.luau`
+
+- **언제**: `mod:Field(fn)`의 변환 함수가 **함수를 돌려줬을 때**(지금 필드 값이 평범한 값인 갈래) — 흔히 `q.Modifier():Activated(function(_old) return function() … end end)`처럼 이벤트 핸들러를 Modifier에 넣으려는 우회입니다. 초기 필드 테이블로 같은 값을 넣으면 [`Quad0063`](#quad0063)으로 거부되는데, 이 길로는 생 함수가 필드에 들어가 두 경로가 갈렸습니다. 지금 필드 값이 `State`면 변환이 `:Compute`로 미뤄져 여기서 걸리지 않습니다.
+- **고치려면**: 이벤트 핸들러는 Modifier가 아니라 Declaration의 인라인 키(`D.TextButton { Activated = fn }`)로 넘기세요. 꼭 Modifier로 옮겨야 하면 `State`에 담아 넘기세요.
+- **참고**: [`mod:<Field>(value)`](../core/08-modifier.md#modfieldvalue)

@@ -73,7 +73,7 @@ return function(S: Types.SlotInternal, module: any)
 	-- Extracted 2026-09-03 (user-approved) — it was copy-pasted at every
 	-- raw* tail and the reconcile/List tails.
 	local function maybeRecompute(self: any, bk: any)
-		if S.BK.getBlocker(self).Blocking or bk.recomputeBlocker.Blocking then return end
+		if S.BK._getBlocker(self).Blocking or bk.recomputeBlocker.Blocking then return end
 		S.BK._recompute(self, bk)
 	end
 
@@ -101,6 +101,31 @@ return function(S: Types.SlotInternal, module: any)
 		end
 	end
 
+	-- round13 Q74 (a) (user decision 2026-10-01): the Q52 attach window covers the WHOLE owner chain —
+	-- `_materializing` goes up on `self` and every Slot owner above it (up to the first non-Slot owner),
+	-- each saved value restored afterwards (save/restore: `_activateList` calls rawAdd while `self` is
+	-- already on a mount walk). Q52 meant "no CRUD on an ancestor from inside the mount" — guarding only
+	-- the direct parent let a runtime-added `:List`'s first `updateFn` (or an Observer firing in that
+	-- window) Remove/Clear a grandparent and leave a ghost. Temp locals, no new field; ~0.14 µs per
+	-- chain link (round13 bench). Accepted consequence (contract, no pcall): a throw inside the window
+	-- leaves the flag up on the whole chain, so `Quad0167` then refuses CRUD on every Slot of it.
+	local function raiseChain(self: any): ({ any }, { any })
+		local slots, olds = {}, {}
+		local cur = self
+		while cur ~= nil and S.isSlot(cur) do
+			slots[#slots + 1] = cur
+			olds[#olds + 1] = cur._materializing
+			cur._materializing = true
+			cur = S.elementOwner:GetWeak(cur, S.OWNER)
+		end
+		return slots, olds
+	end
+	local function restoreChain(slots: { any }, olds: { any })
+		for k = #slots, 1, -1 do
+			slots[k]._materializing = olds[k]
+		end
+	end
+
 	-- ── raw layer ──────────────────────────────────────────────────────
 	-- `deferPhysical` (rawAdd/rawUnmount): bookkeeping only — the caller
 	-- (rawSplice) issues the ONE physical op for the whole batch itself.
@@ -120,12 +145,11 @@ return function(S: Types.SlotInternal, module: any)
 			-- Q52 guard on THIS Slot too (checkpoint code-review): a `:List` element added at runtime
 			-- runs its first `updateFn` inside attachSlot, between spliceArraysUp and the length
 			-- registration — a CRUD on `self` from there shifted the array under the captured
-			-- position and left Length short for good. Save/restore: `_activateList` calls rawAdd
-			-- while `self` is already on a mount walk.
-			local wasMaterializing = self._materializing
-			self._materializing = true
+			-- position and left Length short for good. The whole owner chain since round13 Q74 (a) —
+			-- `raiseChain` above.
+			local chainSlots, chainOlds = raiseChain(self)
 			S.attachSlot(element, self._physicalTarget, self, index, physical)
-			self._materializing = wasMaterializing
+			restoreChain(chainSlots, chainOlds)
 		else
 			S.BK.setOffsetSource(self, index, S.None)
 			if physical then
@@ -211,10 +235,9 @@ return function(S: Types.SlotInternal, module: any)
 			end
 			if self._physicalTarget ~= nil then
 				if S.isSlot(newElement) then
-					local wasMaterializing = self._materializing -- Q52 window (see rawAdd)
-					self._materializing = true
+					local chainSlots, chainOlds = raiseChain(self) -- Q52 window, whole owner chain (see rawAdd)
 					S.attachSlot(newElement, self._physicalTarget, self, index, false)
-					self._materializing = wasMaterializing
+					restoreChain(chainSlots, chainOlds)
 				else
 					S.BK.setOffsetSource(self, index, S.None)
 					S.BK.setLength(self, index, 1, self._physicalTarget, newElement)
@@ -232,10 +255,9 @@ return function(S: Types.SlotInternal, module: any)
 				op(self._mountedInst, offset, { oldElement })
 			end
 			if S.isSlot(newElement) then
-				local wasMaterializing = self._materializing -- Q52 window (see rawAdd)
-				self._materializing = true
+				local chainSlots, chainOlds = raiseChain(self) -- Q52 window, whole owner chain (see rawAdd)
 				S.attachSlot(newElement, self._physicalTarget, self, index, self._mounted)
-				self._materializing = wasMaterializing
+				restoreChain(chainSlots, chainOlds)
 				return
 			end
 			S.BK.setOffsetSource(self, index, S.None)
@@ -347,7 +369,7 @@ return function(S: Types.SlotInternal, module: any)
 			removed[i - index + 1] = self._elements[i]
 		end
 		local mounted = self._mounted
-		local gate = if self._physicalTarget ~= nil then S.BK.getBlocker(self) else nil
+		local gate = if self._physicalTarget ~= nil then S.BK._getBlocker(self) else nil
 		local ownsGate = gate ~= nil and not gate.Blocking
 		if ownsGate then gate:On() end
 

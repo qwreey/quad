@@ -224,10 +224,10 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ### Quad0167
 
-`Slot: cannot mutate a Slot while it is being mounted - a :List/:Single updateFn (or an Observer that fires during the mount) must not CRUD an ancestor Slot; do it after the mount, from an Observer (or an earlier mount into this Slot threw mid-way - then this Slot stays unusable: dispose its host Instance)` — `quad-base/src/Slot/init.luau`
+`Slot: cannot mutate a Slot while it is being mounted (it, or a Slot inside it, is mid-mount) - a :List/:Single updateFn (or an Observer that fires during that mount) must not CRUD an ancestor Slot; do it after the mount has returned, outside the updateFn (or an earlier mount into this Slot or a Slot inside it threw mid-way - then this Slot stays unusable: dispose its host Instance)` — `quad-base/src/Slot/init.luau`
 
-- **언제**: 이 `Slot`의 마운트 walk이 스택에 있는 동안(`_materializing`) 이 `Slot`에 CRUD나 `:List`/`:Single` 설치를 쓰려고 할 때 — 중첩된 `:List`의 첫 `updateFn`이나 그 안에서 도는 `Observer`가 조상 `Slot`을 건드리면 여기 걸립니다.
-- **고치려면**: 마운트가 끝난 뒤 하세요 — "`Observer`에서"라도 그 `Observer`가 마운트 중에 동기로 발화하면 같은 에러입니다(마운트 뒤에 오는 변화에만 반응하게). 이미 이 에러가 났다면 이전 마운트가 도중에 던진 것이라 이 `Slot`은 계속 쓸 수 없습니다 — 호스트 Instance를 `q.dispose`하세요. `D.Frame({ outer })`처럼 호스트를 만드는 호출 자체가 던진 경우엔 호스트가 반환되지 않아 dispose할 손잡이가 없습니다 — 그 `Slot`은 버리고 새로 만드세요(`Dispatch.drive` 형태면 호스트 dispose가 됩니다 — [2026-09-27 mock 실측]).
+- **언제**: 이 `Slot`이나 그 안의 `Slot`이 마운트되는 동안(`_materializing`) 이 `Slot`에 CRUD나 `:List`/`:Single` 설치를 쓰려고 할 때 — 중첩된 `:List`의 첫 `updateFn`이나 그 안에서 도는 `Observer`가 조상 `Slot`을 건드리면 여기 걸립니다. 이미 마운트된 트리에 `Add`/`Splice`/`Replace`로 `:List` Slot을 넣을 때도 같고, 이때 막히는 범위는 바로 위 부모만이 아니라 **맨 위까지의 조상 `Slot` 전부**입니다([2026-10-01 기준] 다음 릴리즈부터 — 전에는 바로 위 부모만 막아 조부모를 지우면 유령 자리가 남았습니다).
+- **고치려면**: 마운트가 끝난 뒤, `updateFn` 밖에서 하세요 — "`Observer`에서"라도 그 `Observer`가 마운트 중에 동기로 발화하면(첫 발화 포함) 같은 에러입니다. 그 안에서 시작해야 하는 일이면 지금 실행이 끝난 뒤로 미루세요(Roblox라면 `task.defer`). 이미 이 에러가 났다면 이전 마운트가 도중에 던진 것이라 **이 `Slot`과 그 조상 `Slot`들**은 계속 쓸 수 없습니다 — 마운트 도중 어디서든 던지면 그 마운트에 걸린 사슬 전체에 표시가 남습니다(사용자 코드의 예외를 복구하지 않는 계약). 호스트 Instance를 `q.dispose`하세요. `D.Frame({ outer })`처럼 호스트를 만드는 호출 자체가 던진 경우엔 호스트가 반환되지 않아 dispose할 손잡이가 없습니다 — 그 `Slot`은 버리고 새로 만드세요(`Dispatch.drive` 형태면 호스트 dispose가 됩니다 — [2026-09-27 mock 실측]).
 - **참고**: [`slot:List(data, updateFn, keyFn?, opts?)`](/reference/core/06-slot/#slotlistdata-updatefn-keyfn-opts)
 
 ### Quad0168

@@ -12,6 +12,7 @@
 
 local Types = require("./types")
 local ModuleIdentity = require("../ModuleIdentity")
+local StoreBind = require("../Dispatch/StoreBind") -- round13 Q113 (a): the shared Quad0070 chain walk
 
 return function(S: Types.SlotInternal, module: any)
 
@@ -126,7 +127,18 @@ return function(S: Types.SlotInternal, module: any)
 				keys[i] = key
 			end
 
-			local blocker = S.BK.getBlocker(self)
+			-- round13 Q113 (a) (user decision 2026-10-01): an identity :Single/:List (a State element's
+			-- wrapper, or `slot:Single(st)` without an updateFn) mounts each item as-is — a State item
+			-- whose chain loops (`st:Set(st)` on a State already in a Slot) would wrap itself forever.
+			-- Checked BEFORE the batch gate goes On so the raise leaves this Slot showing its previous
+			-- element (the State already holds the new value — that write happened before this ran).
+			if updateFn == identityUpdateFn then
+				for _, item in ipairs(items) do
+					StoreBind.assertAcyclicChain(item, nil, S.Err.errorBefore) -- error-code: via StoreBind.assertAcyclicChain
+				end
+			end
+
+			local blocker = S.BK._getBlocker(self)
 			local ownsGate = not blocker.Blocking
 			if ownsGate then blocker:On() end
 

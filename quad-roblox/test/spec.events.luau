@@ -261,7 +261,7 @@ do
 end
 
 print()
-print("=== 9. round13 3′ (2026-09-30) — :List updateFn이 만든 원소의 OnChange가 마운트 창 안에서 동기 발화해 data를 Set해도 유실되지 않는다(목록 Observer의 설치 발화 창 — Immediate 시그널과 같은 동기 전달) ===")
+print("=== 9. round13 3′ (2026-09-30) — :List updateFn이 만든 원소의 OnChange가 마운트 창 안에서 동기 발화해 data를 Set해도 유실되지 않는다(목록 Observer의 설치 발화 창 — Immediate 시그널과 같은 동기 전달; 2026-10-01: 관측 고정 — 계약 아님, updateFn 재진입은 UB) ===")
 do
 	local data = q.Source({ "a" })
 	local outer = q.Slot()

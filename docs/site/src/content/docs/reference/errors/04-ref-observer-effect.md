@@ -276,3 +276,19 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 - **언제**: `observer:Subscribe()`를 부를 때 이미 어떤 인스턴스의 props 자리에 묶여 있을 때.
 - **고치려면**: 자리에 묶인 핸들은 그대로 두거나, 전역 구독이 필요하면 새 `Observer`를 만드세요.
 - **참고**: [`observer:Subscribe()`](/reference/core/05-observer-effect/#observersubscribe)
+
+### Quad0262
+
+`Observer: the first run did not settle after 10000 re-runs - the fn keeps setting its own target (a Source propagates even an equal value; set only when the value differs)` — `quad-base/src/Observer.luau`
+
+- **언제**: [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있고, `state:Observer(fn)`의 첫 발화가 1만 번 넘게 다시 돌았을 때 — 콜백이 자기 대상을 계속 `:Set`해 첫 발화가 끝나지 않는 경우입니다. `Source`는 같은 값을 다시 넣어도 전파하므로 `st:Set(math.clamp(st:Get(), 0, 10))`처럼 조건 없이 되쓰는 콜백이 가장 흔한 원인입니다. `q.debug`가 꺼져 있으면 같은 코드는 에러 없이 멈춘 채 끝나지 않습니다(반복에 상한이 없는 것이 계약입니다).
+- **고치려면**: 값이 실제로 다를 때만 되쓰세요 — `local v = st:Get(); local c = math.clamp(v, 0, 10); if v ~= c then st:Set(c) end`. 서로를 계속 바꾸는 콜백 둘이 원인이면 한쪽이 수렴하도록 조건을 두세요.
+- **참고**: [`state:Observer(fn)`](/reference/core/05-observer-effect/#stateobserverfn)
+
+### Quad0263
+
+`Effect: fn re-ran 10000 times in one loop - the fn keeps setting one of its own deps (a Source propagates even an equal value; set only when the value differs)` — `quad-base/src/Effect.luau`
+
+- **언제**: [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있고, `Effect`의 지연 재실행이 한 번의 반복 안에서 1만 번 넘게 돌았을 때 — `fn`이 자기 의존성을 계속 `:Set`해 끝나지 않는 경우입니다. 첫 실행이든, 구독한 뒤 어떤 `:Set`이 깨운 실행이든 같습니다. `Source`는 같은 값을 다시 넣어도 전파하므로 조건 없이 같은 값을 되쓰는 `fn`이 가장 흔한 원인입니다. `q.debug`가 꺼져 있으면 같은 코드는 에러 없이 끝나지 않습니다. 에러는 첫 실행이면 `q.Effect` 줄, 이후 실행이면 반복을 시작한 `:Set` 줄을 가리킵니다.
+- **고치려면**: 값이 실제로 다를 때만 되쓰세요(`if v ~= c then dep:Set(c) end`). 이 에러가 난 `Effect`는 `fn`이 던진 것과 같이 멈추므로, 고친 뒤에는 새 `Effect`를 만드세요.
+- **참고**: [`q.Effect(fn, ...deps)`](/reference/core/05-observer-effect/#qeffectfn-deps)

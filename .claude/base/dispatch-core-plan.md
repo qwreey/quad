@@ -1998,7 +1998,7 @@ local function ensureBase(bk, ownerKey)
 end
 
 function Dispatch.getOffsetAt(ownerKey, at)
-    checkOwner("getOffsetAt", ownerKey) -- [2026-09-08 `H-504`] nil owner 게이트 — 공개 부기 표면 전부(getBookkeeping/getBlocker/setEmpty 포함)
+    checkOwner("getOffsetAt", ownerKey) -- [2026-09-08 `H-504`] nil owner 게이트 — 공개 부기 표면 전부(getBookkeeping/getBlocker/setEmpty 포함 — [2026-10-01 round13 Q152] getBlocker는 이제 내부 `_getBlocker`)
     checkPosition("getOffsetAt", at) -- [2026-09-01 H-280] 게이트 셋째 — 0이면 cache[0](nil)이 number로 반환됐다
     local bk = getBookkeeping(ownerKey)
     -- [2026-08-21 사용자 제안, 같은 날 의사코드 정정] **단일 함수 + 접두합 캐시.**

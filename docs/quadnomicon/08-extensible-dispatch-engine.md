@@ -57,8 +57,9 @@ export type Handler = {
   효과가 없어야 합니다 — 값 검증은 선택된 *뒤* `process` 안에서 합니다.
 - **`process`는 무언가를 반환합니다.** 반환값은 "이 호출이 한 일을 정확히 되돌리는"
   retractor 클로저입니다. 별도의 `retract` 메소드는 없습니다. `nil`을 반환하면 계약 위반이라
-  즉시 error(`… returned no retractor at key …, index … - return Void when there is
-  nothing to undo`) — 되돌릴 게 없으면 공유 no-op인 `Void`를 반환하면 됩니다.
+  즉시 error(`… must return a retractor function at key …, index … (got nil) - return Void when
+  there is nothing to undo` — 함수가 아닌 다른 값은 `q.debug`일 때만 같은 에러) — 되돌릴 게 없으면
+  공유 no-op인 `Void`를 반환하면 됩니다.
 - **retractor는 두 인자를 받습니다.** `retracting`이 참이면 단순 철거(이 자리는 다시
   처리되지 않습니다), 거짓이면 같은 핸들러의 재처리가 바로 뒤따릅니다. `nil`을 값으로
   받는 핸들러가 "철거의 nil"과 "값인 nil"을 이 플래그로 구별합니다.

@@ -92,7 +92,7 @@ flowchart TB
 1,000개짜리 슬롯을 한 번에 비우거나 교체할 때 요소마다 관측자가 발화하고 오프셋이 재계산되면 재계산이 제곱으로 불어납니다. `rawSplice`(`quad-base/src/Slot/Raw.luau`)는 이걸 배치 게이트로 접습니다 — 흐름만 발췌하면:
 
 ```luau
-local gate = if self._physicalTarget ~= nil then S.BK.getBlocker(self) else nil -- [1] 배치 Blocker
+local gate = if self._physicalTarget ~= nil then S.BK._getBlocker(self) else nil -- [1] 배치 Blocker
 local ownsGate = gate ~= nil and not gate.Blocking
 if ownsGate then gate:On() end
 

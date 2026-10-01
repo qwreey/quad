@@ -260,7 +260,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 `State: Compute fn is already running for this value - a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)` — `quad-base/src/State.luau`
 
 - **언제**: 계산 함수가 자기 자신의 값을 직접·간접(하류 State를 거쳐)으로 읽는 의존성 순환일 때, 계산 함수 안에서 yield하는 사이 다른 코루틴이 같은 노드를 다시 읽을 때, yield했던 읽기가 돌아왔는데 그 사이 상류가 바뀌어 더 새 세대의 계산이 다른 코루틴에서 아직 멈춰 있을 때, 또는 직전 계산이 던진 뒤 같은 세대(상류가 그 사이 움직이지 않음)에서 다시 읽을 때.
-- **고치려면**: 계산 함수가 자기 자신을 순환 참조하지 않게 하고, 계산 함수 안에서 yield하지 마세요 — 계산 도중 yield한 채 돌아오지 않는 코루틴이 있으면 그 코루틴이 계산하다 멈춘 노드들(바깥 계산 포함)은 상류가 바뀔 때까지 이 에러이고, 그동안 그 값을 읽는 `Effect`는 죽습니다. 직전 계산이 던졌다면 상류 값을 고쳐 `:Set`하면(새 세대가 되어) 회복됩니다 — 단 회복되는 것은 그 노드이고, 던질 때 그 값을 읽던 `Effect`·`:List` 원소는 각자의 계약대로 죽거나 멈춰 있습니다([State 레퍼런스](../core/03-state.md)).
+- **고치려면**: 계산 함수가 자기 자신을 순환 참조하지 않게 하고, 계산 함수 안에서 yield하지 마세요 — 계산 함수 안의 yield는 정의되지 않은 동작입니다(현재 동작은 계약이 아닙니다: 돌아오지 않는 코루틴이 계산하다 멈춘 노드는 상류가 바뀔 때까지 이 에러가 됩니다). 직전 계산이 던졌다면 상류 값을 고쳐 `:Set`하면(새 세대가 되어) 회복됩니다 — 단 회복되는 것은 그 노드이고, 던질 때 그 값을 읽던 `Effect`·`:List` 원소는 각자의 계약대로 죽거나 멈춰 있습니다([State 레퍼런스](../core/03-state.md)).
 - **참고**: [`state:Compute(fn, ...deps)`](../core/03-state.md#statecomputefn-deps) · quad 내부(프로퍼티 바인딩·`Animate`·Operator 등)가 그 State를 읽다 나면 `파일:줄` 접두가 quad 파일을 가리킵니다 — [디버깅 부록](../../how-to/10-debugging-and-troubleshooting.md)의 알려진 한계 3
 
 ### Quad0185
@@ -383,10 +383,9 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 - **고치려면**: `q.Context()`로 빈 가방을 만들고 `ctx:Set(provider, value)`로 채우세요.
 - **참고**: [`q.Context()`](../sugar/01-context.md#qcontext)
 
-### Quad0261
+### Quad0261 (폐기)
 
-`Operator.{name}: takes {want} argument{if want == 1 then "" else "s"} (got {got})` — `quad-base/src/Operator.luau`
+`Operator.{name}: takes {want} argument{if want == 1 then "" else "s"} (got {got})` — 폐기
 
-- **언제**: 인자 수가 정해진 연산자 팩토리에 인자를 더 줬을 때 — `q.Operator.Clamp(lo, hi)`는 둘, `Shl(n)`·`Shr(n)`은 하나입니다. 전에는 넘치는 인자를 조용히 버렸습니다. `{name}`은 연산자 이름입니다.
-- **고치려면**: 정해진 수만큼만 넘기세요. 여러 값을 모으려면 인자 수가 자유로운 `Sum`/`Min`/`Max`류를 쓰세요.
-- **참고**: [`q.Operator.Clamp(lo, hi)`](../sugar/02-operator.md#qoperatorclamplo-hi), [공통 계약](../sugar/02-operator.md#공통-계약)
+- **[2026-10-01 폐기]** 이제 던지지 않습니다. 인자 수가 정해진 연산자 팩토리(`q.Operator.Clamp(lo, hi)`, `Shl(n)`, `Shr(n)`)에 넘친 인자를 잠깐 거부했다가, 다른 Lua 함수처럼 조용히 무시하는 동작으로 되돌렸습니다(strict 타입 검사는 넘친 인자를 잡습니다). 이 번호는 다른 에러에 다시 쓰지 않습니다.
+- **참고**: [`q.Operator.Clamp(lo, hi)`](../sugar/02-operator.md#qoperatorclamplo-hi)

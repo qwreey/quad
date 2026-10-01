@@ -563,7 +563,7 @@ export type Slot<T> = {
 -- ── 공개 표면 — `Quad`(quad-base가 구현), `CheckedQuad`, 런타임 값(`Brand` 팩토리·상수) ───────
 
 -- `Bookkeeping` — [2026-09-15 공개 표면 (30) 사용자 결정] 말단 핸들러 작성자가 쓰는 Length/Offset 부기
--- 네임스페이스(옛 Dispatch 재수출 여섯 + 비공개 `_bookkeeping`을 하나로). `_recompute`는 내부.
+-- 네임스페이스(옛 Dispatch 재수출 여섯 + 비공개 `_bookkeeping`을 하나로). `_recompute`·`_getBlocker`(배치 Blocker — 2026-10-01 공개 표면에서 뺌)는 내부.
 export type Bookkeeping = {
 	-- Length/Offset 부기(M3 단위 2, `dispatch-core-plan.md` "Length/Offset" 절).
 	-- 말단 핸들러 작성자만 지키는 계약 — 배열 자리마다 둘 다 필수(생략 UB),
@@ -574,7 +574,6 @@ export type Bookkeeping = {
 	-- nop/leaf 핸들러의 "빈 자리 등록"(post-implementation review Q3 ③, 2026-09-07)
 	setEmpty: (ownerKey: any, i: number, anchor: any?) -> (),
 	getOffsetAt: (ownerKey: any, at: number) -> number,
-	getBlocker: (ownerKey: any) -> Blocker,
 	getBookkeeping: (ownerKey: any) -> any,
 	-- 소유권 부기(2026-09-17 round10 Q48 (a) 사용자 결정) — 값 하나는 동시에 한 자리에만. 자리에
 	-- 값을 놓는(부모를 바꾸는) 핸들러는 키 종류와 무관하게 `claimOwnerAt(value, inst, k)`로 자리를 등록하고

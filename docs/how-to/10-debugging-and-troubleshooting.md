@@ -108,7 +108,7 @@ Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) - not filled yet, or never 
 ### 함정 3: `Ref`를 `Modifier` 안에 넣기, 또는 문자 키로 넘기기
 
 - **증상**: `Modifier`에 넣으면
-  `Quad0064 Modifier: field "Ref" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`(세터 체인 `:Field`로 넣었으면 같은 문구에 `Quad0057`).
+  `Quad0064 Modifier: field "Ref" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`(세터 체인 `:Field`로 넣었으면 같은 문구에 `Quad0057`).
   문자 키로 주면 종류에 맞는 주어로
   `Quad0137 Ref: must be an array item, not the value of a string key`(`PreRef:`/`PostRef:`도 같은 모양)가 납니다 — 단 그 문자 키가 **실제 반영 프로퍼티나 이벤트 이름**이면 이 가드에 닿기 전에 프로퍼티·이벤트 핸들러가 값을 받아 다른 결과가 납니다(`Name = ref`는 번호 없는 타입 에러, `Size = ref`는 에러 없이 `Ref` 테이블이 대입되는 조용한 오염, `Activated = ref`는 `Quad0218` — [Ref 레퍼런스](../reference/core/07-ref.md)의 "숫자 키 자리에만 놓는다" 절; strict가 이 자리를 잡아 줍니다).
 - **원인**: `Modifier`는 여러 인스턴스에 재사용되는 스타일 가방이라, 단일
@@ -189,6 +189,23 @@ local function resetForm(store)
     store.AgreedToTerms:Set(false)
 end
 ```
+
+- **곁가지 — `State`를 돌려 값을 고르기.** `State<State>`는 지원되지만, "둘 중 하나를 고르는" 계산은
+  고를 `State`들을 의존성으로 넣고 값을 `:Get()`해 돌려주는 것이 정식입니다.
+
+```luau
+local useBig, small, big = q.Source(false), q.Source("small"), q.Source("BIG")
+local label: q.State<string> = useBig:Compute(function(self, _, small: q.StateData<string>, big: q.StateData<string>)
+    return if self:Get() then big:Get() else small:Get()
+end, small, big)
+```
+
+`State` 자체를 돌려 `State<State>`로 고르면, 바깥은 안쪽 값을 직접 읽지(pull) 않으므로 안쪽이 지금
+파동을 받았는지 모릅니다 — **같은 원천**에서 한 번의 변경으로 선택과 안쪽 값이 함께 바뀌면, 빠진 가지의
+(그 자체로는 옳은) 새 값이 한 번 쓰였다가 새 선택으로 바뀔 수 있습니다. 숫자 키 자리에서 그 값이 이미
+다른 곳에 마운트된 Instance라면 `Quad0160`, Slot 원소 자리라면 `Quad0156`이 납니다. 이건 결함이 아니라
+의도된 구조입니다 — 위처럼 의존성으로 넣고 `:Get()`하면 한 파동이 한 번으로 접혀 한 번만 씁니다
+([`state:Compute`](../reference/core/03-state.md#statecomputefn-deps)).
 
 ---
 

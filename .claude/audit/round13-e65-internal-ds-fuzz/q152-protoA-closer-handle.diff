@@ -1,0 +1,47 @@
+--- /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/Bookkeeping.orig.luau	2026-10-01 16:04:24.501196272 +0900
++++ /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/Bookkeeping.protoA.luau	2026-10-01 16:05:35.194158333 +0900
+@@ -30,6 +30,7 @@
+ 
+ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
+ 
++local PROTO_PENDING_ONLY = true
+ local function Init(module: any)
+ 	local None = module.None -- sentinel set by the top-level entry before Inits run
+ 
+@@ -67,12 +68,14 @@
+ 		end
+ 	end
+ 
++	local attachCloser: (any, any) -> () -- PROTO Q152: defined after recompute
+ 	local function getBlocker(ownerKey: any): any
+ 		checkOwner("getBlocker", ownerKey) -- `H-499`/`H-504`
+ 		local blocker = blockers:GetStrong(ownerKey, "blocker")
+ 		if blocker == nil then
+ 			blocker = Blocker()
+ 			blockers:SetStrong(ownerKey, "blocker", blocker)
++			attachCloser(ownerKey, blocker)
+ 		end
+ 		return blocker
+ 	end
+@@ -306,6 +309,21 @@
+ 		end
+ 	end
+ 
++	-- PROTO Q152: the batch Blocker's own policy handle — `:Off()` (emit) catches up once;
++	-- `:OffWithoutEmit()` (internal sites, which call recompute themselves) is a no-op here.
++	-- The strong owner of the handle (Policy's return) lives in bk, like the length observers'
++	-- gatedRecompute closures (same capture topology — ownerKey + bk).
++	attachCloser = function(ownerKey: any, blocker: any)
++		local bk = getBookkeeping(ownerKey)
++		bk.batchCloser = blocker:Policy(function(commit: boolean?): boolean
++			if commit == false then return false end
++			if bk.recomputeBlocker.Blocking then return false end
++			if PROTO_PENDING_ONLY and bk.offsetSetUpTo >= (bk.N or 0) then return false end
++			recompute(ownerKey, bk)
++			return true
++		end)
++	end
++
+ 	-- `setLength(ownerKey, i, len, anchor?, element?)` — the one place that
+ 	-- owns calling recompute for length changes (`H-19`). `anchor` is the
+ 	-- lifetime anchor (physical Instance; defaults to ownerKey — only Slot

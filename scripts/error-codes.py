@@ -156,7 +156,9 @@ def main():
     args = sys.argv[1:]
     sites, ids = scan()
     if '--next' in args:
-        used = sorted(int(k[4:]) for k in ids)
+        # [2026-10-01] retired ids (`### QuadNNNN (폐기)` — doc only) count as used: with the source alone,
+        # retiring the highest id (Quad0261) made `--next` hand it out again — reuse is forbidden (rule 2)
+        used = sorted(int(k[4:]) for k in set(ids) | set(doc_ids()))
         print(f'Quad{(used[-1] + 1 if used else 1):04d}')
         return 0
     if 'list' in args:

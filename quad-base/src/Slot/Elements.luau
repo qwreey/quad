@@ -10,6 +10,7 @@
 
 local Types = require("./types")
 local ModuleIdentity = require("../ModuleIdentity") -- round10 H-537: cross-instance door for Slot/State elements
+local StoreBind = require("../Dispatch/StoreBind") -- round13 Q113 (a): the shared Quad0070 chain walk
 
 return function(S: Types.SlotInternal, module: any)
 
@@ -73,6 +74,10 @@ return function(S: Types.SlotInternal, module: any)
 			checkRawElement(v, raise)
 			return v
 		end
+		-- round13 Q113 (a) (user decision 2026-10-01): a State whose value chain loops (`st:Set(st)`,
+		-- `a`→`b`→`a`) wrapped itself forever at mount (stack overflow in Brand/Relate) — the `H-573`
+		-- walk, at the caller's depth (CRUD/`Slot{}` → nearest; reconcile → outermost)
+		StoreBind.assertAcyclicChain(v, nil, raise) -- error-code: via StoreBind.assertAcyclicChain
 		local sub = S.Slot()
 		sub:Single(v, nil, { OwnsElements = false })
 		sub._wrapped = v

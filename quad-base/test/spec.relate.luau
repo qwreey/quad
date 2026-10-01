@@ -103,11 +103,9 @@ do
 		local ok2, err2 = pcall(function() return (r :: any)[m](r, {}, nil, 1) end)
 		assert(not ok2 and string.find(tostring(err2), `Relate:{m}: key must not be nil`, 1, true) ~= nil, m .. " key: " .. tostring(err2))
 	end
-	-- Bookkeeping.getBlocker(nil) sibling gate (H-447 family)
+	-- (the batch Blocker accessor left the public surface 2026-10-01 — `_getBlocker`, internal)
 	local q = Quad.New()
-	local ok3, err3 = pcall(function() return q.Bookkeeping.getBlocker(nil) end)
-	assert(not ok3 and string.find(tostring(err3), "Bookkeeping.getBlocker: ownerKey must not be nil", 1, true) ~= nil, "getBlocker nil: " .. tostring(err3))
-	assert(string.find(tostring(err3), "/src/", 1, true) == nil, "getBlocker blames user: " .. tostring(err3))
+	assert((q.Bookkeeping :: any).getBlocker == nil, "getBlocker is not public")
 	-- `H-504` (round8 K-2): the sibling public surfaces too — no leaf-module name (`Relate:`) in the message
 	local cases: { { any } } = { { "getBookkeeping", 1 }, { "getOffsetAt", 1 }, { "setLength", 1, 1 }, { "setOffsetSource", 1, q.None }, { "setEmpty", 1 } }
 	for _, c in cases do

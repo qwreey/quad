@@ -177,7 +177,9 @@ Version: "3.2.0"
 debug: boolean
 ```
 
-**동작** — 기본값 `false`. 진단 줄을 켜는 플래그입니다 — 켜도 동작은 바뀌지 않고, 치명적이지 않은 실수를 한 줄씩 출력한 뒤 **실행을 그대로 계속합니다**. 지금 이 플래그를 읽는 자리는 넷입니다.
+**동작** — 기본값 `false`. 개발 중에 켜 두는 진단 플래그입니다. 읽는 자리는 두 묶음입니다.
+
+**진단 줄** — 치명적이지 않은 실수를 한 줄씩 출력한 뒤 **실행을 그대로 계속합니다**(켜도 동작은 바뀌지 않습니다).
 
 - `q.Dispatch.addHandler`가 등록 시점에 같은 우선순위의 핸들러를 발견할 때([`../extend/02-dispatch-handler-contract.md`](../extend/02-dispatch-handler-contract.md)).
 - [`q:AddPlugin`](#qaddpluginpluginfn)이 기존 필드를 덮을 때.
@@ -186,8 +188,16 @@ debug: boolean
 
 넷 다 그 호출 시점에 한 번 보므로 `q.debug`는 먼저 켜 두세요. 진단 줄은 `print`이고 `QuadNNNN` 번호가 없습니다(에러가 아니라서 — 번호는 에러에만 붙습니다). **[2026-09-27 기준]** 게시된 3.2.0에는 첫 항목(우선순위 동률)만 있고 나머지 셋은 다음 릴리즈부터입니다([변경 이력](../../../CHANGELOG.md) `[Unreleased]`).
 
+**비용이 드는 검사** — 평소 경로에 두기엔 자주 도는 자리라 꺼 두면 검사하지 않고, 켜면 그 자리에서 **에러로 멈춥니다**(꺼진 채로는 정지하거나 나중에 엉뚱한 자리에서 죽는 실수들입니다). **[2026-10-01 기준]** 셋 다 다음 릴리즈부터입니다.
+
+- `state:Observer(fn)`의 첫 발화가 1만 번 넘게 다시 돌 때 — `Quad0262`([05-observer-effect](./05-observer-effect.md#stateobserverfn)).
+- `Effect`의 지연 재실행이 한 번의 반복 안에서 1만 번 넘게 돌 때 — `Quad0263`([05-observer-effect](./05-observer-effect.md#qeffectfn-deps)).
+- 디스패치 핸들러의 `process`가 함수가 아닌 retractor(`true`·숫자·테이블)를 돌려줄 때 — `Quad0077`([핸들러 계약](../extend/02-dispatch-handler-contract.md#handler-레코드); 꺼져 있어도 `nil`은 늘 검사합니다).
+
+이 셋은 매번 그 자리에서 보므로 켜는 시점은 상관없습니다(켠 뒤의 실행부터 검사합니다).
+
 ```luau
-q.debug = true -- 동률·덮어쓰기·모르는 옵션 키·Claim 디스크립터 진단을 켠다
+q.debug = true -- 진단 줄 넷과 비용이 드는 검사 셋을 켠다
 ```
 
 ## `q.errorNamespace`

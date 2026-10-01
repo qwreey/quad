@@ -331,7 +331,7 @@ quad/
 │       │   ├── (Leaf.luau 없음)    # ⚠️ [2026-09-01 `H-278` 사용자 확정 — 2026-08-08 배치 확정 역전] leaf 매칭 Handler와 동적 경로 가드는 **값을 선언한 모듈이 자기 Init에서 등록**한다("각 객체를 아는 곳은 각 객체가 선언된 곳"): Observer/Effect 몫은 `Observer.luau`/`Effect.luau`의 `registerDispatchHandlers`(결합 핸들러가 `ObserverLeafHandler`/`EffectLeafHandler` 둘로 갈라짐 — 값 공간 배타라 동등), M8의 Ref/PreRef/PostRef 몫은 `Ref/init.luau`로 감. None 쌍만 `None.luau`에 남는 이유는 None이 Dispatch 자신의 개념이라서
 │       │   ├── (Tag/AttrKey/Attr 없음) # **[2026-09-03 `H10-1` 재편]** 이 세 핸들러 파일 분할은 `H-278` 이전 서술 — 실물은 위 top-level `Tag.luau`/`Attr/Key.luau`/`Attr/init.luau`가 값+핸들러+FALLBACK 자기 등록을 전부 가진다(알고리즘 서술은 각 base 문서 그대로 유효)
 │       │   └── Ref.luau            # **[2026-09-04 M8 단위 ②, round18 `H-319`]** PreRef/PostRef pre-pass(`drive`의 (a): 호이스팅 fire·수집·`Processed*Ref` 소진) + `firePostRefs`((c): 본체 루프·배치 종료 뒤) + `ProcessedPreRefHandler`/`ProcessedPostRefHandler`(위 `Dispatch/Modifier/Handler.luau`와 같은 nop 핸들러 모양). Dispatch 소유인 이유는 `Dispatch/Modifier/Handler.luau`와 같다(센티널은 Dispatch의 개념 + `Ref/init.luau`가 Dispatch를 require하므로 순환 회피). leaf 핸들러·가드 둘은 `Ref/init.luau`(`H-278`)
-│       ├── Bookkeeping.luau       # ⭐ [2026-09-01 `H-277` 사용자 확정 — Dispatch에서 분리] Length/Offset 부기 서브시스템 — `InitBookkeeping(module)`이 사적 `module._bookkeeping`(getBookkeeping/getBlocker/getOffsetAt/recompute/setLength/setOffsetSource/**[2026-09-07 Q3 ③]** setEmpty(None/0 쌍 한 본문, round3 `H-434`로 자체 checkPosition) + `H-256` checkPosition)을 설치. 의존 방향 {Slot, Dispatch} → Bookkeeping(부기는 둘 다 모름 — SlotBrand 프로브는 브랜드 잎 판별). 공개 호출 표면은 `quad.Dispatch.*` 그대로(같은 함수 객체 재노출, 래퍼 없음 — `H-39`/`H-25` 계약 유지), M6의 Slot은 `_bookkeeping`을 직접 씀
+│       ├── Bookkeeping.luau       # ⭐ [2026-09-01 `H-277` 사용자 확정 — Dispatch에서 분리] Length/Offset 부기 서브시스템 — `InitBookkeeping(module)`이 사적 `module._bookkeeping`(getBookkeeping/getBlocker/getOffsetAt/recompute/setLength/setOffsetSource/**[2026-09-07 Q3 ③]** setEmpty(None/0 쌍 한 본문, round3 `H-434`로 자체 checkPosition) + `H-256` checkPosition)을 설치. 의존 방향 {Slot, Dispatch} → Bookkeeping(부기는 둘 다 모름 — SlotBrand 프로브는 브랜드 잎 판별). 공개 호출 표면은 `quad.Dispatch.*` 그대로(같은 함수 객체 재노출, 래퍼 없음 — `H-39`/`H-25` 계약 유지), M6의 Slot은 `_bookkeeping`을 직접 씀 **[2026-10-01 사용자 결정 — round13 Q152 후속]** 배치 Blocker 조회 `getBlocker`는 공개 `q.Bookkeeping`에서 빠졌다 — 내부 이름 `_getBlocker`(Slot·`drive`만; 닫기 재계산이 비공개라 공개 게이트는 "켤 수는 있는데 제대로 닫을 수 없는" 표면이었고, 정당한 외부 쓰기 사용처가 없었다 — 공개는 따로 결정된 적 없이 `H-25` 타입 규칙·공개 표면 (30) 이동에 실려 왔다).
 │       ├── ErrorNamespace.luau    # **[2026-08-31 M3 `H-231`]** 공유 에러 네임스페이스 인스턴스(`quad-error` 위의 `QuadError.new()` 한 벌 — 태그 맵·`errorBefore`/`errorBeforeNearest`/`setFuncLevel`; 최상위 `init.luau`가 `errorNamespace`로 재export, 백엔드·플러그인은 이걸 받아 태깅)
 │       ├── NotInstalled.luau      # **[2026-09-07 post-implementation round1 Q3 ②]** `notInstalled(name, what, hint?)` — 백엔드가 설치해야 하는 op의 안내 스텁 팩토리 한 본문(`Tag.luau`/`Attr/Key.luau`/`LifetimeHandle.luau`가 위임; 메시지 `"<name> is not available"`, `errorBefore` 최외곽 — `H-378`)
 │       ├── Void.luau              # **[2026-08-28 `H-162`]** `return function() end` 한 줄 — 단일 no-op. 의존 없는 잎(`None`/`Brand`/`Relate`와 같은 급), `Dispatch/*`·핸들러·최상위 `init.luau`가 require
@@ -548,8 +548,27 @@ debug 는 치명적 부분 아니면 기본적으로 계속 실행은 시켜주�
 - **모양** — `print` 한 줄(주어: 이유 형태, `architecture.md`의 "메시지 모양" 규약), 실행은 그대로 계속.
   에러는 치명적인 경우(계속 돌면 상태가 망가지는 것)에만. 기존 사례(`Dispatch` 동률 경고, `AddPlugin` 덮어쓰기)와 같은 층.
 - **넓히는 방향** — 지금까지 blame하지 않던 것도 이 층에 천천히 추가할 수 있다(비파괴 — 경고는 동작을 안 바꾼다).
-- **2026-09-15 현재 읽는 자리**: Dispatch 동률, `AddPlugin` 덮어쓰기, 옵션 테이블 모르는 키(`Debounce`/`Throttle`,
-  `Slot:List`/`:Single` opts, `Tween`, `Animate`). 목록의 소스는 레퍼런스 core/01의 `q.debug` 절.
+- **[2026-10-01 사용자 결정] 범위 — debug 층은 "비싼·깊은 검사"의 자리다, 입구 검사가 아니라.** 사용자: *"debug 같은
+  경우는 비싼 검사, 깊으니 검사를 말하는거였음. 입구 검사 까지는 내릴 필요는 없고 예를 들어 조상 검사 그건 debug
+  모드에서 비싸더라도, 유저가 보기에, 버그를 잡기에 좋은 도구일수도 있음 … 다만 코드가 더러워져서 그걸 유의하고
+  있음."* 뜻: 받은 인자 자체를 보는 싼 입구 검사(`Quad0259`·`0253`/`0254`·`0255` 류)는 평소 경로에 두고, 평소 경로에
+  비용을 더하는 검사(핫 패스의 모양 검사, 반복 횟수 세기, 조상 사슬 걷기 같은 깊은 검사)를 이 층에 둔다. 그런 검사는
+  치명적인 실수(정지·나중에 엉뚱한 자리에서 죽음)를 잡으므로 **에러**로 멈춰도 된다(위 "모양"의 치명 예외). 첫 사례
+  (2026-10-01): Observer 설치 루프·Effect 재실행 루프의 1만 회 한도(`Quad0262`/`0263` — 상한 없음 계약은 그대로, round13
+  3′ 뒤 같은 값 되쓰기가 에러 없이 정지하던 것), 디스패치 `process`의 함수 아닌 retractor(`Quad0077` debug 갈래 —
+  round13 Q148, 사용자 *"spring 같은게 들어오면 초당 60번 돌 때 과연 많은 가드가 있는게 유리한가는 모르겠음. debug 면
+  모를까, 핫패스에 놓인거라"*). 출처 `session/2026-09-28-01-round13-batch-reply.md` 2026-10-01 회고 검토 회신 절.
+- **[2026-10-01 사용자 결정] 코드 배치 — debug 검사 본문은 파일 위쪽 지역 함수로.** 사용자: *"복잡한 if debug 일 때의
+  요소들은 가급적 함수로 위쪽으로 빼서 적어넣기를 권할게. 코드 흐름을 보는데 디버그와 관련된게 로직과 같이 있으면
+  맥락이 복잡해지거든."* 로직 자리에는 `if module.debug then checkX(...) end` 한 줄(또는 루프 밖 지역 변수 하나)만
+  두고, 검사 본문·메시지는 파일 머리의 "debug-only checks" 블록에 둔다(`Observer.luau`·`Effect.luau`·
+  `Dispatch/init.luau`가 첫 사례). 위 사용자 문장의 "코드가 더러워져서 그걸 유의하고 있음"과 짝 — 비싼 검사를 늘리는
+  비용은 런타임이 아니라 읽기 맥락이라, 배치로 그 비용을 줄인다. 기존 인라인 debug 분기(`Claim.luau`·`Slot/List.luau`
+  모르는 키·`Debounce.luau`)는 한 줄짜리라 그대로 둔다(일괄 이동 안 함 — 그 파일을 만질 때 같이).
+- **2026-10-01 현재 읽는 자리**: 진단 줄 — Dispatch 동률, `AddPlugin` 덮어쓰기, 옵션 테이블 모르는 키(`Debounce`/`Throttle`,
+  `Slot:List`/`:Single` opts, `Tween`, `Animate`), `Claim` 디스크립터; 에러로 멈추는 비싼 검사 — Observer 설치 루프 한도
+  (`Quad0262`), Effect 재실행 루프 한도(`Quad0263`), `process`의 함수 아닌 retractor(`Quad0077`). 목록의 소스는 레퍼런스
+  core/01의 `q.debug` 절.
 
 ## 코드 스타일 — 네이밍 케이싱 (2026-08-08 두 번째 세션 신설)
 

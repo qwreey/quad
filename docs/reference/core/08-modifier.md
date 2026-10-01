@@ -96,7 +96,7 @@ Modifier: setmetatable<{
 - `Quad0061 Modifier: field "{k}" matches the reserved cast prefix As<Class> - casts are methods, not fields`
 - `Quad0062 Modifier: field "{k}" starts with "__" - metamethod-looking names are never properties`
 - `Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function - a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)`
-- `Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`
+- `Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`
 
 **예제**
 
@@ -130,7 +130,8 @@ local panel = D.Frame { wide }
 | 함수 | **변환**입니다. 지금 값이 평범한 값이면 그 값을 인자로 지금 불러 결과를 저장하고, `State`면 `old:Compute(fn)`으로 파생 State를 만들어 반응성을 유지합니다 — 이 갈래에서는 `Compute`가 lazy라 setter 시점에 `fn`이 돌지 않고 첫 읽기(마운트)까지 미뤄집니다: `fn`이 던지거나 핸들러 층 값을 돌려주는 실수도 setter 줄이 아니라 마운트 줄(또는 이후 `:Set`)에서 드러납니다([2026-09-27 mock 실측]) |
 | `nil` | 그 필드가 결과에서 **사라집니다**(가방에 아예 없음) — `mod:X(if c then v else nil)`처럼 조건부로 넘겨도 strict에서 그대로 됩니다 |
 | 함수가 `nil`을 돌려줌 | 지금 값이 평범한 값이면 위 `nil`과 같이 필드가 **사라지고**(앞선 Modifier 값이 살아남), 지금 값이 `State`면 `old:Compute(fn)`이 `State<nil>` 필드를 **만들어** 앞선 값을 덮고 `nil`을 씁니다 — 두 갈래를 뜻하지 않았다면 `q.None`을 돌려주세요 |
-| 이벤트 이름 setter에 함수 | 핸들러가 아니라 **변환**으로 읽힙니다 — 생성 시점에 `old = nil`로 한 번 불리고 반환값이 `nil`이라 필드도 사라집니다(연결도 에러도 없음). 이벤트 핸들러는 Modifier에 두지 않고, 꼭 필요하면 `State`에 담아 넘기세요(`Quad0063` 안내대로) |
+| 함수가 함수를 돌려줌 | 지금 값이 평범한 값이면 setter 줄에서 거부합니다 — 필드는 함수를 들 수 없습니다(초기 필드 테이블의 `Quad0063`과 같은 규칙). `State` 갈래에서는 위 행대로 마운트 때 드러납니다 |
+| 이벤트 이름 setter에 함수 | 핸들러가 아니라 **변환**으로 읽힙니다 — 생성 시점에 `old = nil`로 한 번 불리고 반환값이 `nil`이라 필드도 사라집니다(연결도 에러도 없음 — 핸들러를 돌려주는 변환이었다면 위 행의 에러). 이벤트 핸들러는 Modifier에 두지 않고, 꼭 필요하면 `State`에 담아 넘기세요(`Quad0063` 안내대로) |
 | `q.None` | 그 필드를 `None`으로 둡니다 — 명시적 해제이고, 유일한 "지우기" 표현입니다 |
 
 ⚠️ 변환 함수가 받는 `old`는 **두 경우가 다릅니다.** 지금 값이 평범한 값이면 그 값 자체가 오고, `State`면 `:Compute`로 넘어가므로 **핸들**이 옵니다 — 그때는 `old:Get()`으로 읽어야 합니다.
@@ -145,7 +146,8 @@ setter는 런타임에 어떤 이름으로든 생기지만, **타입은 클래�
 
 **에러**
 
-- `Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`
+- `Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`
+- `Quad0264 Modifier: the transform for field "{key}" returned a function - a field cannot hold a function (an event handler does not belong in a Modifier; put it as an inline key on the Declaration, or wrap it in a State)`
 - `Quad0058 Modifier: setter keys must be strings (got {typeof(key)}) - put a non-string key in the props table itself (Frame { [key] = value })`
 
 **예제**

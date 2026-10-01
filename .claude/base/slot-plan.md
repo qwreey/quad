@@ -965,8 +965,18 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   `H-545`(quad-roblox `InstanceChild`의 조상 walk)가 생겨 비대칭이 됐지만 Slot 쪽은 그대로 UB — 사용자: *"리컬션을 막는 비용 대비
   이득 trade-off 가 불균형이라 나도 막을 이유를 못 느꼈어"*. 백엔드 술어 추가(계약 BREAKING)·`rawAdd` 순서 변경 둘 다 기각. 사용자
   문서 core/06에 캐비엇을 붙였다(전엔 base 문서에만 있었다). 실기기 잔여 상태는 HUMAN_TODO 실측 항목.
+- **[2026-10-01 round13 Q111·Q112 — 사용자 결정, 같은 선] 무엇을 거친 Slot 순환은 UB, 직접 순환만 넣는 시점에 거부한다.**
+  `State` 값을 거친 Slot 순환(`st`의 값이 자기가 든 Slot이나 그 조상인 Slot — Q111)과 값이 `nil`인 같은 State를 두 자리에
+  넣는 것(Q112)은 UB다(마운트·`Set` 때 `Quad0156`/`Quad0173`, 그 Slot이 동결될 수 있음). 위 Q42(Instance 매개)·Q62와 같은
+  선 — 넣는 시점 아래 방향 DFS(깊은 사슬 1.5→96ms, State 사슬 7→292ms, Compute 앞당김)와 신원 검사(평범한 잎 Add +45%)는
+  비용 대비 이득이 없다. 사용자: *"근데 slot 의 순환이 되어버리는건 잡기가 어렵고 비용이 너무 비싸서 UB로만 두자 아니였어?
+  막는 비용 대비 효과가 큰게 맞음?"*. 직접 순환(`H-500` Slot–Slot)은 지금처럼 거부. 예외 하나 — **State 자기 순환(Q113 (a))**:
+  값 사슬이 자기에게 돌아오는 State(`st:Set(st)`, `a`↔`b`)는 StoreBind가 이미 하던 `H-573` 걷기를 Slot 원소 경로(`wrapElement`·
+  identity `:Single`/`:List` reconcile, 배치 게이트 **전**)에도 돌려 `Quad0070`으로 거부한다 — 비용이 잡음 수준이고 그 Slot은
+  이전 원소를 보이며 회복된다(`Dispatch/StoreBind.luau` `assertAcyclicChain` 한 자리, 주어 `State:` — Q90). 출처
+  `session/2026-09-28-01-round13-batch-reply.md` 2026-10-01 Slot-A 회신 절.
 - **재진입성**(Observer/store-bind 재실행 콜백 안에서 `Add`/`Clear`를
-  다시 호출) — 별도 가드 불필요 — **[2026-09-17 사용자 결정 — round10 Q52 (a)] 예외 하나는 가드로 막는다**: `materializeSlotTree`의 마운트 walk 도중 중첩 `:List`의 `updateFn`(또는 그 안의 recompute가 띄운 Observer)이 **조상** Slot을 CRUD하면 walk가 깨졌다(`bindLifetime: already bound`, 부기 영구 파손 — 탐사 A 실행 재현). 이제 walk 중인 Slot은 `_materializing` 플래그를 들고 있고(walk 스택의 조상 전부; 형제는 아님 — **[같은 날 code-review]** 이미 마운트된 부모에 `rawAdd`/`rawReplace`/`rawSplice`로 Slot이 붙는 `attachSlot` 창에서도 그 부모가 플래그를 든다(save/restore) — 런타임 `Add`로 들어온 `:List`의 첫 `updateFn`이 새 부모를 CRUD하면 배열이 캡처된 position 밑에서 밀려 Length가 영구히 모자랐다), 공개 CRUD 아홉과 `:List`/`:Single` 설치는 `assertMutable`/`checkListInstall`에서 `Slot: cannot mutate a Slot while it is being mounted …`로 던진다(Nearest — updateFn의 그 줄). 사용자: *"compute 든 slot 이든 순수성 제약을 크게 풀어줄 이유가 없어서, 계약 상 조상 건들이기 등은 던져도 될것 같아. 정상 사용에서 문제가 생기지 않는지만 봐줘"* — 정상 사용(updateFn이 자기 자식 Slot을 만들어 CRUD, 이미 마운트된 형제 CRUD, 마운트 뒤 Observer CRUD)은 `spec.slot` 32가 그대로임을 확인. 스냅샷 walk(b)는 "스냅샷 뒤 들어온 원소를 따로 마운트"하는 복잡성이라 기각. Observer 안(마운트 walk 밖)은 이 항목 원래 서술대로 가드 없음. CRUD는 평범한 동기 테이블 뮤테이션 +
+  다시 호출) — 별도 가드 불필요 — **[2026-09-17 사용자 결정 — round10 Q52 (a)] 예외 하나는 가드로 막는다**: `materializeSlotTree`의 마운트 walk 도중 중첩 `:List`의 `updateFn`(또는 그 안의 recompute가 띄운 Observer)이 **조상** Slot을 CRUD하면 walk가 깨졌다(`bindLifetime: already bound`, 부기 영구 파손 — 탐사 A 실행 재현). 이제 walk 중인 Slot은 `_materializing` 플래그를 들고 있고(walk 스택의 조상 전부; 형제는 아님 — **[같은 날 code-review]** 이미 마운트된 부모에 `rawAdd`/`rawReplace`/`rawSplice`로 Slot이 붙는 `attachSlot` 창에서도 그 부모가 플래그를 든다(save/restore) — 런타임 `Add`로 들어온 `:List`의 첫 `updateFn`이 새 부모를 CRUD하면 배열이 캡처된 position 밑에서 밀려 Length가 영구히 모자랐다; **[2026-10-01 round13 Q74 (a)]** 부모만이 아니라 **owner 사슬 전체**(첫 비-Slot owner까지의 Slot 조상 전부)가 든다 — 아래 3′ 문단 뒤의 Q74 닫힘 문단), 공개 CRUD 아홉과 `:List`/`:Single` 설치는 `assertMutable`/`checkListInstall`에서 `Slot: cannot mutate a Slot while it is being mounted …`로 던진다(Nearest — updateFn의 그 줄). 사용자: *"compute 든 slot 이든 순수성 제약을 크게 풀어줄 이유가 없어서, 계약 상 조상 건들이기 등은 던져도 될것 같아. 정상 사용에서 문제가 생기지 않는지만 봐줘"* — 정상 사용(updateFn이 자기 자식 Slot을 만들어 CRUD, 이미 마운트된 형제 CRUD, 마운트 뒤 Observer CRUD)은 `spec.slot` 32가 그대로임을 확인. 스냅샷 walk(b)는 "스냅샷 뒤 들어온 원소를 따로 마운트"하는 복잡성이라 기각. Observer 안(마운트 walk 밖)은 이 항목 원래 서술대로 가드 없음. CRUD는 평범한 동기 테이블 뮤테이션 +
   Dispatch 호출일 뿐이라 "일반적 무한루프는 방어 안 함, provider 버그로
   간주"라는 기존 원칙이 그대로 적용됨. `recompute` 자체의 재진입(같은
   Slot의 length를 자기 계산 도중 다시 건드리는 것)도 같은 톤으로 UB —
@@ -982,6 +992,19 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   (`spec.slot` "round13 3′ Q73 (a)" 절 — 원장 재현 `S1:Add(S12)` / `holder:Set(R)` 둘 다). 같은 이유로 `:List`의
   첫 재조정(목록 Observer의 설치 실행) 안에서 `data`가 바뀌는 경우도 한 번 더 재조정한다(core/06 재진입 항목,
   `spec.events` 9). Q74(attach 창의 조부모 CRUD)는 여전히 사용자 문항이다 — 위 문단의 그 절반은 그대로.
+  **[2026-10-01 사용자 정정 — 회고 검토 회신]** 바로 위 문장의 "`:List`의 첫 재조정 안에서 `data`가 바뀌는 경우도 한 번 더
+  재조정한다"는 **계약이 아니라 관측**이다 — `updateFn`이 `data`를 `:Set`하는 재진입은 처음부터 UB였다(사용자: *"updateFn
+  재진입은 처음부터 UB이긴 했어. 내가 아에 updateFn 에서는 컴포넌트 만들기와 자신이 만들어낸 것 이상의 바깥 state 를
+  셋팅하는게 권장되지 않는다 했을거임."*). core/06의 첫 재조정 예외 문장은 되돌렸고, 원소의 `OnChange`가 마운트 중 `data`를
+  바꾸는 F6은 "Observer 첫 발화 규칙의 귀결로 반영된다(관측)"로만 적는다.
+  **[2026-10-01 round13 Q74 (a) 닫힘 — 사용자 "의견대로"]** attach 창의 `_materializing`이 **owner 사슬 전체**에 선다
+  (`Slot/Raw.luau` `raiseChain`/`restoreChain` — 임시 지역, 새 필드 없음, 칸당 약 0.14µs). Q52의 "조상 CRUD 금지"를 그 뜻대로
+  모든 조상에 맞춘 것 — 바로 위 부모만 막으면 런타임 `Add`로 들어온 `:List`의 첫 `updateFn`(또는 그 창에서 동기로 발화한
+  Observer)이 조부모를 `Remove`/`Clear`해 유령 자리를 남겼다(e1b GHOST 둘). **창 안 throw의 동결 범위가 사슬 전체로 넓어지는
+  것은 계약으로 받아들였다**(pcall 금지 — architecture "예외 안전성 계약"): 창 안에서 무엇이든 던지면 그 사슬의 Slot 전부가
+  이후 CRUD에 `Quad0167`을 낸다(문구에 "or a Slot inside it"을 넣었다). Q74 단독이면 State 자기 순환(`st:Set(st)`)이 그 창에서
+  스택 오버플로로 던져 사슬을 동결시키던 상호작용은 Q113 (a)(위 Q42 문단 뒤)가 그 Set을 먼저 `Quad0070`으로 거부해 닫는다;
+  State를 거친 Slot 순환(I1/cycle-outer)은 Q111 UB 안이다. `spec.slot` "round13 Q74 (a) + Q113 (a)" 절.
 - **`Slot(initial?: {T})` 생성자 — [정정, 2026-08-11 세션] "인자 없는
   빈 생성자로 확정"을 뒤집고 초기 배열을 받는 옵션 생성자를 다시 엶.**
   단, 새 마운트 로직이 아니라 **순수하게 `:Add`를 반복 호출하는
@@ -4137,4 +4160,4 @@ State가 아니라 raw number"라는 설계(위 "왜 `LayoutOrder`를 Slot이 �
 없이 동적으로 바뀜)는 드물 것으로 예상 — 실제로 문제가 되면 그때
 `updateFn`이 자체적으로 방어하는 패턴을 문서화.
 
-**[2026-09-17 round11 `H-554` — 탐사 B″ 2] Q52의 `_materializing` 창은 throw에 비원자적이다 — 중첩 Slot의 attach가 던지면(가장 흔하게는 그 `:List`의 첫 `updateFn`) 부모 Slot의 save/restore가 건너뛰어져 부모가 영구히 "마운트 중"이 되고, 이후 최상위 코드의 `parent:Add(x)`까지 "updateFn이 조상을 CRUD하지 말라"는 문구로 거부된다.** pcall 없이는 못 풀고(architecture "감싸지 않는다"; Q52 항목의 "throw 뒤 플래그는 그대로") 회복 경로는 호스트 Instance의 `q.dispose`뿐이다 — 문구에 그 둘째 원인과 회수 경로를 붙였다("or an earlier mount into this Slot threw mid-way - then this Slot stays unusable: dispose its host Instance"). Splice 창에서는 물리 상태도 어긋난다(`_elements`에서 빠진 원소가 호스트 자식으로 남음) — 같은 UB.
+**[2026-09-17 round11 `H-554` — 탐사 B″ 2] Q52의 `_materializing` 창은 throw에 비원자적이다 — 중첩 Slot의 attach가 던지면(가장 흔하게는 그 `:List`의 첫 `updateFn`) 부모 Slot의 save/restore가 건너뛰어져 부모가 영구히 "마운트 중"이 되고, 이후 최상위 코드의 `parent:Add(x)`까지 "updateFn이 조상을 CRUD하지 말라"는 문구로 거부된다.** pcall 없이는 못 풀고(architecture "감싸지 않는다"; Q52 항목의 "throw 뒤 플래그는 그대로") 회복 경로는 호스트 Instance의 `q.dispose`뿐이다 — 문구에 그 둘째 원인과 회수 경로를 붙였다("or an earlier mount into this Slot threw mid-way - then this Slot stays unusable: dispose its host Instance"). Splice 창에서는 물리 상태도 어긋난다(`_elements`에서 빠진 원소가 호스트 자식으로 남음) — 같은 UB. **[2026-10-01 round13 Q74 (a)]** 창이 owner 사슬 전체로 넓어져 동결도 "부모"가 아니라 **이 Slot과 그 조상 Slot 전부**에 걸린다(계약으로 수락 — 위 "재진입성" 항목의 Q74 닫힘 문단). 문구는 "this Slot or a Slot inside it"으로 바꿨다.

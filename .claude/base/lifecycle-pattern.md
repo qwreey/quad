@@ -334,6 +334,11 @@ gcconn 참조 복사, 타입별 후처리(`Observer:_catchUp`/`Effect:_bindDestr
 **[2026-09-27 round13 Q94 검토 중]** `bindLifetime`이 원시값(숫자 등)을 받았을 때의 동작이 실행 탐사에서
 반증됐다 — 숫자 `1`이 gchold의 gcconn 자리를 덮어쓰는 경우가 나왔다(엔진 가정 하나 포함). 사용자 문항이
 열려 있다(`qa-request/post-implementation-review-round13.md` §4). 본문은 결정 전이라 그대로 둔다.
+**[2026-10-01 Q94 (a) 닫힘 — 사용자: *"원시 값 bindLifetime 같은 경우는 입구 검사 가능한것 같아"*] 원시값은 거부한다.**
+"모르는 타입이면 순수 GC 릴레이션"의 "값"은 **신원이 있는 값**(table/function/userdata)이다 — base `bindLifetime`이 nil
+게이트 다음·`canBound` 앞에서 `Quad0265`로 거부하고(buffer·thread도 — bind 대상은 quad 값·인스턴스·클로저뿐), `unbindLifetime`도
+대칭으로 같은 검사를 한다(묶일 수 없는 값을 푸는 것은 nil(`H-474`)처럼 부르는 쪽의 실수). 이것만으로 gcconn 자리 덮기(R5)와
+원시값 충돌(P2)·NaN VM 에러가 닫힌다. 센티널 키 이동((b) — `gchold[1]` → 예약 키)은 하지 않았다(사용자 결정 범위 밖).
 
 #### (1) `bindLifetime` / `unbindLifetime` / `canBound` / `canExecute`
 

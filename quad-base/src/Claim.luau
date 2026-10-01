@@ -126,13 +126,16 @@ local function Init(module: any)
 		-- drive가 보는 모든 배열 자리를 똑같이 본다.
 		local children: { [number]: any } = {}
 		for i, v in desc._props :: { [any]: any } do
+			-- round11 code-review (`H-560`): Dispatch's array-key domain (`H-495`, positive integers)
+			-- used to be asked only by `drive` — after the root and this child were claimed and the
+			-- child driven. A pure predicate belongs in the validating pass (`H-30`/`H-31`).
+			-- round13 Q85 (i) (user decision 2026-10-01): EVERY numeric key, not only a descriptor's —
+			-- `{ M.TextLabel("Title")({…}), [0] = D.Frame({}) }` claimed and drove the tree, then died in
+			-- `drive` with `Quad0085`, and the fixed retry hit `Quad0029` (already claimed). Same loop.
+			if type(i) == "number" and (i < 1 or i % 1 ~= 0) then
+				Err.errorBeforeNearest(`Quad0031 Claim: array keys must be positive integers (got {i})`, SURFACE)
+			end
 			if type(i) == "number" and Brand.isMapperDescriptor(v) then
-				-- round11 code-review (`H-560`): Dispatch's array-key domain (`H-495`, positive integers)
-				-- used to be asked only by `drive` — after the root and this child were claimed and the
-				-- child driven. A pure predicate belongs in the validating pass (`H-30`/`H-31`).
-				if i < 1 or i % 1 ~= 0 then
-					Err.errorBeforeNearest(`Quad0031 Claim: array keys must be positive integers (got {i})`, SURFACE)
-				end
 				-- 이름 중복은 UB(§3 — debug 검사는 debug 도구 몫). 부재는 [2026-09-16 hunt C] fail-fast:
 				-- 옛 "자연 크래시"는 `LifetimeHandle.luau:59: Relate:GetWeak: inst must not be nil`로 죽어
 				-- 키도 주체도 안 보였다(`H-418`/`H-442`/`H-504`와 같은 leaf-message 부류).

@@ -22,7 +22,7 @@
 	Contract (types in `quad-types`):
 	  -- quad-base implements (this file):
 	  bindLifetime(inst, value)   -- inst is needed here and only here
-	  unbindLifetime(value)       -- early release of one value; no-op if unbound, nil is an error (`H-474`)
+	  unbindLifetime(value)       -- early release of one value; no-op if unbound, nil / a primitive is an error (`H-474`, Q94)
 	  canBound(value)  -> boolean -- "may I bind this now?"  true = not bound anywhere
 	  canExecute(value)-> boolean -- "may this fire now?"    emit-propagation gate
 	  `canBound(v) == not canExecute(v)` — both wrap one predicate (`isBoundAlive` below).
@@ -79,6 +79,20 @@ local function notInstalled(name: string): (...any) -> ...any
 	return NotInstalled(name, "the lifetime primitives / engine ops", "; headless tests install their own provider the same way")
 end
 
+-- round13 Q94 (a) (user decision 2026-10-01 — cheap entry gate): only a value with an identity can be
+-- bound. A primitive used to pass to the backend's holder — `bindLifetime(inst, 1)` overwrote the gcconn
+-- slot `gchold[1]` (quad-roblox), two unrelated binds of the same string collided (`Quad0233`), NaN died
+-- in a VM "table index is NaN", and `isHeld(5)` became true for every 5. Values bound in-tree are
+-- quad values, Instances and closures, so buffer/thread are refused too. `unbindLifetime` takes the same
+-- check (symmetric — no primitive can be bound, so releasing one is a caller bug, like nil `H-474`).
+-- `raise` is the caller's depth (bind: outermost like `Quad0103`; unbind: nearest like `Quad0105`).
+local function checkIdentityValue(fnName: string, value: any, raise: (string, any) -> ())
+	local t = type(value)
+	if t ~= "table" and t ~= "function" and t ~= "userdata" then
+		raise(`Quad0265 {fnName}: value must be a table, function or userdata (got {typeof(value)}) - a primitive has no identity to bind`, SURFACE)
+	end
+end
+
 local function Init(module: any)
 	local Backend = module.Backend
 
@@ -125,6 +139,7 @@ local function Init(module: any)
 		if value == nil then
 			Err.errorBefore("Quad0103 bindLifetime: value must not be nil", SURFACE) -- `H-447`: used to die at `gchold[nil]`
 		end
+		checkIdentityValue("bindLifetime", value, Err.errorBefore) -- error-code: via checkIdentityValue
 		if not canBound(value) then
 			-- Only report which path holds the value. Never index `.Subscribed`
 			-- unconditionally — value may be a plain closure.
@@ -179,6 +194,7 @@ local function Init(module: any)
 			-- argument, and a silent success there hides the bug (same door as bindLifetime, `H-447`)
 			Err.errorBeforeNearest("Quad0105 unbindLifetime: value must not be nil", SURFACE)
 		end
+		checkIdentityValue("unbindLifetime", value, Err.errorBeforeNearest) -- error-code: via checkIdentityValue
 		-- symmetric teardown — never calls cleanup, never detaches Ref
 		-- callbacks or dep `_subs` memberships (lifecycle-pattern (1); an
 		-- Effect has no inner Observers since round13 3′)

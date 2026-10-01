@@ -48,8 +48,11 @@ local ProcessedPreRef = NoneModule.sentinel("ProcessedPreRef")
 local ProcessedPostRef = NoneModule.sentinel("ProcessedPostRef")
 
 local function fireOnce(v: any, kind: string)
+	-- round13 Q83 (2026-10-01): the mark goes up when the slot is PROCESSED, not when the callback
+	-- fires — "already fired" was false for a PostRef consumed by a mount that threw first (message
+	-- only; moving `_fired` after the fire was declined — `ref-plan.md` PostRef consumption timing)
 	if v._fired then
-		Err.errorBefore(`Quad0069 {kind}: already fired - a {kind} is one-shot, make a new one for each instance`, SURFACE)
+		Err.errorBefore(`Quad0069 {kind}: already used - a {kind} is one-shot (used up once quad places it, fired or not); make a new one for each instance`, SURFACE)
 	end
 	v._fired = true
 end

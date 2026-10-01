@@ -651,5 +651,48 @@ do
 	print("PASS")
 end
 
+print("=== 15. 2026-10-01 — q.debug면 rawRerun 반복 한도(1만 회)에서 Quad0263(설치든 emit이든 — 지연 재실행이라 같은 값 되쓰기가 끝없이 돈다); 수렴하는 루프는 그대로 ===")
+do
+	local dq = Quad.New()
+	mock.installLifetime(dq)
+	dq.debug = true
+	-- install: an unconditional same-value write to its own dep (a Source propagates an equal value — H-68)
+	local s = dq.Source(5)
+	local runs = 0
+	local ok, err = pcall(function()
+		dq.Effect(function()
+			runs += 1
+			s:Set(math.clamp(s:Get(), 0, 3))
+			end, s)
+	end)
+	assert(not ok and string.find(tostring(err), "Quad0263 Effect: fn re-ran 10000 times in one loop", 1, true) ~= nil, "unsettled install loop raises under debug: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.effect.luau", "Quad0263 blame (install)")
+	assert(runs == 10000, "stopped at the limit: " .. runs)
+	-- a subscribed Effect that starts writing back only once the value crosses a line: the loop starts at the user's Set
+	local s2 = dq.Source(0)
+	local e2 = dq.Effect(function()
+		if s2:Get() >= 10 then
+			s2:Set(s2:Get())
+		end
+	end, s2):Subscribe()
+	local ok2, err2 = pcall(function()
+		s2:Set(10)
+	end)
+	assert(not ok2 and string.find(tostring(err2), "Quad0263", 1, true) ~= nil, "emit-time loop raises under debug: " .. tostring(err2))
+	mock.assertBlamesUser(err2, "spec.effect.luau", "Quad0263 blame (emit)")
+	local _ = e2
+	-- converging (writes only when the value differs) is untouched under debug
+	local s3 = dq.Source(5)
+	local seen: { number } = {}
+	dq.Effect(function()
+		table.insert(seen, s3:Get())
+		if s3:Get() > 3 then
+			s3:Set(3)
+		end
+	end, s3)
+	assert(table.concat(seen, ",") == "5,3", "converging loop under debug: " .. table.concat(seen, ","))
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

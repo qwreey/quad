@@ -337,5 +337,35 @@ do
 	print("PASS")
 end
 
+print("=== round13 Q94 (a) (2026-10-01) — bindLifetime/unbindLifetime는 원시값(숫자·문자열·불리언·NaN·buffer·thread)을 거부(Quad0265, 사용자 줄 blame); 테이블·함수는 그대로 ===")
+do
+	local q = mock.newQuad()
+	local inst = mock.Instance.new("Frame")
+	local prims: { [string]: any } = { one = 1, str = "label", bool = false, nan = 0 / 0, thread = coroutine.create(function() end) }
+	for label, v in prims do
+		local ok, err = pcall(function()
+			q.Backend.bindLifetime(inst, v)
+		end)
+		assert(not ok and string.find(tostring(err), "Quad0265 bindLifetime: value must be a table, function or userdata", 1, true) ~= nil, label .. " bind: " .. tostring(err))
+		mock.assertBlamesUser(err, "spec.lifetime.luau", label .. " bind blame")
+		local ok2, err2 = pcall(function()
+			q.Backend.unbindLifetime(v)
+		end)
+		assert(not ok2 and string.find(tostring(err2), "Quad0265 unbindLifetime:", 1, true) ~= nil, label .. " unbind: " .. tostring(err2))
+		mock.assertBlamesUser(err2, "spec.lifetime.luau", label .. " unbind blame")
+	end
+	-- nothing was held: the two unrelated "label" binds no longer collide, isHeld stays false
+	assert(not q.Backend.isHeld(1) and not q.Backend.isHeld("label"), "no primitive held")
+	-- identity values still bind and release
+	local t, f = {}, function() end
+	q.Backend.bindLifetime(inst, t)
+	q.Backend.bindLifetime(inst, f)
+	assert(q.Backend.isHeld(t) and q.Backend.isHeld(f), "table/function bound")
+	q.Backend.unbindLifetime(t)
+	q.Backend.unbindLifetime(f)
+	assert(not q.Backend.isHeld(t) and not q.Backend.isHeld(f), "and released")
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

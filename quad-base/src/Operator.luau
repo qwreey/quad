@@ -87,14 +87,6 @@ local function checkSelf(name: string, self: any)
 end
 
 -- N-ary numeric fold: self first, then the args in order.
--- round13 Q141 ② (user decision 2026-09-30 — cheap entry gate): fixed-arity factories dropped extra
--- arguments silently (`Clamp(0, 1, "junk")`, `Shl(1, "junk")`); the `Sum` family checks every one
-local function checkArity(name: string, want: number, got: number)
-	if got > want then
-		Err.errorBeforeNearest(`Quad0261 Operator.{name}: takes {want} argument{if want == 1 then "" else "s"} (got {got})`, SURFACE)
-	end
-end
-
 -- `normalize` (round13 Q141 ①, user decision 2026-09-30): the bitwise folds start from the target,
 -- so with NO arguments `Band()` returned it untouched (-1 → -1) while one argument and `Bnot` gave
 -- the `bit32` result (-1 → 4294967295); normalizing the start makes zero arguments agree
@@ -128,9 +120,11 @@ local function unary(name: string, op: (any) -> any): (any) -> any
 end
 
 -- unary with one numeric argument (shift amounts): `Shl(n)`
+-- Fixed-arity factories (`Clamp`, `Shl`, `Shr`) ignore extra arguments, as Lua functions do — strict
+-- catches them. (round13 Q141 ② briefly rejected them as `Quad0261`; reverted 2026-10-01 by user
+-- decision — the id stays retired.)
 local function withArg(name: string, op: (number, number) -> number): (any) -> (any) -> any
-	return function(n: any, ...: any)
-		checkArity(name, 1, 1 + select("#", ...)) -- error-code: via checkArity
+	return function(n: any)
 		local deps, read = splitArgs(name, { n }, 1, "number")
 		return function(self: any): any
 			checkSelf(name, self)
@@ -167,8 +161,7 @@ local Operator = {
 }
 
 -- Clamp(lo, hi): both may be numbers or States
-function Operator.Clamp(lo: any, hi: any, ...: any): (any) -> any
-	checkArity("Clamp", 2, 2 + select("#", ...)) -- error-code: via checkArity
+function Operator.Clamp(lo: any, hi: any): (any) -> any
 	local deps, read = splitArgs("Clamp", { lo, hi }, 2, "number")
 	return function(self: any): any
 		checkSelf("Clamp", self)

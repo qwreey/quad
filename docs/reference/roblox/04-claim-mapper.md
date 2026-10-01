@@ -99,14 +99,14 @@ end
 | 디스크립터를 두 번 씀 | `Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)` |
 | 디스크립터의 props가 테이블이 아님 | `Quad0030 Claim: mapper props must be a table (got {typeof(desc._props)})` |
 | 디스크립터 둘이 같은 자식(같은 이름)을 가리킴 | `Quad0028 Claim: two mapper descriptors resolved to the same Instance {tostring(inst)} - each child needs exactly one descriptor` |
-| 배열 키가 양의 정수가 아님(`{ [0] = M.TextLabel(…) }`) | `Quad0031 Claim: array keys must be positive integers (got {i})` |
+| 배열 키가 양의 정수가 아님(`{ [0] = M.TextLabel(…) }` — 디스크립터든 다른 값이든 props의 모든 숫자 키) | `Quad0031 Claim: array keys must be positive integers (got {i})` |
 | 이미 quad가 소유한 Instance(루트든 자식이든 — 백엔드의 `nativeClaim`보다 먼저 `isClaimed`로 걸립니다) | `Quad0029 Claim: {inst} is already claimed by quad - a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)` |
 | 매퍼 키에 해당하는 자식이 없거나, 이름은 맞는데 그 클래스(`IsA`)가 아님 | `Quad0032 Claim: no child matched key {key} under {inst} (mapper {class}) - a child with that name must also be a {class}` |
 
 `D.<Class>{…}`의 숫자 키 자리에 디스크립터를 넣으면 매치되는 핸들러가 없어 일반 no-match 에러가
 납니다 — 디스크립터는 `Claim` 전용입니다.
 
-위 표의 `Claim: …` 에러는 **아무것도 claim하기 전에** 납니다 — `Claim`은 트리 전체를 먼저 해석하고(키·클래스·재사용·배열 키 검사) 그다음에야 루트부터 claim하고 아래에서 위로 적용합니다. 그래서 자식 이름을 고쳐 같은 루트에 다시 걸면 그대로 됩니다. 이미 quad 소유인 인스턴스(루트든 자식이든 — 위젯을 템플릿에 꽂아 둔 경우, 먼저 `Claim`한 자식)도 같은 해석 패스에서 `Claim: <이름> is already claimed by quad …`로 거부되어 아무것도 남기지 않습니다 — 그 자식은 디스크립터에서 빼고 따로 다루세요. 예외 하나: 적용 단계(프로퍼티·핸들러)에서 던지면 claim은 트리 전체가 끝난 뒤라 그 시점까지 적용된 것과 함께 남습니다(`D.New`가 중간에 던질 때와 같은 정의되지 않은 동작).
+위 표의 `Claim: …` 에러는 **아무것도 claim하기 전에** 납니다 — `Claim`은 트리 전체를 먼저 해석하고(디스크립터의 키·클래스·재사용, 그리고 각 props의 모든 숫자 키가 양의 정수인지) 그다음에야 루트부터 claim하고 아래에서 위로 적용합니다. 그래서 자식 이름을 고쳐 같은 루트에 다시 걸면 그대로 됩니다. 이미 quad 소유인 인스턴스(루트든 자식이든 — 위젯을 템플릿에 꽂아 둔 경우, 먼저 `Claim`한 자식)도 같은 해석 패스에서 `Claim: <이름> is already claimed by quad …`로 거부되어 아무것도 남기지 않습니다 — 그 자식은 디스크립터에서 빼고 따로 다루세요. 예외 하나: 적용 단계(프로퍼티·핸들러)에서 던지면 claim은 트리 전체가 끝난 뒤라 그 시점까지 적용된 것과 함께 남습니다(`D.New`가 중간에 던질 때와 같은 정의되지 않은 동작). 해석 패스가 보는 것은 위 괄호의 범위뿐입니다 — 문자 키나 `State` 안에 놓인 디스크립터, 숫자 키 자리에 그대로 넣은 평범한 Instance(claim되지 않았거나 이미 다른 곳에 있는 것)는 적용 단계에서 판정되므로 이 예외에 듭니다. `Modifier`의 필드에 넣은 디스크립터는 그 `Modifier`를 만드는 줄에서 거부됩니다(`Quad0057`/`Quad0064`). 또 `q.Claim`은 **루트 인스턴스의 클래스는 대조하지 않습니다** — 루트 디스크립터의 클래스와 다른 인스턴스를 넘겨도 해석 패스는 통과하고(클래스 대조는 자식을 찾을 때 `nativeFindChild`가 하는 것뿐), 차이는 적용 단계의 프로퍼티 대입에서 드러납니다.
 
 **계약 셋**
 

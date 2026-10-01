@@ -51,7 +51,7 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 `Claim: array keys must be positive integers (got {i})` — `quad-base/src/Claim.luau`
 
-- **언제**: 디스크립터 props의 숫자 키(다른 매퍼 디스크립터를 담은 자리) 중 양의 정수가 아닌 것이 있을 때.
+- **언제**: 디스크립터 props의 숫자 키 중 양의 정수가 아닌 것(`[0]`, `[2.5]`, 음수)이 있을 때 — 그 자리의 값이 무엇이든 봅니다([2026-10-01 기준] 다음 릴리즈부터; 전에는 다른 매퍼 디스크립터를 담은 자리만 봐서, 다른 값이면 트리를 claim하고 적용한 뒤에야 `Quad0085`로 죽었습니다). 아무것도 claim하기 전에 납니다.
 - **고치려면**: 숫자 키는 1부터 시작하는 정수로 쓰세요.
 - **참고**: [`q.Claim(inst, desc)`](../roblox/04-claim-mapper.md#qclaiminst-desc)
 
@@ -206,3 +206,11 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 - **언제**: 이미 다른 프로바이더 함수(identity 기준)로 `UseProvider`를 부른 모듈에 다시 (다른) `providerFn`으로 `UseProvider`를 부를 때 — 같은 함수를 다시 넘기는 것은 멱등 no-op이라 에러가 아닙니다.
 - **고치려면**: 모듈당 프로바이더는 하나입니다 — 새 모듈 인스턴스(`q.New()`)를 만들어 다른 백엔드를 설치하세요.
 - **참고**: [`q:UseProvider(providerFn)`](../core/01-quad-module.md#quseproviderproviderfn)
+
+### Quad0265
+
+`{fnName}: value must be a table, function or userdata (got {typeof(value)}) - a primitive has no identity to bind` — `quad-base/src/LifetimeHandle.luau`
+
+- **언제**: `q.Backend.bindLifetime(inst, value)`나 `q.Backend.unbindLifetime(value)`의 `value`가 숫자·문자열·불리언(또는 buffer·thread)일 때. 원시값은 같은 값이 프로그램 어디에나 있어 한 요소에 묶는다는 뜻이 서지 않습니다 — 전에는 통과해 무관한 두 바인딩이 같은 값으로 부딪치거나(`Quad0233`), 백엔드가 자기 부기에 쓰는 자리를 덮거나, `NaN`이면 VM 에러로 죽었습니다. `{fnName}`은 `bindLifetime` 또는 `unbindLifetime`입니다. 묶을 수 없는 값이므로 푸는 것도 같은 에러입니다.
+- **고치려면**: 수명을 묶을 값은 quad 값(`Observer`/`Effect`/`Ref`/`Slot` 등)·인스턴스·클로저·테이블로 넘기세요. 원시값의 수명을 따로 관리할 일은 없습니다 — 그 값을 쥔 테이블이나 클로저를 묶으세요.
+- **참고**: [`q.Backend.bindLifetime(inst, value)`](../core/10-lifetime-sentinels.md#qbackendbindlifetimeinst-value)

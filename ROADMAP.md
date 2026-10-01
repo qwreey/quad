@@ -54,6 +54,12 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
         전"*이라 사용자가 큰 틀을 본 뒤에. 재정렬 분석 문서의 옵저버 잔류·stale 인덱스 난제는 현재 코드엔 없다(round7 §3).
         **[2026-09-08 round8 L 실측 추가]** `:List` **전체 키 교체**도 O(N²)(1000개 87ms, 8000개 5.5s — 옛 요소 N개가 남은 2N 배열 중간에
         `rawAdd`(`table.insert`+역맵+`spliceArraysUp` 각 O(N)) 뒤 KeyGone 패스가 하나씩 `vacate`) — 같은 `rawPermute`/"KeyGone 먼저" 계열.
+        **[2026-10-01 round13 Q76 — 사용자 결정: 백로그(Q38 계열), 코드 무변경]** "KeyGone 먼저" 처방의 프로토타입이 있다 —
+        A1(KeyGone 패스를 추가 패스 앞으로) + A1b(사라진 키를 현재 raw index 내림차순으로)라야 선형(N=5000 전체 교체 2.06s → 0.09s, CLI mock),
+        diff·측정은 `.claude/audit/round13-q76-proto/`(`List.keygone-first-descending.diff`), 3′ 뒤 HEAD 재검증은 `.claude/audit/round13-slot-bundle-r2/`.
+        **채택하면 관측 순서가 바뀐다** — core/06 `:List` 동작의 "사이클 순서는 (1)…(2) 항목마다 `updateFn`, (3) …`KeyGone`" 문장(2026-10-01 기준
+        core/06:391 근처)을 "사라진 키 먼저(뒤에서부터), 그다음 항목마다"로 고치는 Changed가 같이 간다(새 항목 `updateFn` 시점에 옛 원소가 이미
+        파괴됨, 던진 뒤 남는 상태가 달라짐 — 원장 round13 Q76 프로토타입 문단). 큰 틀을 본 뒤 `rawPermute`와 같이 판단.
         가운데 한 개 삭제의 O(N²)는 `H-505`(`reindexRange`)로 닫음.
       - **[2026-09-08 round8 L-3]** 마운트된 Slot의 **단발 CRUD**(Add/Remove/Swap/Move/Replace/Extract)는 꼬리 `recompute`가 `i = 1`부터
         전 자리를 훑어 호출당 O(N)(5000자리 `Swap(1,2)` 한 번 0.63ms; N회 반복 O(N²)) — `Splice`/`Clear`/reconcile은 배치 Blocker로

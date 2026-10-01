@@ -42,7 +42,7 @@ return function(S: Types.SlotInternal, module: any)
 		-- open blocker — the tree was already unrecoverable there.
 		slot._materializing = true
 
-		local blocker = S.BK.getBlocker(slot)
+		local blocker = S.BK._getBlocker(slot)
 		blocker:On()
 		slot._baseObserver._rerunRequired = false
 		module.Backend.bindLifetime(physicalTarget, slot._baseObserver)

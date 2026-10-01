@@ -112,6 +112,24 @@ local function describeHandler(h: Handler): string
 	return if h.name ~= nil then `"{h.name}" (priority {h.priority})` else `(priority {h.priority})`
 end
 
+-- `H-222` provider contract: `process` returns a retractor FUNCTION. The one Quad0077 message — both
+-- `process` arms check nil inline (every call, hot path); the full shape is a debug-only check below.
+local function noRetractorMessage(h: Handler, k: any, index: number, retractor: any): string
+	return `Quad0077 Dispatch: handler {describeHandler(h)} must return a retractor function at key {tostring(k)}, index {index} (got {typeof(retractor)})`
+		.. " - return Void when there is nothing to undo"
+end
+
+-- ── debug-only checks (`architecture.md` "debug 층"; kept out of the logic below) ──
+-- round13 Q148 (user decision 2026-10-01 — debug layer, not every call: *"spring 같은게 들어오면 초당 60번
+-- 돌 때 과연 많은 가드가 있는게 유리한가는 모르겠음. debug 면 모를까, 핫패스에 놓인거라"*): a non-function
+-- retractor (`true`, `5`, `{}`, a `__call` table — `Quad0079`'s rule for `process` itself) used to be
+-- stored and blow up later at retract time, inside quad. Outermost blame, same as the nil check.
+local function checkRetractorShape(h: Handler, k: any, index: number, retractor: any)
+	if type(retractor) ~= "function" then
+		Err.errorBefore(noRetractorMessage(h, k, index, retractor), SURFACE) -- error-code: via noRetractorMessage
+	end
+end
+
 local function Init(module: any)
 	-- {[inst(weak)] = {[k] = {[index] = {handler, retractor}}(weak value)}}
 	-- `H-229`: the lists hold retractor closures that (transitively) capture
@@ -208,11 +226,6 @@ local function Init(module: any)
 			-- recursion erases the provenance) — say so, or the user is told they
 			-- passed the one value None exists to be distinguishable from
 			.. (if v == nil then " (a nil at this depth may be an unwrapped None or a reactive nil - the key's own handler must accept nil)" else "")
-	end
-
-	local function noRetractorMessage(h: Handler, k: any, index: number): string
-		return `Quad0077 Dispatch: handler {describeHandler(h)} returned no retractor at key {tostring(k)}, index {index}`
-			.. " - return Void when there is nothing to undo"
 	end
 
 	-- `release` (`H-329`, 사용자 확정 (a) 2026-09-06): a PURE retract that empties
@@ -357,7 +370,10 @@ local function Init(module: any)
 				-- provider-contract violation (`H-222`) — OUTERMOST: this fires at
 				-- dispatch depth so nearest blamed `init.luau` itself (6순회 `H-409`,
 				-- the sibling `noMatchMessage` already uses errorBefore)
-				Err.errorBefore(noRetractorMessage(h, k, index), SURFACE) -- error-code: via noRetractorMessage
+				Err.errorBefore(noRetractorMessage(h, k, index, retractor), SURFACE) -- error-code: via noRetractorMessage
+			end
+			if module.debug then
+				checkRetractorShape(h, k, index, retractor)
 			end
 			slot.retractor = retractor
 		else
@@ -370,7 +386,10 @@ local function Init(module: any)
 			list[index] = { handler = h, retractor = NOOP }
 			local retractor = h.process(inst, k, v, index)
 			if retractor == nil then
-				Err.errorBefore(noRetractorMessage(h, k, index), SURFACE) -- error-code: via noRetractorMessage -- `H-409`
+				Err.errorBefore(noRetractorMessage(h, k, index, retractor), SURFACE) -- error-code: via noRetractorMessage -- `H-409`
+			end
+			if module.debug then
+				checkRetractorShape(h, k, index, retractor)
 			end
 			list[index] = { handler = h, retractor = retractor }
 		end
@@ -507,7 +526,7 @@ local function Init(module: any)
 		end
 		flatten(flattened)
 		local batching = flattened[1] ~= nil
-		local blocker = if batching then bookkeeping.getBlocker(inst) else nil
+		local blocker = if batching then bookkeeping._getBlocker(inst) else nil
 		if blocker then
 			blocker:On()
 		end

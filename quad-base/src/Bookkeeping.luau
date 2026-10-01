@@ -334,6 +334,13 @@ local function Init(module: any)
 		checkPosition("setLength", i)
 		if not Brand.isState(len) then
 			checkLengthValue("setLength", len) -- a State's value is checked in its Observer callback below, outside the blocker window (`H-445`) — never in `contribution`
+		else
+			-- round13 Q151 (가) (user decision 2026-10-01): the State's CURRENT value too, BEFORE any
+			-- bookkeeping write (`H-256` (a)'s promise) — an invalid initial value used to raise only in
+			-- the observer's install run, after `lengthList[i]`/`N` were written: offsets silently wrong
+			-- and that position never moved again. A Compute is computed here (one read earlier than
+			-- the install run, which follows synchronously). Later values: the observer below, as before.
+			checkLengthValue("setLength", len:Get())
 		end
 		anchor = anchor or ownerKey
 		local bk = getBookkeeping(ownerKey)
@@ -417,7 +424,10 @@ local function Init(module: any)
 	end
 
 	module.Bookkeeping = {
-		getBlocker = getBlocker,
+		-- 2026-10-01 (user decision, round13 Q152 follow-up): the batch Blocker is internal — `drive` and
+		-- the Slot layer own its On/close-with-recompute; a public `getBlocker` let a handler open a batch
+		-- it could not close correctly (the closing recompute is private). Diagnostics read `getBookkeeping`.
+		_getBlocker = getBlocker, -- internal (Slot/Dispatch only)
 		getBookkeeping = getBookkeeping,
 		getOffsetAt = getOffsetAt,
 		_recompute = recompute, -- internal (Slot/Dispatch only)

@@ -140,6 +140,38 @@ local function InventoryModal()
 end
 ```
 
+### 끌어다 놓으면 제자리로 돌아가는 카드
+
+엔진이 직접 프로퍼티를 바꾸는 입력(`UIDragDetector`의 드래그)과 애니메이션을 한 프로퍼티에 같이 걸 때는
+**원천을 둘로 가릅니다.** 드래그 중 위치는 `q.Out`으로 받아 읽기만 하고, 놓은 뒤 돌아갈 목표는 애니메이션이
+걸린 **다른** `Source`에 둡니다(같은 `Source`에 둘 다 걸면 트윈 중간값이 `q.Out`으로 되쓰여 애니메이션이 첫
+프레임에 멈춥니다 — [`q.Out`](../reference/roblox/05-onchange.md)의 주의).
+
+```luau
+local HOME = UDim2.fromScale(0.5, 0.5)
+local home = q.Source(HOME)        -- 놓으면 돌아갈 목표 — 애니메이션이 걸린 원천
+local dragged = q.Source(HOME)     -- 드래그 중 위치 — 읽기 전용으로 받아 둠
+
+local card = D.Frame {
+    Size = UDim2.fromOffset(120, 160),
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    Position = home:Apply(q.Animate { Time = 0.25, Dedup = false }),
+    q.Out("Position", dragged),
+
+    D.UIDragDetector {
+        DragEnd = function()
+            home:Set(HOME) -- 같은 목표로 다시 — Dedup = false라 매번 돌아간다
+        end,
+    },
+}
+```
+
+**`Dedup = false`가 핵심입니다.** `home`은 늘 같은 `HOME`을 들고 있으므로, 놓을 때의 `home:Set(HOME)`은
+그 자리에 기록된 목표와 같은 값입니다. 기본값(`Dedup` 켜짐)이면 quad는 "이미 그 목표"로 보고 건너뛰는데,
+실제 프로퍼티는 드래그로 엔진이 옮겨 놓은 뒤라 카드가 제자리로 돌아오지 않습니다 — `Dedup`은 기록된 목표만
+보고 실제 프로퍼티 값은 읽지 않기 때문입니다([Tween 레퍼런스](../reference/roblox/06-tween-animate.md)의
+`Dedup` 절). [2026-10-01 mock 실측 — 엔진의 드래그 쓰기를 대입 한 번으로 흉내 냄; 실기기 드래그는 미실측]
+
 ---
 
 ## 4. 컴포넌트 수명에 리스너 묶기

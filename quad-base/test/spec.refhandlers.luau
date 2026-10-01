@@ -123,7 +123,7 @@ do
 	local p1 = q.PreRef(nil :: any):Callback(function(v)
 		if v then
 			table.insert(log, "pre1")
-			gateOnAtPre = q.Bookkeeping.getBlocker(v).Blocking -- ⓪ → (a): 게이트가 켜진 뒤 fire
+			gateOnAtPre = (q.Bookkeeping :: any)._getBlocker(v).Blocking -- ⓪ → (a): 게이트가 켜진 뒤 fire
 		end
 	end)
 	local p2 = q.PreRef(nil :: any):Callback(function(v)
@@ -148,6 +148,8 @@ do
 		q.Dispatch.drive(Instance.new("Frame"), { p1 })
 	end)
 	assert(not ok and string.find(tostring(err), "one%-shot") ~= nil, "fired PreRef placed again errors: " .. tostring(err))
+	-- round13 Q83 (2026-10-01): "used", not "fired" — the mark is set when quad places it, fired or not
+	assert(string.find(tostring(err), "Quad0069 PreRef: already used", 1, true) ~= nil, "Quad0069 wording: " .. tostring(err))
 	assertBlamesUser(err, SPEC, "PreRef reuse")
 	print("PASS")
 end
@@ -165,7 +167,7 @@ do
 		if v then
 			table.insert(log, "post1")
 			parentAtFire = v.Parent
-			gateOnAtFire = q.Bookkeeping.getBlocker(v).Blocking -- H-17: 배치 게이트가 켜진 채로 실행
+			gateOnAtFire = (q.Bookkeeping :: any)._getBlocker(v).Blocking -- H-17: 배치 게이트가 켜진 채로 실행
 		end
 	end)
 	local post2 = q.PostRef(nil :: any):Callback(function(v)
@@ -182,7 +184,7 @@ do
 	assert(table.concat(log, ",") == "pre,prop:Name,post1,post2", "PostRefs fire last in index order: " .. table.concat(log, ","))
 	assert(parentAtFire == nil, "literal path: not yet parented at fire (no guarantee either way — brief Q6)")
 	assert(gateOnAtFire == true, "PostRef fires BEFORE the batch closes — gate still on (H-17), one recompute catches up")
-	assert(not q.Bookkeeping.getBlocker(inst).Blocking, "…and the batch is closed after drive returns")
+	assert(not (q.Bookkeeping :: any)._getBlocker(inst).Blocking, "…and the batch is closed after drive returns")
 	local bk = q.Bookkeeping.getBookkeeping(inst)
 	assert(bk.lengthList[1] == 0 and bk.sourceList[1] == q.None and bk.lengthList[3] == 0, "consumed slots registered None/0 (ProcessedPostRefHandler)")
 	local ok, err = pcall(function()

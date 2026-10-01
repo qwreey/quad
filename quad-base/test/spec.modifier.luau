@@ -408,4 +408,21 @@ do
 end
 
 print()
+print("=== round13 Q79 (a) (2026-10-01) — 세터 변환이 함수를 돌려주면 setter 줄에서 Quad0264(초기 테이블 Quad0063과 같은 규칙); State 필드의 변환·함수 아닌 반환은 그대로 ===")
+do
+	local m = Modifier()
+	local ok, err = pcall(function()
+		(m :: any):Activated(function(_old: any)
+			return function() end
+		end)
+	end)
+	assert(not ok and string.find(tostring(err), 'Quad0264 Modifier: the transform for field "Activated" returned a function', 1, true) ~= nil, tostring(err))
+	mock.assertBlamesUser(err, SPEC_FILE, "Quad0264 blame")
+	-- a transform returning a plain value, and a State field's transform (lazy Compute), still pass
+	assert(fieldOf((m :: any):Field(function() return 5 end), "Field") == 5, "plain transform result")
+	assert(q.isState(fieldOf((m :: any):Field(q.Source(1)):Field(function(old: any) return old:Get() + 1 end), "Field")), "State field transform stays a State")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

@@ -191,13 +191,13 @@ do
 		q.Dispatch.process(inst, "k", "second", 1) -- (A) branch, returns nil
 	end)
 	assert(not okA, "(A) branch: nil retractor -> error")
-	assert(string.find(tostring(errA), "returned no retractor", 1, true) ~= nil, tostring(errA))
+	assert(string.find(tostring(errA), "Quad0077 Dispatch: handler (priority 0) must return a retractor function at key k, index 1 (got nil)", 1, true) ~= nil, tostring(errA))
 
 	local okB, errB = pcall(function()
 		q.Dispatch.process(inst, "other", "fresh", 1) -- (B) branch, calls == 3 -> nil
 	end)
 	assert(not okB, "(B) branch: nil retractor -> error")
-	assert(string.find(tostring(errB), "returned no retractor", 1, true) ~= nil, tostring(errB))
+	assert(string.find(tostring(errB), "must return a retractor function", 1, true) ~= nil, tostring(errB))
 	print("PASS")
 end
 
@@ -695,6 +695,55 @@ do
 	q.Dispatch.addHandler(h)
 	q.Dispatch.addHandler(h)
 	assert(#q.Dispatch.listHandlers() == before + 1, "identity dedup")
+	print("PASS")
+end
+
+print("=== 22. round13 Q148 (2026-10-01) — 함수가 아닌 retractor(true·5·{}·__call 테이블)는 q.debug일 때만 그 자리에서 Quad0077; 평소는 지금처럼 nil만 ===")
+do
+	local callable = setmetatable({}, { __call = function() end })
+	for label, ret in { ["true"] = true :: any, five = 5 :: any, table = {} :: any, callable = callable :: any } :: { [string]: any } do
+		local q = newQuad()
+		-- the first process of each instance returns Void (so the (A) re-process has a real retractor to call),
+		-- every later one returns the bad value
+		local seen: { [any]: true } = {}
+		local h: Handler = {
+			isHandlable = function(_inst: any, _k: any, v: any): boolean
+				return type(v) == "string"
+			end,
+			priority = q.Dispatch.HANDLER_PRIORITY_NORMAL,
+			process = function(inst: any): (any?, boolean) -> ()
+				if not seen[inst] then
+					seen[inst] = true
+					return Quad.Void
+				end
+				return ret
+			end,
+		}
+		q.Dispatch.addHandler(h)
+		-- debug off: only nil is checked (hot path) — the bad value is accepted at process time as before
+		local quiet = Instance.new("Frame")
+		q.Dispatch.process(quiet, "k", "s", 1)
+		q.Dispatch.process(quiet, "k", "t", 1)
+		q.debug = true
+		local inst = Instance.new("Frame")
+		q.Dispatch.process(inst, "k", "s", 1) -- fresh install: Void
+		local okA, errA = pcall(function()
+			q.Dispatch.process(inst, "k", "t", 1) -- (A) same handler re-processing: bad value
+		end)
+		assert(not okA and string.find(tostring(errA), `Quad0077 Dispatch: handler (priority 0) must return a retractor function at key k, index 1 (got {typeof(ret)})`, 1, true) ~= nil, label .. " (A): " .. tostring(errA))
+		mock.assertBlamesUser(errA, "spec.dispatch.luau", label .. " (A) blame")
+		local okB, errB = pcall(function()
+			q.Dispatch.process(inst, "other", "s", 1) -- (B) fresh install at another key: bad value
+		end)
+		assert(not okB and string.find(tostring(errB), "Quad0077", 1, true) ~= nil, label .. " (B): " .. tostring(errB))
+	end
+	-- a real function (and Void) still passes under debug
+	local q = newQuad()
+	q.debug = true
+	local log: { string } = {}
+	q.Dispatch.addHandler(makeLeaf(log, "ok", isString, q.Dispatch.HANDLER_PRIORITY_NORMAL))
+	q.Dispatch.process(Instance.new("Frame"), "k", "s", 1)
+	assert(log[1] == "ok:process:k:s:1", "function retractor passes under debug")
 	print("PASS")
 end
 

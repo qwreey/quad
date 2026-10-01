@@ -65,9 +65,10 @@
 	number value" — the canon ⚠️ block). Every setter clones BOTH the outer
 	table and the fields table (shallow `table.clone`).
 
-	Handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Slot/Modifier)
-	reaching a field — literal or returned by a transform — raise immediately
-	(4절 정정, 2026-08-09). State/Source pass (4-1). `State<Ref>`-style inner
+	Handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Slot/Modifier, and
+	since round13 Q85 (a′) a mapper descriptor) reaching a field — literal or
+	returned by a transform — raise immediately (4절 정정, 2026-08-09); so does a
+	FUNCTION returned by a transform (round13 Q79 (a), `Quad0264`). State/Source pass (4-1). `State<Ref>`-style inner
 	contents are documented UB, not inspected. The mirror guard (a Modifier as
 	a State/Source VALUE) lives in Source.luau/State.luau since M2 (7절).
 
@@ -100,8 +101,13 @@ local isPlainBranded = Brand.isPlainBranded -- `H-377`: AttrKey/MapperDescriptor
 -- user field name (spike 17 / spike 11 idiom)
 local FieldsKey = table.freeze({})
 
+-- round13 Q85 (a′) (user decision 2026-10-01 — cheap check): a mapper descriptor in a field is always
+-- misuse — a field lands at a STRING key after flatten, and a descriptor resolves only at a numeric key of
+-- mapper props (Claim), so it died in the drive with `Quad0076 … brand: MapperDescriptor` after the Claim
+-- root was claimed. Refused at Modifier creation instead (the Slot `Quad0240` shape); Claim's pass 1 still
+-- skips fields (`H-303` unchanged). A State that HOLDS a descriptor is not read here (no `:Get` at creation).
 local function isHandlerLayerValue(v: any): boolean
-	return isRef(v) or isObserver(v) or isEffect(v) or Brand.isSlot(v) or isModifier(v)
+	return isRef(v) or isObserver(v) or isEffect(v) or Brand.isSlot(v) or isModifier(v) or Brand.isMapperDescriptor(v)
 end
 
 local ModifierMT = {}
@@ -290,7 +296,15 @@ local function setterClosure(key: string): (any, any) -> any
 		if isHandlerLayerValue(value) then
 			-- level 2 = the user's `mod:Field(...)` line (the closure is not
 			-- table-reached, so no tag — `H-250`)
-			error(`Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, 2)
+			error(`Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`, 2)
+		end
+		if type(value) == "function" then
+			-- round13 Q79 (a) (user decision 2026-10-01): a transform that RETURNS a function stored a raw
+			-- function in the field, which the Event handler then connected — the initial-field table
+			-- refuses the same value (`Quad0063`), and `modifier-plan.md` 3절 refuses functions so the
+			-- two construction paths agree. Only the plain-field branch can get here (a State field's
+			-- transform makes a State; a literal function is always a transform).
+			error(`Quad0264 Modifier: the transform for field "{key}" returned a function - a field cannot hold a function (an event handler does not belong in a Modifier; put it as an inline key on the Declaration, or wrap it in a State)`, 2)
 		end
 		local newFields = table.clone(oldFields)
 		newFields[key] = value
@@ -388,7 +402,7 @@ local function construct(tag: any, ...: any): any
 					Err.errorBeforeNearest(`Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function - a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)`, SURFACE)
 				end
 				if isHandlerLayerValue(v) then
-					Err.errorBeforeNearest(`Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier)`, SURFACE)
+					Err.errorBeforeNearest(`Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`, SURFACE)
 				end
 				merged[k] = v
 			end

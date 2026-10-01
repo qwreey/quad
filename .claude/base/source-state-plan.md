@@ -351,7 +351,7 @@ type EmitReceive = { _receive: (self: any, from: Epoch | EpochSet) -> () }
 --   emit을 버렸다(Q73: `setLength` 설치 발화 창의 형제 `Offset` stale, Q157 F6: `:List` 첫 재조정 안의 `data:Set`).
 --   사용자: *"첫 발화든 어느 발화든 자기 state 가 set 된다면 다시 실행되어도 됨. 그거는 내가 가정했던 부분인데,
 --   의도치 않게 막게 된것 같음."* — 옛 순서는 의도가 아니라 부수적으로 굳은 것. 진동 상한 없음 — 수렴하지 않는
---   설치 fn은 UB(Effect 설치와 대칭). 설치 fn이 던지면 핸들이 `_subs`에 남는다(weak-키라 핸들과 같이 사라지고,
+--   설치 fn은 UB(Effect 설치와 대칭; [2026-10-01] `q.debug`면 1만 회에서 `Quad0262` — architecture debug 층). 설치 fn이 던지면 핸들이 `_subs`에 남는다(weak-키라 핸들과 같이 사라지고,
 --   그동안 `_running`이 선 채라 받기만 하고 안 돈다).
 function State:Observer(fn)
     local o = setmetatable({ fn = fn, _state = self, _rerunRequired = false,

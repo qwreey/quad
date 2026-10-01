@@ -163,6 +163,12 @@ bindLifetime: (inst: any, value: any) -> ()
 
 **동작** — 값 하나의 수명을 요소(`inst`)의 수명에 묶습니다. 요소가 죽으면 묶인 값들도 같이 수거되고, 구독은 그때부터 발화하지 않습니다.
 
+`value`는 신원이 있는 값 — 테이블·함수·userdata — 이어야 합니다. 숫자·문자열·불리언(그리고 buffer·thread)은 그 자리에서 거부합니다 — 원시값은 같은 값이 프로그램 어디에나 있어 "이 값을 이 요소에 묶는다"는 뜻이 서지 않습니다(전에는 그대로 통과해 무관한 두 바인딩이 부딪치거나 백엔드 부기 자리를 덮을 수 있었습니다 — [2026-10-01 기준] 다음 릴리즈부터).
+
+```
+Quad0265 bindLifetime: value must be a table, function or userdata (got number) - a primitive has no identity to bind
+```
+
 **이 네 함수는 quad-base 것입니다.** 값 쪽 지식(nil 게이트, 거부 메시지, `Observer`/`Effect`의 훅, 전역 구독 상태)은 여기 있고, 인스턴스 쪽 부기만 백엔드가 심는 hold op 넷(`holdLifetime`/`releaseLifetime`/`isHeld`/`isHeldBy`)에 맡깁니다. quad-base는 임의의 엔진에서 그 부기의 "옳은" 기본값을 추측할 수 없으므로, 그 넷의 자리엔 조용한 no-op 대신 **크게 우는 스텁**을 둡니다. 프로바이더를 설치하지 않은 `Quad.New()`에서 `bindLifetime`을 부르면 그 스텁에 닿습니다:
 
 ```
@@ -179,7 +185,7 @@ Quad0108 quad: isHeld is not available - no backend has installed the lifetime p
 unbindLifetime: (value: any) -> ()
 ```
 
-**동작** — 묶인 값 하나를 미리 풉니다. 묶여 있지 않은 값이면 no-op이고, `nil`은 에러입니다. `Effect`면 `Destroying` 연결을 끊고 나서 백엔드의 `releaseLifetime`에 맡깁니다 — cleanup은 부르지 않습니다. 백엔드가 없으면 `releaseLifetime` 스텁 에러가 납니다.
+**동작** — 묶인 값 하나를 미리 풉니다. 묶여 있지 않은 값이면 no-op이고, `nil`과 원시값은 에러입니다(원시값은 묶일 수 없으므로 푸는 것도 부르는 쪽의 실수입니다 — `Quad0265 unbindLifetime: …`). `Effect`면 `Destroying` 연결을 끊고 나서 백엔드의 `releaseLifetime`에 맡깁니다 — cleanup은 부르지 않습니다. 백엔드가 없으면 `releaseLifetime` 스텁 에러가 납니다.
 
 ## `q.Backend.canBound(value)`
 

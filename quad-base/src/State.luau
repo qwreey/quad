@@ -203,7 +203,10 @@ local function createImpl(module: any)
 		-- `fn(self, previous?, ...deps)` — `self` is the RECEIVER's lazy handle
 		-- (`hold[1]`), never this result node.
 		local result = self._fn(hold[1], self._cache, table.unpack(hold, 2))
-		if self._computing == gen then -- round13 Q93 (a): clear only OUR stamp (a newer one belongs to a run still parked or thrown)
+		-- round13 Q93 (a): clear only OUR stamp (a newer one belongs to a run still parked or thrown).
+		-- Always true on every defined path (no yield / reentrant Compute) — byte-identical there; it only
+		-- narrows the damage of that UB, not a contract (user 2026-10-01: "필요한게 맞다는걸 봤고. 표기만 잘 해줘").
+		if self._computing == gen then
 			self._computing = -1 -- fn returned (the Modifier raise below is ours, not a stuck fn)
 		end
 		if isModifier(result) then
@@ -216,6 +219,9 @@ local function createImpl(module: any)
 		end
 		-- round13 Q98 (a″): never clobber a cache already valid for the current target (a newer run
 		-- finished while this one was parked or nested); otherwise write as before, stale or not.
+		-- Always true on every defined path (no yield / reentrant Compute) — byte-identical there; it only
+		-- narrows the damage of that UB, not a contract (Q159: a newer cache already invalid again can
+		-- still be overwritten — yield Compute is UB).
 		if gen == self._cacheTargetCount or self._cacheCurrCount ~= self._cacheTargetCount then
 			self._cache = result
 			self._cacheCurrCount = gen -- only on success: a thrown fn never marks the cache valid

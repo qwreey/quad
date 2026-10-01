@@ -6,7 +6,7 @@ description: Handler 레코드와 retractor 계약, 우선순위 밴드, q.Dispa
 
 이 페이지는 **핸들러를 직접 작성하는 사람**을 위한 계약입니다. 새 값 타입(백엔드의 `Tween`, 플러그인의 스프링 값)이나 새 props 어휘를 추가하려면 여기 규약을 지키는 테이블 하나를 `q.Dispatch.addHandler`로 등록하면 됩니다.
 
-이 페이지의 심볼: [Handler 레코드](#handler-레코드) · [retractor](#retractor) · [우선순위 밴드](#우선순위-밴드) · [q.Dispatch.addHandler(handler)](#qdispatchaddhandlerhandler) · [q.Dispatch.listHandlers()](#qdispatchlisthandlers) · [q.Dispatch.getHandler(inst, key, value)](#qdispatchgethandlerinst-key-value) · [q.Dispatch.process(inst, key, value, index)](#qdispatchprocessinst-key-value-index) · [q.Dispatch.retractFrom(inst, key, index)](#qdispatchretractfrominst-key-index) · [q.Dispatch.drive(inst, flattened)](#qdispatchdriveinst-flattened) · [q.Bookkeeping.setLength(ownerKey, i, len, anchor, element)](#qbookkeepingsetlengthownerkey-i-len-anchor-element) · [q.Bookkeeping.setOffsetSource(ownerKey, i, source)](#qbookkeepingsetoffsetsourceownerkey-i-source) · [q.Bookkeeping.setEmpty(ownerKey, i, anchor)](#qbookkeepingsetemptyownerkey-i-anchor) · [q.Bookkeeping.getOffsetAt(ownerKey, at)](#qbookkeepinggetoffsetatownerkey-at) · [q.Bookkeeping.getBlocker(ownerKey)](#qbookkeepinggetblockerownerkey) · [q.Bookkeeping.getBookkeeping(ownerKey)](#qbookkeepinggetbookkeepingownerkey) · [q.Bookkeeping.claimOwnerAt(element, inst, k)](#qbookkeepingclaimowneratelement-inst-k) · [q.Bookkeeping.releaseOwner(element, ownerKey)](#qbookkeepingreleaseownerelement-ownerkey)
+이 페이지의 심볼: [Handler 레코드](#handler-레코드) · [retractor](#retractor) · [우선순위 밴드](#우선순위-밴드) · [q.Dispatch.addHandler(handler)](#qdispatchaddhandlerhandler) · [q.Dispatch.listHandlers()](#qdispatchlisthandlers) · [q.Dispatch.getHandler(inst, key, value)](#qdispatchgethandlerinst-key-value) · [q.Dispatch.process(inst, key, value, index)](#qdispatchprocessinst-key-value-index) · [q.Dispatch.retractFrom(inst, key, index)](#qdispatchretractfrominst-key-index) · [q.Dispatch.drive(inst, flattened)](#qdispatchdriveinst-flattened) · [q.Bookkeeping.setLength(ownerKey, i, len, anchor, element)](#qbookkeepingsetlengthownerkey-i-len-anchor-element) · [q.Bookkeeping.setOffsetSource(ownerKey, i, source)](#qbookkeepingsetoffsetsourceownerkey-i-source) · [q.Bookkeeping.setEmpty(ownerKey, i, anchor)](#qbookkeepingsetemptyownerkey-i-anchor) · [q.Bookkeeping.getOffsetAt(ownerKey, at)](#qbookkeepinggetoffsetatownerkey-at) · [q.Bookkeeping.getBookkeeping(ownerKey)](#qbookkeepinggetbookkeepingownerkey) · [q.Bookkeeping.claimOwnerAt(element, inst, k)](#qbookkeepingclaimowneratelement-inst-k) · [q.Bookkeeping.releaseOwner(element, ownerKey)](#qbookkeepingreleaseownerelement-ownerkey)
 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
@@ -34,7 +34,7 @@ export type Handler = {
 |---|---|---|
 | `isHandlable` | ✅ | **순수 판별**. 이 (요소, 키, 값)을 내가 처리할 수 있는가. 부작용을 넣지 마세요 — 매치되지 않는 스캔에서도 계속 불립니다. |
 | `priority` | ✅ | 스캔 순서. 큰 값이 먼저입니다. 아래 밴드 상수에서 출발해 `± n`으로 미세 조정합니다. |
-| `process` | ✅ | 실제 처리. 반환값은 **retractor**이며 생략할 수 없습니다 — 무를 것이 없어도 `q.Void`를 돌려줍니다. |
+| `process` | ✅ | 실제 처리. 반환값은 **retractor 함수**이며 생략할 수 없습니다 — 무를 것이 없어도 `q.Void`를 돌려줍니다. 함수가 아닌 값(`true`·숫자·테이블, `__call` 테이블 포함)은 계약 위반입니다 — 평소에는 `nil`만 그 자리에서 검사하고(매 `process`마다 도는 경로라), [`q.debug`](/reference/core/01-quad-module/#qdebug)를 켜면 나머지도 그 자리에서 거부합니다. 끈 채로 두면 나중에 그 자리를 무를 때 quad 안에서 번호 없는 에러로 죽습니다. |
 | `name` | — | **진단 전용**. 동률 경고와 `listHandlers` 덤프에 쓰입니다. 스캔·매치에는 아무 영향이 없고, 없으면 priority만 보입니다. |
 | `keyType` | — | "나는 이 타입의 키에서만 매치될 수 있다"는 선언. 스캔 버킷을 좁히는 힌트입니다. |
 
@@ -164,10 +164,10 @@ Quad0076 Dispatch: no handler matched key {키} (value: {typeof}, brand: {브랜
 
 값이 `nil`이면 뒤에 한 줄이 더 붙습니다 — 그 `nil`은 벗겨진 `None`일 수도, 반응형 `nil`일 수도 있고, 그 키를 맡은 핸들러가 `nil`을 받아들여야 한다는 안내입니다.
 
-핸들러가 retractor를 돌려주지 않으면 프로바이더 계약 위반입니다.
+핸들러가 retractor 함수를 돌려주지 않으면 프로바이더 계약 위반입니다. `nil`은 늘 그 자리에서, 함수가 아닌 다른 값은 [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때만 그 자리에서 거부합니다.
 
 ```
-Quad0077 Dispatch: handler "{이름}" (priority {n}) returned no retractor at key {키}, index {i} - return Void when there is nothing to undo
+Quad0077 Dispatch: handler "{이름}" (priority {n}) must return a retractor function at key {키}, index {i} (got {typeof}) - return Void when there is nothing to undo
 ```
 
 `inst`가 `nil`이면 `Quad0072 Dispatch.process: inst must not be nil`, `index`가 양의 정수가 아니면 `Quad0073 Dispatch.process: index must be a positive integer (got {tostring(index)})`.
@@ -247,7 +247,7 @@ setLength: (ownerKey: any, i: number, len: number | StateMarker<number>, anchor:
 
 **동작** — 자리 `i`의 길이를 등록합니다. `len`이 `State`면 그 상태를 구독해 값이 바뀔 때마다 뒤 자리들의 오프셋을 다시 계산하고, 상수면 같은 게이트를 한 번 통과합니다. 등록은 그 자리 **뒤** 자리들의 캐시만 무효화합니다 — 자리 `i` 자신의 오프셋은 앞 자리들의 합이라 바뀌지 않습니다.
 
-`State` 길이의 값 검사는 그 상태의 옵서버 안에서 돕니다 — 재계산 창 안에서 던져 owner를 얼어붙게 만들지 않기 위해서입니다. **[2026-09-27 기준]** 다만 그 `State`의 **초기값**이 잘못이면(음수 등) 에러는 나지만 길이 목록과 `N`은 이미 써진 뒤이고 옵서버는 구독에 끼지 못해, 그 자리는 이후 값을 바꿔도 따라오지 않습니다(owner는 얼지 않고 오프셋만 조용히 어긋남 — mock 실측; 처방 검토 중이니 등록 전에 유효한 값인지 직접 확인하세요).
+`State` 길이의 값 검사는 두 번 돕니다. 등록할 때 그 `State`의 **현재 값**을 한 번 읽어 상수와 같은 검사를 하고 — 부기를 하나라도 쓰기 **전에**라, 잘못된 초기값(음수 등)은 `Quad0021`로 던지고 그 자리는 등록되지 않은 채 남습니다(`Compute`면 이 읽기에서 계산이 한 번 앞당겨 돕니다). 이후 값은 그 상태의 옵서버 안에서 검사합니다 — 재계산 창 안에서 던져 owner를 얼어붙게 만들지 않기 위해서입니다. **[2026-10-01 기준]** 등록 전 검사는 다음 릴리즈부터입니다 — 3.2.0까지는 잘못된 초기값이 길이 목록과 `N`을 쓴 뒤에 던져, 그 자리가 이후 값을 바꿔도 따라오지 않았습니다.
 
 ## `q.Bookkeeping.setOffsetSource(ownerKey, i, source)`
 
@@ -293,16 +293,6 @@ getOffsetAt: (ownerKey: any, at: number) -> number
 Quad0022 Bookkeeping.getOffsetAt: position {at} is past N+1 (N = {n}, at most {n+1} may be queried) - or a leaf handler skipped its position registration: position {i} is not registered
 Quad0229 Bookkeeping.getOffsetAt: position {at} needs positions 1..{at-1} registered but {i} is not - a leaf handler skipped its position registration
 ```
-
-## `q.Bookkeeping.getBlocker(ownerKey)`
-
-**시그니처**
-
-```luau
-getBlocker: (ownerKey: any) -> Blocker
-```
-
-**반환** — 그 owner의 **배치 Blocker**(없으면 만들어서). 켜져 있는 동안 자리 등록이 재계산을 촉발하지 않습니다 — 여러 자리를 한 번에 등록할 때 매 자리마다 전체 재계산이 도는 것을 막는 게이트입니다. `drive`가 숫자 키가 있을 때 이걸 켜고, 마지막에 닫으면서 정확히 한 번 재계산합니다. **[2026-09-27 기준]** 그 "닫으면서 재계산"은 `drive` 내부 경로에만 있습니다 — 핸들러가 이 Blocker를 직접 `:On()`한 뒤 `:Off()`/`:OffWithoutEmit()`로 닫으면 재계산이 따라오지 않아 앞 자리 길이를 바꿨다면 뒤 자리 오프셋 `Source`가 옛 값에 남습니다(mock 실측). 닫은 뒤 아무 자리나 `setLength`를 한 번 다시 부르면 맞춰집니다(공개 닫기 op는 검토 중).
 
 ## `q.Bookkeeping.getBookkeeping(ownerKey)`
 

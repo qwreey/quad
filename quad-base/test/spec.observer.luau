@@ -572,5 +572,35 @@ do
 	print("PASS")
 end
 
+print("=== 14. 2026-10-01 — q.debug면 설치 루프 반복 한도(1만 회)에서 Quad0262; 수렴하는 설치 루프와 debug 끈 인스턴스는 그대로(끈 쪽 무한 루프는 계약이라 돌리지 않는다) ===")
+do
+	local dq = Quad.New()
+	mock.installLifetime(dq)
+	dq.debug = true
+	-- same-value clamp: the Source propagates an equal value (H-68), so the install loop never settles
+	local s = dq.Source(5)
+	local runs = 0
+	local ok, err = pcall(function()
+		s:Observer(function(target)
+			runs += 1;
+			(target :: any):Set(math.clamp(target:Get(), 0, 3))
+		end)
+	end)
+	assert(not ok and string.find(tostring(err), "Quad0262 Observer: the first run did not settle after 10000 re-runs", 1, true) ~= nil, "unsettled install loop raises under debug: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.observer.luau", "Quad0262 blame")
+	assert(runs == 10000, "stopped at the limit: " .. runs)
+	-- a converging install loop (sets only when the value differs) is untouched under debug
+	local s2 = dq.Source(5)
+	local seen: { number } = {}
+	s2:Observer(function(target)
+		table.insert(seen, target:Get())
+		if target:Get() > 3 then
+			(target :: any):Set(3)
+		end
+	end)
+	assert(table.concat(seen, ",") == "5,3", "converging install loop under debug: " .. table.concat(seen, ","))
+	print("PASS")
+end
+
 print()
 print("=== ALL PASS ===")

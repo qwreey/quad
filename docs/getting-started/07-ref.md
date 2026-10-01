@@ -169,7 +169,7 @@ Quad0233 bindLifetime: value is already bound to another Instance
 `PreRef`/`PostRef`는 아예 일회용이라 그 시도 자체를 막습니다.
 
 ```
-Quad0069 PreRef: already fired - a PreRef is one-shot, make a new one for each instance
+Quad0069 PreRef: already used - a PreRef is one-shot (used up once quad places it, fired or not); make a new one for each instance
 ```
 
 **결론은 하나입니다 — `Ref`는 인스턴스마다 새로 만듭니다.** 목록처럼 인스턴스가 계속 갈리는 자리라면 `Ref`를 돌려 쓰지 말고, 항목을 만드는 그 자리에서 하나씩 만드세요.

@@ -131,7 +131,7 @@ do
 	local inst = Instance.new("Frame")
 	q.Dispatch.drive(inst, { 2, 3, 1, Size = "s" })
 	assert(sources[1]:Get() == 0 and sources[2]:Get() == 2 and sources[3]:Get() == 5, "immediate calc filled offsets in order")
-	assert(q.Bookkeeping.getBlocker(inst).Blocking == false, "batch blocker closed after drive")
+	assert((q.Bookkeeping :: any)._getBlocker(inst).Blocking == false, "batch blocker closed after drive")
 	assert(q.Bookkeeping.getBookkeeping(inst).N == 3, "bk.N = registered array positions")
 
 	-- 배치 중 각 Source가 정확히 1회만 Set을 받았다 — 즉시 계산 1회, 배치 중
@@ -450,4 +450,32 @@ do
 	print("PASS")
 end
 
+print("=== round13 Q151 (가) (2026-10-01) — State 길이의 초기값도 부기를 쓰기 전에 검사: 거부된 등록은 lengthList·N·오프셋을 건드리지 않고, 같은 자리에 유효한 State를 다시 등록하면 흐른다 ===")
+do
+	local q = newQuad()
+	local inst = mock.Instance.new("Frame")
+	for i = 1, 4 do
+		q.Bookkeeping.setOffsetSource(inst, i, q.None)
+	end
+	q.Bookkeeping.setLength(inst, 1, 1)
+	local bad = q.Source(-1)
+	local ok, err = pcall(function()
+		q.Bookkeeping.setLength(inst, 2, bad)
+	end)
+	assert(not ok and string.find(tostring(err), "Quad0021 Bookkeeping.setLength: length must be a non-negative integer (got -1)", 1, true) ~= nil, tostring(err))
+	mock.assertBlamesUser(err, "spec.lengthoffset.luau", "blames the setLength line")
+	local bk = q.Bookkeeping.getBookkeeping(inst)
+	assert(bk.lengthList[2] == nil and bk.N == 1 and bk.observers[2] == nil, "no bookkeeping written for the rejected registration")
+	local good = q.Source(2)
+	q.Bookkeeping.setLength(inst, 2, good)
+	q.Bookkeeping.setLength(inst, 3, 1)
+	assert(q.Bookkeeping.getOffsetAt(inst, 4) == 4, "a valid State at the same position registers, offsets unpolluted: " .. tostring(q.Bookkeeping.getOffsetAt(inst, 4)))
+	bad:Set(3)
+	assert(q.Bookkeeping.getOffsetAt(inst, 4) == 4, "the rejected State left no observer behind")
+	good:Set(5)
+	assert(q.Bookkeeping.getOffsetAt(inst, 4) == 7, "and keeps flowing")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")
