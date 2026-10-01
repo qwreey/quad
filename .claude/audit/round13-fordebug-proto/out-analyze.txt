@@ -1,0 +1,41 @@
+behavior identical to HEAD (warnings and handler listing removed): True
+warning lines in HEAD on-run: 0
+section A: cases 56, warned 56, warning lines 64
+section A2: cases 40, warned 40, warning lines 40
+section A3: cases 9, warned 6, warning lines 6
+section B: no labelled cases / no warnings
+section C: cases 11, warned 0, warning lines 0
+section E: cases 1, warned 1, warning lines 1
+
+cases without a warning in A/A2:
+cases with more than one warning line:
+   A Ref @UICorner(shorthand) 2
+   A PreRef @UICorner(shorthand) 2
+   A PostRef @UICorner(shorthand) 2
+   A Observer @UICorner(shorthand) 2
+   A Effect @UICorner(shorthand) 2
+   A Slot @UICorner(shorthand) 2
+   A Tag @UICorner(shorthand) 2
+   A Attr @UICorner(shorthand) 2
+A3 / C / E / B detail:
+   A3 Modifier{Name=Tag} create -> none
+   A3 Modifier{Name=Tag} mount -> ['Tag: found at string key "Name" - must be an array item (it would be assigned to the property as a value)']
+   A3 Modifier{Size=Tag} mount -> ['Tag: found at string key "Size" - must be an array item (it would be assigned to the property as a value)']
+   A3 Modifier():Name(Attr) create -> none
+   A3 Modifier():Name(Attr) mount -> ['Attr: found at string key "Name" - must be an array item (it would be assigned to the property as a value)']
+   A3 Modifier{Foo=Tag} mount -> ['Tag: found at string key "Foo" - must be an array item (it would be assigned to the property as a value)']
+   A3 Modifier{Name=Source(Tag)} mount -> ['Tag: found at string key "Name" - must be an array item (it would be assigned to the property as a value)']
+   A3 Modifier{Name=Ref} create (control) -> none
+   A3 Modifier{Name=Source(Ref)} mount -> ['Ref: found at string key "Name" - must be an array item (it would be assigned to the property as a value)']
+   C PreRef via Source numeric -> none
+   C PostRef via Source numeric -> none
+   C Slot at [0] raw process -> none
+   C Ref at AttrKey key -> none
+   C Tag at AttrKey key -> none
+   C Ref at boolean key -> none
+   C PreRef at AttrKey key -> none
+   C Observer at AttrKey key -> none
+   C Effect at AttrKey key -> none
+   C Attr at AttrKey key -> none
+   C Modifier transform returns Tag -> none
+   E NORMAL override for Observer@MyThing -> ['Observer: found at string key "MyThing" - must be an array item (it would be assigned to the property as a value)']

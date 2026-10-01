@@ -19,7 +19,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `Slot: must be an array item, not the value of a {typeof(k)} key` — `quad-base/src/Slot/Handler.luau`
 
-- **언제**: `Slot`을 props의 문자 키 값 자리에 두거나, `State`/`Store`에 담아 그 자리에 닿게 했을 때. 숫자 키라도 `q.Dispatch.process(inst, key, slot, index)`를 직접 불러 배열 리터럴이 아닌 자리(`0`·음수 키 등)에 놓으면 같은 가드로 오고, 이때 메시지는 "number key"라고 말합니다(`q.Dispatch.drive`는 그런 키를 Quad0085로 먼저 막습니다).
+- **언제**: `Slot`을 props의 문자 키 값 자리에 두거나, `State`/`Store`에 담아 그 자리에 닿게 했을 때. 숫자 키라도 `q.Dispatch.process(inst, key, slot, index)`를 직접 불러 배열 리터럴이 아닌 자리(`0`·음수 키 등)에 놓으면 같은 가드로 오고, 이때 메시지는 "number key"라고 말합니다(`q.Dispatch.drive`는 그런 키를 Quad0085로 먼저 막습니다). 문자 키가 클래스의 반영 프로퍼티 이름이면 프로퍼티 핸들러가 먼저 받아 이 가드에 닿지 않습니다 — [`q.debug`](../core/01-quad-module.md#qdebug)를 켜면 그 자리에서 경고 한 줄이 나옵니다.
 - **고치려면**: `Slot`은 부모의 숫자 키(배열부) 리터럴 자리에만 놓으세요.
 - **참고**: [Slot](../core/06-slot.md)
 

@@ -147,20 +147,58 @@ local function Init(module: any)
 	-- installed lifetime backend (nativeClaim'd real Instance, or the mock).
 	local chains = Relate()
 	local handlers: { Handler } = {} -- kept sorted, higher priority first
+	-- round13 Q135 follow-up (user decision 2026-10-01): `debugOnly` handlers live in their own
+	-- sorted array, never in `handlers`: `table.sort` is unstable, so inserting them there reshuffled
+	-- equal-priority PRODUCTION handlers (prototype first cut, measured: `[AttrKey] = q.Effect(…)`
+	-- flipped from the raw attribute error to `Quad0097` with debug OFF). Kept apart, `handlers` sees
+	-- exactly the same insert/sort sequence as without them, so production order is unchanged.
+	local debugHandlers: { Handler } = {}
 	-- `H-484` (round7 Q37 (a), user decision 2026-09-08): per-key-type scan lists,
 	-- each = the handlers DECLARING that `keyType` ∪ the undeclared ones, in the
 	-- same priority order as `handlers`. Rebuilt on every addHandler (cold path).
 	-- Measured before: a 10-string-prop `D.Frame` asked 22 handlers 150 times;
 	-- 12 of them can only ever match number keys.
-	local buckets: { number: { Handler }, string: { Handler }, other: { Handler } } = { number = {}, string = {}, other = {} }
+	-- `debugOnly`: two sets of the same three buckets: `buckets` without the `debugOnly`
+	-- handlers (what production scans), `debugBuckets` with them. `getHandler` picks one by reading
+	-- `module.debug` at call time (the flag is a plain field — toggling it takes effect on the next scan).
+	-- Both are rebuilt here, on the cold path; the hot path pays one field read + one branch.
+	type Buckets = { number: { Handler }, string: { Handler }, other: { Handler } }
+	local buckets: Buckets = { number = {}, string = {}, other = {} }
+	local debugBuckets: Buckets = { number = {}, string = {}, other = {} }
+	local function fill(into: Buckets, list: { Handler })
+		for _, h in list do
+			local kt = h.keyType
+			if kt == nil or kt == "number" then table.insert(into.number, h) end
+			if kt == nil or kt == "string" then table.insert(into.string, h) end
+			if kt == nil then table.insert(into.other, h) end
+		end
+	end
+	-- production order merged with the debug handlers: a stable merge, so the relative order of the
+	-- production handlers in debug mode is the SAME as with debug off (a debug toggle never changes
+	-- which of two tied production handlers wins). On a priority tie the debug handler goes first.
+	local function merged(): { Handler }
+		if #debugHandlers == 0 then
+			return handlers
+		end
+		local out: { Handler } = {}
+		local i, j = 1, 1
+		while i <= #handlers or j <= #debugHandlers do
+			local p, d = handlers[i], debugHandlers[j]
+			if d ~= nil and (p == nil or d.priority >= p.priority) then
+				table.insert(out, d)
+				j += 1
+			else
+				table.insert(out, p)
+				i += 1
+			end
+		end
+		return out
+	end
 	local function rebuildBuckets()
 		buckets = { number = {}, string = {}, other = {} }
-		for _, h in handlers do
-			local kt = h.keyType
-			if kt == nil or kt == "number" then table.insert(buckets.number, h) end
-			if kt == nil or kt == "string" then table.insert(buckets.string, h) end
-			if kt == nil then table.insert(buckets.other, h) end
-		end
+		debugBuckets = { number = {}, string = {}, other = {} }
+		fill(buckets, handlers)
+		fill(debugBuckets, merged())
 	end
 	local NOOP = Void -- `H-162`: the single exported no-op, never a fresh closure
 
@@ -299,11 +337,14 @@ local function Init(module: any)
 	-- incidentally, via its own `bindLifetime` claim-check, which `getHandler` (a
 	-- pure scan with no side effects) must not replicate; closing that gap needs a
 	-- new inst-shape check this round doesn't introduce.
+	-- The one exception to "no side effects": with `module.debug` on, the scan also asks the
+	-- `debugOnly` handlers, whose `isHandlable` may print a diagnostic (`DebugKeyFilter.luau`).
 	local function getHandler(inst: any, k: any, v: any): Handler?
 		checkInst("getHandler", inst)
 		checkKey("getHandler", k)
 		local kt = type(k)
-		local list = if kt == "number" then buckets.number elseif kt == "string" then buckets.string else buckets.other
+		local set = if module.debug then debugBuckets else buckets -- the one `debugOnly` branch on the hot path
+		local list = if kt == "number" then set.number elseif kt == "string" then set.string else set.other
 		for _, h in list do
 			if h.isHandlable(inst, k, v) then
 				return h
@@ -425,6 +466,11 @@ local function Init(module: any)
 				return -- round11 `H-568` (탐사 G′ 8): identity dedup, like RunInit/AddPlugin/UseProvider
 			end
 		end
+		for _, existing in debugHandlers do
+			if existing == handler then
+				return -- same identity dedup over the `debugOnly` array
+			end
+		end
 		local kt = handler.keyType
 		if kt ~= nil and kt ~= "number" and kt ~= "string" then
 			-- registration gate (`H-484`): a typo here would silently drop the handler
@@ -432,8 +478,14 @@ local function Init(module: any)
 			-- the tie print below, so a rejected handler leaves no misleading line)
 			Err.errorBeforeNearest(`Quad0081 Dispatch.addHandler: keyType must be "number", "string" or nil (got {tostring(kt)})`, SURFACE)
 		end
+		local fd = handler.debugOnly
+		if fd ~= nil and type(fd) ~= "boolean" then
+			-- same posture as Quad0081: a truthy non-boolean (`"yes"`, `1`) would
+			-- otherwise silently land in the production buckets (only `== true` moves a handler out)
+			Err.errorBeforeNearest(`Quad0266 Dispatch.addHandler: debugOnly must be a boolean or nil (got {typeof(fd)})`, SURFACE)
+		end
 		if module.debug then
-			for _, existing in handlers do
+			for _, existing in merged() do -- `debugOnly` handlers compete only in debug, and this print is debug-only too
 				-- two handlers declaring DIFFERENT key types never share a bucket, so
 				-- their equal priority is not a tie (`H-484` follow-up, code-review)
 				local ekt = existing.keyType
@@ -448,8 +500,9 @@ local function Init(module: any)
 				end
 			end
 		end
-		table.insert(handlers, handler)
-		table.sort(handlers, function(a: Handler, b: Handler)
+		local into = if fd == true then debugHandlers else handlers
+		table.insert(into, handler)
+		table.sort(into, function(a: Handler, b: Handler)
 			return a.priority > b.priority
 		end)
 		rebuildBuckets()
@@ -470,7 +523,7 @@ local function Init(module: any)
 		-- returned handler's `isHandlable` changed real dispatch behavior). Callers may
 		-- read but must not write. Each handler carries the doc'd name/priority via the
 		-- optional `name` contract field (`H-214` (a) — absent name just shows as nil).
-		return table.clone(handlers)
+		return table.clone(merged()) -- every registered handler, `debugOnly` ones included (each carries its field)
 	end
 
 	-- ── Length/Offset bookkeeping — moved to `src/Bookkeeping.luau` (`H-277`,

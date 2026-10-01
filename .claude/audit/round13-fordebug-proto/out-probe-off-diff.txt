@@ -1,0 +1,36 @@
+160,173c160,179
+< 11	InstanceShorthand	1	string
+< 12	InstanceChild	0	number
+< 13	Property	0	string
+< 14	Event	-1	string
+< 15	OnChange	-1	number
+< 16	RefDynamicPathGuard	-1000000	nil
+< 17	SlotDynamicPathGuard	-1000000	nil
+< 18	AttrKeyFallbackHandler	-1000000	nil
+< 19	AttrGroupFallbackHandler	-1000000	number
+< 20	PostRefDynamicPathGuard	-1000000	nil
+< 21	PreRefDynamicPathGuard	-1000000	nil
+< 22	ObserverDynamicPathGuard	-1000000	nil
+< 23	EffectDynamicPathGuard	-1000000	nil
+< 24	TagFallbackHandler	-1000000	number
+---
+> 11	ObserverStringKeyDebugFilter	2	string
+> 12	RefStringKeyDebugFilter	2	string
+> 13	TagStringKeyDebugFilter	2	string
+> 14	EffectStringKeyDebugFilter	2	string
+> 15	SlotStringKeyDebugFilter	2	string
+> 16	AttrStringKeyDebugFilter	2	string
+> 17	InstanceShorthand	1	string
+> 18	InstanceChild	0	number
+> 19	Property	0	string
+> 20	Event	-1	string
+> 21	OnChange	-1	number
+> 22	RefDynamicPathGuard	-1000000	nil
+> 23	SlotDynamicPathGuard	-1000000	nil
+> 24	AttrKeyFallbackHandler	-1000000	nil
+> 25	AttrGroupFallbackHandler	-1000000	number
+> 26	PostRefDynamicPathGuard	-1000000	nil
+> 27	PreRefDynamicPathGuard	-1000000	nil
+> 28	ObserverDynamicPathGuard	-1000000	nil
+> 29	EffectDynamicPathGuard	-1000000	nil
+> 30	TagFallbackHandler	-1000000	number

@@ -14,6 +14,11 @@
 	                                            -- match — getHandler scans per-type
 	                                            -- buckets; absent = every bucket.
 	                                            -- isHandlable stays the decider.
+	  debugOnly: boolean?                       -- optional (round13 Q135, 2026-10-01): true =
+	                                            -- a candidate only on scans where
+	                                            -- `module.debug` is on (read per scan);
+	                                            -- its isHandlable may print a diagnostic
+	                                            -- — the one exception to "no side effects".
 	  process(inst, key, value, index) -> retractor
 	     -- does the work and returns the closure `(nextValue, retracting)` that
 	     -- undoes exactly what this call did. Returning nil is a contract

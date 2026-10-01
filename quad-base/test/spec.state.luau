@@ -102,7 +102,7 @@ print()
 print("=== 4. 순회(Refresh) — 놓친 emit을 Get에서 값만 앞당기고 통지는 안 한다 ===")
 do
 	local s = Source(1)
-	local d: State<number> = s:Compute(function(x): number
+	local d: State<number> = s:Compute(function(x: any): number
 		return x:Get() * 2
 	end)
 	assert(d:Get() == 2, "seed")
@@ -525,4 +525,171 @@ do
 end
 
 print()
+print()
+print("=== 17. round13 2026-10-01 — Compute debug 감지기 두 신호(q.debug일 때만 print, 던지지 않음): (b) 계산 함수 도중의 Source:Set/Emit, (a) 옛 실행이 안 돌아왔는데 새 실행 시작; 정상 경로는 0줄 ===")
+do
+	-- Observer/Effect need a lifetime backend — this section uses the mock provider's instance
+	local mock: any = require("./mock")
+	local q: any = mock.newQuad()
+	local Src = q.Source
+	local host = mock.Instance.new("Frame") -- Observer/Effect fire only while bound (canExecute)
+	-- the two prints live in State.luau (a) and Source.luau (b) — capture both envs
+	local probeSrc = Src(0)
+	local probeState = probeSrc:Compute(function(x)
+		return x:Get()
+	end)
+	local envs = { getfenv((probeSrc :: any).Set) :: any, getfenv((probeState :: any).Get) :: any }
+	local lines: { string } = {}
+	local olds = {}
+	for i, env in envs do
+		olds[i] = rawget(env, "print")
+		env.print = function(...: any)
+			table.insert(lines, table.concat({ ... }, " "))
+		end
+	end
+	local function countOf(needle: string): number
+		local n = 0
+		for _, l in lines do
+			if string.find(l, needle, 1, true) ~= nil then
+				n += 1
+			end
+		end
+		return n
+	end
+	local SET = "Source: Set/Emit inside a Compute fn - a Compute only reads and combines (undefined)"
+	local RUN = "State: Compute fn entered while an earlier run of this node has not returned - the fn yielded or re-entered (undefined)"
+
+	-- (b1) debug off: a Set inside the fn prints nothing (behavior as before)
+	q.debug = false
+	local up = Src(1)
+	local side = Src(0)
+	local bad = up:Compute(function(x)
+		side:Set(x:Get())
+		return x:Get()
+	end)
+	assert(bad:Get() == 1 and #lines == 0, "off: silent")
+	-- (b2) debug on: one line; the same Source again on later runs: suppressed; another Source: its own line
+	q.debug = true
+	up:Set(2)
+	assert(bad:Get() == 2 and countOf(SET) == 1, "on: one line for the Set inside the fn")
+	up:Set(3)
+	assert(bad:Get() == 3 and countOf(SET) == 1, "same Source again: suppressed")
+	local side2 = Src(0)
+	local bad2 = up:Compute(function(x)
+		side2:Emit()
+		return x:Get()
+	end)
+	assert(bad2:Get() == 3 and countOf(SET) == 2, "Emit counts too, a different Source gets its own line")
+	-- (b3) through a nested pull: the outer fn reads an inner Compute whose fn writes — still inside a fn
+	local side3 = Src(0)
+	local inner = up:Compute(function(x)
+		side3:Set(1)
+		return x:Get()
+	end)
+	local outer = inner:Compute(function(x: any): number
+		return x:Get() + 1
+	end)
+	assert(outer:Get() == 4 and countOf(SET) == 3, "a write anywhere under a running fn")
+
+	-- normal paths with debug on: 0 lines
+	local before = #lines
+	local a = Src(1)
+	local mirror = Src(0)
+	local doubled = a:Compute(function(x: any): number
+		return x:Get() * 2
+	end)
+	local sum = doubled:Compute(function(x: any): number
+		return x:Get() + 1
+	end)
+	-- an Observer that writes another Source (its job), woken by a Set outside any fn
+	local o = sum:Observer(function(x)
+		mirror:Set(x:Get())
+	end)
+	q.Backend.bindLifetime(host, o)
+	a:Set(5)
+	assert(mirror:Get() == 11, "Observer wrote")
+	-- an Effect that writes its own dependency until it settles (the deferred re-run is the defined untangler)
+	local count = Src(0)
+	local e = q.Effect(function()
+		if count:Get() < 3 then
+			count:Set(count:Get() + 1)
+		end
+		return nil
+	end, count)
+	q.Backend.bindLifetime(host, e)
+	assert(count:Get() == 3, "Effect settled: " .. tostring(count:Get()))
+	-- a Compute that THROWS: no counter is left raised, a later Set outside any fn stays silent
+	local flaky = a:Compute(function(x)
+		if x:Get() == 5 then
+			error("boom")
+		end
+		return x:Get()
+	end)
+	assert(not pcall(function()
+		return flaky:Get()
+	end), "threw")
+	a:Set(6) -- recovery path: a new generation
+	assert(flaky:Get() == 6, "recovered")
+	mirror:Set(0)
+	assert(#lines == before, `normal paths: no line (got [{table.concat(lines, " | ", before + 1)}])`)
+	host:Destroy()
+
+	-- (a) an earlier run parked in a coroutine (a yield inside the fn), upstream moves, a new run starts: one line
+	local ysrc = Src(0)
+	local park = true
+	local yc = ysrc:Compute(function(x)
+		local v = x:Get()
+		if park and coroutine.isyieldable() then
+			coroutine.yield()
+		end
+		return v
+	end)
+	local A = coroutine.create(function()
+		return yc:Get()
+	end)
+	coroutine.resume(A)
+	ysrc:Set(1)
+	park = false
+	assert(yc:Get() == 1 and countOf(RUN) == 1, "(a) on: one line when the new run starts over the parked one")
+	coroutine.resume(A) -- let it return (Quad0184 or a value — UB; not asserted here)
+	-- a thrown earlier run is the defined recovery, not an overlap: silent
+	local tsrc = Src(0)
+	local tc = tsrc:Compute(function(x)
+		if x:Get() == 0 then
+			error("first gen throws")
+		end
+		return x:Get()
+	end)
+	assert(not pcall(function()
+		return tc:Get()
+	end), "threw")
+	tsrc:Set(1)
+	assert(tc:Get() == 1 and countOf(RUN) == 1, "(a) after a throw: silent")
+	-- (a) with debug off: silent
+	q.debug = false
+	local ysrc2 = Src(0)
+	park = true
+	local yc2 = ysrc2:Compute(function(x)
+		local v = x:Get()
+		if park and coroutine.isyieldable() then
+			coroutine.yield()
+		end
+		return v
+	end)
+	local B = coroutine.create(function()
+		return yc2:Get()
+	end)
+	coroutine.resume(B)
+	ysrc2:Set(1)
+	park = false
+	assert(yc2:Get() == 1 and countOf(RUN) == 1, "(a) off: silent")
+	coroutine.resume(B)
+
+	for i, env in envs do
+		env.print = olds[i]
+	end
+	q.debug = false
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

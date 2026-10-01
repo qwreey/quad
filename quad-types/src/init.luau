@@ -428,9 +428,9 @@ export type ModifierConstructor = setmetatable<{
 	DefineSubtype: (parent: string, subtype: string) -> (),
 }, { __call: (self: any, ...(Modifier | { [string]: any })) -> Modifier }>
 -- ── 디스패치 엔진(M3 단위 1) ──────────────────────────────────────────
--- `Handler` — 핸들러 계약 **필수 3종 + 선택 `name`·`keyType`**(`.claude/base/
+-- `Handler` — 핸들러 계약 **필수 3종 + 선택 `name`·`keyType`·`debugOnly`**(`.claude/base/
 -- dispatch-core-plan.md` "핸들러 계약"): `isHandlable`은 부작용 없는 순수
--- 판별(inst도 받음), `process`는 자기 자신을 무르는 retractor를
+-- 판별(inst도 받음; `debugOnly` 진단 경고만 예외 — 아래), `process`는 자기 자신을 무르는 retractor를
 -- 반환(생략 불가 — 정리할 게 없어도 `Void`). 1번째 인자는 `nil`(단순
 -- 철거)이거나 같은 핸들러가 처리할 새 값, 2번째는 `retracting`(`H-258` —
 -- 아래 필드 주석). `name`은 진단 전용
@@ -445,9 +445,14 @@ export type ModifierConstructor = setmetatable<{
 -- 아예 안 묻게 할 뿐이다. 어긋나게 선언하면 그 핸들러는 그 버킷에서 조용히
 -- 빠지고 더 낮은 priority의 미선언 핸들러가 대신 매치할 수 있다 — 선언은
 -- `isHandlable`의 `type(k)` 가드와 같은 값이어야 한다.
+-- `debugOnly`(round13 Q135 후속, 사용자 확정 2026-10-01)는 선택 플래그: 참이면 `module.debug`가 참인
+-- 스캔에서만 후보가 된다 — 꺼져 있으면 에러가 아니라 후보에서 조용히 빠진다(`getHandler`가 debug
+-- 포함/미포함 두 벌의 버킷 중 하나를 호출 시점에 고른다). `keyType`처럼 등록 때 한 번 읽는다. 진단 필터
+-- 용도에 한해 `isHandlable`의 부작용(경고 출력) 허용 — 경고를 찍고 `false`를 돌려 디스패치를 그대로 흘린다.
 export type Handler = {
 	name: string?,
 	keyType: ("number" | "string")?,
+	debugOnly: boolean?,
 	isHandlable: (inst: any, key: any, value: any) -> boolean,
 	priority: number,
 	-- retractor 계약(`H-258`, 사용자 설계): 두 번째 인자 `retracting`이 참이면

@@ -1,0 +1,9 @@
+e64-base: identical (3 lines)
+    mode=base mutant=nil seeds=2000 ops=79714 diffs=0 userProcess=41142 ties(user-involved pairs)=25006 sameHandlerA=11373 poisonedKeys=0 listHandlersUnsorted=0 
+    ops: drive=11804 process=35840 retractFrom=16072 stateSet=8072
+e64-prov: identical (3 lines)
+    mode=prov mutant=nil seeds=2000 ops=79714 diffs=0 userProcess=39735 ties(user-involved pairs)=30421 sameHandlerA=14628 poisonedKeys=0 listHandlersUnsorted=0 
+    ops: drive=11707 process=35935 retractFrom=16047 stateSet=9350
+e66: identical (3 lines)
+    E66 fuzz mutant=nil seeds=1..3000 ops=120839 fires=10730 extwrites=8468 conn-samples=143804 diffSeeds=0 
+    ops: destroy=4264 extwrite=8468 fire=10730 noop=3306 process=43149 rebuild=3276 retract=13079 set=34567

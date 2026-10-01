@@ -38,6 +38,19 @@ local isModifier = Brand.isModifier
 
 local WEAK_KEY_MT = { __mode = "k" }
 
+-- ── debug-only checks (`architecture.md` "debug 층"; kept out of the logic below) ──
+-- 2026-10-01 (user decision), signal (b) of the Compute detector (`State.luau` has the other): a
+-- `Set`/`Emit` while a Compute fn of this quad instance is on the call stack — directly in the fn or
+-- in anything it called, an Observer it woke included. A Compute only reads and combines; the write
+-- tangles the wave with nothing to untangle it (`source-state-plan.md` "Compute 순수성", undefined).
+-- Prints once per Source (weak) — a fn that writes on every run would otherwise print every run.
+local function checkWriteInCompute(module: any, source: any, warned: { [any]: true })
+	if warned[source] == nil and State.computeFnOnStack(module) then
+		warned[source] = true
+		print("Source: Set/Emit inside a Compute fn - a Compute only reads and combines (undefined)")
+	end
+end
+
 local function Init(module: any)
 	-- Pull our dependency ourselves, `require`-style (`module-lifecycle-plan.md`
 	-- "순서 의존성은 각 `InitXxx`를 `require`처럼 멱등하게 만들어서 해소한다") —
@@ -66,7 +79,11 @@ local function Init(module: any)
 	-- Nearest raise inside the wave (Slot reconcile, KeyGone …) would blame
 	-- this file's `Emit` line instead of the user's `:Set` line (`H-330`,
 	-- fable 탐사 2026-09-06; `H-250`: local direct calls need no tag).
+	local debugWarned: { [any]: true } = setmetatable({}, WEAK_KEY_MT) :: any
 	local function bumpAndEmit(self: any): any
+		if module.debug then
+			checkWriteInCompute(module, self, debugWarned)
+		end
 		self.Revision = bit32.bnot(-self.Revision)
 		emitDown(self, self) -- payload = the source epoch itself
 		return self

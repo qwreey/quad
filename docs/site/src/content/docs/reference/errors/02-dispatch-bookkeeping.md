@@ -292,7 +292,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 꼬리 힌트는 여섯 중 하나입니다 — 값에 브랜드가 없거나 백엔드(프로바이더) 브랜드이고 키가 **문자 키**면 ` - this key may not be a field of this element (a typo, a read-only field, or one from another class), or the provider that handles it (e.g. quad-roblox) is not initialized`(프로바이더가 설치된 흔한 경우엔 앞쪽 원인 — 오타 난 이름, 읽기 전용 프로퍼티, 다른 클래스의 이름 — 이고, 두 경우를 이 자리에서 가를 수 없어 둘 다 적습니다), 같은 값이 숫자 키면 ` - check that the provider for this value (e.g. quad-roblox) is initialized`; quad-base 브랜드(`Slot`/`Ref`/`State`/`Tag`/`Attr`/`Context`/`Provider`/`MapperDescriptor` 등)이면 `Store`일 때 ` - a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))`, `Context`/`Provider`일 때 ` - a Context is not a value for any key: read the value you need out of it first`(브랜드 이름이 들어갑니다), 나머지 브랜드가 문자 키일 때 ` - a quad value at a string key: it belongs in a numeric (array) slot`, 숫자 키일 때 ` - this quad value has no handler at an array position`. 값이 `nil`이면 그 뒤에 ` (a nil at this depth may be an unwrapped None or a reactive nil - the key's own handler must accept nil)`이 더 붙습니다. `brand: …` 조각은 브랜드를 알아낼 수 있을 때만 들어갑니다.
 
 - **언제**: 그 값을 받아줄 핸들러가 하나도 없을 때. `noMatchMessage` 헬퍼가 만드는 문구이고, `Dispatch.process`의 매치 실패 raise가 이 헬퍼를 부릅니다.
-- **고치려면**: 프로바이더(quad-roblox 등)가 설치돼 있다면 가장 흔한 원인은 문자 키 쪽입니다 — 그 클래스에 없는(오타 난) 프로퍼티·이벤트 이름, 읽기 전용 프로퍼티(`AbsoluteSize` 등 — 읽으려면 `q.OnChange`), 그리고 `Parent`(props가 아니라 만든 뒤 밖에서 `inst.Parent = …`로 붙입니다)를 확인하세요. quad 값이라면 올바른 종류의 키(숫자/문자) 자리에 놓으세요 — 단 `Store`·`Context`·`Provider`는 어느 키에도 그대로 놓이지 않으니(숫자 키로 옮겨도 같은 에러) 메시지 꼬리대로 하세요 — `Store`는 `store.Name` 같은 필드를 놓거나 `q.Attr(store)`로 감싸고, `Context`/`Provider`는 필요한 값을 먼저 읽어 내세요. 설치 전이라면 그 값을 다루는 프로바이더가 설치돼 있는지 확인하세요.
+- **고치려면**: 프로바이더(quad-roblox 등)가 설치돼 있다면 가장 흔한 원인은 문자 키 쪽입니다 — 그 클래스에 없는(오타 난) 프로퍼티·이벤트 이름, 읽기 전용 프로퍼티(`AbsoluteSize` 등 — 읽으려면 `q.OnChange`), 그리고 `Parent`(props가 아니라 만든 뒤 밖에서 `inst.Parent = …`로 붙입니다)를 확인하세요. quad 값이라면 올바른 종류의 키(숫자/문자) 자리에 놓으세요(배열 원소로만 쓰는 값 — `Tag`·`Attr` 등 — 이 반영 프로퍼티 이름 키에 놓이면 이 에러 대신 프로퍼티 핸들러가 먼저 받습니다; `q.debug`를 켜면 그 자리를 한 줄로 알려 줍니다) — 단 `Store`·`Context`·`Provider`는 어느 키에도 그대로 놓이지 않으니(숫자 키로 옮겨도 같은 에러) 메시지 꼬리대로 하세요 — `Store`는 `store.Name` 같은 필드를 놓거나 `q.Attr(store)`로 감싸고, `Context`/`Provider`는 필요한 값을 먼저 읽어 내세요. 설치 전이라면 그 값을 다루는 프로바이더가 설치돼 있는지 확인하세요.
 - **참고**: [`q.Dispatch.process(inst, key, value, index)`](/reference/extend/02-dispatch-handler-contract/#qdispatchprocessinst-key-value-index)
 
 ### Quad0077
@@ -366,3 +366,11 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 - **언제**: `mod:Field(fn)`의 변환 함수가 **함수를 돌려줬을 때**(지금 필드 값이 평범한 값인 갈래) — 흔히 `q.Modifier():Activated(function(_old) return function() … end end)`처럼 이벤트 핸들러를 Modifier에 넣으려는 우회입니다. 초기 필드 테이블로 같은 값을 넣으면 [`Quad0063`](#quad0063)으로 거부되는데, 이 길로는 생 함수가 필드에 들어가 두 경로가 갈렸습니다. 지금 필드 값이 `State`면 변환이 `:Compute`로 미뤄져 여기서 걸리지 않습니다.
 - **고치려면**: 이벤트 핸들러는 Modifier가 아니라 Declaration의 인라인 키(`D.TextButton { Activated = fn }`)로 넘기세요. 꼭 Modifier로 옮겨야 하면 `State`에 담아 넘기세요.
 - **참고**: [`mod:<Field>(value)`](/reference/core/08-modifier/#modfieldvalue)
+
+### Quad0266
+
+`Dispatch.addHandler: debugOnly must be a boolean or nil (got {typeof(fd)})` — `quad-base/src/Dispatch/init.luau`
+
+- **언제**: `handler.debugOnly`가 `true`/`false`/`nil`이 아닐 때 — `"yes"`나 `1`처럼 참 같은 값이 그대로 통과하면 그 핸들러가 조용히 평소(debug 아님) 스캔 목록에 남습니다(`== true`만 debug 전용 목록으로 옮겨지므로).
+- **고치려면**: `debugOnly`는 생략하거나 `true`/`false`로 쓰세요.
+- **참고**: [`q.Dispatch.addHandler(handler)`](/reference/extend/02-dispatch-handler-contract/#qdispatchaddhandlerhandler)

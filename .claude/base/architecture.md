@@ -335,6 +335,7 @@ quad/
 │       ├── ErrorNamespace.luau    # **[2026-08-31 M3 `H-231`]** 공유 에러 네임스페이스 인스턴스(`quad-error` 위의 `QuadError.new()` 한 벌 — 태그 맵·`errorBefore`/`errorBeforeNearest`/`setFuncLevel`; 최상위 `init.luau`가 `errorNamespace`로 재export, 백엔드·플러그인은 이걸 받아 태깅)
 │       ├── NotInstalled.luau      # **[2026-09-07 post-implementation round1 Q3 ②]** `notInstalled(name, what, hint?)` — 백엔드가 설치해야 하는 op의 안내 스텁 팩토리 한 본문(`Tag.luau`/`Attr/Key.luau`/`LifetimeHandle.luau`가 위임; 메시지 `"<name> is not available"`, `errorBefore` 최외곽 — `H-378`)
 │       ├── Void.luau              # **[2026-08-28 `H-162`]** `return function() end` 한 줄 — 단일 no-op. 의존 없는 잎(`None`/`Brand`/`Relate`와 같은 급), `Dispatch/*`·핸들러·최상위 `init.luau`가 require
+│       ├── DebugKeyFilter.luau    # **[2026-10-01 round13 Q135 후속 — 사용자 결정]** `register(dispatch, name, kindOf)` — `debugOnly` 문자 키 경고 필터 팩토리(NORMAL + 2, `keyType = "string"`, 경고 뒤 `false`, 같은 (inst, key)는 한 번). 브랜드 지식은 없다 — Ref 가족·Observer·Effect·Slot·Tag·Attr가 자기 Init에서 `kindOf`로 등록(`H-278`). `Dispatch/` 폴더 규칙(코어와 drive 단계만) 밖이라 최상위 잎. 정본 `dispatch-core-plan.md`의 `debugOnly` 항목
 │       ├── Brand.luau             # **[2026-08-28 M2 첫 단위]** **[2026-09-07 사용자 결정]** `Brand()` 팩토리는 quad-types로(`QuadTypes.Brand` — 패키지마다 자기 브랜드를 만들 수 있게), 여긴 **quad-base 브랜드 인스턴스 전부**(`EpochBrand`를 `Source`/`Ref`/`GateNode`가 공유하므로 타입 모듈마다 두면 순환 require) + `is*` 술어(타입이 생길 때 그 술어를 여기 추가, 최상위 `init.luau`가 재export; `TweenBrand`/`isTween`은 Tween과 함께 quad-roblox `Brand.luau`로). 의존 없는 잎(`base/brand-plan.md`). **[2026-10-01]** 내부 능력 브랜드 `BindableBrand`(술어·`q.` 재노출 없음 — Observer/Effect가 자기 브랜드 옆에서 등록, 아래 `LifetimeHandle.luau` 줄)
 │       ├── Relate.luau            # inst를 weak 키로 하는 범용 릴레이션(`SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`), 비싱글톤 생성자(`base/relate-plan.md`) — 구 PerInstanceState/perInstanceState 대체
 │       ├── ImplRegistry.luau      # **[2026-08-31 `H-206`]** 인스턴스별 임플 저장 접근 `implsOf(module)`(`module._impl`, `H-181`) 한 벌 — State/Observer/Effect에 verbatim 세 벌이던 것을 잎으로 추출(순수 데이터 접근, 내부 전용 — `init.luau` 재export 없음)
@@ -565,8 +566,17 @@ debug 는 치명적 부분 아니면 기본적으로 계속 실행은 시켜주�
   `Dispatch/init.luau`가 첫 사례). 위 사용자 문장의 "코드가 더러워져서 그걸 유의하고 있음"과 짝 — 비싼 검사를 늘리는
   비용은 런타임이 아니라 읽기 맥락이라, 배치로 그 비용을 줄인다. 기존 인라인 debug 분기(`Claim.luau`·`Slot/List.luau`
   모르는 키·`Debounce.luau`)는 한 줄짜리라 그대로 둔다(일괄 이동 안 함 — 그 파일을 만질 때 같이).
+- **[2026-10-01 사용자 결정] 디스패치 스캔 안의 debug 검사는 `debugOnly` 핸들러로.** 사용자: *"debug 를 끄거나 켜거나 동적이게
+  할 수가 없음. handler 계약에 flag 하나를 두는 방향을 넣어보고싶어 … debug 까지 포함하는 테이블 하나, debug 를 포함하지 않는
+  테이블 하나"*, 이름은 *"debugOnly로 가자"*(외부자·내부자 이름 검토 둘 다 추천). `Dispatch`가 `debugOnly` 핸들러를 별도 정렬
+  배열에 두고 버킷을 두 벌(포함·미포함, 안정 병합) 만들어 `getHandler`가 `module.debug`를 호출 시점에 읽어 고른다 — 평소 비용은
+  분기 하나, 토글은 즉시, 평소 핸들러끼리의 순서(동률 포함)는 불변(같은 배열에 넣으면 불안정 정렬이 debug를 꺼도 FALLBACK 동률
+  순서를 바꾼다 — 프로토 실측). 첫 사용자는 문자 키 경고 필터(`DebugKeyFilter.luau`, NORMAL + 2, 경고 후 `false`). 정본은
+  `dispatch-core-plan.md`의 `debugOnly` 항목, 프로토·실측은 `audit/round13-fordebug-proto/`.
 - **2026-10-01 현재 읽는 자리**: 진단 줄 — Dispatch 동률, `AddPlugin` 덮어쓰기, 옵션 테이블 모르는 키(`Debounce`/`Throttle`,
-  `Slot:List`/`:Single` opts, `Tween`, `Animate`), `Claim` 디스크립터; 에러로 멈추는 비싼 검사 — Observer 설치 루프 한도
+  `Slot:List`/`:Single` opts, `Tween`, `Animate`), `Claim` 디스크립터, 배열 전용 quad 값의 문자 키(`debugOnly` 필터),
+  Compute 감지기 둘(계산 함수 도중의 `Source:Set`/`:Emit`, 멈춘 계산 위의 새 실행 — `source-state-plan.md` "Compute 순수성" 절);
+  에러로 멈추는 비싼 검사 — Observer 설치 루프 한도
   (`Quad0262`), Effect 재실행 루프 한도(`Quad0263`), `process`의 함수 아닌 retractor(`Quad0077`). 목록의 소스는 레퍼런스
   core/01의 `q.debug` 절.
 
@@ -629,7 +639,7 @@ debug 는 치명적 부분 아니면 기본적으로 계속 실행은 시켜주�
   `Timeout._native`)는 공개 표면이 아니라 내부 계약이고 언제든 바뀐다** — 케이싱
   규칙의 대상도 아니다(사용자: *"_ 언더스코어 필드는 언제나 바뀔 수 있고, 내부
   계약이지 외부 노출 표면은 아닌걸로 못박어도"*; 문서 쪽 표기는 레퍼런스 core/01·extend/01). Handler 계약 필드(`isHandlable`/
-  `priority`/`process`, 선택 `name`·`keyType` — 2026-08-13 다섯 번째 세션에 `retract`가 `process`의
+  `priority`/`process`, 선택 `name`·`keyType`·`debugOnly` — 2026-08-13 다섯 번째 세션에 `retract`가 `process`의
   반환값으로 합쳐지기 전엔 4종이었음)도 여기 속함 — 이건 애초에 "함수"라기보다
   구현체가 채워 넣는 구조체 필드.
 - **경계 판단 기준**: 새 이름을 지을 때 "이게 특정 프리미티브 타입 하나의

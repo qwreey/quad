@@ -34,6 +34,7 @@
 ]]
 
 local Brand = require("./Brand")
+local DebugKeyFilter = require("./DebugKeyFilter")
 local Relate = require("./Relate")
 local QuadTypes = require("../luau_packages/quad_types")
 local Err = require("./ErrorNamespace")
@@ -267,6 +268,10 @@ local function Init(module: any)
 	-- (tag-plan: holders keyed by position, not Tag identity — the same
 	-- immutable Tag object reused at two positions must count twice)
 	local tagNameMap = Relate()
+
+	DebugKeyFilter.register(dispatch, "TagStringKeyDebugFilter", function(v: any): string?
+		return if isTag(v) then "Tag" else nil
+	end)
 
 	dispatch.addHandler({
 		name = "TagFallbackHandler",

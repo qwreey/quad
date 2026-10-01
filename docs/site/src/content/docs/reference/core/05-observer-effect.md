@@ -9,6 +9,8 @@ description: leaf 구독 핸들 둘 — state:Observer(fn)과 q.Effect(fn, ...de
 
 둘은 이름이 같은 네 진입점(`:Subscribe` / `:WeakSubscribe` / `:Unsubscribe` / `:WeakUnsubscribe`)과 `.Subscribed` 플래그를 공유하지만, **본문은 각자의 것**입니다 — 아래 각 절이 그 차이를 적습니다.
 
+**반응형 콜백은 파동 도중 yield하지 않고, 꼬인 파동을 풀어 줄 도구가 없는 곳에서 자기 입력을 되먹이지 않습니다.** [`:Compute`](/reference/core/03-state/#statecomputefn-deps) 계산 함수는 어떤 `State`도 `:Set`하지 않습니다 — 읽어서 조합해 돌려줄 뿐입니다. `Effect`가 자기 의존성을 `:Set`하면 끝난 뒤 한 번 더 도는데, 이것은 지연 재실행이 그 꼬임을 푸는 정의된 예외입니다. 이 밖은 정의되지 않습니다. 다른 대상을 `:Set`하는 것은 두 핸들의 본업입니다.
+
 이 페이지의 심볼: [`state:Observer(fn)`](#stateobserverfn) · [`observer.Subscribed`](#observersubscribed) · [`observer:Subscribe()`](#observersubscribe) · [`observer:WeakSubscribe()`](#observerweaksubscribe) · [`observer:Unsubscribe()`](#observerunsubscribe) · [`observer:WeakUnsubscribe()`](#observerweakunsubscribe) · [`q.Effect(fn, ...deps)`](#qeffectfn-deps) · [`effect:Rerun()`](#effectrerun) · [`effect:Subscribe()`](#effectsubscribe) · [`effect:WeakSubscribe()`](#effectweaksubscribe) · [`effect:Unsubscribe()`](#effectunsubscribe) · [`effect:WeakUnsubscribe()`](#effectweakunsubscribe)
 
 ```luau
@@ -57,6 +59,8 @@ local label = D.TextLabel {
 
 - `Quad0116 Observer: must be an array item, not the value of a {typeof(k)} key`
 - `Quad0097 Effect: must be an array item, not the value of a {typeof(k)} key`
+
+단 그 문자 키가 그 클래스의 반영 프로퍼티 이름이면 프로퍼티 핸들러가 먼저 받아 이 거절에 닿지 않습니다(생성된 props 타입이 strict에서 그 자리를 막는 것이 첫 방어입니다). [`q.debug`](/reference/core/01-quad-module/#qdebug)를 켜면 그런 자리마다 경고 한 줄이 나옵니다(같은 요소·키는 한 번, 동작은 그대로).
 
 ---
 

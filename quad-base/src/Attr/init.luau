@@ -47,6 +47,7 @@
 ]]
 
 local Brand = require("./Brand")
+local DebugKeyFilter = require("./DebugKeyFilter")
 local Relate = require("./Relate")
 local AttrKeyModule = require("@self/Key")
 local QuadTypes = require("../luau_packages/quad_types")
@@ -242,6 +243,10 @@ local function Init(quad: any)
 	-- (inst(weak), groupValue) -> k — position claim: the same group object at
 	-- two positions of one instance is an immediate error (`AT-1`/`H-41`)
 	local groupClaimKeys = Relate()
+
+	DebugKeyFilter.register(dispatch, "AttrStringKeyDebugFilter", function(v: any): string?
+		return if isAttr(v) then "Attr" else nil
+	end)
 
 	local function groupKey(v: any, name: string): any
 		local key = groupKeys:GetStrong(v, name)

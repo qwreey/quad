@@ -26,6 +26,7 @@ local D = q.Declaration
 export type Handler = {
 	name: string?,
 	keyType: ("number" | "string")?,
+	debugOnly: boolean?,
 	isHandlable: (inst: any, key: any, value: any) -> boolean,
 	priority: number,
 	process: (inst: any, key: any, value: any, index: number) -> (nextValue: any?, retracting: boolean) -> (),
@@ -34,11 +35,12 @@ export type Handler = {
 
 | 필드 | 필수 | 설명 |
 |---|---|---|
-| `isHandlable` | ✅ | **순수 판별**. 이 (요소, 키, 값)을 내가 처리할 수 있는가. 부작용을 넣지 마세요 — 매치되지 않는 스캔에서도 계속 불립니다. |
+| `isHandlable` | ✅ | **순수 판별**. 이 (요소, 키, 값)을 내가 처리할 수 있는가. 부작용을 넣지 마세요 — 매치되지 않는 스캔에서도 계속 불립니다. 예외는 하나 — `debugOnly` 핸들러는 진단 경고를 찍을 수 있습니다(아래 `debugOnly` 행). |
 | `priority` | ✅ | 스캔 순서. 큰 값이 먼저입니다. 아래 밴드 상수에서 출발해 `± n`으로 미세 조정합니다. |
 | `process` | ✅ | 실제 처리. 반환값은 **retractor 함수**이며 생략할 수 없습니다 — 무를 것이 없어도 `q.Void`를 돌려줍니다. 함수가 아닌 값(`true`·숫자·테이블, `__call` 테이블 포함)은 계약 위반입니다 — 평소에는 `nil`만 그 자리에서 검사하고(매 `process`마다 도는 경로라), [`q.debug`](../core/01-quad-module.md#qdebug)를 켜면 나머지도 그 자리에서 거부합니다. 끈 채로 두면 나중에 그 자리를 무를 때 quad 안에서 번호 없는 에러로 죽습니다. |
 | `name` | — | **진단 전용**. 동률 경고와 `listHandlers` 덤프에 쓰입니다. 스캔·매치에는 아무 영향이 없고, 없으면 priority만 보입니다. |
 | `keyType` | — | "나는 이 타입의 키에서만 매치될 수 있다"는 선언. 스캔 버킷을 좁히는 힌트입니다. |
+| `debugOnly` | — | `true`면 [`q.debug`](../core/01-quad-module.md#qdebug)가 참인 스캔에서만 후보가 됩니다. **`q.debug`가 꺼져 있으면 에러가 아니라 후보에서 조용히 빠집니다** — 그 키는 이 핸들러가 없는 것처럼 스캔됩니다. `q.debug`는 스캔할 때마다 읽으므로 켜고 끄면 다음 스캔부터 바로 반영됩니다. `keyType`처럼 등록 때 한 번 읽습니다(나중에 필드를 바꿔도 목록을 옮기지 않음). 쓰임은 경고를 찍고 `false`를 돌려 스캔을 그대로 흘려보내는 진단 필터가 기본이지만, `true`를 돌려 debug에서만 키를 맡는 핸들러도 됩니다. `true`/`false`/`nil` 말고는 등록 때 거부합니다(`Quad0266`). debug를 꺼 두면 스캔 비용은 분기 하나뿐이고, `debugOnly` 핸들러를 등록해도 나머지 핸들러끼리의 순서(동률 포함)는 바뀌지 않습니다. |
 
 `process`의 `index`는 그 자리의 **체인 깊이**입니다. 값을 한 겹 벗겨 아래로 위임하는 핸들러(래핑 핸들러)는 `q.Dispatch.process(inst, key, 벗긴값, index + 1)`을 부릅니다 — 그러면 같은 자리에 핸들러가 층으로 쌓이고, 무를 때는 깊은 층부터 역순으로 풀립니다.
 
@@ -93,7 +95,9 @@ HANDLER_PRIORITY_FALLBACK: number
 
 우선순위 공간은 **열린 숫자**입니다 — 계약은 밴드의 순서와 의미이고, 리터럴 값 자체는 계약이 아닙니다. `HANDLER_PRIORITY_NORMAL + 1`처럼 밴드에서 오프셋해 쓰는 것이 의도된 사용법입니다.
 
-**동률에는 정의된 순서가 없습니다** — 같은 등록 순서면 매번 같지만(정렬이 결정적) 등록 순서가 이기는 것도 아니고, 무관한 priority의 핸들러가 하나 더 등록될 때마다 기존 동률의 순서가 다시 섞일 수 있습니다(나중에 붙은 플러그인 하나가 기존 두 핸들러의 승자를 조용히 바꿀 수 있음 — [2026-09-27 mock 실측]). `q.debug`가 참이면 등록 시점에 진단 줄이 출력됩니다(둘째 핸들러가 등록되는 순간 첫 동률 상대 하나만 — 이후 재배열은 알리지 않고, 등록 뒤에 켜면 0줄)(같은 버킷을 두고 경쟁할 수 있는 핸들러들 사이에서만 — 서로 다른 `keyType`을 선언한 둘은 애초에 같은 버킷에 없으므로 동률로 치지 않습니다).
+**동률에는 정의된 순서가 없습니다** — 같은 등록 순서면 매번 같지만(정렬이 결정적) 등록 순서가 이기는 것도 아니고, 무관한 priority의 핸들러가 하나 더 등록될 때마다 기존 동률의 순서가 다시 섞일 수 있습니다(나중에 붙은 플러그인 하나가 기존 두 핸들러의 승자를 조용히 바꿀 수 있음 — [2026-09-27 mock 실측]). `q.debug`가 참이면 등록 시점에 진단 줄이 출력됩니다(둘째 핸들러가 등록되는 순간 첫 동률 상대 하나만 — 이후 재배열은 알리지 않고, 등록 뒤에 켜면 0줄)(같은 버킷을 두고 경쟁할 수 있는 핸들러들 사이에서만 — 서로 다른 `keyType`을 선언한 둘은 애초에 같은 버킷에 없으므로 동률로 치지 않습니다). `debugOnly` 핸들러는 평소 핸들러와 따로 정렬되고 debug 스캔에서만 안정 병합되므로(동률이면 `debugOnly` 쪽이 먼저), 그것과의 동률은 debug에서만 의미가 있습니다.
+
+**`HANDLER_PRIORITY_NORMAL + 2`에는 quad가 등록한 `debugOnly` 진단 필터가 있습니다.** 배열 원소로만 쓰이는 quad 값(Ref 가족·Observer·Effect·Slot·Tag·Attr)이 문자 키에 놓이면, `q.debug`일 때 그 자리에서 경고 한 줄을 찍고(같은 요소·키는 한 번) 스캔을 그대로 흘려보냅니다 — 그 아래(`NORMAL`의 Property, `NORMAL + 1`의 인스턴스 축약)가 받는 동작은 바뀌지 않습니다. 그래서 `NORMAL + 1` 이하에서 그런 값을 문자 키로 일부러 받는 프로바이더 핸들러는 debug에서 이 경고를 봅니다 — 경고 없이 받으려면 `NORMAL + 3` 이상에 등록하세요.
 
 ## `q.Dispatch.addHandler(handler)`
 
@@ -111,6 +115,7 @@ addHandler: (handler: Handler) -> ()
 Quad0079 Dispatch.addHandler: handler must be a table with isHandlable/process functions and a numeric priority (got {typeof})
 Quad0080 Dispatch.addHandler: priority must be a finite number (got {tostring(pr)})
 Quad0081 Dispatch.addHandler: keyType must be "number", "string" or nil (got {값})
+Quad0266 Dispatch.addHandler: debugOnly must be a boolean or nil (got {typeof})
 ```
 
 ## `q.Dispatch.listHandlers()`
@@ -121,7 +126,7 @@ Quad0081 Dispatch.addHandler: keyType must be "number", "string" or nil (got {�
 listHandlers: () -> { Handler }
 ```
 
-**반환** — 등록된 핸들러 전부를 우선순위 순으로 담은 **사본**(`table.clone`). **[2026-09-26 기준]** 사본인 건 그 배열뿐입니다 — 안의 핸들러 테이블은 레지스트리에 실제로 앉은 항목 그 자체입니다. 읽기만 하세요: 예를 들어 돌려받은 항목의 `isHandlable`을 갈아 끼우면 그 자리에서 레지스트리의 핸들러가 바뀌고, 이후 그 우선순위로 오는 모든 매치에 영향을 줍니다(`q.Dispatch.getHandler` 사본도 같습니다).
+**반환** — 등록된 핸들러 전부를 우선순위 순으로 담은 **사본**(`table.clone`). `debugOnly` 핸들러도 `q.debug`와 무관하게 늘 들어 있습니다(각 항목의 `debugOnly` 필드로 가릴 수 있음). **[2026-09-26 기준]** 사본인 건 그 배열뿐입니다 — 안의 핸들러 테이블은 레지스트리에 실제로 앉은 항목 그 자체입니다. 읽기만 하세요: 예를 들어 돌려받은 항목의 `isHandlable`을 갈아 끼우면 그 자리에서 레지스트리의 핸들러가 바뀌고, 이후 그 우선순위로 오는 모든 매치에 영향을 줍니다(`q.Dispatch.getHandler` 사본도 같습니다).
 
 **동작** — 순수 조회입니다. 아무것도 출력하지 않습니다 — 보여줄지 말지는 부르는 쪽의 일입니다.
 
@@ -135,7 +140,7 @@ getHandler: (inst: any, key: any, value: any) -> Handler?
 
 **반환** — 우선순위 순으로 `isHandlable`이 참을 준 **첫** 핸들러, 없으면 `nil`.
 
-**동작** — 순수 스캔입니다. `process`/`retract`를 부르지 않고 부기도 건드리지 않습니다. 매치 실패를 에러로 만드는 것은 `process`의 일이라, 여기서는 조용히 `nil`입니다. 키의 `type`에 맞는 버킷만 훑습니다.
+**동작** — 순수 스캔입니다. `process`/`retract`를 부르지 않고 부기도 건드리지 않습니다. 단 `q.debug`가 참이면 `debugOnly` 핸들러도 훑으므로 그 진단 필터가 경고를 찍을 수 있습니다. 매치 실패를 에러로 만드는 것은 `process`의 일이라, 여기서는 조용히 `nil`입니다. 키의 `type`에 맞는 버킷만 훑습니다.
 
 인자 자체가 틀리면(`inst`가 `nil`, `key`가 `nil`) 매치 실패와는 다른 층 — `process`/`retractFrom`과 같은 검사(`checkInst`/`checkKey`)로 그 자리에서 즉시 던집니다(`Quad0072`/`Quad0074`). `getHandler`는 `process`/`retractFrom` 앞에 서는 다른 진입점이 없어, 이 검사가 없으면 `nil`/`nil` 인자가 그대로 `isHandlable`에 들어가 잎 모듈(예: quad-roblox의 `Reflection`)의 raw VM 에러가 됩니다. **[2026-09-26 기준]** `inst`가 `nil`이 아니지만 그 백엔드의 Instance 모양이 아닌 값(예: 빈 테이블)은 이 검사를 통과합니다 — 그 경우 `isHandlable`이 여전히 잎 모듈 에러를 낼 수 있고, `q.Dispatch`는 백엔드 무관 설계라 여기서 인스턴스 모양을 검증하지 않습니다.
 
@@ -373,7 +378,7 @@ q.Dispatch.addHandler({
 - **`process`가 던지면 그 자리의 정리는 되돌릴 수 없습니다.** 엔진은 `process`를 `pcall`로 감싸지 않습니다(핫 패스이고, quad는 예외 이후의 부기 정합성을 보장하지 않습니다). 그 자리의 슬롯은 no-op 표식을 단 채 남고, 명시적 철거로도 복구되지 않습니다. **retractor가 던지면** 더 나쁩니다 — 슬롯이 비워지지 않아 그 키의 철거와 다른 핸들러로의 교체가 매번 같은 retractor를 다시 불러 다시 던지고, 위임한 얕은 층은 영영 철거되지 않습니다([2026-09-27 mock 실측] — 정의되지 않은 동작). **retractor 안에서 같은 `(inst, key)`에 `retractFrom`을 다시 부르는 것**(간접 재진입)도 정의되지 않은 동작입니다 — 체인 배열에 구멍이 생겨 `Quad0071`이 납니다.
 - **`keyType`을 잘못 선언하면 조용히 빠집니다.** 등록 자체는 통과하고(값이 `"number"`/`"string"`/`nil` 중 하나이기만 하면), 그 핸들러는 어긋난 버킷에서 아예 후보로 오르지 않습니다.
 - **동률 순서는 정의돼 있지 않습니다.** 진단은 `q.debug`가 참일 때만 나옵니다.
-- **`isHandlable`은 부작용 없이 순수해야 합니다.** 매치되지 않는 스캔에서도 반복해서 불립니다.
+- **`isHandlable`은 부작용 없이 순수해야 합니다**(`debugOnly` 핸들러의 진단 경고만 예외). 매치되지 않는 스캔에서도 반복해서 불립니다.
 - `Destroy`로 요소가 사라질 때 retractor는 **불리지 않습니다**. 그건 정리가 아니라 메모리 해제이고, 체인·retractor·구독이 그 요소의 수명에 묶여 통째로 수거됩니다.
 - **이미 파괴된 인스턴스에 공개 `q.Dispatch.process`/`drive`를 직접 부르는 것은 정의되지 않은 동작입니다.** 입구에 생존 검사가 없어 핸들러가 전부 조용히 "성공"합니다 — `Event`는 영영 `Connected`로 남는 연결을 만들고, `OnChange`는 연결하고, 프로퍼티는 값을 쓰고, 숏핸드 키(`UICorner` 등)는 파괴된 부모 아래 새 관리 자식을 만듭니다([2026-09-27 mock 실측]). 사용자 코드는 이 경로에 닿지 않습니다 — 인스턴스가 죽으면 그 자리의 구독이 수명과 함께 풀려 이후 `Set`이 아무것도 건드리지 않습니다. 노출되는 건 확장 작성자가 이 함수들을 직접 부를 때뿐이니, 부르기 전에 인스턴스가 살아 있는지는 호출하는 쪽이 확인하세요.
 

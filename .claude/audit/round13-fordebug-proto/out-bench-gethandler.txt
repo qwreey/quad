@@ -1,0 +1,6 @@
+getHandler (ns/call, median of 11)        HEAD   control       off        on control/HEAD     off/HEAD      on/HEAD
+string key, string value (Name)          393.5     394.7     400.6     563.6        1.003        1.018        1.432
+string key, table value (Size)           415.6     406.9     420.5    1057.5        0.979        1.012        2.545
+number key, Instance-ish child           589.3     592.9     614.4     614.5        1.006        1.043        1.043
+number key, Tag (FALLBACK, last)        1344.4    1334.4    1366.1    1364.8        0.993        1.016        1.015
+heap 3186 KB

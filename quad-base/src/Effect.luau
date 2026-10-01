@@ -37,6 +37,7 @@
 ]]
 
 local Brand = require("./Brand")
+local DebugKeyFilter = require("./DebugKeyFilter")
 local EpochMap = require("./EpochMap")
 local Err = require("./ErrorNamespace")
 local QuadTypes = require("../luau_packages/quad_types")
@@ -473,6 +474,9 @@ local function registerDispatchHandlers(module: any)
 			return Void -- unreachable; keeps the contract type
 		end,
 	})
+	DebugKeyFilter.register(dispatch, "EffectStringKeyDebugFilter", function(v: any): string?
+		return if Brand.isEffect(v) then "Effect" else nil
+	end)
 end
 
 local function Init(module: any)

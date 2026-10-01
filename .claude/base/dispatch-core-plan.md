@@ -164,6 +164,24 @@ v1의 `ProcessQuadProperty`(`qwreey/quad@f867ccb:src/class.lua` 134~214행)는
   `getHandler`가 46.5µs 중 9.2µs — 관측된 병목이 아니라 사용자가 방향을 먼저
   승인한 항목이다(round1 Q3 ④ 논의 → round7 Q37).
 
+- **⭐ [2026-10-01 신설, round13 Q135 후속 사용자 확정] 선택 필드 `debugOnly: boolean?` — debug 전용 핸들러.**
+  사용자: *"handler 계약에 flag 하나를 두는 방향을 넣어보고싶어. forDebug: boolean?(가칭) 만일 true면 debug 에서만
+  돌아. 여기서 핫패스에서 드는 비용을 줄이기 위해 debug 까지 포함하는 테이블 하나, debug 를 포함하지 않는 테이블 하나"*,
+  이름은 *"debugOnly로 가자"*. 모양: `debugOnly == true` 핸들러는 `handlers`가 아니라 별도 정렬 배열 `debugHandlers`에
+  들어가고, `rebuildBuckets`가 버킷을 두 벌 만든다 — `buckets`(평소, 지금 그대로)와 `debugBuckets`(`handlers`와
+  `debugHandlers`의 **안정 병합**, 동률이면 debug 쪽이 먼저). `getHandler`는 `module.debug`를 호출 시점에 읽어 둘 중
+  하나를 고른다(토글 즉시 반영, 평소 비용 분기 하나 — 프로토 실측 `getHandler` +1.2~4.3%·종단 잡음 안). **배열을 따로
+  두는 이유는 실측**: 같은 배열에 넣고 버킷만 가르면 `table.sort`가 불안정이라 debug 핸들러가 들어간 것만으로 평소
+  FALLBACK 동률의 순서가 다시 섞였다(debug **끔**에서 `[AttrKey] = q.Effect(…)`가 원시 attribute 에러 → `Quad0097`). 분리하면
+  `handlers`의 삽입·정렬 열이 그대로라 평소 순서가 바뀌지 않고, 병합이 안정이라 debug를 켜도 평소 핸들러끼리의 상대
+  순서는 같다. 등록 때 한 번 읽고(`keyType`과 같은 성질), boolean/nil이 아니면 `Quad0266`(참 같은 값이 평소 목록에 조용히
+  남는 것을 막음). 꺼져 있으면 에러가 아니라 후보에서 조용히 빠진다. 신원 dedup은 두 배열에 걸치고, `listHandlers`는
+  병합 목록(debug 핸들러 포함), 동률 줄은 병합 목록 기준(어차피 debug 전용 출력). `isHandlable` 순수성의 유일한 예외 —
+  `debugOnly` 핸들러는 진단 출력을 할 수 있다. 첫 사용자: 문자 키에 놓인 배열 전용 quad 값 경고 필터(`DebugKeyFilter.luau`,
+  각 모듈 Init이 `kindOf`로 등록 — 브랜드 지식은 소유 모듈에(`H-278`), NORMAL + 2·`keyType = "string"`·경고 뒤 `false`·같은
+  (inst, key)는 한 번). FALLBACK 가드 덮어쓰기 계약(`spec.leaf` §7)과 반영 프로퍼티 키가 Property로 가는 동작은 그대로다.
+  프로토·실측 `audit/round13-fordebug-proto/`.
+
 디스패치는 등록된 핸들러를 우선순위 순으로 스캔하며 `isHandlable`을 호출,
 첫 매치가 처리(Fusion의 SpecialKey 우선순위 스캔과 유사하되 4단계 고정이 아니라
 열린 레지스트리). tbox의 `TUnion` 런타임 체커가 이미 이 "순서대로 스캔, 첫 매치

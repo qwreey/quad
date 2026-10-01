@@ -41,6 +41,7 @@
 ]]
 
 local Brand = require("./Brand")
+local DebugKeyFilter = require("./DebugKeyFilter")
 local ImplRegistry = require("./ImplRegistry")
 local Err = require("./ErrorNamespace")
 local Relate = require("./Relate")
@@ -316,6 +317,9 @@ end
 --     (`H-71`, load-bearing per `H-266`)). The combined handler split into
 --     one per owning module — the two value spaces are disjoint, so the
 --     per-module dedup relate is equivalent.
+--   - ObserverStringKeyDebugFilter (`debugOnly`, NORMAL + 2 — `DebugKeyFilter.luau`): with `q.debug`
+--     on, warns when an Observer sits at a string key naming a property (the Property handler takes
+--     it before the FALLBACK guard below can); answers false, so dispatch is unchanged.
 --   - ObserverDynamicPathGuard (FALLBACK — override-able): a named-slot
 --     Observer is a type-bypass mistake; message text is the 2026-08-18
 --     user-confirmed wording, raised via the outermost scan (`errorBefore` —
@@ -372,6 +376,9 @@ local function registerDispatchHandlers(module: any)
 			return Void -- unreachable; keeps the contract type
 		end,
 	})
+	DebugKeyFilter.register(dispatch, "ObserverStringKeyDebugFilter", function(v: any): string?
+		return if Brand.isObserver(v) then "Observer" else nil
+	end)
 end
 
 local function Init(module: any)

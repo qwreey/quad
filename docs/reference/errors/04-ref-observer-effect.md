@@ -115,7 +115,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 `Effect: must be an array item, not the value of a {typeof(k)} key` — `quad-base/src/Effect.luau`
 
-- **언제**: `Effect`를 props의 문자 키 값 자리에 두거나, `State`/`Store`에 담아 그 자리에 닿게 했을 때.
+- **언제**: `Effect`를 props의 문자 키 값 자리에 두거나, `State`/`Store`에 담아 그 자리에 닿게 했을 때. 단 그 키가 클래스의 반영 프로퍼티 이름이면 프로퍼티 핸들러가 먼저 받아 이 가드에 닿지 않습니다 — [`q.debug`](../core/01-quad-module.md#qdebug)를 켜면 그 자리에서 경고 한 줄이 나옵니다.
 - **고치려면**: `Effect`는 props의 숫자 키(배열부) 리터럴 자리에만 놓으세요.
 - **참고**: [숫자 키 자리에 넣기](../core/05-observer-effect.md#숫자-키-자리에-넣기)
 
@@ -195,7 +195,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 `Observer: must be an array item, not the value of a {typeof(k)} key` — `quad-base/src/Observer.luau`
 
-- **언제**: `Observer`를 props의 문자 키 값 자리에 두거나, `State`/`Store`에 담아 그 자리에 닿게 했을 때.
+- **언제**: `Observer`를 props의 문자 키 값 자리에 두거나, `State`/`Store`에 담아 그 자리에 닿게 했을 때. 단 그 키가 클래스의 반영 프로퍼티 이름이면 프로퍼티 핸들러가 먼저 받아 이 가드에 닿지 않습니다 — [`q.debug`](../core/01-quad-module.md#qdebug)를 켜면 그 자리에서 경고 한 줄이 나옵니다.
 - **고치려면**: `Observer`는 props의 숫자 키(배열부) 리터럴 자리에만 놓으세요.
 - **참고**: [숫자 키 자리에 넣기](../core/05-observer-effect.md#숫자-키-자리에-넣기)
 
@@ -259,7 +259,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 `{kind}: must be an array item, not the value of a {typeof(k)} key` — `quad-base/src/Ref/init.luau`
 
-- **언제**: `PreRef`/`PostRef`/`Ref`를 props의 문자 키 값 자리에 두었을 때 — 단 그 키가 클래스의 반영 프로퍼티나 이벤트 이름이면 프로퍼티·이벤트 핸들러가 먼저 받아 이 가드에 닿지 않습니다(`Name = ref`는 핸들러의 번호 없는 타입 에러, `Size = ref`는 조용히 대입, `Activated = ref`는 `Quad0218` — [2026-09-27 mock 관측]; 생성 props 타입이 strict에서 이 자리를 거부합니다).
+- **언제**: `PreRef`/`PostRef`/`Ref`를 props의 문자 키 값 자리에 두었을 때 — 단 그 키가 클래스의 반영 프로퍼티나 이벤트 이름이면 프로퍼티·이벤트 핸들러가 먼저 받아 이 가드에 닿지 않습니다(`Name = ref`는 핸들러의 번호 없는 타입 에러, `Size = ref`는 조용히 대입, `Activated = ref`는 `Quad0218` — [2026-09-27 mock 관측]; 생성 props 타입이 strict에서 이 자리를 거부합니다). 그런 자리는 [`q.debug`](../core/01-quad-module.md#qdebug)를 켜면 경고 한 줄(`{kind}: found at string key …`)로 드러납니다.
 - **고치려면**: 숫자 키(배열부) 자리에만 놓으세요.
 - **참고**: [숫자 키 자리에만 놓는다](../core/07-ref.md#숫자-키-자리에만-놓는다)
 

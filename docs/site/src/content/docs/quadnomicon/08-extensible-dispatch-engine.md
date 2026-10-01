@@ -43,6 +43,7 @@ description: "핸들러 레지스트리로 확장 가능한 디스패치 엔진�
 export type Handler = {
 	name: string?,                                     -- 진단 표시용(선택)
 	keyType: ("number" | "string")?,                   -- 이 핸들러가 볼 수 있는 키 타입(선택)
+	debugOnly: boolean?,                               -- q.debug일 때만 후보(선택)
 	isHandlable: (inst: any, key: any, value: any) -> boolean,
 	priority: number,
 	process: (inst: any, key: any, value: any, index: number)
@@ -53,7 +54,7 @@ export type Handler = {
 읽을 점이 셋 있습니다.
 
 - **`isHandlable`은 `(inst, key, value)` 셋을 다 봅니다.** 순수하고 빨라야 하며 부수
-  효과가 없어야 합니다 — 값 검증은 선택된 *뒤* `process` 안에서 합니다.
+  효과가 없어야 합니다(`debugOnly` 핸들러의 진단 경고만 예외) — 값 검증은 선택된 *뒤* `process` 안에서 합니다.
 - **`process`는 무언가를 반환합니다.** 반환값은 "이 호출이 한 일을 정확히 되돌리는"
   retractor 클로저입니다. 별도의 `retract` 메소드는 없습니다. `nil`을 반환하면 계약 위반이라
   즉시 error(`… must return a retractor function at key …, index … (got nil) - return Void when

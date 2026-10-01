@@ -67,6 +67,50 @@ local WEAK_KEY_MT = { __mode = "k" }
 -- One implementation per quad instance (`H-174`); storage scheme in `ImplRegistry.luau`.
 local implsOf = ImplRegistry.implsOf
 
+-- ── debug-only checks (`architecture.md` "debug 층"; kept out of the logic below) ──
+-- 2026-10-01 (user decision): a Compute fn only reads and combines — a yield inside it, or a Source
+-- write during it, is undefined (`source-state-plan.md` "Compute 순수성"). With `q.debug` on, two
+-- signals print one line each and the run goes on unchanged (they never raise). Both find a running
+-- fn by looking for `_recompute`'s own frame on a real call stack instead of keeping a counter: a fn
+-- that throws is never wrapped (architecture "예외 안전성 계약 — 감싸지 않는다"), so a counter would
+-- stay raised after a throw and warn on every later write; the call stack unwinds by itself.
+
+-- true when `fn` has a frame on `thread`'s stack (the current one when nil). Debug paths only — walks
+-- the whole stack.
+local function stackHas(fn: any, thread: thread?): boolean
+	local level = if thread == nil then 1 else 0
+	while true do
+		local f = if thread == nil then debug.info(level, "f") else debug.info(thread, level, "f")
+		if f == nil then
+			return false
+		end
+		if f == fn then
+			return true
+		end
+		level += 1
+	end
+end
+
+-- Signal (a), at fn entry: this node still carries the stamp of ANOTHER generation's run whose
+-- coroutine is alive and parked inside a recompute — an earlier run of this fn yielded (or this read
+-- re-entered it from a coroutine it resumed) and has not returned. A stamp left by a run that THREW is
+-- the defined recovery path (round10 Q50 (a)) and stays silent: its coroutine is dead, or it is this
+-- same coroutine (a same-coroutine re-entry with a new generation is a Set inside the fn — signal (b)).
+-- Records the running coroutine in `runThreads` (weak both ways — debug must not keep a parked
+-- coroutine alive) for the next entry's comparison; a run started while `q.debug` was off leaves no
+-- record and is not reported.
+local function checkOverlappingRun(node: any, recompute: any, runThreads: { [any]: thread })
+	local prior = runThreads[node]
+	local current = coroutine.running()
+	runThreads[node] = current
+	if node._computing == -1 or prior == nil or prior == current or coroutine.status(prior) == "dead" then
+		return
+	end
+	if stackHas(recompute, prior) then
+		print("State: Compute fn entered while an earlier run of this node has not returned - the fn yielded or re-entered (undefined)")
+	end
+end
+
 local function createImpl(module: any)
 	module:RunInit(Observer.Init) -- `:Observer` needs the per-instance Observer impl (idempotent pull, `H-177`)
 	local ObserverImpl = Observer.implFor(module)
@@ -157,6 +201,7 @@ local function createImpl(module: any)
 		end
 	end
 
+	local debugRunThreads: { [any]: thread } = setmetatable({}, { __mode = "kv" }) :: any -- signal (a) only
 	function Impl._recompute(self: any)
 		-- round10 Q50 (a) (user decision 2026-09-17): ONE flag, no unwinding — `_running`'s
 		-- twin on Observer/Effect, stamped with the generation instead of `true`. It catches
@@ -189,6 +234,9 @@ local function createImpl(module: any)
 		end
 		if self._computing == gen then
 			Err.errorBeforeNearest("Quad0184 State: Compute fn is already running for this value - a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)", SURFACE)
+		end
+		if module.debug then
+			checkOverlappingRun(self, Impl._recompute, debugRunThreads)
 		end
 		self._computing = gen
 		local hold = self._hold
@@ -396,7 +444,14 @@ local function implFor(module: any)
 	return impl
 end
 
+-- Signal (b)'s probe for `Source.luau` (debug paths only): is a Compute fn of this quad instance
+-- running on the current call stack?
+local function computeFnOnStack(module: any): boolean
+	return stackHas(implFor(module)._recompute, nil)
+end
+
 return {
 	Init = Init,
 	implFor = implFor,
+	computeFnOnStack = computeFnOnStack,
 }

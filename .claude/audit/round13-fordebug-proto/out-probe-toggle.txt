@@ -1,0 +1,17 @@
+PASS 1 off: no warning, value still assigned (HEAD behavior)  [0]
+PASS 2 on: one warning, value still assigned  [Ref: found at string key "Size" - must be an array item (it would be assigned to the property as a value)]
+PASS 3 on: 51 emits at one (inst, key) -> one line  [1]
+PASS 3b on: another (inst, key) -> its own line  [1]
+PASS 4 toggled off mid-life: no lines, value tracks  [0]
+PASS 5 toggled on again: the next emit warns  [Effect: found at string key "Size" - must be an array item (it would be assigned to the property as a value)]
+PASS 6 on: number keys -> no line  [0]
+PASS 7 forDebug = "yes" rejected with Quad0266  [Quad0266 Dispatch.addHandler: forDebug must be a boolean or nil (got string)]
+PASS 8 debug-only real handler: on -> handled, off -> no match  [Quad0076]
+PASS 9 provider tie with a debug filter is reported in debug  [Dispatch.addHandler: handler priority tie between "SlotStringKeyDebugFilter" (priority 2) and "ProbeAtFilterPriority" (priority 2) - ties have no defined order; offset from a HANDLER_PRIORITY_* band]
+PASS 10 listHandlers includes forDebug handlers  [7]
+captured lines:
+  Ref: found at string key "Size" - must be an array item (it would be assigned to the property as a value)
+  Ref: found at string key "Size" - must be an array item (it would be assigned to the property as a value)
+  Tag: found at string key "Visible" - must be an array item (it would be assigned to the property as a value)
+  Ref: found at string key "Size" - must be an array item (it would be assigned to the property as a value)
+  Effect: found at string key "Size" - must be an array item (it would be assigned to the property as a value)

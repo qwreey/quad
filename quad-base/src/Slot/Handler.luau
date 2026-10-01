@@ -12,6 +12,7 @@
 local QuadTypes = require("../../luau_packages/quad_types")
 local Err = require("../ErrorNamespace")
 local ModuleIdentity = require("../ModuleIdentity")
+local DebugKeyFilter = require("../DebugKeyFilter")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local function register(dispatch: any, module: any)
@@ -62,6 +63,9 @@ local function register(dispatch: any, module: any)
 			return module.Void -- unreachable; keeps the contract type
 		end,
 	} :: QuadTypes.Handler)
+	DebugKeyFilter.register(dispatch, "SlotStringKeyDebugFilter", function(v: any): string?
+		return if internal.isSlot(v) then "Slot" else nil
+	end)
 end
 
 return { register = register }

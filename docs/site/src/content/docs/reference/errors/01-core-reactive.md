@@ -257,8 +257,8 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 `State: Compute fn is already running for this value - a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)` — `quad-base/src/State.luau`
 
-- **언제**: 계산 함수가 자기 자신의 값을 직접·간접(하류 State를 거쳐)으로 읽는 의존성 순환일 때, 계산 함수 안에서 yield하는 사이 다른 코루틴이 같은 노드를 다시 읽을 때, yield했던 읽기가 돌아왔는데 그 사이 상류가 바뀌어 더 새 세대의 계산이 다른 코루틴에서 아직 멈춰 있을 때, 또는 직전 계산이 던진 뒤 같은 세대(상류가 그 사이 움직이지 않음)에서 다시 읽을 때.
-- **고치려면**: 계산 함수가 자기 자신을 순환 참조하지 않게 하고, 계산 함수 안에서 yield하지 마세요 — 계산 함수 안의 yield는 정의되지 않은 동작입니다(현재 동작은 계약이 아닙니다: 돌아오지 않는 코루틴이 계산하다 멈춘 노드는 상류가 바뀔 때까지 이 에러가 됩니다). 직전 계산이 던졌다면 상류 값을 고쳐 `:Set`하면(새 세대가 되어) 회복됩니다 — 단 회복되는 것은 그 노드이고, 던질 때 그 값을 읽던 `Effect`·`:List` 원소는 각자의 계약대로 죽거나 멈춰 있습니다([State 레퍼런스](/reference/core/03-state/)).
+- **언제**: 계산 함수가 자기 자신의 값을 직접·간접(하류 State를 거쳐)으로 읽는 의존성 순환일 때, 또는 직전 계산이 던진 뒤 같은 세대(상류가 그 사이 움직이지 않음)에서 다시 읽을 때. 계산 함수 안의 yield는 정의되지 않은 동작이고, 그때 이 에러가 나는 자리(멈춘 사이 다른 코루틴이 같은 노드를 읽을 때, yield했던 읽기가 돌아왔는데 더 새 세대의 계산이 다른 코루틴에서 아직 멈춰 있을 때)는 UB에서의 현재 관측일 뿐 계약이 아닙니다.
+- **고치려면**: 계산 함수가 자기 자신을 순환 참조하지 않게 하고, 계산 함수 안에서 yield하지 마세요(정의되지 않은 동작 — 현재 관측으로는 돌아오지 않는 코루틴이 계산하다 멈춘 노드는 상류가 바뀔 때까지 이 에러가 됩니다; [`q.debug`](/reference/core/01-quad-module/#qdebug)를 켜면 멈춘 계산 위에 새 계산이 시작될 때 경고 한 줄이 나옵니다). 직전 계산이 던졌다면 상류 값을 고쳐 `:Set`하면(새 세대가 되어) 회복됩니다 — 단 회복되는 것은 그 노드이고, 던질 때 그 값을 읽던 `Effect`·`:List` 원소는 각자의 계약대로 죽거나 멈춰 있습니다([State 레퍼런스](/reference/core/03-state/)).
 - **참고**: [`state:Compute(fn, ...deps)`](/reference/core/03-state/#statecomputefn-deps) · quad 내부(프로퍼티 바인딩·`Animate`·Operator 등)가 그 State를 읽다 나면 `파일:줄` 접두가 quad 파일을 가리킵니다 — [디버깅 부록](/how-to/10-debugging-and-troubleshooting/)의 알려진 한계 3
 
 ### Quad0185

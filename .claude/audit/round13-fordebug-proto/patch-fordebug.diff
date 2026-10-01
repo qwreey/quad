@@ -1,0 +1,368 @@
+diff --git a/docs/reference/errors/02-dispatch-bookkeeping.md b/docs/reference/errors/02-dispatch-bookkeeping.md
+index 1c91ae85..33fe590b 100644
+--- a/docs/reference/errors/02-dispatch-bookkeeping.md
++++ b/docs/reference/errors/02-dispatch-bookkeeping.md
+@@ -368,3 +368,11 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 
+ - **언제**: `mod:Field(fn)`의 변환 함수가 **함수를 돌려줬을 때**(지금 필드 값이 평범한 값인 갈래) — 흔히 `q.Modifier():Activated(function(_old) return function() … end end)`처럼 이벤트 핸들러를 Modifier에 넣으려는 우회입니다. 초기 필드 테이블로 같은 값을 넣으면 [`Quad0063`](#quad0063)으로 거부되는데, 이 길로는 생 함수가 필드에 들어가 두 경로가 갈렸습니다. 지금 필드 값이 `State`면 변환이 `:Compute`로 미뤄져 여기서 걸리지 않습니다.
+ - **고치려면**: 이벤트 핸들러는 Modifier가 아니라 Declaration의 인라인 키(`D.TextButton { Activated = fn }`)로 넘기세요. 꼭 Modifier로 옮겨야 하면 `State`에 담아 넘기세요.
+ - **참고**: [`mod:<Field>(value)`](../core/08-modifier.md#modfieldvalue)
++
++### Quad0266
++
++`Dispatch.addHandler: forDebug must be a boolean or nil (got {typeof(fd)})` — `quad-base/src/Dispatch/init.luau`
++
++- **언제**: `handler.forDebug`가 `true`/`false`/`nil`이 아닐 때 — `"yes"`나 `1`처럼 참 같은 값이 그대로 통과하면 그 핸들러가 조용히 평소(debug 아님) 스캔 목록에 남습니다. (프로토타입 — 필드 이름 미정)
++- **고치려면**: `forDebug`는 생략하거나 `true`/`false`로 쓰세요.
++- **참고**: [`q.Dispatch.addHandler(handler)`](../extend/02-dispatch-handler-contract.md#qdispatchaddhandlerhandler)
+diff --git a/quad-base/src/Attr/init.luau b/quad-base/src/Attr/init.luau
+index 0c8c203f..9f457330 100644
+--- a/quad-base/src/Attr/init.luau
++++ b/quad-base/src/Attr/init.luau
+@@ -47,6 +47,7 @@
+ ]]
+ 
+ local Brand = require("./Brand")
++local DebugKeyFilter = require("./DebugKeyFilter") -- [PROTOTYPE forDebug]
+ local Relate = require("./Relate")
+ local AttrKeyModule = require("@self/Key")
+ local QuadTypes = require("../luau_packages/quad_types")
+@@ -243,6 +244,10 @@ local function Init(quad: any)
+ 	-- two positions of one instance is an immediate error (`AT-1`/`H-41`)
+ 	local groupClaimKeys = Relate()
+ 
++	DebugKeyFilter.register(dispatch, "AttrStringKeyDebugFilter", function(v: any): string? -- [PROTOTYPE forDebug]
++		return if isAttr(v) then "Attr" else nil
++	end)
++
+ 	local function groupKey(v: any, name: string): any
+ 		local key = groupKeys:GetStrong(v, name)
+ 		if key == nil then
+diff --git a/quad-base/src/Dispatch/init.luau b/quad-base/src/Dispatch/init.luau
+index b27b34a2..a5c6da45 100644
+--- a/quad-base/src/Dispatch/init.luau
++++ b/quad-base/src/Dispatch/init.luau
+@@ -147,20 +147,58 @@ local function Init(module: any)
+ 	-- installed lifetime backend (nativeClaim'd real Instance, or the mock).
+ 	local chains = Relate()
+ 	local handlers: { Handler } = {} -- kept sorted, higher priority first
++	-- [PROTOTYPE round13 forDebug] `forDebug` handlers live in their own sorted array, never in
++	-- `handlers`: `table.sort` is unstable, so inserting them there reshuffled equal-priority
++	-- PRODUCTION handlers (first prototype cut, measured: `[AttrKey] = q.Effect(…)` flipped from the raw
++	-- attribute error to `Quad0097` with debug OFF). Kept apart, `handlers` sees exactly the same
++	-- insert/sort sequence as before, so production order is byte-identical.
++	local debugHandlers: { Handler } = {}
+ 	-- `H-484` (round7 Q37 (a), user decision 2026-09-08): per-key-type scan lists,
+ 	-- each = the handlers DECLARING that `keyType` ∪ the undeclared ones, in the
+ 	-- same priority order as `handlers`. Rebuilt on every addHandler (cold path).
+ 	-- Measured before: a 10-string-prop `D.Frame` asked 22 handlers 150 times;
+ 	-- 12 of them can only ever match number keys.
+-	local buckets: { number: { Handler }, string: { Handler }, other: { Handler } } = { number = {}, string = {}, other = {} }
+-	local function rebuildBuckets()
+-		buckets = { number = {}, string = {}, other = {} }
+-		for _, h in handlers do
++	-- [PROTOTYPE round13 forDebug] two sets of the same three buckets: `buckets` without the `forDebug`
++	-- handlers (what production scans), `debugBuckets` with them. `getHandler` picks one by reading
++	-- `module.debug` at call time (the flag is a plain field — toggling it takes effect on the next scan).
++	-- Both are rebuilt here, on the cold path; the hot path pays one field read + one branch.
++	type Buckets = { number: { Handler }, string: { Handler }, other: { Handler } }
++	local buckets: Buckets = { number = {}, string = {}, other = {} }
++	local debugBuckets: Buckets = { number = {}, string = {}, other = {} }
++	local function fill(into: Buckets, list: { Handler })
++		for _, h in list do
+ 			local kt = h.keyType
+-			if kt == nil or kt == "number" then table.insert(buckets.number, h) end
+-			if kt == nil or kt == "string" then table.insert(buckets.string, h) end
+-			if kt == nil then table.insert(buckets.other, h) end
++			if kt == nil or kt == "number" then table.insert(into.number, h) end
++			if kt == nil or kt == "string" then table.insert(into.string, h) end
++			if kt == nil then table.insert(into.other, h) end
++		end
++	end
++	-- production order merged with the debug handlers: a stable merge, so the relative order of the
++	-- production handlers in debug mode is the SAME as with debug off (a debug toggle never changes
++	-- which of two tied production handlers wins). On a priority tie the debug handler goes first.
++	local function merged(): { Handler }
++		if #debugHandlers == 0 then
++			return handlers
++		end
++		local out: { Handler } = {}
++		local i, j = 1, 1
++		while i <= #handlers or j <= #debugHandlers do
++			local p, d = handlers[i], debugHandlers[j]
++			if d ~= nil and (p == nil or d.priority >= p.priority) then
++				table.insert(out, d)
++				j += 1
++			else
++				table.insert(out, p)
++				i += 1
++			end
+ 		end
++		return out
++	end
++	local function rebuildBuckets()
++		buckets = { number = {}, string = {}, other = {} }
++		debugBuckets = { number = {}, string = {}, other = {} }
++		fill(buckets, handlers)
++		fill(debugBuckets, merged())
+ 	end
+ 	local NOOP = Void -- `H-162`: the single exported no-op, never a fresh closure
+ 
+@@ -303,7 +341,8 @@ local function Init(module: any)
+ 		checkInst("getHandler", inst)
+ 		checkKey("getHandler", k)
+ 		local kt = type(k)
+-		local list = if kt == "number" then buckets.number elseif kt == "string" then buckets.string else buckets.other
++		local set = if module.debug then debugBuckets else buckets -- [PROTOTYPE forDebug] the one added branch
++		local list = if kt == "number" then set.number elseif kt == "string" then set.string else set.other
+ 		for _, h in list do
+ 			if h.isHandlable(inst, k, v) then
+ 				return h
+@@ -425,6 +464,11 @@ local function Init(module: any)
+ 				return -- round11 `H-568` (탐사 G′ 8): identity dedup, like RunInit/AddPlugin/UseProvider
+ 			end
+ 		end
++		for _, existing in debugHandlers do
++			if existing == handler then
++				return -- [PROTOTYPE forDebug] same dedup over the debug-only array
++			end
++		end
+ 		local kt = handler.keyType
+ 		if kt ~= nil and kt ~= "number" and kt ~= "string" then
+ 			-- registration gate (`H-484`): a typo here would silently drop the handler
+@@ -432,8 +476,14 @@ local function Init(module: any)
+ 			-- the tie print below, so a rejected handler leaves no misleading line)
+ 			Err.errorBeforeNearest(`Quad0081 Dispatch.addHandler: keyType must be "number", "string" or nil (got {tostring(kt)})`, SURFACE)
+ 		end
++		local fd = handler.forDebug
++		if fd ~= nil and type(fd) ~= "boolean" then
++			-- [PROTOTYPE forDebug] same posture as Quad0081: a truthy non-boolean (`"yes"`, `1`) would
++			-- otherwise silently land in the production buckets (only `== true` moves a handler out)
++			Err.errorBeforeNearest(`Quad0266 Dispatch.addHandler: forDebug must be a boolean or nil (got {typeof(fd)})`, SURFACE)
++		end
+ 		if module.debug then
+-			for _, existing in handlers do
++			for _, existing in merged() do -- [PROTOTYPE forDebug] debug handlers compete only in debug — this print is debug-only too
+ 				-- two handlers declaring DIFFERENT key types never share a bucket, so
+ 				-- their equal priority is not a tie (`H-484` follow-up, code-review)
+ 				local ekt = existing.keyType
+@@ -448,8 +498,9 @@ local function Init(module: any)
+ 				end
+ 			end
+ 		end
+-		table.insert(handlers, handler)
+-		table.sort(handlers, function(a: Handler, b: Handler)
++		local into = if fd == true then debugHandlers else handlers -- [PROTOTYPE forDebug]
++		table.insert(into, handler)
++		table.sort(into, function(a: Handler, b: Handler)
+ 			return a.priority > b.priority
+ 		end)
+ 		rebuildBuckets()
+@@ -470,7 +521,7 @@ local function Init(module: any)
+ 		-- returned handler's `isHandlable` changed real dispatch behavior). Callers may
+ 		-- read but must not write. Each handler carries the doc'd name/priority via the
+ 		-- optional `name` contract field (`H-214` (a) — absent name just shows as nil).
+-		return table.clone(handlers)
++		return table.clone(merged()) -- [PROTOTYPE forDebug] every registered handler, debug ones included (each carries its `forDebug` field)
+ 	end
+ 
+ 	-- ── Length/Offset bookkeeping — moved to `src/Bookkeeping.luau` (`H-277`,
+diff --git a/quad-base/src/Effect.luau b/quad-base/src/Effect.luau
+index 2f2a442a..68a21f2f 100644
+--- a/quad-base/src/Effect.luau
++++ b/quad-base/src/Effect.luau
+@@ -37,6 +37,7 @@
+ ]]
+ 
+ local Brand = require("./Brand")
++local DebugKeyFilter = require("./DebugKeyFilter") -- [PROTOTYPE forDebug]
+ local EpochMap = require("./EpochMap")
+ local Err = require("./ErrorNamespace")
+ local QuadTypes = require("../luau_packages/quad_types")
+@@ -473,6 +474,9 @@ local function registerDispatchHandlers(module: any)
+ 			return Void -- unreachable; keeps the contract type
+ 		end,
+ 	})
++	DebugKeyFilter.register(dispatch, "EffectStringKeyDebugFilter", function(v: any): string? -- [PROTOTYPE forDebug]
++		return if Brand.isEffect(v) then "Effect" else nil
++	end)
+ end
+ 
+ local function Init(module: any)
+diff --git a/quad-base/src/Observer.luau b/quad-base/src/Observer.luau
+index 3056cd70..ff0bd455 100644
+--- a/quad-base/src/Observer.luau
++++ b/quad-base/src/Observer.luau
+@@ -41,6 +41,7 @@
+ ]]
+ 
+ local Brand = require("./Brand")
++local DebugKeyFilter = require("./DebugKeyFilter") -- [PROTOTYPE forDebug]
+ local ImplRegistry = require("./ImplRegistry")
+ local Err = require("./ErrorNamespace")
+ local Relate = require("./Relate")
+@@ -372,6 +373,9 @@ local function registerDispatchHandlers(module: any)
+ 			return Void -- unreachable; keeps the contract type
+ 		end,
+ 	})
++	DebugKeyFilter.register(dispatch, "ObserverStringKeyDebugFilter", function(v: any): string? -- [PROTOTYPE forDebug]
++		return if Brand.isObserver(v) then "Observer" else nil
++	end)
+ end
+ 
+ local function Init(module: any)
+diff --git a/quad-base/src/Ref/init.luau b/quad-base/src/Ref/init.luau
+index 3bfcd075..c2c6298a 100644
+--- a/quad-base/src/Ref/init.luau
++++ b/quad-base/src/Ref/init.luau
+@@ -29,6 +29,7 @@
+ ]]
+ 
+ local Brand = require("./Brand")
++local DebugKeyFilter = require("./DebugKeyFilter") -- [PROTOTYPE forDebug]
+ local QuadTypes = require("../luau_packages/quad_types")
+ local Err = require("./ErrorNamespace")
+ local Relate = require("./Relate")
+@@ -296,6 +297,13 @@ local function registerDispatchHandlers(module: any)
+ 	addGuard("RefDynamicPathGuard", function(v: any): boolean
+ 		return Brand.isRef(v) and not Brand.isPreRef(v) and not Brand.isPostRef(v)
+ 	end, "Ref")
++	-- [PROTOTYPE forDebug] one filter for the family (the three guards above stay as they are)
++	DebugKeyFilter.register(dispatch, "RefStringKeyDebugFilter", function(v: any): string?
++		if not Brand.isRef(v) then
++			return nil
++		end
++		return if Brand.isPreRef(v) then "PreRef" elseif Brand.isPostRef(v) then "PostRef" else "Ref"
++	end)
+ end
+ 
+ -- PreRef/PostRef share this body by canon ("Ref 런타임 그대로 재사용, 브랜드
+diff --git a/quad-base/src/Slot/Handler.luau b/quad-base/src/Slot/Handler.luau
+index b73465e7..e3fc5b38 100644
+--- a/quad-base/src/Slot/Handler.luau
++++ b/quad-base/src/Slot/Handler.luau
+@@ -12,6 +12,7 @@
+ local QuadTypes = require("../../luau_packages/quad_types")
+ local Err = require("../ErrorNamespace")
+ local ModuleIdentity = require("../ModuleIdentity")
++local DebugKeyFilter = require("../DebugKeyFilter") -- [PROTOTYPE forDebug]
+ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
+ 
+ local function register(dispatch: any, module: any)
+@@ -62,6 +63,9 @@ local function register(dispatch: any, module: any)
+ 			return module.Void -- unreachable; keeps the contract type
+ 		end,
+ 	} :: QuadTypes.Handler)
++	DebugKeyFilter.register(dispatch, "SlotStringKeyDebugFilter", function(v: any): string? -- [PROTOTYPE forDebug]
++		return if internal.isSlot(v) then "Slot" else nil
++	end)
+ end
+ 
+ return { register = register }
+diff --git a/quad-base/src/Tag.luau b/quad-base/src/Tag.luau
+index 39e62a79..c92e61a5 100644
+--- a/quad-base/src/Tag.luau
++++ b/quad-base/src/Tag.luau
+@@ -34,6 +34,7 @@
+ ]]
+ 
+ local Brand = require("./Brand")
++local DebugKeyFilter = require("./DebugKeyFilter") -- [PROTOTYPE forDebug]
+ local Relate = require("./Relate")
+ local QuadTypes = require("../luau_packages/quad_types")
+ local Err = require("./ErrorNamespace")
+@@ -268,6 +269,10 @@ local function Init(module: any)
+ 	-- immutable Tag object reused at two positions must count twice)
+ 	local tagNameMap = Relate()
+ 
++	DebugKeyFilter.register(dispatch, "TagStringKeyDebugFilter", function(v: any): string? -- [PROTOTYPE forDebug]
++		return if isTag(v) then "Tag" else nil
++	end)
++
+ 	dispatch.addHandler({
+ 		name = "TagFallbackHandler",
+ 		keyType = "number", -- `H-484`: only number keys can match (isHandlable checks it too)
+diff --git a/quad-types/src/init.luau b/quad-types/src/init.luau
+index a8400394..231e181c 100644
+--- a/quad-types/src/init.luau
++++ b/quad-types/src/init.luau
+@@ -445,9 +445,13 @@ export type ModifierConstructor = setmetatable<{
+ -- 아예 안 묻게 할 뿐이다. 어긋나게 선언하면 그 핸들러는 그 버킷에서 조용히
+ -- 빠지고 더 낮은 priority의 미선언 핸들러가 대신 매치할 수 있다 — 선언은
+ -- `isHandlable`의 `type(k)` 가드와 같은 값이어야 한다.
++-- [PROTOTYPE round13 forDebug] `forDebug`(선택, 가칭): 참이면 `module.debug`가 참인 스캔에서만 후보가 된다
++-- (`getHandler`가 debug 포함/미포함 두 벌의 버킷 중 하나를 호출 시점에 고른다). 진단 필터 용도 — 경고를
++-- 찍고 `false`를 돌려 디스패치를 그대로 흘리는 `isHandlable`(이 필드가 참인 핸들러에 한해 부작용 허용).
+ export type Handler = {
+ 	name: string?,
+ 	keyType: ("number" | "string")?,
++	forDebug: boolean?,
+ 	isHandlable: (inst: any, key: any, value: any) -> boolean,
+ 	priority: number,
+ 	-- retractor 계약(`H-258`, 사용자 설계): 두 번째 인자 `retracting`이 참이면
+diff --git a/quad-base/src/DebugKeyFilter.luau b/quad-base/src/DebugKeyFilter.luau
+new file mode 100644
+index 00000000..fa3a39b5
+--- /dev/null
++++ b/quad-base/src/DebugKeyFilter.luau
+@@ -0,0 +1,61 @@
++--!strict
++--[[
++	[PROTOTYPE round13 forDebug — not decided] debug-only string-key filter factory.
++
++	Round13 Q135: an array-only quad value (Ref family, Observer, Effect, Slot, Tag, Attr) placed at a
++	string key that names a real property is taken by the NORMAL Property handler (or the NORMAL + 1
++	shorthand) before its own FALLBACK guard can see it — silently assigned, or an engine error.
++	Strict typing is the first defense (round1 Q4 (a)); this is the debug layer
++	(`architecture.md` "debug 층"): a `forDebug` handler between NORMAL + 1 and HIGH that prints one
++	line and answers `false`, so the scan goes on exactly as without it — behavior and the FALLBACK
++	override contract unchanged, and production never scans it (Dispatch keeps it out of the
++	production buckets).
++
++	Brand knowledge stays with each owning module (`H-278`): the caller passes `kindOf(v)` — the
++	subject name to print, or nil when the value is not its kind. This file only shapes the handler.
++
++	`isHandlable` is NOT pure here (it prints) — the one exception `forDebug` handlers get.
++	Repeat suppression: once per (inst, key) per filter (weak on inst) — an emitting State would
++	otherwise print on every emit.
++]]
++
++local QuadTypes = require("../luau_packages/quad_types")
++local Void = require("./Void")
++
++-- the tight lower bound: above Property (NORMAL) and InstanceShorthand (NORMAL + 1), the two
++-- built-in handlers that swallow a quad value at a property-name key; Event (NORMAL - 1) is below
++local PRIORITY_OFFSET = 2
++
++local function register(dispatch: QuadTypes.Dispatch, name: string, kindOf: (v: any) -> string?)
++	local warned: { [any]: { [string]: true } } = setmetatable({}, { __mode = "k" }) :: any
++	dispatch.addHandler({
++		name = name,
++		forDebug = true,
++		keyType = "string", -- number keys are where these values belong; never inspected
++		priority = dispatch.HANDLER_PRIORITY_NORMAL + PRIORITY_OFFSET,
++		isHandlable = function(inst: any, k: any, v: any): boolean
++			if type(v) ~= "table" then
++				return false -- every kind checked here is a table; most property values are not
++			end
++			local kind = kindOf(v)
++			if kind == nil then
++				return false
++			end
++			local seen = warned[inst]
++			if seen == nil then
++				seen = {}
++				warned[inst] = seen
++			end
++			if seen[k] == nil then
++				seen[k] = true
++				print(`{kind}: found at string key "{k}" - must be an array item (it would be assigned to the property as a value)`)
++			end
++			return false -- never selected: the dispatch continues as if this handler did not exist
++		end,
++		process = function(_inst: any, _k: any, _v: any, _index: number): (any?, boolean) -> ()
++			return Void -- unreachable (isHandlable is always false)
++		end,
++	})
++end
++
++return { register = register }

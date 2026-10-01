@@ -29,6 +29,7 @@
 ]]
 
 local Brand = require("./Brand")
+local DebugKeyFilter = require("./DebugKeyFilter")
 local QuadTypes = require("../luau_packages/quad_types")
 local Err = require("./ErrorNamespace")
 local Relate = require("./Relate")
@@ -296,6 +297,13 @@ local function registerDispatchHandlers(module: any)
 	addGuard("RefDynamicPathGuard", function(v: any): boolean
 		return Brand.isRef(v) and not Brand.isPreRef(v) and not Brand.isPostRef(v)
 	end, "Ref")
+	-- round13 Q135 (debug layer): one string-key filter for the family (the three guards above stay as they are)
+	DebugKeyFilter.register(dispatch, "RefStringKeyDebugFilter", function(v: any): string?
+		if not Brand.isRef(v) then
+			return nil
+		end
+		return if Brand.isPreRef(v) then "PreRef" elseif Brand.isPostRef(v) then "PostRef" else "Ref"
+	end)
 end
 
 -- PreRef/PostRef share this body by canon ("Ref 런타임 그대로 재사용, 브랜드

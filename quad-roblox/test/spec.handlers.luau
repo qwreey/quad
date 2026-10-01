@@ -391,4 +391,71 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 15. round13 Q135 후속 (2026-10-01) — 문자 키의 배열 전용 quad 값: q.debug면 debugOnly 필터가 경고 한 줄(같은 요소·키는 한 번), 동작은 그대로; 끄면 0줄; 숫자 키는 안 봄 ===")
+do
+	local filters: { [string]: any } = {}
+	for _, h in q.Dispatch.listHandlers() do
+		if h.debugOnly == true then
+			filters[h.name] = h
+		end
+	end
+	for _, name in { "RefStringKeyDebugFilter", "ObserverStringKeyDebugFilter", "EffectStringKeyDebugFilter", "SlotStringKeyDebugFilter", "TagStringKeyDebugFilter", "AttrStringKeyDebugFilter" } do
+		assert(filters[name] ~= nil, "filter registered: " .. name)
+		assert(filters[name].priority == q.Dispatch.HANDLER_PRIORITY_NORMAL + 2 and filters[name].keyType == "string", "band NORMAL + 2, string keys only: " .. name)
+	end
+	-- every filter's isHandlable lives in DebugKeyFilter.luau — one env to capture
+	local env = getfenv(filters.RefStringKeyDebugFilter.isHandlable) :: any
+	local oldPrint = rawget(env, "print")
+	local lines: { string } = {}
+	env.print = function(...: any)
+		table.insert(lines, table.concat({ ... }, " "))
+	end
+	local made: { any } = {}
+	local function frame(props: any): any
+		local f = q.Declaration.Frame(props) :: any
+		table.insert(made, f)
+		return f
+	end
+	-- (1) debug off: silent, the Property handler takes the value as before
+	q.debug = false
+	local r1 = q.Ref(nil)
+	local f1 = frame({ Size = r1 })
+	assert(#lines == 0 and f1.Size == r1, "off: no line, value assigned as before")
+	-- (2) debug on: one line naming the kind and the key, behavior unchanged
+	q.debug = true
+	local r2 = q.Ref(nil)
+	local f2 = frame({ Size = r2 })
+	assert(#lines == 1 and f2.Size == r2, "on: one line, value still assigned")
+	assert(string.find(lines[1], 'Ref: found at string key "Size" - must be an array item', 1, true) ~= nil, lines[1])
+	-- (3) the same (inst, key) re-emitted by a State: one line; another key: its own line
+	local s = q.Source(q.Ref(nil))
+	local f3 = frame({ Size = s })
+	for _ = 1, 20 do
+		s:Set(q.Ref(nil))
+	end
+	assert(#lines == 2, `one line for 21 values at one (inst, key) (got {#lines})`)
+	frame({ Visible = q.Tag("t") })
+	assert(#lines == 3 and string.find(lines[3], "Tag:", 1, true) == 1, "another key, another kind: " .. tostring(lines[3]))
+	-- (4) toggled off while the bound State keeps emitting: no lines, value tracks
+	q.debug = false
+	local last = q.Ref(nil)
+	s:Set(last)
+	assert(#lines == 3 and f3.Size == last, "toggled off: no lines, value tracks")
+	-- (5) number keys are never inspected (the values' own home)
+	q.debug = true
+	local r6 = q.Ref(nil)
+	local f6 = frame({ r6, q.Slot(), q.Source(1):Observer(function() end), q.Effect(function() end) }) -- (Tag/Attr at a number key need the engine services this spec does not shim)
+	assert(#lines == 3 and r6.Value == f6, "number keys: no line")
+	-- (6) ordinary string-key values: no line (only the six kinds are named)
+	frame({ Name = "n", Size = q.Source(3), Visible = true })
+	assert(#lines == 3, "plain values / State at a string key: no line")
+	q.debug = false
+	env.print = oldPrint
+	for _, f in made do
+		f:Destroy()
+	end
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

@@ -1,0 +1,181 @@
+== A. misuse at string keys (literal) ==
+Ref @Name(prop)	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Ref @Size(prop)	ok  -> Size holds the value (silent)
+Ref @Visible(prop)	ok  -> Visible holds the value (silent)
+Ref @Activated(event)	Quad0218  | ./.claude/audit/round13-fordebug-proto/probe.luau:36: Quad0218 Event: handler for "Activated" must be a function (got table)
+Ref @UICorner(shorthand)	ok
+Ref @Parent	Quad0137  | ./.claude/audit/round13-fordebug-proto/probe.luau:38: Quad0137 Ref: must be an array item, not the value of a string key
+Ref @Foo(unknown)	Quad0137  | ./.claude/audit/round13-fordebug-proto/probe.luau:39: Quad0137 Ref: must be an array item, not the value of a string key
+PreRef @Name(prop)	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+PreRef @Size(prop)	ok  -> Size holds the value (silent)
+PreRef @Visible(prop)	ok  -> Visible holds the value (silent)
+PreRef @Activated(event)	Quad0218  | ./.claude/audit/round13-fordebug-proto/probe.luau:36: Quad0218 Event: handler for "Activated" must be a function (got table)
+PreRef @UICorner(shorthand)	ok
+PreRef @Parent	Quad0137  | ./.claude/audit/round13-fordebug-proto/probe.luau:38: Quad0137 PreRef: must be an array item, not the value of a string key
+PreRef @Foo(unknown)	Quad0137  | ./.claude/audit/round13-fordebug-proto/probe.luau:39: Quad0137 PreRef: must be an array item, not the value of a string key
+PostRef @Name(prop)	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+PostRef @Size(prop)	ok  -> Size holds the value (silent)
+PostRef @Visible(prop)	ok  -> Visible holds the value (silent)
+PostRef @Activated(event)	Quad0218  | ./.claude/audit/round13-fordebug-proto/probe.luau:36: Quad0218 Event: handler for "Activated" must be a function (got table)
+PostRef @UICorner(shorthand)	ok
+PostRef @Parent	Quad0137  | ./.claude/audit/round13-fordebug-proto/probe.luau:38: Quad0137 PostRef: must be an array item, not the value of a string key
+PostRef @Foo(unknown)	Quad0137  | ./.claude/audit/round13-fordebug-proto/probe.luau:39: Quad0137 PostRef: must be an array item, not the value of a string key
+Observer @Name(prop)	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Observer @Size(prop)	ok  -> Size holds the value (silent)
+Observer @Visible(prop)	ok  -> Visible holds the value (silent)
+Observer @Activated(event)	Quad0218  | ./.claude/audit/round13-fordebug-proto/probe.luau:36: Quad0218 Event: handler for "Activated" must be a function (got table)
+Observer @UICorner(shorthand)	ok
+Observer @Parent	Quad0116  | ./.claude/audit/round13-fordebug-proto/probe.luau:38: Quad0116 Observer: must be an array item, not the value of a string key
+Observer @Foo(unknown)	Quad0116  | ./.claude/audit/round13-fordebug-proto/probe.luau:39: Quad0116 Observer: must be an array item, not the value of a string key
+Effect @Name(prop)	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Effect @Size(prop)	ok  -> Size holds the value (silent)
+Effect @Visible(prop)	ok  -> Visible holds the value (silent)
+Effect @Activated(event)	Quad0218  | ./.claude/audit/round13-fordebug-proto/probe.luau:36: Quad0218 Event: handler for "Activated" must be a function (got table)
+Effect @UICorner(shorthand)	ok
+Effect @Parent	Quad0097  | ./.claude/audit/round13-fordebug-proto/probe.luau:38: Quad0097 Effect: must be an array item, not the value of a string key
+Effect @Foo(unknown)	Quad0097  | ./.claude/audit/round13-fordebug-proto/probe.luau:39: Quad0097 Effect: must be an array item, not the value of a string key
+Slot @Name(prop)	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Slot @Size(prop)	ok  -> Size holds the value (silent)
+Slot @Visible(prop)	ok  -> Visible holds the value (silent)
+Slot @Activated(event)	Quad0218  | ./.claude/audit/round13-fordebug-proto/probe.luau:36: Quad0218 Event: handler for "Activated" must be a function (got table)
+Slot @UICorner(shorthand)	ok
+Slot @Parent	Quad0141  | ./.claude/audit/round13-fordebug-proto/probe.luau:38: Quad0141 Slot: must be an array item, not the value of a string key
+Slot @Foo(unknown)	Quad0141  | ./.claude/audit/round13-fordebug-proto/probe.luau:39: Quad0141 Slot: must be an array item, not the value of a string key
+Tag @Name(prop)	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Tag @Size(prop)	ok  -> Size holds the value (silent)
+Tag @Visible(prop)	ok  -> Visible holds the value (silent)
+Tag @Activated(event)	Quad0218  | ./.claude/audit/round13-fordebug-proto/probe.luau:36: Quad0218 Event: handler for "Activated" must be a function (got table)
+Tag @UICorner(shorthand)	ok
+Tag @Parent	Quad0076  | ./.claude/audit/round13-fordebug-proto/probe.luau:38: Quad0076 Dispatch: no handler matched key Parent (value: table, brand: Tag) - a quad value at a string key: it belongs in a numeric (array) slot
+Tag @Foo(unknown)	Quad0076  | ./.claude/audit/round13-fordebug-proto/probe.luau:39: Quad0076 Dispatch: no handler matched key Foo (value: table, brand: Tag) - a quad value at a string key: it belongs in a numeric (array) slot
+Attr @Name(prop)	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Attr @Size(prop)	ok  -> Size holds the value (silent)
+Attr @Visible(prop)	ok  -> Visible holds the value (silent)
+Attr @Activated(event)	Quad0218  | ./.claude/audit/round13-fordebug-proto/probe.luau:36: Quad0218 Event: handler for "Activated" must be a function (got table)
+Attr @UICorner(shorthand)	ok
+Attr @Parent	Quad0076  | ./.claude/audit/round13-fordebug-proto/probe.luau:38: Quad0076 Dispatch: no handler matched key Parent (value: table, brand: Attr) - a quad value at a string key: it belongs in a numeric (array) slot
+Attr @Foo(unknown)	Quad0076  | ./.claude/audit/round13-fordebug-proto/probe.luau:39: Quad0076 Dispatch: no handler matched key Foo (value: table, brand: Attr) - a quad value at a string key: it belongs in a numeric (array) slot
+== A2. misuse at string keys via State / Store ==
+Ref Source @Name	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Ref Source @Size	ok  -> Size holds the value (silent)
+Ref Source @Activated	Quad0218  | ./.claude/audit/round13-fordebug-proto/probe.luau:47: Quad0218 Event: handler for "Activated" must be a function (got table)
+Ref Store field @Name	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Ref Source("x")->Set(v) @Name	RAW:./quad-roblox/src/Handlers/Property.luau:328: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:328: Name must be a string
+PreRef Source @Name	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+PreRef Source @Size	ok  -> Size holds the value (silent)
+PreRef Source @Activated	Quad0218  | ./.claude/audit/round13-fordebug-proto/probe.luau:47: Quad0218 Event: handler for "Activated" must be a function (got table)
+PreRef Store field @Name	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+PreRef Source("x")->Set(v) @Name	RAW:./quad-roblox/src/Handlers/Property.luau:328: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:328: Name must be a string
+PostRef Source @Name	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+PostRef Source @Size	ok  -> Size holds the value (silent)
+PostRef Source @Activated	Quad0218  | ./.claude/audit/round13-fordebug-proto/probe.luau:47: Quad0218 Event: handler for "Activated" must be a function (got table)
+PostRef Store field @Name	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+PostRef Source("x")->Set(v) @Name	RAW:./quad-roblox/src/Handlers/Property.luau:328: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:328: Name must be a string
+Observer Source @Name	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Observer Source @Size	ok  -> Size holds the value (silent)
+Observer Source @Activated	Quad0218  | ./.claude/audit/round13-fordebug-proto/probe.luau:47: Quad0218 Event: handler for "Activated" must be a function (got table)
+Observer Store field @Name	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Observer Source("x")->Set(v) @Name	RAW:./quad-roblox/src/Handlers/Property.luau:328: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:328: Name must be a string
+Effect Source @Name	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Effect Source @Size	ok  -> Size holds the value (silent)
+Effect Source @Activated	Quad0218  | ./.claude/audit/round13-fordebug-proto/probe.luau:47: Quad0218 Event: handler for "Activated" must be a function (got table)
+Effect Store field @Name	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Effect Source("x")->Set(v) @Name	RAW:./quad-roblox/src/Handlers/Property.luau:328: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:328: Name must be a string
+Slot Source @Name	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Slot Source @Size	ok  -> Size holds the value (silent)
+Slot Source @Activated	Quad0218  | ./.claude/audit/round13-fordebug-proto/probe.luau:47: Quad0218 Event: handler for "Activated" must be a function (got table)
+Slot Store field @Name	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Slot Source("x")->Set(v) @Name	RAW:./quad-roblox/src/Handlers/Property.luau:328: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:328: Name must be a string
+Tag Source @Name	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Tag Source @Size	ok  -> Size holds the value (silent)
+Tag Source @Activated	Quad0218  | ./.claude/audit/round13-fordebug-proto/probe.luau:47: Quad0218 Event: handler for "Activated" must be a function (got table)
+Tag Store field @Name	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Tag Source("x")->Set(v) @Name	RAW:./quad-roblox/src/Handlers/Property.luau:328: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:328: Name must be a string
+Attr Source @Name	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Attr Source @Size	ok  -> Size holds the value (silent)
+Attr Source @Activated	Quad0218  | ./.claude/audit/round13-fordebug-proto/probe.luau:47: Quad0218 Event: handler for "Activated" must be a function (got table)
+Attr Store field @Name	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Attr Source("x")->Set(v) @Name	RAW:./quad-roblox/src/Handlers/Property.luau:328: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:328: Name must be a string
+== A3. Q137 ② Modifier fields ==
+Modifier{Name=Tag} create	ok  -> Modifier(1 fields)
+Modifier{Name=Tag} mount	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Modifier{Size=Tag} mount	ok  -> Tag("a")
+Modifier():Name(Attr) create	ok  -> Modifier(1 fields)
+Modifier():Name(Attr) mount	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Modifier{Foo=Tag} mount	Quad0076  | ./.claude/audit/round13-fordebug-proto/probe.luau:58: Quad0076 Dispatch: no handler matched key Foo (value: table, brand: Tag) - a quad value at a string key: it belongs in a numeric (array) slot
+Modifier{Name=Source(Tag)} mount	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+Modifier{Name=Ref} create (control)	Quad0064  | ./.claude/audit/round13-fordebug-proto/probe.luau:60: Quad0064 Modifier: field "Name" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)
+Modifier{Name=Source(Ref)} mount	RAW:./quad-roblox/src/Handlers/Property.luau:300: Name must be a string  | ./quad-roblox/src/Handlers/Property.luau:300: Name must be a string
+== B. normal paths (must stay ok) ==
+B1 Ref literal numeric	true
+B2 PreRef literal numeric	true
+B3 PostRef literal numeric	true
+B4 Ref via Source numeric	true
+B5 Ref via Store numeric	true
+B6 Observer literal numeric fires	2
+B7 Observer via Source numeric	2
+B8 Effect literal numeric	2
+B9 Effect via Source numeric	2
+B10 Tag literal numeric	true	true
+B11 Tag via Source numeric	true	false	true
+B12 Attr literal numeric	5
+B13 Attr via Source numeric	2
+B14 AttrKey literal	100
+B15 AttrKey via Source	7
+B16 StringAttr	v
+B17 Slot literal numeric	true
+B18 Slot via Source numeric	true
+B19 Modifier normal field	mod
+B20 Modifier State field	m2
+B21 Event literal fn	1
+B22 Event via Source fn	1
+B23 Property via Source	n2	true
+B24 Shorthand	true
+B25 Shorthand None->4 via Source	true
+B26 Instance child + prop	true
+B27 OnChange	1
+== C. other-key misuse (message must stay as before or improve) ==
+PreRef via Source numeric	Quad0136  | ./.claude/audit/round13-fordebug-proto/probe.luau:95: Quad0136 PreRef: must be a literal array item - it reached array index 1 through a State/Store value, which the pre-pass cannot see
+PostRef via Source numeric	Quad0136  | ./.claude/audit/round13-fordebug-proto/probe.luau:96: Quad0136 PostRef: must be a literal array item - it reached array index 1 through a State/Store value, which the pre-pass cannot see
+Slot at [0] raw process	Quad0141  | ./.claude/audit/round13-fordebug-proto/probe.luau:97: Quad0141 Slot: must be an array item, not the value of a number key
+Ref at AttrKey key	Quad0137  | ./.claude/audit/round13-fordebug-proto/probe.luau:98: Quad0137 Ref: must be an array item, not the value of a table key
+Tag at AttrKey key	RAW:./quad-roblox/src/EngineOps.luau:138: table is not a supported attribute type  | ./quad-roblox/src/EngineOps.luau:138: table is not a supported attribute type
+Ref at boolean key	Quad0137  | ./.claude/audit/round13-fordebug-proto/probe.luau:100: Quad0137 Ref: must be an array item, not the value of a boolean key
+PreRef at AttrKey key	RAW:./quad-roblox/src/EngineOps.luau:138: table is not a supported attribute type  | ./quad-roblox/src/EngineOps.luau:138: table is not a supported attribute type
+Observer at AttrKey key	RAW:./quad-roblox/src/EngineOps.luau:138: table is not a supported attribute type  | ./quad-roblox/src/EngineOps.luau:138: table is not a supported attribute type
+Effect at AttrKey key	RAW:./quad-roblox/src/EngineOps.luau:138: table is not a supported attribute type  | ./quad-roblox/src/EngineOps.luau:138: table is not a supported attribute type
+Attr at AttrKey key	RAW:./quad-roblox/src/EngineOps.luau:138: table is not a supported attribute type  | ./quad-roblox/src/EngineOps.luau:138: table is not a supported attribute type
+Modifier transform returns Tag	ok  -> Modifier(1 fields)
+== D. handler order ==
+1	NoneHandler	1000	nil
+2	NilHandler	1000	number
+3	ObserverLeafHandler	1000	number
+4	StoreBind	1000	nil
+5	SlotHandler	1000	number
+6	ProcessedModifierHandler	1000	nil
+7	ProcessedPreRefHandler	1000	nil
+8	ProcessedPostRefHandler	1000	nil
+9	RefLeafHandler	1000	number
+10	EffectLeafHandler	1000	number
+11	ObserverStringKeyDebugFilter	2	string
+12	RefStringKeyDebugFilter	2	string
+13	TagStringKeyDebugFilter	2	string
+14	EffectStringKeyDebugFilter	2	string
+15	SlotStringKeyDebugFilter	2	string
+16	AttrStringKeyDebugFilter	2	string
+17	InstanceShorthand	1	string
+18	InstanceChild	0	number
+19	Property	0	string
+20	Event	-1	string
+21	OnChange	-1	number
+22	RefDynamicPathGuard	-1000000	nil
+23	SlotDynamicPathGuard	-1000000	nil
+24	AttrKeyFallbackHandler	-1000000	nil
+25	AttrGroupFallbackHandler	-1000000	number
+26	PostRefDynamicPathGuard	-1000000	nil
+27	PreRefDynamicPathGuard	-1000000	nil
+28	ObserverDynamicPathGuard	-1000000	nil
+29	EffectDynamicPathGuard	-1000000	nil
+30	TagFallbackHandler	-1000000	number
+== E. provider override at NORMAL (spec.leaf §7 shape — the FALLBACK contract) ==
+NORMAL override for Observer@MyThing	ok  -> 1

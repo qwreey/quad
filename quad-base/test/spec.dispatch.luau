@@ -747,4 +747,97 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 23. round13 Q135 후속 (2026-10-01) — debugOnly 핸들러: q.debug가 참인 스캔에서만 후보(호출 시점에 읽음), 꺼지면 조용히 빠짐; 평소 핸들러 순서 불변; Quad0266 모양 검사; listHandlers는 늘 포함 ===")
+do
+	local q = newQuad()
+	local P = q.Dispatch.HANDLER_PRIORITY_NORMAL
+	local log: { string } = {}
+	local normal = makeLeaf(log, "normal", isString, P)
+	local dbg = makeLeaf(log, "dbg", isString, P + 5)
+	dbg.debugOnly = true
+	q.Dispatch.addHandler(normal)
+	q.Dispatch.addHandler(dbg)
+	local inst = Instance.new("Frame")
+	-- (1) toggled at call time: off -> the debug handler is not a candidate at all (no error), on -> it wins, off again
+	assert(q.Dispatch.getHandler(inst, "k", "s") == normal, "debug off: debugOnly handler silently skipped")
+	q.debug = true
+	assert(q.Dispatch.getHandler(inst, "k", "s") == dbg, "debug on: debugOnly handler is scanned (higher priority wins)")
+	q.debug = false
+	assert(q.Dispatch.getHandler(inst, "k", "s") == normal, "debug off again: back to the production scan")
+	-- a debugOnly handler that is the ONLY match: off -> no match (Quad0076 from process), on -> handled
+	local only = makeLeaf(log, "only", isNumber, P + 6)
+	only.debugOnly = true
+	only.keyType = "string"
+	q.Dispatch.addHandler(only)
+	local okOff, errOff = pcall(function()
+		q.Dispatch.process(inst, "n", 1, 1)
+	end)
+	assert(not okOff and string.find(tostring(errOff), "Quad0076", 1, true) ~= nil, "debug off: no candidate -> ordinary no-match: " .. tostring(errOff))
+	q.debug = true
+	q.Dispatch.process(inst, "n", 1, 1)
+	assert(log[#log] == "only:process:n:1:1", "debug on: the debugOnly handler takes the key")
+	q.Dispatch.retractFrom(inst, "n", 1)
+	q.debug = false
+	-- (2) debugOnly = false is an ordinary handler
+	local plain = makeLeaf(log, "plain", isNumber, P + 7)
+	plain.debugOnly = false
+	q.Dispatch.addHandler(plain)
+	assert(q.Dispatch.getHandler(inst, "x", 2) == plain, "debugOnly = false scans in production")
+	-- (3) shape gate: a truthy non-boolean would silently stay in the production buckets
+	for _, bad in { "yes" :: any, 1, {} } do
+		local h = makeLeaf(log, "bad", isString, P)
+		;(h :: any).debugOnly = bad
+		local ok, err = pcall(function()
+			q.Dispatch.addHandler(h)
+		end)
+		assert(not ok and string.find(tostring(err), `Quad0266 Dispatch.addHandler: debugOnly must be a boolean or nil (got {typeof(bad)})`, 1, true) ~= nil, "Quad0266: " .. tostring(err))
+		mock.assertBlamesUser(err, "spec.dispatch.luau", "Quad0266 blame")
+	end
+	-- (4) listHandlers always lists them (with the field), whatever q.debug says; identity dedup covers them too
+	q.Dispatch.addHandler(dbg)
+	local seen = 0
+	for _, h in q.Dispatch.listHandlers() do
+		if h == dbg or h == only then
+			assert(h.debugOnly == true, "field visible")
+			seen += 1
+		end
+	end
+	assert(seen == 2, `listHandlers lists each debugOnly handler once (got {seen})`)
+	print("PASS")
+end
+do
+	-- (5) production order is untouched: two tied production handlers keep the same winner after any number
+	-- of debugOnly registrations, with debug off AND on (separate array + stable merge; the prototype's first
+	-- cut shared one array and the unstable sort flipped a FALLBACK tie with debug off)
+	local q = newQuad()
+	local P = q.Dispatch.HANDLER_PRIORITY_NORMAL + 40
+	local log: { string } = {}
+	local t1 = makeLeaf(log, "t1", isString, P)
+	local t2 = makeLeaf(log, "t2", isString, P)
+	q.Dispatch.addHandler(t1)
+	q.Dispatch.addHandler(t2)
+	local inst = Instance.new("Frame")
+	local winner = q.Dispatch.getHandler(inst, "k", "s")
+	assert(winner == t1 or winner == t2, "one of the tied pair")
+	local function never(): boolean
+		return false
+	end
+	for i = 1, 12 do
+		q.Dispatch.addHandler({
+			debugOnly = true,
+			priority = P + (i % 3) - 1, -- below, tied with, and above the pair
+			isHandlable = never,
+			process = function(): (any?, boolean) -> ()
+				return q.Void
+			end,
+		})
+		assert(q.Dispatch.getHandler(inst, "k", "s") == winner, `debug off: tie winner unchanged after {i} debugOnly registrations`)
+		q.debug = true
+		assert(q.Dispatch.getHandler(inst, "k", "s") == winner, `debug on: tie winner unchanged after {i} debugOnly registrations`)
+		q.debug = false
+	end
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

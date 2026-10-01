@@ -1,0 +1,3 @@
+mode=base mutant=nil seeds=2000 ops=79714 diffs=0 userProcess=41142 ties(user-involved pairs)=25006 sameHandlerA=11373 poisonedKeys=0 listHandlersUnsorted=0 time=1.6s
+ops: drive=11804 process=35840 retractFrom=16072 stateSet=8072
+expected errors: Quad0075=1824 Quad0076=21147 UBOOM:h1=465 UBOOM:h2=482 UBOOM:h3=354 UBOOM:h4=303 UBOOM:h5=239 UBOOM:h6=207 UBOOM:h7=102 UBOOM:h8=46 UEVIL:h1=252 UEVIL:h2=249 UEVIL:h3=171 UEVIL:h4=149 UEVIL:h5=90 UEVIL:h6=71 UEVIL:h7=43 UEVIL:h8=19
