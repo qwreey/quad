@@ -1,0 +1,7 @@
+B1 Started(engine): src=77 playing Size->77 Position->77  (props now Size=0 Position=0)
+B2 snap Started(zero-time): src=77 playing Size->77 Position->77  (props now Size=0 Position=0)
+B2' zero-time snap Completed (Time=0 both): src=77 Size=77 Position=77
+B3 Cancelled(replacement): src=77 playing Size->77 Position->77
+B4 window Completed(replacement): src=77 playing Size->77 Position->77
+B5 engine Completed(async, control): src=77 playing Size->77 Position->77
+B6 Animate fan-out Started -> src:Set(77): src=20 playing Size->20 Position->20 props Size=0 Position=0

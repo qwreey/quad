@@ -1,0 +1,1 @@
+after re-emit same value with motion off: playing=		prop=	360	cancels=	1

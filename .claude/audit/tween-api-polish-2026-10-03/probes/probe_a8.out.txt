@@ -1,0 +1,8 @@
+after retractFrom: playing=	F.Size->77
+after src:Set(5): playing=	F.Size->77	#log	2	t77 cancels	0
+after fresh process(9): playing=	F.Size->9	t77 cancels	1
+after second retractFrom: playing=	
+shorthand running:	_quad_scale.Scale->8
+  shorthand Cancelled	G	UIScale	8
+shorthand nil teardown ok=	true	nil
+after nil: playing=	_quad_scale.Scale->12	src=	12

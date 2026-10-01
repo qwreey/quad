@@ -1,0 +1,5 @@
+D1	Tween(1, 0.3s)
+D2 (no line above = no debug warning for Info+Time)
+D3 after motion:Set(false): playing=	F.Rotation->360
+D4 first set engine tweens=	0	prop=	1
+D5 Started; plays=	1	prop=	0

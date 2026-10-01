@@ -1,0 +1,4 @@
+mount-snap Started via Animate -> src:Set(77): src=77 prop=10 playing=[F.Size->77]
+   then Set(5): playing=[F.Size->5]
+mount-snap Completed via Animate -> src:Set(77): src=77 prop=10 playing=[F.Size->77]
+   then Set(5): playing=[F.Size->5]

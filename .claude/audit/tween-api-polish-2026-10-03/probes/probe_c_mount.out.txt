@@ -1,0 +1,5 @@
+callbacks fired during D.Frame construction (dialog starts CLOSED):
+  BT Completed Parent=nil
+  Started(value=false)
+  Completed(open=false, value=false, Parent=nil, Name=Dialog, Rotation=5)
+after open:Set(true):	Started(value=true)	#tweens	2

@@ -1,0 +1,6 @@
+CanAnimate=true: mount ok=true completedCalls=1 engineTweens=1 err=nil
+   after 5 engine finishes: completedCalls=6 engineTweens=6
+CanAnimate=false: mount ok=false completedCalls=1538 engineTweens=0 err=./quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Brand.luau:80: stack overflow
+runtime flip: after mount n=	1	#log	1
+   after motion:Set(false) n=	1
+   after the running tween finishes: ok=false n=1539 err=./quad-roblox/src/LifetimeHandle.luau:110: stack overflow

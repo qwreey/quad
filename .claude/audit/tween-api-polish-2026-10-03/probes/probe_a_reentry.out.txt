@@ -1,0 +1,16 @@
+A1 engine Completed -> Set(77): prop=10 src=77 playing=[F.Size->77] seen=[a:C(F,Size,10) in:S(F,Size,77)]
+A2 window Completed -> Set(77) while b(20) replaces: prop=0 src=77 playing=[F.Size->77] seen=[a:C(F,Size,10) b:X(F,Size,20) in:S(F,Size,77)]
+A3 engine Started -> Set(77): prop=0 src=77 playing=[F.Size->77] seen=[a:S(F,Size,10) a:X(F,Size,10) in:S(F,Size,77)]
+A4 replacement Cancelled -> Set(77) while b(20) replaces: prop=0 src=77 playing=[F.Size->77] seen=[a:X(F,Size,10) b:X(F,Size,20) in:S(F,Size,77)]
+A5 zero-time snap Started -> Set(77): prop=10 src=77 playing=[F.Size->77] seen=[a:Started in:S(F,Size,77)]
+A5 zero-time snap Completed -> Set(77): prop=10 src=77 playing=[F.Size->77] seen=[a:Completed in:S(F,Size,77)]
+A6/7 mount first-snap Started -> Set(77): prop=10 src=77 playing=[F.Size->77] seen=[a:Started in:S(F,Size,77)]
+   ... then Set(5): prop=10 src=5 playing=[F.Size->5] seen=[in:X(F,Size,77)]
+A6/7 mount first-snap Completed -> Set(77): prop=10 src=77 playing=[F.Size->77] seen=[a:Completed in:S(F,Size,77)]
+   ... then Set(5): prop=10 src=5 playing=[F.Size->5] seen=[in:X(F,Size,77)]
+A8a retractFrom ok=	true	nil
+A8a teardown(retractFrom) Cancelled -> Set(77): prop=0 src=77 playing=[F.Size->77] seen=[a:X in:S(F,Size,77)]
+A8b None ok=	true	nil
+A8b None-switch Cancelled -> Set(77): prop=nil src=77 playing=[] seen=[a:X in:S(F,Size,77) in:X(F,Size,77)]
+   ... then Set(5): prop=nil src=5 playing=[F.Size->5] seen=[after:S(F,Size,5)]
+done

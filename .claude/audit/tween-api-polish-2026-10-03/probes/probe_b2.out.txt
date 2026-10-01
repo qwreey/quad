@@ -1,0 +1,7 @@
+B5 engine Completed(async): src=77 playing=[F.Position->77]
+   Animate Started	Position	0	armed	false
+   Animate Started	Size	0	armed	false
+   Animate Started	Size	20	armed	true
+   Animate Started	Size	77	armed	true
+   Animate Started	Position	77	armed	true
+B6 Animate fan-out Started -> src:Set(77): src=77 playing=[F.Size->77,F.Position->77]

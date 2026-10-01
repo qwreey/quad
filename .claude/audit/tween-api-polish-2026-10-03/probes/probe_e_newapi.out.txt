@@ -1,0 +1,4 @@
+E1 SetIfChanged same-target Tween twice: revisions	0	4294967295	4294967294	(second write happened =	true	) engine tweens=	1
+E2 SetAndDispose(old = Tween) ok=	false	./quad-roblox/test/probe_e_newapi.luau:14: Quad0180 dispose: this backend cannot dispose this value
+E2b SetAndDispose(old = Tween) -> plain ok=	false	./quad-roblox/test/probe_e_newapi.luau:16: Quad0180 dispose: this backend cannot dispose this value
+E2c SetAndDispose(old = number) ok=	false	./quad-roblox/test/probe_e_newapi.luau:18: Quad0180 dispose: this backend cannot dispose this value
