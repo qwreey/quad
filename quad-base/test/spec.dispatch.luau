@@ -503,6 +503,29 @@ do
 		assert(inst.Name == "Frame", "nothing was dispatched before the gate")
 	end
 	assert(string.find(select(2, pcall(function() q.Dispatch.drive(mock.Instance.new("Frame"), q.AttrKey("x")) end)) :: any, "got AttrKey", 1, true) ~= nil, "brand named")
+	-- [2026-10-01 user decision] the every-call half is O(1) (metatable / `Brand.isPlainBranded`); the full
+	-- `brandNameOf` scan is debug-only — the one thing only it catches is a PROVIDER brand with no metatable
+	local qp: any = newQuad()
+	local widgets = setmetatable({}, { __mode = "k" }) :: any
+	qp.isWidget = function(x: any): boolean
+		return widgets[x] == true
+	end
+	qp.BrandPredicates:Register(qp.isWidget)
+	local widget = { Name = "w" }
+	widgets[widget] = true
+	local instOff = mock.Instance.new("Frame")
+	local okOff, errOff = pcall(function() qp.Dispatch.drive(instOff, widget) end)
+	-- debug off: no scan — the plain branded table is dispatched as props, so its `Name` field reaches the
+	-- handler scan (no handler for it in this bare quad: the ordinary no-match), not the Quad0083 gate
+	assert(not okOff and string.find(tostring(errOff), "Quad0083", 1, true) == nil
+		and string.find(tostring(errOff), "Quad0076", 1, true) ~= nil and string.find(tostring(errOff), "key Name", 1, true) ~= nil,
+		"debug off: dispatched as props: " .. tostring(errOff))
+	qp.debug = true
+	local instOn = mock.Instance.new("Frame")
+	local okOn, errOn = pcall(function() qp.Dispatch.drive(instOn, widget) end)
+	assert(not okOn and string.find(tostring(errOn), "Quad0083", 1, true) ~= nil and string.find(tostring(errOn), "got Widget", 1, true) ~= nil, "debug on: the scan names the provider brand: " .. tostring(errOn))
+	mock.assertBlamesUser(errOn, "spec.dispatch.luau", "debug Quad0083 blame")
+	assert(instOn.Name == "Frame", "debug on: nothing dispatched before the gate")
 	print("PASS")
 end
 
@@ -630,15 +653,21 @@ do
 	q.isHasName = function(t: any): boolean
 		return type(t) == "table" and t.Name ~= nil
 	end
-	local okNE, errNE = pcall(function()
-		q.Dispatch.drive(inst, { Name = "x" })
-	end)
-	assert(okNE or string.find(tostring(errNE), "Quad0083", 1, true) == nil, "a non-empty props table is not mistaken for a quad value: " .. tostring(errNE))
-	local okB, errB = pcall(function()
-		q.Dispatch.drive(inst, q.Source(1))
-	end)
-	assert(not okB and string.find(tostring(errB), "props must be a plain", 1, true) ~= nil, "the H-470 gate still refuses a quad value: " .. tostring(errB))
-	assert(string.find(tostring(errB), "Mobile", 1, true) == nil and string.find(tostring(errB), "Empty", 1, true) == nil, "diagnostics not polluted by the helpers: " .. tostring(errB))
+	-- both modes: since 2026-10-01 the module scan runs on every drive only with q.debug on
+	for _, debugOn in { false, true } do
+		q.debug = debugOn
+		q.Dispatch.drive(inst, {})
+		local okNE, errNE = pcall(function()
+			q.Dispatch.drive(inst, { Name = "x" })
+		end)
+		assert(okNE or string.find(tostring(errNE), "Quad0083", 1, true) == nil, "a non-empty props table is not mistaken for a quad value: " .. tostring(errNE))
+		local okB, errB = pcall(function()
+			q.Dispatch.drive(inst, q.Source(1))
+		end)
+		assert(not okB and string.find(tostring(errB), "props must be a plain", 1, true) ~= nil, "the H-470 gate still refuses a quad value: " .. tostring(errB))
+		assert(string.find(tostring(errB), "Mobile", 1, true) == nil and string.find(tostring(errB), "Empty", 1, true) == nil, "diagnostics not polluted by the helpers: " .. tostring(errB))
+	end
+	q.debug = false
 	q.isEmpty, q.isMobile, q.isNonEmptyList, q.isHasName = nil, nil, nil, nil
 	-- H-564: an index that would leave a gap in the chain is refused
 	q.Dispatch.addHandler({
@@ -836,6 +865,54 @@ do
 		q.debug = true
 		assert(q.Dispatch.getHandler(inst, "k", "s") == winner, `debug on: tie winner unchanged after {i} debugOnly registrations`)
 		q.debug = false
+	end
+	print("PASS")
+end
+
+print("=== 24. 2026-10-01 사용자 결정 — 값의 핸들러는 그 값을 선언한 모듈이 등록(NoneHandler ← None.luau, StoreBind ← State.luau); Dispatch는 자기 말단(NilHandler·Processed* 셋)만; HIGH 밴드 술어는 서로 배타(등록 순서가 바뀌어도 동률 순서 무관) ===")
+do
+	local NoneModule = require("../src/None")
+	local StateModule = require("../src/State")
+	local q: any = newQuad()
+	local function counts(): { [string]: number }
+		local c = {}
+		for _, h in q.Dispatch.listHandlers() do
+			if h.name ~= nil then c[h.name] = (c[h.name] or 0) + 1 end
+		end
+		return c
+	end
+	local c = counts()
+	for _, name in { "NoneHandler", "NilHandler", "StoreBind", "ProcessedModifierHandler", "ProcessedPreRefHandler", "ProcessedPostRefHandler" } do
+		assert(c[name] == 1, `{name} registered exactly once (got {tostring(c[name])})`)
+	end
+	-- the owning modules' Init is the registration site: running it again is the RunInit no-op
+	q:RunInit(NoneModule.Init)
+	q:RunInit(StateModule.Init)
+	local c2 = counts()
+	assert(c2.NoneHandler == 1 and c2.StoreBind == 1, "RunInit of the owning Init is idempotent")
+	assert(q.None == NoneModule.None, "the top-level re-export is the None module's value")
+	-- HIGH band: every pair of predicates is disjoint over a sample of keys × values, so the unstable
+	-- sort's tie order (which changes with registration order) never decides a match
+	local inst = Instance.new("Frame")
+	local src = q.Source(1)
+	local samples: { any } = {
+		q.None, src, src:Compute(function(s: any) return s end), src:Observer(function() end), q.Effect(function() end),
+		q.Ref(), q.PreRef(), q.PostRef(), q.Slot(), q.Tag("t"), q.Attr({ a = 1 }), q.AttrKey("k"), q.Blocker(), "s", 5, {},
+	}
+	local high = {}
+	for _, h in q.Dispatch.listHandlers() do
+		if h.priority == q.Dispatch.HANDLER_PRIORITY_HIGH then table.insert(high, h) end
+	end
+	assert(#high >= 10, `HIGH band populated (got {#high})`)
+	for _, k in { 1 :: any, "x" } do
+		for i = 1, #samples + 1 do
+			local v = samples[i] -- i = #samples + 1: nil
+			local hits = {}
+			for _, h in high do
+				if h.isHandlable(inst, k, v) then table.insert(hits, h.name or "?") end
+			end
+			assert(#hits <= 1, `HIGH predicates overlap at key {tostring(k)}, value #{i}: {table.concat(hits, ", ")}`)
+		end
 	end
 	print("PASS")
 end

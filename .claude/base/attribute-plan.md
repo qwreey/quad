@@ -613,7 +613,7 @@ end
   계약("값은 항상 선언된 Compute 재실행 결과, 캐시 비교 금지",
   `base/source-state-plan.md`의 "Source 값을 직접 mutate한 뒤 전파 — `:Emit()`"
   절 "하드 경계" 문단)과 어긋나고, `source`가
-  `State`/`Source`면 `Dispatch/StoreBind`가 알아서 언랩+구독까지 다
+  `State`/`Source`면 `StoreBind`(**[2026-10-01]** 최상위 모듈, 등록은 `State.luau`)가 알아서 언랩+구독까지 다
   해줌(그룹 Handler가 따로 구독 관리 안 함)이라 굳이 비교할 이유가 없음.
 - **[확정, 2026-08-12 세션 후속, 사용자 결정] 클로저는 `setAttr`를
   절대 안 부름 — Attr는 오직 명시적 `None`/`nil`로만 지워진다.**

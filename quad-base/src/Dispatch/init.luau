@@ -40,10 +40,10 @@ local Relate = require("./Relate")
 local Void = require("./Void")
 local Err = require("./ErrorNamespace")
 local InitBookkeeping = require("./Bookkeeping")
-local NoneModule = require("@self/None")
-local StoreBindModule = require("@self/StoreBind")
-local ProcessedModifierModule = require("@self/Modifier/Handler") -- M7 단위 ②
-local flatten = require("@self/Modifier").flatten -- M7 단위 ② — drive의 첫 pre-pass(round17 Q4 (a))
+local Brand = require("./Brand") -- `isPlainBranded` — the `H-470` props gate's O(1) half
+local ModifierModule = require("@self/Modifier")
+local flatten = ModifierModule.flatten -- M7 단위 ② — drive의 첫 pre-pass(round17 Q4 (a))
+local ProcessedModifier = ModifierModule.ProcessedModifier -- M7 단위 ② — flatten's consumed-slot sentinel
 local RefPrePass = require("@self/Ref") -- M8 단위 ② — (a) PreRef/PostRef pre-pass + (c) postRefList
 
 local QuadTypes = require("../luau_packages/quad_types")
@@ -64,8 +64,8 @@ local HANDLER_PRIORITY_FALLBACK = QuadTypes.HANDLER_PRIORITY_FALLBACK
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 -- Probed to name a value's brand in the match-failure message, and by the `H-470`
--- props gate in `drive` (a hot path, ~12% of drive — round11 L′ 7 corrected the old
--- "cold path only" note) — there is deliberately no reverse lookup on Brand
+-- props gate in `drive` — its full scan only with `q.debug` on (2026-10-01; it was ~12% of
+-- drive on every call — round11 L′ 7) — there is deliberately no reverse lookup on Brand
 -- (`archive/brand-shared-registry-reversed.md`), so we ask the module's own
 -- public predicates. Base predicates here, in order; provider brands are found
 -- by CONTRACT (round3 §4 Q27, user decision 2026-09-08): a provider installs its
@@ -128,6 +128,44 @@ local function checkRetractorShape(h: Handler, k: any, index: number, retractor:
 	if type(retractor) ~= "function" then
 		Err.errorBefore(noRetractorMessage(h, k, index, retractor), SURFACE) -- error-code: via noRetractorMessage
 	end
+end
+
+-- `H-470` props gate: the one Quad0083 literal — `drive`'s O(1) check and the debug scan below both raise it.
+local function propsNotPlainMessage(what: string): string
+	return `Quad0083 Dispatch.drive: props must be a plain \{ ... \} table - a quad value needs the braces (got {what})`
+end
+
+-- [2026-10-01 user decision — "debug 로 내리기에 동의해"] the braces-forgotten gate's FULL brand scan
+-- (`brandNameOf`: every registered provider `is<Brand>` field, pcall'd, then the base probe list — ~12% of
+-- drive, round11 L′ 7) runs only with `q.debug` on. The every-call half in `drive` is O(1): a metatable or a
+-- metatable-less base brand (`Brand.isPlainBranded`). What only this scan catches: a value branded by a
+-- PROVIDER predicate that carries no metatable — with debug off its fields are dispatched like props and
+-- fail (or land) wherever their keys lead.
+local function checkPropsBrand(flattened: any, brandNameOf: (any) -> string?)
+	local brand = brandNameOf(flattened)
+	if brand ~= nil then
+		Err.errorBefore(propsNotPlainMessage(brand), SURFACE) -- error-code: via propsNotPlainMessage
+	end
+end
+
+-- The `Processed*` nop terminal (ProcessedModifier / ProcessedPreRef / ProcessedPostRef —
+-- `modifier-plan.md` `H-35` block, `ref-plan.md` canon): matches the sentinel by identity anywhere
+-- (it only ever sits at array positions), registers the position out of the order math and retracts
+-- with `Void` — flatten / the pre-pass fire already happened, nothing to undo. One factory for the
+-- three (Q3 ⑤); 2026-10-01 moved here from 옛 `Dispatch/None.luau` — these are the drive's own
+-- sentinels, so Dispatch registers them itself.
+local function addProcessedHandler(dispatch: Dispatch, bookkeeping: QuadTypes.Bookkeeping, name: string, sent: any)
+	dispatch.addHandler({
+		name = name,
+		isHandlable = function(_inst: any, _k: any, v: any): boolean
+			return v == sent
+		end,
+		priority = HANDLER_PRIORITY_HIGH, -- "매우 높음, NoneHandler와 동급"
+		process = function(inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
+			bookkeeping.setEmpty(inst, k, inst) -- canon block: offsetSource → length 0 (`H-35`)
+			return Void
+		end,
+	})
 end
 
 local function Init(module: any)
@@ -539,18 +577,20 @@ local function Init(module: any)
 		if type(flattened) ~= "table" then
 			Err.errorBefore(`Quad0082 Dispatch.drive: props must be a table (got {typeof(flattened)})`, SURFACE)
 		end
-		-- [2026-09-16 round10] `brandNameOf` is the diagnostics-only module scan and this is the hot
-		-- path (~12% of drive, measured) — but narrowing it to `Brand.isPlainBranded` would drop
-		-- provider brands registered as `is<Brand>` fields without a metatable (Q27 contract, code-review),
-		-- so the scan stays; the speed-up is a ROADMAP optimisation candidate.
-		if getmetatable(flattened) ~= nil or brandNameOf(flattened) ~= nil then
-			-- `H-470` (탐사 A): the braces-forgotten form `D.Frame(q.Source(1))` — every sibling
-			-- constructor refuses a quad value where a plain table is due (`H-204`/`H-377`/
-			-- `H-386`/`H-389`), and canon says `flattened` is always a plain table
-			-- (dispatch-core-plan "`flattened`는 항상 평범한 Luau 테이블이다"). Without this the
-			-- value's own fields were dispatched: a frozen `AttrKey("x")` is `{ Name = "x" }`,
-			-- which quad-roblox's Property handler wrote — a silent rename.
-			Err.errorBefore(`Quad0083 Dispatch.drive: props must be a plain \{ ... \} table - a quad value needs the braces (got {brandNameOf(flattened) or "a table with a metatable"})`, SURFACE)
+		-- `H-470` (탐사 A): the braces-forgotten form `D.Frame(q.Source(1))` — every sibling
+		-- constructor refuses a quad value where a plain table is due (`H-204`/`H-377`/
+		-- `H-386`/`H-389`), and canon says `flattened` is always a plain table
+		-- (dispatch-core-plan "`flattened`는 항상 평범한 Luau 테이블이다"). Without this the
+		-- value's own fields were dispatched: a frozen `AttrKey("x")` is `{ Name = "x" }`,
+		-- which quad-roblox's Property handler wrote — a silent rename.
+		-- [2026-10-01 user decision] every call pays O(1) only (a metatable, or a metatable-less base
+		-- brand); the full `brandNameOf` scan is debug-only (`checkPropsBrand` above). The name in the
+		-- message is still looked up here — that is the failure path.
+		if getmetatable(flattened) ~= nil or Brand.isPlainBranded(flattened) then
+			Err.errorBefore(propsNotPlainMessage(brandNameOf(flattened) or "a table with a metatable"), SURFACE) -- error-code: via propsNotPlainMessage
+		end
+		if module.debug then
+			checkPropsBrand(flattened, brandNameOf)
 		end
 		if inst == nil then
 			Err.errorBefore("Quad0084 Dispatch.drive: inst must not be nil", SURFACE) -- round3 `H-442` (G-12): died in Relate with `table index is nil`
@@ -639,23 +679,34 @@ local function Init(module: any)
 		end
 	end
 
-	-- M3 unit 3: quad-base fills its own registry with the None pair —
-	-- NoneHandler (recursion only) + NilHandler (the one place an empty array
-	-- position is registered out of the order math).
-	NoneModule.register(Dispatch, bookkeeping)
-	-- M7 단위 ②: the flatten sentinel's nop terminal (`H-35`) — registered
-	-- with the None pair for the same self-ownership reason.
-	ProcessedModifierModule.register(Dispatch, bookkeeping)
-	RefPrePass.register(Dispatch, bookkeeping) -- M8 단위 ② — ProcessedPreRef/PostRef 전담 핸들러
-	-- M4: StoreBind — the descending diff's own recursion, so it registers
-	-- here like the None pair, not from a value module (round13 §0 Q3 (a);
-	-- `H-278`'s scope was leaf handlers for one value type). It needs `module`
-	-- too: lifetime fields are read at fire time (`H-174`).
-	StoreBindModule.register(Dispatch, module)
-	-- M3 unit 4 leaf handlers + guards: registered by their OWNING modules
-	-- (`H-278`, user-directed — Observer.luau/Effect.luau pull InitDispatch
-	-- via RunInit and addHandler in their own Init; "각 객체를 아는 곳은 각
-	-- 객체가 선언된 곳").
+	-- Dispatch's own terminals only — nothing here knows a core value type (2026-10-01 user decision:
+	-- *"Dispatch 가 코어 객체들을 아는 방향이 되지 않아야하니까"*).
+	-- M3 unit 3: NilHandler — the one place a real `nil` at an array position (an empty seat, not an
+	-- object: `State<Slot|nil>` must work without forcing `None`; hash-key `nil` belongs to that key's
+	-- own handler) is registered out of the order math. Mounts nothing: `setEmpty(inst, k)` =
+	-- offsetSource None → length 0 (release-order contract). `H-39`: terminal handlers register
+	-- without exception — this one IS that registration. Constant length → no `element` argument.
+	Dispatch.addHandler({
+		name = "NilHandler",
+		keyType = "number", -- `H-484`: only number keys can match (isHandlable checks it too)
+		isHandlable = function(_inst: any, k: any, v: any): boolean
+			return type(k) == "number" and v == nil
+		end,
+		priority = HANDLER_PRIORITY_HIGH,
+		process = function(inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
+			-- no recursion — already nil, nothing further to hand down
+			bookkeeping.setEmpty(inst, k)
+			return Void
+		end,
+	})
+	-- M7 단위 ② / M8 단위 ②: the nop terminals of drive's own pre-passes (`H-35`, `ref-plan.md` canon)
+	addProcessedHandler(Dispatch, bookkeeping, "ProcessedModifierHandler", ProcessedModifier)
+	addProcessedHandler(Dispatch, bookkeeping, "ProcessedPreRefHandler", RefPrePass.ProcessedPreRef)
+	addProcessedHandler(Dispatch, bookkeeping, "ProcessedPostRefHandler", RefPrePass.ProcessedPostRef)
+	-- Everything else is registered by the module that OWNS the value type (`H-278`, user-directed —
+	-- each pulls InitDispatch via RunInit and calls addHandler in its own Init; "각 객체를 아는 곳은
+	-- 각 객체가 선언된 곳"): NoneHandler by `None.luau`, StoreBind by `State.luau` (2026-10-01 — both
+	-- were registered here before), leaf handlers and guards by Observer/Effect/Ref/Slot/Tag/Attr.
 
 	module.Dispatch = Dispatch
 end

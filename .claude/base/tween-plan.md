@@ -52,7 +52,7 @@ State그래프 안의 1급 노드") 참고.
 반응형으로만 바뀌길 원하는 흔한 케이스가 결국 이름은 Tween인 파일을
 거쳐가는지"가 문서로 답이 안 됐음.
 
-**해소**: State/Source 언랩(`Dispatch/StoreBind.luau`, 범용·엔진무관 —
+**해소**: State/Source 언랩(`StoreBind.luau` — **[2026-10-01]** 최상위, 옛 `Dispatch/StoreBind.luau`; 범용·엔진무관 —
 `k`/`v`의 실제 타입과 무관하게 그냥 `isState(v)`만 보고 `realv`까지
 재귀적으로 풀어냄)은 완전히 별개로 유지하고, **"이 값이 트윈 대상인가"는
 최종 소비자(PropertyHandler)가 `realv`를 다 풀어낸 뒤 직접 판단**한다 —

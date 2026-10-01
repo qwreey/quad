@@ -261,7 +261,7 @@ D.Frame = New<<Frame>> "Frame" :: (({ ...타입명시 }) -> Frame)
   마커 필드 하나(`__quadNone = true` — `Brand.luau`의 Brand가 아님)를 부여해 `QuadTypes.None`
   (`{ read __quadNone: true }`)으로 표현한다 — **런타임 판정은 여전히
   신원(`v == None`)뿐**이고 필드는 조언층 타입 전용, frozen 유지
-  (`Dispatch/None.luau`).
+  (옛 `Dispatch/None.luau` — **[2026-10-01]** 최상위 `None.luau`, 생성자는 `Dispatch/Handler.luau`의 `sentinel`).
 - **범위 판정식(round14 `H-296` (a) + `H-301` 실측 보강)**: creatable ∧
   (`GuiObject`∪`UIComponent`∪`LayerCollector` 하위) + 명시 화이트리스트
   `{Folder, Camera, WorldModel}`, **클래스 수준 제외** — `Deprecated`

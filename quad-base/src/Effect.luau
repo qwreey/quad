@@ -100,8 +100,10 @@ local function createImpl(module: any)
 
 	-- The body. `force` means exactly one thing: "may be called ignoring
 	-- canExecute" — the install from the constructor, not yet bound.
-	-- Observer.luau follows this same protocol (`_pending` / `_rerunRequired` / `force`) with its own
-	-- body (round13 3′) — except that an executable Observer delivery nests instead of deferring.
+	-- Observer.luau shares only `_rerunRequired` (the hold) with its own body: since 2026-10-01 it has no
+	-- `_pending`/`force` — a change in its install window is held, not re-run there — and an executable
+	-- delivery nests instead of deferring (a nested Observer run is usually own-upstream feedback — undefined — except a loop
+	-- routed through the Slot bookkeeping recompute, which is defined: the bookkeeping settles it).
 	local function rawRerun(self: any, force: boolean)
 		if self._running then
 			self._pending = true -- re-entered while running → deferred re-run

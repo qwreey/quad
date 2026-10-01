@@ -13,13 +13,12 @@
 	Sources, transcribed as-is:
 	  - `.claude/base/source-state-plan.md` "전파 루프 — 확정 의사코드":
 	    `Observer:_receive(from)` (`canExecute` → `fn(self._state, self, from)`,
-	    else hold `_rerunRequired = true`, `H-159`; inside the install run →
-	    `_pending`, run again in place), `Observer:_catchUp()`
-	    (the ONLY place a held change is replayed — with `from = nil`),
-	    `State:Observer(fn)` constructor ORDER (join `_subs` → forced install
-	    run that repeats while `_pending` — round13 3′ reversed the old
-	    "fn once → join" order, Q73), `observer._state` strong ref (`_hold`
-	    equivalent, `H-110`); "`state:Observer(fn)`" section: fires once on
+	    else hold `_rerunRequired = true`, `H-159` — the install window too),
+	    `Observer:_catchUp()` (the ONLY place a held change is replayed — with
+	    `from = nil`), `State:Observer(fn)` constructor ORDER (join `_subs` →
+	    one install run — round13 3′ reversed the old "fn once → join" order,
+	    Q73; 2026-10-01 dropped the install re-run loop), `observer._state`
+	    strong ref (`_hold` equivalent, `H-110`); "`state:Observer(fn)`" section: fires once on
 	    registration, `fn(targetState, self, emitFrom?)` — `nil` means
 	    "no source: install or catch-up, read the value" (`H-164`); no-arg
 	    `state:Observer()` = always-observe utility.
@@ -35,7 +34,7 @@
 	piece of bookkeeping is `_seenRevision` (round13 3′, Q109) — the same
 	"revision this handle last ran on" record Effect keeps per dep in its
 	`_epochs` map, as one number because an Observer watches one node, and
-	compared only for a Source (a derived target is outside it — see `runLoop`).
+	compared only for a Source (a derived target is outside it — see `run`).
 	`Effect` does NOT reuse these bodies (heterogeneous types; `conventions.md`
 	설계 원칙) — the two follow one protocol with their own bodies.
 ]]
@@ -57,16 +56,38 @@ local BindableBrand = Brand.BindableBrand
 local WEAK_KEY_MT = { __mode = "k" }
 
 -- ── debug-only checks (`architecture.md` "debug 층"; kept out of the logic below) ──
--- 2026-10-01 (user decision): the install loop has no cap by contract — an fn that keeps setting its
--- own target never settles, and since a Source propagates even an equal value (`H-68`) an unconditional
--- `Set` (a same-value clamp) is enough. With `q.debug` on, the loop counts and raises past this limit.
-local DEBUG_RERUN_LIMIT = 10000
-local function checkInstallReruns(count: number)
-	if count > DEBUG_RERUN_LIMIT then
-		Err.errorBefore(
-			`Quad0262 Observer: the first run did not settle after {DEBUG_RERUN_LIMIT} re-runs - the fn keeps setting its own target (a Source propagates even an equal value; set only when the value differs)`,
-			SURFACE
-		)
+-- 2026-10-01 (user decision): an Observer is a final consumer — setting OTHER targets is normal, but
+-- feeding its own upstream (the State it watches, or anything upstream of it) directly or indirectly is
+-- undefined (`source-state-plan.md` "Compute 순수성" 2026-10-01 paragraph); only an Effect's own-dep Set
+-- is defined (its deferred re-run untangles the wave). The visible symptom: a delivery this handle can
+-- run arrives while its own fn is still running — the run would nest. With `q.debug` on, that prints
+-- one line per Observer (weak) and the run goes on unchanged. `_running` alone is not the signal: an fn
+-- that THREW leaves it up for good (no pcall — architecture "예외 안전성 계약"), so the probe also asks
+-- whether `fn` really has a frame on the call stack (the stack unwinds by itself). Handles quad creates
+-- for its own bookkeeping carry `_internal = true` and are skipped — they are not user code.
+-- A nested delivery that came THROUGH the Slot bookkeeping recompute is skipped too (user decision
+-- 2026-10-01: a callback watching a Slot's `Offset`/`Length` that CRUDs a Slot so the value moves again is
+-- not State feedback — the loop goes through the position math, which re-runs until it settles; the user
+-- cannot see it as feedback without knowing Slot internals). Walking out from the innermost frame, meeting
+-- `recompute` before this handle's `fn` means the change was routed by the bookkeeping.
+local function fedBackDirectly(fn: any, recompute: any): boolean
+	local level = 1
+	while true do
+		local f = debug.info(level, "f")
+		if f == nil or f == recompute then
+			return false
+		end
+		if f == fn then
+			return true
+		end
+		level += 1
+	end
+end
+
+local function checkUpstreamFeedback(observer: any, warned: { [any]: true }, recompute: any)
+	if observer._running and not observer._internal and warned[observer] == nil and fedBackDirectly(observer.fn, recompute) then
+		warned[observer] = true
+		print("Observer: a change reached this Observer while its own fn was running - the fn fed its own upstream, directly or through other handles (undefined; set other targets, or use an Effect for a self-correcting write)")
 	end
 end
 
@@ -100,18 +121,12 @@ local function createImpl(module: any)
 	end
 
 	-- ── EmitReceive ──────────────────────────────────────────────────
-	-- round13 bundle 3′ (user decision 2026-09-30, Q73 (a) + Q110 (b)) — Effect's vocabulary, no new name:
-	--   `_pending`       = "a delivery arrived while fn was running and could not run in place" (Effect's
-	--                      field, same meaning); only possible while the handle is NOT executable — the
-	--                      install window, or an fn that has just unsubscribed itself;
-	--   `_rerunRequired` = "a change arrived while not executable" (held; replayed once on bind/subscribe);
-	--   `force`          = the install run, which may run while unexecutable (Effect's parameter, same meaning).
-	-- A forced run re-runs fn while `_pending` (the install window takes changes in place — an emit inside
-	-- the install fire used to be lost, Q73; Effect's install already re-ran); an unforced run turns a
-	-- leftover `_pending` into a hold. No oscillation cap (user: a non-converging install fn is UB, same as
-	-- Effect's install). Executable deliveries still NEST — deliberately unlike Effect's deferred re-run:
-	-- an Observer that threw keeps firing on the next change (self-healing, `H-445`/`H-545`), which a
-	-- deferred loop without pcall would lose. Re-runs pass `from = nil` ("read the value", `H-164`).
+	-- 2026-10-01 (user decision — the round13 3′ install re-run loop is gone): a delivery runs fn in place
+	-- when the handle can execute, and is HELD otherwise (`_rerunRequired`, `H-159` — replayed once on the
+	-- next bind/subscribe). The install window is such a state (a new handle is neither bound nor
+	-- subscribed): a change arriving while the install fn runs is held, not re-run there (user: "설치 발화
+	-- 중에 변경을 계속 받을 필요 없고 … pending 으로 끝날 수 있음"). Only the fn itself (or what it sets off)
+	-- can cause such a change — feeding its own upstream, undefined for an Observer.
 	--
 	-- `_seenRevision` (Q109, user decision 2026-09-30): the Source revision this handle last ran on —
 	-- the SAME record Effect keeps per dep in its `_epochs` map (`Sync` before fn, `Update` on delivery),
@@ -120,64 +135,37 @@ local function createImpl(module: any)
 	-- mid-wave (Q109 shape) or a nested wave (C6 shape) can run twice with the same value — its emit map
 	-- filters at the node's entry, not the outer snapshot walk (2026-09-30 mock measurement; Effect's map
 	-- keys the source and so filters the nested case, both double on revive).
-	local function runLoop(self: any, from: any, force: boolean)
-		local outer = self._running -- `H-183` (save/restore — `H-332`)
+	local function run(self: any, from: any)
+		-- `H-183`: fn may not change its own lifecycle (`H-147` symmetric). An fn that throws leaves the
+		-- flag set — NOT "dead": `_receive` does not read it, so the Observer keeps firing (self-healing,
+		-- `H-445`/`H-545`); what the stuck flag blocks is (re)subscribing and (re)binding
+		-- (`_assertBindable`) — round11 Q63 corrected the old "dead by contract" wording.
+		-- Save/restore, not true/false (`H-332`): only a NESTED run (the fn fed its own upstream —
+		-- undefined) can tell the two apart; kept because it costs nothing, it does not defend that UB
+		-- input and is no contract.
+		local outer = self._running
 		self._running = true
-		local count = if force and module.debug then 0 else nil -- debug only: the install loop's re-run count
-		repeat
-			if count then
-				count += 1
-				checkInstallReruns(count)
-			end
-			self._pending = false
-			self._seenRevision = rawget(self._state, "Revision") -- nil for a derived State
-			self.fn(self._state, self, from)
-			from = nil
-		until not (self._pending and (force or module.Backend.canExecute(self)))
-		if self._pending then
-			self._pending = false
-			self._rerunRequired = true -- lost executability inside fn: hold, replay on the next bind/subscribe
-		end
+		self._seenRevision = rawget(self._state, "Revision") -- nil for a derived State
+		self.fn(self._state, self, from)
 		self._running = outer
 	end
 
+	local debugWarned: { [any]: true } = setmetatable({}, WEAK_KEY_MT) :: any
 	function Impl._receive(self: any, from: any)
 		-- Q109: a direct Source delivery whose revision this handle already ran on (a catch-up or a nested
 		-- run in the same wave read it) is not a new change — skip (Effect: `_epochs:Update` false). Only
-		-- `from == _state` (a Source) — see the derived-target limit at `runLoop`; a gate batch (an
+		-- `from == _state` (a Source) — see the derived-target limit at `run`; a gate batch (an
 		-- EpochSet) is never skipped.
-		local rev = nil
-		if from == self._state then -- only a Source emits itself as `from`
-			rev = from.Revision
-			if self._seenRevision == rev then
-				return
-			end
+		if from == self._state and self._seenRevision == from.Revision then -- only a Source emits itself as `from`
+			return
 		end
 		if module.Backend.canExecute(self) then -- read at fire time (`H-174`)
-			-- Deliberately inline, not `runLoop(self, from, false)` (same result — code-review 2026-09-30
-			-- suggested merging): every nesting level of a self-Setting fn passes through here, and a
-			-- call adds a stack frame per level, lowering the recursion depth before overflow.
-			-- `H-183`: fn may not change its own lifecycle (`H-147` symmetric). An fn
-			-- that throws leaves the flag set — NOT "dead": this gate does not read it, so
-			-- the Observer keeps firing; what the stuck flag blocks is (re)subscribing and
-			-- (re)binding (`_assertBindable`) — round11 Q63 corrected the old "dead by
-			-- contract" wording. Save/restore, not true/false: a reentrant wave (fn sets
-			-- its own State) must not lower the guard for the outer fn's tail (`H-332`)
-			local outer = self._running
-			self._running = true
-			if rev ~= nil then
-				self._seenRevision = rev
+			if module.debug then
+				checkUpstreamFeedback(self, debugWarned, module.Bookkeeping._recompute)
 			end
-			self.fn(self._state, self, from)
-			self._running = outer
-			if self._pending and not outer then -- fn unsubscribed itself, then changed its State: hold
-				self._pending = false
-				self._rerunRequired = true
-			end
-		elseif self._running then
-			self._pending = true -- inside a run that cannot take it in place (the install window): runLoop re-runs
+			run(self, from)
 		else
-			self._rerunRequired = true -- `H-159`: change before binding is held — replayed once when bound
+			self._rerunRequired = true -- `H-159`: change before binding (or in the install window) is held — replayed once when bound
 		end
 	end
 
@@ -186,7 +174,7 @@ local function createImpl(module: any)
 	function Impl._catchUp(self: any)
 		if self._rerunRequired then
 			self._rerunRequired = false
-			runLoop(self, nil, false)
+			run(self, nil)
 		end
 	end
 
@@ -284,20 +272,20 @@ local function createImpl(module: any)
 			_state = state, -- strong: the handle holds its upstream (`_hold` equivalent, `H-110`)
 			_rerunRequired = false, -- one meaning: "a change arrived while unexecutable" (held; 3′ — was seeded `true`)
 			_seenRevision = false, -- the Source revision at this handle's last fn start (Q109 — Effect's `_epochs` entry)
-			_pending = false, -- "a delivery arrived during this run" (Effect's field, same meaning)
 			_running = false, -- `H-183`: raised around every fn run; the subscribe entries + `_assertBindable` refuse while up (Q63 (b): releasing passes)
 			Subscribed = false, -- the shared flag both handle types carry (`H-111`)
 		}, Impl)
 		ObserverBrand:Register(o)
 		BindableBrand:Register(o) -- lifetime hooks + `Subscribed` (`LifetimeHandle.luau`)
-		-- round13 3′ (Q73 (a), user decision 2026-09-30): join FIRST, then the forced install run — an
-		-- emit inside the install window (fn's own Set, or anyone else's) lands in `_receive` →
-		-- `_pending` → the loop runs fn again. The old order (fire → join) was incidental, not intended
-		-- (user: "첫 발화든 어느 발화든 자기 state 가 set 된다면 다시 실행되어도 됨"). An install fn that
-		-- throws now leaves the handle in `_subs` (weak-keyed — it goes with the handle). `_running` stays
-		-- up, so later deliveries only raise `_pending` and (re)subscribe/bind are refused: it never runs.
+		-- round13 3′ (Q73 (a), user decision 2026-09-30): join FIRST, then the install run — an emit inside
+		-- the install window (fn's own Set, or anyone else's) lands in `_receive` and is held
+		-- (`_rerunRequired`) for the first bind/subscribe; the old order (fire → join) lost it (user: "첫
+		-- 발화든 어느 발화든 자기 state 가 set 된다면 다시 실행되어도 됨"). 2026-10-01: no re-run inside the
+		-- install itself (user: "설치 중 즉시 도는거 아님"). An install fn that throws leaves the handle in
+		-- `_subs` (weak-keyed — it goes with the handle) with `_running` up, so (re)subscribe/bind are
+		-- refused and later deliveries are only held: it never runs.
 		state._subs[o] = true
-		runLoop(o, nil, true)
+		run(o, nil)
 		return o
 	end
 
@@ -309,8 +297,8 @@ end
 
 -- Dispatch-side registrations for the Observer VALUE (`H-278`, user-directed:
 -- "각 객체를 아는 곳은 각 객체가 선언된 곳" — moved out of the dissolved
--- Dispatch/Leaf.luau; the None pair stays in Dispatch because None is
--- Dispatch's own concept). Two handlers:
+-- Dispatch/Leaf.luau; [2026-10-01] NoneHandler/StoreBind followed — None.luau/State.luau register
+-- them, Dispatch keeps only NilHandler and the Processed* terminals). Two handlers:
 --   - ObserverLeafHandler (HIGH — dispatch skeleton band): children-array
 --     leaf binding. Body 1:1 with `source-state-plan.md` "Observer/Effect
 --     Leaf dedup" (H-39 registration, `old ~= v` dedup via a weak Relate

@@ -181,26 +181,34 @@ do
 end
 
 print()
-print("=== 6. flush 순서 — 스왑 → Sync(배치) → 전파: 전파 중 재진입 flush는 새 테이블에 쌓인다 ===")
+print("=== 6. flush 순서 — 스왑 → Sync(배치) → 전파: 전파 중 재진입 flush는 새 테이블에 쌓인다(하류 Effect가 상류를 Set — 정의된 경로) ===")
 do
-	local s = Source(1)
+	-- 2026-10-01: 재진입은 하류 Effect가 낸다 — Effect의 자기 의존성(상류 포함) Set은 지연 재실행이 푸는
+	-- 정의된 경로다. 맨 구독자/Observer 하류가 상류를 되먹이는 것은 UB라 그 모양으로는 고정하지 않는다.
+	local q = require("./mock").newQuad() -- an Effect needs the lifetime backend to subscribe
+	local s = q.Source(1)
 	local ctl = switchPolicy()
 	local g: State<number> = s:Gate(ctl.setup)
 	local seen: { any } = {}
-	local reenter = true
 	local sub = {}
 	function sub._receive(_self: any, from: any)
 		table.insert(seen, from)
-		if reenter then
-			reenter = false
-			s:Set(99) -- downstream sets upstream while the outer propagation is on the stack
-		end
 	end
 	;(g :: any)._subs[sub] = true
+	local reenter = true
+	local e = q.Effect(function()
+		if reenter and g:Get() == 2 then
+			reenter = false
+			s:Set(99) -- downstream Effect sets upstream while the outer propagation is on the stack
+		end
+	end, g):Subscribe()
 	s:Set(2)
+	assert(not reenter, "the Effect re-entered")
 	assert(#seen == 2, "outer batch and the nested batch each arrived once")
 	assert(seen[1] ~= seen[2], "the nested wave used a NEW withheld table — the outer batch was not cleared under it")
 	assert(next((g :: any)._withheld) == nil, "nothing left withheld")
+	assert(g:Get() == 99)
+	e:Unsubscribe()
 	print("PASS")
 end
 
@@ -259,11 +267,22 @@ do
 end
 
 print()
-print("=== 10. H-198 — 닫힌 게이트 너머 fn 도중의 Set: 같은 Get 안에서 재시작해 최신으로 수렴, flush는 통지만 ===")
+print("=== 10. H-198 — 닫힌 게이트 너머의 상류 변경: Get이 Refresh 드리프트로 따라잡는다; fn 도중의 Set(UB)은 관측만 ===")
 do
-	-- 리뷰 재현 모양(영구 stale이던 그 시나리오): fn 도중의 S:Set(99)는 게이트가
-	-- emit을 유보해 N의 _receive에 안 오지만, fn 직전 스탬프와 Refresh 드리프트로
-	-- 잡혀 같은 Get이 재시작한다(H-85의 카운터가 못 보는 자리를 스냅샷이 본다).
+	-- 정의된 경로: 닫힌 게이트 너머의 Set은 N의 _receive에 안 오지만 다음 Get의 Refresh 드리프트가 잡는다
+	local S0 = Source(1)
+	local b0 = Quad.Blocker()
+	local N0: State<number> = S0:Apply(b0):Compute(function(x)
+		return x:Get()
+	end)
+	assert(N0:Get() == 1)
+	b0:On()
+	S0:Set(5)
+	assert(N0:Get() == 5, "drift behind a closed gate: the next Get recomputes")
+	b0:Off()
+	-- 관측 — 계약 아님: fn 도중의 S:Set(99)는 UB("Compute 순수성"). 게이트가 emit을 유보해 N의 _receive에 안
+	-- 오지만, fn 직전 스탬프(H-198)라 다음 Get의 Refresh 드리프트가 잡는다(스탬프가 fn 뒤였을 때는 영구 stale).
+	-- 같은 Get 안의 재시작은 2026-10-01에 없어졌다(사용자 "compute 재시작 루프는 확인, 걷어내고").
 	local S = Source(1)
 	local b = Quad.Blocker()
 	local g2: State<number> = S:Apply(b)
@@ -275,11 +294,12 @@ do
 		local v = x:Get()
 		if first then
 			first = false
-			S:Set(99) -- lands DURING fn, behind the closed gate
+			S:Set(99) -- lands DURING fn, behind the closed gate (UB)
 		end
 		return v
 	end)
-	assert(N:Get() == 99 and runs == 2, "the same Get restarted and returned the post-Set value")
+	assert(N:Get() == 1 and runs == 1, "observation: the Get returned what fn computed, no restart")
+	assert(N:Get() == 99 and runs == 2, "observation: the next Get caught the drift (stamp before fn)")
 	assert(N:Get() == 99 and runs == 2, "stable — no further recompute")
 	-- 나중 flush는 규칙 2로 떨어진다: 통지만, 재계산 없음
 	local p = probe(N)

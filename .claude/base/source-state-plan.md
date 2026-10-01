@@ -188,7 +188,7 @@ vs 원천에 대한 메소드)을 결정하는 기준으로 쓸 수 있음.
 "quad 사용자가 직접 다루는 리액티브 값"이 아니라 **그 자체로는 구현체가
 없는 순수 타입 계약**이라 애초에 이 분류표의 대상이 아님 — Source/Ref처럼
 `Type(args)` 자유 함수로 인스턴스를 만들 수도 없고(계약을 만족하는 값은
-`PropertyHandler`/`TagHandler`/`Dispatch/None.luau`의 `NoneHandler`처럼(**[2026-08-31 `H-265`]** 옛 표기는 `StoreBind.luau` 소속이라 잘못)
+`PropertyHandler`/`TagHandler`/`None.luau`(**[2026-10-01]** 최상위 — 옛 `Dispatch/None.luau`)의 `NoneHandler`처럼(**[2026-08-31 `H-265`]** 옛 표기는 `StoreBind.luau` 소속이라 잘못)
 **구현하는 쪽**이 리터럴 테이블로 직접 채워 넣는 것), State/Observer처럼
 어떤 원천에 종속된 파생물도 아님(애초에 "원천"이라는 개념 자체가 안 맞음).
 Handler는 quad 사용자가 아니라 **백엔드/핸들러 구현자가 채우는 확장
@@ -275,13 +275,20 @@ end
 --   `fn` 안에서 자기 State를 `Set`하면 중첩 `_receive`가 `false`로 내려 바깥 `fn`의
 --   꼬리가 가드 없이 진행했다(spec.observer 9a).
 -- ⭐⭐ [2026-09-30 round13 묶음 3′, 사용자 결정 — Q73 (a)·Q109·Q110 (b)] Effect의 어휘를 그대로 쓴다(새 이름 없음):
---   `_rerunRequired` = "실행 자격이 없을 때 온 변경"(보류, 살아날 때 1회 재생) **한 뜻** — 시드 `false`(옛 `true`);
---   `_pending` = "실행 중에 왔는데 그 자리에서 못 돈 배달"(Effect와 같은 뜻 — 설치 창, 또는 fn이 자기를
---   해제한 뒤); `force` = 설치 실행(Effect와 같은 뜻). 자격 있는 배달은 **여전히 중첩**이다 — Effect의 지연
---   재실행과 다른 이 한 점은 의도다: 던진 Observer가 다음 변경에 다시 도는 자가치유(`H-445`/`H-545` 등 스펙
---   고정)를 pcall 없이 지키려면 중첩이어야 한다(사용자: *"자가 치유적 성질이 옵져버에 있다 - 이건 버리기
---   싫은 부분중 하나야"*). 그 대가로 대상을 되써서 수렴시키는 fn(clamp)은 바깥 fn의 꼬리가 옛 값을 본다 —
---   문서화로 둔다(core/05 재귀 항목).
+--   `_rerunRequired` = "실행 자격이 없을 때 온 변경"(보류, 살아날 때 1회 재생) **한 뜻** — 시드 `false`(옛 `true`).
+--   ~~`_pending`·`force`(설치 창 안 재실행 루프)~~ — **[2026-10-01 사용자 결정] 걷어냈다**: 사용자 *"observer 설치
+--   루프는 필요 없는것 같음. 설치 발화 중에 변경을 계속 받을 필요 없고. 내 의도는 pending 으로 끝날 수 있음. 설치
+--   중 즉시 도는거 아님."* 설치 창(아직 구독·바인딩 전 — 실행 자격 없음)에 온 변경은 다른 무자격 배달과 같이
+--   `_rerunRequired`로 보류되고 첫 바인드/구독 때 한 번 재생된다. `Quad0262`(설치 루프 1만 회 debug 한도)도 같이 폐기.
+--   **[2026-10-01 사용자 원칙] Observer는 최종 소비자다** — 다른 대상을 `Set`하는 것은 정상, **자기 상류(관측
+--   대상과 그 상류)를 직·간접으로 되먹이면 UB**(아래 "Compute 순수성" 절의 2026-10-01 문단; `Effect`의 자기
+--   의존성 `Set`만 지연 재실행이 풀어 정의된다). 그 경계 밖: `q.Out`/`OnChange` 왕복은 정상 경로다(엔진이 같은 값
+--   재대입에 무신호, `q.Out`이 같은 값을 거른다). 자격 있는 배달은 **여전히 중첩**이다 — 던진 Observer가 다음
+--   변경에 다시 도는 자가치유(`H-445`/`H-545`)를 pcall 없이 지키려면 중첩이어야 한다(사용자: *"자가 치유적 성질이
+--   옵져버에 있다 - 이건 버리기 싫은 부분중 하나야"*). 실행 중인 fn에 자격 있는 배달이 다시 온다는 것은 곧 자기
+--   상류 되먹임(UB)이다 — `q.debug`면 Observer마다 한 줄 경고(`checkUpstreamFeedback` — `_running`에 더해 fn이
+--   실제 호출 스택에 있는지 본다: 던진 fn이 남긴 `_running`으로 거짓 경고가 나지 않게). quad 내부 Observer(Slot
+--   base Offset·Bookkeeping len·`:List` 목록·StoreBind)는 비공개 `_internal = true` 표시로 빠진다(새 공개 이름 아님).
 --   `_seenRevision`(Q109) = 이 핸들이 마지막으로 돈 Source 리비전 숫자 하나. **Effect의 `_epochs` 맵 항목과 같은
 --   뜻의 기록을 대상 하나에 특수화한 것**이다(Effect: fn 직전 `Sync`, 배달 때 `Update`) — 외부자 검토가 든
 --   Preact signals·Vue 3.4+의 "간선 하나당 버전 숫자 하나"와 같은 모양. 비교는 대상이 **Source일 때만**
@@ -291,42 +298,23 @@ end
 --   이미 거른다"는 전제는 이 두 경우엔 성립하지 않는다(emit 맵은 노드 입구에서 거를 뿐, 이미 도는 스냅샷
 --   순회의 뒤쪽 구독자에게 가는 바깥 배달은 막지 않는다). Effect는 `from`(원천 Source)을 `_epochs`에 기록하므로
 --   파생 dep의 중첩 파동은 거르지만, 되살림 경우는 같이 두 번 돈다(fn 직전 `Sync`는 직접 Epoch dep만).
-local function runLoop(self, from, force)  -- 설치(force)와 캐치업(_catchUp)이 쓰는 본체
-    local outer = self._running            -- `H-183`/`H-332` save
+local function run(self, from)              -- 설치·배달·캐치업이 쓰는 본체(2026-10-01 — 옛 `runLoop` 반복 없음)
+    local outer = self._running            -- `H-183`/`H-332` save(중첩은 UB 입력 — 비용 0이라 남긴다, 계약 아님)
     self._running = true
-    repeat
-        self._pending = false
-        self._seenRevision = rawget(self._state, "Revision")  -- 파생 State면 nil
-        self.fn(self._state, self, from)   -- ⭐ (리시버 State, Observer 자신, 출처)
-        from = nil                         -- 재실행은 "값을 읽어라"(`H-164`)
-    until not (self._pending and (force or canExecute(self)))
-    if self._pending then                  -- fn 안에서 실행 자격을 잃고 변경이 왔다: 보류로
-        self._pending = false
-        self._rerunRequired = true
-    end
+    self._seenRevision = rawget(self._state, "Revision")  -- 파생 State면 nil
+    self.fn(self._state, self, from)       -- ⭐ (리시버 State, Observer 자신, 출처)
     self._running = outer                  -- `H-332` restore
 end
 
 function Observer:_receive(from)
-    local rev = nil
-    if from == self._state then            -- 자기 자신을 `from`으로 내는 것은 Source뿐
-        rev = from.Revision
-        if self._seenRevision == rev then return end   -- Q109: 이미 돈 리비전 — 새 변경이 아니다
+    if from == self._state and self._seenRevision == from.Revision then
+        return                             -- Q109: 이미 돈 리비전(자기 자신을 `from`으로 내는 것은 Source뿐)
     end
     if canExecute(self) then               -- 발화 시점에 읽는다(`H-174`)
-        local outer = self._running
-        self._running = true               -- `H-183`
-        if rev ~= nil then self._seenRevision = rev end
-        self.fn(self._state, self, from)   -- 자격 있는 배달은 **중첩**(위 배너)
-        self._running = outer              -- `H-332`
-        if self._pending and not outer then    -- fn이 자기를 해제한 뒤 대상을 바꿨다: 보류로
-            self._pending = false
-            self._rerunRequired = true
-        end
-    elseif self._running then
-        self._pending = true               -- 제자리에서 못 도는 실행 중(설치 창) — runLoop가 다시 돈다
+        if debug then checkUpstreamFeedback(self) end  -- 2026-10-01 debug 층 — 실행 중 재배달 = 자기 상류 되먹임(UB)
+        run(self, from)                    -- 자격 있는 배달은 **중첩**(위 배너)
     else
-        self._rerunRequired = true         -- [2026-08-28 `H-159`] 묶이기 전의 변경은 홀드 — 묶일 때 1회
+        self._rerunRequired = true         -- [2026-08-28 `H-159`] 묶이기 전(설치 창 포함)의 변경은 홀드 — 묶일 때 1회
     end
 end
 
@@ -337,7 +325,7 @@ end
 function Observer:_catchUp()
     if self._rerunRequired then
         self._rerunRequired = false
-        runLoop(self, nil, false)          -- 3′: 재생도 `_seenRevision`을 찍는다(Q109)
+        run(self, nil)                     -- 3′: 재생도 `_seenRevision`을 찍는다(Q109)
     end
 end
 
@@ -350,15 +338,15 @@ type EmitReceive = { _receive: (self: any, from: Epoch | EpochSet) -> () }
 --   옛 순서(`H-159`/`H-164` — (1) fn 1회 → (2) 플래그 내림 → (3) `_subs` 합류, "순서가 계약")는 설치 발화 도중 온
 --   emit을 버렸다(Q73: `setLength` 설치 발화 창의 형제 `Offset` stale, Q157 F6: `:List` 첫 재조정 안의 `data:Set`).
 --   사용자: *"첫 발화든 어느 발화든 자기 state 가 set 된다면 다시 실행되어도 됨. 그거는 내가 가정했던 부분인데,
---   의도치 않게 막게 된것 같음."* — 옛 순서는 의도가 아니라 부수적으로 굳은 것. 진동 상한 없음 — 수렴하지 않는
---   설치 fn은 UB(Effect 설치와 대칭; [2026-10-01] `q.debug`면 1만 회에서 `Quad0262` — architecture debug 층). 설치 fn이 던지면 핸들이 `_subs`에 남는다(weak-키라 핸들과 같이 사라지고,
---   그동안 `_running`이 선 채라 받기만 하고 안 돈다).
+--   의도치 않게 막게 된것 같음."* — 옛 순서는 의도가 아니라 부수적으로 굳은 것. **[2026-10-01]** 설치 창 안 emit은
+--   그 자리에서 다시 돌지 않고 보류된다(위 배너 — 첫 바인드/구독 때 한 번). 설치 fn이 던지면 핸들이 `_subs`에
+--   남는다(weak-키라 핸들과 같이 사라지고, 그동안 `_running`이 선 채라 (재)구독·바인드가 거부돼 받기만 하고 안 돈다).
 function State:Observer(fn)
     local o = setmetatable({ fn = fn, _state = self, _rerunRequired = false,
-        _seenRevision = false, _pending = false, _running = false }, Observer)
+        _seenRevision = false, _running = false }, Observer)
     ObserverBrand:register(o)
     self._subs[o] = true               -- (1) 먼저 구독자 집합에
-    runLoop(o, nil, true)              -- (2) 설치 실행(force) — 창 안 emit은 `_pending` → 그 자리에서 재실행
+    run(o, nil)                        -- (2) 설치 실행 한 번 — 창 안 emit은 `_rerunRequired`(보류)
     return o
 end
 ```
@@ -1294,7 +1282,11 @@ retract/Destroy되면 자동으로 정리됨.
   fn을 그 자리에서 한 번 더 돌린다 — 그래서 위 괄호가 걱정한 "첫 바인드에서 한 번 더"는 일어나지 않고(`_rerunRequired`는
   시드 `false`, 설치 뒤에도 `false`) 남의 변경도 유실되지 않는다. `Effect`의 내부 Observer와 `from == nil` 거르기는 같은
   날 사라졌다. 의사코드는 "전파 루프 — 확정 의사코드" 절이 소스. 아래 "즉시 1회"의 근거 (1)~(3)은 그대로다(첫 발화는
-  여전히 무조건 한 번 — 바뀐 것은 그 창 안 변경의 처리). 근거: (1) 이미 채워진
+  여전히 무조건 한 번 — 바뀐 것은 그 창 안 변경의 처리). **[2026-10-01 사용자 결정 — 설치 루프 제거]** 바로 앞
+  "`_pending`으로 잡혀 fn을 그 자리에서 한 번 더 돌린다"는 다시 바뀌었다: 설치 창 안 emit은 `_rerunRequired`로
+  보류되고 첫 바인드/구독 때 한 번 재생된다(사용자 *"설치 중 즉시 도는거 아님"*) — 위 괄호의 "첫 바인드에서 한 번
+  더"가 이제 정해진 모양이고, 유실은 여전히 없다. 그 창에 변경을 들이는 길은 설치 fn 자신의 자기 상류 되먹임(UB)뿐이다.
+  근거: (1) 이미 채워진
   State를 나중에 구독하면 그 값을 반영하는 연산이 아예 한 번도 안
   일어나는 문제가 생겨 초기화 순서에 디버깅 부담이 생김. (2) 초회
   실행을 하지 말아야 할 구체적 근거가 약함. (3) **이 결정 덕에
@@ -1328,7 +1320,8 @@ retract/Destroy되면 자동으로 정리됨.
     소비자라면 `nil`을 **"출처 없음 — 값을 읽어라"**로 다뤄야 한다. **[2026-08-28
     `H-164` 확정]** `nil`은 설치 발화 **또는** 묶일 때의 캐치업(`H-159` 홀드 발화)
     둘 다다 — 둘 다 "특정 출처의 통지"가 아니라 "지금 값을 반영하라"라 같은 종류.
-    **[2026-09-30 round13 3′]** 설치·캐치업 실행 도중 온 변경으로 그 자리에서 한 번 더 도는 재실행(`_pending`)도 `nil`이다.
+    ~~**[2026-09-30 round13 3′]** 설치·캐치업 실행 도중 온 변경으로 그 자리에서 한 번 더 도는 재실행(`_pending`)도 `nil`이다.~~
+    **[2026-10-01]** 그 재실행은 없어졌다(설치 창 변경은 보류 → 캐치업, 위 "전파 루프 — 확정 의사코드" 절).
     홀드된 출처를 보관해 넘기는 안은 기각(사용자: *"_rerunRequired 를 from 으로
     저장하면 여러 홀드 변경이 오면 from 이 날아가지 않아? 애초에 from 을 저장할
     이유가 왜 있어?"*). `nil`을 "초기화 전용"으로 분기하는 소비자 패턴은 계약이
@@ -1995,7 +1988,8 @@ Connection/Event/Observable/Observer)를 조사한 결과, 두 지점에서 기�
 **원칙**: `:Compute`/`:With`에 넘기는 함수는 **순수 계산 함수**다 — deps를 읽고 값을 돌려줄 뿐,
 어떤 Source도 `:Set`하지 않는다(상류든 형제든 같은 키든). 그 안에서의 `:Set`은 **UB**이고 quad는
 재진입 게이트를 두지 않는다. Observer/Effect 콜백은 반대로 부작용이 본업이라 이 규칙 밖이다(다른
-Source를 `:Set`하는 것이 정상 패턴). 사용자 원문: *"compute 안에서 상위를 set 하는 그런 경우를 다
+Source를 `:Set`하는 것이 정상 패턴 — **[2026-10-01]** 단 자기 상류(관측 대상·의존성과 그 상류)는 빼고: 아래 2026-10-01
+Observer 문단). 사용자 원문: *"compute 안에서 상위를 set 하는 그런 경우를 다
 막는편이 맞을지도 … compute 의 부작용은 readonly 이고 하류로 내리기만 한다를 크게 잡아두면, 많은양의
 에러/버그 가능성을 선재 방어 할 수 있다고 보는데"*, *"재진입 게이트는 허용 안한다가 내 생각이긴 해"*.
 메인 동의(같은 날): 이 코퍼스의 반응형 모델은 pull(lazy `_recompute` + epoch)이라 Compute 안의 `:Set`은
@@ -2013,3 +2007,22 @@ Source를 `:Set`하는 것이 정상 패턴). 사용자 원문: *"compute 안에
 세대 도장이 다른 코루틴의 멈춘 `_recompute` 안에 남아 있는데 새 실행 시작(`State.luau`). 둘 다 깊이 카운터 대신 실제 호출
 스택에서 `_recompute` 프레임을 찾는다 — 계산 함수가 던지면 카운터는 내려가지 않는데(감싸지 않는다 계약) 스택은 저절로
 풀리므로 거짓 경고가 없다. 출처 `session/2026-09-28-01-round13-batch-reply.md` 2026-10-01 회고 검토 회신 절.
+**[2026-10-01 사용자 결정 — 같은 원칙의 정리 셋]** (1) **`Get`의 재시작 루프(`H-198`)를 걷어냈다** — 사용자 *"compute 재시작 루프는
+확인, 걷어내고"*. 루프는 재계산 뒤 다시 확인했는데, 그게 의미 있는 경우는 fn 도중 무언가 움직인 경우(fn 안 `Set`·yield — UB)뿐이었다.
+`Get`은 한 번 통과다: 카운터가 어긋났거나 `Refresh` 드리프트(닫힌 게이트 뒤 상류 — 정의된 경로)면 한 번 재계산한다. fn 직전
+스탬프(`H-198`)는 비용 0이라 두었고, UB 피해를 줄이는 것일 뿐 계약이 아니다(fn 도중 움직임은 다음 `Get`이 드리프트로 따라잡는다 —
+관측). (2) **round13 Q93(자기 세대 도장만 지우기)·Q98 (a″)(새 세대의 유효 캐시를 덮지 않기)도 걷어냈다** — 사용자 *"yield 쪽
+가드는 드러낸다 동의해"*. 둘 다 yield(UB) 전용이었고 정의된 경로에선 동작이 같았다(`audit/round13-bundle5-guard/` 5만 시드).
+`_recompute`는 Q50 세대 도장·`H-540` 드리프트 가지·`H-85` 카운터가 정한 단순형(fn이 돌아오면 도장을 내리고 캐시를 쓴다)으로
+돌아갔다. Compute yield는 debug 감지기 (a)가 계속 알린다. (3) **Observer는 최종 소비자다** — 사용자 원칙: 다른 대상을 `Set`하는
+것은 정상, **자기 상류(관측 대상과 그 상류)를 직·간접으로 되먹이면 UB**; `Effect`의 자기 의존성 `Set`만 지연 재실행이라는 도구가
+있어 정의된다; yield는 모든 콜백에서 UB. 경계: `q.Out`/`OnChange` 왕복은 정상 경로다(엔진이 같은 값 재대입에 무신호, `q.Out`이
+같은 값을 거른다). 같은 날 Observer 설치 루프(round13 3′의 `_pending`/`force`)와 `Quad0262`를 걷어냈고(사용자 *"observer 설치
+루프는 필요 없는것 같음 … 설치 중 즉시 도는거 아님"*), debug 감지기 하나를 더했다 — 실행 중인 Observer의 fn 도중 같은 핸들에
+자격 있는 배달이 다시 오면 한 줄(Observer마다 한 번, 내부 Observer는 `_internal`로 제외). **Slot 부기 경로는
+이 규칙 밖이다** — Q73 장면(형제 `Offset` Observer의 CRUD가 자기 `Offset`을 바꿈)처럼 Slot의 `Offset`/`Length`를 보는 콜백의 CRUD가
+그 값으로 돌아오는 고리는 State 의존이 아니라 부기 재계산을 거치고, 부기가 되감아 수렴시키는 정의된 경로다. 사용자(2026-10-01): *"옵져버가 상류를 바로 되먹이는 경로는 아니라고 봐. 간접 경로야. 정확히 set 을 넣어버리는 곳은 북키핑 업데이트 하는 리컴퓨트 부분이야 … 유저가 slot 의 내부 구현을 모른다고 가정하자. 그럼 그 묶임이 되먹임인걸 눈 감고 볼 수 없어 … 북키핑 자체가 effect 처럼 반복 수렴 하는건 걷어내야할 이유를 모르겠어. 되감기를 불가하게 하는 경로는 구조적으로 state 이상을 유저가 알아야만 해, 왜 UB인지."* (같은 날 앞서
+"UB이지만 잘 돈다"로 적었던 것을 바로잡음.) debug 감지기도 이 고리를 건너뛴다 — 중첩 배달의 호출 스택에서 이 핸들의 fn보다
+안쪽에 부기 `recompute` 프레임이 있으면 알리지 않는다(사용자 동의 *"부기 거친 배달은 debug 에서 무시하기도 동의. 부기가 묶는건
+처리해준다로."*).
+의사코드는 "전파 루프 — 확정 의사코드" 절.

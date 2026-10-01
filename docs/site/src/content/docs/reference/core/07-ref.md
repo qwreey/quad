@@ -245,7 +245,7 @@ Set: <Self>(self: Self, value: T) -> Self
 
 콜백이 순회 도중 다시 `:Set`을 부르면(재진입), 안쪽 순회가 이미 모두에게 더 새 값을 전달했으므로 **바깥 순회는 남은 콜백을 건너뛰고 멈춥니다** — 콜백이 낡은 값을 받는 일은 없습니다.
 
-`thread` 키(= `:Wait` 대기자)는 소진되고 `Ref` 자신을 인자로 resume됩니다. `:Wait(thread)`로 등록한 코루틴이 지금 `:Set`을 부르는 코루틴 자신이거나 지금 코루틴을 resume한 바깥 코루틴이면(실행 중인 코루틴은 resume할 수 없으므로) 그 자리에서 던집니다 — 인자 없는 `:Wait()`로 멈춰 있는 코루틴은 `:Set`을 부를 수 없으니 이 경우가 아닙니다. 등록한 코루틴이 그 사이 끝났거나 `coroutine.close`로 닫혔으면 그 등록은 소진만 되고 건너뜁니다 — `a:Wait(co); b:Wait(co)`로 "둘 중 먼저"를 기다렸다면 뒤의 `b:Set`은 이미 끝난 `co`를 건드리지 않고 나머지 콜백을 그대로 부릅니다. 단 **진 쪽 등록은 지워지지 않고 남습니다** — `co`가 이긴 뒤 끝나지 않고 다른 곳(`c:Wait()` 등)에서 다시 멈춰 있으면 뒤의 `b:Set`이 그 `co`를 `b`로 깨웁니다(`c:Wait()`가 `c`를 돌려주지만 `c`는 아직 Set되지 않은 채 — [2026-09-30 mock 실측]). 이 모양은 이긴 뒤 `co`가 끝날 때만 쓰세요.
+`thread` 키(= `:Wait` 대기자)는 소진되고 `Ref` 자신을 인자로 resume됩니다. `:Wait(thread)`로 등록한 코루틴이 지금 `:Set`을 부르는 코루틴 자신이거나 지금 코루틴을 resume한 바깥 코루틴이면(실행 중인 코루틴은 resume할 수 없으므로) 그 자리에서 던집니다 — 인자 없는 `:Wait()`로 멈춰 있는 코루틴은 `:Set`을 부를 수 없으니 이 경우가 아닙니다. 등록한 코루틴이 그 사이 끝났거나 `coroutine.close`로 닫혔으면 그 등록은 소진만 되고 건너뛰며, 나머지 콜백은 그대로 부릅니다. 한 코루틴을 여러 Ref에 걸어 "먼저 오는 쪽"을 기다리는 식의 조율은 quad가 정의하지 않습니다 — 그건 코루틴 조율 도구의 몫입니다([`ref:Wait`](#refwaitthread)).
 
 - `Quad0130 Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a {status} coroutine)`
 
@@ -327,6 +327,7 @@ Wait: <Self>(self: Self, thread: thread?) -> Self
 
 **동작**
 
+- **`:Wait(thread)`는 그 Ref가 다음에 `:Set`될 때 등록된 코루틴을 한 번 resume합니다** — 정의는 이것뿐입니다(인자 없는 `:Wait()`는 지금 코루틴을 등록하고 yield하는 같은 일). 한 코루틴을 여러 Ref에 거는 조율(먼저 오는 쪽 기다리기, 시간 제한 등)은 quad가 정의하지 않습니다 — 코루틴 조율 도구의 몫입니다. 등록한 코루틴이 `:Set` 전에 끝났거나 닫혔으면 그 등록은 건너뜁니다([`ref:Set`](#refsetvalue)).
 - **항상 다음 `:Set`을 기다립니다.** 이미 값이 차 있어도 기다립니다 — `Ref<T?>`에서는 `nil`도 정당한 값이라 "차 있는가"를 여기서 판정할 수 없기 때문입니다. 미리 확인하고 싶으면 `if ref.Value then … else ref:Wait().Value end` 관용구를 쓰세요.
 - 인자 없이 부르려면 yield 가능한 코루틴 안이어야 합니다.
   - `Quad0134 Ref: Wait() must be called from a yieldable coroutine (pass a thread to register a waiter without yielding)`

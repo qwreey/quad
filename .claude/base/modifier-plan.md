@@ -42,8 +42,9 @@ cascade 문제가 그대로 오는데, 이건 이미 확정된 "Store 바인드 
 ### flatten의 정확한 형태 — in-place 뮤테이션 + `ProcessedModifier` 소진 (2026-08-20 구현 전 QA 4라운드 `M-2` 확정)
 
 > **[2026-09-04 구현됨 — M7 단위 ②, round17 `H-311`]** `quad-base/src/Dispatch/Modifier/init.luau`의
-> `flatten`(아래 의사코드 1:1) + `Dispatch/Modifier/Handler.luau`의 `ProcessedModifierHandler`
-> (`H-35` 의사코드 1:1, HIGH 우선순위 — None 쌍과 같이 InitDispatch가 등록).
+> `flatten`(아래 의사코드 1:1) + `ProcessedModifierHandler`
+> (`H-35` 의사코드 1:1, HIGH 우선순위 — InitDispatch가 등록; **[2026-10-01]** 옛 `Dispatch/Modifier/Handler.luau`는 지워졌고
+> `Dispatch/init.luau`가 지역 공장 `addProcessedHandler`로 `Processed*Ref` 둘과 같이 직접 등록한다. `NoneHandler`는 그때 `None.luau`의 Init으로 갔다).
 > **호출 주체는 `Dispatch.drive`의 첫 pre-pass**(round17 §0 Q4 (a), 사용자 확정) —
 > `New`의 ③은 사라졌고 `Claim`은 같은 경로로 자동 봉합됐다(`bind-system-plan.md`
 > 파이프라인 의사코드 정정). `ProcessedModifier`는 `Dispatch/Modifier/init.luau` export(내부 —

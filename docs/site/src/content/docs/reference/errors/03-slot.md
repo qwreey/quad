@@ -33,7 +33,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `Slot:List: data must be a plain array - key "{tostring(k)}" is not an array position` — `quad-base/src/Slot/List.luau`
 
-- **언제**: 재조정 중 `data` 테이블에 정수가 아니거나 1보다 작은 키가 있을 때 — 딕셔너리(아이디 맵, 디코딩된 JSON 오브젝트 등)를 통째로 `:List`에 준 경우가 대표적입니다.
+- **언제**: 재조정 중 `data` 테이블에 정수가 아니거나 1보다 작은 키가 있을 때 — 딕셔너리(아이디 맵, 디코딩된 JSON 오브젝트 등)를 통째로 `:List`에 준 경우가 대표적입니다. **[2026-10-01 기준, 다음 릴리즈부터]** 평소에는 배열 부분이 비어 있는데 다른 키가 있는 경우(바로 그 딕셔너리)만 봅니다 — 키 전수 검사는 재조정마다 O(N)이라 [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때만 돕니다. 그래서 배열에 문자 키가 **덧붙은** 데이터(`{ a, b, extra = 1 }`)는 debug를 꺼 두면 덧붙은 키가 조용히 무시되고 배열 부분만 재조정됩니다.
 - **고치려면**: `data`를 1부터 시작하는 배열로 주세요.
 - **참고**: [`slot:List(data, updateFn, keyFn?, opts?)`](/reference/core/06-slot/#slotlistdata-updatefn-keyfn-opts)
 
@@ -282,7 +282,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `{surface}: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)` — `quad-base/src/Slot/init.luau`
 
-- **언제**: `Slot`을 자기 자신이나 자기 조상(원소 관계로 이어진)에 원소로 넣으려 할 때 — 그대로 두면 순환이 생겨 이후 CRUD가 `teardownTree`/`releaseOwner`에서 무한히 재귀합니다.
+- **언제**: [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때, `Slot`을 자기 자신이나 자기 조상(원소 관계로 이어진)에 원소로 넣으려 할 때 — 그대로 두면 순환이 생겨 이후 CRUD가 `teardownTree`/`releaseOwner`에서 무한히 재귀합니다. **[2026-10-01 기준, 다음 릴리즈부터]** 원소 관계를 따라 올라가는 이 검사는 넣는 Slot마다 깊이만큼 비용이 들어 debug 층으로 내려갔습니다 — 꺼 두면 넣는 줄은 그대로 통과하고, 그 순환 트리의 다음 CRUD나 해체가 스택 오버플로나 내부 불변식 에러로 죽습니다(그 뒤의 부기 무결은 약속하지 않습니다). 개발 중에는 debug를 켜 두세요.
 - **고치려면**: 순환이 생기지 않게 구조를 바꾸세요. (인스턴스를 매개로 한 순환은 이 검사 밖입니다 — 정의되지 않은 동작.)
 - **참고**: [`slot:Add(element, index?)`](/reference/core/06-slot/#slotaddelement-index)
 

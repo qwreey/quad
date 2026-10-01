@@ -216,7 +216,7 @@ Quad0084 Dispatch.drive: inst must not be nil
 Quad0085 Dispatch.drive: array keys must be positive integers (got {키})
 ```
 
-둘째 문구는 `D.Frame(q.Source(1))`처럼 중괄호를 잊은 형태를 잡습니다 — 그 값의 내부 필드가 props로 해석되는 조용한 오작동을 막습니다.
+둘째 문구는 `D.Frame(q.Source(1))`처럼 중괄호를 잊은 형태를 잡습니다 — 그 값의 내부 필드가 props로 해석되는 조용한 오작동을 막습니다. **[2026-10-01 기준, 다음 릴리즈부터]** 매 `drive`마다 도는 검사는 싼 것 둘뿐입니다 — 메타테이블이 있는 테이블, 그리고 메타테이블 없이 quad가 브랜드를 붙이는 `AttrKey`·매퍼 디스크립터. quad-base의 값은 전부 이 둘에 걸립니다. 모듈에 등록된 프로바이더 브랜드 술어(`q.BrandPredicates`)까지 훑는 전체 검사는 [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때만 돕니다 — 그래서 **메타테이블 없는 평범한 테이블에 브랜드를 붙이는 프로바이더 값**은 debug를 꺼 두면 이 문구 대신 그 필드들이 props로 해석됩니다(대개 `Quad0076`으로 끝납니다). 3.2.0까지는 전체 검사가 매번 돌았습니다.
 
 ## Length/Offset 부기
 

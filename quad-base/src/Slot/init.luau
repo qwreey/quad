@@ -51,6 +51,24 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 local Detach = table.freeze(setmetatable({ __quadDetach = true :: true }, { __tostring = function() return "Detach" end }))
 local KeyGone = table.freeze(setmetatable({ __quadKeyGone = true :: true }, { __tostring = function() return "KeyGone" end }))
 
+-- ── debug-only checks (`architecture.md` "debug 층"; kept out of the logic below) ──
+-- `H-500` (2026-09-08 2차 감사 G-1): a Slot inside itself or inside one of its own descendants —
+-- `s:Add(s)`, `a:Add(b); b:Add(a)` — passes every other pre-pass gate (the ancestor is a root, so it
+-- is "not mounted"). Walk this Slot's owner chain: the candidate must not be on it — O(depth) per
+-- added Slot. [2026-10-01 user decision — "순환 가드는 … 같은 결정을 따라가자. debug 로 내리기에 동의해"]
+-- runs only with `q.debug` on. With it off nothing stops the cycle at the Add line: the next CRUD /
+-- teardown on that tree recurses until a stack overflow or trips `releaseOwner`'s invariant — a
+-- program error with no integrity promise after it (architecture "예외 안전성 계약", round3 Q18 (c)).
+local function checkNotOwnAncestor(self: any, occupant: any, surface: string, elementOwner: any, OWNER: string)
+	local cursor = self
+	while Brand.isSlot(cursor) do
+		if cursor == occupant then
+			Err.errorBeforeNearest("Quad0173 " .. surface .. ": cannot add a Slot to itself or to one of its own descendants (that would be a cycle)", SURFACE)
+		end
+		cursor = elementOwner:GetWeak(cursor, OWNER)
+	end
+end
+
 local function Init(module: any)
 	-- ⚠️ H6-3: Slot_mt is created PER module instance, NOT at file scope. Its
 	-- methods are closures capturing `module`; a file-level metatable would pin
@@ -256,19 +274,8 @@ local function Init(module: any)
 				if elementOwner:GetWeak(occupant, OWNER) ~= nil then
 					Err.errorBeforeNearest("Quad0172 " .. surface .. ": this element is already mounted - multiple mounts are not allowed" .. ZOMBIE_NOTE, SURFACE)
 				end
-				if isSlot(occupant) then
-					-- `H-500` (2026-09-08 2차 감사 G-1): a Slot inside itself or inside one of its
-					-- own descendants — `s:Add(s)`, `a:Add(b); b:Add(a)` — passed every gate above
-					-- (the ancestor is a root, so it is "not mounted") and the next CRUD recursed
-					-- forever in teardownTree / tripped releaseOwner's invariant. Walk this Slot's
-					-- owner chain: the candidate must not be on it.
-					local cursor = self
-					while isSlot(cursor) do
-						if cursor == occupant then
-							Err.errorBeforeNearest("Quad0173 " .. surface .. ": cannot add a Slot to itself or to one of its own descendants (that would be a cycle)", SURFACE)
-						end
-						cursor = elementOwner:GetWeak(cursor, OWNER)
-					end
+				if module.debug and isSlot(occupant) then
+					checkNotOwnAncestor(self, occupant, surface, elementOwner, OWNER) -- `H-500` cycle guard (debug-only, file head)
 				end
 				seen[occupant] = true
 			end

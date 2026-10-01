@@ -279,12 +279,11 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 - **고치려면**: 자리에 묶인 핸들은 그대로 두거나, 전역 구독이 필요하면 새 `Observer`를 만드세요.
 - **참고**: [`observer:Subscribe()`](../core/05-observer-effect.md#observersubscribe)
 
-### Quad0262
+### Quad0262 (폐기)
 
-`Observer: the first run did not settle after 10000 re-runs - the fn keeps setting its own target (a Source propagates even an equal value; set only when the value differs)` — `quad-base/src/Observer.luau`
+`Observer: the first run did not settle after 10000 re-runs - the fn keeps setting its own target (a Source propagates even an equal value; set only when the value differs)` — 폐기
 
-- **언제**: [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있고, `state:Observer(fn)`의 첫 발화가 1만 번 넘게 다시 돌았을 때 — 콜백이 자기 대상을 계속 `:Set`해 첫 발화가 끝나지 않는 경우입니다. `Source`는 같은 값을 다시 넣어도 전파하므로 `st:Set(math.clamp(st:Get(), 0, 10))`처럼 조건 없이 되쓰는 콜백이 가장 흔한 원인입니다. `q.debug`가 꺼져 있으면 같은 코드는 에러 없이 멈춘 채 끝나지 않습니다(반복에 상한이 없는 것이 계약입니다).
-- **고치려면**: 값이 실제로 다를 때만 되쓰세요 — `local v = st:Get(); local c = math.clamp(v, 0, 10); if v ~= c then st:Set(c) end`. 서로를 계속 바꾸는 콜백 둘이 원인이면 한쪽이 수렴하도록 조건을 두세요.
+- **[2026-10-01 폐기]** 이제 던지지 않습니다. `state:Observer(fn)`의 첫 발화가 도중에 온 변경으로 그 자리에서 다시 돌던 반복이 없어졌습니다 — 첫 발화 도중 온 변경은 보류됐다가 핸들이 묶이거나 구독될 때 한 번 반영되므로, 세어서 멈출 반복 자체가 없습니다. 콜백이 자기 대상(이나 그 원천)을 되쓰는 것은 정의되지 않은 동작이고, [`q.debug`](../core/01-quad-module.md#qdebug)를 켜면 살아난 핸들에서 그런 되먹임이 경고 한 줄로 드러납니다. 이 번호는 다른 에러에 다시 쓰지 않습니다.
 - **참고**: [`state:Observer(fn)`](../core/05-observer-effect.md#stateobserverfn)
 
 ### Quad0263

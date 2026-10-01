@@ -316,7 +316,7 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
   뭔지·왜 필요한지는 아래 "Dispatch 체인" 절 참고** — 요약하면 같은
   `(inst,k)` 안에서 "지금 몇 번째로 겹쳐 위임됐는지"를 나타내는 정수로,
   핸들러 객체 identity 대신 이 숫자로 체인 위치를 추적함.
-- 예시: `Dispatch/StoreBind.luau`(범용, 엔진 무관)는 **`k`는 무엇이든 받고
+- 예시: `StoreBind.luau`(범용, 엔진 무관 — **[2026-10-01]** 최상위, 옛 `Dispatch/StoreBind.luau`, 등록은 `State.luau`의 Init — 아래 "`None` 센티널" 절 머리의 등록 주체 문단)는 **`k`는 무엇이든 받고
   `v`가 State/Source인 경우를 잡아내는, 우선순위가 매우 높은 핸들러** —
   `v`가 반응형이면 그 값을 처리(구독)함. 이 핸들러 안에서:
   1. 지금 이 처리가 실행되어도 되는지 라이프타임(`Connected`)을 확인 —
@@ -480,6 +480,12 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
     plain-branded 값(`AttrKey`/Mapper 디스크립터)이 오면 브랜드 이름을 붙여 표면 에러(중괄호를 빠뜨린
     `D.Frame(q.Source(1))`; `AttrKey("x")`는 frozen `{ Name = "x" }`라 quad-roblox에서 조용한 개명이었다).
     형제 생성자 게이트(`H-204`/`H-377`/`H-386`/`H-389`)와 같은 팔, 부기를 만지기 전.
+    **[2026-10-01 사용자 결정 — "debug 로 내리기에 동의해"]** 매 `drive`의 평소 경로는 O(1)만 본다 — 메타테이블 유무와
+    `Brand.isPlainBranded`. 모듈에 등록된 프로바이더 브랜드 술어(`q.BrandPredicates`)까지 훑는 전체 스캔(`brandNameOf`, 실측
+    drive의 ~12% — round11 L′ 7)은 `module.debug`일 때만(`Dispatch/init.luau` 머리의 `checkPropsBrand`). 그래서 **메타테이블 없는
+    프로바이더 브랜드 값**은 debug를 끄면 이 게이트를 지나 그 필드가 props로 해석된다(2026-10-01 기준 그런 값은 없다 — quad-base
+    값은 전부 메타테이블이 있거나 `isPlainBranded`, quad-roblox `Tween`도 메타테이블이 있다; round10 code-review가 막으려던 것이
+    이 경우였고, 사용자 결정으로 debug 층이 받는다). 실패한 뒤 이름 붙이기에는 여전히 `brandNameOf`를 쓴다(실패 경로).
   - **`flattened`는 항상 평범한 Luau 테이블이다** — props는 사용자가 쓴
     Lua 테이블 리터럴에서 오고, `flatten`도 그걸 제자리에서 뮤테이션할 뿐
     (`base/modifier-plan.md`의 "flatten의 정확한 형태" 절). 메타테이블로
@@ -561,6 +567,19 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
 `None` 센티널이 실제로 인스턴스에 반영될 때 base가 뭘 하는지가 이 문서의
 층위. 결론: **새 메커니즘이 아니라 위 "확정된 디스패치 모델"의
 `StoreBind` 핸들러(위 절)와 완전히 같은 모양의 핸들러 하나 추가.**
+
+**[2026-10-01 사용자 결정 — 등록 주체] `None`은 값이라 그 핸들러는 그 값을 선언한 모듈이 등록한다.** 사용자: *"None.luau 는
+Dispatch 안에 있을 이유가 없지 않나 … Void 처럼 밖에 있어도 되고, effect 나 다른것들 처럼 처리기가 등록되는게 맞지 않나 …
+StoreBind 도 마찬가지. Effect 처럼 State 정의 부분 안에 넣고 최상위에서 수행되어야 하는거 아닌가 … Dispatch 가 코어 객체들을
+아는 방향이 되지 않아야하니까."* — `H-278`("각 객체를 아는 곳은 각 객체가 선언된 곳")을 None·StoreBind까지 넓힌 것. 지금:
+`NoneHandler`는 최상위 `None.luau`의 `Init`(최상위 `init.luau`가 `module:RunInit(None.Init)`)이, `StoreBind`는 최상위
+`StoreBind.luau` 본문을 `State.luau`의 `Init`이 등록한다(둘 다 `module:RunInit(InitDispatch)`로 당긴 뒤 — Effect/Observer와 같은
+모양). `InitDispatch` 자신이 등록하는 것은 디스패치 자기 말단뿐 — `NilHandler`(숫자 키의 진짜 `nil`은 객체가 아니라 빈 자리)와
+`Processed*` nop 셋(drive 단계의 소진 센티널; 공장 `addProcessedHandler`는 `Dispatch/init.luau`의 지역 함수). 옛 결정(round13 §0
+Q3 (a) — StoreBind를 "하강 diff 자신의 재귀"로 보고 `InitDispatch` 꼬리에 둠)은 이것으로 뒤집혔다. frozen 마커 센티널 생성자
+`sentinel`은 `Dispatch/Handler.luau`(잎)로 갔다 — `None.luau`가 Dispatch를 require하므로, 그 생성자를 쓰는 `Dispatch/Ref.luau`·
+`Dispatch/Modifier/init.luau`가 `None.luau`를 require하면 순환이다. 등록 순서가 바뀌어 HIGH 밴드의 동률 정렬 순서가 달라지지만
+그 밴드의 술어는 서로 배타라 매치는 같다(`spec.dispatch` 24절이 표본 키·값으로 확인).
 
 ```lua
 NoneHandler.priority = <매우 높음>
@@ -817,8 +836,8 @@ nop/leaf 핸들러(NilHandler·`Processed*`·Tag/Attr/Effect/Observer/Ref/Slot l
 만들 수 있는 것)로 바꿔야 하는지 검토 후 **기각, 지금 형태(모듈 require로
 바로 닿는 flat 탑레벨 함수) 유지로 확정**:
 
-- **재귀 재-dispatch가 요구하는 필연** — `NoneHandler`/`Dispatch/
-  StoreBind.luau` 전부 자기 `process` 안에서 다시 `Dispatch.process(inst,k,
+- **재귀 재-dispatch가 요구하는 필연** — `NoneHandler`/`StoreBind`(**[2026-10-01]** 둘 다 최상위 모듈 — 옛 `Dispatch/StoreBind.luau`)
+  전부 자기 `process` 안에서 다시 `Dispatch.process(inst,k,
   realv)`를 호출함(위 "확정된 디스패치 모델"/"`None` 센티널" 절). 이게
   성립하려면 Dispatch가 `canExecute`/`bindLifetime`(`base/
   lifecycle-pattern.md`)과 똑같이 require 한 번으로 바로 닿는 안정된
@@ -828,7 +847,7 @@ nop/leaf 핸들러(NilHandler·`Processed*`·Tag/Attr/Effect/Observer/Ref/Slot l
 - **순환참조로 보이는 건 착시 — 실제로는 단방향.** "Handler"라는 말이 두
   가지를 가리켜서 헷갈릴 수 있음: (a) `Handler.luau`의 **타입 계약**
   (`isHandlable`/`priority`/`process`(반환값 포함) 시그니처만 있는 순수
-  leaf, Dispatch를 몰라도 됨) vs (b) `StoreBind.luau`처럼 그 계약을
+  leaf, Dispatch를 몰라도 됨) vs (b) `StoreBind`·`None` 같은 값 모듈처럼 그 계약을
   **구현하는 concrete 값 모듈**(재귀호출 위해 Dispatch를 require함). 의존
   방향은 항상 한쪽으로만 흐름 — `Handler.luau`(leaf) ← `Dispatch/init.luau`
   (`addHandler(h: Handler)`가 `Handler` 타입만 참조) ← `StoreBind.luau`
@@ -838,13 +857,13 @@ nop/leaf 핸들러(NilHandler·`Processed*`·Tag/Attr/Effect/Observer/Ref/Slot l
   시점은 컴포넌트가 렌더되는 시점이라, 그때는 이미 Dispatch 모듈 require가
   완전히 끝나있어 부트스트랩 문제도 없음.
 - **quad-base 자신의 기본 핸들러도 같은 레지스트리를 씀** — `NoneHandler`,
-  `Dispatch/StoreBind.luau`("범용, 엔진 무관")뿐 아니라, children 배열
+  `StoreBind`("범용, 엔진 무관")뿐 아니라, children 배열
   숫자 슬롯에 `Ref`/`Observer`/`PreRef`를 직접 놓는 leaf 값을 매칭하는
   Handler도 여기 속함(`inst`를 `any`로 취급, 엔진 특정 API 불필요 —
   `.claude/question.md`가 2026-08-08 세션에 "quad-base/quad-roblox 중
   어디 사는지 미확인"으로 남겨뒀던 항목, 이 결론으로 해소: quad-base,
   **[2026-09-01 `H-278`]** 등록 주체는 각 값의 선언 모듈(`Observer.luau`/`Effect.luau`,
-  M8은 `Ref/init.luau`), 전부 `Dispatch.addHandler`로 등록). quad-roblox의
+  M8은 `Ref/init.luau`; **[2026-10-01]** `NoneHandler`는 `None.luau`, `StoreBind`는 `State.luau`), 전부 `Dispatch.addHandler`로 등록). quad-roblox의
   Property/Event 핸들러도 **같은** `Dispatch.addHandler` 레지스트리에
   등록됨 — base 기본 핸들러와 backend 핸들러가 별도 경로로 안 갈리고
   전부 하나의 우선순위 스캔을 공유. **[정정, 2026-08-10 세션]** Tween은
@@ -1415,8 +1434,12 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
   죽은 뒤의 무결성은 보장하지 않는다(사용자: *"에러로 죽은 다음 우린 데이터의 무결이 깨져도 상관이
   없고"*). 사전 검사(옛 (a))는 `research/deferred-hardening-plan.md`에 후보로.
   **[2026-09-30 round13 3′ Q73 (a)]** 던지지 않는 쪽 — 설치 발화 창 안에서 온 길이 변경(사용자 Observer가 방금 붙는
-  서브트리를 CRUD)은 이제 유실되지 않는다: Observer가 `_subs`에 먼저 합류하고 설치 실행이 그 변경을 그 자리에서 다시
-  돈다(`source-state-plan.md`의 "전파 루프 — 확정 의사코드" 절). throw의 UB 입장은 그대로다.
+  서브트리를 CRUD)은 이제 유실되지 않는다: Observer가 `_subs`에 먼저 합류해 그 변경을 받는다(`source-state-plan.md`의
+  "전파 루프 — 확정 의사코드" 절). **[2026-10-01 사용자 결정]** 받은 변경은 설치 실행 안에서 다시 돌지 않고 보류됐다가
+  len Observer를 만든 직후의 `bindLifetime(anchor, …)`이 한 번 따라잡는다(사용자 *"설치 중 즉시 도는거 아님"*). 이 장면은
+  **정의된 경로다** — Slot의 `Offset`/`Length`를 보는 콜백의 CRUD가 그 값으로 다시 돌아오는 고리는 State 의존이 아니라 부기
+  재계산(`recompute`)을 거치고, 부기가 Effect처럼 되감아 수렴시킨다(Set 창 되감기 `H-101`/`H-113`/`H-124` 유지). 사용자(2026-10-01): *"옵져버가 상류를 바로 되먹이는 경로는 아니라고 봐. 간접 경로야. 정확히 set 을 넣어버리는 곳은 북키핑 업데이트 하는 리컴퓨트 부분이야 … 유저가 slot 의 내부 구현을 모른다고 가정하자. 그럼 그 묶임이 되먹임인걸 눈 감고 볼 수 없어 … 북키핑 자체가 effect 처럼 반복 수렴 하는건 걷어내야할 이유를 모르겠어. 되감기를 불가하게 하는 경로는 구조적으로 state 이상을 유저가 알아야만 해, 왜 UB인지."* (같은 날
+  앞서 "UB이지만 잘 돈다"로 적었던 것을 이 회신이 바로잡았다.) throw의 UB 입장은 그대로다.
 - **`State<State<T>>`는 정상 지원 대상** (2026-08-13 다섯 번째 세션
   재정정, 열네 번째 세션에 힌트까지 보강). 원래(같은 날 두 번째 세션)
   `store.key = a`(State), `a:Get() = b`(State)일 때 같은 `StoreBind`

@@ -239,7 +239,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 ### Quad0070
 
-`State: the value chain is circular (a State that eventually holds itself) - a State may hold another State, but not a cycle` — `quad-base/src/Dispatch/StoreBind.luau`
+`State: the value chain is circular (a State that eventually holds itself) - a State may hold another State, but not a cycle` — `quad-base/src/StoreBind.luau`
 
 - **언제**: props 자리에 놓인 State의 값을 따라가다(State가 다른 State를 값으로 들고 있으면 그 State도 마저 벗기는 재귀) 결국 자기 자신으로 돌아오는 순환을 만났을 때(예: `a:Set(b); b:Set(a)`). **[2026-10-01]** Slot에 넣은 State도 같습니다 — 원소 State의 값 사슬이 순환하면(`st:Set(st)` 등) 넣는 줄이나 그 `:Set` 줄에서 던지고, Slot은 이전 원소를 유지한 채 다음 정상 `:Set`으로 회복합니다.
 - **고치려면**: State가 다른 State를 값으로 들고 있는 것 자체는 되지만, 그 사슬이 순환하면 안 됩니다 — 순환이 생기지 않게 값 대입을 정리하세요.
@@ -337,9 +337,9 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 ### Quad0083
 
-`Dispatch.drive: props must be a plain { ... } table - a quad value needs the braces (got {brandNameOf(flattened) or "a table with a metatable"})` — `quad-base/src/Dispatch/init.luau`
+`Dispatch.drive: props must be a plain { ... } table - a quad value needs the braces (got {브랜드 또는 "a table with a metatable"})` — `quad-base/src/Dispatch/init.luau`
 
-- **언제**: `flattened` 자체가 메타테이블을 가진 값이거나, 메타테이블이 없는 quad 브랜드 값(`q.AttrKey(...)` 등)일 때 — `D.Frame(q.Source(1))`처럼 중괄호를 잊어 quad 값 하나를 그대로 props로 넘긴 흔한 실수를 잡습니다.
+- **언제**: `flattened` 자체가 메타테이블을 가진 값이거나, 메타테이블이 없는 quad 브랜드 값(`q.AttrKey(...)`·매퍼 디스크립터)일 때 — `D.Frame(q.Source(1))`처럼 중괄호를 잊어 quad 값 하나를 그대로 props로 넘긴 흔한 실수를 잡습니다. **[2026-10-01 기준, 다음 릴리즈부터]** 프로바이더가 등록한 브랜드 술어(`q.BrandPredicates`)까지 훑는 검사는 [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때만 돕니다 — 메타테이블 없는 평범한 테이블에 브랜드를 붙이는 프로바이더 값은 debug를 꺼 두면 여기 걸리지 않고 그 필드들이 props로 해석됩니다(대개 `Quad0076`). quad-base 값은 전부 debug와 무관하게 걸립니다.
 - **고치려면**: 항상 중괄호로 감싼 평범한 테이블을 넘기세요 — `D.Frame { Name = q.Source("x") }`, `D.Frame { q.Attr{...} }`, `D.Frame { child }`처럼. (`D.Frame { q.Source(1) }`은 감싸도 `Quad0076`입니다 — 숫자 키에 놓인 `Source<number>`를 받는 핸들러가 없습니다.)
 - **참고**: [`q.Dispatch.drive(inst, flattened)`](/reference/extend/02-dispatch-handler-contract/#qdispatchdriveinst-flattened)
 

@@ -186,21 +186,25 @@ debug: boolean
 - 옵션 테이블에 모르는 키(오타·옛 이름)가 있을 때 — `q.Debounce`/`q.Throttle`, `slot:List`/`slot:Single`의 `opts`, `q.Tween`, `q.Animate`. 모르는 키는 꺼져 있을 때와 똑같이 무시됩니다.
 - [`q.Claim`](../roblox/04-claim-mapper.md)의 디스크립터가 이상할 때 — 자식 디스크립터의 키가 문자열이 아니거나, 루트 디스크립터에 키를 적어 무시될 때.
 
-위 넷은 그 호출 시점에 한 번 보므로 `q.debug`는 먼저 켜 두세요. 아래 셋은 값이 처리되거나 쓰일 때마다 보므로 켜는 시점은 상관없습니다(켠 뒤의 실행부터 봅니다).
+위 넷은 그 호출 시점에 한 번 보므로 `q.debug`는 먼저 켜 두세요. 아래 넷은 값이 처리되거나 쓰일 때마다 보므로 켜는 시점은 상관없습니다(켠 뒤의 실행부터 봅니다).
 
 - 배열 원소로만 쓰이는 quad 값(`Ref`/`PreRef`/`PostRef`·`Observer`·`Effect`·`Slot`·`Tag`·`Attr`)이 props의 **문자 키**에 놓였을 때(어느 문자 키든 — 특히 반영 프로퍼티·이벤트 이름이면 거절되지 않고 프로퍼티·이벤트 핸들러가 그 값을 받아 가던 자리입니다). 같은 요소·키는 한 번만 알립니다. quad가 등록한 [`debugOnly`](../extend/02-dispatch-handler-contract.md#handler-레코드) 진단 필터가 찍습니다.
 - `:Compute` 계산 함수가 도는 도중(그 함수가 부른 것 안 포함) `Source:Set`/`:Emit`이 불렸을 때 — `Source: Set/Emit inside a Compute fn - …`. 같은 `Source`는 한 번만 알립니다(계약은 [`state:Compute`](./03-state.md#statecomputefn-deps) — 계산 함수는 읽어서 조합할 뿐 아무것도 `:Set`하지 않습니다).
 - 같은 노드의 앞선 계산이 다른 코루틴에서 멈춘 채(계산 함수 안 yield) 새 계산이 시작될 때 — `State: Compute fn entered while an earlier run of this node has not returned - …`. 던져서 끝난 계산은 정해진 회복 경로라 알리지 않습니다.
+- `state:Observer(fn)`의 콜백이 도는 도중 같은 핸들에 실행할 변경이 다시 도착했을 때 — 콜백이 자기 상류(관측 대상이나 그 원천)를 직접 또는 다른 핸들을 거쳐 되먹였다는 뜻입니다: `Observer: a change reached this Observer while its own fn was running - …`. 핸들마다 한 번만 알립니다(계약은 [`state:Observer`](./05-observer-effect.md#stateobserverfn) — Observer는 최종 소비자입니다). quad가 내부에서 쓰는 Observer(Slot 자리 부기·목록 재조정·프로퍼티에 묶인 State)와, Slot의 `Offset`/`Length`를 보는 콜백이 Slot을 CRUD해 그 값이 다시 바뀌는 고리(Slot이 스스로 다시 계산해 맞추는 정의된 경로)는 알리지 않습니다.
 
-이 셋도 켜도 동작은 바뀌지 않습니다(정의되지 않은 동작을 정의된 동작으로 바꾸지 않습니다 — 보여 줄 뿐입니다). 진단 줄은 `print`이고 `QuadNNNN` 번호가 없습니다(에러가 아니라서 — 번호는 에러에만 붙습니다). **[2026-10-01 기준]** 게시된 3.2.0에는 첫 항목(우선순위 동률)만 있고 나머지는 다음 릴리즈부터입니다([변경 이력](../../../CHANGELOG.md) `[Unreleased]`).
+이 넷도 켜도 동작은 바뀌지 않습니다(정의되지 않은 동작을 정의된 동작으로 바꾸지 않습니다 — 보여 줄 뿐입니다). 진단 줄은 `print`이고 `QuadNNNN` 번호가 없습니다(에러가 아니라서 — 번호는 에러에만 붙습니다). **[2026-10-01 기준]** 게시된 3.2.0에는 첫 항목(우선순위 동률)만 있고 나머지는 다음 릴리즈부터입니다([변경 이력](../../../CHANGELOG.md) `[Unreleased]`).
 
-**비용이 드는 검사** — 평소 경로에 두기엔 자주 도는 자리라 꺼 두면 검사하지 않고, 켜면 그 자리에서 **에러로 멈춥니다**(꺼진 채로는 정지하거나 나중에 엉뚱한 자리에서 죽는 실수들입니다). **[2026-10-01 기준]** 셋 다 다음 릴리즈부터입니다.
+**비용이 드는 검사** — 평소 경로에 두기엔 자주 도는 자리라 꺼 두면 검사하지 않고, 켜면 그 자리에서 **에러로 멈춥니다**(꺼진 채로는 정지하거나 나중에 엉뚱한 자리에서 죽는 실수들입니다). **[2026-10-01 기준]** 전부 다음 릴리즈부터입니다 — 뒤의 넷은 3.2.0까지 늘 돌던 검사를 이 층으로 내린 것입니다.
 
-- `state:Observer(fn)`의 첫 발화가 1만 번 넘게 다시 돌 때 — `Quad0262`([05-observer-effect](./05-observer-effect.md#stateobserverfn)).
 - `Effect`의 지연 재실행이 한 번의 반복 안에서 1만 번 넘게 돌 때 — `Quad0263`([05-observer-effect](./05-observer-effect.md#qeffectfn-deps)).
 - 디스패치 핸들러의 `process`가 함수가 아닌 retractor(`true`·숫자·테이블)를 돌려줄 때 — `Quad0077`([핸들러 계약](../extend/02-dispatch-handler-contract.md#handler-레코드); 꺼져 있어도 `nil`은 늘 검사합니다).
+- 중괄호를 잊은 `D.Frame(value)`에서 그 값이 메타테이블 없는 **프로바이더 브랜드** 값일 때 — `Quad0083`(모듈에 등록된 브랜드 술어를 전부 훑는 검사; 메타테이블이 있는 값과 quad-base 값은 꺼져 있어도 늘 잡습니다 — [핸들러 계약](../extend/02-dispatch-handler-contract.md#qdispatchdriveinst-flattened)).
+- `slot:List`의 `data` 배열에 배열이 아닌 키가 **덧붙어** 있을 때 — `Quad0143`(재조정마다 키 전수 검사; 배열 부분이 비어 있는 딕셔너리는 꺼져 있어도 늘 잡습니다 — [06-slot](./06-slot.md#slotlistdata-updatefn-keyfn-opts)).
+- `Slot`을 자기 자신이나 조상 Slot에 원소로 넣을 때 — `Quad0173`(원소 관계를 따라 올라가는 검사; 꺼져 있으면 넣는 줄은 통과하고 그 트리의 다음 CRUD·해체가 스택 오버플로로 죽습니다).
+- (quad-roblox) Instance를 자기 자신이나 자기 자손의 숫자 키 자리에 자식으로 놓을 때 — `Quad0220`(조상 사슬 걷기; 꺼져 있으면 엔진의 circular reference 에러가 대신 멈추되, quad가 자리를 잡은 뒤라 그 요소의 부기는 믿을 수 없습니다).
 
-이 셋은 매번 그 자리에서 보므로 켜는 시점은 상관없습니다(켠 뒤의 실행부터 검사합니다).
+이 검사들은 매번 그 자리에서 보므로 켜는 시점은 상관없습니다(켠 뒤의 실행부터 검사합니다).
 
 ```luau
 q.debug = true -- 위 진단 줄과 비용이 드는 검사를 켠다

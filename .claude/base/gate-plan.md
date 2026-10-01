@@ -462,10 +462,14 @@ end
    - **끝나지 않는 되먹임은 UB.** `base/dispatch-core-plan.md`의 2026-08-04
      확정 원칙 그대로 — *"일반적인 재진입/무한루프는 방어 안 함,
      provider/사용자 코드 버그로 간주"*. 게이트가 따로 가드를 두지 않는다.
-   - **유한한 재진입은 지원한다.** 전파 도중 소비자가 동기적으로 상류를
-     `:Set()`하는 건 이미 대비된 경우이고(`debounce-throttle-plan.md`의
-     `onWindowEnd` 주석), 게이트 쪽에서 그걸 안전하게 만드는 장치가 위 4번의
-     **flush 진입 시 스왑**이다.
+   - **[2026-10-01 고쳐 씀 — 이 줄은 사용자 결정이 아니라 에이전트 문장이었다] 하류 `Effect`가 상류를 되쓰는
+     재진입은 정의된 경로이고, 하류 `Observer`의 상류 되먹임은 UB다.** 옛 문장 "유한한 재진입은 지원한다"는 소비자
+     종류를 가리지 않았다. 2026-10-01 사용자 원칙(`source-state-plan.md`의 "Compute 순수성" 절 2026-10-01 문단 —
+     Observer는 최종 소비자, `Effect`의 자기 의존성 `Set`만 지연 재실행이 풀어 정의된다)에 맞춰: 전파 도중 하류
+     `Effect`가 동기적으로 상류를 `:Set()`하는 것(`debounce-throttle-plan.md`의 `onWindowEnd` 주석)은 정의되고,
+     게이트 쪽에서 그걸 안전하게 만드는 장치가 위 4번의 **flush 진입 시 스왑**이다(코드 그대로 — `spec.gate` 6·
+     `spec.debounce` 10/10b가 Effect 하류로 고정). 하류 `Observer`가 같은 일을 하면 UB(레퍼런스 core/03 Gate 절·
+     sugar/03). 제어 호출(`handle:Cancel()` 재진입, `spec.debounce` 13)은 되먹임이 아니라 그대로 정의된다.
    - **같은 게이트/`Blocker` 인스턴스를 중첩해 쓰지 않는다** — `Blocker`의
      기존 규칙이 그대로 적용된다(겹치는 배치는 새 인스턴스).
 7. **[2026-08-21 해소] `Effect(fn, ...deps)`의 최초 1회 억제는 `Gate`

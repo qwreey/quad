@@ -26,9 +26,14 @@
 	`retracting` flag can be ignored here (own-resource release only; this
 	handler never receives nil as a value — brief §1 note ②).
 
-	Registered per module instance by `InitDispatch`'s tail (round13 §0 Q3
-	(a) — `None.luau` precedent: StoreBind is the descending diff's own
-	recursion, a dispatch-skeleton concept, not any one value module's).
+	[2026-10-01 user decision] a top-level module (옛 `Dispatch/StoreBind.luau`),
+	registered per module instance by `State.luau`'s `Init` — the State value's
+	handler lives with the State definition (`H-278`, Effect/Observer shape:
+	pull `InitDispatch` via `RunInit`, then `register`). User: *"StoreBind 도
+	마찬가지. Effect 처럼 State 정의 부분 안에 넣고 최상위에서 수행되어야 하는거
+	아닌가 … Dispatch 가 코어 객체들을 아는 방향이 되지 않아야하니까"* — this
+	reverses round13 §0 Q3 (a), which had kept the registration in
+	`InitDispatch`'s tail as "the descending diff's own recursion".
 	Priority HIGH — the skeleton band ("base가 소유하는 핸들러가 전부 여기
 	오는 게 아님": StoreBind must outmatch property setters); predicates in
 	the band are disjoint, so the tie carries no ordering dependence.
@@ -36,10 +41,10 @@
 	overwrites them after `New()`).
 ]]
 
-local Brand = require("../Brand")
-local QuadTypes = require("../../luau_packages/quad_types")
-local ModuleIdentity = require("../ModuleIdentity")
-local Err = require("../ErrorNamespace")
+local Brand = require("./Brand")
+local QuadTypes = require("../luau_packages/quad_types")
+local ModuleIdentity = require("./ModuleIdentity")
+local Err = require("./ErrorNamespace")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE -- round11 `H-573` raise
 
 -- `isState` composes `isSource` (Source structurally satisfies State,
@@ -73,8 +78,8 @@ function StoreBind.assertAcyclicChain(first: any, seed: any?, raise: (string, an
 	end
 end
 
--- Called by InitDispatch once per module instance, after the Dispatch table
--- is assembled (the factory pattern, `H-174`). addHandler tags the received
+-- Called by `State.luau`'s Init once per module instance, after it has pulled
+-- InitDispatch (the factory pattern, `H-174`). addHandler tags the received
 -- functions into the shared error namespace itself.
 -- Typed against the shared contract (`H-259`).
 function StoreBind.register(dispatch: QuadTypes.Dispatch, module: any)
@@ -95,6 +100,7 @@ function StoreBind.register(dispatch: QuadTypes.Dispatch, module: any)
 				StoreBind.assertAcyclicChain(realv, state, Err.errorBefore) -- error-code: via assertAcyclicChain
 				dispatch.process(inst, k, realv, index + 1)
 			end)
+			observer._internal = true -- quad's own plumbing: skipped by the Observer upstream-feedback debug check
 			module.Backend.bindLifetime(inst, observer)
 			return function(_nextValue: any?, _retracting: boolean)
 				-- Own resource only — the descending diff (or retractFrom)

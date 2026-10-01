@@ -417,52 +417,54 @@ do
 end
 
 print()
-print("=== 10. 재진입 — flush 도중 하류가 상류를 :Set해도 창은 하나(타이머 하나), 두 번째 신호는 새 창으로 ===")
+print("=== 10. 재진입 — flush 도중 하류 Effect가 상류를 :Set해도 창은 하나(타이머 하나), 두 번째 신호는 새 창으로 ===")
 do
+	-- 2026-10-01: 재진입은 하류 Effect가 낸다(자기 의존성의 상류 Set — 지연 재실행이 푸는 정의된 경로).
+	-- 하류 Observer가 상류를 되먹이는 것은 UB(레퍼런스 core/03 Gate 절)라 그 모양으로는 고정하지 않는다.
 	fresh()
 	local s = Source(0)
 	local g: State<number> = s:Apply(Throttle({ Time = 1 }))
+	local p = probe(g)
 	local reentered = false
-	local p = { count = 0 } :: any
-	function p._receive(self: any, _from: any)
-		self.count += 1
-		if not reentered then
+	local e = q.Effect(function()
+		if not reentered and g:Get() == 1 then
 			reentered = true
 			s:Set(100) -- re-enters the gate while it is flushing
 		end
-	end
-	;(g :: any)._subs[p] = true
+	end, g):Subscribe()
 	s:Set(1)
+	assert(reentered, "the Effect re-entered")
 	assert(p.count == 2, "leading pass, re-entrant set also passed (gate was idle/open at that instant)")
 	assert(mock.pendingTimers() == 1, "exactly one window timer")
 	advance(1)
 	assert(mock.pendingTimers() == 0, "nothing withheld → idle")
+	e:Unsubscribe()
 	print("PASS")
 end
 
 print()
-print("=== 10b. 타이머 경로 재진입 — 창 끝 flush 중 하류가 상류를 :Set하면 보류되고(창 하나), 다음 창에서 통과 ===")
+print("=== 10b. 타이머 경로 재진입 — 창 끝 flush 중 하류 Effect가 상류를 :Set하면 보류되고(창 하나), 다음 창에서 통과 ===")
 do
 	fresh()
 	local s = Source(0)
 	local g: State<number> = s:Apply(Debounce({ Time = 1 }))
+	local p = probe(g)
 	local reentered = false
-	local p = { count = 0 } :: any
-	function p._receive(self: any, _from: any)
-		self.count += 1
-		if not reentered then
+	local e = q.Effect(function()
+		if not reentered and g:Get() == 1 then
 			reentered = true
 			s:Set(100)
 		end
-	end
-	;(g :: any)._subs[p] = true
+	end, g):Subscribe()
 	s:Set(1)
 	advance(1) -- window end: flush → re-entrant Set(100) lands in the fresh set, withheld
+	assert(reentered, "the Effect re-entered at the window-end flush")
 	assert(p.count == 1 and mock.pendingTimers() == 1, "one pass, the re-entrant signal is held, exactly one window")
 	advance(1)
 	assert(p.count == 2, "next window end passes it")
 	advance(1)
 	assert(mock.pendingTimers() == 0, "idle")
+	e:Unsubscribe()
 	print("PASS")
 end
 

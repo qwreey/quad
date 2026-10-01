@@ -341,13 +341,16 @@ end
 print()
 print("=== 14. round11 H-544/H-545/H-546/H-548 (2026-09-17) — 정적 자리 순환 가드·소유권 op nil 게이트·파괴된 인스턴스는 즉시 미claim·nil 구멍 메시지의 회수 경로 ===")
 do
-	-- H-545: a cycle through the static seat is refused before any bookkeeping (Slot's H-500 twin)
+	-- H-545: a cycle through the static seat is refused before any bookkeeping (Slot's H-500 twin) —
+	-- [2026-10-01 user decision] a debug-layer check: only with q.debug on
+	q.debug = true
 	local host = q.Declaration.Frame({}) :: any
 	local seat = q.Source(nil :: any)
 	local f = q.Declaration.Frame({ seat }) :: any
 	f.Parent = host
 	local ok, err = pcall(function() seat:Set(f) end)
 	assert(not ok and string.find(tostring(err), "Quad0220 Dispatch: cannot place an Instance inside itself", 1, true) ~= nil, "self: " .. tostring(err))
+	mock.assertBlamesUser(err, SPEC_FILE, "Quad0220 blame (outermost — the Set line)")
 	local ok2, err2 = pcall(function() seat:Set(host) end)
 	assert(not ok2 and string.find(tostring(err2), "cannot place an Instance inside itself or one of its own descendants", 1, true) ~= nil, "ancestor: " .. tostring(err2))
 	assert(f.Parent == host and host.Parent == nil, "tree untouched")
@@ -359,6 +362,17 @@ do
 	f2.Parent = host
 	local okc = pcall(function() seat2:Set(host) end)
 	assert(not okc and old.Parent == nil, "the previous occupant is retracted before the rejection (Q60)")
+	q.debug = false
+	-- debug OFF: no ancestor walk — the engine's own circular-reference raise at `v.Parent = inst`
+	-- stops it (the mock mirrors it), after the seat was taken (no integrity promise after a throw)
+	local host3 = q.Declaration.Frame({}) :: any
+	local seat3 = q.Source(nil :: any)
+	local f3 = q.Declaration.Frame({ seat3 }) :: any
+	f3.Parent = host3
+	local ok9, err9 = pcall(function() seat3:Set(host3) end)
+	assert(not ok9 and string.find(tostring(err9), "Quad0220", 1, true) == nil
+		and string.find(tostring(err9), "circular reference", 1, true) ~= nil, "debug off: engine error, not Quad0220: " .. tostring(err9))
+	assert(f3.Parent == host3 and host3.Parent == nil, "the engine refused the write — no looped tree")
 	q.dispose(old)
 	q.dispose(host) -- nothing seated by the rejected calls
 	-- H-546: the two public seat ops fail fast on nil, like their six Bookkeeping siblings

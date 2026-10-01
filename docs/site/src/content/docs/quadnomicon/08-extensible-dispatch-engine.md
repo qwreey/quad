@@ -3,7 +3,7 @@ title: "Vol. 8 — 확장 가능한 디스패치 엔진과 우선순위 파이�
 description: "핸들러 레지스트리로 확장 가능한 디스패치 엔진과 우선순위 파이프라인을 설명합니다"
 ---
 > **작성 목적**: 프레임워크 아키텍트 및 고급 엔지니어를 위한 기술 해설서
-> **관련 소스**: `quad-base/src/Dispatch/init.luau`, `quad-base/src/Dispatch/Handler.luau`, `quad-base/src/Dispatch/StoreBind.luau`, `quad-types/src/init.luau`
+> **관련 소스**: `quad-base/src/Dispatch/init.luau`, `quad-base/src/Dispatch/Handler.luau`, `quad-base/src/StoreBind.luau`, `quad-base/src/None.luau`, `quad-types/src/init.luau`
 
 :::danger
 이 권은 프로퍼티·자식 디스패치 엔진 내부를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/getting-started/00-installation/)부터 보십시오.
@@ -198,7 +198,9 @@ base가 소유하되 **최하위 밴드**에 등록됩니다.
    와서 아무 핸들러도 못 매치하면:
    `Quad0076 Dispatch: no handler matched key 1 (value: boolean) - check
    that the provider for this value (e.g. quad-roblox) is initialized`.
-   브랜드 조회는 매치 실패 진단과 **매 drive의 props 검사**(3.1.0부터)에서 돕니다 — 모듈의 `is<Brand>` 필드 중 모듈의 `BrandPredicates`에 등록된 것만
+   브랜드 조회는 매치 실패 진단과 drive의 props 검사(`Quad0083`)에서 돕니다 — props 검사 쪽은 3.1.0~3.2.0엔 매 drive마다,
+   **[2026-10-01 기준] 다음 릴리즈부터는 `q.debug`가 켜져 있을 때만** 이 전체 조회를 돌고(평소엔 메타테이블 유무와
+   quad-base의 메타테이블 없는 브랜드만 봅니다), 실패한 뒤 이름을 붙일 때는 여전히 씁니다. 모듈의 `is<Brand>` 필드 중 모듈의 `BrandPredicates`에 등록된 것만
    훑으므로, 프로바이더는 `isTween` 같은 술어를 모듈에 얹고 그 집합에 등록합니다(등록되지 않은 `is*` 헬퍼는 무시).
    `MapperDescriptor`처럼 quad-base 자신의 브랜드는 이 힌트를 받지 않습니다(프로바이더가
    빠진 게 아니라 그 값 자체가 그 자리에 안 맞는 것이므로) — 같은 숫자 키에 그 값이

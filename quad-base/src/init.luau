@@ -34,7 +34,8 @@ local Blocker = require("@self/Blocker")
 local InitDispatch = require("@self/Dispatch")
 local InitClaim = require("@self/Claim")
 local SlotInit = require("@self/Slot") -- M6(탐사 구현 편입)
-local None = require("@self/Dispatch/None").None
+local NoneModule = require("@self/None") -- 2026-10-01: top-level value module (옛 `Dispatch/None.luau`) — Init registers NoneHandler
+local None = NoneModule.None
 local TagModule = require("@self/Tag")
 local AttrKeyModule = require("@self/Attr/Key")
 local AttrModule = require("@self/Attr")
@@ -234,7 +235,8 @@ local function New(): Quad
 	module:RunInit(InitStore)
 	module:RunInit(Observer.Init) -- 단위 3 — 레지스트리 둘의 소유 모듈(`H-99`)
 	module:RunInit(Effect.Init)
-	module:RunInit(InitDispatch) -- M3 단위 1 — 인스턴스별 레지스트리 + chains
+	module:RunInit(InitDispatch) -- M3 단위 1 — 인스턴스별 레지스트리 + chains(+ NilHandler·Processed* 자기 말단)
+	module:RunInit(NoneModule.Init) -- M3 단위 3 — NoneHandler(값 모듈이 자기 등록, `H-278` — 2026-10-01 Dispatch에서 이동)
 	module:RunInit(RefModule.Init) -- M8 단위 ② — RefLeafHandler + PreRef/PostRef 가드(자기 등록)
 	module:RunInit(InitClaim) -- M5 단위 ④ — Claim + 매퍼 디스크립터(claim-plan)
 	module:RunInit(SlotInit) -- M6 — top-level Slot 값 타입 + SlotHandler(자기 등록)

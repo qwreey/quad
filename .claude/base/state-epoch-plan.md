@@ -352,15 +352,13 @@ end
   목적은 하나뿐 — **못 받은 emit을 여기서 먼저 받아주는 것**(중간 게이트에
   막혀 있었다거나 전파 파동이 아직 이 가지에 안 닿았다거나). `true`가 나오면
   `rawInvalid = true`로 만들고 재계산한다.
-- **⭐ [2026-08-31 `H-198`, 사용자 확정] 이 판정 전체가 `Get` 안의 루프다 —
-  한 번 재계산하고 끝이 아니라, 두 갈래(카운터 상이 / `Refresh` 드리프트) 다
-  거짓인 깨끗한 패스가 나올 때까지 재시작한다.** `fn` 도중에 온 `Set`(재진입이든,
-  닫힌 게이트에 유보돼 `_receive`에 안 온 것이든)을 그 `Get`이 반환하기 전에
-  다시 계산해, **모든 `Get`이 최신 읽기로 수렴한 값을 돌려준다**(사용자: *"그럼
-  항상 최신 값만 읽게되어 문제가 없다"*). 게이트 너머 움직임의 탐지는 아래
-  "재계산이 끝나면"의 스탬프 위치 이동이 맡는다. **`fn`이 매 패스마다 자기
-  (전이적) dep을 `Set`하면 수렴하지 않는다 — UB**(사용자 확정; 관측상 무한
-  재계산 루프).
+- **[2026-10-01 사용자 결정] `Get`은 한 번 통과다 — `H-198`(2026-08-31)의 재시작 루프는 걷어냈다**(옛 원문은
+  `archive/ub-mitigation-loops-and-guards-withdrawn.md` 1절)(사용자: *"compute 재시작 루프는
+  확인, 걷어내고"*). 위 두 갈래 중 하나면 한 번 재계산하고 돌려준다. 재계산 **뒤** 다시 확인하는 반복이 의미
+  있던 경우는 `fn` 도중 무언가 움직였을 때(fn 안 `Set`·yield)뿐인데, 그건 `source-state-plan.md`의 "Compute
+  순수성" 절대로 UB다. 닫힌 게이트 너머의 움직임(정의된 경로)은 재계산 **전** `Refresh` 갈래가 잡으므로 정의된
+  경로에서 `Get`은 여전히 최신 입력으로 계산된 값을 돌려준다. fn 도중의 움직임은 아래 fn 직전 스탬프 덕에 **다음**
+  `Get`이 드리프트로 따라잡는다(관측 — 계약 아님).
 - **⭐ 순회는 `emitEpochMap`을 건드리지 않고, 뒤로 emit 하지도 않는다.**
   그래서 나중에 진짜 emit이 도착하면 위 2번으로 걸려 **하류까지 정상적으로
   전파된다**(사용자: *"emit 바로 안하고 상류가 emit 해줄 때 까지 기다립니다"*).
@@ -377,7 +375,8 @@ end
 조용히 건너뛰는 형태라 관측이 어렵다. 재계산 중 상류 쓰기는 흔하다(다른
 Store 필드에 결과를 적어두는 관용구, 헬퍼의 lazy 초기화, `fn`이 yield하는
 사이 타이머가 `Set`하는 경우 — yield 금지 불변식은 `Dispatch.process`/
-`attachSlot` 체인 **안**에만 적용된다).
+`attachSlot` 체인 **안**에만 적용된다). **[2026-10-01 주석]** 이 문단의 "흔하다"는 당시 판단이다 — 지금은 계산 함수 안의 `Set`·yield가 UB다
+(`source-state-plan.md`의 "Compute 순수성" 절, 2026-09-07·2026-10-01). 카운터 쌍은 그대로 두며, 그 UB 아래서는 피해를 줄일 뿐이다.
 
 **확정**: `rawInvalid: boolean`을 **`cacheTargetCount` / `cacheCurrCount`**
 두 필드로 바꾼다. **사용자 확정**: *"state 는 epoch 를 구현해선 안 돼.
@@ -405,15 +404,14 @@ for _, d in self.deps do d:_track(self.valueEpochMap) end
 self.cache = self.fn(self, self.cache, ...)
 self.cacheCurrCount = gen                       -- ⭐ 성공했을 때만
 
--- 재계산 판정 (아래 `rawInvalid == true` 자리 — [2026-08-31 `H-198`] Get 안의 루프,
--- 위 "재계산 판정" 절의 두 갈래가 다 거짓일 때까지 재시작)
+-- 재계산 판정 (아래 `rawInvalid == true` 자리 — [2026-10-01] Get 안에서 한 번 통과,
+-- 위 "재계산 판정" 절의 두 갈래 중 하나면 한 번 재계산)
 if self.cacheCurrCount ~= self.cacheTargetCount then 재계산 end
 ```
 
 - **재계산 도중 도착한 무효화**가 `cacheTargetCount`를 앞서게 만든다 —
-  **[2026-08-31 `H-198`]** 그걸 다시 계산하는 주체는 "다음 `Get`"이 아니라
-  **같은 `Get`의 재시작 루프**다(위 "재계산 판정" 절): 그 호출이 수렴한
-  최신 값을 돌려준다.
+  그걸 다시 계산하는 주체는 **다음 `Get`**이다(**[2026-10-01]** `H-198`의 같은 `Get` 재시작 루프는 걷어냈다 — 위
+  "재계산 판정" 절; 재계산 도중 무효화가 오는 것 자체가 fn 안 `Set`·yield라 UB이고, 이 카운터는 그 피해를 줄일 뿐이다).
 - **`fn`이 던지면** `cacheCurrCount`가 안 갱신되므로 *계산된 적 없는
   캐시를 유효하다고 확신*하는 일이 없다 — **사용자 지적**: *"특히 에러가
   난다고 하면, 다시 계산 안하고 이전 결과를 다시 쓰겠네?"* (그래서
@@ -450,8 +448,8 @@ if self.cacheCurrCount ~= self.cacheTargetCount then 재계산 end
     난 `Set`**(emit이 유보돼 카운터 쌍이 못 보는 자리)까지 "본 것"으로 기록돼
     — `Refresh` 안전망이 눈멀고 나중 flush가 `_invalidate` 없이 통지만 해서 —
     캐시가 **영구 stale**이었다(단위 2 리뷰 실측 재현). fn 직전 스탬프면 그
-    움직임이 스탬프보다 뒤라 `Get` 루프(위 "재계산 판정" 절)의 `Refresh`
-    드리프트로 잡혀 같은 `Get` 안에서 재계산된다. `EpochMap` 새 연산은 필요
+    움직임이 스탬프보다 뒤라 `Refresh` 드리프트로 잡힌다 — **[2026-10-01]** 같은 `Get` 안이 아니라 다음 `Get`에서
+    (재시작 루프는 걷어냈다, 위 "재계산 판정" 절). fn 도중의 움직임은 UB라 이 스탬프 위치는 비용 0인 피해 줄이기이지 계약이 아니다. `EpochMap` 새 연산은 필요
     없다(사용자: *"이미 있는 표면들로 충분히 구현 가능"*).
 - **`emitEpochMap`은 안 건드린다 — 계산은 통지가 아니다.**
 - 이 "전부 갱신"이 실제로 값을 하는 자리는 **게이트가 붙들고 있는 동안 하류가
@@ -600,10 +598,17 @@ State 층 dedup이 못 닫던 갭이다 — `Effect`가 자기 맵을 들면 그
 
 ## [2026-09-17 사용자 결정 — round10 Q50 (a)] `_recompute` 재진입 가드 — 세대 스탬프 하나, 되감기 없음
 
-`_recompute`는 `Observer`/`Effect`의 `_running`과 같은 모양의 플래그를 갖되, 값은 불린이 아니라 **들어갈 때의 `_cacheTargetCount`(세대)**다(`_computing`, 없음은 -1). 들어갈 때 `_computing == gen`이면 `State: Compute fn is already running for this value - a dependency cycle (…), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)`를 **Nearest**로 던진다(순환을 닫은 그 `:Get()` 줄 blame). 잡는 것: (1) 의존성 순환 — 전에는 `EpochMap.luau:104: stack overflow`가 내부 파일을 blame했고 `q.Fallback` 류가 삼키면 반값이 유효 캐시로 굳었다(탐사 B 실측), (2) fn이 yield하는 사이 다른 코루틴의 읽기 — fn이 세대당 두 번 돌았다, (3) 앞선 읽기에서 fn이 던진 뒤 **같은 세대**의 재읽기. **왜 불린이 아니라 세대인가**: `architecture.md` "예외 안전성 계약 — 감싸지 않는다"라 던진 fn을 되감을 pcall이 없는데, 불린이면 `spec.effect` 8의 Effect 규칙("던지면 죽는다")이 State에도 걸려 `Operator.Sum`의 nil 값 검사 같은 **일시적 검증 raise 한 번이 바인딩을 영구히 죽였다**(`spec.operator` 6이 실제로 깨졌다). 세대로 스탬프하면 상류 `Set`이 새 세대를 만들어 fn이 다시 돌고, 순환·yield·같은 세대 재읽기는 그대로 잡힌다 — 필드 하나를 기존 카운터와 비교하는 것뿐이라 "마법"이 아니다. 사용자 논거: *"순수 flag 로 막는게 가능하고 이건 라이브러리의 실수가 아니라 유저의 흔하게 날 수 있는 실수라, 막는데 들어가는 비용에 비해서 이득이 훨씬 커 … 이 순환이나 yield 를 권장하는 확장된 방향은 가고싶지 않고(라이브러리가 복잡해지고, batch 를 허용하지 않던 이유와 모순됨) 단순 마법 없이 flag 셋으로 만족해야한다 봐"* — 코루틴 신원 비교로 yield 재진입만 허용하는 (b)는 그 확장 방향이라 기각. 위 §4 `H-85`의 "fn이 yield하는 사이 타이머가 `Set`하는 경우"는 그대로 유효하다(그건 같은 코루틴의 fn이 돌아온 뒤 `Refresh` 드리프트로 잡히는 경우이고, 이 가드는 *다른* 읽기가 fn 위에 겹치는 경우). **부수 발견**: `spec.lengthoffset` 10의 H-240 원 재현(길이 Compute의 fn이 같은 owner를 `setLength`)은 관찰자 읽기 → fn → 중첩 recompute → 같은 노드 재읽기라 이제 이 에러다 — 그리고 그 raise는 recompute의 On/Off 창 안이라 owner가 동결된다(기존 "창 안에서 던지면 동결" UB 가족; `Bookkeeping.luau` 주석). 핸들러 작성자 규칙으로 문서화: 길이 Compute는 자기 owner의 부기를 건드리지 않는다. H-240 되감기의 결정적 커버리지는 spec 5(offset:Set 창)가 맡는다. **못 잡는 모양(같은 날 code-review)**: fn이 자기 dep을 `Set`한 **뒤** 자기 값을 읽는 순환 — `Set`이 세대를 올려 재진입이 새 세대로 보이고 옛 스택 오버플로가 그대로 난다. `Impl.Get` 주석의 "fn이 자기 dep을 매 패스 re-Set하면 수렴 안 함: UB"가 덮는 범주라 가드를 세대 무관으로 넓히지 않는다(그러면 던진 fn 재실행 문제가 되살아난다). CHANGELOG·레퍼런스에 명시. 스펙 `spec.state` 14.
+`_recompute`는 `Observer`/`Effect`의 `_running`과 같은 모양의 플래그를 갖되, 값은 불린이 아니라 **들어갈 때의 `_cacheTargetCount`(세대)**다(`_computing`, 없음은 -1). 들어갈 때 `_computing == gen`이면 `State: Compute fn is already running for this value - a dependency cycle (…), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)`를 **Nearest**로 던진다(순환을 닫은 그 `:Get()` 줄 blame). 잡는 것: (1) 의존성 순환 — 전에는 `EpochMap.luau:104: stack overflow`가 내부 파일을 blame했고 `q.Fallback` 류가 삼키면 반값이 유효 캐시로 굳었다(탐사 B 실측), (2) fn이 yield하는 사이 다른 코루틴의 읽기 — fn이 세대당 두 번 돌았다, (3) 앞선 읽기에서 fn이 던진 뒤 **같은 세대**의 재읽기. **왜 불린이 아니라 세대인가**: `architecture.md` "예외 안전성 계약 — 감싸지 않는다"라 던진 fn을 되감을 pcall이 없는데, 불린이면 `spec.effect` 8의 Effect 규칙("던지면 죽는다")이 State에도 걸려 `Operator.Sum`의 nil 값 검사 같은 **일시적 검증 raise 한 번이 바인딩을 영구히 죽였다**(`spec.operator` 6이 실제로 깨졌다). 세대로 스탬프하면 상류 `Set`이 새 세대를 만들어 fn이 다시 돌고, 순환·yield·같은 세대 재읽기는 그대로 잡힌다 — 필드 하나를 기존 카운터와 비교하는 것뿐이라 "마법"이 아니다. 사용자 논거: *"순수 flag 로 막는게 가능하고 이건 라이브러리의 실수가 아니라 유저의 흔하게 날 수 있는 실수라, 막는데 들어가는 비용에 비해서 이득이 훨씬 커 … 이 순환이나 yield 를 권장하는 확장된 방향은 가고싶지 않고(라이브러리가 복잡해지고, batch 를 허용하지 않던 이유와 모순됨) 단순 마법 없이 flag 셋으로 만족해야한다 봐"* — 코루틴 신원 비교로 yield 재진입만 허용하는 (b)는 그 확장 방향이라 기각. 위 §4 `H-85`의 "fn이 yield하는 사이 타이머가 `Set`하는 경우"는 그대로 유효하다(그건 같은 코루틴의 fn이 돌아온 뒤 `Refresh` 드리프트로 잡히는 경우이고, 이 가드는 *다른* 읽기가 fn 위에 겹치는 경우). **부수 발견**: `spec.lengthoffset` 10의 H-240 원 재현(길이 Compute의 fn이 같은 owner를 `setLength`)은 관찰자 읽기 → fn → 중첩 recompute → 같은 노드 재읽기라 이제 이 에러다 — 그리고 그 raise는 recompute의 On/Off 창 안이라 owner가 동결된다(기존 "창 안에서 던지면 동결" UB 가족; `Bookkeeping.luau` 주석). 핸들러 작성자 규칙으로 문서화: 길이 Compute는 자기 owner의 부기를 건드리지 않는다. H-240 되감기의 결정적 커버리지는 spec 5(offset:Set 창)가 맡는다. **못 잡는 모양(같은 날 code-review)**: fn이 자기 dep을 `Set`한 **뒤** 자기 값을 읽는 순환 — `Set`이 세대를 올려 재진입이 새 세대로 보이고 옛 스택 오버플로가 그대로 난다. 계산 함수 안의 `Set`이라 "Compute 순수성" UB 범주라(**[2026-10-01]** 옛 근거였던 `Get` 루프의 "매 패스 re-Set은 수렴 안 함"은 루프와 함께 사라졌다) 가드를 세대 무관으로 넓히지 않는다(그러면 던진 fn 재실행 문제가 되살아난다). CHANGELOG·레퍼런스에 명시. 스펙 `spec.state` 14.
 
-**[2026-09-17 round11 `H-540` — 탐사 B′, 메인 손 트레이싱과 동시 발견] 던진 fn 뒤 닫힌 게이트 너머의 상류 변경은 드리프트로만 오는데 스탬프가 그 길을 막고 있었다.** 위 Q50 항목의 "새 세대(상류 `Set`)면 다시 돈다"는 `_receive`가 닿는 상류에만 참이었다 — Blocker/Debounce/Throttle이 유보 중인 상류의 `Set`은 `_receive`를 안 부르고 §4의 `Refresh` 드리프트로 잡히는데, `Impl.Get`의 드리프트 분기는 `curr == target`(유효 캐시)일 때만 돌아 던진 노드(캐시 무효 + 스탬프 잔존)는 구조적으로 못 닿았다. 결과: `price:Set(-1)`로 한 번 던진 뒤 게이트가 닫힌 채 `price:Set(250)`을 해도 계속 "already running"이고 `OffWithoutEmit()`로 배치를 버리면 게이트 없는 `Set`이 올 때까지 영구 — 하류 서브트리 전체가 같이 막힌다(랜덤 DAG 1200시드 중 10건 자연 발생). `gate-plan.md` 3번·`blocker-plan.md`가 세운 원칙(게이트는 emit만 가로채지 값을 가리지 않는다 — `:Get()`엔 영향 없음)과 정면 충돌. 처방(새 메커니즘 아님 — `Refresh`는 Get 루프가 이미 쓰는 그 술어): `_recompute`의 스탬프 검사에서 같은 세대면 먼저 `_valueEpochMap:Refresh()`를 묻고, 움직였으면 `_invalidate`로 새 세대를 받아 진행, 아니면(진짜 순환·yield 겹침) 그대로 raise. 순환 안에서 유보 상류가 fn 도중 움직인 경우는 한 번 더 재귀한 뒤 같은 에러로 떨어진다(위 "못 잡는 모양"과 같은 UB 부류). 스펙 `spec.state` 15.
+**[2026-09-17 round11 `H-540` — 탐사 B′, 메인 손 트레이싱과 동시 발견] 던진 fn 뒤 닫힌 게이트 너머의 상류 변경은 드리프트로만 오는데 스탬프가 그 길을 막고 있었다.** 위 Q50 항목의 "새 세대(상류 `Set`)면 다시 돈다"는 `_receive`가 닿는 상류에만 참이었다 — Blocker/Debounce/Throttle이 유보 중인 상류의 `Set`은 `_receive`를 안 부르고 §4의 `Refresh` 드리프트로 잡히는데, `Impl.Get`의 드리프트 분기는 `curr == target`(유효 캐시)일 때만 돌아 던진 노드(캐시 무효 + 스탬프 잔존)는 구조적으로 못 닿았다. 결과: `price:Set(-1)`로 한 번 던진 뒤 게이트가 닫힌 채 `price:Set(250)`을 해도 계속 "already running"이고 `OffWithoutEmit()`로 배치를 버리면 게이트 없는 `Set`이 올 때까지 영구 — 하류 서브트리 전체가 같이 막힌다(랜덤 DAG 1200시드 중 10건 자연 발생). `gate-plan.md` 3번·`blocker-plan.md`가 세운 원칙(게이트는 emit만 가로채지 값을 가리지 않는다 — `:Get()`엔 영향 없음)과 정면 충돌. 처방(새 메커니즘 아님 — `Refresh`는 `Get`이 이미 쓰는 그 술어): `_recompute`의 스탬프 검사에서 같은 세대면 먼저 `_valueEpochMap:Refresh()`를 묻고, 움직였으면 `_invalidate`로 새 세대를 받아 진행, 아니면(진짜 순환·yield 겹침) 그대로 raise. 순환 안에서 유보 상류가 fn 도중 움직인 경우는 한 번 더 재귀한 뒤 같은 에러로 떨어진다(위 "못 잡는 모양"과 같은 UB 부류). 스펙 `spec.state` 15.
 
-**[2026-09-17 round11 탐사 A″ 2 — `H-540`의 알려진 잔여]** `_recompute`의 `Refresh()`는 드리프트를 **소비**한다(Get 루프의 `elseif Refresh()` 가지와 같다). 그래서 "던짐 → 유보 상류 `Set` → `Get`(드리프트 재실행, fn이 **또** 던짐 — 여기서 소비) → 게이트 flush → fn이 State 아닌 자기 상태로 고쳐짐 → `Get`"은 flush가 `valueChanged = false`라 새 세대가 안 되고 게이트 밖 `Set`까지 에러다. 고쳐짐이 미선언 의존성(State가 아닌 것)으로 오는 경우라 §8 stale UB 범주 — 값이 `Set`으로 고쳐지는 보통의 회복(유보 중이든 아니든)은 `spec.state` 15대로 된다.
+**[2026-09-17 round11 탐사 A″ 2 — `H-540`의 알려진 잔여]** `_recompute`의 `Refresh()`는 드리프트를 **소비**한다(`Get`의 `elseif Refresh()` 가지와 같다). 그래서 "던짐 → 유보 상류 `Set` → `Get`(드리프트 재실행, fn이 **또** 던짐 — 여기서 소비) → 게이트 flush → fn이 State 아닌 자기 상태로 고쳐짐 → `Get`"은 flush가 `valueChanged = false`라 새 세대가 안 되고 게이트 밖 `Set`까지 에러다. 고쳐짐이 미선언 의존성(State가 아닌 것)으로 오는 경우라 §8 stale UB 범주 — 값이 `Set`으로 고쳐지는 보통의 회복(유보 중이든 아니든)은 `spec.state` 15대로 된다.
 
-**[2026-09-29 round13 Q93·Q98·Q88 닫힘 — 사용자 결정] 멈췄다 돌아온 fn은 자기 세대인지 확인한다.** 위 "잡는 것 (2)"는 yield 창 안에 상류 변경이 없을 때만 참이었다 — 코루틴 A가 세대 1의 fn에서 yield한 사이 상류가 바뀌고 B가 세대 2로 들어가 멈추면, A가 돌아와 B의 스탬프를 `-1`로 지워 세대 2의 fn이 멈춘 B 위에 한 번 더 돌았고(Q93), B가 세대 2를 끝낸 뒤 A가 돌아오면 옛 결과로 유효한 세대 2 캐시를 덮어 한 번 더 돌았다(Q98 — 같은 코루틴 안 중첩 재진입에서도 난다). 처방 둘, 새 필드 없음: fn 복귀 뒤 `if self._computing == gen then self._computing = -1 end`(찍은 사람만 지운다), 캐시 쓰기는 `gen == _cacheTargetCount or _cacheCurrCount ~= _cacheTargetCount`일 때만(현재 목표에 이미 유효한 캐시가 있으면 덮지 않는다 — 조건 "`gen == target`일 때만"인 원안 (a)는 버려진 결과 때문에 다음 `previous`가 더 옛 값이 되어 뺐다). 사용자: *"사실 이미 UB에 가깝지만, 그 UB일 때 동작을 약간 완화 하는 방향이네, 한 줄 의미 자체는 나쁘지 않아보이는데, 다른 부작용이 있는지 … 실측/정적분석"* → 적용 전후 검증(`audit/round13-bundle5-guard/`): 두 조건이 거짓이 되는 길은 fn 도중 같은 노드에 더 새 세대로 재진입하는 것(yield 또는 fn이 자기 의존성을 쓰는 UB)뿐이라 **정의된 경로는 바이트 동일**(스펙 62 출력 동일, yield 없는 차분 퍼저 5만 시드 차이 0 — 순서 잡음 한 시드 제외); yield 퍼저의 겹침·세대 중복·순차 중복은 전부 0. UB 경로의 대가(문서화): 겹쳐 돌던 자리가 **돌아온 쪽**의 `Quad0184`가 되고, 그 에러 창이 "가장 새 세대 실행이 돌아올 때까지"로 길어지며(그 창에서 읽는 Effect는 죽는다 — 늦은 복귀 전 파동이면 전에도 같았다), 돌아오지 않는 코루틴이 계산하다 멈춘 노드들은 상류가 바뀔 때까지 막히고, 늦은 복귀 뒤의 `previous`·반환값은 "유효한 새 세대 실행"의 것을 따른다. 사용자: *"채택할게."* 스펙 `spec.state` 16(두 가드 각각 음성 대조로 실패 확인). **blame(Q88)**: quad 내부가 이 노드를 읽다 나는 `Quad0184`는 가장 가까운 태그 프레임이 내부 호출자라 잎 파일을 가리킨다 — 내부 raw 읽기를 두지 않고 how-to 10 "알려진 한계" 3으로 문서화했다(사용자: blame은 *"한 눈에 문제 위치를 볼 수 있다는 편의일 뿐"*). 위 "순환을 닫은 그 `:Get()` 줄 blame"은 사용자 fn이 읽을 때의 약속이다. **[2026-10-01 사용자 결정 — Q159·회고 검토]** 두 가드는 **계약이 아니라 UB 피해를 줄이는 표시**다(정의된 경로에선 항상 참, 바이트 동일 — 사용자: *"필요한게 맞다는걸 봤고. 표기만 잘 해줘"*; `State.luau` 주석·`spec.state` 16 머리 주석에 "계약 아님"). **이미 무효가 된 더 새 캐시는 덮일 수 있다 — yield Compute UB**(Q159: (a″) 가드는 "현재 목표에 유효한 캐시"만 지키므로, 늦게 돌아온 실행이 그 사이 다시 무효가 된 더 새 세대 캐시를 덮는 틈이 남는다; 동등 비교만 쓰는 (a′) 스냅샷 처방은 넣지 않고 UB로 닫았다). 위 "UB 경로의 대가" 서술도 보장이 아니라 지금의 관측이다. **무효일 때도 캐시를 쓰는 이유**(Q159 회신 때 기록): `_cache`는 "유효할 때의 캐시 값"과 "다음 실행의 `previous`(직전에 끝난 결과)" 두 일을 하고, 무효일 때 쓰는 것은 뒤쪽 때문이다(원안 (a)는 위에 적은 대로 `previous`를 한 칸 옛 값/nil로 만들었다) — 유효성은 번호 둘(`_cacheCurrCount`/`_cacheTargetCount`)이 따로 쥔다. 근거 한 줄은 `State.luau` `_recompute`의 Q98 (a″) 주석.
+**[2026-10-01 사용자 결정 — round13 Q93·Q98 가드 철회]** 2026-09-29에 넣은 두 가드(돌아온 fn은 자기 세대 도장만 지운다 /
+현재 목표에 이미 유효한 캐시는 덮지 않는다)는 걷어냈다 — 사용자 *"yield 쪽 가드는 드러낸다 동의해"*. 둘 다 yield(또는 fn 안
+자기 의존성 `Set`) — UB — 에서만 참·거짓이 갈렸고 정의된 경로에선 동작이 같았다(`audit/round13-bundle5-guard/`). `_recompute`는
+fn이 돌아오면 도장을 `-1`로 내리고 캐시를 쓴다(Q50 세대 도장·`H-540`·`H-85`가 정한 단순형). 겹친 yield 실행이 무엇을 남기는지는
+정하지 않으며, Compute 안 yield는 debug 감지기 (a)가 알린다(`source-state-plan.md`의 "Compute 순수성" 절). 원문·근거는
+`archive/ub-mitigation-loops-and-guards-withdrawn.md` 3절. **blame(Q88)은 그대로**: quad 내부가 이 노드를 읽다 나는 `Quad0184`는
+가장 가까운 태그 프레임이 내부 호출자라 잎 파일을 가리킨다 — how-to 10 "알려진 한계" 3(사용자: blame은 *"한 눈에 문제 위치를 볼
+수 있다는 편의일 뿐"*). 위 "순환을 닫은 그 `:Get()` 줄 blame"은 사용자 fn이 읽을 때의 약속이다.

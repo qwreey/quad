@@ -6,7 +6,7 @@
 
 	[M6 fork, H6] `register(dispatch, module)` is called by Slot.Init (the
 	owning module — `H-278`), after `module._slotInternal` and `module.Dispatch`
-	both exist. None.luau's register(dispatch) is the shape precedent.
+	both exist. Observer.luau/Effect.luau's registerDispatchHandlers is the shape precedent.
 ]]
 
 local QuadTypes = require("../../luau_packages/quad_types")

@@ -1,7 +1,7 @@
 --!strict
 --[[
-	Handler — the handler contract, types only. `.claude/base/dispatch-core-plan.md`
-	"핸들러 계약" section, as-is:
+	Handler — the handler contract (types) + the shared frozen marker-sentinel
+	constructor. `.claude/base/dispatch-core-plan.md` "핸들러 계약" section, as-is:
 
 	  isHandlable(inst, key, value) -> boolean  -- pure, fast predicate (no side
 	                                            -- effects; validation happens
@@ -35,10 +35,29 @@
 	아니다" — the dependency is one-way). The type itself is owned by
 	`quad-types` (so `Quad.Dispatch.addHandler` and backends share it) and only
 	re-exported here.
+
+	`sentinel(name)` (2026-10-01 — moved here from 옛 `Dispatch/None.luau` when `None`
+	became a top-level value module that requires Dispatch): the one constructor for
+	every frozen marker sentinel — `None` (top-level `None.luau`) and the drive's own
+	`ProcessedModifier` (`Dispatch/Modifier/init.luau`) / `ProcessedPreRef`·`PostRef`
+	(`Dispatch/Ref.luau`). It must sit in a leaf both sides can require: `None.luau` →
+	`Dispatch/init.luau` → `Dispatch/Ref.luau` would otherwise loop back to `None.luau`.
 ]]
 
 local QuadTypes = require("../../luau_packages/quad_types")
 
 export type Handler = QuadTypes.Handler
 
-return {}
+-- `H-300` (a): the sentinel carries one MARKER field `__quad<Name> = true` so its
+-- TYPE is structurally expressible, plus a `__tostring` — kept in one place so the
+-- sentinel convention cannot drift between copies (review, M8 ③). Runtime judgement
+-- is identity (`v == sentinel`); freezing keeps the shared value untouchable.
+local function sentinel(name: string): any
+	return table.freeze(setmetatable({ ["__quad" .. name] = true :: true }, {
+		__tostring = function()
+			return name
+		end,
+	}))
+end
+
+return { sentinel = sentinel }

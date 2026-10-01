@@ -367,6 +367,7 @@ local function Init(module: any)
 				checkLengthValue("setLength", len:Get()) -- `H-445`: outside the blocker window; nearest = the `:Set` line
 				gatedRecompute(bk, blocker, ownerKey, element, i)
 			end) -- immediate first run is gated too
+			observer._internal = true -- quad's own bookkeeping: skipped by the Observer upstream-feedback debug check
 			module.Backend.bindLifetime(anchor, observer) -- physical target's lifetime, not :Subscribe()
 			bk.observers[i] = observer
 		else

@@ -90,7 +90,7 @@ export type Detach = { read __quadDetach: true }
 export type KeyGone = { read __quadKeyGone: true }
 
 -- `None` 센티널의 구조 타입(`H-300` (a), 2026-09-02 사용자 확정) — 실값은
--- quad-base `Dispatch/None.luau`의 frozen 테이블이고 판정은 언제나 신원
+-- quad-base `None.luau`(2026-10-01 최상위로 — 옛 `Dispatch/None.luau`)의 frozen 테이블이고 판정은 언제나 신원
 -- (`v == None`)이다. 이 타입은 조언층: 마커 필드 하나로 빈-테이블
 -- 타입이 모든 테이블에 매치되는 문제를 피해, 생성된 `Declaration` 유니언(스칼라·
 -- 이벤트·children)이 None을 실을 수 있게 한다.
@@ -716,7 +716,7 @@ export type Quad = {
 	-- 자기 값에 붙여 두고 "이 인스턴스가 만든 값인가"를 비교하는 데 쓴다. 내용은 없고 identity만 계약.
 	read moduleIdentity: {},
 
-	-- `None` 센티널(M3 단위 2에서 값이 생김 — 정의는 `Dispatch/None.luau`,
+	-- `None` 센티널(M3 단위 2에서 값이 생김 — 정의는 quad-base `None.luau`,
 	-- 여기선 재export. `isNone`은 `v == None` 신원 비교 — 이 구조 타입은
 	-- 조언층일 뿐 판정이 아니다, 최상위 `export type None` 참고(`H-300`).
 	-- [2026-09-02] `H-300` 마커 필드가 생기며 `any`일 이유가 소멸해 좁힘

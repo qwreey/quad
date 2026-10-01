@@ -34,7 +34,7 @@ have no ID yet — flagged inline; treat them as a source gap, not a doc error.
 | `Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value takes one seat, so the same element cannot sit in two parent tables, twice in one table, or in two Slots` | One value, one seat: the same Instance put under two parents (`D.Frame { c }` twice, `{ c, c }`), a Slot element placed as a static child, a shorthand-managed child (`_quad_round`) placed anywhere | Retract it from the first seat (`:Set(nil)` the State holding it, or `slot:Extract`) before re-using it — a value seated as a **literal static child** (`D.Frame { c }`) has no public way out (`c.Parent = nil` does not release it, measured 2026-09-27): values that move must live in a State seat or a Slot from the start; build a second Instance if you need two |
 | `Quad0184 State: Compute fn is already running for this value - a dependency cycle (…), a yield inside the fn, or an earlier read that threw (…)` | A `:Compute` fn reads its own result (directly or via a downstream State), yields and is read again meanwhile (undefined behavior — current observation, not a contract), or threw on an earlier read of the same value generation | Break the cycle (read only upstream nodes), never yield in a Compute (undefined behavior — `q.debug` warns when a new run starts over a parked one); after a throw, fix and `:Set` the upstream — the fn runs again on the new generation |
 | `Quad0167 Slot: cannot mutate a Slot while it is being mounted (…) - …` | A `:List`/`:Single` `updateFn` (first mount) or an Observer fired during the mount did `Add`/`Remove`/… or `:List` on an **ancestor** Slot (any Slot up the owner chain, not only the direct parent) that is being mounted | Keep `updateFn` to building this item (its own child Slots are fine); mutate ancestors after the mount has returned, outside the `updateFn` — an Observer that fires synchronously during the mount is still inside it, so defer (`task.defer`). A throw inside the mount leaves every Slot on that chain refusing CRUD: dispose the host |
-| `Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)` | Circular parenting: `a:Add(b); b:Add(a)` | Keep the slot graph acyclic — this errors immediately, it does not recurse |
+| `Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)` | Circular parenting: `a:Add(b); b:Add(a)` | Keep the slot graph acyclic — with `q.debug` on this errors immediately at the `Add` line; with it off (next release on) the `Add` passes and the next CRUD / teardown of that tree dies in a stack overflow, so develop with `q.debug = true` |
 | `Quad0038 Context:Get: no value for Provider(...)` | Reading a provider key the Context never `:Set` | `:Set` it at the root, or probe with `:Peek` |
 | `Quad0037 Context:Set: value for ... must not be nil` | `ctx:Set(provider, nil)` | Absence is "not set" — omit the key |
 | `Quad0041 Debounce: Time must be a non-negative number less than math.huge, or a State<number> (got ...)` | Negative or wrong-typed `Time` in `q.Debounce`/`q.Throttle` (`Throttle:` for the throttle) | Pass a non-negative number of seconds or a `State<number>` |
@@ -111,10 +111,14 @@ D.TextBox {
   `:Subscribe()` on an unbound handle (replays the held change once; calling it on a bound
   handle errors `Quad0235 Observer: already bound to an Instance`). Silent "my observer never fires" bugs are
   almost always this.
-- A change that happens *during* that registration fire is the exception: the handle has already
-  joined its target's subscribers, so the callback runs again on the spot (with `emitFrom = nil`) until
-  the target stops changing — nothing is held for later. `Effect`'s first run follows the same rule
-  (an `fn`-internal `Rerun()` or dep `:Set` re-runs it before any binding).
+- A change that happens *during* an Observer's registration fire is held like any other (the handle
+  has already joined its target's subscribers, so it is not lost): the callback does not re-run there,
+  it runs once (with `emitFrom = nil`) on bind/subscribe. Only the callback itself can cause such a
+  change, and an Observer feeding its own upstream is undefined behavior — it is a final consumer; set
+  other targets, or move a self-correcting write into an `Effect`. `Effect`'s first run is different
+  and defined: an `fn`-internal `Rerun()` or dep `:Set` re-runs it after `fn` returns, before any binding.
+  The `q.Out`/`OnChange` engine round trip is normal, not feedback; so is a callback on a Slot's
+  `Offset`/`Length` that CRUDs a Slot (the Slot's position math re-runs until it settles).
 - `slot:List(data, updateFn, keyFn?, opts?)` → `updateFn(ctx) -> (result, userdata)`, `ctx = { Item, Index, Offset, Prev, UserData }`
   (a fresh table per call — closures may capture `ctx`; `Index` is `0` on a `KeyGone` call).
 - `slot:Single(state, updateFn?, opts?)` → the same `updateFn(ctx)` shape, `Index` included (one `updateFn` can serve both).

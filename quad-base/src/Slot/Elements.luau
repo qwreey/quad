@@ -10,7 +10,7 @@
 
 local Types = require("./types")
 local ModuleIdentity = require("../ModuleIdentity") -- round10 H-537: cross-instance door for Slot/State elements
-local StoreBind = require("../Dispatch/StoreBind") -- round13 Q113 (a): the shared Quad0070 chain walk
+local StoreBind = require("../StoreBind") -- round13 Q113 (a): the shared Quad0070 chain walk
 
 return function(S: Types.SlotInternal, module: any)
 

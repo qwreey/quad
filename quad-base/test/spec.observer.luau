@@ -33,18 +33,9 @@ do
 	assert((s :: any)._subs[o] == true, "joined the subscriber set (before the install run — round13 3′)")
 	assert((o :: any)._rerunRequired == false, "no hold after the install run (seeded false — one meaning: a change while unexecutable)")
 	assert(o.Subscribed == false, "Subscribed starts false (shared flag, same as Effect — H-189)")
-	-- 설치 발화가 자기 State를 Set하면 fn이 그 자리에서 새 값으로 한 번 더 돈다(round13 3′ Q73 (a) — 옛 순서
-	-- "fn → _subs"는 그 Set을 버렸다); 끝나면 홀드는 남지 않는다
-	local s2 = Source(0)
-	local seen2: { number } = {}
-	local o2 = s2:Observer(function(target, _, from)
-		table.insert(seen2, target:Get())
-		if from == nil and target:Get() == 0 then
-			(target :: any):Set(1)
-		end
-	end)
-	assert(table.concat(seen2, ",") == "0,1", "the install run's own Set re-ran fn in place: " .. table.concat(seen2, ","))
-	assert((o2 :: any)._rerunRequired == false and (o2 :: any)._pending == false, "nothing held or pending after the install run")
+	-- 설치 발화 도중 온 변경은 그 자리에서 다시 돌지 않고 보류된다(2026-10-01 사용자 결정 "설치 중 즉시 도는거 아님") —
+	-- 세부는 10절. 여기선 보류 장치가 Effect의 `_pending`을 따로 두지 않는다는 것만(하나의 뜻: `_rerunRequired`)
+	assert((o :: any)._pending == nil, "no `_pending` field — the install window holds through `_rerunRequired`")
 	print("PASS")
 end
 
@@ -214,8 +205,10 @@ do
 end
 
 print()
-print("=== 9a. H-332 — 재진입 파동(fn 안에서 자기 Source를 Set)이 바깥 fn 꼬리의 _running 가드를 풀지 않는다 ===")
+print("=== 9a. H-332 — 재진입 파동(fn 안에서 자기 Source를 Set)이 바깥 fn 꼬리의 _running 가드를 풀지 않는다 — 관측, 계약 아님 ===")
 do
+	-- [2026-10-01] Observer가 자기 상류를 되먹이는 것은 UB(레퍼런스 core/05). 저장/복원(H-332)은 비용이 0이라 남긴
+	-- 내부 동작이고, 이 절은 그 회귀 검사일 뿐 사용자에게 약속하는 동작이 아니다.
 	local s = Source(1)
 	local n = 0
 	local tailErr: any = nil
@@ -327,9 +320,13 @@ do
 end
 
 print()
-print("=== 10. round13 3′ Q73 (a) (2026-09-30) — 설치 창 유실 없음: 합류가 먼저라 설치 fn 도중 온 변경은 fn을 그 자리에서 한 번 더 돌린다 ===")
+print("=== 10. 설치 창 — 합류가 먼저라 설치 fn 도중 온 변경은 유실되지 않고 보류된다(그 자리에서 다시 돌지 않음); 묶이거나 구독될 때 한 번 반영 (round13 3′ Q73 + 2026-10-01) ===")
 do
-	-- (1) the install fn converges its own target (clamp) — every value it produced is seen, nothing held
+	-- 관측 — 계약 아님(트리거 쪽): 설치 창에 변경을 들이는 길은 그 fn 자신(이나 그 fn이 깨운 핸들)이 자기 상류를
+	-- 되먹이는 것뿐이고 그건 Observer에게 UB다. 보류 자체는 "실행할 수 없을 때 온 변경은 보류, 묶일 때 한 번"
+	-- (H-159)이고, 사용자 결정(2026-10-01): "설치 발화 중에 변경을 계속 받을 필요 없고 … pending 으로 끝날 수 있음.
+	-- 설치 중 즉시 도는거 아님".
+	-- (1) the install fn clamps its own target: fn runs once, the change is held, the bind replays it once
 	local s = Source(50)
 	local seen: { number } = {}
 	local o = s:Observer(function(target)
@@ -338,14 +335,28 @@ do
 			(target :: any):Set(10)
 		end
 	end)
-	assert(table.concat(seen, ",") == "50,10", "clamp inside the install run re-ran with the clamped value: " .. table.concat(seen, ","))
-	assert((o :: any)._rerunRequired == false, "no hold left behind")
-	o:Subscribe()
-	assert(#seen == 2, "Subscribe has nothing to replay (the install window's change was already taken)")
+	assert(table.concat(seen, ",") == "50", "the install run did not re-run in place: " .. table.concat(seen, ","))
+	assert((o :: any)._rerunRequired == true, "the change is held")
+	quad.Backend.bindLifetime(Instance.new("Frame"), o)
+	assert(table.concat(seen, ",") == "50,10", "bind replays it once with the current value: " .. table.concat(seen, ","))
+	assert((o :: any)._rerunRequired == false, "nothing held after the catch-up")
+	-- …and Subscribe replays the same way
+	local s1 = Source(0)
+	local seen1: { number } = {}
+	local o1 = s1:Observer(function(target)
+		table.insert(seen1, target:Get())
+		if target:Get() == 0 then
+			(target :: any):Set(1)
+		end
+	end)
+	assert(table.concat(seen1, ",") == "0", "install ran once: " .. table.concat(seen1, ","))
+	o1:Subscribe()
+	assert(table.concat(seen1, ",") == "0,1", "Subscribe replays the held change once: " .. table.concat(seen1, ","))
+	o1:Unsubscribe()
 	-- (2) ANOTHER handle Sets the target during the install run (the fn's side effect wakes a subscribed
-	-- Observer on a different Source that writes back) — the old order lost it
+	-- Observer on a different Source that writes back) — the old order (fire → join) lost it; now held
 	local t, other = Source(0), Source(0)
-	other:Observer(function(_, _, from)
+	local back = other:Observer(function(_, _, from)
 		if from ~= nil then
 			t:Set(t:Get() + 1)
 		end
@@ -357,8 +368,12 @@ do
 			other:Set(1)
 		end
 	end)
-	assert(table.concat(seenT, ",") == "0,1" and t:Get() == 1, "a foreign Set during the install run is not lost: " .. table.concat(seenT, ","))
-	assert((ot :: any)._rerunRequired == false, "…and not held either")
+	assert(table.concat(seenT, ",") == "0" and t:Get() == 1, "a foreign Set during the install run did not re-run fn: " .. table.concat(seenT, ","))
+	assert((ot :: any)._rerunRequired == true, "…it is held, not lost")
+	ot:Subscribe()
+	assert(table.concat(seenT, ",") == "0,1", "the first subscribe replays it: " .. table.concat(seenT, ","))
+	ot:Unsubscribe()
+	back:Unsubscribe()
 	-- (3) an install fn that throws leaves the handle in `_subs` (weak-keyed): it keeps receiving but never
 	-- runs — the throw left `_running` up (no pcall), so it is a thrown handle like any other: the
 	-- subscribe entries refuse it; releasing it is dropping the reference
@@ -391,6 +406,8 @@ end
 print()
 print("=== 11. round13 3′ C6 (2026-09-30) — Source를 직접 보는 Observer는 중첩 파동에서 같은 리비전을 두 번 돌지 않는다(_seenRevision); 순서 의존이라 해시 순서를 흔들어 반복 ===")
 do
+	-- 2026-10-01: the nested wave comes from an Effect setting its own dep (defined — its re-run is deferred);
+	-- an Observer feeding its own target is undefined, so that shape is not pinned here
 	local twice = 0
 	for trial = 1, 100 do
 		local s = Source(0)
@@ -399,11 +416,11 @@ do
 			pad[i] = s:Observer(function() end):Subscribe()
 		end
 		local seen: { number } = {}
-		local a = s:Observer(function(target, _, from)
-			if from ~= nil and target:Get() == 1 then
-				(target :: any):Set(2) -- nested wave inside the outer one
+		local a = quad.Effect(function()
+			if s:Get() == 1 then
+				s:Set(2) -- nested wave inside the outer one
 			end
-		end):Subscribe()
+		end, s):Subscribe()
 		local b = s:Observer(function(target, _, from)
 			if from ~= nil then
 				table.insert(seen, target:Get())
@@ -563,42 +580,157 @@ do
 		end
 		return table.concat(seen, ",")
 	end
-	local expected = { install = "0,1", clamp = "0,50,10", held = "0,2,3", revive = "0" }
-	for _, name in { "install", "clamp", "held", "revive" } do
+	-- 2026-10-01: "install"/"clamp" are an fn writing its own dep — defined for an Effect (deferred re-run),
+	-- undefined for an Observer (own-upstream feedback). Compared on the defined scenarios only; the
+	-- Effect side of the other two is pinned, the Observer side is not
+	local expected = { held = "0,2,3", revive = "0" }
+	for _, name in { "held", "revive" } do
 		local o, e = scenario("Observer", name), scenario("Effect", name)
 		assert(o == e, `{name}: Observer saw [{o}] but Effect saw [{e}]`)
 		assert(o == expected[name], `{name}: both saw [{o}], expected [{expected[name]}]`)
 	end
+	assert(scenario("Effect", "install") == "0,1", "Effect install: the own-dep Set re-runs (deferred)")
+	assert(scenario("Effect", "clamp") == "0,50,10", "Effect clamp: deferred re-run settles")
 	print("PASS")
 end
 
-print("=== 14. 2026-10-01 — q.debug면 설치 루프 반복 한도(1만 회)에서 Quad0262; 수렴하는 설치 루프와 debug 끈 인스턴스는 그대로(끈 쪽 무한 루프는 계약이라 돌리지 않는다) ===")
+print("=== 14. 2026-10-01 — Observer 자기 상류 되먹임 debug 감지기: q.debug일 때만 Observer마다 한 줄(던지지 않음); 정상 경로·내부 Observer는 0줄 ===")
 do
-	local dq = Quad.New()
-	mock.installLifetime(dq)
-	dq.debug = true
-	-- same-value clamp: the Source propagates an equal value (H-68), so the install loop never settles
-	local s = dq.Source(5)
-	local runs = 0
-	local ok, err = pcall(function()
-		s:Observer(function(target)
-			runs += 1;
-			(target :: any):Set(math.clamp(target:Get(), 0, 3))
-		end)
-	end)
-	assert(not ok and string.find(tostring(err), "Quad0262 Observer: the first run did not settle after 10000 re-runs", 1, true) ~= nil, "unsettled install loop raises under debug: " .. tostring(err))
-	mock.assertBlamesUser(err, "spec.observer.luau", "Quad0262 blame")
-	assert(runs == 10000, "stopped at the limit: " .. runs)
-	-- a converging install loop (sets only when the value differs) is untouched under debug
-	local s2 = dq.Source(5)
-	local seen: { number } = {}
-	s2:Observer(function(target)
-		table.insert(seen, target:Get())
-		if target:Get() > 3 then
-			(target :: any):Set(3)
+	local LINE = "Observer: a change reached this Observer while its own fn was running"
+	local lines: { string } = {}
+	local dq = mock.newQuad()
+	-- the print lives in Observer.luau — capture that module's env (spec.state 17's technique)
+	local env: any = getfenv((dq.Source(0):Observer() :: any).WeakSubscribe)
+	local function capture(f: () -> ())
+		table.clear(lines)
+		local old = rawget(env, "print")
+		env.print = function(...: any)
+			table.insert(lines, table.concat({ ... }, " "))
 		end
+		local ok, err = pcall(f)
+		env.print = old
+		assert(ok, tostring(err))
+	end
+	local function countOf(needle: string): number
+		local n = 0
+		for _, l in lines do
+			if string.find(l, needle, 1, true) ~= nil then
+				n += 1
+			end
+		end
+		return n
+	end
+	local function feedback(qq: any): any
+		-- a subscribed Observer that clamps its own target on every change: a nested run (UB)
+		local s = qq.Source(0)
+		local o = s:Observer(function(target)
+			if target:Get() > 3 then
+				(target :: any):Set(3)
+			end
+		end):Subscribe()
+		s:Set(5)
+		s:Set(7)
+		o:Unsubscribe()
+		return s
+	end
+	-- off: zero lines (the run itself is unchanged — not asserted beyond "no line")
+	capture(function()
+		feedback(dq)
 	end)
-	assert(table.concat(seen, ",") == "5,3", "converging install loop under debug: " .. table.concat(seen, ","))
+	assert(countOf(LINE) == 0, "debug off: no line")
+	-- on: one line per Observer, though it nested twice
+	dq.debug = true
+	capture(function()
+		feedback(dq)
+	end)
+	assert(countOf(LINE) == 1, "debug on: one line per Observer: " .. table.concat(lines, " | "))
+	-- normal paths stay silent: setting OTHER targets, an Effect downstream writing its upstream, a thrown
+	-- fn's stuck `_running` on the next change (the `q.Out`/`OnChange` round trip involves no user Observer — the property
+	-- binding's handle is StoreBind's, marked `_internal`; a debug-forced test.sh run on 2026-10-01 printed no line for it)
+	capture(function()
+		local a, b = dq.Source(0), dq.Source(0)
+		local oa = a:Observer(function(target)
+			b:Set((target:Get() :: number) * 2) -- another target: normal
+		end):Subscribe()
+		local ob = b:Observer(function() end):Subscribe()
+		a:Set(1)
+		a:Set(2)
+		oa:Unsubscribe()
+		ob:Unsubscribe()
+		-- Effect downstream writes its own upstream (defined — deferred re-run)
+		local c = dq.Source(5)
+		local e = dq.Effect(function()
+			if c:Get() > 3 then
+				c:Set(3)
+			end
+		end, c):Subscribe()
+		c:Set(9)
+		e:Unsubscribe()
+		-- a thrown fn leaves `_running` up; the next change runs it again (self-healing) — not a nested run
+		local d = dq.Source(0)
+		local od = d:Observer(function(_, _, from)
+			if from ~= nil and d:Get() == 1 then
+				error("boom")
+			end
+		end):Subscribe()
+		assert(not pcall(function()
+			d:Set(1)
+		end))
+		d:Set(2)
+		od:Unsubscribe()
+	end)
+	assert(countOf(LINE) == 0, "normal paths: no line: " .. table.concat(lines, " | "))
+	-- quad's own Observers (`_internal`) are skipped: the same feedback shape on a marked handle is silent
+	capture(function()
+		local s = dq.Source(0)
+		local o = s:Observer(function(target)
+			if target:Get() > 3 then
+				(target :: any):Set(3)
+			end
+		end)
+		;(o :: any)._internal = true
+		o:Subscribe()
+		s:Set(5)
+		o:Unsubscribe()
+	end)
+	assert(countOf(LINE) == 0, "an `_internal` handle is skipped")
+	-- 2026-10-01 (user decision): a callback on a Slot's `Length`/`Offset` that CRUDs a Slot so the value
+	-- moves again goes through the bookkeeping recompute (the Slot settles it) — defined, no line. Both
+	-- shapes nest this handle's run (measured: each printed before the bookkeeping skip existed).
+	capture(function()
+		local Instance = mock.Instance
+		-- (1) Length of sB, CRUD inside it (a header that depends on the list's length)
+		local p1 = Instance.new("Frame")
+		local sB, sA = dq.Slot(), dq.Slot()
+		sB:Add(sA)
+		dq.Dispatch.drive(p1, { sB })
+		local o1 = sB.Length:Observer(function(len)
+			if (len:Get() :: number) < 3 then
+				sA:Add(Instance.new("Frame"))
+			end
+		end)
+		dq.Backend.bindLifetime(p1, o1)
+		sA:Add(Instance.new("Frame"))
+		assert(sB.Length:Get() >= 3, "the Length loop settled")
+		-- (2) Offset of sB, CRUD on the sibling before it (a heading / grid cell)
+		local p2 = Instance.new("Frame")
+		local hA, hB = dq.Slot(), dq.Slot()
+		hB:Add(Instance.new("Frame"))
+		dq.Dispatch.drive(p2, { hA, hB })
+		local o2 = hB.Offset:Observer(function(off)
+			if (off:Get() :: number) < 2 then
+				hA:Add(Instance.new("Frame"))
+			end
+		end)
+		dq.Backend.bindLifetime(p2, o2)
+		hA:Add(Instance.new("Frame"))
+		assert(hB.Offset:Get() >= 2, "the Offset loop settled")
+		dq.Backend.unbindLifetime(o1)
+		dq.Backend.unbindLifetime(o2)
+		p1:Destroy()
+		p2:Destroy()
+	end)
+	assert(countOf(LINE) == 0, "a loop routed through the Slot bookkeeping is skipped: " .. table.concat(lines, " | "))
 	print("PASS")
 end
 

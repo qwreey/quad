@@ -100,8 +100,8 @@ function RefImpl.Set<T>(self: Ref<T>, value: T): Ref<T>
 			local status = coroutine.status(k)
 			if status == "dead" then
 				-- round13 Q136 ① (user decision 2026-09-30): the thread finished or was
-				-- `coroutine.close`d since it registered — e.g. `a:Wait(co); b:Wait(co)` ("whichever
-				-- first") after `a` woke it. The registration is simply spent (consumed above);
+				-- `coroutine.close`d since it registered — e.g. a `co` also registered on another Ref
+				-- that woke it first (coordinating one thread across Refs is not defined by quad — 2026-10-01). The registration is simply spent (consumed above);
 				-- resuming raised an id-less "cannot resume dead coroutine" and cut this walk short.
 				continue
 			end

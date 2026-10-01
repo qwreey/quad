@@ -4,6 +4,15 @@
 리서치 요소로 두어요. 아니면 필요성이 높아보이면 지금 의논해볼수도
 있습니다"* — round12 `H-279`).
 
+> **[2026-10-01 — 아래 2026-09-13 절의 `register` 넷 서술은 그 전 기준]** 사용자 결정(*"None.luau 는 Dispatch 안에
+> 있을 이유가 없지 않나 … StoreBind 도 마찬가지 … Dispatch 가 코어 객체들을 아는 방향이 되지 않아야하니까"*)으로 그 넷 중
+> 둘이 옮겨졌다: `NoneHandler`는 최상위 `None.luau`의 Init이, `StoreBind`는 최상위 `StoreBind.luau` 본문을 `State.luau`의
+> Init이 등록한다(옛 `Dispatch/None.luau`·옛 `Dispatch/StoreBind.luau`). `Processed*` 셋(Modifier·PreRef·PostRef)은 drive
+> 자기 단계의 말단이라 `Dispatch/init.luau`가 지역 공장으로 직접 등록하고 옛 `Dispatch/Modifier/Handler.luau`는 지워졌다 —
+> 그래서 `Dispatch/init`의 require는 이제 `Modifier`(flatten·`ProcessedModifier`)와 `Ref`(pre-pass·센티널) 둘뿐이다. drive
+> 본문의 스테이지 호출(`flatten`/`prePass`/`firePostRefs`)은 그대로 — 훅 여부(이 문서의 본론)는 여전히 열려 있다. 아래 행
+> 번호·"require 셋(43·44·45)"·"순환 require" 문단은 그 전 코드 기준(정본 `dispatch-core-plan.md`의 "`None` 센티널" 절).
+
 ## 문제 인식 (사용자 원문 요지)
 
 `drive` 파이프라인이 특정 값 종류를 **선처리해 `Processed*`로 바꾸는**
@@ -105,7 +114,7 @@ drive의 스테이지(선처리/후처리)를 핸들러 레지스트리처럼 **
 
 **(B) 각 모듈이 `Init`을 갖고 최상위는 목록만 부름.** 응집이 좋고, **레포의 기존 관례와 정확히 같은 모양**입니다(`Slot/init.luau` → `Slot/Handler.luau`가 이미 그 꼴이고, 백엔드 `RobloxFactory`도 같은 꼴). 시그니처 비대칭(`register(dispatch)` 셋 vs `register(dispatch, module)` 하나)도 `Init(module)` 한 모양으로 정규화됩니다. 사용자가 든 (B)의 단점("등록 순서·우선순위가 흩어짐")은 현재 재료로는 **실체가 없습니다** — 지금 HIGH 밴드에 몰린 핸들러들(`NoneHandler`/`NilHandler`/`Processed*` 셋/`StoreBind`/`RefLeafHandler`/`SlotHandler`)은 `isHandlable`이 서로 배타적이고(센티널 identity / `number`∧`nil` / `isState` / Ref 브랜드 / `isSlot`), `table.sort`가 불안정이라 동률 순서는 애초에 계약상 미정입니다(`addHandler` 330~332행 주석).
 
-**(B)에 하나 실제 제약이 있습니다 — 순환 require.** 확인한 바로 `None.luau`·`StoreBind.luau`·`Modifier/Handler.luau`는 `Dispatch/init`을 require하지 **않고**, 그래서 `Dispatch/init`이 그들을 require할 수 있습니다. register를 빼면 43·44·45행 require가 사라지므로 **이 셋은 안전하게 `./Dispatch`를 require해 `H-278` 관용구(`module:RunInit(InitDispatch)`)를 쓸 수 있습니다.** 그런데 `Dispatch/Ref.luau`만은 `prePass`/`firePostRefs` 때문에 `Dispatch/init`이 계속 require하므로, 그 파일이 `./Dispatch`를 require하면 순환입니다. 해법 셋이 있습니다 — (b1) `Processed*Ref` 두 핸들러의 **등록만** `Ref/init.luau`로 올린다(그 파일은 이미 Dispatch를 require하고 `H-278` 관용구를 쓰며, 센티널 값 자체는 `Dispatch/Ref.luau`가 계속 소유하고 export만 하면 됩니다), (b2) `Dispatch/Ref.luau`를 스테이지 파일과 센티널+핸들러 파일로 쪼갠다, (b3) 그 하나만 Dispatch tail에 남긴다(비대칭이 남음). **(b1)이 제일 싸고 `H-278` 문장("값을 선언한 모듈이 자기 핸들러를 등록")과도 맞습니다** — `PreRef`/`PostRef`를 선언한 모듈이 `Ref/init.luau`이니까요.
+**(B)에 하나 실제 제약이 있습니다 — 순환 require.** 확인한 바로 (그때) 옛 `Dispatch/None.luau`·옛 `Dispatch/StoreBind.luau`·옛 `Dispatch/Modifier/Handler.luau`는 `Dispatch/init`을 require하지 **않고**, 그래서 `Dispatch/init`이 그들을 require할 수 있습니다. register를 빼면 43·44·45행 require가 사라지므로 **이 셋은 안전하게 `./Dispatch`를 require해 `H-278` 관용구(`module:RunInit(InitDispatch)`)를 쓸 수 있습니다.** 그런데 `Dispatch/Ref.luau`만은 `prePass`/`firePostRefs` 때문에 `Dispatch/init`이 계속 require하므로, 그 파일이 `./Dispatch`를 require하면 순환입니다. 해법 셋이 있습니다 — (b1) `Processed*Ref` 두 핸들러의 **등록만** `Ref/init.luau`로 올린다(그 파일은 이미 Dispatch를 require하고 `H-278` 관용구를 쓰며, 센티널 값 자체는 `Dispatch/Ref.luau`가 계속 소유하고 export만 하면 됩니다), (b2) `Dispatch/Ref.luau`를 스테이지 파일과 센티널+핸들러 파일로 쪼갠다, (b3) 그 하나만 Dispatch tail에 남긴다(비대칭이 남음). **(b1)이 제일 싸고 `H-278` 문장("값을 선언한 모듈이 자기 핸들러를 등록")과도 맞습니다** — `PreRef`/`PostRef`를 선언한 모듈이 `Ref/init.luau`이니까요.
 
 **권고: (B), 보완은 (b1).** 근거는 셋입니다 — `init.luau`의 "순서 무관" 불변식을 지키고(그걸 깬 유일 사례가 `H-358`로 결함 판정됐음), 레포에 이미 서 있는 관례(Slot·백엔드)와 같아지며, 시그니처 비대칭이 사라집니다. 사용자가 (A)에서 원한 "전수를 한눈에"는 (B)에서도 `init.luau`의 `RunInit` 목록이 반쯤 제공하고, **완전한 전수 감사는 런타임 `listHandlers()`가 이미 답을 줍니다** — 실제로 `spec.dispatch.luau:344~349`가 그 방식으로 내장 쌍의 존재를 확인합니다. 다만 "빠뜨림"은 (A)든 (B)든 똑같이 가능합니다(A는 register 줄을, B는 `RunInit` 줄을 빠뜨림). 차이는 **빠뜨림이 어디서 드러나느냐**뿐이고, 이건 `dispatch-core-plan.md:926`의 재역전 근거와 직결됩니다 — 그 결정은 "프로바이더를 안 붙여도 FALLBACK 밴드가 채워져 있어야 한다"였지 "`Dispatch/init`이 채워야 한다"가 아니었으므로 (B)로 옮겨도 유지되지만, **조건은 그 모듈들의 `Init`이 실제로 `init.luau`의 `RunInit` 목록에 들어가는 것**입니다.
 

@@ -901,6 +901,11 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
     `a:Add(b); b:Add(a)`) — 선행 패스가 이 Slot의 owner 체인을 걸어 올라가며 후보와 대조한다.
     옛 게이트는 조상이 루트라 "마운트 안 됨"으로 통과시켰고 다음 CRUD가 `teardownTree`에서
     무한 재귀하거나 `releaseOwner` 불변식으로 죽었다(2차 감사 G-1). `Splice`/`Insert`도 같은 패스.
+    **[2026-10-01 사용자 결정 — "순환 가드는 … 같은 결정을 따라가자. debug 로 내리기에 동의해"] 이 owner 체인 걷기는
+    `module.debug`일 때만 돈다**(`Slot/init.luau` 머리의 `checkNotOwnAncestor` — 넣는 Slot마다 깊이만큼의 비용, debug 층의
+    "깊은 검사"). 꺼 두면 넣는 줄은 통과하고 위의 옛 증상(다음 CRUD의 무한 재귀·`releaseOwner` 불변식)이 그대로 난다 —
+    던진 뒤의 무결은 약속하지 않는다(architecture "예외 안전성 계약", round3 Q18 (c)). quad-roblox 정적 자리의 쌍둥이(`Quad0220`,
+    `H-545`)도 같이 debug로 갔다.
   - `Add`: element가 이미 어딘가(같은 Slot이든 다른 Slot이든) 마운트돼
     있으면 에러 — "라이브러리 차원에서 다중 마운팅 절대 금지" 원칙을
     CRUD 경로에도 동일 적용. `element`가 `nil`/`None`이거나 핸들러 계층
@@ -970,10 +975,10 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   넣는 것(Q112)은 UB다(마운트·`Set` 때 `Quad0156`/`Quad0173`, 그 Slot이 동결될 수 있음). 위 Q42(Instance 매개)·Q62와 같은
   선 — 넣는 시점 아래 방향 DFS(깊은 사슬 1.5→96ms, State 사슬 7→292ms, Compute 앞당김)와 신원 검사(평범한 잎 Add +45%)는
   비용 대비 이득이 없다. 사용자: *"근데 slot 의 순환이 되어버리는건 잡기가 어렵고 비용이 너무 비싸서 UB로만 두자 아니였어?
-  막는 비용 대비 효과가 큰게 맞음?"*. 직접 순환(`H-500` Slot–Slot)은 지금처럼 거부. 예외 하나 — **State 자기 순환(Q113 (a))**:
+  막는 비용 대비 효과가 큰게 맞음?"*. 직접 순환(`H-500` Slot–Slot)은 지금처럼 거부(**[2026-10-01]** `q.debug`일 때만 — 위 `H-500` 항목). 예외 하나 — **State 자기 순환(Q113 (a))**:
   값 사슬이 자기에게 돌아오는 State(`st:Set(st)`, `a`↔`b`)는 StoreBind가 이미 하던 `H-573` 걷기를 Slot 원소 경로(`wrapElement`·
   identity `:Single`/`:List` reconcile, 배치 게이트 **전**)에도 돌려 `Quad0070`으로 거부한다 — 비용이 잡음 수준이고 그 Slot은
-  이전 원소를 보이며 회복된다(`Dispatch/StoreBind.luau` `assertAcyclicChain` 한 자리, 주어 `State:` — Q90). 출처
+  이전 원소를 보이며 회복된다(`StoreBind.luau` `assertAcyclicChain` 한 자리 — **[2026-10-01]** 최상위로 이동, 옛 `Dispatch/StoreBind.luau`; 주어 `State:` — Q90). 출처
   `session/2026-09-28-01-round13-batch-reply.md` 2026-10-01 Slot-A 회신 절.
 - **재진입성**(Observer/store-bind 재실행 콜백 안에서 `Add`/`Clear`를
   다시 호출) — 별도 가드 불필요 — **[2026-09-17 사용자 결정 — round10 Q52 (a)] 예외 하나는 가드로 막는다**: `materializeSlotTree`의 마운트 walk 도중 중첩 `:List`의 `updateFn`(또는 그 안의 recompute가 띄운 Observer)이 **조상** Slot을 CRUD하면 walk가 깨졌다(`bindLifetime: already bound`, 부기 영구 파손 — 탐사 A 실행 재현). 이제 walk 중인 Slot은 `_materializing` 플래그를 들고 있고(walk 스택의 조상 전부; 형제는 아님 — **[같은 날 code-review]** 이미 마운트된 부모에 `rawAdd`/`rawReplace`/`rawSplice`로 Slot이 붙는 `attachSlot` 창에서도 그 부모가 플래그를 든다(save/restore) — 런타임 `Add`로 들어온 `:List`의 첫 `updateFn`이 새 부모를 CRUD하면 배열이 캡처된 position 밑에서 밀려 Length가 영구히 모자랐다; **[2026-10-01 round13 Q74 (a)]** 부모만이 아니라 **owner 사슬 전체**(첫 비-Slot owner까지의 Slot 조상 전부)가 든다 — 아래 3′ 문단 뒤의 Q74 닫힘 문단), 공개 CRUD 아홉과 `:List`/`:Single` 설치는 `assertMutable`/`checkListInstall`에서 `Slot: cannot mutate a Slot while it is being mounted …`로 던진다(Nearest — updateFn의 그 줄). 사용자: *"compute 든 slot 이든 순수성 제약을 크게 풀어줄 이유가 없어서, 계약 상 조상 건들이기 등은 던져도 될것 같아. 정상 사용에서 문제가 생기지 않는지만 봐줘"* — 정상 사용(updateFn이 자기 자식 Slot을 만들어 CRUD, 이미 마운트된 형제 CRUD, 마운트 뒤 Observer CRUD)은 `spec.slot` 32가 그대로임을 확인. 스냅샷 walk(b)는 "스냅샷 뒤 들어온 원소를 따로 마운트"하는 복잡성이라 기각. Observer 안(마운트 walk 밖)은 이 항목 원래 서술대로 가드 없음. CRUD는 평범한 동기 테이블 뮤테이션 +
@@ -997,6 +1002,17 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   재진입은 처음부터 UB이긴 했어. 내가 아에 updateFn 에서는 컴포넌트 만들기와 자신이 만들어낸 것 이상의 바깥 state 를
   셋팅하는게 권장되지 않는다 했을거임."*). core/06의 첫 재조정 예외 문장은 되돌렸고, 원소의 `OnChange`가 마운트 중 `data`를
   바꾸는 F6은 "Observer 첫 발화 규칙의 귀결로 반영된다(관측)"로만 적는다.
+  **[2026-10-01 사용자 결정 — Observer 설치 루프 제거·자기 상류 되먹임 UB]** 위 3′ 문단의 "fn을 그 자리에서 다시 돌린다"는
+  더는 아니다 — 설치 실행 도중 온 emit은 보류(`_rerunRequired`, `H-159`)되고 핸들이 묶이거나 구독될 때 한 번 반영된다(사용자:
+  *"설치 발화 중에 변경을 계속 받을 필요 없고. 내 의도는 pending 으로 끝날 수 있음. 설치 중 즉시 도는거 아님."*). len Observer와
+  `:List` 목록 Observer는 만든 직후 `bindLifetime`이 그 보류분을 따라잡으므로 Q73 재현(`spec.slot` 그 절)은 그대로 통과한다.
+  Q73 장면 자체 — 형제 `Offset` Observer의 CRUD가 그 Observer가 보는 `Offset`을 다시 바꾸는 것 — 는 **정의된 경로다**: 그 고리는
+  State 의존이 아니라 부기 재계산을 거치고, 이 항목이 적는 Set 창 되감기(`H-101`/`H-113`/`H-124`)가 Effect의 지연 재실행처럼
+  수렴시킨다. 되감기는 유지한다. 사용자(2026-10-01): *"옵져버가 상류를 바로 되먹이는 경로는 아니라고 봐. 간접 경로야. 정확히 set 을 넣어버리는 곳은 북키핑 업데이트 하는 리컴퓨트 부분이야 … 유저가 slot 의 내부 구현을 모른다고 가정하자. 그럼 그 묶임이 되먹임인걸 눈 감고 볼 수 없어 … 북키핑 자체가 effect 처럼 반복 수렴 하는건 걷어내야할 이유를 모르겠어. 되감기를 불가하게 하는 경로는 구조적으로 state 이상을 유저가 알아야만 해, 왜 UB인지."* (같은 날 앞서 "UB이지만 잘 돈다"로 적었던 것을 이 회신이 바로잡았다.) 수렴하지 않는 CRUD
+  (값마다 넣고 빼기를 뒤집는 것)는 Effect의 무한 재실행처럼 끝나지 않는다. 위 F6(`updateFn`이 만든 원소가 `data`를 바꿈)은 이와 다르다 —
+  `updateFn` 재진입은 처음부터 UB였다(바로 위 정정). quad 내부
+  Observer(len·목록·base Offset·StoreBind)는 debug 되먹임 감지기에서 빠진다(비공개 `_internal` 표시 — `source-state-plan.md`의
+  "전파 루프 — 확정 의사코드" 절).
   **[2026-10-01 round13 Q74 (a) 닫힘 — 사용자 "의견대로"]** attach 창의 `_materializing`이 **owner 사슬 전체**에 선다
   (`Slot/Raw.luau` `raiseChain`/`restoreChain` — 임시 지역, 새 필드 없음, 칸당 약 0.14µs). Q52의 "조상 CRUD 금지"를 그 뜻대로
   모든 조상에 맞춘 것 — 바로 위 부모만 막으면 런타임 `Add`로 들어온 `:List`의 첫 `updateFn`(또는 그 창에서 동기로 발화한
@@ -2095,7 +2111,7 @@ updateFn(item: T | KeyGone, index, offset, prev, ud)
   구조를 복잡하게 만들지 않는다" 원칙). 대신 `None`과 같은 선례를 따른다 —
   `None`도 여러 곳(Slot 요소, Attr, offsetSource)에서 쓰이는
   sentinel이지만 공개 표면은 패키지 최상위(`quad-base/src/init.luau`
-  재노출)이고 실제 정의는 관련 로직 옆(`Dispatch/None.luau`)에 있다.
+  재노출)이고 실제 정의는 관련 로직 옆(옛 `Dispatch/None.luau` — **[2026-10-01]** 최상위 `None.luau`로 이동)에 있다.
   `Detach`도 같은 패턴 — **정의는 Slot 관련 파일(`Slot/init.luau` 또는
   `Slot/Handler.luau`) 옆에 두고, `init.luau`에서 최상위로 재노출**한다.
   지금은 `:List` reconcile 한 곳에서만 쓰이지만 `None`도 처음엔 그렇게
@@ -3479,7 +3495,7 @@ State/Source로 감싼 값을 raw 요소로 못 받았는데, 이미 확정된 �
 
 ### [정정, 같은 세션 후속] 최초안(별도 position-keyed StoreBind 구독) 기각 — 순수 `:Single` sugar로 대체
 
-최초에는 "`rawAdd`가 그 위치에 대해 `Dispatch/StoreBind.luau`류 재-dispatch
+최초에는 "`rawAdd`가 그 위치에 대해 옛 `Dispatch/StoreBind.luau`류 재-dispatch
 구독을 걸고, Length 기여도도 `state:Compute(...)`로 파생시켜 `setLength`에
 넘기는" 별도 메커니즘을 검토했으나 **사용자가 실제 문제를 지적해 기각**:
 

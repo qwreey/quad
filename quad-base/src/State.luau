@@ -48,6 +48,8 @@ local Brand = require("./Brand")
 local EpochMap = require("./EpochMap")
 local ImplRegistry = require("./ImplRegistry")
 local Observer = require("./Observer")
+local InitDispatch = require("./Dispatch") -- Init pulls it to register StoreBind (2026-10-01)
+local StoreBind = require("./StoreBind")
 local Void = require("./Void")
 local QuadTypes = require("../luau_packages/quad_types")
 local Err = require("./ErrorNamespace")
@@ -217,8 +219,8 @@ local function createImpl(module: any)
 		-- 막는게 가능하고 … 유저의 흔하게 날 수 있는 실수라 … 단순 마법 없이 flag 셋으로 만족".
 		-- NOT caught (checkpoint code-review): a fn that `Set`s its own dep and THEN reads itself —
 		-- the Set bumps the generation, so the re-entry looks like a new one and recurses until
-		-- stack overflow. That is the `Get` loop's standing UB ("re-Sets its own dep on every
-		-- pass never converges"); a generation-free flag would re-open the thrown-fn problem.
+		-- stack overflow. A Set inside a Compute fn is UB ("Compute 순수성"; `q.debug` names it);
+		-- a generation-free flag would re-open the thrown-fn problem.
 		local gen = self._cacheTargetCount -- snapshot right before fn (`H-85`)
 		if self._computing == gen then
 			-- round11 `H-540` (탐사 B′): a thrown fn leaves the stamp AND an invalid cache, so `Get`
@@ -240,23 +242,18 @@ local function createImpl(module: any)
 		end
 		self._computing = gen
 		local hold = self._hold
-		-- `H-198` (user-confirmed 2026-08-31): stamp upstream revisions BEFORE fn —
-		-- anything that moves DURING fn (a reentrant Set, or one withheld by a
-		-- closed gate, which never reaches our `_receive`) then shows up afterwards
-		-- as `Refresh` drift and `Get`'s loop recomputes. Stamping after fn marked
-		-- those moves as already seen (permanent stale cache).
+		-- `H-198` (2026-08-31): stamp upstream revisions BEFORE fn — anything that moves DURING fn then
+		-- shows up as `Refresh` drift at the NEXT `Get` instead of being marked as already seen (stamping
+		-- after fn left a permanent stale cache). Moving during fn is a Set or a yield inside the fn —
+		-- undefined (`source-state-plan.md` "Compute 순수성"); the stamp position costs nothing and only
+		-- narrows that UB's damage — an observation, not a contract (2026-10-01: `Get` no longer loops).
 		for _, dep in hold do
 			dep:_track(self._valueEpochMap)
 		end
 		-- `fn(self, previous?, ...deps)` — `self` is the RECEIVER's lazy handle
 		-- (`hold[1]`), never this result node.
 		local result = self._fn(hold[1], self._cache, table.unpack(hold, 2))
-		-- round13 Q93 (a): clear only OUR stamp (a newer one belongs to a run still parked or thrown).
-		-- Always true on every defined path (no yield / reentrant Compute) — byte-identical there; it only
-		-- narrows the damage of that UB, not a contract (user 2026-10-01: "필요한게 맞다는걸 봤고. 표기만 잘 해줘").
-		if self._computing == gen then
-			self._computing = -1 -- fn returned (the Modifier raise below is ours, not a stuck fn)
-		end
+		self._computing = -1 -- fn returned (the Modifier raise below is ours, not a stuck fn)
 		if isModifier(result) then
 			-- `H-205` history: this used to be a hand-counted level 3; the walker
 			-- (`H-231`) picks the frame. Q7 셋째 (a) (사용자 결정 2026-09-07): OUTERMOST —
@@ -265,39 +262,26 @@ local function createImpl(module: any)
 			-- (their `drive`/creation) is the useful one.
 			Err.errorBefore("Quad0185 State: a Compute function returned a Modifier - State/Source cannot hold Modifiers", SURFACE)
 		end
-		-- round13 Q98 (a″): never clobber a cache already valid for the current target (a newer run
-		-- finished while this one was parked or nested); otherwise write as before, stale or not.
-		-- Always true on every defined path (no yield / reentrant Compute) — byte-identical there; it only
-		-- narrows the damage of that UB, not a contract (Q159: a newer cache already invalid again can
-		-- still be overwritten — yield Compute is UB).
-		-- Why a stale result is still written (user 2026-10-01): `_cache` does two jobs — the cached value
-		-- while valid, AND the next run's `previous` (the last finished result). Writing while invalid serves
-		-- the second: branch (a) "drop it unless current" left `previous` one value behind / nil (round13 Q98
-		-- measurement). Validity itself is held by the two counters, not by `_cache`.
-		if gen == self._cacheTargetCount or self._cacheCurrCount ~= self._cacheTargetCount then
-			self._cache = result
-			self._cacheCurrCount = gen -- only on success: a thrown fn never marks the cache valid
-		end
+		-- Written even when an upstream moved during fn (UB — the counters then disagree and the next `Get`
+		-- recomputes): validity is held by the two counters, and `_cache` is also the next run's `previous`.
+		self._cache = result
+		self._cacheCurrCount = gen -- only on success: a thrown fn never marks the cache valid
 	end
 
 	function Impl.Get(self: any): any
-		-- `H-198` (user-confirmed): a LOOP, not a single pass — restart until one
-		-- recompute completes with nothing moving under it, so every Get returns a
-		-- value computed from the latest reads ("항상 최신 값만 읽게되어"). Counter
-		-- mismatch catches Sets our `_receive` saw (`H-85`); `Refresh` drift catches
-		-- the ones it never did (behind a closed gate). Values only — notification
-		-- still waits for the real emit. An fn that re-Sets its own (transitive)
-		-- dep on every pass never converges: UB (user-confirmed).
-		while true do
-			if self._cacheCurrCount ~= self._cacheTargetCount then
-				self:_recompute()
-			elseif self._valueEpochMap:Refresh() then
-				self:_invalidate()
-				self:_recompute()
-			else
-				return self._cache
-			end
+		-- ONE pass (user decision 2026-10-01 — the `H-198` restart loop is gone). Counter mismatch catches
+		-- Sets our `_receive` saw (`H-85`); `Refresh` drift catches an upstream that moved where `_receive`
+		-- never hears it (behind a closed gate — a defined path, so this pre-check stays). Values only —
+		-- notification still waits for the real emit. The old loop re-checked AFTER the recompute, which only
+		-- matters when something moved DURING fn — a Set or a yield inside a Compute fn, both undefined
+		-- (`source-state-plan.md` "Compute 순수성"): a value read then may be one wave behind.
+		if self._cacheCurrCount ~= self._cacheTargetCount then
+			self:_recompute()
+		elseif self._valueEpochMap:Refresh() then
+			self:_invalidate()
+			self:_recompute()
 		end
+		return self._cache
 	end
 
 	-- ── derived-node methods (shared by Source through `__index`) ─────
@@ -434,6 +418,11 @@ end
 
 local function Init(module: any)
 	implsOf(module).State = createImpl(module)
+	-- [2026-10-01 user decision] the State VALUE's dispatch handler (StoreBind — unwrap and re-dispatch
+	-- `index + 1` on every emission) is registered here, by the module that defines State (`H-278`,
+	-- Effect/Observer shape), not by `InitDispatch` — "Dispatch 가 코어 객체들을 아는 방향이 되지 않아야".
+	module:RunInit(InitDispatch) -- idempotent pull (the `H-174` idiom)
+	StoreBind.register(module.Dispatch, module)
 end
 
 local function implFor(module: any)

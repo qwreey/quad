@@ -964,9 +964,19 @@ end
 
 print()
 print()
-print("=== 27. 2026-09-08 2차 감사 H-500 — 자기 자신·조상을 요소로 넣는 순환은 선행 검증이 거부(옛: 다음 CRUD에서 스택오버플로/내부 불변식 에러) ===")
+print("=== 27. 2026-09-08 2차 감사 H-500 — 자기 자신·조상을 요소로 넣는 순환은 q.debug일 때 선행 검증이 거부(2026-10-01 debug 층으로; 꺼져 있으면 다음 CRUD에서 스택오버플로/내부 불변식 에러) ===")
 do
+	-- [2026-10-01 user decision] a debug-layer check: the owner-chain walk runs only with q.debug on
+	local qOff = mock.newQuad()
+	local sOff = qOff.Slot()
+	local okOff, errOff = pcall(function() return sOff:Add(sOff) end)
+	assert(okOff, "debug off: no walk, nothing stops the cycle at the Add line: " .. tostring(errOff))
+	local aOff, bOff = qOff.Slot(), qOff.Slot()
+	aOff:Add(bOff)
+	assert(pcall(function() return bOff:Add(aOff) end), "debug off: the ancestor case is not walked either")
+	-- (those trees are now looped — further CRUD on them is the documented failure mode; left to GC)
 	local q2 = mock.newQuad()
+	q2.debug = true
 	local s = q2.Slot()
 	local ok, err = pcall(function() return s:Add(s) end)
 	assert(not ok and string.find(tostring(err), "Slot:Add: cannot add a Slot to itself or to one of its own descendants", 1, true) ~= nil, "self: " .. tostring(err))
@@ -1217,10 +1227,18 @@ do
 	end)
 	assert(not ok and string.find(tostring(err), "Slot:List: data must be a plain array - key \"", 1, true) ~= nil, tostring(err))
 	assert(s.Length:Get() == 2 and childCount(parent) == 2, "nothing was destroyed by the rejected data")
+	-- [2026-10-01 user decision] an array WITH an extra non-array key is caught only by the full key pass,
+	-- which is debug-only (every reconcile pays the O(1) "empty array part + a non-array key" check above)
+	data:Set({ { id = "a" }, extra = 1 } :: any)
+	assert(s.Length:Get() == 1, "debug off: the extra key is ignored, the array part reconciles")
+	data:Set({ { id = "a" }, { id = "b" } })
+	q.debug = true
 	local ok2, err2 = pcall(function()
 		data:Set({ { id = "a" }, extra = 1 } :: any)
 	end)
+	q.debug = false
 	assert(not ok2 and string.find(tostring(err2), "key \"extra\" is not an array position", 1, true) ~= nil, tostring(err2))
+	mock.assertBlamesUser(err2, "spec.slot.luau", "debug Quad0143 blame")
 	-- updateFn returning the input marker
 	local data2 = q.Source({ { id = "x" } })
 	local s2 = Slot()
@@ -1338,7 +1356,7 @@ do
 end
 
 print()
-print("=== round13 3′ Q73 (a) (2026-09-30) — 설치 발화 창 유실 없음: 길이 Observer의 설치 발화 도중 형제 Offset Observer가 새 서브트리를 CRUD해도 형제 Offset이 stale로 남지 않는다 ===")
+print("=== round13 3′ Q73 (a) (2026-09-30; 2026-10-01 — 설치 루프 없이 먼저 합류 + 보류 + 부기 되감기로, 정의된 Slot 고리) — 설치 발화 창 유실 없음: 길이 Observer의 설치 발화 도중 형제 Offset Observer가 새 서브트리를 CRUD해도 형제 Offset이 stale로 남지 않는다 ===")
 do
 	local function F(n)
 		local f = Instance.new("Frame")

@@ -38,11 +38,30 @@
 
 local QuadTypes = require("../../luau_packages/quad_types")
 
+local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
+
+-- ── debug-only checks (quad-base `architecture.md` "debug 층"; kept out of the logic below) ──
+-- round11 `H-545` (탐사 A′): the static seat's twin of Slot's `H-500` cycle guard — `src:Set(host)`
+-- would make `host.Parent == host`. Walk the ancestor chain: O(1) on the Declaration path (Parent is
+-- nil at creation), O(D) on a State swap with `inst` at depth D (round11 L′ 5: +17µs at D=256).
+-- [2026-10-01 user decision — "순환 가드는 … 같은 결정을 따라가자. debug 로 내리기에 동의해"] the walk runs
+-- only with `q.debug` on. With it off the engine's own "circular reference" raise at `v.Parent = inst`
+-- stops the cycle, AFTER the seat / offset commit — bookkeeping integrity after a throw is not
+-- promised (architecture "예외 안전성 계약", round3 Q18 (c)). errorBefore blames the user's line.
+local function checkNotOwnAncestor(Err: any, inst: any, v: any)
+	local ancestor = inst
+	while ancestor ~= nil do
+		if ancestor == v then
+			Err.errorBefore("Quad0220 Dispatch: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)", SURFACE)
+		end
+		ancestor = ancestor.Parent
+	end
+end
+
 local function install(quad: any)
 	local dispatch = quad.Dispatch
 	local None = quad.None
 	local Err = quad.errorNamespace
-	local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 	dispatch.addHandler({
 		name = "InstanceChild",
@@ -66,19 +85,8 @@ local function install(quad: any)
 			if not quad.Backend.isClaimed(v) then
 				Err.errorBefore("Quad0219 Dispatch: this Instance is not claimed by quad - build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one - a destroyed Instance cannot be reused)", SURFACE)
 			end
-			-- round11 `H-545` (탐사 A′): the static seat had no twin of Slot's `H-500` cycle guard —
-			-- `src:Set(host)` made `host.Parent == host` in the mock, and on Roblox the engine's own
-			-- "circular reference" raise would come AFTER the seat/offset commit (a stuck seat, `H-544`
-			-- shape). Walk the ancestor chain (Parent is nil at creation, so this is O(1) on the
-			-- Declaration path; a State swap re-runs it with `inst` already at depth D — O(D),
-			-- round11 L′ 5: +17µs at D=256, flat at realistic depths); errorBefore blames the
-			-- user's line.
-			local ancestor = inst
-			while ancestor ~= nil do
-				if ancestor == v then
-					Err.errorBefore("Quad0220 Dispatch: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)", SURFACE)
-				end
-				ancestor = ancestor.Parent
+			if quad.debug then
+				checkNotOwnAncestor(Err, inst, v) -- `H-545` cycle guard (debug-only, see above)
 			end
 			if quad.Bookkeeping.claimOwnerAt(v, inst, k) then -- Q48 (a): one seat per value — raises if held elsewhere
 				quad.Bookkeeping.setOffsetSource(inst, k, None)

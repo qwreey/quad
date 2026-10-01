@@ -51,7 +51,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 `Dispatch: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)` — `quad-roblox/src/Handlers/InstanceChild.luau`
 
-- **언제**: 어떤 Instance를 자기 자신이나 자기 자손의 숫자 키 자리에 자식으로 놓으려 할 때 — 놓이는 자리의 Instance에서 조상 사슬을 따라 올라가며 그 Instance를 만나는지 검사합니다.
+- **언제**: [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때, 어떤 Instance를 자기 자신이나 자기 자손의 숫자 키 자리에 자식으로 놓으려 할 때 — 놓이는 자리의 Instance에서 조상 사슬을 따라 올라가며 그 Instance를 만나는지 검사합니다. **[2026-10-01 기준, 다음 릴리즈부터]** 조상 사슬 걷기라 debug 층으로 내려갔습니다 — 꺼 두면 Roblox 엔진의 `… would result in circular reference` 에러가 대신 멈춥니다. 다만 그 에러는 quad가 자리를 잡은 **뒤**에 나므로, 그 요소의 부기는 그 뒤로 믿을 수 없습니다(던진 뒤의 무결은 약속하지 않습니다).
 - **고치려면**: 순환이 생기지 않게 트리 구조를 바꾸세요.
 - **참고**: [D — 숫자 키](../roblox/02-d.md#숫자-키--자식과-디스크립터)
 

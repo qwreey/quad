@@ -79,8 +79,8 @@
 	always win, each consumed slot becomes the `ProcessedModifier` sentinel
 	(no holes → array order kept). `Dispatch.drive` owns the call as its
 	first pre-pass (round17 §0 Q4 (a)) — `New` ③ and `Claim` both get it
-	through drive. `ProcessedModifierHandler` (Dispatch/Modifier/Handler.luau)
-	catches the sentinel and registers None/0 bookkeeping. flatten never
+	through drive. `ProcessedModifierHandler` (registered by `Dispatch/init.luau`;
+	옛 `Dispatch/Modifier/Handler.luau`) catches the sentinel and registers None/0 bookkeeping. flatten never
 	looks at tags — a tag only ever gates `As<Name>()`.
 ]]
 
@@ -483,8 +483,8 @@ Err.setFuncLevel(
 )
 
 -- internal sentinel that fills a consumed array slot (never user-facing —
--- `Processed*` idiom, same frozen+named shape as `None`)
-local ProcessedModifier = require("./None").sentinel("ProcessedModifier")
+-- `Processed*` idiom, same frozen+named shape as `None` — one constructor in `Dispatch/Handler.luau`)
+local ProcessedModifier = require("./Handler").sentinel("ProcessedModifier")
 
 -- flatten(input) -> input — canon pseudocode 1:1 (modifier-plan "flatten의
 -- 정확한 형태"). Mutates and returns the same table.

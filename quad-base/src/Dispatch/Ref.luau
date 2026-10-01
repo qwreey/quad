@@ -5,11 +5,13 @@
 	신설" 절 (pre-pass, hoisting, `ProcessedPreRef`), "`PostRef`" 절 (one sweep
 	collects both, `postRefList` drained after the body loop) — as-is.
 
-	Lives under Dispatch/ for the same reason as Dispatch/Modifier/Handler.luau: the
-	pre-pass is `drive`'s own stage (a)/(c) and the sentinels are Dispatch's
-	concept (a consumed slot), so Dispatch can require this file without a
-	cycle (`Ref/init.luau` requires Dispatch for its `H-278` handler registration).
-	The leaf handler and the two dynamic-path guards stay in `Ref/init.luau`.
+	Lives under Dispatch/ because the pre-pass is `drive`'s own stage (a)/(c)
+	and the sentinels are Dispatch's concept (a consumed slot), so Dispatch can
+	require this file without a cycle (`Ref/init.luau` requires Dispatch for its
+	`H-278` handler registration). The leaf handler and the two dynamic-path
+	guards stay in `Ref/init.luau`; the two `Processed*Ref` nop terminals are
+	registered by `Dispatch/init.luau` itself (2026-10-01 — with
+	`ProcessedModifierHandler`, one local factory there).
 
 	  prePass(inst, flattened) -> postRefList?
 	      one index-order walk of the array part:
@@ -24,9 +26,9 @@
 	      on, one recompute catches up whatever a callback mutates). Every
 	      child is placed physically by then; parent attachment is not part of
 	      the contract either way (brief Q6).
-	  register(dispatch) — ProcessedPreRefHandler / ProcessedPostRefHandler:
-	      HIGH, `v == sentinel`, offsetSource None → length 0 → Void (the
-	      `ProcessedModifierHandler` shape, one letter apart by canon).
+	  ProcessedPreRef / ProcessedPostRef — the sentinels; their handlers
+	      (HIGH, `v == sentinel`, offsetSource None → length 0 → Void, the
+	      `ProcessedModifierHandler` shape) are `Dispatch/init.luau`'s.
 
 	One-shot: a fired PreRef/PostRef placed again is an error at the pre-pass
 	(stale `.Value` would silently re-fire callbacks). `errorBefore`: the
@@ -38,14 +40,14 @@
 local Brand = require("../Brand")
 local QuadTypes = require("../../luau_packages/quad_types")
 local Err = require("../ErrorNamespace")
-local NoneModule = require("./None")
+local sentinel = require("./Handler").sentinel -- the shared frozen marker-sentinel constructor
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local isPreRef = Brand.isPreRef
 local isPostRef = Brand.isPostRef
 
-local ProcessedPreRef = NoneModule.sentinel("ProcessedPreRef")
-local ProcessedPostRef = NoneModule.sentinel("ProcessedPostRef")
+local ProcessedPreRef = sentinel("ProcessedPreRef")
+local ProcessedPostRef = sentinel("ProcessedPostRef")
 
 local function fireOnce(v: any, kind: string)
 	-- round13 Q83 (2026-10-01): the mark goes up when the slot is PROCESSED, not when the callback
@@ -92,11 +94,5 @@ local module = {
 	prePass = prePass,
 	firePostRefs = firePostRefs,
 }
-
-function module.register(dispatch: QuadTypes.Dispatch, bookkeeping: QuadTypes.Bookkeeping)
-	-- canon `ProcessedPreRefHandler` block — the shared nop-terminal factory (Q3 ⑤)
-	NoneModule.addProcessedHandler(dispatch, bookkeeping, "ProcessedPreRefHandler", ProcessedPreRef)
-	NoneModule.addProcessedHandler(dispatch, bookkeeping, "ProcessedPostRefHandler", ProcessedPostRef)
-end
 
 return module

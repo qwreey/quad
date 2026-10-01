@@ -520,14 +520,20 @@ Ref-returning hooks their element type explicitly (`q.OnCreated<<Frame>>(...)`) 
 without it `--!strict` fails with `Type functions do not currently support types of the form '*error-type*'` whenever the callback annotates or uses `inst`.
 
 `state:Observer(fn)` fires once at registration and then **holds** further changes — a
-fresh Observer has `Subscribed == false`. A change made *during* that first fire (by the
-callback itself or by anything it triggers) is not held: the callback runs again on the spot
-until the target stops changing (a first fire that never converges is undefined behavior).
-Once alive, a callback that `:Set`s its own target recurses in place — unlike `Effect`, which
-re-runs after `fn` returns — so after writing the target back, `return` or re-read it. An Observer is a **final consumer**:
-do not use its callback to feed values back upstream (re-`:Set` what it observes or that target's source) — a discouraged path, like
-`:Set` inside `:Compute`; how many times and in what order the handles sharing that upstream re-run (same-value duplicates included)
-is undefined. To build a value from others, derive it with `:Compute` (`...deps` + `:Get()`). Bind it by putting the handle in an array part
+fresh Observer has `Subscribed == false`. A change made *during* that first fire is held too:
+the callback does not re-run inside the first fire; it runs once more (with `emitFrom = nil`)
+when the handle is bound or subscribed. An Observer is a **final consumer**: setting OTHER
+targets from its callback is normal, but feeding its own upstream (re-`:Set` what it observes or
+that target's source, directly or through other handles) is **undefined behavior** — like `:Set`
+inside `:Compute`; how many times, in what order and with which values the handles sharing that
+upstream re-run is not defined (today a live callback that writes its own target recurses in place —
+an observation, not a contract). A write that must correct its own input belongs in an `Effect`
+(its deferred re-run is the defined path). The engine round trip through `q.Out`/`OnChange` is not
+this case (the engine stays silent on a same-value write and `q.Out` drops equal values), and
+neither is a callback watching a Slot's `Offset`/`Length` that CRUDs a Slot so that value moves again —
+that loop goes through the Slot's own position math, which re-runs until it settles (defined). With
+`q.debug` on, a change reaching an Observer while its own callback runs prints one line per handle.
+To build a value from others, derive it with `:Compute` (`...deps` + `:Get()`). Bind it by putting the handle in an array part
 (it then lives and dies with that instance), or call `:Subscribe()` (strong keep) /
 `:WeakSubscribe()` (the registry does not keep the handle alive — a dropped reference is
 collected). `q.Effect(fn, ...deps)` behaves the same way; its cleanup return is optional.
@@ -585,7 +591,7 @@ the solver can see; `Fallback` returns `Ok | Err`.
 | `q.Tween{ Value = someState }` | `Quad0250 Tween: Value must be a plain value, not a State` | `state:Apply(q.Animate{...})`, or build the Tween inside a `:Compute` |
 | `q.Claim(inst)` with one argument | `Quad0034 Claim: second argument must be a D.Mapper descriptor` | `q.Claim(inst, D.Mapper.<Class>(D.Mapper.Root)({...}))` |
 | Reusing a `D.Mapper` descriptor | `Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)` | Build a fresh descriptor per `Claim` |
-| `A:Add(B); B:Add(A)` | Immediate error: `Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)` | Keep the slot graph acyclic |
+| `A:Add(B); B:Add(A)` | With `q.debug` on, immediate error: `Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)`; with it off (next release on) the `Add` passes and the next CRUD dies in a stack overflow | Keep the slot graph acyclic; develop with `q.debug = true` |
 | `Parent = ...` as a prop | `Quad0076 Dispatch: no handler matched key Parent (value: Instance)` (the `value:` part is `typeof(v)`) | Set `.Parent` from outside after creation |
 | `Activated` on a `Frame` | `Quad0076 Dispatch: no handler matched key Activated (value: function)`; `FrameParam` has no such field in `--!strict` | Use `TextButton`/`ImageButton` |
 | `AbsoluteSize` read inside `OnRendered` | No error, but `PostRef` guarantees only the subtree — parenting is explicitly not guaranteed | Read it later, from an event or an explicit connection |

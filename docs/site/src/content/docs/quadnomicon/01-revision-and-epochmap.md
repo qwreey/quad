@@ -118,26 +118,23 @@ end
 
 ```luau
 function Impl.Get(self: any): any
-    while true do
-        if self._cacheCurrCount ~= self._cacheTargetCount then
-            self:_recompute()
-        elseif self._valueEpochMap:Refresh() then
-            self:_invalidate()
-            self:_recompute()
-        else
-            return self._cache
-        end
+    if self._cacheCurrCount ~= self._cacheTargetCount then
+        self:_recompute()
+    elseif self._valueEpochMap:Refresh() then
+        self:_invalidate()
+        self:_recompute()
     end
+    return self._cache
 end
 ```
 
 1. **`_cacheCurrCount ~= _cacheTargetCount`**: 상류에서 푸시 무효화 신호가 도착했는지 정수 비교 한 번으로 확인합니다.
 2. **`_valueEpochMap:Refresh()`**: 추적 중인 키를 다시 읽어, 닫힌 게이트(`Blocker`) 뒤에서 움직여 `_receive`에 닿지 못한 상류가 있는지 확인합니다.
-3. **단발이 아니라 루프입니다.** 재계산 도중 아무것도 움직이지 않은 패스가 한 번 끝날 때까지 다시 돕니다.
+3. **한 번 통과입니다.** 둘 중 하나면 한 번 재계산하고 돌려줍니다. 한때(2026-08-31~2026-10-01)는 재계산 도중 아무것도 움직이지 않은 패스가 나올 때까지 다시 도는 루프였는데, 재계산 **뒤** 다시 확인하는 일이 의미 있는 경우는 `fn` 도중 무언가 움직였을 때(`fn` 안의 `Set`·yield)뿐이고 그건 정의되지 않은 동작이라 걷어냈습니다. 닫힌 게이트 뒤의 움직임은 재계산 **전**의 2번이 잡으므로 정의된 경로에서는 여전히 최신 입력으로 계산된 값을 돌려줍니다.
 
-`_recompute`는 유저 함수 `fn`을 실행하기 **직전에** 모든 상류 리비전을 `_valueEpochMap`에 먼저 찍습니다. 그래야 `fn` 실행 도중 일어난 변경(재진입 `Set`, 닫힌 게이트가 붙들고 있던 변경)이 직후 `Refresh()` 드리프트로 드러나 위 루프가 다시 돌 수 있습니다 — 찍는 순서를 뒤로 미루면 그 변경이 "이미 본 것"으로 표시되어 캐시가 영구히 낡습니다.
+`_recompute`는 유저 함수 `fn`을 실행하기 **직전에** 모든 상류 리비전을 `_valueEpochMap`에 먼저 찍습니다. 찍는 순서를 `fn` 뒤로 미루면 `fn` 도중 움직인 상류가 "이미 본 것"으로 표시되어 캐시가 영구히 낡습니다. 직전에 찍으면 그런 움직임이 다음 `Get`의 `Refresh()` 드리프트로 드러나 따라잡습니다 — 다만 `fn` 도중의 움직임 자체가 정의되지 않은 동작이라, 이건 비용이 들지 않는 피해 줄이기이지 약속이 아닙니다.
 
-**보장되지 않는 것**: 자기 (전이) 의존을 매 패스마다 다시 `Set`하는 `fn`은 이 루프가 수렴하지 않습니다 — 문서화된 UB입니다.
+**보장되지 않는 것**: `fn` 안에서 상류를 `Set`하거나 yield하는 것 — 계산 함수는 읽어서 조합할 뿐입니다(정의되지 않은 동작; `q.debug`가 경고 한 줄로 알려 줍니다).
 
 ---
 

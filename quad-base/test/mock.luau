@@ -200,6 +200,20 @@ local function getProxy(data: Data): any
 				data.name = value
 			elseif key == "Parent" then
 				assert(value == nil or dataOf[value] ~= nil, "attempt to set non-instance as Parent")
+				if value ~= nil then
+					-- engine fidelity (2026-10-01): Roblox refuses a Parent that is the instance itself or one
+					-- of its descendants — quad's own cycle guards (`Quad0220`/`Quad0173`) run only with
+					-- `q.debug` on, so with it off the cycle must stop HERE, as it does on the engine, instead
+					-- of leaving a looped tree that hangs every later descendant walk
+					local target = getData(value)
+					local cursor = target
+					while cursor ~= nil do
+						if cursor == data then
+							error(`Attempt to set parent of {data.name} to {target.name} would result in circular reference`, 2)
+						end
+						cursor = cursor.parent
+					end
+				end
 				if data.parent then
 					local siblings = data.parent.children
 					local i = table.find(siblings, data)

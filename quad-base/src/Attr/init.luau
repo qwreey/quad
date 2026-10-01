@@ -59,7 +59,7 @@ local isAttr = Brand.isAttr
 local isStore = Brand.isStore
 local isState = Brand.isState
 local isPlainBranded = Brand.isPlainBranded -- `H-377`: AttrKey/MapperDescriptor — plain tables branded, no metatable
-local None = require("./Dispatch/None").None -- `isNone` is `v == None` (None.luau header)
+local None = require("./None").None -- `isNone` is `v == None` (None.luau header)
 local newUncachedKey = AttrKeyModule._newUncachedKey
 
 local AttrImpl = {}

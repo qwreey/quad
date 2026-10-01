@@ -12,9 +12,29 @@
 
 local Types = require("./types")
 local ModuleIdentity = require("../ModuleIdentity")
-local StoreBind = require("../Dispatch/StoreBind") -- round13 Q113 (a): the shared Quad0070 chain walk
+local StoreBind = require("../StoreBind") -- round13 Q113 (a): the shared Quad0070 chain walk
+
+-- `H-571` data-key gate: the one Quad0143 literal — reconcile's O(1) check and the debug pass below both raise it.
+local function notArrayKey(k: any): boolean
+	return type(k) ~= "number" or k % 1 ~= 0 or k < 1
+end
+local function dataKeyMessage(k: any): string
+	return `Quad0143 Slot:List: data must be a plain array - key "{tostring(k)}" is not an array position`
+end
 
 return function(S: Types.SlotInternal, module: any)
+
+	-- ── debug-only checks (`architecture.md` "debug 층"; kept out of the logic below) ──
+	-- [2026-10-01 user decision — "debug 로 내리기에 동의해"] the full key pass over `:List` data: O(N) on
+	-- every reconcile, so it runs only with `q.debug` on. What only it catches: an array that ALSO carries
+	-- non-array keys (`{ a, b, x = 1 }` — the extra keys are ignored with debug off).
+	local function checkDataKeys(items: any)
+		for k in pairs(items) do
+			if notArrayKey(k) then
+				S.Err.errorBefore(dataKeyMessage(k), S.SURFACE) -- error-code: via dataKeyMessage
+			end
+		end
+	end
 
 	-- ── :List / :Single (slice 4) ──────────────────────────────────────
 	local function identityUpdateFn(ctx: any): any
@@ -98,10 +118,17 @@ return function(S: Types.SlotInternal, module: any)
 			-- round11 `H-571` (탐사 I′ 1, `H-396`의 짝): a dictionary (an id-keyed map, a decoded JSON
 			-- object) passed the table check, `ipairs` saw nothing and the KeyGone pass silently
 			-- destroyed every element. A nil hole still just stops `ipairs` (documented UB).
-			for k in pairs(items) do
-				if type(k) ~= "number" or k % 1 ~= 0 or k < 1 then
-					S.Err.errorBefore(`Quad0143 Slot:List: data must be a plain array - key "{tostring(k)}" is not an array position`, S.SURFACE)
+			-- [2026-10-01 user decision] every reconcile pays O(1) only: an array part of length 0 with
+			-- some first key that is not an array position — exactly that symptom (the map / object
+			-- case). The full key pass (an array WITH extra non-array keys) is debug-only.
+			if #items == 0 then
+				local k = next(items)
+				if k ~= nil and notArrayKey(k) then
+					S.Err.errorBefore(dataKeyMessage(k), S.SURFACE) -- error-code: via dataKeyMessage
 				end
+			end
+			if module.debug then
+				checkDataKeys(items)
 			end
 			local keys, seen = table.create(#items), {}
 			for i, item in ipairs(items) do
@@ -216,6 +243,7 @@ return function(S: Types.SlotInternal, module: any)
 		local data = self._listData
 		if S.isState(data) then
 			local observer = data:Observer(function() reconcile(data:Get()) end)
+			observer._internal = true -- quad's own bookkeeping: skipped by the Observer upstream-feedback debug check
 			self._listObserver = observer
 			module.Backend.bindLifetime(physicalTarget, observer)
 		else

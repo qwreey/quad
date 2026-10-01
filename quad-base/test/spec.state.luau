@@ -142,23 +142,35 @@ do
 end
 
 print()
-print("=== 6. 캐시 카운터 쌍 (H-85) + Get 재시작 루프 (H-198) — 재계산 도중 온 무효화는 같은 Get이 수렴할 때까지 다시 계산 ===")
+print("=== 6. 캐시 카운터 쌍 (H-85) + Get 한 번 통과 (2026-10-01 — H-198 재시작 루프 제거) ===")
 do
+	-- 정의된 경로: Get 한 번 = 재계산 최대 한 번
 	local s = Source(1)
 	local runs = 0
-	local d: any
-	d = s:Compute(function(x)
+	local d: any = s:Compute(function(x)
 		runs += 1
+		return x:Get()
+	end)
+	assert(d:Get() == 1 and runs == 1, "one Get, one recompute")
+	s:Set(2)
+	assert(d:Get() == 2 and runs == 2, "an upstream Set: the next Get recomputes once")
+	assert(d:Get() == 2 and runs == 2, "then stable")
+	-- 관측 — 계약 아님: fn 도중의 Set은 UB("Compute 순수성"). 지금은 그 Get이 fn이 계산한 값(한 파동 뒤처짐)을
+	-- 돌려주고, 카운터 쌍(H-85)이 그 무효화를 기억해 다음 Get이 따라잡는다. 옛 루프(H-198)는 같은 Get 안에서
+	-- 재시작했다 — 사용자 결정 2026-10-01 "compute 재시작 루프는 확인, 걷어내고".
+	local s2 = Source(1)
+	local runs2 = 0
+	local d2: any = s2:Compute(function(x)
+		runs2 += 1
 		local v = x:Get()
 		if v == 1 then
-			s:Set(2) -- upstream write DURING recompute
+			s2:Set(2) -- upstream write DURING recompute (UB)
 		end
 		return v
 	end)
-	-- [H-198, 사용자 확정 2026-08-31] 옛 계약("다음 Get이 다시 계산")에서 강화 —
-	-- Get이 루프라 같은 호출 안에서 재시작해 항상 최신으로 수렴한 값을 돌려준다.
-	assert(d:Get() == 2 and runs == 2, "the same Get restarted and returned the converged value")
-	assert(d:Get() == 2 and runs == 2, "then stable")
+	assert(d2:Get() == 1 and runs2 == 1, "observation: the Get returned what fn computed, no restart")
+	assert(d2:Get() == 2 and runs2 == 2, "observation: the next Get caught up (the counter pair kept the invalidation)")
+	assert(d2:Get() == 2 and runs2 == 2, "then stable")
 	-- fn이 던지면 cacheCurrCount가 안 갱신된다 — [round10 Q50 (a), 2026-09-17] 다만 같은 세대의
 	-- 다음 Get은 재진입 에러(스탬프가 남아 있다)이고, 상류가 바뀐 새 세대에서 다시 시도한다
 	-- (옛 계약 "다음 Get이 다시 시도한다"에서 좁힘 — 세부는 spec 14)
@@ -467,63 +479,8 @@ do
 end
 
 print()
-print("=== 16. round13 Q93 (a)·Q98 (a″) (2026-09-29) — 멈췄다 돌아온 계산은 자기 세대일 때만 스탬프를 지우고, 이미 유효한 새 세대 캐시는 덮지 않는다(yield는 UB — 세대당 한 번만 지킨다) ===")
--- [2026-10-01] 내부 가드 회귀 검사 — 계약 아님(yield/재진입 Compute는 UB). 이 절은 `_recompute`의 두 가드가
--- UB 피해를 줄이는 지금의 동작을 지키는 것이고, 사용자에게 약속하는 동작이 아니다(사용자: "필요한게 맞다는걸 봤고.
--- 표기만 잘 해줘"). 동작을 바꿀 때 이 절이 막으면 계약 위반이 아니라 내부 결정의 재검토 신호로 읽을 것.
-do
-	local function mk()
-		local src = Source(0)
-		local st = { runs = 0, park = true }
-		local c = src:Compute(function(self)
-			local v = self:Get()
-			st.runs += 1
-			if st.park and coroutine.isyieldable() then
-				coroutine.yield()
-			end
-			return v * 10
-		end)
-		return src, c, st
-	end
-	-- Q93: A parks in gen 1, upstream moves, B parks in gen 2; A returns — it must NOT erase
-	-- B's stamp (which let gen 2's fn start a second time on top of the parked B)
-	do
-		local src, c, st = mk()
-		local A = coroutine.create(function()
-			return c:Get()
-		end)
-		coroutine.resume(A)
-		src:Set(1)
-		local B = coroutine.create(function()
-			return c:Get()
-		end)
-		coroutine.resume(B)
-		st.park = false
-		local okA, errA = coroutine.resume(A)
-		assert(okA == false and string.find(tostring(errA), "Quad0184", 1, true) ~= nil, "the returning gen-1 read meets gen 2 still parked: Quad0184 (was: gen 2's fn ran again): " .. tostring(errA))
-		assert(st.runs == 2, `gen 2's fn ran once, not twice (runs {st.runs})`)
-		local okB, vB = coroutine.resume(B)
-		assert(okB and vB == 10, "B finishes gen 2: " .. tostring(vB))
-		assert(c:Get() == 10 and st.runs == 2, `later reads use B's cache (runs {st.runs})`)
-	end
-	-- Q98: B finishes gen 2 while A (gen 1) is parked; A returns — its stale result must not
-	-- overwrite gen 2's valid cache (which made the next read run gen 2's fn again)
-	do
-		local src, c, st = mk()
-		local A = coroutine.create(function()
-			return c:Get()
-		end)
-		coroutine.resume(A)
-		src:Set(1)
-		st.park = false
-		assert(c:Get() == 10 and st.runs == 2, "B (main thread) computes gen 2")
-		local okA, vA = coroutine.resume(A)
-		assert(okA and vA == 10, "A's Get loop returns the valid gen-2 value: " .. tostring(vA))
-		assert(c:Get() == 10 and st.runs == 2, `gen 2's fn ran once, not again after A returned (runs {st.runs})`)
-	end
-	print("PASS")
-end
-
+-- [2026-10-01] 16절(round13 Q93·Q98 yield 가드 회귀 검사)은 가드와 함께 지웠다 — 사용자 결정 "yield 쪽 가드는
+-- 드러낸다 동의해". 계산 함수 안의 yield는 UB이고, debug 감지기 (a)가 알린다(17절).
 print()
 print()
 print("=== 17. round13 2026-10-01 — Compute debug 감지기 두 신호(q.debug일 때만 print, 던지지 않음): (b) 계산 함수 도중의 Source:Set/Emit, (a) 옛 실행이 안 돌아왔는데 새 실행 시작; 정상 경로는 0줄 ===")
