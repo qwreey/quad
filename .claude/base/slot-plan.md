@@ -1271,7 +1271,7 @@ fail-fast 톤으로 그 자리에서 막음 — `keyFn` 작성자(주로 위 `it
       계속 쓴다"는 뜻, 실제 마운트/파괴가 없는 **저렴한 경로**. 관용구:
       `if prev and (필터 통과) then ...update ud 안의 Source에 :Set()...;
       return prev, ud end` — 이 갈래에서만 기존 Source를 재사용하며
-      값이 실제로 다를 때만 `:Set()`.
+      값이 실제로 다를 때만 `:Set()`(**[2026-10-01]** `:SetIfChanged(v)`가 같은 일을 한다).
   - `userdata = userdata or {}`류 lazy-init 관용구가 `UD`가 완전히 자유
     제네릭인 상태에서도 Luau 타입 시스템이 매끄럽게 좁혀주는지는 **실측
     필요**(M0/M6 착수 시 확인 항목, 지금 단정 안 함).
@@ -3976,7 +3976,7 @@ state 가 안전히 성립 못해서, Apply 라는 이름을 그대로 쓰지는
   이름이 리시버 타입에 따라 다른 걸 넘기게 된다. `Source<T>`가 `State<T>`를
   **단방향으로만** 만족하므로 그 반대 방향(넘겨받은 게 `Source`임을 보장)은
   안전하게 성립하지 않는다 — 이름을 그대로 재사용할 수가 없음.
-- **확정 형태**: `source:SetAndDispose(value)` — `:Set(value)`와 **한 세트로
+- **확정 형태**(**[2026-10-01 기준] 소스에 아직 없음** — 사용자: 부작용 없는 추가라 지금 일이 끝난 뒤 구현, ROADMAP 백로그): `source:SetAndDispose(value)` — `:Set(value)`와 **한 세트로
   묶인 `Source` 전용 콜론 메서드**. `Set`(언마운트) → 옛 값 `dispose` 순서를
   안에서 수행하므로 호출부가 `Get()`으로 옛 값을 미리 잡아둘 필요가 없다.
 - **`state:Apply`는 손대지 않는다** — 시그니처 영향이 없으므로 M2 착수 전

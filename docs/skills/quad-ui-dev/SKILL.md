@@ -99,7 +99,7 @@ Snippets below assume this prologue.
 
 | Concept | Constructor / Type | Mutability | Key Methods & Rules |
 | :--- | :--- | :--- | :--- |
-| **`Source<T>`** | `q.Source(init)` | Writable root | `:Get()`, `:Set(v)`, `:Emit()`. Propagates synchronously. |
+| **`Source<T>`** | `q.Source(init)` | Writable root | `:Get()`, `:Set(v)`, `:SetIfChanged(v)`, `:Emit()`. Propagates synchronously; `:Set` propagates even an equal value, `:SetIfChanged` skips it. |
 | **`State<T>`** | Return of `:Compute`/`:Apply`/`:Gate` | Read-only derived | `:Get()`, `:Compute(fn, ...deps)`, `:Depend(...)`, `:Apply(f)`, `:Observer(fn)` (see 6.3). |
 | **`Store`** | `q.Store{ key = q.Source(v) }` | Bag of Sources | Reset per field: `store.Field:Set(v)`. |
 | **`Context`** | `q.Context()` | Explicit value bag | Keys are `q.Context.Provider(name?)`. Passed through props — no tree walk. |
@@ -115,7 +115,10 @@ Snippets below assume this prologue.
 `source:Set(v)` has **no `==` dedup**: it always bumps the revision and propagates, even for an equal value
 (deduplication is the downstream's call). Re-`:Set`ting the same table after mutating it in place works; so does
 mutating in place and calling `:Emit()`, which signals without replacing the value (Sources only — a derived
-`State` has no `:Emit`).
+`State` has no `:Emit`). The opt-in comparing write is `source:SetIfChanged(v)`: when `v == current` (Luau `==`, a
+shared `__eq` decides; NaN always writes) it does nothing — no revision, no propagation — otherwise it is `:Set(v)`;
+returns self either way. Use it only where a feedback loop must be cut (an `Effect` trimming its own dep, an
+engine → Source bridge, an input handler); an Observer writing its own upstream stays undefined even with it (rule: `reference/core/05` "final consumer").
 
 Values that belong in the **array part** of a props table, never as hash keys:
 `Ref`/`PreRef`/`PostRef`, `Observer`, `Effect`, `Slot`, `Modifier`, `Tag`, `Attr`,
@@ -147,7 +150,7 @@ end, lastName)
 A `:Compute` fn only reads and combines: it never `:Set`s/`:Emit`s any Source and never yields — both are
 undefined behavior (reactive callbacks do not yield mid-wave and do not feed their own inputs back where nothing
 untangles the wave; the one defined exception is an `Effect` setting its own dependency, which re-runs once after
-`fn` returns — set only when the value differs, since a Source propagates an equal value too; a loop that re-runs
+`fn` returns — write it with `:SetIfChanged(v)` (no-op when `==` the current value), since `:Set` propagates an equal value too; a loop that re-runs
 more than 10,000 times stops with `Quad0263`, debug or not). With `q.debug = true` a write during a Compute fn and a new run over a parked one each print a warning.
 
 `state:Depend(...)` is supported (it mints one extra node that passes the receiver's value through and

@@ -144,7 +144,7 @@
 TextBox { Text = textSrc, Out("Text", textSrc) }
 ```
 
-- **구현**: `Handlers/OnChange.luau`의 `Out`은 `OnChange(name, function(v) if v ~= src:Get() then src:Set(v) end end)`를 돌려주는 팩토리다 —
+- **구현**: `Handlers/OnChange.luau`의 `Out`은 `OnChange(name, function(v) src:SetIfChanged(v) end)`를 돌려주는 팩토리다(**[2026-10-01]** 옛 손 비교 `if v ~= src:Get() then src:Set(v) end`를 같은 `==`의 새 메서드로 바꿈 — `source-state-plan.md` `H-68` 절 끝 문단) —
   새 브랜드·핸들러 없음, 이 문서의 핸들러 계약 무변경. `RobloxExtension.Out`으로 실린다.
 - **이름 `Out`**(사용자 *"권고대로"*): 외부자·내부자 탐사 둘이 수렴(`archive/surveys/2026-09-21-writeback-naming-exploration.md`) — `Bind`는
   `bindLifetime` 핵심 어휘와 충돌하고 "한 줄이면 양방향"이라는 틀린 멘탈 모델을 심는다, `Out`은 Fusion의 같은 역할 이름과 뜻이 같다.

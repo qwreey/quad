@@ -219,6 +219,8 @@ export type State<T> = StateData<T> & {
 export type Source<T> = State<T> & {
 	read Revision: number,
 	Set: (self: Source<T>, v: T) -> Source<T>,
+	-- 2026-10-01 (사용자 결정): `v == 현재 값`(Luau `==`, 공유 `__eq`)이면 아무것도 안 함, 다르면 `Set`과 같다 — self 반환
+	SetIfChanged: (self: Source<T>, v: T) -> Source<T>,
 	Emit: (self: Source<T>) -> Source<T>,
 }
 

@@ -286,8 +286,8 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 ### Quad0263
 
-`Effect: fn re-ran 10000 times in one loop - the fn keeps setting one of its own deps (a Source propagates even an equal value; set only when the value differs)` — `quad-base/src/Effect.luau`
+`Effect: fn re-ran 10000 times in one loop - the fn keeps setting one of its own deps (Source:Set propagates even an equal value; write with Source:SetIfChanged to skip it)` — `quad-base/src/Effect.luau`
 
-- **언제**: `Effect`의 지연 재실행이 한 번의 반복 안에서 1만 번 넘게 돌았을 때 — `fn`이 자기 의존성을 계속 `:Set`해 끝나지 않는 경우입니다. 이 한도는 늘 켜져 있습니다([`q.debug`](/reference/core/01-quad-module/#qdebug)와 무관 — 1만 회 전까지의 재실행은 정의된 동작입니다). 첫 실행이든, 구독한 뒤 어떤 `:Set`이 깨운 실행이든 같습니다. `Source`는 같은 값을 다시 넣어도 전파하므로 조건 없이 같은 값을 되쓰는 `fn`이 가장 흔한 원인입니다. **[2026-10-01 기준]** 게시된 3.2.0에는 이 한도가 없어 같은 코드가 에러 없이 끝나지 않습니다. 에러는 첫 실행이면 `q.Effect` 줄, 이후 실행이면 반복을 시작한 `:Set` 줄을 가리킵니다.
-- **고치려면**: 값이 실제로 다를 때만 되쓰세요(`if v ~= c then dep:Set(c) end`). 이 에러가 난 `Effect`는 `fn`이 던진 것과 같이 멈추므로, 고친 뒤에는 새 `Effect`를 만드세요.
-- **참고**: [`q.Effect(fn, ...deps)`](/reference/core/05-observer-effect/#qeffectfn-deps)
+- **언제**: `Effect`의 지연 재실행이 한 번의 반복 안에서 1만 번 넘게 돌았을 때 — `fn`이 자기 의존성을 계속 `:Set`해 끝나지 않는 경우입니다. 이 한도는 늘 켜져 있습니다([`q.debug`](/reference/core/01-quad-module/#qdebug)와 무관 — 1만 회 전까지의 재실행은 정의된 동작입니다). 첫 실행이든, 구독한 뒤 어떤 `:Set`이 깨운 실행이든 같습니다. `source:Set`은 같은 값을 다시 넣어도 전파하므로 조건 없이 같은 값을 되쓰는 `fn`이 가장 흔한 원인입니다. **[2026-10-01 기준]** 게시된 3.2.0에는 이 한도가 없어 같은 코드가 에러 없이 끝나지 않습니다. 에러는 첫 실행이면 `q.Effect` 줄, 이후 실행이면 반복을 시작한 `:Set` 줄을 가리킵니다.
+- **고치려면**: 되쓰기를 [`dep:SetIfChanged(c)`](/reference/core/02-source/#sourcesetifchangedv)로 하세요 — 값이 같으면(`==`) 아무것도 하지 않아 반복이 끝납니다. 이 에러가 난 `Effect`는 `fn`이 던진 것과 같이 멈추므로, 고친 뒤에는 새 `Effect`를 만드세요.
+- **참고**: [`q.Effect(fn, ...deps)`](/reference/core/05-observer-effect/#qeffectfn-deps), [`source:SetIfChanged(v)`](/reference/core/02-source/#sourcesetifchangedv)

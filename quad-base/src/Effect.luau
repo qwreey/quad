@@ -127,7 +127,7 @@ local function createImpl(module: any)
 			count += 1
 			if count > RERUN_LIMIT then
 				Err.errorBefore(
-					`Quad0263 Effect: fn re-ran {RERUN_LIMIT} times in one loop - the fn keeps setting one of its own deps (a Source propagates even an equal value; set only when the value differs)`,
+					`Quad0263 Effect: fn re-ran {RERUN_LIMIT} times in one loop - the fn keeps setting one of its own deps (Source:Set propagates even an equal value; write with Source:SetIfChanged to skip it)`,
 					SURFACE
 				)
 			end

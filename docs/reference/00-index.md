@@ -40,6 +40,7 @@ quad 모듈 인스턴스를 만들고, 초기화 함수·플러그인·백엔드
 |---|---|
 | `q.Source(value)` | [core/02 — Source](./core/02-source.md) |
 | `source:Set(v)` | [core/02](./core/02-source.md) |
+| `source:SetIfChanged(v)` | [core/02](./core/02-source.md) |
 | `source:Emit()` | [core/02](./core/02-source.md) |
 | `source.Revision` | [core/02](./core/02-source.md) |
 | `state:Get()` | [core/03 — State](./core/03-state.md) |

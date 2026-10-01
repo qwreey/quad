@@ -83,7 +83,7 @@ end
 -- on a same-value re-assignment — `audit/studio-docs-2026-09-10.md` A절) but ECHO protection: the array
 -- part connects before the hash part writes, so the initial `Text = src` write reaches this callback with
 -- the value `src` already holds, and `Source:Set` emits even for an equal value (`H-68`) — every subscriber
--- of `src` would re-run once per bind. `Get` on a Source is a plain field read (no ambient tracking).
+-- of `src` would re-run once per bind. Hence `Source:SetIfChanged` (no write, no emit when `==`).
 local isSource: ((any) -> boolean)? = nil
 local isState: ((any) -> boolean)? = nil
 local function Out(name: string, src: any): OnChangeDescriptor
@@ -95,9 +95,7 @@ local function Out(name: string, src: any): OnChangeDescriptor
 		errNS.errorBeforeNearest(`Quad0224 Out: second argument for "{name}" must be a Source to write back into (got {got})`, SURFACE)
 	end
 	return OnChange(name, function(v: any)
-		if v ~= src:Get() then
-			src:Set(v)
-		end
+		src:SetIfChanged(v) -- the echo skip above (2026-10-01: the opt-in comparing write, same `==`)
 	end)
 end
 

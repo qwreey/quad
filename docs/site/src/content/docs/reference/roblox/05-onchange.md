@@ -160,7 +160,7 @@ local box = D.TextBox({
 
 **동작**
 
-- 신호가 올 때 새 값이 `src:Get()`과 **같으면 `:Set`하지 않습니다.** 왕복을 끊기 위해서가 아닙니다 — 엔진은 같은 값을 다시 대입해도
+- 신호가 올 때 새 값이 `src:Get()`과 **같으면 쓰지 않습니다** — 되쓰기가 [`src:SetIfChanged(v)`](/reference/core/02-source/#sourcesetifchangedv)입니다. 왕복을 끊기 위해서가 아닙니다 — 엔진은 같은 값을 다시 대입해도
   변경 신호를 내지 않아 `Source → 프로퍼티 → 신호 → Source` 고리는 저절로 멈춥니다. 건너뛰는 이유는 **메아리**입니다: 숫자 키가 문자 키보다
   먼저 처리되므로 `Text = text`의 첫 쓰기가 이미 연결된 이 콜백에 닿는데, `Source:Set`은 같은 값에도 늘 전파하므로([`source:Set(v)`](/reference/core/02-source/#sourcesetv)) 건너뛰지 않으면
   `text`의 모든 구독자가 바인딩마다 한 번 더 헛돕니다.
@@ -181,7 +181,7 @@ local box = D.TextBox({
 :::
 
 :::caution
-위 충돌 이름 여섯(`CanvasSize`/`Color`/`Offset`/`Padding`/`Style`/`Transparency`)에서는 [2026-09-26 기준] **올바른 `Source`도 타입에서 거부됩니다**(거짓 양성 — 처방 검토 중, 실측으로 확인됨). 그동안은 `q.OnChange(name, function(v) if v ~= src:Get() then src:Set(v) end end)`로 손으로 되쓰세요(같은 값 비교는 위 "동작"의 메아리 건너뛰기 — 빼면 바인딩마다 구독자가 한 번 더 돌고, 같은 값 대입에도 신호를 내는 환경(mock)에서는 무한 재귀합니다 — [2026-09-27 mock 실측]). 또 `Source<T?>`(nilable)는 어느 이름에서도 `q.Out`에 들어가지 않습니다(쓰기 표면이 `non-nil`이라 — `Adornee`처럼 nilable을 되쓰고 싶으면 이 우회를 쓰세요).
+위 충돌 이름 여섯(`CanvasSize`/`Color`/`Offset`/`Padding`/`Style`/`Transparency`)에서는 [2026-09-26 기준] **올바른 `Source`도 타입에서 거부됩니다**(거짓 양성 — 처방 검토 중, 실측으로 확인됨). 그동안은 `q.OnChange(name, function(v) src:SetIfChanged(v) end)`로 손으로 되쓰세요(`SetIfChanged`의 같은 값 건너뛰기는 위 "동작"의 메아리 건너뛰기 — 빼면 바인딩마다 구독자가 한 번 더 돌고, 같은 값 대입에도 신호를 내는 환경(mock)에서는 무한 재귀합니다 — [2026-09-27 mock 실측]). 또 `Source<T?>`(nilable)는 어느 이름에서도 `q.Out`에 들어가지 않습니다(쓰기 표면이 `non-nil`이라 — `Adornee`처럼 nilable을 되쓰고 싶으면 이 우회를 쓰세요).
 :::
 
 ---

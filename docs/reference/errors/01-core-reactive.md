@@ -235,9 +235,9 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 `Source: cannot Set a Modifier as a Source value` — `quad-base/src/Source.luau`
 
-- **언제**: `source:Set(v)`의 `v`로 `Modifier`(`:Apply`용 값)를 넘겼을 때 — `Source`/`State`는 값 자리에 `Modifier`를 담을 수 없습니다.
+- **언제**: `source:Set(v)`나 `source:SetIfChanged(v)`의 `v`로 `Modifier`(`:Apply`용 값)를 넘겼을 때(`SetIfChanged`는 값을 비교하기 전에 검사하므로 같든 다르든 납니다) — `Source`/`State`는 값 자리에 `Modifier`를 담을 수 없습니다.
 - **고치려면**: `Modifier`가 아닌 실제 값을 `Set`하세요. `Modifier`는 `:Apply`에 넘기는 것입니다.
-- **참고**: [`source:Set(v)`](../core/02-source.md#sourcesetv)
+- **참고**: [`source:Set(v)`](../core/02-source.md#sourcesetv), [`source:SetIfChanged(v)`](../core/02-source.md#sourcesetifchangedv)
 
 ### Quad0182
 

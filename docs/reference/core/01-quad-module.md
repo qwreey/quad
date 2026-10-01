@@ -189,7 +189,7 @@ debug: boolean
 위 넷은 그 호출 시점에 한 번 보므로 `q.debug`는 먼저 켜 두세요. 아래 넷은 값이 처리되거나 쓰일 때마다 보므로 켜는 시점은 상관없습니다(켠 뒤의 실행부터 봅니다).
 
 - 배열 원소로만 쓰이는 quad 값(`Ref`/`PreRef`/`PostRef`·`Observer`·`Effect`·`Slot`·`Tag`·`Attr`)이 props의 **문자 키**에 놓였을 때(어느 문자 키든 — 특히 반영 프로퍼티·이벤트 이름이면 거절되지 않고 프로퍼티·이벤트 핸들러가 그 값을 받아 가던 자리입니다). 같은 요소·키는 한 번만 알립니다. quad가 등록한 [`debugOnly`](../extend/02-dispatch-handler-contract.md#handler-레코드) 진단 필터가 찍습니다.
-- `:Compute` 계산 함수가 도는 도중(그 함수가 부른 것 안 포함) `Source:Set`/`:Emit`이 불렸을 때 — `Source: Set/Emit inside a Compute fn - …`. 같은 `Source`는 한 번만 알립니다(계약은 [`state:Compute`](./03-state.md#statecomputefn-deps) — 계산 함수는 읽어서 조합할 뿐 아무것도 `:Set`하지 않습니다).
+- `:Compute` 계산 함수가 도는 도중(그 함수가 부른 것 안 포함) `Source:Set`/`:Emit`이 불렸을 때(`:SetIfChanged`는 실제로 쓸 때) — `Source: Set/Emit inside a Compute fn - …`. 같은 `Source`는 한 번만 알립니다(계약은 [`state:Compute`](./03-state.md#statecomputefn-deps) — 계산 함수는 읽어서 조합할 뿐 아무것도 `:Set`하지 않습니다).
 - 같은 노드의 앞선 계산이 다른 코루틴에서 멈춘 채(계산 함수 안 yield) 새 계산이 시작될 때 — `State: Compute fn entered while an earlier run of this node has not returned - …`. 던져서 끝난 계산은 정해진 회복 경로라 알리지 않습니다.
 - `state:Observer(fn)`의 콜백이 도는 도중 같은 핸들에 실행할 변경이 다시 도착했을 때 — 콜백이 자기 상류를 되먹였다는 뜻입니다: `Observer: a change reached this Observer while its own fn was running - …`. 핸들마다 한 번만 알립니다. 규칙과 정의된 예외는 [`state:Observer`](./05-observer-effect.md#stateobserverfn)의 "Observer는 최종 소비자" 문단 — 예외 경로와 quad가 내부에서 쓰는 Observer는 알리지 않습니다.
 

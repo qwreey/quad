@@ -1,10 +1,10 @@
 ---
 title: Source
-description: 값을 직접 쓸 수 있는 반응형 루트 노드 — Set/Emit/Revision, 그리고 State 메소드 전부
+description: 값을 직접 쓸 수 있는 반응형 루트 노드 — Set/SetIfChanged/Emit/Revision, 그리고 State 메소드 전부
 ---
 `Source`는 **값을 직접 쓸 수 있는 유일한 반응형 노드**입니다. 파생 노드인 [`State`](/reference/core/03-state/)는 읽기 전용이고, 전파는 언제나 어떤 `Source`의 `:Set`/`:Emit`에서 시작합니다.
 
-이 페이지의 심볼: [`q.Source(v)`](#qsourcev) · [`source:Set(v)`](#sourcesetv) · [`source:Emit()`](#sourceemit) · [`source.Revision`](#sourcerevision) · [Source가 물려받는 State 메소드](#source가-물려받는-state-메소드)
+이 페이지의 심볼: [`q.Source(v)`](#qsourcev) · [`source:Set(v)`](#sourcesetv) · [`source:SetIfChanged(v)`](#sourcesetifchangedv) · [`source:Emit()`](#sourceemit) · [`source.Revision`](#sourcerevision) · [Source가 물려받는 State 메소드](#source가-물려받는-state-메소드)
 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
@@ -25,6 +25,7 @@ Source: <T>(v: T) -> Source<T>
 export type Source<T> = State<T> & {
 	read Revision: number,
 	Set: (self: Source<T>, v: T) -> Source<T>,
+	SetIfChanged: (self: Source<T>, v: T) -> Source<T>,
 	Emit: (self: Source<T>) -> Source<T>,
 }
 ```
@@ -73,7 +74,7 @@ Set: (self: Source<T>, v: T) -> Source<T>
 
 **동작**
 
-- **같은 값을 다시 넣어도 언제나 리비전을 올리고 전파합니다.** 값 비교로 중복을 죽이지 않습니다 — 중복 제거는 하류의 판단이고(에폭 판정·게이트), `==` 비교는 테이블을 제자리에서 고친 변경을 조용히 삼켜버리기 때문입니다.
+- **같은 값을 다시 넣어도 언제나 리비전을 올리고 전파합니다.** 값 비교로 중복을 죽이지 않습니다 — 중복 제거는 하류의 판단이고(에폭 판정·게이트), `==` 비교는 테이블을 제자리에서 고친 변경을 조용히 삼켜버리기 때문입니다. 값이 같으면 쓰기를 건너뛰는 프레임워크에서 오셨다면 기대가 반대일 수 있습니다 — 같은 값을 무시하려면 [`:SetIfChanged(v)`](#sourcesetifchangedv)를 쓰세요.
 - `:Get()`은 넣은 참조를 그대로 돌려줍니다(사본이 아닙니다). 테이블을 담아 두고 제자리에서 고쳤다면 [`:Emit()`](#sourceemit)으로 신호만 보내면 됩니다.
 - Modifier를 넣으면 `Quad0181 Source: cannot Set a Modifier as a Source value`
 - 전파를 받는 하류(파생 State·Observer·Effect)끼리의 **순서는 정해져 있지 않습니다** — 등록 순서도 아닙니다.
@@ -84,6 +85,50 @@ Set: (self: Source<T>, v: T) -> Source<T>
 local hp = q.Source(100)
 hp:Set(80):Set(60) -- self를 돌려주므로 이어 쓸 수 있다
 print(hp:Get()) --> 60
+```
+
+---
+
+## `source:SetIfChanged(v)`
+
+> **[2026-10-01 기준]** `:SetIfChanged`는 게시된 3.2.0에는 없습니다 — 다음 릴리즈부터([변경 이력](/changelog/) `[Unreleased]`). 그전엔 `if v ~= src:Get() then src:Set(v) end`가 같은 일을 합니다.
+
+**시그니처**
+
+```luau
+SetIfChanged: (self: Source<T>, v: T) -> Source<T>
+```
+
+**인자**
+
+| 이름 | 타입 | 설명 |
+|---|---|---|
+| `v` | `T` | 새 값. Modifier는 거부됩니다(`:Set`과 같은 검사). |
+
+**반환** — `self`(체이닝 가능). 값을 실제로 썼는지와 상관없이 같습니다 — 썼는지가 궁금하면 `if v ~= src:Get() then src:Set(v) end`로 풀어 쓰면 됩니다.
+
+**동작**
+
+- `v == 현재 값`이면 **아무것도 하지 않습니다** — 값도 [`Revision`](#sourcerevision)도 그대로이고 하류에 아무것도 전파하지 않습니다. 다르면 [`:Set(v)`](#sourcesetv)과 똑같습니다.
+- 비교는 Luau의 `==` 그대로입니다. 테이블은 참조로 비교하므로 제자리에서 고친 테이블을 다시 넣으면 "같다"로 보고 건너뜁니다 — 그때는 [`:Emit()`](#sourceemit)을 쓰세요. 두 값이 **같은 `__eq` 메타메서드**를 가지면 그 메타메서드가 같음을 정합니다(값 객체가 자기 뜻대로 같음을 정의할 수 있습니다; 메타메서드가 서로 다르면 Luau는 그것을 부르지 않고 다르다고 봅니다).
+- `NaN`은 자기 자신과 같지 않으므로 `NaN`을 넣으면 늘 씁니다.
+- 값 검사는 비교보다 **먼저** 합니다 — Modifier를 넣으면 현재 값과 같든 다르든 `Quad0181 Source: cannot Set a Modifier as a Source value`.
+- [`q.Store`](/reference/core/04-store/)의 필드도 `Source`이므로 `store.hp:SetIfChanged(v)`처럼 그대로 씁니다.
+
+**쓰는 자리** — 기본은 `:Set`이고, 이 메서드는 **되먹임 고리를 끊어야 하는 좁은 자리**를 위한 것입니다.
+
+- [`Effect`](/reference/core/05-observer-effect/#qeffectfn-deps)가 자기 의존성을 다듬어 되쓸 때 — `:Set`으로 쓰면 같은 값도 전파해 지연 재실행이 끝나지 않고 1만 회에서 `Quad0263`으로 멈춥니다. `:SetIfChanged`면 값이 자리 잡는 순간 반복이 끝납니다.
+- 엔진 → `Source` 브릿지와 입력 핸들러 — 프로퍼티 변경 신호나 입력 이벤트가 이미 들고 있는 값을 다시 올려 보낼 때. [`q.Out`](/reference/roblox/05-onchange/#qoutname-src)이 안에서 이것으로 되씁니다.
+- Observer 콜백이 **자기 상류**를 되쓰는 것은 이 메서드를 써도 여전히 정의되지 않은 동작입니다 — [`state:Observer(fn)`](/reference/core/05-observer-effect/#stateobserverfn)의 "Observer는 최종 소비자입니다" 문단이 정본입니다.
+
+**예제**
+
+```luau
+local hp = q.Source(120)
+q.Effect(function()
+	hp:SetIfChanged(math.clamp(hp:Get(), 0, 100)) -- 100으로 자리 잡으면 더 쓰지 않는다
+end, hp)
+print(hp:Get()) --> 100
 ```
 
 ---
@@ -123,7 +168,7 @@ read Revision: number
 
 **동작**
 
-- `:Set`/`:Emit`이 일어날 때마다 바뀌는 **불투명한 표식**입니다. 하류는 "이 값을 마지막으로 본 뒤에 움직였는가"를 이 값의 **일치/불일치**로만 판정합니다.
+- `:Set`/`:Emit`이 일어날 때마다(`:SetIfChanged`는 실제로 쓸 때만) 바뀌는 **불투명한 표식**입니다. 하류는 "이 값을 마지막으로 본 뒤에 움직였는가"를 이 값의 **일치/불일치**로만 판정합니다.
 - 크고 작음을 비교하지 마세요 — 갱신 방향은 계약이 아니며 32비트 범위를 순환합니다. 저장해 둔 값과 같으면 그 사이 아무 일도 없었다는 뜻, 다르면 움직였다는 뜻, 그게 전부입니다.
 - 갓 만든 `Source`의 값은 `0`입니다.
 

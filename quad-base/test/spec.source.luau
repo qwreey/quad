@@ -98,4 +98,127 @@ do
 end
 
 print()
+print("=== 7. :SetIfChanged (2026-10-01 사용자 결정) — `==`면 무동작(리비전·통지 없음), 다르면 Set과 같음, self 반환 ===")
+do
+	local mock = require("./mock")
+	local dq = mock.newQuad()
+	-- a. same value: nothing — no revision, no notification; returns self
+	local s = dq.Source(1 :: any)
+	local fires = 0
+	local obs = s:Observer(function()
+		fires += 1
+	end):Subscribe()
+	assert(fires == 1, "observer baseline")
+	local r0 = s.Revision
+	assert(s:SetIfChanged(1) == s, "returns self when it does not write")
+	assert(s.Revision == r0 and fires == 1, "equal value: no revision bump, no notification")
+	-- b. different value: exactly Set (value, revision step, one notification)
+	assert(s:SetIfChanged(2) == s, "returns self when it writes")
+	assert(s:Get() == 2 and s.Revision ~= r0 and fires == 2, "different value: Set's write")
+	-- chain (same shape as Set)
+	s:SetIfChanged(2):SetIfChanged(3)
+	assert(s:Get() == 3 and fires == 3, "chain: the equal call is a no-op, the next one writes")
+	-- c. Set itself is unchanged (H-68): an equal value still propagates
+	s:Set(3)
+	assert(fires == 4, "Set still propagates an equal value")
+	local _ = obs
+
+	-- d. Luau `==`: a shared `__eq` decides (user: "의도에 맞게 override 될 수 있거든")
+	local byId = { __eq = function(x: any, y: any): boolean
+		return x.id == y.id
+	end }
+	local a1 = setmetatable({ id = 1, n = 1 }, byId)
+	local a2 = setmetatable({ id = 1, n = 2 }, byId)
+	local t = dq.Source(a1 :: any)
+	local rt = t.Revision
+	t:SetIfChanged(a2)
+	assert(rawequal(t:Get(), a1) and t.Revision == rt, "__eq says equal: skipped (the old reference stays)")
+	local a3 = setmetatable({ id = 2 }, byId)
+	t:SetIfChanged(a3)
+	assert(rawequal(t:Get(), a3) and t.Revision ~= rt, "__eq says different: written")
+	-- a different `__eq` on each side is not called by Luau — they compare unequal and the write happens
+	local other = setmetatable({ id = 2 }, { __eq = function(): boolean
+		return true
+	end })
+	local rt2 = t.Revision
+	t:SetIfChanged(other)
+	assert(rawequal(t:Get(), other) and t.Revision ~= rt2, "mismatched __eq: unequal, written")
+	-- an in-place-mutated table is the same reference → skipped (that is what :Emit is for)
+	local live = { n = 1 }
+	local m = dq.Source(live)
+	local rm = m.Revision
+	live.n = 2
+	m:SetIfChanged(live)
+	assert(m.Revision == rm, "same reference after in-place mutation: skipped")
+
+	-- e. NaN is never equal to itself → always written
+	local nan = 0 / 0
+	local ns = dq.Source(nan)
+	local rn = ns.Revision
+	ns:SetIfChanged(nan)
+	assert(ns.Revision ~= rn, "NaN always writes")
+
+	-- f. the value gate runs FIRST and raises Set's error, blaming the user line — even when `==` would say equal
+	local alwaysEq = { __eq = function(): boolean
+		return true
+	end }
+	local cur = setmetatable({}, alwaysEq)
+	local mod = setmetatable({}, alwaysEq)
+	Brand.ModifierBrand:Register(mod)
+	local g = dq.Source(cur :: any)
+	assert((mod :: any) == cur, "precondition: the Modifier compares equal to the current value")
+	local okS, errS = pcall(function()
+		g:Set(mod :: any)
+	end)
+	local okC, errC = pcall(function()
+		g:SetIfChanged(mod :: any)
+	end)
+	assert(not okS and not okC, "both reject a Modifier")
+	local function body(e: any): string
+		local str = tostring(e)
+		return string.sub(str, (string.find(str, "Quad0181", 1, true) or 1))
+	end
+	assert(body(errC) == body(errS) and string.find(body(errC), "Quad0181 Source: cannot Set a Modifier", 1, true) == 1, "same error as Set: " .. tostring(errC))
+	mock.assertBlamesUser(errC, "spec.source.luau", "SetIfChanged Modifier blame")
+	assert(rawequal(g:Get(), cur), "value untouched after the rejected call")
+
+	-- g. an error raised deep in the wave blames the SetIfChanged caller line, as with Set (H-330)
+	local slot = dq.Slot({ mock.Instance.new("Frame") })
+	dq.Dispatch.drive(mock.Instance.new("Frame"), { slot })
+	local seat = dq.Source(nil :: any)
+	dq.Dispatch.drive(mock.Instance.new("Frame"), { seat })
+	local okW, errW = pcall(function()
+		seat:SetIfChanged(slot) -- second mount of the same Slot → SlotHandler raises inside the wave
+	end)
+	assert(not okW and string.find(tostring(errW), "already mounted", 1, true) ~= nil, "wave error surfaces: " .. tostring(errW))
+	mock.assertBlamesUser(errW, "spec.source.luau", "wave-depth error blames the SetIfChanged line")
+
+	-- h. an Effect trimming its own dep converges with SetIfChanged; the same shape with Set hits Quad0263
+	local hp = dq.Source(120)
+	local runs = 0
+	dq.Effect(function()
+		runs += 1
+		hp:SetIfChanged(math.clamp(hp:Get(), 0, 100))
+	end, hp)
+	assert(hp:Get() == 100 and runs == 2, "converges: one trimming re-run, then the equal write is a no-op (" .. runs .. ")")
+	local hp2 = dq.Source(120)
+	local okL, errL = pcall(function()
+		dq.Effect(function()
+			hp2:Set(math.clamp(hp2:Get(), 0, 100))
+		end, hp2)
+	end)
+	assert(not okL and string.find(tostring(errL), "Quad0263", 1, true) ~= nil, "Set in the same shape never settles: " .. tostring(errL))
+	assert(string.find(tostring(errL), "SetIfChanged", 1, true) ~= nil, "Quad0263 points at SetIfChanged: " .. tostring(errL))
+
+	-- i. a Store field is a Source — the method is there as-is
+	local store = dq.Store({ hp = dq.Source(5) })
+	local rs = store.hp.Revision
+	store.hp:SetIfChanged(5)
+	assert(store.hp.Revision == rs, "Store field: equal value skipped")
+	store.hp:SetIfChanged(6)
+	assert(store.hp:Get() == 6 and store.hp.Revision ~= rs, "Store field: different value written")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

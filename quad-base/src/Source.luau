@@ -10,7 +10,8 @@
 	Sources, as-is:
 	  - `.claude/base/source-state-plan.md` "State는 쓰기 대상이 아님 —
 	    확정, Source는 독립 공개 프리미티브로 격상" (`Source(default)`),
-	    "`Source:Set(v)`는 동일값이어도 항상 갱신하고 emit한다" (`H-68`),
+	    "`Source:Set(v)`는 동일값이어도 항상 갱신하고 emit한다" (`H-68`; its 2026-10-01
+	    paragraph adds the opt-in `:SetIfChanged(v)`),
 	    "Source 값을 직접 mutate한 뒤 전파 — `:Emit()`" (root only),
 	    "따름정리 — `Store<T>`/`Source<T>`의 `T`는 Modifier가 될 수 없음".
 	  - `.claude/base/modifier-plan.md` 7번: `isModifier` guard at the
@@ -93,15 +94,36 @@ local function Init(module: any)
 		return bumpAndEmit(self)
 	end
 
+	-- The value gate shared by `Set` and `SetIfChanged` — an UNTAGGED local, so the Nearest walk
+	-- skips it and lands on whichever tagged surface (`Set`/`SetIfChanged`) the user called.
+	local function checkSettable(value: any)
+		if isModifier(value) then
+			Err.errorBeforeNearest("Quad0181 Source: cannot Set a Modifier as a Source value", SURFACE)
+		end
+	end
+
 	-- `H-68`: same value still bumps the revision and emits — dedup is the
 	-- downstream's job (EpochMap judgement, gates), and `==` would silently
 	-- drop in-place table mutations.
 	function Impl.Set(self: any, value: any): any
-		if isModifier(value) then
-			Err.errorBeforeNearest("Quad0181 Source: cannot Set a Modifier as a Source value", SURFACE)
-		end
+		checkSettable(value)
 		self._value = value
 		return bumpAndEmit(self) -- direct local call (`H-207`/`H-330`), not colon delegation
+	end
+
+	-- 2026-10-01 (user decision, `source-state-plan.md` `H-68` 절 끝): the opt-in comparing write —
+	-- for the narrow spots that must cut a feedback loop. `Set` stays unconditional; this one does
+	-- nothing (no revision, no emit) when `value == current` by Luau `==` (so a shared `__eq`
+	-- metamethod decides; NaN is never equal to itself, so it always writes). The value gate runs
+	-- FIRST — a bad value raises the same error whether or not it would compare equal. Returns self
+	-- either way (same chain as `Set`; a caller that needs "did it write" spells the compare out).
+	function Impl.SetIfChanged(self: any, value: any): any
+		checkSettable(value)
+		if value == self._value then
+			return self
+		end
+		self._value = value
+		return bumpAndEmit(self) -- direct local call, as in `Set`
 	end
 
 	function Impl._track(self: any, map: any)
@@ -123,7 +145,7 @@ local function Init(module: any)
 	end
 
 	-- `H-231`: public surface joins the shared error-namespace tag layer
-	Err.setFuncLevel(SURFACE, Impl.Get, Impl.Emit, Impl.Set, Source)
+	Err.setFuncLevel(SURFACE, Impl.Get, Impl.Emit, Impl.Set, Impl.SetIfChanged, Source)
 
 	module.Source = Source
 end

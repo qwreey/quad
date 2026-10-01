@@ -184,6 +184,19 @@ do
 	mock.assertBlamesUser(errV, SPEC_FILE, "Out(name, 5)")
 	local okS, errS = pcall(function() return q.Out("Text", src:Compute(function(s) return s:Get() end)) end)
 	assert(not okS and string.find(errS, "read-only State", 1, true) ~= nil, "a :Compute State is named as read-only: " .. tostring(errS))
+	-- 2026-10-01: the write is `src:SetIfChanged(v)` now (was a hand-written `if v ~= src:Get() then src:Set(v) end`).
+	-- An error raised deep in the wave that write starts still blames that write line inside the Out callback —
+	-- the same frame the old `src:Set(v)` line was (both are tagged surfaces; probe-compared against the old body).
+	local slot = q.Slot({ q.Declaration.Frame({}) })
+	q.Declaration.Frame({ slot })
+	local seat = q.Source(nil :: any)
+	q.Declaration.Frame({ seat })
+	local dOut = q.Out("Text", seat :: any)
+	local okW, errW = pcall(function()
+		dOut.Callback(slot) -- as the engine would call it; the Slot is already mounted → Quad0160 inside the wave
+	end)
+	assert(not okW and string.find(tostring(errW), "Quad0160", 1, true) ~= nil, "wave error surfaces: " .. tostring(errW))
+	assert(string.find(tostring(errW), "OnChange.luau:", 1, true) ~= nil, "blames the Out callback's write line: " .. tostring(errW))
 	print("PASS")
 end
 
