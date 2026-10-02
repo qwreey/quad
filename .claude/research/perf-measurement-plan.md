@@ -26,6 +26,7 @@ CLI mock 수치는 **산술(호출 수·할당)**만 믿고, 프레임 시간·�
 
 - 반복 가능한 스위트 `bench/`(가칭, 레포 루트 — 이름·위치는 §4 문항): 시나리오 하나가 파일 하나, CLI에서 `luau bench/<x>.luau`, Studio에서는 rojo로 `ServerScriptService`/`StarterPlayerScripts`에 싱크해 같은 파일을 돈다(`audit/d-factory-studio-probe-2026-09-16/probe.project.json` 관용구).
 - 결과는 `audit/perf-<날짜>/REPORT.md`에 회차별로(기기·버전·수치). 표로 정리되면 오버뷰 01 §8과 레퍼런스 어딘가에 링크.
+- **[2026-10-02] CLI 실행의 메모리 예산·분절 규칙은 `conventions.md`의 "벤치·퍼저·성능 실측처럼 메모리를 크게 쓰는 실행은" 절이 소스**(여기 복제하지 않는다). 이 계획에 걸리는 귀결 하나: P1(대량 마운트)·P6(GC 잔존)은 "시나리오 하나·N 하나 = 프로세스 하나" — 그 안을 나눠 돌리면 측정 의미가 깨진다.
 - 비교 대상(v1 2.x 같은 화면, Fusion/Vide)은 §4에서 정한 뒤에만. v1은 `/code/Projects/quad-v1` worktree에 있다.
 
 ## 4. 사용자가 정할 것
