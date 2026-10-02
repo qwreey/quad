@@ -46,7 +46,7 @@ sonnet·opus는 같은 베이스 모델에서 증류된 계열이라 어휘·선
    .claude/tools/agy-delegate.sh run <이름> <프롬프트 파일> [--model gemini-3.8-flash-high] [--timeout 3600]
    ```
 
-   사용자 판단으로 agy 토큰 한도는 널널하니, 쓰고 싶은 구간에 한둘 띄워도 된다. 동시 실행은 이름만 다르면 된다.
+   **모델은 flash만 쓴다** — 사용자(2026-10-02): flash 3.8이 pro 3.1보다 월등히 빠르고(300 tok/s 이상) 벤치도 넘으며 싸다, *"pro 는 없는것 취급"*. 사용자 판단으로 agy 토큰 한도는 널널하니, 쓰고 싶은 구간에 한둘 띄워도 된다. 동시 실행은 이름만 다르면 된다.
 3. 끝나면 셋을 읽는다.
    - `/code/Projects/quad-agy/<이름>/AGY_REPORT.md`
    - `.agy/guard.txt`: exit code, 메인 레포 변경 여부, worktree 변경 목록
