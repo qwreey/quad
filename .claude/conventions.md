@@ -376,6 +376,7 @@ opus 5.5 서브에이전트에 줬더니 전부 정답이었고 fable이 놓친 
      항목은 '미완'으로 표시"**를 요구할 것 — 후속 송신을 약속하게 두면 3번
      상황이 반복된다.
 - **⭐ [2026-10-02 신설 — 사용자 요청] 다른 모델 계열의 시각은 `delegate-agy`로 — 절차·격리는 `.claude/skills/delegate-agy/SKILL.md`가 소스.** sonnet·opus는 같은 베이스에서 증류돼 어휘·선택 편향을 공유하므로("외부자·내부자" 시선 지정만으로는 모델 단위 편향이 안 좁혀진다), 근본 원인 찾기·현재 틀에서 튀어오르기·같은 메커니즘 발견 묶기·이름 객관성엔 Gemini(`agy`, 기본 `gemini-3.8-flash-high`)를 한둘 띄울 수 있다(사용자: 토큰 한도 널널). **무조건 격리 worktree에서**(읽기 전용 과제여도 — 사용자: flash는 실수가 *훨씬* 잦고 agy 하네스가 완고하지 않다), 결과는 발견이지 결정이 아니며 메인이 전부 검증한다.
+- **⭐ [2026-10-02 신설 — 사용자 요청] 벤치·퍼저·성능 실측처럼 메모리를 크게 쓰는 실행은 `choom -n 1000`으로 OOM 희생자 1순위로 띄운다.** 컨테이너 메모리 cgroup(12 GiB, 여러 Claude 세션이 같이 씀)을 벤치가 다 먹으면 커널 OOM killer가 claude 프로세스를 죽인다 — 실제 사고가 `session/2026-09-28-01-round13-batch-reply.md`(Q135 벤치 exit 137). claude 쪽 `oom_score_adj`를 내리는 건 권한(CAP_SYS_RESOURCE)이 없어 막혀 있지만, 자식 쪽을 올리는 건 무권한이고 exec 뒤 자손까지 상속된다(실측: adj 1000 → score 1332, claude 669). 꼴은 명령 맨 앞 `choom -n 1000 -p $$;`(이 셸과 그 자식 전부) 또는 `choom -n 1000 -- prlimit --data=3221225472 -- <명령>`(자기 한도에서 먼저 실패). **강제 장치는 PreToolUse 훅 `.claude/hooks/heavy-proc-guard.py`**(`.claude/settings.json`) — 명령에 bench/fuzz/perf/stress 류 단어가 있고 `luau`·`bash`·`./x.sh`·`python3` 등을 실행하는데 `choom`이 없으면 막는다(git/gh 명령과 `agy-delegate.sh` 호출은 제외 — 후자는 스크립트 안에서 `setpriv` 앞에 choom을 씌운다). 휴리스틱이라 오탐은 choom으로 감싸 다시 돌리면 되고, 미탐(이름에 그런 단어가 없는 무거운 실행)은 이 규칙을 지켜 손으로 감쌀 것.
 - **⭐ [2026-08-18 실측] `/code-review`는 감사자를 대체하지 않는다 — 큰
   변경에는 둘 다 필요하다.** 2026-08-18 핸드오버에서 감사자 1패스가 1건을
   잡은 뒤 사용자가 `/code-review high`를 직접 돌리자 **10건이 더 나왔고
