@@ -18,6 +18,8 @@
 #     (no object writes), therefore nothing new to push; a pre-push hook (via GIT_CONFIG_*)
 #     refuses pushes as a second line;
 #   - HOME is /code/Projects/quad-agy/.home with a copy of /code/.gemini (agy's OAuth).
+#   - the whole agy tree runs under `choom -n 1000` (OOM victim before claude — conventions 2026-10-02 heavy-process
+#     rule; agy's own Bash is invisible to the PreToolUse guard hook, so this is the only lever there);
 #   - a before/after snapshot of the main repo's HEAD + `git status` is compared and reported.
 set -euo pipefail
 
@@ -98,7 +100,7 @@ before_status=$(git -C "$ROOT" status --porcelain=v1 | sha1sum)
 echo "agy-delegate: start $name ($model) $(date -Is) — worktree $WT"
 
 set +e
-(cd "$WT" && setpriv --reuid=$AGY_UID --regid=$AGY_UID --clear-groups \
+(cd "$WT" && choom -n 1000 -- setpriv --reuid=$AGY_UID --regid=$AGY_UID --clear-groups \
 	env HOME="$AGY_HOME" GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0="$HOOKS" \
 	timeout $((timeoutSec + 60)) "$AGY" --model "$model" --dangerously-skip-permissions \
 	--print-timeout "${timeoutSec}s" -p "$(cat "$WT/.agy/prompt.md")") > "$WT/.agy/stdout.txt" 2>&1
