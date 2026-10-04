@@ -16,7 +16,7 @@
 
 **산출물**(스크래치):
 - 변이 목록 `m14.py`·`m14b.py`·`m14c.py`, 드라이버 `run_mut.py`, 결과 `results*.json`·`run.log`
-- 판별 프로브 `quad-base/test/probe.r14e.luau`
+- 판별 프로브 quad-base/test/probe.r14e.luau(스크래치 사본)
 - 변이를 넣고 프로브를 다시 돌리는 `probe_mut.py`, 결과 `probe-run1.txt`·`probe-run2.txt`
 
 **대상**: `git log --since=2026-09-30`의 열두 커밋(`682e2301`~`9787b0ec`)에서 바뀐 줄이다. 아홉 파일의 설치 창 보류, `_seenRevision`, `RERUN_LIMIT`, `SetIfChanged`·`SetAndDispose`·`checkSettable`, 세대 도장·드리프트 가지·Gate `_flush`, `countRewind`과 되감기 세 자리, flatten의 `Quad0085` 조건, debugOnly 버킷·`brandNamesOf`, `raiseChain`/`restoreChain`·순환 검사가 여기 든다. Gate `_flush`와 flatten의 `Quad0068`은 이번에 바뀌지 않았지만 요청 범위라 몇 개 넣었다.

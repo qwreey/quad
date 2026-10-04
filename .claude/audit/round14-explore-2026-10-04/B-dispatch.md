@@ -4,7 +4,7 @@
 
 ## round14 탐사 각도 B — 디스패치·Slot·부기 최근 변경 (기준 HEAD `8592751fd4a320c257b71519fc56d3050af9e306`)
 
-실측은 레포 밖 사본 `/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/r14x-b/`에서 했다(다섯 패키지와 scripts를 `cp -rL`로 복사하고 relink, 사본의 quad-base/src는 HEAD와 diff 없음). 프로브는 그 사본의 `quad-roblox/test/fuzz.dispatch.luau`(퍼저), `quad-roblox/test/probe.brandhint.luau`, `quad-base/test/probe.q85q68.luau`, `quad-base/test/probe.loops.luau`, `quad-base/test/probe.rootslot.luau`, `probes/nextskip{,2,3}.luau`다. 레포는 고치지 않았다. 무거운 실행은 `choom -n 1000 -- prlimit --data=3221225472`로 돌렸다(예산 3 GiB, 최대 RSS 628 MB). 새 결함은 0건이다. 아래 다섯 항목은 기존 문항에 붙일 재료, 확인 기록, (라) 판정이다.
+실측은 레포 밖 사본 `/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/r14x-b/`에서 했다(다섯 패키지와 scripts를 `cp -rL`로 복사하고 relink, 사본의 quad-base/src는 HEAD와 diff 없음). 프로브는 그 사본의 quad-roblox/test/fuzz.dispatch.luau(스크래치 사본)(퍼저), quad-roblox/test/probe.brandhint.luau(스크래치 사본), quad-base/test/probe.q85q68.luau(스크래치 사본), quad-base/test/probe.loops.luau(스크래치 사본), quad-base/test/probe.rootslot.luau(스크래치 사본), `probes/nextskip{,2,3}.luau`다. 레포는 고치지 않았다. 무거운 실행은 `choom -n 1000 -- prlimit --data=3221225472`로 돌렸다(예산 3 GiB, 최대 RSS 628 MB). 새 결함은 0건이다. 아래 다섯 항목은 기존 문항에 붙일 재료, 확인 기록, (라) 판정이다.
 
 ### 발견 1 — `Quad0076` 꼬리 힌트가 Tween에는 틀린 처방이고 Blocker·AttrKey에는 돌고 도는 처방이다 (기존 Q161의 새 사례 + 이전 결정과 대조 누락)
 

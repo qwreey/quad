@@ -6,8 +6,8 @@
 
 - 기준 HEAD는 `bdd3e0bd`(직전 `8592751f`에 세션 파일 한 줄만 더한 커밋)입니다.
 - 실측 사본은 `/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/r14x-d/`이고, 패키지 다섯과 `scripts/`를 `cp -rL`로 복사한 뒤 relink를 돌렸습니다.
-- 공통 하네스는 `quad-roblox/test/r14d_h.luau`입니다. mock 위에 Reflection·이벤트·TweenService·task 가상 시계를 얹었습니다.
-- 프로브는 `quad-roblox/test/r14d_p1.luau`~`r14d_p20.luau` 스무 개입니다. 전부 `ulimit -v 4000000; timeout 600`으로 돌렸고 무거운 실행은 없었습니다.
+- 공통 하네스는 quad-roblox/test/r14d_h.luau(스크래치 사본)입니다. mock 위에 Reflection·이벤트·TweenService·task 가상 시계를 얹었습니다.
+- 프로브는 quad-roblox/test/r14d_p1.luau(스크래치 사본)~`r14d_p20.luau` 스무 개입니다. 전부 `ulimit -v 4000000; timeout 600`으로 돌렸고 무거운 실행은 없었습니다.
 - 레포는 고치지 않았습니다.
 
 ### (1) 문서 실행 — 발견 넷
@@ -249,7 +249,7 @@
   - 66행 "2026-09-11 사용자 지적·mock 실측"
 - GS 20 112행의 코드 주석 "(레퍼런스 typing-limits)"는 내부 문서 이름입니다.
 - HTML 주석은 105개입니다.
-  - 63개가 내부 스크래치·spec 파일 이름을 담습니다(`gs.refprobe.luau`, `quad-roblox/test/gs.flowingback.luau`, `spec.gs15scratch.luau` 등). README §3 규칙(주석에 내부 경로 금지)에 어긋납니다. 위치는 GS 02·05·06·07·08·09·11·12·13·14·16·18·19·20·21, how-to 01·02·07·08, overview/01, core/06, core/09입니다.
+  - 63개가 내부 스크래치·spec 파일 이름을 담습니다(`gs.refprobe.luau`, quad-roblox/test/gs.flowingback.luau(스크래치 사본), `spec.gs15scratch.luau` 등). README §3 규칙(주석에 내부 경로 금지)에 어긋납니다. 위치는 GS 02·05·06·07·08·09·11·12·13·14·16·18·19·20·21, how-to 01·02·07·08, overview/01, core/06, core/09입니다.
   - 9개는 규칙대로 "근거: … (저장소 내부 기록)" 꼴입니다.
   - 나머지는 날짜와 실측 메모입니다. how-to 08에는 "v1 소스 확인 2026-09-11 …"이 열네 개 몰려 있습니다.
   - `sync-docs.py`의 `strip_html_comments`가 한 줄 주석을 지우므로 사이트 사본에 남은 주석은 0개입니다. README §3의 "사이트 `.md.txt` 원문에 그대로 보인다"는 stale일 가능성이 있습니다(추정 — 빌드는 안 돌렸습니다).
