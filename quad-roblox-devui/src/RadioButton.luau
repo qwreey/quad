@@ -20,11 +20,11 @@
 	The type argument is REQUIRED in strict code: the solver cannot infer `T` from a `Source<T>` argument (a call without
 	it fails with "No valid instantiation could be inferred").
 
-	One TextButton + box Frame + dot Frame (Input/Choice.luau). Clicking the selected button does nothing.
+	One TextButton + box Frame + dot Frame (Inputs/Choice.luau). Clicking the selected button does nothing.
 ]]
 
 local Quad = require("./Quad")
-local Choice = require("./Input/Choice")
+local Choice = require("./Inputs/Choice")
 local Common = require("./Common")
 local Style = require("./Style")
 

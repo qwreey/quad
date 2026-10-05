@@ -198,6 +198,7 @@ return {
 	Util = Util,
 	GlyphButton = require("@self/GlyphButton"),
 	KeyNav = require("@self/KeyNav"),
+	Input = require("@self/Input"),
 	Button = Button,
 	IconButton = IconButton,
 	FAB = FAB,

@@ -30,6 +30,7 @@
 	overlay does nothing (no error from the delayed thread).
 ]]
 
+local Input = require("./Input")
 local Quad = require("./Quad")
 local q = Quad
 local D = q.Declaration
@@ -59,10 +60,6 @@ export type TooltipHandle = {
 }
 
 local Tooltip = {}
-
-local function inputService(): UserInputService
-	return game:GetService("UserInputService")
-end
 
 function Tooltip.hook(props: TooltipProps): TooltipHandle
 	local style = props.Style or Style.default
@@ -127,13 +124,9 @@ function Tooltip.hook(props: TooltipProps): TooltipHandle
 		if not overlay.Alive:Get() then
 			return
 		end
-		local mouse = inputService():GetMouseLocation()
+		local mouse = Input.service():GetMouseLocation()
 		-- GetMouseLocation ignores the GUI inset; AbsolutePosition space includes it (see the header)
-		local guiService = game:GetService("GuiService")
-		if guiService.GetGuiInset then
-			local inset = guiService:GetGuiInset()
-			mouse -= inset
-		end
+		mouse -= Input.guiInset()
 		popup = overlay:Open({
 			Content = build(),
 			Position = mouse + offset,

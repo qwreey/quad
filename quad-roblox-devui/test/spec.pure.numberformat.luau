@@ -1,5 +1,5 @@
 --!strict
-local NF = require("../src/Input/NumberFormat")
+local NF = require("../src/Inputs/NumberFormat")
 
 local function eq(a: any, b: any, msg: string)
 	if a ~= b then

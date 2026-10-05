@@ -19,7 +19,7 @@ local q = require("../../Quad")
 local Anim = require("./Anim")
 local D = q.Declaration
 
-local UserInputService = game:GetService("UserInputService")
+local Input = require("../../Input")
 
 local ARROW = "rbxassetid://4030329127"
 local MARGIN = 10 -- px outside the control before the arrow shows
@@ -54,7 +54,7 @@ local function new(): FakeCursor
 	self = {
 		Element = element,
 		Update = function(_: FakeCursor, x: number, y: number, areaPos: Vector2, areaSize: Vector2)
-			if not UserInputService.MouseEnabled then
+			if not Input.service().MouseEnabled then
 				shown:SetIfChanged(false)
 				return
 			end
@@ -84,10 +84,11 @@ local function hideSystemCursor(dragging: q.State<boolean>)
 		if not dragging:Get() then
 			return nil :: any
 		end
-		local prior = UserInputService.MouseIconEnabled
-		UserInputService.MouseIconEnabled = false
+		local service = Input.service()
+		local prior = service.MouseIconEnabled
+		service.MouseIconEnabled = false
 		return function(_dying: boolean)
-			UserInputService.MouseIconEnabled = prior
+			service.MouseIconEnabled = prior
 		end
 	end, dragging)
 end

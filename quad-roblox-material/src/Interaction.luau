@@ -58,7 +58,7 @@
 
 local q = require("./Quad")
 
-local UserInputService = game:GetService("UserInputService")
+local Input = require("./Input")
 
 local Util = require("./Util")
 
@@ -231,7 +231,7 @@ local function drag(opts: DragOptions?): Drag
 		dragging:Set(true)
 		local isTouch = input.UserInputType == Enum.UserInputType.Touch
 		local kind = input.UserInputType
-		connChanged = UserInputService.InputChanged:Connect(function(changed: InputObject)
+		connChanged = Input.service().InputChanged:Connect(function(changed: InputObject)
 			local ok = if isTouch then changed == beginInput else changed.UserInputType == Enum.UserInputType.MouseMovement
 			if not ok then
 				return
@@ -242,14 +242,14 @@ local function drag(opts: DragOptions?): Drag
 				o.OnMoved(x, y, changed.Delta.X, changed.Delta.Y)
 			end
 		end)
-		connEnded = UserInputService.InputEnded:Connect(function(ended: InputObject)
+		connEnded = Input.service().InputEnded:Connect(function(ended: InputObject)
 			local ok = if isTouch then ended == beginInput else ended.UserInputType == kind
 			if ok then
 				lastX, lastY = ended.Position.X, ended.Position.Y
 				finish(false)
 			end
 		end)
-		connFocus = UserInputService.WindowFocusReleased:Connect(function()
+		connFocus = Input.service().WindowFocusReleased:Connect(function()
 			finish(true)
 		end)
 		if o.OnBegan then

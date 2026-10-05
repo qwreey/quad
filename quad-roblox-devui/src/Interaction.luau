@@ -38,6 +38,7 @@
 	is held, released by the matching InputEnded.
 ]]
 
+local Input = require("./Input")
 local Quad = require("./Quad")
 local q = Quad
 local Types = require("./Types")
@@ -67,11 +68,6 @@ export type DragHandle = {
 }
 
 local Interaction = {}
-
--- the one place that names the engine service
-local function inputService(): UserInputService
-	return game:GetService("UserInputService")
-end
 
 local function isPrimaryDown(input: InputObject): boolean
 	local t = input.UserInputType
@@ -185,7 +181,7 @@ function Interaction.drag(options: DragOptions): DragHandle
 		local p = input.Position
 		startX, startY = p.X, p.Y
 		lastX, lastY = startX, startY
-		local uis = inputService()
+		local uis = Input.service()
 		local isTouch = input.UserInputType == Enum.UserInputType.Touch
 		cChanged = uis.InputChanged:Connect(function(changed: InputObject)
 			if began == nil then

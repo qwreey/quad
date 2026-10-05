@@ -46,7 +46,7 @@
 	      opts.DismissOnEscape boolean  default false. Escape / gamepad B closes the TOP-MOST entry that is modal (has a
 	                        Scrim) or has this flag; if that entry did not ask for it, Escape does nothing (a
 	                        non-dismissable modal on top shields a dismissable one below). ONE shared
-	                        `UserInputService.InputBegan` connection serves every overlay and exists only while such an
+	                        `UserInputService.InputBegan` connection (via `Input.service()`) serves every overlay and exists only while such an
 	                        entry is open. Escape is ignored when the engine already processed the key or a TextBox
 	                        has focus (typing must not dismiss); ButtonB is always honored.
 	      opts.TrapSelection boolean  default false. While open the gamepad selection is confined to the entry: the entry
@@ -85,7 +85,7 @@ local Theme = require("./Theme")
 local Util = require("./Util")
 local D = q.Declaration
 
-local UserInputService = game:GetService("UserInputService")
+local Input = require("./Input")
 local GuiService = game:GetService("GuiService")
 
 export type CloseReason = "Close" | "Scrim" | "Escape" | "Destroyed"
@@ -129,7 +129,7 @@ local holds = 0
 local function onDismissKey(input: InputObject, processed: boolean)
 	local kc = input.KeyCode
 	if kc == Enum.KeyCode.Escape then
-		if processed or UserInputService:GetFocusedTextBox() ~= nil then
+		if processed or Input.service():GetFocusedTextBox() ~= nil then
 			return
 		end
 	elseif kc ~= Enum.KeyCode.ButtonB then
@@ -147,7 +147,7 @@ end
 local function pushEntry(e: StackEntry)
 	table.insert(stack, e)
 	if escConn == nil then
-		escConn = UserInputService.InputBegan:Connect(onDismissKey)
+		escConn = Input.service().InputBegan:Connect(onDismissKey)
 	end
 end
 
@@ -179,11 +179,12 @@ local deadChecks: { [any]: () -> boolean } = setmetatable({}, { __mode = "k" }) 
 
 local function lastInputIsGamepad(): boolean
 	-- the fake service of the test harness may lack it: missing = not a gamepad
-	local f: ((any) -> Enum.UserInputType)? = (UserInputService :: any).GetLastInputType
+	local service = Input.service()
+	local f: ((any) -> Enum.UserInputType)? = (service :: any).GetLastInputType
 	if f == nil then
 		return false
 	end
-	return string.sub(f(UserInputService).Name, 1, 7) == "Gamepad"
+	return string.sub(f(service).Name, 1, 7) == "Gamepad"
 end
 
 local function holdDismiss(): () -> ()

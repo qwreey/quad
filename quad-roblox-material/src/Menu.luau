@@ -98,7 +98,7 @@ local function isImage(s: string): boolean
 	return string.sub(s, 1, 4) == "rbxa" or string.sub(s, 1, 4) == "http"
 end
 
-local UserInputService = game:GetService("UserInputService")
+local Input = require("./Input")
 local GuiService = game:GetService("GuiService")
 
 type NavItem = { Inst: GuiObject, Activate: () -> (), Enabled: () -> boolean }
@@ -353,7 +353,7 @@ local function open(o: OpenOptions): Overlay.Handle
 				body,
 				-- keyboard navigation: one connection for the life of this panel
 				Util.preHook(function(inst: GuiObject)
-					local conn = UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
+					local conn = Input.service().InputBegan:Connect(function(input: InputObject, processed: boolean)
 						if processed or not handle.IsOpen:Get() or #navItems == 0 then
 							return
 						end

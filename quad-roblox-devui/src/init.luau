@@ -56,7 +56,7 @@
 	4. Interaction: `local hover = Interaction.hover()` / `Interaction.drag{...}` / `Interaction.pointerDown(fn)` return a
 	   handle whose `Hook` goes in the ARRAY PART of the element (`hover.Hook,`). One handle per element. Global
 	   connections (drag tracking) are opened only while dragging and closed on release, focus loss and destroy — never
-	   open your own `UserInputService` connection at construction.
+	   open your own `UserInputService` connection at construction (and always reach the service via `Input.service()`).
 	5. Popups (Combo list, Menu, Tooltip): `local popup = (props.Overlay or Overlay.getDefault()):Open{ Content = ..., Position
 	   = absoluteScreenPos, Anchor = ..., CloseOnClickOutside = true }` (resolve the overlay when the popup OPENS, and bail
 	   when `not overlay.Alive:Get()`); close with `popup:Close()` (idempotent; the overlay also closes every open popup
@@ -87,7 +87,8 @@ local Util = require("@self/Util")
 local Types = require("@self/Types")
 local Checkbox = require("@self/Checkbox")
 local RadioButton = require("@self/RadioButton")
-local Input = require("@self/Input")
+local Inputs = require("@self/Inputs")
+local InputService = require("@self/Input")
 local TreeModule = require("@self/Tree")
 local TabModule = require("@self/Tab")
 local TableModule = require("@self/Table")
@@ -140,18 +141,19 @@ export type MenuItemProps = Menu.MenuItemProps
 export type MenuToggleProps = Menu.MenuToggleProps
 export type TooltipProps = Tooltip.TooltipProps
 export type TooltipHandle = Tooltip.TooltipHandle
-export type InputTextProps = Input.InputTextProps
-export type InputNumProps = Input.InputNumProps
-export type DragNumProps = Input.DragNumProps
-export type SliderNumProps = Input.SliderNumProps
-export type InputVector2Props = Input.InputVector2Props
-export type InputUDim2Props = Input.InputUDim2Props
-export type InputColor3Props = Input.InputColor3Props
+export type InputTextProps = Inputs.InputTextProps
+export type InputNumProps = Inputs.InputNumProps
+export type DragNumProps = Inputs.DragNumProps
+export type SliderNumProps = Inputs.SliderNumProps
+export type InputVector2Props = Inputs.InputVector2Props
+export type InputUDim2Props = Inputs.InputUDim2Props
+export type InputColor3Props = Inputs.InputColor3Props
 
 return {
 	-- infrastructure
 	Style = Style,
 	Interaction = Interaction,
+	Input = InputService,
 	Overlay = Overlay,
 	Util = Util,
 	Types = Types,
@@ -176,14 +178,14 @@ return {
 	-- inputs
 	Checkbox = Checkbox,
 	RadioButton = RadioButton,
-	InputText = Input.InputText,
-	InputNum = Input.InputNum,
-	DragNum = Input.DragNum,
-	SliderNum = Input.SliderNum,
-	InputVector2 = Input.InputVector2,
-	InputUDim2 = Input.InputUDim2,
-	InputColor3 = Input.InputColor3,
-	NumberFormat = Input.NumberFormat,
+	InputText = Inputs.InputText,
+	InputNum = Inputs.InputNum,
+	DragNum = Inputs.DragNum,
+	SliderNum = Inputs.SliderNum,
+	InputVector2 = Inputs.InputVector2,
+	InputUDim2 = Inputs.InputUDim2,
+	InputColor3 = Inputs.InputColor3,
+	NumberFormat = Inputs.NumberFormat,
 	-- structure
 	Tree = TreeModule.Tree,
 	CollapsingHeader = TreeModule.CollapsingHeader,

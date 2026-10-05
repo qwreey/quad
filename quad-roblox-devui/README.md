@@ -168,6 +168,64 @@ ScreenGui는 **`ResetOnSpawn = false`**로 만드세요 — 층은 quad가 만�
 아니라 팝업이 없는 곳의 클릭은 그대로 통과합니다. `Window`의 `ZIndex`는 `WindowManager`가 **순위(1..n)**로 관리하므로 포커스를 몇 번 옮겨도
 층(ZIndex 1000)을 넘지 않습니다(살아 있는 창 999개까지).
 
+## UI Labs / 입력 주입
+
+UI Labs(Studio 플러그인)는 스토리를 플러그인 DockWidget 안에 그리는데, 거기서는 `UserInputService`가 입력을 받지 못한다.
+대신 UI Labs가 `Environment.InputListener`(`InputBegan`/`InputChanged`/`InputEnded` + 위젯 좌표계의 `MouseMoved`)를 준다.
+그래서 이 키트에서 `UserInputService`와 `GuiService:GetGuiInset()`을 만지는 곳은 전부 `src/Input.luau` 하나를 거친다
+(드래그, Combo/Menu의 Escape, Tooltip 위치). 기본값은 엔진 서비스이고, 스토리에서만 바꾼다.
+
+```luau
+local Devui = require("<이 폴더>")
+Devui.Input.use(Environment.InputListener)   -- 스토리 모드: 드래그·Escape가 리스너로 흐른다
+-- ... 스토리가 끝날 때
+Devui.Input.use(nil)                          -- 엔진 서비스로 복원
+```
+
+`Input.service()`는 사용 시점에 현재 서비스를 돌려주므로 require 뒤에 바꿔도 된다. 덮어쓰는 동안 `GetMouseLocation()`은
+마지막 `MouseMoved` 위치, `GuiInset`은 `Vector2.zero`, `MouseIconEnabled = false` 같은 쓰기는 엔진에 닿지 않고 로컬에만 남는다.
+나머지 멤버(`GetFocusedTextBox` 등)는 엔진 서비스로 폴백한다.
+
+**`GuiService`의 게임패드/선택(Selection) 동작은 대체물이 없다 — 플레이 테스트에서만 확인된다.**
+
+## Studio에서 보기 — UI Labs 스토리와 플레이 테스트
+
+레포 루트의 `consumer-kits.project.json`이 ReplicatedStorage에 quad-base·quad-roblox·두 킷을 레포 폴더 모양 그대로 올리고,
+킷의 `play/` 폴더를 StarterPlayerScripts에 넣는다(킷의 `src/Quad.luau` 상대 require가 Studio에서도 같은 경로로 풀린다).
+
+1. 터미널에서 `rojo serve consumer-kits.project.json --port 34872`, Studio의 Rojo 플러그인에서 그 포트로 연결.
+2. **스토리(편집 모드)** — UI Labs 플러그인을 연다. 탐색기에 storybook **"quad · devui (Iris-style debug UI)"**(`ReplicatedStorage/quad-roblox-devui/stories/Devui.storybook`)이
+   보이고, 그 아래 `*.story` 모듈마다 항목이 하나씩 있다. 항목을 열면 오른쪽 Controls 패널이 뜬다 — 패널의 값 하나하나가
+   스토리 안에서 `q.Source` 하나이고(`stories/StoryKit.luau`), 컴포넌트는 앱에서 쓰는 그대로 그 Source를 받는다. 값을 바꾸면
+   다시 그리지 않고 바인딩만 갱신된다.
+3. **플레이 테스트** — Play(F5). `play/` 의 LocalScript가 PlayerGui에 Demo 창(Iris ShowDemoWindow 대응)을 띄운다. 게임패드·선택(GuiService)·
+   Escape·GUI inset처럼 플러그인 위젯에서 재현되지 않는 것은 여기서 본다 — 아래 체크리스트.
+
+UI Labs 안에서는 `UserInputService`가 입력을 받지 못한다. StoryKit이 UI Labs가 주입하는 환경(`InputListener`)을 킷의
+`Input.use`로 끼워 넣고 정리 때 되돌린다(위 "UI Labs / 입력 주입"). 제3자 코드(ui-labs-utils)는 들이지 않았다 — 같은 원시
+전역(`__hotreload_env_global_injection__`)을 StoryKit이 직접 읽는다. 고급 컨트롤(`StoryKit.Slider`/`Choose`)도 ui-labs-utils가
+만드는 데이터 모양을 그대로 만든 평범한 테이블이다(문서화된 API가 아니라 UI Labs 업데이트 때 깨질 수 있는 유일한 자리).
+
+### 실기기 체크리스트 (관측 칸은 비워 둠 — Studio에서 채울 것)
+
+Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한다. 아래는 스펙으로는 확인할 수 없어 Studio에서 봐야 하는 것들이다.
+
+| # | 볼 것 | 어디서 | 기대 | 관측 |
+|---|---|---|---|---|
+| 1 | 창 드래그·크기조절·접기·닫기 | Window 스토리 / 플레이 | 타이틀바 드래그로 이동, 우하단 그립으로 크기 조절 |  |
+| 2 | z-순서 — 클릭한 창이 위로, 팝업은 항상 창 위 | 플레이: 데모의 창 셋 | 클릭한 창이 맨 위, Combo/Menu 목록은 창 위 |  |
+| 3 | UIFlexItem Fill(SeparatorText·입력 필드 폭) | Layout·Inputs 스토리 | 선이 남은 폭을 채우고 필드가 행을 채움 |  |
+| 4 | Iris 아이콘 에셋(화살표·체크·닫기) | Tree·Checkbox·Window | 아이콘이 보임 |  |
+| 5 | Table 구분선(Borders) | Table 스토리 | 행·열 선이 끊기지 않음 |  |
+| 6 | PlotLines 선분 기하 | Plot 스토리 | 점들이 끊김 없이 이어짐 |  |
+| 7 | DragNum·SliderNum 드래그(UI Labs InputListener 경유) | Inputs 스토리 | 드래그로 값이 바뀜(위젯 안 입력 주입 확인) |  |
+| 8 | Tooltip 위치(GUI inset 보정) | Tooltip 스토리 / 플레이 | 커서 근처(위아래로 36px 어긋나지 않음) |  |
+| 9 | Combo 목록 화면 가장자리 | 플레이: 창을 화면 아래로 | 목록이 화면 밖으로 나가는지 기록(클램프 미구현) |  |
+| 10 | Escape로 Combo/Menu 닫기 | 플레이 | 열린 목록만 닫힘 |  |
+| 11 | 숨긴 창의 hover 잔상 | 플레이: 닫기 버튼 위에서 닫고 다시 열기 | Active 색이 남지 않음 |  |
+| 12 | Deferred 시그널 파괴 순서 | 플레이: ScreenGui를 지우고 같은 프레임에 다시 만듦 | 에러 없음, 팝업 고아 없음 |  |
+| 13 | 데모 런타임 정보·플롯 Heartbeat | Demo 스토리 / 플레이 | 창을 닫거나 접으면 멈춤 |  |
+
 ## 테스트
 
 ```bash

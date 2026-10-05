@@ -21,7 +21,7 @@
 	an opt-in for a control that only wants keys the engine left alone (no kit control uses it today).
 
 	While the host holds selection (`SelectionGained` .. `SelectionLost` / `Destroying`) ONE
-	`UserInputService.InputBegan` connection delivers key presses; at rest there is none. It is closed on `SelectionLost`
+	`UserInputService.InputBegan` connection (via `Input.service()`) delivers key presses; at rest there is none. It is closed on `SelectionLost`
 	and on `Destroying`, so it cannot outlive the element.
 
 	Why the two pin modes (a gamepad trap is the failure to avoid): `NextSelection*` pointing at the host swallows the
@@ -45,7 +45,7 @@ local q = require("./Quad")
 local Util = require("./Util")
 local Overlay = require("./Overlay")
 
-local UserInputService = game:GetService("UserInputService")
+local Input = require("./Input")
 
 export type Options = {
 	Pin: ("Horizontal" | "All" | "Engage" | "None")?,
@@ -114,7 +114,7 @@ local function hook(onKey: (input: InputObject) -> (), onEnd: (() -> ())?, opts:
 	end
 	local function onInput(input: InputObject, processed: boolean)
 		-- typing wins; `processed` is only honored on request (see the header)
-		if UserInputService:GetFocusedTextBox() ~= nil or (honorProcessed and processed) then
+		if Input.service():GetFocusedTextBox() ~= nil or (honorProcessed and processed) then
 			return
 		end
 		local kc = input.KeyCode
@@ -148,7 +148,7 @@ local function hook(onKey: (input: InputObject) -> (), onEnd: (() -> ())?, opts:
 		end
 		inst.SelectionGained:Connect(function()
 			if conn == nil then
-				conn = UserInputService.InputBegan:Connect(onInput)
+				conn = Input.service().InputBegan:Connect(onInput)
 			end
 		end)
 		inst.SelectionLost:Connect(function()

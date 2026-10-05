@@ -16,10 +16,31 @@ out=$(mise exec -- luau-lsp analyze --flag:LuauSolverV2=true \
 	--flag:LuauTypeInferIterationLimit=1000000 \
 	--definitions=scripts/roblox-defs/globalTypes.d.luau \
 	--ignore "**/luau_packages/**" --ignore "$KIT/test/support/**" \
-	"$KIT/src" "$KIT/test" 2>&1)
+	"$KIT/src" "$KIT/test" "$KIT/stories" 2>&1)
 diag=$(printf '%s\n' "$out" | grep -v "^\[INFO\]" | grep -E "\((Type|Syntax)Error|Error\)|: (TypeError|SyntaxError)" || true)
 printf '%s\n' "$out" | grep -v "^\[INFO\]" || true
 if [ -n "$diag" ]; then echo "FAIL: strict diagnostics"; fail=1; fi
+# play/ LocalScripts require through `@game/ReplicatedStorage/...` (GS 01 convention) — that alias only resolves with
+# a rojo sourcemap of the project that places the kits in the DataModel (consumer-kits.project.json at the repo root).
+if [ -d "$KIT/play" ] && [ -f consumer-kits.project.json ]; then
+	echo "=== luau-lsp strict ($KIT/play, @game via rojo sourcemap)"
+	SM="${TMPDIR:-/tmp}/quad-kit-sourcemap-$KIT-$$.json"
+	if mise exec -- rojo sourcemap consumer-kits.project.json -o "$SM" >/dev/null 2>&1; then
+		pout=$(mise exec -- luau-lsp analyze --flag:LuauSolverV2=true \
+			--flag:LuauTarjanChildLimit=160000 \
+			--flag:LuauSubtypingIterationLimit=100000 \
+			--flag:LuauTypeInferIterationLimit=1000000 \
+			--definitions=scripts/roblox-defs/globalTypes.d.luau \
+			--sourcemap="$SM" \
+			--ignore "**/luau_packages/**" --ignore "$KIT/test/support/**" \
+			"$KIT/play" 2>&1)
+		printf '%s\n' "$pout" | grep -v "^\[INFO\]" | grep -v "^\[WARN\] client does not allow" || true
+		if printf '%s\n' "$pout" | grep -qE ": (TypeError|SyntaxError)"; then echo "FAIL: strict diagnostics (play)"; fail=1; fi
+	else
+		echo "FAIL: rojo sourcemap"; fail=1
+	fi
+	rm -f "$SM"
+fi
 shopt -s nullglob
 for f in "$KIT"/test/spec.pure.*.luau; do
 	echo "=== luau $f"

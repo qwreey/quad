@@ -14,6 +14,7 @@
 	of [check] label [shortcut | arrow] (label fills the free width).
 ]]
 
+local Input = require("./Input")
 local Quad = require("./Quad")
 local q = Quad
 local D = q.Declaration
@@ -52,12 +53,8 @@ local PopupParts = {}
 -- a never-changing `false` shared by every row that has no Selected / Active / Disabled state
 local NEVER: State<boolean> = q.Source(false)
 
-local function inputService(): UserInputService
-	return game:GetService("UserInputService")
-end
-
 function PopupParts.onEscape(fn: () -> ()): () -> ()
-	local conn = inputService().InputBegan:Connect(function(input: InputObject)
+	local conn = Input.service().InputBegan:Connect(function(input: InputObject)
 		if input.KeyCode == Enum.KeyCode.Escape then
 			fn()
 		end

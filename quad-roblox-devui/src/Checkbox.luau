@@ -11,13 +11,13 @@
 			Style: Style?, Modifier: TextButtonModifier?,
 		}
 
-	One TextButton (the whole row is clickable) + box Frame + check ImageLabel — see Input/Choice.luau. Activated
+	One TextButton (the whole row is clickable) + box Frame + check ImageLabel — see Inputs/Choice.luau. Activated
 	(mouse, touch, gamepad) toggles; hover/press colours follow the FrameBg tokens; the mark follows `Value`.
 ]]
 
 local Quad = require("./Quad")
 local q = Quad
-local Choice = require("./Input/Choice")
+local Choice = require("./Inputs/Choice")
 local Common = require("./Common")
 local Style = require("./Style")
 

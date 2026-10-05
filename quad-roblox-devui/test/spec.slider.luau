@@ -2,7 +2,7 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local Input = require("../src/Input")
+local Input = require("../src/Inputs")
 local Style = require("../src/Style")
 
 local UIS = H.UserInputService

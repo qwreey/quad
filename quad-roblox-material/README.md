@@ -235,6 +235,69 @@ Gallery.GalleryPanel({})       -- 페이지(Frame)만; 직접 호스트할 때. 
 Text 268, Surfaces 314, Overlays 199, Chips 403, Pickers 743, Theme 197. 아이콘 데모는 키트가 그림을 싣지 않으므로
 `Icon` prop(기본값은 장치에서 확인 못 한 자리표시 에셋 id)을 본인 에셋으로 바꿔 보세요.
 
+## UI Labs / 입력 주입
+
+UI Labs(Studio 플러그인)는 스토리를 플러그인 DockWidget 안에 그리는데, 거기서는 `UserInputService`가 입력을 받지 못합니다.
+UI Labs가 스토리에 주는 `Environment.InputListener`(`InputBegan`/`InputChanged`/`InputEnded` + `MouseMoved`)로 갈아 끼울 수
+있도록, 키트가 입력을 만지는 자리(Interaction 드래그, KeyNav, Overlay, Menu, FakeCursor)는 전부 `src/Input.luau`의
+`Input.service()`를 **쓰는 순간에** 읽습니다.
+
+```luau
+local Material = require("@pkg/quad-roblox-material")
+Material.Input.use(Environment.InputListener)  -- 스토리 모드: 리스너로 교체
+Material.Input.use(nil)                         -- 엔진 서비스로 복원
+```
+
+- 교체 중에는 `GetMouseLocation()`이 마지막 `MouseMoved` 위치를 돌려주고, `MouseIconEnabled = false` 같은 쓰기는 엔진에
+  닿지 않으며(로컬에 저장), `GetFocusedTextBox`·`GetLastInputType` 등 나머지 멤버는 엔진 서비스로 넘어갑니다.
+- `GuiService`의 선택·게임패드 API(`SelectedObject`, 선택 부모 등)는 대체물이 없어 그대로입니다 — **게임패드/선택 동작은
+  플레이 모드에서만 확인됩니다.**
+
+## Studio에서 보기 — UI Labs 스토리와 플레이 테스트
+
+레포 루트의 `consumer-kits.project.json`이 ReplicatedStorage에 quad-base·quad-roblox·두 킷을 레포 폴더 모양 그대로 올리고,
+킷의 `play/` 폴더를 StarterPlayerScripts에 넣는다(킷의 `src/Quad.luau` 상대 require가 Studio에서도 같은 경로로 풀린다).
+
+1. 터미널에서 `rojo serve consumer-kits.project.json --port 34872`, Studio의 Rojo 플러그인에서 그 포트로 연결.
+2. **스토리(편집 모드)** — UI Labs 플러그인을 연다. 탐색기에 storybook **"quad · Material 3"**(`ReplicatedStorage/quad-roblox-material/stories/Material.storybook`)이
+   보이고, 그 아래 `*.story` 모듈마다 항목이 하나씩 있다. 항목을 열면 오른쪽 Controls 패널이 뜬다 — 패널의 값 하나하나가
+   스토리 안에서 `q.Source` 하나이고(`stories/StoryKit.luau`), 컴포넌트는 앱에서 쓰는 그대로 그 Source를 받는다. 값을 바꾸면
+   다시 그리지 않고 바인딩만 갱신된다.
+3. **플레이 테스트** — Play(F5). `play/` 의 LocalScript가 PlayerGui에 Gallery(탭으로 전 컴포넌트)을 띄운다. 게임패드·선택(GuiService)·
+   Escape·GUI inset처럼 플러그인 위젯에서 재현되지 않는 것은 여기서 본다 — 아래 체크리스트.
+
+UI Labs 안에서는 `UserInputService`가 입력을 받지 못한다. StoryKit이 UI Labs가 주입하는 환경(`InputListener`)을 킷의
+`Input.use`로 끼워 넣고 정리 때 되돌린다(위 "UI Labs / 입력 주입"). 제3자 코드(ui-labs-utils)는 들이지 않았다 — 같은 원시
+전역(`__hotreload_env_global_injection__`)을 StoryKit이 직접 읽는다. 고급 컨트롤(`StoryKit.Slider`/`Choose`)도 ui-labs-utils가
+만드는 데이터 모양을 그대로 만든 평범한 테이블이다(문서화된 API가 아니라 UI Labs 업데이트 때 깨질 수 있는 유일한 자리).
+
+### 실기기 체크리스트 (관측 칸은 비워 둠 — Studio에서 채울 것)
+
+Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한다. 아래는 스펙으로는 확인할 수 없어 Studio에서 봐야 하는 것들이다.
+
+| # | 볼 것 | 어디서 | 기대 | 관측 |
+|---|---|---|---|---|
+| 1 | UIShadow 렌더(엘리베이션 0~5) | 스토리 Card·Button(Elevated)·Menu / 플레이 | 레벨별로 그림자가 보이고 UICorner를 따라 둥글다 |  |
+| 2 | UIShadow가 CanvasGroup 안에서 잘리는지 | Dialog·Snackbar·DatePicker 모달 | 그림자 없음(의도) — 다른 곳은 보임 |  |
+| 3 | CanvasGroup + UICorner 리플 클리핑 | Button·Chip·ListItem을 누름 | 리플 원이 둥근 모서리 밖으로 안 나감 |  |
+| 4 | Roboto 글꼴·굵기(Medium 500) | Theme 스토리·Gallery | LabelLarge/TitleMedium이 Medium으로 보임 |  |
+| 5 | 글리프(▼ ‹ › × ✓ ✎ ▦ !) | Select·DatePicker·Chip·Snackbar·TextField 에러 | 두부(□)로 안 나옴 |  |
+| 6 | UICorner 0.5 스케일 = 완전한 알약 | Button·Chip·Switch | 양 끝이 반원 |  |
+| 7 | Filled TextField 위쪽만 둥근 모서리 | TextField(Filled) | 아래 모서리는 각지고 표시선이 안 삐져나옴 |  |
+| 8 | Content 프레임 가운데 정렬(넓힌 버튼) | Button에 Size Modifier | 라벨이 가운데 |  |
+| 9 | Card 고정폭에서 자식 폭 | Card 스토리 | Content가 카드 폭을 따라감(알려진 위험) |  |
+| 10 | 리플 시작점 = 누른 위치(GUI inset) | Button을 가장자리에서 누름 | 원이 손가락/커서 위치에서 시작 |  |
+| 11 | 게임패드 선택 링(포커스 표시) | 플레이: 게임패드로 이동 | 3px Secondary 링, 엔진 기본 상자 없음 |  |
+| 12 | 오버레이 선택 가두기(SelectionGroup) | 플레이: Dialog/Menu 열고 D-패드 | 선택이 오버레이 밖으로 안 나가고 닫으면 원래 자리로 |  |
+| 13 | Escape / B 닫기 | 플레이: Dialog·Menu·DatePicker 모달 | 맨 위 하나만 닫힘, TextBox 입력 중 Escape는 무시(코어 메뉴와 겹침 확인) |  |
+| 14 | Slider·색 SV·hue 키 조작 | 플레이: 선택 후 화살표/D-패드 | 값이 바뀌고 SV는 A로 잠금/해제 |  |
+| 15 | 날짜 격자 D-패드 이동과 L1/R1 | 플레이: DatePicker | 격자 밖으로 나갈 수 있고 L1/R1이 달을 넘김, 숨은 칸에 안 감 |  |
+| 16 | Tooltip 위치 | Tooltip 스토리 / 플레이 | 커서 근처(위아래로 36px 어긋나지 않음) |  |
+| 17 | 작은 화면에서 Dialog 스크롤·모달 축소 | 플레이: 창을 작게 | 본문 스크롤, 액션 버튼 고정, 모달이 화면 안 |  |
+| 18 | Deferred 시그널 파괴 순서 | 플레이: ScreenGui를 지우고 같은 프레임에 다시 만듦 | 에러 없음(Quad0219 없음), 팝업 고아 없음 |  |
+| 19 | Progress 무한 애니메이션 부하 | Progress 스토리 / 플레이 | 보이는 동안만 돌고 숨기면 멈춤 |  |
+| 20 | Snackbar 호버 시 타이머 멈춤 | Snackbar 스토리 | 커서를 올리면 사라지지 않음 |  |
+
 ## 테스트
 
 ```

@@ -193,3 +193,30 @@ bundle)은 새 메커니즘이라 **사용자 결정 필요**; 당장은 "배열
 - "명시 타입 인자 `f<<string>>(v, "a")`도 실패한다"(material 에이전트) — 재현 결과 통과. 기각.
 - `Slot:List`가 데이터가 바뀔 때마다 모든 키에 `updateFn`을 다시 부르는 것 — 문서화된 동작(`ctx.Prev`로 유지). 결함 아님.
 - Lune에서 `EnumItem`을 테이블 키로 쓰면 조회가 빗나간다 — Lune 쪽 사정, quad 무관.
+
+## F. UI Labs 스토리를 붙이며 (2026-10-05 2차 과제)
+
+두 킷에 UI Labs(Studio 플러그인) Generic 스토리를 붙였다 — 어댑터 하나(`stories/StoryKit.luau`)가 컨트롤 값마다 `q.Source`를
+만들고 UI Labs `subscribe`는 그 Source에 `:SetIfChanged`만 하며, 컴포넌트는 앱에서 쓰는 그대로 Source를 받는다. 정리는 마운트한
+루트·오버레이 레이어의 `q.dispose`뿐이다. quad 쪽 결과는 좋았다 — "패널 값 = Source"가 코어 변경 없이 그대로 됐고, 스펙(가짜
+target·subscribe로 전 스토리를 그려 컨트롤을 한 번씩 바꾸고 정리)에서 정리 뒤 남는 인스턴스 0을 확인했다.
+
+**F1. 반응형 프롭 자리에 인라인 `:Compute`를 쓰면 strict가 죽는다 — 버그(재현됨, 자주 밟음).** `D.TextLabel({ Text =
+src:Compute(function(self) return \`{self:Get()}\` end) })`가 *"Expected (StateData<string>, string?, ...any) -> string but got
+(t1) -> string where t1 = { read Get: … }"*로 거부되고, 같은 람다를 평범한 함수 인자로 넘기면 통과한다. 스토리 작성 에이전트
+셋이 모두 밟았다. 우회는 `self: q.StateData<string>` 주석 또는 결과를 주석 단 지역 변수로 빼는 것(A8과 같은 가족). 생성
+Declaration 필드 자리(`Field<T>` 입력 유니언)에서 콜백 매개변수의 기대 타입이 흘러들지 않는 것으로 보인다. 제안: 시작하기 04/
+레퍼런스 03에 "프롭 자리 인라인 Compute는 `self`를 주석"을 한 줄, 근본 수선은 **사용자 결정 필요**.
+
+**F2. A1(제네릭 State 추론)이 스토리 헬퍼에서도 그대로 — 재현됨.** `StoryKit.rebuild(state, build)`, `ListData`, 표시용 `show(src)`
+같은 작은 제네릭 헬퍼마다 `<<T>>`를 강제당했다. A1의 처방이 정해지면 같이 풀린다.
+
+**F3. 도구: Lune 0.10.5는 인덱스 타입(`T["Field"]`)도 못 읽는다.** `const`·`<<T>>`처럼 줄 보존 재작성으로 지울 수 없는 문법이라
+킷은 인덱스 타입 대신 문자열 유니언을 인라인했다. B1(소비자 테스트 런타임) 선택의 또 하나의 근거.
+
+**F4. UI Labs와의 궁합(기록).** UI Labs는 스토리마다 가상 require로 모듈을 새로 싣는다 — quad 싱글턴(`require(quad_base)`의
+`UseProvider`)도 스토리마다 새 인스턴스라 스토리 사이 상태가 섞이지 않는다(좋음). 문자열 require 리졸버는 `./`·`../`·`@self`·
+`@game`를 `FindFirstChild` 이름 탐색으로 푼다(소스 `PepeElToro41/ui-labs@1e8f45f:src/Utils/HotReloader/Utils.ts`의
+ResolveStringPath) — 이름에 점이 든 `.pesde`·`3.2.0` 폴더도 이름 그대로 찾으므로 풀릴 것으로 읽히지만 **실기기 미확인**.
+플러그인 위젯 안에선 `UserInputService`가 입력을 못 받아 킷마다 입력 주입 모듈(`src/Input.luau`)을 두었다 — quad 코어는
+엔진 입력을 직접 만지지 않으므로 해당 없음.
