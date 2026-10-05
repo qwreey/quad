@@ -29,7 +29,7 @@
 | `research/` | 아직 착수 전, 사용자와 스코프/설계를 더 상의해야 하는 것 — **`research/README.md`** |
 | `qa-request/` | 구현 뒤 코드 리뷰 원장(post-implementation-review-round1 … 라운드는 계속 늘어남 — 최신 목록·각 라운드 요약은 **`qa-request/README.md`**) + 외부 모델 감사 진입점 `external-review-entry.md`. 끝난 v2 초기 구현 라운드는 `archive/v2-initial-implementation/` |
 | `archive/` | 완료됐거나 완전히 뒤집힌 것(`[역전됨]`) + 끝난 구현 구간의 원장 원문 — 능동 참고 불필요. **`archive/README.md`** |
-| `feedback/` | 실사용 피드백을 정리한 긴 로그 — **[2026-08-19 기준] 폴더 자체가 아직 없음**(M0/M1 스캐폴딩만으론 안 생기고 실제로 렌더링해보고 쓰는 단계부터, 첫 피드백이 생길 때 만들면 됨). `qa-request/`는 **[2026-08-18] 더 이상 비어 있지 않음**(구현 전 QA 1라운드 산출물이 들어감) — 여긴 아직 폴더도 없음 |
+| `feedback/` | 실사용 피드백 — **[2026-10-05 신설]** quad를 실제로 소비해 보며 겪은 마찰(첫 소비자: 디버그 UI 킷·Material 킷). 파일 색인은 폴더 `README.md` |
 | `luau-test/` | 추론만으로 확정한 것을 실제 Luau로 부딪혀보는 독립 스파이크 — 상태의 소스는 `luau-test/STATUS.md`, 각 파일의 목적은 `luau-test/README.md` |
 | `audit/` | 스파이크를 실제로 돌린 **실측 결과** 기록(계획 아님, 부분 확인도 그대로) — 폴더 목록·각각 뭘 확인했는지는 **`audit/README.md`** |
 | `tools/` | **[2026-08-13 신설, `session/2026-08-13-09-structure-and-guardrails.md`]** 코퍼스 기계 점검 — `doc-check.py`가 깨진 파일/절 참조, README 색인 누락, 날짜 없는 시한부 주장("아직 안 돌려봄" 등), 미반영 ⚠️ 배너를 한 번에 훑음. **[2026-08-16]** 절 참조는 WARN이 아니라 **ERROR** — 판정 규칙은 `conventions.md`의 "절 인용 규약"이 소스. **중대 변경 후 커밋 전에 돌릴 것**(`python3 .claude/tools/doc-check.py`) — 수동 감사에서 나온 발견의 대부분이 이 종류였고, 실제로 문서를 쪼개다 잘못 옮긴 참조를 이게 잡아냄. ERROR는 고치고 WARN은 판단 대상. **[2026-10-02]** `agy-delegate.sh` — Gemini(Antigravity CLI `agy`) 과제를 격리 worktree(`/code/Projects/quad-agy/<이름>`, 별도 uid)에서 돌리는 위임 스크립트(쓰는 법은 `skills/delegate-agy/SKILL.md`) |

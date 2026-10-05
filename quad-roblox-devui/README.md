@@ -1,0 +1,221 @@
+# quad-roblox-devui
+
+> 패키지 이름은 **가칭**입니다(작업명 `quad-roblox-devui`). 도그푸딩을 거친 뒤 정식 이름을 정합니다. 소스 코드 안에는
+> 이 이름이 없고(require는 전부 폴더 상대 경로) 이 문서, 폴더 이름, 테스트 파일의 주석에만 나옵니다. 이 키트에는 매니페스트가 아직 없습니다.
+
+[quad](../README.md) 위에서 만든 **개발자·디버그용 UI 키트**입니다. [Iris](https://github.com/SirMallard/Iris)
+(Dear ImGui 계열)와 같은 **위젯 세트**와 같은 **겉모양**(작은 글씨, 납작한 프레임, 파란 강조색)을 가지지만,
+API 모양은 Iris를 따르지 않고 quad의 방식 — **retained(유지형)이고 반응형** — 으로 짰습니다.
+
+```luau
+local Devui = require("<이 폴더>/src")
+local q = require("<이 폴더>/src/Quad")
+local D = q.Declaration
+local Kids = Devui.Kids
+
+local count = q.Source(0)
+local label: q.State<string> = count:Compute(function(self)
+	return `Clicked {self:Get()} times`
+end)
+
+local overlay = Devui.Overlay.new() -- ScreenGui마다 하나: 팝업(Combo / Menu / Tooltip)이 그려지는 층
+local screen = D.ScreenGui {
+	ResetOnSpawn = false, -- 층은 quad가 만든 인스턴스라 리스폰으로 다시 만들어지면 안 됨
+	Devui.Window {
+		Title = "Debug",
+		Children = Kids(
+			Devui.Button {
+				Text = "Count up",
+				OnClick = function() count:Set(count:Get() + 1) end,
+				Hooks = { Devui.Tooltip({ Text = "누르면 +1", Overlay = overlay }).Hook },
+			},
+			Devui.Text { Text = label }
+		),
+	},
+	overlay.Layer,
+}
+screen.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+```
+
+전체 위젯을 한 번에 보려면 데모 창을 띄우세요(아래 "데모").
+
+## Iris와 무엇이 다른가
+
+| | Iris (immediate mode) | 이 키트 (retained, 반응형) |
+|---|---|---|
+| 상태 | 위젯이 내부에 들고 있고, 호출 쪽이 `widget.state.value`로 접근 | 호출 쪽이 `Source`를 만들어 위젯에 넘김. 안 넘기면 위젯이 내부 `Source`를 만듦 |
+| 갱신 방법 | 매 프레임 UI 함수를 다시 호출해 "이번 프레임에 있는 위젯"을 선언 | UI는 한 번 만들고, 값이 바뀌면 `Source:Set` — 그 값에 묶인 프로퍼티만 갱신됨 |
+| 생명주기 | 프레임에 호출이 없으면 사라짐 (ID로 재사용) | 인스턴스가 곧 생명 — 만든 쪽이 `q.dispose` 하거나 부모가 파괴될 때 정리됨 |
+| 동적 목록 | 반복문으로 매 프레임 다시 선언 | `Slot`(수동 CRUD) 또는 `Table`처럼 키로 재활용되는 목록 |
+| 프레임당 비용 | UI 크기에 비례해 매 프레임 | 변화가 없으면 0 (데모에서 매 프레임 도는 건 플롯 샘플러 하나뿐, 10Hz) |
+| 팝업 | 같은 호출 흐름 안에서 그림 | `Overlay`(화면 루트의 한 층)에 열고 닫음 |
+
+한 줄 요약: Iris는 "매 프레임 UI를 다시 말한다", 이 키트는 "UI를 한 번 만들고 값만 흘린다".
+
+## 설치와 설정
+
+이 레포 안에서는 그대로 `require("quad-roblox-devui/src")`로 쓰면 됩니다. 키트가 quad가 어디 있는지 아는 곳은
+**`src/Quad.luau` 하나**입니다 — quad 문서가 권하는 "설정 모듈"과 같은 모양입니다(quad_base 싱글턴에 Roblox 프로바이더를
+한 번 설치하고, 키트가 쓰는 타입을 다시 내보냄). 세 줄이 전부입니다.
+
+```luau
+local Quad = require("../../quad-roblox/luau_packages/quad_base")
+local RobloxModule = require("../../quad-roblox/src")
+local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
+```
+
+다른 프로젝트에서 쓸 때는 **이 세 줄만** 그 프로젝트의 패키지 경로로 바꿉니다(예:
+`@game/ReplicatedStorage/Packages/quad_base`). 나머지 키트 코드는 전부 `require("./Quad")` 꼴로 이 모듈만 봅니다.
+`UseProvider`는 같은 프로바이더에 대해 멱등이므로, 게임이 같은 설치 사본에서 자기 설정 모듈을 이미 돌렸다면 같은
+quad 인스턴스를 공유합니다(게임의 `State`와 키트의 `State`가 그대로 섞입니다).
+
+## 데모
+
+```luau
+local Demo = require("<이 폴더>/src/Demo")
+Demo.mount()                -- PlayerGui에 ScreenGui를 만들어 데모 창 + Style Editor + Runtime Info + 팝업 층을 올림
+Demo.mount(someParent)      -- 부모를 직접 지정
+Demo.DemoWindow({ Overlay = o })   -- 메인 창만 (o = Devui.Overlay.new(); 직접 ScreenGui에 놓고 o.Layer도 같이 놓을 것)
+```
+
+`Demo/`는 Iris의 `ShowDemoWindow`에 해당하고, 위젯 그룹마다 파일이 하나씩입니다(`Basic`/`Inputs`/`Trees`/
+`Tables`/`Popups`/`Plots`, 도구 창 `StyleEditor`/`RuntimeInfo`). 새 위젯을 쓰는 법은 이 파일들이 가장 좋은 예제입니다.
+Heartbeat는 `Demo/Clock.luau`의 `ticker`만 건드리고, 그 연결은 그것을 놓은 요소가 죽을 때 끊깁니다.
+
+## 위젯
+
+모든 위젯은 **평범한 함수**이고 인스턴스 하나(또는 형제를 만드는 경우 `Slot`)를 돌려줍니다. 이름은 Iris와 같습니다.
+
+| 그룹 | 위젯 | 한 줄 설명 |
+|---|---|---|
+| 창 | `Window`, `WindowManager` | 드래그·크기 조절·접기·닫기 되는 창, 클릭하면 맨 앞으로(`ZIndex` 관리) |
+| 레이아웃 | `SameLine`, `Group`, `Indent`, `Separator`, `SeparatorText` | 가로 줄 / 세로 묶음 / 들여쓰기 / 구분선 |
+| 글 | `Text`, `TextWrapped`, `TextColored`, `TextDisabled`, `LabelText` | 한 줄·줄바꿈·색·흐림·`값 라벨` 한 줄 |
+| 버튼 | `Button`, `SmallButton` | 클릭 가능한 버튼(작은 쪽은 세로 패딩 없음) |
+| 선택 | `Checkbox`, `RadioButton`, `Selectable`, `SelectableOption` | 체크 / 라디오(같은 `Source` 공유) / 한 줄 선택 행 |
+| 입력 | `InputText`, `InputNum`, `DragNum`, `SliderNum`, `InputVector2`, `InputUDim2`, `InputColor3` | 글·숫자(±버튼)·드래그 숫자·슬라이더·벡터·UDim2·색 |
+| 구조 | `Tree`, `CollapsingHeader`, `TabBar` / `Tab`, `Table` | 접히는 노드·헤더, 탭, 키로 재활용되는 표 |
+| 표시 | `ProgressBar`, `PlotLines`, `PlotHistogram` | 진행 막대, 선 그래프, 막대 그래프 |
+| 팝업 | `Combo`, `ComboArray`, `ComboEnum`, `MenuBar` / `Menu` / `MenuItem` / `MenuToggle`, `Tooltip` | 드롭다운, 메뉴(중첩 가능), 호버 툴팁 |
+| 기반 | `Style`, `Interaction`, `Overlay`, `WindowManager`, `NumberFormat` | 테마·입력 훅·팝업 층·창 z-순서·숫자/색 문자열 도우미 |
+
+`Kids(a, b)`는 위젯이 아니라 **함수**입니다 — `q.Slot({ a, b })`(수동 CRUD `Slot<Instance>`)를 돌려주는 도우미로, 컨테이너의
+`Children`에 넘깁니다. `Util`과 `Types`도 루트에서 접근은 되지만 **키트 내부용**입니다(안정 약속 없음; props 타입은
+`Devui.ButtonProps`처럼 루트에서 바로 꺼내 쓰세요 — 모든 위젯의 `…Props`, `Manager`, `Popup`, `MenuScope`, `TableColumn`, `TabDef`).
+
+위젯마다 헤더 주석에 props 전체가 있습니다. 모든 위젯이 따르는 표준 규칙은 `src/init.luau` 머리의 "HOW TO WRITE A
+DEVUI WIDGET"입니다.
+
+### 값 규약: 제어 / 비제어 `Source`
+
+- **표시만 하는 값**(`Text`, `Value` of `ProgressBar` …)은 `T | State<T>`입니다. 상태를 넘기면 따라 움직입니다.
+- **위젯이 쓰는 값**(`Checkbox.Value`, `InputNum.Value`, `Window.Open` …)은 `Source<T>` props입니다.
+  - **제어**: `Source`를 넘기면 위젯이 그 `Source`에 씁니다(사용자 조작 때). 바깥에서 `:Set`하면 UI가 따라옵니다 — 양방향.
+  - **비제어**: 안 넘기면 위젯이 내부 `Source`를 만들어 혼자 동작합니다.
+- **필수인 `Source`**(비제어가 말이 안 되는 것): `RadioButton.Value`, `SelectableOption.Value`(그룹이 한 `Source`를 공유), `Combo.Value`,
+  `ComboArray.Index`, `ComboEnum.Value`(고른 값이 곧 위젯의 결과). 나머지 `Source` props는 전부 선택입니다 —
+  `Checkbox.Value`, `Selectable.Selected`, `InputText`/`InputNum`/`DragNum`/`SliderNum`/`InputVector2`/`InputUDim2`/`InputColor3`의 `Value`,
+  `Window`의 `Open`/`Collapsed`/`Position`/`Size`, `Tree`/`CollapsingHeader`의 `Open`, `TabBar.Selected`(기본: 첫 탭), `MenuToggle`의
+  `Value`(없으면 `Checked`/`OnToggle`의 제어 형태, 둘 다 없으면 내부 `Source`).
+- 여러 위젯이 한 `Source`를 공유할 수 있습니다(`RadioButton` 그룹이 그 예: 같은 `Value`, 서로 다른 `Option`).
+- `OnChange` 같은 콜백은 **사용자가 바꾼 경우에만** 불립니다(바깥 `:Set`에는 안 불림) — `Checkbox`/`RadioButton`/입력 위젯/`Combo*`/
+  `Tree`/`CollapsingHeader`/`TabBar` 모두 같은 약속입니다.
+- 위젯은 자기 `Source`에 쓸 때 이벤트 핸들러에서 `:Set`/`:SetIfChanged`를 부르고, `Compute`에서는 절대 쓰지 않습니다.
+
+### 이름 규약 (키트 전체)
+
+- **입력·콤보·체크 계열의 뒤따르는 라벨은 `Text`**입니다(`InputNum { Text = "speed", Value = … }`, Iris 관례) — `LabelText`만 값이 `Text`,
+  라벨이 `Label`입니다(Dear ImGui의 `LabelText` 순서).
+- `Value` = 위젯이 읽고 쓰는 `Source`, `Option` = 선택 위젯이 고르는 값(`RadioButton`/`SelectableOption`: `Value: Source<T>` + `Option: T`),
+  `Disabled` = 회색 처리(`boolean | State<boolean>`), `Modifier` = 그 위젯 루트 요소의 Modifier(`LabelText`는 가로 줄 Frame).
+- **`Hooks: { any }?`** — 리프 위젯(`Button`/`SmallButton`/`Selectable`/`SelectableOption`/`Checkbox`/`RadioButton`/`Text` 계열)이 가진 탈출구입니다.
+  리스트의 훅 값(`Tooltip` 핸들의 `.Hook`, `Interaction.pointerDown(fn)`, `q.OnRendered(...)` …)이 요소 배열 부분의 **끝**에 붙습니다:
+  `Devui.Button { Text = "Save", Hooks = { tip.Hook } }`.
+- **타입 인자 `<<T>>`가 필수인 호출**: `RadioButton<<T>>{…}`, `Combo<<T>>{…}`, `ComboArray<<T>>{…}`, `SelectableOption<<T>>{…}` — 해석기가 `Source<T>`
+  인자에서 `T`를 추론하지 못합니다(`No valid instantiation could be inferred`). `Table`은 `Key`의 매개변수에 타입을 달면 추론되고,
+  `TabBar<<K>>`는 `Selected`를 쓸 때만 필요합니다.
+
+## Style과 Overlay
+
+**Style** — 토큰(`State<Color3>`, `State<number>` …)의 모음입니다. 위젯은 `props.Style or Style.default`를 읽고 토큰을 프로퍼티에
+그대로 묶으므로 값이 바뀌면 위젯이 즉시 다시 칠해집니다.
+
+```luau
+Devui.Style.default:SetScheme("Light")   -- "Dark" | "Light"
+Devui.Style.default:SetDensity("Clear")  -- "Default"(13px 납작) | "Clear"(15px 둥근)
+local mine = Devui.Style.new({ Scheme = "Dark", Dark = { ButtonColor = Color3.new(1, 0, 0) }, Metrics = { FrameRounding = 6 } })
+Devui.Button { Text = "red", Style = mine }
+```
+
+토큰 이름은 Iris 설정 이름에서 `Color` 접미사를 뗀 것입니다(`Style.Color.Button`, `Style.Metrics.TextSize` …). 오버라이드는
+`Style.new{...}` 시점에 정해집니다 — **토큰 하나만 실시간으로 바꾸는 setter는 없습니다**(Style Editor 창이 미리보기 Style을
+다시 만들어 보여주는 이유).
+
+**Overlay** — 팝업이 그려지는 화면 루트의 한 층입니다. 두 가지 쓰는 법이 있습니다.
+
+- **명시형(권장)**: ScreenGui마다 `local overlay = Devui.Overlay.new()`를 만들어 `overlay.Layer`를 ScreenGui에 한 번 놓고, 팝업을 여는 위젯
+  (`Combo`/`Menu`/`Tooltip`)에 `Overlay = overlay`를 넘깁니다. 층은 ScreenGui와 같이 죽고, **죽는 순간 열려 있던 팝업은 전부 닫힙니다**
+  (`OnClose`가 한 번씩 불리고 `Count`는 0, Escape 리스너 같은 소유자 정리도 그때 풀립니다). `overlay.Alive`(`State<boolean>`)로 층이 살았는지
+  볼 수 있고, 죽은 overlay에 `Open`하면 에러, 위젯은 조용히 아무것도 안 합니다.
+- **기본형**: `Overlay` prop을 안 주면 위젯은 **팝업을 열 때** `Devui.Overlay.getDefault()`를 씁니다. 첫 호출에 만들어지고, 그 층이 파괴되면
+  다음 호출이 새것을 돌려줍니다(죽은 층을 다시 주지 않으므로 ScreenGui를 다시 만들어도 파괴된 인스턴스를 재부모화하는 `Quad0219`가 나지 않습니다).
+  기본 층은 **ScreenGui 하나**에만 놓을 수 있습니다(층은 인스턴스 하나라 살아 있는 ScreenGui 둘이 동시에 가질 수 없고, 두 번째는 `Quad0160`입니다) —
+  ScreenGui를 다시 지을 때마다 `Devui.Overlay.getDefault().Layer`를 그 하나에 놓으세요. 층이 아무 ScreenGui에도 안 붙어 있으면 `q.debug`가 켜진 때
+  팝업을 열 때 한 줄을 출력합니다. (옛 `Overlay.default` 값은 없어졌습니다 — require 시점에 인스턴스를
+  만들어 첫 ScreenGui와 함께 죽던 싱글턴이었습니다.)
+
+ScreenGui는 **`ResetOnSpawn = false`**로 만드세요 — 층은 quad가 만든 인스턴스라 리스폰이 뒤에서 파괴하면 안 됩니다. 층은 투명하고 `Active`가
+아니라 팝업이 없는 곳의 클릭은 그대로 통과합니다. `Window`의 `ZIndex`는 `WindowManager`가 **순위(1..n)**로 관리하므로 포커스를 몇 번 옮겨도
+층(ZIndex 1000)을 넘지 않습니다(살아 있는 창 999개까지).
+
+## 테스트
+
+```bash
+quad-roblox-devui/test/run.sh                                    # 전부
+quad-roblox-devui/test/run.sh quad-roblox-devui/test/spec.demo.luau   # 하나만
+```
+
+(레포 루트에서, 무거운 실행은 `( ulimit -v 4000000; timeout 900 … )`로 감쌀 것.) `run.sh`는 세 단계입니다. (1) 키트 전체를
+luau-lsp 신 솔버로 strict 검사, (2) 엔진이 필요 없는 순수 스펙(`spec.pure.*`)을 `luau` CLI로, (3) 컴포넌트 스펙(`spec.*`)을
+Lune으로. 종료 코드가 판정입니다.
+
+**왜 Lune인가** — quad 자신의 스펙이 쓰는 `luau` CLI는 모듈마다 읽기 전용 샌드박스 환경을 줘서, 모듈 스코프에서 엔진 전역
+(`Color3.new(...)` 같은 테마 상수)을 쓰는 UI 키트를 돌릴 수 없습니다. Lune은 전역 테이블을 공유하고 진짜 Roblox 데이터
+타입(`Color3`, `UDim2`, `Enum` …)을 제공해 키트 코드를 그대로 돌립니다. 다만 Lune 0.10.5는 `const`와 `f<<T>>(x)`를 파싱하지
+못해서, `run.sh`가 줄 번호를 보존하는 재작성 사본(`test/support/mirror.py`)에서 스펙을 돌립니다 — 원본에 Lune을 직접 쓰지 마세요.
+
+**하네스** — `test/support/harness.luau`가 quad mock 인스턴스(`Instance.new`), 가짜 서비스(`UserInputService`/`RunService`/
+`TextService`/`Players` …), 가상 시계 `task`(`H.advance(dt)`가 타이머와 Heartbeat를 돌림)와 `print` 캡처를 설치합니다.
+스펙은 `H.fire`로 이벤트를, `H.input`으로 입력을 흉내 내고, `H.assertNoDebugOutput`으로 `q.debug = true`에서 진단 출력이 0인지
+확인하며, 끝에 `q.dispose(root)` 뒤 연결 개수가 기준선으로 돌아오는지 봅니다. mock에는 레이아웃 엔진이 없으므로
+`AbsolutePosition`/`AbsoluteSize`는 `H.setAbs`로 직접 넣습니다.
+
+## 알려진 한계
+
+- **[미검증] 실기기 확인은 아직 안 했습니다.** 모든 스펙은 mock 위에서만 돌았습니다. 레이아웃(AutomaticSize·UIFlexItem 조합),
+  아이콘 에셋, 폰트, 터치 입력은 Studio/실기기 확인이 필요합니다.
+- **화면 가장자리 보정 없음.** `Overlay`는 팝업을 요청한 위치에 그대로 둡니다(내용의 크기는 레이아웃 뒤에야 알 수 있음).
+  화면 밖으로 나갈 위치면 호출하는 쪽이 `Anchor`로 방향을 정해야 합니다.
+- **Menu**: Dear ImGui의 "열린 메뉴 위에서 다른 최상위 메뉴로 호버 전환"은 없습니다(열린 동안 바깥 클릭 포획 층이 막대를
+  덮음). 메뉴 항목은 열 때마다 만들어지고 닫으면 파괴됩니다.
+- **Tooltip**은 보일 때의 마우스 위치에 뜨고 따라다니지 않습니다. 리프 위젯에는 `Hooks = { tip.Hook }`로, 그 밖의 요소에는 배열 부분에
+  `tip.Hook`을 놓습니다. 위치는 `GetMouseLocation() - GuiService:GetGuiInset()`(`GetMouseLocation`은 상단바 인셋을 반영하지 않고 `AbsolutePosition`은 반영한 공간)을
+  `Overlay`에 넘기고 `Overlay`가 층의 `AbsolutePosition`을 빼는 방식입니다 — **기기 미검증**이라 세로로 어긋나면 이 읽기가 틀린 것입니다.
+- **Tree / Tab**: 닫힌 트리의 자식은 `Visible = false`로 **계속 마운트**됩니다(위젯 상태가 보존되는 대신 인스턴스는 유지).
+  노드가 수천 개면 직접 지연 생성하세요. 탭 목록은 생성 시점에 고정이고 닫기/숨기기 탭은 없습니다.
+- **Table**: `Cell`은 (행 키, 열)당 한 번만 불리고 값이 바뀌면 `row` State가 다시 발행됩니다 — 행은 제자리 수정이 아니라
+  새 테이블로 교체하세요. 열 너비는 픽셀 또는 균등 분할만 지원합니다.
+- **PlotLines**는 위젯의 픽셀 크기를 알아야 해서 레이아웃이 한 번 돈 뒤에야 선이 보입니다. 마지막 200점만 그립니다.
+- **Style**: 토큰 단위 실시간 setter 없음(위 참고). **Window**는 닫아도 인스턴스가 남고 `Visible = false`가 됩니다.
+- **Combo**: 옵션 값은 서로 달라야 합니다(리스트 키). 중복이 필요하면 `ComboArray`. **가상화가 없습니다** — 열 때마다 옵션 수만큼 행을
+  만들므로(`MaxHeight`로 높이만 자르는 스크롤 목록) 수십~수백 개까지가 현실적입니다. 수천 개면 `Options` State를 검색어로 거르거나 직접
+  쪼개세요. `Disabled`면 열리지 않고(열려 있는 동안 비활성이 되어도 목록은 남습니다), 사용자가 고른 경우에만 `OnChange`가 불립니다.
+- **Hover/Pressed 초기화**는 요소 **자신의** `Visible`이 꺼질 때와 `AncestryChanged`(부모 변경·제거)에서 합니다. 조상이 `Visible = false`가
+  되면 요소에는 아무 신호도 오지 않으므로, 그런 소유자가 직접 `hover.Reset()`을 불러야 합니다 — `Window`는 `Open`이 꺼질 때 제목줄 버튼에 그렇게 합니다.
+  그 밖의 위젯이 든 창을 닫을 때의 호버 잔상은 처리하지 않습니다.
+- `Demo`는 인스턴스를 많이 씁니다(전체 약 860개, 닫힌 도구 창 포함) — 데모일 뿐 위젯 하나의 비용이 아닙니다.
+
+## 라이선스와 출처
+
+MIT (`LICENSE`). 이 키트는 Iris(MIT, © 2024 Michael_48)에서 **영감을 받았고** 위젯 세트와 기본 색·크기 숫자를 따랐지만 Iris
+소스 코드는 가져오지 않았습니다. 자세한 고지는 `NOTICE.md`를 보세요.

@@ -1,0 +1,223 @@
+--!strict
+local H = require("./support/harness")
+local Q = require("../src/Quad")
+local q = H.attach(Q)
+q.debug = true
+local D = q.Declaration
+local Tokens = require("../src/Tokens")
+local Overlay = require("../src/Overlay")
+local Tooltip = require("../src/Tooltip")
+local Button = require("../src/Button")
+
+local L = Tokens.Color.Light
+
+local function setup()
+	local overlay = Overlay.new()
+	local screen = D.Frame { overlay.Layer }
+	return overlay, screen
+end
+
+local function layerClean(overlay: Overlay.Overlay)
+	assert(overlay.Count:Get() == 0 and #overlay.Layer:GetChildren() == 0, "overlay layer back to baseline")
+end
+
+local function tipOf(screen: any): any
+	return H.find(screen, "Tooltip")
+end
+
+H.section("Plain: visual spec and instance count", function()
+	local t: any = Tooltip.Plain({ Text = "Hello" })
+	assert(t.ClassName == "TextLabel" and t.Text == "Hello" and t.TextSize == 12)
+	assert(t.BackgroundColor3 == L.InverseSurface and t.TextColor3 == L.InverseOnSurface)
+	assert(t.Size == UDim2.fromOffset(0, 24) and t.AutomaticSize == Enum.AutomaticSize.XY, "min height 24")
+	assert(H.find(t, "_quad_round").CornerRadius == UDim.new(0, 4))
+	local kids = t:GetChildren()
+	local seen: { [string]: any } = {}
+	for _, c in kids do
+		seen[c.ClassName] = c
+	end
+	assert(seen.UIPadding.PaddingLeft == UDim.new(0, 8) and seen.UIPadding.PaddingTop == UDim.new(0, 4))
+	assert(seen.UISizeConstraint.MaxSize.X == 200)
+	assert(#kids == 3, "UICorner, UIPadding, UISizeConstraint")
+	local src = q.Source("a")
+	local dyn: any = Tooltip.Plain({ Text = src, MaxWidth = 120 })
+	src:Set("b")
+	assert(dyn.Text == "b")
+	q.dispose(t)
+	q.dispose(dyn)
+	H.assertNoDebugOutput("plain")
+end)
+
+H.section("hover shows after the delay, snapped then faded in; leave hides and cleans up", function()
+	local overlay, screen = setup()
+	local tip = Tooltip.hook({ Text = "Add", Overlay = overlay })
+	local btn: any = D.TextButton { tip.Hook, Name = "Target", Size = UDim2.fromOffset(100, 40) }
+	screen.Name = "Screen"
+	H.setAbs(btn, 200, 100, 100, 40)
+	H.fire(btn, "MouseEnter")
+	assert(not tip.IsOpen:Get() and H.pendingTimers() == 1)
+	H.advance(0.4)
+	assert(tipOf(screen) == nil)
+	H.advance(0.2)
+	local t = tipOf(screen)
+	assert(t ~= nil and tip.IsOpen:Get() and t.Text == "Add")
+	assert(t.AnchorPoint == Vector2.new(0.5, 0) and t.Position == UDim2.fromOffset(250, 144), "centered below with a 4 px gap")
+	assert(t.BackgroundTransparency == 1 and t.TextTransparency == 1, "mounted snapped transparent")
+	H.finishTweens()
+	assert(t.BackgroundTransparency == 0 and t.TextTransparency == 0)
+	H.fire(btn, "MouseLeave")
+	assert(not tip.IsOpen:Get())
+	H.finishTweens()
+	assert(t.BackgroundTransparency == 1)
+	H.advance(0.2)
+	layerClean(overlay)
+	assert(H.pendingTimers() == 0)
+	q.dispose(btn)
+	q.dispose(screen)
+	H.assertNoDebugOutput("hover")
+end)
+
+H.section("leaving before the delay cancels it; press hides and does not re-show", function()
+	local overlay, screen = setup()
+	local tip = Tooltip.hook({ Text = "x", Overlay = overlay, Delay = 1 })
+	local btn: any = D.TextButton { tip.Hook }
+	H.fire(btn, "MouseEnter")
+	H.advance(0.5)
+	H.fire(btn, "MouseLeave")
+	assert(H.pendingTimers() == 0, "pending show cancelled")
+	H.advance(2)
+	assert(tipOf(screen) == nil)
+	H.fire(btn, "MouseEnter")
+	H.advance(1.1)
+	assert(tipOf(screen) ~= nil)
+	H.fire(btn, "InputBegan", H.input({ UserInputType = Enum.UserInputType.MouseButton1 }))
+	assert(not tip.IsOpen:Get(), "press hides")
+	H.advance(0.3)
+	layerClean(overlay)
+	H.advance(2)
+	assert(tipOf(screen) == nil, "still hovering but no re-show until leave + enter")
+	H.fire(btn, "MouseLeave")
+	-- other input (mouse move) does not hide
+	H.fire(btn, "MouseEnter")
+	H.advance(1.1)
+	H.fire(btn, "InputBegan", H.input({ UserInputType = Enum.UserInputType.MouseMovement }))
+	assert(tip.IsOpen:Get())
+	tip.Close()
+	H.advance(0.3)
+	layerClean(overlay)
+	q.dispose(btn)
+	q.dispose(screen)
+	H.assertNoDebugOutput("cancel")
+end)
+
+H.section("destroying the target cancels the timer and closes an open tooltip", function()
+	local overlay, screen = setup()
+	local tip = Tooltip.hook({ Text = "x", Overlay = overlay })
+	local btn: any = D.TextButton { tip.Hook }
+	H.fire(btn, "MouseEnter")
+	q.dispose(btn)
+	assert(H.pendingTimers() == 0, "timer cancelled on destroy")
+	H.advance(1)
+	assert(tipOf(screen) == nil)
+	local tip2 = Tooltip.hook({ Text = "y", Overlay = overlay })
+	local btn2: any = D.TextButton { tip2.Hook }
+	H.fire(btn2, "MouseEnter")
+	H.advance(0.6)
+	assert(tipOf(screen) ~= nil)
+	q.dispose(btn2)
+	assert(not tip2.IsOpen:Get())
+	H.advance(0.3)
+	layerClean(overlay)
+	assert(H.pendingTimers() == 0)
+	q.dispose(screen)
+	H.assertNoDebugOutput("destroy")
+end)
+
+H.section("gamepad focus shows it, selection lost hides; Disabled and State text", function()
+	local overlay, screen = setup()
+	local text = q.Source("one")
+	local disabled = q.Source(true)
+	local tip = Tooltip.hook({ Text = text, Overlay = overlay, Disabled = disabled, Delay = 0.1 })
+	local btn: any = D.TextButton { tip.Hook }
+	H.fire(btn, "SelectionGained")
+	H.advance(0.2)
+	assert(tipOf(screen) == nil, "disabled: nothing shows")
+	disabled:Set(false)
+	H.fire(btn, "SelectionGained")
+	H.advance(0.2)
+	assert(tipOf(screen).Text == "one")
+	text:Set("two")
+	assert(tipOf(screen).Text == "two", "open tooltip follows the State")
+	H.fire(btn, "SelectionLost")
+	H.advance(0.3)
+	layerClean(overlay)
+	q.dispose(btn)
+	q.dispose(screen)
+	H.assertNoDebugOutput("focus")
+end)
+
+H.section("edge placement: flips above at the bottom, aligns to the edge near the sides", function()
+	local overlay, screen = setup()
+	H.setAbs(overlay.Layer, 0, 0, 1000, 600)
+	local function place(x: number, y: number): any
+		local tip = Tooltip.hook({ Text = "p", Overlay = overlay, Delay = 0 })
+		local btn: any = D.TextButton { tip.Hook }
+		H.setAbs(btn, x, y, 80, 40)
+		H.fire(btn, "MouseEnter")
+		H.advance(0.01)
+		local t = tipOf(screen)
+		local ap, pos = t.AnchorPoint, t.Position
+		tip.Close()
+		H.advance(0.3)
+		q.dispose(btn)
+		return { ap, pos }
+	end
+	local mid: any = place(400, 100)
+	assert(mid[1] == Vector2.new(0.5, 0) and mid[2] == UDim2.fromOffset(440, 144))
+	local bottom: any = place(400, 580)
+	assert(bottom[1] == Vector2.new(0.5, 1) and bottom[2] == UDim2.fromOffset(440, 576), "above the target")
+	local right: any = place(930, 100)
+	assert(right[1] == Vector2.new(1, 0) and right[2] == UDim2.fromOffset(1010, 144), "right edge aligned")
+	local left: any = place(10, 100)
+	assert(left[1] == Vector2.new(0, 0) and left[2] == UDim2.fromOffset(10, 144), "left edge aligned")
+	layerClean(overlay)
+	q.dispose(screen)
+	H.assertNoDebugOutput("edges")
+end)
+
+H.section("works on a kit Button host; dispose leaves nothing", function()
+	local overlay, screen = setup()
+	local tip = Tooltip.hook({ Text = "Save file", Overlay = overlay })
+	local btn: any = Button({ Label = "Save", Modifier = D.Modifier.TextButton():Size(UDim2.fromOffset(90, 40)) })
+	-- the hook is placed on a plain host next to the button (Button has no array-part pass-through)
+	local wrap: any = D.Frame { tip.Hook, btn }
+	H.fire(wrap, "MouseEnter")
+	H.advance(0.6)
+	assert(tipOf(screen) ~= nil)
+	q.dispose(screen)
+	q.dispose(wrap)
+	H.advance(2)
+	assert(H.pendingTimers() == 0)
+	H.assertNoDebugOutput("button")
+end)
+
+H.section("A-H2 tooltip: the layer dying under an open tooltip does not strand the hook (it can show again elsewhere)", function()
+	local overlay, screen = setup()
+	local tip = Tooltip.hook({ Text = "Add", Overlay = overlay })
+	local btnHost = D.Frame {}
+	local btn: any = D.TextButton { tip.Hook, Name = "Target", Size = UDim2.fromOffset(100, 40) }
+	btn.Parent = btnHost
+	H.setAbs(btn, 200, 100, 100, 40)
+	H.fire(btn, "MouseEnter")
+	H.advance(0.6)
+	assert(tip.IsOpen:Get())
+	q.dispose(screen)
+	assert(not tip.IsOpen:Get(), "IsOpen false after the layer died")
+	H.fire(btn, "MouseLeave")
+	H.advance(1)
+	assert(H.pendingTimers() == 0)
+	q.dispose(btnHost)
+	H.assertNoDebugOutput("tooltip death")
+end)
+
+H.done()

@@ -1,0 +1,365 @@
+--!strict
+local H = require("./support/harness")
+local Q = require("../src/Quad")
+local q = H.attach(Q)
+q.debug = true
+local D = q.Declaration
+local Tokens = require("../src/Tokens")
+local Overlay = require("../src/Overlay")
+local Snackbar = require("../src/Snackbar")
+local Icons = require("../src/Icons")
+
+local L = Tokens.Color.Light
+
+local function setup()
+	local overlay = Overlay.new()
+	local screen = D.Frame { overlay.Layer }
+	return overlay, screen
+end
+
+local function layerClean(overlay: Overlay.Overlay)
+	assert(overlay.Count:Get() == 0 and #overlay.Layer:GetChildren() == 0, "overlay layer back to baseline")
+end
+
+local function snack(screen: any): any
+	return H.find(screen, "Snackbar")
+end
+
+H.section("show: structure, snapped mount then slide/fade in, auto-dismiss after Duration", function()
+	local overlay, screen = setup()
+	local bar = Snackbar.new({ Overlay = overlay })
+	local reasons: { string } = {}
+	local item = bar:Show({
+		Text = "Saved",
+		Duration = 3,
+		OnDismiss = function(r: string)
+			table.insert(reasons, r)
+		end,
+	})
+	local s = snack(screen)
+	assert(s.ClassName == "CanvasGroup" and s.BackgroundColor3 == L.InverseSurface and s.AnchorPoint == Vector2.new(0.5, 1))
+	assert(s.Size == UDim2.fromOffset(344, 0) and s.AutomaticSize == Enum.AutomaticSize.Y)
+	local msg = H.find(s, "Message")
+	assert(msg.Text == "Saved" and msg.TextColor3 == L.InverseOnSurface and msg.TextSize == 14)
+	assert(H.find(s, "Scrim") == nil, "no scrim")
+	assert(s.GroupTransparency == 1 and s.Position == UDim2.new(0.5, 0, 1, 8), "mounted snapped: transparent and low")
+	H.finishTweens()
+	assert(s.GroupTransparency == 0 and s.Position == UDim2.new(0.5, 0, 1, -16), "animated in")
+	assert(item.Visible:Get() and not item.Done:Get() and H.pendingTimers() == 1)
+	H.advance(2.9)
+	assert(not item.Done:Get())
+	H.advance(0.2)
+	assert(item.Done:Get() and reasons[1] == "Timeout")
+	H.finishTweens()
+	assert(s.GroupTransparency == 1, "fades out")
+	H.advance(0.3)
+	assert(snack(screen) == nil and not item.Visible:Get())
+	layerClean(overlay)
+	assert(H.pendingTimers() == 0)
+	bar:Destroy()
+	q.dispose(screen)
+	H.assertNoDebugOutput("show")
+end)
+
+H.section("queue: one at a time, in order, next opens after the previous is gone", function()
+	local overlay, screen = setup()
+	local bar = Snackbar.new({ Overlay = overlay })
+	local a = bar:Show({ Text = "A", Duration = 1 })
+	local b = bar:Show({ Text = "B", Duration = 2 })
+	local c = bar:Show({ Text = "C", Duration = 1 })
+	assert(bar.Pending:Get() == 2 and a.Visible:Get() and not b.Visible:Get())
+	assert(#H.findAll(screen, function(x: any) return x.Name == "Snackbar" end) == 1)
+	assert(H.find(snack(screen), "Message").Text == "A")
+	H.advance(1.05) -- A times out, exit phase
+	assert(H.find(snack(screen), "Message").Text == "A", "A still exiting, B not on top of it")
+	assert(#H.findAll(screen, function(x: any) return x.Name == "Snackbar" end) == 1)
+	H.advance(0.3)
+	assert(H.find(snack(screen), "Message").Text == "B" and b.Visible:Get() and bar.Pending:Get() == 1)
+	H.advance(2.3)
+	assert(H.find(snack(screen), "Message").Text == "C")
+	H.advance(1.5)
+	assert(c.Done:Get() and snack(screen) == nil)
+	layerClean(overlay)
+	assert(H.pendingTimers() == 0)
+	q.dispose(screen)
+	H.assertNoDebugOutput("queue")
+end)
+
+H.section("manual dismiss cancels the timer; dismissing a queued item removes it", function()
+	local overlay, screen = setup()
+	local bar = Snackbar.new({ Overlay = overlay })
+	local reasons: { string } = {}
+	local function track(r: string)
+		table.insert(reasons, r)
+	end
+	local a = bar:Show({ Text = "A", Duration = 10, OnDismiss = track })
+	local b = bar:Show({ Text = "B", OnDismiss = track })
+	local c = bar:Show({ Text = "C", Duration = 1 })
+	assert(H.pendingTimers() == 1)
+	b.Dismiss()
+	assert(b.Done:Get() and bar.Pending:Get() == 1 and reasons[1] == "Manual", "queued item leaves the queue")
+	a.Dismiss()
+	assert(H.pendingTimers() == 1, "A timer cancelled; only the overlay exit timer is pending")
+	assert(a.Done:Get() and reasons[2] == "Manual")
+	a.Dismiss() -- idempotent
+	assert(#reasons == 2)
+	H.advance(0.3)
+	assert(H.find(snack(screen), "Message").Text == "C" and c.Visible:Get())
+	H.advance(1.5)
+	assert(snack(screen) == nil)
+	layerClean(overlay)
+	assert(H.pendingTimers() == 0)
+	q.dispose(screen)
+	H.assertNoDebugOutput("dismiss")
+end)
+
+H.section("action and close buttons; infinite Duration; State Duration", function()
+	local overlay, screen = setup()
+	local bar = Snackbar.new({ Overlay = overlay })
+	local undone = 0
+	local reasons: { string } = {}
+	local item = bar:Show({
+		Text = "Archived",
+		Action = {
+			Label = "Undo",
+			OnClick = function()
+				undone += 1
+			end,
+		},
+		Close = true,
+		Duration = math.huge,
+		OnDismiss = function(r: string)
+			table.insert(reasons, r)
+		end,
+	})
+	assert(H.pendingTimers() == 0, "no timer for an infinite duration")
+	local s = snack(screen)
+	local act = H.find(s, "Action")
+	assert(act.ClassName == "TextButton" and H.find(act, "Label").Text == "Undo" and H.find(act, "Label").TextColor3 == L.InversePrimary)
+	assert(H.find(act, "StateLayer").BackgroundColor3 == L.InversePrimary)
+	do
+		local cc: { [string]: number } = {}
+		for _, c in act:GetChildren() do
+			cc[c.ClassName] = (cc[c.ClassName] or 0) + 1
+		end
+		local visual = H.find(act, "Visual")
+		assert(cc.UIPadding == nil and cc.UIListLayout == nil and visual.Parent == act and H.find(act, "StateLayer").Parent == visual, "layer is a direct child of the unpadded 36 px visual inside the 48 px hit host")
+		assert(act.Size.Y.Offset == 48 and visual.Size.Y.Offset == 36, "48 px touch target around a 36 px visual")
+		local content = H.find(act, "Content")
+		assert(content.Parent == visual and H.find(act, "Label").Parent == content and H.findAll(content, function(x: any) return x.ClassName == "UIPadding" end)[1] ~= nil, "padding on Content")
+	end
+	local close = H.find(s, "Close")
+	assert(H.find(close, "Label").Text == "\u{00D7}" and H.find(close, "Label").TextColor3 == L.InverseOnSurface)
+	H.fire(act, "Activated", H.input({}), 1)
+	assert(undone == 1 and reasons[1] == "Action" and item.Done:Get())
+	H.advance(0.3)
+	layerClean(overlay)
+	local second = bar:Show({ Text = "x", Close = true, Duration = math.huge, OnDismiss = function(r: string) table.insert(reasons, r) end })
+	H.fire(H.find(snack(screen), "Close"), "Activated", H.input({}), 1)
+	assert(reasons[2] == "Close" and second.Done:Get())
+	H.advance(0.3)
+	local dur = q.Source(2)
+	local third = bar:Show({ Text = "state", Duration = dur })
+	H.advance(1.9)
+	assert(not third.Done:Get())
+	H.advance(0.2)
+	assert(third.Done:Get(), "State duration read at show time")
+	H.advance(0.3)
+	layerClean(overlay)
+	assert(H.pendingTimers() == 0)
+	q.dispose(screen)
+	H.assertNoDebugOutput("buttons")
+end)
+
+H.section("close button with an Icons.override asset: a centered 24 px ImageLabel in the 48 px hit host", function()
+	Icons.override({ close = "rbxassetid://21" })
+	local overlay, screen = setup()
+	local bar = Snackbar.new({ Overlay = overlay })
+	bar:Show({ Text = "x", Close = true, Duration = math.huge })
+	H.finishTweens()
+	local close = H.find(screen, "Close")
+	local icon = H.find(close, "Icon")
+	assert(icon ~= nil and icon.ClassName == "ImageLabel" and icon.Image == "rbxassetid://21", "image icon")
+	assert(icon.Size == UDim2.fromOffset(24, 24), "icon size, not stretched: " .. tostring(icon.Size))
+	assert(H.find(close, "Label") == nil)
+	Icons.override({ close = false })
+	bar:Destroy()
+	q.dispose(screen)
+	H.assertNoDebugOutput("snackbar icon override")
+end)
+
+H.section("Destroy: closes the current one, drops the queue, no timers left", function()
+	local overlay, screen = setup()
+	local bar = Snackbar.new({ Overlay = overlay })
+	local reasons: { string } = {}
+	local function track(r: string)
+		table.insert(reasons, r)
+	end
+	local a = bar:Show({ Text = "A", OnDismiss = track })
+	local b = bar:Show({ Text = "B", OnDismiss = track })
+	bar:Destroy()
+	assert(a.Done:Get() and b.Done:Get() and #reasons == 2 and bar.Pending:Get() == 0)
+	H.advance(0.3)
+	layerClean(overlay)
+	assert(H.pendingTimers() == 0)
+	local ok = pcall(function()
+		bar:Show({ Text = "late" })
+	end)
+	assert(not ok, "a destroyed host refuses Show")
+	q.dispose(screen)
+	H.assertNoDebugOutput("destroy")
+end)
+
+H.section("the overlay layer dying while an item is up: timer cancelled, no stuck state", function()
+	local overlay, screen = setup()
+	local bar = Snackbar.new({ Overlay = overlay })
+	local reasons: { string } = {}
+	local item = bar:Show({ Text = "A", Duration = 5, OnDismiss = function(r: string) table.insert(reasons, r) end })
+	assert(H.pendingTimers() == 1)
+	q.dispose(screen)
+	assert(H.pendingTimers() == 0, "all timers cancelled with the layer")
+	assert(item.Done:Get() and reasons[1] == "Destroyed")
+	H.advance(10)
+	H.assertNoDebugOutput("layer death")
+end)
+
+H.section("default host and theme", function()
+	local screen = D.Frame { Overlay.default().Layer }
+	local item = Snackbar.show({ Text = "default", Duration = 1 })
+	assert(H.find(screen, "Message").Text == "default")
+	item.Dismiss()
+	H.advance(0.3)
+	layerClean(Overlay.default())
+	local Theme = require("../src/Theme")
+	local dark = Theme.new({ Scheme = "dark" })
+	local o2, s2 = setup()
+	local bar = Snackbar.new({ Overlay = o2, Theme = dark })
+	bar:Show({ Text = "d", Duration = 1 })
+	assert(snack(s2).BackgroundColor3 == Tokens.Color.Dark.InverseSurface)
+	bar:Destroy()
+	H.advance(0.3)
+	assert(H.pendingTimers() == 0)
+	q.dispose(screen)
+	q.dispose(s2)
+	H.assertNoDebugOutput("default")
+end)
+
+H.section("D9 an Action keeps the snackbar up for 10 s by default; Duration 4 without one", function()
+	local overlay, screen = setup()
+	local bar = Snackbar.new({ Overlay = overlay })
+	local plain = bar:Show({ Text = "plain" })
+	H.advance(3.9)
+	assert(not plain.Done:Get())
+	H.advance(0.2)
+	assert(plain.Done:Get(), "4 s without an action")
+	H.advance(0.3)
+	local item = bar:Show({ Text = "with action", Action = { Label = "Undo", OnClick = function() end } })
+	H.advance(9.9)
+	assert(not item.Done:Get(), "still up at 9.9 s")
+	H.advance(0.2)
+	assert(item.Done:Get(), "gone after 10 s")
+	H.advance(0.3)
+	bar:Destroy()
+	q.dispose(screen)
+	H.assertNoDebugOutput("duration 10")
+end)
+
+H.section("D9 the countdown pauses while the pointer is over the snackbar or a button holds selection, then resumes", function()
+	-- the harness clock is virtual: hand it to the host as its Clock
+	local overlay, screen = setup()
+	local bar = Snackbar.new({ Overlay = overlay, Clock = H.now })
+	local reasons: { string } = {}
+	local item = bar:Show({
+		Text = "hold",
+		Duration = 4,
+		Action = { Label = "Undo", OnClick = function() end },
+		OnDismiss = function(r: string) table.insert(reasons, r) end,
+	})
+	local s = snack(screen)
+	H.advance(1)
+	H.fire(s, "MouseEnter")
+	assert(H.pendingTimers() == 0, "paused: no timer")
+	H.advance(30)
+	assert(not item.Done:Get() and item.Visible:Get(), "hovered: stays")
+	H.fire(s, "MouseLeave")
+	assert(H.pendingTimers() == 1)
+	H.advance(2.9)
+	assert(not item.Done:Get(), "resumed with about 3 s left, not a fresh 4")
+	-- gamepad selection on the action button also holds it
+	local act = H.find(s, "Action")
+	H.fire(act, "SelectionGained")
+	assert(H.pendingTimers() == 0)
+	H.advance(10)
+	assert(not item.Done:Get())
+	H.fire(act, "SelectionLost")
+	H.advance(0.2)
+	assert(item.Done:Get() and reasons[1] == "Timeout")
+	H.advance(0.3)
+	bar:Destroy()
+	q.dispose(screen)
+	H.assertNoDebugOutput("pause")
+end)
+
+H.section("A-H2 layer death in the Shown phase: Visible false, nothing current, queue dropped, Show errors loudly", function()
+	local overlay, screen = setup()
+	local bar = Snackbar.new({ Overlay = overlay })
+	local reasons: { string } = {}
+	local function track(tag: string): (string) -> ()
+		return function(r: string)
+			table.insert(reasons, tag .. ":" .. r)
+		end
+	end
+	local a = bar:Show({ Text = "A", Duration = 5, OnDismiss = track("a") })
+	local b = bar:Show({ Text = "B", OnDismiss = track("b") })
+	assert(bar.Pending:Get() == 1 and a.Visible:Get())
+	q.dispose(screen)
+	H.advance(0.1)
+	assert(not a.Visible:Get() and a.Done:Get() and b.Done:Get(), "both finalized")
+	assert(table.concat(reasons, ",") == "a:Destroyed,b:Destroyed", table.concat(reasons, ","))
+	assert(bar.Pending:Get() == 0 and H.pendingTimers() == 0)
+	local ok, err = pcall(function()
+		bar:Show({ Text = "late" })
+	end)
+	assert(not ok and string.find(tostring(err), "overlay layer was destroyed", 1, true) ~= nil, tostring(err))
+	assert(bar.Pending:Get() == 0, "the failed Show queued nothing")
+	bar:Destroy()
+	H.assertNoDebugOutput("shown death")
+end)
+
+H.section("A-H2 layer death in the Done (exit) phase: the host is released too", function()
+	local overlay, screen = setup()
+	local bar = Snackbar.new({ Overlay = overlay })
+	local a = bar:Show({ Text = "A" })
+	local b = bar:Show({ Text = "B" })
+	a.Dismiss()
+	assert(a.Done:Get() and a.Visible:Get(), "exit phase: still visible")
+	q.dispose(screen)
+	H.advance(0.1)
+	assert(not a.Visible:Get() and b.Done:Get(), "released; the queued item was dropped, not shown on a dead layer")
+	assert(H.pendingTimers() == 0)
+	bar:Destroy()
+	H.assertNoDebugOutput("done death")
+end)
+
+H.section("the default host follows Overlay.default(): rebuilt after its layer died", function()
+	local o1 = Overlay.default()
+	local s1 = D.Frame { o1.Layer }
+	local h1 = Snackbar.default()
+	assert(Snackbar.default() == h1)
+	q.dispose(s1)
+	local o2 = Overlay.default()
+	assert(o2 ~= o1)
+	local s2 = D.Frame { o2.Layer }
+	local h2 = Snackbar.default()
+	assert(h2 ~= h1, "a new host bound to the new overlay")
+	local item = Snackbar.show({ Text = "again", Duration = 1 })
+	assert(H.find(s2, "Message").Text == "again")
+	item.Dismiss()
+	H.advance(0.3)
+	assert(o2.Count:Get() == 0)
+	q.dispose(s2)
+	h2:Destroy()
+	H.assertNoDebugOutput("default rebuild")
+end)
+
+H.done()
