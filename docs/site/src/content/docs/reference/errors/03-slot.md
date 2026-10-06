@@ -281,7 +281,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `{surface}: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)` — `quad-base/src/Slot/init.luau`
 
-- **언제**: [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때, `Slot`을 자기 자신이나 자기 조상(원소 관계로 이어진)에 원소로 넣으려 할 때 — 그대로 두면 순환이 생겨 이후 CRUD가 `teardownTree`/`releaseOwner`에서 무한히 재귀합니다. **(3.2.0 다음 릴리즈부터)** 원소 관계를 따라 올라가는 이 검사는 넣는 Slot마다 깊이만큼 비용이 들어 debug 층으로 내려갔습니다 — 꺼 두면 넣는 줄은 그대로 통과하고 그 순환은 정의되지 않은 동작입니다. 개발 중에는 debug를 켜 두세요.
+- **언제**: [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때, `Slot`을 자기 자신이나 자기 조상(원소 관계로 이어진)에 원소로 넣으려 할 때 — 그대로 두면 순환이 생겨 이후 CRUD·해체가 끝나지 않는 재귀로 들어갑니다(아래 관측 줄). **(3.2.0 다음 릴리즈부터)** 원소 관계를 따라 올라가는 이 검사는 넣는 Slot마다 깊이만큼 비용이 들어 debug 층으로 내려갔습니다 — 꺼 두면 넣는 줄은 그대로 통과하고 그 순환은 정의되지 않은 동작입니다. 개발 중에는 debug를 켜 두세요.
 - **고치려면**: 순환이 생기지 않게 구조를 바꾸세요. (인스턴스를 매개로 한 순환은 이 검사 밖입니다 — 정의되지 않은 동작.)
 - **관측(계약 아님)**: debug를 꺼 둔 채 순환을 넣으면 그 순환 트리의 다음 CRUD나 해체가 스택 오버플로나 내부 불변식 에러로 죽고(어느 쪽인지는 연산마다 다릅니다), 그 뒤의 부기 무결은 약속하지 않습니다.
 - **참고**: [`slot:Add(element, index?)`](/reference/core/06-slot/#slotaddelement-index)
