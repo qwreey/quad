@@ -21,4 +21,5 @@
 - P1: 2026-10-06 완료 — `0da73eb6`(발견: Q174 vs Q164 스냅 `Completed` 오경보 → 사용자 (b), P3에 편입).
 - P2: 2026-10-06 완료 — `a4813a5a`(발견: P1 감지기가 material 킷 spec.api 두 절에서 경고 13줄 — 진단은 P3; Q173 debug 사슬 검사가 CRUD 줄에서 `:Get()` — 사용자 원칙 "debug에서도 lazy 유지"대로 P3에서 고침).
 - P3: 2026-10-06 완료 — `540207a1`(material 킷 `OnChange` 엔진 왕복 오경보 → 원장 "**Q174 보강 2" 결정, P3b로).
-- P3b: 착수 2026-10-06(`OnChange`·`q.Out` 프레임 등록, 등록 프레임 인라인 방지).
+- P3b: 2026-10-06 완료 — `30fc453a`(킷 둘 exit 0). 부수 발견: `-O2`에서 `fireCompleted`·Debounce `commitIdle`이 실제로 인라인돼 감지기가 깨졌던 것(고침), 그리고 `spec.errorutil`·`spec.fallback`·`spec.relate`가 `-O2`에서 blame 줄·traceback 자리가 달라져 실패(손대지 않음) — Roblox 실행 환경의 최적화 수준 실측이 필요(실기기 후보).
+- P4: 착수 2026-10-06.
