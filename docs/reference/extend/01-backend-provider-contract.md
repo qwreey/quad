@@ -27,19 +27,27 @@ description: "quad-base가 백엔드에 요구하는 주입 op 전체와 UseProv
 1. 모듈 인스턴스를 **뮤테이션**해서 아래 주입 슬롯들을 채웁니다.
 2. 백엔드 고유 표면(Roblox라면 `Declaration`/`OnChange`/`Animate`/`Tween`/`isTween`)을 담은 **확장 테이블**을 반환합니다. `UseProvider`가 이걸 모듈에 병합합니다.
 
-주입 슬롯은 전부 20개이고 모두 **`q.Backend` 네임스페이스**에 삽니다(`quad.Backend.nativeInsert = …`로 심고, quad는 `module.Backend.nativeInsert(…)`로 부릅니다). 성격에 따라 다섯 묶음으로 나뉩니다. 이 목록의 단일 소스는 `quad-types/src/init.luau`의 `Backend` 레코드입니다. 이것들은 백엔드가 설치하고 quad가 부르는 계약이지 앱 코드가 부를 API가 아닙니다 — 앱의 `q.` 자동완성에 섞이지 않도록 따로 둔 이유입니다.
+**`q.Backend`는 엔진 경계입니다** — 답이 설치된 백엔드(엔진)의 사실에 따라 달라지는 op가 사는 자리입니다. 소속 기준은 하나입니다: quad-base가 가진 데이터만으로 답이 나오면 `Backend`가 아니고(브랜드 술어 `q.isX`, 자리 부기 `q.Bookkeeping`), 엔진에 물어야 답이 나오면 `Backend`입니다. 그 안의 op는 **두 층**입니다.
 
-| 묶음 | 슬롯 |
-|---|---|
-| 물리 트리 조작 (`native*`) | `nativeInsert` `nativeExtract` `nativeRemove` `nativeMove` `nativeSwap` `nativeDispose` |
-| 판정·훅·조회 op | `isInst` `onDestroying` `nativeClaim` `isClaimed` `nativeFindChild` |
-| 생명주기 hold op | `holdLifetime` `releaseLifetime` `isHeld` `isHeldBy` |
-| 메타데이터 op | `addTag` `removeTag` `setAttr` |
-| 시간 op | `setTimeout` `clearTimeout` |
+- **주입 op** — 백엔드만 아는 것을 **백엔드가 구현해 심습니다**(`quad.Backend.nativeInsert = …`로 심고, quad는 `module.Backend.nativeInsert(…)`로 부릅니다). 전부 20개이고 성격에 따라 다섯 묶음으로 나뉩니다. quad-base에는 크게 에러를 내는 안내 스텁만 있습니다(§7). 이것이 프로바이더의 구현 계약입니다.
+- **합성 op** — **quad-base가 주입 op만으로 합성해 심습니다** — `bindLifetime`·`unbindLifetime`·`canBound`·`canExecute`. 본문은 quad-base의 지식(`Observer`/`Effect`의 훅과 전역 구독 상태)이고, 결과는 `isHeld` 같은 엔진 사실에 따라 달라지므로 같은 네임스페이스에 삽니다. **프로바이더는 합성 op를 구현하지도 덮어쓰지도 않습니다** — 덮어쓰는 것은 정의되지 않은 동작입니다(막지는 않습니다).
 
-`bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`는 이 표에 **없습니다** — 그 넷은 quad-base가 위 hold op 넷 위에 직접 조립하는 프리미티브라 백엔드가 심지 않습니다(아래 §4). 같은 `q.Backend` 네임스페이스에 살지만 채우는 쪽이 다릅니다.
+이 목록의 단일 소스는 `quad-types/src/init.luau`의 `Backend` 레코드입니다. 이것들은 대부분 백엔드가 설치하고 quad가 부르는 계약이지 앱 코드가 부를 API가 아닙니다 — 앱의 `q.` 자동완성에 섞이지 않도록 따로 둔 이유입니다(앱 코드에서 물어도 되는 다섯 — 합성 op 넷과 `isClaimed` — 은 [core/10](../core/10-lifetime-sentinels.md)).
 
-두 번째 백엔드가 이미 존재합니다 — 테스트용 mock(`quad-base/test/mock.luau`)이 같은 계약을 전부 구현하고, 같은 `UseProvider` 경로로 설치됩니다. 계약이 실제로 어떻게 읽히는지 확인하고 싶다면 그 파일이 가장 정확한 참고 구현입니다.
+| 층 | 묶음 | op | 심는 쪽 |
+|---|---|---|---|
+| 주입 op | 물리 트리 조작 (`native*`) | `nativeInsert` `nativeExtract` `nativeRemove` `nativeMove` `nativeSwap` `nativeDispose` | 백엔드 |
+| 주입 op | 판정·훅·조회 op | `isInst` `onDestroying` `nativeClaim` `isClaimed` `nativeFindChild` | 백엔드 |
+| 주입 op | 생명주기 hold op | `holdLifetime` `releaseLifetime` `isHeld` `isHeldBy` | 백엔드 |
+| 주입 op | 메타데이터 op | `addTag` `removeTag` `setAttr` | 백엔드 |
+| 주입 op | 시간 op | `setTimeout` `clearTimeout` | 백엔드 |
+| 합성 op | 생명주기 프리미티브 | `bindLifetime` `unbindLifetime` `canBound` `canExecute` | quad-base(hold op 위에 — §4) |
+
+이 페이지의 나머지 절(§2~§5)과 "주입 슬롯 20개"는 주입 op 층을 말합니다.
+
+두 번째 백엔드가 이미 존재합니다 — 테스트용 mock(`quad-base/test/mock.luau`)이 같은 계약을 전부 구현하고, 같은 `UseProvider` 경로로 설치됩니다. 계약이 실제로 어떻게 읽히는지 확인하고 싶다면 그 파일을 보세요 — **quad 계약의 참고 구현이지 엔진 시뮬레이터가 아닙니다.**
+
+**mock이 무엇을 흉내 내고 무엇을 흉내 내지 않나.** 이 저장소의 mock은 quad 계약(코어·프로바이더·플러그인)을 검증하는 하네스입니다. 엔진 동작은 quad 계약이 기대는 것만 흉내 내고, 그 밖의 엔진 차이(예: 같은 값을 다시 대입해도 변경 신호를 내는 것, 레이아웃이 없는 것)는 mock을 엔진에 맞추지 않습니다 — 엔진 자체의 동작은 실기기에서 확인합니다. 그러니 mock에서 본 결과를 엔진 동작으로 읽지 마세요. 앱이나 컴포넌트 라이브러리를 엔진 없이 테스트할 **소비자용 mock은 이것과 별개**이고, 아직 공개되지 않았습니다([how-to 06 — 헤드리스 테스트](../../how-to/06-headless-testing.md)).
 
 **`_`로 시작하는 필드는 이 규약에 속하지 않습니다.** quad-base 모듈의 `_slotInternal`이나 `Timeout`의 `_native` 같은 필드는 패키지 안쪽의 내부 계약이라 언제든 바뀔 수 있습니다 — 백엔드·플러그인이 기대도 되는 표면은 이 페이지와 `quad-types`의 이름 있는 필드뿐입니다. (`_native`는 백엔드가 자기 op 사이에서만 주고받는 값이라 그 백엔드 안에서는 자유롭게 씁니다.) 한때 `bindLifetime`을 백엔드가 구현하면서 `Observer`/`Effect`의 밑줄 훅 셋을 예외로 불러야 했는데, 지금은 `bindLifetime` 자체가 quad-base 것이라 그 훅들은 백엔드가 알 필요도, 부를 일도 없습니다(아래 §4).
 
@@ -102,7 +110,7 @@ nativeFindChild (inst: any, key: any, className: string?) -> any
 - **`isInst(value)`** — "이 값이 이 백엔드의 마운트 가능한 요소인가". quad-base는 `T`가 무엇인지 모르므로 요소 타입 검증을 이 화이트리스트 술어에 전부 위임합니다. quad-roblox 구현은 `typeof(value) == "Instance"` 한 줄이고, mock은 "이게 mock 인스턴스인가"입니다.
 - **`onDestroying(inst, fn)`** — 요소가 파괴될 때 `fn`을 부르는 훅. 반환값은 **Connection 모양**(`Connected` 필드와 `Disconnect` 메소드를 가진 값)이어야 합니다 — `Effect`가 바인딩을 풀 때 이걸 끊습니다. quad-roblox 구현은 `inst.Destroying:Connect(fn)`입니다. **발화 시점은 동기여도 지연이어도 됩니다** — Roblox는 플레이스 설정(`SignalBehavior` Immediate/Deferred)에 따라 `Destroying`이 `Destroy()` 안에서 불리기도, 다음 재개점으로 미뤄지기도 하며 quad는 둘 다 견디도록 짜여 있습니다(gcconn 끊김은 언제나 동기라 `isHeld`가 먼저 거짓이 됩니다). mock은 동기 하나만 구현합니다. `Disconnect`는 콜론 호출(`conn:Disconnect()`)이고 두 번 불러도 무해해야 합니다.
 - **`nativeClaim(inst)`** — 요소 하나를 quad 소유로 등록하는 셋업. quad-roblox에서는 여기서 GC 앵커(`gchold`)와 절대 발화하지 않는 시그널 연결(`gcconn`)을 만듭니다. `New`가 인스턴스를 만든 직후, 그리고 `Claim`이 기존 트리를 흡수할 때 요소마다 정확히 한 번 불립니다. **같은 요소를 두 번 claim하면 에러**(`Quad0225 nativeClaim: Instance is already claimed by quad`)이고, 이미 파괴된 요소를 claim하는 것은 정의되지 않은 동작입니다(가드하지 않습니다).
-- **`isClaimed(inst)`** — "이 요소가 이미 quad 소유인가". `Slot`이 원소를 받을 때와 **정적 자식 자리마다**(`D.<Class> { child }`의 `InstanceChild` 핸들러 — 구동 hot path) 부르고, 거짓이면 거부합니다(`Quad0241 Slot: this element is not claimed by quad …` / `Quad0219 Dispatch: this Instance is not claimed by quad …`). 싸게 만드세요 — 자식 하나당 한 번 불립니다 — 자동으로 claim해 주지 않는 것이 계약입니다. quad-roblox 구현은 `nativeClaim`이 남긴 셋업(`gchold`)이 있고 **그때 만든 연결(`ClassName` 변경 시그널에 건, 절대 발화하지 않는 `gcconn` — 인스턴스가 파괴되면 엔진이 끊습니다)이 아직 살아 있는가**를 봅니다 — 파괴된 인스턴스는 GC를 기다리지 않고 즉시 거짓이어야 합니다(약한 기록만 보면 다음 GC까지 시체가 claim된 것으로 읽혀 Slot이 그 시체를 앉힙니다). `Claim`도 해석 패스에서 트리의 모든 인스턴스에 이걸 물어 이미 소유된 것이 하나라도 있으면 아무것도 claim하지 않고 거부합니다 — 그러니 "`nativeClaim`이 지나간 것만 참"이어야 `Claim`이 성립합니다. mock은 `Instance.new`가 태어날 때 claim된 것(Declaration이 만든 것의 대역)이고 밖의 것은 `Instance.foreign`입니다.
+- **`isClaimed(inst)`** — **"이 요소는 살아 있는 동안 quad 손에 닿았고, 지금도 살아 있는가"**. 계약은 둘입니다: (1) quad의 제거 경로(`q.dispose`, Slot 철거 — 백엔드 쪽에서는 `nativeRemove`·`nativeDispose`)로 죽은 요소는 **그 즉시 거짓**이어야 합니다 — 모든 백엔드의 필수 계약입니다. (2) 엔진에서 직접 파괴된 요소(quad 밖)는, 엔진이 파괴를 동기로 알려 줄 수 있으면 역시 즉시 거짓이어야 합니다(Roblox가 그렇습니다 — 아래). 엔진이 그걸 알려 주지 못하는 백엔드는 quad 제거 경로에서 죽음을 기록(약한 맵 등)하면 (1)을 지킬 수 있고, 그 백엔드에서는 quad 밖 파괴 뒤의 결과가 정의되지 않습니다(그 백엔드의 사용자에게 `q.dispose`를 쓰라고 안내하세요). 파괴된 요소를 다시 claim하는 것은 정의되지 않습니다(위 `nativeClaim`). 앱 코드도 이 op를 물을 수 있습니다([core/10](../core/10-lifetime-sentinels.md#qbackendisclaimedinst)). `Slot`이 원소를 받을 때와 **정적 자식 자리마다**(`D.<Class> { child }`의 `InstanceChild` 핸들러 — 구동 hot path) 부르고, 거짓이면 거부합니다(`Quad0241 Slot: this element is not claimed by quad …` / `Quad0219 Dispatch: this Instance is not claimed by quad …`). 싸게 만드세요 — 자식 하나당 한 번 불립니다 — 자동으로 claim해 주지 않는 것이 계약입니다. quad-roblox 구현은 `nativeClaim`이 남긴 셋업(`gchold`)이 있고 **그때 만든 연결(`ClassName` 변경 시그널에 건, 절대 발화하지 않는 `gcconn` — 인스턴스가 파괴되면 엔진이 끊습니다)이 아직 살아 있는가**를 봅니다 — 파괴된 인스턴스는 GC를 기다리지 않고 즉시 거짓이어야 합니다(약한 기록만 보면 다음 GC까지 시체가 claim된 것으로 읽혀 Slot이 그 시체를 앉힙니다). `Claim`도 해석 패스에서 트리의 모든 인스턴스에 이걸 물어 이미 소유된 것이 하나라도 있으면 아무것도 claim하지 않고 거부합니다 — 그러니 "`nativeClaim`이 지나간 것만 참"이어야 `Claim`이 성립합니다. mock은 `Instance.new`가 태어날 때 claim된 것(Declaration이 만든 것의 대역)이고 밖의 것은 `Instance.foreign`입니다.
 - **`nativeFindChild(inst, key, className?)`** — 매퍼 디스크립터의 키로 직계 자식을 찾는 조회 op. 키가 무슨 뜻인지는 백엔드가 정합니다(Roblox는 `Name`, web이라면 id나 selector). 셋째 인자는 디스크립터의 클래스 이름 — 이름은 맞는데 그 클래스가 아닌 자식이면 **`nil`을 돌려주세요**(찾지 못한 것과 같이 취급되어 `Claim`이 "no child matched" 에러를 냅니다). quad-roblox 구현은 `inst:FindFirstChild(key)` 뒤 `child:IsA(className)`이고, mock은 `ClassName` 비교입니다.
 
 ### 3.1 자기 값 타입에 브랜드 붙이기 — `Brand()`
@@ -242,7 +250,7 @@ local q = Quad.New():UseProvider(CustomProvider)
 - 대안마다 `+` 뒤 빌드 메타데이터를 버리고, 첫 `-`에서 core와 프리릴리즈 꼬리로 나눕니다. **꼬리의 있고 없음은 양쪽이 같아야** 합니다 — 꼬리 없는 패턴(`"3.*.*"` 포함)은 rc 빌드를 받지 않고, 꼬리 있는 패턴은 릴리즈를 받지 않습니다. rc도 받으려면 꼬리 달린 대안을 더합니다.
 - core와 꼬리를 각각 `.`로 나눠 **따로** 판정합니다(자리 개수가 다르면 불일치). 자리마다 `*`(뭐든) / `N^`(숫자로 N 이상 — N보다 크면 그 구간의 뒤 자리는 보지 않는 사전식 하한) / 그 외 정확 일치입니다. 꼬리의 `rc`·`beta` 같은 글자 자리는 정확 일치뿐입니다(`"3.3.0-rc.1^"`은 3.3.0의 rc.1 이후 rc).
 
- 락은 프로바이더가 아니라 `UseProvider` 안에 있으므로, 프로바이더 작성자가 가드를 빠뜨려도 **바깥에서 두 번 부르는 것**은 구조적으로 막힙니다. 막지 않는 것 둘([2026-09-27 mock 관측]): (1) 프로바이더 **본문 안에서** `q:UseProvider(다른 것)`을 부르면 슬롯이 아직 비어 있어 둘이 다 병합되고 슬롯엔 바깥 것만 남습니다 — "roblox + 사내 확장"을 한 프로바이더로 감싸려면 `UseProvider`를 안에서 부르지 말고 확장을 `AddPlugin`으로 얹으세요(자기 자신을 다시 부르면 상한 없이 재귀합니다); (2) 설치 함수는 **yield하지 마세요** — 표시는 성공 뒤에 남으므로 yield 중 다른 스레드가 같은 함수로 `UseProvider`/`AddPlugin`을 부르면 본문이 두 번 돌고 핸들러가 두 번 등록됩니다(quad-roblox 자체엔 yield가 없습니다). `AddPlugin`은 같은 병합을 하되 락이 없습니다 — 백엔드 팩토리를 `AddPlugin`으로 넘기는 것은 지원 대상이 아닙니다.
+ 락은 프로바이더가 아니라 `UseProvider` 안에 있으므로, 프로바이더 작성자가 가드를 빠뜨려도 **바깥에서 두 번 부르는 것**은 구조적으로 막힙니다. 막지 않는 것 둘(둘 다 정의되지 않은 동작 — 아래 결과는 관측, 계약 아님; [2026-09-27 mock 관측]): (1) 프로바이더 **본문 안에서** `q:UseProvider(다른 것)`을 부르면 슬롯이 아직 비어 있어 둘이 다 병합되고 슬롯엔 바깥 것만 남습니다 — "roblox + 사내 확장"을 한 프로바이더로 감싸려면 `UseProvider`를 안에서 부르지 말고 확장을 `AddPlugin`으로 얹으세요(자기 자신을 다시 부르면 상한 없이 재귀합니다); (2) 설치 함수는 **yield하지 마세요** — 표시는 성공 뒤에 남으므로 yield 중 다른 스레드가 같은 함수로 `UseProvider`/`AddPlugin`을 부르면 본문이 두 번 돌고 핸들러가 두 번 등록됩니다(quad-roblox 자체엔 yield가 없습니다). `AddPlugin`은 같은 병합을 하되 락이 없습니다 — 백엔드 팩토리를 `AddPlugin`으로 넘기는 것은 지원 대상이 아닙니다.
 
 ---
 

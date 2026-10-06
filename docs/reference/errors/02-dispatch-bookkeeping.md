@@ -36,7 +36,8 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 `Bookkeeping.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) - or a leaf handler skipped its position registration: position {i} is not registered` — `quad-base/src/Bookkeeping.luau`
 
 - **언제**: `q.Bookkeeping.getOffsetAt(ownerKey, at)`으로 조회한 `at`이 등록된 마지막 위치(`N`) + 1보다 클 때 — 범위 밖 조회입니다. (같은 자리에서 중간의 어떤 위치가 등록 자체를 건너뛴 경우도 이 갈래로 잡힙니다 — 두 원인을 코드가 구분할 수 없어 메시지가 둘 다 말합니다.) `q.Bookkeeping.setOffsetSource(ownerKey, i, source)`도 내부에서 `getOffsetAt(ownerKey, i)`를 부르므로, `i` 앞 위치들이 아직 등록되지 않았으면 같은 메시지가 납니다 — 이때 메시지는 직접 부르지 않은 `getOffsetAt`을 말합니다.
-- **고치려면**: 등록된 범위(`1..N+1`) 안에서 조회하세요. 조회나 `setOffsetSource` 전에 그 앞 위치들을 **계약 순서대로**(위치마다 `setOffsetSource` → `setLength`, 또는 `setEmpty` 하나) 먼저 등록하세요 — 위치를 등록하는 것은 `setLength`/`setEmpty`뿐이고 `setOffsetSource`는 등록하지 않고 앞 위치를 조회합니다. 앞 위치를 `setLength`만으로 등록하면 이 에러 대신 `Quad0023`(그 위치의 발행 채널이 없음)이 납니다([2026-09-27 mock 실측]).
+- **고치려면**: 등록된 범위(`1..N+1`) 안에서 조회하세요. 조회나 `setOffsetSource` 전에 그 앞 위치들을 **계약 순서대로**(위치마다 `setOffsetSource` → `setLength`, 또는 `setEmpty` 하나) 먼저 등록하세요 — 위치를 등록하는 것은 `setLength`/`setEmpty`뿐이고 `setOffsetSource`는 등록하지 않고 앞 위치를 조회합니다. 앞 위치를 `setLength`만으로 등록하면 이 에러 대신 `Quad0023`(그 위치의 발행 채널이 없음)이 납니다.
+  <!-- 근거: 2026-09-27 mock 실측(저장소 내부 기록) -->
 - **참고**: [`q.Bookkeeping.getOffsetAt(ownerKey, at)`](../extend/02-dispatch-handler-contract.md#qbookkeepinggetoffsetatownerkey-at)
 
 ### Quad0023
@@ -44,7 +45,9 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 `Bookkeeping.recompute: sourceList[{i}] is nil - a nil hole in the numeric-key part of props ({ a, nil, b })? fill the optional slot with q.None (the children placed before this raise stay seated in the half-built Instance, reachable as child.Parent - q.dispose that Instance to clean up; it takes those children with it, so build the retry with new ones); if you are writing a handler, bookkeeping is broken (setLength without setOffsetSource? the contract says None)` — `quad-base/src/Bookkeeping.luau`
 
 - **언제**: 재계산 도중 위치 `i`의 오프셋 발행 채널(`sourceList[i]`)이 `nil`일 때 — 대표 원인은 배열 리터럴 중간에 `nil`이 낀 props(`{ a, nil, b }`)이고, 핸들러를 직접 쓰는 입장이면 `setOffsetSource`(또는 `setEmpty`) 등록을 빠뜨린 경우입니다.
-- **고치려면**: 사용자라면 그 옵셔널 자리를 `q.None`으로 채우세요. 핸들러 작성자라면 그 자리의 `setOffsetSource` 등록을 빠뜨리지 않았는지 확인하세요. 이 에러가 난 뒤 그 Instance는 반쯤 지어진 채(구멍 뒤 자식까지 붙어 있음 — 메시지의 "children placed before this raise"보다 넓음) 남습니다 — 같은 자식 값으로 다시 만들면 `Quad0160`, 그 Instance를 dispose한 뒤 다시 쓰면 `Quad0219`가 나니, 호스트를 dispose하고 자식도 새로 만들어 처음부터 하세요([2026-09-27 mock 실측 — 관측, 계약 아님]).
+- **고치려면**: 사용자라면 그 옵셔널 자리를 `q.None`으로 채우세요. 핸들러 작성자라면 그 자리의 `setOffsetSource` 등록을 빠뜨리지 않았는지 확인하세요.
+- **관측(계약 아님)**: 이 에러가 난 뒤 그 Instance는 반쯤 지어진 채(구멍 뒤 자식까지 붙어 있음 — 메시지의 "children placed before this raise"보다 넓음) 남습니다. 같은 자식 값으로 다시 만들면 `Quad0160`, 그 Instance를 dispose한 뒤 다시 쓰면 `Quad0219`가 납니다.
+  <!-- 근거: 2026-09-27 mock 실측(저장소 내부 기록) -->
 - **참고**: [Length/Offset 부기](../extend/02-dispatch-handler-contract.md#lengthoffset-부기)
 
 ### Quad0024
@@ -67,7 +70,8 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Bookkeeping.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not - a leaf handler skipped its position registration` — `quad-base/src/Bookkeeping.luau`
 
-- **언제**: 조회한 `at`은 등록 범위 안(`N+1` 이하)인데, 그 앞의 어떤 위치 `i`가 등록되지 않았을 때 — 어떤 leaf 핸들러가 자기 자리의 위치 등록(`setLength`/`setOffsetSource`)을 건너뛴 경우입니다. `getOffsetAt`의 if/else 두 갈래 중 하나로, 같은 조건문의 다른 갈래가 Quad0022입니다. [2026-09-27 실측] 실제로는 배치 차단기(`drive`·Slot 내부가 켜는 것)가 켜져 재계산이 미뤄진 동안에만 이 갈래가 보입니다 — 차단기 밖에서 구멍이 생기면 `setLength`/`setEmpty` 끝의 재계산이 Quad0023/Quad0024로 먼저 던집니다.
+- **언제**: 조회한 `at`은 등록 범위 안(`N+1` 이하)인데, 그 앞의 어떤 위치 `i`가 등록되지 않았을 때 — 어떤 leaf 핸들러가 자기 자리의 위치 등록(`setLength`/`setOffsetSource`)을 건너뛴 경우입니다. `getOffsetAt`의 if/else 두 갈래 중 하나로, 같은 조건문의 다른 갈래가 Quad0022입니다. 실제로는 배치 차단기(`drive`·Slot 내부가 켜는 것)가 켜져 재계산이 미뤄진 동안에만 이 갈래가 보입니다 — 차단기 밖에서 구멍이 생기면 `setLength`/`setEmpty` 끝의 재계산이 Quad0023/Quad0024로 먼저 던집니다.
+  <!-- 근거: 2026-09-27 실측(저장소 내부 기록) -->
 - **고치려면**: 그 자리를 담당한 핸들러가 반드시 `setLength`와 `setOffsetSource`(또는 그 둘을 한 번에 하는 `setEmpty`)를 부르게 하세요.
 - **참고**: [`q.Bookkeeping.getOffsetAt(ownerKey, at)`](../extend/02-dispatch-handler-contract.md#qbookkeepinggetoffsetatownerkey-at)
 
@@ -243,7 +247,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `State: the value chain is circular (a State that eventually holds itself) - a State may hold another State, but not a cycle` — `quad-base/src/StateHandler.luau`
 
-- **언제**: [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때, props 자리에 놓인 State의 값을 따라가다(State가 다른 State를 값으로 들고 있으면 그 State도 마저 벗기는 재귀) 결국 자기 자신으로 돌아오는 순환을 만났을 때(예: `a:Set(b); b:Set(a)`). **[2026-10-01]** Slot에 넣은 State도 같습니다 — 원소 State의 값 사슬이 순환하면(`st:Set(st)` 등) Slot이 그 값을 읽는 때 — 마운트될 때(이미 마운트된 Slot이면 넣는 줄)나 그 `:Set` 줄 — 던집니다(그 뒤 Slot의 상태는 계약이 아닙니다 — 지금은 이전 원소를 유지한 채 다음 정상 `:Set`으로 이어지는 것이 관측됨). **[2026-10-06 기준, 다음 릴리즈부터]** 마운트 전 Slot에 넣는 줄에서는 던지지 않습니다 — 그 시점엔 원소 State의 값을 읽지 않으므로(지연 계산), debug에서도 값을 앞당겨 읽지 않습니다. **[2026-10-06 기준, 다음 릴리즈부터]** 사슬을 끝까지 따라가는 이 검사는 emit마다 도는 자리라 debug 층으로 내려갔습니다 — `q.debug`를 꺼 두면 검사하지 않고, 순환은 스택 오버플로로 끝나는 **정의되지 않은 동작**입니다(Slot 원소 자리라면 그 Slot이 망가진 채 남을 수 있습니다). 개발 중에는 debug를 켜 두세요.
+- **언제**: [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때, props 자리에 놓인 State의 값을 따라가다(State가 다른 State를 값으로 들고 있으면 그 State도 마저 벗기는 재귀) 결국 자기 자신으로 돌아오는 순환을 만났을 때(예: `a:Set(b); b:Set(a)`). Slot에 넣은 State도 같습니다 — 원소 State의 값 사슬이 순환하면(`st:Set(st)` 등) Slot이 그 값을 읽는 때 — 마운트될 때(이미 마운트된 Slot이면 넣는 줄)나 그 `:Set` 줄 — 던집니다(그 뒤 Slot의 상태는 계약이 아닙니다 — 지금은 이전 원소를 유지한 채 다음 정상 `:Set`으로 이어지는 것이 관측됨). **(3.2.0 다음 릴리즈부터)** 마운트 전 Slot에 넣는 줄에서는 던지지 않습니다 — 그 시점엔 원소 State의 값을 읽지 않으므로(지연 계산), debug에서도 값을 앞당겨 읽지 않습니다. **(3.2.0 다음 릴리즈부터)** 사슬을 끝까지 따라가는 이 검사는 emit마다 도는 자리라 debug 층으로 내려갔습니다 — `q.debug`를 꺼 두면 검사하지 않고, 순환은 스택 오버플로로 끝나는 **정의되지 않은 동작**입니다(Slot 원소 자리라면 그 Slot이 망가진 채 남을 수 있습니다). 개발 중에는 debug를 켜 두세요.
 - **고치려면**: State가 다른 State를 값으로 들고 있는 것 자체는 되지만, 그 사슬이 순환하면 안 됩니다 — 순환이 생기지 않게 값 대입을 정리하세요.
 - **참고**: [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진](../../quadnomicon/08-extensible-dispatch-engine.md) · [`slot:Add`](../core/06-slot.md#slotaddelement-index)
 
@@ -251,7 +255,8 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Dispatch.retractFrom: no slot at index {i} - the chain array has a hole, bookkeeping is broken` — `quad-base/src/Dispatch/init.luau`
 
-- **언제**: `retractFrom`이 체인 배열을 되감다가 구멍(`nil` 슬롯)을 만났을 때 — 계약을 지키는 호출로는 나지 않는 내부 불변식 위반입니다. 다만 계약을 어긴 호출은 공개 함수 `retractFrom`을 거쳐 이 상태에 닿을 수 있습니다 — 위임 핸들러의 안쪽 retractor가 같은 `(inst, key)`에 `retractFrom`을 다시 부르는 **간접 재진입**(정의되지 않은 동작 — [2026-09-27 mock 실측]).
+- **언제**: `retractFrom`이 체인 배열을 되감다가 구멍(`nil` 슬롯)을 만났을 때 — 계약을 지키는 호출로는 나지 않는 내부 불변식 위반입니다. 다만 계약을 어긴 호출은 공개 함수 `retractFrom`을 거쳐 이 상태에 닿을 수 있습니다 — 위임 핸들러의 안쪽 retractor가 같은 `(inst, key)`에 `retractFrom`을 다시 부르는 **간접 재진입**(정의되지 않은 동작).
+  <!-- 근거: 2026-09-27 mock 실측(저장소 내부 기록) -->
 - **고치려면**: retractor 안에서 같은 자리를 다시 철거하지 마세요(재진입은 계약 밖). 그런 코드가 없는데 났다면 내부 버그 신호입니다 — 재현되면 리포트하세요.
 - **참고**: [`q.Dispatch.retractFrom(inst, key, index)`](../extend/02-dispatch-handler-contract.md#qdispatchretractfrominst-key-index)
 
@@ -259,7 +264,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Dispatch.{fnName}: inst must not be nil` — `quad-base/src/Dispatch/init.luau`
 
-- **언제**: `q.Dispatch.process`/`q.Dispatch.retractFrom`/`q.Dispatch.getHandler`를 `inst = nil`로 직접 부를 때. `{fnName}`은 실제로 부른 함수 이름입니다(`getHandler`는 **[2026-09-26 기준]** 추가된 게이트).
+- **언제**: `q.Dispatch.process`/`q.Dispatch.retractFrom`/`q.Dispatch.getHandler`를 `inst = nil`로 직접 부를 때. `{fnName}`은 실제로 부른 함수 이름입니다(`getHandler`의 게이트는 3.2.0 다음 릴리즈부터).
 - **고치려면**: 실제 대상 요소(`inst`)를 넘기세요.
 - **참고**: [`q.Dispatch.process(inst, key, value, index)`](../extend/02-dispatch-handler-contract.md#qdispatchprocessinst-key-value-index)
 
@@ -275,7 +280,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Dispatch.{fnName}: key must not be nil` — `quad-base/src/Dispatch/init.luau`
 
-- **언제**: `q.Dispatch.process`/`q.Dispatch.retractFrom`/`q.Dispatch.getHandler`를 `key = nil`로 부를 때(`getHandler`는 **[2026-09-26 기준]** 추가된 게이트).
+- **언제**: `q.Dispatch.process`/`q.Dispatch.retractFrom`/`q.Dispatch.getHandler`를 `key = nil`로 부를 때(`getHandler`의 게이트는 3.2.0 다음 릴리즈부터).
 - **고치려면**: 실제 props 키(숫자 또는 문자열)를 넘기세요.
 - **참고**: [`q.Dispatch.process(inst, key, value, index)`](../extend/02-dispatch-handler-contract.md#qdispatchprocessinst-key-value-index)
 
@@ -293,7 +298,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `brand:` 뒤에는 그 값이 답하는 브랜드 이름이 **전부, 이름순으로** 쉼표로 이어 붙습니다 — 모듈의 `is<Brand>` 필드 가운데 [`q.BrandPredicates`](../core/11-predicates.md#qbrandpredicates)에 등록된 술어만 묻습니다(quad-base의 `q.isX` 술어도 모듈이 만들어질 때 같은 집합에 등록됩니다). 그래서 `q.PreRef()`는 `Epoch, PreRef, Ref`, `q.Source(1)`은 `Epoch, Source, State`처럼 포함 관계에 있는 이름이 함께 나옵니다. 등록되지 않은 `is*` 헬퍼는 묻지 않고, 등록된 술어가 던지면 그 술어는 걸리지 않은 것으로 칩니다.
 
-꼬리 힌트는 이렇게 정해집니다. **값이 [`q.Protocols.DispatchHint`](../extend/02-dispatch-handler-contract.md#qprotocolsdispatchhint)에 속하면** 그 값의 `__dispatchHint(key)`를 한 번 불러 돌려받은 문장을 ` - ` 뒤에 씁니다 — 브랜드가 자기 쓰임을 직접 말합니다. **[2026-10-06 기준, 다음 릴리즈부터]** quad가 등록한 문장은 이렇습니다(문구는 API가 아닙니다):
+꼬리 힌트는 이렇게 정해집니다. **값이 [`q.Protocols.DispatchHint`](../extend/02-dispatch-handler-contract.md#qprotocolsdispatchhint)에 속하면** 그 값의 `__dispatchHint(key)`를 한 번 불러 돌려받은 문장을 ` - ` 뒤에 씁니다 — 브랜드가 자기 쓰임을 직접 말합니다. **(3.2.0 다음 릴리즈부터)** quad가 등록한 문장은 이렇습니다(문구는 API가 아닙니다):
 
 | 값 | 꼬리 |
 |---|---|
@@ -354,7 +359,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Dispatch.drive: props must be a plain { ... } table - a quad value needs the braces (got {브랜드 이름들 또는 "a table with a metatable"})` — `quad-base/src/Dispatch/init.luau`
 
-- **언제**: `flattened` 자체가 메타테이블을 가진 값이거나, 메타테이블이 없는 quad 브랜드 값(`q.AttrKey(...)`·매퍼 디스크립터)일 때 — `D.Frame(q.Source(1))`처럼 중괄호를 잊어 quad 값 하나를 그대로 props로 넘긴 흔한 실수를 잡습니다. **[2026-10-01 기준, 다음 릴리즈부터]** 프로바이더가 등록한 브랜드 술어(`q.BrandPredicates`)까지 훑는 검사는 [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때만 돕니다 — 메타테이블 없는 평범한 테이블에 브랜드를 붙이는 프로바이더 값은 debug를 꺼 두면 여기 걸리지 않고 그 필드들이 props로 해석됩니다(대개 `Quad0076`). quad-base 값은 전부 debug와 무관하게 걸립니다.
+- **언제**: `flattened` 자체가 메타테이블을 가진 값이거나, 메타테이블이 없는 quad 브랜드 값(`q.AttrKey(...)`·매퍼 디스크립터)일 때 — `D.Frame(q.Source(1))`처럼 중괄호를 잊어 quad 값 하나를 그대로 props로 넘긴 흔한 실수를 잡습니다. **(3.2.0 다음 릴리즈부터)** 프로바이더가 등록한 브랜드 술어(`q.BrandPredicates`)까지 훑는 검사는 [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때만 돕니다 — 메타테이블 없는 평범한 테이블에 브랜드를 붙이는 프로바이더 값은 debug를 꺼 두면 여기 걸리지 않고 그 필드들이 props로 해석됩니다(대개 `Quad0076`). quad-base 값은 전부 debug와 무관하게 걸립니다.
 - **고치려면**: 항상 중괄호로 감싼 평범한 테이블을 넘기세요 — `D.Frame { Name = q.Source("x") }`, `D.Frame { q.Attr{...} }`, `D.Frame { child }`처럼. (`D.Frame { q.Source(1) }`은 감싸도 `Quad0076`입니다 — 숫자 키에 놓인 `Source<number>`를 받는 핸들러가 없습니다.)
 - **참고**: [`q.Dispatch.drive(inst, flattened)`](../extend/02-dispatch-handler-contract.md#qdispatchdriveinst-flattened)
 
@@ -394,6 +399,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Bookkeeping.recompute: rewound 10000 times in one pass - a subscriber keeps changing a length before the position it is told about (a Slot Offset callback that adds and removes on every value never settles)` — `quad-base/src/Bookkeeping.luau`
 
-- **언제**: 한 번의 자리 계산이 1만 번 넘게 되감았을 때 — 자리 계산 도중 발행된 `Offset`을 받은 콜백이 그 앞자리의 길이를 바꿔 계산이 그 자리부터 다시 돌기를 끝없이 되풀이하는 경우입니다. 흔한 모양은 `slot.Offset`을 보는 Observer·Effect가 값마다 옆 Slot의 원소를 넣었다 뺐다 하는 것입니다. 이 한도는 늘 켜져 있고([`q.debug`](../core/01-quad-module.md#qdebug)와 무관) [`Quad0263`](./04-ref-observer-effect.md#quad0263)(`Effect`의 지연 재실행)과 같은 수입니다 — 1만 번 전까지의 되감기는 정의된 동작이고, 목록이 아무리 길어도 되감기가 없으면 걸리지 않습니다. **[2026-10-02 기준]** 게시된 3.2.0에는 이 한도가 없어 같은 코드가 에러 없이 끝나지 않습니다. 에러는 그 계산을 시작한 줄(CRUD·`:Set`·`setLength`)을 가리킵니다.
-- **고치려면**: 콜백이 넣고 빼는 조건이 한 값에서 멈추게 하세요 — 받은 값에 따라 넣기와 빼기가 번갈아 참이 되면 끝나지 않습니다. 넣을지 말지를 콜백이 바꾸는 그 길이에 기대지 않는 값(데이터 개수 등)으로 정하세요. 이 에러는 자리 계산 도중에 나므로 그 부모의 부기는 멈춘 채 남습니다([`slot.Offset`](../core/06-slot.md#slotoffset)의 caution) — 그 부모는 새로 만드세요.
+- **언제**: 한 번의 자리 계산이 1만 번 넘게 되감았을 때 — 자리 계산 도중 발행된 `Offset`을 받은 콜백이 그 앞자리의 길이를 바꿔 계산이 그 자리부터 다시 돌기를 끝없이 되풀이하는 경우입니다. 흔한 모양은 `slot.Offset`을 보는 Observer·Effect가 값마다 옆 Slot의 원소를 넣었다 뺐다 하는 것입니다. 이 한도는 늘 켜져 있고([`q.debug`](../core/01-quad-module.md#qdebug)와 무관) [`Quad0263`](./04-ref-observer-effect.md#quad0263)(`Effect`의 지연 재실행)과 같은 수입니다. 수렴하는 되감기는 정의된 동작이고(목록이 아무리 길어도 되감기가 끝나면 걸리지 않습니다), 수렴하지 않는 고리는 정의되지 않은 동작입니다 — 이 한도는 그 고리를 정의하는 것이 아니라 무한히 돌지 않고 끝나게 하는 장치입니다([`slot.Offset`](../core/06-slot.md#slotoffset)). 게시된 3.2.0에는 이 한도가 없어 같은 코드가 에러 없이 끝나지 않습니다. 에러는 그 계산을 시작한 줄(CRUD·`:Set`·`setLength`)을 가리킵니다.
+- **고치려면**: 콜백이 넣고 빼는 조건이 한 값에서 멈추게 하세요 — 받은 값에 따라 넣기와 빼기가 번갈아 참이 되면 끝나지 않습니다. 넣을지 말지를 콜백이 바꾸는 그 길이에 기대지 않는 값(데이터 개수 등)으로 정하세요.
+- **관측(계약 아님)**: 이 에러는 자리 계산 도중에 나므로 그 부모의 부기는 멈춘 채 남습니다([`slot.Offset`](../core/06-slot.md#slotoffset)의 caution).
 - **참고**: [`slot.Offset`](../core/06-slot.md#slotoffset), [Length/Offset 부기](../extend/02-dispatch-handler-contract.md#lengthoffset-부기)

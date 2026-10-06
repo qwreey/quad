@@ -242,7 +242,7 @@ panel.Parent = screen
 ```
 
 **실행하면** 체크박스를 누를 때마다 체크 표시와 아래 라벨이 같이 바뀝니다 — `☐ 약관에 동의합니다`/`꺼짐`에서 `☑ 약관에 동의합니다`/`켜짐`으로. 누른 자리는 컴포넌트 안이고 라벨은 밖인데도 따라오는 이유는 둘이 **같은 원천에 매달린 서로 다른 파이프**이기 때문입니다. [03장](./03-flowing-values.md)의 원천 → 파이프 → 프로퍼티 그림 그대로이고, 그 중간에 컴포넌트 경계가 하나 놓였을 뿐입니다. 같은 `agreed`를 `Checkbox` 둘에 넘기면 그 둘이 같이 켜지고 꺼집니다 — 안에서 `q.Source`를 만드는 카운터가 부를 때마다 따로 세는 것과 정확히 반대입니다.
-<!-- mock 실측 2026-09-14: gs.checkbox.luau 1~3 — 컴포넌트 안의 :Set이 바깥 파생 라벨까지 돌고, 원천 하나를 공유한 Checkbox 둘은 함께 움직인다(Counter 둘은 그대로 독립) -->
+<!-- 근거: 2026-09-14 mock 실측(저장소 내부 기록) — 컴포넌트 안의 :Set이 바깥 파생 라벨까지 돌고, 원천 하나를 공유한 Checkbox 둘은 함께 움직인다(Counter 둘은 그대로 독립) -->
 
 <details>
 <summary><strong>처리된 <code>State</code>만 넘기고 싶다면요?</strong></summary>
@@ -256,7 +256,7 @@ panel.Parent = screen
 const readOnly = agreed:Compute(function(c) return c:Get() end)
 -- readOnly:Set(true) → attempt to call missing method 'Set' of table
 ```
-<!-- mock 실측 2026-09-14: gs.checkbox.luau 5 — State 노드에는 Set 필드 자체가 없고, 부르면 위 에러 -->
+<!-- 근거: 2026-09-14 mock 실측(저장소 내부 기록) — State 노드에는 Set 필드 자체가 없고, 부르면 위 에러 -->
 
 </details>
 
@@ -303,7 +303,7 @@ D.Frame { D.TextLabel { … }, props.Children or q.None }
 ```
 
 `q.None`은 "여기에 아무것도 없다"를 뜻하는 약속된 값입니다. 바깥에서 받은 것을 자기 숫자 키 자리에 꽂는 것이라면 `Modifier`든 `Ref`든 전부 같은 관용구를 씁니다. 조건에 따라 자식을 넣고 빼는 자리도 같은 값을 씁니다 — `(showBadge and D.TextLabel { … }) or q.None`. `and`가 만드는 `false`는 그 자리에서 `Quad0076 Dispatch: no handler matched key 1 (value: boolean) - …`로 거부되므로 `or q.None`을 빠뜨리면 안 됩니다.
-<!-- mock 실측 2026-09-11: gs.polish3.luau "11 conditional child" — false 자식은 위 에러, or q.None이면 자리만 비운다 -->
+<!-- 근거: 2026-09-11 mock 실측(저장소 내부 기록) — false 자식은 위 에러, or q.None이면 자리만 비운다 -->
 
 <details>
 <summary><strong>받은 <code>Slot</code>을 왜 <code>Children = …</code> 같은 문자 키 자리에 꽂지 못하나요?</strong></summary>

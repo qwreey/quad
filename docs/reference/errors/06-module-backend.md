@@ -19,7 +19,8 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 `Claim: mapper descriptor was already used (descriptors are one-shot)` — `quad-base/src/Claim.luau`
 
-- **언제**: 이미 한 번 `q.Claim`에 쓰인 디스크립터(1회용)를 다시 쓰려고 할 때. 한 `q.Claim` 트리 안의 두 자리에 같은 디스크립터 값을 놓아도(`M(q.MapperRoot)({ d, d })`) 이 에러입니다([2026-09-27 실측]).
+- **언제**: 이미 한 번 `q.Claim`에 쓰인 디스크립터(1회용)를 다시 쓰려고 할 때. 한 `q.Claim` 트리 안의 두 자리에 같은 디스크립터 값을 놓아도(`M(q.MapperRoot)({ d, d })`) 이 에러입니다.
+  <!-- 근거: 2026-09-27 실측(저장소 내부 기록) -->
 - **고치려면**: 디스크립터 값을 저장해 재사용하지 말고, 필요하면 그것을 만드는 호출을 팩토리 함수로 감싸 매번 새로 만드세요.
 - **참고**: [`q.Claim(inst, desc)`](../roblox/04-claim-mapper.md#qclaiminst-desc)
 
@@ -51,7 +52,7 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 `Claim: array keys must be positive integers (got {i})` — 폐기
 
-- **[2026-10-01 폐기]** 이제 던지지 않습니다. `q.Claim`이 해석 단계에서 디스크립터 props의 숫자 키 도메인을 잠깐 검사했다가, 해석 단계를 디스크립터를 찾아 실제 Instance로 바꾸는 매핑만 하는 단계로 되돌렸습니다. 양의 정수가 아닌 숫자 키(`[0]`, `[2.5]`, 음수)는 그 자리 값이 디스크립터든 아니든 [`Quad0085`](./02-dispatch-bookkeeping.md#quad0085)가 그 props를 적용하는 단계에서 거부합니다 — claim은 이미 일어난 뒤입니다. 이 번호는 다른 에러에 다시 쓰지 않습니다.
+- **폐기** — 이제 던지지 않습니다. `q.Claim`이 해석 단계에서 디스크립터 props의 숫자 키 도메인을 잠깐 검사했다가, 해석 단계를 디스크립터를 찾아 실제 Instance로 바꾸는 매핑만 하는 단계로 되돌렸습니다. 양의 정수가 아닌 숫자 키(`[0]`, `[2.5]`, 음수)는 그 자리 값이 디스크립터든 아니든 [`Quad0085`](./02-dispatch-bookkeeping.md#quad0085)가 그 props를 적용하는 단계에서 거부합니다 — claim은 이미 일어난 뒤입니다. 이 번호는 다른 에러에 다시 쓰지 않습니다.
 - **참고**: [`q.Claim(inst, desc)`](../roblox/04-claim-mapper.md#qclaiminst-desc)
 
 ### Quad0032
@@ -115,7 +116,8 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 `{what}: this value was made by another quad module instance (one made with q.New()) - values cannot cross instances` — `quad-base/src/ModuleIdentity.luau`
 
 - **언제**: 한 quad 모듈 인스턴스가 만든 Observer·Effect·Slot·State를 다른 인스턴스의 트리 자리(숫자 키, 프로퍼티 값, `:List`의 데이터, `Slot`의 원소 자리 등)에 놓았을 때. `{what}`은 그 값이 놓인 자리를 가리키는 이름(`"Observer"`/`"Slot"` 등)입니다.
-- **고치려면**: 값을 만든 인스턴스와 놓는 인스턴스를 같게 맞추세요. quad_base 사본이 둘 섞인 경우는 이 에러로 오지 않습니다 — 사본이 다르면 브랜드가 갈려 `isState`류가 거짓이라 `Quad0076`(빗나간 프로바이더 안내)·`Quad0240`·`Quad0151`류가 납니다([2026-09-27 기준]).
+- **고치려면**: 값을 만든 인스턴스와 놓는 인스턴스를 같게 맞추세요. quad_base 사본이 둘 섞인 경우는 이 에러로 오지 않습니다 — 사본이 다르면 브랜드가 갈려 `isState`류가 거짓이라 `Quad0076`(빗나간 프로바이더 안내)·`Quad0240`·`Quad0151`류가 납니다.
+  <!-- 근거: 2026-09-27 기준 확인(저장소 내부 기록) -->
 - **참고**: [`q.New()`](../core/01-quad-module.md#qnew)
 
 ### Quad0108

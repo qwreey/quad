@@ -124,7 +124,7 @@ const card = D.Frame {
 count:Set(2)   -- 짝수 → 짝수: 집합이 {Card, Even} 그대로라 엔진 호출 0
 count:Set(3)   -- 짝수 → 홀수: 집합이 {Card}가 되어 removeTag:Even 하나
 ```
-<!-- mock 실측 2026-09-21: quad-roblox/test/gs.ch05recheck.luau "05 §2 재검증" — Set(2) 엔진 호출 0, Set(3) removeTag:Even 하나(addTag 없음), Set(5)(홀수→홀수) 0, Set(4)(홀수→짝수) addTag:Even 하나 -->
+<!-- 근거: 2026-09-21 mock 실측(저장소 내부 기록) — Set(2) 엔진 호출 0, Set(3) removeTag:Even 하나(addTag 없음), Set(5)(홀수→홀수) 0, Set(4)(홀수→짝수) addTag:Even 하나 -->
 
 <details>
 <summary><strong>바뀔 때마다 태그를 전부 떼었다 다시 붙이는 건 아닌가요?</strong></summary>
@@ -181,7 +181,7 @@ card:GetAttributes()         --> {Active = true, Kind = "counter", Count = 0}
 active:Set(false)            -- 이제 {Active = false, Kind = "counter", Count = 2}
 active:Set(q.None)           -- 이제 {Kind = "counter", Count = 2}   — Active가 사라진다
 ```
-<!-- 2026-09-10 Studio 실측(Active/Kind/None 경로) + mock 실측 2026-09-21: quad-roblox/test/gs.ch05recheck.luau "05 §3 재검증" — Count가 count:Set을 따라가는 것 확인 -->
+<!-- 근거: 2026-09-10 Studio 실측(Active/Kind/None 경로) + 2026-09-21 mock 실측(저장소 내부 기록) — Count가 count:Set을 따라가는 것 확인 -->
 
 <details>
 <summary><strong><code>Attr</code> 값을 지우려면요?</strong></summary>
@@ -198,7 +198,7 @@ active:Set(q.None)           -- 이제 {Kind = "counter", Count = 2}   — Activ
 네 번째가 함정입니다(`Attr`을 내놓는 `State`로 자리를 잡아 두고 그 파이프가 다른 `Attr`을 내놓는 경우 — 2절의 `Tag`와 같은 모양이고, 원리는 [20장](./20-handlers.md)에서 봅니다). 자리에서 빠지는 `Attr`은 구독을 끊고 이름을 반납할 뿐 엔진 쪽 값에는
 손대지 않습니다. 리터럴 `nil`은 거부가 아니라 평범한 테이블이 `nil`을 담을 수 없어 항목이 조용히
 사라지는 것이고(`q.Attr({ A = nil })`은 빈 그룹), `State` 안의 `nil`은 그 문제가 없어 그대로 삭제로 흐릅니다.
-<!-- mock 실측 2026-09-11: gs.attrnil.luau — 그룹 Attr·BooleanAttr·AttrKey 세 경로 모두 바인딩된 State가 nil을 내놓으면 속성이 삭제된다 -->
+<!-- 근거: 2026-09-11 mock 실측(저장소 내부 기록) — 그룹 Attr·BooleanAttr·AttrKey 세 경로 모두 바인딩된 State가 nil을 내놓으면 속성이 삭제된다 -->
 
 </details>
 

@@ -53,7 +53,7 @@ Quad0204 Tag: names must be strings, Tags, or a plain {...} list of those (got {
 **참조 계수로 붙습니다.** 한 인스턴스의 여러 자리에서 같은 이름을 얹으면 자리마다 세어지고, 마지막 자리가 물러날 때 비로소 엔진에서 떨어집니다(엔진 호출은 이름당 정확히 한 번이지만 묶이는 단위는 **한 자리의 한 전이**라, 한 파동이 여러 자리를 건드리면 호출은 자리 수만큼 나뉩니다 — [2026-09-27 mock 관측]). 세는 것은 **quad의 자리뿐**입니다 — `Claim`으로 입양한 트리나 `:Clone()` 사본에 Studio에서 이미 붙어 있던 같은 이름의 태그는 세지 않으므로, 앱의 마지막 자리가 물러나면 그 태그도 함께 떨어집니다(StyleSheet 셀렉터로 쓰던 태그라면 스타일이 빠집니다). 밖에서 붙인 태그와 앱의 자리가 같은 이름을 쓰지 않게 하세요. 같은 불변 `Tag` 객체를 두 자리에 놓아도 두 번으로 셉니다. 엔진 호출은 이름별로 묶여 한 번에 나갑니다.
 
 **자리의 `Tag`가 갈릴 때 엔진으로 나가는 것은 옛 집합과 새 집합의 차이뿐입니다** — 빠진 이름만 `removeTag`, 생긴 이름만 `addTag`, 각각 한 번에 묶여서. 두 집합이 같으면 호출이 없습니다.
-<!-- mock 실측 2026-09-11: gs.handlerslot.luau — {Card,Even}→{Card,Odd}는 removeTag:Even addTag:Odd, 같은 집합이면 호출 0 -->
+<!-- 근거: 2026-09-11 mock 실측(저장소 내부 기록) — {Card,Even}→{Card,Odd}는 removeTag:Even addTag:Odd, 같은 집합이면 호출 0 -->
 
 ## `q.Tag(...names)`
 
@@ -246,7 +246,7 @@ type AttrConstructor = setmetatable<{
 | 그 `Attr` 값 객체를 다른 것으로 **교체**한다 | 옛 속성 값이 엔진에 **그대로 남습니다** |
 
 네 번째가 중요합니다. 자리에서 물러나는 `Attr`은 구독을 끊고 이름 소유권만 반납할 뿐, 엔진 쪽에는 손대지 않습니다. 지우고 싶으면 명시적으로 `q.None`(또는 바인딩된 `State`의 `nil`)을 보내야 합니다. **리터럴** `nil`은 거부되는 게 아니라 **조용히 빠집니다** — 평범한 테이블이 `nil`을 담을 수 없어 `q.Attr({ A = nil, B = 1 })`은 에러 없이 `{ B = 1 }`이 되고(타입드 슈거 `q.StringAttr("A", nil)`만 `Quad0014`로 거부), 그래서 리터럴 자리에서 지우기의 유일한 표현은 `q.None`입니다.
-<!-- mock 실측 2026-09-11: gs.attrnil.luau — 그룹 Attr·BooleanAttr·AttrKey 세 경로 모두 State의 nil이 삭제로 흐른다 -->
+<!-- 근거: 2026-09-11 mock 실측(저장소 내부 기록) — 그룹 Attr·BooleanAttr·AttrKey 세 경로 모두 State의 nil이 삭제로 흐른다 -->
 
 ## `q.Attr(...)`
 

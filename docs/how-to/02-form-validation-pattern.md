@@ -91,7 +91,7 @@ local panel = D.Frame {
 ```
 
 체크박스를 누르면 `Interactable`과 버튼 색이 같이 따라옵니다. 체크박스는 제출 버튼이 있는지도 모르고, 제출 버튼은 체크박스가 있는지도 모릅니다 — 둘을 잇는 것은 **밖에서 만든 원천 하나**뿐입니다.
-<!-- mock 실측 2026-09-14: gs.checkbox.luau 1·6 — 컴포넌트 안의 :Set이 바깥 판정(canSubmit)과 그 파생(submitColor)까지 돌고, 해제하면 그대로 되돌아온다 -->
+<!-- 근거: 2026-09-14 mock 실측(저장소 내부 기록) — 컴포넌트 안의 :Set이 바깥 판정(canSubmit)과 그 파생(submitColor)까지 돌고, 해제하면 그대로 되돌아온다 -->
 
 읽기만 하면 되는 컴포넌트라면 `Source` 대신 파생된 `State`를 넘기세요. **`State`에는 `:Set`이 없어서** 받은 쪽이 값을 바꿀 길이 없고, 그래서 "이 컴포넌트는 읽기만 한다"가 넘기는 것의 종류로 드러납니다([레퍼런스: `State`](../reference/core/03-state.md)).
 
@@ -300,7 +300,7 @@ local screen = D.ScreenGui {
 }
 ```
 
-<!-- mock 실측 2026-09-13: gs.form.luau — Observer 생성 직후 이미 1회(payload nil, 묶기 전), 제출 뒤 2회(payload.Username "quad"), screen 파괴 뒤 Set해도 2회 그대로 -->
+<!-- 근거: 2026-09-13 mock 실측(저장소 내부 기록) — Observer 생성 직후 이미 1회(payload nil, 묶기 전), 제출 뒤 2회(payload.Username "quad"), screen 파괴 뒤 Set해도 2회 그대로 -->
 
 - **첫 발화는 `nil`을 들고 옵니다.** `Observer`는 값을 실어주지 않고 **만들어질 때**
   한 번 불리므로(실측: 숫자 키 자리에 놓기 전에 이미 1회), 아직 제출이 없는 상태를

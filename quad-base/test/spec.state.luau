@@ -171,6 +171,7 @@ do
 	assert(d2:Get() == 1 and runs2 == 1, "observation: the Get returned what fn computed, no restart")
 	assert(d2:Get() == 2 and runs2 == 2, "observation: the next Get caught up (the counter pair kept the invalidation)")
 	assert(d2:Get() == 2 and runs2 == 2, "then stable")
+	-- 관측 — 계약 아님(round14 Q160, 2026-10-06): 던진 fn의 새 세대 재실행은 구현의 부수효과다.
 	-- fn이 던지면 cacheCurrCount가 안 갱신된다 — [round10 Q50 (a), 2026-09-17] 다만 같은 세대의
 	-- 다음 Get은 재진입 에러(스탬프가 남아 있다)이고, 상류가 바뀐 새 세대에서 다시 시도한다
 	-- (옛 계약 "다음 Get이 다시 시도한다"에서 좁힘 — 세부는 spec 14)
@@ -414,7 +415,8 @@ do
 	assert(n:Get() == 10, "same-generation re-read is cached, not re-entrant")
 	src:Set(2)
 	assert(n:Get() == 20, "recompute after Set")
-	-- (5) a throwing fn: the first read raises the fn's own error; a re-read of the same generation
+	-- (5) observation, not a contract (round14 Q160, 2026-10-06 — the new-generation re-run is a side
+	-- effect of the implementation): a throwing fn: the first read raises the fn's own error; a re-read of the same generation
 	-- says the fn never returned; an upstream change (new generation) runs fn again — so a
 	-- transient validation raise (Operator's nil/wrong-type value) does not kill the node
 	local bad = false
@@ -438,7 +440,7 @@ do
 end
 
 print()
-print("=== 15. round11 H-540 (2026-09-17) — fn이 던진 뒤 닫힌 게이트 너머의 상류 변경(드리프트)도 새 세대: 고친 값으로 다시 돈다 ===")
+print("=== 15. round11 H-540 (2026-09-17) — fn이 던진 뒤 닫힌 게이트 너머의 상류 변경(드리프트)도 새 세대: 고친 값으로 다시 돈다 (관측 — 계약 아님, round14 Q160) ===")
 do
 	local s = Source(1)
 	local open = true
@@ -585,7 +587,7 @@ do
 	assert(not pcall(function()
 		return flaky:Get()
 	end), "threw")
-	a:Set(6) -- recovery path: a new generation
+	a:Set(6) -- recovery path: a new generation (observation, not a contract — round14 Q160)
 	assert(flaky:Get() == 6, "recovered")
 	mirror:Set(0)
 	assert(#lines == before, `normal paths: no line (got [{table.concat(lines, " | ", before + 1)}])`)
@@ -609,7 +611,7 @@ do
 	park = false
 	assert(yc:Get() == 1 and countOf(RUN) == 1, "(a) on: one line when the new run starts over the parked one")
 	coroutine.resume(A) -- let it return (Quad0184 or a value — UB; not asserted here)
-	-- a thrown earlier run is the defined recovery, not an overlap: silent
+	-- a thrown earlier run is not an overlap (its new-generation re-run is an observation, not a contract — round14 Q160): silent
 	local tsrc = Src(0)
 	local tc = tsrc:Compute(function(x)
 		if x:Get() == 0 then

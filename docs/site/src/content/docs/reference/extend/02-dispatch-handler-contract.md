@@ -288,7 +288,7 @@ setLength: (ownerKey: any, i: number, len: number | StateMarker<number>, anchor:
 | `ownerKey` | `any` | 부기의 주인 — 요소이거나 Slot |
 | `i` | `number` | 숫자 키 자리(1부터) |
 | `len` | `number \| StateMarker<number>` | 이 자리가 차지하는 물리 요소 수. 상수이거나 `State<number>` |
-| `anchor` | `any?` | State 길이일 때 구독의 수명을 묶을 대상. 생략하면 `ownerKey` |
+| `anchor` | `any?` | State 길이일 때 구독의 수명을 묶을 대상(물리 Instance). 생략하면 `ownerKey` — **`ownerKey`가 Slot이면 생략하지 말고 그 Slot이 붙은 물리 Instance를 넘기세요**(수명은 Slot이 아니라 실제 인스턴스에 묶입니다 — Slot을 앵커로 두면 Roblox 백엔드에서 [`Quad0226`](/reference/errors/07-roblox/#quad0226)) |
 | `element` | `any?` | 이 자리에 놓인 요소 — 나중에 자리를 되짚기 위한 역맵에 기록됩니다. **한 요소는 한 owner에서 한 자리에만** 놓입니다 — 같은 요소를 두 자리에 넘기면 역맵이 마지막 자리만 기억해 앞 자리 길이 변경이 캐시를 무효화하지 못합니다(계약 위반, 정의되지 않은 동작 — [2026-09-27 mock 실측 — 관측, 계약 아님]) |
 
 **동작** — 자리 `i`의 길이를 등록합니다. `len`이 `State`면 그 상태를 구독해 값이 바뀔 때마다 뒤 자리들의 오프셋을 다시 계산하고, 상수면 같은 게이트를 한 번 통과합니다. 등록은 그 자리 **뒤** 자리들의 캐시만 무효화합니다 — 자리 `i` 자신의 오프셋은 앞 자리들의 합이라 바뀌지 않습니다.

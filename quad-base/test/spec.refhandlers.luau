@@ -95,6 +95,9 @@ end
 
 print()
 print("=== 4. [Q4 (a)] 재진입 — 콜백이 같은 자리를 같은 Ref로 재드라이브해도 dedup(SetWeak가 Set 앞) ===")
+-- 관측 — 계약 아님(round14 Q162 (a), 2026-10-06): 같은 (inst, k)의 간접 재진입은 round1 Q5 (a)대로 UB다. 같은 값을
+-- 되쓰는 정의된 경로는 `src:SetIfChanged(r)`(전파 자체가 없어 재진입이 없다). 2026-10-01 Observer 설치 창 보류 뒤로
+-- 마운트 중의 이 장면은 중첩되지 않아 옛 순서로도 통과한다 — 순서(bindLifetime → SetWeak → Set)는 비용 0이라 코드에 둔다.
 do
 	local q = newQuad()
 	local inst = Instance.new("Frame")

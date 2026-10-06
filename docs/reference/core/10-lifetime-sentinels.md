@@ -4,11 +4,13 @@ description: None/Detach/KeyGone/Void 센티널, q.dispose, 매퍼 루트, 그�
 ---
 # 생명주기와 센티널
 
-값이 아니라 **뜻**을 나르는 상수들(센티널), 관리 중인 값을 파괴하는 유일한 경로 `q.dispose`, 그리고 quad-base가 구현하고 인스턴스 쪽 부기만 백엔드의 hold op 넷에 맡기는 생명주기 프리미티브 넷을 모읍니다.
+값이 아니라 **뜻**을 나르는 상수들(센티널), 관리 중인 값을 파괴하는 유일한 경로 `q.dispose`, 그리고 quad-base가 구현하고 인스턴스 쪽 부기만 백엔드의 hold op 넷에 맡기는 생명주기 프리미티브 넷을 모읍니다. 마지막으로 앱 코드가 직접 물어도 되는 백엔드 술어 하나 — 인스턴스가 quad 손에 있고 살아 있는지 묻는 [`q.Backend.isClaimed`](#qbackendisclaimedinst) — 를 둡니다.
+
+`q.Backend`는 **엔진 경계**입니다 — 답이 설치된 백엔드(엔진)의 사실에 따라 달라지는 op가 거기 삽니다. 대부분은 프로바이더가 심고 quad가 부르는 계약이라 앱 코드가 부를 일이 없지만, 이 페이지의 다섯(`bindLifetime`·`unbindLifetime`·`canBound`·`canExecute`·`isClaimed`)은 앱 코드에서 써도 되는 표면입니다. 전체 목록과 두 층(백엔드가 심는 주입 op, quad-base가 그 위에 합성하는 op)은 [extend/01](../extend/01-backend-provider-contract.md#1-아키텍처-개요-base와-provider의-분리).
 
 센티널은 전부 `table.freeze`된 테이블 하나이고 **판정은 언제나 신원 비교**(`v == q.None`)입니다. 타입에 붙어 있는 마커 필드(`__quadNone` 등)는 유니언 타입을 표현하기 위한 조언층일 뿐, 그걸로 판정하지 않습니다.
 
-이 페이지의 심볼: [q.None](#qnone) · [q.Detach](#qdetach) · [q.KeyGone](#qkeygone) · [q.Void](#qvoid) · [q.dispose(value)](#qdisposevalue) · [q.MapperRoot](#qmapperroot) · [q.newMapperClass(className)](#qnewmapperclassclassname) · [q.Backend.bindLifetime(inst, value)](#qbackendbindlifetimeinst-value) · [q.Backend.unbindLifetime(value)](#qbackendunbindlifetimevalue) · [q.Backend.canBound(value)](#qbackendcanboundvalue) · [q.Backend.canExecute(value)](#qbackendcanexecutevalue)
+이 페이지의 심볼: [q.None](#qnone) · [q.Detach](#qdetach) · [q.KeyGone](#qkeygone) · [q.Void](#qvoid) · [q.dispose(value)](#qdisposevalue) · [q.MapperRoot](#qmapperroot) · [q.newMapperClass(className)](#qnewmapperclassclassname) · [q.Backend.bindLifetime(inst, value)](#qbackendbindlifetimeinst-value) · [q.Backend.unbindLifetime(value)](#qbackendunbindlifetimevalue) · [q.Backend.canBound(value)](#qbackendcanboundvalue) · [q.Backend.canExecute(value)](#qbackendcanexecutevalue) · [q.Backend.isClaimed(inst)](#qbackendisclaimedinst)
 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
@@ -205,9 +207,51 @@ canBound: (value: any) -> boolean
 canExecute: (value: any) -> boolean
 ```
 
-**동작** — "지금 이 값이 발화해도 되는가" — 전파 게이트가 구독을 통과시킬지 판정할 때 묻습니다. quad-base가 구현하고, 인스턴스 쪽 판정만 백엔드의 `isHeld`에 묻습니다 — 백엔드가 없으면 그 스텁 에러가 납니다.
+**동작** — "지금 이 값이 발화해도 되는가" — 전파 게이트가 구독을 통과시킬지 판정할 때 묻습니다. `Observer`/`Effect`라면 인스턴스에 묶여 있고 그 인스턴스가 살아 있거나, 전역 구독(`:Subscribe`/`:WeakSubscribe`) 중일 때 참입니다. quad-base가 구현하고, 인스턴스 쪽 판정만 백엔드의 `isHeld`에 묻습니다 — 백엔드가 없으면 그 스텁 에러가 납니다.
+
+**앱 코드에서 쓰는 자리 — `Effect`의 `fn`이 남긴 비동기 콜백 안.** `fn`이 이벤트 연결이나 지연 실행을 걸어 두면, 그 콜백은 핸들이 더는 돌 수 없게 된 뒤에도 cleanup이 끊기 전까지 한 번 더 불릴 수 있습니다 — 예를 들어 Roblox의 기본 Deferred 시그널 설정에서는 묶인 인스턴스가 파괴된 순간과 `Destroying`을 타고 cleanup이 도는 순간 사이에 틈이 있습니다. 콜백 첫 줄에서 `q.Backend.canExecute(self)`를 물어 거짓이면 그 호출은 건너뛰세요(`self`는 `fn`이 받은 핸들 자신 — 인스턴스를 몰라도 됩니다). **`fn` 안에서는 묻지 마세요** — 생성 자리의 첫 실행은 핸들이 묶이거나 구독되기 전이라 늘 거짓입니다. 묶이기 전의 거짓과 죽은 뒤의 거짓을 가리지 않으므로, 이 술어는 "지금 이 콜백이 일해도 되나"에만 씁니다.
+
+```luau
+local RunService = game:GetService("RunService")
+local spin = D.Frame {
+	q.Effect(function(self)
+		local conn = RunService.Heartbeat:Connect(function(dt: number)
+			if not q.Backend.canExecute(self) then
+				return -- 묶인 인스턴스가 이미 죽었고 cleanup만 아직 안 돈 사이 — 이번 호출은 건너뛴다
+			end
+			-- 매 프레임 할 일
+		end)
+		return function() conn:Disconnect() end
+	end),
+}
+```
 
 `canBound(v) == not canExecute(v)`가 계약입니다 — 둘은 quad-base가 가진 하나의 비공개 술어를 서로 반대로 감싼 것이고, 그 술어가 백엔드에 묻는 것은 `isHeld(v)` 하나입니다.
+
+## `q.Backend.isClaimed(inst)`
+
+**시그니처**
+
+```luau
+isClaimed: (inst: any) -> boolean
+```
+
+**동작** — "이 인스턴스는 살아 있는 동안 quad 손에 닿았고, 지금도 살아 있는가". `Declaration`이 만든 인스턴스와 `q.Claim`이 넘겨받은 인스턴스는 참이고, quad 밖에서 만든 인스턴스와 이미 죽은 인스턴스는 거짓입니다. 이 술어는 백엔드가 심는 주입 op이지만 앱 코드에서 물어도 되는 표면입니다 — quad 자신도 같은 질문을 이 op로 합니다(Slot이 원소를 받을 때, 정적 자식 자리, [`q.debug`](./01-quad-module.md#qdebug)의 검사들).
+
+- **quad가 죽인 인스턴스는 그 즉시 거짓입니다** — `q.dispose`나 Slot 철거로 파괴된 인스턴스. 모든 백엔드가 지키는 계약입니다.
+- **quad 밖에서 직접 파괴한 인스턴스**(`inst:Destroy()`)는 엔진이 파괴를 그 자리에서 알려 줄 수 있으면 역시 즉시 거짓입니다 — Roblox 백엔드가 그렇습니다(파괴가 `Destroy()` 안에서 동기로 보입니다). 그걸 알려 주지 못하는 엔진의 백엔드에서는 quad 밖 파괴 뒤의 결과가 정의되지 않으니, 그런 백엔드에서는 quad가 만든 인스턴스를 `q.dispose`로 죽이세요.
+- 순수 술어입니다 — 던지지 않고, 인스턴스가 아닌 값에도 거짓입니다.
+
+**쓰는 자리** — 인스턴스가 살아 있는지 알아야 하는데 그 인스턴스의 `Destroying` 처리 순서에 기댈 수 없을 때입니다. 예를 들어 Deferred 시그널에서는 자손의 파괴 처리가 부모의 `OnDestroyed`보다 먼저 돌 수 있어, 자손 쪽 정리 코드가 "부모(레이어)가 이미 죽었는지"를 순서로는 알 수 없습니다 — 그때 `q.Backend.isClaimed(layer)`로 묻습니다. 앞 절의 `canExecute`가 "이 핸들이 지금 돌아도 되나"라면, 이것은 "이 인스턴스가 quad 손에서 살아 있나"입니다.
+
+```luau
+-- 팝업이 닫힐 때 그 레이어의 "열린 개수"를 줄인다 — 레이어가 이미 죽었으면 할 일이 없다
+local function onPopupGone(layer: Instance, openCount: q.Source<number>)
+	if q.Backend.isClaimed(layer) then
+		openCount:Set(openCount:Get() - 1)
+	end
+end
+```
 
 ## 관련
 

@@ -22,4 +22,4 @@
 - P2: 2026-10-06 완료 — `a4813a5a`(발견: P1 감지기가 material 킷 spec.api 두 절에서 경고 13줄 — 진단은 P3; Q173 debug 사슬 검사가 CRUD 줄에서 `:Get()` — 사용자 원칙 "debug에서도 lazy 유지"대로 P3에서 고침).
 - P3: 2026-10-06 완료 — `540207a1`(material 킷 `OnChange` 엔진 왕복 오경보 → 원장 "**Q174 보강 2" 결정, P3b로).
 - P3b: 2026-10-06 완료 — `30fc453a`(킷 둘 exit 0). 부수 발견: `-O2`에서 `fireCompleted`·Debounce `commitIdle`이 실제로 인라인돼 감지기가 깨졌던 것(고침), 그리고 `spec.errorutil`·`spec.fallback`·`spec.relate`가 `-O2`에서 blame 줄·traceback 자리가 달라져 실패(손대지 않음) — Roblox 실행 환경의 최적화 수준 실측이 필요(실기기 후보).
-- P4: 착수 2026-10-06.
+- P4: 2026-10-06 완료(Quadnomicon Vol. 12 신설; errors 00~07 Q177 정리 — 남은 것: errors 밖 레퍼런스 본문 날짜 태그 약 50곳·GS·how-to·README 태그, core/06 519 OwnsElements 호스트 파괴 서술의 계약/관측 판단; errors에 "에러 뒤 (계약)" 줄 표기 신설 — Effect 죽음용). 다음: 확인 패스(`/code-review` + agy → opus 추림 → 메인 판정 → 감사 루프).

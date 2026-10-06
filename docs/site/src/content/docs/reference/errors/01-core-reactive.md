@@ -98,7 +98,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 `{name}: Handle is already filled - one Handle Ref per :Apply (make a new Ref, or drop Handle and use the factory's :Flush()/:Cancel() broadcast; a Ref with a non-nil default is rejected the same way)` — `quad-base/src/Debounce.luau`
 
 - **언제**: `opts.Handle`로 넘긴 `Ref`가 이미 다른 `:Apply` 호출의 제어 핸들로 채워져 있을 때(또는 기본값이 `nil`이 아닌 `Ref`를 애초에 줬을 때) — 하나의 `Ref`는 하나의 `:Apply`만 가리킬 수 있습니다.
-- **고치려면**: 새 `Ref`를 **새 팩토리와 함께** 만들거나(`Handle`은 팩토리 옵션이라 팩토리를 재사용하면 새 `Ref`가 붙지 않습니다 — [2026-09-27 mock 실측]), `Handle`을 빼고 팩토리의 `:Flush()`/`:Cancel()` 브로드캐스트를 쓰세요.
+- **고치려면**: 새 `Ref`를 **새 팩토리와 함께** 만들거나(`Handle`은 팩토리 옵션이라 팩토리를 재사용하면 새 `Ref`가 붙지 않습니다), `Handle`을 빼고 팩토리의 `:Flush()`/`:Cancel()` 브로드캐스트를 쓰세요.
 - **참고**: [제어 핸들(`GateHandle`)](/reference/sugar/03-debounce-throttle/#제어-핸들-gatehandle)
 
 ### Quad0045
@@ -186,7 +186,8 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 `Operator.Clamp: min must be <= max and neither NaN (got min {r[1]}, max {r[2]})` — `quad-base/src/Operator.luau`
 
 - **언제**: `Operator.Clamp(lo, hi)`의 경계를 읽는 시점에 `lo > hi`이거나 둘 중 하나가 `NaN`(흔히 `0/0`)일 때 — 반응형 경계가 한 프레임 엇갈리는 경우도 포함됩니다.
-- **고치려면**: 보통은 경계가 다음 세대에 돌아오면 회복됩니다. 계속 나면 `lo`/`hi`를 내놓는 State들의 관계를 확인하세요.
+- **고치려면**: `lo`/`hi`를 내놓는 State들의 관계를 확인해, 경계를 읽는 시점에 `lo <= hi`이고 둘 다 `NaN`이 아니게 하세요.
+- **관측(계약 아님)**: 경계가 한 프레임만 엇갈린 경우라면 지금은 경계가 돌아온 다음 세대에 그 노드가 다시 계산됩니다 — 던진 계산 함수가 새 세대에 다시 도는 것은 지금 구현의 결과이지 약속이 아닙니다([State](/reference/core/03-state/#statecomputefn-deps)).
 - **참고**: [`q.Operator.Clamp(lo, hi)`](/reference/sugar/02-operator/#qoperatorclamplo-hi)
 
 ### Quad0125
@@ -258,7 +259,8 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 `State: Compute fn is already running for this value - a dependency cycle (the fn reads its own value, directly or through a downstream State), a yield inside the fn, or an earlier read that threw (it runs again once an upstream changes)` — `quad-base/src/State.luau`
 
 - **언제**: 계산 함수가 자기 자신의 값을 직접·간접(하류 State를 거쳐)으로 읽는 의존성 순환일 때, 또는 직전 계산이 던진 뒤 같은 세대(상류가 그 사이 움직이지 않음)에서 다시 읽을 때. 계산 함수 안의 yield는 정의되지 않은 동작이고, 그때 이 에러가 나는 자리(멈춘 사이 다른 코루틴이 같은 세대의 같은 노드를 읽을 때)는 UB에서의 현재 관측일 뿐 계약이 아닙니다.
-- **고치려면**: 계산 함수가 자기 자신을 순환 참조하지 않게 하고, 계산 함수 안에서 yield하지 마세요(정의되지 않은 동작 — 현재 관측으로는 돌아오지 않는 코루틴이 계산하다 멈춘 노드는 상류가 바뀔 때까지 이 에러가 됩니다; [`q.debug`](/reference/core/01-quad-module/#qdebug)를 켜면 멈춘 계산 위에 새 계산이 시작될 때 경고 한 줄이 나옵니다). 직전 계산이 던졌다면 상류 값을 고쳐 `:Set`하면(새 세대가 되어) 회복됩니다 — 단 회복되는 것은 그 노드이고, 던질 때 그 값을 읽던 `Effect`·`:List` 원소는 각자의 계약대로 죽거나 멈춰 있습니다([State 레퍼런스](/reference/core/03-state/)).
+- **고치려면**: 계산 함수가 자기 자신을 순환 참조하지 않게 하고, 계산 함수 안에서 yield하지 마세요(정의되지 않은 동작 — [`q.debug`](/reference/core/01-quad-module/#qdebug)를 켜면 멈춘 계산 위에 새 계산이 시작될 때 경고 한 줄이 나옵니다). 직전 계산이 던진 것이 원인이면 그 예외의 원인을 고치세요.
+- **관측(계약 아님)**: 돌아오지 않는 코루틴이 계산하다 멈춘 노드는 상류가 바뀔 때까지 이 에러가 됩니다. 직전 계산이 던진 노드는 상류 값을 고쳐 `:Set`하면(새 세대) 지금은 다시 계산됩니다 — 다시 계산되는 것은 그 노드뿐이고, 던질 때 그 값을 읽던 `:List` 원소의 Slot은 `Length` 발행이 멈춘 채일 수 있습니다(그 값을 읽던 `Effect`가 죽는 것은 [`q.Effect`](/reference/core/05-observer-effect/#qeffectfn-deps)의 계약입니다; [State 레퍼런스](/reference/core/03-state/)).
 - **참고**: [`state:Compute(fn, ...deps)`](/reference/core/03-state/#statecomputefn-deps) · quad 내부(프로퍼티 바인딩·`Animate`·Operator 등)가 그 State를 읽다 나면 `파일:줄` 접두가 quad 파일을 가리킵니다 — [디버깅 부록](/how-to/10-debugging-and-troubleshooting/)의 알려진 한계 3
 
 ### Quad0185
@@ -321,7 +323,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 `State: State.Init(module) has not run for this quad instance` — `quad-base/src/State.luau`
 
-- **언제**: quad 모듈 인스턴스에서 `State` 서브시스템이 아직 `RunInit`으로 설치되지 않은 채로 그 설치물을 찾을 때 던지는 내부 불변조건 검사입니다. 이 검사를 부르는 곳은 `Source` 서브시스템의 설치 하나뿐이고, 그 설치가 바로 앞에서 `State`를 먼저 설치하므로 현재 공개 표면에서 이 조건에 닿는 호출은 없습니다([2026-09-27 실측]).
+- **언제**: quad 모듈 인스턴스에서 `State` 서브시스템이 아직 `RunInit`으로 설치되지 않은 채로 그 설치물을 찾을 때 던지는 내부 불변조건 검사입니다. 이 검사를 부르는 곳은 `Source` 서브시스템의 설치 하나뿐이고, 그 설치가 바로 앞에서 `State`를 먼저 설치하므로 현재 공개 표면에서 이 조건에 닿는 호출은 없습니다.
 - **고치려면**: (문서 미정 — 현재 도달 경로가 없습니다)
 - **참고**: [`q:RunInit(initFn)`](/reference/core/01-quad-module/#qruninitinitfn)
 
@@ -385,5 +387,5 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 `Operator.{name}: takes {want} argument{if want == 1 then "" else "s"} (got {got})` — 폐기
 
-- **[2026-10-01 폐기]** 이제 던지지 않습니다. 인자 수가 정해진 연산자 팩토리(`q.Operator.Clamp(lo, hi)`, `Shl(n)`, `Shr(n)`)에 넘친 인자를 잠깐 거부했다가, 다른 Lua 함수처럼 조용히 무시하는 동작으로 되돌렸습니다(strict 타입 검사는 넘친 인자를 잡습니다). 이 번호는 다른 에러에 다시 쓰지 않습니다.
+- **폐기** — 이제 던지지 않습니다. 인자 수가 정해진 연산자 팩토리(`q.Operator.Clamp(lo, hi)`, `Shl(n)`, `Shr(n)`)에 넘친 인자를 잠깐 거부했다가, 다른 Lua 함수처럼 조용히 무시하는 동작으로 되돌렸습니다(strict 타입 검사는 넘친 인자를 잡습니다). 이 번호는 다른 에러에 다시 쓰지 않습니다.
 - **참고**: [`q.Operator.Clamp(lo, hi)`](/reference/sugar/02-operator/#qoperatorclamplo-hi)

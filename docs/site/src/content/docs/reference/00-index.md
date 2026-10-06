@@ -10,7 +10,7 @@ description: quad 공개 표면 전체를 심볼 이름으로 찾아가는 색�
 
 ## 관측과 계약
 
-**정의되지 않은 동작**이나 **콜백이 던진 뒤의 상태**를 다루는 문장은 약속이 아니라 관측입니다. 그런 문장 안에 붙은 날짜 태그(`[2026-09-27 mock 실측]`·`[… 관측]` 꼴)나 "관측 — 계약 아님" 표시는 그 시점의 동작을 기록한 것이고, 결과를 단정형으로 적었어도 다음 버전에서 예고 없이 바뀔 수 있습니다 — 기대어 코드를 짜지 마세요. 던진 뒤에 대해 quad가 약속하는 회복은 둘뿐입니다: 던진 [`:Compute`](/reference/core/03-state/#statecomputefn-deps) 계산 함수는 상류가 바뀌어 새 세대가 되면 다시 돌고, 던진 [`Observer`](/reference/core/05-observer-effect/#stateobserverfn) 콜백은 다음 변경에 다시 돕니다.
+**정의되지 않은 동작**이나 **콜백이 던진 뒤의 상태**를 다루는 문장은 약속이 아니라 관측입니다. 그런 문장에는 "관측 — 계약 아님"을 붙여 두었습니다 — 지금의 동작을 기록한 것이고, 결과를 단정형으로 적었어도 다음 버전에서 예고 없이 바뀔 수 있으니 기대어 코드를 짜지 마세요. 던진 뒤에 대해 quad가 약속하는 것은 둘뿐입니다. 약속하는 회복은 하나 — 던진 [`Observer`](/reference/core/05-observer-effect/#stateobserverfn) 콜백은 다음 변경에 다시 돕니다. 약속하는 비회복도 하나 — `fn`이 던진 [`Effect`](/reference/core/05-observer-effect/#qeffectfn-deps)는 죽어서 다시 돌지 않습니다. 둘이 왜 다른지는 [Quadnomicon 12 — 파동을 받는 두 방식](/quadnomicon/12-two-ways-to-receive-a-wave/)에서 풀어 봅니다.
 
 ## 에러 코드
 
@@ -190,6 +190,7 @@ quad가 만든 인스턴스를 손에 쥐는 세 종류의 참조와, 채워질 
 | `q.Backend.unbindLifetime(value)` | [core/10](/reference/core/10-lifetime-sentinels/#qbackendunbindlifetimevalue) · [extend/01](/reference/extend/01-backend-provider-contract/) |
 | `q.Backend.canBound(value)` | [core/10](/reference/core/10-lifetime-sentinels/#qbackendcanboundvalue) · [extend/01](/reference/extend/01-backend-provider-contract/) |
 | `q.Backend.canExecute(value)` | [core/10](/reference/core/10-lifetime-sentinels/#qbackendcanexecutevalue) · [extend/01](/reference/extend/01-backend-provider-contract/) |
+| `q.Backend.isClaimed(inst)` | [core/10](/reference/core/10-lifetime-sentinels/#qbackendisclaimedinst) · [extend/01](/reference/extend/01-backend-provider-contract/#3-판정훅조회-op) |
 
 ## 브랜드 술어
 

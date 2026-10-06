@@ -149,8 +149,8 @@ end)
 `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier`를 필드 값으로 주면 리터럴은 그 자리에서
 던지고(`Quad0057`), 변환 함수의 반환도 **저장된 값이 평범한 값일 때는** 그 자리에서 던집니다. 저장된 값이 `State`면
 변환이 `old:Compute(fn)`으로 들어가 lazy라 setter는 통과하고 마운트 때 드러납니다 — `Modifier`를 돌려주면 State 쪽
-가드 `Quad0185`, `Ref`를 돌려주면 quad가 막지 못해 프로퍼티에 `Ref` 테이블이 쓰이는 정의되지 않은 동작입니다
-([2026-09-27 mock 실측]; 소스 주석도 `State<Ref>` 안쪽을 UB로 둡니다).
+가드 `Quad0185`, `Ref`를 돌려주면 quad가 막지 못하는 정의되지 않은 동작입니다(관측, 계약 아님: 프로퍼티에 `Ref` 테이블이 쓰였습니다 —
+[2026-09-27 mock 실측]; 소스 주석도 `State<Ref>` 안쪽을 UB로 둡니다).
 
 ```
 Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)

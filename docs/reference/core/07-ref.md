@@ -63,6 +63,8 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 
 하나의 `Ref`는 **한 자리에만** 놓을 수 있습니다. 생명주기 결합이 그 자리에서 던집니다 — 같은 인스턴스의 두 자리면 `Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)`, 다른 인스턴스면 `Quad0233 bindLifetime: value is already bound to another Instance`(이 두 문구는 quad-base의 것이라 어느 백엔드에서나 같습니다).
 
+`Source`에 담아 숫자 키 자리에 놓은 `Ref`의 콜백이 그 `Source`를 다시 `:Set`하는 것은 그 자리를 처리하는 도중 같은 자리로 다시 들어오는 재진입이라, 다른 값을 넣으면 정의되지 않은 동작입니다(어느 핸들러든 같은 자리를 처리하는 도중의 재진입은 정의하지 않습니다). 같은 값을 되쓰려면 [`:SetIfChanged`](./02-source.md#sourcesetifchangedv)를 쓰세요 — 값이 같으면 전파 자체가 없어 재진입이 생기지 않습니다.
+
 `PreRef`/`PostRef`는 그 위에 **일회용**이기까지 합니다.
 
 - `Quad0069 PreRef: already used - a PreRef is one-shot (used up once quad places it, fired or not); make a new one for each instance`
@@ -251,7 +253,7 @@ Set: <Self>(self: Self, value: T) -> Self
 
 - `Quad0130 Ref: cannot :Set from the coroutine that is waiting on this Ref, nor from one it resumed (Wait(thread) registered a {status} coroutine)`
 
-이 에러가 난 시점에 그 대기자는 이미 소진돼 등록이 풀렸고, `.Value`·`.Revision`은 새 값으로 바뀌어 있으며, 순회에서 그 뒤에 올 콜백은 불리지 않습니다([2026-09-27 mock 실측]).
+관측(계약 아님): 이 에러가 난 시점에 그 대기자는 이미 소진돼 등록이 풀렸고, `.Value`·`.Revision`은 새 값으로 바뀌어 있으며, 순회에서 그 뒤에 올 콜백은 불리지 않습니다([2026-09-27 mock 실측]).
 
 `q.None`은 해석하지 않습니다 — `:Set(q.None)`은 `q.None`을 그대로 저장하므로 `.Value`와 `:Unwrap()`이 `q.None`을 돌려줍니다. 숫자 키 자리에 묶인 `Ref`에 직접 `:Set(x)`하면 값만 바뀌고 인스턴스와의 묶임은 그대로 남습니다([2026-09-27 mock 실측]).
 

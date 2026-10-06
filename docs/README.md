@@ -93,7 +93,7 @@ Roblox 공식 레퍼런스로 유도(React가 DOM 요소를 설명하지 않듯)
 - `extend/`(배지 Advanced) 2편 — [백엔드 프로바이더 규약](./reference/extend/01-backend-provider-contract.md)(옛 reference/01 에세이 그대로) · [Dispatch·Handler 계약](./reference/extend/02-dispatch-handler-contract.md).
 - `errors/`(배지 QuadNNNN) 10편 — **[2026-09-22 신설]** [에러 코드 색인](./reference/errors/00-index.md) + 층별 아홉 페이지(`### QuadNNNN` 절마다 메시지·언제·고치려면·참고). 소스의 번호와 절의 정합은 `scripts/error-codes.py`가 지킨다(test.sh 게이트).
 
-### The Quadnomicon — 11권
+### The Quadnomicon — 12권
 > Rustonomicon 스타일 — 초보자용이 아니다. 입문은 [Getting Started](./getting-started/00-installation.md)부터.
 
 - [Vol. 1](./quadnomicon/01-revision-and-epochmap.md) 32-bit Wrapping Revision과 EpochMap — `bit32.bnot(-rev)` 랩어라운드 감소(성능이 이유), 2^32 랩은 도달 가능하지만 오판정 조건이 한 점.
@@ -107,6 +107,7 @@ Roblox 공식 레퍼런스로 유도(React가 DOM 요소를 설명하지 않듯)
 - [Vol. 9](./quadnomicon/09-fragment-breakthrough-and-domless-slot.md) 형제 여럿을 반환하는 컴포넌트와 DOMless Slot 트리.
 - [Vol. 10](./quadnomicon/10-multi-backend-abstract-machine.md) 다중 백엔드 추상 기계 — 주입 op 묶음, 생명주기 넷, `UseProvider`(성공 후 마킹).
 - [Vol. 11](./quadnomicon/11-static-grepability-and-error-architecture.md) 정적 grep 가능성·표면 blame·에러 아키텍처 — 리터럴은 raise 줄에 통째로(보간은 씀), `setFuncLevel(level, ...fns)`는 nil에 즉시 던짐.
+- [Vol. 12](./quadnomicon/12-two-ways-to-receive-a-wave.md) 파동을 받는 두 방식 — `Observer`는 통지가 올 때마다 그 자리에서, `Effect`는 도는 중에 온 것을 `_pending`으로 접어 끝난 뒤 한 번 더; 그 하나에서 자기 상류 되쓰기(Effect 정의·Observer 정의 안 됨)와 예외(Effect 죽음·Observer 자가 치유)의 네 결과가 나온다.
 
 ### Agents (에이전트) — 1편
 **[2026-09-21 사용자 결정(docs-review 3-7)]** 사이트에는 한국어 설치·사용 페이지만 두고 영문 스킬 본문은 레포 링크로 안내한다(영문 페이지가 섞이는 것을 피함). Claude Code가 정식 경로, 다른 에이전트는 "규칙 파일에 그대로" 한 절.
@@ -131,4 +132,4 @@ AI 코딩 에이전트용 스킬(영문 유지 — 토큰 경제성). [`SKILL.md
 아래 **링크** 항목은 저장소의 다른 계획 문서가 `"링크"` 절로 이름을 찍어 인용한다 — 제목을 바꾸거나 지우지 말 것.
 
 - **링크**: 문서 간 링크는 상대 경로(`../<track>/<file>.md`, 레퍼런스 하위 폴더는 `../../<track>/…`·`../core/…`; `site/sync-docs.py`가 재귀 복사하며 사이트 경로로 치환). frontmatter(`title`/`description`)는 원본에 둔다 — sync가 없으면 실패한다. 저장소 내부 설계 문서·소스 파일로의 링크는 두지 않는다(독자에게 없는 경로) — 소스는 필요할 때 평문 파일명으로만 언급.
-- **HTML 주석의 출처 표시**: 트랙 문서 안 HTML 주석(`<!-- … -->`)은 사이트 렌더에는 안 보이지만 저장소와 사이트의 `.md.txt` 원문에는 그대로 보인다 — 그래서 본문과 같은 규칙을 따른다. 저장소 내부 경로나 내부 검토 번호는 적지 않고, 날짜와 실측 종류만 남긴다(`<!-- 근거: 2026-09-26 신 솔버 실측(저장소 내부 기록) -->` 꼴). 출처를 찾을 땐 내부 기록 쪽이 이 문서 파일·줄을 가리키는 역방향으로 찾는다.
+- **HTML 주석의 출처 표시**: 트랙 문서 안 HTML 주석(`<!-- … -->`)은 사이트 사본에서는 `site/sync-docs.py`가 지우지만(주석만 있는 줄은 통째로, 줄 맨 앞에 붙은 주석은 그 부분만 — 그래서 주석은 한 줄로, 줄 머리나 제 줄에 쓴다; 여러 줄 주석·줄 중간 주석은 지워지지 않는다) 저장소에서는 그대로 보인다 — 그래서 본문과 같은 규칙을 따른다. 저장소 내부 경로·스크래치 파일 이름이나 내부 검토 번호는 적지 않고, 날짜와 실측 종류만 남긴다(`<!-- 근거: 2026-09-26 신 솔버 실측(저장소 내부 기록) -->` 꼴, 관측 내용을 한 줄 덧붙여도 된다). 출처를 찾을 땐 내부 기록 쪽이 이 문서 파일·줄을 가리키는 역방향으로 찾는다.

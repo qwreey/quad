@@ -73,8 +73,7 @@ Quad0076 Dispatch: no handler matched key Foo (value: table, brand: Tag) - a qua
 Quad0097 Effect: must be an array item, not the value of a string key
 ```
 
-첫 메시지의 꼬리 힌트는 값이 무엇인지에 따라 갈립니다. `Tag`·`Slot`·`Ref`처럼 quad가 알아보는 브랜드 값이면(설치된
-프로바이더가 붙이는 `Tween` 같은 브랜드도 마찬가지입니다) 위처럼 "숫자 키 자리로 가라"고 알려 주고, 브랜드가 없는 값(예: 숫자 키
+첫 메시지의 꼬리 힌트는 값이 무엇인지에 따라 갈립니다. `Tag`·`Slot`·`Ref`처럼 quad가 알아보는 브랜드 값이면 위처럼 "숫자 키 자리로 가라"고 알려 주고, 브랜드가 없는 값(예: 숫자 키
 자리에 놓인 `false`)이면 "프로바이더가 초기화됐는지 보라"(`- check that the provider for this value (e.g. quad-roblox) is initialized`)고
 말하되, 문자 키 자리라면 두 원인을 나란히 적습니다(`- this key may not be a field of this element (…), or the provider that handles it (e.g. quad-roblox) is not initialized`) — 같은 증상이 **키를 잘못 쓴 경우**와 **그 값을 맡을 핸들러를 심는 쪽이 아직 안 붙은 경우** 둘 다에서 나기 때문입니다.
 
@@ -109,7 +108,7 @@ const a = q.Source("A")
 const b = q.Source("B")
 const which = q.Source(a)      -- State를 담은 State
 
-const label = D.TextLabel { Text = which :: any } -- 런타임은 중첩을 풀지만 strict 타입은 한 겹만 받아 캐스트가 필요합니다(레퍼런스 typing-limits)
+const label = D.TextLabel { Text = which :: any } -- 런타임은 중첩을 풀지만 strict 타입은 한 겹만 받아 캐스트가 필요합니다
 print(label.Text)   --> "A"
 
 a:Set("A2")

@@ -470,11 +470,14 @@ The first assignment snaps to the value; later emissions run an engine tween.
 - A snap — the very first write to that (Instance, property), or an `Info`-less
   `Tween{ Time = 0 }` with no `DelayTime`/`RepeatCount`/`Reverses` — writes the value
   synchronously and fires `Started` then `Completed` back to back.
-- Writing the same property again from inside a callback (a `:Set` on the State seated there)
-  is fine — callbacks fire after the slot is recorded, so the last write wins and no tween is
-  orphaned. A value replaced that way gets `Cancelled` without `Started` (engine tween) or
-  nothing (snap). One exception: a `:Set` from inside the `Started` of the very first write
-  during mount may not reach the screen — undefined. `Completed` stays the usual place to chain.
+- Chain the next tween from `Completed`: a `:Set` on the State seated at that property from
+  inside `Completed` is defined, snap included (callbacks fire after the slot is recorded, so
+  that write is the last one). Rewriting the same property from `Started`/`Cancelled` is
+  undefined (observed, not a contract: consistent while replacing, State and screen can diverge
+  while the position is being torn down). A `Completed` chain that never ends is undefined too:
+  with motion off the snap's `Completed` fires synchronously and the recursion overflows the
+  stack. For an endless pulse use `TweenInfo` `RepeatCount = -1, Reverses = true`; otherwise give
+  the chain an end condition or move the next write out with `task.defer`.
 - `q.Animate{...}` accepts the same three fields and passes them through to the `Tween` it
   builds. With `CanAnimate = false` **and** any callback present, the property is still
   written synchronously, and `Started`+`Completed` fire together (so "motion off" does not
@@ -595,7 +598,7 @@ the solver can see; `Fallback` returns `Ok | Err`.
 | `q.Tween{ Value = someState }` | `Quad0250 Tween: Value must be a plain value, not a State` | `state:Apply(q.Animate{...})`, or build the Tween inside a `:Compute` |
 | `q.Claim(inst)` with one argument | `Quad0034 Claim: second argument must be a D.Mapper descriptor` | `q.Claim(inst, D.Mapper.<Class>(D.Mapper.Root)({...}))` |
 | Reusing a `D.Mapper` descriptor | `Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)` | Build a fresh descriptor per `Claim` |
-| `A:Add(B); B:Add(A)` | With `q.debug` on, immediate error: `Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)`; with it off (next release on) the `Add` passes and the next CRUD dies in a stack overflow | Keep the slot graph acyclic; develop with `q.debug = true` |
+| `A:Add(B); B:Add(A)` | With `q.debug` on, immediate error: `Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)`; with it off (next release on) the `Add` passes and the cycle is undefined behaviour (observed, not a contract: a later CRUD, mount or dispose of that tree dies in a stack overflow or an internal-invariant error, varying by operation) | Keep the slot graph acyclic; develop with `q.debug = true` |
 | `Parent = ...` as a prop | `Quad0076 Dispatch: no handler matched key Parent (value: Instance)` (the `value:` part is `typeof(v)`) | Set `.Parent` from outside after creation |
 | `Activated` on a `Frame` | `Quad0076 Dispatch: no handler matched key Activated (value: function)`; `FrameParam` has no such field in `--!strict` | Use `TextButton`/`ImageButton` |
 | `AbsoluteSize` read inside `OnRendered` | No error, but `PostRef` guarantees only the subtree — parenting is explicitly not guaranteed | Read it later, from an event or an explicit connection |

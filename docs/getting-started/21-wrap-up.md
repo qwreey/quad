@@ -45,7 +45,7 @@ q.dispose(screen)
 ```
 
 **실행하면** 그 아래 인스턴스가 전부 함께 파괴되고, 그 인스턴스들의 숫자 키 자리에 매달려 있던 것이 같이 멈춥니다. `:Observer`는 멈추고, `q.Effect`와 `q.OnDestroyed`는 각각 cleanup과 콜백이 **한 번 돈 뒤** 끝납니다. 08·09장에서 카드 하나로 본 일이 트리 전체에 한꺼번에 일어나는 것입니다. 따로 끊어야 하는 것은 하나뿐입니다. `:Subscribe()`로 **직접** 건 강한 구독은 인스턴스와 무관하므로 `:Unsubscribe()`를 불러 주세요. 그리고 버린 트리는 다시 살릴 수 없으니, 화면을 잠깐 감출 거라면 `Enabled = false`(또는 `Visible = false`)로 두고 정말 버릴 때만 내립니다.
-<!-- mock 실측 2026-09-14: gs.teardown2.luau — q.dispose(screen) 뒤 자리에 묶인 Observer는 멈추고 Effect cleanup 1회, :Subscribe()한 강한 구독은 계속 돈다(screen:Destroy()와 같은 결과) -->
+<!-- 근거: 2026-09-14 mock 실측(저장소 내부 기록) — q.dispose(screen) 뒤 자리에 묶인 Observer는 멈추고 Effect cleanup 1회, :Subscribe()한 강한 구독은 계속 돈다(screen:Destroy()와 같은 결과) -->
 
 <details>
 <summary><strong><code>inst:Destroy()</code>와 뭐가 다른가요?</strong></summary>
@@ -56,7 +56,7 @@ q.dispose(screen)
 - **숫자 키 자리에 지금 놓인 원소** — `D.Frame { child }`의 정적 자식, `State<Instance?>` 자리에 지금 놓인 원소, `UICorner = 8`이 만든 관리 자식 — 도 같은 에러로 막힙니다. 먼저 `cur:Set(nil)`(또는 다른 값)으로 자리에서 내려놓은 뒤 버리세요 — 11장 §6의 `cur:SetAndDispose(nil)`이 이 두 단계를 이 순서로 한 번에 합니다. 11장 §6에서 갈아 끼워 떼어진 옛 원소는 이미 내려와 있으니 바로 `q.dispose`하면 됩니다.
 - 루트처럼 어디에도 놓이지 않은 값은 둘 중 무엇을 써도 같습니다. 그래도 `q.dispose`로 통일해 두면, 나중에 그 값이 어딘가에 놓이게 됐을 때 실수를 에러로 잡습니다.
 
-<!-- mock 실측 2026-09-14: gs.dispose3.luau — Slot 원소 dispose는 위 문구로 에러, Extract 뒤엔 성공. [2026-09-17] State 자리의 현재 원소도 이제 같은 문구로 거부되고 `cur:Set(nil)` 뒤에 성공 — 실측은 quad-roblox `spec.handlers` 12 (4)(정적 자식 소유권 자리) -->
+<!-- 근거: 2026-09-14 mock 실측(저장소 내부 기록) — Slot 원소 dispose는 위 문구로 에러, Extract 뒤엔 성공. [2026-09-17] State 자리의 현재 원소도 이제 같은 문구로 거부되고 `cur:Set(nil)` 뒤에 성공 — 정적 자식 소유권 자리 실측(저장소 내부 기록) -->
 </details>
 
 ---

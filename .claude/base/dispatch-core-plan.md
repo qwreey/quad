@@ -1440,6 +1440,10 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
   디스패치가 같은 키를 처리 중인 채로 다시 들어오는 것. 재진입 게이트는 두지 않는다(사용자: *"재진입
   게이트는 허용 안한다가 내 생각"*). 더 큰 원칙은 `source-state-plan.md` "Compute 순수성" 절 — Compute
   함수는 그래프를 읽기만 하고 하류로만 내린다.
+  **[2026-10-06 round14 Q162 (a) — 사용자 *"의견대로"*]** M8 Q4 (a)(Ref 핸들러의 `SetWeak`를 `Set` 앞으로 — 같은 Ref 재진입을 dedup으로
+  무해하게)도 이 UB의 예외가 아니다 — 그 순서는 비용 0이라 코드에 남되 "무해"는 관측(`spec.refhandlers` 4). 같은 값을 되쓰는 정의된 경로는
+  `:SetIfChanged` — 같은 값이면 전파 자체가 없어 재진입이 생기지 않는다(사용자 덧말 *"diff and set 이 여기서도 동작하는 부분 아닌가"*);
+  다른 값으로 같은 `(inst, k)`에 중첩해 들어오는 것만 UB로 남는다. 레퍼런스 core/07.
 - **[2026-09-07 회신 3차, Q18 (c) 사용자 확정] `setLength`의 State 팔 설치 발화 중 throw는 UB** —
   부기(`lengthList`/`N`/커서)를 쓴 뒤 `len:Observer` 설치·`bindLifetime(anchor, …)`에서 raise하면(잘못된
   anchor, 설치 발화 recompute 안 사용자 Observer의 throw) 그 자리의 길이 State는 고아로 남는다. 에러로

@@ -67,7 +67,7 @@ nameBox.Parent = screen
 지우고 다른 이름을 타이핑해도 라벨은 그대로입니다 — `name:Get()`도 여전히 `"quad"`입니다.
 `Text = name`은 03~05장에서 해 온 그대로, 값을 **내려보내기만** 합니다. 인스턴스 쪽에서 일어난
 변화는 quad가 알 길이 없습니다.
-<!-- mock 실측 2026-09-21: quad-roblox/test/gs.flowingback.luau "06 §1 재검증" — Out 없이 box.Text를 바꿔도 name:Get()은 그대로 -->
+<!-- 근거: 2026-09-21 mock 실측(저장소 내부 기록) — Out 없이 box.Text를 바꿔도 name:Get()은 그대로 -->
 
 ---
 
@@ -122,7 +122,7 @@ print(emits)          --> 1   (등록 즉시 한 번)
 -- (입력창에 타이핑한다) emits == 2 — 엔진 변경이 한 번만 올라옵니다
 -- (되돌리기 버튼을 누른다) emits == 3 — 추가 메아리 없이 한 번만
 ```
-<!-- mock 실측 2026-09-21: quad-roblox/test/gs.flowingback.luau "06 §2 재검증" — emits 1(baseline) → 1(초기 바인딩, 메아리 없음) → 2(타이핑) → 3(되돌리기), 왕복 모두 확인 -->
+<!-- 근거: 2026-09-21 mock 실측(저장소 내부 기록) — emits 1(baseline) → 1(초기 바인딩, 메아리 없음) → 2(타이핑) → 3(되돌리기), 왕복 모두 확인 -->
 
 ---
 
@@ -188,7 +188,7 @@ D.TextBox { q.Out("Text", derived) }
 ```
 
 </details>
-<!-- mock 실측 2026-09-21: quad-roblox/test/gs.flowingback.luau "06 §5 재검증" -->
+<!-- 근거: 2026-09-21 mock 실측(저장소 내부 기록) -->
 
 ---
 

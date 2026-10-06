@@ -133,6 +133,7 @@ end
 
 print()
 print("=== 6. round10 H-1 — 인자 State의 현재값이 nil/비숫자면 조용히 건너뛰지 않고 읽는 줄을 blame ===")
+-- 일시적 검증 raise 뒤 새 세대에 다시 도는 것(7절 "recovers")은 관측 — 계약 아님(round14 Q160, 2026-10-06).
 do
 	local price, tax, ship = Source(1000), Source(100 :: any), Source(50)
 	local total = price:Apply(Operator.Sum(tax, ship))
@@ -187,7 +188,7 @@ do
 	assert(not okn and string.find(tostring(errn), "Operator.Clamp: min must be <= max and neither NaN", 1, true) ~= nil, "NaN bound: " .. tostring(errn))
 	mock.assertBlamesUser(errn, SPEC_FILE, "NaN bound blames the user's :Get line")
 	hi:Set(3)
-	assert(c:Get() == 3, "recovers on the next generation")
+	assert(c:Get() == 3, "recovers on the next generation (observation, not a contract — round14 Q160)")
 	local ok2, err2 = pcall(function()
 		return Operator.Indexed(Source("k"))
 	end)

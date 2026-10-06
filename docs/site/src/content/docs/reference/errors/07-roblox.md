@@ -49,7 +49,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 `Dispatch: cannot place an Instance inside itself or one of its own descendants (that would be a cycle)` — `quad-roblox/src/Handlers/InstanceChild.luau`
 
-- **언제**: [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때, 어떤 Instance를 자기 자신이나 자기 자손의 숫자 키 자리에 자식으로 놓으려 할 때 — 놓이는 자리의 Instance에서 조상 사슬을 따라 올라가며 그 Instance를 만나는지 검사합니다. **[2026-10-01 기준, 다음 릴리즈부터]** 조상 사슬 걷기라 debug 층으로 내려갔습니다 — 꺼 두면 Roblox 엔진의 `… would result in circular reference` 에러가 대신 멈춥니다. 다만 그 에러는 quad가 자리를 잡은 **뒤**에 나므로, 그 요소의 부기는 그 뒤로 믿을 수 없습니다(던진 뒤의 무결은 약속하지 않습니다).
+- **언제**: [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때, 어떤 Instance를 자기 자신이나 자기 자손의 숫자 키 자리에 자식으로 놓으려 할 때 — 놓이는 자리의 Instance에서 조상 사슬을 따라 올라가며 그 Instance를 만나는지 검사합니다. **(3.2.0 다음 릴리즈부터)** 조상 사슬 걷기라 debug 층으로 내려갔습니다 — 꺼 두면 Roblox 엔진의 `… would result in circular reference` 에러가 대신 멈춥니다. 다만 그 에러는 quad가 자리를 잡은 **뒤**에 나므로, 그 요소의 부기는 그 뒤로 믿을 수 없습니다(던진 뒤의 무결은 약속하지 않습니다).
 - **고치려면**: 순환이 생기지 않게 트리 구조를 바꾸세요.
 - **참고**: [D — 숫자 키](/reference/roblox/02-d/#숫자-키--자식과-디스크립터)
 
@@ -89,7 +89,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 `nativeClaim: Instance is already claimed by quad` — `quad-roblox/src/LifetimeHandle.luau`
 
-- **언제**: 같은 Instance를 `nativeClaim`으로 두 번 claim할 때. 공개 경로(`q.Claim`을 두 번, `New`가 만든 인스턴스를 claim)는 `Claim`의 1패스가 `isClaimed`로 먼저 걸러 `Quad0029`를 내므로, 이 에러는 백엔드 op를 직접 부르거나 파괴된 인스턴스를 GC 전에 다시 claim하는 정의되지 않은 경로에서만 봅니다([2026-09-27 기준]).
+- **언제**: 같은 Instance를 `nativeClaim`으로 두 번 claim할 때. 공개 경로(`q.Claim`을 두 번, `New`가 만든 인스턴스를 claim)는 `Claim`의 1패스가 `isClaimed`로 먼저 걸러 `Quad0029`를 내므로, 이 에러는 백엔드 op를 직접 부르거나 파괴된 인스턴스를 GC 전에 다시 claim하는 정의되지 않은 경로에서만 봅니다.
 - **고치려면**: 이미 quad 소유인 Instance를 다시 claim하지 마세요.
 - **참고**: [`extend/01-backend-provider-contract`](/reference/extend/01-backend-provider-contract/) — "3. 판정·훅·조회 op"
 
@@ -99,8 +99,8 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 `inst`가 Instance가 아니면(평범한 테이블·문자열 키) 이유 절이 `owner must be an Instance claimed by quad (got {typeof(inst)})`로 바뀝니다.
 
-- **언제**: `q.Backend.bindLifetime(inst, value)`의 `inst`가 이 백엔드의 quad 소유 요소가 아닐 때(quad 밖에서 만들어졌거나, 이미 파괴됐을 때). 직접 부르지 않아도 닿습니다 — `q.Dispatch.process`로 quad가 만들지도 `Claim`하지도 않은 Instance의 자리에 `Effect`처럼 수명에 묶이는 값을 놓거나, `q.Backend.holdLifetime`을 그런 Instance에 직접 부르면 같은 메시지가 납니다(메시지는 부르지 않은 `bindLifetime`을 말합니다, [2026-09-27 실측]).
-- **고치려면**: quad가 만들었거나 `Claim`으로 넘겨받은, 아직 살아 있는 Instance에만 값을 놓거나 묶으세요 — 밖에서 만든 Instance는 먼저 `q.Claim`으로 넘겨받으세요.
+- **언제**: `q.Backend.bindLifetime(inst, value)`의 `inst`가 이 백엔드의 quad 소유 요소가 아닐 때(quad 밖에서 만들어졌거나, 이미 파괴됐을 때). 직접 부르지 않아도 닿습니다 — `q.Dispatch.process`로 quad가 만들지도 `Claim`하지도 않은 Instance의 자리에 `Effect`처럼 수명에 묶이는 값을 놓거나, `q.Backend.holdLifetime`을 그런 Instance에 직접 부르면 같은 메시지가 납니다(메시지는 부르지 않은 `bindLifetime`을 말합니다). [`q.Bookkeeping.setLength`](/reference/extend/02-dispatch-handler-contract/#qbookkeepingsetlengthownerkey-i-len-anchor-element)에 State 길이를 넘기며 `anchor`를 생략했는데 `ownerKey`가 Slot이면 Instance가 아닌 키로 묶으려다 이 에러(`owner must be …` 꼴)가 납니다.
+- **고치려면**: quad가 만들었거나 `Claim`으로 넘겨받은, 아직 살아 있는 Instance에만 값을 놓거나 묶으세요 — 밖에서 만든 Instance는 먼저 `q.Claim`으로 넘겨받으세요. `setLength`라면 `ownerKey`가 Slot일 때 `anchor`에 그 Slot이 붙은 물리 Instance를 넘기세요.
 - **참고**: [`q.Backend.bindLifetime(inst, value)`](/reference/core/10-lifetime-sentinels/#qbackendbindlifetimeinst-value)
 
 ### Quad0228

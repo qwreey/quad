@@ -311,6 +311,58 @@ Getting Started의 예제들은 Roblox 기본 모드(`--!nonstrict`)를 가정�
 상태 위에 얹는 연산 조합자는 `q.Operator` 네임스페이스에 있고, `:Apply`로 붙입니다 — 예: `price:Apply(q.Operator.Sum(tax, shipping))`, `reduceMotion:Apply(q.Operator.Not)`. 인자는 리터럴이어도 State여도 됩니다.
 :::
 
+### 제네릭 컴포넌트의 타입 — 라이브러리 저자를 위한 레시피(`--!strict`)
+
+값의 타입을 제네릭으로 받는 컴포넌트(`RadioButton<T>`, `Combo<T>`, `ValueLabel<T>`)를 만들면, props를 `q.State<T>`나 `q.Source<T>`로 받는 순간 신 솔버가 `T`를 추론하지 못하고 *"No valid instantiation could be inferred for generic type parameter T … at least: number | nil, at most: number"*로 죽습니다. `q.State<EnumItem>` 자리에 `q.Source(Enum.EasingStyle.Quad)`가 안 들어가는 것도 같은 뿌리입니다. quad 탓이라기보다 Luau 타입 검사기의 한계(교집합 타입 안에서 `T`가 쓰기·인자 자리에 설 때)이고, quad가 자기 입력 자리에 쓰는 방법을 그대로 쓰면 오늘 풀립니다 — **State props는 `q.StateMarker<T>`로 받고, 메소드가 필요하면 본문에서 캐스트합니다.** 설정 모듈([시작하기 01](/getting-started/01-setup/))의 타입 재수출에 한 줄을 더하세요 — `export type StateMarker<T> = QuadTypes.StateMarker<T>`.
+
+```luau
+-- 읽기만 하는 자리: 마커로 받고, 메소드가 필요하면 본문에서 State로 캐스트
+type ValueLabelProps<T> = {
+    Value: q.StateMarker<T>,
+    Format: (T) -> string,
+}
+local function ValueLabel<T>(props: ValueLabelProps<T>): TextLabel
+    local value = (props.Value :: any) :: q.State<T>
+    local text: q.State<string> = value:Compute(function(v: q.StateData<T>): string
+        return props.Format(v:Get())
+    end)
+    return D.TextLabel { Text = text }
+end
+
+-- 쓰는 자리: 역시 마커로 받고 본문에서 Source로 캐스트 — 입구에서 쓸 수 있는 값인지 확인
+type RadioButtonProps<T> = {
+    Value: q.StateMarker<T>,
+    Option: T,
+    Text: string,
+}
+local function RadioButton<T>(props: RadioButtonProps<T>): TextButton
+    if not q.isSource(props.Value) then
+        error("RadioButton: Value must be a Source - a derived State cannot be written", 2)
+    end
+    local value = (props.Value :: any) :: q.Source<T>
+    return D.TextButton {
+        Text = props.Text,
+        Activated = function()
+            value:Set(props.Option)
+        end,
+    }
+end
+
+local style = q.Source(Enum.EasingStyle.Quad)
+local label = ValueLabel { Value = style, Format = function(s: Enum.EasingStyle) return s.Name end }
+local linear = RadioButton { Value = style, Option = Enum.EasingStyle.Linear, Text = "Linear" } -- T = Enum.EasingStyle
+-- RadioButton { Value = style, Option = 1, Text = "x" } -- 타입 에러: Option의 타입이 Value와 다르다
+```
+
+마커는 quad의 입력 자리(`Text = props.Value`)에 그대로 넘어가고, 넓은 자리에도 들어갑니다(`q.StateMarker<EnumItem>`에 `q.Source(Enum.EasingStyle.Quad)`). **대가가 하나 있습니다** — 쓰는 자리를 마커로 받으면 `:Compute` 결과 같은 파생 State가 들어와도 타입이 막지 못합니다. 그래서 위처럼 입구에서 `q.isSource`로 확인하거나, 적어도 문서에 "`Source`를 넘기라"고 적어 두세요.
+
+같은 자리에서 자주 만나는 셋도 함께 적어 둡니다.
+
+- **props 자리에 인라인으로 쓴 `:Compute`** — `D.TextLabel { Text = n:Compute(function(self) … end) }`처럼 다른 호출에 넘기는 테이블 안에 콜백을 바로 쓰면 콜백 매개변수의 타입이 정해지지 않아 에러가 납니다. `function(self: q.StateData<number>)`처럼 매개변수에 주석을 달거나, 결과를 주석 단 지역 변수로 먼저 빼세요.
+- **자식 배열 안에 인라인으로 쓴 콜백** — `D.Frame { q.PreRef(nil :: Frame?):Callback(function(inst) … end) }`나 `count:Observer(function(t) … end)`도 같은 이유로 매개변수 주석이 필요합니다 — `function(inst: Frame?)`, `function(t: q.StateData<number>)`. 같은 콜백을 독립 문장으로 쓰면 주석 없이도 됩니다.
+- **제네릭 함수 안에서 `Slot:List`에 넘기는 key 함수** — 매개변수 타입을 `(T, number) -> any`로 적으세요. 인자를 하나만 받는 함수 값(`(T) -> string`)은 인자를 둘 받는 함수 자리에 들어가지 않습니다(그 자리에 바로 쓴 람다는 괜찮습니다).
+
+
 ---
 
 ## 7. 컴포넌트 작성 체크리스트

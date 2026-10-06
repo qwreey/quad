@@ -221,7 +221,7 @@ slotB:Add(D.TextLabel {
 ```
 
 **실행하면** `B2`의 `LayoutOrder`가 6으로 놓이고, 앞의 Slot이 늘고 줄 때마다 `Offset`이 움직이므로 `LayoutOrder`도 따라갑니다.
-<!-- mock 실측 2026-09-11: gs.polish4.luau — slotB.Offset 4, B2 LayoutOrder 6, slotA에 A4를 더 넣으면 7 -->
+<!-- 근거: 2026-09-11 mock 실측(저장소 내부 기록) — slotB.Offset 4, B2 LayoutOrder 6, slotA에 A4를 더 넣으면 7 -->
 
 여기서 `+ 2`는 그 원소가 **Slot 안에서 몇 번째인가**입니다. 손으로 `:Add` 할 때는 넣는 쪽이 그 순번을 알고 있고, `:List`에서는 `updateFn`이 받는 `ctx.Index`로 넘겨줍니다([14장](./14-lists.md)).
 
@@ -257,7 +257,7 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 **실행하면** 그 자리가 `cur`를 따라 하나씩 갈아 끼워집니다. `Slot`을 만들지도, `:Add`/`:Remove`를 부르지도 않았습니다.
 
 한 가지가 앞 절들과 다릅니다. **갈아 끼운 옛 원소는 파괴되지 않습니다** — 트리에서 떼어지기만 하고(`a.Parent`가 `nil`이 됩니다) 값 자체는 살아 있습니다. 실제로 `cur:Set(a)`를 다시 하면 그 인스턴스가 그대로 돌아옵니다. 그러니 **떼어 낸 옛 것은 여러분 소유**입니다 — 더 쓸 일이 없으면 `q.dispose(a)`로 파괴하세요. quad가 관리하는 값을 버리는 정본 경로가 `q.dispose`이고, `Slot`이 들고 있는 값이면 파괴 대신 에러로 알려 줍니다(`inst:Destroy()`는 그 확인 없이 지웁니다). 이 절처럼 `State` 자리에 **지금 놓여 있는** 원소도 같은 에러(`Quad0179`)로 막히고 원소는 붙은 채 남으니, 버리기 전에 먼저 다른 값으로 갈아 끼우세요(갈아 끼워 떼어진 옛 원소는 이미 내려와 있어 바로 버릴 수 있습니다).
-<!-- mock 실측 2026-09-14: gs.dispose2.luau — cur:Set(b) 뒤 a.Parent nil, q.dispose(a) 성공 -->
+<!-- 근거: 2026-09-14 mock 실측(저장소 내부 기록) — cur:Set(b) 뒤 a.Parent nil, q.dispose(a) 성공 -->
 
 갈아 끼우면서 옛 것은 더 쓰지 않을 거라면 두 줄을 한 줄로 줄일 수 있습니다. `cur:SetAndDispose(b)`는 `cur:Set(b)`를 한 뒤, 떼어진 옛 원소(`a`)를 `q.dispose`로 파괴합니다 — 순서가 "갈아 끼우기 → 버리기"라 위 에러에 걸리지 않고, 처음 채울 때처럼 옛 값이 `nil`이면 지울 것이 없어 그냥 넘어갑니다. `cur:SetAndDispose(nil)`은 자리를 비우면서 마지막 원소까지 버립니다. 자세한 규칙은 [레퍼런스: `source:SetAndDispose(v)`](../reference/core/02-source.md#sourcesetanddisposev)에 있습니다. **[2026-10-01 기준]** `:SetAndDispose`는 게시된 3.2.0에는 없습니다 — 다음 릴리즈부터([변경 이력](../../CHANGELOG.md)의 `[Unreleased]`). 3.2.0에서는 위처럼 `:Set` 뒤에 `q.dispose`를 직접 부르세요.
 <!-- mock 실측 2026-10-01: cur:SetAndDispose(b) 뒤 a 파괴·b가 자리에, cur:SetAndDispose(nil) 뒤 b 파괴·자리 빔 -->
@@ -266,13 +266,13 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 <summary><strong>이 자리도 진짜 <code>Slot</code>인가요?</strong></summary>
 
 아닙니다. 이 자리는 **자식 인스턴스를 놓을 때와 같은 규칙으로** 처리됩니다 — `State`가 한 겹 벗겨진 뒤 그 안의 인스턴스가 평범한 자식으로 놓이고, 갈아 끼울 때 옛 원소는 `Parent = nil`로 **내려질 뿐** 파괴되지 않습니다. `Offset`/`Length` 장부에는 앞 절들과 똑같이 참여하지만, 이 자리는 `Offset` 발행 채널을 두지 않아 **그 자리의 `Offset` 값 자체는 쓸 수 없습니다.** 왜 `State` 안의 것이 그대로 자식 자리에 앉는지는 [20장](./20-handlers.md)에서 봅니다.
-<!-- mock 실측 2026-09-11: gs.stateinst.luau — 자리의 State는 StoreBind가, 벗겨진 인스턴스는 InstanceChild가 맡는다; 부기는 offset 1/2로 정상. 옛 서술(내부 OwnsElements=false :Single)은 Slot의 요소로 State를 넣을 때(Elements.luau)에만 맞는 것이었다 -->
+<!-- 근거: 2026-09-11 mock 실측(저장소 내부 기록) — 자리의 State는 StoreBind가, 벗겨진 인스턴스는 InstanceChild가 맡는다; 부기는 offset 1/2로 정상. 옛 서술(내부 OwnsElements=false :Single)은 Slot의 요소로 State를 넣을 때에만 맞는 것이었다 -->
 
 </details>
 
 `LayoutOrder`처럼 이 자리의 `Offset` 값이 필요하면 [14장](./14-lists.md)의 `:Single`을 직접 걸어야 합니다.
 
-<!-- mock 실측 2026-09-11: gs.refprobe.luau G1~G4(1 / 2 "A" / 2 "B" / 1, A는 파괴 안 됨) · gs.refprobe2.luau J3/J4(떼어진 A는 Parent nil, 다시 Set하면 돌아온다) -->
+<!-- 근거: 2026-09-11 mock 실측(저장소 내부 기록) — 1 / 2 "A" / 2 "B" / 1, A는 파괴 안 됨; 떼어진 A는 Parent nil, 다시 Set하면 돌아온다 -->
 
 ---
 

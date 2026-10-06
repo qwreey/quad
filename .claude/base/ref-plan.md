@@ -610,7 +610,9 @@ function RefLeafHandler.process(inst, k, v, index)
     -- UB로 닫을 수 있는지까지 포함해 M8에서 RefLeafHandler를 짤 때
     -- 판단할 것(round12 §6). **[2026-09-04 판단됨 — M8 brief §0 Q4 (a)]** UB로
     -- 닫지 않고 `SetWeak`를 `Set` 앞으로 옮겼다(위). 같은 v 재진입은 이제
-    -- dedup으로 무해. 다른 v'로의 재진입(콜백이 같은 자리를 다른 Ref로
+    -- dedup으로 무해 — **[2026-10-06 round14 Q162 (a)] 관측 — 계약 아님**: 같은 (inst,k) 간접
+    -- 재진입은 round1 Q5 (a)대로 전부 UB이고, 같은 값을 되쓰는 정의된 경로는 `:SetIfChanged`
+    -- (전파가 없어 재진입 자체가 없다); 순서는 비용 0이라 코드에 둔다(`dispatch-core-plan.md` Q5 항목). 다른 v'로의 재진입(콜백이 같은 자리를 다른 Ref로
     -- 재디스패치)은 순서와 무관하게 슬롯 클로저가 겹쳐 써져 v가 언바인드
     -- 안 되는 채 남는데, 이건 옮기기 전에도 같았고 "재진입 방어 안 함"
     -- 원칙 그대로 UB. `Set`이 콜백 error로 중단돼도 기록은 남지만 그 error는
