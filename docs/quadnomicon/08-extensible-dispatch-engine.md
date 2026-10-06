@@ -5,7 +5,7 @@ description: "핸들러 레지스트리로 확장 가능한 디스패치 엔진�
 # [Quadnomicon Vol. 8] 확장 가능한 디스패치 엔진과 우선순위 파이프라인
 
 > **작성 목적**: 프레임워크 아키텍트 및 고급 엔지니어를 위한 기술 해설서
-> **관련 소스**: `quad-base/src/Dispatch/init.luau`, `quad-base/src/Dispatch/Handler.luau`, `quad-base/src/StoreBind.luau`, `quad-base/src/None.luau`, `quad-types/src/init.luau`
+> **관련 소스**: `quad-base/src/Dispatch/init.luau`, `quad-base/src/Dispatch/Handler.luau`, `quad-base/src/StateHandler.luau`, `quad-base/src/None.luau`, `quad-types/src/init.luau`
 
 > [!CAUTION]
 > 이 권은 프로퍼티·자식 디스패치 엔진 내부를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](../getting-started/00-installation.md)부터 보십시오.
@@ -87,13 +87,13 @@ export type Handler = {
 
 | 밴드 | 실제로 앉아 있는 것 |
 |---|---|
-| `HIGH` | 디스패치 골격 자체 — `StoreBind`, `NoneHandler`/`NilHandler`, `Processed*` 말단(Modifier·PreRef·PostRef), `SlotHandler`, `Ref`/`Observer`/`Effect` 잎 핸들러 |
+| `HIGH` | 디스패치 골격 자체 — `StateHandler`, `NoneHandler`/`NilHandler`, `Processed*` 말단(Modifier·PreRef·PostRef), `SlotHandler`, `Ref`/`Observer`/`Effect` 잎 핸들러 |
 | `NORMAL + 1` | `InstanceShorthand`(`UICorner` 등 특수 키) |
 | `NORMAL` | 백엔드의 실제 일 — `Property`, `InstanceChild` |
 | `NORMAL - 1` | `Event`, `OnChange`(`Property`/`InstanceChild`와 서로소 술어라 순서가 문제되진 않지만, 동률 미정의 순서를 피하려고 한 밴드 내려 앉힙니다) |
 | `FALLBACK` | base가 알고리즘을 소유하고 효과만 주입받는 것 — `TagFallbackHandler`, `AttrKeyFallbackHandler`, `AttrGroupFallbackHandler`(§5); 그리고 동적 경로로 온 `PreRef`/`PostRef`/`Observer`/`Effect`를 즉시 거부하는 가드([2026-10-02 기준] — 문자 키의 `Ref`·`Slot`은 가드 없이 매치 실패 에러가 안내합니다) |
 
-**base 소속이라고 전부 위에 오는 게 아닙니다.** `StoreBind`는 프로퍼티 세터보다 먼저
+**base 소속이라고 전부 위에 오는 게 아닙니다.** `StateHandler`는 프로퍼티 세터보다 먼저
 매치돼야 반응형 값이 언랩되므로 `HIGH`고, `Tag`/`Attr`는 백엔드가 통째로 다르게
 처리할 수 있어야 하므로 `FALLBACK`입니다.
 
@@ -113,16 +113,16 @@ export type Handler = {
 
 ```
 (Frame, "Size")의 체인:
-  index 1: { handler = StoreBind, retractor = <옵저버를 unbind하는 클로저> }
+  index 1: { handler = StateHandler, retractor = <옵저버를 unbind하는 클로저> }
   index 2: { handler = Property,  retractor = <트윈/값을 되돌리는 클로저> }
 ```
 
-깊이는 재귀로 만듭니다. `StoreBind.process`는 구독을 걸고, 값이 올 때마다 실제 값을
+깊이는 재귀로 만듭니다. `StateHandler.process`는 구독을 걸고, 값이 올 때마다 실제 값을
 `Dispatch.process(inst, k, realv, index + 1)`로 **아래 칸에** 넘깁니다. `NoneHandler`도
 같은 모양으로 `nil`을 한 칸 아래로 넘깁니다. 엔진에는 "State 안의 Tween" 같은 조합
 분기가 하나도 없고, `State<State<Tween>>`도 칸이 하나 더 생길 뿐입니다.
 
-`realv`가 다시 `State`면 `index + 1`의 별도 칸에서 같은 `StoreBind`가 잡으므로 신원
+`realv`가 다시 `State`면 `index + 1`의 별도 칸에서 같은 `StateHandler`가 잡으므로 신원
 충돌이 없고, 반응형이 아니면 `isHandlable`을 실패해 다음 우선순위로 내려가므로 무한
 재귀도 없습니다.
 

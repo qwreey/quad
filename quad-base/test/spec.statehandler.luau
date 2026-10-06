@@ -1,11 +1,12 @@
 --[[
-	StoreBind end-to-end contract — the first reactive update through the real
-	pipeline. Sources: `ROADMAP.md` M4 checkboxes (both), `.claude/base/
+	StateHandler end-to-end contract — the first reactive update through the real
+	pipeline. (옛 `spec.storebind.luau` — renamed with the handler, round14 Q175.)
+	Sources: `ROADMAP.md` M4 checkboxes (both), `.claude/base/
 	dispatch-core-plan.md` "Store 바인드는 특수 경우인가" section, scoped by
 	`.claude/archive/v2-initial-implementation/m4-implementation-round13-brief.md` §1.
 
 	Carries the leftover shares of two retired spikes: `04` (deep-index-first
-	teardown through the REAL StoreBind + effect-level assertions — old store
+	teardown through the REAL StateHandler + effect-level assertions — old store
 	subscriptions actually 0, a dead store's Set never overwrites; `H-215`/
 	`H-224`) and `03` (recursion terminates, `None`→`nil` handoff, priority
 	scan — round13 §0 Q4 (a) retires the spike in favor of this spec).
@@ -125,7 +126,7 @@ do
 	local inner = q.Source("x")
 	local outer = q.Source(inner)
 	q.Dispatch.drive(inst, { Label = outer })
-	-- 체인: StoreBind@1(outer) → StoreBind@2(inner) → str@3 — 같은 핸들러가
+	-- 체인: StateHandler@1(outer) → StateHandler@2(inner) → str@3 — 같은 핸들러가
 	-- 별개 슬롯(1·2)이라 identity 충돌 없음
 	assert(inst.Label == "x", "double-wrapped value unwraps to the leaf")
 	expectLog(log, { "str:process:Label:x:3" })
@@ -148,13 +149,13 @@ do
 end
 
 print()
-print("=== 4. 실제 StoreBind 경유 (B) — 깊은 인덱스부터 정리 + 효과 수준: 옛 구독 0, 죽은 store가 값을 못 덮는다 ===")
+print("=== 4. 실제 StateHandler 경유 (B) — 깊은 인덱스부터 정리 + 효과 수준: 옛 구독 0, 죽은 store가 값을 못 덮는다 ===")
 do
 	local q = newQuad()
 	local log: { string } = {}
 	addPropLeaf(q, log, "str", isString, q.Dispatch.HANDLER_PRIORITY_NORMAL)
 	addPropLeaf(q, log, "num", isNumber, q.Dispatch.HANDLER_PRIORITY_NORMAL + 1)
-	-- unbindLifetime 호출 시점을 관측 — StoreBind는 생명주기 넷을 발화 시점에
+	-- unbindLifetime 호출 시점을 관측 — StateHandler는 생명주기 넷을 발화 시점에
 	-- `module.xxx`로 늦게 읽으므로(`H-174`) 스펙의 래퍼가 실제로 잡힌다
 	local origUnbind = q.Backend.unbindLifetime
 	q.Backend.unbindLifetime = function(value: any)
@@ -169,8 +170,8 @@ do
 	table.clear(log)
 
 	outer:Set(999) -- realv 타입 교대 — (B)@2: 꼬리(3, leaf)부터 물러난 뒤에야
-	-- 2의 StoreBind retractor(unbind)가 돈다(스파이크 04 잔여 몫의 순서 단언)
-	assert(inst.Label == 999, "type change through the real StoreBind lands")
+	-- 2의 StateHandler retractor(unbind)가 돈다(스파이크 04 잔여 몫의 순서 단언)
+	assert(inst.Label == 999, "type change through the real StateHandler lands")
 	expectLog(log, { "str:retract:Label:nil:true", "unbind", "num:process:Label:999:2" })
 	table.clear(log)
 
@@ -198,11 +199,11 @@ do
 	local inst = Instance.new("Frame")
 	local src = q.Source("a")
 	q.Dispatch.drive(inst, { src, "static" })
-	-- 자리 1: StoreBind@1 → SpecLeaf@2(길이 1), 자리 2: SpecLeaf@1
+	-- 자리 1: StateHandler@1 → SpecLeaf@2(길이 1), 자리 2: SpecLeaf@1
 	assert(q.Bookkeeping.getOffsetAt(inst, 2) == 1, "position 1 contributes length 1 while holding a string")
 	table.clear(log)
 
-	src:Set(q.None) -- StoreBind 재귀 → NoneHandler@2 → nil@3 → NilHandler(길이 0)
+	src:Set(q.None) -- StateHandler 재귀 → NoneHandler@2 → nil@3 → NilHandler(길이 0)
 	expectLog(log, { "leaf:retract:1:nil:true" }) -- (B)@2 — leaf가 먼저 물러난다
 	assert(q.Bookkeeping.getOffsetAt(inst, 2) == 0, "None collapses position 1's length — the sibling offset moved reactively")
 	table.clear(log)
@@ -225,7 +226,7 @@ do
 	q.Dispatch.drive(inst, { Title = src })
 	table.clear(log)
 
-	q.Dispatch.retractFrom(inst, "Title", 1) -- 꼬리부터: leaf@2 → StoreBind@1
+	q.Dispatch.retractFrom(inst, "Title", 1) -- 꼬리부터: leaf@2 → StateHandler@1
 	expectLog(log, { "str:retract:Title:nil:true" })
 	table.clear(log)
 	src:Set("zzz")
@@ -252,7 +253,7 @@ do
 end
 
 print()
-print("=== 7. round11 H-573 (2026-09-17) — 순환하는 State 사슬은 stack overflow 대신 StoreBind 메시지 ===")
+print("=== 7. round11 H-573 (2026-09-17) — 순환하는 State 사슬은 stack overflow 대신 StateHandler 메시지 ===")
 do
 	local q: any = newQuad()
 	local sources, log = {}, {}

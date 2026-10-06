@@ -29,7 +29,7 @@
 `AttrKey(name)`+Dispatch 점유 체크 → **최종적으로 그룹 전용 키
 (비공개 `GetKey`) + `AttrKeyHandler`의 이름 claim**(2026-08-13
 열네 번째 세션, `question.md` 0-Z 확정). 세 번째 안이 다시 뒤집힌
-이유는 하강 diff 재디스패치에선 **두 그룹이 똑같이 `StoreBind`로 보여
+이유는 하강 diff 재디스패치에선 **두 그룹이 똑같이 `StateHandler`로 보여
 "같은 핸들러"로 판정**되므로 점유 체크가 성립하지 않기 때문 — 아래
 "이름 소유권"/"메커니즘" 절이 최신, 중간 버전들은 `archive/
 checkpoint-handler-pattern-reversed.md`와
@@ -68,7 +68,7 @@ Store 여러 개를 한 번에 attribute로 묶어 바인드하는 그룹 `Attr(
 >
 > **슈가의 정체**: `StringAttr(name, value)` = `Attr({ [name] = value })`
 > 한 줄(단일 항목 그룹 — 자기 핸들러 없음, 그룹의 개인 키·위치 claim·`H-154`
-> dedup·StoreBind 위임을 그대로 상속). raw 값의 Lua 타입은 슈가가 검사하고
+> dedup·StateHandler 위임을 그대로 상속). raw 값의 Lua 타입은 슈가가 검사하고
 > (`NumberAttr("X", "s")` → surface error), `State`/`None`은 통과, `nil`은
 > 거부(plain 테이블에 실을 수 없어 조용히 사라지므로 — 삭제는 `None`).
 > 타입은 quad-types `AttrSugar<T> = (name, T | State<T> | None) -> Attr`.
@@ -220,8 +220,8 @@ end
 `AttrKey(name)`(이름별 weak 캐시라 항상 같은 객체)으로 위임했고,
 같은 `(inst,k)` 인덱스 1을 두 소유자가 노리면 `Dispatch.process`의 점유
 체크가 error를 냈음. **하강 diff 재디스패치에선 이게 성립하지 않음** —
-그룹 A가 등록해둔 인덱스 1의 핸들러는 `StoreBind`이고 그룹 B가 넘기는
-`sourceB`도 `StoreBind`에 매치되므로 **"같은 핸들러"로 판정되어 조용히
+그룹 A가 등록해둔 인덱스 1의 핸들러는 `StateHandler`이고 그룹 B가 넘기는
+`sourceB`도 `StateHandler`에 매치되므로 **"같은 핸들러"로 판정되어 조용히
 갈아탐**. 게다가 나중에 A의 클로저가 자기 이름들을 `retractFrom`할 때
 **B의 바인딩을 대신 철거**함(교차 오염) — 예전의 "조용한 last-write-wins"가
 그대로 돌아옴.
@@ -344,7 +344,7 @@ end
   -- 런타임에: A는 "Hp"를 놓고, B가 "Hp"를 가져간다
   ```
 
-  두 자리는 **완전히 별개의 체인**이고 각자 자기 `StoreBind`의 Observer가
+  두 자리는 **완전히 별개의 체인**이고 각자 자기 `StateHandler`의 Observer가
   독립적으로 깨어난다. `groupB` 쪽 emit이 먼저 처리되면 `nameClaims`가 아직
   `groupA`의 키를 가리키므로 **`AttrKey: attribute "Hp" is already bound by another
   owner` error**가 난다. `groupA` 쪽이 먼저면 정상 동작한다 — **같은 코드가
@@ -424,7 +424,7 @@ Attr(store1, store2, ..., {plain = "table도 됨"})  -- 생성자, 여러 개 �
 -- setAttr까지 흘렀다(`H-368` 패밀리, 2차 감사 I-5/H-3)
 -- [명시 추가, 2026-08-20 구현 전 QA 4라운드] plain 테이블의 값은 raw T뿐 아니라
 -- State<T>/Source<T>도 그대로 됨 — {count = 3, label = someSource, live = state}
--- 새 배선이 아니라, 이 값들이 결국 단일 키 경로로 위임돼 StoreBind가 언랩하기 때문
+-- 새 배선이 아니라, 이 값들이 결국 단일 키 경로로 위임돼 StateHandler가 언랩하기 때문
 Attr.Merged(a, b, ...): Attr                   -- 합성, 이름이 겹치면 error
 Attr.Overridden(a, b, ...): Attr               -- 합성, 이름이 겹치면 조용히 뒤가 이김
 attr:NameMap(): {[string]: Source<any>}                  -- 평탄화된 이름→Source 맵(아래 "메커니즘" 절이 쓰는 것)
@@ -587,7 +587,7 @@ end
   (`State<Attr>`가 새 객체를 emit) 새 키가 나오는데, 그때는 옛
   클로저가 먼저 전부 철거하므로 claim 충돌이 없음.
 - **생존 이름도 매 사이클 철거→재등록됨(의도된 트레이드오프)** — **[2026-09-03 `H10-8` 한정]** 단, **같은 그룹 객체의 재발행**(`State<Attr>`가 같은 객체를 다시 emit)은 철거·재등록 없이 통째로 스킵된다(retractor `v == nextValue` / process `reemit`) — 이건 아래 `AT-20`이 논한 "다른 객체 사이의 생존 이름 diff"가 아니라 객체 identity 재사용이라 `Tag`와 같은 안전한 스킵이다(round16 `H10-8`, `Attr/init.luau`). 다른 객체로 바뀔 때의 비용은
-  그 이름의 `StoreBind` 구독 해제+재구독, 그리고 재구독의 "등록 즉시 1회
+  그 이름의 `StateHandler` 구독 해제+재구독, 그리고 재구독의 "등록 즉시 1회
   실행"이 같은 값으로 `setAttr`를 한 번 더 쏘는 것뿐. 이 문서가 이미
   "값 비교(`:Get()`으로 old/new 비교)는 안 함"을 확정해뒀으므로(아래 항목)
   결이 같고, `setAttr`는 같은 값 재기록이 관측상 무해함. **[전면 정정, 2026-08-20 구현 전 QA 4라운드 `AT-20`] "체인이 그룹
@@ -613,7 +613,7 @@ end
   계약("값은 항상 선언된 Compute 재실행 결과, 캐시 비교 금지",
   `base/source-state-plan.md`의 "Source 값을 직접 mutate한 뒤 전파 — `:Emit()`"
   절 "하드 경계" 문단)과 어긋나고, `source`가
-  `State`/`Source`면 `StoreBind`(**[2026-10-01]** 최상위 모듈, 등록은 `State.luau`)가 알아서 언랩+구독까지 다
+  `State`/`Source`면 `StateHandler`(**[2026-10-01]** 최상위 모듈, 등록은 `State.luau`)가 알아서 언랩+구독까지 다
   해줌(그룹 Handler가 따로 구독 관리 안 함)이라 굳이 비교할 이유가 없음.
 - **[확정, 2026-08-12 세션 후속, 사용자 결정] 클로저는 `setAttr`를
   절대 안 부름 — Attr는 오직 명시적 `None`/`nil`로만 지워진다.**
@@ -635,7 +635,7 @@ end
   모호하지 않음, 지금은 범위 밖(백로그).
 - **다만 *구독*은 반드시 끊음 — 값은 안 지워도 자원은 새면 안 됨.**
   그룹이 더 이상 관리하지 않는 이름의 체인을 그대로 두면 그 키에 걸려있던
-  `StoreBind` 구독이 인스턴스가 살아있는 동안 영원히 남아 원본 `Source`가
+  `StateHandler` 구독이 인스턴스가 살아있는 동안 영원히 남아 원본 `Source`가
   바뀔 때마다 계속 `setAttr`를 쏘는 실제 리소스 누수가 됨(이건
   "마지막 값이 남는다"는 것과 다른 문제 — 안 죽는 구독 자체가 문제).
   그래서 반환하는 클로저는 자기가 등록했던 키 전부에 대해

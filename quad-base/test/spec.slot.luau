@@ -96,7 +96,7 @@ do
 	local a = Instance.new("Frame"); a.Name = "A"
 	s:Add(a)
 	local parent = Instance.new("Folder")
-	-- store-bind: StoreBind unwraps State → the Slot lands at the array slot
+	-- store-bind: StateHandler unwraps State → the Slot lands at the array slot
 	dispatch.drive(parent, { src })
 	src:Set(s)
 	assert(childCount(parent) == 1, "slot mounted via State")

@@ -33,7 +33,7 @@ for _, handler in q.Dispatch.listHandlers() do
 end
 ```
 
-**실행하면** `SlotHandler`, `StoreBind`, `Event`, `InstanceChild`, `Property` 같은 이름이 **우선순위
+**실행하면** `SlotHandler`, `StateHandler`, `Event`, `InstanceChild`, `Property` 같은 이름이 **우선순위
 순으로** 쭉 찍힙니다. 한 자리가 실제로 훑는 것은 그중 그 키 타입에 해당하는 것들뿐이고, 우선순위가
 같은 것들끼리의 순서는 정해져 있지 않습니다. 이름은 **진단용**이라 버전이나 백엔드에 따라 달라질 수 있습니다 — 외우지
 말고 "이런 것들이 줄 서 있구나" 정도로 보면 됩니다.
@@ -51,7 +51,7 @@ end
 | 숫자 키에 `D.Frame {}`(02) | `InstanceChild` |
 | 문자 키 `Text`에 문자열(02) | `Property` |
 | 문자 키 `Activated`에 함수(04) | `Event` |
-| **숫자 키든 문자 키든** `q.Source(...)`(03) | `StoreBind` |
+| **숫자 키든 문자 키든** `q.Source(...)`(03) | `StateHandler` |
 
 
 앞 장들이 하나씩 "숫자 키 자리엔 자식만 오는 게 아니다"라고 말해 온 것이 이 표입니다. 자식
@@ -85,7 +85,7 @@ Quad0097 Effect: must be an array item, not the value of a string key
 ## 2. `State`가 오면 벗겨서 한 칸 아래로
 
 표의 마지막 줄이 이 장의 핵심입니다. `State`는 숫자 키에서도 문자 키에서도 **같은 핸들러**
-(`StoreBind`)가 맡습니다. 그리고 그 핸들러가 하는 일은 값을 어딘가에 쓰는 것이 아니라 **한 겹
+(`StateHandler`)가 맡습니다. 그리고 그 핸들러가 하는 일은 값을 어딘가에 쓰는 것이 아니라 **한 겹
 벗기는 것**입니다 — 그 `State`를 구독해 두고, 지금 담긴 실제 값을 **같은 자리의 한 칸 아래로**
 다시 넘깁니다. 그 아래 칸에서 "이 값, 누가 맡을래?"가 처음부터 다시 돕니다.
 
@@ -98,7 +98,7 @@ Quad0097 Effect: must be an array item, not the value of a string key
 지원한 것이 아니라, **한 칸 아래로 내려간 뒤에는 셋을 구분할 이유가 없어지는** 것입니다.
 
 [03장](/getting-started/03-flowing-values/)에서 파이프가 프로퍼티에 닿았던 것도 정확히 같은 경로입니다.
-`Text = count:Compute(...)`의 자리에서 `StoreBind`가 먼저 잡고, 벗긴 문자열이 한 칸 아래에서
+`Text = count:Compute(...)`의 자리에서 `StateHandler`가 먼저 잡고, 벗긴 문자열이 한 칸 아래에서
 `Property`에게 갑니다. "파이프를 프로퍼티에 꽂는다"는 표현은 그 두 칸을 줄여 부른 것입니다.
 
 칸은 한 번만 생기는 것도 아닙니다. `State` 안에 `State`를 담으면 칸이 하나 더 생길 뿐입니다.

@@ -98,8 +98,8 @@ v1의 `ProcessQuadProperty`(`qwreey/quad@f867ccb:src/class.lua` 134~214행)는
   >
   > ```
   > (inst, k) 체인
-  >   index 1 : StoreBind   ← 바깥 State를 구독. "얕음"
-  >   index 2 : StoreBind   ← 안쪽 State를 구독(바깥이 재귀로 만든 것)
+  >   index 1 : StateHandler   ← 바깥 State를 구독. "얕음"
+  >   index 2 : StateHandler   ← 안쪽 State를 구독(바깥이 재귀로 만든 것)
   >   index 3 : TagHandler  ← 최종 Tag를 실제로 반영. "깊음"
   > ```
   >
@@ -110,7 +110,7 @@ v1의 `ProcessQuadProperty`(`qwreey/quad@f867ccb:src/class.lua` 134~214행)는
   >   아래 "Dispatch 체인" 절의 의사코드가 `for i = #list, index, -1`로
   >   **꼬리부터 역순**으로 돈다. 즉 사용자가 되물은 *"달라질 때 5, 4, 3, 2
   >   … 순이 되는건 아니지?"*의 답은 **"맞다, 그 순서가 된다"** 이다.
-  > - **왜 반대여야 하는가**: index 2의 `StoreBind`가 index 3의
+  > - **왜 반대여야 하는가**: index 2의 `StateHandler`가 index 3의
   >   `TagHandler`를 *만들어낸* 주체다. 만든 쪽을 먼저 지우면 만들어진
   >   쪽을 정리할 주체가 사라진다 — 스택을 쌓은 역순으로 푸는 것과 같은
   >   이유(LIFO). 그래서 각 핸들러의 retractor는 자기가 재귀로 만든 하위
@@ -157,7 +157,7 @@ v1의 `ProcessQuadProperty`(`qwreey/quad@f867ccb:src/class.lua` 134~214행)는
   **`isHandlable`이 여전히 최종 판별자**다 — 선언은 그 술어가 이미 `type(k)`로
   거부하는 키를 아예 안 묻게 할 뿐이라 매치 결과는 바뀌지 않는다(quad의 열둘
   — `H-52` 배열 자리 가드를 가진 리프 아홉 + Property/Event/InstanceShorthand
-  — 이 선언했고, 센티널·StoreBind·None·AttrKey·폴백 가드는 키 무관이라 미선언).
+  — 이 선언했고, 센티널·StateHandler·None·AttrKey·폴백 가드는 키 무관이라 미선언).
   잘못된 값(`"table"` 등)은 등록 시 표면 에러 — 조용히 모든 버킷에서 빠지면
   매치 실패로만 드러나서. 근거 실측(CLI, quad-roblox 핸들러 22개): 문자열
   프로퍼티 10개짜리 `D.Frame` 한 번에 `isHandlable` 150회(프로퍼티당 15회),
@@ -193,7 +193,7 @@ v1의 `ProcessQuadProperty`(`qwreey/quad@f867ccb:src/class.lua` 134~214행)는
 `archive/surveys/2026-08-06-pre-implementation-audit.md` 1-3/1-4 해소).**
 
 - **동률(같은 `priority` 값)에 대한 tiebreak 규칙은 강제하지 않는다.**
-  "등록 순서가 이긴다" 같은 규칙을 강제하면 `NoneHandler`/`StoreBind`처럼
+  "등록 순서가 이긴다" 같은 규칙을 강제하면 `NoneHandler`/`StateHandler`처럼
   이미 서로 `isHandlable`이 안 겹치는 내장 핸들러에까지 전부 그 규칙을
   지켜가며 순서를 신경 써야 하고, 나중에 서드파티 핸들러가 늘어나면 더
   골치아파짐(사용자 판단). 대신 **목적별로 이름 붙은 우선순위 상수**
@@ -206,8 +206,8 @@ v1의 `ProcessQuadProperty`(`qwreey/quad@f867ccb:src/class.lua` 134~214행)는
 - **`HANDLER_PRIORITY_FALLBACK` — 최하위 밴드, "base가 제공하되 백엔드가
   덮어쓸 수 있는" 핸들러의 자리 (2026-08-13 열네 번째 세션 신설, 사용자
   제안).** **base 소속 핸들러가 전부 여기 오는 게 아님에 주의** —
-  `StoreBind`/`NoneHandler`/`Leaf`처럼 디스패치 골격 자체인 것들은 여전히
-  높은 우선순위여야 함(`StoreBind`가 프로퍼티 세터보다 먼저 매치돼야
+  `StateHandler`/`NoneHandler`/`Leaf`처럼 디스패치 골격 자체인 것들은 여전히
+  높은 우선순위여야 함(`StateHandler`가 프로퍼티 세터보다 먼저 매치돼야
   반응형 값이 언랩됨). `Tag`/
   `Attr`처럼 **알고리즘은 엔진 무관이라 base가 소유하고 실제 효과만
   주입받는** 핸들러(아래 "base가 소유하는 핸들러와 주입되는 엔진 op" 절)는
@@ -316,7 +316,7 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
   뭔지·왜 필요한지는 아래 "Dispatch 체인" 절 참고** — 요약하면 같은
   `(inst,k)` 안에서 "지금 몇 번째로 겹쳐 위임됐는지"를 나타내는 정수로,
   핸들러 객체 identity 대신 이 숫자로 체인 위치를 추적함.
-- 예시: `StoreBind.luau`(범용, 엔진 무관 — **[2026-10-01]** 최상위, 옛 `Dispatch/StoreBind.luau`, 등록은 `State.luau`의 Init — 아래 "`None` 센티널" 절 머리의 등록 주체 문단)는 **`k`는 무엇이든 받고
+- 예시: `StateHandler.luau`(범용, 엔진 무관 — **[2026-10-01]** 최상위, 옛 `Dispatch/StoreBind.luau`, 등록은 `State.luau`의 Init — 아래 "`None` 센티널" 절 머리의 등록 주체 문단)는 **`k`는 무엇이든 받고
   `v`가 State/Source인 경우를 잡아내는, 우선순위가 매우 높은 핸들러** —
   `v`가 반응형이면 그 값을 처리(구독)함. 이 핸들러 안에서:
   1. 지금 이 처리가 실행되어도 되는지 라이프타임(`Connected`)을 확인 —
@@ -338,11 +338,11 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
      이름 공식화는 아래 `None` 센티널 절 참고, 2026-08-07 여덟 번째
      세션) — 이게 바로 "store 바인드는 pluggable 바인드를 재실행하는
      래핑"이라는 이 문서 이전 초안의 결론과 일치. `realv`가 반응형이
-     아니라면 자연히 `StoreBind`의 `isHandlable`을 통과 못 하고 우선순위상
+     아니라면 자연히 `StateHandler`의 `isHandlable`을 통과 못 하고 우선순위상
      다음 핸들러(일반 프로퍼티 세터 등)로 흘러감 — 무한 재귀 걱정 없음.
      `realv`가 또 State/Source(`State<State<T>>`)여도 이제 **자연스럽게
      처리됨** — 안쪽 재귀는 `index+1`이라는 별개 슬롯을 쓰므로 바깥
-     StoreBind의 슬롯(`index`)과 절대 안 겹침(아래 "Dispatch 체인" 절의
+     StateHandler의 슬롯(`index`)과 절대 안 겹침(아래 "Dispatch 체인" 절의
      `State<State<T>>` 재정정 참고, 예전엔 이게 UB였음).
      **[정정, 2026-08-10 세션]** 이 예시는 원래 "Tween의 store-bind
      핸들러"였으나, Tween이 독립 Dispatch 핸들러가 아니라 PropertyHandler가
@@ -407,7 +407,7 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
   - **[일반 규칙] 이 클로저 안에서 `Dispatch.process`를 부르는 것은
     UB — `Dispatch.retractFrom`이 체인을 걷는 도중의 트래킹이 꼬임.**
     이 클로저는 오직 청소(구조적 팝, 내부 자원 해제)만 전담하고 새
-    등록을 트리거하면 안 됨 — 새 등록은 항상 바깥의 StoreBind/그룹
+    등록을 트리거하면 안 됨 — 새 등록은 항상 바깥의 StateHandler/그룹
     로직이 클로저 호출이 다 끝난 *뒤에* 별도로 `process`를 부르는
     순서로만 일어나야 함. **`Dispatch.retractFrom`은 "다른 키에 대해서만"
     허용** — `Attr` 그룹이 자기가 위임했던 `AttrKey(name)`들을
@@ -454,7 +454,7 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
   둬야 할 문제가 아니라 오작동하는 handler/provider(`quad-roblox` 등) 쪽
   버그로 간주 — **사용자 확정**("입력된 값이 다시 입력되면 무한루프
   빠지겠지만, 그건 막기 힘들고 유저가 내기도 힘들어. 아예 quad-roblox나
-  프로바이더가 잘못 짠 코드일테니까"). `StoreBind`의 재귀 케이스(위 절)처럼
+  프로바이더가 잘못 짠 코드일테니까"). `StateHandler`의 재귀 케이스(위 절)처럼
   자연히 좁혀지는 경우가 일반적이고, 일반 사용자가 만들어낼 수 있는 상황이
   아니라고 판단해 별도 가드 없이 진행.
 
@@ -566,14 +566,14 @@ retract 클로저를 반환하는 1-메소드 계약으로 합쳐짐 — 이 절
 지우기" 문제 — raw 저장 계층(Modifier 필드/인라인 props/`Peek`)에서 쓰는
 `None` 센티널이 실제로 인스턴스에 반영될 때 base가 뭘 하는지가 이 문서의
 층위. 결론: **새 메커니즘이 아니라 위 "확정된 디스패치 모델"의
-`StoreBind` 핸들러(위 절)와 완전히 같은 모양의 핸들러 하나 추가.**
+`StateHandler` 핸들러(위 절)와 완전히 같은 모양의 핸들러 하나 추가.**
 
 **[2026-10-01 사용자 결정 — 등록 주체] `None`은 값이라 그 핸들러는 그 값을 선언한 모듈이 등록한다.** 사용자: *"None.luau 는
 Dispatch 안에 있을 이유가 없지 않나 … Void 처럼 밖에 있어도 되고, effect 나 다른것들 처럼 처리기가 등록되는게 맞지 않나 …
 StoreBind 도 마찬가지. Effect 처럼 State 정의 부분 안에 넣고 최상위에서 수행되어야 하는거 아닌가 … Dispatch 가 코어 객체들을
 아는 방향이 되지 않아야하니까."* — `H-278`("각 객체를 아는 곳은 각 객체가 선언된 곳")을 None·StoreBind까지 넓힌 것. 지금:
-`NoneHandler`는 최상위 `None.luau`의 `Init`(최상위 `init.luau`가 `module:RunInit(None.Init)`)이, `StoreBind`는 최상위
-`StoreBind.luau` 본문을 `State.luau`의 `Init`이 등록한다(둘 다 `module:RunInit(InitDispatch)`로 당긴 뒤 — Effect/Observer와 같은
+`NoneHandler`는 최상위 `None.luau`의 `Init`(최상위 `init.luau`가 `module:RunInit(None.Init)`)이, `StateHandler`(**[2026-10-02 round14 Q175 개명]** 옛 이름 `StoreBind`)는 최상위
+`StateHandler.luau` 본문을 `State.luau`의 `Init`이 등록한다(둘 다 `module:RunInit(InitDispatch)`로 당긴 뒤 — Effect/Observer와 같은
 모양). `InitDispatch` 자신이 등록하는 것은 디스패치 자기 말단뿐 — `NilHandler`(숫자 키의 진짜 `nil`은 객체가 아니라 빈 자리)와
 `Processed*` nop 셋(drive 단계의 소진 센티널; 공장 `addProcessedHandler`는 `Dispatch/init.luau`의 지역 함수). 옛 결정(round13 §0
 Q3 (a) — StoreBind를 "하강 diff 자신의 재귀"로 보고 `InitDispatch` 꼬리에 둠)은 이것으로 뒤집혔다. frozen 마커 센티널 생성자
@@ -604,7 +604,7 @@ end
   바로 건너뛴다"였는데, 그 전제 자체가 거짓이었음 — 리터럴
   `Frame{None}`만 생각하면 루프가 걸러내면 그만이지만
   **`Frame{ State<Slot|None> }`처럼 반응형 값이 `None`을 내놓으면 그
-  `None`은 `StoreBind`의 재귀를 타고 `Dispatch.process`에 그대로
+  `None`은 `StateHandler`의 재귀를 타고 `Dispatch.process`에 그대로
   도착**하기 때문. 사용자 판정: *"drive 는 v == None 인지 확인 안하고
   그냥 프로세스 태우는게 가장 적절한 처리로 보임"*. 따라서:
   - **`Dispatch.drive`에 `None` 특수 분기는 없다** — 배열이든 해시든
@@ -639,7 +639,7 @@ end
   존재하지 않고 진짜 `nil`이 되므로, 다음 우선순위 스캔은 자연히 그
   `nil`을 담당하는 핸들러로 흘러감 — 배열 자리(`k`가 숫자)면 `NilHandler`,
   해시 자리면 키 `k`를 원래 담당하던 핸들러(프로퍼티/이벤트/UI shorthand
-  등)로. `StoreBind` 핸들러가 `realv`를 들고 재귀하면 자연히 다음 핸들러로
+  등)로. `StateHandler` 핸들러가 `realv`를 들고 재귀하면 자연히 다음 핸들러로
   좁혀지는 것과 정확히 같은 원리, 무한루프 걱정도 동일하게 없음.
 - **`Dispatch.process`/`Handler.process` 이름 겹침 — 소유자 네임스페이싱으로
   해소, 새 이름 발명 안 함 (2026-08-07 여덟 번째 세션 후속).** 원래
@@ -838,7 +838,7 @@ nop/leaf 핸들러(NilHandler·`Processed*`·Tag/Attr/Effect/Observer/Ref/Slot l
 만들 수 있는 것)로 바꿔야 하는지 검토 후 **기각, 지금 형태(모듈 require로
 바로 닿는 flat 탑레벨 함수) 유지로 확정**:
 
-- **재귀 재-dispatch가 요구하는 필연** — `NoneHandler`/`StoreBind`(**[2026-10-01]** 둘 다 최상위 모듈 — 옛 `Dispatch/StoreBind.luau`)
+- **재귀 재-dispatch가 요구하는 필연** — `NoneHandler`/`StateHandler`(**[2026-10-01]** 둘 다 최상위 모듈 — 옛 `Dispatch/StoreBind.luau`)
   전부 자기 `process` 안에서 다시 `Dispatch.process(inst,k,
   realv)`를 호출함(위 "확정된 디스패치 모델"/"`None` 센티널" 절). 이게
   성립하려면 Dispatch가 `canExecute`/`bindLifetime`(`base/
@@ -849,23 +849,23 @@ nop/leaf 핸들러(NilHandler·`Processed*`·Tag/Attr/Effect/Observer/Ref/Slot l
 - **순환참조로 보이는 건 착시 — 실제로는 단방향.** "Handler"라는 말이 두
   가지를 가리켜서 헷갈릴 수 있음: (a) `Handler.luau`의 **타입 계약**
   (`isHandlable`/`priority`/`process`(반환값 포함) 시그니처만 있는 순수
-  leaf, Dispatch를 몰라도 됨) vs (b) `StoreBind`·`None` 같은 값 모듈처럼 그 계약을
+  leaf, Dispatch를 몰라도 됨) vs (b) `StateHandler`·`None` 같은 값 모듈처럼 그 계약을
   **구현하는 concrete 값 모듈**(재귀호출 위해 Dispatch를 require함). 의존
   방향은 항상 한쪽으로만 흐름 — `Handler.luau`(leaf) ← `Dispatch/init.luau`
-  (`addHandler(h: Handler)`가 `Handler` 타입만 참조) ← `StoreBind.luau`
+  (`addHandler(h: Handler)`가 `Handler` 타입만 참조) ← `StateHandler.luau`
   (재귀호출 위해 Dispatch를 참조). `Handler.luau` 자신이
   Dispatch를 되받아 참조하는 일이 없으니 타입 레벨에서도 사이클이 안 생김.
   런타임에서도 마찬가지 — 어떤 handler의 `process`든 실제로 *호출*되는
   시점은 컴포넌트가 렌더되는 시점이라, 그때는 이미 Dispatch 모듈 require가
   완전히 끝나있어 부트스트랩 문제도 없음.
 - **quad-base 자신의 기본 핸들러도 같은 레지스트리를 씀** — `NoneHandler`,
-  `StoreBind`("범용, 엔진 무관")뿐 아니라, children 배열
+  `StateHandler`("범용, 엔진 무관")뿐 아니라, children 배열
   숫자 슬롯에 `Ref`/`Observer`/`PreRef`를 직접 놓는 leaf 값을 매칭하는
   Handler도 여기 속함(`inst`를 `any`로 취급, 엔진 특정 API 불필요 —
   `.claude/question.md`가 2026-08-08 세션에 "quad-base/quad-roblox 중
   어디 사는지 미확인"으로 남겨뒀던 항목, 이 결론으로 해소: quad-base,
   **[2026-09-01 `H-278`]** 등록 주체는 각 값의 선언 모듈(`Observer.luau`/`Effect.luau`,
-  M8은 `Ref/init.luau`; **[2026-10-01]** `NoneHandler`는 `None.luau`, `StoreBind`는 `State.luau`), 전부 `Dispatch.addHandler`로 등록). quad-roblox의
+  M8은 `Ref/init.luau`; **[2026-10-01]** `NoneHandler`는 `None.luau`, `StateHandler`는 `State.luau`), 전부 `Dispatch.addHandler`로 등록). quad-roblox의
   Property/Event 핸들러도 **같은** `Dispatch.addHandler` 레지스트리에
   등록됨 — base 기본 핸들러와 backend 핸들러가 별도 경로로 안 갈리고
   전부 하나의 우선순위 스캔을 공유. **[정정, 2026-08-10 세션]** Tween은
@@ -1112,10 +1112,10 @@ Relate 값으로도 안 새므로(코드 주석이 소스) **이 분기 대상�
 사용자가 확정한 범위도 `bk` 하나다. 소스는 round12 `H-232`와
 `base/slot-plan.md`의 생성자 절.
 
-**문제(원래 동기, 여전히 유효)**: `NoneHandler`/`StoreBind`처럼 자기
+**문제(원래 동기, 여전히 유효)**: `NoneHandler`/`StateHandler`처럼 자기
 `process` 안에서 `Dispatch.process(inst,k,realv,...)`를 다시 부르는 래핑
 핸들러가 있으면, 같은 `(inst,k)`에 대해 "지금 누가 담당 중인가"를 슬롯
-하나로 추적하는 순간 깨짐 — 래핑 핸들러 A 자신의 생명주기(예: StoreBind의
+하나로 추적하는 순간 깨짐 — 래핑 핸들러 A 자신의 생명주기(예: StateHandler의
 Observer 구독)와, A가 재귀로 위임한 핸들러 B의 생명주기가 **같은 슬롯을
 두고 서로 덮어씀**. 처음 검토했던 "Dispatch 전역 소유자맵 슬롯 하나" 안은
 이 이유로 기각됨.
@@ -1136,7 +1136,7 @@ function Dispatch.process(inst, k, v, index)
     checkInst("process", inst) -- [2026-09-08 `H-504`] nil inst는 여기서 표면 에러(옛: Relate에서 잎 모듈 이름으로)
     -- [순서 주의] list 확보 + chains 등록은 반드시 h.process 호출 *전에* 끝나야 함 —
     -- h.process가 내부에서 재귀 Dispatch.process(inst,k,...,index+1)를 부르는 게
-    -- 정상 경로이고(StoreBind/NoneHandler), 그때 chains에 이 list가 아직 안 들어가
+    -- 정상 경로이고(StateHandler/NoneHandler), 그때 chains에 이 list가 아직 안 들어가
     -- 있으면 재귀 호출이 `or {}`로 자기만의 새 테이블을 만들어 저장해버린 뒤 바깥이
     -- 그걸 덮어써서 하위 위임 retractor가 통째로 유실됨(최초 마운트에서 항상 발생).
     local list = chains:GetWeak(inst, k)
@@ -1243,7 +1243,7 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
 자리).
 
 - **래핑 핸들러는 재-dispatch 전에 아무것도 철거하지 않는다 — 그냥 아래로
-  내려보낸다.** `StoreBind`/`NoneHandler`가 하는 일은 이제 한 줄:
+  내려보낸다.** `StateHandler`/`NoneHandler`가 하는 일은 이제 한 줄:
   ```lua
   Dispatch.process(inst, k, realv, index + 1)   -- 선행 retractFrom 없음
   ```
@@ -1267,7 +1267,7 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
 - **깊은 체인에서도 힌트가 안 사라짐** — 힌트를 위에서 아래로 실어
   보내는 게 아니라 **각 레벨이 자기 재프로세스에서 자기 힌트를 받기**
   때문. `State<State<Tag>>`에서 바깥이 새 inner State를 내놓아도 인덱스 2는
-  StoreBind끼리 같으니 자기 클로저가 구독을 갈아타고, 재위임으로 내려간
+  StateHandler끼리 같으니 자기 클로저가 구독을 갈아타고, 재위임으로 내려간
   인덱스 3은 TagHandler끼리 같으니 **진짜 `Tag` 객체를 힌트로 받아**
   `Contains` skip이 정상 동작함. 옛 모델의 "깊이 2 이상에선 힌트가 `nil`,
   구조상 불가피" 캐비엇은 **철거 선행 모델에서만 불가피했던 것**이라 같이
@@ -1290,7 +1290,7 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
 
   | 핸들러 | 위치 | `inst` 부작용 |
   |---|---|---|
-  | `StoreBind` | 중간 | 없음(구독 + 재위임만) |
+  | `StateHandler` | 중간 | 없음(구독 + 재위임만) |
   | `NoneHandler` | 중간 | 없음(재위임만) |
   | `NilHandler` | 말단 | 없음(`setLength`/`setOffsetSource` 부기만 — 2026-08-18 신설) |
   | `PropertyHandler` | 말단 | 프로퍼티 세팅 |
@@ -1319,7 +1319,7 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
   갈아치우므로, 중간 노드가 `inst`에 직접 손을 댔다면 그 흔적을 지울
   주체가 없어짐.
 - **재위임하는 핸들러는 (A) 분기에서도 반드시 다시 재위임해야 한다.** 안
-  그러면 자기 아래 인덱스가 고아로 남음(아무도 안 지움). `StoreBind`/
+  그러면 자기 아래 인덱스가 고아로 남음(아무도 안 지움). `StateHandler`/
   `NoneHandler`는 항상 재위임하므로 지금 위반 사례는 없지만, "조건부로만
   재위임하는" 핸들러를 새로 만들면 재위임을 건너뛰는 그 자리에서
   `Dispatch.retractFrom(inst, k, index + 1)`을 직접 불러 아래를 정리해야 함.
@@ -1355,7 +1355,7 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
   old/new를 이미 둘 다 갖고 있음. `chains`에 추가로 저장해야 하는 건 **비교용
   `handler` 하나뿐**.
 - **인덱스의 의미 — 재귀 깊이, 서로 다른 키는 항상 1부터**: 같은 키에서
-  값이 한 겹 더 반응형으로 감싸져 재귀하면(`StoreBind`가 `realv`를 들고
+  값이 한 겹 더 반응형으로 감싸져 재귀하면(`StateHandler`가 `realv`를 들고
   다시 `Dispatch.process`를 부르는 경우) `index+1`을 넘김. **다른
   키로 위임할 때는 그 키의 재귀 깊이와 무관하게 항상 `1`부터 시작** —
   `chains[inst][key2]`는 `chains[inst][key1]`과 완전히 별개의 배열이라
@@ -1451,8 +1451,8 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
   error" 가드로 막았었음(`archive/checkpoint-handler-pattern-reversed.md`가
   인용하는 옛 코드 참고). 근본 원인은 "핸들러당 그 키에서 최대 한 번"을
   **객체 identity로** 강제하려 한 것 — 인덱스 기반에선 `a`를 처리하는
-  StoreBind가 인덱스 N, `a:Get()`(=`b`)을 처리하는 (같은 싱글톤인)
-  StoreBind가 N+1을 써서 애초에 슬롯이 안 겹침. 임의 깊이의
+  StateHandler가 인덱스 N, `a:Get()`(=`b`)을 처리하는 (같은 싱글톤인)
+  StateHandler가 N+1을 써서 애초에 슬롯이 안 겹침. 임의 깊이의
   `State<State<State<...>>>`도 인덱스가 늘어날 뿐 정상 동작하고, 위
   "깊은 체인에서도 힌트가 안 사라짐" 항목대로 **깜빡임 방지 최적화까지
   정상 작동**함 — 유일하게 남는 UB는 위 "순환" 항목(**[2026-09-27]** `H-573` 뒤로는 Slot 원소 자리의 순환만 — 위 정정 참고).
@@ -1652,7 +1652,7 @@ Dispatch.getOffsetAt(ownerKey, i): number      -- [2026-08-21 5라운드] 그 �
   자신의 `:List`/CRUD가 아니라 그 위치의 체인을 실제로 끝내는 말단
   Handler(`Slot/Handler.luau`)** — **[정정, 2026-08-18 구현 전 QA]**
   옛 서술은 "그 위치를 **처음** 매치한 Handler"였는데 부정확했다: 배열
-  위치에 `State<Slot>`이 오면 처음 매치하는 건 `StoreBind`(중간 노드)이고,
+  위치에 `State<Slot>`이 오면 처음 매치하는 건 `StateHandler`(중간 노드)이고,
   중간 노드는 `inst`에 부작용을 가하지 않는다는 계약(아래 "Dispatch 체인"
   절)과 정면으로 어긋난다. 사용자 판정은 *"최종 말단 요소가 이를
   처리하는게 더 올바른것으로 보이는데"* — 재귀가 끝나 실제 값을 받은
@@ -2983,7 +2983,7 @@ value)로 `Dispatch.process(inst,k,realv,index+1)`를 재귀 호출"하는 식�
 
 ```lua
 -- 예: 일반 프로퍼티 store-bind 핸들러의 process(inst, k, state, index)
-function StoreBind.process(inst, k, state, index)
+function StateHandler.process(inst, k, state, index)
     local observer = state:Observer(function()
         local realv = state:Get()
         -- 선행 철거 없음 — 아래로 그냥 내려보내면 Dispatch.process가
@@ -3044,4 +3044,4 @@ Slot이 store 바인드로 넘어오는 경우도 이 래핑 방식과 자연스
 `State<Slot>` 교체는 `Dispatch.process`가 (A)/(B) 분기로 판정하고, 그 자리
 클로저가 이전 Slot을 언마운트한다(파괴가 아님 — `base/slot-plan.md`).
 
-**[2026-09-17 round11 3차 탐사 G′ — `H-563`·`H-564`·`H-565`·`H-567`·`H-568`; Dispatch 코어 차등 퍼즈 1500시드·flatten 3000시드 발산 0]** 산술은 깨끗했고 남은 것은 입력 게이트와 이름 공간. **`H-563`** `brandNameOf`의 모듈 `is*` 스캔(Q27 계약)이 비브랜드 헬퍼(`q.isEmpty`, 인자를 무시하는 플러그인 `isMobile`)를 브랜드 술어로 믿어 `H-470` 게이트가 모든 `D.<Class>{}`를 "props must be a plain table (got Empty)"로 죽였다 — 브랜드 술어는 빈 평범 테이블과 비테이블에 거짓이어야 하므로 함수 신원당 한 번 프로브해(weak 캐시) 아니면 스캔에서 뺀다(Q27 계약은 그대로: `is<Brand>` 필드가 등록이되 "브랜드 술어답게 행동하는 것"만 센다 — 레퍼런스 core/11·core/01 캐비엇). **`H-564`** `checkIndex`가 `#list + 1`보다 큰 정수를 안 막아 구멍에 앉은 슬롯을 어떤 철거도 못 닿고 `release and #list == 0`이 살아 있는 retractor를 든 리스트를 놓아버렸다(`H-256`의 형제 — "list가 구멍 없는 시퀀스") → `process`가 리스트를 얻은 직후 `index > #list + 1` 거부. **`H-565`** `process`/`retractFrom`의 nil 키가 `Relate:GetWeak: key must not be nil`로 죽던 것(`H-504`의 나머지 반) → `checkKey`. **`H-567`** Slot·Ref에 동적 경로 가드 가족의 다섯째·여섯째(`Frame { Children = slot }`·`{ Ref = ref }`가 "provider … initialized"를 받던 것) + base 브랜드의 no-match 꼬리는 "a quad value at a string key: it belongs in a numeric (array) slot"(프로바이더 안내는 base 브랜드에 구조적으로 틀림). **[2026-10-02 사용자 — *"중복은 그냥 덜어내는게 맞는것 같음"*]** 그 다섯째·여섯째 가드(`SlotDynamicPathGuard` `Quad0141`, `RefDynamicPathGuard`)는 걷었다 — 같은 `H-567`이 단 no-match 꼬리가 이미 같은 안내를 하고, 2026-10-01 `debugOnly` 문자 키 필터가 반영 프로퍼티 이름 자리를 덮는다; `Quad0141`은 폐기. PreRef/PostRef·Observer/Effect 가드는 더 오래된 정본이라 그대로. **`H-568`** `addHandler` priority NaN/±inf 거부(`H-553`의 NaN 선례; NaN은 정렬 어디든 앉고 동률 경고를 무력화)·같은 핸들러 테이블 identity dedup(형제 셋과 같이)·`newMapperClass` 이름 게이트. 스펙 `spec.dispatch` 21, `spec.refhandlers` 7 갱신(named 자리 Ref는 이제 가드), `spec.claim` 14. 확인: 교차 모듈 인스턴스 가드는 인스턴스별 상태가 있는 값(StoreBind·Observer/Effect/Slot 자리·`slot:Add`/`List`/`Single`·`dispose`)에만 있고 나머지(Ref·PreRef·PostRef·Blocker·Tag·Attr·AttrKey·Modifier·Context·Provider)는 잎 값이라 교차해도 멀쩡 — 새는 것이 아니라 가드할 것이 없음. `AddPlugin(provider)`로 `UseProvider` 1슬롯 락을 지나칠 수 있는 것은 문서화된 오용(core/01 권고) — 그대로. props 테이블 재사용은 **Q67**.
+**[2026-09-17 round11 3차 탐사 G′ — `H-563`·`H-564`·`H-565`·`H-567`·`H-568`; Dispatch 코어 차등 퍼즈 1500시드·flatten 3000시드 발산 0]** 산술은 깨끗했고 남은 것은 입력 게이트와 이름 공간. **`H-563`** `brandNameOf`의 모듈 `is*` 스캔(Q27 계약)이 비브랜드 헬퍼(`q.isEmpty`, 인자를 무시하는 플러그인 `isMobile`)를 브랜드 술어로 믿어 `H-470` 게이트가 모든 `D.<Class>{}`를 "props must be a plain table (got Empty)"로 죽였다 — 브랜드 술어는 빈 평범 테이블과 비테이블에 거짓이어야 하므로 함수 신원당 한 번 프로브해(weak 캐시) 아니면 스캔에서 뺀다(Q27 계약은 그대로: `is<Brand>` 필드가 등록이되 "브랜드 술어답게 행동하는 것"만 센다 — 레퍼런스 core/11·core/01 캐비엇). **`H-564`** `checkIndex`가 `#list + 1`보다 큰 정수를 안 막아 구멍에 앉은 슬롯을 어떤 철거도 못 닿고 `release and #list == 0`이 살아 있는 retractor를 든 리스트를 놓아버렸다(`H-256`의 형제 — "list가 구멍 없는 시퀀스") → `process`가 리스트를 얻은 직후 `index > #list + 1` 거부. **`H-565`** `process`/`retractFrom`의 nil 키가 `Relate:GetWeak: key must not be nil`로 죽던 것(`H-504`의 나머지 반) → `checkKey`. **`H-567`** Slot·Ref에 동적 경로 가드 가족의 다섯째·여섯째(`Frame { Children = slot }`·`{ Ref = ref }`가 "provider … initialized"를 받던 것) + base 브랜드의 no-match 꼬리는 "a quad value at a string key: it belongs in a numeric (array) slot"(프로바이더 안내는 base 브랜드에 구조적으로 틀림). **[2026-10-02 사용자 — *"중복은 그냥 덜어내는게 맞는것 같음"*]** 그 다섯째·여섯째 가드(`SlotDynamicPathGuard` `Quad0141`, `RefDynamicPathGuard`)는 걷었다 — 같은 `H-567`이 단 no-match 꼬리가 이미 같은 안내를 하고, 2026-10-01 `debugOnly` 문자 키 필터가 반영 프로퍼티 이름 자리를 덮는다; `Quad0141`은 폐기. PreRef/PostRef·Observer/Effect 가드는 더 오래된 정본이라 그대로. **`H-568`** `addHandler` priority NaN/±inf 거부(`H-553`의 NaN 선례; NaN은 정렬 어디든 앉고 동률 경고를 무력화)·같은 핸들러 테이블 identity dedup(형제 셋과 같이)·`newMapperClass` 이름 게이트. 스펙 `spec.dispatch` 21, `spec.refhandlers` 7 갱신(named 자리 Ref는 이제 가드), `spec.claim` 14. 확인: 교차 모듈 인스턴스 가드는 인스턴스별 상태가 있는 값(StateHandler·Observer/Effect/Slot 자리·`slot:Add`/`List`/`Single`·`dispose`)에만 있고 나머지(Ref·PreRef·PostRef·Blocker·Tag·Attr·AttrKey·Modifier·Context·Provider)는 잎 값이라 교차해도 멀쩡 — 새는 것이 아니라 가드할 것이 없음. `AddPlugin(provider)`로 `UseProvider` 1슬롯 락을 지나칠 수 있는 것은 문서화된 오용(core/01 권고) — 그대로. props 테이블 재사용은 **Q67**.

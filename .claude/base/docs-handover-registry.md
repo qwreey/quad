@@ -76,7 +76,7 @@
 - **`:Compute(fn, ...deps)`**: 후행 의존성이 노드 하나로 끝나는 기본형. `fn(self, prev, ...depHandles)` — 전부 **핸들**이라 `:Get()`으로 읽는다.
   `:Depend(...)`(옛 `:With`)는 노드가 하나 더 생기지만 **정식 지원 경로**다(~~금지~~ 정정 — `source-state-plan.md`가 채택). 신 솔버 strict에서는 프로퍼티 자리의 인라인 무주석 `:Compute`가 에러라
   타입 붙인 지역 변수로 뺀다(`typing-limits.md` 8.13).
-- **중첩 State**: `State<State<T>>`는 **정상 지원**(StoreBind가 재귀 언랩, ~~미지원~~ 정정). 런타임이 State 값으로 거부하는 것은 **Modifier뿐**(~~Store도 금지~~ 정정) —
+- **중첩 State**: `State<State<T>>`는 **정상 지원**(StateHandler가 재귀 언랩, ~~미지원~~ 정정). 런타임이 State 값으로 거부하는 것은 **Modifier뿐**(~~Store도 금지~~ 정정) —
   `State<Store>`는 되지만 필드 읽기가 반응형이 아니므로 `q.Operator.Indexed<<V>>(key)`를 쓴다.
 - **폼 리셋**: 스토어를 통째로 바꾸지 말고 필드별 `:Set` 또는 슬롯 언마운트/재생성.
 - **`Blocker`**: 읽기를 지연시키지 않고 emit 전파만 묶는다. **`state:Apply(blocker)`로 붙여야 효력**이 있다(`On`/`Off`만으로는 아무 일도 없음).

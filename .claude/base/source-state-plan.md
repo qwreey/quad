@@ -188,7 +188,7 @@ vs 원천에 대한 메소드)을 결정하는 기준으로 쓸 수 있음.
 "quad 사용자가 직접 다루는 리액티브 값"이 아니라 **그 자체로는 구현체가
 없는 순수 타입 계약**이라 애초에 이 분류표의 대상이 아님 — Source/Ref처럼
 `Type(args)` 자유 함수로 인스턴스를 만들 수도 없고(계약을 만족하는 값은
-`PropertyHandler`/`TagHandler`/`None.luau`(**[2026-10-01]** 최상위 — 옛 `Dispatch/None.luau`)의 `NoneHandler`처럼(**[2026-08-31 `H-265`]** 옛 표기는 `StoreBind.luau` 소속이라 잘못)
+`PropertyHandler`/`TagHandler`/`None.luau`(**[2026-10-01]** 최상위 — 옛 `Dispatch/None.luau`)의 `NoneHandler`처럼(**[2026-08-31 `H-265`]** 옛 표기는 옛 `StoreBind.luau`(지금 `StateHandler.luau`) 소속이라 잘못)
 **구현하는 쪽**이 리터럴 테이블로 직접 채워 넣는 것), State/Observer처럼
 어떤 원천에 종속된 파생물도 아님(애초에 "원천"이라는 개념 자체가 안 맞음).
 Handler는 quad 사용자가 아니라 **백엔드/핸들러 구현자가 채우는 확장
@@ -287,7 +287,7 @@ end
 --   옵져버에 있다 - 이건 버리기 싫은 부분중 하나야"*). 실행 중인 fn에 자격 있는 배달이 다시 온다는 것은 곧 자기
 --   상류 되먹임(UB)이다 — `q.debug`면 Observer마다 한 줄 경고(`checkUpstreamFeedback` — `_running`에 더해 fn이
 --   실제 호출 스택에 있는지 본다: 던진 fn이 남긴 `_running`으로 거짓 경고가 나지 않게). quad 내부 Observer(Slot
---   base Offset·Bookkeeping len·`:List` 목록·StoreBind)는 비공개 `_internal = true` 표시로 빠진다(새 공개 이름 아님).
+--   base Offset·Bookkeeping len·`:List` 목록·StateHandler)는 비공개 `_internal = true` 표시로 빠진다(새 공개 이름 아님).
 --   `_seenRevision`(Q109) = 이 핸들이 마지막으로 돈 Source 리비전 숫자 하나. **Effect의 `_epochs` 맵 항목과 같은
 --   뜻의 기록을 대상 하나에 특수화한 것**이다(Effect: fn 직전 `Sync`, 배달 때 `Update`) — 외부자 검토가 든
 --   Preact signals·Vue 3.4+의 "간선 하나당 버전 숫자 하나"와 같은 모양. 비교는 대상이 **Source일 때만**

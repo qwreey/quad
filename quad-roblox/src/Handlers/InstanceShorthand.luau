@@ -97,7 +97,7 @@ local function install(quad: any)
 			return
 		end
 		-- `H-218`: retract the delegated chains BEFORE destroying — a reactive
-		-- shorthand value's StoreBind subscription would otherwise pile up per
+		-- shorthand value's StateHandler subscription would otherwise pile up per
 		-- destroy/recreate cycle (static values: no-op retractor, ~free)
 		for _, prop in entry.props do
 			dispatch.retractFrom(child, prop, 1)

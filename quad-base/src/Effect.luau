@@ -374,7 +374,7 @@ local function createImpl(module: any)
 		-- `H-186` (user-confirmed 2026-08-31): a dep from ANOTHER quad instance is UB —
 		--   not checked here. (The old "a guard here closes only half the hole" reasoning was
 		--   withdrawn on 2026-09-15 — architecture "교차 인스턴스": the guard belongs at the
-		--   seat/StoreBind entry, where `q.moduleIdentity` is compared; a dependency edge across
+		--   seat/StateHandler entry, where `q.moduleIdentity` is compared; a dependency edge across
 		--   instances simply fires.)
 		local seen = {}
 		for i = 1, select("#", ...) do

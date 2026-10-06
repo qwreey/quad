@@ -278,7 +278,7 @@ local function registerDispatchHandlers(module: any)
 			process = function(_inst: any, k: any, _v: any, _index: number): (any?, boolean) -> ()
 				if type(k) == "number" then
 					-- an array slot the pre-pass could not see: the value arrived
-					-- through a State/Store (StoreBind unwrap) — say so instead of
+					-- through a State/Store (StateHandler unwrap) — say so instead of
 					-- blaming the key type (review finding, M8 ②)
 					Err.errorBefore(`Quad0136 {kind}: must be a literal array item - it reached array index {k} through a State/Store value, which the pre-pass cannot see`, SURFACE)
 				end

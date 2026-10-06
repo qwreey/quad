@@ -69,7 +69,7 @@
   `process` 안에서 난다(Studio 실측 `Bogus is not a valid property name`) —
   아래 타이핑이 정적으로 먼저 잡는 것이 방어다.
 - **`State<디스크립터>` — 새 메커니즘 없음.** `Tag`와 같은 배열 원소
-  StoreBind 경로(언랩 + 재디스패치, retractor가 Disconnect). `None`으로 끄면
+  StateHandler 경로(언랩 + 재디스패치, retractor가 Disconnect). `None`으로 끄면
   NilHandler(길이 0)로 넘어가 연결만 사라진다.
 - **패키지 경계: 전부 quad-roblox** — `GetPropertyChangedSignal` 자체가
   로직이라 "한 줄 op 주입"으로 줄어들지 않기 때문(`dispatch-core-plan.md`

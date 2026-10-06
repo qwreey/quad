@@ -1,8 +1,10 @@
 --!strict
 --[[
-	StoreBind — the recursive re-execution handler (`.claude/base/
+	StateHandler — the recursive re-execution handler (`.claude/base/
 	dispatch-core-plan.md` "Store 바인드는 특수 경우인가, 아니면 pluggable
-	바인드를 재실행하는 래핑인가" section, as-is; M4).
+	바인드를 재실행하는 래핑인가" section, as-is; M4). Renamed from
+	옛 `StoreBind.luau` (handler `name` "StoreBind") by the round14 Q175
+	user decision (2026-10-02).
 
 	Store binding is not a special case: this is an ordinary handler under the
 	same `isHandlable`/`priority`/`process` contract whose process subscribes
@@ -35,7 +37,7 @@
 	reverses round13 §0 Q3 (a), which had kept the registration in
 	`InitDispatch`'s tail as "the descending diff's own recursion".
 	Priority HIGH — the skeleton band ("base가 소유하는 핸들러가 전부 여기
-	오는 게 아님": StoreBind must outmatch property setters); predicates in
+	오는 게 아님": StateHandler must outmatch property setters); predicates in
 	the band are disjoint, so the tie carries no ordering dependence.
 	Lifetime fields are read off `module` at call time (`H-174` — the backend
 	overwrites them after `New()`).
@@ -51,16 +53,16 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE -- round11 `H-573` raise
 -- `Brand.luau`) — exactly the "v가 State/Source인 경우" the section confirms.
 local isState = Brand.isState
 
-local StoreBind = {}
+local StateHandler = {}
 
 -- round11 `H-573` (탐사 I′ 4) + round13 Q113 (a) (user decision 2026-10-01): a State whose value chain
 -- loops back on itself (`a:Set(b); b:Set(a)`, or `s:Set(s)`) recursed through `index + 1` (here) or
 -- wrapped itself forever (the Slot element path) until a stack overflow in Brand/Relate — walk the chain
--- once with a visited set. The one Quad0070 literal (one id, one raise site), shared by the StoreBind
+-- once with a visited set. The one Quad0070 literal (one id, one raise site), shared by the StateHandler
 -- observer below and the Slot element path (`Slot/Elements.luau` wrapElement, `Slot/List.luau`'s identity
 -- reconcile). `first` is the value to walk from; `seed` (optional) is a State already on the chain
--- (StoreBind's own); `raise` is the caller's depth. Subject `State:` everywhere (round13 Q90).
-function StoreBind.assertAcyclicChain(first: any, seed: any?, raise: (string, any) -> ())
+-- (StateHandler's own); `raise` is the caller's depth. Subject `State:` everywhere (round13 Q90).
+function StateHandler.assertAcyclicChain(first: any, seed: any?, raise: (string, any) -> ())
 	if not isState(first) then
 		return
 	end
@@ -82,9 +84,9 @@ end
 -- InitDispatch (the factory pattern, `H-174`). addHandler tags the received
 -- functions into the shared error namespace itself.
 -- Typed against the shared contract (`H-259`).
-function StoreBind.register(dispatch: QuadTypes.Dispatch, module: any)
+function StateHandler.register(dispatch: QuadTypes.Dispatch, module: any)
 	dispatch.addHandler({
-		name = "StoreBind",
+		name = "StateHandler",
 		isHandlable = function(_inst: any, _k: any, v: any): boolean
 			-- k is anything (array position or hash key) — only v matters
 			return isState(v)
@@ -97,7 +99,7 @@ function StoreBind.register(dispatch: QuadTypes.Dispatch, module: any)
 			ModuleIdentity.assertOwnAtDispatch(module, state, "State") -- before the registration fire subscribes here
 			local observer = state:Observer(function()
 				local realv = state:Get()
-				StoreBind.assertAcyclicChain(realv, state, Err.errorBefore) -- error-code: via assertAcyclicChain
+				StateHandler.assertAcyclicChain(realv, state, Err.errorBefore) -- error-code: via assertAcyclicChain
 				dispatch.process(inst, k, realv, index + 1)
 			end)
 			observer._internal = true -- quad's own plumbing: skipped by the Observer upstream-feedback debug check
@@ -111,4 +113,4 @@ function StoreBind.register(dispatch: QuadTypes.Dispatch, module: any)
 	})
 end
 
-return StoreBind
+return StateHandler

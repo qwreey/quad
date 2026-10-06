@@ -37,7 +37,7 @@
 	output (pcall sees no error), blaming `Handlers/Event.luau`. So `process`
 	gates it: outermost (dispatch depth). The generated `D` types still pin
 	the callback signature statically; this is the runtime seam for `:: any`
-	and State-carried values (StoreBind unwraps before we see them).
+	and State-carried values (StateHandler unwraps before we see them).
 
 	`game` is read lazily inside the cache-miss path so the CLI spec can
 	substitute a Reflection shim via `getfenv` (Property.luau seam).

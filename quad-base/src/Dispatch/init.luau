@@ -373,7 +373,7 @@ local function Init(module: any)
 		checkIndex("process", index)
 		-- [순서 주의] list 확보 + chains 등록은 반드시 h.process 호출 *전에* —
 		-- h.process가 재귀 Dispatch.process(inst,k,…,index+1)를 부르는 게 정상
-		-- 경로이고(StoreBind/NoneHandler), 그때 chains에 이 list가 아직 없으면
+		-- 경로이고(StateHandler/NoneHandler), 그때 chains에 이 list가 아직 없으면
 		-- 재귀 호출이 자기만의 새 테이블을 만들어 저장한 뒤 바깥이 덮어써서
 		-- 하위 위임 retractor가 통째로 유실됨(최초 마운트에서 항상 발생).
 		local list: { Slot } = chains:GetWeak(inst, k) :: any
@@ -666,7 +666,7 @@ local function Init(module: any)
 	addProcessedHandler(Dispatch, bookkeeping, "ProcessedPostRefHandler", RefPrePass.ProcessedPostRef)
 	-- Everything else is registered by the module that OWNS the value type (`H-278`, user-directed —
 	-- each pulls InitDispatch via RunInit and calls addHandler in its own Init; "각 객체를 아는 곳은
-	-- 각 객체가 선언된 곳"): NoneHandler by `None.luau`, StoreBind by `State.luau` (2026-10-01 — both
+	-- 각 객체가 선언된 곳"): NoneHandler by `None.luau`, StateHandler by `State.luau` (2026-10-01 — both
 	-- were registered here before), leaf handlers and guards by Observer/Effect/Ref/Slot/Tag/Attr.
 
 	module.Dispatch = Dispatch

@@ -86,7 +86,7 @@ do
 	local hp = q.Source(5)
 	q.Dispatch.drive(inst, { [q.AttrKey("Hp")] = hp, [q.AttrKey("Title")] = "quad" })
 	local attrs = mock.getAttributes(inst)
-	assert(attrs.Hp == 5 and attrs.Title == "quad", "both set (store unwrapped by StoreBind)")
+	assert(attrs.Hp == 5 and attrs.Title == "quad", "both set (store unwrapped by StateHandler)")
 
 	hp:Set(7) -- 필드 갱신 — 그 키 체인만 다시 돌고 setAttr 재호출
 	assert(mock.getAttributes(inst).Hp == 7, "reactive update")
@@ -237,13 +237,13 @@ do
 	-- 키 retractor는 claim만 반납하고 엔진 부작용이 없다(attribute-plan "이름
 	-- 소유권" — 삭제는 None 경로) — 그래서 Name은 엔진에 남고 Hp만 갱신된다
 	assert(mock.getAttributes(inst).Hp == 7 and mock.getAttributes(inst).Name == "hero", "replacement re-applies (retract has no engine side effect by contract)")
-	-- State로 감싼 그룹의 같은 값 재발행도 StoreBind 경유로 같은 dedup
+	-- State로 감싼 그룹의 같은 값 재발행도 StateHandler 경유로 같은 dedup
 	local src = q.Source(group)
 	local inst2 = Instance.new("Frame")
 	q.Dispatch.drive(inst2, { src })
 	local before2 = #log
 	src:Set(group)
-	assert(#log == before2, "StoreBind path: same-object re-emission is silent too")
+	assert(#log == before2, "StateHandler path: same-object re-emission is silent too")
 	print("PASS")
 end
 
@@ -260,7 +260,7 @@ do
 	local attrs = mock.getAttributes(inst)
 	assert(attrs.Title == "quad" and attrs.Hp == 3 and attrs.Alive == true, "all three landed through the group → single-key path")
 	hp:Set(4)
-	assert(mock.getAttributes(inst).Hp == 4, "State value stays reactive (StoreBind downstream)")
+	assert(mock.getAttributes(inst).Hp == 4, "State value stays reactive (StateHandler downstream)")
 	-- None = 삭제는 바인딩된 State 경유(새 슈가 값을 다른 자리에 두면 그룹과 같은
 	-- 이름 claim 충돌 — 아래 inst3에서 단언)
 	local inst2 = Instance.new("Frame")

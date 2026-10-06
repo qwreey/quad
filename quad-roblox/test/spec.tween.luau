@@ -124,7 +124,7 @@ do
 	assert(tostring(Tween({ Value = 5 })) == "Tween(5)", tostring(Tween({ Value = 5 })))
 end
 
-print("=== 5. 경계 — StoreBind는 Tween을 언랩하지 않는다(값 그대로 도착), Source 안의 Tween ===")
+print("=== 5. 경계 — StateHandler는 Tween을 언랩하지 않는다(값 그대로 도착), Source 안의 Tween ===")
 do
 	local q = mock.newQuad()
 	local src = q.Source(Tween({ Value = 1 }))
@@ -143,7 +143,7 @@ do
 	} :: QuadTypes.Handler)
 	local inst = mock.Instance.new("Frame")
 	q.Dispatch.drive(inst, { Probe = src })
-	assert(got ~= nil and Quad.isTween(got) and got.Value == 1, "StoreBind unwrapped the Source and delivered the Tween value intact")
+	assert(got ~= nil and Quad.isTween(got) and got.Value == 1, "StateHandler unwrapped the Source and delivered the Tween value intact")
 	print("PASS")
 end
 

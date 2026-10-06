@@ -315,7 +315,7 @@ InstData:SetWeak(inst, "gcconn", gcconn)
   `inst` 자신의 시그널이 잡는 순환이라 Destroy(=엔진이 커넥션을 끊음)가
   유일한 절단면. **실질적으로 새로 생긴 제약은 아님** — 실제 바인딩이
   하나라도 걸리면 그 Observer 클로저가 어차피 `inst`를 캡처해 같은 순환이
-  생기므로(예: `dispatch-core-plan.md`의 `StoreBind.process`), 이번
+  생기므로(예: `dispatch-core-plan.md`의 `StateHandler.process`), 이번
   변경은 "아무것도 안 걸린 Instance"까지 같은 규칙으로 통일한 것뿐.
 
 #### (0.5) `bindLifetime`의 확장 계약 — 모르는 타입이면 순수 GC 릴레이션 (2026-08-31, `H-229` 사용자 확정)

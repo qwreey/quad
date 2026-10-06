@@ -225,7 +225,7 @@ Lua 테이블 리터럴은 배열 파트/해시 파트 사이에 소스 텍스�
   처리하는지는 새 개념이 아니라 이미 확정된 디스패치 모델 그대로다.
   상세는 `base/dispatch-core-plan.md`의 "`None` 센티널 — StoreBind와
   같은 재귀 재디스패치 패턴 재사용" 절 참고 — 핵심만 요약하면 `NoneHandler`도
-  `StoreBind` 핸들러와 완전히 같은 모양(`isHandlable`이 `v == None`을
+  `StateHandler` 핸들러와 완전히 같은 모양(`isHandlable`이 `v == None`을
   잡고, `process`가 `v`를 진짜 `nil`로 바꿔 `process(inst, k, nil)`을 재귀
   호출)이라 base 드라이버 자체엔 `None`을 아는 코드가 한 줄도 안 들어감 —
   개별 프로퍼티/이벤트/UI shorthand 핸들러도 자기 시그니처에 `None`이 안

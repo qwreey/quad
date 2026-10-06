@@ -61,7 +61,7 @@ local function Init(module: any)
 		process = function(inst: any, k: any, _v: any, index: number): (any?, boolean) -> ()
 			-- recursion only — once we pass nil the sentinel no longer exists,
 			-- and the next priority scan narrows naturally (same shape as
-			-- StoreBind's realv recursion; same no-infinite-loop argument).
+			-- StateHandler's realv recursion; same no-infinite-loop argument).
 			dispatch.process(inst, k, nil, index + 1)
 			return Void
 		end,

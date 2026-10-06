@@ -646,7 +646,7 @@ do
 	assert(countOf(LINE) == 1, "debug on: one line per Observer: " .. table.concat(lines, " | "))
 	-- normal paths stay silent: setting OTHER targets, an Effect downstream writing its upstream, a thrown
 	-- fn's stuck `_running` on the next change (the `q.Out`/`OnChange` round trip involves no user Observer — the property
-	-- binding's handle is StoreBind's, marked `_internal`; a debug-forced test.sh run on 2026-10-01 printed no line for it)
+	-- binding's handle is StateHandler's, marked `_internal`; a debug-forced test.sh run on 2026-10-01 printed no line for it)
 	capture(function()
 		local a, b = dq.Source(0), dq.Source(0)
 		local oa = a:Observer(function(target)

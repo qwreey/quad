@@ -26,7 +26,7 @@
 	                                  -- State/None pass through untouched
 
 	plain-table values may be raw T or State<T>/Source<T> — they all flow down
-	the single-key path where StoreBind unwraps (4라운드 명시). Store args are
+	the single-key path where StateHandler unwraps (4라운드 명시). Store args are
 	flattened via `store:Names()` (`H-79` — explicit initialization made the
 	declared key set knowable).
 
@@ -196,7 +196,7 @@ end
 table.freeze(Attr)
 
 -- Typed scalar sugar family — one-entry groups. `luaType` is the raw-value
--- check; a State/Source (StoreBind unwraps it downstream) or `None` (delete)
+-- check; a State/Source (StateHandler unwraps it downstream) or `None` (delete)
 -- passes through. `nil` is rejected here: a plain table cannot hold it, so
 -- the entry would silently vanish — the user must say `None`.
 local function scalarSugar(fnName: string, luaType: string): (string, any) -> any

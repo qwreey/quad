@@ -297,7 +297,7 @@ end
 
 -- Dispatch-side registrations for the Observer VALUE (`H-278`, user-directed:
 -- "각 객체를 아는 곳은 각 객체가 선언된 곳" — moved out of the dissolved
--- Dispatch/Leaf.luau; [2026-10-01] NoneHandler/StoreBind followed — None.luau/State.luau register
+-- Dispatch/Leaf.luau; [2026-10-01] NoneHandler/StateHandler followed — None.luau/State.luau register
 -- them, Dispatch keeps only NilHandler and the Processed* terminals). Two handlers:
 --   - ObserverLeafHandler (HIGH — dispatch skeleton band): children-array
 --     leaf binding. Body 1:1 with `source-state-plan.md` "Observer/Effect

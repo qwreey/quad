@@ -19,7 +19,7 @@
 
 ### 1.1 문제의 성격과 유래
 `quad`의 디스패치 엔진은 props 테이블의 각 `(key, value)` 쌍을 등록된 핸들러 목록을 순회하며 적합한 핸들러에게 위임하여 처리합니다.
-이 중 `quad-base/src/StoreBind.luau`에 정의되고 `quad-base/src/State.luau`의 `Init`에서 등록되는 핸들러는 현재 `name = "StoreBind"`라는 이름을 가지고 있습니다.
+이 중 옛 `quad-base/src/StoreBind.luau`에 정의되고 `quad-base/src/State.luau`의 `Init`에서 등록되는 핸들러는 현재 `name = "StoreBind"`라는 이름을 가지고 있습니다.
 
 - **역사적 유래 [실측: `.claude/audit/round14-principle-audit/followup-2026-10-02.md:319`, `.claude/base/dispatch-core-plan.md`]:**
   quad v1에서 반응형 상태 객체의 이름은 `Store`였으며, props에 상태 객체를 전달하여 프로퍼티나 자식에 연결하는 것을 "store 바인드"라고 불렀습니다. v2 초기 설계 문서에서도 *"Store 바인드는 특수 경우인가, 아니면 pluggable 바인드를 재실행하는 래핑인가"*라는 어휘를 그대로 계승하여 핸들러 이름을 `StoreBind`로 명명했습니다.
@@ -330,7 +330,7 @@ quad 런타임(`q:UseProvider(QuadRoblox)`) 환경에서 `q.Dispatch.listHandler
 만약 사용자가 이름 변경(`StateHandler` 등)을 결정할 경우의 작업 범위는 다음과 같습니다 [추정]:
 
 1. **파일 변경**:
-   - `quad-base/src/StoreBind.luau` → quad-base/src/StateHandler.luau(가상 경로) (git mv)
+   - 옛 `quad-base/src/StoreBind.luau` → quad-base/src/StateHandler.luau(가상 경로) (git mv)
    - `quad-base/test/spec.storebind.luau` → quad-base/test/spec.statehandler.luau(가상 경로) (git mv)
 2. **소스 코드 치환**:
    - `quad-base/src/State.luau`: require 경로 및 `StateHandler.register` 호출

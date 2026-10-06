@@ -209,7 +209,7 @@ do
 	end))
 	local b = q.Declaration.TextButton({ src })
 	local sig = b:GetPropertyChangedSignal("Text")
-	assert(liveConnections(sig) == 1, "connected once through StoreBind unwrap")
+	assert(liveConnections(sig) == 1, "connected once through StateHandler unwrap")
 	b.Text = "b"
 	assert(calls == 1, "reactive descriptor fired")
 
@@ -264,7 +264,7 @@ do
 		assert(not ok and string.find(tostring(err), 'Event: handler for "MouseButton1Click" must be a function (got', 1, true) ~= nil, label .. ": " .. tostring(err))
 		mock.assertBlamesUser(err, SPEC_FILE, "Event value gate (" .. label .. ")")
 	end
-	-- a State that later carries a non-function: the gate fires at that Set (StoreBind re-dispatch)
+	-- a State that later carries a non-function: the gate fires at that Set (StateHandler re-dispatch)
 	local st = q.Source(function() end)
 	local b = q.Declaration.TextButton({ MouseButton1Click = st })
 	assert(liveConnections(b.MouseButton1Click) == 1, "function via State connects")

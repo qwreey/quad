@@ -48,8 +48,8 @@ local Brand = require("./Brand")
 local EpochMap = require("./EpochMap")
 local ImplRegistry = require("./ImplRegistry")
 local Observer = require("./Observer")
-local InitDispatch = require("./Dispatch") -- Init pulls it to register StoreBind (2026-10-01)
-local StoreBind = require("./StoreBind")
+local InitDispatch = require("./Dispatch") -- Init pulls it to register StateHandler (2026-10-01)
+local StateHandler = require("./StateHandler")
 local Void = require("./Void")
 local QuadTypes = require("../luau_packages/quad_types")
 local Err = require("./ErrorNamespace")
@@ -258,7 +258,7 @@ local function createImpl(module: any)
 			-- `H-205` history: this used to be a hand-counted level 3; the walker
 			-- (`H-231`) picks the frame. Q7 셋째 (a) (사용자 결정 2026-09-07): OUTERMOST —
 			-- `_recompute` is lazy, so when dispatch forces it first the nearest tagged
-			-- frame is `StoreBind.luau` (quad internals, `H-416`); the user's entry line
+			-- frame is `StateHandler.luau` (quad internals, `H-416`); the user's entry line
 			-- (their `drive`/creation) is the useful one.
 			Err.errorBefore("Quad0185 State: a Compute function returned a Modifier - State/Source cannot hold Modifiers", SURFACE)
 		end
@@ -418,11 +418,11 @@ end
 
 local function Init(module: any)
 	implsOf(module).State = createImpl(module)
-	-- [2026-10-01 user decision] the State VALUE's dispatch handler (StoreBind — unwrap and re-dispatch
+	-- [2026-10-01 user decision] the State VALUE's dispatch handler (StateHandler — unwrap and re-dispatch
 	-- `index + 1` on every emission) is registered here, by the module that defines State (`H-278`,
 	-- Effect/Observer shape), not by `InitDispatch` — "Dispatch 가 코어 객체들을 아는 방향이 되지 않아야".
 	module:RunInit(InitDispatch) -- idempotent pull (the `H-174` idiom)
-	StoreBind.register(module.Dispatch, module)
+	StateHandler.register(module.Dispatch, module)
 end
 
 local function implFor(module: any)

@@ -26,7 +26,7 @@
 	array-part descriptor kinds join THAT alias, not this union
 	(claim-plan §7-12). M5-era union: what actually works through
 	`drive` by the end of this milestone — a static child Instance
-	(InstanceChildHandler, unit ③) or a reactive one (StoreBind → unwrap).
+	(InstanceChildHandler, unit ③) or a reactive one (StateHandler → unwrap).
 	Later milestones WIDEN this union as their handlers land (M10 did on
 	2026-09-03 — Tag/Attr, see the declaration comment; M6 Slot). M8
 	Ref/PreRef/PostRef landed on 2026-09-04 NOT here but on the per-class
@@ -166,7 +166,7 @@ export type AnimateFn = (info: AnimateInfo) -> (self: any) -> QuadTypes.State<Tw
 -- [2026-09-03 M10 widening] the quad-base array-part VALUES join here: `Tag(...)`
 -- and `Attr(...)` (the typed scalar sugar `StringAttr(name, v)` etc.
 -- returns an `Attr`, so it rides the same member) + their State forms
--- (StoreBind unwraps array elements). OnChange descriptors are NOT here — they
+-- (StateHandler unwraps array elements). OnChange descriptors are NOT here — they
 -- are per-class (`<Class>Elem` in the generated Declaration, `base/onchange-plan.md`).
 export type NewChild =
 	Instance
@@ -174,10 +174,10 @@ export type NewChild =
 	-- quad-types 주석·typing-limits 8.11): 전체형 `State<Instance>`는 불변이라 `Source(frame)`
 	-- (`State<Frame>`)·`State<Instance?>`·`State<Slot<…>>`를 전부 거부했고 팔마다 예산을 먹었다.
 	-- 마커는 T에 공변이라 값 유니언 하나로 끝난다 — `State<Frame>`, `State<Instance?>`(NilHandler
-	-- 팔 — `State<Slot|nil>`), `State<Slot<Frame>>`(Q1의 원래 팔, StoreBind 언랩 → SlotHandler),
+	-- 팔 — `State<Slot|nil>`), `State<Slot<Frame>>`(Q1의 원래 팔, StateHandler 언랩 → SlotHandler),
 	-- `State<Tag>`/`State<Attr>`(M10 팔)가 이 한 줄에 든다. `State<Modifier>`는 7절이 error라
 	-- 여기 없다. [round3 `H-431`] `State<Observer?>`/`State<Effect?>`는 정본이 지시하는 leaf 종료
-	-- 관용구(slot-plan "State<Observer?>를 사용하는게 적절" — nil emit으로 구독 해제, StoreBind 언랩 →
+	-- 관용구(slot-plan "State<Observer?>를 사용하는게 적절" — nil emit으로 구독 해제, StateHandler 언랩 →
 	-- leaf 핸들러/NilHandler)라 여기 든다 — 첫 마커 팔이 빠뜨렸던 것.
 	| QuadTypes.SlotMarker<Instance>
 	-- [2026-09-07 밤 사용자 제안 — 마커 전면화] Tag/Attr/Observer/Effect도 입력 자리는 마커

@@ -37,7 +37,7 @@ local function makeLeaf(log: { string }, tag: string, match: (any) -> boolean, p
 end
 
 -- Wrapping handler — matches `{ inner = ... }`, unwraps one layer and
--- redelegates with `index + 1` (the StoreBind/NoneHandler shape).
+-- redelegates with `index + 1` (the StateHandler/NoneHandler shape).
 local function makeWrap(dispatch: QuadTypes.Dispatch, log: { string }, tag: string, priority: number): Handler
 	return {
 		isHandlable = function(_inst: any, _k: any, v: any): boolean
@@ -105,7 +105,7 @@ do
 	assert(string.find(msg, "number", 1, true) ~= nil, `message carries typeof(v): {msg}`)
 	assert(string.find(msg, "provider", 1, true) ~= nil, `message points at provider init: {msg}`)
 
-	-- 브랜드 예시는 Blocker — Source는 M4부터 내장 StoreBind에 항상 매치돼
+	-- 브랜드 예시는 Blocker — Source는 M4부터 내장 StateHandler에 항상 매치돼
 	-- "핸들러 없는 브랜드 값"이 될 수 없다(언랩된 실제값이 대신 실패한다 —
 	-- round13 `H-287` 회귀의 자리)
 	local blocker = q.Blocker()
@@ -598,7 +598,7 @@ do
 	print("PASS")
 end
 
-print("=== 18. round3 H-452 (Q7 셋째 (a), H-416 재현) — 디스패치가 lazy Compute를 처음 강제해 Modifier가 나오면 blame은 사용자 drive 줄(outermost), StoreBind 내부가 아니다 ===")
+print("=== 18. round3 H-452 (Q7 셋째 (a), H-416 재현) — 디스패치가 lazy Compute를 처음 강제해 Modifier가 나오면 blame은 사용자 drive 줄(outermost), StateHandler 내부가 아니다 ===")
 do
 	local q = newQuad()
 	local inst = mock.Instance.new("Frame")
@@ -610,7 +610,7 @@ do
 		q.Dispatch.drive(inst, { Name = d })
 	end)
 	assert(not ok and string.find(tostring(err), "cannot hold Modifiers", 1, true) ~= nil, "Compute-returned Modifier rejected via dispatch: " .. tostring(err))
-	mock.assertBlamesUser(err, "spec.dispatch.luau", "outermost — the drive line, not StoreBind.luau")
+	mock.assertBlamesUser(err, "spec.dispatch.luau", "outermost — the drive line, not StateHandler.luau")
 	print("PASS")
 end
 
@@ -950,7 +950,7 @@ do
 	print("PASS")
 end
 
-print("=== 24. 2026-10-01 사용자 결정 — 값의 핸들러는 그 값을 선언한 모듈이 등록(NoneHandler ← None.luau, StoreBind ← State.luau); Dispatch는 자기 말단(NilHandler·Processed* 셋)만; HIGH 밴드 술어는 서로 배타(등록 순서가 바뀌어도 동률 순서 무관) ===")
+print("=== 24. 2026-10-01 사용자 결정 — 값의 핸들러는 그 값을 선언한 모듈이 등록(NoneHandler ← None.luau, StateHandler ← State.luau); Dispatch는 자기 말단(NilHandler·Processed* 셋)만; HIGH 밴드 술어는 서로 배타(등록 순서가 바뀌어도 동률 순서 무관) ===")
 do
 	local NoneModule = require("../src/None")
 	local StateModule = require("../src/State")
@@ -963,14 +963,14 @@ do
 		return c
 	end
 	local c = counts()
-	for _, name in { "NoneHandler", "NilHandler", "StoreBind", "ProcessedModifierHandler", "ProcessedPreRefHandler", "ProcessedPostRefHandler" } do
+	for _, name in { "NoneHandler", "NilHandler", "StateHandler", "ProcessedModifierHandler", "ProcessedPreRefHandler", "ProcessedPostRefHandler" } do
 		assert(c[name] == 1, `{name} registered exactly once (got {tostring(c[name])})`)
 	end
 	-- the owning modules' Init is the registration site: running it again is the RunInit no-op
 	q:RunInit(NoneModule.Init)
 	q:RunInit(StateModule.Init)
 	local c2 = counts()
-	assert(c2.NoneHandler == 1 and c2.StoreBind == 1, "RunInit of the owning Init is idempotent")
+	assert(c2.NoneHandler == 1 and c2.StateHandler == 1, "RunInit of the owning Init is idempotent")
 	assert(q.None == NoneModule.None, "the top-level re-export is the None module's value")
 	-- HIGH band: every pair of predicates is disjoint over a sample of keys × values, so the unstable
 	-- sort's tie order (which changes with registration order) never decides a match

@@ -46,13 +46,13 @@ State그래프 안의 1급 노드") 참고.
 ## 새 모델: `Tween<T>` 값-레벨 래퍼, PropertyHandler가 소비 (2026-08-10 세션, 핵심 재설계)
 
 **동기**: 기존 모델("`k`는 무엇이든, `v`가 Store인 경우를 잡는 우선순위
-매우 높은 핸들러")은 State/Source 언랩(범용 StoreBind)과 Tween(실제
+매우 높은 핸들러")은 State/Source 언랩(범용 StateHandler)과 Tween(실제
 애니메이션, 좁고 별개인 기능)을 같은 Dispatch 핸들러 하나로 뭉쳐서,
 "`Frame { BackgroundColor3 = store.color }`처럼 애니메이션 없이 그냥
 반응형으로만 바뀌길 원하는 흔한 케이스가 결국 이름은 Tween인 파일을
 거쳐가는지"가 문서로 답이 안 됐음.
 
-**해소**: State/Source 언랩(`StoreBind.luau` — **[2026-10-01]** 최상위, 옛 `Dispatch/StoreBind.luau`; 범용·엔진무관 —
+**해소**: State/Source 언랩(`StateHandler.luau` — **[2026-10-02 Q175]** 옛 `StoreBind.luau`에서 개명; **[2026-10-01]** 최상위, 옛 `Dispatch/StoreBind.luau`; 범용·엔진무관 —
 `k`/`v`의 실제 타입과 무관하게 그냥 `isState(v)`만 보고 `realv`까지
 재귀적으로 풀어냄)은 완전히 별개로 유지하고, **"이 값이 트윈 대상인가"는
 최종 소비자(PropertyHandler)가 `realv`를 다 풀어낸 뒤 직접 판단**한다 —
@@ -68,7 +68,7 @@ Lua 문법상 `Tween{Value=target, Time=0.3}`처럼 괄호를 생략해 호출. 
 필드 목록은 아래 "확정: `Tween{...}` 최종 모양" 절 참고.
 
 **PropertyHandler.process(inst,k,realv,index)의 새 로직** — `realv`는 이미
-StoreBind가 State/Source 레이어를 전부 풀어낸 뒤의 값(그리고 이 함수는
+StateHandler가 State/Source 레이어를 전부 풀어낸 뒤의 값(그리고 이 함수는
 계약대로 마지막에 no-op 클로저 `Void`(**[2026-08-28 `H-162`]**)를 반환 — 아래 "왜
 `retract`가 더 이상 필요 없는가" 절):
 
@@ -81,7 +81,7 @@ StoreBind가 State/Source 레이어를 전부 풀어낸 뒤의 값(그리고 이
 처음엔 `Tween.Value`도 `T | State<T>`를 받아야 하나(내부에 자체 Observer를
 걸어 값이 바뀔 때마다 트윈을 재시작) 검토했으나 **불필요로 확정** — 이미
 바깥 `:Compute`가 소스 State 변경마다 새 `Tween{Value=v,...}` 테이블을
-통째로 재생성해 StoreBind 재귀 재-dispatch 경로를 타므로, `Tween` 값
+통째로 재생성해 StateHandler 재귀 재-dispatch 경로를 타므로, `Tween` 값
 내부에 또 다른 반응 경로를 만들 이유가 없음. "같은 일 하는 두 번째 경로를
 만들지 않는다"는 이 프로젝트가 Effect의 deps/Ref의 대기 경로 등에서 이미
 여러 번 적용한 원칙과 정확히 같은 결.
@@ -228,8 +228,8 @@ Modifier setter `Field<T>`)은 **`State<T>`와 `State<Tween<T>>`를 각각 나�
 `T`" 자체를 `T' = T | Tween<T>`로 치환하면 ~~자동으로 `T | Tween<T> |
 State<T | Tween<T>>`가 나옴~~ **[2026-09-06 정정]** 실물은 위 배너대로
 `T | State<T> | TweenData<T> | State<Tween<T>> | None`(State 멤버 둘을 각각 나열 —
-`State<X>` 불변성) — Modifier/State/Source/StoreBind 코드엔
-`Tween` 인지 로직을 전혀 안 넣어도 됨(StoreBind는 원래도 페이로드 타입에
+`State<X>` 불변성) — Modifier/State/Source/StateHandler 코드엔
+`Tween` 인지 로직을 전혀 안 넣어도 됨(StateHandler는 원래도 페이로드 타입에
 무관하게 `isState`만 보고 언랩하는 opaque한 구조였음). `Tween<T>`를 실제로
 해석하는 코드는 여전히 PropertyHandler 하나에만 존재.
 
@@ -694,7 +694,7 @@ process될 때 위 "3-상태 저장"의 `prev`가 `{Tween, Value}` 테이블 분
 > 인자 없는 함수도 타입에 들어간다(신 솔버 실측). 아래 "인자 없음(사용자 결정 2)"는 **포획** 금지로 좁혀 유지된다. (2) **모으고 → 쓰고 →
 > 부른다** — Property는 콜백을 슬롯 쓰기·`Play` 뒤 정해진 순서로 부르고, 앞선 콜백이 같은 자리를 대체했으면 뒤의 새 값 콜백은 생략(Q91
 > (b) OLD-FIRST의 일반화) → 아래 `H-589` 문단의 `Started`·`Cancelled` 재진입 UB는 **Property 층에선 풀렸다**(예외: 마운트 중 첫 스냅의
-> `Started` 안 `:Set` — StoreBind 등록 프레임, UB 유지). (3) **철거 창은 늘 `Cancelled`**(Q99 c — `H-581`의 철거 쪽 부분 역전, 교체 창의
+> `Started` 안 `:Set` — StateHandler 등록 프레임, UB 유지). (3) **철거 창은 늘 `Cancelled`**(Q99 c — `H-581`의 철거 쪽 부분 역전, 교체 창의
 > `Completed`는 유지), 시체 위 `retractFrom`은 콜백 무발화(Q82 (a) `isClaimed` 게이트). (4) `tween:Mapped(fn, wrap?)`·`tween:Wrapped(wrap)`
 > (핸들 `cb` — 필드 셋 + `cb:Map(g)`; 변경 없는 셋이면 `Wrapped`는 원본을 돌려줌), 숏핸드는 마지막 키 대표(`ui-shorthand-plan.md` Q92
 > 배너). 새 ID `Quad0256`~`0258`. 콜백 타입: 생성자 옵션은 `TweenCallback<T>`, 저장된 Tween·핸들·셋은 `TweenCallback<any>`(`T`를

@@ -68,12 +68,12 @@ do
 	table.sort(hashLog)
 	assert(table.concat(hashLog, ",") == "Size=10,Text=inline", "merged field dispatched as a hash key; inline Text won: " .. table.concat(hashLog, ","))
 
-	-- State 필드는 StoreBind가 언랩해 같은 해시 핸들러로(반응형 유지)
+	-- State 필드는 StateHandler가 언랩해 같은 해시 핸들러로(반응형 유지)
 	table.clear(hashLog)
 	local src = q.Source(5)
 	local inst2 = Instance.new("Frame")
 	q.Dispatch.drive(inst2, { Modifier():Size(src) })
-	assert(hashLog[1] == "Size=5", "State field unwrapped by StoreBind: " .. tostring(hashLog[1]))
+	assert(hashLog[1] == "Size=5", "State field unwrapped by StateHandler: " .. tostring(hashLog[1]))
 	src:Set(6)
 	assert(hashLog[#hashLog] == "Size=6", "still reactive after flatten")
 	-- None 필드(mod:X(None))는 NoneHandler → nil 재귀 → 해시 키 핸들러에 nil로

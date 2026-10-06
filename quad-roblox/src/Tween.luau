@@ -41,7 +41,7 @@
 	                                   -- `Animate` just forwards its option here.
 
 	Not a dispatch participant: no handler, no Length/Offset bookkeeping —
-	`StoreBind` unwraps State layers and the branded table arrives at
+	`StateHandler` unwraps State layers and the branded table arrives at
 	PropertyHandler as `realv` ("타입 대수" 절).
 
 	Validation (round19 §0 Q5 (a), unchanged by the move): `opts` is a table,

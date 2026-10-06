@@ -137,7 +137,7 @@ ref 저장보단 비쌈. spring 등으로 움직일 수도 있다 생각하면 �
   gcconn/gchold 가 셋업되는게 맞음."*
   - **논거**: 아래 "Tween 지원" 절대로 이 숏핸드는 자식 프로퍼티를 직접 쓰지
     않고 `Dispatch.process(child, prop, v, 1)`로 위임하는데, 그 값이
-    `State`면 `StoreBind`가 `bindLifetime(child, observer)`를 부른다 — 그
+    `State`면 `StateHandler`가 `bindLifetime(child, observer)`를 부른다 — 그
     시점에 `child`에 gcconn/gchold가 없으면 **거기서 곧바로 실패**한다.
     즉 "조용히 미아가 되는" 시나리오가 아니라 **즉시 드러나는 전제 조건**이고,
     숏핸드가 자식을 만드는 경로도 일반 인스턴스 생성과 같은 셋업을 타야 한다.
@@ -233,7 +233,7 @@ end
   자리에서 그대로 재사용됨 — 이 문서가 따로 정할 게 없음.
 - **타입 대수도 그대로** — 숏핸드 키의 값 타입이 `number`였다면 이제
   `number | Tween<number> | State<number | Tween<number>>`가 됨
-  (`T' = T | Tween<T>` 치환, `tween-plan.md` "타입 대수" 절). StoreBind가
+  (`T' = T | Tween<T>` 치환, `tween-plan.md` "타입 대수" 절). StateHandler가
   State 레이어를 먼저 다 풀어내므로 이 Handler가 실제로 보는 `v`는
   `number` 아니면 `Tween<number>` 둘 중 하나.
 
@@ -317,7 +317,7 @@ PropertyHandler의 "첫 세팅은 애니메이션 없이 즉시"(`prev == nil`) 
   실측 패턴), quad 제작 인스턴스는 gcconn 때문에 `Destroy`로만 회수된다.
   위 (a)/(b) 근거(엔진의 Tween 자동 정리 / `PropertyHandler` retractor가
   no-op)는 **정적 값일 때** 그대로 유효하지만, 숏핸드 값이 **반응형**
-  (`UICorner = state`)이면 `StoreBind` 구독이 chains에 남아 자식 파괴/재생성
+  (`UICorner = state`)이면 `StateHandler` 구독이 chains에 남아 자식 파괴/재생성
   사이클마다 누적된다. **확정: 자식을 버릴 때 `retractFrom(child, prop, 1)`
   호출은 이제 의무다**(값의 반응형 여부와 무관하게 무조건 — 정적이면 no-op
   retractor라 비용 ~0, 조건 없는 계약이 어기기 어렵다는 근거로 사용자 채택).

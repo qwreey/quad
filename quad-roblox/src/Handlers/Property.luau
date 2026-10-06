@@ -110,7 +110,7 @@ local function install(quad: any)
 	-- Completed → this value's Started → (snap) Completed. A callback that re-enters the same (inst, k) replaces
 	-- the record; the later callbacks of THIS value are then skipped (`GetStrong(inst, k) ~= rec`). So writing the
 	-- same property from any callback lands in order and leaves one tween — the Property-layer half of `H-589`'s
-	-- UB is gone (the StoreBind None-switch outer frame is not covered). Settle callbacks (the previous value's,
+	-- UB is gone (the StateHandler None-switch outer frame is not covered). Settle callbacks (the previous value's,
 	-- teardown's) are skipped on an Instance quad no longer claims (round13 Q82 (a) — a corpse under
 	-- `retractFrom`; the engine tween is still cancelled). A Destroy runs no chain retractor, so a tween keeps
 	-- running on the destroyed Instance and the engine still sends `Completed` (REPORT 5·6) — ignored by the same

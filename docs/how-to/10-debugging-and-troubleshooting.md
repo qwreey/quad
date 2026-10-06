@@ -49,7 +49,7 @@ ReplicatedStorage.Client.UI.UserProfile:42: Quad0218 Event: handler for "Activat
    그 줄을 정확히 가리킵니다.
 3. **quad가 대신 읽거나 쓰는 자리에서 난 에러는 quad 내부 파일을 가리킬 수 있습니다.** 계산 함수가 던졌거나 (정의되지 않은 동작인) yield를 해서
    같은 세대의 재읽기가 막힌 State(`Quad0184`)를 여러분의 코드가 아니라 quad가 읽으면 — 프로퍼티 바인딩, `Animate`,
-   Operator, `slot:List`·`:Single`, `Debounce`의 `Time` 같은 자리 — `파일:줄` 접두가 `StoreBind.luau` 같은 quad 파일을
+   Operator, `slot:List`·`:Single`, `Debounce`의 `Time` 같은 자리 — `파일:줄` 접두가 `StateHandler.luau` 같은 quad 파일을
    가리킵니다. `ref:Wait(thread)`로 지금 코루틴을 등록한 채 같은 코루틴에서 그 Ref를 마운트해 난 `Quad0130`도 같습니다.
    메시지와 traceback은 그대로 나오니 traceback에서 여러분 파일의 가장 가까운 줄을 보세요 — 원인은 대개 그 State의
    계산 함수(`Quad0184`)나 `Wait` 등록(`Quad0130`)입니다.

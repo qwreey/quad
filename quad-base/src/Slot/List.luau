@@ -12,7 +12,7 @@
 
 local Types = require("./types")
 local ModuleIdentity = require("../ModuleIdentity")
-local StoreBind = require("../StoreBind") -- round13 Q113 (a): the shared Quad0070 chain walk
+local StateHandler = require("../StateHandler") -- round13 Q113 (a): the shared Quad0070 chain walk
 
 -- `H-571` data-key gate: the one Quad0143 literal — reconcile's O(1) check and the debug pass below both raise it.
 local function notArrayKey(k: any): boolean
@@ -161,7 +161,7 @@ return function(S: Types.SlotInternal, module: any)
 			-- element (the State already holds the new value — that write happened before this ran).
 			if updateFn == identityUpdateFn then
 				for _, item in ipairs(items) do
-					StoreBind.assertAcyclicChain(item, nil, S.Err.errorBefore) -- error-code: via StoreBind.assertAcyclicChain
+					StateHandler.assertAcyclicChain(item, nil, S.Err.errorBefore) -- error-code: via StateHandler.assertAcyclicChain
 				end
 			end
 

@@ -12,7 +12,7 @@
 	      Text = "a",
 	      OnChange("Text", function(v: string) ... end),
 	      OnChange("Text", function(v) ... end),   -- same name twice is fine
-	      State<descriptor>,                        -- reactive via StoreBind
+	      State<descriptor>,                        -- reactive via StateHandler
 	  }
 
 	Descriptor = frozen `{ Name, Callback }`, branded in a module-local

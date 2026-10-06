@@ -639,7 +639,7 @@ end
   spurious한 경우)만 둘 다 스킵해 콜백이 `nil`→`inst`로 헛되이 두 번 안
   불리게 함.
 - **children 배열 리터럴 `Ref`도 같은 코드 경로를 그대로 씀** — 그 경우
-  이전 클로저가 (StoreBind 경로가 아니라 이 리터럴 구성 자체가 처음이므로)
+  이전 클로저가 (StateHandler 경로가 아니라 이 리터럴 구성 자체가 처음이므로)
   아예 없고 `relate:GetWeak(inst,k)`도 `nil`이라 `process`가 바로
   `v:Set(inst)`로 끝남. "1회성 리터럴 구성"과 "반복 재바인드"가 하나의
   구현으로 자연히 커버됨, 케이스 분기 불필요.
@@ -924,7 +924,7 @@ flatten된 값은 해시 파트(프로퍼티 키)로 존재하게 되고, Store�
     `if v == None then continue end`로 걸러냄)"*, 따라서 *"`k=number`
     조합으로 `NoneHandler`가 실제로 매치되는 경우는 없음"*이라고 했는데,
     리터럴 `Frame{None}`만 보면 맞아 보여도 **`Frame{ State<Slot|None> }`
-    처럼 반응형 값이 `None`을 내놓으면 그 `None`은 `StoreBind`의 재귀를
+    처럼 반응형 값이 `None`을 내놓으면 그 `None`은 `StateHandler`의 재귀를
     타고 `Dispatch.process`에 그대로 도착**한다(사용자 지적).
     지금 확정된 모델은:
     - `Dispatch.drive`에 `None` 스킵 분기가 **없다** — 전부 `process`를 탄다.

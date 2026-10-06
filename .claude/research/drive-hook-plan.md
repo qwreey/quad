@@ -6,7 +6,7 @@
 
 > **[2026-10-01 — 아래 2026-09-13 절의 `register` 넷 서술은 그 전 기준]** 사용자 결정(*"None.luau 는 Dispatch 안에
 > 있을 이유가 없지 않나 … StoreBind 도 마찬가지 … Dispatch 가 코어 객체들을 아는 방향이 되지 않아야하니까"*)으로 그 넷 중
-> 둘이 옮겨졌다: `NoneHandler`는 최상위 `None.luau`의 Init이, `StoreBind`는 최상위 `StoreBind.luau` 본문을 `State.luau`의
+> 둘이 옮겨졌다: `NoneHandler`는 최상위 `None.luau`의 Init이, `StoreBind`(**[2026-10-02 round14 Q175]** 지금 이름 `StateHandler`)는 최상위 `StateHandler.luau` 본문을 `State.luau`의
 > Init이 등록한다(옛 `Dispatch/None.luau`·옛 `Dispatch/StoreBind.luau`). `Processed*` 셋(Modifier·PreRef·PostRef)은 drive
 > 자기 단계의 말단이라 `Dispatch/init.luau`가 지역 공장으로 직접 등록하고 옛 `Dispatch/Modifier/Handler.luau`는 지워졌다 —
 > 그래서 `Dispatch/init`의 require는 이제 `Modifier`(flatten·`ProcessedModifier`)와 `Ref`(pre-pass·센티널) 둘뿐이다. drive

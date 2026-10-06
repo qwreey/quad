@@ -79,7 +79,7 @@ do
 	end)
 	local src = q.Source(refA)
 	q.Dispatch.drive(inst, { src })
-	assert(refA.Value == inst and notifyA == 2, "bound through StoreBind (registration + inst)")
+	assert(refA.Value == inst and notifyA == 2, "bound through StateHandler (registration + inst)")
 	src:Set(refA) -- spurious: same Ref again
 	assert(notifyA == 2 and refA.Value == inst, "same Ref re-emitted → no re-notify, still bound")
 	src:Set(refB)

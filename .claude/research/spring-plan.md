@@ -14,7 +14,7 @@ quad-spring류 **부가 확장은 `AddPlugin`**(다수 허용, `Self & P` 교집
 ## 아이디어
 
 특정 Spring 설정을 받아 이전 상태와 비교해 스프링 물리 연산을 수행해주는
-**중간 핸들러**(intermediate handler). StoreBind와 비슷한 구조로 별도
+**중간 핸들러**(intermediate handler). StateHandler와 비슷한 구조로 별도
 핸들러 하나를 만들 수 있을 것으로 보인다는 원문 메모(원문: "스토어바인드도
 비슷하게 핸들러 하나 생성 가능할 수 있음").
 
