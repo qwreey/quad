@@ -1,0 +1,22 @@
+type Epoch = { read Revision: number }
+type EpochSet = { [Epoch]: true }
+export type Observer = { read __quadObserver: true, read Subscribed: boolean, Subscribe: (self: Observer) -> Observer }
+export type ObserverFn<T> = (targetState: StateData<T>, self: Observer, emitFrom: (Epoch | EpochSet)?) -> ()
+export type GateEmit = (commit: boolean?) -> boolean
+export type GateSetup = (emit: GateEmit) -> () -> ()
+export type StateData<T> = { read __quadState: true, read __quadStateValue: T, read Get: (self: any) -> T }
+export type State<T> = {
+	read __quadState: true, read __quadStateValue: T, read Get: (self: any) -> T,
+	read Compute: <U>(self: any, fn: (self: StateData<T>, previous: U?, ...any) -> U, ...any) -> State<U>,
+	read Depend: (self: any, ...any) -> State<T>,
+	read Apply: <U>(self: any, factory: ((State<T>) -> U) | { __apply: (self: any, state: any) -> any }) -> U,
+	read Observer: (self: any, fn: ObserverFn<T>?) -> Observer,
+	read Gate: (self: any, setup: GateSetup) -> State<T>,
+}
+export type Source<T> = State<T> & {
+	read Revision: number,
+	read Set: (self: any, v: T) -> Source<T>,
+	read SetIfChanged: (self: any, v: T) -> Source<T>,
+	read SetAndDispose: (self: any, v: T) -> Source<T>,
+	read Emit: (self: any) -> Source<T>,
+}

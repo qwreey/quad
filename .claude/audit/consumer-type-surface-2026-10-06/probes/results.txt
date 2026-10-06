@@ -1,0 +1,555 @@
+# results summary (generated 2026-10-06 from scratch-tree runs; luau-lsp 1.69.0, test.sh limit flags)
+## tree / real_body
+  MISMATCH L15 exp=ok got=err x1 :: local _a1 = id(c1)
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L17 exp=ok got=err x1 :: local _a1s = idS(q.Source(1))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L19 exp=ok got=err x49 :: local _a1l = idL(q.Source({ 1, 2 }))
+      -> Expected this to be
+  MISMATCH L22 exp=ok got=err x53 :: takesEnum(q.Source(Enum.EasingStyle.Quad))
+      -> Expected this to be
+  MISMATCH L29 exp=ok got=err x1 :: local _l1 = D.TextLabel({ Text = src:Compute(function(self) return `{self:Get()}
+      -> Expected this to be
+  MISMATCH L43 exp=ok got=err x1 :: sl:List(data, function(ctx) return D.TextLabel({ Text = "x" }) end, key)
+      -> Expected this to be
+  MISMATCH L56 exp=ok got=err x1 :: local _f1 = D.Frame({ q.PreRef(nil :: Frame?):Callback(function(inst) if inst th
+      -> Expected this to be
+  MISMATCH L76 exp=ok got=err x1 :: local _rad = Radio({ Value = q.Source("a"), Option = "b" })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L83 exp=ok got=err x1 :: local _cmb = Combo({ Value = q.Source(Enum.EasingStyle.Quad), Options = { Enum.E
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L87 exp=ok got=err x1 :: local _sh = show(q.Source(3))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  mismatches=10 outbytes=65481
+## tree / real_neg
+  MISMATCH L31 exp=err got=ok :: local _n5 = D.Frame({ Visible = num:Compute(function(self: StateData<number>) re
+  MISMATCH L36 exp=ok got=err x1 :: local okWide: State<number | string> = num
+      -> Expected this to be
+  mismatches=2 outbytes=201143
+## tree / real_apply
+  mismatches=0 outbytes=33855
+## tree / real_kitlike
+  MISMATCH L35 exp=ok got=err x1 :: local _1 = Radio1({ Value = scheme, Option = "Light" })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L36 exp=ok got=err x1 :: local _2 = Radio2({ Value = scheme, Option = "Light" })
+      -> Expected this to be
+  MISMATCH L39 exp=ok got=err x1 :: local _3 = Combo3({ Value = q.Source(Enum.EasingStyle.Quad), Options = { Enum.Ea
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  mismatches=3 outbytes=10241
+## tree / real_never
+  mismatches=0 outbytes=5891
+## tree / real_marker
+  mismatches=0 outbytes=251
+## tree / real_view
+  MISMATCH L18 exp=ok got=err x2 :: local _1s: number = vA(q.Source(1))
+      -> Expected this to be
+  MISMATCH L19 exp=ok got=err x1 :: local _1d: number = vA(c1:Compute(function(self: StateData<number>) return self:
+      -> Expected this to be 'number', but got 'unknown'
+  MISMATCH L21 exp=ok got=err x1 :: local function vN<T>(x: ViewNever<T>): T return x:Get() end
+      -> Expected this to be unreachable, but got
+  MISMATCH L24 exp=ok got=err x2 :: takeEnumV(q.Source(Enum.EasingStyle.Quad))
+      -> Expected this to be
+  MISMATCH L27 exp=ok got=err x1 :: wA(q.Source("a"), "b")
+      -> Expected this to be
+  MISMATCH L34 exp=ok got=err x1 :: Radio({ Value = q.Source("a"), Option = "b" })
+      -> Expected this to be
+  MISMATCH L42 exp=ok got=err x2 :: local _l = lbl(q.Source("x"))
+      -> Expected this to be
+  mismatches=7 outbytes=22557
+## tree / real_825
+  MISMATCH L9 exp=ok got=err x1 :: out1(q.Source(""))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L11 exp=ok got=err x2 :: out2(q.Source(""))
+      -> Expected this to be
+  MISMATCH L13 exp=ok got=err x2 :: out3(q.Source(""))
+      -> Expected this to be
+  mismatches=3 outbytes=6354
+## tree / real_viewbase
+  MISMATCH L11 exp=ok got=err x1 :: local function v1<T>(x: V1<T>): T return x:Get() end
+      -> Expected this to be
+  MISMATCH L19 exp=ok got=err x5 :: enumSD(q.Source(Enum.EasingStyle.Quad))
+      -> Expected this to be
+  mismatches=2 outbytes=2023
+## tree_getany / real_body
+  MISMATCH L15 exp=ok got=err x1 :: local _a1 = id(c1)
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L17 exp=ok got=err x1 :: local _a1s = idS(q.Source(1))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L19 exp=ok got=err x59 :: local _a1l = idL(q.Source({ 1, 2 }))
+      -> Expected this to be exactly
+  MISMATCH L22 exp=ok got=err x63 :: takesEnum(q.Source(Enum.EasingStyle.Quad))
+      -> Expected this to be
+  MISMATCH L31 exp=err got=ok :: local _l3 = D.TextLabel({ Text = src:Compute(function(self) return self:Get() en
+  MISMATCH L43 exp=ok got=err x1 :: sl:List(data, function(ctx) return D.TextLabel({ Text = "x" }) end, key)
+      -> Expected this to be
+  MISMATCH L56 exp=ok got=err x1 :: local _f1 = D.Frame({ q.PreRef(nil :: Frame?):Callback(function(inst) if inst th
+      -> Expected this to be
+  MISMATCH L76 exp=ok got=err x1 :: local _rad = Radio({ Value = q.Source("a"), Option = "b" })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L83 exp=ok got=err x1 :: local _cmb = Combo({ Value = q.Source(Enum.EasingStyle.Quad), Options = { Enum.E
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L87 exp=ok got=err x1 :: local _sh = show(q.Source(3))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  mismatches=10 outbytes=75266
+## tree_getany / real_neg
+  MISMATCH L31 exp=err got=ok :: local _n5 = D.Frame({ Visible = num:Compute(function(self: StateData<number>) re
+  MISMATCH L36 exp=ok got=err x1 :: local okWide: State<number | string> = num
+      -> Expected this to be
+  mismatches=2 outbytes=229161
+## tree_getany / real_apply
+  mismatches=0 outbytes=34750
+## tree_getany / real_kitlike
+  MISMATCH L35 exp=ok got=err x1 :: local _1 = Radio1({ Value = scheme, Option = "Light" })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L36 exp=ok got=err x1 :: local _2 = Radio2({ Value = scheme, Option = "Light" })
+      -> Expected this to be
+  MISMATCH L39 exp=ok got=err x1 :: local _3 = Combo3({ Value = q.Source(Enum.EasingStyle.Quad), Options = { Enum.Ea
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  mismatches=3 outbytes=12027
+## tree_getany / real_never
+  mismatches=0 outbytes=5903
+## tree_getany / real_view
+  MISMATCH L18 exp=ok got=err x2 :: local _1s: number = vA(q.Source(1))
+      -> Expected this to be
+  MISMATCH L19 exp=ok got=err x1 :: local _1d: number = vA(c1:Compute(function(self: StateData<number>) return self:
+      -> Expected this to be 'number', but got 'unknown'
+  MISMATCH L21 exp=ok got=err x1 :: local function vN<T>(x: ViewNever<T>): T return x:Get() end
+      -> Expected this to be unreachable, but got
+  MISMATCH L24 exp=ok got=err x2 :: takeEnumV(q.Source(Enum.EasingStyle.Quad))
+      -> Expected this to be
+  MISMATCH L27 exp=ok got=err x1 :: wA(q.Source("a"), "b")
+      -> Expected this to be
+  MISMATCH L34 exp=ok got=err x1 :: Radio({ Value = q.Source("a"), Option = "b" })
+      -> Expected this to be
+  MISMATCH L42 exp=ok got=err x2 :: local _l = lbl(q.Source("x"))
+      -> Expected this to be
+  mismatches=7 outbytes=22557
+## tree_getany / real_825
+  MISMATCH L9 exp=ok got=err x1 :: out1(q.Source(""))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L11 exp=ok got=err x2 :: out2(q.Source(""))
+      -> Expected this to be
+  MISMATCH L13 exp=ok got=err x2 :: out3(q.Source(""))
+      -> Expected this to be
+  mismatches=3 outbytes=6354
+## tree_getany / real_viewbase
+  MISMATCH L11 exp=ok got=err x1 :: local function v1<T>(x: V1<T>): T return x:Get() end
+      -> Expected this to be
+  MISMATCH L19 exp=ok got=err x5 :: enumSD(q.Source(Enum.EasingStyle.Quad))
+      -> Expected this to be
+  mismatches=2 outbytes=2023
+## tree_cov / real_body
+  MISMATCH L17 exp=ok got=err x1 :: local _a1s = idS(q.Source(1))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L31 exp=err got=ok :: local _l3 = D.TextLabel({ Text = src:Compute(function(self) return self:Get() en
+  MISMATCH L43 exp=ok got=err x1 :: sl:List(data, function(ctx) return D.TextLabel({ Text = "x" }) end, key)
+      -> Expected this to be
+  MISMATCH L56 exp=ok got=err x1 :: local _f1 = D.Frame({ q.PreRef(nil :: Frame?):Callback(function(inst) if inst th
+      -> Expected this to be
+  MISMATCH L76 exp=ok got=err x1 :: local _rad = Radio({ Value = q.Source("a"), Option = "b" })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L83 exp=ok got=err x1 :: local _cmb = Combo({ Value = q.Source(Enum.EasingStyle.Quad), Options = { Enum.E
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  mismatches=6 outbytes=12216
+## tree_cov / real_neg
+  MISMATCH L31 exp=err got=ok :: local _n5 = D.Frame({ Visible = num:Compute(function(self: StateData<number>) re
+  mismatches=1 outbytes=41386
+## tree_cov / real_apply
+  MISMATCH L9 exp=err got=ok :: local bad1: State<string> = n:Apply(q.Operator.Sum(1)) -- EXPECT
+  MISMATCH L12 exp=err got=ok :: local bad2: number = n:Apply(f) -- EXPECT
+  mismatches=2 outbytes=0
+## tree_cov / real_kitlike
+  MISMATCH L35 exp=ok got=err x1 :: local _1 = Radio1({ Value = scheme, Option = "Light" })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L36 exp=ok got=err x1 :: local _2 = Radio2({ Value = scheme, Option = "Light" })
+      -> Expected this to be
+  MISMATCH L39 exp=ok got=err x1 :: local _3 = Combo3({ Value = q.Source(Enum.EasingStyle.Quad), Options = { Enum.Ea
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  mismatches=3 outbytes=4772
+## tree_cov / real_never
+  mismatches=0 outbytes=6824
+## tree_cov / real_view
+  MISMATCH L19 exp=ok got=err x1 :: local _1d: number = vA(c1:Compute(function(self: StateData<number>) return self:
+      -> Expected this to be 'number', but got 'unknown'
+  MISMATCH L21 exp=ok got=err x1 :: local function vN<T>(x: ViewNever<T>): T return x:Get() end
+      -> Expected this to be unreachable, but got
+  mismatches=2 outbytes=4191
+## tree_cov / real_825
+  MISMATCH L9 exp=ok got=err x1 :: out1(q.Source(""))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  mismatches=1 outbytes=5314
+## tree_stflat / real_body
+  MISMATCH L17 exp=ok got=err x1 :: local _a1s = idS(q.Source(1))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L31 exp=err got=ok :: local _l3 = D.TextLabel({ Text = src:Compute(function(self) return self:Get() en
+  MISMATCH L43 exp=ok got=err x1 :: sl:List(data, function(ctx) return D.TextLabel({ Text = "x" }) end, key)
+      -> Expected this to be
+  MISMATCH L56 exp=ok got=err x1 :: local _f1 = D.Frame({ q.PreRef(nil :: Frame?):Callback(function(inst) if inst th
+      -> Expected this to be
+  MISMATCH L76 exp=ok got=err x1 :: local _rad = Radio({ Value = q.Source("a"), Option = "b" })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  mismatches=5 outbytes=4066
+## tree_stflat / real_neg
+  MISMATCH L31 exp=err got=ok :: local _n5 = D.Frame({ Visible = num:Compute(function(self: StateData<number>) re
+  mismatches=1 outbytes=17899
+## tree_stflat / real_apply
+  MISMATCH L9 exp=err got=ok :: local bad1: State<string> = n:Apply(q.Operator.Sum(1)) -- EXPECT
+  MISMATCH L12 exp=err got=ok :: local bad2: number = n:Apply(f) -- EXPECT
+  mismatches=2 outbytes=0
+## tree_stflat / real_kitlike
+  MISMATCH L35 exp=ok got=err x1 :: local _1 = Radio1({ Value = scheme, Option = "Light" })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L36 exp=ok got=err x1 :: local _2 = Radio2({ Value = scheme, Option = "Light" })
+      -> Expected this to be
+  mismatches=2 outbytes=1891
+## tree_stflat / real_never
+  mismatches=0 outbytes=3545
+## tree_stflat / real_view
+  MISMATCH L19 exp=ok got=err x1 :: local _1d: number = vA(c1:Compute(function(self: StateData<number>) return self:
+      -> Expected this to be 'number', but got 'unknown'
+  MISMATCH L21 exp=ok got=err x1 :: local function vN<T>(x: ViewNever<T>): T return x:Get() end
+      -> Expected this to be unreachable, but got
+  mismatches=2 outbytes=4191
+## tree_stflat / real_825
+  MISMATCH L9 exp=ok got=err x1 :: out1(q.Source(""))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  mismatches=1 outbytes=5314
+## tree_flat / real_body
+  MISMATCH L31 exp=err got=ok :: local _l3 = D.TextLabel({ Text = src:Compute(function(self) return self:Get() en
+  MISMATCH L43 exp=ok got=err x1 :: sl:List(data, function(ctx) return D.TextLabel({ Text = "x" }) end, key)
+      -> Expected this to be
+  MISMATCH L56 exp=ok got=err x1 :: local _f1 = D.Frame({ q.PreRef(nil :: Frame?):Callback(function(inst) if inst th
+      -> Expected this to be
+  mismatches=3 outbytes=1794
+## tree_flat / real_neg
+  MISMATCH L31 exp=err got=ok :: local _n5 = D.Frame({ Visible = num:Compute(function(self: StateData<number>) re
+  mismatches=1 outbytes=4740
+## tree_flatov / real_body
+  MISMATCH L17 exp=ok got=err x6 :: local _a1s = idS(q.Source(1))
+      -> Expected this to be 'T', but got 'number'
+  MISMATCH L19 exp=ok got=err x6 :: local _a1l = idL(q.Source({ 1, 2 }))
+      -> Expected this to be exactly 'T', but got 'number'
+  MISMATCH L31 exp=err got=ok :: local _l3 = D.TextLabel({ Text = src:Compute(function(self) return self:Get() en
+  MISMATCH L43 exp=ok got=err x1 :: sl:List(data, function(ctx) return D.TextLabel({ Text = "x" }) end, key)
+      -> Expected this to be
+  MISMATCH L46 exp=ok got=err x1 :: local _s = listOf(q.Source({ "a" }), function(s: string) return s end)
+      -> Expected this to be
+  MISMATCH L56 exp=ok got=err x1 :: local _f1 = D.Frame({ q.PreRef(nil :: Frame?):Callback(function(inst) if inst th
+      -> Expected this to be
+  MISMATCH L69 exp=ok got=err x1 :: local _s2 = listOf2(q.Source({ "a" }), function(s: string) return s end)
+      -> Expected this to be
+  MISMATCH L83 exp=ok got=err x1 :: local _cmb = Combo({ Value = q.Source(Enum.EasingStyle.Quad), Options = { Enum.E
+      -> Expected this to be
+  MISMATCH L87 exp=ok got=err x6 :: local _sh = show(q.Source(3))
+      -> Expected this to be 'T', but got 'number'
+  MISMATCH L88 exp=ok got=err x2 :: local _shd = show(src:Compute(function(self: StateData<number>) return self:Get(
+      -> Expected this to be
+  mismatches=10 outbytes=14211
+## tree_flatov / real_neg
+  MISMATCH L31 exp=err got=ok :: local _n5 = D.Frame({ Visible = num:Compute(function(self: StateData<number>) re
+  mismatches=1 outbytes=7558
+
+# standalone variants (body files in variants/, header = <variant>.txt)
+## base / body2
+  MISMATCH L3 exp=ok got=err x1 :: local _a1 = (function<T>(x: State<T>): State<T> return x end)(c1)
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L5 exp=ok got=err x1 :: local _a1s = idS(mk(1))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L8 exp=ok got=err x1 :: Radio({ Value = mk("a"), Option = "b" })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L12 exp=ok got=err x1 :: Combo({ Value = mk(1), Options = { 1, 2 } })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L15 exp=ok got=err x53 :: takesState(mk(1))
+      -> Expected this to be
+  MISMATCH L25 exp=ok got=err x2 :: local ap: string = s:Apply(function(st) return tostring(st:Get()) end)
+      -> None of the overloads for function that accept 2 arguments are compatible.
+  MISMATCH L36 exp=err got=ok :: local d3: State<string> = s:Compute(function(self) return self:Get() + 1 end) --
+  MISMATCH L44 exp=ok got=err x1 :: local _gu = genericUse(s, function(n: number) return tostring(n) end)
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L46 exp=ok got=err x1 :: local srcAsState: State<number | string> = s
+      -> Expected this to be
+  mismatches=9 outbytes=132546
+## base / body3
+  mismatches=0 outbytes=0
+## base / body4
+  MISMATCH L4 exp=ok got=err x1 :: Combo1({ Value = mk(1), Options = { 1, 2 } })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L7 exp=ok got=err x1 :: Combo2({ Value = mk(1), Options = { 1, 2 } })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L10 exp=ok got=err x1 :: Combo3({ Value = mk(1), OnChange = function(_n: number) end })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  mismatches=3 outbytes=953
+## base / body5
+  mismatches=0 outbytes=33957
+## cf_any / body2
+  MISMATCH L34 exp=err got=ok :: local apBad: number = s:Apply(function(st) return tostring(st:Get()) end) -- EXP
+  MISMATCH L36 exp=err got=ok :: local d3: State<string> = s:Compute(function(self) return self:Get() + 1 end) --
+  mismatches=2 outbytes=6901
+## cf_any / body3
+  MISMATCH L3 exp=ok got=err x1 :: opt(mk(true))
+      -> Expected this to be
+  MISMATCH L7 exp=ok got=err x1 :: local _p: P = { Open = mk(true) }
+      -> Expected this to be
+  mismatches=2 outbytes=227
+## cf_applysimple / bodyS
+  mismatches=0 outbytes=0
+## cf_both / bodyS
+  mismatches=0 outbytes=0
+## cf_gen / body2
+  MISMATCH L28 exp=ok got=err x1 :: local gated: State<number> = s:Apply(blocker)
+      -> Expected this to be
+  MISMATCH L34 exp=err got=ok :: local apBad: number = s:Apply(function(st) return tostring(st:Get()) end) -- EXP
+  MISMATCH L36 exp=err got=ok :: local d3: State<string> = s:Compute(function(self) return self:Get() + 1 end) --
+  MISMATCH L39 exp=err got=ok :: local depBad: State<string> = s:Depend(c1) -- EXPECT
+  MISMATCH L45 exp=err got=ok :: local _guBad = genericUse(s, function(n: string) return n end) -- EXPECT
+  mismatches=5 outbytes=2367
+## cf_gen / body3
+  MISMATCH L3 exp=ok got=err x1 :: opt(mk(true))
+      -> Expected this to be
+  MISMATCH L7 exp=ok got=err x1 :: local _p: P = { Open = mk(true) }
+      -> Expected this to be
+  mismatches=2 outbytes=227
+## cf_noapply / bodyS
+  mismatches=0 outbytes=0
+## cf_nocompute / bodyS
+  MISMATCH L3 exp=ok got=err x4 :: local _a1s = idS(mk(1))
+      -> Expected this to be 'T', but got 'number'
+  MISMATCH L5 exp=ok got=err x4 :: local _a1 = idSt(mk(1))
+      -> Expected this to be 'T', but got 'number'
+  mismatches=2 outbytes=1054
+## cf_noobs / bodyS
+  MISMATCH L3 exp=ok got=err x5 :: local _a1s = idS(mk(1))
+      -> Expected this to be 'T', but got 'number'
+  MISMATCH L5 exp=ok got=err x5 :: local _a1 = idSt(mk(1))
+      -> Expected this to be 'T', but got 'number'
+  mismatches=2 outbytes=998
+## cf_obsnonopt / bodyS
+  MISMATCH L3 exp=ok got=err x7 :: local _a1s = idS(mk(1))
+      -> Expected this to be 'T', but got 'number'
+  MISMATCH L5 exp=ok got=err x7 :: local _a1 = idSt(mk(1))
+      -> Expected this to be 'T', but got 'number'
+  mismatches=2 outbytes=1422
+## cf_ov / body2
+  MISMATCH L5 exp=ok got=err x6 :: local _a1s = idS(mk(1))
+      -> Expected this to be 'T', but got 'number'
+  MISMATCH L12 exp=ok got=err x1 :: Combo({ Value = mk(1), Options = { 1, 2 } })
+      -> Expected this to be
+  MISMATCH L34 exp=err got=ok :: local apBad: number = s:Apply(function(st) return tostring(st:Get()) end) -- EXP
+  MISMATCH L36 exp=err got=ok :: local d3: State<string> = s:Compute(function(self) return self:Get() + 1 end) --
+  MISMATCH L39 exp=err got=ok :: local depBad: State<string> = s:Depend(c1) -- EXPECT
+  MISMATCH L45 exp=err got=ok :: local _guBad = genericUse(s, function(n: string) return n end) -- EXPECT
+  mismatches=6 outbytes=6078
+## cf_ov / body3
+  MISMATCH L3 exp=ok got=err x1 :: opt(mk(true))
+      -> Expected this to be
+  MISMATCH L7 exp=ok got=err x1 :: local _p: P = { Open = mk(true) }
+      -> Expected this to be
+  mismatches=2 outbytes=225
+## cf_union / body2
+  MISMATCH L34 exp=err got=ok :: local apBad: number = s:Apply(function(st) return tostring(st:Get()) end) -- EXP
+  MISMATCH L36 exp=err got=ok :: local d3: State<string> = s:Compute(function(self) return self:Get() + 1 end) --
+  mismatches=2 outbytes=4703
+## cf_union / body3
+  MISMATCH L3 exp=ok got=err x1 :: opt(mk(true))
+      -> Expected this to be
+  MISMATCH L7 exp=ok got=err x1 :: local _p: P = { Open = mk(true) }
+      -> Expected this to be
+  mismatches=2 outbytes=231
+## cf_union / body4
+  mismatches=0 outbytes=1612
+## cov_applyAnyRW_noT / body
+  MISMATCH L8 exp=ok got=err x1 :: local _a1s = idS(mk(1))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L27 exp=ok got=err x3 :: local d3: State<number> = s:Compute(function(self, prev) return (prev or 0) + se
+      -> Operator '+' could not be applied to operands of types (a & ~(false?)) | number and number; there is no corres
+  MISMATCH L30 exp=ok got=err x2 :: local ap: string = s:Apply(function(st) return tostring(st:Get()) end)
+      -> None of the overloads for function that accept 2 arguments are compatible.
+  mismatches=3 outbytes=10175
+## cov_applyAnyRW_noT / body5
+  MISMATCH L4 exp=ok got=err x2 :: local ok1: string = s:Apply(f)
+      -> None of the overloads for function that accept 2 arguments are compatible.
+  MISMATCH L6 exp=ok got=err x2 :: local ok2: string = s:Apply(function(st: State<number>): string return tostring(
+      -> None of the overloads for function that accept 2 arguments are compatible.
+  MISMATCH L9 exp=ok got=err x2 :: local ok3: State<number> = s:Apply(NumOp)
+      -> None of the overloads for function that accept 2 arguments are compatible.
+  mismatches=3 outbytes=1752
+## cov_applyGen / body
+  MISMATCH L8 exp=ok got=err x1 :: local _a1s = idS(mk(1))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L27 exp=ok got=err x3 :: local d3: State<number> = s:Compute(function(self, prev) return (prev or 0) + se
+      -> Operator '+' could not be applied to operands of types (a & ~(false?)) | number and number; there is no corres
+  mismatches=2 outbytes=10654
+## cov_applyGen / body5
+  MISMATCH L5 exp=err got=ok :: local bad1: number = s:Apply(f) -- EXPECT
+  MISMATCH L7 exp=err got=ok :: local bad2: number = s:Apply(function(st: State<number>): string return tostring
+  MISMATCH L10 exp=err got=ok :: local bad3: State<string> = s:Apply(NumOp) -- EXPECT
+  mismatches=3 outbytes=0
+## cov_applyMRW / body
+  MISMATCH L6 exp=ok got=err x1 :: local _a1 = id(c1)
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L8 exp=ok got=err x1 :: local _a1s = idS(mk(1))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L27 exp=ok got=err x3 :: local d3: State<number> = s:Compute(function(self, prev) return (prev or 0) + se
+      -> Operator '+' could not be applied to operands of types (a & ~(false?)) | number and number; there is no corres
+  MISMATCH L45 exp=ok got=err x1 :: local _n: number = useG(c1)
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  mismatches=4 outbytes=16166
+## cov_applyMRW / body5
+  mismatches=0 outbytes=13884
+## cov_applyM / body
+  MISMATCH L8 exp=ok got=err x1 :: local _a1s = idS(mk(1))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L27 exp=ok got=err x3 :: local d3: State<number> = s:Compute(function(self, prev) return (prev or 0) + se
+      -> Operator '+' could not be applied to operands of types (a & ~(false?)) | number and number; there is no corres
+  mismatches=2 outbytes=11942
+## cov_applyM / body5
+  MISMATCH L5 exp=err got=ok :: local bad1: number = s:Apply(f) -- EXPECT
+  MISMATCH L7 exp=err got=ok :: local bad2: number = s:Apply(function(st: State<number>): string return tostring
+  mismatches=2 outbytes=5627
+## cov_applyRW / body
+  MISMATCH L6 exp=ok got=err x1 :: local _a1 = id(c1)
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L8 exp=ok got=err x1 :: local _a1s = idS(mk(1))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L27 exp=ok got=err x3 :: local d3: State<number> = s:Compute(function(self, prev) return (prev or 0) + se
+      -> Operator '+' could not be applied to operands of types (a & ~(false?)) | number and number; there is no corres
+  MISMATCH L45 exp=ok got=err x1 :: local _n: number = useG(c1)
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  mismatches=4 outbytes=15785
+## cov_applyRW / body5
+  MISMATCH L10 exp=err got=ok :: local bad3: State<string> = s:Apply(NumOp) -- EXPECT
+  mismatches=1 outbytes=200
+## cov_applySD / body
+  MISMATCH L6 exp=ok got=err x1 :: local _a1 = id(c1)
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L8 exp=ok got=err x1 :: local _a1s = idS(mk(1))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L15 exp=ok got=err x12 :: takesState(mk(1))
+      -> Expected this to be
+  MISMATCH L27 exp=ok got=err x3 :: local d3: State<number> = s:Compute(function(self, prev) return (prev or 0) + se
+      -> Operator '+' could not be applied to operands of types (a & ~(false?)) | number and number; there is no corres
+  MISMATCH L45 exp=ok got=err x1 :: local _n: number = useG(c1)
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  mismatches=5 outbytes=21334
+## cov_applySD / body5
+  MISMATCH L5 exp=err got=ok :: local bad1: number = s:Apply(f) -- EXPECT
+  MISMATCH L7 exp=err got=ok :: local bad2: number = s:Apply(function(st: State<number>): string return tostring
+  mismatches=2 outbytes=11949
+## cov / body
+  MISMATCH L8 exp=ok got=err x1 :: local _a1s = idS(mk(1))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L27 exp=ok got=err x3 :: local d3: State<number> = s:Compute(function(self, prev) return (prev or 0) + se
+      -> Operator '+' could not be applied to operands of types (a & ~(false?)) | number and number; there is no corres
+  mismatches=2 outbytes=11460
+## cov / body2
+  MISMATCH L5 exp=ok got=err x1 :: local _a1s = idS(mk(1))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L8 exp=ok got=err x1 :: Radio({ Value = mk("a"), Option = "b" })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L12 exp=ok got=err x1 :: Combo({ Value = mk(1), Options = { 1, 2 } })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L34 exp=err got=ok :: local apBad: number = s:Apply(function(st) return tostring(st:Get()) end) -- EXP
+  MISMATCH L36 exp=err got=ok :: local d3: State<string> = s:Compute(function(self) return self:Get() + 1 end) --
+  MISMATCH L44 exp=ok got=err x1 :: local _gu = genericUse(s, function(n: number) return tostring(n) end)
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  mismatches=6 outbytes=17995
+## cov / body3
+  mismatches=0 outbytes=0
+## cov / body4
+  MISMATCH L4 exp=ok got=err x1 :: Combo1({ Value = mk(1), Options = { 1, 2 } })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L10 exp=ok got=err x1 :: Combo3({ Value = mk(1), OnChange = function(_n: number) end })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  mismatches=2 outbytes=705
+## cov / body5
+  MISMATCH L5 exp=err got=ok :: local bad1: number = s:Apply(f) -- EXPECT
+  MISMATCH L7 exp=err got=ok :: local bad2: number = s:Apply(function(st: State<number>): string return tostring
+  MISMATCH L10 exp=err got=ok :: local bad3: State<string> = s:Apply(NumOp) -- EXPECT
+  mismatches=3 outbytes=0
+## cov_noread / body
+  MISMATCH L6 exp=ok got=err x1 :: local _a1 = id(c1)
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L8 exp=ok got=err x1 :: local _a1s = idS(mk(1))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L15 exp=ok got=err x30 :: takesState(mk(1))
+      -> Expected this to be
+  MISMATCH L27 exp=ok got=err x3 :: local d3: State<number> = s:Compute(function(self, prev) return (prev or 0) + se
+      -> Operator '+' could not be applied to operands of types (a & ~(false?)) | number and number; there is no corres
+  MISMATCH L45 exp=ok got=err x1 :: local _n: number = useG(c1)
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  mismatches=5 outbytes=55025
+## cov_selfSD / body
+  MISMATCH L6 exp=ok got=err x1 :: local _a1 = id(c1)
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L8 exp=ok got=err x1 :: local _a1s = idS(mk(1))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L15 exp=ok got=err x26 :: takesState(mk(1))
+      -> Expected this to be
+  MISMATCH L27 exp=ok got=err x3 :: local d3: State<number> = s:Compute(function(self, prev) return (prev or 0) + se
+      -> Operator '+' could not be applied to operands of types (a & ~(false?)) | number and number; there is no corres
+  MISMATCH L30 exp=ok got=err x2 :: local ap: string = s:Apply(function(st) return tostring(st:Get()) end)
+      -> None of the overloads for function that accept 2 arguments are compatible.
+  MISMATCH L45 exp=ok got=err x1 :: local _n: number = useG(c1)
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L48 exp=ok got=err x1 :: takesRec({ Text = s:Compute(function(self) return tostring(self:Get()) end) })
+      -> Expected this to be
+  mismatches=7 outbytes=34522
+## covflat / body
+  MISMATCH L8 exp=ok got=err x6 :: local _a1s = idS(mk(1))
+      -> Expected this to be 'T', but got 'number'
+  MISMATCH L12 exp=ok got=err x6 :: local _a1l = idL(mk({ 1, 2 }))
+      -> Expected this to be exactly 'T', but got 'number'
+  MISMATCH L27 exp=ok got=err x3 :: local d3: State<number> = s:Compute(function(self, prev) return (prev or 0) + se
+      -> Operator '+' could not be applied to operands of types (a & ~(false?)) | number and number; there is no corres
+  mismatches=3 outbytes=3712
+## covflat / bodyS
+  MISMATCH L3 exp=ok got=err x6 :: local _a1s = idS(mk(1))
+      -> Expected this to be 'T', but got 'number'
+  MISMATCH L5 exp=ok got=err x6 :: local _a1 = idSt(mk(1))
+      -> Expected this to be 'T', but got 'number'
+  mismatches=2 outbytes=1378
+## sdonly / body
+  MISMATCH L6 exp=ok got=err x1 :: local _a1 = id(c1)
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L8 exp=ok got=err x1 :: local _a1s = idS(mk(1))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L12 exp=ok got=err x59 :: local _a1l = idL(mk({ 1, 2 }))
+      -> Expected this to be exactly
+  MISMATCH L15 exp=ok got=err x48 :: takesState(mk(1))
+      -> Expected this to be exactly
+  MISMATCH L27 exp=ok got=err x3 :: local d3: State<number> = s:Compute(function(self, prev) return (prev or 0) + se
+      -> Operator '+' could not be applied to operands of types (a & ~(false?)) | number and number; there is no corres
+  MISMATCH L45 exp=ok got=err x1 :: local _n: number = useG(c1)
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  mismatches=6 outbytes=65190
+## stflat / body2
+  MISMATCH L5 exp=ok got=err x1 :: local _a1s = idS(mk(1))
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L8 exp=ok got=err x1 :: Radio({ Value = mk("a"), Option = "b" })
+      -> No valid instantiation could be inferred for generic type parameter T. It was expected to be at least:
+  MISMATCH L34 exp=err got=ok :: local apBad: number = s:Apply(function(st) return tostring(st:Get()) end) -- EXP
+  MISMATCH L36 exp=err got=ok :: local d3: State<string> = s:Compute(function(self) return self:Get() + 1 end) --
+  mismatches=4 outbytes=8520
+## stflat / body3
+  mismatches=0 outbytes=0
+## stflat / body4
+  mismatches=0 outbytes=3349
+## stflat / body5
+  MISMATCH L5 exp=err got=ok :: local bad1: number = s:Apply(f) -- EXPECT
+  MISMATCH L7 exp=err got=ok :: local bad2: number = s:Apply(function(st: State<number>): string return tostring
+  MISMATCH L10 exp=err got=ok :: local bad3: State<string> = s:Apply(NumOp) -- EXPECT
+  mismatches=3 outbytes=0
+
+# member bisect (variants/bisect): count of 'No valid instantiation' per file
+min0: 2
+bis_Apply: 2
+bis_Compute: 2
+bis_Depend: 2
+bis_Gate: 2
+bis_Observer: 2
+add_Apply: 2
+add_Compute: 2
+add_Depend: 2
+add_Gate: 2
+add_Observer: 2
+add_none: 2
