@@ -89,17 +89,18 @@ do
 end
 
 print()
-print("=== 6. Tag — 자기를 담은 리스트는 도메인 메시지(hunt F 7) ===")
+print("=== 6. Tag — 중첩 리스트는 깊이 제한 없이 펼친다; 자기를 담은 리스트는 정의되지 않음(round14 Q176 (a) — hunt F 7의 깊이 64 가드 Quad0201 퇴역) ===")
 do
 	local q = mock.newQuad()
+	assert(q.Tag("a", { "b", { "c" } }):Contains("c"), "nested lists flatten")
+	local deep: any = { "deep" }
+	for _ = 1, 100 do deep = { deep } end
+	assert(q.Tag(deep):Contains("deep"), "a list nested past the old 64-level guard flattens")
+	-- observed — not a contract (undefined, round3 Q28): a list that contains itself recurses until a stack overflow
 	local t = {}
 	t[1] = t
-	local err = failsWith(function() return q.Tag(t) end, "this list nests deeper than 64 levels (does it contain itself?)", "self-containing list")
-	mock.assertBlamesUser(err, "spec.inputgates.luau", "Tag cycle gate blames the caller")
-	assert(q.Tag("a", { "b", { "c" } }):Contains("c"), "nested lists still flatten after the guard")
-	for _ = 1, 200 do -- depth is per call, not accumulated module state (re-check found the counter drifting)
-		assert(q.Tag({ { { "deep" } } }):Contains("deep"), "repeated nested Tags never trip the depth guard")
-	end
+	local ok, err = pcall(function() return q.Tag(t) end)
+	assert(not ok and not string.find(tostring(err), "Quad0201", 1, true), "observed: no domain error any more (" .. tostring(err) .. ")")
 	print("PASS")
 end
 

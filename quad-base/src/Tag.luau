@@ -91,7 +91,7 @@ end
 -- reject a `{Tag | string}` literal — spike 2026-09-07). Hash tables slip past
 -- the type (a table without an indexer satisfies an indexer type), so this
 -- runtime gate is the one that names them.
-local function flattenInto(target: { [string]: true }, v: any, depth: number)
+local function flattenInto(target: { [string]: true }, v: any)
 	if type(v) == "string" then
 		addName(target, v)
 	elseif isTag(v) then
@@ -107,13 +107,10 @@ local function flattenInto(target: { [string]: true }, v: any, depth: number)
 				SURFACE
 			)
 		end
-		-- [2026-09-16 hunt F] a list that contains itself recursed to a raw stack overflow with
-		-- `Brand.luau` on the blame line; every other bad list shape here has a domain message
-		-- depth travels as a parameter, not module state — a counter that only reset on error
-		-- would drift upward across normal calls (hunt F 재검) and misfire on the 64th
-		if depth > 64 then
-			Err.errorBeforeNearest("Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those - this list nests deeper than 64 levels (does it contain itself?)", SURFACE)
-		end
+		-- [2026-10-06 user decision, round14 Q176 (a) — back to round3 Q28] a list that contains
+		-- itself (`t[1] = t`) is undefined: it recurses until a stack overflow. The 2026-09-16 hunt F
+		-- depth-64 guard (`Quad0201`, retired) was removed — "스택 오버는 다른 곳에서도 방어 안 했음";
+		-- a recursive cycle gets no limit (round14 Q172 principle, user decision 2026-10-06).
 		local count, maxIndex = 0, 0
 		for k, item in pairs(v :: { [any]: any }) do
 			if type(k) ~= "number" or k % 1 ~= 0 or k < 1 then
@@ -123,7 +120,7 @@ local function flattenInto(target: { [string]: true }, v: any, depth: number)
 			if k > maxIndex then
 				maxIndex = k
 			end
-			flattenInto(target, item, depth + 1)
+			flattenInto(target, item)
 		end
 		if count ~= maxIndex then
 			Err.errorBeforeNearest("Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those - a name list cannot have nil holes", SURFACE)
@@ -144,7 +141,7 @@ end
 function TagImpl.Added(self: any, nameOrList: any): any
 	local names = table.clone(self._names)
 	if nameOrList ~= nil then
-		flattenInto(names, nameOrList, 1)
+		flattenInto(names, nameOrList)
 	end
 	return newTag(names)
 end
@@ -154,7 +151,7 @@ function TagImpl.Removed(self: any, nameOrList: any): any
 	-- no-op and `nil` a VM "table index is nil" blaming this file
 	local toRemove: { [string]: true } = {}
 	if nameOrList ~= nil then
-		flattenInto(toRemove, nameOrList, 1)
+		flattenInto(toRemove, nameOrList)
 	end
 	local names = table.clone(self._names)
 	for name in pairs(toRemove) do
@@ -209,7 +206,7 @@ local Tag = setmetatable({}, {
 		for i = 1, select("#", ...) do
 			local v = select(i, ...)
 			if v ~= nil then
-				flattenInto(names, v, 1)
+				flattenInto(names, v)
 			end
 		end
 		return newTag(names)
@@ -226,7 +223,7 @@ function Tag.Merged(...: any): any
 		if not isTag(tag) then
 			Err.errorBeforeNearest("Quad0207 Tag.Merged: arguments must be Tag values", SURFACE)
 		end
-		flattenInto(names, tag, 1) -- the Tag arm of the one door (round3 §9 `H-461` — was a second spelling via :Names())
+		flattenInto(names, tag) -- the Tag arm of the one door (round3 §9 `H-461` — was a second spelling via :Names())
 	end
 	return newTag(names)
 end

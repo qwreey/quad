@@ -301,6 +301,13 @@ do
 		assert(not ok, "rejected: " .. label)
 		mock.assertBlamesUser(err, SPEC_FILE, "As<Class> " .. label)
 	end
+	-- round14 (2026-10-02): the ancestry walk caches POSITIVE answers only — a cast refused before an edge
+	-- exists passes once DefineSubtype adds it (a cached "no" would refuse it forever); a repeated pass stays a pass
+	local Late = Modifier.TypedFactory("SpecLateChild")
+	assert(not pcall(function() return R.Gui():AsSpecLateChild() end), "no edge yet: refused")
+	Modifier.DefineSubtype("SpecGuiObject", "SpecLateChild")
+	assert(R.Gui():AsSpecLateChild().__quadModifier == "SpecLateChild", "edge added: the same cast now passes")
+	assert(R.Gui():AsSpecLateChild().__quadModifier == "SpecLateChild" and Late().__quadModifier == "SpecLateChild", "cached pass")
 	print("PASS")
 end
 

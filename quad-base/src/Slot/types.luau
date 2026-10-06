@@ -38,7 +38,6 @@ export type SlotInternal = {
 	-- Elements.luau
 	destroyElement: (element: any) -> (),
 	wrapElement: (v: any, raise: (string, any) -> ()) -> any,
-	checkRawElement: (v: any, raise: (string, any) -> ()) -> (), -- [2026-09-16] raw gate shared with prepareElements (State occupants)
 	unwrapElement: (el: any) -> any,
 	collectLeaves: (slot: any, out: { any }?) -> { any },
 	leavesOf: (element: any) -> { any },

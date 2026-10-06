@@ -101,6 +101,17 @@ local function checkRetractorShape(h: Handler, k: any, index: number, retractor:
 	end
 end
 
+-- round14 debug detector 3 (user decision 2026-10-06 — replaces the `H-877` callback block, Q166 direction):
+-- `process` on an instance the backend does not hold as claimed — destroyed (by `q.dispose` or outside
+-- quad) or never made by quad — is undefined: handlers may still run on the corpse (a Tween's `Started`
+-- whose `Completed`/`Cancelled` never comes). With `q.debug` on, one line per `process` call; the call goes
+-- on unchanged. `drive` reaches every key through `process`, so this one place covers both.
+local function checkClaimedTarget(inst: any, k: any, isClaimed: (any) -> boolean)
+	if inst ~= nil and not isClaimed(inst) then
+		print(`Dispatch: process on an instance that is not claimed by quad (destroyed - by q.dispose or outside quad - or not made by quad) at key {tostring(k)} - what the handlers do there is undefined; build a new instance`)
+	end
+end
+
 -- `H-470` props gate: the one Quad0083 literal — `drive`'s O(1) check and the debug scan below both raise it.
 local function propsNotPlainMessage(what: string): string
 	return `Quad0083 Dispatch.drive: props must be a plain \{ ... \} table - a quad value needs the braces (got {what})`
@@ -246,27 +257,34 @@ local function Init(module: any)
 	-- `Dispatch.process`, a delegating handler), so naming one function (`drive:` in
 	-- `H-494`, `process:` in K-3) was wrong for the others. The blame line already says
 	-- where the user entered.
+	-- [2026-10-06 user decision, round14 Q161·Q182 (a)] the cause sentence: a value that belongs to the
+	-- `q.Protocols.DispatchHint` capability brand is asked once (`v:__dispatchHint(k)` — each brand says
+	-- what it is for: Store / Context / Provider / Blocker / AttrKey in quad-base, Tween in quad-roblox);
+	-- nil → the generic tail. Not wrapped (a throwing hook is undefined, like the Bindable hooks); runs only
+	-- while building this error (zero cost on the normal path). The old per-name branches here (Store,
+	-- Context/Provider) moved into those brands — Dispatch names no core object (`H-278`).
 	local function noMatchMessage(k: any, v: any): string
 		local names = brandNamesOf(v)
 		local brand = if #names > 0 then table.concat(names, ", ") else nil
-		-- [2026-10-01 user decision] a hit on ANY registered predicate means the brand's owner is installed
-		-- (base always; a provider registers at install), so "provider not initialized" can only fit a value
-		-- that carries no registered brand (round11 `H-567` / `H-613` asked this for base brands one by one —
-		-- a provider brand such as Tween got the wrong hint until the registration became the test).
-		-- round13 Q90 ⑩ (user decision 2026-09-28): at a string key an unbranded value misses for two
-		-- reasons we cannot tell apart here without asking the handler list — name both, neutral wording
-		-- (base knows no engine terms). A provider IS installed in the common case, so the provider-only
-		-- hint pointed the wrong way for `size` / `AbsoluteSize`.
-		local contextName = if table.find(names, "Context") then "Context" elseif table.find(names, "Provider") then "Provider" else nil
-		local hint = if brand == nil and type(k) == "string"
+		local hint: any = nil
+		if module.Protocols.DispatchHint:Is(v) then
+			hint = v:__dispatchHint(k)
+		end
+		-- The generic tail. [2026-10-01 user decision] a hit on ANY registered predicate means the brand's
+		-- owner is installed (base always; a provider registers at install), so "provider not initialized"
+		-- can only fit a value that carries no registered brand (round11 `H-567` / `H-613`). round13 Q90 ⑩
+		-- (user decision 2026-09-28): at a string key an unbranded value misses for two reasons we cannot
+		-- tell apart here without asking the handler list — name both, neutral wording (base knows no engine
+		-- terms). A provider IS installed in the common case, so the provider-only hint pointed the wrong
+		-- way for `size` / `AbsoluteSize`.
+		local tail = if hint ~= nil then " - " .. hint
+			elseif brand == nil and type(k) == "string"
 			then " - this key may not be a field of this element (a typo, a read-only field, or one from another class), or the provider that handles it (e.g. quad-roblox) is not initialized"
 			elseif brand == nil
 			then " - check that the provider for this value (e.g. quad-roblox) is initialized"
-			elseif table.find(names, "Store") then " - a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))" -- 탐사 I′ 3
-			elseif contextName ~= nil then ` - a {contextName} is not a value for any key: read the value you need out of it first` -- round13 E80 (the old hint sent it to a numeric slot, which raises Quad0076 again)
 			elseif type(k) == "string" then " - a quad value at a string key: it belongs in a numeric (array) slot"
 			else " - this quad value has no handler at an array position"
-		return `Quad0076 Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})` .. hint
+		return `Quad0076 Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}{if brand then `, brand: {brand}` else ""})` .. tail
 			-- `H-257`: a nil here often started life as the None sentinel (NoneHandler
 			-- recursion erases the provenance) — say so, or the user is told they
 			-- passed the one value None exists to be distinguishable from
@@ -346,9 +364,10 @@ local function Init(module: any)
 	-- new inst-shape check this round doesn't introduce.
 	-- The one exception to "no side effects": with `module.debug` on, the scan also asks the
 	-- `debugOnly` handlers, whose `isHandlable` may print a diagnostic (`DebugKeyFilter.luau`).
-	local function getHandler(inst: any, k: any, v: any): Handler?
-		checkInst("getHandler", inst)
-		checkKey("getHandler", k)
+	-- [2026-10-06 user decision, round14 Q168 (a)] the scan body without the gates — `process` already
+	-- ran `checkInst`/`checkKey` on the same arguments, so it calls this directly; the public
+	-- `getHandler` below keeps its own gates (`H-603`). Untagged local (no blame role).
+	local function scanHandler(inst: any, k: any, v: any): Handler?
 		local kt = type(k)
 		local set = if module.debug then debugBuckets else buckets -- the one `debugOnly` branch on the hot path
 		local list = if kt == "number" then set.number elseif kt == "string" then set.string else set.other
@@ -359,6 +378,11 @@ local function Init(module: any)
 		end
 		return nil
 	end
+	local function getHandler(inst: any, k: any, v: any): Handler?
+		checkInst("getHandler", inst)
+		checkKey("getHandler", k)
+		return scanHandler(inst, k, v)
+	end
 
 	local function retractFrom(inst: any, k: any, index: number)
 		checkInst("retractFrom", inst)
@@ -368,6 +392,7 @@ local function Init(module: any)
 	end
 
 	local function process(inst: any, k: any, v: any, index: number)
+		if module.debug then checkClaimedTarget(inst, k, module.Backend.isClaimed) end -- detector 3 (debug-only, file head)
 		checkInst("process", inst)
 		checkKey("process", k)
 		checkIndex("process", index)
@@ -394,7 +419,7 @@ local function Init(module: any)
 		end
 
 		local slot = list[index]
-		local matched = getHandler(inst, k, v)
+		local matched = scanHandler(inst, k, v) -- gates already ran above (Q168 (a))
 		if matched == nil then
 			-- `H-219`/`H-231`: outermost scan — climbs every wrapper (drive, a
 			-- delegating handler, later the M5 pipeline) to the user's entry.

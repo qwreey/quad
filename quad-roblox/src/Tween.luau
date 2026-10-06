@@ -114,6 +114,17 @@ local function install(quad: any): any
 		local t = rawget(self, "Time")
 		return `Tween({tostring(rawget(self, "Value"))}{if type(t) == "number" then `, {t}s` else ""})`
 	end
+	-- round14 Q161·Q182 (a) (user decision 2026-10-06): the `q.Protocols.DispatchHint` hook — a Tween at a
+	-- string key no handler takes is almost always a key that is not a writable property of this element
+	-- (the 10-01 "belongs in a numeric slot" hint sent it to an array slot, where it raised again). At a
+	-- numeric key: nil → the generic tail.
+	function TweenImpl.__dispatchHint(_self: any, key: any): string?
+		if type(key) == "string" then
+			return "this key may not be a field of this element (a typo, a read-only field, or one from another class)"
+		end
+		return nil
+	end
+	local DispatchHint = quad.Protocols.DispatchHint -- members register at creation (newTween)
 
 	-- Option fields only (everything but Value). Shared with `Animate.luau`, which runs it
 	-- EAGERLY on the literal (non-State) options at `Animate(info)` time — the lazy Compute
@@ -182,6 +193,7 @@ local function install(quad: any): any
 		validate(opts, raise)
 		local self: any = setmetatable(table.clone(opts), TweenImpl)
 		TweenBrand:Register(self)
+		DispatchHint:Register(self)
 		return table.freeze(self)
 	end
 

@@ -585,16 +585,22 @@ do
 	assert(not pcall(function() s:Splice(n, 3) end), "removeCount past the end rejected")
 	assert(not pcall(function() s:Splice(1, -1) end), "negative removeCount rejected")
 
-	-- pre-pass: the LAST new element is bad → nothing at all changes (H-30/H-31)
+	-- pre-pass = the wrapElement type gate (H-30/H-31): a bad TYPE anywhere in the batch → nothing changes
 	local p, mountedElsewhere = Instance.new("Frame"), Instance.new("Frame")
+	local before = childCount(parent)
+	assert(not pcall(function() s:Splice(1, 0, p, nil, p) end), "nil hole in the vararg rejected")
+	assert(not pcall(function() s:Splice(1, 1, p, q.Ref()) end), "handler-layer value in the batch rejected")
+	assert(childCount(parent) == before and s:Get(1) == a and p.Parent == nil, "type gate: untouched")
+	-- [2026-10-06 round14 Q170 (최종)] an element held elsewhere / twice in the call is caught by rawAdd's
+	-- claimOwner mid-batch (no pre-pass owner scan): still rejected; the state after the raise is observed,
+	-- not a contract (architecture "예외 안전성 계약") — so only the rejection is asserted here
 	local other = Slot(); other:Add(mountedElsewhere)
 	dispatch.drive(Instance.new("Folder"), { other })
-	local before = childCount(parent)
-	assert(not pcall(function() s:Splice(1, 1, p, mountedElsewhere) end), "mounted element in the batch rejected")
-	assert(childCount(parent) == before and s:Get(1) == a and p.Parent == nil, "half-applied state prevented")
-	assert(not pcall(function() s:Splice(1, 0, p, p) end), "duplicate within the batch rejected")
-	assert(not pcall(function() s:Splice(1, 0, p, nil, p) end), "nil hole in the vararg rejected")
-	assert(childCount(parent) == before, "still untouched")
+	local okM, errM = pcall(function() s:Splice(1, 1, p, mountedElsewhere) end)
+	assert(not okM and string.find(tostring(errM), "Quad0172", 1, true), "mounted element in the batch rejected: " .. tostring(errM))
+	local sd, p2 = Slot(), Instance.new("Frame")
+	local okD, errD = pcall(function() sd:Splice(1, 0, p2, p2) end)
+	assert(not okD and string.find(tostring(errD), "Quad0170", 1, true), "duplicate within the batch (debug off): claimOwner's Quad0170: " .. tostring(errD))
 	print("PASS")
 end
 
@@ -696,18 +702,29 @@ do
 	s:Add(Instance.new("Frame"))
 	assert(s.Length:Get() == 3 and childCount(parent) == 3, "bookkeeping still alive after the rejected Splice")
 
-	-- (b) State elements: the same State twice, or a State whose current value
-	-- is mounted elsewhere, are rejected BEFORE any mutation (raw-value checks)
+	-- (b) State elements: [2026-10-06 round14 Q170 (최종)] the pre-pass no longer reads a State element's
+	-- current value (lazy — checked when the wrapper settles it, here at once since `s` is mounted). The
+	-- same State twice in one call: with q.debug on the in-call duplicate check rejects it at the CRUD line
+	-- before any mutation (values as given, no :Get()); with it off the second wrapper's settle meets the
+	-- first one's claim — `Quad0156` (the state after that raise is observed, not a contract)
 	local f = Instance.new("Frame")
 	local st = q.Source(f)
-	assert(not pcall(function() s:Splice(1, 0, st, st) end), "same State twice rejected")
-	assert(#s._elements == 3 and childCount(parent) == 3, "no half-applied wrapper")
-	local elsewhere = Slot(); elsewhere:Add(st)
+	q.debug = true
+	local okDup, errDup = pcall(function() s:Splice(1, 0, st, st) end)
+	q.debug = false
+	assert(not okDup and string.find(tostring(errDup), "Quad0171", 1, true), "debug: same State twice rejected: " .. tostring(errDup))
+	mock.assertBlamesUser(errDup, "spec.slot.luau", "debug Quad0171 blames the CRUD line")
+	assert(#s._elements == 3 and childCount(parent) == 3, "debug: nothing mutated")
+	local sOff = Slot(); dispatch.drive(Instance.new("Folder"), { sOff })
+	local okOffDup, errOffDup = pcall(function() sOff:Splice(1, 0, st, st) end)
+	assert(not okOffDup and string.find(tostring(errOffDup), "Quad0156", 1, true), "debug off: the mount-time claim rejects it: " .. tostring(errOffDup))
+	local f2 = Instance.new("Frame")
+	local st2 = q.Source(f2)
+	local elsewhere = Slot(); elsewhere:Add(st2)
 	dispatch.drive(Instance.new("Folder"), { elsewhere })
-	assert(f.Parent ~= nil, "st's value mounted elsewhere")
-	assert(not pcall(function() s:Add(st) end), "Add(State) whose value is mounted elsewhere rejected")
-	assert(not pcall(function() s:Splice(1, 0, Instance.new("Frame"), st) end), "…and inside a Splice batch")
-	assert(#s._elements == 3 and childCount(parent) == 3, "still untouched")
+	assert(f2.Parent ~= nil, "st2's value mounted elsewhere")
+	local okEl, errEl = pcall(function() s:Add(st2) end)
+	assert(not okEl and string.find(tostring(errEl), "Quad0156", 1, true), "Add(State) whose value is mounted elsewhere: rejected when the wrapper settles it: " .. tostring(errEl))
 
 	-- (c) nested Slot extracted, mutated while unmounted, re-added: Length and
 	-- sibling offsets come from the CURRENT elements, not the old mount's N
@@ -767,28 +784,44 @@ end
 print()
 print("=== 23. 회신 반영 리뷰(H6-24) — 점유자 단위 dedup: 같은 Instance를 든 State 둘·raw+State, 마운트 전 aliasing, 미실체화 Extract(i,new)의 래퍼 반납 ===")
 do
-	-- (a) two States over one instance inside one Splice: rejected in the
-	-- pre-pass (no half-applied array, gate not left On)
+	-- [2026-10-06 round14 Q170 (최종)] the occupant-level dedup of the pre-pass (`H6-24`: scan of the
+	-- existing elements + a State element's `:Get()`) is gone — lazy model. Two States over one instance
+	-- are caught when the wrappers settle (mount, or at once on a mounted Slot) by `claimOwner`'s
+	-- mount-time `Quad0156`; the state after that raise is observed, not a contract.
+	-- (a) on a mounted Slot: rejected inside the CRUD call (the wrapper settles at once)
 	local s = Slot()
 	s:Add(Instance.new("Frame"))
 	local parent = Instance.new("Folder")
 	dispatch.drive(parent, { s })
 	local f = Instance.new("Frame")
-	assert(not pcall(function() s:Splice(2, 0, q.Source(f), q.Source(f)) end), "two States over one instance rejected")
-	assert(not pcall(function() s:Splice(2, 0, f, q.Source(f)) end), "raw + State over the same instance rejected")
-	assert(#s._elements == 1 and childCount(parent) == 1 and not (q.Bookkeeping :: any)._getBlocker(s).Blocking, "nothing mutated, gate open")
-	s:Add(Instance.new("Frame"))
-	assert(s.Length:Get() == 2, "still reactive")
+	local okA1, errA1 = pcall(function() s:Splice(2, 0, q.Source(f), q.Source(f)) end)
+	assert(not okA1 and string.find(tostring(errA1), "Quad0156", 1, true), "two States over one instance rejected: " .. tostring(errA1))
+	assert(string.find(tostring(errA1), "two elements that became the same Instance", 1, true), "Quad0156 names the mount-time cause: " .. tostring(errA1))
+	local s2 = Slot(); dispatch.drive(Instance.new("Folder"), { s2 })
+	local f2 = Instance.new("Frame")
+	local okA2, errA2 = pcall(function() s2:Splice(1, 0, f2, q.Source(f2)) end)
+	assert(not okA2 and string.find(tostring(errA2), "Quad0156", 1, true), "raw + State over the same instance rejected: " .. tostring(errA2))
 
-	-- (b) aliasing States added BEFORE mount (materializeSlotTree variant):
-	-- the second Add already sees the first wrapper's occupant
-	local u = Slot()
-	local g = Instance.new("Frame")
-	u:Add(q.Source(g))
-	assert(not pcall(function() u:Add(q.Source(g)) end), "second State over the same instance rejected before mount")
-	local up = Instance.new("Folder")
-	dispatch.drive(up, { u })
-	assert(childCount(up) == 1 and u.Length:Get() == 1, "mounts cleanly")
+	-- (b) aliasing States added BEFORE mount: the Adds pass (no :Get() — a lazy State element is not
+	-- read at the CRUD line, debug or not), the mount raises `Quad0156` with the mount-time cause
+	for _, dbg in { false, true } do
+		q.debug = dbg
+		local u = Slot()
+		local g = Instance.new("Frame")
+		u:Add(q.Source(g))
+		u:Add(q.Source(g))
+		q.debug = false
+		local okB, errB = pcall(function() dispatch.drive(Instance.new("Folder"), { u }) end)
+		assert(not okB and string.find(tostring(errB), "Quad0156", 1, true), "debug=" .. tostring(dbg) .. ": the mount rejects it: " .. tostring(errB))
+	end
+	-- a lazy Compute element is not run by the CRUD line (the pre-pass reads no State value; with q.debug
+	-- on, the round14 Q173 value-chain walk in wrapElement still reads it — not asserted here)
+	local runs = 0
+	local src = q.Source(1)
+	local lazyEl = src:Compute(function(_v) runs += 1; return Instance.new("Frame") end)
+	local lazySlot = Slot()
+	lazySlot:Add(lazyEl)
+	assert(runs == 0, "Add(Compute) does not run the Compute fn before mount: " .. runs)
 
 	-- (c) unmaterialized Extract(i, new) on a previously mounted nested Slot
 	-- releases the outgoing sugar wrapper's claim
@@ -883,7 +916,7 @@ end
 
 
 print()
-print("=== 26. 자문 RFC(2026-09-08) — Clear/ExtractAll은 배치 한 번의 recompute(H-479), IndexOf는 역맵 경유·State 요소는 언랩 폴백(H-481), List의 KeyGone 사이클(H-480 clone 제거, H-485 증분 집합 유지) ===")
+print("=== 26. 자문 RFC(2026-09-08) — Clear/ExtractAll은 배치 한 번의 recompute(H-479), IndexOf는 역맵 경유·State 요소는 언랩 폴백(H-481), List의 KeyGone 사이클(H-480 clone 제거, 2026-10-02 사이클 끝 교체로 되돌림) ===")
 do
 	local s = Slot()
 	local a, b, c = Instance.new("Frame"), Instance.new("Frame"), Instance.new("Frame")
@@ -940,7 +973,7 @@ do
 	s4:Clear()
 	assert(#s4._elements == 0 and out3[1].Parent == nil, "unmaterialized Clear")
 
-	-- :List KeyGone across cycles still works with the prevKeys swap (`H-480`):
+	-- :List KeyGone across cycles works with the cycle-end `prevKeys = seen` swap (`H-480`, restored 2026-10-02):
 	-- a key gone in cycle 2 is asked once, and not again in cycle 3
 	local data = q.Source({ { id = "a" }, { id = "b" } })
 	local gone = {}
@@ -1045,10 +1078,20 @@ do
 	root:Move(5, 2); checkLayout("mounted move up")
 	root:Swap(1, 6); checkLayout("mounted swap")
 	root:Get(3):Add(mock.Instance.new("Frame")); checkLayout("nested add after permutation") -- gatedRecompute via indexOfElement
+	-- [2026-10-06 round14 Q170 (최종)] `Slot{ a, a }`: debug off → the second rawAdd's claimOwner (`Quad0170`,
+	-- the same raise as `Add(a); Add(a)`); debug on → the in-call duplicate check (`Quad0171`). Both blame the user
 	local a = mock.Instance.new("Frame")
 	local ok, err = pcall(function() return q2.Slot({ a, a }) end)
-	assert(not ok and string.find(tostring(err), "Slot: the same element appears twice", 1, true) ~= nil, "constructor duplicate still caught: " .. tostring(err))
-	mock.assertBlamesUser(err, "spec.slot.luau", "constructor pre-pass blame")
+	assert(not ok and string.find(tostring(err), "Quad0170 Slot: this element is already in this Slot", 1, true) ~= nil, "constructor duplicate caught by claimOwner: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.slot.luau", "constructor claimOwner blame")
+	local okSame, errSame = pcall(function() local s3 = q2.Slot(); local a3 = mock.Instance.new("Frame"); s3:Add(a3); s3:Add(a3) end)
+	assert(not okSame and string.find(tostring(errSame), "Quad0170", 1, true) ~= nil, "Add(a); Add(a) is the same raise: " .. tostring(errSame))
+	q2.debug = true
+	local a2 = mock.Instance.new("Frame")
+	local okDbg, errDbg = pcall(function() return q2.Slot({ a2, a2 }) end)
+	q2.debug = false
+	assert(not okDbg and string.find(tostring(errDbg), "Quad0171 Slot: the same element appears twice", 1, true) ~= nil, "debug: in-call duplicate check: " .. tostring(errDbg))
+	mock.assertBlamesUser(errDbg, "spec.slot.luau", "constructor pre-pass blame (debug)")
 	local big = {}
 	for i = 1, 300 do big[i] = mock.Instance.new("Frame") end
 	local s2 = q2.Slot(big)
@@ -1073,51 +1116,45 @@ do
 	assert(not ok2 and string.find(tostring(err2), "not claimed", 1, true) ~= nil, "constructor pre-pass hits the same gate: " .. tostring(err2))
 	local ok3, err3 = pcall(function() return s:Splice(2, 0, foreign) end)
 	assert(not ok3 and string.find(tostring(err3), "not claimed", 1, true) ~= nil, "Splice hits the same gate: " .. tostring(err3))
-	-- code-review: a State whose current value is unclaimed must fail in the pre-pass, not after rawAdd
-	local ok4, err4 = pcall(function() return s:Add(q3.Source(foreign)) end)
-	assert(not ok4 and string.find(tostring(err4), "not claimed", 1, true) ~= nil, "State-wrapped unclaimed occupant rejected: " .. tostring(err4))
-	assert(#s._elements == 1, "no ghost element after the rejected State Add (unmounted: Length stays 0 by design)")
-	assert(string.find(tostring(err4), "Slot: this element is not claimed", 1, true) ~= nil, "one message form for raw and State paths: " .. tostring(err4))
+	-- [2026-10-06 round14 Q170 (최종)] a State whose current value is unclaimed: checked when the wrapper
+	-- settles it (lazy — the 2026-09-16 pre-pass `:Get()` was reverted); unmounted, the Add passes and the
+	-- mount raises with the same message form as the raw path
+	local u = q3.Slot()
+	u:Add(q3.Source(foreign))
+	local ok4, err4 = pcall(function() q3.Dispatch.drive(mock.Instance.new("Frame"), { u }) end)
+	assert(not ok4 and string.find(tostring(err4), "Slot: this element is not claimed", 1, true) ~= nil, "State-wrapped unclaimed occupant rejected at mount (one message form): " .. tostring(err4))
 	print("PASS")
 end
 
 print()
-print("=== 30. State 요소의 현재값도 pre-pass 게이트(hunt A) — 마운트 전후 모두 삽입 전에 거부, Replace는 옛 요소를 살려 둔다 ===")
+print("=== 30. State 요소의 현재값은 래퍼가 정착시킬 때 검사(round14 Q170 최종 — 2026-09-16 hunt A pre-pass 되돌림): 마운트된 Slot은 그 CRUD 호출 안에서, 마운트 전은 마운트 때 ===")
 do
 	local q4 = mock.newQuad()
 	local host = mock.Instance.new("Frame")
-	-- mounted
+	-- mounted: the wrapper settles at once, so the CRUD call raises (outermost — reconcile depth); the state
+	-- after the raise is observed, not a contract (not asserted)
 	local s = q4.Slot({ mock.Instance.new("Frame") })
 	q4.Dispatch.drive(host, { s })
-	local badSrc = q4.Source(42 :: any)
-	local ok, err = pcall(function() return s:Add(badSrc) end)
-	assert(not ok and string.find(tostring(err), "Slot: this backend cannot mount this value", 1, true) ~= nil, "State holding a non-element rejected in the pre-pass (same message as the raw path): " .. tostring(err))
-	-- None in a State is the absent element (H-467/Q30) — accepted like nil, not rejected by the None arm (code-review)
-	local noneSrc = q4.Source(q4.None :: any)
-	assert(s:Add(noneSrc) == 2 and s.Length:Get() == 1, "State<None> is an empty position, not an error")
-	s:Remove(2)
-	assert(#s._elements == 1 and s.Length:Get() == 1 and s:IndexOf(badSrc) == nil, "no ghost wrapper after the rejected Add")
-	local badRef = q4.Source(q4.Ref(nil) :: any)
-	local ok2, err2 = pcall(function() return s:Add(badRef) end)
+	local ok, err = pcall(function() return s:Add(q4.Source(42 :: any)) end)
+	assert(not ok and string.find(tostring(err), "Slot: this backend cannot mount this value", 1, true) ~= nil, "State holding a non-element rejected when settled (same message as the raw path): " .. tostring(err))
+	local s1 = q4.Slot(); q4.Dispatch.drive(mock.Instance.new("Frame"), { s1 })
+	local ok2, err2 = pcall(function() return s1:Add(q4.Source(q4.Ref(nil) :: any)) end)
 	assert(not ok2 and string.find(tostring(err2), "handler-layer values", 1, true) ~= nil, "handler-layer occupant rejected: " .. tostring(err2))
-	assert(#s._elements == 1, "still no ghost")
-	-- unmounted: used to pass silently and die at drive
+	-- None in a State is the absent element (H-467/Q30) — accepted like nil
+	local s2 = q4.Slot({ mock.Instance.new("Frame") }); q4.Dispatch.drive(mock.Instance.new("Frame"), { s2 })
+	assert(s2:Add(q4.Source(q4.None :: any)) == 2 and s2.Length:Get() == 1, "State<None> is an empty position, not an error")
+	-- unmounted: the Add passes (no :Get() at the CRUD line), the mount raises
 	local u = q4.Slot()
-	local ok3, err3 = pcall(function() return u:Add(q4.Source(42 :: any)) end)
-	assert(not ok3 and string.find(tostring(err3), "cannot mount this value", 1, true) ~= nil, "unmounted Slot rejects too: " .. tostring(err3))
-	local ok3b = pcall(function() return q4.Slot({ mock.Instance.new("Frame"), q4.Source(42 :: any) }) end)
-	assert(not ok3b, "constructor rejects too")
-	-- Replace keeps the old element on failure
-	local a = s:Get(1)
-	local ok4 = pcall(function() return s:Replace(1, q4.Source(42 :: any)) end)
-	assert(not ok4 and s:Get(1) == a and a.Parent == host, "Replace failed before destroying the old element")
-	-- a destroyed Slot inside a State is rejected the same way
+	u:Add(q4.Source(42 :: any))
+	local ok3, err3 = pcall(function() q4.Dispatch.drive(mock.Instance.new("Frame"), { u }) end)
+	assert(not ok3 and string.find(tostring(err3), "cannot mount this value", 1, true) ~= nil, "unmounted: rejected at mount: " .. tostring(err3))
+	-- a destroyed Slot inside a State: the wrapper's settle rejects it (Quad0242, the raw-Slot message)
 	local victim = q4.Slot()
 	local holder = q4.Slot({ victim })
 	holder:Remove(1) -- destroys victim as an element
-	local ok5, err5 = pcall(function() return s:Add(q4.Source(victim :: any)) end)
-	assert(not ok5 and string.find(tostring(err5), "destroyed Slot cannot be an element", 1, true) ~= nil, "destroyed Slot occupant rejected: " .. tostring(err5))
-	assert(#s._elements == 1, "no ghost")
+	local s5 = q4.Slot(); q4.Dispatch.drive(mock.Instance.new("Frame"), { s5 })
+	local ok5, err5 = pcall(function() return s5:Add(q4.Source(victim :: any)) end)
+	assert(not ok5 and string.find(tostring(err5), "Quad0242 Slot: destroyed Slot cannot be an element", 1, true) ~= nil, "destroyed Slot occupant rejected: " .. tostring(err5))
 	print("PASS")
 end
 
@@ -1133,13 +1170,26 @@ do
 	assert(not ok and string.find(tostring(err), "keyFn returned NaN for item #1", 1, true) ~= nil, "NaN key domain error: " .. tostring(err))
 	local a, b = mock.Instance.new("Frame"), mock.Instance.new("Frame")
 	local s = q5.Slot({ a, b })
-	local ok2, err2 = pcall(function() return s:Splice(1, 2, b, a) end)
-	assert(not ok2 and string.find(tostring(err2), "already in this Slot - reorder with Move/Swap", 1, true) ~= nil, "re-adding a held element names the real reason: " .. tostring(err2))
+	-- [2026-10-06 round14 Q170 (최종)] no pre-pass scan of the held elements: a Splice that puts back what
+	-- it removes in the same call now goes through (the removed span is released first — Extract + Add)
+	local removed = s:Splice(1, 2, b, a)
+	assert(removed[1] == a and removed[2] == b and s:Get(1) == b and s:Get(2) == a, "Splice re-adding its own removed span reorders")
+	-- re-adding an element this Slot still holds: claimOwner's owner == self arm names the real reason
 	local ok3, err3 = pcall(function() return s:Replace(1, s:Get(1)) end)
-	assert(not ok3 and string.find(tostring(err3), "already in this Slot", 1, true) ~= nil, "Replace with the same element too: " .. tostring(err3))
+	assert(not ok3 and string.find(tostring(err3), "Quad0170 Slot: this element is already in this Slot (a second mount) - reorder with Move/Swap", 1, true) ~= nil, "Replace with the same element: " .. tostring(err3))
+	mock.assertBlamesUser(err3, "spec.slot.luau", "Quad0170 blames the CRUD line")
+	assert(s:Get(1) == b and not mock.isDestroyed(b), "claimOwner runs before the old element is released — Replace left it alone")
+	local ok3b, err3b = pcall(function() return s:Add(a) end)
+	assert(not ok3b and string.find(tostring(err3b), "Quad0170", 1, true) ~= nil, "Add of a held element: " .. tostring(err3b))
+	-- a batch duplicate: debug on → Quad0171 before any mutation; off → the second claim's Quad0170
 	local c = mock.Instance.new("Frame")
+	q5.debug = true
 	local ok4, err4 = pcall(function() return s:Splice(3, 0, c, c) end)
-	assert(not ok4 and string.find(tostring(err4), "the same element appears twice", 1, true) ~= nil, "a real batch duplicate keeps its message: " .. tostring(err4))
+	q5.debug = false
+	assert(not ok4 and string.find(tostring(err4), "Quad0171 Slot:Splice: the same element appears twice", 1, true) ~= nil, "debug: a real batch duplicate keeps its message: " .. tostring(err4))
+	assert(#s._elements == 2, "debug: nothing mutated")
+	local ok5, err5 = pcall(function() return s:Splice(3, 0, c, c) end)
+	assert(not ok5 and string.find(tostring(err5), "Quad0170", 1, true) ~= nil, "debug off: the second claim raises: " .. tostring(err5))
 	print("PASS")
 end
 
@@ -1521,4 +1571,43 @@ do
 end
 
 print()
+print()
+print("=== 소비자 킷 C0 (2026-10-06 사용자 회신) — q.debug일 때 Slot CRUD 입구에서 마운트 호스트가 claim되지 않았으면(q.dispose 등) 한 줄; 동작은 그대로; 꺼져 있으면·살아 있는 호스트·마운트 전은 0줄 ===")
+do
+	local LINE = "Slot: CRUD on a Slot whose host Instance is no longer claimed by quad"
+	local qc = mock.newQuad()
+	local env: any = getfenv(qc.Slot().Add)
+	local lines: { string } = {}
+	local function capture(f: () -> ())
+		table.clear(lines)
+		local old = rawget(env, "print")
+		env.print = function(...: any) table.insert(lines, table.concat({ ... }, " ")) end
+		local ok, err = pcall(f)
+		env.print = old
+		assert(ok, tostring(err))
+	end
+	local function count(): number
+		local n = 0
+		for _, l in lines do if string.find(l, LINE, 1, true) ~= nil then n += 1 end end
+		return n
+	end
+	qc.debug = true
+	local live = qc.Slot()
+	capture(function() live:Add(Instance.new("Frame")) end)
+	assert(count() == 0, "unmounted Slot: 0 lines")
+	local host = Instance.new("Frame")
+	qc.Dispatch.drive(host, { live })
+	capture(function() live:Add(Instance.new("Frame")) end)
+	assert(count() == 0, "live host: 0 lines")
+	qc.dispose(host)
+	capture(function() live:Add(Instance.new("Frame")) end)
+	assert(count() == 1, "disposed host: one line per CRUD: " .. table.concat(lines, " | "))
+	capture(function() live:Move(1, 2) end)
+	assert(count() == 1, "every public CRUD entry (Move): " .. table.concat(lines, " | "))
+	qc.debug = false
+	capture(function() live:Add(Instance.new("Frame")) end)
+	assert(count() == 0, "debug off: 0 lines (the CRUD still goes through — undefined)")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

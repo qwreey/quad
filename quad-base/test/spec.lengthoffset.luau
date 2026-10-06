@@ -304,8 +304,9 @@ print()
 print("=== 10. H-240의 원 재현(길이 Compute의 fn이 같은 owner의 앞자리를 setLength)은 round10 Q50 (a)부터 Compute 재진입 error다 — 그 fn이 중첩 recompute를 통해 자기 값을 다시 읽으므로 ===")
 do
 	-- Before Q50 the nested recompute re-ran len2's fn inside itself (twice per generation) and
-	-- the H-240 cursor rewind hid it. The contribution-window rewind (check ②) stays in
-	-- Bookkeeping as defense; the deterministic H-240 coverage is spec 5 (the offset:Set window).
+	-- the H-240 cursor rewind hid it. The read-window rewinds (H-240 checks ① ②, getOffsetAt's
+	-- restart) were removed in round14 Q171 (a) (2026-10-06): a Compute length's fn that lowers a
+	-- cursor is undefined (Compute purity). The defined rewind is spec 5 (the offset:Set window).
 	-- Handler-author rule: a length Compute must not mutate its own owner's bookkeeping.
 	local q = newQuad()
 	local inst = Instance.new("Frame")

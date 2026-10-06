@@ -106,8 +106,12 @@ local FieldsKey = table.freeze({})
 -- mapper props (Claim), so it died in the drive with `Quad0076 … brand: MapperDescriptor` after the Claim
 -- root was claimed. Refused at Modifier creation instead (the Slot `Quad0240` shape); Claim's pass 1 still
 -- skips fields (`H-303` unchanged). A State that HOLDS a descriptor is not read here (no `:Get` at creation).
+-- round14 (user decision 2026-10-02): `type` first — every handler-layer value is a table, so the six
+-- brand lookups run only for tables; numbers/strings/booleans/userdata (most field values) skip them.
+-- Both callers (the setter and the initial-field table) go through here.
 local function isHandlerLayerValue(v: any): boolean
-	return isRef(v) or isObserver(v) or isEffect(v) or Brand.isSlot(v) or isModifier(v) or Brand.isMapperDescriptor(v)
+	return type(v) == "table"
+		and (isRef(v) or isObserver(v) or isEffect(v) or Brand.isSlot(v) or isModifier(v) or Brand.isMapperDescriptor(v))
 end
 
 local ModifierMT = {}
@@ -145,6 +149,13 @@ local known: { [string]: true } = {}
 local parents: { [string]: { [string]: true } } = {}
 local constructors: { [string]: any } = {}
 
+-- round14 (user decision 2026-10-02): a POSITIVE-result cache for the walk below — `name -> { ancestor }`.
+-- `DefineSubtype` only ever adds edges, so "ancestor is reachable from name" once true stays true; a
+-- negative answer is not cached (a later DefineSubtype may make it true). Module-level like the registry
+-- it summarizes. The checked cast `mod:As<Class>()` asks the same pair on every call (컴포넌트마다).
+local ancestorHits: { [string]: { [string]: true } } = {}
+local NO_PARENTS: { [string]: true } = table.freeze({} :: { [string]: true }) -- shared empty set (no per-node allocation)
+
 -- is `ancestor` reachable from `name` upward (or equal)? Union over every
 -- parent path; `seen` guards the walk (cycles are refused at registration,
 -- but a bounded walk costs nothing).
@@ -152,12 +163,21 @@ local function isAncestorOrSelf(ancestor: string, name: string): boolean
 	if ancestor == name then
 		return true
 	end
+	local hits = ancestorHits[name]
+	if hits ~= nil and hits[ancestor] then
+		return true
+	end
 	local seen: { [string]: true } = {}
 	local stack = { name }
 	while #stack > 0 do
 		local node = table.remove(stack) :: string
-		for parent in parents[node] or {} do
+		for parent in parents[node] or NO_PARENTS do
 			if parent == ancestor then
+				if hits == nil then
+					hits = {}
+					ancestorHits[name] = hits
+				end
+				(hits :: { [string]: true })[ancestor] = true
 				return true
 			end
 			if not seen[parent] then
@@ -519,7 +539,9 @@ local function flatten(input: { [any]: any }): { [any]: any }
 		if type(k) == "number" and (k < 1 or k % 1 ~= 0) then
 			Err.errorBefore(`Quad0085 Dispatch.drive: array keys must be positive integers (got {k})`, SURFACE)
 		end
-		if isModifier(v) then
+		-- round14 Q167 (a) (user decision 2026-10-06): normal path, `type` first — a Modifier is a table,
+		-- so most prop values (numbers, strings, userdata) skip the brand lookup
+		if type(v) == "table" and isModifier(v) then
 			Err.errorBefore(`Quad0068 Modifier: a Modifier cannot be a value of key "{tostring(k)}" - place it in the array part`, SURFACE)
 		end
 	end

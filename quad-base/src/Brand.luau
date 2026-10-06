@@ -74,6 +74,15 @@ local AttrKeyBrand = Brand()
 -- register into it next to their own brand at construction (`research/bindable-hooks-plan.md`).
 -- A public registration surface is backlog (same document) — until then only quad-base types join.
 local BindableBrand = Brand()
+-- [2026-10-06 user decision, round14 Q161·Q182] the first PUBLIC capability (protocol) brand —
+-- exposed as `q.Protocols.DispatchHint`. Dispatch-match-failure diagnosis: when a member value sits at a
+-- key no handler matches (`Quad0076`), Dispatch calls its `__dispatchHint(key) -> string?` once and uses
+-- the returned sentence as the cause (nil → the generic tail); the error position does not change; a
+-- throwing hook is undefined (not wrapped). `__` = a public protocol hook quad calls (a contract), `_` =
+-- private. A capability brand like `EpochBrand`/`BindableBrand`, so it lives here — one per quad-base
+-- copy, the same object on every module instance's `Protocols` table: the base members (Store, Context,
+-- Provider, Blocker, AttrKey) are made by copy-level constructors that know no module instance.
+local DispatchHintBrand = Brand()
 
 -- Plain identity predicates.
 local function isEpoch(x: any): boolean
@@ -172,6 +181,7 @@ return {
 	EpochBrand = EpochBrand,
 	AttrKeyBrand = AttrKeyBrand,
 	BindableBrand = BindableBrand, -- internal (no `is*` predicate, not re-exported on `q.`)
+	DispatchHintBrand = DispatchHintBrand, -- public as `q.Protocols.DispatchHint` (no `is*` predicate)
 
 	isEpoch = isEpoch,
 	isSource = isSource,

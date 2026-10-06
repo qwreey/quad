@@ -503,4 +503,25 @@ do
 end
 
 print()
+print("=== round14 Q161·Q182 (a) (2026-10-06) — Tween은 생성 때 q.Protocols.DispatchHint에 등록하고, 매치 실패 안내를 스스로 준다(문자 키: 필드가 아닐 수 있음 / 숫자 키: nil → 일반 꼬리) ===")
+do
+	local quadAny: any = q
+	local t = Tween({ Value = 1 })
+	assert(quadAny.Protocols.DispatchHint:Is(t), "registered at creation")
+	assert(quadAny.Protocols.DispatchHint:Is((t :: any):Mapped(function(v: number): number return v end)), "copies too (newTween)")
+	local frame = quadAny.Declaration.Frame({})
+	local okS, errS = pcall(function()
+		quadAny.Dispatch.process(frame, "Sise", t, 1)
+	end)
+	assert(not okS and string.find(tostring(errS), "brand: Tween)", 1, true) ~= nil
+		and string.find(tostring(errS), "this key may not be a field of this element (a typo, a read-only field, or one from another class)", 1, true) ~= nil
+		and string.find(tostring(errS), "belongs in a numeric (array) slot", 1, true) == nil, "string key: the Tween's own hint: " .. tostring(errS))
+	local okN, errN = pcall(function()
+		quadAny.Dispatch.process(frame, 1, t, 1)
+	end)
+	assert(not okN and string.find(tostring(errN), "no handler at an array position", 1, true) ~= nil, "numeric key: the hook returns nil → the generic tail: " .. tostring(errN))
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

@@ -998,4 +998,107 @@ do
 	print("PASS")
 end
 
+print()
+print("=== round14 Q161·Q182 (2026-10-06) — q.Protocols.DispatchHint: 능력 브랜드에 속한 값은 매치 실패 때 자기 __dispatchHint(key)로 원인 문장을 준다(nil이면 일반 꼬리); Dispatch의 이름 분기(Store·Context/Provider)는 없다 ===")
+do
+	local q = newQuad()
+	local DH = q.Protocols.DispatchHint
+	assert(q.BrandPredicates ~= DH, "a separate table member, not inside BrandPredicates")
+	-- registration: the base members, and nothing else
+	local store, ctx, provider, blocker, key = q.Store({}), q.Context(), q.Context.Provider("P"), q.Blocker(), q.AttrKey("k")
+	for label, v in { Store = store, Context = ctx, Provider = provider, Blocker = blocker, AttrKey = key } :: { [string]: any } do
+		assert(DH:Is(v), label .. " is a DispatchHint member")
+	end
+	for label, v in { Slot = q.Slot(), Tag = q.Tag("t"), Source = q.Source(1), plain = {} } :: { [string]: any } do
+		assert(not DH:Is(v), label .. " is not")
+	end
+	local function noMatch(k: any, v: any): string
+		local ok, err = pcall(function() q.Dispatch.drive(Instance.new("Frame"), { [k] = v }) end)
+		assert(not ok and string.find(tostring(err), "Quad0076", 1, true) ~= nil, tostring(err))
+		return tostring(err)
+	end
+	-- each brand's own sentence (Q182 (a): Blocker / AttrKey were "belongs in a numeric slot" — which raised again there)
+	local cases: { { any } } = {
+		{ "Thing", blocker, "a Blocker is not a value for any key: apply it to a State (state:Apply(blocker))" },
+		{ "Thing", key, "an AttrKey is a key, not a value: use it as the key ([q.AttrKey(name)] = value)" },
+		{ "Thing", provider, "a Provider is not a value for any key" },
+		{ "Thing", store, "a Store is not a value for any key" },
+	}
+	for _, c in cases do
+		local err = noMatch(c[1], c[2])
+		assert(string.find(err, c[3], 1, true) ~= nil and string.find(err, "belongs in a numeric (array) slot", 1, true) == nil, "own hint: " .. err)
+	end
+	local errBn = noMatch(1, blocker) -- the same hook at a numeric key
+	assert(string.find(errBn, "a Blocker is not a value for any key", 1, true) ~= nil, errBn)
+	-- a third-party member: the returned sentence follows " - "; nil falls back to the generic tail
+	local Thing = {}
+	Thing.__index = Thing
+	function Thing.__dispatchHint(self: any, k: any): string?
+		return if self.say then `custom sentence for {tostring(k)}` else nil
+	end
+	local loud, quiet = setmetatable({ say = true }, Thing), setmetatable({ say = false }, Thing)
+	DH:Register(loud)
+	DH:Register(quiet)
+	local errLoud = noMatch("Thing", loud)
+	assert(string.find(errLoud, " - custom sentence for Thing", 1, true) ~= nil, errLoud)
+	local errQuiet = noMatch("Thing", quiet)
+	assert(string.find(errQuiet, "this key may not be a field of this element", 1, true) ~= nil, "nil → the generic tail (unbranded, string key): " .. errQuiet)
+	-- an unregistered value with the same method is not asked (membership is the test, not the method)
+	local stray = setmetatable({ say = true }, Thing)
+	assert(string.find(noMatch("Thing", stray), "custom sentence", 1, true) == nil, "not a member → not asked")
+	-- the name branches are gone from Dispatch: with an empty DispatchHint brand on this instance, a Store and a
+	-- Context get only the generic quad-value tail
+	local q2 = newQuad()
+	;(q2 :: any).Protocols = { DispatchHint = QuadTypes.Brand() }
+	for label, v in { Store = q2.Store({}), Context = q2.Context() } :: { [string]: any } do
+		local ok, err = pcall(function() q2.Dispatch.drive(Instance.new("Frame"), { Thing = v }) end)
+		assert(not ok and string.find(tostring(err), "not a value for any key", 1, true) == nil
+			and string.find(tostring(err), "a quad value at a string key: it belongs in a numeric (array) slot", 1, true) ~= nil, label .. ": no name branch left: " .. tostring(err))
+	end
+	-- the nil-value tail (`H-257`) stays in Dispatch
+	local okNil, errNil = pcall(function() q.Dispatch.process(Instance.new("Frame"), "Thing", nil, 1) end)
+	assert(not okNil and string.find(tostring(errNil), "may be an unwrapped None", 1, true) ~= nil, tostring(errNil))
+	print("PASS")
+end
+
+print()
+print("=== round14 debug 감지기 3 (2026-10-06) — q.debug일 때 Dispatch.process 입구에서 claim되지 않은(파괴됐거나 quad가 만들지 않은) 인스턴스면 한 줄; drive도 지난다; 꺼져 있으면 0줄, 살아 있는 인스턴스는 0줄 ===")
+do
+	local LINE = "Dispatch: process on an instance that is not claimed by quad"
+	local q = newQuad()
+	local env: any = getfenv(q.Dispatch.process)
+	local lines: { string } = {}
+	local function capture(f: () -> ())
+		table.clear(lines)
+		local old = rawget(env, "print")
+		env.print = function(...: any) table.insert(lines, table.concat({ ... }, " ")) end
+		local ok, err = pcall(f)
+		env.print = old
+		assert(ok, tostring(err))
+	end
+	local function count(): number
+		local n = 0
+		for _, l in lines do if string.find(l, LINE, 1, true) ~= nil then n += 1 end end
+		return n
+	end
+	q.Dispatch.addHandler({ name = "AnyK", isHandlable = function(_i: any, k: any) return k == "K" end, priority = 0,
+		process = function() return Quad.Void end })
+	local dead = Instance.new("Frame")
+	dead:Destroy()
+	q.debug = true
+	capture(function() q.Dispatch.process(dead, "K", 1, 1) end)
+	assert(count() == 1 and string.find(lines[1], "at key K", 1, true) ~= nil, "debug: one line for a destroyed instance: " .. table.concat(lines, " | "))
+	capture(function() q.Dispatch.drive(dead, { K = 1 }) end)
+	assert(count() == 1, "drive reaches it through process: " .. table.concat(lines, " | "))
+	local foreign = Instance.foreign("Frame")
+	capture(function() pcall(function() q.Dispatch.process(foreign, "K", 1, 1) end) end)
+	assert(count() == 1, "never claimed by quad: one line")
+	capture(function() q.Dispatch.drive(Instance.new("Frame"), { K = 1 }) end)
+	assert(count() == 0, "a live claimed instance: 0 lines")
+	q.debug = false
+	capture(function() q.Dispatch.process(dead, "K", 2, 1) end)
+	assert(count() == 0, "debug off: 0 lines")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

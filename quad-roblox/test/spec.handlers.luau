@@ -281,7 +281,9 @@ do
 	assert(not ok2 and string.find(tostring(err2), "already mounted elsewhere", 1, true) ~= nil, "{c, c} rejected: " .. tostring(err2))
 	-- (3) a Slot cannot take a statically seated child, and a static seat cannot take a Slot element
 	local ok3, err3 = pcall(function() return q.Slot():Add(c) end)
-	assert(not ok3 and string.find(tostring(err3), "Slot:Add: this element is already mounted", 1, true) ~= nil, "Slot refuses a static child: " .. tostring(err3))
+	-- [2026-10-06 round14 Q170 (최종)] caught by rawAdd's claimOwner (no pre-pass owner check): subject `Slot:`, Quad0172
+	assert(not ok3 and string.find(tostring(err3), "Quad0172 Slot: this element is already mounted", 1, true) ~= nil, "Slot refuses a static child: " .. tostring(err3))
+	mock.assertBlamesUser(err3, SPEC_FILE, "Quad0172 blames the Add line")
 	local e = q.Declaration.TextLabel({}) :: any
 	local s = q.Slot({ e })
 	local ok4, err4 = pcall(function() return q.Declaration.Frame({ e }) end)

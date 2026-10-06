@@ -37,6 +37,7 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 local ContextBrand = Brand.ContextBrand
 local ProviderBrand = Brand.ProviderBrand
 local isProvider = Brand.isProvider
+local DispatchHintBrand = Brand.DispatchHintBrand -- `q.Protocols.DispatchHint` (round14 Q161)
 
 local ProviderImpl = {}
 ProviderImpl.__index = ProviderImpl
@@ -46,6 +47,11 @@ ProviderImpl.__quadProviderAccepts = Void
 function ProviderImpl.__tostring(self: any): string
 	return if self.Name ~= nil then `Provider({self.Name})` else "Provider"
 end
+-- round14 Q161·Q182 (user decision 2026-10-06): the `q.Protocols.DispatchHint` hook (moved from Dispatch's
+-- name branch — round13 E80: the old hint sent it to a numeric slot, which raised `Quad0076` again)
+function ProviderImpl.__dispatchHint(_self: any, _key: any): string?
+	return "a Provider is not a value for any key: read the value you need out of the Context first"
+end
 
 local function Provider(name: string?): any
 	if name ~= nil and type(name) ~= "string" then
@@ -53,6 +59,7 @@ local function Provider(name: string?): any
 	end
 	local self = setmetatable({ __quadProvider = true, Name = name }, ProviderImpl)
 	ProviderBrand:Register(self)
+	DispatchHintBrand:Register(self)
 	return table.freeze(self)
 end
 
@@ -65,6 +72,10 @@ function ContextImpl.__tostring(self: any): string
 		n += 1
 	end
 	return `Context({n})`
+end
+-- round14 Q161·Q182: the `q.Protocols.DispatchHint` hook (see ProviderImpl's)
+function ContextImpl.__dispatchHint(_self: any, _key: any): string?
+	return "a Context is not a value for any key: read the value you need out of it first"
 end
 
 local function checkProvider(fnName: string, provider: any)
@@ -99,6 +110,7 @@ end
 local function Context(): any
 	local self = setmetatable({ _values = {} }, ContextImpl)
 	ContextBrand:Register(self)
+	DispatchHintBrand:Register(self)
 	return self
 end
 

@@ -21,11 +21,29 @@ local Types = require("./types")
 
 return function(S: Types.SlotInternal, module: any)
 
+	-- [2026-10-06 user decision, round14 Q170 (최종)] the ONE "already held" check for Slot elements.
+	-- The CRUD pre-pass no longer scans the Slot's existing elements nor reads a State element's
+	-- current value (lazy model — State/:List elements are settled when the Slot mounts or the value
+	-- changes), so this claim (made by rawAdd/rawReplace even before mount) is where a duplicate
+	-- surfaces, and `Add(A); Add(A)` and `Slot{ A, A }` meet at the same raise. The message says
+	-- which case it is:
+	--   a manual Slot that already holds it    → Quad0170 (a second mount — reorder with Move/Swap)
+	--   a manual Slot, held elsewhere           → Quad0172 (CRUD line — nearest blame)
+	--   a :List/:Single Slot (incl. the wrapper a State element becomes) → Quad0156, which names the
+	--     mount-time cause: two elements that became the same Instance (reconcile depth — outermost)
 	local function claimOwner(element: any, ownerKey: any, fromDetached: boolean?)
 		local cur = S.elementOwner:GetWeak(element, S.OWNER)
 		if cur ~= nil then
 			if not (fromDetached and cur == ownerKey) then
-				S.Err.errorBefore("Quad0156 Slot: this element is already mounted - multiple mounts are not allowed" .. S.ZOMBIE_NOTE, S.SURFACE)
+				if ownerKey._listed then
+					S.Err.errorBefore("Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (a State or :List element is settled when its Slot mounts or the value changes, so two elements that became the same Instance - two States holding one value, an updateFn returning the same Instance twice - collide here, not at Add)" .. S.ZOMBIE_NOTE, S.SURFACE)
+				end
+				S.Err.errorBeforeNearest( -- error-code: inline if
+					if cur == ownerKey
+						then "Quad0170 Slot: this element is already in this Slot (a second mount) - reorder with Move/Swap instead of adding it again"
+						else "Quad0172 Slot: this element is already mounted - multiple mounts are not allowed" .. S.ZOMBIE_NOTE,
+					S.SURFACE
+				)
 			end
 			return
 		end

@@ -37,6 +37,7 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 export type Blocker = QuadTypes.Blocker
 
 local BlockerBrand = Brand.BlockerBrand
+local DispatchHintBrand = Brand.DispatchHintBrand -- `q.Protocols.DispatchHint` (round14 Q161)
 
 local WEAK_KEY_MT = { __mode = "k" }
 
@@ -45,6 +46,12 @@ BlockerImpl.__index = BlockerImpl
 -- `__tostring` (2026-09-08, advisory 권고 1)
 function BlockerImpl.__tostring(self: any): string
 	return `Blocker({if self.Blocking then "on" else "off"})`
+end
+-- round14 Q161·Q182 (a) (user decision 2026-10-06): the `q.Protocols.DispatchHint` hook — a Blocker is a
+-- gate policy applied to a State, never a prop value (it used to get the "belongs in a numeric slot" hint,
+-- which raised again there)
+function BlockerImpl.__dispatchHint(_self: any, _key: any): string?
+	return "a Blocker is not a value for any key: apply it to a State (state:Apply(blocker)) and place that State"
 end
 
 
@@ -127,6 +134,7 @@ local function Blocker(): Blocker
 		_handles = setmetatable({}, WEAK_KEY_MT),
 	}, BlockerImpl)
 	BlockerBrand:Register(self)
+	DispatchHintBrand:Register(self)
 	return (self :: any) :: Blocker
 end
 

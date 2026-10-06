@@ -40,11 +40,20 @@ local NotInstalled = require("../NotInstalled")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local AttrKeyBrand = Brand.AttrKeyBrand
+local DispatchHintBrand = Brand.DispatchHintBrand -- `q.Protocols.DispatchHint` (round14 Q161)
+
+-- round14 Q161·Q182 (a) (user decision 2026-10-06): the `q.Protocols.DispatchHint` hook. An AttrKey is a
+-- frozen PLAIN table (no metatable — `Brand.isPlainBranded`), so the hook is a field on the key itself
+-- (one shared function); it is the KEY of an attribute entry, never a value.
+local function attrKeyDispatchHint(_self: any, _key: any): string?
+	return "an AttrKey is a key, not a value: use it as the key ([q.AttrKey(name)] = value)"
+end
 local isAttrKey = Brand.isAttrKey
 
 local function newKeyObject(name: string): any
-	local key = table.freeze({ Name = name })
+	local key = table.freeze({ Name = name, __dispatchHint = attrKeyDispatchHint })
 	AttrKeyBrand:Register(key)
+	DispatchHintBrand:Register(key)
 	return key
 end
 

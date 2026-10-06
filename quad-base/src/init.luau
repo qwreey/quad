@@ -84,6 +84,11 @@ local function New(): Quad
 		-- (quad-types 전역이면 사본마다 집합이 갈린다 — 사용자: "런타임 모듈 하나가 원천이다로 보면 깔끔하게 떨어져").
 		-- [2026-10-01] base 브랜드도 같은 경로 — 아래 `is*` 필드가 달리는 자리에서 `brandPredicate`로 등록된다.
 		BrandPredicates = brandPredicates,
+		-- [2026-10-06 round14 Q161 — 사용자 결정] 능력(프로토콜) 브랜드의 공개 집합 — 이번엔 `DispatchHint` 하나
+		-- (Dispatch 매치 실패 안내 훅 `__dispatchHint(key) -> string?`; `Brand.luau`의 `DispatchHintBrand` 머리 주석).
+		-- `BrandPredicates`(이름 붙이기용 술어 등록부)와는 종류가 달라 그 안에 넣지 않는다. 키 추가는 BREAKING 아님
+		-- (Bindable·Epoch는 계약으로 낼 준비가 될 때).
+		Protocols = { DispatchHint = Brand.DispatchHintBrand },
 
 		-- M2 공통 기반 — 의존 없는 잎 모듈 재export(`ROADMAP.md` M2 `H-80`)
 		Relate = Relate,

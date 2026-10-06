@@ -6,7 +6,7 @@ description: Handler 레코드와 retractor 계약, 우선순위 밴드, q.Dispa
 
 이 페이지는 **핸들러를 직접 작성하는 사람**을 위한 계약입니다. 새 값 타입(백엔드의 `Tween`, 플러그인의 스프링 값)이나 새 props 어휘를 추가하려면 여기 규약을 지키는 테이블 하나를 `q.Dispatch.addHandler`로 등록하면 됩니다.
 
-이 페이지의 심볼: [Handler 레코드](#handler-레코드) · [retractor](#retractor) · [우선순위 밴드](#우선순위-밴드) · [q.Dispatch.addHandler(handler)](#qdispatchaddhandlerhandler) · [q.Dispatch.listHandlers()](#qdispatchlisthandlers) · [q.Dispatch.getHandler(inst, key, value)](#qdispatchgethandlerinst-key-value) · [q.Dispatch.process(inst, key, value, index)](#qdispatchprocessinst-key-value-index) · [q.Dispatch.retractFrom(inst, key, index)](#qdispatchretractfrominst-key-index) · [q.Dispatch.drive(inst, flattened)](#qdispatchdriveinst-flattened) · [q.Bookkeeping.setLength(ownerKey, i, len, anchor, element)](#qbookkeepingsetlengthownerkey-i-len-anchor-element) · [q.Bookkeeping.setOffsetSource(ownerKey, i, source)](#qbookkeepingsetoffsetsourceownerkey-i-source) · [q.Bookkeeping.setEmpty(ownerKey, i, anchor)](#qbookkeepingsetemptyownerkey-i-anchor) · [q.Bookkeeping.getOffsetAt(ownerKey, at)](#qbookkeepinggetoffsetatownerkey-at) · [q.Bookkeeping.getBookkeeping(ownerKey)](#qbookkeepinggetbookkeepingownerkey) · [q.Bookkeeping.claimOwnerAt(element, inst, k)](#qbookkeepingclaimowneratelement-inst-k) · [q.Bookkeeping.releaseOwner(element, ownerKey)](#qbookkeepingreleaseownerelement-ownerkey)
+이 페이지의 심볼: [Handler 레코드](#handler-레코드) · [retractor](#retractor) · [우선순위 밴드](#우선순위-밴드) · [q.Dispatch.addHandler(handler)](#qdispatchaddhandlerhandler) · [q.Dispatch.listHandlers()](#qdispatchlisthandlers) · [q.Dispatch.getHandler(inst, key, value)](#qdispatchgethandlerinst-key-value) · [q.Dispatch.process(inst, key, value, index)](#qdispatchprocessinst-key-value-index) · [q.Dispatch.retractFrom(inst, key, index)](#qdispatchretractfrominst-key-index) · [q.Dispatch.drive(inst, flattened)](#qdispatchdriveinst-flattened) · [q.Protocols.DispatchHint](#qprotocolsdispatchhint) · [q.Bookkeeping.setLength(ownerKey, i, len, anchor, element)](#qbookkeepingsetlengthownerkey-i-len-anchor-element) · [q.Bookkeeping.setOffsetSource(ownerKey, i, source)](#qbookkeepingsetoffsetsourceownerkey-i-source) · [q.Bookkeeping.setEmpty(ownerKey, i, anchor)](#qbookkeepingsetemptyownerkey-i-anchor) · [q.Bookkeeping.getOffsetAt(ownerKey, at)](#qbookkeepinggetoffsetatownerkey-at) · [q.Bookkeeping.getBookkeeping(ownerKey)](#qbookkeepinggetbookkeepingownerkey) · [q.Bookkeeping.claimOwnerAt(element, inst, k)](#qbookkeepingclaimowneratelement-inst-k) · [q.Bookkeeping.releaseOwner(element, ownerKey)](#qbookkeepingreleaseownerelement-ownerkey)
 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
@@ -165,7 +165,7 @@ process: (inst: any, key: any, value: any, index: number) -> ()
 Quad0076 Dispatch: no handler matched key {키} (value: {typeof}, brand: {브랜드 이름들}) - this quad value has no handler at an array position
 ```
 
-꼬리 힌트는 키와 값에 따라 갈립니다 — 위는 숫자 키에 등록된 브랜드의 값이 온 경우입니다(등록됐다는 것이 그 브랜드의 주인이 설치됐다는 뜻이라, quad-base 값이든 설치된 프로바이더의 값이든 같습니다). 등록된 술어에 하나도 걸리지 않는 값이면 숫자 키에선 `- check that the provider for this value (e.g. quad-roblox) is initialized`, **문자 키**에선 키 이름이 틀렸을 가능성과 프로바이더 미설치를 함께 적습니다. 전체 갈래는 [`Quad0076`](/reference/errors/02-dispatch-bookkeeping/#quad0076).
+꼬리 힌트는 키와 값에 따라 갈립니다. 값이 [`q.Protocols.DispatchHint`](#qprotocolsdispatchhint)에 속하면 그 값이 직접 원인 문장을 줍니다(`Store`·`Blocker`·`Tween` 등 — 아래 절). 그 밖에는 위처럼 숫자 키에 등록된 브랜드의 값이 온 경우의 일반 꼬리입니다(등록됐다는 것이 그 브랜드의 주인이 설치됐다는 뜻이라, quad-base 값이든 설치된 프로바이더의 값이든 같습니다). 등록된 술어에 하나도 걸리지 않는 값이면 숫자 키에선 `- check that the provider for this value (e.g. quad-roblox) is initialized`, **문자 키**에선 키 이름이 틀렸을 가능성과 프로바이더 미설치를 함께 적습니다. 전체 갈래는 [`Quad0076`](/reference/errors/02-dispatch-bookkeeping/#quad0076).
 
 값이 `nil`이면 뒤에 한 줄이 더 붙습니다 — 그 `nil`은 벗겨진 `None`일 수도, 반응형 `nil`일 수도 있고, 그 키를 맡은 핸들러가 `nil`을 받아들여야 한다는 안내입니다.
 
@@ -216,6 +216,44 @@ Quad0085 Dispatch.drive: array keys must be positive integers (got {키})
 ```
 
 둘째 문구는 `D.Frame(q.Source(1))`처럼 중괄호를 잊은 형태를 잡습니다 — 그 값의 내부 필드가 props로 해석되는 조용한 오작동을 막습니다. **[2026-10-01 기준, 다음 릴리즈부터]** 매 `drive`마다 도는 검사는 싼 것 둘뿐입니다 — 메타테이블이 있는 테이블, 그리고 메타테이블 없이 quad가 브랜드를 붙이는 `AttrKey`·매퍼 디스크립터. quad-base의 값은 전부 이 둘에 걸립니다. 모듈에 등록된 브랜드 술어(`q.BrandPredicates` — 설치된 프로바이더의 것까지) 전부를 훑는 전체 검사는 [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때만 돕니다 — 그래서 **메타테이블 없는 평범한 테이블에 브랜드를 붙이는 프로바이더 값**은 debug를 꺼 두면 이 문구 대신 그 필드들이 props로 해석됩니다(대개 `Quad0076`으로 끝납니다). 3.2.0까지는 전체 검사가 매번 돌았습니다.
+
+## `q.Protocols.DispatchHint`
+
+**시그니처**
+
+```luau
+Protocols: { DispatchHint: Brand } -- QuadTypes.Brand() 인스턴스 — quad-base 사본마다 하나(모든 모듈 인스턴스의 Protocols가 같은 객체를 담음)
+-- 멤버 값이 갖는 훅:
+-- value:__dispatchHint(key: any) -> string?
+```
+
+**동작** — **[2026-10-06 기준, 다음 릴리즈부터]** 디스패치의 매치 실패 진단을 돕는 **프로토콜**입니다. 이 브랜드에 속한 값이 어떤 핸들러에도 매치되지 않는 자리(`key`)에 놓이면([`Quad0076`](/reference/errors/02-dispatch-bookkeeping/#quad0076)), 디스패치는 그 값의 `__dispatchHint(key)`를 **한 번** 불러 돌려받은 문장을 에러의 원인 설명(` - ` 뒤)으로 씁니다. `nil`을 돌려주면 일반 꼬리를 씁니다. 에러의 위치(blame)는 바꾸지 않습니다 — 문장만 공급합니다. 에러를 만들 때만 불리므로 정상 경로 비용은 없습니다.
+
+- **값 쪽에서 등록합니다** — 값을 만들 때 `quad.Protocols.DispatchHint:Register(value)`, 그리고 그 값(대개 메타테이블의 `__index` 쪽)에 `__dispatchHint`를 둡니다. 훅이 아니라 **소속**이 판정이라, 같은 이름의 메서드가 있어도 등록되지 않은 값에는 묻지 않습니다. quad-base의 `Store`·`Context`·`Provider`·`Blocker`·`AttrKey`와 quad-roblox의 `Tween`이 자기 문장을 등록합니다(문장은 [`Quad0076`](/reference/errors/02-dispatch-bookkeeping/#quad0076)의 표).
+- **훅이 던지면 정의되지 않은 동작입니다** — 디스패치는 훅을 감싸지 않습니다. 돌려주는 값은 문장 하나(`string`) 또는 `nil`입니다. 문장 모양은 quad의 메시지 규약을 따르면 다른 꼬리와 어울립니다 — 소문자로 시작하고, 무엇이 틀렸는지와 어떻게 놓아야 하는지를 한 문장으로.
+- **`key`를 보고 갈라도 됩니다** — `Tween`은 문자 키에서만 "그 요소의 필드가 아닐 수 있음"을 말하고 숫자 키에서는 `nil`을 돌려 일반 꼬리에 맡깁니다.
+- **`q.BrandPredicates`와는 다른 집합입니다** — 그쪽은 값에 이름을 붙이는 `is<Brand>` 술어의 등록부이고(메시지의 `brand: …`), `Protocols`는 quad 런타임이 부르는 훅을 가진 값의 **능력(프로토콜) 브랜드**를 모읍니다. 앞으로 다른 능력이 공개되면 이 테이블에 키가 더해집니다(키 추가는 호환을 깨지 않습니다).
+- **이름 규약** — 두 밑줄로 시작하는 이름(`__dispatchHint`, `__apply`)은 quad 런타임이 부르는 **공개 프로토콜 훅**이고 계약입니다(Luau의 메타메서드처럼). 밑줄 하나(`_x`)는 비공개 내부 필드라 계약이 아닙니다.
+- 브랜드는 quad-base **사본마다 하나**입니다 — 같은 사본에서 만든 모듈 인스턴스들은 같은 `DispatchHint` 객체를 공유하고, 공유 잎 모듈(`Blocker`·`Context`·`AttrKey`)의 값도 그래서 등록됩니다. 다른 사본의 값은 이 사본의 브랜드에 속하지 않습니다([사본 경계](/reference/core/11-predicates/#사본-경계)).
+
+**예제**
+
+```luau
+local SpringImpl = {}
+SpringImpl.__index = SpringImpl
+function SpringImpl:__dispatchHint(key)
+	if type(key) == "string" then
+		return "a Spring drives a value: put it inside a State (state:Apply(spring)), not at a property key"
+	end
+	return nil -- 숫자 키: 일반 꼬리
+end
+
+local function Spring(opts)
+	local self = setmetatable(table.clone(opts), SpringImpl)
+	quad.Protocols.DispatchHint:Register(self)
+	return self
+end
+```
 
 ## Length/Offset 부기
 

@@ -87,9 +87,15 @@ do
 	a:Add(Instance.new("Frame"))
 	expectCross("Replace", function() a:Replace(1, bSlot) end)
 	expectCross("Extract(i, new)", function() a:Extract(1, bSlot) end)
-	-- code-review: this instance's State holding the other instance's Slot/State must not slip through
-	expectCross("Add(A.Source(other Slot))", function() a:Add(A.Source(bSlot)) end)
-	expectCross("Add(A.Source(other State))", function() a:Add(A.Source(bState)) end)
+	-- this instance's State holding the other instance's Slot/State must not slip through — [2026-10-06 round14
+	-- Q170 (최종)] it is checked when the wrapper settles the value (mount / value change — lazy), not at Add
+	for label, held in { ["A.Source(other Slot)"] = bSlot :: any, ["A.Source(other State)"] = bState :: any } :: { [string]: any } do
+		local a2 = A.Slot()
+		a2:Add(A.Source(held)) -- no :Get() at the CRUD line
+		local okM, errM = pcall(function() A.Dispatch.drive(Instance.new("Frame"), { a2 }) end)
+		-- message only, like the :List-result case below (reconcile depth — the door's nearest blame is not the user line)
+		assert(not okM and string.find(tostring(errM), "another quad module instance", 1, true) ~= nil, "mount of Add(" .. label .. "): " .. tostring(errM))
+	end
 	-- :List reconcile returning another instance's Slot (the wrapElement door inside the cycle)
 	local host = Instance.new("Frame")
 	local l = A.Slot()

@@ -81,7 +81,7 @@ Tag: setmetatable<{ Merged: (...TagMarker?) -> Tag }, { __call: (self: any, ...T
   - `Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those - a name list cannot have nil holes`
   - `Quad0237 Tag: names must be strings, Tags, or a plain {...} list of those (got a table with a metatable)`
   - `Quad0200 Tag: names must be strings, Tags, or a plain {...} list of those (got an AttrKey/Mapper descriptor)`
-  - `Quad0201 Tag: names must be strings, Tags, or a plain {...} list of those - this list nests deeper than 64 levels (does it contain itself?)`
+- 리스트는 몇 단계든 중첩할 수 있습니다. 다만 리스트가 자기 자신을 담는 것(`t[1] = t`)은 **정의되지 않은 동작**입니다 — 지금은 재귀가 스택을 넘쳐 quad 내부 줄의 에러로 끝납니다(관측 — 계약 아님).
 
 **예제**
 

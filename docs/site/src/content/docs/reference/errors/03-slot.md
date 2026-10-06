@@ -133,10 +133,11 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ### Quad0156
 
-`Slot: this element is already mounted - multiple mounts are not allowed` — `quad-base/src/Slot/Owner.luau`
+`Slot: this element is already mounted - multiple mounts are not allowed (a State or :List element is settled when its Slot mounts or the value changes, so two elements that became the same Instance - two States holding one value, an updateFn returning the same Instance twice - collide here, not at Add)` — `quad-base/src/Slot/Owner.luau`
 
-- **언제**: `:List`/`:Single`의 `updateFn`이 돌려준 값이 이미 다른 자리에 마운트돼 있을 때(레지스트리는 Slot 원소·정적 자식·숏핸드 관리 자식이 하나를 같이 쓰지만, 정적 자식 자리는 Quad0160, 수동 Slot CRUD는 Quad0172가 냅니다 — [2026-09-27 실측]). `updateFn`이 같은 원소를 두 키에 돌려주거나 자기 Slot을 돌려준 경우도 중복·순환 문구가 아니라 이 문구가 납니다. 런타임 메시지 끝에는 "if its owner was destroyed outside quad …" 꼬리가 붙습니다.
-- **고치려면**: 그 값을 먼저 옛 자리에서 빼세요(`Extract`, 데이터 키 삭제 등). "언제"의 두 변형은 빼는 것으로 안 풀립니다 — 같은 원소를 두 키에 돌려줬다면 `Extract`는 `Quad0166`을 내니 `updateFn`이 키마다 다른 원소를 돌려주게 고치고, 자기 Slot을 돌려준 경우는 뺄 옛 자리가 없으니 반환값을 고치세요([2026-09-27 mock 실측]). 다만 그 값의 원래 owner가 quad 밖에서(`inst:Destroy()`) 파괴됐다면 되살릴 수 없습니다.
+- **언제**: `:List`/`:Single`이나 `State` 원소(그 래퍼)가 원소를 정착시킬 때 — 마운트 때, 그 뒤엔 값이 바뀔 때 — 그 값이 이미 다른 자리에 마운트돼 있을 때(레지스트리는 Slot 원소·정적 자식·숏핸드 관리 자식이 하나를 같이 쓰지만, 정적 자식 자리는 Quad0160, 수동 Slot CRUD는 Quad0172·Quad0170이 냅니다). 흔한 원인은 한 Slot의 원소 둘이 마운트 때 같은 Instance가 된 것입니다 — 마운트 전 Slot에 같은 Instance를 쥔 `State` 둘(또는 그 Instance와 그것을 쥔 `State`)을 넣으면 넣는 줄은 통과하고(넣을 때 `State`의 값을 읽지 않습니다) 마운트 줄에서 이 에러가 납니다. `updateFn`이 같은 원소를 두 키에 돌려주거나 자기 Slot을 돌려준 경우도 이 문구입니다. 런타임 메시지 끝에는 "if its owner was destroyed outside quad …" 꼬리가 붙습니다.
+- **고치려면**: 한 Instance는 한 자리에만 — 원소마다 다른 Instance가 되게 하세요(`State`마다 다른 값, `updateFn`이 키마다 다른 원소). 다른 곳에 있던 값이면 먼저 옛 자리에서 빼세요(`Extract`, 데이터 키 삭제 등). 같은 원소를 두 키에 돌려줬다면 `Extract`는 `Quad0166`을 내니 `updateFn`을 고치고, 자기 Slot을 돌려준 경우는 뺄 옛 자리가 없으니 반환값을 고치세요([2026-09-27 mock 실측]). 그 값의 원래 owner가 quad 밖에서(`inst:Destroy()`) 파괴됐다면 되살릴 수 없습니다.
+- **관측 — 계약 아님**: 마운트 때 던지면 그 Slot은 자식이 빠진 채 남고 그 사슬의 다음 CRUD가 `Quad0167`로 막힙니다 — 그 Slot은 버리세요.
 - **참고**: [죽은 Slot과 마운트 규칙](/reference/core/06-slot/#죽은-slot과-마운트-규칙)
 
 ### Quad0157
@@ -244,35 +245,34 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 - **고치려면**: 현재 길이에 맞는 범위 안의 인덱스를 넘기세요 — 클램프하지 않습니다.
 - **참고**: [`slot:Add(element, index?)`](/reference/core/06-slot/#slotaddelement-index)
 
-### Quad0169
+### Quad0169 (폐기)
 
-`{surface}: destroyed Slot cannot be an element` — `quad-base/src/Slot/init.luau`
+`{surface}: destroyed Slot cannot be an element` — 폐기
 
-- **언제**: 원소로 넣은 `State`가 쥔 현재값이 이미 파괴된 `Slot`일 때(`slot:Add(q.Source(deadSlot))`, 생성자 `q.Slot({ state })` 포함 — `prepareElements`의 배치 사전검사). 파괴된 `Slot`을 `State` 없이 직접 넣으면 같은 문구의 Quad0242가 납니다.
-- **고치려면**: 파괴된 `Slot`은 원소로 쓸 수 없습니다 — 새 `Slot`을 만드세요.
+- **[2026-10-06 폐기]** 이제 던지지 않습니다. `Slot` CRUD는 원소로 넣는 `State`의 값을 넣을 때 읽지 않습니다 — 그 값이 파괴된 `Slot`이면 래퍼가 값을 정착시킬 때(마운트 때, 그 뒤엔 값이 바뀔 때) [`Quad0242`](#quad0242)가 같은 뜻으로 납니다. 이 번호는 다른 에러에 다시 쓰지 않습니다.
 - **참고**: [죽은 Slot과 마운트 규칙](/reference/core/06-slot/#죽은-slot과-마운트-규칙)
 
 ### Quad0170
 
-`{surface}: this element is already in this Slot - reorder with Move/Swap instead of adding it again` — `quad-base/src/Slot/init.luau`
+`Slot: this element is already in this Slot (a second mount) - reorder with Move/Swap instead of adding it again` — `quad-base/src/Slot/Owner.luau`
 
-- **언제**: 이 `Slot`이 이미 들고 있는 원소를 다시 넣으려 할 때(`Replace(i, slot:Get(i))`, `Splice`가 방금 뺀 원소를 같은 호출에서 다시 넣는 경우 등).
-- **고치려면**: 순서만 바꾸려면 `Move`/`Swap`을 쓰세요 — 재추가는 두 번째 마운트로 거부됩니다.
+- **언제**: 수동 `Slot`이 이미 들고 있는 원소를 다시 넣으려 할 때 — `slot:Add(a); slot:Add(a)`, `Replace(i, slot:Get(i))`, 그리고 한 호출 안의 중복(`q.Slot({ a, a })`, `Splice(i, 0, a, a)` — [`q.debug`](/reference/core/01-quad-module/#qdebug)가 꺼져 있을 때; 켜져 있으면 넣기 전에 [`Quad0171`](#quad0171)). 원소를 자리에 넣는 순간 걸리므로 마운트 전 Slot에서도 같습니다. 여러 원소를 받는 호출이 중간 원소에서 던지면 앞 원소는 이미 들어가 있습니다(관측 — 계약 아님). `Splice`가 같은 호출에서 빼는 원소를 다시 넣는 것은 이 에러가 아닙니다(빼는 쪽이 먼저 풀립니다).
+- **고치려면**: 순서만 바꾸려면 `Move`/`Swap`을 쓰세요 — 재추가는 두 번째 마운트로 거부됩니다. 한 호출 안에서는 원소를 한 번씩만 주세요.
 - **참고**: [`slot:Splice(index, removeCount, ...newElements)`](/reference/core/06-slot/#slotspliceindex-removecount-newelements)
 
 ### Quad0171
 
 `{surface}: the same element appears twice` — `quad-base/src/Slot/init.luau`
 
-- **언제**: 한 번의 배치 호출(`Splice`, 생성자 `initial` 등) 안에 같은 원소가 두 번 들어 있을 때.
+- **언제**: [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때, 한 번의 호출(`Splice`, 생성자 `initial` 등) 안에 같은 값이 두 번 들어 있을 때 — 원소를 하나도 넣기 전에 받은 값 그대로 비교합니다(같은 `State` 두 번도 걸리지만, 같은 Instance를 쥔 서로 다른 `State` 둘은 값을 읽지 않으므로 여기서 걸리지 않고 마운트 때 [`Quad0156`](#quad0156)). **[2026-10-06 기준, 다음 릴리즈부터]** debug 층 검사입니다 — 꺼 두면 두 번째 값이 자리에 들어가는 순간 [`Quad0170`](#quad0170)이 납니다.
 - **고치려면**: 배치 안의 원소를 중복 없이 주세요.
 - **참고**: [`q.Slot<<T>>(initial?)`](/reference/core/06-slot/)
 
 ### Quad0172
 
-`{surface}: this element is already mounted - multiple mounts are not allowed` (+ 같은 꼬리) — `quad-base/src/Slot/init.luau`
+`Slot: this element is already mounted - multiple mounts are not allowed` (+ 같은 꼬리) — `quad-base/src/Slot/Owner.luau`
 
-- **언제**: 이미 다른 곳(다른 `Slot`의 원소, 정적 자식, 숏핸드가 만드는 관리 자식 등)에 마운트된 값을 원소로 넣으려 할 때(`prepareElements`의 배치 사전검사).
+- **언제**: 수동 `Slot`에 이미 다른 곳(다른 `Slot`의 원소, 정적 자식, 숏핸드가 만드는 관리 자식 등)에 마운트된 값을 원소로 넣으려 할 때 — 원소를 자리에 넣는 순간 걸립니다(여러 원소를 받는 `Splice`·생성자가 중간 원소에서 던지면 앞의 변경은 이미 일어나 있습니다 — 관측, 계약 아님).
 - **고치려면**: Quad0156과 같습니다 — 먼저 옛 자리에서 빼세요(Slot 원소는 `Extract`, State 자리는 `Set(nil)`). 리터럴 정적 자식(`D.Frame({ el })`)으로 앉은 값은 뺄 공개 경로가 없습니다(`el.Parent = nil`로도 안 풀림) — 옮겨 다닐 값은 처음부터 State 자리나 Slot에 두세요([2026-09-27 mock 실측]).
 - **참고**: [죽은 Slot과 마운트 규칙](/reference/core/06-slot/#죽은-slot과-마운트-규칙)
 
@@ -376,7 +376,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `Slot: destroyed Slot cannot be an element` — `quad-base/src/Slot/Elements.luau`
 
-- **언제**: 이미 파괴된 `Slot`을 다른 `Slot`의 원소로 직접 넣으려 할 때(`wrapElement`의 원소 자체가 파괴된 Slot인 경우 — 같은 뜻: Quad0169, 그쪽은 State로 감싸인 occupant가 파괴된 Slot인 경우).
+- **언제**: 이미 파괴된 `Slot`을 다른 `Slot`의 원소로 넣으려 할 때 — 직접 넣으면 그 호출에서, `State`에 담아 넣었으면 그 래퍼가 값을 정착시킬 때(마운트 때, 그 뒤엔 값이 바뀔 때; 폐기된 Quad0169가 하던 일).
 - **고치려면**: 파괴된 `Slot`은 원소로 쓸 수 없습니다 — 새 `Slot`을 만드세요.
 - **참고**: [죽은 Slot과 마운트 규칙](/reference/core/06-slot/#죽은-slot과-마운트-규칙)
 

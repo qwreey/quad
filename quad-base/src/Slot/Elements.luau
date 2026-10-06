@@ -27,21 +27,22 @@ return function(S: Types.SlotInternal, module: any)
 	-- public CRUD / `Slot{}`) passes `errorBeforeNearest` so a CRUD call made
 	-- inside a reactive callback blames its own line, not the `:Set` that ran
 	-- the callback; `settle` (reconcile depth) passes `errorBefore`.
-	-- [2026-09-16 hunt A] the raw-value gate, shared by wrapElement (raw elements) and
-	-- prepareElements (the CURRENT value of a State element) — every arm must fail in the
-	-- pre-pass, before rawAdd/rawReplace touch anything (`H-30`/`H-31`, slot-plan "검증을
-	-- 선행 패스로"). Before this the isInst/handler-layer/destroyed arms of a State's
-	-- occupant were checked inside the wrapper's reconcile — after the insert (ghost
-	-- element, Blocker left On; unmounted Slots did not raise at all until drive).
+	-- The raw-value gate (wrapElement's raw arm). A State element's CURRENT value is gated by the
+	-- same body when the wrapper Slot settles it — at mount or when the value changes (round14
+	-- Q170 (최종), user decision 2026-10-06: the 2026-09-16 hunt A pre-pass `:Get()` of a State
+	-- element was reverted — lazy model, the same timing as `:List`/`:Single` items).
 	local function checkRawElement(v: any, raise: (string, any) -> ())
-		if module.isRef(v) or module.isPreRef(v) or module.isPostRef(v)
-			or module.isObserver(v) or module.isEffect(v) or module.isModifier(v) then
-			raise("Quad0238 Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements", S.SURFACE)
-		end
 		if v == nil or v == S.None then
 			raise("Quad0239 Slot: nil/None cannot be an element - only actually mountable values", S.SURFACE)
 		end
+		-- [2026-10-06 user decision, round14 Q169 (1)] the handler-layer brand lookups (six) only when
+		-- the backend does not take the value — an Instance is never one of them, so the result and the
+		-- message are the same and a plain Instance skips them (`Slot{200}` −17%, measured)
 		if not module.Backend.isInst(v) then
+			if module.isRef(v) or module.isPreRef(v) or module.isPostRef(v)
+				or module.isObserver(v) or module.isEffect(v) or module.isModifier(v) then
+				raise("Quad0238 Slot: handler-layer values (Ref/PreRef/PostRef/Observer/Effect/Modifier) cannot be elements", S.SURFACE)
+			end
 			raise("Quad0240 Slot: this backend cannot mount this value", S.SURFACE)
 		end
 		-- [2026-09-16 사용자 결정 — question.md §2] a foreign element (made outside quad, never
@@ -53,7 +54,6 @@ return function(S: Types.SlotInternal, module: any)
 			raise("Quad0241 Slot: this element is not claimed by quad - build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one - a destroyed Instance cannot be reused)", S.SURFACE)
 		end
 	end
-	S.checkRawElement = checkRawElement
 
 	local function wrapElement(v: any, raise: (string, any) -> ()): any
 		-- round10 H-537 (code-review 보강): the cross-instance door for Slot/State elements lives HERE so all

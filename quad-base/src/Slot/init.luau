@@ -30,7 +30,7 @@
 	primitives are not on `S`: every use is an inline `module.Backend.bindLifetime(...)`/
 	`module.Backend.isInst(...)` read (`H-174`; the old wrapper trio was a leftover of the M6
 	fork's style, not a need — a hashed field read is cheap, user 2026-09-07). This init keeps the public Slot_mt CRUD,
-	the gates (assertLive/assertManual/assertMutable/checkIndex/occupantOf/
+	the gates (assertLive/assertManual/assertMutable/checkIndex/
 	prepareElements), the `Slot(initial)` constructor, `dispose`, the module exposure
 	+ `_slotInternal`, the handler registration and the setFuncLevel tagging call.
 	`Handler.luau` is the former `Dispatch/Slot.luau` (the top-level SlotHandler).
@@ -66,6 +66,40 @@ local function checkNotOwnAncestor(self: any, occupant: any, surface: string, el
 			Err.errorBeforeNearest("Quad0173 " .. surface .. ": cannot add a Slot to itself or to one of its own descendants (that would be a cycle)", SURFACE)
 		end
 		cursor = elementOwner:GetWeak(cursor, OWNER)
+	end
+end
+
+-- [2026-10-06 user decision, round14 Q170 (최종)] the in-call duplicate check (`Slot{ A, A }`,
+-- `Splice(i, 0, A, A)`, the same State twice) on the values AS GIVEN — no `:Get()`, so a State
+-- element's lazy value is not read even here (user: "debug 일 때 lazy 가 사라지는건 안 돼"). Debug
+-- layer: with it off the second copy meets `claimOwner` mid-batch (`Quad0170`; the state after that
+-- raise is observed, not a contract) — or, for a State given twice, the mount-time `Quad0156`.
+-- Also runs the `H-500` cycle walk on each raw Slot element.
+local function checkBatchDebug(self: any, surface: string, count: number, items: { any }, elementOwner: any, OWNER: string)
+	local seen = {}
+	for i = 1, count do
+		local v = items[i]
+		if v ~= nil then
+			if seen[v] then
+				Err.errorBeforeNearest("Quad0171 " .. surface .. ": the same element appears twice", SURFACE)
+			end
+			seen[v] = true
+			if Brand.isSlot(v) then
+				checkNotOwnAncestor(self, v, surface, elementOwner, OWNER)
+			end
+		end
+	end
+end
+
+-- [2026-10-06 user decision — consumer kits C0, the "debug 감지기 셋" (3) family] a CRUD on a Slot whose
+-- mount host is no longer claimed by quad (`q.dispose(host)`, or destroyed outside quad) goes through
+-- silently and the change lands on a dead Instance — undefined (round3 Q9: "Instance와 동형"). With
+-- `q.debug` on, every public CRUD entry asks the backend once and prints one line; the call goes on
+-- unchanged. No public "host alive" query (user: 공개 질의는 안 함).
+local function checkHostClaimed(self: any, isClaimed: (any) -> boolean)
+	local host = self._mountedInst
+	if host ~= nil and not isClaimed(host) then
+		print("Slot: CRUD on a Slot whose host Instance is no longer claimed by quad (destroyed - by q.dispose or outside quad - or not made by quad) - the change goes to a dead Instance (undefined); stop using this Slot, or build a new one")
 	end
 end
 
@@ -173,6 +207,7 @@ local function Init(module: any)
 		assertLive(self)
 		assertManual(self)
 		assertNotMounting(self)
+		if module.debug then checkHostClaimed(self, module.Backend.isClaimed) end -- C0 (debug-only, file head)
 	end
 
 	S.assertLive = assertLive -- `checkListInstall` (Slot/List.luau) gates through this
@@ -194,92 +229,26 @@ local function Init(module: any)
 		end
 	end
 
-	-- prepareElements: the validation PRE-PASS for CRUD that takes new
-	-- elements (`H-30`/`H-31`) — wrap (type gate) + "already mounted" + no
-	-- duplicates within the batch, all BEFORE any raw* mutates. The wrapped
-	-- results are what raw* receives (never wrapped twice).
-	-- ⚠️ The checks run on the RAW values (round15 `H6-19`, 통합 리뷰): a State
-	-- element is wrapped into a fresh Slot, so checking the wrapper would be
-	-- vacuous — the same State twice, or a State whose current value is
-	-- already mounted, would pass here and raise from reconcile depth
-	-- mid-mutation. For a State the occupant to check is its current value.
-	-- Dedup is on the OCCUPANT (a State's current value), not the raw value
-	-- (`H6-24`, 회신 반영 리뷰): two States holding one instance, or a raw
-	-- instance plus a State holding it, are two wrappers over one occupant —
-	-- the wrappers' own claims happen at mount, mid-loop, inside the batch
-	-- gate. The same occupant test runs against what `self` already holds
-	-- (unmaterialized wrappers have not claimed yet, so elementOwner alone
-	-- cannot see them — the materializeSlotTree variant of the leak).
-	local function occupantOf(element: any): any
-		if isSlot(element) then
-			return if element._wrapped ~= nil then element._wrapped:Get() else element
-		end
-		return element
-	end
-
-	-- `H-506` (2026-09-08 round8 L-2): takes the candidates as an ARRAY (`count` keeps nil
-	-- holes visible — `table.pack`'s `.n` at the Splice call site) so the constructor can
-	-- pre-pass its whole initial list ONCE. It used to call this per element, and the
-	-- `_elements` scan below made `Slot{ …N개 }` O(N²) (1000 → 38 ms; `Splice(1, 0, …)` of
-	-- the same 1000 took 1 ms). Single `Add` stays O(current length) by design — batches
-	-- go through Splice (CRUD 표).
+	-- prepareElements: the PRE-PASS for CRUD that takes new elements (`H-30`/`H-31`) — the
+	-- `wrapElement` type gate (nil/None/handler-layer/isInst/isClaimed, destroyed or foreign Slot,
+	-- State → wrapper Slot), BEFORE any raw* mutates. The wrapped results are what raw* receives
+	-- (never wrapped twice).
+	-- [2026-10-06 user decision, round14 Q170 (최종)] that is ALL it does on the normal path. Gone:
+	-- the scan of this Slot's existing elements (`H6-24` — O(length) per Add, O(N²) for N Adds), the
+	-- State element's current-value gate (`H-517`, 2026-09-16 — it read `raw:Get()` at the CRUD line,
+	-- running a lazy Compute early), and the in-call duplicate table. A State element is checked like
+	-- `:List`/`:Single` items — when the Slot mounts or the value changes (lazy model). A raw element
+	-- already held is caught by `rawAdd`/`rawReplace`'s `claimOwner` (it claims even before mount), so
+	-- `Add(A); Add(A)` and `Slot{ A, A }` raise at the same place with the same message. User: "Get은
+	-- 디버그에도 없는게 맞아보여" — the debug layer adds only the in-call duplicate check on the values
+	-- as given (`checkBatchDuplicates`, file head) and the `H-500` cycle walk on raw Slots.
 	local function prepareElements(self: any, surface: string, count: number, items: { any }): { any }
-		-- one table: existing occupants are seeded as "held" (this Slot already has it), batch
-		-- occupants as true (duplicate within the call) — a second table cost +39% on 2000 Adds
 		local prepared = table.create(count)
-		-- `"held"` = an element this Slot already holds, `true` = seen in this batch. Annotated:
-		-- inferred from the first write the table became `{ [any]: boolean }` in luau-lsp and the
-		-- `== "held"` below was "Cannot compare unrelated types" (user's editor, 2026-09-17)
-		local seen: { [any]: boolean | "held" } = {}
-		for _, existing in ipairs(self._elements) do
-			local occ = occupantOf(existing)
-			if occ ~= nil then seen[occ] = "held" end
-		end
 		for i = 1, count do
-			local raw = items[i]
-			local element = S.wrapElement(raw, Err.errorBeforeNearest) -- type gate (nil/None/handler-layer/isInst); direct surface → nearest
-			local occupant = if element ~= raw then raw:Get() else raw
-			-- `None` in a State is the absent element (`H-467`/Q30: None == nil) — skip like nil
-			if occupant == S.None then occupant = nil end
-			if occupant ~= nil then
-				-- [2026-09-16 code-review + hunt A] wrapElement gates only raw values; a State's CURRENT
-				-- value was gated later, inside the wrapper's reconcile — after rawAdd had inserted
-				-- (ghost element, Blocker left On; an unmounted Slot did not raise at all; Replace had
-				-- already destroyed the old element). Gate the occupant here, in the pre-pass, with the
-				-- same raw gate, so nothing is touched on failure. A State may hold a Slot (`State<Slot>`
-				-- swap) — that arm only rejects a destroyed one, as wrapElement does for a raw Slot.
-				if element ~= raw then
-					-- code-review: the occupant of this instance's State may itself be another instance's
-					-- Slot/State (`a:Add(A.Source(bSlot))`) — same door as wrapElement's raw arm
-					if isSlot(occupant) or module.isState(occupant) then
-						ModuleIdentity.assertOwnAtCall(module, occupant, surface)
-					end
-					if isSlot(occupant) then
-						if occupant._destroyed then
-							Err.errorBeforeNearest("Quad0169 " .. surface .. ": destroyed Slot cannot be an element", SURFACE)
-						end
-					elseif not module.isState(occupant) then
-						S.checkRawElement(occupant, Err.errorBeforeNearest) -- same `Slot: …` messages as the raw path (one greppable form)
-					end
-				end
-				if seen[occupant] == "held" then
-					-- [2026-09-16 hunt A] an element this Slot already holds (Splice putting back what it
-					-- removes, Replace(i, Get(i))) used to be reported as "appears twice" — say what it is:
-					-- reordering is Move/Swap's job (CRUD 표), re-adding is rejected as a second mount.
-					Err.errorBeforeNearest("Quad0170 " .. surface .. ": this element is already in this Slot - reorder with Move/Swap instead of adding it again", SURFACE)
-				end
-				if seen[occupant] then
-					Err.errorBeforeNearest("Quad0171 " .. surface .. ": the same element appears twice", SURFACE)
-				end
-				if elementOwner:GetWeak(occupant, OWNER) ~= nil then
-					Err.errorBeforeNearest("Quad0172 " .. surface .. ": this element is already mounted - multiple mounts are not allowed" .. ZOMBIE_NOTE, SURFACE)
-				end
-				if module.debug and isSlot(occupant) then
-					checkNotOwnAncestor(self, occupant, surface, elementOwner, OWNER) -- `H-500` cycle guard (debug-only, file head)
-				end
-				seen[occupant] = true
-			end
-			prepared[i] = element
+			prepared[i] = S.wrapElement(items[i], Err.errorBeforeNearest) -- type gate; direct surface → nearest
+		end
+		if module.debug then
+			checkBatchDebug(self, surface, count, items, elementOwner, OWNER) -- Quad0171 / `H-500` (debug-only, file head)
 		end
 		return prepared
 	end
@@ -461,8 +430,9 @@ local function Init(module: any)
 			-- Not `self:Add(v)` — the tagged Add would then be the nearest tagged
 			-- frame and blame THIS line instead of the user's `Slot{…}` (round15
 			-- `H6-19`). Same pre-pass + raw* as Add, called directly.
-			-- `H-506`: ONE pre-pass over the whole list (it also catches `Slot{ a, a }` —
-			-- `seen` spans the batch), then raw adds. `ipairs` first, so a nil hole
+			-- `H-506`: ONE pre-pass over the whole list (with `q.debug` it also catches
+			-- `Slot{ a, a }` — the in-call duplicate check; off, the second rawAdd's claimOwner
+			-- raises `Quad0170`), then raw adds. `ipairs` first, so a nil hole
 			-- still just stops the list (documented UB, spec 22b) instead of raising.
 			local list = {}
 			for _, v in ipairs(initial) do table.insert(list, v) end

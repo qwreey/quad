@@ -40,6 +40,7 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 export type Store<T> = QuadTypes.Store<T>
 
 local StoreBrand = Brand.StoreBrand
+local DispatchHintBrand = Brand.DispatchHintBrand -- `q.Protocols.DispatchHint` (round14 Q161)
 local isSource = Brand.isSource
 
 -- Runtime single source of the reserved names (`H-153`). Mirror: quad-types
@@ -87,11 +88,21 @@ local function Init(module: any)
 		return `Store\{{table.concat(shown, ", ")}}`
 	end
 
+	-- round14 Q161·Q182 (user decision 2026-10-06): the `q.Protocols.DispatchHint` hook — the cause
+	-- sentence for a Store left at a key no handler takes (`Quad0076`). Moved here from Dispatch's name branch.
+	function Impl.__dispatchHint(_self: any, _key: any): string?
+		return "a Store is not a value for any key: use one of its fields (store.Name) or wrap it (q.Attr(store))"
+	end
+
 	-- Dynamic keys only: the type cannot stop a computed name, so the runtime does.
+	-- round14 `H-894` (user note 2026-10-06): `rawget` FIRST — a hit already proves the key valid (a
+	-- reserved name can never be a raw field: `Of`/`Names` live on Impl, `__*` is refused at every door,
+	-- and a non-string key's rawget is nil unless `rawset` put it there — unsupported, the docs say so),
+	-- so `checkKey` runs only on the creating path.
 	function Impl.Of(self: any, name: string): any
-		checkKey(name, "Of name") -- `H-201`
 		local src = rawget(self, name) -- shadow = the store itself; never go through `__index`
 		if src == nil then
+			checkKey(name, "Of name") -- `H-201`
 			src = module.Source(nil) -- == Source() — read lazily, not captured
 			self[name] = src
 		end
@@ -130,6 +141,7 @@ local function Init(module: any)
 		end
 		setmetatable(self, Impl)
 		StoreBrand:Register(self)
+		DispatchHintBrand:Register(self)
 		return self
 	end
 

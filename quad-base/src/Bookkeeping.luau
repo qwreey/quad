@@ -15,11 +15,13 @@
 	(`H6-2`); `_recompute` stays internal (`_` prefix).
 
 	Sources, as-is: `dispatch-core-plan.md` "Length/Offset" / "두 필드" /
-	"배치 등록을 안전하게 만드는 Blocker 게이팅" — plus the `H-240` (a)
-	reinforcement (2026-09-01, user-confirmed): cursor writes never stomp a
-	rewind signal raised in a `:Get()` read window — checks sit before every
-	write, and getOffsetAt self-heals by restarting from a lowered cache
-	cursor.
+	"배치 등록을 안전하게 만드는 Blocker 게이팅". The one user-code window the
+	pass defends is the Offset `:Set` (a subscriber's CRUD lowers the cursor and
+	the pass rewinds — a defined path, capped by `Quad0267`). The `:Get()` read
+	windows (a Compute length's fn) are not defended: a fn that lowers a cursor
+	breaks Compute purity (undefined) — the 2026-09-01 `H-240` (a) checks and
+	getOffsetAt's restart branch were removed (round14 Q171 (a), user decision
+	2026-10-06).
 ]]
 
 local Relate = require("./Relate")
@@ -170,27 +172,19 @@ local function Init(module: any)
 	end
 
 	-- Absolute offset (0-based count) of position `at` — single function with
-	-- a prefix-sum cache. `H-240` (a): the cache cursor now advances
-	-- INCREMENTALLY as entries are written (invariant: cursor == i at the top
-	-- of each fill step), so a lowering raised by user code inside a length's
-	-- `:Get()` is detectable against it, and the fill RESTARTS from the
-	-- lowered point instead of a tail write stomping the signal. Safe to
-	-- restart freely — this is a pure cache fill, no Sets.
-	-- Recognized UB boundary (documented, not defended): user code inside
-	-- position i's own `:Get()` REPLACING that same position's length entry
-	-- (`setLength(owner, i, …)` mid-read) — a lowering exactly TO the cursor
-	-- is indistinguishable from the no-op baseline, kin to the standing
-	-- "재진입/자기 재정의 무방어" family. round10 Q50 (a) (2026-09-17): a LENGTH
-	-- Compute whose fn touches its own owner's bookkeeping now raises State's
-	-- re-entry error (the nested recompute reads the node being computed) — and
-	-- since that raise unwinds through recompute's On/Off window the owner is
-	-- frozen, like any throw in that window (same UB family; spec.lengthoffset 10).
+	-- a prefix-sum cache. A length's `:Get()` may run a Compute fn (pure by
+	-- contract, C2); user code there that changes this owner's bookkeeping is
+	-- undefined — not detected, not restarted (round14 Q171 (a), user decision
+	-- 2026-10-06: the `H-240` (a) restart branch and the incremental cursor it
+	-- relied on were removed; the cursor is written once after the fill). The
+	-- original repro (a fn touching its own owner) raises State's re-entry
+	-- error first (round10 Q50 (a)) and, unwinding through recompute's On/Off
+	-- window, leaves the owner frozen like any throw there (spec.lengthoffset 10).
 	-- bootstrap: position 1's offset is this owner's base itself — a Slot's own
-	-- .Offset, or 0 for a physical inst (no base concept). Also re-run when a
-	-- restart lands on 0 (`H-350`): a base change lowers both cursors to 0 (Slot
-	-- `_baseObserver`), and restarting from the stale `offsetCache[1]` would
-	-- rebuild the whole cache on the old base. Init-scope like `contribution`
-	-- (0순회 `H-365`: a per-call closure was allocated N times per recompute).
+	-- .Offset, or 0 for a physical inst (no base concept). A base change lowers
+	-- both cursors to 0 (Slot `_baseObserver`, `H-350`), so the next query
+	-- re-reads it here. Init-scope like `contribution` (0순회 `H-365`: a
+	-- per-call closure was allocated N times per recompute).
 	local function ensureBase(bk: any, ownerKey: any)
 		if bk.offsetCacheValidUpTo == 0 then
 			bk.offsetCache[1] = if Brand.isSlot(ownerKey) then ownerKey.Offset:Get() else 0
@@ -229,35 +223,22 @@ local function Init(module: any)
 					SURFACE
 				)
 			end
-			cur += contribution(bk, i) -- ← a State length's Get can run user code
-			if bk.offsetCacheValidUpTo < i then
-				-- `H-240`: that user code invalidated below us — entries past
-				-- the lowered cursor were built on stale lengths; restart there.
-				-- A lowering to 0 (M6: splice's j-1 = 0, or the owner's base
-				-- moved) re-reads the base first — `ensureBase` leaves the
-				-- cursor at 1 on a fresh `offsetCache[1]`.
-				ensureBase(bk, ownerKey)
-				i = bk.offsetCacheValidUpTo
-				cur = bk.offsetCache[i]
-				continue
-			end
+			cur += contribution(bk, i) -- a Compute length's fn runs here (pure by contract)
 			bk.offsetCache[i + 1] = cur -- this slot's length decides the NEXT slot's offset
-			bk.offsetCacheValidUpTo = i + 1 -- incremental — never past what was just written
 			i += 1
 		end
+		bk.offsetCacheValidUpTo = at
 		return cur
 	end
 
 	-- Full pass: reentry blocked by bk.recomputeBlocker, upper bound re-read
-	-- every iteration, rewind when someone lowered offsetSetUpTo mid-pass (at most
-	-- `REWIND_LIMIT` rewinds per pass — `Quad0267`, 2026-10-02).
-	-- `H-240` (a) reinforcement (2026-09-01): the ORIGINAL check guarded only
-	-- the offset:Set window (`H-101`/`H-113`/`H-124`); user code can also run
-	-- inside the `:Get()` reads (getOffsetAt above, contribution below), and
-	-- the unconditional cursor writes right after those reads erased the
-	-- signal. Now every cursor write is preceded by its own check — and loop
-	-- exit therefore implies "no user code since the last check", making the
-	-- two tail writes safe by construction.
+	-- every iteration, rewind when a subscriber of an Offset `:Set` lowered
+	-- offsetSetUpTo mid-pass (`H-101`/`H-113`/`H-124`; at most `REWIND_LIMIT`
+	-- rewinds per pass — `Quad0267`, 2026-10-02). The `:Get()` read windows
+	-- (getOffsetAt above, contribution below) are not checked: a Compute length's
+	-- fn that lowers a cursor is undefined (round14 Q171 (a), 2026-10-06 — the
+	-- `H-240` (a) checks ① ② were removed), so the Set window is the one rewind
+	-- point and the one place `countRewind` runs.
 	local function recompute(ownerKey: any, bk: any)
 		local sum = 0
 		bk.recomputeBlocker:On()
@@ -265,10 +246,6 @@ local function Init(module: any)
 		local rewinds = 0 -- this pass's rewind count (`REWIND_LIMIT`)
 		while i <= (bk.N or 0) do
 			prefix[i] = sum
-			-- entry snapshot: the read window below may lower the cursor; the
-			-- baseline differs by path (i-1 normally, i right after a rewind),
-			-- so compare against what we actually entered with.
-			local entryCursor = bk.offsetSetUpTo
 			local offset = bk.sourceList[i]
 			-- None is truthy — must be excluded explicitly; nil means broken
 			-- bookkeeping (`C-6`: the contract says None), never skip quietly.
@@ -285,13 +262,6 @@ local function Init(module: any)
 				bk.offsetSetUpTo = i
 			else
 				local abs = getOffsetAt(ownerKey, i)
-				-- `H-240` check ① — BEFORE the write below stomps the signal
-				if bk.offsetSetUpTo < entryCursor then
-					rewinds = countRewind(rewinds)
-					i = math.max(bk.offsetSetUpTo, 1)
-					sum = prefix[i]
-					continue
-				end
 				bk.offsetSetUpTo = i -- Set done up to here
 				if offset:Get() ~= abs then
 					offset:Set(abs) -- ← user code can run here
@@ -318,18 +288,8 @@ local function Init(module: any)
 				error(`Quad0024 Bookkeeping.recompute: lengthList[{i}] is nil - bookkeeping is broken (setOffsetSource without setLength?)`, 1)
 			end
 			sum += contribution(bk, i)
-			-- `H-240` check ② — contribution's own Get window; the possibly
-			-- stale += above is discarded by the rewind's prefix restore.
-			if bk.offsetSetUpTo < i then
-				rewinds = countRewind(rewinds)
-				i = math.max(bk.offsetSetUpTo, 1)
-				sum = prefix[i]
-				continue
-			end
 			i += 1
 		end
-		-- Tail writes are safe: the loop only exits right after a passed check
-		-- with no user-code window in between (`H-240`).
 		bk.offsetSetUpTo = bk.N or 0
 		bk.recomputeBlocker:OffWithoutEmit()
 		if Brand.isSlot(ownerKey) and ownerKey.Length:Get() ~= sum then

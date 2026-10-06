@@ -197,7 +197,7 @@ InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "�
   `Add`(및 내부 `raw*`)에서 즉시 `error` — "Slot 안엔 실제로 마운트
   가능한 값만 들어간다"는 단일 규칙으로 단순화.
 - **⭐ [전면 정정, 2026-08-24 6라운드 손 트레이싱 `H-40`] 판정은 블랙리스트가
-  아니라 화이트리스트다 — `isSlot` → `isState` → `isInst` → **[2026-09-16] `isClaimed`**(미claim 요소 거부, `claim-plan.md` 14번). **[같은 날 round10 `H-517`]** `State` 요소는 그 **현재값**에 같은 화이트리스트를 `prepareElements`(선행 패스)에서 적용한다 — 래퍼 Slot의 reconcile에서 검사하면 삽입 뒤라 유령 요소·Blocker On이 남았다.** 아래 "핸들러 계층
+  아니라 화이트리스트다 — `isSlot` → `isState` → `isInst` → **[2026-09-16] `isClaimed`**(미claim 요소 거부, `claim-plan.md` 14번). ~~**[같은 날 round10 `H-517`]** `State` 요소는 그 **현재값**에 같은 화이트리스트를 `prepareElements`(선행 패스)에서 적용한다 — 래퍼 Slot의 reconcile에서 검사하면 삽입 뒤라 유령 요소·Blocker On이 남았다.~~** **[2026-10-06 round14 Q170 (최종) — 사용자 결정, `H-517` 되돌림]** `State` 요소의 현재값은 CRUD 줄에서 읽지 않는다 — `:List`·`:Single` 항목과 같이 래퍼가 값을 정착시킬 때(마운트·값 변경) `wrapElement`가 검사한다(lazy 모델 — 마운트 전 CRUD가 Compute fn을 앞당기지 않는다). 사용자: *"List는 안 그러면서, Single 로 넣어도 안 그러면서 State<Inst> 만 검증한다면? 이상하다고 느껴 … 애초에 lazy 모델이라 그게 맞기도 하고"*. 던진 뒤의 유령 요소·Blocker On은 예외 안전성 계약상 관측. 아래 "핸들러 계층
   값 … 금지" 항목은 **열거된 것만** 막는 블랙리스트였고, 그래서 목록에 없는
   값 타입이 전부 샜다. 실제로 `Tween`이 그대로 통과해 `_elements`에 들어가고
   (물리적으로는 아무것도 안 붙는데 `Length`만 유령 +1), 나중 파괴 경로의
@@ -794,7 +794,7 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
 
 | 연산 | 시그니처 | 복잡도 | 의미 |
 |---|---|---|---|
-| `Add` | `Slot:Add(element, index?): number` | O(n) | 삽입(뒤 요소 밀림), `index` 생략 시 끝에 추가 — **실제로 삽입된 인덱스를 반환**. 선행 패스가 현재 요소를 전수 훑으므로(중복 검사) `Add` N회 반복은 O(N²) — 대량은 `Splice`/생성자(**[2026-09-08 `H-506`]** 생성자는 배치 한 번 선행 패스, 1000개 38ms → 1ms대) |
+| `Add` | `Slot:Add(element, index?): number` | O(n) | 삽입(뒤 요소 밀림), `index` 생략 시 끝에 추가 — **실제로 삽입된 인덱스를 반환**. ~~선행 패스가 현재 요소를 전수 훑으므로(중복 검사) `Add` N회 반복은 O(N²)~~ (**[2026-10-06 round14 Q170 (최종) — 사용자 결정, `H-517` 되돌림]** 그 스캔은 걷혔다 — 중복은 `rawAdd`의 `claimOwner`가 O(1)로 잡는다) — 대량은 `Splice`/생성자(**[2026-09-08 `H-506`]** 생성자는 배치 한 번 선행 패스, 1000개 38ms → 1ms대) |
 | `Remove` | `Slot:Remove(index)` | O(n) | 제거 **+ 파괴**(retract/Destroy) — `Extract(index):Destroy()`와 동치, 흔한 경로라 별도 이름으로 유지 |
 | `Replace` | `Slot:Replace(index, newElement)` | **O(1)** | 그 자리 요소를 교체하고 **이전 것을 파괴** — `Extract(index, newElement)`의 파괴 짝(`Remove` ↔ `Extract` 관계와 동형). **[2026-08-21 5라운드 `B-5` 신설]** |
 | `Extract` | `Slot:Extract(index, newElement?)` | O(n) 또는 O(1) | `newElement` 생략 — 제거만(파괴 안 함), 뒤 요소가 당겨져 빈 자리를 메움(O(n)). `newElement` 지정 — 그 자리를 즉시 교체(뒤 요소 안 건드림, O(1)), 이전 element를 반환 |
@@ -908,7 +908,10 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
     `H-545`)도 같이 debug로 갔다.
   - `Add`: element가 이미 어딘가(같은 Slot이든 다른 Slot이든) 마운트돼
     있으면 에러 — "라이브러리 차원에서 다중 마운팅 절대 금지" 원칙을
-    CRUD 경로에도 동일 적용. `element`가 `nil`/`None`이거나 핸들러 계층
+    CRUD 경로에도 동일 적용. **[2026-10-06 round14 Q170 (최종) — 사용자 결정, `H-517` 되돌림]** 이 판정은 선행 패스가 아니라
+    `rawAdd`/`rawReplace`의 `claimOwner`(마운트 전에도 owner를 단다)가 한다 — 같은 Slot이면 `Quad0170`(두 번째 마운트,
+    Move/Swap 안내), 다른 곳이면 `Quad0172`, `:List`/`:Single`·래퍼 Slot이면 마운트 때 원인을 말하는 `Quad0156`.
+    그래서 `Add(A); Add(A)`와 `Slot{ A, A }`가 같은 자리·같은 에러로 모인다. `element`가 `nil`/`None`이거나 핸들러 계층
     값(Ref/PreRef/PostRef/Observer/Effect/Modifier)이면 에러 — 위 "요소 타입 제약" 절.
     `index`가 범위 밖(1..현재 개수+1, 즉 끝에 추가하는 위치까지 포함)이면
     에러 — **clamp 안 함**(2026-08-10 세션 확정): index가 조용히 다른
@@ -922,13 +925,16 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
     범위(1..현재 개수+1), `removeCount`는 `index`부터 실제 남은 개수를
     못 넘으면 에러(음수도 에러) — clamp 안 함, 나머지 CRUD와 같은
     fail-fast 톤. `newElements` 각각에 `Add`와 동일한 검증(이미 마운트/
-    타입 제약) 적용, 검증은 실제 mutate 전에 전부 먼저 통과해야 함
-    (일부만 적용된 채 중간에 에러나는 반쪽 상태 방지).
+    타입 제약) 적용, ~~검증은 실제 mutate 전에 전부 먼저 통과해야 함
+    (일부만 적용된 채 중간에 에러나는 반쪽 상태 방지).~~ **[2026-10-06 round14 Q170 (최종) — 사용자 결정, `H-517` 되돌림]** 먼저 통과하는 것은
+    타입 게이트(`wrapElement`)뿐이다 — 이미 마운트·호출 안 중복은 원소를 넣는 순간 `claimOwner`가 잡고, 그 뒤의
+    반쪽 상태는 관측(예외 안전성 계약). 호출 안 중복은 `q.debug`일 때 선행 검사(`Quad0171`, 받은 값 그대로 — `:Get()` 없음).
   - `Replace(index, newElement)`: `index`는 1..현재 개수, `newElement`는 `Add`와
     동일한 검증(**[2026-09-03 추가]** — `B-5` 신설 때 이 목록에 빠져 있었다).
-  - **[2026-09-03 `H6-19`] 선행 검증은 래핑 전 raw 값을 본다** — 새 요소가
+  - **[2026-09-03 `H6-19`] 선행 검증은 래핑 전 raw 값을 본다** — ~~새 요소가
     `State`면 그 **현재 값**의 소유권과 배치 안 중복을 검사한다(래퍼 Slot은 매번
-    새로 만들어지므로 래퍼를 검사하면 항상 통과해 버린다). 파괴된 Slot 요소도
+    새로 만들어지므로 래퍼를 검사하면 항상 통과해 버린다).~~ **[2026-10-06 round14 Q170 (최종) — 사용자 결정, `H-517` 되돌림]** `State`의 현재 값은 읽지
+    않는다(위) — debug의 호출 안 중복 검사도 받은 값 그대로 비교한다. 파괴된 Slot 요소도
     이 자리에서 막는다(`rawSplice`의 배치 Blocker 안에서 raise가 나면 게이트가
     켜진 채 남는다 — 이게 이 선행 패스가 존재하는 이유의 실례).
   - `Swap`: `indexA`/`indexB` 중 하나라도 범위 밖이면 에러 — 단
@@ -1067,7 +1073,8 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
           self._crudUsed = true   -- 빈 테이블이어도 즉시 잠금(아래 참고)
           -- [round15 `H6-19`] `self:Add(v)`를 직접 부르지 않는다 — 태그된 Add가 nearest가 돼 사용자의
           -- `Slot{…}` 줄 대신 이 줄을 blame했다. [2026-09-08 `H-506`] 선행 패스는 리스트 전체에 **한 번**
-          -- (요소마다 부르면 현재 요소 전수 스캔 때문에 O(N²), 1000개 38ms). 중복은 배치 안 `seen`이 잡는다.
+          -- (요소마다 부르면 현재 요소 전수 스캔 때문에 O(N²), 1000개 38ms). [2026-10-06 Q170] 중복은
+          -- 둘째 `rawAdd`의 `claimOwner`(`Quad0170`)가, `q.debug`면 선행 패스의 호출 안 중복 검사(`Quad0171`)가 잡는다.
           local list = {}
           for _, v in ipairs(initial) do table.insert(list, v) end -- ipairs가 첫 nil에서 멈춤
           for _, element in ipairs(prepareElements(self, "Slot", #list, list)) do
@@ -1495,7 +1502,7 @@ GC-native 원칙(`lifecycle-pattern.md`)을 `:List`라는 구체적 지점에 �
 `activateList`가 수행 — `Dispatch.setLength`가 이미 쓰고 있는 것과 같은
 패턴(마운트 시점까지 미뤘다가 그 자리에서 `bindLifetime`).
 
-**[2026-09-27 round13 Q76·Q77 검토 중]** 아래 `reconcile`(`H-38` 증분 갱신)이 O(n)이라는 전제와 무관하게,
+**[2026-09-27 round13 Q76·Q77 검토 중]** 아래 `reconcile`(옛 `H-38` 증분 갱신 — 2026-10-02 사이클 끝 교체로 되돌림)이 O(n)이라는 전제와 무관하게,
 `Slot:List` 전체 교체가 O(N²)로 도는 경로(Q76)와 전체 역순에서 쓰지도 않는 offset 계산이 O(N²)를 만드는
 경로(Q77)가 성능 탐사에서 나왔다 — 프로토타입은 `audit/round13-q76-proto/`. 사용자 문항이 열려 있다
 (`qa-request/post-implementation-review-round13.md` §4). 본문은 결정 전이라 그대로 둔다.
@@ -1696,11 +1703,17 @@ function activateList(self, physicalTarget)
     --     물리/부기를 커밋한 뒤였다. 중복 키는 사용자 데이터에서 가장 흔한 실수라
     --     도달 빈도가 다른 패닉 경로와 다르다. `keyFn`을 한 번 더 도는 O(n)이
     --     붙지만 `:List`가 이미 O(n)이라 상수배다.
-    --   (`H-38`) **키 집합을 증분 갱신한다.** 마지막 일괄 교체를 없앴다 —
+    --   (`H-38`) ~~**키 집합을 증분 갱신한다.** 마지막 일괄 교체를 없앴다 —
     --     `updateFn`이 중간에 던지면 앞선 `settle`은 커밋됐는데 집합만 옛것으로
     --     남아, 그 사이클에 새로 생긴 키를 다음 사이클 소멸 루프가 못 물어
     --     영구 고아가 된다. 계약: **reconcile은 원자적이지 않지만 중단된
-    --     지점까지는 정합하다.**
+    --     지점까지는 정합하다.**~~
+    --     **⚠️ [2026-10-02 사용자 결정, round14 — 사이클 끝 교체로 되돌림]** 이 "중단된 지점까지
+    --     정합" 계약은 예외 안전성 계약(round3 Q18 (c) — 던진 뒤 무결 약속 없음)과 맞지 않아
+    --     걷었다. 사용자: *"updateFn 자체가 던진 이후 상태를 우린 정의한 적 없어. 정의 하고자
+    --     하지도 않고"*. 키 집합은 사이클 끝에 `prevKeys = seen` 한 번으로 바꾼다(`H-480` 첫 안).
+    --     던지면 그 교체가 안 돌아 그 사이클에 새로 생긴 키는 다음 사이클에 다시 묻지 않는다 —
+    --     관측, 계약 아님. 근거 `audit/round14-principle-audit/followup-2026-10-02.md` 2절.
     local function reconcile(items)
         -- 선행 패스 1 — 키 수집 + 중복 검사. 여기선 아무것도 mutate하지 않는다.
         local keys, seen = table.create(#items), {}
@@ -1759,25 +1772,16 @@ function activateList(self, physicalTarget)
                 slotPos = candidateSlot   -- 배열 자리는 요소 하나당 하나(중첩 Slot도 한 칸)
             end
 
-            -- [`H-38`, 2026-08-24 `/code-review high` 지적으로 순서 정정]
-            -- **`settle` *앞*에서 기록한다.** 뒤에 두면 `settle`이 물리/부기를
-            -- 이미 커밋한 뒤 던질 때(`rawAdd` 안의 `claimOwner` 거부 등) 그 키가
-            -- 집합에 안 들어가, 다음 사이클 소멸 루프가 못 물어 영구 고아가
-            -- 된다 — `H-38`이 고치려던 바로 그 모양이다. 선행 패스가 `seen`을
-            -- 미리 채우는 것과 같은 이유.
-            prevKeys[key] = true
-            -- [2026-09-08 `H-485`] 한때(`H-480` 첫 안) 이 기록을 지우고 꼬리에서 `prevKeys = seen`으로
-            -- 통째 교체했다가 `/code-review`가 잡았다 — 그건 위 `H-38`이 없앤 "마지막 일괄 교체"
-            -- 그 자체라, 던지면 교체가 안 일어나 새 키가 영구 고아가 된다. 증분 기록 유지.
+            -- [2026-10-02 round14] 옛 `H-38` 증분 기록(`prevKeys[key] = true`를 settle 앞에)과
+            -- `H-485`의 되돌림은 걷혔다 — 키 집합은 아래 꼬리의 `prevKeys = seen` 한 번이 바꾼다.
             settle(key, result, detach, slotPos)
             userdata[key] = ud       -- result와 무관, 그대로 기록
         end
 
         -- [재설계, 2026-08-21] 소멸 루프 — 조용히 파괴하지 않고 **처분을 묻는다**.
         -- 아래 "`KeyGone`" 절이 소스.
-        -- [`H-38`, 2026-09-08 `H-480`] 옛 코드는 아래 `prevKeys[key] = nil` 때문에
-        -- `table.clone(prevKeys)` 스냅샷을 돌았는데, Lua/Luau `pairs`는 순회 중 **기존 키를
-        -- nil로 지우는 것**을 명시적으로 허용한다(정의되지 않은 건 새 키 삽입뿐) — clone 제거.
+        -- [2026-09-08 `H-480`] 옛 코드는 `table.clone(prevKeys)` 스냅샷을 돌았다 — clone 제거.
+        -- [2026-10-02 round14] 이 루프는 `prevKeys`에 아무것도 쓰지 않는다(옛 `H-38`의 `= nil`도 걷힘).
         for key in pairs(prevKeys) do   -- 직전 사이클에 존재했던 전체 key
             if not seen[key] then
                 local prev = unwrapElement(mounted[key] or (self._detached and self._detached[key]))
@@ -1794,10 +1798,9 @@ function activateList(self, physicalTarget)
                 end
                 settle(key, result, detach, 0)   -- slotPos는 의미 없음(자리를 안 차지함)
                 userdata[key] = ud               -- 유저가 nil을 반환해야 지워짐
-                prevKeys[key] = nil              -- [`H-38`] 이 키는 이제 없다 —
-                                                 -- **다음 사이클엔 다시 안 묻는다**
             end
         end
+        prevKeys = seen   -- [2026-10-02 round14] 사이클 끝 교체 — 사라진 키는 다음 사이클엔 다시 안 묻는다
 
         -- ⭐ [2026-08-27, `H-136`] 배치 닫기 — `Slot:List`의 `_physicalTarget` 분기와
         -- 같은 꼬리. `recomputeBlocker`는 따로 본다(사용자 코드가 바깥 `recompute`
@@ -3553,9 +3556,14 @@ end
 `slot:Splice(1, 0, a, b, c)`에서 `c`만 남의 소유면 `a`/`b`는 이미 들어간
 **반쪽 상태**가 된다. 확정:
 
-- `Splice`/`Replace`/`Extract(index, new)`는 `raw*`를 부르기 **전에**
+- **[2026-10-06 round14 Q170 (최종) — 사용자 결정, `H-517` 되돌림]** 아래 (b)와 생성자 문단의 "실패하면 어떤 요소도 소유권을 얻지 않는다"는 걷혔다 — 선행 패스는
+  (a) `wrapElement`뿐이고, 소유권 판정은 `rawAdd`/`rawReplace`의 `claimOwner` 한 자리(그 뒤의 반쪽 상태는 관측 —
+  이 문단이 막으려던 것은 2026-09-07 예외 안전성 계약 이전의 "반쪽 상태 방지" 약속이었다). 사용자: *"'같은 호출
+  안 중복(seen)' 도 사실 정상 경로엔 없고 UB경로인데 정상 경로에서도 항상 Slot 을 만들 때 해싱하고 seen 테이블
+  만들고 … 정당성을 모르겠어. debug 층이 되는편이 나을지도"*.
+- ~~`Splice`/`Replace`/`Extract(index, new)`는 `raw*`를 부르기 **전에**
   `newElements` 전량에 대해 (a) `wrapElement`(타입 검증 포함)와
-  (b) `elementOwner` 조회(이미 누가 갖고 있으면 error)를 **먼저 다 돌린다.**
+  (b) `elementOwner` 조회(이미 누가 갖고 있으면 error)를 **먼저 다 돌린다.**~~
   **[2026-09-08 `H-506`]** 생성자 `Slot{ … }`도 같다 — 옛 구현은 요소마다 패스→`rawAdd`를 밟아 `Slot{ 새것,
   이미마운트된것 }`이 둘째에서 던지면 첫 요소가 버려질 Slot에 소유권이 묶인 채 남았다(반쪽 상태). 지금은 리스트
   전체가 선행 패스를 통과한 뒤에야 `rawAdd`가 돌아, 실패하면 어떤 요소도 소유권을 얻지 않는다(round8 O-8 실측).

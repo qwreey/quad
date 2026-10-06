@@ -151,12 +151,11 @@ description: "Tag/Attr/AttrKey/타입드 Attr가 던지는 에러"
 - **고치려면**: 문자열, `Tag`, 또는 그것들의 평범한 `{...}` 리스트를 넘기세요.
 - **참고**: [`q.Tag(...names)`](../core/09-tag-attr.md#qtagnames)
 
-### Quad0201
+### Quad0201 (폐기)
 
-`Tag: names must be strings, Tags, or a plain {...} list of those - this list nests deeper than 64 levels (does it contain itself?)` — `quad-base/src/Tag.luau`
+`Tag: names must be strings, Tags, or a plain {...} list of those - this list nests deeper than 64 levels (does it contain itself?)` — 폐기
 
-- **언제**: 이름 리스트가 64단계보다 깊게 중첩됐을 때 — 리스트가 자기 자신을 담아 무한히 중첩되는 경우를 이 한도로 잡습니다.
-- **고치려면**: 리스트가 자기 자신을 참조하지 않는지 확인하세요.
+- **[2026-10-06 폐기]** 이제 던지지 않습니다. 이름 리스트의 중첩 깊이에는 한도가 없고, 리스트가 자기 자신을 담는 것(`t[1] = t`)은 정의되지 않은 동작입니다 — 지금은 재귀가 스택을 넘쳐 quad 내부 줄의 에러로 끝납니다(관측 — 계약 아님). 이 번호는 다른 에러에 다시 쓰지 않습니다.
 - **참고**: [`q.Tag(...names)`](../core/09-tag-attr.md#qtagnames)
 
 ### Quad0202

@@ -129,6 +129,14 @@ EpochBrand:Register(source)
 "`isX` wrapper" 절의 예외이고, 쓰는 자리가 `LifetimeHandle.luau` 하나라 `:Is`를 직접 부른다. 공개 등록 표면은
 백로그(`research/bindable-hooks-plan.md`).
 
+**[2026-10-06 round14 Q161 — 사용자 결정] 첫 공개 능력 브랜드 `q.Protocols.DispatchHint`.** 능력 브랜드는 처음부터
+**집합 테이블 하나**(`module.Protocols`)로 노출하고 이번엔 안내 브랜드만 채운다 — Bindable·Epoch는 프로토콜을 계약으로
+낼 준비가 될 때 같은 테이블에 키를 더한다(키 추가는 BREAKING 아님). `BrandPredicates`는 그 테이블에 넣지 않는다(이름
+붙이기용 술어 등록부 — 종류가 다름). 멤버는 Dispatch 매치 실패 때 불리는 훅 `__dispatchHint(key) -> string?`을 갖는다
+(`dispatch-core-plan.md`의 매치 실패 항목 2026-10-06 문단). 이름 규약: `__` = 공개 프로토콜 훅(계약), `_` 단일 = 비공개.
+타입(quad-types)엔 싣지 않는다(Dispatch 런타임만 쓰는 표면). 브랜드 객체 자체는 `Brand.luau`의 `DispatchHintBrand`(사본 단위)이고
+`Protocols.DispatchHint`가 그것을 가리킨다.
+
 **역조회는 없다** — "이 값이 대체 무엇인가"를 되묻는 창구는 제공하지 않는다.
 코퍼스가 실제로 쓰는 건 전부 `isX` 형태의 **멤버십 질문**뿐이고, 역조회를 하는
 자리는 전수 조사에서 하나도 없었다(사용자 확인: *"확실히 의미가 없어진것 같습니다

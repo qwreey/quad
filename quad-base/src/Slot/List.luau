@@ -190,26 +190,16 @@ return function(S: Types.SlotInternal, module: any)
 				local detach = (result == S.Detach)
 				if detach then result = nil end
 				if result ~= nil then slotPos = candidateSlot end
-				-- `H-38`: record BEFORE settle — if settle (or a later updateFn) throws,
-				-- this key is already in the set and the next cycle's KeyGone pass can
-				-- still ask about it ("중단된 지점까지는 정합"). A tail swap
-				-- `prevKeys = seen` would skip that on a throw (code-review of `H-480`,
-				-- `H-485`) — so the set stays incremental.
-				prevKeys[key] = true
 				settle(key, result, detach, slotPos)
 				userdata[key] = ud
 			end
 
 			-- KeyGone pass over last cycle's key set. No `table.clone` snapshot
-			-- (`H-480`, 2026-09-08 advisory RFC): the loop only CLEARS existing keys
-			-- (`prevKeys[key] = nil` below), which Lua/Luau `pairs` explicitly allows
-			-- during traversal — only inserting new keys is undefined. The one way
-			-- to insert mid-traversal is a REENTRANT reconcile (user code below —
-			-- `updateFn`/a destroyed element's cleanup — `:Set`s this List's data
-			-- State; State emits synchronously): its first loop writes new keys here.
-			-- That is the `slot-plan.md` "재진입성" UB the clone used to hide, not a
-			-- supported path — `H-486` (2026-09-08 감사 A-1/B-1 — the round7 `H-480`
-			-- note "the clone was never needed" was wrong about insertion).
+			-- (`H-480`, 2026-09-08 advisory RFC): the loop writes nothing into `prevKeys`.
+			-- The one way to change it mid-traversal is a REENTRANT reconcile (user code
+			-- below — `updateFn`/a destroyed element's cleanup — `:Set`s this List's data
+			-- State; State emits synchronously): that is the `slot-plan.md` "재진입성" UB,
+			-- not a supported path — `H-486` (2026-09-08 감사 A-1/B-1).
 			for key in pairs(prevKeys) do
 				if not seen[key] then
 					local prev = S.unwrapElement(mounted[key] or (self._detached and self._detached[key]))
@@ -222,9 +212,15 @@ return function(S: Types.SlotInternal, module: any)
 					end
 					settle(key, result, detach, 0)
 					userdata[key] = ud
-					prevKeys[key] = nil -- `H-38`: gone — not asked again next cycle
 				end
 			end
+			-- [2026-10-02 user decision, round14] `H-38` reverted to the cycle-end swap (`H-480`): this
+			-- cycle's key set becomes the next cycle's "last" set in one write. The old incremental
+			-- writes (record before settle, clear after KeyGone) only mattered after an `updateFn` /
+			-- settle raise — a state quad does not define (user: "updateFn 자체가 던진 이후 상태를
+			-- 우린 정의한 적 없어"); after such a raise this swap does not run, so the keys that cycle
+			-- added are not asked about again (observed — not a contract).
+			prevKeys = seen
 
 			if ownsGate then
 				blocker:OffWithoutEmit()

@@ -227,6 +227,15 @@ v1의 `ProcessQuadProperty`(`qwreey/quad@f867ccb:src/class.lua` 134~214행)는
   싣는다 — *"이 깊이의 nil은 벗겨진 `None`이거나 반응형 nil일 수 있다"* —
   `NoneHandler` 재귀가 센티널 출처를 지우므로(사용자는 nil을 쓴 적이
   없는데 nil이라고 보고됨) 진단 문구만 보강한 것, 분기 로직이 아니다.
+  **[2026-10-06 round14 Q161·Q182 (a) 사용자 결정 — 원인 문장은 값이 준다]** 꼬리 안내는 값의 능력 브랜드
+  `q.Protocols.DispatchHint`(인스턴스 필드, `BrandPredicates`와 별개 — 그 안에 넣지 않음)에 속하면 그 값의
+  `__dispatchHint(key) -> string?`이 주고(정상 경로 비용 0 — 에러를 만들 때만; 훅 throw는 UB, 감싸지 않음; 위치는
+  안 바꿈), nil이면 일반 꼬리(브랜드 유무 × 키 종류). 옛 `noMatchMessage`의 이름 분기(Store·Context/Provider)는
+  각 브랜드의 훅으로 옮겼고 Blocker·AttrKey·Tween(quad-roblox, 생성 때 등록)이 자기 문장을 더했다 — Dispatch는
+  코어 객체 이름을 모른다(`H-278`). `H-257`의 nil 꼬리는 Dispatch에 남는다. 이름 규약(사용자): `__` = quad
+  런타임이 부르는 공개 프로토콜 훅(계약, 메타메서드처럼), `_` 단일 = 비공개. 구현 메모: 브랜드 객체는
+  `Brand.luau`의 `DispatchHintBrand`(사본 단위 — `EpochBrand`/`BindableBrand`처럼; 공유 잎 모듈 `Blocker`·
+  `Context`·`AttrKey`의 값도 등록되도록) — 각 `q.New()`의 `Protocols` 테이블이 같은 객체를 담는다.
   - **[2026-08-31 `H-219` (a) 사용자 확정] `level 2`의 도착지 한계를
     명시하고 현행 유지한다.** `process`는 핸들러 재귀도 받는 공개
     진입점이라 level 하나로 모든 경로의 "사용자 호출부"를 맞출 수 없고,
@@ -2031,7 +2040,7 @@ mutate**하는 게 바로 그 반대 방향 쓰기. "State가 자기 Source에 `
 -- 발행 채널(Source) 유무와 무관하게 누구나 부를 수 있다 — nativeInsert의 삽입 위치,
 -- setOffsetSource의 즉시 계산이 둘 다 이걸 쓴다.
 -- [2026-09-07 `H-350`/`H-365`, 1순회 `H-371`로 의사코드 동형화] 베이스 부트스트랩 —
--- 진입부와 루프 안 재시작(커서가 0으로 내려간 경우) 두 자리가 같은 함수를 부른다.
+-- 진입부에서 부른다(옛 루프 안 재시작 자리는 2026-10-06 round14 Q171 (a)로 걷혔다 — 아래).
 -- Init 스코프(`contribution`과 같은 자리) — 호출별 클로저로 두면 recompute마다 할당.
 local function ensureBase(bk, ownerKey)
     if bk.offsetCacheValidUpTo == 0 then
@@ -2057,12 +2066,13 @@ function Dispatch.getOffsetAt(ownerKey, at)
     if at <= bk.offsetCacheValidUpTo then
         return bk.offsetCache[at]              -- 유효 구간 — O(1)
     end
-    -- ⭐⭐ [2026-09-01 `H-240` (a) 사용자 확정] 채우기 루프가 **자가 치유**한다.
-    -- 캐시 커서를 한 칸 쓸 때마다 **바로 그만큼만** 올리고(불변식: 각 스텝
-    -- 머리에서 커서 == i), 길이 State의 `:Get()` 안 사용자 코드가 커서를
-    -- 낮췄으면 그 지점부터 채우기를 **재시작**한다 — 옛 꼬리 일괄 쓰기
-    -- (`= at`)는 그 하강 신호를 덮어 낡은 캐시를 "유효"로 표시했다. 순수
-    -- 캐시 채우기(Set 없음)라 재시작이 자유롭다.
+    -- ~~⭐⭐ [2026-09-01 `H-240` (a) 사용자 확정] 채우기 루프가 **자가 치유**한다.~~
+    -- ⚠️ [2026-10-06 round14 Q171 (a) 사용자 결정 — *"171 걷기 확인"*] **걷었다.** 길이의
+    -- `:Get()` 창에서 도는 것은 Compute 길이의 fn뿐이고 그 fn이 이 owner의 커서를 낮추는 것은
+    -- Compute 순수성(C2) 위반 — 정의되지 않음(원 재현인 "fn이 자기 owner를 건드림"은 round10
+    -- Q50 (a) 뒤 `Quad0184` 재진입 에러가 먼저 던진다). 그래서 재시작 가지도, 그것이 기대던
+    -- 한 칸씩 커서 쓰기도 없앴다 — 커서는 채우기를 마친 뒤 `= at` 한 번(옛 꼬리 쓰기). 근거
+    -- `audit/round14-principle-audit/followup-2026-10-02.md` 11절.
     local i = bk.offsetCacheValidUpTo
     local cur = bk.offsetCache[i]
     while i < at do
@@ -2077,28 +2087,17 @@ function Dispatch.getOffsetAt(ownerKey, at)
                 then `Dispatch.getOffsetAt: position {at} is past N+1 (N = {last}, at most {last + 1} may be queried) - or a leaf handler skipped its position registration (H-39): position {i} is not registered`
                 else `Dispatch.getOffsetAt: position {at} needs positions 1..{at - 1} registered but {i} is not - a leaf handler skipped its position registration (H-39)`)
         end
-        cur += contribution(bk, i)             -- lengthList[i](State면 :Get()) ← 사용자 코드 창
-        if bk.offsetCacheValidUpTo < i then
-            -- 그 사용자 코드가 아래를 무효화했다 — 하강점 너머에 이미 쓴
-            -- 엔트리는 낡은 길이로 만든 것, 거기서부터 다시.
-            -- [2026-09-07 `H-350`] 0으로 내려갔으면(M6 splice의 `j-1 = 0`,
-            -- owner base 이동 — Slot `_baseObserver`) 베이스를 먼저 다시 읽는다:
-            -- 진입부와 같은 ensureBase — 옛 offsetCache[1] 위에 재구축하면 그
-            -- owner의 형제 offset이 base 차이만큼 영구히 어긋난다(옛 주석의
-            -- "max 1 — M6가 베이스 재독을 넣어야"가 미이행이었던 자리)
-            ensureBase(bk, ownerKey)
-            i = bk.offsetCacheValidUpTo
-            cur = bk.offsetCache[i]
-            continue
-        end
+        cur += contribution(bk, i)             -- lengthList[i](State면 :Get() — Compute 길이의 fn, 순수가 계약)
         bk.offsetCache[i + 1] = cur            -- **지금 자리의 길이가 다음 자리의 offset을 정한다**
-        bk.offsetCacheValidUpTo = i + 1        -- 한 칸씩 — 방금 쓴 것 너머로 절대 안 올림
         i += 1
     end
+    bk.offsetCacheValidUpTo = at               -- 채운 만큼 한 번에(2026-10-06 Q171 — 한 칸씩 쓰기 걷음)
     return cur
 end
 ```
 
+**[2026-10-06 round14 Q171 (a)로 대체됨]** 아래 2026-09-01 문단의 "자기 자리 교체" 사각은 이제
+별도 경계가 아니다 — `:Get()` 창 안에서 부기를 바꾸는 것 전체가 정의되지 않는다(위 주석).
 **[2026-09-01 `H-240` 인지된 UB 경계 — 방어하지 않고 문서화만.**
 자리 `i`의 길이 `:Get()` **안에서** 바로 그 자리 `i`를
 `setLength(owner, i, …)`로 **교체**하는 것(자기 자신을 읽는 도중 자기
@@ -2271,17 +2270,16 @@ local function recompute(ownerKey, bk)
     --       지역 카운터로 세어 1만 번(`Effect`의 `RERUN_LIMIT`과 같은 수 — 상수는 각자,
     --       본문 공유 없음)을 넘으면 `Quad0267`로 던진다(outermost blame = 패스를 시작한
     --       사용자 줄). 반복이 아니라 되감기를 세므로 N이 아무리 커도 정상 패스는 0회.
-    --       세 되감기 자리(아래 ①·`H-124`·②)가 전부 센다. 던지는 자리는 On/Off 창 안이라
+    --       ~~세 되감기 자리(아래 ①·`H-124`·②)가 전부 센다.~~ **[2026-10-06 round14 Q171 (a)]**
+    --       되감기 자리는 `offset:Set` 창 뒤의 `H-124` 하나뿐이다(`:Get()` 읽기 창의 검사 ①·②는
+    --       걷혔다 — 아래) — 한도를 세는 자리도 그 하나. 던지는 자리는 On/Off 창 안이라
     --       그 owner는 동결된다(예외 안전성 계약 — 무결 약속 없음).
     bk.recomputeBlocker:On()
     local prefix, i = {}, 1
     while i <= (bk.N or 0) do
         prefix[i] = sum
-        -- ⭐⭐ [2026-09-01 `H-240` (a) 사용자 확정] 진입 스냅샷 — 아래
-        -- `getOffsetAt`의 `:Get()` 읽기 창에서도 사용자 코드가 커서를 낮출
-        -- 수 있는데, 기준선이 경로마다 다르다(평시 `i-1`, 되감기 복귀 직후
-        -- `i`) — 실제 진입값과 비교해야 양쪽 다 정확하다.
-        local entryCursor = bk.offsetSetUpTo
+        -- [2026-10-06 round14 Q171 (a)] 옛 `H-240` (a) 진입 스냅샷(`entryCursor`)은 걷혔다 —
+        -- `:Get()` 읽기 창(Compute 길이의 fn)에서 커서를 낮추는 것은 정의되지 않음(Compute 순수성).
         local offset = bk.sourceList[i]
         -- offset은 실제 Source이거나 None(발행 채널 없음) — None은 truthy라
         -- `if offset then`만으로는 안 걸러짐, 명시적으로 배제해야 함.
@@ -2297,22 +2295,14 @@ local function recompute(ownerKey, bk)
             error("Dispatch.recompute: sourceList[" .. i .. "] is nil - bookkeeping is broken (the contract says None)", 1)
         end
         -- [2026-09-08 `H-483`, 자문 RFC — 사용자 결정] None 자리(발행 채널 없는 리프)는
-        -- Set할 대상이 없으니 `abs`도 안 뽑는다 — 진입 스냅샷 이후 사용자 코드 창이
-        -- 없어 검사 ① 없이 커서를 바로 올린다. 플랫 리스트의 recompute는 순수 합산
+        -- Set할 대상이 없으니 `abs`도 안 뽑는다 — 사용자 코드 창이 없어 커서를 바로 올린다. 플랫 리스트의 recompute는 순수 합산
         -- 루프가 되고, 접두합 캐시는 숫자를 실제로 뽑는 곳(`nativeInsert` offset,
         -- List의 physIndex)에서 `getOffsetAt`이 온디맨드로 채운다(옛 코드는 그 채움을
         -- 여기서 한 번 더 했다 — 플랫 1000개 실측 0.1~0.2ms/회의 중복).
         if offset == None then
             bk.offsetSetUpTo = i
         else
-            local abs = Dispatch.getOffsetAt(ownerKey, i)       -- 절대 offset(캐시 경유) ← 사용자 코드 창
-            -- `H-240` 검사 ① — 아래 커서 쓰기가 신호를 덮기 **전에**. 옛 코드는
-            -- 이 쓰기가 무조건이라 읽기 창의 하강이 여기서 지워졌다(재현 확인).
-            if bk.offsetSetUpTo < entryCursor then
-                i = math.max(bk.offsetSetUpTo, 1)
-                sum = prefix[i]
-                continue
-            end
+            local abs = Dispatch.getOffsetAt(ownerKey, i)       -- 절대 offset(캐시 경유; Compute 길이의 fn은 순수가 계약)
             bk.offsetSetUpTo = i                                -- 여기까지 Set 완료
             if offset:Get() ~= abs then                         -- 실제로 다를 때만 Set
                 offset:Set(abs)                                 -- ← 사용자 코드가 돌 수 있는 자리
@@ -2353,21 +2343,12 @@ local function recompute(ownerKey, bk)
         -- [2026-08-31 `H-244`] 강제(coercion)는 `getOffsetAt`과 같은 단일
         -- `contribution(bk, i)` 하나다 — 인라인 사본 둘이면 강제에 케이스가
         -- 늘 때(M6) 한쪽만 고쳐져 Length와 offset이 갈라진다.
-        sum += contribution(bk, i)             -- ← 사용자 코드 창(길이 State의 :Get)
-        -- `H-240` 검사 ② — contribution의 자기 창. 오염됐을 수 있는 위 `+=`는
-        -- 되감기의 prefix 복원이 버린다. (뮤테이션 실측: 이 검사를 빼면
-        -- `spec.lengthoffset` 10이 실제로 실패한다 — 검사 ①은 이 케이스를
-        -- 다음 반복 진입에서 못 본다, 스냅샷이 이미 낮은 값이라.)
-        if bk.offsetSetUpTo < i then
-            i = math.max(bk.offsetSetUpTo, 1)
-            sum = prefix[i]
-            continue
-        end
+        sum += contribution(bk, i)             -- 길이 State의 :Get(Compute 길이의 fn — 순수가 계약)
+        -- [2026-10-06 round14 Q171 (a)] 옛 `H-240` 검사 ②(이 읽기 창의 되감기)는 걷혔다.
         i += 1
     end
-    -- [2026-09-01 `H-240`] 두 꼬리 쓰기가 안전한 이유 — 루프 탈출은 항상
-    -- "마지막 검사 통과 직후, 사용자 코드 창 없음"을 지나므로 덮을 신호가
-    -- 없다(구조적 보장, 별도 검사 불요).
+    -- 꼬리 쓰기: 정의된 사용자 코드 창(`offset:Set`)은 바로 위 `H-124` 검사를 통과한 뒤에만
+    -- 루프를 빠져나온다. `:Get()` 읽기 창이 커서를 낮추는 것은 정의되지 않으므로(Q171) 덮어도 된다.
     -- ⭐ [2026-08-25] 커서 마감과 블로커 해제를 **`Length:Set` 앞에** 둔다.
     --   `Length:Set`은 상위 owner의 사용자 코드를 돌릴 수 있는데, 그 도중
     --   낮춰진 `offsetSetUpTo`를 뒤에서 무조건 덮으면 **아직 Set 안 한 자리가
