@@ -360,7 +360,7 @@ local linear = RadioButton { Value = style, Option = Enum.EasingStyle.Linear, Te
 
 - **props 자리에 인라인으로 쓴 `:Compute`** — `D.TextLabel { Text = n:Compute(function(self) … end) }`처럼 다른 호출에 넘기는 테이블 안에 콜백을 바로 쓰면 콜백 매개변수의 타입이 정해지지 않아 에러가 납니다. `function(self: q.StateData<number>)`처럼 매개변수에 주석을 달거나, 결과를 주석 단 지역 변수로 먼저 빼세요.
 - **자식 배열 안에 인라인으로 쓴 콜백** — `D.Frame { q.PreRef(nil :: Frame?):Callback(function(inst) … end) }`나 `count:Observer(function(t) … end)`도 같은 이유로 매개변수 주석이 필요합니다 — `function(inst: Frame?)`, `function(t: q.StateData<number>)`. 같은 콜백을 독립 문장으로 쓰면 주석 없이도 됩니다.
-- **제네릭 함수 안에서 `Slot:List`에 넘기는 key 함수** — 매개변수 타입을 `(T, number) -> any`로 적으세요. 인자를 하나만 받는 함수 값(`(T) -> string`)은 인자를 둘 받는 함수 자리에 들어가지 않습니다(그 자리에 바로 쓴 람다는 괜찮습니다).
+- **`Slot:List`에 함수 값으로 넘기는 key 함수**(제네릭 함수 안이든 아니든) — 매개변수 타입을 `(T, number) -> any`로 적으세요. 인자를 하나만 받는 함수 값(`(T) -> string`)은 인자를 둘 받는 함수 자리에 들어가지 않습니다(그 자리에 바로 쓴 람다는 괜찮습니다).
 
 <!-- 근거: 2026-10-06 신 솔버 실측(저장소 내부 기록) — 위 두 컴포넌트와 사용 줄, 인라인 Compute·PreRef:Callback 주석형 통과, Option = 1 줄은 거부 -->
 

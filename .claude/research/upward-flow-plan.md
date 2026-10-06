@@ -151,7 +151,7 @@ callback을 쓰는게 일반적이여 보이긴 해. 타입으로도 편하기�
 **타입**: `Source<T> = State<T> & { Set, Emit, Revision }`라 시그니처를 `<K>(name: K & keyof<PropTypesRead>, src: Source<index<PropTypesRead, K>>) ->
 OnChangeDescriptor<K>`로 두면 `:Compute` 결과(`State<U>`, `Set` 없음)는 strict에서 구조적으로 거부된다 — 마커·브랜드 불필요, `OnChangeFn`·
 `PropTypesRead`(전역 단일 타입)를 그대로 재사용하므로 gen-d도 안 건드린다. **[구현 실측]** 8.11 규칙대로 마커+`{ read Set }`로 받으려던 첫 시도는 신 솔버가
-왼쪽 교집합을 조각마다 대조해 양성까지 거부 — 전체형 `Source<…>`만 통과·음성 거부·값 타입 검사 셋을 다 한다(`typing-limits.md` 8.25, `type-surface: allow` 예외 첫 사례). 사용자 캐비엇("compute 해서 in 을 넣으면 안 된다")은 타입이 먼저
+양성까지 거부(원인은 `typing-limits.md` 8.25 — 2026-10-06 정정: 교집합 조각 대조보다 수신자 `self` 불일치로 보임) — 전체형 `Source<…>`만 통과·음성 거부·값 타입 검사 셋을 다 한다(`typing-limits.md` 8.25, `type-surface: allow` 예외 첫 사례). 사용자 캐비엇("compute 해서 in 을 넣으면 안 된다")은 타입이 먼저
 막고 문서가 한 줄 보탠다.
 
 **걸러내기의 뜻 — 넣는 게 맞다, 그리고 루프 방지가 아니라 echo 방지다.** 엔진이 같은 값 재대입에 시그널을 안 쏘므로 루프는 저절로 끊긴다.

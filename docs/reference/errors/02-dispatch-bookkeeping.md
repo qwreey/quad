@@ -247,7 +247,8 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `State: the value chain is circular (a State that eventually holds itself) - a State may hold another State, but not a cycle` — `quad-base/src/StateHandler.luau`
 
-- **언제**: [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때, props 자리에 놓인 State의 값을 따라가다(State가 다른 State를 값으로 들고 있으면 그 State도 마저 벗기는 재귀) 결국 자기 자신으로 돌아오는 순환을 만났을 때(예: `a:Set(b); b:Set(a)`). Slot에 넣은 State도 같습니다 — 원소 State의 값 사슬이 순환하면(`st:Set(st)` 등) Slot이 그 값을 읽는 때 — 마운트될 때(이미 마운트된 Slot이면 넣는 줄)나 그 `:Set` 줄 — 던집니다(그 뒤 Slot의 상태는 계약이 아닙니다 — 지금은 이전 원소를 유지한 채 다음 정상 `:Set`으로 이어지는 것이 관측됨). **(3.2.0 다음 릴리즈부터)** 마운트 전 Slot에 넣는 줄에서는 던지지 않습니다 — 그 시점엔 원소 State의 값을 읽지 않으므로(지연 계산), debug에서도 값을 앞당겨 읽지 않습니다. **(3.2.0 다음 릴리즈부터)** 사슬을 끝까지 따라가는 이 검사는 emit마다 도는 자리라 debug 층으로 내려갔습니다 — `q.debug`를 꺼 두면 검사하지 않고, 순환은 스택 오버플로로 끝나는 **정의되지 않은 동작**입니다(Slot 원소 자리라면 그 Slot이 망가진 채 남을 수 있습니다). 개발 중에는 debug를 켜 두세요.
+- **언제**: [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때, props 자리에 놓인 State의 값을 따라가다(State가 다른 State를 값으로 들고 있으면 그 State도 마저 벗기는 재귀) 결국 자기 자신으로 돌아오는 순환을 만났을 때(예: `a:Set(b); b:Set(a)`). Slot에 넣은 State도 같습니다 — 원소 State의 값 사슬이 순환하면(`st:Set(st)` 등) Slot이 그 값을 읽는 때 — 마운트될 때(이미 마운트된 Slot이면 넣는 줄)나 그 `:Set` 줄 — 던집니다. **(3.2.0 다음 릴리즈부터)** 마운트 전 Slot에 넣는 줄에서는 던지지 않습니다 — 그 시점엔 원소 State의 값을 읽지 않으므로(지연 계산), debug에서도 값을 앞당겨 읽지 않습니다. **(3.2.0 다음 릴리즈부터)** 사슬을 끝까지 따라가는 이 검사는 emit마다 도는 자리라 debug 층으로 내려갔습니다 — `q.debug`를 꺼 두면 검사하지 않고, 순환은 스택 오버플로로 끝나는 **정의되지 않은 동작**입니다(Slot 원소 자리라면 그 Slot이 망가진 채 남을 수 있습니다). 개발 중에는 debug를 켜 두세요.
+- **관측(계약 아님)**: Slot 원소 자리에서 던진 뒤 그 Slot은 지금 이전 원소를 유지한 채 다음 정상 `:Set`으로 이어지는 것이 관측됩니다.
 - **고치려면**: State가 다른 State를 값으로 들고 있는 것 자체는 되지만, 그 사슬이 순환하면 안 됩니다 — 순환이 생기지 않게 값 대입을 정리하세요.
 - **참고**: [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진](../../quadnomicon/08-extensible-dispatch-engine.md) · [`slot:Add`](../core/06-slot.md#slotaddelement-index)
 
@@ -257,7 +258,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 - **언제**: `retractFrom`이 체인 배열을 되감다가 구멍(`nil` 슬롯)을 만났을 때 — 계약을 지키는 호출로는 나지 않는 내부 불변식 위반입니다. 다만 계약을 어긴 호출은 공개 함수 `retractFrom`을 거쳐 이 상태에 닿을 수 있습니다 — 위임 핸들러의 안쪽 retractor가 같은 `(inst, key)`에 `retractFrom`을 다시 부르는 **간접 재진입**(정의되지 않은 동작).
   <!-- 근거: 2026-09-27 mock 실측(저장소 내부 기록) -->
-- **고치려면**: retractor 안에서 같은 자리를 다시 철거하지 마세요(재진입은 계약 밖). 그런 코드가 없는데 났다면 내부 버그 신호입니다 — 재현되면 리포트하세요.
+- **고치려면**: retractor 안에서 같은 자리를 다시 철거하지 마세요(재진입은 계약 밖). 그런 코드가 없는데 났다면 quad 내부 불변식 위반입니다 — 재현되면 보고해 주세요.
 - **참고**: [`q.Dispatch.retractFrom(inst, key, index)`](../extend/02-dispatch-handler-contract.md#qdispatchretractfrominst-key-index)
 
 ### Quad0072

@@ -188,9 +188,9 @@ export type PropTypes = DeclarationModule.PropTypes
 export type OnChangeFn = DeclarationModule.OnChangeFn
 -- `Out(name, src)` (2026-09-21 사용자 결정 — `research/upward-flow-plan.md` 8절): write-back sugar over `OnChange`.
 -- The Source parameter is an INPUT position, which by 8.11 should be a marker — but the sugar needs a WRITABLE
--- value, and "marker + `{ read Set }`" cannot be expressed: the new solver decomposes the left-hand intersection
--- (`Source<T>` = StateData & State-part & { Set, … }) and demands EVERY component satisfy the target, so even a
--- lone `{ read Set: … }` target rejects a real Source (typing-limits 8.25, scratch 2026-09-21). The full
+-- value, and "marker + `{ read Set }`" did not accept a real Source in the new solver (typing-limits 8.25, scratch
+-- 2026-09-21 — first read as "every intersection component must satisfy the target"; the 2026-10-06 correction there
+-- points at the receiver `self: Source<T>` vs the target's method shape instead). The full
 -- `Source<T>` is the one shape that accepts a Source, rejects a `:Compute` State (no `Set`) and checks the value
 -- type — the user caveat "compute 해서 in 을 넣으면 안 된다" is enforced here. Cost is bounded: the argument is
 -- always a `Source<T>` alias instance, never a structural expansion.

@@ -1146,7 +1146,7 @@ indexer`; (b) `Param & { [AttrKey]: V }` 교집합은 평범한 배열 리터럴
 캐스트하면 통과한다(스크래치 다섯 변형 중 무주석 `~= nil`만 실패). 계기: `Handlers/Property.luau`의 Tween 콜백 발화 헬퍼
 (`Started`/`Completed`/`Cancelled`, docs-review 1-5). 규칙: **`any`에서 꺼낸 함수 로컬은 호출 전에 함수 타입을 적는다.**
 
-## 8.25. 왼쪽이 교집합인 값은 구조 타입 하나에 대조할 때 **모든 조각**이 만족해야 한다 — `Source<T>`를 "마커 + `{ read Set }`"로 받을 수 없다 (2026-09-21 실측, 신 솔버)
+## 8.25. 왼쪽이 교집합인 값은 구조 타입 하나에 대조할 때 **모든 조각**이 만족해야 한다 — `Source<T>`를 "마커 + `{ read Set }`"로 받을 수 없다 (2026-09-21 실측, 신 솔버; **원인 서술은 2026-10-06 정정 — 아래 배너**)
 
 > **[2026-10-06 정정 — 원인 서술과 "유일한 답" 결론; 근거 `audit/consumer-type-surface-2026-10-06/`의 "이미 알려진 한계와의 구분" 절]** 아래 표의 관측(다섯 모양 중 넷이 `q.Source("")`를 거부)은 그 조사의 원본 트리에서도 재현됐다(`probes/real/real_825` — 세 줄 그대로 실패). 그러나 **원인은 "교집합 조각을 따로 대조"가 아닐 가능성이 높다**: `StateData`·`State`·`Source`의 메소드를 `read` + 수신자 `self: any`로 바꾼 사본(`cov`)에서는 비제네릭 두 모양(`{ read Set: (self: any, value: string) -> any }`, `StateMarker<string> & { read Set: … }`)이 `q.Source("")`를 받고 음성(주석 단 `State<string>`, `q.Source(5)`)은 계속 거부했다. 즉 실제 원인은 **`Source`의 수신자 `self: Source<T>`가 목표의 `self: any`와 반공변 자리에서 맞지 않는 것**으로 보인다(제네릭 모양 `<T>(… M<T> & { read Set })`의 실패는 8.36의 A1 — 교집합 + 반공변 `T`). 결론의 "전체형 `Source<T>`가 유일한 답"도 반례가 있다 — 원본 타입 그대로에서 `self: never`로 적은 평평한 쓰기 마커(`{ read __quadState: true, read __quadStateValue: T, read Get: (self: never) -> T, read Set: (self: never, v: T) -> any }`)가 `q.Source`를 받고 파생 State·다른 `T`를 거부했다(`probes/real/real_never`, 어긋남 0). 다만 그 모양을 공개 타입으로 내는 갈래는 **사용자가 기각**했고(2026-10-06 — *"일시적 타입을 제공하는 꼴 같아서 … source 에만 선택적으로 이걸 풀어준다는건 다른 곳도 나도 해줘요 하고 나올 이유가 충분해"*), `q.Out`의 `src` 자리는 전체형 `Source<T>`(+ `type-surface: allow`) 그대로다 — 이 정정은 원인 기록이지 표면 변경이 아니다. 메인이 직접 다시 돌리지는 않았다(조사 결과 파일 `probes/results.txt` 대조).
 
@@ -1165,7 +1165,7 @@ indexer`; (b) `Param & { [AttrKey]: V }` 교집합은 평범한 배열 리터럴
 | `{ __quadState, __quadStateValue, read Set }` 한 테이블 | **거부** | — | — |
 | `<S>(…, src: S & { read Set })` | **거부** | — | — |
 
-**결론**: 쓸 수 있는 값을 입력 자리에서 요구해야 하면 전체형 `Source<T>`가 유일한 답이다 — `type-surface-check.py`에 `type-surface: allow`로
+**결론**(2026-09-21 원문 — "유일한 답"은 위 배너가 정정: `self: never` 평평 마커도 통과하나 사용자가 공개 타입으로 기각했으므로 공개 표면에선 여전히 전체형): 쓸 수 있는 값을 입력 자리에서 요구해야 하면 전체형 `Source<T>`가 유일한 답이다 — `type-surface-check.py`에 `type-surface: allow`로
 예외를 달고 이유를 적는다(첫 사례 `quad-roblox/src/init.luau`의 `OutFn`). 비용은 인자가 늘 `Source<T>` 별칭 인스턴스라 구조 전개가 아닌
 별칭 대조로 끝나 8.11이 걱정한 재귀 예산을 거의 안 쓴다. **주의**: 음성 시험에 `src:Compute(function(s) return s:Get() end)`처럼 무주석
 콜백의 결과를 쓰면 안 된다 — §1의 무주석 파라미터 추론 실패로 결과가 에러 타입이 돼 무엇이든 통과한다(이번 스크래치가 처음 그렇게 잘못
@@ -1212,7 +1212,7 @@ Luau 쪽 한계라 quad 결함이 아니고, 처방은 미정이다 — 상류 �
 
 ## 8.30. 생성자 테이블의 숫자 키 자리에 인라인으로 넣은 무주석 `state:Observer(function(t) … end)`는 `t`가 `unknown`으로 굳는다 — 8.13의 이웃, `t: StateData<T>` 주석이 처방 (2026-09-27 round13 E15 실측, luau-lsp 1.69.0 신 솔버)
 
-같은 코드를 독립 문장으로 쓰면 `local n: number = t:Get()`(t는 `State<string>`)가 잡히는데(`audit/round13-e15-probe-types-iso2.luau` J7), `D.Frame { …, count:Observer(function(t) … end) }`처럼 **children 자리에 인라인**이면 같은 줄이 진단 없이 통과한다(J1 — 검사가 꺼진 것). 값에 `#`·산술을 쓰면 `Operator '#' could not be applied to operand of type unknown`으로 거부된다(I2~I4). Source든 주석 붙은 `q.State<string>`(Compute·Debounce 결과)든 같다. `t: q.StateData<string>` 주석이면 정상(J5); `Effect`의 클로저 읽기는 정상(J6). 8.13이 "children 배열 자리는 통과"라 적은 것은 인라인 `:Compute`에 한한 관측이었다 — Observer 콜백은 그 자리에서 파라미터 타입을 잃는다. 원인은 좁히지 않았다(그 자리의 팔 유니언(`NewChild`)에 대한 문맥 타이핑 실패로 추정 — 미확인). **[2026-10-06 원인 확인 — `audit/consumer-type-surface-2026-10-06/` A5b·F1]** 8.13과 같은 뿌리다 — 다른 호출(`D.Frame(...)`)의 인자인 테이블 리터럴 안에서 호출(`:Observer`·`:Callback`)에 넘긴 람다는 기대 타입으로 매개변수가 정해지지 않는 luau-lsp 1.69.0의 순수 Luau 한계(같은 람다를 독립 문장·`return`·함수 인자로 두면 통과). `PreRef:Callback`의 무주석 매개변수(소비자 킷 A5b)도 같고, `Callback`을 어떤 모양(제네릭·비제네릭·`read`+`self: any`)으로 선언해도 순수 Luau에서 똑같이 재현돼 quad 타입 모양으로는 못 푼다. 처방은 그대로 매개변수 주석(아래 8.36). 문서는 이 모양을 `print`로만 써서 드러나지 않았고(core/05·GS 08·how-to 02), `H-677`로 주석을 달았다.
+같은 코드를 독립 문장으로 쓰면 `local n: number = t:Get()`(t는 `State<string>`)가 잡히는데(`audit/round13-e15-probe-types-iso2.luau` J7), `D.Frame { …, count:Observer(function(t) … end) }`처럼 **children 자리에 인라인**이면 같은 줄이 진단 없이 통과한다(J1 — 검사가 꺼진 것). 값에 `#`·산술을 쓰면 `Operator '#' could not be applied to operand of type unknown`으로 거부된다(I2~I4). Source든 주석 붙은 `q.State<string>`(Compute·Debounce 결과)든 같다. `t: q.StateData<string>` 주석이면 정상(J5); `Effect`의 클로저 읽기는 정상(J6). 8.13이 "children 배열 자리는 통과"라 적은 것은 인라인 `:Compute`에 한한 관측이었다 — Observer 콜백은 그 자리에서 파라미터 타입을 잃는다. 원인은 좁히지 않았다(그 자리의 팔 유니언(`NewChild`)에 대한 문맥 타이핑 실패로 추정 — 미확인). **[2026-10-06 원인 추정 — `audit/consumer-type-surface-2026-10-06/` A5b·F1]** 8.13과 같은 뿌리로 보인다(F1과 같은 재현 모양; Observer 자체의 순수 Luau 재현 파일은 없음) — 다른 호출(`D.Frame(...)`)의 인자인 테이블 리터럴 안에서 호출(`:Observer`·`:Callback`)에 넘긴 람다는 기대 타입으로 매개변수가 정해지지 않는 luau-lsp 1.69.0의 순수 Luau 한계(같은 람다를 독립 문장·`return`·함수 인자로 두면 통과). `PreRef:Callback`의 무주석 매개변수(소비자 킷 A5b)도 같고, `Callback`을 어떤 모양(제네릭·비제네릭·`read`+`self: any`)으로 선언해도 순수 Luau에서 똑같이 재현됐다는 조사 기록이 있어(스크래치 — 재현 파일은 남기지 않음) quad 타입 모양으로는 못 풀 것으로 본다. 8.13 F1 문단처럼 같은 순수 재현이 luau-analyze 0.734에서는 통과 — 더 새 Luau에서 고쳐졌을 가능성(quad 실물 코드로는 미확인). 처방은 그대로 매개변수 주석(아래 8.36). 문서는 이 모양을 `print`로만 써서 드러나지 않았고(core/05·GS 08·how-to 02), `H-677`로 주석을 달았다.
 
 ## 8.31. 숫자 키 자리에 `q.Source(q.PreRef(…))`·`q.Source(q.PostRef(…))`·`q.Source(q.OnCreated(…))`를 넣어도 strict 신 솔버가 통과한다 — 런타임은 항상 `Quad0136` (2026-09-27 round13 E16 실측, luau-lsp 1.69.0)
 
@@ -1262,4 +1262,4 @@ source 로 바꿔 써야하지 않나 싶어. 그게 정본같음. 정확히 문
    (`(T) -> string`)은 매개변수가 더 많은 함수 타입 자리(`((T, number) -> any)?`)에 비제네릭으로도 안 들어가는 순수 Luau 규칙이다(람다 리터럴은 맞춰져 통과;
    `probes/pure`의 repro_arity_pure).
 
-공개 문장은 how-to 01의 "라이브러리 저자를 위한 타입 레시피" 절. material 킷의 손수 만든 뷰 타입(`Radio.ValueSource<T>`)은 이 정본으로 바꿀 킷 정리 거리다.
+공개 문장은 how-to 01의 "제네릭 컴포넌트의 타입 — 라이브러리 저자를 위한 레시피" 소절. material 킷의 손수 만든 뷰 타입(`Radio.ValueSource<T>`)은 이 정본으로 바꿀 킷 정리 거리다.

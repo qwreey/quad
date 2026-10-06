@@ -130,7 +130,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 - **언제**: `Effect.implFor(module)`이 그 quad 모듈 인스턴스에서 아직 `Effect.Init`이 돌지 않았는데 불렸을 때 던지는 내부 조립 순서 불변식입니다. 지금은 quad 안에서 이 함수를 부르는 곳이 없어, 현재 공개 표면에서 이 조건에 닿는 호출은 없습니다.
   <!-- 근거: 2026-09-27 실측(저장소 내부 기록) -->
-- **고치려면**: (문서 미정 — 현재 도달 경로가 없습니다)
+- **고치려면**: 사용자 코드가 닿는 경로가 없는 quad 내부 불변식입니다 — 재현되면 보고해 주세요.
 - **참고**: [Observer / Effect](../core/05-observer-effect.md)
 
 ### Quad0101
@@ -217,7 +217,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 `Observer: Observer.Init(module) has not run for this quad instance` — `quad-base/src/Observer.luau`
 
 - **언제**: `Observer.implFor(module)`이 그 quad 모듈 인스턴스에서 아직 `Observer.Init`이 돌지 않았는데 불렸을 때 — 정상 경로(`module:RunInit`)로는 나지 않는 내부 조립 순서 불변식입니다.
-- **고치려면**: (문서 미정) — 사용자 코드가 직접 부딪히는 자리가 아닙니다. quad 모듈 조립(`New()`) 경로를 우회해 내부 함수를 직접 부르지 않았는지 확인하세요.
+- **고치려면**: 사용자 코드가 직접 부딪히는 자리가 아닙니다(quad 내부 불변식). quad 모듈 조립(`New()`) 경로를 우회해 내부 함수를 직접 부르지 않았는지 확인하세요.
 - **참고**: [Observer / Effect](../core/05-observer-effect.md)
 
 ### Quad0130
