@@ -22,13 +22,12 @@ return function(S: Types.SlotInternal, module: any)
 
 	-- ── attach 3-family ────────────────────────────────────────────────
 	local function makeBaseObserver(slot: any): any
-		local observer = slot.Offset:Observer(function()
+		local observer = slot.Offset:_internalObserver(function()
 			if slot._physicalTarget == nil then return end -- unmaterialized: swallow the install fire
 			local bk = S.BK.getBookkeeping(slot)
 			bk.offsetCacheValidUpTo, bk.offsetSetUpTo = 0, 0 -- base changed → all
 			S.maybeRecompute(slot, bk)
-		end)
-		observer._internal = true -- quad's own bookkeeping: skipped by the Observer upstream-feedback debug check
+		end) -- quad's own bookkeeping: `_internal` from birth, skipped by the Observer upstream-feedback debug check
 		return observer
 	end
 

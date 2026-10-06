@@ -57,7 +57,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 `{name}: {field} must be a non-negative number less than math.huge (got {if type(v) == "number" then tostring(v) else typeof(v)})` — `quad-base/src/Debounce.luau`
 
-- **언제**: `Time`(또는 `MaxTime`)에 바인딩한 `State`가 상류 신호 시점에 내놓은 값이 숫자가 아니거나 음수/NaN/`math.huge`일 때. 받은 값이 숫자면 꼬리에 그 값(`got -1`·`got inf`)이, 아니면 타입이 실립니다. 생성 시점이 아니라 **신호가 들어오는 시점**에 읽어 검사합니다.
+- **언제**: `Time`(또는 `MaxTime`)에 바인딩한 `State`가 읽히는 시점에 내놓은 값이 숫자가 아니거나 음수/NaN/`math.huge`일 때. 받은 값이 숫자면 꼬리에 그 값(`got -1`·`got inf`)이, 아니면 타입이 실립니다. 생성 시점이 아니라 **읽는 시점**에 검사합니다 — `MaxTime`과 신호가 여는 창의 `Time`은 그 `:Set` 줄에서, `Flush` 뒤 다시 여는 창은 `Flush` 줄에서, 창 끝 통과 뒤 다시 여는 창은 타이머 콜백 안에서 던집니다(던진 뒤의 게이트 상태는 [Debounce/Throttle](/reference/sugar/03-debounce-throttle/#qdebounce)의 옵션 게이트 문단 — 관측, 계약 아님).
 - **고치려면**: 그 `State`가 항상 0 이상의 유한한 숫자를 내놓게 하세요.
 - **참고**: [`q.Debounce{...}`](/reference/sugar/03-debounce-throttle/#qdebounce)
 

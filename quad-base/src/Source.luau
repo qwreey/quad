@@ -98,8 +98,10 @@ local function Init(module: any)
 
 	-- The value gate shared by `Set` and `SetIfChanged` — an UNTAGGED local, so the Nearest walk
 	-- skips it and lands on whichever tagged surface (`Set`/`SetIfChanged`) the user called.
+	-- round14 (user decision 2026-10-02): `type` first — a Modifier is always a table, so the brand
+	-- lookup runs only for tables (this is on every Set; numbers/strings/userdata skip it)
 	local function checkSettable(value: any)
-		if isModifier(value) then
+		if type(value) == "table" and isModifier(value) then
 			Err.errorBeforeNearest("Quad0181 Source: cannot Set a Modifier as a Source value", SURFACE)
 		end
 	end
@@ -158,7 +160,7 @@ local function Init(module: any)
 	end
 
 	local function Source(default: any): any
-		if isModifier(default) then
+		if type(default) == "table" and isModifier(default) then -- `type` first, as `checkSettable`
 			Err.errorBeforeNearest("Quad0182 Source: cannot hold a Modifier as a Source value", SURFACE)
 		end
 		local self = setmetatable({

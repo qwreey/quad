@@ -237,11 +237,11 @@ do
 	local g2: State<number> = s2:Apply(Throttle({ Time = t }))
 	local p2 = probe(g2)
 	t:Set("x")
-	assert(not pcall(function() s2:Set(1) end), "throws at the signal entry (Q55 (b): the Time read is the first thing, before the leading pass)")
-	assert(p2.count == 0 and mock.pendingTimers() == 0, "nothing changed underneath the throw: the signal stays merged in the gate's set, no window")
+	assert(not pcall(function() s2:Set(1) end), "throws at the window open that follows the leading pass (Time is read when a window opens)")
+	assert(p2.count == 1 and mock.pendingTimers() == 0, "the leading signal had passed; the open read Time before turning the Blocker On, so no window and no half state")
 	t:Set(1)
 	s2:Set(2)
-	assert(p2.count == 1, "after the throw the gate is idle again: this signal leads and carries the withheld one in the same pass (Blocker was not left On)")
+	assert(p2.count == 2, "after the throw the gate is idle again: this signal leads (Blocker was not left On)")
 	assert(mock.pendingTimers() == 1, "and exactly one window")
 	print("PASS")
 end
@@ -342,7 +342,7 @@ do
 end
 
 print()
-print("=== 9. Time = State<number> — 신호가 들어올 때 읽는다(round10 Q55 (b), 2026-09-17): 바꿔도 진행 중인 창은 그대로, 다음 신호가 여는 창부터 ===")
+print("=== 9. Time = State<number> — 창을 열 때마다 읽는다(2026-10-02 사용자 결정 — round10 Q55 (b) 진입 캐시 철거): 바꿔도 진행 중인 창은 그대로, 다음에 여는 창부터 ===")
 do
 	fresh()
 	local t = Source(1)
@@ -368,51 +368,53 @@ do
 		src:Set(1)
 	end)
 	assert(not ok and string.find(tostring(err), "Time must be a non%-negative number"), tostring(err))
-	-- Q55 (b): the timer path never reads Time — a value gone bad DURING a window does not
-	-- throw inside the timer callback (which used to leave Blocker On with no timer); the
-	-- trailing reopen uses the value sampled at the last signal, and the next signal is
-	-- where the bad value is reported — with nothing changed underneath it
+	-- [2026-10-02 user decision, round14] the window reopen after a trailing pass reads Time too: a value
+	-- gone bad DURING a window throws inside the timer callback. Observed, not a contract (exception-safety
+	-- contract — the throw is not recovered): the batch already went out, no window is left, the Blocker
+	-- stays On until the next signal, which is withheld and passes at the end of its window
+	fresh()
 	local t2 = Source(1)
 	local s2 = Source(0)
 	local g2: State<number> = s2:Apply(Throttle({ Time = t2 }))
 	local p2 = probe(g2)
-	s2:Set(1) -- leading: passes, window 1.0 (sampled 1)
-	s2:Set(2) -- withheld; sample still 1
+	s2:Set(1) -- leading: passes, window 1.0
+	s2:Set(2) -- withheld
 	t2:Set("x" :: any) -- bad value, no signal
-	advance(1) -- window end → trailing passes 2 → reopen with the CACHED 1.0, no throw
-	assert(p2.count == 2, "trailing passed through the timer path with a bad Time State")
-	assert(string.sub(mock.timerLog()[#mock.timerLog()], 1, 3) == "set", "the reopen was scheduled (no stuck gate)")
-	local ok2, err2 = pcall(function() s2:Set(3) end)
-	assert(not ok2 and string.find(tostring(err2), "Time must be a non%-negative number"), "reported at the next signal: " .. tostring(err2))
+	local okT, errT = pcall(function()
+		advance(1) -- window end → trailing passes 2 → the reopen reads "x"
+	end)
+	assert(not okT and string.find(tostring(errT), "Time must be a non%-negative number"), "thrown in the timer path: " .. tostring(errT))
+	assert(p2.count == 2, "the batch went out before the reopen threw")
+	assert(mock.pendingTimers() == 0, "observed: no window left")
 	t2:Set(0.3)
-	s2:Set(4) -- withheld in the still-open reopened window (1.0 from the cache)
-	advance(1)
-	assert(p2.count == 3, "the reopened window ran with the cached 1.0 and passed 4")
-	-- (checkpoint code-review) first read throws → Flush must not schedule a nil window
-	local t3 = Source("x" :: any)
-	local s3 = Source(0)
-	local h3 = Ref(nil :: GateHandle?)
-	local g3: State<number> = s3:Apply(Throttle({ Time = t3, Handle = h3 }))
-	local p3 = probe(g3)
-	local timersBefore = mock.pendingTimers() -- the s2 gate above still has a window open
-	assert(not pcall(function() s3:Set(1) end), "first read throws")
-	t3:Set(1)
-	;(h3.Value :: GateHandle):Flush() -- passes the merged signal, no window (no valid Time yet)
-	assert(p3.count == 1 and mock.pendingTimers() == timersBefore, "Flush passed the batch and stayed idle")
-	-- (checkpoint code-review) a bad MaxTime is reported at the entry too, before any state change
+	s2:Set(3)
+	assert(p2.count == 2, "observed: the Blocker was left On, so this signal is withheld")
+	advance(0.3)
+	assert(p2.count == 3, "observed: its window passes it (self-heals)")
+	-- a bad MaxTime is reported at the entry, before any state change (checkpoint code-review 2026-09-17)
+	fresh()
 	local m4 = Source("bad" :: any)
 	local s4 = Source(0)
 	local _g4: State<number> = s4:Apply(Debounce({ Time = 0.3, MaxTime = m4 }))
 	local okM, errM = pcall(function() s4:Set(1) end)
 	assert(not okM and string.find(tostring(errM), "MaxTime must be a non%-negative number"), tostring(errM))
-	assert(mock.pendingTimers() == timersBefore, "no window was opened before the MaxTime read threw")
-	-- a Time change with no signal reaches the window only one signal later
-	t2:Set(0.1)
-	advance(1) -- the post-trailing reopen used 0.3 (sampled at s2:Set(4)); nothing withheld → idle
-	s2:Set(5) -- samples 0.1 → leading pass + 0.1 window
-	s2:Set(6)
+	assert(mock.pendingTimers() == 0, "no window was opened before the MaxTime read threw")
+	-- a Time change with no signal in between reaches the very next window open (here the trailing reopen)
+	fresh()
+	local t5 = Source(1)
+	local s5 = Source(0)
+	local g5: State<number> = s5:Apply(Throttle({ Time = t5 }))
+	local p5 = probe(g5)
+	s5:Set(1) -- leading, window 1.0
+	s5:Set(2) -- withheld
+	t5:Set(5) -- no signal
+	advance(1) -- trailing passes 2 and reopens with 5, read now
+	assert(p5.count == 2)
+	s5:Set(3) -- withheld in the reopened window
+	advance(4.9)
+	assert(p5.count == 2, "the reopened window is 5 long")
 	advance(0.1)
-	assert(p2.count == 5, "next signal's window is 0.1")
+	assert(p5.count == 3, "and passes 3 at its end")
 	print("PASS")
 end
 
@@ -526,32 +528,115 @@ do
 end
 
 print()
-print("=== 13. round11 H-570 (2026-09-17) — flush 도중 하류가 handle:Cancel()을 재진입으로 부르면 창을 다시 열지 않는다(다음 leading 신호가 즉시 통과) ===")
+print("=== 13. flush 도중 하류가 같은 게이트의 handle:Cancel()을 부름 — 정의되지 않은 동작(round9 (h), 2026-10-02 round11 H-570 철거); q.debug면 Cancel이 한 줄 알림(동작 불변) ===")
 do
-	fresh()
-	local s = Source(0)
-	local h = Ref(nil :: GateHandle?)
-	local g: State<number> = s:Apply(Throttle({ Time = 1, Handle = h }))
-	local cancelOnce = true
-	local p = { count = 0 } :: any
-	function p._receive(self: any, _from: any)
-		self.count += 1
-		if cancelOnce and g:Get() == 2 then
-			cancelOnce = false
-			;(h.Value :: GateHandle):Cancel() -- re-entrant Cancel inside the window-end flush
+	local LINE = "handle:Cancel() was called from a callback this gate's own flush reached"
+	local lines: { string } = {}
+	-- the print lives in Debounce.luau — capture that module's env (spec.observer 14's technique)
+	local env: any = getfenv(q.Debounce :: any)
+	local function capture(f: () -> ())
+		table.clear(lines)
+		local old = rawget(env, "print")
+		env.print = function(...: any)
+			table.insert(lines, table.concat({ ... }, " "))
 		end
+		local ok, err = pcall(f)
+		env.print = old
+		assert(ok, tostring(err))
 	end
-	;(g :: any)._subs[p] = true
-	s:Set(1) -- leading: passes, opens a window
-	s:Set(2) -- withheld
-	assert(p.count == 1 and mock.pendingTimers() == 1)
-	advance(1)
-	assert(p.count == 2 and g:Get() == 2, "2 passed at window end")
-	assert(mock.pendingTimers() == 0, "no window reopened after the re-entrant Cancel (used to reopen)")
-	s:Set(3)
-	assert(p.count == 3 and g:Get() == 3, "the next signal is leading again — passes immediately")
+	local function countOf(needle: string): number
+		local n = 0
+		for _, l in lines do
+			if string.find(l, needle, 1, true) ~= nil then
+				n += 1
+			end
+		end
+		return n
+	end
+	-- a Throttle whose downstream subscriber calls `cancel(h)` once, when it receives 2
+	local function scene(path: "timer" | "flush", cancel: (h: any) -> ()): (any, any, any)
+		fresh()
+		local s = Source(0)
+		local h = Ref(nil :: GateHandle?)
+		local g: State<number> = s:Apply(Throttle({ Time = 1, Handle = h }))
+		local once = true
+		local p = { count = 0 } :: any
+		function p._receive(self: any, _from: any)
+			self.count += 1
+			if once and g:Get() == 2 then
+				once = false
+				cancel(h)
+			end
+		end
+		;(g :: any)._subs[p] = true
+		s:Set(1) -- leading: passes, opens a window
+		s:Set(2) -- withheld
+		if path == "timer" then
+			advance(1) -- window-end flush (`commitIdle`)
+		else
+			(h.Value :: GateHandle):Flush() -- handle flush
+		end
+		return s, p, h
+	end
+	local function ownCancel(h: any)
+		(h.Value :: GateHandle):Cancel()
+	end
+	-- debug off: no line; observed (not a contract) — the commit reopens a window after the Cancel
+	q.debug = false
+	capture(function()
+		local s, p = scene("timer", ownCancel)
+		assert(p.count == 2, "2 passed at the window end")
+		assert(mock.pendingTimers() == 1, "observed: a window reopened after the re-entrant Cancel")
+		s:Set(3)
+		assert(p.count == 2, "observed: the next leading signal waits one Time")
+		advance(1)
+		assert(p.count == 3, "observed: and passes at that window's end (self-heals)")
+	end)
+	assert(countOf(LINE) == 0, "debug off: no line")
+	q.debug = true
+	-- debug on: the timer path and the handle Flush path each print one line
+	capture(function()
+		scene("timer", ownCancel)
+	end)
+	assert(countOf(LINE) == 1, "debug on, timer path: one line: " .. table.concat(lines, " | "))
+	capture(function()
+		scene("flush", ownCancel)
+	end)
+	assert(countOf(LINE) == 1, "debug on, handle Flush path: one line: " .. table.concat(lines, " | "))
+	-- the factory broadcast goes through the same handle Cancel
+	capture(function()
+		fresh()
+		local s = Source(0)
+		local f = Throttle({ Time = 1 })
+		local g: State<number> = s:Apply(f)
+		local once = true
+		local p = { count = 0 } :: any
+		function p._receive(self: any, _from: any)
+			self.count += 1
+			if once and g:Get() == 2 then
+				once = false
+				f:Cancel()
+			end
+		end
+		;(g :: any)._subs[p] = true
+		s:Set(1)
+		s:Set(2)
+		advance(1)
+	end)
+	assert(countOf(LINE) == 1, "debug on, factory Cancel inside the flush: one line: " .. table.concat(lines, " | "))
+	-- negative controls: Cancel outside any flush, and ANOTHER gate's Cancel inside this gate's flush
+	capture(function()
+		local _s, _p, h = scene("timer", function() end)
+		ownCancel(h)
+		local other = Ref(nil :: GateHandle?)
+		local _o: State<number> = Source(0):Apply(Debounce({ Time = 1, Handle = other }))
+		scene("timer", function()
+			(other.Value :: GateHandle):Cancel()
+		end)
+	end)
+	assert(countOf(LINE) == 0, "no line outside the flush or for another gate: " .. table.concat(lines, " | "))
+	q.debug = false
 	advance(2)
-	assert(mock.pendingTimers() == 0)
 	print("PASS")
 end
 

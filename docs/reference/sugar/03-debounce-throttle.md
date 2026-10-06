@@ -103,7 +103,7 @@ export type ThrottleOptions = {
 - 기본값을 적용한 결과 `Leading`과 `Trailing`이 **둘 다 `false`가 되면 에러**입니다 — 아무것도 통과하지 못하므로. `Debounce`는 `Leading`의 기본값이 `false`라서 `Trailing = false` 하나만 줘도 여기에 해당합니다 — 그때는 `Leading = true`를 같이 주세요.
 - `MaxTime`은 **`Debounce` 전용**입니다. `Throttle`은 이미 `Time`마다 통과시키므로 옵션 자체가 거부됩니다.
 - `MaxTime` 타이머는 **뭔가 보류됐고 `Trailing`이 그걸 통과시킬 수 있을 때만** 걸립니다. `Trailing = false`인 Debounce에 `MaxTime`을 줘도 아무 일도 하지 않습니다 — 읽지도 않으므로 그 자리의 `State`는 검증되지도, 계산되지도 않습니다. 그리고 그 타이머는 통과 시점이 아니라 **그다음 보류되는 신호**부터 잽니다 — 신호가 쉬지 않고 들어올 때 실제 통과 간격은 `MaxTime`에 "통과 뒤 다음 신호까지의 틈"이 더해집니다(0.1초마다 신호에 `MaxTime = 1`이면 1.0~1.1초).
-- `Time`/`MaxTime`에 `State`를 줘도 **구독하지 않습니다** — 상류 신호가 들어올 때 한 번 읽습니다. 이미 걸린 타이머는 자기 지연을 유지하고, 창이 닫힌 뒤 다시 여는 창(trailing 통과 뒤·`Flush` 뒤)은 **마지막 신호 때 읽은 값**을 씁니다. 신호 없이 값만 바꾸면 다음 신호부터 반영됩니다.
+- `Time`/`MaxTime`에 `State`를 줘도 **구독하지 않습니다** — 필요할 때 읽습니다. `Time`은 **창을 열 때마다**(신호가 창을 열 때, 창 끝 통과 뒤 다시 열 때, `Flush` 뒤) 읽고, `MaxTime`은 상류 신호가 들어올 때 읽습니다. 이미 걸린 타이머는 자기 지연을 유지하므로, 값을 바꾸면 **다음에 여는 창부터** 반영됩니다(신호가 없어도 창 끝 통과 뒤 다시 여는 창은 새 값으로 열립니다).
 
 :::caution
 옵셔널 자리의 `Handle: Ref<GateHandle?>?`는 [2026-09-26 기준] 신 솔버가 타입 인자를 검사하지 않습니다 — 다른 `T`의 `Ref`(예: `q.Ref<<Frame?>>(nil)`)도 타입 검사를 통과합니다. Luau 쪽 한계이고, 런타임 가드(위 `Quad0047`)는 그대로 동작합니다.
@@ -122,7 +122,7 @@ Quad0048 Debounce: Leading and Trailing both false would pass nothing through
 Quad0046 Throttle: MaxTime is Debounce-only (a throttle already passes every Time)
 ```
 
-`Time`/`MaxTime`에 State를 준 경우엔 값이 실제로 읽히는 **신호가 들어오는 시점**에 한 번 더 검사합니다(`:Set` 줄에서 던집니다 — 타이머 콜백 안에서는 읽지 않습니다. 던진 뒤의 상태는 계약이 아니고 관측입니다: 던진 신호의 출처는 이미 보류 집합에 들어가 있어 버려지지 않고 다음 통과(다음 신호의 leading·창 끝·`Flush`)에 실려 나가며, 던진 자리가 상류 `:Set`의 전파 파동 안이라 같은 원천의 다른 구독자 중 뒤에 오는 것은 그 신호를 받지 못합니다 — [State](../core/03-state.md)의 "던진 콜백은 감싸지 않는다" 규칙 그대로). 이때의 메시지는 조금 다릅니다(그 자리엔 `State<number>` 갈래가 없으므로).
+`Time`/`MaxTime`에 State를 준 경우엔 값이 실제로 **읽히는 시점**에 한 번 더 검사합니다. 신호가 여는 창의 `Time`과 `MaxTime`은 그 `:Set` 줄에서, `Flush` 뒤 다시 여는 창은 그 `Flush` 줄에서, 창 끝 통과 뒤 다시 여는 창은 **타이머 콜백 안에서** 던집니다(Roblox라면 `task` 콜백의 에러 출력). 던진 뒤의 상태는 계약이 아니고 관측입니다([State](../core/03-state.md)의 "던진 콜백은 감싸지 않는다" 규칙 그대로): `:Set` 줄에서 던지면 상태를 바꾸기 전이라 게이트는 그대로이고, 그 신호의 출처는 버려지지 않습니다(leading이면 이미 통과했고, 아니면 보류 집합에 남아 다음 통과에 실려 나갑니다) — 던진 자리가 상류 `:Set`의 전파 파동 안이라 같은 원천의 다른 구독자 중 뒤에 오는 것은 그 신호를 받지 못합니다. 타이머 콜백에서 던지면 그 창의 보류분은 이미 나간 뒤이고, 게이트는 다음 신호까지 창 없이 막힌 채 남습니다 — 다음 신호는 보류됐다가 그 신호가 연 창 끝에 나가며 회복됩니다(`Leading` 게이트는 leading 한 번을 잃습니다). 이때의 메시지는 조금 다릅니다(그 자리엔 `State<number>` 갈래가 없으므로).
 
 ```
 Quad0039 Debounce: Time must be a non-negative number less than math.huge (got string)
@@ -166,6 +166,8 @@ Quad0044 Debounce: Handle is already filled - one Handle Ref per :Apply (make a 
 **시그니처** — `Cancel: (self: GateHandle) -> ()`
 
 보류분을 **버리고** idle로 돌아갑니다. 전파가 일어나지 않습니다. 상류의 값 자체는 그대로이므로 `:Get()`은 여전히 최신 값입니다 — 버려지는 것은 통지입니다.
+
+**flush 도중에 부르지 마세요.** 이 게이트가 보류분을 내보내는 도중(창 끝 통과나 `handle:Flush()`) 그 통지를 받은 하류 콜백 안에서 **같은 게이트**의 `Cancel`이나 `Flush`를 부르는 것은 **정의되지 않은 동작**입니다(팩토리 브로드캐스트로 부르는 것도 같습니다). 관측(계약 아님): 지금은 `Cancel`이 끝난 뒤 내보내던 쪽이 창을 다시 열어, 다음 leading 신호가 `Time` 하나를 더 기다렸다가 저절로 돌아옵니다. 취소는 그 콜백 밖에서 하세요. [`q.debug`](../core/01-quad-module.md#qdebug)를 켜면 이런 `Cancel`이 한 줄로 드러납니다(동작은 그대로) — `Debounce: handle:Cancel() was called from a callback this gate's own flush reached (undefined - the window may reopen); cancel outside that callback`.
 
 ---
 

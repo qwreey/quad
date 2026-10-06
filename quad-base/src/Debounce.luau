@@ -39,21 +39,26 @@
 	test mock) is fully deterministic — plan 11절 "가상 시계로 결정론적 테스트".
 	The min-form is a later optimization behind the same surface.
 
-	Time sampling (round10 Q55 (b), user decision 2026-09-17): `Time` is read ONCE per
-	upstream signal, first thing in `onUpstreamEmit`, into `h._time` (`MaxTime` is read
-	right after it, into a local — only when `Trailing` can arm it, round11 `H-542`); every `openWindow` (signal path, the trailing reopen
-	in `commitIdle`, `Flush`) uses that cache. The only site that can throw (a bad
-	State value, a throwing Compute behind it) is therefore the signal entry, before
-	any state change — the timer callbacks and `Flush` never READ Time and so cannot
-	throw on their own (the `H-518` residue is closed). They do run user code
-	downstream: `commitIdle` goes `closeWindow(); clearCap(); emit()`, and `emit()`
-	runs downstream Observers. If one of those throws, `_window` is already nil while
-	the Blocker is still On — the same "On, no timer" shape, but it self-heals on the
-	next signal (that signal is withheld and goes out trailing after Time; a Leading
-	gate loses one leading edge). Exception-safety contract: user callbacks that throw
-	are not recovered (round13 E12, 2026-09-27). If the very first read threw,
-	`h._time` is still nil and `Flush` reopens nothing (stays idle). Consequence: a
-	Time change with no signal in between reaches the next window one signal later.
+	Time sampling (plan 5-2 — polling, no subscription): `Time` is read at every
+	`openWindow` (the signal path, the trailing reopen in `commitIdle`, `Flush`), right
+	before the schedule and before any state change (`H-509`). `MaxTime` is read once per
+	signal at the entry, into a local — only when `Trailing` can arm it (round11 `H-542`).
+	[2026-10-02 user decision, round14] the round10 Q55 (b) entry cache (`h._time`) is gone:
+	it guarded only one of the timer path's throw sites (a bad Time read) while a throwing
+	downstream callback leaves the same half state, and it made a Time change reach the
+	reopened window one signal late. So a Time State gone bad between signals throws
+	inside the timer callback (or the `Flush` line) when the window reopens — the
+	callback ran `closeWindow(); clearCap(); emit()` first, so the batch went out and the
+	gate is left Blocker On with no window until the next signal (that signal is withheld
+	and goes out trailing after Time; a Leading gate loses one leading edge). A
+	downstream callback that throws inside `emit()` leaves the same shape. Exception-
+	safety contract: a throw is not recovered (round13 E12, 2026-09-27) — observed, not a
+	contract.
+
+	Calling this gate's own `handle:Cancel()`/`Flush()` from a callback its flush reached
+	is undefined (round9 (h), user 2026-09-08 — restored 2026-10-02 over round11 `H-570`):
+	observed, the commit reopens a window and the next leading signal waits one Time.
+	`q.debug` reports the `Cancel` shape (`checkCancelInFlush` below).
 
 	GC (plan 8): a pending timer holds its gate through the callback upvalues
 	for at most 2 × Time after the last signal (the window that a pass reopens
@@ -78,16 +83,16 @@ type Timeout = QuadTypes.Timeout
 
 local WEAK_KEY_MT = { __mode = "k" }
 
--- `Time`/`MaxTime` are read once per upstream signal, at the gate's entry (plan 5-2 as of
--- round10 Q55 (b): polling, no subscription — an already scheduled timer keeps its delay;
--- `MaxTime` is not read at all when `Trailing = false`, `H-542`).
+-- `Time` is read at each window open, `MaxTime` once per upstream signal at the gate's entry
+-- (plan 5-2: polling, no subscription — an already scheduled timer keeps its delay; `MaxTime`
+-- is not read at all when `Trailing = false`, `H-542`).
 local function readTime(name: string, field: string, t: any): number
 	local v = if isState(t) then t:Get() else t
 	-- round13 Q100 (a) (user decision 2026-09-28): `math.huge` is a number, not NaN and >= 0, so it
 	-- passed and the gate held its withheld value until `Flush` (Throttle: forever after the leading
 	-- pass). A number tail shows the value (Q90 ⑥ — `(got number)` said nothing for -1 or inf).
 	if type(v) ~= "number" or v ~= v or v < 0 or v == math.huge then
-		-- reached from emit depth (upstream signal) only — outermost
+		-- reached from emit depth (upstream signal), from timer callbacks and from `Flush` — outermost
 		Err.errorBefore(`Quad0039 {name}: {field} must be a non-negative number less than math.huge (got {if type(v) == "number" then tostring(v) else typeof(v)})`, SURFACE)
 	end
 	return v
@@ -111,6 +116,28 @@ end
 local function checkFlag(name: string, field: string, v: any)
 	if v ~= nil and type(v) ~= "boolean" then
 		Err.errorBeforeNearest(`Quad0042 {name}: {field} must be a boolean (got {typeof(v)})`, SURFACE)
+	end
+end
+
+-- ── debug-only checks (`architecture.md` "debug 층"; kept out of the logic below) ──
+-- round14 (user decision 2026-10-06 — replaces round11 `H-570`): a downstream callback reached by this
+-- gate's own flush (`commitIdle`'s or the handle `Flush`'s `emit()`) that calls this gate's `Cancel` is
+-- undefined (round9 (h)). With `q.debug` on, `Cancel` walks the call stack for those two closures of
+-- ITS gate and prints one line; the call goes on unchanged. Closure identity, so a `Cancel` inside
+-- another gate's flush is not reported. No field: the stack unwinds by itself, so a throw leaves
+-- nothing behind (the Observer feedback detector's reasoning).
+local function checkCancelInFlush(name: string, commitIdle: any, flush: any)
+	local level = 1
+	while true do
+		local f = debug.info(level, "f")
+		if f == nil then
+			return
+		end
+		if f == commitIdle or f == flush then
+			print(`{name}: handle:Cancel() was called from a callback this gate's own flush reached (undefined - the window may reopen); cancel outside that callback`)
+			return
+		end
+		level += 1
 	end
 end
 
@@ -160,7 +187,7 @@ function FactoryImpl.__apply(self: any, state: any): any
 
 	-- the per-gate handle: Flush/Cancel + the timer state (fields, not
 	-- upvalues, so the ONE table is what every closure — and the registry — sees)
-	local h: any = { _window = nil :: Timeout?, _cap = nil :: Timeout?, _time = nil :: number? }
+	local h: any = { _window = nil :: Timeout?, _cap = nil :: Timeout? }
 
 	-- `emit` annotated: `state` is `any` here, so an unannotated parameter is inferred from
 	-- its first use (`emit()` → `() -> boolean`) and `emit(false)` becomes an arity error
@@ -183,11 +210,12 @@ function FactoryImpl.__apply(self: any, state: any): any
 			end
 		end
 		local function openWindow()
-			-- schedule BEFORE any state change (`H-509`, the `H-392`/`H-445` precedent): a
-			-- missing backend must not leave the Blocker On with no window. The Time value is
-			-- `h._time` — sampled at the signal (Q55 (b)), never read here, so the timer-path
-			-- callers (`commitIdle`, `Flush`) cannot throw through this.
-			local t = module.Backend.setTimeout(onWindowEnd, h._time)
+			-- read + schedule BEFORE any state change (`H-509`, the `H-392`/`H-445`
+			-- precedent): a throwing Time read or a missing backend must not leave the
+			-- Blocker On with no window on the signal path. On the timer path the Blocker
+			-- is still On from the window that just ended, so a throw here leaves that
+			-- shape until the next signal (header — not recovered, observed)
+			local t = module.Backend.setTimeout(onWindowEnd, readTime(name, "Time", opts.Time))
 			b:On() -- inside a window: upstream emits are withheld by `pass()`
 			h._window = t
 		end
@@ -212,9 +240,6 @@ function FactoryImpl.__apply(self: any, state: any): any
 			local had = emit()
 			if h._window ~= nil then
 				return
-			end
-			if not b.Blocking then
-				return -- round11 `H-570` (탐사 K′ 4): a downstream `handle:Cancel()` inside the flush went idle — do not reopen
 			end
 			if had then
 				openWindow()
@@ -245,15 +270,13 @@ function FactoryImpl.__apply(self: any, state: any): any
 			if emit() then
 				closeWindow()
 				clearCap()
-				-- `h._time` is nil only if no signal has ever passed the Time read (the first read
-				-- threw and the signal sat merged in the set) — then there is no valid length to
-				-- reopen with: stay idle rather than schedule nil (checkpoint code-review)
-				if h._time ~= nil then
-					openWindow()
-				end
+				openWindow()
 			end
 		end
 		function h.Cancel(_self: any)
+			if module.debug then
+				checkCancelInFlush(name, commitIdle, h.Flush)
+			end
 			emit(false) -- drop, no propagation (set now empty → goIdle is safe)
 			goIdle()
 		end
@@ -263,16 +286,9 @@ function FactoryImpl.__apply(self: any, state: any): any
 		Err.setFuncLevel(SURFACE, h.Flush, h.Cancel)
 
 		return function() -- onUpstreamEmit (synchronous; the gate already merged the source into its set)
-			-- Q55 (b): the ONE Time read — before anything changes, so a throw leaves the gate
-			-- exactly as it was (an open window still ends its batch; idle stays idle)
-			h._time = readTime(name, "Time", opts.Time)
-			-- MaxTime too (checkpoint code-review): read here, before any state change, so the
-			-- "only throwing site is the entry" claim holds for both options — with one caveat
-			-- (round13 E54 U7): `h._time` above is already refreshed, so a signal whose MaxTime read
-			-- throws still leaves the NEW Time sample cached (the next Flush/window uses it). Only the
-			-- window length moves; Blocker/timer are untouched. A cap read at the
-			-- tail used to throw after `pass()`/`openWindow()` had moved the Blocker and timer
-			-- round11 `H-542` (탐사 C′): only when it can be armed — a `Trailing = false` Debounce
+			-- MaxTime (checkpoint code-review 2026-09-17): read here, before any state change — a cap
+			-- read at the tail used to throw after `pass()`/`openWindow()` had moved the Blocker and
+			-- timer (the `H-509` order). round11 `H-542` (탐사 C′): only when it can be armed — a `Trailing = false` Debounce
 			-- "does nothing" with MaxTime (reference sugar/03), so it must not validate it either
 			-- (an invalid State there threw on `:Set`) nor re-run a Compute State every signal
 			local maxT = if maxTime ~= nil and trailing then readTime(name, "MaxTime", maxTime) else nil
@@ -284,7 +300,7 @@ function FactoryImpl.__apply(self: any, state: any): any
 				-- idle: a leading gate passes now (Blocker is Off → `pass()` flushes),
 				-- otherwise withhold first
 				-- [2026-09-16 hunt B] `H-509` again, one level up: the callers flipped state BEFORE
-				-- openWindow's schedule — a missing backend (and, before Q55, a throwing Time read)
+				-- openWindow's read+schedule — a throwing Time read (bad State value, missing backend)
 				-- left Blocker On with no window and the signal withheld until the next emit.
 				-- Non-leading: open first (schedules, then On), then withhold. Leading: pass while Off,
 				-- then open — a throw there leaves the gate idle, which is consistent.
@@ -301,7 +317,7 @@ function FactoryImpl.__apply(self: any, state: any): any
 				pass() -- Blocker is On → withheld
 				if reset then -- the one bit: Debounce restarts the window, Throttle keeps it
 					-- schedule the new window before dropping the old one (same `H-509` rule): if
-					-- the backend throws, the old window still ends the batch
+					-- the Time read or the backend throws, the old window still ends the batch
 					local old = h._window
 					openWindow()
 					module.Backend.clearTimeout(old)

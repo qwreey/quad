@@ -979,7 +979,10 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   값 사슬이 자기에게 돌아오는 State(`st:Set(st)`, `a`↔`b`)는 StateHandler가 이미 하던 `H-573` 걷기를 Slot 원소 경로(`wrapElement`·
   identity `:Single`/`:List` reconcile, 배치 게이트 **전**)에도 돌려 `Quad0070`으로 거부한다 — 비용이 잡음 수준이고 그 Slot은
   이전 원소를 보이며 회복된다(`StateHandler.luau` `assertAcyclicChain` 한 자리 — **[2026-10-02 Q175]** 옛 `StoreBind.luau`에서 개명; **[2026-10-01]** 최상위로 이동, 옛 `Dispatch/StoreBind.luau`; 주어 `State:` — Q90). 출처
-  `session/2026-09-28-01-round13-batch-reply.md` 2026-10-01 Slot-A 회신 절.
+  `session/2026-09-28-01-round13-batch-reply.md` 2026-10-01 Slot-A 회신 절. **[2026-10-06 round14 Q173 (a) — 사용자 "권고대로"]**
+  이 걷기(첫 `isState` 포함, 세 경로 전부)는 debug 층이다 — `q.debug`일 때만 `Quad0070`, 꺼 두면 사슬 순환은 다시 스택 오버플로
+  (원소 경로는 그 Slot이 망가진 채 남을 수 있다 — UB). 호출 자리는 `if module.debug then … end` 한 줄(`Slot/Elements.luau`
+  `wrapElement`, `Slot/List.luau` `checkItemChains`).
 - **재진입성**(Observer/store-bind 재실행 콜백 안에서 `Add`/`Clear`를
   다시 호출) — 별도 가드 불필요 — **[2026-09-17 사용자 결정 — round10 Q52 (a)] 예외 하나는 가드로 막는다**: `materializeSlotTree`의 마운트 walk 도중 중첩 `:List`의 `updateFn`(또는 그 안의 recompute가 띄운 Observer)이 **조상** Slot을 CRUD하면 walk가 깨졌다(`bindLifetime: already bound`, 부기 영구 파손 — 탐사 A 실행 재현). 이제 walk 중인 Slot은 `_materializing` 플래그를 들고 있고(walk 스택의 조상 전부; 형제는 아님 — **[같은 날 code-review]** 이미 마운트된 부모에 `rawAdd`/`rawReplace`/`rawSplice`로 Slot이 붙는 `attachSlot` 창에서도 그 부모가 플래그를 든다(save/restore) — 런타임 `Add`로 들어온 `:List`의 첫 `updateFn`이 새 부모를 CRUD하면 배열이 캡처된 position 밑에서 밀려 Length가 영구히 모자랐다; **[2026-10-01 round13 Q74 (a)]** 부모만이 아니라 **owner 사슬 전체**(첫 비-Slot owner까지의 Slot 조상 전부)가 든다 — 아래 3′ 문단 뒤의 Q74 닫힘 문단), 공개 CRUD 아홉과 `:List`/`:Single` 설치는 `assertMutable`/`checkListInstall`에서 `Slot: cannot mutate a Slot while it is being mounted …`로 던진다(Nearest — updateFn의 그 줄). 사용자: *"compute 든 slot 이든 순수성 제약을 크게 풀어줄 이유가 없어서, 계약 상 조상 건들이기 등은 던져도 될것 같아. 정상 사용에서 문제가 생기지 않는지만 봐줘"* — 정상 사용(updateFn이 자기 자식 Slot을 만들어 CRUD, 이미 마운트된 형제 CRUD, 마운트 뒤 Observer CRUD)은 `spec.slot` 32가 그대로임을 확인. 스냅샷 walk(b)는 "스냅샷 뒤 들어온 원소를 따로 마운트"하는 복잡성이라 기각. Observer 안(마운트 walk 밖)은 이 항목 원래 서술대로 가드 없음. CRUD는 평범한 동기 테이블 뮤테이션 +
   Dispatch 호출일 뿐이라 "일반적 무한루프는 방어 안 함, provider 버그로
@@ -1011,15 +1014,16 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   수렴시킨다. 되감기는 유지한다. (사용자 결정 원문은 `source-state-plan.md`의 "Compute 순수성" 절 2026-10-01 문단, 규칙·예외의 정본 서술은 레퍼런스 core/05 "Observer는 최종 소비자" 문단) (같은 날 앞서 "UB이지만 잘 돈다"로 적었던 것을 이 회신이 바로잡았다.) 수렴하지 않는 CRUD
   (값마다 넣고 빼기를 뒤집는 것)는 끝나지 않는다 — **[2026-10-02 사용자 결정 — *"부기 되감기에 상한 두는거, effect 랑 동일하게 일관적이게 둬도 될 것 같아. 같은 한도로."*]** 그래서 `recompute` 한 패스가 1만 번 넘게 되감으면 `Quad0267`로 멈춘다(Effect의 `Quad0263`과 같은 수, 늘 켜짐; 세는 것은 반복이 아니라 되감기라 긴 목록의 정상 패스는 걸리지 않는다 — `Bookkeeping.luau` `REWIND_LIMIT`, `spec.lengthoffset` round14 절). 옛 줄(**[2026-10-01]** "이 고리엔 그런 한도가 없다")은 이 결정으로 닫혔다. 위 F6(`updateFn`이 만든 원소가 `data`를 바꿈)은 이와 다르다 —
   `updateFn` 재진입은 처음부터 UB였다(바로 위 정정). quad 내부
-  Observer(len·목록·base Offset·StateHandler)는 debug 되먹임 감지기에서 빠진다(비공개 `_internal` 표시 — `source-state-plan.md`의
-  "전파 루프 — 확정 의사코드" 절).
+  Observer(len·목록·base Offset)는 debug 되먹임 감지기에서 빠진다(비공개 `_internal` 표시 — **[2026-10-06 round14]** 설치 전에
+  `State:_internalObserver`로 받는다; StateHandler는 Q174로 빠짐 — `source-state-plan.md`의 "전파 루프 — 확정 의사코드" 절).
   **[2026-10-01 round13 Q74 (a) 닫힘 — 사용자 "의견대로"]** attach 창의 `_materializing`이 **owner 사슬 전체**에 선다
   (`Slot/Raw.luau` `raiseChain`/`restoreChain` — 임시 지역, 새 필드 없음, 칸당 약 0.14µs). Q52의 "조상 CRUD 금지"를 그 뜻대로
   모든 조상에 맞춘 것 — 바로 위 부모만 막으면 런타임 `Add`로 들어온 `:List`의 첫 `updateFn`(또는 그 창에서 동기로 발화한
   Observer)이 조부모를 `Remove`/`Clear`해 유령 자리를 남겼다(e1b GHOST 둘). **창 안 throw의 동결 범위가 사슬 전체로 넓어지는
   것은 계약으로 받아들였다**(pcall 금지 — architecture "예외 안전성 계약"): 창 안에서 무엇이든 던지면 그 사슬의 Slot 전부가
   이후 CRUD에 `Quad0167`을 낸다(문구에 "or a Slot inside it"을 넣었다). Q74 단독이면 State 자기 순환(`st:Set(st)`)이 그 창에서
-  스택 오버플로로 던져 사슬을 동결시키던 상호작용은 Q113 (a)(위 Q42 문단 뒤)가 그 Set을 먼저 `Quad0070`으로 거부해 닫는다;
+  스택 오버플로로 던져 사슬을 동결시키던 상호작용은 Q113 (a)(위 Q42 문단 뒤)가 그 Set을 먼저 `Quad0070`으로 거부해 닫는다
+  (**[2026-10-06 round14 Q173]** `q.debug`일 때 — 꺼 두면 그 Set은 다시 창 안 스택 오버플로·사슬 동결, 입력 자체가 UB);
   State를 거친 Slot 순환(I1/cycle-outer)은 Q111 UB 안이다. `spec.slot` "round13 Q74 (a) + Q113 (a)" 절.
 - **`Slot(initial?: {T})` 생성자 — [정정, 2026-08-11 세션] "인자 없는
   빈 생성자로 확정"을 뒤집고 초기 배열을 받는 옵션 생성자를 다시 엶.**

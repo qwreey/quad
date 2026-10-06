@@ -87,7 +87,9 @@
 
 ---
 
-> **[2026-09-17 round10 Q55 (b), 사용자 결정]** `H-518`의 잔여(타이머 경로 `commitIdle`·`Flush`의 Time 읽기가 던지면 Blocker On·타이머 없음)는 Time을 **신호 진입에서 한 번 읽어 `h._time`에 캐시**하는 것으로 닫았다 — 타이머 콜백과 `Flush`는 Time을 읽지 않으므로 스스로 던질 수 없다. 5-2절의 같은 날 항목이 원문. **[2026-09-27 round13 E12 정정]** 다만 "사용자 코드를 돌리지 않는다"는 틀렸다 — `commitIdle`은 `closeWindow(); clearCap(); emit()` 순서라 `emit()`이 하류 Observer(사용자 코드)를 돌리고, 그것이 던지면 `_window == nil`·Blocker On이 다음 신호까지 남는다(Throttle·`Leading=true`에서 leading edge 한 번 유실, 그 신호는 Time 뒤 trailing으로 나가며 자가 회복; `Leading=false`는 겉으로 차이 없음, `Trailing=false` 경로엔 이 창 없음, `Flush` 안 throw는 창이 유지돼 정상 수렴). 예외 안전성 계약(사용자 콜백이 던지면 복구하지 않음) 범위라 동작은 그대로 두고 주석·문서만 고쳤다(`audit/round13-e12-probe.luau` B1·B1c~e·B7). 같은 탐사의 부수: `Time = math.huge`는 게이트를 전부 통과해 Debounce는 `Flush` 전까지 영원히 보류·Throttle은 leading 한 번 뒤 영원히 보류(8절 "2×Time 유계·자가 치유"는 Time 유한 전제 — 거부/문서화는 round13 `Q100`).
+> **[2026-10-02 round14 사용자 결정 — 아래 Q55 (b) 배너를 되돌림]** Time 진입 캐시(`h._time`)를 걷었다 — 다시 창을 열 때마다(`openWindow`: 신호 경로·`commitIdle`의 trailing 재개방·`Flush`) 읽는다. 사용자: *"반쪽만 잡힌 throw 회복 로직 … 드러내는게 맞는것 같아"* — 캐시는 타이머 경로가 던지는 자리 둘 중 Time 읽기 하나만 막았고(하류 콜백이 던지면 같은 "Blocker On·타이머 없음"이 남는다 — 아래 E12 정정), 그 대가로 신호 없이 바꾼 Time이 다시 여는 창에 한 신호 늦게 반영됐다. 그래서 `Flush`의 nil 가드(첫 읽기가 던진 게이트의 재개방 생략)도 같이 사라졌다. 타이머 콜백·`Flush` 안의 Time 읽기가 던지면 그 뒤 상태는 예외 안전성 계약대로 정하지 않는다(관측: 배치는 이미 나갔고 Blocker On·창 없음이 다음 신호까지 — 그 신호가 보류됐다가 창 끝에 나가며 회복). `MaxTime`은 그대로 신호 진입에서 상태를 바꾸기 전에 읽는다(`H-509` 순서 — 캐시가 아니다). 같은 회신이 flush 중 `Cancel`을 round9 (h) UB로 되돌렸다(아래 `H-570` 문단). 원문 `session/2026-09-28-01-round13-batch-reply.md`의 2026-10-02 새벽 사용자 회신 항목 (3)(4), 설명 `audit/round14-principle-audit/followup-2026-10-02.md` 3·4절.
+>
+> **[2026-09-17 round10 Q55 (b), 사용자 결정 — 2026-10-02 되돌림, 바로 위]** `H-518`의 잔여(타이머 경로 `commitIdle`·`Flush`의 Time 읽기가 던지면 Blocker On·타이머 없음)는 Time을 **신호 진입에서 한 번 읽어 `h._time`에 캐시**하는 것으로 닫았다 — 타이머 콜백과 `Flush`는 Time을 읽지 않으므로 스스로 던질 수 없다. 5-2절의 같은 날 항목이 원문. **[2026-09-27 round13 E12 정정]** 다만 "사용자 코드를 돌리지 않는다"는 틀렸다 — `commitIdle`은 `closeWindow(); clearCap(); emit()` 순서라 `emit()`이 하류 Observer(사용자 코드)를 돌리고, 그것이 던지면 `_window == nil`·Blocker On이 다음 신호까지 남는다(Throttle·`Leading=true`에서 leading edge 한 번 유실, 그 신호는 Time 뒤 trailing으로 나가며 자가 회복; `Leading=false`는 겉으로 차이 없음, `Trailing=false` 경로엔 이 창 없음, `Flush` 안 throw는 창이 유지돼 정상 수렴). 예외 안전성 계약(사용자 콜백이 던지면 복구하지 않음) 범위라 동작은 그대로 두고 주석·문서만 고쳤다(`audit/round13-e12-probe.luau` B1·B1c~e·B7). 같은 탐사의 부수: `Time = math.huge`는 게이트를 전부 통과해 Debounce는 `Flush` 전까지 영원히 보류·Throttle은 leading 한 번 뒤 영원히 보류(8절 "2×Time 유계·자가 치유"는 Time 유한 전제 — 거부/문서화는 round13 `Q100`).
 >
 > **[2026-09-16 round10 `H-518`]** `H-509`의 "읽기·스케줄 먼저, 상태 변경은 뒤"는 `openWindow` 본문뿐 아니라 **그 호출자**(idle 비-leading 분기의 `b:On()`, 재개방 분기의 `closeWindow()`)에도 적용된다 — 그 둘이 먼저 상태를 바꿔 Time 읽기가 던지면 Blocker On·창 없음이 남았다(mock 실측). 지금은 비-leading idle이 `openWindow()` 뒤 `pass()`, 재개방은 새 창을 잡은 뒤 옛 타이머를 지운다(spec.debounce 3·7d).
 
@@ -491,11 +493,13 @@ type ThrottleOptions = {
   바꾼 상태가 없고, 타이머 콜백과 `Flush`에선 사용자 코드가 아예 안 돈다.
   `MaxTime`은 원래 신호 경로에서만 읽는다. 사용자가 흐름을 확인하고 채택
   (*"확인했어"*); 스펙 `spec.debounce` 9 후반.
+  **[2026-10-02 round14 사용자 결정 — 위 Q55 (b) 되돌림]** 진입 캐시를 걷어 다시 **`openWindow`마다**(신호 경로·
+  trailing 재개방·`Flush`) 읽는다 — 근거는 문서 머리의 같은 날 배너. 타이머 콜백·`Flush` 안의 읽기가 던지는 것은
+  예외 안전성 계약 범위(관측만 — `spec.debounce` 9). `MaxTime`은 신호 진입, 상태를 바꾸기 전에 읽는다(`H-509`).
   - **이미 스케줄된 타이머엔 반영 안 됨** — `setTimeout(fn, delay)`로
-    한 번 예약된 delay는 못 바꾸므로, `Time`을 바꿔도 **다음 신호가 여는
+    한 번 예약된 delay는 못 바꾸므로, `Time`을 바꿔도 **다음에 여는
     창부터** 적용됨(진행 중인 창은 그대로 끝까지 감). trailing 통과 뒤 다시
-    여는 최소 창과 `Flush` 뒤의 창은 **마지막 신호 때의 값** — 신호 없이 값만
-    바꾸면 한 창 늦게 반영된다(Q55 (b)의 유일한 의미 변화).
+    여는 최소 창과 `Flush` 뒤의 창도 그때의 값으로 연다(**[2026-10-02]** Q55 (b)의 "마지막 신호 때의 값 — 한 창 늦게"는 캐시와 함께 사라짐).
   - `Time`을 State로 만들고 싶으면 `state:Apply(...)` 상위 구조
     (`State<State<T>>`)가 필요하다던 옛 서술은 무효 — 그런 상위 구조 없이
     바로 지원됨.
@@ -1255,7 +1259,7 @@ Roblox 관용 "debounce"와 다르다는 걸 못박기**. 업계 표준 이름�
     `tween-plan.md` 선례("옵션에 두 번째 반응 경로를 만들지 않음")와
     안 부딪힘. 이미 스케줄된 타이머엔 미반영, 다음 창부터 적용. (5-2절)
     **[2026-09-17 Q55 (b)]** 읽는 시점은 스케줄 순간에서 **신호 진입**으로
-    옮겨졌다(5-2절의 같은 날 항목).
+    옮겨졌다(5-2절의 같은 날 항목). **[2026-10-02 round14]** 되돌림 — 다시 스케줄 순간(`openWindow`)에 읽는다(5-2절).
 
 ---
 
@@ -1298,6 +1302,7 @@ archive/surveys/2026-08-06-additional-primitives-plan.md`가 원래 "안 만들�
 권고한 자리로 거기 인용돼 있다). 프리미티브 자체(`Debounce`/`Throttle` 함수)는 그 위에 아무
 때나 나중에 얹으면 된다.
 
-**[2026-09-17 round11 탐사 C′ — `H-541`·`H-542`·`H-543`] 가상 시계 퍼즈(시드 5000·스텝 20만 누적)에서 값·부기 결함 0.** 오늘 들어간 `h._time` 캐시·MaxTime 진입 읽기·`Flush` nil 가드는 모든 순열("Blocker On인데 타이머 없음"·배치 유실·이중 통과·타이머 누수·재진입·체인·Time 피드백)을 견뎠고 8절의 "마지막 신호 뒤 최대 2 × Time" 유계도 21설정 전수 초과 0. 남은 셋은 표면 손질: **`H-541`** per-gate 핸들 `h.Flush`/`h.Cancel`이 `setFuncLevel` 태그 밖이라 `Flush` 안에서 던지는 유일한 자리(백엔드 `setTimeout` 미설치)가 `Debounce.luau` 줄을 blame했다 — 팩토리 브로드캐스트 `Flush`는 사용자 줄이었으니 `H-231` 규약 위반; 핸들 생성 직후 태그. **`H-542`** `Trailing = false` Debounce는 cap을 절대 무장하지 않는데(`and trailing`) 진입에서 `MaxTime`을 무조건 읽어 검증·Compute 재실행이 났다(레퍼런스 sugar/03 "아무 일도 하지 않습니다"와 어긋남 — 잘못된 MaxTime State가 `:Set`을 던지게 했다) — `and trailing`일 때만 읽는다. `Throttle`은 `MaxTime`을 생성 때 거부하는데 이 조합은 조용히 받는 비대칭은 `H-32`가 정상 사용례로 부르므로 그대로(거부로 바꾸는 것은 결정 사안 — 이번엔 안 올림). **`H-543`** 5-2절/레퍼런스의 "최대 이 간격마다 강제 통과"는 실측보다 강하다 — cap은 커밋이 `clearCap()`한 뒤 **다음 보류 신호**에서 다시 무장되므로 실제 주기는 `MaxTime + (커밋 → 다음 신호 간격)`(0.1초 간격 신호에 `MaxTime = 1`이면 1.0~1.1). 초과는 신호 간격으로 유계라 실해 없음; 문구를 "보류가 시작된 뒤 최대 MaxTime"으로 정정. 스펙 `spec.debounce` 12.
+**[2026-09-17 round11 탐사 C′ — `H-541`·`H-542`·`H-543`] 가상 시계 퍼즈(시드 5000·스텝 20만 누적)에서 값·부기 결함 0.** 오늘 들어간 `h._time` 캐시·MaxTime 진입 읽기·`Flush` nil 가드(**[2026-10-02 round14]** 캐시와 nil 가드는 걷힘 — 문서 머리 배너)는 모든 순열("Blocker On인데 타이머 없음"·배치 유실·이중 통과·타이머 누수·재진입·체인·Time 피드백)을 견뎠고 8절의 "마지막 신호 뒤 최대 2 × Time" 유계도 21설정 전수 초과 0. 남은 셋은 표면 손질: **`H-541`** per-gate 핸들 `h.Flush`/`h.Cancel`이 `setFuncLevel` 태그 밖이라 `Flush` 안에서 던지는 유일한 자리(백엔드 `setTimeout` 미설치)가 `Debounce.luau` 줄을 blame했다 — 팩토리 브로드캐스트 `Flush`는 사용자 줄이었으니 `H-231` 규약 위반; 핸들 생성 직후 태그. **`H-542`** `Trailing = false` Debounce는 cap을 절대 무장하지 않는데(`and trailing`) 진입에서 `MaxTime`을 무조건 읽어 검증·Compute 재실행이 났다(레퍼런스 sugar/03 "아무 일도 하지 않습니다"와 어긋남 — 잘못된 MaxTime State가 `:Set`을 던지게 했다) — `and trailing`일 때만 읽는다. `Throttle`은 `MaxTime`을 생성 때 거부하는데 이 조합은 조용히 받는 비대칭은 `H-32`가 정상 사용례로 부르므로 그대로(거부로 바꾸는 것은 결정 사안 — 이번엔 안 올림). **`H-543`** 5-2절/레퍼런스의 "최대 이 간격마다 강제 통과"는 실측보다 강하다 — cap은 커밋이 `clearCap()`한 뒤 **다음 보류 신호**에서 다시 무장되므로 실제 주기는 `MaxTime + (커밋 → 다음 신호 간격)`(0.1초 간격 신호에 `MaxTime = 1`이면 1.0~1.1). 초과는 신호 간격으로 유계라 실해 없음; 문구를 "보류가 시작된 뒤 최대 MaxTime"으로 정정. 스펙 `spec.debounce` 12.
 
 **[2026-09-17 round11 3차 탐사 K′ — `H-570`]** `commitIdle`의 재진입 고려는 "재진입 upstream emit"(창이 이미 열려 있으면 유지)뿐이었다 — 창 끝 flush 도중 하류 구독자가 `handle:Cancel()`을 부르면 `goIdle()`로 Blocker가 Off가 됐는데 스택을 돌아온 `commitIdle`이 `had`가 참이라 `openWindow()`를 한 번 더 불러, 취소했는데도 창이 다시 열리고 다음 leading 신호가 한 Time을 더 기다렸다(한 Time 뒤 자가 회복). `emit()` 뒤 `b.Blocking`이 거짓이면(창 안 정상 경로에서는 On 그대로 — `Cancel`만 Off로 만든다) 그대로 반환. `spec.debounce` 13. 엔진식 코루틴 타이머(`task.delay`) 위 순열 800시드·인터리빙 1500시드는 값 유실 0.
+**[2026-10-02 round14 사용자 결정 — round9 (h) UB로 되돌림, 위 두 줄 철거]** 이 장면은 아흐레 전 round9 (h)가 이미 UB로 닫은 것이었다(사용자 *"flush 중 cancel 자체가 의미가 안 맞아서"*) — `H-570`은 그 결정을 대조하지 않은 채 들어갔고, 핸들 `Flush` 경로는 고치지 않아 두 경로가 갈렸다(`audit/round14-principle-audit/followup-2026-10-02.md` 4절). 두 줄과 CHANGELOG `[Unreleased]` Fixed 줄을 걷고, **[2026-10-06 사용자 결정 — debug 감지기 2]** 대신 `q.debug`일 때 `h.Cancel` 머리에서 호출 스택에 **이 게이트의** `commitIdle`/`h.Flush` 클로저가 있으면 한 줄을 찍는다(`Debounce.luau` `checkCancelInFlush`; 새 필드 없음, 클로저 신원 비교라 다른 게이트의 flush 안 `Cancel`은 안 걸림; 팩토리 `Cancel` 브로드캐스트도 같은 핸들 `Cancel`을 지나 잡힘). 재진입 `Flush`(flush 안 같은 게이트의 `Flush`)도 round9 (h)상 UB지만 감지기는 넣지 않았다(사용자 결정 범위가 `Cancel`). `spec.debounce` 13이 UB 관측(창 재개방)·debug 한 줄·음성 대조를 고정한다.

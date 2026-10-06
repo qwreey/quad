@@ -1416,7 +1416,8 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
   다투는 유일한 사례였던 Attr 이름은 **자기 도메인 안에서 이름별
   claim으로 해결**함(`base/attribute-plan.md` "이름 소유권" 절, `question.md`
   0-Z 결정) — Dispatch에 claimant 개념을 일반화하는 안은 명시적으로 기각.
-- **순환은 UB, 방어 로직 없음** ~~(2026-08 서술)~~ **[2026-09-27 round13 E23 정정]** `H-573`(round11)이 `StoreBind` 언랩 사슬의 순환(`s:Set(s)`·`a↔b`·무관한 사슬·바인드 전)을 `Quad0070 State: … a State may hold another State, but not a cycle`(주어는 [2026-09-28 round13 Q90 ①] `StoreBind:` → `State:`)로 거부하도록 넣었다 — 프로퍼티·숫자 키·Modifier 필드·Attr 자리 전부 사용자 줄 blame·회복 가능. 이 서술이 지금도 맞는 자리는 **Slot 원소 자리의 State 경로**(`wrapElement`/`:Single` Compute — 검사 밖, stack overflow) 하나뿐이다(round13 `Q113`). 아래 원문은 그 이전 상태 — Handler 간 순환 참조(A가 B를 부르고
+- **순환은 UB, 방어 로직 없음** ~~(2026-08 서술)~~ **[2026-09-27 round13 E23 정정]** `H-573`(round11)이 `StoreBind` 언랩 사슬의 순환(`s:Set(s)`·`a↔b`·무관한 사슬·바인드 전)을 `Quad0070 State: … a State may hold another State, but not a cycle`(주어는 [2026-09-28 round13 Q90 ①] `StoreBind:` → `State:`)로 거부하도록 넣었다 — 프로퍼티·숫자 키·Modifier 필드·Attr 자리 전부 사용자 줄 blame·회복 가능. 이 서술이 지금도 맞는 자리는 **Slot 원소 자리의 State 경로**(`wrapElement`/`:Single` Compute — 검사 밖, stack overflow) 하나뿐이다(round13 `Q113`). **[2026-10-06 round14 Q173 (a) — 사용자 "권고대로"]** 그 사슬 걷기(Slot 원소 경로 포함)는 debug 층으로
+내려갔다 — `q.debug`일 때만 `Quad0070`, 꺼 두면 순환은 다시 이 원문대로 stack overflow로 끝나는 UB다(`architecture.md` "debug 층" 절). 아래 원문은 그 이전 상태 — Handler 간 순환 참조(A가 B를 부르고
   B가 다시 A로 돌아오는 것, 또는 값 자체가 결국 자기 자신을 가리켜
   무한히 깊어지는 인덱스)는 재귀 호출이 안 끝나 바로 스택오버플로가
   나므로 애초에 일어날 수 없는 구조 — 값에 별도 플래그를 심어 의도적으로
@@ -1455,7 +1456,7 @@ retractor 생략의 `2`는 **[2026-08-31 `H-222` (a) 사용자 확정]** —
   StateHandler가 N+1을 써서 애초에 슬롯이 안 겹침. 임의 깊이의
   `State<State<State<...>>>`도 인덱스가 늘어날 뿐 정상 동작하고, 위
   "깊은 체인에서도 힌트가 안 사라짐" 항목대로 **깜빡임 방지 최적화까지
-  정상 작동**함 — 유일하게 남는 UB는 위 "순환" 항목(**[2026-09-27]** `H-573` 뒤로는 Slot 원소 자리의 순환만 — 위 정정 참고).
+  정상 작동**함 — 유일하게 남는 UB는 위 "순환" 항목(**[2026-09-27]** `H-573` 뒤로는 Slot 원소 자리의 순환만 — 위 정정 참고; **[2026-10-06 round14 Q173]** 그 검사가 debug 층이라 `q.debug`를 끄면 다시 모든 자리의 순환).
 - **부수 효과 — quad-debug에 유리**: 이 체인이 Dispatch에 중앙화돼
   있으므로, 임의 시점의 재바인드도 `Dispatch.process(inst, k, newV, 1)`
   **한 줄**로 "이 키의 체인을 새 값에 맞춰 갈아 끼우기"가 됨(옛 모델에선

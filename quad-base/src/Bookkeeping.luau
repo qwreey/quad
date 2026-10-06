@@ -394,11 +394,10 @@ local function Init(module: any)
 		bk.offsetSetUpTo = math.min(bk.offsetSetUpTo, i)
 
 		if Brand.isState(len) then
-			local observer = len:Observer(function()
+			local observer = len:_internalObserver(function() -- quad's own: `_internal` from birth (Observer debug check skips it)
 				checkLengthValue("setLength", len:Get()) -- `H-445`: outside the blocker window; nearest = the `:Set` line
 				gatedRecompute(bk, blocker, ownerKey, element, i)
 			end) -- immediate first run is gated too
-			observer._internal = true -- quad's own bookkeeping: skipped by the Observer upstream-feedback debug check
 			module.Backend.bindLifetime(anchor, observer) -- physical target's lifetime, not :Subscribe()
 			bk.observers[i] = observer
 		else

@@ -1413,7 +1413,7 @@ do
 	print("PASS")
 end
 
-print("=== round13 Q74 (a) + Q113 (a) (2026-10-01) — attach 창의 Q52 가드는 owner 사슬 전체(조부모 Remove·깊이 4 조상 Clear 거부, 형제 Add 통과); State 요소의 값 사슬 순환은 Quad0070(Set 줄 blame, 이전 원소 유지, 회복) ===")
+print("=== round13 Q74 (a) + Q113 (a) (2026-10-01) — attach 창의 Q52 가드는 owner 사슬 전체(조부모 Remove·깊이 4 조상 Clear 거부, 형제 Add 통과); State 요소의 값 사슬 순환은 q.debug일 때 Quad0070(Set 줄 blame, 이전 원소 유지, 회복 — round14 Q173 (a)로 debug 층) ===")
 do
 	local q7 = mock.newQuad()
 	local function F(name)
@@ -1476,7 +1476,9 @@ do
 	gp3:Add(F("after"))
 	assert(gp3.Length:Get() == 5, "the chain is usable after the window")
 
-	-- (4) Q113: a mounted State element set to itself — refused at the Set line, previous element kept, recovers
+	-- (4) Q113: a mounted State element set to itself — refused at the Set line, previous element kept, recovers.
+	-- round14 Q173 (a) (2026-10-06): the chain walk is debug-layer — (4)~(6) run with q.debug on
+	q7.debug = true
 	local host4 = mock.Instance.new("Frame")
 	local st = q7.Source(F("a"))
 	local sl4 = q7.Slot({ st })

@@ -254,7 +254,7 @@ local function createImpl(module: any)
 		-- (`hold[1]`), never this result node.
 		local result = self._fn(hold[1], self._cache, table.unpack(hold, 2))
 		self._computing = -1 -- fn returned (the Modifier raise below is ours, not a stuck fn)
-		if isModifier(result) then
+		if type(result) == "table" and isModifier(result) then -- `type` first (round14, as `Source`'s `checkSettable`)
 			-- `H-205` history: this used to be a hand-counted level 3; the walker
 			-- (`H-231`) picks the frame. Q7 셋째 (a) (사용자 결정 2026-09-07): OUTERMOST —
 			-- `_recompute` is lazy, so when dispatch forces it first the nearest tagged
@@ -398,6 +398,14 @@ local function createImpl(module: any)
 			Err.errorBeforeNearest(`Quad0190 State: Observer fn must be a function or nil (got {typeof(fn)}) - nil makes the always-observe utility`, SURFACE)
 		end
 		return ObserverImpl.new(self, fn)
+	end
+
+	-- Private (round14, user decision 2026-10-06 — debug detector 1): the one creation path for quad's own
+	-- bookkeeping Observers (Slot position math, `:List`'s data Observer, the per-position length
+	-- Observers). Same handle as `:Observer(fn)`, born `_internal` — before its install run, so the
+	-- upstream-feedback debug check skips the install window too. Untagged: never a user entry.
+	function Impl._internalObserver(self: any, fn: any): any
+		return ObserverImpl.new(self, fn, true)
 	end
 
 	function Impl.Apply(self: any, factory: any): any

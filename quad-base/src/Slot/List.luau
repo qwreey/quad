@@ -35,6 +35,14 @@ return function(S: Types.SlotInternal, module: any)
 			end
 		end
 	end
+	-- [2026-10-06 user decision, round14 Q173 (a)] the `Quad0070` value-chain walk over an identity
+	-- `:Single`/`:List`'s items (round13 Q113 (a)): debug layer — with debug off a State item whose chain
+	-- loops wraps itself until a stack overflow (undefined).
+	local function checkItemChains(items: any)
+		for _, item in ipairs(items) do
+			StateHandler.assertAcyclicChain(item, nil, S.Err.errorBefore) -- error-code: via StateHandler.assertAcyclicChain
+		end
+	end
 
 	-- ── :List / :Single (slice 4) ──────────────────────────────────────
 	local function identityUpdateFn(ctx: any): any
@@ -159,11 +167,7 @@ return function(S: Types.SlotInternal, module: any)
 			-- whose chain loops (`st:Set(st)` on a State already in a Slot) would wrap itself forever.
 			-- Checked BEFORE the batch gate goes On so the raise leaves this Slot showing its previous
 			-- element (the State already holds the new value — that write happened before this ran).
-			if updateFn == identityUpdateFn then
-				for _, item in ipairs(items) do
-					StateHandler.assertAcyclicChain(item, nil, S.Err.errorBefore) -- error-code: via StateHandler.assertAcyclicChain
-				end
-			end
+			if module.debug and updateFn == identityUpdateFn then checkItemChains(items) end
 
 			local blocker = S.BK._getBlocker(self)
 			local ownsGate = not blocker.Blocking
@@ -242,8 +246,9 @@ return function(S: Types.SlotInternal, module: any)
 
 		local data = self._listData
 		if S.isState(data) then
-			local observer = data:Observer(function() reconcile(data:Get()) end)
-			observer._internal = true -- quad's own bookkeeping: skipped by the Observer upstream-feedback debug check
+			-- quad's own bookkeeping: `_internal` from birth (before the install run), skipped by the Observer
+			-- upstream-feedback debug check
+			local observer = data:_internalObserver(function() reconcile(data:Get()) end)
 			self._listObserver = observer
 			module.Backend.bindLifetime(physicalTarget, observer)
 		else

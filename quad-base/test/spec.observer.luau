@@ -731,6 +731,126 @@ do
 		p2:Destroy()
 	end)
 	assert(countOf(LINE) == 0, "a loop routed through the Slot bookkeeping is skipped: " .. table.concat(lines, " | "))
+	-- round14 `H-886`: the same rule for the mount/re-seat write — an Offset callback that re-seats its own
+	-- Slot (Extract + Add) reaches the Offset Source through `setOffsetSource`, not `recompute`; skipped too
+	capture(function()
+		local Instance = mock.Instance
+		local host = Instance.new("Frame")
+		local I = dq.Slot({ Instance.new("Frame") })
+		local S = dq.Slot({ Instance.new("Frame"), Instance.new("Frame"), I })
+		dq.Dispatch.drive(host, { S })
+		local depth, nested = 0, 0
+		local o = I.Offset:Observer(function(off)
+			depth += 1
+			if depth > 1 then
+				nested += 1
+			end
+			if off:Get() == 1 then
+				S:Extract(S:IndexOf(I) :: number)
+				S:Add(I)
+			end
+			depth -= 1
+		end):Subscribe()
+		S:Move(S:IndexOf(I) :: number, 2)
+		assert(nested > 0, "the scene really nests this handle's run (else it proves nothing)")
+		o:Unsubscribe()
+		host:Destroy()
+	end)
+	assert(countOf(LINE) == 0, "a re-seat through setOffsetSource is skipped: " .. table.concat(lines, " | "))
+	print("PASS")
+end
+
+print()
+print("=== 14b. round14 (2026-10-06) — 되먹임 감지기를 보류 갈래(설치 창)에도; quad 내부 Observer는 설치 전부터 `_internal`; StateHandler의 Observer는 내부 아님(Q174) ===")
+do
+	local LINE = "Observer: a change reached this Observer while its own fn was running"
+	local lines: { string } = {}
+	local dq = mock.newQuad()
+	local env: any = getfenv((dq.Source(0):Observer() :: any).WeakSubscribe)
+	local function capture(f: () -> ())
+		table.clear(lines)
+		local old = rawget(env, "print")
+		env.print = function(...: any)
+			table.insert(lines, table.concat({ ... }, " "))
+		end
+		local ok, err = pcall(f)
+		env.print = old
+		assert(ok, tostring(err))
+	end
+	local function countOf(needle: string): number
+		local n = 0
+		for _, l in lines do
+			if string.find(l, needle, 1, true) ~= nil then
+				n += 1
+			end
+		end
+		return n
+	end
+	local function clampOnce(target: any)
+		if (target:Get() :: number) > 10 then
+			target:Set(10) -- the install fn writes its own target once and stops (a clamp)
+		end
+	end
+	-- the install window: the change is held (no nested run), still a feedback — one line with debug on
+	dq.debug = false
+	capture(function()
+		local s = dq.Source(20)
+		local o = s:Observer(clampOnce)
+		o:Subscribe() -- replays the held change once
+		assert(s:Get() == 10)
+		o:Unsubscribe()
+	end)
+	assert(countOf(LINE) == 0, "debug off: no line")
+	dq.debug = true
+	capture(function()
+		local s = dq.Source(20)
+		local o = s:Observer(clampOnce)
+		o:Subscribe()
+		o:Unsubscribe()
+	end)
+	assert(countOf(LINE) == 1, "install-window feedback: one line: " .. table.concat(lines, " | "))
+	-- quad's own handles are marked before their install run — the same shape is silent
+	capture(function()
+		local s = dq.Source(20)
+		local o = (s :: any):_internalObserver(clampOnce)
+		o:Subscribe()
+		o:Unsubscribe()
+	end)
+	assert(countOf(LINE) == 0, "an internal handle's install window is skipped: " .. table.concat(lines, " | "))
+	-- Q174: a State placed in props — its handler's Observer is not internal; a Ref callback its dispatch
+	-- set off writes the State back during the install (Q5 — undefined): one line
+	capture(function()
+		local inst = mock.Instance.new("Frame")
+		local r = dq.Ref(nil :: any)
+		local src = dq.Source(r)
+		local once = true
+		r:Callback(function(v)
+			if v ~= nil and once then
+				once = false
+				src:Set(r)
+			end
+		end)
+		dq.Dispatch.drive(inst, { src })
+		inst:Destroy()
+	end)
+	assert(countOf(LINE) == 1, "StateHandler's Observer is checked: " .. table.concat(lines, " | "))
+	-- a `:List` over a State data and a Slot's Length/Offset plumbing mount silently (internal from birth)
+	capture(function()
+		local Instance = mock.Instance
+		local host = Instance.new("Frame")
+		local data = dq.Source({ 1, 2 })
+		local sl = dq.Slot()
+		sl:List(data, function(ctx)
+			return if ctx.Item == dq.KeyGone then nil else Instance.new("Frame")
+		end, function(item)
+			return item
+		end)
+		local inner = dq.Slot({ Instance.new("Frame") })
+		dq.Dispatch.drive(host, { sl, inner })
+		data:Set({ 1, 2, 3 })
+		host:Destroy()
+	end)
+	assert(countOf(LINE) == 0, "quad's own Observers stay silent: " .. table.concat(lines, " | "))
 	print("PASS")
 end
 

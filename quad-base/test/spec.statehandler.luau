@@ -253,11 +253,12 @@ do
 end
 
 print()
-print("=== 7. round11 H-573 (2026-09-17) — 순환하는 State 사슬은 stack overflow 대신 StateHandler 메시지 ===")
+print("=== 7. round11 H-573 (2026-09-17) — 순환하는 State 사슬은 stack overflow 대신 StateHandler 메시지 — q.debug일 때만(round14 Q173 (a), 2026-10-06; 꺼 두면 stack overflow — 정의되지 않음) ===")
 do
 	local q: any = newQuad()
 	local sources, log = {}, {}
 	addSpecLeaf(q, sources, log)
+	q.debug = true -- the chain walk is a debug-layer check
 	local a = q.Source(nil :: any)
 	local b = q.Source(a)
 	a:Set(b)

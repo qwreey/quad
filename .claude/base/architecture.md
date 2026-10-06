@@ -335,7 +335,7 @@ quad/
 │       ├── NotInstalled.luau      # **[2026-09-07 post-implementation round1 Q3 ②]** `notInstalled(name, what, hint?)` — 백엔드가 설치해야 하는 op의 안내 스텁 팩토리 한 본문(`Tag.luau`/`Attr/Key.luau`/`LifetimeHandle.luau`가 위임; 메시지 `"<name> is not available"`, `errorBefore` 최외곽 — `H-378`)
 │       ├── Void.luau              # **[2026-08-28 `H-162`]** `return function() end` 한 줄 — 단일 no-op. 의존 없는 잎(`Brand`/`Relate`와 같은 급 — **[2026-10-01]** `None.luau`는 이제 Dispatch를 require하는 값 모듈이라 이 급이 아니다), `Dispatch/*`·핸들러·최상위 `init.luau`가 require
 │       ├── None.luau              # **[2026-10-01 사용자 결정 — 옛 `Dispatch/None.luau`]** 센티널 `None`(identity 판정, `H-300` 마커 필드 — 생성자는 `Dispatch/Handler.luau`의 `sentinel`) + `Init(module)`: `module:RunInit(InitDispatch)` 뒤 `NoneHandler`(재귀만 — `v==None`을 `nil`로 `index + 1`) 등록(`H-278` — Effect/Observer와 같은 모양). 최상위 `init.luau`가 값을 재export하고 `module:RunInit(None.Init)`. 정본 `dispatch-core-plan.md`의 "`None` 센티널" 절
-│       ├── StateHandler.luau      # **[2026-10-02 round14 Q175 개명 — 옛 `StoreBind.luau`, 핸들러 `name`도 `"StoreBind"` → `"StateHandler"`; 2026-10-01 사용자 결정 — 옛 `Dispatch/StoreBind.luau`]** State 값의 핸들러 — 언랩해 `index + 1`로 재디스패치(범용, 엔진 무관) + `assertAcyclicChain`(Quad0070 사슬 순환 검사 — Slot 원소 경로도 씀). 등록은 `State.luau`의 `Init`(`RunInit(InitDispatch)` 뒤 `StateHandler.register`) — round13 §0 Q3 (a)(InitDispatch 꼬리 등록)의 역전
+│       ├── StateHandler.luau      # **[2026-10-02 round14 Q175 개명 — 옛 `StoreBind.luau`, 핸들러 `name`도 `"StoreBind"` → `"StateHandler"`; 2026-10-01 사용자 결정 — 옛 `Dispatch/StoreBind.luau`]** State 값의 핸들러 — 언랩해 `index + 1`로 재디스패치(범용, 엔진 무관) + `assertAcyclicChain`(Quad0070 사슬 순환 검사 — Slot 원소 경로도 씀; **[2026-10-06 round14 Q173]** `q.debug`일 때만). 등록은 `State.luau`의 `Init`(`RunInit(InitDispatch)` 뒤 `StateHandler.register`) — round13 §0 Q3 (a)(InitDispatch 꼬리 등록)의 역전
 │       ├── DebugKeyFilter.luau    # **[2026-10-01 round13 Q135 후속 — 사용자 결정]** `register(dispatch, name, kindOf)` — `debugOnly` 문자 키 경고 필터 팩토리(NORMAL + 2, `keyType = "string"`, 경고 뒤 `false`, 같은 (inst, key)는 한 번). 브랜드 지식은 없다 — Ref 가족·Observer·Effect·Slot·Tag·Attr가 자기 Init에서 `kindOf`로 등록(`H-278`). `Dispatch/` 폴더 규칙(코어와 drive 단계만) 밖이라 최상위 잎. 정본 `dispatch-core-plan.md`의 `debugOnly` 항목
 │       ├── Brand.luau             # **[2026-08-28 M2 첫 단위]** **[2026-09-07 사용자 결정]** `Brand()` 팩토리는 quad-types로(`QuadTypes.Brand` — 패키지마다 자기 브랜드를 만들 수 있게), 여긴 **quad-base 브랜드 인스턴스 전부**(`EpochBrand`를 `Source`/`Ref`/`GateNode`가 공유하므로 타입 모듈마다 두면 순환 require) + `is*` 술어(타입이 생길 때 그 술어를 여기 추가, 최상위 `init.luau`가 재export; `TweenBrand`/`isTween`은 Tween과 함께 quad-roblox `Brand.luau`로). 의존 없는 잎(`base/brand-plan.md`). **[2026-10-01]** 내부 능력 브랜드 `BindableBrand`(술어·`q.` 재노출 없음 — Observer/Effect가 자기 브랜드 옆에서 등록, 아래 `LifetimeHandle.luau` 줄)
 │       ├── Relate.luau            # inst를 weak 키로 하는 범용 릴레이션(`SetWeak`/`GetWeak`/`SetStrong`/`GetStrong`), 비싱글톤 생성자(`base/relate-plan.md`) — 구 PerInstanceState/perInstanceState 대체
@@ -600,12 +600,16 @@ debug 는 치명적 부분 아니면 기본적으로 계속 실행은 시켜주�
   `Slot:List`/`:Single` opts, `Tween`, `Animate`), `Claim` 디스크립터, 배열 전용 quad 값의 문자 키(`debugOnly` 필터),
   Compute 감지기 둘(계산 함수 도중의 `Source:Set`/`:Emit`, 멈춘 계산 위의 새 실행 — `source-state-plan.md` "Compute 순수성" 절),
   Observer 자기 상류 되먹임 감지기(실행 중인 fn에 같은 핸들의 자격 있는 배달이 다시 옴 — 같은 절 2026-10-01 문단; quad 내부
-  Observer는 `_internal`로 제외); 에러로 멈추는 비싼 검사 — `process`의 함수 아닌
+  Observer는 `_internal`로 제외 — **[2026-10-06 round14 사용자 결정]** 보류 갈래(설치 창)에도 묻고, 내부 Observer는
+  `State:_internalObserver`로 설치 **전에** 표시를 받으며, StateHandler의 Observer는 내부가 아니다(Q174); 부기 `recompute`와
+  `setOffsetSource` 프레임을 거친 배달은 건너뜀(`H-886`)), `Debounce`/`Throttle` 핸들 `Cancel`이 자기 게이트의 flush 안에서
+  불림(스택 검사 — round9 (h) UB, 2026-10-06 `H-570` 대체); 에러로 멈추는 비싼 검사 — `process`의 함수 아닌
   retractor(`Quad0077`), 그리고 **[2026-10-01 사용자
   결정 — "dispatch 안 정리는 동의 … 중괄호 문제도 동의. 순환 가드는 … 같은 결정을 따라가자. debug 로 내리기에 동의해"]** 평소
   경로에서 내린 넷: `drive`의 중괄호 누락 게이트의 전체 브랜드 스캔(`Quad0083` — 평소엔 메타테이블·`Brand.isPlainBranded` O(1)만),
   `slot:List` data의 키 전수 검사(`Quad0143` — 평소엔 "배열 부분이 비었는데 다른 키" O(1)만), Slot 자기 포함 순환 가드(`Quad0173`,
-  `H-500`), quad-roblox 정적 자식의 조상 사슬 순환 가드(`Quad0220`, `H-545`). 순환 둘은 꺼 두면 엔진 에러(Roblox circular
+  `H-500`), quad-roblox 정적 자식의 조상 사슬 순환 가드(`Quad0220`, `H-545`), 그리고 **[2026-10-06 round14 Q173 (a)]** State 값
+  사슬 순환 검사(`Quad0070`, `StateHandler.assertAcyclicChain` — props 자리·Slot 원소 경로 셋; 꺼 두면 stack overflow, UB). Slot·정적 자식 순환 둘은 꺼 두면 엔진 에러(Roblox circular
   reference)나 다음 CRUD의 스택 오버플로가 멈춘다 — 던진 뒤의 부기 무결은 "예외 안전성 계약"대로 약속하지 않는다(round3 Q18 (c),
   사용자 *"에러로 죽은 다음 우린 데이터의 무결이 깨져도 상관이 없고"*). (Observer 설치 루프 한도 `Quad0262`는 2026-10-01 설치 루프와
   함께 폐기.) 목록의 소스는 레퍼런스 core/01의 `q.debug` 절.

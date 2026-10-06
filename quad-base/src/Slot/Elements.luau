@@ -76,8 +76,9 @@ return function(S: Types.SlotInternal, module: any)
 		end
 		-- round13 Q113 (a) (user decision 2026-10-01): a State whose value chain loops (`st:Set(st)`,
 		-- `a`→`b`→`a`) wrapped itself forever at mount (stack overflow in Brand/Relate) — the `H-573`
-		-- walk, at the caller's depth (CRUD/`Slot{}` → nearest; reconcile → outermost)
-		StateHandler.assertAcyclicChain(v, nil, raise) -- error-code: via StateHandler.assertAcyclicChain
+		-- walk, at the caller's depth (CRUD/`Slot{}` → nearest; reconcile → outermost). Debug layer since
+		-- round14 Q173 (a) (user decision 2026-10-06) — debug off, the loop is a stack overflow (undefined)
+		if module.debug then StateHandler.assertAcyclicChain(v, nil, raise) end -- error-code: via StateHandler.assertAcyclicChain
 		local sub = S.Slot()
 		sub:Single(v, nil, { OwnsElements = false })
 		sub._wrapped = v

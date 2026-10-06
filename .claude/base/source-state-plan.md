@@ -287,7 +287,11 @@ end
 --   옵져버에 있다 - 이건 버리기 싫은 부분중 하나야"*). 실행 중인 fn에 자격 있는 배달이 다시 온다는 것은 곧 자기
 --   상류 되먹임(UB)이다 — `q.debug`면 Observer마다 한 줄 경고(`checkUpstreamFeedback` — `_running`에 더해 fn이
 --   실제 호출 스택에 있는지 본다: 던진 fn이 남긴 `_running`으로 거짓 경고가 나지 않게). quad 내부 Observer(Slot
---   base Offset·Bookkeeping len·`:List` 목록·StateHandler)는 비공개 `_internal = true` 표시로 빠진다(새 공개 이름 아님).
+--   base Offset·Bookkeeping len·`:List` 목록)는 비공개 `_internal = true` 표시로 빠진다(새 공개 이름 아님).
+--   **[2026-10-06 round14 사용자 결정]** (1) 같은 검사를 보류 갈래(`_rerunRequired = true` 직전 — 설치 창)에도 묻는다;
+--   내부 Observer는 비공개 생성 경로 `State:_internalObserver(fn)`(= `ObserverImpl.new(state, fn, true)`)로 표시를 **설치
+--   전에** 받는다(설치 뒤에 달면 설치 창의 배달을 못 거른다). (2) Q174 — StateHandler의 Observer는 내부가 아니다(그 fn 아래에서
+--   Ref·Tween 콜백과 엔진 동기 신호가 돈다). (3) `H-886` — 건너뛰는 부기 프레임에 `setOffsetSource`(마운트·다시 앉히기)도.
 --   `_seenRevision`(Q109) = 이 핸들이 마지막으로 돈 Source 리비전 숫자 하나. **Effect의 `_epochs` 맵 항목과 같은
 --   뜻의 기록을 대상 하나에 특수화한 것**이다(Effect: fn 직전 `Sync`, 배달 때 `Update`) — 외부자 검토가 든
 --   Preact signals·Vue 3.4+의 "간선 하나당 버전 숫자 하나"와 같은 모양. 비교는 대상이 **Source일 때만**
@@ -2042,7 +2046,7 @@ Observer 문단). 사용자 원문: *"compute 안에서 상위를 set 하는 그
 이 규칙 밖이다** — Q73 장면(형제 `Offset` Observer의 CRUD가 자기 `Offset`을 바꿈)처럼 Slot의 `Offset`/`Length`를 보는 콜백의 CRUD가
 그 값으로 돌아오는 고리는 State 의존이 아니라 부기 재계산을 거치고, 부기가 되감아 수렴시키는 정의된 경로다. 사용자(2026-10-01): *"옵져버가 상류를 바로 되먹이는 경로는 아니라고 봐. 간접 경로야. 정확히 set 을 넣어버리는 곳은 북키핑 업데이트 하는 리컴퓨트 부분이야 … 유저가 slot 의 내부 구현을 모른다고 가정하자. 그럼 그 묶임이 되먹임인걸 눈 감고 볼 수 없어 … 북키핑 자체가 effect 처럼 반복 수렴 하는건 걷어내야할 이유를 모르겠어. 되감기를 불가하게 하는 경로는 구조적으로 state 이상을 유저가 알아야만 해, 왜 UB인지."* (같은 날 앞서
 "UB이지만 잘 돈다"로 적었던 것을 바로잡음.) debug 감지기도 이 고리를 건너뛴다 — 중첩 배달의 호출 스택에서 이 핸들의 fn보다
-안쪽에 부기 `recompute` 프레임이 있으면 알리지 않는다(사용자 동의 *"부기 거친 배달은 debug 에서 무시하기도 동의. 부기가 묶는건
+안쪽에 부기 `recompute` 프레임(**[2026-10-06 round14 `H-886`]** 또는 마운트·다시 앉히기의 `setOffsetSource` 프레임)이 있으면 알리지 않는다(사용자 동의 *"부기 거친 배달은 debug 에서 무시하기도 동의. 부기가 묶는건
 처리해준다로."*). **정본 서술**: 규칙과 예외 둘의 문장은 레퍼런스 `docs/reference/core/05-observer-effect.md`의 "Observer는
 최종 소비자" 문단 하나에 두고 다른 문서는 한 줄 + 포인터로만 적는다(사용자 *"core/05 정본으로 두고 나머지는 포인터로 줄이자"* —
 같은 문장을 열 곳 가까이 따로 적다 한 곳(CHANGELOG)이 예외를 빠뜨렸던 일 뒤). 이 문단은 그 결정의 경위 기록이다.

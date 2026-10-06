@@ -64,17 +64,24 @@ local WEAK_KEY_MT = { __mode = "k" }
 -- one line per Observer (weak) and the run goes on unchanged. `_running` alone is not the signal: an fn
 -- that THREW leaves it up for good (no pcall — architecture "예외 안전성 계약"), so the probe also asks
 -- whether `fn` really has a frame on the call stack (the stack unwinds by itself). Handles quad creates
--- for its own bookkeeping carry `_internal = true` and are skipped — they are not user code.
--- A nested delivery that came THROUGH the Slot bookkeeping recompute is skipped too (user decision
--- 2026-10-01: a callback watching a Slot's `Offset`/`Length` that CRUDs a Slot so the value moves again is
--- not State feedback — the loop goes through the position math, which re-runs until it settles; the user
--- cannot see it as feedback without knowing Slot internals). Walking out from the innermost frame, meeting
--- `recompute` before this handle's `fn` means the change was routed by the bookkeeping.
-local function fedBackDirectly(fn: any, recompute: any): boolean
+-- for its own bookkeeping (Slot position math, `:List`'s data Observer, the per-position length
+-- Observers) are born with `_internal = true` through `State:_internalObserver` — set BEFORE the install
+-- run, so the install window is skipped too — and are not user code. [2026-10-06 user decision, round14
+-- Q174] StateHandler's Observer (a State placed in props) is NOT internal: its fn is quad's dispatch of the
+-- State's value, but under it run Ref/Tween callbacks, hooks and the engine's synchronous signals — a
+-- write back to that State from there is the same feedback, so the message names that case too.
+-- A nested delivery that came THROUGH the Slot bookkeeping is skipped too (user decision 2026-10-01:
+-- a callback watching a Slot's `Offset`/`Length` that CRUDs a Slot so the value moves again is not State
+-- feedback — the loop goes through the position math, which re-runs until it settles; the user cannot see
+-- it as feedback without knowing Slot internals). Walking out from the innermost frame, meeting the
+-- bookkeeping's `recompute` or `setOffsetSource` (the mount/re-seat write — round14 `H-886`: an Extract +
+-- Add of the watched Slot reaches the Offset Source there, not through `recompute`) before this handle's
+-- `fn` means the change was routed by the bookkeeping.
+local function fedBackDirectly(fn: any, recompute: any, setOffsetSource: any): boolean
 	local level = 1
 	while true do
 		local f = debug.info(level, "f")
-		if f == nil or f == recompute then
+		if f == nil or f == recompute or f == setOffsetSource then
 			return false
 		end
 		if f == fn then
@@ -84,10 +91,14 @@ local function fedBackDirectly(fn: any, recompute: any): boolean
 	end
 end
 
-local function checkUpstreamFeedback(observer: any, warned: { [any]: true }, recompute: any)
-	if observer._running and not observer._internal and warned[observer] == nil and fedBackDirectly(observer.fn, recompute) then
+-- Asked on BOTH delivery branches (round14 — user decision 2026-10-06, debug detector 1): the run branch
+-- (the delivery would nest) and the held branch (the handle cannot execute yet — the install window: an
+-- install fn that writes its own upstream once and stops was 0 lines before).
+local function checkUpstreamFeedback(observer: any, warned: { [any]: true }, bookkeeping: any)
+	if observer._running and not observer._internal and warned[observer] == nil
+		and fedBackDirectly(observer.fn, bookkeeping._recompute, bookkeeping.setOffsetSource) then
 		warned[observer] = true
-		print("Observer: a change reached this Observer while its own fn was running - the fn fed its own upstream, directly or through other handles (undefined; set other targets, or use an Effect for a self-correcting write)")
+		print("Observer: a change reached this Observer while its own fn was running - the fn (for a State placed in props: quad's dispatch of its value, with the callbacks and engine signals it set off) fed its own upstream, directly or through other handles (undefined; set other targets, or use an Effect for a self-correcting write)")
 	end
 end
 
@@ -161,10 +172,13 @@ local function createImpl(module: any)
 		end
 		if module.Backend.canExecute(self) then -- read at fire time (`H-174`)
 			if module.debug then
-				checkUpstreamFeedback(self, debugWarned, module.Bookkeeping._recompute)
+				checkUpstreamFeedback(self, debugWarned, module.Bookkeeping)
 			end
 			run(self, from)
 		else
+			if module.debug then
+				checkUpstreamFeedback(self, debugWarned, module.Bookkeeping)
+			end
 			self._rerunRequired = true -- `H-159`: change before binding (or in the install window) is held — replayed once when bound
 		end
 	end
@@ -266,9 +280,12 @@ local function createImpl(module: any)
 		targetState:Get() -- no-arg `state:Observer()` = "always observe" utility
 	end
 
-	function Impl.new(state: any, fn: any): any
+	-- `internal` (private — only `State:_internalObserver`): quad's own bookkeeping handle, marked before
+	-- the install run so the upstream-feedback debug check skips its install window too (round14).
+	function Impl.new(state: any, fn: any, internal: true?): any
 		local o: any = setmetatable({
 			fn = fn or alwaysObserve,
+			_internal = internal, -- nil for every user handle (no slot)
 			_state = state, -- strong: the handle holds its upstream (`_hold` equivalent, `H-110`)
 			_rerunRequired = false, -- one meaning: "a change arrived while unexecutable" (held; 3′ — was seeded `true`)
 			_seenRevision = false, -- the Source revision at this handle's last fn start (Q109 — Effect's `_epochs` entry)

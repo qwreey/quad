@@ -469,7 +469,11 @@ end
      `Effect`가 동기적으로 상류를 `:Set()`하는 것(`debounce-throttle-plan.md`의 `onWindowEnd` 주석)은 정의되고,
      게이트 쪽에서 그걸 안전하게 만드는 장치가 위 4번의 **flush 진입 시 스왑**이다(코드 그대로 — `spec.gate` 6·
      `spec.debounce` 10/10b가 Effect 하류로 고정). 하류 `Observer`가 같은 일을 하면 UB(레퍼런스 core/03 Gate 절·
-     sugar/03). 제어 호출(`handle:Cancel()` 재진입, `spec.debounce` 13)은 되먹임이 아니라 그대로 정의된다.
+     sugar/03). ~~제어 호출(`handle:Cancel()` 재진입, `spec.debounce` 13)은 되먹임이 아니라 그대로 정의된다.~~
+     **[2026-10-02 round14 정정 — 사용자 결정]** 위 취소선 문장도 에이전트 문장이었고 round9 (h)와 어긋났다: flush가
+     닿은 하류 콜백 안에서 같은 게이트의 핸들(`Cancel`·`Flush`)을 부르는 것은 **정의되지 않은 동작**이다(round9 (h) 사용자
+     *"flush 중 cancel 자체가 의미가 안 맞아서"*; round11 `H-570`의 `commitIdle` 두 줄은 걷음). `q.debug`면 `Cancel`이 한 줄
+     알린다(`debounce-throttle-plan.md`의 `H-570` 문단 끝, `spec.debounce` 13).
    - **같은 게이트/`Blocker` 인스턴스를 중첩해 쓰지 않는다** — `Blocker`의
      기존 규칙이 그대로 적용된다(겹치는 배치는 새 인스턴스).
 7. **[2026-08-21 해소] `Effect(fn, ...deps)`의 최초 1회 억제는 `Gate`

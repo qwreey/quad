@@ -62,6 +62,9 @@ local StateHandler = {}
 -- observer below and the Slot element path (`Slot/Elements.luau` wrapElement, `Slot/List.luau`'s identity
 -- reconcile). `first` is the value to walk from; `seed` (optional) is a State already on the chain
 -- (StateHandler's own); `raise` is the caller's depth. Subject `State:` everywhere (round13 Q90).
+-- [2026-10-06 user decision, round14 Q173 (a)] debug layer (`architecture.md` "debug 층"): every caller
+-- runs it only under `q.debug` — the first `isState` included — as one line `if module.debug then … end`.
+-- With debug off a circular chain ends in a stack overflow (undefined, no raise).
 function StateHandler.assertAcyclicChain(first: any, seed: any?, raise: (string, any) -> ())
 	if not isState(first) then
 		return
@@ -99,10 +102,10 @@ function StateHandler.register(dispatch: QuadTypes.Dispatch, module: any)
 			ModuleIdentity.assertOwnAtDispatch(module, state, "State") -- before the registration fire subscribes here
 			local observer = state:Observer(function()
 				local realv = state:Get()
-				StateHandler.assertAcyclicChain(realv, state, Err.errorBefore) -- error-code: via assertAcyclicChain
+				if module.debug then StateHandler.assertAcyclicChain(realv, state, Err.errorBefore) end -- error-code: via assertAcyclicChain
 				dispatch.process(inst, k, realv, index + 1)
-			end)
-			observer._internal = true -- quad's own plumbing: skipped by the Observer upstream-feedback debug check
+			end) -- NOT `_internal` (round14 Q174, user decision 2026-10-06): user callbacks and engine signals run
+			-- under this fn, so a write back to `state` from there is reported by the Observer debug check
 			module.Backend.bindLifetime(inst, observer)
 			return function(_nextValue: any?, _retracting: boolean)
 				-- Own resource only — the descending diff (or retractFrom)
