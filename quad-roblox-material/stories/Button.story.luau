@@ -55,6 +55,11 @@ return StoryKit.story({
 				Material.Button({ Label = "Text", Variant = "Text", Theme = theme, Disabled = c.Disabled }),
 				Material.Button({ Label = "Elevated", Variant = "Elevated", Theme = theme, Disabled = c.Disabled }),
 			}),
+			caption(theme, "Fixed width (`Width = 160`, label centered)"),
+			row({
+				Material.Button({ Label = c.Label, Variant = "Filled", Width = 160, Theme = theme, Disabled = c.Disabled }),
+				Material.Button({ Label = c.Label, Variant = "Outlined", Width = 160, Theme = theme, Disabled = c.Disabled }),
+			}),
 		})
 	end,
 })

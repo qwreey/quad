@@ -325,7 +325,10 @@ local function build(p: Core): TextButton
 			D.UIPadding { PaddingLeft = padLeft, PaddingRight = padRight },
 			D.UIListLayout {
 				FillDirection = Enum.FillDirection.Horizontal,
-				HorizontalAlignment = Enum.HorizontalAlignment.Center,
+				-- Left, not Center: Content is AutomaticSize X, and a centered layout places the label from the frame's
+				-- width — the width AutomaticSize derives from the label (a loop that settles over several layout passes;
+				-- Studio QA 2026-10-07 saw chips hugging their text, see Button/init.luau "SIZING")
+				HorizontalAlignment = Enum.HorizontalAlignment.Left,
 				VerticalAlignment = Enum.VerticalAlignment.Center,
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding = UDim.new(0, 8),

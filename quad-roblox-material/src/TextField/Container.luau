@@ -35,11 +35,17 @@ local function label(c: Ctx.Ctx, inset: number): Instance?
 	end
 	local filled = c.Filled
 	local floated = c.Floated
+	-- resting label: its 16 px text box centered on the container (a single-line field) or on the first line (multi-line,
+	-- whose text starts 16 px down). The label's LineHeight is forced to 1 (below), so its auto-sized box IS the text size
+	-- and these offsets do not depend on how the engine spreads BodyLarge's 1.5 line height around one line. (The first
+	-- version put the resting label at y = 16, assuming a 24 px line box; the auto-sized box was the 16 px text, so the
+	-- label sat 4 px above the container's center — Studio QA 2026-10-07.)
+	local restY = if c.Multi then 16 else c.Height // 2 - 8
 	local labelPos: q.State<UDim2> = floated:Compute(function(self)
 		if filled then
-			return if self:Get() then UDim2.fromOffset(inset, 7) else UDim2.fromOffset(inset, 16)
+			return if self:Get() then UDim2.fromOffset(inset, 7) else UDim2.fromOffset(inset, restY)
 		end
-		return if self:Get() then UDim2.fromOffset(12, -9) else UDim2.fromOffset(inset - 4, 16)
+		return if self:Get() then UDim2.fromOffset(12, -9) else UDim2.fromOffset(inset - 4, restY)
 	end)
 	local labelSize: q.State<number> = floated:Compute(function(self)
 		return if self:Get() then 12 else 16
@@ -58,6 +64,7 @@ local function label(c: Ctx.Ctx, inset: number): Instance?
 		BackgroundColor3 = notchColor,
 		BackgroundTransparency = if filled then 1 else notchTransparency:Apply(Style.animation()),
 		BorderSizePixel = 0,
+		LineHeight = 1, -- one line: the box is exactly the text size (see restY)
 		Text = Util.asStringState(props.Label),
 		TextColor3 = c.Colors.Label,
 		TextTransparency = c.ContentTransparency,

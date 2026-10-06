@@ -39,7 +39,7 @@ screen.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 | Filled 버튼(아이콘 없음) | **8** | 40 | 70 |
 
 (`src/Button/init.luau` 머리와 `test/spec.button.luau`가 소스. 누르는 동안 리플이 일시적으로 4개를 더 만듭니다.) 다른
-컴포넌트의 수도 각 파일 머리와 스펙에 있습니다 — 예: Checkbox 10, Radio 9, Switch 8, 필드 있는 Filled TextField 13,
+컴포넌트의 수도 각 파일 머리와 스펙에 있습니다 — 예: Checkbox 14(토글 모션 막대 넷 포함), Radio 5(스프라이트 한 장), Switch 8, 필드 있는 Filled TextField 13,
 Slider 14, 한 줄 ListItem 7, 색상 패널 106(8색 프리셋 포함). 갤러리 전체의 탭별 합계는 아래 "갤러리"에 있습니다.
 
 ## 설치와 설정
@@ -73,12 +73,12 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
 | | `Overlay` | 메뉴·다이얼로그·스낵바·툴팁이 뜨는 층 (`Overlay.default()` 자가 치유, Escape/B·선택 가두기) |
 | | `Icons` | 내장 아이콘 글자 표 + `Icons.override`로 이미지 교체 |
 | | `GlyphButton` / `KeyNav` / `Util` | 글리프·이미지 둥근 버튼(날짜 선택기·Snackbar 닫기·Chip 제거가 공유), 키·D-pad 전달 훅(Slider·날짜 칸·색상 선택기가 공유), `asState`/`negate`/`interactable`/`visible`/`hooks` 도우미와 `Hooks` 타입 |
-| 버튼 | `Button` | Filled / Tonal / Elevated / Outlined / Text 다섯 변형(한 함수, `Variant` prop) |
+| 버튼 | `Button` | Filled / Tonal / Elevated / Outlined / Text 다섯 변형(한 함수, `Variant` prop), 폭은 글자에 맞춤 또는 `Width`(픽셀·UDim, 라벨 가운데) |
 | | `IconButton` | Standard / Filled / Tonal / Outlined, `Selected`로 토글 |
 | | `FAB` | Small / Regular / Large, 색 넷, 레이블이 있으면 Extended |
-| 선택 | `Checkbox` | 체크·불확정·오류·비활성(체크 표시는 회전한 Frame 둘이라 이미지 없음) |
-| | `Radio` / `RadioGroup` | 한 개 / 세로·가로 묶음 |
-| | `Switch` | 52x32 트랙, 핸들이 16→24→28로 자람, 선택적 아이콘 |
+| 선택 | `Checkbox` | 체크·불확정·오류·비활성(체크 표시는 회전한 Frame 둘이라 이미지 없음, 토글은 MaterialUI식 가장자리 막대 모션), `Label`로 라벨까지 한 클릭·호버 영역 |
+| | `Radio` / `RadioGroup` | 한 개 / 세로·가로 묶음(선택 모션은 MaterialUI 스프라이트 시트 이미지 한 장), `Label`로 라벨까지 한 클릭·호버 영역 |
+| | `Switch` | 52x32 트랙, 핸들이 16→24→28로 자람(꺼진 채 누르면 24), 선택적 아이콘 |
 | | `Slider` | 클래식 M3(4px 트랙·20px 핸들), 연속/이산(눈금), 값 라벨, 키보드·D-pad |
 | 입력·메뉴 | `TextField` | Filled / Outlined, 떠오르는 레이블, 보조·오류 문구, 글자 수, 아이콘, 접두·접미, 여러 줄 |
 | | `Menu` | `Menu.open{ Anchor, Items }`와 `Menu.Button` — 앵커 아래(공간이 없으면 위)에 뜸 |
@@ -231,8 +231,8 @@ Gallery.GalleryPanel({})       -- 페이지(Frame)만; 직접 호스트할 때. 
 구간은 **탭을 고를 때 만들고 떠나면 부숩니다**(숨겨 두지 않음) — Pickers 하나가 수백 개이고 비확정 진행바가 Heartbeat
 루프를 돌기 때문입니다. 사용자가 입력·조작한 값은 패널의 Memo(Source)에 있어 다시 돌아와도 남습니다. 갤러리를 키트 루트(`src/init.luau`)에서 내보내지 않는 이유: 내보내면 키트를 쓰는 모든 소비자가 데모 코드까지 로드하게 됩니다(갤러리가 컴포넌트를 직접 require하므로 순환 자체는 아니지만, 갤러리가 루트를 require하는 모양이 되면 순환이 됩니다). 이 폴더를 직접 require하세요.
 
-스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함): Buttons 328, Selection 453,
-Text 268, Surfaces 314, Overlays 199, Chips 403, Pickers 743, Theme 197. 아이콘 데모는 키트가 그림을 싣지 않으므로
+스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함): Buttons 363, Selection 421,
+Text 268, Surfaces 314, Overlays 199, Chips 403, Pickers 744, Theme 197. 아이콘 데모는 키트가 그림을 싣지 않으므로
 `Icon` prop(기본값은 장치에서 확인 못 한 자리표시 에셋 id)을 본인 에셋으로 바꿔 보세요.
 
 ## UI Labs / 입력 주입
@@ -284,7 +284,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 5 | 글리프(▼ ‹ › × ✓ ✎ ▦ !) | Select·DatePicker·Chip·Snackbar·TextField 에러 | 두부(□)로 안 나옴 |  |
 | 6 | UICorner 0.5 스케일 = 완전한 알약 | Button·Chip·Switch | 양 끝이 반원 |  |
 | 7 | Filled TextField 위쪽만 둥근 모서리 | TextField(Filled) | 아래 모서리는 각지고 표시선이 안 삐져나옴 |  |
-| 8 | Content 프레임 가운데 정렬(넓힌 버튼) | Button에 Size Modifier | 라벨이 가운데 |  |
+| 8 | 버튼 폭 — 기본(글자에 맞춤)은 처음부터 맞는 폭이고 호버·클릭에 폭이 안 바뀜, `Width` 지정은 라벨이 가운데 | Button 스토리·갤러리 Buttons(고정 폭 묶음)·Theme(Brand outlined) | 글자가 안 삐져나오고 상호작용 뒤에도 폭 그대로 |  |
 | 9 | Card 고정폭에서 자식 폭 | Card 스토리 | Content가 카드 폭을 따라감(알려진 위험) |  |
 | 10 | 리플 시작점 = 누른 위치(GUI inset) | Button을 가장자리에서 누름 | 원이 손가락/커서 위치에서 시작 |  |
 | 11 | 게임패드 선택 링(포커스 표시) | 플레이: 게임패드로 이동 | 3px Secondary 링, 엔진 기본 상자 없음 |  |
@@ -297,6 +297,9 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 18 | Deferred 시그널 파괴 순서 | 플레이: ScreenGui를 지우고 같은 프레임에 다시 만듦 | 에러 없음(Quad0219 없음), 팝업 고아 없음 |  |
 | 19 | Progress 무한 애니메이션 부하 | Progress 스토리 / 플레이 | 보이는 동안만 돌고 숨기면 멈춤 |  |
 | 20 | Snackbar 호버 시 타이머 멈춤 | Snackbar 스토리 | 커서를 올리면 사라지지 않음 |  |
+| 21 | Radio 스프라이트(에셋 4667411351) | Radio 스토리·갤러리 Selection | 링·점이 또렷하고 테마 색으로 물듦, 선택 때 외곽이 안쪽으로 붙으며 점이 차오르는 10프레임 모션 |  |
+| 22 | Checkbox 토글 모션 | Checkbox 스토리 | 체크: 가장자리 막대가 오므라들었다가 가운데부터 체크가 드러남 / 해제: 채움이 접혀 들어감 |  |
+| 23 | 라벨 연동(label-for) | Checkbox 스토리 "Label"·갤러리 Selection | 라벨 위 호버가 상자 상태 레이어를 켜고, 라벨 클릭이 토글, 리플은 상자 가운데에서 |  |
 
 ## 테스트
 
@@ -321,6 +324,8 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 - **장치 미검증**: 이 키트는 목 백엔드에서만 검증됐습니다. 실제 `AbsolutePosition`/`AbsoluteSize` 위의 포인터 지오메트리
   (Slider 드래그, 색상 SV 영역, Menu·Tooltip 위치 보정과 GUI inset), 모양, `UIShadow` 렌더링은 실기기에서 보지 못했습니다.
   `TextField`는 편집 가능한 TextBox 위에서 엔진이 `MouseEnter`를 유지하는지(hover 표시) 확인하지 못했습니다.
+- **외부 이미지 에셋 하나**: `Radio`는 qwreey MaterialUI의 라디오 스프라이트 시트(`rbxassetid://4667411351`)를 그대로
+  참조합니다(키트가 올린 것이 아니라 원본 키트의 공개 에셋). 그 에셋을 못 불러오는 환경에서는 라디오가 비어 보입니다.
 - **글리프 아이콘**: 키트가 아이콘 에셋을 싣지 않으므로 Chip의 체크·제거 "x", Select의 화살표, Snackbar의 닫기는 **텍스트
   글리프**(엔진 폰트 폴백이 그림)입니다. 정확한 그림이 필요하면 `CheckIcon`/`RemoveIcon`/`TrailingIcon` 등 에셋 id prop을
   쓰세요. 갤러리의 기본 `Icon`도 자리표시입니다.

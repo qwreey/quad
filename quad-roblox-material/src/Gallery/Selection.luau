@@ -54,28 +54,26 @@ return function(ctx: Ctx): Instance
 	end
 
 	local checkboxes: { Instance } = {
-		Common.Labeled(ctx, Checkbox({ Theme = theme, Value = agreed }), "Checked"),
-		Common.Labeled(ctx, Checkbox({ Theme = theme, Value = plain }), "Unchecked"),
-		Common.Labeled(ctx, Checkbox({ Theme = theme, Value = erroring, Error = true }), "Error"),
-		Common.Labeled(ctx, Checkbox({ Theme = theme, Value = q.Source(true), Disabled = true }), "Disabled, checked"),
-		Common.Labeled(ctx, Checkbox({ Theme = theme, Value = q.Source(false), Disabled = true }), "Disabled"),
+		-- `Label`: the text belongs to the checkbox (hover / click on it act on the box — HTML label-for)
+		Checkbox({ Theme = theme, Value = agreed, Label = "Checked" }),
+		Checkbox({ Theme = theme, Value = plain, Label = "Unchecked" }),
+		Checkbox({ Theme = theme, Value = erroring, Error = true, Label = "Error" }),
+		Checkbox({ Theme = theme, Value = q.Source(true), Disabled = true, Label = "Disabled, checked" }),
+		Checkbox({ Theme = theme, Value = q.Source(false), Disabled = true, Label = "Disabled" }),
 	}
 	local triState: { Instance } = {
-		Common.Labeled(
-			ctx,
-			Checkbox({
-				Theme = theme,
-				Value = parent,
-				Indeterminate = mixed,
-				OnChange = function(v)
-					childA:Set(v)
-					childB:Set(v)
-				end,
-			}),
-			"Both"
-		),
-		Common.Labeled(ctx, Checkbox({ Theme = theme, Value = childA, OnChange = syncParent }), "First"),
-		Common.Labeled(ctx, Checkbox({ Theme = theme, Value = childB, OnChange = syncParent }), "Second"),
+		Checkbox({
+			Theme = theme,
+			Value = parent,
+			Indeterminate = mixed,
+			Label = "Both",
+			OnChange = function(v)
+				childA:Set(v)
+				childB:Set(v)
+			end,
+		}),
+		Checkbox({ Theme = theme, Value = childA, OnChange = syncParent, Label = "First" }),
+		Checkbox({ Theme = theme, Value = childB, OnChange = syncParent, Label = "Second" }),
 	}
 
 	-- radios
@@ -106,7 +104,7 @@ return function(ctx: Ctx): Instance
 				{ Option = "l", Label = "L" },
 			},
 		}),
-		Common.Labeled(ctx, RadioModule.Radio({ Theme = theme, Value = q.Source("a"), Option = "a", Disabled = true }), "Disabled, selected"),
+		RadioModule.Radio({ Theme = theme, Value = q.Source("a"), Option = "a", Disabled = true, Label = "Disabled, selected" }),
 	}
 
 	-- switches

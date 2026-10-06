@@ -4,7 +4,8 @@
 	navigation only changes the `Grid` State (the visible month's `Calendar.monthGrid`), and every cell derives
 	its text / visibility / selected / disabled look from it. The same 42 Instances live for the picker's life.
 
-	Layout (px): 7 columns of 48; weekday row 40 high; day rows 48; a 40x40 chip centred in each 48x48 slot
+	Layout (px): 12 px side padding, then 7 columns of 48 (weekday labels AND the day grid both start at x = 12); weekday
+	row 40 high; day rows 48; a 40x40 chip centred in each 48x48 slot
 	(M3's 40 dp day circle — the 48 dp touch target is the slot, the chip itself is the hit area: deviation).
 	Instances: weekday labels 7 + grid Frame 1 + 42 chips * 3 = 134 (+ the Frame wrapper = 135).
 
@@ -222,10 +223,12 @@ local function new(o: Options): MonthView
 		end
 	end
 
+	-- the day columns line up with the weekday labels: both start PAD px in (the grid's 7 * 48 px sit inside the
+	-- 12 px side padding, like the header row)
 	local gridFrame = D.Frame {
 		Name = "Days",
-		Size = UDim2.fromOffset(Metrics.Width, Metrics.GridHeight),
-		Position = UDim2.fromOffset(0, WEEKDAY_H),
+		Size = UDim2.fromOffset(7 * COL_W, Metrics.GridHeight),
+		Position = UDim2.fromOffset(PAD, WEEKDAY_H),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		table.unpack(gridChildren),

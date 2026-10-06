@@ -5,7 +5,8 @@
 	    local Button = require("@self")                         -- via the kit root: Material.Button
 	    Button({ Label = "Save", OnClick = save })               -- Filled (default)
 	    Button({ Variant = "Outlined", Label = "Cancel", Icon = "rbxassetid://123", OnClick = cancel })
-	    Button({ Label = labelState, Disabled = busySource, Modifier = D.Modifier.TextButton():Size(UDim2.new(1, 0, 0, 40)) })
+	    Button({ Label = labelState, Disabled = busySource, Width = UDim.new(1, 0) })   -- full width, label centered
+	    Button({ Label = "OK", Width = 120 })                                              -- fixed 120 px
 
 	Props (all `read`):
 	  Variant   "Filled" | "Tonal" | "Elevated" | "Outlined" | "Text"        default "Filled"
@@ -15,9 +16,14 @@
 	  Disabled  boolean | State<boolean>?    container onSurface@12 %, content onSurface@38 %, no state layer,
 	                                         not clickable/selectable (`Interactable = false`)
 	  OnClick   (() -> ())?                  fires on Activated (mouse, touch, gamepad A) unless disabled
+	  Width     (number | UDim)?             a fixed width — a number is pixels, a UDim is scale + offset of the parent
+	                                         (`UDim.new(1, 0)` = fill); the label (and icon) is centered in it. nil = the
+	                                         width of the content (AutomaticSize X, the M3 default — handy in flex/list
+	                                         rows). A label longer than a fixed width overflows: size it for the text.
 	  Theme     Theme?                       default `Theme.default`
-	  Modifier  TextButton Modifier?         applied AFTER the base style (later wins) so a caller can resize
-	                                         (`Size`, `AutomaticSize`), reposition, set LayoutOrder, ...
+	  Modifier  TextButton Modifier?         applied AFTER the base style (later wins) so a caller can reposition, set
+	                                         LayoutOrder, ... — use `Width` to resize: a `Size` through the Modifier
+	                                         keeps AutomaticSize X (Size becomes a minimum) and the label stays at the left
 	Returns the host `TextButton`.
 
 	Choice: ONE function with a `Variant` prop (not five functions) — the five variants differ only in a small
@@ -29,10 +35,16 @@
 	The UIPadding and the UIListLayout live on the Content frame, NOT on the host: on the engine a UIPadding
 	insets the area that children's scale sizes use, and a UIListLayout positions every GuiObject sibling, so
 	on the host they would shrink / list-lay-out the state layer and the ripple CanvasGroup (which must cover
-	the whole button and stay put). The layer is a direct child of the host. (Content is AutomaticSize X like the host and
-	centered with AnchorPoint/Position 0.5, so a caller-fixed wider host keeps the label centered.) A press adds a transient 4
-	(ripple, see Ripple.luau). Compared with RoStrap's RippleButton (40 at rest) and qwreey's round button (70).
-	Size: height 40, shape full (pill), width = content + padding (AutomaticSize X); label = LabelLarge.
+	the whole button and stay put). The layer is a direct child of the host. A press adds a transient 4 (ripple, see
+	Ripple.luau). Compared with RoStrap's RippleButton (40 at rest) and qwreey's round button (70).
+	SIZING — nothing the host measures may depend on the host's own width: with AutomaticSize X the Content frame sits at
+	(0, 0) by offset and is AutomaticSize X itself, so the host is exactly content + padding. (An earlier version centered
+	Content with AnchorPoint/Position 0.5 — a position that depends on the very width the engine was computing, so the
+	host settled to the right width only over several layout passes: labels poked out until a hover/click re-laid it out.)
+	The same holds inside Content: its UIListLayout (with an icon) aligns Left — a Center alignment positions the children
+	from the frame's width, which AutomaticSize is computing from those positions.
+	With `Width` the host is fixed, Content fills it and a UIListLayout centers the label (+1 instance without an icon).
+	Size: height 40, shape full (pill), width = content + padding (AutomaticSize X) or `Width`; label = LabelLarge.
 	Deviation from the spec text: Filled/Tonal do not raise elevation 1 on hover (no shadow instance at all);
 	the state layer is the feedback. Elevated does (1 -> 2).
 ]]
@@ -57,6 +69,7 @@ export type Props = {
 	read Icon: (string | q.State<string>)?,
 	read Disabled: (boolean | q.State<boolean>)?,
 	read OnClick: (() -> ())?,
+	read Width: (number | UDim)?,
 	read Theme: Theme.Theme?,
 	read Modifier: q.TextButtonModifier?,
 	read Hooks: Util.Hooks?,
@@ -113,6 +126,13 @@ local function Button(props: Props)
 	local corner = Tokens.Shape.corner("Full")
 	local hasIcon = props.Icon ~= nil
 	local hooks = Util.hooks(props.Hooks)
+	local width = props.Width
+	local fixed = width ~= nil
+	local sizing: q.TextButtonModifier? = nil
+	if width ~= nil then
+		local x = if type(width) == "number" then UDim.new(0, width) else width
+		sizing = D.Modifier.TextButton():Size(UDim2.new(x, UDim.new(0, 40))):AutomaticSize(Enum.AutomaticSize.None)
+	end
 
 	local contentColor = Style.disabledPick(disabled, theme.Raw[spec.Content], theme.Raw.OnSurface)
 	local contentTransparency = Style.disabledNumber(disabled, 0, Style.DisabledContentTransparency)
@@ -151,6 +171,17 @@ local function Button(props: Props)
 
 	local icon: Instance? = nil
 	local layout: Instance? = nil
+	if hasIcon or fixed then
+		layout = D.UIListLayout {
+			FillDirection = Enum.FillDirection.Horizontal,
+			-- Left in an auto-sized Content: a centered layout places its children by the frame's width, the very
+			-- width AutomaticSize derives from them (see SIZING); Center only inside a fixed `Width`
+			HorizontalAlignment = if fixed then Enum.HorizontalAlignment.Center else Enum.HorizontalAlignment.Left,
+			VerticalAlignment = Enum.VerticalAlignment.Center,
+			SortOrder = Enum.SortOrder.LayoutOrder,
+			Padding = UDim.new(0, 8),
+		}
+	end
 	if hasIcon then
 		icon = D.ImageLabel {
 			Name = "Icon",
@@ -162,18 +193,12 @@ local function Button(props: Props)
 			ImageTransparency = contentTransparency,
 			LayoutOrder = 1,
 		}
-		layout = D.UIListLayout {
-			FillDirection = Enum.FillDirection.Horizontal,
-			HorizontalAlignment = Enum.HorizontalAlignment.Center,
-			VerticalAlignment = Enum.VerticalAlignment.Center,
-			SortOrder = Enum.SortOrder.LayoutOrder,
-			Padding = UDim.new(0, 8),
-		}
 	end
 
 	return D.TextButton {
 		Name = "Button",
 		baseModifier,
+		sizing or q.None,
 		props.Modifier or q.None,
 		fx.Hook,
 		BackgroundColor3 = if container then Style.disabledPick(disabled, theme.Raw[container], theme.Raw.OnSurface) else nil,
@@ -190,10 +215,9 @@ local function Button(props: Props)
 		fx.Layer,
 		D.Frame {
 			Name = "Content",
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.fromScale(0.5, 0.5),
-			Size = UDim2.fromScale(0, 1),
-			AutomaticSize = Enum.AutomaticSize.X,
+			-- auto width: at (0, 0), as wide as its content (see SIZING); fixed width: fills the host
+			Size = if fixed then UDim2.fromScale(1, 1) else UDim2.fromScale(0, 1),
+			AutomaticSize = if fixed then Enum.AutomaticSize.None else Enum.AutomaticSize.X,
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			D.UIPadding {

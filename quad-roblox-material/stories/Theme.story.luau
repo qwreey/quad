@@ -102,8 +102,8 @@ return StoryKit.story({
 					VerticalAlignment = Enum.VerticalAlignment.Center,
 					Padding = UDim.new(0, 12),
 				},
-				Material.Button({ Theme = brand, Label = "Filled", LayoutOrder = 1 }),
-				Material.Button({ Theme = brand, Variant = "Outlined", Label = "Outlined", LayoutOrder = 2 }),
+				Material.Button({ Theme = brand, Label = "Filled", Modifier = D.Modifier.TextButton():LayoutOrder(1) }),
+				Material.Button({ Theme = brand, Variant = "Outlined", Label = "Outlined", Modifier = D.Modifier.TextButton():LayoutOrder(2) }),
 				Material.Switch({ Theme = brand, Value = q.Source(true), Modifier = D.Modifier.TextButton():LayoutOrder(3) }),
 				Material.LinearProgress({ Theme = brand, Value = 0.6, Modifier = D.Modifier.Frame():LayoutOrder(4) }),
 			}

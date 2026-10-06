@@ -39,7 +39,7 @@
 	animates to 1 (Motion Short4 / EmphasizedDecelerate); the exit runs the same tween back during the
 	overlay's closing phase (`ExitTime` Short2). Pure scale: no fade (a fade would need a CanvasGroup around
 	the whole panel and the UIShadow does not render through one) — deviation from M3's fade+expand. The scale
-	pivots at the panel's top-left (bottom-left when flipped), i.e. it grows away from the anchor.
+	pivots at the panel's top-center (bottom-center when flipped): it grows away from the anchor edge, symmetric left/right.
 
 	Input: pointer/touch via the items (`Activated`); gamepad via engine selection (the items are Selectable and show the
 	kit focus ring). Escape / gamepad B close the menu (Overlay `DismissOnEscape`); the gamepad selection is confined to
@@ -341,8 +341,10 @@ local function open(o: OpenOptions): Overlay.Handle
 
 			return D.Frame {
 				Name = "Menu",
-				AnchorPoint = Vector2.new(0, if flipUp then 1 else 0),
-				Position = UDim2.fromOffset(x, y),
+				-- pivot at the TOP-CENTER (bottom-center when flipped): UIScale scales about the AnchorPoint, so a left
+				-- pivot made the opening scale look glued to the left edge (Studio QA 2026-10-07)
+				AnchorPoint = Vector2.new(0.5, if flipUp then 1 else 0),
+				Position = UDim2.fromOffset(x + width / 2, y),
 				Size = UDim2.fromOffset(width, panelH),
 				BackgroundColor3 = theme.Color.SurfaceContainer,
 				BorderSizePixel = 0,

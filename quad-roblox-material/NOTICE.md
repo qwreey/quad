@@ -5,6 +5,9 @@
 - **RoStrapUI** (https://github.com/RoStrap/RoStrapUI, commit 792da9d) — MIT License, Copyright (c) 2017
   Nevermore. Studied as a reference for ripple/shadow behavior; no source code is copied.
 - **qwreey MaterialUI** (https://github.com/qwreey/qwreey.roblox.plugins, commit 7b6552a, `libs/MaterialUI`)
-  — MIT License, Copyright (c) 2021 qwreey75 (the same author as this kit). Studied as a reference.
+  — MIT License, Copyright (c) 2021 qwreey75 (the same author as this kit). Studied as a reference; two motions are
+  ported from it: the `Radio` selection uses its radio sprite-sheet image asset (`rbxassetid://4667411351`, 10 frames
+  of 40x40) and frame timing, and the `Checkbox` toggle reproduces its four-edge-bar close/open motion (re-implemented
+  with Frames, no image).
 - **Color picker** — the `ColorPicker` component is a port of the author's own color picker
   (`colorPicker-ignoreme.rbxm`, Copyright (c) qwreey), republished here under this kit's MIT License.

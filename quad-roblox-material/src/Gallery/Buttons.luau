@@ -122,6 +122,11 @@ return function(ctx: Ctx): Instance
 			end), false),
 		}, "One Source<boolean> feeds the Disabled State of every button below."),
 		Common.Group(ctx, "Button: disabled, icon", disabledSet),
+		Common.Group(ctx, "Button: fixed width", {
+			Button({ Theme = theme, Label = "OK", Width = 160 }),
+			Button({ Theme = theme, Variant = "Outlined", Label = "Cancel", Width = 160 }),
+			Button({ Theme = theme, Variant = "Tonal", Label = "With icon", Icon = ctx.Icon, Width = 200 }),
+		}, "`Width = 160` (pixels) or a UDim such as `UDim.new(1, 0)`: the label stays centered. Without `Width` a button is as wide as its label."),
 		Common.Group(ctx, "IconButton: variants", iconButtons),
 		Common.Group(ctx, "IconButton: toggles (Selected)", toggles, "Standard/Outlined share `liked`, Filled/Tonal share `bookmarked`."),
 		Common.Group(ctx, "FAB: sizes, colors, extended", fabs),

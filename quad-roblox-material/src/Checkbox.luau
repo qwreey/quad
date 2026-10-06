@@ -27,14 +27,20 @@
 	Returns the host `TextButton` (48x48, transparent).
 
 	The check mark has NO image asset: it is two rotated 2 px Frames (the short and the long leg, 45 deg / -45 deg)
-	and the dash is one Frame, so it needs no upload, tints with any theme role and fades with the same tween as
-	the box. (An `rbxassetid` check would cost one ImageLabel instead of two Frames but needs an asset the kit
-	cannot ship; the Frame form is crisp at every scale.)
+	and the dash is one Frame, so it needs no upload and tints with any theme role. (An `rbxassetid` check would cost
+	one ImageLabel instead of two Frames but needs an asset the kit cannot ship; the Frame form is crisp at every scale.)
+
+	Toggle motion (ported from qwreey MaterialUI's CheckBox — four edge bars, 0.15 s + 0.15 s linear): when the look
+	(empty / check / dash) changes, four bars in the OLD look's outline color grow in from the box edges to 40 % each
+	(the box "closes" over its old content) while the box swells 2 px per side; then the new look is swapped in under the
+	bars, which shrink back to the edges in the NEW color — so a check appears from the middle outward and an uncheck
+	folds the fill in. One Heartbeat connection while a change animates (0.3 s), none at rest; an interrupting change
+	resumes from the current bar width. The mounted look is snapped (no motion at construction).
 
 	Structure at rest: host TextButton > Target Frame (40 px, anchor center) > state layer (Frame + UICorner +
-	UIStroke focus ring) + Box (Frame + UICorner(2) + UIStroke(2, Inner)) > CheckShort, CheckLong, Dash
-	= 10 descendants. A press adds a transient 4 (ripple).
-	M3 deviations: none in size/shape; mark animation is a 100 ms fade (M3 draws the check as a path).
+	UIStroke focus ring) + Box (Frame + UICorner(2) + UIStroke(2, Inner)) > CheckShort, CheckLong, Dash, 4 bars
+	= 14 descendants (+1 Label TextLabel). A press adds a transient 4 (ripple).
+	M3 deviations: none in size/shape; the mark animation is the bars motion above (M3 draws the check as a path).
 ]]
 
 local q = require("./Quad")
@@ -43,7 +49,10 @@ local Theme = require("./Theme")
 local Util = require("./Util")
 local Interactive = require("./Interactive")
 local Style = require("./Button/Style")
+local ControlLabel = require("./ControlLabel")
 local D = q.Declaration
+
+local RunService = game:GetService("RunService")
 
 
 export type Props = {
@@ -53,12 +62,19 @@ export type Props = {
 	read Error: (boolean | q.State<boolean>)?,
 	read Disabled: (boolean | q.State<boolean>)?,
 	read OnChange: ((value: boolean) -> ())?,
+	read Label: (string | q.State<string>)?,
 	read Theme: Theme.Theme?,
 	read Modifier: q.TextButtonModifier?,
 	read Hooks: Util.Hooks?,
 }
 
 local DisabledTransparency = Style.DisabledContentTransparency
+local BOX = 18
+local HALF = 0.15 -- each phase of the toggle motion (the original's 0.15 s, linear)
+local CLOSE = 0.4 -- how far each bar grows in (fraction of the box)
+local SWELL = 4 -- extra box size at the closed point (2 px per side)
+
+type Look = "none" | "check" | "dash"
 
 local baseModifier = D.Modifier.TextButton()
 	:Size(UDim2.fromOffset(48, 48))
@@ -81,10 +97,44 @@ local function Checkbox(props: Props)
 	local indeterminate = Util.asState(props.Indeterminate)
 	local corner = Tokens.Shape.corner("Full")
 
-	-- filled look: checked OR indeterminate
+	-- filled look: checked OR indeterminate (the REAL value — the state layer follows it at once)
 	local marked: q.State<boolean> = value:Compute(function(self, _prev, ind)
 		return self:Get() or ind:Get()
 	end, indeterminate)
+	local look: q.State<Look> = value:Compute(function(self, _prev, ind): Look
+		return if ind:Get() then "dash" elseif self:Get() then "check" else "none"
+	end, indeterminate)
+
+	-- the DISPLAYED look lags the real one by the first motion phase (see the header); `closing` 0..1 is the bars' phase
+	local displayed = q.Source(look:Get())
+	local closing = q.Source(0)
+	local motion = q.Effect(function()
+		local target = look:Get()
+		if target == displayed:Get() and closing:Get() == 0 then
+			return nil :: any
+		end
+		local t = closing:Get() * HALF -- an interrupted motion resumes from the current bar width
+		local conn: RBXScriptConnection
+		conn = RunService.Heartbeat:Connect(function(dt: number)
+			t += dt
+			if t < HALF then
+				closing:Set(t / HALF)
+				return
+			end
+			displayed:SetIfChanged(target)
+			local k = math.max(0, 1 - (t - HALF) / HALF)
+			closing:Set(k)
+			if k == 0 then
+				conn:Disconnect()
+			end
+		end)
+		return function()
+			conn:Disconnect()
+		end
+	end, look)
+	local shownMarked: q.State<boolean> = displayed:Compute(function(self)
+		return self:Get() ~= "none"
+	end)
 
 	local accent: q.State<Color3> = isError:Compute(function(self, _prev, pri, err)
 		return if self:Get() then err:Get() else pri:Get()
@@ -96,13 +146,13 @@ local function Checkbox(props: Props)
 	local fillRaw: q.State<Color3> = disabled:Compute(function(self, _prev, acc, onSurface)
 		return if self:Get() then onSurface:Get() else acc:Get()
 	end, accent, R.OnSurface)
-	local fillTransparency: q.State<number> = marked:Compute(function(self, _prev, dis)
+	local fillTransparency: q.State<number> = shownMarked:Compute(function(self, _prev, dis)
 		if not self:Get() then
 			return 1
 		end
 		return if dis:Get() then DisabledTransparency else 0
 	end, disabled)
-	local strokeRaw: q.State<Color3> = marked:Compute(function(self, _prev, dis, err, acc, onSurface, onSurfaceVariant, errColor)
+	local strokeRaw: q.State<Color3> = shownMarked:Compute(function(self, _prev, dis, err, acc, onSurface, onSurfaceVariant, errColor)
 		if dis:Get() then
 			return onSurface:Get()
 		elseif self:Get() then
@@ -118,11 +168,21 @@ local function Checkbox(props: Props)
 	local markRaw: q.State<Color3> = disabled:Compute(function(self, _prev, onAcc, surface)
 		return if self:Get() then surface:Get() else onAcc:Get()
 	end, onAccent, R.Surface)
-	local checkTransparency: q.State<number> = value:Compute(function(self, _prev, ind)
-		return if self:Get() and not ind:Get() then 0 else 1
-	end, indeterminate)
-	local dashTransparency: q.State<number> = indeterminate:Compute(function(self)
-		return if self:Get() then 0 else 1
+	local checkTransparency: q.State<number> = displayed:Compute(function(self)
+		return if self:Get() == "check" then 0 else 1
+	end)
+	local dashTransparency: q.State<number> = displayed:Compute(function(self)
+		return if self:Get() == "dash" then 0 else 1
+	end)
+	local boxSize: q.State<UDim2> = closing:Compute(function(self)
+		local n = BOX + SWELL * self:Get()
+		return UDim2.fromOffset(n, n)
+	end)
+	local barWidth: q.State<UDim2> = closing:Compute(function(self)
+		return UDim2.fromScale(CLOSE * self:Get(), 1)
+	end)
+	local barHeight: q.State<UDim2> = closing:Compute(function(self)
+		return UDim2.fromScale(1, CLOSE * self:Get())
 	end)
 	-- state layer: error > checked (primary) > onSurface
 	local layerRaw: q.State<Color3> = marked:Compute(function(self, _prev, err, errColor, pri, onSurface)
@@ -142,8 +202,6 @@ local function Checkbox(props: Props)
 	})
 
 	local markColor = Style.animated(markRaw)
-	local checkT = checkTransparency:Apply(Style.animation())
-	local dashT = dashTransparency:Apply(Style.animation())
 
 	local function leg(name: string, size: UDim2, position: UDim2, rotation: number)
 		return D.Frame {
@@ -153,8 +211,23 @@ local function Checkbox(props: Props)
 			Size = size,
 			Rotation = rotation,
 			BackgroundColor3 = markColor,
-			BackgroundTransparency = checkT,
+			BackgroundTransparency = checkTransparency,
 			BorderSizePixel = 0,
+		}
+	end
+
+	-- one closing bar (ZIndex 2: drawn over the marks); color = the displayed look's outline color, not animated (the
+	-- bars are zero-sized at rest, so a scheme change needs no cross-fade)
+	local function bar(name: string, anchor: Vector2, size: q.State<UDim2>)
+		return D.Frame {
+			Name = name,
+			AnchorPoint = anchor,
+			Position = UDim2.fromScale(anchor.X, anchor.Y),
+			Size = size,
+			BackgroundColor3 = strokeRaw,
+			BackgroundTransparency = strokeTransparency,
+			BorderSizePixel = 0,
+			ZIndex = 2,
 		}
 	end
 
@@ -162,9 +235,9 @@ local function Checkbox(props: Props)
 		Name = "Box",
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
-		Size = UDim2.fromOffset(18, 18),
+		Size = boxSize,
 		BackgroundColor3 = Style.animated(fillRaw),
-		BackgroundTransparency = fillTransparency:Apply(Style.animation()),
+		BackgroundTransparency = fillTransparency,
 		BorderSizePixel = 0,
 		UICorner = UDim.new(0, 2),
 		D.UIStroke {
@@ -175,25 +248,33 @@ local function Checkbox(props: Props)
 			Color = Style.animated(strokeRaw),
 			Transparency = strokeTransparency:Apply(Style.animation()),
 		},
-		-- check mark = short leg + long leg (rotated 2 px bars, integer pixel centers in the 18 px box)
-		leg("CheckShort", UDim2.fromOffset(6, 2), UDim2.fromOffset(5, 11), 45),
-		leg("CheckLong", UDim2.fromOffset(11, 2), UDim2.fromOffset(11, 9), -45),
+		-- check mark = short leg + long leg (rotated 2 px bars, integer pixel centers (5, 11) / (11, 9) in the 18 px box —
+		-- placed from the CENTER so the swell of the motion keeps them still)
+		leg("CheckShort", UDim2.fromOffset(6, 2), UDim2.new(0.5, -4, 0.5, 2), 45),
+		leg("CheckLong", UDim2.fromOffset(11, 2), UDim2.new(0.5, 2, 0.5, 0), -45),
 		D.Frame {
 			Name = "Dash",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.fromScale(0.5, 0.5),
 			Size = UDim2.fromOffset(10, 2),
 			BackgroundColor3 = markColor,
-			BackgroundTransparency = dashT,
+			BackgroundTransparency = dashTransparency,
 			BorderSizePixel = 0,
 		},
+		bar("BarLeft", Vector2.new(0, 0), barWidth),
+		bar("BarRight", Vector2.new(1, 0), barWidth),
+		bar("BarTop", Vector2.new(0, 0), barHeight),
+		bar("BarBottom", Vector2.new(0, 1), barHeight),
 	}
+	local hasLabel = props.Label ~= nil
 
 	return D.TextButton {
 		Name = "Checkbox",
 		baseModifier,
+		if hasLabel then ControlLabel.host else q.None,
 		props.Modifier or q.None,
 		fx.Hook,
+		motion,
 		Interactable = interactable,
 		Activated = function()
 			if Util.peekBool(disabled) then
@@ -210,13 +291,14 @@ local function Checkbox(props: Props)
 		D.Frame {
 			Name = "Target",
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.fromScale(0.5, 0.5),
+			Position = if hasLabel then ControlLabel.TargetPosition else UDim2.fromScale(0.5, 0.5),
 			Size = UDim2.fromOffset(40, 40),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			fx.Layer,
 			box,
 		},
+		if props.Label ~= nil then ControlLabel.new(props.Label, theme, disabled) else q.None,
 		table.unpack(Util.hooks(props.Hooks)),
 	}
 end

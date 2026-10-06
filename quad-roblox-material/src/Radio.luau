@@ -24,8 +24,8 @@
 
 	RadioGroup props: Value, Options (`{ { Option: T, Label: string, Disabled: (boolean | State<boolean>)? } }`, fixed at
 	construction), Direction ("Vertical" default | "Horizontal"), Disabled, Error, OnChange, Theme, Modifier
-	(Frame Modifier), Hooks. Each row is a Frame with a Radio and a clickable BodyLarge label (a non-selectable
-	TextButton, so gamepad focus stops once per row). It builds one Radio per option — for a dynamic option list
+	(Frame Modifier), Hooks. Each row is a Radio with its `Label` (one host per row: the text hovers / clicks with the
+	radio and gamepad focus stops once per row). It builds one Radio per option — for a dynamic option list
 	build the rows yourself with `Slot:List` and plain `Radio`s.
 ]]
 
@@ -35,8 +35,10 @@ local Theme = require("./Theme")
 local Util = require("./Util")
 local Interactive = require("./Interactive")
 local Style = require("./Button/Style")
-local Text = require("./Text")
+local ControlLabel = require("./ControlLabel")
 local D = q.Declaration
+
+local RunService = game:GetService("RunService")
 
 
 -- KIT WORKAROUND for a quad typing limit (kit feedback A1): the fields below MIRROR quad's phantom fields
@@ -59,6 +61,7 @@ export type Props<T> = {
 	read Error: (boolean | q.State<boolean>)?,
 	read Disabled: (boolean | q.State<boolean>)?,
 	read OnChange: ((option: T) -> ())?,
+	read Label: (string | q.State<string>)?,
 	read Theme: Theme.Theme?,
 	read Modifier: q.TextButtonModifier?,
 	read Hooks: Util.Hooks?,
@@ -79,6 +82,10 @@ export type GroupProps<T> = {
 }
 
 local DisabledTransparency = Style.DisabledContentTransparency
+local SPRITE = "rbxassetid://4667411351"
+local FRAME = 40 -- px per frame in the sheet
+local LAST = 9 -- frames 0..9
+local STEP_TIME = 0.2 -- the whole 0 -> 9 run (the original's 0.2 s, linear)
 
 local baseModifier = D.Modifier.TextButton()
 	:Size(UDim2.fromOffset(48, 48))
@@ -115,9 +122,6 @@ local function Radio<T>(props: Props<T>)
 		end
 		return onSurfaceVariant:Get()
 	end, disabled, isError, accent, R.OnSurface, R.OnSurfaceVariant, R.Error)
-	local dotRaw: q.State<Color3> = disabled:Compute(function(self, _prev, acc, onSurface)
-		return if self:Get() then onSurface:Get() else acc:Get()
-	end, accent, R.OnSurface)
 	local contentTransparency: q.State<number> = disabled:Compute(function(self)
 		return if self:Get() then DisabledTransparency else 0
 	end)
@@ -127,8 +131,32 @@ local function Radio<T>(props: Props<T>)
 		end
 		return if self:Get() then pri:Get() else onSurface:Get()
 	end, isError, R.Error, R.Primary, R.OnSurface)
-	local dotSize: q.State<UDim2> = selected:Compute(function(self)
-		return if self:Get() then UDim2.fromOffset(10, 10) else UDim2.fromOffset(0, 0)
+
+	-- sprite frame: snapped at mount, then stepped toward 0 / LAST while `selected` differs (a reversal mid-way
+	-- continues from the current frame)
+	local frame = q.Source(if selected:Get() then LAST else 0)
+	local stepper = q.Effect(function()
+		local goal = if selected:Get() then LAST else 0
+		if frame:Get() == goal then
+			return nil :: any
+		end
+		local pos = frame:Get()
+		local dir = if goal > pos then 1 else -1
+		local conn: RBXScriptConnection
+		conn = RunService.Heartbeat:Connect(function(dt: number)
+			pos += dir * dt * LAST / STEP_TIME
+			if (dir == 1 and pos >= goal) or (dir == -1 and pos <= goal) then
+				pos = goal
+				conn:Disconnect()
+			end
+			frame:SetIfChanged(if dir == 1 then math.floor(pos) else math.ceil(pos))
+		end)
+		return function()
+			conn:Disconnect()
+		end
+	end, selected)
+	local rectOffset: q.State<Vector2> = frame:Compute(function(self)
+		return Vector2.new(FRAME * self:Get(), 0)
 	end)
 	local interactable: q.State<boolean> = Util.interactable(disabled)
 
@@ -141,11 +169,14 @@ local function Radio<T>(props: Props<T>)
 
 	local tint = contentTransparency:Apply(Style.animation())
 
+	local hasLabel = props.Label ~= nil
 	return D.TextButton {
 		Name = "Radio",
 		baseModifier,
+		if hasLabel then ControlLabel.host else q.None,
 		props.Modifier or q.None,
 		fx.Hook,
+		stepper,
 		Interactable = interactable,
 		Activated = function()
 			if Util.peekBool(disabled) or value:Get() == option then
@@ -159,51 +190,34 @@ local function Radio<T>(props: Props<T>)
 		D.Frame {
 			Name = "Target",
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.fromScale(0.5, 0.5),
+			Position = if hasLabel then ControlLabel.TargetPosition else UDim2.fromScale(0.5, 0.5),
 			Size = UDim2.fromOffset(40, 40),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			fx.Layer,
-			D.Frame {
-				Name = "Ring",
+			D.ImageLabel {
+				Name = "Sprite",
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				Position = UDim2.fromScale(0.5, 0.5),
 				Size = UDim2.fromOffset(20, 20),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				UICorner = corner,
-				D.UIStroke {
-					Name = "Outline",
-					ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-					BorderStrokePosition = Enum.BorderStrokePosition.Inner,
-					Thickness = 2,
-					Color = Style.animated(ringRaw),
-					Transparency = tint,
-				},
-			},
-			D.Frame {
-				Name = "Dot",
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Position = UDim2.fromScale(0.5, 0.5),
-				-- first write snaps (an initially selected radio mounts with the dot), later changes tween
-				Size = dotSize:Apply(q.Animate(Tokens.Motion.options("Short4", "Standard"))),
-				BackgroundColor3 = Style.animated(dotRaw),
-				BackgroundTransparency = tint,
-				BorderSizePixel = 0,
-				UICorner = corner,
+				Image = SPRITE,
+				ImageRectSize = Vector2.new(FRAME, FRAME),
+				ImageRectOffset = rectOffset,
+				ImageColor3 = Style.animated(ringRaw),
+				ImageTransparency = tint,
 			},
 		},
+		if props.Label ~= nil then ControlLabel.new(props.Label, theme, disabled) else q.None,
 		table.unpack(Util.hooks(props.Hooks)),
 	}
 end
 
-local rowLabelStyle = Text.Button("BodyLarge")
 local baseGroup = D.Modifier.Frame():Size(UDim2.fromOffset(0, 0)):AutomaticSize(Enum.AutomaticSize.XY):BackgroundTransparency(1):BorderSizePixel(0)
 
 local function RadioGroup<T>(props: GroupProps<T>)
 	local theme = Theme.resolve(props.Theme)
-	local rawValue: any = props.Value -- see ValueSource
-	local groupValue = rawValue :: q.Source<T>
 	local horizontal = props.Direction == "Horizontal"
 	local groupDisabled = Util.asState(props.Disabled)
 	local rows: { Instance } = {}
@@ -216,56 +230,19 @@ local function RadioGroup<T>(props: GroupProps<T>)
 				return self:Get() or own:Get()
 			end, Util.asState(opt.Disabled))
 		end
-		local option = opt.Option
-		local labelTint = Style.disabledNumber(optDisabled, 0, Style.DisabledContentTransparency)
+		-- one host per row: the label is the radio's own `Label` (hover + click on the text act on the radio)
 		table.insert(
 			rows,
-			D.Frame {
-				Name = "Row",
-				Size = UDim2.fromOffset(0, 48),
-				AutomaticSize = Enum.AutomaticSize.X,
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				LayoutOrder = i,
-				D.UIListLayout {
-					FillDirection = Enum.FillDirection.Horizontal,
-					VerticalAlignment = Enum.VerticalAlignment.Center,
-					SortOrder = Enum.SortOrder.LayoutOrder,
-				},
-				Radio<<T>>({
-					Value = props.Value,
-					Option = option,
-					Error = props.Error,
-					Disabled = optDisabled,
-					OnChange = props.OnChange,
-					Theme = theme,
-				}),
-				D.TextButton {
-					Name = "Label",
-					rowLabelStyle,
-					Size = UDim2.fromOffset(0, 48),
-					AutomaticSize = Enum.AutomaticSize.X,
-					BackgroundTransparency = 1,
-					BorderSizePixel = 0,
-					AutoButtonColor = false,
-					Selectable = false,
-					Text = opt.Label,
-					TextColor3 = theme.Color.OnSurface,
-					TextTransparency = labelTint,
-					TextXAlignment = Enum.TextXAlignment.Left,
-					LayoutOrder = 2,
-					D.UIPadding { PaddingRight = UDim.new(0, 16) },
-					Activated = function()
-						if Util.peekBool(optDisabled) or groupValue:Get() == option then
-							return
-						end
-						groupValue:Set(option)
-						if props.OnChange then
-							props.OnChange(option)
-						end
-					end,
-				},
-			}
+			Radio<<T>>({
+				Value = props.Value,
+				Option = opt.Option,
+				Label = opt.Label,
+				Error = props.Error,
+				Disabled = optDisabled,
+				OnChange = props.OnChange,
+				Theme = theme,
+				Modifier = D.Modifier.TextButton():LayoutOrder(i),
+			})
 		)
 	end
 
@@ -276,6 +253,8 @@ local function RadioGroup<T>(props: GroupProps<T>)
 		D.UIListLayout {
 			FillDirection = if horizontal then Enum.FillDirection.Horizontal else Enum.FillDirection.Vertical,
 			SortOrder = Enum.SortOrder.LayoutOrder,
+			-- side by side, a gap between one row's text and the next radio (a column needs none)
+			Padding = UDim.new(0, if horizontal then 16 else 0),
 		},
 		q.Slot<<Instance>>(rows),
 		table.unpack(Util.hooks(props.Hooks)),

@@ -53,6 +53,7 @@ H.section("Checkbox / Switch `Checked`: displayed only, a click calls OnChange a
 		local track = if which == "Checkbox" then H.find(c, "Box").BackgroundTransparency else c.BackgroundColor3
 		-- the owner decides: write it, and the control follows
 		owner:Set(true)
+		H.advance(0.4) -- the Checkbox toggle motion swaps its look at the midpoint (Heartbeat)
 		H.finishTweens()
 		local trackOn = if which == "Checkbox" then H.find(c, "Box").BackgroundTransparency else c.BackgroundColor3
 		assert(trackOn ~= track, which .. ": follows the State")

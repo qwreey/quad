@@ -16,7 +16,7 @@
 	    })
 
 	Returns the window Frame (230 x 418, ZIndexBehavior Sibling — no ZIndex numbers are used except the fake
-	cursor). Look, sizes, colors, asset ids, layout order, fonts, timings: see the headers of the sub-files and
+	cursor and the hue slider's shadow-below-handle / shadow-below-bubble pairs, HueSlider.luau). Look, sizes, colors, asset ids, layout order, fonts, timings: see the headers of the sub-files and
 	`docs/colorpicker-original-analysis.md`. Display scale = ColorModel.Scale.Legacy (0..255), hex without `#`.
 
 	Port fidelity (kept on purpose): the original tweens the handle/cursor/ring toward EVERY pointer move; the port keeps

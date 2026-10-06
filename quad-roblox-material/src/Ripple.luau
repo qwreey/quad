@@ -27,7 +27,9 @@
 	  ripple.Slot    the ripples mount here (a managed Slot — nothing you need to touch)
 	Drive it:
 	  ripple:Press(position)   start a ripple at `position` (a Vector2 in the same space as the host's
-	                           `AbsolutePosition`; nil = host center — gamepad/keyboard presses)
+	                           `AbsolutePosition`; nil = host center — gamepad/keyboard presses; a position
+	                           outside the host's rectangle also starts at the center — a press on a label
+	                           attached to the control)
 	  ripple:Release()         fade every held ripple (and drop it when the fade completes)
 	  ripple:Count() -> number ripples currently mounted (held or fading) — for specs/diagnostics
 	`Interactive.luau` wires this to `Interaction` so a component never calls these by hand.
@@ -131,7 +133,11 @@ local function new(opts: Options): Ripple
 		local px, py = size.X / 2, size.Y / 2
 		if position ~= nil then
 			local rel = position - Module.PointerInset - h.AbsolutePosition
-			px, py = rel.X, rel.Y
+			-- a press that began OUTSIDE the ripple area (a control's attached label: Checkbox/Radio `Label`) ripples from
+			-- the center, as a keyboard press does
+			if rel.X >= 0 and rel.Y >= 0 and rel.X <= size.X and rel.Y <= size.Y then
+				px, py = rel.X, rel.Y
+			end
 		end
 		-- radius = distance to the farthest corner (M3), so the circle just covers the host
 		local dx = math.max(px, size.X - px)

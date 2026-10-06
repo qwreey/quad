@@ -66,7 +66,9 @@ local function trailing(c: Ctx.Ctx): (Instance?, Instance?)
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			Text = props.TrailingGlyph,
-			TextSize = 20,
+			-- Select's dropdown arrow: "▼" fills its whole em box, so at 20 px it drew a triangle twice M3's
+			-- arrow_drop_down (a 10 x 5 triangle in the 24 px icon) — Studio QA 2026-10-07; 12 px is about that size
+			TextSize = 12,
 			TextColor3 = c.Colors.Trailing,
 			TextTransparency = c.ContentTransparency,
 			Visible = notError,

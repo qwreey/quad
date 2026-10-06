@@ -45,7 +45,8 @@ local function assertLayerLayout(host: any, what: string)
 	assert(content.BackgroundTransparency == 1)
 	local ck = childClasses(content)
 	assert(ck.UIPadding == 1, what .. ": UIPadding lives on Content")
-	assert(content.AnchorPoint == Vector2.new(0.5, 0.5) and content.Position == UDim2.fromScale(0.5, 0.5), what .. ": Content centered in the host")
+	-- auto width: Content at (0, 0) by offset — nothing the auto-sized host measures depends on its own width
+	assert(content.AnchorPoint ~= Vector2.new(0.5, 0.5) and content.Position ~= UDim2.fromScale(0.5, 0.5), what .. ": Content placed by offset")
 	assert(layer.Parent == host and #layer:GetChildren() >= 1)
 end
 
@@ -83,6 +84,21 @@ H.section("Filled button at rest: structure and instance count", function()
 	assert(btn.SelectionImageObject ~= nil, "default selection box replaced")
 	q.dispose(btn)
 	H.assertNoDebugOutput("filled rest")
+end)
+
+H.section("Width: a fixed width (pixels or UDim), Content fills it and centers the label", function()
+	local px = Button({ Label = "OK", Width = 120 })
+	assert(px.Size == UDim2.fromOffset(120, 40) and px.AutomaticSize == Enum.AutomaticSize.None, "fixed 120 x 40")
+	local content = H.find(px, "Content")
+	assert(content.Size == UDim2.fromScale(1, 1) and content.AutomaticSize == Enum.AutomaticSize.None, "Content fills the host")
+	local layout = class(content, "UIListLayout")[1]
+	assert(layout ~= nil and layout.HorizontalAlignment == Enum.HorizontalAlignment.Center, "label centered by a layout")
+	assert(H.countDescendants(px) == 8, "+1 UIListLayout, got " .. H.countDescendants(px))
+	local fill = Button({ Label = "Wide", Width = UDim.new(1, -16), Variant = "Outlined" })
+	assert(fill.Size == UDim2.new(1, -16, 0, 40) and fill.AutomaticSize == Enum.AutomaticSize.None)
+	q.dispose(px)
+	q.dispose(fill)
+	H.assertNoDebugOutput("button width")
 end)
 
 H.section("variants: roles, extra instances", function()

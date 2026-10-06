@@ -51,6 +51,17 @@ return StoryKit.story({
 				caption(theme, show<<any>>(c.Checked, "Checked = ", tostr)),
 				caption(theme, show<<string>>(lastRequest, "last click asked for: ", tostr)),
 			}),
+			caption(theme, "Label (hover or click the text: it acts on the box)"),
+			row({
+				Material.Checkbox({
+					Value = value,
+					Indeterminate = c.Indeterminate,
+					Error = c.Error,
+					Disabled = c.Disabled,
+					Label = "Send me updates",
+					Theme = theme,
+				}),
+			}),
 			caption(theme, "Fixed states"),
 			row({
 				Material.Checkbox({ Value = q.Source(true), Disabled = true, Theme = theme }),

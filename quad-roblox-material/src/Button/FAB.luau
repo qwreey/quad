@@ -119,8 +119,8 @@ local function FAB(props: Props)
 	if extended then
 		content = D.Frame {
 			Name = "Content",
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.fromScale(0.5, 0.5),
+			-- at (0, 0) by offset: the host is AutomaticSize X, so a centered (scale) position would depend on the width
+			-- being computed (Button/init.luau "SIZING")
 			Size = UDim2.fromScale(0, 1),
 			AutomaticSize = Enum.AutomaticSize.X,
 			BackgroundTransparency = 1,
@@ -128,7 +128,7 @@ local function FAB(props: Props)
 			D.UIPadding { PaddingLeft = UDim.new(0, 16), PaddingRight = UDim.new(0, 20) },
 			D.UIListLayout {
 				FillDirection = Enum.FillDirection.Horizontal,
-				HorizontalAlignment = Enum.HorizontalAlignment.Center,
+				HorizontalAlignment = Enum.HorizontalAlignment.Left, -- auto-sized Content: Left (Button/init.luau "SIZING")
 				VerticalAlignment = Enum.VerticalAlignment.Center,
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding = UDim.new(0, 8),

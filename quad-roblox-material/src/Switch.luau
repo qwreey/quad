@@ -1,6 +1,6 @@
 --!strict
 --[[
-	M3 switch: 52x32 pill track, a handle that grows 16 (off) -> 24 (on / has icon) -> 28 (pressed) and slides
+	M3 switch: 52x32 pill track, a handle that grows 16 (off) -> 24 (on / has icon) -> 28 (pressed; off: 24) and slides
 	between the two ends, optional icons on the handle.
 
 	    Switch({ Value = enabled })
@@ -26,7 +26,8 @@
 	Handle (Frame + UICorner) [+ Icon ImageLabel] = 8 descendants (9 with an icon).
 	M3 deviations: the touch target is the 52x32 track (M3 asks for 48 px height); extra hit height would cost one
 	more Frame, so it is not done here — give the Switch a row with enough height instead; the handle has no
-	squish-while-moving stage; hover on the TRACK lights the halo (M3 lights it over the handle only).
+	squish-while-moving stage; hover on the TRACK lights the halo (M3 lights it over the handle only); the pressed
+	handle of an OFF switch grows to 24 px (26 with icons), not 28 — 28 would fill the outline's inside exactly.
 ]]
 
 local q = require("./Quad")
@@ -133,8 +134,17 @@ local function Switch(props: Props)
 	local handleTransparency: q.State<number> = on:Compute(function(self, _prev, dis)
 		return if dis:Get() and not self:Get() then DisabledContent else 0
 	end, disabled)
+	-- pressed: 28 when ON (inside the filled track); when OFF only to 24 (26 with icons): the off track has a 2 px INNER
+	-- outline, so its inside is exactly 28 px and a 28 px handle would touch the outline in a near-identical color
+	-- (Outline vs OnSurfaceVariant) — kit deviation from M3's 28 dp pressed handle in both states
 	local handleSize: q.State<UDim2> = on:Compute(function(self, _prev, pressed)
-		local px = if pressed:Get() then 28 elseif self:Get() or hasIcon then 24 else 16
+		local sel = self:Get()
+		local px
+		if pressed:Get() then
+			px = if sel then 28 elseif hasIcon then 26 else 24
+		else
+			px = if sel or hasIcon then 24 else 16
+		end
 		return UDim2.fromOffset(px, px)
 	end, fx.Pressed)
 	local haloPosition: q.State<UDim2> = on:Compute(function(self)

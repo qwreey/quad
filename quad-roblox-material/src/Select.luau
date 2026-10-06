@@ -118,8 +118,11 @@ local function Select<T>(props: Props<T>): Frame
 				})
 			end
 			-- flag AFTER the menu opened: a dead overlay makes Menu.open throw, and the field must not stay "open"
+			-- the field's own width (Menu's default clamps an anchor's width to 112..280; a select menu matches its field)
+			local fieldWidth = parts.Container.AbsoluteSize.X
 			Menu.open({
 				Anchor = parts.Container,
+				Width = if fieldWidth > 0 then fieldWidth else nil,
 				Items = entries,
 				Overlay = props.Overlay,
 				Theme = props.Theme,

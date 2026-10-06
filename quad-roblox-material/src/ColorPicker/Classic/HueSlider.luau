@@ -10,7 +10,7 @@
 	it, exactly like the original's `Completed` guard), the fill fades back in 0.42 s.
 
 	Instances at rest: slider (+UICorner, UIPadding, UIGradient), shadow, handle (+UICorner), fill (+UICorner),
-	bubble (+UIScale, shadow, color disc (+UICorner)) = 14. The original used 11 + a PreviewShadow + fake cursor
+	bubble holder (+UIScale, shadow, bubble image, color disc (+UICorner)) = 15. The original used 11 + a PreviewShadow + fake cursor
 	(inside the slider); here the fake cursor is shared (FakeCursor.luau) and lives in the window.
 	Drag math maps the pointer onto the PADDED track (the original divided by the full width, so the handle
 	drifted up to 5 px from the pointer near the ends).
@@ -128,6 +128,7 @@ local function HueSlider(props: Props)
 			BackgroundTransparency = 1,
 			Position = shadowPos,
 			Size = UDim2.fromOffset(24, 23),
+			ZIndex = 1,
 		},
 		D.Frame {
 			Name = "Handle",
@@ -137,6 +138,9 @@ local function HueSlider(props: Props)
 			Position = handlePos,
 			Size = UDim2.fromOffset(20, 20),
 			UICorner = UDim.new(0.5, 0),
+			-- above its shadow sibling explicitly (equal ZIndex leaves the sibling order to the engine) — the preview
+			-- bubble is the handle's descendant, so the handle shadow must never paint over it either
+			ZIndex = 2,
 
 			D.Frame {
 				Name = "Fill",
@@ -148,11 +152,14 @@ local function HueSlider(props: Props)
 				Size = UDim2.fromOffset(14, 14),
 				UICorner = UDim.new(0.5, 0),
 			},
-			D.ImageLabel {
+			-- the bubble is a transparent holder (Visible + UIScale) with the shadow and the bubble image as SIBLINGS: under
+			-- ZIndexBehavior Sibling a child always draws ABOVE its parent, so the shadow as a child of the bubble image (the
+			-- first port) painted over the bubble; here the shadow is the earlier sibling with the lower ZIndex
+			D.Frame {
 				Name = "PreviewBubble",
-				Image = IMG_BUBBLE,
 				AnchorPoint = Vector2.new(0.5, 1),
 				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
 				Position = UDim2.fromScale(0.5, 1),
 				Size = UDim2.fromOffset(32, 68),
 				Visible = bubbleVisible,
@@ -167,14 +174,23 @@ local function HueSlider(props: Props)
 					BackgroundTransparency = 1,
 					Position = UDim2.fromScale(0.5, 0.5),
 					Size = UDim2.new(1, 14, 1, 14),
+					ZIndex = 1,
 				},
-				D.Frame {
-					Name = "BubbleColor",
-					BackgroundColor3 = model.hueColor,
-					BorderSizePixel = 0,
-					Position = UDim2.fromOffset(5, 5),
-					Size = UDim2.fromOffset(22, 22),
-					UICorner = UDim.new(0.5, 0),
+				D.ImageLabel {
+					Name = "BubbleImage",
+					Image = IMG_BUBBLE,
+					BackgroundTransparency = 1,
+					Size = UDim2.fromScale(1, 1),
+					ZIndex = 2,
+
+					D.Frame {
+						Name = "BubbleColor",
+						BackgroundColor3 = model.hueColor,
+						BorderSizePixel = 0,
+						Position = UDim2.fromOffset(5, 5),
+						Size = UDim2.fromOffset(22, 22),
+						UICorner = UDim.new(0.5, 0),
+					},
 				},
 			},
 		},
