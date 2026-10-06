@@ -20,6 +20,8 @@
 > `q.dispose`로 quad가 직접 죽인 호스트), C3의 "의존의 상류에 쓰기"는 2026-10-02 사용자 결정(Effect가 자기 의존과 그
 > 상류를 Set하는 것은 정의 — 반영 대기 묶음, `session/2026-09-28-01-round13-batch-reply.md`)이 이미 답한 범위이고
 > 두 Effect가 서로의 의존을 쓰는 교차 루프만 남는다.
+>
+> **[2026-10-06 사용자 회신]** C0 — debug일 때 Slot CRUD 입구에서 마운트 호스트의 claim 확인(감지기 3과 같은 계열, round14 Q170 아래 "debug 감지기 셋" 문단), 공개 "호스트 생존" 질의는 안 함. C3 — 10-02 결정(Effect 상류 Set 정의)과 같은 메커니즘: 수렴하면 정의, 수렴하지 않으면 UB(`Quad0263`) — core/05·quadnomicon에 "다른 Effect를 거쳐도 같다" 한 줄. C7 — Modifier 자리가 아님, 팩토리 출력이 flatten에서 펴지는 값 방향으로 백로그(`research/component-flatten-sugar-plan.md` 4절), 지금 결정 안 함. A1·A2·F1·A5b — 타입 표면 조사 진행(`audit/consumer-type-surface-2026-10-06/`).
 
 ## A. 타입 표면
 

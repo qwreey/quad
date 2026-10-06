@@ -100,3 +100,7 @@ ref 나 named modifier 등을 지원하게 될 텐데, 이거는 일반 leaf 와
   11절(`Into`·`As` — 커스텀 서브타입의 런타임 틈이 `H-340`), `base/dispatch-core-plan.md`
   flatten 규칙, `archive/v2-initial-implementation/m9-implementation-round21.md` §4.
 - `research/operator-sugar-plan.md` — 같은 "순수 슈거는 나중에, 코어는 건드리지 않는다" 결.
+
+## 4. [2026-10-06 사용자 방향] 행동 묶음 — 첫 소비자 킷 피드백 C7과의 연결
+
+첫 실사용 소비자(`feedback/consumer-kits-2026-10-05.md` C7)가 hover·drag·focus 같은 재사용 "행동"을 묶을 자리가 없어(Modifier는 이벤트 핸들러를 거부 — `Quad0063`) PostRef + 직접 `:Connect` 훅을 발명했다. 사용자 판단(2026-10-06): **그건 Modifier의 자리가 아니다** — *"이거는 정적 아니고, 적용 대상을 알고 적용 대상에 따라 진행되는 요소라서 Modifier 에 들어갈 자리는 아니야. 나온다 하면 다른게 나와야해."* 방향으로 낸 모양: 팩토리·커링(상위 요소도 받고 하위 요소도 받는)으로 행동을 만들고, `Frame { GivenFactory(...) }`처럼 놓였을 때 **그 출력이 flatten 단계에서 실제로 펴지는 값**이 되게 허용 — 숫자 키는 `table.move`로 옮기면 빠르고 문자 키도 가능. 열린 문제 둘(사용자): 덮어쓰기가 어떻게 되는지 사용자가 알아야 한다, Modifier와 이 펴짐 중 무엇이 먼저인가 — 사용자 기본 입장은 *"별다른 추가 메커니즘 없이 modifier 처럼 유저가 아래 직접 쓴게 먼저(오버라이딩 혹시나 싶으면 가능함)"*. `Frame { MouseEnter = …, MouseLeave = … }`를 손으로 반복하는 것은 끔찍해 보인다는 데엔 동의. **결정 아님 — 지금 정할 수 없음**(사용자: *"C7 은 그래서 지금 당장 결정 가능한게 아닌것 같아"*); 이 문서 2절 스캐폴딩(경계 flatten 슈거)과 같은 메커니즘 축이라 같이 볼 것. 도그푸딩으로 근거가 더 쌓이면 다시.
