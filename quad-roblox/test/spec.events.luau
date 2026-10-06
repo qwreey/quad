@@ -305,4 +305,80 @@ do
 end
 
 print()
+print("=== 10. round14 Q174 보강 2 (2026-10-06) — q.debug 되먹임 감지기: OnChange·Out 엔진 왕복(속성 쓰기 → 동기 Changed → 콜백이 상류를 되씀)은 core/05가 정의한 정상 경로 — 0줄; 같은 State를 Ref 콜백이 되쓰는 진짜 되먹임은 1줄(음성 대조) ===")
+do
+	local LINE = "Observer: a change reached this Observer while its own fn was running"
+	-- the print lives in quad-base's Observer.luau — capture that module's env (spec.observer 14's technique)
+	local env = getfenv(q.Source(0):Observer().WeakSubscribe)
+	local lines = {}
+	local function capture(f)
+		table.clear(lines)
+		local old = rawget(env, "print")
+		env.print = function(...)
+			table.insert(lines, table.concat({ ... }, " "))
+		end
+		local ok, err = pcall(f)
+		env.print = old
+		assert(ok, tostring(err))
+	end
+	local function count()
+		local n = 0
+		for _, l in lines do
+			if string.find(l, LINE, 1, true) ~= nil then
+				n += 1
+			end
+		end
+		return n
+	end
+	q.debug = true
+	-- (a) OnChange: the callback normalizes what the property shows and writes it back upstream with
+	-- SetIfChanged (a TextBox filter — the kits' `EditRow`/`Fields` shape). The mock fires `Changed`
+	-- synchronously, so the write lands inside the StateHandler Observer's fn (its dispatch of `src`)
+	local src = q.Source("a")
+	local b
+	capture(function()
+		b = q.Declaration.TextButton({
+			Text = src,
+			q.OnChange("Text", function(v)
+				src:SetIfChanged(string.lower(v))
+			end),
+		})
+		src:Set("B")
+	end)
+	assert(src:Get() == "b" and b.Text == "b", `the round trip settled: src {src:Get()}, Text {b.Text}`)
+	assert(count() == 0, "OnChange round trip: no line: " .. table.concat(lines, " | "))
+	-- (b) Out: the property shows a mapped view of the Source; the engine-side value goes back through Out
+	local raw = q.Source("x")
+	local b2
+	capture(function()
+		b2 = q.Declaration.TextButton({
+			Text = raw:Compute(function(s)
+				return string.upper(s:Get())
+			end),
+			q.Out("Text", raw),
+		})
+		raw:Set("y")
+	end)
+	assert(raw:Get() == "Y" and b2.Text == "Y", `the Out round trip settled: raw {raw:Get()}, Text {b2.Text}`)
+	assert(count() == 0, "Out round trip: no line: " .. table.concat(lines, " | "))
+	-- (c) negative control: outside the signal frame — a Ref callback the same dispatch sets off writes the
+	-- placed State back (undefined): one line
+	capture(function()
+		local r = q.Ref(nil)
+		local s3 = q.Source(r)
+		local once = true
+		r:Callback(function(v)
+			if v ~= nil and once then
+				once = false
+				s3:Set(r)
+			end
+		end)
+		q.Declaration.Frame({ s3 })
+	end)
+	assert(count() == 1, "Ref callback feedback: one line: " .. table.concat(lines, " | "))
+	q.debug = false
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

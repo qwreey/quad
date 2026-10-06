@@ -136,17 +136,21 @@ local function install(quad: any)
 	-- tween from `Completed` is defined (Q163; on a snap it runs synchronously inside this property's dispatch,
 	-- Q164 (a′)), so a write back to the same State from here is not reported; one from `Started`/`Cancelled`
 	-- still is (undefined, Q163). The registration is read only under `q.debug`.
-	local function fireCompleted(v: any, inst: any, k: any, value: any)
+	-- [round14 Q174 보강 2 (3)] held in a table field and always called through it: `-O2` inlines a small local
+	-- function at its direct call sites (`luau-compile --remarks -O2`: all three were), and the frame the check
+	-- looks for would be gone.
+	local Frames = {}
+	function Frames.fireCompleted(v: any, inst: any, k: any, value: any)
 		fire(v, "Completed", inst, k, value)
 	end
-	quad._reentryFrames[fireCompleted] = true
+	quad._reentryFrames[Frames.fireCompleted] = true
 	-- round13 묶음 1: a SETTLE callback (the previous value's Cancelled / window Completed, and teardown's Cancelled) —
 	-- round13 Q82 (a): not on an Instance quad no longer claims (a corpse under `retractFrom`); the Cancel
 	-- itself already happened in `settle`. Same gate as the engine connection's (Q71, `H-594`).
 	local function fireSettled(cb: any?, finished: boolean, inst: any, k: any, value: any)
 		if cb ~= nil and quad.Backend.isClaimed(inst) then
 			if finished then
-				fireCompleted(cb, inst, k, value)
+				Frames.fireCompleted(cb, inst, k, value)
 			else
 				fire(cb, "Cancelled", inst, k, value)
 			end
@@ -196,7 +200,7 @@ local function install(quad: any)
 		-- (Q82 — `retractFrom` on a corpse) keeps its gate.
 		fire(v, "Started", inst, k, v.Value)
 		if snapped and v.Completed ~= nil and tweenSlots:GetStrong(inst, k) == rec then
-			fireCompleted(v, inst, k, v.Value)
+			Frames.fireCompleted(v, inst, k, v.Value)
 		end
 	end
 	-- Snap: write the target now, no engine tween; `{ Value }` keeps the dedup honest (Q26 (a)).
@@ -397,7 +401,7 @@ local function install(quad: any)
 							-- is read off the tween (the engine tween holds it anyway) — the closure still captures no
 							-- `inst`.
 							if cb ~= nil and quad.Backend.isClaimed(rec.Tween.Instance) then
-								fireCompleted(cb, rec.Tween.Instance, rec.Key, rec.Value)
+								Frames.fireCompleted(cb, rec.Tween.Instance, rec.Key, rec.Value)
 							end
 						end
 					end)

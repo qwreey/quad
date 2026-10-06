@@ -604,7 +604,9 @@ debug 는 치명적 부분 아니면 기본적으로 계속 실행은 시켜주�
   `State:_internalObserver`로 설치 **전에** 표시를 받으며, StateHandler의 Observer는 내부가 아니다(Q174); 부기 `recompute`와
   `setOffsetSource` 프레임을 거친 배달은 건너뜀(`H-886`); **[2026-10-06 round14 Q174 보강 (b)]** 프로바이더가 등록한 정의된 재진입 프레임도 —
   모듈 인스턴스의 비공개 `_reentryFrames` 집합(Observer `Init`이 만들고 debug 검사만 읽음), 첫 등록은 quad-roblox Property의 `Completed`
-  호출 함수(`Started`/`Cancelled`와 갈라 둠 — Q163)), `Debounce`/`Throttle` 핸들 `Cancel`·`Flush`가 자기 게이트의 flush(창 끝·
+  호출 함수(`Started`/`Cancelled`와 갈라 둠 — Q163), **[2026-10-06 Q174 보강 2]** 둘째는 quad-roblox OnChange가 엔진 changed 신호에서
+  콜백을 부르는 함수(`q.Out` 포함 — core/05의 엔진 왕복); 등록 프레임 함수는 `-O2` 인라인으로 프레임이 사라지지 않게 테이블 필드를
+  거쳐 부른다), `Debounce`/`Throttle` 핸들 `Cancel`·`Flush`가 자기 게이트의 flush(창 끝·
   핸들 `Flush`·**[2026-10-06 Q174 보강]** leading 통과) 안에서 불림(스택 검사 — round9 (h) UB, 2026-10-06 `H-570` 대체), **[2026-10-06 round14]** claim되지 않은(파괴됐거나 quad가 만들지
   않은) 인스턴스에 대한 `Dispatch.process`(감지기 3 — `H-877` 대체, `drive`도 지남)와 그런 호스트에 마운트된 Slot의 CRUD(소비자
   킷 C0); 에러로 멈추는 비싼 검사 — `process`의 함수 아닌

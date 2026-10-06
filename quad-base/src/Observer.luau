@@ -69,7 +69,8 @@ local WEAK_KEY_MT = { __mode = "k" }
 -- run, so the install window is skipped too — and are not user code. [2026-10-06 user decision, round14
 -- Q174] StateHandler's Observer (a State placed in props) is NOT internal: its fn is quad's dispatch of the
 -- State's value, but under it run Ref/Tween callbacks, hooks and the engine's synchronous signals — a
--- write back to that State from there is the same feedback, so the message names that case too.
+-- write back to that State from there is the same feedback, so the message names that case too (the
+-- defined paths among them are the registered re-entry frames below).
 -- A nested delivery that came THROUGH the Slot bookkeeping is skipped too (user decision 2026-10-01:
 -- a callback watching a Slot's `Offset`/`Length` that CRUDs a Slot so the value moves again is not State
 -- feedback — the loop goes through the position math, which re-runs until it settles; the user cannot see
@@ -83,6 +84,10 @@ local WEAK_KEY_MT = { __mode = "k" }
 -- else, no public surface). First entry: quad-roblox's Property handler registers the function that calls
 -- a Tween's `Completed` (Q163/Q164 (a′): the next tween is chained from `Completed`, synchronously on a snap)
 -- — `Started`/`Cancelled` are called from other frames, so a write back from them is still reported.
+-- [2026-10-06 Q174 보강 2] Second: quad-roblox's OnChange handler registers the function the engine's changed
+-- signal calls the `OnChange`/`q.Out` callback through — the engine round trip `docs/reference/core/05` defines
+-- as normal (under Immediate signals it comes back synchronously inside the dispatch). A registered function is
+-- called through a table field so `-O2` cannot inline it away (the frame would vanish from the stack).
 local function fedBackDirectly(fn: any, recompute: any, setOffsetSource: any, frames: { [any]: true }): boolean
 	local level = 1
 	while true do

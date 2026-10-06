@@ -99,8 +99,21 @@ local function Out(name: string, src: any): OnChangeDescriptor
 	end)
 end
 
+-- [2026-10-06 user decision, round14 Q174 보강 2 (1)] the ONE function the engine's changed signal reaches quad
+-- through: it calls the `OnChange` callback (an `Out` callback is one). A write back from there is the engine
+-- round trip `docs/reference/core/05` defines as normal (`Text = src` + `Out("Text", src)`; under Immediate
+-- signals — and the mock — it runs synchronously inside the property's dispatch), so `install` registers this
+-- function as a defined re-entry frame for quad-base's debug feedback check (`Observer.luau` `fedBackDirectly`;
+-- read only under `q.debug`). Held in a table field and always called through it (Q174 보강 2 (3)): `-O2`
+-- inlines a small local function at its direct call sites, and the frame the check looks for would be gone.
+local Frames = {}
+function Frames.fireOnChange(callback: (any) -> (), inst: any, name: string)
+	callback(inst[name])
+end
+
 local function install(quad: any)
 	local dispatch = quad.Dispatch
+	quad._reentryFrames[Frames.fireOnChange] = true
 	if errNS == nil then
 		errNS = quad.errorNamespace
 		errNS.setFuncLevel(SURFACE, OnChange, Out) -- `H-238`: public factories tagged
@@ -125,7 +138,7 @@ local function install(quad: any)
 			local name = v.Name
 			local callback = v.Callback :: (any) -> ()
 			local connection = inst:GetPropertyChangedSignal(name):Connect(function()
-				callback(inst[name])
+				Frames.fireOnChange(callback, inst, name)
 			end)
 			return function(_nextValue: any?, _retracting: boolean)
 				connection:Disconnect() -- bookkeeping stays None/0 (Tag idiom)

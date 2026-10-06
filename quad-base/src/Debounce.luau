@@ -238,7 +238,11 @@ function FactoryImpl.__apply(self: any, state: any): any
 		-- it (its signal sits in the fresh set — it was withheld, not passed); else
 		-- reopen if anything went through (minimum Time until the next pass), or go
 		-- idle. Shared by window end (trailing) and the MaxTime cap.
-		local function commitIdle()
+		-- Assigned to a forward-declared local (like `onWindowEnd`/`onCap`/`onUpstreamEmit`) so `-O2` cannot
+		-- inline it: the debug handle check looks for this frame (round14 Q174 보강 2 (3); `luau-compile --remarks
+		-- -O2` showed both direct call sites inlined).
+		local commitIdle
+		function commitIdle()
 			closeWindow()
 			clearCap()
 			local had = emit()
