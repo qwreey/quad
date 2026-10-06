@@ -1,0 +1,96 @@
+--- [T1 Tag self-containing list] debug=false
+  RAISED: ../src/Brand.luau:116: stack overflow
+--- [T1 Tag self-containing list] debug=true
+  RAISED: ../src/Brand.luau:116: stack overflow
+--- [T2 Tag honest 100-level nesting] debug=false
+  constructed: Tag("deep")
+--- [T2 Tag honest 100-level nesting] debug=true
+  constructed: Tag("deep")
+--- [C1 StoreBind two-State cycle via Set] debug=false
+  mounted, children=b0
+  b:Set(a) ok=false ../src/Dispatch/init.luau:371: stack overflow
+  recover b:Set(F) ok=true  children=x
+--- [C1 StoreBind two-State cycle via Set] debug=true
+  mounted, children=b0
+  b:Set(a) ok=false ../src/Dispatch/init.luau:371: stack overflow
+  recover b:Set(F) ok=true  children=x
+--- [C2 StoreBind self Set (numeric position)] debug=false
+  s:Set(s) ok=false ../src/Dispatch/init.luau:371: stack overflow
+--- [C2 StoreBind self Set (numeric position)] debug=true
+  s:Set(s) ok=false ../src/Dispatch/init.luau:371: stack overflow
+--- [C3 Slot element State cycle (mounted)] debug=false
+  st:Set(st) ok=false ../src/Brand.luau:80: stack overflow children=
+  recover ok=false ../src/Slot/Raw.luau:219: Quad0161 Bookkeeping.releaseOwner: element must not be nil children=
+--- [C3 Slot element State cycle (mounted)] debug=true
+  st:Set(st) ok=false ../src/Brand.luau:80: stack overflow children=
+  recover ok=false ../src/Slot/Raw.luau:219: Quad0161 Bookkeeping.releaseOwner: element must not be nil children=
+--- [C4 Slot:Add of an already circular State] debug=false
+  Add ok=true  len=0
+  mount ok=false ../src/State.luau:251: stack overflow
+--- [C4 Slot:Add of an already circular State] debug=true
+  Add ok=true  len=0
+  mount ok=false ../src/State.luau:241: stack overflow
+--- [P1 re-Add same raw Instance (unmounted)] debug=false
+  2nd Add ok=false ./zzdbg_slot.luau:101: Quad0172 Slot:Add: this element is already mounted - multiple mounts are not allowed (if its owner was destroyed outside quad - `inst:Destroy()` - the value went with it and cannot be reused after its parent is destro len=0
+--- [P1 re-Add same raw Instance (unmounted)] debug=true
+  2nd Add ok=false ./zzdbg_slot.luau:101: Quad0172 Slot:Add: this element is already mounted - multiple mounts are not allowed (if its owner was destroyed outside quad - `inst:Destroy()` - the value went with it and cannot be reused after its parent is destro len=0
+--- [P2 re-Add same raw Instance (mounted)] debug=false
+  2nd Add ok=false ./zzdbg_slot.luau:110: Quad0172 Slot:Add: this element is already mounted - multiple mounts are not allowed (if its owner was destroyed outside quad - `inst:Destroy()` - the value went with it and cannot be reused after its parent is destro len=1 children=x
+--- [P2 re-Add same raw Instance (mounted)] debug=true
+  2nd Add ok=false ./zzdbg_slot.luau:110: Quad0172 Slot:Add: this element is already mounted - multiple mounts are not allowed (if its owner was destroyed outside quad - `inst:Destroy()` - the value went with it and cannot be reused after its parent is destro len=1 children=x
+--- [P3 two States holding one Instance (unmounted, then mount)] debug=false
+  Add(sb) ok=true  len=0
+  mount ok=false ./zzdbg_slot.luau:121: Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its owner was destroyed outside quad - `inst:Destroy()` - the value went with it and cannot be reused after its parent is destroyed; children= len=0
+--- [P3 two States holding one Instance (unmounted, then mount)] debug=true
+  Add(sb) ok=true  len=0
+  mount ok=false ./zzdbg_slot.luau:121: Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (if its owner was destroyed outside quad - `inst:Destroy()` - the value went with it and cannot be reused after its parent is destroyed; children= len=0
+--- [P4 two States holding one Instance (mounted Slot)] debug=false
+  Add(sb) ok=false ./zzdbg_slot.luau:131: Quad0172 Slot:Add: this element is already mounted - multiple mounts are not allowed (if its owner was destroyed outside quad - `inst:Destroy()` - the value went with it and cannot be reused after its parent is destro children=x len=1
+--- [P4 two States holding one Instance (mounted Slot)] debug=true
+  Add(sb) ok=false ./zzdbg_slot.luau:131: Quad0172 Slot:Add: this element is already mounted - multiple mounts are not allowed (if its owner was destroyed outside quad - `inst:Destroy()` - the value went with it and cannot be reused after its parent is destro children=x len=1
+--- [P5 raw Instance + State holding it (unmounted)] debug=false
+  Add(State(x)) ok=false ./zzdbg_slot.luau:138: Quad0172 Slot:Add: this element is already mounted - multiple mounts are not allowed (if its owner was destroyed outside quad - `inst:Destroy()` - the value went with it and cannot be reused after its parent is destro len=0
+--- [P5 raw Instance + State holding it (unmounted)] debug=true
+  Add(State(x)) ok=false ./zzdbg_slot.luau:138: Quad0172 Slot:Add: this element is already mounted - multiple mounts are not allowed (if its owner was destroyed outside quad - `inst:Destroy()` - the value went with it and cannot be reused after its parent is destro len=0
+--- [B1 H-240 PBK] debug=false
+  setup OF2=1 OF4=111 (1/111)
+  after: S1=7 OF2=2 (want 7) OF4=213 (want 218) getOffsetAt(4)=213 getOffsetAt(2)=2
+  next event (S1:Set same): OF2=7 OF4=218
+--- [B1 H-240 PBK] debug=true
+  setup OF2=1 OF4=111 (1/111)
+Source: Set/Emit inside a Compute fn - a Compute only reads and combines (undefined)
+Source: Set/Emit inside a Compute fn - a Compute only reads and combines (undefined)
+  after: S1=7 OF2=2 (want 7) OF4=213 (want 218) getOffsetAt(4)=213 getOffsetAt(2)=2
+  next event (S1:Set same): OF2=7 OF4=218
+--- [Y1 s:Add(s) then CRUD / mount] debug=false
+  Add(s) ok=true 
+  next Add ok=true 
+  mount ok=false ./zzdbg_slot.luau:186: Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value takes one seat, so the same element cannot sit in two parent tables, twice in one table, or in two Slots (if its owner was destr
+  dispose ok=false ./zzdbg_slot.luau:188: Quad0179 dispose: this value is still held by a Slot or a mounted position - Remove/Extract it from a manual Slot, drop its key from a :List Slot's data, destroy the owner Slot (a detached element goes with its owner)
+--- [Y1 s:Add(s) then CRUD / mount] debug=true
+  Add(s) ok=false ./zzdbg_slot.luau:180: Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)
+--- [Y2 a:Add(b); b:Add(a) then mount] debug=false
+  b:Add(a) ok=true 
+  a:Remove(1) ok=false ../src/Slot/Tree.luau:201: Quad0163 Bookkeeping.releaseOwner: this element is not owned by this ownerKey - ownership tracking is broken
+  mount ok=false ./zzdbg_slot.luau:201: Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)
+--- [Y2 a:Add(b); b:Add(a) then mount] debug=true
+  b:Add(a) ok=false ./zzdbg_slot.luau:195: Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)
+--- [K1 Slot at a non-property string key] debug=false
+  drive ok=false ./zzdbg_slot.luau:209: Quad0076 Dispatch: no handler matched key Foo (value: table, brand: Slot) - a quad value at a string key: it belongs in a numeric (array) slot
+--- [K1 Slot at a non-property string key] debug=true
+Slot: found at string key "Foo" - must be an array item (a string key hands it to whichever handler takes that key, usually the property of that name)
+  drive ok=false ./zzdbg_slot.luau:209: Quad0076 Dispatch: no handler matched key Foo (value: table, brand: Slot) - a quad value at a string key: it belongs in a numeric (array) slot
+--- [K2 State<Slot> at a string key] debug=false
+  drive ok=false ./zzdbg_slot.luau:214: Quad0076 Dispatch: no handler matched key Foo (value: table, brand: Slot) - a quad value at a string key: it belongs in a numeric (array) slot
+--- [K2 State<Slot> at a string key] debug=true
+Slot: found at string key "Foo" - must be an array item (a string key hands it to whichever handler takes that key, usually the property of that name)
+  drive ok=false ./zzdbg_slot.luau:214: Quad0076 Dispatch: no handler matched key Foo (value: table, brand: Slot) - a quad value at a string key: it belongs in a numeric (array) slot
+--- [K3 Ref at a non-property string key] debug=false
+  drive ok=false ./zzdbg_slot.luau:219: Quad0076 Dispatch: no handler matched key Foo (value: table, brand: Epoch, Ref) - a quad value at a string key: it belongs in a numeric (array) slot
+--- [K3 Ref at a non-property string key] debug=true
+Ref: found at string key "Foo" - must be an array item (a string key hands it to whichever handler takes that key, usually the property of that name)
+  drive ok=false ./zzdbg_slot.luau:219: Quad0076 Dispatch: no handler matched key Foo (value: table, brand: Epoch, Ref) - a quad value at a string key: it belongs in a numeric (array) slot
+--- [K4 raw process at fractional key 1.5 with a Slot] debug=false
+  process ok=false ./zzdbg_slot.luau:226: Quad0076 Dispatch: no handler matched key 1.5 (value: table, brand: Slot) - this quad value has no handler at an array position children=
+--- [K4 raw process at fractional key 1.5 with a Slot] debug=true
+  process ok=false ./zzdbg_slot.luau:226: Quad0076 Dispatch: no handler matched key 1.5 (value: table, brand: Slot) - this quad value has no handler at an array position children=

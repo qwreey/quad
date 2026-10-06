@@ -1,0 +1,5 @@
+--- [K5 Slot at a reflected property key Size] debug=false
+  ok=true built, Size=Slot(len=0)
+--- [K5 Slot at a reflected property key Size] debug=true
+Slot: found at string key "Size" - must be an array item (a string key hands it to whichever handler takes that key, usually the property of that name)
+  ok=true built, Size=Slot(len=0)

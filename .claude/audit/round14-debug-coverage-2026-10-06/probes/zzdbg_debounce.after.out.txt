@@ -1,0 +1,28 @@
+--- [D1 Throttle Time State goes bad mid-window] debug=false
+  window end ok=false ../src/Debounce.luau:91: Quad0039 Throttle: Time must be a non-negative number less than math.huge (got -1) passed=2 g=2 timers=0
+  next signal ok=false ./zzdbg_debounce.luau:47: Quad0039 Throttle: Time must be a non-negative number less than math.huge (got -1) passed=2 g=3 timers=0
+  after fixing Time, signal ok=true  passed=2 g=4 timers=1
+  +5s passed=3 g=4 timers=0
+--- [D1 Throttle Time State goes bad mid-window] debug=true
+  window end ok=false ../src/Debounce.luau:91: Quad0039 Throttle: Time must be a non-negative number less than math.huge (got -1) passed=2 g=2 timers=0
+  next signal ok=false ./zzdbg_debounce.luau:47: Quad0039 Throttle: Time must be a non-negative number less than math.huge (got -1) passed=2 g=3 timers=0
+  after fixing Time, signal ok=true  passed=2 g=4 timers=1
+  +5s passed=3 g=4 timers=0
+--- [D1b Throttle Time change reaches reopened window] debug=false
+  at t=2.01 passed=2 g=3 (cache: 3 passed at t=2; no cache: still held until t=6)
+--- [D1b Throttle Time change reaches reopened window] debug=true
+  at t=2.01 passed=2 g=3 (cache: 3 passed at t=2; no cache: still held until t=6)
+--- [D2 re-entrant Cancel inside timer flush] debug=false
+  after window end: passed=2 timers=1 (0 = not reopened)
+  next signal: passed=2 g=3 (3 passes at once if idle)
+  +1s: passed=3 g=3
+--- [D2 re-entrant Cancel inside timer flush] debug=true
+  after window end: passed=2 timers=1 (0 = not reopened)
+  next signal: passed=2 g=3 (3 passes at once if idle)
+  +1s: passed=3 g=3
+--- [D3 re-entrant Cancel inside handle Flush] debug=false
+  after Flush: passed=2 timers=1
+  next signal: passed=2 g=3
+--- [D3 re-entrant Cancel inside handle Flush] debug=true
+  after Flush: passed=2 timers=1
+  next signal: passed=2 g=3

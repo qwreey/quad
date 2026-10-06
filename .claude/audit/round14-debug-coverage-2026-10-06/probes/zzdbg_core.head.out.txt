@@ -1,0 +1,46 @@
+--- [A1 compute sets own dep] debug=false
+  Get x3 = 1,2,3  up=3 runs=3
+--- [A1 compute sets own dep] debug=true
+Source: Set/Emit inside a Compute fn - a Compute only reads and combines (undefined)
+  Get x3 = 1,2,3  up=3 runs=3
+--- [A2 Q93 overlapping yield (A parks gen1, B parks gen2, A returns)] debug=false
+  A returned ok=true 0
+  main Get ok=true 1 runs=3
+  B returned ok=true 1
+  final Get ok=true 1 runs=3
+--- [A2 Q93 overlapping yield (A parks gen1, B parks gen2, A returns)] debug=true
+State: Compute fn entered while an earlier run of this node has not returned - the fn yielded or re-entered (undefined)
+  A returned ok=true 0
+  main Get ok=true 1 runs=3
+  B returned ok=true 1
+  final Get ok=true 1 runs=3
+--- [A2b Q98 late return over newer valid cache] debug=false
+  main Get ok=true 100
+  A returned ok=true 0
+  final Get ok=true 100 (expect 100) runs=3
+--- [A2b Q98 late return over newer valid cache] debug=true
+State: Compute fn entered while an earlier run of this node has not returned - the fn yielded or re-entered (undefined)
+  main Get ok=true 100
+  A returned ok=true 0
+  final Get ok=true 100 (expect 100) runs=3
+--- [A3 install fn feeds own target once (clamp)] debug=false
+  after install: s=10 seen=20
+  after bind: s=10 seen=20,10
+--- [A3 install fn feeds own target once (clamp)] debug=true
+  after install: s=10 seen=20
+  after bind: s=10 seen=20,10
+--- [A3b install fn keeps feeding (counter to 3)] debug=false
+  after install: s=1 seen=0
+  after bind: s=3 seen=0,1,2,3
+--- [A3b install fn keeps feeding (counter to 3)] debug=true
+  after install: s=1 seen=0
+Observer: a change reached this Observer while its own fn was running - the fn fed its own upstream, directly or through other handles (undefined; set other targets, or use an Effect for a self-correcting write)
+  after bind: s=3 seen=0,1,2,3
+--- [A3c install fn feeds, never bound/subscribed] debug=false
+  never bound: s=10 seen=20
+--- [A3c install fn feeds, never bound/subscribed] debug=true
+  never bound: s=10 seen=20
+--- [Q0261 Clamp extra arg] debug=false
+  clamp=10
+--- [Q0261 Clamp extra arg] debug=true
+  clamp=10

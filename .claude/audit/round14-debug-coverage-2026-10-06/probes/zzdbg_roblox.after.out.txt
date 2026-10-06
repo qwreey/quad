@@ -1,0 +1,14 @@
+--- [R1 process Tween on a destroyed Instance] debug=false
+  process ok=true  fired=[S] Size=0
+  snap process ok=true  fired=[S,S0,C0] Size=6
+--- [R2 drive plain props on a destroyed Instance] debug=false
+  drive ok=true  Size=3 Name=after
+--- [R3 State-bound Tween on an Instance destroyed outside quad, then Set] debug=false
+  Set after Destroy ok=true  fired=[S1,S2]
+--- [R1 process Tween on a destroyed Instance] debug=true
+  process ok=true  fired=[S] Size=0
+  snap process ok=true  fired=[S,S0,C0] Size=6
+--- [R2 drive plain props on a destroyed Instance] debug=true
+  drive ok=true  Size=3 Name=after
+--- [R3 State-bound Tween on an Instance destroyed outside quad, then Set] debug=true
+  Set after Destroy ok=true  fired=[S1,S2]

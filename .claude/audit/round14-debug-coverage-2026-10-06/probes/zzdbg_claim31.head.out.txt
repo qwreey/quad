@@ -1,0 +1,2 @@
+--- [Q0031 Claim fractional array key] debug=false: ok=false ./zzdbg_claim31.luau:21: Quad0085 Dispatch.drive: array keys must be positive integers (got 2.5) rootClaimed=true titleClaimed=true
+--- [Q0031 Claim fractional array key] debug=true: ok=false ./zzdbg_claim31.luau:21: Quad0085 Dispatch.drive: array keys must be positive integers (got 2.5) rootClaimed=true titleClaimed=true
