@@ -1,0 +1,69 @@
+--- base/quad-roblox/src/Handlers/Property.luau	2026-10-07 01:28:13.253392991 +0900
++++ candD/quad-roblox/src/Handlers/Property.luau	2026-10-07 01:48:19.768137668 +0900
+@@ -208,6 +208,9 @@
+ 	-- Snap: write the target now, no engine tween; `{ Value }` keeps the dedup honest (Q26 (a)).
+ 	local function snap(inst: any, k: any, v: any, oldCb: any?, oldFinished: boolean, oldValue: any)
+ 		inst[k] = v.Value
++		if tweenSlots:GetStrong(inst, k) ~= nil then
++			return -- H-895 cand D: a synchronous signal from the write re-entered (inst, k) and owns the slot now
++		end
+ 		local srec = { Value = v.Value }
+ 		tweenSlots:SetStrong(inst, k, srec)
+ 		announce(inst, k, srec, v, oldCb, oldFinished, oldValue, true)
+@@ -317,7 +320,9 @@
+ 					snap(inst, k, v, nil, false, nil)
+ 				else
+ 					inst[k] = v
+-					tweenSlots:SetStrong(inst, k, true)
++					if tweenSlots:GetStrong(inst, k) == nil then -- H-895 cand D
++						tweenSlots:SetStrong(inst, k, true)
++					end
+ 				end
+ 				return tweenRetractor(inst, k) -- `H-547`: every chain, see the plain tail below
+ 			end
+@@ -344,6 +349,9 @@
+ 			local prevActive = type(prev) == "table" and prev.Tween ~= nil
+ 			if not tweenIn then
+ 				inst[k] = v
++				if tweenSlots:GetStrong(inst, k) ~= prev then
++					return tweenRetractor(inst, k) -- H-895 cand D: re-entered from the write's signal; the inner process settled prev
++				end
+ 				local oldCb, oldFinished = nil, false
+ 				if prevActive then
+ 					oldCb, oldFinished = settle(prev)
+@@ -354,6 +362,9 @@
+ 			end
+ 			if zeroTime then
+ 				inst[k] = v.Value
++				if tweenSlots:GetStrong(inst, k) ~= prev then
++					return tweenRetractor(inst, k) -- H-895 cand D
++				end
+ 				local oldCb, oldFinished = nil, false
+ 				if prevActive then
+ 					oldCb, oldFinished = settle(prev)
+@@ -365,16 +376,17 @@
+ 			end
+ 			local oldCb: any, oldFinished, oldValue: any = nil, false, nil
+ 			if prevActive then
+-				-- branch 3: an engine tween is active — clean it up before the new value lands
+-				-- (a snapped `{ Value }` record has nothing to cancel and nothing to
+-				-- Finish-snap to: the property already holds that value)
+-				oldCb, oldFinished = settle(prev) -- Cancel (if still running) + Disconnect; callback held
+-				oldValue = prev.Value
+ 				if v.Override == "Finish" then
+-					-- (a zero-time snap took its own path above — a Finish snap first would be a second
+-					-- synchronous write of the same property, visible under Immediate signals; code-review)
+-					inst[k] = prev.Value -- Finish: snap to the previous target before continuing
++					-- H-895 cand D: the Finish snap is written BEFORE settle (the engine tween writes only
++					-- asynchronously, so the order is invisible to the engine) — a re-entry from its signal
++					-- then finds prev unsettled and does the whole transition itself, callbacks in order
++					inst[k] = prev.Value
++					if tweenSlots:GetStrong(inst, k) ~= prev then
++						return tweenRetractor(inst, k) -- our engineTween was never played
++					end
+ 				end
++				oldCb, oldFinished = settle(prev) -- Cancel (if still running) + Disconnect; callback held
++				oldValue = prev.Value
+ 			end
+ 			-- branches 2/3 tail (engine tween): slot, then play
+ 			do

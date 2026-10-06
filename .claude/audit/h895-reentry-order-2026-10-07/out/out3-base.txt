@@ -1,0 +1,54 @@
+==========================================================================================
+(A) plain: tween→10, Set(7) → OnChange(7) → Tween 99
+  [imm] after: playing=1 [99] Size=7 cb=[S10 X10 S99]
+         after retractFrom: playing=1 [99] cb=[]
+  [def] after: playing=1 [99] Size=7 cb=[S10 X10 S99]
+         after retractFrom: playing=0 [] cb=[X99]
+==========================================================================================
+(B) Finish: tween→10, Set(Tween 20 Finish) → snap 10 → OnChange(10) → Tween 99
+  [imm] after: playing=2 [20,99] Size=10 cb=[S10 S99 X10 S20]
+         after retractFrom: playing=1 [99] cb=[X20]
+  [def] after: playing=1 [99] Size=10 cb=[S10 X10 S20 X20 S99]
+         after retractFrom: playing=0 [] cb=[X99]
+==========================================================================================
+(B0) Finish, no re-entry (order baseline)
+  [imm] after: playing=1 [20] Size=10 cb=[S10 X10 S20]
+         after retractFrom: playing=0 [] cb=[X20]
+  [def] after: playing=1 [20] Size=10 cb=[S10 X10 S20]
+         after retractFrom: playing=0 [] cb=[X20]
+==========================================================================================
+(C) zero-time: tween→10, Set(Tween 5 Time=0) → OnChange(5) → Tween 99
+  [imm] after: playing=1 [99] Size=5 cb=[S10 X10 S99 S5 C5]
+         after retractFrom: playing=1 [99] cb=[]
+  [def] after: playing=1 [99] Size=5 cb=[S10 X10 S5 C5 S99]
+         after retractFrom: playing=0 [] cb=[X99]
+==========================================================================================
+(C0) zero-time no re-entry baseline
+  [imm] after: playing=0 [] Size=5 cb=[S10 X10 S5 C5]
+         after retractFrom: playing=0 [] cb=[]
+  [def] after: playing=0 [] Size=5 cb=[S10 X10 S5 C5]
+         after retractFrom: playing=0 [] cb=[]
+==========================================================================================
+(F) plain from true: Set(3) → OnChange(3) → Tween 99
+  [imm] after: playing=1 [99] Size=3 cb=[S99]
+         after retractFrom: playing=1 [99] cb=[]
+  [def] after: playing=1 [99] Size=3 cb=[S99]
+         after retractFrom: playing=0 [] cb=[X99]
+==========================================================================================
+(H) plain re-entry, inner plain: tween→10, Set(7) → OnChange(7) → Set(8)
+  [imm] after: playing=0 [] Size=8 cb=[S10 X10]
+         after retractFrom: playing=0 [] cb=[]
+  [def] after: playing=0 [] Size=8 cb=[S10 X10]
+         after retractFrom: playing=0 [] cb=[]
+==========================================================================================
+(I) Finish re-entry with inner dedup-equal (Tween 10 = prev target)
+  [imm] after: playing=1 [20] Size=10 cb=[S10 X10 S20]
+         after retractFrom: playing=0 [] cb=[X20]
+  [def] after: playing=1 [10] Size=10 cb=[S10 X10 S20 X20 S10]
+         after retractFrom: playing=0 [] cb=[X10]
+==========================================================================================
+(J) Completed chain from zero-time snap (Q164 a')
+  [imm] after: playing=1 [99] Size=5 cb=[S5 C5 S99]
+         after retractFrom: playing=0 [] cb=[X99]
+  [def] after: playing=1 [99] Size=5 cb=[S5 C5 S99]
+         after retractFrom: playing=0 [] cb=[X99]

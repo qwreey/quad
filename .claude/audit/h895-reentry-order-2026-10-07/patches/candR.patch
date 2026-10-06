@@ -1,0 +1,73 @@
+--- base/quad-roblox/src/Handlers/Property.luau	2026-10-07 01:28:13.253392991 +0900
++++ candR/quad-roblox/src/Handlers/Property.luau	2026-10-07 01:48:19.768335018 +0900
+@@ -207,9 +207,9 @@
+ 	end
+ 	-- Snap: write the target now, no engine tween; `{ Value }` keeps the dedup honest (Q26 (a)).
+ 	local function snap(inst: any, k: any, v: any, oldCb: any?, oldFinished: boolean, oldValue: any)
+-		inst[k] = v.Value
+ 		local srec = { Value = v.Value }
+ 		tweenSlots:SetStrong(inst, k, srec)
++		inst[k] = v.Value
+ 		announce(inst, k, srec, v, oldCb, oldFinished, oldValue, true)
+ 	end
+ 
+@@ -316,8 +316,8 @@
+ 				if tweenIn then
+ 					snap(inst, k, v, nil, false, nil)
+ 				else
+-					inst[k] = v
+ 					tweenSlots:SetStrong(inst, k, true)
++					inst[k] = v
+ 				end
+ 				return tweenRetractor(inst, k) -- `H-547`: every chain, see the plain tail below
+ 			end
+@@ -343,23 +343,23 @@
+ 			-- Observed, not contract: what a raise in either path leaves behind is not something callers may rely on.
+ 			local prevActive = type(prev) == "table" and prev.Tween ~= nil
+ 			if not tweenIn then
+-				inst[k] = v
+ 				local oldCb, oldFinished = nil, false
+ 				if prevActive then
+ 					oldCb, oldFinished = settle(prev)
+ 				end
+ 				tweenSlots:SetStrong(inst, k, true)
++				inst[k] = v
+ 				fireSettled(oldCb, oldFinished, inst, k, if prevActive then prev.Value else nil)
+ 				return tweenRetractor(inst, k) -- `H-547`: every chain (see the note at the end)
+ 			end
+ 			if zeroTime then
+-				inst[k] = v.Value
+ 				local oldCb, oldFinished = nil, false
+ 				if prevActive then
+ 					oldCb, oldFinished = settle(prev)
+ 				end
+ 				local srec = { Value = v.Value }
+ 				tweenSlots:SetStrong(inst, k, srec)
++				inst[k] = v.Value
+ 				announce(inst, k, srec, v, oldCb, oldFinished, if prevActive then prev.Value else nil, true)
+ 				return tweenRetractor(inst, k)
+ 			end
+@@ -370,16 +370,18 @@
+ 				-- Finish-snap to: the property already holds that value)
+ 				oldCb, oldFinished = settle(prev) -- Cancel (if still running) + Disconnect; callback held
+ 				oldValue = prev.Value
+-				if v.Override == "Finish" then
+-					-- (a zero-time snap took its own path above — a Finish snap first would be a second
+-					-- synchronous write of the same property, visible under Immediate signals; code-review)
+-					inst[k] = prev.Value -- Finish: snap to the previous target before continuing
+-				end
+ 			end
+ 			-- branches 2/3 tail (engine tween): slot, then play
+ 			do
+ 				local rec: any = { Tween = engineTween, Value = v.Value }
+ 				tweenSlots:SetStrong(inst, k, rec)
++				if prevActive and v.Override == "Finish" then
++					inst[k] = prev.Value -- H-895 cand R: Finish snap AFTER our record
++					if tweenSlots:GetStrong(inst, k) ~= rec then
++						fireSettled(oldCb, oldFinished, inst, k, oldValue) -- re-entered: the inner value owns the slot
++						return tweenRetractor(inst, k)
++					end
++				end
+ 				if v.Completed ~= nil or v.Cancelled ~= nil then
+ 					-- `Cb` and the connection share this gate (header: Cancelled alone still needs `Done`);
+ 					-- the closure captures `rec`/`conn` only — never `inst`. round13 묶음 1: `Key` = the property name the

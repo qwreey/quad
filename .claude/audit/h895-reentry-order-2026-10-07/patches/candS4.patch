@@ -1,0 +1,163 @@
+--- base/quad-roblox/src/Handlers/Property.luau	2026-10-07 01:28:13.253392991 +0900
++++ candS4/quad-roblox/src/Handlers/Property.luau	2026-10-07 01:48:19.768137668 +0900
+@@ -208,6 +208,9 @@
+ 	-- Snap: write the target now, no engine tween; `{ Value }` keeps the dedup honest (Q26 (a)).
+ 	local function snap(inst: any, k: any, v: any, oldCb: any?, oldFinished: boolean, oldValue: any)
+ 		inst[k] = v.Value
++		if tweenSlots:GetStrong(inst, k) ~= nil then
++			return -- H-895 cand D: a synchronous signal from the write re-entered (inst, k) and owns the slot now
++		end
+ 		local srec = { Value = v.Value }
+ 		tweenSlots:SetStrong(inst, k, srec)
+ 		announce(inst, k, srec, v, oldCb, oldFinished, oldValue, true)
+@@ -317,7 +320,9 @@
+ 					snap(inst, k, v, nil, false, nil)
+ 				else
+ 					inst[k] = v
+-					tweenSlots:SetStrong(inst, k, true)
++					if tweenSlots:GetStrong(inst, k) == nil then -- H-895 cand D
++						tweenSlots:SetStrong(inst, k, true)
++					end
+ 				end
+ 				return tweenRetractor(inst, k) -- `H-547`: every chain, see the plain tail below
+ 			end
+@@ -344,6 +349,9 @@
+ 			local prevActive = type(prev) == "table" and prev.Tween ~= nil
+ 			if not tweenIn then
+ 				inst[k] = v
++				if tweenSlots:GetStrong(inst, k) ~= prev then
++					return tweenRetractor(inst, k) -- H-895 cand D: re-entered from the write's signal; the inner process settled prev
++				end
+ 				local oldCb, oldFinished = nil, false
+ 				if prevActive then
+ 					oldCb, oldFinished = settle(prev)
+@@ -354,6 +362,9 @@
+ 			end
+ 			if zeroTime then
+ 				inst[k] = v.Value
++				if tweenSlots:GetStrong(inst, k) ~= prev then
++					return tweenRetractor(inst, k) -- H-895 cand D
++				end
+ 				local oldCb, oldFinished = nil, false
+ 				if prevActive then
+ 					oldCb, oldFinished = settle(prev)
+@@ -365,16 +376,17 @@
+ 			end
+ 			local oldCb: any, oldFinished, oldValue: any = nil, false, nil
+ 			if prevActive then
+-				-- branch 3: an engine tween is active — clean it up before the new value lands
+-				-- (a snapped `{ Value }` record has nothing to cancel and nothing to
+-				-- Finish-snap to: the property already holds that value)
+-				oldCb, oldFinished = settle(prev) -- Cancel (if still running) + Disconnect; callback held
+-				oldValue = prev.Value
+ 				if v.Override == "Finish" then
+-					-- (a zero-time snap took its own path above — a Finish snap first would be a second
+-					-- synchronous write of the same property, visible under Immediate signals; code-review)
+-					inst[k] = prev.Value -- Finish: snap to the previous target before continuing
++					-- H-895 cand D: the Finish snap is written BEFORE settle (the engine tween writes only
++					-- asynchronously, so the order is invisible to the engine) — a re-entry from its signal
++					-- then finds prev unsettled and does the whole transition itself, callbacks in order
++					inst[k] = prev.Value
++					if tweenSlots:GetStrong(inst, k) ~= prev then
++						return tweenRetractor(inst, k) -- our engineTween was never played
++					end
+ 				end
++				oldCb, oldFinished = settle(prev) -- Cancel (if still running) + Disconnect; callback held
++				oldValue = prev.Value
+ 			end
+ 			-- branches 2/3 tail (engine tween): slot, then play
+ 			do
+--- base/quad-roblox/src/Handlers/InstanceShorthand.luau	2026-10-07 01:28:13.253292551 +0900
++++ candS4/quad-roblox/src/Handlers/InstanceShorthand.luau	2026-10-07 01:49:50.883178065 +0900
+@@ -85,8 +85,8 @@
+ 			-- late read: `quad.Declaration` is merged by UseProvider after this install ran (`H-174`)
+ 			child = quad.Declaration.New(entry.class)({ Name = entry.childName })
+ 			quad.Bookkeeping.claimOwnerAt(child, inst, entry.childName) -- Q48 (a): fresh Instance — never held, cannot raise
++			managed:SetStrong(inst, entry.childName, child) -- H-895 sweep: record before the Parent write
+ 			child.Parent = inst
+-			managed:SetStrong(inst, entry.childName, child)
+ 		end
+ 		return child
+ 	end
+--- base/quad-base/src/Slot/Tree.luau	2026-10-07 01:28:13.247427300 +0900
++++ candS4/quad-base/src/Slot/Tree.luau	2026-10-07 01:51:09.577405134 +0900
+@@ -87,8 +87,9 @@
+ 	end
+ 
+ 	local function mountSlotTree(slot: any, physicalTarget: any)
+-		module.Backend.nativeInsert(physicalTarget, slot.Offset:Get(), S.collectLeaves(slot))
+-		markMountedTree(slot, physicalTarget)
++		local leaves = S.collectLeaves(slot)
++		markMountedTree(slot, physicalTarget) -- H-895 sweep: record before the Parent writes
++		module.Backend.nativeInsert(physicalTarget, slot.Offset:Get(), leaves)
+ 	end
+ 
+ 	local function attachSlot(slot: any, physicalTarget: any, ownerKey: any, position: number, mount: boolean?)
+@@ -146,9 +147,12 @@
+ 
+ 	local function unmountSlotTree(slot: any)
+ 		if slot._mounted then
+-			module.Backend.nativeExtract(slot._mountedInst, slot.Offset:Get(), S.collectLeaves(slot))
++			local inst, offset, leaves = slot._mountedInst, slot.Offset:Get(), S.collectLeaves(slot)
++			teardownTree(slot) -- H-895 sweep: flags/bookkeeping before the Parent writes
++			module.Backend.nativeExtract(inst, offset, leaves)
++		else
++			teardownTree(slot)
+ 		end
+-		teardownTree(slot)
+ 	end
+ 
+ 	local function destroySlotTree(slot: any)
+--- base/quad-base/src/Slot/Raw.luau	2026-10-07 01:28:13.247655480 +0900
++++ candS4/quad-base/src/Slot/Raw.luau	2026-10-07 01:52:21.333737052 +0900
+@@ -184,7 +184,9 @@
+ 		else
+ 			module.Backend.nativeDispose(element)
+ 		end
+-		vacate(self, index, element, bk)
++		local now = bk.indexOfElement[element] -- H-895 sweep: a signal from the physical op may have re-entered this Slot
++		if now == nil then return end
++		vacate(self, now, element, bk)
+ 	end
+ 
+ 	local function rawUnmount(self: any, index: number, deferPhysical: boolean?)
+@@ -196,7 +198,9 @@
+ 		elseif self._mounted and not deferPhysical then
+ 			module.Backend.nativeExtract(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
+ 		end
+-		vacate(self, index, element, bk)
++		local now = bk.indexOfElement[element] -- H-895 sweep: a signal from the physical op may have re-entered this Slot
++		if now == nil then return end
++		vacate(self, now, element, bk)
+ 	end
+ 
+ 	local function rawDetach(self: any, index: number)
+@@ -209,7 +213,9 @@
+ 		elseif self._mounted then
+ 			module.Backend.nativeExtract(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
+ 		end
+-		vacate(self, index, element, bk)
++		local now = bk.indexOfElement[element] -- H-895 sweep: a signal from the physical op may have re-entered this Slot
++		if now == nil then return end
++		vacate(self, now, element, bk)
+ 	end
+ 
+ 	-- rawReplace: keep the array position, swap the occupant (H-1/B-5).
+@@ -393,14 +399,14 @@
+ 				if S.isSlot(element) then S.collectLeaves(element, newLeaves)
+ 				else table.insert(newLeaves, element) end
+ 			end
++			for _, element in ipairs(newElements) do -- H-895 sweep: flags before the Parent writes
++				if S.isSlot(element) then S.markMountedTree(element, self._mountedInst) end
++			end
+ 			if #removedLeaves > 0 then
+ 				module.Backend.nativeExtract(self._mountedInst, base, removedLeaves, if #newLeaves > 0 then newLeaves else nil)
+ 			elseif #newLeaves > 0 then
+ 				module.Backend.nativeInsert(self._mountedInst, base, newLeaves)
+ 			end
+-			for _, element in ipairs(newElements) do
+-				if S.isSlot(element) then S.markMountedTree(element, self._mountedInst) end
+-			end
+ 		end
+ 
+ 		if ownsGate then

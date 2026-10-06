@@ -113,3 +113,4 @@
 - `round13-q126-spike/` — **[2026-09-30 회신 단계, opus 워크트리]** 묶음 8a(Q118·Q126) 모양 스파이크 — `StateMarker<(T | None)?>`(채택)·`StateMarker<T?>`·`Set`에 None 팔(기각) 비교, 생성기·quad-types·재생성 Declaration diff 셋, 긍정 36/부정 22 프로브(`probes/`), 검사 시간 로그.
 - `round13-drafts-2026-09-27/spec-drafts/` — **[2026-09-27 자율 루프 E76]** 변이 공백 48 → spec 초안(`*.additions.luau` 13·`apply.py`·`run48-results.json`) — 44 죽음, `Q154` (a) 채택 시 `apply.py` 한 번; 남은 넷은 `Q156`.
 
+- `h895-reentry-order-2026-10-07/` — **[2026-10-07 정적 분석 수렴 확인 후속, opus]** Immediate 동기 엔진 신호 재진입 아래 "엔진 쓰기 → quad 기록" 순서 쓸기 — Property(H-895)·Slot 넷·IC/IS, Deferred 셔임 대조, 처방 후보 패치 셋(candD 권고)·프로브·출력; 원장 round14 §6 `Q184`·`Q185`.
