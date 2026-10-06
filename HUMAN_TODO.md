@@ -97,6 +97,17 @@ docs-review 3-1 (4)의 답을 쓰려면 사용자 기기가 필요하다(사용�
 
 자율 수집 루프(`.claude/qa-request/post-implementation-review-round13.md`)는 CLI mock으로만 돌았고, 엔진 사실이 필요한 항목은 전부 "미실측"으로 남겼다. 한 표로 모은 초안이 **`.claude/audit/round13-drafts-2026-09-27/human-todo-realdevice-draft.md`**(출처·엔진 사실 한 문장·프로브 한 줄·결정을 막는가)이고, 그 파일이 소스 — 여기서 다시 나열하지 않는다. **결정을 막는 것은 다섯**(전부 Tween 계열이라 프로브 팩 하나로 묶을 수 있다): 트윈 완료값의 float32/정수 저장 왕복(Q97 → Q81 (b) 전제), 보간 중 매 프레임 `Changed` 신호(Q78), 같은 프레임에 끝나는 트윈들의 통지 순서·`PlaybackState` 선행(Q91/Q99), 철거 뒤 연결을 유지했을 때 지연 통지 도착(Q99 b2), Claim 자식 경로의 `IsA` 하위 클래스 통과(Q84 — 낮은 확신). 나머지는 정보만(개수는 초안 표가 소스)(**[2026-09-27 E25 추가]** `TextButton`·`TextBox`에서 레거시 `Font`/`FontSize`/`TextWrap`이 `Permits.Write == Edit`로 오는가 — `TextLabel`만 실측됨, 거부되면 런타임 `Quad0076`; `Font`/`FontSize`/`TextWrap`/`Transparency`의 `GetPropertyChangedSignal`이 발화하는가; `task.delay(0)`/`math.huge`·`FindFirstChild` nil/숫자 키·`SetAttribute`/태그 이름 규칙·`Destroying` 발화 순서·`:Clone()`의 Attr/Tag 복사·ResetOnSpawn·CanvasPosition 클램핑 등). 결과만 알려 주면 문장 확정·문항 닫기는 에이전트가 한다. 프로브 팩 작성은 결정(어느 다섯을 먼저)이 나면 에이전트 몫. **[2026-09-27 11:05 종결]** 루프가 끝나 초안 표는 더 늘지 않는다 — 추가 절 2-E29~2-E79(마지막은 Deferred 전달 다섯: 클릭 vs 키 입력 순서·`task.delay` vs 큐·Destroy 뒤 대기 전달·재진입 한도·Immediate 리스너 격리 — Q157·Q149·Q142가 이 결과에 걸림)까지 포함, 초안 3절이 프로브 팩 묶음 제안 셋(Tween 다섯 / 수명·GC 넷 / 나머지는 18-C 개별 항목).
 
+#### J. [2026-10-06 신설] 소비자 킷 둘(가칭 devui·material) Studio 눈 확인 — 도구가 준비되면
+
+**[2026-10-06 기준] 대기 중.** 이 환경의 Studio(wine)에서 플러그인 위젯 크기·도킹을 바꿀 수 없어 UI Labs 창을 못 키웠다. 사용자가 에이전트용 rojo·Studio 도구를 이 샌드박스 밖에서 다듬는 중이고(스테이징), 그게 올라오면 다시 본다. 준비물은 커밋 `d911100a`까지로 끝나 있다 — 킷 쪽 할 일은 없다.
+
+1. **싱크**: 레포 루트에서 `mise exec -- rojo serve consumer-kits.project.json --port 34872` → Studio rojo 플러그인 Connect. `./scripts/test.sh`의 relink가 패키지 폴더를 바꾸면 serve가 죽는다 — 다시 띄우고 다시 Connect.
+2. **UI Labs(편집 모드)**: storybook "quad · Material 3"(24)·"quad · devui (Iris-style debug UI)"(15). 권장 순서 Button → TextField → DatePicker → ColorPicker → ClassicColorPicker(원본 이식, Light/Dark 나란히) → Gallery, devui는 Demo. 볼 것: Controls 패널 값을 바꾸면 다시 그리지 않고 바인딩만 갱신되는가, Slider·DragNum·색 SV 영역이 위젯 안에서 드래그되는가(입력 주입 — 각 킷 src의 Input 모듈).
+3. **플레이(F5)**: StarterPlayerScripts의 LocalScript 둘이 Material Gallery와 devui Demo를 띄운다. 게임패드·Escape·선택 가두기·Tooltip inset·Deferred 파괴 순서는 여기서만 보인다. 체크리스트 표는 각 킷 `quad-roblox-material/README.md`·`quad-roblox-devui/README.md`의 Studio에서 보기 절(관측 칸 비움 — 채우면 에이전트가 정리).
+4. **먼저 깨질 수 있는 자리**(실기기 미확인): UI Labs 가상 require가 `.pesde`·`3.2.0` 같은 점 든 폴더 이름을 푸는가(실패 시 quad 첫 require에서 `Unknown script`), UI Labs가 `loadstring`으로 싣는 quad 새 문법(type function·`read`·`<<T>>`) 파싱, StoryKit이 읽는 UI Labs 비공개 주입 전역·고급 컨트롤 데이터 모양, 위젯 좌표계, 스토리 크기 추정값. 에러가 나면 콘솔을 그대로 주면 된다.
+
+결정 거리는 여기가 아니라 `.claude/feedback/consumer-kits-2026-10-05.md`의 **사용자 결정 필요** 항목이 소스다.
+
 #### E. 밖에서 할 것
 
 - ~~**[2026-09-14] 3.2.0 게시**~~ **[같은 날 저녁 완료 — 사용자: "전부 업로드 끝났어"(실게시·사이트 배포·태그 싱크)]** bump 완료(`check-version.py bump 3.2.0`; CHANGELOG `[3.2.0] - 2026-09-14`에 `q.D → q.Declaration` BREAKING 둘; pesde install·test.sh exit 0·publish dry-run 9건 OK; 태그 `3.2.0`은 에이전트가 origin에 올림). 남은 것: `python3 scripts/publish.py --real`(사용자만) → 사이트 배포 → `git push github --tags`·`git push upstream --tags`. 게시 전까지 설치 문서의 "레지스트리에 3.2.0 게시됨"은 선행 서술이다.
