@@ -1026,9 +1026,10 @@ do
 	local d = q2.Slot()
 	c:Add(d)
 	assert(a.Length:Get() == 0 and c:IndexOf(d) == 1, "legal nesting untouched")
-	-- the gate does not disturb the pre-pass's other checks: a mounted element is still "already mounted"
-	local ok4 = pcall(function() return d:Add(c) end) -- c is d's parent AND already owned by b: the older "already mounted" gate fires first
-	assert(not ok4, "parent rejected (by the mounted gate, which runs before the cycle walk)")
+	-- [round14 Q170 final] the pre-pass is wrapElement only; with debug on its cycle walk (checkBatchDebug) runs
+	-- before rawAdd's claimOwner, so here the cycle is what rejects (the "already owned" claim would come after)
+	local ok4 = pcall(function() return d:Add(c) end) -- c is d's parent AND already owned by b
+	assert(not ok4, "parent rejected (debug cycle walk in the pre-pass, before the raw claim)")
 	print("PASS")
 end
 

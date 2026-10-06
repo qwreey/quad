@@ -19,7 +19,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 | M1 | 실제 스캐폴딩(pesde 워크스페이스, `New()`/`RunInit`/`AddPlugin`/`Relate`/`Debug`, mock 하네스) | 2026-08-24 | — |
 | M2 | 반응형 코어(Source/State/Store, Brand/Relate/LifetimeHandle, Gate) | 2026-08-28~31 | `m2-implementation-round11(-brief).md` |
 | M3 | 디스패치 엔진(process/retract, Bookkeeping, Observer/Effect leaf) | 2026-08-31~09-01 | `m3-implementation-round12(-brief).md` |
-| M4 | 첫 end-to-end 반응형 업데이트(`Dispatch/StoreBind`) | 2026-09-01 | `m4-implementation-round13(-brief).md` |
+| M4 | 첫 end-to-end 반응형 업데이트(옛 `Dispatch/StoreBind` — 지금 `StateHandler`) | 2026-09-01 | `m4-implementation-round13(-brief).md` |
 | M5 | quad-roblox 최소 프로바이더(팩토리·주입 op·생명주기·`D`·Property/InstanceChild·`Claim`) | 2026-09-02 | `m5-implementation-round14(-brief).md` |
 | M6 | Slot(공개 CRUD·`List`/`Single`·Deferred 실측) | 2026-09-03(fork 탐사 + 잔여 마감) | `m6-implementation-round15(-brief).md` |
 | M7 | Modifier(클래스 태그·`TypedFactory`·`As`/`Into`) | 2026-09-04 | `m7-implementation-round17(-brief).md` |

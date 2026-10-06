@@ -23,3 +23,4 @@
 - P3: 2026-10-06 완료 — `540207a1`(material 킷 `OnChange` 엔진 왕복 오경보 → 원장 "**Q174 보강 2" 결정, P3b로).
 - P3b: 2026-10-06 완료 — `30fc453a`(킷 둘 exit 0). 부수 발견: `-O2`에서 `fireCompleted`·Debounce `commitIdle`이 실제로 인라인돼 감지기가 깨졌던 것(고침), 그리고 `spec.errorutil`·`spec.fallback`·`spec.relate`가 `-O2`에서 blame 줄·traceback 자리가 달라져 실패(손대지 않음) — Roblox 실행 환경의 최적화 수준 실측이 필요(실기기 후보).
 - P4: 2026-10-06 완료(Quadnomicon Vol. 12 신설; errors 00~07 Q177 정리 — 남은 것: errors 밖 레퍼런스 본문 날짜 태그 약 50곳·GS·how-to·README 태그, core/06 519 OwnsElements 호스트 파괴 서술의 계약/관측 판단; errors에 "에러 뒤 (계약)" 줄 표기 신설 — Effect 죽음용). 다음: 확인 패스(`/code-review` + agy → opus 추림 → 메인 판정 → 감사 루프).
+- 확인 패스: 2026-10-06 완료 — `/code-review` high 여섯 + Gemini(flash) 넷을 opus가 추려 확정 3(`audit/round14-reflect-review-2026-10-06/`, `ced46103`), 반영 `36889c98`(감지기 면제를 가장 가까운 Observer 하나로 등); 감사 루프 1라운드(base↔reference, 8건 → `9df9b126`), 2라운드(인덱스·주석, 확실 3·의심 2 → 반영). 남은 것: round14 §0 이관 23문항 메인 재판정(→ 원장 §2), P5.
