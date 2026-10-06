@@ -130,7 +130,7 @@ nil`/`or None`(and/or 삼항)으로 적었으나, `Tag(...)`가 항상-truthy라
 1. **반환하는 클로저는 store 재발행마다(핸들러 타입이 안 바뀌어도) 항상
    불림** — "Tag(A)→Tag(B)는 retract 안 불림"이라는 옛 서술은 틀렸음
    (`archive/retract-always-fires-reversed.md`). **[갱신, 2026-08-13
-   열네 번째 세션]** 부르는 주체는 이제 `StoreBind`의 선행 `retractFrom`이
+   열네 번째 세션]** 부르는 주체는 이제 `StoreBind`(지금 `StateHandler`)의 선행 `retractFrom`이
    아니라 `Dispatch.process` 자신임 — 같은 핸들러면 그 자리 클로저에 새
    값을 넘기고 곧바로 `process`를 다시 부름(`dispatch-core-plan.md`
    "Dispatch 체인" 절 (A) 분기). 호출 빈도는 그대로.

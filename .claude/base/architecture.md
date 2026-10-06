@@ -663,7 +663,7 @@ debug 는 치명적 부분 아니면 기본적으로 계속 실행은 시켜주�
   약한 맵 등에 기록). Destroy 뒤 claim은 UB.
 - **소비자 공개(새 이름 없음)** — `q.Backend.isClaimed(inst)`(quad가 만든 인스턴스의 소유·생존 확인)와 `q.Backend.canExecute(self)`
   (Effect `fn`이 남긴 비동기 콜백 안에서 "지금 돌 수 있나" — `fn` 안에서는 묻지 말 것, 설치 발화에선 거짓이므로; 사용자 확인 "(가)
-  방식")를 레퍼런스 core/10·how-to 10에 소개한다. 나머지 `Backend` op는 여전히 프로바이더 계약이지 앱 API가 아니다.
+  방식")를 레퍼런스 core/10·how-to 10에 소개한다. 합성 op 넷(`bindLifetime`·`unbindLifetime`·`canBound`·`canExecute`)은 그 전부터 core/10에 레퍼런스로 실려 앱 코드가 써도 되는 표면이었고(이번엔 `canExecute`의 비동기 콜백 사용 안내를 더했을 뿐), 그 밖의 주입 op는 프로바이더 계약이지 앱 API가 아니다.
 
 ## 코드 스타일 — 네이밍 케이싱 (2026-08-08 두 번째 세션 신설)
 

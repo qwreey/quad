@@ -693,8 +693,10 @@ process될 때 위 "3-상태 저장"의 `prev`가 `{Tween, Value}` 테이블 분
 > (1) **인자 `(inst, prop, value)`** — 발화 때 읽는다(엔진 연결은 여전히 `rec`·`conn`만 포획, `rec.Tween.Instance`·`rec.Key`·`rec.Value`),
 > 인자 없는 함수도 타입에 들어간다(신 솔버 실측). 아래 "인자 없음(사용자 결정 2)"는 **포획** 금지로 좁혀 유지된다. (2) **모으고 → 쓰고 →
 > 부른다** — Property는 콜백을 슬롯 쓰기·`Play` 뒤 정해진 순서로 부르고, 앞선 콜백이 같은 자리를 대체했으면 뒤의 새 값 콜백은 생략(Q91
-> (b) OLD-FIRST의 일반화) → 아래 `H-589` 문단의 `Started`·`Cancelled` 재진입 UB는 **Property 층에선 풀렸다**(예외: 마운트 중 첫 스냅의
-> `Started` 안 `:Set` — StateHandler 등록 프레임, UB 유지). (3) **철거 창은 늘 `Cancelled`**(Q99 c — `H-581`의 철거 쪽 부분 역전, 교체 창의
+> (b) OLD-FIRST의 일반화) → ~~아래 `H-589` 문단의 `Started`·`Cancelled` 재진입 UB는 **Property 층에선 풀렸다**(예외: 마운트 중 첫 스냅의
+> `Started` 안 `:Set` — StateHandler 등록 프레임, UB 유지)~~ **[2026-10-04 round14 Q163·Q164 정정 — 사용자 결정]** 다음 트윈을 잇는 자리는
+> **`Completed`만** 정의(스냅이어도 — Q164 (a′)); `Started`·`Cancelled` 안 되쓰기는 정의되지 않음(교체 중엔 일관, 철거 중엔 State·화면이
+> 갈리는 것이 관측됨 — 계약 아님), 끝나지 않는 `Completed` 연쇄도 정의되지 않음. 순서("모으고 → 쓰고 → 부른다")는 그대로. (3) **철거 창은 늘 `Cancelled`**(Q99 c — `H-581`의 철거 쪽 부분 역전, 교체 창의
 > `Completed`는 유지), 시체 위 `retractFrom`은 콜백 무발화(Q82 (a) `isClaimed` 게이트). (4) `tween:Mapped(fn, wrap?)`·`tween:Wrapped(wrap)`
 > (핸들 `cb` — 필드 셋 + `cb:Map(g)`; 변경 없는 셋이면 `Wrapped`는 원본을 돌려줌), 숏핸드는 마지막 키 대표(`ui-shorthand-plan.md` Q92
 > 배너). 새 ID `Quad0256`~`0258`. 콜백 타입: 생성자 옵션은 `TweenCallback<T>`, 저장된 Tween·핸들·셋은 `TweenCallback<any>`(`T`를
@@ -736,7 +738,7 @@ Bookkeeping 어디에도 `Destroying` 훅이 없다, GS 19 "`Destroy()`할 때�
 인스턴스 위에서 끝까지 돌고 엔진은 `Completed` 통지를 그대로 보낸다(`Cancelled`는 안 온다). **[같은 날 저녁 Q71 닫힘 — 사용자 결정, `H-594`] 되돌리지 않고 무시한다**: `Completed` 연결이 `Backend.isClaimed(tween.Instance)`가 거짓이면 콜백을 안 부른다 — 사용자: *"isClaimed 를 통해서 완료 이후 inst 가 gcconn 이 disconnected 상태라면 무시할 수 있다고 봐. claim 이 안 돌면 tween 자체를 못 굴려서, 판정대상으로 쓸 수 있어. 되돌리지는 않지만, 무시할 수는 있는것 같음. defer 이여도 gcconn 판정 자체는 싱크로 돌거야"*. 근거 셋이 다 기실측이다: `Destroy`는 gcconn을 동기로 끊고(`H-548`·`H-574`), 프로퍼티 핸들러는 claim된 인스턴스에서만 돌며, 인스턴스는 `tween.Instance`로 읽어 클로저가 `inst`를 새로 잡지 않는다(엔진 트윈이 어차피 쥔다). 스펙 11 마지막 케이스(mock `Destroy` → `simulateCompleted` 무발화·무취소). 실기기 배선 확인은 여전히 rojo 재기동 뒤 사람 몫. **GC(사용자 후속 우려 *"두 클로저를 nil로 필드를 지워? … gc가 순환되지 않아서 inst/callback 이 gc되지 않는 문제가 없어?"*)**: 정착 자리 넷(자연 완료 핸들러·`stopRunning` 두 갈래·`H-594` 무시 갈래) 전부 `rec.Cb = nil`·`rec.Conn = nil`·`Disconnect`라 콜백과 포획은 정착 즉시 놓이고, 순환(레코드 ↔ 연결 클로저)은 연결이 끊기면 루트를 잃어 수거된다 — mock 프로브 다섯 경로 × 콜백 유무에서 콜백이 있어도 생존 집합이 같았다(`audit/tween-completed-2026-09-21/REPORT.md` 끝 절, `gc-probe.luau`). 잔여 하나(같은 날 밤 sonnet Studio 실측 `audit/tween-completed-2026-09-21/infinite-tween-probe.md`): 엔진은 트윈의 Lua 핸들을 붙잡지 않으므로 사슬을 살리는 건 콜백 연결뿐이다 — 콜백이 있으면 통지가 올 때까지(유한이면 `Time` 상한), 없으면 인스턴스 수거와 함께 끝. `RepeatCount = -1`은 파괴로 안 끊기고(`Parent = nil`도 동일) 핸들이 수거되면 더는 취소할 수 없어 엔진 작업이 영원히 남는다 — 레퍼런스 캐비엇 한 줄(파괴 전에 끊을 것).
 
 **[2026-09-21 round12(Gemini 합본) 판정 — `qa-request/post-implementation-review-round12.md` 머리 배너가 소스]** (1) **`H-589`** 콜백 안
-**[2026-09-28 — 이 문장의 순서 서술·UB 판정은 round13 이전 원문이다. 지금은 콜백이 슬롯 쓰기 **뒤**에 불리고(모으고→쓰고→부른다) Property 층 재진입은 UB가 아니다 — 위 절 머리 배너 (2)가 정본; 아래 원문에서 유효한 것은 G-27 기각과 (3)(4)의 포인터뿐]** 같은 자리 재진입: `Started`·`Cancelled` 안에서 같은 프로퍼티에 묶인 State를 `:Set`하면 branch 3의 `Cancelled`가 이 호출의 슬롯 쓰기
+**[2026-09-28 — 이 문장의 순서 서술·UB 판정은 round13 이전 원문이다. 지금은 콜백이 슬롯 쓰기 **뒤**에 불리고(모으고→쓰고→부른다) Property 층 재진입은 UB가 아니다 — 위 절 머리 배너 (2)가 정본; **[2026-10-04 round14 Q163 정정]** 단 정의되는 것은 `Completed`로 다음 트윈을 잇는 것뿐이고 `Started`·`Cancelled` 안 되쓰기는 다시 정의되지 않음(관측만 — 배너 (2)의 정정); 아래 원문에서 유효한 것은 G-27 기각과 (3)(4)의 포인터뿐]** 같은 자리 재진입: `Started`·`Cancelled` 안에서 같은 프로퍼티에 묶인 State를 `:Set`하면 branch 3의 `Cancelled`가 이 호출의 슬롯 쓰기
 **전에** 불리고 스냅의 `Completed`가 `Started` **뒤에** 따라오므로, 안쪽 `process`가 쓴 레코드를 바깥이 덮거나(G-23) 옛 `Completed`가 새
 `Started` 뒤에 난다(G-26). 이건 `dispatch-core-plan.md`의 "같은 `(inst, k)`의 간접 재진입도 UB"(Q5 (a), 사용자: 재진입 게이트 안 둠) 그대로라
 Gemini의 재진입 가드는 안 넣고 UB로 문서화 — 코드 머리·레퍼런스 roblox/06 한 문단("다음 트윈을 잇는 자리는 `Completed`" — 엔진 경로의

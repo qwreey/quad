@@ -71,7 +71,7 @@ quad-types 전역(`QuadTypes.BrandPredicates`)에 두고 base 열여덟도 등�
 다는 바로 그 자리(`init.luau` 모듈 리터럴의 `brandPredicate(...)`, `Slot/init.luau`의 `module.isSlot`)에서 같은
 `module.BrandPredicates`에 `:Register`한다 — **공개된 `is*` 술어 = 등록된 브랜드 술어**(열여덟, `spec.dispatch` 2절이
 "새 `q`의 `is*` 필드는 전부 등록돼 있다"로 지킨다). Dispatch는 base 브랜드를 이름으로 알지 않는다(`H-278` — 같은 날
-`None`/`StoreBind`를 Dispatch 밖으로 옮긴 것과 같은 방향): `brandNameOf`는 등록된 `is*` 필드를 전부 `pcall`로 묻고
+`None`/`StoreBind`(지금 `StateHandler`)를 Dispatch 밖으로 옮긴 것과 같은 방향): `brandNameOf`는 등록된 `is*` 필드를 전부 `pcall`로 묻고
 **걸린 이름을 전부 이름순으로** 모은다(`Epoch, PreRef, Ref` — 옛 most-specific-first 순서 `H-220`은 첫 하나만 고르던
 때의 규칙이라 필요 없어졌다). 무매치 힌트도 등록이 가른다 — 하나라도 걸리면 그 브랜드의 주인이 설치됐다는 뜻이라
 quad 값 힌트(`Store`/`Context`/`Provider` 전용 힌트는 이름이 목록에 있으면), 아무것도 안 걸리면 오타·프로바이더 미설치
