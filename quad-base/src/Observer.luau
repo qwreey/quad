@@ -75,9 +75,9 @@ local WEAK_KEY_MT = { __mode = "k" }
 -- a callback watching a Slot's `Offset`/`Length` that CRUDs a Slot so the value moves again is not State
 -- feedback — the loop goes through the position math, which re-runs until it settles; the user cannot see
 -- it as feedback without knowing Slot internals). Walking out from the innermost frame, meeting the
--- bookkeeping's `recompute` or `setOffsetSource` (the mount/re-seat write — round14 `H-886`: an Extract +
--- Add of the watched Slot reaches the Offset Source there, not through `recompute`) before this handle's
--- `fn` means the change was routed by the bookkeeping.
+-- bookkeeping's `recompute` before this handle's `fn` means the change was routed by the bookkeeping; so does
+-- `setOffsetSource` (the mount/re-seat write — round14 `H-886`: an Extract + Add of the watched Slot reaches
+-- the Offset Source there, not through `recompute`), for the nearest Observer outside it (see below).
 -- [2026-10-06 user decision, round14 Q174 보강 (b)] A provider's DEFINED re-entry frame stops the walk the
 -- same way: base cannot name a provider's functions, so a provider puts the one function that calls such a
 -- callback into the module's private `_reentryFrames` set (made in `Init` below; debug-only — read nowhere
@@ -88,15 +88,31 @@ local WEAK_KEY_MT = { __mode = "k" }
 -- signal calls the `OnChange`/`q.Out` callback through — the engine round trip `docs/reference/core/05` defines
 -- as normal (under Immediate signals it comes back synchronously inside the dispatch). A registered function is
 -- called through a table field so `-O2` cannot inline it away (the frame would vanish from the stack).
-local function fedBackDirectly(fn: any, recompute: any, setOffsetSource: any, frames: { [any]: true }): boolean
+-- [2026-10-06 round14 확인 패스 code-review 1] What a registered frame (or `setOffsetSource`) exempts is the ONE
+-- handle that called it — the NEAREST Observer fn outside it (the decision's "그 프레임을 부른 그 핸들": for a
+-- Tween's `Completed` / an OnChange round trip, the StateHandler Observer dispatching that value; for a re-seat,
+-- the Offset callback doing the Extract + Add). It used to end the whole walk, so a user Observer whose fn sat
+-- further out (O sets S2 → S2's snap Tween `Completed` writes O's upstream S) was never reported. Now the walk
+-- goes on past that nearest Observer: if it is this handle the change is the defined one (false); if not, this
+-- handle's fn further out is a real loop. `recompute` still ends the walk: the position math runs inside quad's
+-- own per-position length Observers, so "the nearest Observer" there is internal, not the CRUDing callback.
+-- An Observer fn frame is recognised the way this walk finds this handle's own: by the frame that called it —
+-- one of `runners` (the private `run` below, or the three Impl entries that call it, should `-O2` inline it).
+local function fedBackDirectly(fn: any, recompute: any, setOffsetSource: any, frames: { [any]: true }, runners: { [any]: true }): boolean
+	local exempt = false -- a defined re-entry frame was passed; the nearest Observer fn outside it is exempt
 	local level = 1
 	while true do
 		local f = debug.info(level, "f")
-		if f == nil or f == recompute or f == setOffsetSource or frames[f] then
+		if f == nil or f == recompute then
 			return false
 		end
 		if f == fn then
-			return true
+			return not exempt -- exempt: this handle is the one that called the defined frame
+		end
+		if f == setOffsetSource or frames[f] then
+			exempt = true
+		elseif exempt and runners[debug.info(level + 1, "f")] then
+			exempt = false -- another Observer's fn: the exemption was its own; keep looking for this handle's fn
 		end
 		level += 1
 	end
@@ -105,10 +121,10 @@ end
 -- Asked on BOTH delivery branches (round14 — user decision 2026-10-06, debug detector 1): the run branch
 -- (the delivery would nest) and the held branch (the handle cannot execute yet — the install window: an
 -- install fn that writes its own upstream once and stops was 0 lines before).
-local function checkUpstreamFeedback(observer: any, warned: { [any]: true }, module: any)
+local function checkUpstreamFeedback(observer: any, warned: { [any]: true }, module: any, runners: { [any]: true })
 	local bookkeeping = module.Bookkeeping
 	if observer._running and not observer._internal and warned[observer] == nil
-		and fedBackDirectly(observer.fn, bookkeeping._recompute, bookkeeping.setOffsetSource, module._reentryFrames) then
+		and fedBackDirectly(observer.fn, bookkeeping._recompute, bookkeeping.setOffsetSource, module._reentryFrames, runners) then
 		warned[observer] = true
 		print("Observer: a change reached this Observer while its own fn was running - the fn (for a State placed in props: quad's dispatch of its value, with the callbacks and engine signals it set off) fed its own upstream, directly or through other handles (undefined; set other targets, or use an Effect for a self-correcting write)")
 	end
@@ -173,6 +189,10 @@ local function createImpl(module: any)
 		self._running = outer
 	end
 
+	-- The frames that call an Observer's fn (debug feedback check, `fedBackDirectly`): `run`, and the three
+	-- entries that call it, standing in for it should `-O2` inline it (Impl fields are called through the
+	-- table, so they keep their frames). Filled below once the entries exist; read only under `q.debug`.
+	local runners: { [any]: true } = { [run] = true }
 	local debugWarned: { [any]: true } = setmetatable({}, WEAK_KEY_MT) :: any
 	function Impl._receive(self: any, from: any)
 		-- Q109: a direct Source delivery whose revision this handle already ran on (a catch-up or a nested
@@ -184,12 +204,12 @@ local function createImpl(module: any)
 		end
 		if module.Backend.canExecute(self) then -- read at fire time (`H-174`)
 			if module.debug then
-				checkUpstreamFeedback(self, debugWarned, module)
+				checkUpstreamFeedback(self, debugWarned, module, runners)
 			end
 			run(self, from)
 		else
 			if module.debug then
-				checkUpstreamFeedback(self, debugWarned, module)
+				checkUpstreamFeedback(self, debugWarned, module, runners)
 			end
 			self._rerunRequired = true -- `H-159`: change before binding (or in the install window) is held — replayed once when bound
 		end
@@ -317,6 +337,10 @@ local function createImpl(module: any)
 		run(o, nil)
 		return o
 	end
+
+	runners[Impl._receive] = true
+	runners[Impl._catchUp] = true
+	runners[Impl.new] = true
 
 	-- `H-231`: public surface joins the shared error-namespace tag layer
 	Err.setFuncLevel(SURFACE, Impl.WeakSubscribe, Impl.WeakUnsubscribe, Impl.Subscribe, Impl.Unsubscribe)

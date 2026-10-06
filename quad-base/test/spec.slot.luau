@@ -814,8 +814,9 @@ do
 		local okB, errB = pcall(function() dispatch.drive(Instance.new("Folder"), { u }) end)
 		assert(not okB and string.find(tostring(errB), "Quad0156", 1, true), "debug=" .. tostring(dbg) .. ": the mount rejects it: " .. tostring(errB))
 	end
-	-- a lazy Compute element is not run by the CRUD line (the pre-pass reads no State value; with q.debug
-	-- on, the round14 Q173 value-chain walk in wrapElement still reads it — not asserted here)
+	-- a lazy Compute element is not run by the CRUD line (the pre-pass reads no State value, debug or not —
+	-- round14 P3 Q170 (최종): wrapElement runs no value-chain walk; the chain check runs when the Slot reads
+	-- the value, at mount or a value change — `Slot/List.luau` `checkItemChains`)
 	local runs = 0
 	local src = q.Source(1)
 	local lazyEl = src:Compute(function(_v) runs += 1; return Instance.new("Frame") end)

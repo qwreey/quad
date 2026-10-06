@@ -603,6 +603,31 @@ do
 		s3:Set(Tween({ Value = 20, Time = 0.3 }))
 	end)
 	assert(count() == 1, "re-write from Cancelled: one line: " .. table.concat(lines, " | "))
+	-- (c) round14 확인 패스 code-review 1: the registered `Completed` frame exempts only the NEAREST Observer outside
+	-- it (S2's StateHandler Observer, which dispatched the Tween) — a user Observer O further out, whose fn set S2,
+	-- whose snap Tween's `Completed` then writes O's own upstream S, is a real loop: one line (was 0 — the frame
+	-- ended the whole walk)
+	capture(function()
+		local s = q.Source(0)
+		local s2 = q.Source(0 :: any)
+		q.Declaration.Frame({ Name = "O", Size = s2 })
+		local wrote = false
+		local o = s:Observer(function(_, _, from)
+			if from == nil then
+				return -- install run: nothing
+			end
+			s2:Set(Tween({ Value = 5, Time = 0, Completed = function()
+				if not wrote then
+					wrote = true
+					s:Set(2) -- O's upstream, written under O's own run
+				end
+			end }))
+		end):Subscribe()
+		s:Set(1)
+		assert(wrote, "the snap Completed ran inside O's run")
+		o:Unsubscribe()
+	end)
+	assert(count() == 1, "a user Observer outside the Completed chain: one line: " .. table.concat(lines, " | "))
 	q.debug = false
 	print("PASS")
 end

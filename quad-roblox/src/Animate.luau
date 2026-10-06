@@ -53,28 +53,20 @@ for _, name in FIELDS do
 end
 -- [2026-10-06 user decision, round14 Q179] the same pass names the convenience fields an `Info` overrides —
 -- the case the user named: `Info` given and `Time` fed as a State here, and the tween "does not follow" the
--- Time (`Info` wins in the Property handler's `buildInfo`). `Tween.luau`'s check has the same branch.
-local INFO_FIELDS = { "Time", "Style", "Direction", "RepeatCount", "Reverses", "DelayTime" }
-local function warnUnknownOptions(info: { [any]: any })
+-- Time (`Info` wins in the Property handler's `buildInfo`). The line itself is `Tween.luau`'s `warnInfoOverlap`
+-- (one helper for both — round14 확인 패스 code-review 5), handed over by `RobloxFactory` with the validator;
+-- an `Info` State gets the "while it holds a value" wording (code-review 4: one holding nil leaves the
+-- tween Info-less, the convenience fields then apply).
+local function warnUnknownOptions(info: { [any]: any }, warnInfoOverlap: (string, any, boolean) -> (), isState: (any) -> boolean)
 	for key in info do
 		if not KNOWN_OPTIONS[key] then
 			print(`Animate: unknown option "{tostring(key)}" is ignored (known: {table.concat(FIELDS, ", ")}, CanAnimate)`)
 		end
 	end
-	if info.Info ~= nil then
-		local ignored = {}
-		for _, field in INFO_FIELDS do
-			if info[field] ~= nil then
-				table.insert(ignored, field)
-			end
-		end
-		if #ignored > 0 then
-			print(`Animate: Info is given, so {table.concat(ignored, ", ")} {if #ignored == 1 then "is" else "are"} ignored (Info wins over the convenience fields - put them in the TweenInfo, or drop Info)`)
-		end
-	end
+	warnInfoOverlap("Animate", info, isState(info.Info))
 end
 
-local function install(quad: any, validateFields: (any, any?) -> (), tweenOutermost: (any) -> any): any
+local function install(quad: any, validateFields: (any, any?) -> (), tweenOutermost: (any) -> any, warnInfoOverlap: (string, any, boolean) -> ()): any
 	local isState = quad.isState
 	local None = quad.None
 	local Err = quad.errorNamespace -- shared namespace (`H-231`)
@@ -94,7 +86,7 @@ local function install(quad: any, validateFields: (any, any?) -> (), tweenOuterm
 			Err.errorBeforeNearest(`Quad0214 Animate: options must be a table, e.g. Animate\{ Time = ... \} (got {typeof(info)})`, SURFACE)
 		end
 		if quad.debug then
-			warnUnknownOptions(info) -- debug layer (top of file)
+			warnUnknownOptions(info, warnInfoOverlap, isState) -- debug layer (top of file)
 		end
 		-- `H-464`: validate the LITERAL options here, while the user's line is still on the
 		-- stack — the Tween is built lazily inside Compute, where a raise blamed `Animate.luau`.

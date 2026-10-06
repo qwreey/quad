@@ -89,7 +89,31 @@ local KNOWN_OPTIONS = {
 -- [2026-10-06 user decision, round14 Q179] the same pass names the convenience fields an `Info` overrides:
 -- `Info` wins (`Handlers/Property.luau` `buildInfo`), so `Time`/`Style`/… given next to it are ignored — a
 -- `Time` State fed through `Animate` that "does not follow" was the case the user named.
+-- [2026-10-06 round14 확인 패스 code-review 4·5] One helper for both constructors — `Animate.luau` receives it
+-- through `RobloxFactory` with the validator (the field list and the line were copied there before). `who` is the
+-- caller's name; `infoIsState` is Animate's case: an `Info` State that holds nil leaves the tween Info-less, so the
+-- convenience fields DO apply then — the line says "while Info holds a value" instead of "ignored".
 local INFO_FIELDS = { "Time", "Style", "Direction", "RepeatCount", "Reverses", "DelayTime" }
+local function warnInfoOverlap(who: string, opts: { [any]: any }, infoIsState: boolean)
+	if opts.Info == nil then
+		return
+	end
+	local ignored = {}
+	for _, field in INFO_FIELDS do
+		if opts[field] ~= nil then
+			table.insert(ignored, field)
+		end
+	end
+	if #ignored == 0 then
+		return
+	end
+	local list, verb = table.concat(ignored, ", "), if #ignored == 1 then "is" else "are"
+	if infoIsState then
+		print(`{who}: Info is a State, so {list} {verb} ignored while it holds a value (Info wins over the convenience fields; they apply only while Info holds nil - put them in the TweenInfo, or drop Info)`)
+	else
+		print(`{who}: Info is given, so {list} {verb} ignored (Info wins over the convenience fields - put them in the TweenInfo, or drop Info)`)
+	end
+end
 local function warnUnknownOptions(opts: any)
 	if type(opts) ~= "table" then
 		return -- the constructor's own gate reports a non-table
@@ -99,17 +123,7 @@ local function warnUnknownOptions(opts: any)
 			print(`Tween: unknown option "{tostring(key)}" is ignored (known: Value, Info, Time, Style, Direction, RepeatCount, Reverses, DelayTime, Override, Dedup, Started, Completed, Cancelled)`)
 		end
 	end
-	if opts.Info ~= nil then
-		local ignored = {}
-		for _, field in INFO_FIELDS do
-			if opts[field] ~= nil then
-				table.insert(ignored, field)
-			end
-		end
-		if #ignored > 0 then
-			print(`Tween: Info is given, so {table.concat(ignored, ", ")} {if #ignored == 1 then "is" else "are"} ignored (Info wins over the convenience fields - put them in the TweenInfo, or drop Info)`)
-		end
-	end
+	warnInfoOverlap("Tween", opts, false) -- a Tween's own fields are plain values (a State Info fails `validate`)
 end
 
 local function install(quad: any): any
@@ -322,7 +336,8 @@ local function install(quad: any): any
 	local function tweenOutermost(opts: any): any
 		return newTween(opts, Err.errorBefore)
 	end
-	return { Tween = Tween, isTween = isTween, validateFields = validateFields, tweenOutermost = tweenOutermost }
+	-- `warnInfoOverlap` — the debug Info-overlap line (file head), shared with `Animate` the same way
+	return { Tween = Tween, isTween = isTween, validateFields = validateFields, tweenOutermost = tweenOutermost, warnInfoOverlap = warnInfoOverlap }
 end
 
 return install

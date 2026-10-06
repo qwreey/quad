@@ -139,6 +139,8 @@ local function install(quad: any)
 	-- [round14 Q174 보강 2 (3)] held in a table field and always called through it: `-O2` inlines a small local
 	-- function at its direct call sites (`luau-compile --remarks -O2`: all three were), and the frame the check
 	-- looks for would be gone.
+	-- [round14 확인 패스 code-review 6] the field call costs one call level even with debug off — kept on purpose: the
+	-- frame must be the same path always, or `q.debug` turned on while a tween is in flight would not find it.
 	local Frames = {}
 	function Frames.fireCompleted(v: any, inst: any, k: any, value: any)
 		fire(v, "Completed", inst, k, value)

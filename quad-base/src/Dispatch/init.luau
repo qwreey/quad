@@ -41,6 +41,7 @@ local Void = require("./Void")
 local Err = require("./ErrorNamespace")
 local InitBookkeeping = require("./Bookkeeping")
 local Brand = require("./Brand") -- `isPlainBranded` — the `H-470` props gate's O(1) half
+local DispatchHintBrand = Brand.DispatchHintBrand -- `noMatchMessage`'s hook brand (the same object as `q.Protocols.DispatchHint`)
 local ModifierModule = require("@self/Modifier")
 local flatten = ModifierModule.flatten -- M7 단위 ② — drive의 첫 pre-pass(round17 Q4 (a))
 local ProcessedModifier = ModifierModule.ProcessedModifier -- M7 단위 ② — flatten's consumed-slot sentinel
@@ -104,8 +105,13 @@ end
 -- round14 debug detector 3 (user decision 2026-10-06 — replaces the `H-877` callback block, Q166 direction):
 -- `process` on an instance the backend does not hold as claimed — destroyed (by `q.dispose` or outside
 -- quad) or never made by quad — is undefined: handlers may still run on the corpse (a Tween's `Started`
--- whose `Completed`/`Cancelled` never comes). With `q.debug` on, one line per `process` call; the call goes
--- on unchanged. `drive` reaches every key through `process`, so this one place covers both.
+-- whose `Completed`/`Cancelled` never comes). With `q.debug` on, one line per key — asked only at chain index 1
+-- (a top-level call: `drive`, a direct `process`, a delegate starting a fresh chain); the call goes on unchanged.
+-- `drive` reaches every key through `process`, so this one place covers both. Why index 1 (round14 확인 패스
+-- code-review 2): a delegating handler (StateHandler, NoneHandler) re-dispatches the same key at `index + 1`,
+-- so `Source(Source(None))` printed the same line four times. A deeper index on a dead instance is only ever
+-- that synchronous recursion under a call that already printed — a later State emission cannot reach a dead
+-- instance (the handle bound to it fails `canExecute` once the instance dies, so its change is held).
 local function checkClaimedTarget(inst: any, k: any, isClaimed: (any) -> boolean)
 	if inst ~= nil and not isClaimed(inst) then
 		print(`Dispatch: process on an instance that is not claimed by quad (destroyed - by q.dispose or outside quad - or not made by quad) at key {tostring(k)} - what the handlers do there is undefined; build a new instance`)
@@ -267,7 +273,7 @@ local function Init(module: any)
 		local names = brandNamesOf(v)
 		local brand = if #names > 0 then table.concat(names, ", ") else nil
 		local hint: any = nil
-		if module.Protocols.DispatchHint:Is(v) then
+		if DispatchHintBrand:Is(v) then -- the brand object itself (`Brand.luau`), not the public `q.Protocols` table (round14 확인 패스 code-review 3)
 			hint = v:__dispatchHint(k)
 		end
 		-- The generic tail. [2026-10-01 user decision] a hit on ANY registered predicate means the brand's
@@ -392,7 +398,7 @@ local function Init(module: any)
 	end
 
 	local function process(inst: any, k: any, v: any, index: number)
-		if module.debug then checkClaimedTarget(inst, k, module.Backend.isClaimed) end -- detector 3 (debug-only, file head)
+		if module.debug and index == 1 then checkClaimedTarget(inst, k, module.Backend.isClaimed) end -- detector 3 (debug-only, file head; once per key)
 		checkInst("process", inst)
 		checkKey("process", k)
 		checkIndex("process", index)

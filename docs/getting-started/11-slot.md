@@ -266,7 +266,7 @@ print(#host:GetChildren())   --> 1                  (다시 비었다)
 <summary><strong>이 자리도 진짜 <code>Slot</code>인가요?</strong></summary>
 
 아닙니다. 이 자리는 **자식 인스턴스를 놓을 때와 같은 규칙으로** 처리됩니다 — `State`가 한 겹 벗겨진 뒤 그 안의 인스턴스가 평범한 자식으로 놓이고, 갈아 끼울 때 옛 원소는 `Parent = nil`로 **내려질 뿐** 파괴되지 않습니다. `Offset`/`Length` 장부에는 앞 절들과 똑같이 참여하지만, 이 자리는 `Offset` 발행 채널을 두지 않아 **그 자리의 `Offset` 값 자체는 쓸 수 없습니다.** 왜 `State` 안의 것이 그대로 자식 자리에 앉는지는 [20장](./20-handlers.md)에서 봅니다.
-<!-- 근거: 2026-09-11 mock 실측(저장소 내부 기록) — 자리의 State는 StoreBind가, 벗겨진 인스턴스는 InstanceChild가 맡는다; 부기는 offset 1/2로 정상. 옛 서술(내부 OwnsElements=false :Single)은 Slot의 요소로 State를 넣을 때에만 맞는 것이었다 -->
+<!-- 근거: 2026-09-11 mock 실측(저장소 내부 기록) — 자리의 State는 옛 StoreBind(지금 StateHandler)가, 벗겨진 인스턴스는 InstanceChild가 맡는다; 부기는 offset 1/2로 정상. 옛 서술(내부 OwnsElements=false :Single)은 Slot의 요소로 State를 넣을 때에만 맞는 것이었다 -->
 
 </details>
 

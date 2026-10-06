@@ -1046,14 +1046,20 @@ do
 	-- an unregistered value with the same method is not asked (membership is the test, not the method)
 	local stray = setmetatable({ say = true }, Thing)
 	assert(string.find(noMatch("Thing", stray), "custom sentence", 1, true) == nil, "not a member → not asked")
-	-- the name branches are gone from Dispatch: with an empty DispatchHint brand on this instance, a Store and a
-	-- Context get only the generic quad-value tail
+	-- the name branches are gone from Dispatch: a Store's and a Context's sentence is exactly what their own hook
+	-- returns (the brand asks the value). round14 확인 패스 code-review 3: Dispatch reads the brand object itself
+	-- (`Brand.luau`), not the public `q.Protocols` table — a user who overwrites that table entry (here: the whole
+	-- table with an empty one, then nil) still gets `Quad0076` with the hook's sentence, not a nil-index crash
 	local q2 = newQuad()
-	;(q2 :: any).Protocols = { DispatchHint = QuadTypes.Brand() }
-	for label, v in { Store = q2.Store({}), Context = q2.Context() } :: { [string]: any } do
-		local ok, err = pcall(function() q2.Dispatch.drive(Instance.new("Frame"), { Thing = v }) end)
-		assert(not ok and string.find(tostring(err), "not a value for any key", 1, true) == nil
-			and string.find(tostring(err), "a quad value at a string key: it belongs in a numeric (array) slot", 1, true) ~= nil, label .. ": no name branch left: " .. tostring(err))
+	for _, replaced in { { DispatchHint = QuadTypes.Brand() }, false } :: { any } do
+		local q2any: any = q2
+		q2any.Protocols = if replaced then replaced else nil
+		for label, v in { Store = q2.Store({}), Context = q2.Context() } :: { [string]: any } do
+			local ok, err = pcall(function() q2.Dispatch.drive(Instance.new("Frame"), { Thing = v }) end)
+			assert(not ok and string.find(tostring(err), "Quad0076", 1, true) ~= nil
+				and string.find(tostring(err), " - " .. (v :: any):__dispatchHint("Thing"), 1, true) ~= nil
+				and string.find(tostring(err), "a quad value at a string key: it belongs in a numeric (array) slot", 1, true) == nil, label .. ": the hook's own sentence: " .. tostring(err))
+		end
 	end
 	-- the nil-value tail (`H-257`) stays in Dispatch
 	local okNil, errNil = pcall(function() q.Dispatch.process(Instance.new("Frame"), "Thing", nil, 1) end)
@@ -1095,6 +1101,12 @@ do
 	assert(count() == 1, "never claimed by quad: one line")
 	capture(function() q.Dispatch.drive(Instance.new("Frame"), { K = 1 }) end)
 	assert(count() == 0, "a live claimed instance: 0 lines")
+	-- round14 확인 패스 code-review 2: once per key — the delegating handlers (StateHandler, NoneHandler) re-dispatch
+	-- the same key at index + 1; only the chain's index 1 asks (`Source(Source(None))` printed four lines before)
+	q.Dispatch.addHandler({ name = "NilN", isHandlable = function(_i: any, k: any, v: any) return k == "N" and v == nil end, priority = 1,
+		process = function() return Quad.Void end })
+	capture(function() q.Dispatch.drive(dead, { N = q.Source(q.Source(q.None)) }) end)
+	assert(count() == 1 and string.find(lines[1], "at key N", 1, true) ~= nil, "nested re-dispatch: one line per key: " .. table.concat(lines, " | "))
 	q.debug = false
 	capture(function() q.Dispatch.process(dead, "K", 2, 1) end)
 	assert(count() == 0, "debug off: 0 lines")
