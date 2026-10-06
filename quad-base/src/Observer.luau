@@ -77,11 +77,17 @@ local WEAK_KEY_MT = { __mode = "k" }
 -- bookkeeping's `recompute` or `setOffsetSource` (the mount/re-seat write — round14 `H-886`: an Extract +
 -- Add of the watched Slot reaches the Offset Source there, not through `recompute`) before this handle's
 -- `fn` means the change was routed by the bookkeeping.
-local function fedBackDirectly(fn: any, recompute: any, setOffsetSource: any): boolean
+-- [2026-10-06 user decision, round14 Q174 보강 (b)] A provider's DEFINED re-entry frame stops the walk the
+-- same way: base cannot name a provider's functions, so a provider puts the one function that calls such a
+-- callback into the module's private `_reentryFrames` set (made in `Init` below; debug-only — read nowhere
+-- else, no public surface). First entry: quad-roblox's Property handler registers the function that calls
+-- a Tween's `Completed` (Q163/Q164 (a′): the next tween is chained from `Completed`, synchronously on a snap)
+-- — `Started`/`Cancelled` are called from other frames, so a write back from them is still reported.
+local function fedBackDirectly(fn: any, recompute: any, setOffsetSource: any, frames: { [any]: true }): boolean
 	local level = 1
 	while true do
 		local f = debug.info(level, "f")
-		if f == nil or f == recompute or f == setOffsetSource then
+		if f == nil or f == recompute or f == setOffsetSource or frames[f] then
 			return false
 		end
 		if f == fn then
@@ -94,9 +100,10 @@ end
 -- Asked on BOTH delivery branches (round14 — user decision 2026-10-06, debug detector 1): the run branch
 -- (the delivery would nest) and the held branch (the handle cannot execute yet — the install window: an
 -- install fn that writes its own upstream once and stops was 0 lines before).
-local function checkUpstreamFeedback(observer: any, warned: { [any]: true }, bookkeeping: any)
+local function checkUpstreamFeedback(observer: any, warned: { [any]: true }, module: any)
+	local bookkeeping = module.Bookkeeping
 	if observer._running and not observer._internal and warned[observer] == nil
-		and fedBackDirectly(observer.fn, bookkeeping._recompute, bookkeeping.setOffsetSource) then
+		and fedBackDirectly(observer.fn, bookkeeping._recompute, bookkeeping.setOffsetSource, module._reentryFrames) then
 		warned[observer] = true
 		print("Observer: a change reached this Observer while its own fn was running - the fn (for a State placed in props: quad's dispatch of its value, with the callbacks and engine signals it set off) fed its own upstream, directly or through other handles (undefined; set other targets, or use an Effect for a self-correcting write)")
 	end
@@ -172,12 +179,12 @@ local function createImpl(module: any)
 		end
 		if module.Backend.canExecute(self) then -- read at fire time (`H-174`)
 			if module.debug then
-				checkUpstreamFeedback(self, debugWarned, module.Bookkeeping)
+				checkUpstreamFeedback(self, debugWarned, module)
 			end
 			run(self, from)
 		else
 			if module.debug then
-				checkUpstreamFeedback(self, debugWarned, module.Bookkeeping)
+				checkUpstreamFeedback(self, debugWarned, module)
 			end
 			self._rerunRequired = true -- `H-159`: change before binding (or in the install window) is held — replayed once when bound
 		end
@@ -387,6 +394,9 @@ local function registerDispatchHandlers(module: any)
 end
 
 local function Init(module: any)
+	-- the defined re-entry frame set the debug feedback check reads (`fedBackDirectly` above) — private,
+	-- per module instance; a provider adds `module._reentryFrames[fn] = true` at install
+	module._reentryFrames = {} :: { [any]: true }
 	implsOf(module).Observer = createImpl(module)
 	registerDispatchHandlers(module)
 end

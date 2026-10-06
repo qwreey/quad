@@ -602,8 +602,10 @@ debug 는 치명적 부분 아니면 기본적으로 계속 실행은 시켜주�
   Observer 자기 상류 되먹임 감지기(실행 중인 fn에 같은 핸들의 자격 있는 배달이 다시 옴 — 같은 절 2026-10-01 문단; quad 내부
   Observer는 `_internal`로 제외 — **[2026-10-06 round14 사용자 결정]** 보류 갈래(설치 창)에도 묻고, 내부 Observer는
   `State:_internalObserver`로 설치 **전에** 표시를 받으며, StateHandler의 Observer는 내부가 아니다(Q174); 부기 `recompute`와
-  `setOffsetSource` 프레임을 거친 배달은 건너뜀(`H-886`)), `Debounce`/`Throttle` 핸들 `Cancel`이 자기 게이트의 flush 안에서
-  불림(스택 검사 — round9 (h) UB, 2026-10-06 `H-570` 대체), **[2026-10-06 round14]** claim되지 않은(파괴됐거나 quad가 만들지
+  `setOffsetSource` 프레임을 거친 배달은 건너뜀(`H-886`); **[2026-10-06 round14 Q174 보강 (b)]** 프로바이더가 등록한 정의된 재진입 프레임도 —
+  모듈 인스턴스의 비공개 `_reentryFrames` 집합(Observer `Init`이 만들고 debug 검사만 읽음), 첫 등록은 quad-roblox Property의 `Completed`
+  호출 함수(`Started`/`Cancelled`와 갈라 둠 — Q163)), `Debounce`/`Throttle` 핸들 `Cancel`·`Flush`가 자기 게이트의 flush(창 끝·
+  핸들 `Flush`·**[2026-10-06 Q174 보강]** leading 통과) 안에서 불림(스택 검사 — round9 (h) UB, 2026-10-06 `H-570` 대체), **[2026-10-06 round14]** claim되지 않은(파괴됐거나 quad가 만들지
   않은) 인스턴스에 대한 `Dispatch.process`(감지기 3 — `H-877` 대체, `drive`도 지남)와 그런 호스트에 마운트된 Slot의 CRUD(소비자
   킷 C0); 에러로 멈추는 비싼 검사 — `process`의 함수 아닌
   retractor(`Quad0077`), 그리고 **[2026-10-01 사용자
@@ -611,7 +613,7 @@ debug 는 치명적 부분 아니면 기본적으로 계속 실행은 시켜주�
   경로에서 내린 넷: `drive`의 중괄호 누락 게이트의 전체 브랜드 스캔(`Quad0083` — 평소엔 메타테이블·`Brand.isPlainBranded` O(1)만),
   `slot:List` data의 키 전수 검사(`Quad0143` — 평소엔 "배열 부분이 비었는데 다른 키" O(1)만), Slot 자기 포함 순환 가드(`Quad0173`,
   `H-500`), quad-roblox 정적 자식의 조상 사슬 순환 가드(`Quad0220`, `H-545`), 그리고 **[2026-10-06 round14 Q173 (a)]** State 값
-  사슬 순환 검사(`Quad0070`, `StateHandler.assertAcyclicChain` — props 자리·Slot 원소 경로 셋; 꺼 두면 stack overflow, UB), **[2026-10-06
+  사슬 순환 검사(`Quad0070`, `StateHandler.assertAcyclicChain` — props 자리·Slot 원소 경로(identity `:Single`/`:List` 재조정 — 마운트·값 변경 때만, **[2026-10-06 P3]** 마운트 전 CRUD에선 값을 읽지 않으므로 검사도 없음); 꺼 두면 stack overflow, UB), **[2026-10-06
   round14 Q170 (최종)]** Slot CRUD 한 호출 안의 중복(`Quad0171` — 받은 값 그대로, `:Get()` 없음; 꺼 두면 둘째 원소의 `claimOwner`가 `Quad0170`). Slot·정적 자식 순환 둘은 꺼 두면 엔진 에러(Roblox circular
   reference)나 다음 CRUD의 스택 오버플로가 멈춘다 — 던진 뒤의 부기 무결은 "예외 안전성 계약"대로 약속하지 않는다(round3 Q18 (c),
   사용자 *"에러로 죽은 다음 우린 데이터의 무결이 깨져도 상관이 없고"*). (Observer 설치 루프 한도 `Quad0262`는 2026-10-01 설치 루프와

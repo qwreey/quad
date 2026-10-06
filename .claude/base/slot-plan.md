@@ -987,8 +987,11 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   이전 원소를 보이며 회복된다(`StateHandler.luau` `assertAcyclicChain` 한 자리 — **[2026-10-02 Q175]** 옛 `StoreBind.luau`에서 개명; **[2026-10-01]** 최상위로 이동, 옛 `Dispatch/StoreBind.luau`; 주어 `State:` — Q90). 출처
   `session/2026-09-28-01-round13-batch-reply.md` 2026-10-01 Slot-A 회신 절. **[2026-10-06 round14 Q173 (a) — 사용자 "권고대로"]**
   이 걷기(첫 `isState` 포함, 세 경로 전부)는 debug 층이다 — `q.debug`일 때만 `Quad0070`, 꺼 두면 사슬 순환은 다시 스택 오버플로
-  (원소 경로는 그 Slot이 망가진 채 남을 수 있다 — UB). 호출 자리는 `if module.debug then … end` 한 줄(`Slot/Elements.luau`
-  `wrapElement`, `Slot/List.luau` `checkItemChains`).
+  (원소 경로는 그 Slot이 망가진 채 남을 수 있다 — UB). 호출 자리는 `if module.debug then … end` 한 줄(`Slot/List.luau`
+  `checkItemChains`). **[2026-10-06 round14 P3 — Q170 (최종) 사용자 원칙 "debug 일 때 lazy 가 사라지는건 안 돼. Get은 디버그에도
+  없는게 맞아보여"]** `wrapElement` 자리의 걷기는 뺐다 — 그 줄은 마운트 전 CRUD 사전 패스이기도 해서, debug에서 원소 State의
+  Compute fn을 앞당겨 돌렸다(mock: 꺼짐 0회/켜짐 1회). State 원소의 사슬은 이제 그 래퍼의 identity `:Single`이 값을 어차피 읽는
+  때(마운트·값 변경 — 재조정 깊이, outermost blame)에만 검사된다. 마운트 전 Slot의 `Add` 줄은 더 이상 `Quad0070`을 내지 않는다.
 - **재진입성**(Observer/store-bind 재실행 콜백 안에서 `Add`/`Clear`를
   다시 호출) — 별도 가드 불필요 — **[2026-09-17 사용자 결정 — round10 Q52 (a)] 예외 하나는 가드로 막는다**: `materializeSlotTree`의 마운트 walk 도중 중첩 `:List`의 `updateFn`(또는 그 안의 recompute가 띄운 Observer)이 **조상** Slot을 CRUD하면 walk가 깨졌다(`bindLifetime: already bound`, 부기 영구 파손 — 탐사 A 실행 재현). 이제 walk 중인 Slot은 `_materializing` 플래그를 들고 있고(walk 스택의 조상 전부; 형제는 아님 — **[같은 날 code-review]** 이미 마운트된 부모에 `rawAdd`/`rawReplace`/`rawSplice`로 Slot이 붙는 `attachSlot` 창에서도 그 부모가 플래그를 든다(save/restore) — 런타임 `Add`로 들어온 `:List`의 첫 `updateFn`이 새 부모를 CRUD하면 배열이 캡처된 position 밑에서 밀려 Length가 영구히 모자랐다; **[2026-10-01 round13 Q74 (a)]** 부모만이 아니라 **owner 사슬 전체**(첫 비-Slot owner까지의 Slot 조상 전부)가 든다 — 아래 3′ 문단 뒤의 Q74 닫힘 문단), 공개 CRUD 아홉과 `:List`/`:Single` 설치는 `assertMutable`/`checkListInstall`에서 `Slot: cannot mutate a Slot while it is being mounted …`로 던진다(Nearest — updateFn의 그 줄). 사용자: *"compute 든 slot 이든 순수성 제약을 크게 풀어줄 이유가 없어서, 계약 상 조상 건들이기 등은 던져도 될것 같아. 정상 사용에서 문제가 생기지 않는지만 봐줘"* — 정상 사용(updateFn이 자기 자식 Slot을 만들어 CRUD, 이미 마운트된 형제 CRUD, 마운트 뒤 Observer CRUD)은 `spec.slot` 32가 그대로임을 확인. 스냅샷 walk(b)는 "스냅샷 뒤 들어온 원소를 따로 마운트"하는 복잡성이라 기각. Observer 안(마운트 walk 밖)은 이 항목 원래 서술대로 가드 없음. CRUD는 평범한 동기 테이블 뮤테이션 +
   Dispatch 호출일 뿐이라 "일반적 무한루프는 방어 안 함, provider 버그로

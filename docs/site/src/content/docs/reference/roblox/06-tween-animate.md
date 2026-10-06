@@ -107,7 +107,7 @@ local panel = D.Frame({ Size = size })
 `Info`/`Style`/`Direction`은 **생성 시점에 검사하지 않습니다** — 타입이 이미 정밀하고, 타입을 우회한
 값은 엔진이 자기 에러를 냅니다(`inst[k] = 잘못된값`과 같은 부류).
 
-`tostring(tween)`은 `Tween(10, 0.3s)`처럼 목표 값과(편의 필드로 준 경우) `Time`을 보여줍니다.
+`tostring(tween)`은 `Tween(10, 0.3s)`처럼 목표 값과(편의 필드로 준 경우) `Time`을 보여줍니다. `Info`를 줬으면 `Tween(10, Info)`처럼 `Info`를 보여 줍니다 — `Info`가 편의 필드보다 우선하므로(**[2026-10-06 기준, 다음 릴리즈부터]**; 3.2.0까지는 함께 준 `Time`을 보여 줬습니다). [`q.debug`](/reference/core/01-quad-module/#qdebug)를 켜면 `Info`와 편의 필드를 함께 준 것도 한 줄로 알립니다(`Tween`·`Animate` 모두).
 
 ---
 

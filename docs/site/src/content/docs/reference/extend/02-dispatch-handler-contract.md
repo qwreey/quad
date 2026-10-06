@@ -222,17 +222,17 @@ Quad0085 Dispatch.drive: array keys must be positive integers (got {키})
 **시그니처**
 
 ```luau
-Protocols: { DispatchHint: Brand } -- QuadTypes.Brand() 인스턴스 — quad-base 사본마다 하나(모든 모듈 인스턴스의 Protocols가 같은 객체를 담음)
+Protocols: { [string]: Brand? } -- 지금 키는 DispatchHint 하나 — QuadTypes.Brand() 인스턴스, quad-base 사본마다 하나(모든 모듈 인스턴스의 Protocols가 같은 객체를 담음)
 -- 멤버 값이 갖는 훅:
 -- value:__dispatchHint(key: any) -> string?
 ```
 
 **동작** — **[2026-10-06 기준, 다음 릴리즈부터]** 디스패치의 매치 실패 진단을 돕는 **프로토콜**입니다. 이 브랜드에 속한 값이 어떤 핸들러에도 매치되지 않는 자리(`key`)에 놓이면([`Quad0076`](/reference/errors/02-dispatch-bookkeeping/#quad0076)), 디스패치는 그 값의 `__dispatchHint(key)`를 **한 번** 불러 돌려받은 문장을 에러의 원인 설명(` - ` 뒤)으로 씁니다. `nil`을 돌려주면 일반 꼬리를 씁니다. 에러의 위치(blame)는 바꾸지 않습니다 — 문장만 공급합니다. 에러를 만들 때만 불리므로 정상 경로 비용은 없습니다.
 
-- **값 쪽에서 등록합니다** — 값을 만들 때 `quad.Protocols.DispatchHint:Register(value)`, 그리고 그 값(대개 메타테이블의 `__index` 쪽)에 `__dispatchHint`를 둡니다. 훅이 아니라 **소속**이 판정이라, 같은 이름의 메서드가 있어도 등록되지 않은 값에는 묻지 않습니다. quad-base의 `Store`·`Context`·`Provider`·`Blocker`·`AttrKey`와 quad-roblox의 `Tween`이 자기 문장을 등록합니다(문장은 [`Quad0076`](/reference/errors/02-dispatch-bookkeeping/#quad0076)의 표).
+- **값 쪽에서 등록합니다** — 값을 만들 때 `quad.Protocols.DispatchHint:Register(value)`(타입은 `Brand?`라 한 번 `nil` 확인으로 좁힙니다 — 아래 예제), 그리고 그 값(대개 메타테이블의 `__index` 쪽)에 `__dispatchHint`를 둡니다. 훅이 아니라 **소속**이 판정이라, 같은 이름의 메서드가 있어도 등록되지 않은 값에는 묻지 않습니다. quad-base의 `Store`·`Context`·`Provider`·`Blocker`·`AttrKey`와 quad-roblox의 `Tween`이 자기 문장을 등록합니다(문장은 [`Quad0076`](/reference/errors/02-dispatch-bookkeeping/#quad0076)의 표).
 - **훅이 던지면 정의되지 않은 동작입니다** — 디스패치는 훅을 감싸지 않습니다. 돌려주는 값은 문장 하나(`string`) 또는 `nil`입니다. 문장 모양은 quad의 메시지 규약을 따르면 다른 꼬리와 어울립니다 — 소문자로 시작하고, 무엇이 틀렸는지와 어떻게 놓아야 하는지를 한 문장으로.
 - **`key`를 보고 갈라도 됩니다** — `Tween`은 문자 키에서만 "그 요소의 필드가 아닐 수 있음"을 말하고 숫자 키에서는 `nil`을 돌려 일반 꼬리에 맡깁니다.
-- **`q.BrandPredicates`와는 다른 집합입니다** — 그쪽은 값에 이름을 붙이는 `is<Brand>` 술어의 등록부이고(메시지의 `brand: …`), `Protocols`는 quad 런타임이 부르는 훅을 가진 값의 **능력(프로토콜) 브랜드**를 모읍니다. 앞으로 다른 능력이 공개되면 이 테이블에 키가 더해집니다(키 추가는 호환을 깨지 않습니다).
+- **`q.BrandPredicates`와는 다른 집합입니다** — 그쪽은 값에 이름을 붙이는 `is<Brand>` 술어의 등록부이고(메시지의 `brand: …`), `Protocols`는 quad 런타임이 부르는 훅을 가진 값의 **능력(프로토콜) 브랜드**를 모읍니다. 앞으로 다른 능력이 공개되면 이 테이블에 키가 더해집니다(키 추가는 호환을 깨지 않습니다). 타입이 런타임과 같은 모양(`{ [string]: Brand? }`)인 것도 그래서입니다 — 키가 늘어도 타입은 그대로이고, 읽는 쪽은 `nil` 확인으로 좁힙니다(훅 `__dispatchHint`는 타입에 싣지 않습니다).
 - **이름 규약** — 두 밑줄로 시작하는 이름(`__dispatchHint`, `__apply`)은 quad 런타임이 부르는 **공개 프로토콜 훅**이고 계약입니다(Luau의 메타메서드처럼). 밑줄 하나(`_x`)는 비공개 내부 필드라 계약이 아닙니다.
 - 브랜드는 quad-base **사본마다 하나**입니다 — 같은 사본에서 만든 모듈 인스턴스들은 같은 `DispatchHint` 객체를 공유하고, 공유 잎 모듈(`Blocker`·`Context`·`AttrKey`)의 값도 그래서 등록됩니다. 다른 사본의 값은 이 사본의 브랜드에 속하지 않습니다([사본 경계](/reference/core/11-predicates/#사본-경계)).
 
@@ -248,9 +248,13 @@ function SpringImpl:__dispatchHint(key)
 	return nil -- 숫자 키: 일반 꼬리
 end
 
+local DispatchHint = quad.Protocols.DispatchHint -- Brand? — 한 번 좁혀 둔다
+
 local function Spring(opts)
 	local self = setmetatable(table.clone(opts), SpringImpl)
-	quad.Protocols.DispatchHint:Register(self)
+	if DispatchHint then
+		DispatchHint:Register(self)
+	end
 	return self
 end
 ```

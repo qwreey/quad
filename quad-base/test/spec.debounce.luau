@@ -528,7 +528,7 @@ do
 end
 
 print()
-print("=== 13. flush 도중 하류가 같은 게이트의 handle:Cancel()을 부름 — 정의되지 않은 동작(round9 (h), 2026-10-02 round11 H-570 철거); q.debug면 Cancel이 한 줄 알림(동작 불변) ===")
+print("=== 13. flush 도중 하류가 같은 게이트의 handle:Cancel()/Flush()를 부름 — 정의되지 않은 동작(round9 (h), 2026-10-02 round11 H-570 철거); q.debug면 한 줄 알림(동작 불변) — flush는 창 끝·핸들 Flush·leading 통과(round14 Q174 보강) ===")
 do
 	local LINE = "handle:Cancel() was called from a callback this gate's own flush reached"
 	local lines: { string } = {}
@@ -635,6 +635,74 @@ do
 		end)
 	end)
 	assert(countOf(LINE) == 0, "no line outside the flush or for another gate: " .. table.concat(lines, " | "))
+	-- round14 Q174 보강 (user decision 2026-10-06): the same check covers a re-entrant `Flush` (from the handle
+	-- `Flush` head) and a leading pass as a flush frame (`onUpstreamEmit` → `pass()`)
+	local FLUSH_LINE = "handle:Flush() was called from a callback this gate's own flush reached"
+	local function ownFlush(h: any)
+		(h.Value :: GateHandle):Flush()
+	end
+	capture(function()
+		scene("timer", ownFlush)
+	end)
+	assert(countOf(FLUSH_LINE) == 1 and countOf(LINE) == 0, "debug on, re-entrant Flush from the window-end flush: one line: " .. table.concat(lines, " | "))
+	capture(function()
+		scene("flush", ownFlush)
+	end)
+	assert(countOf(FLUSH_LINE) == 1, "debug on, re-entrant Flush from the handle Flush: one line: " .. table.concat(lines, " | "))
+	-- a leading pass: the subscriber receives 1 from inside the upstream `Set` (Throttle passes it at once)
+	local function leadingScene(onFirst: (h: any) -> ())
+		fresh()
+		local s = Source(0)
+		local h = Ref(nil :: GateHandle?)
+		local g: State<number> = s:Apply(Throttle({ Time = 1, Handle = h }))
+		local once = true
+		local p = { count = 0 } :: any
+		function p._receive(self: any, _from: any)
+			self.count += 1
+			if once and g:Get() == 1 then
+				once = false
+				onFirst(h)
+			end
+		end
+		;(g :: any)._subs[p] = true
+		s:Set(1) -- leading pass: the flush runs inside this call
+		advance(2)
+	end
+	capture(function()
+		leadingScene(ownCancel)
+	end)
+	assert(countOf(LINE) == 1, "debug on, Cancel inside a leading pass: one line: " .. table.concat(lines, " | "))
+	capture(function()
+		leadingScene(ownFlush)
+	end)
+	assert(countOf(FLUSH_LINE) == 1, "debug on, Flush inside a leading pass: one line: " .. table.concat(lines, " | "))
+	-- negative controls: Flush outside any flush (handle and factory broadcast), another gate's Flush inside
+	-- this gate's flush, and a Cancel right after a leading pass (outside it)
+	capture(function()
+		local _s, _p, h = scene("timer", function() end)
+		ownFlush(h)
+		local f = Throttle({ Time = 1 })
+		local fs = Source(0)
+		local _fg: State<number> = fs:Apply(f)
+		fs:Set(1)
+		fs:Set(2)
+		f:Flush()
+		local other = Ref(nil :: GateHandle?)
+		local oSrc = Source(0)
+		local _o: State<number> = oSrc:Apply(Throttle({ Time = 1, Handle = other }))
+		oSrc:Set(1)
+		oSrc:Set(2)
+		scene("timer", function()
+			(other.Value :: GateHandle):Flush()
+		end)
+		leadingScene(function() end)
+		local hl = Ref(nil :: GateHandle?)
+		local ls = Source(0)
+		local _lg: State<number> = ls:Apply(Throttle({ Time = 1, Handle = hl }))
+		ls:Set(1)
+		ownCancel(hl)
+	end)
+	assert(countOf(LINE) == 0 and countOf(FLUSH_LINE) == 0, "no line outside a flush or for another gate's Flush: " .. table.concat(lines, " | "))
 	q.debug = false
 	advance(2)
 	print("PASS")

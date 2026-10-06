@@ -130,12 +130,26 @@ local function install(quad: any)
 			cb(inst, k, value)
 		end
 	end
+	-- [2026-10-06 user decision, round14 Q174 보강 (b)] the ONE function every `Completed` is called from (snap,
+	-- deferred-notice window, engine notice) — kept apart from `Started`/`Cancelled` and registered as a defined
+	-- re-entry frame for quad-base's debug feedback check (`Observer.luau` `fedBackDirectly`): chaining the next
+	-- tween from `Completed` is defined (Q163; on a snap it runs synchronously inside this property's dispatch,
+	-- Q164 (a′)), so a write back to the same State from here is not reported; one from `Started`/`Cancelled`
+	-- still is (undefined, Q163). The registration is read only under `q.debug`.
+	local function fireCompleted(v: any, inst: any, k: any, value: any)
+		fire(v, "Completed", inst, k, value)
+	end
+	quad._reentryFrames[fireCompleted] = true
 	-- round13 묶음 1: a SETTLE callback (the previous value's Cancelled / window Completed, and teardown's Cancelled) —
 	-- round13 Q82 (a): not on an Instance quad no longer claims (a corpse under `retractFrom`); the Cancel
 	-- itself already happened in `settle`. Same gate as the engine connection's (Q71, `H-594`).
-	local function fireSettled(cb: any?, name: string, inst: any, k: any, value: any)
+	local function fireSettled(cb: any?, finished: boolean, inst: any, k: any, value: any)
 		if cb ~= nil and quad.Backend.isClaimed(inst) then
-			fire(cb, name, inst, k, value)
+			if finished then
+				fireCompleted(cb, inst, k, value)
+			else
+				fire(cb, "Cancelled", inst, k, value)
+			end
 		end
 	end
 	-- round13 묶음 1 "collect -> write -> call": settle a record WITHOUT calling the user — Cancel its engine tween if
@@ -172,19 +186,17 @@ local function install(quad: any)
 	-- THIS value are not fired (the Q91 OLD-FIRST `GetStrong` check, generalized). `oldValue` = the previous
 	-- record's target (the value its callbacks were about).
 	local function announce(inst: any, k: any, rec: any, v: any, oldCb: any?, oldFinished: boolean, oldValue: any, snapped: boolean)
-		fireSettled(oldCb, if oldFinished then "Completed" else "Cancelled", inst, k, oldValue)
+		fireSettled(oldCb, oldFinished, inst, k, oldValue)
 		if tweenSlots:GetStrong(inst, k) ~= rec then
 			return
 		end
-		-- code-review (2026-09-28): the Q82 `isClaimed` gate covers this value's callbacks too — one rule for every
-		-- callback (a `process` on an Instance quad no longer claims is `H-293` UB; without the gate it fired
-		-- Started with no Completed/Cancelled ever to follow). Read only when there is something to fire.
-		if (v.Started == nil and not (snapped and v.Completed ~= nil)) or not quad.Backend.isClaimed(inst) then
-			return
-		end
+		-- [2026-10-04 user decision, round14 Q166 (a)] this value's own callbacks are NOT gated on `isClaimed`
+		-- (the 2026-09-28 code-review widening is gone): a `process` on an Instance quad no longer claims is
+		-- `H-293` UB input, and `q.debug` reports it at `Dispatch.process`'s entry. Only the settle side above
+		-- (Q82 — `retractFrom` on a corpse) keeps its gate.
 		fire(v, "Started", inst, k, v.Value)
-		if snapped and tweenSlots:GetStrong(inst, k) == rec then
-			fire(v, "Completed", inst, k, v.Value)
+		if snapped and v.Completed ~= nil and tweenSlots:GetStrong(inst, k) == rec then
+			fireCompleted(v, inst, k, v.Value)
 		end
 	end
 	-- Snap: write the target now, no engine tween; `{ Value }` keeps the dedup honest (Q26 (a)).
@@ -222,7 +234,7 @@ local function install(quad: any)
 					-- round13 묶음 1: after this retractor's own record write. round13 Q99 c: a teardown is ALWAYS
 					-- Cancelled, even inside the deferred-notice window (the tween did reach its target, but the
 					-- place is going away — the replacement window keeps Completed, `H-581`).
-					fireSettled(cb, "Cancelled", inst, k, slot.Value)
+					fireSettled(cb, false, inst, k, slot.Value)
 				end
 			end
 			tweenRetractors:SetWeak(inst, k, r)
@@ -331,7 +343,7 @@ local function install(quad: any)
 					oldCb, oldFinished = settle(prev)
 				end
 				tweenSlots:SetStrong(inst, k, true)
-				fireSettled(oldCb, if oldFinished then "Completed" else "Cancelled", inst, k, if prevActive then prev.Value else nil)
+				fireSettled(oldCb, oldFinished, inst, k, if prevActive then prev.Value else nil)
 				return tweenRetractor(inst, k) -- `H-547`: every chain (see the note at the end)
 			end
 			if zeroTime then
@@ -385,7 +397,7 @@ local function install(quad: any)
 							-- is read off the tween (the engine tween holds it anyway) — the closure still captures no
 							-- `inst`.
 							if cb ~= nil and quad.Backend.isClaimed(rec.Tween.Instance) then
-								fire(cb, "Completed", rec.Tween.Instance, rec.Key, rec.Value)
+								fireCompleted(cb, rec.Tween.Instance, rec.Key, rec.Value)
 							end
 						end
 					end)

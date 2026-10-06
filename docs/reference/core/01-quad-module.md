@@ -183,7 +183,7 @@ debug: boolean
 
 - `q.Dispatch.addHandler`가 등록 시점에 같은 우선순위의 핸들러를 발견할 때([`../extend/02-dispatch-handler-contract.md`](../extend/02-dispatch-handler-contract.md)).
 - [`q:AddPlugin`](#qaddpluginpluginfn)이 기존 필드를 덮을 때.
-- 옵션 테이블에 모르는 키(오타·옛 이름)가 있을 때 — `q.Debounce`/`q.Throttle`, `slot:List`/`slot:Single`의 `opts`, `q.Tween`, `q.Animate`. 모르는 키는 꺼져 있을 때와 똑같이 무시됩니다.
+- 옵션 테이블에 모르는 키(오타·옛 이름)가 있을 때 — `q.Debounce`/`q.Throttle`, `slot:List`/`slot:Single`의 `opts`, `q.Tween`, `q.Animate`. 모르는 키는 꺼져 있을 때와 똑같이 무시됩니다. `q.Tween`/`q.Animate`는 `Info`와 편의 필드(`Time`·`Style`·`Direction`·`RepeatCount`·`Reverses`·`DelayTime`)를 함께 줬을 때도 알립니다 — `Info`가 이기므로 그 필드들은 무시됩니다(**[2026-10-06 기준, 다음 릴리즈부터]**).
 - [`q.Claim`](../roblox/04-claim-mapper.md)의 디스크립터가 이상할 때 — 자식 디스크립터의 키가 문자열이 아니거나, 루트 디스크립터에 키를 적어 무시될 때.
 
 위 넷은 그 호출 시점에 한 번 보므로 `q.debug`는 먼저 켜 두세요. 아래 일곱은 값이 처리되거나 쓰일 때마다 보므로 켜는 시점은 상관없습니다(켠 뒤의 실행부터 봅니다).
@@ -191,8 +191,8 @@ debug: boolean
 - 배열 원소로만 쓰이는 quad 값(`Ref`/`PreRef`/`PostRef`·`Observer`·`Effect`·`Slot`·`Tag`·`Attr`)이 props의 **문자 키**에 놓였을 때(어느 문자 키든 — 특히 반영 프로퍼티·이벤트 이름이면 거절되지 않고 프로퍼티·이벤트 핸들러가 그 값을 받아 가던 자리입니다). 같은 요소·키는 한 번만 알립니다. quad가 등록한 [`debugOnly`](../extend/02-dispatch-handler-contract.md#handler-레코드) 진단 필터가 찍습니다.
 - `:Compute` 계산 함수가 도는 도중(그 함수가 부른 것 안 포함) `Source:Set`/`:Emit`이 불렸을 때(`:SetIfChanged`는 실제로 쓸 때) — `Source: Set/Emit inside a Compute fn - …`. 같은 `Source`는 한 번만 알립니다(계약은 [`state:Compute`](./03-state.md#statecomputefn-deps) — 계산 함수는 읽어서 조합할 뿐 아무것도 `:Set`하지 않습니다).
 - 같은 노드의 앞선 계산이 다른 코루틴에서 멈춘 채(계산 함수 안 yield) 새 계산이 시작될 때 — `State: Compute fn entered while an earlier run of this node has not returned - …`. 던져서 끝난 계산은 정해진 회복 경로라 알리지 않습니다.
-- `state:Observer(fn)`의 콜백이 도는 도중 같은 핸들에 변경이 다시 도착했을 때 — 콜백이 자기 상류를 되먹였다는 뜻입니다: `Observer: a change reached this Observer while its own fn was running - …`. 첫 발화(설치) 도중에 와서 보류되는 변경도 알립니다. props 자리에 놓인 `State`도 대상입니다 — 그 값을 처리하는 동안 불린 콜백(`Ref`·`Tween` 콜백 등)이나 엔진 신호가 그 `State`를 되쓰면 알립니다. 핸들마다 한 번만 알립니다. 규칙과 정의된 예외는 [`state:Observer`](./05-observer-effect.md#stateobserverfn)의 "Observer는 최종 소비자" 문단 — Slot 자리 계산을 거친 고리(마운트·다시 앉히기 포함)와 quad가 자리 계산·목록에 내부로 쓰는 Observer는 알리지 않습니다.
-- [`q.Debounce`/`q.Throttle`](../sugar/03-debounce-throttle.md#handlecancel) 게이트가 보류분을 내보내는 도중 그 통지를 받은 하류 콜백 안에서 같은 게이트의 `handle:Cancel()`이 불렸을 때(정의되지 않은 동작) — `Debounce: handle:Cancel() was called from a callback this gate's own flush reached …`. 부를 때마다 알립니다(호출 스택을 걸어 봅니다).
+- `state:Observer(fn)`의 콜백이 도는 도중 같은 핸들에 변경이 다시 도착했을 때 — 콜백이 자기 상류를 되먹였다는 뜻입니다: `Observer: a change reached this Observer while its own fn was running - …`. 첫 발화(설치) 도중에 와서 보류되는 변경도 알립니다. props 자리에 놓인 `State`도 대상입니다 — 그 값을 처리하는 동안 불린 콜백(`Ref`·`Tween` 콜백 등)이나 엔진 신호가 그 `State`를 되쓰면 알립니다 — 단 `Tween`의 `Completed`에서 다음 트윈을 잇는 것은 정의된 경로라(스냅이면 동기로 불려도) 알리지 않습니다(`Started`·`Cancelled`에서의 되쓰기는 알립니다). 핸들마다 한 번만 알립니다. 규칙과 정의된 예외는 [`state:Observer`](./05-observer-effect.md#stateobserverfn)의 "Observer는 최종 소비자" 문단 — Slot 자리 계산을 거친 고리(마운트·다시 앉히기 포함)와 quad가 자리 계산·목록에 내부로 쓰는 Observer는 알리지 않습니다.
+- [`q.Debounce`/`q.Throttle`](../sugar/03-debounce-throttle.md#handlecancel) 게이트가 값을 내보내는 도중(창 끝·`MaxTime`·`handle:Flush()`·leading 통과) 그 통지를 받은 하류 콜백 안에서 같은 게이트의 `handle:Cancel()`이나 `handle:Flush()`가 불렸을 때(정의되지 않은 동작) — `Debounce: handle:Cancel() was called from a callback this gate's own flush reached …`(`Flush`면 `handle:Flush()`). 부를 때마다 알립니다(호출 스택을 걸어 봅니다).
 - quad가 claim하지 않은 인스턴스 — 파괴됐거나(`q.dispose`든 quad 밖이든) quad가 만들지 않은 것 — 에 디스패치가 돌 때(정의되지 않은 동작 — 핸들러가 그 시체 위에서 돌 수 있습니다, 예: 짝이 오지 않는 `Tween`의 `Started`) — `Dispatch: process on an instance that is not claimed by quad … at key {k} …`. `D.<Class> { … }`·`q.Dispatch.drive`·`q.Dispatch.process` 모두 이 한 자리를 지나며, 키마다 알립니다.
 - 마운트 대상 인스턴스가 더는 claim돼 있지 않은 `Slot`(호스트를 `q.dispose`했거나 quad 밖에서 파괴)에 CRUD를 부를 때(정의되지 않은 동작 — [06-slot](./06-slot.md#죽은-slot과-마운트-규칙)의 "마운트 대상이 파괴된 Slot") — `Slot: CRUD on a Slot whose host Instance is no longer claimed by quad …`. 부를 때마다 알립니다.
 

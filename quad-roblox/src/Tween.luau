@@ -86,6 +86,10 @@ local KNOWN_OPTIONS = {
 	RepeatCount = true, Reverses = true, DelayTime = true, Override = true, Dedup = true,
 	Started = true, Completed = true, Cancelled = true,
 }
+-- [2026-10-06 user decision, round14 Q179] the same pass names the convenience fields an `Info` overrides:
+-- `Info` wins (`Handlers/Property.luau` `buildInfo`), so `Time`/`Style`/… given next to it are ignored — a
+-- `Time` State fed through `Animate` that "does not follow" was the case the user named.
+local INFO_FIELDS = { "Time", "Style", "Direction", "RepeatCount", "Reverses", "DelayTime" }
 local function warnUnknownOptions(opts: any)
 	if type(opts) ~= "table" then
 		return -- the constructor's own gate reports a non-table
@@ -93,6 +97,17 @@ local function warnUnknownOptions(opts: any)
 	for key in opts do
 		if not KNOWN_OPTIONS[key] then
 			print(`Tween: unknown option "{tostring(key)}" is ignored (known: Value, Info, Time, Style, Direction, RepeatCount, Reverses, DelayTime, Override, Dedup, Started, Completed, Cancelled)`)
+		end
+	end
+	if opts.Info ~= nil then
+		local ignored = {}
+		for _, field in INFO_FIELDS do
+			if opts[field] ~= nil then
+				table.insert(ignored, field)
+			end
+		end
+		if #ignored > 0 then
+			print(`Tween: Info is given, so {table.concat(ignored, ", ")} {if #ignored == 1 then "is" else "are"} ignored (Info wins over the convenience fields - put them in the TweenInfo, or drop Info)`)
 		end
 	end
 end
@@ -109,10 +124,16 @@ local function install(quad: any): any
 	-- `H-300`: the type promises the marker, so the value carries it — read
 	-- through `__index` (zero per-instance slots, like `RefImpl.__quadRefAccepts`)
 	TweenImpl.__quadTween = true
-	-- `__tostring` (2026-09-08, advisory 권고 1): target value + Time when given as the convenience field
+	-- `__tostring` (2026-09-08, advisory 권고 1): target value + Time when given as the convenience field.
+	-- [2026-10-06 user decision, round14 Q179] `Info` first: with an `Info` the second part is `Info` (it wins
+	-- over `Time` — `Tween(1, Info)`), so the string never shows a Time the tween does not use.
 	function TweenImpl.__tostring(self: any): string
+		local value = tostring(rawget(self, "Value"))
+		if rawget(self, "Info") ~= nil then
+			return `Tween({value}, Info)`
+		end
 		local t = rawget(self, "Time")
-		return `Tween({tostring(rawget(self, "Value"))}{if type(t) == "number" then `, {t}s` else ""})`
+		return `Tween({value}{if type(t) == "number" then `, {t}s` else ""})`
 	end
 	-- round14 Q161·Q182 (a) (user decision 2026-10-06): the `q.Protocols.DispatchHint` hook — a Tween at a
 	-- string key no handler takes is almost always a key that is not a writable property of this element

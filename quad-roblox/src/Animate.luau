@@ -51,10 +51,25 @@ local KNOWN_OPTIONS: { [string]: boolean } = { CanAnimate = true }
 for _, name in FIELDS do
 	KNOWN_OPTIONS[name] = true
 end
+-- [2026-10-06 user decision, round14 Q179] the same pass names the convenience fields an `Info` overrides —
+-- the case the user named: `Info` given and `Time` fed as a State here, and the tween "does not follow" the
+-- Time (`Info` wins in the Property handler's `buildInfo`). `Tween.luau`'s check has the same branch.
+local INFO_FIELDS = { "Time", "Style", "Direction", "RepeatCount", "Reverses", "DelayTime" }
 local function warnUnknownOptions(info: { [any]: any })
 	for key in info do
 		if not KNOWN_OPTIONS[key] then
 			print(`Animate: unknown option "{tostring(key)}" is ignored (known: {table.concat(FIELDS, ", ")}, CanAnimate)`)
+		end
+	end
+	if info.Info ~= nil then
+		local ignored = {}
+		for _, field in INFO_FIELDS do
+			if info[field] ~= nil then
+				table.insert(ignored, field)
+			end
+		end
+		if #ignored > 0 then
+			print(`Animate: Info is given, so {table.concat(ignored, ", ")} {if #ignored == 1 then "is" else "are"} ignored (Info wins over the convenience fields - put them in the TweenInfo, or drop Info)`)
 		end
 	end
 end

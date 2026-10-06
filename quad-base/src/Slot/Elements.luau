@@ -10,7 +10,6 @@
 
 local Types = require("./types")
 local ModuleIdentity = require("../ModuleIdentity") -- round10 H-537: cross-instance door for Slot/State elements
-local StateHandler = require("../StateHandler") -- round13 Q113 (a): the shared Quad0070 chain walk
 
 return function(S: Types.SlotInternal, module: any)
 
@@ -74,11 +73,12 @@ return function(S: Types.SlotInternal, module: any)
 			checkRawElement(v, raise)
 			return v
 		end
-		-- round13 Q113 (a) (user decision 2026-10-01): a State whose value chain loops (`st:Set(st)`,
-		-- `a`→`b`→`a`) wrapped itself forever at mount (stack overflow in Brand/Relate) — the `H-573`
-		-- walk, at the caller's depth (CRUD/`Slot{}` → nearest; reconcile → outermost). Debug layer since
-		-- round14 Q173 (a) (user decision 2026-10-06) — debug off, the loop is a stack overflow (undefined)
-		if module.debug then StateHandler.assertAcyclicChain(v, nil, raise) end -- error-code: via StateHandler.assertAcyclicChain
+		-- A State whose value chain loops (`st:Set(st)`, `a`→`b`→`a`) wraps itself forever at mount. The
+		-- `Quad0070` walk (round13 Q113 (a), debug layer since round14 Q173 (a)) is NOT run here: it reads the
+		-- chain with `:Get()`, and this line is also the CRUD pre-pass, where a State element's value is not
+		-- read yet (lazy — round14 Q170 (최종), user: "debug 일 때 lazy 가 사라지는건 안 돼. Get은 디버그에도
+		-- 없는게 맞아보여"). The wrapper's identity `:Single` checks it when it mounts or the value changes —
+		-- the time the value is read anyway (`Slot/List.luau` `checkItemChains`, outermost blame).
 		local sub = S.Slot()
 		sub:Single(v, nil, { OwnsElements = false })
 		sub._wrapped = v

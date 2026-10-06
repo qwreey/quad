@@ -710,6 +710,11 @@ export type Quad = {
 	-- Dispatch의 진단 스캔은 모듈의 `is*` 필드 중 여기 등록된 것만 브랜드 술어로 보고, 걸린 이름을 전부 보고한다. quad-types 전역이 아니라 모듈 인스턴스에 두는 것은 quad-types 사본이
 	-- 여럿일 수 있어서다(사용자: 런타임 모듈 하나가 원천).
 	BrandPredicates: Brand,
+	-- [2026-10-06 round14 Q161 반영 보강 (다) — 사용자 결정] 능력(프로토콜) 브랜드의 공개 집합(`q.Protocols.DispatchHint` 등).
+	-- 런타임과 같은 모양 — 키를 더해도 타입이 안 바뀌고, 쓰는 쪽은 `local hint = quad.Protocols.DispatchHint; if hint then … end`로
+	-- 좁힌다(사용자: "타입을 더 붙일 수 있는 구조가 되려면 런타임과 똑같게 [string] -> Brand? 가 되어야할듯"). 멤버 값의 훅
+	-- `__dispatchHint`는 타입에 싣지 않는다.
+	Protocols: { [string]: Brand? },
 
 	-- 공유 에러 네임스페이스(`H-231`) — quad-base의 모든 표면·백엔드가 같은
 	-- 태그 맵을 써야 워커가 경계를 본다. 백엔드는 자기 quad-error 사본의

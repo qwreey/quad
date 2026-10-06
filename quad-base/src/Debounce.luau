@@ -58,7 +58,8 @@
 	Calling this gate's own `handle:Cancel()`/`Flush()` from a callback its flush reached
 	is undefined (round9 (h), user 2026-09-08 — restored 2026-10-02 over round11 `H-570`):
 	observed, the commit reopens a window and the next leading signal waits one Time.
-	`q.debug` reports the `Cancel` shape (`checkCancelInFlush` below).
+	`q.debug` reports both shapes, from any flush of this gate — the window-end/cap commit, the
+	handle `Flush`, and a leading pass (`checkHandleInFlush` below).
 
 	GC (plan 8): a pending timer holds its gate through the callback upvalues
 	for at most 2 × Time after the last signal (the window that a pass reopens
@@ -121,20 +122,23 @@ end
 
 -- ── debug-only checks (`architecture.md` "debug 층"; kept out of the logic below) ──
 -- round14 (user decision 2026-10-06 — replaces round11 `H-570`): a downstream callback reached by this
--- gate's own flush (`commitIdle`'s or the handle `Flush`'s `emit()`) that calls this gate's `Cancel` is
--- undefined (round9 (h)). With `q.debug` on, `Cancel` walks the call stack for those two closures of
--- ITS gate and prints one line; the call goes on unchanged. Closure identity, so a `Cancel` inside
--- another gate's flush is not reported. No field: the stack unwinds by itself, so a throw leaves
--- nothing behind (the Observer feedback detector's reasoning).
-local function checkCancelInFlush(name: string, commitIdle: any, flush: any)
-	local level = 1
+-- gate's own flush that calls this gate's `Cancel` — or `Flush` again — is undefined (round9 (h)). With
+-- `q.debug` on, both handle methods walk the call stack (from their CALLER's frame — level 3: this check
+-- is 1, the method itself 2, so a `Flush` never meets its own frame) for the flush frames of ITS gate and
+-- print one line; the call goes on unchanged. The flush frames (round14 Q174 보강, user decision
+-- 2026-10-06): `commitIdle` (window end / MaxTime cap), the handle `Flush`, and `onUpstreamEmit` — whose
+-- leading pass (`pass()` with the Blocker Off) flushes downstream from inside it. Closure identity, so a
+-- call inside another gate's flush is not reported. No field: the stack unwinds by itself, so a throw
+-- leaves nothing behind (the Observer feedback detector's reasoning).
+local function checkHandleInFlush(name: string, method: string, commitIdle: any, flush: any, onUpstreamEmit: any)
+	local level = 3
 	while true do
 		local f = debug.info(level, "f")
 		if f == nil then
 			return
 		end
-		if f == commitIdle or f == flush then
-			print(`{name}: handle:Cancel() was called from a callback this gate's own flush reached (undefined - the window may reopen); cancel outside that callback`)
+		if f == commitIdle or f == flush or f == onUpstreamEmit then
+			print(`{name}: handle:{method}() was called from a callback this gate's own flush reached (undefined - the window may reopen); call it outside that callback`)
 			return
 		end
 		level += 1
@@ -195,7 +199,7 @@ function FactoryImpl.__apply(self: any, state: any): any
 	local gated = state:Gate(function(emit: QuadTypes.GateEmit)
 		local b = Blocker()
 		local pass = b:Policy(emit)
-		local onWindowEnd, onCap
+		local onWindowEnd, onCap, onUpstreamEmit
 
 		local function closeWindow()
 			if h._window ~= nil then
@@ -267,6 +271,9 @@ function FactoryImpl.__apply(self: any, state: any): any
 		-- the window restart from now. With nothing withheld this is a true no-op —
 		-- the running window (if any) is untouched (idempotent Flush).
 		function h.Flush(_self: any)
+			if module.debug then
+				checkHandleInFlush(name, "Flush", commitIdle, h.Flush, onUpstreamEmit)
+			end
 			if emit() then
 				closeWindow()
 				clearCap()
@@ -275,7 +282,7 @@ function FactoryImpl.__apply(self: any, state: any): any
 		end
 		function h.Cancel(_self: any)
 			if module.debug then
-				checkCancelInFlush(name, commitIdle, h.Flush)
+				checkHandleInFlush(name, "Cancel", commitIdle, h.Flush, onUpstreamEmit)
 			end
 			emit(false) -- drop, no propagation (set now empty → goIdle is safe)
 			goIdle()
@@ -285,7 +292,9 @@ function FactoryImpl.__apply(self: any, state: any): any
 		-- while the factory's broadcast `Flush` blamed the user's line
 		Err.setFuncLevel(SURFACE, h.Flush, h.Cancel)
 
-		return function() -- onUpstreamEmit (synchronous; the gate already merged the source into its set)
+		-- synchronous; the gate already merged the source into its set. Named (not returned inline) so the
+		-- debug handle check above can recognise its frame (a leading pass flushes from inside it).
+		function onUpstreamEmit()
 			-- MaxTime (checkpoint code-review 2026-09-17): read here, before any state change — a cap
 			-- read at the tail used to throw after `pass()`/`openWindow()` had moved the Blocker and
 			-- timer (the `H-509` order). round11 `H-542` (탐사 C′): only when it can be armed — a `Trailing = false` Debounce
@@ -329,6 +338,7 @@ function FactoryImpl.__apply(self: any, state: any): any
 				h._cap = module.Backend.setTimeout(onCap, maxT :: number)
 			end
 		end
+		return onUpstreamEmit
 	end)
 
 	self._instances[h] = true -- weak-key (plan 5-4): the gate's closure owns `h`, not the factory

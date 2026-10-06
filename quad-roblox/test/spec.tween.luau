@@ -118,10 +118,14 @@ do
 end
 
 print()
-print("=== 4b. __tostring (2026-09-08 권고 1) — 목표 값 + Time ===")
+print("=== 4b. __tostring (2026-09-08 권고 1) — 목표 값 + Time; Info가 있으면 Info(round14 Q179) ===")
 do
 	assert(tostring(Tween({ Value = 5, Time = 0.5 })) == "Tween(5, 0.5s)", tostring(Tween({ Value = 5, Time = 0.5 })))
 	assert(tostring(Tween({ Value = 5 })) == "Tween(5)", tostring(Tween({ Value = 5 })))
+	-- round14 Q179 (user decision 2026-10-06): `Info` wins over the convenience fields, so the string shows it
+	local info = mock.tweenInfoShim.new(5)
+	assert(tostring(Tween(({ Value = 1, Info = info, Time = 0.3 } :: any))) == "Tween(1, Info)", tostring(Tween(({ Value = 1, Info = info, Time = 0.3 } :: any))))
+	assert(tostring(Tween(({ Value = 1, Info = info } :: any))) == "Tween(1, Info)", "Info alone")
 end
 
 print("=== 5. 경계 — StateHandler는 Tween을 언랩하지 않는다(값 그대로 도착), Source 안의 Tween ===")
@@ -186,7 +190,7 @@ do
 end
 
 print()
-print("=== 8. debug 층(2026-09-15 사용자 결정) — 모르는 옵션 키는 경고만, Tween은 그대로 만들어진다 ===")
+print("=== 8. debug 층(2026-09-15 사용자 결정) — 모르는 옵션 키는 경고만, Tween은 그대로 만들어진다; Info와 편의 필드를 함께 주면 한 줄(round14 Q179) ===")
 do
 	local quadAny: any = Quad
 	quadAny.debug = true
@@ -194,6 +198,36 @@ do
 	local t = Tween(({ Value = 1, Duraton = 0.3 } :: any))
 	quadAny.debug = false
 	assert(t.Value == 1 and t.Time == nil, "typo key ignored, Tween built with defaults")
+	-- round14 Q179 (user decision 2026-10-06): `Info` plus convenience fields → one line naming the ignored fields
+	-- (captured from Tween.luau's env); no line without `Info`, or with `Info` alone
+	local lines: { string } = {}
+	local env: any = getfenv(Tween :: any)
+	local function capture(f: () -> ())
+		table.clear(lines)
+		local old = rawget(env, "print")
+		env.print = function(...: any)
+			table.insert(lines, table.concat({ ... }, " "))
+		end
+		local ok, err = pcall(f)
+		env.print = old
+		assert(ok, tostring(err))
+	end
+	local info = mock.tweenInfoShim.new(5)
+	quadAny.debug = true
+	capture(function()
+		Tween(({ Value = 1, Info = info, Time = 0.3, Style = "Linear" } :: any))
+	end)
+	assert(#lines == 1 and string.find(lines[1], "Tween: Info is given, so Time, Style are ignored", 1, true) ~= nil, table.concat(lines, " | "))
+	capture(function()
+		Tween(({ Value = 1, Info = info } :: any))
+		Tween({ Value = 1, Time = 0.3 })
+	end)
+	assert(#lines == 0, "no line without the overlap: " .. table.concat(lines, " | "))
+	quadAny.debug = false
+	capture(function()
+		Tween(({ Value = 1, Info = info, Time = 0.3 } :: any))
+	end)
+	assert(#lines == 0, "debug off: no line")
 	print("PASS")
 end
 

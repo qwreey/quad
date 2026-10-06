@@ -134,7 +134,9 @@ EpochBrand:Register(source)
 낼 준비가 될 때 같은 테이블에 키를 더한다(키 추가는 BREAKING 아님). `BrandPredicates`는 그 테이블에 넣지 않는다(이름
 붙이기용 술어 등록부 — 종류가 다름). 멤버는 Dispatch 매치 실패 때 불리는 훅 `__dispatchHint(key) -> string?`을 갖는다
 (`dispatch-core-plan.md`의 매치 실패 항목 2026-10-06 문단). 이름 규약: `__` = 공개 프로토콜 훅(계약), `_` 단일 = 비공개.
-타입(quad-types)엔 싣지 않는다(Dispatch 런타임만 쓰는 표면). 브랜드 객체 자체는 `Brand.luau`의 `DispatchHintBrand`(사본 단위)이고
+~~타입(quad-types)엔 싣지 않는다(Dispatch 런타임만 쓰는 표면).~~ **[2026-10-06 Q161 반영 보강 (다) — 사용자 확인]** quad-types `Quad`
+타입에 `Protocols: { [string]: Brand? }`(런타임과 같은 모양 — 키를 더해도 타입 무변경, 쓰는 쪽은 `nil` 확인으로 좁힘; 사용자 *"타입을
+더 붙일 수 있는 구조가 되려면 런타임과 똑같게 [string] -> Brand? 가 되어야할듯"*). 훅 `__dispatchHint`는 여전히 타입에 싣지 않는다. 브랜드 객체 자체는 `Brand.luau`의 `DispatchHintBrand`(사본 단위)이고
 `Protocols.DispatchHint`가 그것을 가리킨다.
 
 **역조회는 없다** — "이 값이 대체 무엇인가"를 되묻는 창구는 제공하지 않는다.

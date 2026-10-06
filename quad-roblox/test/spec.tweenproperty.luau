@@ -410,7 +410,7 @@ do
 end
 
 print()
-print("=== 12. [round13 묶음 1 2026-09-28 round13 tween-callback-structure §8-1] 콜백 인자 (inst, prop, value) — 모든 발화 자리; 모으고→쓰고→부른다(옛 정산 콜백은 새 기록 뒤, Cancelled 안 재진입도 순서대로 한 트윈); 철거는 통지 창이어도 Cancelled(Q99 c); 시체 위 retractFrom은 콜백 없음(Q82 (a)) ===")
+print("=== 12. [round13 묶음 1 2026-09-28 round13 tween-callback-structure §8-1] 콜백 인자 (inst, prop, value) — 모든 발화 자리; 모으고→쓰고→부른다(옛 정산 콜백은 새 기록 뒤; Cancelled 안 재진입이 순서대로 한 트윈인 것은 관측 — 계약 아님, round14 Q163); 철거는 통지 창이어도 Cancelled(Q99 c); 시체 위 retractFrom은 콜백 없음(Q82 (a)) ===")
 do
 	mock.resetTweenLog()
 	local seen: { string } = {}
@@ -448,7 +448,10 @@ do
 	lastTween().PlaybackState = "Completed"
 	q.Dispatch.retractFrom(f, "Size", 1)
 	assert(take() == "e:X(F,Size,5)", "teardown in the window reports Cancelled: " .. table.concat(seen, " "))
-	-- re-entry from the old Cancelled: lands after this write, one tween left, final = the inner value
+	-- re-entry from the old Cancelled: lands after this write, one tween left, final = the inner value.
+	-- OBSERVED — NOT A CONTRACT (round14 Q163 (a), user decision 2026-10-04): the next tween is chained from
+	-- `Completed`; re-writing the same State from `Started`/`Cancelled` is undefined (consistent on this
+	-- replacement path today, split on the teardown path). Kept as an observation of today's behaviour.
 	mock.resetTweenLog()
 	local s2 = q.Source(0 :: any)
 	local g = q.Declaration.Frame({ Name = "G", Size = s2 }) :: any
@@ -459,7 +462,7 @@ do
 	s2:Set(Tween({ Value = 20, Time = 0.3 }))
 	local playing = 0
 	for _, e in log do if e.tween.PlaybackState == "Playing" then playing += 1; assert(e.props.Size == 77, "the playing tween is the inner value") end end
-	assert(playing == 1 and s2:Get().Value == 77, "Cancelled re-entry: one tween, toward 77")
+	assert(playing == 1 and s2:Get().Value == 77, "observed (not a contract): Cancelled re-entry: one tween, toward 77")
 	-- corpse: no callbacks, the engine tween is still cancelled
 	mock.resetTweenLog()
 	local h = q.Declaration.Frame({ Name = "H", Size = 0 }) :: any
@@ -474,18 +477,8 @@ do
 end
 
 print()
-print("=== 13. [code-review 2026-09-28] 콜백 게이트는 하나 — 시체 위 process에서 새 값의 Started·스냅 Completed도 무발화; 프로바이더 브랜드 isTween은 모듈 BrandPredicates에 등록돼 있다(Q106 후속) ===")
+print("=== 13. 프로바이더 브랜드 isTween은 모듈 BrandPredicates에 등록돼 있다(Q106 후속); 중괄호 잊은 Tween·배열 자리 Tween 안내 (시체 위 process의 새 값 콜백 차단(code-review 2026-09-28)은 round14 Q166 (a)로 걷힘 — UB 입력, q.debug는 Dispatch.process 입구가 알림) ===")
 do
-	local fired: { string } = {}
-	local g = q.Declaration.Frame({ Name = "G", Size = 0 }) :: any
-	g:Destroy()
-	pcall(function()
-		q.Dispatch.process(g, "Size", Tween({ Value = 5, Time = 0.3, Started = function() table.insert(fired, "S") end }), 1)
-	end)
-	pcall(function()
-		q.Dispatch.process(g, "Size", Tween({ Value = 6, Time = 0, Started = function() table.insert(fired, "S0") end, Completed = function() table.insert(fired, "C0") end }), 1)
-	end)
-	assert(#fired == 0, "no callback on an Instance quad no longer claims: " .. table.concat(fired, ","))
 	assert(q.BrandPredicates:Is(q.isTween), "RobloxFactory registers isTween in the module's BrandPredicates")
 	local okT, errT = pcall(function()
 		q.Dispatch.drive(q.Declaration.Frame({}), Tween({ Value = 1 }) :: any)
@@ -520,6 +513,97 @@ do
 		quadAny.Dispatch.process(frame, 1, t, 1)
 	end)
 	assert(not okN and string.find(tostring(errN), "no handler at an array position", 1, true) ~= nil, "numeric key: the hook returns nil → the generic tail: " .. tostring(errN))
+	print("PASS")
+end
+
+print()
+print("=== round14 Q174 보강 (b) (2026-10-06) — q.debug 되먹임 감지기: Completed에서 같은 원천에 다음 Tween을 잇는 연쇄는 스냅(동기)이어도 정의(Q163·Q164 (a′)) — 0줄; Started·Cancelled 안 되쓰기는 정의되지 않음(Q163) — 1줄 ===")
+do
+	local LINE = "Observer: a change reached this Observer while its own fn was running"
+	-- the print lives in quad-base's Observer.luau — capture that module's env (spec.observer 14's technique)
+	local env: any = getfenv((q.Source(0):Observer() :: any).WeakSubscribe)
+	local lines: { string } = {}
+	local function capture(f: () -> ())
+		table.clear(lines)
+		local old = rawget(env, "print")
+		env.print = function(...: any)
+			table.insert(lines, table.concat({ ... }, " "))
+		end
+		local ok, err = pcall(f)
+		env.print = old
+		assert(ok, tostring(err))
+	end
+	local function count(): number
+		local n = 0
+		for _, l in lines do
+			if string.find(l, LINE, 1, true) ~= nil then
+				n += 1
+			end
+		end
+		return n
+	end
+	q.debug = true
+	-- (a) a snap `Completed` chain (Info-less `Time = 0` — what `Animate` hands over with `CanAnimate = false`):
+	-- each Completed sets the next Tween on the same Source, synchronously inside its dispatch; the chain ends
+	local src = q.Source(0 :: any)
+	local f = q.Declaration.Frame({ Name = "A", Size = src }) :: any
+	local hops = 0
+	local function step(): any
+		return Tween({ Value = hops, Time = 0, Completed = function()
+			if hops < 3 then
+				hops += 1
+				src:Set(step())
+			end
+		end })
+	end
+	capture(function()
+		src:Set(step())
+	end)
+	assert(hops == 3 and f.Size == 3, "the chain ran to its end: hops " .. hops .. ", Size " .. tostring(f.Size))
+	assert(count() == 0, "snap Completed chain: no line: " .. table.concat(lines, " | "))
+	-- the first-set snap (mount) chains the same way — also no line
+	capture(function()
+		local hops0 = 0
+		local src0 = q.Source(0 :: any)
+		local function step0(): any
+			return Tween({ Value = hops0, Time = 0.3, Completed = function()
+				if hops0 < 2 then
+					hops0 += 1
+					src0:Set(step0())
+				end
+			end })
+		end
+		src0:Set(step0())
+		q.Declaration.Frame({ Name = "M", Size = src0 })
+	end)
+	assert(count() == 0, "mount snap Completed: no line: " .. table.concat(lines, " | "))
+	-- (b) negative controls: the same write from `Started`, and from the previous value's `Cancelled`
+	capture(function()
+		local s2 = q.Source(0 :: any)
+		q.Declaration.Frame({ Name = "B", Size = s2 })
+		local once = true
+		s2:Set(Tween({ Value = 1, Time = 0.3, Started = function()
+			if once then
+				once = false
+				s2:Set(Tween({ Value = 9, Time = 0.3 }))
+			end
+		end }))
+	end)
+	assert(count() == 1, "re-write from Started: one line: " .. table.concat(lines, " | "))
+	capture(function()
+		local s3 = q.Source(0 :: any)
+		q.Declaration.Frame({ Name = "C", Size = s3 })
+		local once = true
+		s3:Set(Tween({ Value = 10, Time = 0.3, Cancelled = function()
+			if once then
+				once = false
+				s3:Set(Tween({ Value = 77, Time = 0.3 }))
+			end
+		end }))
+		s3:Set(Tween({ Value = 20, Time = 0.3 }))
+	end)
+	assert(count() == 1, "re-write from Cancelled: one line: " .. table.concat(lines, " | "))
+	q.debug = false
 	print("PASS")
 end
 

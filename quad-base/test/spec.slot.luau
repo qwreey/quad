@@ -1463,7 +1463,7 @@ do
 	print("PASS")
 end
 
-print("=== round13 Q74 (a) + Q113 (a) (2026-10-01) — attach 창의 Q52 가드는 owner 사슬 전체(조부모 Remove·깊이 4 조상 Clear 거부, 형제 Add 통과); State 요소의 값 사슬 순환은 q.debug일 때 Quad0070(Set 줄 blame, 이전 원소 유지, 회복 — round14 Q173 (a)로 debug 층) ===")
+print("=== round13 Q74 (a) + Q113 (a) (2026-10-01) — attach 창의 Q52 가드는 owner 사슬 전체(조부모 Remove·깊이 4 조상 Clear 거부, 형제 Add 통과); State 요소의 값 사슬 순환은 q.debug일 때 Quad0070(Set 줄 blame, 이전 원소 유지, 회복 — round14 Q173 (a)로 debug 층; 마운트 전 Add 줄은 값을 읽지 않음 — round14 P3) ===")
 do
 	local q7 = mock.newQuad()
 	local function F(name)
@@ -1567,6 +1567,33 @@ do
 	assert(not ok6 and string.find(tostring(err6), "Quad0070", 1, true) ~= nil, "Add(cyclic State): " .. tostring(err6))
 	mock.assertBlamesUser(err6, "spec.slot.luau", "blames the Add line")
 	assert(sl5.Length:Get() == 1, "nothing inserted")
+	-- (7) round14 P3 (2026-10-06 — Q170 (최종) user principle "debug 일 때 lazy 가 사라지는건 안 돼. Get은 디버그에도
+	-- 없는게 맞아보여"): with q.debug ON, a State element added to an UNMOUNTED Slot is not read — its Compute fn
+	-- does not run at the Add line; the chain check runs when the Slot mounts (the value is read then anyway)
+	local runs = 0
+	local base7 = q7.Source(1)
+	local comp7 = base7:Compute(function(_self: any): any
+		runs += 1
+		return F("c7")
+	end)
+	local sl7 = q7.Slot()
+	sl7:Add(comp7)
+	assert(runs == 0, "debug on: Add on an unmounted Slot does not run the Compute fn (ran " .. runs .. ")")
+	local host7 = mock.Instance.new("Frame")
+	q7.Dispatch.drive(host7, { sl7 })
+	assert(runs == 1 and names(host7) == "c7", "the value is read at mount: runs " .. runs .. ", " .. names(host7))
+	-- a circular State added before mount: no raise at the Add line, `Quad0070` when the Slot mounts
+	local cyc8 = q7.Source(nil :: any)
+	cyc8:Set(cyc8)
+	local sl8 = q7.Slot()
+	local okAdd8, errAdd8 = pcall(function()
+		return sl8:Add(cyc8)
+	end)
+	assert(okAdd8, "no raise at the Add line before mount: " .. tostring(errAdd8))
+	local ok8, err8 = pcall(function()
+		q7.Dispatch.drive(mock.Instance.new("Frame"), { sl8 })
+	end)
+	assert(not ok8 and string.find(tostring(err8), "Quad0070 State: the value chain is circular", 1, true) ~= nil, "Quad0070 at mount: " .. tostring(err8))
 	print("PASS")
 end
 

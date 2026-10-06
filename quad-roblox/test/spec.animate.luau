@@ -141,6 +141,23 @@ do
 	local node = q.Source(1):Apply(animate)
 	local out = node:Get()
 	assert(type(out) == "table" and out.Value == 1 and out.Time == nil, "runs with defaults: " .. tostring(out))
+	-- round14 Q179 (user decision 2026-10-06): `Info` plus a convenience field (the case the user named — `Time` as
+	-- a State next to `Info` does not follow) → one line at `Animate{…}`; captured from Animate.luau's env
+	local lines: { string } = {}
+	local env: any = getfenv(q.Animate :: any)
+	local old = rawget(env, "print")
+	env.print = function(...: any)
+		table.insert(lines, table.concat({ ... }, " "))
+	end
+	q.debug = true
+	local ok, err = pcall(function()
+		q.Animate(({ Info = mock.tweenInfoShim.new(5), Time = q.Source(0.3) } :: any))
+		q.Animate(({ Info = mock.tweenInfoShim.new(5) } :: any))
+	end)
+	q.debug = false
+	env.print = old
+	assert(ok, tostring(err))
+	assert(#lines == 1 and string.find(lines[1], "Animate: Info is given, so Time is ignored", 1, true) ~= nil, table.concat(lines, " | "))
 	print("PASS")
 end
 

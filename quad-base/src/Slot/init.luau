@@ -241,7 +241,7 @@ local function Init(module: any)
 	-- already held is caught by `rawAdd`/`rawReplace`'s `claimOwner` (it claims even before mount), so
 	-- `Add(A); Add(A)` and `Slot{ A, A }` raise at the same place with the same message. User: "Get은
 	-- 디버그에도 없는게 맞아보여" — the debug layer adds only the in-call duplicate check on the values
-	-- as given (`checkBatchDuplicates`, file head) and the `H-500` cycle walk on raw Slots.
+	-- as given (`checkBatchDebug`, file head) and the `H-500` cycle walk on raw Slots.
 	local function prepareElements(self: any, surface: string, count: number, items: { any }): { any }
 		local prepared = table.create(count)
 		for i = 1, count do
