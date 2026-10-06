@@ -8,3 +8,4 @@
 | 문서 | 내용 |
 |---|---|
 | `consumer-kits-2026-10-05.md` | 첫 소비자 둘(디버그 UI 킷·Material 3 킷, 계획은 `research/consumer-kits-plan.md`)을 만들며 겪은 quad 마찰 |
+| `consumer-kits-studio-qa-2026-10-07.md` | 사용자가 Studio에서 본 material 킷 시각·상호작용 QA 열한 항목과 처리 상태(원인 파악된 것은 고침, 아닌 것은 QA 대기) |
