@@ -121,83 +121,289 @@ H.section("Linear indeterminate: loop connects on mount, runs, hides, disconnect
 	H.assertNoDebugOutput("linear indeterminate")
 end)
 
-H.section("Circular determinate: ring + two half-plane gradients", function()
+local Circular = require("../src/Progress/Circular")
+local OVERLAP = Circular.OVERLAP
+
+-- inverse of Circular.cellRect: (thickness index 1..4, bit 0..8) of a piece
+local function cellOf(piece: any): (number, number)
+	local o = piece.ImageRectOffset
+	local i = (o.X // 160) * 6 + o.Y // 160
+	return i // 9 + 1, i % 9
+end
+-- the shown pieces of one arc ("Arc" = indicator, "Track"): { rot, deg }
+local function shownPieces(host: any, prefix: string): { { rot: number, deg: number } }
+	local out: { { rot: number, deg: number } } = {}
+	local labels = H.findAll(host, function(x: any): boolean
+		return x.ClassName == "ImageLabel" and string.match(x.Name, "^" .. prefix .. "%d+$") ~= nil
+	end)
+	for _, c in labels do
+		local _, bit = cellOf(c)
+		assert(tonumber(string.sub(c.Name, #prefix + 1)) == 2 ^ bit, "piece name = its cell's angle: " .. c.Name)
+		if c.Visible then
+			table.insert(out, { rot = c.Rotation, deg = 2 ^ bit })
+		end
+	end
+	return out
+end
+-- follow the pieces end to end from `a` (each starts where the previous one's NOMINAL angle ends); every shown piece
+-- must be used; returns the drawn end (the last piece's overhang included) and the piece count
+local function chain(pieces: { { rot: number, deg: number } }, a: number): (number, number)
+	local left = table.clone(pieces)
+	local at, drawnEnd, count = a, a, 0
+	while #left > 0 do
+		local found = nil
+		for i, p in left do
+			if math.abs((p.rot - at + 180) % 360 - 180) < 1e-6 then
+				found = i
+				break
+			end
+		end
+		assert(found ~= nil, "no piece starts at " .. at)
+		local p = table.remove(left, found :: number) :: { rot: number, deg: number }
+		drawnEnd = at + p.deg + OVERLAP
+		at += p.deg
+		count += 1
+	end
+	return drawnEnd, count
+end
+-- a cap centred on the stroke's centre line at `angle` (Scale only)
+local function capAt(cap: any, rho: number, angle: number): boolean
+	local a = math.rad(angle)
+	local p = cap.Position
+	return p.X.Offset == 0 and p.Y.Offset == 0 and math.abs(p.X.Scale - (0.5 + rho * math.sin(a))) < 1e-5
+		and math.abs(p.Y.Scale - (0.5 - rho * math.cos(a))) < 1e-5
+end
+-- one arc drawn from `a` over `span` (Circular.luau "ONE ARC"): pieces, caps, count
+local function checkArc(host: any, prefix: string, a: number, span: number, rho: number, what: string)
+	local pieces = shownPieces(host, prefix)
+	local s, e = H.find(host, prefix .. "Start"), H.find(host, prefix .. "End")
+	if span <= 0 then
+		assert(#pieces == 0 and not s.Visible and not e.Visible, what .. ": nothing drawn")
+	elseif span >= 360 then
+		local drawnEnd, n = chain(pieces, a)
+		assert(math.abs(drawnEnd - (a + 360 + OVERLAP)) < 1e-6 and n == 4, what .. ": closed ring of 4 pieces, laps the join")
+		assert(not s.Visible and not e.Visible, what .. ": no ends on a closed ring")
+	else
+		local drawnEnd, n = chain(pieces, a)
+		if span > OVERLAP then
+			assert(math.abs(drawnEnd - (a + span)) < 1e-6, `{what}: ink ends at {drawnEnd}, want {a + span}`)
+		else
+			assert(n == 0, what .. ": shorter than a piece: caps only")
+		end
+		assert(n <= 9, what .. ": at most 9 pieces, got " .. n)
+		assert(s.Visible and e.Visible and capAt(s, rho, a % 360) and capAt(e, rho, (a + span) % 360), what .. ": caps at both ends")
+	end
+end
+
+H.section("Circular pure rules: sheet cells, thickness pick, step, gap, layout, indeterminate pose", function()
+	assert(Circular.cellRect(1, 0) == Vector2.new(0, 0) and Circular.cellRect(1, 5) == Vector2.new(0, 800))
+	assert(Circular.cellRect(1, 6) == Vector2.new(160, 0) and Circular.cellRect(2, 0) == Vector2.new(160, 480))
+	assert(Circular.cellRect(4, 8) == Vector2.new(800, 800), "cell 35: the last one")
+	assert(Circular.SHEET_IMAGE == "rbxassetid://107858841263712", "the IMAGE id, not the Decal 92434906460089")
+	local pick = Circular.pickThickness
+	assert(pick(40, 2) == 1 and pick(40, 4) == 2 and pick(40, 6) == 3 and pick(40, 8) == 4)
+	assert(pick(40, 1) == 1 and pick(40, 20) == 4 and pick(24, 3) == 2, "nearest; 0.125 is a tie -> the thinner 0.10")
+	assert(Circular.stepFor(40, 0.1) == 2 and Circular.stepFor(129, 0.1) == 2 and Circular.stepFor(130, 0.1) == 1)
+	assert(Circular.stepFor(122, 0.05) == 2 and Circular.stepFor(123, 0.05) == 1 and Circular.stepFor(146, 0.2) == 1)
+	assert(near(Circular.centreRadius(0.1), 71 / 160))
+	local gap = Circular.gapAngle
+	assert(gap(40, 0.05, 2) == 18 and gap(40, 0.1, 2) == 22 and gap(40, 0.15, 2) == 28 and gap(40, 0.2, 2) == 34)
+	local function lay(e: number, a: number, b: number, c: number)
+		local x, y, z = Circular.layout(e, 22)
+		assert(x == a and y == b and z == c, `layout({e}) = {x}, {y}, {z}`)
+	end
+	lay(0, 0, 0, 360)
+	lay(4, 4, 8, 348) -- below the gap: the gap shrinks to the sweep (Compose min(sweep, gapSweep))
+	lay(100, 100, 122, 216)
+	lay(314, 314, 336, 2)
+	lay(316, 316, 338, 0) -- track gone
+	lay(360, 360, 0, 0)
+	local pose = Circular.indeterminatePose
+	local t0, p0 = pose(0)
+	assert(t0 == 0 and near(p0, 0.1))
+	local t1, p1 = pose(0.15)
+	assert(near(t1, 27 + 45) and near(p1, 0.1 + 0.77 * 0.05), "global 180 deg/s + half of the first 90 deg jump")
+	local t2, p2 = pose(1)
+	assert(near(t2, 270) and near(p2, 0.1 + 0.77 / 3))
+	local t3, p3 = pose(3)
+	assert(near(t3, 0) and near(p3, 0.87), "540 + 2 jumps = 720: back at 12 o'clock, longest arc")
+	local _, p4 = pose(6 - 1e-9)
+	assert(math.abs(p4 - 0.1) < 1e-6, "the cycle closes")
+end)
+
+H.section("Circular determinate: sprite pieces + round caps, gap, every 2 degree step covered exactly", function()
 	local value = q.Source(0.25)
 	local c = Progress.CircularProgress({ Value = value })
 	local count = H.countDescendants(c)
 	print("Circular determinate instances: " .. (count + 1))
 	H.resetOutput()
-	assert(count == 13, "track (3) + 2 x (clip, ring, corner, stroke, gradient) = 13, got " .. count)
+	assert(count == 24, "2 arcs x (8 pieces + 2 caps x (Frame + UICorner)) = 24, got " .. count)
 	assert(c.Size == UDim2.fromOffset(40, 40) and c.BackgroundTransparency == 1)
-	local track = H.find(c, "Track")
-	assert(H.find(track, "Stroke").Color == L.SecondaryContainer and H.find(track, "Stroke").Thickness == 4)
-	local right, left = H.find(c, "ClipRight"), H.find(c, "ClipLeft")
-	assert(right.ClipsDescendants == true and left.ClipsDescendants == true)
-	assert(right.Position == UDim2.fromScale(0.5, 0) and right.Size == UDim2.fromScale(0.5, 1) and left.Position == UDim2.new())
-	local rr, lr = H.find(right, "Ring"), H.find(left, "Ring")
-	assert(rr.Size == UDim2.fromScale(2, 1) and rr.Position == UDim2.fromScale(-1, 0) and lr.Position == UDim2.new(), "rings span the full circle")
-	local stroke = H.find(rr, "Stroke")
-	assert(stroke.Color == L.Primary and stroke.BorderStrokePosition == Enum.BorderStrokePosition.Inner)
-	local gr, gl = H.find(right, "Arc"), H.find(left, "Arc")
-	local kps = gr.Transparency.Keypoints
-	assert(#kps == 4 and kps[1].Value == 0 and kps[2].Value == 0 and kps[3].Value == 1 and kps[4].Value == 1 and near(kps[2].Time, 0.5), "hard step at 0.5")
-	local function check(v: number, r: number, l: number)
-		value:Set(v)
-		H.finishTweens()
-		assert(near(gr.Rotation, r) and near(gl.Rotation, l), `value {v}: right {gr.Rotation} left {gl.Rotation}, want {r}/{l}`)
+	assert(#class(c, "UIStroke") == 0 and #class(c, "UIGradient") == 0 and #class(c, "CanvasGroup") == 0)
+	assert(#H.findAll(c, function(x: any)
+		return x.ClipsDescendants == true
+	end) == 0, "no clipping")
+	local p = H.find(c, "Arc64")
+	assert(p.Image == "rbxassetid://107858841263712" and p.ImageRectSize == Vector2.new(160, 160) and p.ScaleType == Enum.ScaleType.Stretch)
+	assert(p.Size == UDim2.fromScale(1, 1) and p.ImageColor3 == L.Primary and p.ZIndex == 2)
+	assert(H.find(c, "Track64").ImageColor3 == L.SecondaryContainer and H.find(c, "Track64").ZIndex == 1, "track under the indicator")
+	assert(select(1, cellOf(p)) == 2, "default 40 / 4 -> the 0.10 stroke")
+	assert(H.find(c, "Arc1") == nil, "no 1 degree piece at step 2")
+	for _, name in { "ArcStart", "ArcEnd", "TrackStart", "TrackEnd" } do
+		local cap = H.find(c, name)
+		assert(cap.Size == UDim2.fromScale(0.1, 0.1) and cap.AnchorPoint == Vector2.new(0.5, 0.5) and #class(cap, "UICorner") == 1)
 	end
-	check(0.25, 90, 180)
-	check(0, 0, 180)
-	check(0.5, 180, 180)
-	check(0.75, 180, 270)
-	check(1, 180, 360)
-	check(2, 180, 360)
-	check(-1, 0, 180)
-	assert(beats() == baseBeats)
+	assert(H.find(c, "ArcStart").BackgroundColor3 == L.Primary and H.find(c, "TrackEnd").BackgroundColor3 == L.SecondaryContainer)
+	local rho = Circular.centreRadius(0.1)
+	checkArc(c, "Arc", 0, 90, rho, "25 %")
+	checkArc(c, "Track", 112, 360 - 90 - 44, rho, "25 % track")
+	assert(beats() == baseBeats, "at rest: no frame loop")
 	q.dispose(c)
+	-- every quantised sweep, built fresh (construction draws without a loop)
+	for e = 0, 360, 2 do
+		local ring = Progress.CircularProgress({ Value = e / 360 })
+		local ispan, ts, tspan = Circular.layout(e, 22)
+		checkArc(ring, "Arc", 0, ispan, rho, `sweep {e}`)
+		checkArc(ring, "Track", ts, tspan, rho, `sweep {e} track`)
+		if e > 0 and e < 360 and tspan > 0 then
+			assert(ts - e == math.min(e, 22), "the gap after the indicator")
+			assert(360 - (ts + tspan) == math.min(e, 22), "the same gap before 12 o'clock")
+		end
+		q.dispose(ring)
+	end
+	-- a big ring quantises to 1 degree and has the 1 degree piece
+	local big = Progress.CircularProgress({ Value = 0.5, Size = 200, Thickness = 20 })
+	assert(H.countDescendants(big) == 26, "9 pieces per arc at step 1")
+	local bigRho = Circular.centreRadius(0.1)
+	for e = 1, 359, 7 do
+		local r = Progress.CircularProgress({ Value = e / 360, Size = 200, Thickness = 20 })
+		local g = Circular.gapAngle(200, 0.1, 1)
+		local ispan, ts, tspan = Circular.layout(e, g)
+		checkArc(r, "Arc", 0, ispan, bigRho, `big sweep {e}`)
+		checkArc(r, "Track", ts, tspan, bigRho, `big sweep {e} track`)
+		q.dispose(r)
+	end
+	q.dispose(big)
 	H.assertNoDebugOutput("circular determinate")
 end)
 
-H.section("Circular: Size and Thickness props", function()
-	local c = Progress.CircularProgress({ Value = 0.5, Size = 24, Thickness = 2 })
-	assert(c.Size == UDim2.fromOffset(24, 24))
-	assert(H.find(H.find(c, "ClipRight"), "Stroke").Thickness == 2)
-	q.dispose(c)
-	H.assertNoDebugOutput("circular props")
+H.section("Circular determinate: a Value change eases (Medium2) in a Heartbeat that stops when it lands", function()
+	local value = q.Source(0.25)
+	local shown = q.Source(true)
+	local c, gui = live(Progress.CircularProgress({ Value = value, Visible = shown }))
+	local rho = Circular.centreRadius(0.1)
+	assert(beats() == baseBeats, "mounted at rest: no loop")
+	local track256 = H.find(c, "Track256")
+	value:Set(0.75)
+	assert(beats() == baseBeats + 1, "moving: one loop")
+	H.advance(0.1)
+	local arcEnd = (H.find(c, "ArcEnd") :: any)
+	local mid = nil
+	for e = 92, 268, 2 do
+		if capAt(arcEnd, rho, e) then
+			mid = e
+		end
+	end
+	assert(mid ~= nil and mid > 90 and mid < 270, "part way")
+	local ispan, ts, tspan = Circular.layout(mid :: number, 22)
+	checkArc(c, "Arc", 0, ispan, rho, "mid-tween")
+	checkArc(c, "Track", ts, tspan, rho, "mid-tween track")
+	H.advance(0.25)
+	checkArc(c, "Arc", 0, 270, rho, "landed")
+	assert(beats() == baseBeats, "landed: the loop stops")
+	-- a nudge keeps the big pieces (largest first from the fixed end): only the small ones near the moving end turn
+	local arc256, trackRot = H.find(c, "Arc256"), nil
+	value:Set(30 / 360) -- track 52..338: 286 = 2 + 256 + 16 + 8 + 4
+	H.advance(0.4)
+	trackRot = track256.Rotation
+	assert(track256.Visible and arc256.Visible == false and near(trackRot, 338 - 2 - 256))
+	value:Set(40 / 360) -- track 62..338: 276 = 2 + 256 + 16 + 2
+	H.advance(0.4)
+	assert(track256.Visible and track256.Rotation == trackRot, "the track's 256 piece stays put (anchored at the track end)")
+	-- reversal mid-way continues from where it is
+	value:Set(1)
+	H.advance(0.1)
+	value:Set(0)
+	H.advance(0.4)
+	checkArc(c, "Arc", 0, 0, rho, "back to 0")
+	checkArc(c, "Track", 0, 360, rho, "0 %: closed track")
+	assert(beats() == baseBeats)
+	-- hidden while moving: the loop stops and resumes from the same place
+	value:Set(1)
+	H.advance(0.05)
+	shown:Set(false)
+	assert(beats() == baseBeats, "hidden: no loop")
+	shown:Set(true)
+	H.advance(0.4)
+	checkArc(c, "Arc", 0, 360, rho, "100 %: closed ring")
+	checkArc(c, "Track", 0, 0, rho, "100 %: no track")
+	assert(beats() == baseBeats)
+	-- clamped
+	value:Set(-2)
+	H.advance(0.4)
+	checkArc(c, "Arc", 0, 0, rho, "clamped low")
+	q.dispose(gui)
+	assert(beats() == baseBeats)
+	H.assertNoDebugOutput("circular tween")
 end)
 
-H.section("Circular indeterminate: two unclipped rings rotate from Heartbeat; lifecycle", function()
+H.section("Circular: Thickness picks one of four sheet strokes; caps follow the drawn stroke", function()
+	for i, t in { 2, 4, 6, 8 } do
+		local c = Progress.CircularProgress({ Value = 0.5, Thickness = t })
+		local ratio = Circular.THICK[i]
+		local labels = H.findAll(c, function(x: any): boolean
+			return x.ClassName == "ImageLabel"
+		end)
+		for _, pc in labels do
+			assert(select(1, cellOf(pc)) == i, `Thickness {t}: every piece from row {i}`)
+		end
+		assert(H.find(c, "ArcEnd").Size == UDim2.fromScale(ratio, ratio), "cap diameter = the drawn stroke")
+		local g = Circular.gapAngle(40, ratio, 2)
+		checkArc(c, "Track", 180 + g, 180 - 2 * g, Circular.centreRadius(ratio), `Thickness {t} track`)
+		q.dispose(c)
+	end
+	local small = Progress.CircularProgress({ Value = 0.5, Size = 24, Thickness = 3 })
+	assert(small.Size == UDim2.fromOffset(24, 24) and select(1, cellOf(H.find(small, "Arc128"))) == 2, "3 / 24 -> 0.10 (2.4 px drawn)")
+	q.dispose(small)
+	H.assertNoDebugOutput("circular thickness")
+end)
+
+H.section("Circular indeterminate: one arc (no track) 10 %..87 % turning from Heartbeat; lifecycle", function()
 	local visible = q.Source(true)
 	local c, gui = live(Progress.CircularProgress({ Visible = visible, Size = 32 }))
-	assert(H.countDescendants(c) == 11, "track (3) + 2 x (ring, corner, stroke, gradient) = 11, got " .. H.countDescendants(c))
-	assert(#class(c, "CanvasGroup") == 0 and #H.findAll(c, function(x: any)
-		return x.ClipsDescendants == true
-	end) == 0, "no clipping under rotation")
+	local n = H.countDescendants(c)
+	print("Circular indeterminate instances: " .. (n + 1))
+	H.resetOutput()
+	assert(n == 12, "8 pieces + 2 caps x (Frame + UICorner) = 12, got " .. n)
+	assert(H.find(c, "Track2") == nil and H.find(c, "TrackStart") == nil, "no track (Compose: transparent)")
 	assert(beats() == baseBeats + 1)
-	local g1, g2 = H.find(H.find(c, "Ring1"), "Arc"), H.find(H.find(c, "Ring2"), "Arc")
-	assert(g1.Rotation == 0 and g2.Rotation == 0)
-	H.advance(0.3)
-	local r1, r2 = g1.Rotation, g2.Rotation
-	assert(r1 > 0 and r2 > 0 and r1 < 360 and r2 < 360)
-	assert(near(r1, 0.3 / 1.5 * 360), "one revolution per 1.5 s")
-	H.advance(0.3)
-	assert(g1.Rotation ~= r1 and g2.Rotation ~= r2)
-	-- the head ring leads the tail ring by the breathing angle d in [0, 120]
-	local seen = {} :: { number }
-	for _ = 1, 30 do
-		H.advance(0.05)
-		local d = (g2.Rotation - g1.Rotation) % 360
-		assert(d >= -1e-6 and d <= 120 + 1e-6, "arc length 180..300, got d=" .. d)
-		table.insert(seen, d)
+	local rho = Circular.centreRadius(0.1) -- 4 / 32 = 0.125: a tie -> 0.10
+	checkArc(c, "Arc", 0, 36, rho, "pose 0")
+	local s = H.find(c, "ArcStart")
+	local lo: number, hi: number = math.huge, -math.huge
+	local clock = 0
+	for _ = 1, 200 do
+		H.advance(1 / 30)
+		clock += 1 / 30
+		local tail, p = Circular.indeterminatePose(clock)
+		local span = math.round(p * 180) * 2
+		checkArc(c, "Arc", tail, span, rho, "t " .. clock)
+		assert(span >= 36 and span <= 314, "arc 10 %..87 %")
+		lo = math.min(lo, span)
+		hi = math.max(hi, span)
 	end
-	assert(math.max(table.unpack(seen)) - math.min(table.unpack(seen)) > 20, "arc breathes")
+	assert(lo <= 40 and hi >= 310, `breathes {lo}..{hi}`)
 	visible:Set(false)
 	assert(beats() == baseBeats and c.Visible == false)
-	local frozen = g1.Rotation
+	local frozen = s.Position
 	H.advance(1)
-	assert(g1.Rotation == frozen)
+	assert(s.Position == frozen, "frozen while hidden")
 	visible:Set(true)
 	assert(beats() == baseBeats + 1)
+	H.advance(1 / 30)
+	clock += 1 / 30
+	local tail, p = Circular.indeterminatePose(clock)
+	checkArc(c, "Arc", tail, math.round(p * 180) * 2, rho, "resumed on its own clock")
 	q.dispose(gui)
 	assert(beats() == baseBeats)
 	H.assertNoDebugOutput("circular indeterminate")

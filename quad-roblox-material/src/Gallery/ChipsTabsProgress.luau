@@ -141,9 +141,14 @@ return function(ctx: Ctx): Instance
 		Common.Column({
 			Progress.LinearProgress({ Theme = theme, Value = value }),
 			Progress.WavyProgress({ Theme = theme, Value = value, Visible = busy }),
+			-- the four strokes of the arc sheet (Thickness / Size = 0.05, 0.10 (M3 default), 0.15, 0.20)
 			Common.Flow({
+				Progress.CircularProgress({ Theme = theme, Value = value, Thickness = 2 }),
 				Progress.CircularProgress({ Theme = theme, Value = value }),
-				Progress.CircularProgress({ Theme = theme, Value = value, Size = 24, Thickness = 3 }),
+				Progress.CircularProgress({ Theme = theme, Value = value, Thickness = 6 }),
+				Progress.CircularProgress({ Theme = theme, Value = value, Thickness = 8 }),
+			}),
+			Common.Flow({
 				Button({ Theme = theme, Variant = "Tonal", Label = "-10 %", OnClick = bump(-0.1) }),
 				Button({ Theme = theme, Variant = "Tonal", Label = "+10 %", OnClick = bump(0.1) }),
 				Common.Caption(ctx, Common.text<<number>>(value, function(v: number)
@@ -169,7 +174,7 @@ return function(ctx: Ctx): Instance
 		Common.Group(ctx, "Chip: filter", filters),
 		Common.Group(ctx, "Chip: input (ChipSet)", inputs, "Remove a chip with its x; the keyed set rebuilds nothing else."),
 		Common.Group(ctx, "Tabs: Primary and Secondary", tabsPrimary),
-		Common.Group(ctx, "Progress: determinate", determinate, "Flat bar, wavy bar (M3 Expressive — its wave travels while Busy is on), rings."),
+		Common.Group(ctx, "Progress: determinate", determinate, "Flat bar, wavy bar (M3 Expressive — its wave travels while Busy is on), rings in the four strokes (2 / 4 / 6 / 8 px at 40)."),
 		Common.Group(
 			ctx,
 			"Progress: indeterminate",

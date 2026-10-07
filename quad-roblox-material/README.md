@@ -92,7 +92,7 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
 | | `Tooltip` | `Tooltip.hook`(대상마다 하나)과 `Tooltip.Plain`(시각만) |
 | 칩·탭·진행 | `Chip` | Assist / Filter / Input / Suggestion + 키로 재활용되는 `ChipSet` |
 | | `Tabs` | Primary / Secondary, 활성 표시기 하나가 미끄러짐 |
-| | `LinearProgress` / `CircularProgress` | 확정·비확정(원형은 `UIStroke`+`UIGradient`, 이미지 없음) |
+| | `LinearProgress` / `CircularProgress` | 확정·비확정. 원형은 원호 조각 스프라이트 시트(1·2·4…256° 조각, 두께 넷)를 2진으로 합쳐 `Rotation`으로 돌려 놓고 양 끝에 둥근 캡 — M3처럼 표시와 트랙 사이 간격·둥근 끝, 비확정은 10 %↔87 % 호가 늘었다 줄며 돎(트랙 없음). `Thickness`는 지름 대비 0.05/0.10/0.15/0.20 중 가장 가까운 것으로 맞춰짐. 인스턴스 확정 25·비확정 13(지름 ≳130 px에선 1° 조각이 더해져 27·14); 확정은 값이 바뀌어 0.3 s 트윈하는 동안만 Heartbeat(바뀐 조각만 써서 2° 한 칸에 평균 약 8 쓰기), 비확정은 매 프레임 보이는 조각 ≤ 7 `Rotation` + 캡 2 `Position` |
 | | `LoadingIndicator` | M3 Expressive 로딩 표시 — 모양이 바뀌며 도는 것(둥근 사각형 셋을 서로 돌려 겹친 근사: 12갈래·8갈래·둥근 사각형·알약·원), `Contained` |
 | | `WavyProgress` | M3 Expressive 물결 막대(확정만) — 진폭 스프라이트 시트의 한 칸(한 파장)을 파장마다 Stretch ImageLabel로 깔아 흐르며 차오름, `ClipsDescendants` 프레임이 채운 길이로 자르고 양 끝에 사인 곡선을 따라 움직이는 둥근 캡; 100 %이거나 `Wavy = false`이면 물결이 잦아들어 평평해짐(0.5 s), 평평하면 루프가 쉼(인스턴스 12 + 폭/파장 올림 + 1 — 300 px에서 21, 폭에 비례, 시트는 아래 "외부 이미지 에셋") |
 | 선택기 | `DatePicker` | `Docked` / `RangeDocked` / `Modal`, 순수 날짜 계산 `Calendar` |
@@ -310,6 +310,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 28 | Dialog 닫힘 | Dialog 스토리 | DatePicker 모달처럼 살짝 작아지며 사라짐, 버튼·바닥 여백이 안 커짐 |  |
 | 29 | LoadingIndicator·WavyProgress | Progress 스토리·갤러리 Chips | 모양이 650ms마다 바뀌며 돌고, 물결이 흐르며 막대가 참 — 물결 선이 또렷한지(시트 칸 Stretch), 파장 이음매·흐름 끊김이 안 보이는지; 양 끝 둥근 캡이 선 위에 붙어 함께 오르내리는지(채움이 바뀌는 동안에도), 0 % 근처에서 점 하나로 줄었다 사라지는지; 100 %·`Wavy = false`에서 물결이 부드럽게 잦아들어 직선이 되고 다시 켜면 부풀어 오르는지(시트 칸 경계에서 이웃 칸이 번져 보이지 않는지) |  |
 | 30 | Classic 색상 선택기 물방울 그림자 | ClassicColorPicker 스토리 | 색조 손잡이를 끌 때 물방울 그림자가 손잡이(구) 위를 덮지 않음 |  |
+| 31 | CircularProgress 원호 조각(시트 `rbxassetid://107858841263712`) | Progress 스토리(두께 넷 한 줄)·갤러리 Chips | 조각 이음매에 머리카락 틈·겹친 진한 줄이 없음, 양 끝이 둥글고 캡이 선 굵기와 같음(삐져나온 모서리 없음), 표시와 트랙 사이 간격이 양쪽 같음, 0 %에서 트랙만 닫힌 고리·100 %에서 표시만 닫힌 고리(12시 이음매 없음), 값을 바꾸면 0.3 s에 걸쳐 끝이 미끄러지고 트랙이 점으로 줄었다 사라짐, 비확정이 짧은 호(10 %)↔긴 호(87 %)로 늘었다 줄며 1.5 s마다 90° 툭 건너뛰며 돎, 작은 지름(24)에서 선이 뭉개지지 않음 |  |
 
 ## 테스트
 
@@ -334,13 +335,17 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 - **장치 미검증**: 이 키트는 목 백엔드에서만 검증됐습니다. 실제 `AbsolutePosition`/`AbsoluteSize` 위의 포인터 지오메트리
   (Slider 드래그, 색상 SV 영역, Menu·Tooltip 위치 보정과 GUI inset), 모양, `UIShadow` 렌더링은 실기기에서 보지 못했습니다.
   `TextField`는 편집 가능한 TextBox 위에서 엔진이 `MouseEnter`를 유지하는지(hover 표시) 확인하지 못했습니다.
-- **외부 이미지 에셋 둘**: `Radio`는 qwreey MaterialUI의 라디오 스프라이트 시트(`rbxassetid://4667411351`)를 그대로
+- **외부 이미지 에셋 셋**: `Radio`는 qwreey MaterialUI의 라디오 스프라이트 시트(`rbxassetid://4667411351`)를 그대로
   참조합니다(키트가 올린 것이 아니라 원본 키트의 공개 에셋). 그 에셋을 못 불러오는 환경에서는 라디오가 비어 보입니다.
   `WavyProgress`의 물결은 이 키트의 진폭 스프라이트 시트 `assets/wavy-progress-sheet-1024x960.png`(한 파장 24칸, 최대 진폭 →
   평평, 흰 선·투명 배경; 생성기 `assets/gen-wave.py`)를 키트 작성자가 올린 공개 에셋(`rbxassetid://111246664282863`,
   `src/Progress/Wavy.luau`의 `SHEET_IMAGE`)으로 그립니다 — 데칼 id가 아니라 데칼이 가리키는 **이미지** id입니다(데칼·클래식
   티셔츠는 상위 에셋이라 `Image`에 넣으면 안 보임). 못 불러오는 환경에서는 물결이 안 보이고 양 끝 캡·트랙·끝 점만 보입니다.
   처음 올린 단일 텍스처 `assets/wavy-progress-512x128.png`(`rbxassetid://78445787165309`)는 더 쓰지 않습니다.
+  `CircularProgress`는 이 키트의 원호 조각 시트 `assets/circular-arc-sheet-960.png`(160 px 칸 36개 = 두께 넷 × 1·2·4…256°,
+  흰 선·투명 배경; 생성기 `assets/gen-arc.py`)를 키트 작성자가 올린 공개 에셋(`rbxassetid://107858841263712`,
+  `src/Progress/Circular.luau`의 `SHEET_IMAGE`)으로 그립니다 — 이것도 데칼(92434906460089)이 아니라 **이미지** id입니다. 못
+  불러오는 환경에서는 둥근 캡만 보입니다.
 - **글리프 아이콘**: 키트가 아이콘 에셋을 싣지 않으므로 Chip의 체크·제거 "x", Select의 화살표, Snackbar의 닫기는 **텍스트
   글리프**(엔진 폰트 폴백이 그림)입니다. 정확한 그림이 필요하면 `CheckIcon`/`RemoveIcon`/`TrailingIcon` 등 에셋 id prop을
   쓰세요. 갤러리의 기본 `Icon`도 자리표시입니다.
@@ -350,8 +355,8 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 - **M3와 다른 점**(Roblox·인스턴스 비용 때문): Filled TextField는 위쪽 두 모서리만 둥글림(채움을 4px 더 크게 그려 부모가 자르는 방식, 인스턴스 +1),
   Outlined의 레이블 노치는 표면색 배경(어두운 배경 위에선 `NotchColor` 필요), Switch 터치 타깃은 52x32, IconButton의 48px 터치 타깃은
   선택(`TouchTarget = true`, 기본은 40px), 칩 제거·스낵바 버튼은 48px, Tabs는 스크롤되지 않고 개별 비활성이 없음, Slider·RangeSlider는 2022 클래식 형태이고 Min/Max/Step이 정적, 리플은 호스트 사각형을 넘지 않는 둥근 사각형으로 자람(가장자리에 잘린 원을 모서리 반경 하나로 흉내 냄 — `AutomaticSize` 조상이 리플까지 재기 때문, `Ripple.luau` "BOUNDED"), LoadingIndicator는 M3의 일곱 모양(오각형·쿠키 9 등) 대신 사각형 셋의 겹침 근사, WavyProgress는 확정만(비확정 물결 없음)·둥근 끝은 직각으로 자른 끝 위에 원을 얹은 근사(모서리 삐져나옴 1 px 미만)·진폭이 0 % 바로 위부터 100 % 바로 아래까지 최대(Compose 기본은 10 % 이하·95 % 이상 평평)·진폭과 선 두께가 높이에 고정 비율, Menu는
-  가장 긴 항목에 폭을 맞추지 못하며(`Width` 지정) 타입어헤드·서브메뉴가 없음(위/아래·Return·Escape는 있음), 원형 비확정
-  진행의 가장 짧은 호가 180도, 색상 선택기에 알파가 없음. 컴포넌트별 전체 목록은 각 파일 머리에 있습니다.
+  가장 긴 항목에 폭을 맞추지 못하며(`Width` 지정) 타입어헤드·서브메뉴가 없음(위/아래·Return·Escape는 있음), CircularProgress는
+  두께가 시트의 네 비율로 맞춰지고 끝·간격이 2° 단위(큰 지름 1°)로 움직이며 원형 물결(M3 Expressive)이 없음, 색상 선택기에 알파가 없음. 컴포넌트별 전체 목록은 각 파일 머리에 있습니다.
 - 갤러리는 좁은 화면에서 탭 글자가 잘릴 수 있습니다(Tabs는 폭을 균등 분할).
 
 ## 크레딧

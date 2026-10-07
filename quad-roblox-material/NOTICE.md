@@ -15,3 +15,6 @@
   `rbxassetid://111246664282863`) and the earlier single texture `assets/wavy-progress-512x128.png` (`rbxassetid://78445787165309`, no
   longer used) were generated for this kit by `assets/gen-wave.py`; they are not derived from Material Design artwork or any
   third-party asset.
+- **Arc pieces** — `assets/circular-arc-sheet-960.png` (the `CircularProgress` arc-piece sprite sheet, published as
+  `rbxassetid://107858841263712`) was generated for this kit by `assets/gen-arc.py`; it is not derived from Material Design
+  artwork or any third-party asset.
