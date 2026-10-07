@@ -96,7 +96,7 @@
 	`Wavy` turning true or the host resizing (new periods may be needed) wakes it. While not Visible the loop stops and
 	the caps freeze with the strip (both last written in the same step).
 
-	`SHEET_IMAGE` = rbxassetid://98909031866905 (the sheet, uploaded by the kit author — the IMAGE id the Decal
+	`SHEET_IMAGE` = rbxassetid://96568777229073 (the sheet, uploaded by the kit author — the IMAGE id the Decal
 	resolves to, not the Decal id). If the asset fails to load the wave is invisible; the caps, track and stop dot
 	still show. (The single full-amplitude texture assets/wavy-progress-512x128.png, rbxassetid://78445787165309, is
 	no longer used.)
@@ -127,7 +127,7 @@ export type Props = {
 
 -- The amplitude sprite sheet: assets/wavy-progress-sheet-1024.png, uploaded by the kit author (2026-10-07). The
 -- IMAGE id (what the uploaded Decal resolves to — a Decal / classic T-shirt id is the parent asset, not usable here).
-local SHEET_IMAGE = "rbxassetid://98909031866905" -- [2026-10-07] uploaded BEFORE the 4:1 display-aspect stroke fix in assets/gen-wave.py (same layout); the file in assets/ is the fixed one, awaiting re-upload
+local SHEET_IMAGE = "rbxassetid://96568777229073"
 local FRAME_W, FRAME_H, ROWS = 480, 64, 12
 local COL_STRIDE, ROW_STRIDE, PAD_X, PAD_Y = 512, 85, 16, 10 -- the sheet's cell pitch and the gutter before each cell
 local LAST = 23 -- frames 0 (full amplitude) .. 23 (flat)

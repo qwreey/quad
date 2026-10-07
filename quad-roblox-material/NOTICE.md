@@ -12,7 +12,7 @@
 - **Color picker** — the `ColorPicker` component is a port of the author's own color picker
   (`colorPicker-ignoreme.rbxm`, Copyright (c) qwreey), republished here under this kit's MIT License.
 - **Wave textures** — `assets/wavy-progress-sheet-1024.png` (the `WavyProgress` amplitude sprite sheet, published as
-  `rbxassetid://98909031866905`) and the earlier single texture `assets/wavy-progress-512x128.png` (`rbxassetid://78445787165309`, no
+  `rbxassetid://96568777229073`) and the earlier single texture `assets/wavy-progress-512x128.png` (`rbxassetid://78445787165309`, no
   longer used) were generated for this kit by `assets/gen-wave.py`; they are not derived from Material Design artwork or any
   third-party asset.
 - **Arc pieces** — `assets/circular-arc-sheet-1024.png` (the `CircularProgress` arc-piece sprite sheet, published as

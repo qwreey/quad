@@ -533,7 +533,7 @@ H.section("WavyProgress: Stretch periods of a sheet cell clipped to the value, r
 	assert(clip.Position == UDim2.fromOffset(2, 0) and clip.Size == UDim2.new(1, -4, 1, 0), "clip inset by the cap radius at both ends")
 	local p0 = periods(bar)[1]
 	assert(p0.ClassName == "ImageLabel" and p0.ScaleType == Enum.ScaleType.Stretch, "one Stretch period (Tile cannot show a sheet cell)")
-	assert(p0.Size == UDim2.fromOffset(40, 10) and p0.Image == "rbxassetid://98909031866905", "the amplitude sheet")
+	assert(p0.Size == UDim2.fromOffset(40, 10) and p0.Image == "rbxassetid://96568777229073", "the amplitude sheet")
 	assert(p0.ImageRectSize == Vector2.new(480, 64) and frameOf(p0) == 0, "one cell, full amplitude")
 	assert(p0.ImageColor3 == L.Primary and H.find(track, "Stop").BackgroundColor3 == L.Primary)
 	for _, cap in { s, e } do

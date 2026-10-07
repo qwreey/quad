@@ -159,3 +159,5 @@
 1. 물결 — quad-roblox-material/src/Progress/Wavy.luau: 시트 이미지 id rbxassetid://98909031866905(파일 quad-roblox-material/assets/wavy-progress-sheet-1024.png), 프레임 480×64, 칸 i → ImageRectOffset (512·(i // 12) + 16, 85·(i % 12) + 10). 높이·진폭·선 두께 식은 모두 표시 높이 대비 비율(2.5·Thickness, 0.3H, 0.4H)이라 텍스처 비율이 4:1에서 7.5:1로 바뀐 것은 Stretch가 흡수 — 식 변경 없음(기본 40×10 표시에서 가로 압축이 조금 더 커져 선 기울기가 가팔라 보일 수 있음, Studio에서 볼 점).
 2. 원호 — quad-roblox-material/src/Progress/Circular.luau: 이미지 id rbxassetid://97823357785454(파일 quad-roblox-material/assets/circular-arc-sheet-1024.png), 칸 i → (170·(i // 6) + 5, 170·(i % 6) + 5), 160×160. 고리 기하 그대로.
 3. 옛 시트 파일 둘 삭제, README·NOTICE·주석·스펙(quad-roblox-material/test/spec.progress.luau의 칸·프레임 매핑 단언)을 새 식·id로. 실기기 확인은 사용자 몫: 프레임 끝·조각 끝 티끌이 사라졌는지, 물결 선이 7.5:1 프레임에서 또렷한지.
+
+- **[2026-10-07 후속]** 물결 시트를 4:1 표시 비율 기준 스트로크로 다시 그려 재업로드 — `rbxassetid://96568777229073`(이미지 id, 50.2 KiB; 직전 `98909031866905`는 같은 배치에 보정 전 스트로크라 경사에서 선이 최대 약 10 % 가늘었다).
