@@ -15,11 +15,18 @@
 	    first version's circle — grown to the farthest corner, i.e. past the host's edges — made every auto-sized
 	    ancestor grow while a press lasted: an auto-width Button / Chip widened, a RadioGroup row or a story holder grew
 	    taller and its centered children jumped, a dialog's actions row pushed the card (Studio QA 2026-10-07, 2nd).
-	    Now each frame of the expand writes the circle as the circle's bounding box CLAMPED to the host, with its
-	    UICorner = the circle radius while it fits, the clipped box's half-side once an edge cuts it, fading to 0
-	    between the nearest and the farthest host corner (the group's corner then gives the exact host shape).
-	    Deviation: once an edge cuts the circle its cut sides show as half-round ends of the box, not as the
-	    flatter arcs of a big circle — visible only during the 0.45 s grow.
+	    Now each frame of the expand writes the circle as the circle's bounding box CLAMPED to the host (around the press
+	    point snapped to a whole pixel, so an uncut box is square), with ONE UICorner radius imitating "circle cut by
+	    the host edges": per box corner the inset where the circle's arc meets the box edges (`cutCorner`), the largest
+	    of the four — the circle radius while it fits, small once both opposite edges cut it (a 32 px chip pressed in
+	    the middle shows a circle sliced by the chip), 0 once the farthest host corner is covered (the group's corner
+	    then gives the exact host shape). Until 2026-10-07 (3rd Studio QA, "the ripple starts as a slight oval") the
+	    radius was the clipped box's half-side: on a 32 px chip the circle reaches both edges in ~2 frames (Quart Out
+	    covers 30 % of the radius in the first 8 % of the 0.45 s), so nearly the whole grow showed as a PILL.
+	    Deviation: UICorner has one radius for all four corners, so a circle cut by ONE edge (pressed near the top of a
+	    tall host) keeps rounded corners on the cut side too (the uncut side wins — it stays circle-like), and the cut
+	    sides of a big circle show as straight sides with rounded corners instead of shallow arcs — only during the
+	    0.45 s grow.
 	  - TRADE-OFF: a `CanvasGroup` renders its subtree into an offscreen texture of the host's size, so a
 	    group costs texture memory + a composite pass while it exists. They are created lazily on press and
 	    destroyed ~0.2-0.6 s later (and at most `Max` exist at once — the oldest is dropped), never kept at
@@ -93,6 +100,19 @@ local Module = {
 	PointerInset = Vector2.new(0, 0),
 }
 
+-- The corner radius that imitates ONE corner of "a circle of radius r cut by the box edges", for the box corner at
+-- (hx, hy) from the circle's center: where the box's horizontal edge meets the circle, the arc starts
+-- hx - sqrt(r^2 - hy^2) in from the corner, and along the vertical edge hy - sqrt(r^2 - hx^2) — a rounded corner of
+-- radius c is c in along both, so c = the smaller inset. Uncut (hx = hy >= r): r, the circle itself. Cut by one edge
+-- (hy < r): the inset where the cut chord ends — small once the circle is much bigger than the cut, so a ripple on a
+-- 32 px chip reads as a circle sliced by the chip, not as a pill. A corner the circle covers (hx^2 + hy^2 <= r^2): 0.
+local function cutCorner(hx: number, hy: number, r: number): number
+	local rr = r * r
+	local alongX = hx - math.sqrt(math.max(0, rr - hy * hy))
+	local alongY = hy - math.sqrt(math.max(0, rr - hx * hx))
+	return math.max(0, math.min(alongX, alongY))
+end
+
 local function new(opts: Options): Ripple
 	local opacity = opts.Opacity or Tokens.State.Opacity.Pressed
 	local corner = opts.Corner or UDim.new(0, 0)
@@ -151,24 +171,24 @@ local function new(opts: Options): Ripple
 			drop(live[1].group)
 		end
 
-		local px, py = size.X / 2, size.Y / 2
+		local rx: number, ry: number = size.X / 2, size.Y / 2
 		if position ~= nil then
 			local rel = position - Module.PointerInset - h.AbsolutePosition
 			-- a press that began OUTSIDE the ripple area (a control's attached label: Checkbox/Radio `Label`) ripples from
 			-- the center, as a keyboard press does
 			if rel.X >= 0 and rel.Y >= 0 and rel.X <= size.X and rel.Y <= size.Y then
-				px, py = rel.X, rel.Y
+				rx, ry = rel.X, rel.Y
 			end
 		end
+		-- snap the center to a whole pixel: the shape's box is whole pixels, and a center with different fractions on the
+		-- two axes made an uncut circle's box 1-2 px wider than tall (or the reverse) — an oval (Studio QA 2026-10-07, 3rd)
+		local wMax, hMax = math.floor(size.X), math.floor(size.Y)
+		local px: number = math.clamp(math.round(rx), 0, wMax)
+		local py: number = math.clamp(math.round(ry), 0, hMax)
 		-- radius = distance to the farthest corner (M3), so the circle just covers the host
 		local dx = math.max(px, size.X - px)
 		local dy = math.max(py, size.Y - py)
 		local radius = math.sqrt(dx * dx + dy * dy)
-		-- the radius at which the NEAREST host corner gets covered: from there on the shape's own rounding fades to 0
-		local nx = math.min(px, size.X - px)
-		local ny = math.min(py, size.Y - py)
-		local nearCorner = math.sqrt(nx * nx + ny * ny)
-		local wMax, hMax = math.floor(size.X), math.floor(size.Y)
 
 		local transparencySrc = q.Source(1 - opacity)
 		local fadeOpts = Motion.options("Short4", "Linear")
@@ -179,22 +199,25 @@ local function new(opts: Options): Ripple
 		local entry: Live = { group = nil :: any, held = true, fade = function() end, timer = nil, conn = nil }
 
 		-- one frame of the expand: the circle of radius `r` around the press point, CLAMPED to the host rectangle (see
-		-- BOUNDED in the header) — its rounding is the circle's while it fits, the clipped box's half-side once an edge
-		-- cuts it, and fades to 0 between the nearest and the farthest corner (the group's UICorner then gives the host shape)
+		-- BOUNDED in the header), with the rounding that best imitates "circle cut by the host edges" (`cutCorner`)
 		local function shape(r: number)
 			local circle = circleRef.Value
 			local round = roundRef.Value
 			if circle == nil or round == nil then
 				return
 			end
-			-- UDim offsets are whole pixels: round outward, but never past the host's (floored) edges
-			local x0, x1 = math.max(0, math.floor(px - r)), math.min(wMax, math.ceil(px + r))
-			local y0, y1 = math.max(0, math.floor(py - r)), math.min(hMax, math.ceil(py + r))
+			-- the uncut box is 2 x ceil(r) square around the whole-pixel center; edges clamp it to the host (floored)
+			local R = math.ceil(r)
+			local x0, x1 = math.max(0, px - R), math.min(wMax, px + R)
+			local y0, y1 = math.max(0, py - R), math.min(hMax, py + R)
 			local bw, bh = x1 - x0, y1 - y0
-			local rad = math.min(r, bw / 2, bh / 2)
-			if r > nearCorner then
-				rad *= math.max(0, (radius - r) / math.max(radius - nearCorner, 1e-6))
-			end
+			local rad = math.max(
+				cutCorner(px - x0, py - y0, r),
+				cutCorner(x1 - px, py - y0, r),
+				cutCorner(px - x0, y1 - py, r),
+				cutCorner(x1 - px, y1 - py, r)
+			)
+			rad = math.min(rad, bw / 2, bh / 2)
 			circle.Position = UDim2.fromOffset(x0, y0)
 			circle.Size = UDim2.fromOffset(bw, bh)
 			round.CornerRadius = UDim.new(0, math.round(rad))
@@ -270,4 +293,5 @@ end
 return {
 	new = new,
 	Config = Module,
+	cutCorner = cutCorner, -- pure, for specs
 }

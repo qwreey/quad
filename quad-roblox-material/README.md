@@ -94,7 +94,7 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
 | | `Tabs` | Primary / Secondary, 활성 표시기 하나가 미끄러짐 |
 | | `LinearProgress` / `CircularProgress` | 확정·비확정(원형은 `UIStroke`+`UIGradient`, 이미지 없음) |
 | | `LoadingIndicator` | M3 Expressive 로딩 표시 — 모양이 바뀌며 도는 것(둥근 사각형 셋을 서로 돌려 겹친 근사: 12갈래·8갈래·둥근 사각형·알약·원), `Contained` |
-| | `WavyProgress` | M3 Expressive 물결 막대(확정만) — 짧은 회전 Frame들로 그린 사인파가 흐르며 차오름, `CanvasGroup`이 채운 길이로 자름 |
+| | `WavyProgress` | M3 Expressive 물결 막대(확정만) — 한 파장 사인 텍스처를 타일로 깐 ImageLabel이 흐르며 차오름, `ClipsDescendants` 프레임이 채운 길이로 자름(인스턴스 7, 텍스처는 아래 "외부 이미지 에셋") |
 | 선택기 | `DatePicker` | `Docked` / `RangeDocked` / `Modal`, 순수 날짜 계산 `Calendar` |
 | | `ColorPicker` | `Panel` / `Modal.open` / `ColorModel` / `Classic` |
 
@@ -303,12 +303,12 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 21 | Radio 스프라이트(에셋 4667411351) | Radio 스토리·갤러리 Selection | 링·점이 또렷하고 테마 색으로 물듦, 선택 때 외곽이 안쪽으로 붙으며 점이 차오르는 10프레임 모션 |  |
 | 22 | Checkbox 토글 모션 | Checkbox 스토리 | 체크: 가장자리 막대가 오므라들었다가 가운데부터 체크가 드러남 / 해제: 채움이 접혀 들어감 |  |
 | 23 | 라벨 연동(label-for) | Checkbox 스토리 "Label"·갤러리 Selection | 라벨 위 호버가 상자 상태 레이어를 켜고, 라벨 클릭이 토글, 리플은 상자 가운데에서 |  |
-| 24 | 누르는 동안 크기가 안 변함(리플이 호스트 밖으로 안 나감) | 버튼·칩(특히 칩)·DatePicker 연도 전환 버튼·가로 RadioGroup·Switch·Dialog 버튼 | 누르는 동안 폭·높이·옆 요소 위치가 그대로, 리플 모양이 둥근 사각형으로 자라다 호스트를 덮음 |  |
+| 24 | 누르는 동안 크기가 안 변함(리플이 호스트 밖으로 안 나감) | 버튼·칩(특히 칩)·DatePicker 연도 전환 버튼·가로 RadioGroup·Switch·Dialog 버튼 | 누르는 동안 폭·높이·옆 요소 위치가 그대로, 리플이 원으로 시작해 칩 위아래에 잘린 원 모양으로 자라다 호스트를 덮음(알약·타원이 아님) |  |
 | 25 | Checkbox 토글 중 모양 | Checkbox 스토리 | 외곽선만 2px씩 살짝 부풀고, 오므리는 막대는 외곽선 안쪽 — 상자가 각진 네모로 보이지 않음 |  |
 | 26 | TextField 아무 곳 클릭 포커스 | TextField 스토리(Filled·Outlined) | 라벨·여백·아이콘 위를 눌러도 입력이 시작됨 |  |
 | 27 | 범위 날짜의 반쪽 띠 | DatePicker 스토리 Range·갤러리 Pickers | 시작·끝 원 아래 반 폭 띠가 사이 띠와 이어짐(틈 없음) |  |
 | 28 | Dialog 닫힘 | Dialog 스토리 | DatePicker 모달처럼 살짝 작아지며 사라짐, 버튼·바닥 여백이 안 커짐 |  |
-| 29 | LoadingIndicator·WavyProgress | Progress 스토리·갤러리 Chips | 모양이 650ms마다 바뀌며 돌고, 물결이 흐르며 막대가 참 — 끊김·이음매 틈이 거슬리지 않는지 |  |
+| 29 | LoadingIndicator·WavyProgress | Progress 스토리·갤러리 Chips | 모양이 650ms마다 바뀌며 돌고, 물결이 흐르며 막대가 참 — 물결 선이 또렷한지(타일 텍스처), 타일 이음매·흐름 끊김이 안 보이는지 |  |
 | 30 | Classic 색상 선택기 물방울 그림자 | ClassicColorPicker 스토리 | 색조 손잡이를 끌 때 물방울 그림자가 손잡이(구) 위를 덮지 않음 |  |
 
 ## 테스트
@@ -334,8 +334,11 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 - **장치 미검증**: 이 키트는 목 백엔드에서만 검증됐습니다. 실제 `AbsolutePosition`/`AbsoluteSize` 위의 포인터 지오메트리
   (Slider 드래그, 색상 SV 영역, Menu·Tooltip 위치 보정과 GUI inset), 모양, `UIShadow` 렌더링은 실기기에서 보지 못했습니다.
   `TextField`는 편집 가능한 TextBox 위에서 엔진이 `MouseEnter`를 유지하는지(hover 표시) 확인하지 못했습니다.
-- **외부 이미지 에셋 하나**: `Radio`는 qwreey MaterialUI의 라디오 스프라이트 시트(`rbxassetid://4667411351`)를 그대로
+- **외부 이미지 에셋 둘**: `Radio`는 qwreey MaterialUI의 라디오 스프라이트 시트(`rbxassetid://4667411351`)를 그대로
   참조합니다(키트가 올린 것이 아니라 원본 키트의 공개 에셋). 그 에셋을 못 불러오는 환경에서는 라디오가 비어 보입니다.
+  `WavyProgress`의 물결은 이 키트의 텍스처 `assets/wavy-progress-512x128.png`(한 파장, 흰 선·투명 배경)를 키트 작성자가
+  올린 공개 에셋(`rbxassetid://78445787165309`, `src/Progress/Wavy.luau`의 `WAVE_IMAGE`)으로 그립니다 — 못 불러오는 환경에서는
+  물결이 안 보이고 트랙·끝 점만 보입니다.
 - **글리프 아이콘**: 키트가 아이콘 에셋을 싣지 않으므로 Chip의 체크·제거 "x", Select의 화살표, Snackbar의 닫기는 **텍스트
   글리프**(엔진 폰트 폴백이 그림)입니다. 정확한 그림이 필요하면 `CheckIcon`/`RemoveIcon`/`TrailingIcon` 등 에셋 id prop을
   쓰세요. 갤러리의 기본 `Icon`도 자리표시입니다.
@@ -344,7 +347,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
   않는 클라이언트에서는 무효입니다(`Elevation.Backdrop`이 대안).
 - **M3와 다른 점**(Roblox·인스턴스 비용 때문): Filled TextField는 위쪽 두 모서리만 둥글림(채움을 4px 더 크게 그려 부모가 자르는 방식, 인스턴스 +1),
   Outlined의 레이블 노치는 표면색 배경(어두운 배경 위에선 `NotchColor` 필요), Switch 터치 타깃은 52x32, IconButton의 48px 터치 타깃은
-  선택(`TouchTarget = true`, 기본은 40px), 칩 제거·스낵바 버튼은 48px, Tabs는 스크롤되지 않고 개별 비활성이 없음, Slider·RangeSlider는 2022 클래식 형태이고 Min/Max/Step이 정적, 리플은 호스트 사각형을 넘지 않는 둥근 사각형으로 자람(원이 가장자리에 잘린 모양이 아님 — `AutomaticSize` 조상이 리플까지 재기 때문, `Ripple.luau` "BOUNDED"), LoadingIndicator는 M3의 일곱 모양(오각형·쿠키 9 등) 대신 사각형 셋의 겹침 근사, WavyProgress는 확정만(비확정 물결 없음), Menu는
+  선택(`TouchTarget = true`, 기본은 40px), 칩 제거·스낵바 버튼은 48px, Tabs는 스크롤되지 않고 개별 비활성이 없음, Slider·RangeSlider는 2022 클래식 형태이고 Min/Max/Step이 정적, 리플은 호스트 사각형을 넘지 않는 둥근 사각형으로 자람(가장자리에 잘린 원을 모서리 반경 하나로 흉내 냄 — `AutomaticSize` 조상이 리플까지 재기 때문, `Ripple.luau` "BOUNDED"), LoadingIndicator는 M3의 일곱 모양(오각형·쿠키 9 등) 대신 사각형 셋의 겹침 근사, WavyProgress는 확정만(비확정 물결 없음)·물결 끝이 직각·진폭과 선 두께가 높이에 고정 비율, Menu는
   가장 긴 항목에 폭을 맞추지 못하며(`Width` 지정) 타입어헤드·서브메뉴가 없음(위/아래·Return·Escape는 있음), 원형 비확정
   진행의 가장 짧은 호가 180도, 색상 선택기에 알파가 없음. 컴포넌트별 전체 목록은 각 파일 머리에 있습니다.
 - 갤러리는 좁은 화면에서 탭 글자가 잘릴 수 있습니다(Tabs는 폭을 균등 분할).

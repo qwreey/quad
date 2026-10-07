@@ -222,4 +222,43 @@ H.section("Ripple.new standalone: Press/Release/Count with a host that has no si
 	H.assertNoDebugOutput("standalone ripple")
 end)
 
+H.section("chip-sized host at a fractional position: the ripple stays a circle, then a circle sliced by the edges (no pill)", function()
+	-- Studio QA 2026-10-07 (3rd): on Input chips the ripple started as a slight oval and grew as a pill
+	local r = Ripple.new({ Color = Color3.new(1, 1, 1), Corner = UDim.new(0, 8) })
+	local host = D.Frame { r.Hook, r.Slot }
+	H.setAbs(host, 10.4, 10.7, 100, 32) -- a flow layout leaves fractional positions; rel press = (49.6, 15.3)
+	r:Press(Vector2.new(60, 26))
+	local circle = H.find(host, "RippleCircle")
+	local round = H.find(circle, "RippleRound")
+	local sawCircle, sawSliced = false, false
+	for _ = 1, 40 do
+		H.advance(1 / 240)
+		local z = circle.Size
+		local bw, bh, c = z.X.Offset, z.Y.Offset, round.CornerRadius.Offset
+		if bh < 30 then
+			-- uncut: a square box (snapped center) with a half-side corner = a circle
+			assert(bw == bh and c == bw / 2, "uncut ripple is a circle: " .. tostring(z) .. " corner " .. c)
+			sawCircle = sawCircle or bw >= 4
+		elseif bw >= 44 and bw <= 80 then
+			-- both long edges cut (R 22..40): the corner is the cut-chord inset, far below the pill's 16
+			local R = bw / 2 -- = ceil(r): the true radius is in (R - 1, R]
+			local lo = math.max(Ripple.cutCorner(R, 15, R), Ripple.cutCorner(R, 17, R))
+			local hi = math.max(Ripple.cutCorner(R, 15, R - 1), Ripple.cutCorner(R, 17, R - 1))
+			assert(c < 12 and c >= lo - 0.5 and c <= hi + 0.5, "sliced circle, not a pill: " .. tostring(z) .. " corner " .. c)
+			sawSliced = true
+		end
+	end
+	assert(sawCircle and sawSliced, "both phases observed")
+	H.advance(0.5)
+	assert(circle.Size == UDim2.fromOffset(100, 32) and round.CornerRadius == UDim.new(0, 0), "ends covering the host")
+	q.dispose(host)
+	H.assertNoDebugOutput("chip ripple")
+end)
+
+H.section("cutCorner: uncut = r, one corner covered = 0, cut by an edge = the chord inset", function()
+	assert(Ripple.cutCorner(10, 10, 10) == 10)
+	assert(Ripple.cutCorner(5, 5, 10) == 0, "corner inside the circle")
+	assert(math.abs(Ripple.cutCorner(20, 16, 20) - 8) < 1e-9, "20 - sqrt(400 - 256) = 8")
+end)
+
 H.done()

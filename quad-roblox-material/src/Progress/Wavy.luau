@@ -4,26 +4,40 @@
 	bar; after a 4 px gap the flat track continues to its stop dot, like the flat LinearProgress.
 
 	    Progress.WavyProgress({ Value = loaded })                -- Value: number | State<number>, 0..1 (required)
-	    Progress.WavyProgress({ Value = 0.6, Amplitude = 4, Wavelength = 32 })
+	    Progress.WavyProgress({ Value = 0.6, Thickness = 6, Wavelength = 60 })
 
-	Props (all `read`): Value (required — see "indeterminate" below), Amplitude (px, default 3), Wavelength (px, default
-	40), Thickness (stroke px, default 4), Visible (boolean | State<boolean>?, default true; the wave stops travelling while
-	not Visible), Theme, Modifier (Frame Modifier after the base: width, position, LayoutOrder ...), Hooks. Height =
-	Thickness + 2 x Amplitude (10 by default). Colors: wave + stop dot `Primary`, track `SecondaryContainer`.
-	Returns the host `Frame`.
+	Props (all `read`): Value (required — see "indeterminate" below), Thickness (stroke px, default 4), Wavelength (px,
+	default 40), Visible (boolean | State<boolean>?, default true; the wave stops travelling while not Visible), Theme,
+	Modifier (Frame Modifier after the base: width, position, LayoutOrder ...), Hooks. Height = 2.5 x Thickness (10 by
+	default) and the amplitude is 0.75 x Thickness (3 by default) — FIXED ratios, see "HOW". Colors: wave + stop dot
+	`Primary`, track `SecondaryContainer`. Returns the host `Frame`.
 
-	HOW (Roblox has no path rendering): the wave is a polyline of short rotated Frames, 8 per wavelength, each a straight
-	stroke between two samples of the sine with a little overlap to close the joins. The segments sit in one-wavelength
-	groups on a strip that slides left by the phase every frame (ONE property write per frame: the strip's Position) —
-	the wave travels without touching its segments. The strip is clipped to the filled length by a `CanvasGroup` (`Wave`,
-	size = Value, tweened Medium1 / Standard): a plain `ClipsDescendants` frame does not clip ROTATED descendants, a
-	CanvasGroup does (cost: one offscreen texture of the filled area). Groups are added when the host gets wider (checked
-	in the loop: ceil(width / Wavelength) + 1 groups), never removed.
-	Cost: host + Track(+UICorner, stop dot + UICorner) + Wave CanvasGroup + Strip + groups x (Frame + 8 segments) — a
-	300 px bar has 9 groups = 81 + 6 = 87 instances; one Heartbeat (`Loop.luau`, only while mounted and Visible).
-	Indeterminate (no Value) is NOT built: the flat indeterminate bars move their window every frame, and resizing a
-	CanvasGroup per frame reallocates its texture — use `LinearProgress({})` for unknown progress. Deviations from M3:
-	the wave's ends are cut square by the clip (M3 rounds them); no amplitude ramp near 0 / 100 %.
+	HOW (Roblox has no path rendering): the wave is a TILED IMAGE. `WAVE_IMAGE` is one wavelength of an anti-aliased white
+	sine stroke on a transparent 512 x 128 texture (source: quad-roblox-material/assets/wavy-progress-512x128.png; stroke
+	= 4/10 of the height, amplitude = 3/10, centre line at both edges, rising first, so it repeats seamlessly), drawn by one
+	ImageLabel (`Strip`, ScaleType Tile, TileSize = Wavelength x height, tinted by ImageColor3). The strip is one
+	wavelength wider than its clip and slides left by the phase every frame (ONE property write per frame: its Position)
+	— the tiles move with it, so the wave travels. The strip sits in a plain `ClipsDescendants` frame (`Wave`, size =
+	Value, tweened Medium1 / Standard): nothing is rotated, so ordinary clipping works — no CanvasGroup (no offscreen
+	texture, nothing reallocated on resize).
+	Why an image (2026-10-07, replaced a polyline of 8 rotated Frames per wavelength + a CanvasGroup clip, 87 instances
+	at 300 px): Roblox does not anti-alias the edges of rotated GuiObjects (DevForum "GUI Anti-Aliasing for Rotation",
+	"Rotation causes frames' edges to be pixelated"), and a CanvasGroup renders through a texture whose resolution the
+	engine lowers with the graphics level and memory (DevForum "CanvasGroups content is blurred!", "Is there anyway to
+	get a consistent quality on Canvas Groups?") — the two likely causes of the low-resolution look seen in Studio (not
+	separated by measurement). The texture's stroke is anti-aliased in the image itself and shown ~12.8x downsampled
+	by the engine's image filtering, so its edge should stay smooth (Studio QA to confirm).
+	Fixed ratios: the texture's stroke and amplitude scale WITH the height, so they cannot be set independently —
+	`Thickness` sets the height (2.5 x) and the amplitude follows (M3's default 4 / 3 / 10 dp). `Wavelength` stretches
+	the tile horizontally: away from 4 x the height (40 for Thickness 4) the slopes steepen or flatten and a steep
+	stroke looks a little thinner.
+	Cost: host + Track(+UICorner, stop dot + UICorner) + Wave clip + Strip = 7 instances at any width; one Heartbeat
+	(`Loop.luau`, only while mounted and Visible).
+	`WAVE_IMAGE` = rbxassetid://78445787165309 (the texture above, uploaded by the kit author — the IMAGE id the Decal resolves to, not the Decal id). If the asset fails to
+	load the wave is invisible; the track and stop dot still show.
+	Indeterminate (no Value) is NOT built: use `LinearProgress({})` for unknown progress. Deviations from M3: the
+	wave's ends are cut square by the clip (M3 rounds them); no amplitude ramp near 0 / 100 %; amplitude and stroke are
+	tied to the height (above).
 ]]
 
 local q = require("../Quad")
@@ -35,16 +49,17 @@ local D = q.Declaration
 
 export type Props = {
 	read Value: number | q.State<number>,
-	read Amplitude: number?,
-	read Wavelength: number?,
 	read Thickness: number?,
+	read Wavelength: number?,
 	read Visible: (boolean | q.State<boolean>)?,
 	read Theme: Theme.Theme?,
 	read Modifier: q.FrameModifier?,
 	read Hooks: Util.Hooks?,
 }
 
-local SEGMENTS = 8 -- per wavelength
+-- One wavelength of the sine stroke: assets/wavy-progress-512x128.png, uploaded by the kit author (2026-10-07).
+local WAVE_IMAGE = "rbxassetid://78445787165309"
+local HEIGHT_PER_THICKNESS = 2.5 -- the texture: stroke 4/10, amplitude 3/10 of its height
 local GAP = 4
 local STOP = 4
 local PERIOD = 1 -- seconds for the wave to travel one wavelength
@@ -56,67 +71,20 @@ local function WavyProgress(props: Props): Frame
 	end
 	local theme = Theme.resolve(props.Theme)
 	local visible = Util.asState(props.Visible, true)
-	local amp = props.Amplitude or 3
-	local lambda = props.Wavelength or 40
 	local thick = props.Thickness or 4
-	local height = thick + 2 * amp
-	local mid = height / 2
-	local step = lambda / SEGMENTS
+	local lambda = props.Wavelength or 40
+	local height = thick * HEIGHT_PER_THICKNESS
 
 	local value: q.State<number> = Util.asNumberState(props.Value, 0):Compute(function(self)
 		return math.clamp(self:Get(), 0, 1)
 	end)
 
-	-- one wavelength of segments (identical for every group)
-	local function group(k: number): Frame
-		local segs: { Instance } = {}
-		for i = 0, SEGMENTS - 1 do
-			local x0, x1 = i * step, (i + 1) * step
-			local y0 = mid - amp * math.sin(2 * math.pi * x0 / lambda)
-			local y1 = mid - amp * math.sin(2 * math.pi * x1 / lambda)
-			local dy = y1 - y0
-			table.insert(
-				segs,
-				D.Frame {
-					Name = "Segment",
-					AnchorPoint = Vector2.new(0.5, 0.5),
-					Position = UDim2.fromOffset((x0 + x1) / 2, (y0 + y1) / 2),
-					Size = UDim2.fromOffset(math.sqrt(step * step + dy * dy) + thick / 2, thick),
-					Rotation = math.deg(math.atan2(dy, step)),
-					BackgroundColor3 = theme.Color.Primary,
-					BorderSizePixel = 0,
-				}
-			)
-		end
-		return D.Frame {
-			Name = "Period",
-			Position = UDim2.fromOffset(k * lambda, 0),
-			Size = UDim2.fromOffset(lambda, height),
-			BackgroundTransparency = 1,
-			BorderSizePixel = 0,
-			table.unpack(segs),
-		}
-	end
-
-	local groups = q.Slot({ group(0) } :: { Instance })
-	local count = 1
-	local host: GuiObject? = nil
 	local strip: GuiObject? = nil
-
 	local hook, effect = Loop.new(visible, function(t: number)
-		local h, st = host, strip
-		if h == nil or st == nil then
-			return
+		local st = strip
+		if st ~= nil then
+			st.Position = UDim2.fromOffset(-((t / PERIOD) % 1) * lambda, 0)
 		end
-		local need = math.ceil(h.AbsoluteSize.X / lambda) + 1
-		if need > count then
-			for k = count, need - 1 do
-				groups:Add(group(k))
-			end
-			count = need
-			st.Size = UDim2.new(0, count * lambda, 1, 0)
-		end
-		st.Position = UDim2.fromOffset(-((t / PERIOD) % 1) * lambda, 0)
 	end)
 
 	local motion = q.Animate(Tokens.Motion.options("Medium1", "Standard"))
@@ -140,9 +108,6 @@ local function WavyProgress(props: Props): Frame
 		D.Modifier.Frame():Size(UDim2.new(1, 0, 0, height)):BackgroundTransparency(1):BorderSizePixel(0),
 		props.Modifier or q.None,
 		Visible = visible,
-		Util.preHook(function(inst)
-			host = inst
-		end),
 		hook,
 		effect,
 		D.Frame {
@@ -164,20 +129,26 @@ local function WavyProgress(props: Props): Frame
 				UICorner = full,
 			},
 		},
-		D.CanvasGroup {
+		D.Frame {
 			Name = "Wave",
 			Size = waveSize:Apply(motion),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.Frame {
+			ClipsDescendants = true,
+			D.ImageLabel {
 				Name = "Strip",
-				Size = UDim2.new(0, lambda, 1, 0),
+				-- the clip's width plus one wavelength (room for the slide); tiles start at the strip's left edge, so
+				-- growing it as Value tweens does not move the wave
+				Size = UDim2.new(1, lambda, 1, 0),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
+				Image = WAVE_IMAGE,
+				ImageColor3 = theme.Color.Primary,
+				ScaleType = Enum.ScaleType.Tile,
+				TileSize = UDim2.fromOffset(lambda, height),
 				Util.preHook(function(inst)
 					strip = inst
 				end),
-				groups,
 			},
 		},
 		table.unpack(Util.hooks(props.Hooks)),

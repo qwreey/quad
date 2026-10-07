@@ -11,3 +11,5 @@
   with Frames, no image).
 - **Color picker** — the `ColorPicker` component is a port of the author's own color picker
   (`colorPicker-ignoreme.rbxm`, Copyright (c) qwreey), republished here under this kit's MIT License.
+- **Wave texture** — `assets/wavy-progress-512x128.png` (the `WavyProgress` sine stroke, published as `rbxassetid://78445787165309`) was generated
+  for this kit; it is not derived from Material Design artwork or any third-party asset.
