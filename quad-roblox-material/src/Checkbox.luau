@@ -164,9 +164,14 @@ local function Checkbox(props: Props)
 		end
 		return onSurfaceVariant:Get()
 	end, disabled, isError, accent, R.OnSurface, R.OnSurfaceVariant, R.Error)
-	local strokeTransparency: q.State<number> = disabled:Compute(function(self)
-		return if self:Get() then DisabledTransparency else 0
-	end)
+	-- disabled + marked: the 38 % fill already draws the box, so the 38 % outline on top of it would double up
+	-- (M3 draws no outline on a selected box) — hide it
+	local strokeTransparency: q.State<number> = disabled:Compute(function(self, _prev, marked)
+		if not self:Get() then
+			return 0
+		end
+		return if marked:Get() then 1 else DisabledTransparency
+	end, shownMarked)
 	local markRaw: q.State<Color3> = disabled:Compute(function(self, _prev, onAcc, surface)
 		return if self:Get() then surface:Get() else onAcc:Get()
 	end, onAccent, R.Surface)
