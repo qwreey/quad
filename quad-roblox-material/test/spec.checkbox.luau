@@ -169,15 +169,22 @@ H.section("toggle motion: bars close in the OLD color, the look swaps at the mid
 	local left = H.find(box, "BarLeft")
 	local bars = H.find(box, "Bars")
 	assert(left.Size == UDim2.fromScale(0, 1) and left.Parent == bars and bars.ZIndex == 2, "bars rest at zero width, above the marks")
-	assert(bars.Size == UDim2.fromOffset(14, 14), "bars frame sits inside the 2 px outline (never over the rounded corners)")
+	local STROKE, OVERLAP = 2, 1
+	local function barsOk(what: string)
+		local n = box.Size.X.Offset - 2 * STROKE + 2 * OVERLAP
+		assert(bars.Size == UDim2.fromOffset(n, n), what .. ": Bars = box - 2*STROKE + 2*OVERLAP, got " .. tostring(bars.Size))
+	end
+	barsOk("rest")
+	assert(bars.Size == UDim2.fromOffset(16, 16))
 	v:Set(true)
 	H.advance(0.075) -- halfway through the close
 	assert(near(left.Size.X.Scale, 0.2), "left bar half way in: " .. tostring(left.Size))
 	assert(left.BackgroundColor3 == L.OnSurfaceVariant, "closing in the old (unchecked) outline color")
 	assert(box.BackgroundTransparency == 1 and H.find(box, "CheckShort").BackgroundTransparency == 1, "old look still shown")
 	assert(box.Size.X.Offset > 18, "box swells while it closes")
-	assert(bars.Size == UDim2.fromOffset(14, 14), "the bars frame does not swell with the outline (a gap ring opens)")
+	barsOk("mid close")
 	H.advance(0.1) -- past the midpoint
+	barsOk("reopening")
 	assert(box.BackgroundTransparency == 0 and H.find(box, "CheckShort").BackgroundTransparency == 0, "new look swapped in")
 	assert(left.BackgroundColor3 == L.Primary, "reopening in the new color")
 	assert(left.Size.X.Scale > 0 and left.Size.X.Scale < 0.4)

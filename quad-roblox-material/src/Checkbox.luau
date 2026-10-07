@@ -32,9 +32,9 @@
 
 	Toggle motion (ported from qwreey MaterialUI's CheckBox — four edge bars, 0.15 s + 0.15 s linear): when the look
 	(empty / check / dash) changes, four bars in the OLD look's outline color grow in to 40 % each from the INNER edge
-	of the outline (a fixed 14 px frame inside the 2 px stroke — never over the rounded corners, so the box never reads
-	as a square; the original likewise kept its bars in an inset frame under the outline image) while the outline swells
-	2 px per side away from them; then the new look is swapped in under the bars, which shrink back in the NEW color —
+	of the outline (a frame that FOLLOWS the swelling box: box - 2 * STROKE + 2 * OVERLAP, i.e. the stroke's inner edge
+	overlapped by 1 px per side, so no empty ring opens between the swollen outline and the bars) while the outline
+	swells 2 px per side; then the new look is swapped in under the bars, which shrink back in the NEW color —
 	so a check appears from the middle outward and an uncheck folds the fill in. One Heartbeat connection while a change animates (0.3 s), none at rest; an interrupting change
 	resumes from the current bar width. The mounted look is snapped (no motion at construction).
 
@@ -74,7 +74,8 @@ local BOX = 18
 local HALF = 0.15 -- each phase of the toggle motion (the original's 0.15 s, linear)
 local CLOSE = 0.4 -- how far each bar grows in (fraction of the box)
 local SWELL = 4 -- extra box size at the closed point (2 px per side) — only the outline/fill swells, not the bars
-local STROKE = 2 -- outline thickness (Inner): the bars frame sits inside it
+local STROKE = 2 -- outline thickness (Inner): the bars frame starts at its inner edge
+local OVERLAP = 1 -- the bars frame reaches this far (per side) OVER the outline, so the swollen outline never leaves a gap
 
 type Look = "none" | "check" | "dash"
 
@@ -185,6 +186,11 @@ local function Checkbox(props: Props)
 		local n = BOX + SWELL * self:Get()
 		return UDim2.fromOffset(n, n)
 	end)
+	-- bars frame = the box's inner edge grown by OVERLAP, tracking the swell (a fixed frame left a square gap ring)
+	local barsSize: q.State<UDim2> = closing:Compute(function(self)
+		local n = BOX + SWELL * self:Get() - 2 * STROKE + 2 * OVERLAP
+		return UDim2.fromOffset(n, n)
+	end)
 	local barWidth: q.State<UDim2> = closing:Compute(function(self)
 		return UDim2.fromScale(CLOSE * self:Get(), 1)
 	end)
@@ -267,15 +273,19 @@ local function Checkbox(props: Props)
 			BackgroundTransparency = dashTransparency,
 			BorderSizePixel = 0,
 		},
-		-- the bars live in a fixed frame INSIDE the at-rest outline (the stroke's inner edge — its inner corner is square,
-		-- radius 2 - 2 = 0): growing in from there they never cover the rounded corners, and while the box swells the
-		-- frame stays put, so a gap ring opens between the swollen outline and the closing bars (the original's inset
-		-- `Side` frame under its outline image). Bars spanning the whole box made the box read as a hard square.
+		-- the bars live in a frame that tracks the box: its size is box - 2 * STROKE + 2 * OVERLAP, so it starts at the
+		-- outline's inner edge and overlaps the stroke by OVERLAP px per side (no gap ring while the box swells).
+		-- Corner safety: the frame's corner sits (STROKE - OVERLAP) = 1 px in from the box corner on both axes; the
+		-- outer corner circle (UICorner 2) has its center 2 px in, so the point is sqrt(2) ~ 1.41 < 2 from the center —
+		-- inside the rounded shape, nothing pokes out (holds at every swell: all offsets are relative to the box).
+		-- Draw order of the bars (ZIndex 2 child) vs the UIStroke is not provable from code — Studio check: the bars
+		-- should paint over the outline's inner 1 px. If a gap still shows, lower SWELL (memo only; value is the
+		-- user's call after Studio) or raise OVERLAP.
 		D.Frame {
 			Name = "Bars",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.fromScale(0.5, 0.5),
-			Size = UDim2.fromOffset(BOX - 2 * STROKE, BOX - 2 * STROKE),
+			Size = barsSize,
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			ZIndex = 2,
