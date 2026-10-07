@@ -33,8 +33,10 @@
 
 	Structure: scrim (Overlay, 0.32) + ONE CanvasGroup (surfaceContainerHigh, corner 28, padding 24, vertical list) +
 	icon / headline / body / actions row + one kit Button per action. Enter: mounted snapped (transparent, scale 0.8)
-	and animated from a PostRef hook: fade 200 ms + scale 300 ms emphasized-decelerate. Exit: fade 200 ms while the Overlay
-	holds it in its closing phase (Closing = true), then it is destroyed. Escape / B, the scrim's `Selectable = false` and
+	and animated from a PostRef hook: fade 200 ms + scale 300 ms emphasized-decelerate. Exit: fade 200 ms + scale to .92 while
+	the Overlay holds it in its closing phase (Closing = true), then it is destroyed. (Nothing inside may grow the auto-sized
+	card while it closes: the clicked action's ripple used to reach past the button and, through AutomaticSize, stretch
+	the actions row and the card — fixed in Ripple.luau, "BOUNDED".) Escape / B, the scrim's `Selectable = false` and
 	the gamepad selection trap (`TrapSelection`, first enabled action = `InitialSelection`) are the Overlay's; a dialog
 	whose layer is destroyed is finalized by the Overlay (IsOpen false, OnClose once, Result = DismissResult).
 	Small screens: when the overlay layer is laid out (AbsoluteSize > 0 at open) the width is capped at layer width - 48 and
@@ -139,9 +141,15 @@ local function open(o: OpenOptions): Handle
 		local fadeTarget: q.State<number> = entered:Compute(function(self, _prev, closing)
 			return if self:Get() and not closing:Get() then 0 else 1
 		end, h.Closing)
-		local scaleTarget: q.State<number> = entered:Compute(function(self)
-			return if self:Get() then 1 else 0.8
-		end)
+		-- exit: also shrinks a little (to .92 — Quint Out reaches almost all of it within the 0.2 s exit), like the
+		-- DatePicker modal's card, instead of a fade alone (Studio QA 2026-10-07, 2nd: "vanishes ambiguously, unlike the
+		-- date picker")
+		local scaleTarget: q.State<number> = entered:Compute(function(self, _prev, closing)
+			if not self:Get() then
+				return 0.8
+			end
+			return if closing:Get() then 0.92 else 1
+		end, h.Closing)
 		local fade = fadeTarget:Apply(q.Animate(Tokens.Motion.options("Short4", "Linear")))
 		local scale = scaleTarget:Apply(q.Animate(Tokens.Motion.options("Medium2", "EmphasizedDecelerate")))
 

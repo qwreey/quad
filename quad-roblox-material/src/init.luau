@@ -20,11 +20,12 @@
 	    Util          asState / negate / interactable / visible / hooks / preHook / postHook helpers, the `Hooks` type
 	  Components
 	    Button, IconButton, FAB                       actions
-	    Checkbox, Radio, RadioGroup, Switch, Slider   selection controls
+	    Checkbox, Radio, RadioGroup, Switch, Slider, RangeSlider   selection controls
 	    TextField, Select, Menu                       text input and menus
 	    Card, Divider, List, ListItem, ListData       surfaces
 	    Dialog, Snackbar, Tooltip                     things that float (opened through an Overlay)
-	    Chip, Tabs, LinearProgress, CircularProgress  chips, tabs, progress
+	    Chip, Tabs, LinearProgress, CircularProgress  chips, tabs, progress (+ the M3 Expressive LoadingIndicator and
+	                                                 WavyProgress)
 	    DatePicker, ColorPicker                       pickers (docked / modal / panel, the pure Calendar / ColorModel math)
 	  (Gallery is NOT exported from here — require `Gallery` directly; see its header.)
 
@@ -34,7 +35,8 @@
 	      take `Value` (a `Source`, two-way: the component reads it and a USER action writes it) and fire
 	      `OnChange(new)` after a user-originated change only (never for a programmatic write). Checkbox and Switch ALSO
 	      accept the controlled form `Checked: State<boolean>` + `OnChange` (nothing is written; the owner decides);
-	      giving both `Value` and `Checked` is an error.
+	      giving both `Value` and `Checked` is an error. The two-ended controls (RangeSlider, DatePicker.RangeDocked) take
+	      two such Sources, `Start` and `End`, and pass both to `OnChange`.
 	    * Choice / indicator components — Chip.Filter, Tabs, ListItem, IconButton (toggle), Menu.Item — use `Selected`.
 	      Their change callback is also `OnChange` (Chip.Filter, Tabs).
 	    * Text: action / button text is `Label` everywhere (Button, Chip, Tabs' tab, Menu.Item, Snackbar action, Dialog
@@ -96,6 +98,7 @@ local Checkbox = require("@self/Checkbox")
 local RadioModule = require("@self/Radio")
 local Switch = require("@self/Switch")
 local Slider = require("@self/Slider")
+local RangeSlider = require("@self/Slider/Range")
 local TextField = require("@self/TextField")
 local Menu = require("@self/Menu")
 local Select = require("@self/Select")
@@ -141,6 +144,7 @@ export type RadioProps<T> = RadioModule.Props<T>
 export type RadioGroupProps<T> = RadioModule.GroupProps<T>
 export type SwitchProps = Switch.Props
 export type SliderProps = Slider.Props
+export type RangeSliderProps = RangeSlider.Props
 export type TextFieldProps = TextField.Props
 export type MenuItem = Menu.Item
 export type MenuEntry = Menu.Entry
@@ -173,6 +177,8 @@ export type TabsProps<K> = Tabs.Props<K>
 export type Tab<K> = Tabs.Tab<K>
 export type LinearProgressProps = Progress.LinearProps
 export type CircularProgressProps = Progress.CircularProps
+export type LoadingIndicatorProps = Progress.LoadingIndicatorProps
+export type WavyProgressProps = Progress.WavyProps
 export type Date = DatePicker.Date
 export type DatePickerDockedProps = DatePicker.DockedProps
 export type DatePickerRangeProps = DatePicker.RangeDockedProps
@@ -208,6 +214,7 @@ return {
 	RadioGroup = RadioModule.RadioGroup,
 	Switch = Switch,
 	Slider = Slider,
+	RangeSlider = RangeSlider,
 	-- text input & menus
 	TextField = TextField,
 	Menu = Menu,
@@ -226,6 +233,8 @@ return {
 	Tabs = Tabs,
 	LinearProgress = Progress.LinearProgress,
 	CircularProgress = Progress.CircularProgress,
+	LoadingIndicator = Progress.LoadingIndicator,
+	WavyProgress = Progress.WavyProgress,
 	-- pickers
 	DatePicker = DatePicker,
 	ColorPicker = ColorPickerModule, -- .Panel / .Modal.open / .ColorModel / .Classic

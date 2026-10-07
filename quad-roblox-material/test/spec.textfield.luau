@@ -252,6 +252,43 @@ H.section("OnClick: press+release on the container (not after leaving)", functio
 	H.assertNoDebugOutput("click")
 end)
 
+H.section("a click anywhere on the container focuses the editable TextBox (Filled and Outlined)", function()
+	for _, variant in { "Filled", "Outlined" } do
+		local focusChanges: { boolean } = {}
+		local tf = TextField({
+			Variant = variant :: any,
+			Label = "Name",
+			OnFocusChanged = function(f: boolean)
+				table.insert(focusChanges, f)
+			end,
+		})
+		local c = H.find(tf, "Container")
+		local box = H.find(tf, "Input")
+		H.fire(c, "InputBegan", H.input({}))
+		H.fire(c, "InputEnded", H.input({}))
+		assert(box:IsFocused() and #focusChanges == 1 and focusChanges[1] == true, variant .. ": container click focused the box")
+		-- already focused (the click landed on the TextBox itself): no second capture
+		H.fire(c, "InputBegan", H.input({}))
+		H.fire(c, "InputEnded", H.input({}))
+		assert(#focusChanges == 1, variant .. ": no refocus while focused")
+		box:ReleaseFocus()
+		-- a cancelled press (pointer left) does not focus
+		H.fire(c, "InputBegan", H.input({}))
+		H.fire(c, "MouseLeave")
+		H.fire(c, "InputEnded", H.input({}))
+		assert(not box:IsFocused(), variant .. ": cancelled press")
+		q.dispose(tf)
+	end
+	-- disabled: never focused by a container click
+	local tf = TextField({ Label = "D", Disabled = true })
+	local c = H.find(tf, "Container")
+	H.fire(c, "InputBegan", H.input({}))
+	H.fire(c, "InputEnded", H.input({}))
+	assert(not H.find(tf, "Input"):IsFocused(), "disabled field stays unfocused")
+	q.dispose(tf)
+	H.assertNoDebugOutput("container focus")
+end)
+
 H.section("dispose destroys everything, connections baseline, Modifier applies", function()
 	local u = H.UserInputService :: any
 	local base = #u.InputChanged.connections + #u.InputEnded.connections + #u.WindowFocusReleased.connections

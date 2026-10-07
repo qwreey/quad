@@ -56,10 +56,23 @@ H.section("two- and three-line heights, inferred and explicit", function()
 	assert(three.Size == UDim2.new(1, 0, 0, 88))
 	assert(H.find(three, "Overline").TextSize == 11)
 	local s3 = H.find(three, "Supporting")
-	assert(s3.Size == UDim2.new(1, 0, 0, 40) and s3.TextWrapped == true, "supporting may wrap to two lines")
+	assert(s3.Size == UDim2.new(1, 0, 0, 20) and s3.TextWrapped == false, "with an overline the supporting text is one line")
 	assert(class(three, "UIListLayout")[1].VerticalAlignment == Enum.VerticalAlignment.Top, "three-line is top aligned")
 	local forced: any = ListItem({ Headline = "H", Supporting = "S", Lines = 3 })
 	assert(forced.Size == UDim2.new(1, 0, 0, 88))
+	local sf = H.find(forced, "Supporting")
+	assert(sf.Size == UDim2.new(1, 0, 0, 40) and sf.TextWrapped == true, "no overline: supporting may wrap to two lines")
+	-- the text column fits the 88 px row inside its 12 px top / bottom padding (the column is auto-sized from these)
+	for _, i in { three, forced } do
+		local sum = 0
+		for _, name in { "Overline", "Headline", "Supporting" } do
+			local part = H.find(i, name)
+			if part ~= nil then
+				sum += part.Size.Y.Offset
+			end
+		end
+		assert(sum <= 88 - 2 * 12, "three-line text fits the padded row: " .. sum)
+	end
 	for _, i in { two, three, forced } do
 		q.dispose(i)
 	end

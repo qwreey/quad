@@ -39,8 +39,8 @@ screen.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 | Filled 버튼(아이콘 없음) | **8** | 40 | 70 |
 
 (`src/Button/init.luau` 머리와 `test/spec.button.luau`가 소스. 누르는 동안 리플이 일시적으로 4개를 더 만듭니다.) 다른
-컴포넌트의 수도 각 파일 머리와 스펙에 있습니다 — 예: Checkbox 14(토글 모션 막대 넷 포함), Radio 5(스프라이트 한 장), Switch 8, 필드 있는 Filled TextField 13,
-Slider 14, 한 줄 ListItem 7, 색상 패널 106(8색 프리셋 포함). 갤러리 전체의 탭별 합계는 아래 "갤러리"에 있습니다.
+컴포넌트의 수도 각 파일 머리와 스펙에 있습니다 — 예: Checkbox 15(토글 모션 막대 틀 하나 + 막대 넷 포함), Radio 5(스프라이트 한 장), Switch 8, 필드 있는 Filled TextField 13,
+Slider 14, RangeSlider 23, 한 줄 ListItem 7, LoadingIndicator 8, 색상 패널 106(8색 프리셋 포함). 갤러리 전체의 탭별 합계는 아래 "갤러리"에 있습니다.
 
 ## 설치와 설정
 
@@ -80,6 +80,7 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
 | | `Radio` / `RadioGroup` | 한 개 / 세로·가로 묶음(선택 모션은 MaterialUI 스프라이트 시트 이미지 한 장), `Label`로 라벨까지 한 클릭·호버 영역 |
 | | `Switch` | 52x32 트랙, 핸들이 16→24→28로 자람(꺼진 채 누르면 24), 선택적 아이콘 |
 | | `Slider` | 클래식 M3(4px 트랙·20px 핸들), 연속/이산(눈금), 값 라벨, 키보드·D-pad |
+| | `RangeSlider` | 손잡이 둘(`Start`/`End` 두 Source) — 누른 자리에서 가까운 손잡이를 끌고 서로를 못 넘음, 키는 한 손잡이씩(Return·게임패드 X로 전환) |
 | 입력·메뉴 | `TextField` | Filled / Outlined, 떠오르는 레이블, 보조·오류 문구, 글자 수, 아이콘, 접두·접미, 여러 줄 |
 | | `Menu` | `Menu.open{ Anchor, Items }`와 `Menu.Button` — 앵커 아래(공간이 없으면 위)에 뜸 |
 | | `Select` | 읽기 전용 TextField + Menu(노출형 드롭다운) |
@@ -92,6 +93,8 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
 | 칩·탭·진행 | `Chip` | Assist / Filter / Input / Suggestion + 키로 재활용되는 `ChipSet` |
 | | `Tabs` | Primary / Secondary, 활성 표시기 하나가 미끄러짐 |
 | | `LinearProgress` / `CircularProgress` | 확정·비확정(원형은 `UIStroke`+`UIGradient`, 이미지 없음) |
+| | `LoadingIndicator` | M3 Expressive 로딩 표시 — 모양이 바뀌며 도는 것(둥근 사각형 셋을 서로 돌려 겹친 근사: 12갈래·8갈래·둥근 사각형·알약·원), `Contained` |
+| | `WavyProgress` | M3 Expressive 물결 막대(확정만) — 짧은 회전 Frame들로 그린 사인파가 흐르며 차오름, `CanvasGroup`이 채운 길이로 자름 |
 | 선택기 | `DatePicker` | `Docked` / `RangeDocked` / `Modal`, 순수 날짜 계산 `Calendar` |
 | | `ColorPicker` | `Panel` / `Modal.open` / `ColorModel` / `Classic` |
 
@@ -231,8 +234,8 @@ Gallery.GalleryPanel({})       -- 페이지(Frame)만; 직접 호스트할 때. 
 구간은 **탭을 고를 때 만들고 떠나면 부숩니다**(숨겨 두지 않음) — Pickers 하나가 수백 개이고 비확정 진행바가 Heartbeat
 루프를 돌기 때문입니다. 사용자가 입력·조작한 값은 패널의 Memo(Source)에 있어 다시 돌아와도 남습니다. 갤러리를 키트 루트(`src/init.luau`)에서 내보내지 않는 이유: 내보내면 키트를 쓰는 모든 소비자가 데모 코드까지 로드하게 됩니다(갤러리가 컴포넌트를 직접 require하므로 순환 자체는 아니지만, 갤러리가 루트를 require하는 모양이 되면 순환이 됩니다). 이 폴더를 직접 require하세요.
 
-스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함): Buttons 363, Selection 421,
-Text 268, Surfaces 314, Overlays 199, Chips 403, Pickers 744, Theme 197. 아이콘 데모는 키트가 그림을 싣지 않으므로
+스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함): Buttons 363, Selection 522,
+Text 268, Surfaces 327, Overlays 199, Chips 438, Pickers 748, Theme 197. 아이콘 데모는 키트가 그림을 싣지 않으므로
 `Icon` prop(기본값은 장치에서 확인 못 한 자리표시 에셋 id)을 본인 에셋으로 바꿔 보세요.
 
 ## UI Labs / 입력 주입
@@ -300,6 +303,13 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 21 | Radio 스프라이트(에셋 4667411351) | Radio 스토리·갤러리 Selection | 링·점이 또렷하고 테마 색으로 물듦, 선택 때 외곽이 안쪽으로 붙으며 점이 차오르는 10프레임 모션 |  |
 | 22 | Checkbox 토글 모션 | Checkbox 스토리 | 체크: 가장자리 막대가 오므라들었다가 가운데부터 체크가 드러남 / 해제: 채움이 접혀 들어감 |  |
 | 23 | 라벨 연동(label-for) | Checkbox 스토리 "Label"·갤러리 Selection | 라벨 위 호버가 상자 상태 레이어를 켜고, 라벨 클릭이 토글, 리플은 상자 가운데에서 |  |
+| 24 | 누르는 동안 크기가 안 변함(리플이 호스트 밖으로 안 나감) | 버튼·칩(특히 칩)·DatePicker 연도 전환 버튼·가로 RadioGroup·Switch·Dialog 버튼 | 누르는 동안 폭·높이·옆 요소 위치가 그대로, 리플 모양이 둥근 사각형으로 자라다 호스트를 덮음 |  |
+| 25 | Checkbox 토글 중 모양 | Checkbox 스토리 | 외곽선만 2px씩 살짝 부풀고, 오므리는 막대는 외곽선 안쪽 — 상자가 각진 네모로 보이지 않음 |  |
+| 26 | TextField 아무 곳 클릭 포커스 | TextField 스토리(Filled·Outlined) | 라벨·여백·아이콘 위를 눌러도 입력이 시작됨 |  |
+| 27 | 범위 날짜의 반쪽 띠 | DatePicker 스토리 Range·갤러리 Pickers | 시작·끝 원 아래 반 폭 띠가 사이 띠와 이어짐(틈 없음) |  |
+| 28 | Dialog 닫힘 | Dialog 스토리 | DatePicker 모달처럼 살짝 작아지며 사라짐, 버튼·바닥 여백이 안 커짐 |  |
+| 29 | LoadingIndicator·WavyProgress | Progress 스토리·갤러리 Chips | 모양이 650ms마다 바뀌며 돌고, 물결이 흐르며 막대가 참 — 끊김·이음매 틈이 거슬리지 않는지 |  |
+| 30 | Classic 색상 선택기 물방울 그림자 | ClassicColorPicker 스토리 | 색조 손잡이를 끌 때 물방울 그림자가 손잡이(구) 위를 덮지 않음 |  |
 
 ## 테스트
 
@@ -334,7 +344,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
   않는 클라이언트에서는 무효입니다(`Elevation.Backdrop`이 대안).
 - **M3와 다른 점**(Roblox·인스턴스 비용 때문): Filled TextField는 위쪽 두 모서리만 둥글림(채움을 4px 더 크게 그려 부모가 자르는 방식, 인스턴스 +1),
   Outlined의 레이블 노치는 표면색 배경(어두운 배경 위에선 `NotchColor` 필요), Switch 터치 타깃은 52x32, IconButton의 48px 터치 타깃은
-  선택(`TouchTarget = true`, 기본은 40px), 칩 제거·스낵바 버튼은 48px, Tabs는 스크롤되지 않고 개별 비활성이 없음, Slider는 2022 클래식 형태이고 Min/Max/Step이 정적, Menu는
+  선택(`TouchTarget = true`, 기본은 40px), 칩 제거·스낵바 버튼은 48px, Tabs는 스크롤되지 않고 개별 비활성이 없음, Slider·RangeSlider는 2022 클래식 형태이고 Min/Max/Step이 정적, 리플은 호스트 사각형을 넘지 않는 둥근 사각형으로 자람(원이 가장자리에 잘린 모양이 아님 — `AutomaticSize` 조상이 리플까지 재기 때문, `Ripple.luau` "BOUNDED"), LoadingIndicator는 M3의 일곱 모양(오각형·쿠키 9 등) 대신 사각형 셋의 겹침 근사, WavyProgress는 확정만(비확정 물결 없음), Menu는
   가장 긴 항목에 폭을 맞추지 못하며(`Width` 지정) 타입어헤드·서브메뉴가 없음(위/아래·Return·Escape는 있음), 원형 비확정
   진행의 가장 짧은 호가 180도, 색상 선택기에 알파가 없음. 컴포넌트별 전체 목록은 각 파일 머리에 있습니다.
 - 갤러리는 좁은 화면에서 탭 글자가 잘릴 수 있습니다(Tabs는 폭을 균등 분할).

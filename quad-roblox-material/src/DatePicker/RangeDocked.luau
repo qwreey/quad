@@ -10,9 +10,11 @@
 	                              (clicking an earlier day swaps them); both Sources are written.
 	  * otherwise (nothing picked, or a complete range) -> the click starts a new range: End := nil, Start := clicked.
 	Look: Start/End are filled primary circles; days between are a secondaryContainer band built from the day
-	chips themselves (an in-range chip widens to the full 48 px slot and squares its corners — no extra Frames,
-	still 3 instances per cell). Deviation from M3: the band has no half-capsule behind the start/end circles
-	(the circle's 4 px slot margin shows between it and the band) and no rounded caps at the ends of a week row.
+	chips themselves (an in-range chip widens to the full 48 px slot and squares its corners — still 3 instances per
+	cell), joined to the start/end circles by two half-band Frames per month grid (`BandStart` from the start circle's
+	center to its slot's right edge, `BandEnd` from the left edge to the end circle's center — MonthView `BandEnds`; the
+	first version had none and the circles floated 4 px apart from the strip, Studio QA 2026-10-07 2nd).
+	Deviation from M3: no rounded caps at the ends of a week row.
 
 	Props: Start, End (Source<Date?>), Min, Max, IsDisabled, FirstDayOfWeek, Locale, Today, UtcOffset, Theme, Modifier
 	as Docked, plus `OnChange: ((start: Date, end: Date?) -> ())?` after each click (End is nil after the first).
@@ -73,6 +75,7 @@ local function RangeDocked(props: Props): Frame
 		Follow = startSource,
 		StatusFor = Status.range({ Start = startSource, End = endSource, Today = today, Selectable = selectable }),
 		Band = true,
+		BandEnds = Status.rangeEnds({ Start = startSource, End = endSource, Today = today, Selectable = selectable }),
 		OnPick = function(date: Date)
 			local s, e = startSource:Get(), endSource:Get()
 			if s ~= nil and e == nil then

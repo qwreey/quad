@@ -7,7 +7,8 @@
 	Layout (px): 12 px side padding, then 7 columns of 48 (weekday labels AND the day grid both start at x = 12); weekday
 	row 40 high; day rows 48; a 40x40 chip centred in each 48x48 slot
 	(M3's 40 dp day circle — the 48 dp touch target is the slot, the chip itself is the hit area: deviation).
-	Instances: weekday labels 7 + grid Frame 1 + 42 chips * 3 = 134 (+ the Frame wrapper = 135).
+	Instances: weekday labels 7 + grid Frame 1 + 42 chips * 3 = 134 (+ the Frame wrapper = 135); a range grid (`BandEnds`)
+	adds the two half-band Frames (137).
 
 	Options
 	  Grid         State<Grid>                   the visible month (View.gridState)
@@ -18,6 +19,12 @@
 	  OnPick       (Date) -> ()                  a selectable cell was activated (click / tap / gamepad A / Enter)
 	  FocusDate    Date                          initial keyboard focus date (Source `focusDate` exposed below)
 	  Band         boolean?                      range band chips
+	  BandEnds     ((grid) -> State<BandEnds>)?  with Band: where the range's start / end circles sit (Status.rangeEnds) —
+	                                             two half-band Frames (`BandStart` / `BandEnd`, under the chips) join each
+	                                             end circle to the in-range strip, as M3's range picker draws it: the start
+	                                             circle sits on a band from its center to the slot's right edge, the end
+	                                             circle on one from the left edge to its center (Studio QA 2026-10-07, 2nd:
+	                                             the circles floated apart from the strip by the 4 px slot margin)
 	  Visible      boolean | State<boolean>?     the Frame's Visible (hidden while the year grid shows)
 
 	KEYBOARD (hardware keyboard): while ANY cell holds engine selection the grid listens (the shared `KeyNav` hook, one per
@@ -64,9 +71,12 @@ export type Options = {
 	OnPick: (date: Date) -> (),
 	FocusDate: Date,
 	Band: boolean?,
+	BandEnds: ((grid: State<View.Grid>) -> State<BandEnds>)?,
 	Visible: (boolean | State<boolean>)?,
 	Position: UDim2?,
 }
+
+export type BandEnds = { Start: { Row: number, Col: number }?, End: { Row: number, Col: number }? }
 
 export type MonthView = {
 	read Frame: Frame,
@@ -221,6 +231,36 @@ local function new(o: Options): MonthView
 			table.insert(cells, chip)
 			table.insert(gridChildren, chip)
 		end
+	end
+
+	-- range: the two half bands joining the end circles to the strip (drawn under the chips: chips are ZIndex 2 in Band mode)
+	if o.Band and o.BandEnds ~= nil then
+		local ends = o.BandEnds(grid)
+		local bandColor = theme.Color.SecondaryContainer
+		local function half(name: string, which: "Start" | "End")
+			local pos: State<UDim2> = ends:Compute(function(self)
+				local cell = if which == "Start" then self:Get().Start else self:Get().End
+				if cell == nil then
+					return UDim2.fromOffset(0, 0)
+				end
+				local x = (cell.Col - 1) * COL_W + (if which == "Start" then COL_W // 2 else 0)
+				return UDim2.fromOffset(x, (cell.Row - 1) * ROW_H + (ROW_H - CHIP) // 2)
+			end)
+			local shown: State<boolean> = ends:Compute(function(self)
+				return (if which == "Start" then self:Get().Start else self:Get().End) ~= nil
+			end)
+			return D.Frame {
+				Name = name,
+				Size = UDim2.fromOffset(COL_W // 2, CHIP),
+				Position = pos,
+				Visible = shown,
+				BackgroundColor3 = bandColor,
+				BorderSizePixel = 0,
+				ZIndex = 1,
+			}
+		end
+		table.insert(gridChildren, 1, half("BandStart", "Start"))
+		table.insert(gridChildren, 2, half("BandEnd", "End"))
 	end
 
 	-- the day columns line up with the weekday labels: both start PAD px in (the grid's 7 * 48 px sit inside the

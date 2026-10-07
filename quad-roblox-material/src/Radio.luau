@@ -17,10 +17,10 @@
 	  Theme, Modifier, Hooks              as Button
 	Returns the host `TextButton` (48x48, transparent).
 
-	Look: 20 px outer ring (2 px outline, `OnSurfaceVariant` -> `Primary` when selected), 10 px inner dot (`Primary`)
-	that scales 0 -> 10 px with a Motion Short4/Standard `q.Animate` on its Size, 40 px state layer + ripple.
-	Structure at rest: host > Target Frame (40) > state layer (3) + Ring (Frame + UICorner + UIStroke) + Dot
-	(Frame + UICorner) = 9 descendants.
+	Look: the ring + dot come from qwreey MaterialUI's sprite sheet (one ImageLabel `Sprite`, 10 frames of 40 px shown at
+	20 px; frames step 0 -> 9 in 0.2 s on selection, reversed on deselection, tinted `OnSurfaceVariant` / `Primary` /
+	`Error`), 40 px state layer + ripple. Structure at rest: host > Target Frame (40) > state layer (3) + Sprite = 5
+	descendants (+1 Label TextLabel). (The header described the earlier Ring + Dot Frames until 2026-10-07.)
 
 	RadioGroup props: Value, Options (`{ { Option: T, Label: string, Disabled: (boolean | State<boolean>)? } }`, fixed at
 	construction), Direction ("Vertical" default | "Horizontal"), Disabled, Error, OnChange, Theme, Modifier

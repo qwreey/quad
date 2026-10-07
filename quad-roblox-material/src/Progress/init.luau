@@ -1,6 +1,8 @@
 --!strict
 --[[
-	M3 progress indicators: LinearProgress and CircularProgress, determinate and indeterminate.
+	M3 progress indicators: LinearProgress and CircularProgress, determinate and indeterminate. Two M3 Expressive
+	additions live in their own files and are re-exported here: `LoadingIndicator` (the morphing-shape spinner,
+	LoadingIndicator.luau) and `WavyProgress` (the travelling-wave determinate bar, Wavy.luau).
 
 	    Progress.LinearProgress({ Value = loaded })              -- Value: number | State<number>, 0..1  (determinate)
 	    Progress.LinearProgress({})                              -- no Value = indeterminate (animated bars)
@@ -49,6 +51,8 @@ local Tokens = require("./Tokens")
 local Theme = require("./Theme")
 local Util = require("./Util")
 local Loop = require("@self/Loop")
+local LoadingModule = require("@self/LoadingIndicator")
+local WavyModule = require("@self/Wavy")
 local D = q.Declaration
 
 
@@ -353,7 +357,13 @@ local function CircularProgress(props: CircularProps): Frame
 	}
 end
 
+export type LoadingIndicatorProps = LoadingModule.Props
+export type WavyProps = WavyModule.Props
+
 return {
 	LinearProgress = LinearProgress,
 	CircularProgress = CircularProgress,
+	-- M3 Expressive additions (2026-10-07): see LoadingIndicator.luau / Wavy.luau
+	LoadingIndicator = LoadingModule.LoadingIndicator,
+	WavyProgress = WavyModule.WavyProgress,
 }

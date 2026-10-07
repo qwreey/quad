@@ -10,6 +10,16 @@
 	  - Here each press makes ONE `CanvasGroup` (it clips its descendants to its own `UICorner` — exact
 	    rounding, any radius) holding ONE circle `Frame` (round via `UICorner`, no image asset). That is
 	    4 instances per press (CanvasGroup, its UICorner, circle, its UICorner), 0 at rest.
+	  - BOUNDED: the circle never reaches outside the host rectangle. `AutomaticSize` measures ALL descendants,
+	    clipped ones included (an engine behavior, DevForum "AutomaticSize does not consider ClipDescendants"), so the
+	    first version's circle — grown to the farthest corner, i.e. past the host's edges — made every auto-sized
+	    ancestor grow while a press lasted: an auto-width Button / Chip widened, a RadioGroup row or a story holder grew
+	    taller and its centered children jumped, a dialog's actions row pushed the card (Studio QA 2026-10-07, 2nd).
+	    Now each frame of the expand writes the circle as the circle's bounding box CLAMPED to the host, with its
+	    UICorner = the circle radius while it fits, the clipped box's half-side once an edge cuts it, fading to 0
+	    between the nearest and the farthest host corner (the group's corner then gives the exact host shape).
+	    Deviation: once an edge cuts the circle its cut sides show as half-round ends of the box, not as the
+	    flatter arcs of a big circle — visible only during the 0.45 s grow.
 	  - TRADE-OFF: a `CanvasGroup` renders its subtree into an offscreen texture of the host's size, so a
 	    group costs texture memory + a composite pass while it exists. They are created lazily on press and
 	    destroyed ~0.2-0.6 s later (and at most `Max` exist at once — the oldest is dropped), never kept at
@@ -37,9 +47,11 @@
 	Geometry: the "host" Ripple measures is the frame that carries `ripple.Hook` — in Interactive that is the state
 	layer, a full-size DIRECT child of the real host with no UIPadding in between, so its AbsolutePosition /
 	AbsoluteSize equal the button's (test/spec.button.luau checks the press point end to end).
-	Timing: expand 0.45 s (Motion Long1, Standard easing); fade 0.2 s (Short4, linear) starting at
-	release. Both are engine tweens (2 per ripple) — no Heartbeat loop; the group is removed by a one-shot
-	`task.delay` (fade time + 50 ms), cancelled if the host dies first.
+	Timing: expand 0.45 s (Motion Long1, Standard easing = Quart Out, evaluated by hand) driven by ONE Heartbeat
+	connection per growing ripple (the clamped shape above is three properties computed per frame, which tweens
+	cannot express), disconnected when the expand ends, the ripple is dropped or the host dies; fade 0.2 s (Short4,
+	linear) starting at release, an engine tween. The group is removed by a one-shot `task.delay` (fade time + 50 ms),
+	cancelled if the host dies first.
 	Pointer-space note: `position` is used as-is against `AbsolutePosition`. If a device shows the ripple
 	offset by the top-bar inset (ScreenGui with `IgnoreGuiInset = false`), set `Ripple.Config.PointerInset`
 	(module-level Vector2, default (0, 0)) — not measurable without a device.
@@ -50,6 +62,8 @@ local Tokens = require("./Tokens")
 local D = q.Declaration
 
 local Motion = Tokens.Motion
+local RunService = game:GetService("RunService")
+local EXPAND_TIME = Motion.Duration.Long1
 
 export type ColorInput = Color3 | q.State<Color3>
 
@@ -72,7 +86,7 @@ export type Ripple = {
 	Count: (self: Ripple) -> number,
 }
 
-type Live = { group: Instance, held: boolean, fade: () -> (), timer: thread? }
+type Live = { group: Instance, held: boolean, fade: () -> (), timer: thread?, conn: RBXScriptConnection? }
 
 local Module = {
 	-- Subtracted from press positions before they are compared with AbsolutePosition (see header).
@@ -95,6 +109,9 @@ local function new(opts: Options): Ripple
 				if l.timer then
 					task.cancel(l.timer)
 				end
+				if l.conn then
+					l.conn:Disconnect()
+				end
 			end
 			table.clear(live)
 		end)
@@ -106,6 +123,10 @@ local function new(opts: Options): Ripple
 				table.remove(live, i)
 				if l.timer then
 					task.cancel(l.timer)
+				end
+				if l.conn then
+					l.conn:Disconnect()
+					l.conn = nil
 				end
 				break
 			end
@@ -142,27 +163,65 @@ local function new(opts: Options): Ripple
 		-- radius = distance to the farthest corner (M3), so the circle just covers the host
 		local dx = math.max(px, size.X - px)
 		local dy = math.max(py, size.Y - py)
-		-- UDim2 offsets are whole pixels, so round UP to still cover the corner
-		local diameter = math.ceil(2 * math.sqrt(dx * dx + dy * dy))
+		local radius = math.sqrt(dx * dx + dy * dy)
+		-- the radius at which the NEAREST host corner gets covered: from there on the shape's own rounding fades to 0
+		local nx = math.min(px, size.X - px)
+		local ny = math.min(py, size.Y - py)
+		local nearCorner = math.sqrt(nx * nx + ny * ny)
+		local wMax, hMax = math.floor(size.X), math.floor(size.Y)
 
-		local sizeSrc = q.Source(UDim2.fromOffset(0, 0))
 		local transparencySrc = q.Source(1 - opacity)
-		local expand = q.Animate(Motion.options("Long1", "Standard"))
 		local fadeOpts = Motion.options("Short4", "Linear")
 		local fadeTween = q.Animate(fadeOpts)
 
+		local circleRef = q.PreRef(nil :: Frame?)
+		local roundRef = q.PreRef(nil :: UICorner?)
+		local entry: Live = { group = nil :: any, held = true, fade = function() end, timer = nil, conn = nil }
+
+		-- one frame of the expand: the circle of radius `r` around the press point, CLAMPED to the host rectangle (see
+		-- BOUNDED in the header) — its rounding is the circle's while it fits, the clipped box's half-side once an edge
+		-- cuts it, and fades to 0 between the nearest and the farthest corner (the group's UICorner then gives the host shape)
+		local function shape(r: number)
+			local circle = circleRef.Value
+			local round = roundRef.Value
+			if circle == nil or round == nil then
+				return
+			end
+			-- UDim offsets are whole pixels: round outward, but never past the host's (floored) edges
+			local x0, x1 = math.max(0, math.floor(px - r)), math.min(wMax, math.ceil(px + r))
+			local y0, y1 = math.max(0, math.floor(py - r)), math.min(hMax, math.ceil(py + r))
+			local bw, bh = x1 - x0, y1 - y0
+			local rad = math.min(r, bw / 2, bh / 2)
+			if r > nearCorner then
+				rad *= math.max(0, (radius - r) / math.max(radius - nearCorner, 1e-6))
+			end
+			circle.Position = UDim2.fromOffset(x0, y0)
+			circle.Size = UDim2.fromOffset(bw, bh)
+			round.CornerRadius = UDim.new(0, math.round(rad))
+		end
+
 		local circle = D.Frame {
 			Name = "RippleCircle",
-			AnchorPoint = Vector2.new(0.5, 0.5),
+			circleRef,
 			Position = UDim2.fromOffset(px, py),
-			Size = sizeSrc:Apply(expand),
+			Size = UDim2.fromOffset(0, 0),
 			BackgroundColor3 = opts.Color,
 			BackgroundTransparency = transparencySrc:Apply(fadeTween),
 			BorderSizePixel = 0,
-			UICorner = UDim.new(0.5, 0),
-			-- mounted snapped (size 0), then grown: the first property write snaps, the second tweens
+			D.UICorner { Name = "RippleRound", roundRef, CornerRadius = UDim.new(0, 0) },
+			-- mounted at size 0, then grown frame by frame for the expand time (one Heartbeat connection per growing
+			-- ripple, disconnected at the end of the expand or when the ripple is dropped)
 			Util.postHook(function()
-				sizeSrc:Set(UDim2.fromOffset(diameter, diameter))
+				local t = 0
+				entry.conn = RunService.Heartbeat:Connect(function(dt: number)
+					t += dt
+					local a = math.min(t / EXPAND_TIME, 1)
+					shape(radius * (1 - (1 - a) ^ 4)) -- Quart Out = the M3 Standard easing's kit mapping
+					if a >= 1 and entry.conn ~= nil then
+						entry.conn:Disconnect()
+						entry.conn = nil
+					end
+				end)
 			end),
 		}
 		local g = D.CanvasGroup {
@@ -173,7 +232,7 @@ local function new(opts: Options): Ripple
 			UICorner = corner,
 			circle,
 		}
-		local entry: Live = { group = g, held = true, fade = function() end, timer = nil }
+		entry.group = g
 		-- Release: start the fade tween, and remove the group once it has finished. A timer (not the tween's
 		-- `Completed`) so removal does not depend on the engine tween's notification path.
 		entry.fade = function()

@@ -18,6 +18,7 @@
 	  StatusFor      (grid, row, col) -> State<Status>
 	  OnPick         (Date) -> ()
 	  Band           boolean?
+	  BandEnds       ((grid) -> State<BandEnds>)?  range: where the half bands joining the end circles go (MonthView)
 	  Visible        boolean | State<boolean>?     (the Modal hides the calendar in text-input mode)
 	Returns { Frame, View, Month, ShowYears }
 
@@ -58,6 +59,7 @@ export type Options = {
 	StatusFor: (grid: State<View.Grid>, row: number, col: number) -> State<Chip.Status>,
 	OnPick: (date: Date) -> (),
 	Band: boolean?,
+	BandEnds: ((grid: State<View.Grid>) -> State<MonthView.BandEnds>)?,
 	Visible: (boolean | State<boolean>)?,
 	Position: UDim2?,
 }
@@ -104,6 +106,7 @@ local function new(o: Options): Body
 		OnPick = o.OnPick,
 		FocusDate = Calendar.clamp(o.Today, o.Min, o.Max),
 		Band = o.Band,
+		BandEnds = o.BandEnds,
 		Visible = notYears,
 		Position = UDim2.fromOffset(0, HEADER_H),
 	})

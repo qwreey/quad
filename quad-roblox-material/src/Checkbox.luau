@@ -31,15 +31,16 @@
 	one ImageLabel instead of two Frames but needs an asset the kit cannot ship; the Frame form is crisp at every scale.)
 
 	Toggle motion (ported from qwreey MaterialUI's CheckBox — four edge bars, 0.15 s + 0.15 s linear): when the look
-	(empty / check / dash) changes, four bars in the OLD look's outline color grow in from the box edges to 40 % each
-	(the box "closes" over its old content) while the box swells 2 px per side; then the new look is swapped in under the
-	bars, which shrink back to the edges in the NEW color — so a check appears from the middle outward and an uncheck
-	folds the fill in. One Heartbeat connection while a change animates (0.3 s), none at rest; an interrupting change
+	(empty / check / dash) changes, four bars in the OLD look's outline color grow in to 40 % each from the INNER edge
+	of the outline (a fixed 14 px frame inside the 2 px stroke — never over the rounded corners, so the box never reads
+	as a square; the original likewise kept its bars in an inset frame under the outline image) while the outline swells
+	2 px per side away from them; then the new look is swapped in under the bars, which shrink back in the NEW color —
+	so a check appears from the middle outward and an uncheck folds the fill in. One Heartbeat connection while a change animates (0.3 s), none at rest; an interrupting change
 	resumes from the current bar width. The mounted look is snapped (no motion at construction).
 
 	Structure at rest: host TextButton > Target Frame (40 px, anchor center) > state layer (Frame + UICorner +
-	UIStroke focus ring) + Box (Frame + UICorner(2) + UIStroke(2, Inner)) > CheckShort, CheckLong, Dash, 4 bars
-	= 14 descendants (+1 Label TextLabel). A press adds a transient 4 (ripple).
+	UIStroke focus ring) + Box (Frame + UICorner(2) + UIStroke(2, Inner)) > CheckShort, CheckLong, Dash, Bars > 4 bars
+	= 15 descendants (+1 Label TextLabel). A press adds a transient 4 (ripple).
 	M3 deviations: none in size/shape; the mark animation is the bars motion above (M3 draws the check as a path).
 ]]
 
@@ -72,7 +73,8 @@ local DisabledTransparency = Style.DisabledContentTransparency
 local BOX = 18
 local HALF = 0.15 -- each phase of the toggle motion (the original's 0.15 s, linear)
 local CLOSE = 0.4 -- how far each bar grows in (fraction of the box)
-local SWELL = 4 -- extra box size at the closed point (2 px per side)
+local SWELL = 4 -- extra box size at the closed point (2 px per side) — only the outline/fill swells, not the bars
+local STROKE = 2 -- outline thickness (Inner): the bars frame sits inside it
 
 type Look = "none" | "check" | "dash"
 
@@ -216,7 +218,7 @@ local function Checkbox(props: Props)
 		}
 	end
 
-	-- one closing bar (ZIndex 2: drawn over the marks); color = the displayed look's outline color, not animated (the
+	-- one closing bar (inside the `Bars` frame, which is ZIndex 2 over the marks); color = the displayed look's outline color, not animated (the
 	-- bars are zero-sized at rest, so a scheme change needs no cross-fade)
 	local function bar(name: string, anchor: Vector2, size: q.State<UDim2>)
 		return D.Frame {
@@ -227,7 +229,6 @@ local function Checkbox(props: Props)
 			BackgroundColor3 = strokeRaw,
 			BackgroundTransparency = strokeTransparency,
 			BorderSizePixel = 0,
-			ZIndex = 2,
 		}
 	end
 
@@ -244,7 +245,7 @@ local function Checkbox(props: Props)
 			Name = "Outline",
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 			BorderStrokePosition = Enum.BorderStrokePosition.Inner,
-			Thickness = 2,
+			Thickness = STROKE,
 			Color = Style.animated(strokeRaw),
 			Transparency = strokeTransparency:Apply(Style.animation()),
 		},
@@ -261,10 +262,23 @@ local function Checkbox(props: Props)
 			BackgroundTransparency = dashTransparency,
 			BorderSizePixel = 0,
 		},
-		bar("BarLeft", Vector2.new(0, 0), barWidth),
-		bar("BarRight", Vector2.new(1, 0), barWidth),
-		bar("BarTop", Vector2.new(0, 0), barHeight),
-		bar("BarBottom", Vector2.new(0, 1), barHeight),
+		-- the bars live in a fixed frame INSIDE the at-rest outline (the stroke's inner edge — its inner corner is square,
+		-- radius 2 - 2 = 0): growing in from there they never cover the rounded corners, and while the box swells the
+		-- frame stays put, so a gap ring opens between the swollen outline and the closing bars (the original's inset
+		-- `Side` frame under its outline image). Bars spanning the whole box made the box read as a hard square.
+		D.Frame {
+			Name = "Bars",
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromOffset(BOX - 2 * STROKE, BOX - 2 * STROKE),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			ZIndex = 2,
+			bar("BarLeft", Vector2.new(0, 0), barWidth),
+			bar("BarRight", Vector2.new(1, 0), barWidth),
+			bar("BarTop", Vector2.new(0, 0), barHeight),
+			bar("BarBottom", Vector2.new(0, 1), barHeight),
+		},
 	}
 	local hasLabel = props.Label ~= nil
 

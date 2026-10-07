@@ -35,6 +35,8 @@
 	  * Focus look comes from the TextBox `Focused`/`FocusLost` events written into an internal Source.
 	  * MaxLength is enforced in the write-back path (see Field.luau header for why `value:Set`, not
 	    `SetIfChanged`, and why it is not an Observer/Effect).
+	  * A click anywhere on the container (label, padding, icons) focuses the TextBox (`CaptureFocus` on the container's
+	    press release, unless the click already focused it) — the TextBox itself covers only the row's padded box.
 	  * Hover is tracked on the container (Interaction hook). The editable TextBox covers the input area; whether
 	    the engine keeps `MouseEnter` alive over it is not verified on a device (미완 — see report).
 

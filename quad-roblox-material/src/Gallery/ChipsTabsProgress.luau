@@ -2,8 +2,9 @@
 --[[
 	Gallery section "Chips, tabs, progress": the four chips (a Filter set bound to Sources, an Input chip set that removes
 	itself from a keyed list, Assist / Suggestion), Primary and Secondary Tabs (a nested page switch — these are plain
-	Tabs, unrelated to the gallery's own), and linear / circular progress (determinate driven by a Slider-like pair of
-	buttons, indeterminate with a Visible toggle that also stops the Heartbeat loop).
+	Tabs, unrelated to the gallery's own), and linear / wavy / circular progress (determinate driven by a Slider-like pair
+	of buttons, indeterminate — with the M3 Expressive loading indicator — under a Visible toggle that also stops the
+	Heartbeat loops).
 ]]
 
 local q = require("../Quad")
@@ -139,6 +140,7 @@ return function(ctx: Ctx): Instance
 	local determinate: { Instance } = {
 		Common.Column({
 			Progress.LinearProgress({ Theme = theme, Value = value }),
+			Progress.WavyProgress({ Theme = theme, Value = value, Visible = busy }),
 			Common.Flow({
 				Progress.CircularProgress({ Theme = theme, Value = value }),
 				Progress.CircularProgress({ Theme = theme, Value = value, Size = 24, Thickness = 3 }),
@@ -154,7 +156,11 @@ return function(ctx: Ctx): Instance
 		Common.Column({
 			Common.Labeled(ctx, Switch({ Theme = theme, Value = busy }), "Busy (Visible)"),
 			Progress.LinearProgress({ Theme = theme, Visible = busy }),
-			Progress.CircularProgress({ Theme = theme, Visible = busy }),
+			Common.Flow({
+				Progress.CircularProgress({ Theme = theme, Visible = busy }),
+				Progress.LoadingIndicator({ Theme = theme, Visible = busy }),
+				Progress.LoadingIndicator({ Theme = theme, Visible = busy, Contained = true }),
+			}),
 		}, 360, 12),
 	}
 
@@ -163,7 +169,12 @@ return function(ctx: Ctx): Instance
 		Common.Group(ctx, "Chip: filter", filters),
 		Common.Group(ctx, "Chip: input (ChipSet)", inputs, "Remove a chip with its x; the keyed set rebuilds nothing else."),
 		Common.Group(ctx, "Tabs: Primary and Secondary", tabsPrimary),
-		Common.Group(ctx, "Progress: determinate", determinate),
-		Common.Group(ctx, "Progress: indeterminate", indeterminate, "Turning Busy off disconnects the Heartbeat loop of both."),
+		Common.Group(ctx, "Progress: determinate", determinate, "Flat bar, wavy bar (M3 Expressive — its wave travels while Busy is on), rings."),
+		Common.Group(
+			ctx,
+			"Progress: indeterminate",
+			indeterminate,
+			"Bar, ring, and the M3 Expressive loading indicator (plain and contained). Turning Busy off disconnects every loop."
+		),
 	})
 end

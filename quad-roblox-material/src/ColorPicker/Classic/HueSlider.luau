@@ -9,8 +9,8 @@
 	the bubble shrinks in 0.28 s and is hidden only when that tween COMPLETES naturally (a new press cancels
 	it, exactly like the original's `Completed` guard), the fill fades back in 0.42 s.
 
-	Instances at rest: slider (+UICorner, UIPadding, UIGradient), shadow, handle (+UICorner), fill (+UICorner),
-	bubble holder (+UIScale, shadow, bubble image, color disc (+UICorner)) = 15. The original used 11 + a PreviewShadow + fake cursor
+	Instances at rest: slider (+UICorner, UIPadding, UIGradient), shadow, bubble-shadow holder (+UIScale, shadow),
+	handle (+UICorner), fill (+UICorner), bubble holder (+UIScale, bubble image, color disc (+UICorner)) = 17. The original used 11 + a PreviewShadow + fake cursor
 	(inside the slider); here the fake cursor is shared (FakeCursor.luau) and lives in the window.
 	Drag math maps the pointer onto the PADDED track (the original divided by the full width, so the handle
 	drifted up to 5 px from the pointer near the ends).
@@ -93,6 +93,12 @@ local function HueSlider(props: Props)
 			return UDim2.new(self:Get(), 0, 0.5, 1)
 		end)
 		:Apply(Anim.quad(0.12))
+	-- the handle's bottom edge (handle 20 px, centered on the track): where both bubble holders pivot
+	local bubbleBase = model.hue
+		:Compute(function(self)
+			return UDim2.new(self:Get(), 0, 0.5, 10)
+		end)
+		:Apply(Anim.quad(0.12))
 	local fillTransparency = dragging:Compute(function(self)
 		local down = self:Get()
 		return Anim.tween(if down then 1 else 0, if down then 0.18 else 0.42)
@@ -130,6 +136,30 @@ local function HueSlider(props: Props)
 			Size = UDim2.fromOffset(24, 23),
 			ZIndex = 1,
 		},
+		-- the preview bubble's shadow: a twin holder of `PreviewBubble` (same 32x68 box, bottom-center pivot at the handle's
+		-- bottom edge, same Visible + UIScale) one layer BELOW the handle, so it never covers the knob
+		D.Frame {
+			Name = "PreviewShadow",
+			AnchorPoint = Vector2.new(0.5, 1),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			Position = bubbleBase,
+			Size = UDim2.fromOffset(32, 68),
+			Visible = bubbleVisible,
+			UIScale = bubbleScale,
+			ZIndex = 1,
+
+			D.ImageLabel {
+				Name = "BubbleShadow",
+				Image = IMG_BUBBLE_SHADOW,
+				ImageColor3 = Color3.fromRGB(95, 95, 95),
+				ImageTransparency = 0.7,
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				BackgroundTransparency = 1,
+				Position = UDim2.fromScale(0.5, 0.5),
+				Size = UDim2.new(1, 14, 1, 14),
+			},
+		},
 		D.Frame {
 			Name = "Handle",
 			AnchorPoint = Vector2.new(0.5, 0.5),
@@ -152,9 +182,10 @@ local function HueSlider(props: Props)
 				Size = UDim2.fromOffset(14, 14),
 				UICorner = UDim.new(0.5, 0),
 			},
-			-- the bubble is a transparent holder (Visible + UIScale) with the shadow and the bubble image as SIBLINGS: under
-			-- ZIndexBehavior Sibling a child always draws ABOVE its parent, so the shadow as a child of the bubble image (the
-			-- first port) painted over the bubble; here the shadow is the earlier sibling with the lower ZIndex
+			-- the bubble image in a transparent holder (Visible + UIScale). Its SHADOW is not in here: under ZIndexBehavior
+			-- Sibling every descendant of the handle draws above the handle, so a shadow anywhere inside it darkened the
+			-- handle disc ("the drop's shadow paints over the knob"). It is the slider-level `PreviewShadow` below the handle,
+			-- as in the original (Global: preview shadow at the slider's ZIndex, handle +1, preview image +1).
 			D.Frame {
 				Name = "PreviewBubble",
 				AnchorPoint = Vector2.new(0.5, 1),
@@ -166,22 +197,10 @@ local function HueSlider(props: Props)
 				UIScale = bubbleScale,
 
 				D.ImageLabel {
-					Name = "BubbleShadow",
-					Image = IMG_BUBBLE_SHADOW,
-					ImageColor3 = Color3.fromRGB(95, 95, 95),
-					ImageTransparency = 0.7,
-					AnchorPoint = Vector2.new(0.5, 0.5),
-					BackgroundTransparency = 1,
-					Position = UDim2.fromScale(0.5, 0.5),
-					Size = UDim2.new(1, 14, 1, 14),
-					ZIndex = 1,
-				},
-				D.ImageLabel {
 					Name = "BubbleImage",
 					Image = IMG_BUBBLE,
 					BackgroundTransparency = 1,
 					Size = UDim2.fromScale(1, 1),
-					ZIndex = 2,
 
 					D.Frame {
 						Name = "BubbleColor",

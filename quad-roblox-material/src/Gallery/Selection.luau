@@ -1,7 +1,7 @@
 --!strict
 --[[
 	Gallery section "Selection": Checkbox (plain, tri-state parent, error, disabled), Radio / RadioGroup, Switch (plain,
-	icons, disabled), Slider (continuous, discrete with ticks, formatted, disabled). Every control is bound to a Source in
+	icons, disabled), Slider (continuous, discrete with ticks, formatted, disabled), RangeSlider (continuous, discrete, disabled). Every control is bound to a Source in
 	the Memo and a caption reads it back, so a click is visibly a round trip (Source in -> UI -> user input -> Source out).
 ]]
 
@@ -11,6 +11,7 @@ local Checkbox = require("../Checkbox")
 local RadioModule = require("../Radio")
 local Switch = require("../Switch")
 local Slider = require("../Slider")
+local RangeSlider = require("../Slider/Range")
 
 type Ctx = Common.Ctx
 
@@ -155,12 +156,46 @@ return function(ctx: Ctx): Instance
 		}, 320, 8),
 	}
 
+	-- range sliders
+	local rangeLo = ctx.Memo("sel.rangeLo", function()
+		return q.Source(20)
+	end)
+	local rangeHi = ctx.Memo("sel.rangeHi", function()
+		return q.Source(70)
+	end)
+	local stepLo = ctx.Memo("sel.stepLo", function()
+		return q.Source(2)
+	end)
+	local stepHi = ctx.Memo("sel.stepHi", function()
+		return q.Source(6)
+	end)
+	local function pair(lo: q.State<number>, hi: q.State<number>, fmt: string): q.State<string>
+		return lo:Compute(function(self, _prev, h)
+			return string.format(fmt, self:Get(), h:Get())
+		end, hi)
+	end
+	local rangeSliders: { Instance } = {
+		Common.Column({
+			RangeSlider({ Theme = theme, Start = rangeLo, End = rangeHi, Min = 0, Max = 100 }),
+			readout<<string>>(ctx, "Continuous: ", pair(rangeLo, rangeHi, "%.1f .. %.1f"), show),
+			RangeSlider({ Theme = theme, Start = stepLo, End = stepHi, Min = 0, Max = 10, Step = 1 }),
+			readout<<string>>(ctx, "Discrete (ticks): ", pair(stepLo, stepHi, "%d .. %d"), show),
+			RangeSlider({ Theme = theme, Start = q.Source(30), End = q.Source(60), Min = 0, Max = 100, Disabled = true }),
+		}, 320, 8),
+	}
+
 	return Common.Section(ctx, "Selection", "Selection controls", {
 		Common.Group(ctx, "Checkbox", checkboxes),
 		Common.Group(ctx, "Checkbox: tri-state parent", triState, "The parent shows the dash while the children differ; a click sets both children."),
 		Common.Group(ctx, "Radio / RadioGroup", radios),
 		Common.Group(ctx, "Switch", switches),
 		Common.Group(ctx, "Slider", sliders, "Drag, or focus and use the arrow keys / D-pad. The label bubble appears while dragging."),
+		Common.Group(
+			ctx,
+			"Range slider",
+			rangeSliders,
+			"Two handles: a press grabs the nearest. Keys move one handle; Return / gamepad X switches to the other."
+		),
 		Common.Group(ctx, "Current values", {
 			readout<<boolean>>(ctx, "Checked: ", agreed, show),
 			readout<<string>>(ctx, "Fruit: ", fruit, show),

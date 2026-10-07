@@ -56,12 +56,24 @@ H.section("press: one CanvasGroup + circle (4 instances), geometry from the pres
 	-- host (10,10) 100x40, press (30,20): rel (20,10); far corner dx 80 dy 30
 	assert(circle.Position == UDim2.fromOffset(20, 10), "origin = press point relative to the host: " .. tostring(circle.Position))
 	assert(circle.Size == UDim2.fromOffset(0, 0), "mounts at size 0 (snapped)")
-	assert(circle.AnchorPoint == Vector2.new(0.5, 0.5))
 	assert(math.abs(circle.BackgroundTransparency - 0.9) < 1e-9, "ripple opacity .10")
 	assert(group.Size == UDim2.fromScale(1, 1))
-	H.finishTweens()
-	local d = math.ceil(2 * math.sqrt(80 * 80 + 30 * 30))
-	assert(math.abs(circle.Size.X.Offset - d) < 1e-6 and circle.Size.Y.Offset == circle.Size.X.Offset, "grows to cover the farthest corner: " .. tostring(circle.Size) .. " vs " .. d)
+	local round = H.find(circle, "RippleRound")
+	-- early in the grow the shape is the circle itself (radius < the 10 px to the nearest edge)
+	H.advance(0.002)
+	local r = circle.Size.X.Offset / 2
+	assert(r > 0 and r < 10 and circle.Size.Y.Offset == circle.Size.X.Offset, "a small circle: " .. tostring(circle.Size))
+	assert(math.abs(circle.Position.X.Offset - (20 - r)) <= 1 and math.abs(round.CornerRadius.Offset - r) <= 1, "centered on the press point, fully round")
+	-- BOUNDED: at every frame the shape stays inside the host rectangle (AutomaticSize ancestors measure it)
+	for _ = 1, 40 do
+		H.advance(0.0125)
+		local p, z = circle.Position, circle.Size
+		assert(p.X.Offset >= 0 and p.Y.Offset >= 0, "inside (top-left): " .. tostring(p))
+		assert(p.X.Offset + z.X.Offset <= 100 + 1e-6 and p.Y.Offset + z.Y.Offset <= 40 + 1e-6, "inside (bottom-right): " .. tostring(p) .. " " .. tostring(z))
+	end
+	H.advance(0.1)
+	assert(circle.Position == UDim2.fromOffset(0, 0) and circle.Size == UDim2.fromOffset(100, 40), "ends covering the host: " .. tostring(circle.Size))
+	assert(round.CornerRadius == UDim.new(0, 0), "own rounding faded out (the group's corner shapes it)")
 	-- rounded clip: the group carries the host's corner
 	local corner = H.find(group, "_quad_round")
 	assert(corner ~= nil and corner.CornerRadius == FULL, "group clips with the host's corner radius")

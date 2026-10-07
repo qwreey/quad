@@ -243,4 +243,83 @@ H.section("a mixed tree: two loops, determinate ones hold no connection, dispose
 	H.assertNoDebugOutput("mixed dispose")
 end)
 
+H.section("LoadingIndicator: 8 instances, morphs + turns from Heartbeat while mounted and visible, Contained colors", function()
+	local visible = q.Source(true)
+	local ind = Progress.LoadingIndicator({ Visible = visible })
+	assert(ind.Name == "LoadingIndicator" and ind.Size == UDim2.fromOffset(48, 48))
+	local n = H.countDescendants(ind)
+	print("LoadingIndicator instances: " .. (n + 1))
+	H.resetOutput()
+	assert(n == 7, "UICorner + 3 x (shape + UICorner) = 7, got " .. n)
+	assert(ind.BackgroundTransparency == 1, "uncontained: no container")
+	local s1, s2 = H.find(ind, "Shape1"), H.find(ind, "Shape2")
+	assert(s1.BackgroundColor3 == L.Primary)
+	assert(beats() == baseBeats, "not mounted: no loop")
+	local _, gui = live(ind)
+	assert(beats() == baseBeats + 1)
+	H.advance(0.3)
+	local r0 = s1.Rotation
+	assert(r0 > 0, "it turns")
+	-- the shape stays inside its 38 px box (spring overshoot is bounded by the sizes)
+	for _ = 1, 60 do
+		H.advance(0.05)
+		for _, f in { s1, s2, H.find(ind, "Shape3") } do
+			assert(f.Size.X.Offset <= 38 * 1.15 and f.Size.Y.Offset <= 38 * 1.15, "inside the shape box: " .. tostring(f.Size))
+			local c = class(f, "UICorner")[1]
+			assert(c.CornerRadius.Scale >= 0 and c.CornerRadius.Scale <= 0.5)
+		end
+	end
+	visible:Set(false)
+	assert(beats() == baseBeats, "hidden: loop off")
+	q.dispose(gui)
+	-- the pose: a full cycle of six morphs returns to the first keyframe's shape
+	local Loading = require("../src/Progress/LoadingIndicator")
+	local p: any = { r1 = 0, r2 = 0, r3 = 0, w = 0, h = 0, c = 0 }
+	Loading.pose(11 * 0.65 + 0.649, p) -- the end of the 12th morph (keyframe 6 -> 1): settled on keyframe 1
+	local k1 = Loading.Keys[1]
+	assert(math.abs(p.c - k1.c) < 0.01 and math.abs(p.w - k1.w) < 0.01, "cycle returns to the burst")
+	assert(math.abs(((p.r2 - p.r1) % 360) - k1.o2) < 0.5, "burst offsets restored")
+	-- contained
+	local boxed = Progress.LoadingIndicator({ Contained = true, Size = 64 })
+	assert(boxed.Size == UDim2.fromOffset(64, 64) and boxed.BackgroundTransparency == 0 and boxed.BackgroundColor3 == L.PrimaryContainer)
+	assert(H.find(boxed, "Shape1").BackgroundColor3 == L.OnPrimaryContainer)
+	q.dispose(boxed)
+	H.assertNoDebugOutput("loading indicator")
+end)
+
+H.section("WavyProgress: wave clipped to the value, gap + track + stop, strip slides, grows with the host", function()
+	local value = q.Source(0.5)
+	local bar = Progress.WavyProgress({ Value = value })
+	assert(bar.Size == UDim2.new(1, 0, 0, 10), "height = 4 + 2 x 3")
+	local wave, track, strip = H.find(bar, "Wave"), H.find(bar, "Track"), H.find(bar, "Strip")
+	assert(wave.ClassName == "CanvasGroup", "rotated segments need a CanvasGroup clip")
+	H.finishTweens()
+	assert(wave.Size == UDim2.fromScale(0.5, 1) and track.Position == UDim2.new(0.5, 4, 0.5, 0) and track.Size == UDim2.new(0.5, -4, 0, 4))
+	local segs = H.findAll(bar, function(c: any)
+		return c.Name == "Segment"
+	end)
+	assert(#segs == 8, "one wavelength before layout")
+	for _, sg in segs do
+		local y = sg.Position.Y.Offset
+		assert(y >= 2 and y <= 8 and sg.BackgroundColor3 == L.Primary, "segments on the wave inside the bar")
+	end
+	H.setAbs(bar, 0, 0, 300, 10)
+	local _, gui = live(bar)
+	H.advance(0.25)
+	assert(#H.findAll(bar, function(c: any)
+		return c.Name == "Period"
+	end) == 9, "ceil(300 / 40) + 1 = 9 wavelengths")
+	assert(strip.Size == UDim2.new(0, 360, 1, 0))
+	assert(math.abs(strip.Position.X.Offset + 10) <= 1, "a quarter wavelength travelled in 0.25 s: " .. tostring(strip.Position))
+	value:Set(1)
+	H.finishTweens()
+	assert(track.Visible == false and wave.Size == UDim2.fromScale(1, 1))
+	q.dispose(gui)
+	assert(beats() == baseBeats)
+	assert(not pcall(function()
+		Progress.WavyProgress({} :: any)
+	end), "Value is required")
+	H.assertNoDebugOutput("wavy")
+end)
+
 H.done()

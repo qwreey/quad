@@ -481,13 +481,26 @@ H.section("RangeDocked: first click starts, second completes (normalized), third
 	end
 	assert(cells[4].BackgroundTransparency == 1 and cells[11].BackgroundTransparency == 1)
 	assert(cells[5].Size == UDim2.fromOffset(40, 40))
+	-- the half bands join the end circles to the strip: start center -> slot right edge, slot left edge -> end center,
+	-- under the chips (chip ZIndex 2)
+	local bs, be = H.find(root, "BandStart"), H.find(root, "BandEnd")
+	assert(bs.Visible == true and be.Visible == true and bs.BackgroundColor3 == L.SecondaryContainer)
+	assert(bs.Size == UDim2.fromOffset(24, 40) and be.Size == UDim2.fromOffset(24, 40))
+	assert(cells[5].ZIndex == 2 and bs.ZIndex == 1)
+	-- start chip spans x [p+4, p+44] of its slot: the band starts at its center p+24 and meets the next slot at p+48
+	assert(bs.Position.X.Offset == cells[5].Position.X.Offset + 20 and bs.Position.Y.Offset == cells[5].Position.Y.Offset)
+	assert(bs.Position.X.Offset + 24 == cells[6].Position.X.Offset, "start half band meets the strip")
+	assert(be.Position.X.Offset + 24 == cells[10].Position.X.Offset + 20, "end half band ends at the end circle's center")
+	assert(be.Position.X.Offset == cells[9].Position.X.Offset + 48, "end half band starts where the strip ends")
 	click(cells[20]) -- complete range -> restart
 	assert(iso(s:Get()) == "2026-02-20" and e:Get() == nil)
 	H.finishTweens()
 	assert(cells[6].BackgroundTransparency == 1 and cells[20].BackgroundTransparency == 0)
+	assert(bs.Visible == false and be.Visible == false, "incomplete range: no half bands")
 	-- same day twice = single-day range
 	click(cells[20])
 	assert(iso(s:Get()) == "2026-02-20" and iso(e:Get()) == "2026-02-20")
+	assert(bs.Visible == false and be.Visible == false, "one-day range: one circle, no half bands")
 	q.dispose(root)
 	H.assertNoDebugOutput("range")
 end)

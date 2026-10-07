@@ -86,14 +86,27 @@ local function build(props: Props): Parts
 
 	local interactable: q.State<boolean> = Util.interactable(disabled)
 
+	-- the editable TextBox, once mounted: a click anywhere on the container (label, padding, icons, the strip under the
+	-- text) focuses it, like M3's whole-container tap target. The TextBox only covers the row's padded box (24 px high in
+	-- a Filled field with a label), and the engine focuses a TextBox only on a click inside its own bounds — Studio QA
+	-- 2026-10-07 (2nd): "had to click the text part".
+	local inputInst: TextBox? = nil
+
 	local ix = Interaction.new({
 		Disabled = disabled,
 		OnHost = function(inst: GuiObject)
 			inst.SelectionImageObject = Interactive.noSelectionImage()
 		end,
 		OnPressEnded = function(cancelled: boolean)
-			if not cancelled and props.OnClick and not Util.peekBool(disabled) then
+			if cancelled or Util.peekBool(disabled) then
+				return
+			end
+			if props.OnClick then
 				props.OnClick()
+			end
+			local box = inputInst
+			if box ~= nil and not readOnly and not box:IsFocused() then
+				box:CaptureFocus()
 			end
 		end,
 	})
@@ -211,6 +224,7 @@ local function build(props: Props): Parts
 			then q.None
 			else Util.preHook(function(inst: GuiObject)
 				inst.SelectionImageObject = Interactive.noSelectionImage() -- the focused look replaces the engine box
+				inputInst = inst :: TextBox
 			end),
 		SelectionGained = function()
 			boxSelected:SetIfChanged(true)

@@ -14,6 +14,8 @@
 	  Today     primary text + 1 px outline
 	  Selected  primary fill, onPrimary text
 	  InRange   (Band chips only) secondaryContainer band, onSecondaryContainer text
+	  RangeStart / RangeEnd   drawn exactly like Selected; they only tell the month grid to lay the half band that joins
+	            the end circle to the in-range strip (MonthView `BandEnds`)
 	Hover / pressed / keyboard-focus feedback is the M3 state layer expressed as the host's own background
 	transparency (onSurface at .08 / .10 — no separate layer Frame, that is what keeps a cell at 3 instances);
 	a focused chip also gets a 2 px `Secondary` ring (the UIStroke). A Selected chip does not change on hover
@@ -43,7 +45,7 @@ local Util = require("../Util")
 local Text = require("../Text")
 local D = q.Declaration
 
-export type Status = "Hidden" | "Disabled" | "Normal" | "Today" | "Selected" | "InRange"
+export type Status = "Hidden" | "Disabled" | "Normal" | "Today" | "Selected" | "InRange" | "RangeStart" | "RangeEnd"
 
 export type Options = {
 	Name: string?,
@@ -65,6 +67,11 @@ export type Options = {
 local DisabledText = 1 - Tokens.State.Opacity.DisabledContent
 local HoverT = 1 - Tokens.State.Opacity.Hover
 local PressT = 1 - Tokens.State.Opacity.Pressed
+
+-- a range end draws as the selected circle (the joining half band is the month grid's, under the chip)
+local function selectedLook(s: Status): boolean
+	return s == "Selected" or s == "RangeStart" or s == "RangeEnd"
+end
 
 local function animation()
 	return q.Animate(Tokens.Motion.options("Short2", "Standard"))
@@ -91,7 +98,7 @@ local function new(o: Options): TextButton
 	-- container: filled primary (Selected) / band (InRange) / onSurface state layer
 	local bgColor: q.State<Color3> = status:Compute(function(self, _prev, primary, onSurface, band)
 		local s = self:Get()
-		if s == "Selected" then
+		if selectedLook(s) then
 			return primary:Get()
 		elseif s == "InRange" then
 			return band:Get()
@@ -100,7 +107,7 @@ local function new(o: Options): TextButton
 	end, raw.Primary, raw.OnSurface, raw.SecondaryContainer)
 	local bgTransparency: q.State<number> = status:Compute(function(self, _prev, hovered, pressed, focused)
 		local s = self:Get()
-		if s == "Selected" or s == "InRange" then
+		if selectedLook(s) or s == "InRange" then
 			return 0
 		elseif s == "Hidden" or s == "Disabled" then
 			return 1
@@ -114,7 +121,7 @@ local function new(o: Options): TextButton
 
 	local textColor: q.State<Color3> = status:Compute(function(self, _prev, onPrimary, primary, onSurface, onBand)
 		local s = self:Get()
-		if s == "Selected" then
+		if selectedLook(s) then
 			return onPrimary:Get()
 		elseif s == "InRange" then
 			return onBand:Get()
@@ -176,6 +183,8 @@ local function new(o: Options): TextButton
 		Name = o.Name or "Chip",
 		Text.Button(o.Role or "BodyLarge"),
 		ix.Hook,
+		-- band chips sit above the month grid's half-band frames (MonthView `BandEnds`)
+		ZIndex = if o.Band then 2 else nil,
 		Size = size,
 		Position = position,
 		BorderSizePixel = 0,

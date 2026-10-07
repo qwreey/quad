@@ -222,7 +222,8 @@ H.section("indeterminate progress: Heartbeat connected only while its section is
 	-- the mock does not fire AncestryChanged when the section is parented into the ScreenGui; the engine does
 	fireAncestry(gui)
 	H.advance(0.1)
-	assert(beats() == baseBeats + 2, `two indeterminate loops: {beats() - baseBeats}`)
+	-- linear + circular indeterminate, two loading indicators, the wavy bar's travelling wave
+	assert(beats() == baseBeats + 5, `five progress loops: {beats() - baseBeats}`)
 	click(tabButton(gui, "Buttons"))
 	assert(beats() == baseBeats, "loops gone with the section")
 	H.assertNoDebugOutput("progress")

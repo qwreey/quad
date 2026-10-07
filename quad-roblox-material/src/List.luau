@@ -14,7 +14,8 @@
 	  Supporting  (string | State<string>)?                    BodyMedium, onSurfaceVariant
 	  Overline    (string | State<string>)?                    LabelSmall, onSurfaceVariant
 	  Lines       number? (1, 2 or 3)    row height 56 / 72 / 88; default inferred (overline + supporting -> 3, either one -> 2, else 1).
-	                             Supporting may take two lines in a three-line item (truncated); every other line is one line.
+	                             Supporting may take two lines in a three-line item WITHOUT an overline (truncated) — with an
+	                             overline it is one line, as M3 (the three lines must fit 88 - 2 x 12 px); every other line is one line.
 	  Leading     string | State<string> | Instance ?    an image asset id (ImageLabel, `LeadingSize` square, onSurfaceVariant)
 	                             or a ready element (avatar, checkbox, ...) which becomes a static child of the row
 	  LeadingSize number?        image size, default 24 (use 40 for avatars)
@@ -136,9 +137,13 @@ local function ListItem(props: ItemProps): GuiObject
 	end
 	table.insert(textParts, label("Headline", headlineStyle, props.Headline, headlineColor, contentTransparency, 24, false, 2))
 	if hasSupporting then
+		-- two supporting lines only when there is no overline: the three-line row's 64 px content box (88 - 2 x 12) holds
+		-- headline 24 + supporting 40, or overline 16 + headline 24 + supporting 20 — the overline + 40 px form was 80 px and
+		-- ran out of the row onto its bottom edge (Studio QA 2026-10-07, 2nd)
+		local twoLines = threeLine and not hasOverline
 		table.insert(
 			textParts,
-			label("Supporting", supportingStyle, props.Supporting :: Text, variantColor, contentTransparency, if threeLine then 40 else 20, threeLine, 3)
+			label("Supporting", supportingStyle, props.Supporting :: Text, variantColor, contentTransparency, if twoLines then 40 else 20, twoLines, 3)
 		)
 	end
 	local column = D.Frame {
