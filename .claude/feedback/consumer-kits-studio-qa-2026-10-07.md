@@ -151,3 +151,11 @@
 7. 바꾼 파일: quad-roblox-material/src/Progress/Circular.luau(신규), quad-roblox-material/src/Progress/init.luau, quad-roblox-material/test/spec.progress.luau(원형 절 넷 — 순수 규칙(칸 매핑·두께 고르기·단계·간격·배치·비확정 자세), 0~360 모든 2° 단계에서 조각이 목표 각도를 정확히 덮고 ≤ 9개·캡이 끝 각도·간격 양쪽 같음·0/100 %, 큰 지름 1° 단계, 트윈 도중·도착 뒤 루프 정지·역전·숨김 중 정지·고정 끝의 256 조각 불변, 두께 넷, 비확정 200프레임 동안 호 36~314°·트랙 없음·숨김 정지·재개), quad-roblox-material/src/Gallery/ChipsTabsProgress.luau(두께 넷 줄), quad-roblox-material/stories/Progress.story.luau(두께 넷 줄, Thickness 슬라이더 제거), quad-roblox-material/README.md(컴포넌트 표·체크리스트 31·외부 에셋 셋·M3 편차), quad-roblox-material/NOTICE.md, quad-roblox-material/assets/gen-arc.py(docstring 한 줄).
 
 **Studio에서 볼 점**: (1) 조각 이음매에 머리카락 틈이나 겹친 진한 줄이 없는지(겹침 2°의 반투명 가장자리가 두 번 칠해져 아주 살짝 진할 수 있음), 12시 닫힌 고리 이음매. (2) 끝 캡이 선 굵기와 같고 선 위에 붙어 있는지(삐져나온 모서리·턱 없음), 간격이 양쪽 같아 보이는지. (3) 160 px 칸이 40 px로 줄 때 선이 매끈한지(엔진의 이미지 축소 필터에 기댐 — 24 px에서 특히), 회전한 ImageLabel의 가장자리. (4) 값을 바꿀 때 끝이 0.3 s에 걸쳐 2° 단위로 미끄러지는 게 끊겨 보이지 않는지, 트랙이 점으로 줄었다가 사라지는 모양. (5) 비확정이 10 % ↔ 87 %로 늘었다 줄며 1.5 s마다 90° 건너뛰는 리듬(건너뛰기가 선형이라 딱딱해 보이면 감속 곡선으로 바꾸는 건 사용자 결정). (6) 두께 넷이 갤러리·스토리에서 구분되는지.
+
+## 5차 처리 상태(시트 여백)
+
+**[2026-10-07 처리 — 서브에이전트, 코드와 목(mock) 스펙만]** 사용자 Studio 관측: 칸을 빈틈없이 붙이면 텍스처 필터링이 이웃 칸을 섞어 끝부분에 티끌이 보임 → 여백을 넣은 새 시트 둘로 교체. 킷 소스 경로는 백틱 없이 적는다.
+
+1. 물결 — quad-roblox-material/src/Progress/Wavy.luau: 시트 이미지 id rbxassetid://98909031866905(파일 quad-roblox-material/assets/wavy-progress-sheet-1024.png), 프레임 480×64, 칸 i → ImageRectOffset (512·(i // 12) + 16, 85·(i % 12) + 10). 높이·진폭·선 두께 식은 모두 표시 높이 대비 비율(2.5·Thickness, 0.3H, 0.4H)이라 텍스처 비율이 4:1에서 7.5:1로 바뀐 것은 Stretch가 흡수 — 식 변경 없음(기본 40×10 표시에서 가로 압축이 조금 더 커져 선 기울기가 가팔라 보일 수 있음, Studio에서 볼 점).
+2. 원호 — quad-roblox-material/src/Progress/Circular.luau: 이미지 id rbxassetid://97823357785454(파일 quad-roblox-material/assets/circular-arc-sheet-1024.png), 칸 i → (170·(i // 6) + 5, 170·(i % 6) + 5), 160×160. 고리 기하 그대로.
+3. 옛 시트 파일 둘 삭제, README·NOTICE·주석·스펙(quad-roblox-material/test/spec.progress.luau의 칸·프레임 매핑 단언)을 새 식·id로. 실기기 확인은 사용자 몫: 프레임 끝·조각 끝 티끌이 사라졌는지, 물결 선이 7.5:1 프레임에서 또렷한지.

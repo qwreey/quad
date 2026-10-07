@@ -17,10 +17,12 @@
 	`SecondaryContainer`. Returns the host `Frame`.
 
 	HOW (Roblox has no path rendering): the wave is an IMAGE of one wavelength, repeated: a cell of the AMPLITUDE SPRITE
-	SHEET `SHEET_IMAGE` (quad-roblox-material/assets/wavy-progress-sheet-1024x960.png, generator assets/gen-wave.py —
-	its docstring is the rule's source): 24 frames of one wavelength, 512 x 80 each, 2 columns x 12 rows, column-major:
-	frame i at ImageRectOffset (512 * (i // 12), 80 * (i % 12)), ImageRectSize (512, 80) (`frameRect`). Every frame has
-	the same shape rule (measured on the PNGs): width W, height H, centre line H/2, y(u) = H/2 - A sin(2 pi u / W),
+	SHEET `SHEET_IMAGE` (quad-roblox-material/assets/wavy-progress-sheet-1024.png, generator assets/gen-wave.py —
+	its docstring is the rule's source): 1024 x 1024, 24 frames of one wavelength, 480 x 64 each, 2 columns x 12 rows, column-major, with gutters
+	(16 px left/right holding the same wave continued, 10 / 11 px transparent above / below — edge-to-edge cells showed
+	specks at the frame ends, texture filtering reads the neighbour): frame i at ImageRectOffset
+	(512 * (i // 12) + 16, 85 * (i % 12) + 10), ImageRectSize (480, 64) (`frameRect`). Every frame has
+	the same shape rule (measured on the PNGs): width W = 480, height H = 64, centre line H/2, y(u) = H/2 - A sin(2 pi u / W),
 	stroke 0.4 H PERPENDICULAR to the curve, rising first from the centre line at u = 0, seamless in u; white,
 	anti-aliased, transparent background; A(i) = 0.3 H (1 - i / 23): frame 0 = full amplitude, 23 = flat.
 	ONE STRETCH ImageLabel PER WAVELENGTH (`Period`, Wavelength x height, k x Wavelength apart on the `Strip` Frame):
@@ -94,7 +96,7 @@
 	`Wavy` turning true or the host resizing (new periods may be needed) wakes it. While not Visible the loop stops and
 	the caps freeze with the strip (both last written in the same step).
 
-	`SHEET_IMAGE` = rbxassetid://111246664282863 (the sheet, uploaded by the kit author — the IMAGE id the Decal
+	`SHEET_IMAGE` = rbxassetid://98909031866905 (the sheet, uploaded by the kit author — the IMAGE id the Decal
 	resolves to, not the Decal id). If the asset fails to load the wave is invisible; the caps, track and stop dot
 	still show. (The single full-amplitude texture assets/wavy-progress-512x128.png, rbxassetid://78445787165309, is
 	no longer used.)
@@ -123,13 +125,14 @@ export type Props = {
 	read Hooks: Util.Hooks?,
 }
 
--- The amplitude sprite sheet: assets/wavy-progress-sheet-1024x960.png, uploaded by the kit author (2026-10-07). The
+-- The amplitude sprite sheet: assets/wavy-progress-sheet-1024.png, uploaded by the kit author (2026-10-07). The
 -- IMAGE id (what the uploaded Decal resolves to — a Decal / classic T-shirt id is the parent asset, not usable here).
-local SHEET_IMAGE = "rbxassetid://111246664282863"
-local FRAME_W, FRAME_H, ROWS = 512, 80, 12
+local SHEET_IMAGE = "rbxassetid://98909031866905" -- [2026-10-07] uploaded BEFORE the 4:1 display-aspect stroke fix in assets/gen-wave.py (same layout); the file in assets/ is the fixed one, awaiting re-upload
+local FRAME_W, FRAME_H, ROWS = 480, 64, 12
+local COL_STRIDE, ROW_STRIDE, PAD_X, PAD_Y = 512, 85, 16, 10 -- the sheet's cell pitch and the gutter before each cell
 local LAST = 23 -- frames 0 (full amplitude) .. 23 (flat)
 
-local HEIGHT_PER_THICKNESS = 2.5 -- the texture: stroke 4/10, amplitude 3/10 of its height
+local HEIGHT_PER_THICKNESS = 2.5 -- the texture: stroke 4/10, amplitude 3/10 of its height (ratios, so the 480 x 64 frame's 7.5:1 shape needs no change — Stretch absorbs it)
 local AMP_PER_THICKNESS = 0.75 -- 3/10 of the height
 local GAP = 4
 local STOP = 4
@@ -140,7 +143,7 @@ local full = UDim.new(0.5, 0)
 
 -- the sheet cell of amplitude frame `i` (0 = full .. LAST = flat)
 local function frameRect(i: number): Vector2
-	return Vector2.new(FRAME_W * (i // ROWS), FRAME_H * (i % ROWS))
+	return Vector2.new(COL_STRIDE * (i // ROWS) + PAD_X, ROW_STRIDE * (i % ROWS) + PAD_Y)
 end
 
 local function WavyProgress(props: Props): Frame

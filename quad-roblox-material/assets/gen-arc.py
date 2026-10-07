@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """CircularProgress arc pieces (pure Python, no deps) — binary-decomposed arcs, user design 2026-10-07.
 
-  gen-arc.py <out.png>   960x960 sheet, 36 cells of 160x160 in 6 columns x 6 rows, COLUMN-major:
-                         cell i -> ImageRectOffset (160 * (i // 6), 160 * (i % 6)), ImageRectSize (160, 160)
+  gen-arc.py <out.png>   1024x1024 sheet, 36 cells of 160x160 in 6 columns x 6 rows, COLUMN-major, spread over the
+                         whole 1024 with gutters (pitch 170, 5 px transparent margin around each cell — user Studio check
+                         2026-10-07: cells packed edge to edge showed specks at the arc ends, texture filtering samples
+                         the neighbour cell):
+                         cell i -> ImageRectOffset (170 * (i // 6) + 5, 170 * (i % 6) + 5), ImageRectSize (160, 160)
                          i = thickness_index * 9 + angle_index
                          thickness_index 0..3 -> stroke / cell = 0.05, 0.10, 0.15, 0.20 (thin, M3 default 4/40, thick, extra)
                          angle_index 0..8    -> nominal arc A = 1, 2, 4, ..., 256 degrees
@@ -58,13 +61,14 @@ def png(path, W, H, alpha):
         + chunk(b"IDAT", zlib.compress(raw, 9)) + chunk(b"IEND", b""))
 
 if __name__ == "__main__":
-    sheet = [[0] * (C * 6) for _ in range(C * 6)]
+    PITCH, MARGIN = 170, 5
+    sheet = [[0] * 1024 for _ in range(1024)]
     i = 0
     for t in THICK:
         for a in ANGLES:
             f = cell(t, a)
-            ox, oy = C * (i // 6), C * (i % 6)
+            ox, oy = PITCH * (i // 6) + MARGIN, PITCH * (i % 6) + MARGIN
             for y in range(C):
                 sheet[oy + y][ox:ox + C] = f[y]
             i += 1
-    png(sys.argv[1], C * 6, C * 6, sheet)
+    png(sys.argv[1], 1024, 1024, sheet)

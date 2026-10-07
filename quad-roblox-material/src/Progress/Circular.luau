@@ -14,9 +14,10 @@
 	SQUARE: the pieces fill it and are turned about its centre), Hooks. Colors: indicator + its ends `Primary`, track
 	`SecondaryContainer` (determinate only). Returns the host `Frame`.
 
-	THE SHEET `SHEET_IMAGE` (quad-roblox-material/assets/circular-arc-sheet-960.png, generator assets/gen-arc.py — its
-	docstring is the rule's source): 960 x 960, 36 cells of 160 x 160, COLUMN-major: cell i at ImageRectOffset
-	(160 (i // 6), 160 (i % 6)), ImageRectSize (160, 160) (`cellRect`); i = thickness index x 9 + angle index, thickness
+	THE SHEET `SHEET_IMAGE` (quad-roblox-material/assets/circular-arc-sheet-1024.png, generator assets/gen-arc.py — its
+	docstring is the rule's source): 1024 x 1024, 36 cells of 160 x 160 on a 170 px pitch (5 px gutter all round — packed cells
+	bled into the neighbour), COLUMN-major: cell i at ImageRectOffset
+	(170 (i // 6) + 5, 170 (i % 6) + 5), ImageRectSize (160, 160) (`cellRect`); i = thickness index x 9 + angle index, thickness
 	= 0.05 / 0.10 / 0.15 / 0.20 of the cell, angle = 2^k degrees (k = 0..8). Each cell is a ring whose OUTER edge is
 	1 px inside the cell edge, the arc starting at 12 o'clock and running clockwise for 2^k + 2 degrees (the 2 degree
 	OVERLAP hides the hairline seam between pieces laid end to end), flat radial cuts, white on transparent. An
@@ -108,7 +109,7 @@
 	A whole-arc parent `Rotation` would cut that to 1 + changes, but relies on parent rotation reaching children — not
 	used (not measured).
 
-	`SHEET_IMAGE` = rbxassetid://107858841263712 — the IMAGE id the uploaded Decal (92434906460089) resolves to, not
+	`SHEET_IMAGE` = rbxassetid://97823357785454 — the IMAGE id the uploaded Decal (92434906460089) resolves to, not
 	the Decal id (a Decal id in `Image` shows nothing). If the asset fails to load only the round caps show.
 	Deviations from M3: the gap is measured as Compose does but on the drawn stroke and snapped to the step (above);
 	near 100 % the track is clamped instead of Compose's negative sweep; Thickness snaps to four ratios; ends and gap
@@ -134,9 +135,9 @@ export type Props = {
 	read Hooks: Util.Hooks?,
 }
 
--- assets/circular-arc-sheet-960.png, uploaded by the kit author (2026-10-07): the IMAGE id, not the Decal id
-local SHEET_IMAGE = "rbxassetid://107858841263712"
-local CELL, ROWS = 160, 6
+-- assets/circular-arc-sheet-1024.png, uploaded by the kit author (2026-10-07): the IMAGE id, not the Decal id
+local SHEET_IMAGE = "rbxassetid://97823357785454"
+local CELL, PITCH, PAD, ROWS = 160, 170, 5, 6
 local THICK = { 0.05, 0.10, 0.15, 0.20 }
 local OVERLAP = 2 -- degrees each piece is drawn past its nominal angle (gen-arc.py)
 local GAP = 4 -- px, Compose CircularIndicatorTrackGapSize
@@ -151,7 +152,7 @@ local full = UDim.new(0.5, 0)
 -- the sheet cell of thickness `thick` (1..4) and piece 2^bit degrees (bit 0..8)
 local function cellRect(thick: number, bit: number): Vector2
 	local i = (thick - 1) * 9 + bit
-	return Vector2.new(CELL * (i // ROWS), CELL * (i % ROWS))
+	return Vector2.new(PITCH * (i // ROWS) + PAD, PITCH * (i % ROWS) + PAD)
 end
 
 -- the nearest sheet thickness (index into THICK) for a requested stroke; a tie takes the thinner

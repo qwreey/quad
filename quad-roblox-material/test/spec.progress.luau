@@ -127,7 +127,7 @@ local OVERLAP = Circular.OVERLAP
 -- inverse of Circular.cellRect: (thickness index 1..4, bit 0..8) of a piece
 local function cellOf(piece: any): (number, number)
 	local o = piece.ImageRectOffset
-	local i = (o.X // 160) * 6 + o.Y // 160
+	local i = ((o.X - 5) // 170) * 6 + (o.Y - 5) // 170
 	return i // 9 + 1, i % 9
 end
 -- the shown pieces of one arc ("Arc" = indicator, "Track"): { rot, deg }
@@ -196,10 +196,10 @@ local function checkArc(host: any, prefix: string, a: number, span: number, rho:
 end
 
 H.section("Circular pure rules: sheet cells, thickness pick, step, gap, layout, indeterminate pose", function()
-	assert(Circular.cellRect(1, 0) == Vector2.new(0, 0) and Circular.cellRect(1, 5) == Vector2.new(0, 800))
-	assert(Circular.cellRect(1, 6) == Vector2.new(160, 0) and Circular.cellRect(2, 0) == Vector2.new(160, 480))
-	assert(Circular.cellRect(4, 8) == Vector2.new(800, 800), "cell 35: the last one")
-	assert(Circular.SHEET_IMAGE == "rbxassetid://107858841263712", "the IMAGE id, not the Decal 92434906460089")
+	assert(Circular.cellRect(1, 0) == Vector2.new(5, 5) and Circular.cellRect(1, 5) == Vector2.new(5, 855))
+	assert(Circular.cellRect(1, 6) == Vector2.new(175, 5) and Circular.cellRect(2, 0) == Vector2.new(175, 515))
+	assert(Circular.cellRect(4, 8) == Vector2.new(855, 855), "cell 35: the last one")
+	assert(Circular.SHEET_IMAGE == "rbxassetid://97823357785454", "the IMAGE id, not the Decal 92434906460089")
 	local pick = Circular.pickThickness
 	assert(pick(40, 2) == 1 and pick(40, 4) == 2 and pick(40, 6) == 3 and pick(40, 8) == 4)
 	assert(pick(40, 1) == 1 and pick(40, 20) == 4 and pick(24, 3) == 2, "nearest; 0.125 is a tie -> the thinner 0.10")
@@ -244,7 +244,7 @@ H.section("Circular determinate: sprite pieces + round caps, gap, every 2 degree
 		return x.ClipsDescendants == true
 	end) == 0, "no clipping")
 	local p = H.find(c, "Arc64")
-	assert(p.Image == "rbxassetid://107858841263712" and p.ImageRectSize == Vector2.new(160, 160) and p.ScaleType == Enum.ScaleType.Stretch)
+	assert(p.Image == "rbxassetid://97823357785454" and p.ImageRectSize == Vector2.new(160, 160) and p.ScaleType == Enum.ScaleType.Stretch)
 	assert(p.Size == UDim2.fromScale(1, 1) and p.ImageColor3 == L.Primary and p.ZIndex == 2)
 	assert(H.find(c, "Track64").ImageColor3 == L.SecondaryContainer and H.find(c, "Track64").ZIndex == 1, "track under the indicator")
 	assert(select(1, cellOf(p)) == 2, "default 40 / 4 -> the 0.10 stroke")
@@ -506,7 +506,7 @@ end
 -- the sheet frame shown by a period (inverse of Wavy.frameRect)
 local function frameOf(period: any): number
 	local o = period.ImageRectOffset
-	return (o.X // 512) * 12 + o.Y // 80
+	return ((o.X - 16) // 512) * 12 + (o.Y - 10) // 85
 end
 -- a cap's centre y in px: its Position is a Scale of `Wave`'s fixed height 10 (an Offset would truncate); a UDim
 -- Scale is a float32, so compare to 1e-4 px
@@ -533,8 +533,8 @@ H.section("WavyProgress: Stretch periods of a sheet cell clipped to the value, r
 	assert(clip.Position == UDim2.fromOffset(2, 0) and clip.Size == UDim2.new(1, -4, 1, 0), "clip inset by the cap radius at both ends")
 	local p0 = periods(bar)[1]
 	assert(p0.ClassName == "ImageLabel" and p0.ScaleType == Enum.ScaleType.Stretch, "one Stretch period (Tile cannot show a sheet cell)")
-	assert(p0.Size == UDim2.fromOffset(40, 10) and p0.Image == "rbxassetid://111246664282863", "the amplitude sheet")
-	assert(p0.ImageRectSize == Vector2.new(512, 80) and frameOf(p0) == 0, "one cell, full amplitude")
+	assert(p0.Size == UDim2.fromOffset(40, 10) and p0.Image == "rbxassetid://98909031866905", "the amplitude sheet")
+	assert(p0.ImageRectSize == Vector2.new(480, 64) and frameOf(p0) == 0, "one cell, full amplitude")
 	assert(p0.ImageColor3 == L.Primary and H.find(track, "Stop").BackgroundColor3 == L.Primary)
 	for _, cap in { s, e } do
 		assert(cap.Size == UDim2.fromOffset(4, 4) and cap.AnchorPoint == Vector2.new(0.5, 0.5) and cap.BackgroundColor3 == L.Primary)
@@ -611,8 +611,8 @@ H.section("WavyProgress: Stretch periods of a sheet cell clipped to the value, r
 end)
 
 H.section("WavyProgress amplitude sheet: frame cells, Wavy off/on and Value 1 flatten 0 -> 23 and back, caps at the frame's amplitude, flat sleeps", function()
-	assert(Wavy.frameRect(0) == Vector2.new(0, 0) and Wavy.frameRect(11) == Vector2.new(0, 880))
-	assert(Wavy.frameRect(12) == Vector2.new(512, 0) and Wavy.frameRect(23) == Vector2.new(512, 880) and Wavy.LAST == 23)
+	assert(Wavy.frameRect(0) == Vector2.new(16, 10) and Wavy.frameRect(11) == Vector2.new(16, 945))
+	assert(Wavy.frameRect(12) == Vector2.new(528, 10) and Wavy.frameRect(23) == Vector2.new(528, 945) and Wavy.LAST == 23)
 	local value = q.Source(0.5)
 	local wavy = q.Source(true)
 	local bar = Progress.WavyProgress({ Value = value, Wavy = wavy })
