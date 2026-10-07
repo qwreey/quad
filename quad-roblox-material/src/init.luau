@@ -20,7 +20,9 @@
 	    Util          asState / negate / interactable / visible / hooks / preHook / postHook helpers, the `Hooks` type
 	  Components
 	    Button, IconButton, FAB                       actions
-	    Checkbox, Radio, RadioGroup, Switch, Slider, RangeSlider   selection controls
+	    Checkbox, Radio, RadioGroup, Switch, Slider, RangeSlider   selection controls (Switch / Slider / RangeSlider are
+	                                                 the M3 look; `M2.Switch` / `M2.Slider` / `M2.RangeSlider` the M2
+	                                                 look with the same props and behaviour — `M2/init.luau`)
 	    TextField, Select, Menu                       text input and menus
 	    Card, Divider, List, ListItem, ListData       surfaces
 	    Dialog, Snackbar, Tooltip                     things that float (opened through an Overlay)
@@ -99,6 +101,7 @@ local RadioModule = require("@self/Radio")
 local Switch = require("@self/Switch")
 local Slider = require("@self/Slider")
 local RangeSlider = require("@self/Slider/Range")
+local M2 = require("@self/M2")
 local TextField = require("@self/TextField")
 local Menu = require("@self/Menu")
 local Select = require("@self/Select")
@@ -145,6 +148,9 @@ export type RadioGroupProps<T> = RadioModule.GroupProps<T>
 export type SwitchProps = Switch.Props
 export type SliderProps = Slider.Props
 export type RangeSliderProps = RangeSlider.Props
+export type M2SliderProps = M2.SliderProps
+export type M2RangeSliderProps = M2.RangeSliderProps
+export type M2SwitchProps = M2.SwitchProps
 export type TextFieldProps = TextField.Props
 export type MenuItem = Menu.Item
 export type MenuEntry = Menu.Entry
@@ -215,6 +221,8 @@ return {
 	Switch = Switch,
 	Slider = Slider,
 	RangeSlider = RangeSlider,
+	-- Material 2 looks (same props / behaviour as the defaults above)
+	M2 = M2,
 	-- text input & menus
 	TextField = TextField,
 	Menu = Menu,

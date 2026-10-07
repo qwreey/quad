@@ -1,8 +1,11 @@
 --!strict
 --[[
-	Gallery section "Selection": Checkbox (plain, tri-state parent, error, disabled), Radio / RadioGroup, Switch (plain,
-	icons, disabled), Slider (continuous, discrete with ticks, formatted, disabled), RangeSlider (continuous, discrete, disabled). Every control is bound to a Source in
-	the Memo and a caption reads it back, so a click is visibly a round trip (Source in -> UI -> user input -> Source out).
+	Gallery section "Selection": first the "Slider / Switch — M3 vs M2" comparison (two columns, the M3 default and the
+	`Material.M2` look side by side; each pair shares ONE Source, so moving either moves both — the behaviour is shared,
+	only the drawing differs), then Checkbox (plain, tri-state parent, error, disabled), Radio / RadioGroup, Switch (plain,
+	icons, disabled), Slider (continuous, discrete with ticks, formatted, disabled), RangeSlider (continuous, discrete,
+	disabled). Every control is bound to a Source in the Memo and a caption reads it back, so a click is visibly a round
+	trip (Source in -> UI -> user input -> Source out).
 ]]
 
 local q = require("../Quad")
@@ -12,6 +15,7 @@ local RadioModule = require("../Radio")
 local Switch = require("../Switch")
 local Slider = require("../Slider")
 local RangeSlider = require("../Slider/Range")
+local M2 = require("../M2")
 
 type Ctx = Common.Ctx
 
@@ -184,7 +188,56 @@ return function(ctx: Ctx): Instance
 		}, 320, 8),
 	}
 
+	-- M3 vs M2: one Source per pair, two columns
+	local cmpVolume = ctx.Memo("cmp.volume", function()
+		return q.Source(40)
+	end)
+	local cmpLevel = ctx.Memo("cmp.level", function()
+		return q.Source(3)
+	end)
+	local cmpLo = ctx.Memo("cmp.lo", function()
+		return q.Source(25)
+	end)
+	local cmpHi = ctx.Memo("cmp.hi", function()
+		return q.Source(70)
+	end)
+	local cmpStepLo = ctx.Memo("cmp.stepLo", function()
+		return q.Source(2)
+	end)
+	local cmpStepHi = ctx.Memo("cmp.stepHi", function()
+		return q.Source(7)
+	end)
+	local cmpOn = ctx.Memo("cmp.on", function()
+		return q.Source(true)
+	end)
+	type Looks = { Slider: typeof(Slider), RangeSlider: typeof(RangeSlider), Switch: typeof(Switch) }
+	local function column(title: string, L: Looks): Frame
+		return Common.Column({
+			Common.Caption(ctx, title, false),
+			L.Slider({ Theme = theme, Value = cmpVolume, Min = 0, Max = 100 }),
+			L.Slider({ Theme = theme, Value = cmpLevel, Min = 0, Max = 10, Step = 1 }),
+			L.Slider({ Theme = theme, Value = q.Source(60), Min = 0, Max = 100, Disabled = true }),
+			L.RangeSlider({ Theme = theme, Start = cmpLo, End = cmpHi, Min = 0, Max = 100 }),
+			L.RangeSlider({ Theme = theme, Start = cmpStepLo, End = cmpStepHi, Min = 0, Max = 10, Step = 1 }),
+			L.RangeSlider({ Theme = theme, Start = q.Source(30), End = q.Source(60), Min = 0, Max = 100, Disabled = true }),
+			Common.Flow({
+				Common.Labeled(ctx, L.Switch({ Theme = theme, Value = cmpOn }), "Drag or tap"),
+				Common.Labeled(ctx, L.Switch({ Theme = theme, Value = q.Source(true), Disabled = true }), "Disabled"),
+			}),
+		}, 300, 16)
+	end
+	local comparison: { Instance } = {
+		column("M3 (Material.Slider / RangeSlider / Switch)", { Slider = Slider, RangeSlider = RangeSlider, Switch = Switch }),
+		column("M2 (Material.M2.*)", { Slider = M2.Slider, RangeSlider = M2.RangeSlider, Switch = M2.Switch }),
+	}
+
 	return Common.Section(ctx, "Selection", "Selection controls", {
+		Common.Group(
+			ctx,
+			"Slider / Switch — M3 vs M2",
+			comparison,
+			"Same props, same behaviour, two looks; each row pair shares one value (move either). Rows: continuous, discrete (ticks), disabled; range continuous, discrete, disabled; switches — drag the handle past the half or tap."
+		),
 		Common.Group(ctx, "Checkbox", checkboxes),
 		Common.Group(ctx, "Checkbox: tri-state parent", triState, "The parent shows the dash while the children differ; a click sets both children."),
 		Common.Group(ctx, "Radio / RadioGroup", radios),
@@ -201,6 +254,10 @@ return function(ctx: Ctx): Instance
 			readout<<string>>(ctx, "Fruit: ", fruit, show),
 			readout<<string>>(ctx, "Size: ", size, show),
 			readout<<boolean>>(ctx, "Wi-Fi: ", wifi, show),
+			readout<<number>>(ctx, "M3/M2 volume: ", cmpVolume, function(v: number)
+				return string.format("%.1f", v)
+			end),
+			readout<<boolean>>(ctx, "M3/M2 switch: ", cmpOn, show),
 		}),
 	})
 end

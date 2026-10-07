@@ -1,6 +1,7 @@
 --!strict
 local Material = require("../src")
 local q = require("../src/Quad")
+local D = q.Declaration
 local StoryKit = require("./StoryKit")
 local StoryParts = require("./StoryParts")
 local holder = StoryParts.holder
@@ -10,7 +11,7 @@ local tostr = StoryParts.tostr
 local page = StoryParts.page
 local themed = StoryParts.themed
 
--- Slider: Min/Max/Step/ticks are construction-time (the story rebuilds on change); the value Source lives outside the
+-- Slider (the M3 look — three-part track, bar handle; M2Slider.story is the Material 2 look): Min/Max/Step/ticks are construction-time (the story rebuilds on change); the value Source lives outside the
 -- rebuild so the position survives, and `Disabled` / `ShowLabel` are live. `Format` shows percent.
 type Look = { Min: number, Max: number, Step: number?, Ticks: boolean, Label: boolean, Percent: boolean }
 
@@ -41,11 +42,13 @@ return StoryKit.story({
 			}
 		end, c.Max, c.Step, c.ShowTicks, c.ShowLabel, c.Percent)
 		return page(theme, follow, {
+			-- the M3 value label is a 44 px pill 12 px above the 44 px handle: leave it room inside the holder
 			holder(
-				56,
+				112,
 				StoryKit.rebuild<<Look>>(look, function(l: Look)
 					local mn, mx = l.Min, l.Max
 					return Material.Slider({
+						Modifier = D.Modifier.Frame():Position(UDim2.fromOffset(0, 68)),
 						Value = value,
 						Min = mn,
 						Max = mx,

@@ -1,6 +1,6 @@
 --!strict
 --[[
-	Slider ticks (discrete sliders only): one 2 px Frame per step, colored by which side of the handle it is on.
+	M2 slider ticks (discrete sliders only — the M2 look; the M3 look draws dots in `../Slider/Track.luau`): one 2 px Frame per step, colored by which side of the handle it is on.
 
 	    Ticks.build({ Frac = frac, Range = max - min, Step = step, ShowTicks = props.ShowTicks, Disabled = disabled, Theme = theme })
 	      -> { Instance }     empty for a continuous slider, `ShowTicks = false`, or more than 100 steps

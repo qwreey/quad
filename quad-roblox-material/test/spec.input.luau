@@ -40,7 +40,7 @@ H.section("use(listener): drag routes to the listener, engine untouched, restore
 
 	local v = q.Source(0)
 	local s = Slider({ Value = v, Min = 0, Max = 100 })
-	H.setAbs(s, 100, 50, 220, 40)
+	H.setAbs(s, 102, 50, 216, 40) -- M3 Slider: handle inset 8 -> a 200 px rail from x = 110
 	H.fire(s, "InputBegan", H.input({ Position = Vector3.new(160, 60, 0) }))
 	assert(math.abs(v:Get() - 25) < 1e-6, "press jumps")
 	assert(#l.InputChanged.connections == 1 and #l.InputEnded.connections == 1, "drag connections are on the listener")
@@ -102,7 +102,7 @@ end)
 H.section("default mode: drag on the engine service, closed at the end", function()
 	local v = q.Source(0)
 	local s = Slider({ Value = v, Min = 0, Max = 100 })
-	H.setAbs(s, 100, 50, 220, 40)
+	H.setAbs(s, 102, 50, 216, 40) -- M3 Slider: handle inset 8 -> a 200 px rail from x = 110
 	H.fire(s, "InputBegan", H.input({ Position = Vector3.new(160, 60, 0) }))
 	assert(conns(UIS) == baseEngine + 3)
 	UIS.InputEnded:Fire(H.input({ UserInputType = Enum.UserInputType.MouseButton1, Position = Vector3.new(160, 60, 0) }))

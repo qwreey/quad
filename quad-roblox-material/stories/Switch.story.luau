@@ -11,7 +11,7 @@ local tostr = StoryParts.tostr
 local page = StoryParts.page
 local themed = StoryParts.themed
 
--- Switch: `Value` (two-way) and the controlled `Checked` form; the thumb icons are plain props, so toggling "Icons"
+-- Switch (the M3 look; M2Switch.story is the Material 2 look — drag the handle past the half or tap): `Value` (two-way) and the controlled `Checked` form; the thumb icons are plain props, so toggling "Icons"
 -- rebuilds the two-way switch.
 return StoryKit.story({
 	controls = {

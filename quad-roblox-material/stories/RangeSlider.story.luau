@@ -1,6 +1,7 @@
 --!strict
 local Material = require("../src")
 local q = require("../src/Quad")
+local D = q.Declaration
 local StoryKit = require("./StoryKit")
 local StoryParts = require("./StoryParts")
 local holder = StoryParts.holder
@@ -9,7 +10,7 @@ local show = StoryParts.show
 local page = StoryParts.page
 local themed = StoryParts.themed
 
--- RangeSlider: Min/Max/Step/ticks are construction-time (the story rebuilds on change); the two Sources live outside the
+-- RangeSlider (the M3 look; M2RangeSlider.story is the Material 2 look): Min/Max/Step/ticks are construction-time (the story rebuilds on change); the two Sources live outside the
 -- rebuild so the handles keep their place, and `Disabled` / `ShowLabel` are live.
 type Look = { Min: number, Max: number, Step: number?, Ticks: boolean, Label: boolean }
 
@@ -42,10 +43,12 @@ return StoryKit.story({
 			return string.format("%.2f .. %.2f", self:Get(), h:Get())
 		end, hi)
 		return page(theme, follow, {
+			-- the M3 value label is a 44 px pill 12 px above the 44 px handle: leave it room inside the holder
 			holder(
-				56,
+				112,
 				StoryKit.rebuild<<Look>>(look, function(l: Look)
 					return Material.RangeSlider({
+						Modifier = D.Modifier.Frame():Position(UDim2.fromOffset(0, 68)),
 						Start = lo,
 						End = hi,
 						Min = l.Min,
