@@ -287,30 +287,114 @@ H.section("LoadingIndicator: 8 instances, morphs + turns from Heartbeat while mo
 	H.assertNoDebugOutput("loading indicator")
 end)
 
-H.section("WavyProgress: tiled wave clipped to the value, gap + track + stop, strip slides, 7 instances at any width", function()
+local Wavy = require("../src/Progress/Wavy")
+
+-- the drawn curve at host x (Wavy.luau "ROUND ENDS"): Thickness 4 -> r 2, height 10 -> centre 5, Wavelength 40
+local function curve(x: number, phase: number, amp: number): number
+	return 5 - amp * math.sin(2 * math.pi * ((x - 2) / 40 + phase))
+end
+-- the strip's slide gives the phase the loop used this frame
+local function phaseOf(strip: any): number
+	return (-strip.Position.X.Offset / 40) % 1
+end
+-- the sheet frame shown by a period (inverse of Wavy.frameRect)
+local function frameOf(period: any): number
+	local o = period.ImageRectOffset
+	return (o.X // 512) * 12 + o.Y // 80
+end
+-- a cap's centre y in px: its Position is a Scale of `Wave`'s fixed height 10 (an Offset would truncate); a UDim
+-- Scale is a float32, so compare to 1e-4 px
+local function capY(cap: any): number
+	return cap.Position.Y.Scale * 10
+end
+local function nearPx(a: number, b: number): boolean
+	return math.abs(a - b) < 1e-4
+end
+local function periods(bar: any): { any }
+	return H.findAll(bar, function(c: any)
+		return c.Name == "Period"
+	end)
+end
+
+H.section("WavyProgress: Stretch periods of a sheet cell clipped to the value, round caps on the curve, gap + track + stop, strip slides", function()
 	local value = q.Source(0.5)
-	local bar = Progress.WavyProgress({ Value = value })
+	local shown = q.Source(true)
+	local bar = Progress.WavyProgress({ Value = value, Visible = shown })
 	assert(bar.Size == UDim2.new(1, 0, 0, 10), "height = 2.5 x Thickness 4")
-	local wave, track, strip = H.find(bar, "Wave"), H.find(bar, "Track"), H.find(bar, "Strip")
-	assert(wave.ClassName == "Frame" and wave.ClipsDescendants == true, "nothing rotated: a plain clip, no CanvasGroup")
-	assert(strip.ClassName == "ImageLabel" and strip.ScaleType == Enum.ScaleType.Tile)
-	assert(strip.TileSize == UDim2.fromOffset(40, 10) and strip.Size == UDim2.new(1, 40, 1, 0), "one wavelength per tile, one spare")
-	assert(strip.ImageColor3 == L.Primary and H.find(track, "Stop").BackgroundColor3 == L.Primary)
+	local wave, clip, track, strip = H.find(bar, "Wave"), H.find(bar, "Clip"), H.find(bar, "Track"), H.find(bar, "Strip")
+	local s, e = H.find(bar, "Start"), H.find(bar, "End")
+	assert(wave.ClipsDescendants ~= true and clip.ClassName == "Frame" and clip.ClipsDescendants == true, "plain clip, no CanvasGroup")
+	assert(clip.Position == UDim2.fromOffset(2, 0) and clip.Size == UDim2.new(1, -4, 1, 0), "clip inset by the cap radius at both ends")
+	local p0 = periods(bar)[1]
+	assert(p0.ClassName == "ImageLabel" and p0.ScaleType == Enum.ScaleType.Stretch, "one Stretch period (Tile cannot show a sheet cell)")
+	assert(p0.Size == UDim2.fromOffset(40, 10) and p0.Image == "rbxassetid://111246664282863", "the amplitude sheet")
+	assert(p0.ImageRectSize == Vector2.new(512, 80) and frameOf(p0) == 0, "one cell, full amplitude")
+	assert(p0.ImageColor3 == L.Primary and H.find(track, "Stop").BackgroundColor3 == L.Primary)
+	for _, cap in { s, e } do
+		assert(cap.Size == UDim2.fromOffset(4, 4) and cap.AnchorPoint == Vector2.new(0.5, 0.5) and cap.BackgroundColor3 == L.Primary)
+		assert(#class(cap, "UICorner") == 1 and cap.Visible == true and cap.Parent == wave)
+	end
+	assert(s.Position == UDim2.new(0, 2, 0.5, 0), "start cap at phase 0: on the centre line")
 	H.finishTweens()
-	assert(wave.Size == UDim2.fromScale(0.5, 1) and track.Position == UDim2.new(0.5, 4, 0.5, 0) and track.Size == UDim2.new(0.5, -4, 0, 4))
-	assert(H.countDescendants(bar) == 6, "host + 6 = 7 instances at any width: " .. H.countDescendants(bar))
+	assert(wave.Size == UDim2.new(0.5, 0, 0, 10) and track.Position == UDim2.new(0.5, 4, 0.5, 0) and track.Size == UDim2.new(0.5, -4, 0, 4))
+	assert(H.countDescendants(bar) == 12, "host + 11 + 1 period before layout: " .. H.countDescendants(bar))
 	H.setAbs(bar, 0, 0, 300, 10)
 	local _, gui = live(bar)
+	-- several frames: the caps follow the curve at the strip's phase, full amplitude 3
+	local function capsOnCurve(len: number, what: string)
+		local ph = phaseOf(strip)
+		assert(s.Position.X == UDim.new(0, 2) and s.Position.Y.Offset == 0 and nearPx(capY(s), curve(2, ph, 3)), what .. ": start cap " .. tostring(s.Position))
+		assert(e.Position.X == UDim.new(1, -2) and nearPx(capY(e), curve(len - 2, ph, 3)), what .. ": end cap " .. tostring(e.Position).. " want " .. curve(len - 2, ph, 3))
+	end
 	H.advance(0.25)
-	assert(H.countDescendants(bar) == 6, "no growth with the width")
-	assert(math.abs(strip.Position.X.Offset + 10) <= 1, "a quarter wavelength travelled in 0.25 s: " .. tostring(strip.Position))
+	assert(#periods(bar) == 9 and strip.Size == UDim2.new(0, 360, 1, 0), "ceil(300 / 40) + 1 periods")
+	assert(H.countDescendants(bar) == 20, "12 + 8 more periods at 300 px: " .. H.countDescendants(bar))
+	assert(strip.Position == UDim2.fromOffset(-10, 0), "a quarter wavelength travelled in 0.25 s: " .. tostring(strip.Position))
+	assert(nearPx(capY(s), 2), "phase 1/4: the start cap at the crest (5 - 3)")
+	capsOnCurve(150, "0.25 s")
+	for n = 1, 7 do
+		H.advance(0.13)
+		capsOnCurve(150, "frame " .. n)
+	end
+	-- the fill changes: the end cap rides the clip's end (x through the layout, y at the new length)
+	value:Set(0.8)
+	H.finishTweens()
+	H.advance(1 / 60)
+	assert(wave.Size == UDim2.new(0.8, 0, 0, 10))
+	capsOnCurve(240, "Value 0.8")
+	-- shorter than a cap: no clip, both caps on one dot at x = r
+	value:Set(0.005)
+	H.finishTweens()
+	H.advance(1 / 60)
+	assert(clip.Visible == false and s.Visible and e.Visible, "L = 1.5 < 2r: the clip hides, the dot stays")
+	assert(e.Position == s.Position and s.Position.X == UDim.new(0, 2) and nearPx(capY(s), curve(2, phaseOf(strip), 3)))
+	value:Set(0)
+	H.finishTweens()
+	H.advance(1 / 60)
+	assert(s.Visible == false and e.Visible == false and clip.Visible == false, "0 %: nothing drawn")
+	value:Set(0.5)
+	H.finishTweens()
+	H.advance(1 / 60)
+	assert(s.Visible and e.Visible and clip.Visible)
+	capsOnCurve(150, "back to 0.5")
+	-- hidden: the loop stops, strip and caps freeze together
+	shown:Set(false)
+	assert(beats() == baseBeats, "hidden: loop off")
+	local sp, ep, xp = s.Position, e.Position, strip.Position
+	H.advance(0.3)
+	assert(s.Position == sp and e.Position == ep and strip.Position == xp, "frozen while hidden")
+	shown:Set(true)
+	H.advance(1 / 60)
+	capsOnCurve(150, "shown again")
 	value:Set(1)
 	H.finishTweens()
-	assert(track.Visible == false and wave.Size == UDim2.fromScale(1, 1))
+	H.advance(1 / 60)
+	assert(track.Visible == false and wave.Size == UDim2.new(1, 0, 0, 10))
 	q.dispose(gui)
 	assert(beats() == baseBeats)
 	local thick = Progress.WavyProgress({ Value = 0.5, Thickness = 6, Wavelength = 60 })
-	assert(thick.Size == UDim2.new(1, 0, 0, 15) and H.find(thick, "Strip").TileSize == UDim2.fromOffset(60, 15))
+	assert(thick.Size == UDim2.new(1, 0, 0, 15) and periods(thick)[1].Size == UDim2.fromOffset(60, 15))
+	assert(H.find(thick, "Start").Size == UDim2.fromOffset(6, 6) and H.find(thick, "Clip").Size == UDim2.new(1, -6, 1, 0))
 	H.finishTweens()
 	assert(H.find(thick, "Track").Size == UDim2.new(0.5, -4, 0, 6), "track = Thickness")
 	q.dispose(thick)
@@ -318,6 +402,95 @@ H.section("WavyProgress: tiled wave clipped to the value, gap + track + stop, st
 		Progress.WavyProgress({} :: any)
 	end), "Value is required")
 	H.assertNoDebugOutput("wavy")
+end)
+
+H.section("WavyProgress amplitude sheet: frame cells, Wavy off/on and Value 1 flatten 0 -> 23 and back, caps at the frame's amplitude, flat sleeps", function()
+	assert(Wavy.frameRect(0) == Vector2.new(0, 0) and Wavy.frameRect(11) == Vector2.new(0, 880))
+	assert(Wavy.frameRect(12) == Vector2.new(512, 0) and Wavy.frameRect(23) == Vector2.new(512, 880) and Wavy.LAST == 23)
+	local value = q.Source(0.5)
+	local wavy = q.Source(true)
+	local bar = Progress.WavyProgress({ Value = value, Wavy = wavy })
+	local p0 = periods(bar)[1]
+	assert(frameOf(p0) == 0, "full amplitude at mount")
+	local strip, s, e = H.find(bar, "Strip"), H.find(bar, "Start"), H.find(bar, "End")
+	H.finishTweens()
+	H.setAbs(bar, 0, 0, 300, 10)
+	local _, gui = live(bar)
+	H.advance(0.1)
+	local function check(what: string)
+		local i = frameOf(periods(bar)[1])
+		for _, p in periods(bar) do
+			assert(frameOf(p) == i, what .. ": every period on the same frame")
+		end
+		local amp = 3 * (1 - i / 23)
+		local ph = if i < 23 then phaseOf(strip) else 0
+		local len = H.find(bar, "Wave").Size.X.Scale * bar.AbsoluteSize.X
+		assert(nearPx(capY(s), curve(2, ph, amp)) and nearPx(capY(e), curve(len - 2, ph, amp)), what .. ": caps at A(" .. i .. ")")
+		return i
+	end
+	-- run a transition frame by frame: monotone, lands within Long2 (0.5 s) + a frame
+	local function transition(toward: number, what: string)
+		local last = frameOf(periods(bar)[1])
+		local seen = {}
+		for n = 1, 40 do
+			H.advance(1 / 60)
+			local i = check(what .. " frame " .. n)
+			assert(if toward == 23 then i >= last else i <= last, what .. ": monotone")
+			seen[i] = true
+			last = i
+			if i == toward then
+				assert(n <= 31, what .. ": within 0.5 s (" .. n .. " frames)")
+				break
+			end
+		end
+		assert(last == toward, what .. ": landed on " .. toward .. ", got " .. last)
+		local inner = 0
+		for i in seen do
+			if i ~= 0 and i ~= 23 then
+				inner += 1
+			end
+		end
+		assert(inner >= 10, what .. ": stepped through the frames (" .. inner .. " in between)")
+	end
+	wavy:Set(false)
+	transition(23, "Wavy off")
+	assert(nearPx(capY(s), 5) and nearPx(capY(e), 5), "flat: caps on the centre line")
+	assert(beats() == baseBeats, "flat and landed: the loop sleeps")
+	local xp = strip.Position
+	H.advance(0.3)
+	assert(strip.Position == xp, "asleep: nothing moves")
+	wavy:Set(true)
+	assert(beats() == baseBeats + 1, "Wavy on wakes the loop")
+	transition(0, "Wavy on")
+	-- complete: M3 flattens the finished bar
+	value:Set(1)
+	H.finishTweens()
+	transition(23, "Value 1")
+	assert(beats() == baseBeats)
+	-- a resize wakes it (more periods may be needed), and it sleeps again
+	H.setAbs(bar, 0, 0, 400, 10)
+	assert(beats() == baseBeats + 1, "resize wakes")
+	H.advance(1 / 60)
+	assert(#periods(bar) == 11 and frameOf(periods(bar)[11]) == 23, "the new periods join on the current frame")
+	assert(beats() == baseBeats, "asleep again")
+	value:Set(0.5)
+	assert(beats() == baseBeats + 1, "a Value below 1 wakes it")
+	H.finishTweens()
+	H.setAbs(bar, 0, 0, 300, 10)
+	transition(0, "Value 0.5 again")
+	-- a Value a float32 Scale cannot hold exactly still lets it sleep
+	value:Set(0.3)
+	H.finishTweens()
+	wavy:Set(false)
+	transition(23, "Wavy off at 0.3")
+	assert(beats() == baseBeats, "asleep at 0.3")
+	-- built complete: snapped flat, no swell on mount
+	local done = Progress.WavyProgress({ Value = 1 })
+	assert(frameOf(periods(done)[1]) == 23)
+	q.dispose(done)
+	q.dispose(gui)
+	assert(beats() == baseBeats)
+	H.assertNoDebugOutput("wavy sheet")
 end)
 
 H.done()
