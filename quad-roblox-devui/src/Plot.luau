@@ -11,8 +11,8 @@
 	ever-growing array without growing the instance count. `Min` / `Max` default to the data range of the drawn values
 	(a flat series is padded to a 1-unit range); `Height` defaults to 80 px; `Text` is an optional centred overlay label.
 
-	HISTOGRAM: one bar Frame per value inside a bottom-aligned horizontal UIListLayout; bar width is 1/n of the plot
-	(scale), height the value's fraction of the range. Bars are keyed by INDEX through Slot:List, so growing/shrinking the
+	HISTOGRAM: one bar Frame per value inside a bottom-aligned horizontal UIListLayout; bar width is exactly 1/n of the plot
+	(scale, no pixel gap: a per-bar offset would leave n px of the width empty), height the value's fraction of the range. Bars are keyed by INDEX through Slot:List, so growing/shrinking the
 	series only creates/destroys bars at the end; a bar's size is a Compute over (the series, min, max).
 
 	LINES: one thin Frame per segment between consecutive points, keyed by the segment's index (also Slot:List); each is
@@ -142,7 +142,7 @@ function Plot.PlotHistogram(props: PlotProps): Frame
 		local index = ctx.Index
 		local size: State<UDim2> = visible:Compute(function(self, _prev, low, high, n)
 			local v = self:Get()[index] or lo:Get()
-			return UDim2.new(1 / n:Get(), -1, fraction(v, low:Get(), high:Get()), 0)
+			return UDim2.new(1 / n:Get(), 0, fraction(v, low:Get(), high:Get()), 0)
 		end, lo, hi, count)
 		return D.Frame({
 			Name = "Bar",

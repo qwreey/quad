@@ -46,7 +46,7 @@ local function Basic(ctx: Context): Instance
 			return Devui.Group({
 				Style = style,
 				Children = Kids(
-					Devui.TextColored({ Text = "A factory-built tooltip", Color = Color3.fromRGB(250, 200, 80), Style = style }),
+					Devui.TextColored({ Text = "A factory-built tooltip", Color = style.Color.PlotLinesHovered, Style = style }),
 					Devui.Text({ Text = counterText, Style = style })
 				),
 			})

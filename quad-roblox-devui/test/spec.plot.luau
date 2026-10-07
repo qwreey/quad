@@ -29,9 +29,9 @@ H.section("PlotHistogram: bars keyed by index, heights follow the series, auto r
 	assert(H.find(plot, "Overlay") ~= nil and (H.find(plot, "Overlay") :: any).Text == "fps")
 	local bars = sortedBy(find(plot, "Bar"))
 	assert(#bars == 4)
-	-- auto range 1..4: heights 0, 1/3, 2/3, 1; width 1/4 minus the 1px gap
+	-- auto range 1..4: heights 0, 1/3, 2/3, 1; width exactly 1/4 (no pixel offset: n bars x -1px left n px of the plot empty)
 	assert(near(bars[1].Size.Y.Scale, 0) and near(bars[2].Size.Y.Scale, 1 / 3) and near(bars[4].Size.Y.Scale, 1))
-	assert(near(bars[1].Size.X.Scale, 0.25) and bars[1].Size.X.Offset == -1)
+	assert(near(bars[1].Size.X.Scale, 0.25) and bars[1].Size.X.Offset == 0)
 	local firstBar = bars[1]
 	local count0 = H.countDescendants(plot)
 

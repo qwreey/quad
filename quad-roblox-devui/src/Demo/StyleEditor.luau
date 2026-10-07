@@ -24,7 +24,7 @@ local Kids = Devui.Kids
 
 type Scheme = typeof(Devui.Style.default.Scheme:Get())
 type Density = typeof(Devui.Style.default.Density:Get())
-type Config = { Accent: Color3, Field: Color3, Rounding: number, TextSize: number }
+type Config = { Accent: Color3, Field: Color3, Rounding: number, TextSize: number, Scheme: Scheme, Density: Density }
 
 export type StyleEditorProps = {
 	read Context: Context,
@@ -40,6 +40,8 @@ local function buildPreview(c: Config): Instance
 	local pStyle = Devui.Style.new({
 		Dark = overrides,
 		Light = overrides,
+		Scheme = c.Scheme,
+		Density = c.Density,
 		Metrics = { FrameRounding = c.Rounding, TextSize = c.TextSize },
 	})
 	local on = q.Source(true)
@@ -65,9 +67,18 @@ local function StyleEditorWindow(props: StyleEditorProps): Frame
 	local rounding = q.Source(3)
 	local textSize = q.Source(13)
 
-	local config: q.State<Config> = accent:Compute(function(self, _prev, f, r, t)
-		return { Accent = self:Get(), Field = f:Get(), Rounding = r:Get(), TextSize = t:Get() }
-	end, field, rounding, textSize)
+	-- the preview Style is a separate throw-away one, so it must be built with the LIVE style's scheme / density
+	-- (otherwise it stays Dark: white text on the Light window) — they are part of the config, a change rebuilds it
+	local config: q.State<Config> = accent:Compute(function(self, _prev, f, r, t, sc, de)
+		return {
+			Accent = self:Get(),
+			Field = f:Get(),
+			Rounding = r:Get(),
+			TextSize = t:Get(),
+			Scheme = sc:Get(),
+			Density = de:Get(),
+		}
+	end, field, rounding, textSize, style.Scheme, style.Density)
 
 	local settled: q.State<Config> = config:Apply(q.Debounce({ Time = 0.15 }))
 	local preview = q.Slot<<Instance>>():Single<<Config, nil>>(settled, function(c)
