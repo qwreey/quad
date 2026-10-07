@@ -38,9 +38,9 @@ screen.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 |---|---|---|---|
 | Filled 버튼(아이콘 없음) | **8** | 40 | 70 |
 
-(`src/Button/init.luau` 머리와 `test/spec.button.luau`가 소스. 누르는 동안 리플이 일시적으로 4개를 더 만듭니다.) 다른
-컴포넌트의 수도 각 파일 머리와 스펙에 있습니다 — 예: Checkbox 15(토글 모션 막대 틀 하나 + 막대 넷 포함), Radio 5(스프라이트 한 장), Switch 8, 필드 있는 Filled TextField 13,
-Slider 14, RangeSlider 23, 한 줄 ListItem 7, LoadingIndicator 8, 색상 패널 106(8색 프리셋 포함). 갤러리 전체의 탭별 합계는 아래 "갤러리"에 있습니다.
+(`src/Button/init.luau` 머리와 `test/spec.button.luau`가 소스. 누르는 동안 리플이 일시적으로 3개를 더 만듭니다.) 다른
+컴포넌트의 수도 각 파일 머리와 스펙에 있습니다 — 예: Checkbox 15(토글 모션 막대 틀 하나 + 막대 넷 포함), Radio 5(스프라이트 한 장), Switch 8(M2 9), 필드 있는 Filled TextField 13,
+Slider 20(M2 14), RangeSlider 30(M2 23), 한 줄 ListItem 7, LoadingIndicator 8, 색상 패널 106(8색 프리셋 포함). 갤러리 전체의 탭별 합계는 아래 "갤러리"에 있습니다.
 
 ## 설치와 설정
 
@@ -78,9 +78,10 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
 | | `FAB` | Small / Regular / Large, 색 넷, 레이블이 있으면 Extended |
 | 선택 | `Checkbox` | 체크·불확정·오류·비활성(체크 표시는 회전한 Frame 둘이라 이미지 없음, 토글은 MaterialUI식 가장자리 막대 모션), `Label`로 라벨까지 한 클릭·호버 영역 |
 | | `Radio` / `RadioGroup` | 한 개 / 세로·가로 묶음(선택 모션은 MaterialUI 스프라이트 시트 이미지 한 장), `Label`로 라벨까지 한 클릭·호버 영역 |
-| | `Switch` | 52x32 트랙, 핸들이 16→24→28로 자람(꺼진 채 누르면 24), 선택적 아이콘 |
-| | `Slider` | 클래식 M3(4px 트랙·20px 핸들), 연속/이산(눈금), 값 라벨, 키보드·D-pad |
-| | `RangeSlider` | 손잡이 둘(`Start`/`End` 두 Source) — 누른 자리에서 가까운 손잡이를 끌고 서로를 못 넘음, 키는 한 손잡이씩(Return·게임패드 X로 전환) |
+| | `Switch` | M3: 52x32 트랙, 핸들이 16→24→28로 자람(꺼진 채 누르면 24), 선택적 아이콘; 핸들을 끌어 절반을 넘기면 반대 상태(탭은 토글) |
+| | `Slider` | M3(현행 Compose 형태): 16px 트랙을 핸들 양옆 6px 틈으로 두 조각, 바깥 끝 반경 8·핸들 쪽 반경 2, 4x44 막대 핸들, 끝 점(stop indicator), 연속/이산(4px 점 눈금), 값 라벨 알약, 키보드·D-pad |
+| | `RangeSlider` | M3 손잡이 둘(`Start`/`End` 두 Source) — 트랙 세 조각(가운데는 양 끝 반경 2), 누른 자리에서 가까운 손잡이를 끌고 서로를 못 넘음, 키는 한 손잡이씩(Return·게임패드 X로 전환) |
+| | `M2.Slider` / `M2.RangeSlider` / `M2.Switch` | Material 2 모양 — 같은 props·같은 동작(공용 동작 모듈), 그림만 다름: 4px 얇은 트랙 + 20px 원형 손잡이·40px halo, 얇은 36x14 트랙 + 트랙보다 큰 20px 원형 썸(그림자). 아래 "M2 모양" |
 | 입력·메뉴 | `TextField` | Filled / Outlined, 떠오르는 레이블, 보조·오류 문구, 글자 수, 아이콘, 접두·접미, 여러 줄 |
 | | `Menu` | `Menu.open{ Anchor, Items }`와 `Menu.Button` — 앵커 아래(공간이 없으면 위)에 뜸 |
 | | `Select` | 읽기 전용 TextField + Menu(노출형 드롭다운) |
@@ -220,6 +221,24 @@ Material.ColorPicker.Classic({ Theme = "Dark" })
   `Panel`/`Modal`이 M3 모양입니다. 둘의 차이와 옮기며 고친 원본 버그는 [`docs/colorpicker-comparison.md`](docs/colorpicker-comparison.md)와
   [`docs/colorpicker-original-analysis.md`](docs/colorpicker-original-analysis.md)에 있습니다.
 
+## M2 모양
+
+`Slider`·`RangeSlider`·`Switch`의 기본은 M3 모양이고, Material 2 모양은 `Style` prop이 아니라 별도 이름으로 씁니다 —
+`Material.M2.Slider`·`Material.M2.RangeSlider`·`Material.M2.Switch`(`src/M2/`). props와 동작(값·드래그·키보드·게임패드·
+눈금·`OnChange`/`OnChangeEnd`, Switch의 `Value`/`Checked`·탭·드래그)은 공용 동작 모듈(`src/Slider/Behavior.luau`,
+`src/Switch/Behavior.luau`)이 한 벌로 갖고, 모양 파일은 그림(트랙·핸들·치수)만 가집니다 — M3 컴포넌트 안에 M2 분기가
+없습니다. 그래서 같은 입력(같은 레일 위치의 누름·이동, 같은 키)은 두 모양에서 같은 값과 콜백을 냅니다(`test/spec.slider.luau`·
+`test/spec.rangeslider.luau`의 "shared behaviour" 절). 다른 점은 그림과 그에 딸린 치수뿐입니다: 슬라이더 기본 높이(M3 44, M2 40),
+핸들 중심이 끝에서 떨어진 거리(M3 8, M2 10 — 포인터 → 값 변환이 이 값을 씀), M2 Switch는 호스트가 56x40(halo까지 안에
+들어가게)이고 썸에 아이콘이 없습니다(`IconOn`/`IconOff`는 받지만 무시).
+
+```luau
+local Material = require("<이 폴더>/src")
+Material.Slider({ Value = volume, Min = 0, Max = 100 })        -- M3
+Material.M2.Slider({ Value = volume, Min = 0, Max = 100 })     -- M2, 같은 Source를 나눠 써도 됨
+Material.M2.Switch({ Value = wifi })
+```
+
 ## 갤러리
 
 ```luau
@@ -234,7 +253,8 @@ Gallery.GalleryPanel({})       -- 페이지(Frame)만; 직접 호스트할 때. 
 구간은 **탭을 고를 때 만들고 떠나면 부숩니다**(숨겨 두지 않음) — Pickers 하나가 수백 개이고 비확정 진행바가 Heartbeat
 루프를 돌기 때문입니다. 사용자가 입력·조작한 값은 패널의 Memo(Source)에 있어 다시 돌아와도 남습니다. 갤러리를 키트 루트(`src/init.luau`)에서 내보내지 않는 이유: 내보내면 키트를 쓰는 모든 소비자가 데모 코드까지 로드하게 됩니다(갤러리가 컴포넌트를 직접 require하므로 순환 자체는 아니지만, 갤러리가 루트를 require하는 모양이 되면 순환이 됩니다). 이 폴더를 직접 require하세요.
 
-스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함): Buttons 363, Selection 522,
+스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함): Buttons 363, Selection 984(맨 위
+"Slider / Switch — M3 vs M2" 비교 묶음 포함),
 Text 268, Surfaces 327, Overlays 199, Chips 438, Pickers 748, Theme 197. 아이콘 데모는 키트가 그림을 싣지 않으므로
 `Icon` prop(기본값은 장치에서 확인 못 한 자리표시 에셋 id)을 본인 에셋으로 바꿔 보세요.
 
@@ -282,7 +302,6 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 |---|---|---|---|---|
 | 1 | UIShadow 렌더(엘리베이션 0~5) | 스토리 Card·Button(Elevated)·Menu / 플레이 | 레벨별로 그림자가 보이고 UICorner를 따라 둥글다 |  |
 | 2 | UIShadow가 CanvasGroup 안에서 잘리는지 | Dialog·Snackbar·DatePicker 모달 | 그림자 없음(의도) — 다른 곳은 보임 |  |
-| 3 | CanvasGroup + UICorner 리플 클리핑 | Button·Chip·ListItem을 누름 | 리플 원이 둥근 모서리 밖으로 안 나감 |  |
 | 4 | Roboto 글꼴·굵기(Medium 500) | Theme 스토리·Gallery | LabelLarge/TitleMedium이 Medium으로 보임 |  |
 | 5 | 글리프(▼ ‹ › × ✓ ✎ ▦ !) | Select·DatePicker·Chip·Snackbar·TextField 에러 | 두부(□)로 안 나옴 |  |
 | 6 | UICorner 0.5 스케일 = 완전한 알약 | Button·Chip·Switch | 양 끝이 반원 |  |
@@ -311,6 +330,11 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 29 | LoadingIndicator·WavyProgress | Progress 스토리·갤러리 Chips | 모양이 650ms마다 바뀌며 돌고, 물결이 흐르며 막대가 참 — 물결 선이 또렷한지(시트 칸 Stretch), 파장 이음매·흐름 끊김이 안 보이는지; 양 끝 둥근 캡이 선 위에 붙어 함께 오르내리는지(채움이 바뀌는 동안에도), 0 % 근처에서 점 하나로 줄었다 사라지는지; 100 %·`Wavy = false`에서 물결이 부드럽게 잦아들어 직선이 되고 다시 켜면 부풀어 오르는지(시트 칸 경계에서 이웃 칸이 번져 보이지 않는지) |  |
 | 30 | Classic 색상 선택기 물방울 그림자 | ClassicColorPicker 스토리 | 색조 손잡이를 끌 때 물방울 그림자가 손잡이(구) 위를 덮지 않음 |  |
 | 31 | CircularProgress 원호 조각(시트 `rbxassetid://97823357785454`) | Progress 스토리(두께 넷 한 줄)·갤러리 Chips | 조각 이음매에 머리카락 틈·겹친 진한 줄이 없음, 양 끝이 둥글고 캡이 선 굵기와 같음(삐져나온 모서리 없음), 표시와 트랙 사이 간격이 양쪽 같음, 0 %에서 트랙만 닫힌 고리·100 %에서 표시만 닫힌 고리(12시 이음매 없음), 값을 바꾸면 0.3 s에 걸쳐 끝이 미끄러지고 트랙이 점으로 줄었다 사라짐, 비확정이 짧은 호(10 %)↔긴 호(87 %)로 늘었다 줄며 1.5 s마다 90° 툭 건너뛰며 돎, 작은 지름(24)에서 선이 뭉개지지 않음 |  |
+| 32 | M3 Slider·RangeSlider 트랙 조각 둥글림 | 갤러리 Selection "Slider / Switch — M3 vs M2"·Slider·RangeSlider 스토리 | 조각의 바깥 끝은 반원(반경 8), 핸들 쪽 끝은 살짝만 둥근(반경 2) 모서리, 캡과 몸통이 만나는 x = 8에 이음매·틈·진한 줄 없음(비활성 반투명일 때도), 핸들 양옆 틈이 6 px로 같음, 끝에 닿은 조각은 사라짐, 끝 점이 트랙 끝 안쪽에 |  |
+| 33 | M3 슬라이더 핸들·라벨 | 같은 곳 | 4x44 막대가 누르는 동안·포커스 동안 2 px로 가늘어지고 게임패드 포커스에 링이 막대를 감쌈, 값 라벨(44 px 알약)이 핸들 위 12 px에 뜸 — 위 행과 겹쳐 보이는지, 높이가 과한지 |  |
+| 34 | Switch 드래그(M3·M2) | 같은 곳 "Drag or tap"·Switch·M2Switch 스토리 / 플레이(터치) | 4 px 넘게 끌면 손잡이가 손가락을 바로 따라오고, 절반을 넘겨 놓으면 반대 상태로·못 넘기면 제자리로 미끄러짐, 놓은 순간 한 번 더 뒤집히지 않음(클릭 억제), 그냥 탭은 토글, 트랙 밖에서 놓아도 판정됨 |  |
+| 35 | M2 Switch 썸 | 같은 곳 | 20 px 썸이 14 px 트랙 위아래로 삐져나오고 그림자가 보임, light에선 흰 썸·dark에선 밝은 회색, 누르는 동안 갤러리 행 높이가 안 변함(halo가 호스트 56x40 안) |  |
+| 3 | CanvasGroup + UICorner 리플 클리핑 | Button·Chip·ListItem을 누름 | 리플 원이 둥근 모서리 밖으로 안 나감 |  |
 
 ## 테스트
 
@@ -335,7 +359,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 - **장치 미검증**: 이 키트는 목 백엔드에서만 검증됐습니다. 실제 `AbsolutePosition`/`AbsoluteSize` 위의 포인터 지오메트리
   (Slider 드래그, 색상 SV 영역, Menu·Tooltip 위치 보정과 GUI inset), 모양, `UIShadow` 렌더링은 실기기에서 보지 못했습니다.
   `TextField`는 편집 가능한 TextBox 위에서 엔진이 `MouseEnter`를 유지하는지(hover 표시) 확인하지 못했습니다.
-- **외부 이미지 에셋 셋**: `Radio`는 qwreey MaterialUI의 라디오 스프라이트 시트(`rbxassetid://4667411351`)를 그대로
+- **외부 이미지 에셋 넷**: `Radio`는 qwreey MaterialUI의 라디오 스프라이트 시트(`rbxassetid://4667411351`)를 그대로
   참조합니다(키트가 올린 것이 아니라 원본 키트의 공개 에셋). 그 에셋을 못 불러오는 환경에서는 라디오가 비어 보입니다.
   `WavyProgress`의 물결은 이 키트의 진폭 스프라이트 시트 `assets/wavy-progress-sheet-1024.png`(1024×1024, 한 파장 480×64 24칸에 이웃 번짐 방지 여백, 최대 진폭 →
   평평, 흰 선·투명 배경; 생성기 `assets/gen-wave.py`)를 키트 작성자가 올린 공개 에셋(`rbxassetid://96568777229073`,
@@ -346,6 +370,9 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
   흰 선·투명 배경; 생성기 `assets/gen-arc.py`)를 키트 작성자가 올린 공개 에셋(`rbxassetid://97823357785454`,
   `src/Progress/Circular.luau`의 `SHEET_IMAGE`)으로 그립니다 — 이것도 데칼(92434906460089)이 아니라 **이미지** id입니다. 못
   불러오는 환경에서는 둥근 캡만 보입니다. 여백 없는 옛 시트 둘은 이음매 티끌이 나서 교체했습니다(2026-10-07).
+  누름 리플은 원판 텍스처 `assets/ripple-disc-1024.png`(1024×1024, 반지름 511.5 흰 원판; 생성기 `assets/gen-disc.py`)를 키트 작성자가
+  올린 공개 에셋(`rbxassetid://89858938964426` — 이것도 **이미지** id)의 부분 사각형(`ImageRectOffset`/`ImageRectSize`)으로 그립니다 —
+  호스트에 잘린 원을 정확히 그리면서 호스트 사각형 밖으로 안 나갑니다. 못 불러오는 환경에서는 리플이 안 보입니다(상태 레이어는 그대로).
 - **글리프 아이콘**: 키트가 아이콘 에셋을 싣지 않으므로 Chip의 체크·제거 "x", Select의 화살표, Snackbar의 닫기는 **텍스트
   글리프**(엔진 폰트 폴백이 그림)입니다. 정확한 그림이 필요하면 `CheckIcon`/`RemoveIcon`/`TrailingIcon` 등 에셋 id prop을
   쓰세요. 갤러리의 기본 `Icon`도 자리표시입니다.
@@ -353,8 +380,8 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
   분리를 맡음). Menu는 CanvasGroup 페이드 대신 순수 스케일 애니메이션입니다. `UIShadow`는 가장 새로운 UI 클래스라 지원하지
   않는 클라이언트에서는 무효입니다(`Elevation.Backdrop`이 대안).
 - **M3와 다른 점**(Roblox·인스턴스 비용 때문): Filled TextField는 위쪽 두 모서리만 둥글림(채움을 4px 더 크게 그려 부모가 자르는 방식, 인스턴스 +1),
-  Outlined의 레이블 노치는 표면색 배경(어두운 배경 위에선 `NotchColor` 필요), Switch 터치 타깃은 52x32, IconButton의 48px 터치 타깃은
-  선택(`TouchTarget = true`, 기본은 40px), 칩 제거·스낵바 버튼은 48px, Tabs는 스크롤되지 않고 개별 비활성이 없음, Slider·RangeSlider는 2022 클래식 형태이고 Min/Max/Step이 정적, 리플은 호스트 사각형을 넘지 않는 둥근 사각형으로 자람(가장자리에 잘린 원을 모서리 반경 하나로 흉내 냄 — `AutomaticSize` 조상이 리플까지 재기 때문, `Ripple.luau` "BOUNDED"), LoadingIndicator는 M3의 일곱 모양(오각형·쿠키 9 등) 대신 사각형 셋의 겹침 근사, WavyProgress는 확정만(비확정 물결 없음)·둥근 끝은 직각으로 자른 끝 위에 원을 얹은 근사(모서리 삐져나옴 1 px 미만)·진폭이 0 % 바로 위부터 100 % 바로 아래까지 최대(Compose 기본은 10 % 이하·95 % 이상 평평)·진폭과 선 두께가 높이에 고정 비율, Menu는
+  Outlined의 레이블 노치는 표면색 배경(어두운 배경 위에선 `NotchColor` 필요), Switch 터치 타깃은 52x32(M2 Switch는 56x40), IconButton의 48px 터치 타깃은
+  선택(`TouchTarget = true`, 기본은 40px), 칩 제거·스낵바 버튼은 48px, Tabs는 스크롤되지 않고 개별 비활성이 없음, Slider·RangeSlider(M3)는 Min/Max/Step이 정적이고 핸들 양옆 틈이 6 px로 고정(Compose는 눌러서 2 px로 가늘어진 핸들에 맞춰 1 px 좁힘)·호버 표시 없음(M3 그대로 — M2 모양은 halo), 값 라벨 알약 높이 44 px는 토큰이 아니라 스펙 그림에서 온 값, 리플은 호스트 사각형을 넘지 않음(`AutomaticSize` 조상이 리플까지 재기 때문, `Ripple.luau` "BOUNDED") — 잘린 원은 원판 텍스처의 부분 사각형으로 정확히 그림(2026-10-07 전엔 모서리 반경 하나로 흉내 내 넓은 호스트에서 둥근 사각형으로 보였음), LoadingIndicator는 M3의 일곱 모양(오각형·쿠키 9 등) 대신 사각형 셋의 겹침 근사, WavyProgress는 확정만(비확정 물결 없음)·둥근 끝은 직각으로 자른 끝 위에 원을 얹은 근사(모서리 삐져나옴 1 px 미만)·진폭이 0 % 바로 위부터 100 % 바로 아래까지 최대(Compose 기본은 10 % 이하·95 % 이상 평평)·진폭과 선 두께가 높이에 고정 비율, Menu는
   가장 긴 항목에 폭을 맞추지 못하며(`Width` 지정) 타입어헤드·서브메뉴가 없음(위/아래·Return·Escape는 있음), CircularProgress는
   두께가 시트의 네 비율로 맞춰지고 끝·간격이 2° 단위(큰 지름 1°)로 움직이며 원형 물결(M3 Expressive)이 없음, 색상 선택기에 알파가 없음. 컴포넌트별 전체 목록은 각 파일 머리에 있습니다.
 - 갤러리는 좁은 화면에서 탭 글자가 잘릴 수 있습니다(Tabs는 폭을 균등 분할).

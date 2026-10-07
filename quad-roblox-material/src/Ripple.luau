@@ -8,25 +8,24 @@
 	    MaterialUI `Round`) solve that by stacking dozens of 1px-high clip frames along the corner curve (and
 	    cloning the ripple into every one on each press: 38 / 57 extra instances per press).
 	  - Here each press makes ONE `CanvasGroup` (it clips its descendants to its own `UICorner` — exact
-	    rounding, any radius) holding ONE circle `Frame` (round via `UICorner`, no image asset). That is
-	    4 instances per press (CanvasGroup, its UICorner, circle, its UICorner), 0 at rest.
-	  - BOUNDED: the circle never reaches outside the host rectangle. `AutomaticSize` measures ALL descendants,
+	    rounding, any radius) holding ONE disc `ImageLabel` (the circle is a texture, not a `UICorner`). That is
+	    3 instances per press (CanvasGroup, its UICorner, the disc), 0 at rest.
+	  - The disc texture `rbxassetid://89858938964426` is an IMAGE id (resolved from the uploaded decal): a white disc
+	    on a 1024 x 1024 canvas, radius 511.5 around (512, 512), transparent outside, 1 px antialiased edge
+	    (`assets/ripple-disc-1024.png`, generator `assets/gen-disc.py`).
+	  - BOUNDED: the disc never reaches outside the host rectangle. `AutomaticSize` measures ALL descendants,
 	    clipped ones included (an engine behavior, DevForum "AutomaticSize does not consider ClipDescendants"), so the
 	    first version's circle — grown to the farthest corner, i.e. past the host's edges — made every auto-sized
 	    ancestor grow while a press lasted: an auto-width Button / Chip widened, a RadioGroup row or a story holder grew
 	    taller and its centered children jumped, a dialog's actions row pushed the card (Studio QA 2026-10-07, 2nd).
-	    Now each frame of the expand writes the circle as the circle's bounding box CLAMPED to the host (around the press
-	    point snapped to a whole pixel, so an uncut box is square), with ONE UICorner radius imitating "circle cut by
-	    the host edges": per box corner the inset where the circle's arc meets the box edges (`cutCorner`), the largest
-	    of the four — the circle radius while it fits, small once both opposite edges cut it (a 32 px chip pressed in
-	    the middle shows a circle sliced by the chip), 0 once the farthest host corner is covered (the group's corner
-	    then gives the exact host shape). Until 2026-10-07 (3rd Studio QA, "the ripple starts as a slight oval") the
-	    radius was the clipped box's half-side: on a 32 px chip the circle reaches both edges in ~2 frames (Quart Out
-	    covers 30 % of the radius in the first 8 % of the 0.45 s), so nearly the whole grow showed as a PILL.
-	    Deviation: UICorner has one radius for all four corners, so a circle cut by ONE edge (pressed near the top of a
-	    tall host) keeps rounded corners on the cut side too (the uncut side wins — it stays circle-like), and the cut
-	    sides of a big circle show as straight sides with rounded corners instead of shallow arcs — only during the
-	    0.45 s grow.
+	    So each frame of the expand shows only the PART of the disc that lies inside the host: the circle's bounding box
+	    (whole pixels, rounded outward: R = ceil(r) around the whole-pixel press point) intersected with the host is the
+	    label's Position/Size (UDim Offsets are integers), and `ImageRectSize` / `ImageRectOffset` select the matching
+	    sub-rectangle of the texture (`ScaleType = Stretch`, s = 1024 / 2R texels per pixel): the cut circle is exact —
+	    chords cut by the edges, arcs at their ends — and nothing is drawn outside the host.
+	    History: until 2026-10-07 the circle was a Frame cut to the host + ONE `UICorner` radius imitating "circle cut by
+	    the host edges". A UICorner has one radius, so on a wide host (tab bar) the sliced circle showed as "a rectangle
+	    with rounded corners" (Studio QA 2026-10-07, tab bar) — the disc image replaced it.
 	  - TRADE-OFF: a `CanvasGroup` renders its subtree into an offscreen texture of the host's size, so a
 	    group costs texture memory + a composite pass while it exists. They are created lazily on press and
 	    destroyed ~0.2-0.6 s later (and at most `Max` exist at once — the oldest is dropped), never kept at
@@ -55,7 +54,7 @@
 	layer, a full-size DIRECT child of the real host with no UIPadding in between, so its AbsolutePosition /
 	AbsoluteSize equal the button's (test/spec.button.luau checks the press point end to end).
 	Timing: expand 0.45 s (Motion Long1, Standard easing = Quart Out, evaluated by hand) driven by ONE Heartbeat
-	connection per growing ripple (the clamped shape above is three properties computed per frame, which tweens
+	connection per growing ripple (the clamped part-of-disc above is five properties computed per frame, which tweens
 	cannot express), disconnected when the expand ends, the ripple is dropped or the host dies; fade 0.2 s (Short4,
 	linear) starting at release, an engine tween. The group is removed by a one-shot `task.delay` (fade time + 50 ms),
 	cancelled if the host dies first.
@@ -71,6 +70,9 @@ local D = q.Declaration
 local Motion = Tokens.Motion
 local RunService = game:GetService("RunService")
 local EXPAND_TIME = Motion.Duration.Long1
+-- the uploaded disc texture (an IMAGE id; 1024 x 1024, see header)
+local DISC_IMAGE = "rbxassetid://89858938964426"
+local DISC_SIZE = 1024
 
 export type ColorInput = Color3 | q.State<Color3>
 
@@ -99,19 +101,6 @@ local Module = {
 	-- Subtracted from press positions before they are compared with AbsolutePosition (see header).
 	PointerInset = Vector2.new(0, 0),
 }
-
--- The corner radius that imitates ONE corner of "a circle of radius r cut by the box edges", for the box corner at
--- (hx, hy) from the circle's center: where the box's horizontal edge meets the circle, the arc starts
--- hx - sqrt(r^2 - hy^2) in from the corner, and along the vertical edge hy - sqrt(r^2 - hx^2) — a rounded corner of
--- radius c is c in along both, so c = the smaller inset. Uncut (hx = hy >= r): r, the circle itself. Cut by one edge
--- (hy < r): the inset where the cut chord ends — small once the circle is much bigger than the cut, so a ripple on a
--- 32 px chip reads as a circle sliced by the chip, not as a pill. A corner the circle covers (hx^2 + hy^2 <= r^2): 0.
-local function cutCorner(hx: number, hy: number, r: number): number
-	local rr = r * r
-	local alongX = hx - math.sqrt(math.max(0, rr - hy * hy))
-	local alongY = hy - math.sqrt(math.max(0, rr - hx * hx))
-	return math.max(0, math.min(alongX, alongY))
-end
 
 local function new(opts: Options): Ripple
 	local opacity = opts.Opacity or Tokens.State.Opacity.Pressed
@@ -194,44 +183,47 @@ local function new(opts: Options): Ripple
 		local fadeOpts = Motion.options("Short4", "Linear")
 		local fadeTween = q.Animate(fadeOpts)
 
-		local circleRef = q.PreRef(nil :: Frame?)
-		local roundRef = q.PreRef(nil :: UICorner?)
+		local circleRef = q.PreRef(nil :: ImageLabel?)
 		local entry: Live = { group = nil :: any, held = true, fade = function() end, timer = nil, conn = nil }
 
-		-- one frame of the expand: the circle of radius `r` around the press point, CLAMPED to the host rectangle (see
-		-- BOUNDED in the header), with the rounding that best imitates "circle cut by the host edges" (`cutCorner`)
+		-- one frame of the expand: the part of the disc of radius `r` around the press point that lies inside the host
+		-- rectangle (see BOUNDED in the header)
 		local function shape(r: number)
 			local circle = circleRef.Value
-			local round = roundRef.Value
-			if circle == nil or round == nil then
+			if circle == nil then
 				return
 			end
-			-- the uncut box is 2 x ceil(r) square around the whole-pixel center; edges clamp it to the host (floored)
+			-- the circle's box is 2R square around the whole-pixel center (R = ceil r); the visible box clamps it to the host
 			local R = math.ceil(r)
 			local x0, x1 = math.max(0, px - R), math.min(wMax, px + R)
 			local y0, y1 = math.max(0, py - R), math.min(hMax, py + R)
 			local bw, bh = x1 - x0, y1 - y0
-			local rad = math.max(
-				cutCorner(px - x0, py - y0, r),
-				cutCorner(x1 - px, py - y0, r),
-				cutCorner(px - x0, y1 - py, r),
-				cutCorner(x1 - px, y1 - py, r)
-			)
-			rad = math.min(rad, bw / 2, bh / 2)
+			if R <= 0 or bw <= 0 or bh <= 0 then
+				circle.Size = UDim2.fromOffset(0, 0)
+				circle.ImageRectSize = Vector2.zero
+				return
+			end
+			-- texture pixels per screen pixel: the disc's 2R box shows the whole 1024 texture (the disc is 1023 px wide in it
+			-- — 0.1 % — not corrected)
+			local s = DISC_SIZE / (2 * R)
 			circle.Position = UDim2.fromOffset(x0, y0)
 			circle.Size = UDim2.fromOffset(bw, bh)
-			round.CornerRadius = UDim.new(0, math.round(rad))
+			circle.ImageRectSize = Vector2.new(bw * s, bh * s)
+			circle.ImageRectOffset = Vector2.new((x0 - (px - R)) * s, (y0 - (py - R)) * s)
 		end
 
-		local circle = D.Frame {
+		local circle = D.ImageLabel {
 			Name = "RippleCircle",
 			circleRef,
+			Image = DISC_IMAGE,
+			ScaleType = Enum.ScaleType.Stretch,
 			Position = UDim2.fromOffset(px, py),
 			Size = UDim2.fromOffset(0, 0),
-			BackgroundColor3 = opts.Color,
-			BackgroundTransparency = transparencySrc:Apply(fadeTween),
+			ImageRectSize = Vector2.zero,
+			ImageColor3 = opts.Color,
+			ImageTransparency = transparencySrc:Apply(fadeTween),
+			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UICorner { Name = "RippleRound", roundRef, CornerRadius = UDim.new(0, 0) },
 			-- mounted at size 0, then grown frame by frame for the expand time (one Heartbeat connection per growing
 			-- ripple, disconnected at the end of the expand or when the ripple is dropped)
 			Util.postHook(function()
@@ -293,5 +285,4 @@ end
 return {
 	new = new,
 	Config = Module,
-	cutCorner = cutCorner, -- pure, for specs
 }

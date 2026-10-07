@@ -42,28 +42,29 @@ H.section("rest: the whole interaction layer is 3 instances, no CanvasGroup", fu
 	H.assertNoDebugOutput("rest")
 end)
 
-H.section("press: one CanvasGroup + circle (4 instances), geometry from the press point", function()
+H.section("press: one CanvasGroup + disc (3 instances), geometry from the press point", function()
 	local btn = mountButton()
 	local before = H.countDescendants(btn)
 	H.fire(btn, "InputBegan", H.input({ Position = Vector3.new(30, 20, 0) }))
 	local added = H.countDescendants(btn) - before
-	assert(added == 4, "a press adds CanvasGroup, UICorner, circle, UICorner = 4, got " .. added)
+	assert(added == 3, "a press adds CanvasGroup, UICorner, disc ImageLabel = 3, got " .. added)
 	local gs = groups(btn)
 	assert(#gs == 1)
 	local group = gs[1]
-	assert(H.find(group, "RippleCircle") ~= nil and H.countDescendants(group) == 3)
+	assert(H.find(group, "RippleCircle") ~= nil and H.countDescendants(group) == 2)
 	local circle = H.find(group, "RippleCircle")
 	-- host (10,10) 100x40, press (30,20): rel (20,10); far corner dx 80 dy 30
 	assert(circle.Position == UDim2.fromOffset(20, 10), "origin = press point relative to the host: " .. tostring(circle.Position))
 	assert(circle.Size == UDim2.fromOffset(0, 0), "mounts at size 0 (snapped)")
-	assert(math.abs(circle.BackgroundTransparency - 0.9) < 1e-9, "ripple opacity .10")
+	assert(math.abs(circle.ImageTransparency - 0.9) < 1e-9 and circle.BackgroundTransparency == 1, "ripple opacity .10")
 	assert(group.Size == UDim2.fromScale(1, 1))
-	local round = H.find(circle, "RippleRound")
-	-- early in the grow the shape is the circle itself (radius < the 10 px to the nearest edge)
+	assert(circle.ClassName == "ImageLabel" and circle.Image == "rbxassetid://89858938964426")
+	-- early in the grow the shape is the whole disc (radius < the 10 px to the nearest edge)
 	H.advance(0.002)
 	local r = circle.Size.X.Offset / 2
 	assert(r > 0 and r < 10 and circle.Size.Y.Offset == circle.Size.X.Offset, "a small circle: " .. tostring(circle.Size))
-	assert(math.abs(circle.Position.X.Offset - (20 - r)) <= 1 and math.abs(round.CornerRadius.Offset - r) <= 1, "centered on the press point, fully round")
+	assert(math.abs(circle.Position.X.Offset - (20 - r)) <= 1, "centered on the press point")
+	assert(circle.ImageRectOffset == Vector2.zero and math.abs(circle.ImageRectSize.X - 1024) < 1e-3, "uncut: the whole texture")
 	-- BOUNDED: at every frame the shape stays inside the host rectangle (AutomaticSize ancestors measure it)
 	for _ = 1, 40 do
 		H.advance(0.0125)
@@ -73,7 +74,6 @@ H.section("press: one CanvasGroup + circle (4 instances), geometry from the pres
 	end
 	H.advance(0.1)
 	assert(circle.Position == UDim2.fromOffset(0, 0) and circle.Size == UDim2.fromOffset(100, 40), "ends covering the host: " .. tostring(circle.Size))
-	assert(round.CornerRadius == UDim.new(0, 0), "own rounding faded out (the group's corner shapes it)")
 	-- rounded clip: the group carries the host's corner
 	local corner = H.find(group, "_quad_round")
 	assert(corner ~= nil and corner.CornerRadius == FULL, "group clips with the host's corner radius")
@@ -90,7 +90,7 @@ H.section("release fades and the ripple is removed after the fade (instances bac
 	local circle = H.find(btn, "RippleCircle")
 	assert(circle ~= nil)
 	H.finishTweens()
-	assert(circle.BackgroundTransparency == 1, "faded out")
+	assert(circle.ImageTransparency == 1, "faded out")
 	assert(#groups(btn) == 1, "still mounted until the fade timer")
 	H.advance(0.1)
 	assert(#groups(btn) == 1, "fade not over yet")
@@ -222,43 +222,59 @@ H.section("Ripple.new standalone: Press/Release/Count with a host that has no si
 	H.assertNoDebugOutput("standalone ripple")
 end)
 
-H.section("chip-sized host at a fractional position: the ripple stays a circle, then a circle sliced by the edges (no pill)", function()
-	-- Studio QA 2026-10-07 (3rd): on Input chips the ripple started as a slight oval and grew as a pill
+H.section("wide host (160x48, pressed in the middle): the box stays inside the host and is a part of one circle", function()
+	-- Studio QA 2026-10-07 (tab bar): a UICorner could not draw the arcs of a circle cut top and bottom
 	local r = Ripple.new({ Color = Color3.new(1, 1, 1), Corner = UDim.new(0, 8) })
 	local host = D.Frame { r.Hook, r.Slot }
-	H.setAbs(host, 10.4, 10.7, 100, 32) -- a flow layout leaves fractional positions; rel press = (49.6, 15.3)
-	r:Press(Vector2.new(60, 26))
+	H.setAbs(host, 10.4, 10.7, 160, 48) -- fractional position
+	r:Press(Vector2.new(90.4, 34.7)) -- rel (80, 24) -> center
 	local circle = H.find(host, "RippleCircle")
-	local round = H.find(circle, "RippleRound")
-	local sawCircle, sawSliced = false, false
-	for _ = 1, 40 do
+	local sawSquare, sawCut = false, false
+	for _ = 1, 120 do
 		H.advance(1 / 240)
-		local z = circle.Size
-		local bw, bh, c = z.X.Offset, z.Y.Offset, round.CornerRadius.Offset
-		if bh < 30 then
-			-- uncut: a square box (snapped center) with a half-side corner = a circle
-			assert(bw == bh and c == bw / 2, "uncut ripple is a circle: " .. tostring(z) .. " corner " .. c)
-			sawCircle = sawCircle or bw >= 4
-		elseif bw >= 44 and bw <= 80 then
-			-- both long edges cut (R 22..40): the corner is the cut-chord inset, far below the pill's 16
-			local R = bw / 2 -- = ceil(r): the true radius is in (R - 1, R]
-			local lo = math.max(Ripple.cutCorner(R, 15, R), Ripple.cutCorner(R, 17, R))
-			local hi = math.max(Ripple.cutCorner(R, 15, R - 1), Ripple.cutCorner(R, 17, R - 1))
-			assert(c < 12 and c >= lo - 0.5 and c <= hi + 0.5, "sliced circle, not a pill: " .. tostring(z) .. " corner " .. c)
-			sawSliced = true
+		local p, z = circle.Position, circle.Size
+		local x0, y0, bw, bh = p.X.Offset, p.Y.Offset, z.X.Offset, z.Y.Offset
+		assert(x0 == math.floor(x0) and bw == math.floor(bw) and y0 == math.floor(y0) and bh == math.floor(bh), "whole pixels")
+		-- (a) inside the host
+		assert(x0 >= 0 and y0 >= 0 and x0 + bw <= 160 and y0 + bh <= 48, "inside: " .. tostring(p) .. " " .. tostring(z))
+		if bw == 0 then
+			continue
+		end
+		local rs, ro = circle.ImageRectSize, circle.ImageRectOffset
+		-- the circle's box: center (80, 24), half-side R; scale s texels per pixel
+		local s = rs.X / bw
+		assert(math.abs(rs.Y / bh - s) < 1e-3, "one scale on both axes")
+		local R = math.round(1024 / (2 * s))
+		assert(math.abs(R - math.round(R)) < 1e-2, "R is a whole pixel: " .. R)
+		-- (b) the label's box + rect are a sub-rectangle of the SAME circle box [80-R, 80+R] x [24-R, 24+R]
+		assert(math.abs(ro.X - (x0 - (80 - R)) * s) < 1e-3 and math.abs(ro.Y - (y0 - (24 - R)) * s) < 1e-3, "rect offset follows the box: " .. tostring(ro) .. " " .. tostring(p) .. " " .. tostring(z) .. " R " .. R)
+		assert(x0 == math.max(0, 80 - R) and x0 + bw == math.min(160, 80 + R), "box = circle box ∩ host (x)")
+		assert(y0 == math.max(0, 24 - R) and y0 + bh == math.min(48, 24 + R), "box = circle box ∩ host (y)")
+		assert(ro.X >= -1e-3 and ro.Y >= -1e-3 and ro.X + rs.X <= 1024 + 1e-3 and ro.Y + rs.Y <= 1024 + 1e-3, "rect inside the texture")
+		if 2 * R <= 48 then
+			-- (c) uncut: a square box showing the whole texture
+			assert(bw == bh and ro == Vector2.zero and math.abs(rs.X - 1024) < 1e-3 and math.abs(rs.Y - 1024) < 1e-3, "uncut = whole texture: " .. tostring(z))
+			sawSquare = true
+		elseif R < 80 then
+			assert(bh == 48 and bw == 2 * R and rs.Y < 1024 - 1e-3 and ro.Y > 0, "cut top and bottom only")
+			sawCut = true
 		end
 	end
-	assert(sawCircle and sawSliced, "both phases observed")
+	assert(sawSquare and sawCut, "both phases observed")
 	H.advance(0.5)
-	assert(circle.Size == UDim2.fromOffset(100, 32) and round.CornerRadius == UDim.new(0, 0), "ends covering the host")
+	assert(circle.Size == UDim2.fromOffset(160, 48) and circle.Position == UDim2.fromOffset(0, 0), "ends covering the host")
 	q.dispose(host)
-	H.assertNoDebugOutput("chip ripple")
+	H.assertNoDebugOutput("wide ripple")
 end)
 
-H.section("cutCorner: uncut = r, one corner covered = 0, cut by an edge = the chord inset", function()
-	assert(Ripple.cutCorner(10, 10, 10) == 10)
-	assert(Ripple.cutCorner(5, 5, 10) == 0, "corner inside the circle")
-	assert(math.abs(Ripple.cutCorner(20, 16, 20) - 8) < 1e-9, "20 - sqrt(400 - 256) = 8")
+H.section("a press adds 3 instances (CanvasGroup, UICorner, disc)", function()
+	local r = Ripple.new({ Color = Color3.new(1, 1, 1) })
+	local host = D.Frame { r.Hook, r.Slot }
+	H.setAbs(host, 0, 0, 160, 48)
+	local before = H.countDescendants(host)
+	r:Press(nil)
+	assert(H.countDescendants(host) - before == 3, "3 per press, got " .. H.countDescendants(host) - before)
+	q.dispose(host)
 end)
 
 H.done()

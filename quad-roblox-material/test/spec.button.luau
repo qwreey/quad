@@ -220,7 +220,7 @@ H.section("press: one transient ripple (4 instances), cleaned up after the fade"
 	local during = H.countDescendants(btn)
 	print("Filled button instances at rest: " .. (rest + 1) .. ", during a ripple: " .. (during + 1))
 	H.resetOutput() -- measurement lines are not q.debug output
-	assert(during - rest == 4)
+	assert(during - rest == 3)
 	local group = H.find(btn, "Ripple")
 	assert(group.Parent == H.find(btn, "StateLayer") and H.find(btn, "StateLayer").Parent == btn, "ripple group under the direct-child layer")
 	assert(H.find(btn, "RippleCircle").Position == UDim2.fromOffset(60, 20), "press point is relative to the host's AbsolutePosition")

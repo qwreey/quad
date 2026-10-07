@@ -19,3 +19,5 @@
   `rbxassetid://97823357785454`) was generated for this kit by `assets/gen-arc.py`; it is not derived from Material Design
   artwork or any third-party asset.
   The earlier gutterless sheets were replaced because packed cells showed seam specks (2026-10-07).
+- **Ripple disc** — `assets/ripple-disc-1024.png` (the pressed-ripple texture, published as `rbxassetid://89858938964426`) was
+  generated for this kit by `assets/gen-disc.py`; it is not derived from Material Design artwork or any third-party asset.
