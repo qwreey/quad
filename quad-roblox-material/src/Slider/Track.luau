@@ -3,7 +3,7 @@
 	M3 slider track parts (the 2023+ form; androidx Compose material3 `SliderTokens` / `Slider.kt`): the track is split
 	into pieces around the handle(s), each piece rounded FULL at the track's outer end and 2 px at the end that faces a
 	handle, with a 6 px space on each side of the 4 px handle (so a piece ends GAP = 2 + 6 = 8 px from the handle
-	center). A 4 px stop indicator dot sits one outer radius inside each outer end of an inactive piece; discrete sliders
+	center). A 4 px stop indicator dot sits 6 px (its center) inside each outer end of an inactive piece; discrete sliders
 	add one 4 px dot per step.
 
 	ONE GEOMETRY PER SLIDER: `Track.new({ Size, Vertical, Flip })` returns the constants and builders of that slider.
@@ -25,12 +25,29 @@
 
 	COORDINATES: every builder takes positions along the axis as a `UDim` of the host's length measured FROM THE MIN END
 	(Scale = fraction of the length, Offset = px). `g.x(f)` is the handle center at value fraction f:
-	UDim.new(f, INSET - 2 INSET f) — the handle travels from INSET to L - INSET, INSET = the outer radius, so a piece
-	reaching the host edge is exactly one outer radius long when the handle sits at that end (Compose `Slider.kt`
-	lerp(start + corner, end - corner, f); MDC `trackSidePadding` with the track `trackCornerSize` past it). `g.phys`
-	turns that into the host's own direction (left / top first); the builders do it themselves. Only VISIBILITY needs
-	pixels (the host length): Compose hides an outer piece no longer than its outer radius and the middle piece of a
-	range no longer than its inner radius — so does this file.
+	UDim.new(f, INSET - 2 INSET f) — the handle travels from INSET to L - INSET, and INSET = 6 px for EVERY size: the
+	stop dot's center sits 6 px from the track end (its edge 4 px from it) and the handle center at value 0 / 1 sits on
+	that dot. Source (user decision 2026-10-08, "m3.material.io Measurements first"): the m3.material.io slider specs
+	(Measurements: https://lh3.googleusercontent.com/WLMws1Xen6XFUKvbCJS2NM4jwTMVmQxFlh8QhTslZGI-TR2eoFPXUp-ck8i0FhO_U2cy0cW5qnNP6Qkrsu1kJ-eztl1sJ_o5lHzXSUtr4FAMPw=s0
+	and Configurations: https://lh3.googleusercontent.com/FH3TsHZ1NpVLh--XKKb2ygB9rd0bgZ6ig1vGxWhQu5HOFVbk_8CXIxMAVdJnPxKj3fojh8jFh6qDqm41tD0R3YRaK0luWcktoURO5RZfBsuO=s0)
+	show the dot at the same ~6 dp from the end for XS .. XL, a static padding independent of the track thickness and the
+	outer radius. THIS DEVIATES from the code: Compose `Slider.kt` 1059-1075 / 2511-2517 (thumb and dot at `cornerSize`)
+	and MDC `BaseSlider` `trackSidePadding` with the track `trackCornerSize` past it both inset by the corner size.
+	`g.phys` turns the coordinates into the host's own direction (left / top first); the builders do it themselves.
+	Only VISIBILITY and SHRINKING need pixels (the host length).
+
+	SHORT PIECES (`Run`): the piece beyond a handle gets shorter than its outer radius over a long stretch (XL: the
+	outer radius is 28, the handle can sit 6 from the end). Compose `drawTrack` with `enableCornerShrinking` (the
+	`Track(trackCornerSize)` overload and `CenteredTrack`, no steps) draws a piece for any length > 0 (threshold 0
+	instead of `cornerSize` added, Slider.kt 2523-2526 / 2594-2597), so it narrows away instead of popping out. The user
+	(Android device, 2026-10-08) sees the outer curve stay FIXED while the piece is masked away — so here only the clip
+	windows move: the cap clip is min(OUTER, Run) long over a fill that keeps its 2 x OUTER size (anchored on the track
+	end), the body clip is the rest over a fill of at least 2 x INNER (anchored on the handle side), and a middle piece
+	is a clip window over a fill of at least 2 x INNER. A fill is never shorter than twice its UICorner radius, because
+	UICorner clamps its radius to half the frame's smaller side — a shrinking fill would change the curve. Stepped
+	sliders keep Compose's hard threshold (a piece no longer than its outer radius, or inner radius for a middle piece,
+	is hidden); a continuous slider and (kit choice, Compose's range slider has no corner shrinking) a continuous range
+	slider show any piece longer than 0.
 
 	ASYMMETRIC ROUNDING (`g.outerPiece`): `UICorner` has ONE radius for all four corners, so a piece rounded OUTER at
 	one end and 2 at the other is composed from two non-overlapping rectangle clips:
@@ -45,14 +62,14 @@
 	piece with radius OUTER and a radius-2 frame over its inner part (4 instances) — exact while opaque, but the overlap
 	doubles the alpha of a translucent (disabled) piece; (b) opaque colors precomposited over `Surface` to dodge (a) —
 	wrong on any other background (a card); (c) a 9-slice image — one more uploaded asset, and the radius would scale
-	with nothing. A piece rounded 2 at both ends (the middle of a range, the active piece of a centered slider) is one
-	Frame + UICorner (2).
+	with nothing. A piece rounded 2 at both ends (the middle of a range, the active piece of a centered slider) is a clip
+	window over one fill + UICorner (2): 3 instances (see SHORT PIECES).
 	Every position and size below the host is Offset or a host fraction (the host is not auto-sized: its size comes
 	from the parent along the axis and HANDLE_H across).
 
-	    g.outerPiece({ Name, End = "Min" | "Max", Edge = State<UDim>, Visible, Color, Transparency }) -> { Frame }
-	      Edge: the piece's INNER end (the end facing a handle) in min-end coordinates.
-	    g.middlePiece({ Name, From = State<UDim>, To = State<UDim>, Visible, Color, Transparency }) -> Frame
+	    g.outerPiece({ Name, End = "Min" | "Max", Edge = State<UDim>, Visible, Run, Color, Transparency }) -> { Frame }
+	      Edge: the piece's INNER end (the end facing a handle) in min-end coordinates; Run: its length in px.
+	    g.middlePiece({ Name, From = State<UDim>, To = State<UDim>, Visible, Run, Color, Transparency }) -> Frame
 	    g.stop({ Name, End = "Min" | "Max", Visible, Color, Transparency }) -> Frame       (4 px dot + UICorner)
 	    g.ticks({ Step, Range, Fracs = { State<number> }, ActiveFrom, ActiveTo, Length, SkipFirst, SkipLast,
 	              CenterGap, ShowTicks, Disabled, Theme }) -> { Instance }
@@ -70,7 +87,7 @@
 	    g.centerPx(length, f) -> number   the handle center in px from the min end
 	Track.forLook(name, Size, Orientation, TopToBottom) -> Geometry   the looks' props validated (Vertical -> Flip unless
 	    TopToBottom); Track.labelPlacement(g) -> (Position, AnchorPoint) of the value label in the handle
-	Constants (read-only): THICK (track), OUTER, INNER 2, INSET (= OUTER), GAP 8, SPACE 6, HANDLE_W 4 /
+	Constants (read-only): THICK (track), OUTER, INNER 2, INSET 6 (= the stop dot's center, every size), GAP 8, SPACE 6, HANDLE_W 4 /
 	HANDLE_W_ACTIVE 2, HANDLE_H, DOT 4, ICON (nil below M), Vertical, Flip.
 ]]
 
@@ -100,6 +117,7 @@ local SPACE = 6 -- SliderTokens.ActiveHandleLeadingSpace / TrailingSpace
 local GAP = HANDLE_W / 2 + SPACE -- handle center -> piece end
 local DOT = 4 -- SliderTokens.StopIndicatorSize
 local MAX_TICKS = 100
+local STOP_INSET = 6 -- stop dot center (and handle center at Min / Max) from the track end, whatever the size: m3.material.io specs
 
 local CORNER_FULL = Tokens.Shape.corner("Full")
 
@@ -117,6 +135,8 @@ export type OuterOptions = {
 	End: End,
 	Edge: q.State<UDim>,
 	Visible: q.State<boolean>,
+	-- the piece's current length in px (0 before layout); a piece shorter than OUTER narrows by its clip windows only
+	Run: q.State<number>,
 	Color: Animated,
 	Transparency: Animated,
 }
@@ -126,6 +146,7 @@ export type MiddleOptions = {
 	From: q.State<UDim>,
 	To: q.State<UDim>,
 	Visible: q.State<boolean>,
+	Run: q.State<number>, -- the piece's current length in px (0 before layout)
 	Color: Animated,
 	Transparency: Animated,
 }
@@ -202,7 +223,7 @@ local function new(o: GeometryOptions?): Geometry
 	local vertical = opts.Vertical == true
 	local flip = vertical and opts.Flip == true
 	local THICK, OUTER, HANDLE_H = row.Track, row.Outer, row.Handle
-	local INSET = OUTER -- handle center at Min / Max
+	local INSET = STOP_INSET -- handle center at Min / Max = the stop dots' centers
 
 	local function x(f: number): UDim
 		return UDim.new(f, INSET - 2 * INSET * f)
@@ -240,7 +261,7 @@ local function new(o: GeometryOptions?): Geometry
 		}
 	end
 
-	local function fill(position: UDim2, size: UDim2, radius: number, color: Animated, transparency: Animated): Frame
+	local function fill(position: UDim2 | q.State<UDim2>, size: UDim2 | q.State<UDim2>, radius: UDim, color: Animated, transparency: Animated): Frame
 		return D.Frame {
 			Name = "Fill",
 			Position = position,
@@ -248,53 +269,91 @@ local function new(o: GeometryOptions?): Geometry
 			BackgroundColor3 = color,
 			BackgroundTransparency = transparency,
 			BorderSizePixel = 0,
-			UICorner = UDim.new(0, radius),
+			UICorner = radius,
 		}
 	end
 
 	local function outerPiece(p: OuterOptions): { Instance }
 		-- the piece's outer end is the host's physical start (left / top) or its physical end
 		local atStart = (p.End == "Min") ~= flip
-		local cap = clip(
-			p.Name .. "Cap",
-			pair(if atStart then UDim.new(0, 0) else UDim.new(1, -OUTER), CENTER),
-			offsets(OUTER, THICK),
-			p.Visible,
-			fill(offsets(if atStart then 0 else -OUTER, 0), offsets(2 * OUTER, THICK), OUTER, p.Color, p.Transparency)
-		)
+		local run = p.Run
 		local edge: q.State<UDim> = p.Edge:Compute(function(self)
 			return phys(self:Get())
 		end)
-		local bodyPosition: UDim2 | q.State<UDim2>
-		local bodySize: q.State<UDim2>
+		-- SHORT PIECES: only the clip windows change, the rounded fills keep their size (so their corner radii never
+		-- change — UICorner clamps its radius to half the frame's smaller side). The cap fill is always 2 x OUTER, kept
+		-- on the track end, and its clip window is min(OUTER, Run) long; the body clip is the rest. A body fill is at
+		-- least 2 x INNER long and kept on the handle side. Past SHORT the host-fraction formulas take over (the layout
+		-- owns the length of a long piece, not a px state).
+		local SHORT = OUTER + 2 * INNER
+		local capLen: q.State<number> = run:Compute(function(self)
+			return math.clamp(self:Get(), 0, OUTER)
+		end)
+		local capPosition: UDim2 | q.State<UDim2>
+		local fillPosition: UDim2 | q.State<UDim2>
 		if atStart then
-			bodyPosition = pair(UDim.new(0, OUTER), CENTER)
-			bodySize = edge:Compute(function(self)
-				local e = self:Get()
-				return lengthSize(UDim.new(e.Scale, e.Offset - OUTER))
-			end)
+			capPosition = pair(UDim.new(0, 0), CENTER)
+			fillPosition = offsets(0, 0)
 		else
-			bodyPosition = edge:Compute(function(self)
-				return pair(self:Get(), CENTER)
+			capPosition = capLen:Compute(function(self)
+				return pair(UDim.new(1, -self:Get()), CENTER)
 			end)
-			bodySize = edge:Compute(function(self)
-				local e = self:Get()
-				return lengthSize(UDim.new(1 - e.Scale, -OUTER - e.Offset))
+			fillPosition = capLen:Compute(function(self)
+				return offsets(self:Get() - 2 * OUTER, 0)
 			end)
 		end
+		local capSize: q.State<UDim2> = capLen:Compute(function(self)
+			return offsets(self:Get(), THICK)
+		end)
+		local edgeBodySize: q.State<UDim2> = edge:Compute(function(self)
+			local e = self:Get()
+			return if atStart then lengthSize(UDim.new(e.Scale, e.Offset - OUTER)) else lengthSize(UDim.new(1 - e.Scale, -OUTER - e.Offset))
+		end)
+		local bodyLength = function(r: number): number
+			return math.max(r - OUTER, 0)
+		end
+		local bodyPosition: q.State<UDim2> = edge:Compute(function(self, _prev, r: q.State<number>)
+			if r:Get() >= SHORT then
+				return if atStart then pair(UDim.new(0, OUTER), CENTER) else pair(self:Get(), CENTER)
+			end
+			return if atStart then pair(UDim.new(0, OUTER), CENTER) else pair(UDim.new(1, -r:Get()), CENTER)
+		end, run)
+		local bodySize: q.State<UDim2> = edgeBodySize:Compute(function(self, _prev, r: q.State<number>)
+			if r:Get() >= SHORT then
+				return self:Get()
+			end
+			return lengthSize(UDim.new(0, bodyLength(r:Get())))
+		end, run)
+		-- body fill: bodyLength + INNER long (its handle-side end rounded, the cap-side overhang cut off), never below 2 x INNER
+		local bodyFillSize: q.State<UDim2> = run:Compute(function(self)
+			local r = self:Get()
+			if r >= SHORT then
+				return pair(UDim.new(1, INNER), UDim.new(1, 0))
+			end
+			return pair(UDim.new(0, math.max(bodyLength(r) + INNER, 2 * INNER)), UDim.new(1, 0))
+		end)
+		local bodyFillPosition: UDim2 | q.State<UDim2>
+		if atStart then
+			bodyFillPosition = run:Compute(function(self)
+				local r = self:Get()
+				return offsets(-(if r >= SHORT then INNER else math.max(INNER, 2 * INNER - bodyLength(r))), 0)
+			end)
+		else
+			bodyFillPosition = offsets(0, 0)
+		end
+		local cap = clip(
+			p.Name .. "Cap",
+			capPosition,
+			capSize,
+			p.Visible,
+			fill(fillPosition, offsets(2 * OUTER, THICK), UDim.new(0, OUTER), p.Color, p.Transparency)
+		)
 		local body = clip(
 			p.Name .. "Body",
 			bodyPosition,
 			bodySize,
 			p.Visible,
-			-- 2 px longer than the clip on the cap side: that rounded end is cut off, the handle-side end stays rounded
-			fill(
-				offsets(if atStart then -INNER else 0, 0),
-				pair(UDim.new(1, INNER), UDim.new(1, 0)),
-				INNER,
-				p.Color,
-				p.Transparency
-			)
+			fill(bodyFillPosition, bodyFillSize, UDim.new(0, INNER), p.Color, p.Transparency)
 		)
 		return { cap, body }
 	end
@@ -307,24 +366,20 @@ local function new(o: GeometryOptions?): Geometry
 			local a, b = self:Get(), to:Get()
 			return lengthSize(UDim.new(b.Scale - a.Scale, b.Offset - a.Offset))
 		end, p.To)
-		return D.Frame {
-			Name = p.Name,
-			AnchorPoint = SEGMENT_ANCHOR,
-			Position = position,
-			Size = size,
-			Visible = p.Visible,
-			BackgroundColor3 = p.Color,
-			BackgroundTransparency = p.Transparency,
-			BorderSizePixel = 0,
-			UICorner = UDim.new(0, INNER),
-		}
+		-- a clip window over a fill that is never shorter than 2 x INNER (UICorner would shrink its radius otherwise),
+		-- kept on the window's physical start; a short piece just narrows the window
+		local fillSize: q.State<UDim2> = p.Run:Compute(function(self)
+			local r = self:Get()
+			return if r >= 2 * INNER then pair(UDim.new(1, 0), UDim.new(1, 0)) else pair(UDim.new(0, 2 * INNER), UDim.new(1, 0))
+		end)
+		return clip(p.Name, position, size, p.Visible, fill(UDim2.fromOffset(0, 0), fillSize, UDim.new(0, INNER), p.Color, p.Transparency))
 	end
 
 	local function stop(p: StopOptions): Frame
 		return D.Frame {
 			Name = p.Name,
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = point(if p.End == "Min" then UDim.new(0, OUTER) else UDim.new(1, -OUTER)),
+			Position = point(if p.End == "Min" then UDim.new(0, INSET) else UDim.new(1, -INSET)),
 			Size = UDim2.fromOffset(DOT, DOT),
 			Visible = p.Visible,
 			BackgroundColor3 = p.Color,

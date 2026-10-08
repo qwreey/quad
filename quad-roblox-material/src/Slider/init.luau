@@ -143,7 +143,7 @@ local function Slider(props: Props)
 	end
 	local b = Behavior.single(props, { Name = "Slider", Inset = g.INSET, Vertical = g.Vertical, Flip = g.Flip, Centered = centered })
 	local disabled, frac, length = b.Disabled, b.Frac, b.Length
-	local OUTER, INNER, GAP, SPACE = g.OUTER, g.INNER, g.GAP, g.SPACE
+	local OUTER, INNER, GAP, SPACE, INSET = g.OUTER, g.INNER, g.GAP, g.SPACE, g.INSET
 
 	local activeColor = Style.disabledPick(disabled, R.Primary, R.OnSurface)
 	local activeT = Style.disabledNumber(disabled, 0, Style.DisabledContentTransparency)
@@ -167,16 +167,30 @@ local function Slider(props: Props)
 		local inactiveEdge: q.State<UDim> = frac:Compute(function(self)
 			return plus(g.x(self:Get()), GAP)
 		end)
-		local activeShown: q.State<boolean> = length:Compute(function(self, _prev, f)
+		-- piece lengths in px (0 before layout)
+		local activeRun: q.State<number> = length:Compute(function(self, _prev, f)
 			local l = self:Get()
-			return l > 0 and g.centerPx(l, f:Get()) - GAP > OUTER
+			return if l > 0 then g.centerPx(l, f:Get()) - GAP else 0
 		end, frac)
-		local inactiveShown: q.State<boolean> = length:Compute(function(self, _prev, f)
+		local inactiveRun: q.State<number> = length:Compute(function(self, _prev, f)
 			local l = self:Get()
-			return l > 0 and l - g.centerPx(l, f:Get()) - GAP > OUTER
+			return if l > 0 then l - g.centerPx(l, f:Get()) - GAP else 0
 		end, frac)
-		add(g.outerPiece({ Name = "Active", End = "Min", Edge = activeEdge, Visible = activeShown, Color = activeColor, Transparency = activeT }))
-		add(g.outerPiece({ Name = "Inactive", End = "Max", Edge = inactiveEdge, Visible = inactiveShown, Color = inactiveColor, Transparency = inactiveT }))
+		-- Compose (Slider.kt drawTrack, enableCornerShrinking): a continuous slider draws a piece for any length > 0 and
+		-- the rounded rect shrinks its corners with it; a stepped one hides it once it is no longer than the outer
+		-- radius (threshold += cornerSize). The stop dot is drawn with its piece: here only while the piece covers its center (INSET).
+		local shrinks = b.Step == nil
+		local activeShown: q.State<boolean> = activeRun:Compute(function(self)
+			return self:Get() > (if shrinks then 0 else OUTER)
+		end)
+		local inactiveShown: q.State<boolean> = inactiveRun:Compute(function(self)
+			return self:Get() > (if shrinks then 0 else OUTER)
+		end)
+		local inactiveCoversStop: q.State<boolean> = inactiveRun:Compute(function(self)
+			return self:Get() > (if shrinks then INSET else OUTER)
+		end)
+		add(g.outerPiece({ Name = "Active", End = "Min", Edge = activeEdge, Visible = activeShown, Run = activeRun, Color = activeColor, Transparency = activeT }))
+		add(g.outerPiece({ Name = "Inactive", End = "Max", Edge = inactiveEdge, Visible = inactiveShown, Run = inactiveRun, Color = inactiveColor, Transparency = inactiveT }))
 
 		-- inset icons (MDC calculateTrackIconBounds: shown while the piece is at least icon + 2 x 10 long)
 		if hasIcons then
@@ -234,10 +248,10 @@ local function Slider(props: Props)
 			iconFor("InactiveEnd", "Inactive", "End")
 		end
 
-		local stopShown = inactiveShown
+		local stopShown = inactiveCoversStop
 		local iconOnStop = inactiveEndIconShown
 		if iconOnStop ~= nil then
-			stopShown = inactiveShown:Compute(function(self, _prev, icon)
+			stopShown = inactiveCoversStop:Compute(function(self, _prev, icon)
 				return self:Get() and not icon:Get()
 			end, iconOnStop)
 		end
@@ -277,19 +291,37 @@ local function Slider(props: Props)
 		local function activeTo(f: number): UDim
 			return if f > 0.5 then plus(g.x(f), -GAP) else mid
 		end
-		local startShown: q.State<boolean> = length:Compute(function(self, _prev, f)
+		-- piece lengths in px (0 before layout); continuous: any length > 0 (corners shrink with it, Compose
+		-- enableCornerShrinking), stepped: hidden at or below the outer / inner radius
+		local shrinks = b.Step == nil
+		local startRun: q.State<number> = length:Compute(function(self, _prev, f)
 			local l = self:Get()
-			return l > 0 and px(minEdge(f:Get()), l) > OUTER
+			return if l > 0 then px(minEdge(f:Get()), l) else 0
 		end, frac)
-		local endShown: q.State<boolean> = length:Compute(function(self, _prev, f)
+		local endRun: q.State<number> = length:Compute(function(self, _prev, f)
 			local l = self:Get()
-			return l > 0 and l - px(maxEdge(f:Get()), l) > OUTER
+			return if l > 0 then l - px(maxEdge(f:Get()), l) else 0
 		end, frac)
-		local middleShown: q.State<boolean> = length:Compute(function(self, _prev, f)
+		local startShown: q.State<boolean> = startRun:Compute(function(self)
+			return self:Get() > (if shrinks then 0 else OUTER)
+		end)
+		local endShown: q.State<boolean> = endRun:Compute(function(self)
+			return self:Get() > (if shrinks then 0 else OUTER)
+		end)
+		local startCoversStop: q.State<boolean> = startRun:Compute(function(self)
+			return self:Get() > (if shrinks then INSET else OUTER)
+		end)
+		local endCoversStop: q.State<boolean> = endRun:Compute(function(self)
+			return self:Get() > (if shrinks then INSET else OUTER)
+		end)
+		local middleRun: q.State<number> = length:Compute(function(self, _prev, f)
 			local l = self:Get()
 			local v = f:Get()
-			return l > 0 and px(activeTo(v), l) - px(activeFrom(v), l) > INNER
+			return if l > 0 then px(activeTo(v), l) - px(activeFrom(v), l) else 0
 		end, frac)
+		local middleShown: q.State<boolean> = middleRun:Compute(function(self)
+			return self:Get() > (if shrinks then 0 else INNER)
+		end)
 		local minEdgeS: q.State<UDim> = frac:Compute(function(self)
 			return minEdge(self:Get())
 		end)
@@ -302,11 +334,11 @@ local function Slider(props: Props)
 		local toS: q.State<UDim> = frac:Compute(function(self)
 			return activeTo(self:Get())
 		end)
-		add(g.outerPiece({ Name = "Start", End = "Min", Edge = minEdgeS, Visible = startShown, Color = inactiveColor, Transparency = inactiveT }))
-		add(g.outerPiece({ Name = "End", End = "Max", Edge = maxEdgeS, Visible = endShown, Color = inactiveColor, Transparency = inactiveT }))
-		table.insert(pieces, g.middlePiece({ Name = "Active", From = fromS, To = toS, Visible = middleShown, Color = activeColor, Transparency = activeT }))
-		table.insert(pieces, g.stop({ Name = "StopStart", End = "Min", Visible = startShown, Color = activeColor, Transparency = activeT }))
-		table.insert(pieces, g.stop({ Name = "StopEnd", End = "Max", Visible = endShown, Color = activeColor, Transparency = activeT }))
+		add(g.outerPiece({ Name = "Start", End = "Min", Edge = minEdgeS, Visible = startShown, Run = startRun, Color = inactiveColor, Transparency = inactiveT }))
+		add(g.outerPiece({ Name = "End", End = "Max", Edge = maxEdgeS, Visible = endShown, Run = endRun, Color = inactiveColor, Transparency = inactiveT }))
+		table.insert(pieces, g.middlePiece({ Name = "Active", From = fromS, To = toS, Visible = middleShown, Run = middleRun, Color = activeColor, Transparency = activeT }))
+		table.insert(pieces, g.stop({ Name = "StopStart", End = "Min", Visible = startCoversStop, Color = activeColor, Transparency = activeT }))
+		table.insert(pieces, g.stop({ Name = "StopEnd", End = "Max", Visible = endCoversStop, Color = activeColor, Transparency = activeT }))
 		local tickFrom: q.State<number> = frac:Compute(function(self)
 			return math.min(self:Get(), 0.5)
 		end)

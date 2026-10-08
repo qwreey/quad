@@ -30,7 +30,7 @@ end
 -- position relative to the rail in both looks.
 type LookCase = { Name: string, Make: (props: any) -> any, Inset: number }
 local looks: { LookCase } = {
-	{ Name = "M3", Make = Slider, Inset = 8 },
+	{ Name = "M3", Make = Slider, Inset = 6 },
 	{ Name = "M2", Make = M2.Slider, Inset = 10 },
 }
 local RAIL0 = 110
@@ -63,11 +63,11 @@ H.section("M3 mount: three-part track, 4x44 bar handle, 6 px gaps, instance coun
 	print("Slider (M3) descendants: " .. n .. " (+1 host = " .. (n + 1) .. ")")
 	H.resetOutput()
 	assert(n == 20, "2 outer pieces x (2 clips + 2 fills + 2 corners) + stop(2) + handle(3) + label(3) = 20, got " .. n)
-	local W = 216
+	local W = 212
 	H.setAbs(s, 0, 0, W, 44)
 	local handle = H.find(s, "Handle")
 	assert(handle.Size == UDim2.fromOffset(4, 44), "4 x 44 bar handle")
-	assert(handle.Position == UDim2.new(0.5, 0, 0.5, 0), "center 8 + 200 * 0.5 = 108")
+	assert(handle.Position == UDim2.new(0.5, 0, 0.5, 0), "center 6 + 200 * 0.5 = 106")
 	local hx = px(handle.Position.X, W)
 	-- active piece: cap [0, 8] + body [8, hx - 8]
 	local aCap, aBody = H.find(s, "ActiveCap"), H.find(s, "ActiveBody")
@@ -100,7 +100,7 @@ H.section("M3 mount: three-part track, 4x44 bar handle, 6 px gaps, instance coun
 	assert(aCapFill.BackgroundColor3 == L.Primary and aBodyFill.BackgroundColor3 == L.Primary and handle.BackgroundColor3 == L.Primary)
 	assert(iCapFill.BackgroundColor3 == L.SecondaryContainer and iBodyFill.BackgroundColor3 == L.SecondaryContainer)
 	local stopDot = H.find(s, "StopEnd")
-	assert(stopDot.Visible and stopDot.Size == UDim2.fromOffset(4, 4) and px(stopDot.Position.X, W) == W - 8 and stopDot.BackgroundColor3 == L.Primary, "stop dot")
+	assert(stopDot.Visible and stopDot.Size == UDim2.fromOffset(4, 4) and px(stopDot.Position.X, W) == W - 6 and stopDot.BackgroundColor3 == L.Primary, "stop dot: center 6 px from the track end")
 	assert(H.find(s, "Label").Size.Y.Offset == 32 and H.find(s, "Label").Position == UDim2.new(0.5, 0, 0, -12), "M3 label pill 32 px (MDC Widget.Material3.Slider.Label minHeight), 12 px above (value-indicator.active.bottom-space)")
 	do
 		local lbl = H.find(s, "Label")
@@ -120,22 +120,24 @@ H.section("M3 mount: three-part track, 4x44 bar handle, 6 px gaps, instance coun
 	H.assertNoDebugOutput("m3 mount")
 end)
 
-H.section("M3 pieces hide at the ends (Compose: an outer piece no longer than its 8 px radius); before layout", function()
+H.section("M3 pieces vanish at the ends (a continuous piece is drawn for any length > 0, shrinking); before layout", function()
 	local v = q.Source(0)
 	local s = Slider({ Value = v, Min = 0, Max = 100 })
 	assert(not H.find(s, "ActiveCap").Visible and not H.find(s, "InactiveCap").Visible, "nothing before layout (width 0)")
-	H.setAbs(s, 0, 0, 216, 44)
+	H.setAbs(s, 0, 0, 212, 44)
 	assert(not H.find(s, "ActiveCap").Visible and not H.find(s, "ActiveBody").Visible, "at Min: no active piece")
 	assert(H.find(s, "InactiveCap").Visible and H.find(s, "StopEnd").Visible)
-	v:Set(4) -- active piece 200 * 0.04 = 8 px: not longer than the radius
+	v:Set(1) -- active piece 6 + 2 - 8 = 0 px
 	assert(not H.find(s, "ActiveCap").Visible)
-	v:Set(5) -- 10 px
+	v:Set(2) -- 2 px: a sliver, drawn
 	assert(H.find(s, "ActiveCap").Visible and H.find(s, "ActiveBody").Visible)
-	v:Set(96) -- inactive piece 8 px
-	assert(not H.find(s, "InactiveCap").Visible and not H.find(s, "StopEnd").Visible, "stop dot hides with its piece")
-	v:Set(95)
+	v:Set(99) -- inactive piece 212 - 204 - 8 = 0 px
+	assert(not H.find(s, "InactiveCap").Visible and not H.find(s, "StopEnd").Visible)
+	v:Set(98) -- 2 px sliver; the stop dot (center 6 px in) is not covered yet
+	assert(H.find(s, "InactiveCap").Visible and not H.find(s, "StopEnd").Visible, "the stop dot waits until its piece covers it")
+	v:Set(95) -- 8 px
 	assert(H.find(s, "InactiveCap").Visible and H.find(s, "StopEnd").Visible)
-	assert(H.find(s, "Handle").Position == UDim2.new(0.95, 8 - 16 * 0.95, 0.5, 0))
+	assert(H.find(s, "Handle").Position == UDim2.new(0.95, 6 - 12 * 0.95, 0.5, 0))
 	q.dispose(s)
 	H.assertNoDebugOutput("m3 hide")
 end)
@@ -222,7 +224,7 @@ local function vrelease(y: number)
 	UIS.InputEnded:Fire(H.input({ UserInputType = Enum.UserInputType.MouseButton1, Position = Vector3.new(70, y, 0) }))
 end
 
-H.section("M3 sizes: XS / S / M / L / XL track, outer corner, handle height, stop dot one outer radius in (MDC tokens.xml)", function()
+H.section("M3 sizes: XS / S / M / L / XL track, outer corner, handle height, stop dot 6 px in at every size (m3.material.io specs; tokens.xml sizes)", function()
 	-- size -> track, outer corner, handle height (material-components-android slider tokens.xml 55~94)
 	local rows: { { any } } = {
 		{ "XS", 16, 8, 44 },
@@ -234,21 +236,21 @@ H.section("M3 sizes: XS / S / M / L / XL track, outer corner, handle height, sto
 	for _, row in rows do
 		local name, track, outer, handleH = row[1], row[2], row[3], row[4]
 		local s = Slider({ Value = q.Source(0.5), Size = name })
-		local W = 200 + 2 * outer
+		local W = 200 + 2 * 6
 		assert(s.Size == UDim2.new(1, 0, 0, handleH), name .. ": host as tall as the handle")
 		H.setAbs(s, 0, 0, W, handleH)
 		local handle = H.find(s, "Handle")
 		assert(handle.Size == UDim2.fromOffset(4, handleH), name .. ": 4 px handle, " .. handleH .. " tall")
-		assert(px(handle.Position.X, W) == outer + 100, name .. ": the handle travels one outer radius in")
+		assert(px(handle.Position.X, W) == 6 + 100, name .. ": the handle travels from the stop dot (6 px in) at every size")
 		local capFill = H.find(H.find(s, "ActiveCap"), "Fill")
 		assert(capFill.Size == UDim2.fromOffset(2 * outer, track) and H.find(capFill, "_quad_round").CornerRadius == UDim.new(0, outer), name .. ": cap fill")
 		assert(H.find(s, "ActiveCap").Size == UDim2.fromOffset(outer, track), name .. ": cap clip")
 		assert(H.find(s, "ActiveBody").Size.Y.Offset == track, name .. ": track thickness")
 		assert(H.find(H.find(s, "ActiveBody"), "_quad_round").CornerRadius == UDim.new(0, 2), name .. ": inside corner 2")
 		local stopDot = H.find(s, "StopEnd")
-		assert(px(stopDot.Position.X, W) == W - outer and stopDot.Size == UDim2.fromOffset(4, 4), name .. ": stop dot")
+		assert(px(stopDot.Position.X, W) == W - 6 and stopDot.Size == UDim2.fromOffset(4, 4), name .. ": stop dot")
 		local aBody = H.find(s, "ActiveBody")
-		assert(px(aBody.Position.X, W) + px(aBody.Size.X, W) == outer + 100 - 8, name .. ": 6 px gap at every size")
+		assert(px(aBody.Position.X, W) + px(aBody.Size.X, W) == 6 + 100 - 8, name .. ": 6 px gap at every size")
 		assert(H.countDescendants(s) == 20, name .. ": the size changes no count")
 		q.dispose(s)
 	end
@@ -269,11 +271,11 @@ H.section("M3 vertical: Min at the bottom, 44 x 4 handle, label on the left, Up/
 		end,
 	})
 	assert(s.Size == UDim2.new(0, 44, 1, 0), "44 wide, the parent's height")
-	local H0, L0 = 100, 216 -- top, length (rail 200 from y = 108)
+	local H0, L0 = 100, 212 -- top, length (rail 200 from y = 106)
 	H.setAbs(s, 50, H0, 44, L0)
 	local handle = H.find(s, "Handle")
 	assert(handle.Size == UDim2.fromOffset(44, 4), "the handle turned: 44 wide, 4 tall")
-	assert(handle.Position.X == UDim.new(0.5, 0) and px(handle.Position.Y, L0) == L0 - (8 + 50), "25 % up from the bottom")
+	assert(handle.Position.X == UDim.new(0.5, 0) and px(handle.Position.Y, L0) == L0 - (6 + 50), "25 % up from the bottom")
 	-- the active piece runs from the BOTTOM (Min) up to 8 px below the handle center
 	local aCap, aBody = H.find(s, "ActiveCap"), H.find(s, "ActiveBody")
 	assert(px(aCap.Position.Y, L0) == L0 - 8 and aCap.Size == UDim2.fromOffset(16, 8) and aCap.AnchorPoint == Vector2.new(0.5, 0), "cap at the bottom end")
@@ -282,15 +284,15 @@ H.section("M3 vertical: Min at the bottom, 44 x 4 handle, label on the left, Up/
 	assert(H.find(aBody, "Fill").Size == UDim2.new(1, 0, 1, 2) and H.find(aBody, "Fill").Position == UDim2.fromOffset(0, 0), "rounded end cut on the cap side (below)")
 	local iCap = H.find(s, "InactiveCap")
 	assert(px(iCap.Position.Y, L0) == 0 and H.find(iCap, "Fill").Position == UDim2.fromOffset(0, 0), "inactive cap at the top")
-	assert(px(H.find(s, "StopEnd").Position.Y, L0) == 8, "stop dot at the top (Max)")
+	assert(px(H.find(s, "StopEnd").Position.Y, L0) == 6, "stop dot at the top (Max)")
 	local label = H.find(s, "Label")
 	assert(label.AnchorPoint == Vector2.new(1, 0.5) and label.Position == UDim2.new(0, -12, 0.5, 0), "label 12 px left of the handle")
 	-- pointer along Y: bottom = Min
-	vpress(s, H0 + 8 + 50) -- 50 px below the rail top -> 75
+	vpress(s, H0 + 6 + 50) -- 50 px below the rail top -> 75
 	assert(near(v:Get(), 75), "press maps Y: " .. v:Get())
-	vmove(H0 + 8 + 200)
+	vmove(H0 + 6 + 200)
 	assert(near(v:Get(), 0))
-	vrelease(H0 + 8 + 150)
+	vrelease(H0 + 6 + 150)
 	assert(near(v:Get(), 25) and ends[#ends] == 25)
 	-- keys: Up / Down move the handle the way they point; Left / Right walk on (not pinned)
 	local sa: any = s
@@ -315,11 +317,11 @@ H.section("M3 vertical: Min at the bottom, 44 x 4 handle, label on the left, Up/
 	local t = q.Source(25)
 	local top = Slider({ Value = t, Min = 0, Max = 100, Orientation = "Vertical", TopToBottom = true })
 	H.setAbs(top, 50, H0, 44, L0)
-	assert(px(H.find(top, "Handle").Position.Y, L0) == 8 + 50, "25 % down from the top")
+	assert(px(H.find(top, "Handle").Position.Y, L0) == 6 + 50, "25 % down from the top")
 	assert(px(H.find(top, "ActiveCap").Position.Y, L0) == 0, "active piece from the top")
-	vpress(top, H0 + 8 + 150)
+	vpress(top, H0 + 6 + 150)
 	assert(near(t:Get(), 75))
-	vrelease(H0 + 8 + 150)
+	vrelease(H0 + 6 + 150)
 	H.fire(top, "SelectionGained")
 	key(Enum.KeyCode.Up)
 	assert(near(t:Get(), 70), "Up = toward Min when Min is at the top")
@@ -334,34 +336,34 @@ end)
 H.section("M3 centered: the active piece joins the middle and the handle on either side; middle fixed; own Value starts there", function()
 	local sBody: any, eBody: any, active: any
 	local own = Slider({ Min = -50, Max = 50, Centered = true })
-	local W = 216 -- rail 200, middle at 108
+	local W = 212 -- rail 200, middle at 106
 	H.setAbs(own, 0, 0, W, 44)
-	assert(px(H.find(own, "Handle").Position.X, W) == 108, "own Value starts at (Min + Max) / 2")
+	assert(px(H.find(own, "Handle").Position.X, W) == 106, "own Value starts at (Min + Max) / 2")
 	local n = H.countDescendants(own)
-	assert(n == 24, "Start/End outer pieces 12 + Active 2 + two stops 4 + handle 3 + label 3 = 24, got " .. n)
+	assert(n == 25, "Start/End outer pieces 12 + Active 3 + two stops 4 + handle 3 + label 3 = 25, got " .. n)
 	-- at the middle: no active piece, both inactive pieces stop 8 px from the handle
 	sBody, eBody, active = H.find(own, "StartBody"), H.find(own, "EndBody"), H.find(own, "Active")
 	assert(not active.Visible, "no active piece at the middle")
-	assert(px(sBody.Position.X, W) + px(sBody.Size.X, W) == 100 and px(eBody.Position.X, W) == 116)
-	assert(H.find(own, "StopStart").Visible and H.find(own, "StopEnd").Visible and px(H.find(own, "StopStart").Position.X, W) == 8, "stop dots at both ends")
+	assert(px(sBody.Position.X, W) + px(sBody.Size.X, W) == 98 and px(eBody.Position.X, W) == 114)
+	assert(H.find(own, "StopStart").Visible and H.find(own, "StopEnd").Visible and px(H.find(own, "StopStart").Position.X, W) == 6, "stop dots at both ends")
 	q.dispose(own)
 
 	local v = q.Source(25)
 	local s = Slider({ Value = v, Min = -50, Max = 50, Centered = true })
 	H.setAbs(s, 0, 0, W, 44)
 	sBody, eBody, active = H.find(s, "StartBody"), H.find(s, "EndBody"), H.find(s, "Active")
-	-- 25 -> f .75, handle at 158: Start [.., 102] (6 before the middle), Active [108, 150], End [166, ..]
-	assert(px(sBody.Position.X, W) + px(sBody.Size.X, W) == 102, "inactive piece stops 6 px before the middle")
-	assert(active.Visible and px(active.Position.X, W) == 108 and px(active.Position.X, W) + px(active.Size.X, W) == 150, "active: middle -> 8 px before the handle")
-	assert(H.find(active, "_quad_round").CornerRadius == UDim.new(0, 2) and active.BackgroundColor3 == L.Primary, "inner corners 2 at both ends")
-	assert(px(eBody.Position.X, W) == 166)
+	-- 25 -> f .75, handle at 156: Start [.., 100] (6 before the middle), Active [106, 148], End [164, ..]
+	assert(px(sBody.Position.X, W) + px(sBody.Size.X, W) == 100, "inactive piece stops 6 px before the middle")
+	assert(active.Visible and px(active.Position.X, W) == 106 and px(active.Position.X, W) + px(active.Size.X, W) == 148, "active: middle -> 8 px before the handle")
+	assert(H.find(H.find(active, "Fill"), "_quad_round").CornerRadius == UDim.new(0, 2) and H.find(active, "Fill").BackgroundColor3 == L.Primary, "inner corners 2 at both ends")
+	assert(px(eBody.Position.X, W) == 164)
 	-- below the middle: mirrored
-	v:Set(-25) -- handle at 58
-	assert(px(sBody.Position.X, W) + px(sBody.Size.X, W) == 50, "Start ends 8 px before the handle")
-	assert(px(active.Position.X, W) == 66 and px(active.Position.X, W) + px(active.Size.X, W) == 108, "active: 8 px after the handle -> the middle")
-	assert(px(eBody.Position.X, W) == 114, "End starts 6 px after the middle")
+	v:Set(-25) -- handle at 56
+	assert(px(sBody.Position.X, W) + px(sBody.Size.X, W) == 48, "Start ends 8 px before the handle")
+	assert(px(active.Position.X, W) == 64 and px(active.Position.X, W) + px(active.Size.X, W) == 106, "active: 8 px after the handle -> the middle")
+	assert(px(eBody.Position.X, W) == 112, "End starts 6 px after the middle")
 	-- drag across the middle: the active piece follows on either side
-	H.setAbs(s, RAIL0 - 8, 50, W, 40)
+	H.setAbs(s, RAIL0 - 6, 50, W, 40)
 	press(s, RAIL0 + 190)
 	assert(near(v:Get(), 45))
 	release(RAIL0 + 10)
@@ -376,7 +378,7 @@ H.section("M3 centered: the active piece joins the middle and the handle on eith
 		return c.Name == "Tick"
 	end)
 	assert(#ticks == 9, "11 steps minus both stop dots = 9, got " .. #ticks)
-	-- ticks[i] is t = i / 10 (0 and 1 are the stop dots); value 30 -> f .8, handle at 8 + 160 = 168
+	-- ticks[i] is t = i / 10 (0 and 1 are the stop dots); value 30 -> f .8, handle at 6 + 160 = 166
 	assert(not ticks[5].Visible, "no tick at the middle")
 	assert(ticks[6].Visible and ticks[6].BackgroundColor3 == L.SecondaryContainer, "between the middle and the handle: active color")
 	assert(not ticks[8].Visible, "under the handle")
@@ -387,7 +389,7 @@ H.section("M3 centered: the active piece joins the middle and the handle on eith
 end)
 
 H.section("M3 inset icons (M+): 10 px inside their piece, hidden below icon + 20, tick colors; the stop dot yields to an end icon", function()
-	local v = q.Source(146) -- Min 0, Max 292: the M rail is 292 px on a 316 px host (outer 12), 1 px per unit
+	local v = q.Source(146) -- Min 0, Max 292: the M rail is 292 px on a 304 px host (inset 6), 1 px per unit
 	local s = Slider({
 		Value = v,
 		Min = 0,
@@ -398,27 +400,27 @@ H.section("M3 inset icons (M+): 10 px inside their piece, hidden below icon + 20
 		TrackIconInactiveStart = "\u{266A}",
 		TrackIconInactiveEnd = "close",
 	})
-	local W = 316
+	local W = 304
 	H.setAbs(s, 0, 0, W, 44)
 	assert(H.countDescendants(s) == 24, "20 + one instance per icon")
 	local as, ae = H.find(s, "TrackIconActiveStart"), H.find(s, "TrackIconActiveEnd")
 	local is, ie = H.find(s, "TrackIconInactiveStart"), H.find(s, "TrackIconInactiveEnd")
 	assert(as.ClassName == "ImageLabel" and as.Image == Icons.Defaults.check and as.Size == UDim2.fromOffset(24, 24), "an Icons name: its image, 24 px at M")
 	assert(ae.Image == "rbxassetid://7" and is.ClassName == "TextLabel" and is.Text == "\u{266A}" and is.TextSize == 24, "URL image; text = glyph")
-	-- handle at 12 + 146 = 158: active [0, 150], inactive [166, 316]; icon centers 10 + 12 px in from a piece end
-	assert(px(as.Position.X, W) == 22 and px(ae.Position.X, W) == 150 - 22, "active icons")
-	assert(px(is.Position.X, W) == 166 + 22 and px(ie.Position.X, W) == W - 22, "inactive icons")
+	-- handle at 6 + 146 = 152: active [0, 144], inactive [160, 304]; icon centers 10 + 12 px in from a piece end
+	assert(px(as.Position.X, W) == 22 and px(ae.Position.X, W) == 144 - 22, "active icons")
+	assert(px(is.Position.X, W) == 160 + 22 and px(ie.Position.X, W) == W - 22, "inactive icons")
 	assert(as.AnchorPoint == Vector2.new(0.5, 0.5) and as.Position.Y == UDim.new(0.5, 0))
 	assert(as.ImageColor3 == L.SecondaryContainer and is.TextColor3 == L.Primary, "on the active piece SecondaryContainer, on the inactive Primary")
 	assert(not H.find(s, "StopEnd").Visible, "the end icon takes the stop dot's place")
-	-- the active piece is 4 + v px long: shown from icon + 20 = 44 (MDC calculateTrackIconBounds: >=)
-	v:Set(40)
+	-- the active piece is v - 2 px long: shown from icon + 20 = 44 (MDC calculateTrackIconBounds: >=)
+	v:Set(46)
 	assert(as.Visible and ae.Visible, "44 px piece: shown")
-	v:Set(39)
+	v:Set(45)
 	assert(not as.Visible and not ae.Visible, "43 px piece: hidden")
-	v:Set(252) -- inactive piece 316 - 264 - 8 = 44
+	v:Set(246) -- inactive piece 304 - 252 - 8 = 44
 	assert(is.Visible and ie.Visible)
-	v:Set(253)
+	v:Set(247)
 	assert(not is.Visible and not ie.Visible and H.find(s, "StopEnd").Visible, "end icon hidden: the stop dot is back")
 	q.dispose(s)
 	-- glyph fallback of a name
@@ -432,6 +434,174 @@ H.section("M3 inset icons (M+): 10 px inside their piece, hidden below icon + 20
 	assert(not pcall(Slider, { Size = "S", TrackIconActiveStart = "check" }), "S: an error")
 	assert(not pcall(Slider, { Size = "M", Centered = true, TrackIconActiveStart = "check" }), "standard slider only")
 	H.assertNoDebugOutput("m3 icons")
+end)
+
+-- ── end pieces shrink instead of popping (user, Studio 2026-10-08) ──────────
+
+-- The visible along-axis length of a clipped piece: its cap clip + body clip when shown, else 0.
+local function pieceLength(s: any, name: string, host: number, vertical: boolean): number
+	local cap, body = H.find(s, name .. "Cap"), H.find(s, name .. "Body")
+	if not cap.Visible and not body.Visible then
+		return 0
+	end
+	local function along(f: any): number
+		return px(if vertical then f.Size.Y else f.Size.X, host)
+	end
+	return along(cap) + math.max(along(body), 0)
+end
+
+-- Sweeps a value from `from` to `to` in 0.125-unit steps (a quarter px of handle travel on the 200 px rail) and
+-- asserts the piece length is monotone (direction `dir` = -1 shrinking), never above the track, never jumps more than
+-- 3 px between two frames (UDim offsets are whole numbers: cap and body each truncate, and the regime switch trades a
+-- fractional host-fraction length for a truncated one) and is
+-- NEVER shown-then-hidden while longer than 3 px; returns the lengths.
+local function sweep(label: string, set: (v: number) -> (), length: () -> number, from: number, to: number, dir: number, host: number, each: (() -> ())?): { number }
+	local out: { number } = {}
+	local n = math.floor(math.abs(to - from) / 0.125)
+	local sign = if to >= from then 1 else -1
+	for i = 0, n do
+		set(from + sign * 0.125 * i)
+		if each ~= nil then
+			each()
+		end
+		local len = length()
+		assert(len >= 0 and len <= host + 1e-6, label .. ": length within the track: " .. len)
+		table.insert(out, len)
+		if i > 0 then
+			local d = len - out[i]
+			assert(math.abs(d) <= 3.01, label .. ": no jump at step " .. i .. ": " .. out[i] .. " -> " .. len)
+			assert(d * dir >= -3.01, label .. ": monotone at step " .. i .. ": " .. out[i] .. " -> " .. len)
+		end
+	end
+	return out
+end
+local function reachesZeroSmoothly(label: string, lens: { number })
+	assert(lens[#lens] == 0, label .. ": ends at 0, got " .. lens[#lens])
+	local sawSliver = false
+	for i = 2, #lens do
+		if lens[i] == 0 and lens[i - 1] > 0 then
+			assert(lens[i - 1] <= 3.01, label .. ": hidden while still " .. lens[i - 1] .. " px long")
+			sawSliver = true
+		end
+	end
+	assert(sawSliver, label .. ": never went from a positive length to 0")
+end
+
+-- Every rounded fill of a piece keeps its size: along the axis never shorter than 2 x its UICorner radius, and the
+-- radius itself constant (cap OUTER, body / middle INNER) — UICorner clamps its radius to half the frame's smaller
+-- side, so a shrinking fill would visibly change the curve (user, Studio 2026-10-08).
+local function checkFills(s: any, host: number, vertical: boolean, fills: { [string]: number }, tag: string)
+	for name, radius in fills do
+		local clipFrame = H.find(s, name)
+		local f = H.find(clipFrame, "Fill")
+		local r = H.find(f, "_quad_round").CornerRadius
+		assert(r == UDim.new(0, radius), tag .. ": " .. name .. " radius constant " .. radius .. ", got " .. tostring(r))
+		local clipAlong = px(if vertical then clipFrame.Size.Y else clipFrame.Size.X, host)
+		local along = px(if vertical then f.Size.Y else f.Size.X, math.max(clipAlong, 0))
+		local across = if vertical then px(f.Size.X, clipFrame.Size.X.Offset) else px(f.Size.Y, clipFrame.Size.Y.Offset)
+		assert(along >= 2 * radius - 1e-6, tag .. ": " .. name .. " fill " .. along .. " px >= 2 x radius " .. radius)
+		assert(across >= 2 * radius - 1e-6, tag .. ": " .. name .. " fill across " .. across .. " >= 2 x " .. radius)
+	end
+end
+
+H.section("M3 ends: the piece beyond a handle shrinks to 0 (no pop) — XS and XL, horizontal, vertical, centered", function()
+	for _, size in { "XS", "XL" } do
+		for _, vertical in { false, true } do
+			local v = q.Source(50)
+			local s = Slider({ Value = v, Min = 0, Max = 100, Size = size :: any, Orientation = if vertical then "Vertical" else nil })
+			local host = 212
+			if vertical then
+				H.setAbs(s, 0, 0, if size == "XL" then 108 else 44, host)
+			else
+				H.setAbs(s, 0, 0, host, if size == "XL" then 108 else 44)
+			end
+			local tag = size .. (if vertical then " vertical" else " horizontal")
+			-- vertical: Min at the bottom; the along-axis length is read the same way
+			local set = function(x: number)
+				v:Set(x)
+			end
+			local outer = if size == "XL" then 28 else 8
+			local fills = { InactiveCap = outer, ActiveCap = outer, InactiveBody = 2, ActiveBody = 2 }
+			local each = function()
+				checkFills(s, host, vertical, fills, tag)
+			end
+			local inactive = sweep(tag .. " inactive", set, function()
+				return pieceLength(s, "Inactive", host, vertical)
+			end, 70, 100, -1, host, each)
+			reachesZeroSmoothly(tag .. " inactive", inactive)
+			local active = sweep(tag .. " active", set, function()
+				return pieceLength(s, "Active", host, vertical)
+			end, 30, 0, -1, host, each)
+			reachesZeroSmoothly(tag .. " active", active)
+			-- the stop dot never shows without its piece under it, and is back once the piece covers its center
+			v:Set(100)
+			assert(not H.find(s, "StopEnd").Visible, tag .. ": no stop dot at the end")
+			v:Set(0)
+			assert(H.find(s, "StopEnd").Visible and pieceLength(s, "Inactive", host, vertical) > 6, tag .. ": stop dot back")
+			q.dispose(s)
+		end
+	end
+	-- XL: a 26 px piece (below outer 28) keeps the full 56 px cap fill and the 28 px curve; only the clip windows are short
+	local v = q.Source(0)
+	local s = Slider({ Value = v, Min = 0, Max = 100, Size = "XL" })
+	H.setAbs(s, 0, 0, 212, 108)
+	v:Set(86) -- handle 178: run = 212 - 178 - 8 = 26 px
+	local capFill = H.find(H.find(s, "InactiveCap"), "Fill")
+	assert(capFill.Size == UDim2.fromOffset(56, 96) and H.find(capFill, "_quad_round").CornerRadius == UDim.new(0, 28), "cap fill keeps its size and radius")
+	assert(H.find(s, "InactiveCap").Size == UDim2.fromOffset(26, 96), "the cap clip window follows the piece")
+	assert(px(capFill.Position.X, 212) == 26 - 56, "the fill stays on the track end (its inner part is cut)")
+	v:Set(80) -- handle 166: run = 38: the full cap window again, the body takes the rest
+	assert(H.find(s, "InactiveCap").Size == UDim2.fromOffset(28, 96), "full cap window above the outer radius")
+	assert(math.abs(pieceLength(s, "Inactive", 212, false) - 38) < 2)
+	q.dispose(s)
+
+	-- centered: the Start / End pieces shrink toward their ends, the active piece grows out of the middle
+	for _, size in { "XS", "XL" } do
+		local v2 = q.Source(0)
+		local c = Slider({ Value = v2, Min = -50, Max = 50, Centered = true, Size = size :: any })
+		H.setAbs(c, 0, 0, 212, if size == "XL" then 108 else 44)
+		local tag = "centered " .. size
+		local outer = if size == "XL" then 28 else 8
+		local fills = { StartCap = outer, EndCap = outer, StartBody = 2, EndBody = 2, Active = 2 }
+		local each = function()
+			checkFills(c, 212, false, fills, tag)
+		end
+		local startLens = sweep(tag .. " start", function(x)
+			v2:Set(x)
+		end, function()
+			return pieceLength(c, "Start", 212, false)
+		end, -30, -50, -1, 212, each)
+		reachesZeroSmoothly(tag .. " start", startLens)
+		local endLens = sweep(tag .. " end", function(x)
+			v2:Set(x)
+		end, function()
+			return pieceLength(c, "End", 212, false)
+		end, 30, 50, -1, 212, each)
+		reachesZeroSmoothly(tag .. " end", endLens)
+		-- the middle piece: 0 at the middle, grows continuously (no frame hidden while longer than 1 px)
+		local mid = H.find(c, "Active")
+		local last = 0
+		for i = 0, 400 do
+			v2:Set(0.125 * i)
+			each()
+			local len = if mid.Visible then mid.Size.X.Offset + mid.Size.X.Scale * 212 else 0
+			assert(math.abs(len - last) <= 2.01, tag .. ": active grows smoothly (whole-pixel offsets: within 2 px) at " .. i .. ": " .. last .. " -> " .. len)
+			last = len
+		end
+		q.dispose(c)
+	end
+	H.assertNoDebugOutput("m3 ends")
+end)
+
+H.section("M3 stepped slider keeps the hard threshold (Compose: no corner shrinking with steps)", function()
+	local v = q.Source(50)
+	local s = Slider({ Value = v, Min = 0, Max = 100, Step = 1, Size = "XL" })
+	H.setAbs(s, 0, 0, 212, 108)
+	v:Set(97) -- inactive run = 212 - 200 - 8 = 4 px <= 28
+	assert(not H.find(s, "InactiveCap").Visible and not H.find(s, "StopEnd").Visible, "stepped: hidden at or below the outer radius")
+	v:Set(80) -- run 44 px
+	assert(H.find(s, "InactiveCap").Visible and H.find(s, "InactiveCap").Size == UDim2.fromOffset(28, 96))
+	q.dispose(s)
 end)
 
 -- ── M2 shape ─────────────────────────────────────────────────────────────

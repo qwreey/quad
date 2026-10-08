@@ -22,10 +22,10 @@ local function near(a: number, b: number): boolean
 	return math.abs(a - b) < 1e-6
 end
 
--- every look gets a 200 px RAIL from x = 110 (as spec.slider): M3 handle inset 8, M2 10
+-- every look gets a 200 px RAIL from x = 110 (as spec.slider): M3 handle inset 6, M2 10
 type LookCase = { Name: string, Make: (props: any) -> any, Inset: number, Halo: string }
 local looks: { LookCase } = {
-	{ Name = "M3", Make = RangeSlider, Inset = 8, Halo = "Handle" },
+	{ Name = "M3", Make = RangeSlider, Inset = 6, Halo = "Handle" },
 	{ Name = "M2", Make = M2.RangeSlider, Inset = 10, Halo = "Halo" },
 }
 local current: LookCase = looks[1]
@@ -55,27 +55,27 @@ H.section("M3 mount: three pieces (outer rounded 8 / 2, middle 2 / 2), two bar h
 	local n = H.countDescendants(s)
 	print("RangeSlider (M3) descendants: " .. n .. " (+1 host = " .. (n + 1) .. ")")
 	H.resetOutput()
-	assert(n == 30, "2 outer pieces x 6 + active(2) + 2 stops x 2 + 2 x (handle 3 + label 3) = 30, got " .. n)
-	local W = 216
+	assert(n == 31, "2 outer pieces x 6 + active(clip + fill + corner = 3) + 2 stops x 2 + 2 x (handle 3 + label 3) = 31, got " .. n)
+	local W = 212
 	H.setAbs(s, 0, 0, W, 44)
 	local hs, he = H.find(s, "HandleStart"), H.find(s, "HandleEnd")
 	assert(hs.Size == UDim2.fromOffset(4, 44) and he.Size == UDim2.fromOffset(4, 44))
 	local xs, xe = px(hs.Position.X, W), px(he.Position.X, W)
-	assert(xs == 58 and xe == 158, "centers 8 + 200 f: " .. xs .. ", " .. xe)
+	assert(xs == 56 and xe == 156, "centers 6 + 200 f: " .. xs .. ", " .. xe)
 	-- left inactive piece: cap [0, 8] + body [8, xs - 8]
 	local sBody = H.find(s, "StartBody")
 	assert(px(sBody.Position.X, W) == 8 and px(sBody.Position.X, W) + px(sBody.Size.X, W) == xs - 8)
 	-- middle: [xs + 8, xe - 8], one frame rounded 2
 	local active = H.find(s, "Active")
 	assert(px(active.Position.X, W) == xs + 8 and px(active.Position.X, W) + px(active.Size.X, W) == xe - 8, "6 px gap beside each handle")
-	assert(H.find(active, "_quad_round").CornerRadius == UDim.new(0, 2) and active.BackgroundColor3 == L.Primary)
+	assert(H.find(H.find(active, "Fill"), "_quad_round").CornerRadius == UDim.new(0, 2) and H.find(active, "Fill").BackgroundColor3 == L.Primary)
 	-- right inactive piece: body [xe + 8, W - 8] + cap [W - 8, W]
 	local eBody, eCap = H.find(s, "EndBody"), H.find(s, "EndCap")
 	assert(px(eBody.Position.X, W) == xe + 8 and px(eBody.Position.X, W) + px(eBody.Size.X, W) == W - 8 and px(eCap.Position.X, W) == W - 8)
 	assert(H.find(H.find(s, "StartCap"), "Fill").BackgroundColor3 == L.SecondaryContainer)
 	assert(H.find(H.find(s, "StartCap"), "Fill").Position == UDim2.fromOffset(0, 0) and H.find(eCap, "Fill").Position == UDim2.fromOffset(-8, 0), "outer halves kept")
 	local stopS, stopE = H.find(s, "StopStart"), H.find(s, "StopEnd")
-	assert(stopS.Visible and stopE.Visible and px(stopS.Position.X, W) == 8 and px(stopE.Position.X, W) == W - 8, "a stop dot inside each outer end")
+	assert(stopS.Visible and stopE.Visible and px(stopS.Position.X, W) == 6 and px(stopE.Position.X, W) == W - 6, "a stop dot 6 px (center) inside each outer end")
 	assert(s.Selectable == true and s.NextSelectionLeft == s and s.NextSelectionRight == s, "one selection stop")
 	assert(keyConns() == baseKeys and uisConns() == baseConns)
 	q.dispose(s)
@@ -86,7 +86,7 @@ H.section("M3 pieces hide: handles together hide the middle; a handle at an end 
 	current = looks[1]
 	local lo, hi = q.Source(0), q.Source(100)
 	local s = RangeSlider({ Start = lo, End = hi, Min = 0, Max = 100 })
-	H.setAbs(s, 0, 0, 216, 44)
+	H.setAbs(s, 0, 0, 212, 44)
 	assert(not H.find(s, "StartCap").Visible and not H.find(s, "StopStart").Visible, "Start at Min")
 	assert(not H.find(s, "EndCap").Visible and not H.find(s, "StopEnd").Visible, "End at Max")
 	assert(H.find(s, "Active").Visible)
@@ -137,7 +137,7 @@ H.section("M3 vertical range (MDC RangeSlider shares BaseSlider's orientation): 
 	local lo, hi = q.Source(20), q.Source(70)
 	local s = RangeSlider({ Start = lo, End = hi, Min = 0, Max = 100, Orientation = "Vertical", Size = "L" })
 	assert(s.Size == UDim2.new(0, 68, 1, 0), "L handle 68 across")
-	local L0 = 232 -- rail 200 from 16 (outer 16)
+	local L0 = 212 -- rail 200 from 6 (the stop-dot inset)
 	H.setAbs(s, 50, 100, 68, L0)
 	local hs, he = H.find(s, "HandleStart"), H.find(s, "HandleEnd")
 	assert(hs.Size == UDim2.fromOffset(68, 4), "turned handle")
@@ -145,16 +145,16 @@ H.section("M3 vertical range (MDC RangeSlider shares BaseSlider's orientation): 
 	local function close(a: number, b: number): boolean
 		return math.abs(a - b) < 1
 	end
-	assert(close(px(hs.Position.Y, L0), L0 - (16 + 40)) and close(px(he.Position.Y, L0), L0 - (16 + 140)), "Start lower, End higher")
+	assert(close(px(hs.Position.Y, L0), L0 - (6 + 40)) and close(px(he.Position.Y, L0), L0 - (6 + 140)), "Start lower, End higher")
 	assert(px(H.find(s, "StartCap").Position.Y, L0) == L0 - 16 and px(H.find(s, "EndCap").Position.Y, L0) == 0, "Start piece at the bottom")
 	local active = H.find(s, "Active")
 	assert(close(px(active.Position.Y, L0), px(he.Position.Y, L0) + 8), "active starts 8 px below the End handle")
 	assert(close(px(active.Position.Y, L0) + px(active.Size.Y, L0), px(hs.Position.Y, L0) - 8), "and ends 8 px above the Start handle")
 	assert(active.Size.X == UDim.new(0, 56), "56 px track (L)")
-	-- press near the End handle (y of 70 = 100 + 232 - 156 = 176)
-	H.fire(s, "InputBegan", H.input({ Position = Vector3.new(80, 100 + 16 + 20, 0) })) -- 90
+	-- press near the End handle (y of 70 = 100 + 212 - 146 = 166)
+	H.fire(s, "InputBegan", H.input({ Position = Vector3.new(80, 100 + 6 + 20, 0) })) -- 90
 	assert(hi:Get() == 90 and lo:Get() == 20, "the nearest (End) moves")
-	UIS.InputEnded:Fire(H.input({ UserInputType = Enum.UserInputType.MouseButton1, Position = Vector3.new(80, 100 + 16 + 20, 0) }))
+	UIS.InputEnded:Fire(H.input({ UserInputType = Enum.UserInputType.MouseButton1, Position = Vector3.new(80, 100 + 6 + 20, 0) }))
 	local sa: any = s
 	assert(sa.NextSelectionUp == s and sa.NextSelectionLeft == nil, "Vertical pin")
 	H.fire(s, "SelectionGained")
@@ -362,6 +362,86 @@ H.section("shared behaviour: the same input sequence gives the same values in M3
 	end
 	assert(logs[1] == logs[2], logs[1] .. " vs " .. logs[2])
 	H.assertNoDebugOutput("range shared")
+end)
+
+-- ── end pieces shrink instead of popping (user, Studio 2026-10-08) ──────────
+
+local function pieceLength(s: any, name: string, host: number, vertical: boolean): number
+	local cap, body = H.find(s, name .. "Cap"), H.find(s, name .. "Body")
+	if not cap.Visible and not body.Visible then
+		return 0
+	end
+	local function along(f: any): number
+		return px(if vertical then f.Size.Y else f.Size.X, host)
+	end
+	return along(cap) + math.max(along(body), 0)
+end
+
+-- every rounded fill keeps its size: along the axis >= 2 x its (constant) UICorner radius
+local function checkFills(s: any, host: number, vertical: boolean, fills: { [string]: number }, tag: string)
+	for name, radius in fills do
+		local clipFrame = H.find(s, name)
+		local f = H.find(clipFrame, "Fill")
+		local r = H.find(f, "_quad_round").CornerRadius
+		assert(r == UDim.new(0, radius), tag .. ": " .. name .. " radius constant " .. radius .. ", got " .. tostring(r))
+		local clipAlong = px(if vertical then clipFrame.Size.Y else clipFrame.Size.X, host)
+		local along = px(if vertical then f.Size.Y else f.Size.X, math.max(clipAlong, 0))
+		assert(along >= 2 * radius - 1e-6, tag .. ": " .. name .. " fill " .. along .. " px >= 2 x radius " .. radius)
+	end
+end
+
+H.section("M3 range ends: pieces beyond a handle shrink to 0 with constant fills (XS / XL, horizontal / vertical)", function()
+	current = looks[1]
+	for _, size in { "XS", "XL" } do
+		for _, vertical in { false, true } do
+			local lo, hi = q.Source(20), q.Source(80)
+			local s = RangeSlider({ Start = lo, End = hi, Min = 0, Max = 100, Size = size :: any, Orientation = if vertical then "Vertical" else nil })
+			local host = 212
+			if vertical then
+				H.setAbs(s, 0, 0, if size == "XL" then 108 else 44, host)
+			else
+				H.setAbs(s, 0, 0, host, if size == "XL" then 108 else 44)
+			end
+			local tag = "range " .. size .. (if vertical then " vertical" else " horizontal")
+			local outer = if size == "XL" then 28 else 8
+			local fills = { StartCap = outer, EndCap = outer, StartBody = 2, EndBody = 2, Active = 2 }
+			local function run(name: string, set: (x: number) -> (), from: number, to: number)
+				local prev = -1
+				local sign = if to >= from then 1 else -1
+				for i = 0, math.floor(math.abs(to - from) / 0.125) do
+					set(from + sign * 0.125 * i)
+					checkFills(s, host, vertical, fills, tag)
+					local len = pieceLength(s, name, host, vertical)
+					assert(len <= host, tag .. ": " .. name .. " within the track")
+					if prev >= 0 then
+						assert(math.abs(len - prev) <= 3.01, tag .. ": " .. name .. " no jump at step " .. i .. ": " .. prev .. " -> " .. len)
+						if len == 0 then
+							assert(prev <= 3.01, tag .. ": " .. name .. " hidden while still " .. prev .. " px long")
+						end
+					end
+					prev = len
+				end
+				assert(prev == 0, tag .. ": " .. name .. " ends at 0")
+			end
+			run("Start", function(x) lo:Set(x) end, 30, 0)
+			run("End", function(x) hi:Set(x) end, 70, 100)
+			-- the middle piece: the handles meet (a 16 px gap closes it) — no pop either
+			lo:Set(40)
+			local mid = H.find(s, "Active")
+			local last = -1
+			for i = 0, 240 do
+				hi:Set(40 + 0.125 * i)
+				checkFills(s, host, vertical, fills, tag)
+				local len = if mid.Visible then px(if vertical then mid.Size.Y else mid.Size.X, host) else 0
+				if last >= 0 then
+					assert(math.abs(len - last) <= 2.01, tag .. ": active smooth at " .. i .. ": " .. last .. " -> " .. len)
+				end
+				last = len
+			end
+			q.dispose(s)
+		end
+	end
+	H.assertNoDebugOutput("m3 range ends")
 end)
 
 H.done()

@@ -70,7 +70,7 @@ local function RangeSlider(props: Props)
 	local disabled, width = r.Disabled, r.Length
 	local fs, fe = r.FracStart, r.FracEnd
 	local centerPx = g.centerPx
-	local GAP, OUTER, INNER = g.GAP, g.OUTER, g.INNER
+	local GAP, OUTER, INNER, INSET = g.GAP, g.OUTER, g.INNER, g.INSET
 
 	local activeColor = Style.disabledPick(disabled, R.Primary, R.OnSurface)
 	local activeT = Style.disabledNumber(disabled, 0, Style.DisabledContentTransparency)
@@ -83,29 +83,48 @@ local function RangeSlider(props: Props)
 			return UDim.new(h.Scale, h.Offset + offset)
 		end)
 	end
-	local startShown: q.State<boolean> = width:Compute(function(self, _prev, f)
+	-- piece lengths in px (0 before layout). Compose's range slider keeps the hard threshold (no enableCornerShrinking:
+	-- a piece no longer than its outer / inner radius is hidden); this kit shrinks a continuous range slider's pieces
+	-- like the single slider's instead (Track header "SHRINKING ENDS") — the same pop would show at its ends.
+	local shrinks = r.Step == nil
+	local startRun: q.State<number> = width:Compute(function(self, _prev, f)
 		local w = self:Get()
-		return w > 0 and centerPx(w, f:Get()) - GAP > OUTER
+		return if w > 0 then centerPx(w, f:Get()) - GAP else 0
 	end, fs)
-	local endShown: q.State<boolean> = width:Compute(function(self, _prev, f)
+	local endRun: q.State<number> = width:Compute(function(self, _prev, f)
 		local w = self:Get()
-		return w > 0 and w - centerPx(w, f:Get()) - GAP > OUTER
+		return if w > 0 then w - centerPx(w, f:Get()) - GAP else 0
 	end, fe)
-	local middleShown: q.State<boolean> = width:Compute(function(self, _prev, a, b)
+	local startShown: q.State<boolean> = startRun:Compute(function(self)
+		return self:Get() > (if shrinks then 0 else OUTER)
+	end)
+	local endShown: q.State<boolean> = endRun:Compute(function(self)
+		return self:Get() > (if shrinks then 0 else OUTER)
+	end)
+	local startStop: q.State<boolean> = startRun:Compute(function(self)
+		return self:Get() > (if shrinks then INSET else OUTER)
+	end)
+	local endStop: q.State<boolean> = endRun:Compute(function(self)
+		return self:Get() > (if shrinks then INSET else OUTER)
+	end)
+	local middleRun: q.State<number> = width:Compute(function(self, _prev, a, b)
 		local w = self:Get()
-		return w > 0 and centerPx(w, b:Get()) - centerPx(w, a:Get()) - 2 * GAP > INNER
+		return if w > 0 then centerPx(w, b:Get()) - centerPx(w, a:Get()) - 2 * GAP else 0
 	end, fs, fe)
+	local middleShown: q.State<boolean> = middleRun:Compute(function(self)
+		return self:Get() > (if shrinks then 0 else INNER)
+	end)
 
 	local pieces: { Instance } = {}
-	for _, p in g.outerPiece({ Name = "Start", End = "Min", Edge = edge(fs, -GAP), Visible = startShown, Color = inactiveColor, Transparency = inactiveT }) do
+	for _, p in g.outerPiece({ Name = "Start", End = "Min", Edge = edge(fs, -GAP), Visible = startShown, Run = startRun, Color = inactiveColor, Transparency = inactiveT }) do
 		table.insert(pieces, p)
 	end
-	for _, p in g.outerPiece({ Name = "End", End = "Max", Edge = edge(fe, GAP), Visible = endShown, Color = inactiveColor, Transparency = inactiveT }) do
+	for _, p in g.outerPiece({ Name = "End", End = "Max", Edge = edge(fe, GAP), Visible = endShown, Run = endRun, Color = inactiveColor, Transparency = inactiveT }) do
 		table.insert(pieces, p)
 	end
-	table.insert(pieces, g.middlePiece({ Name = "Active", From = edge(fs, GAP), To = edge(fe, -GAP), Visible = middleShown, Color = activeColor, Transparency = activeT }))
-	table.insert(pieces, g.stop({ Name = "StopStart", End = "Min", Visible = startShown, Color = activeColor, Transparency = activeT }))
-	table.insert(pieces, g.stop({ Name = "StopEnd", End = "Max", Visible = endShown, Color = activeColor, Transparency = activeT }))
+	table.insert(pieces, g.middlePiece({ Name = "Active", From = edge(fs, GAP), To = edge(fe, -GAP), Visible = middleShown, Run = middleRun, Color = activeColor, Transparency = activeT }))
+	table.insert(pieces, g.stop({ Name = "StopStart", End = "Min", Visible = startStop, Color = activeColor, Transparency = activeT }))
+	table.insert(pieces, g.stop({ Name = "StopEnd", End = "Max", Visible = endStop, Color = activeColor, Transparency = activeT }))
 
 	local ticks = g.ticks({
 		Step = r.Step,
