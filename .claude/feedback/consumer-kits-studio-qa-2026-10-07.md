@@ -439,3 +439,28 @@
 **Studio 확인(고친 뒤, stop → studio-sync(9파일) → Play)**: 표준 시트 — 엿보기(-56)에서 손잡이 옆 빈 띠(570, 630)를 위로 230 끌어 따라옴·펼침(-288)에 정착(InputBegan은 `InputSink`); 손잡이 클릭 Expanded → PartiallyExpanded; 엿보기에서 손잡이를 위로 끄는 동안 손잡이 아래 리플 그룹 0개·상태 층 투명도 0.92(호버 8 %만), 놓으니 가까운 펼침으로, 놓을 때 `Activated`는 클릭 안 됨. 모달(Tall) — 절반(-316)에서 손잡이 옆 몸통(450, 340)을 위로 끌어 펼침(-632); 펼침에서 손잡이를 아래로 끌어 절반; 절반에서 손잡이 클릭 → 펼침; 펼침에서 몸통을 아래로 끝까지 끌어 놓으니 닫힘("Last sheet pick: dismissed"). 모달 측면 시트 — 몸통(1200, 400)을 오른쪽으로 160 끌어 놓으니 닫힘. 모달 드로어 — 헤드라인 자리(200, 375; 위에서부터 Overlay Frame·헤드라인·Scroll·시트 Frame → 홀더 싱크)를 왼쪽으로 199 끌어 닫힘; 다시 열고 같은 자리 클릭 → 안 닫힘(싱크가 막음); 항목 "Outbox" 클릭 → 동작. 프로브 ScreenGui 셋 모두 삭제.
 
 **남은 정본 차이**: 목록 행·버튼 위에서 시작한 누름은 시트를 끌지 못한다(Compose는 끌림 + 행 클릭 취소). 엔진이 누름을 첫 GuiButton에서 멈추므로, 하려면 UserInputService 전역 누름을 면 영역으로 판정하고 행의 클릭을 막아야 해서(행의 남은 누름 `Activated`까지) 이번엔 안 했다 — README "끌기" 문단에 적음. 모달 드로어 시트를 드로어 밖(스크림 위)에서 단독으로 쓰면 이제 싱크가 없다(문서상 용도는 드로어 내용).
+
+[2026-10-08] 자식 이름 InputSink → ClickSink, Util.inputSink → Util.clickSink (엔진 0.742 GuiObject.InputSink 속성과 겹침)
+
+## 앱 바 스크롤 — 스크롤바 가림 (2026-10-08)
+
+**관찰(사용자)**: "top app bars that scroll 만족스럽지만 스크롤바가 문제가 약간 있음. 탑바 뒤로 숨어. 그리고 가장 오른쪽 것은 탑바 영역 또는 오버레이가 아래로 내려오는 식인듯 한데, 애니메이션은 좋지만 그걸로 인해 스크롤바가 아에 숨어서 안 보이더라." — 스크롤 동작·애니메이션은 유지.
+
+**Studio 실측(고치기 전, 107de6d8 레이아웃)**: 세 화면(360 x 420) 모두 `Content` ScrollingFrame이 화면 전체(0, 0, 360 x 420)에 있고 바(ZIndex 2)가 그 위를 덮음. 캔버스 1216(pinned·enterAlways — 24행 x 48 + 위 여백 64) / 1288(exitUntilCollapsed — 여백 136). 엄지 길이 ≈ 420 x 420 / 캔버스 = 145 / 137 px. 가장 오른쪽은 exitUntilCollapsed(MediumFlexibleTopAppBar, 136): 맨 위에서 엄지(0~137)가 바(0~136)에 **통째로** 가려짐(스크린샷 1: 왼쪽 둘은 엄지 아래쪽만 보이고 오른쪽은 안 보임). 사용자가 본 "아래로 내려오는" 것은 이 바가 펼쳐지는 동작(맨 위로 올 때 64 → 136). 층·크기 실수는 아님 — 바가 스크롤바 위에 놓이는 레이아웃 자체가 원인.
+
+**원인**: Roblox 스크롤바는 ScrollingFrame 전체 높이에 걸린다(위 끝을 띄우는 속성 없음 — `VerticalScrollBarInset`은 캔버스만 줄임). 107de6d8은 Compose Scaffold처럼 ScrollingFrame을 바 **뒤**에 화면 가득 두고 위 여백으로 행을 내렸으므로 스크롤바 위쪽 (바 높이)만큼이 늘 가려진다.
+
+**고침(레이아웃, 키트 API 무변경)**: ScrollingFrame을 바의 지금 아래 끝에서 시작시킨다 — `top = max(0, round(펼친 높이 + State.HeightOffset))`(바 높이와 같은 식), Position (0, top), Size (1, 0, 1, −top), UIPadding.PaddingTop = 펼친 높이 − top. 행의 화면 위치 = top + 여백 − 스크롤 = 펼친 높이 − 스크롤로 옛 레이아웃과 같고, 캔버스가 프레임과 같은 만큼 늘어 최대 스크롤(=내용 + 펼친 높이 − 화면)이 그대로라 CanvasPosition 클램프가 없다. 공개 State(`HeightOffset`)만 쓰므로 새 prop 없음 — 갤러리 `scrollScreen`·AppBar 스토리·`Scroll.luau` 머리·README "앱 바 스크롤" 문단을 이 모양으로.
+
+**Studio 확인(고친 뒤, stop → studio-sync → Play)**: RenderStepped 기록(캔버스 위치·프레임 위·바 아래 끝·1행 위치)과 CanvasPosition 변경 신호를 같이 —
+- exitUntilCollapsed 휠 아래 3번: 캔버스 0 → 300 매끈히(신호마다 휠 보간만, 추가 변경 없음), 프레임 위 = 바 아래 끝이 136 → 64를 따라감, 1행 = 136 − 스크롤(옛 레이아웃과 같은 자리), 캔버스 높이 1152 → 1224가 프레임 높이 284 → 356과 같은 만큼.
+- 맨 아래까지: 최대 868(옛 레이아웃 1288 − 420과 같음). 위로 휠: 64에서 머물다 스크롤 < 72에서 펼쳐짐(73, 93, … 136), 클램프 없음.
+- enterAlways 맨 아래(796)에서 휠 위로: 바가 0 → 64로 돌아오며 프레임 위가 따라오고 캔버스 높이 1216 → 1152, CanvasPosition은 휠 보간만(튐 없음).
+- 멈춤 정착(Heartbeat 애니메이션): enterAlways(616에서 바 44 → 64), exitUntilCollapsed(50에서 86 → 64) — 정착 동안 CanvasPosition 고정, 1행 위치 고정.
+- 바 위 아래 끝은 스크롤보다 한 프레임 늦다(CanvasPosition 신호가 RenderStepped 뒤에 옴 — 옛 레이아웃도 같음, 바는 불투명이라 행이 프레임에 잘릴 뿐 차이 없음).
+- 스크린샷 2(맨 위): 오른쪽 엄지가 136 바 바로 아래(화면 284~)에 보임, 왼쪽 둘은 64 아래에서 시작. 스크린샷 3(pinned 200·enterAlways 정착 후 숨음·exitUntilCollapsed 300): 세 엄지 모두 바 아래 끝 밑에 온전히 보임.
+- 콘솔 에러 없음. 끝나고 Edit 모드.
+
+**바뀐 것 하나**: 바 위에서 굴린 휠이 이제 목록에 닿지 않는다(목록이 바 아래에 없음). 실측: 옛 레이아웃(프레임 화면 가득)에선 pinned 바 위 휠 → 목록 0 → 100, 새 레이아웃에선 목록 그대로·갤러리 페이지가 100 스크롤. README 문단에 적음.
+
+**스펙**: spec.gallery 새 절 "app bar screens: …" — 세 화면에서 스크롤 경로(0·5·30·64·71·72·100·400·2000·380·350·60·20·3·0)와 정착 15프레임마다 `Content.Position.Y = 바 Size.Y`, `Content.Size = (1, 0, 1, −바)`, `Position.Y + PaddingTop = 펼친 높이`. 음성 대조: Position을 (0, 0)으로 되돌리면 "PinnedAppBarScreen rest: frame top 0 … vs bar bottom 64"로 실패.

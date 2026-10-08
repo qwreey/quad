@@ -5,8 +5,9 @@
 	DismissibleNavigationDrawer / PermanentNavigationDrawer) with their sheets and a NavigationDrawerItems list of many
 	destinations (headlines, dividers, badges — the drawer scrolls); the navigation bar (ShortNavigationBar: equal cells
 	with icons on top in a phone screen, centered start-icon items in a wide one); the navigation rail (WideNavigationRail,
-	its header menu button expands / collapses it); the app bars — a scrolling screen per scroll behavior (the content
-	scrolls BEHIND the bar with a top padding of the bar's expanded height, Compose Scaffold's layout), the large bars at
+	its header menu button expands / collapses it); the app bars — a scrolling screen per scroll behavior (the list starts at
+	the bar's current bottom edge and pads its canvas by what the bar has collapsed: rows move as in Compose Scaffold's
+	content-behind-the-bar layout while the native scrollbar never sits under the bar), the large bars at
 	rest, the bottom app bar and the flexible one (docked toolbar); the floating toolbars (horizontal with leading /
 	trailing content, vertical with a FAB, standard and vibrant) with an Expanded switch.
 	The selected destination of every drawer is ONE Memo Source (`nav.page`), so the three drawers show the same choice and
@@ -164,7 +165,8 @@ local function pageCaption(ctx: Ctx, page: q.State<string>, note: string, order:
 	}
 end
 
--- a screen whose content scrolls BEHIND an app bar (Compose Scaffold: the content padded by the bar's expanded height)
+-- a screen whose list scrolls under an app bar: rows where Compose Scaffold puts them (behind the bar, padded by its
+-- expanded height), but the ScrollingFrame itself starts at the bar's bottom so its scrollbar is never covered
 local function scrollScreen(ctx: Ctx, name: string, expanded: number, behavior: Material.TopAppBarScrollBehavior, bar: Instance): Frame
 	local rows: { Instance } = {}
 	for i = 1, 24 do
@@ -183,10 +185,25 @@ local function scrollScreen(ctx: Ctx, name: string, expanded: number, behavior: 
 			}
 		)
 	end
+	-- the frame starts at the bar's current bottom edge (so the native scrollbar is never under the bar) and pads its
+	-- canvas by what the bar has collapsed, so a row stays where the full-screen layout would put it
+	local top: q.State<number> = behavior.State.HeightOffset:Compute(function(self)
+		return math.max(0, math.round(expanded + self:Get()))
+	end)
+	local position: q.State<UDim2> = top:Compute(function(self)
+		return UDim2.fromOffset(0, self:Get())
+	end)
+	local size: q.State<UDim2> = top:Compute(function(self)
+		return UDim2.new(1, 0, 1, -self:Get())
+	end)
+	local padding: q.State<UDim> = top:Compute(function(self)
+		return UDim.new(0, expanded - self:Get())
+	end)
 	return Common.Screen(ctx, name, 360, 420, {
 		D.ScrollingFrame {
 			Name = "Content",
-			Size = UDim2.fromScale(1, 1),
+			Position = position,
+			Size = size,
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			CanvasSize = UDim2.fromOffset(0, 0),
@@ -195,7 +212,10 @@ local function scrollScreen(ctx: Ctx, name: string, expanded: number, behavior: 
 			ScrollBarThickness = 4,
 			ScrollBarImageColor3 = ctx.Theme.Color.OnSurface,
 			behavior.Hook,
-			D.UIPadding { PaddingTop = UDim.new(0, expanded), PaddingLeft = UDim.new(0, 16) },
+			D.UIPadding {
+				PaddingTop = padding,
+				PaddingLeft = UDim.new(0, 16),
+			},
 			D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder },
 			q.Slot<<Instance>>(rows),
 		},

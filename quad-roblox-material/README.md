@@ -300,7 +300,7 @@ Material.ModalNavigationDrawer({
   내용이 처음 배치되기 전에는 아무 자리도 없고, 첫 배치가 목표 자리로 바로 놓입니다(모달은 그 뒤 `Show` — 아래에서 올라옴).
 - **끌기**: 시트 어디든, 손잡이에서도 — 단 시트 안의 버튼(목록 행 등) 위에서 누르면 그 버튼만 누름을 받아 끌기는 시작되지 않습니다
   (Roblox는 누름을 위에서부터 첫 GuiButton까지만 전합니다 — 2026-10-08 Studio 실측; Compose는 행에서도 끌림). 그래서 끌기는 면의
-  투명 `InputSink`(모든 하단 시트·모달 측면 시트·모달 드로어 홀더 — M3 Surface처럼 아래로 누름이 새지도 않음)와 손잡이·스크림이 받습니다.
+  투명 `ClickSink`(모든 하단 시트·모달 측면 시트·모달 드로어 홀더 — M3 Surface처럼 아래로 누름이 새지도 않음)와 손잡이·스크림이 받습니다.
   손잡이는 Compose처럼 리플·호버 층이 있고(정본 `Modifier.clickable`의 기본 표시), 끌기가 시작되면 누름이 취소됩니다. 놓으면 Compose `computeTarget` — 움직임 방향으로 속도가 125 px/s 이상이면 다음 자리, 아니면 시작
   자리에서 56 px(하단 시트) 이상 멀어졌을 때만 다음 자리. 드로어는 거리의 절반·400 px/s, 측면 시트는 MDC 규칙(바깥쪽으로 움직이면 펼침,
   500 px/s 넘는 가로 스와이프나 절반 넘게 밀었으면 숨김). 터치 슬롭 8 px 안의 누름은 클릭으로 남습니다. 끄는 동안 바깥
@@ -335,12 +335,19 @@ Material.WideNavigationRail<<string>>({ State = rail, Selected = page, Items = i
 	Header = Material.IconButton({ Icon = Material.Icons.asset("menu") or "", TouchTarget = true, OnClick = rail.Toggle,
 		Modifier = q.Declaration.Modifier.TextButton():Position(UDim2.fromOffset(24, 0)) }) })
 
--- 앱 바 + 스크롤: 목록은 바 뒤에서 스크롤(바의 펼친 높이만큼 위 여백)
+-- 앱 바 + 스크롤: 목록 ScrollingFrame은 바의 지금 아래 끝에서 시작하고, 바가 접힌 만큼 위 여백(행 자리는 바 뒤 레이아웃과 같음)
 local scroll = Material.TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 Material.MediumFlexibleTopAppBar({ Title = "Inbox", Subtitle = "3 unread", ScrollBehavior = scroll,
 	NavigationIcon = { Icon = "menu", Label = "Menu", OnClick = drawer.Open },
 	Actions = { { Icon = "rbxassetid://6031154871", Label = "Search", OnClick = search } } })
-q.Declaration.ScrollingFrame { scroll.Hook, … }
+local expanded = 136 -- 바의 펼친 높이
+local top: q.State<number> = scroll.State.HeightOffset:Compute(function(self)
+	return math.max(0, math.round(expanded + self:Get())) -- 바의 지금 높이
+end)
+local position: q.State<UDim2> = top:Compute(function(self) return UDim2.fromOffset(0, self:Get()) end)
+local size: q.State<UDim2> = top:Compute(function(self) return UDim2.new(1, 0, 1, -self:Get()) end)
+local padding: q.State<UDim> = top:Compute(function(self) return UDim.new(0, expanded - self:Get()) end)
+q.Declaration.ScrollingFrame { scroll.Hook, Position = position, Size = size, q.Declaration.UIPadding { PaddingTop = padding }, … }
 
 -- 떠 있는 툴바
 Material.HorizontalFloatingToolbar({ Expanded = expanded, Content = { … }, FloatingActionButton = { Icon = "…", OnClick = add } })
@@ -360,9 +367,13 @@ Material.HorizontalFloatingToolbar({ Expanded = expanded, Content = { … }, Flo
   움직이고, 글자는 절반에서 자리·크기(LabelMedium → LabelLarge)를 바꾸며 사라졌다 나타납니다(Compose `placeAnimatedLabelAndIcon`).
   펼친 폭은 재어 둔 글자 폭으로 정합니다(가장 넓은 항목 + 20, 220~360).
 - **앱 바 스크롤**: Roblox ScrollingFrame은 스크롤을 부모에게 넘길 수 없어서(중첩 스크롤 없음) 바가 스크롤을 "먹지" 않고 같이
-  접힙니다. 그래서 화면은 Compose Scaffold처럼 짭니다 — 스크롤 내용이 바 **뒤**에서 화면을 채우고 위 여백 = 바의 펼친 높이, 바는
-  위에(ZIndex) — 그러면 첫 행이 접히는 바의 아래 끝에 붙어 갑니다(갤러리의 세 화면). 스크롤이 0.1 s 멈추면 중간에 걸린 바는 가까운
-  쪽 끝으로 0.2 s(Compose `settleAppBar`). 바를 직접 끌어 접기·플링 감속은 없습니다.
+  접힙니다. 행은 Compose Scaffold처럼 움직이게 짭니다(내용이 바 뒤에서 위 여백 = 바의 펼친 높이로 스크롤하는 자리 — 첫 행이 접히는
+  바의 아래 끝에 붙어 감). 다만 ScrollingFrame 자체를 바 뒤에 두면 Roblox 스크롤바가 프레임 전체 높이에 걸려 바에 가려지므로(두 줄
+  바의 목록 맨 위에선 통째로), **ScrollingFrame은 바의 지금 아래 끝(`top` = 펼친 높이 + `State.HeightOffset`)에서 시작하고 높이는 화면 −
+  `top`, 위 여백은 펼친 높이 − `top`**(위 코드). 캔버스가 프레임과 같은 만큼 늘고 줄어 최대 스크롤이 그대로라 CanvasPosition이 튀지
+  않습니다(Studio 실측 2026-10-08 — 휠·멈춤 정착·맨 아래에서 올리기). 갤러리의 세 화면과 AppBar 스토리가 이 모양. 대신 바 위에서 굴린
+  휠은 목록에 닿지 않습니다(목록이 바 아래에 없음). 스크롤이 0.1 s 멈추면 중간에 걸린 바는 가까운 쪽 끝으로 0.2 s(Compose
+  `settleAppBar`). 바를 직접 끌어 접기·플링 감속은 없습니다.
 - **두 줄 바의 큰 제목**은 마지막 기준선이 아래에서 24(medium)/28(large) — 기준선은 Roboto 지표(ascender 0.928 em, descender
   0.244 em)로 근사했습니다(Roblox는 글꼴 기준선을 알려 주지 않음).
 - **오버플로**: 액션이 `MaxItemCount`보다 많으면 `MaxItemCount - 1`개 + 더보기(⋮, `Icons` "moreVert") 버튼, 나머지는 Menu로. Compose는
@@ -539,7 +550,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 58 | 모달 내비게이션 드로어 | 갤러리 Navigation "Modal navigation drawer"·NavigationDrawer 스토리 | 메뉴 버튼으로 왼쪽에서 0.2 s, 스크림이 드로어 위치를 따라 0~0.32, 오른쪽 두 모서리 16, 항목이 많으면 드로어 안에서 스크롤, 목적지 클릭이 선택(알약 secondaryContainer) + 닫힘, 스크림 탭·왼쪽으로 끌기·Escape/B로 닫힘, 닫히면 게임패드 선택이 드로어로 들어가지 않음 |  |
 | 59 | 드로어 항목 | 같은 곳·Permanent 화면 | 56 px 알약이 드로어 폭에서 양옆 12 px, 아이콘 24·글자 LabelLarge·배지가 오른쪽 끝, 선택 행 글자·아이콘 onSecondaryContainer, 구획 제목 TitleSmall이 28 px 들여씀, 구분선이 양옆 28 px·위아래 8 px, 리플이 알약 안에만 |  |
 | 60 | dismissible·permanent 드로어 | 갤러리 Navigation 둘째·셋째 화면 | dismissible: 열리면 내용이 드로어 폭만큼 오른쪽으로 밀리고 메뉴 버튼으로 토글; permanent: 240 폭 드로어 옆을 내용이 채움 |  |
-| 61 | 모달 면 안쪽 클릭 | 갤러리의 대화상자·메뉴·날짜/시간 선택 모달·모달 하단/측면 시트·모달 드로어 | 면 안 어디를 눌러도(빈 여백·머리·시계판 끌기·시트 손잡이 조작 뒤 포함) 닫히지 않음; 면 밖 스크림을 누르면 닫힘. 면마다 투명 TextButton `InputSink`가 눌림을 먹는다(일반 Frame은 누름을 아래 스크림 버튼으로 흘려보낸다 — `Active`는 3D 입력만 막음) |  |
+| 61 | 모달 면 안쪽 클릭 | 갤러리의 대화상자·메뉴·날짜/시간 선택 모달·모달 하단/측면 시트·모달 드로어 | 면 안 어디를 눌러도(빈 여백·머리·시계판 끌기·시트 손잡이 조작 뒤 포함) 닫히지 않음; 면 밖 스크림을 누르면 닫힘. 면마다 투명 TextButton `ClickSink`가 눌림을 먹는다(일반 Frame은 누름을 아래 스크림 버튼으로 흘려보낸다 — `Active`는 3D 입력만 막음) |  |
 | 62 | 범위 날짜 완성·해제 때 깜빡임 | DatePicker 스토리 Range·갤러리 Pickers(밝은 테마) | 두 번째 날짜를 누르는 순간 사이 날짜의 띠와 끝 원이 바로 나타나고, 그 전에 반투명한 어두운 모양이 한 프레임도 덮지 않음; 세 번째 누름으로 범위가 풀릴 때도 띠·두 원이 바로 사라짐(어두워지지 않음); 첫 날짜(시작 원)만 0.1 s로 부드럽게 나타나고, 범위 밖 날짜의 호버 표시는 여전히 부드럽게 바뀜 |  |
 | 63 | 슬라이더 끝에서 조각이 사라질 때 | 갤러리 Selection·Slider·RangeSlider 스토리, 특히 XL(트랙 96)과 L, Centered 포함, 값을 천천히 끝으로 끌기 | 핸들이 끝 점(트랙 끝에서 6 px)에 가까워지면 핸들 바깥쪽 조각이 툭 사라지지 않고 모서리 곡선은 그대로인 채 안쪽부터 좁아져 0이 됨(곡선이 바뀌지 않음), 0 %·100 %에서 핸들 중심이 끝 점 위, 끝 점은 조각이 덮을 때만 보임, 이산 슬라이더는 예전처럼 한 번에 사라짐 |  |
 | 64 | 내비게이션 바 알약·배지(가장 먼저) | 갤러리 Navigation "Navigation bar" 두 화면·NavigationBar 스토리 | 누르면 알약(56 x 32, secondaryContainer)이 가운데서 0.2 s에 자라고 이전 것은 줄어듦, 글자·아이콘 색은 바로 바뀜; 아이콘 위 배지 — 작은 점은 아이콘 오른쪽 위 모서리, 큰 배지 "3"은 아이콘 오른쪽으로 삐져나옴; Start 아이콘(넓은 화면)은 40 높이 알약 안에 아이콘·글자 한 줄, 세 항목이 바 가운데 70 %; 리플·호버가 알약 안에만 |  |
@@ -549,6 +560,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 68 | 하단 앱 바 | 갤러리 "Bottom app bars" | FlexibleBottomAppBar(64) 다섯 아이콘이 양 끝 16 안에서 고르게 벌어짐; BottomAppBar(80) 아이콘이 왼쪽 4부터, FAB(secondaryContainer)가 위 12·오른쪽 16 |  |
 | 69 | 떠 있는 툴바 | 갤러리 "Floating toolbars"·Toolbar 스토리 | Expanded 스위치로 앞·뒤 내용이 0.15 s에 줄었다 펼쳐짐(앞은 왼쪽부터, 뒤는 오른쪽부터 드러남), 알약 모양 유지; FAB 형은 접으면 툴바가 FAB 쪽으로 사라지고 FAB이 56 → 80, 펼치면 툴바 그림자; Vibrant는 primaryContainer 위 onPrimaryContainer 아이콘 |  |
 | 3 | CanvasGroup + UICorner 리플 클리핑 | Button·Chip·ListItem을 누름 | 리플 원이 둥근 모서리 밖으로 안 나감 |  |
+| 70 | 앱 바 스크롤 — 스크롤바 | 갤러리 "Top app bars that scroll" 세 화면·AppBar 스토리 | 세 화면 모두 스크롤바가 바 아래 끝에서 시작해 바에 가리지 않음(오른쪽 exitUntilCollapsed는 맨 위에서도 136 바로 아래에 보임); 바가 접히고 펼쳐지는 동안 스크롤바 위 끝이 바 아래 끝을 따라감; 행 움직임은 66과 같음(튀거나 두 배로 움직이지 않음) | Studio 2026-10-08 확인(휠) |
 
 ## 테스트
 

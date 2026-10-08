@@ -1,6 +1,7 @@
 --!strict
--- Top app bars over a scrolling list (the list scrolls BEHIND the bar with a top padding of its expanded height — Compose
--- Scaffold), and the bottom app bars. Kind / Behavior / Subtitle / Center are construction-time (rebuilt).
+-- Top app bars over a scrolling list (the list starts at the bar's current bottom edge and pads its canvas by what the bar
+-- has collapsed — the rows move as in Compose Scaffold's content-behind-the-bar layout, the scrollbar stays visible), and
+-- the bottom app bars. Kind / Behavior / Subtitle / Center are construction-time (rebuilt).
 local Material = require("../src")
 local q = require("../src/Quad")
 local StoryKit = require("./StoryKit")
@@ -79,6 +80,21 @@ return StoryKit.story({
 			for i = 1, 30 do
 				table.insert(rows, StoryParts.caption(theme, `List item {i}`))
 			end
+			-- the list starts at the bar's current bottom edge (the native scrollbar never under the bar) and pads its canvas by
+			-- what the bar has collapsed, so the rows sit where a full-screen list padded by `expanded` would put them
+			local offset: q.State<number> = if behavior then behavior.State.HeightOffset else q.Source(0)
+			local top: q.State<number> = offset:Compute(function(self: q.StateData<number>): number
+				return math.max(0, math.round(expanded + self:Get()))
+			end)
+			local position: q.State<UDim2> = top:Compute(function(self: q.StateData<number>): UDim2
+				return UDim2.fromOffset(0, self:Get())
+			end)
+			local size: q.State<UDim2> = top:Compute(function(self: q.StateData<number>): UDim2
+				return UDim2.new(1, 0, 1, -self:Get())
+			end)
+			local padding: q.State<UDim> = top:Compute(function(self: q.StateData<number>): UDim
+				return UDim.new(0, expanded - self:Get())
+			end)
 			return D.Frame {
 				Name = "Screen",
 				Size = UDim2.fromOffset(400, 480),
@@ -86,12 +102,16 @@ return StoryKit.story({
 				ClipsDescendants = true,
 				D.ScrollingFrame {
 					Name = "Content",
-					Size = UDim2.fromScale(1, 1),
+					Position = position,
+					Size = size,
 					BackgroundTransparency = 1,
 					CanvasSize = UDim2.fromOffset(0, 0),
 					AutomaticCanvasSize = Enum.AutomaticSize.Y,
 					if behavior then behavior.Hook else q.None,
-					D.UIPadding { PaddingTop = UDim.new(0, expanded), PaddingLeft = UDim.new(0, 16) },
+					D.UIPadding {
+						PaddingTop = padding,
+						PaddingLeft = UDim.new(0, 16),
+					},
 					D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 24) },
 					q.Slot<<Instance>>(rows),
 				},

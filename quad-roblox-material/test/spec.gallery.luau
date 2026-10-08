@@ -297,6 +297,58 @@ H.section("navigation bar, rail, app bars and toolbars: the Navigation tab's scr
 	H.assertNoDebugOutput("layout group")
 end)
 
+H.section("app bar screens: the list's ScrollingFrame starts at the bar's bottom edge (scrollbar never under the bar), rows stay where the content-behind-the-bar layout puts them", function()
+	click(tabButton(gui, "Navigation"))
+	H.finishTweens()
+	local function padTop(content: any): number
+		for _, c in content:GetChildren() do
+			if c.ClassName == "UIPadding" then
+				return c.PaddingTop.Offset
+			end
+		end
+		error("no UIPadding")
+	end
+	local cases: { { Screen: string, Bar: string, Expanded: number } } = {
+		{ Screen = "PinnedAppBarScreen", Bar = "TopAppBar", Expanded = 64 },
+		{ Screen = "EnterAlwaysAppBarScreen", Bar = "CenterAlignedTopAppBar", Expanded = 64 },
+		{ Screen = "ExitUntilCollapsedAppBarScreen", Bar = "MediumFlexibleTopAppBar", Expanded = 136 },
+	}
+	-- down in small and large steps, up part way (enterAlways brings the bar back), back to the top
+	local path = { 0, 5, 30, 64, 71, 72, 100, 400, 2000, 380, 350, 60, 20, 3, 0 }
+	for _, case in cases do
+		local name = case.Screen
+		local screen = H.find(gui, name) :: any
+		local bar = H.find(screen, case.Bar) :: any
+		local content = H.find(screen, "Content") :: any
+		local expanded = case.Expanded
+		local function check(label: string)
+			local barBottom = bar.Size.Y.Offset
+			assert(bar.Size.Y.Scale == 0, label)
+			assert(content.Position == UDim2.fromOffset(0, barBottom), `{name} {label}: frame top {content.Position} vs bar bottom {barBottom}`)
+			assert(content.Size == UDim2.new(1, 0, 1, -barBottom), `{name} {label}: frame fills below the bar`)
+			assert(content.Position.Y.Offset + padTop(content) == expanded, `{name} {label}: rows at the full-screen place`)
+		end
+		check("rest")
+		for _, y in path do
+			content.CanvasPosition = Vector2.new(0, y)
+			check(`y={y}`)
+		end
+		-- stop part way: the settle animation moves the bar; the frame follows every step
+		content.CanvasPosition = Vector2.new(0, 30)
+		H.advance(0.15)
+		for i = 1, 15 do
+			H.advance(0.02)
+			check(`settle {i}`)
+		end
+		content.CanvasPosition = Vector2.new(0, 0)
+		H.advance(0.5)
+		check("back")
+	end
+	click(tabButton(gui, "Buttons"))
+	H.advance(0.5)
+	H.assertNoDebugOutput("app bar screens")
+end)
+
 local function fireAncestry(root: any)
 	local all = H.findAll(root, function(_: any): boolean
 		return true
