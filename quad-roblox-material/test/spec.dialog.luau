@@ -1,6 +1,6 @@
 --!strict
 local H = require("./support/harness")
-local InputSink = require("./support/inputsink")
+local ClickSink = require("./support/clicksink")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
@@ -58,7 +58,7 @@ H.section("open: structure, snapped mount then animated enter", function()
 	local dlg: any = H.find(screen, "Dialog")
 	assert(dlg.ClassName == "CanvasGroup" and dlg.BackgroundColor3 == L.SurfaceContainerHigh)
 	assert(dlg.Size == UDim2.fromOffset(312, 0) and dlg.AutomaticSize == Enum.AutomaticSize.Y and dlg.Active == true)
-	InputSink.assertInputSink(dlg, "the dialog card")
+	ClickSink.assertClickSink(dlg, "the dialog card")
 	assert(own(dlg, "UICorner").CornerRadius == UDim.new(0, 28), "corner 28")
 	assert(own(H.find(dlg, "Content"), "UIPadding").PaddingLeft == UDim.new(0, 24), "padding 24")
 	assert(H.find(dlg, "Headline").Text == "Discard draft?" and H.find(dlg, "Headline").TextSize == 24)

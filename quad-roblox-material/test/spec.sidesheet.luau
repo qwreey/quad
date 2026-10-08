@@ -2,7 +2,7 @@
 -- Side sheets: SideSheet (standard) and ModalSideSheet.open (modal) — MDC SideSheetBehavior geometry, tokens, the release
 -- rule (outwards -> Expanded; significant 500 px/s swipe or past half -> Hidden), header, Escape / scrim, dispose.
 local H = require("./support/harness")
-local InputSink = require("./support/inputsink")
+local ClickSink = require("./support/clicksink")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
 local D = q.Declaration
@@ -160,7 +160,7 @@ H.section("modal: tokens (surfaceContainerLow, inner corner 16, shadow 1), slide
 	local s: any = H.find(screen, "SideSheet")
 	assert(s.BackgroundColor3 == L.SurfaceContainerLow and own(s, "UICorner").CornerRadius == UDim.new(0, 16))
 	assert(s.Active == true, "the sheet above the scrim keeps 3D input out")
-	InputSink.assertInputSink(s, "the modal side sheet")
+	ClickSink.assertClickSink(s, "the modal side sheet")
 	assert(own(s, "UIShadow") ~= nil, "level-1 shadow")
 	local patch = H.find(s, "CornerPatch")
 	assert(patch.AnchorPoint == Vector2.new(1, 0) and patch.Size == UDim2.new(0, 16, 1, 0), "the outer (right) corners squared off")
@@ -190,12 +190,12 @@ H.section("modal: tokens (surfaceContainerLow, inner corner 16, shadow 1), slide
 	H.finishTweens()
 	local s3: any = H.find(screen, "SideSheet")
 	assert(s3.AnchorPoint == Vector2.new(0, 0) and H.find(s3, "CornerPatch").AnchorPoint == Vector2.new(0, 0))
-	-- the press on a modal sheet stops at its InputSink (Util.luau "INPUT RULE"): the Frame has no hook, the sink drags
+	-- the press on a modal sheet stops at its ClickSink (Util.luau "INPUT RULE"): the Frame has no hook, the sink drags
 	H.fire(s3, "InputBegan", H.input({ Position = Vector3.new(200, 300, 0) }))
 	assert(uisConns() == baseConns, "the modal sheet Frame carries no drag hook")
 	local sink3 = nil
 	for _, c in s3:GetChildren() do
-		if c.Name == "InputSink" then
+		if c.Name == "ClickSink" then
 			sink3 = c
 		end
 	end
@@ -228,7 +228,7 @@ H.section("modal: layer death finalizes, nothing left", function()
 			closes += 1
 		end,
 	})
-	H.fire(H.find(H.find(screen, "SideSheet"), "InputSink"), "InputBegan", H.input({ Position = Vector3.new(800, 300, 0) }))
+	H.fire(H.find(H.find(screen, "SideSheet"), "ClickSink"), "InputBegan", H.input({ Position = Vector3.new(800, 300, 0) }))
 	q.dispose(screen)
 	H.advance(1)
 	assert(closes == 1 and not handle.IsOpen:Get() and handle.SheetState.CurrentValue:Get() == "Hidden")

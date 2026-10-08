@@ -11,7 +11,7 @@
 	visible(v)      Visible default: nil -> true, else the value / State as given
 	hooks(h)        `Hooks?` -> a table safe to `table.unpack` into a host's array part
 	preHook / postHook   lifecycle hooks (see below)
-	inputSink(hooks?)   an invisible full-cover TextButton "InputSink" for a surface shown above a dismissing scrim; it is
+	clickSink(hooks?)   an invisible full-cover TextButton "ClickSink" for a surface shown above a dismissing scrim; it is
 	                also the instance that receives the surface's presses (below)
 	Hooks           the shared `Hooks = { any }` alias every component's `Hooks` prop uses: values that are placed in the
 	                host's array part (a `Tooltip.hook(...).Hook`, a `q.OnChange(...)`, a `q.Ref(...)`, ...). Only the array
@@ -100,7 +100,10 @@ local function visible(v: (boolean | q.State<boolean>)?): boolean | q.State<bool
 end
 
 --[[
-	inputSink(hooks?) -> TextButton. On Roblox a click goes THROUGH a plain Frame / CanvasGroup (`Active = true` only keeps
+	NAME: the child is "ClickSink", not "InputSink" — Roblox 0.742 added a GuiObject PROPERTY `InputSink` (Enum None/Activate/All),
+	so `surface.InputSink` would return the property instead of the child. The engine property showed no effect in 0.742 Play
+	(measured 2026-10-08), which is why the kit sinks clicks with a GuiButton child.
+	clickSink(hooks?) -> TextButton. On Roblox a click goes THROUGH a plain Frame / CanvasGroup (`Active = true` only keeps
 	3D / camera input out) to a GuiButton beneath, so a modal surface above a dismissing scrim (Overlay scrim, a sheet's own
 	scrim) closes when it is clicked inside. Only a GuiButton sinks a GUI click. Put ONE of these as a DIRECT child of the
 	surface (Size Scale 1,1 is only safe at that depth, see Ripple.luau "NOT SCALE"); ZIndex 0 keeps every other child above
@@ -116,9 +119,9 @@ end
 	reaches neither the sink nor the surface.
 ]]
 local EMPTY_HOOKS: Hooks = table.freeze({} :: Hooks)
-local function inputSink(hooks: Hooks?): TextButton
+local function clickSink(hooks: Hooks?): TextButton
 	return q.Declaration.TextButton {
-		Name = "InputSink",
+		Name = "ClickSink",
 		Size = UDim2.fromScale(1, 1),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
@@ -145,5 +148,5 @@ return {
 	peekBool = peekBool,
 	preHook = preHook,
 	postHook = postHook,
-	inputSink = inputSink,
+	clickSink = clickSink,
 }

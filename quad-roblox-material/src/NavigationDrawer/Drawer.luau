@@ -152,11 +152,11 @@ local function slidingDrawer(props: ModalProps, modal: boolean): Frame
 		Visible = shown,
 		ZIndex = 3,
 		-- Active only keeps 3D / camera input out; a GUI click on empty sheet padding reaches the scrim below through a plain
-		-- frame (Studio, 2026-10-08), so a modal holder carries an InputSink (a GuiButton) as well. A press stops at the
+		-- frame (Studio, 2026-10-08), so a modal holder carries an ClickSink (a GuiButton) as well. A press stops at the
 		-- first GuiButton (Util.luau "INPUT RULE"), so the holder Frame never sees one: the drag hook goes on the sink — and
 		-- the ModalDrawerSheet carries no sink of its own, or the press would stop at ITS sink, above this one
 		Active = true,
-		if modal then Util.inputSink({ slide.Hook() }) else slide.Hook() :: any,
+		if modal then Util.clickSink({ slide.Hook() }) else slide.Hook() :: any,
 		props.DrawerContent,
 	}
 

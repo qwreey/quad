@@ -217,8 +217,8 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 
 	return D.CanvasGroup {
 		Name = "TimePickerModal",
-		Active = true, -- 3D / camera input only; a GUI click is sunk by the InputSink child (a plain frame passes it down)
-		Util.inputSink(),
+		Active = true, -- 3D / camera input only; a GUI click is sunk by the ClickSink child (a plain frame passes it down)
+		Util.clickSink(),
 		Size = cardSize,
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.5),

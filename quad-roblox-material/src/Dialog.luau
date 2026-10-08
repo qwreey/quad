@@ -57,7 +57,7 @@
 	texture composited every frame while it is up. Fine for one short-lived dialog; swapping to a plain Frame once the enter
 	animation ends is possible but not done (it would also lose the exit fade).
 	M3 deviations: no shadow (a UIShadow inside the CanvasGroup would be clipped; the scrim does the separating).
-	Input: only a GuiButton sinks a GUI click (Active = true on a Frame does not), so the surface carries a `Util.inputSink()`
+	Input: only a GuiButton sinks a GUI click (Active = true on a Frame does not), so the surface carries a `Util.clickSink()`
 	child; the list-laid content lives in an inner "Content" frame so the sink stays a full-cover sibling.
 ]]
 
@@ -325,7 +325,7 @@ local function open(o: OpenOptions): Handle
 			GroupTransparency = fade,
 			UIScale = scale,
 			UICorner = Tokens.Shape.corner("ExtraLarge"),
-			Util.inputSink(),
+			Util.clickSink(),
 			Util.postHook(function(card: GuiObject)
 				entered:Set(true)
 				if fitMode and measured then

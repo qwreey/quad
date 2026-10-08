@@ -18,7 +18,7 @@
 	NavigationView's menu scrolls (design_navigation_menu.xml, `scrollbars="vertical"`, 8 bottom padding), and every Compose
 	drawer sample wraps its items in `verticalScroll` after a 12 px Spacer: so 12 top, 8 bottom, items centered (each item
 	carries its own 12 px side margins).
-	Returns the sheet Frame (Active: 3D / camera input only). It has no InputSink of its own: inside a ModalNavigationDrawer
+	Returns the sheet Frame (Active: 3D / camera input only). It has no ClickSink of its own: inside a ModalNavigationDrawer
 	the drawer's holder carries the sink under the sheet — it stops a press on the sheet's padding from reaching the scrim
 	AND takes the drawer's drag (a press stops at the first GuiButton, Util.luau "INPUT RULE": a sink on the sheet would sit
 	above the holder's and swallow the drag). Structure: Frame [+ UICorner + CornerPatch] + Scroll (ScrollingFrame,
@@ -57,7 +57,7 @@ local function sheet(kind: Kind, props: Props?): Frame
 		D.Modifier.Frame():Size(UDim2.new(0, width, 1, 0)),
 		BackgroundColor3 = color,
 		BorderSizePixel = 0,
-		Active = true, -- 3D / camera input only; inside a modal drawer the holder's InputSink sinks the click (header)
+		Active = true, -- 3D / camera input only; inside a modal drawer the holder's ClickSink sinks the click (header)
 		p.Modifier or q.None,
 		if modal then D.UICorner { CornerRadius = UDim.new(0, CORNER) } else q.None,
 		if modal then Parts.patch("Left", CORNER, color) else q.None,

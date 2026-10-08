@@ -55,7 +55,7 @@
 	  :Cancel()     end an active drag now (cancelled = true)
 	THE HOOKED ELEMENT MUST BE THE ONE THAT RECEIVES THE PRESS: a press reaches `InputBegan` of the GuiObjects under the
 	pointer from the top down and stops after the first GuiButton (Util.luau "INPUT RULE", Studio 2026-10-08) — a Frame
-	that holds a full-cover GuiButton (an InputSink) never gets it; hook the button.
+	that holds a full-cover GuiButton (an ClickSink) never gets it; hook the button.
 	While dragging (and ONLY then) it holds three UserInputService connections: InputChanged, InputEnded,
 	WindowFocusReleased. All three are disconnected when the drag ends, when the window loses focus, and
 	when the element is destroyed. Mouse drags are tracked until MouseButton1 is released ANYWHERE (the

@@ -3,7 +3,7 @@
 -- Items / Headline / Divider — Compose tokens, the scrim fraction, drag thresholds (half / 400 px/s), Escape on the shared
 -- Overlay stack, selection (Tabs rule), ripple BOUNDED, dispose.
 local H = require("./support/harness")
-local InputSink = require("./support/inputsink")
+local ClickSink = require("./support/clicksink")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
 local D = q.Declaration
@@ -39,15 +39,15 @@ end
 local function key(code: Enum.KeyCode)
 	UIS.InputBegan:Fire(H.input({ KeyCode = code, UserInputType = Enum.UserInputType.Keyboard }), false)
 end
--- the holder's InputSink: a press on the drawer stops at this GuiButton (Util.luau "INPUT RULE"), so the modal drag hook
+-- the holder's ClickSink: a press on the drawer stops at this GuiButton (Util.luau "INPUT RULE"), so the modal drag hook
 -- lives here; the holder Frame never gets InputBegan
 local function sinkOf(holder: any): any
 	for _, c in holder:GetChildren() do
-		if c.Name == "InputSink" then
+		if c.Name == "ClickSink" then
 			return c
 		end
 	end
-	error("no InputSink")
+	error("no ClickSink")
 end
 
 local function drag(inst: any, x0: number, xs: { number }, dt: number)
@@ -193,7 +193,7 @@ H.section("sheets: modal surfaceContainerLow + end corners 16, standard surface,
 	H.resetOutput()
 	assert(nm == 7 and np == 4, `counts {nm} / {np}`)
 	-- no sink of its own: inside the drawer the holder's sink (under the sheet) stops the click and takes the drag
-	assert(H.find(m, "InputSink") == nil, "the modal sheet carries no InputSink")
+	assert(H.find(m, "ClickSink") == nil, "the modal sheet carries no ClickSink")
 	q.dispose(m)
 	q.dispose(dsheet)
 	q.dispose(psheet)
@@ -219,8 +219,8 @@ H.section("ModalNavigationDrawer: closed and hidden at rest; Open slides in with
 	assert(host.ClipsDescendants == true and host.Size == UDim2.fromScale(1, 1) and H.find(host, "Page") ~= nil)
 	assert(drawer.Position == UDim2.fromOffset(-360, 0) and drawer.Visible == false and scrim.Visible == false, "closed: not shown")
 	assert(drawer.Active == true and H.find(drawer, "ModalDrawerSheet").Active == true, "the surfaces above the scrim sink 3D input")
-	InputSink.assertInputSink(drawer, "the drawer holder")
-	assert(H.find(H.find(drawer, "ModalDrawerSheet"), "InputSink") == nil, "one sink: the holder's (a sink on the sheet would swallow the drag)")
+	ClickSink.assertClickSink(drawer, "the drawer holder")
+	assert(H.find(H.find(drawer, "ModalDrawerSheet"), "ClickSink") == nil, "one sink: the holder's (a sink on the sheet would swallow the drag)")
 	assert(scrim.BackgroundTransparency == 1)
 	state.Open()
 	assert(drawer.Visible and scrim.Visible and state.TargetValue:Get() == "Open" and not state.IsOpen:Get())
@@ -237,7 +237,7 @@ H.section("ModalNavigationDrawer: closed and hidden at rest; Open slides in with
 	state.SnapTo("Open")
 	assert(drawer.Position == UDim2.fromOffset(0, 0) and state.CurrentValue:Get() == "Open")
 	H.fire(drawer, "InputBegan", H.input({ Position = Vector3.new(300, 300, 0) }))
-	assert(uisConns() == baseConns, "the holder Frame carries no drag hook (the press lands on its InputSink)")
+	assert(uisConns() == baseConns, "the holder Frame carries no drag hook (the press lands on its ClickSink)")
 	H.fire(sinkOf(drawer), "InputBegan", H.input({ Position = Vector3.new(300, 300, 0) }))
 	H.advance(0.1)
 	UIS.InputChanged:Fire(H.input({ UserInputType = Enum.UserInputType.MouseMovement, Position = Vector3.new(120, 300, 0) }))

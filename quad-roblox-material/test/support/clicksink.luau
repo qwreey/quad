@@ -1,17 +1,17 @@
 --!strict
 --[[
-	InputSink shape check shared by the specs (Util.inputSink, "a plain frame passes a GUI click down to the scrim button
-	beneath; only a GuiButton sinks it"). assertInputSink(surface, label): `surface` has exactly one DIRECT child named
-	"InputSink" that is an invisible TextButton, full cover (Scale 1,1), not Selectable, ZIndex 0 — below every sibling.
+	ClickSink shape check shared by the specs (Util.clickSink, "a plain frame passes a GUI click down to the scrim button
+	beneath; only a GuiButton sinks it"). assertClickSink(surface, label): `surface` has exactly one DIRECT child named
+	"ClickSink" that is an invisible TextButton, full cover (Scale 1,1), not Selectable, ZIndex 0 — below every sibling.
 ]]
-local function assertInputSink(surface: any, label: string)
+local function assertClickSink(surface: any, label: string)
 	local sinks = {}
 	for _, c in surface:GetChildren() do
-		if c.Name == "InputSink" then
+		if c.Name == "ClickSink" then
 			table.insert(sinks, c)
 		end
 	end
-	assert(#sinks == 1, label .. ": exactly one direct InputSink child, got " .. #sinks)
+	assert(#sinks == 1, label .. ": exactly one direct ClickSink child, got " .. #sinks)
 	local s: any = sinks[1]
 	assert(s.ClassName == "TextButton", label .. ": the sink is a GuiButton")
 	assert(s.Size == UDim2.fromScale(1, 1), label .. ": the sink covers the whole surface (direct child, Scale 1,1)")
@@ -25,4 +25,4 @@ local function assertInputSink(surface: any, label: string)
 	end
 end
 
-return { assertInputSink = assertInputSink }
+return { assertClickSink = assertClickSink }

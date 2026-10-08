@@ -360,8 +360,8 @@ local function open(o: OpenOptions): Overlay.Handle
 				Size = UDim2.fromOffset(width, panelH),
 				BackgroundColor3 = theme.Color.SurfaceContainer,
 				BorderSizePixel = 0,
-				Active = true, -- 3D / camera input only; a GUI click is sunk by the InputSink child below
-				Util.inputSink(),
+				Active = true, -- 3D / camera input only; a GUI click is sunk by the ClickSink child below
+				Util.clickSink(),
 				UICorner = Corner,
 				Elevation.Shadow({ Level = 2, Theme = theme }),
 				D.UIScale { Scale = scale:Apply(q.Animate(Tokens.Motion.options("Short4", "EmphasizedDecelerate"))) },

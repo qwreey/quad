@@ -31,7 +31,7 @@
 
 	Drag: `Interaction.drag` trackers (one per element given `Hook()`, one gesture at a time across them; `LockScroll`, so
 	an ancestor ScrollingFrame does not scroll along). Give `Hook()` to the elements a press actually reaches: a press stops
-	at the first GuiButton under the pointer (Util.luau "INPUT RULE"), so on a surface with an InputSink that is the sink,
+	at the first GuiButton under the pointer (Util.luau "INPUT RULE"), so on a surface with an ClickSink that is the sink,
 	never the surface Frame — plus the handle / scrim buttons. Each pointer move
 	adds the axis delta to the offset, coerced into the anchors' range (Compose `newOffsetForDelta`). At release the
 	component's `Release` picks the target from the offset and the pointer velocity (Anchored.tracker); a vetoed target

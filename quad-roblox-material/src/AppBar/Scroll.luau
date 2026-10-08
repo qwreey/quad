@@ -13,7 +13,7 @@
 	  opts (`read`, optional): State (TopAppBarState? — default a fresh one, rememberTopAppBarState), CanScroll ((() -> boolean)?
 	  — while it returns false the bar ignores the scroll, Compose canScroll).
 	  -> { State: TopAppBarState, IsPinned: boolean, Hook } — put `Hook` in the array part of ONE ScrollingFrame (the content
-	  scrolling under the bar); it follows that frame's `CanvasPosition`.
+	  scrolling below the bar — layout under ROBLOX DIFFERENCE); it follows that frame's `CanvasPosition`.
 	TopAppBarState(opts?) — opts: InitialHeightOffset (number?, default 0). Fields (State<number>): HeightOffset (0 .. the
 	  limit, <= 0), HeightOffsetLimit (set by the bar: minus its collapsible height), ContentOffset (minus the content's scroll),
 	  CollapsedFraction (HeightOffset / HeightOffsetLimit), OverlappedFraction (Compose overlappedFraction: 0 .. 1 over the
@@ -34,10 +34,17 @@
 	(snapAnimationSpec = DefaultEffects -> Short4, Standard; one Heartbeat connection while it runs).
 	ROBLOX DIFFERENCE: a ScrollingFrame cannot hand its scroll to a parent (no nested scrolling), so the bar does not CONSUME
 	the scroll as Compose's onPreScroll does — the content scrolls by the full distance while the bar collapses alongside.
-	Lay the screen out the way Compose's Scaffold does it: the scrolling content fills the screen BEHIND the bar (the bar on
-	top, a higher ZIndex) with a top padding of the bar's expanded height, so the first row stays right under the bar's
-	bottom edge while it collapses (the gallery's app bar screen). The fling decay (flingAnimationSpec) and dragging the bar
-	itself (Compose's draggable on the bar) are not reproduced.
+	Lay the screen out so the rows move the way Compose's Scaffold places them (the content behind the bar, padded by the
+	bar's expanded height — the first row stays right under the bar's bottom edge while it collapses), but keep the
+	ScrollingFrame itself out from under the bar: a Roblox scrollbar spans the whole frame, so a frame behind the bar has
+	its scrollbar covered (fully, at the top of a two-row bar's list). With `expanded` the bar's expanded height and
+	`top = max(0, round(expanded + State.HeightOffset))` (the bar's current height):
+	    ScrollingFrame Position = (0, top), Size = (1, 0, 1, -top), UIPadding.PaddingTop = expanded - top
+	The canvas grows by exactly what the frame grows, so the furthest scroll stays content - screen + expanded and the
+	CanvasPosition never clamps (Studio-measured 2026-10-08: wheel scrolls, settle and scrolling up at the bottom move the
+	frame with no extra CanvasPosition change). The gallery's app bar screens and the AppBar story do this. A wheel over
+	the bar no longer reaches the list (it is not under the bar any more). The fling decay (flingAnimationSpec) and
+	dragging the bar itself (Compose's draggable on the bar) are not reproduced.
 ]]
 
 local q = require("../Quad")

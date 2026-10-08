@@ -1,6 +1,6 @@
 --!strict
 local H = require("./support/harness")
-local InputSink = require("./support/inputsink")
+local ClickSink = require("./support/clicksink")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
@@ -688,7 +688,7 @@ H.section("modal: draft / OK commits / Cancel discards, headline in the locale",
 	})
 	local card = H.find(screen, "DatePickerModal")
 	assert((card :: any).Active == true, "the card keeps 3D input out")
-	InputSink.assertInputSink(card, "the date picker card (a click on it must not reach the scrim)")
+	ClickSink.assertClickSink(card, "the date picker card (a click on it must not reach the scrim)")
 	assert(card ~= nil and card.ClassName == "CanvasGroup" and card.Size == UDim2.fromOffset(360, 569))
 	assert(H.find(screen, "Scrim") ~= nil and overlay.Count:Get() == 1)
 	assert(H.find(card, "Headline").Text == "Mon, Oct 5", H.find(card, "Headline").Text)

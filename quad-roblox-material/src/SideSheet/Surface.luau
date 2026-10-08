@@ -21,7 +21,7 @@
 	the sheet was released more than halfway to the edge (isReleasedCloseToInnerEdge 63-67), else Expanded. (MDC's
 	`shouldHide` gate compares a pixel coordinate with 0.5 and is true for every real release, so its other branches never
 	run — the kit keeps the reachable path.) The press hook sits on the instance a press on the sheet stops at
-	(Util.luau "INPUT RULE"): the modal sheet's InputSink (a GuiButton — the Frame under it never gets InputBegan), the
+	(Util.luau "INPUT RULE"): the modal sheet's ClickSink (a GuiButton — the Frame under it never gets InputBegan), the
 	standard sheet's Frame itself (it has no sink: MDC's standard sheet is a plain view in the layout). A press on a
 	GuiButton of the content stops there and drags nothing.
 	HEADER (optional, `Headline`): MDC itself has no header view; the M3 anatomy names a headline and a close icon button
@@ -176,9 +176,9 @@ local function build(cfg: Config): Built
 		Position = position,
 		BackgroundColor3 = container,
 		BorderSizePixel = 0,
-		Active = true, -- 3D / camera input only; a modal sheet's GUI clicks are sunk by the InputSink child
+		Active = true, -- 3D / camera input only; a modal sheet's GUI clicks are sunk by the ClickSink child
 		-- the drag hook goes where the press lands: the sink when there is one (the Frame below it never gets InputBegan)
-		if cfg.Modal then Util.inputSink({ slide.Hook() }) else slide.Hook() :: any,
+		if cfg.Modal then Util.clickSink({ slide.Hook() }) else slide.Hook() :: any,
 		cfg.Modifier or q.None,
 		if cfg.Modal then D.UICorner { CornerRadius = UDim.new(0, CORNER) } else q.None,
 		if cfg.Modal then Elevation.Shadow({ Level = 1, Theme = theme }) else q.None,

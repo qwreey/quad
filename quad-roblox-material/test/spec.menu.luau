@@ -1,6 +1,6 @@
 --!strict
 local H = require("./support/harness")
-local InputSink = require("./support/inputsink")
+local ClickSink = require("./support/clicksink")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
 local D = q.Declaration
@@ -68,7 +68,7 @@ H.section("open: panel under the anchor, items, divider, scrim is transparent", 
 	assert(menu.Position == UDim2.fromOffset(200, 106) and menu.AnchorPoint == Vector2.new(0.5, 0), "below the anchor (top-center pivot)")
 	assert(menu.Size == UDim2.fromOffset(200, 16 + 48 * 4 + 17), "anchor width, content height")
 	assert(menu.BackgroundColor3 == L.SurfaceContainer and menu.Active == true)
-	InputSink.assertInputSink(menu, "the menu panel (opens with a scrim)")
+	ClickSink.assertClickSink(menu, "the menu panel (opens with a scrim)")
 	assert(#itemsOf(screen) == 4 and H.find(screen, "Divider") ~= nil)
 	local scrim = H.find(screen, "Scrim")
 	H.finishTweens()

@@ -2,7 +2,7 @@
 -- Bottom sheets: BottomSheetScaffold (standard) and ModalBottomSheet.open (modal) — Compose geometry, SheetState,
 -- drag thresholds (positional 56 / velocity 125), handle clicks, back key, scrim, dispose.
 local H = require("./support/harness")
-local InputSink = require("./support/inputsink")
+local ClickSink = require("./support/clicksink")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
 local D = q.Declaration
@@ -39,15 +39,15 @@ local function own(inst: any, className: string): any
 	return nil
 end
 
--- the surface's InputSink: a press on the sheet stops at this GuiButton (the Frame under it never gets InputBegan — Studio
+-- the surface's ClickSink: a press on the sheet stops at this GuiButton (the Frame under it never gets InputBegan — Studio
 -- 2026-10-08, Util.luau "INPUT RULE"), so the drag hook lives here
 local function sinkOf(sheet: any): any
 	for _, c in sheet:GetChildren() do
-		if c.Name == "InputSink" then
+		if c.Name == "ClickSink" then
 			return c
 		end
 	end
-	error("no InputSink")
+	error("no ClickSink")
 end
 
 -- a real click on the handle, in the engine's order (Studio 2026-10-08): InputBegan, Activated, the element's InputEnded,
@@ -121,7 +121,7 @@ H.section("scaffold: structure, tokens, instance count", function()
 	H.resetOutput()
 	assert(n == 16, "sheet instances " .. n)
 	-- an M3 Surface blocks pointer input (Surface.kt 131): the standard sheet carries the sink too
-	InputSink.assertInputSink(sheet, "the standard bottom sheet")
+	ClickSink.assertClickSink(sheet, "the standard bottom sheet")
 	q.dispose(host)
 	H.assertNoDebugOutput("structure")
 end)
@@ -256,9 +256,9 @@ H.section("press hooks where the engine delivers the press; the handle's canon r
 	local screen, _host, sheet = scaffold({ SheetState = state })
 	-- the engine never delivers InputBegan to the Frame under a full-cover GuiButton (Util.luau "INPUT RULE"): no hook there
 	H.fire(sheet, "InputBegan", H.input({ Position = Vector3.new(200, 600, 0) }))
-	assert(uisConns() == baseConns, "the sheet Frame carries no drag hook (the press lands on its InputSink)")
+	assert(uisConns() == baseConns, "the sheet Frame carries no drag hook (the press lands on its ClickSink)")
 	H.fire(sinkOf(sheet), "InputBegan", H.input({ Position = Vector3.new(200, 600, 0) }))
-	assert(uisConns() > baseConns, "the InputSink starts the drag")
+	assert(uisConns() > baseConns, "the ClickSink starts the drag")
 	UIS.InputEnded:Fire(H.input({ Position = Vector3.new(200, 600, 0) }))
 	assert(uisConns() == baseConns)
 	-- canon: `Modifier.clickable` with LocalIndication = ripple (BottomSheet.kt 364-372, Clickable.kt 199-210)
@@ -375,7 +375,7 @@ H.section("modal: opens Hidden, shows after the first layout (rises), scrim foll
 	local scrim = H.find(root, "Scrim")
 	assert(own(sheet, "UIShadow") == nil, "modal: no shadow (tonal 0)")
 	assert(sheet.Active == true and root.Active ~= true, "the sheet above the scrim keeps 3D input out; the full-size root does not")
-	InputSink.assertInputSink(sheet, "the modal bottom sheet")
+	ClickSink.assertClickSink(sheet, "the modal bottom sheet")
 	assert(scrim.BackgroundColor3 == L.Scrim and scrim.BackgroundTransparency == 1 and scrim.Selectable == false)
 	assert(offsetOf(sheet) == 0, "mounted hidden")
 	layout(screen, 200)

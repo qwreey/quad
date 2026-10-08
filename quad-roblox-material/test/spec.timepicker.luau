@@ -3,7 +3,7 @@
 -- user-only, 12 h / 24 h, the AM/PM toggle, dial tap / drag / keys, text-input validation, the modal's OK / Cancel and
 -- mode toggle, dispose, ripples bounded (no partial Scale, no AutomaticSize anywhere).
 local H = require("./support/harness")
-local InputSink = require("./support/inputsink")
+local ClickSink = require("./support/clicksink")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
@@ -407,7 +407,7 @@ H.section("Modal: draft / OK commits / Cancel discards; title, sizes, mode toggl
 	})
 	local card = H.find(screen, "TimePickerModal")
 	assert((card :: any).Active == true, "the card keeps 3D input out")
-	InputSink.assertInputSink(card, "the time picker card (a click / dial drag on it must not reach the scrim)")
+	ClickSink.assertClickSink(card, "the time picker card (a click / dial drag on it must not reach the scrim)")
 	assert(card ~= nil and card.ClassName == "CanvasGroup" and card.Size == UDim2.fromOffset(320, 528), tostring(card and card.Size))
 	assert(card.BackgroundColor3 == L.SurfaceContainerHigh and own(card, "UICorner").CornerRadius == UDim.new(0, 28))
 	local title = H.find(card, "Title")
