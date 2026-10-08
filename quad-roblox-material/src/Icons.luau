@@ -11,7 +11,8 @@
 	    Icons.resolve(value)                  -> ("Image", id) | ("Glyph", text)   what an ICON PROP draws (below)
 	    Icons.imageOf(value)                  -> string   a name's image ("" without one) or the value itself
 
-	Names: check, close, arrowDown, arrowUp, chevronLeft, chevronRight, chevronDown, edit, calendar, keyboard, schedule, menu, error
+	Names: check, close, arrowDown, arrowUp, chevronLeft, chevronRight, chevronDown, edit, calendar, keyboard, schedule, menu, moreVert,
+	error
 	(the "!" TextField shows while in the Error state).
 
 	ICON PROPS (Button / SplitButton `Icon`, Slider `TrackIcon*`) take ONE string, resolved by `Icons.resolve` when the
@@ -57,6 +58,11 @@
 	  menu          6031097225   baseline/navigation/menu   (added 2026-10-08 with the navigation drawer — the "hamburger"
 	                             that opens it from an app bar / a screen; image id, verified AssetTypeId 1,
 	                             "baseline_navigation_menu", creator qwreey74_icon — not rendered through thumbnails)
+	  moreVert      6031104648   baseline/navigation/more_vert   (added 2026-10-08 with the app bars — the overflow indicator of an app
+	                             bar's actions row: Compose AppBarOverflowIndicator draws Icons.Filled.MoreVert, androidx/androidx@40ff481
+	                             compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/AppBarDsl.kt 434-466
+	                             (the default overflowIndicator of AppBarRow.kt 52-56); image id, verified AssetTypeId 1, "baseline_navigation_more_vert", creator
+	                             qwreey74_icon — not rendered through thumbnails)
 	  error         (none)       the dump has no "error" icon; the glyph "!" (ASCII, always in the font) stays
 	White on transparent, so `ImageColor3` tints them like text.
 
@@ -64,14 +70,15 @@
 	close U+00D7, arrowDown U+25BC, arrowUp U+25B2, chevronLeft U+2039, chevronRight U+203A — inside Roboto; chevronDown has
 	no single-chevron glyph in Roboto and falls back to the arrowDown triangle U+25BC; edit (U+270E) and calendar (U+25A6)
 	have NO Roboto glyph and depend on the platform's font fallback; so do keyboard (U+2328) and schedule (U+25F7); menu
-	falls back to U+2261 (≡, IDENTICAL TO — the closest three-bar glyph; not checked against Roboto).
+	falls back to U+2261 (≡, IDENTICAL TO — the closest three-bar glyph; not checked against Roboto); moreVert to U+22EE (⋮, VERTICAL
+	ELLIPSIS — not checked against Roboto).
 
 	Who goes through here: Chip (check; remove x — unless the chip's own CheckIcon / RemoveIcon is given), Select (the
 	arrow, a `TrailingIcon` image / `TrailingGlyph` fallback), Snackbar (close), the date picker month arrows and the modal's
 	edit / calendar mode toggle (GlyphButtons given the asset), the time picker modal's keyboard / schedule mode toggle, the ColorPicker's selected-swatch check, the date picker
 	header's year-menu arrow (arrowDown / arrowUp as the month-year Button's trailing icon since the 10th QA — until then a
 	"▼"/"▲" inside the label text; the glyphs again when either image is overridden away), the split button's menu arrow
-	(chevronDown).
+	(chevronDown), the app bars' / toolbars' overflow button (moreVert).
 	`override` is module-wide (every theme, every Roblox VM script sharing this module) and read when a component is
 	built, so call it before building UI; already-built instances keep what they have.
 ]]
@@ -89,6 +96,7 @@ export type Name =
 	| "keyboard"
 	| "schedule"
 	| "menu"
+	| "moreVert"
 	| "error"
 
 local Glyphs: { [Name]: string } = {
@@ -104,6 +112,7 @@ local Glyphs: { [Name]: string } = {
 	keyboard = "\u{2328}",
 	schedule = "\u{25F7}",
 	menu = "\u{2261}",
+	moreVert = "\u{22EE}",
 	error = "!",
 }
 
@@ -121,6 +130,7 @@ local defaultIds: { [string]: string } = {
 	keyboard = "rbxassetid://6034818398",
 	schedule = "rbxassetid://6031260808",
 	menu = "rbxassetid://6031097225",
+	moreVert = "rbxassetid://6031104648",
 }
 local Defaults = table.freeze(defaultIds)
 

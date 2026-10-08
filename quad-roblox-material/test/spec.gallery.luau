@@ -254,6 +254,49 @@ H.section("sheets and drawers: the modal sheets open in the panel's layer, the s
 	H.assertNoDebugOutput("sheets and drawers")
 end)
 
+H.section("navigation bar, rail, app bars and toolbars: the Navigation tab's screens work", function()
+	click(tabButton(gui, "Navigation"))
+	H.finishTweens()
+	local phone = H.find(gui, "NavigationBarScreen") :: any
+	local bar = H.find(phone, "ShortNavigationBar") :: any
+	assert(bar ~= nil and bar.Size == UDim2.new(1, 0, 0, 64))
+	click(button(phone, "Saved"))
+	assert(byText(phone, "Page: saved") ~= nil and byText(H.find(gui, "NavigationRailScreen"), "Page: saved") ~= nil, "one page Source")
+	local railScreen = H.find(gui, "NavigationRailScreen") :: any
+	local rail = H.find(railScreen, "WideNavigationRail") :: any
+	assert(rail.Size == UDim2.new(0, 96, 1, 0))
+	click(H.findAll(H.find(rail, "Header"), function(i: any)
+		return i.ClassName == "TextButton"
+	end)[1])
+	for _ = 1, 15 do
+		H.advance(0.02)
+	end
+	assert(rail.Size.X.Offset >= 220, "the header button expanded the rail")
+	local exit = H.find(gui, "ExitUntilCollapsedAppBarScreen") :: any
+	local medium = H.find(exit, "MediumFlexibleTopAppBar") :: any
+	assert(medium.Size == UDim2.new(1, 0, 0, 136))
+	local content = H.find(exit, "Content") :: any
+	content.CanvasPosition = Vector2.new(0, 200)
+	assert(medium.Size == UDim2.new(1, 0, 0, 64), "collapsed by the list's scroll")
+	content.CanvasPosition = Vector2.new(0, 0)
+	assert(medium.Size == UDim2.new(1, 0, 0, 136))
+	assert(H.find(gui, "BottomAppBarScreen") ~= nil and H.find(gui, "LargeFlexibleAppBar") ~= nil)
+	local toolbars = H.find(gui, "ToolbarScreen") :: any
+	local horizontal = H.find(toolbars, "HorizontalFloatingToolbar") :: any
+	local wide = horizontal.Size.X.Offset
+	local labeled = (byText(gui, "Expanded") :: any).Parent
+	click(H.findAll(labeled, function(i: any)
+		return i.Name == "Switch"
+	end)[1])
+	for _ = 1, 15 do
+		H.advance(0.02)
+	end
+	assert(horizontal.Size.X.Offset < wide, "the Expanded switch collapsed the toolbars")
+	click(tabButton(gui, "Buttons"))
+	H.advance(0.5)
+	H.assertNoDebugOutput("layout group")
+end)
+
 local function fireAncestry(root: any)
 	local all = H.findAll(root, function(_: any): boolean
 		return true

@@ -80,7 +80,7 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
 | 선택 | `Checkbox` | 체크·불확정·오류·비활성(체크 표시는 회전한 Frame 둘이라 이미지 없음, 토글은 MaterialUI식 가장자리 막대 모션), `Label`로 라벨까지 한 클릭·호버 영역 |
 | | `Radio` / `RadioGroup` | 한 개 / 세로·가로 묶음(선택 모션은 MaterialUI 스프라이트 시트 이미지 한 장), `Label`로 라벨까지 한 클릭·호버 영역 |
 | | `Switch` | M3: 52x32 트랙, 핸들이 16→24→28로 자람(꺼진 채 누르면 24), 선택적 아이콘; 핸들을 끌어 절반을 넘기면 반대 상태(탭은 토글) |
-| | `Slider` | M3(현행 Compose 형태): 트랙을 핸들 양옆 6px 틈으로 두 조각, 바깥 끝 완전 둥글림·핸들 쪽 반경 2, 4 px 막대 핸들, 끝 점(stop indicator), 연속/이산(4px 점 눈금), 값 라벨 알약, 키보드·D-pad. M3 변형: `Size` XS/S/M/L/XL(트랙 16/24/40/56/96, 바깥 반경 8/8/12/16/28, 핸들 높이 44/44/44/68/108 — MDC `Widget.Material3Expressive.Slider.*`), `Orientation = "Vertical"`(기본 아래가 Min, `TopToBottom`으로 위가 Min; 핸들은 44 x 4로 눕고 라벨은 왼쪽, 위/아래 키), `Centered`(활성 트랙이 범위 한가운데에서 핸들까지), 안쪽 아이콘 `TrackIconActiveStart/End`·`TrackIconInactiveStart/End`(M 이상·표준만, 24/24/32 px, 조각 끝에서 10 px, 조각이 아이콘 + 20보다 짧으면 숨음) |
+| | `Slider` | M3(현행 Compose 형태): 트랙을 핸들 양옆 6px 틈으로 두 조각, 바깥 끝 완전 둥글림·핸들 쪽 반경 2, 4 px 막대 핸들, 끝 점(stop indicator, 트랙 끝에서 중심 6 px 안쪽 — 크기와 무관, m3.material.io 스펙), 연속/이산(4px 점 눈금), 값 라벨 알약, 키보드·D-pad. M3 변형: `Size` XS/S/M/L/XL(트랙 16/24/40/56/96, 바깥 반경 8/8/12/16/28, 핸들 높이 44/44/44/68/108 — MDC `Widget.Material3Expressive.Slider.*`), `Orientation = "Vertical"`(기본 아래가 Min, `TopToBottom`으로 위가 Min; 핸들은 44 x 4로 눕고 라벨은 왼쪽, 위/아래 키), `Centered`(활성 트랙이 범위 한가운데에서 핸들까지), 안쪽 아이콘 `TrackIconActiveStart/End`·`TrackIconInactiveStart/End`(M 이상·표준만, 24/24/32 px, 조각 끝에서 10 px, 조각이 아이콘 + 20보다 짧으면 숨음) |
 | | `RangeSlider` | M3 손잡이 둘(`Start`/`End` 두 Source) — 트랙 세 조각(가운데는 양 끝 반경 2), 누른 자리에서 가까운 손잡이를 끌고 서로를 못 넘음, 키는 한 손잡이씩(Return·게임패드 X로 전환); `Size`·`Orientation`·`TopToBottom`은 Slider와 같음(세로 범위는 MDC `RangeSlider`가 `BaseSlider`의 orientation을 물려받아 정본 — Compose엔 없음), `Centered`·안쪽 아이콘은 없음 |
 | | `M2.Slider` / `M2.RangeSlider` / `M2.Switch` | Material 2 모양 — 같은 props·같은 동작(공용 동작 모듈), 그림만 다름: 4px 얇은 트랙 + 20px 원형 손잡이·40px halo, 얇은 36x14 트랙 + 트랙보다 큰 20px 원형 썸(그림자). 아래 "M2 모양" |
 | 입력·메뉴 | `TextField` | Filled / Outlined, 떠오르는 레이블, 보조·오류 문구, 글자 수, 아이콘, 접두·접미, 여러 줄 |
@@ -108,6 +108,13 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
 | | `ModalNavigationDrawer` / `DismissibleNavigationDrawer` / `PermanentNavigationDrawer` | 트리 안 레이아웃(Compose 그대로): 스크림 위로 미끄러지는 모달, 내용을 밀어내는 dismissible, 늘 옆에 있는 permanent |
 | | `ModalDrawerSheet` / `DismissibleDrawerSheet` / `PermanentDrawerSheet` | 드로어 면 — 폭 360(240~360), 모달은 surfaceContainerLow + 끝 모서리 16, 목록은 스크롤 |
 | | `NavigationDrawerItem` / `NavigationDrawerItems` / `NavigationDrawerHeadline` / `NavigationDrawerDivider` | 56 px 알약 행(아이콘 24·LabelLarge·배지), 데이터 목록(`Selected: Source<K>` 하나 — Tabs 규칙), 구획 제목(TitleSmall)·구분선(MDC) |
+| | `ShortNavigationBar` | 내비게이션 바(M3 Expressive, 64 높이 surfaceContainer) — 같은 목적지 모델·Tabs 선택 규칙, 아이콘 위(56 x 32 알약) / 아이콘 앞(40 높이 알약), `EqualWeight` / `Centered` 배치, 선택하면 알약이 가운데서 자람 |
+| | `WideNavigationRail` / `WideNavigationRailState` | 내비게이션 레일 — 접힘 96 폭(아이콘 위 알약), 펼침은 가장 넓은 항목 + 20(220~360, 아이콘 앞 56 높이 알약), `Collapsed` / `Expanded` 상태 객체, 머리(메뉴 버튼·FAB) |
+| | `Badge` | M3 배지 — 작은 점 6 px, 글자 있는 16 px(LabelSmall, error) — 바·레일 아이콘 위에 |
+| 앱 바·툴바 | `TopAppBar` / `CenterAlignedTopAppBar` / `MediumTopAppBar` / `MediumFlexibleTopAppBar` / `LargeTopAppBar` / `LargeFlexibleTopAppBar` | 위 앱 바 여섯(Compose 그대로): 내비게이션 아이콘·제목(·부제목)·액션(데이터 → 48 px 아이콘 버튼, 툴팁, `MaxItemCount` 넘으면 오버플로 메뉴) |
+| | `TopAppBarState` / `TopAppBarDefaults` | 스크롤 동작 `pinnedScrollBehavior` / `enterAlwaysScrollBehavior` / `exitUntilCollapsedScrollBehavior` — `Hook`을 ScrollingFrame에 꽂으면 그 스크롤을 따라 색이 바뀌고(scrolledContainerColor) 접힘 |
+| | `BottomAppBar` / `FlexibleBottomAppBar` | 하단 앱 바(80, 액션 + FAB)와 유연한 하단 앱 바(64 — MDC의 docked toolbar) |
+| | `HorizontalFloatingToolbar` / `VerticalFloatingToolbar` | M3 Expressive 떠 있는 툴바 — 64 두께 알약, Standard / Vibrant 색, 앞·뒤 내용은 펼쳤을 때만, FAB 형(펼침 56 FAB + 툴바, 접힘 80 FAB만) |
 
 ### props 관례
 
@@ -134,7 +141,11 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
   하나가 몰고, 나중에 만든 컴포넌트가 넘겨받습니다(다시 만든 시트, 같은 상태로 다시 연 모달).
 - **내비게이션 목적지**: `NavigationDrawerItems`는 `{ Key, Label, Icon, Badge }` 목록과 **`Selected: Source<K>` 하나**를 받습니다(`Tabs`와
   같은 규칙 — 클릭이 `SetIfChanged(key)`, 바뀌었으면 `OnChange`, 매번 `OnClick`). 행 하나(`NavigationDrawerItem`)는 다른 표시
-  컴포넌트처럼 `Selected: boolean | State<boolean>`. 목적지 타입 `Material.NavigationDestination<K>`는 뒤에 올 내비게이션 바·레일과 공유합니다.
+  컴포넌트처럼 `Selected: boolean | State<boolean>`. 목적지 타입 `Material.NavigationDestination<K>`는 `ShortNavigationBar`·`WideNavigationRail`과 공유합니다
+  (바·레일은 `Badge = ""`를 작은 점, 다른 글자를 큰 배지로 아이콘 위에 그림).
+- **앱 바·툴바의 아이콘 버튼은 데이터로**: `Material.AppBarAction = { Icon, Label, OnClick?, Checked?, OnCheckedChange?, Disabled? }` —
+  Compose `AppBarRow`의 항목처럼 Label이 툴팁이자 오버플로 메뉴 글자, `Checked`가 있으면 토글(새 값으로 `OnCheckedChange`, 아무것도
+  쓰지 않음). 인스턴스를 그대로 넣어도 됩니다(메뉴로 안 넘어감). 아이콘 색은 그 바의 색(`IconButton`의 새 `ContentColor` prop).
 - **제네릭 컴포넌트의 타입 인자**: `Tabs<<string>>({ ... })`처럼 적어야 합니다 — `Selected: Source<K>`가 불변이라 `q.Source("a")`만으로는 strict가
   K를 `string | nil`로 추론해 호출을 거부합니다(`Tabs`의 탭 목록은 인라인 리터럴도 받고, State는 `TabsState`로 따로 받음).
 - **`Modifier`**: 배열 부분에서 컴포넌트의 기본 스타일 **뒤에** 적용되므로(나중 것이 이김) 크기·위치·`LayoutOrder`를
@@ -305,6 +316,57 @@ Material.ModalNavigationDrawer({
 - **측면 시트**: 표준은 부모 끝(오른쪽, `SheetEdge = "Start"`면 왼쪽)에 붙고 숨으면 폭만큼 밖으로 — 부모가 `ClipsDescendants`여야 합니다.
   `SheetState`의 값은 `Hidden`/`Expanded` 둘(MDC STATE_HIDDEN / STATE_EXPANDED) — PartiallyExpanded를 켠 상태를 주면 에러.
 
+## 내비게이션 바·레일·앱 바·툴바
+
+```luau
+local page = q.Source("home")
+local items = {
+	{ Key = "home", Label = "Home", Icon = "rbxassetid://6026568195" },
+	{ Key = "saved", Label = "Saved", Icon = "rbxassetid://6022852108", Badge = "3" },
+}
+-- 세로로 긴 화면: 아래 내비게이션 바
+Material.ShortNavigationBar<<string>>({ Selected = page, Items = items })
+-- 넓은 화면: 레일(머리의 메뉴 버튼으로 펼치고 접기)
+local rail = Material.WideNavigationRailState()
+Material.WideNavigationRail<<string>>({ State = rail, Selected = page, Items = items,
+	Header = Material.IconButton({ Icon = Material.Icons.asset("menu") or "", TouchTarget = true, OnClick = rail.Toggle,
+		Modifier = q.Declaration.Modifier.TextButton():Position(UDim2.fromOffset(24, 0)) }) })
+
+-- 앱 바 + 스크롤: 목록은 바 뒤에서 스크롤(바의 펼친 높이만큼 위 여백)
+local scroll = Material.TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+Material.MediumFlexibleTopAppBar({ Title = "Inbox", Subtitle = "3 unread", ScrollBehavior = scroll,
+	NavigationIcon = { Icon = "menu", Label = "Menu", OnClick = drawer.Open },
+	Actions = { { Icon = "rbxassetid://6031154871", Label = "Search", OnClick = search } } })
+q.Declaration.ScrollingFrame { scroll.Hook, … }
+
+-- 떠 있는 툴바
+Material.HorizontalFloatingToolbar({ Expanded = expanded, Content = { … }, FloatingActionButton = { Icon = "…", OnClick = add } })
+```
+
+- **정본**: Compose material3(androidx/androidx@40ff481 — `ShortNavigationBar.kt`·`WideNavigationRail.kt`·`WideNavigationRailState.kt`·
+  `NavigationItem.kt`·`Badge.kt`·`AppBar.kt`·`AppBarRow.kt`·`AppBarDsl.kt`·`FloatingToolbar.kt`, 토큰 `NavigationBar*Tokens`·
+  `NavigationRail*Tokens`·`BadgeTokens`·`AppBar*Tokens`·`BottomAppBarTokens`·`DockedToolbarTokens`·`FloatingToolbarTokens`), MDC 문서
+  (material-components/material-components-android@60ff094 `docs/components/` — 어느 쪽이 지금 정본인지). 줄 번호는 각 파일 머리.
+- **어느 모양인가**: 바·레일은 M3 Expressive 판(MDC 문서가 지금 것으로 적은 쪽 — 바 80 → 64, 레일은 접힘 96 / 펼침이 드로어를 대신함)만
+  넣었습니다. Compose의 옛 `NavigationBar`(80)·`NavigationRail`(80)은 없습니다. 위 앱 바는 Compose가 여섯 다 내보내므로 여섯 다(MDC는
+  medium·large를 flexible로 대체 예정이라고 적음), 하단은 `BottomAppBar`와 `FlexibleBottomAppBar`(= MDC docked toolbar).
+- **선택 표시**: 바·레일 항목의 아이콘·글자 색은 애니메이션하지 않고(Compose `animateColor = false`) 알약만 움직입니다 — 폭이 0에서 제
+  폭까지(바: 가운데에서, 레일: 왼쪽 끝 20에서) 알파와 함께 0.2 s. 레일 항목 글자 색만 Compose처럼 애니메이션. 상태 레이어·리플은 알약
+  전체(항목 전체가 아님), 클릭은 항목 전체.
+- **레일 펼치고 접기**: 하나의 진행값이 폭·항목 높이(64 → 56)·간격(4 → 0)·알약 크기(56 x 32 → 56 높이 가로 알약)·아이콘 위치를 함께
+  움직이고, 글자는 절반에서 자리·크기(LabelMedium → LabelLarge)를 바꾸며 사라졌다 나타납니다(Compose `placeAnimatedLabelAndIcon`).
+  펼친 폭은 재어 둔 글자 폭으로 정합니다(가장 넓은 항목 + 20, 220~360).
+- **앱 바 스크롤**: Roblox ScrollingFrame은 스크롤을 부모에게 넘길 수 없어서(중첩 스크롤 없음) 바가 스크롤을 "먹지" 않고 같이
+  접힙니다. 그래서 화면은 Compose Scaffold처럼 짭니다 — 스크롤 내용이 바 **뒤**에서 화면을 채우고 위 여백 = 바의 펼친 높이, 바는
+  위에(ZIndex) — 그러면 첫 행이 접히는 바의 아래 끝에 붙어 갑니다(갤러리의 세 화면). 스크롤이 0.1 s 멈추면 중간에 걸린 바는 가까운
+  쪽 끝으로 0.2 s(Compose `settleAppBar`). 바를 직접 끌어 접기·플링 감속은 없습니다.
+- **두 줄 바의 큰 제목**은 마지막 기준선이 아래에서 24(medium)/28(large) — 기준선은 Roboto 지표(ascender 0.928 em, descender
+  0.244 em)로 근사했습니다(Roblox는 글꼴 기준선을 알려 주지 않음).
+- **오버플로**: 액션이 `MaxItemCount`보다 많으면 `MaxItemCount - 1`개 + 더보기(⋮, `Icons` "moreVert") 버튼, 나머지는 Menu로. Compose는
+  폭을 재서도 넘기지만 키트는 개수만 셉니다.
+- **툴바**: 64 두께·모서리 완전 둥글게·안쪽 여백 8, 그림자 없음(FAB 형만 펼쳤을 때 Level1). 펼침 0.15 s(Compose FastSpatial 스프링의
+  근사). FAB 형은 툴바와 FAB 사이 8, 펼침 FAB 56 / 접힘 80, 툴바는 FAB 쪽으로 줄어듭니다.
+
 ## 색상 선택기
 
 ```luau
@@ -362,7 +424,8 @@ Gallery.GalleryPanel({})       -- 페이지(Frame)만; 직접 호스트할 때. 
 
 스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함; 2026-10-08 시트·드로어 처리에서 Navigation 탭이
 더해져 모든 탭이 탭 버튼 하나(8)만큼 늘었다 — 아래 숫자는 그 앞의 값, 지금 값은 Buttons 657 · Selection 1345 · Text 276 · Surfaces 335 ·
-Overlays 334(하단·측면 시트 묶음 둘: 모달 버튼과 흉내 화면 속 표준 시트) · Navigation 498(드로어 셋, 흉내 화면 셋) · Chips 521 ·
+Overlays 334(하단·측면 시트 묶음 둘: 모달 버튼과 흉내 화면 속 표준 시트) · Navigation 1190(드로어 셋 + 2026-10-08 바 둘·레일·스크롤
+하는 앱 바 셋·쉬는 앱 바 넷·하단 앱 바 둘·툴바 셋 — 흉내 화면 열둘 더; 드로어만일 때 498) · Chips 521 ·
 Pickers 1037 · Theme 205): Buttons 649(10차에 "Button: icons —
 leading / trailing"·"SplitButton" 묶음 추가 — 분할 버튼 하나가 쉴 때 40), Selection 1337(맨 위 "Slider / Switch — M3 vs M2" 비교
 묶음 옆에 10차 "Slider variants (M3)" 묶음 — 크기 다섯·가운데 정렬·안쪽 아이콘·세로 넷),
@@ -444,7 +507,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 29 | LoadingIndicator·WavyProgress | Progress 스토리·갤러리 Chips | 모양이 650ms마다 바뀌며 돌고, 물결이 흐르며 막대가 참 — 물결 선이 또렷한지(시트 칸 Stretch), 파장 이음매·흐름 끊김이 안 보이는지; 양 끝 둥근 캡이 선 위에 붙어 함께 오르내리는지(채움이 바뀌는 동안에도), 0 % 근처에서 점 하나로 줄었다 사라지는지; 100 %·`Wavy = false`에서 물결이 부드럽게 잦아들어 직선이 되고 다시 켜면 부풀어 오르는지(시트 칸 경계에서 이웃 칸이 번져 보이지 않는지) |  |
 | 30 | Classic 색상 선택기 물방울 그림자 | ClassicColorPicker 스토리 | 색조 손잡이를 끌 때 물방울 그림자가 손잡이(구) 위를 덮지 않음 |  |
 | 31 | CircularProgress 원호 조각(시트 `rbxassetid://97823357785454`) | Progress 스토리(두께 넷 한 줄)·갤러리 Chips | 조각 이음매에 머리카락 틈·겹친 진한 줄이 없음, 양 끝이 둥글고 캡이 선 굵기와 같음(삐져나온 모서리 없음), 표시와 트랙 사이 간격이 양쪽 같음, 0 %에서 트랙만 닫힌 고리·100 %에서 표시만 닫힌 고리(12시 이음매 없음), 값을 바꾸면 0.3 s에 걸쳐 끝이 미끄러지고 트랙이 점으로 줄었다 사라짐, 비확정이 짧은 호(10 %)↔긴 호(87 %)로 늘었다 줄며 1.5 s마다 90° 툭 건너뛰며 돎, 작은 지름(24)에서 선이 뭉개지지 않음 |  |
-| 32 | M3 Slider·RangeSlider 트랙 조각 둥글림 | 갤러리 Selection "Slider / Switch — M3 vs M2"·Slider·RangeSlider 스토리 | 조각의 바깥 끝은 반원(반경 8), 핸들 쪽 끝은 살짝만 둥근(반경 2) 모서리, 캡과 몸통이 만나는 x = 8에 이음매·틈·진한 줄 없음(비활성 반투명일 때도), 핸들 양옆 틈이 6 px로 같음, 끝에 닿은 조각은 사라짐, 끝 점이 트랙 끝 안쪽에 |  |
+| 32 | M3 Slider·RangeSlider 트랙 조각 둥글림 | 갤러리 Selection "Slider / Switch — M3 vs M2"·Slider·RangeSlider 스토리 | 조각의 바깥 끝은 반원(반경 8), 핸들 쪽 끝은 살짝만 둥근(반경 2) 모서리, 캡과 몸통이 만나는 x = 8에 이음매·틈·진한 줄 없음(비활성 반투명일 때도), 핸들 양옆 틈이 6 px로 같음, 끝에 닿은 조각은 모서리 곡선이 그대로인 채 창이 좁아져 사라짐(툭 사라지지 않음), 끝 점이 트랙 끝에서 중심 6 px 안쪽에 |  |
 | 33 | M3 슬라이더 핸들·라벨 | 같은 곳 | 4x44 막대가 누르는 동안·포커스 동안 2 px로 가늘어지고 게임패드 포커스에 링이 막대를 감쌈, 값 라벨(32 px 알약, 좌우 여백 10, LabelLarge 크기·Regular 굵기)이 핸들 위 12 px에 뜸 — 위 행과 겹쳐 보이는지 |  |
 | 34 | Switch 드래그(M3·M2) | 같은 곳 "Drag or tap"·Switch·M2Switch 스토리 / 플레이(터치) | 4 px 넘게 끌면 손잡이가 그 자리에서 튀지 않고(넘긴 순간의 포인터가 원점) 손가락을 1:1로 따라오고, 절반을 넘겨 놓으면 반대 상태로·못 넘기면 제자리로 미끄러짐, 놓은 순간 한 번 더 뒤집히지 않음(클릭 억제), 그냥 탭은 토글, 트랙 밖에서 놓아도 판정됨 |  |
 | 35 | M2 Switch 썸 | 같은 곳 | 20 px 썸이 14 px 트랙 위아래로 삐져나오고 그림자가 보임, light에선 흰 썸·dark에선 밝은 회색, 누르는 동안 갤러리 행 높이가 안 변함(halo가 호스트 56x40 안) |  |
@@ -453,7 +516,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 38 | 누르는 동안 자동 폭 버튼·칩이 안 늘어남(9차 회귀·10차 후속) | 갤러리 Buttons·Chips 행, Dialog·DatePicker 모달 버튼, DatePicker(도킹·모달) 머리의 월·연 버튼 | 리플이 버튼을 가득 채울 때까지(0.5초 넘게) 누르고 있어도 버튼이 행 폭을 다 채우거나(서서히든 한 번에든) 줄바꿈되지 않고, 가득 찬 순간 리플 색이 끊기거나 깜빡이지 않으며 오른쪽 끝에 얇은 틈이 안 보임 — 리플 그룹 아래엔 Scale이 하나도 없음(`Ripple.luau` "NOT SCALE", "FULL COVER") |  |
 | 39 | 드롭다운 메뉴 스크롤바·리플 | Select 스토리(Options 컨트롤을 6 이상으로 — 메뉴 높이 240 px를 넘으면 스크롤)·Menu 스토리 | 스크롤 막대가 흰색이 아니라 onSurface 50 %로 보이고, 항목을 누르면 리플이 누른 자리에서 퍼져 행 오른쪽 끝(막대 아래까지)을 덮음 |  |
 | 40 | 작은 화면의 색상 선택기 모달 | 갤러리 Pickers "ColorPicker: modal" — 창을 작게 | 카드 전체가 화면 안으로 작아짐(잘리지 않음), 그 안 버튼 리플이 버튼 전체를 덮음 |  |
-| 41 | M3 슬라이더 크기 다섯 | 갤러리 Selection "Slider variants (M3)" 크기 행·Slider 스토리 `Size` | XS 16·S 24·M 40·L 56·XL 96 트랙, 바깥 끝 반경 8/8/12/16/28이 반원·둥근 끝으로 보이고 캡·몸통 이음매 없음, L·XL 핸들이 68·108로 길어지고 호스트 안에 들어감, 끝 점이 바깥 반경만큼 안쪽 |  |
+| 41 | M3 슬라이더 크기 다섯 | 갤러리 Selection "Slider variants (M3)" 크기 행·Slider 스토리 `Size` | XS 16·S 24·M 40·L 56·XL 96 트랙, 바깥 끝 반경 8/8/12/16/28이 반원·둥근 끝으로 보이고 캡·몸통 이음매 없음, L·XL 핸들이 68·108로 길어지고 호스트 안에 들어감, 끝 점이 크기와 무관하게 트랙 끝에서 6 px 안쪽(핸들 0 %·100 %가 그 점 위) |  |
 | 42 | 세로 슬라이더 | 같은 곳 세로 넷·Slider·RangeSlider 스토리 `Vertical` | 아래가 Min(TopToBottom이면 위), 44 x 4 눕힌 핸들이 포인터를 세로로 따라옴, 값 라벨이 핸들 왼쪽 12 px, 위/아래 키·D-패드가 값을 움직이고 좌/우는 옆 컨트롤로 선택이 넘어감 |  |
 | 43 | 가운데 정렬(Centered) 슬라이더 | 같은 곳 "Centered"·Slider 스토리 `Centered` | 활성 트랙이 한가운데에서 핸들 쪽으로(양방향), 한가운데에 점·표시 없음, 한가운데 반대편 비활성 조각이 6 px 떨어져 끝남, 양 끝 점 둘 |  |
 | 44 | 안쪽 아이콘 | 같은 곳 L(✓·×)·M(♪, 비활성)·Slider 스토리 `InsetIcons`(M 이상) | 아이콘이 조각 끝에서 10 px 안쪽 트랙 위에 활성 SecondaryContainer·비활성 Primary 색, 조각이 아이콘 + 20보다 짧아지면 사라지고, 끝 아이콘이 있는 동안 끝 점이 안 보임 |  |
@@ -475,6 +538,13 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 60 | dismissible·permanent 드로어 | 갤러리 Navigation 둘째·셋째 화면 | dismissible: 열리면 내용이 드로어 폭만큼 오른쪽으로 밀리고 메뉴 버튼으로 토글; permanent: 240 폭 드로어 옆을 내용이 채움 |  |
 | 61 | 모달 면 안쪽 클릭 | 갤러리의 대화상자·메뉴·날짜/시간 선택 모달·모달 하단/측면 시트·모달 드로어 | 면 안 어디를 눌러도(빈 여백·머리·시계판 끌기·시트 손잡이 조작 뒤 포함) 닫히지 않음; 면 밖 스크림을 누르면 닫힘. 면마다 투명 TextButton `InputSink`가 눌림을 먹는다(일반 Frame은 누름을 아래 스크림 버튼으로 흘려보낸다 — `Active`는 3D 입력만 막음) |  |
 | 62 | 범위 날짜 완성·해제 때 깜빡임 | DatePicker 스토리 Range·갤러리 Pickers(밝은 테마) | 두 번째 날짜를 누르는 순간 사이 날짜의 띠와 끝 원이 바로 나타나고, 그 전에 반투명한 어두운 모양이 한 프레임도 덮지 않음; 세 번째 누름으로 범위가 풀릴 때도 띠·두 원이 바로 사라짐(어두워지지 않음); 첫 날짜(시작 원)만 0.1 s로 부드럽게 나타나고, 범위 밖 날짜의 호버 표시는 여전히 부드럽게 바뀜 |  |
+| 63 | 슬라이더 끝에서 조각이 사라질 때 | 갤러리 Selection·Slider·RangeSlider 스토리, 특히 XL(트랙 96)과 L, Centered 포함, 값을 천천히 끝으로 끌기 | 핸들이 끝 점(트랙 끝에서 6 px)에 가까워지면 핸들 바깥쪽 조각이 툭 사라지지 않고 모서리 곡선은 그대로인 채 안쪽부터 좁아져 0이 됨(곡선이 바뀌지 않음), 0 %·100 %에서 핸들 중심이 끝 점 위, 끝 점은 조각이 덮을 때만 보임, 이산 슬라이더는 예전처럼 한 번에 사라짐 |  |
+| 64 | 내비게이션 바 알약·배지(가장 먼저) | 갤러리 Navigation "Navigation bar" 두 화면·NavigationBar 스토리 | 누르면 알약(56 x 32, secondaryContainer)이 가운데서 0.2 s에 자라고 이전 것은 줄어듦, 글자·아이콘 색은 바로 바뀜; 아이콘 위 배지 — 작은 점은 아이콘 오른쪽 위 모서리, 큰 배지 "3"은 아이콘 오른쪽으로 삐져나옴; Start 아이콘(넓은 화면)은 40 높이 알약 안에 아이콘·글자 한 줄, 세 항목이 바 가운데 70 %; 리플·호버가 알약 안에만 |  |
+| 65 | 레일 펼치고 접기 | 갤러리 "Navigation rail"·스토리 RailExpanded | 머리 메뉴 버튼(레일 96 가운데)을 누르면 0.2 s에 폭이 220 이상으로, 항목이 56 높이 가로 알약으로, 글자가 사라졌다가 아이콘 오른쪽 8에 다시 나타남(튀거나 잘리지 않음); 다시 누르면 접힘; 오른쪽 내용이 레일 폭을 따라 밀림 |  |
+| 66 | 앱 바 스크롤(가장 위험) | 갤러리 "Top app bars that scroll" 세 화면·AppBar 스토리 | pinned: 목록을 조금만 내려도 바가 surfaceContainer로(0.2 s), 맨 위로 오면 surface; enterAlways: 내리면 바가 위로 사라지고 조금만 올려도 다시 나타남; exitUntilCollapsed: 136 → 64로 접히며 큰 제목이 옅어지고 작은 제목이 나타남, 맨 위로 와야 다시 펼쳐짐; 스크롤을 중간에 멈추면 0.1 s 뒤 가까운 끝으로 붙음; 첫 행이 바 아래 끝에 붙어 다님(겹치거나 벌어지지 않음); 터치 관성 스크롤 도중에 바가 떨지 않음 |  |
+| 67 | 앱 바 모양·액션 | 같은 곳·"Top app bars at rest" | 내비게이션 아이콘 왼쪽 4, 제목 56에서 시작(TitleLarge), 가운데 정렬 제목이 바 가운데, 두 줄 바 큰 제목의 기준선이 아래에서 24/28 근처(글자 아래가 잘리지 않음), 액션 아이콘 onSurfaceVariant·내비게이션 아이콘 onSurface, 마우스를 올리면 툴팁, ⋮이 남은 액션을 메뉴로 열고 다시 누르면 닫힘, Favorite 토글이 primary로 |  |
+| 68 | 하단 앱 바 | 갤러리 "Bottom app bars" | FlexibleBottomAppBar(64) 다섯 아이콘이 양 끝 16 안에서 고르게 벌어짐; BottomAppBar(80) 아이콘이 왼쪽 4부터, FAB(secondaryContainer)가 위 12·오른쪽 16 |  |
+| 69 | 떠 있는 툴바 | 갤러리 "Floating toolbars"·Toolbar 스토리 | Expanded 스위치로 앞·뒤 내용이 0.15 s에 줄었다 펼쳐짐(앞은 왼쪽부터, 뒤는 오른쪽부터 드러남), 알약 모양 유지; FAB 형은 접으면 툴바가 FAB 쪽으로 사라지고 FAB이 56 → 80, 펼치면 툴바 그림자; Vibrant는 primaryContainer 위 onPrimaryContainer 아이콘 |  |
 | 3 | CanvasGroup + UICorner 리플 클리핑 | Button·Chip·ListItem을 누름 | 리플 원이 둥근 모서리 밖으로 안 나감 |  |
 
 ## 테스트
@@ -517,7 +587,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 - **내장 아이콘**: Chip의 체크·제거, Select의 화살표, Snackbar의 닫기, DatePicker의 ‹ ›와 모달 모드 전환, 색상 선택기
   스와치 체크는 Google Material Design Icons(Apache 2.0, "baseline")를 작성자의 아이콘 계정이 Roblox에 올린 **이미지**
   에셋입니다(id 목록·출처는 `src/Icons.luau` 머리, 고지는 `NOTICE.md`). 2026-10-08에 economy API로 모두
-  이미지(AssetTypeId 1)인 것을 확인했고(아홉째 chevronDown은 10차 분할 버튼용, keyboard·schedule은 시간 선택기용, menu는 내비게이션 드로어용) 썸네일 렌더로 넷을 확인했지만, Studio 안에서는 아직 못 봤습니다. 이미지를 못 쓰는
+  이미지(AssetTypeId 1)인 것을 확인했고(아홉째 chevronDown은 10차 분할 버튼용, keyboard·schedule은 시간 선택기용, menu는 내비게이션 드로어용, moreVert는 앱 바 오버플로용) 썸네일 렌더로 넷을 확인했지만, Studio 안에서는 아직 못 봤습니다. 이미지를 못 쓰는
   곳에서는 `Icons.override({ edit = false, ... })`로 이름별 텍스트 글리프로 돌릴 수 있습니다(✎ ▦은 Roboto에 없어 폰트 폴백에
   따라 물음표 상자가 됨 — 9차 관측). DatePicker 머리의 연도 메뉴 화살표는 10차부터 월-년 버튼의 뒤 아이콘 이미지(arrowDown/arrowUp —
   둘 중 하나를 지우면 예전처럼 라벨 안 ▼▲ 글리프); TextField 에러 "!"는 글리프 그대로입니다.
@@ -529,11 +599,16 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
   Outlined의 레이블 노치는 표면색 배경(어두운 배경 위에선 `NotchColor` 필요), Switch 터치 타깃은 52x32(M2 Switch는 56x40), IconButton의 48px 터치 타깃은
   선택(`TouchTarget = true`, 기본은 40px), 칩 제거·스낵바 버튼은 48px, Tabs는 스크롤되지 않고 개별 비활성이 없음, Slider·RangeSlider(M3)는 Min/Max/Step이 정적이고 핸들 양옆 틈이 6 px로 고정(Compose는 눌러서 2 px로 가늘어진 핸들에 맞춰 1 px 좁힘)·호버 표시 없음(M3 그대로 — M2 모양은 halo), 값 라벨 알약의 높이 32 px·좌우 여백 10 px는 토큰이 아니라 Google의 Android 구현(material-components-android `Widget.Material3.Slider.Label` — 그 스타일의 위아래 여백 12dp는 Android에서도 그려지지 않아 안 따름)에서 온 값, 리플은 호스트 사각형을 넘지 않음(`AutomaticSize` 조상이 리플까지 재기 때문, `Ripple.luau` "BOUNDED") — 잘린 원은 원판 텍스처의 부분 사각형으로 정확히 그림(2026-10-07 전엔 모서리 반경 하나로 흉내 내 넓은 호스트에서 둥근 사각형으로 보였음), 리플 상자는 조상 `UIScale`들의 곱으로 나눈 로컬 단위 정수 Offset이라 확장 도중 마지막 1 로컬 픽셀 미만은 끝 프레임(호스트 전체 덮기)에서야 채워짐, Menu 스크롤 막대는 M3 토큰이 없어 onSurface 50 %(Compose Desktop 기본 스크롤바의 호버 값), LoadingIndicator는 M3의 일곱 모양(오각형·쿠키 9 등) 대신 사각형 셋의 겹침 근사, WavyProgress는 확정만(비확정 물결 없음)·둥근 끝은 직각으로 자른 끝 위에 원을 얹은 근사(모서리 삐져나옴 1 px 미만)·진폭이 0 % 바로 위부터 100 % 바로 아래까지 최대(Compose 기본은 10 % 이하·95 % 이상 평평)·진폭과 선 두께가 높이에 고정 비율, Menu는
   가장 긴 항목에 폭을 맞추지 못하며(`Width` 지정) 타입어헤드·서브메뉴가 없음(위/아래·Return·Escape는 있음), CircularProgress는
-  두께가 시트의 네 비율로 맞춰지고 끝·간격이 2° 단위(큰 지름 1°)로 움직이며 원형 물결(M3 Expressive)이 없음, 색상 선택기에 알파가 없음, 가운데 정렬 슬라이더는 바깥 반경보다 짧은 조각을 숨김(Compose는 모서리를 줄여 그림)·끝 안쪽 아이콘이 보이는 동안 끝 점을 숨김(MDC는 같은 자리에 둘 다 그림), 분할 버튼은 작은 크기(40)만·포커스 링이 바깥 반경 하나의 둥근 사각형(안쪽 모서리가 모양보다 둥긂)·Elevated 그림자의 안쪽 모서리도 반경 20·두 반쪽이 `Disabled` 하나를 나눠 씀, 날짜 선택기 머리 화살표는 키트 Button의 뒤 아이콘(18 px, 여백 16/12 — Compose `YearPickerMenuButton`은 24 dp 아이콘에 12/12). 컴포넌트별 전체 목록은 각 파일 머리에 있습니다.
+  두께가 시트의 네 비율로 맞춰지고 끝·간격이 2° 단위(큰 지름 1°)로 움직이며 원형 물결(M3 Expressive)이 없음, 색상 선택기에 알파가 없음, 슬라이더 핸들 이동 범위의 끝 여백은 크기와 무관한 6 px(m3.material.io 스펙 우선 — Compose·MDC 코드는 바깥 반경만큼 안쪽)·이산(Step) 슬라이더는 바깥 반경보다 짧은 조각을 숨김(연속은 창이 좁아지며 사라짐)·끝 안쪽 아이콘이 보이는 동안 끝 점을 숨김(MDC는 같은 자리에 둘 다 그림), 분할 버튼은 작은 크기(40)만·포커스 링이 바깥 반경 하나의 둥근 사각형(안쪽 모서리가 모양보다 둥긂)·Elevated 그림자의 안쪽 모서리도 반경 20·두 반쪽이 `Disabled` 하나를 나눠 씀, 날짜 선택기 머리 화살표는 키트 Button의 뒤 아이콘(18 px, 여백 16/12 — Compose `YearPickerMenuButton`은 24 dp 아이콘에 12/12). 컴포넌트별 전체 목록은 각 파일 머리에 있습니다.
 - **시트·드로어**(2026-10-08): 움직임이 스프링이 아니라 트윈(Compose는 스프링 — 놓을 때의 속도를 이어받지 않음, 넘침 없음),
   예측형 뒤로 가기(predictive back) 스케일 없음, 하단 시트의 중첩 스크롤(안의 목록을 다 올린 뒤 시트가 이어서 끌림) 없음, 드로어를
   내용 위에서 끌어 여는 제스처 없음, 측면 시트의 coplanar·detached 모양 없음, 손잡이 툴팁("Drag handle") 없음, 드로어 항목에 비활성 없음
   (Compose `NavigationDrawerItem`에도 없음). 시트 안 버튼을 누른 채 끌 때 시트가 같이 끌리는지는 엔진에 달림(실기기 체크리스트 54).
+- **바·레일·앱 바·툴바**(2026-10-08): 움직임이 스프링이 아니라 트윈(DefaultSpatial → 0.2 s, FastSpatial → 0.15 s, 넘침 없음); 바·레일의
+  옛(baseline) 판·`ModalWideNavigationRail`·항목 비활성·배지 룰러(긴 배지를 알약 안에 가둠) 없음; Centered 바 항목의 최대 폭(바 폭 / n)
+  제한 없음; 앱 바는 바를 끌어 접기·플링·폭으로 넘치는 오버플로·`BottomAppBarScrollBehavior` 없음, 가운데 제목은 넓은 쪽에 맞춘
+  대칭 공간 안에서 가운데(Compose는 겹칠 때 옮김); 툴바는 스크롤 동작·균형 최소 여백(minimumInteractiveBalancedPadding) 없음,
+  FAB 그림자는 키트 FAB 그대로(Compose 툴바 FAB 2/3, 하단 앱 바 샘플 0); 바·레일의 선택 색은 테마 전환 때 교차 페이드 없이 바뀜.
 - 갤러리는 좁은 화면에서 탭 글자가 잘릴 수 있습니다(Tabs는 폭을 균등 분할).
 
 ## 크레딧

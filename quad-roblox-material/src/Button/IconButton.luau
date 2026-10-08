@@ -14,6 +14,11 @@
 	                                           surfaceContainerHighest -> secondaryContainer; Outlined: outlined ->
 	                                           inverseSurface). The component does not flip it — `OnClick`
 	                                           should `:Set` the Source you passed.
+	  ContentColor  Color3 | State<Color3>?    the icon (and state layer) color of the plain / unselected look, in place of the
+	                                           variant's role — Compose `IconButtonColors.contentColor`; Compose's standard icon
+	                                           button takes `LocalContentColor` from its container, which the kit has not, so the
+	                                           app bars / toolbars pass their own icon color here (a raw role State such as
+	                                           `theme.Raw.OnSurface` animates like the roles; the selected look keeps its role)
 	  Disabled, OnClick (() -> ()), Theme, Modifier, Hooks   as Button (Hooks: extra array-part values, see Button)
 	  TouchTarget  boolean?                   default false = the host IS the 40x40 container (instance count minimal, no layout
 	                                           surprise in toolbars laid out at 40 px pitch). true = M3's 48 dp touch target:
@@ -48,6 +53,7 @@ export type Props = {
 	read Modifier: q.TextButtonModifier?,
 	read Hooks: Util.Hooks?,
 	read TouchTarget: boolean?,
+	read ContentColor: (Color3 | q.State<Color3>)?,
 }
 
 type Look = { Container: ColorTokens.Role?, Content: ColorTokens.Role, Stroke: boolean }
@@ -106,6 +112,11 @@ local function IconButton(props: Props)
 	local content = colorOf(function(l)
 		return l.Content
 	end)
+	local given = props.ContentColor
+	if given ~= nil then
+		local own: q.State<Color3> = if typeof(given) == "Color3" then q.Source(given) else given :: q.State<Color3>
+		content = if toggle then Style.choose(selected, raw(spec.Selected.Content), own) else own
+	end
 	local contentColor = Style.disabledPick(disabled, content, theme.Raw.OnSurface)
 	local contentTransparency = Style.disabledNumber(disabled, 0, Style.DisabledContentTransparency)
 

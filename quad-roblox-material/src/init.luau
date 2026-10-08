@@ -38,6 +38,14 @@
 	                                                 (in-tree layouts, Compose) + ModalDrawerSheet / DismissibleDrawerSheet /
 	                                                 PermanentDrawerSheet + NavigationDrawerItem / NavigationDrawerItems /
 	                                                 NavigationDrawerHeadline / NavigationDrawerDivider
+	    ShortNavigationBar, WideNavigationRail, WideNavigationRailState   the navigation bar (M3 Expressive, 64 tall) and the
+	                                                 collapsed / expanded navigation rail (Compose), sharing the destination
+	                                                 model with the drawer; Badge (the M3 badge, used on their icons)
+	    TopAppBar, CenterAlignedTopAppBar, MediumTopAppBar, MediumFlexibleTopAppBar, LargeTopAppBar, LargeFlexibleTopAppBar,
+	    TopAppBarState, TopAppBarDefaults, BottomAppBar, FlexibleBottomAppBar   app bars (Compose AppBar.kt: the six top bars,
+	                                                 the scroll behaviors driven by a ScrollingFrame, the bottom app bar and
+	                                                 the flexible one = the docked toolbar)
+	    HorizontalFloatingToolbar, VerticalFloatingToolbar   M3 Expressive floating toolbars (standard / vibrant, optional FAB)
 	  (The Gallery is not part of the kit: it lives in `<kit>/gallery`, outside `src`, and uses this table like any consumer.)
 
 	API CONVENTIONS (the same everywhere; a new component follows them, a reviewer checks them)
@@ -60,6 +68,9 @@
 	      component that returns a host instance. `Hooks = { any }` is the one exported alias: values placed in the host's
 	      ARRAY part (a `Tooltip.hook(...).Hook`, `q.OnChange`, a ref, ...). Use `table.unpack(Util.hooks(props.Hooks))` as
 	      the LAST entry of the host constructor (a multi-value call is truncated anywhere else).
+	    * App bars and toolbars take their icon buttons as DATA (`Material.AppBarAction` = { Icon, Label, OnClick?, Checked?,
+	      OnCheckedChange?, Disabled? } — Compose's AppBarRow items: a tooltip of the Label, an overflow menu past
+	      `MaxItemCount`) or as instances placed as given.
 	  Opened things
 	    * Everything that is opened — an Overlay entry, Menu.open, Dialog.open, DatePicker.Modal.open, ColorPicker.Modal.open,
 	      TimePicker.Modal.open, ModalBottomSheet.open, ModalSideSheet.open,
@@ -68,11 +79,12 @@
 	      the `Dismiss` alias, the modal sheets `SheetState`). `result` is `unknown`.
 	  Sliding surfaces
 	    * Sheets and drawers are driven by a state object, as in Compose: `SheetState` (Hidden / PartiallyExpanded /
-	      Expanded) and `DrawerState` (Closed / Open), with `CurrentValue` (settled) / `TargetValue` States and closures
-	      (`Expand`, `Show`, `Hide`, `Open`, `Close`, ...). They are not form values: no `Value` / `OnChange`.
+	      Expanded) and `DrawerState` (Closed / Open) — and the rail's `WideNavigationRailState` (Collapsed / Expanded) —, with
+	      `CurrentValue` (settled) / `TargetValue` States and closures (`Expand`, `Show`, `Hide`, `Open`, `Close`, `Toggle`,
+	      ...). They are not form values: no `Value` / `OnChange`.
 	    * Navigation destinations share ONE item model (`Material.NavigationDestination<K>` = { Key, Label, Icon, Badge }) and
 	      the Tabs selection rule: `Selected: Source<K>` for the whole set, `OnChange` after a user click that changed it,
-	      `OnClick` on every click (NavigationDrawerItems now; the navigation bar / rail later). A single row
+	      `OnClick` on every click (NavigationDrawerItems, ShortNavigationBar, WideNavigationRail). A single row
 	      (`NavigationDrawerItem`) takes `Selected: boolean | State<boolean>` like every indicator component.
 	  Types
 	    * Props types are exported `read`-field tables; optional inputs are `T?`; reactive inputs are `T | State<T>`. A
@@ -143,6 +155,11 @@ local BottomSheet = require("@self/BottomSheet")
 local SideSheetModule = require("@self/SideSheet")
 local NavigationDrawer = require("@self/NavigationDrawer")
 local Destination = require("@self/Navigation/Destination")
+local NavigationBar = require("@self/NavigationBar")
+local NavigationRail = require("@self/NavigationRail")
+local BadgeModule = require("@self/Badge")
+local AppBar = require("@self/AppBar")
+local Toolbar = require("@self/Toolbar")
 local Util = require("@self/Util")
 
 export type Theme = ThemeModule.Theme
@@ -258,6 +275,31 @@ export type NavigationDrawerHeadlineProps = NavigationDrawer.HeadlineProps
 export type NavigationDrawerDividerProps = NavigationDrawer.DividerProps
 export type NavigationDrawerItemsProps<K> = NavigationDrawer.ItemsProps<K>
 export type NavigationDrawerEntry<K> = NavigationDrawer.Entry<K>
+export type ShortNavigationBarProps<K> = NavigationBar.Props<K>
+export type ShortNavigationBarArrangement = NavigationBar.Arrangement
+export type NavigationItemIconPosition = NavigationBar.IconPosition
+export type WideNavigationRailProps<K> = NavigationRail.Props<K>
+export type WideNavigationRailArrangement = NavigationRail.Arrangement
+export type WideNavigationRailValue = NavigationRail.Value
+export type WideNavigationRailState = NavigationRail.WideNavigationRailState
+export type WideNavigationRailStateOptions = NavigationRail.StateOptions
+export type BadgeProps = BadgeModule.Props
+-- app bars and toolbars
+export type AppBarAction = AppBar.Action
+export type AppBarEntry = AppBar.Entry
+export type TopAppBarProps = AppBar.TopAppBarProps
+export type TopAppBarAlignment = AppBar.TopAppBarAlignment
+export type BottomAppBarProps = AppBar.BottomAppBarProps
+export type FlexibleBottomAppBarProps = AppBar.FlexibleBottomAppBarProps
+export type FlexibleBottomAppBarArrangement = AppBar.FlexibleArrangement
+export type AppBarFab = AppBar.Fab
+export type TopAppBarState = AppBar.TopAppBarState
+export type TopAppBarStateOptions = AppBar.TopAppBarStateOptions
+export type TopAppBarScrollBehavior = AppBar.TopAppBarScrollBehavior
+export type TopAppBarScrollBehaviorOptions = AppBar.ScrollBehaviorOptions
+export type HorizontalFloatingToolbarProps = Toolbar.HorizontalProps
+export type VerticalFloatingToolbarProps = Toolbar.VerticalProps
+export type FloatingToolbarColors = Toolbar.Colors
 
 return {
 	Tokens = require("@self/Tokens"),
@@ -329,4 +371,23 @@ return {
 	NavigationDrawerItems = NavigationDrawer.NavigationDrawerItems,
 	NavigationDrawerHeadline = NavigationDrawer.NavigationDrawerHeadline,
 	NavigationDrawerDivider = NavigationDrawer.NavigationDrawerDivider,
+	-- navigation bar / rail
+	ShortNavigationBar = NavigationBar,
+	WideNavigationRail = NavigationRail.WideNavigationRail,
+	WideNavigationRailState = NavigationRail.WideNavigationRailState,
+	Badge = BadgeModule.Badge,
+	-- app bars
+	TopAppBar = AppBar.TopAppBar,
+	CenterAlignedTopAppBar = AppBar.CenterAlignedTopAppBar,
+	MediumTopAppBar = AppBar.MediumTopAppBar,
+	MediumFlexibleTopAppBar = AppBar.MediumFlexibleTopAppBar,
+	LargeTopAppBar = AppBar.LargeTopAppBar,
+	LargeFlexibleTopAppBar = AppBar.LargeFlexibleTopAppBar,
+	TopAppBarState = AppBar.TopAppBarState,
+	TopAppBarDefaults = AppBar.TopAppBarDefaults,
+	BottomAppBar = AppBar.BottomAppBar,
+	FlexibleBottomAppBar = AppBar.FlexibleBottomAppBar,
+	-- toolbars
+	HorizontalFloatingToolbar = Toolbar.HorizontalFloatingToolbar,
+	VerticalFloatingToolbar = Toolbar.VerticalFloatingToolbar,
 }
