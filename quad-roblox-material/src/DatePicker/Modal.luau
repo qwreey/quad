@@ -197,6 +197,7 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 
 	return D.CanvasGroup {
 		Name = "DatePickerModal",
+		Active = true, -- sinks clicks/drags on the card so they never reach the dismissing scrim beneath
 		Size = UDim2.fromOffset(WIDTH, CARD_H),
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.5),

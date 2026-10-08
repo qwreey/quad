@@ -404,6 +404,7 @@ H.section("Modal: draft / OK commits / Cancel discards; title, sizes, mode toggl
 		end,
 	})
 	local card = H.find(screen, "TimePickerModal")
+	assert((card :: any).Active == true, "the card sinks input: a click / dial drag on it must not reach the scrim")
 	assert(card ~= nil and card.ClassName == "CanvasGroup" and card.Size == UDim2.fromOffset(320, 528), tostring(card and card.Size))
 	assert(card.BackgroundColor3 == L.SurfaceContainerHigh and own(card, "UICorner").CornerRadius == UDim.new(0, 28))
 	local title = H.find(card, "Title")

@@ -581,6 +581,7 @@ H.section("modal: draft / OK commits / Cancel discards, headline in the locale",
 		end,
 	})
 	local card = H.find(screen, "DatePickerModal")
+	assert((card :: any).Active == true, "the card sinks input: a click / dial drag on it must not reach the scrim")
 	assert(card ~= nil and card.ClassName == "CanvasGroup" and card.Size == UDim2.fromOffset(360, 569))
 	assert(H.find(screen, "Scrim") ~= nil and overlay.Count:Get() == 1)
 	assert(H.find(card, "Headline").Text == "Mon, Oct 5", H.find(card, "Headline").Text)
