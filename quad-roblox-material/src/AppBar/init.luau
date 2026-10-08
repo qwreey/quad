@@ -7,7 +7,8 @@
 	    Material.MediumFlexibleTopAppBar({ Title = "Inbox", Subtitle = "3 unread", ScrollBehavior = scroll,
 	        NavigationIcon = { Icon = "rbxassetid://…", Label = "Back", OnClick = back },
 	        Actions = { { Icon = "rbxassetid://…", Label = "Search", OnClick = search } } })
-	    D.ScrollingFrame { scroll.Hook, … }                      -- the content under the bar
+	    -- in a Material.Scaffold (TopBar = the bar): the content region starts at the bar's current bottom
+	    Content = function(innerPadding) return D.ScrollingFrame { scroll.Hook, D.UIPadding { PaddingTop = innerPadding.Top }, … } end
 
 	Top: TopAppBar / CenterAlignedTopAppBar / MediumTopAppBar / MediumFlexibleTopAppBar / LargeTopAppBar /
 	LargeFlexibleTopAppBar (Top.luau). Scrolling: TopAppBarState + TopAppBarDefaults (pinned / enterAlways /

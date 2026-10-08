@@ -485,3 +485,22 @@
 - 스크립트 30 (exit 30/72): 캔버스 0·바 136. pinned 30: 0.6 s 뒤에도 30(정착 없음).
 - 휠 한 칸은 100 px라 맨 위 근처의 애매한 정지는 휠로는 거의 안 생긴다(엄지 끌기가 주 경로). 엄지를 정착 도중에 다시 잡아 끄는 것은 MCP 입력 지연 때문에 정착이 끝난 뒤에 도착해 직접 못 봤다 — 같은 경로(정착 밖의 CanvasPosition 변경)는 휠로 확인, 스펙이 대조.
 - 콘솔 에러 없음. 끝나고 Edit 모드, 최종 코드 싱크.
+
+## Scaffold (2026-10-08)
+
+**계기(사용자)**: 앱 바 스크롤 권장 레이아웃(a4d5c4b5 + 정착 fae2fca5)은 동작하지만 DX가 나쁨 — 호출자가 ScrollingFrame을 바의 지금 아래 끝(펼친 높이 + `HeightOffset`)에서 시작시키고 위 여백 = 펼친 높이 − 지금 높이를 손으로 계산해야 함. Compose는 이 배치를 `Scaffold`로 푼다 → 사용자: *"Scaffold 넣자."*
+
+**정본**: `androidx/androidx@40ff481` compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/`Scaffold.kt` — 86-119 `Scaffold`, 133-306 `ScaffoldLayout`(174-178 `topBarHeight`, 195-225 FAB 가로 자리, 234-244 `fabOffsetFromBottom`, 246-254 `snackbarOffsetFromBottom`, 256-269 내용 `PaddingValues(top = topBarHeight, bottom = bottomBarHeight)`, 276-304 배치, 373-377 z 순서), 316-356 `FabPosition`, 369-370 `FabSpacing` 16. 스낵바 자체 여백 12는 `Snackbar.kt` 272.
+
+**구현**(quad-roblox-material): quad-roblox-material/src/Scaffold.luau 신설(`Material.Scaffold`, 타입 `ScaffoldProps`·`FabPosition`·`PaddingValues`). props `Content`(GuiObject 또는 `(innerPadding) -> GuiObject`)·`TopBar`·`BottomBar`·`SnackbarHost`·`FloatingActionButton`·`FloatingActionButtonPosition`(Start/Center/End/EndOverlay)·`ContainerColor`(기본 background)·`Theme`·`Modifier`·`Hooks`. 내용은 바 뒤가 아니라 **위 바의 지금 아래 끝 ~ 아래 바의 위 끝 영역**(`Body` — Position·Size가 State)에 놓여 스크롤바가 어느 바에도 안 가림; `innerPadding.Top` = 키트 위 앱 바의 펼친 높이 − 지금 높이(그 밖의 바는 0). 키트 위 앱 바는 quad-roblox-material/src/AppBar/Top.luau의 약한 표(`measureOf`)로 펼친 높이와 크기가 따르는 같은 높이 State를 알려 줘 같은 프레임에 움직임; 다른 바는 `Size.Y.Offset` + Size 신호. `Hook`은 정본대로 호출자가 꽂음(Scaffold는 스크롤 동작을 안 받음). FAB·스낵바는 ZIndex 2의 `Floating` 한 프레임(아래 끝 = 아래 바 위 끝, EndOverlay·바 없음이면 바닥)에 UIPadding 16 + 세로 UIListLayout(아래 정렬, 가로 정렬 = FabPosition)으로, 스낵바 층은 FAB 위를 채우는 `SnackbarHost` Frame(UIFlexItem Fill, LayoutOrder −1). 바는 Scaffold가 AnchorPoint/Position을 한 번 써서 놓음. 인스턴스 자기 것 2~7, 키트 앱 바엔 연결 0, 매 프레임 일 없음. 갤러리: 앱 바 세 화면·내비게이션 바 두 화면·하단 앱 바(둘로 나눔)를 Scaffold로, 폰 화면에 FAB(누르면 스낵바) + 스낵바 층. AppBar 스토리를 Scaffold로, quad-roblox-material/stories/Scaffold.story.luau 신설. 앱 바 모듈 머리·README는 "Scaffold를 쓸 것, 손 배치는 직접 짤 때만"으로.
+
+**스펙**: quad-roblox-material/test/spec.scaffold.luau 새로(5절 — 내용만 2개·배경·잘못된 FabPosition 에러 / 세 동작 × 아래 바(80)에서 스크롤 경로 15점·정착 둘(30, 20) 프레임마다 `Body.Position.Y = 바 아래 끝`, `Body.Size = (1, 0, 1, −(바 + 80))`, `Body.Position.Y + PaddingTop = 펼친 높이`, 정착 뒤 1행 = 바 아래 끝, 쉬는 동안 Heartbeat 0 / 스크롤 동작 없는 바·키트 밖 바(Size 변경 따라감, 보정 0) / FabPosition 넷 × 아래 바 유무 — Floating 크기·패딩 16·정렬, 자기 인스턴스 5 / 스낵바 층 혼자·FAB과 함께(자기 인스턴스 7)·띄운 스낵바가 그 층에). spec.gallery "app bar screens"는 Scaffold 영역 기준으로 그대로 통과 + 새 절 "Scaffold screens"(폰 화면 바 자리·Floating −64·FAB 정렬·스낵바가 패널 층이 아니라 화면 층에·하단 바 화면들 영역). spec.api Hooks 탐침에 Scaffold(71). 음성 대조: 영역 크기에서 아래 바를 빼지 않거나 보정을 0으로 바꾸면 spec.scaffold 3절·spec.gallery 2절이 실패. 갤러리 Navigation 1221.
+
+**Studio 확인(Place1.rbxl, stop 상태에서 studio-sync → Play, 클라이언트 RenderStepped 기록)**:
+- 쉬는 상태: 세 화면 모두 `Body` 위 = 바 아래 끝(172/172/244), ScrollingFrame이 그 아래 채움(356/356/284), 스크롤바가 바 아래에서 시작(스크린샷 Scaffold_top).
+- exitUntilCollapsed 휠 아래 3번: 캔버스 0 → 300, 프레임마다 바 아래 끝 = 영역 위 = 스크롤바 위(244 → 172), 1행 = 화면 위 + 136 − 캔버스(45개 고유 프레임 중 어긋남 0).
+- exitUntilCollapsed 엄지 12 px 끌어 잡은 채 0.6 s → 47.2에서 정착 없음, 놓으니 55 → … → 72, 바 64, 1행 = 바 아래 끝(틈 0, 모든 프레임). enterAlways 엄지 14 px → 44.4, 놓으니 → 64, 바 0, 영역 위 = 화면 위(108), 1행 = 바 아래 끝.
+- pinned 휠 2번 뒤 스크린샷(Scaffold_scrolled): 세 엄지 모두 바 아래 끝 밑에 온전히 보임.
+- 폰 화면: 내비게이션 바 324~388(화면 바닥), FAB 304~360 × 252~308 = 오른쪽 16·바 위 16, 스낵바 층 88~252(FAB 위 끝까지); FAB 클릭 → "New item on home" 스낵바 24~368 × 194~236(아래 끝 = FAB 위 − 16, 화면 가운데), 부모는 화면의 `Scaffold.Floating.SnackbarHost.Overlay`(스크린샷 Scaffold_fab_snackbar). 하단 앱 바 두 화면·넓은 바 화면: 영역 아래 끝 = 바 위 끝(1944/1928/274).
+- 콘솔 에러 0(LogService). 끝나고 Edit 모드, 최종 코드 싱크.
+- 미확인: Scaffold 스토리(UI Labs)의 FabPosition Start / Center / EndOverlay와 아래 바 없음 조합 — 스펙만.

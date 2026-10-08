@@ -297,7 +297,48 @@ H.section("navigation bar, rail, app bars and toolbars: the Navigation tab's scr
 	H.assertNoDebugOutput("layout group")
 end)
 
-H.section("app bar screens: the list's ScrollingFrame starts at the bar's bottom edge (scrollbar never under the bar), rows stay where the content-behind-the-bar layout puts them", function()
+H.section("Scaffold screens: the bars placed, the FAB 16 above the navigation bar, its snackbar in the screen's own layer above the FAB", function()
+	click(tabButton(gui, "Navigation"))
+	H.finishTweens()
+	local phone = H.find(gui, "NavigationBarScreen") :: any
+	local scaffold = H.find(phone, "Scaffold") :: any
+	local bar = H.find(scaffold, "ShortNavigationBar") :: any
+	assert(bar.Parent == scaffold and bar.AnchorPoint == Vector2.new(0, 1) and bar.Position == UDim2.fromScale(0, 1), "bar at the bottom")
+	local body = H.find(scaffold, "Body") :: any
+	assert(body.Parent == scaffold and body.Position == UDim2.fromOffset(0, 0) and body.Size == UDim2.new(1, 0, 1, -64), "content above the bar")
+	local floating = H.find(scaffold, "Floating") :: any
+	assert(floating.Size == UDim2.new(1, 0, 1, -64) and floating.ZIndex == 2, "FAB / snackbar frame ends at the bar's top")
+	local pad = H.find(floating, "UIPadding") :: any
+	assert(pad.PaddingBottom == UDim.new(0, 16) and pad.PaddingRight == UDim.new(0, 16) and pad.PaddingLeft == UDim.new(0, 16), "FabSpacing")
+	local list = H.find(floating, "UIListLayout") :: any
+	assert(list.HorizontalAlignment == Enum.HorizontalAlignment.Right and list.VerticalAlignment == Enum.VerticalAlignment.Bottom, "End")
+	local host = H.find(floating, "SnackbarHost") :: any
+	assert(host.LayoutOrder == -1 and H.find(host, "UIFlexItem") ~= nil, "the snackbar host fills above the FAB")
+	local fab = H.findAll(floating, function(i: any)
+		return i.Parent == floating and i.ClassName == "TextButton"
+	end)[1]
+	assert(fab ~= nil and (fab.LayoutOrder or 0) == 0, "the FAB below the snackbar host (default LayoutOrder)")
+	click(fab)
+	H.advance(0.05)
+	local own = H.find(host, "Overlay") :: any
+	assert(H.find(own, "Snackbar") ~= nil, "the snackbar opened in the screen's layer")
+	assert(H.find(layer, "Snackbar") == nil, "not in the panel's overlay")
+	H.advance(5)
+	assert(H.find(own, "Snackbar") == nil, "timed out")
+	for _, name in { "FlexibleBottomAppBarScreen", "BottomAppBarScreen", "WideNavigationBarScreen" } do
+		local sc = H.find(H.find(gui, name), "Scaffold") :: any
+		assert(sc ~= nil and H.find(sc, "Floating") == nil, name .. ": no FAB / snackbar frame")
+		local b = H.find(sc, "Body") :: any
+		assert(b.Parent == sc, name)
+		local barH = if name == "BottomAppBarScreen" then 80 else 64
+		assert(b.Size == UDim2.new(1, 0, 1, -barH), `{name}: region {b.Size}`)
+	end
+	click(tabButton(gui, "Buttons"))
+	H.advance(0.5)
+	H.assertNoDebugOutput("scaffold screens")
+end)
+
+H.section("app bar screens (Scaffold): the content region and the list's ScrollingFrame start at the bar's bottom edge (scrollbar never under the bar), rows stay where the content-behind-the-bar layout puts them", function()
 	click(tabButton(gui, "Navigation"))
 	H.finishTweens()
 	local function padTop(content: any): number
@@ -320,6 +361,9 @@ H.section("app bar screens: the list's ScrollingFrame starts at the bar's bottom
 		local screen = H.find(gui, name) :: any
 		local bar = H.find(screen, case.Bar) :: any
 		local content = H.find(screen, "Content") :: any
+		local body = content.Parent :: any
+		assert(body.Name == "Body" and body.Parent.Name == "Scaffold", `{name}: the list is the Scaffold's content`)
+		assert(content.Size == UDim2.fromScale(1, 1) and (content.Position or UDim2.new()) == UDim2.new(), `{name}: the list fills the region`)
 		local expanded = case.Expanded
 		-- layout stand-in for the settle's canvas clamp: 24 rows of 48 in a 420 screen, the window below the bar
 		content.AbsoluteWindowSize = Vector2.new(360, 420 - expanded)
@@ -327,9 +371,9 @@ H.section("app bar screens: the list's ScrollingFrame starts at the bar's bottom
 		local function check(label: string)
 			local barBottom = bar.Size.Y.Offset
 			assert(bar.Size.Y.Scale == 0, label)
-			assert(content.Position == UDim2.fromOffset(0, barBottom), `{name} {label}: frame top {content.Position} vs bar bottom {barBottom}`)
-			assert(content.Size == UDim2.new(1, 0, 1, -barBottom), `{name} {label}: frame fills below the bar`)
-			assert(content.Position.Y.Offset + padTop(content) == expanded, `{name} {label}: rows at the full-screen place`)
+			assert(body.Position == UDim2.fromOffset(0, barBottom), `{name} {label}: region top {body.Position} vs bar bottom {barBottom}`)
+			assert(body.Size == UDim2.new(1, 0, 1, -barBottom), `{name} {label}: region fills below the bar`)
+			assert(body.Position.Y.Offset + padTop(content) == expanded, `{name} {label}: rows at the full-screen place`)
 		end
 		check("rest")
 		for _, y in path do

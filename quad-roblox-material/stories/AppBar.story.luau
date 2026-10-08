@@ -1,7 +1,8 @@
 --!strict
--- Top app bars over a scrolling list (the list starts at the bar's current bottom edge and pads its canvas by what the bar
--- has collapsed — the rows move as in Compose Scaffold's content-behind-the-bar layout, the scrollbar stays visible), and
--- the bottom app bars. Kind / Behavior / Subtitle / Center are construction-time (rebuilt).
+-- Top app bars over a scrolling list, laid out by a Scaffold (the list fills the content region, which starts at the bar's
+-- current bottom edge, and takes innerPadding.Top — what the bar has collapsed — as its top padding: the rows move as in
+-- Compose's Scaffold, the scrollbar stays visible), and the bottom app bars. Kind / Behavior / Subtitle / Center are
+-- construction-time (rebuilt).
 local Material = require("../src")
 local q = require("../src/Quad")
 local StoryKit = require("./StoryKit")
@@ -10,8 +11,6 @@ local D = q.Declaration
 local themed = StoryParts.themed
 
 type Config = { Kind: string, Behavior: string, Subtitle: boolean, Center: boolean }
-
-local HEIGHTS: { [string]: number } = { Small = 64, CenterAligned = 64, Medium = 112, MediumFlexible = 112, Large = 152, LargeFlexible = 120 }
 
 return StoryKit.story({
 	controls = {
@@ -70,52 +69,36 @@ return StoryKit.story({
 			else
 				bar = Material.TopAppBar(props)
 			end
-			local expanded = HEIGHTS[cfg.Kind] or 64
-			if cfg.Subtitle and cfg.Kind == "MediumFlexible" then
-				expanded = 136
-			elseif cfg.Subtitle and cfg.Kind == "LargeFlexible" then
-				expanded = 152
-			end
 			local rows: { Instance } = {}
 			for i = 1, 30 do
 				table.insert(rows, StoryParts.caption(theme, `List item {i}`))
 			end
-			-- the list starts at the bar's current bottom edge (the native scrollbar never under the bar) and pads its canvas by
-			-- what the bar has collapsed, so the rows sit where a full-screen list padded by `expanded` would put them
-			local offset: q.State<number> = if behavior then behavior.State.HeightOffset else q.Source(0)
-			local top: q.State<number> = offset:Compute(function(self: q.StateData<number>): number
-				return math.max(0, math.round(expanded + self:Get()))
-			end)
-			local position: q.State<UDim2> = top:Compute(function(self: q.StateData<number>): UDim2
-				return UDim2.fromOffset(0, self:Get())
-			end)
-			local size: q.State<UDim2> = top:Compute(function(self: q.StateData<number>): UDim2
-				return UDim2.new(1, 0, 1, -self:Get())
-			end)
-			local padding: q.State<UDim> = top:Compute(function(self: q.StateData<number>): UDim
-				return UDim.new(0, expanded - self:Get())
-			end)
 			return D.Frame {
 				Name = "Screen",
 				Size = UDim2.fromOffset(400, 480),
-				BackgroundColor3 = theme.Color.Surface,
+				BackgroundTransparency = 1,
 				ClipsDescendants = true,
-				D.ScrollingFrame {
-					Name = "Content",
-					Position = position,
-					Size = size,
-					BackgroundTransparency = 1,
-					CanvasSize = UDim2.fromOffset(0, 0),
-					AutomaticCanvasSize = Enum.AutomaticSize.Y,
-					if behavior then behavior.Hook else q.None,
-					D.UIPadding {
-						PaddingTop = padding,
-						PaddingLeft = UDim.new(0, 16),
-					},
-					D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 24) },
-					q.Slot<<Instance>>(rows),
-				},
-				D.Frame { Name = "BarLayer", Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, ZIndex = 2, bar },
+				Material.Scaffold({
+					Theme = theme,
+					ContainerColor = theme.Color.Surface,
+					TopBar = bar,
+					Content = function(innerPadding: Material.PaddingValues): GuiObject
+						return D.ScrollingFrame {
+							Name = "Content",
+							Size = UDim2.fromScale(1, 1),
+							BackgroundTransparency = 1,
+							CanvasSize = UDim2.fromOffset(0, 0),
+							AutomaticCanvasSize = Enum.AutomaticSize.Y,
+							if behavior then behavior.Hook else q.None,
+							D.UIPadding {
+								PaddingTop = innerPadding.Top,
+								PaddingLeft = UDim.new(0, 16),
+							},
+							D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 24) },
+							q.Slot<<Instance>>(rows),
+						}
+					end,
+				}),
 			}
 		end, { Size = UDim2.fromOffset(400, 480) })
 

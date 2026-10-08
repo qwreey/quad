@@ -115,6 +115,7 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
 | | `TopAppBarState` / `TopAppBarDefaults` | 스크롤 동작 `pinnedScrollBehavior` / `enterAlwaysScrollBehavior` / `exitUntilCollapsedScrollBehavior` — `Hook`을 ScrollingFrame에 꽂으면 그 스크롤을 따라 색이 바뀌고(scrolledContainerColor) 접힘 |
 | | `BottomAppBar` / `FlexibleBottomAppBar` | 하단 앱 바(80, 액션 + FAB)와 유연한 하단 앱 바(64 — MDC의 docked toolbar) |
 | | `HorizontalFloatingToolbar` / `VerticalFloatingToolbar` | M3 Expressive 떠 있는 툴바 — 64 두께 알약, Standard / Vibrant 색, 앞·뒤 내용은 펼쳤을 때만, FAB 형(펼침 56 FAB + 툴바, 접힘 80 FAB만) |
+| 화면 틀 | `Scaffold` | Compose `Scaffold` — 위 앱 바·아래 바·FAB(`FabPosition` Start / Center / End / EndOverlay)·스낵바 자리를 내용 둘레에 배치; 내용은 두 바 사이 영역(스크롤바가 바에 안 가림), 접히는 앱 바만큼의 위 여백은 `innerPadding.Top`(`PaddingValues`)으로 |
 
 ### props 관례
 
@@ -335,19 +336,17 @@ Material.WideNavigationRail<<string>>({ State = rail, Selected = page, Items = i
 	Header = Material.IconButton({ Icon = Material.Icons.asset("menu") or "", TouchTarget = true, OnClick = rail.Toggle,
 		Modifier = q.Declaration.Modifier.TextButton():Position(UDim2.fromOffset(24, 0)) }) })
 
--- 앱 바 + 스크롤: 목록 ScrollingFrame은 바의 지금 아래 끝에서 시작하고, 바가 접힌 만큼 위 여백(행 자리는 바 뒤 레이아웃과 같음)
+-- 앱 바 + 스크롤: Scaffold에 바를 주고, 목록은 내용 영역(바의 지금 아래 끝부터)을 채우며 innerPadding.Top을 위 여백으로
 local scroll = Material.TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-Material.MediumFlexibleTopAppBar({ Title = "Inbox", Subtitle = "3 unread", ScrollBehavior = scroll,
-	NavigationIcon = { Icon = "menu", Label = "Menu", OnClick = drawer.Open },
-	Actions = { { Icon = "rbxassetid://6031154871", Label = "Search", OnClick = search } } })
-local expanded = 136 -- 바의 펼친 높이
-local top: q.State<number> = scroll.State.HeightOffset:Compute(function(self)
-	return math.max(0, math.round(expanded + self:Get())) -- 바의 지금 높이
-end)
-local position: q.State<UDim2> = top:Compute(function(self) return UDim2.fromOffset(0, self:Get()) end)
-local size: q.State<UDim2> = top:Compute(function(self) return UDim2.new(1, 0, 1, -self:Get()) end)
-local padding: q.State<UDim> = top:Compute(function(self) return UDim.new(0, expanded - self:Get()) end)
-q.Declaration.ScrollingFrame { scroll.Hook, Position = position, Size = size, q.Declaration.UIPadding { PaddingTop = padding }, … }
+Material.Scaffold({
+	TopBar = Material.MediumFlexibleTopAppBar({ Title = "Inbox", Subtitle = "3 unread", ScrollBehavior = scroll,
+		NavigationIcon = { Icon = "menu", Label = "Menu", OnClick = drawer.Open },
+		Actions = { { Icon = "rbxassetid://6031154871", Label = "Search", OnClick = search } } }),
+	Content = function(innerPadding)
+		return q.Declaration.ScrollingFrame { Size = UDim2.fromScale(1, 1), scroll.Hook,
+			q.Declaration.UIPadding { PaddingTop = innerPadding.Top }, … }
+	end,
+})
 
 -- 떠 있는 툴바
 Material.HorizontalFloatingToolbar({ Expanded = expanded, Content = { … }, FloatingActionButton = { Icon = "…", OnClick = add } })
@@ -367,12 +366,13 @@ Material.HorizontalFloatingToolbar({ Expanded = expanded, Content = { … }, Flo
   움직이고, 글자는 절반에서 자리·크기(LabelMedium → LabelLarge)를 바꾸며 사라졌다 나타납니다(Compose `placeAnimatedLabelAndIcon`).
   펼친 폭은 재어 둔 글자 폭으로 정합니다(가장 넓은 항목 + 20, 220~360).
 - **앱 바 스크롤**: Roblox ScrollingFrame은 스크롤을 부모에게 넘길 수 없어서(중첩 스크롤 없음) 바가 스크롤을 "먹지" 않고 같이
-  접힙니다. 행은 Compose Scaffold처럼 움직이게 짭니다(내용이 바 뒤에서 위 여백 = 바의 펼친 높이로 스크롤하는 자리 — 첫 행이 접히는
-  바의 아래 끝에 붙어 감). 다만 ScrollingFrame 자체를 바 뒤에 두면 Roblox 스크롤바가 프레임 전체 높이에 걸려 바에 가려지므로(두 줄
-  바의 목록 맨 위에선 통째로), **ScrollingFrame은 바의 지금 아래 끝(`top` = 펼친 높이 + `State.HeightOffset`)에서 시작하고 높이는 화면 −
-  `top`, 위 여백은 펼친 높이 − `top`**(위 코드). 캔버스가 프레임과 같은 만큼 늘고 줄어 최대 스크롤이 그대로라 CanvasPosition이 튀지
-  않습니다(Studio 실측 2026-10-08 — 휠·멈춤 정착·맨 아래에서 올리기). 갤러리의 세 화면과 AppBar 스토리가 이 모양. 대신 바 위에서 굴린
-  휠은 목록에 닿지 않습니다(목록이 바 아래에 없음). 스크롤이 0.1 s 멈추면(왼쪽 마우스 버튼이 떼어진 뒤 — 스크롤바 엄지를 잡은 채
+  접힙니다. 행은 Compose Scaffold처럼 움직여야 하고(첫 행이 접히는 바의 아래 끝에 붙어 감) ScrollingFrame은 바 뒤에 두면 안 됩니다
+  (Roblox 스크롤바가 프레임 전체 높이에 걸려 바에 가려짐 — 두 줄 바의 목록 맨 위에선 통째로). **이 배치는 `Material.Scaffold`가
+  합니다**(아래 "스캐폴드" 절): 바를 `TopBar`로 주고, `Hook`을 꽂은 목록에 `innerPadding.Top`을 위 여백으로 주면 끝입니다. 갤러리의
+  세 화면과 AppBar·Scaffold 스토리가 이 모양. Scaffold 없이 직접 짤 때만: ScrollingFrame을 바의 지금 아래 끝(`top` = 펼친 높이 +
+  `State.HeightOffset`, 반올림)에서 시작시키고 높이는 화면 − `top`, 위 여백은 펼친 높이 − `top`(캔버스가 프레임과 같은 만큼 늘고 줄어
+  최대 스크롤이 그대로라 CanvasPosition이 튀지 않음 — Studio 실측 2026-10-08). 어느 쪽이든 바 위에서 굴린 휠은 목록에 닿지 않습니다
+  (목록이 바 아래에 없음). 스크롤이 0.1 s 멈추면(왼쪽 마우스 버튼이 떼어진 뒤 — 스크롤바 엄지를 잡은 채
   멈춘 것은 아직 스크롤 중) 중간에 걸린 바는 가까운 쪽 끝으로 0.2 s(Compose `settleAppBar`). 이때 **CanvasPosition도 같은 만큼 같이
   움직입니다** — Compose에선 바가 스크롤을 먹어 목록 자체 스크롤이 그대로이고 여백이 바를 따라가 정착한 바가 틈을 남기지 않는데,
   여기선 행이 바를 따라가지 않으므로 캔버스 + `HeightOffset`을 그대로 두도록 캔버스를 옮깁니다(exitUntilCollapsed는 맨 위 근처에서 0
@@ -384,6 +384,55 @@ Material.HorizontalFloatingToolbar({ Expanded = expanded, Content = { … }, Flo
   폭을 재서도 넘기지만 키트는 개수만 셉니다.
 - **툴바**: 64 두께·모서리 완전 둥글게·안쪽 여백 8, 그림자 없음(FAB 형만 펼쳤을 때 Level1). 펼침 0.15 s(Compose FastSpatial 스프링의
   근사). FAB 형은 툴바와 FAB 사이 8, 펼침 FAB 56 / 접힘 80, 툴바는 FAB 쪽으로 줄어듭니다.
+
+## 스캐폴드(Scaffold)
+
+```luau
+local snackbarLayer = Material.Overlay.new()                          -- Compose: snackbarHost = { SnackbarHost(state) }
+local snackbars = Material.Snackbar.new({ Overlay = snackbarLayer })  -- Compose: SnackbarHostState
+local scroll = Material.TopAppBarDefaults.enterAlwaysScrollBehavior()
+Material.Scaffold({
+	TopBar = Material.TopAppBar({ Title = "Inbox", ScrollBehavior = scroll }),
+	BottomBar = Material.ShortNavigationBar<<string>>({ Items = items, Selected = page }),
+	FloatingActionButton = Material.FAB({ Icon = "rbxassetid://6035047377", OnClick = function()
+		snackbars:Show({ Text = "Draft saved" })
+	end }),
+	FloatingActionButtonPosition = "End",                              -- "Start" | "Center" | "End" | "EndOverlay"
+	SnackbarHost = snackbarLayer.Layer,
+	Content = function(innerPadding)                                   -- 또는 GuiObject 하나(여백이 필요 없을 때)
+		return q.Declaration.ScrollingFrame { Size = UDim2.fromScale(1, 1), scroll.Hook,
+			q.Declaration.UIPadding { PaddingTop = innerPadding.Top }, … }
+	end,
+})
+```
+
+- **정본**: Compose material3 `Scaffold.kt`(androidx/androidx@40ff481 — 86-119 함수, 133-306 `ScaffoldLayout`: 178 `topBarHeight`,
+  195-225 FAB 가로 자리, 234-244 `fabOffsetFromBottom`, 246-254 `snackbarOffsetFromBottom`, 256-269 내용 `PaddingValues`,
+  276-304 배치·373-377 z 순서; 316-356 `FabPosition`, 369-370 `FabSpacing` 16). 줄 번호는 `src/Scaffold.luau` 머리에도.
+- **props**: `Content`(필수 — `GuiObject` 또는 `(innerPadding: PaddingValues) -> GuiObject`, 내용 영역 안에 놓이니 Size 1, 1로),
+  `TopBar`·`BottomBar`·`SnackbarHost`·`FloatingActionButton`(전부 `GuiObject?`), `FloatingActionButtonPosition`(`FabPosition?`, 기본
+  End), `ContainerColor`(기본 background), `Theme`·`Modifier`(Frame)·`Hooks`. 호스트 Frame은 부모의 100 %.
+- **내용 자리 — Compose와 다른 곳**: Compose는 내용을 바 **뒤** (0, 0)에 두고 `PaddingValues(top = 위 바 높이, bottom = 아래 바
+  높이)`를 넘깁니다. Roblox 스크롤바는 프레임 전체에 걸리고 위·아래 끝을 띄울 수 없어서, 키트는 내용을 **위 바의 지금 아래 끝부터
+  아래 바의 위 끝까지의 영역**(`Body`)에 놓습니다 — 스크롤바가 어느 바에도 가리지 않음. 그래서 `innerPadding`은 `Top` 하나뿐이고 그
+  값은 **키트 위 앱 바가 접힌 만큼**(펼친 높이 − 지금 높이; 고정 바·키트 밖의 바·바 없음은 0)입니다 — 스크롤 동작의 `Hook`을 꽂은
+  목록이 이걸 위 여백으로 받으면 행이 Compose의 바-뒤 배치와 같은 자리에 오고 캔버스가 영역이 준 만큼 늘어 CanvasPosition이 튀지
+  않습니다. `Hook`은 Compose처럼 호출자가 꽂습니다(`Modifier.nestedScroll(...)` 자리 — Scaffold는 스크롤 동작을 받지 않음).
+- **바 높이**: 키트 위 앱 바는 자기 펼친 높이와 지금 높이(크기가 따르는 같은 State)를 Scaffold에 알려 줘서 영역이 접히는 바와 같은
+  프레임에 움직입니다. 그 밖의 바(키트 아래 바 포함)는 `Size.Y.Offset`으로 읽고 Size 변경 신호로 따라갑니다 — AutomaticSize나 Scale
+  높이 바는 offset만 읽히니 픽셀 높이를 주세요. Scaffold가 위 바를 (0, 0)에, 아래 바를 AnchorPoint (0, 1)·Position (0, 0, 1, 0)에
+  한 번 써서 놓습니다.
+- **FAB**: 가장자리에서 16(`FabSpacing`, Start / End) 또는 가운데(Center), 아래 끝이 아래 바 위 끝에서 16 위 — `EndOverlay`(그리고
+  아래 바가 없을 때)는 Scaffold 아래 끝에서 16 위, 아래 바 위에 겹침.
+- **스낵바**: `SnackbarHost`는 `Overlay.new()`의 `Layer`를 받아 FAB이 있으면 FAB 위 끝까지, 없으면 아래 바 위 끝(또는 바닥)까지의
+  영역에 놓고, 그 Overlay에 묶인 `Snackbar.new` 호스트가 그 안 가운데 아래(호스트 `BottomOffset` 기본 16 — Compose Snackbar는 자기
+  여백 12)에 띄웁니다.
+- **z 순서**: 내용·바는 기본 ZIndex(겹치지 않음), FAB·스낵바 층은 그 위 한 프레임(ZIndex 2). Compose는 스낵바가 아래 바 밑이라
+  아래 바 위로 미끄러져 들어올 때만 다르게 보일 수 있음.
+- **없는 것**: `contentColor`(Roblox엔 물려받는 내용 색이 없음 — 컴포넌트마다 자기 역할), `contentWindowInsets`(안전 영역은
+  ScreenGui의 `ScreenInsets`가 맡음), 오른쪽→왼쪽 배치, 아래 바 스크롤 숨김(`BottomAppBarScrollBehavior`).
+- **인스턴스**: Scaffold + Body = 2, FAB이나 스낵바 자리가 있으면 + Floating 1, FAB이 + UIPadding·UIListLayout 2, FAB 옆 스낵바 자리가
+  + SnackbarHost Frame·UIFlexItem 2 — 자기 것 최대 7. 키트 위 앱 바엔 연결 0, 다른 바마다 Size 신호 1, 매 프레임 일 없음.
 
 ## 색상 선택기
 
@@ -442,8 +491,9 @@ Gallery.GalleryPanel({})       -- 페이지(Frame)만; 직접 호스트할 때. 
 
 스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함; 2026-10-08 시트·드로어 처리에서 Navigation 탭이
 더해져 모든 탭이 탭 버튼 하나(8)만큼 늘었다 — 아래 숫자는 그 앞의 값, 지금 값은 Buttons 657 · Selection 1345 · Text 276 · Surfaces 335 ·
-Overlays 334(하단·측면 시트 묶음 둘: 모달 버튼과 흉내 화면 속 표준 시트) · Navigation 1190(드로어 셋 + 2026-10-08 바 둘·레일·스크롤
-하는 앱 바 셋·쉬는 앱 바 넷·하단 앱 바 둘·툴바 셋 — 흉내 화면 열둘 더; 드로어만일 때 498) · Chips 521 ·
+Overlays 334(하단·측면 시트 묶음 둘: 모달 버튼과 흉내 화면 속 표준 시트) · Navigation 1221(드로어 셋 + 2026-10-08 바 둘·레일·스크롤
+하는 앱 바 셋·쉬는 앱 바 넷·하단 앱 바 둘·툴바 셋 — 흉내 화면 열셋 더; 드로어만일 때 498; 같은 날 Scaffold로 옮긴 뒤 1221(이 줄의 앞 기재는 1190) —
+바 화면·앱 바 화면마다 Scaffold + Body, 폰 바 화면의 FAB·스낵바 층, 하단 앱 바 둘이 화면 하나씩으로 갈라짐) · Chips 521 ·
 Pickers 1037 · Theme 205): Buttons 649(10차에 "Button: icons —
 leading / trailing"·"SplitButton" 묶음 추가 — 분할 버튼 하나가 쉴 때 40), Selection 1337(맨 위 "Slider / Switch — M3 vs M2" 비교
 묶음 옆에 10차 "Slider variants (M3)" 묶음 — 크기 다섯·가운데 정렬·안쪽 아이콘·세로 넷),
@@ -566,6 +616,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 3 | CanvasGroup + UICorner 리플 클리핑 | Button·Chip·ListItem을 누름 | 리플 원이 둥근 모서리 밖으로 안 나감 |  |
 | 70 | 앱 바 스크롤 — 스크롤바 | 갤러리 "Top app bars that scroll" 세 화면·AppBar 스토리 | 세 화면 모두 스크롤바가 바 아래 끝에서 시작해 바에 가리지 않음(오른쪽 exitUntilCollapsed는 맨 위에서도 136 바로 아래에 보임); 바가 접히고 펼쳐지는 동안 스크롤바 위 끝이 바 아래 끝을 따라감; 행 움직임은 66과 같음(튀거나 두 배로 움직이지 않음) | Studio 2026-10-08 확인(휠) |
 | 71 | 앱 바 스크롤 — 정착 틈 | 갤러리 "Top app bars that scroll" 세 화면 | 스크롤바 엄지를 잡고 애매한 곳(enterAlways 0~64, exitUntilCollapsed 0~72)까지 끌어 잡은 채로 두면 바가 붙지 않고, 놓으면 0.2 s에 바와 목록이 함께 가까운 끝으로 움직여 첫 행이 바 아래 끝에 붙음(바와 1행 사이 빈 띠 없음); 목록 깊은 곳에서 enterAlways 바가 반쯤 돌아온 채 멈춰도 바와 목록이 같이 움직임; 정착 도중 휠·끌기를 하면 정착이 바로 멈추고 휠을 따름(되돌아가며 싸우지 않음); pinned는 그대로 | Studio 2026-10-08 확인(엄지 끌기·놓기, 정착 도중 휠) |
+| 72 | Scaffold — 내용 영역·FAB·스낵바 | 갤러리 "Top app bars that scroll" 세 화면·"Navigation bar" 폰 화면·"Bottom app bars"·Scaffold 스토리 | 세 앱 바 화면의 스크롤바가 바 아래 끝 밑에 온전히 보이고 바가 접히고 펼치는 동안 따라감(70·71과 같은 움직임, 휠·엄지 끌기·정착 뒤 틈 없음); 폰 화면 FAB이 오른쪽 16·내비게이션 바 위 16, FAB을 누르면 스낵바가 FAB 위 16에 가운데로; 하단 앱 바 화면의 내용이 바 위 끝에서 끝남; 스토리에서 FabPosition Start / Center / EndOverlay(바 위에 겹침)와 아래 바 없음 | Studio 2026-10-08 확인(갤러리 — 휠·엄지 끌기 정착·FAB 클릭 스낵바; 스토리는 미확인) |
 
 ## 테스트
 

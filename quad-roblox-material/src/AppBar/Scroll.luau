@@ -6,14 +6,16 @@
 	EnterAlwaysScrollBehavior / ExitUntilCollapsedScrollBehavior / settleAppBar).
 
 	    local scroll = Material.TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-	    local list = D.ScrollingFrame { scroll.Hook, ... }              -- Compose: Modifier.nestedScroll(scroll.nestedScrollConnection)
-	    Material.MediumTopAppBar({ Title = "Inbox", ScrollBehavior = scroll })
+	    Material.Scaffold({ TopBar = Material.MediumTopAppBar({ Title = "Inbox", ScrollBehavior = scroll }),
+	        Content = function(innerPadding)                            -- Compose: Modifier.nestedScroll(scroll.nestedScrollConnection)
+	            return D.ScrollingFrame { Size = UDim2.fromScale(1, 1), scroll.Hook, D.UIPadding { PaddingTop = innerPadding.Top }, ... }
+	        end })
 
 	TopAppBarDefaults.pinnedScrollBehavior(opts?) / .enterAlwaysScrollBehavior(opts?) / .exitUntilCollapsedScrollBehavior(opts?)
 	  opts (`read`, optional): State (TopAppBarState? — default a fresh one, rememberTopAppBarState), CanScroll ((() -> boolean)?
 	  — while it returns false the bar ignores the scroll, Compose canScroll).
 	  -> { State: TopAppBarState, IsPinned: boolean, Hook } — put `Hook` in the array part of ONE ScrollingFrame (the content
-	  scrolling below the bar — layout under ROBLOX DIFFERENCE); it follows that frame's `CanvasPosition` and, to settle,
+	  scrolling below the bar — the Scaffold's content; layout under ROBLOX DIFFERENCE); it follows that frame's `CanvasPosition` and, to settle,
 	  moves it (a pre-hook: it keeps the frame until the frame is destroyed).
 	TopAppBarState(opts?) — opts: InitialHeightOffset (number?, default 0). Fields (State<number>): HeightOffset (0 .. the
 	  limit, <= 0), HeightOffsetLimit (set by the bar: minus its collapsible height), ContentOffset (minus the content's scroll),
@@ -44,16 +46,18 @@
 	(Studio-measured 2026-10-08 on the gallery: a scrollbar drag released part way and a wheel during the settle).
 	ROBLOX DIFFERENCE: a ScrollingFrame cannot hand its scroll to a parent (no nested scrolling), so the bar does not CONSUME
 	the scroll as Compose's onPreScroll does — the content scrolls by the full distance while the bar collapses alongside.
-	Lay the screen out so the rows move the way Compose's Scaffold places them (the content behind the bar, padded by the
-	bar's expanded height — the first row stays right under the bar's bottom edge while it collapses), but keep the
-	ScrollingFrame itself out from under the bar: a Roblox scrollbar spans the whole frame, so a frame behind the bar has
-	its scrollbar covered (fully, at the top of a two-row bar's list). With `expanded` the bar's expanded height and
+	USE `Material.Scaffold` (Scaffold.luau): it lays the screen out so the rows move the way Compose's Scaffold places them
+	(the first row stays right under the bar's bottom edge while it collapses) while the ScrollingFrame itself stays out
+	from under the bar — a Roblox scrollbar spans the whole frame, so a frame behind the bar would have its scrollbar
+	covered (fully, at the top of a two-row bar's list). The Scaffold's content region starts at the bar's current bottom
+	and hands the content `innerPadding.Top` = expanded - current height; the ScrollingFrame that carries `Hook` takes it as
+	its UIPadding.PaddingTop. For a custom layout without the Scaffold, with `expanded` the bar's expanded height and
 	`top = max(0, round(expanded + State.HeightOffset))` (the bar's current height):
 	    ScrollingFrame Position = (0, top), Size = (1, 0, 1, -top), UIPadding.PaddingTop = expanded - top
 	The canvas grows by exactly what the frame grows, so the furthest scroll stays content - screen + expanded and the
 	CanvasPosition never clamps (Studio-measured 2026-10-08: wheel scrolls, settle and scrolling up at the bottom move the
-	frame with no extra CanvasPosition change). The gallery's app bar screens and the AppBar story do this. A wheel over
-	the bar no longer reaches the list (it is not under the bar any more). The fling decay (flingAnimationSpec) and
+	frame with no extra CanvasPosition change; the same through the Scaffold). A wheel over the bar does not reach the list
+	(it is not under the bar). The fling decay (flingAnimationSpec) and
 	dragging the bar itself (Compose's draggable on the bar) are not reproduced.
 ]]
 

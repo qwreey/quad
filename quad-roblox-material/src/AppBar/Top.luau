@@ -28,7 +28,9 @@
 	  ExpandedHeight number?                       Compose expandedHeight (default per bar, below)
 	  CollapsedHeight number?                      two-row bars only, default 64
 	  Overlay (for the actions' tooltips and overflow menu), LayoutOrder, Theme, Modifier (Frame), Hooks
-	Returns the bar Frame (full width; ClipsDescendants — Compose clips the layout, so collapsing content is cut).
+	Returns the bar Frame (full width; ClipsDescendants — Compose clips the layout, so collapsing content is cut). The bar
+	reports its expanded height and its current height to `Material.Scaffold` (`measureOf` — the Scaffold's content region
+	follows the collapsing bar in the same frame, Scaffold.luau).
 
 	COLORS (defaultTopAppBarColors): container surface, scrolled container surfaceContainer, navigation icon onSurface, title
 	onSurface, actions onSurfaceVariant, subtitle onSurfaceVariant. No shadow (ContainerElevation Level0).
@@ -128,6 +130,19 @@ local fastOutLinearIn = bezier(0.4, 0, 1, 1) -- FastOutLinearInEasing (TopAppBar
 
 local function lerpColor(a: Color3, b: Color3, t: number): Color3
 	return a:Lerp(b, t)
+end
+
+-- What a bar reports to the Scaffold (Scaffold.luau): its expanded height and, when it collapses, its current height
+-- (the same State its Size follows, so the Scaffold's content region moves in the same frame). Keyed by the bar Frame.
+export type Measure = {
+	read Expanded: number,
+	read Height: q.State<number>?, -- nil: the bar never changes height (no scroll behavior, or pinned)
+}
+
+local measures: { [Instance]: Measure } = setmetatable({}, { __mode = "k" }) :: any
+
+local function measureOf(bar: Instance): Measure?
+	return measures[bar]
 end
 
 type Built = {
@@ -263,12 +278,17 @@ local function singleRow(name: string, props: Props, center: boolean): Frame
 	local behavior = props.ScrollBehavior
 
 	local height: UDim2 | q.State<UDim2> = UDim2.new(1, 0, 0, expanded)
+	local px: q.State<number>? = nil
 	local color: any = theme.Color.Surface
 	if behavior ~= nil then
 		Scroll.setLimit(behavior.State, -expanded)
 		if not behavior.IsPinned then
-			height = behavior.State.HeightOffset:Compute(function(self)
-				return UDim2.new(1, 0, 0, math.max(0, math.round(expanded + self:Get())))
+			local current: q.State<number> = behavior.State.HeightOffset:Compute(function(self)
+				return math.max(0, math.round(expanded + self:Get()))
+			end)
+			px = current
+			height = current:Compute(function(self)
+				return UDim2.new(1, 0, 0, self:Get())
 			end)
 		end
 		local scrolled: q.State<boolean> = behavior.State.OverlappedFraction:Compute(function(self)
@@ -278,7 +298,7 @@ local function singleRow(name: string, props: Props, center: boolean): Frame
 	end
 
 	local start = math.max(TITLE_INSET, PAD + built.NavWidth)
-	return D.Frame {
+	local bar = D.Frame {
 		Name = name,
 		D.Modifier.Frame():Size(height),
 		BackgroundColor3 = color,
@@ -302,6 +322,8 @@ local function singleRow(name: string, props: Props, center: boolean): Frame
 		built.Actions or q.None,
 		table.unpack(Util.hooks(props.Hooks)),
 	}
+	measures[bar] = { Expanded = expanded, Height = px }
+	return bar
 end
 
 type TwoRowSpec = {
@@ -332,8 +354,11 @@ local function twoRows(name: string, props: Props, spec: TwoRowSpec): Frame
 	local offset = state.HeightOffset
 	local fraction = state.CollapsedFraction
 
-	local hostSize: q.State<UDim2> = offset:Compute(function(self)
-		return UDim2.new(1, 0, 0, math.round(collapsed + math.max(0, bottom + self:Get())))
+	local px: q.State<number> = offset:Compute(function(self)
+		return math.round(collapsed + math.max(0, bottom + self:Get()))
+	end)
+	local hostSize: q.State<UDim2> = px:Compute(function(self)
+		return UDim2.new(1, 0, 0, self:Get())
 	end)
 	local bottomSize: q.State<UDim2> = offset:Compute(function(self)
 		return UDim2.new(1, 0, 0, math.round(math.max(0, bottom + self:Get())))
@@ -358,7 +383,7 @@ local function twoRows(name: string, props: Props, spec: TwoRowSpec): Frame
 	fromBottom = math.max(0, math.round(fromBottom))
 
 	local start = math.max(TITLE_INSET, PAD + built.NavWidth)
-	return D.Frame {
+	local bar = D.Frame {
 		Name = name,
 		D.Modifier.Frame():Size(hostSize),
 		BackgroundColor3 = color,
@@ -410,6 +435,8 @@ local function twoRows(name: string, props: Props, spec: TwoRowSpec): Frame
 		},
 		table.unpack(Util.hooks(props.Hooks)),
 	}
+	measures[bar] = { Expanded = expanded, Height = if behavior ~= nil and not behavior.IsPinned then px else nil }
+	return bar
 end
 
 local function TopAppBar(props: Props): Frame
@@ -468,4 +495,5 @@ return {
 	LargeTopAppBar = LargeTopAppBar,
 	LargeFlexibleTopAppBar = LargeFlexibleTopAppBar,
 	descentOf = descentOf,
+	measureOf = measureOf,
 }

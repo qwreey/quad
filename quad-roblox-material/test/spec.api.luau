@@ -41,6 +41,7 @@ local Rail = require("../src/NavigationRail")
 local BadgeModule = require("../src/Badge")
 local AppBar = require("../src/AppBar")
 local Toolbar = require("../src/Toolbar")
+local ScaffoldModule = require("../src/Scaffold")
 
 local Calendar = DatePicker.Calendar
 
@@ -195,7 +196,8 @@ H.section("every host component takes `Hooks` (array-part values) and the hook s
 	probe("HorizontalFloatingToolbar (FAB)", function(h)
 		return Toolbar.HorizontalFloatingToolbar({ Expanded = true, Content = {}, FloatingActionButton = { Icon = "x" }, Hooks = h })
 	end)
-	assert(checked == 70, "probed " .. checked)
+	probe("Scaffold", function(h) return ScaffoldModule.Scaffold({ Content = D.Frame {}, Hooks = h }) end)
+	assert(checked == 71, "probed " .. checked)
 	H.assertNoDebugOutput("hooks")
 end)
 

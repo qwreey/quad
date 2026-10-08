@@ -4,12 +4,13 @@
 	they are layouts, not floating things): the three navigation drawers (Compose ModalNavigationDrawer /
 	DismissibleNavigationDrawer / PermanentNavigationDrawer) with their sheets and a NavigationDrawerItems list of many
 	destinations (headlines, dividers, badges — the drawer scrolls); the navigation bar (ShortNavigationBar: equal cells
-	with icons on top in a phone screen, centered start-icon items in a wide one); the navigation rail (WideNavigationRail,
-	its header menu button expands / collapses it); the app bars — a scrolling screen per scroll behavior (the list starts at
-	the bar's current bottom edge and pads its canvas by what the bar has collapsed: rows move as in Compose Scaffold's
-	content-behind-the-bar layout while the native scrollbar never sits under the bar), the large bars at
-	rest, the bottom app bar and the flexible one (docked toolbar); the floating toolbars (horizontal with leading /
-	trailing content, vertical with a FAB, standard and vibrant) with an Expanded switch.
+	with icons on top in a phone screen — a Scaffold with a FAB and a snackbar host —, centered start-icon items in a wide
+	one); the navigation rail (WideNavigationRail, its header menu button expands / collapses it); the app bars — a
+	scrolling screen per scroll behavior, each a Scaffold (the list fills the content region, which starts at the bar's
+	current bottom edge, and takes `innerPadding.Top` — what the bar has collapsed — as its top padding: rows move as in
+	Compose's Scaffold while the native scrollbar never sits under the bar), the large bars at rest, the bottom app bar and
+	the flexible one (docked toolbar) as Scaffold bottom bars; the floating toolbars (horizontal with leading / trailing
+	content, vertical with a FAB, standard and vibrant) with an Expanded switch.
 	The selected destination of every drawer is ONE Memo Source (`nav.page`), so the three drawers show the same choice and
 	it survives leaving the tab; the bar and the rail share another (`nav.barPage`). The icons are Material Design Icons
 	image ids from the kit's icon dump (qwreey/qwreey.roblox.plugins@7b6552a:IconPack.Plugin/res/IconDump.lua, baseline —
@@ -139,7 +140,8 @@ local function barDestinations(): { Material.NavigationDestination<string> }
 end
 
 -- a fill frame under the screen's bar / beside its rail with the selected page as a caption
-local function pageCaption(ctx: Ctx, page: q.State<string>, note: string, order: number?): Frame
+local function pageCaption(ctx: Ctx, page: q.State<string>, note: string, order: number?, prefix: string?): Frame
+	local label = prefix or "Page: "
 	return D.Frame {
 		Name = "Body",
 		Size = UDim2.fromScale(1, 1),
@@ -158,16 +160,17 @@ local function pageCaption(ctx: Ctx, page: q.State<string>, note: string, order:
 			TextXAlignment = Enum.TextXAlignment.Left,
 			TextColor3 = ctx.Theme.Color.OnSurface,
 			Text = Common.text<<string>>(page, function(v: string): string
-				return `Page: {v}`
+				return label .. v
 			end),
 		},
 		Common.Caption(ctx, note),
 	}
 end
 
--- a screen whose list scrolls under an app bar: rows where Compose Scaffold puts them (behind the bar, padded by its
--- expanded height), but the ScrollingFrame itself starts at the bar's bottom so its scrollbar is never covered
-local function scrollScreen(ctx: Ctx, name: string, expanded: number, behavior: Material.TopAppBarScrollBehavior, bar: Instance): Frame
+-- a screen whose list scrolls under an app bar, laid out by the Scaffold: the list's ScrollingFrame fills the content
+-- region (from the bar's current bottom edge, so the native scrollbar is never under the bar) and takes the Scaffold's
+-- innerPadding.Top (what the bar has collapsed) as its top padding, so the rows move as in Compose's Scaffold
+local function scrollScreen(ctx: Ctx, name: string, behavior: Material.TopAppBarScrollBehavior, bar: Frame): Frame
 	local rows: { Instance } = {}
 	for i = 1, 24 do
 		table.insert(
@@ -185,49 +188,31 @@ local function scrollScreen(ctx: Ctx, name: string, expanded: number, behavior: 
 			}
 		)
 	end
-	-- the frame starts at the bar's current bottom edge (so the native scrollbar is never under the bar) and pads its
-	-- canvas by what the bar has collapsed, so a row stays where the full-screen layout would put it
-	local top: q.State<number> = behavior.State.HeightOffset:Compute(function(self)
-		return math.max(0, math.round(expanded + self:Get()))
-	end)
-	local position: q.State<UDim2> = top:Compute(function(self)
-		return UDim2.fromOffset(0, self:Get())
-	end)
-	local size: q.State<UDim2> = top:Compute(function(self)
-		return UDim2.new(1, 0, 1, -self:Get())
-	end)
-	local padding: q.State<UDim> = top:Compute(function(self)
-		return UDim.new(0, expanded - self:Get())
-	end)
 	return Common.Screen(ctx, name, 360, 420, {
-		D.ScrollingFrame {
-			Name = "Content",
-			Position = position,
-			Size = size,
-			BackgroundTransparency = 1,
-			BorderSizePixel = 0,
-			CanvasSize = UDim2.fromOffset(0, 0),
-			AutomaticCanvasSize = Enum.AutomaticSize.Y,
-			ScrollingDirection = Enum.ScrollingDirection.Y,
-			ScrollBarThickness = 4,
-			ScrollBarImageColor3 = ctx.Theme.Color.OnSurface,
-			behavior.Hook,
-			D.UIPadding {
-				PaddingTop = padding,
-				PaddingLeft = UDim.new(0, 16),
-			},
-			D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder },
-			q.Slot<<Instance>>(rows),
-		},
-		D.Frame {
-			Name = "BarLayer",
-			Size = UDim2.fromScale(1, 0),
-			AutomaticSize = Enum.AutomaticSize.Y,
-			BackgroundTransparency = 1,
-			BorderSizePixel = 0,
-			ZIndex = 2,
-			bar,
-		},
+		Material.Scaffold({
+			Theme = ctx.Theme,
+			TopBar = bar,
+			Content = function(innerPadding: Material.PaddingValues): GuiObject
+				return D.ScrollingFrame {
+					Name = "Content",
+					Size = UDim2.fromScale(1, 1),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					CanvasSize = UDim2.fromOffset(0, 0),
+					AutomaticCanvasSize = Enum.AutomaticSize.Y,
+					ScrollingDirection = Enum.ScrollingDirection.Y,
+					ScrollBarThickness = 4,
+					ScrollBarImageColor3 = ctx.Theme.Color.OnSurface,
+					behavior.Hook,
+					D.UIPadding {
+						PaddingTop = innerPadding.Top,
+						PaddingLeft = UDim.new(0, 16),
+					},
+					D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder },
+					q.Slot<<Instance>>(rows),
+				}
+			end,
+		}),
 	})
 end
 
@@ -340,34 +325,36 @@ return function(ctx: Ctx): Instance
 	local barPage = ctx.Memo("nav.barPage", function()
 		return q.Source("home")
 	end)
+	-- the phone screen is a Scaffold: the bar at the bottom, a FAB 16 above it, the snackbars (the FAB shows one) above the FAB
+	local snackbarLayer = Material.Overlay.new({ Theme = theme })
+	local snackbars = Material.Snackbar.new({ Overlay = snackbarLayer, Theme = theme })
 	local phoneBar = Common.Screen(ctx, "NavigationBarScreen", 360, 300, {
-		D.Frame {
-			Name = "Column",
-			Size = UDim2.fromScale(1, 1),
-			BackgroundTransparency = 1,
-			BorderSizePixel = 0,
-			D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder },
-			pageCaption(ctx, barPage, "ShortNavigationBar (EqualWeight, icons on top): Explore has the small badge, Saved the large one.", 1),
-			Material.ShortNavigationBar<<string>>({ Theme = theme, Items = barDestinations(), Selected = barPage, LayoutOrder = 2 }),
-		},
+		Material.Scaffold({
+			Theme = theme,
+			BottomBar = Material.ShortNavigationBar<<string>>({ Theme = theme, Items = barDestinations(), Selected = barPage }),
+			FloatingActionButton = Material.FAB({
+				Theme = theme,
+				Icon = ADD,
+				OnClick = function()
+					snackbars:Show({ Text = `New item on {barPage:Get()}` })
+				end,
+			}),
+			SnackbarHost = snackbarLayer.Layer,
+			Content = pageCaption(ctx, barPage, "Scaffold + ShortNavigationBar (EqualWeight, icons on top): Explore has the small badge, Saved the large one. The FAB shows a snackbar above itself.", 1),
+		}),
 	})
 	local wideBar = Common.Screen(ctx, "WideNavigationBarScreen", 640, 200, {
-		D.Frame {
-			Name = "Column",
-			Size = UDim2.fromScale(1, 1),
-			BackgroundTransparency = 1,
-			BorderSizePixel = 0,
-			D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder },
-			pageCaption(ctx, barPage, "Centered + Start icons (medium windows): the items share 70 % of the bar.", 1),
-			Material.ShortNavigationBar<<string>>({
+		Material.Scaffold({
+			Theme = theme,
+			BottomBar = Material.ShortNavigationBar<<string>>({
 				Theme = theme,
 				Items = barDestinations(),
 				Selected = barPage,
 				Arrangement = "Centered",
 				IconPosition = "Start",
-				LayoutOrder = 2,
 			}),
-		},
+			Content = pageCaption(ctx, barPage, "Centered + Start icons (medium windows): the items share 70 % of the bar.", 1),
+		}),
 	})
 
 	-- ── navigation rail ──
@@ -430,7 +417,7 @@ return function(ctx: Ctx): Instance
 	local back: Material.AppBarAction = { Icon = ARROW_BACK, Label = "Back", OnClick = did("Back") }
 
 	local pinned = Material.TopAppBarDefaults.pinnedScrollBehavior()
-	local pinnedScreen = scrollScreen(ctx, "PinnedAppBarScreen", 64, pinned, Material.TopAppBar({
+	local pinnedScreen = scrollScreen(ctx, "PinnedAppBarScreen", pinned, Material.TopAppBar({
 		Theme = theme,
 		Overlay = ctx.Overlay,
 		Title = "Pinned",
@@ -440,7 +427,7 @@ return function(ctx: Ctx): Instance
 		ScrollBehavior = pinned,
 	}))
 	local enter = Material.TopAppBarDefaults.enterAlwaysScrollBehavior()
-	local enterScreen = scrollScreen(ctx, "EnterAlwaysAppBarScreen", 64, enter, Material.CenterAlignedTopAppBar({
+	local enterScreen = scrollScreen(ctx, "EnterAlwaysAppBarScreen", enter, Material.CenterAlignedTopAppBar({
 		Theme = theme,
 		Overlay = ctx.Overlay,
 		Title = "Enter always",
@@ -449,7 +436,7 @@ return function(ctx: Ctx): Instance
 		ScrollBehavior = enter,
 	}))
 	local exit = Material.TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-	local exitScreen = scrollScreen(ctx, "ExitUntilCollapsedAppBarScreen", 136, exit, Material.MediumFlexibleTopAppBar({
+	local exitScreen = scrollScreen(ctx, "ExitUntilCollapsedAppBarScreen", exit, Material.MediumFlexibleTopAppBar({
 		Theme = theme,
 		Overlay = ctx.Overlay,
 		Title = "Exit until collapsed",
@@ -484,17 +471,12 @@ return function(ctx: Ctx): Instance
 			Actions = { { Icon = SEARCH, Label = "Search", OnClick = did("Search") } },
 		})),
 	}
-	local bottomScreen = Common.Screen(ctx, "BottomAppBarScreen", 360, 220, {
-		D.Frame {
-			Name = "Column",
-			Size = UDim2.fromScale(1, 1),
-			BackgroundTransparency = 1,
-			BorderSizePixel = 0,
-			D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, VerticalAlignment = Enum.VerticalAlignment.Bottom, Padding = UDim.new(0, 12) },
-			Material.FlexibleBottomAppBar({
+	local flexibleScreen = Common.Screen(ctx, "FlexibleBottomAppBarScreen", 360, 200, {
+		Material.Scaffold({
+			Theme = theme,
+			BottomBar = Material.FlexibleBottomAppBar({
 				Theme = theme,
 				Overlay = ctx.Overlay,
-				LayoutOrder = 1,
 				Actions = {
 					{ Icon = UNDO, Label = "Undo", OnClick = did("Undo") },
 					{ Icon = REDO, Label = "Redo", OnClick = did("Redo") },
@@ -503,10 +485,15 @@ return function(ctx: Ctx): Instance
 					{ Icon = SHARE, Label = "Share", OnClick = did("Share") },
 				},
 			}),
-			Material.BottomAppBar({
+			Content = pageCaption(ctx, barAction, "FlexibleBottomAppBar (the docked toolbar, 64) in a Scaffold.", 1, "Last action: "),
+		}),
+	})
+	local bottomScreen = Common.Screen(ctx, "BottomAppBarScreen", 360, 200, {
+		Material.Scaffold({
+			Theme = theme,
+			BottomBar = Material.BottomAppBar({
 				Theme = theme,
 				Overlay = ctx.Overlay,
-				LayoutOrder = 2,
 				Actions = {
 					{ Icon = "check", Label = "Done", OnClick = did("Done") },
 					{ Icon = "edit", Label = "Edit", OnClick = did("Edit") },
@@ -515,7 +502,8 @@ return function(ctx: Ctx): Instance
 				},
 				FloatingActionButton = { Icon = ADD, OnClick = did("FAB") },
 			}),
-		},
+			Content = pageCaption(ctx, barAction, "BottomAppBar (80, its own FAB in secondaryContainer) in a Scaffold.", 1, "Last action: "),
+		}),
 	})
 
 	-- ── toolbars ──
@@ -578,7 +566,7 @@ return function(ctx: Ctx): Instance
 			"Scroll each list: pinned turns surfaceContainer, enterAlways hides and returns with any scroll up, exitUntilCollapsed shrinks to 64 and grows back at the top. Four actions with MaxItemCount 3 overflow into a menu."
 		),
 		Common.Group(ctx, "Top app bars at rest", largeScreens),
-		Common.Group(ctx, "Bottom app bars", { bottomScreen }, "FlexibleBottomAppBar (the docked toolbar, 64) above the BottomAppBar (80, FAB secondaryContainer)."),
+		Common.Group(ctx, "Bottom app bars", { flexibleScreen, bottomScreen }, "FlexibleBottomAppBar (the docked toolbar, 64) and BottomAppBar (80, FAB secondaryContainer), each the BottomBar of a Scaffold."),
 		Common.Group(ctx, "Floating toolbars", { toolbarControls, toolbarScreen }),
 	})
 end

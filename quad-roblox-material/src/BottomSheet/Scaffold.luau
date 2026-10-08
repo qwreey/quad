@@ -32,7 +32,7 @@
 	Drag handle click (StandardBottomSheet 393-408): Expanded -> Hide when Hidden is enabled, else PartialExpand;
 	PartiallyExpanded -> Expand; Hidden -> Show.
 	Not here: the scaffold's top app bar and snackbar host slots (Compose `topBar` / `snackbarHost` — put an app bar in
-	`Content`; the kit Snackbar has its own host).
+	`Content`, or a `Material.Scaffold` (Scaffold.luau) as the content; the kit Snackbar has its own host).
 ]]
 
 local q = require("../Quad")

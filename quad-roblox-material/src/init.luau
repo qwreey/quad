@@ -46,6 +46,9 @@
 	                                                 the scroll behaviors driven by a ScrollingFrame, the bottom app bar and
 	                                                 the flexible one = the docked toolbar)
 	    HorizontalFloatingToolbar, VerticalFloatingToolbar   M3 Expressive floating toolbars (standard / vibrant, optional FAB)
+	    Scaffold                                      the screen frame (Compose Scaffold): top bar, bottom bar, FAB, snackbar
+	                                                 host around the content, which sits between the bars (+ `FabPosition`,
+	                                                 the content's `PaddingValues`)
 	  (The Gallery is not part of the kit: it lives in `<kit>/gallery`, outside `src`, and uses this table like any consumer.)
 
 	API CONVENTIONS (the same everywhere; a new component follows them, a reviewer checks them)
@@ -160,6 +163,7 @@ local NavigationRail = require("@self/NavigationRail")
 local BadgeModule = require("@self/Badge")
 local AppBar = require("@self/AppBar")
 local Toolbar = require("@self/Toolbar")
+local ScaffoldModule = require("@self/Scaffold")
 local Util = require("@self/Util")
 
 export type Theme = ThemeModule.Theme
@@ -300,6 +304,10 @@ export type TopAppBarScrollBehaviorOptions = AppBar.ScrollBehaviorOptions
 export type HorizontalFloatingToolbarProps = Toolbar.HorizontalProps
 export type VerticalFloatingToolbarProps = Toolbar.VerticalProps
 export type FloatingToolbarColors = Toolbar.Colors
+-- scaffold
+export type ScaffoldProps = ScaffoldModule.Props
+export type FabPosition = ScaffoldModule.FabPosition
+export type PaddingValues = ScaffoldModule.PaddingValues
 
 return {
 	Tokens = require("@self/Tokens"),
@@ -390,4 +398,6 @@ return {
 	-- toolbars
 	HorizontalFloatingToolbar = Toolbar.HorizontalFloatingToolbar,
 	VerticalFloatingToolbar = Toolbar.VerticalFloatingToolbar,
+	-- screen layout
+	Scaffold = ScaffoldModule.Scaffold,
 }
