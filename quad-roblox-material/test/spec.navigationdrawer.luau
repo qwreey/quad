@@ -39,6 +39,17 @@ end
 local function key(code: Enum.KeyCode)
 	UIS.InputBegan:Fire(H.input({ KeyCode = code, UserInputType = Enum.UserInputType.Keyboard }), false)
 end
+-- the holder's InputSink: a press on the drawer stops at this GuiButton (Util.luau "INPUT RULE"), so the modal drag hook
+-- lives here; the holder Frame never gets InputBegan
+local function sinkOf(holder: any): any
+	for _, c in holder:GetChildren() do
+		if c.Name == "InputSink" then
+			return c
+		end
+	end
+	error("no InputSink")
+end
+
 local function drag(inst: any, x0: number, xs: { number }, dt: number)
 	H.fire(inst, "InputBegan", H.input({ Position = Vector3.new(x0, 300, 0) }))
 	for _, x in xs do
@@ -180,7 +191,9 @@ H.section("sheets: modal surfaceContainerLow + end corners 16, standard surface,
 	local np = H.countDescendants(psheet) + 1
 	print(`[drawer] sheets: modal {nm} (1 row), permanent {np} (empty)`)
 	H.resetOutput()
-	assert(nm == 8 and np == 4, `counts {nm} / {np}`)
+	assert(nm == 7 and np == 4, `counts {nm} / {np}`)
+	-- no sink of its own: inside the drawer the holder's sink (under the sheet) stops the click and takes the drag
+	assert(H.find(m, "InputSink") == nil, "the modal sheet carries no InputSink")
 	q.dispose(m)
 	q.dispose(dsheet)
 	q.dispose(psheet)
@@ -207,7 +220,7 @@ H.section("ModalNavigationDrawer: closed and hidden at rest; Open slides in with
 	assert(drawer.Position == UDim2.fromOffset(-360, 0) and drawer.Visible == false and scrim.Visible == false, "closed: not shown")
 	assert(drawer.Active == true and H.find(drawer, "ModalDrawerSheet").Active == true, "the surfaces above the scrim sink 3D input")
 	InputSink.assertInputSink(drawer, "the drawer holder")
-	InputSink.assertInputSink(H.find(drawer, "ModalDrawerSheet"), "the modal drawer sheet")
+	assert(H.find(H.find(drawer, "ModalDrawerSheet"), "InputSink") == nil, "one sink: the holder's (a sink on the sheet would swallow the drag)")
 	assert(scrim.BackgroundTransparency == 1)
 	state.Open()
 	assert(drawer.Visible and scrim.Visible and state.TargetValue:Get() == "Open" and not state.IsOpen:Get())
@@ -224,6 +237,8 @@ H.section("ModalNavigationDrawer: closed and hidden at rest; Open slides in with
 	state.SnapTo("Open")
 	assert(drawer.Position == UDim2.fromOffset(0, 0) and state.CurrentValue:Get() == "Open")
 	H.fire(drawer, "InputBegan", H.input({ Position = Vector3.new(300, 300, 0) }))
+	assert(uisConns() == baseConns, "the holder Frame carries no drag hook (the press lands on its InputSink)")
+	H.fire(sinkOf(drawer), "InputBegan", H.input({ Position = Vector3.new(300, 300, 0) }))
 	H.advance(0.1)
 	UIS.InputChanged:Fire(H.input({ UserInputType = Enum.UserInputType.MouseMovement, Position = Vector3.new(120, 300, 0) }))
 	assert(drawer.Position == UDim2.fromOffset(-180, 0), "follows")
@@ -241,17 +256,17 @@ H.section("modal drag: half the width or 400 px/s; scrim drag; veto; gestures of
 	local host, drawer, scrim = modalDrawer(state)
 	assert(drawer.Position == UDim2.fromOffset(0, 0) and drawer.Visible)
 	-- slow drag 170 px left (< 180 = half) at 340 px/s: stays open
-	drag(drawer, 300, { 266, 232, 198, 164, 130 }, 0.1)
+	drag(sinkOf(drawer), 300, { 266, 232, 198, 164, 130 }, 0.1)
 	H.advance(0.3)
 	assert(state.CurrentValue:Get() == "Open", "170 < 180 at 340 px/s: stays")
 	-- slow drag 190 px: closes
-	drag(drawer, 300, { 262, 224, 186, 148, 110 }, 0.1)
+	drag(sinkOf(drawer), 300, { 262, 224, 186, 148, 110 }, 0.1)
 	H.advance(0.3)
 	assert(state.CurrentValue:Get() == "Closed", "190 >= 180: closes")
 	state.Open()
 	H.advance(0.3)
 	-- fast short fling (40 px in 0.05 s = 800 px/s >= 400): closes
-	drag(drawer, 300, { 280, 260 }, 0.025)
+	drag(sinkOf(drawer), 300, { 280, 260 }, 0.025)
 	H.advance(0.3)
 	assert(state.CurrentValue:Get() == "Closed", "fling closes")
 	state.Open()
@@ -272,7 +287,7 @@ H.section("modal drag: half the width or 400 px/s; scrim drag; veto; gestures of
 	})
 	local host2, drawer2, scrim2 = modalDrawer(stubborn)
 	H.fire(scrim2, "Activated", H.input({}), 1)
-	drag(drawer2, 300, { 260, 220 }, 0.025)
+	drag(sinkOf(drawer2), 300, { 260, 220 }, 0.025)
 	H.advance(0.3)
 	assert(stubborn.CurrentValue:Get() == "Open", "vetoed")
 	stubborn.Close()
@@ -282,7 +297,7 @@ H.section("modal drag: half the width or 400 px/s; scrim drag; veto; gestures of
 	-- gestures off: no drag, no scrim tap (Compose onDismissRequest checks gesturesEnabled)
 	local still = Nav.DrawerState({ InitialValue = "Open" })
 	local host3, drawer3, scrim3 = modalDrawer(still, { GesturesEnabled = false })
-	drag(drawer3, 300, { 200, 100 }, 0.02)
+	drag(sinkOf(drawer3), 300, { 200, 100 }, 0.02)
 	H.fire(scrim3, "Activated", H.input({}), 1)
 	H.advance(0.3)
 	assert(still.CurrentValue:Get() == "Open" and drawer3.Position == UDim2.fromOffset(0, 0))

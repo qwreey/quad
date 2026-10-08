@@ -51,8 +51,16 @@
 	    held until the ripple filled it then jumped INSTANTLY to the full available width (the date picker's month-year
 	    button, Studio QA 2026-10-08, 10th follow-up — a press shorter than ~0.2 s is dropped before full cover, which is
 	    why only a long hold showed it). The state layer and this group (Position 0, Size Scale 1, levels 1 and 2 below the
-	    host) have always been there and never did that; why the engine treats a Scale 1 one level deeper differently was
-	    not measured (no Studio was connected) — the rule is simply: the group is the deepest Scale.
+	    host) have always been there and never did that. MEASURED (Studio 2026-10-08, .claude/feedback/
+	    consumer-kits-studio-qa-2026-10-07.md "Studio 실측 — 바텀 시트 핸들"): under an AutomaticSize host in a 600 px row, a
+	    VISIBLE Scale-sized element at depth >= 2 that has NO GuiObject child — a Scale LEAF whose ancestors up to the host
+	    are Scale-sized too — is resolved against the space AVAILABLE to the host, not the host's own size, and pushes the
+	    host to it (Scale 1 -> 600, Scale 0.5 -> 300; under an ancestor UIScale 0.92, 552). The same element with any child
+	    (an Offset 10 x 10, even 0 x 0, even an invisible one) is measured by that child and the host keeps its size; so is
+	    a Scale leaf under an Offset-sized parent, a hidden Scale leaf and a level-1 Scale child. CanvasGroup or Frame makes
+	    no difference. So the group (a Scale element that always holds the disc) is safe, and the disc must never be a
+	    Scale leaf: the 9th fix's full-cover disc was one (instant jump to the row width), the 8th fix's partial-Scale disc
+	    too (grew with the fraction — GRADUALLY). The rule stays: nothing below the group has a Scale component.
 	  - FULL COVER: once the clamped box is the whole host's last whole unit on both axes, the disc's job is done — it is
 	    hidden (`Visible = false`, its last whole-unit Offsets kept) and the group's own background, already the host's
 	    exact size and rounded by the group's `UICorner`, is painted in the ripple color at the ripple opacity. The switch

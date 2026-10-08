@@ -39,6 +39,27 @@ local function own(inst: any, className: string): any
 	return nil
 end
 
+-- the surface's InputSink: a press on the sheet stops at this GuiButton (the Frame under it never gets InputBegan — Studio
+-- 2026-10-08, Util.luau "INPUT RULE"), so the drag hook lives here
+local function sinkOf(sheet: any): any
+	for _, c in sheet:GetChildren() do
+		if c.Name == "InputSink" then
+			return c
+		end
+	end
+	error("no InputSink")
+end
+
+-- a real click on the handle, in the engine's order (Studio 2026-10-08): InputBegan, Activated, the element's InputEnded,
+-- then UserInputService.InputEnded
+local function clickHandle(handle: any)
+	local i = H.input({ Position = Vector3.new(200, 10, 0) })
+	H.fire(handle, "InputBegan", i)
+	H.fire(handle, "Activated", i, 1)
+	H.fire(handle, "InputEnded", i)
+	UIS.InputEnded:Fire(i)
+end
+
 -- drag: press on `inst` at y, then moves (each after `dt` seconds), release at the last y
 local function drag(inst: any, y0: number, ys: { number }, dt: number, restBeforeRelease: number?)
 	H.fire(inst, "InputBegan", H.input({ Position = Vector3.new(200, y0, 0) }))
@@ -98,7 +119,9 @@ H.section("scaffold: structure, tokens, instance count", function()
 	local n = H.countDescendants(sheet) + 1
 	print(`[bottomsheet] standard sheet: {n} instances (1 content row)`)
 	H.resetOutput()
-	assert(n == 15, "sheet instances " .. n)
+	assert(n == 16, "sheet instances " .. n)
+	-- an M3 Surface blocks pointer input (Surface.kt 131): the standard sheet carries the sink too
+	InputSink.assertInputSink(sheet, "the standard bottom sheet")
 	q.dispose(host)
 	H.assertNoDebugOutput("structure")
 end)
@@ -115,11 +138,11 @@ H.section("scaffold: first layout snaps to the peek; Expand / handle click / Par
 	H.advance(0.25)
 	assert(state.CurrentValue:Get() == "Expanded", "settled when the motion ends")
 	-- handle click on Expanded: no Hidden -> PartialExpand
-	H.fire(H.find(sheet, "DragHandle"), "Activated", H.input({}), 1)
+	clickHandle(H.find(sheet, "DragHandle"))
 	H.finishTweens()
 	H.advance(0.25)
 	assert(state.CurrentValue:Get() == "PartiallyExpanded" and offsetOf(sheet) == -56)
-	H.fire(H.find(sheet, "DragHandle"), "Activated", H.input({}), 1)
+	clickHandle(H.find(sheet, "DragHandle"))
 	H.advance(0.25)
 	assert(state.CurrentValue:Get() == "Expanded", "handle on Partial expands")
 	assert(not pcall(state.Hide), "Hide errors when Hidden is not enabled")
@@ -134,18 +157,18 @@ H.section("scaffold drag: follow, positional threshold 56, velocity 125, clamp, 
 	local screen, _host, sheet = scaffold({ SheetState = state })
 	assert(offsetOf(sheet) == -248)
 	-- slow drag 50 px down (5 px per 50 ms = 100 px/s < 125): under the 56 threshold -> back to Expanded
-	drag(sheet, 600, { 605, 610, 615, 620, 625, 630, 635, 640, 645, 650 }, 0.05)
+	drag(sinkOf(sheet), 600, { 605, 610, 615, 620, 625, 630, 635, 640, 645, 650 }, 0.05)
 	assert(uisConns() == baseConns, "drag connections closed")
 	H.finishTweens()
 	H.advance(0.3)
 	assert(state.CurrentValue:Get() == "Expanded" and offsetOf(sheet) == -248, "50 px < 56: stays")
 	-- slow drag 60 px (100 px/s): past 56 -> PartiallyExpanded
-	drag(sheet, 600, { 605, 610, 615, 620, 625, 630, 635, 640, 645, 650, 655, 660 }, 0.05)
+	drag(sinkOf(sheet), 600, { 605, 610, 615, 620, 625, 630, 635, 640, 645, 650, 655, 660 }, 0.05)
 	H.finishTweens()
 	H.advance(0.3)
 	assert(state.CurrentValue:Get() == "PartiallyExpanded", "60 px >= 56: next anchor")
 	-- while dragging the sheet follows the pointer (snapped), clamped to the anchors' range
-	H.fire(sheet, "InputBegan", H.input({ Position = Vector3.new(200, 760, 0) }))
+	H.fire(sinkOf(sheet), "InputBegan", H.input({ Position = Vector3.new(200, 760, 0) }))
 	H.advance(0.05)
 	UIS.InputChanged:Fire(H.input({ UserInputType = Enum.UserInputType.MouseMovement, Position = Vector3.new(200, 700, 0) }))
 	assert(offsetOf(sheet) == -116, "follows: -56 - 60 = " .. offsetOf(sheet))
@@ -157,11 +180,11 @@ H.section("scaffold drag: follow, positional threshold 56, velocity 125, clamp, 
 	UIS.InputEnded:Fire(H.input({ UserInputType = Enum.UserInputType.MouseButton1, Position = Vector3.new(200, 900, 0) }))
 	H.advance(0.3)
 	-- fling: 30 px up in 0.05 s = 600 px/s >= 125 -> the next anchor up, whatever the distance
-	drag(sheet, 760, { 745, 730 }, 0.025)
+	drag(sinkOf(sheet), 760, { 745, 730 }, 0.025)
 	H.advance(0.3)
 	assert(state.CurrentValue:Get() == "Expanded", "fling up expands")
 	-- a pause > 40 ms before the release zeroes the velocity: back to the closest anchor
-	drag(sheet, 600, { 580, 560 }, 0.01, 0.1)
+	drag(sinkOf(sheet), 600, { 580, 560 }, 0.01, 0.1)
 	H.advance(0.3)
 	assert(state.CurrentValue:Get() == "Expanded")
 	-- the click that ends a real drag on the handle is not a click
@@ -181,7 +204,7 @@ H.section("scaffold drag: follow, positional threshold 56, velocity 125, clamp, 
 		end,
 	})
 	local screen2, _h2, sheet2 = scaffold({ SheetState = vetoed })
-	drag(sheet2, 600, { 610, 620, 630, 640, 650, 660, 670, 680 }, 0.05)
+	drag(sinkOf(sheet2), 600, { 610, 620, 630, 640, 650, 660, 670, 680 }, 0.05)
 	H.finishTweens()
 	H.advance(0.3)
 	assert(vetoed.CurrentValue:Get() == "Expanded" and offsetOf(sheet2) == -248, "vetoed target settles back")
@@ -192,7 +215,7 @@ H.section("scaffold drag: follow, positional threshold 56, velocity 125, clamp, 
 	-- swipe disabled
 	local still = SheetState({ InitialValue = "Expanded", EnabledValues = { "PartiallyExpanded", "Expanded" } })
 	local screen3, _h3, sheet3 = scaffold({ SheetState = still, SheetSwipeEnabled = false })
-	drag(sheet3, 600, { 650, 700, 750 }, 0.02)
+	drag(sinkOf(sheet3), 600, { 650, 700, 750 }, 0.02)
 	assert(offsetOf(sheet3) == -248 and still.CurrentValue:Get() == "Expanded" and uisConns() == baseConns, "SheetSwipeEnabled = false")
 	q.dispose(screen3)
 	H.advance(1)
@@ -203,7 +226,7 @@ end)
 H.section("scaffold with Hidden: drag down hides, handle shows it again; peek 0 / no handle", function()
 	local state = SheetState({ InitialValue = "PartiallyExpanded" })
 	local screen, _host, sheet = scaffold({ SheetState = state })
-	drag(sheet, 760, { 790, 820 }, 0.02) -- fast, down
+	drag(sinkOf(sheet), 760, { 790, 820 }, 0.02) -- fast, down
 	H.finishTweens()
 	H.advance(0.3)
 	assert(state.CurrentValue:Get() == "Hidden" and offsetOf(sheet) == 0, "hidden below the host")
@@ -212,7 +235,7 @@ H.section("scaffold with Hidden: drag down hides, handle shows it again; peek 0 
 	assert(state.CurrentValue:Get() == "PartiallyExpanded", "Show -> PartiallyExpanded (the anchor exists)")
 	state.Hide()
 	H.advance(0.3)
-	H.fire(H.find(sheet, "DragHandle"), "Activated", H.input({}), 1)
+	clickHandle(H.find(sheet, "DragHandle"))
 	H.advance(0.3)
 	assert(state.CurrentValue:Get() == "PartiallyExpanded", "handle on Hidden shows")
 	q.dispose(screen)
@@ -226,6 +249,56 @@ H.section("scaffold with Hidden: drag down hides, handle shows it again; peek 0 
 	q.dispose(screen2)
 	H.advance(1)
 	H.assertNoDebugOutput("scaffold hidden")
+end)
+
+H.section("press hooks where the engine delivers the press; the handle's canon ripple, drag cancel, armed click", function()
+	local state = SheetState({ InitialValue = "Expanded", EnabledValues = { "PartiallyExpanded", "Expanded" } })
+	local screen, _host, sheet = scaffold({ SheetState = state })
+	-- the engine never delivers InputBegan to the Frame under a full-cover GuiButton (Util.luau "INPUT RULE"): no hook there
+	H.fire(sheet, "InputBegan", H.input({ Position = Vector3.new(200, 600, 0) }))
+	assert(uisConns() == baseConns, "the sheet Frame carries no drag hook (the press lands on its InputSink)")
+	H.fire(sinkOf(sheet), "InputBegan", H.input({ Position = Vector3.new(200, 600, 0) }))
+	assert(uisConns() > baseConns, "the InputSink starts the drag")
+	UIS.InputEnded:Fire(H.input({ Position = Vector3.new(200, 600, 0) }))
+	assert(uisConns() == baseConns)
+	-- canon: `Modifier.clickable` with LocalIndication = ripple (BottomSheet.kt 364-372, Clickable.kt 199-210)
+	local handle = H.find(sheet, "DragHandle")
+	local layer = H.find(handle, "StateLayer")
+	assert(layer ~= nil and layer.Size == UDim2.fromScale(1, 1), "the handle box has the state layer / ripple (canon)")
+	-- a drag past the slop cancels the handle's press: its ripple fades and no click follows, even after the 0.25 s window
+	H.setAbs(handle, 184, 552, 32, 48)
+	H.setAbs(layer, 184, 552, 32, 48)
+	local press = H.input({ Position = Vector3.new(200, 560, 0) })
+	H.fire(handle, "InputBegan", press)
+	H.advance(1 / 60)
+	assert(H.find(layer, "Ripple") ~= nil, "pressed: a ripple")
+	for _, y in { 550, 540, 530 } do
+		H.advance(0.05)
+		UIS.InputChanged:Fire(H.input({ UserInputType = Enum.UserInputType.MouseMovement, Position = Vector3.new(200, y, 0) }))
+	end
+	H.advance(0.5)
+	assert(H.find(layer, "Ripple") == nil, "the drag cancelled the press: the ripple faded out")
+	H.fire(handle, "Activated", press, 1)
+	H.fire(handle, "InputEnded", press)
+	UIS.InputEnded:Fire(press)
+	H.advance(0.3)
+	assert(state.CurrentValue:Get() == "Expanded", "no click from a press the drag took over")
+	-- the engine fires Activated on mouse-up over a button that kept an unfinished earlier press, even when this press
+	-- began elsewhere (Studio 2026-10-08): a pointer Activated without a live press on the handle is ignored
+	H.fire(handle, "Activated", H.input({}), 1)
+	H.advance(0.3)
+	assert(state.CurrentValue:Get() == "Expanded", "no click without a press that began on the handle")
+	-- gamepad / keyboard activation is not filtered
+	H.fire(handle, "Activated", H.input({ UserInputType = Enum.UserInputType.Gamepad1, KeyCode = Enum.KeyCode.ButtonA }), 1)
+	H.advance(0.3)
+	assert(state.CurrentValue:Get() == "PartiallyExpanded", "gamepad activation clicks")
+	clickHandle(handle)
+	H.advance(0.3)
+	assert(state.CurrentValue:Get() == "Expanded", "a real click still toggles (Partial -> Expanded)")
+	assert(uisConns() == baseConns)
+	q.dispose(screen)
+	H.advance(1)
+	H.assertNoDebugOutput("handle input")
 end)
 
 H.section("drag handle: its ripple stays inside the 32 x 48 box (BOUNDED)", function()
@@ -331,7 +404,7 @@ H.section("modal tall content: partial at half the layer; handle expands; back s
 	H.finishTweens()
 	assert(sheet.Size == UDim2.new(1, 0, 0, 648) and offsetOf(sheet) == -400, "PartiallyExpanded = half of 800")
 	H.advance(0.3)
-	H.fire(H.find(sheet, "DragHandle"), "Activated", H.input({}), 1)
+	clickHandle(H.find(sheet, "DragHandle"))
 	H.finishTweens()
 	H.advance(0.3)
 	assert(handle.SheetState.CurrentValue:Get() == "Expanded" and offsetOf(sheet) == -648)
@@ -366,7 +439,7 @@ H.section("modal drag: fling down dismisses; Close(result) animates out; veto; D
 	})
 	local _root, sheet = layout(screen, 200)
 	H.advance(0.3)
-	drag(sheet, 600, { 630, 660 }, 0.02)
+	drag(sinkOf(sheet), 600, { 630, 660 }, 0.02)
 	assert(not handle.IsOpen:Get() and #got == 1, "flung to Hidden: closed")
 	H.advance(0.3)
 	assert(#overlay.Layer:GetChildren() == 0)
@@ -423,7 +496,7 @@ H.section("modal: layer death finalizes; nothing left behind", function()
 		end,
 	})
 	layout(screen, 200)
-	H.fire(H.find(screen, "BottomSheet"), "InputBegan", H.input({ Position = Vector3.new(200, 600, 0) }))
+	H.fire(sinkOf(H.find(screen, "BottomSheet")), "InputBegan", H.input({ Position = Vector3.new(200, 600, 0) }))
 	q.dispose(screen)
 	H.advance(1)
 	assert(reasons == 1 and not handle.IsOpen:Get(), "OnClose once")

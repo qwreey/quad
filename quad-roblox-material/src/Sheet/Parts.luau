@@ -30,6 +30,19 @@
 	    (SheetBottomTokens DockedDragHandleWidth / Height, shape extraLarge = full on 4 px), onSurfaceVariant, 22 px above and
 	    below (DragHandleVerticalPadding, 788-789) — the clickable is the padded 32 x 48 box (the handle's `clickable` comes
 	    before the padding in the modifier chain), so the state layer / ripple fill that box. Centered at the top.
+	    RIPPLE — canon has one: the sheets wrap the handle in `Modifier.clickable { ... }` (BottomSheet.kt 364-372,
+	    BottomSheetScaffold.kt 392-405), the overload without an `indication` argument, which takes `LocalIndication`
+	    (foundation Clickable.kt 199-210, `useLocalIndication = true`), and MaterialTheme provides the ripple there
+	    (MaterialTheme.kt 109) — a bounded ripple and hover / focus state layer on the rectangular 32 x 48 box. So the kit's
+	    `Interactive` (corner 0) is the canon look, not a stray effect.
+	    DRAG vs CLICK — the sheet's `anchoredDraggable` sits on the Surface, the handle's `clickable` on a child: once the drag
+	    passes the touch slop it consumes the pointer and the clickable cancels its press (the ripple fades, no click on
+	    release). `opts.Dragging` (the slide's Dragging State) does that here: when it turns true the handle's press is
+	    cancelled (`fx.CancelPress`). And a pointer click counts only for a press that BEGAN on the handle and was not
+	    cancelled: the engine fires `Activated` on mouse-up over a GuiButton that still holds an unfinished earlier press —
+	    pressed there, released elsewhere — even when the current press began somewhere else (Studio 2026-10-08, Util.luau
+	    "INPUT RULE" and the QA file), so a drag released off the handle would otherwise leave a click armed for a later
+	    unrelated release over it. Gamepad / keyboard activation is not filtered.
 	Parts.scrim(opts) -> TextButton   a full-size Scrim (Scrim.kt 50-79: the scrim color, a tap dismisses), not Selectable.
 ]]
 
@@ -94,6 +107,8 @@ end
 export type HandleOptions = {
 	Theme: Theme.Theme,
 	OnClick: () -> (),
+	-- the slide's Dragging State: the handle's press is cancelled when a drag takes over
+	Dragging: q.State<boolean>?,
 	Hooks: { any }?,
 }
 
@@ -102,9 +117,41 @@ local HANDLE_HEIGHT = 4 -- SheetBottomTokens.DockedDragHandleHeight
 local HANDLE_PADDING = 22 -- DragHandleVerticalPadding
 local HANDLE_BOX = HANDLE_HEIGHT + 2 * HANDLE_PADDING -- 48
 
+local function isPointer(input: InputObject?): boolean
+	if input == nil then
+		return false
+	end
+	local t = input.UserInputType
+	return t == Enum.UserInputType.MouseButton1 or t == Enum.UserInputType.Touch
+end
+
 local function dragHandle(o: HandleOptions): TextButton
 	local theme = o.Theme
-	local fx = Interactive.new({ Theme = theme, OnColor = theme.Color.OnSurface, Corner = UDim.new(0, 0) })
+	-- a press began on the handle and has not been cancelled (pointer leaving, a drag taking over)
+	local armed = false
+	local fx = Interactive.new({
+		Theme = theme,
+		OnColor = theme.Color.OnSurface,
+		Corner = UDim.new(0, 0),
+		OnPress = function()
+			armed = true
+		end,
+		OnRelease = function(cancelled: boolean)
+			if cancelled then
+				armed = false
+			end
+		end,
+	})
+	local dragging = o.Dragging
+	local cancelOnDrag: any = q.None
+	if dragging ~= nil then
+		cancelOnDrag = q.Effect(function()
+			if dragging:Get() then
+				fx.CancelPress()
+			end
+			return nil :: any
+		end, dragging)
+	end
 	return D.TextButton {
 		Name = "DragHandle",
 		Size = UDim2.fromOffset(HANDLE_WIDTH, HANDLE_BOX),
@@ -116,8 +163,13 @@ local function dragHandle(o: HandleOptions): TextButton
 		Text = "",
 		ZIndex = 2,
 		fx.Hook,
-		Activated = function()
-			o.OnClick()
+		cancelOnDrag,
+		Activated = function(input: InputObject?)
+			local ok = armed or not isPointer(input)
+			armed = false
+			if ok then
+				o.OnClick()
+			end
 		end,
 		fx.Layer,
 		D.Frame {

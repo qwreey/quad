@@ -35,6 +35,9 @@
 	                                                SelectionImageObject, without a second hook)
 	  .Hovered / .Pressed / .Focused   State<boolean>   (Focused = gamepad/keyboard selection, not mouse)
 	  .Hook              array-part value
+	  .CancelPress()     end a press now as cancelled (OnPressEnded(true)) — a gesture of an ancestor took the pointer
+	                     over (Compose: a parent's drag consumes the pointer once past the touch slop, and the child's
+	                     clickable cancels its press — the ripple fades and no click follows)
 	A press = MouseButton1, Touch, or gamepad ButtonA going down ON the element. The pointer leaving the
 	element while pressed cancels the press (ripples fade, like Android) — one MouseLeave handler covers a
 	touch lifting off outside too, so no global input connection is needed for plain buttons.
@@ -50,6 +53,9 @@
 	  .Dragging     State<boolean>
 	  .Hook         array-part value
 	  :Cancel()     end an active drag now (cancelled = true)
+	THE HOOKED ELEMENT MUST BE THE ONE THAT RECEIVES THE PRESS: a press reaches `InputBegan` of the GuiObjects under the
+	pointer from the top down and stops after the first GuiButton (Util.luau "INPUT RULE", Studio 2026-10-08) — a Frame
+	that holds a full-cover GuiButton (an InputSink) never gets it; hook the button.
 	While dragging (and ONLY then) it holds three UserInputService connections: InputChanged, InputEnded,
 	WindowFocusReleased. All three are disconnected when the drag ends, when the window loses focus, and
 	when the element is destroyed. Mouse drags are tracked until MouseButton1 is released ANYWHERE (the
@@ -77,6 +83,7 @@ export type Interaction = {
 	read Pressed: q.State<boolean>,
 	read Focused: q.State<boolean>,
 	read Hook: Hook,
+	read CancelPress: () -> (),
 }
 
 export type DragOptions = {
@@ -163,6 +170,9 @@ local function new(opts: Options?): Interaction
 		Pressed = pressed,
 		Focused = focused,
 		Hook = hook,
+		CancelPress = function()
+			endPress(true)
+		end,
 	}
 end
 

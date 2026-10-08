@@ -17,6 +17,8 @@
 	        UICorner = fx.Corner,
 	    }
 	  .Hovered/.Pressed/.Focused  State<boolean>   for extra component logic (e.g. raise elevation on hover)
+	  .CancelPress()               end the press as cancelled (the ripple fades; OnRelease(true)) — an ancestor's drag took
+	                               the pointer over (Interaction.luau)
 	  .Corner                      the UDim you passed (convenience for `UICorner = fx.Corner`)
 	Interactive.noSelectionImage() -> Frame   the shared invisible SelectionImageObject (for hosts that wire their
 	  own Interaction instead of `fx.Hook`; never parent it)
@@ -67,6 +69,7 @@ export type Interactive = {
 	read Pressed: q.State<boolean>,
 	read Focused: q.State<boolean>,
 	read Corner: UDim,
+	read CancelPress: () -> (),
 }
 
 -- One invisible selection image for every host: assigning it as `SelectionImageObject` replaces the engine's
@@ -136,6 +139,7 @@ local function new(o: Options): Interactive
 		Pressed = ix.Pressed,
 		Focused = ix.Focused,
 		Corner = corner,
+		CancelPress = ix.CancelPress,
 	}
 end
 

@@ -190,7 +190,16 @@ H.section("modal: tokens (surfaceContainerLow, inner corner 16, shadow 1), slide
 	H.finishTweens()
 	local s3: any = H.find(screen, "SideSheet")
 	assert(s3.AnchorPoint == Vector2.new(0, 0) and H.find(s3, "CornerPatch").AnchorPoint == Vector2.new(0, 0))
-	drag(s3, 200, { 180, 160 }, 0.025)
+	-- the press on a modal sheet stops at its InputSink (Util.luau "INPUT RULE"): the Frame has no hook, the sink drags
+	H.fire(s3, "InputBegan", H.input({ Position = Vector3.new(200, 300, 0) }))
+	assert(uisConns() == baseConns, "the modal sheet Frame carries no drag hook")
+	local sink3 = nil
+	for _, c in s3:GetChildren() do
+		if c.Name == "InputSink" then
+			sink3 = c
+		end
+	end
+	drag(sink3, 200, { 180, 160 }, 0.025)
 	assert(not h3.IsOpen:Get(), "swiped off: closed")
 	H.advance(0.3)
 	-- Close(result) and the flags
@@ -219,7 +228,7 @@ H.section("modal: layer death finalizes, nothing left", function()
 			closes += 1
 		end,
 	})
-	H.fire(H.find(screen, "SideSheet"), "InputBegan", H.input({ Position = Vector3.new(800, 300, 0) }))
+	H.fire(H.find(H.find(screen, "SideSheet"), "InputSink"), "InputBegan", H.input({ Position = Vector3.new(800, 300, 0) }))
 	q.dispose(screen)
 	H.advance(1)
 	assert(closes == 1 and not handle.IsOpen:Get() and handle.SheetState.CurrentValue:Get() == "Hidden")

@@ -317,7 +317,7 @@
 
 **고친 것**: `Util.inputSink()`(src/Util.luau, 이미 루트에 내보내는 `Util`의 멤버라 새 루트 이름 없음) — 투명 전체 덮기 `TextButton` "InputSink"(Size Scale 1,1 직계 자식만, ZIndex 0, Selectable false, AutoButtonColor false). GuiButton만 GUI 클릭을 먹으므로 면마다 하나를 직계 자식으로 둔다. `Active = true`는 3D 입력용으로 남기고 주석을 바로잡았다. Dialog는 UIListLayout·UIPadding이 면 직계에 있어 싱크가 한 행이 되거나 패딩에 줄어들므로 목록 내용을 안쪽 "Content" 프레임으로 옮겼다(패딩 24도 거기로).
 
-**자리**: Dialog 카드(ColorPicker 모달은 Dialog를 씀), Menu 패널(Scrim = true), DatePicker 모달 카드, TimePicker 모달 카드, 모달 하단 시트 면(손잡이 포함, 표준 시트에는 없음), 모달 측면 시트 면(표준 없음), 모달 드로어 시트와 드로어 홀더 `Drawer`(모달일 때만). 스펙은 test/support/inputsink.luau의 `assertInputSink`(직계 InputSink TextButton·Selectable false·ZIndex가 모든 형제 아래·Size 정확히 Scale 1,1)로 단언. 끌기는 `Interaction.drag`가 호스트 InputBegan과 UserInputService로 듣는데 싱크는 호스트의 자식이라 호스트 이벤트를 막지 않는다고 판단했으나(조상에도 입력 이벤트가 닿는다는 전제) **Studio 미측정** — 시계판·시트 몸통·손잡이 끌기가 여전히 되는지 실기기 체크리스트 61에서 확인.
+**자리**: Dialog 카드(ColorPicker 모달은 Dialog를 씀), Menu 패널(Scrim = true), DatePicker 모달 카드, TimePicker 모달 카드, 모달 하단 시트 면(손잡이 포함, 표준 시트에는 없음), 모달 측면 시트 면(표준 없음), 모달 드로어 시트와 드로어 홀더 `Drawer`(모달일 때만). 스펙은 test/support/inputsink.luau의 `assertInputSink`(직계 InputSink TextButton·Selectable false·ZIndex가 모든 형제 아래·Size 정확히 Scale 1,1)로 단언. 끌기는 `Interaction.drag`가 호스트 InputBegan과 UserInputService로 듣는데 싱크는 호스트의 자식이라 호스트 이벤트를 막지 않는다고 판단했으나(조상에도 입력 이벤트가 닿는다는 전제) **Studio 미측정** — 시계판·시트 몸통·손잡이 끌기가 여전히 되는지 실기기 체크리스트 61에서 확인. **[2026-10-08 실측으로 반증 — 맨 아래 "Studio 실측 — 바텀 시트 핸들·입력 규칙·리플 Scale" 절]** 전제가 틀렸다: 싱크(GuiButton)가 누름을 받으면 부모 Frame의 `InputBegan`은 오지 않는다. 그래서 이 커밋 뒤로 모달 하단·측면 시트 몸통과 모달 드로어 몸통 끌기가 죽어 있었다. 고침은 그 절(끌기 훅을 싱크에, 표준 하단 시트에도 싱크, 모달 드로어 시트 자체 싱크 제거).
 
 ## 범위 선택 깜빡임 (2026-10-08)
 
@@ -378,3 +378,64 @@
 **Studio에서 볼 점**(README 체크리스트 64~69, 위험한 순): (1) 앱 바 스크롤(66) — 실제 ScrollingFrame에서 CanvasPosition이 터치 관성·휠마다 어떻게 오는지, 첫 행이 바 아래에 붙어 다니는지, 0.1 s 정착이 관성 스크롤 도중에 끼어들지 않는지(멈춤 판정이 짧으면 관성 중에 정착이 시작될 수 있음). (2) 레일 펼침(65) — 글자 폭 측정(AbsoluteSize)이 글꼴이 바뀐 직후 한 프레임 늦어 폭이 튀는지, 오른쪽 내용이 레일을 따라 밀리는지. (3) 바 알약·배지(64) — 배지 위치, 알약이 가운데서 자라는지, Start 아이콘 바의 글자 측정. (4) 앱 바 모양(67) — 두 줄 바 큰 제목 기준선(Roboto 근사), 툴팁·오버플로 메뉴. (5) 툴바(69)·하단 앱 바(68).
 
 **정본이 모호해 판단한 것**: (a) 판 선택 — 위 1. (b) **이름** — Compose 이름 그대로(ShortNavigationBar·WideNavigationRail·WideNavigationRailState·Badge·TopAppBar·CenterAlignedTopAppBar·MediumTopAppBar·MediumFlexibleTopAppBar·LargeTopAppBar·LargeFlexibleTopAppBar·TopAppBarState·TopAppBarDefaults(pinnedScrollBehavior 등 소문자 Compose 이름)·BottomAppBar·FlexibleBottomAppBar·HorizontalFloatingToolbar·VerticalFloatingToolbar); 항목은 개별 컴포넌트(ShortNavigationBarItem·WideNavigationRailItem) 대신 드로어 NavigationDrawerItems처럼 **데이터 목록 + `Selected: Source<K>` 하나**(Tabs 규칙) — 바·레일이 배치(셀 폭·세로 위치)를 알아야 해서. 아이콘 위치는 Compose처럼 항목마다가 아니라 바 하나에 `IconPosition`(레일은 상태에서 자동 — iconPositionFor). (c) **앱 바 슬롯** — Compose는 자유 composable, 키트는 데이터 액션(AppBarRow 규칙) 또는 인스턴스; 제목·부제목은 글자만. 오버플로는 개수(`MaxItemCount`)만, 폭으로 넘기기 없음. 툴팁은 아래(키트 Tooltip), Compose는 위. (d) **IconButton `ContentColor`** — 새 공개 prop(Compose IconButtonColors.contentColor). (e) **스크롤** — 위 6의 Roblox 차이, 멈춤 판정 0.1 s(정본 없음, 플링 끝의 대용), 바 끌기·플링 감속 없음. 두 줄 바 기준선은 Roboto 지표 근사. 가운데 제목은 넓은 쪽 기준 대칭 공간(Compose는 겹치면 옮김). (f) **스프링 → 트윈** — DefaultSpatial ≈ 0.19 s → Short4(바 알약·레일), FastSpatial ≈ 0.14 s → Short3(툴바), DefaultEffects → Short4(앱 바 색·정착); Quart Out(키트 Standard), 넘침 없음. (g) **FAB** — 하단 앱 바·툴바는 FAB를 데이터 `{ Icon, OnClick }`로 받아 키트 FAB로 그림(툴바가 56 ↔ 80 크기를 몰아야 해서); 그림자는 키트 FAB 그대로(Compose 툴바 FAB 2/3, 하단 앱 바 샘플 0). (h) **빠진 것** — ModalWideNavigationRail, 옛 NavigationBar/NavigationRail, 항목 비활성(목적지 모델에 없음), 배지 룰러, BadgedBox 공개, BottomAppBarScrollBehavior, 툴바 스크롤 동작·균형 최소 여백·터치 탐색 규칙, Centered 항목 최대 폭(바 / n). (i) 바·레일 선택 색은 Raw 역할에서 골라 테마 전환 때 교차 페이드 없이 바뀜.
+
+## Studio 실측 — 바텀 시트 핸들·입력 규칙·리플 Scale (2026-10-08)
+
+**[2026-10-08 처리 — 서브에이전트, Studio(Place1.rbxl, 클라이언트 0.742) 실측 + 코드·목 스펙]**
+
+**관찰(사용자, 원문)**: *"바텀 시트 뭔가 이상하더라. 핸들부 왜 ripple 있음? 거기 드래그 해도 안 열림. 클릭은 열리던데."*
+
+**정본 확인**(`androidx/androidx@40ff481`, compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ 아래, 줄 번호는 그 sha): 손잡이는 `DragHandleWithTooltip(modifier = Modifier.clickable { ... }.semantics { ... })`로 감싸인다(BottomSheet.kt 364-372, BottomSheetScaffold.kt 392-405). `clickable(onClick)`은 `indication` 인자가 없는 오버로드라 `LocalIndication`을 쓰고(compose/foundation/.../Clickable.kt 199-210, `useLocalIndication = true`), MaterialTheme이 거기에 리플을 넣는다(MaterialTheme.kt 109 `LocalIndication provides rippleIndication`). 그래서 **정본 손잡이에도 리플·호버 상태 층이 있다** — 32 x 48 상자(위아래 패딩 22 포함, SheetDefaults.kt 571-589의 `DragHandle`) 사각형. 끌기는 손잡이가 아니라 Surface의 `anchoredDraggable`(BottomSheet.kt 329, BottomSheetScaffold.kt 363)이라 면 어디서든 끌리고, 손잡이의 clickable은 자식이라 부모 끌기가 터치 슬롭을 넘어 포인터를 소비하면 누름이 취소된다(리플 사라짐, 놓아도 클릭 없음). 그리고 M3 `Surface`는 `pointerInput(Unit) {}`으로 아래로 가는 누름을 막는다(Surface.kt 131) — 표준 시트도. 놓은 뒤 목표는 `computeTarget`(foundation AnchoredDraggable.kt 1485-1515): 속도 0이면 가장 가까운 자리 — 킷 `Anchored.computeTarget`과 같다.
+
+**재현(시뮬레이션 마우스, `user_mouse_input`; 이 도구의 좌표는 GUI 좌표 = `AbsolutePosition`, 화면 캡처 y는 + 58)**: 고치기 전 코드에서 — 손잡이 상자(32 x 48) 안을 눌러 끌면 표준·모달 모두 시트가 따라왔다(InputBegan이 손잡이로 옴, 놓을 때 `Activated`는 `Moved()`로 무시). 그러나 **모달 시트에서 손잡이 옆(같은 48 띠)이나 빈 몸통을 눌러 끌면 아무것도 안 움직였다** — 누름이 `InputSink`에만 오고 끌기 훅이 걸린 시트 Frame에는 `InputBegan`이 오지 않음. 목록 행(버튼) 위 누름은 행만 받는다(싱크·Frame 둘 다 못 받음). 사용자의 "드래그 해도 안 열림"은 이 경우(모달, 손잡이 상자 밖 띠)로 본다 — 손잡이 상자 안쪽만 끌렸다. 절반 상태에서 천천히 끌다 멈춰 놓으면 가까운 자리(절반)로 돌아가는 것은 정본과 같다(속도 0 → closest).
+
+**입력 규칙 측정**(Client PlayerGui에 프로브 ScreenGui, 측정 뒤 삭제). 회색 스크림 TextButton 위에 Active Frame "Surface"(ZIndex 2), 그 직계 자식으로 투명 TextButton 싱크(Scale 1,1, ZIndex 0), 일반 Frame 자식, TextButton 자식을 두고 각 자리를 클릭:
+
+| 누른 곳 | InputBegan을 받은 것 | Activated |
+|---|---|---|
+| 싱크만 있는 곳 | 싱크 | 싱크 |
+| 일반 Frame 자식 위(아래에 싱크) | Frame 자식, 싱크 | 싱크 |
+| TextButton 자식 위 | 그 버튼만 | 그 버튼 |
+| 싱크 없는 Surface 빈 곳 | Surface, 스크림 | **스크림**(관통) |
+| 싱크 없는 Surface의 일반 Frame 자식 위 | Frame 자식, Surface, 스크림 | 스크림 |
+| 버튼 위를 덮은 형제 Frame(ZIndex 높음) | 그 Frame, 아래 버튼 | 아래 버튼 |
+| ScrollingFrame 자식 위(아래에 싱크) | ScrollingFrame, 싱크 | 싱크 |
+| 홀더(싱크) > 시트(싱크) > ScrollingFrame | ScrollingFrame, 시트의 싱크 | 시트의 싱크(홀더 싱크·홀더 Frame은 못 받음) |
+
+규칙: **누름은 포인터 아래 GuiObject들에 위에서부터 `InputBegan`으로 전해지고, 첫 GuiButton에서 멈춘다**(그 버튼 포함). Frame·ScrollingFrame은 받고 넘긴다. 부모는 자식 아래에 그려지므로 직계 싱크가 있는 Frame은 자기 안 누름의 `InputBegan`을 영영 못 받는다. 질문 셋의 답: (1) 부모 Frame의 `InputBegan` — 안 옴, (2) 위에 있는 형제 Frame — 받음(그리고 넘김), (3) 아래 스크림 GuiButton의 `Activated` — 싱크가 있으면 안 옴, 없으면 옴.
+
+추가 발견 — **남은 누름(latent press)**: GuiButton을 누르고 다른 곳에서 떼면 그 버튼은 "눌린" 상태를 들고 있다가, 나중에 **다른 곳에서 시작한 누름**을 그 버튼 위에서 떼도 `Activated`가 난다(그 뒤 지워짐). 측정: 싱크를 누르고 버튼 위에서 뗌 → 버튼 `MouseButton1Up`만, `Activated` 없음; 버튼을 누르고 싱크 위에서 뗌 → 싱크 `Activated`(싱크에 앞서 남은 누름이 있었음); 스크림을 누르고 버튼 위에서 뗌 → 버튼 `Activated`(앞서 남은 누름), 한 번 더 → 없음. 고치기 전 재현 중 "Option 1"이 의도치 않게 골라진 것도 이것(앞선 시도에서 Option 1을 누르고 다른 행에서 뗐음). 손잡이를 끌어 클램프 밖에서 놓으면 손잡이에 누름이 남아, 나중에 다른 곳에서 시작한 누름을 손잡이 위에서 떼면 토글될 수 있었다.
+
+부수: GuiObject에 새 속성 **`InputSink`**(Enum.InputSink None/Activate/All)가 있다. 클라이언트에서 설정은 되지만 세 값 모두 스크림 `Activated`를 막지 못했다(0.742, 효과 없음 — 아직 꺼진 기능으로 보임). 그리고 이 이름 때문에 `surface.InputSink`는 자식이 아니라 속성을 돌려준다 — 킷 코드·스펙은 이름 색인을 안 써서 무해하지만 Studio에서 찾을 땐 `FindFirstChild("InputSink")`.
+
+**리플 Scale 측정**(프로브: 600 폭 행 Frame(가로 UIListLayout, Wraps) > TextButton 호스트(AutomaticSize X, Size 0,0,0,40) > 내용(고정 120 TextLabel 또는 킷처럼 AutomaticSize X 프레임 + UIPadding 24 + 라벨) + Layer Frame(Scale 1,1); 배치 뒤 Layer 아래에 하위 트리를 넣고 30~60 프레임 뒤 호스트 폭):
+
+| Layer 아래(깊이 2~3) | UIScale 없음 | 조상 UIScale 0.92 |
+|---|---|---|
+| Frame Offset 10 x 10(대조) | 120 → 120 | 110.4 → 110.4 |
+| Frame Scale 1,1, 자식 없음 | 120 → **600** | 110.4 → **552** |
+| CanvasGroup Scale 1,1, 자식 없음 | 120 → **600** | 110.4 → **552** |
+| CanvasGroup Scale 1,1, 킷형 내용 | 256 → **600** | 222.2 → **552** |
+| CanvasGroup Scale 1,1 > ImageLabel Scale 1,1 | 309 → **600** | 269.2 → **552** |
+| CanvasGroup Scale 1,1 > ImageLabel Offset(호스트 크기) | 311 → 311 | 272.2 → 272.2 |
+| Frame Scale 1,1 > Frame Offset 10 x 10 | 120 → 120 | — |
+| Frame Scale 1,1 > Frame Offset 0 x 0 | 120 → 120 | — |
+| Frame Scale 1,1 > Frame Offset 10 x 10(Visible false) | 120 → 120 | — |
+| Frame Scale 0.5,1, 자식 없음 | 120 → **300** | — |
+| Frame Scale 1,1 > Frame Scale 1,1(잎) | 120 → **600** | — |
+| Frame Offset 50 x 40 > Frame Scale 1,1(잎) | 120 → 120 | — |
+| Frame Scale 1,1, 자식 없음, Visible false | 120 → 120 | — |
+
+(폭은 첫 프레임에 이미 최종값, 이후 안 변함. 실제 킷 Button "Tall (half, then drag up)"을 1.2 s 눌러 잡아도 178 그대로 — 리플 그룹은 원판을 늘 자식으로 가짐.)
+
+**결론(리플)**: AutomaticSize 호스트 아래 깊이 2 이상에서, 조상이 호스트까지 모두 Scale 크기인 **보이는 Scale 잎(GuiObject 자식이 없는 것)**은 호스트 자신이 아니라 호스트가 쓸 수 있는 공간(여기선 행 600)을 기준으로 풀려 호스트를 그만큼 민다(Scale 0.5면 절반). 같은 요소에 자식이 하나라도 있으면(크기 0 x 0이나 숨긴 것이어도) 자식으로 재서 안 민다; Offset 부모 아래의 Scale 잎, 숨긴 잎, 깊이 1(직계) Scale도 안 민다. CanvasGroup·Frame 차이 없음. 그래서 "깊이가 하나 더 깊은 Scale 1을 엔진이 다르게 다룬다"는 미측정 서술은 "Scale **잎**이 문제"로 정정된다: 9차의 전체 덮음 원판(Scale 1, 잎)은 즉시 행 폭으로, 8차의 부분 Scale 원판(잎)은 비율만큼 점점; 리플 그룹(Scale 1)은 늘 원판을 자식으로 가져 무해. src/Ripple.luau 머리 "NOT SCALE" 문단을 이 측정으로 고쳤다(규칙 "그룹 아래엔 Scale 없음"은 그대로).
+
+**원인(시트)**: 5e1ef91f가 스크림 관통을 막으려 모달 면에 `Util.inputSink()`를 붙이면서 끌기 훅은 면 Frame에 그대로 두었다. 위 규칙대로 싱크가 누름을 먹으니 Frame의 `InputBegan`이 사라져 모달 하단 시트·모달 측면 시트·모달 드로어의 **몸통 끌기가 전부 죽었다**(손잡이·스크림의 자체 훅만 살아 있었음). 모달 드로어는 홀더와 시트가 각자 싱크를 가져 시트 싱크가 위에서 먹었다. 손잡이 리플은 정본과 같다(버그 아님) — 다만 끄는 동안 누름 리플이 그대로 남았고(정본은 취소), 위의 남은 누름 때문에 늦은 클릭이 가능했다.
+
+**고침**(quad-roblox-material/src): (1) `Util.inputSink(hooks?)` — 싱크 배열 칸에 훅을 받는다; 머리에 "INPUT RULE"(위 규칙) 기록. (2) 하단 시트(BottomSheet/Sheet.luau): **표준·모달 모두** 싱크(M3 Surface가 누름을 막으므로 — 표준 시트 아래로 클릭이 새던 것도 같이 막힘), 끌기 훅은 싱크로(면 Frame에서 뺌). 인스턴스 +1(표준 16 — 스펙). (3) 측면 시트(SideSheet/Surface.luau): 모달은 싱크에 훅, 표준은 그대로 Frame(MDC 표준 시트는 일반 뷰). (4) 드로어: 모달 홀더 싱크에 훅(NavigationDrawer/Drawer.luau), `ModalDrawerSheet`는 자체 싱크 제거(NavigationDrawer/Sheet.luau — 홀더 싱크가 시트 아래에서 클릭을 막고 끌기도 받음; 시트 인스턴스 8 → 7). (5) 손잡이(Sheet/Parts.luau): 정본대로 `Interactive` 리플 유지, `Dragging`(슬라이드의 Dragging State)이 켜지면 `CancelPress`(새 `Interaction`/`Interactive` 멤버) — 리플이 사라지고; 포인터 `Activated`는 손잡이에서 시작해 취소되지 않은 누름일 때만 클릭(남은 누름 무시, 게임패드·키보드는 그대로). (6) Slide.luau·Interaction.luau 머리에 "훅은 누름이 실제로 닿는 요소에" 기록.
+
+**스펙**: spec.bottomsheet — 끌기는 싱크로(`sinkOf`), 손잡이 클릭은 엔진 순서(InputBegan → Activated → InputEnded → UIS InputEnded)로; 새 절 "press hooks where the engine delivers the press…": 시트 Frame에 InputBegan → 끌기 연결 없음, 싱크 → 있음; 손잡이에 StateLayer(정본 리플); 끌기가 누름을 취소해 리플 그룹이 사라지고 0.25 s 뒤 `Activated`도 클릭 아님; 앞선 누름 없는 포인터 `Activated` 무시; 게임패드 `Activated`는 클릭; 진짜 클릭은 토글. spec.navigationdrawer — 홀더 싱크로 끌기, 홀더 Frame 무훅, 시트 싱크 없음·카운트 7. spec.sidesheet — 모달 Frame 무훅, 싱크로 끌기. 엔진 적중 판정 자체는 목이 못 보여 위 규칙을 파일 머리에 남겼다.
+
+**Studio 확인(고친 뒤, stop → studio-sync(9파일) → Play)**: 표준 시트 — 엿보기(-56)에서 손잡이 옆 빈 띠(570, 630)를 위로 230 끌어 따라옴·펼침(-288)에 정착(InputBegan은 `InputSink`); 손잡이 클릭 Expanded → PartiallyExpanded; 엿보기에서 손잡이를 위로 끄는 동안 손잡이 아래 리플 그룹 0개·상태 층 투명도 0.92(호버 8 %만), 놓으니 가까운 펼침으로, 놓을 때 `Activated`는 클릭 안 됨. 모달(Tall) — 절반(-316)에서 손잡이 옆 몸통(450, 340)을 위로 끌어 펼침(-632); 펼침에서 손잡이를 아래로 끌어 절반; 절반에서 손잡이 클릭 → 펼침; 펼침에서 몸통을 아래로 끝까지 끌어 놓으니 닫힘("Last sheet pick: dismissed"). 모달 측면 시트 — 몸통(1200, 400)을 오른쪽으로 160 끌어 놓으니 닫힘. 모달 드로어 — 헤드라인 자리(200, 375; 위에서부터 Overlay Frame·헤드라인·Scroll·시트 Frame → 홀더 싱크)를 왼쪽으로 199 끌어 닫힘; 다시 열고 같은 자리 클릭 → 안 닫힘(싱크가 막음); 항목 "Outbox" 클릭 → 동작. 프로브 ScreenGui 셋 모두 삭제.
+
+**남은 정본 차이**: 목록 행·버튼 위에서 시작한 누름은 시트를 끌지 못한다(Compose는 끌림 + 행 클릭 취소). 엔진이 누름을 첫 GuiButton에서 멈추므로, 하려면 UserInputService 전역 누름을 면 영역으로 판정하고 행의 클릭을 막아야 해서(행의 남은 누름 `Activated`까지) 이번엔 안 했다 — README "끌기" 문단에 적음. 모달 드로어 시트를 드로어 밖(스크림 위)에서 단독으로 쓰면 이제 싱크가 없다(문서상 용도는 드로어 내용).

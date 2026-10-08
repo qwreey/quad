@@ -20,7 +20,11 @@
 	Nothing is anchored before the host AND the content have been laid out (AbsoluteSize > 0); the first layout then snaps
 	to the target value (Compose places the sheet at its anchor on the first measure) — the modal waits for that layout
 	before it calls `Show`, so its opening animates up from Hidden.
-	DRAG: anywhere on the surface and on the handle (Compose `anchoredDraggable` on the Surface); released, the target is
+	DRAG: anywhere on the surface and on the handle (Compose `anchoredDraggable` on the Surface); the kit's press hooks sit on
+	the surface's InputSink and on the handle — the two GuiButtons a press on the sheet stops at (a press on a GuiButton of
+	the content, a list item, stops at that item and drags nothing; Util.luau "INPUT RULE"). Every sheet, the standard one
+	too, carries the sink: an M3 Surface blocks pointer input to what lies beneath it (Surface.kt 131 `pointerInput(Unit) {}`),
+	and a plain Roblox Frame does not. Released, the target is
 	Compose `computeTarget` with the sheet's thresholds — positional 56 (BottomSheetDefaults.PositionalThreshold, a fixed
 	distance whatever the gap between anchors: `positionalThreshold = { _ -> state.positionalThreshold() }`, BottomSheet.kt
 	211-216) and velocity 125 px/s (VelocityThreshold, also AnchoredDraggableMinFlingVelocity), SheetDefaults.kt 557-559.
@@ -28,9 +32,9 @@
 	Color SurfaceContainerLow (DockedContainerColor). `Shadow` = an elevation level (the scaffold's sheetShadowElevation
 	= BottomSheetDefaults.Elevation = Level1; the modal has none — tonalElevation 0, no shadow).
 
-	Structure: Sheet (Frame, Active) + UICorner + UISizeConstraint [+ UIShadow] + CornerPatch [+ DragHandle (TextButton +
-	state layer 3 + Bar + UICorner)] + ContentClip (ClipsDescendants) > Content (AutomaticSize Y + UIListLayout + the
-	Children slot). 13 instances with the handle (+1 shadow), 7 without.
+	Structure: Sheet (Frame, Active) + UICorner + InputSink (TextButton, the drag hook) + UISizeConstraint [+ UIShadow] +
+	CornerPatch [+ DragHandle (TextButton + state layer 3 + Bar + UICorner)] + ContentClip (ClipsDescendants) > Content
+	(AutomaticSize Y + UIListLayout + the Children slot). 14 instances with the handle (+1 shadow), 8 without.
 ]]
 
 local q = require("../Quad")
@@ -180,6 +184,7 @@ local function build(cfg: Config): Built
 				end
 				cfg.OnHandleClick(rec.Current:Get() :: SheetValue)
 			end,
+			Dragging = slide.Dragging,
 			Hooks = { slide.Hook() },
 		})
 	end
@@ -191,11 +196,10 @@ local function build(cfg: Config): Built
 		Position = position,
 		BackgroundColor3 = theme.Color.SurfaceContainerLow,
 		BorderSizePixel = 0,
-		Active = true, -- 3D / camera input only; a modal sheet's GUI clicks are sunk by the InputSink child
+		Active = true, -- 3D / camera input only; GUI clicks are sunk by the InputSink child, which also takes the drag
 		ZIndex = 2,
 		UICorner = UDim.new(0, CORNER),
-		if cfg.Modal then Util.inputSink() else q.None,
-		slide.Hook(),
+		Util.inputSink({ slide.Hook() }),
 		D.UISizeConstraint { MaxSize = Vector2.new(cfg.MaxWidth, math.huge) },
 		if cfg.Shadow then Elevation.Shadow({ Level = cfg.Shadow, Theme = theme }) else q.None,
 		Parts.patch("Bottom", CORNER, theme.Color.SurfaceContainerLow),
