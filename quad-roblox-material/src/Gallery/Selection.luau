@@ -2,7 +2,9 @@
 --[[
 	Gallery section "Selection": first the "Slider / Switch — M3 vs M2" comparison (two columns, the M3 default and the
 	`Material.M2` look side by side; each pair shares ONE Source, so moving either moves both — the behaviour is shared,
-	only the drawing differs), then Checkbox (plain, tri-state parent, error, disabled), Radio / RadioGroup, Switch (plain,
+	only the drawing differs), then "Slider variants" (the M3 configurations M2 does not have: the five sizes XS..XL on
+	one Source, centered sliders, inset icons, vertical sliders — Min at the bottom, TopToBottom, centered, a range),
+	then Checkbox (plain, tri-state parent, error, disabled), Radio / RadioGroup, Switch (plain,
 	icons, disabled), Slider (continuous, discrete with ticks, formatted, disabled), RangeSlider (continuous, discrete,
 	disabled). Every control is bound to a Source in the Memo and a caption reads it back, so a click is visibly a round
 	trip (Source in -> UI -> user input -> Source out).
@@ -16,6 +18,7 @@ local Switch = require("../Switch")
 local Slider = require("../Slider")
 local RangeSlider = require("../Slider/Range")
 local M2 = require("../M2")
+local D = q.Declaration
 
 type Ctx = Common.Ctx
 
@@ -226,6 +229,95 @@ return function(ctx: Ctx): Instance
 			}),
 		}, 300, 16)
 	end
+	-- M3 slider variants (sizes, centered, inset icons, vertical)
+	local sized = ctx.Memo("var.sized", function()
+		return q.Source(60)
+	end)
+	local pan = ctx.Memo("var.pan", function()
+		return q.Source(20)
+	end)
+	local panStep = ctx.Memo("var.panStep", function()
+		return q.Source(-20)
+	end)
+	local loud = ctx.Memo("var.loud", function()
+		return q.Source(50)
+	end)
+	local vUp = ctx.Memo("var.vUp", function()
+		return q.Source(30)
+	end)
+	local vDown = ctx.Memo("var.vDown", function()
+		return q.Source(30)
+	end)
+	local vPan = ctx.Memo("var.vPan", function()
+		return q.Source(-10)
+	end)
+	local vLo = ctx.Memo("var.vLo", function()
+		return q.Source(20)
+	end)
+	local vHi = ctx.Memo("var.vHi", function()
+		return q.Source(70)
+	end)
+	type SizeName = "XS" | "S" | "M" | "L" | "XL"
+	local sizeRows: { Instance } = {}
+	for _, name in { "XS", "S", "M", "L", "XL" } :: { SizeName } do
+		table.insert(sizeRows, Common.Caption(ctx, name, false))
+		table.insert(sizeRows, Slider({ Theme = theme, Value = sized, Min = 0, Max = 100, Size = name }))
+	end
+	-- a vertical slider in a fixed box: room on the left for the value label
+	local function tall(caption: string, control: Instance): Frame
+		return Common.Column({
+			Common.Caption(ctx, caption, false),
+			D.Frame {
+				Name = "Tall",
+				Size = UDim2.fromOffset(120, 200),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				control,
+			},
+		}, 120, 4)
+	end
+	local function vModifier(width: number): q.FrameModifier
+		return D.Modifier.Frame():Position(UDim2.fromOffset(120 - width, 0)):Size(UDim2.fromOffset(width, 200))
+	end
+	local variants: { Instance } = {
+		Common.Column(sizeRows, 320, 8),
+		Common.Column({
+			Common.Caption(ctx, "Centered (Min -50, Max 50)", false),
+			Slider({ Theme = theme, Value = pan, Min = -50, Max = 50, Centered = true }),
+			readout<<number>>(ctx, "Centered: ", pan, function(v: number)
+				return string.format("%.1f", v)
+			end),
+			Slider({ Theme = theme, Value = panStep, Min = -50, Max = 50, Step = 10, Centered = true }),
+			readout<<number>>(ctx, "Centered, Step 10: ", panStep, show),
+			Common.Caption(ctx, "Inset icons (L: active start / inactive end)", false),
+			Slider({
+				Theme = theme,
+				Value = loud,
+				Min = 0,
+				Max = 100,
+				Size = "L",
+				TrackIconActiveStart = "check",
+				TrackIconInactiveEnd = "close",
+			}),
+			Slider({ Theme = theme, Value = loud, Min = 0, Max = 100, Size = "M", TrackIconActiveStart = "\u{266A}", Disabled = true }),
+		}, 320, 8),
+		Common.Flow({
+			tall("Vertical", Slider({ Theme = theme, Value = vUp, Min = 0, Max = 100, Orientation = "Vertical", Modifier = vModifier(44) })),
+			tall(
+				"TopToBottom",
+				Slider({ Theme = theme, Value = vDown, Min = 0, Max = 100, Orientation = "Vertical", TopToBottom = true, Modifier = vModifier(44) })
+			),
+			tall(
+				"Centered, M",
+				Slider({ Theme = theme, Value = vPan, Min = -50, Max = 50, Orientation = "Vertical", Centered = true, Size = "M", Modifier = vModifier(44) })
+			),
+			tall(
+				"Range, S",
+				RangeSlider({ Theme = theme, Start = vLo, End = vHi, Min = 0, Max = 100, Orientation = "Vertical", Size = "S", Modifier = vModifier(44) })
+			),
+		}, 8),
+	}
+
 	local comparison: { Instance } = {
 		column("M3 (Material.Slider / RangeSlider / Switch)", { Slider = Slider, RangeSlider = RangeSlider, Switch = Switch }),
 		column("M2 (Material.M2.*)", { Slider = M2.Slider, RangeSlider = M2.RangeSlider, Switch = M2.Switch }),
@@ -237,6 +329,12 @@ return function(ctx: Ctx): Instance
 			"Slider / Switch — M3 vs M2",
 			comparison,
 			"Same props, same behaviour, two looks; each row pair shares one value (move either). Rows: continuous, discrete (ticks), disabled; range continuous, discrete, disabled; switches — drag the handle past the half or tap."
+		),
+		Common.Group(
+			ctx,
+			"Slider variants (M3)",
+			variants,
+			"Sizes XS / S / M / L / XL share one value. Centered: the active track runs from the middle. Inset icons (M and up): hidden when their track piece gets shorter than icon + 20. Vertical: Min at the bottom (TopToBottom flips it), Up / Down keys; the label shows on the left."
 		),
 		Common.Group(ctx, "Checkbox", checkboxes),
 		Common.Group(ctx, "Checkbox: tri-state parent", triState, "The parent shows the dash while the children differ; a click sets both children."),

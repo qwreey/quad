@@ -24,9 +24,13 @@
 
 	Month change = one `View:Set`; the 42 day cells keep their identity (spec.datepicker "navigation keeps the
 	same cell instances"). The year grid is windowed (YearView.luau).
-	The "▼"/"▲" glyphs are text characters from `Icons` (part of a text Button's label, which has no trailing image; both are
-	in Roboto). The month arrows are GlyphButtons given `Icons.asset("chevronLeft"/"chevronRight")` — the Material
-	keyboard_arrow_left / right images by default (icon size 24), the ‹ › glyphs when overridden away.
+	The month-year button is a Text Button with a TRAILING ICON (10th QA): `Icons` arrowDown, arrowUp while the year grid
+	is open (Compose DatePicker.kt `YearPickerMenuButton`: Icons.Filled.ArrowDropDown rotated 180 degrees when expanded —
+	arrow_drop_up is the same triangle turned); when either image is overridden away, the "▼"/"▲" glyphs go back into the
+	label text (both in Roboto). Compose's button keeps the plain TextButton padding 12 / 12 and a 24 dp icon; the kit
+	Button's trailing icon is 18 px with the material-web Text-button padding 16 / 12 — a deviation of the kit Button,
+	not reproduced here by hand. The month arrows are GlyphButtons given `Icons.asset("chevronLeft"/"chevronRight")` — the
+	Material keyboard_arrow_left / right images by default (icon size 24), the ‹ › glyphs when overridden away.
 ]]
 
 local q = require("../Quad")
@@ -127,10 +131,22 @@ local function new(o: Options): Body
 		end,
 	})
 
+	-- the year-menu arrow: the arrowDown / arrowUp images as the button's trailing icon, or (an image overridden away)
+	-- the glyphs inside the label
+	local arrowImages = Icons.asset("arrowDown") ~= nil and Icons.asset("arrowUp") ~= nil
 	local label: State<string> = view:Compute(function(self, _prev, shown)
 		local text = Calendar.format(View.first(self:Get()), strings.MonthYear, o.Locale)
+		if arrowImages then
+			return text
+		end
 		return text .. " " .. Icons.glyph(if shown:Get() then "arrowUp" else "arrowDown")
 	end, showYears)
+	local arrow: State<string>? = nil
+	if arrowImages then
+		arrow = showYears:Compute(function(self)
+			return if self:Get() then "arrowUp" else "arrowDown"
+		end)
+	end
 
 	local prevDisabled: State<boolean> = view:Compute(function(self)
 		local v = self:Get()
@@ -163,6 +179,8 @@ local function new(o: Options): Body
 		Button({
 			Variant = "Text",
 			Label = label,
+			Icon = arrow,
+			IconPosition = "Trailing",
 			Theme = theme,
 			OnClick = function()
 				showYears:Set(not showYears:Get())

@@ -133,6 +133,43 @@ H.section("M3 key handle: narrows and shows the ring while focused; draws above 
 	H.assertNoDebugOutput("m3 range focus")
 end)
 
+H.section("M3 vertical range (MDC RangeSlider shares BaseSlider's orientation): Min at the bottom, Y drag, Up/Down keys; sizes", function()
+	local lo, hi = q.Source(20), q.Source(70)
+	local s = RangeSlider({ Start = lo, End = hi, Min = 0, Max = 100, Orientation = "Vertical", Size = "L" })
+	assert(s.Size == UDim2.new(0, 68, 1, 0), "L handle 68 across")
+	local L0 = 232 -- rail 200 from 16 (outer 16)
+	H.setAbs(s, 50, 100, 68, L0)
+	local hs, he = H.find(s, "HandleStart"), H.find(s, "HandleEnd")
+	assert(hs.Size == UDim2.fromOffset(68, 4), "turned handle")
+	-- (UDim offsets are whole numbers — the fraction's px part truncates, as on the engine: within 1 px)
+	local function close(a: number, b: number): boolean
+		return math.abs(a - b) < 1
+	end
+	assert(close(px(hs.Position.Y, L0), L0 - (16 + 40)) and close(px(he.Position.Y, L0), L0 - (16 + 140)), "Start lower, End higher")
+	assert(px(H.find(s, "StartCap").Position.Y, L0) == L0 - 16 and px(H.find(s, "EndCap").Position.Y, L0) == 0, "Start piece at the bottom")
+	local active = H.find(s, "Active")
+	assert(close(px(active.Position.Y, L0), px(he.Position.Y, L0) + 8), "active starts 8 px below the End handle")
+	assert(close(px(active.Position.Y, L0) + px(active.Size.Y, L0), px(hs.Position.Y, L0) - 8), "and ends 8 px above the Start handle")
+	assert(active.Size.X == UDim.new(0, 56), "56 px track (L)")
+	-- press near the End handle (y of 70 = 100 + 232 - 156 = 176)
+	H.fire(s, "InputBegan", H.input({ Position = Vector3.new(80, 100 + 16 + 20, 0) })) -- 90
+	assert(hi:Get() == 90 and lo:Get() == 20, "the nearest (End) moves")
+	UIS.InputEnded:Fire(H.input({ UserInputType = Enum.UserInputType.MouseButton1, Position = Vector3.new(80, 100 + 16 + 20, 0) }))
+	local sa: any = s
+	assert(sa.NextSelectionUp == s and sa.NextSelectionLeft == nil, "Vertical pin")
+	H.fire(s, "SelectionGained")
+	key(Enum.KeyCode.Down) -- the key handle is End (last dragged)
+	assert(hi:Get() == 85)
+	key(Enum.KeyCode.Return)
+	key(Enum.KeyCode.Up)
+	assert(lo:Get() == 25, "Return switches to Start; Up raises it")
+	H.fire(s, "SelectionLost")
+	q.dispose(s)
+	assert(not pcall(RangeSlider, { TopToBottom = true }), "TopToBottom needs Vertical")
+	assert(keyConns() == baseKeys and uisConns() == baseConns)
+	H.assertNoDebugOutput("m3 vertical range")
+end)
+
 H.section("M2 mount: structure, two handles, active track between them, instance count", function()
 	local s = M2.RangeSlider({ Start = q.Source(0.25), End = q.Source(0.75) })
 	assert(s.ClassName == "Frame" and s.Name == "M2RangeSlider" and s.Size == UDim2.new(1, 0, 0, 40))

@@ -71,16 +71,17 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
 | | `Interaction` / `StateLayer` / `Ripple` / `Interactive` | hover·pressed·focus State, 상태 레이어 프레임, `CanvasGroup` 리플, 이 셋을 한 번에 묶은 것 |
 | | `Elevation` | `UIShadow` 한 개로 엘리베이션 0~5(`Elevation.Backdrop`은 9-slice 이미지 대안) |
 | | `Overlay` | 메뉴·다이얼로그·스낵바·툴팁이 뜨는 층 (`Overlay.default()` 자가 치유, Escape/B·선택 가두기) |
-| | `Icons` | 내장 아이콘 — Material Design Icons 이미지(기본) + 이름마다 텍스트 글리프 폴백, `Icons.override`로 교체·제거 |
+| | `Icons` | 내장 아이콘 — Material Design Icons 이미지(기본) + 이름마다 텍스트 글리프 폴백, `Icons.override`로 교체·제거; 아이콘 prop(Button·SplitButton `Icon`, Slider `TrackIcon*`) 값은 `Icons.resolve`로 — 이름이면 그 이미지(지운 이름은 글리프), 에셋 URL이면 그 이미지, 그 밖의 글자는 글리프로 그림 |
 | | `GlyphButton` / `KeyNav` / `Util` | 글리프·이미지 둥근 버튼(날짜 선택기·Snackbar 닫기·Chip 제거가 공유), 키·D-pad 전달 훅(Slider·날짜 칸·색상 선택기가 공유), `asState`/`negate`/`interactable`/`visible`/`hooks` 도우미와 `Hooks` 타입 |
-| 버튼 | `Button` | Filled / Tonal / Elevated / Outlined / Text 다섯 변형(한 함수, `Variant` prop), 폭은 글자에 맞춤 또는 `Width`(픽셀·UDim, 라벨 가운데) |
+| 버튼 | `Button` | Filled / Tonal / Elevated / Outlined / Text 다섯 변형(한 함수, `Variant` prop), 폭은 글자에 맞춤 또는 `Width`(픽셀·UDim, 라벨 가운데); `Icon`(18 px, 라벨과 8 px)과 `IconPosition = "Leading" \| "Trailing"` — 여백은 material-web 토큰(아이콘 없음 24/24, 앞 아이콘 16/24, 뒤 아이콘 24/16; Text는 12/12·12/16·16/12) |
+| | `SplitButton` | M3 Expressive 분할 버튼(작은 크기, 높이 40): 앞 버튼(행동 — `Label`·`Icon` 20 px·`OnClick`)과 뒤 버튼(메뉴 — 아래 화살표 22 px·`OnTrailingClick`) 사이 2 px, 바깥 모서리 20·안쪽 모서리 4(누르는 동안 12), `Selected`면 뒤 버튼이 양 끝 반원 알약 + 화살표 180° + 내용색 10 % 덮개; Filled / Tonal / Elevated / Outlined |
 | | `IconButton` | Standard / Filled / Tonal / Outlined, `Selected`로 토글 |
 | | `FAB` | Small / Regular / Large, 색 넷, 레이블이 있으면 Extended |
 | 선택 | `Checkbox` | 체크·불확정·오류·비활성(체크 표시는 회전한 Frame 둘이라 이미지 없음, 토글은 MaterialUI식 가장자리 막대 모션), `Label`로 라벨까지 한 클릭·호버 영역 |
 | | `Radio` / `RadioGroup` | 한 개 / 세로·가로 묶음(선택 모션은 MaterialUI 스프라이트 시트 이미지 한 장), `Label`로 라벨까지 한 클릭·호버 영역 |
 | | `Switch` | M3: 52x32 트랙, 핸들이 16→24→28로 자람(꺼진 채 누르면 24), 선택적 아이콘; 핸들을 끌어 절반을 넘기면 반대 상태(탭은 토글) |
-| | `Slider` | M3(현행 Compose 형태): 16px 트랙을 핸들 양옆 6px 틈으로 두 조각, 바깥 끝 반경 8·핸들 쪽 반경 2, 4x44 막대 핸들, 끝 점(stop indicator), 연속/이산(4px 점 눈금), 값 라벨 알약, 키보드·D-pad |
-| | `RangeSlider` | M3 손잡이 둘(`Start`/`End` 두 Source) — 트랙 세 조각(가운데는 양 끝 반경 2), 누른 자리에서 가까운 손잡이를 끌고 서로를 못 넘음, 키는 한 손잡이씩(Return·게임패드 X로 전환) |
+| | `Slider` | M3(현행 Compose 형태): 트랙을 핸들 양옆 6px 틈으로 두 조각, 바깥 끝 완전 둥글림·핸들 쪽 반경 2, 4 px 막대 핸들, 끝 점(stop indicator), 연속/이산(4px 점 눈금), 값 라벨 알약, 키보드·D-pad. M3 변형: `Size` XS/S/M/L/XL(트랙 16/24/40/56/96, 바깥 반경 8/8/12/16/28, 핸들 높이 44/44/44/68/108 — MDC `Widget.Material3Expressive.Slider.*`), `Orientation = "Vertical"`(기본 아래가 Min, `TopToBottom`으로 위가 Min; 핸들은 44 x 4로 눕고 라벨은 왼쪽, 위/아래 키), `Centered`(활성 트랙이 범위 한가운데에서 핸들까지), 안쪽 아이콘 `TrackIconActiveStart/End`·`TrackIconInactiveStart/End`(M 이상·표준만, 24/24/32 px, 조각 끝에서 10 px, 조각이 아이콘 + 20보다 짧으면 숨음) |
+| | `RangeSlider` | M3 손잡이 둘(`Start`/`End` 두 Source) — 트랙 세 조각(가운데는 양 끝 반경 2), 누른 자리에서 가까운 손잡이를 끌고 서로를 못 넘음, 키는 한 손잡이씩(Return·게임패드 X로 전환); `Size`·`Orientation`·`TopToBottom`은 Slider와 같음(세로 범위는 MDC `RangeSlider`가 `BaseSlider`의 orientation을 물려받아 정본 — Compose엔 없음), `Centered`·안쪽 아이콘은 없음 |
 | | `M2.Slider` / `M2.RangeSlider` / `M2.Switch` | Material 2 모양 — 같은 props·같은 동작(공용 동작 모듈), 그림만 다름: 4px 얇은 트랙 + 20px 원형 손잡이·40px halo, 얇은 36x14 트랙 + 트랙보다 큰 20px 원형 썸(그림자). 아래 "M2 모양" |
 | 입력·메뉴 | `TextField` | Filled / Outlined, 떠오르는 레이블, 보조·오류 문구, 글자 수, 아이콘, 접두·접미, 여러 줄 |
 | | `Menu` | `Menu.open{ Anchor, Items }`와 `Menu.Button` — 앵커 아래(공간이 없으면 위)에 뜸 |
@@ -231,6 +232,10 @@ Material.ColorPicker.Classic({ Theme = "Dark" })
 `test/spec.rangeslider.luau`의 "shared behaviour" 절). 다른 점은 그림과 그에 딸린 치수뿐입니다: 슬라이더 기본 높이(M3 44, M2 40),
 핸들 중심이 끝에서 떨어진 거리(M3 8, M2 10 — 포인터 → 값 변환이 이 값을 씀), M2 Switch는 호스트가 56x40(halo까지 안에
 들어가게)이고 썸에 아이콘이 없습니다(`IconOn`/`IconOff`는 받지만 무시).
+M3 슬라이더의 변형(`Size`·`Orientation`/`TopToBottom`·`Centered`·안쪽 아이콘 — 2026-10-08)은 M2 쪽에 없습니다: MDC 문서가 이것들을
+"M3 Expressive" 구성(Orientation·inset icon·Sizes XS~XL, centered는 그 문서의 세 갈래 중 하나)으로 소개하고 M2 슬라이더(MDC
+`Widget.MaterialComponents.Slider`)에는 그 스타일·토큰이 없습니다. 동작 모듈은 축(가로/세로)·뒤집기·중점 시작값을 받게 됐지만
+M2 모양은 넘기지 않으므로 M2의 동작은 그대로입니다.
 
 ```luau
 local Material = require("<이 폴더>/src")
@@ -253,10 +258,12 @@ Gallery.GalleryPanel({})       -- 페이지(Frame)만; 직접 호스트할 때. 
 구간은 **탭을 고를 때 만들고 떠나면 부숩니다**(숨겨 두지 않음) — Pickers 하나가 수백 개이고 비확정 진행바가 Heartbeat
 루프를 돌기 때문입니다. 사용자가 입력·조작한 값은 패널의 Memo(Source)에 있어 다시 돌아와도 남습니다. 갤러리를 키트 루트(`src/init.luau`)에서 내보내지 않는 이유: 내보내면 키트를 쓰는 모든 소비자가 데모 코드까지 로드하게 됩니다(갤러리가 컴포넌트를 직접 require하므로 순환 자체는 아니지만, 갤러리가 루트를 require하는 모양이 되면 순환이 됩니다). 이 폴더를 직접 require하세요.
 
-스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함): Buttons 363, Selection 984(맨 위
-"Slider / Switch — M3 vs M2" 비교 묶음 포함),
-Text 268, Surfaces 327, Overlays 199, Chips 513, Pickers 752, Theme 197(Chips·Pickers는 2026-10-08 9차에 내장 아이콘이
-글리프에서 이미지로 바뀌며 늘었다 — `GlyphButton` 이미지 경로가 글리프보다 둘 많음). 아이콘 데모는
+스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함): Buttons 649(10차에 "Button: icons —
+leading / trailing"·"SplitButton" 묶음 추가 — 분할 버튼 하나가 쉴 때 40), Selection 1337(맨 위 "Slider / Switch — M3 vs M2" 비교
+묶음 옆에 10차 "Slider variants (M3)" 묶음 — 크기 다섯·가운데 정렬·안쪽 아이콘·세로 넷),
+Text 268, Surfaces 327, Overlays 199, Chips 513, Pickers 756, Theme 197(Chips·Pickers는 2026-10-08 9차에 내장 아이콘이
+글리프에서 이미지로 바뀌며 늘었다 — `GlyphButton` 이미지 경로가 글리프보다 둘 많음; Pickers는 10차에 날짜 선택기 머리의
+▼▲가 버튼의 뒤 아이콘 이미지가 되며 머리마다 둘(이미지 + UIListLayout) 늘었다). 아이콘 데모는
 `Icon` prop(기본값은 장치에서 확인 못 한 자리표시 에셋 id)을 본인 에셋으로 바꿔 보세요.
 
 ## UI Labs / 입력 주입
@@ -304,7 +311,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 1 | UIShadow 렌더(엘리베이션 0~5) | 스토리 Card·Button(Elevated)·Menu / 플레이 | 레벨별로 그림자가 보이고 UICorner를 따라 둥글다 |  |
 | 2 | UIShadow가 CanvasGroup 안에서 잘리는지 | Dialog·Snackbar·DatePicker 모달 | 그림자 없음(의도) — 다른 곳은 보임 |  |
 | 4 | Roboto 글꼴·굵기(Medium 500) | Theme 스토리·Gallery | LabelLarge/TitleMedium이 Medium으로 보임 |  |
-| 5 | 내장 아이콘 이미지(Material Design Icons — `Icons.luau` 머리의 id 여덟)와 남은 글리프(DatePicker 머리 ▼▲, TextField 에러 !) | Select 화살표·DatePicker ‹ ›·모달 모드 전환(연필 ↔ 달력)·Chip 체크·제거·Snackbar 닫기·색상 선택기 스와치 체크 | 이미지가 뜨고(물음표 상자·빈칸 아님) 테마 색으로 물듦, 크기가 글자 자리와 어울림; ▼▲·!는 두부(□)로 안 나옴 |  |
+| 5 | 내장 아이콘 이미지(Material Design Icons — `Icons.luau` 머리의 id 아홉)와 남은 글리프(TextField 에러 !) | Select 화살표·DatePicker ‹ ›·머리의 연도 메뉴 화살표(▼/▲ 이미지)·모달 모드 전환(연필 ↔ 달력)·Chip 체크·제거·Snackbar 닫기·색상 선택기 스와치 체크·분할 버튼 화살표 | 이미지가 뜨고(물음표 상자·빈칸 아님) 테마 색으로 물듦, 크기가 글자 자리와 어울림; !는 두부(□)로 안 나옴 |  |
 | 6 | UICorner 0.5 스케일 = 완전한 알약 | Button·Chip·Switch | 양 끝이 반원 |  |
 | 7 | Filled TextField 위쪽만 둥근 모서리 | TextField(Filled) | 아래 모서리는 각지고 표시선이 안 삐져나옴 |  |
 | 8 | 버튼 폭 — 기본(글자에 맞춤)은 처음부터 맞는 폭이고 호버·클릭에 폭이 안 바뀜, `Width` 지정은 라벨이 가운데 | Button 스토리·갤러리 Buttons(고정 폭 묶음)·Theme(Brand outlined) | 글자가 안 삐져나오고 상호작용 뒤에도 폭 그대로 |  |
@@ -340,6 +347,13 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 38 | 누르는 동안 자동 폭 버튼·칩이 안 늘어남(9차 회귀) | 갤러리 Buttons·Chips 행, Dialog·DatePicker 모달 버튼 | 누르고 있는 동안 버튼이 행 폭을 다 채우거나 줄바꿈되지 않음 — 리플이 부분 Scale 대신 로컬 단위 Offset(`Ripple.luau` "NOT SCALE") |  |
 | 39 | 드롭다운 메뉴 스크롤바·리플 | Select 스토리(Options 컨트롤을 6 이상으로 — 메뉴 높이 240 px를 넘으면 스크롤)·Menu 스토리 | 스크롤 막대가 흰색이 아니라 onSurface 50 %로 보이고, 항목을 누르면 리플이 누른 자리에서 퍼져 행 오른쪽 끝(막대 아래까지)을 덮음 |  |
 | 40 | 작은 화면의 색상 선택기 모달 | 갤러리 Pickers "ColorPicker: modal" — 창을 작게 | 카드 전체가 화면 안으로 작아짐(잘리지 않음), 그 안 버튼 리플이 버튼 전체를 덮음 |  |
+| 41 | M3 슬라이더 크기 다섯 | 갤러리 Selection "Slider variants (M3)" 크기 행·Slider 스토리 `Size` | XS 16·S 24·M 40·L 56·XL 96 트랙, 바깥 끝 반경 8/8/12/16/28이 반원·둥근 끝으로 보이고 캡·몸통 이음매 없음, L·XL 핸들이 68·108로 길어지고 호스트 안에 들어감, 끝 점이 바깥 반경만큼 안쪽 |  |
+| 42 | 세로 슬라이더 | 같은 곳 세로 넷·Slider·RangeSlider 스토리 `Vertical` | 아래가 Min(TopToBottom이면 위), 44 x 4 눕힌 핸들이 포인터를 세로로 따라옴, 값 라벨이 핸들 왼쪽 12 px, 위/아래 키·D-패드가 값을 움직이고 좌/우는 옆 컨트롤로 선택이 넘어감 |  |
+| 43 | 가운데 정렬(Centered) 슬라이더 | 같은 곳 "Centered"·Slider 스토리 `Centered` | 활성 트랙이 한가운데에서 핸들 쪽으로(양방향), 한가운데에 점·표시 없음, 한가운데 반대편 비활성 조각이 6 px 떨어져 끝남, 양 끝 점 둘 |  |
+| 44 | 안쪽 아이콘 | 같은 곳 L(✓·×)·M(♪, 비활성)·Slider 스토리 `InsetIcons`(M 이상) | 아이콘이 조각 끝에서 10 px 안쪽 트랙 위에 활성 SecondaryContainer·비활성 Primary 색, 조각이 아이콘 + 20보다 짧아지면 사라지고, 끝 아이콘이 있는 동안 끝 점이 안 보임 |  |
+| 45 | 버튼 뒤 아이콘 | 갤러리 Buttons "Button: icons — leading / trailing"·Button 스토리 `TrailingIcon` | 18 px 아이콘이 라벨 뒤 8 px, 여백 24/16(Text 16/12), 누르는 동안 폭 그대로(9차 회귀 아님), ♪ 글리프가 잘리지 않음 |  |
+| 46 | 분할 버튼 모양과 리플 | 갤러리 Buttons "SplitButton"·SplitButton 스토리 | 두 반쪽 사이 2 px, 바깥 끝 반원·안쪽 모서리 작게(4) 둥글고 누르는 동안 12로 부드럽게 커짐, 두 면(겉·안)이 만나는 반쪽 한가운데에 이음매·진한 줄 없음(비활성 반투명·Outlined 외곽선 포함), 리플이 반쪽 전체를 이음매 없이 덮음(두 원판이 한가운데에서 맞물림), Elevated 그림자가 보임, 뒤 버튼을 누르면 메뉴가 열리고 그동안 뒤 버튼이 양 끝 반원 알약 + 화살표 위로 + 살짝 어두움, 메뉴를 닫으면 되돌아옴, 포커스 링(바깥 반경으로 둥근 사각형) |  |
+| 47 | 날짜 선택기 머리의 연도 메뉴 화살표 | DatePicker 스토리·갤러리 Pickers | 월-년 글자 뒤 ▼ 이미지(연도 격자가 열리면 ▲), 물듦·크기가 글자와 어울림, 글자 시작 위치가 이전보다 4 px 오른쪽(뒤 아이콘 여백 16) |  |
 | 3 | CanvasGroup + UICorner 리플 클리핑 | Button·Chip·ListItem을 누름 | 리플 원이 둥근 모서리 밖으로 안 나감 |  |
 
 ## 테스트
@@ -381,10 +395,11 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
   호스트에 잘린 원을 정확히 그리면서 호스트 사각형 밖으로 안 나갑니다. 못 불러오는 환경에서는 리플이 안 보입니다(상태 레이어는 그대로).
 - **내장 아이콘**: Chip의 체크·제거, Select의 화살표, Snackbar의 닫기, DatePicker의 ‹ ›와 모달 모드 전환, 색상 선택기
   스와치 체크는 Google Material Design Icons(Apache 2.0, "baseline")를 작성자의 아이콘 계정이 Roblox에 올린 **이미지**
-  에셋입니다(id 목록·출처는 `src/Icons.luau` 머리, 고지는 `NOTICE.md`). 2026-10-08에 economy API로 여덟 개 모두
-  이미지(AssetTypeId 1)인 것을 확인했고 썸네일 렌더로 넷을 확인했지만, Studio 안에서는 아직 못 봤습니다. 이미지를 못 쓰는
+  에셋입니다(id 목록·출처는 `src/Icons.luau` 머리, 고지는 `NOTICE.md`). 2026-10-08에 economy API로 아홉 개 모두
+  이미지(AssetTypeId 1)인 것을 확인했고(아홉째 chevronDown은 10차 분할 버튼용) 썸네일 렌더로 넷을 확인했지만, Studio 안에서는 아직 못 봤습니다. 이미지를 못 쓰는
   곳에서는 `Icons.override({ edit = false, ... })`로 이름별 텍스트 글리프로 돌릴 수 있습니다(✎ ▦은 Roboto에 없어 폰트 폴백에
-  따라 물음표 상자가 됨 — 9차 관측). DatePicker 머리의 ▼▲(텍스트 버튼 라벨의 일부)와 TextField 에러 "!"는 글리프 그대로입니다.
+  따라 물음표 상자가 됨 — 9차 관측). DatePicker 머리의 연도 메뉴 화살표는 10차부터 월-년 버튼의 뒤 아이콘 이미지(arrowDown/arrowUp —
+  둘 중 하나를 지우면 예전처럼 라벨 안 ▼▲ 글리프); TextField 에러 "!"는 글리프 그대로입니다.
   장기 계획(Material Symbols 아틀라스)은 `.claude/research/icon-pack-plan.md`. 갤러리의 기본 `Icon` prop은 여전히 자리표시입니다.
 - **`UIShadow`와 `CanvasGroup`**: `CanvasGroup` 안의 `UIShadow`는 잘리므로 Dialog와 Snackbar는 그림자가 없습니다(스크림이
   분리를 맡음). Menu는 CanvasGroup 페이드 대신 순수 스케일 애니메이션입니다. `UIShadow`는 가장 새로운 UI 클래스라 지원하지
@@ -393,7 +408,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
   Outlined의 레이블 노치는 표면색 배경(어두운 배경 위에선 `NotchColor` 필요), Switch 터치 타깃은 52x32(M2 Switch는 56x40), IconButton의 48px 터치 타깃은
   선택(`TouchTarget = true`, 기본은 40px), 칩 제거·스낵바 버튼은 48px, Tabs는 스크롤되지 않고 개별 비활성이 없음, Slider·RangeSlider(M3)는 Min/Max/Step이 정적이고 핸들 양옆 틈이 6 px로 고정(Compose는 눌러서 2 px로 가늘어진 핸들에 맞춰 1 px 좁힘)·호버 표시 없음(M3 그대로 — M2 모양은 halo), 값 라벨 알약의 높이 32 px·좌우 여백 10 px는 토큰이 아니라 Google의 Android 구현(material-components-android `Widget.Material3.Slider.Label` — 그 스타일의 위아래 여백 12dp는 Android에서도 그려지지 않아 안 따름)에서 온 값, 리플은 호스트 사각형을 넘지 않음(`AutomaticSize` 조상이 리플까지 재기 때문, `Ripple.luau` "BOUNDED") — 잘린 원은 원판 텍스처의 부분 사각형으로 정확히 그림(2026-10-07 전엔 모서리 반경 하나로 흉내 내 넓은 호스트에서 둥근 사각형으로 보였음), 리플 상자는 조상 `UIScale`들의 곱으로 나눈 로컬 단위 정수 Offset이라 확장 도중 마지막 1 로컬 픽셀 미만은 끝 프레임(호스트 전체 덮기)에서야 채워짐, Menu 스크롤 막대는 M3 토큰이 없어 onSurface 50 %(Compose Desktop 기본 스크롤바의 호버 값), LoadingIndicator는 M3의 일곱 모양(오각형·쿠키 9 등) 대신 사각형 셋의 겹침 근사, WavyProgress는 확정만(비확정 물결 없음)·둥근 끝은 직각으로 자른 끝 위에 원을 얹은 근사(모서리 삐져나옴 1 px 미만)·진폭이 0 % 바로 위부터 100 % 바로 아래까지 최대(Compose 기본은 10 % 이하·95 % 이상 평평)·진폭과 선 두께가 높이에 고정 비율, Menu는
   가장 긴 항목에 폭을 맞추지 못하며(`Width` 지정) 타입어헤드·서브메뉴가 없음(위/아래·Return·Escape는 있음), CircularProgress는
-  두께가 시트의 네 비율로 맞춰지고 끝·간격이 2° 단위(큰 지름 1°)로 움직이며 원형 물결(M3 Expressive)이 없음, 색상 선택기에 알파가 없음. 컴포넌트별 전체 목록은 각 파일 머리에 있습니다.
+  두께가 시트의 네 비율로 맞춰지고 끝·간격이 2° 단위(큰 지름 1°)로 움직이며 원형 물결(M3 Expressive)이 없음, 색상 선택기에 알파가 없음, 가운데 정렬 슬라이더는 바깥 반경보다 짧은 조각을 숨김(Compose는 모서리를 줄여 그림)·끝 안쪽 아이콘이 보이는 동안 끝 점을 숨김(MDC는 같은 자리에 둘 다 그림), 분할 버튼은 작은 크기(40)만·포커스 링이 바깥 반경 하나의 둥근 사각형(안쪽 모서리가 모양보다 둥긂)·Elevated 그림자의 안쪽 모서리도 반경 20·두 반쪽이 `Disabled` 하나를 나눠 씀, 날짜 선택기 머리 화살표는 키트 Button의 뒤 아이콘(18 px, 여백 16/12 — Compose `YearPickerMenuButton`은 24 dp 아이콘에 12/12). 컴포넌트별 전체 목록은 각 파일 머리에 있습니다.
 - 갤러리는 좁은 화면에서 탭 글자가 잘릴 수 있습니다(Tabs는 폭을 균등 분할).
 
 ## 크레딧

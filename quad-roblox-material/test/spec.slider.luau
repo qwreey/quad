@@ -209,6 +209,231 @@ H.section("M3 disabled: onSurface 38 % / 12 %", function()
 	H.assertNoDebugOutput("m3 disabled")
 end)
 
+-- ── M3 variants (10th QA): sizes, vertical, centered, inset icons ─────────
+
+local Icons = require("../src/Icons")
+local function vpress(s: any, y: number)
+	H.fire(s, "InputBegan", H.input({ Position = Vector3.new(70, y, 0) }))
+end
+local function vmove(y: number)
+	UIS.InputChanged:Fire(H.input({ UserInputType = Enum.UserInputType.MouseMovement, Position = Vector3.new(70, y, 0) }))
+end
+local function vrelease(y: number)
+	UIS.InputEnded:Fire(H.input({ UserInputType = Enum.UserInputType.MouseButton1, Position = Vector3.new(70, y, 0) }))
+end
+
+H.section("M3 sizes: XS / S / M / L / XL track, outer corner, handle height, stop dot one outer radius in (MDC tokens.xml)", function()
+	-- size -> track, outer corner, handle height (material-components-android slider tokens.xml 55~94)
+	local rows: { { any } } = {
+		{ "XS", 16, 8, 44 },
+		{ "S", 24, 8, 44 },
+		{ "M", 40, 12, 44 },
+		{ "L", 56, 16, 68 },
+		{ "XL", 96, 28, 108 },
+	}
+	for _, row in rows do
+		local name, track, outer, handleH = row[1], row[2], row[3], row[4]
+		local s = Slider({ Value = q.Source(0.5), Size = name })
+		local W = 200 + 2 * outer
+		assert(s.Size == UDim2.new(1, 0, 0, handleH), name .. ": host as tall as the handle")
+		H.setAbs(s, 0, 0, W, handleH)
+		local handle = H.find(s, "Handle")
+		assert(handle.Size == UDim2.fromOffset(4, handleH), name .. ": 4 px handle, " .. handleH .. " tall")
+		assert(px(handle.Position.X, W) == outer + 100, name .. ": the handle travels one outer radius in")
+		local capFill = H.find(H.find(s, "ActiveCap"), "Fill")
+		assert(capFill.Size == UDim2.fromOffset(2 * outer, track) and H.find(capFill, "_quad_round").CornerRadius == UDim.new(0, outer), name .. ": cap fill")
+		assert(H.find(s, "ActiveCap").Size == UDim2.fromOffset(outer, track), name .. ": cap clip")
+		assert(H.find(s, "ActiveBody").Size.Y.Offset == track, name .. ": track thickness")
+		assert(H.find(H.find(s, "ActiveBody"), "_quad_round").CornerRadius == UDim.new(0, 2), name .. ": inside corner 2")
+		local stopDot = H.find(s, "StopEnd")
+		assert(px(stopDot.Position.X, W) == W - outer and stopDot.Size == UDim2.fromOffset(4, 4), name .. ": stop dot")
+		local aBody = H.find(s, "ActiveBody")
+		assert(px(aBody.Position.X, W) + px(aBody.Size.X, W) == outer + 100 - 8, name .. ": 6 px gap at every size")
+		assert(H.countDescendants(s) == 20, name .. ": the size changes no count")
+		q.dispose(s)
+	end
+	assert(not pcall(Slider, { Size = "XXL" :: any }), "an unknown Size is an error")
+	H.assertNoDebugOutput("m3 sizes")
+end)
+
+H.section("M3 vertical: Min at the bottom, 44 x 4 handle, label on the left, Up/Down keys, Y drag; TopToBottom flips it", function()
+	local v = q.Source(25)
+	local ends: { number } = {}
+	local s = Slider({
+		Value = v,
+		Min = 0,
+		Max = 100,
+		Orientation = "Vertical",
+		OnChangeEnd = function(x: number)
+			table.insert(ends, x)
+		end,
+	})
+	assert(s.Size == UDim2.new(0, 44, 1, 0), "44 wide, the parent's height")
+	local H0, L0 = 100, 216 -- top, length (rail 200 from y = 108)
+	H.setAbs(s, 50, H0, 44, L0)
+	local handle = H.find(s, "Handle")
+	assert(handle.Size == UDim2.fromOffset(44, 4), "the handle turned: 44 wide, 4 tall")
+	assert(handle.Position.X == UDim.new(0.5, 0) and px(handle.Position.Y, L0) == L0 - (8 + 50), "25 % up from the bottom")
+	-- the active piece runs from the BOTTOM (Min) up to 8 px below the handle center
+	local aCap, aBody = H.find(s, "ActiveCap"), H.find(s, "ActiveBody")
+	assert(px(aCap.Position.Y, L0) == L0 - 8 and aCap.Size == UDim2.fromOffset(16, 8) and aCap.AnchorPoint == Vector2.new(0.5, 0), "cap at the bottom end")
+	local hy = px(handle.Position.Y, L0)
+	assert(px(aBody.Position.Y, L0) == hy + 8 and px(aBody.Position.Y, L0) + px(aBody.Size.Y, L0) == L0 - 8, "body from the handle gap down to the cap")
+	assert(H.find(aBody, "Fill").Size == UDim2.new(1, 0, 1, 2) and H.find(aBody, "Fill").Position == UDim2.fromOffset(0, 0), "rounded end cut on the cap side (below)")
+	local iCap = H.find(s, "InactiveCap")
+	assert(px(iCap.Position.Y, L0) == 0 and H.find(iCap, "Fill").Position == UDim2.fromOffset(0, 0), "inactive cap at the top")
+	assert(px(H.find(s, "StopEnd").Position.Y, L0) == 8, "stop dot at the top (Max)")
+	local label = H.find(s, "Label")
+	assert(label.AnchorPoint == Vector2.new(1, 0.5) and label.Position == UDim2.new(0, -12, 0.5, 0), "label 12 px left of the handle")
+	-- pointer along Y: bottom = Min
+	vpress(s, H0 + 8 + 50) -- 50 px below the rail top -> 75
+	assert(near(v:Get(), 75), "press maps Y: " .. v:Get())
+	vmove(H0 + 8 + 200)
+	assert(near(v:Get(), 0))
+	vrelease(H0 + 8 + 150)
+	assert(near(v:Get(), 25) and ends[#ends] == 25)
+	-- keys: Up / Down move the handle the way they point; Left / Right walk on (not pinned)
+	local sa: any = s
+	assert(sa.NextSelectionUp == s and sa.NextSelectionDown == s and sa.NextSelectionLeft == nil and sa.NextSelectionRight == nil, "Vertical pin")
+	H.fire(s, "SelectionGained")
+	key(Enum.KeyCode.Up)
+	assert(near(v:Get(), 30), "Up = toward Max (Min at the bottom): " .. v:Get())
+	key(Enum.KeyCode.DPadDown)
+	key(Enum.KeyCode.Down)
+	assert(near(v:Get(), 20))
+	key(Enum.KeyCode.Right)
+	key(Enum.KeyCode.Left)
+	assert(near(v:Get(), 20), "Left / Right do nothing")
+	key(Enum.KeyCode.PageUp)
+	assert(near(v:Get(), 70))
+	key(Enum.KeyCode.Home)
+	assert(v:Get() == 0)
+	H.fire(s, "SelectionLost")
+	q.dispose(s)
+
+	-- TopToBottom (Compose's default): Min at the top
+	local t = q.Source(25)
+	local top = Slider({ Value = t, Min = 0, Max = 100, Orientation = "Vertical", TopToBottom = true })
+	H.setAbs(top, 50, H0, 44, L0)
+	assert(px(H.find(top, "Handle").Position.Y, L0) == 8 + 50, "25 % down from the top")
+	assert(px(H.find(top, "ActiveCap").Position.Y, L0) == 0, "active piece from the top")
+	vpress(top, H0 + 8 + 150)
+	assert(near(t:Get(), 75))
+	vrelease(H0 + 8 + 150)
+	H.fire(top, "SelectionGained")
+	key(Enum.KeyCode.Up)
+	assert(near(t:Get(), 70), "Up = toward Min when Min is at the top")
+	H.fire(top, "SelectionLost")
+	q.dispose(top)
+	assert(not pcall(Slider, { TopToBottom = true }), "TopToBottom on a horizontal slider is an error")
+	assert(not pcall(Slider, { Orientation = "Diagonal" :: any }), "a bad Orientation is an error")
+	assert(keyConns() == baseKeys and uisConns() == baseConns)
+	H.assertNoDebugOutput("m3 vertical")
+end)
+
+H.section("M3 centered: the active piece joins the middle and the handle on either side; middle fixed; own Value starts there", function()
+	local sBody: any, eBody: any, active: any
+	local own = Slider({ Min = -50, Max = 50, Centered = true })
+	local W = 216 -- rail 200, middle at 108
+	H.setAbs(own, 0, 0, W, 44)
+	assert(px(H.find(own, "Handle").Position.X, W) == 108, "own Value starts at (Min + Max) / 2")
+	local n = H.countDescendants(own)
+	assert(n == 24, "Start/End outer pieces 12 + Active 2 + two stops 4 + handle 3 + label 3 = 24, got " .. n)
+	-- at the middle: no active piece, both inactive pieces stop 8 px from the handle
+	sBody, eBody, active = H.find(own, "StartBody"), H.find(own, "EndBody"), H.find(own, "Active")
+	assert(not active.Visible, "no active piece at the middle")
+	assert(px(sBody.Position.X, W) + px(sBody.Size.X, W) == 100 and px(eBody.Position.X, W) == 116)
+	assert(H.find(own, "StopStart").Visible and H.find(own, "StopEnd").Visible and px(H.find(own, "StopStart").Position.X, W) == 8, "stop dots at both ends")
+	q.dispose(own)
+
+	local v = q.Source(25)
+	local s = Slider({ Value = v, Min = -50, Max = 50, Centered = true })
+	H.setAbs(s, 0, 0, W, 44)
+	sBody, eBody, active = H.find(s, "StartBody"), H.find(s, "EndBody"), H.find(s, "Active")
+	-- 25 -> f .75, handle at 158: Start [.., 102] (6 before the middle), Active [108, 150], End [166, ..]
+	assert(px(sBody.Position.X, W) + px(sBody.Size.X, W) == 102, "inactive piece stops 6 px before the middle")
+	assert(active.Visible and px(active.Position.X, W) == 108 and px(active.Position.X, W) + px(active.Size.X, W) == 150, "active: middle -> 8 px before the handle")
+	assert(H.find(active, "_quad_round").CornerRadius == UDim.new(0, 2) and active.BackgroundColor3 == L.Primary, "inner corners 2 at both ends")
+	assert(px(eBody.Position.X, W) == 166)
+	-- below the middle: mirrored
+	v:Set(-25) -- handle at 58
+	assert(px(sBody.Position.X, W) + px(sBody.Size.X, W) == 50, "Start ends 8 px before the handle")
+	assert(px(active.Position.X, W) == 66 and px(active.Position.X, W) + px(active.Size.X, W) == 108, "active: 8 px after the handle -> the middle")
+	assert(px(eBody.Position.X, W) == 114, "End starts 6 px after the middle")
+	-- drag across the middle: the active piece follows on either side
+	H.setAbs(s, RAIL0 - 8, 50, W, 40)
+	press(s, RAIL0 + 190)
+	assert(near(v:Get(), 45))
+	release(RAIL0 + 10)
+	assert(near(v:Get(), -45))
+	q.dispose(s)
+
+	-- ticks: none at the two stops, none within 6 px of the middle (Compose tickCenterGap), active between middle and handle
+	local d = q.Source(30)
+	local ds = Slider({ Value = d, Min = -50, Max = 50, Step = 10, Centered = true })
+	H.setAbs(ds, 0, 0, W, 44)
+	local ticks = H.findAll(ds, function(c: any)
+		return c.Name == "Tick"
+	end)
+	assert(#ticks == 9, "11 steps minus both stop dots = 9, got " .. #ticks)
+	-- ticks[i] is t = i / 10 (0 and 1 are the stop dots); value 30 -> f .8, handle at 8 + 160 = 168
+	assert(not ticks[5].Visible, "no tick at the middle")
+	assert(ticks[6].Visible and ticks[6].BackgroundColor3 == L.SecondaryContainer, "between the middle and the handle: active color")
+	assert(not ticks[8].Visible, "under the handle")
+	assert(ticks[9].Visible and ticks[9].BackgroundColor3 == L.Primary, "past the handle: inactive color")
+	assert(ticks[4].Visible and ticks[4].BackgroundColor3 == L.Primary, "the other side: inactive")
+	q.dispose(ds)
+	H.assertNoDebugOutput("m3 centered")
+end)
+
+H.section("M3 inset icons (M+): 10 px inside their piece, hidden below icon + 20, tick colors; the stop dot yields to an end icon", function()
+	local v = q.Source(146) -- Min 0, Max 292: the M rail is 292 px on a 316 px host (outer 12), 1 px per unit
+	local s = Slider({
+		Value = v,
+		Min = 0,
+		Max = 292,
+		Size = "M",
+		TrackIconActiveStart = "check",
+		TrackIconActiveEnd = "rbxassetid://7",
+		TrackIconInactiveStart = "\u{266A}",
+		TrackIconInactiveEnd = "close",
+	})
+	local W = 316
+	H.setAbs(s, 0, 0, W, 44)
+	assert(H.countDescendants(s) == 24, "20 + one instance per icon")
+	local as, ae = H.find(s, "TrackIconActiveStart"), H.find(s, "TrackIconActiveEnd")
+	local is, ie = H.find(s, "TrackIconInactiveStart"), H.find(s, "TrackIconInactiveEnd")
+	assert(as.ClassName == "ImageLabel" and as.Image == Icons.Defaults.check and as.Size == UDim2.fromOffset(24, 24), "an Icons name: its image, 24 px at M")
+	assert(ae.Image == "rbxassetid://7" and is.ClassName == "TextLabel" and is.Text == "\u{266A}" and is.TextSize == 24, "URL image; text = glyph")
+	-- handle at 12 + 146 = 158: active [0, 150], inactive [166, 316]; icon centers 10 + 12 px in from a piece end
+	assert(px(as.Position.X, W) == 22 and px(ae.Position.X, W) == 150 - 22, "active icons")
+	assert(px(is.Position.X, W) == 166 + 22 and px(ie.Position.X, W) == W - 22, "inactive icons")
+	assert(as.AnchorPoint == Vector2.new(0.5, 0.5) and as.Position.Y == UDim.new(0.5, 0))
+	assert(as.ImageColor3 == L.SecondaryContainer and is.TextColor3 == L.Primary, "on the active piece SecondaryContainer, on the inactive Primary")
+	assert(not H.find(s, "StopEnd").Visible, "the end icon takes the stop dot's place")
+	-- the active piece is 4 + v px long: shown from icon + 20 = 44 (MDC calculateTrackIconBounds: >=)
+	v:Set(40)
+	assert(as.Visible and ae.Visible, "44 px piece: shown")
+	v:Set(39)
+	assert(not as.Visible and not ae.Visible, "43 px piece: hidden")
+	v:Set(252) -- inactive piece 316 - 264 - 8 = 44
+	assert(is.Visible and ie.Visible)
+	v:Set(253)
+	assert(not is.Visible and not ie.Visible and H.find(s, "StopEnd").Visible, "end icon hidden: the stop dot is back")
+	q.dispose(s)
+	-- glyph fallback of a name
+	Icons.override({ check = false })
+	local g = Slider({ Size = "XL", TrackIconActiveStart = "check" })
+	local gi = H.find(g, "TrackIconActiveStart")
+	assert(gi.ClassName == "TextLabel" and gi.Text == Icons.glyph("check") and gi.TextSize == 32, "XL icon 32; glyph without the image")
+	Icons.override({ check = Icons.Defaults.check })
+	q.dispose(g)
+	assert(not pcall(Slider, { TrackIconActiveStart = "check" }), "XS has no icon size: an error")
+	assert(not pcall(Slider, { Size = "S", TrackIconActiveStart = "check" }), "S: an error")
+	assert(not pcall(Slider, { Size = "M", Centered = true, TrackIconActiveStart = "check" }), "standard slider only")
+	H.assertNoDebugOutput("m3 icons")
+end)
+
 -- ── M2 shape ─────────────────────────────────────────────────────────────
 
 H.section("M2 mount: thin track, round handle, halo, instance count", function()

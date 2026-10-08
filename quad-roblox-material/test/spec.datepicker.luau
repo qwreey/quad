@@ -9,6 +9,7 @@ local Overlay = require("../src/Overlay")
 local Interactive = require("../src/Interactive")
 local DatePicker = require("../src/DatePicker")
 local Calendar = require("../src/DatePicker/Calendar")
+local IconsModule = require("../src/Icons")
 local Docked = DatePicker.Docked
 local RangeDocked = DatePicker.RangeDocked
 local Modal = DatePicker.Modal
@@ -45,8 +46,20 @@ end
 local function headerButton(root: any): any
 	return named(root, "Button")[1]
 end
+-- the month-year text + the year-menu arrow: the trailing icon image read back as its glyph ("▼" / "▲"), or (an arrow
+-- image overridden away) the glyph inside the label text
 local function header(root: any): string
-	return buttonLabel(headerButton(root))
+	local btn = headerButton(root)
+	local text = buttonLabel(btn)
+	local icon = H.find(btn, "Icon")
+	if icon ~= nil then
+		local glyph = if icon.Image == IconsModule.asset("arrowUp")
+			then "\u{25B2}"
+			elseif icon.Image == IconsModule.asset("arrowDown") then "\u{25BC}"
+			else "?"
+		return text .. " " .. glyph
+	end
+	return text
 end
 local function click(inst: any)
 	H.fire(inst, "Activated", H.input({}), 1)
@@ -281,6 +294,36 @@ H.section("today defaults from the UTC offset, not the machine time zone", funct
 	assert(header(root) == want .. " \u{25BC}", header(root) .. " vs " .. want .. " (utc " .. iso(utc) .. ")")
 	q.dispose(root)
 	H.assertNoDebugOutput("today")
+end)
+
+-- ── header arrow (10th QA) ──────────────────────────────────────────────────
+H.section("header: the year-menu arrow is the month-year Button's TRAILING icon image (arrowDown / arrowUp); glyphs in the label without the images", function()
+	local root = Docked({ Value = q.Source<<Date?>>(nil), Today = TODAY })
+	local btn = headerButton(root)
+	local icon = H.find(btn, "Icon")
+	local label = H.find(btn, "Label")
+	assert(icon ~= nil and icon.ClassName == "ImageLabel", "an image, not a glyph")
+	assert(icon.Image == IconsModule.Defaults.arrowDown and label.Text == "February 2026", "arrow_drop_down; the label is the text alone")
+	assert(icon.Size == UDim2.fromOffset(18, 18) and icon.LayoutOrder > label.LayoutOrder, "18 px, after the label")
+	local pad: any = nil
+	for _, c in H.find(btn, "Content"):GetChildren() do
+		if c.ClassName == "UIPadding" then
+			pad = c
+		end
+	end
+	assert(pad.PaddingLeft == UDim.new(0, 16) and pad.PaddingRight == UDim.new(0, 12), "Text button with a trailing icon: 16 / 12")
+	click(btn)
+	assert(icon.Image == IconsModule.Defaults.arrowUp, "year grid open: arrow_drop_up (Compose rotates ArrowDropDown 180)")
+	q.dispose(root)
+	-- an arrow image overridden away: the glyphs return to the label, no icon
+	IconsModule.override({ arrowUp = false })
+	local plain = Docked({ Value = q.Source<<Date?>>(nil), Today = TODAY })
+	assert(H.find(headerButton(plain), "Icon") == nil and header(plain) == "February 2026 \u{25BC}")
+	click(headerButton(plain))
+	assert(header(plain) == "February 2026 \u{25B2}")
+	q.dispose(plain)
+	IconsModule.override({ arrowUp = IconsModule.Defaults.arrowUp })
+	H.assertNoDebugOutput("header arrow")
 end)
 
 -- ── year grid ───────────────────────────────────────────────────────────────

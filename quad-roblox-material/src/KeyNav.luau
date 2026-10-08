@@ -7,7 +7,7 @@
 	      onKey(input: InputObject)            a key press that should act on the control
 	      onEnd()                              the selection left the host (the end of a key session — the picker records
 	                                           the recent color there, once, instead of once per key press)
-	      opts.Pin   "Horizontal" (default) | "All" | "Engage" | "None"
+	      opts.Pin   "Horizontal" (default) | "Vertical" | "All" | "Engage" | "None"
 	      opts.HonorProcessed  boolean?         default false: see "processed" below
 	      opts.Engaged  Source<boolean>?        ("Engage" only) written true while the control is engaged — lets the control
 	                                           draw its "engaged" look (a thicker ring)
@@ -28,6 +28,8 @@
 	D-pad direction, so the user can no longer walk away along that axis.
 	  - "Horizontal" (the hue slider, like Slider): only Left/Right are pinned; Up/Down still move the selection to the
 	    neighbouring control. The control must map Left/Right (+ PageUp/PageDown, Home/End) and NOT Up/Down.
+	  - "Vertical" (the vertical Slider / RangeSlider): the same turned 90 degrees — only Up/Down are pinned; Left/Right
+	    walk the selection on. The control maps Up/Down (+ PageUp/PageDown, Home/End) and NOT Left/Right.
 	  - "All" (like Slider but on all four directions): every `NextSelection*` is pinned to the host for as long as it
 	    exists, so the engine never moves selection geometrically — the control moves `GuiService.SelectedObject` itself from
 	    `onKey`. Caveat: the D-pad cannot walk out along any axis, so use it only where something else lets the user leave
@@ -48,7 +50,7 @@ local Overlay = require("./Overlay")
 local Input = require("./Input")
 
 export type Options = {
-	Pin: ("Horizontal" | "All" | "Engage" | "None")?,
+	Pin: ("Horizontal" | "Vertical" | "All" | "Engage" | "None")?,
 	HonorProcessed: boolean?,
 	Engaged: q.Source<boolean>?,
 }
@@ -142,7 +144,7 @@ local function hook(onKey: (input: InputObject) -> (), onEnd: (() -> ())?, opts:
 			inst.NextSelectionLeft = inst
 			inst.NextSelectionRight = inst
 		end
-		if pinMode == "All" then
+		if pinMode == "Vertical" or pinMode == "All" then
 			inst.NextSelectionUp = inst
 			inst.NextSelectionDown = inst
 		end

@@ -1,7 +1,8 @@
 --!strict
 --[[
-	Gallery section "Buttons": Button (five variants, icon, disabled), IconButton (four variants + a toggle), FAB (sizes,
-	colors, extended). A Switch in the first group drives the `Disabled` State of every button below it, so the disabled
+	Gallery section "Buttons": Button (five variants, icon, disabled, leading / trailing icons from `Icons` names), the
+	split button (four variants, a menu on the trailing half, disabled), IconButton (four variants + a toggle), FAB
+	(sizes, colors, extended). A Switch in the first group drives the `Disabled` State of every button below it, so the disabled
 	look of each variant can be compared with its enabled twin.
 ]]
 
@@ -11,6 +12,9 @@ local Button = require("../Button")
 local IconButton = require("../Button/IconButton")
 local FAB = require("../Button/FAB")
 local Switch = require("../Switch")
+local SplitButton = require("../Button/Split")
+local Menu = require("../Menu")
+local Util = require("../Util")
 
 type Ctx = Common.Ctx
 type Variant = "Filled" | "Tonal" | "Elevated" | "Outlined" | "Text"
@@ -103,6 +107,66 @@ return function(ctx: Ctx): Instance
 		}),
 	}
 
+	-- icons: leading / trailing, an `Icons` name, an image URL, a text glyph
+	local iconButtons2: { Instance } = {
+		Button({ Theme = theme, Label = "Leading", Icon = "check" }),
+		Button({ Theme = theme, Variant = "Tonal", Label = "Trailing", Icon = "arrowDown", IconPosition = "Trailing" }),
+		Button({ Theme = theme, Variant = "Outlined", Label = "Image id", Icon = ctx.Icon }),
+		Button({ Theme = theme, Variant = "Text", Label = "Next", Icon = "chevronRight", IconPosition = "Trailing" }),
+		Button({ Theme = theme, Variant = "Text", Label = "Glyph", Icon = "\u{266A}" }),
+		Button({ Theme = theme, Variant = "Elevated", Label = "Disabled", Icon = "edit", Disabled = disabled }),
+	}
+
+	-- split buttons: the trailing half opens a Menu under the button and is Selected while it is open
+	local splitPicked = ctx.Memo("buttons.splitPicked", function()
+		return q.Source("Save")
+	end)
+	type SplitVariant = "Filled" | "Tonal" | "Elevated" | "Outlined"
+	local splits: { Instance } = {}
+	for _, v in { "Filled", "Tonal", "Elevated", "Outlined" } :: { SplitVariant } do
+		local open = q.Source(false)
+		local host: GuiObject? = nil
+		table.insert(
+			splits,
+			SplitButton({
+				Theme = theme,
+				Variant = v,
+				Label = splitPicked,
+				Icon = if v == "Filled" then "check" else nil,
+				Selected = open,
+				OnClick = function()
+					clicks:Set(clicks:Get() + 1)
+				end,
+				OnTrailingClick = function()
+					local anchor = host
+					if anchor == nil or open:Get() then
+						return
+					end
+					open:Set(true)
+					Menu.open({
+						Anchor = anchor,
+						Overlay = ctx.Overlay,
+						Theme = theme,
+						Items = {
+							{ Label = "Save", OnClick = function() splitPicked:Set("Save") end },
+							{ Label = "Save as", OnClick = function() splitPicked:Set("Save as") end },
+							{ Label = "Export", OnClick = function() splitPicked:Set("Export") end },
+						},
+						OnClose = function()
+							open:Set(false)
+						end,
+					})
+				end,
+				Hooks = {
+					Util.preHook(function(inst: GuiObject)
+						host = inst
+					end),
+				},
+			})
+		)
+	end
+	table.insert(splits, SplitButton({ Theme = theme, Label = "Disabled", Disabled = disabled }))
+
 	local fabs: { Instance } = {
 		FAB({ Theme = theme, Size = "Small", Icon = ctx.Icon, Disabled = disabled }),
 		FAB({ Theme = theme, Icon = ctx.Icon, Disabled = disabled }),
@@ -127,6 +191,18 @@ return function(ctx: Ctx): Instance
 			Button({ Theme = theme, Variant = "Outlined", Label = "Cancel", Width = 160 }),
 			Button({ Theme = theme, Variant = "Tonal", Label = "With icon", Icon = ctx.Icon, Width = 200 }),
 		}, "`Width = 160` (pixels) or a UDim such as `UDim.new(1, 0)`: the label stays centered. Without `Width` a button is as wide as its label."),
+		Common.Group(
+			ctx,
+			"Button: icons — leading / trailing",
+			iconButtons2,
+			"`Icon` takes an Icons name (\"check\"), an image id, or text drawn as a glyph; `IconPosition = \"Trailing\"` puts it after the label (padding 24 / 16, Text 16 / 12)."
+		),
+		Common.Group(
+			ctx,
+			"SplitButton (M3 Expressive)",
+			splits,
+			"The leading half is the action (counts into the caption above); the trailing half opens a menu and stays Selected (circle, arrow turned) while it is open. Inner corners 4, 12 while pressed."
+		),
 		Common.Group(ctx, "IconButton: variants", iconButtons),
 		Common.Group(ctx, "IconButton: toggles (Selected)", toggles, "Standard/Outlined share `liked`, Filled/Tonal share `bookmarked`."),
 		Common.Group(ctx, "FAB: sizes, colors, extended", fabs),

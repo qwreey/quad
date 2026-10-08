@@ -19,7 +19,7 @@
 	    KeyNav        key / D-pad delivery for focusable controls (Slider, day cells, hue slider, SV area)
 	    Util          asState / negate / interactable / visible / hooks / preHook / postHook helpers, the `Hooks` type
 	  Components
-	    Button, IconButton, FAB                       actions
+	    Button, IconButton, FAB, SplitButton          actions
 	    Checkbox, Radio, RadioGroup, Switch, Slider, RangeSlider   selection controls (Switch / Slider / RangeSlider are
 	                                                 the M3 look; `M2.Switch` / `M2.Slider` / `M2.RangeSlider` the M2
 	                                                 look with the same props and behaviour — `M2/init.luau`)
@@ -96,6 +96,7 @@ local Icons = require("@self/Icons")
 local Button = require("@self/Button")
 local IconButton = require("@self/Button/IconButton")
 local FAB = require("@self/Button/FAB")
+local SplitButton = require("@self/Button/Split")
 local Checkbox = require("@self/Checkbox")
 local RadioModule = require("@self/Radio")
 local Switch = require("@self/Switch")
@@ -136,12 +137,17 @@ export type OverlayOnCloseFn = Overlay.OnCloseFn
 -- variants
 export type ButtonVariant = Button.Variant
 export type IconButtonVariant = IconButton.Variant
+export type SplitButtonVariant = SplitButton.Variant
+export type ButtonIconPosition = Button.IconPosition
+export type SliderSize = Slider.Size
+export type SliderOrientation = Slider.Orientation
 export type CardVariant = Card.Variant
 export type TabsVariant = Tabs.Variant
 export type TextFieldVariant = TextField.Variant
 export type ButtonProps = Button.Props
 export type IconButtonProps = IconButton.Props
 export type FABProps = FAB.Props
+export type SplitButtonProps = SplitButton.Props
 export type CheckboxProps = Checkbox.Props
 export type RadioProps<T> = RadioModule.Props<T>
 export type RadioGroupProps<T> = RadioModule.GroupProps<T>
@@ -214,6 +220,7 @@ return {
 	Button = Button,
 	IconButton = IconButton,
 	FAB = FAB,
+	SplitButton = SplitButton,
 	-- selection
 	Checkbox = Checkbox,
 	Radio = RadioModule.Radio,

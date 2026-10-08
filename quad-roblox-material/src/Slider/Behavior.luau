@@ -4,8 +4,10 @@
 	in `../M2/`): the value model (Min/Max/Step snapping, the one write path, OnChange/OnChangeEnd), the pointer (press
 	jumps + drag, `Interaction.drag`), the keys (`KeyNav`), hover / pressed / focus States and the host width. A look file
 	only draws: it places the hooks below on its host and derives its track / handle / label from the States. No look
-	branch lives here — the only look input is `Look.Inset`, the px from a host edge to the handle CENTER at Min / Max
-	(the pointer maps over the host width minus both insets).
+	branch lives here — the look inputs are `Look.Inset`, the px from a host edge to the handle CENTER at Min / Max
+	(the pointer maps over the host length minus both insets), and the M3 variants' AXIS and CENTER: `Look.Vertical`
+	(the pointer and the keys work along Y), `Look.Flip` (Min at the axis' far end — the vertical slider with Min at the
+	bottom) and `Look.Centered` (an own Value starts at the middle). The M2 look passes none of the three.
 
 	    local b = Behavior.single(props, { Name = "Slider", Inset = 8 })
 	    D.Frame { b.InteractionHook, b.DragHook, b.KeyHook, Interactable = b.Interactable, Selectable = b.Interactable, ... }
@@ -16,7 +18,8 @@
 	    local s = r.handle("Start")   -- { IsKey, Hovered, Focused, Dragged } of one handle
 
 	Props (both shapes are the public props of the looks; all `read`):
-	  single  Value Source<number>? (nil = own, starting at Min)
+	  single  Value Source<number>? (nil = own, starting at Min — or at (Min + Max) / 2 with `Look.Centered`, as MDC
+          `setCentered`)
 	  range   Start, End Source<number>? (nil = own, at Min / Max); Start <= End is kept by user input (a handle stops at
 	          the other; the two may meet). A programmatic Start > End is shown as given.
 	  Min, Max     number?   default 0 / 1, STATIC; Max must be > Min
@@ -36,9 +39,13 @@
 	Keys (host is ONE selection stop, `KeyNav` "Horizontal"): Left/Right (+ D-pad) +-KeyStep, PageUp/PageDown +-10 KeyStep,
 	Home/End = Min/Max; range: Return / KeypadEnter / gamepad ButtonX switch the KEY handle (the one last dragged, Start
 	at first). Up/Down are neither mapped nor pinned (they walk the selection on).
-	Width: `Width` follows the host's AbsoluteSize.X (0 before layout) through ONE property-changed connection on the
-	host itself (dies with it) — the M3 look hides track pieces / ticks that are shorter than a corner or fall in the
-	handle gap, which needs pixels.
+	Vertical (`Look.Vertical`, `KeyNav` "Vertical"): Up/Down (+ D-pad) move the handle the way the arrow points — +-KeyStep
+	(Up = toward Max when Min is at the bottom, toward Min when Min is at the top), PageUp/PageDown the same way by 10
+	KeyStep, Home/End = Min/Max (Compose `Slider.kt` vertical key handling: DirectionUp = value - sign * delta with
+	sign -1 for a reversed (bottom-first) slider, PageUp likewise); Left/Right walk the selection on.
+	Length: `Length` (also `Width`, the name the horizontal looks use) follows the host's AbsoluteSize along the axis (0
+	before layout) through ONE property-changed connection on the host itself (dies with it) — the M3 look hides track
+	pieces / ticks / inset icons that are shorter than a corner or fall in the handle gap, which needs pixels.
 	Global connections: as `Interaction.drag` (three only while dragging) and `KeyNav` (one only while selected).
 ]]
 
@@ -90,6 +97,9 @@ export type Which = "Start" | "End"
 export type Look = {
 	Name: string, -- for error messages
 	Inset: number, -- px from a host edge to the handle center at Min / Max
+	Vertical: boolean?, -- the axis is Y (pointer, length, keys)
+	Flip: boolean?, -- Min at the axis' far end (vertical: Min at the bottom)
+	Centered: boolean?, -- an own Value starts at (Min + Max) / 2
 }
 
 type Hook = Interaction.Hook
@@ -103,6 +113,7 @@ export type Common = {
 	read Disabled: q.State<boolean>,
 	read Interactable: q.State<boolean>,
 	read Width: q.State<number>,
+	read Length: q.State<number>,
 	read Hovered: q.State<boolean>,
 	read Pressed: q.State<boolean>,
 	read Focused: q.State<boolean>,
@@ -152,6 +163,8 @@ type Config = {
 	keyStep: number,
 	format: (value: number) -> string,
 	disabled: q.State<boolean>,
+	vertical: boolean,
+	flip: boolean,
 }
 
 -- validated static configuration (`level` 3: the caller of the look's constructor)
@@ -162,7 +175,8 @@ local function config(
 	step: number?,
 	keyStep0: number?,
 	format: ((value: number) -> string)?,
-	disabled0: (boolean | q.State<boolean>)?
+	disabled0: (boolean | q.State<boolean>)?,
+	look: Look
 ): Config
 	local min: number = min0 or 0
 	local max: number = max0 or 1
@@ -181,6 +195,8 @@ local function config(
 		keyStep = keyStep0 or step or range / 20,
 		format = format or defaultFormat,
 		disabled = Util.asState(disabled0),
+		vertical = look.Vertical == true,
+		flip = look.Vertical == true and look.Flip == true,
 	}
 end
 
@@ -195,48 +211,74 @@ local function snapper(c: Config): (number) -> number
 	end
 end
 
--- the host tracker: hover / press / focus (hidden engine selection box), the host instance and its width
+-- the host tracker: hover / press / focus (hidden engine selection box), the host instance and its length
 type HostTracker = {
 	ix: Interaction.Interaction,
-	width: q.Source<number>,
-	valueAt: (x: number) -> number?,
+	length: q.Source<number>,
+	valueAt: (x: number, y: number) -> number?,
 }
 local function hostTracker(c: Config, look: Look): HostTracker
-	local width = q.Source(0)
+	local length = q.Source(0)
 	local host: GuiObject? = nil
 	local inset = look.Inset
+	local vertical, flip = c.vertical, c.flip
+	local function along(v: Vector2): number
+		return if vertical then v.Y else v.X
+	end
 	local ix = Interaction.new({
 		Disabled = c.disabled,
 		OnHost = function(inst: GuiObject)
 			host = inst
 			inst.SelectionImageObject = Interactive.noSelectionImage()
-			width:Set(inst.AbsoluteSize.X)
+			length:Set(along(inst.AbsoluteSize))
 			inst:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-				width:SetIfChanged(inst.AbsoluteSize.X)
+				length:SetIfChanged(along(inst.AbsoluteSize))
 			end)
 			inst.Destroying:Connect(function()
 				host = nil
 			end)
 		end,
 	})
-	-- pointer x -> value (unsnapped), nil before the host is laid out
-	local function valueAt(x: number): number?
+	-- pointer (x, y) -> value (unsnapped), nil before the host is laid out
+	local function valueAt(x: number, y: number): number?
 		local h = host
 		if h == nil then
 			return nil
 		end
-		local w = h.AbsoluteSize.X - 2 * inset
+		local w = along(h.AbsoluteSize) - 2 * inset
 		if w <= 0 then
 			return nil
 		end
-		local f = (x - Ripple.Config.PointerInset.X - h.AbsolutePosition.X - inset) / w
+		local p = if vertical then y - Ripple.Config.PointerInset.Y else x - Ripple.Config.PointerInset.X
+		local f = (p - along(h.AbsolutePosition) - inset) / w
+		if flip then
+			f = 1 - f
+		end
 		return c.min + f * c.range
 	end
-	return { ix = ix, width = width, valueAt = valueAt }
+	return { ix = ix, length = length, valueAt = valueAt }
 end
 
 -- the key -> target mapping shared by both shapes (nil = not a value key)
 local function keyTarget(c: Config, kc: Enum.KeyCode, cur: number): number?
+	if c.vertical then
+		-- the way the arrow points: Up is toward Max when Min is at the bottom (flip), toward Min otherwise
+		local up = if c.flip then 1 else -1
+		if kc == Enum.KeyCode.Up or kc == Enum.KeyCode.DPadUp then
+			return cur + up * c.keyStep
+		elseif kc == Enum.KeyCode.Down or kc == Enum.KeyCode.DPadDown then
+			return cur - up * c.keyStep
+		elseif kc == Enum.KeyCode.PageUp then
+			return cur + up * 10 * c.keyStep
+		elseif kc == Enum.KeyCode.PageDown then
+			return cur - up * 10 * c.keyStep
+		elseif kc == Enum.KeyCode.Home then
+			return c.min
+		elseif kc == Enum.KeyCode.End then
+			return c.max
+		end
+		return nil
+	end
 	if kc == Enum.KeyCode.Left or kc == Enum.KeyCode.DPadLeft then
 		return cur - c.keyStep
 	elseif kc == Enum.KeyCode.Right or kc == Enum.KeyCode.DPadRight then
@@ -254,9 +296,9 @@ local function keyTarget(c: Config, kc: Enum.KeyCode, cur: number): number?
 end
 
 local function single(props: SliderProps, look: Look): Single
-	local c = config(look.Name, props.Min, props.Max, props.Step, props.KeyStep, props.Format, props.Disabled)
+	local c = config(look.Name, props.Min, props.Max, props.Step, props.KeyStep, props.Format, props.Disabled, look)
 	local snap = snapper(c)
-	local value: q.Source<number> = props.Value or q.Source(c.min)
+	local value: q.Source<number> = props.Value or q.Source(if look.Centered then snap((c.min + c.max) / 2) else c.min)
 	local min, range = c.min, c.range
 
 	-- the one write path for user input (drag + keys): snapped, only when changed
@@ -277,21 +319,21 @@ local function single(props: SliderProps, look: Look): Single
 	end)
 
 	local t = hostTracker(c, look)
-	local function commitFromX(x: number)
-		local v = t.valueAt(x)
+	local function commitFrom(x: number, y: number)
+		local v = t.valueAt(x, y)
 		if v ~= nil then
 			commit(v)
 		end
 	end
 	local drag = Interaction.drag({
 		Disabled = c.disabled,
-		OnBegan = commitFromX,
-		OnMoved = function(x: number)
-			commitFromX(x)
+		OnBegan = commitFrom,
+		OnMoved = function(x: number, y: number)
+			commitFrom(x, y)
 		end,
-		OnEnded = function(x: number, _y: number, cancelled: boolean)
+		OnEnded = function(x: number, y: number, cancelled: boolean)
 			if not cancelled then
-				commitFromX(x)
+				commitFrom(x, y)
 				if props.OnChangeEnd then
 					props.OnChangeEnd(value:Get())
 				end
@@ -306,7 +348,7 @@ local function single(props: SliderProps, look: Look): Single
 		if target ~= nil and commit(target) and props.OnChangeEnd then
 			props.OnChangeEnd(value:Get())
 		end
-	end)
+	end, nil, { Pin = if c.vertical then "Vertical" else "Horizontal" })
 
 	return {
 		Min = c.min,
@@ -316,7 +358,8 @@ local function single(props: SliderProps, look: Look): Single
 		Format = c.format,
 		Disabled = c.disabled,
 		Interactable = Util.interactable(c.disabled),
-		Width = t.width,
+		Width = t.length,
+		Length = t.length,
 		Hovered = t.ix.Hovered,
 		Pressed = t.ix.Pressed,
 		Focused = t.ix.Focused,
@@ -330,7 +373,7 @@ local function single(props: SliderProps, look: Look): Single
 end
 
 local function range(props: RangeSliderProps, look: Look): Range
-	local c = config(look.Name, props.Min, props.Max, props.Step, props.KeyStep, props.Format, props.Disabled)
+	local c = config(look.Name, props.Min, props.Max, props.Step, props.KeyStep, props.Format, props.Disabled, look)
 	local snap = snapper(c)
 	local min, rangeWidth = c.min, c.range
 	local startS: q.Source<number> = props.Start or q.Source(c.min)
@@ -384,8 +427,8 @@ local function range(props: RangeSliderProps, look: Look): Range
 	-- a drag that BEGAN on a closed range picks its handle from the first movement; a handle pushed into the other
 	-- during a drag just stops there
 	local undecided = false
-	local function moveTo(x: number)
-		local v = t.valueAt(x)
+	local function moveTo(x: number, y: number)
+		local v = t.valueAt(x, y)
 		if v == nil then
 			return
 		end
@@ -402,21 +445,21 @@ local function range(props: RangeSliderProps, look: Look): Range
 	end
 	local drag = Interaction.drag({
 		Disabled = c.disabled,
-		OnBegan = function(x: number)
-			local v = t.valueAt(x)
+		OnBegan = function(x: number, y: number)
+			local v = t.valueAt(x, y)
 			if v == nil then
 				return
 			end
 			which:Set(nearestTo(v))
 			undecided = startS:Get() == endS:Get()
-			moveTo(x)
+			moveTo(x, y)
 		end,
-		OnMoved = function(x: number)
-			moveTo(x)
+		OnMoved = function(x: number, y: number)
+			moveTo(x, y)
 		end,
-		OnEnded = function(x: number, _y: number, cancelled: boolean)
+		OnEnded = function(x: number, y: number, cancelled: boolean)
 			if not cancelled then
-				moveTo(x)
+				moveTo(x, y)
 				if props.OnChangeEnd then
 					props.OnChangeEnd(startS:Get(), endS:Get())
 				end
@@ -438,7 +481,7 @@ local function range(props: RangeSliderProps, look: Look): Range
 		if target ~= nil and commit(h, target) and props.OnChangeEnd then
 			props.OnChangeEnd(startS:Get(), endS:Get())
 		end
-	end)
+	end, nil, { Pin = if c.vertical then "Vertical" else "Horizontal" })
 
 	local ix = t.ix
 	local function handle(h: Which): HandleStates
@@ -466,7 +509,8 @@ local function range(props: RangeSliderProps, look: Look): Range
 		Format = c.format,
 		Disabled = c.disabled,
 		Interactable = Util.interactable(c.disabled),
-		Width = t.width,
+		Width = t.length,
+		Length = t.length,
 		Hovered = ix.Hovered,
 		Pressed = ix.Pressed,
 		Focused = ix.Focused,
@@ -480,8 +524,8 @@ local function range(props: RangeSliderProps, look: Look): Range
 		FracEnd = fracEnd,
 		Key = which,
 		Nearest = nearest,
-		MouseMoved = function(x: number, _y: number)
-			local v = t.valueAt(x)
+		MouseMoved = function(x: number, y: number)
+			local v = t.valueAt(x, y)
 			if v ~= nil then
 				nearest:SetIfChanged(nearestTo(v))
 			end

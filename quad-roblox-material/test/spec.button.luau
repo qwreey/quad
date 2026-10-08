@@ -9,6 +9,8 @@ local Tokens = require("../src/Tokens")
 local Button = require("../src/Button")
 local IconButton = require("../src/Button/IconButton")
 local FAB = require("../src/Button/FAB")
+local SplitButton = require("../src/Button/Split")
+local Icons = require("../src/Icons")
 local Tooltip = require("../src/Tooltip")
 local Overlay = require("../src/Overlay")
 local Interactive = require("../src/Interactive")
@@ -432,6 +434,285 @@ H.section("D7 IconButton TouchTarget: 48x48 transparent host owns the input, 40x
 	q.dispose(plain)
 	assert(uisConns() == baseConns)
 	H.assertNoDebugOutput("touch target")
+end)
+
+-- ── icon position / values (10th QA) ────────────────────────────────────────
+local function padOf(btn: any): (number, number)
+	local p = class(btn, "UIPadding")[1]
+	return p.PaddingLeft.Offset, p.PaddingRight.Offset
+end
+
+H.section("icon position: leading / trailing, the material-web spaces per variant, the icon after the label when trailing", function()
+	-- material-web tokens/_md-comp-*-button.scss: no icon / leading icon / trailing icon (left, right)
+	local want: { [string]: { { number } } } = {
+		Filled = { { 24, 24 }, { 16, 24 }, { 24, 16 } },
+		Tonal = { { 24, 24 }, { 16, 24 }, { 24, 16 } },
+		Elevated = { { 24, 24 }, { 16, 24 }, { 24, 16 } },
+		Outlined = { { 24, 24 }, { 16, 24 }, { 24, 16 } },
+		Text = { { 12, 12 }, { 12, 16 }, { 16, 12 } },
+	}
+	for variant, rows in want do
+		local v: any = variant
+		local plain = Button({ Variant = v, Label = "x" })
+		local lead = Button({ Variant = v, Label = "x", Icon = "rbxassetid://1" })
+		local trail = Button({ Variant = v, Label = "x", Icon = "rbxassetid://1", IconPosition = "Trailing" })
+		local pl, pr = padOf(plain)
+		assert(pl == rows[1][1] and pr == rows[1][2], variant .. " no icon")
+		pl, pr = padOf(lead)
+		assert(pl == rows[2][1] and pr == rows[2][2], variant .. " leading icon: " .. pl .. "/" .. pr)
+		pl, pr = padOf(trail)
+		assert(pl == rows[3][1] and pr == rows[3][2], variant .. " trailing icon: " .. pl .. "/" .. pr)
+		local li, ll = H.find(lead, "Icon"), H.find(lead, "Label")
+		local ti, tl = H.find(trail, "Icon"), H.find(trail, "Label")
+		assert(li.LayoutOrder < ll.LayoutOrder and ti.LayoutOrder > tl.LayoutOrder, variant .. ": order follows IconPosition")
+		assert(class(trail, "UIListLayout")[1].Padding == UDim.new(0, 8) and ti.Size == UDim2.fromOffset(18, 18), "8 px gap, 18 px icon")
+		assert(H.countDescendants(trail) == H.countDescendants(lead), "same instance count either side")
+		q.dispose(plain)
+		q.dispose(lead)
+		q.dispose(trail)
+	end
+	local noIcon = Button({ Label = "x", IconPosition = "Trailing" })
+	assert(H.find(noIcon, "Icon") == nil and select(1, padOf(noIcon)) == 24, "IconPosition without Icon: ignored")
+	q.dispose(noIcon)
+	assert(not pcall(Button, { Label = "x", Icon = "check", IconPosition = "Left" :: any }), "a bad IconPosition is an error")
+	H.assertNoDebugOutput("icon position")
+end)
+
+H.section("icon values: an Icons name -> its image (its glyph once overridden away), a URL -> image, other text -> glyph", function()
+	local named = Button({ Label = "Done", Icon = "check" })
+	local i1 = H.find(named, "Icon")
+	assert(i1.ClassName == "ImageLabel" and i1.Image == Icons.Defaults.check, "a name draws its default image")
+	local url = Button({ Label = "u", Icon = "rbxassetid://42" })
+	assert(H.find(url, "Icon").ClassName == "ImageLabel" and H.find(url, "Icon").Image == "rbxassetid://42")
+	local glyph = Button({ Variant = "Text", Label = "Music", Icon = "\u{266A}" })
+	local g = H.find(glyph, "Icon")
+	assert(g.ClassName == "TextLabel" and g.Text == "\u{266A}" and g.TextSize == 18 and g.LineHeight == 1, "text is a glyph, 18 px, LineHeight 1")
+	assert(g.TextColor3 == L.Primary, "glyph in the content color")
+	Icons.override({ check = false })
+	local fallback = Button({ Label = "Done", Icon = "check" })
+	local f = H.find(fallback, "Icon")
+	assert(f.ClassName == "TextLabel" and f.Text == Icons.glyph("check"), "overridden away: the glyph")
+	Icons.override({ check = Icons.Defaults.check })
+	local which = q.Source("arrowDown")
+	local stateful = Button({ Variant = "Text", Label = "m", Icon = which, IconPosition = "Trailing" })
+	local si = H.find(stateful, "Icon")
+	assert(si.ClassName == "ImageLabel" and si.Image == Icons.Defaults.arrowDown)
+	which:Set("arrowUp")
+	assert(si.Image == Icons.Defaults.arrowUp, "a State follows names through Icons.imageOf")
+	for _, b in { named, url, glyph, fallback, stateful } do
+		q.dispose(b)
+	end
+	H.assertNoDebugOutput("icon values")
+end)
+
+-- ── SplitButton (M3 Expressive, small) ──────────────────────────────────────
+local function face(half: any, clipName: string): any
+	return H.find(H.find(half, clipName), "Face")
+end
+local function cornerOf(inst: any): UDim
+	return H.find(inst, "_quad_round").CornerRadius
+end
+-- lays the two halves out: their content frames measured `lw` / `tw` local px wide (no UIScale in the mock)
+local function layoutSplit(sb: any, lw: number, tw: number)
+	H.setAbs(H.find(H.find(sb, "Leading"), "Content"), 0, 0, lw, 40)
+	H.setAbs(H.find(H.find(sb, "Trailing"), "Content"), 0, 0, tw, 40)
+end
+
+H.section("SplitButton: two halves 2 px apart, 48 px minimum, outer corners 20, inner 4, one face per side, instance count", function()
+	local sb = SplitButton({ Label = "Save" })
+	assert(sb.ClassName == "Frame" and sb.Name == "SplitButton" and sb.AutomaticSize == Enum.AutomaticSize.X and sb.Size == UDim2.fromOffset(0, 40))
+	local lay = class(sb, "UIListLayout")[1]
+	assert(lay.Parent == sb and lay.Padding == UDim.new(0, 2) and lay.FillDirection == Enum.FillDirection.Horizontal, "BetweenSpace 2")
+	local lead, trail = H.find(sb, "Leading"), H.find(sb, "Trailing")
+	assert(lead.ClassName == "TextButton" and trail.ClassName == "TextButton" and lead.LayoutOrder < trail.LayoutOrder)
+	assert(lead.Size == UDim2.fromOffset(48, 40) and trail.Size == UDim2.fromOffset(48, 40), "unmeasured: the 48 px minimum")
+	local n = H.countDescendants(sb)
+	print("SplitButton (Filled, no icon) descendants: " .. n .. " (+1 host = " .. (n + 1) .. ")")
+	H.resetOutput()
+	-- per half: the TextButton 1 + 2 sides x (clip + face + UICorner + StateLayer + its UICorner) = 10 + ring 3 +
+	-- Content + UIPadding 2; leading + Label 1 = 17; trailing + arrow 1 + a Selected overlay per face (Frame + UICorner)
+	-- x 2 = 4 -> 21; the host's UIListLayout 1 -> 39
+	assert(n == 39, "39 descendants, got " .. n)
+	layoutSplit(sb, 75.4, 48)
+	assert(lead.Size == UDim2.fromOffset(76, 40), "W = ceil(content) = 76: " .. tostring(lead.Size))
+	assert(trail.Size == UDim2.fromOffset(48, 40), "trailing: 13 + 22 + 13 = 48")
+	-- leading: outer side [0, 38] rounded 20, inner side [38, 76] rounded 4; both faces are the full 76 x 40
+	local lo, li = H.find(lead, "OuterClip"), H.find(lead, "InnerClip")
+	assert(lo.ClipsDescendants and li.ClipsDescendants and lo.Position == UDim2.fromOffset(0, 0) and lo.Size == UDim2.fromOffset(38, 40))
+	assert(li.Position == UDim2.fromOffset(38, 0) and li.Size == UDim2.fromOffset(38, 40))
+	assert(face(lead, "OuterClip").Position == UDim2.fromOffset(0, 0) and face(lead, "InnerClip").Position == UDim2.fromOffset(-38, 0))
+	assert(face(lead, "OuterClip").Size == UDim2.fromOffset(76, 40) and face(lead, "InnerClip").Size == UDim2.fromOffset(76, 40))
+	H.finishTweens()
+	assert(cornerOf(face(lead, "OuterClip")) == UDim.new(0, 20) and cornerOf(face(lead, "InnerClip")) == UDim.new(0, 4), "Full outside, ExtraSmall inside")
+	-- trailing: inner side first
+	local ti, to = H.find(trail, "InnerClip"), H.find(trail, "OuterClip")
+	assert(ti.Position == UDim2.fromOffset(0, 0) and ti.Size == UDim2.fromOffset(24, 40) and to.Position == UDim2.fromOffset(24, 0))
+	assert(face(trail, "OuterClip").Position == UDim2.fromOffset(-24, 0))
+	assert(cornerOf(face(trail, "InnerClip")) == UDim.new(0, 4) and cornerOf(face(trail, "OuterClip")) == UDim.new(0, 20))
+	-- colors and content
+	assert(face(lead, "OuterClip").BackgroundColor3 == L.Primary and face(trail, "InnerClip").BackgroundColor3 == L.Primary)
+	local label = H.find(lead, "Label")
+	assert(label.Text == "Save" and label.TextColor3 == L.OnPrimary)
+	local lp = class(H.find(lead, "Content"), "UIPadding")[1]
+	local tp = class(H.find(trail, "Content"), "UIPadding")[1]
+	assert(lp.PaddingLeft == UDim.new(0, 16) and lp.PaddingRight == UDim.new(0, 12), "leading 16 / 12")
+	assert(tp.PaddingLeft == UDim.new(0, 13) and tp.PaddingRight == UDim.new(0, 13), "trailing 13 / 13")
+	local arrow = H.find(trail, "Icon")
+	assert(arrow.ClassName == "ImageLabel" and arrow.Image == Icons.Defaults.chevronDown and arrow.Size == UDim2.fromOffset(22, 22), "keyboard_arrow_down, 22 px")
+	assert(arrow.Rotation == 0)
+	-- content centered, the trailing one shifted by Compose's optical centering: round(0.11 * (4 - 20)) = -2
+	assert(H.find(lead, "Content").Position == UDim2.fromOffset(0, 0), "leading content fills its half")
+	assert(H.find(trail, "Content").Position == UDim2.fromOffset(-2, 0), "optical shift -2: " .. tostring(H.find(trail, "Content").Position))
+	-- a short label: the half keeps 48 and centers the content
+	local short = SplitButton({ Label = "A" })
+	layoutSplit(short, 37, 48)
+	H.finishTweens()
+	assert(H.find(short, "Leading").Size == UDim2.fromOffset(48, 40) and H.find(H.find(short, "Leading"), "Content").Position == UDim2.fromOffset(5, 0))
+	q.dispose(short)
+	q.dispose(sb)
+	H.assertNoDebugOutput("split mount")
+end)
+
+H.section("SplitButton: pressed inner corners 4 -> 12; Selected = circle, arrow 180, 10 % overlay; pressed wins over selected", function()
+	local selected = q.Source(false)
+	local sb = SplitButton({ Label = "Save", Selected = selected })
+	layoutSplit(sb, 80, 48)
+	local lead, trail = H.find(sb, "Leading"), H.find(sb, "Trailing")
+	H.fire(lead, "InputBegan", H.input({ Position = Vector3.new(10, 10, 0) }))
+	H.finishTweens()
+	assert(cornerOf(face(lead, "InnerClip")) == UDim.new(0, 12), "pressed: CornerValueMedium 12")
+	assert(cornerOf(face(trail, "InnerClip")) == UDim.new(0, 4), "only the pressed half morphs")
+	H.fire(lead, "InputEnded", H.input({}))
+	H.finishTweens()
+	assert(cornerOf(face(lead, "InnerClip")) == UDim.new(0, 4))
+	selected:Set(true)
+	H.finishTweens()
+	local arrow = H.find(trail, "Icon")
+	assert(cornerOf(face(trail, "InnerClip")) == UDim.new(0, 20) and cornerOf(face(trail, "OuterClip")) == UDim.new(0, 20), "circle shape")
+	assert(arrow.Rotation == 180, "the arrow turns over")
+	assert(H.find(trail, "Content").Position == UDim2.fromOffset(0, 0), "no optical shift on a symmetric shape")
+	for _, clipName in { "InnerClip", "OuterClip" } do
+		local overlay = H.find(face(trail, clipName), "Selected")
+		assert(overlay.BackgroundColor3 == L.OnPrimary and math.abs(overlay.BackgroundTransparency - 0.9) < 1e-6, "content color @ 10 %")
+	end
+	H.fire(trail, "InputBegan", H.input({ Position = Vector3.new(10, 10, 0) }))
+	H.finishTweens()
+	assert(cornerOf(face(trail, "InnerClip")) == UDim.new(0, 12), "pressed wins over selected (shapeByInteraction)")
+	assert(H.find(trail, "Content").Position == UDim2.fromOffset(-1, 0), "optical shift round(0.11 * (12 - 20)) = -1")
+	H.fire(trail, "InputEnded", H.input({}))
+	selected:Set(false)
+	H.finishTweens()
+	assert(arrow.Rotation == 0 and cornerOf(face(trail, "InnerClip")) == UDim.new(0, 4))
+	for _, clipName in { "InnerClip", "OuterClip" } do
+		assert(H.find(face(trail, clipName), "Selected").BackgroundTransparency == 1)
+	end
+	q.dispose(sb)
+	H.assertNoDebugOutput("split states")
+end)
+
+H.section("SplitButton: one press = two ripples (one per face, each with its face's corner) of the same disc; Offsets only; clicks", function()
+	local leads, trails = 0, 0
+	local sb = SplitButton({
+		Label = "Save",
+		OnClick = function()
+			leads += 1
+		end,
+		OnTrailingClick = function()
+			trails += 1
+		end,
+	})
+	layoutSplit(sb, 80, 48)
+	local lead = H.find(sb, "Leading")
+	local layers = H.findAll(lead, function(c: any)
+		return c.Name == "StateLayer"
+	end)
+	assert(#layers == 2, "a state layer per face")
+	for _, layer in layers do
+		H.setAbs(layer, 100, 50, 80, 40) -- both faces are the half's full rectangle
+	end
+	H.fire(lead, "InputBegan", H.input({ Position = Vector3.new(160, 62, 0) }))
+	local circles = H.findAll(lead, function(c: any)
+		return c.Name == "RippleCircle"
+	end)
+	assert(#circles == 2, "two ripples, got " .. #circles)
+	local groups = H.findAll(lead, function(c: any)
+		return c.ClassName == "CanvasGroup"
+	end)
+	H.finishTweens()
+	local radii: { [number]: boolean } = {}
+	for _, g in groups do
+		radii[cornerOf(g).Offset] = true
+	end
+	assert(radii[20] and radii[12], "the outer ripple clips at 20, the inner one follows the pressed corner 12")
+	for _ = 1, 40 do
+		H.advance(1 / 60)
+		assert(circles[1].Position == circles[2].Position and circles[1].Size == circles[2].Size, "the two discs coincide")
+		assert(circles[1].ImageRectOffset == circles[2].ImageRectOffset and circles[1].ImageRectSize == circles[2].ImageRectSize)
+	end
+	H.fire(lead, "InputEnded", H.input({}))
+	H.advance(1)
+	-- nothing below the host is a partial Scale (AutomaticSize ancestors — Ripple.luau "NOT SCALE")
+	local function ok(u: UDim): boolean
+		return u.Scale == 0 or u.Scale == 1
+	end
+	local function isDrawn(x: any): boolean
+		return x.ClassName == "Frame" or x.ClassName == "TextButton" or x.ClassName == "ImageLabel" or x.ClassName == "TextLabel"
+	end
+	for _, c in H.findAll(sb, isDrawn) do
+		local p, z = c.Position or UDim2.new(), c.Size or UDim2.new()
+		assert(ok(p.X) and ok(p.Y) and ok(z.X) and ok(z.Y), c.Name .. ": no partial Scale: " .. tostring(p) .. " " .. tostring(z))
+	end
+	H.fire(lead, "Activated", H.input({}), 1)
+	H.fire(H.find(sb, "Trailing"), "Activated", H.input({}), 1)
+	assert(leads == 1 and trails == 1, "each half its own callback")
+	q.dispose(sb)
+	H.assertNoDebugOutput("split ripple")
+end)
+
+H.section("SplitButton: variants (kit Button roles), Outlined inner outline on every face, Elevated shadow caster, icon, disabled", function()
+	local tonal = SplitButton({ Variant = "Tonal", Label = "t", Icon = "check" })
+	assert(face(H.find(tonal, "Leading"), "OuterClip").BackgroundColor3 == L.SecondaryContainer)
+	local icon = H.find(H.find(tonal, "Leading"), "Icon")
+	assert(icon.Image == Icons.Defaults.check and icon.Size == UDim2.fromOffset(20, 20), "leading icon 20 px (ButtonSmallTokens.IconSize)")
+	assert(class(H.find(tonal, "Leading"), "UIListLayout")[1].Padding == UDim.new(0, 8), "8 px to the label")
+	q.dispose(tonal)
+	local outlined = SplitButton({ Variant = "Outlined", Label = "o" })
+	local strokes = H.findAll(outlined, function(c: any)
+		return c.Name == "Outline"
+	end)
+	assert(#strokes == 4, "one outline per face")
+	for _, st in strokes do
+		assert(st.BorderStrokePosition == Enum.BorderStrokePosition.Inner and st.Thickness == 1 and st.Color == L.Outline, "inside the face (an outer stroke would be clipped)")
+	end
+	assert(face(H.find(outlined, "Leading"), "OuterClip").BackgroundTransparency == 1)
+	q.dispose(outlined)
+	local elevated = SplitButton({ Variant = "Elevated", Label = "e" })
+	local caster = H.find(H.find(elevated, "Leading"), "ShadowCaster")
+	assert(caster ~= nil and cornerOf(caster) == UDim.new(0, 20) and class(caster, "UIShadow")[1] ~= nil, "UIShadow on the rounded caster")
+	q.dispose(elevated)
+	assert(not pcall(SplitButton, { Variant = "Text" :: any, Label = "x" }), "no text split button")
+	local disabled = q.Source(true)
+	local clicks = 0
+	local sb = SplitButton({
+		Label = "d",
+		Disabled = disabled,
+		OnClick = function()
+			clicks += 1
+		end,
+	})
+	H.finishTweens()
+	local lead = H.find(sb, "Leading")
+	assert(lead.Interactable == false and H.find(sb, "Trailing").Interactable == false)
+	assert(face(lead, "InnerClip").BackgroundColor3 == L.OnSurface and math.abs(face(lead, "InnerClip").BackgroundTransparency - 0.88) < 1e-6)
+	assert(H.find(lead, "Label").TextColor3 == L.OnSurface and math.abs(H.find(lead, "Label").TextTransparency - 0.62) < 1e-6)
+	H.fire(lead, "Activated", H.input({}), 1)
+	assert(clicks == 0)
+	disabled:Set(false)
+	H.fire(lead, "Activated", H.input({}), 1)
+	assert(clicks == 1)
+	q.dispose(sb)
+	assert(uisConns() == baseConns)
+	H.assertNoDebugOutput("split variants")
 end)
 
 H.done()

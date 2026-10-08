@@ -5,7 +5,10 @@
 	ancestor with `ClipsDescendants` clips it. Cost: TextLabel + UICorner + UIPadding (3).
 
 	    Bubble.build({ Dragging, Focused, Disabled, Value, Format, Theme, Style })  -> TextLabel
-	The caller parents it under the handle (or the handle's halo) and gives the bottom-center `Position` in that parent.
+	The caller parents it under the handle (or the handle's halo) and gives the bottom-center `Position` in that parent —
+	or, with `AnchorPoint`, any other anchor: the vertical M3 slider puts it LEFT of the handle (AnchorPoint (1, 0.5),
+	12 px out — MDC BaseSlider `calculateLabelBounds`, vertical: the horizontal label box below the track center, turned
+	90 degrees clockwise with the view, which lands it on the left).
 	Styles (`Bubble.M3`, `Bubble.M2`):
 	  M3  32 px tall pill (corner Full), 10 px side padding, `InverseSurface` / `InverseOnSurface`, text = `LabelLarge` size /
 	      line height at the BodyLarge weight (Regular). Sources (2026-10-08, "follow the canonical spec"): the M3 token set
@@ -47,7 +50,8 @@ export type Options = {
 	Format: (value: number) -> string,
 	Theme: Theme.Theme,
 	Style: BubbleStyle,
-	Position: UDim2, -- bottom center, in the parent
+	Position: UDim2, -- bottom center (or `AnchorPoint`), in the parent
+	AnchorPoint: Vector2?, -- default (0.5, 1)
 }
 
 local M3: BubbleStyle = {
@@ -76,7 +80,7 @@ local function build(o: Options): TextLabel
 	return D.TextLabel {
 		Name = "Label",
 		style.Text,
-		AnchorPoint = Vector2.new(0.5, 1),
+		AnchorPoint = o.AnchorPoint or Vector2.new(0.5, 1),
 		Position = o.Position,
 		Size = UDim2.fromOffset(0, style.Height),
 		AutomaticSize = Enum.AutomaticSize.X,

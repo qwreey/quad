@@ -19,7 +19,7 @@
 
 	opts
 	  Color      Color3 | State<Color3>         the "on" color (e.g. OnPrimary for a filled button)
-	  Corner     UDim                           the host's corner radius (default 0)
+	  Corner     UDim | State<UDim>             the host's corner radius (default 0; a State follows an animated radius)
 	  Hovered, Pressed, Focused   State<boolean>
 	  Dragged    State<boolean>?                (sliders, handles)
 	  Disabled   boolean | State<boolean>       layer hidden while true
@@ -44,7 +44,7 @@ export type ColorInput = Color3 | Theme.Animated | q.State<Color3>
 
 export type Options = {
 	Color: ColorInput,
-	Corner: UDim?,
+	Corner: Ripple.CornerInput?,
 	Hovered: q.State<boolean>,
 	Pressed: q.State<boolean>,
 	Focused: q.State<boolean>,

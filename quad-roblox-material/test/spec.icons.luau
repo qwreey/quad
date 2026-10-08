@@ -10,6 +10,8 @@ local Overlay = require("../src/Overlay")
 local DatePicker = require("../src/DatePicker")
 local Calendar = require("../src/DatePicker/Calendar")
 local ColorPicker = require("../src/ColorPicker")
+local SplitButton = require("../src/Button/Split")
+local Slider = require("../src/Slider")
 
 -- Studio QA 2026-10-08 (9th): the edit glyph (U+270E) drew as a "?" box; the icons are images by default now (Material
 -- Design Icons, baseline, IMAGE ids from the old IconPack dump — Icons.luau header), each name keeping a glyph fallback
@@ -20,12 +22,13 @@ local EXPECTED: { [string]: string } = {
 	arrowUp = "rbxassetid://6031090990",
 	chevronLeft = "rbxassetid://6034818375",
 	chevronRight = "rbxassetid://6034818365",
+	chevronDown = "rbxassetid://6034818372", -- 10th: the split button's menu arrow (keyboard_arrow_down)
 	edit = "rbxassetid://6034328955",
 	calendar = "rbxassetid://6022668894",
 }
 
 H.section("defaults are Material icon images, each with a text glyph fallback; error stays a glyph", function()
-	for _, name in { "check", "close", "arrowDown", "arrowUp", "chevronLeft", "chevronRight", "edit", "calendar", "error" } do
+	for _, name in { "check", "close", "arrowDown", "arrowUp", "chevronLeft", "chevronRight", "chevronDown", "edit", "calendar", "error" } do
 		assert(#Icons.glyph(name :: any) > 0, name .. ": glyph fallback")
 		assert(Icons.asset(name :: any) == EXPECTED[name], name .. ": default image " .. tostring(Icons.asset(name :: any)))
 		assert(Icons.Defaults[name] == EXPECTED[name], name .. ": Defaults table")
@@ -56,6 +59,10 @@ H.section("glyph fallback: with the images overridden away every icon place draw
 	local panel: any = ColorPicker.Panel({ Value = q.Source(Color3.fromRGB(255, 255, 255)) })
 	local swatch = H.find(panel, "Swatch")
 	assert(swatch.ClassName == "TextButton", "swatch check is the button's text")
+	local split: any = SplitButton({ Label = "S" })
+	local arrow = H.find(H.find(split, "Trailing"), "Icon")
+	assert(arrow.ClassName == "TextLabel" and arrow.Text == "\u{25BC}", "split menu arrow glyph")
+	q.dispose(split)
 	q.dispose(chip)
 	q.dispose(input)
 	q.dispose(select)
@@ -82,6 +89,29 @@ H.section("default images reach every icon place", function()
 	q.dispose(select)
 	q.dispose(screen)
 	H.assertNoDebugOutput("default images")
+end)
+
+H.section("Icons.resolve: a name -> its image (glyph without one), an asset URL -> image, other text -> glyph; imageOf", function()
+	local k, v = Icons.resolve("check")
+	assert(k == "Image" and v == EXPECTED.check)
+	k, v = Icons.resolve("error")
+	assert(k == "Glyph" and v == "!", "error has no image")
+	for _, url in { "rbxassetid://5", "rbxasset://textures/x.png", "rbxthumb://type=Asset&id=1&w=150&h=150", "https://x.y/z.png", "http://www.roblox.com/asset/?id=6" } do
+		k, v = Icons.resolve(url)
+		assert(k == "Image" and v == url, url)
+	end
+	k, v = Icons.resolve("\u{266A}")
+	assert(k == "Glyph" and v == "\u{266A}")
+	Icons.override({ check = false })
+	k, v = Icons.resolve("check")
+	assert(k == "Glyph" and v == Icons.glyph("check"), "overridden away: the glyph")
+	assert(Icons.imageOf("check") == "" and Icons.imageOf("close") == EXPECTED.close and Icons.imageOf("rbxassetid://5") == "rbxassetid://5")
+	Icons.override({ check = EXPECTED.check })
+	-- every icon prop goes through it: Button / SplitButton `Icon`, Slider `TrackIcon*`
+	local s: any = Slider({ Size = "M", TrackIconActiveStart = "close" })
+	assert(H.find(s, "TrackIconActiveStart").Image == EXPECTED.close)
+	q.dispose(s)
+	H.assertNoDebugOutput("resolve")
 end)
 
 H.section("override swaps in another image without touching components; false removes it", function()

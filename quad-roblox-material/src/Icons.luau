@@ -8,9 +8,17 @@
 	    Icons.override({ check = "rbxassetid://123", close = "rbxassetid://456" })   -- once, at startup
 	    Icons.override({ edit = false })      -- drop the image for a name: that icon falls back to its glyph
 	    Icons.Defaults                        -- the default name -> asset id table (read-only; the list below)
+	    Icons.resolve(value)                  -> ("Image", id) | ("Glyph", text)   what an ICON PROP draws (below)
+	    Icons.imageOf(value)                  -> string   a name's image ("" without one) or the value itself
 
-	Names: check, close, arrowDown, arrowUp, chevronLeft, chevronRight, edit, calendar, error (the "!" TextField shows while
-	in the Error state).
+	Names: check, close, arrowDown, arrowUp, chevronLeft, chevronRight, chevronDown, edit, calendar, error (the "!" TextField
+	shows while in the Error state).
+
+	ICON PROPS (Button / SplitButton `Icon`, Slider `TrackIcon*`) take ONE string, resolved by `Icons.resolve` when the
+	component is built: a NAME above -> its image (the default or your override) or, with the image overridden away, its
+	glyph; an asset URL ("rbxassetid://…", "rbxasset://…", "rbxthumb://…", "http(s)://…") -> that image; any other
+	string -> drawn as TEXT (a glyph such as "♪" — the 9th-QA rule: a glyph is the fallback, and whether it draws depends
+	on the font, see below). A State-valued icon prop is always an image (`Icons.imageOf` per value).
 
 	DEFAULT IMAGES (Studio QA 2026-10-08, 9th: the edit glyph U+270E drew as a "?" box — the engine's font fallback has no
 	glyph for it on that machine — while U+25A6 drew). Material Design Icons (google/material-design-icons, Apache License
@@ -24,32 +32,49 @@
 	kotlin/androidx/compose/material3/): the date picker mode toggle Icons.Filled.Edit / DateRange (DatePicker.kt 1453,
 	1460), its month arrows AutoMirrored KeyboardArrowLeft / Right (2511, 2519), its year dropdown and the exposed dropdown
 	menu ArrowDropDown (DatePicker.kt 2547, ExposedDropdownMenu.kt 463), the Snackbar dismiss Icons.Filled.Close
-	(Snackbar.kt 263); the chip check is the Material "check".
+	(Snackbar.kt 263); the chip check is the Material "check"; the split button's menu arrow is Icons.Filled.KeyboardArrowDown
+	(androidx/androidx@5ac4c7c compose/material3/material3/samples/src/main/java/androidx/compose/material3/samples/
+	SplitButtonSamples.kt 120).
 	  check         6031094667   baseline/navigation/check
 	  close         6031094678   baseline/navigation/close
 	  arrowDown     6031091004   baseline/navigation/arrow_drop_down
 	  arrowUp       6031090990   baseline/navigation/arrow_drop_up
 	  chevronLeft   6034818375   baseline/hardware/keyboard_arrow_left
 	  chevronRight  6034818365   baseline/hardware/keyboard_arrow_right
+	  chevronDown   6034818372   baseline/hardware/keyboard_arrow_down   (added 2026-10-08 for the split button; checked as an
+	                             IMAGE asset the same way — AssetTypeId 1, "baseline_hardware_keyboard_arrow_down" — not
+	                             rendered through thumbnails)
 	  edit          6034328955   baseline/image/edit
 	  calendar      6022668894   baseline/action/date_range
 	  error         (none)       the dump has no "error" icon; the glyph "!" (ASCII, always in the font) stays
 	White on transparent, so `ImageColor3` tints them like text.
 
 	GLYPH FALLBACKS (kept for a place that cannot load images, and for any name you override with `false`): check U+221A,
-	close U+00D7, arrowDown U+25BC, arrowUp U+25B2, chevronLeft U+2039, chevronRight U+203A — inside Roboto; edit (U+270E)
-	and calendar (U+25A6) have NO Roboto glyph and depend on the platform's font fallback.
+	close U+00D7, arrowDown U+25BC, arrowUp U+25B2, chevronLeft U+2039, chevronRight U+203A — inside Roboto; chevronDown has
+	no single-chevron glyph in Roboto and falls back to the arrowDown triangle U+25BC; edit (U+270E) and calendar (U+25A6)
+	have NO Roboto glyph and depend on the platform's font fallback.
 
 	Who goes through here: Chip (check; remove x — unless the chip's own CheckIcon / RemoveIcon is given), Select (the
 	arrow, a `TrailingIcon` image / `TrailingGlyph` fallback), Snackbar (close), the date picker month arrows and the modal's
-	edit / calendar mode toggle (GlyphButtons given the asset), the ColorPicker's selected-swatch check. Still a glyph by
-	design: the "▼"/"▲" after the month-year label of the date picker header — part of a text Button's label (the kit Button
-	has no trailing image), and U+25BC / U+25B2 are in Roboto.
+	edit / calendar mode toggle (GlyphButtons given the asset), the ColorPicker's selected-swatch check, the date picker
+	header's year-menu arrow (arrowDown / arrowUp as the month-year Button's trailing icon since the 10th QA — until then a
+	"▼"/"▲" inside the label text; the glyphs again when either image is overridden away), the split button's menu arrow
+	(chevronDown).
 	`override` is module-wide (every theme, every Roblox VM script sharing this module) and read when a component is
 	built, so call it before building UI; already-built instances keep what they have.
 ]]
 
-export type Name = "check" | "close" | "arrowDown" | "arrowUp" | "chevronLeft" | "chevronRight" | "edit" | "calendar" | "error"
+export type Name =
+	"check"
+	| "close"
+	| "arrowDown"
+	| "arrowUp"
+	| "chevronLeft"
+	| "chevronRight"
+	| "chevronDown"
+	| "edit"
+	| "calendar"
+	| "error"
 
 local Glyphs: { [Name]: string } = {
 	check = "\u{221A}",
@@ -58,6 +83,7 @@ local Glyphs: { [Name]: string } = {
 	arrowUp = "\u{25B2}",
 	chevronLeft = "\u{2039}",
 	chevronRight = "\u{203A}",
+	chevronDown = "\u{25BC}",
 	edit = "\u{270E}",
 	calendar = "\u{25A6}",
 	error = "!",
@@ -71,6 +97,7 @@ local defaultIds: { [string]: string } = {
 	arrowUp = "rbxassetid://6031090990",
 	chevronLeft = "rbxassetid://6034818375",
 	chevronRight = "rbxassetid://6034818365",
+	chevronDown = "rbxassetid://6034818372",
 	edit = "rbxassetid://6034328955",
 	calendar = "rbxassetid://6022668894",
 }
@@ -92,9 +119,43 @@ local function override(map: { [Name]: string | false })
 	end
 end
 
+export type Kind = "Image" | "Glyph"
+
+local function isAssetUrl(value: string): boolean
+	return string.match(value, "^rbxasset") ~= nil
+		or string.match(value, "^rbxthumb://") ~= nil
+		or string.match(value, "^https?://") ~= nil
+end
+
+-- what an icon prop draws: a name -> its image, or its glyph without one; an asset URL -> that image; else text
+local function resolve(value: string): (Kind, string)
+	local g = (Glyphs :: { [string]: string })[value]
+	if g ~= nil then
+		local id = assets[value]
+		if id ~= nil then
+			return "Image", id
+		end
+		return "Glyph", g
+	end
+	if isAssetUrl(value) then
+		return "Image", value
+	end
+	return "Glyph", value
+end
+
+-- a name's image ("" without one), or the value itself — for a State-valued icon prop (always drawn as an image)
+local function imageOf(value: string): string
+	if (Glyphs :: { [string]: string })[value] ~= nil then
+		return assets[value] or ""
+	end
+	return value
+end
+
 return {
 	glyph = glyph,
 	asset = asset,
 	override = override,
+	resolve = resolve,
+	imageOf = imageOf,
 	Defaults = Defaults,
 }

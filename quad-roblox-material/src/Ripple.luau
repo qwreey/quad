@@ -58,7 +58,8 @@
 	Ripple.new(opts) -> Ripple
 	  opts.Color     Color3 | State<Color3>   ripple color (the component's "on" color)
 	  opts.Opacity   number                   ripple opacity (default 0.10, the M3 pressed state layer)
-	  opts.Corner    UDim                     the HOST's corner radius (default UDim.new(0, 0))
+	  opts.Corner    UDim | State<UDim>       the HOST's corner radius (default UDim.new(0, 0)); a State (an animated radius:
+	                                          the split button's inner corners morph while pressed) is bound to every group
 	  opts.Max       number                   most ripples alive at once, fading ones included (default 3)
 	Place BOTH array-part values in the host Frame/GuiObject whose geometry is the ripple area:
 	  ripple.Hook    captures the host instance (OnCreated)
@@ -87,6 +88,7 @@
 
 local q = require("./Quad")
 local Tokens = require("./Tokens")
+local Theme = require("./Theme")
 local D = q.Declaration
 
 local Motion = Tokens.Motion
@@ -97,11 +99,12 @@ local DISC_IMAGE = "rbxassetid://89858938964426"
 local DISC_SIZE = 1024
 
 export type ColorInput = Color3 | q.State<Color3>
+export type CornerInput = UDim | q.State<UDim> | Theme.Animated
 
 export type Options = {
 	Color: ColorInput,
 	Opacity: number?,
-	Corner: UDim?,
+	Corner: CornerInput?,
 	Max: number?,
 }
 
@@ -152,7 +155,7 @@ end
 
 local function new(opts: Options): Ripple
 	local opacity = opts.Opacity or Tokens.State.Opacity.Pressed
-	local corner = opts.Corner or UDim.new(0, 0)
+	local corner: CornerInput = opts.Corner or UDim.new(0, 0)
 	local max = opts.Max or 3
 	local slot = q.Slot({} :: { Instance })
 	local host: GuiObject? = nil
