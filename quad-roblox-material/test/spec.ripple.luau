@@ -7,6 +7,11 @@ local Interactive = require("../src/Interactive")
 local Ripple = require("../src/Ripple")
 local Theme = require("../src/Theme")
 local StateLayer = require("../src/StateLayer")
+local Button = require("../src/Button")
+local Chip = require("../src/Chip")
+local Overlay = require("../src/Overlay")
+local DatePicker = require("../src/DatePicker")
+local Calendar = require("../src/DatePicker/Calendar")
 
 local theme = Theme.default
 local FULL = UDim.new(0.5, 0)
@@ -26,16 +31,17 @@ local function mountButton(opts: Interactive.Options?)
 	return btn, layer, fx
 end
 
--- the circle's box in host pixels: Ripple writes Position/Size as fractions of the host's AbsoluteSize (an ancestor UIScale
--- makes Offsets differ from screen pixels — Studio QA 2026-10-08); rounded to 1e-3 px against float noise (UDim Scale is a
--- 32-bit float: 37 / 160 * 160 is 37.0000015)
+-- the circle's box in host local units (= screen pixels here: no UIScale). Ripple writes whole Offsets, or the full-cover
+-- form Position 0 / Size Scale 1 once the box covers the host — never a PARTIAL Scale (an AutomaticSize ancestor cannot
+-- resolve one: Studio QA 2026-10-08, 9th — Ripple.luau "NOT SCALE")
 local function box(circle: any, w: number, h: number): (number, number, number, number)
-	local function r(v: number): number
-		return math.round(v * 1e3) / 1e3
-	end
 	local p, z = circle.Position, circle.Size
-	assert(p.X.Offset == 0 and p.Y.Offset == 0 and z.X.Offset == 0 and z.Y.Offset == 0, "scale only: " .. tostring(p) .. " " .. tostring(z))
-	return r(p.X.Scale * w), r(p.Y.Scale * h), r(z.X.Scale * w), r(z.Y.Scale * h)
+	if z == UDim2.fromScale(1, 1) then
+		assert(p == UDim2.fromScale(0, 0), "full cover sits at the origin: " .. tostring(p))
+		return 0, 0, w, h
+	end
+	assert(p.X.Scale == 0 and p.Y.Scale == 0 and z.X.Scale == 0 and z.Y.Scale == 0, "no partial Scale: " .. tostring(p) .. " " .. tostring(z))
+	return p.X.Offset, p.Y.Offset, z.X.Offset, z.Y.Offset
 end
 
 local function groups(host: any): { any }
@@ -66,8 +72,8 @@ H.section("press: one CanvasGroup + disc (3 instances), geometry from the press 
 	assert(H.find(group, "RippleCircle") ~= nil and H.countDescendants(group) == 2)
 	local circle = H.find(group, "RippleCircle")
 	-- host (10,10) 100x40, press (30,20): rel (20,10); far corner dx 80 dy 30
-	assert(circle.Position == UDim2.fromScale(20 / 100, 10 / 40), "origin = press point relative to the host: " .. tostring(circle.Position))
-	assert(circle.Size == UDim2.fromScale(0, 0), "mounts at size 0 (snapped)")
+	assert(circle.Position == UDim2.fromOffset(20, 10), "origin = press point relative to the host: " .. tostring(circle.Position))
+	assert(circle.Size == UDim2.fromOffset(0, 0), "mounts at size 0 (snapped)")
 	assert(math.abs(circle.ImageTransparency - 0.9) < 1e-9 and circle.BackgroundTransparency == 1, "ripple opacity .10")
 	assert(group.Size == UDim2.fromScale(1, 1))
 	assert(circle.ClassName == "ImageLabel" and circle.Image == "rbxassetid://89858938964426")
@@ -128,7 +134,7 @@ H.section("gamepad press ripples from the center", function()
 	local btn = mountButton()
 	H.fire(btn, "InputBegan", H.input({ UserInputType = Enum.UserInputType.Gamepad1, KeyCode = Enum.KeyCode.ButtonA }))
 	local circle = H.find(btn, "RippleCircle")
-	assert(circle ~= nil and circle.Position == UDim2.fromScale(0.5, 0.5), "center of 100x40")
+	assert(circle ~= nil and circle.Position == UDim2.fromOffset(50, 20), "center of 100x40")
 	H.fire(btn, "InputEnded", H.input({ UserInputType = Enum.UserInputType.Gamepad1, KeyCode = Enum.KeyCode.ButtonA }))
 	H.advance(0.4)
 	assert(#groups(btn) == 0)
@@ -288,6 +294,110 @@ H.section("a press adds 3 instances (CanvasGroup, UICorner, disc)", function()
 	r:Press(nil)
 	assert(H.countDescendants(host) - before == 3, "3 per press, got " .. H.countDescendants(host) - before)
 	q.dispose(host)
+end)
+
+-- Studio QA 2026-10-08, 9th: with the ripple written as partial Scale fractions of the host (the 8th fix), an auto-width
+-- Button / Chip grew to the full width of its row while a ripple ran and the row wrapped — the engine's AutomaticSize
+-- cannot resolve a descendant sized by a partial Scale of the auto-sized ancestor. The mock has no AutomaticSize, so the
+-- CAUSE is asserted: inside a ripple group there is no partial Scale anywhere (whole Offsets, or the full-cover form that
+-- the state layer itself uses), at every frame of the expand, and the box stays inside the host's local size.
+local function assertNoPartialScale(root: any, label: string)
+	local gs = groups(root)
+	assert(#gs > 0, label .. ": a ripple is running")
+	for _, g in gs do
+		assert(g.Size == UDim2.fromScale(1, 1) and (g.Position or UDim2.new()) == UDim2.new(), label .. ": the group is full-cover")
+		local drawn = H.findAll(g, function(x: any): boolean
+			return x.ClassName == "ImageLabel" or x.ClassName == "Frame"
+		end)
+		for _, c in drawn do
+			local p, z = c.Position or UDim2.new(), c.Size or UDim2.new()
+			local full = p == UDim2.fromScale(0, 0) and z == UDim2.fromScale(1, 1)
+			assert(full or (p.X.Scale == 0 and p.Y.Scale == 0 and z.X.Scale == 0 and z.Y.Scale == 0),
+				label .. ": no partial Scale under an AutomaticSize host: " .. tostring(p) .. " " .. tostring(z))
+		end
+	end
+end
+
+-- presses `host` at `rel` (screen pixels from its top-left) with the layer laid out at `wl x hl` LOCAL units under a
+-- total UIScale `k` (so `wl * k` screen pixels), then checks every frame: no partial Scale, the box (local units) inside the host's local size and
+-- centered on the press point, the far edges reached, and the end = the whole host
+local function pressAndTrack(host: any, label: string, wl: number, hl: number, k: number, rel: Vector2)
+	local layer = H.find(host, "StateLayer")
+	assert(layer ~= nil, label .. ": state layer")
+	-- the UIScale's Scale is a 32-bit float on the engine (0.8 reads back as 0.800000021): lay out with the measured product
+	assert(math.abs(Ripple.localScale(layer) - k) < 1e-6, label .. ": UIScale product " .. Ripple.localScale(layer) .. " vs " .. k)
+	k = Ripple.localScale(layer)
+	local w, h = wl * k, hl * k
+	H.setAbs(host, 200.3, 100.6, w, h)
+	H.setAbs(layer, 200.3, 100.6, w, h)
+	H.fire(host, "InputBegan", H.input({ Position = Vector3.new(200.3 + rel.X, 100.6 + rel.Y, 0) }))
+	local circle = H.find(host, "RippleCircle")
+	assert(circle ~= nil, label .. ": a ripple")
+	local px, py = math.round(rel.X / k), math.round(rel.Y / k)
+	assert(circle.Position == UDim2.fromOffset(px, py), label .. ": starts at the press point in local units: " .. tostring(circle.Position))
+	local right, bottom = false, false
+	for _ = 1, 60 do
+		H.advance(1 / 120)
+		assertNoPartialScale(host, label)
+		local x0, y0, bw, bh = box(circle, wl, hl)
+		assert(x0 >= 0 and y0 >= 0 and x0 + bw <= wl + 1e-6 and y0 + bh <= hl + 1e-6, label .. ": inside the host's local size")
+		if bw > 0 and x0 > 0 and y0 > 0 and x0 + bw < math.floor(wl) and y0 + bh < math.floor(hl) then
+			assert(bw == bh and math.abs(x0 + bw / 2 - px) <= 0.5 and math.abs(y0 + bh / 2 - py) <= 0.5, label .. ": uncut = centered square")
+		end
+		right = right or x0 + bw >= math.floor(wl)
+		bottom = bottom or y0 + bh >= math.floor(hl)
+	end
+	assert(right and bottom, label .. ": reaches the right and bottom edges")
+	H.advance(0.5)
+	assert(circle.Position == UDim2.fromScale(0, 0) and circle.Size == UDim2.fromScale(1, 1), label .. ": ends covering the host")
+	H.fire(host, "InputEnded", H.input({}))
+	H.advance(0.5)
+end
+
+H.section("no partial Scale: auto-width Button and Chip presses (the AutomaticSize loop, 9th)", function()
+	local btn = Button({ Label = "Auto width", OnClick = function() end })
+	assert(btn.AutomaticSize == Enum.AutomaticSize.X, "the button is auto-width")
+	pressAndTrack(btn, "button", 121.5, 40, 1, Vector2.new(100.2, 31.7))
+	q.dispose(btn)
+	local chip = Chip.Assist({ Label = "Directions", OnClick = function() end })
+	pressAndTrack(chip, "chip", 97.25, 32, 1, Vector2.new(12.4, 6.6))
+	q.dispose(chip)
+	H.assertNoDebugOutput("no partial scale")
+end)
+
+local function labelOf(b: any): string?
+	local l = H.find(b, "Label")
+	return if l ~= nil then l.Text else nil
+end
+
+H.section("under a UIScale 0.8 (DatePicker modal fitted to a small layer): offsets in local units, box covers the host", function()
+	local overlay = Overlay.new()
+	local screen = D.Frame { overlay.Layer }
+	-- fit = min(1, (W - 32) / 360, (H - 32) / 569) = 0.8 (DatePicker/Modal.luau)
+	H.setAbs(overlay.Layer, 0, 0, 1280, 0.8 * 569 + 32)
+	-- a picked date: OK is enabled (an empty draft disables it)
+	DatePicker.Modal.open({ Overlay = overlay, Today = Calendar.date(2026, 10, 8), Value = q.Source<<Calendar.Date?>>(Calendar.date(2026, 10, 8)) })
+	H.finishTweens()
+	local card = H.find(screen, "DatePickerModal")
+	local scale = H.findAll(card, function(x: any)
+		return x.ClassName == "UIScale"
+	end)[1]
+	assert(math.abs(scale.Scale - 0.8) < 1e-6, "fitted to 0.8: " .. scale.Scale)
+	-- the mode toggle (a 40 px round GlyphButton) pressed near its bottom-right, then the auto-width OK button
+	pressAndTrack(H.find(card, "ModeToggle"), "mode toggle", 40, 40, 0.8, Vector2.new(29, 30.4))
+	local ok: any = nil
+	local buttons = H.findAll(card, function(x: any): boolean
+		return x.Name == "Button"
+	end)
+	for _, b in buttons do
+		if labelOf(b) == "OK" then
+			ok = b
+		end
+	end
+	assert(ok ~= nil and ok.AutomaticSize == Enum.AutomaticSize.X, "the auto-width OK button")
+	pressAndTrack(ok, "OK", 58.5, 40, 0.8, Vector2.new(44, 29))
+	q.dispose(screen)
+	H.assertNoDebugOutput("ripple under UIScale")
 end)
 
 H.done()

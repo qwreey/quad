@@ -49,9 +49,13 @@
 	panel is destroyed) that ignores keys the engine already processed, so it never doubles the engine's own navigation.
 	NOT implemented: type-ahead, submenus.
 
-	Per item at rest: TextButton + state layer (Frame, UICorner, UIStroke) + label = 5 (+1 per icon/trailing text;
-	no ripple — the menu closes on click). Panel: Frame, UICorner, UIShadow, UIScale (+ScrollingFrame when it scrolls),
+	Per item at rest: TextButton + state layer (Frame, UICorner, UIStroke) + label = 5 (+1 per icon/trailing text);
+	a press adds the transient ripple (Ripple.luau, 3) over the whole row — the M3 DropdownMenuItem has a bounded ripple
+	(Compose Menu.kt, see itemRow). Panel: Frame, UICorner, UIShadow, UIScale (+ScrollingFrame when it scrolls),
 	UIListLayout, UIPadding. Divider = 2.
+	Scrolling list: the rows span the full panel width (`VerticalScrollBarInset` None — the thumb overlays the rows'
+	right edge, so a row's layer and ripple reach the panel edge), thumb onSurface at 50 % (Tokens/State.luau
+	`ScrollBar` — M3 has no scrollbar token; the engine default thumb is white).
 ]]
 
 local q = require("./Quad")
@@ -116,7 +120,10 @@ local function itemRow(
 		Disabled = disabled,
 		OnColor = if selected then theme.Color.OnSecondaryContainer else theme.Color.OnSurface,
 		Corner = UDim.new(0, 0),
-		Ripple = false,
+		-- a bounded ripple over the whole row, as Compose's DropdownMenuItem (clickable(indication = ripple(true)) BEFORE
+		-- fillMaxWidth / padding: androidx/androidx@5ac4c7c compose/material3/material3/src/commonMain/kotlin/androidx/
+		-- compose/material3/Menu.kt 2141-2160). Until 2026-10-08 the kit had `Ripple = false` ("the menu closes on click") —
+		-- but a press is held before the click, and the user saw only the static darkening (Studio QA 2026-10-08, 9th).
 	})
 	local textColor = if selected then theme.Color.OnSecondaryContainer else theme.Color.OnSurface
 	local iconColor = if selected then theme.Color.OnSecondaryContainer else theme.Color.OnSurfaceVariant
@@ -322,6 +329,11 @@ local function open(o: OpenOptions): Overlay.Handle
 					CanvasSize = UDim2.fromOffset(0, 0),
 					AutomaticCanvasSize = Enum.AutomaticSize.Y,
 					ScrollBarThickness = 4,
+					-- themed thumb (Tokens/State.luau `ScrollBar`); it overlays the rows (inset None), so an item's state
+					-- layer and ripple reach the panel edge and show through the half-transparent thumb
+					ScrollBarImageColor3 = theme.Color.OnSurface,
+					ScrollBarImageTransparency = 1 - Tokens.State.Opacity.ScrollBar,
+					VerticalScrollBarInset = Enum.ScrollBarInset.None,
 					ScrollingDirection = Enum.ScrollingDirection.Y,
 					list,
 					pad,

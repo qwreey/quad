@@ -24,9 +24,9 @@
 
 	Month change = one `View:Set`; the 42 day cells keep their identity (spec.datepicker "navigation keeps the
 	same cell instances"). The year grid is windowed (YearView.luau).
-	The "▼"/"▲" glyphs are text characters from `Icons` (no icon assets needed; part of a text button, so an image override is
-	not picked up there). The ‹ › month arrows are GlyphButtons that pass `Icons.asset("chevronLeft"/"chevronRight")`: register
-	assets with `Icons.override` and they draw as images (icon size 24), else the glyphs.
+	The "▼"/"▲" glyphs are text characters from `Icons` (part of a text Button's label, which has no trailing image; both are
+	in Roboto). The month arrows are GlyphButtons given `Icons.asset("chevronLeft"/"chevronRight")` — the Material
+	keyboard_arrow_left / right images by default (icon size 24), the ‹ › glyphs when overridden away.
 ]]
 
 local q = require("../Quad")

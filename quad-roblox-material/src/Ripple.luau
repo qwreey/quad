@@ -19,20 +19,35 @@
 	    ancestor grow while a press lasted: an auto-width Button / Chip widened, a RadioGroup row or a story holder grew
 	    taller and its centered children jumped, a dialog's actions row pushed the card (Studio QA 2026-10-07, 2nd).
 	    So each frame of the expand shows only the PART of the disc that lies inside the host: the circle's bounding box
-	    (whole pixels, rounded outward: R = ceil(r) around the whole-pixel press point) intersected with the host is the
-	    label's Position/Size (as fractions of the host — SCALE, NOT OFFSET below), and `ImageRectSize` / `ImageRectOffset` select the matching
-	    sub-rectangle of the texture (`ScaleType = Stretch`, s = 1024 / 2R texels per pixel): the cut circle is exact —
-	    chords cut by the edges, arcs at their ends — and nothing is drawn outside the host.
+	    (whole local units, rounded outward: R = ceil(r) around the whole-unit press point) intersected with the host's
+	    last whole unit is the label's Position/Size (Offsets — OFFSETS IN LOCAL UNITS below), and `ImageRectSize` /
+	    `ImageRectOffset` select the matching sub-rectangle of the texture (`ScaleType = Stretch`, s = 1024 / 2R texels per
+	    unit): the cut circle is exact — chords cut by the edges, arcs at their ends — and nothing is drawn outside the host.
+	    When the box covers the whole host (the end of every expand) it switches to the full-cover form Position 0 /
+	    Size Scale 1 — the host's exact, possibly fractional, size, which whole Offsets cannot reach.
 	    History: until 2026-10-07 the circle was a Frame cut to the host + ONE `UICorner` radius imitating "circle cut by
 	    the host edges". A UICorner has one radius, so on a wide host (tab bar) the sliced circle showed as "a rectangle
 	    with rounded corners" (Studio QA 2026-10-07, tab bar) — the disc image replaced it.
-	  - SCALE, NOT OFFSET: the shape is computed in ABSOLUTE pixels (the press point and `AbsoluteSize` are screen space) but
-	    written as `UDim2.fromScale` fractions of the host's AbsoluteSize at press. Offsets are the host's LOCAL units, which
-	    differ from screen pixels under an ancestor `UIScale`: the date picker modal card is scaled by .92 -> 1 on enter and by
-	    a fitting factor (< 1) in a small layer, so absolute-pixel Offsets were shrunk a second time by the UIScale — the
-	    ripple grew only in the top-left part of the button and its box edge cut the disc in a straight line short of the
-	    right and bottom edges (Studio QA 2026-10-08, the modal's round mode-toggle button). Fractions are the same in both
-	    spaces. The far edges are the host's exact (possibly fractional) size, so the expand ends at exactly `fromScale(1, 1)`.
+	  - OFFSETS IN LOCAL UNITS (an ancestor UIScale): the press point and `AbsoluteSize` are screen pixels; they are divided
+	    by `k`, the product of every `UIScale` that applies to the host (`localScale` below: the host and each ancestor, its
+	    first `UIScale` child), and the shape is computed and written in those local units.
+	    Offsets are the host's LOCAL units: under a UIScale s an Offset of n draws n * s screen pixels, so absolute pixels
+	    written as Offsets were shrunk a second time — the date picker modal card (UIScale .92 -> 1 on enter, times a fitting
+	    factor < 1 in a small layer) drew the ripple in the top-left part of the button, cut in a straight line short of the
+	    right and bottom edges (Studio QA 2026-10-08, 8th). The engine has no API for a GuiObject's effective scale, hence
+	    the walk. `k` and `AbsoluteSize` are read together at press, inside input handling: the last layout used the current
+	    UIScale values (tweens step before layout), so they agree; a UIScale that animates AFTER the press scales the whole
+	    ripple with the host, which is right in local units.
+	    NOT SCALE: the 8th fix wrote the box as `UDim2.fromScale` fractions of the host instead. A descendant whose Size or
+	    Position is a partial Scale of an `AutomaticSize` ancestor is a size loop the engine does not resolve (staff, DevForum
+	    "AutomaticSize is influenced by scaled UI elements", 2024-04-29: "not a valid usage for AutomaticSize and is a known
+	    issue" — use a fixed offset; the AutomaticSize beta notes list "scaled children ... scale based on parent's
+	    updated/automatic size ... (double-accounting)", and the max extent of an auto-sized element is "the nearest ancestor
+	    ... with [a size] that isn't determined by AutomaticSize"): an auto-width Button / Chip grew to the full width of
+	    its row while a ripple ran and the row wrapped (Studio QA 2026-10-08, 9th). The full-cover Scale children that have
+	    always been there (the state layer and this CanvasGroup: Position 0, Size 1) did not do that; the regression came
+	    exactly with the partial fractions. So every ripple descendant below the group is Offset-only (test/spec.ripple.luau
+	    "no partial Scale").
 	  - TRADE-OFF: a `CanvasGroup` renders its subtree into an offscreen texture of the host's size, so a
 	    group costs texture memory + a composite pass while it exists. They are created lazily on press and
 	    destroyed ~0.2-0.6 s later (and at most `Max` exist at once — the oldest is dropped), never kept at
@@ -109,6 +124,32 @@ local Module = {
 	PointerInset = Vector2.new(0, 0),
 }
 
+-- The product of the UIScales that apply to `inst`: a UIScale scales its parent and everything below it, so the host's
+-- own first UIScale child and each ancestor's (ScreenGui included). `FindFirstChildOfClass` where the instance has it
+-- (the engine), a scan otherwise (the test mock).
+local function localScale(inst: Instance): number
+	local k = 1
+	local node: any = inst
+	while node ~= nil do
+		local found: any = nil
+		if node.FindFirstChildOfClass ~= nil then
+			found = node:FindFirstChildOfClass("UIScale")
+		else
+			for _, c in node:GetChildren() do
+				if c.ClassName == "UIScale" then
+					found = c
+					break
+				end
+			end
+		end
+		if found ~= nil then
+			k *= (found :: UIScale).Scale
+		end
+		node = node.Parent
+	end
+	return k
+end
+
 local function new(opts: Options): Ripple
 	local opacity = opts.Opacity or Tokens.State.Opacity.Pressed
 	local corner = opts.Corner or UDim.new(0, 0)
@@ -159,7 +200,9 @@ local function new(opts: Options): Ripple
 			return
 		end
 		local size = h.AbsoluteSize
-		if size.X <= 0 or size.Y <= 0 then
+		-- screen pixels per local unit (see OFFSETS IN LOCAL UNITS in the header)
+		local k = localScale(h)
+		if size.X <= 0 or size.Y <= 0 or k <= 0 then
 			return
 		end
 		-- keep the number of live groups bounded: drop the oldest first
@@ -176,16 +219,18 @@ local function new(opts: Options): Ripple
 				rx, ry = rel.X, rel.Y
 			end
 		end
-		-- snap the center to a whole pixel: the shape's box is whole pixels, and a center with different fractions on the
-		-- two axes made an uncut circle's box 1-2 px wider than tall (or the reverse) — an oval (Studio QA 2026-10-07, 3rd)
-		-- the host's absolute size (may be fractional): the far edges of the visible box; every box below is written as a
-		-- FRACTION of it (see SCALE, NOT OFFSET in the header — an ancestor UIScale makes Offsets differ from screen pixels)
-		local wMax, hMax = size.X, size.Y
-		local px: number = math.clamp(math.round(rx), 0, math.floor(wMax))
-		local py: number = math.clamp(math.round(ry), 0, math.floor(hMax))
+		-- everything below is in the host's LOCAL units (screen pixels / k — OFFSETS IN LOCAL UNITS in the header): UDim
+		-- Offsets are whole numbers, so the box is whole local units; the host's local size may be fractional
+		local wLocal, hLocal = size.X / k, size.Y / k
+		-- the last whole unit inside the host (the 1e-4 absorbs float noise from the division)
+		local wMax, hMax = math.floor(wLocal + 1e-4), math.floor(hLocal + 1e-4)
+		-- snap the center to a whole unit: a center with different fractions on the two axes made an uncut circle's box
+		-- 1-2 px wider than tall (or the reverse) — an oval (Studio QA 2026-10-07, 3rd)
+		local px: number = math.clamp(math.round(rx / k), 0, wMax)
+		local py: number = math.clamp(math.round(ry / k), 0, hMax)
 		-- radius = distance to the farthest corner (M3), so the circle just covers the host
-		local dx = math.max(px, size.X - px)
-		local dy = math.max(py, size.Y - py)
+		local dx = math.max(px, wLocal - px)
+		local dy = math.max(py, hLocal - py)
 		local radius = math.sqrt(dx * dx + dy * dy)
 
 		local transparencySrc = q.Source(1 - opacity)
@@ -202,22 +247,31 @@ local function new(opts: Options): Ripple
 			if circle == nil then
 				return
 			end
-			-- the circle's box is 2R square around the whole-pixel center (R = ceil r); the visible box clamps it to the host
+			-- the circle's box is 2R square around the whole-unit center (R = ceil r); the visible box clamps it to the host
 			local R = math.ceil(r)
 			local x0, x1 = math.max(0, px - R), math.min(wMax, px + R)
 			local y0, y1 = math.max(0, py - R), math.min(hMax, py + R)
-			local bw, bh = x1 - x0, y1 - y0
-			if R <= 0 or bw <= 0 or bh <= 0 then
-				circle.Size = UDim2.fromScale(0, 0)
+			if R <= 0 or x1 <= x0 or y1 <= y0 then
+				circle.Size = UDim2.fromOffset(0, 0)
 				circle.ImageRectSize = Vector2.zero
 				return
 			end
-			-- texture pixels per screen pixel: the disc's 2R box shows the whole 1024 texture (the disc is 1023 px wide in it
+			-- covering the whole host (the end of every expand): the full-cover form the state layer and the group already
+			-- use (Position 0, Size Scale 1 — never a partial Scale, see NOT SCALE in the header), reaching the host's exact,
+			-- possibly fractional, far edges that whole Offsets cannot
+			local covers = x0 == 0 and y0 == 0 and x1 == wMax and y1 == hMax
+			if covers then
+				x1, y1 = wLocal, hLocal
+				circle.Position = UDim2.fromScale(0, 0)
+				circle.Size = UDim2.fromScale(1, 1)
+			else
+				circle.Position = UDim2.fromOffset(x0, y0)
+				circle.Size = UDim2.fromOffset(x1 - x0, y1 - y0)
+			end
+			-- texture pixels per local unit: the disc's 2R box shows the whole 1024 texture (the disc is 1023 px wide in it
 			-- — 0.1 % — not corrected)
 			local s = DISC_SIZE / (2 * R)
-			circle.Position = UDim2.fromScale(x0 / wMax, y0 / hMax)
-			circle.Size = UDim2.fromScale(bw / wMax, bh / hMax)
-			circle.ImageRectSize = Vector2.new(bw * s, bh * s)
+			circle.ImageRectSize = Vector2.new((x1 - x0) * s, (y1 - y0) * s)
 			circle.ImageRectOffset = Vector2.new((x0 - (px - R)) * s, (y0 - (py - R)) * s)
 		end
 
@@ -226,8 +280,8 @@ local function new(opts: Options): Ripple
 			circleRef,
 			Image = DISC_IMAGE,
 			ScaleType = Enum.ScaleType.Stretch,
-			Position = UDim2.fromScale(px / wMax, py / hMax),
-			Size = UDim2.fromScale(0, 0),
+			Position = UDim2.fromOffset(px, py),
+			Size = UDim2.fromOffset(0, 0),
 			ImageRectSize = Vector2.zero,
 			ImageColor3 = opts.Color,
 			ImageTransparency = transparencySrc:Apply(fadeTween),
@@ -294,4 +348,5 @@ end
 return {
 	new = new,
 	Config = Module,
+	localScale = localScale,
 }

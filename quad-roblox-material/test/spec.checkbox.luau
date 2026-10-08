@@ -220,7 +220,7 @@ H.section("Label: the text belongs to the control (hover lights the box's layer,
 	-- a press that starts on the text ripples from the layer's center
 	H.setAbs(H.find(cb, "StateLayer"), 4, 4, 40, 40)
 	H.fire(cb, "InputBegan", H.input({ Position = Vector3.new(120, 24, 0) }))
-	assert(H.find(cb, "RippleCircle").Position == UDim2.fromScale(0.5, 0.5), "press on the label: ripple from the center")
+	assert(H.find(cb, "RippleCircle").Position == UDim2.fromOffset(20, 20), "press on the label: ripple from the center")
 	H.fire(cb, "InputEnded", H.input({}))
 	H.advance(1)
 	q.dispose(cb)

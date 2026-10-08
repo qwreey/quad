@@ -25,9 +25,9 @@
 	Assist / Suggestion: only the common props.
 	Returns the host `TextButton` (height 32, shape Small = corner 8, width = content, AutomaticSize X, label LabelLarge).
 
-	Roblox deviations: (1) no icon font ships with the kit, so the check and the remove "x" are TEXT GLYPHS
-	(`Icons`: check / close) unless an asset id is given (the prop, or one registered with `Icons.override`) — the engine's font fallback draws them; pass `CheckIcon` /
-	`RemoveIcon` for pixel-exact art. (2) The trailing remove button sits INSIDE the chip's button: hovering it
+	Roblox deviations: (1) the check and the remove "x" are the `Icons` images check / close (Material Design Icons, the
+	kit defaults — Icons.luau) unless the chip's own `CheckIcon` / `RemoveIcon` is given; with an image overridden away
+	(`Icons.override({ check = false })`) they fall back to TEXT GLYPHS. (2) The trailing remove button sits INSIDE the chip's button: hovering it
 	also lights the chip's state layer. Its hit target is 48 x 48 (it overhangs the 32 px chip vertically and 4 px at the
 	right edge, as M3's touch target does); the chip body itself stays 32 px high. (3) Filter/Input selected-with-elevation hover rises like the
 	unselected one. Everything else follows M3 chip specs (heights, paddings 16/8, outline 1 px Outline,

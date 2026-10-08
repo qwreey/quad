@@ -23,8 +23,8 @@
 	container (above if there is no room). The field shows the focused look (primary indicator/outline, floated
 	label) while the menu is open. Selecting writes the option and closes; an outside click closes without
 	changing. Options are compared with `==` for the highlight.
-	The arrow is a text glyph (`Icons.glyph("arrowDown")` through `TextField` `TrailingGlyph`) because the kit ships no icon
-	assets; register an image with `Icons.override({ arrowDown = "rbxassetid://..." })` and it becomes a `TrailingIcon`. The arrow does not rotate while open.
+	The arrow is the `Icons` image arrowDown (Material arrow_drop_down — Compose's ExposedDropdownMenu icon) as the
+	`TextField` `TrailingIcon`; with it overridden away it is the text glyph (`TrailingGlyph`). The arrow does not rotate while open.
 	Not implemented: typing to filter (that is the autocomplete variant), keyboard open/arrow keys.
 ]]
 

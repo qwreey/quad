@@ -3,7 +3,9 @@
 	Swatch rows: the PRESETS (`Swatches`, static — known at construction) and the RECENT colors
 	(`model.recent`, a Source the caller may own to persist it).
 
-	One swatch = ONE `TextButton` (circle, `UICorner`) + ONE `UIStroke`: no state layer, no ripple. The stroke IS the
+	One swatch = ONE `ImageButton` (circle, `UICorner`; its own image is the selected check — the `Icons` check image, or
+	a `TextButton` whose text is the check glyph when that image is overridden away) + ONE `UIStroke`: no state layer, no
+	ripple. The stroke IS the
 	state: selected (the swatch equals the current color, compared as 8-bit bytes) 3 px Primary; focused (gamepad /
 	keyboard selection) 3 px Secondary; hovered 2 px Outline; idle 1 px OutlineVariant — thickness and color are
 	animated Computes of three States. A click does `model.setColor(color)` (hue-preserving) and `model.remember()`.
@@ -60,7 +62,7 @@ local function hexKey(c: Color3): string
 	return ColorModel.rgbToHex(c.R, c.G, c.B, true)
 end
 
-local function swatch(model: Model.Model, theme: Theme.Theme, color: Color3, order: q.State<number>?)
+local function swatch(model: Model.Model, theme: Theme.Theme, color: Color3, order: q.State<number>?): GuiButton
 	local R = theme.Raw
 	local bytes = Color3.fromRGB(ColorModel.toByte(color.R), ColorModel.toByte(color.G), ColorModel.toByte(color.B))
 	local selected: q.State<boolean> = model.color:Compute(function(self)
@@ -83,6 +85,44 @@ local function swatch(model: Model.Model, theme: Theme.Theme, color: Color3, ord
 		end
 		return variant:Get()
 	end, ix.Hovered, ix.Focused, R.Primary, R.Secondary, R.Outline, R.OutlineVariant)
+	-- the selected swatch shows a check ON the swatch itself (the button's own image / text: no extra instance) so the
+	-- selection is not carried by the ring color alone; the check contrasts with the swatch (luminance split)
+	local contrast = if 0.299 * color.R + 0.587 * color.G + 0.114 * color.B > 0.55 then BLACK else WHITE
+	local function activated()
+		model.setColor(color)
+		model.remember()
+	end
+	local ring = D.UIStroke {
+		Name = "Ring",
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		Thickness = thickness:Apply(Style.animation()),
+		Color = picked:Apply(Style.animation()),
+	}
+	local checkAsset = Icons.asset("check")
+	if checkAsset ~= nil then
+		-- the Material check image (Icons default) fitted to the 32 px circle: its 24 dp grid keeps the ink in the middle
+		-- ~3/4 (about 23 px), inside the round corner
+		local checkTransparency: q.State<number> = selected:Compute(function(self)
+			return if self:Get() then 0 else 1
+		end)
+		return D.ImageButton {
+			Name = "Swatch",
+			ix.Hook,
+			AutoButtonColor = false,
+			BorderSizePixel = 0,
+			Size = UDim2.fromOffset(SIZE, SIZE),
+			LayoutOrder = order or 0,
+			BackgroundColor3 = color,
+			Image = checkAsset,
+			ScaleType = Enum.ScaleType.Fit,
+			ImageColor3 = contrast,
+			ImageTransparency = checkTransparency,
+			UICorner = Tokens.Shape.corner("Full"),
+			Activated = activated,
+			ring,
+		}
+	end
+	-- glyph fallback (the check image overridden away — Icons.luau)
 	local selectedText: q.State<string> = selected:Compute(function(self)
 		return if self:Get() then Icons.glyph("check") else ""
 	end)
@@ -94,22 +134,12 @@ local function swatch(model: Model.Model, theme: Theme.Theme, color: Color3, ord
 		Size = UDim2.fromOffset(SIZE, SIZE),
 		LayoutOrder = order or 0,
 		BackgroundColor3 = color,
-		-- the selected swatch shows a check ON the swatch (the button's own text: no extra instance) so the selection is
-		-- not carried by the ring color alone; the check contrasts with the swatch (luminance split)
 		Text = selectedText,
 		TextSize = 18,
-		TextColor3 = if 0.299 * color.R + 0.587 * color.G + 0.114 * color.B > 0.55 then BLACK else WHITE,
+		TextColor3 = contrast,
 		UICorner = Tokens.Shape.corner("Full"),
-		Activated = function()
-			model.setColor(color)
-			model.remember()
-		end,
-		D.UIStroke {
-			Name = "Ring",
-			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-			Thickness = thickness:Apply(Style.animation()),
-			Color = picked:Apply(Style.animation()),
-		},
+		Activated = activated,
+		ring,
 	}
 end
 

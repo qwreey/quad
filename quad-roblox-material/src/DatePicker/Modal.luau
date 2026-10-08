@@ -28,7 +28,8 @@
 	the locale: "Mon, Oct 5" / "10월 5일 (월)", "–" when nothing is picked) + a mode toggle button (edit glyph -> input
 	mode, calendar glyph -> calendar) / divider / the calendar (Body) or the text field (InputMode) / Cancel + OK
 	(Text buttons, right aligned; OK is disabled while nothing is picked or the typed text is invalid).
-	The text glyphs (`Icons.glyph("edit")` / `("calendar")`) stand in for icons (no assets).
+	The toggle draws the `Icons` images "edit" / "calendar" (Material edit / date_range — Compose's DatePicker mode toggle
+	Icons.Filled.Edit / DateRange), or their text glyphs when either image is overridden away.
 
 	Motion (docs/how-to 09): the card is a CanvasGroup mounted snapped (transparent, scale .92) and animated in from a
 	postHook: GroupTransparency 1 -> 0 and a UIScale .92 -> 1 over Short4 / Standard; `Handle.IsOpen` going false (OK /
@@ -158,6 +159,14 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 	local toggleGlyph: State<string> = mode:Compute(function(self)
 		return Icons.glyph(if self:Get() == "Input" then "calendar" else "edit")
 	end)
+	-- the Material images when both are registered (the default — Icons.luau), else the glyphs
+	local editAsset, calendarAsset = Icons.asset("edit"), Icons.asset("calendar")
+	local toggleAsset: State<string>? = nil
+	if editAsset ~= nil and calendarAsset ~= nil then
+		toggleAsset = mode:Compute(function(self)
+			return if self:Get() == "Input" then calendarAsset else editAsset
+		end)
+	end
 
 	-- OK needs a picked date and, in input mode, valid text
 	local okDisabled: State<boolean> = draft:Compute(function(self, _prev, err, m)
@@ -225,6 +234,7 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 		GlyphButton.new({
 			Name = "ModeToggle",
 			Glyph = toggleGlyph,
+			Asset = toggleAsset,
 			Position = UDim2.fromOffset(WIDTH - 12 - 40, 56),
 			Theme = theme,
 			OnClick = function()

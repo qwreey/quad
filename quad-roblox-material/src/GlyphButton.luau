@@ -1,8 +1,8 @@
 --!strict
 --[[
-	GlyphButton: ONE small round control whose "icon" is a text glyph (or an image asset) — the date picker's previous /
-	next / mode buttons, the Snackbar's close button, the Chip's remove button. The kit's `IconButton` wants an image asset
-	id and is a 40 px Material icon button; this one works with no uploaded assets (`Icons` glyphs) and covers the three
+	GlyphButton: ONE small round control whose icon is an image asset (the `Icons` defaults) or a text glyph (the `Icons`
+	fallback) — the date picker's previous / next / mode buttons, the Snackbar's close button, the Chip's remove button.
+	The kit's `IconButton` is the public 40 px Material icon button; this one takes either form and covers the three
 	shapes the kit needs:
 
 	    GlyphButton.new({ Glyph = "‹", Position = UDim2.fromOffset(8, 8), OnClick = prev })            -- 40 px, state layer
@@ -12,7 +12,8 @@
 
 	Options (`Options` below)
 	  Glyph        string | State<string>?   text glyph (a TextButton / TextLabel); ignored when `Asset` is given
-	  Asset        string?                   image asset id (an ImageButton host + a centered ImageLabel instead of text)
+	  Asset        (string | State<string>)?  image asset id (an ImageButton host + a centered ImageLabel instead of text); a
+	                                         State switches the image (the date picker's edit / calendar mode toggle)
 	  Size         number?                   the visible circle / glyph box, default 40
 	  Hit          number?                   the transparent touch target, default = Size. Larger than Size WITH a layer: the
 	                                         host is the `Hit` square and a `Visual` frame (the circle + state layer) sits
@@ -55,7 +56,7 @@ local D = q.Declaration
 
 export type Options = {
 	Glyph: (string | q.State<string>)?,
-	Asset: string?,
+	Asset: (string | q.State<string>)?,
 	Size: number?,
 	Hit: number?,
 	Layer: boolean?,
@@ -100,7 +101,7 @@ local function new(o: Options): GuiButton
 	local hooks = Util.hooks(o.Hooks)
 	local iconSize = o.TextSize or 24
 	-- an image asset is drawn as a centered `ImageLabel` of icon size (never stretched over the hit area)
-	local function iconImage(asset: string): Instance
+	local function iconImage(asset: string | q.State<string>): Instance
 		return D.ImageLabel {
 			Name = "Icon",
 			AnchorPoint = Vector2.new(0.5, 0.5),

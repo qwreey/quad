@@ -149,7 +149,8 @@ H.section("action and close buttons; infinite Duration; State Duration", functio
 		assert(content.Parent == visual and H.find(act, "Label").Parent == content and H.findAll(content, function(x: any) return x.ClassName == "UIPadding" end)[1] ~= nil, "padding on Content")
 	end
 	local close = H.find(s, "Close")
-	assert(H.find(close, "Label").Text == "\u{00D7}" and H.find(close, "Label").TextColor3 == L.InverseOnSurface)
+	-- the Material close image (Icons default; glyph fallback in spec.icons), tinted like the text was
+	assert(H.find(close, "Icon").Image == "rbxassetid://6031094678" and H.find(close, "Icon").ImageColor3 == L.InverseOnSurface)
 	H.fire(act, "Activated", H.input({}), 1)
 	assert(undone == 1 and reasons[1] == "Action" and item.Done:Get())
 	H.advance(0.3)

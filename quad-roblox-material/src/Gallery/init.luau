@@ -39,6 +39,7 @@
 
 local q = require("./Quad")
 local Theme = require("./Theme")
+local Tokens = require("./Tokens")
 local Overlay = require("./Overlay")
 local Snackbar = require("./Snackbar")
 local Tabs = require("./Tabs")
@@ -146,6 +147,8 @@ function Gallery.GalleryPanel(props: Props?): Frame
 			AutomaticCanvasSize = Enum.AutomaticSize.Y,
 			ScrollingDirection = Enum.ScrollingDirection.Y,
 			ScrollBarThickness = 6,
+			ScrollBarImageColor3 = theme.Color.OnSurface,
+			ScrollBarImageTransparency = 1 - Tokens.State.Opacity.ScrollBar,
 			D.Frame {
 				Name = "Page",
 				Size = UDim2.fromScale(1, 0),

@@ -158,6 +158,34 @@ H.section("flip up when it does not fit below; clamp horizontally; scroll when t
 	H.assertNoDebugOutput("placement")
 end)
 
+H.section("items ripple over the whole row; a scrolling list has a themed thumb and full-width rows (9th)", function()
+	local overlay, screen, anchor = setup()
+	local many: { Menu.Entry } = {}
+	for i = 1, 20 do
+		table.insert(many, { Label = "Option " .. i, OnClick = function() end })
+	end
+	local h = Menu.open({ Anchor = anchor, Items = many, Overlay = overlay })
+	local scroll = H.find(screen, "Scroll")
+	assert(scroll ~= nil and scroll.ClassName == "ScrollingFrame")
+	assert(scroll.ScrollBarImageColor3 == L.OnSurface and math.abs(scroll.ScrollBarImageTransparency - 0.5) < 1e-9, "themed thumb, not the engine's white")
+	assert(scroll.VerticalScrollBarInset == Enum.ScrollBarInset.None, "rows keep the full width under the overlaid thumb")
+	local row = itemsOf(screen)[1]
+	assert(row.Size == UDim2.new(1, 0, 0, 48), "full-width row")
+	local layer = H.find(row, "StateLayer")
+	H.setAbs(row, 108, 106, 200, 48)
+	H.setAbs(layer, 108, 106, 200, 48)
+	H.fire(row, "InputBegan", H.input({ Position = Vector3.new(300, 130, 0) }))
+	local circle = H.find(row, "RippleCircle")
+	assert(circle ~= nil, "a press ripples (M3 DropdownMenuItem: ripple(true))")
+	H.advance(0.6)
+	assert(circle.Position == UDim2.fromScale(0, 0) and circle.Size == UDim2.fromScale(1, 1), "the ripple ends covering the whole row (to the panel edge)")
+	H.fire(row, "InputEnded", H.input({}))
+	h.Close()
+	H.advance(0.5)
+	q.dispose(screen)
+	H.assertNoDebugOutput("menu ripple")
+end)
+
 H.section("Menu.Button opens the menu under itself", function()
 	local overlay, screen, anchor = setup()
 	local log: { string } = {}

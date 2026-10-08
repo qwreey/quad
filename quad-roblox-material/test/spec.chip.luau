@@ -6,6 +6,7 @@ q.debug = true
 local D = q.Declaration
 local Tokens = require("../src/Tokens")
 local Chip = require("../src/Chip")
+local Icons = require("../src/Icons")
 
 local UIS = H.UserInputService
 local function uisConns(): number
@@ -81,13 +82,14 @@ H.section("Filter: Source round trip, check glyph, colors, outline hides", funct
 	assert(chip.BackgroundTransparency == 1 and check.Visible == false)
 	assert(H.find(chip, "Outline").Transparency == 0)
 	assert(class(chip, "UIPadding")[1].PaddingLeft == UDim.new(0, 16))
-	assert(H.countDescendants(chip) == 10, "check glyph adds one instance")
+	assert(H.countDescendants(chip) == 10, "the check (an image by default) adds one instance")
+	assert(check.ClassName == "ImageLabel" and check.Image == Icons.asset("check"), "the Material check image (Icons default)")
 	H.fire(chip, "Activated", H.input({}), 1)
 	H.finishTweens()
 	assert(on:Get() == true and toggles[1] == true, "click flips the Source")
 	assert(chip.BackgroundColor3 == L.SecondaryContainer and chip.BackgroundTransparency == 0, "selected container")
-	assert(H.find(chip, "Label").TextColor3 == L.OnSecondaryContainer and check.Visible == true and check.Text == "\u{221A}")
-	assert(check.TextColor3 == L.OnSecondaryContainer and H.find(chip, "Outline").Transparency == 1)
+	assert(H.find(chip, "Label").TextColor3 == L.OnSecondaryContainer and check.Visible == true)
+	assert(check.ImageColor3 == L.OnSecondaryContainer and H.find(chip, "Outline").Transparency == 1)
 	assert(class(chip, "UIPadding")[1].PaddingLeft == UDim.new(0, 8), "8 px left once the check shows")
 	-- external write also drives the UI
 	on:Set(false)
@@ -121,7 +123,9 @@ H.section("Input: trailing remove fires OnRemove only, disabled swallows", funct
 		end,
 	})
 	local rm = H.find(chip, "Remove")
-	assert(rm.Size == UDim2.fromOffset(48, 48) and rm.Text == "\u{00D7}" and rm.TextSize == 18, "D7: 48 px touch target")
+	local rmIcon = H.find(rm, "Icon")
+	assert(rm.Size == UDim2.fromOffset(48, 48) and rm.ClassName == "ImageButton", "D7: 48 px touch target")
+	assert(rmIcon.Image == Icons.asset("close") and rmIcon.Size == UDim2.fromOffset(18, 18), "the Material close image (Icons default), 18 px")
 	assert(rm.Parent == chip and rm.Position == UDim2.new(1, -20, 0.5, 0), "centered 20 px in from the right edge, outside the layout")
 	assert(class(chip, "UIPadding")[1].PaddingRight == UDim.new(0, 32), "reserves the 24 px slot + 8")
 	H.fire(rm, "Activated", H.input({}), 1)
@@ -131,7 +135,7 @@ H.section("Input: trailing remove fires OnRemove only, disabled swallows", funct
 	dis:Set(true)
 	H.finishTweens()
 	assert(chip.Interactable == false and rm.Interactable == false)
-	assert(near(rm.TextTransparency, 0.62) and near(chip.BackgroundTransparency, 1), "flat chip stays transparent")
+	assert(near(rmIcon.ImageTransparency, 0.62) and near(chip.BackgroundTransparency, 1), "flat chip stays transparent")
 	H.fire(rm, "Activated", H.input({}), 1)
 	H.fire(chip, "Activated", H.input({}), 1)
 	assert(removed == 1 and clicked == 1)

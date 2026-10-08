@@ -11,8 +11,8 @@
 	ShowOptions (all `read`):
 	  Text      string                                 the message
 	  Action    { Label: string, OnClick: () -> () }?  one text action (inversePrimary); click runs OnClick, then dismisses
-	  Close     boolean?                               a trailing close button (a text glyph — or the image registered with
-	                                                   `Icons.override({ close = ... })`)
+	  Close     boolean?                               a trailing close button (the `Icons` close image — Material close;
+	                                                   the text glyph when it is overridden away)
 	  Duration  (number | State<number>)?              seconds visible, default 4 (10 when there is an Action — M3: a
 	                                                   snackbar with an action must stay long enough to be reached); read
 	                                                   when the item becomes visible; math.huge = until dismissed. The

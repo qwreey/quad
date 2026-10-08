@@ -223,7 +223,7 @@ H.section("press: one transient ripple (4 instances), cleaned up after the fade"
 	assert(during - rest == 3)
 	local group = H.find(btn, "Ripple")
 	assert(group.Parent == H.find(btn, "StateLayer") and H.find(btn, "StateLayer").Parent == btn, "ripple group under the direct-child layer")
-	assert(H.find(btn, "RippleCircle").Position == UDim2.fromScale(60 / 120, 20 / 40), "press point is relative to the host's AbsolutePosition (as a fraction of its size)")
+	assert(H.find(btn, "RippleCircle").Position == UDim2.fromOffset(60, 20), "press point is relative to the host's AbsolutePosition")
 	H.fire(btn, "InputEnded", H.input({}))
 	H.advance(0.4)
 	assert(H.countDescendants(btn) == rest, "back to rest")

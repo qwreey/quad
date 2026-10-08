@@ -619,13 +619,15 @@ H.section("D12 the selected swatch carries a check on the swatch itself (no extr
 	local r = rig(Color3.fromRGB(10, 20, 30))
 	local presets = named(H.find(r.root, "Presets"), "Swatch")
 	local first, second = presets[1], presets[2]
-	assert(first.Text == "" and second.Text == "")
+	-- the check is the swatch ImageButton's own image (the Material check — Icons default), shown only when selected
+	assert(first.ClassName == "ImageButton" and first.Image == "rbxassetid://6031094667")
+	assert(first.ImageTransparency == 1 and second.ImageTransparency == 1)
 	H.fire(first, "Activated", H.input({}), 1)
 	H.finishTweens()
-	assert(first.Text == "\u{221A}" and second.Text == "", "the selected swatch shows the check")
-	assert(first.TextColor3 == Color3.new(1, 1, 1) or first.TextColor3 == Color3.new(0, 0, 0), "contrasting color")
+	assert(first.ImageTransparency == 0 and second.ImageTransparency == 1, "the selected swatch shows the check")
+	assert(first.ImageColor3 == Color3.new(1, 1, 1) or first.ImageColor3 == Color3.new(0, 0, 0), "contrasting color")
 	H.fire(second, "Activated", H.input({}), 1)
-	assert(first.Text == "" and second.Text == "\u{221A}")
+	assert(first.ImageTransparency == 1 and second.ImageTransparency == 0)
 	q.dispose(r.root)
 	H.assertNoDebugOutput("swatch check")
 end)
@@ -671,6 +673,64 @@ H.section("R2-11 a drag inside a scrolling body switches its scrolling off for t
 	q.dispose(sf)
 	assert(dragConns() == baseDrag, "connections closed on destroy")
 	H.assertNoDebugOutput("scroll lock")
+end)
+
+-- Studio QA 2026-10-08 (9th): the modal was cut off on a small screen. Dialog `Fit` scales the whole card (DatePicker
+-- modal style); the mock has no layout, so the card's laid-out AbsoluteSize is set by hand (ratio = natural height / width).
+H.section("modal on a small layer: the whole card scales to fit (no width cap, no scrolling body); the ripple under it", function()
+	local overlay = Overlay.new()
+	local screen = D.Frame { overlay.Layer }
+	H.setAbs(overlay.Layer, 0, 0, 400, 360)
+	local handle = ColorPicker.Modal.open({ Value = Color3.fromRGB(0, 120, 255), Overlay = overlay })
+	local dlg: any = H.find(screen, "Dialog")
+	assert(dlg.Size == UDim2.fromOffset(360, 0), "keeps its width (no cap at layer - 48)")
+	assert(H.find(dlg, "BodyScroll") == nil, "no scrolling body (drag surfaces)")
+	local scale = own(dlg, "UIScale")
+	H.finishTweens()
+	assert(scale.Scale == 1, "unlaid card: no fit yet")
+	-- the engine lays the card out: natural 360 x 640 (shown at the current scale 1)
+	H.setAbs(dlg, 20, -140, 360, 640)
+	H.finishTweens()
+	local want = math.min(1, (400 - 48) / 360, (360 - 48) / 640)
+	assert(math.abs(scale.Scale - want) < 1e-5, "fit " .. want .. " got " .. scale.Scale)
+	-- the scaled layout reports the same ratio: no refit loop
+	H.setAbs(dlg, 112, 24, 360 * want, 640 * want)
+	H.finishTweens()
+	assert(math.abs(scale.Scale - want) < 1e-5, "stable under its own scale")
+	-- the auto-width OK button under that UIScale: local-unit Offsets (never a partial Scale), ends covering it
+	local ok: any = nil
+	local buttons = H.findAll(dlg, function(x: any): boolean
+		return x.Name == "Button"
+	end)
+	for _, b in buttons do
+		local l = H.find(b, "Label")
+		if l ~= nil and l.Text == "OK" then
+			ok = b
+		end
+	end
+	assert(ok ~= nil and ok.AutomaticSize == Enum.AutomaticSize.X)
+	local layer: any = H.find(ok, "StateLayer")
+	local k = scale.Scale
+	H.setAbs(ok, 300, 300, 58 * k, 40 * k)
+	H.setAbs(layer, 300, 300, 58 * k, 40 * k)
+	H.fire(ok, "InputBegan", H.input({ Position = Vector3.new(300 + 50 * k, 300 + 30 * k, 0) }))
+	local circle = H.find(ok, "RippleCircle")
+	assert(circle ~= nil and circle.Position == UDim2.fromOffset(50, 30), "press point in LOCAL units: " .. tostring(circle and circle.Position))
+	for _ = 1, 60 do
+		H.advance(1 / 120)
+		local p, z = circle.Position, circle.Size
+		if z ~= UDim2.fromScale(1, 1) then
+			assert(p.X.Scale == 0 and p.Y.Scale == 0 and z.X.Scale == 0 and z.Y.Scale == 0, "no partial Scale")
+			assert(p.X.Offset >= 0 and p.Y.Offset >= 0 and p.X.Offset + z.X.Offset <= 58 and p.Y.Offset + z.Y.Offset <= 40, "inside the local 58 x 40")
+		end
+	end
+	H.advance(0.5)
+	assert(circle.Position == UDim2.fromScale(0, 0) and circle.Size == UDim2.fromScale(1, 1), "covers the button")
+	H.fire(ok, "InputEnded", H.input({}))
+	handle.Close(false)
+	H.advance(0.6)
+	q.dispose(screen)
+	H.assertNoDebugOutput("modal fit")
 end)
 
 H.done()

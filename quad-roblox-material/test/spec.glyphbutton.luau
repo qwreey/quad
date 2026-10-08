@@ -112,37 +112,51 @@ H.section("no layer: a bare hit target that draws the glyph itself (the Chip rem
 	q.dispose(img)
 end)
 
--- Studio QA 2026-10-08: in the date picker modal (a card under a UIScale — .92 -> 1 on enter, times a fitting factor < 1
--- in a small layer) the round mode-toggle's ripple grew only in the top-left and was cut straight short of the right and
--- bottom edges: Ripple wrote absolute pixels as Offsets, which the UIScale shrank a second time. The mock has no UIScale,
--- so the scaled layout is set by hand: a 40 px button whose AbsoluteSize is 40 * s.
-H.section("ripple under an ancestor UIScale: the ripple box grows over the WHOLE host (the modal's mode toggle)", function()
-	for _, s in { 0.8, 0.92 * 0.85, 1.25 } do
+-- Studio QA 2026-10-08 (8th): in the date picker modal (a card under a UIScale — .92 -> 1 on enter, times a fitting factor
+-- < 1 in a small layer) the round mode-toggle's ripple grew only in the top-left and was cut straight short of the right
+-- and bottom edges: Ripple wrote absolute pixels as Offsets, which the UIScale shrank a second time. 9th: the box is in
+-- LOCAL units (screen pixels / the product of the UIScales above the host) as whole Offsets — never a partial Scale (the
+-- AutomaticSize loop). Here the UIScales are real mock instances (one or two nested), and the layout (AbsoluteSize =
+-- 40 * product) is set by hand.
+H.section("ripple under ancestor UIScales: local-unit Offsets that cover the WHOLE host (the modal's mode toggle)", function()
+	local D = q.Declaration
+	local Ripple = require("../src/Ripple")
+	for _, scales in { { 0.8 }, { 0.92, 0.85 }, { 1.25 } } do
 		local b = make({ Name = "ModeToggle", Glyph = "\u{270E}", Position = UDim2.fromOffset(296, 56), OnClick = function() end })
-		local layer = H.find(b, "StateLayer")
-		local side = 40 * s
+		local root: any = b
+		local k = 1
+		for _, sc in scales do
+			root = D.Frame { D.UIScale { Scale = sc }, root }
+			k *= sc
+		end
+		local layer: any = H.find(b, "StateLayer")
+		local side = 40 * k
 		H.setAbs(b, 500.3, 120.6, side, side)
 		H.setAbs(layer, 500.3, 120.6, side, side)
-		-- press near the bottom-right: the part of the host the bug never painted
+		assert(math.abs(Ripple.localScale(layer) - k) < 1e-9, "UIScale product")
+		-- press near the bottom-right: the part of the host the 8th bug never painted
 		H.fire(b, "InputBegan", H.input({ Position = Vector3.new(500.3 + side * 0.8, 120.6 + side * 0.8, 0) }))
 		local circle = H.find(b, "RippleCircle")
 		assert(circle ~= nil, "a ripple")
-		local px, py = math.round(side * 0.8), math.round(side * 0.8)
-		assert(math.abs(circle.Position.X.Scale * side - px) < 1e-3 and math.abs(circle.Position.Y.Scale * side - py) < 1e-3,
-			"starts at the press point in host pixels (scale " .. s .. "): " .. tostring(circle.Position))
+		assert(circle.Position == UDim2.fromOffset(32, 32), "starts at the press point in LOCAL units (k " .. k .. "): " .. tostring(circle.Position))
 		local reachedRight, reachedBottom = false, false
 		for _ = 1, 60 do
 			H.advance(1 / 120)
 			local p, z = circle.Position, circle.Size
-			assert(p.X.Offset == 0 and p.Y.Offset == 0 and z.X.Offset == 0 and z.Y.Offset == 0, "fractions of the host only (no Offsets a UIScale would shrink)")
-			assert(p.X.Scale >= 0 and p.Y.Scale >= 0 and p.X.Scale + z.X.Scale <= 1 + 1e-5 and p.Y.Scale + z.Y.Scale <= 1 + 1e-5, "inside the host")
-			reachedRight = reachedRight or math.abs(p.X.Scale + z.X.Scale - 1) < 1e-5
-			reachedBottom = reachedBottom or math.abs(p.Y.Scale + z.Y.Scale - 1) < 1e-5
+			if z == UDim2.fromScale(1, 1) then
+				assert(p == UDim2.fromScale(0, 0), "full cover at the origin")
+				reachedRight, reachedBottom = true, true
+				continue
+			end
+			assert(p.X.Scale == 0 and p.Y.Scale == 0 and z.X.Scale == 0 and z.Y.Scale == 0, "no partial Scale (the AutomaticSize loop)")
+			assert(p.X.Offset >= 0 and p.Y.Offset >= 0 and p.X.Offset + z.X.Offset <= 40 and p.Y.Offset + z.Y.Offset <= 40, "inside the 40-unit host")
+			reachedRight = reachedRight or p.X.Offset + z.X.Offset == 40
+			reachedBottom = reachedBottom or p.Y.Offset + z.Y.Offset == 40
 		end
-		assert(reachedRight and reachedBottom, "the disc reaches the right and bottom edges (scale " .. s .. ")")
+		assert(reachedRight and reachedBottom, "the disc reaches the right and bottom edges (k " .. k .. ")")
 		H.advance(0.5)
-		assert(circle.Position == UDim2.fromScale(0, 0) and circle.Size == UDim2.fromScale(1, 1), "ends covering the whole host (scale " .. s .. "): " .. tostring(circle.Size))
-		q.dispose(b)
+		assert(circle.Position == UDim2.fromScale(0, 0) and circle.Size == UDim2.fromScale(1, 1), "ends covering the whole host (k " .. k .. ")")
+		q.dispose(root)
 	end
 	H.assertNoDebugOutput("ripple under UIScale")
 end)

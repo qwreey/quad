@@ -57,6 +57,10 @@
 	  opts.OnCancel     (() -> ())?         once, on Cancel / scrim / Escape
 	  opts.Swatches, Recent, MaxRecent, ShowChannels, Mode, AreaHeight, Width (default 360), Overlay, Theme   as above / Dialog
 	Returns the Dialog's handle (`Close(result?)`, `Result`, `IsOpen`, `Closing`).
+	Small layers: the Dialog's `Fit` — the whole card scales down to fit (a UIScale factor, floor 0.25), like the DatePicker
+	modal; the Panel's SV area / hue slider are drag surfaces, so the body is not put in a scrolling frame. M3 has no
+	color picker component (no md.comp color-picker tokens: material-components/material-web@763a973
+	tokens/versions/latest/sass lists date-picker-docked/-modal and time-picker only), so this is the kit's own call.
 	`ColorPicker.Recent` is the module-level default recent list the Modal uses when `Recent` is not given.
 
 	Instances at rest (asserted in test/spec.colorpicker.luau): panel 107 including the host = SV area 12 + hue slider 11 +
@@ -229,6 +233,9 @@ local function open(o: ModalOptions): Dialog.Handle
 		Overlay = o.Overlay,
 		Theme = theme,
 		DismissResult = false,
+		-- a small layer scales the whole card down (Dialog `Fit`, as the DatePicker modal does) rather than scrolling a body
+		-- of drag surfaces (Studio QA 2026-10-08, 9th: the modal was cut off on a small screen)
+		Fit = true,
 		Actions = {
 			{ Label = o.CancelLabel or "Cancel", Result = false },
 			{ Label = o.ConfirmLabel or "OK", Result = true },

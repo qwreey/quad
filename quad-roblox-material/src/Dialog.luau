@@ -26,6 +26,10 @@
 	  DismissOnScrim, DismissOnEscape  boolean?   default true; Escape / gamepad B close the TOP dialog only (the Overlay
 	                                     owns the Escape plumbing; see Overlay.DismissOnEscape)
 	  DismissResult  unknown?            result reported when dismissed (scrim, Escape) rather than by an action
+	  Fit       boolean?                 small layers: scale the WHOLE card down (a UIScale factor, like the DatePicker modal)
+	                                     instead of capping the width and scrolling the body (default false). For a body that
+	                                     is a tool rather than text — the ColorPicker modal: its SV area and sliders are drag
+	                                     surfaces, which a scrolling body would fight, and its rows have fixed widths.
 	  OnClose   ((result: unknown?) -> ())?  once, at the start of closing
 	  Overlay   Overlay?                 default `Overlay.default()`;  Theme  Theme?
 	Handle (the kit-wide shape): Close(result?) (a closure, no self), IsOpen / Closing State<boolean> (the overlay handle
@@ -43,6 +47,12 @@
 	the body sits in a ScrollingFrame (`BodyScroll`) capped so the card stays within layer height - 48, with the headline
 	and the actions pinned. Not re-measured after open (a resize while open keeps the open-time caps). An unmeasured layer
 	(no layout yet, a mock) gets no caps and no scroll wrapper.
+	`Fit = true` instead: no caps, no scroll wrapper; the card keeps its width and natural height and its UIScale is
+	multiplied by fit = min(1, (layer width - 48) / width, (layer height - 48) / natural height), floored at 0.25 (the
+	DatePicker modal's floor — below it the card would be unusable anyway, so it is left to clip rather than adding a
+	second mechanism). The natural height is read from the laid-out card: AbsoluteSize.Y / AbsoluteSize.X * width (the
+	UIScale scales both axes, so the ratio is the unscaled one), re-read whenever the card's AbsoluteSize changes (the
+	ratio is constant while the scale animates, so only a real content change refits); the layer size is the open-time one.
 	CanvasGroup lifetime: the group (needed for the fade) stays a CanvasGroup for the dialog's whole life — an offscreen
 	texture composited every frame while it is up. Fine for one short-lived dialog; swapping to a plain Frame once the enter
 	animation ends is possible but not done (it would also lose the exit fade).
@@ -76,6 +86,7 @@ export type OpenOptions = {
 	read DismissOnScrim: boolean?,
 	read DismissOnEscape: boolean?,
 	read DismissResult: unknown?,
+	read Fit: boolean?,
 	read OnClose: ((result: unknown?) -> ())?,
 	read Overlay: Overlay.Overlay?,
 	read Theme: Theme.Theme?,
@@ -102,6 +113,7 @@ export type ConfirmOptions = {
 
 local LayerMargin = 24 -- min distance between the card and the layer edge when the layer is measured
 local ScrollBodyMin = 72
+local FitMin = 0.25 -- the DatePicker modal's floor (DatePicker/Modal.luau)
 local headlineStyle = Text.Label("HeadlineSmall")
 local bodyStyle = Text.Label("BodyMedium")
 
@@ -111,7 +123,10 @@ local function open(o: OpenOptions): Handle
 	local width = math.clamp(o.Width or 312, 280, 560)
 	local layerSize = overlay.Layer.AbsoluteSize
 	local measured = layerSize.X > 0 and layerSize.Y > 0
-	if measured then
+	local fitMode = o.Fit == true
+	-- Fit: the card keeps its size and is scaled as a whole; this factor joins the animated UIScale (see header)
+	local fit = q.Source(1)
+	if measured and not fitMode then
 		width = math.min(width, math.max(layerSize.X - 2 * LayerMargin, 0))
 	end
 	local result = q.Source(nil :: unknown?)
@@ -144,12 +159,13 @@ local function open(o: OpenOptions): Handle
 		-- exit: also shrinks a little (to .92 — Quint Out reaches almost all of it within the 0.2 s exit), like the
 		-- DatePicker modal's card, instead of a fade alone (Studio QA 2026-10-07, 2nd: "vanishes ambiguously, unlike the
 		-- date picker")
-		local scaleTarget: q.State<number> = entered:Compute(function(self, _prev, closing)
+		local scaleTarget: q.State<number> = entered:Compute(function(self, _prev, closing, fitFactor)
+			local f = fitFactor:Get()
 			if not self:Get() then
-				return 0.8
+				return 0.8 * f
 			end
-			return if closing:Get() then 0.92 else 1
-		end, h.Closing)
+			return (if closing:Get() then 0.92 else 1) * f
+		end, h.Closing, fit)
 		local fade = fadeTarget:Apply(q.Animate(Tokens.Motion.options("Short4", "Linear")))
 		local scale = scaleTarget:Apply(q.Animate(Tokens.Motion.options("Medium2", "EmphasizedDecelerate")))
 
@@ -215,7 +231,7 @@ local function open(o: OpenOptions): Handle
 			}
 		end
 		if bodyInner ~= nil then
-			if measured then
+			if measured and not fitMode then
 				-- the card never outgrows the layer: the body scrolls, headline and actions stay pinned
 				local fixed = 0
 				local parts = 1
@@ -240,6 +256,8 @@ local function open(o: OpenOptions): Handle
 					AutomaticCanvasSize = Enum.AutomaticSize.Y,
 					ScrollingDirection = Enum.ScrollingDirection.Y,
 					ScrollBarThickness = 4,
+					ScrollBarImageColor3 = theme.Color.OnSurface,
+					ScrollBarImageTransparency = 1 - Tokens.State.Opacity.ScrollBar,
 					VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar,
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
@@ -307,8 +325,25 @@ local function open(o: OpenOptions): Handle
 			UIScale = scale,
 			UICorner = Tokens.Shape.corner("ExtraLarge"),
 			UIPaddingOffset = 24,
-			Util.postHook(function()
+			Util.postHook(function(card: GuiObject)
 				entered:Set(true)
+				if fitMode and measured then
+					local function refit()
+						local abs = card.AbsoluteSize
+						if abs.X <= 0 or abs.Y <= 0 then
+							return
+						end
+						local natural = abs.Y / abs.X * width
+						local f = math.min(1, (layerSize.X - 2 * LayerMargin) / width, (layerSize.Y - 2 * LayerMargin) / natural)
+						f = math.max(f, FitMin)
+						if math.abs(f - fit:Get()) > 1e-3 then
+							fit:Set(f)
+						end
+					end
+					-- the card's own signal: disconnected with the card
+					card:GetPropertyChangedSignal("AbsoluteSize"):Connect(refit)
+					refit()
+				end
 			end),
 			D.UIListLayout {
 				FillDirection = Enum.FillDirection.Vertical,
