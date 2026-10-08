@@ -27,10 +27,11 @@ local EXPECTED: { [string]: string } = {
 	calendar = "rbxassetid://6022668894",
 	keyboard = "rbxassetid://6034818398", -- time picker mode toggle (Icons.Filled.Keyboard)
 	schedule = "rbxassetid://6031260808", -- time picker mode toggle (Icons.Filled.Schedule)
+	menu = "rbxassetid://6031097225", -- the navigation drawer's opener (baseline/navigation/menu)
 }
 
 H.section("defaults are Material icon images, each with a text glyph fallback; error stays a glyph", function()
-	for _, name in { "check", "close", "arrowDown", "arrowUp", "chevronLeft", "chevronRight", "chevronDown", "edit", "calendar", "keyboard", "schedule", "error" } do
+	for _, name in { "check", "close", "arrowDown", "arrowUp", "chevronLeft", "chevronRight", "chevronDown", "edit", "calendar", "keyboard", "schedule", "menu", "error" } do
 		assert(#Icons.glyph(name :: any) > 0, name .. ": glyph fallback")
 		assert(Icons.asset(name :: any) == EXPECTED[name], name .. ": default image " .. tostring(Icons.asset(name :: any)))
 		assert(Icons.Defaults[name] == EXPECTED[name], name .. ": Defaults table")

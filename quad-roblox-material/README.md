@@ -100,6 +100,14 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
 | 선택기 | `DatePicker` | `Docked` / `RangeDocked` / `Modal`, 순수 날짜 계산 `Calendar` |
 | | `ColorPicker` | `Panel` / `Modal.open` / `ColorModel` / `Classic` |
 | | `TimePicker` | `Dial`(시계 문자판) / `Input`(두 칸 입력) / `Modal.open`(다이얼 ↔ 입력 전환), 순수 시간 계산 `Clock` — Compose `TimePicker`·`TimeInput`·`TimePickerDialog` 그대로 |
+| 시트 | `SheetState` | 시트 상태 — Compose `SheetState`: `Hidden` / `PartiallyExpanded` / `Expanded`, `CurrentValue`(멈춘 값)·`TargetValue`, `Expand`/`PartialExpand`/`Show`/`Hide`, `ConfirmValueChange` 거부권 |
+| | `BottomSheetScaffold` | 표준 하단 시트 — 화면(호스트) 아래에 붙어 56 px 엿보기·펼침(스크림 없음), 끌기·손잡이 클릭 |
+| | `ModalBottomSheet` | `ModalBottomSheet.open{ Children }` — 스크림 위로 올라오는 모달 하단 시트(Overlay), 끌어 내리기·스크림·Escape/B(펼침이면 절반으로 먼저) |
+| | `SideSheet` / `ModalSideSheet` | MDC 측면 시트 — 표준(부모 가장자리에 붙음, surface)과 `ModalSideSheet.open`(스크림, 안쪽 모서리 16, 그림자 1); 폭 256, 오른쪽(End)/왼쪽(Start), 머리(제목 + 닫기) 선택, 옆으로 끌어 숨기기 |
+| 내비게이션 | `DrawerState` | 드로어 상태 — Compose `DrawerState`: `Closed` / `Open`, `Open`/`Close`/`SnapTo`, `IsOpen` |
+| | `ModalNavigationDrawer` / `DismissibleNavigationDrawer` / `PermanentNavigationDrawer` | 트리 안 레이아웃(Compose 그대로): 스크림 위로 미끄러지는 모달, 내용을 밀어내는 dismissible, 늘 옆에 있는 permanent |
+| | `ModalDrawerSheet` / `DismissibleDrawerSheet` / `PermanentDrawerSheet` | 드로어 면 — 폭 360(240~360), 모달은 surfaceContainerLow + 끝 모서리 16, 목록은 스크롤 |
+| | `NavigationDrawerItem` / `NavigationDrawerItems` / `NavigationDrawerHeadline` / `NavigationDrawerDivider` | 56 px 알약 행(아이콘 24·LabelLarge·배지), 데이터 목록(`Selected: Source<K>` 하나 — Tabs 규칙), 구획 제목(TitleSmall)·구분선(MDC) |
 
 ### props 관례
 
@@ -119,15 +127,22 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
 - **글자 이름**: 버튼·행동 글자는 어디서나 `Label`(`Button`, `Chip`, `Tabs`의 탭, `Menu` 항목, `Snackbar`·`Dialog`의 액션). 스낵바 메시지만 `Text`.
 - **`Disabled`는 어디서나 `boolean | State<boolean>`**(메뉴·목록 항목, 라디오 옵션 포함).
 - **열린 것의 핸들은 하나의 모양**: `Overlay:Open`, `Menu.open`, `Dialog.open`, `DatePicker.Modal.open`, `ColorPicker.Modal.open`,
-  `Snackbar` 항목, `Tooltip.hook` 모두 **self 없는 클로저** `handle.Close(result?)`와 `handle.IsOpen: State<boolean>`을 돌려줍니다
-  (`Overlay` 핸들은 `Closing`, `Dialog`는 `Result`, `Snackbar` 항목은 `Visible`/`Done`/별칭 `Dismiss`가 더 있음). `result`는 `unknown`.
+  `ModalBottomSheet.open`, `ModalSideSheet.open`, `Snackbar` 항목, `Tooltip.hook` 모두 **self 없는 클로저** `handle.Close(result?)`와 `handle.IsOpen: State<boolean>`을 돌려줍니다
+  (`Overlay` 핸들은 `Closing`, `Dialog`는 `Result`, 모달 시트는 `SheetState`, `Snackbar` 항목은 `Visible`/`Done`/별칭 `Dismiss`가 더 있음). `result`는 `unknown`.
+- **시트·드로어는 상태 객체로**: Compose처럼 `SheetState`·`DrawerState`가 움직임을 맡습니다(`CurrentValue`/`TargetValue` State와
+  `Expand`·`Hide`·`Open`·`Close` 같은 self 없는 클로저). 폼 값이 아니므로 `Value`/`OnChange`가 없습니다. 상태 하나는 컴포넌트
+  하나가 몰고, 나중에 만든 컴포넌트가 넘겨받습니다(다시 만든 시트, 같은 상태로 다시 연 모달).
+- **내비게이션 목적지**: `NavigationDrawerItems`는 `{ Key, Label, Icon, Badge }` 목록과 **`Selected: Source<K>` 하나**를 받습니다(`Tabs`와
+  같은 규칙 — 클릭이 `SetIfChanged(key)`, 바뀌었으면 `OnChange`, 매번 `OnClick`). 행 하나(`NavigationDrawerItem`)는 다른 표시
+  컴포넌트처럼 `Selected: boolean | State<boolean>`. 목적지 타입 `Material.NavigationDestination<K>`는 뒤에 올 내비게이션 바·레일과 공유합니다.
 - **제네릭 컴포넌트의 타입 인자**: `Tabs<<string>>({ ... })`처럼 적어야 합니다 — `Selected: Source<K>`가 불변이라 `q.Source("a")`만으로는 strict가
   K를 `string | nil`로 추론해 호출을 거부합니다(`Tabs`의 탭 목록은 인라인 리터럴도 받고, State는 `TabsState`로 따로 받음).
 - **`Modifier`**: 배열 부분에서 컴포넌트의 기본 스타일 **뒤에** 적용되므로(나중 것이 이김) 크기·위치·`LayoutOrder`를
   호출한 쪽이 바꿀 수 있습니다.
 - **`Hooks`**: 호스트 인스턴스가 있는 **모든** 컴포넌트는 배열 부분에 추가로 꽂을 값(예: `Tooltip.hook(...).Hook`, `q.OnChange`, ref)을 받습니다.
   타입은 하나의 별칭 `Material.Hooks = { any }`입니다. `Modifier`의 타입은 호스트 클래스의 `q.<Class>Modifier`(`q.TextButtonModifier` 등)입니다.
-- 자식을 받는 컴포넌트(`Card`, `List`)는 `q.Slot<<Instance>>({ ... })`를 `Children`으로 받습니다.
+- 자식을 받는 컴포넌트(`Card`, `List`, 시트·드로어 면)는 `q.Slot<<Instance>>({ ... })`를 `Children`으로 받습니다(`BottomSheetScaffold`는
+  `SheetContent`·`Content`, 드로어 레이아웃은 `Content` Slot + `DrawerContent` 인스턴스 하나 — Compose의 이름).
 
 ## 테마
 
@@ -234,6 +249,62 @@ Material.TimePicker.Modal.open({ Value = alarm, Overlay = overlay, OnConfirm = f
   Vertical(320 x 528); 층 높이가 300 이하면 다이얼 없이 입력만. `DisplayMode = "Input"`이면 입력부터 열고 칸에 포커스를 줍니다.
 - **시간대**: 모달의 기본값은 `Clock.now(nil, UtcOffset)`(UTC + 넘긴 초) — 기계의 시간대를 읽지 않습니다.
 
+## 시트와 내비게이션 드로어
+
+```luau
+-- 표준 하단 시트: 화면 아래에 붙어 엿보고(56 px) 끌면 펼쳐짐
+local sheet = Material.SheetState({ InitialValue = "PartiallyExpanded", EnabledValues = { "PartiallyExpanded", "Expanded" } })
+Material.BottomSheetScaffold({ SheetState = sheet, SheetContent = q.Slot<<Instance>>({ ... }), Content = q.Slot<<Instance>>({ page }) })
+
+-- 모달 하단 시트: Overlay에 열림
+local handle = Material.ModalBottomSheet.open({ Children = q.Slot<<Instance>>({ ... }), Overlay = overlay, OnClose = function(r) end })
+
+-- 측면 시트(MDC): 표준은 부모(ClipsDescendants) 가장자리에, 모달은 Overlay에
+Material.SideSheet({ Headline = "Filters", Children = slot })
+Material.ModalSideSheet.open({ Headline = "Details", Children = slot, Overlay = overlay })
+
+-- 내비게이션 드로어: 화면을 감싸는 트리 안 레이아웃
+local drawer = Material.DrawerState({ InitialValue = "Closed" })
+local page = q.Source("inbox")
+Material.ModalNavigationDrawer({
+	DrawerState = drawer,
+	DrawerContent = Material.ModalDrawerSheet({ Children = q.Slot<<Instance>>({
+		Material.NavigationDrawerItems<<string>>({ Selected = page, Items = {
+			{ Headline = "Mail" },
+			{ Key = "inbox", Label = "Inbox", Icon = "rbxassetid://6035067831", Badge = "24" },
+			"divider",
+			{ Key = "trash", Label = "Trash" },
+		} }),
+	}) }),
+	Content = q.Slot<<Instance>>({ screen }),           -- 그 안의 메뉴 버튼이 drawer.Open()
+})
+```
+
+- **정본**: 하단 시트·드로어는 Compose material3(androidx/androidx@40ff481 — `ModalBottomSheet.kt`·`BottomSheet.kt`·`BottomSheetScaffold.kt`·
+  `SheetDefaults.kt`·`NavigationDrawer.kt`, 토큰 `SheetBottomTokens`·`NavigationDrawerTokens`), 측면 시트는 Compose에 없어 MDC
+  (material-components/material-components-android@60ff094 `sidesheet/`), 드로어의 구획 제목·구분선도 MDC `NavigationView`. 줄 번호는 각 파일 머리.
+- **하단 시트 기하**: 폭은 호스트 폭, 최대 640(가운데), 높이는 내용 + 손잡이 상자 48(32 x 4 막대), 최대 호스트 높이. 위 모서리 28(아래는
+  같은 색 사각형으로 덮음 — UICorner는 반경 하나), surfaceContainerLow; 표준만 그림자(Level1). 멈출 자리: Hidden(호스트 아래),
+  Expanded(시트 높이), PartiallyExpanded — 모달은 호스트 높이의 절반(짧은 시트면 Expanded와 같은 자리), 표준은 엿보기 높이.
+  내용이 처음 배치되기 전에는 아무 자리도 없고, 첫 배치가 목표 자리로 바로 놓입니다(모달은 그 뒤 `Show` — 아래에서 올라옴).
+- **끌기**: 시트 어디든, 손잡이에서도. 놓으면 Compose `computeTarget` — 움직임 방향으로 속도가 125 px/s 이상이면 다음 자리, 아니면 시작
+  자리에서 56 px(하단 시트) 이상 멀어졌을 때만 다음 자리. 드로어는 거리의 절반·400 px/s, 측면 시트는 MDC 규칙(바깥쪽으로 움직이면 펼침,
+  500 px/s 넘는 가로 스와이프나 절반 넘게 밀었으면 숨김). 터치 슬롭 8 px 안의 누름은 클릭으로 남습니다. 끄는 동안 바깥
+  ScrollingFrame은 멈춥니다.
+- **움직임**: Compose는 스프링(DefaultSpatial / FastEffects)인데 키트는 트윈이라 1 % 수렴 시간에 가까운 토큰으로 — 보이기·끌고 놓기 0.2 s,
+  숨기기 0.1 s(Standard), dismissible 드로어의 끌고 놓기 0.256 s, 측면 시트는 MDC 애니메이션 275 ms Emphasized. 스크림 페이드는 Short4.
+- **모달 하단 시트**: 스크림은 시트 자신의 것(목표가 Hidden이 아니면 0.32, 끌어 내리다 Hidden으로 향하면 바로 옅어짐); Overlay 항목이
+  게임패드 선택 가두기와 Escape 배관을 맡고 Escape/B는 Compose `settleToDismiss`(Expanded면 PartiallyExpanded로 한 단계, 아니면 숨기고 닫음).
+  손잡이 클릭: Expanded → 숨기고 닫음, PartiallyExpanded → 펼침, Hidden → 보임. `ConfirmValueChange`가 Hidden을 거부하면 스크림·손잡이·끌기는
+  닫지 않습니다(`handle.Close()`는 닫음).
+- **드로어**: 레이아웃이라 Overlay 항목이 아닙니다 — 호스트가 부모를 채우고 자릅니다(닫힌 드로어는 왼쪽 가장자리 밖). 모달 스크림
+  투명도는 드로어 위치를 따라가고(열림 비율 x 0.32), 열려 있을 때만 탭으로 닫힘(제스처가 켜져 있을 때). Escape/B는 Overlay의 공용 스택
+  (`Overlay.onEscape`)에 올라가 위에 뜬 다이얼로그가 먼저 받습니다. 닫혀 멈춰 있는 동안 드로어·스크림은 아예 안 보입니다(게임패드
+  선택이 들어가지 않음). Compose는 내용 위 어디서나 끌어 열 수 있지만, 키트는 내용에서 끌기를 시작하지 않습니다 — 버튼(앱 바의 메뉴
+  아이콘 `Icons` "menu")으로 여세요.
+- **측면 시트**: 표준은 부모 끝(오른쪽, `SheetEdge = "Start"`면 왼쪽)에 붙고 숨으면 폭만큼 밖으로 — 부모가 `ClipsDescendants`여야 합니다.
+  `SheetState`의 값은 `Hidden`/`Expanded` 둘(MDC STATE_HIDDEN / STATE_EXPANDED) — PartiallyExpanded를 켠 상태를 주면 에러.
+
 ## 색상 선택기
 
 ```luau
@@ -284,12 +355,15 @@ Gallery.mount(someParent)      -- 부모를 직접 지정
 Gallery.GalleryPanel({})       -- 페이지(Frame)만; 직접 호스트할 때. Overlay를 안 주면 자기 층을 만들어 안에 놓음
 ```
 
-위쪽 `Tabs`로 여덟 구간(Buttons / Selection / Text / Surfaces / Overlays / Chips / Pickers / Theme)을 오가고, 각
+위쪽 `Tabs`로 아홉 구간(Buttons / Selection / Text / Surfaces / Overlays / Navigation / Chips / Pickers / Theme)을 오가고, 각
 컴포넌트가 실제 상태(비활성·오류·선택 변형 포함)로 동작하며 Theme 탭의 스위치가 `Theme.default`의 light/dark를 바꿉니다.
 구간은 **탭을 고를 때 만들고 떠나면 부숩니다**(숨겨 두지 않음) — Pickers 하나가 수백 개이고 비확정 진행바가 Heartbeat
 루프를 돌기 때문입니다. 사용자가 입력·조작한 값은 패널의 Memo(Source)에 있어 다시 돌아와도 남습니다. 갤러리는 키트의 일부가 아니라 **키트를 쓰는 소비자**라서 `src` 밖 `gallery/`에 둡니다 — `src` 안에 있으면 키트와 함께 게시돼 보통의 사용 경로에선 아무도 부르지 않는 코드가 모든 설치본에 실립니다. 그래서 갤러리는 게임이 키트를 쓰는 방식 그대로, 루트 내보내기 표 하나(`require("<이 폴더>/src")` → `Material.Button` 같은 값, `Material.Theme`·`Material.Tab<K>`·`Material.ButtonVariant` 같은 다시 내보낸 타입)와 자기 설정 모듈(`gallery/Quad.luau`)만 씁니다. Studio 진입 스크립트 `gallery/MaterialGallery.client.luau`도 같은 폴더에 있습니다(아래 "Studio에서 보기").
 
-스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함): Buttons 649(10차에 "Button: icons —
+스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함; 2026-10-08 시트·드로어 처리에서 Navigation 탭이
+더해져 모든 탭이 탭 버튼 하나(8)만큼 늘었다 — 아래 숫자는 그 앞의 값, 지금 값은 Buttons 657 · Selection 1345 · Text 276 · Surfaces 335 ·
+Overlays 334(하단·측면 시트 묶음 둘: 모달 버튼과 흉내 화면 속 표준 시트) · Navigation 498(드로어 셋, 흉내 화면 셋) · Chips 521 ·
+Pickers 1037 · Theme 205): Buttons 649(10차에 "Button: icons —
 leading / trailing"·"SplitButton" 묶음 추가 — 분할 버튼 하나가 쉴 때 40), Selection 1337(맨 위 "Slider / Switch — M3 vs M2" 비교
 묶음 옆에 10차 "Slider variants (M3)" 묶음 — 크기 다섯·가운데 정렬·안쪽 아이콘·세로 넷),
 Text 268, Surfaces 327, Overlays 199, Chips 513, Pickers 1029, Theme 197(Chips·Pickers는 2026-10-08 9차에 내장 아이콘이
@@ -392,6 +466,13 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 51 | 시간 입력 | 갤러리 "TimePicker: input"·모달 "Start in text input" | 칸을 누르면 그 칸이 primaryContainer + 2 px 외곽선, 다른 칸은 surfaceContainerHighest + "09" 표시; 문자 입력이 되돌려짐, 13(12 h)·24(24 h)·75분이 오류 색·오류 문구, 두 자리(12 h는 2~9 한 자리)면 분 칸으로 포커스가 넘어감, Enter로도 넘어감; 모바일 키보드가 숫자 입력에 불편하지 않은지 |  |
 | 52 | 시간 선택기 모달 | 갤러리 "TimePicker: modal" / 창 비율 바꾸기 | 가로로 긴 창에서 Horizontal 카드(556 x 332), 세로로 긴 창에서 Vertical(320 x 528), 전환 버튼(키보드 ↔ 시계 이미지)으로 카드 크기가 바뀜, 입력 모드로 열면 시 칸에 바로 포커스(그 상태에서 Escape/B가 칸 포커스만 풀고 모달은 안 닫히는지), 높이 300 이하 창에서 입력만·전환 버튼 없음, OK가 오류 동안 꺼짐 |  |
 | 53 | 문자판 키보드·게임패드 | 플레이: 문자판을 게임패드로 선택 | 선택 동안 문자판 둘레 3 px 링, ←/→(D-패드 좌우)가 숫자를 한 칸씩(24 h 시는 11 → 12 안쪽 고리로), ↑/↓로 시/분 상자·AM/PM으로 빠져나감 |  |
+| 54 | 하단 시트 끌기(가장 위험) | 갤러리 Overlays "Bottom sheet" 흉내 화면·모달 버튼, BottomSheet 스토리 | 시트 안의 목록 행·버튼을 눌러도 시트 끌기가 함께 시작되는지(엔진이 자식 버튼 위 누름을 시트 Frame의 InputBegan에도 주는지), 손잡이에서 끌기가 되는지, 끄는 동안 손가락을 그대로 따라오고 놓으면 가까운 자리로 0.2 s, 짧게 튕기면(125 px/s) 다음 자리, 끈 뒤 손잡이 클릭이 같이 일어나지 않음, 갤러리 페이지가 같이 스크롤되지 않음 |  |
+| 55 | 하단 시트 모양 | 같은 곳 | 위 두 모서리만 28로 둥글고 아래 모서리는 각짐(덮개 사각형과 이음매 없음), 폭 640 넘는 창에서 가운데, 손잡이 32 x 4 막대가 48 상자 가운데, 표준 시트 그림자(Level1)가 위로 보임, 모달은 그림자 없음 |  |
+| 56 | 모달 하단 시트 열고 닫기 | 갤러리 "Modal bottom sheet"·"Tall" | 아래에서 올라오며 스크림이 0.32로, 키 큰 내용은 화면 절반에서 멈추고 손잡이 클릭·끌기로 끝까지, Escape/B가 펼침 → 절반 → 닫힘 순, 스크림 탭으로 닫힘, 닫힐 때 스크림·시트가 함께 사라짐(튀지 않음), 행 클릭이 "Last sheet pick"에 남음 |  |
+| 57 | 측면 시트 | 갤러리 Overlays "Side sheet"·SideSheet 스토리 | 모달: 오른쪽에서 275 ms로 미끄러져 들어오고 안쪽 두 모서리만 16, 그림자, 닫기 아이콘·Escape·스크림·오른쪽으로 밀기로 닫힘; 표준: 흉내 화면 오른쪽에 붙어 토글로 밖으로 빠졌다 들어옴, 머리 제목(TitleLarge)과 닫기 버튼이 한 줄 |  |
+| 58 | 모달 내비게이션 드로어 | 갤러리 Navigation "Modal navigation drawer"·NavigationDrawer 스토리 | 메뉴 버튼으로 왼쪽에서 0.2 s, 스크림이 드로어 위치를 따라 0~0.32, 오른쪽 두 모서리 16, 항목이 많으면 드로어 안에서 스크롤, 목적지 클릭이 선택(알약 secondaryContainer) + 닫힘, 스크림 탭·왼쪽으로 끌기·Escape/B로 닫힘, 닫히면 게임패드 선택이 드로어로 들어가지 않음 |  |
+| 59 | 드로어 항목 | 같은 곳·Permanent 화면 | 56 px 알약이 드로어 폭에서 양옆 12 px, 아이콘 24·글자 LabelLarge·배지가 오른쪽 끝, 선택 행 글자·아이콘 onSecondaryContainer, 구획 제목 TitleSmall이 28 px 들여씀, 구분선이 양옆 28 px·위아래 8 px, 리플이 알약 안에만 |  |
+| 60 | dismissible·permanent 드로어 | 갤러리 Navigation 둘째·셋째 화면 | dismissible: 열리면 내용이 드로어 폭만큼 오른쪽으로 밀리고 메뉴 버튼으로 토글; permanent: 240 폭 드로어 옆을 내용이 채움 |  |
 | 3 | CanvasGroup + UICorner 리플 클리핑 | Button·Chip·ListItem을 누름 | 리플 원이 둥근 모서리 밖으로 안 나감 |  |
 
 ## 테스트
@@ -433,8 +514,8 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
   호스트에 잘린 원을 정확히 그리면서 호스트 사각형 밖으로 안 나갑니다. 못 불러오는 환경에서는 리플이 안 보입니다(상태 레이어는 그대로).
 - **내장 아이콘**: Chip의 체크·제거, Select의 화살표, Snackbar의 닫기, DatePicker의 ‹ ›와 모달 모드 전환, 색상 선택기
   스와치 체크는 Google Material Design Icons(Apache 2.0, "baseline")를 작성자의 아이콘 계정이 Roblox에 올린 **이미지**
-  에셋입니다(id 목록·출처는 `src/Icons.luau` 머리, 고지는 `NOTICE.md`). 2026-10-08에 economy API로 아홉 개 모두
-  이미지(AssetTypeId 1)인 것을 확인했고(아홉째 chevronDown은 10차 분할 버튼용) 썸네일 렌더로 넷을 확인했지만, Studio 안에서는 아직 못 봤습니다. 이미지를 못 쓰는
+  에셋입니다(id 목록·출처는 `src/Icons.luau` 머리, 고지는 `NOTICE.md`). 2026-10-08에 economy API로 모두
+  이미지(AssetTypeId 1)인 것을 확인했고(아홉째 chevronDown은 10차 분할 버튼용, keyboard·schedule은 시간 선택기용, menu는 내비게이션 드로어용) 썸네일 렌더로 넷을 확인했지만, Studio 안에서는 아직 못 봤습니다. 이미지를 못 쓰는
   곳에서는 `Icons.override({ edit = false, ... })`로 이름별 텍스트 글리프로 돌릴 수 있습니다(✎ ▦은 Roboto에 없어 폰트 폴백에
   따라 물음표 상자가 됨 — 9차 관측). DatePicker 머리의 연도 메뉴 화살표는 10차부터 월-년 버튼의 뒤 아이콘 이미지(arrowDown/arrowUp —
   둘 중 하나를 지우면 예전처럼 라벨 안 ▼▲ 글리프); TextField 에러 "!"는 글리프 그대로입니다.
@@ -447,6 +528,10 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
   선택(`TouchTarget = true`, 기본은 40px), 칩 제거·스낵바 버튼은 48px, Tabs는 스크롤되지 않고 개별 비활성이 없음, Slider·RangeSlider(M3)는 Min/Max/Step이 정적이고 핸들 양옆 틈이 6 px로 고정(Compose는 눌러서 2 px로 가늘어진 핸들에 맞춰 1 px 좁힘)·호버 표시 없음(M3 그대로 — M2 모양은 halo), 값 라벨 알약의 높이 32 px·좌우 여백 10 px는 토큰이 아니라 Google의 Android 구현(material-components-android `Widget.Material3.Slider.Label` — 그 스타일의 위아래 여백 12dp는 Android에서도 그려지지 않아 안 따름)에서 온 값, 리플은 호스트 사각형을 넘지 않음(`AutomaticSize` 조상이 리플까지 재기 때문, `Ripple.luau` "BOUNDED") — 잘린 원은 원판 텍스처의 부분 사각형으로 정확히 그림(2026-10-07 전엔 모서리 반경 하나로 흉내 내 넓은 호스트에서 둥근 사각형으로 보였음), 리플 상자는 조상 `UIScale`들의 곱으로 나눈 로컬 단위 정수 Offset이라 확장 도중 마지막 1 로컬 픽셀 미만은 끝 프레임(호스트 전체 덮기)에서야 채워짐, Menu 스크롤 막대는 M3 토큰이 없어 onSurface 50 %(Compose Desktop 기본 스크롤바의 호버 값), LoadingIndicator는 M3의 일곱 모양(오각형·쿠키 9 등) 대신 사각형 셋의 겹침 근사, WavyProgress는 확정만(비확정 물결 없음)·둥근 끝은 직각으로 자른 끝 위에 원을 얹은 근사(모서리 삐져나옴 1 px 미만)·진폭이 0 % 바로 위부터 100 % 바로 아래까지 최대(Compose 기본은 10 % 이하·95 % 이상 평평)·진폭과 선 두께가 높이에 고정 비율, Menu는
   가장 긴 항목에 폭을 맞추지 못하며(`Width` 지정) 타입어헤드·서브메뉴가 없음(위/아래·Return·Escape는 있음), CircularProgress는
   두께가 시트의 네 비율로 맞춰지고 끝·간격이 2° 단위(큰 지름 1°)로 움직이며 원형 물결(M3 Expressive)이 없음, 색상 선택기에 알파가 없음, 가운데 정렬 슬라이더는 바깥 반경보다 짧은 조각을 숨김(Compose는 모서리를 줄여 그림)·끝 안쪽 아이콘이 보이는 동안 끝 점을 숨김(MDC는 같은 자리에 둘 다 그림), 분할 버튼은 작은 크기(40)만·포커스 링이 바깥 반경 하나의 둥근 사각형(안쪽 모서리가 모양보다 둥긂)·Elevated 그림자의 안쪽 모서리도 반경 20·두 반쪽이 `Disabled` 하나를 나눠 씀, 날짜 선택기 머리 화살표는 키트 Button의 뒤 아이콘(18 px, 여백 16/12 — Compose `YearPickerMenuButton`은 24 dp 아이콘에 12/12). 컴포넌트별 전체 목록은 각 파일 머리에 있습니다.
+- **시트·드로어**(2026-10-08): 움직임이 스프링이 아니라 트윈(Compose는 스프링 — 놓을 때의 속도를 이어받지 않음, 넘침 없음),
+  예측형 뒤로 가기(predictive back) 스케일 없음, 하단 시트의 중첩 스크롤(안의 목록을 다 올린 뒤 시트가 이어서 끌림) 없음, 드로어를
+  내용 위에서 끌어 여는 제스처 없음, 측면 시트의 coplanar·detached 모양 없음, 손잡이 툴팁("Drag handle") 없음, 드로어 항목에 비활성 없음
+  (Compose `NavigationDrawerItem`에도 없음). 시트 안 버튼을 누른 채 끌 때 시트가 같이 끌리는지는 엔진에 달림(실기기 체크리스트 54).
 - 갤러리는 좁은 화면에서 탭 글자가 잘릴 수 있습니다(Tabs는 폭을 균등 분할).
 
 ## 크레딧

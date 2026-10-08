@@ -31,6 +31,13 @@
 	    DatePicker, ColorPicker                       pickers (docked / modal / panel, the pure Calendar / ColorModel math)
 	    TimePicker                                    time pickers: Dial (clock face) / Input (two fields) / Modal, the pure
 	                                                 Clock math
+	    SheetState, BottomSheetScaffold, ModalBottomSheet   bottom sheets (Compose: the docked standard sheet in a scaffold, the
+	                                                 modal sheet opened through the Overlay, the shared sheet state)
+	    SideSheet, ModalSideSheet                     side sheets (MDC SideSheetBehavior / SideSheetDialog)
+	    DrawerState, ModalNavigationDrawer, DismissibleNavigationDrawer, PermanentNavigationDrawer   navigation drawers
+	                                                 (in-tree layouts, Compose) + ModalDrawerSheet / DismissibleDrawerSheet /
+	                                                 PermanentDrawerSheet + NavigationDrawerItem / NavigationDrawerItems /
+	                                                 NavigationDrawerHeadline / NavigationDrawerDivider
 	  (The Gallery is not part of the kit: it lives in `<kit>/gallery`, outside `src`, and uses this table like any consumer.)
 
 	API CONVENTIONS (the same everywhere; a new component follows them, a reviewer checks them)
@@ -55,10 +62,18 @@
 	      the LAST entry of the host constructor (a multi-value call is truncated anywhere else).
 	  Opened things
 	    * Everything that is opened — an Overlay entry, Menu.open, Dialog.open, DatePicker.Modal.open, ColorPicker.Modal.open,
-	      TimePicker.Modal.open,
+	      TimePicker.Modal.open, ModalBottomSheet.open, ModalSideSheet.open,
 	      a Snackbar item, a Tooltip hook — returns ONE handle shape: closures WITHOUT self, `handle.Close(result?)` and
 	      `handle.IsOpen: State<boolean>` (Overlay handles also have `Closing`, Dialog `Result`, Snackbar `Visible` / `Done` /
-	      the `Dismiss` alias). `result` is `unknown`.
+	      the `Dismiss` alias, the modal sheets `SheetState`). `result` is `unknown`.
+	  Sliding surfaces
+	    * Sheets and drawers are driven by a state object, as in Compose: `SheetState` (Hidden / PartiallyExpanded /
+	      Expanded) and `DrawerState` (Closed / Open), with `CurrentValue` (settled) / `TargetValue` States and closures
+	      (`Expand`, `Show`, `Hide`, `Open`, `Close`, ...). They are not form values: no `Value` / `OnChange`.
+	    * Navigation destinations share ONE item model (`Material.NavigationDestination<K>` = { Key, Label, Icon, Badge }) and
+	      the Tabs selection rule: `Selected: Source<K>` for the whole set, `OnChange` after a user click that changed it,
+	      `OnClick` on every click (NavigationDrawerItems now; the navigation bar / rail later). A single row
+	      (`NavigationDrawerItem`) takes `Selected: boolean | State<boolean>` like every indicator component.
 	  Types
 	    * Props types are exported `read`-field tables; optional inputs are `T?`; reactive inputs are `T | State<T>`. A
 	      generic component needs its type argument spelled out where an invariant `Source<K>` is passed (`Tabs<<string>>`).
@@ -123,6 +138,11 @@ local DatePicker = require("@self/DatePicker")
 local ColorPickerModule = require("@self/ColorPicker")
 local TimePickerModule = require("@self/TimePicker")
 local ClassicColorPicker = require("@self/ColorPicker/Classic")
+local SheetStateModule = require("@self/Sheet/State")
+local BottomSheet = require("@self/BottomSheet")
+local SideSheetModule = require("@self/SideSheet")
+local NavigationDrawer = require("@self/NavigationDrawer")
+local Destination = require("@self/Navigation/Destination")
 local Util = require("@self/Util")
 
 export type Theme = ThemeModule.Theme
@@ -213,6 +233,31 @@ export type TimePickerDisplayMode = TimePickerModule.DisplayMode
 export type TimePickerDialProps = TimePickerModule.DialProps
 export type TimePickerInputProps = TimePickerModule.InputProps
 export type TimePickerModalOptions = TimePickerModule.ModalOptions
+-- sheets
+export type SheetValue = SheetStateModule.SheetValue
+export type SheetState = SheetStateModule.SheetState
+export type SheetStateOptions = SheetStateModule.Options
+export type BottomSheetScaffoldProps = BottomSheet.ScaffoldProps
+export type ModalBottomSheetOptions = BottomSheet.ModalOptions
+export type ModalBottomSheetHandle = BottomSheet.ModalHandle
+export type SideSheetEdge = SideSheetModule.Edge
+export type SideSheetProps = SideSheetModule.Props
+export type ModalSideSheetOptions = SideSheetModule.ModalOptions
+export type ModalSideSheetHandle = SideSheetModule.ModalHandle
+-- navigation
+export type NavigationDestination<K> = Destination.Destination<K>
+export type DrawerValue = NavigationDrawer.DrawerValue
+export type DrawerState = NavigationDrawer.DrawerState
+export type DrawerStateOptions = NavigationDrawer.DrawerStateOptions
+export type ModalNavigationDrawerProps = NavigationDrawer.ModalProps
+export type DismissibleNavigationDrawerProps = NavigationDrawer.DismissibleProps
+export type PermanentNavigationDrawerProps = NavigationDrawer.PermanentProps
+export type DrawerSheetProps = NavigationDrawer.SheetProps
+export type NavigationDrawerItemProps = NavigationDrawer.ItemProps
+export type NavigationDrawerHeadlineProps = NavigationDrawer.HeadlineProps
+export type NavigationDrawerDividerProps = NavigationDrawer.DividerProps
+export type NavigationDrawerItemsProps<K> = NavigationDrawer.ItemsProps<K>
+export type NavigationDrawerEntry<K> = NavigationDrawer.Entry<K>
 
 return {
 	Tokens = require("@self/Tokens"),
@@ -266,4 +311,22 @@ return {
 	DatePicker = DatePicker,
 	ColorPicker = ColorPickerModule, -- .Panel / .Modal.open / .ColorModel / .Classic
 	TimePicker = TimePickerModule, -- .Dial / .Input / .Modal.open / .Clock
+	-- sheets
+	SheetState = SheetStateModule.SheetState,
+	BottomSheetScaffold = BottomSheet.BottomSheetScaffold,
+	ModalBottomSheet = BottomSheet.ModalBottomSheet, -- .open
+	SideSheet = SideSheetModule.SideSheet,
+	ModalSideSheet = SideSheetModule.ModalSideSheet, -- .open
+	-- navigation drawer
+	DrawerState = NavigationDrawer.DrawerState,
+	ModalNavigationDrawer = NavigationDrawer.ModalNavigationDrawer,
+	DismissibleNavigationDrawer = NavigationDrawer.DismissibleNavigationDrawer,
+	PermanentNavigationDrawer = NavigationDrawer.PermanentNavigationDrawer,
+	ModalDrawerSheet = NavigationDrawer.ModalDrawerSheet,
+	DismissibleDrawerSheet = NavigationDrawer.DismissibleDrawerSheet,
+	PermanentDrawerSheet = NavigationDrawer.PermanentDrawerSheet,
+	NavigationDrawerItem = NavigationDrawer.NavigationDrawerItem,
+	NavigationDrawerItems = NavigationDrawer.NavigationDrawerItems,
+	NavigationDrawerHeadline = NavigationDrawer.NavigationDrawerHeadline,
+	NavigationDrawerDivider = NavigationDrawer.NavigationDrawerDivider,
 }

@@ -49,6 +49,10 @@
 	                        `UserInputService.InputBegan` connection (via `Input.service()`) serves every overlay and exists only while such an
 	                        entry is open. Escape is ignored when the engine already processed the key or a TextBox
 	                        has focus (typing must not dismiss); ButtonB is always honored.
+	      opts.OnEscape     (() -> ())?  with `DismissOnEscape`: Escape / gamepad B on this entry (when it is the top-most) calls this
+	                        INSTEAD of closing it — the entry decides (a modal bottom sheet steps back from Expanded to
+	                        PartiallyExpanded first, Compose ModalBottomSheet's back handler; it closes the handle itself
+	                        when it is done). The entry keeps its place in the Escape stack, so it still shields entries below.
 	      opts.TrapSelection boolean  default false. While open the gamepad selection is confined to the entry: the entry
 	                        frame is a `SelectionGroup` whose `SelectionBehaviorUp/Down/Left/Right` are `Stop` (the
 	                        current mechanism; `GuiService:AddSelectionParent` is deprecated), the group is released when the
@@ -70,6 +74,11 @@
 
 	Overlay.holdDismiss() -> release   suppress Escape/B dismissal until `release()` runs (idempotent). For a child that
 	                        uses B itself (the color picker's engaged SV area).
+Overlay.onEscape(fn) -> release    put an IN-TREE consumer of Escape / gamepad B on the same shared stack the entries use
+	                        (top-most wins): while registered, Escape / B calls `fn` when nothing opened later sits above it,
+	                        and a dialog opened on top of it gets the key first. For things that are not overlay entries but
+	                        close on Escape — the modal / dismissible navigation drawers (Compose closes them on Escape).
+	                        `release()` is idempotent.
 
 	Open animation (docs/how-to/09): the scrim mounts fully transparent and fades in from its own PostRef —
 	the first property write snaps, the second one tweens. Content is expected to do the same with
@@ -106,6 +115,7 @@ export type OpenOptions = {
 	DismissOnEscape: boolean?,
 	TrapSelection: boolean?,
 	InitialSelection: (GuiObject | () -> GuiObject?)?,
+	OnEscape: (() -> ())?,
 	ExitTime: number?,
 	OnClose: OnCloseFn?,
 }
@@ -185,6 +195,19 @@ local function lastInputIsGamepad(): boolean
 		return false
 	end
 	return string.sub(f(service).Name, 1, 7) == "Gamepad"
+end
+
+-- an in-tree Escape / B consumer on the shared stack (see the header)
+local function onEscape(fn: () -> ()): () -> ()
+	local e: StackEntry = { Escape = true, Dismiss = fn }
+	pushEntry(e)
+	local released = false
+	return function()
+		if not released then
+			released = true
+			popEntry(e)
+		end
+	end
 end
 
 local function holdDismiss(): () -> ()
@@ -448,10 +471,15 @@ local function new(o: Options?): Overlay
 		slot:Add(e)
 
 		if oo.Scrim == true or oo.DismissOnEscape == true then
+			local onEsc = oo.OnEscape
 			local se: StackEntry = {
 				Escape = oo.DismissOnEscape == true,
 				Dismiss = function()
-					close("Escape", nil)
+					if onEsc ~= nil then
+						onEsc()
+					else
+						close("Escape", nil)
+					end
 				end,
 			}
 			stackEntry = se
@@ -491,4 +519,5 @@ return {
 	new = new,
 	default = default,
 	holdDismiss = holdDismiss,
+	onEscape = onEscape,
 }

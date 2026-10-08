@@ -33,6 +33,9 @@ local Progress = require("../src/Progress")
 local DatePicker = require("../src/DatePicker")
 local ColorPicker = require("../src/ColorPicker")
 local TimePicker = require("../src/TimePicker")
+local BottomSheet = require("../src/BottomSheet")
+local SideSheetModule = require("../src/SideSheet")
+local Nav = require("../src/NavigationDrawer")
 
 local Calendar = DatePicker.Calendar
 
@@ -153,7 +156,23 @@ H.section("every host component takes `Hooks` (array-part values) and the hook s
 	probe("Tooltip.Plain", function(h) return Tooltip.Plain({ Text = "t", Hooks = h }) end)
 	probe("TimePicker.Dial", function(h) return TimePicker.Dial({ Value = q.Source(TimePicker.Clock.time(9, 0)), Hooks = h }) end)
 	probe("TimePicker.Input", function(h) return TimePicker.Input({ Value = q.Source(TimePicker.Clock.time(9, 0)), Hooks = h }) end)
-	assert(checked == 43, "probed " .. checked)
+	probe("BottomSheetScaffold", function(h) return BottomSheet.BottomSheetScaffold({ Hooks = h }) end)
+	probe("SideSheet", function(h) return SideSheetModule.SideSheet({ Hooks = h }) end)
+	probe("ModalNavigationDrawer", function(h) return Nav.ModalNavigationDrawer({ DrawerContent = Nav.ModalDrawerSheet(), Hooks = h }) end)
+	probe("DismissibleNavigationDrawer", function(h)
+		return Nav.DismissibleNavigationDrawer({ DrawerContent = Nav.DismissibleDrawerSheet(), Hooks = h })
+	end)
+	probe("PermanentNavigationDrawer", function(h) return Nav.PermanentNavigationDrawer({ DrawerContent = Nav.PermanentDrawerSheet(), Hooks = h }) end)
+	probe("ModalDrawerSheet", function(h) return Nav.ModalDrawerSheet({ Hooks = h }) end)
+	probe("DismissibleDrawerSheet", function(h) return Nav.DismissibleDrawerSheet({ Hooks = h }) end)
+	probe("PermanentDrawerSheet", function(h) return Nav.PermanentDrawerSheet({ Hooks = h }) end)
+	probe("NavigationDrawerItem", function(h) return Nav.NavigationDrawerItem({ Label = "x", Hooks = h }) end)
+	probe("NavigationDrawerItems", function(h)
+		return Nav.NavigationDrawerItems<<string>>({ Items = { { Key = "a", Label = "A" } }, Selected = q.Source("a"), Hooks = h })
+	end)
+	probe("NavigationDrawerHeadline", function(h) return Nav.NavigationDrawerHeadline({ Text = "x", Hooks = h }) end)
+	probe("NavigationDrawerDivider", function(h) return Nav.NavigationDrawerDivider({ Hooks = h }) end)
+	assert(checked == 55, "probed " .. checked)
 	H.assertNoDebugOutput("hooks")
 end)
 
@@ -177,6 +196,8 @@ H.section("every opened thing returns closures without self: Close(result?) + Is
 		DatePickerModal = DatePicker.Modal.open({ Overlay = overlay }),
 		ColorPickerModal = ColorPicker.Modal.open({ Overlay = overlay }),
 		TimePickerModal = TimePicker.Modal.open({ Overlay = overlay }),
+		ModalBottomSheet = BottomSheet.ModalBottomSheet.open({ Overlay = overlay }),
+		ModalSideSheet = SideSheetModule.ModalSideSheet.open({ Overlay = overlay }),
 		Snackbar = bar:Show({ Text = "hi" }),
 		Tooltip = tip,
 	}
@@ -191,7 +212,7 @@ H.section("every opened thing returns closures without self: Close(result?) + Is
 		H.advance(0.5)
 		assert(hnd.IsOpen:Get() == false, name .. ": IsOpen false after Close")
 	end
-	assert(n == 8)
+	assert(n == 10)
 	assert(handles.Snackbar.Dismiss ~= nil, "Snackbar keeps Dismiss as an alias")
 	bar:Destroy()
 	q.dispose(screen)

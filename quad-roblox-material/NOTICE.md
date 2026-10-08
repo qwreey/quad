@@ -21,9 +21,11 @@
   The earlier gutterless sheets were replaced because packed cells showed seam specks (2026-10-07).
 - **Material Design Icons** (https://github.com/google/material-design-icons) — Apache License 2.0, Copyright Google
   Inc. (the IconPack plugin's notice reads "Google INC.", 2016). The kit's built-in icons (`src/Icons.luau`: check, close,
-  arrow_drop_down/up, keyboard_arrow_left/right/down, edit, date_range, keyboard, schedule — "baseline" style) are these icons as image assets
+  arrow_drop_down/up, keyboard_arrow_left/right/down, edit, date_range, keyboard, schedule, menu — "baseline" style) are these icons as image assets
   uploaded to Roblox by the author's icon account (`qwreey74_icon`) for the IconPack Studio plugin; the ids come from its
   dump (qwreey/qwreey.roblox.plugins@7b6552a, `IconPack.Plugin/res/IconDump.lua`). The images are not modified; the kit
-  references them by asset id and ships no copy. Apache 2.0 text: https://www.apache.org/licenses/LICENSE-2.0
+  references them by asset id and ships no copy. The gallery (`gallery/Navigation.luau`, not part of the kit) also references
+  four more of the same set by id for its drawer destinations (inbox, send, favorite, delete). Apache 2.0 text:
+  https://www.apache.org/licenses/LICENSE-2.0
 - **Ripple disc** — `assets/ripple-disc-1024.png` (the pressed-ripple texture, published as `rbxassetid://89858938964426`) was
   generated for this kit by `assets/gen-disc.py`; it is not derived from Material Design artwork or any third-party asset.

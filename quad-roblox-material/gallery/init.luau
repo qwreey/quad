@@ -14,8 +14,8 @@
 	                                  one for its ScreenGui and passes it. The gallery never uses `Overlay.default()`:
 	                                  it owns its layer, so the demo is independent of whatever the host app mounted as the
 	                                  shared default (which self-heals but is the app's to mount, not the demo's).
-	  Selected  Source<string>?       the tab key ("Buttons" | "Selection" | "Text" | "Surfaces" | "Overlays" | "Chips" |
-	                                  "Pickers" | "Theme"); two-way, default "Buttons"
+	  Selected  Source<string>?       the tab key ("Buttons" | "Selection" | "Text" | "Surfaces" | "Overlays" | "Navigation" |
+	                                  "Chips" | "Pickers" | "Theme"); two-way, default "Buttons"
 	  Icon      string?               image asset id used by the icon demos (the kit ships no art). The default is a
 	                                  placeholder id that is NOT verified on a device — pass your own to see real icons
 	  Modifier  FrameModifier?        applied to the root after the base style
@@ -48,6 +48,7 @@ local Selection = require("@self/Selection")
 local TextInput = require("@self/TextInput")
 local Surfaces = require("@self/Surfaces")
 local Overlays = require("@self/Overlays")
+local Navigation = require("@self/Navigation")
 local ChipsTabsProgress = require("@self/ChipsTabsProgress")
 local Pickers = require("@self/Pickers")
 local ThemeSection = require("@self/Theme")
@@ -69,6 +70,7 @@ local TABS: { Material.Tab<string> } = {
 	{ Key = "Text", Label = "Text" },
 	{ Key = "Surfaces", Label = "Surfaces" },
 	{ Key = "Overlays", Label = "Overlays" },
+	{ Key = "Navigation", Label = "Navigation" },
 	{ Key = "Chips", Label = "Chips" },
 	{ Key = "Pickers", Label = "Pickers" },
 	{ Key = "Theme", Label = "Theme" },
@@ -80,6 +82,7 @@ local BUILDERS: { [string]: (ctx: Common.Ctx) -> Instance } = {
 	Text = TextInput,
 	Surfaces = Surfaces,
 	Overlays = Overlays,
+	Navigation = Navigation,
 	Chips = ChipsTabsProgress,
 	Pickers = Pickers,
 	Theme = ThemeSection,

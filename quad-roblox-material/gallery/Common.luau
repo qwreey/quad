@@ -139,6 +139,24 @@ function Common.Column(children: { Instance }, width: number?, gap: number?): Fr
 	}
 end
 
+-- A mock app screen for the layout pieces (sheets, drawers): a fixed-size surface frame with an outline that CLIPS (a
+-- docked sheet waits past its edge, a closed drawer past its left edge), holding `children`.
+function Common.Screen(ctx: Ctx, name: string, width: number, height: number, children: { Instance }): Frame
+	return D.Frame {
+		Name = name,
+		Size = UDim2.fromOffset(width, height),
+		BackgroundColor3 = ctx.Theme.Color.Surface,
+		BorderSizePixel = 0,
+		ClipsDescendants = true,
+		D.UIStroke {
+			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+			Color = ctx.Theme.Color.OutlineVariant,
+			Thickness = 1,
+		},
+		q.Slot<<Instance>>(children),
+	}
+end
+
 -- A titled group: title (TitleSmall, primary) + optional note + a flow row of the components.
 function Common.Group(ctx: Ctx, title: string, children: { Instance }, note: string?): Frame
 	local parts: { Instance } = {

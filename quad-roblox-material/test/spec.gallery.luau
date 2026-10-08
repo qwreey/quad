@@ -96,12 +96,13 @@ H.section("buttons: click counter, disable switch drives the disabled buttons", 
 	H.assertNoDebugOutput("buttons")
 end)
 
-local order = { "Selection", "Text", "Surfaces", "Overlays", "Chips", "Pickers", "Theme" }
+local order = { "Selection", "Text", "Surfaces", "Overlays", "Navigation", "Chips", "Pickers", "Theme" }
 local sectionNames: { [string]: string } = {
 	Selection = "Selection",
 	Text = "TextInput",
 	Surfaces = "Surfaces",
 	Overlays = "Overlays",
+	Navigation = "Navigation",
 	Chips = "ChipsTabsProgress",
 	Pickers = "Pickers",
 	Theme = "Theme",
@@ -206,6 +207,53 @@ H.section("overlays: one of each kind opens and closes through the panel's own o
 	click(tabButton(gui, "Buttons"))
 end)
 
+H.section("sheets and drawers: the modal sheets open in the panel's layer, the standard ones sit in mock screens", function()
+	click(tabButton(gui, "Overlays"))
+	H.finishTweens()
+	local base = #layer:GetChildren()
+	local function escape()
+		UIS.InputBegan:Fire(H.input({ KeyCode = Enum.KeyCode.Escape, UserInputType = Enum.UserInputType.Keyboard }), false)
+	end
+	click(button(gui, "Modal bottom sheet"))
+	assert(#layer:GetChildren() == base + 1, "modal bottom sheet opened")
+	escape()
+	H.advance(0.5)
+	assert(#layer:GetChildren() == base, "Escape closed it")
+	assert(byText(gui, "Last sheet pick: dismissed") ~= nil)
+	click(button(gui, "Modal side sheet"))
+	assert(#layer:GetChildren() == base + 1, "modal side sheet opened")
+	escape()
+	H.advance(0.5)
+	assert(#layer:GetChildren() == base)
+	local side = H.find(H.find(gui, "SideSheetScreen"), "SideSheet") :: any
+	assert(side.Position == UDim2.fromScale(1, 0), "standard side sheet expanded")
+	click(button(gui, "Toggle side sheet"))
+	H.finishTweens()
+	assert(side.Position == UDim2.new(1, 256, 0, 0), "...and hidden by the toggle")
+	H.advance(0.5)
+	assert(H.find(H.find(gui, "BottomSheetScreen"), "BottomSheet") ~= nil, "the scaffold's sheet")
+	click(tabButton(gui, "Navigation"))
+	H.finishTweens()
+	local screen = H.find(gui, "ModalDrawerScreen") :: any
+	local drawer = H.find(screen, "Drawer") :: any
+	assert(drawer.Visible == false, "closed")
+	local menu = H.findAll(H.find(screen, "TopBar"), function(i: any)
+		return i.ClassName == "TextButton"
+	end)[1]
+	click(menu)
+	assert(drawer.Visible == true, "the menu button opened it")
+	H.finishTweens()
+	click(button(screen, "Outbox"))
+	assert(byText(screen, "Page: outbox") ~= nil, "picked")
+	H.finishTweens()
+	H.advance(0.5)
+	assert(drawer.Visible == false, "picking closed it (Compose sample)")
+	assert(H.find(gui, "PermanentDrawerScreen") ~= nil and H.find(gui, "DismissibleDrawerScreen") ~= nil)
+	click(tabButton(gui, "Buttons"))
+	H.advance(0.5)
+	H.assertNoDebugOutput("sheets and drawers")
+end)
+
 local function fireAncestry(root: any)
 	local all = H.findAll(root, function(_: any): boolean
 		return true
@@ -254,7 +302,7 @@ H.section("GalleryPanel without an Overlay brings its own layer and works inside
 end)
 
 print("[gallery] instance counts:")
-for _, k in { "Buttons", "Selection", "Text", "Surfaces", "Overlays", "Chips", "Pickers", "Theme" } do
+for _, k in { "Buttons", "Selection", "Text", "Surfaces", "Overlays", "Navigation", "Chips", "Pickers", "Theme" } do
 	print(`  {k}: {counts[k]}`)
 end
 H.done()

@@ -11,7 +11,7 @@
 	    Icons.resolve(value)                  -> ("Image", id) | ("Glyph", text)   what an ICON PROP draws (below)
 	    Icons.imageOf(value)                  -> string   a name's image ("" without one) or the value itself
 
-	Names: check, close, arrowDown, arrowUp, chevronLeft, chevronRight, chevronDown, edit, calendar, keyboard, schedule, error
+	Names: check, close, arrowDown, arrowUp, chevronLeft, chevronRight, chevronDown, edit, calendar, keyboard, schedule, menu, error
 	(the "!" TextField shows while in the Error state).
 
 	ICON PROPS (Button / SplitButton `Icon`, Slider `TrackIcon*`) take ONE string, resolved by `Icons.resolve` when the
@@ -54,13 +54,17 @@
 	                             through thumbnails)
 	  schedule      6031260808   baseline/action/schedule   (the same, image id, verified AssetTypeId 1,
 	                             "baseline_action_schedule", creator qwreey74_icon)
+	  menu          6031097225   baseline/navigation/menu   (added 2026-10-08 with the navigation drawer — the "hamburger"
+	                             that opens it from an app bar / a screen; image id, verified AssetTypeId 1,
+	                             "baseline_navigation_menu", creator qwreey74_icon — not rendered through thumbnails)
 	  error         (none)       the dump has no "error" icon; the glyph "!" (ASCII, always in the font) stays
 	White on transparent, so `ImageColor3` tints them like text.
 
 	GLYPH FALLBACKS (kept for a place that cannot load images, and for any name you override with `false`): check U+221A,
 	close U+00D7, arrowDown U+25BC, arrowUp U+25B2, chevronLeft U+2039, chevronRight U+203A — inside Roboto; chevronDown has
 	no single-chevron glyph in Roboto and falls back to the arrowDown triangle U+25BC; edit (U+270E) and calendar (U+25A6)
-	have NO Roboto glyph and depend on the platform's font fallback; so do keyboard (U+2328) and schedule (U+25F7).
+	have NO Roboto glyph and depend on the platform's font fallback; so do keyboard (U+2328) and schedule (U+25F7); menu
+	falls back to U+2261 (≡, IDENTICAL TO — the closest three-bar glyph; not checked against Roboto).
 
 	Who goes through here: Chip (check; remove x — unless the chip's own CheckIcon / RemoveIcon is given), Select (the
 	arrow, a `TrailingIcon` image / `TrailingGlyph` fallback), Snackbar (close), the date picker month arrows and the modal's
@@ -84,6 +88,7 @@ export type Name =
 	| "calendar"
 	| "keyboard"
 	| "schedule"
+	| "menu"
 	| "error"
 
 local Glyphs: { [Name]: string } = {
@@ -98,6 +103,7 @@ local Glyphs: { [Name]: string } = {
 	calendar = "\u{25A6}",
 	keyboard = "\u{2328}",
 	schedule = "\u{25F7}",
+	menu = "\u{2261}",
 	error = "!",
 }
 
@@ -114,6 +120,7 @@ local defaultIds: { [string]: string } = {
 	calendar = "rbxassetid://6022668894",
 	keyboard = "rbxassetid://6034818398",
 	schedule = "rbxassetid://6031260808",
+	menu = "rbxassetid://6031097225",
 }
 local Defaults = table.freeze(defaultIds)
 
