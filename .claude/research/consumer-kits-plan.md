@@ -89,9 +89,11 @@ round14 탐사에서 정상 경로 결함이 0이었고 열린 결정은 UB·문
 Studio QA 1~9차(`feedback/consumer-kits-studio-qa-2026-10-07.md`)를 거친 뒤 사용자가 정한 다음 순서. 원칙: **의견을 보태지 말고 구글 M3 정본 그대로**(사용자 *"오피네이션 빼고 구글의 favor 를 그대로"*), 근거는 구글 구현 원문(Compose material3·material-components-android·material-web). 킷 작업은 서브에이전트(opus 하나씩, 순서대로 — 갤러리·README·`src/init.luau`가 겹쳐 병렬 금지), 메인이 게이트(`quad-roblox-material/test/run.sh` exit 0 && doc-check ERROR 0)·커밋.
 
 1. **(진행 중)** 10차 — 슬라이더 변형(`Centered` 정중앙 고정·`Orientation` 세로 기본 아래 = 최소·`Size` XS~XL·inset icon; 경고 구간은 정본에 없어 안 넣음) + 버튼 아이콘 prop + Split button + DatePicker ▼▲ 이미지화.
-2. Time picker — dial과 input 둘 다(Compose `TimePicker`·`TimeInput`, MDC).
-3. 레이아웃·내비게이션 — 사용자: *"실제로 플러그인 작성하게 되면 레이아웃도 필요해질거야"*. Sheets(bottom·side), Navigation bar(세로로 긴 레이아웃), Navigation drawer(요소 많을 때), Navigation rail(데스크톱), Toolbars(내비게이션 아닌 액션), App bars(사용자: 쉽지만 여기저기서 따로 구현될 바엔 제공하는 게 맞아 보임). 이것으로 정본 요소 전부. **레이아웃이 살짝 만들어지면 사용자가 전체 확인.**
-4. 그 뒤 `/code-review` 한 번 — Gemini(agy, 격리 worktree) + sonnet/opus, opus가 추림 → 메인 판정. 초점: 순수 구현의 비효율·더 나은 구현법·가독성·버그. fork가 fork를 내지 않게(서브에이전트 모델 지정·검증자 상한).
-5. 그다음 round14 재검토로 복귀 — 원장 §2 사용자 몫(릴리즈 절차 Q119·Q124 (4)·Q131, Q125, Q154)·§6 Q184·Q185(엔진 확답은 rojo/새 MCP 뒤), 계획표 P6 반영 묶음.
+2. **갤러리를 `src/` 밖으로**(사용자 2026-10-08, 두 킷 다 — devui `src/Demo`도 같은 구조) — 사용자: *"보통 사용 경로에서 안 쓰는 데드코드임. 그게 src 에 있고 배포된다는건 약간 문제"*. `play/`를 킷 최상위 `gallery/`로 바꿔 갤러리 모듈과 실행 진입점을 같이 두고, 갤러리는 파일별 상대 require 대신 **루트 내보내기 표**(`src/init.luau`)를 소비자처럼 쓴다 — 사용자: 루트에서 다 로드돼 봐야 modifier 객체·클로저·proto 정도라 하나로 내놓고 골라 쓰는 쪽이 DX가 낫다. (킷 루트 표는 이미 있고, 지금 갤러리만 순환을 피하려 폴더 경로로 require한다 — `src/` 밖으로 나가면 그 순환 걱정이 없어진다.) spec·stories·`test/run.sh`·`consumer-kits.project.json` 매핑을 같이 옮긴다. 10차가 끝난 뒤, Time picker 전에(새 데모가 새 자리에 들어가게).
+3. Time picker — dial과 input 둘 다(Compose `TimePicker`·`TimeInput`, MDC).
+4. 레이아웃·내비게이션 — 사용자: *"실제로 플러그인 작성하게 되면 레이아웃도 필요해질거야"*. Sheets(bottom·side), Navigation bar(세로로 긴 레이아웃), Navigation drawer(요소 많을 때), Navigation rail(데스크톱), Toolbars(내비게이션 아닌 액션), App bars(사용자: 쉽지만 여기저기서 따로 구현될 바엔 제공하는 게 맞아 보임). 이것으로 정본 요소 전부. **레이아웃이 살짝 만들어지면 사용자가 전체 확인.**
+5. 그 뒤 `/code-review` 한 번 — Gemini(agy, 격리 worktree) + sonnet/opus, opus가 추림 → 메인 판정. 초점: 순수 구현의 비효율·더 나은 구현법·가독성·버그. fork가 fork를 내지 않게(서브에이전트 모델 지정·검증자 상한).
+6. 그다음 round14 재검토로 복귀 — 원장 §2 사용자 몫(릴리즈 절차 Q119·Q124 (4)·Q131, Q125, Q154)·§6 Q184·Q185(엔진 확답은 rojo/새 MCP 뒤), 계획표 P6 반영 묶음.
+7. round14 뒤 같이 볼 것(사용자 2026-10-08) — 두 킷이 훅·인터랙션으로 만든 부분(`Interaction`의 hover/pressed/focused State·드래그 추적, `Util.hooks`/`preHook`/`postHook`, `Interactive` 묶음)에서 **quad 상위에서 생각해 볼 것**이 있는지. 사용자: *"내가 잊고 있었다 … round14 이후 같이 보도록 하자"*.
 
 관련 계획: 아이콘 팩 `research/icon-pack-plan.md`(사용자 결정 다섯 대기), material 킷·아이콘 팩은 게시 때 quad 레포 밖으로 분리(메인 권고 — 사용자 미확정).
