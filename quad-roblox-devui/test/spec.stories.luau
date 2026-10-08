@@ -7,8 +7,12 @@
 	the subscription was released, the injected input listener was installed while rendering and removed after,
 	and global input connections / timers are back to baseline.
 
-	UI Labs' injected environment is simulated with the same raw global UI Labs sets
-	(`__hotreload_env_global_injection__`) — see `stories/StoryKit.luau`.
+	The stories are loaded the way UI Labs loads them (ui-labs@1e8f45f:src/Utils/HotReloader/Utils.ts `SetEnvironment`):
+	each module under `stories/` is compiled from source and run in its OWN environment whose `require` is the
+	loader's and whose globals fall back to an injection table holding `__hotreload_env_global_injection__` — the
+	injection is NOT a real global, so a lookup that reads the thread's globals instead of the module's environment
+	(`pcall(getfenv, 1)`, the 2026-10-08 bug) misses it, as it did in UI Labs. Paths outside `stories/` ("../src", quad)
+	are ordinary requires. Last section: the Style story's SliderNum dragged through the fake listener only.
 ]]
 
 local H = require("./support/harness")
@@ -31,8 +35,29 @@ local listener = {
 	InputEnded = H.mock.newSignal(),
 	MouseMoved = H.mock.newSignal(),
 }
-;(_G :: any).__hotreload_env_global_injection__ = { InputListener = listener }
-;(getfenv(1) :: any).__hotreload_env_global_injection__ = { InputListener = listener }
+local injection = setmetatable({ __hotreload_env_global_injection__ = { InputListener = listener } }, { __index = getfenv(1) })
+assert((getfenv(1) :: any).__hotreload_env_global_injection__ == nil, "the injection is not a real global")
+
+-- UI Labs' virtual require: `./X` from a story = stories/X.luau compiled into its own environment (cached per name);
+-- anything else resolves from this folder, a sibling of `stories/` (so "../src" means the same folder)
+local virtualCache: { [string]: any } = {}
+local function virtualRequire(path: string): any
+	if string.sub(path, 1, 2) ~= "./" then
+		return lune(path)
+	end
+	local name = string.sub(path, 3)
+	local cached = virtualCache[name]
+	if cached ~= nil then
+		return cached
+	end
+	-- loadstring + setfenv like UI Labs (Lune's `luau.load` copies the environment's own fields and drops its __index)
+	local chunk, err = loadstring(fs.readFile(storyDir .. "/" .. name .. ".luau"), "stories/" .. name)
+	assert(chunk ~= nil, err)
+	setfenv(chunk, setmetatable({ require = virtualRequire }, { __index = injection }))
+	local result = chunk()
+	virtualCache[name] = result
+	return result
+end
 
 local function startValue(control: any): any
 	if type(control) == "table" and control.EntryType == "Control" then
@@ -87,7 +112,7 @@ for _, file in names do
 		local baseEnded = connections(H.UserInputService.InputEnded)
 		local timersBefore = H.pendingTimers()
 
-		local story: any = lune("../stories/" .. moduleName)
+		local story: any = virtualRequire("./" .. moduleName)
 		local renderKind: string = type(story) == "table" and type(story.render) or type(story)
 		assert(renderKind == "function", "a Generic story (controls + render)")
 
@@ -148,5 +173,47 @@ for _, file in names do
 		H.assertNoDebugOutput(moduleName)
 	end)
 end
+
+H.section("Style story: a SliderNum drag runs on the injected listener alone (UI Labs widget — the engine service gets nothing)", function()
+	local baseChanged = connections(H.UserInputService.InputChanged)
+	local baseEnded = connections(H.UserInputService.InputEnded)
+	local story: any = virtualRequire("./Style.story")
+	local values: { [string]: any } = {}
+	for name, control in story.controls do
+		values[name] = startValue(control)
+	end
+	local target = H.mock.Instance.foreign("Frame")
+	H.setAbs(target, 0, 0, 800, 600)
+	local cleanup = story.render({
+		target = target,
+		controls = values,
+		converted = story.controls,
+		subscribe = function(_fn: any): () -> ()
+			return function() end
+		end,
+	})
+	assert(Input.isOverridden(), "the listener was installed")
+	local track = H.find(target, "Track")
+	assert(track ~= nil, "the story's slider track")
+	local text = H.find(target, "ValueText") :: any
+	assert(text ~= nil and text.Text == "30.000", text and text.Text)
+	-- 200 px track from x = 100, Min 0..Max 100; grab centre range 105..295 (GrabMinSize 10)
+	H.setAbs(track, 100, 0, 200, 20)
+	H.fire(track, "InputBegan", H.input({ UserInputType = Enum.UserInputType.MouseButton1, Position = Vector3.new(200, 0, 0) }))
+	assert(text.Text == "50.000", `pressed: {text.Text}`)
+	assert(connections(H.UserInputService.InputChanged) == baseChanged, "the drag did not connect to the engine service")
+	assert(connections(listener.InputChanged) == 1 and connections(listener.InputEnded) == 1, "drag tracking on the listener")
+	listener.InputChanged:Fire(H.input({ UserInputType = Enum.UserInputType.MouseMovement, Position = Vector3.new(295, 0, 0) }), false)
+	assert(text.Text == "100.000", `moved: {text.Text}`)
+	listener.InputEnded:Fire(H.input({ UserInputType = Enum.UserInputType.MouseButton1, UserInputState = Enum.UserInputState.End, Position = Vector3.new(295, 0, 0) }), false)
+	assert(connections(listener.InputChanged) == 0 and connections(listener.InputEnded) == 0, "the drag released its listener connections")
+	cleanup()
+	H.advance(2)
+	H.finishTweens()
+	assert(not Input.isOverridden())
+	assert(connections(H.UserInputService.InputChanged) == baseChanged and connections(H.UserInputService.InputEnded) == baseEnded)
+	assert(H.countDescendants(target) == 0)
+	H.assertNoDebugOutput("style story drag")
+end)
 
 H.done()

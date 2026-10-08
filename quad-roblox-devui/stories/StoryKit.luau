@@ -25,8 +25,9 @@
 	that opens popups so they draw inside the story view.
 
 	Input: UI Labs runs stories in a plugin widget where `UserInputService` gets no input. StoryKit reads UI Labs'
-	injected environment (the raw global `__hotreload_env_global_injection__` — the same lookup the optional
-	ui-labs-utils package performs; no third-party code is vendored) and installs its `InputListener` through the
+	injected environment (the global `__hotreload_env_global_injection__` of this module's own environment — the same
+	`getfenv()` lookup the optional ui-labs-utils package performs, PepeElToro41/ui-labs-utils@77fddfb:src/Environment.luau;
+	no third-party code is vendored) and installs its `InputListener` through the
 	kit's `Input.use`, restoring the engine service on cleanup. Outside UI Labs (the Lune specs) the environment is
 	absent and nothing is installed.
 
@@ -103,13 +104,17 @@ function StoryKit.rebuild<T>(key: q.State<T>, build: (value: T) -> Instance, opt
 	})
 end
 
--- UI Labs' injected story environment, or nil outside UI Labs
+-- UI Labs' injected story environment, or nil outside UI Labs. UI Labs loads every module of a story with
+-- `loadstring` + `setfenv`, and the injection is visible only through THIS function's environment (what a plain
+-- `getfenv()` returns — level 1, this function). NOT `pcall(getfenv, 1)`: level 1 is then pcall, a C function, for
+-- which getfenv answers the running thread's globals — UI Labs' own plugin globals, without the injection — so the
+-- listener was never found and every drag in a story ran on the engine UserInputService (2026-10-08).
 local function environment(): any?
-	local ok, env = pcall(getfenv, 1)
-	if not ok or type(env) ~= "table" then
+	local env: any = getfenv()
+	if type(env) ~= "table" then
 		return nil
 	end
-	return (env :: any)[INJECTION_KEY]
+	return env[INJECTION_KEY]
 end
 
 function StoryKit.story(spec: Spec): Story
