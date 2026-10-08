@@ -318,3 +318,23 @@
 **고친 것**: `Util.inputSink()`(src/Util.luau, 이미 루트에 내보내는 `Util`의 멤버라 새 루트 이름 없음) — 투명 전체 덮기 `TextButton` "InputSink"(Size Scale 1,1 직계 자식만, ZIndex 0, Selectable false, AutoButtonColor false). GuiButton만 GUI 클릭을 먹으므로 면마다 하나를 직계 자식으로 둔다. `Active = true`는 3D 입력용으로 남기고 주석을 바로잡았다. Dialog는 UIListLayout·UIPadding이 면 직계에 있어 싱크가 한 행이 되거나 패딩에 줄어들므로 목록 내용을 안쪽 "Content" 프레임으로 옮겼다(패딩 24도 거기로).
 
 **자리**: Dialog 카드(ColorPicker 모달은 Dialog를 씀), Menu 패널(Scrim = true), DatePicker 모달 카드, TimePicker 모달 카드, 모달 하단 시트 면(손잡이 포함, 표준 시트에는 없음), 모달 측면 시트 면(표준 없음), 모달 드로어 시트와 드로어 홀더 `Drawer`(모달일 때만). 스펙은 test/support/inputsink.luau의 `assertInputSink`(직계 InputSink TextButton·Selectable false·ZIndex가 모든 형제 아래·Size 정확히 Scale 1,1)로 단언. 끌기는 `Interaction.drag`가 호스트 InputBegan과 UserInputService로 듣는데 싱크는 호스트의 자식이라 호스트 이벤트를 막지 않는다고 판단했으나(조상에도 입력 이벤트가 닿는다는 전제) **Studio 미측정** — 시계판·시트 몸통·손잡이 끌기가 여전히 되는지 실기기 체크리스트 61에서 확인.
+
+## 범위 선택 깜빡임 (2026-10-08)
+
+**[2026-10-08 처리 — 서브에이전트, 코드와 목(mock) 스펙만. 실기기 측정 없음]** 킷 소스 경로는 백틱 없이 적는다.
+
+**사용자 관측(2026-10-08, 원문)**: *"range date picker 보니까, 선택이 영역으로 될 때, 뭔가 각 날짜가 투명한 검은 원으로 덮어진 다음 그게 사라지고 range 가 남더라. 비쥬얼 글리치인것 같은데"* — 두 번째 누름으로 범위가 완성되는 순간 사이 날짜마다 반투명한 어두운 모양이 잠깐 덮였다가 사라지고 띠가 남는다. 범위는 이 깜빡임 하나(끌어서 범위 고치기는 안 함 — 사용자; 누름 규칙은 그대로 — 사용자가 다시 누르기가 된다고 확인).
+
+**원인(목에서 프레임별 추적)**: 날짜 칩(quad-roblox-material/src/DatePicker/Chip.luau)은 쉴 때 컨테이너 색이 **상태 레이어 색 onSurface(밝은 테마 #1D1B20, 거의 검정)이고 BackgroundTransparency 1**이다(호버·누름 표시를 같은 배경의 투명도로 그리기 때문). 두 번째 누름에서 사이 날짜(InRange)는 BackgroundColor3 onSurface → secondaryContainer와 BackgroundTransparency 1 → 0을 **같은 Short2(0.1 s) 트윈으로 동시에** 돌렸다. 중간 프레임은 "검정에 가까운 색이 반쯤 불투명"이라, 면(surfaceContainerHigh) 위에 합성한 밝기(luma)가 양 끝 0.89·0.91인데 t = 0.5에서 약 0.70까지 떨어진다 — 이것이 어두운 반투명 모양이다. 끝 날짜(RangeEnd)도 onSurface → primary로 같은 경로를 탔고(그래서 둥근 원), 글자 색(onSurface → onSecondaryContainer)도 트윈이었다. 반쪽 띠 Frame(`BandStart`/`BandEnd`)은 애니메이션 없이 바로 나타나 칩과도 어긋났다. 세 번째 누름으로 범위가 풀릴 때도 반대 방향(secondaryContainer → onSurface, 0 → 1)으로 같은 어두운 프레임이 났다. 목에서 사이 날짜의 모양은 같은 순간 48 x 40 사각으로 바뀌므로(크기·모서리는 트윈 아님) 원으로 보인 것은 끝 원이거나 사각들이 이어진 띠였을 수 있다 — 실기기에서 확인할 점.
+
+**정본(androidx/androidx@40ff481 compose/material3/…/material3/)**: DatePicker.kt `dayContainerColor`(996~1016)는 선택(시작·끝)이 아닌 날을 `Color.Transparent`로 두므로 **사이 날짜에는 원 컨테이너가 아예 없고**, 띠는 월 격자의 `drawWithContent`(1957~1962)가 DateRangePicker.kt `drawRangeBackground`(1039~)로 **애니메이션 없이** 칠한다. 사이 날짜의 글자 색은 `if (inRange) rememberUpdatedState(target)`(976~977)로 애니메이션하지 않는다. 컨테이너 애니메이션은 `animateChecked = startDateSelected`(2063~2066, "Only animate on the first selected day … important to disable when drawing a range marker behind the days on an end-date selection") — **시작 원만** 애니메이션하고 끝 원은 바로 그린다. 범위가 풀릴 때도 선택에서 빠진 날은 animateChecked가 거짓이라 바로 사라진다.
+
+**고친 것**(Chip.luau): 세 트윈 프로퍼티를 `look` 레코드 State 하나(색·투명도·글자 색 + 이번 변화가 스냅인지)에서 만들고, 각 프로퍼티는 `q.Tween{ Time = 스냅이면 0 아니면 Short2 }`를 받는다. 스냅 규칙 `snaps(band, from, to)` — 상태가 바뀔 때 (1) 새 상태가 InRange·RangeEnd이거나 (2) 범위 칩(Band)이 원·띠(Selected/RangeStart/RangeEnd/InRange)에서 쉬는 모양으로 돌아가면 스냅. 시작 원 등장(Normal → Selected), 호버·누름·포커스, 테마 전환, 단일 날짜 선택기(Band 아님)와 연도 칩은 이전과 같이 Short2로 움직인다. 스냅 쓰기는 진행 중인 호버 트윈도 취소한다(스펙이 확인). RangeDocked.luau 머리에 정본 근거와 아래 정본 차이를 적었다. 인스턴스 수 변화 없음(칩 3개 그대로, 갤러리 숫자 그대로).
+
+**스펙**: test/spec.datepicker.luau 새 섹션 "RangeDocked: completing / clearing a range shows no dark fill on the in-range and end days" — 목은 보간하지 않으므로 누름 직후 진행 중인 트윈의 (시작값, 목표값)에서 t = 0, 0.1, …, 1 프레임을 뽑아 면 위 합성 밝기가 양 끝보다 어두워지지 않는지, 사이 날짜·끝 날짜에 트윈이 남지 않는지(끝 날짜엔 호버 트윈이 도는 중에 누름), 범위 해제 때 사이·양 끝이 바로 지워지는지, 새 시작 원은 여전히 트윈인지, 해제 뒤 호버는 여전히 트윈인지를 단언. **옛 코드에서 실패 확인**: 고치기 전 코드로 "in-range 6: frame 0.1 is darker than both ends (0.837 < 0.886)"에서 실패, 스냅만 끈 사본도 같은 자리에서 실패, 복원 뒤 통과.
+
+**검증**: quad-roblox-material/test/run.sh exit 0, `doc-check.py` ERROR 0건.
+
+**Studio에서 볼 점**(README 체크리스트 62): 밝은 테마에서 DatePicker 스토리 Range·갤러리 Pickers — 두 번째 날짜를 누르는 순간 띠와 끝 원이 바로 나타나고 어두운 반투명 모양이 한 프레임도 안 덮이는지, 세 번째 누름으로 풀릴 때도 바로 사라지는지, 첫 날짜(시작 원)만 부드럽게 나타나는지. 어두운 테마에선 반대로 밝은 번쩍임이었을 것(onSurface가 밝음) — 같이 보면 좋다.
+
+**정본 차이, 이번 범위 밖(사용자 2026-10-08)**: 시작만 정해진 상태에서 시작보다 **앞선** 날을 누르면 킷은 둘을 바꿔 범위를 만든다(RangeDocked.luau OnPick의 `Calendar.normalizeRange`). Compose `DateRangePicker`는 그 날을 새 시작으로 삼는다(끝은 여전히 비어 있음 — DateRangePicker.kt `updateDateSelection` 960~963, "The user selected an earlier date than the start date, so reset the start"). 기록만 하고 고치지 않았다.

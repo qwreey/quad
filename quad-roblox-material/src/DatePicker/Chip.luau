@@ -33,7 +33,10 @@
 	  OnActivated                () -> ()     mouse / touch / gamepad A (skipped while Hidden / Disabled)
 	  OnFocused / OnBlurred      (() -> ())?  engine selection (gamepad / keyboard focus) entered / left
 	  Hooks                      Hooks?       extra array-part values on the host (the month grid seats a KeyNav hook here)
-	Cost: 3 instances, 10 status-derived States, 3 of them animated (Short2).
+	Animation: container color / transparency and text color tween (Short2) — except, on Band chips, joining the band,
+	becoming the END circle and clearing a circle or the band, which snap like Compose's range picker (`snaps`; the
+	Studio QA 2026-10-08 dark flicker).
+	Cost: 3 instances, 12 status-derived States (one `look` record feeds the 3 tweened properties); Band chips +3.
 ]]
 
 local q = require("../Quad")
@@ -73,8 +76,24 @@ local function selectedLook(s: Status): boolean
 	return s == "Selected" or s == "RangeStart" or s == "RangeEnd"
 end
 
-local function animation()
-	return q.Animate(Tokens.Motion.options("Short2", "Standard"))
+-- Range pickers (Band chips) follow Compose's per-day animation rule (see `look` in `new`): a change of status SNAPS when
+-- the day joins the band or becomes the END circle, or when a band chip leaves a filled look (circle or band) for an
+-- idle one; the start circle appearing, hover / press / focus and scheme switches animate.
+local function snaps(band: boolean, from: Status, to: Status): boolean
+	if from == to then
+		return false
+	end
+	if to == "InRange" or to == "RangeEnd" then
+		return true
+	end
+	return band and not selectedLook(to) and (selectedLook(from) or from == "InRange")
+end
+
+type Look = { Status: Status, Color: Color3, Transparency: number, TextColor: Color3, Snap: boolean }
+
+local motion = Tokens.Motion.options("Short2", "Standard")
+local function tween<T>(value: T, snap: boolean): q.Tween<T>
+	return q.Tween({ Value = value, Time = if snap then 0 else motion.Time, Style = motion.Style, Direction = motion.Direction })
 end
 
 local function new(o: Options): TextButton
@@ -95,41 +114,53 @@ local function new(o: Options): TextButton
 		return s ~= "Hidden" and s ~= "Disabled"
 	end)
 
-	-- container: filled primary (Selected) / band (InRange) / onSurface state layer
-	local bgColor: q.State<Color3> = status:Compute(function(self, _prev, primary, onSurface, band)
+	-- One record for the three tweened properties (container color / transparency, text color), with whether this
+	-- change SNAPS (`snaps` above). Joining the band, becoming the end circle and (range picker) clearing a circle or the
+	-- band are written at once, as Compose draws a range: the in-range band is painted unanimated behind the days (DateRangePicker.kt
+	-- `drawRangeBackground`), an in-range day's content color is not animated (DatePicker.kt `dayContentColor`:
+	-- `if (inRange) rememberUpdatedState(target)`), and only the START date's container animates
+	-- (`animateChecked = startDateSelected`: "important to disable when drawing a range marker behind the days on an
+	-- end-date selection"). Animating them was the Studio QA 2026-10-08 flicker: the idle container color is the onSurface
+	-- state-layer color at transparency 1, so tweening color AND transparency together drew a half-opaque near-black
+	-- shape over every in-range day before it settled into the band (and again when a range was cleared).
+	-- Hover / press / focus changes, scheme switches, the start circle and the whole single-date picker keep the Short2
+	-- animation. (Compose also animates the start circle in from Color.Transparent; that path stays as it was.)
+	local isBand = o.Band == true
+	local look: q.State<Look> = status:Compute(function(self, prev: Look?, hovered, pressed, focused, primary, onPrimary, onSurface, bandColor, onBand): Look
 		local s = self:Get()
+		local color, transparency, textColor
 		if selectedLook(s) then
-			return primary:Get()
+			color, transparency, textColor = primary:Get(), 0, onPrimary:Get()
 		elseif s == "InRange" then
-			return band:Get()
+			color, transparency, textColor = bandColor:Get(), 0, onBand:Get()
+		else
+			color = onSurface:Get()
+			textColor = if s == "Today" then primary:Get() else onSurface:Get()
+			if s == "Hidden" or s == "Disabled" then
+				transparency = 1
+			elseif pressed:Get() or focused:Get() then
+				transparency = PressT
+			elseif hovered:Get() then
+				transparency = HoverT
+			else
+				transparency = 1
+			end
 		end
-		return onSurface:Get()
-	end, raw.Primary, raw.OnSurface, raw.SecondaryContainer)
-	local bgTransparency: q.State<number> = status:Compute(function(self, _prev, hovered, pressed, focused)
-		local s = self:Get()
-		if selectedLook(s) or s == "InRange" then
-			return 0
-		elseif s == "Hidden" or s == "Disabled" then
-			return 1
-		elseif pressed:Get() or focused:Get() then
-			return PressT
-		elseif hovered:Get() then
-			return HoverT
-		end
-		return 1
-	end, ix.Hovered, ix.Pressed, ix.Focused)
-
-	local textColor: q.State<Color3> = status:Compute(function(self, _prev, onPrimary, primary, onSurface, onBand)
-		local s = self:Get()
-		if selectedLook(s) then
-			return onPrimary:Get()
-		elseif s == "InRange" then
-			return onBand:Get()
-		elseif s == "Today" then
-			return primary:Get()
-		end
-		return onSurface:Get()
-	end, raw.OnPrimary, raw.Primary, raw.OnSurface, raw.OnSecondaryContainer)
+		local snap = prev ~= nil and snaps(isBand, prev.Status, s)
+		return { Status = s, Color = color, Transparency = transparency, TextColor = textColor, Snap = snap }
+	end, ix.Hovered, ix.Pressed, ix.Focused, raw.Primary, raw.OnPrimary, raw.OnSurface, raw.SecondaryContainer, raw.OnSecondaryContainer)
+	local bgColor: q.State<q.Tween<Color3>> = look:Compute(function(self)
+		local l = self:Get()
+		return tween(l.Color, l.Snap)
+	end)
+	local bgTransparency: q.State<q.Tween<number>> = look:Compute(function(self)
+		local l = self:Get()
+		return tween(l.Transparency, l.Snap)
+	end)
+	local textColor: q.State<q.Tween<Color3>> = look:Compute(function(self)
+		local l = self:Get()
+		return tween(l.TextColor, l.Snap)
+	end)
 	local textTransparency: q.State<number> = status:Compute(function(self)
 		return if self:Get() == "Disabled" then DisabledText else 0
 	end)
@@ -194,9 +225,9 @@ local function new(o: Options): TextButton
 		Interactable = interactable,
 		-- a hidden (out-of-month) cell is never a gamepad selection target (device-unverified)
 		Selectable = selectable,
-		BackgroundColor3 = bgColor:Apply(animation()),
-		BackgroundTransparency = bgTransparency:Apply(animation()),
-		TextColor3 = textColor:Apply(animation()),
+		BackgroundColor3 = bgColor,
+		BackgroundTransparency = bgTransparency,
+		TextColor3 = textColor,
 		TextTransparency = textTransparency,
 		UICorner = corner,
 		Activated = function()

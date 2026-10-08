@@ -562,6 +562,98 @@ H.section("RangeDocked: first click starts, second completes (normalized), third
 	H.assertNoDebugOutput("range")
 end)
 
+-- Studio QA 2026-10-08: completing a range flashed a translucent dark shape over every in-range day, which then faded
+-- into the band. The idle chip's container color is the onSurface state-layer color at transparency 1; the old chip
+-- tweened BackgroundColor3 (onSurface -> secondaryContainer) and BackgroundTransparency (1 -> 0) TOGETHER, so mid-way
+-- the cell was a half-opaque near-black blend. Canon (Compose DatePicker.kt `dayContainerColor` / `dayContentColor`,
+-- DateRangePicker.kt `drawRangeBackground`): an in-range day has no container, the band is drawn unanimated and its
+-- content color is not animated; the END date's container does not animate either (`animateChecked = startDateSelected`).
+-- The mock does not interpolate, so the frames are sampled here from each in-flight tween's (from, to) — any easing
+-- stays inside that segment.
+H.section("RangeDocked: completing / clearing a range shows no dark fill on the in-range and end days", function()
+	H.finishTweens()
+	local s, e = q.Source<<Date?>>(nil), q.Source<<Date?>>(nil)
+	local root = RangeDocked({ Start = s, End = e, Today = TODAY })
+	local cells = days(root)
+	local surface = L.SurfaceContainerHigh
+	local props = { "BackgroundColor3", "BackgroundTransparency", "TextColor3" }
+	local function lerp(a: any, b: any, t: number): any
+		if typeof(a) == "number" then
+			return a + (b - a) * t
+		end
+		return (a :: Color3):Lerp(b, t)
+	end
+	-- the value of `prop` on `inst` at fraction `t` of whatever tween is playing on it now (the current value if none)
+	local function sample(inst: any, prop: string, t: number): any
+		for _, entry in H.tweenLog() do
+			if entry.inst == inst and entry.tween.PlaybackState == "Playing" and entry.props[prop] ~= nil then
+				return lerp(inst[prop], entry.props[prop], t)
+			end
+		end
+		return inst[prop]
+	end
+	local function playing(inst: any): { string }
+		local out = {}
+		for _, entry in H.tweenLog() do
+			if entry.inst == inst and entry.tween.PlaybackState == "Playing" then
+				for _, p in props do
+					if entry.props[p] ~= nil then
+						table.insert(out, p)
+					end
+				end
+			end
+		end
+		return out
+	end
+	local function luma(c: Color3): number
+		return 0.2126 * c.R + 0.7152 * c.G + 0.0722 * c.B
+	end
+	-- the chip's fill composited over the picker surface, at fraction t of the transition
+	local function shown(inst: any, t: number): number
+		local a = 1 - sample(inst, "BackgroundTransparency", t)
+		return luma(surface:Lerp(sample(inst, "BackgroundColor3", t), a))
+	end
+	local function checkFrames(label: string, cell: any, final: Color3?)
+		local floor = math.min(luma(surface), if final then luma(final) else luma(surface))
+		for i = 0, 10 do
+			local t = i / 10
+			local seen = shown(cell, t)
+			assert(seen >= floor - 1e-3, `{label}: frame {t} is darker than both ends ({seen} < {floor})`)
+		end
+	end
+
+	click(cells[5]) -- start: the first circle (it animates, as Compose's start date)
+	H.finishTweens()
+	H.fire(cells[10], "MouseEnter") -- a hover tween is still in flight on the end day when it is tapped
+	assert(#playing(cells[10]) > 0)
+	click(cells[10]) -- complete
+	for i = 6, 9 do
+		checkFrames("in-range " .. i, cells[i], L.SecondaryContainer)
+		assert(#playing(cells[i]) == 0, `in-range day {i} snaps (no tween on {table.concat(playing(cells[i]), ", ")})`)
+		assert(cells[i].BackgroundColor3 == L.SecondaryContainer and cells[i].BackgroundTransparency == 0)
+		assert(cells[i].TextColor3 == L.OnSecondaryContainer)
+	end
+	assert(#playing(cells[10]) == 0, "the end date's circle snaps (Compose animateChecked = startDateSelected)")
+	assert(cells[10].BackgroundColor3 == L.Primary and cells[10].BackgroundTransparency == 0)
+	H.fire(cells[10], "MouseLeave")
+	H.finishTweens()
+	click(cells[20]) -- restart: the old range clears at once, the new start animates
+	for i = 6, 9 do
+		checkFrames("cleared " .. i, cells[i], nil)
+		assert(#playing(cells[i]) == 0 and cells[i].BackgroundTransparency == 1, "cleared in-range day " .. i)
+	end
+	assert(#playing(cells[5]) == 0 and #playing(cells[10]) == 0, "old ends clear at once")
+	assert(cells[5].BackgroundTransparency == 1 and cells[10].BackgroundTransparency == 1)
+	assert(#playing(cells[20]) > 0, "the new start's circle still animates")
+	H.finishTweens()
+	-- hover feedback on an idle day still animates after a range was cleared through it
+	H.fire(cells[7], "MouseEnter")
+	assert(#playing(cells[7]) > 0, "hover layer still tweens")
+	H.finishTweens()
+	q.dispose(root)
+	H.assertNoDebugOutput("range frames")
+end)
+
 -- ── modal ───────────────────────────────────────────────────────────────────
 local function setupModal()
 	local overlay = Overlay.new()

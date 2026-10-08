@@ -15,6 +15,12 @@
 	center to its slot's right edge, `BandEnd` from the left edge to the end circle's center — MonthView `BandEnds`; the
 	first version had none and the circles floated 4 px apart from the strip, Studio QA 2026-10-07 2nd).
 	Deviation from M3: no rounded caps at the ends of a week row.
+	Motion (Compose): the band and the END circle appear / clear at once, only the start circle fades in (Chip `snaps` —
+	androidx/androidx@40ff481 DatePicker.kt:2063-2066 `animateChecked = startDateSelected`, :976-977 in-range content color
+	not animated, DateRangePicker.kt:1039 `drawRangeBackground` unanimated); tweening them was the Studio QA 2026-10-08
+	dark flicker (the idle chip's color is onSurface at transparency 1).
+	Known canon difference, kept: with only Start set, tapping an EARLIER day swaps (`normalizeRange`) — Compose makes that
+	day the new Start instead (user 2026-10-08: out of scope for now).
 
 	Props: Start, End (Source<Date?>), Min, Max, IsDisabled, FirstDayOfWeek, Locale, Today, UtcOffset, Theme, Modifier
 	as Docked, plus `OnChange: ((start: Date, end: Date?) -> ())?` after each click (End is nil after the first).
