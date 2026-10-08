@@ -23,7 +23,10 @@
 	    connections only while the press lasts). Until the pointer has moved SLOP = 4 px horizontally it is still a TAP:
 	    the handle does not move and the release is the engine's `Activated`, which toggles as before (gamepad ButtonA /
 	    keyboard activation are taps too — they never start a drag).
-	  * Past 4 px it is a DRAG: the handle follows the pointer (`DragFrac`, clamped to the two ends) with no tween. On
+	  * Past 4 px it is a DRAG: the handle follows the pointer (`DragFrac`, clamped to the two ends) with no tween. The
+	    drag's ORIGIN is the pointer at the moment it crosses the slop, not the press point: measured from the press point
+	    the handle jumped by the slop on the first drag frame (Studio QA 2026-10-08, "툭 튐") — re-based there, it starts
+	    from where it rests (displacement 0) and then moves 1:1 with the pointer. On
 	    release the switch takes the far state only if the handle passed the HALF (off -> on needs frac > 0.5, on -> off
 	    needs frac < 0.5; exactly half stays), otherwise it springs back; the handle then animates from the pointer to its
 	    end. A cancelled drag (window focus lost, host destroyed) springs back without a change.
@@ -100,10 +103,14 @@ local function new(props: Props, look: Look): Switch
 			startX, startOn, moved = x, on:Get(), false
 		end,
 		OnMoved = function(x: number)
-			if not moved and math.abs(x - startX) < SLOP then
-				return
+			if not moved then
+				if math.abs(x - startX) < SLOP then
+					return
+				end
+				-- crossing the slop: re-base the origin here so the handle starts from its rest position (header DRAG vs TAP)
+				startX = x
+				moved = true
 			end
-			moved = true
 			dragFrac:Set(fracAt(x))
 		end,
 		OnEnded = function(x: number, _y: number, cancelled: boolean)

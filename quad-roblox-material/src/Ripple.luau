@@ -20,12 +20,19 @@
 	    taller and its centered children jumped, a dialog's actions row pushed the card (Studio QA 2026-10-07, 2nd).
 	    So each frame of the expand shows only the PART of the disc that lies inside the host: the circle's bounding box
 	    (whole pixels, rounded outward: R = ceil(r) around the whole-pixel press point) intersected with the host is the
-	    label's Position/Size (UDim Offsets are integers), and `ImageRectSize` / `ImageRectOffset` select the matching
+	    label's Position/Size (as fractions of the host — SCALE, NOT OFFSET below), and `ImageRectSize` / `ImageRectOffset` select the matching
 	    sub-rectangle of the texture (`ScaleType = Stretch`, s = 1024 / 2R texels per pixel): the cut circle is exact —
 	    chords cut by the edges, arcs at their ends — and nothing is drawn outside the host.
 	    History: until 2026-10-07 the circle was a Frame cut to the host + ONE `UICorner` radius imitating "circle cut by
 	    the host edges". A UICorner has one radius, so on a wide host (tab bar) the sliced circle showed as "a rectangle
 	    with rounded corners" (Studio QA 2026-10-07, tab bar) — the disc image replaced it.
+	  - SCALE, NOT OFFSET: the shape is computed in ABSOLUTE pixels (the press point and `AbsoluteSize` are screen space) but
+	    written as `UDim2.fromScale` fractions of the host's AbsoluteSize at press. Offsets are the host's LOCAL units, which
+	    differ from screen pixels under an ancestor `UIScale`: the date picker modal card is scaled by .92 -> 1 on enter and by
+	    a fitting factor (< 1) in a small layer, so absolute-pixel Offsets were shrunk a second time by the UIScale — the
+	    ripple grew only in the top-left part of the button and its box edge cut the disc in a straight line short of the
+	    right and bottom edges (Studio QA 2026-10-08, the modal's round mode-toggle button). Fractions are the same in both
+	    spaces. The far edges are the host's exact (possibly fractional) size, so the expand ends at exactly `fromScale(1, 1)`.
 	  - TRADE-OFF: a `CanvasGroup` renders its subtree into an offscreen texture of the host's size, so a
 	    group costs texture memory + a composite pass while it exists. They are created lazily on press and
 	    destroyed ~0.2-0.6 s later (and at most `Max` exist at once — the oldest is dropped), never kept at
@@ -171,9 +178,11 @@ local function new(opts: Options): Ripple
 		end
 		-- snap the center to a whole pixel: the shape's box is whole pixels, and a center with different fractions on the
 		-- two axes made an uncut circle's box 1-2 px wider than tall (or the reverse) — an oval (Studio QA 2026-10-07, 3rd)
-		local wMax, hMax = math.floor(size.X), math.floor(size.Y)
-		local px: number = math.clamp(math.round(rx), 0, wMax)
-		local py: number = math.clamp(math.round(ry), 0, hMax)
+		-- the host's absolute size (may be fractional): the far edges of the visible box; every box below is written as a
+		-- FRACTION of it (see SCALE, NOT OFFSET in the header — an ancestor UIScale makes Offsets differ from screen pixels)
+		local wMax, hMax = size.X, size.Y
+		local px: number = math.clamp(math.round(rx), 0, math.floor(wMax))
+		local py: number = math.clamp(math.round(ry), 0, math.floor(hMax))
 		-- radius = distance to the farthest corner (M3), so the circle just covers the host
 		local dx = math.max(px, size.X - px)
 		local dy = math.max(py, size.Y - py)
@@ -199,15 +208,15 @@ local function new(opts: Options): Ripple
 			local y0, y1 = math.max(0, py - R), math.min(hMax, py + R)
 			local bw, bh = x1 - x0, y1 - y0
 			if R <= 0 or bw <= 0 or bh <= 0 then
-				circle.Size = UDim2.fromOffset(0, 0)
+				circle.Size = UDim2.fromScale(0, 0)
 				circle.ImageRectSize = Vector2.zero
 				return
 			end
 			-- texture pixels per screen pixel: the disc's 2R box shows the whole 1024 texture (the disc is 1023 px wide in it
 			-- — 0.1 % — not corrected)
 			local s = DISC_SIZE / (2 * R)
-			circle.Position = UDim2.fromOffset(x0, y0)
-			circle.Size = UDim2.fromOffset(bw, bh)
+			circle.Position = UDim2.fromScale(x0 / wMax, y0 / hMax)
+			circle.Size = UDim2.fromScale(bw / wMax, bh / hMax)
 			circle.ImageRectSize = Vector2.new(bw * s, bh * s)
 			circle.ImageRectOffset = Vector2.new((x0 - (px - R)) * s, (y0 - (py - R)) * s)
 		end
@@ -217,8 +226,8 @@ local function new(opts: Options): Ripple
 			circleRef,
 			Image = DISC_IMAGE,
 			ScaleType = Enum.ScaleType.Stretch,
-			Position = UDim2.fromOffset(px, py),
-			Size = UDim2.fromOffset(0, 0),
+			Position = UDim2.fromScale(px / wMax, py / hMax),
+			Size = UDim2.fromScale(0, 0),
 			ImageRectSize = Vector2.zero,
 			ImageColor3 = opts.Color,
 			ImageTransparency = transparencySrc:Apply(fadeTween),

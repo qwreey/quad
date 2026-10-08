@@ -43,7 +43,7 @@ return StoryKit.story({
 			return string.format("%.2f .. %.2f", self:Get(), h:Get())
 		end, hi)
 		return page(theme, follow, {
-			-- the M3 value label is a 44 px pill 12 px above the 44 px handle: leave it room inside the holder
+			-- the M3 value label is a 32 px pill 12 px above the 44 px handle: leave it room inside the holder
 			holder(
 				112,
 				StoryKit.rebuild<<Look>>(look, function(l: Look)

@@ -26,6 +26,18 @@ local function mountButton(opts: Interactive.Options?)
 	return btn, layer, fx
 end
 
+-- the circle's box in host pixels: Ripple writes Position/Size as fractions of the host's AbsoluteSize (an ancestor UIScale
+-- makes Offsets differ from screen pixels — Studio QA 2026-10-08); rounded to 1e-3 px against float noise (UDim Scale is a
+-- 32-bit float: 37 / 160 * 160 is 37.0000015)
+local function box(circle: any, w: number, h: number): (number, number, number, number)
+	local function r(v: number): number
+		return math.round(v * 1e3) / 1e3
+	end
+	local p, z = circle.Position, circle.Size
+	assert(p.X.Offset == 0 and p.Y.Offset == 0 and z.X.Offset == 0 and z.Y.Offset == 0, "scale only: " .. tostring(p) .. " " .. tostring(z))
+	return r(p.X.Scale * w), r(p.Y.Scale * h), r(z.X.Scale * w), r(z.Y.Scale * h)
+end
+
 local function groups(host: any): { any }
 	return H.findAll(host, function(c: any)
 		return c.ClassName == "CanvasGroup"
@@ -54,26 +66,27 @@ H.section("press: one CanvasGroup + disc (3 instances), geometry from the press 
 	assert(H.find(group, "RippleCircle") ~= nil and H.countDescendants(group) == 2)
 	local circle = H.find(group, "RippleCircle")
 	-- host (10,10) 100x40, press (30,20): rel (20,10); far corner dx 80 dy 30
-	assert(circle.Position == UDim2.fromOffset(20, 10), "origin = press point relative to the host: " .. tostring(circle.Position))
-	assert(circle.Size == UDim2.fromOffset(0, 0), "mounts at size 0 (snapped)")
+	assert(circle.Position == UDim2.fromScale(20 / 100, 10 / 40), "origin = press point relative to the host: " .. tostring(circle.Position))
+	assert(circle.Size == UDim2.fromScale(0, 0), "mounts at size 0 (snapped)")
 	assert(math.abs(circle.ImageTransparency - 0.9) < 1e-9 and circle.BackgroundTransparency == 1, "ripple opacity .10")
 	assert(group.Size == UDim2.fromScale(1, 1))
 	assert(circle.ClassName == "ImageLabel" and circle.Image == "rbxassetid://89858938964426")
 	-- early in the grow the shape is the whole disc (radius < the 10 px to the nearest edge)
 	H.advance(0.002)
-	local r = circle.Size.X.Offset / 2
-	assert(r > 0 and r < 10 and circle.Size.Y.Offset == circle.Size.X.Offset, "a small circle: " .. tostring(circle.Size))
-	assert(math.abs(circle.Position.X.Offset - (20 - r)) <= 1, "centered on the press point")
+	local cx0, _, cbw, cbh = box(circle, 100, 40)
+	local r = cbw / 2
+	assert(r > 0 and r < 10 and cbh == cbw, "a small circle: " .. tostring(circle.Size))
+	assert(math.abs(cx0 - (20 - r)) <= 1, "centered on the press point")
 	assert(circle.ImageRectOffset == Vector2.zero and math.abs(circle.ImageRectSize.X - 1024) < 1e-3, "uncut: the whole texture")
 	-- BOUNDED: at every frame the shape stays inside the host rectangle (AutomaticSize ancestors measure it)
 	for _ = 1, 40 do
 		H.advance(0.0125)
-		local p, z = circle.Position, circle.Size
-		assert(p.X.Offset >= 0 and p.Y.Offset >= 0, "inside (top-left): " .. tostring(p))
-		assert(p.X.Offset + z.X.Offset <= 100 + 1e-6 and p.Y.Offset + z.Y.Offset <= 40 + 1e-6, "inside (bottom-right): " .. tostring(p) .. " " .. tostring(z))
+		local x0, y0, bw, bh = box(circle, 100, 40)
+		assert(x0 >= 0 and y0 >= 0, "inside (top-left): " .. tostring(circle.Position))
+		assert(x0 + bw <= 100 + 1e-6 and y0 + bh <= 40 + 1e-6, "inside (bottom-right): " .. tostring(circle.Position) .. " " .. tostring(circle.Size))
 	end
 	H.advance(0.1)
-	assert(circle.Position == UDim2.fromOffset(0, 0) and circle.Size == UDim2.fromOffset(100, 40), "ends covering the host: " .. tostring(circle.Size))
+	assert(circle.Position == UDim2.fromScale(0, 0) and circle.Size == UDim2.fromScale(1, 1), "ends covering the host: " .. tostring(circle.Size))
 	-- rounded clip: the group carries the host's corner
 	local corner = H.find(group, "_quad_round")
 	assert(corner ~= nil and corner.CornerRadius == FULL, "group clips with the host's corner radius")
@@ -115,7 +128,7 @@ H.section("gamepad press ripples from the center", function()
 	local btn = mountButton()
 	H.fire(btn, "InputBegan", H.input({ UserInputType = Enum.UserInputType.Gamepad1, KeyCode = Enum.KeyCode.ButtonA }))
 	local circle = H.find(btn, "RippleCircle")
-	assert(circle ~= nil and circle.Position == UDim2.fromOffset(50, 20), "center of 100x40")
+	assert(circle ~= nil and circle.Position == UDim2.fromScale(0.5, 0.5), "center of 100x40")
 	H.fire(btn, "InputEnded", H.input({ UserInputType = Enum.UserInputType.Gamepad1, KeyCode = Enum.KeyCode.ButtonA }))
 	H.advance(0.4)
 	assert(#groups(btn) == 0)
@@ -233,7 +246,7 @@ H.section("wide host (160x48, pressed in the middle): the box stays inside the h
 	for _ = 1, 120 do
 		H.advance(1 / 240)
 		local p, z = circle.Position, circle.Size
-		local x0, y0, bw, bh = p.X.Offset, p.Y.Offset, z.X.Offset, z.Y.Offset
+		local x0, y0, bw, bh = box(circle, 160, 48)
 		assert(x0 == math.floor(x0) and bw == math.floor(bw) and y0 == math.floor(y0) and bh == math.floor(bh), "whole pixels")
 		-- (a) inside the host
 		assert(x0 >= 0 and y0 >= 0 and x0 + bw <= 160 and y0 + bh <= 48, "inside: " .. tostring(p) .. " " .. tostring(z))
@@ -262,7 +275,7 @@ H.section("wide host (160x48, pressed in the middle): the box stays inside the h
 	end
 	assert(sawSquare and sawCut, "both phases observed")
 	H.advance(0.5)
-	assert(circle.Size == UDim2.fromOffset(160, 48) and circle.Position == UDim2.fromOffset(0, 0), "ends covering the host")
+	assert(circle.Size == UDim2.fromScale(1, 1) and circle.Position == UDim2.fromScale(0, 0), "ends covering the host")
 	q.dispose(host)
 	H.assertNoDebugOutput("wide ripple")
 end)

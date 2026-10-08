@@ -21,7 +21,7 @@
 	  on the active piece / `Primary` on the inactive; disabled: active + handle onSurface @ 38 %, inactive onSurface @ 12 %.
 	  The handle narrows to 2 px while pressed / dragged / focused (Pressed/FocusHandleWidth); gamepad / keyboard focus
 	  also draws the kit focus ring (3 px `Secondary` UIStroke, 2 px outside the handle). Hover has no visual (M3 tokens:
-	  hover handle width and color unchanged). Label: 44 px pill `InverseSurface` / `LabelLarge` `InverseOnSurface`,
+	  hover handle width and color unchanged). Label: 32 px pill `InverseSurface` / `LabelLarge` (Regular) `InverseOnSurface`,
 	  12 px above the handle (`Bubble.M3`).
 	Everything but the label and the focus ring is inside the host rectangle (`AutomaticSize` ancestors measure every
 	descendant — `Ripple.luau` "BOUNDED"): the handle is exactly the host height and its center stops 8 px from each edge.

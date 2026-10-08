@@ -7,6 +7,8 @@ local D = q.Declaration
 local Tokens = require("../src/Tokens")
 local Switch = require("../src/Switch")
 local M2 = require("../src/M2")
+local SwitchBehavior = require("../src/Switch/Behavior")
+local SLOP = SwitchBehavior.SLOP
 
 local UIS = H.UserInputService
 local function uisConns(): number
@@ -189,6 +191,13 @@ end
 local function click(sw: any)
 	H.fire(sw, "Activated", H.input({}), 1)
 end
+-- press at `x` and move `dir` * SLOP: the first move that crosses the slop — the drag's ORIGIN (returned) is that pointer
+-- position, not the press point (Studio QA 2026-10-08: measured from the press point the handle jumped by the slop)
+local function startDrag(sw: any, x: number, dir: number): number
+	pressAt(sw, x)
+	moveTo(x + dir * SLOP)
+	return x + dir * SLOP
+end
 
 for _, c in cases do
 	local travel = c.On - c.Off
@@ -206,14 +215,17 @@ for _, c in cases do
 		assert(uisConns() == baseConns + 3)
 		moveTo(102) -- inside the 4 px slop: still a tap
 		assert(halo.Position == UDim2.fromOffset(c.Off, c.Y), "no movement inside the slop")
-		moveTo(100 + travel * 0.3)
-		assert(halo.Position == UDim2.fromOffset(c.Off + travel * 0.3, c.Y), "follows the pointer at once (no tween)")
-		moveTo(100 + travel * 0.6)
+		moveTo(100 + SLOP + 1) -- the first move past the slop: the origin is HERE
+		assert(halo.Position == UDim2.fromOffset(c.Off, c.Y), "crossing the slop: the handle stays where it rests (no jump)")
+		local o = 100 + SLOP + 1
+		moveTo(o + travel * 0.3)
+		assert(halo.Position == UDim2.fromOffset(c.Off + travel * 0.3, c.Y), "then follows the pointer 1:1 at once (no tween)")
+		moveTo(o + travel * 0.6)
 		assert(halo.Position == UDim2.fromOffset(c.Off + travel * 0.6, c.Y))
-		moveTo(100 + travel * 3)
+		moveTo(o + travel * 3)
 		assert(halo.Position == UDim2.fromOffset(c.On, c.Y), "clamped to the on end")
-		moveTo(100 + travel * 0.6)
-		releaseAt(sw, 100 + travel * 0.6)
+		moveTo(o + travel * 0.6)
+		releaseAt(sw, o + travel * 0.6)
 		assert(v:Get() == true and #changes == 1 and changes[1] == true, "past the half: on")
 		click(sw) -- the engine's click of that same release
 		assert(v:Get() == true and #changes == 1, "the release click is ignored")
@@ -222,11 +234,13 @@ for _, c in cases do
 		assert(halo.Position == UDim2.fromOffset(c.On, c.Y))
 		assert(uisConns() == baseConns, "drag connections closed")
 		-- and back: from on, dragged left past the half
-		pressAt(sw, 200)
-		moveTo(200 - travel * 0.7)
+		local o2 = startDrag(sw, 200, -1)
+		assert(halo.Position == UDim2.fromOffset(c.On, c.Y), "from on: crossing the slop leaves the handle at the on end")
+		moveTo(o2 - travel * 0.7)
+		assert(halo.Position == UDim2.fromOffset(c.On - travel * 0.7, c.Y), "displacement from the re-based origin")
 		click(sw) -- a click arriving BEFORE the release (engine order not relied on)
 		assert(v:Get() == true, "a click while the moved drag runs is ignored")
-		releaseAt(sw, 200 - travel * 0.7)
+		releaseAt(sw, o2 - travel * 0.7)
 		assert(v:Get() == false and #changes == 2 and changes[2] == false)
 		H.finishTweens()
 		assert(halo.Position == UDim2.fromOffset(c.Off, c.Y))
@@ -241,25 +255,25 @@ for _, c in cases do
 			changes += 1
 		end })
 		local halo = H.find(sw, "Halo")
-		pressAt(sw, 100)
-		moveTo(100 + travel * 0.4)
-		releaseAt(sw, 100 + travel * 0.4)
+		local o = startDrag(sw, 100, 1)
+		moveTo(o + travel * 0.4)
+		releaseAt(sw, o + travel * 0.4)
 		click(sw)
 		assert(v:Get() == false and changes == 0, "0.4: back to off, click ignored")
 		H.finishTweens()
 		assert(halo.Position == UDim2.fromOffset(c.Off, c.Y))
-		pressAt(sw, 100)
-		moveTo(100 + travel * 0.5)
-		releaseAt(sw, 100 + travel * 0.5)
+		o = startDrag(sw, 100, 1)
+		moveTo(o + travel * 0.5)
+		releaseAt(sw, o + travel * 0.5)
 		assert(v:Get() == false and changes == 0, "exactly half: stays")
 		v:Set(true)
 		H.finishTweens()
-		pressAt(sw, 100)
-		moveTo(100 - travel * 0.5)
-		releaseAt(sw, 100 - travel * 0.5)
+		o = startDrag(sw, 100, -1)
+		moveTo(o - travel * 0.5)
+		releaseAt(sw, o - travel * 0.5)
 		assert(v:Get() == true and changes == 0, "exactly half from on: stays")
-		pressAt(sw, 100)
-		moveTo(100 - travel * 0.9)
+		o = startDrag(sw, 100, -1)
+		moveTo(o - travel * 0.9)
 		UIS.WindowFocusReleased:Fire()
 		assert(v:Get() == true and changes == 0 and uisConns() == baseConns, "cancelled: no change")
 		H.finishTweens()
@@ -276,9 +290,9 @@ for _, c in cases do
 		releaseAt(sw, 53)
 		click(sw)
 		assert(v:Get() == true, "a tap toggles")
-		pressAt(sw, 50)
-		moveTo(50 - travel)
-		releaseAt(sw, 50 - travel)
+		local o = startDrag(sw, 50, -1)
+		moveTo(o - travel)
+		releaseAt(sw, o - travel)
 		assert(v:Get() == false)
 		local t0 = os.clock()
 		repeat
@@ -292,9 +306,9 @@ for _, c in cases do
 		local ctl = c.Make({ Checked = checked, OnChange = function(x: boolean)
 			table.insert(got, x)
 		end })
-		pressAt(ctl, 0)
-		moveTo(travel)
-		releaseAt(ctl, travel)
+		local oc = startDrag(ctl, 0, 1)
+		moveTo(oc + travel)
+		releaseAt(ctl, oc + travel)
 		assert(checked:Get() == false and got[1] == true and #got == 1, "controlled: OnChange(true), nothing written")
 		H.finishTweens()
 		assert(H.find(ctl, "Halo").Position == UDim2.fromOffset(c.Off, c.Y), "shows Checked until the owner writes it")

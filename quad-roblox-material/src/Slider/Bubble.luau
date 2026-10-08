@@ -7,8 +7,19 @@
 	    Bubble.build({ Dragging, Focused, Disabled, Value, Format, Theme, Style })  -> TextLabel
 	The caller parents it under the handle (or the handle's halo) and gives the bottom-center `Position` in that parent.
 	Styles (`Bubble.M3`, `Bubble.M2`):
-	  M3  44 px tall, 16 px side padding, `InverseSurface` / `InverseOnSurface`, `LabelLarge` (androidx SliderTokens
-	      ValueIndicator*; 44 px height from the M3 spec drawing, not a token)
+	  M3  32 px tall pill (corner Full), 10 px side padding, `InverseSurface` / `InverseOnSurface`, text = `LabelLarge` size /
+	      line height at the BodyLarge weight (Regular). Sources (2026-10-08, "follow the canonical spec"): the M3 token set
+	      md.comp.slider value-indicator.* (material-web tokens/versions/latest/sass/_md-comp-slider.scss, Material 3
+	      v34.0.21; androidx compose material3 SliderTokens.kt ValueIndicator*) gives the colors, the LabelLarge font /
+	      size / line height with label-text.weight = body-large-weight, and active.bottom-space 12 (the gap above the
+	      handle, see the looks) — it has NO container height / width / shape token. Those come from Google's own M3
+	      Android implementation, material-components-android slider/res/values/styles.xml `Widget.Material3.Slider.Label`:
+	      android:minHeight 32dp (the drawn height: TooltipDrawable.getIntrinsicHeight = max(textSize, minHeight)),
+	      paddingStart/End 10dp, shape from its parent `Widget.Material3.Tooltip` = ShapeAppearance.Material3.Corner.Full.
+	      Not taken: that style's paddingTop/Bottom 12dp and the drawable's 4dp `android:padding` / 28dp minWidth (the
+	      Tooltip styleable reads only `android:padding`, so on Android the stated 10dp side padding is not what draws),
+	      and its BodySmall text appearance (inherited from the plain tooltip; the slider token says LabelLarge).
+	      Until 2026-10-08 this was 44 px / 16 px from memory of a spec drawing — no source.
 	  M2  28 px tall, 12 px side padding, `Primary` / `OnPrimary`, `LabelMedium` (the 2022 classic form)
 ]]
 
@@ -16,6 +27,7 @@ local q = require("../Quad")
 local Theme = require("../Theme")
 local Text = require("../Text")
 local Tokens = require("../Tokens")
+local Typography = require("../Tokens/Typography")
 local Style = require("../Button/Style")
 local D = q.Declaration
 
@@ -38,7 +50,14 @@ export type Options = {
 	Position: UDim2, -- bottom center, in the parent
 }
 
-local M3: BubbleStyle = { Height = 44, Padding = 16, Container = "InverseSurface", Content = "InverseOnSurface", Text = Text.Label("LabelLarge") }
+local M3: BubbleStyle = {
+	Height = 32,
+	Padding = 10,
+	Container = "InverseSurface",
+	Content = "InverseOnSurface",
+	-- md.comp.slider.value-indicator.label.label-text: LabelLarge size / line height, weight = body-large-weight (400)
+	Text = Text.Label("LabelLarge"):FontFace(Typography.font("BodyLarge")),
+}
 local M2: BubbleStyle = { Height = 28, Padding = 12, Container = "Primary", Content = "OnPrimary", Text = Text.Label("LabelMedium") }
 
 local function build(o: Options): TextLabel

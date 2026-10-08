@@ -30,8 +30,17 @@
 	Returns the host (`TextButton`, or `ImageButton` with `Asset` — an empty button hosting a centered `Icon` ImageLabel of
 	icon size `TextSize` or 24, in both the wrapped and the bare path).
 
-	Cost: layer + no wrapper = host + UICorner + state layer (Frame + UICorner + UIStroke) = 5; wrapper +2 (Visual, its
-	glyph label); no layer = the host alone (+ its UICorner none).
+	Cost: text glyph, layer, no wrapper = host + state layer (Frame + UICorner + UIStroke) = 4; image, layer, no wrapper =
+	host + its UICorner + state layer + Icon = 6; wrapper: host + Visual (+ UICorner) + state layer + glyph label = 7; no
+	layer = the host alone (text) / host + Icon (image).
+
+	Glyph clipping (Studio QA 2026-10-08, the date picker modal's mode toggle): a `UICorner` rounds its parent's OWN
+	drawing — background, image AND text — so a glyph drawn by a round (corner Full) host was cut by the circle wherever
+	the glyph's ink reached past it: an engine fallback glyph (edit U+270E / calendar U+25A6 have no Roboto glyph) is
+	drawn with another font's metrics, and the role's LineHeight (TitleLarge 28/22) moved it down inside the 40 px circle.
+	So the text-glyph host carries NO UICorner (its background is transparent; the state layer has its own corner — the
+	visible round shape), and every glyph is set with `LineHeight = 1` (one glyph, no lines to space: its em box is the
+	centered box). The wrapped path's label is a child, which a parent's UICorner never clips.
 ]]
 
 local q = require("./Quad")
@@ -121,6 +130,7 @@ local function new(o: Options): GuiButton
 				BorderSizePixel = 0,
 				Text = o.Glyph or "",
 				TextSize = o.TextSize,
+				LineHeight = 1,
 				TextColor3 = color,
 				TextTransparency = transparency,
 				TextXAlignment = Enum.TextXAlignment.Center,
@@ -188,12 +198,13 @@ local function new(o: Options): GuiButton
 		AutoButtonColor = false,
 		Text = o.Glyph or "",
 		TextSize = o.TextSize,
+		LineHeight = 1,
 		TextColor3 = color,
 		TextTransparency = transparency,
 		Visible = Util.visible(o.Visible),
 		Interactable = interactable,
 		Activated = activated,
-		UICorner = if withLayer then corner else nil,
+		-- no UICorner: it would round the host's own TEXT too and cut the glyph (header "Glyph clipping")
 		hostHook,
 		layer,
 		table.unpack(hooks),

@@ -24,7 +24,8 @@
 	Returns the host Frame (360 x 396, surfaceContainerHigh, shape Large, elevation 3 UIShadow).
 
 	INSTANCES at rest (measured in test/spec.datepicker.luau): host Frame + UICorner + UIShadow, header
-	(label Button 7 + 2 GlyphButtons 5 each), month view 135 (7 weekday labels + days Frame + 42 chips * 3 + wrapper),
+	(label Button 7 + 2 GlyphButtons 4 each — a text-glyph host has no UICorner, GlyphButton.luau "Glyph clipping"),
+	month view 135 (7 weekday labels + days Frame + 42 chips * 3 + wrapper),
 	year grid ~85 (windowed — see YearView.luau). The 42 day cells are created once and survive every month change.
 
 	M3 deviations: day chips are 40 px hit targets (M3: 48 dp touch slot); out-of-month days are hidden (as M3);

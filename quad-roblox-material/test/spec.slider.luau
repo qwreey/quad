@@ -101,7 +101,18 @@ H.section("M3 mount: three-part track, 4x44 bar handle, 6 px gaps, instance coun
 	assert(iCapFill.BackgroundColor3 == L.SecondaryContainer and iBodyFill.BackgroundColor3 == L.SecondaryContainer)
 	local stopDot = H.find(s, "StopEnd")
 	assert(stopDot.Visible and stopDot.Size == UDim2.fromOffset(4, 4) and px(stopDot.Position.X, W) == W - 8 and stopDot.BackgroundColor3 == L.Primary, "stop dot")
-	assert(H.find(s, "Label").Size.Y.Offset == 44 and H.find(s, "Label").Position == UDim2.new(0.5, 0, 0, -12), "M3 label pill 44 px, 12 px above")
+	assert(H.find(s, "Label").Size.Y.Offset == 32 and H.find(s, "Label").Position == UDim2.new(0.5, 0, 0, -12), "M3 label pill 32 px (MDC Widget.Material3.Slider.Label minHeight), 12 px above (value-indicator.active.bottom-space)")
+	do
+		local lbl = H.find(s, "Label")
+		local pad: any = nil
+		for _, ch in lbl:GetChildren() do
+			if ch.ClassName == "UIPadding" then
+				pad = ch
+			end
+		end
+		assert(pad ~= nil and pad.PaddingLeft == UDim.new(0, 10) and pad.PaddingRight == UDim.new(0, 10), "10 px side padding")
+		assert(lbl.TextSize == 14 and lbl.FontFace.Weight == Enum.FontWeight.Regular, "LabelLarge size at the body-large weight (Regular)")
+	end
 	assert(H.find(s, "Label").BackgroundColor3 == L.InverseSurface)
 	assert(s.Selectable == true and s.NextSelectionLeft == s and s.NextSelectionRight == s)
 	assert(keyConns() == baseKeys and uisConns() == baseConns, "no global connection at rest")
