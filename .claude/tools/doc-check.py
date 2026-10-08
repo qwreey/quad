@@ -114,7 +114,10 @@ def _workspace_members():
     except OSError:
         pass
     return ('quad-base', 'quad-roblox', 'quad-types', 'quad-error', 'type-version-check')
-_SRC_ROOTS = _workspace_members() + ('scripts',)
+# Consumer kits (not pesde workspace members, 2026-10-05~): their src/test/gallery/stories are real paths too —
+# without them a backticked `quad-roblox-material/src/X.luau` was judged missing (2026-10-08 Scaffold agent report).
+_CONSUMER_KITS = ('quad-roblox-material', 'quad-roblox-devui')
+_SRC_ROOTS = _workspace_members() + _CONSUMER_KITS + ('scripts',)
 _src_index = None
 def src_files():
     global _src_index
