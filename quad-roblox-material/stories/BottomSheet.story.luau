@@ -3,7 +3,7 @@
 -- docked in a clipped mock screen. PeekHeight / DragHandle are construction-time props, so the scaffold is rebuilt when
 -- they change (StoryKit.rebuild). The scaffold's SheetState value and the last modal result are shown live.
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local D = q.Declaration
 local StoryParts = require("./StoryParts")

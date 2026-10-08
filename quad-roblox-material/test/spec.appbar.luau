@@ -11,6 +11,7 @@ local Overlay = require("../src/Overlay")
 local AppBar = require("../src/AppBar")
 local Top = require("../src/AppBar/Top")
 local Bounded = require("./support/bounded")
+local Input = require("../src/Input")
 
 local L = Tokens.Color.Light
 local Heartbeat = H.RunService.Heartbeat :: any
@@ -389,6 +390,40 @@ H.section("settle yields to the user: a scroll during it cancels it; a held mous
 	H.advance(0.5)
 	assert(H.pendingTimers() == 0)
 	H.assertNoDebugOutput("settle cancel")
+end)
+
+H.section("story mode (Input.use): the held button comes from the injected listener, not the engine service", function()
+	-- inside a UI Labs widget the engine reports no button held; the held scrollbar thumb is seen only by the listener
+	local listener = {
+		InputBegan = H.mock.newSignal(),
+		InputChanged = H.mock.newSignal(),
+		InputEnded = H.mock.newSignal(),
+		MouseMoved = H.mock.newSignal(),
+	}
+	Input.use(listener :: any)
+	local exit = AppBar.TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+	local medium: any = AppBar.MediumTopAppBar({ Title = "Medium", ScrollBehavior = exit })
+	local list = scroller(exit)
+	assert(H.UserInputService.MouseButton1Down == false)
+	listener.InputBegan:Fire(H.input({ UserInputType = Enum.UserInputType.MouseButton1 }), false)
+	scrollTo(list, 30)
+	H.advance(0.15)
+	for _ = 1, 30 do
+		H.advance(0.02)
+	end
+	assert(near(list.CanvasPosition.Y, 30) and near(exit.State.HeightOffset:Get(), -30), "listener-held: no settle")
+	assert(#Heartbeat.connections == baseBeats)
+	listener.InputEnded:Fire(H.input({ UserInputType = Enum.UserInputType.MouseButton1 }), false)
+	settleOut()
+	assert(medium.Size == UDim2.new(1, 0, 0, 64) and near(list.CanvasPosition.Y, 48), `listener-released: settles {list.CanvasPosition.Y}`)
+	q.dispose(medium)
+	q.dispose(list)
+	Input.use(nil)
+	assert(#(listener.InputBegan :: any).connections == 0 and #(listener.InputEnded :: any).connections == 0, "tracking dropped")
+	assert(#(listener.MouseMoved :: any).connections == 0)
+	H.advance(0.5)
+	assert(H.pendingTimers() == 0)
+	H.assertNoDebugOutput("story settle")
 end)
 
 -- ── bottom ──────────────────────────────────────────────────────────────────

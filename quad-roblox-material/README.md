@@ -98,7 +98,7 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
 | | `LoadingIndicator` | M3 Expressive 로딩 표시 — 모양이 바뀌며 도는 것(둥근 사각형 셋을 서로 돌려 겹친 근사: 12갈래·8갈래·둥근 사각형·알약·원), `Contained` |
 | | `WavyProgress` | M3 Expressive 물결 막대(확정만) — 진폭 스프라이트 시트의 한 칸(한 파장)을 파장마다 Stretch ImageLabel로 깔아 흐르며 차오름, `ClipsDescendants` 프레임이 채운 길이로 자르고 양 끝에 사인 곡선을 따라 움직이는 둥근 캡; 100 %이거나 `Wavy = false`이면 물결이 잦아들어 평평해짐(0.5 s), 평평하면 루프가 쉼(인스턴스 12 + 폭/파장 올림 + 1 — 300 px에서 21, 폭에 비례, 시트는 아래 "외부 이미지 에셋") |
 | 선택기 | `DatePicker` | `Docked` / `RangeDocked` / `Modal`, 순수 날짜 계산 `Calendar` |
-| | `ColorPicker` | `Panel` / `Modal.open` / `ColorModel` / `Classic` |
+| | `ColorPicker` | `Panel` / `Modal.open` / `ColorModel` |
 | | `TimePicker` | `Dial`(시계 문자판) / `Input`(두 칸 입력) / `Modal.open`(다이얼 ↔ 입력 전환), 순수 시간 계산 `Clock` — Compose `TimePicker`·`TimeInput`·`TimePickerDialog` 그대로 |
 | 시트 | `SheetState` | 시트 상태 — Compose `SheetState`: `Hidden` / `PartiallyExpanded` / `Expanded`, `CurrentValue`(멈춘 값)·`TargetValue`, `Expand`/`PartialExpand`/`Show`/`Hide`, `ConfirmValueChange` 거부권 |
 | | `BottomSheetScaffold` | 표준 하단 시트 — 화면(호스트) 아래에 붙어 56 px 엿보기·펼침(스크림 없음), 끌기·손잡이 클릭 |
@@ -440,7 +440,6 @@ Material.Scaffold({
 local brand = q.Source(Color3.fromRGB(103, 80, 164))
 Material.ColorPicker.Panel({ Value = brand, Swatches = { ... } })
 Material.ColorPicker.Modal.open({ Value = brand:Get(), Title = "Brand color", OnConfirm = function(c) brand:Set(c) end, Overlay = overlay })
-Material.ColorPicker.Classic({ Theme = "Dark" })
 ```
 
 - **상태 모델**: 패널의 단 하나의 진실은 **`Source<HSV>`**입니다. `Value: Source<Color3>`를 넘기면 Effect 하나가 둘을
@@ -449,8 +448,7 @@ Material.ColorPicker.Classic({ Theme = "Dark" })
 - **색상 보존**: 검정·회색에는 색상이 없습니다. Color3만 상태로 두면 사용자가 검정 가장자리를 건드릴 때 색상 슬라이더가
   빨강으로 튑니다(원본 선택기의 버그). HSV를 상태로 두면 검정·회색을 지나도 H와 S가 남습니다.
 - **Modal**: 임시(draft) 값을 편집하다가 OK에서만 바깥에 반영합니다. Cancel·스크림·Escape는 draft를 버립니다.
-- **Classic vs Material**: `Classic`은 작성자의 원본 OOP 선택기를 거의 그대로 옮긴 것(자기 모양, 0..255 눈금, 230x418)이고,
-  `Panel`/`Modal`이 M3 모양입니다. 둘의 차이와 옮기며 고친 원본 버그는 [`docs/colorpicker-comparison.md`](docs/colorpicker-comparison.md)와
+- **원본 선택기**: 이 선택기의 출발점이 된 작성자의 원본 OOP 선택기 분석(구조·에셋·결함)은
   [`docs/colorpicker-original-analysis.md`](docs/colorpicker-original-analysis.md)에 있습니다.
 
 ## M2 모양
@@ -490,11 +488,11 @@ Gallery.GalleryPanel({})       -- 페이지(Frame)만; 직접 호스트할 때. 
 루프를 돌기 때문입니다. 사용자가 입력·조작한 값은 패널의 Memo(Source)에 있어 다시 돌아와도 남습니다. 갤러리는 키트의 일부가 아니라 **키트를 쓰는 소비자**라서 `src` 밖 `gallery/`에 둡니다 — `src` 안에 있으면 키트와 함께 게시돼 보통의 사용 경로에선 아무도 부르지 않는 코드가 모든 설치본에 실립니다. 그래서 갤러리는 게임이 키트를 쓰는 방식 그대로, 루트 내보내기 표 하나(`require("<이 폴더>/src")` → `Material.Button` 같은 값, `Material.Theme`·`Material.Tab<K>`·`Material.ButtonVariant` 같은 다시 내보낸 타입)와 자기 설정 모듈(`gallery/Quad.luau`)만 씁니다. Studio 진입 스크립트 `gallery/MaterialGallery.client.luau`도 같은 폴더에 있습니다(아래 "Studio에서 보기").
 
 스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함; 2026-10-08 시트·드로어 처리에서 Navigation 탭이
-더해져 모든 탭이 탭 버튼 하나(8)만큼 늘었다 — 아래 숫자는 그 앞의 값, 지금 값은 Buttons 657 · Selection 1345 · Text 276 · Surfaces 335 ·
-Overlays 334(하단·측면 시트 묶음 둘: 모달 버튼과 흉내 화면 속 표준 시트) · Navigation 1221(드로어 셋 + 2026-10-08 바 둘·레일·스크롤
+더해져 모든 탭이 탭 버튼 하나(8)만큼 늘었다 — 아래 숫자는 그 앞의 값, 지금 값은 Buttons 657 · Selection 1355 · Text 276 · Surfaces 335 ·
+Overlays 335(하단·측면 시트 묶음 둘: 모달 버튼과 흉내 화면 속 표준 시트) · Navigation 1221(드로어 셋 + 2026-10-08 바 둘·레일·스크롤
 하는 앱 바 셋·쉬는 앱 바 넷·하단 앱 바 둘·툴바 셋 — 흉내 화면 열셋 더; 드로어만일 때 498; 같은 날 Scaffold로 옮긴 뒤 1221(이 줄의 앞 기재는 1190) —
 바 화면·앱 바 화면마다 Scaffold + Body, 폰 바 화면의 FAB·스낵바 층, 하단 앱 바 둘이 화면 하나씩으로 갈라짐) · Chips 521 ·
-Pickers 1037 · Theme 205): Buttons 649(10차에 "Button: icons —
+Pickers 950(2026-10-08 Classic 색상 선택기 묶음을 빼며 1037 → 950; 같은 날 다시 센 Selection·Overlays는 앞 기재 1345·334에서 1355·335) · Theme 205): Buttons 649(10차에 "Button: icons —
 leading / trailing"·"SplitButton" 묶음 추가 — 분할 버튼 하나가 쉴 때 40), Selection 1337(맨 위 "Slider / Switch — M3 vs M2" 비교
 묶음 옆에 10차 "Slider variants (M3)" 묶음 — 크기 다섯·가운데 정렬·안쪽 아이콘·세로 넷),
 Text 268, Surfaces 327, Overlays 199, Chips 513, Pickers 1029, Theme 197(Chips·Pickers는 2026-10-08 9차에 내장 아이콘이
@@ -507,8 +505,8 @@ Text 268, Surfaces 327, Overlays 199, Chips 513, Pickers 1029, Theme 197(Chips·
 
 UI Labs(Studio 플러그인)는 스토리를 플러그인 DockWidget 안에 그리는데, 거기서는 `UserInputService`가 입력을 받지 못합니다.
 UI Labs가 스토리에 주는 `Environment.InputListener`(`InputBegan`/`InputChanged`/`InputEnded` + `MouseMoved`)로 갈아 끼울 수
-있도록, 키트가 입력을 만지는 자리(Interaction 드래그, KeyNav, Overlay, Menu, FakeCursor)는 전부 `src/Input.luau`의
-`Input.service()`를 **쓰는 순간에** 읽습니다.
+있도록, 키트가 입력을 만지는 자리(Interaction 드래그, KeyNav, Overlay, Menu, 앱 바 정착의 버튼 누름 확인)는 전부 `src/Input.luau`의
+`Input.service()`를 **쓰는 순간에** 읽습니다. 스토리는 `stories/StoryKit.luau`가 렌더 때 자동으로 설치합니다.
 
 ```luau
 local Material = require("@pkg/quad-roblox-material")
@@ -516,10 +514,14 @@ Material.Input.use(Environment.InputListener)  -- 스토리 모드: 리스너로
 Material.Input.use(nil)                         -- 엔진 서비스로 복원
 ```
 
-- 교체 중에는 `GetMouseLocation()`이 마지막 `MouseMoved` 위치를 돌려주고, `MouseIconEnabled = false` 같은 쓰기는 엔진에
+- 교체 중에는 `GetMouseLocation()`이 마지막 `MouseMoved` 위치를, `IsMouseButtonPressed`가 리스너가 본 `InputBegan`/`InputEnded`로
+  센 버튼 상태를 돌려주고(위젯 안에선 엔진이 늘 "안 누름"이라 답함), `MouseIconEnabled = false` 같은 쓰기는 엔진에
   닿지 않으며(로컬에 저장), `GetFocusedTextBox`·`GetLastInputType` 등 나머지 멤버는 엔진 서비스로 넘어갑니다.
 - `GuiService`의 선택·게임패드 API(`SelectedObject`, 선택 부모 등)는 대체물이 없어 그대로입니다 — **게임패드/선택 동작은
   플레이 모드에서만 확인됩니다.**
+- 주입 전역을 찾을 때는 자기 함수 환경을 읽는 `getfenv()`를 써야 합니다. `pcall(getfenv, 1)`은 레벨 1이 pcall(C 함수)이라
+  스레드의 전역(UI Labs 플러그인 자신의 것)을 돌려줘서 주입을 못 찾습니다 — 2026-10-08까지 StoryKit이 이 실수로 리스너를
+  설치하지 못해 스토리 안 드래그가 전부 안 됐습니다.
 
 ## Studio에서 보기 — UI Labs 스토리와 플레이 테스트
 
@@ -573,7 +575,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 27 | 범위 날짜의 반쪽 띠 | DatePicker 스토리 Range·갤러리 Pickers | 시작·끝 원 아래 반 폭 띠가 사이 띠와 이어짐(틈 없음) |  |
 | 28 | Dialog 닫힘 | Dialog 스토리 | DatePicker 모달처럼 살짝 작아지며 사라짐, 버튼·바닥 여백이 안 커짐 |  |
 | 29 | LoadingIndicator·WavyProgress | Progress 스토리·갤러리 Chips | 모양이 650ms마다 바뀌며 돌고, 물결이 흐르며 막대가 참 — 물결 선이 또렷한지(시트 칸 Stretch), 파장 이음매·흐름 끊김이 안 보이는지; 양 끝 둥근 캡이 선 위에 붙어 함께 오르내리는지(채움이 바뀌는 동안에도), 0 % 근처에서 점 하나로 줄었다 사라지는지; 100 %·`Wavy = false`에서 물결이 부드럽게 잦아들어 직선이 되고 다시 켜면 부풀어 오르는지(시트 칸 경계에서 이웃 칸이 번져 보이지 않는지) |  |
-| 30 | Classic 색상 선택기 물방울 그림자 | ClassicColorPicker 스토리 | 색조 손잡이를 끌 때 물방울 그림자가 손잡이(구) 위를 덮지 않음 |  |
+| 30 | (삭제됨 2026-10-08 — Classic 색상 선택기를 키트에서 뺐다) | | | |
 | 31 | CircularProgress 원호 조각(시트 `rbxassetid://97823357785454`) | Progress 스토리(두께 넷 한 줄)·갤러리 Chips | 조각 이음매에 머리카락 틈·겹친 진한 줄이 없음, 양 끝이 둥글고 캡이 선 굵기와 같음(삐져나온 모서리 없음), 표시와 트랙 사이 간격이 양쪽 같음, 0 %에서 트랙만 닫힌 고리·100 %에서 표시만 닫힌 고리(12시 이음매 없음), 값을 바꾸면 0.3 s에 걸쳐 끝이 미끄러지고 트랙이 점으로 줄었다 사라짐, 비확정이 짧은 호(10 %)↔긴 호(87 %)로 늘었다 줄며 1.5 s마다 90° 툭 건너뛰며 돎, 작은 지름(24)에서 선이 뭉개지지 않음 |  |
 | 32 | M3 Slider·RangeSlider 트랙 조각 둥글림 | 갤러리 Selection "Slider / Switch — M3 vs M2"·Slider·RangeSlider 스토리 | 조각의 바깥 끝은 반원(반경 8), 핸들 쪽 끝은 살짝만 둥근(반경 2) 모서리, 캡과 몸통이 만나는 x = 8에 이음매·틈·진한 줄 없음(비활성 반투명일 때도), 핸들 양옆 틈이 6 px로 같음, 끝에 닿은 조각은 모서리 곡선이 그대로인 채 창이 좁아져 사라짐(툭 사라지지 않음), 끝 점이 트랙 끝에서 중심 6 px 안쪽에 |  |
 | 33 | M3 슬라이더 핸들·라벨 | 같은 곳 | 4x44 막대가 누르는 동안·포커스 동안 2 px로 가늘어지고 게임패드 포커스에 링이 막대를 감쌈, 값 라벨(32 px 알약, 좌우 여백 10, LabelLarge 크기·Regular 굵기)이 핸들 위 12 px에 뜸 — 위 행과 겹쳐 보이는지 |  |
@@ -684,5 +686,4 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 
 ## 크레딧
 
-Material Design 3 명세(Google), RoStrapUI(MIT), qwreey MaterialUI(MIT), 그리고 작성자 본인의 원본 색상 선택기에서 옮긴
-`ColorPicker.Classic` — 자세한 출처와 라이선스는 [`NOTICE.md`](NOTICE.md). 이 키트 자체는 [`LICENSE`](LICENSE).
+Material Design 3 명세(Google), RoStrapUI(MIT), qwreey MaterialUI(MIT) — 자세한 출처와 라이선스는 [`NOTICE.md`](NOTICE.md). 이 키트 자체는 [`LICENSE`](LICENSE).

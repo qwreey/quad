@@ -152,7 +152,6 @@ local Progress = require("@self/Progress")
 local DatePicker = require("@self/DatePicker")
 local ColorPickerModule = require("@self/ColorPicker")
 local TimePickerModule = require("@self/TimePicker")
-local ClassicColorPicker = require("@self/ColorPicker/Classic")
 local SheetStateModule = require("@self/Sheet/State")
 local BottomSheet = require("@self/BottomSheet")
 local SideSheetModule = require("@self/SideSheet")
@@ -242,7 +241,6 @@ export type DatePickerDockedProps = DatePicker.DockedProps
 export type DatePickerRangeProps = DatePicker.RangeDockedProps
 export type DatePickerModalOptions = DatePicker.ModalOptions
 export type DatePickerLocale = DatePicker.Locale
-export type ClassicColorPickerProps = ClassicColorPicker.Props
 export type ColorPickerProps = ColorPickerModule.PanelProps
 export type ColorPickerModalOptions = ColorPickerModule.ModalOptions
 export type HSV = ColorPickerModule.HSV
@@ -359,7 +357,7 @@ return {
 	WavyProgress = Progress.WavyProgress,
 	-- pickers
 	DatePicker = DatePicker,
-	ColorPicker = ColorPickerModule, -- .Panel / .Modal.open / .ColorModel / .Classic
+	ColorPicker = ColorPickerModule, -- .Panel / .Modal.open / .ColorModel
 	TimePicker = TimePickerModule, -- .Dial / .Input / .Modal.open / .Clock
 	-- sheets
 	SheetState = SheetStateModule.SheetState,

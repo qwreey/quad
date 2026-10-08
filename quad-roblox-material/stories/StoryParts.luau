@@ -10,7 +10,7 @@
 	  caption / show   a small label, and a State<T> -> State<string> formatter for live readouts
 ]]
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local D = q.Declaration
 
 local ICON = "rbxassetid://6031094678" -- placeholder image asset (the kit ships none)

@@ -102,7 +102,7 @@ docs-review 3-1 (4)의 답을 쓰려면 사용자 기기가 필요하다(사용�
 **[2026-10-06 기준] 대기 중.** 이 환경의 Studio(wine)에서 플러그인 위젯 크기·도킹을 바꿀 수 없어 UI Labs 창을 못 키웠다. 사용자가 에이전트용 rojo·Studio 도구를 이 샌드박스 밖에서 다듬는 중이고(스테이징), 그게 올라오면 다시 본다. 준비물은 커밋 `d911100a`까지로 끝나 있다 — 킷 쪽 할 일은 없다.
 
 1. **싱크**: 레포 루트에서 `mise exec -- rojo serve consumer-kits.project.json --port 34872` → Studio rojo 플러그인 Connect. `./scripts/test.sh`의 relink가 패키지 폴더를 바꾸면 serve가 죽는다 — 다시 띄우고 다시 Connect.
-2. **UI Labs(편집 모드)**: storybook "quad · Material 3"(24)·"quad · devui (Iris-style debug UI)"(15). 권장 순서 Button → TextField → DatePicker → ColorPicker → ClassicColorPicker(원본 이식, Light/Dark 나란히) → Gallery, devui는 Demo. 볼 것: Controls 패널 값을 바꾸면 다시 그리지 않고 바인딩만 갱신되는가, Slider·DragNum·색 SV 영역이 위젯 안에서 드래그되는가(입력 주입 — 각 킷 src의 Input 모듈).
+2. **UI Labs(편집 모드)**: storybook "quad · Material 3"(24)·"quad · devui (Iris-style debug UI)"(15). 권장 순서 Button → TextField → DatePicker → ColorPicker → Gallery(**[2026-10-08]** ClassicColorPicker 스토리는 원본 이식째 키트에서 뺐다), devui는 Demo. 볼 것: Controls 패널 값을 바꾸면 다시 그리지 않고 바인딩만 갱신되는가, Slider·DragNum·색 SV 영역이 위젯 안에서 드래그되는가(입력 주입 — 각 킷 src의 Input 모듈).
 3. **플레이(F5)**: StarterPlayerScripts의 LocalScript 둘이 Material Gallery와 devui Demo를 띄운다. 게임패드·Escape·선택 가두기·Tooltip inset·Deferred 파괴 순서는 여기서만 보인다. 체크리스트 표는 각 킷 `quad-roblox-material/README.md`·`quad-roblox-devui/README.md`의 Studio에서 보기 절(관측 칸 비움 — 채우면 에이전트가 정리).
 4. **먼저 깨질 수 있는 자리**(실기기 미확인): UI Labs 가상 require가 `.pesde`·`3.2.0` 같은 점 든 폴더 이름을 푸는가(실패 시 quad 첫 require에서 `Unknown script`), UI Labs가 `loadstring`으로 싣는 quad 새 문법(type function·`read`·`<<T>>`) 파싱, StoryKit이 읽는 UI Labs 비공개 주입 전역·고급 컨트롤 데이터 모양, 위젯 좌표계, 스토리 크기 추정값. 에러가 나면 콘솔을 그대로 주면 된다.
 

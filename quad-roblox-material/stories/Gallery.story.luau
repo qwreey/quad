@@ -3,7 +3,7 @@
 -- tooltips open inside the story view, never in a layer of their own) and a per-story Theme driven by the Scheme control.
 -- Tab is a two-way Source: clicking a tab inside the gallery writes it, the control panel can write it too.
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local Gallery = require("../gallery")
 

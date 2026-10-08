@@ -25,10 +25,12 @@
 	that opens popups so they draw inside the story view.
 
 	Input: UI Labs runs stories in a plugin widget where `UserInputService` gets no input. StoryKit reads UI Labs'
-	injected environment (the raw global `__hotreload_env_global_injection__` — the same lookup the optional
-	ui-labs-utils package performs; no third-party code is vendored) and installs its `InputListener` through the
-	kit's `Input.use`, restoring the engine service on cleanup. Outside UI Labs (the Lune specs) the environment is
-	absent and nothing is installed.
+	injected environment (the global `__hotreload_env_global_injection__` of this module's own environment — the same
+	`getfenv()` lookup the optional ui-labs-utils package performs, PepeElToro41/ui-labs-utils@77fddfb:src/Environment.luau;
+	no third-party code is vendored) and installs its `InputListener` through the kit's root `Material.Input.use`,
+	restoring the engine service on cleanup. Every story goes through `StoryKit.story`, so every story gets it. Outside
+	UI Labs the environment is absent and nothing is installed; test/spec.stories.luau loads the stories the way UI
+	Labs does (setfenv'd environment holding the injection) and drags a slider through the fake listener only.
 
 	Controls: literal values (string/number/boolean/Color3) are UI Labs primitive controls. `StoryKit.Slider` and
 	`StoryKit.Choose` build UI Labs advanced-control objects as plain tables — the data shape ui-labs-utils builds
@@ -36,15 +38,16 @@
 	update changes it, these two helpers are the only place to fix.
 ]]
 
-local q = require("../src/Quad")
-local Input = require("../src/Input")
-local Overlay = require("../src/Overlay")
+local q = require("./Quad")
+local Material = require("../src")
+local Input = Material.Input
+local Overlay = Material.Overlay
 
 export type Controls = { [string]: any }
 export type Sources = { [string]: q.Source<any> }
 export type Context = {
 	Target: Instance,
-	Overlay: Overlay.Overlay,
+	Overlay: Material.OverlayType,
 }
 export type Spec = {
 	controls: Controls?,
@@ -103,13 +106,17 @@ function StoryKit.rebuild<T>(key: q.State<T>, build: (value: T) -> Instance, opt
 	})
 end
 
--- UI Labs' injected story environment, or nil outside UI Labs
+-- UI Labs' injected story environment, or nil outside UI Labs. UI Labs loads every module of a story with
+-- `loadstring` + `setfenv`, and the injection is visible only through THIS function's environment (what a plain
+-- `getfenv()` returns — level 1, this function). NOT `pcall(getfenv, 1)`: level 1 is then pcall, a C function, for
+-- which getfenv answers the running thread's globals — UI Labs' own plugin globals, without the injection — so the
+-- listener was never found and every drag in a story ran on the engine UserInputService (2026-10-08).
 local function environment(): any?
-	local ok, env = pcall(getfenv, 1)
-	if not ok or type(env) ~= "table" then
+	local env: any = getfenv()
+	if type(env) ~= "table" then
 		return nil
 	end
-	return (env :: any)[INJECTION_KEY]
+	return env[INJECTION_KEY]
 end
 
 function StoryKit.story(spec: Spec): Story

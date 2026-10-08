@@ -2,7 +2,7 @@
 -- Tooltip: `Tooltip.hook` on a button (Text follows the control while the tooltip is up), a disabled-able hook, and the
 -- bare `Tooltip.Plain` visual. The hook is one-shot per target, so a changed Delay / Gap rebuilds the target.
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local D = q.Declaration
 local StoryParts = require("./StoryParts")

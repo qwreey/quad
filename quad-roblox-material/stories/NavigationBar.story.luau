@@ -3,7 +3,7 @@
 -- IconPosition / Badges are construction-time, so the bar and the rail are rebuilt when they change; the selected
 -- destination is ONE Source shared by both; Expanded drives the rail's WideNavigationRailState.
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local StoryParts = require("./StoryParts")
 local D = q.Declaration

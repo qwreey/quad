@@ -1,5 +1,8 @@
 # 원본 컬러피커 분석 (비교 문서 + 이식 사양)
 
+> **[2026-10-08]** 이 문서가 사양을 적은 이식(`ColorPicker.Classic`)은 키트에서 뺐다(사용자 결정). 지금은 원본 선택기의
+> 구조·에셋·결함 기록으로만 남는다 — 아래 "이식"은 그 지워진 이식을 가리킨다.
+
 대상은 사용자 소유 Roblox 컬러피커 모델(MIT)을 파싱해 얻은 LocalScript 하나다(루트의 rbxm 파일, 레포 밖
 스크래치에 추출본). 인스턴스 트리는 `ScreenGui "colorPicker"`(ZIndexBehavior Global) > `Frame`(크기 1,0,1,0,
 흰 배경) > `UIListLayout`(Horizontal, Padding 32px, 가운데 정렬, LayoutOrder 정렬) + 그 LocalScript 하나다.

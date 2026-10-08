@@ -2,7 +2,7 @@
 -- Divider: Orientation and Inset are construction-time props, so one combined State rebuilds the demo. The three
 -- static samples underneath show every Inset at once.
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local D = q.Declaration
 local StoryParts = require("./StoryParts")

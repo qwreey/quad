@@ -3,7 +3,7 @@
 -- Locale / FirstDayOfWeek / Min / Max / UtcOffset are plain construction-time props, so one combined State rebuilds the
 -- two calendars; the picked dates live in Sources OUTSIDE the rebuild, so they survive it.
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local D = q.Declaration
 local StoryParts = require("./StoryParts")

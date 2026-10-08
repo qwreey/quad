@@ -3,7 +3,7 @@
 -- destinations with icons and a badge, a divider). Count / Kind are construction-time, so the drawer is rebuilt when they
 -- change; the selected destination is one Source shown live, Open / Close drive the DrawerState.
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local D = q.Declaration
 local StoryParts = require("./StoryParts")

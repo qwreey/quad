@@ -3,7 +3,7 @@
 	Channel editing: a two-segment toggle (RGB | HSV) and three compact number boxes whose labels, texts and ranges
 	follow the mode. RGB = bytes 0..255; HSV = degrees 0..360 / percent 0..100 (`ColorModel.Scale.Degrees`).
 
-	A box needs no hand synchronization (the idea of the Classic port's EditBox, restyled):
+	A box needs no hand synchronization:
 	  shown text = focused ? buffer : model text            (a Compute of three things)
 	  buffer     = what the engine currently holds           (`q.OnChange("Text")` echo)
 	  typing     -> buffer, and when the text parses AND differs from what the model shows, `model.typeField` commits it

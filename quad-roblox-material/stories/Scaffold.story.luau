@@ -4,7 +4,7 @@
 -- region (from the bar's current bottom — its scrollbar is never under a bar) and takes innerPadding.Top as its top padding.
 -- Every control is construction-time (rebuilt).
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local StoryParts = require("./StoryParts")
 local D = q.Declaration

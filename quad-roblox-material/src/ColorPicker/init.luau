@@ -9,7 +9,6 @@
 	    -- modal (kit Dialog): draft vs committed
 	    ColorPicker.Modal.open({ Value = brand:Get(), Title = "Brand color", OnConfirm = function(c) brand:Set(c) end })
 	    ColorPicker.ColorModel   -- the pure color math (HSV, hue-preserving writes, hex/channel parsing)
-	    ColorPicker.Classic      -- the near-identical port of the original OOP picker (see Classic/init.luau)
 
 	== Panel ==
 	Layout (top to bottom): SV area · hue slider · [preview | hex field] · RGB/HSV toggle + three number boxes ·
@@ -78,7 +77,6 @@ local Util = require("./Util")
 local Dialog = require("./Dialog")
 local Overlay = require("./Overlay")
 local ColorModel = require("@self/ColorModel")
-local Classic = require("@self/Classic")
 local Model = require("@self/Material/Model")
 local SVArea = require("@self/Material/SVArea")
 local HueSlider = require("@self/Material/HueSlider")
@@ -259,6 +257,5 @@ return {
 	Modal = { open = open },
 	Recent = Recent,
 	ColorModel = ColorModel,
-	Classic = Classic,
 	Defaults = SwatchesModule.Defaults,
 }

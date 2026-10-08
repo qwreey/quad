@@ -2,7 +2,7 @@
 -- Side sheets: a ModalSideSheet opened from a button (options read at click time) and a standard SideSheet docked in a
 -- clipped mock screen, rebuilt when its construction-time props (edge, headline on/off) change; a button toggles it.
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local D = q.Declaration
 local StoryParts = require("./StoryParts")

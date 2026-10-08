@@ -3,7 +3,7 @@
 -- overlay. Is24Hour / LayoutType / Locale are plain construction-time props, so one combined State rebuilds the two
 -- pickers; the time lives in a Source OUTSIDE the rebuild, so it survives it.
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local D = q.Declaration
 local StoryParts = require("./StoryParts")

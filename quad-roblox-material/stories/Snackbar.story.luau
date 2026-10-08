@@ -2,7 +2,7 @@
 -- Snackbar: one host bound to the story overlay. Text / Duration / Close / Action are read from the controls when
 -- "Show" is pressed; the host's `Pending` State (queue length) and the last dismiss reason are shown live.
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local D = q.Declaration
 local StoryParts = require("./StoryParts")

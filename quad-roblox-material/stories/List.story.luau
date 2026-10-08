@@ -2,7 +2,7 @@
 -- List: one ListItem whose texts / Selected / Disabled are Sources (Lines and Clickable are construction-time, so they
 -- rebuild the item), a static List with dividers, and a keyed ListData over a Source<{Item}> with add / remove buttons.
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local D = q.Declaration
 local StoryParts = require("./StoryParts")

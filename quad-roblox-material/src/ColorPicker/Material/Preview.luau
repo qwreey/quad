@@ -1,8 +1,8 @@
 --!strict
 --[[
 	Current-vs-initial preview: ONE rounded square whose `UIGradient` has a hard stop at 50 % — the INITIAL color
-	on the left half, the CURRENT color on the right half (the same trick the Classic port uses; M3 shows the old and
-	the new value side by side in its pickers). The two keypoints are a Compute of `model.initial` and
+	on the left half, the CURRENT color on the right half (M3 shows the old and the new value side by side in its
+	pickers). The two keypoints are a Compute of `model.initial` and
 	`model.color`, so dragging and an outside change of the initial color both just flow; nothing calls an
 	"update preview" function.
 

@@ -3,8 +3,7 @@
 	Gallery section "Pickers": DatePicker (docked calendar, range calendar, modal in English / Korean with text-input
 	mode and a UTC offset), TimePicker (the dial in 12 h and 24 h, the two-field input in 12 h and 24 h — all four on ONE
 	Source<Time>, so they follow each other — and the modal: picker first, 24 h Korean, input first), ColorPicker (inline Material panel bound to one Source<Color3>, the modal with its
-	draft-versus-committed behavior, and the Classic port of the original picker for comparison — see
-	docs/colorpicker-comparison.md).
+	draft-versus-committed behavior).
 
 	This is the heaviest section (hundreds of instances: 42 persistent day cells per calendar, ~110 for the color
 	panel). That is why sections are built lazily and destroyed when the tab is left; the selected date and colors live in
@@ -213,15 +212,6 @@ return function(ctx: Ctx): Instance
 		swatch,
 		Common.Caption(ctx, committedText, false),
 	}
-	local scheme = theme.Scheme:Get()
-	local classic: { Instance } = {
-		Material.ColorPicker.Classic({ Theme = if scheme == "dark" then "Dark" else "Light", Title = "Classic picker" }),
-		Common.Caption(
-			ctx,
-			"The near-identical port of the original OOP picker (own look, 0..255 scale). It reads the scheme once, at construction; see docs/colorpicker-comparison.md for the differences.",
-			true
-		),
-	}
 
 	return Common.Section(ctx, "Pickers", "Pickers", {
 		Common.Group(ctx, "DatePicker: docked and range", docked, "Docked: Monday first, 2026-2027 only, even Sundays disabled. Range: Korean."),
@@ -231,6 +221,5 @@ return function(ctx: Ctx): Instance
 		Common.Group(ctx, "TimePicker: modal", timeModals, "The keyboard / clock button switches input and dial; Cancel and the scrim keep the old value; OK writes it."),
 		Common.Group(ctx, "ColorPicker: panel", panel, "One Source<Color3> in; the picker keeps its own HSV so hue survives black and grey."),
 		Common.Group(ctx, "ColorPicker: modal", colorModal, "Edits a draft; only OK commits."),
-		Common.Group(ctx, "ColorPicker: Classic", classic),
 	})
 end

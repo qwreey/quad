@@ -2,7 +2,7 @@
 -- Dialog: buttons open Dialog.open / confirm / alert in the story overlay. The options are read from the controls at
 -- click time (Dialog options are plain values), the result of the last dialog is a Source shown live.
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local D = q.Declaration
 local StoryParts = require("./StoryParts")

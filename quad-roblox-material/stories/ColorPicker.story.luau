@@ -3,7 +3,7 @@
 -- "Randomize" button to show the outside-write path), Disabled as a State, and a button that opens ColorPicker.Modal.
 -- ShowChannels / AreaHeight are plain props, so one combined State rebuilds the panel (the Source survives).
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local D = q.Declaration
 local StoryParts = require("./StoryParts")

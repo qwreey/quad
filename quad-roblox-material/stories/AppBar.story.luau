@@ -4,7 +4,7 @@
 -- Compose's Scaffold, the scrollbar stays visible), and the bottom app bars. Kind / Behavior / Subtitle / Center are
 -- construction-time (rebuilt).
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local StoryParts = require("./StoryParts")
 local D = q.Declaration

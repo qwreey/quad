@@ -158,7 +158,6 @@ H.section("every host component takes `Hooks` (array-part values) and the hook s
 		return DatePicker.RangeDocked({ Start = q.Source(nil :: DatePicker.Date?), End = q.Source(nil :: DatePicker.Date?), Today = TODAY, Hooks = h })
 	end)
 	probe("ColorPicker.Panel", function(h) return ColorPicker.Panel({ Hooks = h }) end)
-	probe("ColorPicker.Classic", function(h) return ColorPicker.Classic({ Hooks = h }) end)
 	probe("Tooltip.Plain", function(h) return Tooltip.Plain({ Text = "t", Hooks = h }) end)
 	probe("TimePicker.Dial", function(h) return TimePicker.Dial({ Value = q.Source(TimePicker.Clock.time(9, 0)), Hooks = h }) end)
 	probe("TimePicker.Input", function(h) return TimePicker.Input({ Value = q.Source(TimePicker.Clock.time(9, 0)), Hooks = h }) end)
@@ -197,7 +196,7 @@ H.section("every host component takes `Hooks` (array-part values) and the hook s
 		return Toolbar.HorizontalFloatingToolbar({ Expanded = true, Content = {}, FloatingActionButton = { Icon = "x" }, Hooks = h })
 	end)
 	probe("Scaffold", function(h) return ScaffoldModule.Scaffold({ Content = D.Frame {}, Hooks = h }) end)
-	assert(checked == 71, "probed " .. checked)
+	assert(checked == 70, "probed " .. checked)
 	H.assertNoDebugOutput("hooks")
 end)
 

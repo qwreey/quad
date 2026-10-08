@@ -2,7 +2,7 @@
 -- Floating toolbars: horizontal (leading / content / trailing) and vertical, each with and without a FAB; Expanded is a
 -- live Source; Colors and FAB position are construction-time (rebuilt).
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local StoryParts = require("./StoryParts")
 local D = q.Declaration

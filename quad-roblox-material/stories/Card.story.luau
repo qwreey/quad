@@ -3,7 +3,7 @@
 -- Variant / Padding / Gap are construction-time props, so one combined State rebuilds the cards (StoryKit.rebuild).
 -- An interactive card (OnClick), a disabled interactive one, and the click count shown live.
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local D = q.Declaration
 local StoryParts = require("./StoryParts")

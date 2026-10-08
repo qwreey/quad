@@ -63,7 +63,7 @@
 9. **고침** — 원인: 미리보기 물방울의 그림자(`BubbleShadow`)가 물방울 이미지의 **자식**이었다 — ZIndexBehavior Sibling에선 자식이 늘 부모 위에 그려진다
    (원본은 Global + 손 ZIndex로 아래에 뒀음). quad-roblox-material/src/ColorPicker/Classic/HueSlider.luau: 투명 틀(`PreviewBubble`, Visible·UIScale) 안에 그림자(ZIndex 1)와
    물방울 이미지(`BubbleImage`, ZIndex 2)를 형제로. 핸들 그림자도 핸들 아래로 명시(ZIndex 1/2 — 물방울은 핸들의 자손). 인스턴스 +1(창 78 → 79,
-   `quad-roblox-material/docs/colorpicker-comparison.md` 갱신).
+   옛 `quad-roblox-material/docs/colorpicker-comparison.md` 갱신 — **[2026-10-08]** Classic 이식째 키트에서 뺐다).
 10. **고침(원인 추정)** — 원인: 쉬는 라벨을 y = 16에 두었는데 이는 BodyLarge의 24 px 줄 높이 상자를 가정한 값이고, 라벨은 AutomaticSize라 한 줄이면
     상자가 글자 크기(16 px)에 가까워 중심이 24(컨테이너 중심 28보다 4 px 위)에 왔다(quad-roblox-material/src/TextField/Container.luau `labelPos`). 고침: 라벨 `LineHeight = 1`로
     상자 = 글자 크기를 확정하고, 쉬는 위치를 한 줄 필드는 `Height/2 − 8`(기본 56 → 20), 여러 줄은 첫 줄(16) 그대로. 떠오른 위치는 사용자가 괜찮다고 해 그대로.
@@ -504,3 +504,17 @@
 - 폰 화면: 내비게이션 바 324~388(화면 바닥), FAB 304~360 × 252~308 = 오른쪽 16·바 위 16, 스낵바 층 88~252(FAB 위 끝까지); FAB 클릭 → "New item on home" 스낵바 24~368 × 194~236(아래 끝 = FAB 위 − 16, 화면 가운데), 부모는 화면의 `Scaffold.Floating.SnackbarHost.Overlay`(스크린샷 Scaffold_fab_snackbar). 하단 앱 바 두 화면·넓은 바 화면: 영역 아래 끝 = 바 위 끝(1944/1928/274).
 - 콘솔 에러 0(LogService). 끝나고 Edit 모드, 최종 코드 싱크.
 - 미확인: Scaffold 스토리(UI Labs)의 FabPosition Start / Center / EndOverlay와 아래 바 없음 조합 — 스펙만.
+
+## 스토리 드래그 (2026-10-08)
+
+**[2026-10-08 처리 — 서브에이전트]** 사용자 관측: UI Labs 스토리에서 드래그(슬라이더·스위치·시트·색 영역·시간 다이얼·앱 바 등)가 안 먹는다. 킷 소스 경로는 doc-check 색인 밖이라 백틱 없이 적는다.
+
+**원인(확정 — 코드, Luau CLI·Lune·Studio에서 재현)**: UserInputService 문제는 맞지만, 키트 쪽 대체 경로(`Input.use`)는 처음부터 한 번도 설치되지 않았다. quad-roblox-material/stories/StoryKit.luau가 UI Labs 주입 전역 `__hotreload_env_global_injection__`을 `pcall(getfenv, 1)`로 찾았는데, pcall을 거치면 getfenv의 레벨 1이 pcall 자신(C 함수)이 되고 C 함수에 대해 getfenv는 **실행 중 스레드의 전역**(UI Labs 플러그인 자신의 전역)을 돌려준다. UI Labs는 스토리의 모든 모듈을 `loadstring` + `setfenv`로 싣고 주입을 그 모듈 환경의 `__index`에만 둔다(PepeElToro41/ui-labs@1e8f45f:src/Utils/HotReloader/Utils.ts `SetEnvironment`, 주입 키는 PepeElToro41/ui-labs-utils@77fddfb:src/Environment.luau — 거기선 그냥 `getfenv()`). 그래서 리스너를 못 찾았고 모든 드래그가 위젯 안에서 아무 입력도 못 받는 엔진 UserInputService의 `InputChanged`/`InputEnded`를 기다렸다(누름 자체는 GuiObject `InputBegan`이라 시작은 됨 — 눌러도 따라오지 않는 증상). Studio 실측(편집 모드, UI Labs와 같은 로더를 손으로 흉내): 같은 setfenv 청크 안에서 `pcall(getfenv, 1)`은 주입을 못 찾고(false) `getfenv()`는 찾음(true). 스펙이 이걸 못 잡은 이유: test/spec.stories.luau가 주입을 진짜 전역(`_G`·스펙 자신의 `getfenv(1)`)에 넣었는데 Lune에선 모든 모듈이 그 전역 하나를 공유해서 틀린 조회도 통과했다.
+
+**두 번째 우회(확정 — 코드)**: quad-roblox-material/src/AppBar/Scroll.luau가 모듈 스코프에서 `game:GetService("UserInputService")`를 잡아 정착 전 `IsMouseButtonPressed(MouseButton1)`을 엔진에 물었다(유일한 우회 — `GetService("UserInputService")`·모듈 스코프 `Input.service()` 포착을 전수 grep). 위젯 안에선 엔진이 늘 "안 누름"이라 스크롤바 엄지를 잡고 있어도 정착이 끼어든다.
+
+**고침**: (1) StoryKit — 조회를 `getfenv()`로(머리 주석에 이유). 모든 스토리가 `StoryKit.story`를 거치므로 전부 설치된다. (2) quad-roblox-material/src/Input.luau — 교체 중 `IsMouseButtonPressed`를 리스너의 `InputBegan`/`InputEnded`로 센 버튼 상태로 답한다(마우스 버튼 1~3; 미리보기 밖에서 뗀 버튼은 다음 누름까지 "누름"으로 남음 — 머리 주석). 연결 셋(MouseMoved·InputBegan·InputEnded)은 다음 `use`에서 끊는다. (3) Scroll.luau — 쓰는 순간 `Input.service():IsMouseButtonPressed`. 위치 공간: UI Labs 리스너는 스토리 홀더 위의 투명 전체 Frame("UILabsInputListener", ZIndex 50, ui-labs@1e8f45f:src/UI/StoryPreview/PreviewController/index.tsx)의 GuiObject 입력 이벤트를 다시 쏘는 것이라(src/Context/UserInputContext/index.tsx) 위치가 스토리 AbsolutePosition과 같은 위젯 공간이다 — 교체 중 `guiInset()` 0은 맞고, `Interaction.drag`가 쓰는 `InputObject.Position`도 그대로 맞는다(델타는 어디서도 안 씀).
+
+**검증**: test/spec.stories.luau를 UI Labs처럼 싣도록 바꿈 — stories/ 아래 모듈을 소스에서 `loadstring` + `setfenv`(주입은 그 환경의 `__index`에만, 진짜 전역엔 없음을 단언), 그 밖 경로는 보통 require. 새 절 "Slider story: a drag runs on the injected listener alone" — 리스너 신호로만 30 → 50 → 100 끌기·"Last drag ended at 100", 엔진 서비스 연결 수 그대로. spec.appbar 새 절 "story mode (Input.use)" — 엔진은 안 누름, 리스너 InputBegan 동안 정착 없음, InputEnded 뒤 정착. spec.input에 버튼 상태 단언. 음성 대조: StoryKit 조회를 `pcall(getfenv, 1)`로 되돌리면 spec.stories 37절 전부 "the injected InputListener was installed"로, Scroll을 엔진 UIS로 되돌리면 spec.appbar가 "listener-held: no settle"로 실패. Studio(편집 모드, UI Labs 플러그인 "UILabs(DEV)" 설치 확인): 복제한 킷을 UI Labs 로더 흉내로 실어 Slider 스토리 render → 리스너 설치 true, BindableEvent 가짜 리스너로 버튼 누름/뗌·`GetMouseLocation` 정상, cleanup 뒤 복원. **실제 UI Labs 창에서 마우스로 끄는 것은 못 봤다** — MCP 마우스 입력이 플레이(Client) 전용이라 편집 모드 위젯을 끌 수 없음.
+
+**UI Labs에서 볼 점**: Slider·RangeSlider·M2 둘·Switch(끌기)·ColorPicker(SV 영역·색조 막대)·TimePicker(다이얼 끌기)·BottomSheet·SideSheet·NavigationDrawer(끌어 닫기)가 위젯 안에서 포인터를 따라오고 놓으면 끝나는지; 미리보기 밖으로 끌고 나가 놓았을 때 드래그가 남지 않는지(리스너는 미리보기 위에서만 InputEnded를 받음 — 남으면 다시 한 번 누르고 떼면 풀림); AppBar·Scaffold 스토리에서 스크롤바 엄지를 잡은 채 두면 바가 정착하지 않고 놓으면 정착하는지. 같은 `pcall(getfenv, 1)`이 quad-roblox-devui/stories/StoryKit.luau에도 있다(이번엔 손대지 않음 — devui 스토리 드래그도 같은 원인일 것).

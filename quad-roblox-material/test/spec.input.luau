@@ -37,20 +37,34 @@ H.section("use(listener): drag routes to the listener, engine untouched, restore
 	assert(Input.isOverridden() and (Input.service() :: any) ~= UIS)
 	assert(Input.guiInset() == Vector2.new(0, 0), "no inset while overridden")
 	assert(#l.MouseMoved.connections == 1, "one MouseMoved connection")
+	assert(#l.InputBegan.connections == 1 and #l.InputEnded.connections == 1, "button tracking: one InputBegan + one InputEnded")
 
 	local v = q.Source(0)
 	local s = Slider({ Value = v, Min = 0, Max = 100 })
 	H.setAbs(s, 104, 50, 212, 40) -- M3 Slider: handle inset 6 -> a 200 px rail from x = 110
 	H.fire(s, "InputBegan", H.input({ Position = Vector3.new(160, 60, 0) }))
 	assert(math.abs(v:Get() - 25) < 1e-6, "press jumps")
-	assert(#l.InputChanged.connections == 1 and #l.InputEnded.connections == 1, "drag connections are on the listener")
+	assert(#l.InputChanged.connections == 1 and #l.InputEnded.connections == 2, "drag connections are on the listener")
 	assert(conns(UIS) == baseEngine, "nothing on the engine service")
 	l.InputChanged:Fire(H.input({ UserInputType = Enum.UserInputType.MouseMovement, Position = Vector3.new(210, 60, 0) }))
 	assert(math.abs(v:Get() - 50) < 1e-6, "listener move drives the slider, got " .. v:Get())
 	UIS.InputChanged:Fire(H.input({ UserInputType = Enum.UserInputType.MouseMovement, Position = Vector3.new(310, 60, 0) }))
 	assert(math.abs(v:Get() - 50) < 1e-6, "engine signal is ignored")
 	l.InputEnded:Fire(H.input({ UserInputType = Enum.UserInputType.MouseButton1, Position = Vector3.new(210, 60, 0) }))
-	assert(#l.InputChanged.connections == 0 and #l.InputEnded.connections == 0, "drag ended: closed")
+	assert(#l.InputChanged.connections == 0 and #l.InputEnded.connections == 1, "drag ended: closed (tracking stays)")
+
+	-- IsMouseButtonPressed answers from the listener (the engine reports nothing held inside a widget)
+	local svc0 = Input.service()
+	assert(not svc0:IsMouseButtonPressed(Enum.UserInputType.MouseButton1))
+	UIS.MouseButton1Down = true
+	assert(not svc0:IsMouseButtonPressed(Enum.UserInputType.MouseButton1), "the engine's answer is not used")
+	UIS.MouseButton1Down = false
+	l.InputBegan:Fire(H.input({ UserInputType = Enum.UserInputType.MouseButton1 }), false)
+	assert(svc0:IsMouseButtonPressed(Enum.UserInputType.MouseButton1), "held per the listener")
+	assert(not svc0:IsMouseButtonPressed(Enum.UserInputType.MouseButton2))
+	l.InputBegan:Fire(H.input({ UserInputType = Enum.UserInputType.Keyboard, KeyCode = Enum.KeyCode.A }), false)
+	l.InputEnded:Fire(H.input({ UserInputType = Enum.UserInputType.MouseButton1 }), false)
+	assert(not svc0:IsMouseButtonPressed(Enum.UserInputType.MouseButton1), "released per the listener")
 
 	-- GetMouseLocation follows MouseMoved
 	assert(Input.service():GetMouseLocation() == Vector2.new(0, 0))
@@ -77,20 +91,20 @@ H.section("use(listener): drag routes to the listener, engine untouched, restore
 	q.dispose(s)
 	Input.use(nil)
 	assert(not Input.isOverridden() and (Input.service() :: any) == UIS, "restored")
-	assert(listenerConns(l) == 1 or #l.MouseMoved.connections == 0, "MouseMoved connection dropped")
+	assert(listenerConns(l) == 0, "MouseMoved and button-tracking connections dropped")
 	assert(#l.MouseMoved.connections == 0)
 	assert(conns(UIS) == baseEngine)
 	assert(UIS.MouseIconEnabled == true)
 	H.assertNoDebugOutput("input override")
 end)
 
-H.section("a second use() drops the previous MouseMoved connection", function()
+H.section("a second use() drops the previous listener's connections (MouseMoved, button tracking)", function()
 	local a, b = newListener(), newListener()
 	Input.use(a)
 	Input.use(b)
-	assert(#a.MouseMoved.connections == 0 and #b.MouseMoved.connections == 1)
+	assert(listenerConns(a) == 0 and #b.MouseMoved.connections == 1 and listenerConns(b) == 3)
 	Input.use(nil)
-	assert(#b.MouseMoved.connections == 0)
+	assert(listenerConns(b) == 0)
 	-- a listener without MouseMoved works
 	local c = newListener()
 	c.MouseMoved = nil

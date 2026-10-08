@@ -1,6 +1,6 @@
 --!strict
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local D = q.Declaration
 local StoryKit = require("./StoryKit")
 local StoryParts = require("./StoryParts")

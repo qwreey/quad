@@ -598,7 +598,7 @@ H.section("modal: draft vs committed, OK / Cancel / scrim, overlay back to basel
 	assert(overlay.Count:Get() == 0 and #overlay.Layer:GetChildren() == 0)
 	-- the default Recent source exists and is a Source
 	assert(ColorPicker.Recent:Get() ~= nil and #ColorPicker.Defaults == 8)
-	assert(ColorPicker.ColorModel == ColorModel and ColorPicker.Classic ~= nil)
+	assert(ColorPicker.ColorModel == ColorModel)
 	assert(dragConns() == baseDrag and keyConns() == baseKeys, "no connection survives the modals")
 	q.dispose(screen)
 	H.assertNoDebugOutput("modal")

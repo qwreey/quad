@@ -9,8 +9,6 @@
   ported from it: the `Radio` selection uses its radio sprite-sheet image asset (`rbxassetid://4667411351`, 10 frames
   of 40x40) and frame timing, and the `Checkbox` toggle reproduces its four-edge-bar close/open motion (re-implemented
   with Frames, no image).
-- **Color picker** — the `ColorPicker` component is a port of the author's own color picker
-  (`colorPicker-ignoreme.rbxm`, Copyright (c) qwreey), republished here under this kit's MIT License.
 - **Wave textures** — `assets/wavy-progress-sheet-1024.png` (the `WavyProgress` amplitude sprite sheet, published as
   `rbxassetid://96568777229073`) and the earlier single texture `assets/wavy-progress-512x128.png` (`rbxassetid://78445787165309`, no
   longer used) were generated for this kit by `assets/gen-wave.py`; they are not derived from Material Design artwork or any

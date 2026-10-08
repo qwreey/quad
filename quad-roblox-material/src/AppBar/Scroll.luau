@@ -64,9 +64,9 @@
 local q = require("../Quad")
 local Tokens = require("../Tokens")
 local Util = require("../Util")
+local Input = require("../Input")
 
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 
 export type Kind = "Pinned" | "EnterAlways" | "ExitUntilCollapsed"
 
@@ -180,7 +180,7 @@ local function behavior(kind: Kind, o: BehaviorOptions?): TopAppBarScrollBehavio
 		if fraction < 0.01 or fraction == 1 then
 			return
 		end
-		if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+		if Input.service():IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
 			-- a scrollbar thumb held still is not the end of the scroll (Compose settles on the fling's end, after
 			-- the finger lifts): look again once the button is released
 			task.delay(IDLE, settle, v)

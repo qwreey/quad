@@ -3,7 +3,7 @@
 -- cross-fades them all), and a second theme built with `Overrides` from the Brand color control (a different seed is a
 -- different Theme, so the brand row rebuilds) with real components on it. `Theme.default` is never touched.
 local Material = require("../src")
-local q = require("../src/Quad")
+local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local D = q.Declaration
 local StoryParts = require("./StoryParts")
