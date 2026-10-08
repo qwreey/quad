@@ -83,3 +83,15 @@ round14 탐사에서 정상 경로 결함이 0이었고 열린 결정은 UB·문
 - 2파: 위젯 묶음별 병렬(같은 파일을 두 에이전트가 동시에 고치지 않게 파일 단위로 나눈다).
 - 3파: 데모(디버그 창·Material 갤러리), Color picker 시연판·다듬은 판, 비교 문서.
 - 4파: 리뷰 → 반영 → 재리뷰.
+
+## 5. 2026-10-08 이후 순서 (사용자 지시)
+
+Studio QA 1~9차(`feedback/consumer-kits-studio-qa-2026-10-07.md`)를 거친 뒤 사용자가 정한 다음 순서. 원칙: **의견을 보태지 말고 구글 M3 정본 그대로**(사용자 *"오피네이션 빼고 구글의 favor 를 그대로"*), 근거는 구글 구현 원문(Compose material3·material-components-android·material-web). 킷 작업은 서브에이전트(opus 하나씩, 순서대로 — 갤러리·README·`src/init.luau`가 겹쳐 병렬 금지), 메인이 게이트(`quad-roblox-material/test/run.sh` exit 0 && doc-check ERROR 0)·커밋.
+
+1. **(진행 중)** 10차 — 슬라이더 변형(`Centered` 정중앙 고정·`Orientation` 세로 기본 아래 = 최소·`Size` XS~XL·inset icon; 경고 구간은 정본에 없어 안 넣음) + 버튼 아이콘 prop + Split button + DatePicker ▼▲ 이미지화.
+2. Time picker — dial과 input 둘 다(Compose `TimePicker`·`TimeInput`, MDC).
+3. 레이아웃·내비게이션 — 사용자: *"실제로 플러그인 작성하게 되면 레이아웃도 필요해질거야"*. Sheets(bottom·side), Navigation bar(세로로 긴 레이아웃), Navigation drawer(요소 많을 때), Navigation rail(데스크톱), Toolbars(내비게이션 아닌 액션), App bars(사용자: 쉽지만 여기저기서 따로 구현될 바엔 제공하는 게 맞아 보임). 이것으로 정본 요소 전부. **레이아웃이 살짝 만들어지면 사용자가 전체 확인.**
+4. 그 뒤 `/code-review` 한 번 — Gemini(agy, 격리 worktree) + sonnet/opus, opus가 추림 → 메인 판정. 초점: 순수 구현의 비효율·더 나은 구현법·가독성·버그. fork가 fork를 내지 않게(서브에이전트 모델 지정·검증자 상한).
+5. 그다음 round14 재검토로 복귀 — 원장 §2 사용자 몫(릴리즈 절차 Q119·Q124 (4)·Q131, Q125, Q154)·§6 Q184·Q185(엔진 확답은 rojo/새 MCP 뒤), 계획표 P6 반영 묶음.
+
+관련 계획: 아이콘 팩 `research/icon-pack-plan.md`(사용자 결정 다섯 대기), material 킷·아이콘 팩은 게시 때 quad 레포 밖으로 분리(메인 권고 — 사용자 미확정).
