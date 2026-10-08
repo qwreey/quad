@@ -3,6 +3,7 @@
 -- user-only, 12 h / 24 h, the AM/PM toggle, dial tap / drag / keys, text-input validation, the modal's OK / Cancel and
 -- mode toggle, dispose, ripples bounded (no partial Scale, no AutomaticSize anywhere).
 local H = require("./support/harness")
+local InputSink = require("./support/inputsink")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
@@ -12,6 +13,7 @@ local Overlay = require("../src/Overlay")
 local Icons = require("../src/Icons")
 local Util = require("../src/Util")
 local TimePicker = require("../src/TimePicker")
+local Bounded = require("./support/bounded")
 local Clock = TimePicker.Clock
 
 type Time = TimePicker.Time
@@ -404,7 +406,8 @@ H.section("Modal: draft / OK commits / Cancel discards; title, sizes, mode toggl
 		end,
 	})
 	local card = H.find(screen, "TimePickerModal")
-	assert((card :: any).Active == true, "the card sinks input: a click / dial drag on it must not reach the scrim")
+	assert((card :: any).Active == true, "the card keeps 3D input out")
+	InputSink.assertInputSink(card, "the time picker card (a click / dial drag on it must not reach the scrim)")
 	assert(card ~= nil and card.ClassName == "CanvasGroup" and card.Size == UDim2.fromOffset(320, 528), tostring(card and card.Size))
 	assert(card.BackgroundColor3 == L.SurfaceContainerHigh and own(card, "UICorner").CornerRadius == UDim.new(0, 28))
 	local title = H.find(card, "Title")
@@ -529,9 +532,13 @@ H.section("Hooks / Modifier on the hosts; ripples bounded; dispose leaves nothin
 				H.setAbs(sl, 10, 10, (b.Size :: UDim2).X.Offset, (b.Size :: UDim2).Y.Offset)
 			end
 			H.fire(b, "InputBegan", H.input({ Position = Vector3.new(30, 25, 0) }))
-			for _ = 1, 10 do
+			-- through full cover (0.45 s): below a ripple group nothing has any Scale (Ripple.luau "FULL COVER")
+			for _ = 1, 32 do
 				H.advance(1 / 60)
 				assertNoPartialScale(root, b.Name)
+				if H.find(b, "Ripple") ~= nil then
+					Bounded.assertNoScale(b, b.Name)
+				end
 			end
 			H.fire(b, "InputEnded", H.input({}))
 		end

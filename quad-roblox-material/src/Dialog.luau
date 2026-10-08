@@ -57,7 +57,8 @@
 	texture composited every frame while it is up. Fine for one short-lived dialog; swapping to a plain Frame once the enter
 	animation ends is possible but not done (it would also lose the exit fade).
 	M3 deviations: no shadow (a UIShadow inside the CanvasGroup would be clipped; the scrim does the separating).
-	Active = true on the surface keeps clicks on the dialog body from reaching the dismissing scrim.
+	Input: only a GuiButton sinks a GUI click (Active = true on a Frame does not), so the surface carries a `Util.inputSink()`
+	child; the list-laid content lives in an inner "Content" frame so the sink stays a full-cover sibling.
 ]]
 
 local q = require("./Quad")
@@ -324,7 +325,7 @@ local function open(o: OpenOptions): Handle
 			GroupTransparency = fade,
 			UIScale = scale,
 			UICorner = Tokens.Shape.corner("ExtraLarge"),
-			UIPaddingOffset = 24,
+			Util.inputSink(),
 			Util.postHook(function(card: GuiObject)
 				entered:Set(true)
 				if fitMode and measured then
@@ -345,16 +346,24 @@ local function open(o: OpenOptions): Handle
 					refit()
 				end
 			end),
-			D.UIListLayout {
-				FillDirection = Enum.FillDirection.Vertical,
-				HorizontalAlignment = if hasIcon then Enum.HorizontalAlignment.Center else Enum.HorizontalAlignment.Left,
-				SortOrder = Enum.SortOrder.LayoutOrder,
-				Padding = UDim.new(0, 16),
+			D.Frame {
+				Name = "Content",
+				Size = UDim2.fromScale(1, 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				UIPaddingOffset = 24,
+				D.UIListLayout {
+					FillDirection = Enum.FillDirection.Vertical,
+					HorizontalAlignment = if hasIcon then Enum.HorizontalAlignment.Center else Enum.HorizontalAlignment.Left,
+					SortOrder = Enum.SortOrder.LayoutOrder,
+					Padding = UDim.new(0, 16),
+				},
+				icon or q.None,
+				headline or q.None,
+				body or q.None,
+				actionsRow or q.None,
 			},
-			icon or q.None,
-			headline or q.None,
-			body or q.None,
-			actionsRow or q.None,
 		} :: GuiObject
 	end
 

@@ -1,5 +1,6 @@
 --!strict
 local H = require("./support/harness")
+local InputSink = require("./support/inputsink")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
@@ -57,8 +58,9 @@ H.section("open: structure, snapped mount then animated enter", function()
 	local dlg: any = H.find(screen, "Dialog")
 	assert(dlg.ClassName == "CanvasGroup" and dlg.BackgroundColor3 == L.SurfaceContainerHigh)
 	assert(dlg.Size == UDim2.fromOffset(312, 0) and dlg.AutomaticSize == Enum.AutomaticSize.Y and dlg.Active == true)
+	InputSink.assertInputSink(dlg, "the dialog card")
 	assert(own(dlg, "UICorner").CornerRadius == UDim.new(0, 28), "corner 28")
-	assert(own(dlg, "UIPadding").PaddingLeft == UDim.new(0, 24), "padding 24")
+	assert(own(H.find(dlg, "Content"), "UIPadding").PaddingLeft == UDim.new(0, 24), "padding 24")
 	assert(H.find(dlg, "Headline").Text == "Discard draft?" and H.find(dlg, "Headline").TextSize == 24)
 	assert(H.find(dlg, "Headline").TextXAlignment == Enum.TextXAlignment.Center, "icon centers the headline")
 	assert(H.find(dlg, "Body").Text == "Your changes will be lost." and H.find(dlg, "Body").TextColor3 == L.OnSurfaceVariant)
@@ -328,7 +330,7 @@ H.section("D3 small layer: width capped, body scrolls with the card capped to th
 	assert(limit ~= nil, "the scroll body is height-capped")
 	local maxBody = limit.MaxSize.Y
 	assert(maxBody > 0 and maxBody <= 400 - 48 - 48 - 32 - 48, "card within layer height: body max " .. maxBody)
-	assert(H.find(scroll, "Body").Text:sub(1, 5) == "lorem" and H.find(dlg, "Headline").Parent == dlg and H.find(dlg, "Actions").Parent == dlg, "pinned parts are outside the scroll")
+	assert(H.find(scroll, "Body").Text:sub(1, 5) == "lorem" and H.find(dlg, "Headline").Parent == H.find(dlg, "Content") and H.find(dlg, "Actions").Parent == H.find(dlg, "Content"), "pinned parts are outside the scroll")
 	-- an unmeasured layer keeps the plain structure
 	h.Close()
 	H.advance(0.3)

@@ -1,5 +1,6 @@
 --!strict
 local H = require("./support/harness")
+local InputSink = require("./support/inputsink")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
@@ -10,6 +11,7 @@ local Interactive = require("../src/Interactive")
 local DatePicker = require("../src/DatePicker")
 local Calendar = require("../src/DatePicker/Calendar")
 local IconsModule = require("../src/Icons")
+local Bounded = require("./support/bounded")
 local Docked = DatePicker.Docked
 local RangeDocked = DatePicker.RangeDocked
 local Modal = DatePicker.Modal
@@ -326,6 +328,18 @@ H.section("header: the year-menu arrow is the month-year Button's TRAILING icon 
 	H.assertNoDebugOutput("header arrow")
 end)
 
+-- Studio QA 2026-10-08, 10th follow-up: held until the ripple filled it, the month-year button (auto width, trailing icon)
+-- jumped to the full width of the picker — the disc took Size Scale 1 at full cover. Nothing below the ripple group may
+-- have a Scale, through the expand and after full cover (Ripple.luau "NOT SCALE", "FULL COVER").
+H.section("header: the month-year button's ripple never puts a Scale below its group, through full cover (docked)", function()
+	local root = Docked({ Value = q.Source<<Date?>>(nil), Today = TODAY })
+	local btn = headerButton(root)
+	assert(btn.AutomaticSize == Enum.AutomaticSize.X and H.find(btn, "Icon") ~= nil, "auto width with the trailing icon")
+	Bounded.pressBounded(btn, 137.5, 40, "docked header")
+	q.dispose(root)
+	H.assertNoDebugOutput("header ripple")
+end)
+
 -- ── year grid ───────────────────────────────────────────────────────────────
 H.section("year grid: toggles with the label, 3 columns, selects a year, keeps the month", function()
 	local value = q.Source<<Date?>>(date(2026, 2, 10))
@@ -581,7 +595,8 @@ H.section("modal: draft / OK commits / Cancel discards, headline in the locale",
 		end,
 	})
 	local card = H.find(screen, "DatePickerModal")
-	assert((card :: any).Active == true, "the card sinks input: a click / dial drag on it must not reach the scrim")
+	assert((card :: any).Active == true, "the card keeps 3D input out")
+	InputSink.assertInputSink(card, "the date picker card (a click on it must not reach the scrim)")
 	assert(card ~= nil and card.ClassName == "CanvasGroup" and card.Size == UDim2.fromOffset(360, 569))
 	assert(H.find(screen, "Scrim") ~= nil and overlay.Count:Get() == 1)
 	assert(H.find(card, "Headline").Text == "Mon, Oct 5", H.find(card, "Headline").Text)

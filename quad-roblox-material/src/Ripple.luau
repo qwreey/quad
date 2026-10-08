@@ -23,8 +23,8 @@
 	    last whole unit is the label's Position/Size (Offsets — OFFSETS IN LOCAL UNITS below), and `ImageRectSize` /
 	    `ImageRectOffset` select the matching sub-rectangle of the texture (`ScaleType = Stretch`, s = 1024 / 2R texels per
 	    unit): the cut circle is exact — chords cut by the edges, arcs at their ends — and nothing is drawn outside the host.
-	    When the box covers the whole host (the end of every expand) it switches to the full-cover form Position 0 /
-	    Size Scale 1 — the host's exact, possibly fractional, size, which whole Offsets cannot reach.
+	    When the box covers the whole host (the end of every expand) the disc hides and the group paints its own
+	    background instead (FULL COVER below).
 	    History: until 2026-10-07 the circle was a Frame cut to the host + ONE `UICorner` radius imitating "circle cut by
 	    the host edges". A UICorner has one radius, so on a wide host (tab bar) the sliced circle showed as "a rectangle
 	    with rounded corners" (Studio QA 2026-10-07, tab bar) — the disc image replaced it.
@@ -38,16 +38,28 @@
 	    the walk. `k` and `AbsoluteSize` are read together at press, inside input handling: the last layout used the current
 	    UIScale values (tweens step before layout), so they agree; a UIScale that animates AFTER the press scales the whole
 	    ripple with the host, which is right in local units.
-	    NOT SCALE: the 8th fix wrote the box as `UDim2.fromScale` fractions of the host instead. A descendant whose Size or
-	    Position is a partial Scale of an `AutomaticSize` ancestor is a size loop the engine does not resolve (staff, DevForum
-	    "AutomaticSize is influenced by scaled UI elements", 2024-04-29: "not a valid usage for AutomaticSize and is a known
-	    issue" — use a fixed offset; the AutomaticSize beta notes list "scaled children ... scale based on parent's
-	    updated/automatic size ... (double-accounting)", and the max extent of an auto-sized element is "the nearest ancestor
-	    ... with [a size] that isn't determined by AutomaticSize"): an auto-width Button / Chip grew to the full width of
-	    its row while a ripple ran and the row wrapped (Studio QA 2026-10-08, 9th). The full-cover Scale children that have
-	    always been there (the state layer and this CanvasGroup: Position 0, Size 1) did not do that; the regression came
-	    exactly with the partial fractions. So every ripple descendant below the group is Offset-only (test/spec.ripple.luau
-	    "no partial Scale").
+	    NOT SCALE: nothing below the group ever has a Scale component in its Size or Position — not a partial one, not even
+	    the full-cover Scale 1 (test/spec.ripple.luau "no Scale", test/support/bounded.luau). The 8th fix wrote the box as
+	    `UDim2.fromScale` fractions of the host: a descendant whose Size or Position is a partial Scale of an `AutomaticSize`
+	    ancestor is a size loop the engine does not resolve (staff, DevForum "AutomaticSize is influenced by scaled UI
+	    elements", 2024-04-29: "not a valid usage for AutomaticSize and is a known issue" — use a fixed offset; the
+	    AutomaticSize beta notes list "scaled children ... scale based on parent's updated/automatic size ...
+	    (double-accounting)", and the max extent of an auto-sized element is "the nearest ancestor ... with [a size] that
+	    isn't determined by AutomaticSize"): an auto-width Button / Chip grew GRADUALLY to the full width of its row while
+	    a ripple ran and the row wrapped (Studio QA 2026-10-08, 9th). The 9th fix went back to Offsets but kept, at full
+	    cover only, Position 0 / Size Scale 1 on the disc (to reach the host's fractional far edge): an auto-width button
+	    held until the ripple filled it then jumped INSTANTLY to the full available width (the date picker's month-year
+	    button, Studio QA 2026-10-08, 10th follow-up — a press shorter than ~0.2 s is dropped before full cover, which is
+	    why only a long hold showed it). The state layer and this group (Position 0, Size Scale 1, levels 1 and 2 below the
+	    host) have always been there and never did that; why the engine treats a Scale 1 one level deeper differently was
+	    not measured (no Studio was connected) — the rule is simply: the group is the deepest Scale.
+	  - FULL COVER: once the clamped box is the whole host's last whole unit on both axes, the disc's job is done — it is
+	    hidden (`Visible = false`, its last whole-unit Offsets kept) and the group's own background, already the host's
+	    exact size and rounded by the group's `UICorner`, is painted in the ripple color at the ripple opacity. The switch
+	    is seamless: the disc covered everything but a < 1 unit sliver at the far edge, in the same color and alpha. The
+	    fade therefore runs on the group's `GroupTransparency` (0 -> 1, Short4 linear — the same curve the disc's
+	    ImageTransparency used to run), so a cover reached mid-fade fades with it. The expand's Heartbeat connection
+	    ends at full cover (nothing changes after it). Instances per press stay 3.
 	  - TRADE-OFF: a `CanvasGroup` renders its subtree into an offscreen texture of the host's size, so a
 	    group costs texture memory + a composite pass while it exists. They are created lazily on press and
 	    destroyed ~0.2-0.6 s later (and at most `Max` exist at once — the oldest is dropped), never kept at
@@ -78,8 +90,8 @@
 	AbsoluteSize equal the button's (test/spec.button.luau checks the press point end to end).
 	Timing: expand 0.45 s (Motion Long1, Standard easing = Quart Out, evaluated by hand) driven by ONE Heartbeat
 	connection per growing ripple (the clamped part-of-disc above is five properties computed per frame, which tweens
-	cannot express), disconnected when the expand ends, the ripple is dropped or the host dies; fade 0.2 s (Short4,
-	linear) starting at release, an engine tween. The group is removed by a one-shot `task.delay` (fade time + 50 ms),
+	cannot express), disconnected when the expand ends (or reaches FULL COVER), the ripple is dropped or the host dies;
+	fade 0.2 s (Short4, linear) of the group's GroupTransparency starting at release, an engine tween. The group is removed by a one-shot `task.delay` (fade time + 50 ms),
 	cancelled if the host dies first.
 	Pointer-space note: `position` is used as-is against `AbsolutePosition`. If a device shows the ripple
 	offset by the top-bar inset (ScreenGui with `IgnoreGuiInset = false`), set `Ripple.Config.PointerInset`
@@ -236,7 +248,8 @@ local function new(opts: Options): Ripple
 		local dy = math.max(py, hLocal - py)
 		local radius = math.sqrt(dx * dx + dy * dy)
 
-		local transparencySrc = q.Source(1 - opacity)
+		-- the fade drives the whole group (disc and, once it covers, the group's background — FULL COVER in the header)
+		local fadeSrc = q.Source(0)
 		local fadeOpts = Motion.options("Short4", "Linear")
 		local fadeTween = q.Animate(fadeOpts)
 
@@ -244,11 +257,11 @@ local function new(opts: Options): Ripple
 		local entry: Live = { group = nil :: any, held = true, fade = function() end, timer = nil, conn = nil }
 
 		-- one frame of the expand: the part of the disc of radius `r` around the press point that lies inside the host
-		-- rectangle (see BOUNDED in the header)
-		local function shape(r: number)
+		-- rectangle (see BOUNDED in the header). Returns true once the disc covers the whole host (FULL COVER).
+		local function shape(r: number): boolean
 			local circle = circleRef.Value
 			if circle == nil then
-				return
+				return false
 			end
 			-- the circle's box is 2R square around the whole-unit center (R = ceil r); the visible box clamps it to the host
 			local R = math.ceil(r)
@@ -257,25 +270,24 @@ local function new(opts: Options): Ripple
 			if R <= 0 or x1 <= x0 or y1 <= y0 then
 				circle.Size = UDim2.fromOffset(0, 0)
 				circle.ImageRectSize = Vector2.zero
-				return
+				return false
 			end
-			-- covering the whole host (the end of every expand): the full-cover form the state layer and the group already
-			-- use (Position 0, Size Scale 1 — never a partial Scale, see NOT SCALE in the header), reaching the host's exact,
-			-- possibly fractional, far edges that whole Offsets cannot
-			local covers = x0 == 0 and y0 == 0 and x1 == wMax and y1 == hMax
-			if covers then
-				x1, y1 = wLocal, hLocal
-				circle.Position = UDim2.fromScale(0, 0)
-				circle.Size = UDim2.fromScale(1, 1)
-			else
-				circle.Position = UDim2.fromOffset(x0, y0)
-				circle.Size = UDim2.fromOffset(x1 - x0, y1 - y0)
+			-- covering the whole host (the end of every expand): hand over to the group's own background (FULL COVER in
+			-- the header) — the disc hides, nothing below the group ever takes a Scale
+			if x0 == 0 and y0 == 0 and x1 == wMax and y1 == hMax then
+				local group = entry.group :: CanvasGroup
+				group.BackgroundTransparency = 1 - opacity
+				circle.Visible = false
+				return true
 			end
+			circle.Position = UDim2.fromOffset(x0, y0)
+			circle.Size = UDim2.fromOffset(x1 - x0, y1 - y0)
 			-- texture pixels per local unit: the disc's 2R box shows the whole 1024 texture (the disc is 1023 px wide in it
 			-- — 0.1 % — not corrected)
 			local s = DISC_SIZE / (2 * R)
 			circle.ImageRectSize = Vector2.new((x1 - x0) * s, (y1 - y0) * s)
 			circle.ImageRectOffset = Vector2.new((x0 - (px - R)) * s, (y0 - (py - R)) * s)
+			return false
 		end
 
 		local circle = D.ImageLabel {
@@ -287,7 +299,7 @@ local function new(opts: Options): Ripple
 			Size = UDim2.fromOffset(0, 0),
 			ImageRectSize = Vector2.zero,
 			ImageColor3 = opts.Color,
-			ImageTransparency = transparencySrc:Apply(fadeTween),
+			ImageTransparency = 1 - opacity,
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			-- mounted at size 0, then grown frame by frame for the expand time (one Heartbeat connection per growing
@@ -297,8 +309,9 @@ local function new(opts: Options): Ripple
 				entry.conn = RunService.Heartbeat:Connect(function(dt: number)
 					t += dt
 					local a = math.min(t / EXPAND_TIME, 1)
-					shape(radius * (1 - (1 - a) ^ 4)) -- Quart Out = the M3 Standard easing's kit mapping
-					if a >= 1 and entry.conn ~= nil then
+					-- Quart Out = the M3 Standard easing's kit mapping; once the disc covers the host nothing changes any more
+					local covered = shape(radius * (1 - (1 - a) ^ 4))
+					if (covered or a >= 1) and entry.conn ~= nil then
 						entry.conn:Disconnect()
 						entry.conn = nil
 					end
@@ -308,7 +321,10 @@ local function new(opts: Options): Ripple
 		local g = D.CanvasGroup {
 			Name = "Ripple",
 			Size = UDim2.fromScale(1, 1),
+			-- painted (1 - opacity) only from full cover on, in the ripple color, under the group's corner
+			BackgroundColor3 = opts.Color,
 			BackgroundTransparency = 1,
+			GroupTransparency = fadeSrc:Apply(fadeTween),
 			BorderSizePixel = 0,
 			UICorner = corner,
 			circle,
@@ -317,7 +333,7 @@ local function new(opts: Options): Ripple
 		-- Release: start the fade tween, and remove the group once it has finished. A timer (not the tween's
 		-- `Completed`) so removal does not depend on the engine tween's notification path.
 		entry.fade = function()
-			transparencySrc:Set(1)
+			fadeSrc:Set(1)
 			entry.timer = task.delay(fadeOpts.Time + 0.05, function()
 				entry.timer = nil
 				drop(g)

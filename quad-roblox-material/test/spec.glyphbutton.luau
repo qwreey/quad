@@ -6,6 +6,7 @@ q.debug = true
 local Tokens = require("../src/Tokens")
 local Util = require("../src/Util")
 local GlyphButton = require("../src/GlyphButton")
+local Bounded = require("./support/bounded")
 
 local L = Tokens.Color.Light
 
@@ -143,19 +144,18 @@ H.section("ripple under ancestor UIScales: local-unit Offsets that cover the WHO
 		for _ = 1, 60 do
 			H.advance(1 / 120)
 			local p, z = circle.Position, circle.Size
-			if z == UDim2.fromScale(1, 1) then
-				assert(p == UDim2.fromScale(0, 0), "full cover at the origin")
+			Bounded.assertNoScale(b, "glyph (k " .. k .. ")")
+			if Bounded.isCovered(circle) then
 				reachedRight, reachedBottom = true, true
 				continue
 			end
-			assert(p.X.Scale == 0 and p.Y.Scale == 0 and z.X.Scale == 0 and z.Y.Scale == 0, "no partial Scale (the AutomaticSize loop)")
 			assert(p.X.Offset >= 0 and p.Y.Offset >= 0 and p.X.Offset + z.X.Offset <= 40 and p.Y.Offset + z.Y.Offset <= 40, "inside the 40-unit host")
 			reachedRight = reachedRight or p.X.Offset + z.X.Offset == 40
 			reachedBottom = reachedBottom or p.Y.Offset + z.Y.Offset == 40
 		end
 		assert(reachedRight and reachedBottom, "the disc reaches the right and bottom edges (k " .. k .. ")")
 		H.advance(0.5)
-		assert(circle.Position == UDim2.fromScale(0, 0) and circle.Size == UDim2.fromScale(1, 1), "ends covering the whole host (k " .. k .. ")")
+		Bounded.assertCovered(circle, "ends covering the whole host (k " .. k .. ")")
 		q.dispose(root)
 	end
 	H.assertNoDebugOutput("ripple under UIScale")

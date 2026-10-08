@@ -3,6 +3,7 @@
 -- Items / Headline / Divider — Compose tokens, the scrim fraction, drag thresholds (half / 400 px/s), Escape on the shared
 -- Overlay stack, selection (Tabs rule), ripple BOUNDED, dispose.
 local H = require("./support/harness")
+local InputSink = require("./support/inputsink")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
 local D = q.Declaration
@@ -179,7 +180,7 @@ H.section("sheets: modal surfaceContainerLow + end corners 16, standard surface,
 	local np = H.countDescendants(psheet) + 1
 	print(`[drawer] sheets: modal {nm} (1 row), permanent {np} (empty)`)
 	H.resetOutput()
-	assert(nm == 7 and np == 4, `counts {nm} / {np}`)
+	assert(nm == 8 and np == 4, `counts {nm} / {np}`)
 	q.dispose(m)
 	q.dispose(dsheet)
 	q.dispose(psheet)
@@ -204,7 +205,9 @@ H.section("ModalNavigationDrawer: closed and hidden at rest; Open slides in with
 	local host, drawer, scrim = modalDrawer(state)
 	assert(host.ClipsDescendants == true and host.Size == UDim2.fromScale(1, 1) and H.find(host, "Page") ~= nil)
 	assert(drawer.Position == UDim2.fromOffset(-360, 0) and drawer.Visible == false and scrim.Visible == false, "closed: not shown")
-	assert(drawer.Active == true and H.find(drawer, "ModalDrawerSheet").Active == true, "the surfaces above the scrim sink presses")
+	assert(drawer.Active == true and H.find(drawer, "ModalDrawerSheet").Active == true, "the surfaces above the scrim sink 3D input")
+	InputSink.assertInputSink(drawer, "the drawer holder")
+	InputSink.assertInputSink(H.find(drawer, "ModalDrawerSheet"), "the modal drawer sheet")
 	assert(scrim.BackgroundTransparency == 1)
 	state.Open()
 	assert(drawer.Visible and scrim.Visible and state.TargetValue:Get() == "Open" and not state.IsOpen:Get())

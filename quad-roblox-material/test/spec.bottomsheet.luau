@@ -2,6 +2,7 @@
 -- Bottom sheets: BottomSheetScaffold (standard) and ModalBottomSheet.open (modal) — Compose geometry, SheetState,
 -- drag thresholds (positional 56 / velocity 125), handle clicks, back key, scrim, dispose.
 local H = require("./support/harness")
+local InputSink = require("./support/inputsink")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
 local D = q.Declaration
@@ -300,7 +301,8 @@ H.section("modal: opens Hidden, shows after the first layout (rises), scrim foll
 	local sheet = H.find(root, "BottomSheet")
 	local scrim = H.find(root, "Scrim")
 	assert(own(sheet, "UIShadow") == nil, "modal: no shadow (tonal 0)")
-	assert(sheet.Active == true and root.Active ~= true, "the sheet above the scrim sinks presses; the full-size root does not")
+	assert(sheet.Active == true and root.Active ~= true, "the sheet above the scrim keeps 3D input out; the full-size root does not")
+	InputSink.assertInputSink(sheet, "the modal bottom sheet")
 	assert(scrim.BackgroundColor3 == L.Scrim and scrim.BackgroundTransparency == 1 and scrim.Selectable == false)
 	assert(offsetOf(sheet) == 0, "mounted hidden")
 	layout(screen, 200)

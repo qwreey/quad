@@ -36,6 +36,7 @@
 local q = require("../Quad")
 local Tokens = require("../Tokens")
 local Theme = require("../Theme")
+local Util = require("../Util")
 local Elevation = require("../Elevation")
 local Anchored = require("../Sheet/Anchored")
 local Slide = require("../Sheet/Slide")
@@ -190,9 +191,10 @@ local function build(cfg: Config): Built
 		Position = position,
 		BackgroundColor3 = theme.Color.SurfaceContainerLow,
 		BorderSizePixel = 0,
-		Active = true,
+		Active = true, -- 3D / camera input only; a modal sheet's GUI clicks are sunk by the InputSink child
 		ZIndex = 2,
 		UICorner = UDim.new(0, CORNER),
+		if cfg.Modal then Util.inputSink() else q.None,
 		slide.Hook(),
 		D.UISizeConstraint { MaxSize = Vector2.new(cfg.MaxWidth, math.huge) },
 		if cfg.Shadow then Elevation.Shadow({ Level = cfg.Shadow, Theme = theme }) else q.None,

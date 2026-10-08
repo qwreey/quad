@@ -2,6 +2,7 @@
 -- Side sheets: SideSheet (standard) and ModalSideSheet.open (modal) — MDC SideSheetBehavior geometry, tokens, the release
 -- rule (outwards -> Expanded; significant 500 px/s swipe or past half -> Hidden), header, Escape / scrim, dispose.
 local H = require("./support/harness")
+local InputSink = require("./support/inputsink")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
 local D = q.Declaration
@@ -158,7 +159,8 @@ H.section("modal: tokens (surfaceContainerLow, inner corner 16, shadow 1), slide
 	})
 	local s: any = H.find(screen, "SideSheet")
 	assert(s.BackgroundColor3 == L.SurfaceContainerLow and own(s, "UICorner").CornerRadius == UDim.new(0, 16))
-	assert(s.Active == true, "the sheet above the scrim sinks presses (empty padding / header included)")
+	assert(s.Active == true, "the sheet above the scrim keeps 3D input out")
+	InputSink.assertInputSink(s, "the modal side sheet")
 	assert(own(s, "UIShadow") ~= nil, "level-1 shadow")
 	local patch = H.find(s, "CornerPatch")
 	assert(patch.AnchorPoint == Vector2.new(1, 0) and patch.Size == UDim2.new(0, 16, 1, 0), "the outer (right) corners squared off")
@@ -169,7 +171,7 @@ H.section("modal: tokens (surfaceContainerLow, inner corner 16, shadow 1), slide
 	local n = H.countDescendants(s) + 1
 	print(`[sidesheet] modal with header: {n} instances`)
 	H.resetOutput()
-	assert(n == 16, "modal count " .. n)
+	assert(n == 17, "modal count " .. n)
 	-- Escape closes; the sheet slides out during the exit time
 	UIS.InputBegan:Fire(H.input({ KeyCode = Enum.KeyCode.Escape, UserInputType = Enum.UserInputType.Keyboard }), false)
 	assert(not handle.IsOpen:Get() and #results == 1)

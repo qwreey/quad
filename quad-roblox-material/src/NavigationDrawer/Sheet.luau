@@ -54,7 +54,8 @@ local function sheet(kind: Kind, props: Props?): Frame
 		D.Modifier.Frame():Size(UDim2.new(0, width, 1, 0)),
 		BackgroundColor3 = color,
 		BorderSizePixel = 0,
-		Active = true,
+		Active = true, -- 3D / camera input only; a GUI click is sunk by the InputSink (modal)
+		if modal then Util.inputSink() else q.None,
 		p.Modifier or q.None,
 		if modal then D.UICorner { CornerRadius = UDim.new(0, CORNER) } else q.None,
 		if modal then Parts.patch("Left", CORNER, color) else q.None,

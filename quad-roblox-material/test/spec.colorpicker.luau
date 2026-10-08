@@ -8,6 +8,7 @@ local Tokens = require("../src/Tokens")
 local Overlay = require("../src/Overlay")
 local ColorPicker = require("../src/ColorPicker")
 local ColorModel = require("../src/ColorPicker/ColorModel")
+local Bounded = require("./support/bounded")
 
 local L = Tokens.Color.Light
 local UIS = H.UserInputService
@@ -719,13 +720,13 @@ H.section("modal on a small layer: the whole card scales to fit (no width cap, n
 	for _ = 1, 60 do
 		H.advance(1 / 120)
 		local p, z = circle.Position, circle.Size
-		if z ~= UDim2.fromScale(1, 1) then
-			assert(p.X.Scale == 0 and p.Y.Scale == 0 and z.X.Scale == 0 and z.Y.Scale == 0, "no partial Scale")
+		Bounded.assertNoScale(ok, "OK")
+		if not Bounded.isCovered(circle) then
 			assert(p.X.Offset >= 0 and p.Y.Offset >= 0 and p.X.Offset + z.X.Offset <= 58 and p.Y.Offset + z.Y.Offset <= 40, "inside the local 58 x 40")
 		end
 	end
 	H.advance(0.5)
-	assert(circle.Position == UDim2.fromScale(0, 0) and circle.Size == UDim2.fromScale(1, 1), "covers the button")
+	Bounded.assertCovered(circle, "covers the button")
 	H.fire(ok, "InputEnded", H.input({}))
 	handle.Close(false)
 	H.advance(0.6)

@@ -15,6 +15,7 @@ local Tooltip = require("../src/Tooltip")
 local Overlay = require("../src/Overlay")
 local Interactive = require("../src/Interactive")
 local Util = require("../src/Util")
+local Bounded = require("./support/bounded")
 
 local UIS = H.UserInputService
 local function uisConns(): number
@@ -713,6 +714,23 @@ H.section("SplitButton: variants (kit Button roles), Outlined inner outline on e
 	q.dispose(sb)
 	assert(uisConns() == baseConns)
 	H.assertNoDebugOutput("split variants")
+end)
+
+-- Studio QA 2026-10-08, 10th follow-up: an auto-width button (the date picker's month-year button: Text, trailing icon)
+-- held until the ripple filled it jumped to the full available width — the disc took Size Scale 1 at full cover. Below a
+-- ripple group nothing has any Scale, through the expand and after full cover (Ripple.luau "NOT SCALE", "FULL COVER").
+H.section("auto-width buttons: no Scale below the ripple group, through full cover (leading / trailing icon, none)", function()
+	for _, o in {
+		{ Variant = "Text", Label = "October 2026", Icon = "arrowDown", IconPosition = "Trailing" },
+		{ Variant = "Filled", Label = "Save", Icon = "arrowDown" },
+		{ Variant = "Outlined", Label = "Cancel" },
+	} :: { Button.Props } do
+		local btn = Button(o)
+		assert(btn.AutomaticSize == Enum.AutomaticSize.X, "auto width")
+		Bounded.pressBounded(btn, 121.5, 40, `{o.Variant} {o.IconPosition or ""}`)
+		q.dispose(btn)
+	end
+	H.assertNoDebugOutput("auto-width full cover")
 end)
 
 H.done()

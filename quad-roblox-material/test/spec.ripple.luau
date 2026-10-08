@@ -12,6 +12,7 @@ local Chip = require("../src/Chip")
 local Overlay = require("../src/Overlay")
 local DatePicker = require("../src/DatePicker")
 local Calendar = require("../src/DatePicker/Calendar")
+local Bounded = require("./support/bounded")
 
 local theme = Theme.default
 local FULL = UDim.new(0.5, 0)
@@ -31,16 +32,16 @@ local function mountButton(opts: Interactive.Options?)
 	return btn, layer, fx
 end
 
--- the circle's box in host local units (= screen pixels here: no UIScale). Ripple writes whole Offsets, or the full-cover
--- form Position 0 / Size Scale 1 once the box covers the host — never a PARTIAL Scale (an AutomaticSize ancestor cannot
--- resolve one: Studio QA 2026-10-08, 9th — Ripple.luau "NOT SCALE")
+-- the circle's box in host local units (= screen pixels here: no UIScale). Ripple writes whole Offsets while the disc
+-- grows; once the box covers the host the disc hides and its group paints the whole host (FULL COVER) — never any Scale
+-- below the group (an AutomaticSize ancestor: Studio QA 2026-10-08, 9th and 10th follow-up — Ripple.luau "NOT SCALE")
 local function box(circle: any, w: number, h: number): (number, number, number, number)
 	local p, z = circle.Position, circle.Size
-	if z == UDim2.fromScale(1, 1) then
-		assert(p == UDim2.fromScale(0, 0), "full cover sits at the origin: " .. tostring(p))
+	assert(p.X.Scale == 0 and p.Y.Scale == 0 and z.X.Scale == 0 and z.Y.Scale == 0, "no Scale: " .. tostring(p) .. " " .. tostring(z))
+	if Bounded.isCovered(circle) then
+		Bounded.assertCovered(circle, "box")
 		return 0, 0, w, h
 	end
-	assert(p.X.Scale == 0 and p.Y.Scale == 0 and z.X.Scale == 0 and z.Y.Scale == 0, "no partial Scale: " .. tostring(p) .. " " .. tostring(z))
 	return p.X.Offset, p.Y.Offset, z.X.Offset, z.Y.Offset
 end
 
@@ -75,7 +76,7 @@ H.section("press: one CanvasGroup + disc (3 instances), geometry from the press 
 	assert(circle.Position == UDim2.fromOffset(20, 10), "origin = press point relative to the host: " .. tostring(circle.Position))
 	assert(circle.Size == UDim2.fromOffset(0, 0), "mounts at size 0 (snapped)")
 	assert(math.abs(circle.ImageTransparency - 0.9) < 1e-9 and circle.BackgroundTransparency == 1, "ripple opacity .10")
-	assert(group.Size == UDim2.fromScale(1, 1))
+	assert(group.Size == UDim2.fromScale(1, 1) and group.GroupTransparency == 0 and group.BackgroundTransparency == 1, "the group: unfaded, unpainted")
 	assert(circle.ClassName == "ImageLabel" and circle.Image == "rbxassetid://89858938964426")
 	-- early in the grow the shape is the whole disc (radius < the 10 px to the nearest edge)
 	H.advance(0.002)
@@ -92,7 +93,9 @@ H.section("press: one CanvasGroup + disc (3 instances), geometry from the press 
 		assert(x0 + bw <= 100 + 1e-6 and y0 + bh <= 40 + 1e-6, "inside (bottom-right): " .. tostring(circle.Position) .. " " .. tostring(circle.Size))
 	end
 	H.advance(0.1)
-	assert(circle.Position == UDim2.fromScale(0, 0) and circle.Size == UDim2.fromScale(1, 1), "ends covering the host: " .. tostring(circle.Size))
+	-- FULL COVER: the disc hides, the group's own background paints the host in the ripple color at .10
+	Bounded.assertCovered(circle, "press")
+	assert(math.abs(group.BackgroundTransparency - 0.9) < 1e-9 and group.BackgroundColor3 == circle.ImageColor3, "the group paints .10 in the ripple color")
 	-- rounded clip: the group carries the host's corner
 	local corner = H.find(group, "_quad_round")
 	assert(corner ~= nil and corner.CornerRadius == FULL, "group clips with the host's corner radius")
@@ -109,7 +112,7 @@ H.section("release fades and the ripple is removed after the fade (instances bac
 	local circle = H.find(btn, "RippleCircle")
 	assert(circle ~= nil)
 	H.finishTweens()
-	assert(circle.ImageTransparency == 1, "faded out")
+	assert(circle.Parent.GroupTransparency == 1, "faded out (the whole group)")
 	assert(#groups(btn) == 1, "still mounted until the fade timer")
 	H.advance(0.1)
 	assert(#groups(btn) == 1, "fade not over yet")
@@ -256,7 +259,7 @@ H.section("wide host (160x48, pressed in the middle): the box stays inside the h
 		assert(x0 == math.floor(x0) and bw == math.floor(bw) and y0 == math.floor(y0) and bh == math.floor(bh), "whole pixels")
 		-- (a) inside the host
 		assert(x0 >= 0 and y0 >= 0 and x0 + bw <= 160 and y0 + bh <= 48, "inside: " .. tostring(p) .. " " .. tostring(z))
-		if bw == 0 then
+		if bw == 0 or Bounded.isCovered(circle) then
 			continue
 		end
 		local rs, ro = circle.ImageRectSize, circle.ImageRectOffset
@@ -281,7 +284,7 @@ H.section("wide host (160x48, pressed in the middle): the box stays inside the h
 	end
 	assert(sawSquare and sawCut, "both phases observed")
 	H.advance(0.5)
-	assert(circle.Size == UDim2.fromScale(1, 1) and circle.Position == UDim2.fromScale(0, 0), "ends covering the host")
+	Bounded.assertCovered(circle, "wide")
 	q.dispose(host)
 	H.assertNoDebugOutput("wide ripple")
 end)
@@ -298,25 +301,12 @@ end)
 
 -- Studio QA 2026-10-08, 9th: with the ripple written as partial Scale fractions of the host (the 8th fix), an auto-width
 -- Button / Chip grew to the full width of its row while a ripple ran and the row wrapped — the engine's AutomaticSize
--- cannot resolve a descendant sized by a partial Scale of the auto-sized ancestor. The mock has no AutomaticSize, so the
--- CAUSE is asserted: inside a ripple group there is no partial Scale anywhere (whole Offsets, or the full-cover form that
--- the state layer itself uses), at every frame of the expand, and the box stays inside the host's local size.
-local function assertNoPartialScale(root: any, label: string)
-	local gs = groups(root)
-	assert(#gs > 0, label .. ": a ripple is running")
-	for _, g in gs do
-		assert(g.Size == UDim2.fromScale(1, 1) and (g.Position or UDim2.new()) == UDim2.new(), label .. ": the group is full-cover")
-		local drawn = H.findAll(g, function(x: any): boolean
-			return x.ClassName == "ImageLabel" or x.ClassName == "Frame"
-		end)
-		for _, c in drawn do
-			local p, z = c.Position or UDim2.new(), c.Size or UDim2.new()
-			local full = p == UDim2.fromScale(0, 0) and z == UDim2.fromScale(1, 1)
-			assert(full or (p.X.Scale == 0 and p.Y.Scale == 0 and z.X.Scale == 0 and z.Y.Scale == 0),
-				label .. ": no partial Scale under an AutomaticSize host: " .. tostring(p) .. " " .. tostring(z))
-		end
-	end
-end
+-- cannot resolve a descendant sized by a partial Scale of the auto-sized ancestor. 10th follow-up: the 9th fix still put
+-- Position 0 / Size Scale 1 on the disc at full cover, and an auto-width button held until the ripple filled it jumped to
+-- the full available width (the date picker's month-year button). The mock has no AutomaticSize, so the CAUSE is
+-- asserted (test/support/bounded.luau): below a ripple group there is no Scale at all, at every frame of the expand and
+-- after full cover, and the box stays inside the host's local size.
+local assertNoScale = Bounded.assertNoScale
 
 -- presses `host` at `rel` (screen pixels from its top-left) with the layer laid out at `wl x hl` LOCAL units under a
 -- total UIScale `k` (so `wl * k` screen pixels), then checks every frame: no partial Scale, the box (local units) inside the host's local size and
@@ -338,7 +328,7 @@ local function pressAndTrack(host: any, label: string, wl: number, hl: number, k
 	local right, bottom = false, false
 	for _ = 1, 60 do
 		H.advance(1 / 120)
-		assertNoPartialScale(host, label)
+		assertNoScale(host, label)
 		local x0, y0, bw, bh = box(circle, wl, hl)
 		assert(x0 >= 0 and y0 >= 0 and x0 + bw <= wl + 1e-6 and y0 + bh <= hl + 1e-6, label .. ": inside the host's local size")
 		if bw > 0 and x0 > 0 and y0 > 0 and x0 + bw < math.floor(wl) and y0 + bh < math.floor(hl) then
@@ -349,8 +339,11 @@ local function pressAndTrack(host: any, label: string, wl: number, hl: number, k
 	end
 	assert(right and bottom, label .. ": reaches the right and bottom edges")
 	H.advance(0.5)
-	assert(circle.Position == UDim2.fromScale(0, 0) and circle.Size == UDim2.fromScale(1, 1), label .. ": ends covering the host")
+	Bounded.assertCovered(circle, label)
 	H.fire(host, "InputEnded", H.input({}))
+	-- the fade after full cover keeps the rule
+	H.advance(0.1)
+	assertNoScale(host, label .. " (fading)")
 	H.advance(0.5)
 end
 
@@ -396,6 +389,16 @@ H.section("under a UIScale 0.8 (DatePicker modal fitted to a small layer): offse
 	end
 	assert(ok ~= nil and ok.AutomaticSize == Enum.AutomaticSize.X, "the auto-width OK button")
 	pressAndTrack(ok, "OK", 58.5, 40, 0.8, Vector2.new(44, 29))
+	-- the month-year header (auto width, trailing arrow icon) held until the ripple fills it — the 10th follow-up's button
+	local headerBtn: any = nil
+	for _, b in buttons do
+		if labelOf(b) == "October 2026" then
+			headerBtn = b
+		end
+	end
+	assert(headerBtn ~= nil and headerBtn.AutomaticSize == Enum.AutomaticSize.X, "the auto-width month-year header")
+	assert(H.find(headerBtn, "Icon") ~= nil, "with its trailing icon")
+	pressAndTrack(headerBtn, "month-year header", 137.25, 40, 0.8, Vector2.new(90.3, 28.6))
 	q.dispose(screen)
 	H.assertNoDebugOutput("ripple under UIScale")
 end)

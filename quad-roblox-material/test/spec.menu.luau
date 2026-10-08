@@ -1,11 +1,13 @@
 --!strict
 local H = require("./support/harness")
+local InputSink = require("./support/inputsink")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
 local D = q.Declaration
 local Menu = require("../src/Menu")
 local Overlay = require("../src/Overlay")
 local Tokens = require("../src/Tokens")
+local Bounded = require("./support/bounded")
 
 local L = Tokens.Color.Light
 
@@ -66,6 +68,7 @@ H.section("open: panel under the anchor, items, divider, scrim is transparent", 
 	assert(menu.Position == UDim2.fromOffset(200, 106) and menu.AnchorPoint == Vector2.new(0.5, 0), "below the anchor (top-center pivot)")
 	assert(menu.Size == UDim2.fromOffset(200, 16 + 48 * 4 + 17), "anchor width, content height")
 	assert(menu.BackgroundColor3 == L.SurfaceContainer and menu.Active == true)
+	InputSink.assertInputSink(menu, "the menu panel (opens with a scrim)")
 	assert(#itemsOf(screen) == 4 and H.find(screen, "Divider") ~= nil)
 	local scrim = H.find(screen, "Scrim")
 	H.finishTweens()
@@ -178,7 +181,7 @@ H.section("items ripple over the whole row; a scrolling list has a themed thumb 
 	local circle = H.find(row, "RippleCircle")
 	assert(circle ~= nil, "a press ripples (M3 DropdownMenuItem: ripple(true))")
 	H.advance(0.6)
-	assert(circle.Position == UDim2.fromScale(0, 0) and circle.Size == UDim2.fromScale(1, 1), "the ripple ends covering the whole row (to the panel edge)")
+	Bounded.assertCovered(circle, "the ripple ends covering the whole row (to the panel edge)")
 	H.fire(row, "InputEnded", H.input({}))
 	h.Close()
 	H.advance(0.5)

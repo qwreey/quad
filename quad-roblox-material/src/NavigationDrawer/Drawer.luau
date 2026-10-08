@@ -151,9 +151,10 @@ local function slidingDrawer(props: ModalProps, modal: boolean): Frame
 		BorderSizePixel = 0,
 		Visible = shown,
 		ZIndex = 3,
-		-- sinks presses over the drawer even when the DrawerContent is not Active itself: a press on empty sheet padding must
-		-- never reach the scrim below (Studio, 2026-10-08: picker modal cards without Active closed on a press)
+		-- Active only keeps 3D / camera input out; a GUI click on empty sheet padding reaches the scrim below through a plain
+		-- frame (Studio, 2026-10-08), so a modal holder carries an InputSink (a GuiButton) as well
 		Active = true,
+		if modal then Util.inputSink() else q.None,
 		slide.Hook(),
 		props.DrawerContent,
 	}

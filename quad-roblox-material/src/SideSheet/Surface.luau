@@ -34,6 +34,7 @@
 local q = require("../Quad")
 local Tokens = require("../Tokens")
 local Theme = require("../Theme")
+local Util = require("../Util")
 local Text = require("../Text")
 local Elevation = require("../Elevation")
 local Icons = require("../Icons")
@@ -172,7 +173,8 @@ local function build(cfg: Config): Built
 		Position = position,
 		BackgroundColor3 = container,
 		BorderSizePixel = 0,
-		Active = true,
+		Active = true, -- 3D / camera input only; a modal sheet's GUI clicks are sunk by the InputSink child
+		if cfg.Modal then Util.inputSink() else q.None,
 		cfg.Modifier or q.None,
 		slide.Hook(),
 		if cfg.Modal then D.UICorner { CornerRadius = UDim.new(0, CORNER) } else q.None,
