@@ -32,6 +32,7 @@ local Tabs = require("../src/Tabs")
 local Progress = require("../src/Progress")
 local DatePicker = require("../src/DatePicker")
 local ColorPicker = require("../src/ColorPicker")
+local TimePicker = require("../src/TimePicker")
 
 local Calendar = DatePicker.Calendar
 
@@ -150,7 +151,9 @@ H.section("every host component takes `Hooks` (array-part values) and the hook s
 	probe("ColorPicker.Panel", function(h) return ColorPicker.Panel({ Hooks = h }) end)
 	probe("ColorPicker.Classic", function(h) return ColorPicker.Classic({ Hooks = h }) end)
 	probe("Tooltip.Plain", function(h) return Tooltip.Plain({ Text = "t", Hooks = h }) end)
-	assert(checked == 41, "probed " .. checked)
+	probe("TimePicker.Dial", function(h) return TimePicker.Dial({ Value = q.Source(TimePicker.Clock.time(9, 0)), Hooks = h }) end)
+	probe("TimePicker.Input", function(h) return TimePicker.Input({ Value = q.Source(TimePicker.Clock.time(9, 0)), Hooks = h }) end)
+	assert(checked == 43, "probed " .. checked)
 	H.assertNoDebugOutput("hooks")
 end)
 
@@ -173,6 +176,7 @@ H.section("every opened thing returns closures without self: Close(result?) + Is
 		Dialog = Dialog.open({ Headline = "x", Overlay = overlay }),
 		DatePickerModal = DatePicker.Modal.open({ Overlay = overlay }),
 		ColorPickerModal = ColorPicker.Modal.open({ Overlay = overlay }),
+		TimePickerModal = TimePicker.Modal.open({ Overlay = overlay }),
 		Snackbar = bar:Show({ Text = "hi" }),
 		Tooltip = tip,
 	}
@@ -187,7 +191,7 @@ H.section("every opened thing returns closures without self: Close(result?) + Is
 		H.advance(0.5)
 		assert(hnd.IsOpen:Get() == false, name .. ": IsOpen false after Close")
 	end
-	assert(n == 7)
+	assert(n == 8)
 	assert(handles.Snackbar.Dismiss ~= nil, "Snackbar keeps Dismiss as an alias")
 	bar:Destroy()
 	q.dispose(screen)
@@ -288,7 +292,7 @@ H.section("RadioGroup option `Disabled` accepts a State (group OR option)", func
 	H.assertNoDebugOutput("radio group")
 end)
 
-H.section("OnChange: TextField (user edits only), Select (item click), Chip.Filter, Tabs, DatePicker.Docked", function()
+H.section("OnChange: TextField (user edits only), Select (item click), Chip.Filter, Tabs, DatePicker.Docked, TimePicker", function()
 	-- TextField
 	local text = q.Source("")
 	local edits: { string } = {}
@@ -392,6 +396,23 @@ H.section("OnChange: TextField (user edits only), Select (item click), Chip.Filt
 	H.fire(cells[15], "Activated", H.input({}), 1)
 	assert(#days == 1 and Calendar.equals(days[1], day:Get() :: DatePicker.Date))
 	q.dispose(docked)
+	-- TimePicker.Dial / Input: a programmatic write never calls OnChange, a user action does
+	local time = q.Source(TimePicker.Clock.time(7, 0))
+	local times = 0
+	local dial = TimePicker.Dial({ Value = time, OnChange = function()
+		times += 1
+	end })
+	time:Set(TimePicker.Clock.time(8, 0))
+	assert(times == 0, "TimePicker: no OnChange for a programmatic write")
+	H.fire(H.find(dial, "PM"), "Activated", H.input({}), 1)
+	assert(times == 1 and time:Get().Hour == 20, "TimePicker: the AM/PM click reports")
+	q.dispose(dial)
+	local input = TimePicker.Input({ Value = time, Is24Hour = true, OnChange = function()
+		times += 1
+	end })
+	H.find(input, "MinuteField").Text = "30"
+	assert(times == 2 and time:Get().Minute == 30, "TimePicker.Input: typing reports")
+	q.dispose(input)
 	H.assertNoDebugOutput("onchange")
 end)
 

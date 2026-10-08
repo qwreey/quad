@@ -99,6 +99,7 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
 | | `WavyProgress` | M3 Expressive 물결 막대(확정만) — 진폭 스프라이트 시트의 한 칸(한 파장)을 파장마다 Stretch ImageLabel로 깔아 흐르며 차오름, `ClipsDescendants` 프레임이 채운 길이로 자르고 양 끝에 사인 곡선을 따라 움직이는 둥근 캡; 100 %이거나 `Wavy = false`이면 물결이 잦아들어 평평해짐(0.5 s), 평평하면 루프가 쉼(인스턴스 12 + 폭/파장 올림 + 1 — 300 px에서 21, 폭에 비례, 시트는 아래 "외부 이미지 에셋") |
 | 선택기 | `DatePicker` | `Docked` / `RangeDocked` / `Modal`, 순수 날짜 계산 `Calendar` |
 | | `ColorPicker` | `Panel` / `Modal.open` / `ColorModel` / `Classic` |
+| | `TimePicker` | `Dial`(시계 문자판) / `Input`(두 칸 입력) / `Modal.open`(다이얼 ↔ 입력 전환), 순수 시간 계산 `Clock` — Compose `TimePicker`·`TimeInput`·`TimePickerDialog` 그대로 |
 
 ### props 관례
 
@@ -203,6 +204,36 @@ Material.DatePicker.Modal.open({ Value = day, UtcOffset = 9 * 3600, Overlay = ov
 - **`FirstDayOfWeek`**: 0 = 일요일(기본), 1 = 월요일, ...
 - `Min`/`Max`/`IsDisabled`로 선택 가능한 날을 제한하고, 달력 키보드 이동을 지원합니다.
 
+## 시간 선택기
+
+```luau
+local Clock = Material.TimePicker.Clock
+local alarm = q.Source(Clock.time(7, 30))                    -- Source<Time>, Time = { Hour (0-23), Minute }
+
+Material.TimePicker.Dial({ Value = alarm })                    -- 12 h, Vertical (272 x 396)
+Material.TimePicker.Dial({ Value = alarm, Is24Hour = true, LayoutType = "Horizontal" })
+Material.TimePicker.Input({ Value = alarm, Locale = "ko" })    -- 두 칸 입력(272 x 111)
+Material.TimePicker.Modal.open({ Value = alarm, Overlay = overlay, OnConfirm = function(t) end })
+```
+
+- **정본**: Compose material3(`androidx/androidx@40ff481`의 `TimePicker.kt`·`TimePickerDialog.kt`·`tokens/TimePickerTokens.kt`·
+  `tokens/TimeInputTokens.kt`)를 그대로 옮겼고, MDC와 다른 곳은 Compose를 따랐습니다(각 파일 머리에 줄 번호까지 인용).
+  치수: 시/분 상자 96 x 80(DisplayLarge), 문자판 256(바깥 고리 101·안쪽 고리 69, 숫자 칸 48), 선택 원 48·선 2·가운데 점 8,
+  AM/PM 토글은 Compose 현행(`isUpdatedTimepickerToggleEnabled` 기본 켬) — 4 px 떨어진 두 버튼, 쉴 때 알약·선택·누름은
+  반경 12, 선택은 primaryContainer + 굵은 글자. 입력 칸 96 x 72(DisplayMedium), 아래 보조 문구 "Hour"/"Minute"(오류면 오류 문구).
+- **값**: `Time`은 얼어 있는 `{ Hour, Minute }`(`Clock.equals`로 비교), Compose `TimePickerState.hour`/`minute`입니다.
+  `Value`는 양방향 Source, `OnChange`는 사용자 조작(탭·끌기·키·AM/PM·입력)으로 바뀐 뒤에만. 바깥에서 쓰면 바늘이 바로 그 자리로.
+- **문자판**: 탭은 시는 정시로, 분은 5분 단위로 맞추고 시를 고르면 0.1초 뒤 분으로 넘어갑니다. 끌면 바늘이 손가락을 그대로
+  따라오고(분은 1분 단위), 놓으면 분으로 넘어가 값 자리로 미끄러집니다. 24시간은 안쪽 고리(12~23, 중심에서 74 px 안쪽을 누름).
+  키보드·D-패드: 문자판을 선택한 채 ←/→가 이전/다음 숫자(Compose의 숫자 포커스 순서), ↑/↓는 옆 컨트롤로.
+- **입력**: 숫자만, 두 자리까지(가득 찬 칸에 세 번째 숫자를 치면 그 숫자로 바뀜). 12시간은 AM/PM 토글의 오전/오후 안에서
+  해석(12 → 0/12)하고 13은 오류("Hour must be 1–12"), 두 자리(또는 12시간에서 2~9 한 자리)가 유효하면 분 칸으로 넘어갑니다.
+  오류 동안 값은 마지막 유효 값 그대로이고 모달의 OK가 꺼집니다.
+- **모달**: 제목 "Select Time"/"Enter Time", 왼쪽 아래 전환 버튼(키보드 ↔ 시계 아이콘), Cancel/OK. 초안을 편집하다 OK에서만
+  `Value`에 씁니다. `LayoutType`을 안 주면 Compose 규칙대로 오버레이 층이 가로로 길면 Horizontal(556 x 332), 아니면
+  Vertical(320 x 528); 층 높이가 300 이하면 다이얼 없이 입력만. `DisplayMode = "Input"`이면 입력부터 열고 칸에 포커스를 줍니다.
+- **시간대**: 모달의 기본값은 `Clock.now(nil, UtcOffset)`(UTC + 넘긴 초) — 기계의 시간대를 읽지 않습니다.
+
 ## 색상 선택기
 
 ```luau
@@ -261,9 +292,10 @@ Gallery.GalleryPanel({})       -- 페이지(Frame)만; 직접 호스트할 때. 
 스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함): Buttons 649(10차에 "Button: icons —
 leading / trailing"·"SplitButton" 묶음 추가 — 분할 버튼 하나가 쉴 때 40), Selection 1337(맨 위 "Slider / Switch — M3 vs M2" 비교
 묶음 옆에 10차 "Slider variants (M3)" 묶음 — 크기 다섯·가운데 정렬·안쪽 아이콘·세로 넷),
-Text 268, Surfaces 327, Overlays 199, Chips 513, Pickers 756, Theme 197(Chips·Pickers는 2026-10-08 9차에 내장 아이콘이
+Text 268, Surfaces 327, Overlays 199, Chips 513, Pickers 1029, Theme 197(Chips·Pickers는 2026-10-08 9차에 내장 아이콘이
 글리프에서 이미지로 바뀌며 늘었다 — `GlyphButton` 이미지 경로가 글리프보다 둘 많음; Pickers는 10차에 날짜 선택기 머리의
-▼▲가 버튼의 뒤 아이콘 이미지가 되며 머리마다 둘(이미지 + UIListLayout) 늘었다). 아이콘 데모는
+▼▲가 버튼의 뒤 아이콘 이미지가 되며 머리마다 둘(이미지 + UIListLayout) 늘었고, 시간 선택기 묶음 셋(문자판 12 h 90 + 24 h 101,
+입력 12 h 24 + 24 h 11, 모달 버튼 셋)이 더해져 756 → 1029). 아이콘 데모는
 `Icon` prop(기본값은 장치에서 확인 못 한 자리표시 에셋 id)을 본인 에셋으로 바꿔 보세요.
 
 ## UI Labs / 입력 주입
@@ -311,7 +343,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 1 | UIShadow 렌더(엘리베이션 0~5) | 스토리 Card·Button(Elevated)·Menu / 플레이 | 레벨별로 그림자가 보이고 UICorner를 따라 둥글다 |  |
 | 2 | UIShadow가 CanvasGroup 안에서 잘리는지 | Dialog·Snackbar·DatePicker 모달 | 그림자 없음(의도) — 다른 곳은 보임 |  |
 | 4 | Roboto 글꼴·굵기(Medium 500) | Theme 스토리·Gallery | LabelLarge/TitleMedium이 Medium으로 보임 |  |
-| 5 | 내장 아이콘 이미지(Material Design Icons — `Icons.luau` 머리의 id 아홉)와 남은 글리프(TextField 에러 !) | Select 화살표·DatePicker ‹ ›·머리의 연도 메뉴 화살표(▼/▲ 이미지)·모달 모드 전환(연필 ↔ 달력)·Chip 체크·제거·Snackbar 닫기·색상 선택기 스와치 체크·분할 버튼 화살표 | 이미지가 뜨고(물음표 상자·빈칸 아님) 테마 색으로 물듦, 크기가 글자 자리와 어울림; !는 두부(□)로 안 나옴 |  |
+| 5 | 내장 아이콘 이미지(Material Design Icons — `Icons.luau` 머리의 id 열둘)와 남은 글리프(TextField 에러 !) | Select 화살표·DatePicker ‹ ›·머리의 연도 메뉴 화살표(▼/▲ 이미지)·모달 모드 전환(연필 ↔ 달력)·시간 선택기 모달 전환(키보드 ↔ 시계)·Chip 체크·제거·Snackbar 닫기·색상 선택기 스와치 체크·분할 버튼 화살표 | 이미지가 뜨고(물음표 상자·빈칸 아님) 테마 색으로 물듦, 크기가 글자 자리와 어울림; !는 두부(□)로 안 나옴 |  |
 | 6 | UICorner 0.5 스케일 = 완전한 알약 | Button·Chip·Switch | 양 끝이 반원 |  |
 | 7 | Filled TextField 위쪽만 둥근 모서리 | TextField(Filled) | 아래 모서리는 각지고 표시선이 안 삐져나옴 |  |
 | 8 | 버튼 폭 — 기본(글자에 맞춤)은 처음부터 맞는 폭이고 호버·클릭에 폭이 안 바뀜, `Width` 지정은 라벨이 가운데 | Button 스토리·갤러리 Buttons(고정 폭 묶음)·Theme(Brand outlined) | 글자가 안 삐져나오고 상호작용 뒤에도 폭 그대로 |  |
@@ -354,6 +386,12 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 45 | 버튼 뒤 아이콘 | 갤러리 Buttons "Button: icons — leading / trailing"·Button 스토리 `TrailingIcon` | 18 px 아이콘이 라벨 뒤 8 px, 여백 24/16(Text 16/12), 누르는 동안 폭 그대로(9차 회귀 아님), ♪ 글리프가 잘리지 않음 |  |
 | 46 | 분할 버튼 모양과 리플 | 갤러리 Buttons "SplitButton"·SplitButton 스토리 | 두 반쪽 사이 2 px, 바깥 끝 반원·안쪽 모서리 작게(4) 둥글고 누르는 동안 12로 부드럽게 커짐, 두 면(겉·안)이 만나는 반쪽 한가운데에 이음매·진한 줄 없음(비활성 반투명·Outlined 외곽선 포함), 리플이 반쪽 전체를 이음매 없이 덮음(두 원판이 한가운데에서 맞물림), Elevated 그림자가 보임, 뒤 버튼을 누르면 메뉴가 열리고 그동안 뒤 버튼이 양 끝 반원 알약 + 화살표 위로 + 살짝 어두움, 메뉴를 닫으면 되돌아옴, 포커스 링(바깥 반경으로 둥근 사각형) |  |
 | 47 | 날짜 선택기 머리의 연도 메뉴 화살표 | DatePicker 스토리·갤러리 Pickers | 월-년 글자 뒤 ▼ 이미지(연도 격자가 열리면 ▲), 물듦·크기가 글자와 어울림, 글자 시작 위치가 이전보다 4 px 오른쪽(뒤 아이콘 여백 16) |  |
+| 48 | 시간 선택기 선택 원 안의 숫자(가장 위험) | TimePicker 스토리·갤러리 Pickers "TimePicker: dial" | 선택 원(48 px, primary)에 걸친 숫자의 겹친 부분만 onPrimary로 보이고 나머지는 onSurface — 원이 두 숫자 사이(분 끌기)에 있어도 글자가 원 경계에서 정확히 두 색으로 갈림, 원 안 글자가 돌거나 밀리지 않음(회전한 `Hand` 안 `CanvasGroup` 안의 반대로 회전한 사본), 바늘이 돌아가는 동안에도 어긋나지 않음, 원 안 글자가 흐리지 않음 |  |
+| 49 | 시간 선택기 바늘 동작 | 같은 곳 | 탭: 정시/5분으로 맞춰 미끄러지고 시는 0.1 s 뒤 분으로 넘어감(바늘도 분 자리로); 끌기: 손가락을 그대로 따라오고 놓으면 분으로; 12시를 지날 때 짧은 쪽으로 돎; 24 h에서 안쪽 고리(12~23) 숫자를 누르면 바늘이 짧아짐; 시↔분 숫자 면이 겹쳐 사라지고 나타남; 바깥에서 값을 바꾸면 바늘이 바로 그 자리 |  |
+| 50 | 시간 선택기 머리·AM/PM | 같은 곳·Horizontal 스토리 | 시/분 상자 96 x 80 DisplayLarge "09" 가운데, ":" 위치(4 px 위), AM/PM 두 버튼 4 px 간격 — 선택은 반경 12 둥근 사각 + 굵은 글자, 아닌 쪽은 알약, 누르는 동안 12로 부드럽게, 리플이 버튼 밖으로 안 나감, Horizontal(508 x 256)에서 왼쪽 열이 문자판과 세로 가운데 |  |
+| 51 | 시간 입력 | 갤러리 "TimePicker: input"·모달 "Start in text input" | 칸을 누르면 그 칸이 primaryContainer + 2 px 외곽선, 다른 칸은 surfaceContainerHighest + "09" 표시; 문자 입력이 되돌려짐, 13(12 h)·24(24 h)·75분이 오류 색·오류 문구, 두 자리(12 h는 2~9 한 자리)면 분 칸으로 포커스가 넘어감, Enter로도 넘어감; 모바일 키보드가 숫자 입력에 불편하지 않은지 |  |
+| 52 | 시간 선택기 모달 | 갤러리 "TimePicker: modal" / 창 비율 바꾸기 | 가로로 긴 창에서 Horizontal 카드(556 x 332), 세로로 긴 창에서 Vertical(320 x 528), 전환 버튼(키보드 ↔ 시계 이미지)으로 카드 크기가 바뀜, 입력 모드로 열면 시 칸에 바로 포커스(그 상태에서 Escape/B가 칸 포커스만 풀고 모달은 안 닫히는지), 높이 300 이하 창에서 입력만·전환 버튼 없음, OK가 오류 동안 꺼짐 |  |
+| 53 | 문자판 키보드·게임패드 | 플레이: 문자판을 게임패드로 선택 | 선택 동안 문자판 둘레 3 px 링, ←/→(D-패드 좌우)가 숫자를 한 칸씩(24 h 시는 11 → 12 안쪽 고리로), ↑/↓로 시/분 상자·AM/PM으로 빠져나감 |  |
 | 3 | CanvasGroup + UICorner 리플 클리핑 | Button·Chip·ListItem을 누름 | 리플 원이 둥근 모서리 밖으로 안 나감 |  |
 
 ## 테스트

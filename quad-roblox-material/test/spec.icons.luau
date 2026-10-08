@@ -25,10 +25,12 @@ local EXPECTED: { [string]: string } = {
 	chevronDown = "rbxassetid://6034818372", -- 10th: the split button's menu arrow (keyboard_arrow_down)
 	edit = "rbxassetid://6034328955",
 	calendar = "rbxassetid://6022668894",
+	keyboard = "rbxassetid://6034818398", -- time picker mode toggle (Icons.Filled.Keyboard)
+	schedule = "rbxassetid://6031260808", -- time picker mode toggle (Icons.Filled.Schedule)
 }
 
 H.section("defaults are Material icon images, each with a text glyph fallback; error stays a glyph", function()
-	for _, name in { "check", "close", "arrowDown", "arrowUp", "chevronLeft", "chevronRight", "chevronDown", "edit", "calendar", "error" } do
+	for _, name in { "check", "close", "arrowDown", "arrowUp", "chevronLeft", "chevronRight", "chevronDown", "edit", "calendar", "keyboard", "schedule", "error" } do
 		assert(#Icons.glyph(name :: any) > 0, name .. ": glyph fallback")
 		assert(Icons.asset(name :: any) == EXPECTED[name], name .. ": default image " .. tostring(Icons.asset(name :: any)))
 		assert(Icons.Defaults[name] == EXPECTED[name], name .. ": Defaults table")

@@ -1,7 +1,8 @@
 --!strict
 --[[
 	Gallery section "Pickers": DatePicker (docked calendar, range calendar, modal in English / Korean with text-input
-	mode and a UTC offset), ColorPicker (inline Material panel bound to one Source<Color3>, the modal with its
+	mode and a UTC offset), TimePicker (the dial in 12 h and 24 h, the two-field input in 12 h and 24 h — all four on ONE
+	Source<Time>, so they follow each other — and the modal: picker first, 24 h Korean, input first), ColorPicker (inline Material panel bound to one Source<Color3>, the modal with its
 	draft-versus-committed behavior, and the Classic port of the original picker for comparison — see
 	docs/colorpicker-comparison.md).
 
@@ -16,8 +17,10 @@ local Material = require("../src")
 
 type Ctx = Common.Ctx
 type Date = Material.Date
+type Time = Material.Time
 
 local Calendar = Material.DatePicker.Calendar
+local Clock = Material.TimePicker.Clock
 
 local function formatDate(d: Date?): string
 	if d == nil then
@@ -113,6 +116,58 @@ return function(ctx: Ctx): Instance
 		Common.Caption(ctx, modalText, false),
 	}
 
+	-- times: one Source for the four inline pickers, one for the modal
+	local time = ctx.Memo("pick.time", function()
+		return q.Source<<Time>>(Clock.time(9, 30))
+	end)
+	local modalTime = ctx.Memo("pick.modalTime", function()
+		return q.Source<<Time>>(Clock.time(18, 45))
+	end)
+	local timeText: q.State<string> = time:Compute(function(self)
+		local t = self:Get()
+		return `Value: {Clock.format(t, false)} ({Clock.format(t, true)})`
+	end)
+	local modalTimeText: q.State<string> = modalTime:Compute(function(self)
+		return `Modal: {Clock.format(self:Get(), false)}`
+	end)
+	local timeDials: { Instance } = {
+		Material.TimePicker.Dial({ Theme = theme, Value = time }),
+		Material.TimePicker.Dial({ Theme = theme, Value = time, Is24Hour = true }),
+	}
+	local timeInputs: { Instance } = {
+		Common.Column({
+			Material.TimePicker.Input({ Theme = theme, Value = time }),
+			Material.TimePicker.Input({ Theme = theme, Value = time, Is24Hour = true }),
+			Common.Caption(ctx, timeText, false),
+		}, 300, 16),
+	}
+	local timeModals: { Instance } = {
+		Material.Button({
+			Theme = theme,
+			Label = "Pick a time",
+			OnClick = function()
+				Material.TimePicker.Modal.open({ Value = modalTime, Overlay = ctx.Overlay, Theme = theme })
+			end,
+		}),
+		Material.Button({
+			Theme = theme,
+			Variant = "Tonal",
+			Label = "시간 선택 (ko, 24 h)",
+			OnClick = function()
+				Material.TimePicker.Modal.open({ Value = modalTime, Is24Hour = true, Locale = "ko", Overlay = ctx.Overlay, Theme = theme })
+			end,
+		}),
+		Material.Button({
+			Theme = theme,
+			Variant = "Outlined",
+			Label = "Start in text input",
+			OnClick = function()
+				Material.TimePicker.Modal.open({ Value = modalTime, DisplayMode = "Input", Overlay = ctx.Overlay, Theme = theme })
+			end,
+		}),
+		Common.Caption(ctx, modalTimeText, false),
+	}
+
 	-- colors
 	local brand = ctx.Memo("pick.brand", function()
 		return q.Source(Color3.fromRGB(103, 80, 164))
@@ -171,6 +226,9 @@ return function(ctx: Ctx): Instance
 	return Common.Section(ctx, "Pickers", "Pickers", {
 		Common.Group(ctx, "DatePicker: docked and range", docked, "Docked: Monday first, 2026-2027 only, even Sundays disabled. Range: Korean."),
 		Common.Group(ctx, "DatePicker: modal", modals, "Cancel and the scrim keep the old value; OK writes it."),
+		Common.Group(ctx, "TimePicker: dial (12 h, 24 h)", timeDials, "Tap or drag the dial; an hour pick moves on to the minutes. The boxes above switch hour / minute; 24 h has an inner ring for 12-23."),
+		Common.Group(ctx, "TimePicker: input (12 h, 24 h)", timeInputs, "Digits only; 12 h takes 1-12 in the period of the AM / PM toggle. All four pickers share one value."),
+		Common.Group(ctx, "TimePicker: modal", timeModals, "The keyboard / clock button switches input and dial; Cancel and the scrim keep the old value; OK writes it."),
 		Common.Group(ctx, "ColorPicker: panel", panel, "One Source<Color3> in; the picker keeps its own HSV so hue survives black and grey."),
 		Common.Group(ctx, "ColorPicker: modal", colorModal, "Edits a draft; only OK commits."),
 		Common.Group(ctx, "ColorPicker: Classic", classic),

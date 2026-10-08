@@ -14,7 +14,7 @@
 	    Interactive   Interaction + StateLayer + Ripple + focus ring in one call (what components use)
 	    Elevation     `Elevation.Shadow{ Level }` (UIShadow) + `Elevation.Backdrop` (9-slice image fallback)
 	    Overlay       the layer for menus / dialogs / snackbars / tooltips (Escape/B, selection trap, layer death)
-	    Icons         the built-in glyph table + `Icons.override` for image assets
+	    Icons         the built-in icon images (Material Design Icons) with glyph fallbacks + `Icons.override`
 	    GlyphButton   the small round glyph / image button (date picker, Snackbar close, Chip remove)
 	    KeyNav        key / D-pad delivery for focusable controls (Slider, day cells, hue slider, SV area)
 	    Util          asState / negate / interactable / visible / hooks / preHook / postHook helpers, the `Hooks` type
@@ -29,11 +29,14 @@
 	    Chip, Tabs, LinearProgress, CircularProgress  chips, tabs, progress (+ the M3 Expressive LoadingIndicator and
 	                                                 WavyProgress)
 	    DatePicker, ColorPicker                       pickers (docked / modal / panel, the pure Calendar / ColorModel math)
+	    TimePicker                                    time pickers: Dial (clock face) / Input (two fields) / Modal, the pure
+	                                                 Clock math
 	  (The Gallery is not part of the kit: it lives in `<kit>/gallery`, outside `src`, and uses this table like any consumer.)
 
 	API CONVENTIONS (the same everywhere; a new component follows them, a reviewer checks them)
 	  Value and callbacks
-	    * Form controls — Checkbox, Switch, Radio, Slider, TextField, Select, DatePicker (Docked / Range), ColorPicker —
+	    * Form controls — Checkbox, Switch, Radio, Slider, TextField, Select, DatePicker (Docked / Range), ColorPicker,
+	      TimePicker (Dial / Input) —
 	      take `Value` (a `Source`, two-way: the component reads it and a USER action writes it) and fire
 	      `OnChange(new)` after a user-originated change only (never for a programmatic write). Checkbox and Switch ALSO
 	      accept the controlled form `Checked: State<boolean>` + `OnChange` (nothing is written; the owner decides);
@@ -52,6 +55,7 @@
 	      the LAST entry of the host constructor (a multi-value call is truncated anywhere else).
 	  Opened things
 	    * Everything that is opened — an Overlay entry, Menu.open, Dialog.open, DatePicker.Modal.open, ColorPicker.Modal.open,
+	      TimePicker.Modal.open,
 	      a Snackbar item, a Tooltip hook — returns ONE handle shape: closures WITHOUT self, `handle.Close(result?)` and
 	      `handle.IsOpen: State<boolean>` (Overlay handles also have `Closing`, Dialog `Result`, Snackbar `Visible` / `Done` /
 	      the `Dismiss` alias). `result` is `unknown`.
@@ -117,6 +121,7 @@ local Tabs = require("@self/Tabs")
 local Progress = require("@self/Progress")
 local DatePicker = require("@self/DatePicker")
 local ColorPickerModule = require("@self/ColorPicker")
+local TimePickerModule = require("@self/TimePicker")
 local ClassicColorPicker = require("@self/ColorPicker/Classic")
 local Util = require("@self/Util")
 
@@ -201,6 +206,13 @@ export type ColorPickerProps = ColorPickerModule.PanelProps
 export type ColorPickerModalOptions = ColorPickerModule.ModalOptions
 export type HSV = ColorPickerModule.HSV
 export type ColorPickerMode = ColorPickerModule.Mode
+export type Time = TimePickerModule.Time
+export type TimePickerLocale = TimePickerModule.Locale
+export type TimePickerLayoutType = TimePickerModule.LayoutType
+export type TimePickerDisplayMode = TimePickerModule.DisplayMode
+export type TimePickerDialProps = TimePickerModule.DialProps
+export type TimePickerInputProps = TimePickerModule.InputProps
+export type TimePickerModalOptions = TimePickerModule.ModalOptions
 
 return {
 	Tokens = require("@self/Tokens"),
@@ -253,4 +265,5 @@ return {
 	-- pickers
 	DatePicker = DatePicker,
 	ColorPicker = ColorPickerModule, -- .Panel / .Modal.open / .ColorModel / .Classic
+	TimePicker = TimePickerModule, -- .Dial / .Input / .Modal.open / .Clock
 }

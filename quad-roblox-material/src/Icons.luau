@@ -11,8 +11,8 @@
 	    Icons.resolve(value)                  -> ("Image", id) | ("Glyph", text)   what an ICON PROP draws (below)
 	    Icons.imageOf(value)                  -> string   a name's image ("" without one) or the value itself
 
-	Names: check, close, arrowDown, arrowUp, chevronLeft, chevronRight, chevronDown, edit, calendar, error (the "!" TextField
-	shows while in the Error state).
+	Names: check, close, arrowDown, arrowUp, chevronLeft, chevronRight, chevronDown, edit, calendar, keyboard, schedule, error
+	(the "!" TextField shows while in the Error state).
 
 	ICON PROPS (Button / SplitButton `Icon`, Slider `TrackIcon*`) take ONE string, resolved by `Icons.resolve` when the
 	component is built: a NAME above -> its image (the default or your override) or, with the image overridden away, its
@@ -46,17 +46,25 @@
 	                             rendered through thumbnails)
 	  edit          6034328955   baseline/image/edit
 	  calendar      6022668894   baseline/action/date_range
+	  keyboard      6034818398   baseline/hardware/keyboard   (added 2026-10-08 for the time picker's mode toggle — Compose
+	                             TimePickerDialogDefaults.DisplayModeToggle draws Icons.Filled.Keyboard in picker mode and
+	                             Icons.Filled.Schedule in input mode, androidx/androidx@40ff481 compose/material3/material3/
+	                             src/commonMain/kotlin/androidx/compose/material3/TimePickerDialog.kt 456-461; image id,
+	                             verified AssetTypeId 1, "baseline_hardware_keyboard", creator qwreey74_icon — not rendered
+	                             through thumbnails)
+	  schedule      6031260808   baseline/action/schedule   (the same, image id, verified AssetTypeId 1,
+	                             "baseline_action_schedule", creator qwreey74_icon)
 	  error         (none)       the dump has no "error" icon; the glyph "!" (ASCII, always in the font) stays
 	White on transparent, so `ImageColor3` tints them like text.
 
 	GLYPH FALLBACKS (kept for a place that cannot load images, and for any name you override with `false`): check U+221A,
 	close U+00D7, arrowDown U+25BC, arrowUp U+25B2, chevronLeft U+2039, chevronRight U+203A — inside Roboto; chevronDown has
 	no single-chevron glyph in Roboto and falls back to the arrowDown triangle U+25BC; edit (U+270E) and calendar (U+25A6)
-	have NO Roboto glyph and depend on the platform's font fallback.
+	have NO Roboto glyph and depend on the platform's font fallback; so do keyboard (U+2328) and schedule (U+25F7).
 
 	Who goes through here: Chip (check; remove x — unless the chip's own CheckIcon / RemoveIcon is given), Select (the
 	arrow, a `TrailingIcon` image / `TrailingGlyph` fallback), Snackbar (close), the date picker month arrows and the modal's
-	edit / calendar mode toggle (GlyphButtons given the asset), the ColorPicker's selected-swatch check, the date picker
+	edit / calendar mode toggle (GlyphButtons given the asset), the time picker modal's keyboard / schedule mode toggle, the ColorPicker's selected-swatch check, the date picker
 	header's year-menu arrow (arrowDown / arrowUp as the month-year Button's trailing icon since the 10th QA — until then a
 	"▼"/"▲" inside the label text; the glyphs again when either image is overridden away), the split button's menu arrow
 	(chevronDown).
@@ -74,6 +82,8 @@ export type Name =
 	| "chevronDown"
 	| "edit"
 	| "calendar"
+	| "keyboard"
+	| "schedule"
 	| "error"
 
 local Glyphs: { [Name]: string } = {
@@ -86,6 +96,8 @@ local Glyphs: { [Name]: string } = {
 	chevronDown = "\u{25BC}",
 	edit = "\u{270E}",
 	calendar = "\u{25A6}",
+	keyboard = "\u{2328}",
+	schedule = "\u{25F7}",
 	error = "!",
 }
 
@@ -100,6 +112,8 @@ local defaultIds: { [string]: string } = {
 	chevronDown = "rbxassetid://6034818372",
 	edit = "rbxassetid://6034328955",
 	calendar = "rbxassetid://6022668894",
+	keyboard = "rbxassetid://6034818398",
+	schedule = "rbxassetid://6031260808",
 }
 local Defaults = table.freeze(defaultIds)
 
