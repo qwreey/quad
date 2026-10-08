@@ -2,7 +2,7 @@
 --[[
 	Demo — the kit's showcase (Iris: ShowDemoWindow), one window with a section per widget group plus two tool windows.
 
-		local Demo = require("<kit>/src/Demo")
+		local Demo = require("<kit>/gallery")
 		Demo.mount()                              -- a ScreenGui in LocalPlayer.PlayerGui with all three windows + the popup layer
 		Demo.mount(someParentGui)                 -- or into a given parent
 
@@ -13,14 +13,21 @@
 
 	DemoWindow props (all optional): Style, Overlay, Open, StyleEditorOpen, RuntimeInfoOpen (the menu's "Windows" toggles
 	write these two Sources — a host that owns those windows passes the same Sources), Position, Size, Manager, Context
-	(Demo/Context.luau, the shared Sources the sections read).
+	(gallery/Context.luau, the shared Sources the sections read).
 
 	The sections are separate files (Basic / Inputs / Trees / Tables / Popups / Plots), each `function(ctx) -> Instance`.
 	Heartbeat is touched by `Clock.ticker` only (plots, runtime info); a ticker is gated on its window's Open AND NOT Collapsed (no
 	connection while the window is closed or collapsed; a closed Plots header keeps its sampler running) and disconnects with its element.
+
+	Why it lives in `<kit>/gallery`, outside `src`: the demo is a consumer of the kit, not part of it. Kept in `src` it
+	would be published with the kit and sit on every consumer's install while no normal usage path loads it. Out here it
+	uses the kit the way a game does — ONE root export table (`require("./src")`, `Devui.*` values and re-exported
+	types) plus its own setup module for quad (`Quad.luau`) — so it also checks that the root table is enough to build a
+	real screen. The Studio entry `DevuiDemo.client.luau` sits next to it (consumer-kits.project.json maps it into
+	StarterPlayerScripts and keeps it out of the ReplicatedStorage copy).
 ]]
 
-local Devui = require("@self/Kit")
+local Devui = require("./src")
 local Context = require("@self/Context")
 local Basic = require("@self/Basic")
 local Inputs = require("@self/Inputs")
@@ -30,7 +37,7 @@ local Popups = require("@self/Popups")
 local Plots = require("@self/Plots")
 local StyleEditorWindow = require("@self/StyleEditor")
 local RuntimeInfoWindow = require("@self/RuntimeInfo")
-local q = require("./Quad")
+local q = require("@self/Quad")
 
 local D = q.Declaration
 local Kids = Devui.Kids

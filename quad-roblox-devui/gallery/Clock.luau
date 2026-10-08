@@ -14,7 +14,7 @@
 	A hidden Frame is the host because the Effect rides in the array part of an element.
 ]]
 
-local q = require("../Quad")
+local q = require("./Quad")
 local D = q.Declaration
 
 local RunService = game:GetService("RunService")

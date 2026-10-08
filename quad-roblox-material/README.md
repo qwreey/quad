@@ -247,7 +247,7 @@ Material.M2.Switch({ Value = wifi })
 ## 갤러리
 
 ```luau
-local Gallery = require("<이 폴더>/src/Gallery")
+local Gallery = require("<이 폴더>/gallery")
 Gallery.mount()                -- PlayerGui에 ScreenGui를 만들어 갤러리 + 자기 소유 오버레이 층을 올림
 Gallery.mount(someParent)      -- 부모를 직접 지정
 Gallery.GalleryPanel({})       -- 페이지(Frame)만; 직접 호스트할 때. Overlay를 안 주면 자기 층을 만들어 안에 놓음
@@ -256,7 +256,7 @@ Gallery.GalleryPanel({})       -- 페이지(Frame)만; 직접 호스트할 때. 
 위쪽 `Tabs`로 여덟 구간(Buttons / Selection / Text / Surfaces / Overlays / Chips / Pickers / Theme)을 오가고, 각
 컴포넌트가 실제 상태(비활성·오류·선택 변형 포함)로 동작하며 Theme 탭의 스위치가 `Theme.default`의 light/dark를 바꿉니다.
 구간은 **탭을 고를 때 만들고 떠나면 부숩니다**(숨겨 두지 않음) — Pickers 하나가 수백 개이고 비확정 진행바가 Heartbeat
-루프를 돌기 때문입니다. 사용자가 입력·조작한 값은 패널의 Memo(Source)에 있어 다시 돌아와도 남습니다. 갤러리를 키트 루트(`src/init.luau`)에서 내보내지 않는 이유: 내보내면 키트를 쓰는 모든 소비자가 데모 코드까지 로드하게 됩니다(갤러리가 컴포넌트를 직접 require하므로 순환 자체는 아니지만, 갤러리가 루트를 require하는 모양이 되면 순환이 됩니다). 이 폴더를 직접 require하세요.
+루프를 돌기 때문입니다. 사용자가 입력·조작한 값은 패널의 Memo(Source)에 있어 다시 돌아와도 남습니다. 갤러리는 키트의 일부가 아니라 **키트를 쓰는 소비자**라서 `src` 밖 `gallery/`에 둡니다 — `src` 안에 있으면 키트와 함께 게시돼 보통의 사용 경로에선 아무도 부르지 않는 코드가 모든 설치본에 실립니다. 그래서 갤러리는 게임이 키트를 쓰는 방식 그대로, 루트 내보내기 표 하나(`require("<이 폴더>/src")` → `Material.Button` 같은 값, `Material.Theme`·`Material.Tab<K>`·`Material.ButtonVariant` 같은 다시 내보낸 타입)와 자기 설정 모듈(`gallery/Quad.luau`)만 씁니다. Studio 진입 스크립트 `gallery/MaterialGallery.client.luau`도 같은 폴더에 있습니다(아래 "Studio에서 보기").
 
 스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함): Buttons 649(10차에 "Button: icons —
 leading / trailing"·"SplitButton" 묶음 추가 — 분할 버튼 하나가 쉴 때 40), Selection 1337(맨 위 "Slider / Switch — M3 vs M2" 비교
@@ -287,14 +287,14 @@ Material.Input.use(nil)                         -- 엔진 서비스로 복원
 ## Studio에서 보기 — UI Labs 스토리와 플레이 테스트
 
 레포 루트의 `consumer-kits.project.json`이 ReplicatedStorage에 quad-base·quad-roblox·두 킷을 레포 폴더 모양 그대로 올리고,
-킷의 `play/` 폴더를 StarterPlayerScripts에 넣는다(킷의 `src/Quad.luau` 상대 require가 Studio에서도 같은 경로로 풀린다).
+킷의 `gallery/*.client.luau` 진입 스크립트 하나만 StarterPlayerScripts에 넣는다(`src`와 `gallery`가 레포와 같은 상대 위치에 있어 상대 require가 Studio에서도 같은 경로로 풀린다; ReplicatedStorage의 `gallery` 사본에서는 `globIgnorePaths`로 진입 스크립트를 뺀다).
 
 1. 터미널에서 `rojo serve consumer-kits.project.json --port 34872`, Studio의 Rojo 플러그인에서 그 포트로 연결.
 2. **스토리(편집 모드)** — UI Labs 플러그인을 연다. 탐색기에 storybook **"quad · Material 3"**(`ReplicatedStorage/quad-roblox-material/stories/Material.storybook`)이
    보이고, 그 아래 `*.story` 모듈마다 항목이 하나씩 있다. 항목을 열면 오른쪽 Controls 패널이 뜬다 — 패널의 값 하나하나가
    스토리 안에서 `q.Source` 하나이고(`stories/StoryKit.luau`), 컴포넌트는 앱에서 쓰는 그대로 그 Source를 받는다. 값을 바꾸면
    다시 그리지 않고 바인딩만 갱신된다.
-3. **플레이 테스트** — Play(F5). `play/` 의 LocalScript가 PlayerGui에 Gallery(탭으로 전 컴포넌트)을 띄운다. 게임패드·선택(GuiService)·
+3. **플레이 테스트** — Play(F5). StarterPlayerScripts의 `MaterialGallery` LocalScript(`gallery/MaterialGallery.client.luau`)가 PlayerGui에 Gallery(탭으로 전 컴포넌트)을 띄운다. 게임패드·선택(GuiService)·
    Escape·GUI inset처럼 플러그인 위젯에서 재현되지 않는 것은 여기서 본다 — 아래 체크리스트.
 
 UI Labs 안에서는 `UserInputService`가 입력을 받지 못한다. StoryKit이 UI Labs가 주입하는 환경(`InputListener`)을 킷의

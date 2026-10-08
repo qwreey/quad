@@ -3,7 +3,7 @@ local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
 local D = q.Declaration
-local Gallery = require("../src/Gallery")
+local Gallery = require("../gallery")
 local Theme = require("../src/Theme")
 local Tokens = require("../src/Tokens")
 

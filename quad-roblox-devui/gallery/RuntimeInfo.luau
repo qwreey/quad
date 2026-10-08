@@ -11,10 +11,10 @@
 	Both tickers are gated on the window's `Open` Source and `Collapsed` (no Heartbeat connection while it is closed or collapsed) and die with the window.
 ]]
 
-local Devui = require("./Kit")
+local Devui = require("../src")
 local Context = require("./Context")
 local Clock = require("./Clock")
-local q = require("../Quad")
+local q = require("./Quad")
 
 type Context = Context.Context
 

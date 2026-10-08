@@ -6,19 +6,13 @@
 	look of each variant can be compared with its enabled twin.
 ]]
 
-local q = require("../Quad")
+local q = require("./Quad")
 local Common = require("./Common")
-local Button = require("../Button")
-local IconButton = require("../Button/IconButton")
-local FAB = require("../Button/FAB")
-local Switch = require("../Switch")
-local SplitButton = require("../Button/Split")
-local Menu = require("../Menu")
-local Util = require("../Util")
+local Material = require("../src")
 
 type Ctx = Common.Ctx
-type Variant = "Filled" | "Tonal" | "Elevated" | "Outlined" | "Text"
-type IconVariant = "Standard" | "Filled" | "Tonal" | "Outlined"
+type Variant = Material.ButtonVariant
+type IconVariant = Material.IconButtonVariant
 
 local VARIANTS: { Variant } = { "Filled", "Tonal", "Elevated", "Outlined", "Text" }
 local ICON_VARIANTS: { IconVariant } = { "Standard", "Filled", "Tonal", "Outlined" }
@@ -45,7 +39,7 @@ return function(ctx: Ctx): Instance
 	for _, v in VARIANTS do
 		table.insert(
 			variants,
-			Button({
+			Material.Button({
 				Theme = theme,
 				Variant = v,
 				Label = v,
@@ -59,17 +53,17 @@ return function(ctx: Ctx): Instance
 
 	local disabledSet: { Instance } = {}
 	for _, v in VARIANTS do
-		table.insert(disabledSet, Button({ Theme = theme, Variant = v, Label = v, Disabled = disabled }))
+		table.insert(disabledSet, Material.Button({ Theme = theme, Variant = v, Label = v, Disabled = disabled }))
 	end
-	table.insert(disabledSet, Button({ Theme = theme, Label = "With icon", Icon = ctx.Icon, Disabled = disabled }))
-	table.insert(disabledSet, Button({ Theme = theme, Variant = "Outlined", Label = "Always disabled", Disabled = true }))
+	table.insert(disabledSet, Material.Button({ Theme = theme, Label = "With icon", Icon = ctx.Icon, Disabled = disabled }))
+	table.insert(disabledSet, Material.Button({ Theme = theme, Variant = "Outlined", Label = "Always disabled", Disabled = true }))
 
 	local iconButtons: { Instance } = {}
 	for _, v in ICON_VARIANTS do
-		table.insert(iconButtons, IconButton({ Theme = theme, Variant = v, Icon = ctx.Icon, Disabled = disabled }))
+		table.insert(iconButtons, Material.IconButton({ Theme = theme, Variant = v, Icon = ctx.Icon, Disabled = disabled }))
 	end
 	local toggles: { Instance } = {
-		IconButton({
+		Material.IconButton({
 			Theme = theme,
 			Variant = "Standard",
 			Icon = ctx.Icon,
@@ -78,7 +72,7 @@ return function(ctx: Ctx): Instance
 				liked:Set(not liked:Get())
 			end,
 		}),
-		IconButton({
+		Material.IconButton({
 			Theme = theme,
 			Variant = "Filled",
 			Icon = ctx.Icon,
@@ -87,7 +81,7 @@ return function(ctx: Ctx): Instance
 				bookmarked:Set(not bookmarked:Get())
 			end,
 		}),
-		IconButton({
+		Material.IconButton({
 			Theme = theme,
 			Variant = "Tonal",
 			Icon = ctx.Icon,
@@ -96,7 +90,7 @@ return function(ctx: Ctx): Instance
 				bookmarked:Set(not bookmarked:Get())
 			end,
 		}),
-		IconButton({
+		Material.IconButton({
 			Theme = theme,
 			Variant = "Outlined",
 			Icon = ctx.Icon,
@@ -109,12 +103,12 @@ return function(ctx: Ctx): Instance
 
 	-- icons: leading / trailing, an `Icons` name, an image URL, a text glyph
 	local iconButtons2: { Instance } = {
-		Button({ Theme = theme, Label = "Leading", Icon = "check" }),
-		Button({ Theme = theme, Variant = "Tonal", Label = "Trailing", Icon = "arrowDown", IconPosition = "Trailing" }),
-		Button({ Theme = theme, Variant = "Outlined", Label = "Image id", Icon = ctx.Icon }),
-		Button({ Theme = theme, Variant = "Text", Label = "Next", Icon = "chevronRight", IconPosition = "Trailing" }),
-		Button({ Theme = theme, Variant = "Text", Label = "Glyph", Icon = "\u{266A}" }),
-		Button({ Theme = theme, Variant = "Elevated", Label = "Disabled", Icon = "edit", Disabled = disabled }),
+		Material.Button({ Theme = theme, Label = "Leading", Icon = "check" }),
+		Material.Button({ Theme = theme, Variant = "Tonal", Label = "Trailing", Icon = "arrowDown", IconPosition = "Trailing" }),
+		Material.Button({ Theme = theme, Variant = "Outlined", Label = "Image id", Icon = ctx.Icon }),
+		Material.Button({ Theme = theme, Variant = "Text", Label = "Next", Icon = "chevronRight", IconPosition = "Trailing" }),
+		Material.Button({ Theme = theme, Variant = "Text", Label = "Glyph", Icon = "\u{266A}" }),
+		Material.Button({ Theme = theme, Variant = "Elevated", Label = "Disabled", Icon = "edit", Disabled = disabled }),
 	}
 
 	-- split buttons: the trailing half opens a Menu under the button and is Selected while it is open
@@ -128,7 +122,7 @@ return function(ctx: Ctx): Instance
 		local host: GuiObject? = nil
 		table.insert(
 			splits,
-			SplitButton({
+			Material.SplitButton({
 				Theme = theme,
 				Variant = v,
 				Label = splitPicked,
@@ -143,7 +137,7 @@ return function(ctx: Ctx): Instance
 						return
 					end
 					open:Set(true)
-					Menu.open({
+					Material.Menu.open({
 						Anchor = anchor,
 						Overlay = ctx.Overlay,
 						Theme = theme,
@@ -158,38 +152,38 @@ return function(ctx: Ctx): Instance
 					})
 				end,
 				Hooks = {
-					Util.preHook(function(inst: GuiObject)
+					Material.Util.preHook(function(inst: GuiObject)
 						host = inst
 					end),
 				},
 			})
 		)
 	end
-	table.insert(splits, SplitButton({ Theme = theme, Label = "Disabled", Disabled = disabled }))
+	table.insert(splits, Material.SplitButton({ Theme = theme, Label = "Disabled", Disabled = disabled }))
 
 	local fabs: { Instance } = {
-		FAB({ Theme = theme, Size = "Small", Icon = ctx.Icon, Disabled = disabled }),
-		FAB({ Theme = theme, Icon = ctx.Icon, Disabled = disabled }),
-		FAB({ Theme = theme, Size = "Large", Icon = ctx.Icon, Disabled = disabled }),
-		FAB({ Theme = theme, Color = "Surface", Icon = ctx.Icon, Disabled = disabled }),
-		FAB({ Theme = theme, Color = "Secondary", Icon = ctx.Icon, Disabled = disabled }),
-		FAB({ Theme = theme, Color = "Tertiary", Icon = ctx.Icon, Disabled = disabled }),
-		FAB({ Theme = theme, Icon = ctx.Icon, Label = "Compose", Disabled = disabled }),
+		Material.FAB({ Theme = theme, Size = "Small", Icon = ctx.Icon, Disabled = disabled }),
+		Material.FAB({ Theme = theme, Icon = ctx.Icon, Disabled = disabled }),
+		Material.FAB({ Theme = theme, Size = "Large", Icon = ctx.Icon, Disabled = disabled }),
+		Material.FAB({ Theme = theme, Color = "Surface", Icon = ctx.Icon, Disabled = disabled }),
+		Material.FAB({ Theme = theme, Color = "Secondary", Icon = ctx.Icon, Disabled = disabled }),
+		Material.FAB({ Theme = theme, Color = "Tertiary", Icon = ctx.Icon, Disabled = disabled }),
+		Material.FAB({ Theme = theme, Icon = ctx.Icon, Label = "Compose", Disabled = disabled }),
 	}
 
 	return Common.Section(ctx, "Buttons", "Buttons", {
 		Common.Group(ctx, "Button: five variants", variants),
 		Common.Group(ctx, "Disable switch", {
-			Switch({ Theme = theme, Value = disabled }),
+			Material.Switch({ Theme = theme, Value = disabled }),
 			Common.Caption(ctx, Common.text<<boolean>>(disabled, function(v: boolean)
 				return if v then "Disabled: the buttons below ignore input" else "Enabled"
 			end), false),
 		}, "One Source<boolean> feeds the Disabled State of every button below."),
 		Common.Group(ctx, "Button: disabled, icon", disabledSet),
 		Common.Group(ctx, "Button: fixed width", {
-			Button({ Theme = theme, Label = "OK", Width = 160 }),
-			Button({ Theme = theme, Variant = "Outlined", Label = "Cancel", Width = 160 }),
-			Button({ Theme = theme, Variant = "Tonal", Label = "With icon", Icon = ctx.Icon, Width = 200 }),
+			Material.Button({ Theme = theme, Label = "OK", Width = 160 }),
+			Material.Button({ Theme = theme, Variant = "Outlined", Label = "Cancel", Width = 160 }),
+			Material.Button({ Theme = theme, Variant = "Tonal", Label = "With icon", Icon = ctx.Icon, Width = 200 }),
 		}, "`Width = 160` (pixels) or a UDim such as `UDim.new(1, 0)`: the label stays centered. Without `Width` a button is as wide as its label."),
 		Common.Group(
 			ctx,

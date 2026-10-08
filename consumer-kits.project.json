@@ -1,5 +1,6 @@
 {
 	"name": "quad-consumer-kits",
+	"globIgnorePaths": ["quad-roblox-*/gallery/*.client.luau"],
 	"tree": {
 		"$className": "DataModel",
 		"ReplicatedStorage": {
@@ -17,11 +18,13 @@
 			"quad-roblox-devui": {
 				"$className": "Folder",
 				"src": { "$path": "quad-roblox-devui/src" },
+				"gallery": { "$path": "quad-roblox-devui/gallery" },
 				"stories": { "$path": "quad-roblox-devui/stories" }
 			},
 			"quad-roblox-material": {
 				"$className": "Folder",
 				"src": { "$path": "quad-roblox-material/src" },
+				"gallery": { "$path": "quad-roblox-material/gallery" },
 				"stories": { "$path": "quad-roblox-material/stories" }
 			}
 		},
@@ -29,8 +32,8 @@
 			"$className": "StarterPlayer",
 			"StarterPlayerScripts": {
 				"$className": "StarterPlayerScripts",
-				"devui-play": { "$path": "quad-roblox-devui/play" },
-				"material-play": { "$path": "quad-roblox-material/play" }
+				"DevuiDemo": { "$path": "quad-roblox-devui/gallery/DevuiDemo.client.luau" },
+				"MaterialGallery": { "$path": "quad-roblox-material/gallery/MaterialGallery.client.luau" }
 			}
 		}
 	}

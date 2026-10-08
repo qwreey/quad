@@ -5,7 +5,7 @@
 local Material = require("../src")
 local q = require("../src/Quad")
 local StoryKit = require("./StoryKit")
-local Gallery = require("../src/Gallery")
+local Gallery = require("../gallery")
 
 return StoryKit.story({
 	controls = {

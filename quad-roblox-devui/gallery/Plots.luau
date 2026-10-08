@@ -9,10 +9,10 @@
 	ticker is gated on `active` (the demo window's Open and not Collapsed; the Plots header's own open state is NOT part of it): a hidden window has no Heartbeat connection at all.
 ]]
 
-local Devui = require("./Kit")
+local Devui = require("../src")
 local Context = require("./Context")
 local Clock = require("./Clock")
-local q = require("../Quad")
+local q = require("./Quad")
 
 type Context = Context.Context
 

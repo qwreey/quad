@@ -3,7 +3,7 @@ local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
 local D = q.Declaration
-local Clock = require("../src/Demo/Clock")
+local Clock = require("../gallery/Clock")
 
 local Heartbeat = H.RunService.Heartbeat :: any
 local function beats(): number

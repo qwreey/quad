@@ -5,8 +5,8 @@
 	RuntimeInfo read them).
 ]]
 
-local Devui = require("./Kit")
-local q = require("../Quad")
+local Devui = require("../src")
+local q = require("./Quad")
 
 type Source<T> = q.Source<T>
 

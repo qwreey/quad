@@ -11,17 +11,13 @@
 	Button through its `Hooks`.
 ]]
 
-local q = require("../Quad")
+local q = require("./Quad")
 local Common = require("./Common")
-local ThemeModule = require("../Theme")
-local Button = require("../Button")
-local Switch = require("../Switch")
-local Text = require("../Text")
-local Card = require("../Card")
+local Material = require("../src")
 local D = q.Declaration
 
 type Ctx = Common.Ctx
-type Role = ThemeModule.Role
+type Role = Material.Role
 
 local PAIRS: { { Role } } = {
 	{ "Primary", "OnPrimary" },
@@ -38,7 +34,7 @@ local PAIRS: { { Role } } = {
 	{ "InverseSurface", "InverseOnSurface" },
 }
 
-local labelStyle = Text.Label("LabelMedium")
+local labelStyle = Material.Text.Label("LabelMedium")
 
 return function(ctx: Ctx): Instance
 	local theme = ctx.Theme
@@ -48,7 +44,7 @@ return function(ctx: Ctx): Instance
 	end)
 
 	local brand = ctx.Memo("theme.brand", function()
-		return ThemeModule.new({
+		return Material.Theme.new({
 			Scheme = theme.Scheme:Get(),
 			Overrides = {
 				Light = { Primary = Color3.fromRGB(0, 122, 108), OnPrimary = Color3.new(1, 1, 1) },
@@ -63,7 +59,7 @@ return function(ctx: Ctx): Instance
 	local switchRow: { Instance } = {
 		Common.Labeled(
 			ctx,
-			Switch({
+			Material.Switch({
 				Theme = theme,
 				Checked = dark,
 				OnChange = function(isDark: boolean)
@@ -72,7 +68,7 @@ return function(ctx: Ctx): Instance
 			}),
 			"Dark scheme"
 		),
-		Button({
+		Material.Button({
 			Theme = theme,
 			Variant = "Tonal",
 			Label = "Toggle",
@@ -113,10 +109,10 @@ return function(ctx: Ctx): Instance
 	end
 
 	local branded: { Instance } = {
-		Button({ Theme = brand, Label = "Brand filled", Hooks = { follow } }),
-		Button({ Theme = brand, Variant = "Outlined", Label = "Brand outlined" }),
-		Switch({ Theme = brand, Value = q.Source(true) }),
-		Card({
+		Material.Button({ Theme = brand, Label = "Brand filled", Hooks = { follow } }),
+		Material.Button({ Theme = brand, Variant = "Outlined", Label = "Brand outlined" }),
+		Material.Switch({ Theme = brand, Value = q.Source(true) }),
+		Material.Card({
 			Theme = brand,
 			Variant = "Filled",
 			Padding = 12,

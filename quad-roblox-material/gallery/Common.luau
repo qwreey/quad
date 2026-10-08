@@ -18,17 +18,14 @@
 	follows it. A group's children are held in a `Slot` (the quad boundary form for a list of children).
 ]]
 
-local q = require("../Quad")
-local Theme = require("../Theme")
-local Overlay = require("../Overlay")
-local Snackbar = require("../Snackbar")
-local Text = require("../Text")
+local q = require("./Quad")
+local Material = require("../src")
 local D = q.Declaration
 
 export type Ctx = {
-	read Theme: Theme.Theme,
-	read Overlay: Overlay.Overlay,
-	read Snackbar: Snackbar.Host,
+	read Theme: Material.Theme,
+	read Overlay: Material.OverlayType,
+	read Snackbar: Material.SnackbarHost,
 	read Memo: <T>(key: string, make: () -> T) -> T,
 	read Icon: string, -- the image asset id used wherever a demo needs an icon (the kit ships none)
 }
@@ -48,10 +45,10 @@ end
 local Common = {}
 Common.newMemo = newMemo
 
-local titleStyle = Text.Label("TitleSmall")
-local captionStyle = Text.Label("BodySmall")
-local bodyStyle = Text.Label("BodyMedium")
-local headingStyle = Text.Label("TitleLarge")
+local titleStyle = Material.Text.Label("TitleSmall")
+local captionStyle = Material.Text.Label("BodySmall")
+local bodyStyle = Material.Text.Label("BodyMedium")
+local headingStyle = Material.Text.Label("TitleLarge")
 
 -- `State<T>` -> `State<string>` through `fn` (the annotated local is what lets strict infer the Compute callback).
 function Common.text<T>(source: q.State<T>, fn: (value: T) -> string): q.State<string>

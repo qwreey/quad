@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Kit test runner: (1) strict type check of src + specs (luau-lsp new solver, the quad test.sh flag set),
+# Kit test runner: (1) strict type check of src + gallery + specs + stories (luau-lsp new solver, the quad test.sh flag set),
 # (2) every pure spec (`spec.pure.*.luau`) under the `luau` CLI, (3) every component spec under Lune.
 # Optional args: spec paths relative to the repo root (e.g. quad-roblox-devui/test/spec.window.luau) to run only those
 # under Lune (the strict pass still covers the whole kit).
@@ -15,15 +15,17 @@ out=$(mise exec -- luau-lsp analyze --flag:LuauSolverV2=true \
 	--flag:LuauSubtypingIterationLimit=100000 \
 	--flag:LuauTypeInferIterationLimit=1000000 \
 	--definitions=scripts/roblox-defs/globalTypes.d.luau \
-	--ignore "**/luau_packages/**" --ignore "$KIT/test/support/**" \
-	"$KIT/src" "$KIT/test" "$KIT/stories" 2>&1)
+	--ignore "**/luau_packages/**" --ignore "$KIT/test/support/**" --ignore "$KIT/gallery/*.client.luau" \
+	"$KIT/src" "$KIT/gallery" "$KIT/test" "$KIT/stories" 2>&1)
 diag=$(printf '%s\n' "$out" | grep -v "^\[INFO\]" | grep -E "\((Type|Syntax)Error|Error\)|: (TypeError|SyntaxError)" || true)
 printf '%s\n' "$out" | grep -v "^\[INFO\]" || true
 if [ -n "$diag" ]; then echo "FAIL: strict diagnostics"; fail=1; fi
-# play/ LocalScripts require through `@game/ReplicatedStorage/...` (GS 01 convention) — that alias only resolves with
-# a rojo sourcemap of the project that places the kits in the DataModel (consumer-kits.project.json at the repo root).
-if [ -d "$KIT/play" ] && [ -f consumer-kits.project.json ]; then
-	echo "=== luau-lsp strict ($KIT/play, @game via rojo sourcemap)"
+# The gallery's Studio entry (`gallery/*.client.luau`, a LocalScript) requires through `@game/ReplicatedStorage/...`
+# (GS 01 convention) — that alias only resolves with a rojo sourcemap of the project that places the kits in the
+# DataModel (consumer-kits.project.json at the repo root).
+entries=("$KIT"/gallery/*.client.luau)
+if [ -e "${entries[0]}" ] && [ -f consumer-kits.project.json ]; then
+	echo "=== luau-lsp strict ($KIT/gallery entry, @game via rojo sourcemap)"
 	SM="${TMPDIR:-/tmp}/quad-kit-sourcemap-$KIT-$$.json"
 	if mise exec -- rojo sourcemap consumer-kits.project.json -o "$SM" >/dev/null 2>&1; then
 		pout=$(mise exec -- luau-lsp analyze --flag:LuauSolverV2=true \
@@ -33,9 +35,9 @@ if [ -d "$KIT/play" ] && [ -f consumer-kits.project.json ]; then
 			--definitions=scripts/roblox-defs/globalTypes.d.luau \
 			--sourcemap="$SM" \
 			--ignore "**/luau_packages/**" --ignore "$KIT/test/support/**" \
-			"$KIT/play" 2>&1)
+			"${entries[@]}" 2>&1)
 		printf '%s\n' "$pout" | grep -v "^\[INFO\]" | grep -v "^\[WARN\] client does not allow" || true
-		if printf '%s\n' "$pout" | grep -qE ": (TypeError|SyntaxError)"; then echo "FAIL: strict diagnostics (play)"; fail=1; fi
+		if printf '%s\n' "$pout" | grep -qE ": (TypeError|SyntaxError)"; then echo "FAIL: strict diagnostics (gallery entry)"; fail=1; fi
 	else
 		echo "FAIL: rojo sourcemap"; fail=1
 	fi

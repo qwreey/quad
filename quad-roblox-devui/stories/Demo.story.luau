@@ -1,7 +1,7 @@
 --!strict
 -- The kit's full Demo window (Iris ShowDemoWindow equivalent), hosted in the story with the story's own overlay so
 -- Combo / Menu / Tooltip popups draw inside the story view. A control opens / closes the window.
-local Demo = require("../src/Demo")
+local Demo = require("../gallery")
 local q = require("../src/Quad")
 local StoryKit = require("./StoryKit")
 

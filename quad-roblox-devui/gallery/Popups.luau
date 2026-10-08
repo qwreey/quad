@@ -4,9 +4,9 @@
 	from a button-like bar inside the section. Tooltips are in "Basic widgets".
 ]]
 
-local Devui = require("./Kit")
+local Devui = require("../src")
 local Context = require("./Context")
-local q = require("../Quad")
+local q = require("./Quad")
 
 type Context = Context.Context
 

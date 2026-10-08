@@ -2,7 +2,7 @@
 --[[
 	Gallery — the kit's showcase: every component with live state, one section per group, a Tabs bar to switch.
 
-		local Gallery = require("<kit>/src/Gallery")
+		local Gallery = require("<kit>/gallery")
 		Gallery.mount()                       -- a ScreenGui in LocalPlayer.PlayerGui: the panel + its OWN overlay layer
 		Gallery.mount(someParent)             -- or into a given parent (the spec uses a Folder)
 		Gallery.GalleryPanel(props?)          -- just the page (a Frame, size 100 % of its parent) to host yourself
@@ -32,18 +32,16 @@
 	`Gallery.mount` ScreenGui: `ResetOnSpawn = false` (a respawn does not rebuild the UI), `IgnoreGuiInset = false` (the
 	tabs start BELOW the Roblox top bar instead of under its icons), `DisplayOrder = 10`, `ZIndexBehavior = Sibling`.
 
-	Not exported from the kit root (`src/init.luau`), as devui did for its Demo: every consumer of the kit would load the
-	demo code too, and the gallery requires its components by folder path (never the root), so a root export is also one
-	careless `require("..")` away from a cycle. Require this folder directly.
+	Why it lives in `<kit>/gallery`, outside `src`: the gallery is a consumer of the kit, not part of it. Kept in `src` it
+	would be published with the kit and sit on every consumer's install while no normal usage path loads it. Out here it
+	uses the kit the way a game does — ONE root export table (`require("./src")`, the `Material.*` values and re-exported
+	types) plus its own setup module for quad (`Quad.luau`) — so it also checks that the root table is enough to build a
+	real screen. The Studio entry `MaterialGallery.client.luau` sits next to it (consumer-kits.project.json maps it into
+	StarterPlayerScripts and keeps it out of the ReplicatedStorage copy).
 ]]
 
-local q = require("./Quad")
-local Theme = require("./Theme")
-local Tokens = require("./Tokens")
-local Overlay = require("./Overlay")
-local Snackbar = require("./Snackbar")
-local Tabs = require("./Tabs")
-local Util = require("./Util")
+local q = require("@self/Quad")
+local Material = require("./src")
 local Common = require("@self/Common")
 local Buttons = require("@self/Buttons")
 local Selection = require("@self/Selection")
@@ -56,8 +54,8 @@ local ThemeSection = require("@self/Theme")
 local D = q.Declaration
 
 export type Props = {
-	read Theme: Theme.Theme?,
-	read Overlay: Overlay.Overlay?,
+	read Theme: Material.Theme?,
+	read Overlay: Material.OverlayType?,
 	read Selected: q.Source<string>?,
 	read Icon: string?,
 	read Modifier: q.FrameModifier?,
@@ -65,7 +63,7 @@ export type Props = {
 
 local PLACEHOLDER_ICON = "rbxassetid://6031094678"
 
-local TABS: { Tabs.Tab<string> } = {
+local TABS: { Material.Tab<string> } = {
 	{ Key = "Buttons", Label = "Buttons" },
 	{ Key = "Selection", Label = "Selection" },
 	{ Key = "Text", Label = "Text" },
@@ -93,19 +91,19 @@ local Gallery = {}
 
 function Gallery.GalleryPanel(props: Props?): Frame
 	local p: Props = props or {}
-	local theme = Theme.resolve(p.Theme)
+	local theme = Material.Theme.resolve(p.Theme)
 	local selected = p.Selected or q.Source("Buttons")
 	local ownLayer: Frame? = nil
 	local overlay = p.Overlay
 	if overlay == nil then
-		local own = Overlay.new({ Theme = theme })
+		local own = Material.Overlay.new({ Theme = theme })
 		overlay = own
 		ownLayer = own.Layer
 	end
-	local bar = Snackbar.new({ Overlay = overlay, Theme = theme })
+	local bar = Material.Snackbar.new({ Overlay = overlay, Theme = theme })
 	local ctx: Common.Ctx = {
 		Theme = theme,
-		Overlay = overlay :: Overlay.Overlay,
+		Overlay = overlay :: Material.OverlayType,
 		Snackbar = bar,
 		Memo = Common.newMemo(),
 		Icon = p.Icon or PLACEHOLDER_ICON,
@@ -126,12 +124,12 @@ function Gallery.GalleryPanel(props: Props?): Frame
 		BorderSizePixel = 0,
 		BackgroundColor3 = theme.Color.Surface,
 		p.Modifier or q.None,
-		Util.preHook(function(inst: GuiObject)
+		Material.Util.preHook(function(inst: GuiObject)
 			inst.Destroying:Connect(function()
 				bar:Destroy()
 			end)
 		end),
-		Tabs<<string>>({
+		Material.Tabs<<string>>({
 			Theme = theme,
 			Selected = selected,
 			Tabs = TABS,
@@ -148,7 +146,7 @@ function Gallery.GalleryPanel(props: Props?): Frame
 			ScrollingDirection = Enum.ScrollingDirection.Y,
 			ScrollBarThickness = 6,
 			ScrollBarImageColor3 = theme.Color.OnSurface,
-			ScrollBarImageTransparency = 1 - Tokens.State.Opacity.ScrollBar,
+			ScrollBarImageTransparency = 1 - Material.Tokens.State.Opacity.ScrollBar,
 			D.Frame {
 				Name = "Page",
 				Size = UDim2.fromScale(1, 0),
@@ -164,7 +162,7 @@ end
 
 -- A ScreenGui with the panel and its own overlay layer. Returns the ScreenGui.
 function Gallery.mount(parent: Instance?): ScreenGui
-	local overlay = Overlay.new()
+	local overlay = Material.Overlay.new()
 	local gui = D.ScreenGui {
 		Name = "MaterialGallery",
 		ResetOnSpawn = false,

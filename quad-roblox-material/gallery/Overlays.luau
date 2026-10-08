@@ -7,12 +7,9 @@
 	The last dialog result and the last snackbar dismiss reason are written to Memo Sources and shown below.
 ]]
 
-local q = require("../Quad")
+local q = require("./Quad")
 local Common = require("./Common")
-local Button = require("../Button")
-local Dialog = require("../Dialog")
-local Menu = require("../Menu")
-local Tooltip = require("../Tooltip")
+local Material = require("../src")
 
 type Ctx = Common.Ctx
 
@@ -39,19 +36,19 @@ return function(ctx: Ctx): Instance
 	end
 
 	local dialogs: { Instance } = {
-		Button({
+		Material.Button({
 			Theme = theme,
 			Label = "Alert",
 			OnClick = function()
-				Dialog.alert({ Headline = "Saved", Body = "Your changes were saved.", Overlay = overlay, Theme = theme })
+				Material.Dialog.alert({ Headline = "Saved", Body = "Your changes were saved.", Overlay = overlay, Theme = theme })
 			end,
 		}),
-		Button({
+		Material.Button({
 			Theme = theme,
 			Variant = "Tonal",
 			Label = "Confirm",
 			OnClick = function()
-				Dialog.confirm({
+				Material.Dialog.confirm({
 					Headline = "Delete the draft?",
 					Body = "This cannot be undone.",
 					Overlay = overlay,
@@ -62,12 +59,12 @@ return function(ctx: Ctx): Instance
 				})
 			end,
 		}),
-		Button({
+		Material.Button({
 			Theme = theme,
 			Variant = "Outlined",
 			Label = "Custom actions",
 			OnClick = function()
-				Dialog.open({
+				Material.Dialog.open({
 					Icon = ctx.Icon,
 					Headline = "Discard changes?",
 					Body = "Three actions, the last one disabled.",
@@ -92,7 +89,7 @@ return function(ctx: Ctx): Instance
 
 	local bar = ctx.Snackbar
 	local snacks: { Instance } = {
-		Button({
+		Material.Button({
 			Theme = theme,
 			Label = "Show",
 			OnClick = function()
@@ -104,7 +101,7 @@ return function(ctx: Ctx): Instance
 				})
 			end,
 		}),
-		Button({
+		Material.Button({
 			Theme = theme,
 			Variant = "Tonal",
 			Label = "With action",
@@ -120,7 +117,7 @@ return function(ctx: Ctx): Instance
 				})
 			end,
 		}),
-		Button({
+		Material.Button({
 			Theme = theme,
 			Variant = "Outlined",
 			Label = "Persistent + close",
@@ -135,7 +132,7 @@ return function(ctx: Ctx): Instance
 				})
 			end,
 		}),
-		Button({
+		Material.Button({
 			Theme = theme,
 			Variant = "Text",
 			Label = "Queue three",
@@ -152,7 +149,7 @@ return function(ctx: Ctx): Instance
 	}
 
 	local menus: { Instance } = {
-		Menu.Button({
+		Material.Menu.Button({
 			Theme = theme,
 			Overlay = overlay,
 			Label = "Actions",
@@ -163,7 +160,7 @@ return function(ctx: Ctx): Instance
 				{ Label = "Delete", OnClick = say(lastMenu, "delete") },
 			},
 		}),
-		Menu.Button({
+		Material.Menu.Button({
 			Theme = theme,
 			Overlay = overlay,
 			Variant = "Outlined",
@@ -180,13 +177,13 @@ return function(ctx: Ctx): Instance
 	}
 
 	local function tipped(label: string, text: string): Instance
-		local tip = Tooltip.hook({ Text = text, Overlay = overlay, Theme = theme })
-		return Button({ Theme = theme, Variant = "Tonal", Label = label, Hooks = { tip.Hook } })
+		local tip = Material.Tooltip.hook({ Text = text, Overlay = overlay, Theme = theme })
+		return Material.Button({ Theme = theme, Variant = "Tonal", Label = label, Hooks = { tip.Hook } })
 	end
 	local tooltips: { Instance } = {
 		tipped("Hover me", "A plain tooltip"),
 		tipped("Or focus me", "Gamepad and keyboard selection show it too"),
-		Tooltip.Plain({ Theme = theme, Text = "Tooltip.Plain, the bare visual" }),
+		Material.Tooltip.Plain({ Theme = theme, Text = "Tooltip.Plain, the bare visual" }),
 	}
 
 	return Common.Section(ctx, "Overlays", "Overlays", {

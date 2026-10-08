@@ -7,13 +7,9 @@
 	Heartbeat loops).
 ]]
 
-local q = require("../Quad")
+local q = require("./Quad")
 local Common = require("./Common")
-local Chip = require("../Chip")
-local Tabs = require("../Tabs")
-local Progress = require("../Progress")
-local Button = require("../Button")
-local Switch = require("../Switch")
+local Material = require("../src")
 
 type Ctx = Common.Ctx
 type Tag = { Id: number, Name: string }
@@ -51,30 +47,30 @@ return function(ctx: Ctx): Instance
 		return `On sale: {self:Get()}, in stock: {stock:Get()}`
 	end, inStock)
 	local assist: { Instance } = {
-		Chip.Assist({ Theme = theme, Label = "Directions", Icon = ctx.Icon, OnClick = function() picked:Set("directions") end }),
-		Chip.Assist({ Theme = theme, Label = "Elevated", Elevated = true, OnClick = function() picked:Set("elevated") end }),
-		Chip.Assist({ Theme = theme, Label = "Disabled", Disabled = true }),
-		Chip.Suggestion({ Theme = theme, Label = "Cheap flights", OnClick = function() picked:Set("cheap flights") end }),
-		Chip.Suggestion({ Theme = theme, Label = "Elevated suggestion", Elevated = true, OnClick = function() picked:Set("suggestion") end }),
+		Material.Chip.Assist({ Theme = theme, Label = "Directions", Icon = ctx.Icon, OnClick = function() picked:Set("directions") end }),
+		Material.Chip.Assist({ Theme = theme, Label = "Elevated", Elevated = true, OnClick = function() picked:Set("elevated") end }),
+		Material.Chip.Assist({ Theme = theme, Label = "Disabled", Disabled = true }),
+		Material.Chip.Suggestion({ Theme = theme, Label = "Cheap flights", OnClick = function() picked:Set("cheap flights") end }),
+		Material.Chip.Suggestion({ Theme = theme, Label = "Elevated suggestion", Elevated = true, OnClick = function() picked:Set("suggestion") end }),
 		Common.Caption(ctx, picked:Compute(function(self)
 			return `Last chip: {self:Get()}`
 		end), false),
 	}
 	local filters: { Instance } = {
-		Chip.Filter({ Theme = theme, Label = "On sale", Selected = onSale }),
-		Chip.Filter({ Theme = theme, Label = "In stock", Selected = inStock }),
-		Chip.Filter({ Theme = theme, Label = "Elevated", Selected = q.Source(false), Elevated = true }),
-		Chip.Filter({ Theme = theme, Label = "Disabled", Selected = q.Source(true), Disabled = true }),
+		Material.Chip.Filter({ Theme = theme, Label = "On sale", Selected = onSale }),
+		Material.Chip.Filter({ Theme = theme, Label = "In stock", Selected = inStock }),
+		Material.Chip.Filter({ Theme = theme, Label = "Elevated", Selected = q.Source(false), Elevated = true }),
+		Material.Chip.Filter({ Theme = theme, Label = "Disabled", Selected = q.Source(true), Disabled = true }),
 		Common.Caption(ctx, saleText, false),
 	}
 	local inputs: { Instance } = {
-		Chip.ChipSet<<Tag>>({
+		Material.Chip.ChipSet<<Tag>>({
 			Items = tags,
 			Key = function(t: Tag)
 				return t.Id
 			end,
 			Render = function(tag: q.State<Tag>, order: q.State<number>)
-				return Chip.Input({
+				return Material.Chip.Input({
 					Theme = theme,
 					Label = Common.text<<Tag>>(tag, function(t: Tag)
 						return t.Name
@@ -95,12 +91,12 @@ return function(ctx: Ctx): Instance
 	local secondary = ctx.Memo("tabs.secondary", function()
 		return q.Source("a")
 	end)
-	local primaryTabs: { Tabs.Tab<string> } = {
+	local primaryTabs: { Material.Tab<string> } = {
 		{ Key = "flights", Label = "Flights" },
 		{ Key = "trips", Label = "Trips" },
 		{ Key = "explore", Label = "Explore" },
 	}
-	local secondaryTabs: { Tabs.Tab<string> } = {
+	local secondaryTabs: { Material.Tab<string> } = {
 		{ Key = "a", Label = "First" },
 		{ Key = "b", Label = "Second" },
 		{ Key = "c", Label = "Third" },
@@ -108,7 +104,7 @@ return function(ctx: Ctx): Instance
 	}
 	local tabsPrimary: { Instance } = {
 		Common.Column({
-			Tabs<<string>>({
+			Material.Tabs<<string>>({
 				Theme = theme,
 				Selected = primary,
 				Tabs = primaryTabs,
@@ -116,7 +112,7 @@ return function(ctx: Ctx): Instance
 			Common.Caption(ctx, Common.text<<string>>(primary, function(key: string)
 				return `Selected: {key}`
 			end), false),
-			Tabs<<string>>({
+			Material.Tabs<<string>>({
 				Theme = theme,
 				Variant = "Secondary",
 				Selected = secondary,
@@ -139,18 +135,18 @@ return function(ctx: Ctx): Instance
 	end
 	local determinate: { Instance } = {
 		Common.Column({
-			Progress.LinearProgress({ Theme = theme, Value = value }),
-			Progress.WavyProgress({ Theme = theme, Value = value, Visible = busy }),
+			Material.LinearProgress({ Theme = theme, Value = value }),
+			Material.WavyProgress({ Theme = theme, Value = value, Visible = busy }),
 			-- the four strokes of the arc sheet (Thickness / Size = 0.05, 0.10 (M3 default), 0.15, 0.20)
 			Common.Flow({
-				Progress.CircularProgress({ Theme = theme, Value = value, Thickness = 2 }),
-				Progress.CircularProgress({ Theme = theme, Value = value }),
-				Progress.CircularProgress({ Theme = theme, Value = value, Thickness = 6 }),
-				Progress.CircularProgress({ Theme = theme, Value = value, Thickness = 8 }),
+				Material.CircularProgress({ Theme = theme, Value = value, Thickness = 2 }),
+				Material.CircularProgress({ Theme = theme, Value = value }),
+				Material.CircularProgress({ Theme = theme, Value = value, Thickness = 6 }),
+				Material.CircularProgress({ Theme = theme, Value = value, Thickness = 8 }),
 			}),
 			Common.Flow({
-				Button({ Theme = theme, Variant = "Tonal", Label = "-10 %", OnClick = bump(-0.1) }),
-				Button({ Theme = theme, Variant = "Tonal", Label = "+10 %", OnClick = bump(0.1) }),
+				Material.Button({ Theme = theme, Variant = "Tonal", Label = "-10 %", OnClick = bump(-0.1) }),
+				Material.Button({ Theme = theme, Variant = "Tonal", Label = "+10 %", OnClick = bump(0.1) }),
 				Common.Caption(ctx, Common.text<<number>>(value, function(v: number)
 					return string.format("%d %%", math.floor(v * 100 + 0.5))
 				end), false),
@@ -159,12 +155,12 @@ return function(ctx: Ctx): Instance
 	}
 	local indeterminate: { Instance } = {
 		Common.Column({
-			Common.Labeled(ctx, Switch({ Theme = theme, Value = busy }), "Busy (Visible)"),
-			Progress.LinearProgress({ Theme = theme, Visible = busy }),
+			Common.Labeled(ctx, Material.Switch({ Theme = theme, Value = busy }), "Busy (Visible)"),
+			Material.LinearProgress({ Theme = theme, Visible = busy }),
 			Common.Flow({
-				Progress.CircularProgress({ Theme = theme, Visible = busy }),
-				Progress.LoadingIndicator({ Theme = theme, Visible = busy }),
-				Progress.LoadingIndicator({ Theme = theme, Visible = busy, Contained = true }),
+				Material.CircularProgress({ Theme = theme, Visible = busy }),
+				Material.LoadingIndicator({ Theme = theme, Visible = busy }),
+				Material.LoadingIndicator({ Theme = theme, Visible = busy, Contained = true }),
 			}),
 		}, 360, 12),
 	}

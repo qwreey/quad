@@ -13,9 +13,9 @@
 	those fields.
 ]]
 
-local Devui = require("./Kit")
+local Devui = require("../src")
 local Context = require("./Context")
-local q = require("../Quad")
+local q = require("./Quad")
 
 type Context = Context.Context
 

@@ -10,14 +10,9 @@
 	trip (Source in -> UI -> user input -> Source out).
 ]]
 
-local q = require("../Quad")
+local q = require("./Quad")
 local Common = require("./Common")
-local Checkbox = require("../Checkbox")
-local RadioModule = require("../Radio")
-local Switch = require("../Switch")
-local Slider = require("../Slider")
-local RangeSlider = require("../Slider/Range")
-local M2 = require("../M2")
+local Material = require("../src")
 local D = q.Declaration
 
 type Ctx = Common.Ctx
@@ -63,14 +58,14 @@ return function(ctx: Ctx): Instance
 
 	local checkboxes: { Instance } = {
 		-- `Label`: the text belongs to the checkbox (hover / click on it act on the box — HTML label-for)
-		Checkbox({ Theme = theme, Value = agreed, Label = "Checked" }),
-		Checkbox({ Theme = theme, Value = plain, Label = "Unchecked" }),
-		Checkbox({ Theme = theme, Value = erroring, Error = true, Label = "Error" }),
-		Checkbox({ Theme = theme, Value = q.Source(true), Disabled = true, Label = "Disabled, checked" }),
-		Checkbox({ Theme = theme, Value = q.Source(false), Disabled = true, Label = "Disabled" }),
+		Material.Checkbox({ Theme = theme, Value = agreed, Label = "Checked" }),
+		Material.Checkbox({ Theme = theme, Value = plain, Label = "Unchecked" }),
+		Material.Checkbox({ Theme = theme, Value = erroring, Error = true, Label = "Error" }),
+		Material.Checkbox({ Theme = theme, Value = q.Source(true), Disabled = true, Label = "Disabled, checked" }),
+		Material.Checkbox({ Theme = theme, Value = q.Source(false), Disabled = true, Label = "Disabled" }),
 	}
 	local triState: { Instance } = {
-		Checkbox({
+		Material.Checkbox({
 			Theme = theme,
 			Value = parent,
 			Indeterminate = mixed,
@@ -80,8 +75,8 @@ return function(ctx: Ctx): Instance
 				childB:Set(v)
 			end,
 		}),
-		Checkbox({ Theme = theme, Value = childA, OnChange = syncParent, Label = "First" }),
-		Checkbox({ Theme = theme, Value = childB, OnChange = syncParent, Label = "Second" }),
+		Material.Checkbox({ Theme = theme, Value = childA, OnChange = syncParent, Label = "First" }),
+		Material.Checkbox({ Theme = theme, Value = childB, OnChange = syncParent, Label = "Second" }),
 	}
 
 	-- radios
@@ -92,7 +87,7 @@ return function(ctx: Ctx): Instance
 		return q.Source("m")
 	end)
 	local radios: { Instance } = {
-		RadioModule.RadioGroup({
+		Material.RadioGroup({
 			Theme = theme,
 			Value = fruit,
 			Options = {
@@ -101,7 +96,7 @@ return function(ctx: Ctx): Instance
 				{ Option = "plum", Label = "Plum (disabled)", Disabled = true },
 			},
 		}),
-		RadioModule.RadioGroup({
+		Material.RadioGroup({
 			Theme = theme,
 			Value = size,
 			Direction = "Horizontal",
@@ -112,7 +107,7 @@ return function(ctx: Ctx): Instance
 				{ Option = "l", Label = "L" },
 			},
 		}),
-		RadioModule.Radio({ Theme = theme, Value = q.Source("a"), Option = "a", Disabled = true, Label = "Disabled, selected" }),
+		Material.Radio({ Theme = theme, Value = q.Source("a"), Option = "a", Disabled = true, Label = "Disabled, selected" }),
 	}
 
 	-- switches
@@ -123,10 +118,10 @@ return function(ctx: Ctx): Instance
 		return q.Source(false)
 	end)
 	local switches: { Instance } = {
-		Common.Labeled(ctx, Switch({ Theme = theme, Value = wifi }), "Plain"),
-		Common.Labeled(ctx, Switch({ Theme = theme, Value = sound, IconOn = ctx.Icon, IconOff = ctx.Icon }), "With icons"),
-		Common.Labeled(ctx, Switch({ Theme = theme, Value = q.Source(true), Disabled = true }), "Disabled, on"),
-		Common.Labeled(ctx, Switch({ Theme = theme, Value = q.Source(false), Disabled = true }), "Disabled, off"),
+		Common.Labeled(ctx, Material.Switch({ Theme = theme, Value = wifi }), "Plain"),
+		Common.Labeled(ctx, Material.Switch({ Theme = theme, Value = sound, IconOn = ctx.Icon, IconOff = ctx.Icon }), "With icons"),
+		Common.Labeled(ctx, Material.Switch({ Theme = theme, Value = q.Source(true), Disabled = true }), "Disabled, on"),
+		Common.Labeled(ctx, Material.Switch({ Theme = theme, Value = q.Source(false), Disabled = true }), "Disabled, off"),
 	}
 
 	-- sliders
@@ -141,13 +136,13 @@ return function(ctx: Ctx): Instance
 	end)
 	local sliders: { Instance } = {
 		Common.Column({
-			Slider({ Theme = theme, Value = volume, Min = 0, Max = 100 }),
+			Material.Slider({ Theme = theme, Value = volume, Min = 0, Max = 100 }),
 			readout<<number>>(ctx, "Continuous: ", volume, function(v: number)
 				return string.format("%.1f", v)
 			end),
-			Slider({ Theme = theme, Value = level, Min = 0, Max = 10, Step = 1 }),
+			Material.Slider({ Theme = theme, Value = level, Min = 0, Max = 10, Step = 1 }),
 			readout<<number>>(ctx, "Discrete (ticks): ", level, show),
-			Slider({
+			Material.Slider({
 				Theme = theme,
 				Value = percent,
 				Min = 0,
@@ -159,7 +154,7 @@ return function(ctx: Ctx): Instance
 			readout<<number>>(ctx, "Formatted label: ", percent, function(v: number)
 				return string.format("%.2f", v)
 			end),
-			Slider({ Theme = theme, Value = q.Source(60), Min = 0, Max = 100, Disabled = true }),
+			Material.Slider({ Theme = theme, Value = q.Source(60), Min = 0, Max = 100, Disabled = true }),
 		}, 320, 8),
 	}
 
@@ -183,11 +178,11 @@ return function(ctx: Ctx): Instance
 	end
 	local rangeSliders: { Instance } = {
 		Common.Column({
-			RangeSlider({ Theme = theme, Start = rangeLo, End = rangeHi, Min = 0, Max = 100 }),
+			Material.RangeSlider({ Theme = theme, Start = rangeLo, End = rangeHi, Min = 0, Max = 100 }),
 			readout<<string>>(ctx, "Continuous: ", pair(rangeLo, rangeHi, "%.1f .. %.1f"), show),
-			RangeSlider({ Theme = theme, Start = stepLo, End = stepHi, Min = 0, Max = 10, Step = 1 }),
+			Material.RangeSlider({ Theme = theme, Start = stepLo, End = stepHi, Min = 0, Max = 10, Step = 1 }),
 			readout<<string>>(ctx, "Discrete (ticks): ", pair(stepLo, stepHi, "%d .. %d"), show),
-			RangeSlider({ Theme = theme, Start = q.Source(30), End = q.Source(60), Min = 0, Max = 100, Disabled = true }),
+			Material.RangeSlider({ Theme = theme, Start = q.Source(30), End = q.Source(60), Min = 0, Max = 100, Disabled = true }),
 		}, 320, 8),
 	}
 
@@ -213,7 +208,7 @@ return function(ctx: Ctx): Instance
 	local cmpOn = ctx.Memo("cmp.on", function()
 		return q.Source(true)
 	end)
-	type Looks = { Slider: typeof(Slider), RangeSlider: typeof(RangeSlider), Switch: typeof(Switch) }
+	type Looks = { Slider: typeof(Material.Slider), RangeSlider: typeof(Material.RangeSlider), Switch: typeof(Material.Switch) }
 	local function column(title: string, L: Looks): Frame
 		return Common.Column({
 			Common.Caption(ctx, title, false),
@@ -261,7 +256,7 @@ return function(ctx: Ctx): Instance
 	local sizeRows: { Instance } = {}
 	for _, name in { "XS", "S", "M", "L", "XL" } :: { SizeName } do
 		table.insert(sizeRows, Common.Caption(ctx, name, false))
-		table.insert(sizeRows, Slider({ Theme = theme, Value = sized, Min = 0, Max = 100, Size = name }))
+		table.insert(sizeRows, Material.Slider({ Theme = theme, Value = sized, Min = 0, Max = 100, Size = name }))
 	end
 	-- a vertical slider in a fixed box: room on the left for the value label
 	local function tall(caption: string, control: Instance): Frame
@@ -283,14 +278,14 @@ return function(ctx: Ctx): Instance
 		Common.Column(sizeRows, 320, 8),
 		Common.Column({
 			Common.Caption(ctx, "Centered (Min -50, Max 50)", false),
-			Slider({ Theme = theme, Value = pan, Min = -50, Max = 50, Centered = true }),
+			Material.Slider({ Theme = theme, Value = pan, Min = -50, Max = 50, Centered = true }),
 			readout<<number>>(ctx, "Centered: ", pan, function(v: number)
 				return string.format("%.1f", v)
 			end),
-			Slider({ Theme = theme, Value = panStep, Min = -50, Max = 50, Step = 10, Centered = true }),
+			Material.Slider({ Theme = theme, Value = panStep, Min = -50, Max = 50, Step = 10, Centered = true }),
 			readout<<number>>(ctx, "Centered, Step 10: ", panStep, show),
 			Common.Caption(ctx, "Inset icons (L: active start / inactive end)", false),
-			Slider({
+			Material.Slider({
 				Theme = theme,
 				Value = loud,
 				Min = 0,
@@ -299,28 +294,28 @@ return function(ctx: Ctx): Instance
 				TrackIconActiveStart = "check",
 				TrackIconInactiveEnd = "close",
 			}),
-			Slider({ Theme = theme, Value = loud, Min = 0, Max = 100, Size = "M", TrackIconActiveStart = "\u{266A}", Disabled = true }),
+			Material.Slider({ Theme = theme, Value = loud, Min = 0, Max = 100, Size = "M", TrackIconActiveStart = "\u{266A}", Disabled = true }),
 		}, 320, 8),
 		Common.Flow({
-			tall("Vertical", Slider({ Theme = theme, Value = vUp, Min = 0, Max = 100, Orientation = "Vertical", Modifier = vModifier(44) })),
+			tall("Vertical", Material.Slider({ Theme = theme, Value = vUp, Min = 0, Max = 100, Orientation = "Vertical", Modifier = vModifier(44) })),
 			tall(
 				"TopToBottom",
-				Slider({ Theme = theme, Value = vDown, Min = 0, Max = 100, Orientation = "Vertical", TopToBottom = true, Modifier = vModifier(44) })
+				Material.Slider({ Theme = theme, Value = vDown, Min = 0, Max = 100, Orientation = "Vertical", TopToBottom = true, Modifier = vModifier(44) })
 			),
 			tall(
 				"Centered, M",
-				Slider({ Theme = theme, Value = vPan, Min = -50, Max = 50, Orientation = "Vertical", Centered = true, Size = "M", Modifier = vModifier(44) })
+				Material.Slider({ Theme = theme, Value = vPan, Min = -50, Max = 50, Orientation = "Vertical", Centered = true, Size = "M", Modifier = vModifier(44) })
 			),
 			tall(
 				"Range, S",
-				RangeSlider({ Theme = theme, Start = vLo, End = vHi, Min = 0, Max = 100, Orientation = "Vertical", Size = "S", Modifier = vModifier(44) })
+				Material.RangeSlider({ Theme = theme, Start = vLo, End = vHi, Min = 0, Max = 100, Orientation = "Vertical", Size = "S", Modifier = vModifier(44) })
 			),
 		}, 8),
 	}
 
 	local comparison: { Instance } = {
-		column("M3 (Material.Slider / RangeSlider / Switch)", { Slider = Slider, RangeSlider = RangeSlider, Switch = Switch }),
-		column("M2 (Material.M2.*)", { Slider = M2.Slider, RangeSlider = M2.RangeSlider, Switch = M2.Switch }),
+		column("M3 (Material.Slider / RangeSlider / Switch)", { Slider = Material.Slider, RangeSlider = Material.RangeSlider, Switch = Material.Switch }),
+		column("M2 (Material.M2.*)", { Slider = Material.M2.Slider, RangeSlider = Material.M2.RangeSlider, Switch = Material.M2.Switch }),
 	}
 
 	return Common.Section(ctx, "Selection", "Selection controls", {

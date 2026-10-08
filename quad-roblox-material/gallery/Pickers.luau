@@ -10,16 +10,14 @@
 	the Memo, so coming back shows the same values.
 ]]
 
-local q = require("../Quad")
+local q = require("./Quad")
 local Common = require("./Common")
-local Button = require("../Button")
-local DatePicker = require("../DatePicker")
-local ColorPicker = require("../ColorPicker")
+local Material = require("../src")
 
 type Ctx = Common.Ctx
-type Date = DatePicker.Date
+type Date = Material.Date
 
-local Calendar = DatePicker.Calendar
+local Calendar = Material.DatePicker.Calendar
 
 local function formatDate(d: Date?): string
 	if d == nil then
@@ -60,7 +58,7 @@ return function(ctx: Ctx): Instance
 
 	local docked: { Instance } = {
 		Common.Column({
-			DatePicker.Docked({
+			Material.DatePicker.Docked({
 				Theme = theme,
 				Value = day,
 				FirstDayOfWeek = 1,
@@ -73,7 +71,7 @@ return function(ctx: Ctx): Instance
 			Common.Caption(ctx, dayText, false),
 		}, 360, 8),
 		Common.Column({
-			DatePicker.RangeDocked({
+			Material.DatePicker.RangeDocked({
 				Theme = theme,
 				Start = rangeStart,
 				End = rangeEnd,
@@ -83,19 +81,19 @@ return function(ctx: Ctx): Instance
 		}, 360, 8),
 	}
 	local modals: { Instance } = {
-		Button({
+		Material.Button({
 			Theme = theme,
 			Label = "Pick a date (en)",
 			OnClick = function()
-				DatePicker.Modal.open({ Value = modalDay, Overlay = ctx.Overlay, Theme = theme })
+				Material.DatePicker.Modal.open({ Value = modalDay, Overlay = ctx.Overlay, Theme = theme })
 			end,
 		}),
-		Button({
+		Material.Button({
 			Theme = theme,
 			Variant = "Tonal",
 			Label = "날짜 선택 (ko, UTC+9)",
 			OnClick = function()
-				DatePicker.Modal.open({
+				Material.DatePicker.Modal.open({
 					Value = modalDay,
 					Locale = "ko",
 					UtcOffset = 9 * 3600,
@@ -104,12 +102,12 @@ return function(ctx: Ctx): Instance
 				})
 			end,
 		}),
-		Button({
+		Material.Button({
 			Theme = theme,
 			Variant = "Outlined",
 			Label = "Start in text input",
 			OnClick = function()
-				DatePicker.Modal.open({ Value = modalDay, StartInInput = true, Overlay = ctx.Overlay, Theme = theme })
+				Material.DatePicker.Modal.open({ Value = modalDay, StartInInput = true, Overlay = ctx.Overlay, Theme = theme })
 			end,
 		}),
 		Common.Caption(ctx, modalText, false),
@@ -137,16 +135,16 @@ return function(ctx: Ctx): Instance
 	}
 	local panel: { Instance } = {
 		Common.Column({
-			ColorPicker.Panel({ Theme = theme, Value = brand }),
+			Material.ColorPicker.Panel({ Theme = theme, Value = brand }),
 			Common.Caption(ctx, brandText, false),
 		}, 360, 8),
 	}
 	local colorModal: { Instance } = {
-		Button({
+		Material.Button({
 			Theme = theme,
 			Label = "Choose color",
 			OnClick = function()
-				ColorPicker.Modal.open({
+				Material.ColorPicker.Modal.open({
 					Theme = theme,
 					Overlay = ctx.Overlay,
 					Value = committed:Get(),
@@ -162,7 +160,7 @@ return function(ctx: Ctx): Instance
 	}
 	local scheme = theme.Scheme:Get()
 	local classic: { Instance } = {
-		ColorPicker.Classic({ Theme = if scheme == "dark" then "Dark" else "Light", Title = "Classic picker" }),
+		Material.ColorPicker.Classic({ Theme = if scheme == "dark" then "Dark" else "Light", Title = "Classic picker" }),
 		Common.Caption(
 			ctx,
 			"The near-identical port of the original OOP picker (own look, 0..255 scale). It reads the scheme once, at construction; see docs/colorpicker-comparison.md for the differences.",

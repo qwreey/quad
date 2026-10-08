@@ -29,7 +29,7 @@
 	    Chip, Tabs, LinearProgress, CircularProgress  chips, tabs, progress (+ the M3 Expressive LoadingIndicator and
 	                                                 WavyProgress)
 	    DatePicker, ColorPicker                       pickers (docked / modal / panel, the pure Calendar / ColorModel math)
-	  (Gallery is NOT exported from here — require `Gallery` directly; see its header.)
+	  (The Gallery is not part of the kit: it lives in `<kit>/gallery`, outside `src`, and uses this table like any consumer.)
 
 	API CONVENTIONS (the same everywhere; a new component follows them, a reviewer checks them)
 	  Value and callbacks

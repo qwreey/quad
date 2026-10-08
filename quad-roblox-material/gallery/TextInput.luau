@@ -6,10 +6,9 @@
 	chosen option live in the Memo, so they survive switching tabs.
 ]]
 
-local q = require("../Quad")
+local q = require("./Quad")
 local Common = require("./Common")
-local TextField = require("../TextField")
-local Select = require("../Select")
+local Material = require("../src")
 
 type Ctx = Common.Ctx
 
@@ -48,7 +47,7 @@ return function(ctx: Ctx): Instance
 
 	local filled: { Instance } = {
 		Common.Column({
-			TextField({
+			Material.TextField({
 				Theme = theme,
 				Label = "Name",
 				Value = name,
@@ -56,7 +55,7 @@ return function(ctx: Ctx): Instance
 				MaxLength = 20,
 			}),
 			Common.Caption(ctx, summary, false),
-			TextField({
+			Material.TextField({
 				Theme = theme,
 				Label = "Email",
 				Value = email,
@@ -65,13 +64,13 @@ return function(ctx: Ctx): Instance
 				SupportingText = "We never send spam",
 				LeadingIcon = ctx.Icon,
 			}),
-			TextField({ Theme = theme, Label = "Disabled", Value = q.Source("Read only"), Disabled = true }),
+			Material.TextField({ Theme = theme, Label = "Disabled", Value = q.Source("Read only"), Disabled = true }),
 		}, 280, 12),
 	}
 
 	local outlined: { Instance } = {
 		Common.Column({
-			TextField({
+			Material.TextField({
 				Theme = theme,
 				Variant = "Outlined",
 				Label = "Price",
@@ -79,7 +78,7 @@ return function(ctx: Ctx): Instance
 				Prefix = "$",
 				Suffix = "USD",
 			}),
-			TextField({
+			Material.TextField({
 				Theme = theme,
 				Variant = "Outlined",
 				Label = "PIN",
@@ -88,7 +87,7 @@ return function(ctx: Ctx): Instance
 				TrailingIcon = ctx.Icon,
 				SupportingText = "Optional",
 			}),
-			TextField({
+			Material.TextField({
 				Theme = theme,
 				Variant = "Outlined",
 				Label = "Notes",
@@ -97,7 +96,7 @@ return function(ctx: Ctx): Instance
 				MaxLength = 80,
 				SupportingText = "Multi-line, with a counter",
 			}),
-			TextField({
+			Material.TextField({
 				Theme = theme,
 				Variant = "Outlined",
 				Label = "Error shown",
@@ -105,13 +104,13 @@ return function(ctx: Ctx): Instance
 				Error = true,
 				ErrorText = "Always in error",
 			}),
-			TextField({ Theme = theme, Variant = "Outlined", Label = "Disabled", Value = q.Source(""), Disabled = true }),
+			Material.TextField({ Theme = theme, Variant = "Outlined", Label = "Disabled", Value = q.Source(""), Disabled = true }),
 		}, 280, 12),
 	}
 
 	local selects: { Instance } = {
 		Common.Column({
-			Select({
+			Material.Select({
 				Theme = theme,
 				Overlay = ctx.Overlay,
 				Label = "Fruit",
@@ -119,7 +118,7 @@ return function(ctx: Ctx): Instance
 				Value = fruit,
 				SupportingText = "Opens a menu under the field",
 			}),
-			Select({
+			Material.Select({
 				Theme = theme,
 				Overlay = ctx.Overlay,
 				Variant = "Outlined",
@@ -131,7 +130,7 @@ return function(ctx: Ctx): Instance
 			Common.Caption(ctx, Common.text<<string?>>(fruit, function(v: string?)
 				return `Chosen: {v or "(nothing)"}`
 			end), false),
-			Select({
+			Material.Select({
 				Theme = theme,
 				Overlay = ctx.Overlay,
 				Label = "Disabled",

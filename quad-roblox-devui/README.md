@@ -72,15 +72,17 @@ quad 인스턴스를 공유합니다(게임의 `State`와 키트의 `State`가 �
 ## 데모
 
 ```luau
-local Demo = require("<이 폴더>/src/Demo")
+local Demo = require("<이 폴더>/gallery")
 Demo.mount()                -- PlayerGui에 ScreenGui를 만들어 데모 창 + Style Editor + Runtime Info + 팝업 층을 올림
 Demo.mount(someParent)      -- 부모를 직접 지정
 Demo.DemoWindow({ Overlay = o })   -- 메인 창만 (o = Devui.Overlay.new(); 직접 ScreenGui에 놓고 o.Layer도 같이 놓을 것)
 ```
 
-`Demo/`는 Iris의 `ShowDemoWindow`에 해당하고, 위젯 그룹마다 파일이 하나씩입니다(`Basic`/`Inputs`/`Trees`/
+`gallery/`(데모)는 Iris의 `ShowDemoWindow`에 해당하고, 위젯 그룹마다 파일이 하나씩입니다(`Basic`/`Inputs`/`Trees`/
 `Tables`/`Popups`/`Plots`, 도구 창 `StyleEditor`/`RuntimeInfo`). 새 위젯을 쓰는 법은 이 파일들이 가장 좋은 예제입니다.
-Heartbeat는 `Demo/Clock.luau`의 `ticker`만 건드리고, 그 연결은 그것을 놓은 요소가 죽을 때 끊깁니다.
+Heartbeat는 `gallery/Clock.luau`의 `ticker`만 건드리고, 그 연결은 그것을 놓은 요소가 죽을 때 끊깁니다.
+
+데모는 키트의 일부가 아니라 **키트를 쓰는 소비자**라서 `src` 밖 `gallery/`에 둡니다 — `src` 안에 있으면 키트와 함께 게시돼 보통의 사용 경로에선 아무도 부르지 않는 코드가 모든 설치본에 실립니다. 그래서 데모는 게임이 키트를 쓰는 방식 그대로, 루트 내보내기 표 하나(`require("<이 폴더>/src")` → `Devui.Window` 같은 값, `Devui.Style`·`Devui.Overlay` 같은 다시 내보낸 타입)와 자기 설정 모듈(`gallery/Quad.luau`)만 씁니다. Studio 진입 스크립트 `gallery/DevuiDemo.client.luau`도 같은 폴더에 있습니다(아래 "Studio에서 보기").
 
 ## 위젯
 
@@ -191,14 +193,14 @@ Devui.Input.use(nil)                          -- 엔진 서비스로 복원
 ## Studio에서 보기 — UI Labs 스토리와 플레이 테스트
 
 레포 루트의 `consumer-kits.project.json`이 ReplicatedStorage에 quad-base·quad-roblox·두 킷을 레포 폴더 모양 그대로 올리고,
-킷의 `play/` 폴더를 StarterPlayerScripts에 넣는다(킷의 `src/Quad.luau` 상대 require가 Studio에서도 같은 경로로 풀린다).
+킷의 `gallery/*.client.luau` 진입 스크립트 하나만 StarterPlayerScripts에 넣는다(`src`와 `gallery`가 레포와 같은 상대 위치에 있어 상대 require가 Studio에서도 같은 경로로 풀린다; ReplicatedStorage의 `gallery` 사본에서는 `globIgnorePaths`로 진입 스크립트를 뺀다).
 
 1. 터미널에서 `rojo serve consumer-kits.project.json --port 34872`, Studio의 Rojo 플러그인에서 그 포트로 연결.
 2. **스토리(편집 모드)** — UI Labs 플러그인을 연다. 탐색기에 storybook **"quad · devui (Iris-style debug UI)"**(`ReplicatedStorage/quad-roblox-devui/stories/Devui.storybook`)이
    보이고, 그 아래 `*.story` 모듈마다 항목이 하나씩 있다. 항목을 열면 오른쪽 Controls 패널이 뜬다 — 패널의 값 하나하나가
    스토리 안에서 `q.Source` 하나이고(`stories/StoryKit.luau`), 컴포넌트는 앱에서 쓰는 그대로 그 Source를 받는다. 값을 바꾸면
    다시 그리지 않고 바인딩만 갱신된다.
-3. **플레이 테스트** — Play(F5). `play/` 의 LocalScript가 PlayerGui에 Demo 창(Iris ShowDemoWindow 대응)을 띄운다. 게임패드·선택(GuiService)·
+3. **플레이 테스트** — Play(F5). StarterPlayerScripts의 `DevuiDemo` LocalScript(`gallery/DevuiDemo.client.luau`)가 PlayerGui에 Demo 창(Iris ShowDemoWindow 대응)을 띄운다. 게임패드·선택(GuiService)·
    Escape·GUI inset처럼 플러그인 위젯에서 재현되지 않는 것은 여기서 본다 — 아래 체크리스트.
 
 UI Labs 안에서는 `UserInputService`가 입력을 받지 못한다. StoryKit이 UI Labs가 주입하는 환경(`InputListener`)을 킷의

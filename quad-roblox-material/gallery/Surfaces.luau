@@ -5,21 +5,16 @@
 	keyed `ListData` whose rows are added / removed from the buttons above it).
 ]]
 
-local q = require("../Quad")
+local q = require("./Quad")
 local Common = require("./Common")
-local Text = require("../Text")
-local Button = require("../Button")
-local Card = require("../Card")
-local Divider = require("../Divider")
-local ListModule = require("../List")
-local Elevation = require("../Elevation")
+local Material = require("../src")
 local D = q.Declaration
 
 type Ctx = Common.Ctx
 type Row = { Id: number, Title: string }
 
-local bodyStyle = Text.Label("BodyMedium")
-local titleStyle = Text.Label("TitleMedium")
+local bodyStyle = Material.Text.Label("BodyMedium")
+local titleStyle = Material.Text.Label("TitleMedium")
 
 local function cardWidth()
 	return D.Modifier.GuiObject():Size(UDim2.fromOffset(240, 0)):AutomaticSize(Enum.AutomaticSize.Y)
@@ -68,7 +63,7 @@ return function(ctx: Ctx): Instance
 				BorderSizePixel = 0,
 				BackgroundColor3 = theme.Color.SurfaceContainerLow,
 				UICorner = UDim.new(0, 12),
-				Elevation.Shadow({ Level = level, Theme = theme }),
+				Material.Elevation.Shadow({ Level = level, Theme = theme }),
 				D.TextLabel {
 					bodyStyle,
 					Size = UDim2.fromScale(1, 1),
@@ -86,7 +81,7 @@ return function(ctx: Ctx): Instance
 		return q.Source(0)
 	end)
 	local cards: { Instance } = {
-		Card({
+		Material.Card({
 			Theme = theme,
 			Variant = "Elevated",
 			Padding = 16,
@@ -94,7 +89,7 @@ return function(ctx: Ctx): Instance
 			Modifier = cardWidth(),
 			Children = q.Slot<<Instance>>(cardBody(ctx, "Elevated", "Surface container low with a level 1 shadow.")),
 		}),
-		Card({
+		Material.Card({
 			Theme = theme,
 			Variant = "Filled",
 			Padding = 16,
@@ -102,7 +97,7 @@ return function(ctx: Ctx): Instance
 			Modifier = cardWidth(),
 			Children = q.Slot<<Instance>>(cardBody(ctx, "Filled", "Surface container highest, no shadow.")),
 		}),
-		Card({
+		Material.Card({
 			Theme = theme,
 			Variant = "Outlined",
 			Padding = 16,
@@ -110,7 +105,7 @@ return function(ctx: Ctx): Instance
 			Modifier = cardWidth(),
 			Children = q.Slot<<Instance>>(cardBody(ctx, "Outlined", "Surface with a 1 px outline variant stroke.")),
 		}),
-		Card({
+		Material.Card({
 			Theme = theme,
 			Variant = "Filled",
 			Padding = 16,
@@ -121,7 +116,7 @@ return function(ctx: Ctx): Instance
 			end,
 			Children = q.Slot<<Instance>>(cardBody(ctx, "Interactive", "State layer, ripple and focus ring. Click me.")),
 		}),
-		Card({
+		Material.Card({
 			Theme = theme,
 			Variant = "Elevated",
 			Padding = 16,
@@ -139,9 +134,9 @@ return function(ctx: Ctx): Instance
 	-- dividers
 	local dividers: { Instance } = {
 		Common.Column({
-			Divider({ Theme = theme }),
-			Divider({ Theme = theme, Inset = "Start" }),
-			Divider({ Theme = theme, Inset = "Both" }),
+			Material.Divider({ Theme = theme }),
+			Material.Divider({ Theme = theme, Inset = "Start" }),
+			Material.Divider({ Theme = theme, Inset = "Both" }),
 			D.Frame {
 				Name = "VerticalDemo",
 				Size = UDim2.new(1, 0, 0, 32),
@@ -154,7 +149,7 @@ return function(ctx: Ctx): Instance
 					Padding = UDim.new(0, 16),
 				},
 				Common.Caption(ctx, "left", false),
-				Divider({ Theme = theme, Orientation = "Vertical" }),
+				Material.Divider({ Theme = theme, Orientation = "Vertical" }),
 				Common.Caption(ctx, "right", false),
 			},
 		}, 280, 12),
@@ -174,10 +169,10 @@ return function(ctx: Ctx): Instance
 			return self:Get() == key
 		end)
 	end
-	local staticList = ListModule.List({
+	local staticList = Material.List({
 		Theme = theme,
 		Children = q.Slot<<Instance>>({
-			ListModule.ListItem({
+			Material.ListItem({
 				Theme = theme,
 				Headline = "Inbox",
 				Leading = ctx.Icon,
@@ -185,7 +180,7 @@ return function(ctx: Ctx): Instance
 				Selected = selected("inbox"),
 				OnClick = pick("inbox"),
 			}),
-			ListModule.ListItem({
+			Material.ListItem({
 				Theme = theme,
 				Headline = "Sent",
 				Supporting = "Two lines: headline and supporting text",
@@ -193,8 +188,8 @@ return function(ctx: Ctx): Instance
 				Selected = selected("sent"),
 				OnClick = pick("sent"),
 			}),
-			Divider({ Theme = theme, Inset = "Start" }),
-			ListModule.ListItem({
+			Material.Divider({ Theme = theme, Inset = "Start" }),
+			Material.ListItem({
 				Theme = theme,
 				Overline = "Overline",
 				Headline = "Drafts",
@@ -203,7 +198,7 @@ return function(ctx: Ctx): Instance
 				Selected = selected("drafts"),
 				OnClick = pick("drafts"),
 			}),
-			ListModule.ListItem({
+			Material.ListItem({
 				Theme = theme,
 				Headline = "Archive",
 				Supporting = "Three lines without an overline: the supporting text may take a second line when it is long",
@@ -212,8 +207,8 @@ return function(ctx: Ctx): Instance
 				Selected = selected("archive"),
 				OnClick = pick("archive"),
 			}),
-			ListModule.ListItem({ Theme = theme, Headline = "Trash (disabled)", Leading = ctx.Icon, Disabled = true, OnClick = pick("trash") }),
-			ListModule.ListItem({ Theme = theme, Headline = "Static row (no click)", Supporting = "No state layer is built" }),
+			Material.ListItem({ Theme = theme, Headline = "Trash (disabled)", Leading = ctx.Icon, Disabled = true, OnClick = pick("trash") }),
+			Material.ListItem({ Theme = theme, Headline = "Static row (no click)", Supporting = "No state layer is built" }),
 		}),
 	})
 
@@ -228,14 +223,14 @@ return function(ctx: Ctx): Instance
 			{ Id = 3, Title = "Row three" },
 		})
 	end)
-	local dataList = ListModule.ListData<<Row>>({
+	local dataList = Material.ListData<<Row>>({
 		Theme = theme,
 		Items = rows,
 		Key = function(r: Row)
 			return r.Id
 		end,
 		Render = function(row: q.State<Row>, index: q.State<number>)
-			return ListModule.ListItem({
+			return Material.ListItem({
 				Theme = theme,
 				Headline = Common.text<<Row>>(row, function(r: Row)
 					return r.Title
@@ -258,7 +253,7 @@ return function(ctx: Ctx): Instance
 		end,
 	})
 	local dataButtons = Common.Flow({
-		Button({
+		Material.Button({
 			Theme = theme,
 			Variant = "Tonal",
 			Label = "Add row",
@@ -269,7 +264,7 @@ return function(ctx: Ctx): Instance
 				rows:Set(copy)
 			end,
 		}),
-		Button({
+		Material.Button({
 			Theme = theme,
 			Variant = "Text",
 			Label = "Reverse",
