@@ -2,7 +2,7 @@
 --[[
 	Top app bar scrolling — Compose material3 `TopAppBarState` and the three `TopAppBarDefaults` scroll behaviors
 	(androidx/androidx@40ff481 compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/AppBar.kt
-	1400-1436 TopAppBarScrollBehavior, 1712-1984 the factories, 2028-2146 TopAppBarState, 3267-3590 PinnedScrollBehavior /
+	1400-1436 TopAppBarScrollBehavior, 1712-1984 the factories, 2028-2146 TopAppBarState, 3267-3592 PinnedScrollBehavior /
 	EnterAlwaysScrollBehavior / ExitUntilCollapsedScrollBehavior / settleAppBar).
 
 	    local scroll = Material.TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -13,7 +13,8 @@
 	  opts (`read`, optional): State (TopAppBarState? — default a fresh one, rememberTopAppBarState), CanScroll ((() -> boolean)?
 	  — while it returns false the bar ignores the scroll, Compose canScroll).
 	  -> { State: TopAppBarState, IsPinned: boolean, Hook } — put `Hook` in the array part of ONE ScrollingFrame (the content
-	  scrolling below the bar — layout under ROBLOX DIFFERENCE); it follows that frame's `CanvasPosition`.
+	  scrolling below the bar — layout under ROBLOX DIFFERENCE); it follows that frame's `CanvasPosition` and, to settle,
+	  moves it (a pre-hook: it keeps the frame until the frame is destroyed).
 	TopAppBarState(opts?) — opts: InitialHeightOffset (number?, default 0). Fields (State<number>): HeightOffset (0 .. the
 	  limit, <= 0), HeightOffsetLimit (set by the bar: minus its collapsible height), ContentOffset (minus the content's scroll),
 	  CollapsedFraction (HeightOffset / HeightOffsetLimit), OverlappedFraction (Compose overlappedFraction: 0 .. 1 over the
@@ -29,9 +30,18 @@
 	  enterAlways          every scroll moves HeightOffset by the same distance: scrolling down hides the bar, any scroll up
 	                       brings it back
 	  exitUntilCollapsed   scrolling down collapses; the bar expands again only as the content reaches its top
-	SETTLE (settleAppBar): when the scroll stops part way (the canvas has not moved for 0.1 s — the kit's stand-in for the
-	end of a fling) a behavior that is not pinned animates HeightOffset to 0 if CollapsedFraction < 0.5, else to the limit
-	(snapAnimationSpec = DefaultEffects -> Short4, Standard; one Heartbeat connection while it runs).
+	SETTLE (settleAppBar, AppBar.kt 3542-3592): when the scroll stops part way (the canvas has not moved for 0.1 s — the kit's
+	stand-in for the end of a fling — and the left mouse button is up: a scrollbar thumb held still is not the end of the
+	scroll) a behavior that is not pinned animates HeightOffset to 0 if CollapsedFraction < 0.5, else to the limit
+	(snapAnimationSpec = DefaultEffects -> Short4, Standard; one Heartbeat connection while it runs). Compose animates only
+	the height: the bar had CONSUMED the scroll (onPreScroll, 3417 / 3485), so the list's own scroll is unchanged and the
+	Scaffold's top padding (Scaffold.kt 258-265, the bar's measured height) carries the content with the bar — a settled bar
+	never leaves a gap. Here a row's screen place does not follow the bar (layout below), so the settle moves the hooked
+	ScrollingFrame's CanvasPosition by the same amount, keeping CanvasPosition.Y + HeightOffset (the content's own scroll
+	under the bar) constant — exitUntilCollapsed near the top lands on 0 or the collapse range, enterAlways keeps the first
+	row on the bar's bottom. If the canvas cannot scroll far enough for a collapse (a list shorter than the collapse range)
+	the settle expands instead. A canvas move that is not the settle's own (wheel, drag, scrollbar) cancels it at once
+	(Studio-measured 2026-10-08 on the gallery: a scrollbar drag released part way and a wheel during the settle).
 	ROBLOX DIFFERENCE: a ScrollingFrame cannot hand its scroll to a parent (no nested scrolling), so the bar does not CONSUME
 	the scroll as Compose's onPreScroll does — the content scrolls by the full distance while the bar collapses alongside.
 	Lay the screen out so the rows move the way Compose's Scaffold places them (the content behind the bar, padded by the
@@ -49,8 +59,10 @@
 
 local q = require("../Quad")
 local Tokens = require("../Tokens")
+local Util = require("../Util")
 
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 export type Kind = "Pinned" | "EnterAlways" | "ExitUntilCollapsed"
 
@@ -85,6 +97,7 @@ type Rec = {
 
 local IDLE = 0.1 -- seconds without a canvas move before the bar settles
 local SETTLE = Tokens.Motion.Duration.Short4
+local EPS = 0.01 -- px: a canvas read-back within this of the settle's last write is the settle's own
 
 local records: { [any]: Rec } = setmetatable({}, { __mode = "k" }) :: any
 
@@ -137,9 +150,11 @@ local function behavior(kind: Kind, o: BehaviorOptions?): TopAppBarScrollBehavio
 	local state = opts.State or TopAppBarState()
 	local rec = recOf(state)
 	local canScroll = opts.CanScroll
+	local frame: ScrollingFrame? = nil
 	local prevY = 0
 	local version = 0
 	local settling: RBXScriptConnection? = nil
+	local written = 0 -- the canvas Y the running settle wrote last (a different value means someone else scrolled)
 
 	local function stopSettle()
 		if settling then
@@ -156,29 +171,68 @@ local function behavior(kind: Kind, o: BehaviorOptions?): TopAppBarScrollBehavio
 		if limit == 0 or limit == -math.huge then
 			return
 		end
-		local fraction = rec.Offset:Get() / limit
+		local from = rec.Offset:Get()
+		local fraction = from / limit
 		if fraction < 0.01 or fraction == 1 then
 			return
 		end
-		local from = rec.Offset:Get()
+		if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+			-- a scrollbar thumb held still is not the end of the scroll (Compose settles on the fling's end, after
+			-- the finger lifts): look again once the button is released
+			task.delay(IDLE, settle, v)
+			return
+		end
 		local goal = if fraction < 0.5 then 0 else limit
+		local inst = frame
+		local x, fromY, toY = 0, 0, 0
+		if inst ~= nil then
+			-- Compose animates only the height; the content's own scroll is untouched and its padding follows the bar.
+			-- Here a row sits at `expanded - CanvasPosition.Y` whatever the bar does, so keep CanvasPosition.Y +
+			-- HeightOffset (the kit's "content scroll under the bar") constant: the canvas moves with the bar.
+			local position = inst.CanvasPosition
+			x, fromY = position.X, position.Y
+			local maxY = math.max(0, inst.AbsoluteCanvasSize.Y - inst.AbsoluteWindowSize.Y)
+			toY = math.clamp(fromY + from - goal, 0, maxY)
+			if goal == limit and toY < -limit - EPS then
+				-- the content cannot scroll far enough for the first row to meet the collapsed bar: expand instead
+				goal = 0
+				toY = math.clamp(fromY + from, 0, maxY)
+			end
+		end
 		local t = 0
 		stopSettle()
+		written = fromY
 		settling = RunService.Heartbeat:Connect(function(dt: number)
+			if inst ~= nil and math.abs(inst.CanvasPosition.Y - written) >= EPS then
+				stopSettle() -- the user scrolled (wheel, drag, scrollbar): the scroll wins
+				return
+			end
 			t += dt
 			local k = math.min(t / SETTLE, 1)
 			local u = 1 - k
-			setOffset(rec, from + (goal - from) * (1 - u * u * u * u))
+			local e = 1 - u * u * u * u
+			setOffset(rec, from + (goal - from) * e)
+			if inst ~= nil then
+				local y = fromY + (toY - fromY) * e
+				written = y -- before the write: an immediate change signal must already see it as the settle's
+				inst.CanvasPosition = Vector2.new(x, y)
+				written = inst.CanvasPosition.Y
+			end
 			if k >= 1 then
 				stopSettle()
 			end
 		end)
 	end
 
-	local hook = q.OnChange("CanvasPosition", function(position: Vector2)
+	local function onCanvas(position: Vector2)
 		local y = position.Y
 		local dy = y - prevY
 		prevY = y
+		if settling ~= nil and math.abs(y - written) < EPS then
+			-- the settle's own canvas step: it drives HeightOffset itself
+			rec.Content:SetIfChanged(-y)
+			return
+		end
 		if canScroll ~= nil and not canScroll() then
 			return
 		end
@@ -196,11 +250,23 @@ local function behavior(kind: Kind, o: BehaviorOptions?): TopAppBarScrollBehavio
 		end
 		if kind ~= "Pinned" then
 			version += 1
-			local v = version
-			task.delay(IDLE, function()
-				settle(v)
-			end)
+			task.delay(IDLE, settle, version)
 		end
+	end
+
+	local hook = Util.preHook(function(inst: GuiObject)
+		local scroller = (inst :: any) :: ScrollingFrame
+		frame = scroller
+		prevY = 0 -- a pre-hook runs before the element's properties: the canvas is at its default (0, 0)
+		scroller:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+			onCanvas(scroller.CanvasPosition)
+		end)
+		scroller.Destroying:Connect(function()
+			stopSettle()
+			if frame == scroller then
+				frame = nil
+			end
+		end)
 	end)
 
 	return {

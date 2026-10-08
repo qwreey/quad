@@ -372,8 +372,12 @@ Material.HorizontalFloatingToolbar({ Expanded = expanded, Content = { … }, Flo
   바의 목록 맨 위에선 통째로), **ScrollingFrame은 바의 지금 아래 끝(`top` = 펼친 높이 + `State.HeightOffset`)에서 시작하고 높이는 화면 −
   `top`, 위 여백은 펼친 높이 − `top`**(위 코드). 캔버스가 프레임과 같은 만큼 늘고 줄어 최대 스크롤이 그대로라 CanvasPosition이 튀지
   않습니다(Studio 실측 2026-10-08 — 휠·멈춤 정착·맨 아래에서 올리기). 갤러리의 세 화면과 AppBar 스토리가 이 모양. 대신 바 위에서 굴린
-  휠은 목록에 닿지 않습니다(목록이 바 아래에 없음). 스크롤이 0.1 s 멈추면 중간에 걸린 바는 가까운 쪽 끝으로 0.2 s(Compose
-  `settleAppBar`). 바를 직접 끌어 접기·플링 감속은 없습니다.
+  휠은 목록에 닿지 않습니다(목록이 바 아래에 없음). 스크롤이 0.1 s 멈추면(왼쪽 마우스 버튼이 떼어진 뒤 — 스크롤바 엄지를 잡은 채
+  멈춘 것은 아직 스크롤 중) 중간에 걸린 바는 가까운 쪽 끝으로 0.2 s(Compose `settleAppBar`). 이때 **CanvasPosition도 같은 만큼 같이
+  움직입니다** — Compose에선 바가 스크롤을 먹어 목록 자체 스크롤이 그대로이고 여백이 바를 따라가 정착한 바가 틈을 남기지 않는데,
+  여기선 행이 바를 따라가지 않으므로 캔버스 + `HeightOffset`을 그대로 두도록 캔버스를 옮깁니다(exitUntilCollapsed는 맨 위 근처에서 0
+  또는 접힘 범위로, enterAlways는 첫 행이 바 아래 끝에 붙은 채). 목록이 접힘 범위만큼 스크롤되지 못하면(짧은 목록) 접는 대신
+  펼칩니다. 정착 도중의 휠·끌기·스크롤바는 정착을 바로 멈춥니다. 바를 직접 끌어 접기·플링 감속은 없습니다.
 - **두 줄 바의 큰 제목**은 마지막 기준선이 아래에서 24(medium)/28(large) — 기준선은 Roboto 지표(ascender 0.928 em, descender
   0.244 em)로 근사했습니다(Roblox는 글꼴 기준선을 알려 주지 않음).
 - **오버플로**: 액션이 `MaxItemCount`보다 많으면 `MaxItemCount - 1`개 + 더보기(⋮, `Icons` "moreVert") 버튼, 나머지는 Menu로. Compose는
@@ -561,6 +565,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 69 | 떠 있는 툴바 | 갤러리 "Floating toolbars"·Toolbar 스토리 | Expanded 스위치로 앞·뒤 내용이 0.15 s에 줄었다 펼쳐짐(앞은 왼쪽부터, 뒤는 오른쪽부터 드러남), 알약 모양 유지; FAB 형은 접으면 툴바가 FAB 쪽으로 사라지고 FAB이 56 → 80, 펼치면 툴바 그림자; Vibrant는 primaryContainer 위 onPrimaryContainer 아이콘 |  |
 | 3 | CanvasGroup + UICorner 리플 클리핑 | Button·Chip·ListItem을 누름 | 리플 원이 둥근 모서리 밖으로 안 나감 |  |
 | 70 | 앱 바 스크롤 — 스크롤바 | 갤러리 "Top app bars that scroll" 세 화면·AppBar 스토리 | 세 화면 모두 스크롤바가 바 아래 끝에서 시작해 바에 가리지 않음(오른쪽 exitUntilCollapsed는 맨 위에서도 136 바로 아래에 보임); 바가 접히고 펼쳐지는 동안 스크롤바 위 끝이 바 아래 끝을 따라감; 행 움직임은 66과 같음(튀거나 두 배로 움직이지 않음) | Studio 2026-10-08 확인(휠) |
+| 71 | 앱 바 스크롤 — 정착 틈 | 갤러리 "Top app bars that scroll" 세 화면 | 스크롤바 엄지를 잡고 애매한 곳(enterAlways 0~64, exitUntilCollapsed 0~72)까지 끌어 잡은 채로 두면 바가 붙지 않고, 놓으면 0.2 s에 바와 목록이 함께 가까운 끝으로 움직여 첫 행이 바 아래 끝에 붙음(바와 1행 사이 빈 띠 없음); 목록 깊은 곳에서 enterAlways 바가 반쯤 돌아온 채 멈춰도 바와 목록이 같이 움직임; 정착 도중 휠·끌기를 하면 정착이 바로 멈추고 휠을 따름(되돌아가며 싸우지 않음); pinned는 그대로 | Studio 2026-10-08 확인(엄지 끌기·놓기, 정착 도중 휠) |
 
 ## 테스트
 

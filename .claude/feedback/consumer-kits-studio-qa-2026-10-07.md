@@ -464,3 +464,24 @@
 **바뀐 것 하나**: 바 위에서 굴린 휠이 이제 목록에 닿지 않는다(목록이 바 아래에 없음). 실측: 옛 레이아웃(프레임 화면 가득)에선 pinned 바 위 휠 → 목록 0 → 100, 새 레이아웃에선 목록 그대로·갤러리 페이지가 100 스크롤. README 문단에 적음.
 
 **스펙**: spec.gallery 새 절 "app bar screens: …" — 세 화면에서 스크롤 경로(0·5·30·64·71·72·100·400·2000·380·350·60·20·3·0)와 정착 15프레임마다 `Content.Position.Y = 바 Size.Y`, `Content.Size = (1, 0, 1, −바)`, `Position.Y + PaddingTop = 펼친 높이`. 음성 대조: Position을 (0, 0)으로 되돌리면 "PinnedAppBarScreen rest: frame top 0 … vs bar bottom 64"로 실패.
+
+## 앱 바 스크롤 — 정착 틈 (2026-10-08)
+
+**관찰(사용자, a4d5c4b5 뒤)**: "일부로 스크롤바를 잡아서 애매한 곳에서 멈추면 위쪽 공간이 남고 영역은 탑바로 올라가고 그러기도 함" — 바는 접힘/펼침(숨김/보임)으로 붙는데 목록은 제자리라 바 아래 끝과 첫 행 사이에 빈 띠가 남는다.
+
+**Studio 재현(고치기 전, a4d5c4b5)**: 갤러리 Navigation → "Top app bars that scroll". exitUntilCollapsed(MediumFlexibleTopAppBar 136 → 64) 스크롤바 엄지를 12 px 끌어 놓음 → CanvasPosition 46.79, 바 64로 정착, 1행 89 → **빈 띠 25 px**(스크린샷 Before_exit_drag). enterAlways(CenterAligned 64) 엄지를 14 px 끌어 놓음 → 캔버스 44.08, 바 숨김(0), 1행 20 → **빈 띠 20 px**(Before_enter_drag). 그리고 엄지를 **잡은 채** 멈춰도 0.1 s 뒤 정착이 돌았다(놓기 전에 바가 움직임).
+
+**원인(확인)**: `src/AppBar/Scroll.luau`의 정착이 `HeightOffset`만 애니메이션해 CanvasPosition과의 결합을 끊는다. 이 레이아웃(a4d5c4b5)에서 행의 화면 위치는 바와 무관하게 `펼친 높이 − CanvasPosition.Y`, 바 아래 끝은 `펼친 높이 + HeightOffset`이라 틈 = −(CanvasPosition.Y + HeightOffset)이 생긴다. 정본은 높이만 애니메이션하지만(androidx/androidx@40ff481 `AppBar.kt` 3542-3592 `settleAppBar` — 3577-3585 `animateTo(0 or heightOffsetLimit) { state.heightOffset = value }`), 바가 스크롤을 먼저 먹어서(onPreScroll — EnterAlways 3417, ExitUntilCollapsed 3485) 목록 자체 스크롤은 안 변하고 Scaffold 위 여백이 바의 측정 높이를 따라가므로(`Scaffold.kt` 178 `topBarHeight`, 258-265 `PaddingValues(top = topBarHeight)`) 정착한 바가 틈을 남길 수 없다. 정착 스펙은 `TopAppBarDefaults.snapAnimationSpec` = `MotionSchemeKeyTokens.DefaultEffects`(AppBar.kt 1539-1540) — 키트는 이미 Short4(0.2 s)·Standard(Quart Out)로 근사하고 있어 그대로 둠.
+
+**고침**(키트 공개 API 무변경): (1) 정착이 `HeightOffset`을 from → goal로 움직이는 같은 이징으로 훅이 붙은 ScrollingFrame의 CanvasPosition.Y도 `fromY + from − offset(t)`로 옮긴다 — 캔버스 + 오프셋(바 아래 목록 자체 스크롤)을 그대로 두는 Compose와 같은 결과. exitUntilCollapsed 맨 위 근처는 0 또는 접힘 범위로, enterAlways는 첫 행이 바 아래 끝에 붙은 채, 깊은 곳의 enterAlways는 목록이 바를 따라 밀림. pinned는 정착 없음(그대로). (2) 목표 캔버스는 [0, AbsoluteCanvasSize − AbsoluteWindowSize]로 자르고, 접으려는데 접힘 범위만큼 스크롤할 수 없으면(짧은 목록) 펼침으로 바꾼다(접으면 틈이 남음). (3) 사용자 우선: 정착이 마지막으로 쓴 값과 다른 CanvasPosition(휠·끌기·스크롤바)이 보이면 정착을 바로 끊고 그 스크롤을 평소처럼 처리 — Heartbeat에서 쓰기 전에 읽어 대조하고, 변경 신호에서도 대조(즉시/지연 신호 모드 둘 다). (4) 왼쪽 마우스 버튼이 눌려 있으면(엄지를 잡은 채 멈춤) 정착하지 않고 0.1 s마다 다시 본다 — Compose는 손을 뗀 뒤(플링 끝) 정착. (5) 그래서 `Hook`은 `q.OnChange` 디스크립터에서 프레임을 잡는 pre-hook(`Util.preHook`, 툴팁 훅과 같은 모양)으로 바뀌었다 — 배열 칸에 넣는 사용법은 그대로. 터치를 잡은 채 멈추는 경우는 따로 막지 않았다(실기기 미확인).
+
+**스펙**: spec.appbar 새 절 둘 — "settle keeps the content under the bar…"(exitUntilCollapsed 30/48 → 캔버스 48·틈 0, 20/48 → 0; enterAlways 40 → 64, 20 → 0; 깊은 곳 470(−34) → 500, 466(−30) → 436; 짧은 목록(최대 30) → 펼침), "settle yields to the user…"(정착 절반에서 사용자 스크롤 → Heartbeat 연결 즉시 해제·바는 사용자 스크롤을 따름·이후 프레임에 캔버스 안 움직임, 다시 멈추면 새로 정착; 버튼을 잡은 채엔 정착 없음, 떼면 정착). spec.gallery "app bar screens" 정착 뒤 `펼친 높이 − CanvasPosition.Y == 바 아래 끝`(pinned 제외). 하네스 UIS 가짜에 `IsMouseButtonPressed`(`MouseButton1Down`). 음성 대조: 옛 정착으로 바꿔 돌리면 spec.appbar 두 절이 "exit collapse: canvas 30"·"settling: canvas 30"으로, spec.gallery가 "EnterAlwaysAppBarScreen: first row 34 vs bar bottom 64"로 실패.
+
+**Studio 확인(고친 뒤, stop → studio-sync → Play)** — CanvasPosition 변경 신호마다 캔버스·바 높이·버튼 상태 기록:
+- exitUntilCollapsed 엄지를 같은 12 px 끌어 **잡은 채** 0.7 s: 캔버스 46.79, 바 아래 끝 89 = 1행 89, 정착 없음(After_exit_held). 놓으니 0.12 s 뒤 54 → 60 → … → 72로 0.2 s, 바 64, 1행 64 — 틈 0(After_exit_release).
+- enterAlways 엄지 14 px 끌어 놓음: 44.08 → 50 → … → 64, 바 0, 1행 0 — 틈 0(After_enter_release).
+- 정착 도중 휠: 놓은 뒤 60 ms에 휠 위 → 정착이 54 → 60까지 쓴 다음 휠이 50으로 끌어내렸고 그 뒤 쓰기는 휠 보간만(41, 30, … 0), 바는 휠을 따라 136으로 — 싸움 없음, 최종 0/136/136.
+- 깊은 enterAlways(스크립트로 500 → 470, 바 30 보임 = 0.53 숨김): 캔버스 500·바 0, 10행이 26 → −4(바와 같이 30). 470 → 466(0.47): 캔버스 436·바 64, 10행 30 → 60.
+- 스크립트 30 (exit 30/72): 캔버스 0·바 136. pinned 30: 0.6 s 뒤에도 30(정착 없음).
+- 휠 한 칸은 100 px라 맨 위 근처의 애매한 정지는 휠로는 거의 안 생긴다(엄지 끌기가 주 경로). 엄지를 정착 도중에 다시 잡아 끄는 것은 MCP 입력 지연 때문에 정착이 끝난 뒤에 도착해 직접 못 봤다 — 같은 경로(정착 밖의 CanvasPosition 변경)는 휠로 확인, 스펙이 대조.
+- 콘솔 에러 없음. 끝나고 Edit 모드, 최종 코드 싱크.

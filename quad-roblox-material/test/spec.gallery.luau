@@ -321,6 +321,9 @@ H.section("app bar screens: the list's ScrollingFrame starts at the bar's bottom
 		local bar = H.find(screen, case.Bar) :: any
 		local content = H.find(screen, "Content") :: any
 		local expanded = case.Expanded
+		-- layout stand-in for the settle's canvas clamp: 24 rows of 48 in a 420 screen, the window below the bar
+		content.AbsoluteWindowSize = Vector2.new(360, 420 - expanded)
+		content.AbsoluteCanvasSize = Vector2.new(360, 24 * 48)
 		local function check(label: string)
 			local barBottom = bar.Size.Y.Offset
 			assert(bar.Size.Y.Scale == 0, label)
@@ -340,6 +343,9 @@ H.section("app bar screens: the list's ScrollingFrame starts at the bar's bottom
 			H.advance(0.02)
 			check(`settle {i}`)
 		end
+		-- settled: the first row meets the bar's bottom (the canvas moved with the bar — no gap)
+		local rowTop = expanded - content.CanvasPosition.Y
+		assert(math.abs(rowTop - bar.Size.Y.Offset) < 1e-3 or name == "PinnedAppBarScreen", `{name}: first row {rowTop} vs bar bottom {bar.Size.Y.Offset}`)
 		content.CanvasPosition = Vector2.new(0, 0)
 		H.advance(0.5)
 		check("back")

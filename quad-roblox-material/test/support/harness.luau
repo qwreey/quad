@@ -121,12 +121,17 @@ local UserInputService = {
 	KeyboardEnabled = true,
 	GamepadEnabled = false,
 	MouseEnabled = true,
+	MouseButton1Down = false,
 }
 function UserInputService.GetMouseLocation(_self: any): any
 	return mouse
 end
 function UserInputService.IsKeyDown(_self: any, _key: any): boolean
 	return false
+end
+-- specs set `H.UserInputService.MouseButton1Down = true` to simulate a held left button (a scrollbar thumb held still)
+function UserInputService.IsMouseButtonPressed(self: any, inputType: any): boolean
+	return inputType == Enum.UserInputType.MouseButton1 and self.MouseButton1Down == true
 end
 -- specs set `H.UserInputService.FocusedTextBox = box` to simulate a focused TextBox
 function UserInputService.GetFocusedTextBox(self: any): any

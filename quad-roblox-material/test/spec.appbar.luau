@@ -195,8 +195,19 @@ end)
 
 -- ── scrolling ───────────────────────────────────────────────────────────────
 
-local function scroller(behavior: any): any
-	return D.ScrollingFrame { Name = "List", behavior.Hook }
+local function scroller(behavior: any, maxY: number?): any
+	local frame: any = D.ScrollingFrame { Name = "List", behavior.Hook }
+	-- layout stand-in: the furthest scroll (canvas - window) the settle clamps its canvas target to
+	frame.AbsoluteWindowSize = Vector2.new(360, 300)
+	frame.AbsoluteCanvasSize = Vector2.new(360, 300 + (maxY or 1700))
+	return frame
+end
+-- run the 0.1 s idle wait and the whole 0.2 s settle animation
+local function settleOut()
+	H.advance(0.15)
+	for _ = 1, 15 do
+		H.advance(0.02)
+	end
 end
 local function scrollTo(frame: any, y: number)
 	frame.CanvasPosition = Vector2.new(0, y)
@@ -273,6 +284,111 @@ H.section("exitUntilCollapsed (Medium): collapses on scroll down to its 64 px ro
 	H.advance(0.5)
 	assert(#Heartbeat.connections == baseBeats)
 	H.assertNoDebugOutput("exit until collapsed")
+end)
+
+H.section("settle keeps the content under the bar: a stop part way moves the canvas with the bar (no gap, no overlap)", function()
+	-- the kit layout (Scroll.luau header): a row sits at `expanded - CanvasPosition.Y`, the bar's bottom at
+	-- `expanded + HeightOffset` — the first row meets the bar's bottom iff CanvasPosition.Y + HeightOffset == 0
+	local function rowGap(bar: any, list: any, expanded: number): number
+		return (expanded - list.CanvasPosition.Y) - bar.Size.Y.Offset
+	end
+	-- exitUntilCollapsed, Medium (112 -> 64): 30 of 48 collapsed (0.63) collapses; the canvas follows to 48
+	local exit = AppBar.TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+	local medium: any = AppBar.MediumTopAppBar({ Title = "Medium", ScrollBehavior = exit })
+	local list = scroller(exit)
+	scrollTo(list, 30)
+	settleOut()
+	assert(medium.Size == UDim2.new(1, 0, 0, 64), tostring(medium.Size))
+	assert(near(list.CanvasPosition.Y, 48), `exit collapse: canvas {list.CanvasPosition.Y}`)
+	assert(near(rowGap(medium, list, 112), 0), `exit collapse: gap {rowGap(medium, list, 112)}`)
+	assert(#Heartbeat.connections == baseBeats)
+	-- 20 of 48 (0.42) expands; the canvas follows back to the top
+	scrollTo(list, 20)
+	settleOut()
+	assert(medium.Size == UDim2.new(1, 0, 0, 112) and near(list.CanvasPosition.Y, 0), `exit expand: canvas {list.CanvasPosition.Y}`)
+	q.dispose(medium)
+	q.dispose(list)
+	-- enterAlways, TopAppBar 64: near the top, 40 hidden (0.63) hides and scrolls the first row up to the screen top
+	local enter = AppBar.TopAppBarDefaults.enterAlwaysScrollBehavior()
+	local bar: any = AppBar.TopAppBar({ Title = "Enter", ScrollBehavior = enter })
+	list = scroller(enter)
+	scrollTo(list, 40)
+	settleOut()
+	assert(bar.Size == UDim2.new(1, 0, 0, 0) and near(list.CanvasPosition.Y, 64), `enter hide: canvas {list.CanvasPosition.Y}`)
+	assert(near(rowGap(bar, list, 64), 0))
+	-- 20 hidden (0.31) shows; the canvas follows back to the top
+	scrollTo(list, 20)
+	assert(near(enter.State.HeightOffset:Get(), -20))
+	settleOut()
+	assert(bar.Size == UDim2.new(1, 0, 0, 64) and near(list.CanvasPosition.Y, 0), `enter show: canvas {list.CanvasPosition.Y}`)
+	-- deep in the list the bar comes back 30 px (0.47 hidden): showing it scrolls the content down with it, as
+	-- Compose's padding pushes the list — the content's own scroll (canvas + offset) stays 436
+	scrollTo(list, 500)
+	scrollTo(list, 470)
+	assert(near(enter.State.HeightOffset:Get(), -34))
+	settleOut()
+	assert(bar.Size == UDim2.new(1, 0, 0, 0) and near(list.CanvasPosition.Y, 500), `enter deep hide: canvas {list.CanvasPosition.Y}`)
+	scrollTo(list, 470)
+	scrollTo(list, 466)
+	assert(near(enter.State.HeightOffset:Get(), -30))
+	settleOut()
+	assert(bar.Size == UDim2.new(1, 0, 0, 64) and near(list.CanvasPosition.Y, 436), `enter deep show: canvas {list.CanvasPosition.Y}`)
+	assert(#Heartbeat.connections == baseBeats)
+	q.dispose(bar)
+	q.dispose(list)
+	-- a list too short to scroll the collapse range (furthest scroll 30 < 48): collapsing would leave a gap, expand
+	local short = AppBar.TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+	medium = AppBar.MediumTopAppBar({ Title = "Short", ScrollBehavior = short })
+	list = scroller(short, 30)
+	scrollTo(list, 30)
+	assert(near(short.State.CollapsedFraction:Get(), 30 / 48))
+	settleOut()
+	assert(medium.Size == UDim2.new(1, 0, 0, 112) and near(list.CanvasPosition.Y, 0), `short: canvas {list.CanvasPosition.Y}`)
+	q.dispose(medium)
+	q.dispose(list)
+	H.advance(0.5)
+	H.assertNoDebugOutput("settle gap")
+end)
+
+H.section("settle yields to the user: a scroll during it cancels it; a held mouse button (scrollbar thumb) delays it", function()
+	local exit = AppBar.TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+	local medium: any = AppBar.MediumTopAppBar({ Title = "Medium", ScrollBehavior = exit })
+	local list = scroller(exit)
+	scrollTo(list, 30)
+	H.advance(0.1) -- the idle timer starts the settle; this Heartbeat (dt 0.1) runs it half way
+	local y = list.CanvasPosition.Y
+	assert(y > 30 and y < 48, `settling: canvas {y}`)
+	assert(#Heartbeat.connections == baseBeats + 1, "the settle loop runs")
+	-- the wheel moves the canvas mid-settle: the loop ends at once, the bar follows the wheel, the canvas stays put
+	scrollTo(list, y - 10)
+	assert(#Heartbeat.connections == baseBeats, "a user scroll cancels the settle")
+	local offset = exit.State.HeightOffset:Get()
+	assert(near(offset, -(y - 10)), `the bar follows the user's scroll: {offset}`)
+	H.advance(0.02)
+	H.advance(0.02)
+	assert(near(list.CanvasPosition.Y, y - 10) and near(exit.State.HeightOffset:Get(), offset), "nothing fights the scroll")
+	-- the user's stop settles afresh
+	settleOut()
+	assert(near(list.CanvasPosition.Y + exit.State.HeightOffset:Get(), 0), "settled again, no gap")
+	-- the scrollbar thumb held still part way: no settle until the button is released
+	scrollTo(list, 0)
+	settleOut()
+	H.UserInputService.MouseButton1Down = true
+	scrollTo(list, 30)
+	H.advance(0.15)
+	for _ = 1, 30 do
+		H.advance(0.02)
+	end
+	assert(near(list.CanvasPosition.Y, 30) and near(exit.State.HeightOffset:Get(), -30), "held: no settle")
+	assert(#Heartbeat.connections == baseBeats)
+	H.UserInputService.MouseButton1Down = false
+	settleOut()
+	assert(medium.Size == UDim2.new(1, 0, 0, 64) and near(list.CanvasPosition.Y, 48), `released: settles {list.CanvasPosition.Y}`)
+	q.dispose(medium)
+	q.dispose(list)
+	H.advance(0.5)
+	assert(H.pendingTimers() == 0)
+	H.assertNoDebugOutput("settle cancel")
 end)
 
 -- ── bottom ──────────────────────────────────────────────────────────────────
