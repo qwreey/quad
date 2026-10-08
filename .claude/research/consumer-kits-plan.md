@@ -94,6 +94,6 @@ Studio QA 1~9차(`feedback/consumer-kits-studio-qa-2026-10-07.md`)를 거친 뒤
 4. 레이아웃·내비게이션 — 사용자: *"실제로 플러그인 작성하게 되면 레이아웃도 필요해질거야"*. Sheets(bottom·side), Navigation bar(세로로 긴 레이아웃), Navigation drawer(요소 많을 때), Navigation rail(데스크톱), Toolbars(내비게이션 아닌 액션), App bars(사용자: 쉽지만 여기저기서 따로 구현될 바엔 제공하는 게 맞아 보임). 이것으로 정본 요소 전부. **레이아웃이 살짝 만들어지면 사용자가 전체 확인.**
 5. 그 뒤 `/code-review` 한 번 — Gemini(agy, 격리 worktree) + sonnet/opus, opus가 추림 → 메인 판정. 초점: 순수 구현의 비효율·더 나은 구현법·가독성·버그. fork가 fork를 내지 않게(서브에이전트 모델 지정·검증자 상한).
 6. 그다음 round14 재검토로 복귀 — 원장 §2 사용자 몫(릴리즈 절차 Q119·Q124 (4)·Q131, Q125, Q154)·§6 Q184·Q185(엔진 확답은 rojo/새 MCP 뒤), 계획표 P6 반영 묶음.
-7. round14 뒤 같이 볼 것(사용자 2026-10-08) — 두 킷이 훅·인터랙션으로 만든 부분(`Interaction`의 hover/pressed/focused State·드래그 추적, `Util.hooks`/`preHook`/`postHook`, `Interactive` 묶음)에서 **quad 상위에서 생각해 볼 것**이 있는지. 사용자: *"내가 잊고 있었다 … round14 이후 같이 보도록 하자"*.
+7. round14 뒤 같이 볼 것(사용자 2026-10-08) — 두 킷이 훅·인터랙션으로 만든 부분(`Interaction`의 hover/pressed/focused State·드래그 추적, `Util.hooks`/`preHook`/`postHook`, `Interactive` 묶음)에서 **quad 상위에서 생각해 볼 것**이 있는지. 사용자: *"내가 잊고 있었다 … round14 이후 같이 보도록 하자"*. 같은 자리에서 볼 것 하나 더(사용자 2026-10-08): material 갤러리가 만든 `Ctx`(`gallery/Common.luau` — 패널마다 Source를 담아 두는 Memo; 탭을 다시 만들어도 입력 상태가 남게)가 왜 quad `Context`로 안 됐는지, 그리고 `make`를 받는 Memo 꼴(없으면 만들어 넣고 있으면 돌려주는 것)이 quad로 올라갈 니즈인지 — 사용자: *"Context 로 안되던 이유가 있을까? make 를 받는 Memo 식은 필요한것 같긴한데 … 나중에 관찰해줘"*.
 
 관련 계획: 아이콘 팩 `research/icon-pack-plan.md`(사용자 결정 다섯 대기), material 킷·아이콘 팩은 게시 때 quad 레포 밖으로 분리(메인 권고 — 사용자 미확정).
