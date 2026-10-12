@@ -55,8 +55,21 @@
 	`Tween{ Dedup = false }` opts out. Value equality is the engine's (`UDim.new(0, 8)` twice
 	is equal), which is why the shorthand handler's `Mapped` copies fold too. A plain-value
 	slot (`true`) records no value, so a Tween arriving there always plays.
-	Order invariant: an active tween is cancelled BEFORE the new value is
-	written (the engine keeps writing the property asynchronously). The
+	Order: the property is written FIRST and the slot record after it (plain value, zero-time
+	snap, Finish snap) — the engine tween writes the property only asynchronously, so within the
+	synchronous section the engine cannot see which came first. What the order must survive is a
+	RE-ENTRY: with Immediate signals the write fires the changed signal synchronously, and a
+	`q.Out`/`OnChange` round trip may feed the same slot again from inside the write (the engine
+	hands back a normalized value, an `Animate` upstream turns it into a Tween). That inner
+	process settles the previous record and installs its own, so the outer one re-checks the slot
+	right after each of its writes and YIELDS when it changed (round14 Q184 (a), user decision
+	2026-10-12: "바깥쪽이 포기하게 됨으로써 해결"; `H-895`) — otherwise it would overwrite the inner
+	record and leave that engine tween playing with nothing able to cancel it. A value that was
+	re-entered gets none of its remaining callbacks (the existing rule). The FIRST set of a slot
+	needs no re-check: it runs inside the State handler's Observer install, where a re-entrant
+	emit is held, not delivered (mutants of a re-check there survived the spec). The round trip being
+	DEFINED covers the engine echoing back what quad wrote; a callback that puts a different value
+	of its own into the slot it is being called from stays undefined (core/07). The
 	override policy consulted is the INCOMING Tween's `Override` (`H-328`):
 	`"Finish"` snaps the previous target first; `"Cancel"` (default, `H-343`)
 	and a plain incoming value continue from the interpolated value as-is.
@@ -344,6 +357,9 @@ local function install(quad: any)
 			local prevActive = type(prev) == "table" and prev.Tween ~= nil
 			if not tweenIn then
 				inst[k] = v
+				if tweenSlots:GetStrong(inst, k) ~= prev then
+					return tweenRetractor(inst, k) -- Q184 (a): re-entered from the write's signal; the inner process settled prev
+				end
 				local oldCb, oldFinished = nil, false
 				if prevActive then
 					oldCb, oldFinished = settle(prev)
@@ -354,6 +370,9 @@ local function install(quad: any)
 			end
 			if zeroTime then
 				inst[k] = v.Value
+				if tweenSlots:GetStrong(inst, k) ~= prev then
+					return tweenRetractor(inst, k) -- Q184 (a)
+				end
 				local oldCb, oldFinished = nil, false
 				if prevActive then
 					oldCb, oldFinished = settle(prev)
@@ -365,16 +384,17 @@ local function install(quad: any)
 			end
 			local oldCb: any, oldFinished, oldValue: any = nil, false, nil
 			if prevActive then
-				-- branch 3: an engine tween is active — clean it up before the new value lands
-				-- (a snapped `{ Value }` record has nothing to cancel and nothing to
-				-- Finish-snap to: the property already holds that value)
+				if v.Override == "Finish" then
+					-- Q184 (a): the Finish snap is written BEFORE settle (the engine tween writes only
+					-- asynchronously, so the order is invisible to the engine) — a re-entry from its signal
+					-- then finds prev unsettled and does the whole transition itself, callbacks in order
+					inst[k] = prev.Value
+					if tweenSlots:GetStrong(inst, k) ~= prev then
+						return tweenRetractor(inst, k) -- our engineTween was never played
+					end
+				end
 				oldCb, oldFinished = settle(prev) -- Cancel (if still running) + Disconnect; callback held
 				oldValue = prev.Value
-				if v.Override == "Finish" then
-					-- (a zero-time snap took its own path above — a Finish snap first would be a second
-					-- synchronous write of the same property, visible under Immediate signals; code-review)
-					inst[k] = prev.Value -- Finish: snap to the previous target before continuing
-				end
 			end
 			-- branches 2/3 tail (engine tween): slot, then play
 			do

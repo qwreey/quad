@@ -2040,7 +2040,12 @@ Observer 문단). 사용자 원문: *"compute 안에서 상위를 set 하는 그
 돌아갔다. Compute yield는 debug 감지기 (a)가 계속 알린다. (3) **Observer는 최종 소비자다** — 사용자 원칙: 다른 대상을 `Set`하는
 것은 정상, **자기 상류(관측 대상과 그 상류)를 직·간접으로 되먹이면 UB**; `Effect`의 자기 의존성 `Set`만 지연 재실행이라는 도구가
 있어 정의된다; yield는 모든 콜백에서 UB. 경계: `q.Out`/`OnChange` 왕복은 정상 경로다(엔진이 같은 값 재대입에 무신호, `q.Out`이
-같은 값을 거른다). 같은 날 Observer 설치 루프(round13 3′의 `_pending`/`force`)와 `Quad0262`를 걷어냈고(사용자 *"observer 설치
+같은 값을 거른다). **[2026-10-12 round14 Q184 (a) — 사용자 결정]** 정의 범위는 "엔진이 quad가 쓴 값을 (정규화해) 되돌려 보내는 왕복"이다 —
+Immediate에서 처리 도중 동기로 돌아와도, 그 값이 상류 `Animate`를 거쳐 Tween으로 같은 프로퍼티에 들어와도 정의된 경로이고, 그래서
+Property 핸들러는 쓰기 직후 자리의 기록을 다시 확인해 재진입이 있었으면 물러난다(`H-895` — 사용자: *"바깥쪽이 포기하게 됨으로써
+해결한다는거지? 그럼 맞는듯"*; `quad-roblox/src/Handlers/Property.luau` 머리 "Order"). 콜백이 스스로 바꾼 값을 같은 자리에 되넣는 것은
+그대로 UB(같은 `(inst, k)` 재진입 — InstanceChild·InstanceShorthand까지 정의로 넓히는 갈래 (b)는 Dispatch 꼬리에 새 감지가 들어 기각).
+엔진이 실제로 값을 정규화해 돌려주는지는 미실측(HUMAN_TODO 실기기). 같은 날 Observer 설치 루프(round13 3′의 `_pending`/`force`)와 `Quad0262`를 걷어냈고(사용자 *"observer 설치
 루프는 필요 없는것 같음 … 설치 중 즉시 도는거 아님"*), debug 감지기 하나를 더했다 — 실행 중인 Observer의 fn 도중 같은 핸들에
 자격 있는 배달이 다시 오면 한 줄(Observer마다 한 번, 내부 Observer는 `_internal`로 제외). **Slot 부기 경로는
 이 규칙 밖이다** — Q73 장면(형제 `Offset` Observer의 CRUD가 자기 `Offset`을 바꿈)처럼 Slot의 `Offset`/`Length`를 보는 콜백의 CRUD가

@@ -633,4 +633,80 @@ do
 end
 
 print()
+print("=== round14 Q184 (a) — 쓰기가 동기로 일으킨 신호가 같은 자리에 다시 들어오면 바깥 처리가 물러난다(안쪽 기록이 남는다) ===")
+-- Immediate signals (and this mock): `inst[k] = v` fires the changed signal synchronously, an `OnChange`
+-- feeds the same source again, and that inner process records/plays its own tween BEFORE the outer one
+-- writes its record. The outer process re-checks the slot right after each of its writes and yields when
+-- it changed — the inner tween stays recorded, so teardown and the next write can still cancel it.
+do
+	local LOG: { string } = {}
+	local function T(val: any, extra: any?): any
+		local t: any = {
+			Value = val,
+			Started = function(_: any, _: any, v: any) table.insert(LOG, "S" .. tostring(v)) end,
+			Cancelled = function(_: any, _: any, v: any) table.insert(LOG, "X" .. tostring(v)) end,
+			Completed = function(_: any, _: any, v: any) table.insert(LOG, "C" .. tostring(v)) end,
+		}
+		for kk, vv in extra or {} do t[kk] = vv end
+		return Tween(t)
+	end
+	local function playing(): string
+		local ts = {}
+		for _, e in log do
+			if e.tween.PlaybackState == "Playing" then table.insert(ts, tostring(e.props.Size)) end
+		end
+		return table.concat(ts, ",")
+	end
+	-- `first`: what the source holds before the re-entering write (nil = stay at the first-set plain value)
+	local function scene(name: string, first: any?, write: any, trigger: any, wantLog: string)
+		mock.resetTweenLog()
+		table.clear(LOG)
+		local src = q.Source(0 :: any)
+		local armed = false
+		local f = q.Declaration.Frame({ Size = src, q.OnChange("Size", function(v: any)
+			if armed and v == trigger then
+				armed = false
+				src:Set(T(99))
+			end
+		end) }) :: any
+		if first ~= nil then src:Set(first) end
+		armed = true
+		src:Set(write)
+		assert(not armed, name .. ": the write's signal re-entered")
+		assert(playing() == "99", name .. ": exactly the inner tween plays, got [" .. playing() .. "]")
+		assert(table.concat(LOG, " ") == wantLog, name .. ": callbacks " .. table.concat(LOG, " "))
+		table.clear(LOG)
+		q.Dispatch.retractFrom(f, "Size", 1)
+		assert(playing() == "" and table.concat(LOG, " ") == "X99", name .. ": teardown cancels the inner tween: [" .. playing() .. "] " .. table.concat(LOG, " "))
+	end
+	-- plain value over an active tween
+	scene("plain", T(10), 7, 7, "S10 X10 S99")
+	-- Finish: the snap to the previous target is the write that re-enters; the outer tween (20) never starts
+	scene("Finish", T(10), T(20, { Override = "Finish" }), 10, "S10 X10 S99")
+	-- zero-time snap
+	scene("zero-time", T(10), T(5, { Time = 0 }), 5, "S10 X10 S99")
+	-- plain over a plain slot (no previous tween)
+	scene("plain from plain", nil, 3, 3, "S99")
+	-- and the next plain write still cancels what the re-entry left
+	do
+		mock.resetTweenLog()
+		table.clear(LOG)
+		local src = q.Source(0 :: any)
+		local armed = false
+		local f = q.Declaration.Frame({ Size = src, q.OnChange("Size", function(v: any)
+			if armed and v == 7 then
+				armed = false
+				src:Set(T(99))
+			end
+		end) }) :: any
+		src:Set(T(10))
+		armed = true
+		src:Set(7)
+		src:Set(5)
+		assert(playing() == "" and f.Size == 5, "a later plain write cancels the inner tween: [" .. playing() .. "]")
+	end
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")
