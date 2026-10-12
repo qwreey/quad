@@ -22,6 +22,7 @@
 local Quad = require("./Quad")
 local q = Quad
 local D = q.Declaration
+local selectableName = D.Modifier.TextButton():Name("Selectable")
 local Common = require("./Common")
 local Interaction = require("./Interaction")
 local Style = require("./Style")
@@ -81,9 +82,9 @@ local function row(
 	end, look.Transparency, selected, style.Transparency.Header)
 	local padX, padY = Common.padXY(style.Metrics.FramePadding)
 	return D.TextButton({
+		selectableName,
 		props.Modifier or q.None,
 		hover.Hook,
-		Name = "Selectable",
 		Text = props.Text,
 		FontFace = style.Metrics.TextFont,
 		TextSize = style.Metrics.TextSize,

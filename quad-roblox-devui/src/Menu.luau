@@ -44,6 +44,7 @@
 local Quad = require("./Quad")
 local q = Quad
 local D = q.Declaration
+local menuBarName = D.Modifier.Frame():Name("MenuBar")
 local Overlay = require("./Overlay")
 local PopupParts = require("./PopupParts")
 local Style = require("./Style")
@@ -115,8 +116,8 @@ end
 function Menu.MenuBar(props: MenuBarProps): Frame
 	local style = props.Style or Style.default
 	return D.Frame({
+		menuBarName,
 		props.Modifier or q.None,
-		Name = "MenuBar",
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundColor3 = style.Color.MenubarBg,

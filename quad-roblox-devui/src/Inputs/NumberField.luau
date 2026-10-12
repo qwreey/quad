@@ -25,6 +25,16 @@
 local Quad = require("../Quad")
 local q = Quad
 local D = q.Declaration
+-- the host Name is an argument here; a closed set of names, so each builds one Modifier
+local hostNames: { [string]: Quad.TextBoxModifier } = {}
+local function hostName(name: string): Quad.TextBoxModifier
+	local m = hostNames[name]
+	if m == nil then
+		m = D.Modifier.TextBox():Name(name)
+		hostNames[name] = m
+	end
+	return m
+end
 local Common = require("../Common")
 local Interaction = require("../Interaction")
 local NumberFormat = require("./NumberFormat")
@@ -148,11 +158,11 @@ local function build(props: FieldProps, dragging: boolean): TextBox
 	end
 
 	return D.TextBox({
+		hostName(props.Name or (if dragging then "DragField" else "InputField")),
 		props.Modifier or q.None,
 		boxRef,
 		hover.Hook,
 		dragHook,
-		Name = props.Name or (if dragging then "DragField" else "InputField"),
 		LayoutOrder = props.LayoutOrder or 0,
 		Text = shown,
 		TextEditable = if dragging then editing else enabled,

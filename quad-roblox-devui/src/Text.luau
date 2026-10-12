@@ -19,6 +19,8 @@
 local Quad = require("./Quad")
 local q = Quad
 local D = q.Declaration
+local textName = D.Modifier.TextLabel():Name("Text")
+local labelTextName = D.Modifier.Frame():Name("LabelText")
 local Common = require("./Common")
 local Style = require("./Style")
 local Util = require("./Util")
@@ -62,8 +64,8 @@ local function label(
 	hooks: { any }?
 ): TextLabel
 	return D.TextLabel({
+		textName,
 		modifier or q.None,
-		Name = "Text",
 		Text = text,
 		FontFace = style.Metrics.TextFont,
 		TextSize = style.Metrics.TextSize,
@@ -116,8 +118,8 @@ function Text.LabelText(props: LabelTextProps): Frame
 	local style = props.Style or Style.default
 	local spacing: State<UDim> = Util.pxX(style.Metrics.ItemInnerSpacing)
 	return D.Frame({
+		labelTextName,
 		props.Modifier or q.None,
-		Name = "LabelText",
 		AutomaticSize = Enum.AutomaticSize.XY,
 		Size = UDim2.fromOffset(0, 0),
 		BackgroundTransparency = 1,

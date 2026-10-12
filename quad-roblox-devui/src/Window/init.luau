@@ -28,6 +28,7 @@
 local Quad = require("./Quad")
 local q = Quad
 local D = q.Declaration
+local windowName = D.Modifier.Frame():Name("Window")
 local Interaction = require("./Interaction")
 local Style = require("./Style")
 local Util = require("./Util")
@@ -139,11 +140,11 @@ local function Window(props: WindowProps): Frame
 	local strokeThickness: State<number> = style.Metrics.WindowBorderSize
 
 	return D.Frame({
+		windowName,
 		props.Modifier or q.None,
 		Interaction.pointerDown(function()
 			slot:Focus()
 		end),
-		Name = "Window",
 		Position = position,
 		Size = rootSize,
 		ZIndex = slot.ZIndex,

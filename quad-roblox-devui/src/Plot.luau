@@ -28,6 +28,8 @@
 local Quad = require("./Quad")
 local q = Quad
 local D = q.Declaration
+local plotHistogramName = D.Modifier.Frame():Name("PlotHistogram")
+local plotLinesName = D.Modifier.Frame():Name("PlotLines")
 local Style = require("./Style")
 
 type State<T> = Quad.State<T>
@@ -157,8 +159,8 @@ function Plot.PlotHistogram(props: PlotProps): Frame
 		return i
 	end)
 	return D.Frame({
+		plotHistogramName,
 		props.Modifier or q.None,
-		Name = "PlotHistogram",
 		Size = UDim2.new(1, 0, 0, props.Height or 80),
 		BackgroundColor3 = style.Color.FrameBg,
 		BackgroundTransparency = style.Transparency.FrameBg,
@@ -242,8 +244,8 @@ function Plot.PlotLines(props: PlotProps): Frame
 		return i
 	end)
 	return D.Frame({
+		plotLinesName,
 		props.Modifier or q.None,
-		Name = "PlotLines",
 		Size = UDim2.new(1, 0, 0, props.Height or 80),
 		BackgroundColor3 = style.Color.FrameBg,
 		BackgroundTransparency = style.Transparency.FrameBg,

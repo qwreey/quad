@@ -21,6 +21,7 @@
 local Quad = require("../Quad")
 local q = Quad
 local D = q.Declaration
+local dragNumName = D.Modifier.Frame():Name("DragNum")
 local Common = require("../Common")
 local NumberField = require("./NumberField")
 local NumberFormat = require("./NumberFormat")
@@ -50,8 +51,8 @@ local function DragNum(props: DragNumProps): Frame
 	local value: Source<number> = props.Value or q.Source(NumberFormat.normalize(0, props.Min, props.Max, props.Step))
 	local enabled = Common.enabled(props.Disabled)
 	return D.Frame({
+		dragNumName,
 		props.Modifier or q.None,
-		Name = "DragNum",
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,

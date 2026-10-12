@@ -17,6 +17,11 @@
 local Quad = require("./Quad")
 local q = Quad
 local D = q.Declaration
+local sameLineName = D.Modifier.Frame():Name("SameLine")
+local groupName = D.Modifier.Frame():Name("Group")
+local indentName = D.Modifier.Frame():Name("Indent")
+local separatorName = D.Modifier.Frame():Name("Separator")
+local separatorTextName = D.Modifier.Frame():Name("SeparatorText")
 local Style = require("./Style")
 local Text = require("./Text")
 local Util = require("./Util")
@@ -71,8 +76,8 @@ function Layout.SameLine(props: SameLineProps): Frame
 		spacing = Util.pxX(style.Metrics.ItemSpacing)
 	end
 	return D.Frame({
+		sameLineName,
 		props.Modifier or q.None,
-		Name = "SameLine",
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,
@@ -90,8 +95,8 @@ end
 function Layout.Group(props: ContainerProps): Frame
 	local style = props.Style or Style.default
 	return D.Frame({
+		groupName,
 		props.Modifier or q.None,
-		Name = "Group",
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,
@@ -114,8 +119,8 @@ function Layout.Indent(props: IndentProps): Frame
 		width = Util.px(style.Metrics.IndentSpacing)
 	end
 	return D.Frame({
+		indentName,
 		props.Modifier or q.None,
-		Name = "Indent",
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,
@@ -133,8 +138,8 @@ end
 function Layout.Separator(props: SeparatorProps): Frame
 	local style = props.Style or Style.default
 	return D.Frame({
+		separatorName,
 		props.Modifier or q.None,
-		Name = "Separator",
 		Size = UDim2.new(1, 0, 0, 1),
 		BackgroundColor3 = style.Color.Separator,
 		BackgroundTransparency = style.Transparency.Separator,
@@ -152,8 +157,8 @@ function Layout.SeparatorText(props: SeparatorTextProps): Frame
 	end)
 	local padY: State<UDim> = Util.pxY(style.Metrics.SeparatorTextPadding)
 	return D.Frame({
+		separatorTextName,
 		props.Modifier or q.None,
-		Name = "SeparatorText",
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,

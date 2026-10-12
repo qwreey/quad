@@ -130,6 +130,7 @@ DEVUI WIDGET"입니다.
   라벨이 `Label`입니다(Dear ImGui의 `LabelText` 순서).
 - `Value` = 위젯이 읽고 쓰는 `Source`, `Option` = 선택 위젯이 고르는 값(`RadioButton`/`SelectableOption`: `Value: Source<T>` + `Option: T`),
   `Disabled` = 회색 처리(`boolean | State<boolean>`), `Modifier` = 그 위젯 루트 요소의 Modifier(`LabelText`는 가로 줄 Frame).
+- **호스트 `Name`은 소비자가 `Modifier`로 바꿀 수 있습니다** — `Devui.Button { Modifier = D.Modifier.TextButton():Name("Save") }`. 킷은 기본 이름(`Button` 등)을 기본 Modifier에 두므로 소비자의 `:Name(...)`이 이깁니다(`InputText`의 `FieldModifier` 필드·`SliderNum`의 `TrackModifier` 트랙도 같음). 안쪽 자식 이름(`Track`·`Arrow` 등)은 고정입니다.
 - **`Hooks: { any }?`** — 리프 위젯(`Button`/`SmallButton`/`Selectable`/`SelectableOption`/`Checkbox`/`RadioButton`/`Text` 계열)이 가진 탈출구입니다.
   리스트의 훅 값(`Tooltip` 핸들의 `.Hook`, `Interaction.pointerDown(fn)`, `q.OnRendered(...)` …)이 요소 배열 부분의 **끝**에 붙습니다:
   `Devui.Button { Text = "Save", Hooks = { tip.Hook } }`.

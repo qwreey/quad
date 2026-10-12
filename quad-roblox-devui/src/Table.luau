@@ -36,6 +36,7 @@
 local Quad = require("./Quad")
 local q = Quad
 local D = q.Declaration
+local tableName = D.Modifier.Frame():Name("Table")
 local Style = require("./Style")
 local Util = require("./Util")
 
@@ -238,8 +239,8 @@ local function Table<T>(props: TableProps<T>): Frame
 	end)
 
 	return D.Frame({
+		tableName,
 		props.Modifier or q.None,
-		Name = "Table",
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,

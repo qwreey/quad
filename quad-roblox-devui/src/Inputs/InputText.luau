@@ -24,6 +24,8 @@
 local Quad = require("../Quad")
 local q = Quad
 local D = q.Declaration
+local inputTextName = D.Modifier.Frame():Name("InputText")
+local fieldName = D.Modifier.TextBox():Name("Field")
 local Common = require("../Common")
 local Interaction = require("../Interaction")
 local Style = require("../Style")
@@ -75,19 +77,19 @@ local function InputText(props: InputTextProps): Frame
 	end
 
 	return D.Frame({
+		inputTextName,
 		props.Modifier or q.None,
-		Name = "InputText",
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Common.rowLayout(style),
 		D.TextBox({
+			fieldName,
 			props.FieldModifier or q.None,
 			boxRef,
 			hover.Hook,
 			writeBack,
-			Name = "Field",
 			LayoutOrder = 1,
 			Text = value,
 			PlaceholderText = props.Placeholder or "",

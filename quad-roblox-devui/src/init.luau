@@ -46,6 +46,10 @@
 	   (`OnClick`, `OnChange` — plain functions, called from engine events), then `Style: Style?` and
 	   `Modifier: <Class>Modifier?` (use `Quad.FrameModifier` etc.; for a class not yet there, add a re-export line to
 	   `src/Quad.luau`: `export type <Class>Modifier = RobloxModule.<Class>Modifier`, and likewise `Into<Class>`).
+	   The host's `Name` lives in a module-level base Modifier (`local fooName = D.Modifier.Frame():Name("Foo")`), first in the
+	   array part and BEFORE `props.Modifier` (later wins) — never `Name = "Foo"` inline on the host: an inline key always beats
+	   a Modifier, so the caller's `D.Modifier.Frame():Name("X")` could not rename it. Inner children keep inline names; a
+	   name that is an argument (Choice, Tree, NumberField) goes through a small per-name Modifier cache.
 	   Display values that can change take `T | State<T>`. Values a widget WRITES BACK are `Source<T>` props (e.g.
 	   Window `Open`/`Position`): the widget creates an internal Source when the caller passes none, so it works both
 	   controlled and uncontrolled. Write back with `:Set`/`:SetIfChanged` from event handlers, never from a Compute.

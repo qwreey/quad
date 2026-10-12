@@ -35,6 +35,7 @@
 local Quad = require("./Quad")
 local q = Quad
 local D = q.Declaration
+local comboName = D.Modifier.Frame():Name("Combo")
 local Common = require("./Common")
 local Interaction = require("./Interaction")
 local Overlay = require("./Overlay")
@@ -277,8 +278,8 @@ local function core(spec: CoreSpec): Frame
 	})
 
 	return D.Frame({
+		comboName,
 		spec.Modifier or q.None,
-		Name = "Combo",
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,

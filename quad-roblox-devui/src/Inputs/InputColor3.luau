@@ -18,6 +18,7 @@
 local Quad = require("../Quad")
 local q = Quad
 local D = q.Declaration
+local inputColor3Name = D.Modifier.Frame():Name("InputColor3")
 local Common = require("../Common")
 local Interaction = require("../Interaction")
 local InputVector = require("./InputVector")
@@ -104,8 +105,8 @@ local function InputColor3(props: InputColor3Props): Frame
 		return UDim2.fromOffset(self:Get(), self:Get())
 	end)
 	return D.Frame({
+		inputColor3Name,
 		props.Modifier or q.None,
-		Name = "InputColor3",
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,

@@ -27,6 +27,16 @@
 local Quad = require("./Quad")
 local q = Quad
 local D = q.Declaration
+-- the host Name is an argument here; a closed set of names, so each builds one Modifier
+local hostNames: { [string]: Quad.FrameModifier } = {}
+local function hostName(name: string): Quad.FrameModifier
+	local m = hostNames[name]
+	if m == nil then
+		m = D.Modifier.Frame():Name(name)
+		hostNames[name] = m
+	end
+	return m
+end
 local Common = require("./Common")
 local Interaction = require("./Interaction")
 local Style = require("./Style")
@@ -132,8 +142,8 @@ local function build(
 	})
 
 	return D.Frame({
+		hostName(name),
 		modifier or q.None,
-		Name = name,
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,

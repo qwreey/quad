@@ -21,6 +21,8 @@
 local Quad = require("../Quad")
 local q = Quad
 local D = q.Declaration
+local sliderNumName = D.Modifier.Frame():Name("SliderNum")
+local trackName = D.Modifier.Frame():Name("Track")
 local Common = require("../Common")
 local Interaction = require("../Interaction")
 local NumberFormat = require("./NumberFormat")
@@ -99,19 +101,19 @@ local function SliderNum(props: SliderNumProps): Frame
 	local textLook = Common.textLook(style, enabled)
 
 	return D.Frame({
+		sliderNumName,
 		props.Modifier or q.None,
-		Name = "SliderNum",
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Common.rowLayout(style),
 		D.Frame({
+			trackName,
 			props.TrackModifier or q.None,
 			trackRef,
 			hover.Hook,
 			drag.Hook,
-			Name = "Track",
 			LayoutOrder = 1,
 			Size = Common.frameHeight(style),
 			BackgroundColor3 = look.Color,

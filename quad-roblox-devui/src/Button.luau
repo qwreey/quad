@@ -19,6 +19,8 @@
 local Quad = require("./Quad")
 local q = Quad
 local D = q.Declaration
+local buttonName = D.Modifier.TextButton():Name("Button")
+local smallButtonName = D.Modifier.TextButton():Name("SmallButton")
 local Common = require("./Common")
 local Interaction = require("./Interaction")
 local Style = require("./Style")
@@ -46,9 +48,9 @@ local function button(props: ButtonProps, small: boolean): TextButton
 	local padY: State<UDim> | UDim = if small then UDim.new(0, 0) else framePadY
 	local onClick = props.OnClick
 	return D.TextButton({
+		if small then smallButtonName else buttonName,
 		props.Modifier or q.None,
 		hover.Hook,
-		Name = if small then "SmallButton" else "Button",
 		Text = props.Text,
 		FontFace = style.Metrics.TextFont,
 		TextSize = style.Metrics.TextSize,

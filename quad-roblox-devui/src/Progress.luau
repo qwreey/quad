@@ -13,6 +13,7 @@
 local Quad = require("./Quad")
 local q = Quad
 local D = q.Declaration
+local progressBarName = D.Modifier.Frame():Name("ProgressBar")
 local Style = require("./Style")
 
 type State<T> = Quad.State<T>
@@ -54,8 +55,8 @@ local function ProgressBar(props: ProgressBarProps): Frame
 		return UDim2.new(1, 0, 0, self:Get())
 	end)
 	return D.Frame({
+		progressBarName,
 		props.Modifier or q.None,
-		Name = "ProgressBar",
 		Size = height,
 		BackgroundColor3 = style.Color.FrameBg,
 		BackgroundTransparency = style.Transparency.FrameBg,

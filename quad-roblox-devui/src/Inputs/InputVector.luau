@@ -25,6 +25,8 @@
 local Quad = require("../Quad")
 local q = Quad
 local D = q.Declaration
+local inputVector2Name = D.Modifier.Frame():Name("InputVector2")
+local inputUDim2Name = D.Modifier.Frame():Name("InputUDim2")
 local Common = require("../Common")
 local NumberField = require("./NumberField")
 local Style = require("../Style")
@@ -127,8 +129,8 @@ function InputVector.InputVector2(props: InputVector2Props): Frame
 		Style = style,
 	}
 	return D.Frame({
+		inputVector2Name,
 		props.Modifier or q.None,
-		Name = "InputVector2",
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,
@@ -156,8 +158,8 @@ function InputVector.InputUDim2(props: InputUDim2Props): Frame
 	local scale: FieldOptions = { Drag = drag, Format = "%.3f", Speed = 0.01, Enabled = enabled, Style = style }
 	local offset: FieldOptions = { Drag = drag, Step = 1, Speed = 1, Enabled = enabled, Style = style }
 	return D.Frame({
+		inputUDim2Name,
 		props.Modifier or q.None,
-		Name = "InputUDim2",
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,

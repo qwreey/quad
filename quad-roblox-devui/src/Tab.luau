@@ -31,6 +31,7 @@
 local Quad = require("./Quad")
 local q = Quad
 local D = q.Declaration
+local tabBarName = D.Modifier.Frame():Name("TabBar")
 local Common = require("./Common")
 local Interaction = require("./Interaction")
 local Style = require("./Style")
@@ -147,8 +148,8 @@ local function TabBar<K>(props: TabBarProps<K>): Frame
 	end
 
 	return D.Frame({
+		tabBarName,
 		props.Modifier or q.None,
-		Name = "TabBar",
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,

@@ -20,6 +20,7 @@
 local Quad = require("../Quad")
 local q = Quad
 local D = q.Declaration
+local inputNumName = D.Modifier.Frame():Name("InputNum")
 local Button = require("../Button")
 local Common = require("../Common")
 local NumberField = require("./NumberField")
@@ -59,8 +60,8 @@ local function InputNum(props: InputNumProps): Frame
 	end
 
 	return D.Frame({
+		inputNumName,
 		props.Modifier or q.None,
-		Name = "InputNum",
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,
