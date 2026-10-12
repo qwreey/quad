@@ -92,6 +92,10 @@
 	  Types
 	    * Props types are exported `read`-field tables; optional inputs are `T?`; reactive inputs are `T | State<T>`. A
 	      generic component needs its type argument spelled out where an invariant `Source<K>` is passed (`Tabs<<string>>`).
+	    * Type names are NOT uniform; the `export type` block below is the source. Props are `<Name>Props`, open options
+	      `<Name>Options` / `<Name>OpenOptions`, handles `<Name>Handle`. Where a type would share its name with a VALUE
+	      module the type gets a suffix: `Material.Overlay.new()` returns `Material.OverlayType` (`Material.Overlay` is not a
+	      type), while `Material.Theme` is both the value and the type.
 
 	HOW TO WRITE A MATERIAL COMPONENT (the checklist every component of this kit follows)
 	1. Plain function `Component(props: Props)` returning the host instance. `Props` is an exported type with

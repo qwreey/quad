@@ -59,6 +59,56 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
 `UseProvider`는 같은 프로바이더에 대해 멱등이므로, 게임이 같은 설치 사본에서 자기 설정 모듈을 이미 돌렸다면 같은 quad
 인스턴스를 공유합니다(게임의 `State`와 키트의 `State`가 그대로 섞입니다).
 
+### 킷을 고치지 않고 쓰는 배치
+
+키트에는 패키지 매니페스트가 없어 설치할 수 없습니다. 대신 `src/Quad.luau`의 상대 경로 셋을 그대로 두고, **소비자의 DataModel 쪽을
+그 모양에 맞추면** 키트 소스를 한 줄도 고치지 않고 돕니다. 필요한 모양은 `<부모>` 폴더 아래 형제 둘입니다.
+
+```
+<부모>/quad-roblox/src                  -- Roblox 프로바이더
+<부모>/quad-roblox/luau_packages        -- quad_base · quad_types · type_version_check (pesde 산출물)
+<부모>/quad-roblox-material/src         -- 이 키트
+```
+
+rojo 프로젝트 조각 예(이 레포 루트의 `consumer-kits.project.json`에서 필요한 부분만 — `<경로>`는 소비자 쪽 사본 위치):
+
+```json
+"ReplicatedStorage": {
+	"$className": "ReplicatedStorage",
+	"quad-roblox": {
+		"$className": "Folder",
+		"src": { "$path": "<경로>/quad-roblox/src" },
+		"luau_packages": { "$path": "<경로>/quad-roblox/luau_packages" }
+	},
+	"quad-roblox-material": {
+		"$className": "Folder",
+		"src": { "$path": "<경로>/quad-roblox-material/src" }
+	}
+}
+```
+
+갤러리(`gallery/`)와 스토리(`stories/`)는 소비자에게 필요 없습니다 — `src`는 둘 다 `require`하지 않습니다(레포 루트의 프로젝트 파일이
+둘을 싣는 건 갤러리 실행용입니다). 상대 경로 덕에 같은 플레이스에 다른 quad 사본이 따로 있어도 서로 섞이지 않습니다.
+
+**게임 쪽 설정 모듈도 같은 경로를 물어야 합니다.** 키트가 쓰는 quad 싱글턴은 `quad-roblox/luau_packages/quad_base`입니다
+(그 파일은 같은 폴더의 `.pesde/…/quad_base/src`로 위임하는 링커이고, `quad-roblox/src`는 quad_base를 직접 `require`하지 않고
+`UseProvider`로 주입받습니다). 게임의 설정 모듈이 `quad-base/src`를 직접 물면 **다른 모듈 인스턴스**라 `State`가 키트와 섞이지 않습니다.
+그래서 게임의 설정 모듈은 키트의 `src/Quad.luau`와 같은 세 곳을 물어야 합니다.
+
+```luau
+local Quad = require("<…>/quad-roblox/luau_packages/quad_base")
+local RobloxModule = require("<…>/quad-roblox/src")
+local QuadTypes = require("<…>/quad-roblox/luau_packages/quad_types")
+local q = Quad:UseProvider(RobloxModule.QuadRoblox)
+```
+
+(첫 소비자가 `rawequal(게임의 q, 키트의 q) == true`를 Studio Play에서 확인했습니다.)
+
+**미게시 작업 트리를 커밋 해시로 고정해 받기.** `quad-roblox/luau_packages`는 `.gitignore`된 pesde 산출물이라 복제본에는
+없습니다. 복제하고 해시로 체크아웃한 뒤, 복제본의 워크스페이스 루트에서 `pesde install`을 한 번 돌리면 생깁니다(이 레포는 pesde를
+`mise`로 핀하므로 `mise exec -- pesde install`). 첫 소비자는 이 두 단계만으로 rojo `$path`가 돌았다고 보고했고, 오프라인에서도 됐습니다.
+`scripts/relink.sh`는 이 레포를 고치며 `luau` CLI로 테스트할 때 필요한 절차이고(`CONTRIBUTING.md`), 이 배치에서 필요했다는 보고는 없습니다.
+
 ## 컴포넌트
 
 `require("<이 폴더>/src")`가 돌려주는 표의 항목입니다.
@@ -126,8 +176,22 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
 - **`T | State<T>` 입력**: 값이 바뀔 수 있는 입력(`Label`, `Disabled`, `Error`, ...)은 값 또는 State를 받습니다. State를
   넘기면 그 프로퍼티만 갱신됩니다.
 - **`Source<T>` 양방향 prop(`Value`)**: 폼 컨트롤(`Checkbox`·`Switch`·`Radio`·`Slider`·`TextField`·`Select`·`DatePicker`·
-  `ColorPicker`)은 `Value`로 `Source<T>`를 받습니다. 컴포넌트가 읽고, 사용자가 조작하면 `:Set`합니다. 안 넘기면 컴포넌트가
-  내부 Source를 만듭니다. **`OnChange(new)`는 사용자 조작 뒤**에만 불리고 프로그램이 쓴 값에는 안 불립니다.
+  `ColorPicker`)은 `Value`로 `Source<T>`를 받습니다. 컴포넌트가 읽고, 사용자가 조작하면 `:Set`합니다. `Checkbox`·`Switch`·`Slider`·`TextField`·
+  `ColorPicker`는 안 넘기면 컴포넌트가 내부 Source를 만들고, `Select`·`Radio`·`DatePicker`는 필수입니다. **`OnChange(new)`는 사용자 조작 뒤**에만 불리고 프로그램이 쓴 값에는 안 불립니다.
+- **서버가 진실인 값에는 되쓰기 패턴**: `Select`·`Radio`·`Slider`·`TextField`·`Chip.Filter` 같은 나머지 폼 부품은 지금 `Value`(칩은 `Selected`)의
+  `Source`만 받고, 조작하면 **스스로 그 `Source`에 먼저 쓴 뒤** `OnChange`를 부릅니다. 요청을 보내고 서버가 승인하면 새 상태가 오는 값이라면
+  `OnChange`에서 요청만 보내고, **서버 상태가 올 때마다 그 `Source`에 다시 `:Set`**하세요. 프로그램이 쓴 값에는 `OnChange`가 불리지 않으므로
+  되돌이가 없고, 서버가 거절하면 서버가 보낸 이전 상태가 화면의 값을 되돌립니다.
+
+  ```luau
+  local level = q.Source<<string?>>("everyone")                   -- 화면의 값(Select의 Value는 Source<T?>)
+  Material.Select<<string>>({ Label = "Who can edit", Options = { "everyone", "host" }, Value = level,
+      OnChange = function(option) Bridge.send("setLevel", option) end })      -- 요청만
+  Bridge.onState(function(state) level:Set(state.level) end)       -- 서버 상태가 올 때마다 덮어씀(OnChange 안 불림)
+  ```
+
+  (`Chip.Filter`의 `Selected`도 필수 `Source`입니다.) 예의 `Bridge`는 가상 이름입니다.
+  `Checkbox`·`Switch`만은 아래의 통제형이 따로 있어 쓰지 않아도 됩니다.
 - **통제형 `Checked`**: `Checkbox`와 `Switch`는 `Value` 대신 `Checked: State<boolean>` + `OnChange`도 받습니다. 컴포넌트는 State를
   보여 주기만 하고 클릭하면 `OnChange(새 값)`만 부르며 **아무것도 쓰지 않습니다**(원본 상태는 호출한 쪽이 정함 — 예: 테마 스위치는
   `Checked = theme.Scheme:Compute(...)`, `OnChange = function(dark) theme:SetScheme(...) end`). `Value`와 `Checked`를 같이 주면 에러.
@@ -155,6 +219,23 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
   타입은 하나의 별칭 `Material.Hooks = { any }`입니다. `Modifier`의 타입은 호스트 클래스의 `q.<Class>Modifier`(`q.TextButtonModifier` 등)입니다.
 - 자식을 받는 컴포넌트(`Card`, `List`, 시트·드로어 면)는 `q.Slot<<Instance>>({ ... })`를 `Children`으로 받습니다(`BottomSheetScaffold`는
   `SheetContent`·`Content`, 드로어 레이아웃은 `Content` Slot + `DrawerContent` 인스턴스 하나 — Compose의 이름).
+
+### 타입 이름 규칙
+
+모듈 표의 값(`Material.X`)과 같은 이름의 타입이 필요할 때 어떤 이름으로 내보내는지는 일관된 규칙이 없고, `src/init.luau`의 `export type` 블록이
+소스입니다. 실제로 쓰이는 꼴은 이렇습니다.
+
+| 꼴 | 예 |
+|---|---|
+| 값과 타입이 같은 이름 | `Material.Theme`(값이자 타입) |
+| 컴포넌트 props는 `<이름>Props` | `Material.ButtonProps`, `Material.TabsProps<K>`(제네릭 컴포넌트는 `<K>`/`<T>`) |
+| 열기 옵션은 `<이름>Options`/`<이름>OpenOptions` | `Material.MenuOpenOptions`, `Material.ModalSideSheetOptions` |
+| 열린 것의 핸들은 `<이름>Handle` | `Material.DialogHandle`, `Material.ModalBottomSheetHandle`, `Material.OverlayHandle` |
+| 값 모듈과 겹치는 타입 | `Material.Overlay.new()`가 돌려주는 타입은 **`Material.OverlayType`**(`Material.Overlay`는 타입 이름이 아님 — `Unknown type`) |
+| 상태 객체 | `Material.SheetState`·`Material.DrawerState`는 값과 타입이 같은 이름 |
+
+`Material.Handle`은 `Material.OverlayHandle`의 별칭입니다. 이름이 겹치는데 타입이 필요하면 `Material.<이름>Type`이 있는지 `init.luau`의
+`export type`을 먼저 찾아보세요(현재 그런 것은 `OverlayType` 하나입니다).
 
 ## 테마
 
@@ -292,6 +373,11 @@ Material.ModalNavigationDrawer({
 })
 ```
 
+- **모달 시트의 `Children`은 간격 없이 세로로만 쌓입니다.** 시트 몸통은 `UIListLayout`(세로, `LayoutOrder`)이고 `Padding`을 주지 않습니다
+  (`ModalSideSheet`·`SideSheet`는 몸통 바깥에 16 px 안쪽 여백만 있고, 하단 시트는 그것도 없음) — Compose의 시트 content가 간격 없는
+  Column인 것과 같습니다. 자식 사이 간격이 필요하면 자식들을 `UIListLayout`(`Padding`)을 가진 자기 `D.Frame` 하나로 싸서 `Children`에 넣으세요.
+- **연 시트는 그것을 연 화면의 수명과 묶이지 않습니다.** `ModalBottomSheet.open`·`ModalSideSheet.open`은 `Overlay`에 걸리므로, 연 화면을
+  숨기거나 바꿔도 시트는 남습니다. 화면을 떠날 때 돌려받은 핸들의 `handle.Close()`를 부르세요.
 - **정본**: 하단 시트·드로어는 Compose material3(androidx/androidx@40ff481 — `ModalBottomSheet.kt`·`BottomSheet.kt`·`BottomSheetScaffold.kt`·
   `SheetDefaults.kt`·`NavigationDrawer.kt`, 토큰 `SheetBottomTokens`·`NavigationDrawerTokens`), 측면 시트는 Compose에 없어 MDC
   (material-components/material-components-android@60ff094 `sidesheet/`), 드로어의 구획 제목·구분선도 MDC `NavigationView`. 줄 번호는 각 파일 머리.

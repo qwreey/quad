@@ -9,3 +9,4 @@
 |---|---|
 | `consumer-kits-2026-10-05.md` | 첫 소비자 둘(디버그 UI 킷·Material 3 킷, 계획은 `research/consumer-kits-plan.md`)을 만들며 겪은 quad 마찰 |
 | `consumer-kits-studio-qa-2026-10-07.md` | 사용자가 Studio에서 본 material 킷 시각·상호작용 QA 열한 항목과 처리 상태(원인 파악된 것은 고침, 아닌 것은 QA 대기) |
+| `table-sim-2026-10-12.md` | 레포 밖 첫 실제 소비자(table-sim 게임)의 마찰 기록을 quad 쪽에서 판정한 것 — 이미 답이 있던 것, 고친 문서 공백, 사용자 결정으로 올린 것(문항은 `research/consumer-kits-plan.md` 5절), 관측으로만 받은 것. 원문은 레포 밖 `/code/Projects/table-sim/.claude/feedback/` |

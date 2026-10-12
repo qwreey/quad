@@ -120,3 +120,37 @@ D.TextBox {
 - `slot:List(data, updateFn, keyFn?, opts?)` → `updateFn(ctx) -> (result, userdata)`, `ctx = { Item, Index, Offset, Prev, UserData }`
   (a fresh table per call — closures may capture `ctx`; `Index` is `0` on a `KeyGone` call).
 - `slot:Single(state, updateFn?, opts?)` → the same `updateFn(ctx)` shape, `Index` included (one `updateFn` can serve both).
+
+### 2.6 Strict diagnostics that do not say what they mean
+
+Three diagnostics a first strict consumer hits whether or not it ports v1 code (the full verbatim table
+is `v1-migration.md` §3 — read it even for new code):
+
+- **Unknown property key** — `D.TextLabel { Bogus = 1 }` reports
+  `Expected this to be 'number', but got '"Bogus"'` plus a long array-union mismatch line on the value.
+  It means **"this class has no such property"**: the props type is "known string keys + numeric child
+  keys", so an unknown string key is read as a bad array index. The same two-line shape appears for an
+  event on the wrong class (`Activated` on a `Frame`).
+- **Inline unannotated `:Compute` inside a props table** —
+  `Text = n:Compute(function(self) return tostring(self:Get()) end)` reports
+  `Expected this to be '(StateData<number>, string?, ...any) -> string' but got '(t1) -> string where t1 = { read Get: … }'`.
+  A lambda passed to a call *inside a table literal that is itself a call argument* does not get its
+  parameters from the expected type (a luau-lsp 1.69.0 limit, not a quad rule). Annotate the parameter —
+  `function(self: QuadTypes.StateData<number>): string` — or hoist to an annotated local
+  (`local label: QuadTypes.State<string> = n:Compute(...)`). No helper function is needed.
+- **Children built from data** — a prebuilt table mixing string keys and children
+  (`local props = { Name = "Toolbar" }; table.insert(props, child); D.Frame(props)`) fails with
+  `Expected this to be 'FrameParam<…>' … 'string' is not exactly 'StateMarker<string>'`: the props type
+  is only inferred at the literal site. Build the children as a plain array and hand them to a Slot's
+  `initial`, keeping the properties in the literal:
+
+  ```luau
+  local kids: { Instance } = {}
+  for _, tool in tools do
+      table.insert(kids, D.TextButton { Text = tool.Label })
+  end
+  local bar = D.Frame { Name = "Toolbar", D.UIListLayout {}, q.Slot<<Instance>>(kids) }
+  ```
+
+  (A Slot built with `initial` is a manual-CRUD Slot — `:Add`/`:Remove` work on it, `:List`/`:Single`
+  cannot be installed later. For children that follow a `State`, use `:List` from the start.)
