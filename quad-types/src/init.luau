@@ -547,6 +547,10 @@ export type Slot<T> = {
 	Swap: (self: Slot<T>, indexA: number, indexB: number) -> (),
 	Get: (self: Slot<T>, index: number) -> SlotItem<T>?,
 	IndexOf: (self: Slot<T>, element: SlotElement<T>) -> number?,
+	-- [2026-10-12 round14 Q185] `fn(slot)` now when this Slot is not in the middle of an operation, otherwise
+	-- right after that operation has finished — the way to CRUD a Slot from a callback that runs inside its own
+	-- insert/remove (`Quad0167`).
+	WhenIdle: (self: Slot<T>, fn: (slot: Slot<T>) -> ()) -> (),
 	List: <Item, UD>(
 		self: Slot<T>,
 		data: { Item } | StateMarker<{ Item }>,

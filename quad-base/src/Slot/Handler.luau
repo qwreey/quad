@@ -41,6 +41,7 @@ local function register(dispatch: any, module: any)
 			if internal.claimOwnerAt(slotValue, inst, k) then
 				module.Backend.bindLifetime(inst, slotValue)
 				internal.attachSlot(slotValue, inst, inst, k)
+				internal.settleIdle() -- `slot:WhenIdle` requests made inside the mount's backend call
 			end
 			return function(nextValue: any, _retracting: boolean)
 				-- nextValue is nil or a Slot the same handler will process (typed)

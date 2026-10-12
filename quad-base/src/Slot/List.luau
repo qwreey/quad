@@ -244,7 +244,10 @@ return function(S: Types.SlotInternal, module: any)
 		if S.isState(data) then
 			-- quad's own bookkeeping: `_internal` from birth (before the install run), skipped by the Observer
 			-- upstream-feedback debug check
-			local observer = data:_internalObserver(function() reconcile(data:Get()) end)
+			local observer = data:_internalObserver(function()
+				reconcile(data:Get())
+				if S.pending ~= nil then S.settle() end -- `slot:WhenIdle` requests made inside this reconcile's backend calls
+			end)
 			self._listObserver = observer
 			module.Backend.bindLifetime(physicalTarget, observer)
 		else
@@ -312,6 +315,7 @@ return function(S: Types.SlotInternal, module: any)
 		if self._physicalTarget then
 			self:_activateList(self._physicalTarget)
 			S.maybeRecompute(self, S.BK.getBookkeeping(self))
+			if S.pending ~= nil then S.settle() end -- `slot:WhenIdle`: an install on a mounted Slot is an operation entry
 		end
 		return self
 	end

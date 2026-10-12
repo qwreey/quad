@@ -1639,4 +1639,458 @@ do
 	print("PASS")
 end
 
+-- ── round14 Q185 (d) (user decision 2026-10-12): the Q52 flag also covers the backend call ──
+-- A backend signal that fires synchronously inside an insert/remove (the mock fires `Parent` changed
+-- inside native*; Roblox does under Immediate SignalBehavior) must not CRUD the Slot whose operation is
+-- on the stack: refused with Quad0167, and the outer operation finishes with consistent records. Each
+-- callback catches its own error, the way an engine isolates a listener's.
+do
+	print("=== round14 Q185 (d): no CRUD on a Slot from inside its own backend call")
+	local q8 = mock.newQuad()
+	local function F(name: string): any
+		local f = mock.Instance.new("Frame")
+		f.Name = name
+		return f
+	end
+	local function names(inst: any): string
+		local t = {}
+		for _, c in inst:GetChildren() do
+			table.insert(t, c.Name)
+		end
+		table.sort(t)
+		return table.concat(t, ",")
+	end
+	local function leaves(slot: any, acc: { string }?): { string }
+		local out = acc or {}
+		for _, e in slot._elements do
+			if q8.isSlot(e) then leaves(e, out) else table.insert(out, e.Name) end
+		end
+		return out
+	end
+	-- `when` = "in" (parent became non-nil) | "out" (became nil); fires `fn` once, records its error id
+	local function onParent(inst: any, when: string, fn: () -> ()): { err: string? , fired: boolean }
+		local rec = { err = nil :: string?, fired = false }
+		inst:GetPropertyChangedSignal("Parent"):Connect(function()
+			if rec.fired or (inst.Parent ~= nil) ~= (when == "in") then return end
+			rec.fired = true
+			local ok, err = pcall(fn)
+			if not ok then rec.err = tostring(err) end
+		end)
+		return rec
+	end
+	local function refused(rec: any, what: string)
+		assert(rec.fired, what .. ": the callback ran inside the operation")
+		assert(rec.err ~= nil and string.find(rec.err, "Quad0167", 1, true) ~= nil, what .. ": refused with Quad0167, got " .. tostring(rec.err))
+	end
+
+	-- (1) Add of a plain element; the callback front-inserts next to a nested Slot
+	do
+		local host = mock.Instance.new("Frame")
+		local slot = q8.Slot({ q8.Slot({ F("p"), F("q") }) })
+		q8.Dispatch.drive(host, { slot })
+		local b = F("b")
+		local rec = onParent(b, "in", function() slot:Add(F("c"), 1) end)
+		slot:Add(b)
+		refused(rec, "(1) Add")
+		mock.assertBlamesUser(rec.err, "spec.slot.luau", "(1) blames the callback's Add line")
+		assert(table.concat(leaves(slot), ",") == "p,q,b" and slot.Length:Get() == 3, "(1) records: " .. table.concat(leaves(slot), ",") .. " Length " .. tostring(slot.Length:Get()))
+		assert(names(host) == "b,p,q", "(1) attached: " .. names(host))
+		assert(slot._materializing == false, "(1) the flag came back down")
+		slot:Add(F("z"), 1)
+		assert(slot.Length:Get() == 4 and names(host) == "b,p,q,z", "(1) usable afterwards")
+	end
+	-- (2) Remove; the callback removes / clears / front-inserts on the same Slot
+	for _, variant in { "Remove", "Clear", "Add" } do
+		local host = mock.Instance.new("Frame")
+		local slot
+		local b = F("b")
+		local rec = onParent(b, "out", function()
+			if variant == "Remove" then slot:Remove(1) elseif variant == "Clear" then slot:Clear() else slot:Add(F("c"), 1) end
+		end)
+		slot = q8.Slot({ F("a"), b, F("d") })
+		q8.Dispatch.drive(host, { slot })
+		slot:Remove(2)
+		refused(rec, "(2) Remove/" .. variant)
+		assert(table.concat(leaves(slot), ",") == "a,d" and slot.Length:Get() == 2 and names(host) == "a,d", "(2) " .. variant .. ": the removed element is the one asked for: " .. table.concat(leaves(slot), ",") .. " | " .. names(host))
+		assert(slot:IndexOf(b) == nil and slot._materializing == false, "(2) " .. variant .. ": records clean")
+	end
+	-- (2b) Extract (the element leaves alive) — same window
+	do
+		local host = mock.Instance.new("Frame")
+		local slot
+		local b = F("b")
+		local rec = onParent(b, "out", function() slot:Add(F("c"), 1) end)
+		slot = q8.Slot({ F("a"), b, F("d") })
+		q8.Dispatch.drive(host, { slot })
+		assert(slot:Extract(2) == b, "(2b) Extract returns the element asked for")
+		refused(rec, "(2b) Extract")
+		assert(table.concat(leaves(slot), ",") == "a,d" and slot.Length:Get() == 2 and names(host) == "a,d" and slot._materializing == false, "(2b) records: " .. table.concat(leaves(slot), ","))
+	end
+	-- (2c) Splice of plain elements: the batch call is one window on this Slot
+	do
+		local host = mock.Instance.new("Frame")
+		local slot = q8.Slot({ F("a"), F("d") })
+		q8.Dispatch.drive(host, { slot })
+		local x = F("x")
+		local rec = onParent(x, "in", function() slot:Add(F("c"), 1) end)
+		slot:Splice(2, 0, x)
+		refused(rec, "(2c) Splice")
+		assert(table.concat(leaves(slot), ",") == "a,x,d" and slot.Length:Get() == 3 and names(host) == "a,d,x" and slot._materializing == false, "(2c) records: " .. table.concat(leaves(slot), ","))
+	end
+	-- (2d) Replace on an unmounted Slot destroys the old element — its `Destroying` callback is inside the window too
+	do
+		local slot
+		local b = F("b")
+		local rec = { err = nil :: string?, fired = false }
+		b.Destroying:Connect(function()
+			rec.fired = true
+			local ok, err = pcall(function() slot:Add(F("c"), 1) end)
+			if not ok then rec.err = tostring(err) end
+		end)
+		slot = q8.Slot({ F("a"), b })
+		slot:Replace(2, F("e"))
+		refused(rec, "(2d) unmounted Replace")
+		assert(table.concat(leaves(slot), ",") == "a,e" and slot._materializing == false, "(2d) records: " .. table.concat(leaves(slot), ","))
+	end
+	-- (3) first mount; an element's callback adds to the Slot being mounted
+	do
+		local host = mock.Instance.new("Frame")
+		local slot
+		local b = F("b")
+		local rec = onParent(b, "in", function() slot:Add(F("c")) end)
+		slot = q8.Slot({ F("a"), b })
+		q8.Dispatch.drive(host, { slot })
+		refused(rec, "(3) mount")
+		assert(slot.Length:Get() == 2 and names(host) == "a,b" and slot._mounted and slot._materializing == false, "(3) mounted whole: " .. names(host))
+		slot:Add(F("c"))
+		assert(names(host) == "a,b,c", "(3) usable afterwards")
+	end
+	-- (4) a Slot arriving through Add / Splice; the callback adds to the ARRIVING Slot
+	for _, variant in { "Add", "Splice" } do
+		local host = mock.Instance.new("Frame")
+		local outer = q8.Slot({ F("a") })
+		q8.Dispatch.drive(host, { outer })
+		local inner
+		local x = F("x")
+		local rec = onParent(x, "in", function() inner:Add(F("y")) end)
+		inner = q8.Slot({ x })
+		if variant == "Add" then outer:Add(inner) else outer:Splice(2, 0, inner) end
+		refused(rec, "(4) " .. variant)
+		assert(inner.Length:Get() == 1 and outer.Length:Get() == 2 and names(host) == "a,x", "(4) " .. variant .. ": " .. names(host))
+		assert(inner._mounted and inner._materializing == false and outer._materializing == false, "(4) " .. variant .. ": flags down, mounted")
+		inner:Add(F("y"))
+		assert(outer.Length:Get() == 3 and names(host) == "a,x,y", "(4) " .. variant .. ": usable afterwards")
+	end
+	-- (5) Replace; the leaving element's callback front-inserts next to a nested Slot
+	do
+		local host = mock.Instance.new("Frame")
+		local slot
+		local b = F("b")
+		local rec = onParent(b, "out", function() slot:Add(F("c"), 1) end)
+		slot = q8.Slot({ q8.Slot({ F("p"), F("q") }), b, F("d") })
+		q8.Dispatch.drive(host, { slot })
+		slot:Replace(2, F("e"))
+		refused(rec, "(5) Replace")
+		assert(table.concat(leaves(slot), ",") == "p,q,e,d" and slot.Length:Get() == 4 and names(host) == "d,e,p,q", "(5) records: " .. table.concat(leaves(slot), ",") .. " Length " .. tostring(slot.Length:Get()))
+	end
+	-- (6) a nested Slot being destroyed; the callback adds to the dying Slot
+	do
+		local host = mock.Instance.new("Frame")
+		local inner
+		local x, y = F("x"), F("y")
+		local rec = onParent(x, "out", function() inner:Add(y) end)
+		inner = q8.Slot({ x })
+		local outer = q8.Slot({ F("a"), inner })
+		q8.Dispatch.drive(host, { outer })
+		outer:Remove(2)
+		refused(rec, "(6) destroy")
+		assert(outer.Length:Get() == 1 and names(host) == "a", "(6) outer: " .. names(host))
+		q8.Slot({ y }) -- y was never taken by the dying Slot: still free to be owned
+	end
+	-- (7) unmount needs no refusal: the logical half runs first, so the callback's Add is a plain
+	-- unmounted-Slot Add (records only) and the next mount shows it
+	do
+		local host = mock.Instance.new("Frame")
+		local slot
+		local b = F("b")
+		local rec = onParent(b, "out", function() slot:Add(F("c")) end)
+		slot = q8.Slot({ F("a"), b })
+		local holder = q8.Source(slot :: any)
+		q8.Dispatch.drive(host, { holder })
+		assert(names(host) == "a,b", "(7) mounted through the State: " .. names(host))
+		holder:Set(nil)
+		assert(rec.fired and rec.err == nil, "(7) the callback's Add went through: " .. tostring(rec.err))
+		assert(names(host) == "" and #slot._elements == 3 and slot._mounted == false, "(7) unmounted, c in the records only: " .. names(host))
+		local host2 = mock.Instance.new("Frame")
+		q8.Dispatch.drive(host2, { slot })
+		assert(names(host2) == "a,b,c" and slot.Length:Get() == 3, "(7) remount: " .. names(host2))
+	end
+	-- (8) NOT refused: an ancestor during a plain-element operation, and an unrelated Slot
+	do
+		local host = mock.Instance.new("Frame")
+		local outer
+		local b = F("b")
+		local rec = onParent(b, "in", function() outer:Add(F("c"), 1) end)
+		local inner = q8.Slot({ F("p") })
+		outer = q8.Slot({ F("a"), inner, F("z") })
+		q8.Dispatch.drive(host, { outer })
+		inner:Add(b)
+		assert(rec.fired and rec.err == nil, "(8) ancestor CRUD from a plain-element Add is fine: " .. tostring(rec.err))
+		assert(table.concat(leaves(outer), ",") == "c,a,p,b,z" and outer.Length:Get() == 5 and inner.Offset:Get() == 2, "(8) records: " .. table.concat(leaves(outer), ","))
+		local otherHost = mock.Instance.new("Frame")
+		local other = q8.Slot()
+		q8.Dispatch.drive(otherHost, { other })
+		local x = F("x")
+		local rec2 = onParent(x, "in", function() other:Add(F("y")) end)
+		outer:Add(q8.Slot({ x }))
+		assert(rec2.fired and rec2.err == nil and names(otherHost) == "y", "(8) an unrelated Slot is fine: " .. tostring(rec2.err))
+	end
+	print("PASS")
+end
+
+-- ── round14 Q185 (user decision 2026-10-12): slot:WhenIdle(fn) — the way out of Quad0167 ──
+-- fn(slot) runs NOW when the Slot is not mid-operation, otherwise right after that operation has finished
+-- (its tail included) — at the end of every entry that can raise the flag. A destroyed Slot counts as idle.
+do
+	print("=== round14 Q185: slot:WhenIdle runs fn now when idle, else right after the operation")
+	local q9 = mock.newQuad()
+	local function F(name: string): any
+		local f = mock.Instance.new("Frame")
+		f.Name = name
+		return f
+	end
+	local function names(inst: any): string
+		local t = {}
+		for _, c in inst:GetChildren() do
+			table.insert(t, c.Name)
+		end
+		table.sort(t)
+		return table.concat(t, ",")
+	end
+	local function leaves(slot: any, acc: { string }?): { string }
+		local out = acc or {}
+		for _, e in slot._elements do
+			if q9.isSlot(e) then leaves(e, out) else table.insert(out, e.Name) end
+		end
+		return out
+	end
+	local function onParent(inst: any, when: string, fn: () -> ())
+		local fired = false
+		inst:GetPropertyChangedSignal("Parent"):Connect(function()
+			if fired or (inst.Parent ~= nil) ~= (when == "in") then return end
+			fired = true
+			fn()
+		end)
+	end
+
+	-- (1) idle: runs before WhenIdle returns, with the Slot as its argument — unmounted and mounted alike
+	do
+		local slot = q9.Slot({ F("a") })
+		local got: any = nil
+		local ret = table.pack(slot:WhenIdle(function(s: any) got = s end))
+		assert(got == slot and ret.n == 0, "(1) unmounted Slot is idle: fn(slot) ran, nothing returned")
+		local host = mock.Instance.new("Frame")
+		q9.Dispatch.drive(host, { slot })
+		local ran = false
+		slot:WhenIdle(function(s: any) ran = true; s:Add(F("b")) end)
+		assert(ran and names(host) == "a,b", "(1) mounted idle Slot: fn ran at once and may CRUD")
+		local ok, err = pcall(function() (slot :: any):WhenIdle("nope") end)
+		assert(not ok and string.find(tostring(err), "Quad0268", 1, true) ~= nil, "(1) fn must be a function: " .. tostring(err))
+		mock.assertBlamesUser(err, "spec.slot.luau", "(1) blames the WhenIdle line")
+	end
+	-- (2) the menu shape: an element leaving closes its companion in the SAME Slot (fresh IndexOf inside fn)
+	do
+		local host = mock.Instance.new("Frame")
+		local slot
+		local root, sub = F("root"), F("sub")
+		local atCallback: string? = nil
+		onParent(root, "out", function()
+			slot:WhenIdle(function(s: any)
+				local i = s:IndexOf(sub)
+				if i then s:Remove(i) end
+			end)
+			atCallback = table.concat(leaves(slot), ",")
+		end)
+		slot = q9.Slot({ F("a"), sub, root }) -- the companion sits BEFORE the leaving element: the order that broke silently
+		q9.Dispatch.drive(host, { slot })
+		slot:Remove(3)
+		assert(atCallback == "a,sub,root", "(2) fn had not run inside the backend call: " .. tostring(atCallback))
+		assert(table.concat(leaves(slot), ",") == "a" and slot.Length:Get() == 1 and names(host) == "a", "(2) both gone when Remove returned: " .. table.concat(leaves(slot), ","))
+		assert(slot._materializing == false, "(2) flag down")
+	end
+	-- (3) every public CRUD entry settles: Add / Replace / Extract / Splice / Clear / ExtractAll
+	for _, op in { "Add", "Replace", "Extract", "ExtractSwap", "Splice", "Clear", "ExtractAll" } do
+		local host = mock.Instance.new("Frame")
+		local slot
+		local b = F("b")
+		local ran = 0
+		local when = if op == "Add" then "in" else "out"
+		onParent(b, when, function()
+			slot:WhenIdle(function(s: any)
+				ran += 1
+				s:Add(F("late"), 1)
+			end)
+		end)
+		slot = q9.Slot(if op == "Add" then { F("a") } else { F("a"), b, F("d") })
+		q9.Dispatch.drive(host, { slot })
+		if op == "Add" then slot:Add(b)
+		elseif op == "Replace" then slot:Replace(2, F("e"))
+		elseif op == "Extract" then slot:Extract(2)
+		elseif op == "ExtractSwap" then slot:Extract(2, F("e"))
+		elseif op == "Splice" then slot:Splice(2, 1)
+		elseif op == "Clear" then slot:Clear()
+		else slot:ExtractAll() end
+		assert(ran == 1, "(3) " .. op .. ": fn ran once by the time the call returned (ran " .. ran .. ")")
+		local got = table.concat(leaves(slot), ",")
+		local want = if op == "Add" then "late,a,b"
+			elseif op == "Replace" or op == "ExtractSwap" then "late,a,e,d"
+			elseif op == "Extract" or op == "Splice" then "late,a,d"
+			else "late"
+		assert(got == want and slot.Length:Get() == #leaves(slot) and #host:GetChildren() == #leaves(slot), "(3) " .. op .. ": " .. got)
+	end
+	-- (4) mount through the dispatch handler (no public CRUD on the stack), the Slot itself and an ancestor
+	do
+		local host = mock.Instance.new("Frame")
+		local slot
+		local b = F("b")
+		onParent(b, "in", function()
+			slot:WhenIdle(function(s: any) s:Add(F("c")) end)
+		end)
+		slot = q9.Slot({ F("a"), b })
+		q9.Dispatch.drive(host, { slot })
+		assert(table.concat(leaves(slot), ",") == "a,b,c" and names(host) == "a,b,c" and slot.Length:Get() == 3, "(4) first mount: " .. names(host))
+		-- an arriving Slot and its ancestor, both asked from inside the arriving subtree's insert
+		local inner
+		local x = F("x")
+		local order: { string } = {}
+		onParent(x, "in", function()
+			inner:WhenIdle(function(s: any) table.insert(order, "inner"); s:Add(F("y")) end)
+			slot:WhenIdle(function(s: any) table.insert(order, "outer"); s:Add(F("z"), 1) end)
+		end)
+		inner = q9.Slot({ x })
+		slot:Add(inner)
+		assert(table.concat(order, ",") == "inner,outer", "(4) requests run in the order they were made: " .. table.concat(order, ","))
+		assert(table.concat(leaves(slot), ",") == "z,a,b,c,x,y" and slot.Length:Get() == 6 and #host:GetChildren() == 6, "(4) arriving Slot + ancestor: " .. table.concat(leaves(slot), ","))
+	end
+	-- (5) a request parked on a Slot that is mid-operation stays parked through unrelated operations that end
+	-- meanwhile (their settle skips it) and runs at ITS operation's end; unmount itself needs no waiting — by the
+	-- time its backend call runs the Slot is plain unmounted, so a request made there runs at once
+	do
+		local host = mock.Instance.new("Frame")
+		local other = q9.Slot({ F("o") })
+		local otherHost = mock.Instance.new("Frame")
+		local a = F("a")
+		local slotA = q9.Slot({ a })
+		local holder = q9.Source(slotA :: any)
+		q9.Dispatch.drive(host, { holder })
+		local ran: { string } = {}
+		onParent(a, "out", function()
+			slotA:WhenIdle(function() table.insert(ran, "unmounting:" .. tostring(slotA._mounted)) end)
+		end)
+		local o2 = F("o2")
+		onParent(o2, "in", function()
+			other:WhenIdle(function() table.insert(ran, "other") end)
+			holder:Set(nil)
+			slotA:Add(F("b")) -- an unrelated operation ends here: its settle must skip `other`
+			table.insert(ran, "callback-done")
+		end)
+		other:Add(o2) -- unmounted: no backend call, nothing fires yet
+		q9.Dispatch.drive(otherHost, { other })
+		assert(table.concat(ran, ",") == "unmounting:false,callback-done,other", "(5) order: " .. table.concat(ran, ","))
+		assert(names(host) == "" and slotA._mounted == false, "(5) the swap unmounted")
+	end
+	-- (6) :List — a reconcile is an entry (the Slot refuses CRUD, so fn does what a :List owner does: set the data)
+	do
+		local host = mock.Instance.new("Frame")
+		local data = q9.Source({ "a", "b" } :: { string })
+		local list = q9.Slot()
+		local log: { string } = {}
+		local armed = false
+		list:List(data, function(ctx: any)
+			if ctx.Item == q9.KeyGone then return nil, nil end
+			if ctx.Prev ~= nil then return ctx.Prev, nil end
+			local f = F(ctx.Item)
+			onParent(f, "out", function()
+				if armed then
+					armed = false
+					list:WhenIdle(function() table.insert(log, "after:" .. tostring(list.Length:Get())); data:Set({ "z" }) end)
+					table.insert(log, "queued")
+				end
+			end)
+			return f, nil
+		end, function(item: string) return item end)
+		q9.Dispatch.drive(host, { list })
+		armed = true
+		data:Set({ "a" })
+		assert(table.concat(log, ",") == "queued,after:1", "(6) ran when the reconcile had finished: " .. table.concat(log, ","))
+		assert(names(host) == "z" and list.Length:Get() == 1, "(6) fn's data:Set reconciled normally: " .. names(host))
+		-- installing :List on a mounted Slot is an entry too
+		local host2 = mock.Instance.new("Frame")
+		local list2 = q9.Slot()
+		q9.Dispatch.drive(host2, { list2 })
+		local seen: number? = nil
+		list2:List({ "p", "q" }, function(ctx: any)
+			if ctx.Item == q9.KeyGone then return nil, nil end
+			local f = F(ctx.Item)
+			if ctx.Item == "p" then
+				onParent(f, "in", function()
+					list2:WhenIdle(function(s: any) seen = s.Length:Get() end)
+				end)
+			end
+			return f, nil
+		end, function(item: string) return item end)
+		assert(seen == 2, "(6) install on a mounted Slot settled after both items: " .. tostring(seen))
+	end
+	-- (7) destroyed Slots count as idle: a request made while the Slot is being destroyed runs once it is gone,
+	-- through Remove of the owner and through q.dispose; a request on an already destroyed Slot runs at once
+	do
+		local host = mock.Instance.new("Frame")
+		local inner
+		local x = F("x")
+		local sawDestroyed: any = nil
+		onParent(x, "out", function()
+			inner:WhenIdle(function(s: any) sawDestroyed = s._destroyed end)
+			assert(sawDestroyed == nil, "(7) not inside the destroy")
+		end)
+		inner = q9.Slot({ x })
+		local outer = q9.Slot({ F("a"), inner })
+		q9.Dispatch.drive(host, { outer })
+		outer:Remove(2)
+		assert(sawDestroyed == true, "(7) ran after the owner's Remove, on the destroyed Slot")
+		local again = false
+		inner:WhenIdle(function() again = true end)
+		assert(again, "(7) an already destroyed Slot: fn runs at once")
+		-- q.dispose
+		local loose
+		local y = F("y")
+		local ranAfterDispose = false
+		y.Destroying:Connect(function()
+			loose:WhenIdle(function() ranAfterDispose = true end)
+			assert(not ranAfterDispose, "(7) not inside dispose's destroy")
+		end)
+		loose = q9.Slot({ y })
+		q9.dispose(loose)
+		assert(ranAfterDispose, "(7) dispose settles")
+	end
+	-- (8) a raise from fn reaches the caller of the operation that settled it; the other requests stay queued
+	do
+		local host = mock.Instance.new("Frame")
+		local slot
+		local b = F("b")
+		local second = false
+		onParent(b, "out", function()
+			slot:WhenIdle(function() error("boom-from-fn") end)
+			slot:WhenIdle(function() second = true end)
+		end)
+		slot = q9.Slot({ F("a"), b })
+		q9.Dispatch.drive(host, { slot })
+		local ok, err = pcall(function() slot:Remove(2) end)
+		assert(not ok and string.find(tostring(err), "boom-from-fn", 1, true) ~= nil, "(8) fn's raise propagates: " .. tostring(err))
+		assert(table.concat(leaves(slot), ",") == "a" and slot.Length:Get() == 1 and not second, "(8) the Remove itself had finished; the second request still waits")
+		slot:Add(F("c"))
+		assert(second, "(8) the next operation's end runs what was left")
+	end
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

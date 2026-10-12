@@ -42,3 +42,27 @@
   연산이 중간에 끊기고 그 Slot은 플래그가 선 채 남는다(Q52의 "마운트 중 던지면 그 Slot은 못 쓴다"와 같은 상태). (2) `rawMove`·`rawSwap`의
   엔진 호출 창은 넣지 않았다(Roblox에서 `Parent`가 바뀌지 않는 연산). (3) 콜백이 `:List`의 데이터 State를 바꿔 같은 Slot의 재조정을
   엔진 호출 안에서 다시 일으키는 경로는 공개 CRUD가 아니라 이 가드 밖이다(`updateFn` 재진입과 같은 UB 범위).
+
+## 후속 — "연산이 끝난 뒤 실행" 도구 검토 (2026-10-12)
+
+(d)를 레포에 적용하자 devui 킷의 메뉴 스펙이 `Quad0167`로 실패했다(루트 팝업을 오버레이 Slot에서 `Remove` → 그 안 메뉴 행의
+`q.OnDestroyed`가 서브메뉴 팝업을 같은 Slot에서 `Remove`; HEAD에서는 서브메뉴의 index가 항상 더 커서 우연히 맞았다). 사용자가
+"미루는 도구 없이 가면 모든 패턴에서 어려워지지 않나", "`task.defer`를 쓰라는 것은 엔진 문제가 아닌 것을 엔진으로 푸는 것"이라 짚어,
+필요 여부와 이름을 세 시선으로 검토받았다(서로의 결과를 모르는 채, 메인이 쓰던 이름은 주지 않음). 원문·재료는 `review-after-op/`
+(`task-prompt.txt` 과제문, `gemini-report.txt` Gemini 보고서 원문, `insider-prototype-*.diff.txt` 내부자 시제품의 diff — sonnet 둘의
+보고는 세션에만 있고 요지는 아래).
+
+| 시선 | 필요한가 | 이름 1순위 / 차선 | 그 밖 |
+|---|---|---|---|
+| sonnet 외부자(공개 문서·킷 소스만) | 지금은 문서 보강(다만 "신호 설정에 따라 걸렸다 안 걸렸다 하는 에러"를 줄이는 장치의 값은 인정) | `WhenIdle` / `AfterOperation` | `task.defer`의 함정: 미뤄진 사이 Slot·원소가 죽는 경우의 가드를 호출자가 매번 |
+| sonnet 내부자(결정 이력·소스) | 약한 찬성 — 세 환경(Immediate·Deferred·mock)에서 같은 코드가 되는 도구, mock에는 `task`가 없음 | `WhenIdle` / `After` | 사본 시제품 약 45줄 — 모듈 수준 대기 목록 하나, 대기분 없을 때 비용은 nil 검사 하나; 실행 지점은 진입점 끝마다(공개 CRUD·호스트 마운트/언마운트·dispose), `:List` 재조정 끝은 빠져 있어 imm에서 다음 연산까지 밀림 |
+| Gemini(agy) | 강한 찬성 — 한 Slot에 팝업을 평평하게 두는 오버레이 구조에서는 주류 시나리오, quad-base의 규칙을 엔진 전역으로 풀게 하면 추상화 경계가 깨짐 | `Ready` / `AfterOp` (`WhenIdle`은 넷째 — 뜻은 맞으나 `requestIdleCallback` 연상) | 원소 기반 제거·훅 쪽 해결은 가드를 대체하지 못함; 콜백에 Slot을 인자로 |
+
+메인 검증: 킷 사례는 직접 확인(devui `Menu.luau`·`PopupParts.luau`·`Combo.luau`의 `OnDestroyed`가 오버레이 Slot 닫기로 이어짐; material의
+`task.defer` 둘은 이 규칙을 알고 피한 것이 아님 — `Snackbar`는 Observer 발화 순서 때문, `KeyNav`는 Slot과 무관). Gemini의 "`task.defer`는
+1프레임 깜빡임"은 근거 없는 추정으로 본다(`task.defer`는 같은 프레임의 다음 재개 지점에서 돈다 — 실측하지 않음). 내부자 시제품의
+스펙 통과는 메인이 다시 돌리지 않았다. 결정(만들지, 이름, 인자, 파괴된 Slot의 처리)은 원장 Q185.
+
+**결정(2026-10-12)**: 사용자가 도구를 만드는 쪽으로 정했고 이름은 `slot:WhenIdle(fn)`, 콜백 인자는 Slot, 파괴된 Slot은 그냥 실행. 구현은
+내부자 시제품의 뼈대(모듈 수준 대기 목록, 진입점 끝의 실행)에 `:List` 재조정·설치 끝을 더하고, 변이로 불필요함이 드러난 둘(언마운트 끝의
+실행 지점, 목록 재시작)을 뺀 것이다 — 정본은 `base/slot-plan.md` 재진입성 항목의 2026-10-12 문단.

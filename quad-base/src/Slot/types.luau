@@ -57,6 +57,7 @@ export type SlotInternal = {
 	-- Tree.luau
 	makeBaseObserver: (slot: any) -> any,
 	markMountedTree: (slot: any, physicalTarget: any) -> (),
+	raiseTree: (slot: any) -> (),
 	attachSlot: (slot: any, physicalTarget: any, ownerKey: any, position: number, mount: boolean?) -> (),
 	releaseSugarWrapper: (wrapper: any) -> (),
 	teardownTree: (slot: any) -> (),
@@ -66,6 +67,8 @@ export type SlotInternal = {
 	List: (self: any, data: any, updateFn: any, keyFn: any?, opts: any?) -> any,
 	Single: (self: any, state: any, updateFn: any?, opts: any?) -> any,
 	-- init.luau (published AFTER the installs)
+	pending: { { slot: any, fn: (slot: any) -> () } }?, -- `slot:WhenIdle` requests waiting for their Slot's operation to end (nil = none)
+	settle: () -> (),
 	assertLive: (self: any) -> (),
 	assertNotMounting: (self: any) -> (),
 	Slot: (initial: { any }?) -> any,

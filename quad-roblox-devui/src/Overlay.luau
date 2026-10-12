@@ -215,10 +215,20 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 			-- skip Slot ops when the layer is dead, or when the entry was already detached (Deferred signal ordering:
 			-- descendants' Destroying may run before the layer's OnDestroyed)
 			if not isDead() and entry.Parent == layer then
-				local index = slot:IndexOf(entry)
-				if index then
-					slot:Remove(index)
-				end
+				-- A close can arrive from INSIDE another popup's removal: a menu row's / combo's OnDestroyed closes
+				-- its own popup while the popup holding that row is being removed from this same Slot (synchronous
+				-- signals: Immediate SignalBehavior, the test mock). The Slot refuses a CRUD there (`Quad0167`), so
+				-- go through WhenIdle — now when the Slot is idle, right after that removal otherwise — and take the
+				-- index when it runs.
+				slot:WhenIdle(function(s)
+					if isDead() then
+						return
+					end
+					local index = s:IndexOf(entry)
+					if index then
+						s:Remove(index)
+					end
+				end)
 			elseif entry.Parent ~= nil then
 				-- dead layer: whatever is still parented to it goes with it
 				entry:Destroy()

@@ -1,0 +1,34 @@
+# 과제: Slot "연산이 끝난 뒤 실행" 도구 — 필요한가, 어떤 모양인가, 이름은 무엇인가
+
+읽기 전용 검토 과제다. 소스·문서를 고치지 말고 `AGY_REPORT.md`에 한국어로 보고하라. 주장마다 [실측](파일:줄 또는 실행 출력) / [추정]을 표시하라. 제안은 결정이 아니다.
+
+## 배경 (이 부분은 사실로 받아들일 것 — 검토 대상 아님)
+
+quad는 Roblox용 UI 렌더러(Luau)이고, `Slot`은 동적 자식 컨테이너다. CRUD는 **index 기반**이다 — `slot:Add(element, index?)`, `slot:Remove(index)`, `slot:Replace(index, new)`, `slot:Extract(index)`, `slot:Splice(index, removeCount, ...)`, `slot:Clear()`, `slot:Move`, `slot:Swap`, `slot:IndexOf(element)`, `slot:Get(index)`, `slot.Length`·`slot.Offset`(State). 공개 문서는 `docs/reference/core/06-slot.md`.
+
+**방금 결정된 것**: Slot의 연산이 엔진 호출(인스턴스를 붙이기·떼기·파괴하기) 한가운데 있을 때, 그 호출 **안에서 동기로 불린 콜백**이 그 Slot(또는 통째로 붙고 있는 하위 Slot, 파괴 중인 Slot)을 CRUD하면 `Quad0167`로 **거부한다**. 그런 콜백은 Roblox의 `SignalBehavior`가 Immediate일 때의 `Parent` 변경·`Destroying` 신호 콜백이다 — quad 표면으로는 `q.OnDestroyed(fn)`(인스턴스가 죽을 때 도는 훅)과 `q.OnChange("Parent", fn)`, 그리고 사용자가 호스트에 직접 건 `ChildAdded`류. Deferred(새 경험의 기본)에서는 엔진이 콜백 자체를 연산 뒤로 미루므로 해당 없다. quad의 테스트 mock은 신호를 동기로 낸다(= Immediate에 해당).
+거부하기로 한 이유는 거부하지 않으면 부기가 조용히 깨지기 때문이다(연산이 엔진 호출 전에 잡아 둔 index를 호출 뒤에 다시 쓴다). 근거와 시제품은 `.claude/audit/q185-guard-window-2026-10-12/`(README에 장면 표, `candD-guard.patch`가 그 변경 — 이 worktree에는 아직 적용돼 있지 않다고 보고 읽을 것), 앞선 같은 계열 결정은 `.claude/base/slot-plan.md`의 "재진입성" 항목(Q52·Q74: 마운트 중인 Slot과 그 조상의 CRUD는 던진다).
+
+**이 결정에 걸린 실제 코드**: 형제 킷 `quad-roblox-devui`의 메뉴. 루트 팝업을 오버레이의 Slot에서 `Remove`하면(`quad-roblox-devui/src/Overlay.luau`의 `closeImpl`), 그 엔진 호출 안에서 루트 팝업 안 메뉴 행이 파괴되고, 그 행에 달린 `q.OnDestroyed`(`src/PopupParts.luau` 229행 부근, `src/Menu.luau`의 `OnDestroyed = closeRoot`)가 "내 서브메뉴 팝업도 닫아라"를 실행한다. 서브메뉴 팝업은 같은 오버레이 Slot의 원소라 `slot:IndexOf(entry)` → `slot:Remove(index)`가 같은 Slot에 다시 들어온다. "주인이 죽으면 딸린 것도 정리한다"는 자연스러운 모양인데 이제 Immediate(와 mock)에서 `Quad0167`이 된다.
+
+자동으로 미루는 것(막지 않고 quad가 그 CRUD를 대기열에 넣었다가 나중에 적용)은 이미 기각됐다 — index 기반이라 부른 시점의 index가 적용 시점엔 틀리고(위 예에서 `Remove(3)`을 미뤘다 적용하면 그 사이 앞 원소가 빠져 다른 원소를 지운다), 반환값도 줄 수 없다.
+
+## 물음 1 — 필요한가
+
+소비자가 "이 Slot의 지금 연산이 끝난 뒤에 이 일을 해라"를 표현할 **quad 수준의 도구**가 필요한가? 후보:
+
+- (A) 새 도구 없음 — 문서와 에러 메시지로 "Roblox에서는 `task.defer`로 미뤄라"를 안내한다.
+- (B) Slot에 메소드 하나 — 함수를 받아, 그 Slot이 한가하면 **즉시** 실행하고, 연산 중이면 **그 연산이 끝난 직후** 실행한다(함수 안에서 index를 다시 구하게 된다). 프로젝트 소유자의 스케치: "작업 완료 후 돌 것이 있는지 보고 돌리고, 없으면 바로 도는 형태. 던지는 것은 터져도 된다고 가정."
+- (C) 엔진과 무관한 `defer`를 백엔드 op으로(지금 백엔드에는 `setTimeout`/`clearTimeout`뿐 — `quad-roblox/src/EngineOps.luau`).
+- (D) 그 밖의 것 — **주어진 틀 밖에서 생각해 보라.** 예: index 기반 표면 자체가 뿌리인가(원소 기반 제거가 있으면 미룰 필요가 줄어드는가), `q.OnDestroyed` 같은 quad 훅 쪽에서 풀 수 있는가, 거부 대신 다른 모델이 있는가.
+
+따질 것: (1) 실사용에서 이 상황이 얼마나 자주·자연스럽게 생기는가(킷 둘 `quad-roblox-devui/src`·`quad-roblox-material/src`에서 `q.OnDestroyed`·`OnChange`·`task.defer`가 쓰인 자리를 실제로 찾아 근거로 삼을 것). (2) 도구가 없을 때 소비자가 겪는 어려움은 구체적으로 무엇인가. (3) quad가 다른 곳에서 "막는 대신 우회 도구를 주는" 선례와의 일관성 — `source:SetIfChanged`(되먹임 고리 끊기), `Effect`(재실행을 뒤로 미룸), `q.Blocker`(전파 묶기), `q.Out`. 공개 문서는 `docs/reference/core/`와 `docs/reference/sugar/`. (4) 이 프로젝트의 설계 원칙 "드문 오용이나 가상의 미래 요구까지 방어·최적화하려고 구조를 복잡하게 만들지 않는다 — 실제로 관측된 문제에만 구조를 쓴다"(`.claude/conventions.md` "설계 원칙")와의 관계. (5) 테스트: mock이 동기 신호라, 프로덕션이 Deferred인 소비자도 테스트에서는 이 거부를 만난다.
+
+## 물음 2 — (B)를 만든다면 이름과 모양
+
+이름 후보를 **다섯 개 이상** 내고 각각을 평가하라. quad의 기존 어휘·케이싱을 따를 것: 객체의 메소드·필드는 PascalCase(`slot:Add`, `source:SetIfChanged`, `source:SetAndDispose`, `state:Compute`, `state:Depend`, `state:Gate`, `state:Observer`, `slot.Length`), 모듈 수준 생성자·팩토리도 PascalCase(`q.Effect`, `q.Blocker`, `q.Debounce`, `q.OnCreated`/`q.OnRendered`/`q.OnDestroyed`, `q.OnChange`, `q.Out`), 모듈 수준 동사 함수는 camelCase(`q.dispose`, `q.isSlot`). 케이싱 규칙의 원문은 `.claude/base/architecture.md`의 "네이밍 케이싱" 절.
+각 후보에 대해: 처음 보는 Roblox 개발자가 무엇을 연상하는가, "한가하면 즉시 실행"이라는 성질과 맞는가(이름이 "항상 나중"으로 읽히면 오해), 다른 라이브러리·엔진의 같은 이름과 뜻이 부딪히는가, 메소드여야 하는가 모듈 함수여야 하는가, 인자·반환(함수에 인자를 줄지, 무엇을 돌려줄지). 가장 나은 하나와 차선 하나를 근거와 함께 고르라.
+
+## 물음 3 — 구현의 함정 (소스를 읽고)
+
+(B)를 넣는다면 실행 지점은 어디여야 하고 무엇이 어려운가. 소스는 `quad-base/src/Slot/`(`init.luau`의 공개 CRUD와 `assertMutable`, `Raw.luau`, `Tree.luau`, `List.luau`, `Handler.luau`). 알려진 것 하나: 플래그(`_materializing`)를 내리는 자리에서 곧바로 실행하면 안 된다 — 그 뒤에 연산의 꼬리(옛 index를 쓰는 `vacate` 등)가 남아 있다. 조상 Slot에 건 요청(자손의 연산 때문에 조상이 막힌 경우), 호스트 마운트(`D.Frame { slot }` — 공개 CRUD를 거치지 않는 진입), `:List` 재조정, 연산이 던진 경우를 각각 어떻게 되는지 적어라. 소유자의 가정("던지는 것은 터져도 된다")을 받아들이면 얼마나 단순해지는지도.

@@ -78,16 +78,32 @@ return function(S: Types.SlotInternal, module: any)
 	-- walk (recursive `_mounted`/`_mountedInst`) and ONE physical op for the
 	-- whole subtree's flattened leaves — never one op per leaf. rawSplice uses
 	-- the halves separately to fold several new subtrees into its single op.
+	-- round14 Q185 (d) (user decision 2026-10-12): the backend call that inserts a subtree runs with
+	-- every Slot of that subtree flagged (`_materializing` — the Q52 flag, lowered at the end of
+	-- materializeSlotTree, goes up again here), so a backend signal delivered synchronously from
+	-- inside the call cannot CRUD a Slot that is materialized but not yet marked mounted (its Add
+	-- would touch the records only and never reach the screen). markMountedTree lowers it — one
+	-- extra walk per mount, none on the way down.
+	local function raiseTree(slot: any)
+		slot._materializing = true
+		for _, element in ipairs(slot._elements) do
+			if S.isSlot(element) then raiseTree(element) end
+		end
+	end
+
 	local function markMountedTree(slot: any, physicalTarget: any)
 		slot._mounted = true
 		slot._mountedInst = physicalTarget
+		slot._materializing = false
 		for _, element in ipairs(slot._elements) do
 			if S.isSlot(element) then markMountedTree(element, physicalTarget) end
 		end
 	end
 
 	local function mountSlotTree(slot: any, physicalTarget: any)
-		module.Backend.nativeInsert(physicalTarget, slot.Offset:Get(), S.collectLeaves(slot))
+		local leaves = S.collectLeaves(slot)
+		raiseTree(slot)
+		module.Backend.nativeInsert(physicalTarget, slot.Offset:Get(), leaves)
 		markMountedTree(slot, physicalTarget)
 	end
 
@@ -145,14 +161,21 @@ return function(S: Types.SlotInternal, module: any)
 	end
 
 	local function unmountSlotTree(slot: any)
+		-- round14 Q185 (d): logical half FIRST — by the time the backend call runs (and any signal it
+		-- delivers synchronously) the subtree is already a plain unmounted Slot, where CRUD touches the
+		-- records only. No refusal needed on this path (it used to leave a callback's Add on the OLD host).
 		if slot._mounted then
-			module.Backend.nativeExtract(slot._mountedInst, slot.Offset:Get(), S.collectLeaves(slot))
+			local inst, offset, leaves = slot._mountedInst, slot.Offset:Get(), S.collectLeaves(slot)
+			teardownTree(slot)
+			module.Backend.nativeExtract(inst, offset, leaves)
+		else
+			teardownTree(slot)
 		end
-		teardownTree(slot)
 	end
 
 	local function destroySlotTree(slot: any)
 		if slot._destroyed then return end
+		slot._materializing = true -- round14 Q185 (d): no CRUD on a Slot whose elements are being destroyed/released under it
 		if slot._owned == false then
 			unmountSlotTree(slot)
 			-- round11 Q61 (user decision 2026-09-18): a destroy request (`q.dispose(slot)`, or an
@@ -190,6 +213,7 @@ return function(S: Types.SlotInternal, module: any)
 			slot._listActivated = nil
 			slot._listObserver = nil
 			slot._detachCleanup = nil
+			slot._materializing = false
 			return
 		end
 		-- Q14 (a) (사용자 결정 2026-09-07): release ownership in BOTH loops — an `OwnsElements = false`
@@ -224,6 +248,7 @@ return function(S: Types.SlotInternal, module: any)
 
 	S.makeBaseObserver = makeBaseObserver
 	S.markMountedTree = markMountedTree
+	S.raiseTree = raiseTree
 	S.attachSlot = attachSlot
 	S.releaseSugarWrapper = releaseSugarWrapper
 	S.teardownTree = teardownTree

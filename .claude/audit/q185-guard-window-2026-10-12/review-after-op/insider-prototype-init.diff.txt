@@ -1,0 +1,125 @@
+--- quad-base/src/Slot/init.luau	2026-10-12 16:39:45.745405530 +0900
++++ /tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/insider/repo/quad-roblox/luau_packages/.pesde/qwreey+quad_base/3.2.0/quad_base/src/Slot/init.luau	2026-10-12 17:02:44.829315873 +0900
+@@ -262,12 +262,46 @@
+ 		return prepared
+ 	end
+ 
++	-- PROTOTYPE (insider review): After(fn) = run fn now if idle, else once the running operation is done.
++	local function settle()
++		local p = S.pending
++		if p == nil then return end
++		local i = 1
++		while i <= #p do
++			local item = p[i]
++			local slot = item[1]
++			if slot._destroyed then
++				table.remove(p, i)
++			elseif slot._materializing then
++				i += 1
++			else
++				table.remove(p, i)
++				if #p == 0 then S.pending = nil end
++				item[2]()
++				p = S.pending
++				if p == nil then return end
++				i = 1
++			end
++		end
++		if #p == 0 then S.pending = nil end
++	end
++	S.settle = settle
++	function Slot_mt.After(self: any, fn: () -> ())
++		assertLive(self)
++		if not self._materializing then fn() return end
++		local p = S.pending
++		if p == nil then p = {}; S.pending = p end
++		p[#p + 1] = { self, fn }
++	end
++
+ 	function Slot_mt.Add(self: any, element: any, index: number?): number
+ 		assertMutable(self)
+ 		if index ~= nil then checkIndex(self, index, "Slot:Add", true) end
+ 		local prepared = prepareElements(self, "Slot:Add", 1, { element })
+ 		markManual(self)
+-		return S.rawAdd(self, prepared[1], index)
++		local r = S.rawAdd(self, prepared[1], index)
++		if S.pending then settle() end
++		return r
+ 	end
+ 
+ 	function Slot_mt.Remove(self: any, index: number)
+@@ -275,6 +309,7 @@
+ 		checkIndex(self, index, "Slot:Remove")
+ 		markManual(self)
+ 		S.rawRemove(self, index)
++		if S.pending then settle() end
+ 	end
+ 
+ 	-- Replace: same position, new occupant, old one DESTROYED — Extract's
+@@ -285,6 +320,7 @@
+ 		local prepared = prepareElements(self, "Slot:Replace", 1, { newElement })
+ 		markManual(self)
+ 		S.rawReplace(self, index, prepared[1], true)
++		if S.pending then settle() end
+ 	end
+ 
+ 	-- Extract(index, newElement?): alive removal. Without `newElement` the
+@@ -302,6 +338,7 @@
+ 			markManual(self)
+ 			S.rawUnmount(self, index)
+ 		end
++		if S.pending then settle() end
+ 		return S.unwrapElement(old)
+ 	end
+ 
+@@ -322,6 +359,7 @@
+ 		for i, element in ipairs(removed) do
+ 			removed[i] = S.unwrapElement(element)
+ 		end
++		if S.pending then settle() end
+ 		return removed
+ 	end
+ 
+@@ -387,6 +425,7 @@
+ 			gate:OffWithoutEmit()
+ 			S.maybeRecompute(self, S.BK.getBookkeeping(self))
+ 		end
++		if S.pending then settle() end
+ 	end
+ 
+ 	function Slot_mt.ExtractAll(self: any): { any }
+@@ -398,6 +437,7 @@
+ 		for i, element in ipairs(removed) do
+ 			removed[i] = S.unwrapElement(element)
+ 		end
++		if S.pending then settle() end
+ 		return removed
+ 	end
+ 
+@@ -477,7 +517,7 @@
+ 		if isSlot(value) or module.isState(value) then
+ 			ModuleIdentity.assertOwnAtCall(module, value, "dispose")
+ 		end
+-		if isSlot(value) then S.destroySlotTree(value)
++		if isSlot(value) then S.destroySlotTree(value); if S.pending then S.settle() end
+ 		elseif module.Backend.isInst(value) then module.Backend.nativeDispose(value)
+ 		else Err.errorBeforeNearest("Quad0180 dispose: this backend cannot dispose this value", SURFACE) end
+ 	end
+@@ -495,6 +535,7 @@
+ 	module.BrandPredicates:Register(isSlot) -- [2026-10-01] a public `is*` field is a registered brand predicate (same function as init.luau's — idempotent)
+ 	-- internal surface the SlotHandler needs
+ 	module._slotInternal = {
++		S = S,
+ 		claimOwnerAt = S.claimOwnerAt,
+ 		releaseOwner = S.releaseOwner,
+ 		attachSlot = S.attachSlot,
+@@ -537,7 +578,8 @@
+ 		S.List, -- [split] Slot_mt fields defined in Slot/List.luau, taken via S
+ 		S.Single,
+ 		Slot_mt.Get, -- 6순회 `H-410`: read methods too — a raise inside them blames the caller
+-		Slot_mt.IndexOf
++		Slot_mt.IndexOf,
++		Slot_mt.After
+ 	)
+ end
+ 

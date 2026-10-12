@@ -197,9 +197,18 @@ local function Init(module: any)
 	-- 순수성 제약을 크게 풀어줄 이유가 없어서, 계약 상 조상 건들이기 등은 던져도 될것 같아".
 	-- round13 Q74 (a) (2026-10-01): a runtime attach raises the flag on the whole owner chain
 	-- (`Slot/Raw.luau` raiseChain), so "an ancestor" means every Slot above the one being attached.
+	-- round14 Q185 (d) (user decision 2026-10-12): the same flag also covers the BACKEND CALL of an
+	-- operation — the physical insert of a subtree (every Slot of it, `Slot/Tree.luau` raiseTree), the
+	-- insert/remove of a raw CRUD (that Slot, `Slot/Raw.luau`) and a destroy (that Slot). A backend
+	-- signal delivered synchronously from inside that call (Roblox Immediate SignalBehavior: an
+	-- element's `Parent` changed) used to CRUD a Slot whose records were half-written — wrong
+	-- Length, the wrong element vacated, an element in the records but never attached, all silent
+	-- (`audit/q185-guard-window-2026-10-12`). Same rule as Q52, one window wider; unmount needs no
+	-- flag (its logical half runs first). With deferred signals the callback runs after the
+	-- operation and is never refused.
 	local function assertNotMounting(self: any)
 		if self._materializing then
-			Err.errorBeforeNearest("Quad0167 Slot: cannot mutate a Slot while it is being mounted (it, or a Slot inside it, is mid-mount) - a :List/:Single updateFn (or an Observer that fires during that mount) must not CRUD an ancestor Slot; do it after the mount has returned, outside the updateFn (or an earlier mount into this Slot or a Slot inside it threw mid-way - then this Slot stays unusable: dispose its host Instance)", SURFACE)
+			Err.errorBeforeNearest("Quad0167 Slot: cannot mutate a Slot while it is being mounted or while one of its elements is being inserted/removed (it, or a Slot inside it, is mid-operation) - a :List/:Single updateFn, an Observer that fires during that mount, or a backend signal callback that runs synchronously inside the insert/remove (an element's parent changed) must not CRUD this Slot or an ancestor Slot; run it through slot:WhenIdle(fn) - fn runs as soon as the operation has finished (or an earlier operation on this Slot or a Slot inside it threw mid-way - then this Slot stays unusable: dispose its host Instance)", SURFACE)
 		end
 	end
 	-- every public CRUD entry: live AND manual (Q3 ⑥ — nine hand copies folded) AND not mid-mount
@@ -253,12 +262,71 @@ local function Init(module: any)
 		return prepared
 	end
 
+	-- ── WhenIdle (round14 Q185, user decision 2026-10-12) ────────────────
+	-- The way out of `Quad0167`: `slot:WhenIdle(fn)` runs `fn(slot)` NOW when this Slot is idle, and
+	-- otherwise right after the operation it is in the middle of has finished — in every signal mode
+	-- and in the mock, with no engine scheduler. User: "엔진 자체 문제라고 보기 애매한 부분에 엔진을 써서
+	-- 해결 … 이런 상황을 우회할 도구를 아예 안 주는 경우는 없는지라". quad does NOT queue the refused CRUD
+	-- itself: the API is index-based, so an index taken at the call is wrong by the time it would be
+	-- applied — `fn` takes its indices again when it runs.
+	--   * idle = not `_materializing`, or destroyed (a destroyed Slot never becomes "not mid-operation";
+	--     user decision: fn just runs — a CRUD inside it meets the usual destroyed-Slot error).
+	--   * waiting requests live in ONE module-level list (`S.pending`, nil when empty — the hot-path
+	--     cost of an operation is that nil check). No per-Slot field.
+	--   * `settle` runs at the END of every entry that can raise the flag — the public CRUD below,
+	--     `:List`/`:Single` install and each reconcile, the dispatch handler's mount
+	--     (`Slot/Handler.luau`) and `dispose` — never where the flag comes down: the tail of an
+	--     operation (`vacate`, `setLength`) still uses an index captured before the backend call.
+	--     (Unmount raises no flag — its logical half runs first — so it has no settle point.)
+	--   * no pcall (contract): a raise from `fn` propagates to the caller of the operation that
+	--     settled it (the request is already off the list); an operation that raised mid-way leaves
+	--     its Slot flagged, and requests on that Slot wait until it is destroyed.
+	local function settle()
+		local i = 1
+		while true do
+			local pending = S.pending -- re-read every turn: fn may run operations, and each settles at its own end
+			if pending == nil then return end
+			local item = pending[i]
+			if item == nil then return end
+			local slot = item.slot
+			if slot._materializing and not slot._destroyed then
+				i += 1 -- still mid-operation (an outer frame): that operation's own end comes back here
+			else
+				-- (same `i` next turn: the list closed up. Everything left of `i` is a skipped,
+				-- still-flagged request, so nothing runnable can end up behind the cursor.)
+				table.remove(pending, i)
+				if #pending == 0 then S.pending = nil end
+				item.fn(slot)
+			end
+		end
+	end
+	S.settle = settle
+
+	function Slot_mt.WhenIdle(self: any, fn: (slot: any) -> ())
+		if type(fn) ~= "function" then
+			Err.errorBeforeNearest(`Quad0268 Slot:WhenIdle: fn must be a function (got {typeof(fn)})`, SURFACE)
+		end
+		if self._materializing and not self._destroyed then
+			local request = { slot = self, fn = fn }
+			local pending = S.pending
+			if pending == nil then
+				S.pending = { request }
+			else
+				table.insert(pending, request)
+			end
+			return
+		end
+		fn(self)
+	end
+
 	function Slot_mt.Add(self: any, element: any, index: number?): number
 		assertMutable(self)
 		if index ~= nil then checkIndex(self, index, "Slot:Add", true) end
 		local prepared = prepareElements(self, "Slot:Add", 1, { element })
 		markManual(self)
-		return S.rawAdd(self, prepared[1], index)
+		local added = S.rawAdd(self, prepared[1], index)
+		if S.pending ~= nil then settle() end
+		return added
 	end
 
 	function Slot_mt.Remove(self: any, index: number)
@@ -266,6 +334,7 @@ local function Init(module: any)
 		checkIndex(self, index, "Slot:Remove")
 		markManual(self)
 		S.rawRemove(self, index)
+		if S.pending ~= nil then settle() end
 	end
 
 	-- Replace: same position, new occupant, old one DESTROYED — Extract's
@@ -276,6 +345,7 @@ local function Init(module: any)
 		local prepared = prepareElements(self, "Slot:Replace", 1, { newElement })
 		markManual(self)
 		S.rawReplace(self, index, prepared[1], true)
+		if S.pending ~= nil then settle() end
 	end
 
 	-- Extract(index, newElement?): alive removal. Without `newElement` the
@@ -293,6 +363,7 @@ local function Init(module: any)
 			markManual(self)
 			S.rawUnmount(self, index)
 		end
+		if S.pending ~= nil then settle() end
 		return S.unwrapElement(old)
 	end
 
@@ -313,6 +384,7 @@ local function Init(module: any)
 		for i, element in ipairs(removed) do
 			removed[i] = S.unwrapElement(element)
 		end
+		if S.pending ~= nil then settle() end
 		return removed
 	end
 
@@ -378,6 +450,7 @@ local function Init(module: any)
 			gate:OffWithoutEmit()
 			S.maybeRecompute(self, S.BK.getBookkeeping(self))
 		end
+		if S.pending ~= nil then settle() end
 	end
 
 	function Slot_mt.ExtractAll(self: any): { any }
@@ -389,6 +462,7 @@ local function Init(module: any)
 		for i, element in ipairs(removed) do
 			removed[i] = S.unwrapElement(element)
 		end
+		if S.pending ~= nil then settle() end
 		return removed
 	end
 
@@ -405,7 +479,7 @@ local function Init(module: any)
 			Length = module.Source(0),
 			Offset = module.Source(0),
 			_mounted = false,
-			_materializing = false, -- round10 Q52 (a): mount walk on the stack
+			_materializing = false, -- round10 Q52 (a): mount walk on the stack; round14 Q185 (d): or a backend call of an operation on it
 		}, Slot_mt)
 		Brand.SlotBrand:Register(self)
 		self._baseObserver = S.makeBaseObserver(self)
@@ -468,7 +542,9 @@ local function Init(module: any)
 		if isSlot(value) or module.isState(value) then
 			ModuleIdentity.assertOwnAtCall(module, value, "dispose")
 		end
-		if isSlot(value) then S.destroySlotTree(value)
+		if isSlot(value) then
+			S.destroySlotTree(value)
+			if S.pending ~= nil then settle() end -- `slot:WhenIdle` requests made while it was being destroyed
 		elseif module.Backend.isInst(value) then module.Backend.nativeDispose(value)
 		else Err.errorBeforeNearest("Quad0180 dispose: this backend cannot dispose this value", SURFACE) end
 	end
@@ -492,6 +568,9 @@ local function Init(module: any)
 		unmountSlotTree = S.unmountSlotTree,
 		isSlot = isSlot,
 		disposeValue = disposeValue, -- 2026-10-01: Source:SetAndDispose's untagged route (see `dispose` above)
+		settleIdle = function() -- `slot:WhenIdle`: the handler's mount is an operation entry too
+			if S.pending ~= nil then settle() end
+		end,
 	}
 	-- [2026-09-17 round10 Q48 (a) — user decision] the seat ops are public on the bookkeeping
 	-- namespace: a provider's numeric-key handler that parents a value (quad-roblox's
@@ -528,7 +607,8 @@ local function Init(module: any)
 		S.List, -- [split] Slot_mt fields defined in Slot/List.luau, taken via S
 		S.Single,
 		Slot_mt.Get, -- 6순회 `H-410`: read methods too — a raise inside them blames the caller
-		Slot_mt.IndexOf
+		Slot_mt.IndexOf,
+		Slot_mt.WhenIdle
 	)
 end
 

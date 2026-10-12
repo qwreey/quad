@@ -1025,6 +1025,25 @@ Slot의 좀비 배열이 조용히 자란다(아래 "파괴된 Slot은 재사용
   `updateFn` 재진입은 처음부터 UB였다(바로 위 정정). quad 내부
   Observer(len·목록·base Offset)는 debug 되먹임 감지기에서 빠진다(비공개 `_internal` 표시 — **[2026-10-06 round14]** 설치 전에
   `State:_internalObserver`로 받는다; StateHandler는 Q174로 빠짐 — `source-state-plan.md`의 "전파 루프 — 확정 의사코드" 절).
+  **[2026-10-12 round14 Q185 — 사용자 결정] 같은 플래그가 엔진(백엔드) 호출 창도 덮고, 빠져나가는 문은 `slot:WhenIdle(fn)`이다.**
+  Immediate 신호에서는 원소의 `Parent` 변경·`Destroying` 콜백(`q.OnDestroyed`, `q.OnChange("Parent")`)이 붙이기·떼기·파괴의 엔진 호출
+  **안에서** 동기로 불리는데, 그 콜백의 CRUD가 연산이 호출 전에 잡아 둔 index를 무너뜨려 부기가 조용히 깨졌다(`Length` 틀림, 다른 원소가
+  빠짐, 부기에만 있고 화면에 없음 — `audit/q185-guard-window-2026-10-12/`). Q52·Q74와 같은 종류이고(사용자: *"자식 slot 이 부모 slot 에
+  뭔가 넣는거랑 유사한 경우 아닌가"* — 같은 프로브의 한 겹 안쪽 장면은 이미 `Quad0167`이었다), 안 걸리던 이유는 창의 틈(부기 walk가 플래그를
+  내린 **뒤에** 물리 삽입)이었다. 그래서 (1) 하위 트리의 물리 삽입 동안 그 하위 트리 Slot 전부(`raiseTree`, 내리는 것은 `markMountedTree`),
+  (2) raw 연산의 엔진 호출 동안 그 Slot(`rawAdd`·`rawRemove`·`rawUnmount`·`rawReplace`·`rawSplice` — `self`만: 평범한 원소 연산은 조상에
+  아무것도 잡아 두지 않는다), (3) `destroySlotTree`가 도는 동안 그 Slot에 플래그가 선다. 언마운트는 논리 절반(`teardownTree`)을 엔진 호출
+  앞으로 옮겨 가드 없이 동작한다. 재정렬로 "동작하게" 만드는 갈래는 기각 — 조합마다 맞춰야 했고(새 조합 다섯 중 하나만 고침) 한 겹 안쪽은
+  여전히 던져 비대칭이었다. 받아들인 귀결(계약, pcall 없음): 엔진 호출이 던지면 플래그가 남아 그 Slot은 이후 CRUD를 거부한다.
+  **`slot:WhenIdle(fn)`** — `fn(slot)`을 그 Slot이 한가하면 즉시, 연산 중이면 그 연산이 끝난 직후 실행한다. 사용자: *"뭔가 처리 이후 처리가
+  가능해지게 돕는 뭔가가 있지 않으면 모든 패턴에서 어려워지지 않아?"*, *"task.defer 를 쓰라 하는건 애매하네. 엔진 자체 문제라고 보기 애매한
+  부분에 있어서 엔진을 써서 해결이라는거라"*, *"이런 상황을 우회할 도구를 아에 안 주는 경우는 없는지라"*. quad가 거부된 CRUD를 대신 미뤄
+  주지는 않는다(index 기반이라 부른 시점의 index가 적용 시점엔 틀린다 — `fn`이 실행될 때 다시 구한다). 구조: 모듈 수준 대기 목록 하나
+  (`S.pending`, Slot 필드 없음, 대기분이 없을 때 연산의 비용은 nil 검사 하나), 실행 지점은 플래그를 내리는 자리가 아니라 **진입점의 끝**
+  (공개 CRUD 일곱, `:List` 설치와 재조정, 디스패치 핸들러의 마운트, `dispose`) — 연산의 꼬리(`vacate`·`setLength`)가 옛 index를 쓰기 때문.
+  파괴된 Slot은 한가한 것으로 친다(사용자: *"그냥 실행도 동의해"*). `fn`의 예외는 그 요청을 실행한 연산의 호출자에게 전파되고, 던져서
+  막힌 Slot의 요청은 그 Slot이 파괴될 때까지 실행되지 않는다. 이름은 세 시선 검토 뒤 사용자 확정(`WhenIdle` — 후보 `Ready`·`AfterOperation`
+  계열; 경위 `session/2026-10-12-01-table-sim-feedback-and-q185.md`).
   **[2026-10-01 round13 Q74 (a) 닫힘 — 사용자 "의견대로"]** attach 창의 `_materializing`이 **owner 사슬 전체**에 선다
   (`Slot/Raw.luau` `raiseChain`/`restoreChain` — 임시 지역, 새 필드 없음, 칸당 약 0.14µs). Q52의 "조상 CRUD 금지"를 그 뜻대로
   모든 조상에 맞춘 것 — 바로 위 부모만 막으면 런타임 `Add`로 들어온 `:List`의 첫 `updateFn`(또는 그 창에서 동기로 발화한

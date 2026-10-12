@@ -1,0 +1,396 @@
+# Slot "연산이 끝난 뒤 실행" 도구 검토 보고서
+
+> **안내**: 본 보고서는 검토 및 제안 보고서입니다. 본 문서에 제시된 새 메소드 이름, 시그니처, 메커니즘 등은 **제안**이며 최종 결정은 프로젝트 소유자가 합니다.
+> 보고서 내 모든 기술적 사실과 코드 위치는 **[실측](파일:줄 또는 실행 출력)** 또는 **[추정]**으로 명시하였습니다.
+
+---
+
+## 목차
+
+1. [배경 및 문제 정의](#1-배경-및-문제-정의)
+2. [물음 1 — "연산이 끝난 뒤 실행" 도구가 필요한가?](#2-물음-1--연산이-끝난-뒤-실행-도구가-필요한가)
+   - [1-1. 실사용에서 이 상황이 얼마나 자주·자연스럽게 생기는가 (킷 실측)](#1-1-실사용에서-이-상황이-얼마나-자주자연스럽게-생기는가-킷-실측)
+   - [1-2. 도구가 없을 때(후보 A) 소비자가 겪는 구체적 어려움](#1-2-도구가-없을-때후보-a-소비자가-겪는-구체적-어려움)
+   - [1-3. quad의 다른 우회 도구 선례와의 일관성](#1-3-quad의-다른-우회-도구-선례와의-일관성)
+   - [1-4. 설계 원칙과의 관계](#1-4-설계-원칙과의-관계)
+   - [1-5. 대안들(C, D)의 한계와 후보 (B)의 당위성](#1-5-대안들c-d의-한계와-후보-b의-당위성)
+3. [물음 2 — (B)를 만든다면 이름과 모양](#3-물음-2--b를-만든다면-이름과-모양)
+   - [2-1. 네이밍 규칙 및 평가 기준](#2-1-네이밍-규칙-및-평가-기준)
+   - [2-2. 후보 6선 및 개별 평가](#2-2-후보-6선-및-개별-평가)
+   - [2-3. 메소드 vs 모듈 함수, 인자 및 반환값 설계](#2-3-메소드-vs-모듈-함수-인자-및-반환값-설계)
+   - [2-4. 최선의 안과 차선의 안 (제안)](#2-4-최선의-안과-차선의-안-제안)
+4. [물음 3 — 구현의 함정 (소스를 읽고)](#4-물음-3--구현의-함정-소스를-읽고)
+   - [3-1. 실행 지점과 꼬리(Tail) 문제 — `_materializing` 해제 시점의 함정](#3-1-실행-지점과-꼬리tail-문제--_materializing-해제-시점의-함정)
+   - [3-2. 조상 Slot에 걸린 요청 (자손 연산으로 조상이 잠긴 경우)](#3-2-조상-slot에-걸린-요청-자손-연산으로-조상이-잠긴-경우)
+   - [3-3. 호스트 마운트 (`D.Frame { slot }`) 진입 경로](#3-3-호스트-마운트-dframe--slot--진입-경로)
+   - [3-4. `:List` 재조정 (`Slot:List`) 중의 큐잉](#3-4-list-재조정-slotlist-중의-큐잉)
+   - [3-5. 연산이 던진 경우 (Exception Safety)와 단순화 이득](#3-5-연산이-던진-경우-exception-safety와-단순화-이득)
+   - [3-6. 드레인 중 재진입 큐잉 (Reentrant Drain)](#3-6-드레인-중-재진입-큐잉-reentrant-drain)
+5. [종합 요약 및 권고](#5-종합-요약-및-권고)
+
+---
+
+## 1. 배경 및 문제 정의
+
+- **Slot의 구조적 특성**: quad의 [`Slot`](file:///code/Projects/quad-agy/after-op/docs/reference/core/06-slot.md)은 동적 자식 컨테이너이며, 모든 CRUD는 **index 기반**이다 (`Add(el, idx?)`, `Remove(idx)`, `Replace(idx, new)`, `Extract(idx)`, `Splice(idx, count, ...)`, `Clear()`, `Move`, `Swap`, `IndexOf(el)`, `Get(idx)`, `Length`, `Offset`).
+- **가드 결정 (`Quad0167`)**:
+  - Slot의 연산이 엔진 호출(인스턴스 붙이기·떼기·파괴: `nativeInsert`, `nativeRemove`, `nativeExtract`) 구간에 있을 때, 그 호출 안에서 동기로 불린 신호 콜백(Immediate 모드의 `Parent` 변경, `Destroying` 신호 콜백 등)이 해당 Slot(또는 하위 Slot, 파괴 중인 Slot)에 CRUD를 다시 가하면 부기(Bookkeeping) 및 배열 인덱스가 깨지므로 `Quad0167`로 엄격하게 거부하기로 결정되었다 [실측: `.claude/audit/q185-guard-window-2026-10-12/README.md#L8-L15`, `candD-guard.patch`].
+  - 자동 대기열 미루기(엔진 호출 중 들어온 CRUD를 quad가 내부적으로 큐에 넣었다가 나중에 적용)는 이미 기각되었다 [실측: 과제 배경 설명]. CRUD가 index 기반이라 호출 시점의 index와 적용 시점의 index가 어긋나 엉뚱한 원소가 지워질 수 있고, `Extract`의 기존 원소 반환값 등을 동기로 줄 수 없기 때문이다.
+- **실제 발생 사례 (`quad-roblox-devui`)**:
+  - `quad-roblox-devui/src/Overlay.luau`의 `closeImpl` [실측: `quad-roblox-devui/src/Overlay.luau#L217-L221`]은 팝업을 닫을 때 `slot:IndexOf(entry)`로 위치를 찾은 뒤 `slot:Remove(index)`를 실행한다.
+  - 이 `slot:Remove`의 엔진 호출(`nativeRemove`) 도중, 루트 팝업의 하위 인스턴스인 메뉴 행이 파괴된다.
+  - 메뉴 행의 [`q.OnDestroyed`](file:///code/Projects/quad-agy/after-op/quad-roblox-devui/src/Menu.luau#L262)에 등록된 `closeRoot`가 실행되면서 "열려 있는 서브메뉴 팝업도 닫아라(`popup:Close()`)"를 호출한다 [실측: `quad-roblox-devui/src/Menu.luau#L169-L174`].
+  - 서브메뉴 팝업 역시 같은 `Overlay`의 `slot`에 들어있으므로, 같은 Slot에 대해 다시 `slot:Remove`를 시도하게 된다.
+  - 그 결과 Immediate 신호 모드(및 quad의 테스트 mock 환경)에서 `Quad0167` 에러가 발생하여 메뉴를 정상적으로 닫을 수 없게 된다.
+
+---
+
+## 2. 물음 1 — "연산이 끝난 뒤 실행" 도구가 필요한가?
+
+소비자가 **"이 Slot의 지금 연산이 끝난 뒤에 이 일을 해라"**를 표현할 **quad 수준의 도구**가 필요한가?
+
+> **결론 요약 (제안)**: **반드시 필요하다.** 후보 (A)("도구 없음, `task.defer` 안내")는 테스트 mock과의 괴리, 1프레임 렌더링 깜빡임, 상태 불일치 창이라는 치명적인 문제를 남긴다. Slot 수준에서 연산 사후 실행을 보장하는 **후보 (B)**가 가장 적합하다.
+
+---
+
+### 1-1. 실사용에서 이 상황이 얼마나 자주·자연스럽게 생기는가 (킷 실측)
+
+소비자 킷인 `quad-roblox-devui/src`와 `quad-roblox-material/src`에서 `q.OnDestroyed`, `OnChange`, `task.defer`가 쓰인 자리를 전수 조사하였다.
+
+#### 1) `q.OnDestroyed` 사용처 실측
+- **팝업 및 자식 위젯 수명 연계 (직접적 원인)**:
+  - [`quad-roblox-devui/src/Menu.luau:262`](file:///code/Projects/quad-agy/after-op/quad-roblox-devui/src/Menu.luau#L262): `OnDestroyed = closeRoot` — 메뉴 행 파괴 시 열려 있던 서브메뉴 팝업 `p:Close()` 트리거 (Overlay Slot `Remove` 재진입).
+  - [`quad-roblox-devui/src/Combo.luau:295`](file:///code/Projects/quad-agy/after-op/quad-roblox-devui/src/Combo.luau#L295): `q.OnDestroyed(function() close() end)` — Combo 인스턴스 파괴 시 열려 있던 드롭다운 팝업 `popup:Close()` 트리거 (Combo가 팝업 안에 있거나 부모가 닫힐 때 동일하게 Overlay Slot 재진입 가능).
+  - [`quad-roblox-devui/src/Overlay.luau:138`](file:///code/Projects/quad-agy/after-op/quad-roblox-devui/src/Overlay.luau#L138): `q.OnDestroyed(function() ... snapshot[i]:Close() ... end)` — Overlay 레이어 자체 파괴 시 열려 있는 팝업 일괄 Close.
+- **리소스 및 하위 시스템 정리**:
+  - [`quad-roblox-material/src/Snackbar/init.luau:227`](file:///code/Projects/quad-agy/after-op/quad-roblox-material/src/Snackbar/init.luau#L227-L244): 스낵바 카드 파괴 시 타이머 취소, 관찰자 해제(`unwatch`), 상태 마감(`finish(e, "Destroyed")`).
+  - [`quad-roblox-material/src/NavigationDrawer/Drawer.luau:228`](file:///code/Projects/quad-agy/after-op/quad-roblox-material/src/NavigationDrawer/Drawer.luau#L228), [`BottomSheet/Sheet.luau:230`](file:///code/Projects/quad-agy/after-op/quad-roblox-material/src/BottomSheet/Sheet.luau#L230), [`SideSheet/Surface.luau:205`](file:///code/Projects/quad-agy/after-op/quad-roblox-material/src/SideSheet/Surface.luau#L205): 슬라이드 애니메이션 Tween/인스턴스 정리 (`slide.Destroy()`).
+  - [`quad-roblox-material/src/Tabs.luau:233`](file:///code/Projects/quad-agy/after-op/quad-roblox-material/src/Tabs.luau#L233): 탭 라벨 너비 캐시 정리 (`labelWidths[key] = nil`).
+
+#### 2) `q.OnChange` 및 신호 사용처 실측
+- 대부분 `AbsoluteSize` 측정([`Tabs.luau:226`](file:///code/Projects/quad-agy/after-op/quad-roblox-material/src/Tabs.luau#L226), [`BottomSheet/Sheet.luau:222`](file:///code/Projects/quad-agy/after-op/quad-roblox-material/src/BottomSheet/Sheet.luau#L222) 등), `Text` 양방향 바인딩([`InputText.luau:68`](file:///code/Projects/quad-agy/after-op/quad-roblox-devui/src/Inputs/InputText.luau#L68)), `CanvasPosition`([`YearView.luau:157`](file:///code/Projects/quad-agy/after-op/quad-roblox-material/src/DatePicker/YearView.luau#L157))에 사용됨.
+- `Parent` 신호: [`Overlay.luau:131`](file:///code/Projects/quad-agy/after-op/quad-roblox-devui/src/Overlay.luau#L131)에서 `inst:GetPropertyChangedSignal("Parent"):Connect(...)`로 liveness 감지에 직접 사용됨.
+
+#### 3) `task.defer` 사용처 실측
+- [`quad-roblox-material/src/Snackbar/init.luau:233, 266, 283`](file:///code/Projects/quad-agy/after-op/quad-roblox-material/src/Snackbar/init.luau#L233):
+  - `task.defer(function() unwatch(e) end)`
+  - `task.defer(showNext)`: 이전 스낵바 항목이 닫힌 뒤(`OnClose` 또는 `Closing` 전이) 다음 스낵바를 열 때 연쇄 트리거 충돌을 피하기 위해 `task.defer`로 미루고 있음 [실측].
+- [`quad-roblox-material/src/KeyNav.luau:104`](file:///code/Projects/quad-agy/after-op/quad-roblox-material/src/KeyNav.luau#L104): `task.defer(r)` — 포커스 릴리스 핸들러 지연.
+
+#### 실사용 분석 평가 [추정]
+- **"주인이 죽으면 딸린 것도 닫는다/정리한다"**는 패턴은 UI 위젯의 수명 주기 관리에서 극히 자연스럽고 필수적이다.
+  - 메뉴 바 항목이 닫히면 서브메뉴도 닫혀야 한다.
+  - 팝업/다이얼로그 안의 콤보박스나 툴팁은 부모 팝업이 닫힐 때 함께 닫혀야 한다.
+- 특히 `Overlay`처럼 **단일 Slot에 여러 팝업을 플랫하게 배치하는 아키텍처**([`docs/how-to/09`](file:///code/Projects/quad-agy/after-op/docs/how-to/09-popup-and-modal.md))에서는, 한 팝업의 파괴가 다른 팝업의 `slot:Remove`를 유발하는 상황이 구조적으로 빈번하게 발생한다.
+- 따라서 이 충돌은 "희귀한 엣지 케이스"가 아니라, **quad의 권장 팝업 패턴을 사용하는 순간 자연스럽게 마주치는 주류 시나리오**이다.
+
+---
+
+### 1-2. 도구가 없을 때(후보 A) 소비자가 겪는 구체적 어려움
+
+후보 (A)는 quad에 도구를 두지 않고 "Roblox에서는 `task.defer`로 미뤄라"고 문서/에러 문구로 안내하는 방식이다. 그러나 이는 소비자에게 심각한 문제를 안긴다:
+
+1. **테스트 환경(Mock)과 프로덕션 간의 치명적 괴리 [실측/추정]**:
+   - Roblox 실기기 환경은 기본이 `SignalBehavior.Deferred`이므로 엔진이 `Destroying` 신호 콜백을 프레임 뒤로 미룬다. 그래서 프로덕션에서는 `Quad0167`이 터지지 않고 정상 동작하는 것처럼 보일 수 있다.
+   - 하지만 **quad의 테스트 mock은 신호를 동기(Immediate)로 낸다** [실측: 과제 배경 설명].
+   - 따라서 **"프로덕션 게임에서는 완벽히 잘 도는데, `scripts/test.sh`의 단위 테스트에서는 `Quad0167`이 터져서 테스트가 깨지는"** 심각한 혼란이 발생한다.
+   - 소비자는 테스트를 통과시키기 위해 모든 정상적인 정리 코드에 억지로 `task.defer`를 도배해야 하며, mock 환경에서 `task.defer`의 타이밍을 맞추기 위해 임의의 틱 지연이나 복잡한 테스트 하네스를 짜야 한다.
+2. **1프레임 시각적 깜빡임 (Flicker) [추정]**:
+   - `task.defer`는 동기 작업이 아니라 엔진의 스케줄러 큐로 작업을 넘긴다.
+   - 루트 팝업이 닫힌 뒤 서브메뉴 팝업의 닫기가 `task.defer`로 넘어가면, 다음 렌더 단계 사이에 서브메뉴만 화면에 1프레임 동안 고아 상태로 떠 있는 시각적 글리치가 발생할 수 있다.
+3. **상태 불일치 창 (Torn State) [추정]**:
+   - 소비자는 `popup:Close()`를 호출했으므로 즉시 닫혔다고 기대하지만, 실제로는 대기열에 들어가 있어 `overlay.Count:Get()`이나 `slot.Length:Get()`이 즉시 줄어들지 않는다. 후속 동기 코드가 이 상태를 읽으면 일관성이 깨진다.
+4. **플랫폼 독립성 훼손 [추정]**:
+   - `Slot`은 `quad-base`에 속한 플랫폼 독립적인 핵심 프리미티브다.
+   - 그런데 Slot을 조작하는 코드에서 Roblox 플랫폼 전용 글로벌인 `task.defer`를 강제하는 것은 패키지 추상화 경계를 깨뜨린다.
+
+---
+
+### 1-3. quad의 다른 우회 도구 선례와의 일관성
+
+quad는 다른 영역에서도 "무한 루프나 부기 파손이 우려되는 위험 경로를 엄격히 가드하되, 소비자가 의도를 안전하게 달성할 수 있는 일급 도구"를 제공해왔다:
+
+| 위험 상황 및 가드 | quad가 제공한 일급 우회 도구 | 동작 및 목적 |
+|---|---|---|
+| `Source:Set`이 같은 값도 무조건 전파하여 의존성 고리 유발 (`Quad0263`) | [`source:SetIfChanged(v)`](file:///code/Projects/quad-agy/after-op/docs/reference/core/02-source.md#L96-L137) | 값이 같으면 전파를 중단하여 되먹임 고리를 안전하게 끊음 [실측] |
+| `Effect` 안에서 상류 의존성을 직접 수정할 때의 무한 재귀 | [`q.Effect`](file:///code/Projects/quad-agy/after-op/docs/reference/core/05-observer-effect.md#L198-L247)의 지연 재실행(deferred re-run) | 동기 즉시 재실행 대신 루프를 접고 지연 재실행하여 수렴 기회를 줌 (1만 번 한도) [실측] |
+| 다중 상태 변경 시 중간 불일치 상태가 하류로 누출 | [`q.Blocker()`](file:///code/Projects/quad-agy/after-op/docs/reference/sugar/06-blocker.md#L20-L60) | `On()`/`Off()`로 전파를 잠시 유보하고 작업 완료 후 1회만 일괄 통지 [실측] |
+| 엔진 프로퍼티 → 상태 되쓰기 시의 에코(무한 반복) | [`q.Out(name, src)`](file:///code/Projects/quad-agy/after-op/docs/reference/roblox/05-onchange.md#L134-L185) | 내부에서 `SetIfChanged`를 적용하여 안전한 단방향 동기화 보장 [실측] |
+
+- **일관성 분석 [추정]**:
+  - Slot에서 엔진 호출 도중의 CRUD를 `Quad0167`로 막은 것은 부기 보호를 위해 필수적이다.
+  - 하지만 그 가드만 두고 끝내는 것은 `source:SetIfChanged` 없이 `Quad0263`만 던지는 것과 같다.
+  - 소비자가 "지금 연산이 끝난 직후 안전하게 실행해라"는 의도를 표현할 수 있는 도구를 제공하는 것은 quad의 설계 철학 및 기존 선례와 완벽하게 일치한다.
+
+---
+
+### 1-4. 설계 원칙과의 관계
+
+`.claude/conventions.md` "설계 원칙" [실측: `.claude/conventions.md#L50-L58`]:
+> *"드문 오용이나 가상의 미래 요구까지 방어/최적화하려고 구조를 복잡하게 만들지 않는다. 실제로 관측된 문제(실측된 병목, 실제로 밟은 함정)에만 구조를 쓴다."*
+> *"이 원칙은 구조(메커니즘·필드·경로)에 대한 것이다. 입구 한 줄 검사처럼 넣는 비용이 압도적으로 싼 코드 품질 개선은... 고려해봄직한것 같다."*
+
+- **원칙과의 정합성 [추정]**:
+  - 이 문제는 가상의 미래 요구가 아니라, **`quad-roblox-devui`의 `Menu`와 `Overlay`에서 실제로 밟은 구체적 함정**이다.
+  - 따라서 이를 해결하기 위한 구조를 도입할 정당성이 충분하다.
+  - 단, 도구를 도입할 때 복잡한 전역 이벤트 루프, 타이머 스케줄러, 우선순위 큐, 취소 핸들 등의 무거운 구조를 만들면 원칙에 위배된다.
+  - 프로젝트 소유자의 스케치처럼 **"연산 완료 후 돌 것이 있는지 보고 돌리고, 없으면 바로 도는 단순한 큐/콜백 1개"** 수준의 가벼운 구조여야 설계 원칙에 부합한다.
+
+---
+
+### 1-5. 대안들(C, D)의 한계와 후보 (B)의 당위성
+
+- **후보 (C) — 엔진 무관 `defer`를 백엔드 op으로 (`q.defer`)**:
+  - `quad-roblox/src/EngineOps.luau`에 `defer` op을 주입하고 base에서 노출하는 안.
+  - 플랫폼 독립성은 확보되지만, "한가하면 즉시 실행"이 불가능하고 "무조건 다음 스케줄러 틱으로 지연"되므로 1프레임 깜빡임 및 상태 불일치 문제는 그대로 남는다.
+- **후보 (D) — 틀 밖의 대안들**:
+  - **대안 D-1: 원소 기반 제거 표면 (`slot:RemoveElement(element)`)**:
+    - `Overlay`는 `slot:IndexOf(entry)` 후 `slot:Remove(index)`를 하므로, 원소 기반 제거가 있으면 index 조회 단계를 건너뛸 수 있다.
+    - 하지만 "엔진 호출 중인 Slot에 구조적 변경을 가한다"는 본질은 같다. 원소 기반 제거든 index 기반 제거든, 물리 트리가 조작되는 한가운데서 Slot 컬렉션을 변경하면 내부 부기가 깨지므로 `Quad0167` 가드는 여전히 필요하다. 또한 자동 미루기는 이미 기각되었으므로 원소 기반 제거가 도구의 필요성을 대체하지 못한다.
+  - **대안 D-2: `q.OnDestroyed` 등 quad 훅 단계에서 지연 처리**:
+    - `OnDestroyed`는 개별 `Instance`의 `Destroying` 신호에 붙는 훅이다. 훅 실행 시점에 "이 인스턴스가 지금 어떤 Slot의 어떤 연산 때문에 파괴되고 있는지"를 알려면 복잡한 전역 호출 스택 컨텍스트가 필요하여 결합도가 급증한다.
+    - 또한 `Destroying` 외에도 `Parent` 변경 신호 등 다른 엔진 신호 경로도 존재하므로 훅 하나로 해결할 수 없다.
+
+**결론 (물음 1)**:
+소비자가 특정 Slot에 대해 **"이 Slot이 한가하면 즉시 실행하고, 연산 중이면 그 연산이 끝난 직후 동기로 실행해라"**를 명시할 수 있는 **(B) Slot 메소드**가 가장 정확하고 단순하며 부작용이 없다.
+
+---
+
+## 3. 물음 2 — (B)를 만든다면 이름과 모양
+
+(B) 메소드를 도입할 경우의 명칭과 시그니처 설계 검토.
+
+### 2-1. 네이밍 규칙 및 평가 기준
+- **케이싱 규칙** [실측: `.claude/base/architecture.md#L676-L688`]:
+  - Slot 인스턴스의 콜론 메소드는 **PascalCase** (`slot:Add`, `source:SetIfChanged`, `state:Compute`, `slot:Clear`).
+  - 모듈 수준 생성자·팩토리도 PascalCase (`q.Effect`, `q.Blocker`, `q.OnDestroyed`).
+  - 모듈 수준 동사 함수만 camelCase (`q.dispose`, `q.isSlot`).
+- **평가 기준**:
+  1. 처음 보는 Roblox 개발자의 자연스러운 연상.
+  2. **"한가하면 즉시 실행"**이라는 핵심 성질과의 부합 여부 (이름이 "항상 나중에 실행"으로 읽히면 오해 유발).
+  3. 다른 엔진/라이브러리 어휘(`task.defer`, `Promise.then` 등)와의 충돌 여부.
+  4. 메소드 vs 모듈 함수 적합성.
+  5. 인자 및 반환값 설계의 깔끔함.
+
+---
+
+### 2-2. 후보 6선 및 개별 평가
+
+#### 후보 1: `slot:Ready(fn)`
+- **연산/의미**: "이 Slot이 조작 준비가 되면 실행하라."
+- **"한가하면 즉시" 부합도**: **매우 높음**. jQuery의 `$(document).ready()`나 브라우저의 `document.readyState`처럼, **"이미 준비된 상태면 즉시 실행하고, 아직 진행 중이면 완료 시점에 실행한다"**는 멘탈 모델과 완벽히 부합한다.
+- **오해 가능성**: 낮음. 개발자에게 "나중(defer)"이라는 뉘앙스를 강제하지 않으며, "안전한 준비 상태"를 연상시킨다.
+- **충돌**: 없음. Roblox 엔진에 `Ready`라는 메소드는 없음.
+
+#### 후보 2: `slot:AfterOp(fn)` (또는 `slot:After(fn)`)
+- **연산/의미**: "지금 연산(Op)이 끝난 뒤에 실행하라."
+- **"한가하면 즉시" 부합도**: **보통**. "After"라는 단어가 "현재 진행 중인 작업의 뒤"를 의미하지만, 아무 작업도 없을 때 "즉시 실행"된다는 점이 이름만 봐서는 직관적이지 않을 수 있다(`setTimeout`처럼 항상 지연되는 것으로 오해할 소지).
+- **장점**: 본 과제의 목적("Slot 연산 직후")을 가장 직설적이고 명확하게 드러냄.
+- **단점**: "Op"이라는 축약어는 내부 용어에 가깝고 quad 공개 표면에서는 `slot:Add`, `slot:Remove` 등을 "메소드" 또는 "CRUD"라고 부른다.
+
+#### 후보 3: `slot:Defer(fn)`
+- **연산/의미**: "실행을 미뤄라."
+- **"한가하면 즉시" 부합도**: **매우 낮음 (부적합)**.
+- **충돌 및 오해**: Roblox 개발자에게 `defer`는 `task.defer`를 연상시키며, "무조건 이번 프레임/스레드 뒤로 넘긴다(비동기)"는 강한 선입견을 준다. "한가하면 지금 당장 동기로 돈다"는 성질과 정면으로 배치된다.
+
+#### 후보 4: `slot:WhenIdle(fn)`
+- **연산/의미**: "Slot이 유휴 상태(Idle)가 되면 실행하라."
+- **"한가하면 즉시" 부합도**: **높음**. "지금 바쁘면(연산 중이면) 끝나고 돌고, 이미 한가하면(Idle이면) 지금 돈다."
+- **단점**: Roblox 개발자에게는 다소 장황하거나, 브라우저의 `requestIdleCallback`처럼 "CPU가 한가할 때 도는 저우선순위 백그라운드 태스크"로 오해될 수 있다.
+
+#### 후보 5: `slot:Queue(fn)` / `slot:Enqueue(fn)`
+- **연산/의미**: "대기열에 넣어라."
+- **"한가하면 즉시" 부합도**: **낮음**. "Queue"는 대기열을 뜻하므로 "지금 실행되지 않고 순서를 기다린다"는 인상을 준다. 즉시 실행 성질과 맞지 않는다.
+
+#### 후보 6: `slot:Run(fn)`
+- **연산/의미**: "안전하게 실행하라."
+- **"한가하면 즉시" 부합도**: **보통**. 짧고 직관적이나, 무엇으로부터 안전하게 실행하는지(연산 가드 회피) 의도가 이름에 드러나지 않는다.
+
+---
+
+### 2-3. 메소드 vs 모듈 함수, 인자 및 반환값 설계
+
+#### 1) 메소드여야 하는가 모듈 함수여야 하는가?
+- **결론: Slot 메소드 (`slot:Ready(fn)`)여야 한다.**
+- **근거**:
+  - 가드가 걸리는 단위와 큐가 관리되는 단위가 전역이 아니라 **개별 `Slot` 인스턴스**이다.
+  - quad에서 Slot의 모든 조작(`Add`, `Remove`, `List`, `Single`, `Clear` 등)은 Slot의 메소드로 제공된다.
+  - 모듈 함수 `q.ready(slot, fn)` 또는 `q.afterOp(slot, fn)`은 주어가 뒤로 밀리고, 모듈 함수 네이밍 케이싱 규칙(소문자 동사)과도 어색하게 얽힌다.
+
+#### 2) 인자 설계
+- **콜백 시그니처**: `fn: (slot: Slot<T>) -> ()`
+- **근거**: 콜백에 대상 `slot` 자신을 인자로 넘겨주면, 클로저 캡처 없이 콜백 내부에서 `slot:IndexOf(...)`나 `slot:Remove(...)`를 깔끔하게 호출할 수 있다. 인자 없이 `() -> ()`여도 무방하나, `slot`을 넘겨주는 것이 Luau의 함수 재사용 및 정적 분석에 더 유리하다.
+
+#### 3) 반환값 설계
+- **결론: `()` (void) 또는 `Slot<T>` (메서드 체이닝).**
+- **근거**:
+  - `fn()`의 반환값을 돌려주는 것은 **불가능**하다. 한가할 때는 `fn()`이 즉시 돌아 반환값을 얻을 수 있지만, 연산 중일 때는 지연 실행되므로 동기 반환값을 줄 수 없기 때문이다(상태에 따라 반환 타입이 `T` 또는 `nil`로 갈리면 불안정).
+  - 취소 핸들(`CancelHandle`)이나 Promise 같은 복잡한 반환값은 프로젝트 설계 원칙 및 소유자의 가정("던지는 것은 터져도 된다, 작업 완료 후 돌 것이 있는지 보고 돌린다")에 비추어볼 때 불필요한 과대 설계다.
+  - 따라서 단순 `()` (void)가 가장 명확하다.
+
+---
+
+### 2-4. 최선의 안과 차선의 안 (제안)
+
+| 순위 | 후보 이름 | 시그니처 | 제안 근거 |
+|---|---|---|---|
+| **최선 (추천)** | **`slot:Ready(fn)`** | `Ready: (self: Slot<T>, fn: (slot: Slot<T>) -> ()) -> ()` | **"한가하면 즉시 실행, 연산 중이면 완료 시점 실행"**이라는 의미를 가장 정확하게 담고 있음. "After"나 "Defer"처럼 '항상 지연 실행'으로 오해할 위험이 없음. 간결하고 Roblox 어휘와 충돌 없음. |
+| **차선** | **`slot:AfterOp(fn)`** | `AfterOp: (self: Slot<T>, fn: (slot: Slot<T>) -> ()) -> ()` | 본래 과제의 목적("지금 진행 중인 연산 뒤에")을 가장 직설적이고 명확하게 서술함. 단, 한가할 때 즉시 돈다는 점이 이름만으로는 다소 덜 직관적일 수 있어 2순위로 둠. |
+
+---
+
+## 4. 물음 3 — 구현의 함정 (소스를 읽고)
+
+후보 (B)를 `quad-base/src/Slot/`에 실제로 구현할 때 맞닥뜨리는 함정과 설계 고려사항을 소스 분석을 바탕으로 상세히 정리한다.
+
+### 3-1. 실행 지점과 꼬리(Tail) 문제 — `_materializing` 해제 시점의 함정
+
+가장 치명적인 함정이다. **`self._materializing = was` 플래그를 내리는 자리에서 곧바로 대기 콜백을 실행하면 안 된다.**
+
+#### [실측 근거] `quad-base/src/Slot/Raw.luau`
+- `rawRemove` [실측: `quad-base/src/Slot/Raw.luau#L176-L188`]:
+  ```luau
+  -- candD-guard.patch 적용 시:
+  local was = self._materializing
+  self._materializing = true
+  if S.isSlot(element) then S.destroySlotTree(element)
+  elseif self._mounted then
+      module.Backend.nativeRemove(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
+  else
+      module.Backend.nativeDispose(element)
+  end
+  self._materializing = was -- ⚠️ 여기서 콜백을 돌리면 안 됨!
+  vacate(self, index, element, bk) -- 꼬리 연산!
+  ```
+- `vacate`가 하는 일 [실측: `quad-base/src/Slot/Raw.luau#L94-L102`]:
+  1. `table.remove(self._elements, index)` — 배열에서 원소 제거
+  2. `reindexFrom(self, index)` — 이후 원소들의 역방향 인덱스 맵 갱신
+  3. `bk.indexOfElement[element] = nil` — 인덱스 캐시 제거
+  4. `spliceArraysDown(self, index)` — Bookkeeping의 lengthList/observers 시프트
+  5. `maybeRecompute(self, bk)` — 전체 Slot 길이 및 오프셋 재계산
+
+#### 함정의 구체적 결과 [추정]
+- 만약 `self._materializing = was` 바로 뒤에서 대기 콜백 `fn`을 실행하면:
+  - 아직 `self._elements`에서 원소가 제거되지 않았음.
+  - `indexOfElement`가 옛 인덱스를 가리키고 있음.
+  - Bookkeeping이 갱신되지 않았음.
+  - 이 상태에서 대기 콜백이 `slot:IndexOf(other)`를 하거나 `slot:Remove(idx)`를 호출하면 **인덱스가 어긋나 다른 원소를 지우거나 부기가 영구 파손**된다!
+- `rawReplace`에서도 마찬가지로 플래그 해제 뒤에 `S.BK.setLength(...)`가 남고 [실측: `Raw.luau#L268`], `rawSplice`에서도 게이트 해제와 `maybeRecompute`가 남는다 [실측: `Raw.luau#L432`].
+
+#### 올바른 실행 지점 [추정]
+- 대기 콜백을 실행(Drain)하는 지점은 `_materializing`을 내리는 곳이 아니라, **`vacate`와 부기 갱신이 완전히 끝난 뒤, 즉 공개 CRUD (`Slot_mt.Remove`, `Slot_mt.Add`, `Slot_mt.Replace`, `Slot_mt.Splice`, `Slot_mt.Clear`)의 함수 반환 직전 최외곽**이어야 한다.
+
+---
+
+### 3-2. 조상 Slot에 걸린 요청 (자손 연산으로 조상이 잠긴 경우)
+
+#### [실측 근거] `raiseChain` (Q74)
+- 런타임에 중첩 Slot이 부모에 붙을 때, 부모뿐만 아니라 **owner 사슬 전체(조상 Slot 전부)**에 `_materializing = true` 플래그가 올라간다 [실측: `quad-base/src/Slot/Raw.luau#L112-L127`, `slot-plan.md` Q74].
+  ```luau
+  local function raiseChain(self: any): ({ any }, { any })
+      local slots, olds = {}, {}
+      local cur = self
+      while cur ~= nil and S.isSlot(cur) do
+          table.insert(slots, cur)
+          table.insert(olds, cur._materializing)
+          cur._materializing = true
+          cur = S.elementOwner:GetWeak(cur, S.OWNER)
+      end
+      return slots, olds
+  end
+  ```
+
+#### 함정 및 해결책 [추정]
+- 만약 자손 Slot의 마운트 중 엔진 호출에서 콜백이 **조상 Slot**에 `ancestor:Ready(fn)`을 걸었다면?
+- 조상 Slot은 스스로 CRUD를 돌리고 있는 것이 아니라, 자손의 연산 때문에 `_materializing`이 서 있는 상태다.
+- 따라서 자손의 attach가 끝나고 `restoreChain`을 할 때, 혹은 자손의 최상위 연산이 끝나서 반환될 때 **조상 사슬에 걸린 대기 콜백도 함께 드레인(Drain)**해주어야 한다. 그렇지 않으면 조상에 걸린 콜백이 영구히 실행되지 않고 유실된다.
+
+---
+
+### 3-3. 호스트 마운트 (`D.Frame { slot }`) 진입 경로
+
+#### [실측 근거] `quad-base/src/Slot/Handler.luau`
+- `D.Frame { slot }`처럼 선언적 트리 마운트가 일어날 때의 진입점은 공개 CRUD(`Slot_mt.Add` 등)가 아니라 `Dispatch`의 핸들러다 [실측: `quad-base/src/Slot/Handler.luau#L33-L44`]:
+  ```luau
+  process = function(inst: any, k: any, slotValue: any, _index: number)
+      ...
+      if internal.claimOwnerAt(slotValue, inst, k) then
+          module.Backend.bindLifetime(inst, slotValue)
+          internal.attachSlot(slotValue, inst, inst, k)
+      end
+      ...
+  ```
+- 이 경로는 `attachSlot` → `materializeSlotTree` → `mountSlotTree` (`nativeInsert`)를 바로 부른다.
+
+#### 함정 및 해결책 [추정]
+- 호스트에 마운트되는 순간 엔진 호출(`nativeInsert`)이 발생하고, 여기서 동기 신호가 터져 `slot:Ready(fn)`이 불릴 수 있다.
+- 이 경로는 `Slot_mt`의 공개 CRUD 메서드를 거치지 않으므로, **`attachSlot`이 끝나는 지점(또는 `Handler.luau`의 `process` 완료 직전)**에서도 반드시 대기 큐를 드레인(Drain)해주어야 한다.
+
+---
+
+### 3-4. `:List` 재조정 (`Slot:List`) 중의 큐잉
+
+#### [실측 근거] `quad-base/src/Slot/List.luau`
+- `Slot:List`의 `reconcile` [실측: `quad-base/src/Slot/List.luau#L120-L229`]:
+  - `blocker:On()`을 켜고 배치 게이트를 연다 [실측: L174].
+  - `items`를 순회하며 `updateFn`을 부르고 `settle`을 실행한다 (여러 개의 `rawAdd`, `rawRemove`, `rawReplace`, `rawMove`가 연속 호출됨).
+  - 사라진 키에 대해 `KeyGone` 패스를 돌며 원소들을 파괴/정리한다.
+  - 모든 변경이 끝난 뒤 `blocker:OffWithoutEmit()`을 끄고 `maybeRecompute`를 호출한다 [실측: L226-L227].
+
+#### 함정 및 해결책 [추정]
+- `:List` 재조정 도중 어떤 원소가 파괴되면서 `slot:Ready(fn)`이 걸렸을 때:
+  - 그 개별 `rawRemove`가 끝났다고 해서 바로 콜백을 돌리면 안 된다!
+  - 아직 뒤쪽 아이템들의 `settle`과 `KeyGone` 패스가 남아 있고, `blocker`가 열려 있어 전체 목록 상태가 불완전하기 때문이다.
+  - 따라서 `:List`의 경우, 개별 raw 연산 단위가 아니라 **`reconcile` 함수 전체가 완료된 직후(배치 게이트가 닫히고 recompute가 끝난 L228 직후)**에 대기 큐를 드레인해야 한다.
+
+---
+
+### 3-5. 연산이 던진 경우 (Exception Safety)와 단순화 이득
+
+quad의 기본 예외 안전성 철학 [실측: `slot-plan.md` Q52, H-554]:
+> *"Q52의 `_materializing` 창은 throw에 비원자적이다 — 중첩 Slot의 attach가 던지면... 부모가 영구히 '마운트 중'이 되고... pcall 없이는 못 풀고... 회복 경로는 호스트 Instance의 q.dispose뿐이다."*
+
+소유자의 가정:
+> **"던지는 것은 터져도 된다고 가정."**
+
+#### 이 가정이 가져다주는 단순화 이득 [추정]
+- **`pcall`/`xpcall` 없는 무비용 구현**:
+  - 만약 예외 안전성을 완벽히 보장하려면 모든 CRUD와 엔진 호출을 `pcall`로 감싸고, 실패 시 플래그 롤백과 큐 정리를 하는 복잡한 unwinding 구조가 필요하다. 이는 핫 패스에 오버헤드를 유발한다.
+  - 하지만 "던지는 것은 터져도 된다"는 가정을 수용하면:
+    - `pcall`을 전혀 쓸 필요가 없다!
+    - 연산 도중 에러가 발생해 던지면, Lua 스택이 그대로 언와인드되며 전체 호출이 종료된다.
+    - 그 Slot은 `_materializing = true`인 채로 동결(unusable)되며, 큐에 대기 중이던 콜백도 실행되지 않고 함께 버려진다.
+    - 대기 콜백 `fn` 자체가 실행 중 에러를 던져도 마찬가지로 그냥 상류로 터지면 된다.
+  - 이는 quad의 기존 예외 계약("던진 뒤의 상태는 정의되지 않음(UB), 복구 경로는 dispose뿐")과 완벽히 일치하며, 런타임 오버헤드가 사실상 0이다.
+
+---
+
+### 3-6. 드레인 중 재진입 큐잉 (Reentrant Drain)
+
+- 연산이 끝난 뒤 대기열에 있던 `fn`을 실행할 때, `fn` 내부에서 다시 그 Slot의 CRUD를 수행하고 또 `slot:Ready(fn2)`를 걸 수 있다.
+- 따라서 단순 재귀 호출로 처리하면 스택 오버플로우나 큐 오염이 발생할 수 있으므로, **큐를 로컬로 스왑(swap)한 뒤 루프로 소비하는 널리 알려진 안전한 드레인 패턴**을 사용해야 한다:
+  ```luau
+  -- 스케치 (추정)
+  local function drainReady(slot: any)
+      while slot._readyQueue and #slot._readyQueue > 0 do
+          local q = slot._readyQueue
+          slot._readyQueue = nil
+          for _, fn in ipairs(q) do
+              fn(slot)
+          end
+      end
+  end
+  ```
+
+---
+
+## 5. 종합 요약 및 권고
+
+| 항목 | 검토 결과 및 권고 (제안) |
+|---|---|
+| **도구의 필요성** | **필요함 (강력 권고)**. (A)안(`task.defer`)은 테스트 mock(Immediate)과 프로덕션(Deferred) 간 괴리, 1프레임 렌더 깜빡임, 상태 불일치 문제를 야기함. 선례(`SetIfChanged`, `Effect`, `Blocker`)와도 일관됨. |
+| **도구의 형태** | **Slot 메소드**. 특정 Slot의 연산 완료 여부와 직결되므로 모듈 함수가 아닌 `slot` 인스턴스 메소드가 자연스러움. |
+| **추천 이름 (최선)** | **`slot:Ready(fn)`**. "한가하면 즉시 실행, 연산 중이면 완료 시점 실행"이라는 특성을 오해 없이 전달함. |
+| **차선 이름** | **`slot:AfterOp(fn)`**. 연산 직후라는 목적을 직설적으로 표현하나, 한가할 때의 즉시 실행 인상이 다소 약함. |
+| **콜백 및 반환값** | 콜백에 `(slot: Slot<T>) -> ()` 전달. 반환값은 `()` (void). |
+| **구현 주의점** | 1. `_materializing = was` 직후가 아니라 `vacate` 및 부기 갱신이 완료된 최외곽 반환 직전에 드레인할 것.<br>2. 조상 사슬(`raiseChain`), 호스트 마운트(`Handler`), `:List` reconcile 완료 시점에서도 드레인할 것.<br>3. 소유자의 가정("던지면 터져도 됨")을 수용하여 `pcall` 없는 단순한 구조를 유지할 것. |

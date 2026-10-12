@@ -103,7 +103,7 @@ Snippets below assume this prologue.
 | **`State<T>`** | Return of `:Compute`/`:Apply`/`:Gate` | Read-only derived | `:Get()`, `:Compute(fn, ...deps)`, `:Depend(...)`, `:Apply(f)`, `:Observer(fn)` (see 6.3). |
 | **`Store`** | `q.Store{ key = q.Source(v) }` | Bag of Sources | Reset per field: `store.Field:Set(v)`. |
 | **`Context`** | `q.Context()` | Explicit value bag | Keys are `q.Context.Provider(name?)`. Passed through props — no tree walk. |
-| **`Slot`** | `q.Slot<<T>>(initial?)` | Dynamic child container | `:Add(el, index?)`, `:Remove(index)`, `:Replace`, `:Splice`, `:Clear`, `:List(...)`, `:Single(...)`. DOMless. |
+| **`Slot`** | `q.Slot<<T>>(initial?)` | Dynamic child container | `:Add(el, index?)`, `:Remove(index)`, `:Replace`, `:Splice`, `:Clear`, `:List(...)`, `:Single(...)`, `:WhenIdle(fn)` (CRUD a Slot from a callback that runs inside its own insert/remove — `q.OnDestroyed`, `q.OnChange("Parent")`; a direct CRUD there is `Quad0167`). DOMless. |
 | **`Modifier`** | `q.Modifier{...}` / `D.Modifier.<Class>()` | Immutable property bag | Chaining clones (`mod:Size(...)`). Later array entry wins. |
 | **`Ref<T>`** | `q.Ref<<Frame?>>(nil)`, `q.PreRef(...)`, `q.PostRef(...)` | Instance box | The initial value is a required argument at the type level (`Ref: <T>(default: T)`; the runtime does not check). `ref.Value` may be nil; `ref:Unwrap()` errors when empty; `:Wait()` awaits the NEXT `:Set`. |
 | **`Tween<T>`** | `q.Tween{ Value = v, Time = 0.3 }` | Value container | `Value` must be plain (never a State). `Override`, `Dedup`. |

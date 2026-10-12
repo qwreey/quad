@@ -129,6 +129,13 @@ return function(S: Types.SlotInternal, module: any)
 	-- ── raw layer ──────────────────────────────────────────────────────
 	-- `deferPhysical` (rawAdd/rawUnmount): bookkeeping only — the caller
 	-- (rawSplice) issues the ONE physical op for the whole batch itself.
+	-- round14 Q185 (d) (user decision 2026-10-12) — the "backend-call window" marked below in rawAdd /
+	-- rawRemove / rawUnmount / rawReplace / rawSplice: `self._materializing` is raised (saved, restored)
+	-- around the backend call of the operation, so a backend signal delivered synchronously from inside
+	-- it cannot CRUD `self` while an index captured before the call is still to be used after it
+	-- (`Quad0167`, the Q52 rule one window wider — see `assertNotMounting` in `Slot/init.luau`). `self`
+	-- only: a plain-element operation captures nothing in its ancestors. No pcall (contract): a backend
+	-- call that throws leaves the flag up, like a throw inside the Q52 window.
 	local function rawAdd(self: any, element: any, index: number?, fromDetached: boolean?, deferPhysical: boolean?): number
 		S.claimOwner(element, self, fromDetached)
 		index = index or (#self._elements + 1)
@@ -153,7 +160,10 @@ return function(S: Types.SlotInternal, module: any)
 		else
 			S.BK.setOffsetSource(self, index, S.None)
 			if physical then
+				local was = self._materializing -- Q185 (d) backend-call window
+				self._materializing = true
 				module.Backend.nativeInsert(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
+				self._materializing = was
 			end
 			S.BK.setLength(self, index, 1, self._physicalTarget, element)
 		end
@@ -178,12 +188,15 @@ return function(S: Types.SlotInternal, module: any)
 		local bk = S.BK.getBookkeeping(self)
 		unbindObserverAt(bk, index)
 		S.releaseOwner(element, self)
+		local was = self._materializing -- Q185 (d) backend-call window
+		self._materializing = true
 		if S.isSlot(element) then S.destroySlotTree(element)
 		elseif self._mounted then
 			module.Backend.nativeRemove(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
 		else
 			module.Backend.nativeDispose(element)
 		end
+		self._materializing = was
 		vacate(self, index, element, bk)
 	end
 
@@ -192,10 +205,13 @@ return function(S: Types.SlotInternal, module: any)
 		local bk = S.BK.getBookkeeping(self)
 		unbindObserverAt(bk, index)
 		S.releaseOwner(element, self)
+		local was = self._materializing -- Q185 (d) backend-call window
+		self._materializing = true
 		if S.isSlot(element) then leaveAsElement(element, deferPhysical)
 		elseif self._mounted and not deferPhysical then
 			module.Backend.nativeExtract(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
 		end
+		self._materializing = was
 		vacate(self, index, element, bk)
 	end
 
@@ -205,6 +221,8 @@ return function(S: Types.SlotInternal, module: any)
 		unbindObserverAt(bk, index)
 		-- releaseOwner NOT called — the one difference from rawUnmount: releasing
 		-- would let someone else claim what slot._detached still holds.
+		-- (no Q185 (d) window here: rawDetach is reached only from a `:List` reconcile, and a `:List`
+		-- Slot refuses every public CRUD already — `assertManual`.)
 		if S.isSlot(element) then S.unmountSlotTree(element)
 		elseif self._mounted then
 			module.Backend.nativeExtract(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
@@ -222,7 +240,9 @@ return function(S: Types.SlotInternal, module: any)
 		bk.indexOfElement[oldElement] = nil
 		bk.indexOfElement[newElement] = index
 
+		local was = self._materializing -- Q185 (d) backend-call windows below
 		if not self._mounted then
+			self._materializing = true
 			if destroyOld then
 				S.destroyElement(oldElement)
 			elseif S.isSlot(oldElement) then
@@ -233,6 +253,7 @@ return function(S: Types.SlotInternal, module: any)
 				if self._physicalTarget ~= nil then S.teardownTree(oldElement) end
 				if oldElement._wrapped ~= nil then S.releaseSugarWrapper(oldElement) end
 			end
+			self._materializing = was
 			if self._physicalTarget ~= nil then
 				if S.isSlot(newElement) then
 					local chainSlots, chainOlds = raiseChain(self) -- Q52 window, whole owner chain (see rawAdd)
@@ -247,6 +268,7 @@ return function(S: Types.SlotInternal, module: any)
 		end
 
 		local offset = S.BK.getOffsetAt(self, index)
+		self._materializing = true
 		if S.isSlot(oldElement) or S.isSlot(newElement) then
 			if S.isSlot(oldElement) then
 				if destroyOld then S.destroySlotTree(oldElement) else leaveAsElement(oldElement) end
@@ -255,6 +277,7 @@ return function(S: Types.SlotInternal, module: any)
 				op(self._mountedInst, offset, { oldElement })
 			end
 			if S.isSlot(newElement) then
+				self._materializing = was
 				local chainSlots, chainOlds = raiseChain(self) -- Q52 window, whole owner chain (see rawAdd)
 				S.attachSlot(newElement, self._physicalTarget, self, index, self._mounted)
 				restoreChain(chainSlots, chainOlds)
@@ -266,6 +289,7 @@ return function(S: Types.SlotInternal, module: any)
 			local op = if destroyOld then module.Backend.nativeRemove else module.Backend.nativeExtract
 			op(self._mountedInst, offset, { oldElement }, { newElement })
 		end
+		self._materializing = was
 		S.BK.setLength(self, index, 1, self._physicalTarget, newElement)
 	end
 
@@ -393,6 +417,11 @@ return function(S: Types.SlotInternal, module: any)
 				if S.isSlot(element) then S.collectLeaves(element, newLeaves)
 				else table.insert(newLeaves, element) end
 			end
+			local was = self._materializing -- Q185 (d) backend-call window — this Slot and the arriving subtrees
+			self._materializing = true
+			for _, element in ipairs(newElements) do
+				if S.isSlot(element) then S.raiseTree(element) end
+			end
 			if #removedLeaves > 0 then
 				module.Backend.nativeExtract(self._mountedInst, base, removedLeaves, if #newLeaves > 0 then newLeaves else nil)
 			elseif #newLeaves > 0 then
@@ -401,6 +430,7 @@ return function(S: Types.SlotInternal, module: any)
 			for _, element in ipairs(newElements) do
 				if S.isSlot(element) then S.markMountedTree(element, self._mountedInst) end
 			end
+			self._materializing = was
 		end
 
 		if ownsGate then
