@@ -1263,3 +1263,14 @@ source 로 바꿔 써야하지 않나 싶어. 그게 정본같음. 정확히 문
    `probes/pure`의 repro_arity_pure).
 
 공개 문장은 how-to 01의 "제네릭 컴포넌트의 타입 — 라이브러리 저자를 위한 레시피" 소절. material 킷의 손수 만든 뷰 타입(`Radio.ValueSource<T>`)은 이 정본으로 바꿀 킷 정리 거리다.
+
+## 8.37. `state:Apply`의 객체 팔은 `{ read __apply: any }`다 — 사용자가 쓴 `__apply` 테이블이 strict에 들어가게 (2026-10-12 round14 P6, round13 Q144 (a))
+
+`Apply`의 객체 팔을 `{ __apply: (self: any, state: any) -> any }`로 적었을 때, 사용자가 시작하기 13장대로 쓴 `{ __apply = function(self, state) … end }`는
+`state`가 무주석이든 `State<number>`든 반환에 타입이 붙으면 "None of the overloads"로 거부됐다(통과하는 것은 `self: any, state: any`·반환 `any`뿐 — round13
+E56). 무주석 매개변수를 가진 함수 값은 제네릭 함수라 `any` 매개변수 함수 자리에 안 들어가는 것이 뿌리다(8.14의 이웃). 프로브(luau-lsp 1.69.0 신 솔버):
+`read __apply: (self: any, state: any) -> any`와 `read __apply: (...any) -> ...any`는 여전히 거부(뒤의 것은 선언 팩토리 `Blocker`·`Debounce`까지 거부),
+**`read __apply: any`는 네 모양 전부와 선언 팩토리 셋(`Blocker`·`Debounce`·`Animate`)을 받는다.** 이 팔은 원래도 인자·결과가 `any`라 검사하던 것이 없었으므로
+잃는 것은 "`__apply`가 함수가 아닌 표"를 타입이 못 잡게 되는 것뿐이고(런타임 `Quad0191`이 잡는다), 넓히기만 하므로 BREAKING이 아니다. `__apply`는 공개 프로토콜
+훅이라(2026-10-06 `__` 규약) 사용자 구현이 타입을 통과하는 것이 그 계약의 일부다 — "Luau 한계를 우회하는 공개 타입을 두지 않는다"와 부딪히지 않는다(새 타입이
+아니라 기존 팔의 넓힘). 게이트: `quad-roblox/test/spec.componenttypes.luau`의 `_applyObjects`. 결과 State의 타입이 `any`인 것(8.29의 무검사)은 그대로다.

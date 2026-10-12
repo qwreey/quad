@@ -205,11 +205,15 @@ export type State<T> = StateData<T> & {
 	-- [2026-09-15 사용자 결정] 옛 `With` → `Depend`: 값은 리시버 그대로, `...deps`만 추가로 건다(`:Compute`/`q.Effect`의 deps와 같은 낱말)
 	Depend: (self: StateData<T>, ...any) -> State<T>,
 	-- 애플리커티브 팩토리는 함수이거나 메소드형 `__apply`를 가진 객체(`H-94`/`H-158`).
+	-- [2026-10-12 round13 Q144 (a) / round14 P6] 객체 팔의 `__apply`는 `read … : any`다 — `(self: any, state: any) -> any`로 적으면
+	-- 사용자가 쓴 `{ __apply = function(self, state) … end }`가 무주석이든 `state: State<number>`든 strict에서 "None of the
+	-- overloads"로 거부됐다(무주석 매개변수의 제네릭 함수 값이 `any` 매개변수 함수 자리에 안 들어감 — typing-limits 8.14).
+	-- 이 팔은 원래도 인자·결과가 `any`라 검사하던 것이 없고, 넓히기만 하므로 BREAKING이 아니다. `__apply`는 공개 프로토콜 훅이다.
 	-- **교집합 오버로드**로 선언한다(M2 단위 4 실측, `luau-test/done/26-*`): 유니온 하나로
 	-- 두면 `Blocker`처럼 필드가 더 있는 객체가 제네릭 `U` 자리에서 너비 서브타이핑을 못
 	-- 받아 `state:Apply(blocker)`가 strict에서 막힌다. 객체 쪽은 `any`를 돌려주므로 결과는
 	-- `local g: State<number> = s:Apply(b)`로 명시(§1①의 파생 State 명시 주석 관례와 같다).
-	Apply: (<U>(self: StateData<T>, factory: (State<T>) -> U) -> U) & ((self: StateData<T>, factory: { __apply: (self: any, state: any) -> any }) -> any),
+	Apply: (<U>(self: StateData<T>, factory: (State<T>) -> U) -> U) & ((self: StateData<T>, factory: { read __apply: any }) -> any),
 	-- 등록 즉시 1회 실행. 무인자면 "항상 관측" 유틸.
 	Observer: (self: StateData<T>, fn: ObserverFn<T>?) -> Observer,
 	-- 전파 경로에 GateNode 하나(값은 안 가린다, 통지만 유보). 같은 T.

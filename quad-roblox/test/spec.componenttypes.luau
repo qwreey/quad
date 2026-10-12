@@ -82,4 +82,27 @@ local function _neverCalled()
 	return parent
 end
 
+-- round13 Q144 (a) (round14 P6, 2026-10-12): a user-written `__apply` object is accepted by `state:Apply` under strict in
+-- the shapes GS 13 shows — the object arm of `Apply` is `{ read __apply: any }` (it used to reject every shape but
+-- `self: any, state: any`). Declared factories (Blocker / Debounce / Animate) keep passing. Type-only: never called.
+local function _applyObjects()
+	local count = q.Source(0)
+	local unannotated = { __apply = function(self, state) return state end }
+	local a = count:Apply(unannotated)
+	local innerAnnotated = { __apply = function(self, state)
+		return state:Compute(function(c: QuadTypes.StateData<number>): number return c:Get() * 2 end)
+	end }
+	local b: QuadTypes.State<number> = count:Apply(innerAnnotated)
+	local typedState = { __apply = function(self, state: QuadTypes.State<number>): QuadTypes.State<number>
+		return state:Compute(function(c: QuadTypes.StateData<number>): number return c:Get() * 2 end)
+	end }
+	local c: QuadTypes.State<number> = count:Apply(typedState)
+	local anyState = { __apply = function(self: any, state: any): any return state end }
+	local d: QuadTypes.State<number> = count:Apply(anyState)
+	local e = count:Apply(q.Blocker())
+	local f = count:Apply(q.Debounce({ Time = 0.1 }))
+	local g = count:Apply(q.Animate({ Time = 0.1 }))
+	return a, b, c, d, e, f, g
+end
+
 print("=== ALL PASS ===")

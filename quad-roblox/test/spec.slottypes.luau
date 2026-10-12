@@ -34,6 +34,18 @@ local function _neverCalled()
 			end),
 		}), (ud or 0) + 1
 	end)
+	-- (1b) round13 Q121 (b) (round14 P6): the mapping call a strict user actually writes — `Item` spelled out.
+	-- `Ctx<any, number>` above never showed the gate that an exact `Item = string` annotation alone is
+	-- refused ("No valid instantiation could be inferred for generic type parameter Item"); the documented
+	-- practice is the explicit type arguments (core/06 `slot:Single`, GS 14 §5, SKILL 4.3).
+	local curB = q.Source(nil :: string?)
+	local slotB = q.Slot<<Instance>>()
+	local mappedB = slotB:Single<<string, nil>>(curB, function(ctx): (TextLabel?, nil)
+		if ctx.Item == q.KeyGone then
+			return nil, nil
+		end
+		return D.TextLabel({ Text = ctx.Item :: string }), nil
+	end)
 	-- (2) updateFn 생략 슈거(identity): Item = T
 	local current = q.Source(nil :: Instance?)
 	local identity = q.Slot<<Instance>>():Single(current)
@@ -51,7 +63,7 @@ local function _neverCalled()
 	end, function(item: Row)
 		return item.Id
 	end)
-	local host = D.Frame({ mapped, identity, literal, listed })
+	local host = D.Frame({ mapped, mappedB, identity, literal, listed })
 	return host
 end
 

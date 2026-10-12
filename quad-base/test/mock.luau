@@ -656,7 +656,7 @@ local function installTimers(quad: any)
 	Err.setFuncLevel(SURFACE, setTimeout, clearTimeout)
 end
 
-local function mockProvider(quad: any): { [any]: any }
+local function mockProvider(quad: any): {} -- `{}`, not `{ [any]: any }`/`any`: an indexer/any return makes every later `q.<member>` an error type under strict (typing-limits 8.35) — how-to 06 points here as the model
 	-- `H-272`: 백엔드 교체 함수의 사용자 오용 error도 워커 경유 — 단위 4 이후
 	-- holdLifetime의 주 호출부가 디스패치 깊이(Leaf.process → bindLifetime)라 리터럴 level 2는
 	-- quad 내부를 blame했다. errorBefore(최외곽)면 직접 호출·디스패치 경유
