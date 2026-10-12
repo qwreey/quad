@@ -2,13 +2,17 @@
 """버전 리터럴 정합성 검사 + 릴리즈 bump (2026-09-10).
 
 quad는 워크스페이스 멤버 셋(quad_base·quad_roblox·quad_types)을 같은 버전으로 게시한다(lockstep). 범용 패키지 둘
-(quad_error·type_version_check)은 [2026-09-15 사용자 결정 — 공개 표면 (3) (나)] lockstep에서 빠져 자기 SemVer를 따로 올린다
-(번호는 이어서 — 첫 독립 릴리즈가 4.0.0, 옛 3.x는 yank). 그 둘은 `bump-package`로 매니페스트와 자기 CHANGELOG.md만 올린다.
-lockstep 버전 문자열은 매니페스트 넷과 소스·테스트 몇 곳에
+(quad_error·type_version_check)은 **4.0.0 전까지는 같은 lockstep에 들어 있고**, 4.0.0부터 자기 SemVer를 따로 올린다
+([2026-10-12 사용자 결정 — round14 Q131]: 3.x는 다섯 패키지 모두에게 호환이 깨질 수 있는 안정화 구간이라, 범용 쪽에 breaking이
+나와도 메이저를 따로 올리지 않도록 "지금은 계속 싱크 맞추고, 4.x.x 가 나올 때 한번에 올린다"; 2026-09-15의 "첫 독립 릴리즈가
+4.0.0"은 그대로이고 그 전 기간만 lockstep으로 바뀌었다. 옛 3.x의 yank는 4.0.0 뒤.) 판정은 그 패키지의 지금 버전이다 —
+4.0.0 미만이면 `bump`가 같이 올리고(자기 CHANGELOG.md도 같이 자른다) `bump-package`는 거부한다; `bump 4.0.0`이 다섯을 같이
+올린 뒤로는 `bump`가 건드리지 않고 `bump-package`로만 올린다(태그는 `<패키지 이름>/N.N.N` — 본체 태그 `N.N.N`과 겹치지 않게).
+lockstep 버전 문자열은 매니페스트와 소스·테스트 몇 곳, 그리고 `pesde.lock` 여섯에
 따로 박혀 있는데, 소스끼리는 타입 캐스트와 스펙으로 묶여 있지만 매니페스트는 아무 게이트도 보지 않았다 — 이 스크립트가 그 구멍을 막는다.
 
-  python3 scripts/check-version.py            # 전 자리가 quad-base/pesde.toml의 version과 같은지, VERSION_PATTERN이 그 버전을 받는지 (exit 1이면 불일치)
-  python3 scripts/check-version.py bump-package type-version-check 4.0.0  # 독립 패키지 하나: 매니페스트 + <폴더>/CHANGELOG.md의 [Unreleased] 절단
+  python3 scripts/check-version.py            # 전 자리가 quad-base/pesde.toml의 version과 같은지, VERSION_PATTERN이 그 버전을 받는지, pesde.lock이 매니페스트와 같은 버전인지 (exit 1이면 불일치)
+  python3 scripts/check-version.py bump-package type-version-check 4.1.0  # 독립한 뒤의 패키지 하나: 매니페스트 + <폴더>/CHANGELOG.md의 [Unreleased] 절단
   python3 scripts/check-version.py bump 3.0.0 # 전 자리를 새 버전으로 바꾸고 CHANGELOG의 [Unreleased]를 잘라 버전 헤딩으로. VERSION_PATTERN은 새 버전을 하한으로 한 `M.m^.p^`(2026-09-15 — 메이저 고정 사전식 하한, 프리릴리즈 bump면 그 빌드 정확히 `M.m.p-rc.N`).
                                               # docs/ 안의 옛 버전 문자열은 바꾸지 않고 목록만 찍는다(verbatim 에러 문구가 섞여 있어 손으로 볼 것).
 """
@@ -16,8 +20,14 @@ import datetime, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MANIFESTS = ['pesde.toml', 'quad-base/pesde.toml', 'quad-roblox/pesde.toml', 'quad-types/pesde.toml']
-# [2026-09-15] versioned on their own (not lockstep) — bump with `bump-package`
+# [2026-10-12 user decision] the two general-purpose packages: in LOCKSTEP while their own version is below
+# INDEPENDENT_FROM (bumped by `bump`), versioned on their own from there on (`bump-package`). See the docstring.
 INDEPENDENT = ['quad-error', 'type-version-check']
+INDEPENDENT_FROM = (4, 0, 0)
+REGISTRY_NAME = {'quad-error': 'quad_error', 'type-version-check': 'type_version_check'}
+# every committed lock file and the manifest whose version it must repeat (`pesde install` rewrites them after a bump)
+LOCKS = [('pesde.lock', 'pesde.toml')] + [(f'{m}/pesde.lock', f'{m}/pesde.toml') for m in
+                                           ('quad-base', 'quad-roblox', 'quad-types', 'quad-error', 'type-version-check')]
 # (파일, 정규식 — 그룹 1이 버전) : 소스·테스트 리터럴
 SITES = [
     ('quad-base/src/init.luau', r'(?m)^(\s*Version = ")([^"]+)(",)'),
@@ -50,6 +60,15 @@ def split_tail(v):
         c, pre = core.split('-', 1)
         return c, pre
     return core, None
+
+
+def core_tuple(v):
+    return tuple(int(x) for x in split_tail(v)[0].split('.'))
+
+
+def follows_lockstep(member):
+    """A general-purpose package still below INDEPENDENT_FROM rides the quad lockstep."""
+    return core_tuple(manifest_version(read(f'{member}/pesde.toml'))) < INDEPENDENT_FROM
 
 
 def matches_places(actual, pattern):
@@ -93,7 +112,7 @@ def matches_pattern(actual, pattern):
 
 def collect():
     found = []
-    for m in MANIFESTS:
+    for m in MANIFESTS + [f'{p}/pesde.toml' for p in INDEPENDENT if follows_lockstep(p)]:
         found.append((m, manifest_version(read(m))))
     for f, rx in SITES:
         mm = re.search(rx, read(f))
@@ -117,6 +136,20 @@ def check():
     em = re.search(PATTERN_ECHO_SITE[1], read(PATTERN_ECHO_SITE[0]))
     if em is None or em.group(2) != pattern:
         print(f'  MISMATCH {PATTERN_ECHO_SITE[0]}: asserted pattern {em.group(2) if em else None!r} != VERSION_PATTERN {pattern!r}')
+        ok = False
+    # [2026-10-12 round14 Q131] a bump without `pesde install` left the six lock files on the old version and every
+    # gate green (release rehearsal E43) — the lock's own `version` line must repeat its manifest's.
+    stale = []
+    for lock, manifest in LOCKS:
+        if not os.path.exists(os.path.join(ROOT, lock)):
+            continue  # a tree that was never installed (an export without lock files) has nothing to compare
+        lv, mv = manifest_version(read(lock)), manifest_version(read(manifest))
+        if lv != mv:
+            stale.append(f'{lock}: {lv} (manifest {mv})')
+    if stale:
+        for s in stale:
+            print(f'  STALE LOCK {s}')
+        print('  run `mise exec -- pesde install` (it rewrites the lock files; then relink — ./scripts/test.sh does)')
         ok = False
     if not ok:
         sys.exit(1)
@@ -151,19 +184,26 @@ def cut_changelog(path, new):
 def bump_package(member, new):
     if member not in INDEPENDENT:
         sys.exit(f'not an independently versioned package: {member} (choose from {", ".join(INDEPENDENT)})')
+    if follows_lockstep(member):
+        sys.exit(f'{member} is still in the quad lockstep (its version is below {".".join(map(str, INDEPENDENT_FROM))}) — '
+                 f'`bump <version>` raises it together with quad; `bump-package` is for after that')
     check_semver(new)
     manifest = f'{member}/pesde.toml'
     old = manifest_version(read(manifest))
     write(manifest, re.sub(r'(?m)^version = "[^"]+"$', f'version = "{new}"', read(manifest), count=1))
     head = cut_changelog(f'{member}/CHANGELOG.md', new)
     print(f'bumped {member} {old} -> {new}; {member}/CHANGELOG.md [Unreleased] cut to {head}')
+    print('next: mise exec -- pesde install   # rewrites the pesde.lock files — check-version fails until then')
+    tag = f'{REGISTRY_NAME[member]}/{new}'
+    print(f'then (after commit): git tag -a {tag} -m "{REGISTRY_NAME[member]} {new}" && git push origin {tag}')
     print('publish it before (or together with) the quad release that needs it: python3 scripts/publish.py --with ' + member)
 
 
 def bump(new):
     check_semver(new)
     old = manifest_version(read('quad-base/pesde.toml'))
-    for m in MANIFESTS:
+    riding = [p for p in INDEPENDENT if follows_lockstep(p)]  # decided BEFORE any manifest changes
+    for m in MANIFESTS + [f'{p}/pesde.toml' for p in riding]:
         write(m, re.sub(r'(?m)^version = "[^"]+"$', f'version = "{new}"', read(m), count=1))
     for f, rx in SITES + [(f, rx.replace('OLD', re.escape(old))) for f, rx in BUMP_ONLY]:
         s, n = re.subn(rx, lambda mo: mo.group(1) + new + mo.group(3) if mo.lastindex == 3 else mo.group(1) + new + mo.group(2), read(f))
@@ -185,19 +225,34 @@ def bump(new):
     # [2026-09-13 사용자] [Unreleased] 아래에는 고정 안내문 한 줄과 `---`가 있다(비어 있을 때 다음 버전 헤딩이 붙어 보이던 것을 가른다).
     # 안내문·hr은 남기고 그 사이의 항목만 새 버전 헤딩 아래로 옮긴다. 안내문/hr이 없으면 옛 방식(헤딩 바로 뒤에 삽입).
     print(f'bumped {old} -> {new}; CHANGELOG [Unreleased] cut to {head}')
-    print(f'next (after commit): git tag -a {new} -m "quad {new}" && git push origin {new}   # tags do not follow branch sync — push them to github/upstream too (conventions 2026-09-11)')
-    leftovers = []
+    for p in riding:
+        print(f'  with it (lockstep until {".".join(map(str, INDEPENDENT_FROM))}): {p} -> {new}; {p}/CHANGELOG.md cut to {cut_changelog(f"{p}/CHANGELOG.md", new)}')
+    for p in INDEPENDENT:
+        if p not in riding:
+            print(f'  NOT bumped (versioned on its own): {p} {manifest_version(read(f"{p}/pesde.toml"))} — `bump-package {p} <version>` first if this release needs a new one')
+    print('next: mise exec -- pesde install   # rewrites the six pesde.lock files — check-version (and so test.sh) fails until then')
+    print(f'then (after commit): git tag -a {new} -m "quad {new}" && git push origin {new}   # tags do not follow branch sync — push them to github/upstream too (conventions 2026-09-11)')
+    # What the bump does not rewrite: prose that names the old version. Verbatim error strings are mixed in, so
+    # this only lists them. On a MAJOR change the install ranges and "N.x" wording go stale too (rehearsal E43).
+    needles = [old]
+    old_major, new_major = split_tail(old)[0].split('.')[0], split_tail(new)[0].split('.')[0]
+    if old_major != new_major:
+        needles += [f'^{old_major}.', f'{old_major}.x']
+    files = [os.path.join(ROOT, 'README.md'), os.path.join(ROOT, 'docs', 'site', 'sync-docs.py')]
     for dp, dn, fn in os.walk(os.path.join(ROOT, 'docs')):
         if 'site' in dp.split(os.sep):
             continue
-        for f in fn:
-            if f.endswith('.md'):
-                p = os.path.join(dp, f)
-                for i, line in enumerate(open(p, encoding='utf-8'), 1):
-                    if old in line:
-                        leftovers.append(f'{os.path.relpath(p, ROOT)}:{i}')
+        files += [os.path.join(dp, f) for f in fn if f.endswith('.md')]
+    leftovers = []
+    for p in files:
+        if not os.path.exists(p):
+            continue
+        for i, line in enumerate(open(p, encoding='utf-8'), 1):
+            hit = [n for n in needles if n in line]
+            if hit:
+                leftovers.append(f'{os.path.relpath(p, ROOT)}:{i}  ({", ".join(hit)})')
     if leftovers:
-        print(f'docs still mention {old} (fix by hand, then run docs/site/sync-docs.py):')
+        print(f'still mention {" / ".join(needles)} (fix by hand, then run docs/site/sync-docs.py):')
         for l in leftovers:
             print('  ', l)
 

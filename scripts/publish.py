@@ -45,10 +45,12 @@ pesde 문서 "Multi-target Packages"가 정한 유일한 방법은 *"같은 이�
     python3 scripts/publish.py --keep          # 스테이징 트리를 지우지 않고 경로를 찍는다
     python3 scripts/publish.py --with type-version-check,quad-error   # 독립 번호 패키지도 같이 게시
 
-**[2026-09-15 사용자 결정 — 공개 표면 (3) (나)]** `quad_error`·`type_version_check`는 quad와 lockstep이 아니다
-(자기 SemVer, `check-version.py bump-package`). 기본 게시는 lockstep 셋(쌍둥이 포함)뿐이고, 둘은 **새 번호를
-올린 릴리즈에서만** `--with`로 더한다 — 같은 이름+버전+타깃은 다시 못 올리므로 매번 싣지 않는다. 스테이징
-워크스페이스엔 언제나 다섯이 다 있어(게이트·`version = "^"` 해소용) 게시 여부와 무관하게 test.sh가 돈다.
+**[2026-10-12 사용자 결정 — round14 Q131]** `quad_error`·`type_version_check`는 **4.0.0 전까지 quad와 lockstep**이라
+(매 릴리즈 같은 새 번호 — `check-version.py bump`가 같이 올린다) 그 동안은 `--with` 없이도 **늘 같이 게시**한다. 4.0.0부터는
+자기 SemVer(`check-version.py bump-package`)이고 기본 게시는 lockstep 셋(쌍둥이 포함)뿐 — 둘은 **새 번호를 올린 릴리즈에서만**
+`--with`로 더한다(같은 이름+버전+타깃은 다시 못 올리므로 매번 싣지 않는다). `--with`는 여러 번 써도, 쉼표로 묶어도 된다
+(2026-09-27에는 두 번 쓰면 앞의 것이 조용히 버려졌다). 스테이징 워크스페이스엔 언제나 다섯이 다 있어(게이트·`version = "^"`
+해소용) 게시 여부와 무관하게 test.sh가 돈다.
 
 `--real`은 `pesde auth login`(GitHub)과 `qwreey` 스코프 소유가 선행돼야 한다 — dry-run은 둘 다
 필요 없다.
@@ -109,8 +111,17 @@ COPY_TOP = list(MEMBERS) + ['scripts', 'pesde.toml', 'LICENSE', 'README.md', 'CH
                             # 전역 pesde(0.7.3)로 떨어지고 luau-analyze가 nonstrict로 돈다(실측: 0.7.3 배너)
                             'mise.toml', '.luaurc']
 TWIN_PREFIX = 'rbx-'
-# [2026-09-15] versioned on their own — published only when named in --with
+# [2026-10-12] the two general-purpose packages: published with every release while they ride the lockstep (their
+# version is below INDEPENDENT_FROM — `check-version.py`), only when named in --with once they are on their own
 INDEPENDENT = ('quad-error', 'type-version-check')
+INDEPENDENT_FROM = (4, 0, 0)
+
+
+def rides_lockstep(member, root):
+    text = open(os.path.join(root, member, 'pesde.toml'), encoding='utf-8').read()
+    v = re.search(r'(?m)^version = "([^"]+)"$', text)
+    core = (v.group(1) if v else '0.0.0').split('+', 1)[0].split('-', 1)[0]
+    return tuple(int(x) for x in core.split('.')) < INDEPENDENT_FROM
 
 
 def run(cmd, cwd, capture=True, check=False):
@@ -306,8 +317,9 @@ def main():
     ap.add_argument('--twins', choices=sorted(TWIN_SETS), default='four',
                     help='양 타깃으로 게시할 멤버 집합 (기본 four = 사용자 결정 2026-09-10; '
                          'three는 옛 구성 — 위 독스트링 참고)')
-    ap.add_argument('--with', dest='with_independent', default='',
-                    help='같이 게시할 독립 번호 패키지(쉼표 구분: quad-error,type-version-check) — 새 번호를 올린 때만')
+    ap.add_argument('--with', dest='with_independent', action='append', default=[],
+                    help='같이 게시할 독립 번호 패키지(쉼표 구분 또는 여러 번: quad-error,type-version-check) — '
+                         '4.0.0 이후 새 번호를 올린 때만(그 전에는 lockstep이라 늘 같이 게시)')
     ap.add_argument('--no-test', action='store_true', help='스테이징 test.sh 생략')
     ap.add_argument('--keep', action='store_true', help='스테이징 트리를 남긴다')
     ap.add_argument('--stage-only', action='store_true', help='스테이징만 짓고 멈춘다')
@@ -315,7 +327,7 @@ def main():
                     help='스테이징을 만들 상위 디렉터리 (기본: 시스템 임시 디렉터리)')
     args = ap.parse_args()
     dry = not args.real
-    with_independent = [m for m in args.with_independent.split(',') if m]
+    with_independent = [m for chunk in args.with_independent for m in chunk.split(',') if m]
     for m in with_independent:
         if m not in INDEPENDENT:
             sys.exit(f'--with: {m}는 독립 번호 패키지가 아니다({", ".join(INDEPENDENT)} 중에서)')
@@ -352,14 +364,15 @@ def main():
                 sys.exit('스테이징 게이트 실패 — 게시하지 않습니다.')
 
         def selected(m):
-            return m not in INDEPENDENT or m in with_independent
+            return m not in INDEPENDENT or m in with_independent or rides_lockstep(m, stage)
         order = [(m, 'luau') for m in ('quad-error', 'type-version-check', 'quad-types',
                                        'quad-base') if selected(m)]
         order += [(TWIN_PREFIX + m, 'roblox') for m in TWIN_SETS[args.twins] if selected(m)]
         order += [('quad-roblox', 'roblox')]
         for m in INDEPENDENT:
             v = re.search(r'(?m)^version = "([^"]+)"$', open(os.path.join(stage, m, 'pesde.toml'), encoding='utf-8').read())
-            print(f'  {MEMBERS[m]} {v.group(1) if v else "?"} — {"게시함" if selected(m) else "게시 안 함(이미 올라간 번호여야 한다 — 새 번호면 --with)"}')
+            why = '게시함(lockstep — 4.0.0 전)' if rides_lockstep(m, stage) else ('게시함(--with)' if selected(m) else '게시 안 함(이미 올라간 번호여야 한다 — 새 번호면 --with)')
+            print(f'  {MEMBERS[m]} {v.group(1) if v else "?"} — {why}')
 
         print(f'\n== publish ({"dry-run" if dry else "REAL"}) — {len(order)}건')
         rows, failed = [], []
