@@ -21,6 +21,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 - **언제**: `q.Bookkeeping`의 부기 함수(`getBookkeeping`/`getOffsetAt`/`setLength`/`setOffsetSource`/`setEmpty`)에 `ownerKey`(부기의 주인 — 요소 또는 Slot)로 `nil`을 넘겼을 때. `{fnName}`은 부른 함수 이름입니다. 같은 조건이라도 `claimOwnerAt`은 Quad0158, `releaseOwner`는 Quad0162로 따로 던집니다.
 - **고치려면**: 실제 owner를 넘기세요.
+- **같은 실수를 다른 자리에서 알리는 것**: `claimOwnerAt`은 Quad0158, `releaseOwner`는 Quad0162입니다 — 같은 `nil` owner 실수를 부른 함수에 따라 번호를 달리해 알립니다.
 - **참고**: [Length/Offset 부기](../extend/02-dispatch-handler-contract.md#lengthoffset-부기)
 
 ### Quad0021

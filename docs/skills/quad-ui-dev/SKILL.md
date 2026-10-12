@@ -378,6 +378,26 @@ slot:Single(selected, nil, { OwnsElements = false })
 -- selected:Set(other) now unparents the previous element instead of destroying it
 ```
 
+### 4.4 Modal / overlay recipe (same shape as `how-to/09`)
+
+Default: keep the instance and toggle `Visible`; the open flag lives in a `Source` **outside** the component,
+the children come in as a `Slot` (`props.Children or None` in the numeric position).
+
+```luau
+local function Modal(props: { read Open: q.Source<boolean>, read OnConfirm: () -> (), read Children: q.Slot<Instance>? }): Frame
+    return D.Frame {
+        Visible = props.Open,
+        props.Children or None,
+        D.TextButton { Text = "OK", Activated = function() props.Open:Set(false); props.OnConfirm() end },
+    }
+end
+```
+
+Alternative when the modal should exist only while open: put a `State<Instance?>` straight into the screen's
+numeric position and swap it with `activeModal:SetAndDispose(Modal { ... })` / `SetAndDispose(nil)` (a plain
+`:Set` only unparents the old modal; it is not destroyed). No explicit `:Single` is needed there. If you do hand-roll a
+mapping `:Single(state, updateFn)` for an overlay, write the type arguments (`slot:Single<<Item, UD>>(…)`, see 4.3).
+
 ---
 
 ## 5. Studio UI Binding (`q.Claim`)

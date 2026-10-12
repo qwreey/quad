@@ -321,6 +321,8 @@ print(single:Get(1).LayoutOrder)   --> 4      (앞이 줄어 당겨졌다)
 ```
 
 **실행하면** 내 원소는 그대로인 채 `LayoutOrder`만 앞 구간을 따라 움직입니다. `Offset`이 `State`라서 `:Compute`로 이어 붙이면 그 뒤로는 quad가 알아서 갱신합니다.
+
+`--!strict`에서는 이 예시처럼 값을 원소로 **매핑**하는 `:Single`(`updateFn`을 주는 경우)에 타입 인자를 적어 `q.Slot<<Instance>>():Single<<string, nil>>(cur, function(ctx) … end)`처럼 씁니다. 안 적으면 타입 검사가 `Item`을 추론하지 못합니다(`updateFn`을 생략하는 사용은 해당 없습니다). 자세한 모양은 [레퍼런스: `Slot`](../reference/core/06-slot.md)의 `slot:Single` 절을 보세요.
 <!-- 근거: 2026-09-11 mock 실측(저장소 내부 기록) — LayoutOrder 4 → 5 → 4, cur:Set(nil)이면 자식 수가 4에서 3으로 -->
 
 <details>

@@ -157,6 +157,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 - **언제**: `claimOwnerAt`의 `inst`(그 자리의 주인 — ownerKey)로 `nil`을 넘겼을 때.
 - **고치려면**: 실제 owner를 넘기세요.
+- **같은 실수를 다른 자리에서 알리는 것**: 부기 함수(`getBookkeeping`/`setLength` 등)는 Quad0020, `releaseOwner`는 Quad0162입니다 — 같은 `nil` owner 실수를 부른 함수에 따라 번호를 달리해 알립니다.
 - **참고**: [`q.Bookkeeping.claimOwnerAt(element, inst, k)`](../extend/02-dispatch-handler-contract.md#qbookkeepingclaimowneratelement-inst-k)
 
 ### Quad0159
@@ -190,6 +191,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 - **언제**: `releaseOwner`의 `ownerKey`로 `nil`을 넘겼을 때.
 - **고치려면**: 실제 owner를 넘기세요.
+- **같은 실수를 다른 자리에서 알리는 것**: 부기 함수(`getBookkeeping`/`setLength` 등)는 Quad0020, `claimOwnerAt`은 Quad0158입니다 — 같은 `nil` owner 실수를 부른 함수에 따라 번호를 달리해 알립니다.
 - **참고**: [`q.Bookkeeping.releaseOwner(element, ownerKey)`](../extend/02-dispatch-handler-contract.md#qbookkeepingreleaseownerelement-ownerkey)
 
 ### Quad0163

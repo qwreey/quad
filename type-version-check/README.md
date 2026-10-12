@@ -2,6 +2,8 @@
 
 Compile-time version pattern matching for string literal types, used by **quad**, not quad-specific. `CheckVersion<Actual, Pattern>` compares a version literal against patterns built from `|` alternatives, glob (`*`) and lexicographic-floor (`N^`) places; a SemVer prerelease tail must be present on both sides or neither, and build metadata is ignored (see the source header for the full rules). The same rules are exported as a runtime function, `matchesPattern(actual, pattern)`, which is what `quad_roblox` uses to gate the installed `quad_base` version.
 
+The `N` in `N^` is an ASCII decimal integer; other notations (hexadecimal, exponent, `inf`, `nan`, a sign, whitespace) are undefined. A place whose text before `^` is not a number (`x^`, a bare `^`) never matches.
+
 Part of the [quad](https://github.com/qwreey/quad) monorepo. **Documentation (Korean): <https://quad.qwreey.moe/>** — start at [설치](https://quad.qwreey.moe/getting-started/00-installation/) or [왜 Quad인가](https://quad.qwreey.moe/overview/01-why-quad/); the same text is in the repo under [`docs/`](https://github.com/qwreey/quad/tree/main/docs).
 
 This package is versioned **on its own** (SemVer, see [`CHANGELOG.md`](./CHANGELOG.md)) — it was published in lockstep with quad up to 3.2.0, and 4.0.0 is its first independent release. The three quad packages below (`quad_base`, `quad_roblox`, `quad_types`) share one version; `quad_base` is the main one, and the docs show its version:

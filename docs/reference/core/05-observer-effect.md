@@ -33,8 +33,10 @@ local D = q.Declaration
 
 만들어진 직후의 핸들은 **아직 실행 자격이 없습니다**(`.Subscribed`는 `false`). 자격을 얻는 경로는 둘이고, 둘 중 하나만 골라야 합니다.
 
-1. **props의 숫자 키 자리에 핸들을 넣어 인스턴스에 매다는 것** — 그 인스턴스가 사는 동안만 실행 자격을 유지합니다. 인스턴스가 파괴되면 `Observer`는 **관측을 멈추고**(그 뒤로는 값이 바뀌어도 콜백이 불리지 않습니다 — 기본 Deferred 시그널 설정에선 파괴 즉시; Immediate 설정에선 파괴 파동 안에서 죽는 쪽의 cleanup·`OnDestroyed`가 부른 `Set`은 같은 호스트의 핸들을 한 번 더 돌릴 수 있습니다), `Effect`은 **cleanup이 한 번 돈 뒤** 멈춥니다. UI에 딸린 부수효과는 대개 이쪽입니다.
+1. **props의 숫자 키 자리에 핸들을 넣어 인스턴스에 매다는 것** — 그 인스턴스가 사는 동안만 실행 자격을 유지합니다. 인스턴스가 파괴되면 `Observer`는 **관측을 멈추고**(그 뒤로는 값이 바뀌어도 콜백이 불리지 않습니다 — 기본 Deferred 시그널 설정에선 파괴 즉시; Immediate 설정에선 파괴 파동 안에서 죽는 쪽의 cleanup·`OnDestroyed`가 부른 `Set`이 어떤 핸들을 한 번 더 돌리는지는 엔진의 파괴·연결 해제 순서에 달려 있습니다 — 관측이며 계약이 아닙니다), `Effect`은 **cleanup이 한 번 돈 뒤** 멈춥니다. UI에 딸린 부수효과는 대개 이쪽입니다.
 2. **전역 구독** — `:Subscribe()`(강한 유지) 또는 `:WeakSubscribe()`(약한 유지). 인스턴스와 무관하게 사는 구독입니다.
+
+파괴 순서에 관해 정해 둔 것은 없습니다. **서브트리 안 인스턴스들의 파괴 순서는 정하지 않습니다** — 한 인스턴스 안의 cleanup·`OnDestroyed`가 다른 인스턴스의 것보다 먼저 도는지에 기대지 마세요. 또 **죽어 가는 호스트의 `Slot`을 cleanup·`OnDestroyed` 안에서 CRUD하는 것은 정의되지 않은 동작입니다**([죽은 Slot과 마운트 규칙](./06-slot.md#죽은-slot과-마운트-규칙)).
 
 **둘을 겹칠 수는 없습니다.** 이미 한쪽으로 살아 있는 핸들을 다른 쪽으로 다시 살리려 하면 거절합니다 — 묶인 핸들에 `:Subscribe()`/`:WeakSubscribe()`를 부르면 `Observer: already bound to an Instance`(`Effect`도 주어만 바뀐 같은 문구), 반대로 구독된 핸들을 숫자 키 자리(`D.Frame { h }`)에 놓으면 `Quad0104 bindLifetime: value is already subscribed`([2026-09-27 mock 실측] — 강한·약한 구독 둘 다).
 

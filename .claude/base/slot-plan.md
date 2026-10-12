@@ -168,10 +168,8 @@ base는 여전히 `T`가 뭔지 모른다 — **아는 건 백엔드고 base는 
 InstanceChild.luau`. Slot은 "뮤터블 배열"을 다루고 이 핸들러는 "정적으로
 하나 박아넣는" 더 단순한 경우라 별개로 둠.
 
-**[2026-09-27 round13 Q75 검토 중]** 위 native op들이 받는 offset이 배치·파동 중 절대 오프셋이라는 전제가
-실행 탐사에서 반증됐다 — 배치·파동 중 native op에 stale offset이 넘어가는 경우가 있다(지금 백엔드에서는
-무해하다고 판단됐으나 사용자 문항이 열려 있다, `qa-request/post-implementation-review-round13.md` §4). 본문은
-결정 전이라 그대로 둔다.
+**[2026-10-07 round14 Q75 닫힘]** 배치·파동·파괴 순회 도중에 native op에 넘어가는 offset은 참고값이며 계약은 최종 논리 `Offset`뿐이다
+(지금의 두 백엔드는 offset을 쓰지 않는다; 순서를 존중하는 백엔드가 생기면 다시 본다). 위 "0-based 절대 offset" 서술은 이 단서 아래에서 읽는다. 코드 무변경.
 
 ## 개념
 
