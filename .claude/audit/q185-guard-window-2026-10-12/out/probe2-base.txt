@@ -1,0 +1,62 @@
+==========================================================================================
+(IS) UICorner = src (nil→8); host ChildAdded → src:Set(16)
+  [imm] after: corners=2 [8,16] src=16
+         after src:Set(nil): corners=1 [16]
+         after src:Set(4): corners=2 [16,4]
+  [def] after: corners=1 [16] src=16
+         after src:Set(nil): corners=0 []
+         after src:Set(4): corners=1 [4]
+==========================================================================================
+(SL) Slot rawAdd: element OnChange('Parent') → slot:Add(other) (Parent write precedes setLength)
+  [imm] children=[a,b,c] Length=3
+         after Add(d,1): children=[a,b,c,d] Length=4
+         after Clear: children=[] Length=0
+  [def] children=[a,b,c] Length=3
+         after Add(d,1): children=[a,b,c,d] Length=4
+         after Clear: children=[] Length=0
+==========================================================================================
+(SL2) offsets after nested Add from element's OnChange('Parent')
+  [imm] elements=[a@0 b@1 c@2] Length=3
+         after Add(d,1) elements=[d@0 a@1 b@2 c@3] Length=4
+  [def] elements=[a@0 b@1 c@2] Length=3
+         after Add(d,1) elements=[d@0 a@1 b@2 c@3] Length=4
+==========================================================================================
+(IC) host Frame{ cs }, cs:Set(B) where B has OnChange('Parent') → cs:Set(C)
+  [imm] children=[B,C] cs=C
+         after cs:Set(nil): children=[C]
+         q.dispose(C): Quad0179
+  [def] children=[C] cs=C
+         after cs:Set(nil): children=[]
+         q.dispose(C): ok
+==========================================================================================
+(SL3) materialize walk: unmounted slot{a, b(OnChange Parent → slot:Add(c))} then host Frame{slot}
+  [imm] elements=[a@0 b@1 c@2] Length=3 children=[a,b]
+  [def] elements=[a@0 b@1 c@2] Length=3 children=[a,b,c]
+==========================================================================================
+(SL4) Slot:Replace / nested slot element: b inside inner slot, OnChange Parent → outer:Add(c)
+  [imm] THREW: ./probe2.luau:111: Quad0167 Slot: cannot mutate a Slot while it is being mounted (it, or a Slot inside it, is mid-mount) - a :List/:Single updateFn (or an Observer that fires during that mount) must not CRUD an ancestor Slot; do it after the mount has returned, outside the updateFn (or an earlier mount into this Slot or a Slot inside it threw mid-way - then this Slot stays unusable: dispose its host Instance)
+  [def] outer=[a@0 c@1 slot@2] Length=3 children=[a,b,c]
+==========================================================================================
+(SL5) unmount: host Frame{ ss }, ss = Source(slot{a,b}); b OnChange Parent nil → slot:Add(c); ss:Set(nil)
+  [imm] slot elements=[a,b,c] mounted=false host children=[c]
+         remount host2 children=[a,b,c] host children=[] Length=3
+  [def] slot elements=[a,b,c] mounted=false host children=[]
+         remount host2 children=[a,b,c] host children=[] Length=3
+==========================================================================================
+(SL6-Extract) slot{a,b,d} mounted; b OnChange Parent nil → slot:Add(c, 1); slot:Extract(2)
+  [imm] elements=[c@0 b@1 d@2] Length=3 children=[a,d,c] IndexOf(b)=2
+  [def] elements=[c@0 a@1 d@2] Length=3 children=[a,d,c] IndexOf(b)=nil
+==========================================================================================
+(SL6-Remove) slot{a,b,d} mounted; b OnChange Parent nil → slot:Add(c, 1); slot:Remove(2)
+  [imm] elements=[c@0 b@1 d@2] Length=3 children=[a,d,c] IndexOf(b)=2
+  [def] elements=[c@0 a@1 d@2] Length=3 children=[a,d,c] IndexOf(b)=nil
+==========================================================================================
+(SL7) Replace(2, e): old b OnChange Parent nil → slot:Add(c, 1)
+  [imm] elements=[c@0 a@1 e@2 d@3] Length=4 children=[a,d,c,e]
+         after Add(z): elements=[c@0 a@1 e@2 d@3 z@4] Length=5
+  [def] elements=[c@0 a@1 e@2 d@3] Length=4 children=[a,d,e,c]
+         after Add(z): elements=[c@0 a@1 e@2 d@3 z@4] Length=5
+==========================================================================================
+(SL8) Splice(2,0, inner{x}) where x OnChange Parent → inner:Add(y)
+  [imm] inner Length=2 outer Length=3 children=[a,x]
+  [def] inner Length=2 outer Length=3 children=[a,x,y]

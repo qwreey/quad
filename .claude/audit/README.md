@@ -114,3 +114,4 @@
 - `round13-drafts-2026-09-27/spec-drafts/` — **[2026-09-27 자율 루프 E76]** 변이 공백 48 → spec 초안(`*.additions.luau` 13·`apply.py`·`run48-results.json`) — 44 죽음, `Q154` (a) 채택 시 `apply.py` 한 번; 남은 넷은 `Q156`.
 
 - `h895-reentry-order-2026-10-07/` — **[2026-10-07 정적 분석 수렴 확인 후속, opus]** Immediate 동기 엔진 신호 재진입 아래 "엔진 쓰기 → quad 기록" 순서 쓸기 — Property(H-895)·Slot 넷·IC/IS, Deferred 셔임 대조, 처방 후보 패치 셋(candD 권고)·프로브·출력; 원장 round14 §6 `Q184`·`Q185`.
+- `q185-guard-window-2026-10-12/` — **[2026-10-12 round14 Q185, 메인]** 위 조사의 Slot 쪽 후속: 기존 `Quad0167` 가드 창을 엔진 호출까지 넓히는 시제품(`candD-guard.patch`)과 10-07 프로브가 안 본 재진입 조합 다섯(`probe4.luau`)을 HEAD·후보 S4·시제품 사본에서 대조 — 후보 S4는 새 조합 다섯 중 하나만 고치고 시제품은 전부 거부(상태 일관), 스펙 62 통과, 비용은 CRUD 잡음 안·마운트 0~10%. 결정은 원장 §6 Q185.

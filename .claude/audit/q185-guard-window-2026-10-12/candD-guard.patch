@@ -1,0 +1,204 @@
+diff -ru ../base/quad-base/src/Slot/Raw.luau quad-base/src/Slot/Raw.luau
+--- ../base/quad-base/src/Slot/Raw.luau	2026-10-12 16:09:28.154369536 +0900
++++ quad-base/src/Slot/Raw.luau	2026-10-12 16:21:43.773787353 +0900
+@@ -153,7 +153,10 @@
+ 		else
+ 			S.BK.setOffsetSource(self, index, S.None)
+ 			if physical then
++				local was = self._materializing -- Q185 (d): engine-call window
++				self._materializing = true
+ 				module.Backend.nativeInsert(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
++				self._materializing = was
+ 			end
+ 			S.BK.setLength(self, index, 1, self._physicalTarget, element)
+ 		end
+@@ -178,12 +181,15 @@
+ 		local bk = S.BK.getBookkeeping(self)
+ 		unbindObserverAt(bk, index)
+ 		S.releaseOwner(element, self)
++		local was = self._materializing -- Q185 (d): engine-call window (the captured `index` must hold until vacate)
++		self._materializing = true
+ 		if S.isSlot(element) then S.destroySlotTree(element)
+ 		elseif self._mounted then
+ 			module.Backend.nativeRemove(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
+ 		else
+ 			module.Backend.nativeDispose(element)
+ 		end
++		self._materializing = was
+ 		vacate(self, index, element, bk)
+ 	end
+ 
+@@ -192,10 +198,13 @@
+ 		local bk = S.BK.getBookkeeping(self)
+ 		unbindObserverAt(bk, index)
+ 		S.releaseOwner(element, self)
++		local was = self._materializing -- Q185 (d): engine-call window
++		self._materializing = true
+ 		if S.isSlot(element) then leaveAsElement(element, deferPhysical)
+ 		elseif self._mounted and not deferPhysical then
+ 			module.Backend.nativeExtract(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
+ 		end
++		self._materializing = was
+ 		vacate(self, index, element, bk)
+ 	end
+ 
+@@ -205,10 +214,13 @@
+ 		unbindObserverAt(bk, index)
+ 		-- releaseOwner NOT called — the one difference from rawUnmount: releasing
+ 		-- would let someone else claim what slot._detached still holds.
++		local was = self._materializing -- Q185 (d): engine-call window
++		self._materializing = true
+ 		if S.isSlot(element) then S.unmountSlotTree(element)
+ 		elseif self._mounted then
+ 			module.Backend.nativeExtract(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
+ 		end
++		self._materializing = was
+ 		vacate(self, index, element, bk)
+ 	end
+ 
+@@ -222,7 +234,9 @@
+ 		bk.indexOfElement[oldElement] = nil
+ 		bk.indexOfElement[newElement] = index
+ 
++		local was = self._materializing -- Q185 (d): engine-call windows below (the captured `index` must hold to the tail)
+ 		if not self._mounted then
++			self._materializing = true
+ 			if destroyOld then
+ 				S.destroyElement(oldElement)
+ 			elseif S.isSlot(oldElement) then
+@@ -233,6 +247,7 @@
+ 				if self._physicalTarget ~= nil then S.teardownTree(oldElement) end
+ 				if oldElement._wrapped ~= nil then S.releaseSugarWrapper(oldElement) end
+ 			end
++			self._materializing = was
+ 			if self._physicalTarget ~= nil then
+ 				if S.isSlot(newElement) then
+ 					local chainSlots, chainOlds = raiseChain(self) -- Q52 window, whole owner chain (see rawAdd)
+@@ -247,6 +262,7 @@
+ 		end
+ 
+ 		local offset = S.BK.getOffsetAt(self, index)
++		self._materializing = true
+ 		if S.isSlot(oldElement) or S.isSlot(newElement) then
+ 			if S.isSlot(oldElement) then
+ 				if destroyOld then S.destroySlotTree(oldElement) else leaveAsElement(oldElement) end
+@@ -255,6 +271,7 @@
+ 				op(self._mountedInst, offset, { oldElement })
+ 			end
+ 			if S.isSlot(newElement) then
++				self._materializing = was
+ 				local chainSlots, chainOlds = raiseChain(self) -- Q52 window, whole owner chain (see rawAdd)
+ 				S.attachSlot(newElement, self._physicalTarget, self, index, self._mounted)
+ 				restoreChain(chainSlots, chainOlds)
+@@ -266,6 +283,7 @@
+ 			local op = if destroyOld then module.Backend.nativeRemove else module.Backend.nativeExtract
+ 			op(self._mountedInst, offset, { oldElement }, { newElement })
+ 		end
++		self._materializing = was
+ 		S.BK.setLength(self, index, 1, self._physicalTarget, newElement)
+ 	end
+ 
+@@ -393,6 +411,11 @@
+ 				if S.isSlot(element) then S.collectLeaves(element, newLeaves)
+ 				else table.insert(newLeaves, element) end
+ 			end
++			local was = self._materializing -- Q185 (d): engine-call window — this Slot and the arriving subtrees
++			self._materializing = true
++			for _, element in ipairs(newElements) do
++				if S.isSlot(element) then S.raiseTree(element) end
++			end
+ 			if #removedLeaves > 0 then
+ 				module.Backend.nativeExtract(self._mountedInst, base, removedLeaves, if #newLeaves > 0 then newLeaves else nil)
+ 			elseif #newLeaves > 0 then
+@@ -401,6 +424,7 @@
+ 			for _, element in ipairs(newElements) do
+ 				if S.isSlot(element) then S.markMountedTree(element, self._mountedInst) end
+ 			end
++			self._materializing = was
+ 		end
+ 
+ 		if ownsGate then
+diff -ru ../base/quad-base/src/Slot/Tree.luau quad-base/src/Slot/Tree.luau
+--- ../base/quad-base/src/Slot/Tree.luau	2026-10-12 16:09:28.154178856 +0900
++++ quad-base/src/Slot/Tree.luau	2026-10-12 16:21:04.220040952 +0900
+@@ -78,16 +78,29 @@
+ 	-- walk (recursive `_mounted`/`_mountedInst`) and ONE physical op for the
+ 	-- whole subtree's flattened leaves — never one op per leaf. rawSplice uses
+ 	-- the halves separately to fold several new subtrees into its single op.
++	-- Q185 (d): the engine call that inserts a subtree runs with every Slot of that subtree
++	-- flagged (`_materializing`), so a synchronous engine signal fired from inside it (Immediate
++	-- `Parent` changed) cannot CRUD a Slot whose leaves are half-inserted. markMountedTree lowers it.
++	local function raiseTree(slot: any)
++		slot._materializing = true
++		for _, element in ipairs(slot._elements) do
++			if S.isSlot(element) then raiseTree(element) end
++		end
++	end
++
+ 	local function markMountedTree(slot: any, physicalTarget: any)
+ 		slot._mounted = true
+ 		slot._mountedInst = physicalTarget
++		slot._materializing = false
+ 		for _, element in ipairs(slot._elements) do
+ 			if S.isSlot(element) then markMountedTree(element, physicalTarget) end
+ 		end
+ 	end
+ 
+ 	local function mountSlotTree(slot: any, physicalTarget: any)
+-		module.Backend.nativeInsert(physicalTarget, slot.Offset:Get(), S.collectLeaves(slot))
++		local leaves = S.collectLeaves(slot)
++		raiseTree(slot)
++		module.Backend.nativeInsert(physicalTarget, slot.Offset:Get(), leaves)
+ 		markMountedTree(slot, physicalTarget)
+ 	end
+ 
+@@ -145,14 +158,20 @@
+ 	end
+ 
+ 	local function unmountSlotTree(slot: any)
++		-- Q185 (d): logical half FIRST — by the time the engine call runs (and its synchronous
++		-- signals with it) the subtree is already plain unmounted, where CRUD is bookkeeping only.
+ 		if slot._mounted then
+-			module.Backend.nativeExtract(slot._mountedInst, slot.Offset:Get(), S.collectLeaves(slot))
++			local inst, offset, leaves = slot._mountedInst, slot.Offset:Get(), S.collectLeaves(slot)
++			teardownTree(slot)
++			module.Backend.nativeExtract(inst, offset, leaves)
++		else
++			teardownTree(slot)
+ 		end
+-		teardownTree(slot)
+ 	end
+ 
+ 	local function destroySlotTree(slot: any)
+ 		if slot._destroyed then return end
++		slot._materializing = true -- Q185 (d): no CRUD on a Slot whose elements are being destroyed/released under it
+ 		if slot._owned == false then
+ 			unmountSlotTree(slot)
+ 			-- round11 Q61 (user decision 2026-09-18): a destroy request (`q.dispose(slot)`, or an
+@@ -190,6 +209,7 @@
+ 			slot._listActivated = nil
+ 			slot._listObserver = nil
+ 			slot._detachCleanup = nil
++			slot._materializing = false
+ 			return
+ 		end
+ 		-- Q14 (a) (사용자 결정 2026-09-07): release ownership in BOTH loops — an `OwnsElements = false`
+@@ -224,6 +244,7 @@
+ 
+ 	S.makeBaseObserver = makeBaseObserver
+ 	S.markMountedTree = markMountedTree
++	S.raiseTree = raiseTree
+ 	S.attachSlot = attachSlot
+ 	S.releaseSugarWrapper = releaseSugarWrapper
+ 	S.teardownTree = teardownTree
+diff -ru ../base/quad-base/src/Slot/types.luau quad-base/src/Slot/types.luau
+--- ../base/quad-base/src/Slot/types.luau	2026-10-12 16:09:28.154476216 +0900
++++ quad-base/src/Slot/types.luau	2026-10-12 16:21:04.220156342 +0900
+@@ -57,6 +57,7 @@
+ 	-- Tree.luau
+ 	makeBaseObserver: (slot: any) -> any,
+ 	markMountedTree: (slot: any, physicalTarget: any) -> (),
++	raiseTree: (slot: any) -> (),
+ 	attachSlot: (slot: any, physicalTarget: any, ownerKey: any, position: number, mount: boolean?) -> (),
+ 	releaseSugarWrapper: (wrapper: any) -> (),
+ 	teardownTree: (slot: any) -> (),

@@ -1,0 +1,22 @@
+==========================================================================================
+(N1) rawAdd: slot{inner{p,q}} ; b OnChange Parent → slot:Add(c, 1) ; slot:Add(b)
+  [imm] elements=[c@0 slot@1 b@2] Length=2 children=4
+  [def] elements=[c@0 slot@1 b@3] Length=4 children=4
+==========================================================================================
+(N2) Replace: slot{inner{p,q}, b, d}; b OnChange Parent nil → slot:Add(c, 1); slot:Replace(2, e)
+  [imm] elements=[c@0 slot@1 e@2 d@3] Length=4 children=5
+  [def] elements=[c@0 slot@1 e@3 d@4] Length=5 children=5
+==========================================================================================
+(N3) Remove: slot{a,b,d}; b OnChange Parent nil → slot:Remove(1); slot:Remove(2)
+  [imm] elements=[b@0] Length=1 children=[d]
+  [def] elements=[d@0] Length=1 children=[d]
+==========================================================================================
+(N4) Remove: slot{a,b,d}; b OnChange Parent nil → slot:Clear(); slot:Remove(2)
+  [imm] callback error: Quad0163
+         elements=[a@0] Length=3 children=[a]
+  [def] elements=[] Length=0 children=[]
+==========================================================================================
+(N5) destroy nested: outer{a, inner{x}}; x OnChange Parent nil → inner:Add(y); outer:Remove(2)
+  [imm] outer=[a@0] Length=1 children=[a] y.claimed=false
+  [def] callback error: Quad0165
+         outer=[a@0] Length=1 children=[a] y.claimed=true
