@@ -303,4 +303,85 @@ do
 end
 
 print()
+print("=== 9. round14 Q154 — hold op 술어는 순수 술어: isClaimed·isHeld는 nil에 거짓(던지지 않음), isHeldBy는 아무도 쥐지 않은 값에 거짓(claim되지 않은 인스턴스·nil 포함) ===")
+-- Contract: core/10 `q.Backend.isClaimed` ("순수 술어입니다 — 던지지 않고, 인스턴스가 아닌 값에도 거짓"),
+-- extend/01 §4 `isHeld` ("순수 술어입니다: 던지지 말고, `nil`에는 거짓") and `isHeldBy` ("`value`를 쥔 것이
+-- 바로 이 `inst`인가 … 순수 술어"). Mutants (E73): LR03 (isClaimed's nil gate → a raise from Relate),
+-- LR06 (isHeld's nil gate → the same), LR08 (isHeldBy without `held ~= nil` — nil == nil read as "held by").
+do
+	local okClaimed, claimed = pcall(function()
+		return q.Backend.isClaimed(nil)
+	end)
+	assert(okClaimed and claimed == false, "isClaimed(nil) is false, not a raise: " .. tostring(claimed))
+	assert(q.Backend.isClaimed(5) == false and q.Backend.isClaimed({}) == false, "isClaimed of a non-Instance is false")
+	local okHeld, held = pcall(function()
+		return q.Backend.isHeld(nil)
+	end)
+	assert(okHeld and held == false, "isHeld(nil) is false, not a raise: " .. tostring(held))
+	assert(q.Backend.isHeld({}) == false, "a value nobody holds is not held")
+
+	local unclaimed = Instance.new("Folder") -- never nativeClaim'd under this provider
+	local inst, other = Instance.new("Folder"), Instance.new("Folder")
+	q.Backend.nativeClaim(inst)
+	q.Backend.nativeClaim(other)
+	local value = {}
+	assert(q.Backend.isHeldBy(value, unclaimed) == false, "a value nobody holds vs an unclaimed Instance: false")
+	assert(q.Backend.isHeldBy(value, inst) == false, "a value nobody holds vs a claimed Instance: false")
+	local okBy, by = pcall(function()
+		return q.Backend.isHeldBy(nil, inst) or q.Backend.isHeldBy(value, nil)
+	end)
+	assert(okBy and by == false, "isHeldBy with a nil on either side is false, not a raise: " .. tostring(by))
+	q.Backend.bindLifetime(inst, value)
+	assert(q.Backend.isHeld(value) and q.Backend.isHeldBy(value, inst), "bound: held, and by this Instance")
+	assert(q.Backend.isHeldBy(value, other) == false and q.Backend.isHeldBy(value, unclaimed) == false, "…and by no other Instance")
+	inst:Destroy()
+	other:Destroy()
+	print("PASS")
+end
+
+print()
+print("=== 10. round14 Q154 — bindLifetime은 값을 인스턴스가 사는 동안 살린다(참조를 놓고 GC가 돌아도 발화); unbindLifetime은 그 자리에서 놓는다(isHeld·isHeldBy 거짓, 인스턴스가 살아 있어도 수거 가능) ===")
+-- Contract: extend/01 §4 `holdLifetime` ("`inst`가 사는 동안 `value`가 GC되지 않게") and `releaseLifetime`
+-- ("홀더에서 `value`를 빼고 남긴 근거를 지웁니다"); core/10 `bindLifetime`/`unbindLifetime`. Mutants (E73):
+-- LR10 (the holder never takes the value → a bound Observer is collected and stops firing), LR12 (the
+-- holder keeps it after unbind → held until the Instance dies), LR13 (the value keeps its evidence
+-- after unbind → isHeldBy still true).
+do
+	local gcFull = (_G :: any).collectgarbage :: (string) -> ()
+	local inst = Instance.new("Folder")
+	q.Backend.nativeClaim(inst)
+	local src = q.Source(0)
+	local fired = 0
+	do
+		local observer = src:Observer(function()
+			fired += 1
+		end)
+		q.Backend.bindLifetime(inst, observer)
+	end -- the only reference left is the Instance's holder
+	gcFull("collect")
+	gcFull("collect")
+	local before = fired
+	src:Set(1)
+	assert(fired == before + 1, "the bound Observer outlived its last reference and still runs: " .. (fired - before))
+
+	local weak: { any } = setmetatable({}, { __mode = "v" }) :: any
+	do
+		local released = src:Observer(function() end)
+		q.Backend.bindLifetime(inst, released)
+		assert(q.Backend.isHeld(released) and q.Backend.isHeldBy(released, inst), "held by this Instance after the bind")
+		q.Backend.unbindLifetime(released)
+		assert(not q.Backend.isHeld(released) and not q.Backend.isHeldBy(released, inst), "neither held nor held-by after the unbind")
+		assert(q.Backend.canBound(released), "free to be bound again")
+		weak[1] = released
+	end
+	gcFull("collect")
+	gcFull("collect")
+	assert(weak[1] == nil, "an unbound value is collectible while the Instance lives")
+	src:Set(2)
+	assert(fired == before + 2, "the value still bound to the same Instance is untouched by the other's release")
+	inst:Destroy()
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

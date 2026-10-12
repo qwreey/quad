@@ -97,4 +97,28 @@ do
 	assert(tostring(b) == "Blocker(on)", tostring(b))
 end
 
+print("=== 5. round14 Q154 — 구독을 푼 Observer는 어느 길로 풀었든 Observer(unsubscribed): 강한 구독을 :Unsubscribe로, 약한 구독을 :WeakUnsubscribe로 ===")
+-- Contract: `.claude/base/architecture.md` `__tostring` list — `Observer(subscribed|weak|unsubscribed)`.
+-- Mutant (E69 OB06): `Observer:Unsubscribe` left the weak record up, so a released handle printed
+-- `Observer(weak)` (section 4 only printed the state after `:WeakUnsubscribe`).
+do
+	local q = newQuad()
+	local s = q.Source(0)
+	local strong = s:Observer(function() end)
+	strong:Subscribe()
+	strong:Unsubscribe()
+	assert(tostring(strong) == "Observer(unsubscribed)", "Subscribe then Unsubscribe: " .. tostring(strong))
+	local weak = s:Observer(function() end)
+	weak:WeakSubscribe()
+	weak:WeakUnsubscribe()
+	assert(tostring(weak) == "Observer(unsubscribed)", "WeakSubscribe then WeakUnsubscribe: " .. tostring(weak))
+	strong:WeakSubscribe()
+	assert(tostring(strong) == "Observer(weak)", "a released handle subscribed again weakly: " .. tostring(strong))
+	strong:WeakUnsubscribe()
+	local e = q.Effect(function() end, s)
+	e:Subscribe()
+	e:Unsubscribe()
+	assert(tostring(e) == "Effect(unsubscribed)", "Effect, Subscribe then Unsubscribe: " .. tostring(e))
+end
+
 print("=== ALL PASS ===")

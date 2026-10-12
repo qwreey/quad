@@ -2147,4 +2147,502 @@ do
 	print("PASS")
 end
 
+-- ── round14 Q154 (user approval 2026-10-12): spec-gap fill from the mutation runs (round13 E69/E73,
+-- round14 explore E). Each section below asserts a CONTRACT a mutant used to break unnoticed — the
+-- source it rests on is named in the section. Nothing here pins the state after a throw of user code,
+-- nor the result of an undefined input. Record: `.claude/audit/q154-spec-gaps-2026-10-12/README.md`.
+
+-- A Slot's Offset is an ABSOLUTE position inside the mount target (core/06 `slot.Offset`), and for a
+-- Slot owner `getOffsetAt` starts from that Slot's own `.Offset` (extend/02) — so a Slot nested in a
+-- Slot that does not start at 0 carries its parent's base, follows it when an earlier sibling of the
+-- parent grows, and hands the backend an absolute 0-based offset (extend/01 §2).
+-- Mutants: `ensureBase`'s `ownerKey.Offset:Get()` → 0 (E69 BK16), the base Observer's cache reset (E69 SE01).
+do
+	print("=== round14 Q154: a Slot nested under a non-zero base — Offset / getOffsetAt / backend offset carry the base and follow it")
+	local qa = mock.newQuad()
+	local function F(): any
+		return mock.Instance.new("Frame")
+	end
+	local host = mock.Instance.new("Frame")
+	local uncle = qa.Slot({ F() })
+	local inner = qa.Slot({ F() })
+	local parentSlot = qa.Slot({ inner })
+	qa.Dispatch.drive(host, { uncle, parentSlot })
+	assert(parentSlot.Offset:Get() == 1, "the parent Slot sits after its sibling's one leaf")
+	assert(inner.Offset:Get() == 1, "the nested Slot starts at its parent's base, not at 0: " .. inner.Offset:Get())
+	parentSlot:Add(F(), 1) -- a leaf before `inner`, inside the parent
+	assert(inner.Offset:Get() == 2, "base 1 + the leaf before it: " .. inner.Offset:Get())
+	uncle:Add(F()) -- the earlier sibling grows: the parent's base 1 → 2
+	assert(parentSlot.Offset:Get() == 2, "the parent follows its sibling")
+	assert(inner.Offset:Get() == 3, "the nested Slot follows its parent's base: " .. inner.Offset:Get())
+	assert(qa.Bookkeeping.getOffsetAt(inner, 1) == 3, "getOffsetAt(slot, 1) is the Slot's own Offset: " .. qa.Bookkeeping.getOffsetAt(inner, 1))
+	assert(qa.Bookkeeping.getOffsetAt(inner, 2) == 4, "getOffsetAt(slot, 2) = base + the first element's length")
+	assert(qa.Bookkeeping.getOffsetAt(parentSlot, 2) == 3 and qa.Bookkeeping.getOffsetAt(host, 2) == 2, "the same positions seen from the parent Slot and from the host (base 0)")
+	-- the backend is handed the absolute offset of the new leaf
+	local seen: { number } = {}
+	local orig = qa.Backend.nativeInsert
+	qa.Backend.nativeInsert = function(target: any, offset: number, elements: { any })
+		table.insert(seen, offset)
+		return orig(target, offset, elements)
+	end
+	inner:Add(F()) -- behind inner's one leaf: absolute 4
+	inner:Add(F(), 1) -- in front of it: absolute 3
+	qa.Backend.nativeInsert = orig
+	assert(#seen == 2 and seen[1] == 4 and seen[2] == 3, "nativeInsert offsets are absolute: " .. table.concat(seen, ","))
+	-- three levels: the base accumulates through every Slot owner
+	local deep = qa.Slot({ F() })
+	inner:Add(qa.Slot({ F(), deep })) -- behind inner's three leaves, one leaf before `deep`
+	assert(deep.Offset:Get() == 7, "3 (inner's base) + 3 (inner's leaves) + 1: " .. deep.Offset:Get())
+	uncle:Remove(1)
+	assert(inner.Offset:Get() == 2 and deep.Offset:Get() == 6, "the whole chain follows a shrink too: " .. inner.Offset:Get() .. "/" .. deep.Offset:Get())
+	print("PASS")
+end
+
+-- `slot:IndexOf(element)` is "the index, or nil when the element is not there" (core/06) — an element
+-- that left through Extract(index, new) / Replace is not there. (Remove is covered by the Q185 section.)
+-- Mutant: rawReplace's `bk.indexOfElement[oldElement] = nil` (E69 SW07).
+do
+	print("=== round14 Q154: IndexOf answers nil for an element that was swapped out (Extract with a replacement, Replace)")
+	local qa = mock.newQuad()
+	local function F(): any
+		return mock.Instance.new("Frame")
+	end
+	for _, mountedCase in { false, true } do
+		local a, b, c, d = F(), F(), F(), F()
+		local slot = qa.Slot({ a, b })
+		if mountedCase then qa.Dispatch.drive(mock.Instance.new("Frame"), { slot }) end
+		assert(slot:Extract(1, c) == a, "Extract(1, c) hands `a` back")
+		assert(slot:IndexOf(a) == nil, "the extracted element has no index: " .. tostring(slot:IndexOf(a)))
+		assert(slot:IndexOf(c) == 1 and slot:IndexOf(b) == 2, "the replacement sits at 1, the neighbour stays at 2")
+		slot:Replace(2, d)
+		assert(slot:IndexOf(b) == nil and slot:IndexOf(d) == 2, "the replaced-out element has no index: " .. tostring(slot:IndexOf(b)))
+		slot:Add(a) -- the extracted element is free: it comes back at the end, under its new index
+		assert(slot:IndexOf(a) == 3, "re-added at 3: " .. tostring(slot:IndexOf(a)))
+	end
+	print("PASS")
+end
+
+-- A `q.Detach`-held element belongs to the Slot that holds it (core/06 `q.Detach`, `:List` return
+-- table; `base/slot-plan.md` "홀드된 요소는 owner가 죽을 때까지"): it is destroyed when its key is dropped
+-- (nil) or given a NEW element, when the Slot is destroyed, and when the host the Slot is mounted on dies
+-- (core/06 "죽은 Slot과 마운트 규칙" — the one exception to "a Slot does not know its host died"). An
+-- unmount moves that tie: the old host's death no longer reaches it, the next host's does.
+-- Mutants: releaseElement's owned arm inverted (E69 SW14); and five of this run on the same paths —
+-- settle's release before a new element, destroySlotTree's held loop, `_detachCleanup`'s bind / body,
+-- the remount re-anchor.
+do
+	print("=== round14 Q154: a q.Detach-held element is destroyed with its key, its Slot or its host — and only then")
+	local qa = mock.newQuad()
+	-- a one-key :List; `st.mode` says what updateFn answers for the key. Returns with the element HELD.
+	local function heldList(): (any, any, any, any)
+		local st = { mode = "make", made = {} :: { any } }
+		local data = qa.Source({ "k" })
+		local slot = qa.Slot()
+		slot:List(data, function(ctx: any): (any, any)
+			if ctx.Item == qa.KeyGone then return nil, nil end
+			if st.mode == "detach" then return qa.Detach, nil end
+			if st.mode == "drop" then return nil, nil end
+			if st.mode == "keep" and ctx.Prev ~= nil then return ctx.Prev, nil end
+			local f = mock.Instance.new("Frame")
+			table.insert(st.made, f)
+			return f, nil
+		end, function(item: string) return item end)
+		return slot, data, st, function()
+			st.mode = "detach"
+			data:Set({ "k" })
+			local el = st.made[1]
+			assert(el.Parent == nil and not mock.isDestroyed(el), "held: off the tree, alive")
+			return el
+		end
+	end
+	-- (1) the key is dropped with nil → destroyed
+	do
+		local slot, data, st, hold = heldList()
+		qa.Dispatch.drive(mock.Instance.new("Frame"), { slot })
+		local el = hold()
+		st.mode = "drop"
+		data:Set({ "k" })
+		assert(mock.isDestroyed(el), "(1) a held element dropped with nil is destroyed by the owning Slot")
+	end
+	-- (2) the key gets a NEW element → the held one is destroyed, the new one is mounted
+	do
+		local slot, data, st, hold = heldList()
+		local host = mock.Instance.new("Frame")
+		qa.Dispatch.drive(host, { slot })
+		local el = hold()
+		st.mode = "make"
+		data:Set({ "k" })
+		assert(mock.isDestroyed(el), "(2) a held element replaced by a new one is destroyed")
+		assert(#st.made == 2 and st.made[2].Parent == host and slot.Length:Get() == 1, "(2) the new element took the key")
+	end
+	-- (3) the Slot is destroyed (an owning parent removes it) → destroyed
+	do
+		local slot, _, _, hold = heldList()
+		local outer = qa.Slot({ slot })
+		qa.Dispatch.drive(mock.Instance.new("Frame"), { outer })
+		local el = hold()
+		outer:Remove(1)
+		assert(slot._destroyed and mock.isDestroyed(el), "(3) the held element goes with its Slot")
+	end
+	-- (4) the host dies → destroyed
+	do
+		local slot, _, _, hold = heldList()
+		local host = mock.Instance.new("Frame")
+		qa.Dispatch.drive(host, { slot })
+		local el = hold()
+		qa.dispose(host)
+		assert(mock.isDestroyed(el), "(4) the held element goes with the host the Slot is mounted on")
+	end
+	-- (5) unmounted first: the OLD host's death does not reach it; remounted, the NEW host's does —
+	-- and in between the key coming back re-attaches the very same element
+	do
+		local slot, data, st, hold = heldList()
+		local hostA, hostB = mock.Instance.new("Frame"), mock.Instance.new("Frame")
+		local seat = qa.Source(slot :: any)
+		qa.Dispatch.drive(hostA, { seat })
+		local el = hold()
+		seat:Set(nil) -- unmount (not a destroy)
+		qa.dispose(hostA)
+		assert(not mock.isDestroyed(el), "(5) the old host died after the unmount: still held, alive")
+		qa.Dispatch.drive(hostB, { slot })
+		st.mode = "keep"
+		data:Set({ "k" })
+		assert(el.Parent == hostB and #st.made == 1, "(5) the held element re-attached on the new host, not rebuilt")
+		hold()
+		qa.dispose(hostB)
+		assert(mock.isDestroyed(el), "(5) held again on the new host: goes with it")
+	end
+	print("PASS")
+end
+
+-- `:List` reconcile (core/06 `slot:List`): a cycle first computes every key and checks duplicates
+-- (`Quad0145`) BEFORE any `updateFn` runs; `updateFn`'s second return is that key's next
+-- `ctx.UserData`, kept per key; and one cycle is ONE batch — the Slot's Length is published once for
+-- the whole cycle, however many elements it added.
+-- Mutants: the duplicate gate (E69 SL04), `userdata[key] = ud` (SL06), List's `ownsGate` inverted
+-- (SL10), gatedRecompute's batch-blocker gate (BK10).
+do
+	print("=== round14 Q154: :List — duplicate key is Quad0145 before any updateFn, UserData round-trips per key, one cycle publishes Length once")
+	local qa = mock.newQuad()
+	local function F(): any
+		return mock.Instance.new("Frame")
+	end
+	-- duplicate key: at the first reconcile (mount) and on a later cycle, both before updateFn
+	do
+		local calls = 0
+		local first = qa.Slot()
+		first:List({ "a", "a" }, function(ctx: any): (any, any)
+			calls += 1
+			return ctx.Prev or F(), nil
+		end, function(item: string) return item end)
+		local ok, err = pcall(function() qa.Dispatch.drive(mock.Instance.new("Frame"), { first }) end)
+		assert(not ok and string.find(tostring(err), "Quad0145", 1, true) ~= nil, "duplicate key at mount: " .. tostring(err))
+		assert(calls == 0, "the key pass comes before every updateFn: " .. calls)
+
+		local data = qa.Source({ "a", "b" })
+		local later = qa.Slot()
+		later:List(data, function(ctx: any): (any, any)
+			calls += 1
+			return ctx.Prev or F(), nil
+		end, function(item: string) return item end)
+		qa.Dispatch.drive(mock.Instance.new("Frame"), { later })
+		calls = 0
+		local ok2, err2 = pcall(function() data:Set({ "a", "b", "a" }) end)
+		assert(not ok2 and string.find(tostring(err2), "Quad0145", 1, true) ~= nil and string.find(tostring(err2), "duplicate key a", 1, true) ~= nil, "duplicate key on a later cycle names the key: " .. tostring(err2))
+		assert(calls == 0, "later cycle: no updateFn ran before the raise: " .. calls)
+		mock.assertBlamesUser(err2, "spec.slot.luau", "Quad0145 blames the data:Set line")
+	end
+	-- UserData: nil on the first call, then whatever this key returned last — independent of position
+	do
+		local data = qa.Source({ "a", "b" })
+		local seen: { [string]: any } = {}
+		local calls: { [string]: number } = {}
+		local slot = qa.Slot()
+		slot:List(data, function(ctx: any): (any, any)
+			calls[ctx.Item] = if calls[ctx.Item] == nil then 0 else calls[ctx.Item] + 1
+			seen[ctx.Item] = if ctx.UserData == nil then "none" else ctx.UserData
+			return ctx.Prev or F(), ctx.Item .. "#" .. calls[ctx.Item] -- "<key>#<how many times this key was asked before>"
+		end, function(item: string) return item end)
+		qa.Dispatch.drive(mock.Instance.new("Frame"), { slot })
+		assert(seen.a == "none" and seen.b == "none", "first call for a key: no UserData")
+		data:Set({ "a", "b" })
+		assert(seen.a == "a#0" and seen.b == "b#0", "second cycle sees each key's own first return: " .. tostring(seen.a) .. "/" .. tostring(seen.b))
+		data:Set({ "b", "a", "c" })
+		assert(seen.a == "a#1" and seen.b == "b#1" and seen.c == "none", "kept per key, not per position: " .. tostring(seen.a) .. "/" .. tostring(seen.b) .. "/" .. tostring(seen.c))
+	end
+	-- one batch per cycle: five keys arriving at once publish Length once (and it lands on the final value)
+	do
+		local data = qa.Source({} :: { number })
+		local slot = qa.Slot()
+		slot:List(data, function(ctx: any): (any, any)
+			if ctx.Item == qa.KeyGone then return nil, nil end
+			return ctx.Prev or F(), nil
+		end)
+		qa.Dispatch.drive(mock.Instance.new("Frame"), { slot })
+		local values: { number } = {}
+		local handle = slot.Length:Observer(function(length: any) table.insert(values, length:Get()) end):Subscribe()
+		table.clear(values) -- drop the install run
+		data:Set({ 1, 2, 3, 4, 5 })
+		assert(#values == 1 and values[1] == 5, "five elements added in one cycle: one Length publish: " .. table.concat(values, ","))
+		table.clear(values)
+		data:Set({ 5, 1 })
+		assert(#values == 1 and values[1] == 2, "three keys gone in one cycle: one Length publish: " .. table.concat(values, ","))
+		handle:Unsubscribe()
+	end
+	print("PASS")
+end
+
+-- Error ids of the Slot layer that only an "it raised" check used to cover — each id is the registry
+-- entry for that cause (`docs/reference/errors/03-slot.md`; ids are stable, `base/error-id-plan.md`):
+--   Quad0163  `q.Bookkeeping.releaseOwner` with an ownerKey that does not hold the value (extend/02)
+--   Quad0174  `Splice` whose removeCount does not fit what is there — no clamping, nothing removed
+--   Quad0140  a destroyed Slot placed at a numeric key — the handler's pre-check, before the seat is taken
+--   Quad0238  a handler-layer value as an element / Quad0239 nil or `q.None` / Quad0240 anything else
+--             the backend cannot mount / Quad0242 a destroyed Slot
+-- Mutants: E69 SN03, SI09; E73 SH03, EL02, EL04.
+do
+	print("=== round14 Q154: Slot-layer error ids — Quad0163 (releaseOwner), Quad0174 (Splice range), Quad0140 (destroyed Slot at a seat), Quad0238/0239/0240/0242 (element gate)")
+	local qa = mock.newQuad()
+	local function F(): any
+		return mock.Instance.new("Frame")
+	end
+	local function raises(id: string, what: string, fn: () -> ()): string
+		local ok, err = pcall(fn)
+		assert(not ok and string.find(tostring(err), id, 1, true) ~= nil, what .. ": expected " .. id .. ", got " .. tostring(err))
+		return tostring(err)
+	end
+	-- Quad0163
+	do
+		local owner, other, el = F(), F(), F()
+		assert(qa.Bookkeeping.claimOwnerAt(el, owner, 1) == true, "claimed")
+		raises("Quad0163", "release through another ownerKey", function() qa.Bookkeeping.releaseOwner(el, other) end)
+		qa.Bookkeeping.releaseOwner(el, owner) -- the holder releases
+		raises("Quad0163", "release of a value nobody holds", function() qa.Bookkeeping.releaseOwner(el, owner) end)
+		assert(qa.Bookkeeping.claimOwnerAt(el, other, 1) == true, "free again after the release")
+	end
+	-- Quad0174 — range edge on both sides, and the argument domain
+	do
+		local a, b = F(), F()
+		local slot = qa.Slot({ a, b })
+		for _, case in { { 1, 3 }, { 2, 2 }, { 3, 1 }, { 1, -1 }, { 1, 0.5 }, { 1, "1" } } :: { { any } } do
+			raises("Quad0174", "Splice(" .. tostring(case[1]) .. ", " .. tostring(case[2]) .. ")", function() slot:Splice(case[1], case[2]) end)
+		end
+		assert(slot:Get(1) == a and slot:Get(2) == b, "a refused Splice removed nothing")
+		assert(#slot:Splice(3, 0) == 0, "index n+1 with nothing to remove is in range")
+		local removed = slot:Splice(1, 2)
+		assert(#removed == 2 and removed[1] == a and removed[2] == b, "exactly what is there fits")
+	end
+	-- Quad0140
+	do
+		local dead = qa.Slot()
+		qa.dispose(dead)
+		local err = raises("Quad0140", "destroyed Slot at a numeric key", function() qa.Dispatch.drive(F(), { dead }) end)
+		mock.assertBlamesUser(err, "spec.slot.luau", "Quad0140 blames the drive line")
+		local seat = qa.Source(nil :: any)
+		qa.Dispatch.drive(F(), { seat })
+		raises("Quad0140", "destroyed Slot arriving through a State seat", function() seat:Set(dead) end)
+	end
+	-- the element gate, through every public arrival
+	do
+		local src = qa.Source(0)
+		local handlerLayer: { [string]: any } = {
+			Ref = qa.Ref(), PreRef = qa.PreRef(), PostRef = qa.PostRef(),
+			Observer = src:Observer(function() end), Effect = qa.Effect(function() end), Modifier = qa.Modifier(),
+		}
+		for name, value in handlerLayer do
+			raises("Quad0238", name .. " as an element (Add)", function() qa.Slot():Add(value) end)
+		end
+		raises("Quad0238", "Modifier in Slot{…}", function() return qa.Slot({ handlerLayer.Modifier }) end)
+		raises("Quad0238", "Ref through Replace", function() qa.Slot({ F() }):Replace(1, handlerLayer.Ref) end)
+		raises("Quad0238", "Effect through Splice", function() qa.Slot():Splice(1, 0, handlerLayer.Effect) end)
+		raises("Quad0239", "nil as an element", function() qa.Slot():Add(nil) end)
+		raises("Quad0239", "q.None as an element", function() qa.Slot():Add(qa.None) end)
+		raises("Quad0239", "q.None through Replace", function() qa.Slot({ F() }):Replace(1, qa.None) end)
+		for _, value in { 1, "text", true, {}, function() end } :: { any } do
+			raises("Quad0240", typeof(value) .. " as an element", function() qa.Slot():Add(value) end)
+		end
+		local dead = qa.Slot()
+		qa.dispose(dead)
+		raises("Quad0242", "destroyed Slot as an element", function() qa.Slot():Add(dead) end)
+	end
+	print("PASS")
+end
+
+-- The same Slot arriving again at the seat it already holds is a no-op: `claimOwnerAt` answers false
+-- for "exactly this seat" and the handler then skips the physical attach as well (extend/02
+-- `q.Bookkeeping.claimOwnerAt`), and the seated retractor keeps what the next value still needs
+-- (extend/02 retractor: `nextValue` sets the basis of its own teardown). Both arrivals: a State seat
+-- re-publishing its value (`Source:Set` propagates an equal value) and a second `drive` of the same props.
+-- Mutant: the retractor's `slotValue == nextValue` early return (E73 SH06 — the Slot left and came back).
+do
+	print("=== round14 Q154: the same Slot again at its own seat is a no-op — no backend call, nothing unmounted, usable afterwards")
+	local qa = mock.newQuad()
+	local function F(): any
+		return mock.Instance.new("Frame")
+	end
+	local calls: { string } = {}
+	local origs: { [string]: any } = {}
+	local function watch(on: boolean)
+		for _, name in { "nativeInsert", "nativeExtract", "nativeRemove" } do
+			if on then
+				origs[name] = qa.Backend[name]
+				qa.Backend[name] = function(...: any)
+					table.insert(calls, name)
+					return origs[name](...)
+				end
+			else
+				qa.Backend[name] = origs[name]
+			end
+		end
+	end
+	-- (1) a State<Slot> seat that publishes the same Slot again
+	do
+		local host = mock.Instance.new("Frame")
+		local lead = qa.Slot({ F() })
+		local a, b = F(), F()
+		local slot = qa.Slot({ a, b })
+		local seat = qa.Source(slot :: any)
+		qa.Dispatch.drive(host, { lead, seat })
+		watch(true)
+		seat:Set(slot)
+		watch(false)
+		assert(#calls == 0, "(1) no backend call for the same Slot: " .. table.concat(calls, ","))
+		assert(slot._mounted and a.Parent == host and b.Parent == host and #host:GetChildren() == 3, "(1) still mounted, children untouched")
+		local c = F()
+		slot:Add(c)
+		assert(c.Parent == host and slot.Length:Get() == 3 and slot.Offset:Get() == 1, "(1) CRUD afterwards reaches the host")
+	end
+	-- (2) the same props driven again
+	do
+		local host = mock.Instance.new("Frame")
+		local lead = qa.Slot({ F() })
+		local a = F()
+		local slot = qa.Slot({ a })
+		qa.Dispatch.drive(host, { lead, slot })
+		table.clear(calls)
+		watch(true)
+		qa.Dispatch.drive(host, { lead, slot })
+		watch(false)
+		assert(#calls == 0, "(2) no backend call on the second drive: " .. table.concat(calls, ","))
+		assert(slot._mounted and a.Parent == host and #host:GetChildren() == 2, "(2) still mounted")
+		slot:Add(F())
+		assert(slot.Length:Get() == 2 and slot.Offset:Get() == 1 and #host:GetChildren() == 3, "(2) bookkeeping intact")
+	end
+	print("PASS")
+end
+
+-- The Q52 / Q74 refusal (core/06 `:List` "이 Slot의 조상을 CRUD하면 안 됩니다 … 맨 위까지의 조상 Slot 전부가
+-- 막힙니다"; round13 Q74 (a)) on the paths no section reached. The refused CRUD is caught where it is
+-- made (inside the callback), so the operation around it finishes — what is asserted is the refusal
+-- itself (`Quad0167`, the ancestor untouched), never a state after an escaped throw.
+--   (a) a NESTED window keeps the outer one: the ancestor is mid-mount, a callback adds a Slot to an
+--       already-walked sibling (its own window opens and closes over the same ancestor) and then
+--       CRUDs the ancestor — still refused. (`restoreChain` puts back what `raiseChain` saved.)
+--   (b) `Replace(i, newSlot)` on a mounted Slot, and a State element whose value becomes a Slot.
+--   (c) `Replace(i, newSlot)` on a Slot that is materialized but not yet marked mounted (inside a Splice batch).
+-- Mutants (round14 explore E): R05 / R15 (restore to false / save false), R09, R08 (`raiseChain`
+-- dropped on rawReplace's mounted / not-yet-mounted arm).
+do
+	print("=== round14 Q154: Quad0167 on the remaining attach windows — a nested window keeps the outer flag; Replace with a Slot (mounted, State element, not yet mounted)")
+	local qa = mock.newQuad()
+	local function F(name: string): any
+		local f = mock.Instance.new("Frame")
+		f.Name = name
+		return f
+	end
+	local function names(slot: any, acc: { string }?): string
+		local out = acc or {}
+		for _, e in slot._elements do
+			if qa.isSlot(e) then names(e, out) else table.insert(out, e.Name) end
+		end
+		return table.concat(out, ",")
+	end
+	-- a :List Slot of one item whose first updateFn runs `inWindow` once and returns a Frame named `name`
+	local function listThat(name: string, inWindow: () -> ()): any
+		local slot = qa.Slot()
+		local ran = false
+		slot:List({ 1 }, function(ctx: any): (any, any)
+			if ctx.Item == qa.KeyGone then return nil, nil end
+			if not ran then
+				ran = true
+				inWindow()
+			end
+			return ctx.Prev or F(name), nil
+		end)
+		return slot
+	end
+	local function refusal(fn: () -> ()): string?
+		local ok, err = pcall(fn)
+		return if ok then nil else tostring(err)
+	end
+	local function isRefused(err: string?, what: string)
+		assert(err ~= nil and string.find(err, "Quad0167", 1, true) ~= nil, what .. ": refused with Quad0167, got " .. tostring(err))
+	end
+
+	-- (a) nested window inside a mount walk
+	do
+		local host = mock.Instance.new("Frame")
+		local sib = qa.Slot({ F("s") })
+		local gp
+		local stage, err = "start", nil :: string?
+		local lst = listThat("l", function()
+			sib:Add(qa.Slot({ F("n") })) -- a sibling already walked: allowed; opens a window over sib → gp
+			stage = "sibling-added"
+			err = refusal(function() gp:Add(F("bad")) end)
+		end)
+		gp = qa.Slot({ sib, lst })
+		qa.Dispatch.drive(host, { gp })
+		assert(stage == "sibling-added", "(a) the sibling Add went through")
+		isRefused(err, "(a) ancestor Add after a nested window closed")
+		assert(names(gp) == "s,n,l" and gp.Length:Get() == 3 and #host:GetChildren() == 3, "(a) mounted whole, the ancestor as built: " .. names(gp))
+		assert(not gp._materializing and not sib._materializing, "(a) flags down after the mount")
+		gp:Add(F("after"))
+		assert(gp.Length:Get() == 4, "(a) the ancestor is usable after the mount")
+	end
+	-- (b) Replace with a Slot on a mounted Slot: the new Slot's first updateFn may not touch the grandparent
+	do
+		local host = mock.Instance.new("Frame")
+		local p = qa.Slot({ F("x") })
+		local gp = qa.Slot({ p, F("y"), F("z") })
+		qa.Dispatch.drive(host, { gp })
+		local err: string? = nil
+		local c = listThat("c", function()
+			err = refusal(function() gp:Remove(2) end)
+		end)
+		p:Replace(1, c)
+		isRefused(err, "(b) grandparent Remove from a Replace's attach window")
+		assert(names(gp) == "c,y,z" and gp.Length:Get() == 3 and #host:GetChildren() == 3, "(b) the replace finished, the grandparent kept its element: " .. names(gp))
+		assert(not p._materializing and not gp._materializing, "(b) flags down")
+		-- the same through a State element whose value becomes a Slot
+		local host2 = mock.Instance.new("Frame")
+		local st = qa.Source(F("x") :: any)
+		local p2 = qa.Slot({ st })
+		local gp2 = qa.Slot({ p2, F("y"), F("z") })
+		qa.Dispatch.drive(host2, { gp2 })
+		local err2: string? = nil
+		st:Set(listThat("c", function()
+			err2 = refusal(function() gp2:Remove(2) end)
+		end))
+		isRefused(err2, "(b) grandparent Remove from a State element's swap to a Slot")
+		assert(gp2.Length:Get() == 3 and #host2:GetChildren() == 3 and gp2:Get(2).Name == "y", "(b) State element: the grandparent kept its element")
+	end
+	-- (c) Replace with a Slot on a Slot that is materialized but not mounted yet (it is arriving in a Splice batch)
+	do
+		local host = mock.Instance.new("Frame")
+		local p = qa.Slot({ F("p0") })
+		qa.Dispatch.drive(host, { p })
+		local first = qa.Slot({ F("f0") })
+		local err: string? = nil
+		local second = listThat("s", function()
+			first:Replace(1, listThat("r", function()
+				err = refusal(function() first:Add(F("bad")) end)
+			end))
+		end)
+		p:Splice(2, 0, first, second)
+		isRefused(err, "(c) CRUD on the owner of a Slot being attached before its mount")
+		assert(names(p) == "p0,r,s" and p.Length:Get() == 3 and #host:GetChildren() == 3, "(c) the batch finished as asked: " .. names(p))
+	end
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

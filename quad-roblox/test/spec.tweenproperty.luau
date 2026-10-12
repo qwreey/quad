@@ -709,4 +709,32 @@ do
 end
 
 print()
+print("=== round14 Q154 — Info 없는 Time = 0의 스냅은 재생할 것이 아무것도 없을 때만: Reverses나 RepeatCount가 있으면 엔진 트윈, 0·false로 적은 것은 없는 것과 같다 ===")
+-- Contract: roblox/06 options ("`Info` 없이 `Time = 0`이고 `DelayTime`/`RepeatCount`/`Reverses`도 없으면(또는
+-- 0·거짓) … 값을 그 자리에서 씁니다 … 그 셋 중 하나라도 있으면 평소대로 엔진 트윈"). The spec had
+-- `Time = 0` alone and with `DelayTime`. Mutant (E69 PR10): the `Reverses ~= true` term dropped.
+do
+	local function settled(): (any, any)
+		local src = q.Source(0 :: any)
+		local f = q.Declaration.Frame({ Size = src }) :: any -- first set: Size is written, later Tweens animate
+		mock.resetTweenLog()
+		return src, f
+	end
+	for name, extra in { Reverses = { Reverses = true }, RepeatCount = { RepeatCount = 2 }, DelayTime = { DelayTime = 0.5 } } :: { [string]: { [string]: any } } do
+		local src, f = settled()
+		local opts: { [string]: any } = { Value = 5, Time = 0 }
+		for key, value in extra do
+			opts[key] = value
+		end
+		src:Set(Tween(opts))
+		assert(#log == 1 and lastTween().plays == 1, "Time = 0 with " .. name .. " plays an engine tween: " .. #log)
+		assert(f.Size == 0, "…and does not snap (the mock engine does not interpolate): " .. tostring(f.Size))
+	end
+	local src, f = settled()
+	src:Set(Tween({ Value = 7, Time = 0, Reverses = false, RepeatCount = 0, DelayTime = 0 }))
+	assert(#log == 0 and f.Size == 7, "Time = 0 with the three written as 0 / false is the snap: " .. #log .. " / " .. tostring(f.Size))
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

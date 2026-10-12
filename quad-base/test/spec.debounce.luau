@@ -732,4 +732,26 @@ do
 end
 
 print()
+print("=== round14 Q154 — Time에 묶은 State가 신호 시점에 음수·NaN이면 그 :Set 줄에서 Quad0039 ===")
+-- Contract: errors/01 Quad0039 ("`Time`에 바인딩한 `State`가 읽히는 시점에 내놓은 값이 … 음수/NaN … 신호가
+-- 여는 창의 `Time`은 그 `:Set` 줄에서"). Mutant (E69 DB01): `v < 0` → `v < -1` — the mock timer's own
+-- argument check raised instead, and a real `task.delay` takes a negative delay silently.
+do
+	fresh()
+	for _, bad in { -0.5, 0 / 0 } do
+		local T = Source(bad)
+		local src = Source(0)
+		local gated = src:Apply(Debounce({ Time = T }))
+		local p = probe(gated)
+		local ok, err = pcall(function()
+			src:Set(1)
+		end)
+		assert(not ok and string.find(tostring(err), "Quad0039", 1, true) ~= nil, "State Time " .. tostring(bad) .. " read at signal time: " .. tostring(err))
+		mock.assertBlamesUser(err, SPEC_FILE, "Quad0039 blames the :Set line")
+		local _ = p
+	end
+	print("PASS")
+end
+
+print()
 print("ALL PASS")

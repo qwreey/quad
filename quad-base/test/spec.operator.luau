@@ -210,4 +210,26 @@ do
 end
 
 print()
+print("=== round14 Q154 — 경계값: Clamp(lo, lo)는 허용(lo > hi만 Quad0124), Shr는 논리 시프트(bit32.rshift — 최상위 비트가 부호로 번지지 않는다) ===")
+-- Contract: sugar/02 `q.Operator.Clamp` ("읽는 시점에 `lo > hi`이면 … Quad0124", message "min must be <= max")
+-- and the operator table (`Shr` = `bit32.rshift`). Mutants (E69): OP03 (`>` → `>=`), OP05 (`rshift` → `arshift`).
+do
+	local v = Source(5)
+	local pinned: State<number> = v:Apply(Operator.Clamp(3, 3))
+	assert(pinned:Get() == 3, "equal bounds pin the value: " .. tostring(pinned:Get()))
+	local lo, hi = Source(2), Source(2)
+	local reactive: State<number> = v:Apply(Operator.Clamp(lo, hi))
+	assert(reactive:Get() == 2, "equal reactive bounds too")
+	hi:Set(1)
+	local ok, err = pcall(function()
+		return reactive:Get()
+	end)
+	assert(not ok and string.find(tostring(err), "Quad0124", 1, true) ~= nil, "lo > hi still raises: " .. tostring(err))
+	local high = Source(0x80000000)
+	assert(high:Apply(Operator.Shr(4)):Get() == 0x08000000, "logical shift of a high-bit value: " .. tostring(high:Apply(Operator.Shr(4)):Get()))
+	assert(Source(-1):Apply(Operator.Shr(28)):Get() == 0xF, "-1 is 2^32 - 1: zeros come in from the left")
+	print("PASS")
+end
+
+print()
 print("ALL PASS")

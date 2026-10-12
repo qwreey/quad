@@ -1113,4 +1113,32 @@ do
 	print("PASS")
 end
 
+print()
+print("=== round14 Q154 — Dispatch.process의 index는 그 자리 체인의 다음 깊이(#list + 1)까지: 건너뛰면 핸들러가 불리기 전에 Quad0075(빈 체인의 2, 한 층짜리 체인의 3) ===")
+-- Contract: errors/02 Quad0075 ("`index`가 그 자리 체인의 다음 자연스러운 깊이(`#list + 1`)보다 클 때"),
+-- `.claude/base/dispatch-core-plan.md` (the chain list is a sequence without holes). Mutant (E69 DI07):
+-- the gate one slot late (`#list + 2`) — a hole no unwind ever visits.
+do
+	local q = newQuad()
+	local log: { string } = {}
+	q.Dispatch.addHandler(makeLeaf(log, "L", isString, 0))
+	local inst = Instance.new("Frame")
+	local ok, err = pcall(function()
+		q.Dispatch.process(inst, "K", "v", 2)
+	end)
+	assert(not ok and string.find(tostring(err), "Quad0075", 1, true) ~= nil, "index 2 on an empty chain: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.dispatch.luau", "Quad0075 blames the process line")
+	assert(#log == 0, "refused before any handler ran: " .. table.concat(log, " | "))
+	q.Dispatch.process(inst, "K", "v", 1)
+	assert(#log == 1, "depth 1 seats the value")
+	local ok2, err2 = pcall(function()
+		q.Dispatch.process(inst, "K", "w", 3)
+	end)
+	assert(not ok2 and string.find(tostring(err2), "Quad0075", 1, true) ~= nil, "index 3 on a chain of one: " .. tostring(err2))
+	assert(#log == 1, "the seated value was not touched: " .. table.concat(log, " | "))
+	q.Dispatch.retractFrom(inst, "K", 1)
+	assert(#log == 2 and string.find(log[2], "L:retract", 1, true) ~= nil, "the chain still unwinds as one layer: " .. table.concat(log, " | "))
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

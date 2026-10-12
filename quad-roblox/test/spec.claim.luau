@@ -360,4 +360,40 @@ do
 	print("PASS")
 end
 
+print()
+print("=== 18. round14 Q154 — Claim 에러 id: 디스크립터가 아닌 둘째 인자는 Quad0034(아무것도 claim하기 전), 빈·비문자열 클래스 이름은 Quad0026 ===")
+-- Contract: roblox/04 error table (Quad0034 "둘째 인자가 디스크립터가 아님") and "위 표의 `Claim: …` 에러는
+-- **아무것도 claim하기 전에** 납니다"; errors/06 Quad0026 ("문자열이 아니거나 빈 문자열일 때").
+-- Mutants (E73): CL15 (the descriptor gate), CL16 (`className == ""`).
+do
+	local function raises(id: string, what: string, fn: () -> ()): any
+		local ok, err = pcall(fn)
+		assert(not ok and string.find(tostring(err), id, 1, true) ~= nil, what .. ": expected " .. id .. ", got " .. tostring(err))
+		return err
+	end
+	for _, notDescriptor in { { _props = {} }, {}, "Frame", 5, M.Frame, M.Frame(M.Root) } :: { any } do
+		local root = makeTemplate()
+		local err = raises("Quad0034", "second argument " .. typeof(notDescriptor), function()
+			q.Claim(root, notDescriptor)
+		end)
+		mock.assertBlamesUser(err, "spec.claim.luau", "Quad0034 blames the Claim line")
+		assert(q.Backend.isClaimed(root) == false, "refused before anything was claimed")
+	end
+	local okNil = pcall(function()
+		q.Claim(makeTemplate(), nil :: any)
+	end)
+	assert(not okNil, "a missing descriptor is refused too")
+
+	for _, badName in { "", 5, false } :: { any } do
+		raises("Quad0026", "newMapperClass(" .. tostring(badName) .. ")", function()
+			q.newMapperClass(badName)
+		end)
+	end
+	local okNoName, errNoName = pcall(function()
+		return (q.newMapperClass :: any)()
+	end)
+	assert(not okNoName and string.find(tostring(errNoName), "Quad0026", 1, true) ~= nil, "newMapperClass(): " .. tostring(errNoName))
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

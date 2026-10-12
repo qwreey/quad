@@ -855,4 +855,70 @@ do
 end
 
 print()
+print("=== 15. round14 Q154 — 게이트 아래의 Observer는 flush 통지를 받는다(Q109의 건너뜀은 Source가 직접 보낸 통지에만 적용): Gate 바로 아래 / 그 아래 Compute / Blocker 아래 ===")
+-- Contract: a gate holds emits and hands them on at flush (core/03 `state:Gate`, sugar/06 Blocker) — an
+-- Observer subscribed below it runs on every flush. Q109's "already ran on this revision" skip is for a
+-- delivery a Source makes itself (`Observer.luau` `_receive`). Mutant (round14 explore E, O03): the
+-- `from == self._state` half of that test dropped — every flush below a gate was discarded.
+do
+	-- a gate that passes while `open`, holds otherwise; `flush()` hands on what it held
+	local function switchGate(upstream: any): (any, { open: boolean, flush: () -> () })
+		local ctl = { open = true, flush = function() end }
+		local gated = upstream:Gate(function(emit: (boolean?) -> boolean): () -> ()
+			ctl.flush = function()
+				emit()
+			end
+			return function()
+				if ctl.open then
+					emit()
+				end
+			end
+		end)
+		return gated, ctl
+	end
+	-- directly below the gate, and one Compute further down
+	local s = Source(10)
+	local gated, ctl = switchGate(s)
+	local doubled = gated:Compute(function(self: any): number
+		return self:Get() * 2
+	end)
+	local direct: { number } = {}
+	local derived: { number } = {}
+	local o1 = gated:Observer(function(target: any)
+		table.insert(direct, target:Get() :: number)
+	end):Subscribe()
+	local o2 = doubled:Observer(function(target: any)
+		table.insert(derived, target:Get() :: number)
+	end):Subscribe()
+	ctl.open = false
+	s:Set(20)
+	assert(#direct == 1 and #derived == 1, "held: nothing ran while the gate was closed")
+	ctl.flush()
+	assert(table.concat(direct, ",") == "10,20", "the flush reached the Observer below the gate: " .. table.concat(direct, ","))
+	assert(table.concat(derived, ",") == "20,40", "…and the one below a Compute of it: " .. table.concat(derived, ","))
+	ctl.open = true
+	s:Set(30)
+	assert(table.concat(direct, ",") == "10,20,30" and table.concat(derived, ",") == "20,40,60", "an open gate passes each change on: " .. table.concat(direct, ",") .. " / " .. table.concat(derived, ","))
+	o1:Unsubscribe()
+	o2:Unsubscribe()
+	-- the Blocker sugar: On holds, Off flushes once, then it passes again
+	local src = Source(1)
+	local blocker = quad.Blocker()
+	local seen: { number } = {}
+	local o3 = src:Apply(blocker):Observer(function(target: any)
+		table.insert(seen, target:Get() :: number)
+	end):Subscribe()
+	blocker:On()
+	src:Set(4)
+	src:Set(5)
+	assert(#seen == 1, "blocked: nothing ran")
+	blocker:Off()
+	assert(table.concat(seen, ",") == "1,5", "Off flushed once, with the latest value: " .. table.concat(seen, ","))
+	src:Set(6)
+	assert(table.concat(seen, ",") == "1,5,6", "passes again: " .. table.concat(seen, ","))
+	o3:Unsubscribe()
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

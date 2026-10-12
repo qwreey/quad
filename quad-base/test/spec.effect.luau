@@ -728,4 +728,115 @@ do
 end
 
 print()
+print("=== 16. round14 Q154 — 같은 Effect가 자기 자리에 다시 오면 접힌다(H-266 dedup): State<Effect> 자리의 같은 값 재발행·같은 props 재drive에 에러·cleanup·재실행 없음, 다른 Effect가 오면 교체(cleanup(false)) ===")
+-- Contract: `.claude/base/source-state-plan.md` "Observer/Effect Leaf dedup" (`H-266` — the `old ~= v`
+-- dedup is load-bearing: `bindLifetime` refuses a value that is already bound; a re-published seat must
+-- show nothing to the user) and extend/02 retractor ("같은 핸들러가 같은 자리를 계속 맡을 때 … 앉아 있던
+-- retractor에게 새 값을 넘겨"). Mutants (E69): EF17 (`old ~= v` always true → `Quad0232` on the
+-- re-publish), EF18 (the retractor's `nextValue ~= v` always true → cleanup + fn again on every re-publish).
+-- The Observer leaf's same dedup is spec.leaf 3.
+do
+	local dq = mock.newQuad()
+	local inst = Instance.new("Frame")
+	local s = dq.Source(0)
+	local runs = 0
+	local cleans: { boolean } = {}
+	local e = dq.Effect(function(): any
+		runs += 1
+		return function(dying: boolean)
+			table.insert(cleans, dying)
+		end
+	end, s)
+	local seat = dq.Source(e :: any)
+	dq.Dispatch.drive(inst, { seat })
+	local before = runs
+	seat:Set(e) -- `Source:Set` propagates an equal value: the seat is processed again with the same handle
+	assert(runs == before and #cleans == 0, "the same Effect again: no cleanup, no run (runs +" .. (runs - before) .. ", cleanups " .. #cleans .. ")")
+	assert(not dq.Backend.canBound(e), "still bound to the seat")
+	s:Set(1)
+	assert(runs == before + 1 and #cleans == 1 and cleans[1] == false, "a dep change afterwards: one (cleanup, fn) cycle")
+	dq.Dispatch.drive(inst, { seat }) -- the same props driven again
+	assert(runs == before + 1 and #cleans == 1 and not dq.Backend.canBound(e), "the second drive folded too")
+	-- a different Effect takes the seat: the old one's cleanup runs with dying = false and it is released
+	local other = dq.Effect(function() end, s)
+	seat:Set(other)
+	assert(#cleans == 2 and cleans[2] == false, "swap: the leaving Effect's cleanup ran, dying = false")
+	assert(dq.Backend.canBound(e) and not dq.Backend.canBound(other), "swap: old released, new bound")
+	s:Set(2)
+	assert(runs == before + 1, "the released Effect no longer runs")
+	print("PASS")
+end
+
+print()
+print("=== 17. round14 Q154 — 이미 구독된 Effect의 :WeakSubscribe()는 Quad0089(약한 구독 두 번·강한 구독 뒤 모두), 자리에 묶인 Effect면 Quad0230 ===")
+-- Contract: errors/04 Quad0089 ("강한 구독이든 약한 구독이든 마찬가지라, `:WeakSubscribe()`를 두 번 불러도
+-- 이 에러") and Quad0230. Mutant (E69 EF11): WeakSubscribe's `canBound` gate dropped.
+do
+	local dq = mock.newQuad()
+	local s = dq.Source(0)
+	local e = dq.Effect(function() end, s)
+	e:WeakSubscribe()
+	local ok, err = pcall(function()
+		e:WeakSubscribe()
+	end)
+	assert(not ok and string.find(tostring(err), "Quad0089", 1, true) ~= nil, "WeakSubscribe twice: " .. tostring(err))
+	mock.assertBlamesUser(err, "spec.effect.luau", "Quad0089 blames the WeakSubscribe line")
+	e:WeakUnsubscribe()
+	e:Subscribe()
+	local ok2, err2 = pcall(function()
+		e:WeakSubscribe()
+	end)
+	assert(not ok2 and string.find(tostring(err2), "Quad0089", 1, true) ~= nil, "WeakSubscribe on a strongly subscribed Effect: " .. tostring(err2))
+	e:Unsubscribe()
+	local bound = dq.Effect(function() end, s)
+	dq.Dispatch.drive(Instance.new("Frame"), { bound })
+	local ok3, err3 = pcall(function()
+		bound:WeakSubscribe()
+	end)
+	assert(not ok3 and string.find(tostring(err3), "Quad0230", 1, true) ~= nil, "WeakSubscribe on an Effect bound to a seat: " .. tostring(err3))
+	print("PASS")
+end
+
+print()
+print("=== 18. round14 Q154 — 재실행 한도는 반복 하나의 것: 바깥에서 따로 한 Set은 몇 번이든(1만 번을 넘겨도) 한도에 걸리지 않고, 한도 아래에서 끝나는 반복이 여러 번 이어져도 그렇다 ===")
+-- Contract: core/05 `q.Effect` ("한 번의 반복 안에서 `fn`이 1만 번 돈 뒤에도 또 다시 돌아야 하면 … `Quad0263`"),
+-- errors/04 Quad0263 ("지연 재실행 루프에서"). Section 15 pins the edge of ONE loop; this pins that the
+-- count starts over with every loop. Mutant (round14 explore E, E05): the counter kept on the handle.
+do
+	local dq = mock.newQuad()
+	-- (a) 10 005 separate outside Sets: each is its own loop of one run
+	local dep = dq.Source(0)
+	local runs = 0
+	local e = dq.Effect(function()
+		runs += 1
+		dep:Get()
+	end, dep):Subscribe()
+	local before = runs
+	for i = 1, 10005 do
+		dep:Set(i)
+	end
+	assert(runs == before + 10005, "one run per outside Set, no limit across them: " .. (runs - before))
+	e:Unsubscribe()
+	-- (b) two converging loops of 9 000 re-runs each on one Effect: 18 000 runs in all, each loop under the limit
+	local counter = dq.Source(0)
+	local floor = 0
+	local loopRuns = 0
+	local e2 = dq.Effect(function()
+		loopRuns += 1
+		local v = counter:Get()
+		if v > floor then
+			counter:Set(v - 1)
+		end
+	end, counter):Subscribe()
+	loopRuns = 0
+	counter:Set(9000)
+	assert(counter:Get() == 0 and loopRuns == 9001, "first loop settled: " .. loopRuns)
+	floor = -9000
+	counter:Set(0)
+	assert(counter:Get() == -9000 and loopRuns == 18002, "a second loop on the same Effect starts its own count: " .. loopRuns)
+	e2:Unsubscribe()
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

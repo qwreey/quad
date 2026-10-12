@@ -576,4 +576,37 @@ do
 end
 
 print()
+print("=== round14 Q154 — 되감기 한도는 자리 계산 한 번의 것: 수렴하는 고리가 여러 번의 계산에 걸쳐 합쳐서 1만 번 넘게 되감아도 던지지 않는다 ===")
+-- Contract: core/06 `slot.Offset` ("한 번의 자리 계산이 1만 번 넘게 되감으면 … `Quad0267`"), errors/02
+-- Quad0267 ("한 번의 자리 계산이"). The section above pins the limit inside ONE pass ((a) divergent,
+-- (b) convergent, (c) a long pass without rewinds); this pins that the count starts over with every
+-- pass. Mutant (round14 explore E, K10b): the rewind counter kept on the owner's bookkeeping.
+do
+	local q = newQuad()
+	local inst = Instance.new("Frame")
+	local s1, s2 = q.Source(-1), q.Source(-1)
+	q.Bookkeeping.setOffsetSource(inst, 1, s1)
+	q.Bookkeeping.setLength(inst, 1, 1)
+	q.Bookkeeping.setOffsetSource(inst, 2, s2)
+	q.Bookkeeping.setLength(inst, 2, 1)
+	-- the (b) shape: position 2's offset subscriber grows position 1 until the offset reaches `target`
+	local target, runs = 0, 0
+	local obs = (s2 :: any):Observer(function()
+		if s2:Get() < target then
+			runs += 1
+			q.Bookkeeping.setLength(inst, 1, s2:Get() + 1)
+		end
+	end):Subscribe()
+	local _ = obs
+	for pass = 1, 25 do
+		target = pass * 500
+		q.Bookkeeping.setLength(inst, 1, s2:Get() + 1) -- the user line that starts this pass (~500 rewinds)
+		assert(s2:Get() == target, `pass {pass} converged at {s2:Get()}`)
+	end
+	assert(runs > 10000, `the passes rewound {runs} times in all`)
+	assert(not q.Bookkeeping.getBookkeeping(inst).recomputeBlocker.Blocking, "every pass completed")
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

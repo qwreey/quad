@@ -127,4 +127,20 @@ do
 end
 
 print()
+print("=== 4. round14 Q154 — setTimeout의 delay 게이트는 Quad0216: NaN·음수·숫자 아님 모두, task.delay에 닿기 전 ===")
+-- Contract: errors/07 Quad0216 ("`delay`가 숫자가 아니거나, NaN이거나, 음수일 때"). Mutant (E73 EO12): the
+-- NaN term dropped — NaN went on to `task.delay`.
+do
+	local scheduled = #log
+	for _, bad in { 0 / 0, -1, "1", nil } :: { any } do
+		local ok, err = pcall(function()
+			return q.Backend.setTimeout(function() end, bad)
+		end)
+		assert(not ok and string.find(tostring(err), "Quad0216", 1, true) ~= nil, "delay " .. tostring(bad) .. ": " .. tostring(err))
+	end
+	assert(#log == scheduled, "nothing reached task.delay: " .. table.concat(log, ","))
+	print("PASS")
+end
+
+print()
 print("ALL PASS")
