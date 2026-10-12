@@ -1,0 +1,16 @@
+==========================================================================================
+(N6) inner:Add(b) plain; b OnChange Parent → outer:Add(c, 1) (ancestor, front)
+  [imm] leaves=[c,a,p,b,z] outer.Length=5 inner.Length=2 inner.Offset=2 children=5
+  [def] leaves=[c,a,p,b,z] outer.Length=5 inner.Length=2 inner.Offset=2 children=5
+==========================================================================================
+(N7) inner:Remove(1) plain; x OnChange Parent nil → outer:Add(c, 1) (ancestor, front)
+  [imm] leaves=[c,a,p,z] outer.Length=4 inner.Length=1 inner.Offset=2 children=4
+  [def] leaves=[c,a,p,z] outer.Length=4 inner.Length=1 inner.Offset=2 children=4
+==========================================================================================
+(N8) outer:Add(inner{x}); x OnChange Parent → other:Add(y) (unrelated Slot)
+  [imm] outer.Length=2 other.Length=1 host2 children=1
+  [def] outer.Length=2 other.Length=1 host2 children=1
+==========================================================================================
+(N9) outer:Add(inner{x}); x OnChange Parent → inner:Add(y) (the arriving Slot)
+  [imm] outer.Length=3 inner.Length=2 children=2
+  [def] outer.Length=3 inner.Length=2 children=3

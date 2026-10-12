@@ -14,6 +14,7 @@
   `Add`(이웃이 중첩 Slot), N2 `Replace` 중 앞쪽 `Add`(이웃이 중첩 Slot), N3 `Remove` 중 `Remove(1)`, N4 `Remove` 중 `Clear`, N5 파괴 중인
   중첩 Slot에 `Add`.
 - `out/probe4-{base,s4,d}.txt`·`out/probe2-{base,s4,d}.txt` — 사본별 출력(`s4` = 10-07 후보 S4의 Slot 부분만 적용).
+- `probe5.luau`·`out/probe5-{base,d}.txt` — 플래그가 어느 Slot에 서는지 확인하는 넷: N6·N7 안쪽 Slot의 평범한 원소 `Add`/`Remove` 도중 콜백이 **조상** Slot에 앞쪽 `Add`(HEAD·시제품 모두 imm = def로 동작 — 평범한 원소 연산은 조상 자리를 잡아 두지 않아 조상엔 플래그가 필요 없다), N8 무관한 Slot에 `Add`(둘 다 동작), N9 `Add`로 들어오는 Slot 자신에 `Add`(HEAD imm은 부기 `Length` 3·화면 2개로 어긋남, 시제품은 `Quad0167`).
 - `bench.luau` — 비용 측정(mock, Deferred 셔임; 평평한 2000개 마운트, 중첩 200×10 마운트, 추가+제거 2만 회, 교체 2만 회).
 
 ## 결과
