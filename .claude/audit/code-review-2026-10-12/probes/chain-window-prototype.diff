@@ -1,0 +1,68 @@
+--- ../core-s/quad-base/src/Slot/Raw.luau	2026-10-12 21:02:54.496097841 +0900
++++ quad-base/src/Slot/Raw.luau	2026-10-12 21:03:51.455096968 +0900
+@@ -160,10 +160,9 @@
+ 		else
+ 			S.BK.setOffsetSource(self, index, S.None)
+ 			if physical then
+-				local was = self._materializing -- Q185 (d) backend-call window
+-				self._materializing = true
++				local cS, cO = raiseChain(self) -- PROTO chain window
+ 				module.Backend.nativeInsert(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
+-				self._materializing = was
++				restoreChain(cS, cO)
+ 			end
+ 			S.BK.setLength(self, index, 1, self._physicalTarget, element)
+ 		end
+@@ -188,15 +187,14 @@
+ 		local bk = S.BK.getBookkeeping(self)
+ 		unbindObserverAt(bk, index)
+ 		S.releaseOwner(element, self)
+-		local was = self._materializing -- Q185 (d) backend-call window
+-		self._materializing = true
++		local cS, cO = raiseChain(self) -- PROTO chain window
+ 		if S.isSlot(element) then S.destroySlotTree(element)
+ 		elseif self._mounted then
+ 			module.Backend.nativeRemove(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
+ 		else
+ 			module.Backend.nativeDispose(element)
+ 		end
+-		self._materializing = was
++		restoreChain(cS, cO)
+ 		vacate(self, index, element, bk)
+ 	end
+ 
+@@ -205,13 +203,12 @@
+ 		local bk = S.BK.getBookkeeping(self)
+ 		unbindObserverAt(bk, index)
+ 		S.releaseOwner(element, self)
+-		local was = self._materializing -- Q185 (d) backend-call window
+-		self._materializing = true
++		local cS, cO = raiseChain(self) -- PROTO chain window
+ 		if S.isSlot(element) then leaveAsElement(element, deferPhysical)
+ 		elseif self._mounted and not deferPhysical then
+ 			module.Backend.nativeExtract(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
+ 		end
+-		self._materializing = was
++		restoreChain(cS, cO)
+ 		vacate(self, index, element, bk)
+ 	end
+ 
+@@ -417,8 +414,7 @@
+ 				if S.isSlot(element) then S.collectLeaves(element, newLeaves)
+ 				else table.insert(newLeaves, element) end
+ 			end
+-			local was = self._materializing -- Q185 (d) backend-call window — this Slot and the arriving subtrees
+-			self._materializing = true
++			local cS, cO = raiseChain(self) -- PROTO chain window (splice)
+ 			local raised = {}
+ 			for _, element in ipairs(newElements) do
+ 				if S.isSlot(element) then S.raiseTree(element, raised) end
+@@ -432,7 +428,7 @@
+ 			for _, element in ipairs(newElements) do
+ 				if S.isSlot(element) then S.markMountedTree(element, self._mountedInst) end
+ 			end
+-			self._materializing = was
++			restoreChain(cS, cO)
+ 		end
+ 
+ 		if ownsGate then
