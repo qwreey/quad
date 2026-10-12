@@ -65,6 +65,7 @@ local Destination = require("./Navigation/Destination")
 local Item = require("./Navigation/Item")
 local Motion = require("./Navigation/Motion")
 local D = q.Declaration
+local barName = D.Modifier.Frame():Name("ShortNavigationBar")
 
 export type Arrangement = "EqualWeight" | "Centered"
 export type IconPosition = "Top" | "Start"
@@ -234,7 +235,7 @@ local function ShortNavigationBar<K>(props: Props<K>): Frame
 	end
 
 	return D.Frame {
-		Name = "ShortNavigationBar",
+		barName,
 		barBase,
 		BackgroundColor3 = theme.Color.SurfaceContainer,
 		BorderSizePixel = 0,

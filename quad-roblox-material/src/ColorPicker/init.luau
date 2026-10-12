@@ -85,6 +85,7 @@ local HexField = require("@self/Material/HexField")
 local Fields = require("@self/Material/Fields")
 local SwatchesModule = require("@self/Material/Swatches")
 local D = q.Declaration
+local pickerName = D.Modifier.Frame():Name("ColorPicker")
 
 export type HSV = ColorModel.HSV
 export type Mode = Model.Mode
@@ -158,7 +159,7 @@ local function Panel(props: PanelProps)
 	end)
 
 	return D.Frame {
-		Name = "ColorPicker",
+		pickerName,
 		baseModifier,
 		props.Modifier or q.None,
 		model.Sync or q.None,

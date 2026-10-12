@@ -70,6 +70,7 @@ local Item = require("./Navigation/Item")
 local Motion = require("./Navigation/Motion")
 local StateModule = require("@self/State")
 local D = q.Declaration
+local railName = D.Modifier.Frame():Name("WideNavigationRail")
 
 export type Arrangement = "Top" | "Center" | "Bottom"
 export type Value = StateModule.Value
@@ -362,7 +363,7 @@ local function WideNavigationRail<K>(props: Props<K>): Frame
 	end)
 
 	return D.Frame {
-		Name = "WideNavigationRail",
+		railName,
 		railBase:Size(width),
 		BackgroundColor3 = theme.Color.Surface,
 		BorderSizePixel = 0,

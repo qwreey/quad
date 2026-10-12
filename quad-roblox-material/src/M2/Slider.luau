@@ -33,6 +33,7 @@ local Behavior = require("../Slider/Behavior")
 local Bubble = require("../Slider/Bubble")
 local Ticks = require("./SliderTicks")
 local D = q.Declaration
+local sliderName = D.Modifier.Frame():Name("M2Slider")
 
 export type Props = Behavior.SliderProps
 
@@ -86,7 +87,7 @@ local function Slider(props: Props)
 	end)
 
 	return D.Frame {
-		Name = "M2Slider",
+		sliderName,
 		baseModifier,
 		props.Modifier or q.None,
 		b.InteractionHook,

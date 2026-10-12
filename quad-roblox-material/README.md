@@ -172,6 +172,7 @@ local q = Quad:UseProvider(RobloxModule.QuadRoblox)
 모든 컴포넌트는 같은 규칙을 따릅니다(`src/init.luau` 머리의 열 항목 체크리스트가 소스).
 
 - **평범한 함수 하나**가 호스트 인스턴스를 돌려줍니다: `Material.Button { ... }`.
+- **호스트 `Name`은 `Modifier`로 바꿀 수 있습니다**: 컴포넌트는 호스트 이름(`Button`, `Card`, ...)을 기본 Modifier에 두므로 `Modifier = D.Modifier.TextButton():Name("SaveButton")`처럼 주면 그 이름이 됩니다(안 주면 기본 이름 그대로). 안쪽 자식의 이름은 바꿀 수 없습니다.
 - **`Theme` 폴백**: `props.Theme`가 없으면 `Theme.default`. 앱 전체에 테마 하나를 쓰면 아무것도 안 넘겨도 됩니다.
 - **`T | State<T>` 입력**: 값이 바뀔 수 있는 입력(`Label`, `Disabled`, `Error`, ...)은 값 또는 State를 받습니다. State를
   넘기면 그 프로퍼티만 갱신됩니다.

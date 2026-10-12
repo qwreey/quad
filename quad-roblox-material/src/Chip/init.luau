@@ -53,6 +53,8 @@ local Style = require("./Button/Style")
 local ColorTokens = require("./Tokens/Color")
 local KeyedSlot = require("@self/KeyedSlot")
 local D = q.Declaration
+local chipSetName = D.Modifier.Frame():Name("ChipSet")
+local chipName = D.Modifier.TextButton():Name("Chip")
 
 type Kind = "Assist" | "Filter" | "Input" | "Suggestion"
 
@@ -288,7 +290,7 @@ local function build(p: Core): TextButton
 	local onClick = p.OnClick
 	local sel = p.Selected
 	return D.TextButton {
-		Name = "Chip",
+		chipName,
 		baseModifier,
 		p.Modifier or q.None,
 		fx.Hook,
@@ -448,7 +450,7 @@ local chipSetBase = D.Modifier.Frame()
 local function ChipSet<T>(props: ChipSetProps<T>): Frame
 	local gap = props.Gap or 8
 	return D.Frame {
-		Name = "ChipSet",
+		chipSetName,
 		chipSetBase,
 		props.Modifier or q.None,
 		D.UIListLayout {

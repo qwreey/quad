@@ -30,6 +30,7 @@ local Theme = require("../Theme")
 local Util = require("../Util")
 local Loop = require("./Loop")
 local D = q.Declaration
+local indicatorName = D.Modifier.Frame():Name("LoadingIndicator")
 
 export type Props = {
 	read Size: number?,
@@ -140,7 +141,7 @@ local function LoadingIndicator(props: Props): Frame
 	end)
 
 	return D.Frame {
-		Name = "LoadingIndicator",
+		indicatorName,
 		D.Modifier.Frame():Size(UDim2.fromOffset(size, size)):BorderSizePixel(0),
 		props.Modifier or q.None,
 		BackgroundColor3 = theme.Color.PrimaryContainer,

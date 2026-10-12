@@ -44,6 +44,7 @@ local Interactive = require("./Interactive")
 local Style = require("./Button/Style")
 local Behavior = require("@self/Behavior")
 local D = q.Declaration
+local switchName = D.Modifier.TextButton():Name("Switch")
 
 export type Props = Behavior.Props
 
@@ -184,7 +185,7 @@ local function Switch(props: Props)
 	end
 
 	return D.TextButton {
-		Name = "Switch",
+		switchName,
 		baseModifier,
 		props.Modifier or q.None,
 		fx.Hook,

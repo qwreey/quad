@@ -25,6 +25,7 @@ local Behavior = require("../Slider/Behavior")
 local Bubble = require("../Slider/Bubble")
 local Ticks = require("./SliderTicks")
 local D = q.Declaration
+local rangeName = D.Modifier.Frame():Name("M2RangeSlider")
 
 export type Props = Behavior.RangeSliderProps
 
@@ -116,7 +117,7 @@ local function RangeSlider(props: Props)
 	end
 
 	return D.Frame {
-		Name = "M2RangeSlider",
+		rangeName,
 		baseModifier,
 		props.Modifier or q.None,
 		r.InteractionHook,

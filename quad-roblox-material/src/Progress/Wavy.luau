@@ -113,6 +113,7 @@ local Theme = require("../Theme")
 local Util = require("../Util")
 local Loop = require("./Loop")
 local D = q.Declaration
+local wavyName = D.Modifier.Frame():Name("WavyProgress")
 
 export type Props = {
 	read Value: number | q.State<number>,
@@ -313,7 +314,7 @@ local function WavyProgress(props: Props): Frame
 
 	local startAmp = maxAmp * (1 - frame:Get() / LAST)
 	local root = D.Frame {
-		Name = "WavyProgress",
+		wavyName,
 		D.Modifier.Frame():Size(UDim2.new(1, 0, 0, height)):BackgroundTransparency(1):BorderSizePixel(0),
 		props.Modifier or q.None,
 		Visible = visible,

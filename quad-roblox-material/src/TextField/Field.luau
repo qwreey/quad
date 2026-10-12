@@ -42,6 +42,7 @@ local Slots = require("./Slots")
 local Container = require("./Container")
 local Support = require("./Support")
 local D = q.Declaration
+local fieldName = D.Modifier.Frame():Name("TextField")
 
 export type Variant = Ctx.Variant
 export type Props = Ctx.Props
@@ -283,7 +284,7 @@ local function build(props: Props): Parts
 	})
 
 	local host = D.Frame {
-		Name = "TextField",
+		fieldName,
 		hostModifier,
 		props.Modifier or q.None,
 		D.UIListLayout {

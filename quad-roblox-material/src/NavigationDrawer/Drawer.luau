@@ -45,6 +45,18 @@ local Slide = require("../Sheet/Slide")
 local Parts = require("../Sheet/Parts")
 local StateModule = require("./State")
 local D = q.Declaration
+local permanentName = D.Modifier.Frame():Name("PermanentNavigationDrawer")
+
+-- host Name per call (the name is an argument here); cached so each distinct name builds one Modifier
+local hostNames: { [string]: q.FrameModifier } = {}
+local function hostName(name: string): q.FrameModifier
+	local m = hostNames[name]
+	if m == nil then
+		m = D.Modifier.Frame():Name(name)
+		hostNames[name] = m
+	end
+	return m
+end
 
 export type ModalProps = {
 	read DrawerContent: Instance,
@@ -206,7 +218,7 @@ local function slidingDrawer(props: ModalProps, modal: boolean): Frame
 	end
 
 	return D.Frame {
-		Name = who,
+		hostName(who),
 		hostBase,
 		props.Modifier or q.None,
 		escape,
@@ -234,7 +246,7 @@ local function PermanentNavigationDrawer(props: PermanentProps): Frame
 	end
 	local _ = Theme.resolve(props.Theme)
 	return D.Frame {
-		Name = "PermanentNavigationDrawer",
+		permanentName,
 		hostBase,
 		props.Modifier or q.None,
 		D.UIListLayout { FillDirection = Enum.FillDirection.Horizontal, SortOrder = Enum.SortOrder.LayoutOrder },

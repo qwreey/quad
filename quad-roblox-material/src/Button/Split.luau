@@ -80,6 +80,7 @@ local IconView = require("../IconView")
 local Style = require("./Style")
 local ColorTokens = require("../Tokens/Color")
 local D = q.Declaration
+local splitName = D.Modifier.Frame():Name("SplitButton")
 
 export type Variant = "Filled" | "Tonal" | "Elevated" | "Outlined"
 
@@ -459,7 +460,7 @@ local function SplitButton(props: Props)
 	})
 
 	return D.Frame {
-		Name = "SplitButton",
+		splitName,
 		D.Modifier.Frame()
 			:Size(UDim2.fromOffset(0, HEIGHT))
 			:AutomaticSize(Enum.AutomaticSize.X)

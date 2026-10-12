@@ -32,6 +32,7 @@ local Style = require("./Style")
 local ColorTokens = require("../Tokens/Color")
 local ShapeTokens = require("../Tokens/Shape")
 local D = q.Declaration
+local fabName = D.Modifier.TextButton():Name("FAB")
 
 export type Size = "Small" | "Regular" | "Large"
 export type ColorName = "Surface" | "Primary" | "Secondary" | "Tertiary"
@@ -151,7 +152,7 @@ local function FAB(props: Props)
 	local hooks = Util.hooks(props.Hooks)
 
 	return D.TextButton {
-		Name = "FAB",
+		fabName,
 		base,
 		props.Modifier or q.None,
 		fx.Hook,

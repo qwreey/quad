@@ -42,6 +42,7 @@ local StateModule = require("../Sheet/State")
 local Anchored = require("../Sheet/Anchored")
 local Sheet = require("./Sheet")
 local D = q.Declaration
+local scaffoldName = D.Modifier.Frame():Name("BottomSheetScaffold")
 
 export type Props = {
 	read SheetContent: q.Slot<Instance>?,
@@ -96,7 +97,7 @@ local function BottomSheetScaffold(props: Props?): Frame
 	})
 
 	return D.Frame {
-		Name = "BottomSheetScaffold",
+		scaffoldName,
 		baseModifier,
 		BackgroundColor3 = theme.Color.Surface,
 		p.Modifier or q.None,

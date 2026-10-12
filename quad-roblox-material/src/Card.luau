@@ -41,6 +41,8 @@ local Elevation = require("./Elevation")
 local Style = require("./Button/Style")
 local ColorTokens = require("./Tokens/Color")
 local D = q.Declaration
+local cardFrameName = D.Modifier.Frame():Name("Card")
+local cardButtonName = D.Modifier.TextButton():Name("Card")
 
 export type Variant = "Elevated" | "Filled" | "Outlined"
 
@@ -154,7 +156,7 @@ local function Card(props: Props): GuiObject
 		local f = fx :: Interactive.Interactive
 		local interactable: q.State<boolean> = Util.interactable(disabled)
 		return D.TextButton {
-			Name = "Card",
+			cardButtonName,
 			baseButton,
 			if props.Modifier then props.Modifier:AsGuiObject():AsTextButton() else q.None,
 			f.Hook,
@@ -177,7 +179,7 @@ local function Card(props: Props): GuiObject
 	end
 
 	return D.Frame {
-		Name = "Card",
+		cardFrameName,
 		baseFrame,
 		if props.Modifier then props.Modifier:AsGuiObject():AsFrame() else q.None,
 		BackgroundColor3 = container,

@@ -54,6 +54,7 @@ local Style = require("./Button/Style")
 local ColorTokens = require("./Tokens/Color")
 local KeyedSlot = require("./Chip/KeyedSlot")
 local D = q.Declaration
+local tabsName = D.Modifier.Frame():Name("Tabs")
 
 export type Variant = "Primary" | "Secondary"
 export type Tab<K> = { read Key: K, read Label: string, read Icon: string? }
@@ -239,7 +240,7 @@ local function Tabs<K>(props: Props<K>): Frame
 
 	local trackBase = UDim2.new(1, 0, 0, trackHeight)
 	return D.Frame {
-		Name = "Tabs",
+		tabsName,
 		baseModifier:Size(UDim2.new(1, 0, 0, height)),
 		props.Modifier or q.None,
 		D.Frame {

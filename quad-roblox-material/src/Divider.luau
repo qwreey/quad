@@ -18,6 +18,7 @@ local q = require("./Quad")
 local Theme = require("./Theme")
 local Util = require("./Util")
 local D = q.Declaration
+local dividerName = D.Modifier.Frame():Name("Divider")
 
 export type Props = {
 	read Orientation: ("Horizontal" | "Vertical")?,
@@ -41,7 +42,7 @@ local function Divider(props: Props?): Frame
 
 	if inset == "None" then
 		return D.Frame {
-			Name = "Divider",
+			dividerName,
 			base,
 			p.Modifier or q.None,
 			BackgroundColor3 = theme.Color.OutlineVariant,
@@ -53,7 +54,7 @@ local function Divider(props: Props?): Frame
 	local startPad = UDim.new(0, InsetPx)
 	local endPad = if inset == "Both" then UDim.new(0, InsetPx) else UDim.new(0, 0)
 	return D.Frame {
-		Name = "Divider",
+		dividerName,
 		base,
 		p.Modifier or q.None,
 		BackgroundTransparency = 1,

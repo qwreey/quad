@@ -39,6 +39,7 @@ local Behavior = require("./Behavior")
 local Track = require("./Track")
 local Bubble = require("./Bubble")
 local D = q.Declaration
+local rangeName = D.Modifier.Frame():Name("RangeSlider")
 
 export type Props = {
 	read Start: q.Source<number>?,
@@ -197,7 +198,7 @@ local function RangeSlider(props: Props)
 	end
 
 	return D.Frame {
-		Name = "RangeSlider",
+		rangeName,
 		D.Modifier.Frame():Size(g.hostSize()):BackgroundTransparency(1):BorderSizePixel(0),
 		props.Modifier or q.None,
 		r.InteractionHook,

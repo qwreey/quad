@@ -49,6 +49,7 @@ local Model = require("./Model")
 local Parts = require("./Parts")
 local Strings = require("./Strings")
 local D = q.Declaration
+local inputName = D.Modifier.Frame():Name("TimePickerInput")
 
 type State<T> = q.State<T>
 type Time = Clock.Time
@@ -340,7 +341,7 @@ local function Input(props: Props): Frame
 	local built = build({ Model = model, Theme = theme, Locale = props.Locale or "en" })
 	local total = built.Size
 	return D.Frame {
-		Name = "TimePickerInput",
+		inputName,
 		D.Modifier.Frame():Size(UDim2.fromOffset(total.X, total.Y)):BorderSizePixel(0):BackgroundTransparency(1),
 		props.Modifier or q.None,
 		model.Sync,

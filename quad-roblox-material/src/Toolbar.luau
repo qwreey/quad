@@ -64,6 +64,17 @@ local Motion = require("./Navigation/Motion")
 local ColorTokens = require("./Tokens/Color")
 local D = q.Declaration
 
+-- host Name per call (the name is an argument here); cached so each distinct name builds one Modifier
+local hostNames: { [string]: q.FrameModifier } = {}
+local function hostName(name: string): q.FrameModifier
+	local m = hostNames[name]
+	if m == nil then
+		m = D.Modifier.Frame():Name(name)
+		hostNames[name] = m
+	end
+	return m
+end
+
 export type Colors = "Standard" | "Vibrant"
 export type Fab = {
 	read Icon: string,
@@ -205,7 +216,7 @@ local function toolbar(name: string, vertical: boolean, props: Common): Frame
 			return pos2(math.round(PAD + leadLength * self:Get()), PAD)
 		end)
 		return D.Frame {
-			Name = name,
+			hostName(name),
 			D.Modifier.Frame():Size(hostSize),
 			BackgroundColor3 = theme.Color[palette.Container],
 			BorderSizePixel = 0,
@@ -259,7 +270,7 @@ local function toolbar(name: string, vertical: boolean, props: Common): Frame
 		return self:Get()
 	end)
 	return D.Frame {
-		Name = name,
+		hostName(name),
 		D.Modifier.Frame():Size(size2(total, FAB_MAX)),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,

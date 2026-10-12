@@ -37,6 +37,8 @@ local Interactive = require("./Interactive")
 local Style = require("./Button/Style")
 local ControlLabel = require("./ControlLabel")
 local D = q.Declaration
+local groupName = D.Modifier.Frame():Name("RadioGroup")
+local radioName = D.Modifier.TextButton():Name("Radio")
 
 local RunService = game:GetService("RunService")
 
@@ -171,7 +173,7 @@ local function Radio<T>(props: Props<T>)
 
 	local hasLabel = props.Label ~= nil
 	return D.TextButton {
-		Name = "Radio",
+		radioName,
 		baseModifier,
 		if hasLabel then ControlLabel.host else q.None,
 		props.Modifier or q.None,
@@ -247,7 +249,7 @@ local function RadioGroup<T>(props: GroupProps<T>)
 	end
 
 	return D.Frame {
-		Name = "RadioGroup",
+		groupName,
 		baseGroup,
 		props.Modifier or q.None,
 		D.UIListLayout {

@@ -71,6 +71,12 @@
 	      component that returns a host instance. `Hooks = { any }` is the one exported alias: values placed in the host's
 	      ARRAY part (a `Tooltip.hook(...).Hook`, `q.OnChange`, a ref, ...). Use `table.unpack(Util.hooks(props.Hooks))` as
 	      the LAST entry of the host constructor (a multi-value call is truncated anywhere else).
+	    * The host's `Name` lives in the component's base Modifier (`local hostName = D.Modifier.TextButton():Name("Button")`
+	      at module level), NOT inline in the host's string keys: an inline key always beats a Modifier, so the caller's
+	      `Modifier = D.Modifier.TextButton():Name("SaveButton")` could not rename it. Order in the array part: kit base
+	      Modifier(s), then `props.Modifier` (later wins). Names of the host's inner children (`Label`, `Icon`, `Outline`,
+	      `Content` ...) stay inline. A component that builds its host through another kit component passes its
+	      Modifier along (the caller's still wins).
 	    * App bars and toolbars take their icon buttons as DATA (`Material.AppBarAction` = { Icon, Label, OnClick?, Checked?,
 	      OnCheckedChange?, Disabled? } — Compose's AppBarRow items: a tooltip of the Label, an overflow menu past
 	      `MaxItemCount`) or as instances placed as given.
@@ -113,7 +119,9 @@
 	6. Shape: ONE `UICorner = Tokens.Shape.corner(role)` on the host and the SAME value to `Interactive`.
 	7. Optional caller styling: `props.Modifier` goes in the array part AFTER the component's base Modifier
 	   (later wins), never `or nil` — `props.Modifier or q.None`. Keep Size/AutomaticSize in the base Modifier
-	   (not inline) so callers can override them. `props.Hooks` goes last (`table.unpack(Util.hooks(props.Hooks))`).
+	   (not inline) so callers can override them. The host's `Name` goes in a base Modifier too (a module-level
+	   `D.Modifier.<Class>():Name("...")`, first in the array part) — never `Name = "..."` inline on the host, which would beat
+	   the caller's `:Name(...)`; inner children keep inline names. `props.Hooks` goes last (`table.unpack(Util.hooks(props.Hooks))`).
 	8. Overlays (menus, dialogs, snackbars, tooltips): do not parent them yourself — `Overlay.default():Open({
 	   Content = ..., Scrim = ..., DismissOnEscape = ..., TrapSelection = ... })` (or the app's own `Overlay.new()`);
 	   the content mounts snapped and animates from a `Util.postHook`. Escape/B, selection trapping and layer-death

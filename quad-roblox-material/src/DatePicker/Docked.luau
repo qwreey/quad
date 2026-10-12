@@ -44,6 +44,7 @@ local Calendar = require("./Calendar")
 local Status = require("./Status")
 local View = require("./View")
 local D = q.Declaration
+local pickerName = D.Modifier.Frame():Name("DockedDatePicker")
 
 type Date = Calendar.Date
 
@@ -95,7 +96,7 @@ local function Docked(props: Props): Frame
 	})
 
 	return D.Frame {
-		Name = "DockedDatePicker",
+		pickerName,
 		baseModifier,
 		props.Modifier or q.None,
 		BackgroundColor3 = theme.Color.SurfaceContainerHigh,

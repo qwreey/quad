@@ -43,6 +43,7 @@ local Model = require("./Model")
 local Parts = require("./Parts")
 local ClockFace = require("./ClockFace")
 local D = q.Declaration
+local dialName = D.Modifier.Frame():Name("TimePickerDial")
 
 type State<T> = q.State<T>
 type Time = Clock.Time
@@ -202,7 +203,7 @@ local function Dial(props: Props): Frame
 	local built = build({ Model = model, Theme = theme, Locale = props.Locale or "en", LayoutType = layout })
 	local total = built.Size
 	return D.Frame {
-		Name = "TimePickerDial",
+		dialName,
 		D.Modifier.Frame():Size(UDim2.fromOffset(total.X, total.Y)):BorderSizePixel(0):BackgroundTransparency(1),
 		props.Modifier or q.None,
 		model.Sync,

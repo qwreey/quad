@@ -35,6 +35,7 @@ local Elevation = require("../Elevation")
 local Style = require("../Button/Style")
 local Behavior = require("../Switch/Behavior")
 local D = q.Declaration
+local switchName = D.Modifier.TextButton():Name("M2Switch")
 
 export type Props = Behavior.Props
 
@@ -98,7 +99,7 @@ local function Switch(props: Props)
 	local slide = Tokens.Motion.options("Short4", "Standard")
 
 	return D.TextButton {
-		Name = "M2Switch",
+		switchName,
 		baseModifier,
 		props.Modifier or q.None,
 		fx.Hook,

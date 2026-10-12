@@ -38,6 +38,8 @@ local FAB = require("../Button/FAB")
 local Overlay = require("../Overlay")
 local Actions = require("./Actions")
 local D = q.Declaration
+local flexibleName = D.Modifier.Frame():Name("FlexibleBottomAppBar")
+local bottomName = D.Modifier.Frame():Name("BottomAppBar")
 
 export type Fab = {
 	read Icon: string,
@@ -109,7 +111,7 @@ local function BottomAppBar(props: BottomProps): Frame
 		})
 	end
 	return D.Frame {
-		Name = "BottomAppBar",
+		bottomName,
 		bottomBase,
 		BackgroundColor3 = theme.Color.SurfaceContainer,
 		BorderSizePixel = 0,
@@ -130,7 +132,7 @@ local function FlexibleBottomAppBar(props: FlexibleProps): Frame
 	end
 	local list = Actions.build(props.Actions, { Theme = theme, Color = theme.Raw.OnSurface, Overlay = props.Overlay })
 	return D.Frame {
-		Name = "FlexibleBottomAppBar",
+		flexibleName,
 		D.Modifier.Frame():Size(UDim2.new(1, 0, 0, height :: number)),
 		BackgroundColor3 = theme.Color.SurfaceContainer,
 		BorderSizePixel = 0,

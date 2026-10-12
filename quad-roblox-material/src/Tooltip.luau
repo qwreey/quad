@@ -39,6 +39,7 @@ local Util = require("./Util")
 local Text = require("./Text")
 local Overlay = require("./Overlay")
 local D = q.Declaration
+local tooltipName = D.Modifier.TextLabel():Name("Tooltip")
 
 local _hookProto = Util.preHook(function() end)
 export type Hook = typeof(_hookProto)
@@ -83,7 +84,7 @@ local function Plain(props: PlainProps): TextLabel
 	end)
 	local fade = transparency:Apply(q.Animate(Tokens.Motion.options("Short3", "Linear")))
 	return D.TextLabel {
-		Name = "Tooltip",
+		tooltipName,
 		baseModifier,
 		labelStyle,
 		props.Modifier or q.None,

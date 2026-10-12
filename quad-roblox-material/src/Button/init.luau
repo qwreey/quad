@@ -77,6 +77,7 @@ local Style = require("@self/Style")
 local ColorTokens = require("./Tokens/Color")
 local IconView = require("./IconView")
 local D = q.Declaration
+local buttonName = D.Modifier.TextButton():Name("Button")
 
 export type Variant = "Filled" | "Tonal" | "Elevated" | "Outlined" | "Text"
 export type IconPosition = "Leading" | "Trailing"
@@ -224,7 +225,7 @@ local function Button(props: Props)
 	local pad = if not hasIcon then spec.Pad elseif trailing then spec.PadTrailing else spec.PadLeading
 
 	return D.TextButton {
-		Name = "Button",
+		buttonName,
 		baseModifier,
 		sizing or q.None,
 		props.Modifier or q.None,

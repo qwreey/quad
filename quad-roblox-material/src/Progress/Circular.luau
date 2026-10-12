@@ -124,6 +124,7 @@ local Theme = require("../Theme")
 local Util = require("../Util")
 local Loop = require("./Loop")
 local D = q.Declaration
+local circularName = D.Modifier.Frame():Name("CircularProgress")
 
 export type Props = {
 	read Value: (number | q.State<number>)?,
@@ -348,7 +349,7 @@ local function CircularProgress(props: Props): Frame
 
 	local indicator, indicatorParts = newArc("Arc", theme.Color.Primary, 2, thick, step)
 	local tree: { [any]: any } = {
-		Name = "CircularProgress",
+		circularName,
 		D.Modifier.Frame():Size(UDim2.fromOffset(size, size)):BackgroundTransparency(1):BorderSizePixel(0),
 		props.Modifier or q.None,
 		Visible = visible,

@@ -84,6 +84,7 @@ local Behavior = require("@self/Behavior")
 local Track = require("@self/Track")
 local Bubble = require("@self/Bubble")
 local D = q.Declaration
+local sliderName = D.Modifier.Frame():Name("Slider")
 
 export type Size = Track.SizeName
 export type Orientation = Track.Orientation
@@ -391,7 +392,7 @@ local function Slider(props: Props)
 	end
 
 	return D.Frame {
-		Name = "Slider",
+		sliderName,
 		D.Modifier.Frame():Size(g.hostSize()):BackgroundTransparency(1):BorderSizePixel(0),
 		props.Modifier or q.None,
 		b.InteractionHook,

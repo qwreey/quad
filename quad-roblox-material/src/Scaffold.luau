@@ -79,6 +79,7 @@ local Theme = require("./Theme")
 local Util = require("./Util")
 local Top = require("./AppBar/Top")
 local D = q.Declaration
+local scaffoldName = D.Modifier.Frame():Name("Scaffold")
 
 export type FabPosition = "Start" | "Center" | "End" | "EndOverlay"
 
@@ -216,7 +217,7 @@ local function Scaffold(props: Props): Frame
 	end
 
 	return D.Frame {
-		Name = "Scaffold",
+		scaffoldName,
 		baseModifier,
 		BackgroundColor3 = props.ContainerColor or theme.Color.Background,
 		props.Modifier or q.None,

@@ -39,6 +39,7 @@ local Docked = require("./Docked")
 local Status = require("./Status")
 local View = require("./View")
 local D = q.Declaration
+local pickerName = D.Modifier.Frame():Name("DockedRangePicker")
 
 type Date = Calendar.Date
 
@@ -102,7 +103,7 @@ local function RangeDocked(props: Props): Frame
 	})
 
 	return D.Frame {
-		Name = "DockedRangePicker",
+		pickerName,
 		baseModifier,
 		props.Modifier or q.None,
 		BackgroundColor3 = theme.Color.SurfaceContainerHigh,

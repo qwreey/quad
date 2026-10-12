@@ -26,6 +26,7 @@ local Theme = require("./Theme")
 local Util = require("./Util")
 local Text = require("./Text")
 local D = q.Declaration
+local badgeName = D.Modifier.Frame():Name("Badge")
 
 export type Props = {
 	read Text: (string | q.State<string>)?,
@@ -52,7 +53,7 @@ local function Badge(props: Props?): Frame
 	local corner = Tokens.Shape.corner("Full")
 	if p.Text == nil then
 		return D.Frame {
-			Name = "Badge",
+			badgeName,
 			smallBase,
 			BackgroundColor3 = theme.Color.Error,
 			BorderSizePixel = 0,
@@ -62,7 +63,7 @@ local function Badge(props: Props?): Frame
 		}
 	end
 	return D.Frame {
-		Name = "Badge",
+		badgeName,
 		largeBase,
 		BackgroundColor3 = theme.Color.Error,
 		BorderSizePixel = 0,

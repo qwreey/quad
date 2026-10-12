@@ -47,6 +47,7 @@ local Slide = require("../Sheet/Slide")
 local Parts = require("../Sheet/Parts")
 local StateModule = require("../Sheet/State")
 local D = q.Declaration
+local surfaceName = D.Modifier.Frame():Name("SideSheet")
 
 export type Edge = "End" | "Start"
 
@@ -170,7 +171,7 @@ local function build(cfg: Config): Built
 
 	local container = if cfg.Modal then theme.Color.SurfaceContainerLow else theme.Color.Surface
 	local sheet = D.Frame {
-		Name = "SideSheet",
+		surfaceName,
 		D.Modifier.Frame():Size(UDim2.new(0, width, 1, 0)),
 		AnchorPoint = Vector2.new(if atEnd then 1 else 0, 0),
 		Position = position,

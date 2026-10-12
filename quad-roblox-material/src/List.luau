@@ -49,6 +49,9 @@ local Interactive = require("./Interactive")
 local Text = require("./Text")
 local Style = require("./Button/Style")
 local D = q.Declaration
+local listName = D.Modifier.Frame():Name("List")
+local itemFrameName = D.Modifier.Frame():Name("ListItem")
+local itemButtonName = D.Modifier.TextButton():Name("ListItem")
 
 export type Text = string | q.State<string>
 export type Slotted = string | q.State<string> | Instance
@@ -223,7 +226,7 @@ local function ListItem(props: ItemProps): GuiObject
 		local fx = Interactive.new({ Theme = theme, Disabled = disabled, OnColor = theme.Color.OnSurface, Corner = UDim.new(0, 0) })
 		local interactable: q.State<boolean> = Util.interactable(disabled)
 		return D.TextButton {
-			Name = "ListItem",
+			itemButtonName,
 			baseButton,
 			D.Modifier.TextButton():Size(size),
 			if props.Modifier then props.Modifier:AsGuiObject():AsTextButton() else q.None,
@@ -255,7 +258,7 @@ local function ListItem(props: ItemProps): GuiObject
 	end
 
 	return D.Frame {
-		Name = "ListItem",
+		itemFrameName,
 		baseFrame,
 		D.Modifier.Frame():Size(size),
 		if props.Modifier then props.Modifier:AsGuiObject():AsFrame() else q.None,
@@ -284,7 +287,7 @@ local function container(
 ): Frame
 	local _ = Theme.resolve(theme)
 	return D.Frame {
-		Name = "List",
+		listName,
 		listBase,
 		modifier or q.None,
 		LayoutOrder = order,

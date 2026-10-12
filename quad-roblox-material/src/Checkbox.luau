@@ -52,6 +52,7 @@ local Interactive = require("./Interactive")
 local Style = require("./Button/Style")
 local ControlLabel = require("./ControlLabel")
 local D = q.Declaration
+local checkboxName = D.Modifier.TextButton():Name("Checkbox")
 
 local RunService = game:GetService("RunService")
 
@@ -298,7 +299,7 @@ local function Checkbox(props: Props)
 	local hasLabel = props.Label ~= nil
 
 	return D.TextButton {
-		Name = "Checkbox",
+		checkboxName,
 		baseModifier,
 		if hasLabel then ControlLabel.host else q.None,
 		props.Modifier or q.None,

@@ -52,6 +52,10 @@ local IconView = require("../IconView")
 local Style = require("../Button/Style")
 local Destination = require("../Navigation/Destination")
 local D = q.Declaration
+local itemsName = D.Modifier.Frame():Name("NavigationDrawerItems")
+local dividerName = D.Modifier.Frame():Name("NavigationDrawerDivider")
+local headlineName = D.Modifier.TextLabel():Name("NavigationDrawerHeadline")
+local itemName = D.Modifier.TextButton():Name("NavigationDrawerItem")
 
 export type ItemProps = {
 	read Label: string | q.State<string>,
@@ -142,7 +146,7 @@ local function NavigationDrawerItem(props: ItemProps): TextButton
 	end
 
 	return D.TextButton {
-		Name = "NavigationDrawerItem",
+		itemName,
 		itemBase,
 		props.Modifier or q.None,
 		fx.Hook,
@@ -191,7 +195,7 @@ end
 local function NavigationDrawerHeadline(props: HeadlineProps): TextLabel
 	local theme = Theme.resolve(props.Theme)
 	return D.TextLabel {
-		Name = "NavigationDrawerHeadline",
+		headlineName,
 		headlineStyle,
 		headlineBase,
 		BackgroundTransparency = 1,
@@ -211,7 +215,7 @@ local function NavigationDrawerDivider(props: DividerProps?): Frame
 	local p: DividerProps = props or {}
 	local theme = Theme.resolve(p.Theme)
 	return D.Frame {
-		Name = "NavigationDrawerDivider",
+		dividerName,
 		dividerBase,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
@@ -262,7 +266,7 @@ local function NavigationDrawerItems<K>(props: ItemsProps<K>): Frame
 		end
 	end
 	return D.Frame {
-		Name = "NavigationDrawerItems",
+		itemsName,
 		itemsBase,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,

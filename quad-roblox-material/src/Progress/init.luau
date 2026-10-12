@@ -43,6 +43,7 @@ local LoadingModule = require("@self/LoadingIndicator")
 local WavyModule = require("@self/Wavy")
 local CircularModule = require("@self/Circular")
 local D = q.Declaration
+local linearName = D.Modifier.Frame():Name("LinearProgress")
 
 
 export type LinearProps = {
@@ -123,7 +124,7 @@ local function LinearProgress(props: LinearProps): Frame
 			shown2 = place(bar2, smooth((p - 0.55) / 0.45), smooth((p - 0.35) / 0.55), shown2)
 		end)
 		return D.Frame {
-			Name = "LinearProgress",
+			linearName,
 			linearBase,
 			props.Modifier or q.None,
 			Visible = visible,
@@ -161,7 +162,7 @@ local function LinearProgress(props: LinearProps): Frame
 	end)
 
 	return D.Frame {
-		Name = "LinearProgress",
+		linearName,
 		linearBase,
 		props.Modifier or q.None,
 		Visible = visible,
