@@ -96,4 +96,12 @@ Studio QA 1~9차(`feedback/consumer-kits-studio-qa-2026-10-07.md`)를 거친 뒤
 6. 그다음 round14 재검토로 복귀 — 원장 §2 사용자 몫(릴리즈 절차 Q119·Q124 (4)·Q131, Q125, Q154)·§6 Q184·Q185(엔진 확답은 rojo/새 MCP 뒤), 계획표 P6 반영 묶음.
 7. round14 뒤 같이 볼 것(사용자 2026-10-08) — 두 킷이 훅·인터랙션으로 만든 부분(`Interaction`의 hover/pressed/focused State·드래그 추적, `Util.hooks`/`preHook`/`postHook`, `Interactive` 묶음)에서 **quad 상위에서 생각해 볼 것**이 있는지. 사용자: *"내가 잊고 있었다 … round14 이후 같이 보도록 하자"*. 같은 자리에서 볼 것 하나 더(사용자 2026-10-08): material 갤러리가 만든 `Ctx`(`gallery/Common.luau` — 패널마다 Source를 담아 두는 Memo; 탭을 다시 만들어도 입력 상태가 남게)가 왜 quad `Context`로 안 됐는지, 그리고 `make`를 받는 Memo 꼴(없으면 만들어 넣고 있으면 돌려주는 것)이 quad로 올라갈 니즈인지 — 사용자: *"Context 로 안되던 이유가 있을까? make 를 받는 Memo 식은 필요한것 같긴한데 … 나중에 관찰해줘"*.
 
+### 진행 상태 [2026-10-12 기준]
+
+5절의 1~4번은 끝났다(커밋 `ec6079f1`~`1cc4a833`, 내용은 git log와 `feedback/consumer-kits-studio-qa-2026-10-07.md`의 날짜별 절이 소스 — 여기 되풀이하지 않는다). 계획에 없던 것도 같이 들어갔다: Compose `Scaffold`(사용자 승인 — 앱 바 스크롤 레이아웃의 DX), Classic 컬러 피커 제거(사용자: 프로젝트에서 빼자), 스토리를 갤러리처럼 소비자 방식으로, UI Labs 스토리 드래그 수정(두 킷), 스크림 관통 막이 `ClickSink`. Studio는 이제 컨테이너에서 `studio-sync consumer-kits.project.json`으로 한 번 싱크해 MCP로 직접 실측한다(요령은 메모리 `reference-studio-mcp-input`).
+
+**남은 순서**: 사용자 전체 확인(레이아웃 그룹 + README 실기기 체크리스트 41~72) → 5번 code-review → 6번 round14 → 7번 상위 검토. 그 사이에 **table-sim 소비 피드백**이 돌아온다(사용자 2026-10-12: table-sim 게임이 material 킷과 quad를 실제로 소비 중) — 원문은 레포 밖 `/code/Projects/table-sim/.claude/feedback/`(색인 `README.md`; `material-kit-2026-10-11.md`·`material-kit-2026-10-12.md`·`quad-2026-10-11.md`·`report-for-quad-2026-10-11.md`·`toolchain-2026-10-12.md`·`upstream-candidates.md`), 그쪽 규약상 quad 저장소엔 직접 쓰지 않고 사용자가 넘긴다.
+
+**사용자 결정 대기**(메인 의견 포함): (1) 킷 `docs/colorpicker-original-analysis.md`와 `ColorModel.Scale.Legacy`(255 눈금) — Classic을 뺀 이유와 같아 둘 다 지우기를 권함. (2) 그날 생긴 새 공개 이름의 확인 — `Material.Time`, `IconButton`의 `ContentColor`, `NavigationDrawerHeadline`·`NavigationDrawerDivider`(정본에 없는 둘), `Util.clickSink`. (3) 넣지 않은 동작 둘 — 내용 위에서 끌어 드로어 열기, 목록 행·버튼 위에서 시작한 누름으로 시트 끌기(둘 다 UserInputService 전역 판정 + 클릭 억제라는 새 장치가 필요). (4) 정본 차이로 기록만 한 것 — 범위 날짜 선택기에서 시작보다 앞 날짜를 탭하면 맞바꿈(Compose는 새 시작), 단일 날짜 선택기의 선택 해제 페이드(Compose는 스냅). (5) 사용자만 볼 수 있는 것 — UI Labs 창에서 실제 드래그, Scaffold 스토리, 터치에서 앱 바 정착. 닫힌 것: 범위 슬라이더 끝 조각은 지금처럼 줄어듦(사용자: 사이트 정본과 같음), 슬라이더 이동·끝 점은 고정 6(m3.material.io Measurements 우선).
+
 관련 계획: 아이콘 팩 `research/icon-pack-plan.md`(사용자 결정 다섯 대기), material 킷·아이콘 팩은 게시 때 quad 레포 밖으로 분리(메인 권고 — 사용자 미확정).
