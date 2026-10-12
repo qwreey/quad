@@ -419,14 +419,16 @@ return function(S: Types.SlotInternal, module: any)
 			end
 			local was = self._materializing -- Q185 (d) backend-call window — this Slot and the arriving subtrees
 			self._materializing = true
+			local raised = {}
 			for _, element in ipairs(newElements) do
-				if S.isSlot(element) then S.raiseTree(element) end
+				if S.isSlot(element) then S.raiseTree(element, raised) end
 			end
 			if #removedLeaves > 0 then
 				module.Backend.nativeExtract(self._mountedInst, base, removedLeaves, if #newLeaves > 0 then newLeaves else nil)
 			elseif #newLeaves > 0 then
 				module.Backend.nativeInsert(self._mountedInst, base, newLeaves)
 			end
+			S.lowerTree(raised)
 			for _, element in ipairs(newElements) do
 				if S.isSlot(element) then S.markMountedTree(element, self._mountedInst) end
 			end

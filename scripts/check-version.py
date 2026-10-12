@@ -67,8 +67,11 @@ def core_tuple(v):
 
 
 def follows_lockstep(member):
-    """A general-purpose package still below INDEPENDENT_FROM rides the quad lockstep."""
-    return core_tuple(manifest_version(read(f'{member}/pesde.toml'))) < INDEPENDENT_FROM
+    """A general-purpose package still below the FINAL INDEPENDENT_FROM rides the quad lockstep
+    (a pre-release of that version is still below it — otherwise `bump 4.0.0-rc.1` then `bump 4.0.0`
+    left the two at the rc; code review 2026-10-12)."""
+    v = manifest_version(read(f'{member}/pesde.toml'))
+    return core_tuple(v) < INDEPENDENT_FROM or (core_tuple(v) == INDEPENDENT_FROM and split_tail(v)[1] is not None)
 
 
 def matches_places(actual, pattern):

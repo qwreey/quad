@@ -82,19 +82,28 @@ return function(S: Types.SlotInternal, module: any)
 	-- every Slot of that subtree flagged (`_materializing` — the Q52 flag, lowered at the end of
 	-- materializeSlotTree, goes up again here), so a backend signal delivered synchronously from
 	-- inside the call cannot CRUD a Slot that is materialized but not yet marked mounted (its Add
-	-- would touch the records only and never reach the screen). markMountedTree lowers it — one
-	-- extra walk per mount, none on the way down.
-	local function raiseTree(slot: any)
+	-- would touch the records only and never reach the screen). The raised Slots are remembered in
+	-- `raised` and lowered from that list (`lowerTree`), not by walking `_elements` again: a
+	-- :List/:Single reconcile is raw-layer, so one triggered from inside the call can take a Slot out
+	-- of the subtree, and a second walk would never reach it — it stayed flagged for good (code review
+	-- 2026-10-12). One temp array per mount, no field.
+	local function raiseTree(slot: any, raised: { any })
 		slot._materializing = true
+		raised[#raised + 1] = slot
 		for _, element in ipairs(slot._elements) do
-			if S.isSlot(element) then raiseTree(element) end
+			if S.isSlot(element) then raiseTree(element, raised) end
+		end
+	end
+
+	local function lowerTree(raised: { any })
+		for _, slot in ipairs(raised) do
+			slot._materializing = false
 		end
 	end
 
 	local function markMountedTree(slot: any, physicalTarget: any)
 		slot._mounted = true
 		slot._mountedInst = physicalTarget
-		slot._materializing = false
 		for _, element in ipairs(slot._elements) do
 			if S.isSlot(element) then markMountedTree(element, physicalTarget) end
 		end
@@ -102,8 +111,10 @@ return function(S: Types.SlotInternal, module: any)
 
 	local function mountSlotTree(slot: any, physicalTarget: any)
 		local leaves = S.collectLeaves(slot)
-		raiseTree(slot)
+		local raised = {}
+		raiseTree(slot, raised)
 		module.Backend.nativeInsert(physicalTarget, slot.Offset:Get(), leaves)
+		lowerTree(raised)
 		markMountedTree(slot, physicalTarget)
 	end
 
@@ -249,6 +260,7 @@ return function(S: Types.SlotInternal, module: any)
 	S.makeBaseObserver = makeBaseObserver
 	S.markMountedTree = markMountedTree
 	S.raiseTree = raiseTree
+	S.lowerTree = lowerTree
 	S.attachSlot = attachSlot
 	S.releaseSugarWrapper = releaseSugarWrapper
 	S.teardownTree = teardownTree

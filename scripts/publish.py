@@ -112,16 +112,28 @@ COPY_TOP = list(MEMBERS) + ['scripts', 'pesde.toml', 'LICENSE', 'README.md', 'CH
                             'mise.toml', '.luaurc']
 TWIN_PREFIX = 'rbx-'
 # [2026-10-12] the two general-purpose packages: published with every release while they ride the lockstep (their
-# version is below INDEPENDENT_FROM — `check-version.py`), only when named in --with once they are on their own
+# version is below INDEPENDENT_FROM — `check-version.py`) and with the INDEPENDENT_FROM release itself, only when
+# named in --with once they are on their own
 INDEPENDENT = ('quad-error', 'type-version-check')
 INDEPENDENT_FROM = (4, 0, 0)
 
 
-def rides_lockstep(member, root):
+def manifest_version(member, root):
     text = open(os.path.join(root, member, 'pesde.toml'), encoding='utf-8').read()
     v = re.search(r'(?m)^version = "([^"]+)"$', text)
-    core = (v.group(1) if v else '0.0.0').split('+', 1)[0].split('-', 1)[0]
-    return tuple(int(x) for x in core.split('.')) < INDEPENDENT_FROM
+    return v.group(1) if v else '0.0.0'
+
+
+def rides_lockstep(member, root):
+    """Published with the quad release without --with: while below the final INDEPENDENT_FROM, and in the
+    one release that takes it there together with quad (`bump 4.0.0` raises all five — leaving the two out
+    of that publish would ship a quad_base that requires a quad_error nobody uploaded; code review 2026-10-12)."""
+    ver = manifest_version(member, root)
+    head = ver.split('+', 1)[0]
+    core = tuple(int(x) for x in head.split('-', 1)[0].split('.'))
+    if core < INDEPENDENT_FROM or (core == INDEPENDENT_FROM and '-' in head):
+        return True
+    return core == INDEPENDENT_FROM and ver == manifest_version('quad-base', root)
 
 
 def run(cmd, cwd, capture=True, check=False):
@@ -371,7 +383,7 @@ def main():
         order += [('quad-roblox', 'roblox')]
         for m in INDEPENDENT:
             v = re.search(r'(?m)^version = "([^"]+)"$', open(os.path.join(stage, m, 'pesde.toml'), encoding='utf-8').read())
-            why = '게시함(lockstep — 4.0.0 전)' if rides_lockstep(m, stage) else ('게시함(--with)' if selected(m) else '게시 안 함(이미 올라간 번호여야 한다 — 새 번호면 --with)')
+            why = '게시함(lockstep — 4.0.0까지)' if rides_lockstep(m, stage) else ('게시함(--with)' if selected(m) else '게시 안 함(이미 올라간 번호여야 한다 — 새 번호면 --with)')
             print(f'  {MEMBERS[m]} {v.group(1) if v else "?"} — {why}')
 
         print(f'\n== publish ({"dry-run" if dry else "REAL"}) — {len(order)}건')

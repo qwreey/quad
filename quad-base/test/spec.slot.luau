@@ -1845,6 +1845,36 @@ do
 		outer:Add(q8.Slot({ x }))
 		assert(rec2.fired and rec2.err == nil and names(otherHost) == "y", "(8) an unrelated Slot is fine: " .. tostring(rec2.err))
 	end
+
+	-- (9) code review 2026-10-12: a Slot that LEAVES the arriving subtree during the insert comes back
+	-- idle. A :Single reconcile is raw-layer (not refused), so a signal inside the insert that flips its
+	-- State takes the held Slot out — the flag used to be lowered by walking `_elements` again, which
+	-- never reached it: `Quad0167` on it for good and its `WhenIdle` requests never ran. Three ways in:
+	-- first mount, a runtime Add, a Splice. Only the flag is asserted — where the leaves of a subtree
+	-- that changed under its own insert end up is not a contract.
+	for _, way in { "drive", "Add", "Splice" } do
+		local host = mock.Instance.new("Frame")
+		local held = q8.Slot({ F("u") })
+		local state = q8.Source(held :: any)
+		local inner = q8.Slot():Single(state, nil, { OwnsElements = false })
+		local x = F("x")
+		local arriving = q8.Slot({ x, inner })
+		local rec = onParent(x, "in", function() state:Set(nil) end)
+		if way == "drive" then
+			q8.Dispatch.drive(host, { arriving })
+		else
+			local parent = q8.Slot({ F("head") })
+			q8.Dispatch.drive(host, { parent })
+			if way == "Add" then parent:Add(arriving) else parent:Splice(1, 1, arriving) end
+		end
+		assert(rec.fired and rec.err == nil, `(9 {way}) the reconcile ran inside the insert: {rec.err}`)
+		assert(held._materializing == false and inner._materializing == false and arriving._materializing == false, `(9 {way}) no Slot of the subtree stays flagged`)
+		local ran = false
+		held:WhenIdle(function() ran = true end)
+		assert(ran, `(9 {way}) WhenIdle on the Slot that left runs at once`)
+		held:Add(F("v"))
+		assert(#held._elements == 2, `(9 {way}) and it takes CRUD again`)
+	end
 	print("PASS")
 end
 

@@ -57,7 +57,8 @@ export type SlotInternal = {
 	-- Tree.luau
 	makeBaseObserver: (slot: any) -> any,
 	markMountedTree: (slot: any, physicalTarget: any) -> (),
-	raiseTree: (slot: any) -> (),
+	raiseTree: (slot: any, raised: { any }) -> (),
+	lowerTree: (raised: { any }) -> (),
 	attachSlot: (slot: any, physicalTarget: any, ownerKey: any, position: number, mount: boolean?) -> (),
 	releaseSugarWrapper: (wrapper: any) -> (),
 	teardownTree: (slot: any) -> (),
