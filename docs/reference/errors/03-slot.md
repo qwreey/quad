@@ -238,6 +238,22 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
   <!-- 근거: 2026-09-27 mock 실측(저장소 내부 기록) -->
 - **참고**: [`slot:List(data, updateFn, keyFn?, opts?)`](../core/06-slot.md#slotlistdata-updatefn-keyfn-opts)
 
+### Quad0269
+
+`Slot:List: data has a nil hole at index {hole} (the array goes on to index {highest}) - the list would end there and every item behind it would be treated as gone, its element destroyed; remove the nil or put a placeholder value there` — `quad-base/src/Slot/List.luau`
+
+- **언제**: [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있고, `slot:List`의 `data` 배열 중간에 `nil`이 있을 때(`{ "a", nil, "c" }`). 재조정이 아무것도 파괴하기 전에 멈춥니다. 꺼져 있으면 검사하지 않습니다 — 목록이 구멍에서 끝나고 구멍 뒤 항목의 원소는 "키가 사라졌다" 경로로 파괴됩니다(정의되지 않은 동작).
+- **고치려면**: 배열에 `nil`을 넣지 마세요. 빈 칸이 필요한 데이터면 자리표시 값(예: `false`나 전용 표식)을 넣고 `updateFn`에서 그 값을 다루세요. 끝자리의 `nil`은 구멍이 아닙니다(배열이 거기서 끝날 뿐).
+- **참고**: [`slot:List(data, updateFn, keyFn?, opts?)`](../core/06-slot.md#slotlistdata-updatefn-keyfn-opts)
+
+### Quad0270
+
+`Slot: initial elements have a nil hole at index {hole} (the array goes on to index {highest}) - the elements behind it would be ignored; build the array without the nil (a Slot element cannot be nil or None)` — `quad-base/src/Slot/init.luau`
+
+- **언제**: [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있고, `q.Slot({ a, nil, c })`처럼 `initial` 배열 중간에 `nil`이 있을 때(조건부 원소를 `cond and x or nil`로 넣은 경우가 흔합니다). 꺼져 있으면 구멍 뒤 원소가 조용히 무시됩니다(정의되지 않은 동작).
+- **고치려면**: 구멍 없이 배열을 만드세요 — 조건부 원소는 배열을 만든 뒤 `table.insert`로 넣거나, Slot을 만든 뒤 `slot:Add`로 넣습니다. Slot 원소 자리에는 `nil`도 `q.None`도 둘 수 없습니다.
+- **참고**: [`q.Slot<<T>>(initial?)`](../core/06-slot.md#qslottinitial)
+
 ### Quad0268
 
 `Slot:WhenIdle: fn must be a function (got {typeof(fn)})` — `quad-base/src/Slot/init.luau`

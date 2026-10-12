@@ -28,11 +28,25 @@ return function(S: Types.SlotInternal, module: any)
 	-- [2026-10-01 user decision — "debug 로 내리기에 동의해"] the full key pass over `:List` data: O(N) on
 	-- every reconcile, so it runs only with `q.debug` on. What only it catches: an array that ALSO carries
 	-- non-array keys (`{ a, b, x = 1 }` — the extra keys are ignored with debug off).
+	-- [2026-10-12 user decision, round14 Q125] the same pass also catches a nil HOLE in the middle
+	-- (`{ "a", nil, "c" }`): every key is a positive integer by then, so "fewer keys than the highest
+	-- key" is a hole — no second pass. With debug off the hole stays undefined: `ipairs` stops there
+	-- and the items behind it go down the KeyGone path, their elements DESTROYED, silently. (The usual
+	-- path cannot check it: reconcile pays O(1) only, and `#items` may sit at the border before the
+	-- hole, so comparing it with the `ipairs` length misses holes.)
 	local function checkDataKeys(items: any)
+		local count, highest = 0, 0
 		for k in pairs(items) do
 			if notArrayKey(k) then
 				S.Err.errorBefore(dataKeyMessage(k), S.SURFACE) -- error-code: via dataKeyMessage
 			end
+			count += 1
+			if k > highest then highest = k end
+		end
+		if count ~= highest then
+			local hole = 1
+			while items[hole] ~= nil do hole += 1 end
+			S.Err.errorBefore(`Quad0269 Slot:List: data has a nil hole at index {hole} (the array goes on to index {highest}) - the list would end there and every item behind it would be treated as gone, its element destroyed; remove the nil or put a placeholder value there`, S.SURFACE)
 		end
 	end
 	-- [2026-10-06 user decision, round14 Q173 (a)] the `Quad0070` value-chain walk over an identity

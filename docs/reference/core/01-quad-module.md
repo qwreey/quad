@@ -204,6 +204,7 @@ debug: boolean
 - `State`의 값 사슬이 자기에게 돌아올 때(`a:Set(b); b:Set(a)`, `s:Set(s)`) — `Quad0070`(props 자리에 놓인 `State`를 벗길 때와 Slot에 넣은 `State` 원소; 사슬을 끝까지 따라가는 검사; 꺼져 있으면 스택 오버플로로 끝나는 정의되지 않은 동작).
 - 중괄호를 잊은 `D.Frame(value)`에서 그 값이 메타테이블 없는 **프로바이더 브랜드** 값일 때 — `Quad0083`(모듈에 등록된 브랜드 술어를 전부 훑는 검사; 메타테이블이 있는 값과 quad-base 값은 꺼져 있어도 늘 잡습니다 — [핸들러 계약](../extend/02-dispatch-handler-contract.md#qdispatchdriveinst-flattened)).
 - `slot:List`의 `data` 배열에 배열이 아닌 키가 **덧붙어** 있을 때 — `Quad0143`(재조정마다 키 전수 검사; 배열 부분이 비어 있는 딕셔너리는 꺼져 있어도 늘 잡습니다 — [06-slot](./06-slot.md#slotlistdata-updatefn-keyfn-opts)).
+- `slot:List`의 `data` 배열이나 `q.Slot({ … })`의 `initial` 배열 **중간에 `nil` 구멍**이 있을 때 — `Quad0269`(`:List`)·`Quad0270`(`initial`). 위 `Quad0143` 검사가 이미 도는 키 훑기에 얹은 검사입니다(키 개수와 가장 큰 키가 다르면 구멍). 꺼져 있으면 정의되지 않은 동작 그대로입니다 — 목록이 구멍에서 끝나고, `:List`는 구멍 뒤 항목의 원소를 파괴합니다([06-slot](./06-slot.md#slotlistdata-updatefn-keyfn-opts)).
 - `Slot`을 자기 자신이나 조상 Slot에 원소로 넣을 때 — `Quad0173`(원소 관계를 따라 올라가는 검사; 꺼져 있으면 넣는 줄은 통과하고 그 순환은 정의되지 않은 동작입니다 — 관측(계약 아님): 그 순환 트리의 다음 CRUD나 해체가 스택 오버플로나 내부 불변식 에러로 죽고(어느 쪽인지는 연산마다 다릅니다), 그 뒤의 부기 무결은 약속하지 않습니다).
 - `Slot` CRUD 한 호출(생성자 `initial`·`Splice`) 안에 같은 값이 두 번 있을 때 — `Quad0171`(원소를 넣기 전에 받은 값 그대로 비교 — `State`의 값은 읽지 않습니다; 꺼져 있으면 둘째 값이 자리에 들어가는 순간 `Quad0170`이 나고 앞 원소는 이미 들어가 있습니다).
 - (quad-roblox) Instance를 자기 자신이나 자기 자손의 숫자 키 자리에 자식으로 놓을 때 — `Quad0220`(조상 사슬 걷기; 꺼져 있으면 엔진의 circular reference 에러가 대신 멈추되, quad가 자리를 잡은 뒤라 그 요소의 부기는 믿을 수 없습니다).

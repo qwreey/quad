@@ -493,12 +493,23 @@ local function Init(module: any)
 			if type(initial) ~= "table" or getmetatable(initial) ~= nil or Brand.isPlainBranded(initial) then
 				Err.errorBeforeNearest(`Quad0176 Slot: initial elements must be a plain \{ element, ... \} array (got {typeof(initial)} - a bare element or quad value needs the braces)`, SURFACE)
 			end
+			local count, highest = 0, 0
 			for k in pairs(initial :: { [any]: any }) do
 				-- 5순회 `H-396`: `[0]`/`[-1]`/`[1.5]` live in the hash part too (Tag's
-				-- `flattenInto` mirror); a nil hole stays UB (no count check)
+				-- `flattenInto` mirror)
 				if type(k) ~= "number" or k % 1 ~= 0 or k < 1 then
 					Err.errorBeforeNearest(`Quad0177 Slot: initial elements must be an array - key "{tostring(k)}" is not an array position`, SURFACE)
 				end
+				count += 1
+				if k > highest then highest = k end
+			end
+			-- [2026-10-12 user decision, round14 Q125] a nil hole (`Slot{ a, nil, c }`) stays undefined with
+			-- debug off (the `ipairs` below stops there, the rest is ignored); `q.debug` reports it — the
+			-- same check, off the same pass, as `:List`'s data (`Slot/List.luau` checkDataKeys).
+			if module.debug and count ~= highest then
+				local hole = 1
+				while (initial :: { [any]: any })[hole] ~= nil do hole += 1 end
+				Err.errorBeforeNearest(`Quad0270 Slot: initial elements have a nil hole at index {hole} (the array goes on to index {highest}) - the elements behind it would be ignored; build the array without the nil (a Slot element cannot be nil or None)`, SURFACE)
 			end
 			self._crudUsed = true
 			-- Not `self:Add(v)` — the tagged Add would then be the nearest tagged

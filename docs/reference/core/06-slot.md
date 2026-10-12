@@ -77,7 +77,7 @@ Slot: <T>(initial: { read [number]: SlotElement<T> }?) -> Slot<T>
 - 원소의 **종류**(마운트 가능한 값인지·quad 소유인지·파괴된 Slot이 아닌지)는 원소를 하나도 넣기 전에 한 번에 검사됩니다 — 이 검사에 걸린 호출은 아무것도 바꾸지 않습니다.
 - 같은 원소를 두 번 넣는 것(배열 안의 중복, 이미 이 Slot에 있는 원소를 다시 넣기)과 이미 다른 곳에 마운트된 원소는 그 원소를 자리에 넣는 순간 걸립니다 — `Quad0170 Slot: this element is already in this Slot (a second mount) - reorder with Move/Swap instead of adding it again`(`slot:Add(a); slot:Add(a)`·`Slot { a, a }`·`Replace(i, slot:Get(i))`), `Quad0172 Slot: this element is already mounted - multiple mounts are not allowed …`. 여러 원소를 받는 호출(생성자·`Splice`)이 중간 원소에서 이렇게 던지면 앞 원소는 이미 들어가 있습니다(관측 — 계약 아님). [`q.debug`](./01-quad-module.md#qdebug)가 켜져 있으면 한 호출 안의 중복은 넣기 전에 `Quad0171 Slot: the same element appears twice`로 거부합니다(받은 값 그대로 비교합니다 — `State`의 값은 읽지 않습니다). `Splice`가 같은 호출에서 빼는 원소를 다시 넣는 것은 정상입니다(빼는 쪽이 먼저 풀립니다).
 - **`State`에 담긴 원소는 넣을 때 그 값을 읽지 않습니다** — `:List`·`:Single`의 항목과 같이, 래퍼가 그 값을 정착시킬 때(마운트 때, 그 뒤엔 값이 바뀔 때) 위와 같은 검사를 받습니다. 그래서 마운트 전 Slot에 같은 Instance를 쥔 `State` 둘을 넣으면 넣는 줄은 통과하고 마운트 줄에서 `Quad0156`이 납니다(마운트된 Slot이면 그 래퍼가 곧바로 정착하므로 넣는 호출 안에서 납니다). 던진 뒤 그 Slot의 상태는 관측 — 계약 아님입니다(지금은 자식이 빠진 채 남고 그 사슬의 다음 CRUD가 `Quad0167`로 막힙니다).
-- 배열 중간의 nil 구멍은 정의되지 않은 동작입니다 — `ipairs`가 거기서 멈추고 뒤는 무시됩니다.
+- 배열 중간의 nil 구멍은 정의되지 않은 동작입니다 — `ipairs`가 거기서 멈추고 뒤는 무시됩니다. [`q.debug`](./01-quad-module.md#qdebug)를 켜 두면 그 자리에서 멈춥니다 — `Quad0270 Slot: initial elements have a nil hole at index {n} …`(다음 릴리즈부터).
 
 **예제**
 
@@ -425,7 +425,7 @@ Quad0167 Slot: cannot mutate a Slot while it is being mounted or while one of it
 **동작**
 
 - `:List`는 **설치**입니다. 한 Slot에 한 번만 걸 수 있고, 수동 CRUD를 이미 쓴 Slot(빈 `Slot{}` 포함)에는 걸 수 없습니다.
-- 데이터 배열 중간의 `nil` 구멍은 **정의되지 않은 동작**입니다 — `initial`과 같은 이유로 `ipairs`가 거기서 멈추고, 구멍 뒤에 아직 있는 항목의 원소까지 `KeyGone` 경로로 **파괴**됩니다(`{"a","b","c"}` → `{"a", nil, "c"}`를 `:Set`하면 Length 1, `"c"`의 원소 파괴 — [2026-09-27 mock 관측 — 계약 아님]). 항목을 빼려면 `table.remove`로 배열을 다시 채우세요.
+- 데이터 배열 중간의 `nil` 구멍은 **정의되지 않은 동작**입니다 — `initial`과 같은 이유로 `ipairs`가 거기서 멈추고, 구멍 뒤에 아직 있는 항목의 원소까지 `KeyGone` 경로로 **파괴**됩니다(`{"a","b","c"}` → `{"a", nil, "c"}`를 `:Set`하면 Length 1, `"c"`의 원소 파괴 — [2026-09-27 mock 관측 — 계약 아님]). 항목을 빼려면 `table.remove`로 배열을 다시 채우세요. [`q.debug`](./01-quad-module.md#qdebug)를 켜 두면 재조정이 아무것도 파괴하기 전에 멈춥니다 — `Quad0269 Slot:List: data has a nil hole at index {n} …`(다음 릴리즈부터; 평소 경로에서는 검사하지 않습니다 — 재조정마다 배열을 한 번 더 훑어야 해서).
   - `Quad0148 Slot: already has :List/:Single installed`
   - `Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)`
   - 반대로 `:List`를 건 뒤의 수동 CRUD는 `Quad0166 Slot: manual CRUD is not allowed after :List/:Single`.

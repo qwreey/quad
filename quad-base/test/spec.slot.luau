@@ -2093,4 +2093,58 @@ do
 	print("PASS")
 end
 
+-- ── round14 Q125 (user decision 2026-10-12): `q.debug` reports a nil hole in `:List` data and in `Slot{…}` ──
+-- With debug off the hole stays undefined (ipairs stops there; for `:List` the items behind it are treated as
+-- gone and their elements destroyed). The debug check rides the key pass that already runs — no second pass.
+do
+	print("=== round14 Q125: q.debug raises on a nil hole in :List data (Quad0269) and in Slot initial (Quad0270)")
+	local qh = mock.newQuad()
+	local function F(name: string): any
+		local f = mock.Instance.new("Frame")
+		f.Name = name
+		return f
+	end
+	local function listOf(data: any): (any, any)
+		local host = mock.Instance.new("Frame")
+		local slot = qh.Slot()
+		slot:List(data, function(ctx: any)
+			if ctx.Item == qh.KeyGone then return nil, nil end
+			return ctx.Prev or F(ctx.Item), nil
+		end, function(item: string) return item end)
+		qh.Dispatch.drive(host, { slot })
+		return slot, host
+	end
+	-- debug off: unchanged — the list ends at the hole and "c" is destroyed, silently
+	local data = qh.Source({ "a", "b", "c" } :: { any })
+	local slot, host = listOf(data)
+	data:Set({ "a", nil :: any, "c" })
+	assert(slot.Length:Get() == 1 and #host:GetChildren() == 1, "debug off: the hole ends the list (undefined, observed): " .. tostring(slot.Length:Get()))
+	-- debug on: the reconcile raises and names the index; nothing is destroyed
+	qh.debug = true
+	local data2 = qh.Source({ "a", "b", "c" } :: { any })
+	local slot2, host2 = listOf(data2)
+	local ok, err = pcall(function() data2:Set({ "a", nil :: any, "c" }) end)
+	assert(not ok and string.find(tostring(err), "Quad0269", 1, true) ~= nil and string.find(tostring(err), "hole at index 2", 1, true) ~= nil, "debug on: " .. tostring(err))
+	assert(string.find(tostring(err), "goes on to index 3", 1, true) ~= nil, "names where the array really ends: " .. tostring(err))
+	assert(slot2.Length:Get() == 3 and #host2:GetChildren() == 3, "raised before anything was destroyed")
+	-- a leading hole, and the first reconcile (plain array at install)
+	local ok2, err2 = pcall(function() data2:Set({ nil :: any, "b" }) end)
+	assert(not ok2 and string.find(tostring(err2), "hole at index 1", 1, true) ~= nil, "leading hole: " .. tostring(err2))
+	local ok3, err3 = pcall(function() listOf({ "x", nil :: any, "z" }) end)
+	assert(not ok3 and string.find(tostring(err3), "Quad0269", 1, true) ~= nil, "plain array at mount: " .. tostring(err3))
+	-- no false positives: full arrays, the empty array, a trailing nil (not a hole — the array just ends)
+	data2:Set({ "a", "b" })
+	data2:Set({})
+	data2:Set({ "a", "b", nil :: any })
+	assert(slot2.Length:Get() == 2, "full / empty / trailing nil pass")
+	-- Slot initial: same check, Quad0270, blames the caller's line; debug off stays silent
+	local okI, errI = pcall(function() return qh.Slot({ F("a"), nil :: any, F("c") }) end)
+	assert(not okI and string.find(tostring(errI), "Quad0270", 1, true) ~= nil and string.find(tostring(errI), "hole at index 2", 1, true) ~= nil, "Slot initial: " .. tostring(errI))
+	mock.assertBlamesUser(errI, "spec.slot.luau", "Quad0270 blames the Slot{…} line")
+	assert(#qh.Slot({ F("a"), F("b") })._elements == 2 and #qh.Slot({})._elements == 0, "full / empty initial pass")
+	qh.debug = false
+	assert(#qh.Slot({ F("a"), nil :: any, F("c") })._elements == 1, "debug off: initial stops at the hole (undefined, observed)")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")
