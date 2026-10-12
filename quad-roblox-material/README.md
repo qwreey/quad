@@ -218,6 +218,7 @@ local q = Quad:UseProvider(RobloxModule.QuadRoblox)
   호출한 쪽이 바꿀 수 있습니다.
 - **`Hooks`**: 호스트 인스턴스가 있는 **모든** 컴포넌트는 배열 부분에 추가로 꽂을 값(예: `Tooltip.hook(...).Hook`, `q.OnChange`, ref)을 받습니다.
   타입은 하나의 별칭 `Material.Hooks = { any }`입니다. `Modifier`의 타입은 호스트 클래스의 `q.<Class>Modifier`(`q.TextButtonModifier` 등)입니다.
+- **`ListData`의 줄은 키마다 한 번 만들고 `item` State만 갈아 끼웁니다.** 그래서 줄 안의 `OnClick` 같은 콜백은 값을 **불릴 때** 읽어야 합니다(`item:Get()`) — 줄을 만들 때 읽어 둔 값은 같은 키에 다른 항목이 들어오면 낡습니다(키를 목록 안의 자리로 준 경우가 그렇습니다).
 - 자식을 받는 컴포넌트(`Card`, `List`, 시트·드로어 면)는 `q.Slot<<Instance>>({ ... })`를 `Children`으로 받습니다(`BottomSheetScaffold`는
   `SheetContent`·`Content`, 드로어 레이아웃은 `Content` Slot + `DrawerContent` 인스턴스 하나 — Compose의 이름).
 
@@ -377,6 +378,7 @@ Material.ModalNavigationDrawer({
 - **모달 시트의 `Children`은 간격 없이 세로로만 쌓입니다.** 시트 몸통은 `UIListLayout`(세로, `LayoutOrder`)이고 `Padding`을 주지 않습니다
   (`ModalSideSheet`·`SideSheet`는 몸통 바깥에 16 px 안쪽 여백만 있고, 하단 시트는 그것도 없음) — Compose의 시트 content가 간격 없는
   Column인 것과 같습니다. 자식 사이 간격이 필요하면 자식들을 `UIListLayout`(`Padding`)을 가진 자기 `D.Frame` 하나로 싸서 `Children`에 넣으세요.
+- **시트는 내용을 스크롤하지 않습니다.** 내용이 시트보다 길면 `ScrollingFrame`으로 싸서 `Children`에 넣으세요. 측면 시트의 내용 영역은 시트 안쪽 16 px 여백 안이고, `Headline`을 주면 그 위에 머리글 줄(제목 + 닫기 버튼)과 24 px 간격이 먼저 놓입니다 — 안쪽에 좌우 여백을 한 번 더 주지 마세요.
 - **연 시트는 그것을 연 화면의 수명과 묶이지 않습니다.** `ModalBottomSheet.open`·`ModalSideSheet.open`은 `Overlay`에 걸리므로, 연 화면을
   숨기거나 바꿔도 시트는 남습니다. 화면을 떠날 때 돌려받은 핸들의 `handle.Close()`를 부르세요.
 - **정본**: 하단 시트·드로어는 Compose material3(androidx/androidx@40ff481 — `ModalBottomSheet.kt`·`BottomSheet.kt`·`BottomSheetScaffold.kt`·

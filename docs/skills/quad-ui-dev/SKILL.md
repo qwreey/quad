@@ -138,6 +138,10 @@ binding (in and out stay two visible lines); `src` must be a `Source` — a `:Co
 
 ### 2.1 Trailing Dependencies for `:Compute`
 
+There is **no free `q.Compute(fn, a, b)`** — a derived State is always a method call on ONE State, and the
+others ride as trailing deps: `a:Compute(function(self, _prev, b) … end, b)` (first parameter = the State
+itself, second = the previous result, deps from the third).
+
 `fn` receives `(selfHandle, previous, ...depHandles)`. **Every dep arrives as a State
 handle, not as a value** — read it with `:Get()`. `#dep` and string interpolation (`` `{dep}` ``)
 on a handle do not error and silently produce garbage (`#handle` is `0`); `dep .. ""` throws
@@ -428,6 +432,11 @@ local hoverSrc, targetSrc = q.Source(false), q.Source(UDim2.new())
 local btnColor = hoverSrc:Compute(function(self)
     return if self:Get() then Color3.fromRGB(60, 60, 60) else Color3.fromRGB(35, 35, 35)
 end):Apply(q.Animate { Time = 0.2, Style = Enum.EasingStyle.Quad })
+-- ⚠ `btnColor` is a `State<Tween<Color3>>`: its `:Get()` is a Tween RECORD, not a Color3. It belongs in a
+-- property slot (`BackgroundColor3 = btnColor`) and nowhere else — do NOT `:Compute` from it
+-- (`fade:Compute(function(s) return s:Get() < 0.98 end)` dies with "attempt to compare table < number").
+-- Derive further values from the State BEFORE the Animate (`hoverSrc` here). strict does not catch it when
+-- the chain starts from an unannotated inline `:Compute` (that result is unchecked — section on annotations).
 
 -- Tween: a first-class value emitted from a Compute
 local flash = q.Source(false)

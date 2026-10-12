@@ -237,6 +237,8 @@ local guarded = alpha:Apply(q.Animate({
 local box = D.Frame({ BackgroundTransparency = animated })
 ```
 
+**결과는 `Tween` 값의 State입니다.** `state:Apply(q.Animate { … })`가 돌려주는 State의 `:Get()`은 원래 값(`number`·`Color3` …)이 아니라 그 값을 목표로 든 **`Tween` 레코드**입니다(`State<Tween<T>>`). 프로퍼티 자리에 놓으라고 있는 값이니 거기에만 쓰세요 — 그 State에서 다시 `:Compute`로 파생하면 콜백이 레코드를 받아 `attempt to compare table < number` 같은 런타임 에러로 죽습니다. "거의 투명한가" 같은 값이 더 필요하면 `Animate`를 걸기 **전**의 State에서 파생하세요. strict 타입은 이 실수를 늘 잡지는 못합니다 — 사슬이 주석 없는 인라인 `:Compute`에서 시작하면 그 결과가 무검사라, `local fade: State<number> = src:Compute(…):Apply(q.Animate { … })`처럼 틀린 주석도 통과합니다([디버깅 체크리스트](../../how-to/10-debugging-and-troubleshooting.md)의 "파생 State의 결과 타입").
+
 **동작**
 
 - **옵션 State는 의존성이 아닙니다.** 다시 계산되는 것은 **원래 State의 값이 바뀔 때**뿐입니다.
