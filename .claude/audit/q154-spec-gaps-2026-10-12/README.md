@@ -199,6 +199,13 @@
 - **`OB06`.** `Observer:Unsubscribe`가 약한 기록을 안 지워도 실행 자격은 `.Subscribed`가 정하므로 관측되는 차이는 `tostring`뿐이었다
   (`Observer(weak)`). 그래서 절은 `spec.tostring`에 있다 — "`:Unsubscribe` 뒤에는 fn이 돌지 않는다"를 단언해도 이 변이는 살아남는다(써 보고 확인).
 
+**메인 대조(2026-10-12 저녁) — 다섯 다 그대로 둔다.** Detach (5): core/06 `q.Detach`의 "동작" 문단이 "보관분의 수명이 호스트에 묶이고, 언마운트 때
+풀려 다시 마운트되면 새 호스트에 묶입니다"를 표시 없이 적는다 — 괄호 끝의 날짜 태그는 출처 표시이고 "관측(계약 아님)" 표시가 아니며, `slot-plan.md`의
+의사코드도 같은 설계를 적는다. 계약. `Length` 한 번: core/06 `:List` "한 사이클은 하나의 배치로 묶여 재계산이 한 번만 일어납니다"가 근거 — Slot 하나의
+`Length` Observer가 한 번 도는 것은 그 문장의 직접 귀결이다. `Quad0140`: core/06을 `Quad0140`으로 고쳤다(`6eca164d`). `isHeldBy`: 절이 단언하는 것은
+"아무도 쥐지 않은 값은 이 인스턴스가 쥔 것이 아니다"이고 이는 extend/01의 정의("`value`를 쥔 것이 바로 이 `inst`인가") 그대로다. `OB06`: `tostring` 목록은
+`architecture.md`가 고정한 표면이라 거기서 단언하는 것이 맞다.
+
 ## 문서 메모 (이 작업은 문서를 고치지 않았다)
 
 - core/06 "죽은 Slot과 마운트 규칙"의 "마운트하려 하면 `Quad0164 Slot: destroyed Slot cannot be mounted`"는 errors/03의 `Quad0164` 절("공개
