@@ -32,17 +32,6 @@ local Util = require("../Util")
 local Parts = require("../Sheet/Parts")
 local D = q.Declaration
 
--- host Name per call (the name is an argument here); cached so each distinct name builds one Modifier
-local hostNames: { [string]: q.FrameModifier } = {}
-local function hostName(name: string): q.FrameModifier
-	local m = hostNames[name]
-	if m == nil then
-		m = D.Modifier.Frame():Name(name)
-		hostNames[name] = m
-	end
-	return m
-end
-
 export type Props = {
 	read Children: q.Slot<Instance>?,
 	read Width: number?,
@@ -64,7 +53,7 @@ local function sheet(kind: Kind, props: Props?): Frame
 	local width = math.clamp(p.Width or MAX_WIDTH, MIN_WIDTH, MAX_WIDTH)
 	local color = if modal then theme.Color.SurfaceContainerLow else theme.Color.Surface
 	return D.Frame {
-		hostName(kind .. "DrawerSheet"),
+		Util.frameName(kind .. "DrawerSheet"),
 		D.Modifier.Frame():Size(UDim2.new(0, width, 1, 0)),
 		BackgroundColor3 = color,
 		BorderSizePixel = 0,

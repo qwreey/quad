@@ -143,10 +143,15 @@ local function new(cfg: Config): Slide
 		lastKind = kind
 		local motion = cfg.Motion(kind)
 		local target = anchorOf(cfg.Anchors(), value)
-		if target ~= nil and not dragging:Get() then
-			set(target, motion)
+		if dragging:Get() then
+			-- a finger holds the surface: nothing moves and nothing settles until it lifts (`ended` settles then)
+			cancelSettle()
+		else
+			if target ~= nil then
+				set(target, motion)
+			end
+			scheduleSettle(value, motion.Time)
 		end
-		scheduleSettle(value, motion.Time)
 		if cfg.OnGo then
 			cfg.OnGo(value, kind)
 		end
@@ -197,8 +202,10 @@ local function new(cfg: Config): Slide
 			return
 		end
 		if settleThread ~= nil then
-			-- a motion is under way: re-aim it at the moved anchor
-			set(target, cfg.Motion(lastKind))
+			-- a motion is under way: re-aim it at the moved anchor; the tween starts over, so does the settle timer
+			local motion = cfg.Motion(lastKind)
+			set(target, motion)
+			scheduleSettle(rec.Target:Get(), motion.Time)
 		else
 			set(target, nil)
 		end
@@ -272,12 +279,16 @@ local function new(cfg: Config): Slide
 		moved = false
 		movedUntil = Anchored.clock() + CLICK_SUPPRESS
 		dragging:Set(false)
+		if destroyed or rec.Driver ~= driver then
+			return -- the surface is going away or another driver took the state over: this drag no longer writes it
+		end
 		local vx, vy = tracker.Velocity()
 		if cancelled then
 			vx, vy = 0, 0
 		end
 		local anchors = cfg.Anchors()
 		if anchors == nil or #anchors == 0 then
+			go(rec.Target:Get(), "Settle") -- no anchors any more: settle at the target a request left
 			return
 		end
 		local velocity = if isY then vy else vx
@@ -291,13 +302,30 @@ local function new(cfg: Config): Slide
 	end
 
 	local trackers: { Interaction.Drag } = {}
+	local owner: any = nil -- the hook whose press holds the gesture (a second finger on another hook is ignored)
 	local function hook(): Interaction.Hook
+		local token = {}
 		local d = Interaction.drag({
-			OnBegan = began,
-			OnMoved = function(x: number, y: number)
-				movedTo(x, y)
+			OnBegan = function(x: number, y: number)
+				if active then
+					return
+				end
+				began(x, y)
+				if active then
+					owner = token
+				end
 			end,
-			OnEnded = ended,
+			OnMoved = function(x: number, y: number)
+				if owner == token then
+					movedTo(x, y)
+				end
+			end,
+			OnEnded = function(x: number, y: number, cancelled: boolean)
+				if owner == token then
+					owner = nil
+					ended(x, y, cancelled)
+				end
+			end,
 			-- a sheet inside a scrolling page (the gallery's mock screens) must not scroll the page while it is dragged
 			LockScroll = true,
 		})

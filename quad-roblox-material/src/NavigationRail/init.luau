@@ -180,7 +180,7 @@ local function WideNavigationRail<K>(props: Props<K>): Frame
 	local R = theme.Raw
 	local state = props.State or StateModule.WideNavigationRailState()
 	local rec = StateModule.recOf(state)
-	rec.Driven = true
+	rec.Driven += 1
 	local selected = props.Selected
 	local items = props.Items
 	local n = #items
@@ -371,6 +371,13 @@ local function WideNavigationRail<K>(props: Props<K>): Frame
 		LayoutOrder = props.LayoutOrder,
 		props.Modifier or q.None,
 		railMotion,
+		q.OnDestroyed(function()
+			-- the rail is gone: its motion no longer reports the settled value, so hand the state back settled
+			rec.Driven -= 1
+			if rec.Driven == 0 then
+				rec.Current:SetIfChanged(rec.Target:Get())
+			end
+		end),
 		headerHolder or q.None,
 		q.Slot<<Instance>>(children),
 		table.unpack(Util.hooks(props.Hooks)),

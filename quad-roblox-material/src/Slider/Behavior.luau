@@ -147,6 +147,8 @@ export type Range = Common & {
 }
 
 local function defaultFormat(v: number): string
+	-- round to 2 decimals FIRST: 0.004 is "0", not "0.00" with its zeros cut ("0.")
+	v = math.floor(v * 100 + 0.5) / 100
 	if v == math.floor(v) then
 		return string.format("%d", v)
 	end
@@ -303,6 +305,9 @@ local function single(props: SliderProps, look: Look): Single
 
 	-- the one write path for user input (drag + keys): snapped, only when changed
 	local function commit(raw: number): boolean
+		if c.disabled:Get() then
+			return false -- disabled while a drag is under way: the drag no longer writes
+		end
 		local v = snap(raw)
 		if v == value:Get() then
 			return false
@@ -385,6 +390,9 @@ local function range(props: RangeSliderProps, look: Look): Range
 
 	-- the one write path for user input: snapped, kept on its side of the other handle, only when changed
 	local function commit(h: Which, raw: number): boolean
+		if c.disabled:Get() then
+			return false -- disabled while a drag is under way: the drag no longer writes
+		end
 		local v = snap(raw)
 		local src = if h == "Start" then startS else endS
 		if h == "Start" then

@@ -47,17 +47,6 @@ local StateModule = require("./State")
 local D = q.Declaration
 local permanentName = D.Modifier.Frame():Name("PermanentNavigationDrawer")
 
--- host Name per call (the name is an argument here); cached so each distinct name builds one Modifier
-local hostNames: { [string]: q.FrameModifier } = {}
-local function hostName(name: string): q.FrameModifier
-	local m = hostNames[name]
-	if m == nil then
-		m = D.Modifier.Frame():Name(name)
-		hostNames[name] = m
-	end
-	return m
-end
-
 export type ModalProps = {
 	read DrawerContent: Instance,
 	read Content: q.Slot<Instance>?,
@@ -218,7 +207,7 @@ local function slidingDrawer(props: ModalProps, modal: boolean): Frame
 	end
 
 	return D.Frame {
-		hostName(who),
+		Util.frameName(who),
 		hostBase,
 		props.Modifier or q.None,
 		escape,

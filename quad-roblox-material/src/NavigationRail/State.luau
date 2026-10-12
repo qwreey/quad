@@ -38,7 +38,7 @@ export type Internal = {
 	Target: q.Source<Value>,
 	Current: q.Source<Value>,
 	Snap: q.Source<number>,
-	Driven: boolean,
+	Driven: number, -- how many live rails show this state (0: a request settles at once)
 }
 
 local records: { [any]: Internal } = setmetatable({}, { __mode = "k" }) :: any
@@ -57,11 +57,11 @@ local function WideNavigationRailState(o: Options?): WideNavigationRailState
 		Target = q.Source<<Value>>(initial),
 		Current = q.Source<<Value>>(initial),
 		Snap = q.Source(0),
-		Driven = false,
+		Driven = 0,
 	}
 	local function go(value: Value)
 		rec.Target:SetIfChanged(value)
-		if not rec.Driven then
+		if rec.Driven == 0 then
 			rec.Current:SetIfChanged(value)
 		end
 	end

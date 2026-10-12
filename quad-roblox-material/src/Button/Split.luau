@@ -50,7 +50,8 @@
 	stroke would be cut by the clips). Elevated: a CASTER Frame under the faces (the half's rectangle, rounded 20, the
 	container color — fully covered by the faces) carries the UIShadow, so the shadow's inner corners are rounded 20, not
 	4 (a UIShadow follows its parent's one UICorner; on a face it would be cut by the clip).
-	Every size below the host is Offset (no Scale fraction under an auto-sized ancestor — `Ripple.luau` "NOT SCALE"):
+	Every size that feeds the layout below the host is Offset (no Scale fraction under an auto-sized ancestor —
+	`Ripple.luau` "NOT SCALE"; the Selected overlay is a full-cover Scale leaf under an Offset-sized face, which is fine):
 	a half's width W = max(48, its content's width), read from the content frame's AbsoluteSize in local units (divided
 	by the UIScale product, `Ripple.localScale`); the half is not auto-sized itself.
 
@@ -149,10 +150,15 @@ local function half(o: HalfOptions): TextButton
 
 	-- the measured content width (local units) -> the half's width
 	local contentWidth = q.Source(0)
+	-- false until the content has been measured once: the first layout places the content, it does not slide it there
+	local measured = q.Source(false)
 	local measure = Util.preHook(function(inst: GuiObject)
 		local function read()
 			local k = Ripple.localScale(inst)
 			contentWidth:SetIfChanged(if k > 0 then inst.AbsoluteSize.X / k else inst.AbsoluteSize.X)
+			if inst.AbsoluteSize.X > 0 then
+				measured:SetIfChanged(true) -- after the width: the write above still snapped
+			end
 		end
 		read()
 		inst:GetPropertyChangedSignal("AbsoluteSize"):Connect(read)
@@ -334,10 +340,16 @@ local function half(o: HalfOptions): TextButton
 		local shift = if o.Optical then math.floor(OPTICAL * (inner:Get() - OUTER) + 0.5) else 0
 		return UDim2.fromOffset(math.floor((self:Get() - cw:Get()) / 2) + shift, 0)
 	end, contentWidth, innerTarget)
+	local contentMotion = Tokens.Motion.options("Short4", "Standard")
 	local content = D.Frame {
 		Name = "Content",
 		measure,
-		Position = contentPosition:Apply(animation()),
+		Position = contentPosition:Apply(q.Animate({
+			Time = contentMotion.Time,
+			Style = contentMotion.Style,
+			Direction = contentMotion.Direction,
+			CanAnimate = measured,
+		})),
 		Size = UDim2.fromOffset(0, HEIGHT),
 		AutomaticSize = Enum.AutomaticSize.X,
 		BackgroundTransparency = 1,

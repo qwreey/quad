@@ -64,17 +64,6 @@ local Actions = require("./Actions")
 local Scroll = require("./Scroll")
 local D = q.Declaration
 
--- host Name per call (the name is an argument here); cached so each distinct name builds one Modifier
-local hostNames: { [string]: q.FrameModifier } = {}
-local function hostName(name: string): q.FrameModifier
-	local m = hostNames[name]
-	if m == nil then
-		m = D.Modifier.Frame():Name(name)
-		hostNames[name] = m
-	end
-	return m
-end
-
 export type Alignment = "Start" | "Center"
 
 export type Props = {
@@ -310,7 +299,7 @@ local function singleRow(name: string, props: Props, center: boolean): Frame
 
 	local start = math.max(TITLE_INSET, PAD + built.NavWidth)
 	local bar = D.Frame {
-		hostName(name),
+		Util.frameName(name),
 		D.Modifier.Frame():Size(height),
 		BackgroundColor3 = color,
 		BorderSizePixel = 0,
@@ -395,7 +384,7 @@ local function twoRows(name: string, props: Props, spec: TwoRowSpec): Frame
 
 	local start = math.max(TITLE_INSET, PAD + built.NavWidth)
 	local bar = D.Frame {
-		hostName(name),
+		Util.frameName(name),
 		D.Modifier.Frame():Size(hostSize),
 		BackgroundColor3 = color,
 		BorderSizePixel = 0,

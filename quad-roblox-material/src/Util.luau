@@ -10,6 +10,8 @@
 	interactable(disabled)   the `Interactable` State of a host: `negate(disabled)`
 	visible(v)      Visible default: nil -> true, else the value / State as given
 	hooks(h)        `Hooks?` -> a table safe to `table.unpack` into a host's array part
+	frameName(name) the host-`Name` Modifier of a Frame host whose name is an argument (one Modifier per distinct name,
+	                cached); a fixed name is a module-level `D.Modifier.<Class>():Name(...)` constant in the component
 	preHook / postHook   lifecycle hooks (see below)
 	clickSink(hooks?)   an invisible full-cover TextButton "ClickSink" for a surface shown above a dismissing scrim; it is
 	                also the instance that receives the surface's presses (below)
@@ -137,6 +139,16 @@ local function hooks(h: Hooks?): Hooks
 	return h or EMPTY_HOOKS
 end
 
+local frameNames: { [string]: q.FrameModifier } = {}
+local function frameName(name: string): q.FrameModifier
+	local m = frameNames[name]
+	if m == nil then
+		m = q.Declaration.Modifier.Frame():Name(name)
+		frameNames[name] = m
+	end
+	return m
+end
+
 return {
 	negate = negate,
 	interactable = interactable,
@@ -149,4 +161,5 @@ return {
 	preHook = preHook,
 	postHook = postHook,
 	clickSink = clickSink,
+	frameName = frameName,
 }
