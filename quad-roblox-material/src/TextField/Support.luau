@@ -17,10 +17,10 @@ local function charCount(s: string): number
 	return utf8.len(s) or #s
 end
 
--- nil when the field has no supporting text, error text or counter
+-- nil when the field has no supporting text, error text or counter (`MaxLength` with `ShowCounter = false` is no counter)
 local function build(c: Ctx.Ctx): Instance?
 	local props = c.Props
-	local maxLength = c.MaxLength
+	local maxLength = if c.ShowCounter then c.MaxLength else nil -- ShowCounter = false: clip only, no `n/max`
 	if not (props.SupportingText ~= nil or props.ErrorText ~= nil or maxLength ~= nil) then
 		return nil
 	end

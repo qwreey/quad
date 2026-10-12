@@ -133,7 +133,7 @@ local q = Quad:UseProvider(RobloxModule.QuadRoblox)
 | | `Slider` | M3(현행 Compose 형태): 트랙을 핸들 양옆 6px 틈으로 두 조각, 바깥 끝 완전 둥글림·핸들 쪽 반경 2, 4 px 막대 핸들, 끝 점(stop indicator, 트랙 끝에서 중심 6 px 안쪽 — 크기와 무관, m3.material.io 스펙), 연속/이산(4px 점 눈금), 값 라벨 알약, 키보드·D-pad. M3 변형: `Size` XS/S/M/L/XL(트랙 16/24/40/56/96, 바깥 반경 8/8/12/16/28, 핸들 높이 44/44/44/68/108 — MDC `Widget.Material3Expressive.Slider.*`), `Orientation = "Vertical"`(기본 아래가 Min, `TopToBottom`으로 위가 Min; 핸들은 44 x 4로 눕고 라벨은 왼쪽, 위/아래 키), `Centered`(활성 트랙이 범위 한가운데에서 핸들까지), 안쪽 아이콘 `TrackIconActiveStart/End`·`TrackIconInactiveStart/End`(M 이상·표준만, 24/24/32 px, 조각 끝에서 10 px, 조각이 아이콘 + 20보다 짧으면 숨음) |
 | | `RangeSlider` | M3 손잡이 둘(`Start`/`End` 두 Source) — 트랙 세 조각(가운데는 양 끝 반경 2), 누른 자리에서 가까운 손잡이를 끌고 서로를 못 넘음, 키는 한 손잡이씩(Return·게임패드 X로 전환); `Size`·`Orientation`·`TopToBottom`은 Slider와 같음(세로 범위는 MDC `RangeSlider`가 `BaseSlider`의 orientation을 물려받아 정본 — Compose엔 없음), `Centered`·안쪽 아이콘은 없음 |
 | | `M2.Slider` / `M2.RangeSlider` / `M2.Switch` | Material 2 모양 — 같은 props·같은 동작(공용 동작 모듈), 그림만 다름: 4px 얇은 트랙 + 20px 원형 손잡이·40px halo, 얇은 36x14 트랙 + 트랙보다 큰 20px 원형 썸(그림자). 아래 "M2 모양" |
-| 입력·메뉴 | `TextField` | Filled / Outlined, 떠오르는 레이블, 보조·오류 문구, 글자 수, 아이콘, 접두·접미, 여러 줄 |
+| 입력·메뉴 | `TextField` | Filled / Outlined, 떠오르는 레이블, 보조·오류 문구, 글자 수(`MaxLength`; `ShowCounter = false`면 길이 제한만 걸고 표시는 끔), 아이콘, 접두·접미, 여러 줄 |
 | | `Menu` | `Menu.open{ Anchor, Items }`와 `Menu.Button` — 앵커 아래(공간이 없으면 위)에 뜸 |
 | | `Select` | 읽기 전용 TextField + Menu(노출형 드롭다운) |
 | 표면 | `Card` | Elevated / Filled / Outlined, `OnClick`이 있으면 상호작용 카드 |

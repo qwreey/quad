@@ -21,6 +21,7 @@
 	  TrailingIcon    string?                                     image id, 24 px at the right edge
 	  Prefix/Suffix   string?                                     shown after the label floated
 	  MaxLength       number?                                     utf8 characters; clips typing, shows `n/max`
+	  ShowCounter     boolean?                                    default true; false keeps the MaxLength clipping but drops `n/max`
 	  Disabled        boolean | State<boolean>?                   not editable/focusable, M3 disabled opacities
 	  MultiLine       boolean?, Height: number?                   height default 56 (120 multi-line)
 	  OnChange        ((text: string) -> ())?                     after a USER edit (typing, paste, clip) — not on a
@@ -69,6 +70,7 @@ export type Props = {
 	read Prefix: string?,
 	read Suffix: string?,
 	read MaxLength: number?,
+	read ShowCounter: boolean?,
 	read Disabled: (boolean | q.State<boolean>)?,
 	read MultiLine: boolean?,
 	read Height: number?,

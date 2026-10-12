@@ -138,6 +138,7 @@ local function build(props: Props): Parts
 		ReadOnly = readOnly,
 		HasLabel = hasLabel,
 		MaxLength = maxLength,
+		ShowCounter = props.ShowCounter ~= false,
 		Value = value,
 		Focused = focused,
 		Floated = floated,

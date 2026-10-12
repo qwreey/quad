@@ -29,6 +29,8 @@ export type Props = {
 	read Prefix: string?,
 	read Suffix: string?,
 	read MaxLength: number?,
+	-- with MaxLength: false drops the `n/max` counter (typing is still clipped); default true
+	read ShowCounter: boolean?,
 	read Disabled: (boolean | q.State<boolean>)?,
 	read MultiLine: boolean?,
 	read Height: number?,
@@ -74,6 +76,7 @@ export type Ctx = {
 	ReadOnly: boolean,
 	HasLabel: boolean,
 	MaxLength: number?,
+	ShowCounter: boolean,
 	Value: q.Source<string>,
 	Focused: q.State<boolean>,
 	Floated: q.State<boolean>,
