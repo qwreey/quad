@@ -151,6 +151,7 @@ local UnitModule = require("@self/Unit")
 local RangeSlider = require("@self/Slider/Range")
 local M2 = require("@self/M2")
 local TextField = require("@self/TextField")
+local NumberField = require("@self/NumberField")
 local Menu = require("@self/Menu")
 local Select = require("@self/Select")
 local Card = require("@self/Card")
@@ -217,6 +218,7 @@ export type M2SliderProps = M2.SliderProps
 export type M2RangeSliderProps = M2.RangeSliderProps
 export type M2SwitchProps = M2.SwitchProps
 export type TextFieldProps = TextField.Props
+export type NumberFieldProps = NumberField.Props
 export type MenuItem = Menu.Item
 export type MenuEntry = Menu.Entry
 export type MenuOpenOptions = Menu.OpenOptions
@@ -353,6 +355,8 @@ return {
 	M2 = M2,
 	-- text input & menus
 	TextField = TextField,
+	-- a TextField whose value is a number, shown and read back through a `Unit` (kit addition)
+	NumberField = NumberField,
 	Menu = Menu,
 	Select = Select,
 	-- surfaces & overlays

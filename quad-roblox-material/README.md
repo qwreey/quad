@@ -142,6 +142,7 @@ local q = Quad:UseProvider(RobloxModule.QuadRoblox)
 | | `M2.Slider` / `M2.RangeSlider` / `M2.Switch` | Material 2 모양 — 같은 props·같은 동작(공용 동작 모듈), 그림만 다름: 4px 얇은 트랙 + 20px 원형 손잡이·40px halo, 얇은 36x14 트랙 + 트랙보다 큰 20px 원형 썸(그림자). 아래 "M2 모양" |
 | 입력·메뉴 | `TextField` | Filled / Outlined, 떠오르는 레이블, 보조·오류 문구, 글자 수(`MaxLength`; `ShowCounter = false`면 길이 제한만 걸고 표시는 끔), 아이콘, 접두·접미, 여러 줄 |
 | | `Menu` | `Menu.open{ Anchor, Items }`와 `Menu.Button` — 앵커 아래(공간이 없으면 위)에 뜸 |
+| | `NumberField` | 값이 **숫자**인 TextField(`Value: Source<number>`) — `Unit`으로 보여 주고 되읽습니다. 치는 동안은 글자를 그대로 두고, 필드를 떠날 때(Enter 포함) 되읽어 `Step`에 맞추고 `Min`/`Max`로 자른 뒤 값을 쓰고 표시를 단위의 정밀도로 정돈합니다. 숫자가 아니면 값을 쓰지 않고 다음 편집까지 오류 모양(`InvalidText`), 빈 칸은 오류가 아니라 지금 값으로 돌아감. 단위의 접두·접미는 필드의 `Prefix`/`Suffix`로 나가 편집되는 글자는 숫자뿐입니다(직접 쳐도 읽음). 같은 `Source`를 `Slider`와 나눠 쓰면 값 직접 입력이 됩니다. `OnChange(value)`는 값이 바뀐 커밋 뒤, `OnSubmit(value)`는 Enter 뒤. `MultiLine`·`MaxLength`는 받지 않습니다. M3 정본에는 없는 킷의 덧붙임(Compose는 키보드 옵션·입력 변환, MDC는 `inputType` — Roblox에 대응 없음) |
 | | `Select` | 읽기 전용 TextField + Menu(노출형 드롭다운) |
 | 표면 | `Card` | Elevated / Filled / Outlined, `OnClick`이 있으면 상호작용 카드 |
 | | `Divider` | 1px 선, 수평·수직, 안쪽 여백 |
@@ -585,7 +586,7 @@ Gallery.GalleryPanel({})       -- 페이지(Frame)만; 직접 호스트할 때. 
 루프를 돌기 때문입니다. 사용자가 입력·조작한 값은 패널의 Memo(Source)에 있어 다시 돌아와도 남습니다. 갤러리는 키트의 일부가 아니라 **키트를 쓰는 소비자**라서 `src` 밖 `gallery/`에 둡니다 — `src` 안에 있으면 키트와 함께 게시돼 보통의 사용 경로에선 아무도 부르지 않는 코드가 모든 설치본에 실립니다. 그래서 갤러리는 게임이 키트를 쓰는 방식 그대로, 루트 내보내기 표 하나(`require("<이 폴더>/src")` → `Material.Button` 같은 값, `Material.Theme`·`Material.Tab<K>`·`Material.ButtonVariant` 같은 다시 내보낸 타입)와 자기 설정 모듈(`gallery/Quad.luau`)만 씁니다. Studio 진입 스크립트 `gallery/MaterialGallery.client.luau`도 같은 폴더에 있습니다(아래 "Studio에서 보기").
 
 스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함; 2026-10-08 시트·드로어 처리에서 Navigation 탭이
-더해져 모든 탭이 탭 버튼 하나(8)만큼 늘었다 — 아래 숫자는 그 앞의 값, 지금 값은 Buttons 655 · Selection 1355 · Text 276 · Surfaces 335 ·
+더해져 모든 탭이 탭 버튼 하나(8)만큼 늘었다 — 아래 숫자는 그 앞의 값, 지금 값은 Buttons 655 · Selection 1355 · Text 293 · Surfaces 335 ·
 Overlays 335(하단·측면 시트 묶음 둘: 모달 버튼과 흉내 화면 속 표준 시트) · Navigation 1221(드로어 셋 + 2026-10-08 바 둘·레일·스크롤
 하는 앱 바 셋·쉬는 앱 바 넷·하단 앱 바 둘·툴바 셋 — 흉내 화면 열셋 더; 드로어만일 때 498; 같은 날 Scaffold로 옮긴 뒤 1221(이 줄의 앞 기재는 1190) —
 바 화면·앱 바 화면마다 Scaffold + Body, 폰 바 화면의 FAB·스낵바 층, 하단 앱 바 둘이 화면 하나씩으로 갈라짐) · Chips 521 ·

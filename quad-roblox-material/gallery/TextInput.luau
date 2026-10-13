@@ -31,6 +31,12 @@ return function(ctx: Ctx): Instance
 	local price = ctx.Memo("text.price", function()
 		return q.Source("12.50")
 	end)
+	local cents = ctx.Memo("text.cents", function()
+		return q.Source(1999)
+	end)
+	local centsCaption: q.State<string> = cents:Compute(function(self)
+		return `Stored: {self:Get()} (an integer; the Unit shows it as dollars)`
+	end)
 	local fruit = ctx.Memo("text.fruit", function()
 		return q.Source<<string?>>(nil)
 	end)
@@ -78,6 +84,19 @@ return function(ctx: Ctx): Instance
 				Prefix = "$",
 				Suffix = "USD",
 			}),
+			Material.NumberField({
+				Theme = theme,
+				Variant = "Outlined",
+				Label = "Amount",
+				Value = cents,
+				Unit = { Scale = 0.01, Prefix = "$" },
+				Min = 0,
+				Max = 100000,
+				Step = 1,
+				SupportingText = "NumberField: commits when you leave the field",
+				InvalidText = "Not a number",
+			}),
+			Common.Caption(ctx, centsCaption, false),
 			Material.TextField({
 				Theme = theme,
 				Variant = "Outlined",
