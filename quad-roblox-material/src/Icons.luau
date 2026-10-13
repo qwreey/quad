@@ -13,7 +13,7 @@
 
 	Names: check, close, arrowDown, arrowUp, chevronLeft, chevronRight, chevronDown, edit, calendar, keyboard, schedule, menu, moreVert,
 	error
-	(the "!" TextField shows while in the Error state).
+	(the "!" TextField shows while in the Error state), dragHandle (the reorderable list's row handle — NO default image).
 
 	ICON PROPS (Button / SplitButton `Icon`, Slider `TrackIcon*`) take ONE string, resolved by `Icons.resolve` when the
 	component is built: a NAME above -> its image (the default or your override) or, with the image overridden away, its
@@ -64,6 +64,10 @@
 	                             (the default overflowIndicator of AppBarRow.kt 52-56); image id, verified AssetTypeId 1, "baseline_navigation_more_vert", creator
 	                             qwreey74_icon — not rendered through thumbnails)
 	  error         (none)       the dump has no "error" icon; the glyph "!" (ASCII, always in the font) stays
+	  dragHandle    (none)       added 2026-10-13 for `ListData`'s `OnReorder` (ListReorder.luau): Material's `drag_handle`
+	                             (two bars). No image id was resolved for it (an id is only listed here once checked as an
+	                             IMAGE asset — none was), so it draws its glyph "=" (ASCII, always in the font) until a
+	                             place registers one: `Icons.override({ dragHandle = "rbxassetid://…" })`
 	White on transparent, so `ImageColor3` tints them like text.
 
 	GLYPH FALLBACKS (kept for a place that cannot load images, and for any name you override with `false`): check U+221A,
@@ -98,6 +102,7 @@ export type Name =
 	| "menu"
 	| "moreVert"
 	| "error"
+	| "dragHandle"
 
 local Glyphs: { [Name]: string } = {
 	check = "\u{221A}",
@@ -114,6 +119,7 @@ local Glyphs: { [Name]: string } = {
 	menu = "\u{2261}",
 	moreVert = "\u{22EE}",
 	error = "!",
+	dragHandle = "=",
 }
 
 -- Material Design Icons (Apache 2.0), baseline style; IMAGE asset ids (see the header)

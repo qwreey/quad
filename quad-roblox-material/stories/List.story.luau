@@ -1,6 +1,7 @@
 --!strict
 -- List: one ListItem whose texts / Selected / Disabled are Sources (Lines and Clickable are construction-time, so they
--- rebuild the item), a static List with dividers, and a keyed ListData over a Source<{Item}> with add / remove buttons.
+-- rebuild the item), a static List with dividers, a keyed ListData over a Source<{Item}> with add / remove buttons, and a
+-- drag-to-reorder ListData (`OnReorder`): the story moves the row itself, at once or 0.4 s later (`ReorderDelay`).
 local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
@@ -43,6 +44,7 @@ return StoryKit.story({
 		Clickable = true,
 		Selected = false,
 		Disabled = false,
+		ReorderDelay = false,
 		Scheme = StoryKit.Choose({ "light", "dark" }),
 	},
 	render = function(c)
@@ -129,6 +131,45 @@ return StoryKit.story({
 			Modifier = D.Modifier.Frame():Size(UDim2.fromOffset(360, 0)),
 		})
 
+		local tracks = q.Source<<{ Item }>>({
+			{ Id = 1, Name = "Drag my handle" },
+			{ Id = 2, Name = "Second" },
+			{ Id = 3, Name = "Third" },
+			{ Id = 4, Name = "Fourth" },
+		})
+		local reorder = Material.ListData<<Item>>({
+			Theme = theme,
+			Items = tracks,
+			Key = function(item: Item)
+				return item.Id
+			end,
+			Render = function(item: q.State<Item>, index: q.State<number>)
+				return Material.ListItem({
+					Theme = theme,
+					Headline = item:Compute(function(self: q.StateData<Item>): string
+						return self:Get().Name
+					end),
+					TrailingText = index:Compute(function(self: q.StateData<number>): string
+						return `#{self:Get()}`
+					end),
+				})
+			end,
+			OnReorder = function(from: number, to: number)
+				local function apply()
+					local list = table.clone(tracks:Get())
+					table.insert(list, to, table.remove(list, from) :: Item)
+					tracks:Set(list)
+				end
+				picked:Set(`OnReorder({from}, {to})`)
+				if c.ReorderDelay:Get() == true then
+					task.delay(0.4, apply)
+				else
+					apply()
+				end
+			end,
+			Modifier = D.Modifier.Frame():Size(UDim2.fromOffset(360, 0)),
+		})
+
 		return D.Frame {
 			follow,
 			Name = "ListStory",
@@ -199,6 +240,16 @@ return StoryKit.story({
 				Text = picked:Compute(function(self: q.StateData<string>): string
 					return `Last clicked: {self:Get()}`
 				end),
+			},
+			header(theme, "ListData (drag to reorder: OnReorder)", 9),
+			D.Frame {
+				Name = "ReorderHost",
+				LayoutOrder = 10,
+				Size = UDim2.fromOffset(360, 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				reorder,
 			},
 		}
 	end,

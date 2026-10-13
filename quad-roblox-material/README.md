@@ -147,7 +147,7 @@ local q = Quad:UseProvider(RobloxModule.QuadRoblox)
 | | `Select` | 읽기 전용 TextField + Menu(노출형 드롭다운) |
 | 표면 | `Card` | Elevated / Filled / Outlined, `OnClick`이 있으면 상호작용 카드 |
 | | `Divider` | 1px 선, 수평·수직, 안쪽 여백 |
-| | `List` / `ListItem` / `ListData` | 1~3줄 행, 정적 자식 또는 키로 재활용되는 데이터 목록 |
+| | `List` / `ListItem` / `ListData` | 1~3줄 행, 정적 자식 또는 키로 재활용되는 데이터 목록; `ListData`에 `OnReorder(from, to)`를 주면 줄 끝 손잡이를 끌어 순서를 바꾸는 목록(아래 "props 관례") |
 | 오버레이 | `Dialog` | `open` / `confirm` / `alert`, 스크림·Escape·게임패드 B·선택 가두기, 작은 화면에서 본문 스크롤(또는 `Fit` — 카드째 축소) |
 | | `Snackbar` | 하단 중앙, 한 번에 하나, 나머지는 큐; 호스트에 `Position = "Top"`을 주면 같은 여백·폭으로 위쪽 가운데(위에서 내려옴) |
 | | `Tooltip` | `Tooltip.hook`(대상마다 하나)과 `Tooltip.Plain`(시각만) |
@@ -229,6 +229,16 @@ local q = Quad:UseProvider(RobloxModule.QuadRoblox)
 - **`Hooks`**: 호스트 인스턴스가 있는 **모든** 컴포넌트는 배열 부분에 추가로 꽂을 값(예: `Tooltip.hook(...).Hook`, `q.OnChange`, ref)을 받습니다.
   타입은 하나의 별칭 `Material.Hooks = { any }`입니다. `Modifier`의 타입은 호스트 클래스의 `q.<Class>Modifier`(`q.TextButtonModifier` 등)입니다.
 - **`ListData`의 줄은 키마다 한 번 만들고 `item` State만 갈아 끼웁니다.** 그래서 줄 안의 `OnClick` 같은 콜백은 값을 **불릴 때** 읽어야 합니다(`item:Get()`) — 줄을 만들 때 읽어 둔 값은 같은 키에 다른 항목이 들어오면 낡습니다(키를 목록 안의 자리로 준 경우가 그렇습니다).
+- **끌어서 순서 바꾸기 — `ListData`의 `OnReorder: ((from: number, to: number) -> ())?`**(2026-10-13). 이 prop이 있으면 줄마다 끝에 손잡이(`Icons` "dragHandle")가
+  생기고, 손잡이를 누르고 끌면 그 줄이 떠서(tertiaryContainer·모서리 16·엘리베이션 4) 포인터를 세로로 따라가며 나머지 줄이 자리를 내줍니다. 놓으면
+  **콜백만 부릅니다 — `Items`는 목록이 고치지 않습니다.** `from`·`to`는 1부터의 자리이고 `to`는 옮긴 뒤의 자리라서
+  `table.insert(items, to, table.remove(items, from))`이 그대로 맞습니다(`from == to`면 부르지 않음). 콜백 안에서(또는 서버 응답을 받은 뒤)
+  `Items`를 고치면 줄들이 지금 보이는 자리에서 새 순서의 자리로 튀지 않고 옮겨 갑니다. 고치지 않으면 놓은 모습으로 1초 기다렸다가 원래 자리로
+  돌아가고(기다리는 동안은 새로 집지 못함), 같은 순서를 다시 `Set`하면 "거절"로 보고 바로 돌아갑니다. Escape·게임패드 B·창 포커스 상실·끄는 도중의
+  `Items` 변경은 끌기를 취소합니다(콜백 없음). 줄 높이는 집을 때 잽니다(한 줄·두 줄·세 줄이 섞여도 됨). 목록이 `ScrollingFrame` 안에 있으면 끄는 줄이
+  창 가장자리를 넘는 동안 캔버스가 굴러갑니다. 키보드·게임패드: 손잡이를 선택하고 Enter / A로 잡은 뒤 위·아래로 한 칸씩(누를 때마다 바로
+  `OnReorder`), Enter / A / B / Escape로 놓습니다. `Render`가 돌려준 줄은 손잡이와 함께 감싸지므로 줄에 `LayoutOrder = index`를 줄 필요가 없습니다.
+  `OnReorder`가 없으면 `ListData`는 전과 똑같습니다(인스턴스도 그대로). 근거·구조·기다림 규칙은 `src/ListReorder.luau` 머리, 한계는 아래 "알려진 한계".
 - 자식을 받는 컴포넌트(`Card`, `List`, 시트·드로어 면)는 `q.Slot<<Instance>>({ ... })`를 `Children`으로 받습니다(`BottomSheetScaffold`는
   `SheetContent`·`Content`, 드로어 레이아웃은 `Content` Slot + `DrawerContent` 인스턴스 하나 — Compose의 이름).
 
@@ -597,7 +607,7 @@ Gallery.GalleryPanel({})       -- 페이지(Frame)만; 직접 호스트할 때. 
 루프를 돌기 때문입니다. 사용자가 입력·조작한 값은 패널의 Memo(Source)에 있어 다시 돌아와도 남습니다. 갤러리는 키트의 일부가 아니라 **키트를 쓰는 소비자**라서 `src` 밖 `gallery/`에 둡니다 — `src` 안에 있으면 키트와 함께 게시돼 보통의 사용 경로에선 아무도 부르지 않는 코드가 모든 설치본에 실립니다. 그래서 갤러리는 게임이 키트를 쓰는 방식 그대로, 루트 내보내기 표 하나(`require("<이 폴더>/src")` → `Material.Button` 같은 값, `Material.Theme`·`Material.Tab<K>`·`Material.ButtonVariant` 같은 다시 내보낸 타입)와 자기 설정 모듈(`gallery/Quad.luau`)만 씁니다. Studio 진입 스크립트 `gallery/MaterialGallery.client.luau`도 같은 폴더에 있습니다(아래 "Studio에서 보기").
 
 스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함; 2026-10-08 시트·드로어 처리에서 Navigation 탭이
-더해져 모든 탭이 탭 버튼 하나(8)만큼 늘었다 — 아래 숫자는 그 앞의 값, 지금 값은 Buttons 1101(2026-10-13 "ButtonGroup" 묶음 넷으로 655 → 1101 — 세 칸 그룹 하나가 쉴 때 47) · Selection 1355 · Text 293 · Surfaces 335 ·
+더해져 모든 탭이 탭 버튼 하나(8)만큼 늘었다 — 아래 숫자는 그 앞의 값, 지금 값은 Buttons 1101(2026-10-13 "ButtonGroup" 묶음 넷으로 655 → 1101 — 세 칸 그룹 하나가 쉴 때 47) · Selection 1355 · Text 293 · Surfaces 475(2026-10-13 "ListData: drag to reorder" 묶음으로 335 → 475 — 줄 다섯에 줄마다 손잡이·들림 틀 12, 스위치 둘) ·
 Overlays 422(하단·측면 시트 묶음 둘: 모달 버튼과 흉내 화면 속 표준 시트; 2026-10-13 위쪽 스낵바 버튼 둘·떨어진 모달 버튼 둘·떨어진 표준 시트 흉내 화면 둘로 335 → 422) · Navigation 1221(드로어 셋 + 2026-10-08 바 둘·레일·스크롤
 하는 앱 바 셋·쉬는 앱 바 넷·하단 앱 바 둘·툴바 셋 — 흉내 화면 열셋 더; 드로어만일 때 498; 같은 날 Scaffold로 옮긴 뒤 1221(이 줄의 앞 기재는 1190) —
 바 화면·앱 바 화면마다 Scaffold + Body, 폰 바 화면의 FAB·스낵바 층, 하단 앱 바 둘이 화면 하나씩으로 갈라짐) · Chips 521 ·
@@ -729,6 +739,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 71 | 앱 바 스크롤 — 정착 틈 | 갤러리 "Top app bars that scroll" 세 화면 | 스크롤바 엄지를 잡고 애매한 곳(enterAlways 0~64, exitUntilCollapsed 0~72)까지 끌어 잡은 채로 두면 바가 붙지 않고, 놓으면 0.2 s에 바와 목록이 함께 가까운 끝으로 움직여 첫 행이 바 아래 끝에 붙음(바와 1행 사이 빈 띠 없음); 목록 깊은 곳에서 enterAlways 바가 반쯤 돌아온 채 멈춰도 바와 목록이 같이 움직임; 정착 도중 휠·끌기를 하면 정착이 바로 멈추고 휠을 따름(되돌아가며 싸우지 않음); pinned는 그대로 | Studio 2026-10-08 확인(엄지 끌기·놓기, 정착 도중 휠) |
 | 72 | Scaffold — 내용 영역·FAB·스낵바 | 갤러리 "Top app bars that scroll" 세 화면·"Navigation bar" 폰 화면·"Bottom app bars"·Scaffold 스토리 | 세 앱 바 화면의 스크롤바가 바 아래 끝 밑에 온전히 보이고 바가 접히고 펼치는 동안 따라감(70·71과 같은 움직임, 휠·엄지 끌기·정착 뒤 틈 없음); 폰 화면 FAB이 오른쪽 16·내비게이션 바 위 16, FAB을 누르면 스낵바가 FAB 위 16에 가운데로; 하단 앱 바 화면의 내용이 바 위 끝에서 끝남; 스토리에서 FabPosition Start / Center / EndOverlay(바 위에 겹침)와 아래 바 없음 | Studio 2026-10-08 확인(갤러리 — 휠·엄지 끌기 정착·FAB 클릭 스낵바; 스토리는 미확인) |
 | 73 | 연결된 버튼 그룹(ButtonGroup) | 갤러리 Buttons "ButtonGroup" 묶음 넷·ButtonGroup 스토리 | 칸 사이 2 px, 줄의 양 끝 반원·칸 사이 모서리 8이 누르는 동안 4로, 고른 칸은 알약(양쪽 다 반원)으로 0.2 s에 부드럽게 바뀌고 색이 함께 바뀜(Filled: surfaceContainer → primary); 끝 칸의 두 면(겉·안)이 만나는 한가운데에 이음매 없음(비활성 반투명·Outlined 외곽선 포함), 가운데 칸은 면 하나; Outlined는 고르면 외곽선이 사라지고 inverseSurface로 채워짐; Elevated 그림자가 칸마다 제 모양으로 이어지고 이웃 칸 위에 겹쳐 그려지지 않음(고른 알약 칸 옆 2 px 틈 포함); 칸 폭이 누르는 동안 안 변함; `Width = 360` 그룹의 세 칸이 같은 폭·글자 가운데; 게임패드 선택이 칸마다 멈추고 링이 보임(링이 옆 칸에 가리지 않음 — 포커스된 칸이 `ZIndex` 2) | Studio 2026-10-13 확인(Place1, UIScale 1~5 — `.claude/audit/kit-studio-2026-10-13/buttongroup-*.jpg`): 간격 2·높이 40·`Width = 360` → 119/119/118 실측, 끝 칸 이음매 없음(배율 1·1.25·1.5·1.7 화소 대조), 선택 전환 0.15~0.2 s, 마우스로 단일·다중·`Required` 확인; 포커스 링이 다음 칸에 가려지던 것을 고침(SplitButton 앞 반쪽 포함). 게임패드 실물 이동은 못 봄(`SelectedObject`를 코드로 옮김) |
+| 74 | 끌어서 순서 바꾸기(`ListData` `OnReorder`) | 갤러리 Surfaces "ListData: drag to reorder"(스위치 둘)·List 스토리 | 손잡이(=)를 누르면 줄이 뜸(tertiaryContainer·모서리 16·그림자 4), 포인터를 끊김 없이 따라가고 목록 밖으로 안 나감; 지나간 줄이 0.25 s에 한 칸씩 비켜 주고 두 줄(72)·한 줄(56)이 섞여도 틈·겹침 없음; 놓는 순간 어떤 줄도 튀지 않고 자리로 미끄러짐("Server delay"를 켜도 0.4 s 뒤 튐 없이 그대로), "Server refuses"는 1 s 뒤 원래 자리로; Escape로 취소; 갤러리 스크롤 프레임 가장자리로 끌면 캔버스가 굴러가고 줄이 포인터 아래에 머묾(잠긴 `ScrollingEnabled`에서도 `CanvasPosition` 쓰기가 먹는지); 뜬 줄의 그림자가 스크롤 프레임 가장자리에서 잘리는 정도; 터치에서 손잡이를 끌 때 목록이 같이 스크롤되지 않음; 손잡이 선택 → Enter → 위·아래 |  |
 
 ## 테스트
 
@@ -803,6 +814,18 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
   `SnackbarHost` 자리는 정본대로 아래용 그대로입니다 — 그 층에 위쪽 호스트를 묶으면 위 앱 바 위에 겹쳐 그려집니다. 한 번에
   하나·큐는 호스트마다 그대로이고, 여럿을 쌓는 부품은 없습니다(같은 Overlay의 아래 호스트와 위 호스트는 서로 다른 큐).
 - **ButtonGroup**(2026-10-13): 연결된 그룹의 작은 크기(높이 40)만 있습니다 — Compose에 연결된 그룹의 다른 크기 토큰이 없습니다. 표준(떨어진, 12 px 간격, 누르면 폭이 15 % 늘며 이웃을 누르는) 버튼 그룹과 넘침 메뉴, 줄바꿈(Compose 샘플은 FlowRow — 칸이 많으면 `Width`를 주거나 칸을 줄이세요), 아이콘만 있는 칸, 세로 그룹은 없습니다. 고른 칸의 아이콘을 바꾸는 정본 샘플의 관례는 `Icon`에 선택 Source에서 만든 State를 넘겨서 합니다(State 아이콘은 이미지여야 함). 비활성 컨테이너는 토글 버튼 토큰대로 10 %입니다(킷 Button·SplitButton은 옛 12 %). m3.material.io의 Measurements와는 대조하지 못했습니다(스크립트로 그려지는 페이지 — 수치는 Compose 토큰). 끝 칸의 포커스 링은 바깥 반경의 알약 하나라 안쪽 모서리(8)에서 링의 곡선과 칸의 모서리가 어긋나 보입니다(SplitButton과 같은 한계). Studio에서는 2026-10-13에 봤습니다(체크리스트 73) — 터치·게임패드 실물은 아직.
+- **끌어서 순서 바꾸기**(`ListData`의 `OnReorder`, 2026-10-13 — **Studio 미확인, 목 스펙만**): 집는 곳은 **손잡이뿐**입니다 — 줄 본체를 길게 눌러 집는
+  것(Compose 샘플·`ItemTouchHelper`의 기본)은 없습니다(클릭되는 줄은 누름이 줄의 버튼에서 멈추고, 그 클릭을 밖에서 취소할 길이 없음). 손잡이 자리는
+  줄 끝으로 고정이고 세 줄짜리 줄에서도 세로 가운데입니다. 손잡이 아이콘은 **내장 이미지가 없어 글리프 "="로 그려집니다** — 이미지 id를 확인해
+  넣지 못했습니다(`Icons.override({ dragHandle = "rbxassetid://…" })`로 등록하면 이미지 버튼이 됩니다). 뜬 줄의 **내용 색은 그대로**입니다(정본은
+  onTertiaryContainer — 줄은 `Render`가 만든 인스턴스라 목록이 안을 건드리지 않음); `Selected`인 `ListItem`은 자기 사각 배경을 그려 뜬 틀의 둥근
+  모서리 밖으로 보입니다. 놓을 자리 색(정본 토큰 `ItemDropZoneColor`)은 그리지 않습니다. 줄마다 인스턴스가 12개(이미지 손잡이면 14개) 늘어납니다.
+  끄는 동안에는 `Items`를 바꾸지 않으므로(정본 샘플은 자리 바꿀 때마다 데이터를 옮김) 다른 곳에 비친 순서는 놓을 때까지 그대로입니다. 놓은 뒤
+  기다리는 시간(1초)은 킷이 정한 값이고 옵션이 아닙니다 — 그보다 늦게 온 서버 응답은 줄이 원래 자리로 돌아간 뒤 한 번에 옮겨집니다. 같은 줄들의
+  내용만 바뀐 `Items` 변경도 "응답"으로 칩니다(기다리던 줄이 그 순서로 정착). 줄이 추가·삭제되면 끌기·정착을 그 자리에서 끝냅니다(움직임 없이 제자리).
+  `ScrollingFrame` 안에서는 뜬 줄의 그림자가 프레임 가장자리에서 잘리고(UIShadow는 조상 클립에 잘림), 가장자리 스크롤은 가장 가까운 조상
+  `ScrollingFrame` 하나만 굴립니다. 소수 배율 `UIScale` 아래에서는 끄는 동안 줄이 1 px 어긋날 수 있습니다(오프셋·얼린 높이가 정수).
+  키보드로 옮기는 규칙(Enter / A로 잡고 위·아래)은 정본 근거 없이 킷의 `KeyNav` "Engage" 관례를 따른 것입니다.
 - 갤러리는 좁은 화면에서 탭 글자가 잘릴 수 있습니다(Tabs는 폭을 균등 분할).
 
 ## 크레딧

@@ -38,6 +38,10 @@ H.section("defaults are Material icon images, each with a text glyph fallback; e
 		assert(Icons.Defaults[name] == EXPECTED[name], name .. ": Defaults table")
 	end
 	assert(table.isfrozen(Icons.Defaults), "Defaults is read-only")
+	-- the reorderable list's handle: a name with a glyph and NO built-in image (no id was verified for it)
+	assert(Icons.glyph("dragHandle") == "=" and Icons.asset("dragHandle") == nil and Icons.Defaults["dragHandle"] == nil)
+	local kind, drawn = Icons.resolve("dragHandle")
+	assert(kind == "Glyph" and drawn == "=")
 	H.assertNoDebugOutput("defaults")
 end)
 

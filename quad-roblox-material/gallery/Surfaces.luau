@@ -1,8 +1,9 @@
 --!strict
 --[[
 	Gallery section "Surfaces": Elevation levels, Card (Elevated / Filled / Outlined, one interactive), Divider (plain,
-	inset, vertical) and List (static rows of one / two / three lines with leading + trailing, selection, disabled; and a
-	keyed `ListData` whose rows are added / removed from the buttons above it).
+	inset, vertical) and List (static rows of one / two / three lines with leading + trailing, selection, disabled; a
+	keyed `ListData` whose rows are added / removed from the buttons above it; and a drag-to-reorder `ListData` — rows of
+	two heights, the owner applies each move at once, after a pretend server delay, or not at all).
 ]]
 
 local q = require("./Quad")
@@ -12,6 +13,7 @@ local D = q.Declaration
 
 type Ctx = Common.Ctx
 type Row = { Id: number, Title: string }
+type Track = { Id: number, Title: string, Artist: string? }
 
 local bodyStyle = Material.Text.Label("BodyMedium")
 local titleStyle = Material.Text.Label("TitleMedium")
@@ -279,6 +281,72 @@ return function(ctx: Ctx): Instance
 		}),
 	})
 
+	-- drag to reorder: the list only calls back; this owner moves the row — at once, late (a server round trip) or never
+	local tracks = ctx.Memo("surf.tracks", function()
+		return q.Source<<{ Track }>>({
+			{ Id = 1, Title = "Opening", Artist = "Two lines: drag the handle at the end" },
+			{ Id = 2, Title = "Interlude" },
+			{ Id = 3, Title = "Main theme", Artist = "Rows of different heights give way by the dragged row's height" },
+			{ Id = 4, Title = "Bridge" },
+			{ Id = 5, Title = "Finale", Artist = "Escape cancels a drag" },
+		})
+	end)
+	local serverDelay = ctx.Memo("surf.reorderDelay", function()
+		return q.Source(false)
+	end)
+	local serverRefuses = ctx.Memo("surf.reorderRefuse", function()
+		return q.Source(false)
+	end)
+	local lastMove = ctx.Memo("surf.reorderLast", function()
+		return q.Source("No move yet")
+	end)
+	local reorderList = Material.ListData<<Track>>({
+		Theme = theme,
+		Items = tracks,
+		Key = function(t: Track)
+			return t.Id
+		end,
+		Render = function(track: q.State<Track>, index: q.State<number>)
+			return Material.ListItem({
+				Theme = theme,
+				Headline = Common.text<<Track>>(track, function(t: Track)
+					return t.Title
+				end),
+				-- two-line or one-line is decided when the row is built (rows are keyed by Id, so the item never changes kind)
+				Supporting = if track:Get().Artist ~= nil
+					then Common.text<<Track>>(track, function(t: Track)
+						return t.Artist or ""
+					end)
+					else nil,
+				TrailingText = Common.text<<number>>(index, function(i: number)
+					return `#{i}`
+				end),
+			})
+		end,
+		OnReorder = function(from: number, to: number)
+			local function apply()
+				local copy = table.clone(tracks:Get())
+				if copy[from] ~= nil and to <= #copy then
+					table.insert(copy, to, table.remove(copy, from) :: Track)
+					tracks:Set(copy)
+				end
+			end
+			if serverRefuses:Get() then
+				lastMove:Set(`OnReorder({from}, {to}) refused: Items untouched, the rows go back`)
+			elseif serverDelay:Get() then
+				lastMove:Set(`OnReorder({from}, {to}) applied 0.4 s later`)
+				task.delay(0.4, apply)
+			else
+				lastMove:Set(`OnReorder({from}, {to}) applied at once`)
+				apply()
+			end
+		end,
+	})
+	local reorderControls = Common.Flow({
+		Common.Labeled(ctx, Material.Switch({ Theme = theme, Value = serverDelay }), "Server delay 0.4 s"),
+		Common.Labeled(ctx, Material.Switch({ Theme = theme, Value = serverRefuses }), "Server refuses"),
+	})
+
 	return Common.Section(ctx, "Surfaces", "Surfaces", {
 		Common.Group(ctx, "Elevation", levels, "A UIShadow per level; it follows the UICorner."),
 		Common.Group(ctx, "Card", cards),
@@ -287,5 +355,8 @@ return function(ctx: Ctx): Instance
 		Common.Group(ctx, "ListData: keyed rows", {
 			Common.Column({ dataButtons, dataList }, 360, 8),
 		}, "Rows are built once per key; reversing re-orders through LayoutOrder only."),
+		Common.Group(ctx, "ListData: drag to reorder", {
+			Common.Column({ reorderControls, Common.Caption(ctx, lastMove), reorderList }, 360, 8),
+		}, "OnReorder(from, to) is all the list does; the owner edits Items. Engage a handle with Enter / A, then Up / Down."),
 	})
 end

@@ -138,6 +138,69 @@ H.section("section state survives leaving and re-entering (Memo)", function()
 	H.assertNoDebugOutput("memo")
 end)
 
+H.section("surfaces: dragging a row's handle re-orders the list through OnReorder (at once / after the pretend server delay)", function()
+	click(tabButton(gui, "Surfaces"))
+	H.finishTweens()
+	local UIS: any = H.UserInputService
+	local function rows(): { any }
+		local found = named(gui, "ReorderRow")
+		table.sort(found, function(a: any, b: any)
+			return a.LayoutOrder < b.LayoutOrder
+		end)
+		return found
+	end
+	local function titles(): string
+		local out: { string } = {}
+		for _, r in rows() do
+			table.insert(out, H.find(r, "Headline").Text)
+		end
+		return table.concat(out, ",")
+	end
+	-- the mock has no layout: stack the rows as the engine would (two-line rows 72, one-line 56)
+	local function layout()
+		local y = 0
+		for _, r in rows() do
+			local h = if H.find(r, "Supporting") ~= nil then 72 else 56
+			H.setAbs(r, 0, y, 360, h)
+			y += h
+		end
+		H.setAbs(rows()[1].Parent, 0, 0, 360, y)
+	end
+	local function drag(index: number, dy: number)
+		layout()
+		local handle = H.find(rows()[index], "DragHandle")
+		local y = rows()[index].AbsolutePosition.Y + 20
+		local input = H.input({ Position = Vector3.new(340, y, 0) })
+		H.fire(handle, "InputBegan", input)
+		UIS.InputChanged:Fire(H.input({ UserInputType = Enum.UserInputType.MouseMovement, Position = Vector3.new(340, y + dy, 0) }))
+		H.fire(handle, "InputEnded", input)
+		UIS.InputEnded:Fire(H.input({ UserInputType = Enum.UserInputType.MouseButton1, Position = Vector3.new(340, y + dy, 0) }))
+	end
+	assert(titles() == "Opening,Interlude,Main theme,Bridge,Finale", titles())
+	drag(1, 60) -- Opening (72) under Interlude (56): its slots are 0 / 56 / 128 ..., 60 is nearest to the second
+	assert(titles() == "Interlude,Opening,Main theme,Bridge,Finale", titles())
+	assert(byText(gui, "OnReorder(1, 2) applied at once") ~= nil)
+	H.finishTweens()
+	H.advance(0.3)
+	click(H.find(byText(gui, "Server delay 0.4 s").Parent, "Switch"))
+	H.finishTweens()
+	drag(5, -80)
+	assert(titles() == "Interlude,Opening,Main theme,Bridge,Finale", "the pretend server has not answered")
+	assert(byText(gui, "OnReorder(5, 4) applied 0.4 s later") ~= nil)
+	H.advance(0.45)
+	assert(titles() == "Interlude,Opening,Main theme,Finale,Bridge", titles())
+	H.finishTweens()
+	H.advance(0.5)
+	click(H.find(byText(gui, "Server delay 0.4 s").Parent, "Switch"))
+	click(tabButton(gui, "Buttons"))
+	click(tabButton(gui, "Surfaces"))
+	assert(titles() == "Interlude,Opening,Main theme,Finale,Bridge", "the order is the owner's data: it survives the tab")
+	click(tabButton(gui, "Buttons"))
+	H.finishTweens()
+	H.advance(0.5)
+	H.assertNoDebugOutput("reorder")
+end)
+
 H.section("theme switch: the Switch toggles Theme.default and every swatch follows", function()
 	click(tabButton(gui, "Theme"))
 	H.finishTweens()

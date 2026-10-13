@@ -40,6 +40,14 @@
 	ListData props: Items State<{T}>, Key (item -> string | number, unique and stable — duplicate keys error, see
 	`Slot:List`), Render (item State, index State -> Instance), Gap, Theme, Modifier. Rows are keyed and recycled: the
 	row is built once per key (Render runs once); data edits update the `item` State, reorders update `index`.
+	  OnReorder  ((from: number, to: number) -> ())?   presence (at construction) makes the list DRAG-TO-REORDER: every
+	             row gets a drag handle at its end (and is wrapped — the rendered instance is no longer the List's direct
+	             child, its own `LayoutOrder` is not needed); dragging a handle moves that row with the pointer while the
+	             others give way, and the release calls `OnReorder(from, to)` — places from 1, `to` counted AFTER the move
+	             (`table.insert(t, to, table.remove(t, from))`), never with `from == to`. The list does not edit `Items`:
+	             set it in the callback (or when a server answers) and the rows settle in that order; leave it and they go
+	             back after a moment. Everything else — sources, the waiting rule, keys, limits — is in ListReorder.luau.
+	             Without `OnReorder` nothing of this exists (same instances as before).
 ]]
 
 local q = require("./Quad")
@@ -48,6 +56,7 @@ local Util = require("./Util")
 local Interactive = require("./Interactive")
 local Text = require("./Text")
 local Style = require("./Button/Style")
+local ListReorder = require("./ListReorder")
 local D = q.Declaration
 local listName = D.Modifier.Frame():Name("List")
 local itemFrameName = D.Modifier.Frame():Name("ListItem")
@@ -310,6 +319,7 @@ export type DataProps<T> = {
 	read Items: q.State<{ T }>,
 	read Key: (item: T) -> string | number,
 	read Render: (item: q.State<T>, index: q.State<number>) -> Instance,
+	read OnReorder: ((from: number, to: number) -> ())?,
 	read Gap: number?,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
@@ -327,6 +337,21 @@ type RowCtx<T> = {
 }
 
 local function ListData<T>(props: DataProps<T>): Frame
+	local onReorder = props.OnReorder
+	if onReorder ~= nil then
+		-- drag-to-reorder: the rows are wrapped and driven by ListReorder (its hooks go on the List host, before the caller's)
+		local reorder = ListReorder.new({
+			Items = props.Items :: any,
+			Key = props.Key :: any,
+			Render = props.Render :: any,
+			OnReorder = onReorder,
+			Gap = props.Gap,
+			Theme = props.Theme,
+		})
+		local hooks = table.clone(reorder.Hooks)
+		table.move(Util.hooks(props.Hooks), 1, #Util.hooks(props.Hooks), #hooks + 1, hooks)
+		return container(props.Theme, props.Gap, props.LayoutOrder, props.Modifier, hooks, reorder.Slot)
+	end
 	local slot = q.Slot<<Instance>>()
 	slot:List(props.Items, function(ctx: RowCtx<T>): (any, RowUD<T>?)
 		if ctx.Item == q.KeyGone then
