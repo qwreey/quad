@@ -115,7 +115,12 @@ function Common.Flow(children: { Instance }, gap: number?): Frame
 			FillDirection = Enum.FillDirection.Horizontal,
 			Wraps = true,
 			SortOrder = Enum.SortOrder.LayoutOrder,
-			VerticalAlignment = Enum.VerticalAlignment.Center,
+			-- Items are centered WITHIN their line (ItemLineAlignment), the lines start at the TOP. With
+			-- VerticalAlignment = Center the engine centered the whole block in the frame's ONE-line height once the
+			-- row wrapped (the auto-sized frame grows afterwards): a two-line row was drawn (content - one line) / 2
+			-- above its frame, over the note before it (Studio 2026-10-13: flow y 632 h 184, children 580..764).
+			VerticalAlignment = Enum.VerticalAlignment.Top,
+			ItemLineAlignment = Enum.ItemLineAlignment.Center,
 			Padding = UDim.new(0, gap or 12),
 		},
 		q.Slot<<Instance>>(children),
