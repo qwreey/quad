@@ -94,6 +94,15 @@ sonnet 서브에이전트가 Studio MCP로 측정(Play Client에서 `ReplicatedS
 `ModalBottomSheet`(스크림 닫기), `Select`, `DatePicker`·`TimePicker` 모달, `Slider` 끌기 전부 에러 0. SplitButton의 `Content` 위치는 첫 프레임 24/22, 둘째 프레임부터 0/−2(중간값 없음 — Deferred와 같음).
 미완: devui 창 안의 팝업을 연 채 창을 닫는 장면(마우스 클릭이 devui 창에 반응하지 않음 — 원인 미확인), `q.Out` 형태의 왕복.
 
+## 9. Elevated SplitButton의 그림자 (같은 날 저녁 — 사용자가 화면에서 봄, opus + Studio)
+
+사용자: *"그림자 있는 애 좀 이상함. 잘린 부분에서도 동그랗게 그림자 들어가서 중간 쯤에서 그림자가 사라짐."* 반쪽마다 네 모서리 반경 20인 caster가 그림자를 내서 가운데에서 말려 올라갔다
+(`split-shadow-before-*.jpg`). 실험(Sibling ScreenGui, 손으로 만든 인스턴스): `UIShadow`는 부모가 투명해도 그려지지만 부모 모양 전체가 채워진 그림자라 전체 크기의 투명 caster는 2 px 틈으로
+진한 줄이 비치고, 불투명 caster는 틈을 메운다; 조상의 `ClipsDescendants`는 자식의 `UIShadow`를 경계에서 깨끗이 자른다; `UIShadow`는 부모 `UICorner`의 트윈을 따라간다.
+고침: caster를 없애고 면(바깥 반경 20 / 안쪽 4·눌림 12·선택 20)마다 `UIShadow`를 달고, Elevated 반쪽의 클립만 바깥 세 변을 그림자가 닿는 거리(15)만큼, 안쪽은 틈 2 px만큼 연다 —
+반쪽마다 제 모양의 그림자(Compose와 같은 결과). Elevated 인스턴스 45 → 43, 다른 변형은 그대로. `split-shadow-after-*.jpg`(평상·호버·눌림·선택·뒤 반쪽 눌림·비활성·배율 다섯).
+`Content`의 첫 프레임 24/22는 첫 레이아웃 패스 안에서 최종값으로 수렴한다(Immediate에서 신호 순서로 확인 — 화면에 그려지지 않는 것으로 판단; Deferred는 미확인).
+
 ## 미완
 
 Immediate 전용 관측(항목 3 전부 — 가드의 거부, `WhenIdle`의 지연 실행, 신호 콜백 에러의 전파, Q186 장면), 항목 1의 "일반 Frame으로 옮겨 붙이기"와 문자열 본문 14의 원인,

@@ -47,22 +47,34 @@
 	container has no seam. Each face carries its own state layer and its own ripple (`Ripple.luau`) with the face's
 	corner: the two ripples start at the same press point in the same full-rectangle geometry, so the visible halves of
 	the two discs meet exactly at the clip line. The outline (Outlined) is a 1 px Inner UIStroke on each face (an outer
-	stroke would be cut by the clips). Elevated: a CASTER Frame under the faces (the half's rectangle, rounded 20, the
-	container color — fully covered by the faces) carries the UIShadow, so the shadow's inner corners are rounded 20, not
-	4 (a UIShadow follows its parent's one UICorner; on a face it would be cut by the clip).
+	stroke would be cut by the clips).
+	ELEVATED SHADOW: each FACE carries its own UIShadow (`Elevation.Shadow`), so each half casts the shadow of its own
+	shape — outer corners 20, inner corners 4 / 12 pressed / 20 selected, as Compose draws it (a UIShadow follows its
+	parent's one UICorner, so the two faces give the two radii) — and the two shadows of a half meet at the split line
+	like the faces do. For that the clips of an Elevated half are OPEN on the three sides that are not the split line:
+	by the shadow's reach (2 x blur + spread + y-offset of the hovered level = 15) above, below and on the half's outer
+	side, and by the 2 px gap on its inner side (further in, the trailing half's shadow would be drawn over the leading
+	half's container — it is the later sibling); the faces sit at the same place as before. The other variants keep the
+	clips at the half's rectangle. (Before 2026-10-13 one ShadowCaster Frame per half — the half's rectangle rounded 20
+	on all four corners — carried the shadow: it curled in at the gap and left the middle of the button without a
+	shadow. An Elevated split button is 2 instances SMALLER now: 4 UIShadow instead of 2 x (Frame + UICorner +
+	UIShadow). Engine facts, Studio 2026-10-13: a UIShadow is drawn for a transparent parent too, as a FILLED shape —
+	one transparent caster across both halves shows through the gap as a dark line; ClipsDescendants of an ancestor
+	cuts a UIShadow.)
 	Every size that feeds the layout below the host is Offset (no Scale fraction under an auto-sized ancestor —
 	`Ripple.luau` "NOT SCALE"; the Selected overlay is a full-cover Scale leaf under an Offset-sized face, which is fine):
 	a half's width W = max(48, its content's width), read from the content frame's AbsoluteSize in local units (divided
-	by the UIScale product, `Ripple.localScale`); the half is not auto-sized itself.
+	by the UIScale product, `Ripple.localScale`); the half is not auto-sized itself. (The open clips of an Elevated half
+	reach outside the half; the host's AutomaticSize measures its children — the two halves — not their descendants.)
 
 	Structure at rest (Filled, no icon): host Frame + UIListLayout; per half: TextButton > OuterClip > Face (UICorner,
 	StateLayer > UICorner), InnerClip > Face (same), FocusRing (Frame + UICorner + UIStroke), Content (UIPadding + ...):
 	leading Content = UIPadding + Label (+ Icon + UIListLayout with an icon); trailing Content = UIPadding + Icon, and the
-	trailing faces each hold a Selected overlay (Frame + UICorner). Counted in test/spec.button.luau. A press adds two
-	transient ripples (2 x 3).
+	trailing faces each hold a Selected overlay (Frame + UICorner); Elevated: + a UIShadow on each of the four faces.
+	Counted in test/spec.button.luau. A press adds two transient ripples (2 x 3).
 	M3 deviations: the focus ring is one rounded rectangle at the outer radius (the half's inner corners are rounder in
-	the ring than in the shape); the Elevated shadow's inner corners as above; no hover shape (the token
-	InnerHoveredCornerCornerSize exists, Compose does not use it); one `Disabled` for both halves (Compose: one
+	the ring than in the shape); a half's shadow ends 2 px past its inner edge (ELEVATED SHADOW); no hover shape (the
+	token InnerHoveredCornerCornerSize exists, Compose does not use it); one `Disabled` for both halves (Compose: one
 	`enabled` per half); small size only (the XS / M / L / XL split buttons are not here — the kit Button is the 40 px
 	one).
 ]]
@@ -219,6 +231,33 @@ local function half(o: HalfOptions): TextButton
 		return math.floor(w / 2)
 	end
 
+	-- Elevated (header "ELEVATED SHADOW"): the level of this half (rest, + 1 hovered, 0 disabled) and how far its clips
+	-- open for the shadow. 0 = no shadow: the clips are the half's rectangle.
+	local shadowLevel: q.State<number>? = nil
+	local reach = 0
+	if spec.Shadow ~= nil then
+		local rest = spec.Shadow
+		shadowLevel = ix.Hovered:Compute(function(self, _prev, dis)
+			if dis:Get() then
+				return 0
+			end
+			return if self:Get() then rest + 1 else rest
+		end, disabled)
+		local highest = Tokens.Elevation.levelOf(rest + 1)
+		reach = 2 * highest.BlurRadius + highest.Spread + math.abs(highest.OffsetY)
+	end
+	-- a clip's left edge and width in the half's coordinates: its side of the split line, opened by `reach` on the
+	-- half's outer side and by the gap on its inner side
+	local function clipSpan(w: number, from: "Start" | "Split"): (number, number)
+		local m = splitAt(w)
+		local outerSide = (from == "Start") == leading
+		local open = if outerSide then reach else math.min(reach, BETWEEN)
+		if from == "Start" then
+			return 0 - open, m + open
+		end
+		return m, w - m + open
+	end
+
 	local function face(name: string, corner: UDim | Theme.Animated, ripple: Ripple.Ripple, clipFrom: "Start" | "Split"): Frame
 		local stroke: Instance? = nil
 		if spec.Stroke then
@@ -243,9 +282,12 @@ local function half(o: HalfOptions): TextButton
 				UICorner = corner,
 			}
 		end
-		-- the face is the half's full rectangle; inside the clip that starts at the split line it is shifted back
+		local level = shadowLevel
+		local shadow: Instance? = if level ~= nil then Elevation.Shadow({ Level = level, Theme = theme }) else nil
+		-- the face is the half's full rectangle: shifted back by its clip's origin
 		local position: q.State<UDim2> = width:Compute(function(self)
-			return UDim2.fromOffset(if clipFrom == "Split" then -splitAt(self:Get()) else 0, 0)
+			local x0 = clipSpan(self:Get(), clipFrom)
+			return UDim2.fromOffset(0 - x0, reach)
 		end)
 		return D.Frame {
 			Name = name,
@@ -255,6 +297,7 @@ local function half(o: HalfOptions): TextButton
 			BackgroundTransparency = containerT or 1,
 			BorderSizePixel = 0,
 			UICorner = corner,
+			shadow or q.None,
 			stroke or q.None,
 			StateLayer.new({
 				Color = contentColor,
@@ -271,12 +314,12 @@ local function half(o: HalfOptions): TextButton
 
 	local function clip(name: string, from: "Start" | "Split", child: Frame): Frame
 		local position: q.State<UDim2> = width:Compute(function(self)
-			return UDim2.fromOffset(if from == "Split" then splitAt(self:Get()) else 0, 0)
+			local x0 = clipSpan(self:Get(), from)
+			return UDim2.fromOffset(x0, 0 - reach)
 		end)
 		local size: q.State<UDim2> = width:Compute(function(self)
-			local w = self:Get()
-			local m = splitAt(w)
-			return UDim2.fromOffset(if from == "Split" then w - m else m, HEIGHT)
+			local _x0, span = clipSpan(self:Get(), from)
+			return UDim2.fromOffset(span, HEIGHT + 2 * reach)
 		end)
 		return D.Frame {
 			Name = name,
@@ -294,26 +337,6 @@ local function half(o: HalfOptions): TextButton
 	local innerFrom: "Start" | "Split" = if leading then "Split" else "Start"
 	local outerClip = clip("OuterClip", outerFrom, face("Face", UDim.new(0, OUTER), rippleOuter, outerFrom))
 	local innerClip = clip("InnerClip", innerFrom, face("Face", innerCorner, rippleInner, innerFrom))
-
-	local caster: Instance? = nil
-	if spec.Shadow ~= nil then
-		local rest = spec.Shadow
-		local level: q.State<number> = ix.Hovered:Compute(function(self, _prev, dis)
-			if dis:Get() then
-				return 0
-			end
-			return if self:Get() then rest + 1 else rest
-		end, disabled)
-		caster = D.Frame {
-			Name = "ShadowCaster",
-			Size = faceSize,
-			BackgroundColor3 = containerColor,
-			BackgroundTransparency = Style.disabledNumber(disabled, 0, 1),
-			BorderSizePixel = 0,
-			UICorner = UDim.new(0, OUTER),
-			Elevation.Shadow({ Level = level, Theme = theme }),
-		}
-	end
 
 	local ringOn: q.State<boolean> = ix.Focused:Compute(function(self, _prev, dis)
 		return self:Get() and not dis:Get()
@@ -373,7 +396,6 @@ local function half(o: HalfOptions): TextButton
 				o.OnClick()
 			end
 		end,
-		caster or q.None,
 		outerClip,
 		innerClip,
 		ring,

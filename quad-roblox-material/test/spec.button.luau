@@ -670,7 +670,7 @@ H.section("SplitButton: one press = two ripples (one per face, each with its fac
 	H.assertNoDebugOutput("split ripple")
 end)
 
-H.section("SplitButton: variants (kit Button roles), Outlined inner outline on every face, Elevated shadow caster, icon, disabled", function()
+H.section("SplitButton: variants (kit Button roles), Outlined inner outline on every face, icon, disabled", function()
 	local tonal = SplitButton({ Variant = "Tonal", Label = "t", Icon = "check" })
 	assert(face(H.find(tonal, "Leading"), "OuterClip").BackgroundColor3 == L.SecondaryContainer)
 	local icon = H.find(H.find(tonal, "Leading"), "Icon")
@@ -687,10 +687,10 @@ H.section("SplitButton: variants (kit Button roles), Outlined inner outline on e
 	end
 	assert(face(H.find(outlined, "Leading"), "OuterClip").BackgroundTransparency == 1)
 	q.dispose(outlined)
-	local elevated = SplitButton({ Variant = "Elevated", Label = "e" })
-	local caster = H.find(H.find(elevated, "Leading"), "ShadowCaster")
-	assert(caster ~= nil and cornerOf(caster) == UDim.new(0, 20) and class(caster, "UIShadow")[1] ~= nil, "UIShadow on the rounded caster")
-	q.dispose(elevated)
+	-- Elevated: covered by the next section; here only that the variant mounts with the kit Button's roles
+	local elevated0 = SplitButton({ Variant = "Elevated", Label = "e" })
+	assert(face(H.find(elevated0, "Leading"), "OuterClip").BackgroundColor3 == L.SurfaceContainerLow and H.find(elevated0, "Label").TextColor3 == L.Primary)
+	q.dispose(elevated0)
 	assert(not pcall(SplitButton, { Variant = "Text" :: any, Label = "x" }), "no text split button")
 	local disabled = q.Source(true)
 	local clicks = 0
@@ -714,6 +714,103 @@ H.section("SplitButton: variants (kit Button roles), Outlined inner outline on e
 	q.dispose(sb)
 	assert(uisConns() == baseConns)
 	H.assertNoDebugOutput("split variants")
+end)
+
+-- Studio QA 2026-10-13: the Elevated shadow curled in at the gap (one caster per half, rounded 20 on all four corners)
+-- and the middle of the button had no shadow. Now every face casts its own shadow (outer radius / inner radius) through
+-- a clip that is open on the three sides that are not the split line. What it LOOKS like is a Studio matter
+-- (.claude/audit/kit-studio-2026-10-13 split-shadow-*.jpg); this pins the structure.
+H.section("SplitButton Elevated: a UIShadow per face (the half's own shape), clips open by the shadow's reach outside and by the gap inside", function()
+	local selected = q.Source(false)
+	local disabled = q.Source(false)
+	local sb = SplitButton({ Variant = "Elevated", Label = "Save", Selected = selected, Disabled = disabled })
+	local lead, trail = H.find(sb, "Leading"), H.find(sb, "Trailing")
+	assert(#H.findAll(sb, function(c: any)
+		return c.Name == "ShadowCaster"
+	end) == 0, "no caster frame")
+	local shadows = class(sb, "UIShadow")
+	assert(#shadows == 4, "one UIShadow per face, got " .. #shadows)
+	-- Filled 39 (counted above) + 4 UIShadow
+	assert(H.countDescendants(sb) == 43, "43 descendants, got " .. H.countDescendants(sb))
+	local function shadowOf(half: any, clipName: string): any
+		local f = face(half, clipName)
+		local sh = class(f, "UIShadow")[1]
+		assert(sh ~= nil and sh.Parent == f, clipName .. ": the shadow is the face's own child (it follows the face's UICorner)")
+		return sh
+	end
+	local lv = Tokens.Elevation.Levels
+	-- reach = 2 x blur + spread + y-offset of the hovered level (rest 1 + 1)
+	local R = 2 * lv[2].BlurRadius + lv[2].Spread + lv[2].OffsetY
+	assert(R == 15, "reach 15 with the kit's level 2, got " .. R)
+	local function assertGeometry(lw: number, tw: number)
+		local lm, tm = math.floor(lw / 2), math.floor(tw / 2)
+		local lo, li = H.find(lead, "OuterClip"), H.find(lead, "InnerClip")
+		local ti, to = H.find(trail, "InnerClip"), H.find(trail, "OuterClip")
+		assert(lead.Size == UDim2.fromOffset(lw, 40) and trail.Size == UDim2.fromOffset(tw, 40), `halves {lead.Size} / {trail.Size}`)
+		-- leading: outer side [-R, m], inner side [m, W + 2]; both R above and below
+		assert(lo.Position == UDim2.fromOffset(-R, -R) and lo.Size == UDim2.fromOffset(lm + R, 40 + 2 * R), `leading outer clip {lo.Position} {lo.Size}`)
+		assert(li.Position == UDim2.fromOffset(lm, -R) and li.Size == UDim2.fromOffset(lw - lm + 2, 40 + 2 * R), `leading inner clip {li.Position} {li.Size}`)
+		-- trailing: inner side [-2, m], outer side [m, W + R]
+		assert(ti.Position == UDim2.fromOffset(-2, -R) and ti.Size == UDim2.fromOffset(tm + 2, 40 + 2 * R), `trailing inner clip {ti.Position} {ti.Size}`)
+		assert(to.Position == UDim2.fromOffset(tm, -R) and to.Size == UDim2.fromOffset(tw - tm + R, 40 + 2 * R), `trailing outer clip {to.Position} {to.Size}`)
+		-- every face is still the half's rectangle at the half's origin: clip position + face position = (0, 0)
+		for _, pair in { { lead, lw }, { trail, tw } } :: { { any } } do
+			for _, clipName in { "OuterClip", "InnerClip" } do
+				local c, f = H.find(pair[1], clipName), face(pair[1], clipName)
+				assert(c.ClipsDescendants == true and f.Size == UDim2.fromOffset(pair[2], 40), clipName .. " face size")
+				assert(c.Position.X.Offset + f.Position.X.Offset == 0 and c.Position.Y.Offset + f.Position.Y.Offset == 0, clipName .. ": the face stays at the half's origin")
+			end
+		end
+	end
+	assertGeometry(48, 48) -- unmeasured: the 48 px minimum
+	layoutSplit(sb, 75.4, 48)
+	assertGeometry(76, 48)
+	layoutSplit(sb, 91, 48) -- a longer label: clips, faces (and with them the shadows) follow the half's width
+	assertGeometry(91, 48)
+	H.finishTweens()
+	-- the shadow's shape = its face's corner: outer 20, inner 4 -> 12 pressed -> 20 selected
+	assert(cornerOf(face(lead, "OuterClip")) == UDim.new(0, 20) and cornerOf(face(lead, "InnerClip")) == UDim.new(0, 4))
+	assert(cornerOf(face(trail, "OuterClip")) == UDim.new(0, 20) and cornerOf(face(trail, "InnerClip")) == UDim.new(0, 4))
+	for _, sh in shadows do
+		assert(sh.Enabled == true and sh.ShowBehindParent == true and sh.Color == L.Shadow, "level 1 at rest")
+		assert(sh.BlurRadius == UDim.new(0, lv[1].BlurRadius) and sh.Offset == UDim2.fromOffset(0, lv[1].OffsetY) and near(sh.Transparency, lv[1].Transparency))
+	end
+	H.fire(lead, "InputBegan", H.input({ Position = Vector3.new(10, 10, 0) }))
+	H.finishTweens()
+	assert(cornerOf(shadowOf(lead, "InnerClip").Parent) == UDim.new(0, 12) and cornerOf(shadowOf(lead, "OuterClip").Parent) == UDim.new(0, 20), "pressed: the inner shadow follows 12")
+	H.fire(lead, "InputEnded", H.input({}))
+	selected:Set(true)
+	H.finishTweens()
+	assert(cornerOf(shadowOf(trail, "InnerClip").Parent) == UDim.new(0, 20), "selected: the trailing half casts a pill's shadow")
+	assertGeometry(91, 48) -- a shape change does not move the clips
+	selected:Set(false)
+	-- hover raises the hovered half alone (rest + 1), both of its faces together
+	H.fire(lead, "MouseEnter")
+	H.finishTweens()
+	for _, clipName in { "OuterClip", "InnerClip" } do
+		assert(shadowOf(lead, clipName).BlurRadius == UDim.new(0, lv[2].BlurRadius) and shadowOf(lead, clipName).Spread == UDim2.fromOffset(lv[2].Spread, lv[2].Spread), "hovered half: level 2")
+		assert(shadowOf(trail, clipName).BlurRadius == UDim.new(0, lv[1].BlurRadius), "the other half stays at level 1")
+	end
+	H.fire(lead, "MouseLeave")
+	H.finishTweens()
+	assert(shadowOf(lead, "InnerClip").BlurRadius == UDim.new(0, lv[1].BlurRadius))
+	-- disabled: no shadow (level 0), translucent container
+	disabled:Set(true)
+	H.finishTweens()
+	for _, sh in shadows do
+		assert(sh.Enabled == false, "disabled: shadow off")
+	end
+	assert(math.abs(face(lead, "InnerClip").BackgroundTransparency - 0.88) < 1e-6)
+	disabled:Set(false)
+	H.finishTweens()
+	assert(shadows[1].Enabled == true)
+	-- the other variants: no shadow, clips at the half's rectangle (asserted for Filled in the first SplitButton section)
+	local tonal = SplitButton({ Variant = "Tonal", Label = "t" })
+	assert(#class(tonal, "UIShadow") == 0 and H.find(H.find(tonal, "Leading"), "OuterClip").Position == UDim2.fromOffset(0, 0))
+	assert(H.find(H.find(tonal, "Trailing"), "OuterClip").Size == UDim2.fromOffset(24, 40) and H.countDescendants(tonal) == 39)
+	q.dispose(tonal)
+	q.dispose(sb)
+	H.assertNoDebugOutput("split elevated shadow")
 end)
 
 -- Studio QA 2026-10-08, 10th follow-up: an auto-width button (the date picker's month-year button: Text, trailing icon)

@@ -550,3 +550,7 @@
 **실측용 ScreenGui를 `Instance.new`로 만들 때는 반드시 `ZIndexBehavior = Sibling`을 줄 것** — 이날 서브에이전트들의 QA ScreenGui가 Global이어서 "CanvasGroup은 `UIStroke`를 자르지 않는다",
 "대화 상자의 단추가 카드 밖으로 보인다"는 관측이 나왔다(둘 다 Global의 귀결; 대화 상자의 높이 수치 자체는 레이아웃이라 영향 없음). 킷 README의 `D.ScreenGui` 예제 둘에도 이 줄이 빠져 있어 넣었다.
 
+**6. [같은 날 — SplitButton 그림자] `UIShadow`의 성질 셋.** 부모가 투명(`BackgroundTransparency = 1`)이어도 그려지되 테두리만이 아니라 부모 모양 전체가 채워진 그림자다(투명 caster 뒤로 틈이 있으면 진하게 비친다).
+조상의 `ClipsDescendants`가 자식의 `UIShadow`를 경계에서 자른다 — 클립 안에 든 면에 그림자를 달려면 클립을 그림자가 닿는 거리(`2 × blur + spread + y오프셋`, 레벨 2에서 15)만큼 열어야 한다.
+부모 `UICorner`의 반경 트윈을 따라간다.
+
