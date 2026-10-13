@@ -169,6 +169,8 @@ Quad0076 Dispatch: no handler matched key {키} (value: {typeof}, brand: {브랜
 
 꼬리 힌트는 키와 값에 따라 갈립니다. 값이 [`q.Protocols.DispatchHint`](#qprotocolsdispatchhint)에 속하면 그 값이 직접 원인 문장을 줍니다(`Store`·`Blocker`·`Tween` 등 — 아래 절). 그 밖에는 위처럼 숫자 키에 등록된 브랜드의 값이 온 경우의 일반 꼬리입니다(등록됐다는 것이 그 브랜드의 주인이 설치됐다는 뜻이라, quad-base 값이든 설치된 프로바이더의 값이든 같습니다). 등록된 술어에 하나도 걸리지 않는 값이면 숫자 키에선 `- check that the provider for this value (e.g. quad-roblox) is initialized`, **문자 키**에선 키 이름이 틀렸을 가능성과 프로바이더 미설치를 함께 적습니다. 전체 갈래는 [`Quad0076`](../errors/02-dispatch-bookkeeping.md#quad0076).
 
+**`Slot`은 양의 정수 키 자리에만 놓입니다.** 내장 Slot 핸들러의 조건이 "키가 1 이상의 정수이고 값이 `Slot`"이라, `process`를 직접 불러 `Slot`을 `0`·음수·소수 키에 놓으면 위 `Quad0076`(`brand: Slot`)으로 거부됩니다 — 문자 키의 `Slot`과 같은 거부이고 꼬리 문장만 다릅니다. `D.<Class>{ … }`의 배열부는 늘 1부터의 정수 키라 사용자 코드는 닿지 않습니다.
+
 값이 `nil`이면 뒤에 한 줄이 더 붙습니다 — 그 `nil`은 벗겨진 `None`일 수도, 반응형 `nil`일 수도 있고, 그 키를 맡은 핸들러가 `nil`을 받아들여야 한다는 안내입니다.
 
 핸들러가 retractor 함수를 돌려주지 않으면 프로바이더 계약 위반입니다. `nil`은 늘 그 자리에서, 함수가 아닌 다른 값은 [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때만 그 자리에서 거부합니다.

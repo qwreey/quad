@@ -1141,4 +1141,27 @@ do
 	print("PASS")
 end
 
+print()
+print("=== round14 Q154 (2026-10-13 사용자 결정) — Slot은 양의 정수 키 자리에만 놓인다: 0·음수·소수 키는 Quad0076(brand: Slot), 양의 정수 키는 놓인다 ===")
+-- Contract: extend/02 `q.Dispatch.process` ("`Slot`은 양의 정수 키 자리에만 놓입니다 …"), `Slot/Handler.luau`
+-- condition. The sentence used to live with the retired `Quad0141` guard and was lost with it (2026-10-02).
+-- What the refused Slot can still be used for afterwards is not asserted (observed, not a contract).
+do
+	local q = newQuad()
+	for _, key in { 0, -2, 1.5 } do
+		local inst = Instance.new("Frame")
+		local slot = q.Slot()
+		local ok, err = pcall(function()
+			q.Dispatch.process(inst, key, slot, 1)
+		end)
+		local text = tostring(err)
+		assert(not ok and string.find(text, "Quad0076", 1, true) ~= nil and string.find(text, "brand: Slot", 1, true) ~= nil, `key {key}: {text}`)
+	end
+	local inst = Instance.new("Frame")
+	local slot = q.Slot({ Instance.new("Frame") })
+	q.Dispatch.process(inst, 1, slot, 1)
+	assert(#inst:GetChildren() == 1, "a positive integer key seats the Slot (its element is mounted)")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")
