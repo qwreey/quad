@@ -534,7 +534,7 @@ Material.Scaffold({
 - **FAB**: 가장자리에서 16(`FabSpacing`, Start / End) 또는 가운데(Center), 아래 끝이 아래 바 위 끝에서 16 위 — `EndOverlay`(그리고
   아래 바가 없을 때)는 Scaffold 아래 끝에서 16 위, 아래 바 위에 겹침.
 - **스낵바**: `SnackbarHost`는 `Overlay.new()`의 `Layer`를 받아 FAB이 있으면 FAB 위 끝까지, 없으면 아래 바 위 끝(또는 바닥)까지의
-  영역에 놓고, 그 Overlay에 묶인 `Snackbar.new` 호스트가 그 안 가운데 아래(호스트 `BottomOffset` 기본 16 — Compose Snackbar는 자기
+  영역에 놓고, 그 Overlay에 묶인 `Snackbar.new` 호스트가 그 안 가운데 아래(호스트 `Offset` 기본 16 — Compose Snackbar는 자기
   여백 12)에 띄웁니다.
 - **z 순서**: 내용·바는 기본 ZIndex(겹치지 않음), FAB·스낵바 층은 그 위 한 프레임(ZIndex 2). Compose는 스낵바가 아래 바 밑이라
   아래 바 위로 미끄러져 들어올 때만 다르게 보일 수 있음.
@@ -797,9 +797,9 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
   픽셀, 한도는 카드의 지역 단위라서 조상에 1보다 큰 `UIScale`이 걸려 있으면 카드가 그 배율만큼 층보다 커질 수 있습니다(1보다
   작으면 필요 이상으로 작아짐). 층이 아주 낮아 본문 창이 72 px도 안 남으면 카드가 층을 넘습니다(`Dialog.luau` 머리 "CAP").
 - **모달 시트의 긴 내용**(2026-10-13): `ModalBottomSheet`·`ModalSideSheet`는 내용을 스크롤해 주지 않습니다 — 내용이 면보다 길면 잘립니다(Studio 실측: 56 px 행 14개의 마지막 행에 닿을 수 없음). 길어질 수 있는 내용은 `ScrollingFrame`에 담아 넘기세요(Compose의 시트도 내용이 스크롤을 맡습니다).
-- **위쪽 스낵바**(2026-10-13): `Snackbar.new({ Position = "Top" })`의 여백은 호스트 옵션 `BottomOffset`(이름은 기본 자리의 것 —
-  위쪽에선 층 위 끝에서의 거리)이고 **오버레이 층의 위 끝**에서 잽니다. 기본 인셋의 `ScreenGui`(`IgnoreGuiInset = false`)에서는
-  Roblox 상단 바 아래지만, 인셋을 무시하는 ScreenGui에서는 상단 바 아이콘에 가리니 `BottomOffset`을 키우세요. `Scaffold`의
+- **위쪽 스낵바**(2026-10-13): `Snackbar.new({ Position = "Top" })`의 여백은 호스트 옵션 `Offset`(호스트가 놓인 가장자리에서의 거리, 기본 16 — 아래 호스트에서는 층 아래 끝에서,
+  위쪽에선 층 위 끝에서)이고 위쪽 호스트는 **오버레이 층의 위 끝**에서 잽니다. 기본 인셋의 `ScreenGui`(`IgnoreGuiInset = false`)에서는
+  Roblox 상단 바 아래지만, 인셋을 무시하는 ScreenGui에서는 상단 바 아이콘에 가리니 `Offset`을 키우세요. `Scaffold`의
   `SnackbarHost` 자리는 정본대로 아래용 그대로입니다 — 그 층에 위쪽 호스트를 묶으면 위 앱 바 위에 겹쳐 그려집니다. 한 번에
   하나·큐는 호스트마다 그대로이고, 여럿을 쌓는 부품은 없습니다(같은 Overlay의 아래 호스트와 위 호스트는 서로 다른 큐).
 - **ButtonGroup**(2026-10-13): 연결된 그룹의 작은 크기(높이 40)만 있습니다 — Compose에 연결된 그룹의 다른 크기 토큰이 없습니다. 표준(떨어진, 12 px 간격, 누르면 폭이 15 % 늘며 이웃을 누르는) 버튼 그룹과 넘침 메뉴, 줄바꿈(Compose 샘플은 FlowRow — 칸이 많으면 `Width`를 주거나 칸을 줄이세요), 아이콘만 있는 칸, 세로 그룹은 없습니다. 고른 칸의 아이콘을 바꾸는 정본 샘플의 관례는 `Icon`에 선택 Source에서 만든 State를 넘겨서 합니다(State 아이콘은 이미지여야 함). 비활성 컨테이너는 토글 버튼 토큰대로 10 %입니다(킷 Button·SplitButton은 옛 12 %). m3.material.io의 Measurements와는 대조하지 못했습니다(스크립트로 그려지는 페이지 — 수치는 Compose 토큰). 실기기에서 본 적이 없습니다(체크리스트 73).

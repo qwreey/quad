@@ -387,8 +387,8 @@ H.section("Position = Top: the bottom host mirrored (top anchor, same gap, slide
 	H.advance(1.5)
 	layerClean(overlay)
 	bar:Destroy()
-	-- BottomOffset is the gap to whichever edge the host sits at
-	local far = Snackbar.new({ Overlay = overlay, Position = "Top", BottomOffset = 40 })
+	-- Offset is the gap to whichever edge the host sits at
+	local far = Snackbar.new({ Overlay = overlay, Position = "Top", Offset = 40 })
 	far:Show({ Text = "far" })
 	H.finishTweens()
 	assert(snack(screen).Position == UDim2.new(0.5, 0, 0, 40))

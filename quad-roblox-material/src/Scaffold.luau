@@ -61,7 +61,7 @@
 	("Center"), its bottom 16 above the bottom bar's top — "EndOverlay" (and every position without a bottom bar) 16 above
 	the scaffold's bottom, over the bottom bar.
 	SNACKBAR (246-254): the SnackbarHost layer spans the scaffold's width and ends at the FAB's top when there is a FAB, else
-	at the bottom bar's top, else at the scaffold's bottom; the kit Snackbar sits centered at its host's BottomOffset (default
+	at the bottom bar's top, else at the scaffold's bottom; the kit Snackbar sits centered at its host's Offset (default
 	16) above that edge (Compose's Snackbar adds 12 of its own padding — Snackbar.kt 272).
 	Z ORDER (373-377: content 0 < top bar 1 < snackbar 2 < bottom bar 3 < FAB 4): the content region and the bars at the
 	default ZIndex (they do not overlap), the FAB and the snackbar layer in one frame above them (ZIndex 2) — so a
