@@ -1825,18 +1825,60 @@ do
 		q8.Dispatch.drive(host2, { slot })
 		assert(names(host2) == "a,b,c" and slot.Length:Get() == 3, "(7) remount: " .. names(host2))
 	end
-	-- (8) NOT refused: an ancestor during a plain-element operation, and an unrelated Slot
+	-- (8) round14 Q186 (user decision 2026-10-13): the window covers the whole owner chain — an ANCESTOR is
+	-- refused too during a descendant's plain-element operation (the descendant's Length is stale inside
+	-- its backend call, so an ancestor insert behind it would hand the backend a wrong offset), and the
+	-- ancestor's WhenIdle request runs once the descendant's operation is over, with the offset right.
+	-- A sibling Slot and an unrelated Slot are not on the chain: fine.
 	do
 		local host = mock.Instance.new("Frame")
-		local outer
+		local offsets: { [string]: number } = {}
+		local realInsert = q8.Backend.nativeInsert
+		q8.Backend.nativeInsert = function(target: any, offset: number, elements: { any })
+			for k, e in elements do
+				offsets[e.Name] = offset + k - 1
+			end
+			return realInsert(target, offset, elements)
+		end
+		local outer, top
 		local b = F("b")
-		local rec = onParent(b, "in", function() outer:Add(F("c"), 1) end)
+		local idleLength: number? = nil
+		local rec = onParent(b, "in", function()
+			outer:WhenIdle(function(s)
+				idleLength = s.Length:Get()
+				s:Add(F("c"), 3) -- behind `inner`: its offset needs inner's NEW length
+			end)
+			outer:Add(F("no"), 3)
+		end)
+		local recTop = onParent(b, "in", function() top:Add(F("no2")) end)
 		local inner = q8.Slot({ F("p") })
-		outer = q8.Slot({ F("a"), inner, F("z") })
-		q8.Dispatch.drive(host, { outer })
+		local sibling = q8.Slot({ F("s") })
+		outer = q8.Slot({ F("a"), inner, F("z"), sibling })
+		top = q8.Slot({ outer })
+		q8.Dispatch.drive(host, { top })
 		inner:Add(b)
-		assert(rec.fired and rec.err == nil, "(8) ancestor CRUD from a plain-element Add is fine: " .. tostring(rec.err))
-		assert(table.concat(leaves(outer), ",") == "c,a,p,b,z" and outer.Length:Get() == 5 and inner.Offset:Get() == 2, "(8) records: " .. table.concat(leaves(outer), ","))
+		refused(rec, "(8) parent during the child's Add")
+		refused(recTop, "(8) grandparent during the child's Add")
+		assert(idleLength == 5, "(8) the parent's WhenIdle ran after the child's Add, on the new Length: " .. tostring(idleLength))
+		assert(table.concat(leaves(top), ",") == "a,p,b,c,z,s" and top.Length:Get() == 6, "(8) records: " .. table.concat(leaves(top), ","))
+		assert(offsets.c == 3, "(8) the deferred insert got the offset behind the grown child: " .. tostring(offsets.c))
+		assert(outer._materializing == false and top._materializing == false and inner._materializing == false, "(8) the chain came back down")
+
+		-- Remove and Extract of a plain element raise the chain as well
+		local recRemove = onParent(b, "out", function() outer:Add(F("no3")) end)
+		inner:Remove(2)
+		refused(recRemove, "(8) parent during the child's Remove")
+		local p1 = inner._elements[1]
+		local recExtract = onParent(p1, "out", function() top:Add(F("no4")) end)
+		inner:Extract(1)
+		refused(recExtract, "(8) grandparent during the child's Extract")
+		assert(table.concat(leaves(top), ",") == "a,c,z,s" and top.Length:Get() == 4, "(8) records after Remove/Extract: " .. table.concat(leaves(top), ","))
+
+		-- NOT refused: a sibling Slot under the same parent, and an unrelated Slot
+		local d = F("d")
+		local recSib = onParent(d, "in", function() sibling:Add(F("s2")) end)
+		inner:Add(d)
+		assert(recSib.fired and recSib.err == nil and table.concat(leaves(top), ",") == "a,d,c,z,s,s2", "(8) a sibling Slot is fine: " .. tostring(recSib.err) .. " " .. table.concat(leaves(top), ","))
 		local otherHost = mock.Instance.new("Frame")
 		local other = q8.Slot()
 		q8.Dispatch.drive(otherHost, { other })
@@ -1844,6 +1886,7 @@ do
 		local rec2 = onParent(x, "in", function() other:Add(F("y")) end)
 		outer:Add(q8.Slot({ x }))
 		assert(rec2.fired and rec2.err == nil and names(otherHost) == "y", "(8) an unrelated Slot is fine: " .. tostring(rec2.err))
+		q8.Backend.nativeInsert = realInsert
 	end
 
 	-- (9) code review 2026-10-12: a Slot that LEAVES the arriving subtree during the insert comes back

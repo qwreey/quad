@@ -238,7 +238,7 @@ operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 
 
 ## 4. [2026-09-26 밤 신설] 자율 수집 루프 round13 — 사용자 문항 포인터
 
-**[2026-10-12 저녁 기준 열린 것]** round14 원장 §7의 `Q186`(자식의 원소 연산 도중 조상 Slot CRUD를 막을지 — 메인 의견: 사슬 전체를 막는다)·`Q187`(재조정의 재진입을 debug에서 잡을지 — 메인 의견: 지금은 안 넣음), §4 끝의 Q154 계약 여부 불명 셋, 그리고 킷 쪽 결정은 `research/consumer-kits-plan.md` 5절.
+**[2026-10-12 저녁 기준 열린 것]** round14 원장 §4 끝의 Q154 계약 여부 불명 셋(§7의 `Q186`·`Q187`은 2026-10-13 닫힘), 그리고 킷 쪽 결정은 `research/consumer-kits-plan.md` 5절.
 
 **[2026-10-01 이관]** round13의 남은 문항은 **`qa-request/post-implementation-review-round14.md`**로 옮겼다(사용자 지시 — round13이 방대해짐). 처리 전에 프로젝트 전체 원칙 감사(`audit/round14-principle-audit/`)와 문항별 재검토를 먼저 돈다. 아래는 round13 시절 서술이다.
 

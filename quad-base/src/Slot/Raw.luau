@@ -130,12 +130,18 @@ return function(S: Types.SlotInternal, module: any)
 	-- `deferPhysical` (rawAdd/rawUnmount): bookkeeping only — the caller
 	-- (rawSplice) issues the ONE physical op for the whole batch itself.
 	-- round14 Q185 (d) (user decision 2026-10-12) — the "backend-call window" marked below in rawAdd /
-	-- rawRemove / rawUnmount / rawReplace / rawSplice: `self._materializing` is raised (saved, restored)
-	-- around the backend call of the operation, so a backend signal delivered synchronously from inside
-	-- it cannot CRUD `self` while an index captured before the call is still to be used after it
-	-- (`Quad0167`, the Q52 rule one window wider — see `assertNotMounting` in `Slot/init.luau`). `self`
-	-- only: a plain-element operation captures nothing in its ancestors. No pcall (contract): a backend
-	-- call that throws leaves the flag up, like a throw inside the Q52 window.
+	-- rawRemove / rawUnmount / rawReplace / rawSplice: `_materializing` is raised (saved, restored) around
+	-- the backend call of the operation, so a backend signal delivered synchronously from inside it cannot
+	-- CRUD the Slot while an index captured before the call is still to be used after it (`Quad0167`, the
+	-- Q52 rule one window wider — see `assertNotMounting` in `Slot/init.luau`).
+	-- [2026-10-13 user decision — round14 Q186] on the WHOLE owner chain (`raiseChain`), not `self` alone:
+	-- a child's `Length` is only updated after its backend call, and an ancestor computes the offsets
+	-- behind that child from it — an ancestor CRUD from inside the call handed the backend an offset off
+	-- by the operation's delta (records `x,r,y,pz,tail`, screen `x,r,pz,y,tail` on a backend that honours
+	-- offsets), and an ancestor's `WhenIdle` ran at once on the stale Length. Now it is refused, and the
+	-- ancestor's `WhenIdle` request runs when the child's operation has finished (its entry point settles).
+	-- No pcall (contract): a backend call that throws leaves the flag up on the chain, like a throw
+	-- inside the Q52 window.
 	local function rawAdd(self: any, element: any, index: number?, fromDetached: boolean?, deferPhysical: boolean?): number
 		S.claimOwner(element, self, fromDetached)
 		index = index or (#self._elements + 1)
@@ -160,10 +166,9 @@ return function(S: Types.SlotInternal, module: any)
 		else
 			S.BK.setOffsetSource(self, index, S.None)
 			if physical then
-				local was = self._materializing -- Q185 (d) backend-call window
-				self._materializing = true
+				local chainSlots, chainOlds = raiseChain(self) -- Q185 (d) / Q186 backend-call window
 				module.Backend.nativeInsert(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
-				self._materializing = was
+				restoreChain(chainSlots, chainOlds)
 			end
 			S.BK.setLength(self, index, 1, self._physicalTarget, element)
 		end
@@ -188,15 +193,14 @@ return function(S: Types.SlotInternal, module: any)
 		local bk = S.BK.getBookkeeping(self)
 		unbindObserverAt(bk, index)
 		S.releaseOwner(element, self)
-		local was = self._materializing -- Q185 (d) backend-call window
-		self._materializing = true
+		local chainSlots, chainOlds = raiseChain(self) -- Q185 (d) / Q186 backend-call window
 		if S.isSlot(element) then S.destroySlotTree(element)
 		elseif self._mounted then
 			module.Backend.nativeRemove(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
 		else
 			module.Backend.nativeDispose(element)
 		end
-		self._materializing = was
+		restoreChain(chainSlots, chainOlds)
 		vacate(self, index, element, bk)
 	end
 
@@ -205,13 +209,12 @@ return function(S: Types.SlotInternal, module: any)
 		local bk = S.BK.getBookkeeping(self)
 		unbindObserverAt(bk, index)
 		S.releaseOwner(element, self)
-		local was = self._materializing -- Q185 (d) backend-call window
-		self._materializing = true
+		local chainSlots, chainOlds = raiseChain(self) -- Q185 (d) / Q186 backend-call window
 		if S.isSlot(element) then leaveAsElement(element, deferPhysical)
 		elseif self._mounted and not deferPhysical then
 			module.Backend.nativeExtract(self._mountedInst, S.BK.getOffsetAt(self, index), { element })
 		end
-		self._materializing = was
+		restoreChain(chainSlots, chainOlds)
 		vacate(self, index, element, bk)
 	end
 
@@ -240,9 +243,10 @@ return function(S: Types.SlotInternal, module: any)
 		bk.indexOfElement[oldElement] = nil
 		bk.indexOfElement[newElement] = index
 
-		local was = self._materializing -- Q185 (d) backend-call windows below
+		-- Q185 (d) / Q186 backend-call window, and the Q52 attach window of a Slot arriving (see rawAdd) —
+		-- one raise for both: the chain stays up from the old occupant's teardown through the new one's attach.
+		local chainSlots, chainOlds = raiseChain(self)
 		if not self._mounted then
-			self._materializing = true
 			if destroyOld then
 				S.destroyElement(oldElement)
 			elseif S.isSlot(oldElement) then
@@ -253,22 +257,18 @@ return function(S: Types.SlotInternal, module: any)
 				if self._physicalTarget ~= nil then S.teardownTree(oldElement) end
 				if oldElement._wrapped ~= nil then S.releaseSugarWrapper(oldElement) end
 			end
-			self._materializing = was
-			if self._physicalTarget ~= nil then
-				if S.isSlot(newElement) then
-					local chainSlots, chainOlds = raiseChain(self) -- Q52 window, whole owner chain (see rawAdd)
-					S.attachSlot(newElement, self._physicalTarget, self, index, false)
-					restoreChain(chainSlots, chainOlds)
-				else
-					S.BK.setOffsetSource(self, index, S.None)
-					S.BK.setLength(self, index, 1, self._physicalTarget, newElement)
-				end
+			if self._physicalTarget ~= nil and S.isSlot(newElement) then
+				S.attachSlot(newElement, self._physicalTarget, self, index, false)
+			end
+			restoreChain(chainSlots, chainOlds)
+			if self._physicalTarget ~= nil and not S.isSlot(newElement) then
+				S.BK.setOffsetSource(self, index, S.None)
+				S.BK.setLength(self, index, 1, self._physicalTarget, newElement)
 			end
 			return
 		end
 
 		local offset = S.BK.getOffsetAt(self, index)
-		self._materializing = true
 		if S.isSlot(oldElement) or S.isSlot(newElement) then
 			if S.isSlot(oldElement) then
 				if destroyOld then S.destroySlotTree(oldElement) else leaveAsElement(oldElement) end
@@ -277,8 +277,6 @@ return function(S: Types.SlotInternal, module: any)
 				op(self._mountedInst, offset, { oldElement })
 			end
 			if S.isSlot(newElement) then
-				self._materializing = was
-				local chainSlots, chainOlds = raiseChain(self) -- Q52 window, whole owner chain (see rawAdd)
 				S.attachSlot(newElement, self._physicalTarget, self, index, self._mounted)
 				restoreChain(chainSlots, chainOlds)
 				return
@@ -289,7 +287,7 @@ return function(S: Types.SlotInternal, module: any)
 			local op = if destroyOld then module.Backend.nativeRemove else module.Backend.nativeExtract
 			op(self._mountedInst, offset, { oldElement }, { newElement })
 		end
-		self._materializing = was
+		restoreChain(chainSlots, chainOlds)
 		S.BK.setLength(self, index, 1, self._physicalTarget, newElement)
 	end
 
@@ -417,8 +415,7 @@ return function(S: Types.SlotInternal, module: any)
 				if S.isSlot(element) then S.collectLeaves(element, newLeaves)
 				else table.insert(newLeaves, element) end
 			end
-			local was = self._materializing -- Q185 (d) backend-call window — this Slot and the arriving subtrees
-			self._materializing = true
+			local chainSlots, chainOlds = raiseChain(self) -- Q185 (d) / Q186 backend-call window — the owner chain and the arriving subtrees
 			local raised = {}
 			for _, element in ipairs(newElements) do
 				if S.isSlot(element) then S.raiseTree(element, raised) end
@@ -432,7 +429,7 @@ return function(S: Types.SlotInternal, module: any)
 			for _, element in ipairs(newElements) do
 				if S.isSlot(element) then S.markMountedTree(element, self._mountedInst) end
 			end
-			self._materializing = was
+			restoreChain(chainSlots, chainOlds)
 		end
 
 		if ownsGate then
