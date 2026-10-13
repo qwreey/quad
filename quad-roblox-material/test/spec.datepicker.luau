@@ -450,7 +450,12 @@ H.section("keyboard: connection only while a cell is focused; arrows, page, home
 	assert(GuiService.SelectedObject == cells[15], "home -> week start")
 	key(Enum.KeyCode.End)
 	assert(GuiService.SelectedObject == cells[21], "end -> week end (Feb 21)")
+	-- Enter: the engine activates the selected cell (Studio 2026-10-13); the key handler itself must NOT pick as well
+	-- (it did — one press picked twice: Docked OnChange twice, a range closed on its first day)
+	local before = iso(value:Get())
 	key(Enum.KeyCode.Return)
+	assert(iso(value:Get()) == before, "the Return key alone picks nothing (the engine's Activated does): " .. iso(value:Get()))
+	click(GuiService.SelectedObject)
 	assert(iso(value:Get()) == "2026-02-21", iso(value:Get()))
 	-- page down moves the visible month and the engine selection
 	key(Enum.KeyCode.PageDown)

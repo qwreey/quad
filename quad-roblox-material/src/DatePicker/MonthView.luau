@@ -30,8 +30,8 @@
 	KEYBOARD (hardware keyboard): while ANY cell holds engine selection the grid listens (the shared `KeyNav` hook, one per
 	cell, ignoring `processed` — KeyNav's premise, device-unverified; at most one `UserInputService.InputBegan` connection is open) — arrows +-1 day / +-7 days, PageUp/PageDown +-1 month, Home/End week row ends
 	(`Calendar.moveFocus`, skipping non-selectable dates by repeating the move; Home/End go to the row end, or to the
-	selectable day nearest to it on this side of the focused one), Enter/KeypadEnter picks the
-	focused date. KeyNav opens the connection on `SelectionGained` of a cell and closes it on `SelectionLost` and when the
+	selectable day nearest to it on this side of the focused one). Enter/KeypadEnter picks the
+	focused date through the ENGINE — it fires `Activated` on the selected cell (measured); this handler leaves the key alone. KeyNav opens the connection on `SelectionGained` of a cell and closes it on `SelectionLost` and when the
 	cell is destroyed — at most one connection, zero when nothing is focused. Moving focus to another
 	month moves the visible month, then the engine selection (`GuiService.SelectedObject`) to the new cell.
 	`gameProcessed` is NOT consulted (the engine marks nav keys processed while a cell holds selection). The grid
@@ -193,11 +193,9 @@ local function new(o: Options): MonthView
 			if cell ~= nil then
 				GuiService.SelectedObject = cell
 			end
-		elseif input.KeyCode.Name == "Return" or input.KeyCode.Name == "KeypadEnter" then
-			local d = focusDate:Get()
-			if o.Selectable(d) then
-				o.OnPick(d)
-			end
+		-- Enter / KeypadEnter is NOT handled here: the engine activates the selected cell on Return (its `Activated`
+		-- picks — Chip.luau). Handling it here as well picked TWICE per press (Studio 2026-10-13: Docked `OnChange`
+		-- twice; a range closed start = end on one Enter).
 		end
 	end
 

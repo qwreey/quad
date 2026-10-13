@@ -147,6 +147,27 @@ UIScale 1.25·1.5(창 경계가 소수 픽셀)에서도 반투명 선(비활성 
 Filled `#E6E0EA`(SurfaceVariant 38 % over SurfaceContainerHighest), Outlined 컨테이너 `#FEF7FF`·외곽선 `#E8E3EB`(Outline 12 % over SurfaceContainerLow, 투명도 0); 어두운 테마 `#141218` / `#3D3A43` / `#141218`·`#2B292F`.
 어두운 테마에서 비활성 Filled는 활성(`#36343B`)보다 **밝다**(SurfaceVariant가 더 밝은 역할 — 정본 그대로).
 
+## 13. code-review가 남긴 실기기 항목 (같은 날 밤 — sonnet + Studio, `quad-test`, 레포 `d89bb54d`)
+
+**devui — 뒤에 있는 창 안의 위젯을 누르면 창이 앞으로 오지 않는다(확정).** 창 둘(각자 버튼·체크박스·콤보·Selectable·트리·탭·입력 칸·슬라이더), A를 앞으로 가져온 뒤 B의 위젯을 누름:
+Button·Checkbox·Combo 상자·Selectable·Tree 머리·Tab·TextBox는 위젯은 동작하는데 창 루트와 내용 프레임의 `InputBegan`이 발화하지 않아 B의 `ZIndex`가 1 그대로다. 슬라이더(Frame)·빈 내용 영역·타이틀바는
+`InputBegan`이 오고 B가 앞으로 온다. 누름이 포인터 아래의 첫 GuiButton·TextBox에서 멈추는 것과 맞는다. `review-c-1-*.jpg`.
+
+**devui — 조상이 `Visible = false`가 돼도 자손에 `MouseLeave`가 오지 않는다(확정).** 창 안 버튼에 마우스를 올린 채 `Open`을 false로: `MouseLeave` 없음, 호버 색 유지, 떠 있던 툴팁 그대로; 툴팁이 뜨기 전에
+닫으면 1.5초 뒤 툴팁이 새로 뜬다. 다시 열면(마우스 그 자리) 호버 색 그대로이고, 마우스를 움직여 나간 뒤에야 풀린다. 열린 콤보 목록도 창을 닫아도 남는다. `review-c-2-*.jpg`.
+
+**material — 날짜 칸에서 Enter 한 번이 두 번 고르기가 된다(확정 → 고침).** 엔진은 선택된 GuiButton에 Return으로 `Activated`를 낸다(맨 TextButton으로 확인, `gameProcessed = true`). 날짜 칸은 키 처리기의 Return
+분기와 칩의 `Activated`가 둘 다 골라 Docked는 `OnChange` 2회, 범위 선택은 시작 = 끝 = 같은 날로 확정됐다 → 키 처리기의 Return 분기를 없앰. `review-c-3-datepickers.jpg`.
+
+**devui — `ZIndexBehavior`가 Global인 ScreenGui의 창 둘(확정).** 앞(서열 2) 창의 내용이 자기 루트에 가려져 흐린 윤곽만 보이고 콤보 목록도 흐리다. 서열이 바뀌면 가려지는 창도 바뀐다. `q.debug`에서 콤보를 처음 열 때
+알림 한 줄이 나온다. `review-c-5-global-*.jpg`.
+
+**연기 검사**: 갤러리 탭 아홉에서 에러·`Quad%d+` 0건; 버튼 그룹 클릭, Outlined 필드의 노치, 순서 바꾸는 목록 끌기(`OnReorder(1, 3)`), 위쪽 스낵바 정상. 메뉴 항목 더블 클릭(60 ms 간격)에 `OnClick` 1회,
+`Dialog.confirm`의 OK 더블 클릭에 결과 1회(그날 고침 확인). devui 숫자 칸은 클릭했다 떠나도 값 그대로. 관찰 하나: 갤러리 Actions 메뉴의 "Duplicate" 라벨이 "…"로 줄어 보인다 — 메뉴 폭이 앵커 폭(최소 112)으로
+정해지고 항목을 재지 않아(머리 주석이 밝힌 한계), 뒤 글자 64가 있으면 라벨 자리가 16 px 남는다; `Menu.Button`에는 폭을 줄 길이 없다.
+
+**못 본 것**: submit 모드 `InputText`의 Escape(MCP가 Escape 키를 거부 — 사람 손), 터치.
+
 ## 미완
 
 Immediate 전용 관측(항목 3 전부 — 가드의 거부, `WhenIdle`의 지연 실행, 신호 콜백 에러의 전파, Q186 장면), 항목 1의 "일반 Frame으로 옮겨 붙이기"와 문자열 본문 14의 원인,
