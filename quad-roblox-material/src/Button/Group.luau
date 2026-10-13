@@ -92,7 +92,8 @@
 	NOT here (M3 has it): the standard (unconnected, 12 px apart, width-squeezing) button group and its overflow menu;
 	other sizes than small; wrapping onto a second row (Compose's samples are a FlowRow — give the group a `Width` or
 	fewer cells); icon-only cells; a vertical group. M3 deviations: the focus ring of an end cell is one rounded rectangle
-	at the outer radius; a shadow ends 2 px past a cell's inner edge; Filled / Tonal do not rise on hover (no shadow
+	at the outer radius (the focused cell is raised above its neighbours so the ring is whole — Segment.luau "FOCUS
+	RING"); a shadow ends 2 px past a cell's inner edge; Filled / Tonal do not rise on hover (no shadow
 	instance, as the kit Button); the outline fades instead of shrinking to zero width.
 ]]
 

@@ -666,6 +666,14 @@ H.section("SplitButton: one press = two ripples (one per face, each with its fac
 	H.fire(lead, "Activated", H.input({}), 1)
 	H.fire(H.find(sb, "Trailing"), "Activated", H.input({}), 1)
 	assert(leads == 1 and trails == 1, "each half its own callback")
+	-- Studio 2026-10-13: the leading half's focus ring (5 px out) was painted over by the trailing half 2 px away (a later
+	-- sibling). The half that holds the selection is raised (Segment.luau "FOCUS RING").
+	local trailHalf = H.find(sb, "Trailing")
+	assert(lead.ZIndex == 1 and trailHalf.ZIndex == 1)
+	H.fire(lead, "SelectionGained")
+	assert(lead.ZIndex == 2 and trailHalf.ZIndex == 1 and H.find(H.find(lead, "FocusRing"), "Ring").Enabled == true, "the focused half is drawn above the other")
+	H.fire(lead, "SelectionLost")
+	assert(lead.ZIndex == 1)
 	q.dispose(sb)
 	H.assertNoDebugOutput("split ripple")
 end)

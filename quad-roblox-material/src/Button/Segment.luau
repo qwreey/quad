@@ -52,8 +52,13 @@
 
 	Structure: TextButton > [OuterClip > Face (UICorner, StateLayer > UICorner), InnerClip > Face (same)] or
 	[Face] / [Clip > Face] for a Middle cell, FocusRing (Frame + UICorner + UIStroke), Content (UIPadding + ...).
-	The focus ring is one rounded rectangle: at `Outer` for a Leading / Trailing cell (its inner corners are rounder in
-	the ring than in the shape), at the animated inner radius for a Middle cell.
+	FOCUS RING: one rounded rectangle, at `Outer` for a Leading / Trailing cell (its inner corners are rounder in the
+	ring than in the shape), at the animated inner radius for a Middle cell. It reaches 5 px outside the cell (2 px
+	offset + 3 px stroke) and a neighbour is 2 px away, so the cell that holds the selection takes `ZIndex = 2` (the others
+	1): siblings draw in ZIndex order, then child order, and without it the next cell — a later sibling — painted over the
+	ring's side (Studio 2026-10-13: a middle cell's ring showed on the left and was missing on the right; a split
+	button's leading ring was cut by the trailing half). Needs `ZIndexBehavior = Sibling` on the ScreenGui, as the kit
+	does everywhere.
 ]]
 
 local q = require("../Quad")
@@ -370,6 +375,8 @@ local function new(o: Options): TextButton
 		AutoButtonColor = false,
 		Text = "",
 		LayoutOrder = o.LayoutOrder,
+		-- the focused cell is drawn above its neighbours (header "FOCUS RING")
+		ZIndex = Style.select(ringOn, 2, 1),
 		ix.Hook,
 		Interactable = Util.interactable(disabled),
 		Activated = function()

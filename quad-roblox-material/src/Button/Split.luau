@@ -74,7 +74,8 @@
 	trailing faces each hold a Selected overlay (Frame + UICorner); Elevated: + a UIShadow on each of the four faces.
 	Counted in test/spec.button.luau. A press adds two transient ripples (2 x 3).
 	M3 deviations: the focus ring is one rounded rectangle at the outer radius (the half's inner corners are rounder in
-	the ring than in the shape); a half's shadow ends 2 px past its inner edge (ELEVATED SHADOW); no hover shape (the
+	the ring than in the shape; the focused half is raised above the other so the ring is whole — Segment.luau "FOCUS
+	RING"); a half's shadow ends 2 px past its inner edge (ELEVATED SHADOW); no hover shape (the
 	token InnerHoveredCornerCornerSize exists, Compose does not use it); one `Disabled` for both halves (Compose: one
 	`enabled` per half); small size only (the XS / M / L / XL split buttons are not here — the kit Button is the 40 px
 	one).
