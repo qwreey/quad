@@ -439,6 +439,14 @@ H.section("Modal: draft / OK commits / Cancel discards; title, sizes, mode toggl
 	assert(ok.Interactable == false, "OK disabled while invalid")
 	click(ok)
 	assert(handle.IsOpen:Get() == true)
+	-- review 2026-10-12 B3 (user decision 2026-10-13): back to the dial drops the invalid text — OK is usable again
+	-- without touching the dial, and the input shows the valid time when it comes back
+	click(toggle)
+	assert(picker.Visible == true and ok.Interactable == true, "dial mode after an invalid hour: OK enabled")
+	click(toggle)
+	assert(hourF.Text == "03" and ok.Interactable == true, "the input is back at the valid time: " .. hourF.Text)
+	hourF.Text = "13"
+	assert(ok.Interactable == false)
 	hourF.Text = "4"
 	assert(ok.Interactable == true)
 	-- Cancel discards

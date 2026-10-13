@@ -759,7 +759,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
   않는 클라이언트에서는 무효입니다(`Elevation.Backdrop`이 대안).
 - **M3와 다른 점**(Roblox·인스턴스 비용 때문): Filled TextField는 위쪽 두 모서리만 둥글림(채움을 4px 더 크게 그려 부모가 자르는 방식, 인스턴스 +1),
   Outlined의 레이블 노치는 표면색 배경(어두운 배경 위에선 `NotchColor` 필요), Switch 터치 타깃은 52x32(M2 Switch는 56x40), IconButton의 48px 터치 타깃은
-  선택(`TouchTarget = true`, 기본은 40px), 칩 제거·스낵바 버튼은 48px, Tabs는 스크롤되지 않고 개별 비활성이 없음, Slider·RangeSlider(M3)는 Min/Max/Step이 정적이고 핸들 양옆 틈이 6 px로 고정(Compose는 눌러서 2 px로 가늘어진 핸들에 맞춰 1 px 좁힘)·호버 표시 없음(M3 그대로 — M2 모양은 halo), 값 라벨 알약의 높이 32 px·좌우 여백 10 px는 토큰이 아니라 Google의 Android 구현(material-components-android `Widget.Material3.Slider.Label` — 그 스타일의 위아래 여백 12dp는 Android에서도 그려지지 않아 안 따름)에서 온 값, 리플은 호스트 사각형을 넘지 않음(`AutomaticSize` 조상이 리플까지 재기 때문, `Ripple.luau` "BOUNDED") — 잘린 원은 원판 텍스처의 부분 사각형으로 정확히 그림(2026-10-07 전엔 모서리 반경 하나로 흉내 내 넓은 호스트에서 둥근 사각형으로 보였음), 리플 상자는 조상 `UIScale`들의 곱으로 나눈 로컬 단위 정수 Offset이라 확장 도중 마지막 1 로컬 픽셀 미만은 끝 프레임(호스트 전체 덮기)에서야 채워짐, Menu 스크롤 막대는 M3 토큰이 없어 onSurface 50 %(Compose Desktop 기본 스크롤바의 호버 값), LoadingIndicator는 M3의 일곱 모양(오각형·쿠키 9 등) 대신 사각형 셋의 겹침 근사, WavyProgress는 확정만(비확정 물결 없음)·둥근 끝은 직각으로 자른 끝 위에 원을 얹은 근사(모서리 삐져나옴 1 px 미만)·진폭이 0 % 바로 위부터 100 % 바로 아래까지 최대(Compose 기본은 10 % 이하·95 % 이상 평평)·진폭과 선 두께가 높이에 고정 비율, Menu는
+  선택(`TouchTarget = true`, 기본은 40px), 칩 제거·스낵바 버튼은 48px, Tabs는 스크롤되지 않고 개별 비활성이 없음, Slider·RangeSlider(M3)는 Min/Max/Step이 정적이고 `Max - Min`은 `Step`의 배수여야 하며(아니면 생성 때 에러 — MDC와 같음; 소수 스텝은 작은 허용 오차) 핸들 양옆 틈이 6 px로 고정(Compose는 눌러서 2 px로 가늘어진 핸들에 맞춰 1 px 좁힘)·호버 표시 없음(M3 그대로 — M2 모양은 halo), 값 라벨 알약의 높이 32 px·좌우 여백 10 px는 토큰이 아니라 Google의 Android 구현(material-components-android `Widget.Material3.Slider.Label` — 그 스타일의 위아래 여백 12dp는 Android에서도 그려지지 않아 안 따름)에서 온 값, 리플은 호스트 사각형을 넘지 않음(`AutomaticSize` 조상이 리플까지 재기 때문, `Ripple.luau` "BOUNDED") — 잘린 원은 원판 텍스처의 부분 사각형으로 정확히 그림(2026-10-07 전엔 모서리 반경 하나로 흉내 내 넓은 호스트에서 둥근 사각형으로 보였음), 리플 상자는 조상 `UIScale`들의 곱으로 나눈 로컬 단위 정수 Offset이라 확장 도중 마지막 1 로컬 픽셀 미만은 끝 프레임(호스트 전체 덮기)에서야 채워짐, Menu 스크롤 막대는 M3 토큰이 없어 onSurface 50 %(Compose Desktop 기본 스크롤바의 호버 값), LoadingIndicator는 M3의 일곱 모양(오각형·쿠키 9 등) 대신 사각형 셋의 겹침 근사, WavyProgress는 확정만(비확정 물결 없음)·둥근 끝은 직각으로 자른 끝 위에 원을 얹은 근사(모서리 삐져나옴 1 px 미만)·진폭이 0 % 바로 위부터 100 % 바로 아래까지 최대(Compose 기본은 10 % 이하·95 % 이상 평평)·진폭과 선 두께가 높이에 고정 비율, Menu는
   가장 긴 항목에 폭을 맞추지 못하며(`Width` 지정) 타입어헤드·서브메뉴가 없음(위/아래·Return·Escape는 있음), CircularProgress는
   두께가 시트의 네 비율로 맞춰지고 끝·간격이 2° 단위(큰 지름 1°)로 움직이며 원형 물결(M3 Expressive)이 없음, 색상 선택기에 알파가 없음, 슬라이더 핸들 이동 범위의 끝 여백은 크기와 무관한 6 px(m3.material.io 스펙 우선 — Compose·MDC 코드는 바깥 반경만큼 안쪽)·이산(Step) 슬라이더는 바깥 반경보다 짧은 조각을 숨김(연속은 창이 좁아지며 사라짐)·끝 안쪽 아이콘이 보이는 동안 끝 점을 숨김(MDC는 같은 자리에 둘 다 그림), 분할 버튼은 작은 크기(40)만·포커스 링이 바깥 반경 하나의 둥근 사각형(안쪽 모서리가 모양보다 둥긂)·Elevated 그림자의 안쪽 모서리도 반경 20·두 반쪽이 `Disabled` 하나를 나눠 씀, 날짜 선택기 머리 화살표는 키트 Button의 뒤 아이콘(18 px, 여백 16/12 — Compose `YearPickerMenuButton`은 24 dp 아이콘에 12/12). 컴포넌트별 전체 목록은 각 파일 머리에 있습니다.
 - **시트·드로어**(2026-10-08): 움직임이 스프링이 아니라 트윈(Compose는 스프링 — 놓을 때의 속도를 이어받지 않음, 넘침 없음),
@@ -771,6 +771,11 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
   제한 없음; 앱 바는 바를 끌어 접기·플링·폭으로 넘치는 오버플로·`BottomAppBarScrollBehavior` 없음, 가운데 제목은 넓은 쪽에 맞춘
   대칭 공간 안에서 가운데(Compose는 겹칠 때 옮김); 툴바는 스크롤 동작·균형 최소 여백(minimumInteractiveBalancedPadding) 없음,
   FAB 그림자는 키트 FAB 그대로(Compose 툴바 FAB 2/3, 하단 앱 바 샘플 0); 바·레일의 선택 색은 테마 전환 때 교차 페이드 없이 바뀜.
+- **Dialog의 화면 맞춤**(2026-10-13): 카드의 폭 한도와 본문 스크롤 한도는 **열 때의 오버레이 층 크기**로 한 번 정합니다 — 열려 있는
+  동안 창 크기가 바뀌어도 다시 재지 않습니다(머리말이 여러 줄로 접히는 것과 본문이 자라는 것은 따라갑니다). 층 크기는 화면
+  픽셀, 한도는 카드의 지역 단위라서 조상에 1보다 큰 `UIScale`이 걸려 있으면 카드가 그 배율만큼 층보다 커질 수 있습니다(1보다
+  작으면 필요 이상으로 작아짐). 층이 아주 낮아 본문 창이 72 px도 안 남으면 카드가 층을 넘습니다(`Dialog.luau` 머리 "CAP").
+- **모달 시트의 긴 내용**(2026-10-13): `ModalBottomSheet`·`ModalSideSheet`는 내용을 스크롤해 주지 않습니다 — 내용이 면보다 길면 잘립니다(Studio 실측: 56 px 행 14개의 마지막 행에 닿을 수 없음). 길어질 수 있는 내용은 `ScrollingFrame`에 담아 넘기세요(Compose의 시트도 내용이 스크롤을 맡습니다).
 - 갤러리는 좁은 화면에서 탭 글자가 잘릴 수 있습니다(Tabs는 폭을 균등 분할).
 
 ## 크레딧

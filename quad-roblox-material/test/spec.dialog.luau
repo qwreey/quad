@@ -448,6 +448,111 @@ H.section("body height: the wrapper is min(body, cap) tall, follows a body that 
 	H.assertNoDebugOutput("dialog body height")
 end)
 
+-- The body's cap comes from what the rest of the card measures: the headline is text that wraps, so its laid-out height
+-- is read like the body's (Dialog.luau "CAP"). Layer 300 x 400 -> card 252 wide, at most 400 - 48 = 352 tall.
+H.section("cap: the headline's laid-out height comes off the body's cap, the card stays within layer - 48", function()
+	local overlay, screen = setup()
+	H.setAbs(overlay.Layer, 0, 0, 300, 400)
+	local h = Dialog.open({
+		Overlay = overlay,
+		Headline = "A headline",
+		Body = D.Frame { Name = "Custom" },
+		Width = 560,
+		Actions = { { Label = "Cancel" }, { Label = "OK" } },
+	})
+	local dlg = H.find(screen, "Dialog")
+	local scroll = H.find(dlg, "BodyScroll")
+	local headline = H.find(dlg, "Headline")
+	local function window(): number
+		return scroll.Size.Y.Offset
+	end
+	local function canvas(): number
+		return scroll.CanvasSize.Y.Offset
+	end
+	-- one layout pass of the headline (`k` = the UIScale product, as `layout`)
+	local function layHeadline(height: number, k: number?)
+		local scale = k or 1
+		H.setAbs(dlg, 0, 0, 252 * scale, 300 * scale)
+		H.setAbs(headline, 0, 0, 204 * scale, height * scale)
+	end
+	-- the card's height as the engine would sum it: padding 48 + headline + window + actions 48 + two 16 px gaps
+	local function card(headlineHeight: number): number
+		return 48 + headlineHeight + window() + 48 + 2 * 16
+	end
+	-- the headline is laid out before the card has a width (cannot happen in one engine pass): not read
+	H.setAbs(headline, 0, 0, 204, 88)
+	-- an overflowing body, the headline not laid out yet: it counts as one 32 px line (the old fixed estimate)
+	layout(dlg, 1000)
+	assert(window() == 192 and canvas() == 1000, "unmeasured headline = 32: " .. window())
+	-- one line measures 24 (not 32): the body gets the 8 px, the card is exactly layer - 48
+	layHeadline(24)
+	assert(window() == 200 and canvas() == 1000, "one line: " .. window())
+	assert(card(24) == 400 - 48, "one-line headline: the 24 px margin exactly, " .. card(24))
+	-- two lines (24 + 32): the cap gives the 32 px back, the card does not grow
+	layHeadline(56)
+	assert(window() == 168, "two lines: the cap shrinks by the extra line, " .. window())
+	assert(card(56) == 400 - 48, "two-line headline: still layer - 48, " .. card(56))
+	layHeadline(88)
+	assert(window() == 136 and card(88) == 400 - 48, "three lines: " .. window())
+	-- LOCAL UNITS, as the body: a scale change alone moves nothing
+	for _, k in { 0.8, 0.92, 1.25, 1 } do
+		layHeadline(88, k)
+		assert(window() == 136, "scale " .. k .. ": " .. window())
+	end
+	-- a height of 0 is "not laid out" (a headline has at least a line): the last measure stays
+	layHeadline(0)
+	assert(window() == 136, "0 is not a measure: " .. window())
+	-- a body between the two caps: fits under a one-line headline, scrolls under a three-line one
+	layHeadline(24)
+	layout(dlg, 150)
+	assert(window() == 150 and canvas() == 0, "150 fits the 200 cap: " .. window())
+	layHeadline(88)
+	assert(window() == 136 and canvas() == 150, "and scrolls under the 136 cap: " .. window() .. " / " .. canvas())
+	-- a body under both caps is not touched by the headline
+	layout(dlg, 100)
+	layHeadline(24)
+	assert(window() == 100 and canvas() == 0)
+	layHeadline(88)
+	assert(window() == 100 and canvas() == 0, "the cap only caps")
+	-- the cap never goes under 72 (ScrollBodyMin): a headline that leaves less overflows the layer instead
+	layout(dlg, 1000)
+	layHeadline(200)
+	assert(window() == 72 and canvas() == 1000, "floor of the cap: " .. window())
+	h.Close()
+	H.advance(0.3)
+
+	-- the icon (24 + a gap) is a constant; no headline = nothing to read
+	local icon = Dialog.open({
+		Overlay = overlay,
+		Icon = "rbxassetid://7",
+		Headline = "H",
+		Body = D.Frame { Name = "Custom" },
+		Width = 560,
+		Actions = { { Label = "OK" } },
+	})
+	dlg = H.find(screen, "Dialog")
+	scroll = H.find(dlg, "BodyScroll")
+	headline = H.find(dlg, "Headline")
+	layout(dlg, 1000)
+	layHeadline(24)
+	assert(window() == 160, "icon: " .. window())
+	assert(48 + 24 + 24 + window() + 48 + 3 * 16 == 400 - 48, "icon + headline + body + actions = layer - 48")
+	icon.Close()
+	H.advance(0.3)
+	local bare = Dialog.open({ Overlay = overlay, Body = D.Frame { Name = "Custom" }, Width = 560, Actions = { { Label = "OK" } } })
+	dlg = H.find(screen, "Dialog")
+	scroll = H.find(dlg, "BodyScroll")
+	assert(H.find(dlg, "Headline") == nil)
+	layout(dlg, 1000)
+	assert(window() == 240 and 48 + window() + 48 + 16 == 400 - 48, "no headline: " .. window())
+	bare.Close()
+	H.advance(0.3)
+	layerClean(overlay)
+	assert(H.pendingTimers() == 0)
+	q.dispose(screen)
+	H.assertNoDebugOutput("dialog cap")
+end)
+
 H.section("body height: no Body = no wrapper; Fit = true keeps the body in the content list (no wrapper, no room)", function()
 	local overlay, screen = setup()
 	H.setAbs(overlay.Layer, 0, 0, 300, 400)

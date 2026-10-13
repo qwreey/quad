@@ -31,10 +31,14 @@ return StoryKit.story({
 		local ended = q.Source(0)
 		local look: q.State<Look> = c.Min:Compute(function(self, _prev, max, step, ticks, label, percent)
 			local s: number = step:Get()
+			local mn: number, mx: number = self:Get(), max:Get()
+			-- the range must be a multiple of Step (the slider raises otherwise — MDC's rule): the story trims Max down
+			-- to the last whole step, and a Step wider than the range means continuous
+			local stepped = s > 0 and mx - mn >= s
 			return {
-				Min = self:Get(),
-				Max = max:Get(),
-				Step = if s > 0 then s else nil,
+				Min = mn,
+				Max = if stepped then mn + math.floor((mx - mn) / s) * s else mx,
+				Step = if stepped then s else nil,
 				Ticks = ticks:Get() == true,
 				Label = label:Get() == true,
 				Percent = percent:Get() == true,

@@ -32,6 +32,10 @@ sonnet 서브에이전트가 Studio MCP로 측정(Play Client에서 `ReplicatedS
 빈 본문 153 → 48), table-sim 장면(1325×715, 본문 262·278) 414·430, ScreenGui UIScale 1.25·0.75에서도 모자람 0. 스크린샷 `dialog-fix-*.jpg`. 같은 구조를 쓰는 다른 면(메뉴·드로어 시트·
 시간/날짜/색 선택 모달)은 원인이 달라 잘림 없음.
 
+**[같은 날 — 한도가 머리말 실측을 따르게, opus + Studio]** 층 높이 685, 폭 312. 전(`71026a1b`) → 후, 카드 H / 층과의 여백 / 스크롤 창: 한 줄 머리말 + 30줄 본문 629/28/477 → 637/24/485,
+두 줄 661/12/477 → 637/24/453, 세 줄 693/−4/477 → 637/24/421, 층 300×400에 네 줄 440/−20/192 → 352/24/104. 짧은 본문 경우들은 그대로. 띄운 뒤 머리말 글을 바꿔도(한 줄 → 세 줄 → 한 줄)
+창이 485 → 421 → 485로 따라가고 카드는 637. 한계 확인: ScreenGui UIScale 1.25에서 카드가 층을 위아래 55.6씩 넘음(README에 적은 한계). 머리말 한 줄 24, 줄마다 +32. 스크린샷 `dialog-headline-*.jpg`.
+
 ## 2. 코어 GUI 인셋
 
 갤러리 `ScreenGui`: `ScreenInsets = CoreUISafeInsets`, `IgnoreGuiInset = false`, AbsolutePosition (0,0), AbsoluteSize 1325×659(화면 높이 717, 위 58이 Roblox 상단 바).

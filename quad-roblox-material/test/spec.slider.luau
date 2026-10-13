@@ -867,6 +867,13 @@ for _, look in looks do
 			make({ Step = 0 })
 		end)
 		assert(not ok2, "Step must be positive")
+		-- review 2026-10-12 B1 (user decision 2026-10-13): the range must be a multiple of Step (MDC); float steps pass
+		local ok3, err3 = pcall(function()
+			make({ Min = 0, Max = 10, Step = 3 })
+		end)
+		assert(not ok3 and string.find(tostring(err3), "must be a multiple of Step", 1, true), tostring(err3))
+		q.dispose(make({ Min = 0, Max = 1, Step = 0.1 }))
+		q.dispose(make({ Min = 0, Max = 10000, Step = 25 }))
 		local d = make({ Value = q.Source(0.125) })
 		assert(H.find(d, "Label").Text == "0.13" or H.find(d, "Label").Text == "0.12")
 		q.dispose(d)

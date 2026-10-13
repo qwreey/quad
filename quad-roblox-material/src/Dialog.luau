@@ -45,8 +45,20 @@
 	whose layer is destroyed is finalized by the Overlay (IsOpen false, OnClose once, Result = DismissResult).
 	Small screens: when the overlay layer is laid out (AbsoluteSize > 0 at open) the width is capped at layer width - 48 and
 	the body sits in a ScrollingFrame (`BodyScroll`) capped so the card stays within layer height - 48, with the headline
-	and the actions pinned. The caps are not re-measured after open (a resize while open keeps the open-time caps). An
-	unmeasured layer (no layout yet, a mock) gets no caps and no scroll wrapper.
+	and the actions pinned. An unmeasured layer (no layout yet, a mock) gets no caps and no scroll wrapper.
+	CAP (the body's): layer height - 48 - everything in the card that is not the body. Of that, the padding (48), the
+	icon (24), the actions row (8 + the 40 px Button) and the 16 px gaps are sizes M3 fixes — constants; the HEADLINE is
+	text that wraps (24 for one line at HeadlineSmall, +32 per further line), so its laid-out height is read the way the
+	body's is (below) and the cap follows it: a headline of two or three lines takes its lines from the body's window,
+	not from the layer margin, and a one-line headline leaves exactly the 24 px margin. Until the headline is laid out it
+	counts as one 32 px line; a later change of its height (its text or font replaced from outside) is followed. The cap
+	never goes under 72 (`ScrollBodyMin`): on a layer too small for that the card overflows rather than leaving the body
+	no window. During the enter / exit scale the headline's local height wobbles like any text (BODY HEIGHT below), so
+	the cap of an overflowing body can move by a pixel for those frames.
+	KNOWN LIMITS (decided 2026-10-13, not handled): (1) the layer is read ONCE, at open — a window resized while the
+	dialog is open keeps the open-time width cap and body cap; (2) the layer size is in screen pixels while the caps
+	are used in the card's local units, so under an ancestor UIScale above 1 the card can come out larger than the
+	layer by that factor (below 1: smaller than it had to be).
 	BODY HEIGHT (the scroll wrapper): the kit WRITES the wrapper's height; the engine's automatic sizing is not used for
 	it. The body (`Body`, AutomaticSize Y) is laid out in `BodyRoom`, a transparent frame of a fixed, very tall height
 	inside the wrapper; its laid-out height H is read from its AbsoluteSize (re-read whenever that changes, so a body
@@ -144,6 +156,8 @@ export type ConfirmOptions = {
 
 local LayerMargin = 24 -- min distance between the card and the layer edge when the layer is measured
 local ScrollBodyMin = 72
+-- HeadlineSmall's line height: what the headline counts for in the body cap until it is laid out (header, "CAP")
+local HeadlineEstimate = 32
 -- the height of the frame the body is laid out in inside the scroll wrapper (header, "BODY HEIGHT" 3): only ever a bound
 -- for the body's own automatic height, so any value no body reaches
 local BodyRoom = 100000
@@ -218,7 +232,7 @@ local function open(o: OpenOptions): Handle
 			}
 		end
 
-		local headline: Instance? = nil
+		local headline: GuiObject? = nil
 		if o.Headline ~= nil then
 			headline = D.TextLabel {
 				Name = "Headline",
@@ -239,8 +253,8 @@ local function open(o: OpenOptions): Handle
 		local body: Instance? = nil
 		local b = o.Body
 		local bodyInner: GuiObject? = nil
-		-- set when the body sits in the scroll wrapper: starts its measurement (run from the card's PostRef hook)
-		local watchBody: ((card: GuiObject) -> ())? = nil
+		-- set when the body sits in the scroll wrapper: starts the measurements (run from the card's PostRef hook)
+		local watchLayout: ((card: GuiObject) -> ())? = nil
 		if type(b) == "string" then
 			bodyInner = D.TextLabel {
 				Name = "Body",
@@ -269,48 +283,74 @@ local function open(o: OpenOptions): Handle
 		end
 		if bodyInner ~= nil then
 			if measured and not fitMode then
-				-- the card never outgrows the layer: the body scrolls, headline and actions stay pinned
-				local fixed = 0
+				-- the card never outgrows the layer: the body scrolls, headline and actions stay pinned (header, "CAP")
+				-- everything in the card but the headline and the body — sizes M3 fixes, so constants
+				local fixed = 48 -- Content's padding, 24 + 24
 				local parts = 1
 				if hasIcon then
 					fixed += 24
 					parts += 1
 				end
-				if o.Headline ~= nil then
-					fixed += 32
+				if headline ~= nil then
 					parts += 1
 				end
 				if o.Actions ~= nil and #o.Actions > 0 then
-					fixed += 48
+					fixed += 48 -- 8 padding + the 40 px Button
 					parts += 1
 				end
-				local maxBody = math.max(ScrollBodyMin, layerSize.Y - 2 * LayerMargin - 48 - fixed - 16 * (parts - 1))
-				-- the body's laid-out height in the card's local units (header, "BODY HEIGHT"); 0 until the first layout
+				fixed += 16 * (parts - 1)
+				-- what the headline and the body share
+				local room = layerSize.Y - 2 * LayerMargin - fixed
+				-- the laid-out heights in the card's local units (header, "BODY HEIGHT"): the body's is 0 until the first
+				-- layout, the headline's is the one-line estimate until then
 				local bodyHeight = q.Source(0)
+				local headlineHeight = q.Source(if headline ~= nil then HeadlineEstimate else 0)
+				local maxBody: q.State<number> = headlineHeight:Compute(function(self)
+					return math.max(ScrollBodyMin, room - self:Get())
+				end)
 				local inner: GuiObject = bodyInner
-				watchBody = function(card: GuiObject)
-					local function read()
+				local head: GuiObject? = headline
+				watchLayout = function(card: GuiObject)
+					-- nil while the card has no width. Up to the whole pixel (a UDim offset is an integer: a fraction would be
+					-- cut and clip the body's last row), less the float noise of a scaled layout
+					local function localHeight(inst: GuiObject): number?
 						local cardWidth = card.AbsoluteSize.X
 						if cardWidth <= 0 then
-							return
+							return nil
 						end
-						-- up to the whole pixel (a UDim offset is an integer: a fraction would be cut and clip the body's last
-						-- row), less the float noise of a scaled layout
-						bodyHeight:SetIfChanged(math.ceil(inner.AbsoluteSize.Y / cardWidth * width - 1e-3))
+						return math.ceil(inst.AbsoluteSize.Y / cardWidth * width - 1e-3)
 					end
-					-- the body's own signal: disconnected with the body
-					inner:GetPropertyChangedSignal("AbsoluteSize"):Connect(read)
-					read()
+					local function readBody()
+						local height = localHeight(inner)
+						if height ~= nil then
+							bodyHeight:SetIfChanged(height)
+						end
+					end
+					-- each part's own signal: disconnected with the part
+					inner:GetPropertyChangedSignal("AbsoluteSize"):Connect(readBody)
+					readBody()
+					if head ~= nil then
+						local label: GuiObject = head
+						local function readHeadline()
+							local height = localHeight(label)
+							-- 0 = not laid out yet (a headline is at least one line tall): the estimate stays
+							if height ~= nil and height > 0 then
+								headlineHeight:SetIfChanged(height)
+							end
+						end
+						label:GetPropertyChangedSignal("AbsoluteSize"):Connect(readHeadline)
+						readHeadline()
+					end
 				end
 				-- never 0 tall (header, "BODY HEIGHT" 4): a body under a zero-height window is not measured again
-				local scrollSize: q.State<UDim2> = bodyHeight:Compute(function(self)
-					return UDim2.new(1, 0, 0, math.min(math.max(self:Get(), ScrollBodyFloor), maxBody))
-				end)
+				local scrollSize: q.State<UDim2> = bodyHeight:Compute(function(self, _prev, cap)
+					return UDim2.new(1, 0, 0, math.min(math.max(self:Get(), ScrollBodyFloor), cap:Get()))
+				end, maxBody)
 				-- canvas 0 = the window: a body within the cap cannot scroll (and shows no scrollbar) whatever the rounding
-				local canvasSize: q.State<UDim2> = bodyHeight:Compute(function(self)
+				local canvasSize: q.State<UDim2> = bodyHeight:Compute(function(self, _prev, cap)
 					local height = self:Get()
-					return UDim2.fromOffset(0, if height > maxBody then height else 0)
-				end)
+					return UDim2.fromOffset(0, if height > cap:Get() then height else 0)
+				end, maxBody)
 				body = D.ScrollingFrame {
 					Name = "BodyScroll",
 					Size = scrollSize,
@@ -393,8 +433,8 @@ local function open(o: OpenOptions): Handle
 			Util.clickSink(),
 			Util.postHook(function(card: GuiObject)
 				entered:Set(true)
-				if watchBody ~= nil then
-					watchBody(card)
+				if watchLayout ~= nil then
+					watchLayout(card)
 				end
 				if fitMode and measured then
 					local function refit()

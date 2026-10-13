@@ -189,6 +189,15 @@ local function config(
 	if step ~= nil and not (step > 0) then
 		error(name .. ": Step must be positive", 4)
 	end
+	if step ~= nil then
+		-- MDC `BaseSlider.validateStepSize` ("The stepSize must be 0, or a factor of the valueFrom-valueTo range");
+		-- Compose takes a step COUNT, so its range always divides. Otherwise Max is never reached (0..10 by 3 stops
+		-- at 9) while the end stop is drawn at Max. A small tolerance for float steps (1 / 0.1 is 10.000000000000002).
+		local count = range / step
+		if math.abs(count - math.floor(count + 0.5)) > 1e-6 then
+			error(`{name}: Max - Min ({range}) must be a multiple of Step ({step})`, 4)
+		end
+	end
 	return {
 		min = min,
 		max = max,

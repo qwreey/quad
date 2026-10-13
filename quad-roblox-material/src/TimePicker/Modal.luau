@@ -211,6 +211,10 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 			mode:Set("Input")
 			input.Focus()
 		else
+			-- back to the dial: drop whatever was typed (an out-of-range hour would keep `Valid` false — and OK
+			-- disabled — while the dial shows the last valid time). SetTime with the current value only rewrites the
+			-- two inputs (no OnChange). Compose gets the same from its inputs leaving the composition.
+			model:SetTime(model.Value:Get())
 			mode:Set("Picker")
 		end
 	end
