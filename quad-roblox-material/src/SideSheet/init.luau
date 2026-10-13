@@ -7,8 +7,9 @@
 	    Material.SideSheet({ Headline = "Filters", Children = slot })              -- standard: docked at the parent's edge
 	    Material.ModalSideSheet.open({ Headline = "Details", Children = slot })    -- modal: over a scrim, in the Overlay
 
-	Both use the kit's `SheetState` with the two MDC states (EnabledValues { "Hidden", "Expanded" }). Files: Surface (the
-	shared sheet: geometry, shape, drag, header) / Standard / Modal.
+	Both use the kit's `SheetState` with the two MDC states (EnabledValues { "Hidden", "Expanded" }) and both take
+	`Detached = true` (MDC `Widget.Material3.SideSheet.Detached` / `.Modal.Detached`: 16 px off the edge, all four corners
+	16). Files: Surface (the shared sheet: geometry, shape, drag, header) / Standard / Modal.
 ]]
 
 local Standard = require("@self/Standard")

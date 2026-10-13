@@ -1,6 +1,7 @@
 --!strict
--- Snackbar: one host bound to the story overlay. Text / Duration / Close / Action are read from the controls when
--- "Show" is pressed; the host's `Pending` State (queue length) and the last dismiss reason are shown live.
+-- Snackbar: two hosts bound to the story overlay — the default one at the bottom and one placed at the top (`Position`
+-- picks which one "Show" uses). Text / Duration / Close / Action are read from the controls when "Show" is pressed; the
+-- hosts' `Pending` States (queue lengths, summed) and the last dismiss reason are shown live.
 local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
@@ -15,16 +16,19 @@ return StoryKit.story({
 		Persistent = false,
 		Close = false,
 		Action = true,
+		Position = StoryKit.Choose({ "Bottom", "Top" }),
 		Scheme = StoryKit.Choose({ "light", "dark" }),
 	},
 	render = function(c, ctx)
 		local theme, follow = themed(c.Scheme)
 		local bar = Material.Snackbar.new({ Overlay = ctx.Overlay, Theme = theme })
+		local topBar = Material.Snackbar.new({ Overlay = ctx.Overlay, Theme = theme, Position = "Top" })
 		local last = q.Source("(none yet)")
 		local count = 0
 
 		local function show(text: string, withAction: boolean, duration: number?)
-			bar:Show({
+			local host = if c.Position:Get() == "Top" then topBar else bar
+			host:Show({
 				Text = text,
 				Action = if withAction
 					then {
@@ -44,9 +48,10 @@ return StoryKit.story({
 
 		return D.Frame {
 			follow,
-			-- the host dies with the story root (the overlay layer's death would finalize it too)
+			-- the hosts die with the story root (the overlay layer's death would finalize them too)
 			q.OnDestroyed(function()
 				bar:Destroy()
+				topBar:Destroy()
 			end),
 			Name = "SnackbarStory",
 			Size = UDim2.fromScale(1, 1),
@@ -100,9 +105,9 @@ return StoryKit.story({
 				BorderSizePixel = 0,
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextColor3 = theme.Color.OnSurface,
-				Text = bar.Pending:Compute(function(self: q.StateData<number>): string
-					return `Waiting in the queue: {self:Get()}`
-				end),
+				Text = bar.Pending:Compute(function(self: q.StateData<number>, _prev: string?, top: q.State<number>): string
+					return `Waiting in the queue: {self:Get() + top:Get()}`
+				end, topBar.Pending),
 			},
 			D.TextLabel {
 				Material.Text.Label("BodyMedium"),

@@ -1,10 +1,12 @@
 --!strict
 --[[
 	Gallery section "Overlays": the triggers for everything that floats — Dialog (alert / confirm / custom actions),
-	Snackbar (plain / action / persistent with a close button / several queued), Menu (a Menu.Button and one with
+	Snackbar (plain / action / persistent with a close button / several queued / a second host placed at the top), Menu (a Menu.Button and one with
 	icons, a disabled item and a divider) and Tooltip (a hook per target; Tooltip.Plain for the static look) — and the
 	sheets: the modal bottom / side sheets (buttons) and the standard ones docked in mock screens (`Common.Screen`, which
-	clips like a phone screen; the standard sheets are layout pieces, not overlay entries).
+	clips like a phone screen; the standard sheets are layout pieces, not overlay entries). The side sheets also come
+	detached (`Detached = true`: 16 px off the edge, four round corners) — modal from either edge, standard in two more
+	mock screens whose content area is tinted so the surface-colored, shadowless standard sheet shows its shape.
 	Everything opens through `ctx.Overlay`, the overlay the panel owns — nothing here touches `Overlay.default()`.
 	The last dialog result and the last snackbar dismiss reason are written to Memo Sources and shown below.
 ]]
@@ -91,6 +93,10 @@ return function(ctx: Ctx): Instance
 	}
 
 	local bar = ctx.Snackbar
+	-- a second host on the same overlay, placed at the top (its own queue; it lives as long as the panel's Memo)
+	local topBar = ctx.Memo("ov.topbar", function()
+		return Material.Snackbar.new({ Overlay = overlay, Theme = theme, Position = "Top" })
+	end)
 	local snacks: { Instance } = {
 		Material.Button({
 			Theme = theme,
@@ -143,6 +149,30 @@ return function(ctx: Ctx): Instance
 				for _ = 1, 3 do
 					snackCount.value += 1
 					bar:Show({ Text = `Queued message {snackCount.value}`, Duration = 2 })
+				end
+			end,
+		}),
+		Material.Button({
+			Theme = theme,
+			Variant = "Tonal",
+			Label = "Show at top",
+			OnClick = function()
+				topBar:Show({
+					Text = "Player joined the table",
+					OnDismiss = function(reason)
+						lastSnack:Set(reason .. " (top)")
+					end,
+				})
+			end,
+		}),
+		Material.Button({
+			Theme = theme,
+			Variant = "Text",
+			Label = "Queue two at top",
+			OnClick = function()
+				for _ = 1, 2 do
+					snackCount.value += 1
+					topBar:Show({ Text = `Top message {snackCount.value}`, Duration = 2 })
 				end
 			end,
 		}),
@@ -265,6 +295,58 @@ return function(ctx: Ctx): Instance
 	}
 
 	local sideState = Material.SheetState({ InitialValue = "Expanded", EnabledValues = { "Hidden", "Expanded" } })
+	local function openDetached(edge: Material.SideSheetEdge)
+		Material.ModalSideSheet.open({
+			Overlay = overlay,
+			Theme = theme,
+			Detached = true,
+			SheetEdge = edge,
+			Headline = "Filters",
+			Children = q.Slot<<Instance>>({
+				Common.Labeled(ctx, Material.Checkbox({ Theme = theme, Value = q.Source(true) }), "Unread only"),
+				Common.Labeled(ctx, Material.Checkbox({ Theme = theme, Value = q.Source(false) }), "With attachments"),
+			}),
+		})
+	end
+	-- a standard detached sheet in a mock screen: the content area is tinted (the sheet is surface, without a shadow)
+	local function detachedScreen(name: string, edge: Material.SideSheetEdge): Frame
+		local state = Material.SheetState({ InitialValue = "Expanded", EnabledValues = { "Hidden", "Expanded" } })
+		local atEnd = edge == "End"
+		return Common.Screen(ctx, name, 460, 300, {
+			D.Frame {
+				Name = "Content",
+				Size = UDim2.fromScale(1, 1),
+				BorderSizePixel = 0,
+				BackgroundColor3 = theme.Color.SurfaceContainerHigh,
+			},
+			Material.Button({
+				Theme = theme,
+				Variant = "Outlined",
+				Label = if atEnd then "Toggle detached" else "Toggle start",
+				Modifier = D.Modifier
+					.TextButton()
+					:AnchorPoint(Vector2.new(if atEnd then 0 else 1, 0))
+					:Position(UDim2.new(if atEnd then 0 else 1, if atEnd then 16 else -16, 0, 16)),
+				OnClick = function()
+					if state.TargetValue:Get() == "Hidden" then
+						state.Expand()
+					else
+						state.Hide()
+					end
+				end,
+			}),
+			Material.SideSheet({
+				Theme = theme,
+				SheetState = state,
+				SheetEdge = edge,
+				Detached = true,
+				Headline = "Details",
+				Children = q.Slot<<Instance>>({
+					Common.Caption(ctx, "Detached: 16 px off the top, the bottom and its edge, four corners 16. Drag it to its edge to hide."),
+				}),
+			}),
+		})
+	end
 	local sideSheets: { Instance } = {
 		Material.Button({
 			Theme = theme,
@@ -279,6 +361,22 @@ return function(ctx: Ctx): Instance
 						Common.Labeled(ctx, Material.Checkbox({ Theme = theme, Value = q.Source(false) }), "With attachments"),
 					}),
 				})
+			end,
+		}),
+		Material.Button({
+			Theme = theme,
+			Variant = "Tonal",
+			Label = "Detached modal",
+			OnClick = function()
+				openDetached("End")
+			end,
+		}),
+		Material.Button({
+			Theme = theme,
+			Variant = "Outlined",
+			Label = "Detached modal (start)",
+			OnClick = function()
+				openDetached("Start")
 			end,
 		}),
 		Common.Screen(ctx, "SideSheetScreen", 520, 300, {
@@ -304,14 +402,16 @@ return function(ctx: Ctx): Instance
 				}),
 			}),
 		}),
+		detachedScreen("DetachedSideSheetScreen", "End"),
+		detachedScreen("DetachedStartSideSheetScreen", "Start"),
 	}
 
 	return Common.Section(ctx, "Overlays", "Overlays", {
 		Common.Group(ctx, "Dialog", dialogs, "A scrim, a 28 px surface that fades and scales in; Escape and the scrim dismiss."),
-		Common.Group(ctx, "Snackbar", snacks, "One at a time; the rest wait in the queue."),
+		Common.Group(ctx, "Snackbar", snacks, "One at a time; the rest wait in the queue. A host can be placed at the top (Position = \"Top\")."),
 		Common.Group(ctx, "Menu", menus),
 		Common.Group(ctx, "Tooltip", tooltips),
 		Common.Group(ctx, "Bottom sheet", bottomSheets, "Modal: a scrim, rises from the bottom; drag it, tap the scrim or press Escape / B (an expanded sheet steps down to half first)."),
-		Common.Group(ctx, "Side sheet", sideSheets, "Modal: slides in from the right over a scrim, 256 px wide, inner corners 16."),
+		Common.Group(ctx, "Side sheet", sideSheets, "Modal: slides in from the right over a scrim, 256 px wide, inner corners 16. Detached: 16 px off the edge, all four corners."),
 	})
 end

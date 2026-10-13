@@ -3,6 +3,7 @@
 	M3 snackbar: a short message at the bottom center, one at a time, the rest queued.
 
 	    local bar = Snackbar.new({ Overlay = overlay })                     -- a host bound to an Overlay (default: Overlay.default())
+	    local top = Snackbar.new({ Overlay = overlay, Position = "Top" })   -- the same host, placed at the top center
 	    local item = bar:Show({ Text = "Message archived", Action = { Label = "Undo", OnClick = undo }, Duration = 6, Close = true })
 	    item.Close()                                                       -- manual dismiss (queued items just leave the queue)
 	    Snackbar.show({ Text = "Saved" })                                  -- the shared default host (lazy; rebuilt when its overlay died)
@@ -22,8 +23,20 @@
 	  OnDismiss ((reason: DismissReason) -> ())?       once, when the item starts leaving (or leaves the queue):
 	                                                   "Timeout" | "Action" | "Close" | "Manual" | "Destroyed"
 	  Width     number?                                default 344 (M3)
-	Host options: Overlay (default `Overlay.default()`), Theme, BottomOffset (default 16), Clock (() -> seconds, default `os.clock`:
+	Host options: Overlay (default `Overlay.default()`), Theme, Position ("Bottom" | "Top", default "Bottom"), BottomOffset
+	                    (default 16: the gap between the snackbar and the edge it sits at — the layer's bottom edge, or its
+	                    top edge with Position = "Top"; the name is the default place's), Clock (() -> seconds, default `os.clock`:
 	                    only used to measure how much of a paused countdown is left; inject one to replay/test with a virtual clock).
+	POSITION (user decision 2026-10-13): M3 shows the snackbar at the bottom, but where it sits is the caller's in canon —
+	Compose's Snackbar is drawn wherever its `SnackbarHost` composable is placed (androidx/androidx@40ff481 compose/
+	material3/.../SnackbarHost.kt 215-239: the host takes a `modifier` and draws its current snackbar in place; Scaffold.kt
+	246-254 is what puts a Scaffold's host at the bottom) — so a host may be placed at the top: Position = "Top" is the "Bottom" host
+	mirrored (same width, same gap, same times; it slides DOWN into place — View.luau). Still one at a time with the rest
+	queued, per host: stacking several is not a snackbar. Two hosts on one Overlay (a bottom and a top one) are two queues.
+	The top gap is measured from the LAYER's top: under a ScreenGui with the default insets that is below the Roblox top bar
+	(`IgnoreGuiInset = false` / ScreenInsets CoreUISafeInsets); with the inset ignored the snackbar is under the top bar's
+	icons — raise BottomOffset. `Scaffold` is not adapted: it places its SnackbarHost layer for the bottom (above the FAB /
+	bottom bar) and that layer starts at the scaffold's top, so a "Top" host in it draws over the top app bar.
 	Item (the kit-wide handle shape — closures WITHOUT self): Close(result?) (the result is ignored: a snackbar has none;
 	`Dismiss()` is an alias), IsOpen State<boolean> (queued or on screen; false once dismissed), Visible State<boolean>
 	(currently on screen, including the exit), Done State<boolean> (the inverse of IsOpen).
@@ -70,7 +83,15 @@ export type Item = {
 	read Done: q.State<boolean>,
 }
 
-export type Options = { Overlay: Overlay.Overlay?, Theme: Theme.Theme?, BottomOffset: number?, Clock: (() -> number)? }
+export type Position = View.Position
+
+export type Options = {
+	Overlay: Overlay.Overlay?,
+	Theme: Theme.Theme?,
+	Position: Position?,
+	BottomOffset: number?,
+	Clock: (() -> number)?,
+}
 
 export type Host = {
 	read Pending: q.State<number>,
@@ -98,6 +119,10 @@ local function new(o: Options?): Host
 	local overlay = opts.Overlay or Overlay.default()
 	local theme = Theme.resolve(opts.Theme)
 	local bottom = opts.BottomOffset or 16
+	local place: Position = opts.Position or "Bottom"
+	if place ~= "Bottom" and place ~= "Top" then
+		error(`Snackbar.new: Position must be "Bottom" or "Top" (got {tostring(place)})`, 2)
+	end
 	local clock: () -> number = opts.Clock or os.clock
 
 	local queue: { Entry } = {}
@@ -208,6 +233,7 @@ local function new(o: Options?): Host
 			Close = e.Opts.Close,
 			Width = e.Opts.Width,
 			Theme = theme,
+			Position = place,
 			BottomOffset = bottom,
 			Closing = h.Closing,
 			OnHover = function(over: boolean)

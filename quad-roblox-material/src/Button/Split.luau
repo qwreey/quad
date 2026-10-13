@@ -40,6 +40,7 @@
 	0 -> 180 when selected (SplitButtonSamples.kt 114~126) — the `Icons` name "chevronDown". Corner morph, arrow
 	rotation and the optical shift animate together (Motion Short4 / Standard — Compose uses its DefaultEffects spring).
 
+	Each half is one `Segment` cell (`./Segment.luau` — the drawing below is shared with `ButtonGroup`, `./Group.luau`).
 	ASYMMETRIC SHAPE (a UICorner has ONE radius): each half draws its container as two FACES, both the half's full
 	rectangle, one rounded 20 and one rounded at the inner radius, each inside a rectangle clip that shows only its own
 	side (outer side [0, W/2] of the leading half, inner side [W/2, W]; mirrored for the trailing half) — the same
@@ -83,14 +84,10 @@ local q = require("../Quad")
 local Tokens = require("../Tokens")
 local Theme = require("../Theme")
 local Util = require("../Util")
-local Interaction = require("../Interaction")
-local Interactive = require("../Interactive")
-local Ripple = require("../Ripple")
-local StateLayer = require("../StateLayer")
-local Elevation = require("../Elevation")
 local Text = require("../Text")
 local IconView = require("../IconView")
 local Style = require("./Style")
+local Segment = require("./Segment")
 local ColorTokens = require("../Tokens/Color")
 local D = q.Declaration
 local splitName = D.Modifier.Frame():Name("SplitButton")
@@ -132,7 +129,6 @@ local TRAILING_PAD = { 13, 13 }
 local LEADING_ICON = 20
 local TRAILING_ICON = 22
 local ICON_GAP = 8
-local OPTICAL = 0.11 -- CenterOpticallyCoefficient
 local SELECTED_OPACITY = Tokens.State.Opacity.Pressed -- TrailingButtonStateLayerAlpha = PressedStateLayerOpacity
 
 local labelStyle = Text.Label("LabelLarge")
@@ -153,255 +149,52 @@ type HalfOptions = {
 	Optical: boolean, -- shift the content by the optical-centering offset (trailing)
 }
 
+-- one half = one `Segment` cell (./Segment.luau draws the faces, clips, ripples, shadows and the content frame); this
+-- function supplies the split button's colors: the kit Button's roles, and a content-colored overlay while Selected
 local function half(o: HalfOptions): TextButton
 	local theme, spec, disabled = o.Theme, o.Spec, o.Disabled
-	local leading = o.Side == "Leading"
 	local container = spec.Container
-	local contentRaw = theme.Raw[spec.Content]
-	local contentColor = Style.disabledPick(disabled, contentRaw, theme.Raw.OnSurface)
-
-	-- the measured content width (local units) -> the half's width
-	local contentWidth = q.Source(0)
-	-- false until the content has been measured once: the first layout places the content, it does not slide it there
-	local measured = q.Source(false)
-	local measure = Util.preHook(function(inst: GuiObject)
-		local function read()
-			local k = Ripple.localScale(inst)
-			contentWidth:SetIfChanged(if k > 0 then inst.AbsoluteSize.X / k else inst.AbsoluteSize.X)
-			if inst.AbsoluteSize.X > 0 then
-				measured:SetIfChanged(true) -- after the width: the write above still snapped
-			end
-		end
-		read()
-		inst:GetPropertyChangedSignal("AbsoluteSize"):Connect(read)
-	end)
-	local width: q.State<number> = contentWidth:Compute(function(self)
-		return math.max(MIN_WIDTH, math.ceil(self:Get() - 1e-3))
-	end)
-
-	local rippleOuter = Ripple.new({ Color = contentColor, Corner = UDim.new(0, OUTER) })
-	local pressedSrc = q.Source(false)
+	local contentColor = Style.disabledPick(disabled, theme.Raw[spec.Content], theme.Raw.OnSurface)
 	local selected = o.Selected
-	-- the inner radius now (pressed > selected > rest) and its animated form
-	local innerTarget: q.State<number> = pressedSrc:Compute(function(self, _prev, sel)
-		if self:Get() then
-			return INNER_PRESSED
-		end
-		return if sel:Get() then OUTER else INNER
-	end, selected or q.Source(false))
-	local innerCornerRaw: q.State<UDim> = innerTarget:Compute(function(self)
-		return UDim.new(0, self:Get())
-	end)
-	local innerCorner = innerCornerRaw:Apply(animation())
-	local rippleInner = Ripple.new({ Color = contentColor, Corner = innerCorner })
-
-	local ix = Interaction.new({
-		Disabled = disabled,
-		OnHost = function(inst: GuiObject)
-			inst.SelectionImageObject = Interactive.noSelectionImage()
-		end,
-		OnPressBegan = function(position: Vector2?)
-			pressedSrc:Set(true)
-			rippleOuter:Press(position)
-			rippleInner:Press(position)
-		end,
-		OnPressEnded = function(_cancelled: boolean)
-			pressedSrc:Set(false)
-			rippleOuter:Release()
-			rippleInner:Release()
-		end,
-	})
-
-	local containerColor = if container then Style.disabledPick(disabled, theme.Raw[container], theme.Raw.OnSurface) else nil
-	local containerT = if container then Style.disabledNumber(disabled, 0, Style.DisabledContainerTransparency) else nil
-
-	local selectedT: q.State<number>? = nil
+	local overlay: q.State<number>? = nil
 	if selected ~= nil then
 		local raw: q.State<number> = selected:Compute(function(self, _prev, dis)
 			return if self:Get() and not dis:Get() then 1 - SELECTED_OPACITY else 1
 		end, disabled)
-		selectedT = raw
+		overlay = raw
 	end
-
-	local faceSize: q.State<UDim2> = width:Compute(function(self)
-		return UDim2.fromOffset(self:Get(), HEIGHT)
-	end)
-	-- the split line between the two clips
-	local function splitAt(w: number): number
-		return math.floor(w / 2)
-	end
-
-	-- Elevated (header "ELEVATED SHADOW"): the level of this half (rest, + 1 hovered, 0 disabled) and how far its clips
-	-- open for the shadow. 0 = no shadow: the clips are the half's rectangle.
-	local shadowLevel: q.State<number>? = nil
-	local reach = 0
-	if spec.Shadow ~= nil then
-		local rest = spec.Shadow
-		shadowLevel = ix.Hovered:Compute(function(self, _prev, dis)
-			if dis:Get() then
-				return 0
-			end
-			return if self:Get() then rest + 1 else rest
-		end, disabled)
-		local highest = Tokens.Elevation.levelOf(rest + 1)
-		reach = 2 * highest.BlurRadius + highest.Spread + math.abs(highest.OffsetY)
-	end
-	-- a clip's left edge and width in the half's coordinates: its side of the split line, opened by `reach` on the
-	-- half's outer side and by the gap on its inner side
-	local function clipSpan(w: number, from: "Start" | "Split"): (number, number)
-		local m = splitAt(w)
-		local outerSide = (from == "Start") == leading
-		local open = if outerSide then reach else math.min(reach, BETWEEN)
-		if from == "Start" then
-			return 0 - open, m + open
-		end
-		return m, w - m + open
-	end
-
-	local function face(name: string, corner: UDim | Theme.Animated, ripple: Ripple.Ripple, clipFrom: "Start" | "Split"): Frame
-		local stroke: Instance? = nil
-		if spec.Stroke then
-			stroke = D.UIStroke {
-				Name = "Outline",
-				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-				BorderStrokePosition = Enum.BorderStrokePosition.Inner,
-				Thickness = 1,
-				Color = Style.disabledPick(disabled, theme.Raw.Outline, theme.Raw.OnSurface),
-				Transparency = Style.disabledNumber(disabled, 0, Style.DisabledContainerTransparency),
-			}
-		end
-		local overlay: Instance? = nil
-		local st = selectedT
-		if st ~= nil then
-			overlay = D.Frame {
-				Name = "Selected",
-				Size = UDim2.fromScale(1, 1),
-				BackgroundColor3 = contentColor,
-				BackgroundTransparency = st:Apply(Style.animation()),
-				BorderSizePixel = 0,
-				UICorner = corner,
-			}
-		end
-		local level = shadowLevel
-		local shadow: Instance? = if level ~= nil then Elevation.Shadow({ Level = level, Theme = theme }) else nil
-		-- the face is the half's full rectangle: shifted back by its clip's origin
-		local position: q.State<UDim2> = width:Compute(function(self)
-			local x0 = clipSpan(self:Get(), clipFrom)
-			return UDim2.fromOffset(0 - x0, reach)
-		end)
-		return D.Frame {
-			Name = name,
-			Position = position,
-			Size = faceSize,
-			BackgroundColor3 = containerColor,
-			BackgroundTransparency = containerT or 1,
-			BorderSizePixel = 0,
-			UICorner = corner,
-			shadow or q.None,
-			stroke or q.None,
-			StateLayer.new({
-				Color = contentColor,
-				Corner = corner,
-				Hovered = ix.Hovered,
-				Pressed = ix.Pressed,
-				Focused = ix.Focused,
-				Disabled = disabled,
-				Ripple = ripple,
-			}),
-			overlay or q.None,
+	local stroke: Segment.Stroke? = nil
+	if spec.Stroke then
+		stroke = {
+			Color = Style.disabledPick(disabled, theme.Raw.Outline, theme.Raw.OnSurface),
+			Transparency = Style.disabledNumber(disabled, 0, Style.DisabledContainerTransparency),
 		}
 	end
-
-	local function clip(name: string, from: "Start" | "Split", child: Frame): Frame
-		local position: q.State<UDim2> = width:Compute(function(self)
-			local x0 = clipSpan(self:Get(), from)
-			return UDim2.fromOffset(x0, 0 - reach)
-		end)
-		local size: q.State<UDim2> = width:Compute(function(self)
-			local _x0, span = clipSpan(self:Get(), from)
-			return UDim2.fromOffset(span, HEIGHT + 2 * reach)
-		end)
-		return D.Frame {
-			Name = name,
-			Position = position,
-			Size = size,
-			BackgroundTransparency = 1,
-			BorderSizePixel = 0,
-			ClipsDescendants = true,
-			child,
-		}
-	end
-
-	-- leading: outer side first (left), inner side at the split; trailing: inner side first, outer at the split
-	local outerFrom: "Start" | "Split" = if leading then "Start" else "Split"
-	local innerFrom: "Start" | "Split" = if leading then "Split" else "Start"
-	local outerClip = clip("OuterClip", outerFrom, face("Face", UDim.new(0, OUTER), rippleOuter, outerFrom))
-	local innerClip = clip("InnerClip", innerFrom, face("Face", innerCorner, rippleInner, innerFrom))
-
-	local ringOn: q.State<boolean> = ix.Focused:Compute(function(self, _prev, dis)
-		return self:Get() and not dis:Get()
-	end, disabled)
-	local ring = D.Frame {
-		Name = "FocusRing",
-		Size = faceSize,
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		UICorner = UDim.new(0, OUTER),
-		D.UIStroke {
-			Name = "Ring",
-			Color = theme.Color.Secondary,
-			Thickness = 3,
-			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-			BorderStrokePosition = Enum.BorderStrokePosition.Outer,
-			BorderOffset = UDim.new(0, 2),
-			Enabled = ringOn,
-		},
-	}
-
-	-- content: centered in the half (it is narrower only at the 48 px minimum), plus the optical shift
-	local contentPosition: q.State<UDim2> = width:Compute(function(self, _prev, cw, inner)
-		local shift = if o.Optical then math.floor(OPTICAL * (inner:Get() - OUTER) + 0.5) else 0
-		return UDim2.fromOffset(math.floor((self:Get() - cw:Get()) / 2) + shift, 0)
-	end, contentWidth, innerTarget)
-	local contentMotion = Tokens.Motion.options("Short4", "Standard")
-	local content = D.Frame {
-		Name = "Content",
-		measure,
-		Position = contentPosition:Apply(q.Animate({
-			Time = contentMotion.Time,
-			Style = contentMotion.Style,
-			Direction = contentMotion.Direction,
-			CanAnimate = measured,
-		})),
-		Size = UDim2.fromOffset(0, HEIGHT),
-		AutomaticSize = Enum.AutomaticSize.X,
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		D.UIPadding { PaddingLeft = UDim.new(0, o.Pad[1]), PaddingRight = UDim.new(0, o.Pad[2]) },
-		table.unpack(o.Content),
-	}
-
-	local host = D.TextButton {
+	return Segment.new({
 		Name = o.Side,
-		Size = faceSize,
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		AutoButtonColor = false,
-		Text = "",
-		LayoutOrder = if leading then 1 else 2,
-		ix.Hook,
-		Interactable = Util.interactable(disabled),
-		Activated = function()
-			if o.OnClick and not disabled:Get() then
-				o.OnClick()
-			end
-		end,
-		outerClip,
-		innerClip,
-		ring,
-		content,
-	}
-	return host
+		Side = o.Side,
+		LayoutOrder = if o.Side == "Leading" then 1 else 2,
+		Theme = theme,
+		Disabled = disabled,
+		Selected = selected,
+		Height = HEIGHT,
+		Between = BETWEEN,
+		MinWidth = MIN_WIDTH,
+		Outer = OUTER,
+		Inner = INNER,
+		InnerPressed = INNER_PRESSED,
+		InnerSelected = OUTER, -- TrailingCheckedShape = CircleShape
+		ContainerColor = if container then Style.disabledPick(disabled, theme.Raw[container], theme.Raw.OnSurface) else nil,
+		ContainerTransparency = if container then Style.disabledNumber(disabled, 0, Style.DisabledContainerTransparency) else nil,
+		ContentColor = contentColor,
+		Stroke = stroke,
+		Shadow = spec.Shadow,
+		Overlay = overlay,
+		Content = o.Content,
+		Pad = o.Pad,
+		Optical = o.Optical,
+		OnClick = o.OnClick,
+	})
 end
 
 local function SplitButton(props: Props)

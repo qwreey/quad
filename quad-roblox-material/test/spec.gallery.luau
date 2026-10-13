@@ -185,6 +185,17 @@ H.section("overlays: one of each kind opens and closes through the panel's own o
 	H.advance(0.5)
 	assert(count() == base, "snackbar gone after its action")
 	assert(byText(gui, "Last snackbar: undo pressed") ~= nil)
+	-- the second host, placed at the top of the same layer
+	click(button(gui, "Show at top"))
+	local topSnack = H.find(layer, "Snackbar") :: any
+	assert(topSnack ~= nil and topSnack.AnchorPoint == Vector2.new(0.5, 0), "the top host's snackbar hangs from the layer's top")
+	H.finishTweens()
+	assert(topSnack.Position == UDim2.new(0.5, 0, 0, 16), "16 under the top edge")
+	H.advance(4.1)
+	H.finishTweens()
+	H.advance(0.5)
+	assert(count() == base, "the top snackbar timed out")
+	assert(byText(gui, "Last snackbar: Timeout (top)") ~= nil)
 	-- menu
 	click(button(gui, "Actions"))
 	assert(count() > base, "menu opened")
@@ -225,6 +236,22 @@ H.section("sheets and drawers: the modal sheets open in the panel's layer, the s
 	escape()
 	H.advance(0.5)
 	assert(#layer:GetChildren() == base)
+	click(button(gui, "Detached modal"))
+	assert(#layer:GetChildren() == base + 1, "detached modal side sheet opened")
+	local detachedModal = H.find(layer, "SideSheet") :: any
+	H.finishTweens()
+	assert(detachedModal.Position == UDim2.new(1, -16, 0, 16) and H.find(detachedModal, "CornerPatch") == nil, "16 off the edge, no squared corner")
+	escape()
+	H.advance(0.5)
+	assert(#layer:GetChildren() == base)
+	local detached = H.find(H.find(gui, "DetachedSideSheetScreen"), "SideSheet") :: any
+	assert(detached.Position == UDim2.new(1, -16, 0, 16) and detached.Size == UDim2.new(0, 256, 1, -32), "detached standard sheet expanded")
+	click(button(gui, "Toggle detached"))
+	H.finishTweens()
+	assert(detached.Position == UDim2.new(1, 256, 0, 16), "...and hidden past the edge, margin included")
+	H.advance(0.5)
+	local detachedStart = H.find(H.find(gui, "DetachedStartSideSheetScreen"), "SideSheet") :: any
+	assert(detachedStart.Position == UDim2.new(0, 16, 0, 16), "the start-edge one 16 in from the left")
 	local side = H.find(H.find(gui, "SideSheetScreen"), "SideSheet") :: any
 	assert(side.Position == UDim2.fromScale(1, 0), "standard side sheet expanded")
 	click(button(gui, "Toggle side sheet"))

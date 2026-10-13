@@ -3,13 +3,17 @@
 	Snackbar view: the card for ONE snackbar (init.luau owns the queue, the timers and the Overlay handle; this file only
 	draws and reports).
 
-	    View.build({ Text, Action, Close, Width, Theme, BottomOffset, Closing = handle.Closing,
+	    View.build({ Text, Action, Close, Width, Theme, Position, BottomOffset, Closing = handle.Closing,
 	                 OnHover, OnFocus, OnAction, OnClose, OnDestroyed }) -> CanvasGroup
 
 	Structure: ONE CanvasGroup (inverseSurface, corner 4, row layout) holding the message (BodyMedium, inverseOnSurface,
 	wraps; one line = 48 px, two lines = 68 px as in M3) plus an optional action TextButton and an optional close
 	`GlyphButton` (each with the kit state layer). Enter: mounted snapped (transparent, 24 px low) and animated from a
 	PostRef hook: 250 ms slide up (emphasized decelerate) and fade; exit: the reverse while `Closing` is true.
+	Place (`Position`, the host's): "Bottom" = centered, its bottom edge `BottomOffset` above the layer's bottom; "Top" = the
+	mirror image — centered, its top edge `BottomOffset` below the layer's top, mounted 24 px HIGH and sliding down (the
+	same distance, times and easings; the card itself is the same). Canon has no place of its own to mirror: Compose's
+	Snackbar is put wherever the caller puts its SnackbarHost (init.luau "POSITION").
 	Touch targets: the action and close buttons are 48 px tall (close 48 x 48) transparent hit hosts around a 36 px visual
 	(state layer + label), so the card stays 48 px (one line) / 68 px (two lines) as in M3.
 	Reports (all callbacks, no queue knowledge here): `OnHover(over)` pointer over the card; `OnFocus(delta)` a button gained
@@ -32,12 +36,15 @@ local D = q.Declaration
 
 export type Action = { read Label: string, read OnClick: () -> () }
 
+export type Position = "Bottom" | "Top"
+
 export type Options = {
 	Text: string,
 	Action: Action?,
 	Close: boolean?,
 	Width: number?,
 	Theme: Theme.Theme,
+	Position: Position,
 	BottomOffset: number,
 	Closing: q.State<boolean>,
 	OnHover: (over: boolean) -> (),
@@ -141,7 +148,8 @@ end
 
 local function build(o: Options): GuiObject
 	local theme = o.Theme
-	local bottom = o.BottomOffset
+	local edge = o.BottomOffset
+	local atTop = o.Position == "Top"
 	local entered = q.Source(false)
 	local shown: q.State<boolean> = entered:Compute(function(self, _prev, closing)
 		return self:Get() and not closing:Get()
@@ -150,7 +158,9 @@ local function build(o: Options): GuiObject
 		return if self:Get() then 0 else 1
 	end)
 	local yTarget: q.State<UDim2> = shown:Compute(function(self)
-		return UDim2.new(0.5, 0, 1, if self:Get() then -bottom else -bottom + SlideDistance)
+		-- away from the screen while hidden: below its place at the bottom, above it at the top
+		local away = if self:Get() then 0 else SlideDistance
+		return if atTop then UDim2.new(0.5, 0, 0, edge - away) else UDim2.new(0.5, 0, 1, -edge + away)
 	end)
 	local fade = fadeTarget:Apply(q.Animate(Tokens.Motion.options("Short4", "Linear")))
 	local position = yTarget:Apply(q.Animate(Tokens.Motion.options("Medium1", "EmphasizedDecelerate")))
@@ -180,7 +190,7 @@ local function build(o: Options): GuiObject
 	local act = o.Action
 	return D.CanvasGroup {
 		Name = "Snackbar",
-		AnchorPoint = Vector2.new(0.5, 1),
+		AnchorPoint = Vector2.new(0.5, if atTop then 0 else 1),
 		Position = position,
 		Size = UDim2.fromOffset(o.Width or 344, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,

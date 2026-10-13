@@ -11,6 +11,9 @@
 	  Children        Slot<Instance>?   the content, stacked vertically under the header
 	  Headline        (string | State<string>)?  the optional header: headline + a close icon button (closes)
 	  SheetEdge       ("End" | "Start")?   default "End" (the right edge) — SideSheetDialog.setSheetEdge
+	  Detached        boolean?          default false. true = MDC `Widget.Material3.SideSheet.Modal.Detached` (styles.xml
+	                                    53-57): 16 px off the top, the bottom and its edge, all four corners 16; the
+	                                    color and the level-1 shadow stay the modal sheet's
 	  Width           number?           default 256 (m3_side_sheet_width = the docked container width)
 	  Draggable       boolean?          default true: dragging it off the screen closes it (MDC: "can be dragged horizontally and
 	                                    dismissed by sliding them off of the screen")
@@ -21,7 +24,9 @@
 	Handle (the kit-wide shape): Close(result?), IsOpen / Closing (the Overlay entry's), SheetState (its own state: Hidden ->
 	Expanded on open).
 
-	The sheet: surfaceContainerLow, corner 16 on the inner edge, a level-1 shadow, full height — SideSheet/Surface.luau.
+	The sheet: surfaceContainerLow, corner 16 on the inner edge, a level-1 shadow, full height (detached: all four
+	corners, 16 px short of the top, the bottom and the edge; it enters from and leaves to fully past the edge, margin
+	included) — SideSheet/Surface.luau.
 	Scrim: the Overlay's (the scrim color at 0.32 — the dialog's dim). Enter and exit: the sheet slides in from / out to its
 	edge, 275 ms Emphasized (m3_side_sheet_enter_from_right / exit_to_right, res/anim); the Overlay entry stays for that exit
 	time. Escape / B and the gamepad selection trap are the Overlay's.
@@ -41,6 +46,7 @@ export type OpenOptions = {
 	read Children: q.Slot<Instance>?,
 	read Headline: (string | q.State<string>)?,
 	read SheetEdge: Surface.Edge?,
+	read Detached: boolean?,
 	read Width: number?,
 	read Draggable: boolean?,
 	read DismissOnScrim: boolean?,
@@ -83,6 +89,7 @@ local function open(o: OpenOptions?): Handle
 			Who = "ModalSideSheet.open",
 			Modal = true,
 			Edge = opts.SheetEdge or "End",
+			Detached = opts.Detached == true,
 			Width = opts.Width or WIDTH,
 			Draggable = opts.Draggable ~= false,
 			Headline = opts.Headline,

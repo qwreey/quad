@@ -14,6 +14,32 @@
 	surfaceContainerLow, corner large (16) on the INNER edge only (setSheetEdge clears the two corners on the docked edge when
 	the sheet has no margin, SideSheetBehavior.java 176-194) — UICorner 16 + an outer-edge `Parts.patch`, elevation level1
 	(a UIShadow).
+	DETACHED (`Detached`; MDC styles `Widget.Material3.SideSheet.Detached` / `Widget.Material3.SideSheet.Modal.Detached`,
+	styles.xml 32-39, 53-57): the sheet stands off its edge — a margin of 16 (m3_side_sheet_margin_detached, dimens.xml 19;
+	MDC's `android:layout_margin` is all four sides, but the sheet overlays its parent, so the kit keeps the three that
+	show: top, bottom and the sheet edge) and corner large (16) on ALL FOUR corners (md.comp.sheet.side detached container
+	shape, tokens.xml 29; with a margin on the sheet edge setSheetEdge leaves the two docked corners alone,
+	SideSheetBehavior.java 176-194, hasRightMargin / hasLeftMargin 217-225) — so no corner patch. Both styles only add the
+	margin and the shape to their parents, so color and elevation are the parents': a detached STANDARD sheet is still
+	surface at level0 (NO shadow), a detached MODAL sheet surfaceContainerLow at level1 (the UIShadow; nothing clips it —
+	the Overlay layer and its entries do not clip, and the 16 px margin keeps it clear of a clipping parent's edge).
+	The width stays `Width` (Android margins are outside the view's width; the catalog's detached sheets are 256 wide,
+	catalog/.../sidesheet/res/layout/cat_sidesheets.xml 28-36), the height is the parent's minus 32. Offsets: Expanded 0 is
+	the spot 16 in from the edge, Hidden is `Width + 16` further out — the whole sheet AND its margin past the edge (the
+	end sheet's MDC range: hidden left = the parent's width, expanded left = that - childWidth - innerMargin,
+	RightSheetDelegate.java 47-59; `getViewHorizontalDragRange` = childWidth + innerMargin, SideSheetBehavior.java
+	861-863). The start sheet uses the same travel; MDC's start delegate settles a further 16 out of sight (hidden left =
+	-childWidth - innerMargin, LeftSheetDelegate.java 47-51) while its drag stops at -childWidth (127-129) — nothing on
+	screen differs. Released halfway: the end sheet past `(Width + 16) / 2`, the start sheet past `Width / 2` (the two
+	delegates' isReleasedCloseToInnerEdge worked out with a margin, RightSheetDelegate.java 63-67 / LeftSheetDelegate.java
+	62-66; equal when docked).
+	CLIP when detached: the content holder (Inner — the sheet's rectangle) clips, as MDC's sheet view clips its children
+	to its bounds, so content longer than the sheet stops at the sheet's bottom edge instead of running into the margin
+	under it. A Roblox clip is a rectangle, not the rounded shape: the content stays inside the rounding because the
+	16 px padding equals the 16 px radius (content that ignores the padding can show in a corner). The UIShadow is a child
+	of the Sheet, not of Inner, so this clip does not touch it.
+	Not here: MDC's coplanar mode (the sibling squeezed as the sheet expands). MDC squeezes it by childWidth + innerMargin
+	(SideSheetBehavior.java 1029), so content laid out BESIDE a detached sheet should leave `Width + 16`.
 	DRAG (MDC `draggable`, default true): the sheet follows a horizontal drag; released, `calculateTargetStateOnViewReleased`
 	(SideSheetBehavior.java 871-900): moving outwards (towards the inner side: the end sheet's x velocity < 0, the start
 	sheet's > 0 — the delegates' isExpandingOutwards) -> Expanded; otherwise Hidden when the swipe is significant (mostly
@@ -29,9 +55,11 @@
 	layout/cat_sidesheet_content.xml 23-54): 16 px padding, the headline TitleLarge on the left, a standard icon button
 	"close" (onSurfaceVariant) at the end on the headline's line, 24 px under the headline before the content.
 
-	Structure: Sheet (Frame, Active) [+ UICorner + UIShadow + CornerPatch when modal] + Inner (ZIndex 2, UIPadding 16) >
-	[Header > Headline + Close (GlyphButton)] + Body (UIListLayout + the Children slot). Standard without a header 5,
-	a header +8 (Header, Headline, the close GlyphButton 6), modal +3 (counted in test/spec.sidesheet.luau).
+	Structure: Sheet (Frame, Active) [+ UICorner + UIShadow + CornerPatch when modal; detached: UICorner, no CornerPatch]
+	+ Inner (ZIndex 2, UIPadding 16; ClipsDescendants when detached) > [Header > Headline + Close (GlyphButton)] + Body
+	(UIListLayout + the Children slot). Standard without a header 5, a header +8 (Header, Headline, the close GlyphButton
+	6), modal +3 (+ the ClickSink); detached standard +1 (UICorner), detached modal -1 (no CornerPatch) — counted in
+	test/spec.sidesheet.luau.
 ]]
 
 local q = require("../Quad")
@@ -57,6 +85,7 @@ export type Config = {
 	Who: string,
 	Modal: boolean,
 	Edge: Edge,
+	Detached: boolean,
 	Width: number,
 	Draggable: boolean,
 	Headline: (string | q.State<string>)?,
@@ -75,6 +104,7 @@ local PADDING = 16 -- cat_sidesheet_content.xml android:padding
 local HEADLINE_HEIGHT = 28 -- TitleLarge line height
 local HEADLINE_GAP = 24 -- the headline's paddingBottom
 local CORNER = Tokens.Shape.Radius.Large :: number
+local DETACHED_MARGIN = 16 -- m3_side_sheet_margin_detached
 
 local headlineStyle = Text.Label("TitleLarge")
 
@@ -88,7 +118,14 @@ local function build(cfg: Config): Built
 		)
 	end
 	local width = cfg.Width
-	local hiddenPos = if cfg.Edge == "End" then width else -width
+	local atEnd = cfg.Edge == "End"
+	local detached = cfg.Detached
+	local margin = if detached then DETACHED_MARGIN else 0
+	-- hidden = the sheet and its margin past the edge
+	local travel = width + margin
+	local hiddenPos = if atEnd then travel else -travel
+	-- isReleasedCloseToInnerEdge with a margin: the end sheet's halfway point counts the margin, the start sheet's does not
+	local half = if atEnd then travel / 2 else width / 2
 	local anchors: { Anchored.Anchor } = {}
 	if rec.Enabled.Hidden then
 		table.insert(anchors, { Value = "Hidden", Pos = hiddenPos })
@@ -107,12 +144,12 @@ local function build(cfg: Config): Built
 			return Parts.Motion.Side
 		end,
 		Release = function(_list: { Anchored.Anchor }, offset: number, velocity: number, cross: number): string?
-			local outwards = if cfg.Edge == "End" then velocity < 0 else velocity > 0
+			local outwards = if atEnd then velocity < 0 else velocity > 0
 			if outwards or not rec.Enabled.Hidden then
 				return "Expanded"
 			end
 			local significant = math.abs(velocity) > math.abs(cross) and math.abs(velocity) > SIGNIFICANT_VELOCITY
-			if significant or math.abs(offset) > width / 2 then
+			if significant or math.abs(offset) > half then
 				return "Hidden"
 			end
 			return "Expanded"
@@ -124,11 +161,12 @@ local function build(cfg: Config): Built
 		Initial = initial,
 	})
 
-	local atEnd = cfg.Edge == "End"
+	-- the docked spot: at the edge, or `margin` in from it (and from the top) when detached
+	local inset = if atEnd then -margin else margin
 	local position: q.State<any> = slide.Pos:Compute(function(self)
 		local p = self:Get()
 		return q.Tween({
-			Value = UDim2.new(if atEnd then 1 else 0, p.Offset, 0, 0),
+			Value = UDim2.new(if atEnd then 1 else 0, p.Offset + inset, 0, margin),
 			Time = p.Time,
 			Style = p.Style,
 			Direction = p.Direction,
@@ -172,7 +210,7 @@ local function build(cfg: Config): Built
 	local container = if cfg.Modal then theme.Color.SurfaceContainerLow else theme.Color.Surface
 	local sheet = D.Frame {
 		surfaceName,
-		D.Modifier.Frame():Size(UDim2.new(0, width, 1, 0)),
+		D.Modifier.Frame():Size(UDim2.new(0, width, 1, -2 * margin)),
 		AnchorPoint = Vector2.new(if atEnd then 1 else 0, 0),
 		Position = position,
 		BackgroundColor3 = container,
@@ -181,15 +219,17 @@ local function build(cfg: Config): Built
 		-- the drag hook goes where the press lands: the sink when there is one (the Frame below it never gets InputBegan)
 		if cfg.Modal then Util.clickSink({ slide.Hook() }) else slide.Hook() :: any,
 		cfg.Modifier or q.None,
-		if cfg.Modal then D.UICorner { CornerRadius = UDim.new(0, CORNER) } else q.None,
+		if cfg.Modal or detached then D.UICorner { CornerRadius = UDim.new(0, CORNER) } else q.None,
 		if cfg.Modal then Elevation.Shadow({ Level = 1, Theme = theme }) else q.None,
-		if cfg.Modal then Parts.patch(if atEnd then "Right" else "Left", CORNER, container) else q.None,
+		-- docked: square the two corners on the edge; detached: all four stay round
+		if cfg.Modal and not detached then Parts.patch(if atEnd then "Right" else "Left", CORNER, container) else q.None,
 		D.Frame {
 			Name = "Inner",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			ZIndex = 2,
+			ClipsDescendants = detached,
 			UIPaddingOffset = PADDING,
 			header or q.None,
 			D.Frame {

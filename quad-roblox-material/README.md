@@ -132,6 +132,7 @@ local q = Quad:UseProvider(RobloxModule.QuadRoblox)
 | 버튼 | `Button` | Filled / Tonal / Elevated / Outlined / Text 다섯 변형(한 함수, `Variant` prop), 폭은 글자에 맞춤 또는 `Width`(픽셀·UDim, 라벨 가운데); `Icon`(18 px, 라벨과 8 px)과 `IconPosition = "Leading" \| "Trailing"` — 여백은 material-web 토큰(아이콘 없음 24/24, 앞 아이콘 16/24, 뒤 아이콘 24/16; Text는 12/12·12/16·16/12) |
 | | `Unit` | 저장된 수를 **어떻게 보여 주고 글자에서 되읽는지** — `{ Scale, Decimals?, Prefix?, Suffix? }`(타입 `Material.Unit`). 값은 정수로 두고 표시만 곱해서 냅니다: `Slider { Value = ratio, Min = 0, Max = 10000, Step = 1, KeyStep = 100, Unit = { Scale = 0.01, Suffix = "%" } }`의 라벨은 `37.25%`. 정수라서 스냅·`Step` 배수 검사·값 비교가 정확하고 저장·전송 값에 부동소수 꼬리가 없습니다. `Decimals` 기본은 `Scale`이 10의 거듭제곱일 때 거기서(0.01 → 2), 그 밖의 `Scale`은 명시(아니면 생성 때 에러). `Material.Unit.format(unit, value)` / `Material.Unit.parse(unit, text)`(접두·접미·공백은 선택, 숫자가 아니면 `nil`, 정수로 떨어지면 정수) — 같은 정의로 입력 칸의 글자를 값으로 되돌릴 수 있습니다. `Slider`·`RangeSlider`(M2 포함)의 `Unit` prop이 쓰고, `Format`을 같이 주면 `Format`이 표시를 이깁니다. 키 한 번의 이동량 기본값은 `Step`(MDC와 같음)이라 스텝이 촘촘하면 `KeyStep`을 주세요. M3 정본에는 없는 킷의 덧붙임입니다 |
 | | `SplitButton` | M3 Expressive 분할 버튼(작은 크기, 높이 40): 앞 버튼(행동 — `Label`·`Icon` 20 px·`OnClick`)과 뒤 버튼(메뉴 — 아래 화살표 22 px·`OnTrailingClick`) 사이 2 px, 바깥 모서리 20·안쪽 모서리 4(누르는 동안 12), `Selected`면 뒤 버튼이 양 끝 반원 알약 + 화살표 180° + 내용색 10 % 덮개; Filled / Tonal / Elevated / Outlined |
+| | `ButtonGroup` | M3 Expressive **연결된 버튼 그룹**(세그먼트 버튼의 자리 — MDC 문서: "Use instead of segmented button, which is deprecated"; 작은 크기, 높이 40): 칸 사이 2 px, 줄의 양 끝은 반원·칸 사이 모서리 8(누르는 동안 4), 선택된 칸은 알약 모양 + 선택 색. `Items = { { Key, Label, Icon?, Disabled? }, … }`(정적, 2칸 이상)와 **`Value: Source<string?>`(하나 고르기, `OnChange`) 또는 `Values: Source<{ [string]: boolean }>`(여럿 고르기, `OnValuesChange`) 중 하나**; `Required`(기본: `Value`면 true — 고른 칸을 다시 눌러도 안 풀림, `Values`면 false); Filled(기본) / Tonal / Elevated / Outlined(토글 버튼 색); `Width`를 주면 칸이 그 폭을 똑같이 나눔(안 주면 칸마다 내용 폭) |
 | | `IconButton` | Standard / Filled / Tonal / Outlined, `Selected`로 토글 |
 | | `FAB` | Small / Regular / Large, 색 넷, 레이블이 있으면 Extended |
 | 선택 | `Checkbox` | 체크·불확정·오류·비활성(체크 표시는 회전한 Frame 둘이라 이미지 없음, 토글은 MaterialUI식 가장자리 막대 모션), `Label`로 라벨까지 한 클릭·호버 영역 |
@@ -148,7 +149,7 @@ local q = Quad:UseProvider(RobloxModule.QuadRoblox)
 | | `Divider` | 1px 선, 수평·수직, 안쪽 여백 |
 | | `List` / `ListItem` / `ListData` | 1~3줄 행, 정적 자식 또는 키로 재활용되는 데이터 목록 |
 | 오버레이 | `Dialog` | `open` / `confirm` / `alert`, 스크림·Escape·게임패드 B·선택 가두기, 작은 화면에서 본문 스크롤(또는 `Fit` — 카드째 축소) |
-| | `Snackbar` | 하단 중앙, 한 번에 하나, 나머지는 큐 |
+| | `Snackbar` | 하단 중앙, 한 번에 하나, 나머지는 큐; 호스트에 `Position = "Top"`을 주면 같은 여백·폭으로 위쪽 가운데(위에서 내려옴) |
 | | `Tooltip` | `Tooltip.hook`(대상마다 하나)과 `Tooltip.Plain`(시각만) |
 | 칩·탭·진행 | `Chip` | Assist / Filter / Input / Suggestion + 키로 재활용되는 `ChipSet` |
 | | `Tabs` | Primary / Secondary, 활성 표시기 하나가 미끄러짐 |
@@ -161,7 +162,7 @@ local q = Quad:UseProvider(RobloxModule.QuadRoblox)
 | 시트 | `SheetState` | 시트 상태 — Compose `SheetState`: `Hidden` / `PartiallyExpanded` / `Expanded`, `CurrentValue`(멈춘 값)·`TargetValue`, `Expand`/`PartialExpand`/`Show`/`Hide`, `ConfirmValueChange` 거부권 |
 | | `BottomSheetScaffold` | 표준 하단 시트 — 화면(호스트) 아래에 붙어 56 px 엿보기·펼침(스크림 없음), 끌기·손잡이 클릭 |
 | | `ModalBottomSheet` | `ModalBottomSheet.open{ Children }` — 스크림 위로 올라오는 모달 하단 시트(Overlay), 끌어 내리기·스크림·Escape/B(펼침이면 절반으로 먼저) |
-| | `SideSheet` / `ModalSideSheet` | MDC 측면 시트 — 표준(부모 가장자리에 붙음, surface)과 `ModalSideSheet.open`(스크림, 안쪽 모서리 16, 그림자 1); 폭 256, 오른쪽(End)/왼쪽(Start), 머리(제목 + 닫기) 선택, 옆으로 끌어 숨기기 |
+| | `SideSheet` / `ModalSideSheet` | MDC 측면 시트 — 표준(부모 가장자리에 붙음, surface)과 `ModalSideSheet.open`(스크림, 안쪽 모서리 16, 그림자 1); 폭 256, 오른쪽(End)/왼쪽(Start), 머리(제목 + 닫기) 선택, 옆으로 끌어 숨기기; 둘 다 `Detached = true`면 위·아래·가장자리에서 16 떨어지고 네 모서리 16(MDC Detached 스타일) |
 | 내비게이션 | `DrawerState` | 드로어 상태 — Compose `DrawerState`: `Closed` / `Open`, `Open`/`Close`/`SnapTo`, `IsOpen` |
 | | `ModalNavigationDrawer` / `DismissibleNavigationDrawer` / `PermanentNavigationDrawer` | 트리 안 레이아웃(Compose 그대로): 스크림 위로 미끄러지는 모달, 내용을 밀어내는 dismissible, 늘 옆에 있는 permanent |
 | | `ModalDrawerSheet` / `DismissibleDrawerSheet` / `PermanentDrawerSheet` | 드로어 면 — 폭 360(240~360), 모달은 surfaceContainerLow + 끝 모서리 16, 목록은 스크롤 |
@@ -204,6 +205,7 @@ local q = Quad:UseProvider(RobloxModule.QuadRoblox)
 - **통제형 `Checked`**: `Checkbox`와 `Switch`는 `Value` 대신 `Checked: State<boolean>` + `OnChange`도 받습니다. 컴포넌트는 State를
   보여 주기만 하고 클릭하면 `OnChange(새 값)`만 부르며 **아무것도 쓰지 않습니다**(원본 상태는 호출한 쪽이 정함 — 예: 테마 스위치는
   `Checked = theme.Scheme:Compute(...)`, `OnChange = function(dark) theme:SetScheme(...) end`). `Value`와 `Checked`를 같이 주면 에러.
+- **`ButtonGroup`은 선택 모델마다 prop이 다릅니다**: 하나 고르기는 `Value: Source<string?>` + `OnChange(key?)`, 여럿 고르기는 `Values: Source<{ [string]: boolean }>` + `OnValuesChange(새 표)`(누를 때마다 새 표를 `:Set` — 받은 표를 고치지 않음). 둘 중 하나만 줍니다(둘 다·둘 다 없음은 에러). 한 prop에 두 모양을 받지 않는 이유는 strict에서 인라인 콜백의 매개변수 타입이 함수 유니언의 첫 갈래로 정해지기 때문입니다(`src/Button/Group.luau` 머리 "WHY TWO PROPS").
 - **선택·표시 컴포넌트는 `Selected`**: `Chip.Filter`·`Tabs`·`ListItem`·`IconButton`(토글)·`Menu` 항목. 값 바뀜 콜백은 `Chip.Filter`/`Tabs`도 `OnChange`.
 - **글자 이름**: 버튼·행동 글자는 어디서나 `Label`(`Button`, `Chip`, `Tabs`의 탭, `Menu` 항목, `Snackbar`·`Dialog`의 액션). 스낵바 메시지만 `Text`.
 - **`Disabled`는 어디서나 `boolean | State<boolean>`**(메뉴·목록 항목, 라디오 옵션 포함).
@@ -287,6 +289,7 @@ local gui = D.ScreenGui {
 Material.Dialog.confirm({ Headline = "Delete?", Body = "This cannot be undone.", Overlay = overlay })
 Material.Menu.Button({ Label = "Actions", Items = items, Overlay = overlay })
 local snackbars = Material.Snackbar.new({ Overlay = overlay })   -- 호스트 하나, :Show로 큐에 넣음
+local notices = Material.Snackbar.new({ Overlay = overlay, Position = "Top" })   -- 위쪽에 놓은 호스트(자기 큐)
 ```
 
 **`Overlay.default()`**: 오버레이를 안 넘기면 컴포넌트는 `Overlay.default()`로 폴백합니다. 모듈이 로드될 때 만들어지는 전역
@@ -366,6 +369,7 @@ local handle = Material.ModalBottomSheet.open({ Children = q.Slot<<Instance>>({ 
 -- 측면 시트(MDC): 표준은 부모(ClipsDescendants) 가장자리에, 모달은 Overlay에
 Material.SideSheet({ Headline = "Filters", Children = slot })
 Material.ModalSideSheet.open({ Headline = "Details", Children = slot, Overlay = overlay })
+Material.SideSheet({ Headline = "Create", Children = slot, Detached = true })   -- 가장자리에서 16 떨어짐, 네 모서리 16
 
 -- 내비게이션 드로어: 화면을 감싸는 트리 안 레이아웃
 local drawer = Material.DrawerState({ InitialValue = "Closed" })
@@ -417,6 +421,13 @@ Material.ModalNavigationDrawer({
   아이콘 `Icons` "menu")으로 여세요.
 - **측면 시트**: 표준은 부모 끝(오른쪽, `SheetEdge = "Start"`면 왼쪽)에 붙고 숨으면 폭만큼 밖으로 — 부모가 `ClipsDescendants`여야 합니다.
   `SheetState`의 값은 `Hidden`/`Expanded` 둘(MDC STATE_HIDDEN / STATE_EXPANDED) — PartiallyExpanded를 켠 상태를 주면 에러.
+- **떨어진 측면 시트**(`Detached = true`, 2026-10-13): MDC 스타일 `Widget.Material3.SideSheet.Detached`·`….Modal.Detached` 그대로 —
+  여백 16(`m3_side_sheet_margin_detached`; 보이는 세 변 — 위·아래·붙은 가장자리), 네 모서리 16(corner large), 폭은 그대로 256,
+  높이는 부모 − 32. 두 스타일은 부모 스타일에 **여백과 모양만** 더하므로 색·높이는 그대로입니다: 모달은 surfaceContainerLow +
+  그림자 1, **표준은 surface에 그림자 없음(level0)** — 본문과 같은 색 위에서는 윤곽이 안 보이니, 구분이 필요하면 본문 쪽 색을
+  달리하거나 `Modifier`로 시트 색을 바꾸세요. 숨으면 폭 + 16만큼 나가 여백까지 화면 밖입니다. 놓았을 때 숨는 반환점은 MDC
+  식 그대로 오른쪽(End)은 (폭 + 16) / 2, 왼쪽(Start)은 폭 / 2. 시트 안쪽 면(Inner)이 내용을 자릅니다(사각형 클립 — 안쪽 여백
+  16과 모서리 반경 16이 같아 둥근 모서리 밖으로 나가지 않음). 본문을 시트 옆으로 비켜 놓으려면(MDC coplanar는 없음) 폭 + 16을 비우세요.
 
 ## 내비게이션 바·레일·앱 바·툴바
 
@@ -586,8 +597,8 @@ Gallery.GalleryPanel({})       -- 페이지(Frame)만; 직접 호스트할 때. 
 루프를 돌기 때문입니다. 사용자가 입력·조작한 값은 패널의 Memo(Source)에 있어 다시 돌아와도 남습니다. 갤러리는 키트의 일부가 아니라 **키트를 쓰는 소비자**라서 `src` 밖 `gallery/`에 둡니다 — `src` 안에 있으면 키트와 함께 게시돼 보통의 사용 경로에선 아무도 부르지 않는 코드가 모든 설치본에 실립니다. 그래서 갤러리는 게임이 키트를 쓰는 방식 그대로, 루트 내보내기 표 하나(`require("<이 폴더>/src")` → `Material.Button` 같은 값, `Material.Theme`·`Material.Tab<K>`·`Material.ButtonVariant` 같은 다시 내보낸 타입)와 자기 설정 모듈(`gallery/Quad.luau`)만 씁니다. Studio 진입 스크립트 `gallery/MaterialGallery.client.luau`도 같은 폴더에 있습니다(아래 "Studio에서 보기").
 
 스펙이 센 인스턴스 합계(`test/spec.gallery.luau`, 패널 뼈대 — 루트·탭·스크롤 — 포함; 2026-10-08 시트·드로어 처리에서 Navigation 탭이
-더해져 모든 탭이 탭 버튼 하나(8)만큼 늘었다 — 아래 숫자는 그 앞의 값, 지금 값은 Buttons 655 · Selection 1355 · Text 293 · Surfaces 335 ·
-Overlays 335(하단·측면 시트 묶음 둘: 모달 버튼과 흉내 화면 속 표준 시트) · Navigation 1221(드로어 셋 + 2026-10-08 바 둘·레일·스크롤
+더해져 모든 탭이 탭 버튼 하나(8)만큼 늘었다 — 아래 숫자는 그 앞의 값, 지금 값은 Buttons 1101(2026-10-13 "ButtonGroup" 묶음 넷으로 655 → 1101 — 세 칸 그룹 하나가 쉴 때 47) · Selection 1355 · Text 293 · Surfaces 335 ·
+Overlays 422(하단·측면 시트 묶음 둘: 모달 버튼과 흉내 화면 속 표준 시트; 2026-10-13 위쪽 스낵바 버튼 둘·떨어진 모달 버튼 둘·떨어진 표준 시트 흉내 화면 둘로 335 → 422) · Navigation 1221(드로어 셋 + 2026-10-08 바 둘·레일·스크롤
 하는 앱 바 셋·쉬는 앱 바 넷·하단 앱 바 둘·툴바 셋 — 흉내 화면 열셋 더; 드로어만일 때 498; 같은 날 Scaffold로 옮긴 뒤 1221(이 줄의 앞 기재는 1190) —
 바 화면·앱 바 화면마다 Scaffold + Body, 폰 바 화면의 FAB·스낵바 층, 하단 앱 바 둘이 화면 하나씩으로 갈라짐) · Chips 521 ·
 Pickers 950(2026-10-08 Classic 색상 선택기 묶음을 빼며 1037 → 950; 같은 날 다시 센 Selection·Overlays는 앞 기재 1345·334에서 1355·335) · Theme 205): Buttons 649(10차에 "Button: icons —
@@ -717,6 +728,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 | 70 | 앱 바 스크롤 — 스크롤바 | 갤러리 "Top app bars that scroll" 세 화면·AppBar 스토리 | 세 화면 모두 스크롤바가 바 아래 끝에서 시작해 바에 가리지 않음(오른쪽 exitUntilCollapsed는 맨 위에서도 136 바로 아래에 보임); 바가 접히고 펼쳐지는 동안 스크롤바 위 끝이 바 아래 끝을 따라감; 행 움직임은 66과 같음(튀거나 두 배로 움직이지 않음) | Studio 2026-10-08 확인(휠) |
 | 71 | 앱 바 스크롤 — 정착 틈 | 갤러리 "Top app bars that scroll" 세 화면 | 스크롤바 엄지를 잡고 애매한 곳(enterAlways 0~64, exitUntilCollapsed 0~72)까지 끌어 잡은 채로 두면 바가 붙지 않고, 놓으면 0.2 s에 바와 목록이 함께 가까운 끝으로 움직여 첫 행이 바 아래 끝에 붙음(바와 1행 사이 빈 띠 없음); 목록 깊은 곳에서 enterAlways 바가 반쯤 돌아온 채 멈춰도 바와 목록이 같이 움직임; 정착 도중 휠·끌기를 하면 정착이 바로 멈추고 휠을 따름(되돌아가며 싸우지 않음); pinned는 그대로 | Studio 2026-10-08 확인(엄지 끌기·놓기, 정착 도중 휠) |
 | 72 | Scaffold — 내용 영역·FAB·스낵바 | 갤러리 "Top app bars that scroll" 세 화면·"Navigation bar" 폰 화면·"Bottom app bars"·Scaffold 스토리 | 세 앱 바 화면의 스크롤바가 바 아래 끝 밑에 온전히 보이고 바가 접히고 펼치는 동안 따라감(70·71과 같은 움직임, 휠·엄지 끌기·정착 뒤 틈 없음); 폰 화면 FAB이 오른쪽 16·내비게이션 바 위 16, FAB을 누르면 스낵바가 FAB 위 16에 가운데로; 하단 앱 바 화면의 내용이 바 위 끝에서 끝남; 스토리에서 FabPosition Start / Center / EndOverlay(바 위에 겹침)와 아래 바 없음 | Studio 2026-10-08 확인(갤러리 — 휠·엄지 끌기 정착·FAB 클릭 스낵바; 스토리는 미확인) |
+| 73 | 연결된 버튼 그룹(ButtonGroup) | 갤러리 Buttons "ButtonGroup" 묶음 넷·ButtonGroup 스토리 | 칸 사이 2 px, 줄의 양 끝 반원·칸 사이 모서리 8이 누르는 동안 4로, 고른 칸은 알약(양쪽 다 반원)으로 0.2 s에 부드럽게 바뀌고 색이 함께 바뀜(Filled: surfaceContainer → primary); 끝 칸의 두 면(겉·안)이 만나는 한가운데에 이음매 없음(비활성 반투명·Outlined 외곽선 포함), 가운데 칸은 면 하나; Outlined는 고르면 외곽선이 사라지고 inverseSurface로 채워짐; Elevated 그림자가 칸마다 제 모양으로 이어지고 이웃 칸 위에 겹쳐 그려지지 않음(고른 알약 칸 옆 2 px 틈 포함); 칸 폭이 누르는 동안 안 변함; `Width = 360` 그룹의 세 칸이 같은 폭·글자 가운데; 게임패드 선택이 칸마다 멈추고 링이 보임 |  |
 
 ## 테스트
 
@@ -773,7 +785,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
   두께가 시트의 네 비율로 맞춰지고 끝·간격이 2° 단위(큰 지름 1°)로 움직이며 원형 물결(M3 Expressive)이 없음, 색상 선택기에 알파가 없음, 슬라이더 핸들 이동 범위의 끝 여백은 크기와 무관한 6 px(m3.material.io 스펙 우선 — Compose·MDC 코드는 바깥 반경만큼 안쪽)·이산(Step) 슬라이더는 바깥 반경보다 짧은 조각을 숨김(연속은 창이 좁아지며 사라짐)·끝 안쪽 아이콘이 보이는 동안 끝 점을 숨김(MDC는 같은 자리에 둘 다 그림), 분할 버튼은 작은 크기(40)만·포커스 링이 바깥 반경 하나의 둥근 사각형(안쪽 모서리가 모양보다 둥긂)·Elevated 그림자의 안쪽 모서리도 반경 20·두 반쪽이 `Disabled` 하나를 나눠 씀, 날짜 선택기 머리 화살표는 키트 Button의 뒤 아이콘(18 px, 여백 16/12 — Compose `YearPickerMenuButton`은 24 dp 아이콘에 12/12). 컴포넌트별 전체 목록은 각 파일 머리에 있습니다.
 - **시트·드로어**(2026-10-08): 움직임이 스프링이 아니라 트윈(Compose는 스프링 — 놓을 때의 속도를 이어받지 않음, 넘침 없음),
   예측형 뒤로 가기(predictive back) 스케일 없음, 하단 시트의 중첩 스크롤(안의 목록을 다 올린 뒤 시트가 이어서 끌림) 없음, 드로어를
-  내용 위에서 끌어 여는 제스처 없음, 측면 시트의 coplanar·detached 모양 없음, 손잡이 툴팁("Drag handle") 없음, 드로어 항목에 비활성 없음
+  내용 위에서 끌어 여는 제스처 없음, 측면 시트의 coplanar 모양 없음(detached는 2026-10-13 `Detached`로 생김), 손잡이 툴팁("Drag handle") 없음, 드로어 항목에 비활성 없음
   (Compose `NavigationDrawerItem`에도 없음). 시트 안 버튼을 누른 채 끌 때 시트가 같이 끌리는지는 엔진에 달림(실기기 체크리스트 54).
 - **바·레일·앱 바·툴바**(2026-10-08): 움직임이 스프링이 아니라 트윈(DefaultSpatial → 0.2 s, FastSpatial → 0.15 s, 넘침 없음); 바·레일의
   옛(baseline) 판·`ModalWideNavigationRail`·항목 비활성·배지 룰러(긴 배지를 알약 안에 가둠) 없음; Centered 바 항목의 최대 폭(바 폭 / n)
@@ -785,6 +797,12 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
   픽셀, 한도는 카드의 지역 단위라서 조상에 1보다 큰 `UIScale`이 걸려 있으면 카드가 그 배율만큼 층보다 커질 수 있습니다(1보다
   작으면 필요 이상으로 작아짐). 층이 아주 낮아 본문 창이 72 px도 안 남으면 카드가 층을 넘습니다(`Dialog.luau` 머리 "CAP").
 - **모달 시트의 긴 내용**(2026-10-13): `ModalBottomSheet`·`ModalSideSheet`는 내용을 스크롤해 주지 않습니다 — 내용이 면보다 길면 잘립니다(Studio 실측: 56 px 행 14개의 마지막 행에 닿을 수 없음). 길어질 수 있는 내용은 `ScrollingFrame`에 담아 넘기세요(Compose의 시트도 내용이 스크롤을 맡습니다).
+- **위쪽 스낵바**(2026-10-13): `Snackbar.new({ Position = "Top" })`의 여백은 호스트 옵션 `BottomOffset`(이름은 기본 자리의 것 —
+  위쪽에선 층 위 끝에서의 거리)이고 **오버레이 층의 위 끝**에서 잽니다. 기본 인셋의 `ScreenGui`(`IgnoreGuiInset = false`)에서는
+  Roblox 상단 바 아래지만, 인셋을 무시하는 ScreenGui에서는 상단 바 아이콘에 가리니 `BottomOffset`을 키우세요. `Scaffold`의
+  `SnackbarHost` 자리는 정본대로 아래용 그대로입니다 — 그 층에 위쪽 호스트를 묶으면 위 앱 바 위에 겹쳐 그려집니다. 한 번에
+  하나·큐는 호스트마다 그대로이고, 여럿을 쌓는 부품은 없습니다(같은 Overlay의 아래 호스트와 위 호스트는 서로 다른 큐).
+- **ButtonGroup**(2026-10-13): 연결된 그룹의 작은 크기(높이 40)만 있습니다 — Compose에 연결된 그룹의 다른 크기 토큰이 없습니다. 표준(떨어진, 12 px 간격, 누르면 폭이 15 % 늘며 이웃을 누르는) 버튼 그룹과 넘침 메뉴, 줄바꿈(Compose 샘플은 FlowRow — 칸이 많으면 `Width`를 주거나 칸을 줄이세요), 아이콘만 있는 칸, 세로 그룹은 없습니다. 고른 칸의 아이콘을 바꾸는 정본 샘플의 관례는 `Icon`에 선택 Source에서 만든 State를 넘겨서 합니다(State 아이콘은 이미지여야 함). 비활성 컨테이너는 토글 버튼 토큰대로 10 %입니다(킷 Button·SplitButton은 옛 12 %). m3.material.io의 Measurements와는 대조하지 못했습니다(스크립트로 그려지는 페이지 — 수치는 Compose 토큰). 실기기에서 본 적이 없습니다(체크리스트 73).
 - 갤러리는 좁은 화면에서 탭 글자가 잘릴 수 있습니다(Tabs는 폭을 균등 분할).
 
 ## 크레딧

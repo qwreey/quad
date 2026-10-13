@@ -1,7 +1,8 @@
 --!strict
 --[[
 	Gallery section "Buttons": Button (five variants, icon, disabled, leading / trailing icons from `Icons` names), the
-	split button (four variants, a menu on the trailing half, disabled), IconButton (four variants + a toggle), FAB
+	split button (four variants, a menu on the trailing half, disabled), the connected button group (single and multiple
+	selection, four variants, a disabled cell, a shared fixed width), IconButton (four variants + a toggle), FAB
 	(sizes, colors, extended). A Switch in the first group drives the `Disabled` State of every button below it, so the disabled
 	look of each variant can be compared with its enabled twin.
 ]]
@@ -161,6 +162,75 @@ return function(ctx: Ctx): Instance
 	end
 	table.insert(splits, Material.SplitButton({ Theme = theme, Label = "Disabled", Disabled = disabled }))
 
+	-- connected button groups: one selection (`Value`) or several (`Values`); the Sources live in the Memo
+	local view = ctx.Memo("buttons.groupView", function()
+		return q.Source("week" :: string?)
+	end)
+	local days = ctx.Memo("buttons.groupDays", function()
+		return q.Source({ mon = true, wed = true } :: { [string]: boolean })
+	end)
+	local viewItems: { Material.ButtonGroupItem } = {
+		{ Key = "day", Label = "Day" },
+		{ Key = "week", Label = "Week" },
+		{ Key = "month", Label = "Month" },
+	}
+	local dayItems: { Material.ButtonGroupItem } = {
+		{ Key = "mon", Label = "Mon" },
+		{ Key = "tue", Label = "Tue" },
+		{ Key = "wed", Label = "Wed" },
+		{ Key = "thu", Label = "Thu" },
+		{ Key = "fri", Label = "Fri" },
+	}
+	local groupSingle: { Instance } = {
+		Material.ButtonGroup({ Theme = theme, Items = viewItems, Value = view }),
+		Material.ButtonGroup({
+			Theme = theme,
+			Variant = "Tonal",
+			Items = {
+				{ Key = "day", Label = "Day", Icon = "schedule" },
+				{ Key = "week", Label = "Week", Icon = "calendar" },
+				{ Key = "month", Label = "Month", Icon = "calendar" },
+			},
+			Value = view,
+			Required = false,
+		}),
+		Common.Caption(ctx, Common.text<<string?>>(view, function(v: string?)
+			return `Value: {v or "nil"}`
+		end), false),
+	}
+	local groupMultiple: { Instance } = {
+		Material.ButtonGroup({ Theme = theme, Items = dayItems, Values = days }),
+		Common.Caption(ctx, Common.text<<{ [string]: boolean }>>(days, function(set: { [string]: boolean })
+			local keys: { string } = {}
+			for _, item in dayItems do
+				if set[item.Key] then
+					table.insert(keys, item.Key)
+				end
+			end
+			return `Values: {if #keys == 0 then "(none)" else table.concat(keys, ", ")}`
+		end), false),
+	}
+	local groupVariants: { Instance } = {}
+	for _, v in { "Filled", "Tonal", "Elevated", "Outlined" } :: { Material.ButtonGroupVariant } do
+		table.insert(
+			groupVariants,
+			Material.ButtonGroup({
+				Theme = theme,
+				Variant = v,
+				Items = {
+					{ Key = "day", Label = v },
+					{ Key = "week", Label = "Week" },
+					{ Key = "month", Label = "Off", Disabled = true },
+				},
+				Value = view,
+				Disabled = disabled,
+			})
+		)
+	end
+	local groupWidth: { Instance } = {
+		Material.ButtonGroup({ Theme = theme, Variant = "Outlined", Items = viewItems, Value = view, Width = 360 }),
+	}
+
 	local fabs: { Instance } = {
 		Material.FAB({ Theme = theme, Size = "Small", Icon = ctx.Icon, Disabled = disabled }),
 		Material.FAB({ Theme = theme, Icon = ctx.Icon, Disabled = disabled }),
@@ -197,6 +267,20 @@ return function(ctx: Ctx): Instance
 			splits,
 			"The leading half is the action (counts into the caption above); the trailing half opens a menu and stays Selected (circle, arrow turned) while it is open. Inner corners 4, 12 while pressed."
 		),
+		Common.Group(
+			ctx,
+			"ButtonGroup (M3 Expressive): single selection",
+			groupSingle,
+			"A connected button group — the segmented button's place. `Value` is a Source<string?> of the selected Key; both groups share it. The second one has `Required = false`: a click on its selected cell clears the selection. Inner corners 8, 4 while pressed; the selected cell is a pill."
+		),
+		Common.Group(ctx, "ButtonGroup: multiple selection", groupMultiple, "`Values` is a Source<{ [string]: boolean }>: every cell toggles on its own."),
+		Common.Group(
+			ctx,
+			"ButtonGroup: variants, a disabled cell",
+			groupVariants,
+			"Filled / Tonal / Elevated / Outlined toggle colors; the last cell of each is always disabled, the disable switch above disables the whole group."
+		),
+		Common.Group(ctx, "ButtonGroup: fixed width", groupWidth, "`Width = 360`: the cells share the width equally, labels centered."),
 		Common.Group(ctx, "IconButton: variants", iconButtons),
 		Common.Group(ctx, "IconButton: toggles (Selected)", toggles, "Standard/Outlined share `liked`, Filled/Tonal share `bookmarked`."),
 		Common.Group(ctx, "FAB: sizes, colors, extended", fabs),

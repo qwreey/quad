@@ -14,6 +14,10 @@
 	  SheetState   SheetState?      default a fresh `SheetState{ InitialValue = "Expanded", EnabledValues = { "Hidden",
 	                                "Expanded" } }`. A side sheet has no PartiallyExpanded: a state that enables it is an error
 	  SheetEdge    ("End" | "Start")?  default "End" (the right edge); MDC `layout_gravity` end / start
+	  Detached     boolean?         default false. true = MDC `Widget.Material3.SideSheet.Detached` (styles.xml 32-39): the
+	                                sheet stands 16 px off the top, the bottom and its edge, all four corners 16. Still
+	                                surface and still level0 — canon gives the detached standard sheet NO shadow (the
+	                                style only adds the margin and the shape); hidden, it is `Width + 16` past the edge
 	  Width        number?          default 256 (md.comp.sheet.side docked container width)
 	  Draggable    boolean?         default true (MDC behavior_draggable): the sheet follows a horizontal drag and a release
 	                                settles it (MDC's rule — SideSheet/Surface.luau)
@@ -23,8 +27,8 @@
 	  Theme, Modifier (Frame, after the base style), Hooks
 	Returns the sheet Frame (surface, no corner, no elevation — tokens md.comp.sheet.side docked standard). The PARENT must
 	clip (`ClipsDescendants`): a hidden sheet sits just past its edge. Motion: 275 ms Emphasized (Sheet/Parts.luau).
-	Not here: MDC's coplanar mode (the sibling squeezed as the sheet expands) and the detached style (16 px margin, all
-	corners large).
+	Not here: MDC's coplanar mode (the sibling squeezed as the sheet expands) — the sheet overlays its parent; content
+	meant to sit BESIDE it leaves `Width` (detached: `Width + 16`, MDC's coplanar margin — SideSheet/Surface.luau) itself.
 ]]
 
 local q = require("../Quad")
@@ -37,6 +41,7 @@ local Surface = require("./Surface")
 export type Props = {
 	read SheetState: StateModule.SheetState?,
 	read SheetEdge: Surface.Edge?,
+	read Detached: boolean?,
 	read Width: number?,
 	read Draggable: boolean?,
 	read Headline: (string | q.State<string>)?,
@@ -59,6 +64,7 @@ local function SideSheet(props: Props?): Frame
 		Who = "SideSheet",
 		Modal = false,
 		Edge = p.SheetEdge or "End",
+		Detached = p.Detached == true,
 		Width = p.Width or WIDTH,
 		Draggable = p.Draggable ~= false,
 		Headline = p.Headline,

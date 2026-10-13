@@ -20,6 +20,9 @@
 	    Util          asState / negate / interactable / visible / hooks / preHook / postHook helpers, the `Hooks` type
 	  Components
 	    Button, IconButton, FAB, SplitButton          actions
+	    ButtonGroup                                   the M3 Expressive connected button group (the segmented button's
+	                                                 place): a row of toggle cells, one selection (`Value`) or several
+	                                                 (`Values`)
 	    Checkbox, Radio, RadioGroup, Switch, Slider, RangeSlider   selection controls (Switch / Slider / RangeSlider are
 	                                                 the M3 look; `M2.Switch` / `M2.Slider` / `M2.RangeSlider` the M2
 	                                                 look with the same props and behaviour — `M2/init.luau`)
@@ -60,6 +63,8 @@
 	      accept the controlled form `Checked: State<boolean>` + `OnChange` (nothing is written; the owner decides);
 	      giving both `Value` and `Checked` is an error. The two-ended controls (RangeSlider, DatePicker.RangeDocked) take
 	      two such Sources, `Start` and `End`, and pass both to `OnChange`.
+      ButtonGroup takes ONE of two Sources, by selection model: `Value: Source<string?>` + `OnChange(key?)` (single) or
+      `Values: Source<{ [string]: boolean }>` + `OnValuesChange(new)` (multiple); both or neither is an error.
 	    * Choice / indicator components — Chip.Filter, Tabs, ListItem, IconButton (toggle), Menu.Item — use `Selected`.
 	      Their change callback is also `OnChange` (Chip.Filter, Tabs).
 	    * Text: action / button text is `Label` everywhere (Button, Chip, Tabs' tab, Menu.Item, Snackbar action, Dialog
@@ -143,6 +148,7 @@ local Button = require("@self/Button")
 local IconButton = require("@self/Button/IconButton")
 local FAB = require("@self/Button/FAB")
 local SplitButton = require("@self/Button/Split")
+local ButtonGroup = require("@self/Button/Group")
 local Checkbox = require("@self/Checkbox")
 local RadioModule = require("@self/Radio")
 local Switch = require("@self/Switch")
@@ -197,6 +203,7 @@ export type OverlayOnCloseFn = Overlay.OnCloseFn
 export type ButtonVariant = Button.Variant
 export type IconButtonVariant = IconButton.Variant
 export type SplitButtonVariant = SplitButton.Variant
+export type ButtonGroupVariant = ButtonGroup.Variant
 export type ButtonIconPosition = Button.IconPosition
 export type SliderSize = Slider.Size
 export type SliderOrientation = Slider.Orientation
@@ -207,6 +214,8 @@ export type ButtonProps = Button.Props
 export type IconButtonProps = IconButton.Props
 export type FABProps = FAB.Props
 export type SplitButtonProps = SplitButton.Props
+export type ButtonGroupProps = ButtonGroup.Props
+export type ButtonGroupItem = ButtonGroup.Item
 export type CheckboxProps = Checkbox.Props
 export type RadioProps<T> = RadioModule.Props<T>
 export type RadioGroupProps<T> = RadioModule.GroupProps<T>
@@ -239,6 +248,7 @@ export type SnackbarItem = Snackbar.Item
 export type SnackbarHost = Snackbar.Host
 export type SnackbarAction = Snackbar.Action
 export type SnackbarDismissReason = Snackbar.DismissReason
+export type SnackbarPosition = Snackbar.Position
 export type TooltipOptions = Tooltip.Options
 export type TooltipHandle = Tooltip.Handle
 export type TooltipPlainProps = Tooltip.PlainProps
@@ -342,6 +352,7 @@ return {
 	IconButton = IconButton,
 	FAB = FAB,
 	SplitButton = SplitButton,
+	ButtonGroup = ButtonGroup,
 	-- selection
 	Checkbox = Checkbox,
 	Radio = RadioModule.Radio,
