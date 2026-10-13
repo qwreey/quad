@@ -23,6 +23,14 @@
 	  TrailingText (string | State<string>)?
 	  OnClick     (() -> ())?    presence (at construction) makes the row a TextButton host with state layer + ripple
 	  Selected    boolean | State<boolean>?   secondaryContainer fill, content onSecondaryContainer
+	  Dragged     boolean | State<boolean>?   the row is being dragged (a reorderable `ListData` hands this State to `Render`):
+	                             EVERY content role — headline, supporting, overline, leading / trailing image, trailing
+	                             text — turns onTertiaryContainer (Compose ReorderListTokens.kt 22-47, the defaults of
+	                             ListItemDefaults.kt 231-240). Content only: the tertiaryContainer fill, the shape and the
+	                             shadow of a dragged row are drawn around the row by the list (ListReorder.luau), so the
+	                             item's own `Selected` fill steps aside while dragged. Precedence, as Compose resolves
+	                             every list color (ListItemDefaults.kt 751-835): disabled, then dragged, then selected.
+	                             Same motion as the other color changes (Short4 / Standard).
 	  Disabled    boolean | State<boolean>?   content onSurface @ 38 %, not clickable
 	  LayoutOrder number | State<number>?     direct prop (the data form binds it to the row index)
 	  Theme, Modifier, Hooks                   Modifier applies after the base style; Size is fixed by `Lines`; Hooks = array-part values
@@ -48,6 +56,12 @@
 	             set it in the callback (or when a server answers) and the rows settle in that order; leave it and they go
 	             back after a moment. Everything else — sources, the waiting rule, keys, limits — is in ListReorder.luau.
 	             Without `OnReorder` nothing of this exists (same instances as before).
+	  Reordering State<boolean>?   (with `OnReorder`) the owner's "an answer is on its way": while true after a release the
+	             rows stay where they were dropped, with no time limit; turning false with `Items` unchanged = refused, the
+	             rows go back. Without it (or never true after the release) they go back after 1 s.
+	  Render's third argument `dragged: State<boolean>` — true while that row is lifted (pointer drag or engaged by a
+	             key); pass it to `ListItem`'s `Dragged`. Always false in a list without `OnReorder`. A two-parameter
+	             `Render` keeps working.
 ]]
 
 local q = require("./Quad")
@@ -76,6 +90,7 @@ export type ItemProps = {
 	read TrailingText: Text?,
 	read OnClick: (() -> ())?,
 	read Selected: (boolean | q.State<boolean>)?,
+	read Dragged: (boolean | q.State<boolean>)?,
 	read Disabled: (boolean | q.State<boolean>)?,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
@@ -123,6 +138,7 @@ local function ListItem(props: ItemProps): GuiObject
 	local theme = Theme.resolve(props.Theme)
 	local disabled = Util.asState(props.Disabled)
 	local selected = Util.asState(props.Selected)
+	local dragged = Util.asState(props.Dragged)
 	local interactive = props.OnClick ~= nil
 	local hasSupporting = props.Supporting ~= nil
 	local hasOverline = props.Overline ~= nil
@@ -130,16 +146,26 @@ local function ListItem(props: ItemProps): GuiObject
 	local threeLine = lines == 3
 	local height = Heights[lines]
 
-	-- content roles: headline follows Selected, supporting/icons stay onSurfaceVariant; disabled -> onSurface @ 38 %
-	local headlineRole: q.State<Color3> = Style.choose(selected, theme.Raw.OnSecondaryContainer, theme.Raw.OnSurface)
-	local variantRole: q.State<Color3> = Style.choose(selected, theme.Raw.OnSecondaryContainer, theme.Raw.OnSurfaceVariant)
+	-- content roles: headline follows Selected, supporting/icons stay onSurfaceVariant; dragged -> everything
+	-- onTertiaryContainer; disabled -> onSurface @ 38 %. Precedence disabled > dragged > selected (header "Dragged")
+	local headlineRole: q.State<Color3> = Style.choose(
+		dragged,
+		theme.Raw.OnTertiaryContainer,
+		Style.choose(selected, theme.Raw.OnSecondaryContainer, theme.Raw.OnSurface)
+	)
+	local variantRole: q.State<Color3> = Style.choose(
+		dragged,
+		theme.Raw.OnTertiaryContainer,
+		Style.choose(selected, theme.Raw.OnSecondaryContainer, theme.Raw.OnSurfaceVariant)
+	)
 	local headlineColor = Style.disabledPick(disabled, headlineRole, theme.Raw.OnSurface)
 	local variantColor = Style.disabledPick(disabled, variantRole, theme.Raw.OnSurface)
 	local contentTransparency = Style.disabledNumber(disabled, 0, Style.DisabledContentTransparency)
 
-	local containerTransparency: q.State<number> = selected:Compute(function(self)
-		return if self:Get() then 0 else 1
-	end)
+	-- the selected fill; a dragged row's container is the list's (drawn around the item), so the item's own steps aside
+	local containerTransparency: q.State<number> = selected:Compute(function(self, _prev, d)
+		return if self:Get() and not d:Get() then 0 else 1
+	end, dragged)
 	local containerAnim = containerTransparency:Apply(Style.animation())
 
 	-- text column
@@ -318,8 +344,9 @@ end
 export type DataProps<T> = {
 	read Items: q.State<{ T }>,
 	read Key: (item: T) -> string | number,
-	read Render: (item: q.State<T>, index: q.State<number>) -> Instance,
+	read Render: (item: q.State<T>, index: q.State<number>, dragged: q.State<boolean>) -> Instance,
 	read OnReorder: ((from: number, to: number) -> ())?,
+	read Reordering: q.State<boolean>?,
 	read Gap: number?,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
@@ -345,6 +372,7 @@ local function ListData<T>(props: DataProps<T>): Frame
 			Key = props.Key :: any,
 			Render = props.Render :: any,
 			OnReorder = onReorder,
+			Reordering = props.Reordering,
 			Gap = props.Gap,
 			Theme = props.Theme,
 		})
@@ -353,6 +381,8 @@ local function ListData<T>(props: DataProps<T>): Frame
 		return container(props.Theme, props.Gap, props.LayoutOrder, props.Modifier, hooks, reorder.Slot)
 	end
 	local slot = q.Slot<<Instance>>()
+	-- `Render`'s third argument in a list that cannot be reordered: one never-true State for the whole list
+	local neverDragged: q.State<boolean> = q.Source(false)
 	slot:List(props.Items, function(ctx: RowCtx<T>): (any, RowUD<T>?)
 		if ctx.Item == q.KeyGone then
 			return nil, ctx.UserData
@@ -366,7 +396,7 @@ local function ListData<T>(props: DataProps<T>): Frame
 		end
 		local item = q.Source(data)
 		local index = q.Source(ctx.Index)
-		return props.Render(item, index), { item = item, index = index }
+		return props.Render(item, index, neverDragged), { item = item, index = index }
 	end, function(item: T): any
 		return props.Key(item)
 	end)

@@ -1,7 +1,9 @@
 --!strict
 -- List: one ListItem whose texts / Selected / Disabled are Sources (Lines and Clickable are construction-time, so they
 -- rebuild the item), a static List with dividers, a keyed ListData over a Source<{Item}> with add / remove buttons, and a
--- drag-to-reorder ListData (`OnReorder`): the story moves the row itself, at once or 0.4 s later (`ReorderDelay`).
+-- drag-to-reorder ListData (`OnReorder`): the story moves the row itself, at once or 2 s later (`ReorderDelay` — the
+-- rows wait for that answer because `Reordering` is true meanwhile); the lifted row's content takes the dragged colors
+-- (`Render`'s third argument -> `ListItem`'s `Dragged`).
 local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
@@ -137,15 +139,18 @@ return StoryKit.story({
 			{ Id = 3, Name = "Third" },
 			{ Id = 4, Name = "Fourth" },
 		})
+		local awaiting = q.Source(false)
 		local reorder = Material.ListData<<Item>>({
 			Theme = theme,
 			Items = tracks,
+			Reordering = awaiting,
 			Key = function(item: Item)
 				return item.Id
 			end,
-			Render = function(item: q.State<Item>, index: q.State<number>)
+			Render = function(item: q.State<Item>, index: q.State<number>, dragged: q.State<boolean>)
 				return Material.ListItem({
 					Theme = theme,
+					Dragged = dragged,
 					Headline = item:Compute(function(self: q.StateData<Item>): string
 						return self:Get().Name
 					end),
@@ -162,7 +167,11 @@ return StoryKit.story({
 				end
 				picked:Set(`OnReorder({from}, {to})`)
 				if c.ReorderDelay:Get() == true then
-					task.delay(0.4, apply)
+					awaiting:Set(true)
+					task.delay(2, function()
+						apply()
+						awaiting:Set(false)
+					end)
 				else
 					apply()
 				end

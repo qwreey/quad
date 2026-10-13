@@ -228,11 +228,19 @@ type Reorderable = {
 	move: (y: number) -> (),
 	release: (y: number) -> (),
 	order: () -> string,
+	dragged: (title: string) -> boolean,
+}
+type ReorderExtra = {
+	-- the owner's "an answer is on its way" State, and what the callback does besides recording the call
+	Reordering: Q.Source<boolean>?,
+	OnCall: ((from: number, to: number) -> ())?,
 }
 
 -- a reorderable list of `titles` (ids 1..n); `heights[title]` is the row's height (default 56); `apply` = the callback
 -- edits `Items` itself (the local flow), else it only records the call (the server flow)
-local function reorderable(titles: { string }, heights: { [string]: number }?, apply: boolean?, gap: number?): Reorderable
+local function reorderable(titles: { string }, heights: { [string]: number }?, apply: boolean?, gap: number?, extra: ReorderExtra?): Reorderable
+	local more: ReorderExtra = extra or {}
+	local draggedOf: { [number]: Q.State<boolean> } = {}
 	local mails: { Mail } = {}
 	for i, t in titles do
 		mails[i] = { Id = i, Title = t }
@@ -245,14 +253,19 @@ local function reorderable(titles: { string }, heights: { [string]: number }?, a
 		Key = function(m: Mail)
 			return m.Id
 		end,
-		Render = function(item: Q.State<Mail>, _index: Q.State<number>)
+		Render = function(item: Q.State<Mail>, _index: Q.State<number>, dragged: Q.State<boolean>)
 			local title: Q.State<string> = item:Compute(function(self)
 				return self:Get().Title
 			end)
-			return ListItem({ Headline = title })
+			draggedOf[item:Get().Id] = dragged
+			return ListItem({ Headline = title, Supporting = "s", Leading = "rbxassetid://1", TrailingText = "t", Dragged = dragged })
 		end,
+		Reordering = more.Reordering,
 		OnReorder = function(from: number, to: number)
 			table.insert(calls, { from, to })
+			if more.OnCall then
+				more.OnCall(from, to)
+			end
 			if apply then
 				local copy = table.clone(items:Get())
 				table.insert(copy, to, table.remove(copy, from) :: Mail)
@@ -333,6 +346,15 @@ local function reorderable(titles: { string }, heights: { [string]: number }?, a
 			end
 			return table.concat(names, ",")
 		end,
+		-- the `dragged` State `Render` got for that row
+		dragged = function(title: string): boolean
+			for _, m in items:Get() do
+				if m.Title == title then
+					return draggedOf[m.Id]:Get()
+				end
+			end
+			error("no item " .. title)
+		end,
 	}
 end
 
@@ -389,8 +411,8 @@ H.section("reorder: row structure — host / Lift / Body / handle, 12 instances 
 	for _, inst in { host, lift, body } :: { any } do
 		assert(inst.Size.Y.Scale == 0 and (inst.Position == nil or inst.Position.Y.Scale == 0), inst.Name .. ": no Scale Y")
 	end
-	assert(H.countDescendants(host) == 12 + 6, "12 around the row (1 + 6), got " .. H.countDescendants(host))
-	assert(H.countDescendants(r.list) == 1 + 3 * 19)
+	assert(H.countDescendants(host) == 12 + 9, "12 around the row (1 + 9: supporting, leading, trailing text), got " .. H.countDescendants(host))
+	assert(H.countDescendants(r.list) == 1 + 3 * 22)
 	assert(dragConns() == base and beganConns() == began and heartbeatConns() == beat, "no connection at rest")
 	q.dispose(r.list)
 	assert(H.isDestroyed(host) and H.isDestroyed(handle))
@@ -399,7 +421,7 @@ H.section("reorder: row structure — host / Lift / Body / handle, 12 instances 
 	local withImage = reorderable({ "A" })
 	local imageHandle = H.find(withImage.list, "DragHandle")
 	assert(imageHandle.ClassName == "ImageButton" and H.find(imageHandle, "Icon").Image == "rbxassetid://1")
-	assert(H.countDescendants(withImage.row("A")) == 14 + 6)
+	assert(H.countDescendants(withImage.row("A")) == 14 + 9)
 	q.dispose(withImage.list)
 	Icons.override({ dragHandle = false })
 	H.assertNoDebugOutput("structure")
@@ -769,6 +791,273 @@ H.section("reorder: edge scroll — the ancestor ScrollingFrame scrolls while th
 	H.assertNoDebugOutput("scroll")
 end)
 
+H.section("ListItem Dragged: every content role onTertiaryContainer; disabled > dragged > selected; the selected fill steps aside", function()
+	local dragged = q.Source(false)
+	local selected = q.Source(false)
+	local disabled = q.Source(false)
+	local item: any = ListItem({
+		Overline = "O",
+		Headline = "H",
+		Supporting = "S",
+		Leading = "rbxassetid://1",
+		Trailing = "rbxassetid://2",
+		TrailingText = "T",
+		Selected = selected,
+		Disabled = disabled,
+		Dragged = dragged,
+	})
+	local plain: any = ListItem({ Overline = "O", Headline = "H", Supporting = "S", Leading = "rbxassetid://1", Trailing = "rbxassetid://2", TrailingText = "T" })
+	assert(H.countDescendants(item) == H.countDescendants(plain), "Dragged adds no instance")
+	local function colors(): { Color3 }
+		H.finishTweens()
+		return {
+			H.find(item, "Headline").TextColor3,
+			H.find(item, "Supporting").TextColor3,
+			H.find(item, "Overline").TextColor3,
+			H.find(item, "Leading").ImageColor3,
+			H.find(item, "Trailing").ImageColor3,
+			H.find(item, "TrailingText").TextColor3,
+		}
+	end
+	local function all(role: Color3, what: string)
+		for i, c in colors() do
+			assert(c == role, `{what}: content {i} is {c}`)
+		end
+	end
+	local rest = colors()
+	assert(rest[1] == L.OnSurface and rest[2] == L.OnSurfaceVariant and rest[4] == L.OnSurfaceVariant and rest[6] == L.OnSurfaceVariant)
+	dragged:Set(true)
+	assert(H.find(item, "Headline").TextColor3 == L.OnSurface, "a tween, like the other color changes (not a snap)")
+	all(L.OnTertiaryContainer, "dragged")
+	assert(item.BackgroundTransparency == 1)
+	-- dragged beats selected: content stays onTertiaryContainer, and the item's own secondaryContainer fill is not drawn
+	selected:Set(true)
+	all(L.OnTertiaryContainer, "dragged + selected")
+	assert(item.BackgroundTransparency == 1, "the dragged container is the list's: the selected fill steps aside")
+	dragged:Set(false)
+	all(L.OnSecondaryContainer, "selected")
+	assert(item.BackgroundTransparency == 0 and item.BackgroundColor3 == L.SecondaryContainer)
+	-- disabled beats dragged
+	dragged:Set(true)
+	disabled:Set(true)
+	all(L.OnSurface, "disabled + dragged")
+	assert(near(H.find(item, "Headline").TextTransparency, 0.62))
+	disabled:Set(false)
+	selected:Set(false)
+	dragged:Set(false)
+	local back = colors()
+	for i, c in back do
+		assert(c == rest[i], "back to rest: " .. i)
+	end
+	-- a plain boolean works too
+	local fixed: any = ListItem({ Headline = "H", Dragged = true })
+	assert(H.find(fixed, "Headline").TextColor3 == L.OnTertiaryContainer)
+	q.dispose(item)
+	q.dispose(plain)
+	q.dispose(fixed)
+	H.assertNoDebugOutput("dragged item")
+end)
+
+H.section("Render's third argument: the row's dragged State — pointer drag and key engage; never true without OnReorder", function()
+	local seen: { Q.State<boolean> } = {}
+	local plain: any = ListData<<Mail>>({
+		Items = q.Source({ { Id = 1, Title = "one" }, { Id = 2, Title = "two" } } :: { Mail }),
+		Key = function(m: Mail)
+			return m.Id
+		end,
+		Render = function(_item: Q.State<Mail>, _index: Q.State<number>, dragged: Q.State<boolean>)
+			table.insert(seen, dragged)
+			return ListItem({ Headline = "x", Dragged = dragged })
+		end,
+	})
+	assert(#seen == 2 and seen[1]:Get() == false and seen[2]:Get() == false, "a State, false, in a list that cannot be reordered")
+	assert(H.countDescendants(plain) == 1 + 2 * 7, "and nothing is added for it")
+	q.dispose(plain)
+
+	local r = reorderable({ "A", "B", "C" })
+	assert(not r.dragged("A") and not r.dragged("B"))
+	local y = r.press("B")
+	assert(r.dragged("B") and not r.dragged("A") and not r.dragged("C"), "true from the press")
+	H.finishTweens()
+	local row = r.row("B")
+	assert(H.find(row, "Headline").TextColor3 == L.OnTertiaryContainer and H.find(row, "Supporting").TextColor3 == L.OnTertiaryContainer)
+	assert(H.find(row, "Leading").ImageColor3 == L.OnTertiaryContainer and H.find(row, "TrailingText").TextColor3 == L.OnTertiaryContainer)
+	assert(H.find(row, "DragHandle").TextColor3 == L.OnTertiaryContainer, "the handle is the row's trailing icon")
+	assert(H.find(r.row("A"), "Headline").TextColor3 == L.OnSurface and H.find(r.row("A"), "DragHandle").TextColor3 == L.OnSurfaceVariant)
+	r.move(y + 60)
+	r.release(y + 60)
+	assert(not r.dragged("B"), "false from the release (the row waits or settles in its resting colors)")
+	H.finishTweens()
+	assert(H.find(row, "Headline").TextColor3 == L.OnSurface and H.find(row, "DragHandle").TextColor3 == L.OnSurfaceVariant)
+	H.advance(1.5)
+	-- engaged by a key
+	local handle = H.find(r.row("A"), "DragHandle")
+	H.fire(handle, "SelectionGained")
+	UIS.InputBegan:Fire(H.input({ KeyCode = Enum.KeyCode.ButtonA, UserInputType = Enum.UserInputType.Gamepad1 }), false)
+	assert(r.dragged("A"), "engaged = dragged")
+	H.finishTweens()
+	assert(H.find(r.row("A"), "Headline").TextColor3 == L.OnTertiaryContainer)
+	UIS.InputBegan:Fire(H.input({ KeyCode = Enum.KeyCode.ButtonB, UserInputType = Enum.UserInputType.Gamepad1 }), false)
+	assert(not r.dragged("A"))
+	H.fire(handle, "SelectionLost")
+	H.flushDeferred()
+	q.dispose(r.list)
+	H.advance(1)
+	assert(H.pendingTimers() == 0)
+	H.assertNoDebugOutput("dragged state")
+end)
+
+H.section("Reordering: while the owner's State is true the dropped rows wait without a limit; false with Items unchanged = refused", function()
+	local waiting = q.Source(false)
+	local raise = true
+	local r = reorderable({ "A", "B", "C" }, nil, false, nil, {
+		Reordering = waiting,
+		OnCall = function()
+			if raise then
+				waiting:Set(true)
+			end
+		end,
+	})
+	-- accepted, late: the rows stay where they were dropped for as long as it takes, then nothing moves
+	local y = r.press("A")
+	r.move(y + 60)
+	r.release(y + 60)
+	H.finishTweens()
+	assert(#r.calls == 1 and r.offset("A") == 56 and r.offset("B") == -56)
+	assert(H.pendingTimers() == 0, "no timer: the wait has no limit")
+	H.advance(ListReorder.HOLD * 5)
+	H.finishTweens()
+	assert(r.offset("A") == 56 and r.offset("B") == -56 and r.row("A").AutomaticSize == Enum.AutomaticSize.None, "still waiting after 5 s")
+	local base = dragConns()
+	r.press("C")
+	assert(not r.dragged("C"), "no new drag while waiting")
+	r.release(0)
+	assert(dragConns() == base and #r.calls == 1)
+	local list = r.items:Get()
+	r.items:Set({ list[2], list[1], list[3] })
+	waiting:Set(false)
+	r.layout()
+	assert(r.order() == "B,A,C" and r.offset("A") == 0 and r.offset("B") == 0 and r.offset("C") == 0, "the answer: seamless")
+	H.advance(0.3)
+	assert(r.row("A").AutomaticSize == Enum.AutomaticSize.Y and H.pendingTimers() == 0)
+
+	-- the owner lowers the State BEFORE setting Items (same block): still that order, nothing glides back first
+	y = r.press("B")
+	r.move(y + 60)
+	r.release(y + 60) -- shown: A,B,C
+	H.finishTweens()
+	waiting:Set(false)
+	list = r.items:Get()
+	r.items:Set({ list[2], list[1], list[3] })
+	r.layout()
+	assert(r.order() == "A,B,C" and r.offset("A") == 0 and r.offset("B") == 0, "re-seated from where the rows are")
+	H.finishTweens()
+	H.advance(0.3)
+
+	-- refused: false, Items untouched -> the rows glide back now
+	y = r.press("A")
+	r.move(y + 60)
+	r.release(y + 60)
+	H.finishTweens()
+	H.advance(3)
+	assert(r.offset("A") == 56 and #r.calls == 3)
+	waiting:Set(false)
+	assert(r.offset("A") == 56 and H.pendingTimers() == 1, "gliding (a tween and its end timer)")
+	H.finishTweens()
+	assert(r.offset("A") == 0 and r.offset("B") == 0 and r.order() == "A,B,C")
+	H.advance(0.25)
+	assert(r.row("A").AutomaticSize == Enum.AutomaticSize.Y and H.pendingTimers() == 0)
+
+	-- the prop is there but the owner never raises it: the plain 1 s wait
+	raise = false
+	y = r.press("A")
+	r.move(y + 60)
+	r.release(y + 60)
+	H.finishTweens()
+	assert(H.pendingTimers() == 1 and r.offset("A") == 56)
+	waiting:Set(false) -- a false that follows no true is not an answer (a derived State may emit it again)
+	H.advance(ListReorder.HOLD - 0.05)
+	H.finishTweens()
+	assert(r.offset("A") == 56, "still the 1 s wait")
+	H.advance(0.1)
+	H.finishTweens()
+	assert(r.offset("A") == 0)
+	H.advance(0.3)
+	assert(H.pendingTimers() == 0)
+
+	-- raised a moment AFTER the callback returned (an async hop): the wait becomes unlimited
+	y = r.press("A")
+	r.move(y + 60)
+	r.release(y + 60)
+	H.finishTweens()
+	H.advance(0.2)
+	waiting:Set(true)
+	assert(H.pendingTimers() == 0)
+	H.advance(4)
+	H.finishTweens()
+	assert(r.offset("A") == 56, "waiting")
+	-- destroyed while waiting: nothing is left
+	q.dispose(r.list)
+	waiting:Set(false)
+	H.advance(2)
+	assert(H.pendingTimers() == 0 and dragConns() == base)
+
+	-- the local flow with the State raised and lowered around the edit, all inside the callback
+	local busy = q.Source(false)
+	local own: { Q.Source<{ Mail }> } = {}
+	local l = reorderable({ "A", "B", "C" }, nil, false, nil, {
+		Reordering = busy,
+		OnCall = function(from: number, to: number)
+			busy:Set(true)
+			local copy = table.clone(own[1]:Get())
+			table.insert(copy, to, table.remove(copy, from) :: Mail)
+			own[1]:Set(copy)
+			busy:Set(false)
+		end,
+	})
+	own[1] = l.items
+	y = l.press("A")
+	l.move(y + 100)
+	l.release(y + 100)
+	l.layout()
+	assert(l.order() == "B,C,A" and l.top("A") + l.offset("A") == 100, "settling in the new order, from where it was dropped")
+	H.finishTweens()
+	assert(l.offset("A") == 0)
+	H.advance(0.3)
+	assert(H.pendingTimers() == 0)
+	-- a key move waits too when the State is true after the callback, and the answer animates
+	local slow = q.Source(false)
+	local k = reorderable({ "A", "B", "C" }, nil, false, nil, {
+		Reordering = slow,
+		OnCall = function()
+			slow:Set(true)
+		end,
+	})
+	local handle = H.find(k.row("A"), "DragHandle")
+	H.fire(handle, "SelectionGained")
+	UIS.InputBegan:Fire(H.input({ KeyCode = Enum.KeyCode.Return, UserInputType = Enum.UserInputType.Keyboard }), false)
+	UIS.InputBegan:Fire(H.input({ KeyCode = Enum.KeyCode.Down, UserInputType = Enum.UserInputType.Keyboard }), false)
+	assert(#k.calls == 1 and k.calls[1][1] == 1 and k.calls[1][2] == 2)
+	UIS.InputBegan:Fire(H.input({ KeyCode = Enum.KeyCode.Down, UserInputType = Enum.UserInputType.Keyboard }), false)
+	assert(#k.calls == 1, "no second move while the first waits")
+	H.advance(3)
+	list = k.items:Get()
+	k.items:Set({ list[2], list[1], list[3] })
+	slow:Set(false)
+	k.layout()
+	assert(k.order() == "B,A,C" and k.offset("A") == -56 and k.offset("B") == 56, "drawn where they were, gliding to the answer")
+	H.finishTweens()
+	H.advance(0.3)
+	UIS.InputBegan:Fire(H.input({ KeyCode = Enum.KeyCode.Escape, UserInputType = Enum.UserInputType.Keyboard }), false)
+	H.fire(handle, "SelectionLost")
+	H.flushDeferred()
+	q.dispose(l.list)
+	q.dispose(k.list)
+	H.advance(1)
+	assert(H.pendingTimers() == 0)
+	H.assertNoDebugOutput("reordering")
+end)
+
 H.section("reorder: keys — the handle engages with Return / ButtonA, Up / Down move the row one place at once", function()
 	local began = beganConns()
 	local r = reorderable({ "A", "B", "C" }, nil, true)
@@ -784,6 +1073,7 @@ H.section("reorder: keys — the handle engages with Return / ButtonA, Up / Down
 	H.finishTweens()
 	assert(handle.NextSelectionUp == handle and handle.NextSelectionDown == handle, "engaged: the arrows are the row's")
 	assert(H.find(r.row("B"), "Lift").BackgroundTransparency == 0, "engaged looks lifted")
+	assert(r.row("B").ZIndex == 2 and r.row("A").ZIndex == 1 and r.row("C").ZIndex == 1, "and is drawn above its neighbours")
 	key(Enum.KeyCode.Down)
 	assert(#r.calls == 1 and r.calls[1][1] == 2 and r.calls[1][2] == 3 and r.order() == "A,C,B")
 	r.layout()
@@ -808,9 +1098,65 @@ H.section("reorder: keys — the handle engages with Return / ButtonA, Up / Down
 	H.fire(handle, "SelectionLost")
 	assert(beganConns() == began)
 	H.advance(0.25)
+	assert(r.row("B").ZIndex == 1, "back in the row order once it is neither lifted nor settling")
 	assert(H.pendingTimers() == 0)
 	q.dispose(r.list)
 	H.assertNoDebugOutput("keys")
+end)
+
+H.section("reorder: keys in a ScrollingFrame — the moved row is scrolled into view (the selection does not move, the engine does not scroll)", function()
+	local titles: { string } = {}
+	for i = 1, 10 do
+		titles[i] = "R" .. i
+	end
+	local r = reorderable(titles, nil, true)
+	local scroll: any = D.ScrollingFrame { r.list }
+	H.setAbs(scroll, 0, 100, 360, 200)
+	scroll.AbsoluteWindowSize = Vector2.new(360, 200)
+	scroll.AbsoluteCanvasSize = Vector2.new(360, 560)
+	-- scrolled by 112: R3 (canvas 112 .. 168) is the first row in the window, R6 (280 .. 336) the last whole one
+	scroll.CanvasPosition = Vector2.new(0, 112)
+	r.layout(100 - 112)
+	local function key(code: Enum.KeyCode)
+		UIS.InputBegan:Fire(H.input({ KeyCode = code, UserInputType = Enum.UserInputType.Keyboard }), false)
+	end
+	local handle = H.find(r.row("R3"), "DragHandle")
+	H.fire(handle, "SelectionGained")
+	key(Enum.KeyCode.Return)
+	key(Enum.KeyCode.Down)
+	assert(r.order() == "R1,R2,R4,R3,R5,R6,R7,R8,R9,R10" and scroll.CanvasPosition.Y == 112, "still inside the window: no scroll")
+	r.layout()
+	H.finishTweens()
+	H.advance(0.3)
+	key(Enum.KeyCode.Up)
+	r.layout()
+	H.advance(0.3)
+	key(Enum.KeyCode.Up)
+	assert(r.order() == "R1,R3,R2,R4,R5,R6,R7,R8,R9,R10")
+	assert(scroll.CanvasPosition.Y == 56, "R3's new place (canvas 56 .. 112) was above the window: scrolled to its top, got " .. scroll.CanvasPosition.Y)
+	r.layout(100 - 56)
+	H.advance(0.3)
+	-- and downwards, past the bottom of the window (56 + 200 = 256)
+	for _ = 1, 4 do
+		key(Enum.KeyCode.Down)
+		r.layout(100 - scroll.CanvasPosition.Y)
+		H.advance(0.3)
+	end
+	assert(r.order() == "R1,R2,R4,R5,R6,R3,R7,R8,R9,R10", r.order())
+	assert(scroll.CanvasPosition.Y == 136, "R3 at canvas 280 .. 336: its bottom at the window's bottom, got " .. scroll.CanvasPosition.Y)
+	key(Enum.KeyCode.Escape)
+	H.fire(handle, "SelectionLost")
+	H.flushDeferred()
+	-- a pointer drop does not scroll (the row is under the pointer already)
+	r.layout(100 - 136)
+	local y = r.press("R7")
+	r.move(y + 10)
+	r.release(y + 10)
+	assert(scroll.CanvasPosition.Y == 136)
+	q.dispose(scroll)
+	H.advance(2)
+	assert(H.pendingTimers() == 0)
+	H.assertNoDebugOutput("keys scroll")
 end)
 
 H.section("reorder: Escape during a drag does not dismiss an overlay around the list; dispose mid-drag leaves nothing", function()

@@ -11,7 +11,9 @@
 	With `OnReorder` every row gets a drag handle at its end. Pressing the handle lifts the row; the row follows the pointer
 	(vertically, kept inside the list) while the other rows give way; releasing calls `OnReorder(from, to)` when the place
 	changed. THE LIST NEVER EDITS `Items`: the owner does (a server may decide the order). Until `Items` next changes the
-	rows stay where they were dropped, at most `HOLD` seconds; then they glide back.
+	rows stay where they were dropped — for as long as the owner's `Reordering` State is true, else at most `HOLD`
+	seconds; then they glide back. `Render` gets the row's `dragged` State as its third argument (give it to
+	`ListItem`'s `Dragged`: the content takes the dragged colors).
 
 	SOURCES (read 2026-10-13; m3.material.io/components/lists is script-rendered and returned no text — "site not compared")
 	  Compose material3 has no reorderable list component. What it does have is the DRAGGED state of a list item:
@@ -48,9 +50,13 @@
 
 	WHAT THE KIT DOES WITH THEM
 	  Lifted look     the row's `Lift` frame: TertiaryContainer fill, CornerLarge, elevation level 4 (tokens above), animated
-	                  with Short4 / Standard like every kit elevation. NOT applied: the OnTertiaryContainer content colors —
-	                  the row is the caller's instance (`Render`), the list does not reach into it. No drop-zone fill
-	                  (ItemDropZoneColor): the gap is the affordance, as in both sources.
+	                  with Short4 / Standard like every kit elevation; the handle glyph turns OnTertiaryContainer (the
+	                  trailing icon's dragged color). The CONTENT colors are the row's own business — the row is the
+	                  caller's instance — so `Render(item, index, dragged)` hands the row its `dragged: State<boolean>`
+	                  (lifted by the pointer OR engaged by a key) and `ListItem({ Dragged = dragged })` does the rest
+	                  (List.luau: every content role OnTertiaryContainer; disabled > dragged > selected, as
+	                  ListItemDefaults.kt 751-835). No drop-zone fill (ItemDropZoneColor): the gap is the affordance, as
+	                  in both sources.
 	  Pick-up         the HANDLE only, at once, mouse and touch (ItemTouchHelper's `startDrag` form). No long press on
 	                  the row body: a press on a clickable row stops at the row's own GuiButton (Util.luau "INPUT RULE") and
 	                  its click cannot be cancelled from outside the row.
@@ -62,10 +68,21 @@
 	                  (`from ~= to`; `to` counts places after the move, so `table.insert(t, to, table.remove(t, from))`).
 	  After release   the row settles into the gap and the list WAITS for `Items`: the next change of `Items` (inside the
 	                  callback, or later — a server answer) re-seats every row from where it IS on screen to where the new
-	                  order puts it, in the same frame as the LayoutOrder change (below), so nothing jumps. If `Items` does
-	                  not change within `HOLD` (1 s — a kit choice, no source: long enough for a round trip to a server,
-	                  short enough that a refused move does not look accepted) the rows glide back. Setting `Items` to the
-	                  unchanged order is "refused": they glide back at once. No new drag starts while waiting.
+	                  order puts it, in the same frame as the LayoutOrder change (below), so nothing jumps. How long it
+	                  waits (user decision 2026-10-13):
+	                    * `Reordering: State<boolean>?` — the owner's "an answer is on its way". While it is true the
+	                      rows wait, with no time limit. When it turns false and `Items` has not changed, the move was
+	                      REFUSED: the rows glide back.
+	                    * Without the prop, or while it has not been true since the release: `HOLD` (1 s — a kit choice,
+	                      no source), then the rows glide back. `Reordering` is looked at when the callback returns AND
+	                      whenever it changes during the wait, so an owner that raises it a moment after the callback
+	                      (an async hop) still gets the unlimited wait; a `false` that was never preceded by a `true`
+	                      since the release is not a refusal (a derived State may re-emit false) — only the HOLD ends
+	                      that wait. Why not "false at return = refused at once": that would break the owner who raises
+	                      it late, and an owner who wants an immediate refusal has the signal below.
+	                    * Setting `Items` to the unchanged order is "refused" too: the rows glide back at once.
+	                  No new drag (or key move) starts while waiting. A key move displaces nothing, so it only waits
+	                  when `Reordering` is true after the callback (the answer then animates like a drop).
 	  Cancel          Escape / gamepad B, window focus lost, the row or the list destroyed, `Items` changing mid-drag: back
 	                  to the resting places, no callback.
 	  Edge scroll     the nearest ancestor ScrollingFrame scrolls while the lifted row sticks out of its window in the drag
@@ -74,6 +91,9 @@
 	  Keys            (kit convention, no source — KeyNav "Engage", like the color picker's SV area) the handle is a
 	                  selection stop; ButtonA / Return engages it (the row looks lifted), Up / Down then call `OnReorder(i,
 	                  i -+ 1)` at once, ButtonA / ButtonB / Return / Escape disengage. Unengaged, the D-pad walks on.
+	                  A row moved by a key is scrolled into view when the new order arrives: the selection does not
+	                  change, so the engine does not scroll for it (Studio 2026-10-13: two Up presses took the engaged
+	                  row out of a 240 px ScrollingFrame's window).
 
 	HOW (the engine constraints behind the shape)
 	  * Rows are laid out by the List's UIListLayout (`LayoutOrder` = index), which ignores a child's Position. So every
@@ -102,9 +122,16 @@
 	  * Offsets are integers (UDim): under a fractional UIScale the frozen heights round, the rows may sit a pixel off
 	    during a session.
 
-	Not verified in Studio (mock only, 2026-10-13): smoothness, the release frame, the shadow under a clipping ScrollingFrame
-	(a UIShadow is cut by an ancestor's clip — a lifted row near the frame's edge will lose part of it), programmatic
-	CanvasPosition writes while `ScrollingEnabled` is off (Interaction.drag's LockScroll), touch.
+	STUDIO (quad-test, Play Client, SignalBehavior Immediate, UIScale 1, 2026-10-13 — positions logged every frame from a
+	RenderStep bound after `Last`): at the release frame every row is drawn where it was the frame before (0 px), with
+	`Items` set in the callback, 0.1 s later (the dropped row mid-tween: 178 -> 177), 0.4 s and 2 s later; the thaw to
+	automatic height moves nothing; the largest step of a giving-way row is one tween frame (18 px of 72). Edge scroll:
+	`CanvasPosition` writes work while LockScroll holds `ScrollingEnabled` false, the row stays under the pointer (0 px)
+	while the canvas runs, the canvas stops at its end and `ScrollingEnabled` comes back. A press on the handle does not
+	click a clickable row. Enter / Down / Up / Enter on a selected handle: engaged look, one place per key, selection
+	stays on the handle; unengaged Down walks to the next handle. Seen, not changed: a lifted row at the edge of a
+	ScrollingFrame loses its shadow there (a UIShadow is cut by an ancestor's clip). NOT verified: touch (no touch input
+	through the tooling), a UIScale other than 1, Deferred signals.
 ]]
 
 local q = require("./Quad")
@@ -119,6 +146,7 @@ local Ripple = require("./Ripple")
 local Elevation = require("./Elevation")
 local GlyphButton = require("./GlyphButton")
 local Icons = require("./Icons")
+local Style = require("./Button/Style")
 local D = q.Declaration
 
 local RunService = game:GetService("RunService")
@@ -126,8 +154,9 @@ local RunService = game:GetService("RunService")
 export type Config = {
 	Items: q.State<{ any }>,
 	Key: (item: any) -> string | number,
-	Render: (item: q.State<any>, index: q.State<number>) -> Instance,
+	Render: (item: q.State<any>, index: q.State<number>, dragged: q.State<boolean>) -> Instance,
 	OnReorder: (from: number, to: number) -> (),
+	Reordering: q.State<boolean>?,
 	Gap: number?,
 	Theme: Theme.Theme?,
 }
@@ -160,6 +189,7 @@ type Row = {
 	held: q.Source<boolean>, -- lifted by a pointer
 	engaged: q.Source<boolean>, -- lifted by ButtonA / Return (KeyNav "Engage")
 	raised: q.Source<boolean>, -- drawn above the other rows
+	lifted: q.State<boolean>, -- held or engaged: the lifted look, and what `Render` gets as `dragged`
 	host: GuiObject?,
 	lift: GuiObject?,
 	tracker: Interaction.Drag?,
@@ -207,6 +237,9 @@ local function new(cfg: Config): Reorder
 	local escapeConn: RBXScriptConnection? = nil
 	local stepConn: RBXScriptConnection? = nil
 	local releaseHold: (() -> ())? = nil
+	local reordering = cfg.Reordering
+	local answerComing = false -- `Reordering` has been true since the release: its turning false is a refusal
+	local reveal: Row? = nil -- the row a key moved: scrolled into view when the new order arrives
 	local scroller: ScrollingFrame? = nil
 	local scrollTime = 0
 
@@ -283,6 +316,7 @@ local function new(cfg: Config): Reorder
 	local function finish()
 		cancelTimer()
 		phase = "Idle"
+		reveal = nil
 		local list = order
 		local d = dragged
 		order = {}
@@ -313,6 +347,50 @@ local function new(cfg: Config): Reorder
 			end
 		end
 		after(MOVE.Time, finish)
+	end
+
+	-- the wait after a release (phase "Pending"): armed with the HOLD timer; `Reordering` true makes it unlimited
+	local function armWait()
+		answerComing = false
+		after(HOLD, settle)
+	end
+	local function lookAtReordering()
+		local state = reordering
+		if destroyed or phase ~= "Pending" or state == nil then
+			return
+		end
+		if state:Get() then
+			answerComing = true
+			cancelTimer()
+		elseif answerComing then
+			answerComing = false
+			settle() -- the answer came and `Items` is what it was: refused
+		end
+	end
+
+	-- a row moved by a key keeps the selection, so the engine does not scroll to it: bring its new place into the
+	-- nearest ScrollingFrame's window (`row.top` is already the place in the new order)
+	local function show(row: Row)
+		local host = listHost
+		local sf = if host ~= nil then findScroller(host) else nil
+		if host == nil or sf == nil then
+			return
+		end
+		local top = host.AbsolutePosition.Y + row.top * scale
+		local bottom = top + row.height * scale
+		local windowTop = sf.AbsolutePosition.Y
+		local windowBottom = windowTop + sf.AbsoluteWindowSize.Y
+		local delta = 0
+		if top < windowTop then
+			delta = top - windowTop
+		elseif bottom > windowBottom then
+			delta = bottom - windowBottom
+		end
+		if delta ~= 0 then
+			local canvas = sf.CanvasPosition
+			local max = math.max(sf.AbsoluteCanvasSize.Y - sf.AbsoluteWindowSize.Y, 0)
+			sf.CanvasPosition = Vector2.new(canvas.X, math.clamp(canvas.Y + delta, 0, max))
+		end
 	end
 
 	local function targetOf(top: number): number
@@ -503,8 +581,9 @@ local function new(cfg: Config): Reorder
 		phase = "Pending"
 		setPos(row, slots[to] - row.top, MOVE.Time)
 		-- armed BEFORE the callback: a callback that throws still lets the rows go back
-		after(HOLD, settle)
+		armWait()
 		cfg.OnReorder(from, to)
+		lookAtReordering()
 	end
 
 	-- `Items` changed (the Observer below): the session's rows move from where they are to where the new order puts them
@@ -561,6 +640,11 @@ local function new(cfg: Config): Reorder
 		from, to = 0, 0
 		phase = "Settling"
 		after(MOVE.Time, finish)
+		local moved = reveal
+		if moved ~= nil then
+			reveal = nil
+			show(moved)
+		end
 	end
 
 	-- a session that can no longer be trusted (a row appeared or left): end it where the layout is
@@ -596,12 +680,14 @@ local function new(cfg: Config): Reorder
 		if measure() then
 			freeze()
 			dragged = row
+			reveal = row
 			row.raised:Set(true)
 			phase = "Pending"
-			after(HOLD, settle)
+			armWait()
 		end
 		cfg.OnReorder(i, j)
-		if phase == "Pending" then
+		lookAtReordering()
+		if phase == "Pending" and not answerComing then
 			finish() -- nothing is displaced, so there is nothing to wait in: a later `Items` change just re-seats the rows
 		end
 	end
@@ -620,15 +706,21 @@ local function new(cfg: Config): Reorder
 		owner = nil
 	end
 
-	local function makeRow(key: any, index: q.Source<number>, content: Instance): (Row, Instance)
-		local row: Row = {
+	local function newRow(key: any, index: q.Source<number>): Row
+		local held = q.Source(false)
+		local engaged = q.Source(false)
+		local lifted: q.State<boolean> = held:Compute(function(self, _prev, e)
+			return self:Get() or e:Get()
+		end, engaged)
+		return {
 			key = key,
 			index = index,
 			pos = q.Source({ Offset = 0, Time = 0 } :: Pos),
 			frozen = q.Source(-1),
-			held = q.Source(false),
-			engaged = q.Source(false),
+			held = held,
+			engaged = engaged,
 			raised = q.Source(false),
+			lifted = lifted,
 			host = nil,
 			lift = nil,
 			tracker = nil,
@@ -637,6 +729,10 @@ local function new(cfg: Config): Reorder
 			shift = 0,
 			moved = false,
 		}
+	end
+
+	-- the host around the row `Render` returned (header "HOW")
+	local function wrap(row: Row, content: Instance): Instance
 		local tracker = Interaction.drag({
 			OnBegan = function(_x: number, y: number)
 				if owner == nil and began(row, y) then
@@ -668,9 +764,7 @@ local function new(cfg: Config): Reorder
 			end
 		end, nil, { Pin = "Engage", Engaged = row.engaged })
 
-		local lifted: q.State<boolean> = row.held:Compute(function(self, _prev, engaged)
-			return self:Get() or engaged:Get()
-		end, row.engaged)
+		local lifted = row.lifted
 		local level: q.State<number> = lifted:Compute(function(self)
 			return if self:Get() then LIFT_LEVEL else 0
 		end)
@@ -697,14 +791,18 @@ local function new(cfg: Config): Reorder
 		local automatic: q.State<Enum.AutomaticSize> = row.frozen:Compute(function(self)
 			return if self:Get() < 0 then Enum.AutomaticSize.Y else Enum.AutomaticSize.None
 		end)
-		local zIndex: q.State<number> = row.raised:Compute(function(self)
-			return if self:Get() then 2 else 1
-		end)
+		-- above the other rows while it moves (a session) and while it is lifted (engaged by a key: its shadow)
+		local zIndex: q.State<number> = row.raised:Compute(function(self, _prev, l)
+			return if self:Get() or l:Get() then 2 else 1
+		end, lifted)
 
 		local asset = Icons.asset("dragHandle")
+		-- the trailing icon of a dragged item is OnTertiaryContainer (ReorderListTokens.ItemTrailingIconColor)
+		local glyphColor = Style.animated(Style.choose(lifted, theme.Raw.OnTertiaryContainer, theme.Raw.OnSurfaceVariant))
 		local handle = GlyphButton.new({
 			Name = "DragHandle",
 			Asset = asset,
+			Color = glyphColor,
 			Glyph = Icons.glyph("dragHandle"),
 			Size = HANDLE,
 			TextSize = 24,
@@ -720,7 +818,7 @@ local function new(cfg: Config): Reorder
 			AutomaticSize = automatic,
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			LayoutOrder = index,
+			LayoutOrder = row.index,
 			ZIndex = zIndex,
 			Util.preHook(function(inst: GuiObject)
 				row.host = inst
@@ -757,7 +855,7 @@ local function new(cfg: Config): Reorder
 				handle,
 			},
 		}
-		return row, host
+		return host
 	end
 
 	local slot = q.Slot<<Instance>>()
@@ -779,7 +877,8 @@ local function new(cfg: Config): Reorder
 		abort()
 		local item = q.Source(ctx.Item)
 		local index = q.Source(ctx.Index)
-		local row, host = makeRow(cfg.Key(ctx.Item), index, cfg.Render(item, index))
+		local row = newRow(cfg.Key(ctx.Item), index)
+		local host = wrap(row, cfg.Render(item, index, row.lifted))
 		rows[row] = true
 		return host, { item = item, index = index, row = row }
 	end, function(item: any): any
@@ -795,6 +894,14 @@ local function new(cfg: Config): Reorder
 			onItems()
 		end),
 	}
+	if reordering ~= nil then
+		table.insert(
+			hooks,
+			reordering:Observer(function()
+				lookAtReordering()
+			end)
+		)
+	end
 
 	return { Slot = slot, Hooks = hooks }
 end

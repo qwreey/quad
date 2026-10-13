@@ -3,7 +3,8 @@
 	Gallery section "Surfaces": Elevation levels, Card (Elevated / Filled / Outlined, one interactive), Divider (plain,
 	inset, vertical) and List (static rows of one / two / three lines with leading + trailing, selection, disabled; a
 	keyed `ListData` whose rows are added / removed from the buttons above it; and a drag-to-reorder `ListData` — rows of
-	two heights, the owner applies each move at once, after a pretend server delay, or not at all).
+	two heights, the owner applies each move at once, after a pretend 2 s server round trip (`Reordering` keeps the rows
+	waiting), or not at all; `Render` passes its `dragged` State to `ListItem`'s `Dragged`).
 ]]
 
 local q = require("./Quad")
@@ -281,7 +282,8 @@ return function(ctx: Ctx): Instance
 		}),
 	})
 
-	-- drag to reorder: the list only calls back; this owner moves the row — at once, late (a server round trip) or never
+	-- drag to reorder: the list only calls back; this owner moves the row — at once, late (a server round trip, during
+	-- which `Reordering` is true and the dropped rows wait) or never
 	local tracks = ctx.Memo("surf.tracks", function()
 		return q.Source<<{ Track }>>({
 			{ Id = 1, Title = "Opening", Artist = "Two lines: drag the handle at the end" },
@@ -300,15 +302,21 @@ return function(ctx: Ctx): Instance
 	local lastMove = ctx.Memo("surf.reorderLast", function()
 		return q.Source("No move yet")
 	end)
+	local awaiting = ctx.Memo("surf.reorderAwaiting", function()
+		return q.Source(false)
+	end)
 	local reorderList = Material.ListData<<Track>>({
 		Theme = theme,
 		Items = tracks,
 		Key = function(t: Track)
 			return t.Id
 		end,
-		Render = function(track: q.State<Track>, index: q.State<number>)
+		Reordering = awaiting,
+		Render = function(track: q.State<Track>, index: q.State<number>, dragged: q.State<boolean>)
 			return Material.ListItem({
 				Theme = theme,
+				Dragged = dragged, -- the lifted row's content takes the dragged colors
+				Leading = ctx.Icon,
 				Headline = Common.text<<Track>>(track, function(t: Track)
 					return t.Title
 				end),
@@ -331,11 +339,22 @@ return function(ctx: Ctx): Instance
 					tracks:Set(copy)
 				end
 			end
-			if serverRefuses:Get() then
-				lastMove:Set(`OnReorder({from}, {to}) refused: Items untouched, the rows go back`)
-			elseif serverDelay:Get() then
-				lastMove:Set(`OnReorder({from}, {to}) applied 0.4 s later`)
-				task.delay(0.4, apply)
+			local refused = serverRefuses:Get()
+			if serverDelay:Get() then
+				-- the server flow: `Reordering` is true until the answer, the rows wait where they were dropped
+				lastMove:Set(`OnReorder({from}, {to}) sent: waiting for the server (2 s)`)
+				awaiting:Set(true)
+				task.delay(2, function()
+					if refused then
+						lastMove:Set(`OnReorder({from}, {to}): the server refused, the rows go back`)
+					else
+						lastMove:Set(`OnReorder({from}, {to}) applied by the server after 2 s`)
+						apply()
+					end
+					awaiting:Set(false)
+				end)
+			elseif refused then
+				lastMove:Set(`OnReorder({from}, {to}) refused: the rows go back after 1 s`)
 			else
 				lastMove:Set(`OnReorder({from}, {to}) applied at once`)
 				apply()
@@ -343,7 +362,7 @@ return function(ctx: Ctx): Instance
 		end,
 	})
 	local reorderControls = Common.Flow({
-		Common.Labeled(ctx, Material.Switch({ Theme = theme, Value = serverDelay }), "Server delay 0.4 s"),
+		Common.Labeled(ctx, Material.Switch({ Theme = theme, Value = serverDelay }), "Server delay 2 s"),
 		Common.Labeled(ctx, Material.Switch({ Theme = theme, Value = serverRefuses }), "Server refuses"),
 	})
 
@@ -357,6 +376,6 @@ return function(ctx: Ctx): Instance
 		}, "Rows are built once per key; reversing re-orders through LayoutOrder only."),
 		Common.Group(ctx, "ListData: drag to reorder", {
 			Common.Column({ reorderControls, Common.Caption(ctx, lastMove), reorderList }, 360, 8),
-		}, "OnReorder(from, to) is all the list does; the owner edits Items. Engage a handle with Enter / A, then Up / Down."),
+		}, "OnReorder(from, to) is all the list does; the owner edits Items (Reordering = waiting for the server). Engage a handle with Enter / A, then Up / Down."),
 	})
 end
