@@ -1,6 +1,7 @@
 --!strict
 --[[
-	Gallery section "Surfaces": Elevation levels, Card (Elevated / Filled / Outlined, one interactive), Divider (plain,
+	Gallery section "Surfaces": Elevation levels, Card (Elevated / Filled / Outlined, one interactive, the three variants
+	disabled — the kit colors the container / outline / shadow, the gallery dims its own text to 38 %), Divider (plain,
 	inset, vertical) and List (static rows of one / two / three lines with leading + trailing, selection, disabled; a
 	keyed `ListData` whose rows are added / removed from the buttons above it; and a drag-to-reorder `ListData` — rows of
 	two heights, the owner applies each move at once, after a pretend 2 s server round trip (`Reordering` keeps the rows
@@ -23,8 +24,11 @@ local function cardWidth()
 	return D.Modifier.GuiObject():Size(UDim2.fromOffset(240, 0)):AutomaticSize(Enum.AutomaticSize.Y)
 end
 
-local function cardBody(ctx: Ctx, title: string, body: string): { Instance }
+-- `dim`: the content of a DISABLED card. The Card colors its container, outline and shadow; its children are the
+-- caller's, so the caller dims them (M3: content at 38 %).
+local function cardBody(ctx: Ctx, title: string, body: string, dim: boolean?): { Instance }
 	local theme = ctx.Theme
+	local textTransparency = if dim then 1 - Material.Tokens.State.Opacity.DisabledContent else 0
 	return {
 		D.TextLabel {
 			Name = "Title",
@@ -35,6 +39,7 @@ local function cardBody(ctx: Ctx, title: string, body: string): { Instance }
 			BorderSizePixel = 0,
 			TextXAlignment = Enum.TextXAlignment.Left,
 			TextColor3 = theme.Color.OnSurface,
+			TextTransparency = textTransparency,
 			Text = title,
 		},
 		D.TextLabel {
@@ -47,6 +52,7 @@ local function cardBody(ctx: Ctx, title: string, body: string): { Instance }
 			TextWrapped = true,
 			TextXAlignment = Enum.TextXAlignment.Left,
 			TextColor3 = theme.Color.OnSurfaceVariant,
+			TextTransparency = textTransparency,
 			Text = body,
 		},
 	}
@@ -127,7 +133,27 @@ return function(ctx: Ctx): Instance
 			Modifier = cardWidth(),
 			Disabled = true,
 			OnClick = function() end,
-			Children = q.Slot<<Instance>>(cardBody(ctx, "Disabled", "An interactive card in its disabled look.")),
+			Children = q.Slot<<Instance>>(cardBody(ctx, "Disabled (Elevated)", "Surface, the level 1 shadow stays.", true)),
+		}),
+		Material.Card({
+			Theme = theme,
+			Variant = "Filled",
+			Padding = 16,
+			Gap = 4,
+			Modifier = cardWidth(),
+			Disabled = true,
+			OnClick = function() end,
+			Children = q.Slot<<Instance>>(cardBody(ctx, "Disabled (Filled)", "Surface variant at 38 % over the container.", true)),
+		}),
+		Material.Card({
+			Theme = theme,
+			Variant = "Outlined",
+			Padding = 16,
+			Gap = 4,
+			Modifier = cardWidth(),
+			Disabled = true,
+			OnClick = function() end,
+			Children = q.Slot<<Instance>>(cardBody(ctx, "Disabled (Outlined)", "Surface, the outline at 12 %.", true)),
 		}),
 		Common.Caption(ctx, opened:Compute(function(self)
 			return `Interactive card opened {self:Get()} times`

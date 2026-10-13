@@ -33,8 +33,8 @@
 	                               swatch click, field blur); pass your own to persist/share it. MaxRecent default 6.
 	  ShowChannels boolean?        the RGB/HSV toggle + boxes (default true); Mode "RGB" | "HSV" starts the toggle
 	  AreaHeight number?           SV area height, default 160
-	  Surface    Color3 | State<Color3>?  the backdrop color behind the panel (the Outlined hex field's label notch must
-	                               match it; default theme Surface — `Modal` passes SurfaceContainerHigh)
+	  Surface    Color3 | State<Color3>?  the backdrop color behind the panel: the color of the Disabled veil (default
+	                               theme Surface — `Modal` passes SurfaceContainerHigh)
 	  Disabled   boolean | State<boolean>?  input blocked (SV/hue not selectable, a surface veil at 38 % sinks the
 	                               pointer over everything)
 	  Theme, Modifier, Hooks       as the kit (Modifier = Frame Modifier applied after the base)
@@ -62,8 +62,8 @@
 	tokens/versions/latest/sass lists date-picker-docked/-modal and time-picker only), so this is the kit's own call.
 	`ColorPicker.Recent` is the module-level default recent list the Modal uses when `Recent` is not given.
 
-	Instances at rest (asserted in test/spec.colorpicker.luau): panel 107 including the host = SV area 12 + hue slider 11 +
-	preview 4 + hex field 13 (incl. the error mark) + channels 29 + swatches 32 (8 presets x 3, no recents) + 6 of glue (host, content + list,
+	Instances at rest (asserted in test/spec.colorpicker.luau): panel 117 including the host = SV area 12 + hue slider 11 +
+	preview 4 + hex field 23 (incl. the error mark; an Outlined TextField with the cut-outline notch) + channels 29 + swatches 32 (8 presets x 3, no recents) + 6 of glue (host, content + list,
 	value row + list, disabled veil). Recents add 3 per swatch. No image assets, no ZIndex numbers.
 	M3 deviations (forced by Roblox / cost): no alpha channel (Color3 has none; an alpha slider would write a separate
 	Source — out of scope); no 2D gradient shadow under the SV thumb; hex commits on blur / Enter, not per keystroke
@@ -150,7 +150,6 @@ local function Panel(props: PanelProps)
 	local hex = HexField({
 		Model = model,
 		Theme = theme,
-		NotchColor = surface,
 		Disabled = props.Disabled,
 		Modifier = D.Modifier.Frame():Size(UDim2.new(1, -68, 0, 0)),
 	})

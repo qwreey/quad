@@ -14,6 +14,13 @@ local L = Tokens.Color.Light
 local function near(a: number, b: number): boolean
 	return math.abs(a - b) < 1e-6
 end
+local function sameColor(a: Color3, b: Color3): boolean
+	return near(a.R, b.R) and near(a.G, b.G) and near(a.B, b.B)
+end
+-- Compose `tint.copy(alpha).compositeOver(over)`
+local function over(base: Color3, tint: Color3, alpha: number): Color3
+	return base:Lerp(tint, alpha)
+end
 local function class(inst: any, name: string): { any }
 	return H.findAll(inst, function(c: any)
 		return c.ClassName == name
@@ -106,8 +113,11 @@ H.section("interactive card: OnClick, state layer, hover raises the shadow, disa
 	assert(near(H.find(card, "StateLayer").BackgroundTransparency, 0.92), "hover layer .08")
 	disabled:Set(true)
 	H.finishTweens()
-	assert(card.Interactable == false and shadow.Enabled == false)
-	assert(near(card.BackgroundTransparency, 0.88) and card.BackgroundColor3 == L.OnSurface)
+	-- Elevated, disabled (Card.kt defaultElevatedCardColors / ElevatedCardTokens): an OPAQUE Surface (Surface @ 38 %
+	-- over Surface), and the shadow stays at Level1 (DisabledContainerElevation) — also while the pointer is still on it
+	assert(card.Interactable == false and shadow.Enabled ~= false and shadow.BlurRadius == UDim.new(0, lv[1].BlurRadius), "disabled keeps level 1")
+	assert(card.BackgroundTransparency == 0 and sameColor(card.BackgroundColor3, L.Surface), "disabled container: Surface, opaque")
+	assert(not sameColor(card.BackgroundColor3, L.SurfaceContainerLow))
 	H.fire(card, "Activated", H.input({}), 1)
 	assert(clicks == 1, "disabled swallows the click")
 	disabled:Set(false)
@@ -117,17 +127,40 @@ H.section("interactive card: OnClick, state layer, hover raises the shadow, disa
 	H.assertNoDebugOutput("interactive")
 end)
 
-H.section("outlined interactive: disabled outline, theme switch", function()
+H.section("disabled interactive cards: the composited canon colors (Card.kt), following a theme switch", function()
+	local Dk = Tokens.Color.Dark
 	local theme = Theme.new({ Scheme = "light" })
-	local card = Card({ Variant = "Outlined", Theme = theme, OnClick = function() end, Disabled = true })
+	local off = q.Source(true)
+	local function click() end
+	-- Outlined: the container does not change; the outline is Outline @ 12 % over SurfaceContainerLow, opaque
+	local card: any = Card({ Variant = "Outlined", Theme = theme, OnClick = click, Disabled = off })
+	-- Filled: SurfaceVariant @ 38 % over SurfaceContainerHighest, opaque; no shadow instance either way
+	local filled: any = Card({ Variant = "Filled", Theme = theme, OnClick = click, Disabled = off })
+	local elevated: any = Card({ Variant = "Elevated", Theme = theme, OnClick = click, Disabled = off })
 	H.finishTweens()
 	local stroke = H.find(card, "Outline")
-	assert(near(stroke.Transparency, 0.88) and stroke.Color == L.OnSurface)
+	assert((stroke.Transparency or 0) == 0 and sameColor(stroke.Color, over(L.SurfaceContainerLow, L.Outline, 0.12)), "disabled outline: an opaque composite")
+	assert(card.BackgroundTransparency == 0 and card.BackgroundColor3 == L.Surface, "outlined container unchanged")
+	assert(filled.BackgroundTransparency == 0 and sameColor(filled.BackgroundColor3, over(L.SurfaceContainerHighest, L.SurfaceVariant, 0.38)), "filled disabled container")
+	assert(not sameColor(filled.BackgroundColor3, L.SurfaceContainerHighest) and #class(filled, "UIShadow") == 0)
+	assert(elevated.BackgroundTransparency == 0 and sameColor(elevated.BackgroundColor3, L.Surface))
+	assert(H.countDescendants(filled) == 5, "corner + layer(3) + Content: the composite adds no instance, got " .. H.countDescendants(filled))
 	local plain = Card({ Variant = "Filled", Theme = theme })
+	-- the composites are computed from the theme's raw roles: a scheme switch recolors them
 	theme:SetScheme("dark")
 	H.finishTweens()
-	assert(plain.BackgroundColor3 == Tokens.Color.Dark.SurfaceContainerHighest)
+	assert(plain.BackgroundColor3 == Dk.SurfaceContainerHighest)
+	assert(sameColor(filled.BackgroundColor3, over(Dk.SurfaceContainerHighest, Dk.SurfaceVariant, 0.38)), "filled disabled, dark")
+	assert(sameColor(elevated.BackgroundColor3, Dk.Surface), "elevated disabled, dark")
+	assert(sameColor(stroke.Color, over(Dk.SurfaceContainerLow, Dk.Outline, 0.12)) and card.BackgroundColor3 == Dk.Surface, "outlined disabled, dark")
+	-- enabled again: the role colors, the enabled outline
+	off:Set(false)
+	H.finishTweens()
+	assert(filled.BackgroundColor3 == Dk.SurfaceContainerHighest and elevated.BackgroundColor3 == Dk.SurfaceContainerLow)
+	assert(stroke.Color == Dk.OutlineVariant and (stroke.Transparency or 0) == 0 and card.BackgroundColor3 == Dk.Surface)
 	q.dispose(card)
+	q.dispose(filled)
+	q.dispose(elevated)
 	q.dispose(plain)
 	H.assertNoDebugOutput("theme")
 end)

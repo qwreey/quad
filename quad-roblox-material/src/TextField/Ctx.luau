@@ -41,7 +41,6 @@ export type Props = {
 	read OnClick: (() -> ())?,
 	-- draws the focused look while true (Select: menu open)
 	read ForceFocused: q.State<boolean>?,
-	read NotchColor: (Color3 | q.State<Color3>)?,
 	read Theme: Theme.Theme?,
 	read Modifier: q.FrameModifier?,
 	read Hooks: Util.Hooks?,

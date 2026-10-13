@@ -13,7 +13,7 @@
 	  Value      Source<T?>               two-way: shows `Format(value)`, an item click writes the option
 	  OnChange   ((option: T) -> ())?     after a USER pick (an item click), not on programmatic Value writes
 	  Format     ((T) -> string)?         default `tostring`
-	  Label, Variant, Placeholder, SupportingText, Error, ErrorText, LeadingIcon, Disabled, Theme, Modifier, NotchColor, Hooks
+	  Label, Variant, Placeholder, SupportingText, Error, ErrorText, LeadingIcon, Disabled, Theme, Modifier, Hooks
 	             as TextField (Variant "Filled" | "Outlined")
 	  Overlay    Overlay.Overlay?         default `Overlay.default()`
 	  MaxMenuHeight number?               the list scrolls past this
@@ -49,7 +49,6 @@ export type Props<T> = {
 	read ErrorText: (string | q.State<string>)?,
 	read LeadingIcon: string?,
 	read Disabled: (boolean | q.State<boolean>)?,
-	read NotchColor: (Color3 | q.State<Color3>)?,
 	read Overlay: Overlay.Overlay?,
 	read MaxMenuHeight: number?,
 	read Theme: Theme.Theme?,
@@ -94,7 +93,6 @@ local function Select<T>(props: Props<T>): Frame
 		TrailingGlyph = Icons.glyph("arrowDown"),
 		Disabled = props.Disabled,
 		ForceFocused = open,
-		NotchColor = props.NotchColor,
 		Theme = props.Theme,
 		Modifier = props.Modifier,
 		Hooks = props.Hooks,

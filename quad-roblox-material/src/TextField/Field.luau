@@ -15,7 +15,9 @@
 	        UICorner · StateLayer (Frame+UICorner) · active indicator Frame · Row Frame (UIPadding+UIListLayout,
 	        TextBox+UIFlexItem) · floating Label TextLabel
 	      Supporting TextLabel (+UIPadding, counter TextLabel child)        only when needed
-	Outlined replaces the state layer + indicator with ONE UIStroke on the container.
+	Outlined replaces the fill, the state layer and the indicator with the outline: ONE UIStroke on the container when
+	the field has no label; with a label, three clipped copies of the outline that leave the notch open (Container.luau
+	"OUTLINED NOTCH").
 
 	Write-back: `q.Out("Text", value)`. With `MaxLength` (or an `OnChange` callback) the write-back is
 	`q.OnChange("Text", fn)`: it clips the engine text to the limit and writes the clipped string with `value:Set` — NOT
@@ -273,11 +275,13 @@ local function build(props: Props): Parts
 		if props.Suffix ~= nil then Slots.affix(c, "Suffix", props.Suffix) else q.None,
 	}
 
+	local labelInst, notch = Container.label(c, inset)
 	local container = Container.container(c, {
 		Hook = ix.Hook,
 		Selectable = if readOnly then interactable else false,
 		Row = row,
-		Label = Container.label(c, inset),
+		Label = labelInst,
+		Notch = notch,
 		Leading = leading,
 		Trailing = trailing,
 		ErrorMark = errorMark,

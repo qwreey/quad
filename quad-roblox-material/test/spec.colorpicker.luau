@@ -120,8 +120,8 @@ H.section("mount: structure, tint, texts, instance count", function()
 	print(`  SV area {H.countDescendants(r.area) + 1}, hue slider {H.countDescendants(r.hue) + 1}, hex field {count("TextField")}, channels {count("Channels")}, swatches {count("Swatches")}, preview {count("Preview")}`)
 	assert(H.countDescendants(r.area) + 1 == 12, "area, corner, stroke, 2 overlays (+corner, gradient), thumb (+corner, stroke)")
 	assert(H.countDescendants(r.hue) + 1 == 11, "host, rail (+corner, gradient), halo, layer (3), handle (+corner, stroke)")
-	assert(count("Preview") == 4 and count("TextField") == 13 and count("Channels") == 29 and count("Swatches") == 32)
-	assert(n + 1 == 107, `panel total {n + 1}`)
+	assert(count("Preview") == 4 and count("TextField") == 23 and count("Channels") == 29 and count("Swatches") == 32)
+	assert(n + 1 == 117, `panel total {n + 1}`) -- the Outlined hex field: 13 -> 23 with the cut-outline notch
 	H.resetOutput()
 	assert(r.root.Name == "ColorPicker" and r.root.AutomaticSize == Enum.AutomaticSize.Y)
 	assert(r.area.Size == UDim2.new(1, 0, 0, 160) and own(r.area, "UICorner").CornerRadius == UDim.new(0, 12), "SV area rounded 12")
@@ -562,8 +562,8 @@ H.section("modal: draft vs committed, OK / Cancel / scrim, overlay back to basel
 	H.resetOutput()
 	local hb = H.find(H.find(panel, "TextField"), "Input")
 	assert(hb.Text == "#0000FF")
-	-- the notch matches the dialog surface
-	assert(H.find(H.find(panel, "TextField"), "Label").BackgroundColor3 == L.SurfaceContainerHigh)
+	-- the hex field's notch is a cut in the outline: nothing painted in a surface color
+	assert(H.find(H.find(panel, "TextField"), "Label").BackgroundTransparency == 1)
 	-- edit the draft
 	typeInto(hb, "#FF0000")
 	lose(hb)

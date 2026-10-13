@@ -1,7 +1,8 @@
 --!strict
 --[[
 	Gallery section "TextInput": TextField (Filled / Outlined, floating label, supporting + error text, counter, icons,
-	prefix / suffix, multi-line, disabled) and Select. The email field validates live: `Error` is a `:Compute` of the same
+	prefix / suffix, multi-line, disabled; Outlined fields on a tinted panel and on a gradient — the label notch is a cut
+	in the outline, nothing is painted in a surface color) and Select. The email field validates live: `Error` is a `:Compute` of the same
 	Source the field writes, and `ErrorText` swaps in for the supporting text (the M3 error state). Typed text and the
 	chosen option live in the Memo, so they survive switching tabs.
 ]]
@@ -9,6 +10,7 @@
 local q = require("./Quad")
 local Common = require("./Common")
 local Material = require("../src")
+local D = q.Declaration
 
 type Ctx = Common.Ctx
 
@@ -127,6 +129,59 @@ return function(ctx: Ctx): Instance
 		}, 280, 12),
 	}
 
+	-- Outlined on something that is not the page surface: the outline is cut open under the floated label, so whatever is
+	-- behind the field shows through the notch (a picture stands in as a gradient)
+	local tinted = ctx.Memo("text.tinted", function()
+		return q.Source("Lavender")
+	end)
+	local pictured = ctx.Memo("text.pictured", function()
+		return q.Source("")
+	end)
+	-- the light scheme's ink on the fixed pastel picture, whichever scheme the gallery is in
+	local lightTheme = ctx.Memo("text.lightTheme", function()
+		return Material.Theme.new({ Scheme = "light" })
+	end)
+	local function backdrop(name: string, color: Color3 | q.State<Color3>, gradient: Instance?, field: Instance): Instance
+		return D.Frame {
+			Name = name,
+			Size = UDim2.fromOffset(280, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			BackgroundColor3 = color,
+			BorderSizePixel = 0,
+			UICorner = UDim.new(0, 12),
+			UIPaddingOffset = 16,
+			gradient or q.None,
+			field,
+		}
+	end
+	local backdrops: { Instance } = {
+		backdrop(
+			"Tinted",
+			theme.Color.PrimaryContainer,
+			nil,
+			Material.TextField({ Theme = theme, Variant = "Outlined", Label = "On a tinted panel", Value = tinted })
+		),
+		backdrop(
+			"Pictured",
+			Color3.new(1, 1, 1),
+			D.UIGradient {
+				Rotation = 35,
+				Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 214, 140)),
+					ColorSequenceKeypoint.new(0.5, Color3.fromRGB(244, 143, 177)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(144, 202, 249)),
+				}),
+			},
+			Material.TextField({
+				Theme = lightTheme,
+				Variant = "Outlined",
+				Label = "On a picture",
+				Value = pictured,
+				SupportingText = "Focus it: the line opens under the label",
+			})
+		),
+	}
+
 	local selects: { Instance } = {
 		Common.Column({
 			Material.Select({
@@ -163,6 +218,12 @@ return function(ctx: Ctx): Instance
 	return Common.Section(ctx, "TextInput", "Text input", {
 		Common.Group(ctx, "TextField: Filled", filled, "The email field turns to the error state while the text is not an address."),
 		Common.Group(ctx, "TextField: Outlined", outlined),
+		Common.Group(
+			ctx,
+			"TextField: Outlined on other backdrops",
+			backdrops,
+			"The label notch is a cut in the outline (three clipped copies of it), not a patch in the surface color."
+		),
 		Common.Group(ctx, "Select", selects),
 	})
 end

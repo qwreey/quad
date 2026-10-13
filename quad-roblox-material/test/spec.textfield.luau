@@ -166,24 +166,174 @@ H.section("ShowCounter = false: clips typing, no counter, no support row unless 
 	H.assertNoDebugOutput("showcounter")
 end)
 
-H.section("Outlined: stroke, notch label, thickness", function()
+-- the mock has no layout: a spec gives the label its laid-out size by hand (screen pixels)
+local function layoutLabel(label: any, w: number, h: number)
+	H.setAbs(label, 0, 0, w, h)
+end
+
+H.section("Outlined: three clipped outline copies, no label background, thickness", function()
 	local v = q.Source("")
 	local tf = TextField({ Variant = "Outlined", Label = "Email", Value = v })
-	assert(H.countDescendants(tf) == 11, "Outlined+label descendants: " .. H.countDescendants(tf))
-	local stroke = H.find(tf, "Outline")
-	local label = H.find(tf, "Label")
+	-- 21: the notch needs the outline three times, each copy in its own clip window (window + Box + UICorner + UIStroke
+	-- = 4 each, 12) plus the UISizeConstraint that holds the end window at 0 for an over-long label, where a label-less
+	-- Outlined field has one UICorner + UIStroke on the container; the label has no padding / background any more
+	-- (it was 11 with the surface-colored label background)
+	assert(H.countDescendants(tf) == 21, "Outlined+label descendants: " .. H.countDescendants(tf))
 	local container = H.find(tf, "Container")
-	assert(container.BackgroundTransparency == 1 and H.find(tf, "Indicator") == nil)
-	assert(stroke.Thickness == 1 and stroke.Color == L.Outline)
-	assert(label.BackgroundTransparency == 1 and label.Position == UDim2.fromOffset(12, 20))
+	local label = H.find(tf, "Label")
+	assert(container.BackgroundTransparency == 1 and container.ClipsDescendants == false and H.find(tf, "Indicator") == nil)
+	for _, c in container:GetChildren() do
+		assert(c.ClassName ~= "UICorner" and c.ClassName ~= "UIStroke", "the container itself draws nothing")
+	end
+	local strokes = class(tf, "UIStroke")
+	assert(#strokes == 3, "three outline copies")
+	for _, stroke in strokes do
+		assert(stroke.Name == "Outline" and stroke.Thickness == 1 and stroke.Color == L.Outline and stroke.Transparency == 0)
+		assert(stroke.BorderStrokePosition == Enum.BorderStrokePosition.Inner, "inside the 56 px, like Compose's border")
+		local box = stroke.Parent
+		assert(box.Name == "Box" and box.BackgroundTransparency == 1 and #class(box, "UICorner") == 1)
+		assert(box.Parent.ClipsDescendants == true and box.Parent.BackgroundTransparency == 1, "each copy sits in a clip window")
+	end
+	-- the windows: bottom = below the 8 px band, start = the band left of x 12, end = the band from x 12 (rest)
+	local bottom, startW, endW = H.find(tf, "OutlineBottom"), H.find(tf, "OutlineStart"), H.find(tf, "OutlineEnd")
+	assert(bottom.Position == UDim2.fromOffset(-2, 8) and bottom.Size == UDim2.new(1, 4, 0, 50))
+	assert(H.find(bottom, "Box").Position == UDim2.fromOffset(2, -8) and H.find(bottom, "Box").Size == UDim2.new(1, -4, 0, 56), "the field's own rectangle")
+	assert(startW.Position == UDim2.fromOffset(-2, -2) and startW.Size == UDim2.fromOffset(14, 10))
+	assert(H.find(startW, "Box").Position == UDim2.fromOffset(2, 2))
+	assert(endW.AnchorPoint == Vector2.new(1, 0) and endW.Position == UDim2.new(1, 2, 0, -2), "anchored to the field's right edge")
+	assert(endW.Size == UDim2.new(1, 2 - 12, 0, 10) and endW.Visible == true, "rest: starts at x 12, meets the start window")
+	local endBox = H.find(endW, "Box")
+	assert(endBox.AnchorPoint == Vector2.new(1, 0) and endBox.Position == UDim2.new(1, -2, 0, 2), "its box hangs on the window's right edge")
+	assert(endBox.Size.X.Scale == 0 and endBox.Size.X.Offset >= 2048, "a fixed width: resizing the window never resizes the box")
+	assert(#class(endW, "UISizeConstraint") == 1, "an over-long label cannot turn the window inside out")
+	-- label: no background, no padding
+	assert(label.BackgroundTransparency == 1 and label.Position == UDim2.fromOffset(16, 20) and #label:GetChildren() == 0)
 	local box = H.find(tf, "Input")
 	H.fire(box, "Focused")
 	H.finishTweens()
-	assert(stroke.Thickness == 2 and stroke.Color == L.Primary)
-	assert(label.BackgroundTransparency == 0 and label.BackgroundColor3 == L.Surface and label.Position == UDim2.fromOffset(12, -9), "notch")
+	for _, stroke in strokes do
+		assert(stroke.Thickness == 2 and stroke.Color == L.Primary, "every copy follows the focus")
+	end
+	assert(label.BackgroundTransparency == 1 and label.Position == UDim2.fromOffset(16, -6), "floated: x 16, its 12 px box centered on the top edge")
 	assert(label.TextSize == 12)
 	q.dispose(tf)
+	-- no label: no notch, the one stroke on the container
+	local bare = TextField({ Variant = "Outlined" })
+	assert(H.countDescendants(bare) == 9, "Outlined without a label: " .. H.countDescendants(bare))
+	local bareStroke = H.find(bare, "Outline")
+	assert(bareStroke.Parent == H.find(bare, "Container") and bareStroke.BorderStrokePosition == Enum.BorderStrokePosition.Inner)
+	assert(H.find(bare, "OutlineEnd") == nil and #class(H.find(bare, "Container"), "UICorner") == 1)
+	q.dispose(bare)
 	H.assertNoDebugOutput("outlined")
+end)
+
+H.section("Outlined notch: the cut follows the measured label (rest estimate, floated exact, ancestor UIScale)", function()
+	local v = q.Source("")
+	local tf = TextField({ Variant = "Outlined", Label = "Email", Value = v })
+	local label = H.find(tf, "Label")
+	local endW = H.find(tf, "OutlineEnd")
+	local endBox = H.find(endW, "Box")
+	local boxPos, boxSize = endBox.Position, endBox.Size
+	local box = H.find(tf, "Input")
+	-- resting (TextSize 16), laid out 40 px wide: the floated width is estimated, 40 * 12 / 16 = 30; nothing is cut yet
+	layoutLabel(label, 40, 16)
+	assert(endW.Size == UDim2.new(1, 2 - 12, 0, 10) and endW.Visible == true, "resting: the line is whole")
+	H.fire(box, "Focused")
+	H.finishTweens()
+	assert(endW.Size == UDim2.new(1, 2 - (16 + 30 + 4), 0, 10), "floated: the cut is 12 .. 16 + 30 + 4, got " .. tostring(endW.Size))
+	-- the floated label reports its real width: 29.6 rounds up to the same 30 (nothing restarts); 32.2 -> 33
+	local tweens = #H.tweenLog()
+	layoutLabel(label, 29.6, 12)
+	assert(endW.Size == UDim2.new(1, 2 - 50, 0, 10) and #H.tweenLog() == tweens, "same whole width: not retargeted")
+	layoutLabel(label, 32.2, 12)
+	H.finishTweens()
+	assert(endW.Size == UDim2.new(1, 2 - (16 + 33 + 4), 0, 10), "the exact floated width wins, rounded up")
+	-- a size reported while the TextSize tween runs is ignored
+	label.TextSize = 14
+	tweens = #H.tweenLog()
+	layoutLabel(label, 37, 14)
+	assert(#H.tweenLog() == tweens, "mid-tween sizes are ignored: nothing retargets")
+	H.finishTweens()
+	assert(endW.Size == UDim2.new(1, 2 - 53, 0, 10), "mid-tween sizes are ignored")
+	label.TextSize = 12
+	-- blur with no text: the label drops, the line closes
+	H.fire(box, "FocusLost", false, H.input({}))
+	H.finishTweens()
+	assert(endW.Size == UDim2.new(1, 2 - 12, 0, 10), "dropped: no cut")
+	assert(endBox.Position == boxPos and endBox.Size == boxSize, "the outline copy never moved or resized")
+	assert(H.find(H.find(tf, "OutlineStart"), "Box").Size == UDim2.fromOffset(32, 32))
+	q.dispose(tf)
+
+	-- under UIScale 1.5 the label's AbsoluteSize is screen pixels: 45 px = 30 local units
+	local D = (require("../src/Quad") :: any).Declaration
+	local tf2 = TextField({ Variant = "Outlined", Label = "Email", Value = q.Source("x") })
+	local root = D.Frame { D.UIScale { Scale = 1.5 }, tf2 }
+	layoutLabel(H.find(tf2, "Label"), 45, 18)
+	assert(H.find(tf2, "OutlineEnd").Size == UDim2.new(1, 2 - (16 + 30 + 4), 0, 10), "local units: " .. tostring(H.find(tf2, "OutlineEnd").Size))
+	q.dispose(root)
+	H.assertNoDebugOutput("notch")
+end)
+
+H.section("Outlined notch: a field born floated hides the end line until the label is measured, then snaps", function()
+	local tf = TextField({ Variant = "Outlined", Label = "Email", Value = q.Source("ada@example.com") })
+	local label = H.find(tf, "Label")
+	local endW = H.find(tf, "OutlineEnd")
+	assert(label.TextSize == 12 and label.Position == UDim2.fromOffset(16, -6), "born floated")
+	assert(endW.Visible == false, "no line through the label before the first layout")
+	assert(H.find(tf, "OutlineStart").Visible ~= false and H.find(tf, "OutlineBottom").Visible ~= false, "only the end window waits")
+	local before = #H.tweenLog()
+	layoutLabel(label, 28, 12)
+	assert(endW.Visible == true and endW.Size == UDim2.new(1, 2 - (16 + 28 + 4), 0, 10), "measured: shown, cut in place")
+	assert(#H.tweenLog() == before, "the first measurement snaps (no tween)")
+	-- later changes animate
+	layoutLabel(label, 40, 12)
+	assert(#H.tweenLog() == before + 1, "a later width change tweens")
+	H.finishTweens()
+	assert(endW.Size == UDim2.new(1, 2 - 60, 0, 10))
+	q.dispose(tf)
+	-- born resting: nothing to hide
+	local rest = TextField({ Variant = "Outlined", Label = "Email" })
+	assert(H.find(rest, "OutlineEnd").Visible == true)
+	q.dispose(rest)
+	-- an empty label has nothing to cut and nothing to wait for
+	local empty = TextField({ Variant = "Outlined", Label = "", Value = q.Source("x") })
+	assert(H.find(empty, "OutlineEnd").Visible == true and H.find(empty, "OutlineEnd").Size == UDim2.new(1, 2 - 12, 0, 10))
+	q.dispose(empty)
+	-- Filled measures nothing
+	local filled = TextField({ Label = "Name", Value = q.Source("x") })
+	layoutLabel(H.find(filled, "Label"), 30, 12)
+	assert(H.find(filled, "OutlineEnd") == nil)
+	q.dispose(filled)
+	H.assertNoDebugOutput("notch born floated")
+end)
+
+H.section("Outlined notch: disabled / error look on every copy; leading icon and multi-line keep the floated label at x 16", function()
+	local err = q.Source(false)
+	local dis = q.Source(false)
+	local tf = TextField({ Variant = "Outlined", Label = "Mail", Value = q.Source("x"), Error = err, Disabled = dis })
+	local strokes = class(tf, "UIStroke")
+	err:Set(true)
+	H.finishTweens()
+	for _, stroke in strokes do
+		assert(stroke.Color == L.Error and stroke.Transparency == 0)
+	end
+	dis:Set(true)
+	H.finishTweens()
+	for _, stroke in strokes do
+		assert(stroke.Color == L.OnSurface and near(stroke.Transparency, 0.88), "disabled: onSurface @ 12 %")
+	end
+	q.dispose(tf)
+	local icon = TextField({ Variant = "Outlined", Label = "Search", LeadingIcon = "rbxassetid://1" })
+	assert(H.find(icon, "Label").Position == UDim2.fromOffset(52, 20), "resting: after the icon")
+	H.fire(H.find(icon, "Input"), "Focused")
+	H.finishTweens()
+	assert(H.find(icon, "Label").Position == UDim2.fromOffset(16, -6), "floated: the start padding, over the icon's column")
+	q.dispose(icon)
+	local multi = TextField({ Variant = "Outlined", Label = "Notes", MultiLine = true })
+	assert(H.find(multi, "Label").Position == UDim2.fromOffset(16, 16))
+	assert(H.find(multi, "OutlineBottom").Size == UDim2.new(1, 4, 0, 120 - 8 + 2) and H.find(H.find(multi, "OutlineBottom"), "Box").Size == UDim2.new(1, -4, 0, 120))
+	q.dispose(multi)
+	H.assertNoDebugOutput("notch states")
 end)
 
 H.section("hover state layer (filled) and outline (outlined)", function()

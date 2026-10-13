@@ -28,7 +28,6 @@ local Model = require("./Model")
 export type Props = {
 	read Model: Model.Model,
 	read Theme: Theme.Theme?,
-	read NotchColor: (Color3 | q.State<Color3>)?,
 	read Disabled: (boolean | q.State<boolean>)?,
 	read Modifier: q.FrameModifier?,
 }
@@ -51,7 +50,6 @@ local function HexField(props: Props): Hex
 		Value = hexText,
 		Error = invalid,
 		Disabled = props.Disabled,
-		NotchColor = props.NotchColor,
 		Theme = props.Theme,
 		Modifier = props.Modifier,
 		OnFocusChanged = function(focused: boolean)

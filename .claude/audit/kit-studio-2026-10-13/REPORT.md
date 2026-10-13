@@ -129,6 +129,24 @@ sonnet 서브에이전트가 Studio MCP로 측정(Play Client에서 `ReplicatedS
 찾아 고친 결함 셋: 키로 옮긴 줄이 스크롤 창 밖으로 나감(새 순서가 올 때 그 줄이 보이게 캔버스를 옮김), 키로 잡은 줄의 `ZIndex`, 갤러리 설명 글이 두 줄로 접히며 목록이 16 밀리던 것. 낮은 `ScrollingFrame`의
 가장자리에서는 뜬 줄의 그림자가 잘린다(엔진 규칙 — 한계). 측정 도구의 가짜 신호 하나: MCP 마우스가 누른 채 한 프레임 포인터를 y = −18로 보냄. `reorder-*.jpg`. 미완: 터치, 1이 아닌 UIScale, Deferred.
 
+## 12. Outlined TextField의 레이블 노치와 비활성 Card (같은 날 밤 — opus 빌더 + Studio, `quad-test`, Play Client, Immediate 신호, 뷰포트 1447×565)
+
+**노치**(외곽선을 덧칠하지 않고 끊음 — 외곽선 사본 셋을 클립 창 셋에; 구조는 `quad-roblox-material/src/TextField/Container.luau` 머리). 실험용 ScreenGui(Sibling)에 그라디언트·SurfaceContainerHigh·Primary 세 배경을 깔고
+조상 `UIScale`로 확대해 캡처. 고치기 전(`notch-0`)은 표면색 조각이 세 배경 모두에서 보이고 뜬 레이블이 선보다 3 px 위(상자 −9..3)였다. 고친 뒤: 쉼·뜸·비활성(`notch-1`), 포커스 2 px·오류(`notch-2`), 긴 레이블·레이블
+없음(`notch-3`), 트윈 도중(`notch-4`·`notch-5` — 포커스를 0.11초마다 뒤집으며 찍음), 앞 아이콘·접두/접미·여러 줄(`notch-6`), 어두운 테마의 Select·NumberField·포커스(`notch-7`), 조상 UIScale 1.25·1.5 원본 픽셀과 그
+9배 확대(`notch-8*`·`notch-9*`), 7배 모서리(`notch-10`), 갤러리 묶음·색상 선택기 모달의 헥스 필드(`notch-11`~`13`). **프레임 기록**(쉬는 필드를 `CaptureFocus` → 0.5초 → `ReleaseFocus`, 렌더 프레임 62개, UIScale 2.5):
+외곽선 사본 셋의 `AbsolutePosition`·`AbsoluteSize` 열두 숫자의 최대 변화 0 px(끝 창의 상자 −9792.5, −18 / 10240×80, 시작 창의 상자 35, −18 / 80×80, 아래 창의 상자 35, −18 / 412.5×140), 끝 창의 오른쪽 끝 452.50 고정.
+끊긴 끝(필드 x, 지역 단위)은 포커스 뒤 34 ms부터 프레임마다 23 → 31 → 36 → 40 → 43 → 44 → 45 → 46(158 ms), 내릴 때 35 → 27 → 22 → 17 → 15 → 13 → 12. 값이 있는 채로 만든 필드: 만든 직후 끝 창 `Visible = false`,
+부모에 붙인 뒤 첫 렌더 프레임에 이미 보임 + 끊긴 자리(87 = 16 + 67 + 4) — 선이 레이블을 가로지르는 프레임 없음.
+엔진 사실 넷: (1) **`UDim`의 Offset은 정수다** — 소수 Offset은 버려진다(−43.6 → −43; 그래서 레이블 폭을 올림해 쓴다). 트윈도 지역 단위 정수로 움직인다. (2) **음수 크기의 클립 창은 반대쪽으로 뒤집혀 그린다** —
+`AnchorPoint` (1, 0)인 창의 폭이 −162.5가 되자 필드 오른쪽 밖에 선이 그려졌다. (3) **`UISizeConstraint`(기본 MinSize 0)는 음수 크기를 0으로 잡는다**(`AbsoluteSize` 0). (4) 클립 창 둘이 만나는 이음매(위에서 8)는
+UIScale 1.25·1.5(창 경계가 소수 픽셀)에서도 반투명 선(비활성 12 %)에 겹친 진한 점·틈이 없다. 덧붙여 **MCP `execute_luau`에서 `require`한 킷은 게임 스크립트가 쓰는 것과 다른 모듈 인스턴스였다**
+(거기서 부른 `Theme.default:SetScheme`이 갤러리에 닿지 않아 Theme 탭의 스위치를 마우스로 눌렀다). 미완: 터치·게임패드 포커스, Deferred 신호에서 태어날 때 뜬 필드의 첫 프레임.
+
+**비활성 Card**(갤러리 Surfaces의 비활성 카드 셋, `card-disabled-1`(밝은)·`card-disabled-2`(어두운)): 인스턴스의 색이 정본 식(Compose `Card.kt`)의 값과 채널 차 0 — 밝은 테마 Elevated `#FEF7FF`(Surface)·그림자 레벨 1 유지,
+Filled `#E6E0EA`(SurfaceVariant 38 % over SurfaceContainerHighest), Outlined 컨테이너 `#FEF7FF`·외곽선 `#E8E3EB`(Outline 12 % over SurfaceContainerLow, 투명도 0); 어두운 테마 `#141218` / `#3D3A43` / `#141218`·`#2B292F`.
+어두운 테마에서 비활성 Filled는 활성(`#36343B`)보다 **밝다**(SurfaceVariant가 더 밝은 역할 — 정본 그대로).
+
 ## 미완
 
 Immediate 전용 관측(항목 3 전부 — 가드의 거부, `WhenIdle`의 지연 실행, 신호 콜백 에러의 전파, Q186 장면), 항목 1의 "일반 Frame으로 옮겨 붙이기"와 문자열 본문 14의 원인,

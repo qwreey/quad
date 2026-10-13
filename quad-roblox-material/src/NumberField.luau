@@ -60,7 +60,6 @@ export type Props = {
 	read OnChange: ((value: number) -> ())?,
 	read OnSubmit: ((value: number) -> ())?,
 	read OnFocusChanged: ((focused: boolean) -> ())?,
-	read NotchColor: (Color3 | q.State<Color3>)?,
 	read Theme: Theme.Theme?,
 	read Modifier: q.FrameModifier?,
 	read Hooks: Util.Hooks?,
@@ -198,7 +197,6 @@ local function NumberField(props: Props): Frame
 				props.OnSubmit(value:Get())
 			end
 		end,
-		NotchColor = props.NotchColor,
 		Theme = props.Theme,
 		Modifier = props.Modifier,
 		Hooks = hooks,

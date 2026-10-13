@@ -28,7 +28,6 @@
 	                                                              programmatic `Value:Set`; the new (clipped) text
 	  OnSubmit        ((text: string) -> ())?                     FocusLost with enterPressed
 	  OnFocusChanged  ((focused: boolean) -> ())?
-	  NotchColor      Color3 | State<Color3>?                     Outlined: the surface behind the field (default theme Surface)
 	  Theme, Modifier (Frame Modifier applied after the base; `Size` default is 210 wide, height automatic), Hooks
 	Returns the host `Frame` (a vertical list: the 56 px container, then the supporting row).
 
@@ -42,10 +41,13 @@
 	    the engine keeps `MouseEnter` alive over it is not verified on a device (미완 — see report).
 
 	M3 deviations (Roblox / cost): the Filled container rounds only its TOP corners by drawing the rounded fill taller than
-	its clipping parent (Container.luau); the Outlined notch is a surface-colored label background (needs `NotchColor` on a
-	non-Surface backdrop); the error "icon" is a bold "!" text mark; label animation interpolates TextSize (glyphs re-rasterize while it runs);
+	its clipping parent (Container.luau); the error "icon" is a bold "!" text mark; label animation interpolates TextSize (glyphs re-rasterize while it runs);
 	no text selection color/handle theming (engine-owned).
-	Instances at rest (asserted in the spec): Filled+label 13 incl. host, Outlined+label 12 incl. host.
+	The Outlined outline is cut open where the label floats (nothing is painted over it — the field works on any
+	backdrop): three clipped copies of the outline, see Container.luau "OUTLINED NOTCH".
+	Instances at rest (asserted in the spec): Filled+label 14 incl. host; Outlined+label 22 incl. host (the notch: three
+	clip windows, each with its outline copy = Frame + UICorner + UIStroke, 12, plus one UISizeConstraint — in place of
+	the one UICorner + UIStroke an Outlined field without a label keeps).
 ]]
 
 local q = require("./Quad")
@@ -77,7 +79,6 @@ export type Props = {
 	read OnChange: ((text: string) -> ())?,
 	read OnSubmit: ((text: string) -> ())?,
 	read OnFocusChanged: ((focused: boolean) -> ())?,
-	read NotchColor: (Color3 | q.State<Color3>)?,
 	read Theme: Theme.Theme?,
 	read Modifier: q.FrameModifier?,
 	read Hooks: Util.Hooks?,
