@@ -29,7 +29,8 @@
 
 	KEYBOARD (hardware keyboard): while ANY cell holds engine selection the grid listens (the shared `KeyNav` hook, one per
 	cell, ignoring `processed` — KeyNav's premise, device-unverified; at most one `UserInputService.InputBegan` connection is open) — arrows +-1 day / +-7 days, PageUp/PageDown +-1 month, Home/End week row ends
-	(`Calendar.moveFocus`, skipping non-selectable dates by repeating the move), Enter/KeypadEnter picks the
+	(`Calendar.moveFocus`, skipping non-selectable dates by repeating the move; Home/End go to the row end, or to the
+	selectable day nearest to it on this side of the focused one), Enter/KeypadEnter picks the
 	focused date. KeyNav opens the connection on `SelectionGained` of a cell and closes it on `SelectionLost` and when the
 	cell is destroyed — at most one connection, zero when nothing is focused. Moving focus to another
 	month moves the visible month, then the engine selection (`GuiService.SelectedObject`) to the new cell.
@@ -132,9 +133,28 @@ local function new(o: Options): MonthView
 
 	-- next date in direction `action` that is selectable (nil: nothing reachable / at the bound)
 	local function reach(from: Date, action: Calendar.FocusAction): Date?
+		local bounds: Calendar.FocusOptions = { FirstDayOfWeek = o.FirstDayOfWeek, Min = o.Min, Max = o.Max }
+		-- (compared as plain strings: narrowing `action` to "home" | "end" makes the new solver reject the call below)
+		local name: string = action
+		if name == "home" or name == "end" then
+			-- the end of the week row, or — when that day is not selectable — the nearest selectable day on the way
+			-- back to `from` (repeating home / end would stand still: it is the same day again)
+			local back: Calendar.FocusAction = if name == "home" then "right" else "left"
+			local cur = Calendar.moveFocus(from, action, bounds)
+			for _ = 1, 6 do
+				if Calendar.equals(cur, from) then
+					return nil
+				end
+				if o.Selectable(cur) then
+					return cur
+				end
+				cur = Calendar.moveFocus(cur, back, bounds)
+			end
+			return nil
+		end
 		local cur = from
 		for _ = 1, 400 do
-			local nxt = Calendar.moveFocus(cur, action, { FirstDayOfWeek = o.FirstDayOfWeek, Min = o.Min, Max = o.Max })
+			local nxt = Calendar.moveFocus(cur, action, bounds)
 			if Calendar.equals(nxt, cur) then
 				return nil
 			end

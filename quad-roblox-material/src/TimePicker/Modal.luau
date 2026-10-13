@@ -324,6 +324,11 @@ local function open(o: OpenOptions): Overlay.Handle
 		end,
 		Content = function(h: Overlay.Handle): Instance
 			return card(o, h, overlay.Layer.AbsoluteSize, function(t: Time)
+				-- the card stays mounted (and clickable) while it animates out: a second OK, or an OK after Cancel,
+				-- within the exit time must not commit (again)
+				if not h.IsOpen:Get() then
+					return
+				end
 				committed = true
 				if o.Value ~= nil then
 					o.Value:Set(t)

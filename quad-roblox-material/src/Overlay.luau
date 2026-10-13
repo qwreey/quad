@@ -61,7 +61,10 @@
 	                        called right after the entry is mounted — use it for content the builder creates)
 	      opts.ExitTime     number    seconds the closing phase lasts before the content is destroyed
 	                        (default 0.2 = Motion Short4). Content may animate out while `handle.Closing` is
-	                        true; the scrim fades over the same time. 0 = destroy immediately.
+	                        true; the scrim fades over the same time. 0 = destroy immediately. The content stays
+	                        MOUNTED AND CLICKABLE for that time (the overlay does not block it): a handler in the
+	                        content that must not run for a second tap, or after a dismissal, checks
+	                        `handle.IsOpen:Get()` first — the kit's own menus, dialogs, pickers and snackbars do.
 	      opts.OnClose      (reason: CloseReason, result: unknown?) -> ()  called once, at the start of closing (the very last
 	                        step: state is consistent even if it throws). reason = "Close" (handle.Close) | "Scrim" |
 	                        "Escape" | "Destroyed" (the layer died: nothing animates, the handle is finalized on the spot);

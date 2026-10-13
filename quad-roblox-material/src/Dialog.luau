@@ -387,6 +387,12 @@ local function open(o: OpenOptions): Handle
 						Disabled = a.Disabled,
 						Theme = theme,
 						OnClick = function()
+							-- the card stays mounted (and clickable) while it animates out: a second tap on an action
+							-- within the exit time must not run its OnClick again
+							local ov = ovHandle
+							if ov == nil or not ov.IsOpen:Get() then
+								return
+							end
 							if a.OnClick then
 								a.OnClick()
 							end

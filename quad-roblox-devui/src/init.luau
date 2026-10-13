@@ -13,6 +13,8 @@
 		local open = q.Source(true)
 		local screen = D.ScreenGui {
 			ResetOnSpawn = false,                            -- the layer is a quad-made instance: no respawn rebuilds
+			ZIndexBehavior = Enum.ZIndexBehavior.Sibling,    -- REQUIRED: a code-made ScreenGui is Global, and windows /
+			                                                 -- popups are layered by sibling ZIndex (Window/Manager)
 			Devui.Window {
 				Title = "Debug", Open = open,
 				Children = Kids(

@@ -83,6 +83,11 @@ local function actionButton(o: Options, act: Action): Instance
 			end)
 		end),
 		Activated = function()
+			-- the card stays mounted (and clickable) while it animates out: a second tap within the exit time must
+			-- not run the action again ("Undo" twice)
+			if o.Closing:Get() then
+				return
+			end
 			act.OnClick()
 			o.OnAction()
 		end,

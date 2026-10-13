@@ -21,6 +21,7 @@ end)
 local overlay = Devui.Overlay.new() -- ScreenGui마다 하나: 팝업(Combo / Menu / Tooltip)이 그려지는 층
 local screen = D.ScreenGui {
 	ResetOnSpawn = false, -- 층은 quad가 만든 인스턴스라 리스폰으로 다시 만들어지면 안 됨
+	ZIndexBehavior = Enum.ZIndexBehavior.Sibling, -- 필수(아래)
 	Devui.Window {
 		Title = "Debug",
 		Children = Kids(
@@ -36,6 +37,12 @@ local screen = D.ScreenGui {
 }
 screen.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 ```
+
+**`ScreenGui`는 `ZIndexBehavior = Sibling`이어야 합니다.** 코드로 만든 `ScreenGui`(`D.ScreenGui`·`Instance.new`)의 기본값은
+`Global`이고, 이 키트는 창의 겹침 순서(창 루트의 `ZIndex` = 서열 1..n)와 팝업 층(`ZIndex` 1000)을 형제 사이의 `ZIndex`로
+정합니다. `Global`에서는 `ZIndex`가 `ScreenGui` 전체에서 비교되어, 서열 2 이상인 창의 배경이 자기 내용(`ZIndex` 1)과 팝업
+위에 그려집니다. `q.debug`가 켜져 있으면 팝업이 처음 열릴 때 한 줄로 알립니다. Studio에서 손으로 넣은 `ScreenGui`는 기본이
+Sibling입니다.
 
 전체 위젯을 한 번에 보려면 데모 창을 띄우세요(아래 "데모").
 

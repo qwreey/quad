@@ -2,8 +2,10 @@
 --[[
 	WindowManager — z-order and focus for a group of windows (focus-on-click, "bring to front").
 
-	Windows hosted as siblings in one container are layered by ZIndex (ScreenGui.ZIndexBehavior = Sibling, the
-	default). The manager keeps the windows in stacking order (bottom first) and a window's ZIndex is its RANK in that
+	Windows hosted as siblings in one container are layered by ZIndex. This needs `ScreenGui.ZIndexBehavior = Sibling`,
+	which is the default only for a ScreenGui inserted in Studio: one made in code (`D.ScreenGui`, `Instance.new`) is
+	Global unless you set it, and under Global a window root with rank 2+ draws over its own content (a ZIndex is then
+	compared across the whole ScreenGui, and the content's is 1). The manager keeps the windows in stacking order (bottom first) and a window's ZIndex is its RANK in that
 	list (1..n): `Focus` moves the window to the end and renumbers, so the ZIndex never grows past the number of live
 	windows (an ever-increasing counter would climb above the Overlay layer's ZIndex 1000 after enough focus switches and
 	draw windows over popups). The window that was focused last is `Focused` (its title bar draws in the "active" colour).
@@ -84,7 +86,7 @@ function Manager.new(): Manager
 					table.remove(order, at)
 					table.insert(order, entry)
 					renumber()
-					focusedId:Set(id) -- no-op when unchanged
+					focusedId:SetIfChanged(id) -- (a focused window that was only covered: the rank changed, the focus did not)
 				end,
 				Release = function(_slot: Slot)
 					local at = table.find(order, entry)

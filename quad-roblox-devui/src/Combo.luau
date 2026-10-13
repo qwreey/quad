@@ -159,8 +159,10 @@ local function core(spec: CoreSpec): Frame
 				Selected = selected,
 				Width = "Fill",
 				OnClick = function()
-					spec.OnPick(key)
+					-- close first (as Menu's closeThen): an OnPick that throws must not leave the list — and its
+					-- full-screen click catcher — open
 					close()
+					spec.OnPick(key)
 				end,
 			})
 			return row, { label = label }

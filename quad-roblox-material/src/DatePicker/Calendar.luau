@@ -531,7 +531,8 @@ function Calendar.parseLocalized(text: string, locale: string?): (Date?, string?
 		return build(ky, km, kd)
 	end
 	-- named month, e.g. "October 5, 2026" (matches against the locale's month names)
-	local mon, dd, yy = s:match("^(%a+)%.?%s+(%d%d?),?%s+(%d%d%d%d)$")
+	-- (a comma or a space between the day and the year: "October 5,2026" too)
+	local mon, dd, yy = s:match("^(%a+)%.?%s+(%d%d?)%s*[,%s]%s*(%d%d%d%d)$")
 	if mon and dd and yy then
 		local lower = mon:lower()
 		for i = 1, 12 do

@@ -16,7 +16,8 @@
 	    Menu.Button({ Label = "Actions", Items = items })         -- a Button that opens the menu under itself
 
 	OpenOptions
-	  Anchor     GuiObject                       position source: `AbsolutePosition`/`AbsoluteSize` are read ONCE at open
+	  Anchor     GuiObject                       position source: `AbsolutePosition`/`AbsoluteSize` are read ONCE at open;
+	                                             the menu closes when the anchor is destroyed
 	  Items      { Item | "divider" }            fixed for the lifetime of the open menu (it is rebuilt per open)
 	  Overlay    Overlay.Overlay?                default `Overlay.default()`
 	  Theme      Theme?
@@ -27,7 +28,7 @@
 	  OnClose    Overlay.OnCloseFn?      once, at the start of closing (item click, outside click, Escape, `.Close()`,
 	                                             or "Destroyed" when the overlay layer died)
 	Item = { Label, OnClick?, Disabled? (boolean | State<boolean>, read live: a disabled item is skipped by the keyboard
-	         navigation and does nothing when activated), Leading? (image id), Trailing? (image id, or any other string = text),
+	         navigation and does nothing when activated; no item does anything once the menu is closing), Leading? (image id), Trailing? (image id, or any other string = text),
 	         Selected? (container highlight, as the Select field shows the chosen option) }
 
 	Placement: below the anchor, flipped above when the list does not fit below and there is more room above;
@@ -110,7 +111,7 @@ type NavItem = { Inst: GuiObject, Activate: () -> (), Enabled: () -> boolean }
 local function itemRow(
 	item: Item,
 	theme: Theme.Theme,
-	close: () -> (),
+	close: () -> boolean, -- closes the menu; false when it was closed already (the item then does nothing)
 	register: (inst: GuiObject, activate: () -> (), enabled: () -> boolean) -> ()
 )
 	local disabled = Util.asState(item.Disabled)
@@ -134,7 +135,11 @@ local function itemRow(
 		if Util.peekBool(disabled) then
 			return
 		end
-		close()
+		-- the rows stay mounted (and clickable) while the menu animates out: a second tap on the row within the exit
+		-- time must not run OnClick again
+		if not close() then
+			return
+		end
 		if item.OnClick then
 			item.OnClick()
 		end
@@ -280,7 +285,10 @@ local function open(o: OpenOptions): Overlay.Handle
 		end)
 	end
 
-	return overlay:Open({
+	-- the anchor going away (its screen was torn down) takes the menu with it: nothing else would close it, and its
+	-- transparent scrim would keep swallowing clicks until one lands on it
+	local anchorGone: RBXScriptConnection? = nil
+	local handle = overlay:Open({
 		Scrim = true,
 		ScrimOpacity = 0,
 		Dismissable = true,
@@ -295,7 +303,16 @@ local function open(o: OpenOptions): Overlay.Handle
 			return nil
 		end,
 		ExitTime = Tokens.Motion.Duration.Short2,
-		OnClose = o.OnClose,
+		OnClose = function(reason: Overlay.CloseReason, result: unknown?)
+			local conn = anchorGone
+			if conn ~= nil then
+				anchorGone = nil
+				conn:Disconnect()
+			end
+			if o.OnClose then
+				o.OnClose(reason, result)
+			end
+		end,
 		Content = function(handle: Overlay.Handle)
 			local rows = {} :: { Instance }
 			for _, e in o.Items do
@@ -304,8 +321,12 @@ local function open(o: OpenOptions): Overlay.Handle
 				else
 					table.insert(
 						rows,
-						itemRow(e, theme, function()
+						itemRow(e, theme, function(): boolean
+							if not handle.IsOpen:Get() then
+								return false
+							end
 							handle.Close()
+							return true
 						end, register)
 					)
 				end
@@ -408,6 +429,12 @@ local function open(o: OpenOptions): Overlay.Handle
 			}
 		end,
 	})
+	if handle.IsOpen:Get() then
+		anchorGone = anchor.Destroying:Connect(function()
+			handle.Close()
+		end)
+	end
+	return handle
 end
 
 export type ButtonProps = {

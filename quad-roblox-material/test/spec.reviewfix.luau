@@ -207,4 +207,369 @@ H.section("C1 SplitButton: the first layout places the content without a tween; 
 	H.advance(1)
 end)
 
+-- Review 2026-10-13 (triage 2): one section per class-A fix. Each section FAILS on the unpatched source.
+local Overlay = require("../src/Overlay")
+local Menu = require("../src/Menu")
+local Select = require("../src/Select")
+local Dialog = require("../src/Dialog")
+local Snackbar = require("../src/Snackbar")
+local DatePicker = require("../src/DatePicker")
+local Calendar = require("../src/DatePicker/Calendar")
+local TimePicker = require("../src/TimePicker")
+local Clock = require("../src/TimePicker/Clock")
+local Switch = require("../src/Switch")
+local ColorPicker = require("../src/ColorPicker")
+
+local function named(root: any, name: string): { any }
+	return H.findAll(root, function(c: any)
+		return c.Name == name
+	end)
+end
+local function click(inst: any)
+	H.fire(inst, "Activated", H.input({}), 1)
+end
+local function buttonByLabel(root: any, text: string): any
+	for _, b in named(root, "Button") do
+		if (H.find(b, "Label") :: any).Text == text then
+			return b
+		end
+	end
+	error("no button " .. text)
+end
+local function overlayRig(): (any, any)
+	local overlay = Overlay.new()
+	local screen = D.Frame { overlay.Layer }
+	H.setAbs(overlay.Layer, 0, 0, 800, 600)
+	return overlay, screen
+end
+
+H.section("R1 closing phase: a second tap on a menu item / Select option within the exit time does nothing", function()
+	local overlay, screen = overlayRig()
+	local anchor: any = D.Frame { Name = "Anchor" }
+	H.setAbs(anchor, 100, 50, 200, 56)
+	local clicks, closes = 0, 0
+	local handle = Menu.open({
+		Anchor = anchor,
+		Overlay = overlay,
+		Items = { { Label = "Delete", OnClick = function()
+			clicks += 1
+		end } },
+		OnClose = function()
+			closes += 1
+		end,
+	})
+	local item: any = H.find(screen, "Item")
+	click(item)
+	H.advance(0.03)
+	assert(handle.Closing:Get() and not H.isDestroyed(item), "the row is still mounted while the menu animates out")
+	click(item)
+	assert(clicks == 1, `OnClick ran {clicks} times for a double tap`)
+	assert(closes == 1)
+	H.advance(0.5)
+	assert(overlay.Count:Get() == 0)
+	-- dismissed by the scrim, then a tap on a row during the exit: the menu was dismissed, the item does nothing
+	Menu.open({ Anchor = anchor, Overlay = overlay, Items = { { Label = "Delete", OnClick = function()
+		clicks += 1
+	end } } })
+	click(H.find(screen, "Scrim"))
+	click(H.find(screen, "Item"))
+	assert(clicks == 1, "an item of a dismissed menu does nothing")
+	H.advance(0.5)
+	-- Select: OnChange once
+	local value = q.Source(nil :: string?)
+	local changes = 0
+	local field: any = Select({ Label = "F", Options = { "A", "B" }, Value = value, Overlay = overlay, OnChange = function()
+		changes += 1
+	end })
+	local container: any = H.find(field, "Container")
+	H.setAbs(container, 50, 20, 240, 56)
+	H.fire(container, "InputBegan", H.input({}))
+	H.fire(container, "InputEnded", H.input({}))
+	local options = named(screen, "Item")
+	assert(#options == 2, `the select menu opened ({#options} items)`)
+	click(options[1])
+	click(options[2])
+	assert(value:Get() == "A" and changes == 1, `Select: value {value:Get()}, OnChange {changes}`)
+	H.advance(0.5)
+	q.dispose(field)
+	q.dispose(screen)
+	H.advance(0.5)
+end)
+
+H.section("R1 closing phase: OK of a date / time modal commits once; OK after Cancel does not commit", function()
+	local overlay, screen = overlayRig()
+	local value = q.Source(nil :: any)
+	local confirms, cancels = 0, 0
+	DatePicker.Modal.open({ Overlay = overlay, Value = value, Today = Calendar.date(2026, 10, 5), OnConfirm = function()
+		confirms += 1
+	end })
+	local card: any = H.find(screen, "DatePickerModal")
+	local cells = named(card, "Day")
+	click(cells[25])
+	local first = value:Get()
+	local ok = buttonByLabel(card, "OK")
+	click(ok)
+	local picked = value:Get()
+	assert(confirms == 1 and picked ~= nil and first == nil)
+	H.advance(0.05)
+	click(ok)
+	click(cells[26])
+	click(ok)
+	assert(confirms == 1, `OnConfirm ran {confirms} times`)
+	assert(Calendar.equals(value:Get(), picked), "a pick made while the card animates out is not committed")
+	H.advance(0.5)
+	-- Cancel, then OK within the exit time
+	local value2 = q.Source(Calendar.date(2026, 10, 7) :: any)
+	confirms = 0
+	DatePicker.Modal.open({ Overlay = overlay, Value = value2, Today = Calendar.date(2026, 10, 5), OnConfirm = function()
+		confirms += 1
+	end, OnCancel = function()
+		cancels += 1
+	end })
+	local card2: any = H.find(screen, "DatePickerModal")
+	click(named(card2, "Day")[20])
+	click(buttonByLabel(card2, "Cancel"))
+	click(buttonByLabel(card2, "OK"))
+	assert(cancels == 1 and confirms == 0, `cancelled: OnCancel {cancels}, OnConfirm {confirms}`)
+	assert(Calendar.equals(value2:Get(), Calendar.date(2026, 10, 7)), "a cancelled picker leaves the value")
+	H.advance(0.5)
+	-- time picker
+	local time = q.Source(Clock.time(8, 15))
+	local tConfirms, tCancels = 0, 0
+	TimePicker.Modal.open({ Overlay = overlay, Value = time, OnConfirm = function()
+		tConfirms += 1
+	end, OnCancel = function()
+		tCancels += 1
+	end })
+	local tcard: any = H.find(screen, "TimePickerModal")
+	local tok = buttonByLabel(tcard, "OK")
+	click(tok)
+	click(tok)
+	assert(tConfirms == 1, `time OnConfirm ran {tConfirms} times`)
+	H.advance(0.5)
+	TimePicker.Modal.open({ Overlay = overlay, Value = time, OnConfirm = function()
+		tConfirms += 1
+	end, OnCancel = function()
+		tCancels += 1
+	end })
+	local tcard2: any = H.find(screen, "TimePickerModal")
+	click(buttonByLabel(tcard2, "Cancel"))
+	click(buttonByLabel(tcard2, "OK"))
+	assert(tConfirms == 1 and tCancels == 1, `time: cancelled then OK -> confirms {tConfirms}, cancels {tCancels}`)
+	H.advance(0.5)
+	q.dispose(screen)
+	H.advance(0.5)
+end)
+
+H.section("R1 closing phase: a dialog action / a snackbar action runs once for a double tap", function()
+	local overlay, screen = overlayRig()
+	local discards = 0
+	local results: { any } = {}
+	Dialog.open({
+		Overlay = overlay,
+		Headline = "Discard?",
+		Actions = {
+			{ Label = "Cancel", Result = false },
+			{ Label = "Discard", Result = true, OnClick = function()
+				discards += 1
+			end },
+		},
+		OnClose = function(r: unknown?)
+			table.insert(results, r)
+		end,
+	})
+	local discard = buttonByLabel(screen, "Discard")
+	click(discard)
+	click(discard)
+	assert(discards == 1 and #results == 1 and results[1] == true, `Discard ran {discards} times`)
+	H.advance(0.5)
+	Dialog.open({
+		Overlay = overlay,
+		Headline = "Discard?",
+		Actions = {
+			{ Label = "Cancel", Result = false },
+			{ Label = "Discard", Result = true, OnClick = function()
+				discards += 1
+			end },
+		},
+	})
+	click(buttonByLabel(screen, "Cancel"))
+	click(buttonByLabel(screen, "Discard"))
+	assert(discards == 1, "Cancel, then Discard while the card animates out: Discard does nothing")
+	H.advance(0.5)
+	local bar = Snackbar.new({ Overlay = overlay })
+	local undone = 0
+	bar:Show({ Text = "Archived", Duration = math.huge, Action = { Label = "Undo", OnClick = function()
+		undone += 1
+	end } })
+	local act: any = H.find(H.find(screen, "Snackbar"), "Action")
+	click(act)
+	click(act)
+	assert(undone == 1, `Undo ran {undone} times`)
+	H.advance(0.5)
+	q.dispose(screen)
+	H.advance(0.5)
+end)
+
+H.section("R2 Menu: the anchor being destroyed closes the menu (and the Select's)", function()
+	local overlay, screen = overlayRig()
+	local anchor: any = D.Frame { Name = "Anchor" }
+	H.setAbs(anchor, 100, 50, 200, 56)
+	local reasons: { string } = {}
+	local handle = Menu.open({ Anchor = anchor, Overlay = overlay, Items = { { Label = "A" } }, OnClose = function(reason: string)
+		table.insert(reasons, reason)
+	end })
+	assert(overlay.Count:Get() == 1)
+	q.dispose(anchor)
+	assert(handle.IsOpen:Get() == false and #reasons == 1, "the menu closes with its anchor")
+	H.advance(0.5)
+	assert(overlay.Count:Get() == 0 and H.find(screen, "Scrim") == nil, "no scrim left to swallow clicks")
+	-- a menu closed normally drops the anchor connection: destroying the anchor later is silent
+	local anchor2: any = D.Frame { Name = "Anchor" }
+	H.setAbs(anchor2, 100, 50, 200, 56)
+	local closes = 0
+	local h2 = Menu.open({ Anchor = anchor2, Overlay = overlay, Items = { { Label = "A" } }, OnClose = function()
+		closes += 1
+	end })
+	h2.Close()
+	H.advance(0.5)
+	q.dispose(anchor2)
+	assert(closes == 1)
+	local field: any = Select({ Label = "F", Options = { "A", "B" }, Value = q.Source(nil :: string?), Overlay = overlay })
+	local holder = D.Frame { field }
+	local container: any = H.find(field, "Container")
+	H.setAbs(container, 50, 20, 240, 56)
+	H.fire(container, "InputBegan", H.input({}))
+	H.fire(container, "InputEnded", H.input({}))
+	assert(overlay.Count:Get() == 1, "select menu open")
+	q.dispose(holder)
+	H.advance(0.5)
+	assert(overlay.Count:Get() == 0, "the select's menu went with the field")
+	q.dispose(screen)
+	H.advance(0.5)
+end)
+
+H.section("R3 Disabled set during a drag: a Switch release and the color areas write nothing", function()
+	local value, disabled = q.Source(false), q.Source(false)
+	local changes = 0
+	local sw: any = Switch({ Value = value, Disabled = disabled, OnChange = function()
+		changes += 1
+	end })
+	local root = D.Frame { sw }
+	H.fire(sw, "InputBegan", H.input({ Position = Vector3.new(100, 10, 0) }))
+	mouseMove(105, 10)
+	mouseMove(135, 10)
+	disabled:Set(true)
+	mouseUp(135, 10)
+	assert(value:Get() == false and changes == 0, `switch: value {value:Get()}, OnChange {changes}`)
+	q.dispose(root)
+	-- the same drag without Disabled still switches
+	local v2 = q.Source(false)
+	local sw2: any = Switch({ Value = v2 })
+	local root2 = D.Frame { sw2 }
+	H.fire(sw2, "InputBegan", H.input({ Position = Vector3.new(100, 10, 0) }))
+	mouseMove(105, 10)
+	mouseMove(135, 10)
+	mouseUp(135, 10)
+	assert(v2:Get() == true, "an enabled drag past the half switches")
+	q.dispose(root2)
+	H.advance(0.5)
+
+	local color, off = q.Source(Color3.fromRGB(235, 153, 255)), q.Source(false)
+	local colorChanges = 0
+	local panel: any = ColorPicker.Panel({ Value = color, Disabled = off, Recent = q.Source({} :: { Color3 }), OnChange = function()
+		colorChanges += 1
+	end })
+	local area: any, hue: any = H.find(panel, "SVArea"), H.find(panel, "HueSlider")
+	H.setAbs(panel, 80, 40, 340, 500)
+	H.setAbs(area, 100, 50, 300, 160)
+	H.setAbs(hue, 100, 230, 300, 40)
+	H.fire(area, "InputBegan", H.input({ Position = Vector3.new(150, 100, 0) }))
+	mouseMove(200, 120)
+	local n = colorChanges
+	assert(n >= 1, "the drag writes while enabled")
+	local at = color:Get()
+	off:Set(true)
+	mouseMove(300, 180)
+	mouseUp(320, 190)
+	assert(color:Get() == at and colorChanges == n, "SV area: disabled mid-drag, the color stays")
+	off:Set(false)
+	H.fire(hue, "InputBegan", H.input({ Position = Vector3.new(150, 250, 0) }))
+	mouseMove(200, 250)
+	at, n = color:Get(), colorChanges
+	off:Set(true)
+	mouseMove(350, 250)
+	mouseUp(360, 250)
+	assert(color:Get() == at and colorChanges == n, "hue slider: disabled mid-drag, the color stays")
+	q.dispose(panel)
+	H.advance(0.5)
+end)
+
+H.section("R4 ColorPicker channel boxes: a typed edit is remembered at blur; a rejected text remembers nothing", function()
+	local color, recent = q.Source(Color3.fromRGB(235, 153, 255)), q.Source({} :: { Color3 })
+	local panel: any = ColorPicker.Panel({ Value = color, Recent = recent })
+	local g: any = H.find(panel, "Channel2")
+	local function edit(text: string)
+		H.fire(g, "Focused")
+		g.Text = text
+		H.fire(g, "FocusLost", false)
+	end
+	edit("abc")
+	assert(#recent:Get() == 0, "a rejected text changed nothing: nothing to remember")
+	H.fire(g, "Focused")
+	H.fire(g, "FocusLost", false)
+	assert(#recent:Get() == 0, "focus alone remembers nothing")
+	edit("10")
+	assert(#recent:Get() == 1 and math.abs(recent:Get()[1].G * 255 - 10) < 1e-3, `a typed channel is remembered ({#recent:Get()})`)
+	-- typed live, then left with a text that does not parse: the color DID change during the edit
+	H.fire(g, "Focused")
+	g.Text = "77"
+	g.Text = ""
+	H.fire(g, "FocusLost", false)
+	assert(#recent:Get() == 2 and math.abs(recent:Get()[1].G * 255 - 77) < 1e-3, "a live commit is remembered whatever the last text was")
+	q.dispose(panel)
+	H.advance(0.5)
+end)
+
+H.section("R5 DatePicker keys: Home / End stop at the selectable day nearest to the row end", function()
+	local GuiService: any = H.GuiService
+	local value = q.Source(nil :: any)
+	-- weekends disabled, Sunday first: the row of Wed Oct 14 2026 is Sun 11 (disabled) .. Sat 17 (disabled)
+	local picker: any = DatePicker.Docked({ Value = value, Today = Calendar.date(2026, 10, 14), IsDisabled = function(d: any): boolean
+		local w = Calendar.weekday(d)
+		return w == 0 or w == 6
+	end })
+	local root = D.Frame { picker }
+	local function focusOn(day: number)
+		for _, c in named(picker, "Day") do
+			if c.Text == tostring(day) and c.Visible then
+				GuiService.SelectedObject = c
+				H.fire(c, "SelectionGained")
+				return
+			end
+		end
+		error("no day " .. day)
+	end
+	local function key(code: EnumItem)
+		UIS.InputBegan:Fire(H.input({ UserInputType = Enum.UserInputType.Keyboard, KeyCode = code }), false)
+	end
+	local function selected(): string
+		local s = GuiService.SelectedObject
+		return if s ~= nil then s.Text else "nil"
+	end
+	focusOn(14)
+	key(Enum.KeyCode.Home)
+	assert(selected() == "12", `Home from Wed 14 with Sun 11 disabled -> Mon 12 (got {selected()})`)
+	key(Enum.KeyCode.Home)
+	assert(selected() == "12", "Home again stays")
+	key(Enum.KeyCode.End)
+	assert(selected() == "16", `End -> Fri 16 (got {selected()})`)
+	key(Enum.KeyCode.End)
+	assert(selected() == "16", "End again stays")
+	H.fire(GuiService.SelectedObject, "SelectionLost")
+	GuiService.SelectedObject = nil
+	q.dispose(root)
+	H.advance(0.5)
+end)
+
 H.done()

@@ -60,7 +60,8 @@ local function HueSlider(props: Props)
 	local host: GuiObject? = nil
 	local function setFromX(x: number)
 		local h = host
-		if h == nil then
+		-- (Disabled set while a drag is under way: the drag no longer writes)
+		if h == nil or disabled:Get() then
 			return
 		end
 		local width = h.AbsoluteSize.X - 2 * INSET

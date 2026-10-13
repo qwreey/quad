@@ -22,6 +22,11 @@
 	(`row:Compute(function(self) return self:Get().Name end)`). Row order follows the data order through `LayoutOrder`
 	(physical reordering is never done); a key that leaves the data destroys its row.
 
+	NO VIRTUALIZATION: every row of `Rows` is built, on screen or not — 3 instances per row plus 4 to 6 per column with a
+	one-label cell (3 columns with Borders: about 20 per row, so 500 rows are 10,000 instances and most of a second to build).
+	Updates are cheap (a surviving key only republishes its row State), the first build is not: for thousands of rows
+	filter or page the `Rows` State yourself.
+
 	DEVIATION FROM THE FIRST SKETCH: `Cell` takes `State<T>`, not `T`, because with a plain `T` a surviving key could never
 	show new values.
 
@@ -87,20 +92,28 @@ local function Table<T>(props: TableProps<T>): Frame
 	local keyFn = props.Key
 	local cellFn = props.Cell
 
+	-- a column rule is a child of a PADDED cell, so its scale rect is the padded inner area: shift it out by the
+	-- padding tokens so it spans the cell's full height and sits on the cell's right edge. The same two States for
+	-- every column rule of the table (they depend on the style tokens only): one pair, not one per cell.
+	local columnRulePosition: State<UDim2>? = nil
+	local columnRuleSize: State<UDim2>? = nil
+	if borders and last > 1 then
+		columnRulePosition = cellPadX:Compute(function(self, _prev, padY)
+			return UDim2.new(1, self:Get().Offset, 0, -padY:Get().Offset)
+		end, cellPadY)
+		columnRuleSize = cellPadY:Compute(function(self)
+			return UDim2.new(0, 1, 1, 2 * self:Get().Offset)
+		end)
+	end
+
 	local function hairline(vertical: boolean, strong: boolean): Frame
 		local color = if strong then style.Color.TableBorderStrong else style.Color.TableBorderLight
 		local alpha = if strong then style.Transparency.TableBorderStrong else style.Transparency.TableBorderLight
-		-- a column rule is a child of a PADDED cell, so its scale rect is the padded inner area: shift it out by the
-		-- padding tokens so it spans the cell's full height and sits on the cell's right edge
 		local position: UDim2 | State<UDim2> = UDim2.fromScale(0, 1)
 		local size: UDim2 | State<UDim2> = UDim2.new(1, 0, 0, 1)
-		if vertical then
-			position = cellPadX:Compute(function(self, _prev, padY)
-				return UDim2.new(1, self:Get().Offset, 0, -padY:Get().Offset)
-			end, cellPadY)
-			size = cellPadY:Compute(function(self)
-				return UDim2.new(0, 1, 1, 2 * self:Get().Offset)
-			end)
+		if vertical and columnRulePosition ~= nil and columnRuleSize ~= nil then
+			position = columnRulePosition
+			size = columnRuleSize
 		end
 		return D.Frame({
 			Name = if vertical then "ColumnRule" else "RowRule",

@@ -119,7 +119,8 @@ local function new(props: Props, look: Look): Switch
 			end
 			suppressUntil = os.clock() + SUPPRESS
 			local target = startOn
-			if not cancelled then
+			-- Disabled set while the drag was under way: the release writes nothing (as a cancelled drag)
+			if not cancelled and not disabled:Get() then
 				local f = fracAt(x)
 				target = if startOn then f >= 0.5 else f > 0.5
 			end

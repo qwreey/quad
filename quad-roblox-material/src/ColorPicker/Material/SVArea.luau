@@ -60,7 +60,8 @@ local function SVArea(props: Props)
 	local host: GuiObject? = nil
 	local function apply(x: number, y: number)
 		local h = host
-		if h == nil then
+		-- (Disabled set while a drag is under way: the drag no longer writes)
+		if h == nil or disabled:Get() then
 			return
 		end
 		local size = h.AbsoluteSize

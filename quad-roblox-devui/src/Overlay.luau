@@ -10,7 +10,9 @@
 	USAGE
 		local Overlay = require("./Overlay")
 		local overlay = Overlay.new()            -- one per ScreenGui (the layer dies with it), or Overlay.getDefault()
-		D.ScreenGui { ResetOnSpawn = false, windowsFrame, overlay.Layer }
+		D.ScreenGui { ResetOnSpawn = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, windowsFrame, overlay.Layer }
+		-- ZIndexBehavior = Sibling is REQUIRED: a ScreenGui made in code defaults to Global, where the layer's ZIndex
+		-- does not lift its popups (their own ZIndex is 1) above a window whose root has a higher rank
 
 		local popup = overlay:Open({
 			Content = D.Frame { ... },           -- a quad-made element; the overlay owns it from now on
@@ -38,7 +40,8 @@ under Deferred signals) (the ScreenGui was rebuilt, e.g. ResetOnSpawn) makes a f
 	`Overlay.getDefault().Layer` into the ONE ScreenGui that shows popups (the layer is a single instance: two live
 	ScreenGuis cannot both hold it — Quad0160); for several ScreenGuis create your own `Overlay.new()` per ScreenGui and pass
 	it to the widgets (`Overlay = overlay`). With `q.debug` on, `Open` prints one line when the layer is not mounted
-	(`Layer.Parent == nil`): the popup would be invisible. Always create the ScreenGui with `ResetOnSpawn = false` (the layer is a
+	(`Layer.Parent == nil`): the popup would be invisible; and one line (once per overlay) when the ScreenGui above the
+	layer is not `ZIndexBehavior = Sibling` (see below). Always create the ScreenGui with `ResetOnSpawn = false` (the layer is a
 	quad-made instance, a respawn would destroy it behind quad's back).
 
 	WHEN THE LAYER DIES every popup still open is closed on the spot: `IsOpen` goes false, `OnClose` runs once (so owners
@@ -146,12 +149,32 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 		end),
 	})
 
+	-- `q.debug` only, once per overlay: the kit layers by ZIndex among SIBLINGS (window rank 1..n, this layer 1000). A
+	-- ScreenGui made in code is ZIndexBehavior Global, where a ZIndex is compared across the whole ScreenGui: a window
+	-- root with rank 2+ then draws over its own content and over every popup (their ZIndex is 1). Nothing raises, so the
+	-- first Open under such a ScreenGui says it (as the material kit's Overlay does).
+	local zIndexChecked = false
 	local function openPopup(self: Overlay, opts: PopupOptions): Popup
 		if isDead() then
 			error("Overlay:Open: the overlay layer was destroyed", 2)
 		end
 		if q.debug and Overlay.warnUnmounted and layer.Parent == nil then
 			print("Overlay:Open: overlay layer is not mounted — the popup will not be visible")
+		end
+		if q.debug and not zIndexChecked then
+			-- by ClassName, not IsA("LayerCollector"): the spec mock has no class hierarchy
+			local gui: any = layer.Parent
+			while gui ~= nil and gui.ClassName ~= "ScreenGui" and gui.ClassName ~= "SurfaceGui" and gui.ClassName ~= "BillboardGui" do
+				gui = gui.Parent
+			end
+			if gui ~= nil then
+				zIndexChecked = true -- only once the layer is under a ScreenGui: an Open before that keeps the check
+				-- (nil: the spec mock has no property defaults — a ScreenGui that was not given one reads nil there)
+				local behavior = gui.ZIndexBehavior
+				if behavior ~= nil and behavior ~= Enum.ZIndexBehavior.Sibling then
+					print(`Devui.Overlay: the overlay layer is under {gui.ClassName} "{gui.Name}" with ZIndexBehavior = {behavior.Name} - set ZIndexBehavior = Enum.ZIndexBehavior.Sibling (a code-made ScreenGui defaults to Global: windows and popups are layered by sibling ZIndex and draw in the wrong order under Global)`)
+				end
+			end
 		end
 		local isOpen: Source<boolean> = q.Source(true)
 		-- (`or`: engines always have it; the test mock has no layout engine until a spec sets AbsolutePosition)

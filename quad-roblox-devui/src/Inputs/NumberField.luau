@@ -6,6 +6,7 @@
 
 		NumberField.Edit { Value, OnSet, Min?, Max?, Step?, Format?, Enabled, Style?, Modifier?, Name? }
 			type, then commit on FocusLost/Enter: parse -> clamp/snap -> `OnSet(n)`. Invalid text reverts to the current value.
+			Leaving the box with the text it was showing (focus without an edit) calls nothing.
 		NumberField.Drag { same + Speed? }
 			drag horizontally to change the value (`Speed` units per pixel, default = Step or 1; a 3px dead zone separates
 			a click from a drag); a click without drag (release inside the dead zone) enters text editing, which commits
@@ -92,10 +93,12 @@ local function build(props: FieldProps, dragging: boolean): TextBox
 		refresh:Set(refresh:Get() + 1)
 	end
 
-	-- commit the text typed into the box (FocusLost / Enter)
+	-- commit the text typed into the box (FocusLost / Enter). A text that still is what the box was given (`shown`) was
+	-- not edited: nothing is written — reading it back would round the value to the format ("%.3f" shows 0.12345 as
+	-- "0.123") and call `OnSet` for a change the user did not make.
 	local function commit()
 		local text = boxText(boxRef)
-		if text ~= nil then
+		if text ~= nil and text ~= shown:Get() then
 			local n = NumberFormat.commitText(text, min, max, step)
 			if n ~= nil then
 				props.OnSet(n)
@@ -128,7 +131,8 @@ local function build(props: FieldProps, dragging: boolean): TextBox
 				startValue = value:Get()
 			end,
 			OnMove = function(_x, _y, dx, _dy)
-				if not tracking then
+				-- (`enabled`: Disabled set while the drag is under way — the drag no longer writes, as SliderNum)
+				if not tracking or not enabled:Get() then
 					return
 				end
 				if not moved then

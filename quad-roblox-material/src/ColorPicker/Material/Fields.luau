@@ -8,8 +8,9 @@
 	  buffer     = what the engine currently holds           (`q.OnChange("Text")` echo)
 	  typing     -> buffer, and when the text parses AND differs from what the model shows, `model.typeField` commits it
 	                LIVE (invalid or empty text is simply not committed)
-	  FocusLost  -> final commit of an edited buffer, `model.remember()`, then `focused = false`: the box flips back to
-	                the model's text, so an invalid / empty entry reverts and a clamped one shows its clamp.
+	  FocusLost  -> final commit of an edited buffer, `model.remember()` when this focus session committed anything
+	                (live or now), then `focused = false`: the box flips back to the model's text, so an invalid /
+	                empty entry reverts and a clamped one shows its clamp.
 	"Differs from the model text" stops the echo of the model's own rounded display (H = 0.4812 shown as "173") from
 	being parsed back and quantizing the color.
 	Keys: Tab (the `\t` character a TextBox receives) moves focus box 1 -> 2 -> 3 -> 1; the mouse wheel is +-1.
@@ -104,6 +105,10 @@ local function NumberBox(model: Model.Model, theme: Theme.Theme, i: number, refs
 	local modelText = model.fieldText(i)
 	local focused = q.Source(false)
 	local buffer = q.Source("")
+	-- this focus session committed something (live while typing, or at FocusLost): only then is the color remembered.
+	-- (A text equal to the model's after a live commit is the NORMAL end of a valid edit — it must be remembered; a
+	-- rejected text that committed nothing must not push the unchanged color.)
+	local committed = false
 	local shown: q.State<string> = focused:Compute(function(self, _prev, m, b)
 		return if self:Get() then b:Get() else m:Get()
 	end, modelText, buffer)
@@ -156,8 +161,8 @@ local function NumberBox(model: Model.Model, theme: Theme.Theme, i: number, refs
 					return
 				end
 				buffer:SetIfChanged(v)
-				if focused:Get() and v ~= modelText:Get() then
-					model.typeField(i, v)
+				if focused:Get() and v ~= modelText:Get() and model.typeField(i, v) then
+					committed = true
 				end
 			end),
 			Position = UDim2.fromOffset(26, 0),
@@ -173,8 +178,11 @@ local function NumberBox(model: Model.Model, theme: Theme.Theme, i: number, refs
 			end,
 			FocusLost = function()
 				local b = buffer:Get()
-				if b ~= modelText:Get() then
-					model.typeField(i, b)
+				if b ~= modelText:Get() and model.typeField(i, b) then
+					committed = true
+				end
+				if committed then
+					committed = false
 					model.remember()
 				end
 				focused:SetIfChanged(false)

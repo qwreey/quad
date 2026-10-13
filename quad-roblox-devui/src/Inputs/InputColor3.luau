@@ -74,7 +74,9 @@ local function hexField(style: Style, value: Source<Color3>, enabled: State<bool
 		Size = Common.frameHeight(style),
 		FocusLost = function(_enterPressed: boolean, _input: InputObject)
 			local box = boxRef.Value
-			if box ~= nil then
+			-- a text that still is what the box was given was not edited: reading it back would quantize a colour that
+			-- is not on the 8-bit grid (0.5 -> 128 / 255) and report a change the user did not make
+			if box ~= nil and box.Text ~= shown:Get() then
 				local r, g, b = NumberFormat.parseHex(box.Text)
 				if r ~= nil and g ~= nil and b ~= nil then
 					local c = Color3.fromRGB(r, g, b)
