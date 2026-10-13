@@ -526,3 +526,21 @@
 **고침**: (1) StoryKit의 조회를 그 함수 안 평범한 `getfenv()`로(머리 주석에 이유). (2) test/spec.stories.luau를 material과 같이 UI Labs처럼 싣게 바꿨다 — `stories/` 아래 모듈은 소스에서 `loadstring` + `setfenv`(주입은 그 환경의 `__index`에만 있고 진짜 전역엔 없음을 단언), 그 밖 경로는 보통 require. 새 절 "Style story: a SliderNum drag runs on the injected listener alone" — Style 스토리의 SliderNum을 리스너 신호만으로 30 → 50 → 100 끌고 놓아, 엔진 서비스 연결 수가 그대로이고 리스너 연결이 풀리는 것을 확인. 음성 대조: 조회를 `pcall(getfenv, 1)`로 되돌리면 스토리 16절 전부 "the injected InputListener was installed"로 실패(복구 뒤 `test/run.sh` exit 0).
 
 **devui에 옮기지 않은 것(발견 없음)**: devui의 src/Input.luau에는 `IsMouseButtonPressed` 대체가 없지만 devui 어디서도 `IsMouseButtonPressed`를 쓰지 않고(grep 0건), 엔진 UserInputService는 src/Input.luau:36의 `engine()` 한 곳에서만 잡는다 — material의 Scroll.luau 같은 직접 우회는 없다. 따라서 `Input.use`의 버튼 상태 추적은 이식하지 않았다. 실제 UI Labs 창에서 마우스로 끄는 것은 이번에도 못 봤다.
+
+## Studio 실측 — 자동 크기 엔진 규칙 넷 (2026-10-13, `Dialog` 높이 결함)
+
+`Dialog` 카드가 모자라던 결함(table-sim M18)을 고치며 킷 없이 손으로 만든 인스턴스로 확인한 엔진 동작이다(`Place1.rbxl`, Deferred 신호, Play Client;
+원문 `audit/kit-studio-2026-10-13/REPORT.md` 1번). 킷의 다른 면을 만들 때도 같은 함정이다.
+
+1. **자동 높이 `ScrollingFrame`이, `UIPadding`과 `UIListLayout`을 둘 다 가진 자동 높이 부모의 직접 자식이면 그 부모의 자동 높이가 `min(부모의 세로 패딩 합, 스크롤 프레임 높이)`만큼 모자란다.**
+   패딩 24/24·본문 272 → 48, 10/10 → 20, 24/0 → 24, 40/40 → 80, 한 줄 본문 21 → 21, 좌우 패딩만 → 0. 패딩이나 목록 레이아웃을 빼거나, 일반 `Frame`으로 바꾸거나,
+   사이에 패딩 없는 자동 높이 `Frame`을 하나 끼우거나, 높이를 Offset으로 고정하면 맞다. `AutomaticCanvasSize`·`UISizeConstraint`·`CanvasGroup` 여부는 무관.
+2. **`AutomaticSize`는 `UISizeConstraint.MaxSize`를 무시한다** — 본문 1000에 Max 400을 걸어도 `AbsoluteSize`는 1000(Frame·ScrollingFrame 모두). "자동 높이 + 최대 높이 제약 = 넘으면 스크롤"은 성립하지 않는다.
+3. **줄바꿈되는 자동 높이 `TextLabel`은 높이가 확정된 가장 가까운 조상보다 커지지 못한다** — 자연 높이 1575인 글이 창 300 스크롤 프레임(`AutomaticCanvasSize`) 안에서는 294에서 멈춘다(스크롤되지 않고 잘림).
+   글의 자연 높이를 재려면 충분히 큰 고정 높이의 투명 Frame 안에 놓는다.
+4. **높이 0인 클립 조상 아래에서는 후손의 `AbsoluteSize` 변경 신호가 오지 않는다**(UIScale 애니메이션 18프레임 동안 창 0에서는 1회, 창 1px에서는 17회; 글이 바뀌어도 신호 없음). 측정해서 높이를 쓰는 래퍼는 0에서 시작하면 0에 갇힌다 — 1px 바닥을 둔다.
+
+그래서 `Dialog`의 본문 스크롤 래퍼는 엔진의 자동 크기를 쓰지 않고, 본문을 높이 100000의 투명 `BodyRoom` 안에 놓아 그 `AbsoluteSize`를 읽고 `Size.Y = min(max(H, 1), 한도)`·`CanvasSize.Y`를 직접 쓴다.
+같은 조사에서 본 것(안 고침): `ModalBottomSheet`·`ModalSideSheet`는 내용이 면보다 길면 스크롤 없이 잘린다(내용이 스스로 스크롤해야 하는 설계인데 머리 주석에 그 말이 없다);
+`Dialog`의 층 크기는 화면 픽셀인데 한도는 지역 단위로 써서 조상 UIScale이 1보다 크면 한도가 그만큼 느슨하다; `maxBody`가 머리말을 32로 치는데 실측은 24(한 줄)라 8 보수적이다.
+

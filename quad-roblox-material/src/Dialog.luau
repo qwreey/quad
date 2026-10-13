@@ -45,8 +45,38 @@
 	whose layer is destroyed is finalized by the Overlay (IsOpen false, OnClose once, Result = DismissResult).
 	Small screens: when the overlay layer is laid out (AbsoluteSize > 0 at open) the width is capped at layer width - 48 and
 	the body sits in a ScrollingFrame (`BodyScroll`) capped so the card stays within layer height - 48, with the headline
-	and the actions pinned. Not re-measured after open (a resize while open keeps the open-time caps). An unmeasured layer
-	(no layout yet, a mock) gets no caps and no scroll wrapper.
+	and the actions pinned. The caps are not re-measured after open (a resize while open keeps the open-time caps). An
+	unmeasured layer (no layout yet, a mock) gets no caps and no scroll wrapper.
+	BODY HEIGHT (the scroll wrapper): the kit WRITES the wrapper's height; the engine's automatic sizing is not used for
+	it. The body (`Body`, AutomaticSize Y) is laid out in `BodyRoom`, a transparent frame of a fixed, very tall height
+	inside the wrapper; its laid-out height H is read from its AbsoluteSize (re-read whenever that changes, so a body
+	that grows or shrinks later is followed) and the wrapper gets Size.Y = min(max(H, 1), cap) and CanvasSize.Y = H above
+	the cap, 0 (= the window) within it: the card fits a body below the cap exactly, with nothing to scroll, and only the
+	body scrolls above it. H is in the card's local units: Body.AbsoluteSize.Y / card.AbsoluteSize.X * width — both come
+	from the same layout pass and every UIScale (the card's animated one, any ancestor's) scales both, so no scale is
+	read (the Fit ratio below, the other way round). H is rounded UP to a whole pixel (less 0.001 of float noise): a
+	UDim offset is an integer, so a fractional height — an ancestor UIScale of 1.25 makes a 17 px line 13.6 local
+	units — would be cut and clip the body's last row. A proportionally scaled body therefore gives the same H on every
+	frame of the enter / exit scale; a TEXT body does not — the engine lays text out in whole screen pixels, so its
+	local height wobbles by a pixel or two per line while the scale animates (the label's own AbsoluteSize does; an
+	auto-sized label outside the wrapper takes its parent along the same way). No loop: the body's height does not
+	depend on the wrapper's (only on its width, and a visible scrollbar can only make a body that already overflows
+	taller).
+	Why not `AutomaticSize = Y` + `AutomaticCanvasSize = Y` + a UISizeConstraint on the wrapper (the form until
+	2026-10-13) — engine behaviours measured in Studio with hand-built instances (no kit):
+	  1. an auto-sized ScrollingFrame that is a direct child of an auto-sized, UIListLayout-laid frame WITH a UIPadding
+	     makes that parent lose min(its vertical padding, the scroll frame's height) of its own automatic height (the
+	     card was 48 short — Content's 24 + 24 — and the actions row hung out of it; 14 short with a one-line body).
+	     No UIPadding, no UIListLayout, a plain Frame instead of the ScrollingFrame, or an explicit height: correct.
+	  2. AutomaticSize ignores a UISizeConstraint's MaxSize (the frame's AbsoluteSize is its content's), so the cap
+	     never held.
+	  3. a wrapped, auto-sized TextLabel is never taller than the nearest ancestor with a definite height (inside a
+	     ScrollingFrame: its canvas), so a long string body was cut at the window instead of scrolling — and a wrapper
+	     sized from the label would stay one line tall. Hence `BodyRoom`.
+	  4. under a ZERO-height clipping ancestor the engine stops updating a descendant's AbsoluteSize (no changed signal
+	     while a UIScale animates, none for a TextLabel whose text changes; the first signal of a text body can carry
+	     height 0), so a wrapper that started at 0 could stay there. Hence the 1 px floor — the one visible trace: a
+	     body that is 0 tall (an empty element) still gets a 1 px window.
 	`Fit = true` instead: no caps, no scroll wrapper; the card keeps its width and natural height and its UIScale is
 	multiplied by fit = min(1, (layer width - 48) / width, (layer height - 48) / natural height), floored at 0.25 (the
 	DatePicker modal's floor — below it the card would be unusable anyway, so it is left to clip rather than adding a
@@ -114,6 +144,10 @@ export type ConfirmOptions = {
 
 local LayerMargin = 24 -- min distance between the card and the layer edge when the layer is measured
 local ScrollBodyMin = 72
+-- the height of the frame the body is laid out in inside the scroll wrapper (header, "BODY HEIGHT" 3): only ever a bound
+-- for the body's own automatic height, so any value no body reaches
+local BodyRoom = 100000
+local ScrollBodyFloor = 1 -- the scroll wrapper's least height (header, "BODY HEIGHT" 4)
 local FitMin = 0.25 -- the DatePicker modal's floor (DatePicker/Modal.luau)
 local headlineStyle = Text.Label("HeadlineSmall")
 local bodyStyle = Text.Label("BodyMedium")
@@ -204,7 +238,9 @@ local function open(o: OpenOptions): Handle
 
 		local body: Instance? = nil
 		local b = o.Body
-		local bodyInner: Instance? = nil
+		local bodyInner: GuiObject? = nil
+		-- set when the body sits in the scroll wrapper: starts its measurement (run from the card's PostRef hook)
+		local watchBody: ((card: GuiObject) -> ())? = nil
 		if type(b) == "string" then
 			bodyInner = D.TextLabel {
 				Name = "Body",
@@ -249,12 +285,36 @@ local function open(o: OpenOptions): Handle
 					parts += 1
 				end
 				local maxBody = math.max(ScrollBodyMin, layerSize.Y - 2 * LayerMargin - 48 - fixed - 16 * (parts - 1))
+				-- the body's laid-out height in the card's local units (header, "BODY HEIGHT"); 0 until the first layout
+				local bodyHeight = q.Source(0)
+				local inner: GuiObject = bodyInner
+				watchBody = function(card: GuiObject)
+					local function read()
+						local cardWidth = card.AbsoluteSize.X
+						if cardWidth <= 0 then
+							return
+						end
+						-- up to the whole pixel (a UDim offset is an integer: a fraction would be cut and clip the body's last
+						-- row), less the float noise of a scaled layout
+						bodyHeight:SetIfChanged(math.ceil(inner.AbsoluteSize.Y / cardWidth * width - 1e-3))
+					end
+					-- the body's own signal: disconnected with the body
+					inner:GetPropertyChangedSignal("AbsoluteSize"):Connect(read)
+					read()
+				end
+				-- never 0 tall (header, "BODY HEIGHT" 4): a body under a zero-height window is not measured again
+				local scrollSize: q.State<UDim2> = bodyHeight:Compute(function(self)
+					return UDim2.new(1, 0, 0, math.min(math.max(self:Get(), ScrollBodyFloor), maxBody))
+				end)
+				-- canvas 0 = the window: a body within the cap cannot scroll (and shows no scrollbar) whatever the rounding
+				local canvasSize: q.State<UDim2> = bodyHeight:Compute(function(self)
+					local height = self:Get()
+					return UDim2.fromOffset(0, if height > maxBody then height else 0)
+				end)
 				body = D.ScrollingFrame {
 					Name = "BodyScroll",
-					Size = UDim2.fromScale(1, 0),
-					AutomaticSize = Enum.AutomaticSize.Y,
-					CanvasSize = UDim2.fromOffset(0, 0),
-					AutomaticCanvasSize = Enum.AutomaticSize.Y,
+					Size = scrollSize,
+					CanvasSize = canvasSize,
 					ScrollingDirection = Enum.ScrollingDirection.Y,
 					ScrollBarThickness = 4,
 					ScrollBarImageColor3 = theme.Color.OnSurface,
@@ -263,8 +323,13 @@ local function open(o: OpenOptions): Handle
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
 					LayoutOrder = 3,
-					D.UISizeConstraint { MaxSize = Vector2.new(math.huge, maxBody) },
-					bodyInner,
+					D.Frame {
+						Name = "BodyRoom",
+						Size = UDim2.new(1, 0, 0, BodyRoom),
+						BackgroundTransparency = 1,
+						BorderSizePixel = 0,
+						bodyInner,
+					},
 				}
 			else
 				body = bodyInner
@@ -328,6 +393,9 @@ local function open(o: OpenOptions): Handle
 			Util.clickSink(),
 			Util.postHook(function(card: GuiObject)
 				entered:Set(true)
+				if watchBody ~= nil then
+					watchBody(card)
+				end
 				if fitMode and measured then
 					local function refit()
 						local abs = card.AbsoluteSize

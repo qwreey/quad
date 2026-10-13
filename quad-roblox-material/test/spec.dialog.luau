@@ -311,7 +311,17 @@ H.section("D4 Escape is ignored while a TextBox is focused (and when the engine 
 	H.assertNoDebugOutput("dialog escape guards")
 end)
 
-H.section("D3 small layer: width capped, body scrolls with the card capped to the layer, headline/actions pinned", function()
+-- The mock has no layout engine: the specs below play it by hand (`H.setAbs`). `layout(dlg, bodyHeight, k)` is one layout
+-- pass of a card that is 252 local px wide under a UIScale product `k`: the card's AbsoluteSize.X, then the body's
+-- AbsoluteSize (the body's change is the signal the dialog listens to, so it goes last, as both are already there when the
+-- engine's signal arrives).
+local function layout(dlg: any, bodyHeight: number, k: number?)
+	local scale = k or 1
+	H.setAbs(dlg, 0, 0, 252 * scale, 300 * scale)
+	H.setAbs(H.find(dlg, "Body"), 0, 0, 204 * scale, bodyHeight * scale)
+end
+
+H.section("D3 small layer: width capped, the body in a scroll wrapper the kit sizes, headline/actions pinned", function()
 	local overlay, screen = setup()
 	H.setAbs(overlay.Layer, 0, 0, 300, 400)
 	local h = Dialog.open({
@@ -324,23 +334,151 @@ H.section("D3 small layer: width capped, body scrolls with the card capped to th
 	local dlg = H.find(screen, "Dialog")
 	assert(dlg.Size == UDim2.fromOffset(252, 0), "width capped at layer - 48: " .. tostring(dlg.Size))
 	local scroll = H.find(dlg, "BodyScroll")
-	assert(scroll ~= nil and scroll.ClassName == "ScrollingFrame" and scroll.AutomaticCanvasSize == Enum.AutomaticSize.Y)
+	assert(scroll ~= nil and scroll.ClassName == "ScrollingFrame")
+	-- Until 2026-10-13 the wrapper was `AutomaticSize = Y` + `AutomaticCanvasSize = Y` + a UISizeConstraint child (asserted
+	-- here). The engine does not size that correctly (Dialog.luau "BODY HEIGHT": the card came out 48 short, the cap did not
+	-- hold, a long text never scrolled), so the wrapper now has NO automatic size, NO automatic canvas and NO constraint:
+	-- the kit writes Size / CanvasSize from the body's laid-out height. One instance more than before nets out: the
+	-- UISizeConstraint is gone, the `BodyRoom` frame is new.
+	-- (the mock has no property defaults: a property the kit never set reads nil)
+	assert(scroll.AutomaticSize == nil, "the wrapper's height is written, not automatic")
+	assert(scroll.AutomaticCanvasSize == nil, "the canvas is written too")
+	assert(#class(scroll, "UISizeConstraint") == 0, "no size constraint (AutomaticSize ignored it)")
 	assert(scroll.VerticalScrollBarInset == Enum.ScrollBarInset.ScrollBar, "the scrollbar does not overlay the body")
-	local limit = class(scroll, "UISizeConstraint")[1]
-	assert(limit ~= nil, "the scroll body is height-capped")
-	local maxBody = limit.MaxSize.Y
-	assert(maxBody > 0 and maxBody <= 400 - 48 - 48 - 32 - 48, "card within layer height: body max " .. maxBody)
-	assert(H.find(scroll, "Body").Text:sub(1, 5) == "lorem" and H.find(dlg, "Headline").Parent == H.find(dlg, "Content") and H.find(dlg, "Actions").Parent == H.find(dlg, "Content"), "pinned parts are outside the scroll")
+	assert(scroll.ScrollingDirection == Enum.ScrollingDirection.Y)
+	-- the body is laid out in a very tall frame, so a wrapped label is not bounded by the wrapper's window
+	local room = H.find(scroll, "BodyRoom")
+	assert(room ~= nil and room.Parent == scroll and room.ClassName == "Frame" and room.BackgroundTransparency == 1)
+	assert(room.Size.X == UDim.new(1, 0) and room.Size.Y.Scale == 0 and room.Size.Y.Offset >= 10000, "a fixed, very tall room: " .. tostring(room.Size))
+	local body = H.find(scroll, "Body")
+	assert(body.Parent == room and body.Text:sub(1, 5) == "lorem" and body.AutomaticSize == Enum.AutomaticSize.Y and body.Size == UDim2.fromScale(1, 0))
+	assert(H.find(dlg, "Headline").Parent == H.find(dlg, "Content") and H.find(dlg, "Actions").Parent == H.find(dlg, "Content"), "pinned parts are outside the scroll")
+	assert(scroll.Parent == H.find(dlg, "Content") and scroll.LayoutOrder == 3)
+	-- before any layout: the 1 px floor (never 0: the engine stops measuring a body under a zero-height window), no canvas
+	assert(scroll.Size == UDim2.new(1, 0, 0, 1) and scroll.CanvasSize == UDim2.fromOffset(0, 0), "unmeasured: " .. tostring(scroll.Size))
+	-- the cap: layer 400 - 48 margins - 48 card padding - headline 32 - actions 48 - 2 gaps of 16 = 192
+	layout(dlg, 794)
+	assert(scroll.Size == UDim2.new(1, 0, 0, 192), "a body over the cap stops at the cap: " .. tostring(scroll.Size))
+	assert(scroll.CanvasSize == UDim2.fromOffset(0, 794), "and the canvas is the whole body: " .. tostring(scroll.CanvasSize))
+	assert(192 <= 400 - 48 - 48 - 32 - 48, "card within the layer height")
 	-- an unmeasured layer keeps the plain structure
 	h.Close()
 	H.advance(0.3)
 	local o2, s2 = setup()
 	Dialog.open({ Overlay = o2, Headline = "Short", Body = "text", Width = 560 })
 	local d2 = H.find(s2, "Dialog")
-	assert(d2.Size == UDim2.fromOffset(560, 0) and H.find(d2, "BodyScroll") == nil, "no caps, no scroll wrapper when the layer is unmeasured")
+	assert(d2.Size == UDim2.fromOffset(560, 0) and H.find(d2, "BodyScroll") == nil and H.find(d2, "BodyRoom") == nil, "no caps, no scroll wrapper when the layer is unmeasured")
+	assert(H.find(d2, "Body").Parent == H.find(d2, "Content"))
 	q.dispose(screen)
 	q.dispose(s2)
 	H.assertNoDebugOutput("dialog caps")
+end)
+
+H.section("body height: the wrapper is min(body, cap) tall, follows a body that grows or shrinks, in local units", function()
+	local overlay, screen = setup()
+	H.setAbs(overlay.Layer, 0, 0, 300, 400)
+	local custom = D.Frame { Name = "Custom" }
+	local h = Dialog.open({
+		Overlay = overlay,
+		Headline = "H",
+		Body = custom,
+		Width = 560,
+		Actions = { { Label = "OK" } },
+	})
+	local dlg = H.find(screen, "Dialog")
+	local scroll = H.find(dlg, "BodyScroll")
+	local body = H.find(scroll, "Body")
+	assert(body.Parent == H.find(scroll, "BodyRoom") and custom.Parent == body, "an element body: Body wraps it, inside the room")
+	local function height(): number
+		assert(scroll.Size.X == UDim.new(1, 0) and scroll.Size.Y.Scale == 0, "full width, offset height")
+		return scroll.Size.Y.Offset
+	end
+	local function canvas(): number
+		assert(scroll.CanvasSize.X == UDim.new(0, 0) and scroll.CanvasSize.Y.Scale == 0)
+		return scroll.CanvasSize.Y.Offset
+	end
+	-- the body is laid out before the card has a width (cannot happen in one engine pass; the read must not divide by 0)
+	H.setAbs(body, 0, 0, 204, 100)
+	assert(height() == 1 and canvas() == 0, "no card width yet: nothing written")
+	-- below the cap (192): the wrapper is exactly the body, nothing to scroll (canvas 0 = the window)
+	layout(dlg, 120)
+	assert(height() == 120 and canvas() == 0, "fits the body: " .. height())
+	-- the body grows after open (a row was added): the card follows
+	layout(dlg, 176)
+	assert(height() == 176 and canvas() == 0, "follows growth: " .. height())
+	-- exactly the cap: still not scrolling
+	layout(dlg, 192)
+	assert(height() == 192 and canvas() == 0, "at the cap")
+	-- past the cap: the wrapper stops, the canvas takes the body
+	layout(dlg, 193)
+	assert(height() == 192 and canvas() == 193, "one over the cap scrolls: " .. canvas())
+	layout(dlg, 1672)
+	assert(height() == 192 and canvas() == 1672, "stays at the cap: " .. canvas())
+	-- and back: it shrinks with the body
+	layout(dlg, 60)
+	assert(height() == 60 and canvas() == 0, "follows shrinking: " .. height())
+	-- LOCAL UNITS: under a UIScale (the card's enter scale .8, an ancestor's 1.25 ...) AbsoluteSize is scaled on both
+	-- axes; the height written is the unscaled one, and a scale change alone rewrites nothing
+	local writes = 0
+	scroll:GetPropertyChangedSignal("Size"):Connect(function()
+		writes += 1
+	end)
+	for _, k in { 0.8, 0.8437, 0.92, 1.25, 2.3, 1 } do
+		layout(dlg, 60, k)
+		assert(height() == 60 and canvas() == 0, "scale " .. k .. ": " .. height())
+	end
+	assert(writes == 0, "a scale change alone does not rewrite the size: " .. writes)
+	-- a fraction of a local pixel (text under a UIScale: two lines = 33 screen px at 1.25 = 26.4) rounds UP, not to the
+	-- nearest — a UDim offset is an integer, the body's last row would be clipped otherwise
+	H.setAbs(dlg, 0, 0, 252 * 1.25, 300)
+	H.setAbs(body, 0, 0, 204 * 1.25, 33)
+	assert(height() == 27, "26.4 -> 27: " .. height())
+	-- an empty body: the 1 px floor
+	layout(dlg, 0)
+	assert(height() == 1 and canvas() == 0, "floor: " .. height())
+	layout(dlg, 48)
+	assert(height() == 48, "and measured again from there")
+	-- closing: the body dies with the dialog, nothing is left listening
+	h.Close()
+	H.advance(0.3)
+	assert(H.isDestroyed(custom) and H.find(screen, "Dialog") == nil)
+	layerClean(overlay)
+	assert(H.pendingTimers() == 0)
+	q.dispose(screen)
+	H.assertNoDebugOutput("dialog body height")
+end)
+
+H.section("body height: no Body = no wrapper; Fit = true keeps the body in the content list (no wrapper, no room)", function()
+	local overlay, screen = setup()
+	H.setAbs(overlay.Layer, 0, 0, 300, 400)
+	local bare = Dialog.open({ Overlay = overlay, Headline = "no body", Actions = { { Label = "OK" } } })
+	local d0 = H.find(screen, "Dialog")
+	assert(H.find(d0, "BodyScroll") == nil and H.find(d0, "BodyRoom") == nil and H.find(d0, "Body") == nil)
+	bare.Close()
+	H.advance(0.3)
+	local custom = D.Frame { Name = "Custom" }
+	local fit = Dialog.open({ Overlay = overlay, Headline = "fit", Body = custom, Width = 560, Fit = true, Actions = { { Label = "OK" } } })
+	local d1 = H.find(screen, "Dialog")
+	assert(d1.Size == UDim2.fromOffset(560, 0), "Fit: no width cap")
+	assert(H.find(d1, "BodyScroll") == nil and H.find(d1, "BodyRoom") == nil, "Fit: no scroll wrapper")
+	local body = H.find(d1, "Body")
+	assert(body.Parent == H.find(d1, "Content") and custom.Parent == body and body.AutomaticSize == Enum.AutomaticSize.Y)
+	-- laying the body out writes nothing anywhere (the card is auto-sized by the engine; Fit only reads the CARD)
+	local scale = own(d1, "UIScale")
+	H.finishTweens()
+	H.setAbs(body, 0, 0, 512, 100)
+	H.finishTweens()
+	assert(scale.Scale == 1 and body.Size == UDim2.fromScale(1, 0), "Fit: the body's own layout is not a fit input")
+	fit.Close()
+	H.advance(0.3)
+	local text = Dialog.open({ Overlay = overlay, Headline = "fit", Body = "text", Fit = true })
+	local d2 = H.find(screen, "Dialog")
+	assert(H.find(d2, "BodyScroll") == nil and H.find(d2, "Body").Parent == H.find(d2, "Content") and H.find(d2, "Body").Text == "text")
+	text.Close()
+	H.advance(0.3)
+	layerClean(overlay)
+	q.dispose(screen)
+	H.assertNoDebugOutput("dialog body fit")
 end)
 
 H.section("A-H2 dialog: layer death reports DismissResult through OnClose and clears the Escape connection", function()

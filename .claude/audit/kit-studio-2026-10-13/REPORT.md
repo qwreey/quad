@@ -24,6 +24,14 @@ sonnet 서브에이전트가 Studio MCP로 측정(Play Client에서 `ReplicatedS
 **`AutomaticSize = Y` 그대로 + `Size = (1,0,0,272)` → 424** / `Size = (1,0,0,1)` 376 / 같은 값 재대입 376 / `Content`·카드의 `AutomaticSize` 토글 376 / `ScrollBarThickness = 0` 376.
 즉 이 조합들에서는 본문 스크롤 프레임의 Size Y 오프셋에 본문 높이를 직접 써넣을 때만 48이 돌아왔다. "본문을 일반 Frame으로 옮겨 붙이기"는 미완.
 
+**[같은 날 오후 — 원인 확인과 고침, opus + Studio]** 모자란 48은 단추 줄이 아니라 `Content`의 세로 패딩 24 + 24였다: 자동 높이 `ScrollingFrame`이 `UIPadding`과
+`UIListLayout`을 둘 다 가진 자동 높이 부모의 직접 자식이면 부모의 자동 높이가 `min(세로 패딩 합, 스크롤 프레임 높이)`만큼 모자란다(문자열 본문의 14 = `min(48, 14)`).
+같이 드러난 별개 결함 둘: `AutomaticSize`가 `UISizeConstraint.MaxSize`를 무시해 **한도가 걸린 적이 없었고**(30줄 본문의 스크롤 프레임이 1672), 긴 문자열 본문은 스크롤되지 않고
+294에서 잘렸다. 고침은 스크롤 래퍼의 높이·캔버스를 킷이 직접 쓰는 것(`Dialog.luau` 머리 주석 "BODY HEIGHT", 엔진 규칙 넷은 `feedback/consumer-kits-studio-qa-2026-10-07.md` 끝 절).
+고친 뒤 측정: (가) 424 / (나) 430 / (다) 166 / (라) 424, 긴 본문 30줄과 긴 문자열 모두 카드 629(층 685 안)·창 477에서 스크롤, 띄운 뒤 줄을 넣고 빼면 카드가 따라감(272 → 328 → 한도 → 104 →
+빈 본문 153 → 48), table-sim 장면(1325×715, 본문 262·278) 414·430, ScreenGui UIScale 1.25·0.75에서도 모자람 0. 스크린샷 `dialog-fix-*.jpg`. 같은 구조를 쓰는 다른 면(메뉴·드로어 시트·
+시간/날짜/색 선택 모달)은 원인이 달라 잘림 없음.
+
 ## 2. 코어 GUI 인셋
 
 갤러리 `ScreenGui`: `ScreenInsets = CoreUISafeInsets`, `IgnoreGuiInset = false`, AbsolutePosition (0,0), AbsoluteSize 1325×659(화면 높이 717, 위 58이 Roblox 상단 바).
