@@ -70,8 +70,8 @@
 	    Outlined    none / OnSurfaceVariant, 1 px OutlineVariant   InverseSurface / InverseOnSurface, no outline
 	    Disabled (selected or not — ToggleButtonColors.containerColor): container OnSurface @ 10 % (Outlined:
 	    OutlineVariant @ 10 %, and its outline OutlineVariant @ 10 % unless selected — ButtonDefaults.outlinedButtonBorder),
-	    content OnSurface @ 38 %. (DisabledContainerOpacity is 0.1 in these tokens; the kit Button / SplitButton use the
-	    older 12 % of `Tokens.State.Opacity.DisabledContainer`.)
+	    content OnSurface @ 38 %. (DisabledContainerOpacity is 0.1 in these tokens — the button family's value,
+	    `Style.DisabledButtonContainerTransparency`; only the standalone Tonal Button / SplitButton stay at canon's 12 %.)
 	  samples/ButtonGroupSamples.kt 152~252: SingleSelectConnectedButtonGroupSample (`onCheckedChange = { selectedIndex =
 	    index }`, role RadioButton — one is always selected), MultiSelectConnectedButtonGroupSample (independent toggles).
 	    Both swap the cell's icon when it is checked (an outlined icon -> its filled form): pass `Icon` as a State derived
@@ -195,7 +195,7 @@ local INNER_SELECTED = OUTER -- SelectedInnerCornerCornerSizePercent 50
 local PAD = { 16, 16 } -- ButtonSmallTokens.LeadingSpace / TrailingSpace
 local ICON = 20 -- ButtonSmallTokens.IconSize
 local ICON_GAP = 8 -- ButtonSmallTokens.IconLabelSpace
-local DISABLED_CONTAINER_T = 1 - 0.10 -- <Variant>ButtonTokens.DisabledContainerOpacity
+local DISABLED_CONTAINER_T = Style.DisabledButtonContainerTransparency -- <Variant>ButtonTokens.DisabledContainerOpacity 0.1
 local DISABLED_CONTENT_T = 1 - 0.38 -- DisabledLabelTextOpacity
 
 local labelStyle = Text.Label("LabelLarge")

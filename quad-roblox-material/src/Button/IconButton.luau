@@ -133,7 +133,7 @@ local function IconButton(props: Props)
 		if not self:Get() then
 			return 1
 		end
-		return if dis:Get() then Style.DisabledContainerTransparency else 0
+		return if dis:Get() then Style.DisabledButtonContainerTransparency else 0
 	end, disabled)
 
 	local fx = Interactive.new({
@@ -149,7 +149,8 @@ local function IconButton(props: Props)
 			if toggle and self:Get() then
 				return 1
 			end
-			return if dis:Get() then Style.DisabledContainerTransparency else 0
+			-- OutlinedIconButtonTokens.DisabledOpacity 0.38 (outlinedIconButtonBorder): the outline fades like the icon
+			return if dis:Get() then Style.DisabledContentTransparency else 0
 		end, disabled)
 		stroke = D.UIStroke {
 			Name = "Outline",

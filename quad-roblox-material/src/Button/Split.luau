@@ -24,7 +24,7 @@
 	                   `checked`): circle shape, arrow rotated 180 degrees, a content-colored overlay at the pressed
 	                   state-layer opacity (10 %). The component does not flip it — write the Source you passed
 	                   (typically: true while the menu is open, `handle.IsOpen`).
-	  Disabled         (boolean | State<boolean>)?     both halves: container onSurface@12 %, content @38 %, no input
+	  Disabled         (boolean | State<boolean>)?     both halves: container onSurface@10 % (Tonal 12 % — canon), content @38 %, no input
 	  Theme, Modifier (Frame Modifier on the host, after the base), Hooks (host array part)
 	Returns the host `Frame` (auto width: the two halves + 2; height 40).
 
@@ -108,14 +108,15 @@ export type Props = {
 	read Hooks: Util.Hooks?,
 }
 
-type Spec = { Container: ColorTokens.Role?, Content: ColorTokens.Role, Stroke: boolean, Shadow: number? }
+-- `Disabled`: the disabled container's transparency — canon per variant (`Button/Style.luau`, token audit 2026-10-13)
+type Spec = { Container: ColorTokens.Role?, Content: ColorTokens.Role, Stroke: boolean, Shadow: number?, Disabled: number }
 
 -- the kit Button's roles per variant (Button/init.luau Specs)
 local Specs: { [Variant]: Spec } = {
-	Filled = { Container = "Primary", Content = "OnPrimary", Stroke = false, Shadow = nil },
-	Tonal = { Container = "SecondaryContainer", Content = "OnSecondaryContainer", Stroke = false, Shadow = nil },
-	Elevated = { Container = "SurfaceContainerLow", Content = "Primary", Stroke = false, Shadow = 1 },
-	Outlined = { Container = nil, Content = "Primary", Stroke = true, Shadow = nil },
+	Filled = { Container = "Primary", Content = "OnPrimary", Stroke = false, Shadow = nil, Disabled = Style.disabledContainerTransparencyOf("Filled") },
+	Tonal = { Container = "SecondaryContainer", Content = "OnSecondaryContainer", Stroke = false, Shadow = nil, Disabled = Style.disabledContainerTransparencyOf("Tonal") },
+	Elevated = { Container = "SurfaceContainerLow", Content = "Primary", Stroke = false, Shadow = 1, Disabled = Style.disabledContainerTransparencyOf("Elevated") },
+	Outlined = { Container = nil, Content = "Primary", Stroke = true, Shadow = nil, Disabled = Style.disabledContainerTransparencyOf("Outlined") },
 }
 
 -- SplitButtonSmallTokens / SplitButtonDefaults (see the header)
@@ -168,7 +169,7 @@ local function half(o: HalfOptions): TextButton
 	if spec.Stroke then
 		stroke = {
 			Color = Style.disabledPick(disabled, theme.Raw.Outline, theme.Raw.OnSurface),
-			Transparency = Style.disabledNumber(disabled, 0, Style.DisabledContainerTransparency),
+			Transparency = Style.disabledNumber(disabled, 0, Style.DisabledButtonContainerTransparency),
 		}
 	end
 	return Segment.new({
@@ -186,7 +187,7 @@ local function half(o: HalfOptions): TextButton
 		InnerPressed = INNER_PRESSED,
 		InnerSelected = OUTER, -- TrailingCheckedShape = CircleShape
 		ContainerColor = if container then Style.disabledPick(disabled, theme.Raw[container], theme.Raw.OnSurface) else nil,
-		ContainerTransparency = if container then Style.disabledNumber(disabled, 0, Style.DisabledContainerTransparency) else nil,
+		ContainerTransparency = if container then Style.disabledNumber(disabled, 0, spec.Disabled) else nil,
 		ContentColor = contentColor,
 		Stroke = stroke,
 		Shadow = spec.Shadow,

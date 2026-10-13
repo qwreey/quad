@@ -14,6 +14,17 @@ local Tokens = require("../Tokens")
 local Theme = require("../Theme")
 
 local DisabledContainerTransparency = 1 - Tokens.State.Opacity.DisabledContainer
+-- The BUTTON family's disabled container (token audit 2026-10-13, androidx-main): Filled / Elevated buttons, the
+-- Outlined button's OUTLINE, every icon-button container and the toggle buttons of a ButtonGroup are 10 %
+-- (`FilledButtonTokens` / `ElevatedButtonTokens` / `OutlinedButtonTokens` / `Filled(Tonal)IconButtonTokens`
+-- `.DisabledContainerOpacity = 0.1`). The standalone TONAL button and the Tonal SplitButton are still 12 % in canon
+-- (`Button.kt` filledTonalButtonColors -> `FilledTonalButtonTokens` 0.12) — per component, as canon has it. The
+-- shared 12 % above stays for what canon still has at 12 % (switch track, slider inactive track, chips, the
+-- outlined text field) and for the FAB (no disabled state in canon: the kit's own).
+local DisabledButtonContainerTransparency = 1 - 0.10
+local function disabledContainerTransparencyOf(variant: string): number
+	return if variant == "Tonal" then DisabledContainerTransparency else DisabledButtonContainerTransparency
+end
 local DisabledContentTransparency = 1 - Tokens.State.Opacity.DisabledContent
 
 local function animation()
@@ -55,6 +66,8 @@ end
 
 return {
 	DisabledContainerTransparency = DisabledContainerTransparency,
+	DisabledButtonContainerTransparency = DisabledButtonContainerTransparency,
+	disabledContainerTransparencyOf = disabledContainerTransparencyOf,
 	DisabledContentTransparency = DisabledContentTransparency,
 	disabledPick = disabledPick,
 	disabledNumber = disabledNumber,

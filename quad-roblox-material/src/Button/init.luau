@@ -19,7 +19,7 @@
 	  IconPosition  "Leading" | "Trailing"?  default "Leading" — the icon before or after the label (material-web
 	                                         `trailing-icon`; Compose ButtonDefaults.contentPaddingFor hasStartIcon /
 	                                         hasEndIcon). Without `Icon` it is ignored.
-	  Disabled  boolean | State<boolean>?    container onSurface@12 %, content onSurface@38 %, no state layer,
+	  Disabled  boolean | State<boolean>?    container onSurface@10 % (Tonal 12 % — canon), content onSurface@38 %, no state layer,
 	                                         not clickable/selectable (`Interactable = false`)
 	  OnClick   (() -> ())?                  fires on Activated (mouse, touch, gamepad A) unless disabled
 	  Width     (number | UDim)?             a fixed width — a number is pixels, a UDim is scale + offset of the parent
@@ -195,7 +195,7 @@ local function Button(props: Props)
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 			Thickness = 1,
 			Color = Style.disabledPick(disabled, theme.Raw.Outline, theme.Raw.OnSurface),
-			Transparency = Style.disabledNumber(disabled, 0, Style.DisabledContainerTransparency),
+			Transparency = Style.disabledNumber(disabled, 0, Style.DisabledButtonContainerTransparency),
 		}
 	end
 
@@ -231,7 +231,7 @@ local function Button(props: Props)
 		props.Modifier or q.None,
 		fx.Hook,
 		BackgroundColor3 = if container then Style.disabledPick(disabled, theme.Raw[container], theme.Raw.OnSurface) else nil,
-		BackgroundTransparency = if container then Style.disabledNumber(disabled, 0, Style.DisabledContainerTransparency) else 1,
+		BackgroundTransparency = if container then Style.disabledNumber(disabled, 0, Style.disabledContainerTransparencyOf(variant)) else 1,
 		Interactable = interactable,
 		Activated = function()
 			if props.OnClick and not Util.peekBool(disabled) then
