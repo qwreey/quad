@@ -84,7 +84,7 @@
 ### 6. [버그 / 높음] 비활성 창 내부의 버튼/위젯 클릭 시 GuiButton 싱크 규칙으로 인한 창 포커스 누락
 뒤에 깔려 있는 비활성 창을 전면으로 가져오기 위해 창 내부의 대화형 위젯(`Button`, `Checkbox`, `Tab` 등)을 클릭하는 경우, `Window/init.luau`에서 창 포커스를 전환하는 `pointerDown` 리스너는 오직 루트 Frame과 본문 컨테이너인 ScrollingFrame에만 등록되어 있습니다. Roblox GUI 엔진 불변식에 따라 클릭 입력은 최상단 `GuiButton`에서 소비(Sink)되어 조상 Frame으로 전파되지 않으므로, 위젯의 버튼 이벤트는 발화할지라도 창 자체의 `mgr:Focus(id)`는 호출되지 않아 창이 앞으로 올라오지 않고 여전히 다른 창 뒤에 가려진 채로 남게 됩니다.  
 - **위치**: `quad-roblox-devui/src/Window/init.luau:145, 200`, `quad-roblox-devui/src/Button.luau:42`  
-- **근거**: [추정] Roblox 엔진의 GUI 입력 싱크 규칙(`.claude/feedback/consumer-kits-studio-qa-2026-10-07.md`의 "Roblox 엔진 규칙: GUI 누름은 첫 GuiButton에서 멈춘다")에 기반한 추정입니다.
+- **근거**: [추정] Roblox 엔진의 GUI 입력 싱크 규칙(`.claude/feedback/consumer-kits-studio-qa-2026-10-07.md`가 적은 엔진 규칙 — GUI 누름은 첫 GuiButton에서 멈춘다)에 기반한 추정입니다.
 
 ---
 

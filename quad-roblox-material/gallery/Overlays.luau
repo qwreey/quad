@@ -303,8 +303,8 @@ return function(ctx: Ctx): Instance
 			SheetEdge = edge,
 			Headline = "Filters",
 			Children = q.Slot<<Instance>>({
-				Common.Labeled(ctx, Material.Checkbox({ Theme = theme, Value = q.Source(true) }), "Unread only"),
-				Common.Labeled(ctx, Material.Checkbox({ Theme = theme, Value = q.Source(false) }), "With attachments"),
+				Material.Checkbox({ Theme = theme, Value = q.Source(true), Label = "Unread only" }),
+				Material.Checkbox({ Theme = theme, Value = q.Source(false), Label = "With attachments" }),
 			}),
 		})
 	end
@@ -357,8 +357,8 @@ return function(ctx: Ctx): Instance
 					Theme = theme,
 					Headline = "Filters",
 					Children = q.Slot<<Instance>>({
-						Common.Labeled(ctx, Material.Checkbox({ Theme = theme, Value = q.Source(true) }), "Unread only"),
-						Common.Labeled(ctx, Material.Checkbox({ Theme = theme, Value = q.Source(false) }), "With attachments"),
+						Material.Checkbox({ Theme = theme, Value = q.Source(true), Label = "Unread only" }),
+						Material.Checkbox({ Theme = theme, Value = q.Source(false), Label = "With attachments" }),
 					}),
 				})
 			end,

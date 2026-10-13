@@ -13,4 +13,4 @@
 | `finder-mat-rest-sonnet.md` | material의 날짜·색 선택기, 메뉴, 선택 상자, 탭, 칩, 체크박스류, 진행 표시, 툴팁, 테마 |
 | `triage-opus.md` | 합본·검증·분류 — material A 5·B 2·C 1·D 1, devui A 4·B 4·C 5·D 3, 기각 목록. A·D의 고침은 레포에 적용됨 |
 
-Gemini의 material 미리뷰 영역 보고는 추림이 끝날 때까지 나오지 않았다 — 나오면 메인이 따로 판정해 이 폴더에 `finder-mat-rest-gemini.md`로 둔다.
+`finder-mat-rest-gemini.md` — Gemini의 material 미리뷰 영역 보고(추림이 끝난 뒤 도착 — 메인 판정). 앞의 둘(앵커 파괴 뒤 남는 메뉴, 끄는 도중 `Disabled`인 스위치)은 sonnet 발견과 같아 이미 반영. 받은 것 하나: 갤러리가 `Checkbox`의 `Label` prop 대신 `Common.Labeled`로 감싸 글자를 눌러도 토글되지 않던 것과 그 조각의 틀린 주석. 기록만: `Progress/Loop`가 `Parent = nil`로 내려 둔 ScreenGui를 못 알아보는 것(머리 주석이 이미 밝힌 한계 — 고치면 부모 없는 ScreenGui를 쓰는 스펙들이 바뀐다), 날짜 칸 하나에 State 18개쯤(한 달 약 750 — 재지 않은 주장), Docked ↔ RangeDocked·색 선택기 두 모양·Checkbox ↔ Radio 라벨 배선의 중복, `MonthView.new`의 길이, 색 선택기 끌기의 연쇄 갱신(재지 않음).

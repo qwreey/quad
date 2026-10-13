@@ -75,7 +75,9 @@ function Common.Caption(ctx: Ctx, text: string | q.State<string>, wrap: boolean?
 	}
 end
 
--- A control with a text label to its right (Checkbox / Radio / Switch have none of their own).
+-- A control with a text label to its right — for controls without a `Label` of their own (Switch, Slider, a bare
+-- IconButton). Checkbox and Radio HAVE one (`Label = "…"`: the text is part of the control and a tap on it toggles) — use
+-- that, not this wrapper (review 2026-10-13: the Overlays tab wrapped checkboxes here, so their text did nothing).
 function Common.Labeled(ctx: Ctx, control: Instance, text: string | q.State<string>): Frame
 	return D.Frame {
 		Name = "Labeled",
