@@ -147,6 +147,7 @@ local Checkbox = require("@self/Checkbox")
 local RadioModule = require("@self/Radio")
 local Switch = require("@self/Switch")
 local Slider = require("@self/Slider")
+local UnitModule = require("@self/Unit")
 local RangeSlider = require("@self/Slider/Range")
 local M2 = require("@self/M2")
 local TextField = require("@self/TextField")
@@ -210,6 +211,7 @@ export type RadioProps<T> = RadioModule.Props<T>
 export type RadioGroupProps<T> = RadioModule.GroupProps<T>
 export type SwitchProps = Switch.Props
 export type SliderProps = Slider.Props
+export type Unit = UnitModule.Unit
 export type RangeSliderProps = RangeSlider.Props
 export type M2SliderProps = M2.SliderProps
 export type M2RangeSliderProps = M2.RangeSliderProps
@@ -345,6 +347,8 @@ return {
 	Switch = Switch,
 	Slider = Slider,
 	RangeSlider = RangeSlider,
+	-- how a stored number is shown and read back ({ Scale, Decimals?, Prefix?, Suffix? } — `Slider`'s `Unit` prop)
+	Unit = UnitModule,
 	-- Material 2 looks (same props / behaviour as the defaults above)
 	M2 = M2,
 	-- text input & menus

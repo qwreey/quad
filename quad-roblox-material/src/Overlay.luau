@@ -285,9 +285,25 @@ local function new(o: Options?): Overlay
 	}
 
 	layerRef = layer
+	-- `q.debug` only, once per overlay (user decision 2026-10-13): a ScreenGui made in code is ZIndexBehavior Global,
+	-- and under Global a CanvasGroup neither clips its children nor fades them with GroupTransparency — a dialog's
+	-- content is drawn outside its card and only the card's background fades (measured in Studio). Nothing raises, so
+	-- the first Open says it.
+	local zIndexChecked = false
 	local function open(_self: Overlay, oo: OpenOptions): Handle
 		if isDead() then
 			error("Overlay:Open: the overlay layer was destroyed — build a new Overlay (Overlay.default() rebuilds itself)", 2)
+		end
+		if q.debug and not zIndexChecked then
+			zIndexChecked = true
+			-- by ClassName, not IsA("LayerCollector"): the spec mock has no class hierarchy (test/support/harness)
+			local gui: any = layer.Parent
+			while gui ~= nil and gui.ClassName ~= "ScreenGui" and gui.ClassName ~= "SurfaceGui" and gui.ClassName ~= "BillboardGui" do
+				gui = gui.Parent
+			end
+			if gui ~= nil and gui.ZIndexBehavior ~= Enum.ZIndexBehavior.Sibling then
+				print(`Material.Overlay: the overlay layer is under {gui.ClassName} "{gui.Name}" with ZIndexBehavior = {gui.ZIndexBehavior.Name} - set ZIndexBehavior = Enum.ZIndexBehavior.Sibling (a code-made ScreenGui defaults to Global: CanvasGroup surfaces - dialogs, pickers - then neither clip nor fade their content)`)
+			end
 		end
 		local isOpen = q.Source(true)
 		local closing = q.Source(false)

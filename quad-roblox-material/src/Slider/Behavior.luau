@@ -27,6 +27,8 @@
 	  ShowTicks    boolean?  (read by the looks)
 	  KeyStep      number?   arrow increment; default Step, or (Max - Min) / 20
 	  Format       ((value: number) -> string)?   label text; default integers plain, else up to 2 decimals
+	  Unit         Unit?     (`../Unit.luau`) label text = Unit.format(Unit, value) — for a value kept as an integer and
+	               shown scaled ({ Scale = 0.01, Suffix = "%" }: 3725 reads "37.25%"). `Format`, when given, wins.
 	  ShowLabel    boolean?  (read by the looks)
 	  Disabled     boolean | State<boolean>?   no input, not selectable
 	  OnChange     single (value) / range (startValue, endValue) -> (): after each USER change, only when changed
@@ -55,6 +57,7 @@ local Util = require("../Util")
 local Interaction = require("../Interaction")
 local Interactive = require("../Interactive")
 local KeyNav = require("../KeyNav")
+local Unit = require("../Unit")
 local Ripple = require("../Ripple")
 
 export type SliderProps = {
@@ -65,6 +68,7 @@ export type SliderProps = {
 	read ShowTicks: boolean?,
 	read KeyStep: number?,
 	read Format: ((value: number) -> string)?,
+	read Unit: Unit.Unit?,
 	read ShowLabel: boolean?,
 	read Disabled: (boolean | q.State<boolean>)?,
 	read OnChange: ((value: number) -> ())?,
@@ -83,6 +87,7 @@ export type RangeSliderProps = {
 	read ShowTicks: boolean?,
 	read KeyStep: number?,
 	read Format: ((value: number) -> string)?,
+	read Unit: Unit.Unit?,
 	read ShowLabel: boolean?,
 	read Disabled: (boolean | q.State<boolean>)?,
 	read OnChange: ((startValue: number, endValue: number) -> ())?,
@@ -177,6 +182,7 @@ local function config(
 	step: number?,
 	keyStep0: number?,
 	format: ((value: number) -> string)?,
+	unit: Unit.Unit?,
 	disabled0: (boolean | q.State<boolean>)?,
 	look: Look
 ): Config
@@ -198,13 +204,21 @@ local function config(
 			error(`{name}: Max - Min ({range}) must be a multiple of Step ({step})`, 4)
 		end
 	end
+	local unitFormat: ((value: number) -> string)? = nil
+	if unit ~= nil then
+		Unit.check(unit, 4)
+		local u: Unit.Unit = unit
+		unitFormat = function(v: number): string
+			return Unit.format(u, v)
+		end
+	end
 	return {
 		min = min,
 		max = max,
 		range = range,
 		step = step,
 		keyStep = keyStep0 or step or range / 20,
-		format = format or defaultFormat,
+		format = format or unitFormat or defaultFormat,
 		disabled = Util.asState(disabled0),
 		vertical = look.Vertical == true,
 		flip = look.Vertical == true and look.Flip == true,
@@ -307,7 +321,7 @@ local function keyTarget(c: Config, kc: Enum.KeyCode, cur: number): number?
 end
 
 local function single(props: SliderProps, look: Look): Single
-	local c = config(look.Name, props.Min, props.Max, props.Step, props.KeyStep, props.Format, props.Disabled, look)
+	local c = config(look.Name, props.Min, props.Max, props.Step, props.KeyStep, props.Format, props.Unit, props.Disabled, look)
 	local snap = snapper(c)
 	local value: q.Source<number> = props.Value or q.Source(if look.Centered then snap((c.min + c.max) / 2) else c.min)
 	local min, range = c.min, c.range
@@ -387,7 +401,7 @@ local function single(props: SliderProps, look: Look): Single
 end
 
 local function range(props: RangeSliderProps, look: Look): Range
-	local c = config(look.Name, props.Min, props.Max, props.Step, props.KeyStep, props.Format, props.Disabled, look)
+	local c = config(look.Name, props.Min, props.Max, props.Step, props.KeyStep, props.Format, props.Unit, props.Disabled, look)
 	local snap = snapper(c)
 	local min, rangeWidth = c.min, c.range
 	local startS: q.Source<number> = props.Start or q.Source(c.min)

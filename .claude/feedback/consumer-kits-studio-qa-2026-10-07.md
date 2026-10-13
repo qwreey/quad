@@ -544,3 +544,9 @@
 같은 조사에서 본 것(안 고침): `ModalBottomSheet`·`ModalSideSheet`는 내용이 면보다 길면 스크롤 없이 잘린다(내용이 스스로 스크롤해야 하는 설계인데 머리 주석에 그 말이 없다);
 `Dialog`의 층 크기는 화면 픽셀인데 한도는 지역 단위로 써서 조상 UIScale이 1보다 크면 한도가 그만큼 느슨하다; `maxBody`가 머리말을 32로 치는데 실측은 24(한 줄)라 8 보수적이다.
 
+**5. [같은 날 추가 — 사용자 확인] `CanvasGroup`은 `ScreenGui.ZIndexBehavior = Sibling`일 때만 묶어 그린다.** `Global`(코드로 만든 `ScreenGui`의 기본값) 아래에서는
+`ClipsDescendants`가 참이어도 자식을 자르지 않고 `GroupTransparency`도 자식에 먹지 않는다(배경에만). Sibling으로 바꾸면 `ClipsDescendants` 값과 무관하게 창(둥근 모서리 포함)으로
+자르고 자식까지 같이 옅어진다 — 같은 화면에서 일곱 조합을 나란히 놓고 전환해 확인(사용자가 ZIndexBehavior를 바꿔 보여 줌; 그 전에 메인은 "이 Studio의 렌더링 폴백"으로 잘못 추정했다).
+**실측용 ScreenGui를 `Instance.new`로 만들 때는 반드시 `ZIndexBehavior = Sibling`을 줄 것** — 이날 서브에이전트들의 QA ScreenGui가 Global이어서 "CanvasGroup은 `UIStroke`를 자르지 않는다",
+"대화 상자의 단추가 카드 밖으로 보인다"는 관측이 나왔다(둘 다 Global의 귀결; 대화 상자의 높이 수치 자체는 레이아웃이라 영향 없음). 킷 README의 `D.ScreenGui` 예제 둘에도 이 줄이 빠져 있어 넣었다.
+

@@ -877,6 +877,29 @@ for _, look in looks do
 		local d = make({ Value = q.Source(0.125) })
 		assert(H.find(d, "Label").Text == "0.13" or H.find(d, "Label").Text == "0.12")
 		q.dispose(d)
+		-- Unit (user decision 2026-10-13): an INTEGER value shown scaled; Format, when given, wins; a bad unit raises
+		local ratio = q.Source(3725)
+		local u = make({ Value = ratio, Min = 0, Max = 10000, Step = 1, Unit = { Scale = 0.01, Suffix = "%" } })
+		assert(H.find(u, "Label").Text == "37.25%", "unit label: " .. H.find(u, "Label").Text)
+		ratio:Set(10000)
+		assert(H.find(u, "Label").Text == "100.00%", "the unit's precision, zeros kept: " .. H.find(u, "Label").Text)
+		assert(H.find(u, "Tick") == nil, "more than 100 steps: no ticks")
+		q.dispose(u)
+		local both = make({
+			Value = q.Source(50),
+			Min = 0,
+			Max = 100,
+			Unit = { Scale = 0.01 },
+			Format = function(v: number): string
+				return "F" .. tostring(v)
+			end,
+		})
+		assert(H.find(both, "Label").Text == "F50", "Format wins over Unit: " .. H.find(both, "Label").Text)
+		q.dispose(both)
+		local ok4, err4 = pcall(function()
+			make({ Unit = { Scale = 0.5 } })
+		end)
+		assert(not ok4 and string.find(tostring(err4), "Decimals is required", 1, true), tostring(err4))
 		H.assertNoDebugOutput(tag .. "format")
 	end)
 end

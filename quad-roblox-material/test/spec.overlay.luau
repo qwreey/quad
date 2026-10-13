@@ -25,6 +25,38 @@ H.section("layer: transparent full-screen frame, empty at first", function()
 	H.assertNoDebugOutput("layer")
 end)
 
+H.section("q.debug: the first Open under a ScreenGui that is not ZIndexBehavior Sibling says so, once; Sibling and no ScreenGui are silent", function()
+	local function openOnce(overlay: any)
+		overlay:Open({ Content = function() return dialog("x") end }).Close()
+	end
+	local global = Overlay.new()
+	local screenGlobal = D.ScreenGui { Name = "App", ZIndexBehavior = Enum.ZIndexBehavior.Global, global.Layer }
+	openOnce(global)
+	local out = H.output()
+	assert(#out == 1 and string.find(out[1], "ZIndexBehavior = Global", 1, true) ~= nil and string.find(out[1], "\"App\"", 1, true) ~= nil, "one line naming the ScreenGui: " .. table.concat(out, " | "))
+	openOnce(global)
+	assert(#H.output() == 1, "once per overlay")
+	H.resetOutput()
+	local sibling = Overlay.new()
+	local screenSibling = D.ScreenGui { ZIndexBehavior = Enum.ZIndexBehavior.Sibling, sibling.Layer }
+	openOnce(sibling)
+	local bare = Overlay.new()
+	local holder = D.Frame { bare.Layer }
+	openOnce(bare)
+	H.assertNoDebugOutput("Sibling / no ScreenGui")
+	q.debug = false
+	local quiet = Overlay.new()
+	local screenQuiet = D.ScreenGui { ZIndexBehavior = Enum.ZIndexBehavior.Global, quiet.Layer }
+	openOnce(quiet)
+	q.debug = true
+	H.assertNoDebugOutput("debug off")
+	H.advance(1)
+	q.dispose(screenGlobal)
+	q.dispose(screenSibling)
+	q.dispose(holder)
+	q.dispose(screenQuiet)
+end)
+
 H.section("open with scrim: mounts snapped, fades in to .32 opacity, click dismisses", function()
 	local overlay = Overlay.new()
 	local screen = D.Frame { overlay.Layer }

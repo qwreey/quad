@@ -36,6 +36,7 @@ local Tokens = require("../Tokens")
 local Util = require("../Util")
 local Style = require("../Button/Style")
 local Behavior = require("./Behavior")
+local Unit = require("../Unit")
 local Track = require("./Track")
 local Bubble = require("./Bubble")
 local D = q.Declaration
@@ -50,6 +51,7 @@ export type Props = {
 	read ShowTicks: boolean?,
 	read KeyStep: number?,
 	read Format: ((value: number) -> string)?,
+	read Unit: Unit.Unit?,
 	read ShowLabel: boolean?,
 	read Disabled: (boolean | q.State<boolean>)?,
 	read OnChange: ((startValue: number, endValue: number) -> ())?,

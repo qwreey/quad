@@ -15,6 +15,7 @@ local D = q.Declaration
 local agreed = q.Source(false)
 local screen = D.ScreenGui {
 	ResetOnSpawn = false,
+	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,   -- 필수(아래)
 	D.Frame {
 		Size = UDim2.fromScale(1, 1),
 		BackgroundColor3 = Material.Theme.default.Color.Surface,
@@ -24,6 +25,11 @@ local screen = D.ScreenGui {
 }
 screen.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 ```
+
+**`ScreenGui`는 `ZIndexBehavior = Sibling`이어야 합니다.** 코드로 만든 `ScreenGui`(`D.ScreenGui`·`Instance.new`)의 기본값은
+`Global`이고, 그 아래에서는 `CanvasGroup`이 자식을 자르지도 그룹 투명도를 자식에 입히지도 않습니다(Studio 실측 2026-10-13) —
+대화 상자·선택기 카드의 내용이 카드 밖으로 그려지고 여닫는 페이드가 배경에만 먹습니다. 킷의 겹침 순서도 Sibling을 전제로
+합니다. Studio에서 손으로 넣은 `ScreenGui`는 기본이 Sibling입니다.
 
 전체를 한 번에 보려면 갤러리를 띄우세요(아래 "갤러리").
 
@@ -124,6 +130,7 @@ local q = Quad:UseProvider(RobloxModule.QuadRoblox)
 | | `Icons` | 내장 아이콘 — Material Design Icons 이미지(기본) + 이름마다 텍스트 글리프 폴백, `Icons.override`로 교체·제거; 아이콘 prop(Button·SplitButton `Icon`, Slider `TrackIcon*`) 값은 `Icons.resolve`로 — 이름이면 그 이미지(지운 이름은 글리프), 에셋 URL이면 그 이미지, 그 밖의 글자는 글리프로 그림 |
 | | `GlyphButton` / `KeyNav` / `Util` | 글리프·이미지 둥근 버튼(날짜 선택기·Snackbar 닫기·Chip 제거가 공유), 키·D-pad 전달 훅(Slider·날짜 칸·색상 선택기가 공유), `asState`/`negate`/`interactable`/`visible`/`hooks` 도우미와 `Hooks` 타입 |
 | 버튼 | `Button` | Filled / Tonal / Elevated / Outlined / Text 다섯 변형(한 함수, `Variant` prop), 폭은 글자에 맞춤 또는 `Width`(픽셀·UDim, 라벨 가운데); `Icon`(18 px, 라벨과 8 px)과 `IconPosition = "Leading" \| "Trailing"` — 여백은 material-web 토큰(아이콘 없음 24/24, 앞 아이콘 16/24, 뒤 아이콘 24/16; Text는 12/12·12/16·16/12) |
+| | `Unit` | 저장된 수를 **어떻게 보여 주고 글자에서 되읽는지** — `{ Scale, Decimals?, Prefix?, Suffix? }`(타입 `Material.Unit`). 값은 정수로 두고 표시만 곱해서 냅니다: `Slider { Value = ratio, Min = 0, Max = 10000, Step = 1, KeyStep = 100, Unit = { Scale = 0.01, Suffix = "%" } }`의 라벨은 `37.25%`. 정수라서 스냅·`Step` 배수 검사·값 비교가 정확하고 저장·전송 값에 부동소수 꼬리가 없습니다. `Decimals` 기본은 `Scale`이 10의 거듭제곱일 때 거기서(0.01 → 2), 그 밖의 `Scale`은 명시(아니면 생성 때 에러). `Material.Unit.format(unit, value)` / `Material.Unit.parse(unit, text)`(접두·접미·공백은 선택, 숫자가 아니면 `nil`, 정수로 떨어지면 정수) — 같은 정의로 입력 칸의 글자를 값으로 되돌릴 수 있습니다. `Slider`·`RangeSlider`(M2 포함)의 `Unit` prop이 쓰고, `Format`을 같이 주면 `Format`이 표시를 이깁니다. 키 한 번의 이동량 기본값은 `Step`(MDC와 같음)이라 스텝이 촘촘하면 `KeyStep`을 주세요. M3 정본에는 없는 킷의 덧붙임입니다 |
 | | `SplitButton` | M3 Expressive 분할 버튼(작은 크기, 높이 40): 앞 버튼(행동 — `Label`·`Icon` 20 px·`OnClick`)과 뒤 버튼(메뉴 — 아래 화살표 22 px·`OnTrailingClick`) 사이 2 px, 바깥 모서리 20·안쪽 모서리 4(누르는 동안 12), `Selected`면 뒤 버튼이 양 끝 반원 알약 + 화살표 180° + 내용색 10 % 덮개; Filled / Tonal / Elevated / Outlined |
 | | `IconButton` | Standard / Filled / Tonal / Outlined, `Selected`로 토글 |
 | | `FAB` | Small / Regular / Large, 색 넷, 레이블이 있으면 Extended |
@@ -270,6 +277,7 @@ theme.Color.Surface`). 색 계산이 필요하면 애니메이션 없는 `theme.
 local overlay = Material.Overlay.new()
 local gui = D.ScreenGui {
 	ResetOnSpawn = false,
+	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 	DisplayOrder = 10,
 	App(overlay),
 	overlay.Layer,                       -- 마지막 자식

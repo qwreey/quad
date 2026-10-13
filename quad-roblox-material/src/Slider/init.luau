@@ -12,6 +12,8 @@
 	    Slider({ Value = volume, Min = 0, Max = 100 })                                   -- standard, continuous
 	    Slider({ Value = level, Min = 0, Max = 10, Step = 1, OnChangeEnd = save })        -- discrete, with ticks
 	    Slider({ Value = x, Min = 0, Max = 1, Format = function(v) return string.format("%d%%", v * 100) end })
+	    Slider({ Value = ratio, Min = 0, Max = 10000, Step = 1, KeyStep = 100, Unit = { Scale = 0.01, Suffix = "%" } })
+	        -- the value stays an INTEGER (0..10000), the label reads "37.25%" (`../Unit.luau`)
 	    Slider({ Value = pan, Min = -50, Max = 50, Centered = true })                     -- centered
 	    Slider({ Value = volume, Min = 0, Max = 100, Orientation = "Vertical", Modifier = D.Modifier.Frame():Size(UDim2.fromOffset(44, 200)) })
 	    Slider({ Value = volume, Min = 0, Max = 100, Size = "M", TrackIconActiveStart = "rbxassetid://123" })  -- inset icon
@@ -81,6 +83,7 @@ local Util = require("./Util")
 local Style = require("./Button/Style")
 local IconView = require("./IconView")
 local Behavior = require("@self/Behavior")
+local Unit = require("./Unit")
 local Track = require("@self/Track")
 local Bubble = require("@self/Bubble")
 local D = q.Declaration
@@ -97,6 +100,7 @@ export type Props = {
 	read ShowTicks: boolean?,
 	read KeyStep: number?,
 	read Format: ((value: number) -> string)?,
+	read Unit: Unit.Unit?,
 	read ShowLabel: boolean?,
 	read Disabled: (boolean | q.State<boolean>)?,
 	read OnChange: ((value: number) -> ())?,

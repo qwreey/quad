@@ -54,7 +54,7 @@ sonnet 서브에이전트가 Studio MCP로 측정(Play Client에서 `ReplicatedS
 
 창 50×30, 안의 상자(위치 −15,−12, 크기 55×50, `UICorner` 8, `UIStroke` 두께 1·2)가 위·왼·아래로 삐져나감, UIScale 2.3으로 확대(`item4-uistroke-clip.jpg`).
 **`ClipsDescendants = true`인 Frame 창은 창 밖의 선을 전부 자르고, 경계에 걸친 선도 경계에서 깨끗이 잘린다**(창에 둥근 모서리가 있든 없든). **`CanvasGroup` 창은 자르지 않는다** —
-상자 테두리 전체가 창 밖까지 보였다. 선이 창의 모서리 곡선 근처에 닿는 경우는 미완.
+상자 테두리 전체가 창 밖까지 보였다. **⚠️ [같은 날 정정 — 사용자 확인] 이것은 실측용 ScreenGui가 `ZIndexBehavior = Global`(코드로 만든 ScreenGui의 기본값)이었기 때문이다. Sibling에서는 `CanvasGroup`도 자식과 테두리를 창(둥근 모서리 포함)으로 자르고 `GroupTransparency`가 자식에 먹는다 — 일곱 조합 비교로 확인. 항목 1의 "단추가 카드 밖으로 보인다"도 같은 귀결이다(높이 수치는 무관).** 선이 창의 모서리 곡선 근처에 닿는 경우는 미완.
 
 ## 5. 목록 행의 `Trailing` 버튼
 
@@ -68,6 +68,31 @@ sonnet 서브에이전트가 Studio MCP로 측정(Play Client에서 `ReplicatedS
 ## 7. 터치 — MCP로 불가
 
 입력 도구는 마우스뿐, `TouchEnabled = false`, `VirtualInputManager:SendTouchEvent`는 capability 부족으로 거부. 터치 중 앱 바 정착·멀티터치 끌기·앱 전환 뒤 끌기는 사람 손이 필요하다.
+
+## 8. Immediate 신호에서 (같은 날 오후 — 사용자가 Workspace `SignalBehavior`를 Immediate로 바꿈, 레포 `e1440c10`)
+
+`Parent` 대입 다음 줄에서 콜백이 이미 불려 있음을 Edit·Play 둘 다에서 확인한 뒤 측정. 기대와 다른 것은 없었다.
+
+**코어의 재진입 가드**(`D.Frame { slot }`, 원소의 `Parent` 변경 콜백, 콜백 안 호출만 `pcall`):
+
+| 장면 | 관측 |
+|---|---|
+| `slot:Add(b)`의 창에서 `slot:Add(c)` | 콜백이 바깥 `Add` 안에서 불림, `Quad0167`. 바깥은 정상 반환, `Length` 1 |
+| `slot:Remove(1)`의 창에서 `slot:Add(c)` | `Quad0167`, `Length` 0 |
+| 같은 콜백에서 `slot:WhenIdle(Add c)` | 바깥 `Add` 반환 직후 이미 실행돼 있음, 자식 b·c, `Length` 2 |
+| (Q186) `inner:Add(y)`의 창에서 조상 `outer:Add(pz, 2)` | `Quad0167` |
+| 같은 창에서 `outer:WhenIdle(Add pz, 2)` | `inner:Add` 반환 뒤 실행돼 있음, `outer.Length` 5·`inner.Length` 3, 부기 순서 x, r, y, pz, tail |
+| 같은 창에서 형제 Slot의 `Add` | 통과 |
+| 신호 콜백의 `error("boom")` | `inst.Parent = x`의 호출자에게 **전파되지 않음**(다음 줄 실행, 에러는 출력 창에만) — quad의 전제 확인 |
+| 원소의 콜백이 던질 때 `slot:Add(b)` | 정상 반환, 이어지는 `slot:Add(c)`도 통과(플래그가 남지 않음) |
+| `:List` 행의 콜백에서 `slot:WhenIdle(rows:Set(…))` | 에러 없이 끝, 최종 자식 a·b·c |
+
+**Property의 왕복**: `CanvasPosition = pos` + `q.OnChange("CanvasPosition", v → pos:Set(v))`에서 `pos:Set((0, 99999))` → `OnChange`가 쓰기 **안에서** 한 번 불려 (0, 200)을 읽고, 되써도
+에러·반복 없이 끝(콜백 1회), 최종 인스턴스와 State 모두 (0, 200). `TextBox.Text`의 같은 왕복도 콜백 1회.
+
+**킷 연기 검사**: 갤러리 탭 아홉을 마우스로 넘기는 동안 출력 창의 에러·`Quad%d+` 0건. `Dialog`(문자열 166 / 고정 278 본문 430 / 긴 본문 637 — Deferred 때와 같음), `Menu`, `Snackbar` 둘,
+`ModalBottomSheet`(스크림 닫기), `Select`, `DatePicker`·`TimePicker` 모달, `Slider` 끌기 전부 에러 0. SplitButton의 `Content` 위치는 첫 프레임 24/22, 둘째 프레임부터 0/−2(중간값 없음 — Deferred와 같음).
+미완: devui 창 안의 팝업을 연 채 창을 닫는 장면(마우스 클릭이 devui 창에 반응하지 않음 — 원인 미확인), `q.Out` 형태의 왕복.
 
 ## 미완
 
