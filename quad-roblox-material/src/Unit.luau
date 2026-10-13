@@ -23,7 +23,9 @@
 	format(unit, value) -> string    Prefix .. number .. Suffix; a value that rounds to zero has no minus sign.
 	parse(unit, text) -> number?     the value for a text: surrounding spaces, the Prefix and the Suffix are optional;
 	                                 nil when what is left is not a number (tonumber, so "1e3" and "0x10" are read the
-	                                 way Luau reads them). The result is n / Scale, and when that is a whole number up
+	                                 way Luau reads them) or when the value is out of range (inf). A text that is a
+	                                 number as it stands is read as that number even when the prefix / suffix looks
+	                                 like part of one. The result is n / Scale, and when that is a whole number up
 	                                 to float noise it IS the whole number (37.25 / 0.01 is 3725, not 3724.9999999999995).
 	check(unit, level?)              raises on a malformed unit (the components call it at construction).
 ]]
@@ -82,28 +84,58 @@ local function format(unit: Unit, value: number): string
 	return (unit.Prefix or "") .. text .. (unit.Suffix or "")
 end
 
+-- linear: the pattern "^%s*(.-)%s*$" backtracks quadratically on a long run of spaces inside the text (a paste)
+local function isSpace(byte: number): boolean
+	return byte == 32 or (byte >= 9 and byte <= 13)
+end
 local function trim(text: string): string
-	return (string.gsub(text, "^%s*(.-)%s*$", "%1"))
+	local first, last = 1, #text
+	while first <= last and isSpace(string.byte(text, first)) do
+		first += 1
+	end
+	while last >= first and isSpace(string.byte(text, last)) do
+		last -= 1
+	end
+	return string.sub(text, first, last)
+end
+
+local function finite(n: number?): number?
+	if n == nil or n ~= n or math.abs(n) == math.huge then
+		return nil
+	end
+	return n
 end
 
 local function parse(unit: Unit, text: string): number?
 	local rest = trim(text)
-	local prefix, suffix = unit.Prefix or "", unit.Suffix or ""
-	local bare = trim(prefix)
-	if bare ~= "" and string.sub(rest, 1, #bare) == bare then
-		rest = trim(string.sub(rest, #bare + 1))
+	-- the bare number first: a prefix / suffix that reads as part of a number ("-", "2") must not eat the number's own
+	-- characters ("-5" under Prefix "-" is -5, "52" under Suffix "2" is 52). Only a text that is not a number as it
+	-- stands is tried again without its prefix / suffix.
+	local shown = finite(tonumber(rest))
+	if shown == nil then
+		local bare = trim(unit.Prefix or "")
+		if bare ~= "" and string.sub(rest, 1, #bare) == bare then
+			rest = trim(string.sub(rest, #bare + 1))
+		end
+		bare = trim(unit.Suffix or "")
+		if bare ~= "" and #rest >= #bare and string.sub(rest, #rest - #bare + 1) == bare then
+			rest = trim(string.sub(rest, 1, #rest - #bare))
+		end
+		shown = finite(tonumber(rest))
 	end
-	bare = trim(suffix)
-	if bare ~= "" and #rest >= #bare and string.sub(rest, #rest - #bare + 1) == bare then
-		rest = trim(string.sub(rest, 1, #rest - #bare))
-	end
-	local shown = tonumber(rest)
-	if shown == nil or shown ~= shown or math.abs(shown) == math.huge then
+	if shown == nil then
 		return nil
 	end
-	local value = shown / unit.Scale
+	local number: number = shown
+	-- a tiny Scale can take a finite text out of range ("1e303" at 1e-7)
+	local value = finite(number / unit.Scale)
+	if value == nil then
+		return nil
+	end
+	-- whole up to the noise of ONE division (a few ulp — 1e-13 relative leaves room): not 1e-9, which at 1e9 is a
+	-- whole unit and ate real fractions ("1000000000.25" at Scale 1)
 	local whole = math.floor(value + 0.5)
-	if math.abs(value - whole) <= 1e-9 * math.max(1, math.abs(value)) then
+	if math.abs(value - whole) <= 1e-13 * math.max(1, math.abs(value)) then
 		return whole
 	end
 	return value

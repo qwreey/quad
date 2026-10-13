@@ -295,11 +295,13 @@ local function new(o: Options?): Overlay
 			error("Overlay:Open: the overlay layer was destroyed — build a new Overlay (Overlay.default() rebuilds itself)", 2)
 		end
 		if q.debug and not zIndexChecked then
-			zIndexChecked = true
 			-- by ClassName, not IsA("LayerCollector"): the spec mock has no class hierarchy (test/support/harness)
 			local gui: any = layer.Parent
 			while gui ~= nil and gui.ClassName ~= "ScreenGui" and gui.ClassName ~= "SurfaceGui" and gui.ClassName ~= "BillboardGui" do
 				gui = gui.Parent
+			end
+			if gui ~= nil then
+				zIndexChecked = true -- only once the layer is under a ScreenGui: an Open before that keeps the check
 			end
 			if gui ~= nil and gui.ZIndexBehavior ~= Enum.ZIndexBehavior.Sibling then
 				print(`Material.Overlay: the overlay layer is under {gui.ClassName} "{gui.Name}" with ZIndexBehavior = {gui.ZIndexBehavior.Name} - set ZIndexBehavior = Enum.ZIndexBehavior.Sibling (a code-made ScreenGui defaults to Global: CanvasGroup surfaces - dialogs, pickers - then neither clip nor fade their content)`)

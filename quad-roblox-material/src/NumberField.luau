@@ -12,15 +12,20 @@
 	loses focus (Enter included): the text is read back through the unit (`Unit.parse`: the prefix / suffix and spaces
 	are optional), snapped to `Step`, clamped to `Min` / `Max`, written to `Value` when it differs, and the text is
 	tidied to the unit's precision. A text that is not a number writes nothing and turns the field to its error look
-	until the next edit; an EMPTY text is not an error — the field goes back to showing the current value.
+	until the next edit; an EMPTY text is not an error — the field goes back to showing the current value. Leaving the
+	field WITHOUT having edited the text commits nothing (the value is not rounded to what the text shows, `OnChange`
+	is not called): the text is only rewritten from the value.
 
 	Props (all `read`) — the `TextField` props (`./TextField`) with these differences:
 	  Value      Source<number>?     the number (nil = an own Source at `Min`, or 0). A programmatic `Value:Set` rewrites
-	                                 the text unless the field is focused (then at the next commit, if still in force)
-	  Unit       Unit?               (`./Unit.luau`) how the number is shown and read back; default { Scale = 1, Decimals
-	                                 = 0 } with a `Step`-less field showing up to 6 decimals of what was typed. The
-	                                 unit's Prefix / Suffix become the field's `Prefix` / `Suffix` (unless those props are
-	                                 given), so the editable text is the bare number
+	                                 the text unless the field is focused; then leaving the field shows it — unless the
+	                                 user typed meanwhile, in which case the typed text is committed over it
+	  Unit       Unit?               (`./Unit.luau`) how the number is shown and read back. Without one: a `Step` sets the
+	                                 decimals shown (Step 0.5 -> one, a whole Step -> none), and with neither the text
+	                                 is the value with up to 6 decimals. With a unit and no `Step` a typed number is
+	                                 stored at the unit's precision. The unit's Prefix / Suffix become the field's
+	                                 `Prefix` / `Suffix` (unless those props are given), so the editable text is the
+	                                 bare number
 	  Min, Max   number?             clamp (Max must be >= Min when both are given)
 	  Step       number?             snaps to Min + n * Step (0 + n * Step without a Min); positive
 	  OnChange   ((value: number) -> ())?    after a USER commit that changed the value — not on a programmatic Set
@@ -93,11 +98,21 @@ local function NumberField(props: Props): Frame
 
 	-- the editable text is the bare number: the unit without its prefix / suffix
 	local bare: Unit.Unit? = if unit ~= nil then { Scale = unit.Scale, Decimals = unit.Decimals } else nil
+	-- a Step alone sets the precision too: Step 0.5 shows one decimal ("2.5", not "2" — which the next commit
+	-- would have written back as 2), Step 0.25 two; a whole Step none
+	local stepUnit: Unit.Unit? = nil
+	if step ~= nil and bare == nil then
+		local decimals = 0
+		while decimals < 6 and math.abs(step * 10 ^ decimals - math.floor(step * 10 ^ decimals + 0.5)) > 1e-9 do
+			decimals += 1
+		end
+		stepUnit = if decimals == 0 then PLAIN else { Scale = 1, Decimals = decimals }
+	end
 	local function show(value: number): string
 		if bare ~= nil then
 			return Unit.format(bare, value)
-		elseif step ~= nil then
-			return Unit.format(PLAIN, value)
+		elseif stepUnit ~= nil then
+			return Unit.format(stepUnit, value)
 		end
 		return plainText(value)
 	end
@@ -105,6 +120,10 @@ local function NumberField(props: Props): Frame
 		if step ~= nil then
 			local origin = min or 0
 			value = origin + math.floor((value - origin) / step + 0.5) * step
+		elseif bare ~= nil then
+			-- a unit without a Step: the unit's precision is the step — "37.255" at two decimals is stored as what
+			-- the field then shows ("37.26" -> 3726), not as 3725.5 that the next commit would change again
+			value = Unit.parse(bare, Unit.format(bare, value)) or value
 		end
 		if min ~= nil and value < min then
 			value = min
@@ -119,6 +138,11 @@ local function NumberField(props: Props): Frame
 	local text = q.Source(show(value:Get()))
 	local invalid = q.Source(false)
 	local focused = false
+	-- the text was edited by the USER since it was last written from the value: only then does leaving the field
+	-- commit. Otherwise a focus alone would write the value back through the text — a value finer than the text shows
+	-- (0.12345 shown "0.12") would be rounded, a programmatic Set made during the focus would be undone, and OnChange
+	-- would fire for a change the user did not make.
+	local edited = false
 
 	-- a programmatic Set shows at once, except under the caret
 	local follow = value:Observer(function(self: q.StateData<number>)
@@ -129,11 +153,13 @@ local function NumberField(props: Props): Frame
 
 	local function commit(): boolean
 		local typed = text:Get()
-		if string.match(typed, "^%s*$") ~= nil then
+		if not edited or string.match(typed, "^%s*$") ~= nil then
+			edited = false
 			invalid:SetIfChanged(false)
 			text:SetIfChanged(show(value:Get()))
 			return true
 		end
+		edited = false
 		local parsed = Unit.parse(unit or PLAIN, typed)
 		if parsed == nil then
 			invalid:SetIfChanged(true)
@@ -162,6 +188,16 @@ local function NumberField(props: Props): Frame
 			return ext:Get() or self:Get()
 		end, external)
 
+	-- the field's own "not a number" shows InvalidText; an external Error shows ErrorText (InvalidText falls back to it)
+	local errorText: (string | q.State<string>)? = props.ErrorText
+	if props.InvalidText ~= nil then
+		local invalidText = Util.asStringState(props.InvalidText)
+		local outer = Util.asStringState(props.ErrorText)
+		errorText = invalid:Compute(function(self: q.StateData<boolean>, _prev: string?, own: q.State<string>, other: q.State<string>): string
+			return if self:Get() then own:Get() else other:Get()
+		end, invalidText, outer)
+	end
+
 	local committed = true
 	local hooks: Util.Hooks = table.clone(Util.hooks(props.Hooks))
 	table.insert(hooks, follow)
@@ -172,7 +208,7 @@ local function NumberField(props: Props): Frame
 		Placeholder = props.Placeholder,
 		SupportingText = props.SupportingText,
 		Error = errorState,
-		ErrorText = if props.InvalidText ~= nil then props.InvalidText else props.ErrorText,
+		ErrorText = errorText,
 		LeadingIcon = props.LeadingIcon,
 		TrailingIcon = props.TrailingIcon,
 		Prefix = if props.Prefix ~= nil then props.Prefix elseif unit ~= nil then unit.Prefix else nil,
@@ -180,6 +216,7 @@ local function NumberField(props: Props): Frame
 		Disabled = props.Disabled,
 		-- an edit clears the "not a number" look: the user is fixing it
 		OnChange = function(_typed: string)
+			edited = true
 			invalid:SetIfChanged(false)
 		end,
 		OnFocusChanged = function(isFocused: boolean)

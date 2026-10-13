@@ -59,6 +59,27 @@ eq(Unit.parse(percent, "abc"), nil, "not a number")
 eq(Unit.parse(percent, "12abc%"), nil, "trailing junk")
 eq(Unit.parse(percent, "nan"), nil, "nan")
 eq(Unit.parse(percent, "inf"), nil, "inf")
+-- review 2026-10-13: out of range, large values, prefix / suffix that reads as part of a number, long blank runs
+eq(Unit.parse({ Scale = 1e-7 }, "1e303"), nil, "a value out of range is not a number (no inf)")
+eq(Unit.parse({ Scale = 1, Decimals = 2 }, "1000000000.25"), 1000000000.25, "a real fraction of a large value is kept")
+eq(Unit.parse({ Scale = 1, Decimals = 2 }, "100000000.25"), 100000000.25, "1e8 too")
+eq(Unit.parse({ Scale = 0.01 }, "10000000.01"), 1000000001, "a large value is still snapped to its integer")
+eq(Unit.parse({ Scale = 1, Suffix = "2" }, "52"), 52, "a suffix that is a digit does not eat the number's last digit")
+eq(Unit.parse({ Scale = 1, Suffix = "2" }, "5 2"), 5, "... but is removed when the text is not a number with it")
+eq(Unit.parse({ Scale = 1, Prefix = "-" }, "-5"), -5, "a prefix that is a sign: the text is the number")
+eq(Unit.parse({ Scale = 1, Prefix = "1x" }, "1x5"), 5, "a prefix that starts with a digit")
+eq(Unit.parse({ Scale = 1, Prefix = "1x" }, "15"), 15, "... and a bare number under it")
+eq(Unit.parse(percent, "+5"), 500, "leading plus")
+eq(Unit.parse(percent, ".5"), 50, "leading point")
+eq(Unit.parse(percent, "   "), nil, "blanks only")
+do
+	local t0 = os.clock()
+	local long = "1" .. string.rep(" ", 200000) .. "1"
+	eq(Unit.parse(percent, long), nil, "a long blank run inside is not a number")
+	eq(Unit.parse(percent, string.rep(" ", 200000) .. "7" .. string.rep(" ", 200000)), 700, "long blank runs around are trimmed")
+	check(os.clock() - t0 < 0.5, "trimming is linear (took " .. tostring(os.clock() - t0) .. " s)")
+end
+
 -- every integer of a slider's domain survives format -> parse (the point of the unit)
 local bad = 0
 for v = 0, 10000 do
