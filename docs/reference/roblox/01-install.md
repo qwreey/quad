@@ -157,6 +157,7 @@ local fade: RobloxModule.Tween<number> = q.Tween({ Value = 0, Time = 0.2 })
 
 클래스별 타입도 같은 경로로 닿습니다 — 생성기가 루트에 찍어 두는 재익스포트 블록에 **`<Class>Modifier`**(`FrameModifier`,
 상위 클래스 `GuiObjectModifier`까지), **`Into<Class>`**(`IntoTextButton`), **`<Class>Elem`**(`FrameElem`)이 들어 있습니다.
+**[3.3.0 기준 — 4.0.0 전까지 바뀔 수 있음]** 이 클래스별 이름들은 모양이 바뀔 수 있습니다 — 클래스마다 복제한 이름 대신 타입 함수로 조립하는 쪽을 검토하고 있습니다(`Field`/`FieldOut`은 해당 없음).
 
 ```luau
 local function Button(props: { read Modifier: RobloxModule.TextButtonModifier? }): TextButton

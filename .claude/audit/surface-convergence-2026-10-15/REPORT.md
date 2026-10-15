@@ -72,3 +72,12 @@ HEAD `752cbc1c` 사이, 판정 기준은 `audit/round14-principle-audit/PRINCIPL
 1-1(10-12 결정과 대조), 1-2(3.2.0 트리의 "inside itself"는 Slot 쪽 하나뿐, `InstanceChild.luau`의 `Quad0220`은 debug 전용), 1-3(3.2.0 `List.luau`는 `typeof` 검사뿐, HEAD 152행은 키 전수가
 `module.debug` 안), 1-4(3.2.0에 `_materializing` 0건), 1-5(`Tween.luau` `__dispatchHint`)를 직접 확인 — 전부 맞음. 처리: 1절·2-1은 `[Unreleased]`가 아직 게시 전이라 사실 정정으로 바로 고침
 (같은 날 커밋), 3-1·3-2·3-3·3-4는 사용자 문항.
+
+## 사용자 결정 (2026-10-15)
+
+- 3-1 클래스별 타입 재수출 — 사용자: *"클래스 타입 경우는 아직 타입 함수나 실험이 안 되어서. 일단 3.3 으로 범프를 하더라도 바뀔 수 있는 표면이야. 아직 4 는 안 오니까."* → 그대로 게시하되
+  CHANGELOG·`docs/reference/roblox/01-install.md`에 "4.0.0 전까지 바뀔 수 있음" 표시.
+- 3-2 Tween 콜백 — 사용자: *"콜백도 더 보긴 해야하는데. 정의 자체를 이대로 굳어지게 할지는 바로 못 정한 상태야."* → 같은 표시(CHANGELOG·`docs/reference/roblox/06-tween-animate.md`).
+- 3-3 에러 식별자 — 사용자: *"4까지는 다 다듬어 질 수 있다고 하자."* → "한 번 붙은 번호는 재사용하지 않음"은 유지, "어떤 실수가 어느 번호로 보고되는지는 4.0.0 전까지 다듬어질 수 있음"
+  (CHANGELOG·`docs/reference/errors/00-index.md`).
+- 3-4 `:List` 순서 문장 — 사용자가 판단 근거를 더 요청(설명 뒤 결정). bump 시기는 여전히 사용자 지시 뒤.
