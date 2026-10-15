@@ -312,11 +312,11 @@ do
 	-- 4순회 `H-385`: the same gates through the `:Single` sugar blame the user's
 	-- `:Single(...)` line, not Single's delegation to `:List` inside Slot/List.luau
 	local _, errS1 = pcall(function() s1:Single(q.Source(nil)) end)
-	assert(string.find(tostring(errS1), ":List/:Single on a manual Slot", 1, true) ~= nil, "Single after CRUD is the same gate, and the message names both entries: " .. tostring(errS1))
+	assert(string.find(tostring(errS1), ":List/:Single/:Defer on a manual Slot", 1, true) ~= nil, "Single after CRUD is the same gate, and the message names both entries: " .. tostring(errS1))
 	mock.assertBlamesUser(errS1, "spec.slot.luau", "Single-after-CRUD blame")
 	local s3 = Slot(); s3:Single(q.Source(nil))
 	local _, errS2 = pcall(function() s3:Single(q.Source(nil)) end)
-	assert(string.find(tostring(errS2), "already has :List/:Single installed", 1, true) ~= nil, "Single twice is the same gate: " .. tostring(errS2))
+	assert(string.find(tostring(errS2), "already has :List/:Single/:Defer installed", 1, true) ~= nil, "Single twice is the same gate: " .. tostring(errS2))
 	mock.assertBlamesUser(errS2, "spec.slot.luau", "Single-twice blame")
 	print("PASS")
 end
@@ -2766,6 +2766,83 @@ do
 		assert(s:Get(k) == frames[id], "mixed order at " .. k)
 	end
 	assert(s.Length:Get() == 200 and childCount(parent) == 200, "200 after mixed")
+	print("PASS")
+end
+
+print()
+print("=== slot:Defer (2026-10-15) — 처음 꽂힐 때 한 번 짓기 ===")
+do
+	local function raises(code, f)
+		local ok, err = pcall(f)
+		assert(not ok and string.find(tostring(err), code, 1, true), `expected {code}, got {tostring(err)}`)
+	end
+	-- 1. not built at install; built at the first mount; not rebuilt on remount (one shot, reuse)
+	local calls, built = 0, nil
+	local d = Slot():Defer(function()
+		calls += 1
+		built = Instance.new("Frame")
+		return built
+	end)
+	assert(calls == 0, "not built at install")
+	local parent = Instance.new("Folder")
+	local src = q.Source(d)
+	dispatch.drive(parent, { src })
+	assert(calls == 1 and childCount(parent) == 1 and d:Get(1) == built and d.Length:Get() == 1, "built once at mount")
+	src:Set(nil)
+	assert(childCount(parent) == 0, "unmounted")
+	local other = Instance.new("Folder")
+	dispatch.drive(other, { d })
+	assert(calls == 1 and childCount(other) == 1 and d:Get(1) == built, "remounted elsewhere: the same element, fn not run again")
+
+	-- 2. runs inside the parent's drive: after the component body filled a value, after a PreRef on the same parent
+	local filled, seen = nil, nil
+	local order = {}
+	local function Window(children)
+		local root = Instance.new("Frame")
+		filled = "handle"
+		local r = q.PreRef(nil)
+		r:Callback(function(inst) if inst ~= nil then table.insert(order, "preref") end end)
+		dispatch.drive(root, { children, r })
+		return root
+	end
+	Window(Slot():Defer(function()
+		seen = filled
+		table.insert(order, "fn")
+		return Instance.new("Frame")
+	end))
+	assert(seen == "handle", "fn sees what the component body filled")
+	assert(order[1] == "preref" and order[#order] == "fn", "PreRef pre-pass first: " .. table.concat(order, ","))
+
+	-- 3. a Slot of several; nil = empty; inside a manual Slot (nested)
+	local many = Slot():Defer(function() return Slot({ Instance.new("Frame"), Instance.new("Frame"), Instance.new("Frame") }) end)
+	local empty = Slot():Defer(function() return nil end)
+	local p3 = Instance.new("Folder")
+	dispatch.drive(p3, { Slot({ Instance.new("Frame"), many, empty }) })
+	assert(childCount(p3) == 4 and many.Length:Get() == 3 and empty.Length:Get() == 0, "nested, several, empty")
+
+	-- 4. install on an already mounted (empty) Slot builds now
+	local late = Slot()
+	local p4 = Instance.new("Folder")
+	dispatch.drive(p4, { late })
+	late:Defer(function() return Instance.new("Frame") end)
+	assert(childCount(p4) == 1 and late.Length:Get() == 1, "install on a mounted Slot builds at once")
+
+	-- 5. the built element goes with the tree (owned, like any :Single element)
+	local b5
+	local p5 = Instance.new("Frame")
+	dispatch.drive(p5, { Slot():Defer(function() b5 = Instance.new("Frame"); return b5 end) })
+	q.dispose(p5)
+	assert(b5.Parent == nil, "built element torn down with its owner tree")
+
+	-- 6. gates: fn type, one value only, install rules and the CRUD lock shared with :List/:Single
+	raises("Quad0271", function() Slot():Defer(42 :: any) end)
+	local two = Slot():Defer(function() return Instance.new("Frame"), Instance.new("Frame") end :: any)
+	raises("Quad0272", function() dispatch.drive(Instance.new("Folder"), { two }) end)
+	local once = Slot():Defer(function() return nil end)
+	raises("Quad0148", function() once:Defer(function() return nil end) end)
+	raises("Quad0148", function() once:Single(q.Source(1)) end)
+	raises("Quad0166", function() once:Add(Instance.new("Frame")) end)
+	raises("Quad0149", function() Slot({}):Defer(function() return nil end) end)
 	print("PASS")
 end
 

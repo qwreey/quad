@@ -575,6 +575,9 @@ export type Slot<T> = {
 		updateFn: ((ctx: { Item: Item | KeyGone, Index: number, Offset: State<number>, Prev: SlotItem<T>?, UserData: UD? }) -> (any, UD?))?,
 		opts: SlotListOpts?
 	) -> Slot<T>,
+	-- [2026-10-15 사용자 결정] 한 번만 짓는 설치 — `fn`은 이 Slot이 처음 마운트될 때 한 번 불리고, 돌려준 값 하나
+	-- (원소·State·Slot, 또는 nil)가 내용이 된다. 다시 붙여도 다시 불리지 않는다. 반환이 둘 이상이면 런타임 `Quad0272`.
+	Defer: (self: Slot<T>, fn: () -> SlotElement<T>?) -> Slot<T>,
 }
 
 -- ── 공개 표면 — `Quad`(quad-base가 구현), `CheckedQuad`, 런타임 값(`Brand` 팩토리·상수) ───────

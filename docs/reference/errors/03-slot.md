@@ -71,7 +71,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ### Quad0148
 
-`Slot: already has :List/:Single installed` — `quad-base/src/Slot/List.luau`
+`Slot: already has :List/:Single/:Defer installed` — `quad-base/src/Slot/List.luau`
 
 - **언제**: 이미 `:List`나 `:Single`을 건 `Slot`에 다시 `:List`/`:Single`을 걸려고 할 때 — 재조정 모드 설치는 한 Slot에 한 번뿐입니다.
 - **고치려면**: 다른 데이터를 반영하려면 그 `:List`가 참조하는 `data` State를 바꾸세요 — 재설치는 하지 않습니다.
@@ -79,7 +79,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ### Quad0149
 
-`Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)` — `quad-base/src/Slot/List.luau`
+`Slot: cannot install :List/:Single/:Defer on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)` — `quad-base/src/Slot/List.luau`
 
 - **언제**: 이미 수동 CRUD(`Add`/`Remove`/...)를 쓴 `Slot`이나, 생성자에 `initial` 테이블을 준 `Slot`(빈 `q.Slot({})`도 포함)에 `:List`/`:Single`을 걸려고 할 때 — 두 모드는 상호 배타입니다. 자기 검증에서 거부된 CRUD 호출은 수동으로 표시하지 않습니다.
 - **고치려면**: `:List`/`:Single`을 쓸 `Slot`은 CRUD 없이, 인자 없는 `q.Slot()`으로 만드세요.
@@ -222,7 +222,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ### Quad0166
 
-`Slot: manual CRUD is not allowed after :List/:Single` — `quad-base/src/Slot/init.luau`
+`Slot: manual CRUD is not allowed after :List/:Single/:Defer` — `quad-base/src/Slot/init.luau`
 
 - **언제**: `:List`/`:Single`을 이미 건 `Slot`에 수동 CRUD(`Add`/`Remove`/`Replace`/...)를 쓰려고 할 때.
 - **고치려면**: `:List`/`:Single`을 건 `Slot`은 그 데이터 `State`를 통해서만 바꾸세요 — 수동 CRUD가 필요하면 그 설치 없이 새 `Slot`을 만드세요.
@@ -433,3 +433,19 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 - **언제**: `:List`의 데이터 배열 항목 자체가 `q.KeyGone`일 때. 전에는 그 항목이 `Item = q.KeyGone`인 평범한 호출로 `updateFn`에 들어가 관용구 첫 줄(`if ctx.Item == q.KeyGone then …`)에서 조용히 빠졌습니다.
 - **고치려면**: 데이터에는 실제 값만 두세요 — 항목을 없애려면 배열에서 빼면 됩니다. `q.KeyGone`은 키가 사라질 때 `updateFn`이 **받는** 표시입니다.
 - **참고**: [`slot:List(data, updateFn, keyFn?, opts?)`](../core/06-slot.md#slotlistdata-updatefn-keyfn-opts)
+
+### Quad0271
+
+`Slot:Defer: fn must be a function (got {typeof(fn)})` — `quad-base/src/Slot/List.luau`
+
+- **언제**: `slot:Defer(fn)`에 함수가 아닌 값을 넘겼을 때.
+- **고치려면**: 이 Slot의 내용을 지어 돌려주는 함수를 넘기세요 — 이미 지은 원소라면 `Defer` 없이 `q.Slot{ element }`로 넣으면 됩니다.
+- **참고**: [`slot:Defer(fn)`](../core/06-slot.md#slotdeferfn)
+
+### Quad0272
+
+`Slot:Defer: fn must return one value (got {n}) - put several elements in a Slot and return that` — `quad-base/src/Slot/List.luau`
+
+- **언제**: `slot:Defer(fn)`의 `fn`이 값을 둘 이상 돌려줬을 때 — 그 Slot이 처음 마운트되는 자리에서 납니다.
+- **고치려면**: 여러 원소는 `q.Slot{ a, b, c }`에 담아 그 Slot 하나를 돌려주세요.
+- **참고**: [`slot:Defer(fn)`](../core/06-slot.md#slotdeferfn)

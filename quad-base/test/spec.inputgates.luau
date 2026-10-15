@@ -84,7 +84,7 @@ do
 	s:List(q.Source({}), function() return nil end) -- must still be allowed: nothing was mutated
 	local s2 = q.Slot()
 	s2:Add(mock.Instance.new("Frame"))
-	failsWith(function() s2:List(q.Source({}), function() return nil end) end, "cannot install :List/:Single on a manual Slot", "a real CRUD still locks")
+	failsWith(function() s2:List(q.Source({}), function() return nil end) end, "cannot install :List/:Single/:Defer on a manual Slot", "a real CRUD still locks")
 	print("PASS")
 end
 
