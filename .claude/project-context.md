@@ -82,11 +82,7 @@ post-implementation-review; 2026-09-07 사용자 결정으로 라운드 번호�
   결론은 `base/typing-limits.md`로 승격 — 이후 신설된 폴더들도 같은
   구성 관례를 따름(`type-recursive-issue-with-typeof/`,
   `type-recursive-issue-try-callback/` 등).
-- `.claude/qa-request/` — 원래는 "구현이 끝나고 사용자 실기기 QA만 남은 것"을
-  담는 폴더였으나, **[2026-08-18]** 구현 전 사용자 심사 라운드의 산출물도
-  여기 둠(`pre-implementation-qa-round1.md`/`pre-implementation-qa-round2.md`/
-  `pre-implementation-qa-round3.md` 전부 **완료** — 라운드마다 새
-  파일, 상태의 소스는 각 파일 자신). `.claude/feedback/` — **실사용**
+- `.claude/qa-request/` — 구현 뒤 코드 리뷰 원장(`post-implementation-review-round*.md`, 라운드마다 새 파일 — 최신 목록은 그 폴더 `README.md`)과 외부 모델 감사 진입점. **[2026-09-07]** 구현 전 심사 라운드(옛 `pre-implementation-qa-round1~3` 등)는 `archive/v2-initial-implementation/`로 옮겨졌다. `.claude/feedback/` — **실사용**
   피드백용(M0/M1 스캐폴딩이 아니라 실제로 렌더링해보고 쓰는 단계부터),
   **[2026-10-05 신설]** 첫 소비자 킷 둘의 피드백부터(색인은 그 폴더 `README.md`).
   `.claude/archive/`는 원래 같은 취급이었으나

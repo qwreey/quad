@@ -1532,10 +1532,7 @@ GC-native 원칙(`lifecycle-pattern.md`)을 `:List`라는 구체적 지점에 �
 `activateList`가 수행 — `Dispatch.setLength`가 이미 쓰고 있는 것과 같은
 패턴(마운트 시점까지 미뤘다가 그 자리에서 `bindLifetime`).
 
-**[2026-09-27 round13 Q76·Q77 검토 중]** 아래 `reconcile`(옛 `H-38` 증분 갱신 — 2026-10-02 사이클 끝 교체로 되돌림)이 O(n)이라는 전제와 무관하게,
-`Slot:List` 전체 교체가 O(N²)로 도는 경로(Q76)와 전체 역순에서 쓰지도 않는 offset 계산이 O(N²)를 만드는
-경로(Q77)가 성능 탐사에서 나왔다 — 프로토타입은 `audit/round13-q76-proto/`. 사용자 문항이 열려 있다
-(`qa-request/post-implementation-review-round13.md` §4). 본문은 결정 전이라 그대로 둔다.
+**[2026-10-15 round13 Q76 사용자 결정 — 채택]** 아래 의사코드는 옛 순서(항목 루프 먼저, 소멸 루프 나중) 원문이다. 지금 코드(`quad-base/src/Slot/List.luau` reconcile)는 사라진 키를 먼저 — 마운트된 것은 raw 위치 내림차순으로 — 정리한 뒤 항목 루프를 돈다. 키를 전부 바꾸는 교체가 O(N²) → O(N)이 됐다(N=5000 2.21s → 0.097s, CLI mock). 계약은 "사라진 키 먼저"가 아니라 **한 사이클 안의 `updateFn` 호출 순서는 정하지 않음**이다(사용자: *"그걸 정하면 너무 해키한 코드들이 나올 것 같음"*, CHANGELOG BREAKING). Q77(전체 역순의 offset 계산)은 기록만. 경위 `session/2026-10-15-01-release-recheck-kits-list-lazy.md` 3절.
 
 ```lua
 function Slot:List(data, updateFn, keyFn, opts)
@@ -2446,6 +2443,14 @@ sugar로 재정의되면서, `updateFn` 생략이 유효해야 그 sugar가 성�
 - `mounted`/`userdata`/`prevKeys` 전부 `:List`가 이미 갖고 있는 걸
   그대로 재사용, 코드 중복 없음. `:List`와 마찬가지로 `self._crudUsed`
   체크 대상(내부적으로 `:List`를 호출하므로 자동 적용).
+
+## `Slot:Lazy(fn)` — 처음 마운트될 때 한 번만 내용을 짓는다 (2026-10-15 사용자 결정)
+
+**모양**: 빈 Slot에 `slot:Lazy(fn)`을 걸면 그 Slot이 **처음** 마운트되는 순간(`_activateList`) `fn()`을 한 번 부르고, 돌려준 값 하나(원소·`State`·여러 원소를 담은 `Slot`, 또는 `nil`/`None`)를 내용으로 넣는다. 뗐다 다시 꽂아도 `fn`은 다시 돌지 않는다 — 재마운트는 수동 Slot처럼 `_elements`를 걷는다. 다시 지으려면 새 Slot을 만든다.
+
+**왜**: 컴포넌트가 자기 본문에서 Context 등을 채운 **뒤에** 자식을 짓게 하려는 것 — 받는 컴포넌트는 평범한 `Slot`으로 받는다. 사용자 착안: *"Slot 중에서 List/Single 모양에 있어서는 실제 마운트에서 실체화잖아. 이걸 그대로 이용할 수 있지 않나"*. `:Single` 위 슈거가 아니라 별도 가벼운 분기다 — State·Observer·Effect 없음(사용자: *"Effect 가 완전 필요하지 않은 경로 … 단순 얹혀서 구현하는건 안 맞지 않나"*, *"뽑고 다른 곳에 심어도 다시 실행은 없게"*).
+
+**규칙**: 설치 규칙과 수동 CRUD 잠금은 `:List`/`:Single`과 같다(사용자, 이름이 정해지기 전 표기로: *":Defer 실행 이후 CRUD 잠기는건 똑같게"* — `Quad0148`/`Quad0149`/`Quad0166` 문구가 `:Lazy`도 말한다). `fn`이 함수가 아니면 `Quad0271`, 값을 둘 이상 돌려주면 `Quad0272`. 활성 표시는 `fn`을 부르기 **전**에 하므로 `fn`이 던지면 사용자 몫(pcall 없음)이고 다음 마운트가 다시 시도하지 않는다. 이름은 sonnet·Gemini 둘 다 `Lazy`(`Defer`는 `task.defer`와 겹침 — `audit/naming-defer-2026-10-15/`) — 사용자 *"동의. 더 어울리는 단어같아"*. flatten 슈거와 묶지 않은 순수 추가. 경위 `session/2026-10-15-01-release-recheck-kits-list-lazy.md` 4절.
 
 ## Slot-in-Slot 중첩 — 확정 (2026-08-11 세션)
 

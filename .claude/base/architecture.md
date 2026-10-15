@@ -295,7 +295,7 @@ quad/
 │   ├── pesde.toml
 │   └── src/
 │       ├── Source.luau           # 값의 근원, 단일 지점. Source가 State를 구조적으로 만족(`__index` 델리게이션)
-│       ├── State.luau            # 캐시만 하는 non-owning 핸들, state(state) 분기, `:With`/`:Compute`/`:Observer`(등록 즉시 1회 실행)/`:Gate`(`GateNode`, `ComputeNode`와 같은 층위 — `base/gate-plan.md`) 전부 여기 소속
+│       ├── State.luau            # 캐시만 하는 non-owning 핸들, state(state) 분기, `:Depend`(**[2026-09-15]** 옛 `:With`)/`:Compute`/`:Observer`(등록 즉시 1회 실행)/`:Gate`(`GateNode`, `ComputeNode`와 같은 층위 — `base/gate-plan.md`) 전부 여기 소속
 │       ├── Observer.luau        # ⭐ [2026-08-25 신설, 7라운드 `H-99`] `Observer` 객체와 **`:Subscribe()`/`:WeakSubscribe()` 전역 레지스트리의 소유 모듈** — `EpochMap.luau`와 같은 이유로 `State.luau`에 묻지 않는다(`Effect`/`Gate`/leaf 핸들러가 전부 이 레지스트리를 본다 — **[2026-08-27 `H-144` (b)]** `Effect.luau`는 이 두 테이블과 `canBound`만 공유하고 네 진입점 본문은 자기 것)
 │       ├── EpochMap.luau         # 재사용 가능한 Epoch 부기 객체(`:Update`/`:Refresh`/`:Sync`/`:TrackFrom`) — `State.luau`에 묻지 않고 별도 모듈, `GateNode`/`State`/`Effect`가 전부 씀(`base/state-epoch-plan.md`)
 │       ├── Store.luau            # source 집합체, dot-access로 Source 그대로 반환(**평범한 레코드 필드** — 타입 함수 안 씀). **[2026-08-25]** 생성은 **명시적 초기화**(타입 인자에 `Source<T>` 직접, `defaults`에도 `Source(v)` 직접 — 옛 lazy `__index` 폐기), 동적 키는 `:Of<<T>>(name)` 하나(옛 `GetDynamic` 흡수), `:Names()`, 예약 키 진단용 `CheckReservedKeys<keyof<T>>`(**[2026-08-26 `H-112`]** 옛 이름 `CheckReserved`는 `T`를 통째로 받아 실사용 `T`에서 안 돌았다 — `base/store-plan.md`)
@@ -372,8 +372,6 @@ quad/
 
 **⭐ [2026-09-07 명문화 — `archive/surveys/2026-09-07-source-layout-plan.md` 5절, 사용자 4절 (a) 채택] `Dispatch/` 폴더의 규칙: 핸들러는 그 값 타입을 소유하는 모듈 안에 산다(`H-278`). `Dispatch/` 아래엔 코어(`init`·`Handler` 타입)와 `drive`의 자기 단계(`Modifier` — flatten과 ProcessedModifier/`Ref` pre-pass)만 둔다** (**[2026-10-01 사용자 결정]** 옛 목록의 `None`/`StoreBind` 언랩은 빠졌다 — 둘 다 값의 핸들러라 최상위 모듈의 Init이 등록한다. 사용자: *"Dispatch 가 코어 객체들을 아는 방향이 되지 않아야하니까"*; Dispatch에 남는 자기 말단은 `NilHandler`와 `Processed*` 셋) — 값 모듈이 `Dispatch/init`을 require하므로(`H-278` 자기 등록) 그 반대 방향은 구조적으로 불가하고, `Dispatch/init`은 값 모듈(자기 핸들러를 등록하는 Tag/Attr/Ref/Slot/Observer/Effect)을 절대 require하지 않는다 — `Dispatch/Modifier`는 drive의 단계(flatten)라 이 규칙의 대상이 아니고 `Dispatch/init`이 require한다. 사용자가 이상하다고 본 옛 `Dispatch/Slot.luau`가 유일한 혼종(파일은 Dispatch 아래, 등록자는 Slot)이었고 `Slot/Handler.luau`로 갔다; ~~`StoreBind`는 값 모듈이 아니라 디스패치 자체의 언랩 단계라 남는다~~ **[2026-10-01 역전]** `StoreBind`(**[2026-10-02 Q175]** 지금 이름 `StateHandler`)는 State 값의 핸들러로 최상위로 나가 `State.luau`의 Init이 등록한다(None도 같이 — 위 괄호). 폴더 접기는 공짜다 — `init.luau` 안에서 `./`는 부모 폴더, `@self/`는 자기 폴더라 바깥 require가 안 바뀐다(`X.luau`와 `X/`를 동시에 두지 말 것). 대분류 폴더(`Util/`·`Reactive/`)는 보류 — 사용자: *"다른 부분은 보기 힘들어져 아플 때 처리하는게 나아보임"*.
 
-**남은 것**: Slot 코어 로직의 정확한 API(`research`→`base` 승격된
-`slot-plan.md` 참고)와 각 파일의 정확한 함수/타입 이름은 구현 단계에서.
 existing-instance-bind는 **[2026-08-14 세션] 기각되어 `archive/`로
 이전**됐고(`archive/existing-instance-bind-rejected.md`), 애초에 이 구조
 확정을 막던 항목도 아니었음(`purity-and-effects-plan.md`/`tween-plan.md`는
@@ -850,12 +848,11 @@ pull-recompute(`Get()` 시점) — Fusion식 eager 노드 없이도 다이아몬
 소비자(`Effect`)도 같은 판정을 쓴다. 규칙 전량은 `base/state-epoch-plan.md`,
 명시적 게이트는 `base/gate-plan.md`(`state:Gate`)와 그 위의 `Blocker`). State는 쓰기 대상이 아니고, 값을 쓰는
 경로는 `source:Set(value)`(Source가 State보다 넓은 인터페이스를 가짐 —
-`:Get()`/`:With`/`:Compute` 위에 `:Set`/`:Emit` 추가; [정정, 2026-08-07]
+`:Get()`/`:Depend`(**[2026-09-15]** 옛 `:With`)/`:Compute` 위에 `:Set`/`:Emit` 추가; [정정, 2026-08-07]
 읽기는 `:Get()` 하나로 통일 — 프로퍼티 읽기 표기는 Ref의 `.Value` 전용으로 좁혀짐. **[표기 정정, 2026-08-18]** 여기 소문자 `.value`로 적혀 있었음). 값 하나만
 다룰 땐 Store와 별개인 가벼운 `Source` 프리미티브를 독립적으로도 씀.
 `store.key` dot-access를 타입 추론 1급 경로로 삼는 것도 3차 라운드에서
-정식 확정됨 — **더 이상 열린 질문 아님**, [2026-08-04 기준] 남은 건 정확한
-API 이름뿐.
+정식 확정됨 — **더 이상 열린 질문 아님**(API 이름도 M2 구현으로 확정 — 코드가 정본).
 상세는 `base/source-state-plan.md`의 "Source가 State를 만족함"/"핵심
 온톨로지" 절 참고.
 

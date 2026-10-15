@@ -1985,9 +1985,7 @@ Connection/Event/Observable/Observer)를 조사한 결과, 두 지점에서 기�
 
 ## 남은 열린 질문
 
-- **`state()`/`Source()`/`Get()` 등 정확한 함수·생성자 이름** — 방향은
-  전부 확정, 이름만 구현 단계에서 남음. `State`/`Source`/`Compute` 자체는
-  이미 최종 확정(위 "이름 주의"/"네이밍 — `Compute`가 `-ed`가 아닌 이유").
+- ~~**`state()`/`Source()`/`Get()` 등 정확한 함수·생성자 이름**~~ **[M2 구현(2026-08-28~31)으로 닫힘]** 이름은 코드가 정본(`quad-base/src/Source.luau`·`State.luau`). `State`/`Source`/`Compute`의 근거는 위 "이름 주의"/"네이밍 — `Compute`가 `-ed`가 아닌 이유".
 - **이형 다중 trailing deps를 제네릭 팩 하나로 좁힐 수 있는지** — 위
   "trailing deps를 `fn`에 lazy positional 인자로도 노출" 절의 실측 항목
   (`luau-test`의 `15-...`, 현재 스파이크 재작성 필요 상태).

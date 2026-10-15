@@ -6,164 +6,18 @@
 
 
 00. **⭐⭐⭐ [2026-09-06 기준] 마일스톤 M0~M11 전부 완료 — 열린 마일스톤 없음.**
-   진행의 소스는 루트 `ROADMAP.md`(상단 배너·완료 표), 결정 이력은 `session-summary.md`,
-   각 마일스톤의 규약·발견 원장은 **[2026-09-07 재편]** `archive/v2-initial-implementation/`
-   (`mN-implementation-roundNN(-brief).md`, round11~21 + pre-implementation 1~10 + 옛 ROADMAP
-   본문 `roadmap.md`). 종결 기록은 여기 쌓지 않는다 — 이 파일 규약(맨 위) 그대로.
-   **지금 사용자 몫**(답을 주면 반영한다):
-   - **[2026-10-15 기준 — 가장 최근]** 3.3.0 전 재검사 끝(확정 결함 0, CHANGELOG 정정), `:List` 정리 순서(Q76 닫힘), `slot:Lazy` 신설, devui 창·메뉴 폭 반영. 남은 사용자 몫: devui 창 핸들(밖에서 올리기 — `slot:Lazy` 위에서), 3.3.0 bump 시기, 아이콘 팩. 원문 `session/2026-10-15-01-release-recheck-kits-list-lazy.md`.
-   - **[2026-10-13 기준]** round14 코어 문항은 전부 닫혔다(Q186 사슬 가드·Q187 안 넣음·Q154). 지금 사용자 몫은 소비자 킷 결정 — `research/consumer-kits-plan.md` 5절의 2026-10-13 문단들(창 포커스·메뉴 폭·창 닫기 정리 외, 아이콘 팩, 3.3.0 시기). 원문 `session/2026-10-13-01-q186-kit-build-and-review.md`.
-   - **[2026-09-07]** `qa-request/post-implementation-review-round1.md` §4 Q1~Q17(핸드오버 전체
-     코드 리뷰 — `NewChild` 팔 둘·품질 제안 묶음 `H-356`·Property 핸들 오용 진단·같은 키
-     재진입 UB 명시·**Q6** native* 조합 폴백 약속 철회·**Q7** 미설치 스텁 무태그 여부·**Q8**
-     `Animate` nil/None 통과 팔·**Q9** 부모 Destroy 뒤 Slot 좀비(유일한 동작 결함 문항)·**Q10**
-     `AddPlugin` 락 우회·**Q11** Modifier setter 키·**Q12** Tween 동일값 재발행·**Q13~Q17**(5순회 —
-     `setOffsetSource` 게이트·`destroySlotTree` `releaseOwner`·`setLength` 도메인·`Tween.validate` State·
-     `numberOnly`)·**Q7 둘째** `_assertBindable` 방향). §1·§5~§11의 ① 갈래(`H-344`~`H-402`; 야간 0~3 +
-     주간 4·5순회)는 반영·커밋됨(CLI 49/49) — 순회는 사용자 지시로 계속(batch 쌓는 중). §12에 `H-403`(`isSlot` → Brand)·`H-404`(전역
-     게이트)·`H-405`(exit code)·6순회 `H-406`~`H-416`(Property 트윈 Create 선행·SlotHandler 파괴 값
-     pre-pass·`getOffsetAt` 범위 에러 복원 등; **Q18~Q20·Q7 셋째** 추가), §13 Gemini 검증(`H-417`~`H-419`),
-     §14 7순회 `H-420`~`H-430`(**HIGH** 생성기 `ContentId`→`Content` 오매핑으로 `Image` 등 10슬롯이 문자열을
-     거부하던 것 — 재정규화·재생성; gen-d `check`·모듈 스코프 전역 게이트가 test.sh에; **Q21** 툴체인 핀·selene).
-     **§15 사용자 회신 1차(2026-09-07 오후)** — Q2 (a) 반영(`NewChild`에 `Observer`/`EffectHandle`), Q3 ②③④⑤⑥⑦
-     반영(`NotInstalled.luau`·`Dispatch.setEmpty`·`Reflection.luau`·`addProcessedHandler`·`assertMutable`·gen-d
-     소스 읽기)·①⑧⑨ 보류(ROADMAP 백로그 최적화 후보 목록). 라운드 번호 1부터(round2 = Gemini). **§16 회신 2차 — Q1
-     닫힘: 입력 자리의 State/Slot 팔을 공변 마커로**(`StateMarker`/`SlotMarker`, quad-types·gen-d·`NewChild`·spec; `PV73`
-     11팔 → 4팔, 타입 검사 4.96s → 3.41s, `LuauSolverConstraintLimit` 제거; `typing-limits.md` 8.11). 순수 팬텀 필드
-     `__quadStateValue`/`__quadSlotValue`는 사용자 확정(*"런타임 값에 없는 팬텀 괜찮아 … 값이 싸다면 그래도 좋아"*).
-     **round3**(`qa-request/post-implementation-review-round3.md`, 마커 커밋 리뷰): ① `H-431`(NewChild State 팔에
-     Observer/EffectHandle — `State<Observer?>` 종료 관용구)·`H-433`~`H-439` 반영, ② **Q22**(Slot 공변 + 가변 출력)·**Q23**
-     (`FieldOut` 모양)·**Q24**(승인 범위 — 이름·팔 모양·플래그).
-     **회신 3차(2026-09-07 저녁, 대화형)**: Q4~Q19·Q7 둘째·셋째 전부 닫힘(round3 §6 — Animate `Dedup`·nil/None 통과, Slot 좀비
-     메시지+UB, `releaseOwner`, setter 키·`setOffsetSource`·`setLength` 게이트, `numberOnly` 제거, `PropTypesRead`, Compute 순수성
-     원칙); Gemini 4차 → round4 파일·`H-440`~`H-444` 반영; `research/deferred-hardening-plan.md` 신설. **회신 4차**: Q6(약속 철회+백로그)·Q20(메시지 확장)·Q21(luau 핀·selene 폐기)·Q22(그대로)·Q23(FieldOut 한 팔) 닫힘(round3 §7).
-     Q24도 설명 뒤 (a) 확정(+`Peek` 반환을 `FieldOut<T>?`로 통일).
-     회신 3차 묶음 리뷰(round3 §8, `H-445`~`H-452` 반영 — `H-445`는 Q15 검사가 차단기 창 안에서 던져 owner를 동결시키던 회귀).
-     **[2026-09-07 밤] 구조 재편 회신 반영 완료**(`session/2026-09-07-04-source-layout-reply.md`, 결정은
-     `archive/surveys/2026-09-07-source-layout-plan.md` 각 절 `[결정]`·9절 상태·10절): Tag 유니언, **Brand→quad-types**, **Tween→quad-roblox
-     통째**(`typing-limits.md` 8.12 부수 발견), 마커 전면화 + quad-types 재배치, 패밀리 폴더(`Ref/`·`Attr/`·
-     `Dispatch/Modifier/`·`Slot/`), `doc-check.py` `.luau` 경로 검사. 외부 모델 감사 진입점 `qa-request/external-review-entry.md`.
-     **[2026-09-08 아침 회신 반영 — round3 §12]** Gemini 코드 품질 자문(`qa-request/post-implementation-review-round6.md` — 옛 무시 파일, 2026-09-08 정식 편입;
-     커밋 안 됨) 권고 셋 — `__tostring`(목록 고정, `spec.tostring` 스펙 50)·`setFuncLevel(level, ...fns)`(옛 시그니처 폐기, `H-475`)·
-     메시지 헬퍼 기각 → `architecture.md` "메시지 모양" 규약 + 열 곳 손질(`H-477`); 옛 `Attribute` → **`Attr`**(+`AttrKey`·`setAttr`, 폴더
-     `Attr/`); 10-4는 리서치 대상으로; Q26 (a) 축소판(`H-476`), Q27 등록 op 기각(모듈 `is<Brand>` 필드가 계약, 진단 스캔).
-     같은 날 아침 후속: **Q25 닫힘 — 값 비교 모델**(`H-478`: Property 핸들러가 목표 `Value`만 비교, `Dedup`은 Tween 필드,
-     옛 Q12 신원 모델·슬롯 `Source` 폐기, `InstanceShorthand` 무변경). **[2026-09-08 오전 후속]** 사용자 반입 RFC 다섯(무시 파일) 판정 — `qa-request/post-implementation-review-round7.md`: 적용 `H-479`~`H-483`(Clear/ExtractAll O(N²) → 배치 1회, 실측 1000개 130ms → 1~3ms; List `prevKeys` 스왑; `IndexOf` 역맵; setter 클로저 캐시; recompute abs 온디맨드 — 사용자 판정), 문항 Q37~Q39는 **같은 날 오후 회신으로 닫힘**(round7 §6 — Q37 (a) `keyType` 반영 `H-484`, Q38 백로그, Q39 폴더별 README 분리만·루트 README 백로그). **남은 사용자 몫: flatten 슈거 일곱(+named 자리 축,
-     사용자 "내일") — `question.md` 2절.** [2026-09-07 밤 탐사 순회] opus 탐사자 둘(전체 스코프) + Gemini 5차(`round5.md` §1~§6, 사용자 회신 Q30~Q32 포함) → round3 §10 `H-463`~`H-474` 반영(전부 메인 실측; Gemini 다섯 건의 "nil 키 읽기 VM 에러" 전제는 틀림 — 읽기는 nil, 쓰기만 에러). **[2026-09-08 새벽 회신 5차]** Q33~Q36 닫힘(round3 §11 — Property nil 쓰기(M10 skip-defense 역전)·보간 가능 타입만 Tween 팔·`Parent` 읽기 표면·KeyGone `ud`는 사용자 재량), Q30~Q32는 사용자 본인 회신 확인. 다음 순회는 round3 §12·`H-475`부터. 문항은 앞으로 평문 한 문단으로(사용자: 기호·압축 서술이 읽기 어려움).
-   - **[2026-09-07]** Gemini 외부 리뷰(`qa-request/post-implementation-review-round2.md`, G-01~G-09·S-01~S-06)는
-     메인이 판정해 원장 **§13**에 반영 — 실존 셋(`H-417`~`H-419`) 반영·커밋, 나머지는 확인 기록. 사용자 몫 없음
-     (G-03/G-09는 기존 Q18/Q3 ⑨에 논거만 추가).
-   - **[2026-09-07 밤 반영, 2026-09-08 닫힘]** 소스 구조 재편 — `archive/surveys/2026-09-07-source-layout-plan.md`. 여덟 중 일곱 +
-     후속 셋은 07 밤에, 8절 `Attr` 축약은 08 아침에 반영(`66281ab`), 10-4는 리서치 대상으로 — 남은 사용자 몫 없음.
-   - `research/component-flatten-sugar-plan.md` 2절 "정해야 할 것" 일곱(컴포넌트 경계
-     flatten 슈거 — round21 Q2·`H-340`의 후속, 백로그; `question.md` 2절).
-   - 백로그 착수 순서(ROADMAP 백로그 절 — `quad-mock`/`quad-debug`/문서 사이트/
-     `Operator` 슈가/`Fallback`·`Traceback`/생명주기 훅 슈가/`Debounce`·`Throttle`/
-     `fastscroll`/`spring`/`quad-roblox-types`).
-   **[2026-09-08 밤 — 슈거 구간, 사용자 결정 "문서화는 뒤로, base에 올릴 순수 슈거를 먼저 간단히 만들어 놓고 다듬기"]**
-   구현·커밋: `Debounce`/`Throttle`(`Debounce.luau` + 시간 op 둘 — base 스텁·Roblox `task` 배선·mock 가상 시계·Studio 실측 일치
-   `audit/sugar-studio-2026-09-08.md`), 훅 셋(`LifecycleHooks.luau`), `Fallback`/`Traceback`(`Fallback.luau`); 스펙 넷(54). `Operator`는
-   이름·범위 미정이라 뺐다. ~~지금 사용자 몫: `question.md` 0절 (a)~(g)·(h)~(j)~~(같은 밤 전부 닫힘 — 아래).
-   round9(`qa-request/post-implementation-review-round9.md`) `H-509`~`H-516` 반영. **같은 밤 회신으로 (a)~(j) 전부 닫힘**, 추가로
-   `Operator`(범위 확정)·`Context`/`Provider`·`ref:Unwrap()` 구현(스펙 56). (k)(l)도 후속 회신으로 닫힘(불변 확장 안 함 / IfElse·컬렉션·Attr unset·평탄화·타입드 Index는 ROADMAP 백로그 넷). **남은 사용자 몫 없음** — 다음은 사용자 예고대로 구현된 슈거 위의 문서화 다듬기.
-   원문 `session/2026-09-08-04-sugar-implementation.md`.
-   **[2026-09-09 오후 후속]** 사용자 결정 넷 — (1) 생성 `D`에 **~~Deprecated 전부~~(**[2026-09-21 정정]** 의도는 "자주 쓰이던 것만" — 허용목록 `FontSize`/`TextWrap`, 소문자 별칭·`Draggable`·거리 한계는 뺌) + Hidden `Font`/`Transparency`** 되살리기 — **같은 날 저녁 적용 완료**(`HUMAN_TODO.md` 12 사용자 실측 뒤;
-   두 팔 분리 규칙, D 5250줄, 실측 원장 `audit/deprecated-props-spike-2026-09-09/`); (2) `[q.AttrKey(...)] = v` 해시 키 strict 타입은 **안 함**
-   (배열부 슈가 안내만 — `attribute-plan.md` 2026-09-09 항목·`typing-limits.md` 8.17); (3) 루트 `-ignoreme` 메모 여섯 삭제(round7 흡수 확인), `comparison-vide-fusion`만
-   유지; (4) 번역 전 검수 두 축 — 독자 페르소나 통독·v1→v2 마이그레이션 관점(반영 완료, 세션 파일 §7). luau-web 인터랙티브 스니펫은 ROADMAP 백로그.
-   **[2026-09-09 저녁]** 사용자 결정: 초안을 `docs-ignoreme/` → **`docs/`로 옮겨 커밋**(링크는 상대 경로, 진입점 `docs/README.md`), 오버뷰 트랙 신설(퍼널 첫 단 — 사용자 프레이밍으로
-   재작성), `comparison-vide-fusion-ignoreme.md` 삭제(오버뷰가 흡수). **`en/` 번역은 잠정 유보** — 사용자: *"내가 여러번 보고 회사 사람들이 여러번 보고 여러 실제 개발자 시점의
-   조언들을 전부 처리한 다음 시작"* — 데이터 모이기 전엔 수행하지 않는다. 다른 Deprecated 프로퍼티(Draggable 등)는 실측 안 함(사용자: 잘 안 씀 — **[2026-09-21 정정]** 허용목록 전환으로 `Draggable`은 표면에서 빠짐).
-   **[2026-09-10 열린 스레드]** v1 사용자 인게이지먼트 페이지 `docs/overview/02-from-v1.md`(달라진 것/추가된 것/이관 틀 셋/새로 짤 때 전제) —
-   사용자 답 셋 다 받음(v1 사용자는 회사 내부+외부 둘 다 / 이관 틀은 (b) 화면 단위 공존 지원·(c) Claim 넘겨받기 비권장, 브릿지는 양방향·경계는 평범한 값·GC
-   상호작용은 실측 없음(ROADMAP 백로그) / v1·v2 동시 로드 공식 허용 + 조건 셋) → 초안 작성 중(opus), 세션 파일 §11.
-   **[2026-09-10 배포 준비]** 사용자 결정: SemVer, 레지스트리 `3.0.0`부터(메이저 프리릴리즈 없음), `master`=v1 2.x, changelog는 Keep a Changelog(루트 `CHANGELOG.md`, 규율은
-   `conventions.md` 2026-09-10 항목), MIT, 타깃 경계는 셋(quad_types·type_version_check·quad_error)을 roblox 타깃으로도 게시, README 최소본, 에러 문자열 `H-39` 제거.
-   반영 완료(세션 §12): `--!strict` 전수, 매니페스트 다섯 정비, `scripts/check-version.py` 게이트+bump, LICENSE/README, HUMAN_TODO 14(스코프 등록·sync config 실측·pesde 0.7.4·회수 버전 목록).
-   **[2026-09-10 후속]** `const` 채택(architecture 코드 스타일 절 — 새 코드부터, 기존 일괄 전환 없음; HUMAN_TODO 8 해소), **pesde 핀 0.7.4로 올리기는 타깃 경계 작업 뒤**(0.7.3은 `const` 게시 거부).
-   **[2026-09-10 저녁]** 타깃 경계 해소 — 사용자 결정 **넷 다 양 타깃(9건)**, `scripts/publish.py`(스테이징 워크스페이스 + `rbx-*` 쌍둥이 + require 재작성, dry-run 기본·`--real`은 사용자만) 9건 OK·스테이징 test.sh exit 0, pesde 핀 0.7.4, Roblox 소비자는 `roblox_packages/` 하나(설치 문서·퀵스타트·README). **[2026-09-10 밤]** bump 3.0.0 완료(dry-run 9건 OK), 로고·Cloudflare Pages 배포 스크립트(`docs/site/DEPLOY.md`) 준비. **[2026-09-10 밤 게시 완료]** 사용자가 밖에서 실게시 9건 OK + 사이트 <https://quad.qwreey.moe/>(커스텀 도메인, `astro` `site` 교체) + 세 리모트 싱크(이제 PR 없이 직접 싱크 — changelog가 있으므로). 에이전트: 빈 roblox 프로젝트에 `^3.0.0` 설치 실측(다섯 패키지 `roblox_packages/` 하나, 교차 require 전부 해소) → 설치 문서·오버뷰·README의 "아직 제공되지 않음" 표시를 "pesde만 제공"으로 정리, HUMAN_TODO 14.1·15 닫힘. **남은 사람 몫: HUMAN_TODO 14.2(`roblox_sync_config_generator` 없이 Studio 싱크 실측)**. **[2026-09-10 저녁 사용자 피드백 반영]** 사이트 로고 404(한국어 root 로케일로, URL `/<track>/…`), 사이드바 접힘, 01 머리 `UseProvider` 서술(싱글턴·멱등) + 설정 모듈 절, v1 콜아웃 접힘. **사용자 결정: Getting Started를 선형 튜토리얼 7페이지로 재작성**(카운터 하나를 키움 — 01 첫 화면 → 02 흐름(원천→파이프→프로퍼티, 이름은 겪은 뒤) → 03 반응 → 04 컴포넌트 → 05 애니메이션 → 06 정리; 규칙 상세는 `how-to/09-component-conventions.md`로 이동) — opus 작성·메인 검토·스니펫 mock 실행+strict 검사, 사이트 113페이지. 사용자가 `docs/site/src/styles/custom.css` 손작업 중(완료 알림 뒤 커밋). ~~이월: type function 안 `pcall`~~(2026-09-10 밤 해소, `2bdc3f0`). **[2026-09-10 밤 2차 통독 피드백 → GS 재구성 완료 — 같은 밤 누적으로 **16페이지**(`62e0188`→`8591da8` Blocker→`f28521b` Tag·Attr: 00 설치 → 01 설정 → 02 첫 화면 → 03 흐름 → 04 반응 → 05 Tag·Attr → 06 Ref·Effect → 07 Modifier → 08 Slot → 09 컴포넌트 → 10 목록 → 11 Context → 12 애니메이션 → 13 Blocker → 14 게으름 → 15 정리; how-to 01↔09 맞바꿈). sonnet 리뷰어 넷(초심자·구조·문장·정확성) 결과를 opus 편집자가 반영 중(브리프 스크래치 `review-apply-brief.md` — Slot을 진행 카드에 잇기·Context 실제 diff·라벨 16px 치우침·D9 (a) 등) + 오버뷰 비교 문서 재작성 완료 + 사이트(사이드바 순서·랜딩·GitHub 경고→aside·수식 코드 스팬); 게으름 위치는 사용자 확정(2026-09-10 밤)]** 사용자 요지: 설치 바로 뒤 "프레임워크 설정하기"(설정 ModuleScript + main.tsx 같은 진입점, react.dev/learn 방식) / 00은 까는 것만 / 문자열 require `@game/…` 권장 + 설정 모듈에서 타입 재수출(strict 실측 통과) + `const` 사용 / 정리 페이지 해체 → 각 자리 `<details>` / 01 "방금 무슨 일이" 삭제·지뢰 셋은 접어서 아래 / 02 §2 "처리"·파이프≠컨베이어 암시 / 컴포넌트 자식은 `Slot` 받기(`table.unpack` 패턴 삭제), Slot 소개(CRUD·slot in slot) / `Slot:List`를 GS로(데이터 → 컴포넌트 흐름) / Modifier·Ref/Effect·Context 각각 분리(팩토리 패턴 강조) / 애니메이션은 바텀업(Tween 직접 → Animate 슈거) / "다음 단계" 절 삭제 / how-to 디버깅은 부록(09)으로. 문서 다 다듬기 전엔 다른 백로그 착수 안 함(사용자). 열린 문항 `question.md` 3절 D4·D5·D9(문자열 require 복제 타이밍 — 리서치는 "기다리지 않음").
-   **[2026-09-11 새벽]** GS **18페이지**로 재편(04 이벤트 / 06 Ref / 07 Observer·Effect / 09 Slot §6 State를 자리에 / 11 함수로 묶기 / 12 목록 §5 `:Single`), `<<T>>` 타입 인자 관행 통일, `Slot:Single` `<Item, UD>`(D10 닫힘, `dae8258`), 오버뷰 "더 나쁜 점" 재평가 반영(라벨 치른 대가/알아 둘 것/다른 관점, `035544e`). **[같은 날 오전]** GS **19페이지**(08 생명주기 훅 바텀업 신설), PostRef 캐비엇 셋, Blocker → 레퍼런스 sugar 그룹(Core 하위), 장황 구간 접힘 18항목, 백로그 계획서 둘(`research/rfc-docs-section-plan.md`·`archive/surveys/2026-09-11-roadmap-changelog-docs-plan.md` — 착수 안 함), **HUMAN_TODO 18**(사람 몫 모음 — 도식·눈 검토·실기기·결정·배포). 다음: 사용자가 HUMAN_TODO 18을 처리하며 주는 노트 반영; 열린 결정은 `question.md` 3절 D5·D11 + 두 계획서. 원문 `session/2026-09-09-01-docs-polish.md` 끝 두 문단. 미실측 하나: StyleRule과 quad 프로퍼티 직접 대입의 우선순위(오버뷰는 어느 쪽으로도 안 적음). **[같은 날 오후]** 랜딩 카드 여섯·Blocker mermaid·HUMAN_TODO 해소/미해소 두 절·사이트 버전 배지(`docs/site/src/version.ts`가 `quad-base/pesde.toml`을 빌드 시 읽음)·"해시/배열"→"문자 키/숫자 키" 전수·GS 02 nil 구멍 캐비엇·nil 구멍 에러 문구 변경(Unreleased)·**CHANGELOG 2.x 절을 커밋 diff 근거로 재구성(사용자 결정 — 원문 보존 철회)** + 3.0.0 절 확장 + 인계 메모 반영(문서 오류 일곱, 이관 문서 동작 차이 a~j). 원문은 같은 세션 파일 끝 문단. **[같은 날 저녁]** 다각 탐사 다섯(열린 탐사 opus 포함) 반영 — 문서가 HEAD 기준이라 `Indexed` 미게시 표시(**릴리즈 급함**, HUMAN_TODO D), 레퍼런스·how-to 프롤로그를 GS 01 설정 모듈로 통일, Effect cleanup 자리 넷, GS 연속성 안내, README 의존성 셋; **`.claude/initreq/` 제거 준비 완료**(포인터 45곳·사용자 원본 둘은 삭제(사용자: 내용이 다 반영돼 무해)·해석표·doc-check 폴더 없이 ERROR 0 — 삭제는 사용자 `rm -rf .claude/initreq`); CHANGELOG 사이트 `/changelog/`. **[2026-09-11 완료]** `docs/README.md` 공개/내부 분리 — §3~§5(검토 지침·검토 기록·핸드오버 원장)는 `base/docs-handover-registry.md`로 옮기고 공개 파일엔 트랙 표·문서 목록·링크 규약만 남겼다. **[같은 날 밤] 3.1.0 bump 완료**(사용자 결정 — BREAKING이 마이너에 실린 것은 사용자 판단) — 게시 `--real`·태그·사이트 배포는 사용자(HUMAN_TODO E). **[같은 날 밤 — 문서 다듬기 2차, 사용자 지시 여섯]** GS **20편**: 18장 신설(자리에 놓인 값은 누가 처리하나 — 핸들러 맛보기; 옛 18 정리 → 19), 05 §2 확장(State<Tag>는 집합 차이만), 16 Blocker 게이트를 **파이프 뒤**로(사용자: emit이 한데 모이는 자리에 1차선 톨게이트 — mock: 원천마다 두면 통지 2), 07 §3 `Effect` 안 프로퍼티 직접 쓰기 안티패턴 제거 + §4 cleanup이 실제로 필요한 Ref+Effect, 12 §3 팩토리를 컴포넌트에 넘기기(`props.Watch`) + `__apply` 예고; opus 편집자 셋 + opus 리뷰어 다섯(초심자·문장·사실·연결·열린 탐사) 반영 — 사실 정정 넷(10 §6 자리의 State는 내부 `:Single`이 아니라 자식 처리기·Attr에 묶인 State의 nil도 삭제·Animate는 `:Apply` 함수 팔·설치 장 버전 핀 예시 3.1.0), how-to 링크 라벨 통일, `q.Store`/`q.OnChange`/조건부 자식 관용구 안내. 전부 mock(`gs.blocker2/handlerslot/handlers9/polish2~4/ch18/attrnil/stateinst`)·strict(P16·P17) 실측. 원문은 세션 파일 끝 문단. 남은 사람 몫: HUMAN_TODO C13·C14, D(클래스별 타입 경로). **[같은 날 밤 — 다패스 검증, 사용자 지시 "리뷰가 0 나올 때까지"]** 라운드 여섯(각도 교대: 사실 대조 GS·how-to/오버뷰 → 스니펫 연속성·레퍼런스 vs 코드 → 통독 재검·문서 간 정합(sonnet) → 예제 상태 추적·how-to 실무자 통독 → 상태 재추적·how-to 재통독(sonnet) → 상태 최종 재검). 라운드별 새 발견 17→18→13→16→9→2; 사실·정합·레퍼런스·how-to 축은 0으로 수렴, 예제 연속성 축만 마지막 2건(생략 마커)로 닫음. 커밋 `0d28abc`~`e70d535`+최종. 리뷰어가 낸 실측 필요 셋은 mock/strict로 닫았고(`Owned=false` Detach·`D.New` unknown·Claim 사본 `UICorner`), 남은 사람 몫은 HUMAN_TODO C13·C14뿐. **[2026-09-12] 문서 제안 문서 작성 완료** — `archive/surveys/2026-09-12-docs-proposals.md`(sonnet 셋 각도 + opus 심층 + 메인 검증; 묶음 다섯·제안 25·기각 8·문항 열다섯). ~~지금 사용자 몫: 그 문서 5절 문항 열다섯~~ **[2026-09-14]** 지금도 유효한 제안은 합본 `research/docs-review-2026-09-14.md`로 옮겼고 제안서는 archive로 갔다. 착수 전엔 문서 다른 백로그 안 함. **[2026-09-13 배치]** 사용자 요청 묶음 진행 중 — 의견만: `research/public-surface-pre-adoption-review.md`(`D`→풀 이름 등 공개 표면 결정 열여섯 문항), `research/drive-hook-plan.md` 2026-09-13 절(register 위치·훅, 문항 넷); 문서 반영(검토 대기): how-to 02 폼 상태 주입형 재작성, 랜딩 예시 코드+FAQ 10, CHANGELOG `[Unreleased]` 안내문+hr(+`check-version.py bump` 대응); 사이트: Starlight 플러그인(quiz·md-txt·contextual-menu·sidebar-swipe·changelogs·sidebar-topics·다이어그램 확대) 도입, 그 뒤 퀴즈 본문·스킬 md-txt 조회법. **[2026-09-14]** 사용자 결정 반영: `q.D` → `q.Declaration` 개명 완료(타입 셋·생성 폴더·문서 43·base 배너, CHANGELOG BREAKING; test.sh exit 0·gen-d check·coverage 154/154), drive-hook은 백로그(문항 넷 열림), contextual-menu 제거, sidebar-swipe 플러그인 → 네이티브 popover 스크립트(테스터 실측), 사이드바 네 토픽(Docs/Reference/Quadnomicon/Changelog), `quad-site-tester` 에이전트 + `docs/site/tools/`. 남은 공개 표면 문항은 `research/public-surface-pre-adoption-review.md` 결정 문항 목록(**[2026-09-15]** 4·5·7·8·9·10·13·15·16 닫힘 — Brand `:Register`/`:Is`·`read` 필드·`slot.Length/Offset` State 좁히기·`updateFn(ctx)` 새 테이블·`:With` → `:Depend`(다섯 다 BREAKING)·AddPlugin debug 경고·생성기 예약 이름 게이트·`_` 필드 비공개 명시·Peek 층 나눔 레퍼런스 명시). **[같은 날 회신 4차]** 2·14 닫힘(`VERSION_PATTERN` `"3.2^.0^"` + `type_version_check` `N^` 사전식 하한, `Owned` → `OwnsElements` BREAKING) + 원장 밖 탐사 (18)~(32) 중 (19) debug 층 경고(원칙 `base/architecture.md` "debug 층" 절)·(20)(21) UB 문서화·(22) `AddPlugin` dedup·문서 약속 묶음 반영; ~~남은 것은 원장 (3)·(6)·(11)·(12)·(18)·(23 Brand 호환)·(25)~(32) — 사용자 지시로 하나씩 대화형.~~ **[같은 날 대화형 진행]** 닫힘: 체크포인트 리뷰 둘(프리릴리즈 bump 꼬리·플러그인 순환 UB), `type_version_check` 문법 재설계(`|` 대안·꼬리 유무 일치·프리릴리즈 `*`/`^`, BREAKING 좁힘), (25) `Provider<T>` 불변(+Ref 불변 캐비엇), (23) 게시본 Brand 호환은 별칭 없이 설치 문서 한 줄 + HUMAN_TODO 20(최종 고정 릴리즈 뒤 deprecate·yank), (18) Effect 반환값 즉시 검사(연결 객체 슈거는 백로그), (26) `tag:Names()` → `__iter`, (27) `blocker.Blocking`(+필드 좁힘 캐비엇), (11) 에러 메시지는 API 아님(식별자·앵커는 리서치 백로그), (29) 케이싱 규칙 문장 정정 + `Claim` 태어남 진입점 부류. **원장 대화형 문항 전부 닫힘 — [2026-09-15 저녁 체크포인트] 오늘 범위(`9118e23..HEAD`) 리뷰 두 번 수렴(`91d9d2a..HEAD` 발견 2 → 전체 재검 발견 1, 전부 반영), test.sh exit 0 — 다음 세션은 급한 작업 "D 타입 함수 팩토리화"부터, 사용자 읽을거리 `research/luau-upstream-order-leak-report.md`(보고 여부)** — (32) 옵션 타입·`q.Slot` `initial`에 `read`(비파괴)도 닫힘, `q.Debounce({ Time = "x" })` 무진단 원인은 opus 배경 조사 중; (31) `EffectHandle` → `Effect`(타입 BREAKING)도 닫힘; (30) 백엔드 op → `q.Backend`, 부기 → `q.Bookkeeping`(BREAKING, 멤버 이름 그대로)도 닫힘; **⭐ 그 뒤 급한 다음 작업(사용자 지정 2026-09-15): 생성 Declaration(D)을 타입 함수로 팩토리화**(사용자 실측: Roblox luau-lsp에서 `keyof<Model>` 자동완성·`index<Model, "IsA">`가 `(self: Object, className: string) -> boolean`으로 정직 — 클래스별 `<Class>Modifier`·`Into<Class>`·`FieldP` 공개 경로와 HUMAN_TODO D는 그 뒤, 원장 (28) 결정 줄). **[2026-09-16 닫힘]** 실측 뒤 사용자 결정 — 생성 D는 stable 유지, type function 경로는 unstable 백로그(`typing-limits.md` 8.22, `session/2026-09-16-01-d-typefunction-measurement.md`); 부산물로 8.18 정정(`LuauDoNotExportBrokenTypeFunction` — 실사용자 환경엔 없던 문제)·`type-version-check` 프라이밍. (28) 잠정 — 루트 자동 생성 재수출 블록(지금은 `Field`/`FieldOut`만)도 닫힘, (12) 인스턴스 교차 가드(`q.moduleIdentity` 빈 토큰, 서브시스템별 비교)도 닫힘, (6) Store 메소드 동결 + `__` 접두 예약(BREAKING)도 닫힘, (3)은 체크포인트 뒤 첫 문항으로 닫힘(범용 둘 lockstep 해제, 4.0.0부터·3.x yank — HUMAN_TODO 20). 퀴즈 완료(opus 둘 작성 → sonnet 둘 검수 — 발견 1건은 유지 판단; 문항·편수는 여기 안 센다 — `docs/` 안 ```quiz 펜스가 소스, **[2026-09-27 정정]** 이 문장이 적었던 "73문항·30편"은 이후 편집으로 늘어 stale했다(round13 §2 E13)). 랜딩 재배치(기능 → 코드 → FAQ, hr 여백, summary 굵기 제거, "React를 쓰다 오셨다면" 절·Tag/Attr 문항 — 테스터 실측). 사용자가 `docs/site/src/styles/starlight-*.css`로 스타일을 재편·손질 중(메인은 `starlight-landing.css`만). **[2026-09-14 저녁] 3.2.0 bump·게시·배포 완료**(BREAKING 허용 주간 — HUMAN_TODO F). **다음 세션이 할 일**: (1) 사용자가 `research/docs-review-2026-09-14.md`(문서 검토 합본 — 외부자 통독 둘 + 옛 제안서 중 유효한 것)와 `research/public-surface-pre-adoption-review.md` 문항 2~16을 검토해 답하면 묶음 단위로 반영(공개 표면 쪽은 BREAKING 허용 주간 안에 — VERSION_PATTERN `"3.*.*"`·`slot.Length/Offset` State 좁히기 권고). (2) drive-hook 문항 넷은 백로그(사용자와 같이). (3) 사이트 작업 규칙: 플러그인 설치는 `--legacy-peer-deps` 없이, lock 바꾸면 `npm ci` 통과 확인 뒤 커밋(2026-09-14 사고 — 중첩 astro@5로 `z.url` 에러), dev 서버(4321, 사용자 프록시)가 도는 동안 build 금지 → `npx astro dev stop` → build → `./dev.sh`; 화면 실측은 `quad-site-tester`(dind Chrome, `docs/site/tools/browser.sh up`).
-   **[2026-09-14 오후 — 사용자 지시 정리]** 오버뷰 이해 점검 퀴즈 제거·how-to 퀴즈 질문 손질, 00 설치 3단계를 VS Code Luau Language Server 확장 기준으로(사용자 code-server 실측·한도 플래그 음성대조), 레포 `.vscode/settings.json` 맞춤, 외부자 통독 둘(opus) 1차 반영 `d090009`. research 정리: 끝난 조사 여덟을 새 폴더 `archive/surveys/`(파일 이름 앞에 처음 만든 날짜)로 이동 — `source-layout-plan`의 대분류 보류는 사용자 결정으로 닫음, 공개 로드맵은 만들지 않고 블로그 구상 `research/blog-plan.md`로 대신. 문서 정확성 감사 루프(sonnet, 틀린 사실·참조·링크만, 각도 교대) **수렴** — 라운드별 확정 발견 2(시작하기)→0(how-to·오버뷰)→2(레퍼런스)→1(Quadnomicon·트랙 사이)→0(트랙 사이 잔여 여덟 축·에러 문구 전수), 전부 반영. 남은 확인 필요는 Roblox 엔진 자체 동작 셋(같은 값 재대입 무발화, `Interactable=false`, `OnChange` 초기값) — 실기기 몫. **[2026-09-21 정정 — 감사자 발견]** 그중 같은 값 재대입 무발화와 `OnChange` 초기값은 이 문단보다 먼저인 2026-09-10에 이미 실측됐다(`audit/studio-docs-2026-09-10.md` A절, HUMAN_TODO 13) — 남은 건 `Interactable=false`뿐. **사용자 몫: `research/docs-review-2026-09-14.md`와 `research/blog-plan.md` 4절.**
-   **[2026-09-09 밤]** API 레퍼런스 26페이지 신설·2차 검사 반영 완료(세션 §10; `scripts/doc-coverage.py` test.sh 게이트, `docs/site/sync-docs.py`, 사이트 빌드 103페이지).
-   **[2026-09-09] 문서 다듬기 착수** — 루트 `docs-ignoreme/`(git 밖) 초안을 opus 검사·재작성 1차 완료(`session/2026-09-09-01-docs-polish.md`,
-   진입점·결정 원장은 `docs-ignoreme/README.md`). 사용자 결정: research/·best-practices·reference 02/03 삭제, 설치 경로 셋은 "아직 없음"
-   표시로 유지, README §5는 코드 기준 정정. **소스 쪽 이월 둘**: (1) `[q.AttrKey("Hp")] = v` 해시 키가 strict에서 생성 prop 타입에 인덱서가
-   없어 에러(런타임은 정상) — 타입만 열지, 배열부 `Attr`로 안내만 할지 사용자 판단; (2) ~~`Font`는 생성 `D`에 없음~~ → Hidden 태그였고 같은 날 되살림(위 (1)). 다음: 2차 검증 결과 반영 → `en/` 트랙·정식 위치는 백로그(ROADMAP "문서 사이트").
-   ~~**[2026-09-08 밤 이월, 사용자 미답]** test.sh에 quad-base용 신 솔버 패스를 게이트로 붙일지~~ **[2026-09-10 밤 해소 — 사용자 "좋아. 실제로 지금은 뉴 솔버 쓰는 사람들이 더 많아" → `2bdc3f0`에서 부착(0.45s), 같은 커밋에서 type function `pcall` 제거; 부수 실측: ~~luau-lsp 1.69.0은 모듈 경계를 넘는 type function을 아예 평가하지 않는다~~ **[2026-09-16 정정]** CLI "전 FFlag 켬"의 `LuauDoNotExportBrokenTypeFunction`이 만든 관측이었고 실사용자 환경엔 없다(`typing-limits.md` 8.18 정정)]**
-   **[2026-09-16 체크포인트]** 오늘: (1) 생성 `Declaration` 팩토리화 실측(리눅스·VSCode·Studio) → **사용자 결정: 생성 D = stable, 클래스 매개 type function 경로 = unstable 백로그**(`typing-limits.md` 8.22, `audit/d-factory-studio-probe-2026-09-16/REPORT.md`); 부산물 8.18 정정(`LuauDoNotExportBrokenTypeFunction` — CLI "전 FFlag 켬"만의 관측) + `type-version-check` 프라이밍. (2) opus가 추린 열린 결정 문항 49건 중 **시한 있는 일곱 전부 닫힘**(HUMAN_TODO F 잠정 2026년 10월·사내 첫 사용 / docs-review 2-6 여덟 반영 / `question.md` §1 용어 여섯 유지·`hintValue`→`nextValue` / §2 Slot foreign (b) → **`isClaimed` 계약 op + Slot 미claim 거부, BREAKING** / docs-review 2-2 (d) → 루트 재수출에 `<Class>Modifier`/`Into<Class>`/`<Class>Elem`, HUMAN_TODO D 해소). 원문 `session/2026-09-16-01-d-typefunction-measurement.md`. **다음 세션**: 남은 결정 문항 42건은 시한 없음 — 사용자 요청 시 `docs-review-2026-09-14.md` 3-1·3-3(다음 릴리즈 서술 전)부터 대화형으로; 목록은 그 세션의 opus 정리(채팅) 대신 각 원문(`question.md` §2 넷·§3 D11, `docs-review` 1-1~3-8, `drive-hook-plan.md` §5, `blog-plan.md` §4, `rfc-docs-section-plan.md` §8, HUMAN_TODO D 넷, research 셋)을 다시 추리면 된다. 릴리즈 bump(3.3.0)는 Slot BREAKING·isClaimed·루트 재수출이 `[Unreleased]`에 있으니 사용자 지시 뒤. **체크포인트 결과**: 감사 4라운드 수렴·code-review 10건 반영(세션 파일 §6) — **새 사용자 문항 하나**: `question.md` §2 "정적 자식 자리 `D.Frame { foreign }`에는 같은 게이트가 없다"(권고 (a) 대칭 게이트, BREAKING 주간 안). test.sh exit 0(스펙 60), doc-check ERROR 0, `type-surface-check.py`에 프라이밍 게이트 추가. **[같은 밤]** 정적 자식 대칭 게이트(`1bc6d3e`) → 여섯 갈래 결함 탐사 **round10**(`qa-request/post-implementation-review-round10.md`): `H-517`~`H-530` 반영, **내일 사용자 검토 = 그 §4 `Q48`~`Q54`**(HIGH Q48 정적 자식 소유권 부기 — `q.Bookkeeping` 소유권 op 노출 권고; Q50 `_recompute` 재진입·순환 가드; Q51 cleanup 안 Set; Q52 마운트 walk 중 조상 CRUD; Q49 Claim 클래스 대조; Q53 실기기; Q54 메시지; Q55 Debounce 타이머 경로 복구; **[09-17 새벽 소진 확인 G·H]** G `H-531`~`H-534` + Q56·Q48/Q53 보강, H `H-535`~`H-537`(Operator nil 값 건너뜀·Blocker `__apply`·교차 인스턴스 요소 문/dispose) + Q57 — **두 갈래 모두 새 발견이 나와 소진 아님**(라운드별 7→4). 그 뒤 code-review 10건 반영(`H-532` 철회·`H-533`/`H-534` debug 검사로 축소·`dispose` Instance 게이트 원상·교차 인스턴스 문을 `wrapElement`로) + Q58. 내일 배치: §4·§7·§8·§9 `Q48`~`Q58` 열하나.) 그 뒤 code-review(`1bc6d3e..94d8f76`) 9건 반영·`H-528` 철회, 감사 3라운드(6→4→1) — 마지막 1건(slot-plan 재진입성 절에 Q52 포인터)도 반영. test.sh exit 0(스펙 61). **[2026-09-17 회신 완료]** `Q48`~`Q58` 열하나 대화형으로 전부 닫힘(`session/2026-09-17-01-round10-batch-reply.md`, 원장 §10; 커밋 `720bf60..1e3e468`) — Q48 같은 레지스트리·`q.Bookkeeping.claimOwnerAt/releaseOwner`, Q50 `_recompute` 세대 스탬프, Q51·Q52 가드, Q55 Time 캐시, Q56 UB, Q49 `nativeFindChild` className, Q57 cleanup `dying`(사용자 제안), Q58 dispose 캐비엇·우선순위 오프셋, Q53 Tween 체인 retractor, Q54 구절. 체크포인트 검증 완료(감사 4→4→0 + 리뷰 반영분 2, code-review 12건 반영 — 원장 §11; HEAD 워킹트리 클린). **[2026-09-17 저녁 round11 진행]** 1차(A′~F′ 여섯, 발견 18)·2차(A″~D″ 넷, 발견 22) 완료 — 반영 `H-538`~`H-559`(커밋 `2f8dad2`·`3348a68`·`69591cd`; HIGH: 던진 Compute의 게이트 뒤 회복 `H-540`, Property retractor GC 창 `H-547`, 프로바이더 계약 문서 `H-538`, `Offset` 구독 throw 동결 `H-555` 문서; 회귀 하나 `H-551` 정정), **사용자 몫 = 원장 §4 `Q59`~`Q69`**(Q64·Q65는 체크포인트 code-review, Q66~Q69는 3차 탐사가 추가)(밑줄 메소드 이름·정적 자리 거부 전 철거·`OwnsElements=false` 폐기 시 원소 갇힘·Slot 원소 순환 가드·던진 Effect/Observer 해제). 두 라운드 모두 0인 갈래 없음 — **소진 아님**, 체크포인트 완료(감사 4→5→2→4 — 각도 소진으로 닫음, code-review 10건 반영 `H-560`·`H-561` 등 — 원장 §5). **3차(새 각도 여섯: Dispatch·엄격 mock·List/Store·타입·동시성·성능) 완료 — 발견 31, 반영 `H-562`~`H-574`, 코어 산술은 전 축 0(원장 §6)**; **[2026-09-18 회신 완료]** Q59~Q69 열하나 대화형으로 전부 닫힘(원장 §4 각 문항 닫힘 문단, `session/2026-09-18-01-round11-batch-reply.md`; 커밋 `cb71e799`~) — 코드 변경 여섯(Q59 생명주기 넷 base 구현 + hold op 넷 BREAKING / Q61 / Q63·Q68 / Q64 Claim 1패스 게이트 + mock `Instance.foreign` / Q65 / Q66 `Instance?` 타입 BREAKING), 문서 넷. **체크포인트 완료(같은 날)**: 감사 5라운드(8→7→3→9→4, 각도 소진으로 닫음 — 원장 §7) + `/code-review`(sonnet 서브에이전트) 6건 `H-575`~`H-580` 반영(HIGH `H-575`: 해제 게이트 제거 뒤 `rawRerun` 루프가 죽은 핸들에서 fn 재실행). 사용자 지시(2026-09-18): 이번 주는 토큰 88%라 가볍게 — 실측은 비용이 크면 뒤로. **[2026-09-21 실측 라운드 완료]** 여섯 항목(소문자 별칭 시그널·물리 순서·Q62 네 입구·B″-8·tweenSlots GC·GS 07 SelectedObject) 전부 실측·기록·반영(`audit/round11-studio-2026-09-21/REPORT.md`, `session/2026-09-21-01-round11-studio-measurement.md`; 커밋 `e8993022`~`948800e8`). 부산물: Studio MCP 스레드 capability 제한 → 로드 관용구 갱신(같은 REPORT 2번); **Deprecated 허용목록**(타입 BREAKING, `[Unreleased]`). HUMAN_TODO 10~13 닫힘. **다음**: 남은 실측 항목 없음 — 3.3.0 bump는 사용자 지시 뒤(`[Unreleased]`에 BREAKING 일곱). bump 3.3.0은 수렴 뒤 한 번에(사용자 결정 2026-09-17, `[Unreleased]`에 BREAKING 넷). **[2026-09-21 오후 — 문서 검토 합본 반영 1차]** `research/docs-review-2026-09-14.md` 1-1·1-2·1-3(15장 `q.Store` 신설, 15~19 → 16~20 재번호)·1-5(Tween 콜백 `Started`/`Completed`/`Cancelled` — `[Unreleased]` Added)·1-6·3-7(Agents 트랙) 닫힘(`session/2026-09-21-02-docs-review-batch.md`). **다음: ~~1-4 문항 대기~~(같은 날 밤 `research/upward-flow-plan.md`로 대체 — 아래) → 그 뒤 2-1·2-3·2-4·2-5·3-1~3-6·3-8 순으로 한 문항씩.** 사람 몫 둘: 각주 다이얼로그 실기기 마우스 클릭 확인, Tween 콜백 실기기 배선(rojo 재기동 뒤). 체크포인트 code-review 10건 → `H-581`~`H-588` 반영(round11 §8; HIGH `H-581` deferred 완료 창), **사용자 문항 `Q70`(`const` 규칙 vs src 0건 — `question.md` 2절)**. **[같은 날 저녁] round12(Gemini 여러 에이전트 합본, `qa-request/post-implementation-review-round12.md`) 판정 완료** — 머리 배너가 소스: ① `H-589`(콜백 안 같은 자리 재진입 UB 문서화)·`H-590`(yield 중 파괴 창의 `dying`)·`H-591`(스킬 문서 현행화)·`H-592`(GS 18·19 장 번호)·`H-593`(tween-plan 철거 문장 정정), ② ~~사용자 문항 `Q71`·`Q72`~~ **같은 날 저녁 닫힘** — Q71 `H-594`(파괴된 인스턴스의 완료 통지는 `isClaimed`로 무시, 되돌리진 않음), Q72 (a) core/05 한 줄; ③ S-17~S-25 확인. 원문 `session/2026-09-21-03-round12-gemini-judgment.md`. **[같은 날 밤]** docs-review 1-4는 사용자 지시로 `research/upward-flow-plan.md`(되돌아오는 흐름 — `OnChange`·`Bind` 검토·루트 `-ignoreme` 초안 여덟 흡수, 원문·팩트체크 `archive/surveys/2026-09-17-root-drafts/`)로 대체 — **[같은 날 밤]** 되쓰기 슈거 **`q.Out(name, src)` 구현·커밋**(사용자 결정: in/out 나란히, 이름 `Out` — 탐사 둘 수렴; `typing-limits.md` 8.25 부수 발견). **[같은 날 밤]** 문항 (3) 닫힘 — 시작하기 **22편**: 새 `06-flowing-back.md`(다시 위로 올려보내기 — `q.Out`) + 05장 손질(`tag:Added(if … else nil)`·그룹 `q.Attr` State — Tag nil 규칙 `102a3935`) + 06~20 → 07~21 재번호(sonnet; 슬러그 첫 글자가 잘린 링크 43곳을 메인이 잡아 `doc-check.py`에 마크다운 링크 실존 검사 신설). 문항 (4) 닫힘(오버뷰 `03-from-the-web.md` "웹에서 오셨다면"). (5) 루트 원본 삭제도 사용자 승인으로 완료 — **되돌아오는 흐름 문항 다섯 전부 닫힘**. docs-review 2-1 닫힘(how-to 06 재작성 — CLI 실측 `audit/headless-cli-install-2026-09-21.md`, `CONTRIBUTING.md` 신설). 2-3 닫힘(how-to 09 손질 + 에러 ID `base/error-id-plan.md` — 사용자 결정 다섯 다 권고대로, **[2026-09-22 롤아웃 완료]** 234 id·228자리·미태그 0, `scripts/error-codes.py check`가 test.sh 게이트, `docs/reference/errors/` 10페이지). **[2026-09-25]** 2-4 닫힘 — 새 how-to 09 "떠 있는 것 열고 닫기 — 모달과 토스트"(엔진 지식 제외, `Fallback`은 "던진 것을 에러 모달이 받는다"; 옛 부록 09 → **10**; mock만 `audit/howto-overlays-mock-2026-09-25/`, `session/2026-09-25-01-docs-review-2-4-overlays.md`). **[2026-09-26]** 2-5 닫힘 (b) — how-to 03 파일 `03-long-lists-and-windowing.md`, 부록 한 문단, 옛 URL `_redirects` 301. **[2026-09-26]** 3-1 (1)(2)(3) 닫힘 — 3.x 안정화 구간 → 끝나면 **4.0.0**(HUMAN_TODO F), 실서비스 전·벤치마크는 실측 뒤(**성능 실측 계획 `research/perf-measurement-plan.md` 신설 — 사용자 문항 그 문서 §4**), v1 2.x 버그 수정 유지(`research/v1-compat-plan.md` §9 게이트 계획 — 문항 §9.3; v1 worktree `/code/Projects/quad-v1`); (4)는 **HUMAN_TODO G** 프로브 답 대기. **[2026-09-26 밤 시작 → 2026-09-27 11:05 KST 종료(사용자 지시로 조기 마감) — 자율 수집 루프]** `session/2026-09-26-01-autonomous-loop.md`(회차 로그 + "종결" 절 — 숫자·미소진 각도 일곱·다음 할 일이 거기 소스) / 원장 **`qa-request/post-implementation-review-round13.md`**(§0 요약표·결정 묶음이 읽는 순서, §1 반영한 발견, §2 확인만 한 것, §4 사용자 문항 — 번호는 여기서 세지 않음). 문서 사실 감사·mock 퍼저·CLI 성능·변이 테스트·Deferred 셔임까지 돌았고 코어 산술 차등은 전 축 0, 실동작 코드 변경은 `H-707` 하나 + 게이트·진단 문구·spec 위생. **지금 사용자 몫 = ~~round13 §0 결정 묶음 순서로 대화형 회신~~ [2026-10-01 이관] `qa-request/post-implementation-review-round14.md` §0(남은 23문항 — 프로젝트 전체 원칙 감사 `audit/round14-principle-audit/`와 문항별 재검토 뒤 대화형 회신) + HUMAN_TODO I 실기기 프로브 팩(결정을 막는 다섯 + Deferred 다섯).** **[2026-10-06 기준]** round14 §4·§5 사용자 문항(Q160~Q183)은 전부 닫혔고 반영 P0~P4·확인 패스(code-review + Gemini 추림)·감사 루프까지 끝났다 — 진행의 소스는 `qa-request/round14-reflection-plan.md` "진행" 절. **§0 이관 23문항은 아직 열림**: 다음은 메인이 그 23개를 2026-10-02~10-06 결정(mock 정책·고리 원칙·debug 감지기·`__` 규약·Backend 정의 등) 기준으로 재판정해 원장 §2에 쌓고, 정말 답이 필요한 것만 사용자에게. 그 밖 사람 몫: HUMAN_TODO J(소비자 킷 Studio 확인 — 도구 대기), 계획표 P5(라이브러리 저자 how-to·업스트림 보고), Quadnomicon Vol. 12 사용자 피드백. **[2026-09-28~29 회신 진행 중]** 어느 문항이 닫혔는지와 다음 묶음은 원장 §0 표 행의 [닫힘] 표시·"결정 묶음" 문단 머리의 닫힘 목록이 소스(여기 순서를 복제하지 않는다); 원문 `session/2026-09-28-01-round13-batch-reply.md`. 미소진 각도 일곱은 다음 주 자율 구간(세션 파일 "종결" 절 1~7). `question.md` 4절이 포인터. 다음: 3-2부터 대화형(3-2~3-6·3-8), `Q70`; 그 뒤 delegate-agy 셋업(사용자 요청). 무한 트윈 Studio 실측은 sonnet이 끝냄(`audit/tween-completed-2026-09-21/infinite-tween-probe.md`).
-   **다음 세션이 먼저 볼 것**: `conventions.md` 2026-09-06·09-07·09-08 항목(백그라운드 에이전트
-   종료 판정 — 알림 `status: completed`가 종료 / test.sh 판정은 exit code / 문항·발견은 평문),
-   `question.md` 2절(flatten 슈거 일곱 — 사용자 "내일"), 루트의 사용자 메모 파일 **하나**(2026-09-09 정리 — 여섯 삭제, `comparison-vide-fusion-ignoreme.md`만 유지; `-ignoreme`
-   접미, 커밋 제외 — Bookkeeping abs 온디맨드 RFC·Vide/Fusion 전환 가이드 초안, 착수는 사용자 지시 뒤).
-   **직전 구간 요약**(원문 `session/2026-09-08-01-advisory-and-user-items.md`): Gemini 자문
-   권고 셋 판정(`__tostring` 목록 고정·`setFuncLevel(level, ...fns)`·메시지 헬퍼 기각) → `Attr`
-   축약 → Q26·Q27 → Q25 값 비교 dedup(`H-478`) → 신원 잔재 탐사 → 2026-09-08 감사 스윕(sonnet
-   넷 병렬, 사용자 지시). test.sh exit 0(스펙 50), doc-check ERROR 0.
-   **[2026-09-08 오후 누적 감사 — round8]** 감사자 다섯 병렬(사용자 지시) → 동작 회귀 0·옛 결정 역전 0, 반영 `H-486`~`H-491`;
-   Q40(`Slot:Clear` 창 안 파괴 → 던지면 그 Slot 동결)은 **같은 날 회신으로 (a) 닫힘**(round8 §6). **2차(실행 기반 탐사 다섯, round8 §7)**: 동작 결함은 Slot 순환 하나(`H-500`), 나머지는 게이트·blame·메시지·의사코드(`H-492`~`H-503`). Q41(그대로·재개봉 금지)·Q42(UB)·Q47(mock 전용)은 **실측 뒤 회신으로 닫힘**(round8 §15·§16), `H-507` Event 값 게이트는 사용자 확인 Q43~Q46도 **회신으로 닫힘**(round8 §17 — `H-508` Store 생성자 오버로드 교집합, Q44/Q46 문서화, Q45 재노출 안 함). **round8 열린 문항 없음** — 다음은 문서화·타입 정형화(사용자 예고) (round8 §8 — `D.New` 클래스 이름 오타의 blame·Instance 매개 Slot 순환, 둘 다 실기기 실측 필요; 권고 (a) HUMAN_TODO 실측 항목). 3차(K 커밋 리뷰·N 문서 감사) 반영 `H-504`(nil owner 게이트 전수) + 정본 정정(K-1 J-4 오독 되돌림 등)은 round8 §9. 원문 `session/2026-09-08-03-cumulative-audit.md`.
+   진행의 소스는 루트 `ROADMAP.md`(상단 배너·완료 표·백로그), 결정 이력은 `session-summary.md`,
+   마일스톤 원장은 `archive/v2-initial-implementation/`. 종결 기록은 여기 쌓지 않는다 — 이 파일 규약(맨 위) 그대로.
+   **[2026-10-15 정리]** 이 항목에 2026-09-06~10-13 동안 쌓였던 구간별 경과 서술(회신 1~5차, 슈거 구간, 문서 다듬기, 배포 준비, round8~14 등)은
+   지웠다 — 각 결정은 `session-summary.md`의 해당 날짜 항목과 원장이 소스다(지운 원문은 git 히스토리).
+   **지금 사용자 몫**(목록은 각 소스가 쥔다):
+   - **[2026-10-15 기준]** 3.3.0 bump 시기(재검사 셋은 끝남 — `session/2026-10-15-01-release-recheck-kits-list-lazy.md`), 아이콘 팩 결정(`research/icon-pack-plan.md`), `q.Spread` 표면 문항(`research/component-flatten-sugar-plan.md` 5절).
+   - 열린 질문 전체는 `.claude/question.md`, 사람 손 일은 루트 `HUMAN_TODO.md` 미해소 절, 계획서마다 걸린 결정은 `research/README.md` 표의 우선순위 칸.
+   **다음 세션이 먼저 볼 것**: `conventions.md` 2026-09-06·09-07·09-08 항목(백그라운드 에이전트 종료 판정 / test.sh 판정은 exit code / 문항·발견은 평문).
 
+4. **[백로그]** 착수 전 백로그 전체(`quad-mock`·`quad-debug`·`fastscroll`·`spring`·`quad-roblox-types`·렌더 스텝 op 등)는 루트 `ROADMAP.md` 백로그 절이 소스다.
+   **[2026-10-15 정리]** 예전 이 자리의 나열 중 `Operator`·`Fallback`/`Traceback`·생명주기 훅 셋·`Debounce`/`Throttle`은 2026-09-08에 구현됐다(각 `base/` 문서 머리 배너).
 
-2. **[백로그] 용어 정리 — 1차 제안 이후 대부분 확정, 소수만 남음.** 최신 소스는
-   `.claude/question.md` 1번(개수 반복 안 함, 항목 추가/해소될 때마다 여기가
-   stale해지는 패턴이 반복됐어서). **[2026-08-13 정정]** `State`는
-   2026-08-12 스무 번째 세션에 현재 이름 그대로 유지로 이미 확정됐음(이
-   목록이 "위험도 높음, 1순위 open"으로 stale하게 남아있던 걸 발견해 수정)
-   — **[2026-08-21] 여기 있던 이름 나열은 지웠다.** 바로 위 문장이 이미
-   "`question.md` 1번이 최신 소스"라고 선언해놓고 다음 줄에서 목록을 다시
-   나열하고 있었고, 예고대로 실제로 갈라졌다(2026-08-21에 추가된 `Owned`와
-   그 전부터 있던 `hintValue`가 둘 다 빠져 있었음 — 감사가 발견).
-   **열린 항목이 뭔지는 `question.md` 1번을 열어볼 것.**
-4. **[백로그 — ⚠️ 2026-09-08 정정: 아래 나열 중 `Fallback`/`Traceback`·생명주기 훅 셋·`Debounce`/`Throttle`은 그날 밤 구현됐다
-   (00번·각 `base/` 문서 머리 배너가 소스; 아래 "맨 뒤"·"후순위" 서술은 그 넷에 한해 착수 전 기록). `Operator`도 같은 밤 이름·범위 확정 뒤 구현됨(`research/operator-sugar-plan.md` 머리 배너).]**
-   범용 렌더 디버깅 도구 `quad-mock`(Tween mock 등 동적 동작
-   지원, M0 mock 테스트 하네스와는 별개), 런타임 디버깅 플러그인
-   `quad-debug`(Studio 플러그인, 실물 Instance→코드 위치 역추적 — 채널
-   실현 가능성은 실측 검증 완료, 세부 API 이름만 남음), 문서 사이트 전체
-   구조(초심자/api/심화/`quadnomicon` 4축 + 콘텐츠 맵), `Operator` 콤비네이터
-   슈가(`Sum`/`Product`/`Not`/비트연산 등 `:Compute`/`:Apply`용 — ~~메커니즘은
-   확정, 네임스페이스 이름만 미정, 구현은 순수 슈가라 맨 마지막~~ **[2026-09-08 구현됨]**), 컴포넌트
-   에러 격리 유틸 `Fallback`/`Traceback`(**[2026-08-14 세션, 설계 확정 —
-   `research/`에서 `base/fallback-plan.md`로 승격]** `pcall` 기반
-   `Fallback`과 `xpcall`+`debug.traceback` 기반 `Traceback`으로 분리,
-   `err: any` 확정, 패키지·이름 전부 확정 — **설계만 끝났을 뿐 구현
-   우선순위는 그대로 맨 뒤**), 생명주기 훅
-   `OnCreated`/`OnRendered`/`OnDestroyed`(**[2026-08-14 아홉 번째 세션,
-   `research/`에서 `base/lifecycle-hooks-plan.md`로 승격]** 각각
-   `PreRef`/`PostRef`/`Effect`를 반환하는 순수 팩토리 함수 슈가 —
-   `OnRendered`도 **채택 확정**, 그게 얹히는 `PostRef` 프리미티브 자체는
-   슈가가 아니라 디스패치 코어라 **ROADMAP M8에서 `PreRef`와 같이 구현됨**
-   (백로그가 아님, `base/ref-plan.md`의 "`PostRef`" 절). 훅 슈가 셋만
-   후순위) — 전부
-   "quad 개발 상당 부분 끝난 뒤"로 사용자가 못박은 후순위. 상세는
-   `.claude/base/README.md` 표(`fallback-plan.md`/
-   `lifecycle-hooks-plan.md`)와 `.claude/research/README.md` 표
-   (`debug-tooling-plan.md`/`operator-sugar-plan.md`). 문서 사이트 구조·콘텐츠 맵·프레임워크 비교 조사는
-   **[2026-09-14]** 끝나 `archive/surveys/`로 옮겨졌다(`2026-08-06-documentation-plan.md`/
-   `2026-08-06-documentation-content-map.md`/`2026-08-06-framework-comparison-findings.md`).
-   **[2026-08-14 추가, 2026-08-19 설계 전부 해소 후 `base/`로 승격]** 시간
-   기반 전파 게이트 `Debounce`/`Throttle`(`base/debounce-throttle-plan.md`)도
-   백로그이지만 위 항목들과는 발단이 다름 — **사용자가 직접 요청한 실제
-   기능 갭**에서 시작됨(그 문서 13절). 다만 제어 핸들 설계까지 닫히고 나니
-   실제로 quad-base에 새 코어 메커니즘을 추가하지 않는 **순수 슈가**로
-   확인돼(같은 절), 위 항목들과 우선순위는 다시 같아짐 — M0/M2를 막지
-   않고, **그 게이티드 노드는 [2026-08-21] `state:Gate`로 확정돼 M2에서
-   만들어졌다**(`base/gate-plan.md`, **[2026-08-29]** 단위 4로 완료) — `Debounce`/`Throttle`은 그 위의
-   정책으로 얹으면 되고, 같은 설계를 두 번 할 일은 없어졌다.
-   주입 op 2개(`setTimeout`/`clearTimeout`)가 백엔드 팩토리 표면에
-   추가될 예정이라는 것도 M1 설계 시 인지. 남은 열린 질문 없음(구
-   `question.md` 낮은 우선순위 절, 전량 해소로 항목 자체가 빠짐).
-   **[2026-08-18 추가]** 사용자 아이디어 메모 두 건도 같은 성격의 백로그로
-   신설 — 스크롤 최적화 외부 유틸 `quad-roblox-fastscroll`
-   (`research/fastscroll-plan.md`, 선행으로 `Visible=false`일 때
-   `AbsoluteSize`/`AbsolutePosition` 갱신 여부 실측 필요)과 스프링 물리
-   기반 지속 업데이트 프리미티브 `quad-spring`(`research/spring-plan.md`,
-   참고 구현 `qwreey/spring.lua` 사용 가능성 확인 필요) — 둘 다 설계 논의
-   전 아이디어 단계이고 사용자가 직접 "아주 나중"으로 후순위 지정, M0/설계
-   게이트와 무관.
-   **[2026-08-19 추가]** `quad-roblox-types`(가칭, `quad-types`와 같은
-   패턴으로 `quad-roblox` 전체 대신 그 타입만 필요한 모듈을 위한 패키지)도
-   같은 성격의 백로그로 신설 — 사용자가 지금 만들 필요는 없다고 명시적으로
-   후순위 지정, 상세는 `base/quad-types-plan.md`의 "남은 것" 절.
 6. **[신규 백로그, 2026-08-14 열네 번째 세션]** 문서 stale 감소용 include
    도구 `doc-include.py`(가칭, `doc-check.py`와 짝) — `research/
    doc-include-plan.md` 참고(상태의 소스는 그 문서). **[2026-08-16 기준]**
@@ -213,15 +67,6 @@
    diff해서 대조했고, 그 구간에 오히려 절 참조 오류 2건이 해소된 것도
    확인됨. M0/설계 게이트와 무관.
 
-
-8. **[2026-08-16 신설, 이미 닫힘 — 다음 세션이 알아야 할 규약]** 절 인용
-   규약이 생겼다. 이제 `` `<파일>.md`의 "절 제목" `` 형태로 인용할 땐
-   **의역하지 말고 원문에서 잘라 쓸 것**(`#` 헤딩은 부분문자열, `**볼드**`
-   절은 줄머리 + 앞부분일치). 규칙 본문은 `.claude/conventions.md`의
-   "절 인용 규약"이 소스 — 여기서 반복하지 않음. 지키지 않으면
-   `doc-check.py`가 **ERROR**로 잡아 커밋 게이트에 걸린다(WARN이 아님 —
-   절 참조 불일치를 78→0으로 정리한 뒤 승격했음). 경위는
-   `session/2026-08-16-03-doc-check-section-convention.md`.
 
 9. **[2026-08-16 신설, 이월 — 급하지 않음]** 이번 절 인용 규약 작업에서
    의도적으로 **안 한** 것 둘. 둘 다 다음 세션이 알아야 이중 조사를 안 한다.

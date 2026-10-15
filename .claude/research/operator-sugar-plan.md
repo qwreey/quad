@@ -5,7 +5,7 @@
 > 괜찮고"*). 포함: 단항 `Not`, 산술 `Sum`/`Product`, `Min`/`Max`/`Clamp`, 비트 `Band`/`Bor`/`Bxor`/`Bnot`/`Shl`/`Shr`,
 > `Alternative`(nil 대체), **`Indexed<<V>>(key)`**(반응형 필드 읽기 — 결과 타입은 호출자가 직접, `typing-limits.md` 8.15; 사용자 제안 2026-09-08). 숫자 인자는 plain이거나 `State<number>`(팩토리가 State만 deps로 넘긴다). **뺀 것(사용자)**: `And`/`Or`
 > 결합(*"솔찍히 비추. if else 우리가 쓰던 이유가 있는데, 그거에 부딛힘"*), 비교 `Eq`/`Lt`/`Gt`/`Lte`/`Gte`(*"조건 분기를 타는 경우
-> 쓰는게 일반적인데, 그걸 지원하는걸 안 넣어줬으니까"* — 분기 콤비네이터 `IfElse`류가 있어야 뜻이 생긴다, `question.md` 0절 (l)),
+> 쓰는게 일반적인데, 그걸 지원하는걸 안 넣어줬으니까"* — 분기 콤비네이터 `IfElse`류가 있어야 뜻이 생긴다, 옛 `question.md` 0절 (l)(원문은 `archive/question-resolved.md`)),
 > `Sub`/`Div`/`Xor`(선례 없음 — 아래 "포함 범위"). 사용자 문서용 관측(round9 둘째 리뷰): 비트 계열은 `bit32` 계약대로 음수는 2^32 모듈로,
 > 소수는 잘린다(게이트 없음); `Alternative`는 primary가 nil이 아니어도 default State를 항상 구독한다(최신 fallback 보장); default State의
 > ~~값이 nil이면 결과도 nil~~ **[2026-09-17 정정 — round11 탐사 C″ 3]** default State의 현재값이 nil이면 읽는 줄에서 `Operator.Alternative: the default State's current value is nil`로 던진다(2026-09-08 이후 code-review가 넣은 게이트가 정본 — 레퍼런스 sugar/02에 명시). nil 인자는 팩토리 호출에서 에러(`H-199` 관용구, `H-517`). **나머지 열린 절은 같은 밤 사용자 결정으로 각각 별도 백로그로 분리**(ROADMAP 백로그):
@@ -37,7 +37,7 @@
 reduceMotion:Compute(function(self) return not self:Get() end)
 
 -- 슈가로
-reduceMotion:Apply(Operator.Not)  -- 네임스페이스 이름은 미정, 아래 참고
+reduceMotion:Apply(Operator.Not)  -- 네임스페이스 이름은 2026-09-08 Operator로 확정(머리 배너)
 ```
 
 ## 메커니즘 — 새 프리미티브 아님, `:Apply(factory)` 위의 순수 함수

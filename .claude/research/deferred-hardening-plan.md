@@ -8,31 +8,7 @@
 
 ## 1. Compute 순수성 가드 — Compute 함수 안의 `:Set`을 싸게 잡기 (Q5 후속)
 
-> **[2026-10-01 debug 감지기로 반영]** 사용자 결정으로 (a)의 변형을 `q.debug` 층에 넣었다 — 경고 `print`만(던지지 않음),
-> 깊이 카운터 대신 실제 호출 스택에서 `_recompute` 프레임을 찾는 모양(던진 계산 뒤 카운터가 남는 문제가 없다), Source마다
-> 한 번. 아래 "주의"의 설치 발화·게이트 catch-up 걱정은 실측상 해당 없음 — pull(`Get`)은 통지를 내지 않으므로 계산 함수
-> 도중의 콜백 발화는 그 함수 자신의 쓰기가 일으킨 것뿐이다(test.sh 전체를 `q.debug` 강제로 돌려 경고가 의도된 UB 스펙
-> 자리에서만 나는 것을 확인). 평소 경로 비용은 `Set`/`Emit`과 `_recompute`의 분기 하나씩(마이크로벤치 +0.8%, 잡음 안).
-> 정본은 `base/source-state-plan.md` "Compute 순수성" 절의 2026-10-01 문단. 아래는 착수 전 기록.
-
-**원칙은 확정**(`source-state-plan.md` "Compute 순수성" 절): Compute 함수는 읽기만 하고 하류로만 내린다,
-그 안의 `:Set`은 UB, 재진입 게이트는 안 둔다. 남은 것은 *"조용히 많이 꼬여서 에러 원인을 알기 어려워"*
-(사용자)에 대한 **값싼 진단**이다.
-
-후보(전부 미실측):
-- **(a) 모듈 스코프 깊이 카운터** — `State.luau` `_recompute`가 `self._fn`을 부르기 전후로 `computing += 1 / -= 1`,
-  `Source:Set`(과 `Emit`)이 `if computing > 0 then errorBefore("Set inside a Compute function") end`. 비용은
-  `Set`마다 정수 비교 하나 + recompute마다 증감 둘. 잡는 것: Compute 안에서 직접/간접으로 부른 모든 `:Set`
-  (형제·상류·같은 키). 못 잡는 것: Compute가 예약한 나중 실행(`task.defer` 등) — 그건 순수성 위반이 아니다.
-  주의: Observer/Effect 콜백이 recompute **안에서** 동기로 불리는 경로가 있으면(설치 발화·게이트 catch-up)
-  그 콜백의 정당한 `:Set`까지 잡는다 — 카운터를 콜백 진입에서 0으로 밀고 나오며 복원하는 스택이 필요할 수
-  있음. 실측: `spec.state`에 Compute 안 `:Set`을 넣어 지금 어떤 증상이 나는지(이중 발화? stale?)부터.
-- **(b) 디버그 빌드 전용** — 위 (a)를 `quad-debug`(백로그) 플러그인이 `Source:Set`을 감싸 설치. 릴리즈 경로엔
-  비용 0. 단 플러그인이 base 함수를 감싸는 표면이 아직 없다.
-- **(c) 아무것도 안 함** — 문서 규칙만(지금 상태).
-
-재는 법: (a)를 붙인 뒤 `spec.state`/`spec.source`/`spec.effect` 전부 통과하는지(정당한 콜백 `:Set`이 걸리는지),
-`Set` 마이크로벤치(N=1e6)에서 비교 하나의 비용.
+> **[2026-10-01 채택 — debug 감지기]** 4절 규칙대로 base로 옮기고 여기선 지웠다 — 정본은 `base/source-state-plan.md`의 "Compute 순수성" 절 2026-10-01 문단(착수 전 후보 원문은 git 히스토리).
 
 ## 2. 에러 컨텍스트 래핑 — 계층마다 살을 붙여 위로 올리기 (Q7 후속, 사용자 아이디어)
 

@@ -30,9 +30,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 
 ## 특정 마일스톤에 안 묶이고 병행 가능
 
-- [ ] 용어 정리 스윕 — `State`/`Slot` 등(`PerInstanceState`는 `Relate`로
-      대체·해소됨, `DI`→`D`는 2026-08-18 확정·반영 완료) — `.claude/question.md` 1번, 최종 이름 확정되는 대로
-      아무 시점에나
+- [x] 용어 정리 스윕 — **[2026-09-15·16 완료]** 항목 일곱 전부 해소(원문은 `.claude/archive/question-resolved.md`의 "question.md 1절 용어 정리 절 전체 원문" 절).
 - [ ] 각 마일스톤 완료 시 `.claude/qa-request/`/`.claude/archive/`에 기록,
       필요하면 `.claude/session-summary.md` "세션 히스토리"도 갱신(전체 원문은
       `.claude/session/`에, `.claude/session-summary.md`엔 2~4줄 요약+링크만
@@ -75,8 +73,8 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
         (Q3 ⑨; round2 G-09의 원자성 논거 — 배치로 접으면 중간 길이 파동 노출도 사라진다).
       - `drive`의 recompute 호출부가 배치 `blocker.Blocking`을 안 보는 것(Q3 ⑧ — `_handles`가 in-tree에서 비어 공허).
 
-- [ ] **[2026-09-08 밤 신설 — 사용자 제기, 결정 대기 `question.md` 0절]** 렌더 스텝 op(`onStep(fn) -> cancel`류) — 시간 op와 같은 base 주입 경로에 예약 슬롯으로 둘지(`spring`이 그 위에 얹힘), 이름·계약(델타 시간 인자·프레임 안 순서·취소 뒤 미발화)은 사용자 결정 뒤 정본에 적는다. 지금은 아무것도 안 심었다.
-- [x] **[2026-09-15 신설 — 사용자 결정, 리서치 먼저·비파괴; 2026-09-22 완료]** 에러 식별자와 문서 앵커 — 메시지 끝에 붙는 코드(TypeScript `TS2339: Property does not exist on type`류)로 문서에서 grep·링크할 표면을 만드는 것. 사용자: *"문서에 grep 할 수 있는 표면이 없다는건 아쉽게 느껴져 … 메니징을 어떻게 미려하게 할 수 있냐가 큰 문제. 보통 어떻게 하는지 리서치도 필요하고, 문서에 ref 를 걸 때 깨짐을 어떻게 잡느냐도 중요해. 앵커가 있어야한다는 점은 여전히 필요"*. 지금은 "메시지는 API 아님" 정책만 명시(공개 표면 (11) (가)), 잠정 방향은 정책 + 식별자 둘 다. 조사할 것: 다른 컴파일러·라이브러리의 에러 코드 관리 방식, 코드 → 레퍼런스 앵커 규약, 깨진 앵커를 `doc-check.py`/`doc-coverage.py`류로 잡는 법, quad-error의 `err: any` 계약과 `Fallback`/`Traceback`에 미치는 영향. 메시지 자체가 API가 아니라고 선언했으므로 코드를 붙이는 변경은 비파괴. **[2026-09-22 결정·착수]** `base/error-id-plan.md`(다섯 다 권고대로 — 평평한 순번 `QuadNNNN` 접두, `docs/reference/errors/`가 레지스트리, 게이트 `scripts/error-codes.py`, 222곳 배치 롤아웃 진행 중).
+- [ ] **[2026-09-08 밤 신설 — 사용자 제기, 같은 밤 회신 (g) "당장 안 함" — 백로그]** 렌더 스텝 op(`onStep(fn) -> cancel`류) — 시간 op와 같은 base 주입 경로에 예약 슬롯으로 둘지(`spring`이 그 위에 얹힘), 이름·계약(델타 시간 인자·프레임 안 순서·취소 뒤 미발화)은 사용자 결정 뒤 정본에 적는다. 지금은 아무것도 안 심었다.
+- [x] **[2026-09-15 신설 — 사용자 결정, 리서치 먼저·비파괴; 2026-09-22 완료]** 에러 식별자와 문서 앵커 — 메시지 끝에 붙는 코드(TypeScript `TS2339: Property does not exist on type`류)로 문서에서 grep·링크할 표면을 만드는 것. 사용자: *"문서에 grep 할 수 있는 표면이 없다는건 아쉽게 느껴져 … 메니징을 어떻게 미려하게 할 수 있냐가 큰 문제. 보통 어떻게 하는지 리서치도 필요하고, 문서에 ref 를 걸 때 깨짐을 어떻게 잡느냐도 중요해. 앵커가 있어야한다는 점은 여전히 필요"*. 지금은 "메시지는 API 아님" 정책만 명시(공개 표면 (11) (가)), 잠정 방향은 정책 + 식별자 둘 다. 조사할 것: 다른 컴파일러·라이브러리의 에러 코드 관리 방식, 코드 → 레퍼런스 앵커 규약, 깨진 앵커를 `doc-check.py`/`doc-coverage.py`류로 잡는 법, quad-error의 `err: any` 계약과 `Fallback`/`Traceback`에 미치는 영향. 메시지 자체가 API가 아니라고 선언했으므로 코드를 붙이는 변경은 비파괴. **[2026-09-22 결정·착수]** `base/error-id-plan.md`(다섯 다 권고대로 — 평평한 순번 `QuadNNNN` 접두, `docs/reference/errors/`가 레지스트리, 게이트 `scripts/error-codes.py`, 같은 날 롤아웃 완료 — 개수·미태그 0은 `scripts/error-codes.py check`가 소스, test.sh 게이트).
 - [ ] **[2026-09-15 신설 — 사용자 결정, 순수 슈거·비파괴]** 연결 객체용 cleanup 슈거(가칭 `Disconnector` — `Effect`의 `fn`이 `RBXScriptConnection`류를 돌려주고 싶을 때 `return function() conn:Disconnect() end`를 대신 만들어 주는 팩토리·커링 함수). 코어는 넓히지 않는다 — `Effect`는 함수/nil만 받고 그 밖은 즉시 에러(공개 표면 (18)). 사용자: *"팩토리&커링 함수를 넣어서 해결이 가능한 표면이라서 새로운 규격을 내야할 이유도 없고, 순수 슈거로 처리 가능해 … base 만 아닌 어디에 있어도 별 상관은 없어보임"*. 유용성이 드러나면 위치(사용자 코드 관용구 / quad-roblox 슈거)부터 정한다.
 - [x] **[2026-09-08 밤 구현 — 사용자 범위 확정]** `Operator` 콤비네이터(`Operator.luau`, `research/operator-sugar-plan.md` 머리 배너), `Context`/`Provider`(`Context.luau`, `base/context-plan.md` — 불변 확장은 사용자 결정으로 안 만듦), `ref:Unwrap()`(`ref-plan.md`).
 - [ ] **[2026-09-08 밤 신설 — 사용자 결정으로 `operator-sugar-plan.md`에서 분리한 백로그 넷]** 릴리즈를 막지 않고, 문서 재개편 없이 이미 있는 슈거 그룹 절에 더해지는 것들(사용자: *"이미 구현된 슈거를 통해 먼저 문서화를 어느정도 다듬어 두면, 나중에 추가는 쉬워"*):
@@ -123,7 +121,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
       나머지(`nativeRemove` = extract+dispose 반복, `nativeMove` = extract+insert, `nativeSwap` = move 2회)는 base가
       조합해 주는 것. 정본의 약속은 코드 사실에 맞춰 철회했고(`slot-plan.md` "기본 구현(조합 폴백)" 절 배너), 셋째 백엔드가
       실제로 나올 때 착수. 사용자: *"있는게 맞다이고, 지금 필요하지 않고 없어도 치명적이지 않을 뿐"*.
-- [x] **[2026-09-08 구현 완료 — 사용자 결정 "슈거를 먼저 간단히 만들어 놓고 다듬기", 문서화는 뒤로]** `Debounce.luau` + 시간 op 둘(base 스텁·Roblox `task` 배선·mock 가상 시계), Studio 실측 일치. 구현 중 정한 것 다섯은 그 문서 머리 배너 + `question.md` 0절(사용자 확인 대기). 아래는 착수 전 서술.
+- [x] **[2026-09-08 구현 완료 — 사용자 결정 "슈거를 먼저 간단히 만들어 놓고 다듬기", 문서화는 뒤로]** `Debounce.luau` + 시간 op 둘(base 스텁·Roblox `task` 배선·mock 가상 시계), Studio 실측 일치. 구현 중 정한 것은 그 문서 머리 배너가 소스(옛 `question.md` 0절 (a)~(j) — 같은 밤 회신으로 전부 닫힘). 아래는 착수 전 서술.
       **[2026-08-14 신설, 2026-08-19 설계 전부 해소 후 `base/`로 승격]**
       시간 기반 전파 게이트 `Debounce`/`Throttle`(`base/debounce-throttle-plan.md`)
       — 제어 핸들 설계까지 닫히면서 quad-base에 새 코어 메커니즘을

@@ -352,8 +352,7 @@ removeTag(inst: any, names: {string}): ()
 
 값 모양/메커니즘/패키지 배치엔 **[2026-08-13 열네 번째 세션 기준] 없음** —
 재디스패치 모델(`question.md` 0-A)과 패키지 재배치까지 전부 반영 완료.
-남은 건 이름 자체(`Tag`/`Added`/`Removed`/`Merged`)가 용어 정리
-대기열(`.claude/question.md` 1번)에 있다는 것뿐.
+이름(`Tag`/`Added`/`Removed`/`Merged`)도 **[2026-09-16 해소 — 유지, 사용자 "문제가 없는 부분"]**(원문은 `archive/question-resolved.md`의 "question.md 1절 용어 정리 절 전체 원문" 절).
 
 ## [2026-09-21 사용자 결정 — GS 05장 `:Added` 관용구] 인자 자리의 `nil`은 "없음", 리스트 안 `nil` 구멍은 여전히 에러
 

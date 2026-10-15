@@ -12,155 +12,16 @@
 
 ---
 
-## ⭐ 최우선 — 비어 있음 (2026-08-28 갱신)
+## ⭐ 최우선 — 비어 있음
 
-**[2026-08-28] 10라운드 §4 문항 7건과 그 반영분의 후속(`H-158`~`H-164` — `EmitReceive`·
-`Observer:_catchUp` 포함)까지 사용자와 대화형으로 전량 결정·반영됐습니다**(소스는
-`archive/v2-initial-implementation/pre-implementation-handtrace-round10-followup.md`). 같은 날 마지막으로
-남아 있던 **`Claim` 갈래 여덟도 전량 확정**돼 `research/`에서 `base/claim-plan.md`로
-승격됐습니다(결정 기록은 그 §7, 원문은 `session/2026-08-28-02-claim-promotion.md`,
-해소 요지는 `archive/question-resolved.md`의 "`Claim` 갈래" 절). **M2 착수를 막는
-항목은 없습니다.**
+지금 최우선으로 답할 문항은 없다. 2026-08-24~28의 해소 기록과 아래 절들에서 걷어낸 닫힌 항목은 `archive/question-resolved.md`의 "question.md에서 걷어낸 닫힌 항목 원문" 절.
 
-**[2026-08-27] 9라운드**(Q1~Q10·`H-138`·`H-139`·`H-142`·`H-143`~`H-146`)는
-전량 처리·반영됐습니다 — 소스는 `-round9-followup.md`.
-
-**[2026-08-26] 8라운드 손 트레이싱이 처리 완료됐습니다 — M2(반응형 코어)
-착수를 막는 항목이 하나도 없습니다.** 발견 17건(`H-107`~`H-123`)의 결정
-문항 Q1~Q10을 사용자와 대화형으로 전부 처리하고 `base/`에 반영했습니다 —
-**결정의 소스는
-`archive/v2-initial-implementation/pre-implementation-handtrace-round8-followup.md`**(발견 원문은
-`-round8.md`, 개수·개별 항목은 여기서 세지 않음). 7라운드 확정 중 뒤집힌
-것은 없고, 고쳐진 건 전부 **7라운드가 `base/`에 내려앉을 때 생긴
-누락·충돌**입니다. 아래 blockquote는 8라운드 이전(2026-08-25) 시점
-서술입니다 — 그때 닫힌 두 항목 자체는 그대로 유효합니다.
-
-> **[2026-08-25] M2(반응형 코어) 착수를 막는 항목이 하나도 없습니다.**
-> 2026-08-24에 이 절로 올라왔던 둘이 7라운드 손 트레이싱 후속에서 같이
-> 닫혔습니다 — 결정과 근거는
-> `archive/v2-initial-implementation/pre-implementation-handtrace-round7-followup.md`가 소스.
->
-> - **중간 State GC 미검증** → **닫힘.** 사용자 확정: *"단순히, 각 state
->   들이 상위 State|Source 를 홀드하는 `_hold` 를 놓는것으로 바로
->   해결된다. 당연히 후행은 선행 요소들이 있어야하기 때문."* 불변식은
->   **하류 → 상류 강함(`_hold`) / 상류 → 하류 weak(구독자 집합)**이고
->   `base/source-state-plan.md`에 명문화됐습니다. 실측 스파이크는 여전히
->   `luau-test`에 하나 두는 게 좋지만 **착수 게이트는 아닙니다**.
-> - **동적 키 표면(옛 `GetDynamic`) 위치** → **닫힘.** `store:Of<<T>>(name)`
->   하나로 합쳤고(콜론 메소드 유지),
->   예약 키 충돌은 예약 키 진단 타입 함수가 잡습니다(**[2026-08-26]** 그
->   함수는 8라운드 `H-112`로 `CheckReservedKeys<keyof<T>>`가 됐습니다 —
->   `T`를 통째로 넘기는 옛 배선 `CheckReserved<T>`는 실사용 `T`에서 아예
->   안 돕니다). 애초에 이 항목이
->   섰던 근거(lazy `__index`와의 충돌)는 **lazy 생성 자체가 폐기**되며
->   소멸했습니다(명시적 초기화). 이름도 `store:Of<<T>>(name)` 하나로
->   합쳐졌습니다 — `base/store-plan.md`의 "타입 추론 문제" 절.
->
-> **[2026-08-24] M2/M3 마일스톤 경계 문제도 닫혀 있습니다** — 사용자가
-> **(a) 순서 교체**(반응형이 M2, 디스패치가 M3)를 선택해 전량 반영됐습니다.
-> 결정과 근거는 `archive/question-resolved.md`의 "마일스톤 경계" 절, 새
-> 마일스톤 구성은 `archive/v2-initial-implementation/roadmap.md`의 M2 배너.
-
-> **M0 착수를 막던 항목이 전부 해소됐습니다.** `0-Y`(`:Compute(fn)`의
-> lazy 핸들 계약)는 열세 번째 세션에, `0-Z`(Attr 이름 소유권)와
-> `0-A`(재디스패치 하강 diff)는 열네 번째 세션에, **`0-W`(`Ref` 이중
-> 배치 방지)는 2026-08-14 열한 번째 세션에 확정·`base/` 반영 완료** —
-> 그래서 이 문서의 "결정 대기" 절은 한동안 비어 있었음(위 두 항목이
-> 2026-08-24 순서 교체로 올라오기 전까지). 해소 전 원문과 결론은
-> `archive/question-resolved.md`, 뒤집힌 옛 재디스패치 모델은
-> `archive/dispatch-hintvalue-model-reversed.md`.
->
-> **M0 착수 전 읽을 것**: `base/typing-limits.md`(0-Y가 남긴 구현 규약),
-> `base/dispatch-core-plan.md`(0-A/0-Z가 반영된 디스패치 코어 — 열네 번째
-> 세션에 `bind-system-plan.md`에서 분리 신설).
-
-## 0. [2026-09-08 밤 신설, 같은 밤 회신으로 (a)~(j) 전부 닫힘] 슈거 구현 뒤 확인 문항
-
-**회신(2026-09-08 밤)**: (a) 새 마커 OK(다른 것과 맞춤) · (b) 메소드형 OK · (c) 확인 · (d) 동의 · (e) UB(블래스트 범위 억제가
-목적, 고아는 처리 안 함 — `fallback-plan.md` "미해결" 절에 원문) · (f) `Operator` 이름·범위 확정 → **구현됨**(`research/
-operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 함 · (h) UB · (i) 그대로 · (j) 에러(구현됨). 같은 회신으로
-새 슈거 둘 채택 — `Context`(`base/context-plan.md`)·`ref:Unwrap()`(`ref-plan.md`). **(k)·(l)도 같은 밤 후속 회신으로 닫힘** —
-(k) 불변 확장 안 함(진실 원천 하나, `context-plan.md`), (l) `IfElse`는 컬렉션 계열과 함께 별도 백로그(ROADMAP). 같은 회신의
-타입드 `Index` 제안은 실측 결과 지금 솔버로 불가(`typing-limits.md` 8.15) — 백로그. **이 절에 남은 문항 없음.**
-
-사용자 결정("문서화는 뒤로, base에 올릴 순수 슈거를 먼저 간단히 만들어 놓고 다듬기")으로 `Debounce`/`Throttle`·생명주기 훅 셋·
-`Fallback`/`Traceback`을 구현해 커밋했다(원문 `session/2026-09-08-04-sugar-implementation.md`). 정본이 이미 답을 가진 건 그대로
-옮겼고, 아래 일곱은 정본이 비어 있거나 옛 표기라 메인이 임시로 정했거나 열어 둔 것이다 — 답을 주면 코드·정본을 맞춘다.
-
-- **(a) `Timeout` 마커 이름.** 정본 6절은 2026-08-14에 `__type_timeout`으로 적었는데, 그 뒤 코퍼스가 `H-300`으로 마커를 전부
-  `__quad*`(`__quadPreRef`·`__quadEffect`·`__quadState`)로 통일했다. 구현은 관례 쪽인 `__quadTimeout`을 썼다. 옛 표기를 지키려면 이름
-  하나만 바꾸면 된다. 권고는 그대로 `__quadTimeout`.
-- **(b) `GateHandle`의 호출 모양.** 정본 5-4절은 타입을 `Flush: () -> ()`로 적고 예시는 `h.Value:Flush()`(콜론)로 부른다 — 둘이 안
-  맞는다. 구현은 예시와 팩토리(`factory:Flush()`)에 맞춰 메소드형으로 했다. 권고는 메소드형 유지.
-- **(c) `MaxTime`의 타이머 수.** 정본 6-1절은 `os.clock()` 차이로 `min(Time, 남은 MaxTime)` 한 타이머를 권했고, 7절 의사코드는 타이머
-  둘이다. 구현은 둘로 했다 — base가 시계를 읽으면 mock의 가상 시간과 어긋나 스펙이 결정론을 잃는다(정본 11절이 mock 가상 시계를
-  quad-base 배치의 근거로 든 것과 같은 결). 6-1 형태로 가려면 시계도 주입 op가 돼야 한다(`now()` — 정본이 "주입 대상 아님"으로
-  닫았던 것). 권고는 둘 유지(표면 불변, 실측 병목이 나오면 그때).
-- **(d) `Flush`와 `Trailing=false`.** 정본 5-4절 문장은 "보류분이 있으면 즉시 커밋"이고 7절 옛 코드는 `pending and trailing` 가드가
-  있었다(그 가드가 `H-32`의 영구 no-op 결함 자리). 구현은 가드 없이 — 사용자가 명시적으로 `Flush`를 불렀으면 `Trailing=false`
-  게이트라도 보류분을 통과시킨다. 권고는 무조건 통과 유지.
-- **(e) `Fallback`/`Traceback`의 부분 트리 미회수(정본 "미해결" 절, `H-26`).** 실패 지점 앞에 완성된 형제 Instance가 gcconn 때문에
-  세션 끝까지 안 죽는 문제. 갈래는 정본 그대로 셋 — (1) `Dispatch.drive`가 이번 construction의 생성물을 쌓고 실패 시 역순
-  `Destroy`(정상 경로에도 부기 비용, 중첩 경계 문제), (2) gcconn 자기순환 재설계(규모 큼), (3) UB로 명문화 + "생성 전에 검증부터"
-  권고. 권고는 (3) — 지금 실측된 사례가 없고, 관측된 문제에만 구조를 쓴다는 `conventions.md` 설계 원칙에 맞는다. 코드는 아무 갈래도 안 담았다.
-- **(f) `Operator` 콤비네이터 — 이 구간에서 뺀 이유.** `research/operator-sugar-plan.md`가 네임스페이스 이름(`Operator`/`Op`/`Ops`,
-  외부 리서치는 `Operator` 권고)과 포함 범위(산술·논리는 명확, 비트·비교·`Sub`/`Div`는 선례 없음, `Clamp`/`Min`/`Max`·`Alternative`는
-  선례 강함)를 열어 두고 있다. 이름과 범위를 주면 같은 방식으로 얹는다.
-- **(g) 렌더 스텝 op 예약.** 사용자 제기(2026-09-08 밤): 시간 op를 base 주입 경로에 두는 이상 렌더 스텝/애니메이션 리퀘스트도 같은
-  경로가 맞다는 의견. 메인 동의 — 다만 지금 쓰는 곳이 없어(Debounce/Throttle은 타이머만) 심지 않았고, 이름(`onStep(fn) -> cancel`류)·
-  계약(델타 시간 인자 단위, 프레임 안 호출 순서 보장 여부, 취소 뒤 미발화)을 정본에 **예약 슬롯**으로만 적어 두자는 것이 권고.
-  `spring`은 그 위의 별도 패키지. 정하면 `architecture.md` EngineOps 줄에 적는다.
-- **(h)~(j) [같은 밤 round9 리뷰가 낸 셋 — 평문 전문은 `qa-request/post-implementation-review-round9.md` §4].** (h) 창 끝 flush
-  도중 하류가 같은 게이트의 `Cancel`/`Flush`를 부르면 상위 커밋이 그걸 모르고 창을 다시 연다 — 세대 카운터 필드(새 필드) vs UB
-  명문화, 권고 UB. (i) idle에서 leading 통과 도중 하류가 상류를 `:Set`하면 같은 파동에서 두 번 통과한다(정본 7절 의사코드도 같은
-  순서, 스펙 10절이 고정) — 그대로 vs 창을 먼저 열고 통과, 권고 그대로. (j) 같은 `Handle` Ref로 팩토리를 두 번 `:Apply`하면 둘째가
-  조용히 덮어쓴다 — 둘째 Apply에서 에러 vs 문서만 vs 그대로, 권고 에러.
-
-## 1. 용어 정리 — 전부 해소됨(2026-09-15·16) — 원문은 archive
-
-**[2026-09-27 정리 — round13 E74]** 이 절의 항목 일곱(`Slot`·`Owned`/`OwnsElements`·`canExecute`·`hintValue`/`nextValue`·`Brand`·`Tag`/`Added`/`Removed`/`Merged`·`Attr`/`AttrKey`)은 2026-09-15·16에 전부 해소됐는데(결정 원문 `session/2026-09-16-01-d-typefunction-measurement.md` §5, `OwnsElements`는 그 전날) 절 제목만 "진행 중"으로 남아 있었다. 원문은 이 문서 규약대로 `archive/question-resolved.md`의 "용어 정리 절 전체" 절로 옮겼다 — 여기 남은 열린 용어 항목은 없다(`todos.md` 2번이 "열린 항목은 `question.md` 1번"이라 가리키는 것의 답은 "없음").
 
 ## 2. 낮은 우선순위 — 열려 있지만 급하지 않음
 
-- **[2026-09-07] 핸드오버 전체 코드 리뷰 문항(round1 §4)** — Q1~Q21 **전부 닫힘**(회신 1~4차; 상태는 그 표의 각 행). 여기 남은 것 없음.
-
-- **[2026-09-07 신설] 구현 뒤 리뷰 round3 문항** — `qa-request/post-implementation-review-round3.md` §4가 소스. Q22~Q24는 회신 4차,
-  **Q25·Q26·Q27은 2026-09-08 회신으로 전부 닫힘**(§12 — Q25는 값 비교 모델·`Tween.Dedup` 필드, `H-478`). 여기 남은 것 없음.
-
-- **[2026-09-07 신설, 같은 날 밤 회신 반영] 소스 구조 재편** — `archive/surveys/2026-09-07-source-layout-plan.md`가 소스(각 절
-  머리 `[결정]` 줄 + 9절 상태). 회신으로 닫힌 것: 1절 Slot 분할·3절 Tag 유니언·4절 패밀리 접기(5·6·7절 포함)·
-  2절 Tween(권고 (c) 대신 **통째 이동 (b)**)·10-1 Brand→quad-types·10-2 마커 전면화·10-3 quad-types 재배치.
-  **[2026-09-08 회신으로 전부 닫힘]** (1) 8절 옛 `Attribute` → `Attr` 축약 — **한다**(+`AttrKey`·엔진 op `setAttr`),
-  반영 `66281ab`. (2) 10-4 D 정적 굽기 — **지금 안 함, 백로그 아닌 리서치 대상**(그 절 `[결정]`). (3) round3 §4 **Q27** — 등록
-  op 기각, 모듈 최상위 `is<Brand>` 필드가 계약(round3 §12). 이 항목에 남은 사용자 몫 없음(마커 이름 10-2도 2026-09-07 밤 확인 완료).
-
-- **[2026-09-08 밤 신설, 같은 밤 실기기 실측으로 닫힘 — (c) mock 충실도, round8 §15] Q47 엔진 Tween 슬롯의 Instance 회수.** `Property` 핸들러의 strong 트윈 슬롯이
-  mock에선 Instance를 되참조해(Luau weak-key는 에페메론이 아님) `Destroy` 뒤에도 안 회수됨(10,000회 30MB). 실물 Tween userdata는
-  Lua 참조가 아닐 가능성이 커 (a) Q41·Q42와 함께 Studio 실측 권고 / (b) `onDestroying`에서 슬롯 비우기 / (c) mock 충실도 문제로 닫기.
-- **[2026-09-08 저녁 신설, 같은 밤 회신으로 전부 닫힘 — round8 §17] Q43~Q46.** Q43 스파이크 → `H-508` 오버로드 교집합, Q44 (a) 문서화, Q45 (c) 재노출 안 함(직접 `require(D)`), Q46 (a) `Of` 주석 필수 문서화. Q43 무인자 `Store()`가 strict TypeError(스펙도 `any` 우회 중 —
-  (a) 생성자 오버로드 교차 스파이크 권고 / (b) 무인자 폐기 / (c) 그대로); Q44 `{ Instance }` 변수를 `D.Frame(kids)`에 통째로 못 넘김(인덱서
-  불변 — (a) 관용구 셋 문서화 권고 / (b) `| { E }` 팔 추가+솔버 비용 재측정); Q45 릴리즈 사용자용 타입 표면 — quad-roblox가 컴포넌트 경계 별칭
-  (`Into<Class>`·`<Class>Param`·`<Class>Modifier`·`<Class>RefMarker`·`Field<T>`)을 재노출하지 않음((a) 선별 재노출 + 8.12 실측 권고 / (b)
-  `quad-roblox-types` 지금 / (c) 백로그); Q46 `store:Of(name)` 무주석 `Source<any>`((a) 문서화 권고 / (b) 새 인자). 평문 전문은
-  `qa-request/post-implementation-review-round8.md` §11; 한계 기록은 `typing-limits.md` 8.13.
-- **[2026-09-08 저녁 신설, 같은 밤 실측 뒤 회신으로 닫힘 — UB, round8 §16] Q42 Instance를 매개로 한 Slot 순환.** 실물: 엔진이 "own parent / circular reference"로 raise, 요소는 들어가고 부기는 안 된 반쪽 상태(`Remove(1)`로 복구 가능). `drive(F, { s })` 뒤 `s:Add(F)`는 `H-500`의
-  Slot–Slot 체인 검사가 안 돌아 mock에선 통과한다(K-7 실측). 실엔진은 `F.Parent = F`의 "circular reference"를 `EngineOps.luau`
-  줄에서 낼 것. 갈래: (a) Q41과 함께 Studio 실측 뒤 판단(권고) / (b) 지금 마운트 타깃 조상 체인 게이트(엔진 순회, 새 경로) / (c) UB.
-- **[2026-09-08 저녁 신설, 같은 밤 실측 뒤 회신으로 닫힘 — (c) 그대로·재개봉 금지, round8 §16] Q41 `D.New(className)`의 클래스 이름 오타.** 실물 문구 `Unable to create an Instance of type "Frmae"`(클래스 이름을 말함, 스택은 생성물). `D.New`는 생성기 범위 밖 클래스의 탈출구라
-  타입 방어가 없는 유일한 생성 경로다. `D.New("Frmae")` 같은 문자열 오타는 생성된 `D/init.luau`의 `Instance.new`가 엔진 에러를 내며
-  생성물 내부 줄을 blame할 것으로 보이는데, CLI mock은 아무 이름이나 받아 실측하지 못했다. 갈래: (a) Studio 실측 뒤 판단(권고 —
-  HUMAN_TODO 실측 항목) / (b) 지금 생성기 템플릿에서 `pcall` 재던지기 / (c) 안 함(엔진 메시지가 이름을 말해줌). 평문 전문은
-  `qa-request/post-implementation-review-round8.md` §8.
-- **[2026-09-08 오후 신설, 같은 날 회신으로 닫힘 — round8 §6, (a)] Q40 `Slot:Clear`의 창 안 파괴.** `H-479`로 `Clear`가 Blocker 창 하나 안에서
-  요소를 파괴하게 돼, 파괴 도중 raise(요소 cleanup 던짐·quad 밖 `Destroy`된 타깃의 `nativeRemove`·소유권 불변식 에러 —
-  셋 다 UB·내부 버그 범주)면 게이트가 남아 그 Slot의 레이아웃이 동결된다. List의 KeyGone 패스가 이미 같은 모양을 수용하고
-  있어 메인 권고는 (a) 그대로 + `slot-plan.md`에 한 줄 명시; (b) 파괴만 창 밖으로(열 줄 패치); (c) 옛 요소별 recompute
-  복귀(비권장). 평문 전문은 `qa-request/post-implementation-review-round8.md` §4.
-- **[2026-09-08 오전 신설, 같은 날 오후 회신으로 전부 닫힘 — round7 §6]** 사용자 반입 RFC 다섯의 판정 문항(`qa-request/post-implementation-review-round7.md` §4): Q37 (a) `keyType` 반영(`H-484`), Q38 백로그(ROADMAP), Q39는 폴더별 README 분리만 하고 루트 README는 백로그·나머지 둘은 안 함. 여기 남은 것 없음. 원문: **Q37** `getHandler` 키 타입 버킷을 핸들러 계약의 어떤 필드로 선언하나(권고 (a) `keyType: "number" | "string"?`, 없으면 모든 버킷 — 방향은 사용자가 이미 승인, 이름·모양만 남음; 실측 절감은 `D.Frame` 한 번에 5µs 안팎). **Q38** `Slot:List` 대량 재정렬 O(N²)(1000개 역순 82ms, 100개 1ms) — `rawPermute` 설계를 지금 열 것인가 백로그인가(권고 (a) 백로그). **Q39** 문서 거버넌스 넷 — README `qa-request/`·`audit/` 행 비대(한 셀 16,636자, 권고: 한다), `base/` 계약서화(권고: 반대), `session-summary.md` 분할(권고: 안 함), 루트 `README.md` 신설(권고: 지금 안 함). 적용된 다섯(`H-479`~`H-483`)엔 사용자 몫 없음.
 
 - **[2026-10-15 신설] 펴 넣는 묶음 `q.Spread` — 이름은 확정, 표면 문항 다섯은 `research/component-flatten-sugar-plan.md` 5절**(같은 키 두 Spread, 같은 값 두 요소, 펴기 루프 세 단계, 타입, 2절 경계 flatten과의 관계).
 - **[2026-09-06 신설] 컴포넌트 경계 flatten 슈거 스캐폴딩 — `research/component-flatten-sugar-plan.md` 2절의 "정해야 할 것" 일곱(단위·State 취급·`rest` 형태·배열부 분리 범위·되꽂기 표기·경계 필드 이름 Q2·패키지).** 사용자가 "나중에 보고 답할게"라 한 항목. 구현은 순수 슈거라 코어를 막지 않는다.
-- **`Operator` 콤비네이터 슈가 네임스페이스 이름+포함 범위 — [2026-09-08 닫힘, 2026-09-27 정리]** 이름 `Operator`·범위 사용자 확정 뒤 구현됨(`quad-base/src/Operator.luau`, 0절 (f), `research/operator-sugar-plan.md` 머리 배너). 이 항목은 확정 뒤에도 "최종 확정은 사용자 몫"이라 적힌 채 남아 있었다 — 원문은 `archive/question-resolved.md`로.
 - **중첩 State 평탄화 `State<State<T>>` → `State<T>`(2026-08-13 여섯 번째
   세션 신설, 백로그)** — **[근거 축소, 열네 번째 세션]** 원래 이 항목의
   주 근거는 "깊은 체인에선 힌트가 `nil`로 전달돼 깜빡임 방지가 꺼진다"는
@@ -181,38 +42,8 @@ operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 
 - **문서화 전략(UI 네이밍 컨벤션, Store 부작용을 게임 시스템에서 쓰는
   패턴)** — `archive/surveys/2026-08-06-documentation-plan.md`(뼈대만). 정식 백로그 항목으로
   올릴지, 착수 시점을 언제로 볼지 사용자 판단 필요.
-- **v1 하위호환(compat) 레이어 — `quad-roblox-v1-compat`** —
-  `research/v1-compat-plan.md`(신규, 2026-08-06, 두 차례 후속 논의로 수렴).
-  방향 확정: v1을 그대로 병행 실행 + 경계에서만 `state:Observer()`(lazy
-  포기)로 값을 리졸브해 v1 프로퍼티에 재대입하는 브리지, v2→v1 단방향만
-  (양방향 불필요로 확정), 패키지명 `quad-roblox-v1-compat`으로 확정(소스
-  트리에 세 번째 패키지로 추가될 예정). v2-in-v1/v1-in-v2 두 임베딩 방향
-  모두 기술적 근거와 안전 규칙까지 정리됐으나(문서 7번), **Slot이 foreign
-  Instance를 어떻게 다루는지만 Slot 코어 구현 시점까지 결정 불가로 남음**
-  — **[2026-09-03 현황]** Slot 코어가 편입돼 그 시점이 왔다: 사실관계는
-  바로 아래 "Slot이 quad 밖에서 만들어진 임의 Instance를 받을 수 있는가"
-  항목의 현황 갱신이 소스(**[2026-09-16 닫힘]** `isClaimed` 게이트로 미claim `Add` 거부 — 옛 "받아짐 / `H-293` 안전성 구멍" 요약은 2026-09-03 시점). (옛 괄호 참조
-  *"여러 Slot이 형제로 섞일 때 순서 보장 항목과 같은 시점"*은 2026-08-09에
-  설계로 닫힌 항목을 가리키던 stale 포인터라 지움 — 감사 3라운드.)
-  그 외 §8의 세부 항목(v1 자기 루트의 `Destroying` 자기청소 여부,
-  `registerClass` 체이닝 기능 브릿징 필요성)은 문서 자체가 "지금 결정
-  불필요"로 표시해둠 — 위 Slot 항목과 별도로, 실제 compat 레이어 구현
-  시점에 `research/v1-compat-plan.md` §8을 다시 열어 확인.
-- **[2026-09-17 저녁 신설 — round11 §4 `Q59`~`Q63`, 원장 `qa-request/post-implementation-review-round11.md` §4가 소스(평문 한 문단씩)]** 결함 탐사 3차 문항 다섯: ~~Q59 `bindLifetime`이 부르는 값 쪽 밑줄 메소드 셋(`_assertBindable`/`_catchUp`/`_bindDestroying`)의 이름 — 예외로 두기(권고 (a)) / 밑줄 없는 이름으로 BREAKING~~ **[2026-09-18 닫힘 — 구조 수정]** 생명주기 넷은 quad-base가 구현, 백엔드는 hold op 넷(`holdLifetime`/`releaseLifetime`/`isHeld`/`isHeldBy`)만(원장 Q59 닫힘 문단); ~~Q60 정적 자식 State가 거부될 값을 받으면 옛 점유자가 거부 **전에** 내려가는 것 — 캐비엇으로 닫기(권고 (a)) / 핸들러 계약에 검증 단계(새 메커니즘)~~ **[2026-09-18 (a) 닫힘]**; ~~Q61 폐기된 `OwnsElements = false` Slot의 원소가 소유권에 갇혀 재사용·dispose 불가 — 그 분기에서도 `releaseOwner`+배열 비움(권고 (가)) / 문서 정정 / 버릴 때 에러~~ **[2026-09-18 닫힘 — 파괴 경로만 release+비움, Extract는 그대로]**; ~~Q62 Slot 원소 경로에 정적 자리(`H-545`)와 같은 순환 가드가 없음 — 백엔드 술어 추가(BREAKING) / 순서 변경 / UB 문서화(권고 (c))~~ **[2026-09-18 (c) 닫힘 — Q42 재확인, core/06 캐비엇]**; ~~Q63 한 번 던진 Effect가 영영 해제 불가(강한 레지스트리 누수)·Observer는 던져도 계속 발화 — 문서만 / `Unsubscribe`만 `_running` 무시하고 통과(권고 (b)) / 세대 스탬프~~ **[2026-09-18 (b) 닫힘]**. **[같은 밤 code-review 추가]** ~~Q64 Claim 1패스의 `isClaimed` 게이트(자식이 이미 quad 소유일 때 루트와 앞선 형제가 claim된 채 남음) — 두고 문서(권고 (a)) / mock isClaimed 의미 변경 + 게이트 / 새 op~~ **[2026-09-18 (b) 닫힘 — blast 실측 뒤 사용자가 권고를 뒤집음]**; ~~Q65 핸들러 교체(plain ↔ State·`None` 경유) 때 Tween 기록이 지워져 다음 Tween이 스냅 — 새 동작 채택·문서화(권고 (a)) / 옛 동작 복원(retractor 계약 BREAKING)~~ **[2026-09-18 닫힘 — 넓은 수정: 기록은 (inst, k)에 인스턴스 수명 동안, 철거는 진행 중 트윈만 Cancel 뒤 true]**. **[같은 밤 3차 탐사 추가]** ~~Q66 `OnChange("Parent")` 콜백·`AncestryChanged.parent` 타입이 `Instance`인데 엔진은 nil — 캐비엇 / `Instance?`(타입 BREAKING, 권고 (b)) / 예외 목록+게이트~~ **[2026-09-18 (b) 닫힘]**; ~~Q67 props 테이블 재사용이 훅을 조용히 소진 — 캐비엇(권고 (a)) / 센티널 재drive 거부~~ **[2026-09-18 (a) 닫힘 — 재사용은 UB]**; ~~Q68 yield하는 Effect fn 중 leaf가 죽으면 그 뒤 cleanup 영구 누수 — 문서만 / fn 반환 뒤 `_dying`이면 즉시 소진(권고 (b)) / 즉시 에러~~ **[2026-09-18 (b) 확장 닫힘 — 실행 불가면 즉시 소진]**; ~~Q69 quad가 붙이지 않은 태그를 마지막 자리가 물러날 때 뗌(입양·사본 트리) — 캐비엇(권고 (a)) / "밖의 이름" 기억 / Claim 때 흡수~~ **[2026-09-18 (a) 닫힘]**. **→ round11 §4 열하나 전부 닫힘(2026-09-18).**
+- **v1 하위호환(compat) 레이어 — `research/v1-compat-plan.md` 9.4 문항 셋**(첫 게이트·v1 쪽 수정 허용·CLI 게이트 시도). **[2026-10-15 정리]** 옛 서술(v2→v1 단방향)은 2026-09-10에 양방향으로 뒤집혀 archive로 옮겼다.
 - **[2026-09-21 신설 — round11 §8 `Q70`, 원장이 소스]** `base/architecture.md` 코드 스타일 절의 "새 코드는 `const`" 원칙이 src에 한 번도 적용된 적 없음(검증자 실측 0건) — (a) 유지하고 새 코드부터 실제로 쓰기(권고) / (b) 문서·예제 코드로 좁히기 / (c) 접기. 계기: docs-review 1-5 Tween 콜백 diff의 새 `local` 바인딩.
-- ~~**[2026-09-21 저녁 신설 — round12 §4 `Q71`·`Q72`, 원장 `qa-request/post-implementation-review-round12.md` 머리 배너가 소스(평문 한 문단씩)]** Gemini 합본 판정에서 나온 문항 둘: Q71 파괴 경로는 프로퍼티 체인의 retractor를 돌리지 않아 콜백을 실은 트윈이 파괴된 인스턴스 위에서 끝까지 돌고 `Completed`가 그대로 불린다(숏핸드 자식 `nil` 교체만 `retractFrom`을 먼저 돌려 `Cancelled`) — (a) 문서만(권고: `Destroy`는 되돌리기를 거치지 않는다는 기존 규칙 그대로, 인자 없는 콜백이라 고정은 없음) / (b) 레코드마다 `Destroying`을 구독해 `Cancel` + `Cancelled`(새 메커니즘) / (c) `Completed` 발화 전 인스턴스 생존 검사(새 게이트). Q72 `effect:Unsubscribe()`가 소비한 cleanup 안에서 다시 `:Unsubscribe()`를 부르면 이중 해제 에러 — (a) 문서만(권고: cleanup 안 해제는 재실행·죽음·자리 교체 소진에서만 뜻이 있다고 core/05에 한 줄) / (b) `_cleanupRunning` 중엔 두 번째 해제를 no-op(기존 플래그 재사용이지만 약한 구독 핸들의 cleanup 안 강한 해제도 조용히 통과하는 부수 효과) / (c) cleanup에 소비 이유 인자(새 표면).~~ **[같은 날 저녁 닫힘 — 사용자 회신]** Q71: 되돌리진 않되 **무시** — 사용자 *"isClaimed 를 통해서 완료 이후 inst 가 gcconn 이 disconnected 상태라면 무시할 수 있다고 봐. claim 이 안 돌면 tween 자체를 못 굴려서, 판정대상으로 쓸 수 있어 … defer 이여도 gcconn 판정 자체는 싱크로 돌거야"* → `Completed` 연결이 `Backend.isClaimed(tween.Instance)`가 거짓이면 콜백을 안 부른다(`H-594`). Q72: (a) 권고대로 core/05 한 줄. 원장 배너 닫힘 문단이 소스.
-- **[2026-09-21 밤 신설 — `research/upward-flow-plan.md` 7절이 소스]** 되돌아오는 흐름(엔진이 바꾼 값을 상태로 올리기 — docs-review 1-4 대체) 문항 다섯: (1) ~~같은 값 재대입 무발화 실측~~(닫힘 — 2026-09-10 `audit/studio-docs-2026-09-10.md` A절에 이미 있었다, 감사자 발견) / (2) ~~`Bind` 채택 여부와 모양~~(**닫힘 — 사용자 결정: 순수 슈거, `Text = src`(in) + `Bind("Text", src)`(out, `OnChange` 위 슈거) 나란히; 이름은 탐사 뒤 — research 8절: 외부자·내부자 둘 다 **`Out`** 1순위(`Writeback` 2순위, `Bind`는 `bindLifetime` 어휘 충돌 + 양방향 오해로 비권고), 걸러내기는 `v ~= src:Get()`일 때만 `Set`; **같은 날 밤 닫힘 — 사용자 *"Out 권고대로"*, 구현 커밋**) / (3) ~~문서 위치~~(**닫힘 — 사용자: 분리, 05 뒤 새 06장 `06-flowing-back.md`, 07~21 재번호; 탐사 원문 `archive/surveys/2026-09-21-upward-chapter-placement.md`**) / (4) ~~web-vs-quad 다섯 흡수~~(**닫힘 — 사용자 권고대로 (a) 오버뷰 `03-from-the-web.md`**) / (5) ~~루트 `-ignoreme` 원본 여덟 삭제~~(**닫힘 — 사용자 승인, sonnet 확인 뒤 삭제**). **문항 다섯 전부 닫힘.**
-- ~~**[2026-09-22 신설 — `base/error-id-plan.md` 7절이 소스]** 에러 식별자 문항 다섯~~ **[같은 날 닫힘 — 다섯 다 권고대로: (C) 순번·접두·문서 레지스트리·안정 계약·한 번에; 롤아웃 진행 중]**(사용자가 `Quad10000`식 번호 공간을 제안하며 갈래를 요청): (1) 번호 공간 — (A) 카테고리 밴드 `Quad1203` / (B) 문자열 카테고리 `Q-SLOT-012` / (C) 평평한 순번 + 레지스트리 `Quad0042`(권고 — 주어가 이미 층을 말해 주고, 코드 이동에 번호가 안 낡음) / (2) 자리 — 접두(권고) / 접미 / (3) 레지스트리 — 문서 페이지가 곧 레지스트리(권고) / 별도 TSV / (4) ID 계약 — 분기 금지 유지 / ID는 안정 계약·분기 허용(권고) / (5) 롤아웃 — 222곳 한 번에(권고) / 새 코드부터.
-- **[2026-09-16 밤 신설 — round10 §4 `Q48`~`Q54`; [2026-09-17 전부 해소 — 원장 §10, `session/2026-09-17-01-round10-batch-reply.md`]** 다각 탐사 문항(§4 일곱 + §7·§8·§9 넷 = 열하나): ~~Q48 정적 자식 자리 소유권 부기 부재~~(**[해소 2026-09-17]** (a) — 레지스트리 하나, `q.Bookkeeping.claimOwnerAt`/`releaseOwner` 공개), ~~Q49 Claim 클래스 불일치 검사~~(**[해소 2026-09-17]** (a) `nativeFindChild` 셋째 인자), ~~Q50 `_recompute` 재진입·순환 가드~~(**[해소 2026-09-17]** (a) `_computing` 플래그), ~~Q51 Effect cleanup 안 `Set`~~(**[해소 2026-09-17]** (a) `_pending` 하강을 fn 직전으로), ~~Q52 마운트 walk 중 조상 CRUD~~(**[해소 2026-09-17]** (a) `_materializing` 가드), ~~Q53 Property Tween 미취소~~(**[해소 2026-09-17]** (a) Tween 체인 retractor), ~~Q54 교차 인스턴스 메시지~~(**[해소 2026-09-17]** 구절 추가), ~~Q55 Debounce 타이머 경로의 Time 읽기 실패 복구~~(**[해소 2026-09-17]** (b) 신호 진입 캐시), **~~Q56 `bindLifetime` 커밋 뒤 사용자 코드 실패로 반쪽 바인딩~~(**[해소 2026-09-17]** (b) UB 문서화), **~~Q57 `OnDestroyed`가 State 자리 교체 때 살아 있는 인스턴스에서 발화~~(**[해소 2026-09-17]** 사용자 제안 — cleanup `dying` 인자), **~~Q58 두 정책~~(**[해소 2026-09-17]** (가) 안 좁힘·캐비엇, (나) `Event`/`OnChange` NORMAL − 1). Q48엔 숏핸드 관리 자식(세 번째 자리), Q53엔 슬롯 미청소 증상이 보강됨(round10 §7). 본문은 `qa-request/post-implementation-review-round10.md` §4.
-- **[해소 2026-09-16 — (a) 대칭 게이트, 사용자 "권고대로"; `InstanceChild.luau` process 머리에 `isClaimed` 거부, `spec.handlers` 11, 레퍼런스 roblox/02·CHANGELOG·claim-plan 14번] 정적 자식 자리 `D.Frame { foreign }`에는 같은 게이트가 없다.** 상황: Slot은 이제 미claim 요소를 거부하는데, quad-roblox의 `Handlers/InstanceChild.luau`는 숫자 키 자리의 raw Instance를 `isInst`만 보고 `Parent`를 잡고 길이 부기를 만든다 — `nativeClaim`도 `isClaimed`도 안 부른다(`spec.handlers`가 raw `Instance.new` 자식으로 성공을 단언). 무엇이 막히나: 사용자가 `slot:Add(foreign)`은 에러, `D.Frame { foreign }`은 통과라는 비대칭을 보고 정적 자리로 옮겨 "고치면" 옛 stale 동작(밖에서 Destroy되면 부기가 시체를 가리킴)이 그대로 돌아온다. 갈래: (a) `InstanceChild`에도 `isClaimed` 게이트(정적 자리도 미claim 거부 — 표면 변경, Slot과 대칭) / (b) 정적 자리는 공인 adoption 경로로 두고 문서에 "정적 자리는 소유 검사가 없다, 죽음 추적도 없다"를 명시 / (c) 그대로. 메인 권고 (a) — 오늘 결정의 논거(소유는 명시적, 조용한 stale 금지)가 자리와 무관하게 성립하고 BREAKING 허용 주간 안이다. `v1-compat-plan.md` 7-3이 두 경로를 나란히 물었던 문항이라 Slot만 닫힌 상태.
-- **[해소 2026-09-16 — (b) 사용자 결정: 미claim이면 `Add`에서 에러, 자동 claim은 마법("명시적으로 claim 안 한게 다른 경로로 claim 될 수 있다는거고, 마법 아님?"); 판정 술어는 quad-roblox의 gchold 유무("gchold 같은게 있는 경우가 claim 된 판정처럼 되는거지?" — 맞음)를 백엔드 계약 op 하나로 노출, mock은 항상 참(**[2026-09-18 Q64 정정]** 이제 mock은 `Data.claimed` 플래그 — `Instance.new`는 태어날 때 claim, `Instance.foreign`은 아님). 구현 완료 같은 날 — `isClaimed` op(quad-types·quad-base 스텁·quad-roblox·mock)·`Slot/Elements.luau` 게이트·`spec.slot` 22·레퍼런스 core/06·extend/01·CHANGELOG BREAKING; `claim-plan.md` 14번] Slot이 quad 밖에서 만들어진 임의 Instance를 받을 수 있는가**
-  (2026-08-06 추가) — v1 compat 등에서 넘어온 foreign
-  Instance를 동적 배열 원소로 받을 수 있는지, retract 시 어떻게 다루는지.
-  **Slot 코어 구현(M6) 시점에 확인** — `research/v1-compat-plan.md` 7-3.
-  **[2026-09-16 정리 — 옛 본문 압축]** 2026-09-03 시점 현황(요소 판정이 `isInst`뿐이라 foreign도 조용히 들어감, 단 미claim 요소엔
-  `bindLifetime`이 fail-fast(`H-290`)라 leaf 바인딩 불가)과 갈래 셋((a) `Add` 때 자동 claim — 옛 메인 권고 / (b) 미claim이면 `Add` 에러 /
-  (c) 현행)은 **(b)로 닫혔다** — (a)는 마법이라 기각, (c)는 조용히 stale해지는 유일한 갈래. 지금의 사실은 `Slot/Elements.luau`의
-  `isClaimed` 게이트와 `claim-plan.md` 14번이 소스, 논의 원문은 `session/2026-09-16-01-d-typefunction-measurement.md` §5.
 
 > **⚠️ 번호는 재사용된다 — 옛 문서가 가리키는 번호를 그대로 믿지 말 것.**
 > 예전 "0번(추가 프리미티브)"과 "2번(구현 착수 직전 감사 결과)"은 전원
@@ -232,16 +63,10 @@ operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 
 
 사용자 요청(*"이제 내가 말해줘야할 부분을 알려줘"*)으로 모은 것. 자유서술 답이 곧 결정이고, 닫히면 그 자리에서 지운다. **[2026-09-10 밤 회신]** D1·D2·D3·D6·D7·D8은 같은 밤 회신으로 닫혔다(회신 원문·반영은 `session/2026-09-09-01-docs-polish.md` 끝의 2026-09-10 밤 2차 통독 피드백 문단) — D1 문자열 원천 유지(단 §2 문구를 "처리"로, 파이프≠컨베이어 암시), D2 별도 페이지, D3 통독 피드백 열두 갈래(GS 12페이지 재구성), D6 게이트 부착(`2bdc3f0`), D7 `pcall` 제거(같은 커밋), D8 백로그 그대로("문서를 다 다듬고 … 그 때 다른걸 시작하자"). 남은 것:
 
-- **~~D10~~ [2026-09-11 닫힘 — 사용자: "List 와 같이 Item, UD 를 Single 에 두는거 내 처음 목적이 맞았음. 인자 같고 타입 인자 같고 … 빠질것만 빠져야하는데, Item 도 실수로 빠진게 맞는듯"]** → (a) 반영. identity 슈거를 별도 오버로드 팔로 두는 것은 신 솔버가 제네릭 팔을 못 골라 기각(`typing-limits.md` 8.19) — 한 시그니처, 오용은 런타임 가드.
 - **D11. [2026-09-11 신설] `quad-mock` 이름이 두 물건을 가리키는가.** 오버뷰 §8은 "헤드리스 검증용 **공개 mock 백엔드**(예정)"를 이름 없이 약속하고, `ROADMAP.md` 백로그·how-to 06·`docs/README.md`는 `quad-mock`을 "범용 렌더 디버깅 도구(Tween mock 등 동적 동작 포함)"라 부른다(`archive/surveys/2026-09-11-roadmap-changelog-docs-plan.md` 조사에서 발견). 한 물건이면(테스트 mock을 공개 패키지로 꺼내면서 동적 동작을 얹는 것) 오버뷰에 이름을 적고 ROADMAP 문구를 맞추면 되고, 둘이면 오버뷰 항목에 별도 이름이 필요하다. 메인 추정은 한 물건.
 - **D5. HUMAN_TODO 14.2** — `roblox_sync_config_generator` 없이 Rojo 매핑만으로 Studio 싱크가 되는지 실기기 실측(설치 문서 2단계의 [2026-09-10 기준] 미확인 문장이 그 결과를 기다린다).
-- **~~D9~~ [2026-09-10 밤 닫힘 — 사용자: "기다릴 필요는 있는듯. 아니면 WaitForChild 를 하거나. … 실제 클라이언트는 코드들을 동적으로 네트워크로 복제하고 있는 상황이라, 뭐가 먼저 실행될지 몰라서 진짜 없어서 에러 날 수 있긴 해"] → 진입점에 `game.Loaded:Wait()` 한 줄 + 접힘에 실측 근거(편집자 반영 중). D4(custom.css)도 같은 회신으로 닫힘("확실히 끝났어").
 
-## 4. [2026-09-26 밤 신설] 자율 수집 루프 round13 — 사용자 문항 포인터
+## 4. 리뷰 원장 문항 — 열린 것 없음 [2026-10-15 기준]
 
-**[2026-10-12 저녁 기준 열린 것]** round14 원장의 코어 문항은 2026-10-13에 전부 닫혔다(`Q186`·`Q187`·Q154 불명 셋 — 그 원장 끝 문단들), 그리고 킷 쪽 결정은 `research/consumer-kits-plan.md` 5절.
-
-**[2026-10-01 이관]** round13의 남은 문항은 **`qa-request/post-implementation-review-round14.md`**로 옮겼다(사용자 지시 — round13이 방대해짐). 처리 전에 프로젝트 전체 원칙 감사(`audit/round14-principle-audit/`)와 문항별 재검토를 먼저 돈다. 아래는 round13 시절 서술이다.
-
-문항 본문은 **`qa-request/post-implementation-review-round13.md` §4**(`Q73`부터 — 끝 번호는 그 파일이 소스)에 평문 한 문단씩 있고, **읽기 전에 그 파일 §0을 먼저 볼 것** — 문항마다 한 줄 상황·심각도·메인 권고·프로토타입 유무·실기기 필요 여부·같이 정할 문항을 표로, 그리고 답할 순서 제안인 **결정 묶음**과 문항 사이 충돌·의존을 거기 한 곳에만 둔다(**[2026-09-27 감사 7라운드]** 예전엔 이 절이 묶음 구성과 프로토타입 목록을 복제해 두었다가 §0이 갱신될 때 따라오지 못해 갈라졌다 — 이제 여기엔 포인터만). 결정 재료 실측은 `audit/round13-*`(색인은 `audit/README.md`), 처방 초안은 `audit/round13-drafts-2026-09-27/`. 실기기 확인 후보는 HUMAN_TODO **I**(초안 표 `audit/round13-drafts-2026-09-27/human-todo-realdevice-draft.md`)가 소스. **[2026-09-27 11:05]** 루프는 사용자 지시로 종료됐다 — 탐사 문항은 더 늘지 않고(`Q157`까지 — **[2026-09-30]** 반영 중 실측으로 `Q158` 하나 추가, 끝 번호는 원장이 소스), 다음은 §0 결정 묶음 순서의 대화형 회신.
-
+round13·round14 원장의 사용자 문항은 전부 닫혔다(round14 원장 끝 문단들, round13 §0 표의 [닫힘] 표시). round13에서 보류로 남은 Q87·Q122·Q127은
+`research/declaration-surface-plan.md`에 묶여 있다(Q76은 2026-10-15 닫힘). 이 절의 옛 포인터 서술은 `archive/question-resolved.md`의 "question.md에서 걷어낸 닫힌 항목 원문" 절.
