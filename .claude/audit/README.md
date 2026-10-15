@@ -121,3 +121,4 @@
 - `code-review-2026-10-13/` — **[2026-10-13 밤, sonnet 셋·Gemini 둘·opus 추림·메인 적용]** material·devui 두 킷 전체의 code-review 원문 — 파인더 보고 넷과 추림(material: 확정 5·결정 2·실기기 1, devui: 확정 4·결정 4·실기기 5). 확정분은 레포에 반영, 판정과 문항은 `research/consumer-kits-plan.md` 5절.
 - `code-review-2026-10-15/` — **[2026-10-15, sonnet 파인더·메인 판정]** 리뷰 안 된 코어 커밋 둘(`b1f301e1`, Q186 `99c2d7a1`) — 동작 결함 0, 낡은 주석 하나 고침, 지연 경로의 사슬 올림은 이유를 적고 유지. 3.3.0 전 재검사 셋 중 하나.
 - `surface-convergence-2026-10-15/` — **[2026-10-15, opus 읽기 전용·메인 검증]** 3.3.0 전 공개 표면 수렴 점검 — `[Unreleased]` 사실 대조(틀린 줄 다섯: 범용 둘 버전 줄, debug 층으로 내린 검사 둘의 3.2.0 기준, 마운트 창 거부의 "전에는", Tween 힌트 — 같은 날 정정), 빠진 줄(`type_version_check` BREAKING 포인터), 앞으로 BREAKING을 낼 열린 결정(클래스 타입 재수출·Tween 콜백·에러 식별자 계약·`:List` 순서 문장 — 사용자 문항).
+- `gemini-core-2026-10-15/` — **[2026-10-15, Gemini 격리 worktree·메인 판정]** 3.2.0 이후 코어 변경의 라운드 사이 상호작용 — 주장한 결함 셋은 UB 장면·결정된 결과·무해로 판정(확정 결함 0), CHANGELOG 43행 BREAKING 표기만 반영.

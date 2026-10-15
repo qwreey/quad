@@ -1,0 +1,15 @@
+local mock = require("./mock")
+local q = mock.newQuad()
+
+local host = mock.Instance.new("Frame")
+local rootSlot = q.Slot()
+local childSlot = q.Slot()
+rootSlot:Add(childSlot)
+q.Dispatch.drive(host, { rootSlot })
+
+print("childSlot elements count before:", #childSlot._elements)
+local ok, err = pcall(function() childSlot:Add(123) end)
+print("plain 123 Add ok =", ok)
+print("childSlot elements count after:", #childSlot._elements)
+print("childSlot._materializing =", childSlot._materializing)
+print("rootSlot._materializing =", rootSlot._materializing)
