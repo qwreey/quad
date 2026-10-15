@@ -209,7 +209,12 @@ return function(S: Types.SlotInternal, module: any)
 		local bk = S.BK.getBookkeeping(self)
 		unbindObserverAt(bk, index)
 		S.releaseOwner(element, self)
-		local chainSlots, chainOlds = raiseChain(self) -- Q185 (d) / Q186 backend-call window
+		-- Q185 (d) / Q186 backend-call window. Raised on the deferPhysical path too, where no backend call is made:
+		-- `teardownTree` unbinds lifetimes (user cleanups run), and mid-`rawSplice` the bookkeeping already
+		-- disagrees with the physical layout until the batch below — an ancestor CRUD from a cleanup would
+		-- compute its offset from that. (code-review 2026-10-15: costs ~2 table allocs + a chain walk per
+		-- element on ExtractAll/Splice — 3000 elements at depth 20, 5.7 -> 18 ms in mock; kept.)
+		local chainSlots, chainOlds = raiseChain(self)
 		if S.isSlot(element) then leaveAsElement(element, deferPhysical)
 		elseif self._mounted and not deferPhysical then
 			module.Backend.nativeExtract(self._mountedInst, S.BK.getOffsetAt(self, index), { element })

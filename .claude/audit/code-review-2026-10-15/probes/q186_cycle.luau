@@ -1,0 +1,10 @@
+--!nocheck
+local mock = require("./mock")
+local q = mock.newQuad()
+print("debug", q.debug)
+local a = q.Slot()
+local b = q.Slot()
+a:Add(b)
+print("a:Add(b) ok")
+print(pcall(function() b:Add(a) end))
+print("done")

@@ -277,7 +277,8 @@ local function Init(module: any)
 	--     `:List`/`:Single` install and each reconcile, the dispatch handler's mount
 	--     (`Slot/Handler.luau`) and `dispose` — never where the flag comes down: the tail of an
 	--     operation (`vacate`, `setLength`) still uses an index captured before the backend call.
-	--     (Unmount raises no flag — its logical half runs first — so it has no settle point.)
+	--     (`rawUnmount` raises the chain too — Q185 (d) / Q186 — and settles at the end of the entry that
+	--     called it: `Extract`, a `:List` reconcile, `Splice`/`ExtractAll`.)
 	--   * no pcall (contract): a raise from `fn` propagates to the caller of the operation that
 	--     settled it (the request is already off the list); an operation that raised mid-way leaves
 	--     its Slot flagged, and requests on that Slot wait until it is destroyed.
