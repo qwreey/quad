@@ -158,6 +158,7 @@ operator-sugar-plan.md` 머리 배너; And/Or·비교 제외) · (g) 당장 안 
   복귀(비권장). 평문 전문은 `qa-request/post-implementation-review-round8.md` §4.
 - **[2026-09-08 오전 신설, 같은 날 오후 회신으로 전부 닫힘 — round7 §6]** 사용자 반입 RFC 다섯의 판정 문항(`qa-request/post-implementation-review-round7.md` §4): Q37 (a) `keyType` 반영(`H-484`), Q38 백로그(ROADMAP), Q39는 폴더별 README 분리만 하고 루트 README는 백로그·나머지 둘은 안 함. 여기 남은 것 없음. 원문: **Q37** `getHandler` 키 타입 버킷을 핸들러 계약의 어떤 필드로 선언하나(권고 (a) `keyType: "number" | "string"?`, 없으면 모든 버킷 — 방향은 사용자가 이미 승인, 이름·모양만 남음; 실측 절감은 `D.Frame` 한 번에 5µs 안팎). **Q38** `Slot:List` 대량 재정렬 O(N²)(1000개 역순 82ms, 100개 1ms) — `rawPermute` 설계를 지금 열 것인가 백로그인가(권고 (a) 백로그). **Q39** 문서 거버넌스 넷 — README `qa-request/`·`audit/` 행 비대(한 셀 16,636자, 권고: 한다), `base/` 계약서화(권고: 반대), `session-summary.md` 분할(권고: 안 함), 루트 `README.md` 신설(권고: 지금 안 함). 적용된 다섯(`H-479`~`H-483`)엔 사용자 몫 없음.
 
+- **[2026-10-15 신설] 펴 넣는 묶음 `q.Spread` — 이름은 확정, 표면 문항 다섯은 `research/component-flatten-sugar-plan.md` 5절**(같은 키 두 Spread, 같은 값 두 요소, 펴기 루프 세 단계, 타입, 2절 경계 flatten과의 관계).
 - **[2026-09-06 신설] 컴포넌트 경계 flatten 슈거 스캐폴딩 — `research/component-flatten-sugar-plan.md` 2절의 "정해야 할 것" 일곱(단위·State 취급·`rest` 형태·배열부 분리 범위·되꽂기 표기·경계 필드 이름 Q2·패키지).** 사용자가 "나중에 보고 답할게"라 한 항목. 구현은 순수 슈거라 코어를 막지 않는다.
 - **`Operator` 콤비네이터 슈가 네임스페이스 이름+포함 범위 — [2026-09-08 닫힘, 2026-09-27 정리]** 이름 `Operator`·범위 사용자 확정 뒤 구현됨(`quad-base/src/Operator.luau`, 0절 (f), `research/operator-sugar-plan.md` 머리 배너). 이 항목은 확정 뒤에도 "최종 확정은 사용자 몫"이라 적힌 채 남아 있었다 — 원문은 `archive/question-resolved.md`로.
 - **중첩 State 평탄화 `State<State<T>>` → `State<T>`(2026-08-13 여섯 번째
