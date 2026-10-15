@@ -19,7 +19,7 @@
 	  Elements.luau — destroyElement / wrapElement / unwrapElement / collectLeaves / leavesOf
 	  Raw.luau      — the raw* mutation layer + its bookkeeping helpers (vacate 등)
 	  Tree.luau     — materialize/mount/attach + teardown/unmount/destroy tree walks
-	  List.luau     — identityUpdateFn / _activateList / checkListInstall / :List / :Single / :Defer
+	  List.luau     — identityUpdateFn / _activateList / checkListInstall / :List / :Single / :Lazy
 	`S` is the internal table every sibling receives — typed `Types.SlotInternal`
 	(`Slot/types.luau`, round3 §9 Q29, user decision 2026-09-07: internal types stay in
 	quad-base, quad-types carries only the public contract): init puts the prelude
@@ -186,7 +186,7 @@ local function Init(module: any)
 	-- here — a CRUD call rejected by its own validation (`Add(nil)`, out-of-range `Remove`) used to
 	-- lock the Slot as manual, and a later `:List` blamed "CRUD was used" (the `H-386` shape again).
 	local function assertManual(self: any)
-		if self._listed then Err.errorBeforeNearest("Quad0166 Slot: manual CRUD is not allowed after :List/:Single/:Defer", SURFACE) end
+		if self._listed then Err.errorBeforeNearest("Quad0166 Slot: manual CRUD is not allowed after :List/:Single/:Lazy", SURFACE) end
 	end
 	local function markManual(self: any)
 		self._crudUsed = true
@@ -618,7 +618,7 @@ local function Init(module: any)
 		Slot_mt.Swap,
 		S.List, -- [split] Slot_mt fields defined in Slot/List.luau, taken via S
 		S.Single,
-		S.Defer,
+		S.Lazy,
 		Slot_mt.Get, -- 6순회 `H-410`: read methods too — a raise inside them blames the caller
 		Slot_mt.IndexOf,
 		Slot_mt.WhenIdle

@@ -7,9 +7,9 @@ description: 가변 자식 배열 프리미티브 — CRUD 열하나, :List/:Sin
 
 `Slot<T>`은 **가변 자식 배열**입니다. 부모의 숫자 키 자리에 한 번 놓이면, 그 뒤로 Slot에 가한 CRUD가 그대로 물리 자식에 반영됩니다 — 부모를 다시 만들지도, 렌더 함수를 다시 돌리지도 않습니다.
 
-Slot은 **두 모드 중 하나**로만 삽니다. 손으로 원소를 넣고 빼는 **수동 CRUD** 모드와, 데이터 배열에 맞춰 quad가 재조정하는 **`:List`/`:Single`** 모드입니다(처음 꽂힐 때 한 번 짓는 **`:Defer`**도 이 쪽 — 수동 CRUD가 잠깁니다). 둘은 상호 배타이고, 섞으려 하면 그 자리에서 에러가 납니다.
+Slot은 **두 모드 중 하나**로만 삽니다. 손으로 원소를 넣고 빼는 **수동 CRUD** 모드와, 데이터 배열에 맞춰 quad가 재조정하는 **`:List`/`:Single`** 모드입니다(처음 꽂힐 때 한 번 짓는 **`:Lazy`**도 이 쪽 — 수동 CRUD가 잠깁니다). 둘은 상호 배타이고, 섞으려 하면 그 자리에서 에러가 납니다.
 
-이 페이지의 심볼: [`q.Slot`](#qslottinitial) · [`slot.Length`](#slotlength) · [`slot.Offset`](#slotoffset) · [`slot:Add`](#slotaddelement-index) · [`slot:Remove`](#slotremoveindex) · [`slot:Replace`](#slotreplaceindex-newelement) · [`slot:Extract`](#slotextractindex-newelement) · [`slot:ExtractAll`](#slotextractall) · [`slot:Splice`](#slotspliceindex-removecount-newelements) · [`slot:Clear`](#slotclear) · [`slot:Move`](#slotmoveoldindex-newindex) · [`slot:Swap`](#slotswapindexa-indexb) · [`slot:Get`](#slotgetindex) · [`slot:IndexOf`](#slotindexofelement) · [`slot:WhenIdle`](#slotwhenidlefn) · [`slot:List`](#slotlistdata-updatefn-keyfn-opts) · [`slot:Single`](#slotsinglestate-updatefn-opts) · [`slot:Defer`](#slotdeferfn) · [`q.Detach`](#qdetach) · [`q.KeyGone`](#qkeygone) · [`q.dispose`](#qdisposevalue)
+이 페이지의 심볼: [`q.Slot`](#qslottinitial) · [`slot.Length`](#slotlength) · [`slot.Offset`](#slotoffset) · [`slot:Add`](#slotaddelement-index) · [`slot:Remove`](#slotremoveindex) · [`slot:Replace`](#slotreplaceindex-newelement) · [`slot:Extract`](#slotextractindex-newelement) · [`slot:ExtractAll`](#slotextractall) · [`slot:Splice`](#slotspliceindex-removecount-newelements) · [`slot:Clear`](#slotclear) · [`slot:Move`](#slotmoveoldindex-newindex) · [`slot:Swap`](#slotswapindexa-indexb) · [`slot:Get`](#slotgetindex) · [`slot:IndexOf`](#slotindexofelement) · [`slot:WhenIdle`](#slotwhenidlefn) · [`slot:List`](#slotlistdata-updatefn-keyfn-opts) · [`slot:Single`](#slotsinglestate-updatefn-opts) · [`slot:Lazy`](#slotlazyfn) · [`q.Detach`](#qdetach) · [`q.KeyGone`](#qkeygone) · [`q.dispose`](#qdisposevalue)
 
 이 페이지의 모든 예제는 아래 프롤로그를 전제합니다.
 
@@ -426,9 +426,9 @@ Quad0167 Slot: cannot mutate a Slot while it is being mounted or while one of it
 
 - `:List`는 **설치**입니다. 한 Slot에 한 번만 걸 수 있고, 수동 CRUD를 이미 쓴 Slot(빈 `Slot{}` 포함)에는 걸 수 없습니다.
 - 데이터 배열 중간의 `nil` 구멍은 **정의되지 않은 동작**입니다 — `initial`과 같은 이유로 `ipairs`가 거기서 멈추고, 구멍 뒤에 아직 있는 항목의 원소까지 `KeyGone` 경로로 **파괴**됩니다(`{"a","b","c"}` → `{"a", nil, "c"}`를 `:Set`하면 Length 1, `"c"`의 원소 파괴 — [2026-09-27 mock 관측 — 계약 아님]). 항목을 빼려면 `table.remove`로 배열을 다시 채우세요. [`q.debug`](./01-quad-module.md#qdebug)를 켜 두면 재조정이 아무것도 파괴하기 전에 멈춥니다 — `Quad0269 Slot:List: data has a nil hole at index {n} …`(다음 릴리즈부터; 평소 경로에서는 검사하지 않습니다 — 재조정마다 배열을 한 번 더 훑어야 해서).
-  - `Quad0148 Slot: already has :List/:Single/:Defer installed`
-  - `Quad0149 Slot: cannot install :List/:Single/:Defer on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)`
-  - 반대로 `:List`를 건 뒤의 수동 CRUD는 `Quad0166 Slot: manual CRUD is not allowed after :List/:Single/:Defer`.
+  - `Quad0148 Slot: already has :List/:Single/:Lazy installed`
+  - `Quad0149 Slot: cannot install :List/:Single/:Lazy on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)`
+  - 반대로 `:List`를 건 뒤의 수동 CRUD는 `Quad0166 Slot: manual CRUD is not allowed after :List/:Single/:Lazy`.
 - 재조정은 마운트 시점과 이후 `data`가 바뀔 때마다 돕니다. 한 사이클은 **하나의 배치**로 묶여 재계산이 한 번만 일어납니다.
 - 사이클마다 먼저 데이터 순서대로 키를 계산해 중복/누락을 검사하고(여기서 걸리면 아무 `updateFn`도 불리지 않습니다), 그 뒤 데이터의 항목마다 `updateFn`을, 지난 사이클에 있었지만 이번엔 없는 키마다 `q.KeyGone`으로 `updateFn`을 한 번씩 부릅니다. **이 호출들이 어떤 순서로 오는지는 정해져 있지 않습니다** — 항목끼리, 사라진 키끼리, 항목과 사라진 키 사이 모두(**[다음 릴리즈부터]** 3.2.0까지는 "항목 먼저, 사라진 키 나중"을 적어 두었습니다). `updateFn`은 자기 키의 항목만 보고 원소를 돌려주세요 — 다른 키의 `updateFn`이 먼저 불렸는지에 기대는 코드(바깥 상태를 호출 순서대로 쌓기 등)는 정의되지 않습니다. 전부 한 배치 안이라 화면에는 사이클이 끝난 모습만 나옵니다.
 - `KeyGone` 호출에서는 `nil`/`q.None`(파괴)과 `q.Detach`(보관)만 반환할 수 있습니다. 새 원소를 반환하면 `Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)`.
@@ -535,17 +535,17 @@ current:Set(nil)                              -- 비워진다
 
 **관련** — [비파괴 포털과 소유권](../../quadnomicon/05-non-destructive-portal-and-ownership.md)
 
-## `slot:Defer(fn)`
+## `slot:Lazy(fn)`
 
 **시그니처**
 
 ```luau
-Defer: (self: Slot<T>, fn: () -> SlotElement<T>?) -> Slot<T>
+Lazy: (self: Slot<T>, fn: () -> SlotElement<T>?) -> Slot<T>
 ```
 
-빈 Slot에 **한 번만 짓는 함수**를 겁니다. `fn`은 거는 순간이 아니라 이 Slot이 **처음 꽂혀 마운트될 때 한 번** 불리고, 돌려준 값 하나가 이 Slot의 내용이 됩니다 — 원소 하나, `State`(반응형 원소), 여러 원소를 담은 `Slot`, 또는 `nil`(빈 내용). 돌려준 값은 [`slot:Add`](#slotaddelement-index)로 넣은 것과 같이 다룹니다. **[다음 릴리즈부터]**
+빈 Slot에 **한 번만 짓는 함수**를 겁니다. `fn`은 거는 순간이 아니라 이 Slot이 **처음 꽂혀 마운트될 때 한 번** 불리고, 돌려준 값 하나가 이 Slot의 내용이 됩니다 — 원소 하나, `State`(반응형 원소), 여러 원소를 담은 `Slot`, 또는 `nil`(빈 내용). 돌려준 값은 [`slot:Add`](#slotaddelement-index)로 넣은 것과 같이 다룹니다. 이름의 "게으름"은 [시작하기 19장](../../getting-started/19-laziness.md)의 그것과 같은 뜻입니다 — 필요한 순간(꽂히는 순간)까지 미룰 뿐, 엔진 스케줄러(`task.defer`)와는 무관하게 마운트 순회 안에서 그 자리에서 짓습니다. **[다음 릴리즈부터]**
 
-**언제 쓰나** — Luau는 인자를 먼저 평가하므로 `Window({ Children = q.Slot{ Button{…} } })`에서 버튼은 창보다 **먼저** 지어집니다. 창이 자기 본문에서 무언가(예: [`q.Context`](../sugar/01-context.md) 가방에 넣는 값)를 채운 **뒤에** 내용을 짓고 싶을 때 내용을 `q.Slot():Defer(fn)`으로 넘기세요. 받는 컴포넌트는 이것을 모릅니다 — 평범한 `Slot`으로 받아 자기 자리에 꽂을 뿐이고, 꽂히는 순간(그 부모가 자기 자리를 처리할 때) `fn`이 돕니다.
+**언제 쓰나** — Luau는 인자를 먼저 평가하므로 `Window({ Children = q.Slot{ Button{…} } })`에서 버튼은 창보다 **먼저** 지어집니다. 창이 자기 본문에서 무언가(예: [`q.Context`](../sugar/01-context.md) 가방에 넣는 값)를 채운 **뒤에** 내용을 짓고 싶을 때 내용을 `q.Slot():Lazy(fn)`으로 넘기세요. 받는 컴포넌트는 이것을 모릅니다 — 평범한 `Slot`으로 받아 자기 자리에 꽂을 뿐이고, 꽂히는 순간(그 부모가 자기 자리를 처리할 때) `fn`이 돕니다.
 
 ```luau
 local ctx = q.Context()
@@ -558,7 +558,7 @@ end
 
 Window({
     Context = ctx,
-    Children = q.Slot():Defer(function()
+    Children = q.Slot():Lazy(function()
         return CloseButton({ Handle = ctx:Get(Handle) }) -- 창이 채운 값을 본다
     end),
 })
@@ -573,7 +573,7 @@ Window({
 - `fn`은 `:List`/`:Single`의 첫 `updateFn`과 같은 자리(마운트 작업 안)에서 불립니다. 그래서 같은 규칙을 따릅니다 — 자기가 돌려줄 원소와 그 안의 Slot은 지어도 되지만, 이 Slot의 조상 Slot을 CRUD하면 `Quad0167`입니다(그 자리에서 고쳐야 하면 [`slot:WhenIdle`](#slotwhenidlefn)).
 - 설치 규칙과 잠금은 `:List`/`:Single`과 같습니다. 한 Slot에 한 번만 걸 수 있고(`Quad0148`), 수동 CRUD를 쓴 Slot에는 걸 수 없으며(`Quad0149`), 건 뒤의 수동 CRUD는 `Quad0166`입니다.
 - 지은 원소는 이 Slot이 소유합니다 — Slot이 파괴되면 같이 파괴됩니다.
-- 인자·반환 에러: `Quad0271 Slot:Defer: fn must be a function (got {typeof(fn)})`, `Quad0272 Slot:Defer: fn must return one value (got {n}) - put several elements in a Slot and return that`(여럿을 돌려주려면 `q.Slot{ … }`에 담아 하나로).
+- 인자·반환 에러: `Quad0271 Slot:Lazy: fn must be a function (got {typeof(fn)})`, `Quad0272 Slot:Lazy: fn must return one value (got {n}) - put several elements in a Slot and return that`(여럿을 돌려주려면 `q.Slot{ … }`에 담아 하나로).
 - `fn`이 던지면 그 에러가 마운트한 쪽으로 그대로 나갑니다(감싸지 않습니다). 그 뒤의 상태는 `:List`의 `updateFn`이 던진 경우와 같이 정의되지 않습니다 — 다음 마운트에서 `fn`을 다시 부르지도 않습니다.
 
 ## `q.Detach`

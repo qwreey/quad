@@ -214,9 +214,9 @@ end, small, big)
 - **증상**: 어느 쪽을 먼저 썼든, 나중에 쓴 쪽이 즉시 에러로 막힙니다.
   수동 CRUD(`:Add`/`:Remove`/`:Move`/`:Swap`/`:Extract`/`:Replace`/`:Splice`/
   `:Clear`/`:ExtractAll`) 뒤에 `:List`나 `:Single`을 걸면
-  `Quad0149 Slot: cannot install :List/:Single/:Defer on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)`,
+  `Quad0149 Slot: cannot install :List/:Single/:Lazy on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)`,
   반대로 `:List`/`:Single`을 먼저 건 뒤에 수동 CRUD를 부르면
-  `Quad0166 Slot: manual CRUD is not allowed after :List/:Single/:Defer`이 그 CRUD를
+  `Quad0166 Slot: manual CRUD is not allowed after :List/:Single/:Lazy`이 그 CRUD를
   부른 줄에서 납니다.
 - **원인**: 한 Slot은 태어날 때부터 **수동 모드**이거나 `:List`/`:Single`이
   설치된 **리스트 모드**이고, 이 둘은 같이 못 씁니다 — `Slot{ ... }`로

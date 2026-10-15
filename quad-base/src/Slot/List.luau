@@ -69,19 +69,19 @@ return function(S: Types.SlotInternal, module: any)
 	-- the reconcile closure (mounted/userdata/prevKeys upvalues) + subscribes;
 	-- remount path re-anchors only (idempotent guard).
 	function S.Slot_mt._activateList(self: any, physicalTarget: any)
-		if self._deferred then
-			-- `slot:Defer(fn)` [2026-10-15 user decision]: ONE shot — `fn` runs at this Slot's FIRST mount only and
+		if self._lazy then
+			-- `slot:Lazy(fn)` [2026-10-15 user decision]: ONE shot — `fn` runs at this Slot's FIRST mount only and
 			-- its one value is the content. A remount walks `_elements` like a manual Slot (`Slot/Tree.luau`
 			-- materialize) and nothing runs again; to build again, make a new Slot. No State, no Observer, no
 			-- Effect — nothing ever reruns (user: "Effect 가 완전 필요하지 않은 경로"). Marked activated BEFORE
 			-- `fn` runs: a raise from `fn` is the user's (no pcall) and is not retried by a later mount.
 			if self._listActivated then return end
 			self._listActivated = true
-			local fn = self._deferFn
-			self._deferFn = nil
+			local fn = self._lazyFn
+			self._lazyFn = nil
 			local out = table.pack(fn())
 			if out.n > 1 then
-				S.Err.errorBefore(`Quad0272 Slot:Defer: fn must return one value (got {out.n}) - put several elements in a Slot and return that`, S.SURFACE)
+				S.Err.errorBefore(`Quad0272 Slot:Lazy: fn must return one value (got {out.n}) - put several elements in a Slot and return that`, S.SURFACE)
 			end
 			local result = out[1]
 			if result ~= nil and result ~= S.None then
@@ -322,8 +322,8 @@ return function(S: Types.SlotInternal, module: any)
 	local function checkListInstall(self: any)
 		S.assertLive(self)
 		S.assertNotMounting(self) -- round10 Q52 (a)
-		if self._listed then S.Err.errorBeforeNearest("Quad0148 Slot: already has :List/:Single/:Defer installed", S.SURFACE) end
-		if self._crudUsed then S.Err.errorBeforeNearest("Quad0149 Slot: cannot install :List/:Single/:Defer on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)", S.SURFACE) end
+		if self._listed then S.Err.errorBeforeNearest("Quad0148 Slot: already has :List/:Single/:Lazy installed", S.SURFACE) end
+		if self._crudUsed then S.Err.errorBeforeNearest("Quad0149 Slot: cannot install :List/:Single/:Lazy on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)", S.SURFACE) end
 	end
 
 	function S.Slot_mt.List(self: any, data: any, updateFn: any, keyFn: any?, opts: any?): any
@@ -397,17 +397,17 @@ return function(S: Types.SlotInternal, module: any)
 		return self:List(data, uf, function() return true end, opts)
 	end
 
-	-- `slot:Defer(fn)` [2026-10-15 user decision]: install a one-shot builder — `fn()` runs when this Slot is first
+	-- `slot:Lazy(fn)` [2026-10-15 user decision]: install a one-shot builder — `fn()` runs when this Slot is first
 	-- mounted (inside its mount walk, after whatever filled a Context / PreRef above it), never at install
 	-- unless the Slot is already mounted. Same install rules and CRUD lock as :List/:Single (`_listed`).
-	function S.Slot_mt.Defer(self: any, fn: any): any
+	function S.Slot_mt.Lazy(self: any, fn: any): any
 		checkListInstall(self)
 		if type(fn) ~= "function" then
-			S.Err.errorBeforeNearest(`Quad0271 Slot:Defer: fn must be a function (got {typeof(fn)})`, S.SURFACE)
+			S.Err.errorBeforeNearest(`Quad0271 Slot:Lazy: fn must be a function (got {typeof(fn)})`, S.SURFACE)
 		end
 		self._listed = true
-		self._deferred = true
-		self._deferFn = fn
+		self._lazy = true
+		self._lazyFn = fn
 		if self._physicalTarget then -- already mounted: build now (mount is a one-shot event, as :List)
 			self:_activateList(self._physicalTarget)
 			S.maybeRecompute(self, S.BK.getBookkeeping(self))
@@ -418,5 +418,5 @@ return function(S: Types.SlotInternal, module: any)
 
 	S.List = S.Slot_mt.List -- for init's setFuncLevel tagging call
 	S.Single = S.Slot_mt.Single
-	S.Defer = S.Slot_mt.Defer
+	S.Lazy = S.Slot_mt.Lazy
 end

@@ -67,7 +67,7 @@ export type SlotInternal = {
 	-- List.luau
 	List: (self: any, data: any, updateFn: any, keyFn: any?, opts: any?) -> any,
 	Single: (self: any, state: any, updateFn: any?, opts: any?) -> any,
-	Defer: (self: any, fn: any) -> any,
+	Lazy: (self: any, fn: any) -> any,
 	-- init.luau (published AFTER the installs)
 	pending: { { slot: any, fn: (slot: any) -> () } }?, -- `slot:WhenIdle` requests waiting for their Slot's operation to end (nil = none)
 	settle: () -> (),
