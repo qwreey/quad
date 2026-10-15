@@ -7,7 +7,10 @@
 			Children: Slot<Instance>?,          -- the content (laid out top-down; use Layout.* / Text / Button inside)
 			Position: Source<UDim2>?,           -- two-way: dragging the title bar writes it (default: an internal Source)
 			Size: Source<Vector2>?,             -- pixels; two-way: the resize grip writes it (default 300 x 200)
-			Open: Source<boolean>?,             -- the close button sets it false; setting it true shows the window again
+			Open: Source<boolean>?,             -- the close button sets it false; every `:Set(true)` shows the window AND brings it
+			                                    -- to the front with the focus (also when it is already open — `:SetIfChanged(true)`
+			                                    -- only syncs the state without raising)
+			Focused: Source<boolean>?,          -- output: the window writes whether it is the focused one (like Position on a drag)
 			Collapsed: Source<boolean>?,        -- the arrow toggles it; collapsed = title bar only
 			NoTitleBar / NoResize / NoMove / NoClose / NoCollapse: boolean?,   -- static flags
 			MinSize: Vector2?,                  -- resize floor (default 2 x frame height square)
@@ -65,6 +68,7 @@ export type WindowProps = {
 	read Position: Source<UDim2>?,
 	read Size: Source<Vector2>?,
 	read Open: Source<boolean>?,
+	read Focused: Source<boolean>?,
 	read Collapsed: Source<boolean>?,
 	read NoTitleBar: boolean?,
 	read NoResize: boolean?,
@@ -222,8 +226,30 @@ local function Window(props: WindowProps): Frame
 		end)
 	end
 
+	-- [2026-10-15 user decision] the owner drives the window through the Sources it already holds, no handle:
+	-- `open:Set(true)` raises (quad's `Set` re-emits an equal value, `SetIfChanged` does not), and `Focused` is an
+	-- output Source. The install run of the Observer is skipped — a window open from the start does not steal the focus.
+	local openInstalled = false
+	local raiseOnOpen = open:Observer(function(self)
+		if not openInstalled then
+			openInstalled = true
+			return
+		end
+		if self:Get() then
+			slot:Focus()
+		end
+	end)
+	local focusedOut = props.Focused
+	local focusedMirror = if focusedOut
+		then slot.Focused:Observer(function(self)
+			focusedOut:SetIfChanged(self:Get())
+		end)
+		else q.None
+
 	local built = D.Frame({
 		windowName,
+		raiseOnOpen,
+		focusedMirror,
 		props.Modifier or q.None,
 		slot.Hook,
 		Position = position,
