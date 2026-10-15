@@ -11,7 +11,8 @@
    (`mN-implementation-roundNN(-brief).md`, round11~21 + pre-implementation 1~10 + 옛 ROADMAP
    본문 `roadmap.md`). 종결 기록은 여기 쌓지 않는다 — 이 파일 규약(맨 위) 그대로.
    **지금 사용자 몫**(답을 주면 반영한다):
-   - **[2026-10-13 기준 — 가장 최근]** round14 코어 문항은 전부 닫혔다(Q186 사슬 가드·Q187 안 넣음·Q154). 지금 사용자 몫은 소비자 킷 결정 — `research/consumer-kits-plan.md` 5절의 2026-10-13 문단들(창 포커스·메뉴 폭·창 닫기 정리 외, 아이콘 팩, 3.3.0 시기). 원문 `session/2026-10-13-01-q186-kit-build-and-review.md`.
+   - **[2026-10-15 기준 — 가장 최근]** 3.3.0 전 재검사 끝(확정 결함 0, CHANGELOG 정정), `:List` 정리 순서(Q76 닫힘), `slot:Lazy` 신설, devui 창·메뉴 폭 반영. 남은 사용자 몫: devui 창 핸들(밖에서 올리기 — `slot:Lazy` 위에서), 3.3.0 bump 시기, 아이콘 팩. 원문 `session/2026-10-15-01-release-recheck-kits-list-lazy.md`.
+   - **[2026-10-13 기준]** round14 코어 문항은 전부 닫혔다(Q186 사슬 가드·Q187 안 넣음·Q154). 지금 사용자 몫은 소비자 킷 결정 — `research/consumer-kits-plan.md` 5절의 2026-10-13 문단들(창 포커스·메뉴 폭·창 닫기 정리 외, 아이콘 팩, 3.3.0 시기). 원문 `session/2026-10-13-01-q186-kit-build-and-review.md`.
    - **[2026-09-07]** `qa-request/post-implementation-review-round1.md` §4 Q1~Q17(핸드오버 전체
      코드 리뷰 — `NewChild` 팔 둘·품질 제안 묶음 `H-356`·Property 핸들 오용 진단·같은 키
      재진입 UB 명시·**Q6** native* 조합 폴백 약속 철회·**Q7** 미설치 스텁 무태그 여부·**Q8**
