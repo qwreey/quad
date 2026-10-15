@@ -116,11 +116,12 @@ local function Select<T>(props: Props<T>): Frame
 				})
 			end
 			-- flag AFTER the menu opened: a dead overlay makes Menu.open throw, and the field must not stay "open"
-			-- the field's own width (Menu's default clamps an anchor's width to 112..280; a select menu matches its field)
+			-- the field's own width: an exposed dropdown matches its field (Compose `exposedDropdownSize(matchAnchorWidth
+			-- = true)`); Menu's default would fit the options instead. A field not laid out yet (0) gets the M3 minimum.
 			local fieldWidth = parts.Container.AbsoluteSize.X
 			Menu.open({
 				Anchor = parts.Container,
-				Width = if fieldWidth > 0 then fieldWidth else nil,
+				Width = if fieldWidth > 0 then fieldWidth else 112,
 				Items = entries,
 				Overlay = props.Overlay,
 				Theme = props.Theme,

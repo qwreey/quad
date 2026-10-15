@@ -56,6 +56,9 @@ end
 local baseBeats, baseUis = beats(), uis()
 local parent = Instance.new("Folder")
 local gui = Demo.mount(parent) :: any
+-- the window manager's ONE press listener (press-to-front) is open while it has windows; everything else is opened
+-- only during a drag / while a popup is open
+local idleUis = baseUis + 1
 local layer = H.find(gui, "OverlayLayer") :: any
 local total = H.countDescendants(gui)
 print(`[demo] mounted: {total} instances, {#byName(gui, "Window")} windows`)
@@ -66,7 +69,7 @@ H.section("mount: ScreenGui settings, three windows (tools closed), only the ope
 	local vis = visibleWindows(gui)
 	assert(#byName(gui, "Window") == 3 and #vis == 1 and vis[1] == "quad devui — Demo", table.concat(vis, ","))
 	assert(beats() == baseBeats + 1, `heartbeat connections (the plot ticker only; tools are closed): {beats() - baseBeats}`)
-	assert(uis() == baseUis, "no input connection until a drag/popup")
+	assert(uis() == idleUis, "no input connection until a drag/popup (but the manager's press listener)")
 	H.assertNoDebugOutput("mount")
 end)
 
@@ -106,7 +109,7 @@ H.section("inputs: text box <-> shared Source, slider -> progress", function()
 	UIS.InputEnded:Fire(H.input({ UserInputType = Enum.UserInputType.MouseButton1, UserInputState = Enum.UserInputState.End }), false)
 	local fill = byName(gui, "Fill")[1]
 	assert(math.abs(fill.Size.X.Scale - 0.5) < 0.02, `progress fill {fill.Size.X.Scale}`)
-	assert(uis() == baseUis, "slider drag closed its connections")
+	assert(uis() == idleUis, "slider drag closed its connections")
 	H.assertNoDebugOutput("inputs")
 end)
 

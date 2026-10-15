@@ -250,4 +250,44 @@ H.section("the layer dying with the list open: popup closed, Escape listener bac
 end)
 
 
+H.section("closing the window the combo is in (an ANCESTOR hidden) closes the open list; watchers only while open", function()
+	local o = Overlay.new()
+	local win = D.Frame({})
+	local inner = D.Frame({})
+	inner.Parent = win
+	local combo = Combo.Combo<<number>>({ Text = "n", Value = q.Source(1), Options = { 1, 2 }, Overlay = o })
+	combo.Parent = inner
+	local box = get(combo, "Box")
+	local winVisible = (win :: any):GetPropertyChangedSignal("Visible")
+	local idle = #winVisible.connections
+	H.fire(box, "Activated", H.input({}), 1)
+	assert(o.Count:Get() == 1 and #winVisible.connections == idle + 1, "open: the ancestors are watched")
+	-- an unrelated property or Visible = true does nothing
+	win.Visible = true
+	assert(o.Count:Get() == 1)
+	win.Visible = false
+	assert(o.Count:Get() == 0 and #winVisible.connections == idle, "hidden ancestor closed the list; watchers dropped")
+	win.Visible = true
+	-- the box itself hidden, and a closed list leaves nothing behind either way
+	H.fire(box, "Activated", H.input({}), 1)
+	box.Visible = false
+	assert(o.Count:Get() == 0, "box hidden")
+	box.Visible = true
+	-- the ScreenGui disabled
+	local gui = D.ScreenGui({ ZIndexBehavior = Enum.ZIndexBehavior.Sibling })
+	win.Parent = gui
+	H.fire(box, "Activated", H.input({}), 1)
+	gui.Enabled = false
+	assert(o.Count:Get() == 0, "ScreenGui disabled")
+	-- a hidden window does not stop the list from opening again once shown
+	gui.Enabled = true
+	H.fire(box, "Activated", H.input({}), 1)
+	assert(o.Count:Get() == 1)
+	H.fire(get(o.Layer, "Catcher"), "Activated", H.input({}), 1)
+	assert(o.Count:Get() == 0 and #winVisible.connections == idle)
+	q.dispose(gui)
+	q.dispose(o.Layer)
+	H.assertNoDebugOutput("ancestor hidden")
+end)
+
 H.done()

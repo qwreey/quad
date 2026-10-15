@@ -30,6 +30,7 @@
 	the box. While open, a changing `Options` State updates the list in place.
 
 	Escape is listened for only while the list is open (one UserInputService.InputBegan connection, closed on close).
+	Hiding the box or an ancestor of it (closing the window the Combo is in) closes the list too (watched only while open).
 ]]
 
 local Quad = require("./Quad")
@@ -219,7 +220,7 @@ local function core(spec: CoreSpec): Frame
 				end
 			end,
 		})
-		disconnectEscape = PopupParts.onEscape(close)
+		disconnectEscape = PopupParts.whileOpen(anchor, close)
 	end
 
 	local padX: State<UDim> = Util.pxX(style.Metrics.FramePadding)

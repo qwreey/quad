@@ -369,4 +369,29 @@ H.section("the default overlay is resolved when the menu opens (a rebuilt defaul
 end)
 
 
+H.section("closing the window the menu bar is in closes the open chain (submenu included); watchers only while open", function()
+	local o = Overlay.new()
+	local win = D.Frame({})
+	local bar = build(o)
+	bar.Parent = win
+	local file = titles(bar)[1]
+	local winVisible = (win :: any):GetPropertyChangedSignal("Visible")
+	local idle = #winVisible.connections
+	local base = nBegan()
+	click(file)
+	local recent = byName(o.Layer, "Menu")[1]
+	H.fire(recent, "MouseEnter", 0, 0)
+	assert(o.Count:Get() == 2 and #winVisible.connections == idle + 1, "root + submenu open; ancestors watched once")
+	win.Visible = false
+	assert(o.Count:Get() == 0 and nBegan() == base and #winVisible.connections == idle, "whole chain closed, nothing left")
+	win.Visible = true
+	click(file)
+	assert(o.Count:Get() == 1, "opens again once shown")
+	escape()
+	assert(o.Count:Get() == 0 and #winVisible.connections == idle)
+	q.dispose(win)
+	q.dispose(o.Layer)
+	H.assertNoDebugOutput("ancestor hidden")
+end)
+
 H.done()

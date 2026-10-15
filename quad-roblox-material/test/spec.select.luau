@@ -190,7 +190,7 @@ H.section("D10 gamepad focus on a read-only field draws the focused look and hid
 	H.assertNoDebugOutput("select focus")
 end)
 
-H.section("a field wider than Menu's 280 px default cap opens a menu of the field's width", function()
+H.section("the menu matches the field's width (exposed dropdown), not its options' width", function()
 	local overlay, screen = setup()
 	local sel = Select({ Label = "Wide", Options = { "A", "B" }, Value = q.Source(nil :: string?), Overlay = overlay })
 	sel.Parent = screen
@@ -199,6 +199,14 @@ H.section("a field wider than Menu's 280 px default cap opens a menu of the fiel
 	click(container)
 	local menu = H.find(screen, "Menu")
 	assert(menu.Size.X.Offset == 400 and menu.Position == UDim2.fromOffset(220, 76), "field width, centered pivot: " .. tostring(menu.Position))
+	assert(menu.AutomaticSize == Enum.AutomaticSize.None, "a fixed width, not fitted to the options")
+	H.fire(items(screen)[1], "Activated", H.input({}), 1)
+	H.advance(0.3)
+	-- a field not laid out yet (0 wide) still gets a fixed width: the M3 minimum
+	H.setAbs(container, 20, 20, 0, 56)
+	click(container)
+	local m2 = H.find(screen, "Menu")
+	assert(m2.Size.X.Offset == 112 and m2.AutomaticSize == Enum.AutomaticSize.None, "unmeasured field: 112 fixed")
 	H.fire(items(screen)[1], "Activated", H.input({}), 1)
 	H.advance(0.3)
 	q.dispose(screen)

@@ -362,6 +362,7 @@ local function single(props: SliderProps, look: Look): Single
 		OnEnded = function(x: number, y: number, cancelled: boolean)
 			if not cancelled then
 				commitFrom(x, y)
+				-- still reported when `Disabled` turned on during the drag: OnChangeEnd means "the gesture ended"
 				if props.OnChangeEnd then
 					props.OnChangeEnd(value:Get())
 				end
@@ -491,6 +492,7 @@ local function range(props: RangeSliderProps, look: Look): Range
 		OnEnded = function(x: number, y: number, cancelled: boolean)
 			if not cancelled then
 				moveTo(x, y)
+				-- still reported when `Disabled` turned on during the drag: OnChangeEnd means "the gesture ended"
 				if props.OnChangeEnd then
 					props.OnChangeEnd(startS:Get(), endS:Get())
 				end

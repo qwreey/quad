@@ -38,7 +38,8 @@
 	Escape is listened for only while a root menu is open (one UserInputService.InputBegan connection). The Overlay is
 	resolved when a menu OPENS (`Scope.Overlay`, else `props.Overlay`, else `Overlay.getDefault()`), and the scope handed to
 	`Children` is made fresh for every open. If the overlay layer dies while a menu is open, the Overlay closes the popup
-	(`OnClose` runs, so the Escape listener is dropped).
+	(`OnClose` runs, so the Escape listener is dropped). Hiding the bar item or an ancestor of it (closing the window the
+	menu bar is in) closes the open chain too (watched only while a root menu is open).
 ]]
 
 local Quad = require("./Quad")
@@ -235,7 +236,7 @@ function Menu.Menu(props: MenuProps): TextButton
 		if parent then
 			openChild[parent] = newPopup
 		else
-			disconnectEscape = PopupParts.onEscape(scope.CloseAll)
+			disconnectEscape = PopupParts.whileOpen(anchor, scope.CloseAll)
 		end
 	end
 

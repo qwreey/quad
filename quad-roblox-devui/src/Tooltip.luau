@@ -16,7 +16,10 @@
 
 	One handle per target element (it owns the pending timer / popup). The hook connects the target's MouseEnter /
 	MouseLeave / Destroying. On enter a `task.delay` is scheduled; on leave or destroy it is cancelled and an open
-	tooltip is closed — nothing is left behind. The tooltip appears at the mouse position read when it SHOWS
+	tooltip is closed — nothing is left behind. When the timer fires the target must still be shown (its own and its
+	ancestors' `Visible`, the ScreenGui's `Enabled`): hiding an ancestor — closing the window the target is in — sends
+	no MouseLeave, so without that check a hint would appear for a closed window. A tooltip already showing when its
+	window closes goes on the next mouse move (the engine re-evaluates hover and sends MouseLeave — Studio-confirmed). The tooltip appears at the mouse position read when it SHOWS
 	(`UserInputService:GetMouseLocation()`) and does not follow the mouse. It has no click-outside catcher (input falls
 	through to the UI underneath). Text may be a State: the open tooltip follows it.
 
@@ -39,6 +42,7 @@ local PopupParts = require("./PopupParts")
 local Style = require("./Style")
 local Types = require("./Types")
 local Util = require("./Util")
+local Visibility = require("./Visibility")
 
 type State<T> = Quad.State<T>
 type Source<T> = Quad.Source<T>
@@ -73,6 +77,8 @@ function Tooltip.hook(props: TooltipProps): TooltipHandle
 	end
 
 	local visible: Source<boolean> = q.Source(false)
+	-- the element the hook was placed on
+	local target: GuiObject? = nil
 	local pending: thread? = nil
 	local popup: Overlay.Popup? = nil
 
@@ -120,6 +126,12 @@ function Tooltip.hook(props: TooltipProps): TooltipHandle
 		if popup then
 			return
 		end
+		-- the target (or its window) was hidden while the timer ran: hiding an ancestor sends no MouseLeave, so the
+		-- timer was not cancelled — do not show a hint for something that is no longer on screen
+		local t = target
+		if t == nil or not Visibility.isShown(t) then
+			return
+		end
 		local overlay = props.Overlay or Overlay.getDefault()
 		if not overlay.Alive:Get() then
 			return
@@ -144,6 +156,7 @@ function Tooltip.hook(props: TooltipProps): TooltipHandle
 		if inst == nil then
 			return
 		end
+		target = inst
 		inst.MouseEnter:Connect(function()
 			if pending == nil and popup == nil then
 				pending = task.delay(delay, show)

@@ -65,8 +65,10 @@ H.section("open: panel under the anchor, items, divider, scrim is transparent", 
 	local handle = Menu.open({ Anchor = anchor, Items = items(log), Overlay = overlay })
 	assert(overlay.Count:Get() == 1 and handle.IsOpen:Get())
 	local menu = H.find(screen, "Menu")
-	assert(menu.Position == UDim2.fromOffset(200, 106) and menu.AnchorPoint == Vector2.new(0.5, 0), "below the anchor (top-center pivot)")
-	assert(menu.Size == UDim2.fromOffset(200, 16 + 48 * 4 + 17), "anchor width, content height")
+	-- no Width: the panel fits its items (AutomaticSize X); until the engine lays it out (the mock never does) it is
+	-- placed for the 112 minimum, NOT the anchor's width (Compose DropdownMenu does not follow the anchor)
+	assert(menu.Size == UDim2.fromOffset(0, 16 + 48 * 4 + 17) and menu.AutomaticSize == Enum.AutomaticSize.X, "fits the items, content height")
+	assert(menu.Position == UDim2.fromOffset(100 + 56, 106) and menu.AnchorPoint == Vector2.new(0.5, 0), "below the anchor (top-center pivot)")
 	assert(menu.BackgroundColor3 == L.SurfaceContainer and menu.Active == true)
 	ClickSink.assertClickSink(menu, "the menu panel (opens with a scrim)")
 	assert(#itemsOf(screen) == 4 and H.find(screen, "Divider") ~= nil)
@@ -74,17 +76,84 @@ H.section("open: panel under the anchor, items, divider, scrim is transparent", 
 	H.finishTweens()
 	assert(scrim.BackgroundTransparency == 1, "outside-click catcher is invisible")
 	local first = itemsOf(screen)[1]
-	assert(first.Size == UDim2.new(1, 0, 0, 48) and H.find(first, "Label").Text == "Rename" and H.find(first, "Leading").Image == "rbxassetid://1")
+	assert(H.find(first, "Label").Text == "Rename" and H.find(first, "Leading").Image == "rbxassetid://1")
 	assert(H.find(first, "Label").Position == UDim2.fromOffset(48, 0))
 	local copy = itemsOf(screen)[2]
 	assert(H.find(copy, "Trailing").Text == "Ctrl+C" and H.find(copy, "Trailing").ClassName == "TextLabel")
 	local pick = itemsOf(screen)[4]
 	assert(pick.BackgroundTransparency == 0 and pick.BackgroundColor3 == L.SecondaryContainer, "selected highlight")
 	assert(H.find(pick, "Trailing").ClassName == "ImageLabel", "image trailing")
+	-- fit structure: the list sizes to its rows, rows to their labels (+ the trailing room), stretched to the widest
+	local list = H.find(menu, "List")
+	assert(list.Size == UDim2.fromScale(0, 1) and list.AutomaticSize == Enum.AutomaticSize.X)
+	local spacer = H.find(list, "MinWidth")
+	assert(spacer ~= nil and spacer.Size == UDim2.fromOffset(112, 0), "the 112 floor is a 0-high spacer")
+	local divider = H.find(list, "Divider")
+	assert(divider.Size == UDim2.fromOffset(0, 17), "no scale width inside the automatic-width list (it fed back: half the layer wide)")
+	local divFlex = H.findAll(divider, function(c: any)
+		return c.ClassName == "UIFlexItem"
+	end)[1]
+	assert(divFlex ~= nil and divFlex.ItemLineAlignment == Enum.ItemLineAlignment.Stretch, "the divider is stretched like the rows")
+	assert(first.Size == UDim2.fromOffset(0, 48) and first.AutomaticSize == Enum.AutomaticSize.X)
+	local flex = H.findAll(first, function(c: any)
+		return c.ClassName == "UIFlexItem"
+	end)[1]
+	assert(flex ~= nil and flex.ItemLineAlignment == Enum.ItemLineAlignment.Stretch, "stretched to the widest row")
+	local copyLabel = H.find(copy, "Label")
+	assert(copyLabel.AutomaticSize == Enum.AutomaticSize.X and copyLabel.Size == UDim2.fromScale(0, 1))
+	local copyPad = H.findAll(copyLabel, function(c: any)
+		return c.ClassName == "UIPadding"
+	end)[1]
+	assert(copyPad.PaddingRight == UDim.new(0, 16 + 64), "the label reserves the trailing text room (64 until measured)")
+	local copyTrailing = H.find(copy, "Trailing")
+	assert(copyTrailing.Size == UDim2.fromScale(0, 1) and copyTrailing.AutomaticSize == Enum.AutomaticSize.X, "trailing text fits its text")
+	local uiScale = H.findAll(menu, function(c: any)
+		return c.ClassName == "UIScale"
+	end)[1]
+	assert(uiScale.Scale == 1, "(the scrim check above finished the open tween)")
+	-- laid out at full scale (here under an ancestor 0.9 scale: 90 px of text at 48 px row height): 16 + text + 12
+	H.setAbs(copyTrailing, 0, 0, 90 * 0.9, 48 * 0.9)
+	assert(copyPad.PaddingRight == UDim.new(0, 16 + 90 + 12), `measured trailing room: {copyPad.PaddingRight}`)
+	H.setAbs(copyTrailing, 0, 0, 91, 48)
+	assert(copyPad.PaddingRight == UDim.new(0, 16 + 90 + 12), "a 1 px change is jitter")
+	H.setAbs(copyTrailing, 0, 0, 30, 48)
+	assert(copyPad.PaddingRight == UDim.new(0, 16 + 30 + 12), "follows a real change (a font that loads), either way")
+	-- while the panel animates (its own scale is not 1) readings are not proportional: ignored
+	uiScale.Scale = 0.95
+	H.setAbs(copyTrailing, 0, 0, 120, 48)
+	assert(copyPad.PaddingRight == UDim.new(0, 16 + 30 + 12), "no trailing reading mid-animation")
+	local picPad = H.findAll(H.find(pick, "Label"), function(c: any)
+		return c.ClassName == "UIPadding"
+	end)[1]
+	assert(picPad.PaddingRight == UDim.new(0, 12 + 24 + 12), "and the trailing icon room")
+	-- the engine lays the panel out: it is re-placed by its real (full-scale) width
+	H.setAbs(menu, 0, 0, 300 * 0.95, 225)
+	assert(menu.Position == UDim2.fromOffset(100 + 56, 106), "no panel reading mid-animation")
+	uiScale.Scale = 1
+	H.setAbs(menu, 0, 0, 300, 225)
+	assert(menu.Position == UDim2.fromOffset(100 + 150, 106), `re-placed for 300: {menu.Position}`)
+	H.setAbs(menu, 0, 0, 299, 225)
+	assert(menu.Position == UDim2.fromOffset(100 + 150, 106), "a 1 px change is jitter")
+	H.setAbs(menu, 0, 0, 280, 225)
+	assert(menu.Position == UDim2.fromOffset(100 + 140, 106), "narrower re-places too")
 	local count = H.countDescendants(menu)
 	print("Menu (4 items + divider) descendants: " .. count)
 	H.resetOutput()
 	handle.Close()
+	H.advance(0.3)
+
+	-- a fixed Width: that width (labels truncate), rows fill it, no spacer, no re-placing
+	local fixed = Menu.open({ Anchor = anchor, Items = items({}), Overlay = overlay, Width = 200 })
+	local m2 = H.find(screen, "Menu")
+	assert(m2.Size == UDim2.fromOffset(200, 16 + 48 * 4 + 17) and m2.AutomaticSize == Enum.AutomaticSize.None)
+	assert(m2.Position == UDim2.fromOffset(200, 106))
+	assert(H.find(m2, "MinWidth") == nil and H.find(m2, "List").Size == UDim2.fromScale(1, 1))
+	local row = itemsOf(screen)[1]
+	assert(row.Size == UDim2.new(1, 0, 0, 48) and row.AutomaticSize == Enum.AutomaticSize.None)
+	assert(H.find(row, "Label").Size == UDim2.new(1, -(48 + 16), 1, 0) and H.find(row, "Label").TextTruncate == Enum.TextTruncate.AtEnd)
+	H.setAbs(m2, 0, 0, 500, 225)
+	assert(m2.Position == UDim2.fromOffset(200, 106), "a fixed width is not re-placed")
+	fixed.Close()
 	H.advance(0.3)
 	q.dispose(screen)
 	H.assertNoDebugOutput("open")
@@ -96,6 +165,7 @@ H.section("open animation: snapped at .9, animates to 1, back on close", functio
 	local scale = H.findAll(H.find(screen, "Menu"), function(c: any)
 		return c.ClassName == "UIScale"
 	end)[1]
+	assert(scale.Scale == 0.9, "the full-scale measuring read at open restores the closed scale: " .. tostring(scale.Scale))
 	H.finishTweens()
 	assert(scale.Scale == 1, "opened: " .. tostring(scale.Scale))
 	handle.Close()
@@ -142,7 +212,14 @@ H.section("flip up when it does not fit below; clamp horizontally; scroll when t
 	H.setAbs(anchor, 700, 520, 200, 56) -- bottom edge, right edge
 	local h = Menu.open({ Anchor = anchor, Items = items({}), Overlay = overlay })
 	local menu = H.find(screen, "Menu")
-	assert(menu.AnchorPoint == Vector2.new(0.5, 1) and menu.Position == UDim2.fromOffset(700, 520), "flipped, clamped: " .. tostring(menu.Position))
+	-- placed for the 112 guess (x clamped to 800 - 112), then for the laid-out 200 (x clamped to 800 - 200)
+	assert(menu.AnchorPoint == Vector2.new(0.5, 1) and menu.Position == UDim2.fromOffset(688 + 56, 520), "flipped, clamped: " .. tostring(menu.Position))
+	H.finishTweens() -- (readings are taken at full scale)
+	H.setAbs(menu, 0, 0, 200, 100)
+	assert(menu.Position == UDim2.fromOffset(700, 520), "clamped for the real width: " .. tostring(menu.Position))
+	-- wider than the layer: starts at its left edge
+	H.setAbs(menu, 0, 0, 1000, 100)
+	assert(menu.Position == UDim2.fromOffset(500, 520), "wider than the layer: " .. tostring(menu.Position))
 	h.Close()
 	H.advance(0.3)
 	-- tall list near the top: scrolls within the room below
@@ -154,6 +231,8 @@ H.section("flip up when it does not fit below; clamp horizontally; scroll when t
 	local h2 = Menu.open({ Anchor = anchor, Items = many, Overlay = overlay })
 	local m2 = H.find(screen, "Menu")
 	assert(m2.Size.Y.Offset == 600 - 156 - 8 and H.find(m2, "Scroll") ~= nil and H.find(m2, "Scroll").ClassName == "ScrollingFrame", "scrolls: " .. m2.Size.Y.Offset)
+	local scroller = H.find(m2, "Scroll")
+	assert(scroller.Size == UDim2.fromScale(0, 1) and scroller.AutomaticSize == Enum.AutomaticSize.X, "a scrolling list fits its rows too")
 	assert(#itemsOf(screen) == 20)
 	h2.Close()
 	H.advance(0.3)
@@ -173,7 +252,10 @@ H.section("items ripple over the whole row; a scrolling list has a themed thumb 
 	assert(scroll.ScrollBarImageColor3 == L.OnSurface and math.abs(scroll.ScrollBarImageTransparency - 0.5) < 1e-9, "themed thumb, not the engine's white")
 	assert(scroll.VerticalScrollBarInset == Enum.ScrollBarInset.None, "rows keep the full width under the overlaid thumb")
 	local row = itemsOf(screen)[1]
-	assert(row.Size == UDim2.new(1, 0, 0, 48), "full-width row")
+	local stretch = H.findAll(row, function(c: any)
+		return c.ClassName == "UIFlexItem"
+	end)[1]
+	assert(stretch ~= nil and stretch.ItemLineAlignment == Enum.ItemLineAlignment.Stretch, "full-width row (stretched to the widest)")
 	local layer = H.find(row, "StateLayer")
 	H.setAbs(row, 108, 106, 200, 48)
 	H.setAbs(layer, 108, 106, 200, 48)
@@ -197,9 +279,18 @@ H.section("Menu.Button opens the menu under itself", function()
 	H.setAbs(btn, 10, 20, 120, 40)
 	H.fire(btn, "Activated", H.input({}), 1)
 	local menu = H.find(screen, "Menu")
-	assert(menu ~= nil and menu.Position == UDim2.fromOffset(70, 60) and menu.Size.X.Offset == 120)
+	assert(menu ~= nil and menu.Position == UDim2.fromOffset(10 + 56, 60) and menu.AutomaticSize == Enum.AutomaticSize.X, "fits its items by default")
 	H.fire(itemsOf(screen)[2], "Activated", H.input({}), 1)
 	assert(log[1] == "copy")
+	H.advance(0.3)
+	-- `Width` passes through to Menu.open
+	local wide = Menu.Button({ Label = "Wide", Items = items(log), Overlay = overlay, Width = 240 })
+	wide.Parent = anchor
+	H.setAbs(wide, 10, 20, 120, 40)
+	H.fire(wide, "Activated", H.input({}), 1)
+	local m2 = H.find(screen, "Menu")
+	assert(m2.Size.X.Offset == 240 and m2.AutomaticSize == Enum.AutomaticSize.None and m2.Position == UDim2.fromOffset(10 + 120, 60))
+	H.fire(H.find(screen, "Scrim"), "Activated", H.input({}), 1)
 	H.advance(0.3)
 	q.dispose(screen)
 	q.dispose(anchor)

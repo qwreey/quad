@@ -22,7 +22,20 @@
 	`Open:Set(true)` brings it back with its state intact.
 
 	Dragging uses Interaction.drag (global tracking only while a drag is active, closed on release / focus loss /
-	destroy). Pressing anywhere in the window focuses it (raises it to the front).
+	destroy). Pressing anywhere in the window — a button, a text box or any other widget in it included — focuses it
+	(raises it to the front): the manager's one global press listener (Manager header "PRESS TO FRONT"). Closing the
+	focused window passes the focus to the topmost open one.
+
+	STAYING ON SCREEN (Dear ImGui `ClampWindowPos`, imgui.cpp — `DisplayWindowPadding` 19 at the default size, applied
+	with the title bar as the window's height when the window moves by its title bar only): the window's top-left is
+	kept in [pad - width, W - pad] x [pad - band, H - pad] of its container (W x H = the container's size, pad =
+	max(FrameHeight, DisplaySafeAreaPadding) — FrameHeight is 19 at the default size like ImGui's padding and scales
+	with the style; band = the title bar height, or the window height without a title bar). With the title bar that
+	is: at least `pad` pixels of the title bar stay inside horizontally and the whole title bar vertically (its top
+	never goes above the container). Applied (1) while dragging the title bar and (2) when the container SHRINKS (its
+	AbsoluteSize gets smaller in either axis, not to zero) — then an out-of-bounds window is brought back in by writing
+	the Position Source. A position the program sets is otherwise left alone (also one outside the container), and a
+	container that grows clamps nothing.
 ]]
 
 local Quad = require("./Quad")
@@ -32,6 +45,7 @@ local windowName = D.Modifier.Frame():Name("Window")
 local Interaction = require("./Interaction")
 local Style = require("./Style")
 local Util = require("./Util")
+local Visibility = require("./Visibility")
 local Manager = require("@self/Manager")
 local TitleBar = require("@self/TitleBar")
 
@@ -103,6 +117,43 @@ local function Window(props: WindowProps): Frame
 	end, style.Metrics.FramePadding)
 	local gripVisible: State<boolean> = expanded
 
+	-- assigned right after the root is built; read only from event handlers
+	local root: Frame? = nil
+
+	-- keep the window reachable inside its container (header "STAYING ON SCREEN"); `pos` unchanged when it already is
+	local function clampToContainer(pos: UDim2): UDim2
+		local r = root
+		local container = if r then r.Parent else nil
+		if r == nil or container == nil or not Visibility.hasArea(container) then
+			return pos
+		end
+		local area = (container :: GuiBase2d).AbsoluteSize
+		if area.X <= 0 or area.Y <= 0 then
+			return pos -- (a zero-sized container: minimised / not laid out yet — Dear ImGui skips it too)
+		end
+		local s = size:Get()
+		local titleH = titleHeight:Get()
+		local w = s.X
+		local h = if collapsed:Get() then titleH else s.Y
+		-- AbsoluteSize is in screen pixels, Position offsets in the window's own units: an ancestor UIScale divides
+		local abs = r.AbsoluteSize
+		local scale = if w > 0 and abs.X > 0 then abs.X / w else 1
+		local cw, ch = area.X / scale, area.Y / scale
+		local safe = style.Metrics.DisplaySafeAreaPadding:Get()
+		local frame = style.FrameHeight:Get()
+		local padX, padY = math.max(frame, safe.X), math.max(frame, safe.Y)
+		local band = if titleH > 0 then titleH else h
+		local anchor = r.AnchorPoint or Vector2.zero -- (`or`: the spec mock has no property defaults)
+		local x = pos.X.Scale * cw + pos.X.Offset - anchor.X * w
+		local y = pos.Y.Scale * ch + pos.Y.Offset - anchor.Y * h
+		local cx = math.max(padX - w, math.min(cw - padX, x))
+		local cy = math.max(padY - band, math.min(ch - padY, y))
+		if cx == x and cy == y then
+			return pos
+		end
+		return UDim2.new(pos.X.Scale, pos.X.Offset + math.round(cx - x), pos.Y.Scale, pos.Y.Offset + math.round(cy - y))
+	end
+
 	-- title-bar drag moves the window (pixel deltas added to the Position offsets)
 	local startPos = UDim2.new()
 	local titleDrag: Interaction.DragHandle? = nil
@@ -113,7 +164,7 @@ local function Window(props: WindowProps): Frame
 				startPos = position:Get()
 			end,
 			OnMove = function(_x, _y, dx, dy)
-				position:Set(UDim2.new(startPos.X.Scale, startPos.X.Offset + dx, startPos.Y.Scale, startPos.Y.Offset + dy))
+				position:Set(clampToContainer(UDim2.new(startPos.X.Scale, startPos.X.Offset + dx, startPos.Y.Scale, startPos.Y.Offset + dy)))
 			end,
 		})
 	end
@@ -139,12 +190,40 @@ local function Window(props: WindowProps): Frame
 
 	local strokeThickness: State<number> = style.Metrics.WindowBorderSize
 
-	return D.Frame({
+	-- the container shrinking brings an out-of-bounds window back in (one connection, on the current container)
+	local containerConn: RBXScriptConnection? = nil
+	local lastArea = Vector2.zero
+	local function watchContainer()
+		local c = containerConn
+		if c then
+			containerConn = nil
+			c:Disconnect()
+		end
+		local r = root
+		local container = if r then r.Parent else nil
+		if container == nil or not Visibility.hasArea(container) then
+			return
+		end
+		local gui = container :: GuiBase2d
+		lastArea = gui.AbsoluteSize
+		containerConn = gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+			local area = gui.AbsoluteSize
+			local shrank = area.X < lastArea.X or area.Y < lastArea.Y
+			lastArea = area
+			if shrank and area.X > 0 and area.Y > 0 then
+				local current = position:Get()
+				local inside = clampToContainer(current)
+				if inside ~= current then
+					position:Set(inside)
+				end
+			end
+		end)
+	end
+
+	local built = D.Frame({
 		windowName,
 		props.Modifier or q.None,
-		Interaction.pointerDown(function()
-			slot:Focus()
-		end),
+		slot.Hook,
 		Position = position,
 		Size = rootSize,
 		ZIndex = slot.ZIndex,
@@ -197,13 +276,15 @@ local function Window(props: WindowProps): Frame
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding = Util.pxY(style.Metrics.ItemSpacing),
 			}),
-			Interaction.pointerDown(function()
-				slot:Focus()
-			end),
 			props.Children or q.None,
 		}),
 		q.OnDestroyed(function()
 			slot:Release()
+			local c = containerConn
+			if c then
+				containerConn = nil
+				c:Disconnect()
+			end
 		end),
 		if grip
 			then D.ImageButton({
@@ -224,6 +305,10 @@ local function Window(props: WindowProps): Frame
 			})
 			else q.None,
 	})
+	root = built
+	built:GetPropertyChangedSignal("Parent"):Connect(watchContainer)
+	watchContainer()
+	return built
 end
 
 return {

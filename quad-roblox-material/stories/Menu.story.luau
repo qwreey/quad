@@ -18,7 +18,7 @@ return StoryKit.story({
 	controls = {
 		Label = "Actions",
 		DisableDelete = false,
-		Width = StoryKit.Slider(0, 0, 320, 8), -- 0 = anchor width (clamped 112..280)
+		Width = StoryKit.Slider(0, 0, 320, 8), -- 0 = fit the widest item (at least 112)
 		Variant = StoryKit.Choose({ "Tonal", "Filled", "Outlined", "Text", "Elevated" }),
 		Scheme = StoryKit.Choose({ "light", "dark" }),
 	},

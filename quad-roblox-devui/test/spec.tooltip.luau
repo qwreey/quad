@@ -216,4 +216,37 @@ H.section("Hooks prop: a tooltip hook rides on a Button, a Text and a Selectable
 end)
 
 
+H.section("a target hidden while the timer runs (its window closed) shows nothing; shown again, a new hover works", function()
+	local o = Overlay.new()
+	local tip = Tooltip.hook({ Text = "hint", Overlay = o })
+	local win = D.Frame({})
+	local target = D.TextButton({ tip.Hook, Text = "t" })
+	target.Parent = win
+	H.fire(target, "MouseEnter", 10, 10)
+	win.Visible = false -- an ancestor hidden: no MouseLeave reaches the target
+	H.advance(0.6)
+	assert(o.Count:Get() == 0 and tip.Visible:Get() == false and H.pendingTimers() == 0, "no hint for a closed window")
+	win.Visible = true
+	-- the engine sends MouseEnter again on the next move over the target
+	H.fire(target, "MouseEnter", 10, 10)
+	H.advance(0.6)
+	assert(o.Count:Get() == 1 and tip.Visible:Get() == true, "visible again: the hint works")
+	H.fire(target, "MouseLeave")
+	-- the target's own Visible counts too, and a disabled ScreenGui
+	target.Visible = false
+	H.fire(target, "MouseEnter", 10, 10)
+	H.advance(0.6)
+	assert(o.Count:Get() == 0, "target hidden")
+	target.Visible = true
+	local gui = D.ScreenGui({ ZIndexBehavior = Enum.ZIndexBehavior.Sibling })
+	win.Parent = gui
+	H.fire(target, "MouseEnter", 10, 10)
+	gui.Enabled = false
+	H.advance(0.6)
+	assert(o.Count:Get() == 0, "ScreenGui disabled")
+	q.dispose(gui)
+	q.dispose(o.Layer)
+	H.assertNoDebugOutput("hidden target")
+end)
+
 H.done()

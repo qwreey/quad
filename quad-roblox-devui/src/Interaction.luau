@@ -28,7 +28,7 @@
 		})
 		D.Frame { drag.Hook, ... }                           -- drag.Dragging : State<boolean>, drag:Cancel()
 
-		-- plain "pointer went down on me" (MouseButton1 / Touch), e.g. window focus-on-click
+		-- plain "pointer went down on me" (MouseButton1 / Touch); it stops at the first GuiButton / TextBox under the pointer
 		D.Frame { Interaction.pointerDown(function(input) ... end) }
 
 	Coordinates are `InputObject.Position` space (the same space for begin/move/end, so deltas are exact). Convert to

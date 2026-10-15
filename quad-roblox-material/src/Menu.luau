@@ -14,6 +14,7 @@
 	    })
 	    handle.Close()                                            -- idempotent (Overlay handle)
 	    Menu.Button({ Label = "Actions", Items = items })         -- a Button that opens the menu under itself
+	                                                              --   (`Width: number?` as in OpenOptions; nil = fit)
 
 	OpenOptions
 	  Anchor     GuiObject                       position source: `AbsolutePosition`/`AbsoluteSize` are read ONCE at open;
@@ -21,9 +22,8 @@
 	  Items      { Item | "divider" }            fixed for the lifetime of the open menu (it is rebuilt per open)
 	  Overlay    Overlay.Overlay?                default `Overlay.default()`
 	  Theme      Theme?
-	  Width      number?                         default = anchor width clamped to 112..280 (M3 min/max; the menu does
-	                                             NOT fit its widest item — Roblox cannot measure FontFace text
-	                                             synchronously; pass `Width` for a wider list)
+	  Width      number?                         fixed panel width (labels truncate with "…"). nil = fit the widest item
+	                                             (leading + label + trailing + padding), at least 112 — see WIDTH below
 	  MaxHeight  number?                         the list scrolls past this (default: the room left on screen)
 	  OnClose    Overlay.OnCloseFn?      once, at the start of closing (item click, outside click, Escape, `.Close()`,
 	                                             or "Destroyed" when the overlay layer died)
@@ -31,10 +31,29 @@
 	         navigation and does nothing when activated; no item does anything once the menu is closing), Leading? (image id), Trailing? (image id, or any other string = text),
 	         Selected? (container highlight, as the Select field shows the chosen option) }
 
+	WIDTH. Compose's DropdownMenu sizes its column to the widest item (`width(IntrinsicSize.Max)`, each item
+	`sizeIn(minWidth = 112.dp, maxWidth = 280.dp)` — androidx/androidx@5ac4c7c compose/material3/material3/src/commonMain/
+	kotlin/androidx/compose/material3/Menu.kt 1867, 2163-2166, 2388-2391) and does NOT follow the anchor's width; only the
+	exposed dropdown (`ExposedDropdownMenuBox`, `exposedDropdownSize(matchAnchorWidth = true)` — ExposedDropdownMenu.kt
+	202-211) matches its field, which `Select` does by passing `Width`. Without `Width` the kit lets the engine measure
+	(FontFace text cannot be measured synchronously): the panel and its list are `AutomaticSize` X, each row is
+	`AutomaticSize` X (label `AutomaticSize` X + a right UIPadding that reserves the trailing room — for a trailing text,
+	its laid-out width + 12 + 16, measured like the panel) and stretched to the
+	widest row (`UIFlexItem` `ItemLineAlignment = Stretch`), and a 0-high 112-wide spacer in the list sets the floor
+	(a `UISizeConstraint.MinSize` on the panel does grow it, but the rows only stretch to the widest SIBLING — Studio
+	2026-10-15). Deviation: no 280 maximum (user decision 2026-10-15 — a long label shows in full rather than "…").
+	The width is read back from the laid-out panel (`AbsoluteSize` / its UIScale) right after the overlay mounts it (the
+	engine lays out on read), and the panel is re-placed when that width later changes by 2 px or more (a FontFace that
+	loads). Every reading — the panel's and the trailing texts' — is taken at the panel's FULL scale only: text under a
+	UIScale renders at whole font sizes, so a width read during the open animation is up to ~4 % off and not proportional
+	(Studio 2026-10-15), and following those readings fed back through the re-placing into "Maximum event re-entrancy
+	depth exceeded". The first reading sets the panel's UIScale to 1 and back to the closed scale in the same step (nothing
+	is drawn in between). While it animates open the panel's width breathes with the text's whole font sizes.
+
 	Placement: below the anchor, flipped above when the list does not fit below and there is more room above;
 	clamped horizontally into the overlay layer (so the layer's AbsoluteSize must be laid out — with a zero
 	size, e.g. a mock, no flipping/clamping happens). Coordinates are converted to layer space, so a ScreenGui
-	inset does not matter.
+	inset does not matter. A panel wider than the layer starts at the layer's left edge (and runs past the right one).
 
 	Motion: the panel mounts at scale .9 (snapped) and a `Util.postHook` flips a Source, so the next write
 	animates to 1 (Motion Short4 / EmphasizedDecelerate); the exit runs the same tween back during the
@@ -50,10 +69,11 @@
 	panel is destroyed) that ignores keys the engine already processed, so it never doubles the engine's own navigation.
 	NOT implemented: type-ahead, submenus.
 
-	Per item at rest: TextButton + state layer (Frame, UICorner, UIStroke) + label = 5 (+1 per icon/trailing text);
+	Per item at rest: TextButton + state layer (Frame, UICorner, UIStroke) + label = 5 (+1 per icon/trailing text; +2 when
+	the width fits the items — the row's UIFlexItem and the label's UIPadding);
 	a press adds the transient ripple (Ripple.luau, 3) over the whole row — the M3 DropdownMenuItem has a bounded ripple
 	(Compose Menu.kt, see itemRow). Panel: Frame, UICorner, UIShadow, UIScale (+ScrollingFrame when it scrolls),
-	UIListLayout, UIPadding. Divider = 2.
+	UIListLayout, UIPadding (+ the 112 spacer Frame when the width fits the items). Divider = 2.
 	Scrolling list: the rows span the full panel width (`VerticalScrollBarInset` None — the thumb overlays the rows'
 	right edge, so a row's layer and ripple reach the panel edge), thumb onSurface at 50 % (Tokens/State.luau
 	`ScrollBar` — M3 has no scrollbar token; the engine default thumb is white).
@@ -93,7 +113,7 @@ export type OpenOptions = {
 local ItemHeight = 48
 local DividerHeight = 17
 local ListPadding = 8
-local MinWidth, MaxWidth = 112, 280
+local MinWidth = 112
 local TrailingTextWidth = 64
 local ClosedScale = 0.9
 local Corner = Tokens.Shape.corner("ExtraSmall")
@@ -108,11 +128,15 @@ local GuiService = game:GetService("GuiService")
 
 type NavItem = { Inst: GuiObject, Activate: () -> (), Enabled: () -> boolean }
 
+-- (fit) shared by one open menu: the panel's UIScale once built, and the trailing-text measures to run at full scale
+type FitCtx = { Scale: UIScale?, Measures: { () -> () } }
+
 local function itemRow(
 	item: Item,
 	theme: Theme.Theme,
 	close: () -> boolean, -- closes the menu; false when it was closed already (the item then does nothing)
-	register: (inst: GuiObject, activate: () -> (), enabled: () -> boolean) -> ()
+	register: (inst: GuiObject, activate: () -> (), enabled: () -> boolean) -> (),
+	fit: FitCtx? -- the panel fits its items (no `Width`): the row and label size to their content (header WIDTH)
 )
 	local disabled = Util.asState(item.Disabled)
 	local selected = item.Selected == true
@@ -149,6 +173,11 @@ local function itemRow(
 	local trailing = item.Trailing
 	local trailingIsImage = trailing ~= nil and isImage(trailing)
 	local right = if trailing == nil then 16 elseif trailingIsImage then 12 + 24 + 12 else 16 + TrailingTextWidth
+	-- (fit) the label's right padding = the room the trailing part takes. A trailing TEXT is measured once laid out
+	-- (FontFace text has no synchronous measure): 16 + its width + 12 (Compose: the text's end padding next to a
+	-- trailing slot, DropdownMenuItemHorizontalPadding — Menu.kt 2183-2196, 2376-2377); until then the fixed 64 px guess
+	local labelPadRight: q.Source<UDim> = q.Source(UDim.new(0, right))
+	local fitting = fit ~= nil
 
 	local leadingIcon: Instance? = nil
 	if item.Leading ~= nil then
@@ -184,7 +213,31 @@ local function itemRow(
 				labelLarge,
 				AnchorPoint = Vector2.new(1, 0),
 				Position = UDim2.new(1, -16, 0, 0),
-				Size = UDim2.new(0, TrailingTextWidth, 1, 0),
+				-- (fit) as wide as its text; the label's padding follows it (AbsoluteSize carries every UIScale above:
+				-- divide by the known 48 px row height it fills)
+				Size = if fitting then UDim2.fromScale(0, 1) else UDim2.new(0, TrailingTextWidth, 1, 0),
+				AutomaticSize = if fitting then Enum.AutomaticSize.X else Enum.AutomaticSize.None,
+				if fit
+					then Util.preHook(function(inst: GuiObject)
+						-- read only while the panel is at FULL scale: text under a UIScale renders at whole font sizes, so
+						-- a reading during the open animation is not proportional (Studio 2026-10-15 — following those
+						-- readings fed back through the panel's re-placing into "Maximum event re-entrancy depth
+						-- exceeded"); a change under 2 px is ignored (sub-pixel jitter)
+						local function measure()
+							local sc = fit.Scale
+							local abs = inst.AbsoluteSize
+							if sc == nil or sc.Scale ~= 1 or abs.Y <= 0 then
+								return
+							end
+							local pad = 16 + math.ceil(abs.X * ItemHeight / abs.Y - 0.01) + 12
+							if math.abs(pad - labelPadRight:Get().Offset) >= 2 then
+								labelPadRight:Set(UDim.new(0, pad))
+							end
+						end
+						table.insert(fit.Measures, measure)
+						inst:GetPropertyChangedSignal("AbsoluteSize"):Connect(measure)
+					end)
+					else q.None,
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				Text = trailing,
@@ -197,7 +250,8 @@ local function itemRow(
 
 	return D.TextButton {
 		Name = "Item",
-		Size = UDim2.new(1, 0, 0, ItemHeight),
+		Size = if fitting then UDim2.fromOffset(0, ItemHeight) else UDim2.new(1, 0, 0, ItemHeight),
+		AutomaticSize = if fitting then Enum.AutomaticSize.X else Enum.AutomaticSize.None,
 		Text = "",
 		AutoButtonColor = false,
 		BorderSizePixel = 0,
@@ -211,13 +265,18 @@ local function itemRow(
 			end)
 		end),
 		Activated = activate,
+		-- (fit) the row is as wide as its label, then stretched to the widest row of the list
+		if fitting then D.UIFlexItem { ItemLineAlignment = Enum.ItemLineAlignment.Stretch } else q.None,
 		fx.Layer,
 		leadingIcon or q.None,
 		D.TextLabel {
 			Name = "Label",
 			labelLarge,
 			Position = UDim2.fromOffset(left, 0),
-			Size = UDim2.new(1, -(left + right), 1, 0),
+			Size = if fitting then UDim2.fromScale(0, 1) else UDim2.new(1, -(left + right), 1, 0),
+			AutomaticSize = if fitting then Enum.AutomaticSize.X else Enum.AutomaticSize.None,
+			-- (fit) the label's own width carries the trailing room, so the row's automatic width includes it
+			if fitting then D.UIPadding { PaddingRight = labelPadRight } else q.None,
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			Text = item.Label,
@@ -230,12 +289,15 @@ local function itemRow(
 	}
 end
 
-local function dividerRow(theme: Theme.Theme)
+local function dividerRow(theme: Theme.Theme, fit: boolean)
 	return D.Frame {
 		Name = "Divider",
-		Size = UDim2.new(1, 0, 0, DividerHeight),
+		-- (fit) a scale width inside the automatic-width list feeds back into it (Studio 2026-10-15: the panel grew to
+		-- half the layer); stretched like the rows instead
+		Size = if fit then UDim2.fromOffset(0, DividerHeight) else UDim2.new(1, 0, 0, DividerHeight),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
+		if fit then D.UIFlexItem { ItemLineAlignment = Enum.ItemLineAlignment.Stretch } else q.None,
 		D.Frame {
 			Name = "Line",
 			Position = UDim2.fromOffset(0, 8),
@@ -256,7 +318,10 @@ local function open(o: OpenOptions): Overlay.Handle
 	for _, e in o.Items do
 		contentH += if type(e) == "string" then DividerHeight else ItemHeight
 	end
-	local width = o.Width or math.clamp(anchor.AbsoluteSize.X, MinWidth, MaxWidth)
+	local fit = o.Width == nil
+	local fitCtx: FitCtx? = if fit then { Scale = nil, Measures = {} } else nil
+	-- the panel's width: fixed, or (fit) a first guess until the laid-out panel is read back below
+	local width = o.Width or MinWidth
 	local layer = overlay.Layer
 	local layerPos, layerSize = layer.AbsolutePosition, layer.AbsoluteSize
 	local aTop = anchor.AbsolutePosition.Y - layerPos.Y
@@ -268,11 +333,16 @@ local function open(o: OpenOptions): Overlay.Handle
 	local flipUp = contentH > below and above > below
 	local avail = if flipUp then above else below
 	local panelH = math.min(contentH, o.MaxHeight or math.huge, math.max(avail, ItemHeight + ListPadding * 2))
-	local x = aLeft
-	if layerSize.X > 0 then
-		x = math.clamp(aLeft, 0, math.max(0, layerSize.X - width))
+	-- the panel's center x for a given width (clamped into the layer when the layer is laid out)
+	local function centerX(w: number): number
+		local x = aLeft
+		if layerSize.X > 0 then
+			x = math.clamp(aLeft, 0, math.max(0, layerSize.X - w))
+		end
+		return x + w / 2
 	end
 	local y = if flipUp then aTop else aBottom
+	local position: q.Source<UDim2> = q.Source(UDim2.fromOffset(centerX(width), y))
 	local scrolls = panelH < contentH
 
 	local navItems: { NavItem } = {}
@@ -288,6 +358,9 @@ local function open(o: OpenOptions): Overlay.Handle
 	-- the anchor going away (its screen was torn down) takes the menu with it: nothing else would close it, and its
 	-- transparent scrim would keep swallowing clicks until one lands on it
 	local anchorGone: RBXScriptConnection? = nil
+	-- (fit) the panel and its UIScale, to read the laid-out width back
+	local panel: Frame? = nil
+	local panelScale: UIScale? = nil
 	local handle = overlay:Open({
 		Scrim = true,
 		ScrimOpacity = 0,
@@ -317,7 +390,7 @@ local function open(o: OpenOptions): Overlay.Handle
 			local rows = {} :: { Instance }
 			for _, e in o.Items do
 				if type(e) == "string" then
-					table.insert(rows, dividerRow(theme))
+					table.insert(rows, dividerRow(theme, fit))
 				else
 					table.insert(
 						rows,
@@ -327,9 +400,13 @@ local function open(o: OpenOptions): Overlay.Handle
 							end
 							handle.Close()
 							return true
-						end, register)
+						end, register, fitCtx)
 					)
 				end
+			end
+			if fit then
+				-- the minimum width: a 0-high spacer (the rows stretch to the widest sibling — header WIDTH)
+				table.insert(rows, 1, D.Frame { Name = "MinWidth", Size = UDim2.fromOffset(MinWidth, 0), BackgroundTransparency = 1, BorderSizePixel = 0 })
 			end
 			local slot = q.Slot(rows)
 
@@ -341,10 +418,14 @@ local function open(o: OpenOptions): Overlay.Handle
 			local list = D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder }
 			local pad = D.UIPadding { PaddingTop = UDim.new(0, ListPadding), PaddingBottom = UDim.new(0, ListPadding) }
 			local body: Instance
+			-- (fit) the list is as wide as its widest row and the panel as wide as the list
+			local bodySize = if fit then UDim2.fromScale(0, 1) else UDim2.fromScale(1, 1)
+			local bodyAuto = if fit then Enum.AutomaticSize.X else Enum.AutomaticSize.None
 			if scrolls then
 				body = D.ScrollingFrame {
 					Name = "Scroll",
-					Size = UDim2.fromScale(1, 1),
+					Size = bodySize,
+					AutomaticSize = bodyAuto,
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
 					CanvasSize = UDim2.fromOffset(0, 0),
@@ -363,7 +444,8 @@ local function open(o: OpenOptions): Overlay.Handle
 			else
 				body = D.Frame {
 					Name = "List",
-					Size = UDim2.fromScale(1, 1),
+					Size = bodySize,
+					AutomaticSize = bodyAuto,
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
 					list,
@@ -372,20 +454,26 @@ local function open(o: OpenOptions): Overlay.Handle
 				}
 			end
 
-			return D.Frame {
+			local uiScale = D.UIScale { Scale = scale:Apply(q.Animate(Tokens.Motion.options("Short4", "EmphasizedDecelerate"))) }
+			panelScale = uiScale
+			if fitCtx then
+				fitCtx.Scale = uiScale
+			end
+			local built = D.Frame {
 				Name = "Menu",
 				-- pivot at the TOP-CENTER (bottom-center when flipped): UIScale scales about the AnchorPoint, so a left
 				-- pivot made the opening scale look glued to the left edge (Studio QA 2026-10-07)
 				AnchorPoint = Vector2.new(0.5, if flipUp then 1 else 0),
-				Position = UDim2.fromOffset(x + width / 2, y),
-				Size = UDim2.fromOffset(width, panelH),
+				Position = position,
+				Size = UDim2.fromOffset(if fit then 0 else width, panelH),
+				AutomaticSize = if fit then Enum.AutomaticSize.X else Enum.AutomaticSize.None,
 				BackgroundColor3 = theme.Color.SurfaceContainer,
 				BorderSizePixel = 0,
 				Active = true, -- 3D / camera input only; a GUI click is sunk by the ClickSink child below
 				Util.clickSink(),
 				UICorner = Corner,
 				Elevation.Shadow({ Level = 2, Theme = theme }),
-				D.UIScale { Scale = scale:Apply(q.Animate(Tokens.Motion.options("Short4", "EmphasizedDecelerate"))) },
+				uiScale,
 				body,
 				-- keyboard navigation: one connection for the life of this panel
 				Util.preHook(function(inst: GuiObject)
@@ -427,12 +515,43 @@ local function open(o: OpenOptions): Overlay.Handle
 					shown:Set(true)
 				end),
 			}
+			panel = built
+			return built
 		end,
 	})
 	if handle.IsOpen:Get() then
 		anchorGone = anchor.Destroying:Connect(function()
 			handle.Close()
 		end)
+		local p, ps = panel, panelScale
+		if fitCtx ~= nil and p ~= nil and ps ~= nil then
+			-- (fit) place the panel by its laid-out width. Read only at FULL scale (see the trailing measure in itemRow):
+			-- now — the panel is momentarily set to scale 1 and back to its closed scale in this same step, so nothing is
+			-- drawn in between and the running open tween is not disturbed — and later whenever the full-scale width
+			-- changes by 2 px or more (the end of the open animation, a FontFace that loads)
+			local placing = false
+			local placedWidth = 0
+			local function place()
+				if placing or ps.Scale ~= 1 then
+					return
+				end
+				placing = true
+				local w = math.ceil(p.AbsoluteSize.X - 0.01)
+				if w > 0 and math.abs(w - placedWidth) >= 2 then
+					placedWidth = w
+					position:Set(UDim2.fromOffset(centerX(w), y))
+				end
+				placing = false
+			end
+			local closedScale = ps.Scale
+			ps.Scale = 1
+			for _, measure in fitCtx.Measures do
+				measure() -- (direct calls: under Deferred signals the AbsoluteSize handlers would run after the restore)
+			end
+			place()
+			ps.Scale = closedScale
+			p:GetPropertyChangedSignal("AbsoluteSize"):Connect(place)
+		end
 	end
 	return handle
 end
@@ -442,6 +561,7 @@ export type ButtonProps = {
 	read Items: { Entry },
 	read Variant: Button.Variant?,
 	read Icon: (string | q.State<string>)?,
+	read Width: number?,
 	read Disabled: (boolean | q.State<boolean>)?,
 	read Overlay: Overlay.Overlay?,
 	read Theme: Theme.Theme?,
@@ -463,7 +583,7 @@ local function MenuButton(props: ButtonProps)
 		OnClick = function()
 			local a = btn
 			if a ~= nil then
-				open({ Anchor = a, Items = props.Items, Overlay = props.Overlay, Theme = props.Theme })
+				open({ Anchor = a, Items = props.Items, Overlay = props.Overlay, Theme = props.Theme, Width = props.Width })
 			end
 		end,
 	})

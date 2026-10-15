@@ -9,6 +9,9 @@
 		PopupParts.onEscape(fn)       connects UserInputService.InputBegan and calls `fn` on Escape; returns the
 		                              disconnect function. Open it when a popup opens and call the disconnect from the
 		                              popup's OnClose — nothing is connected while no popup is open.
+		PopupParts.whileOpen(anchor, close)   onEscape(close) + Visibility.whenHidden(anchor, close) in one disconnect:
+		                              a popup also closes when its anchor (or the window it is in) is hidden — hiding
+		                              an ancestor fires nothing on the anchor, so a closed window would leave it open.
 
 	A row without Check / Shortcut / Arrow is ONE TextButton (+ UIPadding); otherwise the button holds a horizontal list
 	of [check] label [shortcut | arrow] (label fills the free width).
@@ -21,6 +24,7 @@ local D = q.Declaration
 local Interaction = require("./Interaction")
 local Style = require("./Style")
 local Util = require("./Util")
+local Visibility = require("./Visibility")
 
 type State<T> = Quad.State<T>
 type Style = Style.Style
@@ -61,6 +65,15 @@ function PopupParts.onEscape(fn: () -> ()): () -> ()
 	end)
 	return function()
 		conn:Disconnect()
+	end
+end
+
+function PopupParts.whileOpen(anchor: Instance, close: () -> ()): () -> ()
+	local offEscape = PopupParts.onEscape(close)
+	local offHidden = Visibility.whenHidden(anchor, close)
+	return function()
+		offEscape()
+		offHidden()
 	end
 end
 

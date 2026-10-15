@@ -49,11 +49,15 @@ under Deferred signals) (the ScreenGui was rebuilt, e.g. ResetOnSpawn) makes a f
 	popup's entry is no longer parented to the layer (with Deferred signals a descendant's Destroying can run before the
 	layer's OnDestroyed, so a close path must not rely on the dead flag alone). `Open` on a dead overlay raises.
 
+	The window manager does not move focus for a press on an open popup or on its click-outside catcher (each open popup
+	is listed in the internal PopupHits registry while it is open).
+
 	Positioning: `Position` is converted into layer space at open time (minus Layer.AbsolutePosition), so the layer may
 	sit under a ScreenGui with or without GuiInset. Anchor the content with `Anchor` to open upward/leftward; clamping
 	to the screen edge needs the content's size (known only after layout) — do it in the opener if needed.
 ]]
 
+local PopupHits = require("./PopupHits")
 local Quad = require("./Quad")
 local q = Quad
 local D = q.Declaration
@@ -225,11 +229,14 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 			end,
 			Holder = holder,
 		}
+		-- the window manager does not move focus for a press on a popup (or on its click-outside catcher: the layer)
+		local hits: PopupHits.Record = { Area = if closeOutside then layer else holder }
 		closeImpl = function()
 			if not isOpen:Get() then
 				return
 			end
 			isOpen:Set(false)
+			PopupHits.remove(hits)
 			local i = table.find(open, popup)
 			if i then
 				table.remove(open, i)
@@ -261,6 +268,7 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 			end
 		end
 		slot:Add(entry)
+		PopupHits.add(hits)
 		table.insert(open, popup)
 		count:Set(#open)
 		return popup
