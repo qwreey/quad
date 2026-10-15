@@ -187,6 +187,24 @@ ScreenGui는 **`ResetOnSpawn = false`**로 만드세요 — 층은 quad가 만�
 픽셀, 세로로 타이틀바 전체), 컨테이너가 **줄어들면** 바깥으로 나간 창을 안으로 데려옵니다(`Position` Source에 씀). 프로그램이 준 위치는 그 밖에는
 건드리지 않습니다.
 
+창 안 깊은 곳(창을 직접 받지 않은 컴포넌트)에서 창을 다뤄야 하면, 창의 Source들을 [`q.Store`](../docs/reference/core/04-store.md)나
+[`q.Context`](../docs/reference/sugar/01-context.md) 가방에 담아 내려 주고, 다루는 일은 그 가방을 받는 **평범한 함수**에 두세요.
+devui는 이 키나 함수를 따로 제공하지 않습니다(**[2026-10-15 기준]** 그것을 읽는 devui 위젯이 없어서) — 어떤 값을 담을지는 창을 만든 쪽이 정합니다.
+
+```luau
+local WindowP = q.Context.Provider("Window")           -- 이 게임의 키
+local win = q.Store({ Open = q.Source(true), Focused = q.Source(false) })
+local ctx = q.Context():Set(WindowP, win)
+
+local function focusWindow(c: q.Context)               -- 다루는 일은 밖의 함수로
+	c:Get(WindowP).Open:Set(true)                         -- 지을 때 부르면 아직 없어 Quad0038 — 이벤트에서 부른다
+end
+
+Devui.Window({ Title = "Tools", Open = win.Open, Focused = win.Focused, Children = q.Slot({
+	SomePanel({ Context = ctx }),                          -- 그 안 어딘가의 버튼: OnClick = function() focusWindow(ctx) end
+}) })
+```
+
 ## UI Labs / 입력 주입
 
 UI Labs(Studio 플러그인)는 스토리를 플러그인 DockWidget 안에 그리는데, 거기서는 `UserInputService`가 입력을 받지 못한다.
