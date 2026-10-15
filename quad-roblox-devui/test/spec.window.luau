@@ -50,8 +50,8 @@ H.section("mount: structure, bindings, small instance count", function()
 	assert(body.Text == "body" and body.Parent == content, "children live in the scrolling content")
 	assert(get(win, "ResizeGrip").Visible == true)
 
-	-- window chrome = 16 instances (8 GuiObjects + corner/stroke/padding/list helpers); the 2 widgets add 6 more
-	assert(H.countDescendants(win) == 22, `unexpected instance count {H.countDescendants(win)}`)
+	-- window chrome = 17 instances (9 GuiObjects incl. the ClickSink + corner/stroke/padding/list helpers); the 2 widgets add 6 more
+	assert(H.countDescendants(win) == 23, `unexpected instance count {H.countDescendants(win)}`)
 
 	q.dispose(win)
 	H.assertNoDebugOutput("mount")
@@ -217,8 +217,9 @@ H.section("press-to-front: hidden windows and popups are not hit; one listener p
 	press(5, 5)
 	assert((a :: any).ZIndex > (b2 :: any).ZIndex, "a closed window is not hit; the one beneath is")
 	openB:Set(true)
+	assert((b2 :: any).ZIndex > (a :: any).ZIndex, "reopened B comes to the front (and takes the focus)")
 	press(5, 5)
-	assert((a :: any).ZIndex > (b2 :: any).ZIndex, "reopened B kept its rank below A: A still on top")
+	assert((b2 :: any).ZIndex > (a :: any).ZIndex, "a press on the overlap now hits B, the front one")
 
 	-- a hidden ancestor (the container) hides every window in it
 	local container = Instance.new("Frame")
@@ -271,7 +272,7 @@ H.section("press-to-front: hidden windows and popups are not hit; one listener p
 	H.assertNoDebugOutput("press-to-front")
 end)
 
-H.section("focus succession: closing or destroying the focused window focuses the topmost open one", function()
+H.section("focus succession: closing or destroying the focused window focuses the topmost open one; reopening focuses", function()
 	local manager = Devui.WindowManager.new()
 	local opens = { q.Source(true), q.Source(true), q.Source(true) }
 	local w: { any } = {}
@@ -294,19 +295,21 @@ H.section("focus succession: closing or destroying the focused window focuses th
 	-- closing a window that is NOT focused moves nothing
 	opens[2]:Set(false)
 	assert(focusedIndex() == 3)
+	-- reopening brings the window to the front WITH the focus (Dear ImGui; user decision 2026-10-15)
 	opens[2]:Set(true)
-	-- the closed w1 keeps its slot; reopening does not steal focus
+	assert(focusedIndex() == 2 and w[2].ZIndex > w[3].ZIndex, "reopened w2: front + focused")
 	opens[1]:Set(true)
-	assert(focusedIndex() == 3)
-	-- destroying the focused window: same rule (w1 is now above w2 in rank)
-	q.dispose(w[3])
-	assert(focusedIndex() == 1, "destroyed: topmost remaining (w1) focused")
-	-- the last open one closes: nobody is focused
-	opens[2]:Set(false)
-	opens[1]:Set(false)
-	assert(manager.Focused:Get() == 0 and focusedIndex() == nil, "no open window: Focused 0")
+	assert(focusedIndex() == 1 and w[1].ZIndex > w[2].ZIndex and w[2].ZIndex > w[3].ZIndex, "reopened w1: front + focused")
+	-- destroying the focused window: same rule as closing (topmost remaining = w2)
 	q.dispose(w[1])
+	assert(focusedIndex() == 2, "destroyed: topmost remaining (w2) focused")
+	opens[2]:Set(false)
+	assert(focusedIndex() == 3, "closed w2: w3 focused")
+	-- the last open one closes: nobody is focused
+	opens[3]:Set(false)
+	assert(manager.Focused:Get() == 0 and focusedIndex() == nil, "no open window: Focused 0")
 	q.dispose(w[2])
+	q.dispose(w[3])
 	H.assertNoDebugOutput("succession")
 end)
 
@@ -460,5 +463,20 @@ H.section("z-order is a rank: 2000 focus switches never reach the overlay layer;
 	H.assertNoDebugOutput("z rank")
 end)
 
+
+H.section("click sink: the window's empty area is covered by one invisible GuiButton under every other child", function()
+	local win = Devui.Window({ Title = "sink" })
+	local sink: any = win:FindFirstChild("ClickSink")
+	assert(sink ~= nil and sink.ClassName == "TextButton", "a TextButton ClickSink is a direct child of the root")
+	assert(sink.ZIndex == 0 and sink.Size == UDim2.fromScale(1, 1), "full cover at ZIndex 0")
+	assert(sink.BackgroundTransparency == 1 and sink.Text == "" and sink.AutoButtonColor == false and sink.Selectable == false,
+		"invisible, no hover tint, off the gamepad path")
+	for _, child: any in win:GetChildren() do
+		if child ~= sink and child.ZIndex ~= nil then
+			assert(child.ZIndex >= 1, `{child.Name} draws above the sink`)
+		end
+	end
+	q.dispose(win)
+end)
 
 H.done()

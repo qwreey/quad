@@ -39,8 +39,9 @@
 
 	FOCUS SUCCESSION (Dear ImGui: closing the focused window gives focus to the topmost remaining one). When the focused
 	window is hidden (its root's `Visible` goes false — Window binds it to `Open`) or released, the topmost hooked window
-	whose root is still `Visible` is focused (and raised); none left = `Focused` 0. A closed window keeps its slot and its
-	rank (it reappears where it was).
+	whose root is still `Visible` is focused (and raised); none left = `Focused` 0. A closed window keeps its slot; when it
+	is shown again it comes to the front WITH the focus (Dear ImGui focuses an appearing window — user decision
+	2026-10-15). A window that is open from the start does not steal the focus (the line above).
 ]]
 
 local Input = require("../Input")
@@ -169,7 +170,9 @@ function Manager.new(): Manager
 				entry.Root = inst
 				hook(1)
 				visibleConn = inst:GetPropertyChangedSignal("Visible"):Connect(function()
-					if inst.Visible == false and focusedId:Get() == id then
+					if inst.Visible then
+						focus(entry) -- shown again: to the front with the focus (Dear ImGui focuses an appearing window)
+					elseif focusedId:Get() == id then
 						succeed()
 					end
 				end)

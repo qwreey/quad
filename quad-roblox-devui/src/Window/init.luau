@@ -17,14 +17,16 @@
 		}
 
 	Returns the root Frame (place it in a ScreenGui / a Frame container: windows that share a container are layered
-	by the manager). Structure (about seven GuiObjects): root > TitleBar (CollapseButton, Title, CloseButton), Content
+	by the manager). Structure (about eight GuiObjects): root > ClickSink, TitleBar (CollapseButton, Title, CloseButton), Content
 	(ScrollingFrame + UIListLayout + UIPadding), ResizeGrip. Closing keeps the instance and hides it (Visible=false) —
 	`Open:Set(true)` brings it back with its state intact.
 
 	Dragging uses Interaction.drag (global tracking only while a drag is active, closed on release / focus loss /
 	destroy). Pressing anywhere in the window — a button, a text box or any other widget in it included — focuses it
 	(raises it to the front): the manager's one global press listener (Manager header "PRESS TO FRONT"). Closing the
-	focused window passes the focus to the topmost open one.
+	focused window passes the focus to the topmost open one; opening it again brings it to the front with the focus.
+	A press on the window's empty area stops at an invisible full-cover `ClickSink` button (ZIndex 0) instead of falling
+	through to a widget of a window beneath.
 
 	STAYING ON SCREEN (Dear ImGui `ClampWindowPos`, imgui.cpp — `DisplayWindowPadding` 19 at the default size, applied
 	with the title bar as the window's height when the window moves by its title bar only): the window's top-left is
@@ -238,6 +240,19 @@ local function Window(props: WindowProps): Frame
 			Thickness = strokeThickness,
 			Color = style.Color.Border,
 			Transparency = style.Transparency.Border,
+		}),
+		-- a press on the window's empty area must not fall through to a window beneath: a plain Frame / ScrollingFrame
+		-- passes a click on to the GuiButton under it (`Active` does not stop it), only a GuiButton sinks it. Direct
+		-- child at ZIndex 0 (the root lays nothing out), so every other child stays above it (user decision 2026-10-15).
+		D.TextButton({
+			Name = "ClickSink",
+			Size = UDim2.fromScale(1, 1),
+			ZIndex = 0,
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			Text = "",
+			AutoButtonColor = false,
+			Selectable = false,
 		}),
 		if noTitleBar
 			then q.None
