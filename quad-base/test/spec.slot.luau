@@ -2718,4 +2718,55 @@ do
 	print("PASS")
 end
 
+print()
+print("=== Q76 (2026-10-15) — :List 통째 교체·섞인 교체: 최종 상태와 호출 횟수(호출 순서는 계약 아님) ===")
+do
+	local function items(ids) local t = {} for i, id in ids do t[i] = { id = id } end return t end
+	local ids0 = {}
+	for i = 1, 200 do ids0[i] = "old" .. i end
+	local data = q.Source(items(ids0))
+	local s = Slot()
+	local calls, gone, frames = {}, {}, {}
+	s:List(data, function(ctx)
+		if ctx.Item == q.KeyGone then
+			table.insert(gone, ctx.Prev.Name)
+			return nil
+		end
+		local id = ctx.Item.id
+		calls[id] = (calls[id] or 0) + 1
+		if ctx.Prev then return ctx.Prev end
+		local f = Instance.new("Frame"); f.Name = id
+		frames[id] = f
+		return f
+	end, function(item) return item.id end)
+	local parent = Instance.new("Folder")
+	dispatch.drive(parent, { s })
+	-- full replace: every key new
+	local ids1 = {}
+	for i = 1, 200 do ids1[i] = "new" .. i end
+	table.clear(calls)
+	data:Set(items(ids1))
+	assert(#gone == 200, "each gone key asked once: " .. #gone)
+	local seenGone = {}
+	for _, name in gone do assert(not seenGone[name], "gone twice: " .. name); seenGone[name] = true end
+	for i = 1, 200 do
+		assert(calls["new" .. i] == 1, "each item called once")
+		assert(s:Get(i) == frames["new" .. i], "data order kept at " .. i)
+		assert(frames["old" .. i].Parent == nil, "old element destroyed")
+	end
+	assert(s.Length:Get() == 200 and childCount(parent) == 200, "200 mounted")
+	-- mixed: keep evens of new, drop odds, insert fresh ones between, reverse
+	table.clear(gone); table.clear(calls)
+	local ids2 = {}
+	for i = 200, 2, -2 do table.insert(ids2, "new" .. i); table.insert(ids2, "mid" .. i) end
+	data:Set(items(ids2))
+	assert(#gone == 100, "the 100 odd keys gone: " .. #gone)
+	for k, id in ids2 do
+		assert(calls[id] == 1, "called once: " .. id)
+		assert(s:Get(k) == frames[id], "mixed order at " .. k)
+	end
+	assert(s.Length:Get() == 200 and childCount(parent) == 200, "200 after mixed")
+	print("PASS")
+end
+
 print("=== ALL PASS ===")

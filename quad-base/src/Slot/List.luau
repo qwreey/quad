@@ -187,6 +187,44 @@ return function(S: Types.SlotInternal, module: any)
 			local ownsGate = not blocker.Blocking
 			if ownsGate then blocker:On() end
 
+			-- KeyGone pass FIRST (round13 Q76 A1 + A1b, user decision 2026-10-15): the keys of last cycle that are
+			-- gone now are settled before the item loop, the mounted ones from the HIGHEST raw position down. With the
+			-- old order (items first, gone keys after, in `pairs` order) a full replace inserted every new element in
+			-- front of the N old ones still in the array (each `rawAdd` re-indexes / splices everything behind it) and
+			-- then removed the old ones from the middle — O(N^2) (N=5000: ~2.1 s in the CLI mock). Gone first and
+			-- descending, each removal is at the tail and every later `rawAdd` appends: O(N). The final state is the
+			-- same (differential fuzz, `audit/round13-q76b-proto/`); the ORDER of updateFn calls in a cycle is not a
+			-- contract (user: "updateFn 이 불리는 순서는 정함 없음으로 계약"). The gone keys are collected into a list
+			-- before any user code runs, so `prevKeys` is not traversed while updateFn executes (`H-480`/`H-486`).
+			local gone: { any } = {}
+			for key in pairs(prevKeys) do
+				if not seen[key] then
+					table.insert(gone, key)
+				end
+			end
+			if #gone > 1 then
+				local position: { [any]: number } = {}
+				for _, key in gone do
+					local element = mounted[key]
+					position[key] = if element ~= nil then (S.indexOfRaw(self, element) or 0) else 0 -- detached: last
+				end
+				table.sort(gone, function(a, b)
+					return position[a] > position[b]
+				end)
+			end
+			for _, key in gone do
+				local prev = S.unwrapElement(mounted[key] or (self._detached and self._detached[key]))
+				local result, ud = updateFn({ Item = S.KeyGone, Index = 0, Offset = offset, Prev = prev, UserData = userdata[key] })
+				if result == S.None then result = nil end
+				local detach = (result == S.Detach)
+				if detach then result = nil end
+				if result ~= nil then
+					S.Err.errorBefore("Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)", S.SURFACE)
+				end
+				settle(key, result, detach, 0)
+				userdata[key] = ud
+			end
+
 			local slotPos = 0
 			for i, item in ipairs(items) do
 				local key = keys[i]
@@ -208,26 +246,6 @@ return function(S: Types.SlotInternal, module: any)
 				userdata[key] = ud
 			end
 
-			-- KeyGone pass over last cycle's key set. No `table.clone` snapshot
-			-- (`H-480`, 2026-09-08 advisory RFC): the loop writes nothing into `prevKeys`.
-			-- The one way to change it mid-traversal is a REENTRANT reconcile (user code
-			-- below — `updateFn`/a destroyed element's cleanup — `:Set`s this List's data
-			-- State; State emits synchronously): that is the `slot-plan.md` "재진입성" UB,
-			-- not a supported path — `H-486` (2026-09-08 감사 A-1/B-1).
-			for key in pairs(prevKeys) do
-				if not seen[key] then
-					local prev = S.unwrapElement(mounted[key] or (self._detached and self._detached[key]))
-					local result, ud = updateFn({ Item = S.KeyGone, Index = 0, Offset = offset, Prev = prev, UserData = userdata[key] })
-					if result == S.None then result = nil end
-					local detach = (result == S.Detach)
-					if detach then result = nil end
-					if result ~= nil then
-						S.Err.errorBefore("Quad0147 Slot:List: KeyGone accepts only nil/None (destroy) or Detach (hold)", S.SURFACE)
-					end
-					settle(key, result, detach, 0)
-					userdata[key] = ud
-				end
-			end
 			-- [2026-10-02 user decision, round14] `H-38` reverted to the cycle-end swap (`H-480`): this
 			-- cycle's key set becomes the next cycle's "last" set in one write. The old incremental
 			-- writes (record before settle, clear after KeyGone) only mattered after an `updateFn` /
