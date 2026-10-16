@@ -35,6 +35,9 @@ pesde 문서 "Multi-target Packages"가 정한 유일한 방법은 *"같은 이�
     아래 타깃별 경로) 같은 이름의 멤버가 둘 있어도 된다 — 실측 확인.
   * 스테이징에서 `./scripts/test.sh`를 돌린다. **게시되는 그 트리가 게이트를 통과한 트리다.**
   * 의존 순서대로 publish 한다: luau 넷 → roblox 넷 → `quad_roblox`.
+  * **[2026-10-16]** 레지스트리가 `429 Too Many Requests (… retry in Ns)`로 막으면 N+5초 기다렸다 같은 패키지를 다시 올린다(최대 다섯 번,
+    숫자가 없으면 65초). 실게시에서 다른 이유로 실패하면 거기서 멈추고 뒤 패키지는 SKIPPED — 의존 순서라 계속 올리면 아무도 안 올린
+    버전을 요구하는 패키지가 게시된다. 실게시는 패키지마다 레지스트리를 먼저 읽어 이미 올라간 번호·타깃은 건너뛰므로(HAVE), 고친 뒤 그대로 다시 돌리면 이어서 올린다.
 
 ## 사용법
 
@@ -88,6 +91,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -296,6 +300,32 @@ def patch_stage_tooling(stage, twin_names, quad_base_is_roblox):
         json.dump(d, open(proj, 'w', encoding='utf-8'), indent='\t', ensure_ascii=False)
 
 
+RATE_LIMIT_TRIES = 6  # 1 try + up to 5 waits
+REGISTRY_API = 'https://registry.pesde.daimond113.com/v1/packages/'
+
+
+def already_published(name, version, target):
+    """True if the registry already lists `name@version` for `target` (read-only GET; on any error, False —
+    pesde then reports the duplicate itself)."""
+    import urllib.parse
+    import urllib.request
+    try:
+        with urllib.request.urlopen(REGISTRY_API + urllib.parse.quote(name, safe=''), timeout=20) as r:
+            data = json.load(r)
+    except Exception:
+        return False
+    return target in (data.get('versions', {}).get(version, {}).get('targets') or {})
+
+
+def rate_limit_wait(out):
+    """Seconds to wait if `pesde publish` failed on the registry's rate limit, else None.
+    Observed (2026-10-16): `error: failed to publish package: 429 Too Many Requests (Too many requests, retry in 55s)`."""
+    if '429' not in out and 'Too Many Requests' not in out:
+        return None
+    m = re.search(r'retry in (\d+)\s*s', out)
+    return (int(m.group(1)) if m else 60) + 5
+
+
 def summarize_publish(out, pkgdir, dry):
     """pesde publish 출력에서 확인 블록만 뽑고, dry-run이면 타르볼 엔트리 수도 센다."""
     keep = []
@@ -389,10 +419,33 @@ def main():
         print(f'\n== publish ({"dry-run" if dry else "REAL"}) — {len(order)}건')
         rows, failed = [], []
         for d, target in order:
+            if failed and not dry:
+                # [2026-10-16] a real publish stops at the first failure: the order is the dependency order, so
+                # going on would upload packages that require a version nobody uploaded.
+                rows.append((d, '?', target, 'SKIPPED', '-'))
+                print(f'  SKIP {d:<24} (앞 패키지 실패 — 고친 뒤 다시 돌리면 이미 올라간 것은 건너뛴다)')
+                continue
+            if not dry:
+                man = open(os.path.join(stage, d, 'pesde.toml'), encoding='utf-8').read()
+                name = re.search(r'(?m)^name = "([^"]+)"$', man).group(1)
+                version = re.search(r'(?m)^version = "([^"]+)"$', man).group(1)
+                if already_published(name, version, target):
+                    # [2026-10-16] resume after a partial run (a 429 left three of nine unpublished): the registry
+                    # rejects a version it already has, which would now stop the run at the first package
+                    rows.append((d, name, target, 'ALREADY', '-'))
+                    print(f'  HAVE {d:<24} {name:<28} {target:<7} (레지스트리에 {version} 이미 있음 — 건너뜀)')
+                    continue
             cmd = ['mise', 'exec', '--', 'pesde', 'publish', '-y']
             if dry:
                 cmd.append('--dry-run')
-            p = run(cmd, cwd=os.path.join(stage, d))
+            for attempt in range(1, RATE_LIMIT_TRIES + 1):
+                p = run(cmd, cwd=os.path.join(stage, d))
+                wait = rate_limit_wait(p.stdout) if p.returncode != 0 else None
+                if wait is None or attempt == RATE_LIMIT_TRIES:
+                    break
+                # [2026-10-16 user report] the registry answers `429 Too Many Requests (… retry in 55s)` mid-run
+                print(f'  429  {d:<24} 레지스트리 요청 한도 — {wait}s 기다렸다 다시 ({attempt}/{RATE_LIMIT_TRIES - 1})', flush=True)
+                time.sleep(wait)
             keep, info, entries = summarize_publish(p.stdout, os.path.join(stage, d), dry)
             ok = p.returncode == 0
             rows.append((d, info.get('name', '?'), info.get('target', target),
