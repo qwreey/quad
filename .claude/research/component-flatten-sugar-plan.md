@@ -147,3 +147,4 @@ D.Frame { Size = ..., Hoverable(enter, leave), MouseLeave = myLeave } -- 직접 
 - **(5) `Split`과의 관계 — 맞물린다는 데 동의, 처리 방식은 나중에**(*"Split/Flatten 슈거에서 어떻게 처리할지는 아직은 미정인것 같음. 나와 봐야 알것 같아"*).
 - **순서(메인 제안)**: 이벤트 디스크립터 결정 → Declaration 타입 함수 트랙(그 안에서 `Spread<Ty>`/`SpreadMarker<Ty>`) → `Spread` 런타임 → `Split`은 나중.
 - **[2026-10-16 같은 날 — 이벤트 (가) 결정]** 사용자: *"해시 디스크립터 상의 이벤트는 그대로 두고, OnEvent 는 speard 나 팩토리 등에서 결과로 내놓을 때 쓰는 것으로 두면 될 것 같아. 가 안으로 가면 되겠음. 다만 declaration 이 또 길어지겠다만, 타입 함수와 같이 처리가 가능해진다면 해소될 것 … 다음 트랙에서 같이 설계하면 되겠음"*. 문자 키 이벤트는 그대로(손으로 쓸 때의 편의), `OnChange`와 짝인 배열부 이벤트 디스크립터(사용자 1안 `OnEvent`, 이름 탐색 sonnet·Gemini — `audit/naming-onevent-2026-10-16/`)는 팩토리·Spread가 내놓는 형태. 타입은 Declaration 타입 함수 트랙에서 같이.
+- **[2026-10-16] `OnEvent`로 확정**(사용자: *"OnEvent로 확정. 해당 방향으로 가보자"*) — 런타임은 `OnChange` 디스크립터와 같은 모양, 타입(이벤트 이름 자동완성·콜백 인자 추론)은 Declaration 타입 함수 트랙(`research/declaration-surface-plan.md` 5절)에서 `Spread<Ty>`와 함께.
