@@ -11,7 +11,8 @@
    **[2026-10-15 정리]** 이 항목에 2026-09-06~10-13 동안 쌓였던 구간별 경과 서술(회신 1~5차, 슈거 구간, 문서 다듬기, 배포 준비, round8~14 등)은
    지웠다 — 각 결정은 `session-summary.md`의 해당 날짜 항목과 원장이 소스다(지운 원문은 git 히스토리).
    **지금 사용자 몫**(목록은 각 소스가 쥔다):
-   - **[2026-10-15 기준]** 3.3.0 bump 시기(재검사 셋은 끝남 — `session/2026-10-15-01-release-recheck-kits-list-lazy.md`), 아이콘 팩 결정(`research/icon-pack-plan.md`), `q.Spread` 표면 문항(`research/component-flatten-sugar-plan.md` 5절).
+   - **[2026-10-16 기준]** 3.3.0 bump 시기(재검사 셋은 끝남 — `session/2026-10-15-01-release-recheck-kits-list-lazy.md`), 아이콘 팩 결정(`research/icon-pack-plan.md`), table-sim 리뷰 후속(`feedback/table-sim-2026-10-16.md`).
+   - **진행 중 트랙 — Declaration을 타입 함수로**(`research/declaration-surface-plan.md` 5절, 이름은 `research/declaration-naming-table.md` 5절, 경과 `session/2026-10-16-01-spread-onevent-decl-typefn.md`): 4절 1번 닫힘, 2번은 "생성 D 포기·파일별 꺼내 두기"까지 — 남은 것은 재수출 운명·킷 이전, 4절 3~5번, 이름표에 빠진 축. 구현 착수 전.
    - 열린 질문 전체는 `.claude/question.md`, 사람 손 일은 루트 `HUMAN_TODO.md` 미해소 절, 계획서마다 걸린 결정은 `research/README.md` 표의 우선순위 칸.
    **다음 세션이 먼저 볼 것**: `conventions.md` 2026-09-06·09-07·09-08 항목(백그라운드 에이전트 종료 판정 / test.sh 판정은 exit code / 문항·발견은 평문).
 
