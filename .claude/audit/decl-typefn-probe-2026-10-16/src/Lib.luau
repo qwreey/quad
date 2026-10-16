@@ -360,6 +360,32 @@ export type function Build(mode: type, cls: type, policy: type)
 			return types.newtable(props)
 		end
 		return types.intersectionof(table.unpack(parts))
+	elseif M == "readmap" then
+		-- [2026-10-16] per-class read map for OnChange/Out with the Q127 rule: an Instance-class property reads as `T?`
+		-- (the engine hands nil for an unset object reference even where the defs say non-nil). Writable surface here.
+		local function isInstance(t: type): boolean
+			local cur: type? = t
+			while cur ~= nil and cur.tag == "extern" do
+				if tostring(cur) == "Instance" then
+					return true
+				end
+				cur = cur:readparent()
+			end
+			return false
+		end
+		local names, info = collect(cls)
+		local props: { [type]: { read: type?, write: type? } } = {}
+		for _, n in names do
+			local i = info[n]
+			if i.kind == "prop" then
+				local ty = i.ty
+				if isInstance(ty) then
+					ty = types.optional(ty)
+				end
+				props[types.singleton(n)] = { read = ty }
+			end
+		end
+		return types.newtable(props)
 	elseif M == "eventoverloads" then
 		-- [2026-10-16] `OnEvent "Frame"` as an overloaded function: one `(name) -> (fn) -> desc` per event, picked by the literal
 		local names, info = collect(cls)
@@ -501,6 +527,7 @@ export type Brief<C> = Build<"brief", C, Policy>
 export type Names<C> = Build<"names", C, Policy>
 export type EventArgs = Build<"eventargs", Scope, Policy>
 export type PropMap<C> = Build<"propmap", C, Policy>
+export type ReadMap<C> = Build<"readmap", C, Policy>
 export type ChangeOverloads<C> = Build<"changeoverloads", C, Policy>
 export type EventOverloads<C> = Build<"eventoverloads", C, Policy>
 export type ChangeDesc<K> = { read __quadChange: K }

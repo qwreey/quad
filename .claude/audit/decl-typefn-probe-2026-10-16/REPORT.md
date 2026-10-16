@@ -110,3 +110,14 @@ hover는 참조 타입까지 펼쳐 이상하게 보이나 타입은 `Modifier`)
 - **파일별 vs 공용 모듈**(`multi/`, 파일 20개가 같은 생성자 8 + Modifier 4를 씀, 한 프로세스로 전체 검사, sync): 파일별 1 → 5 → 20개 0.53 → 0.66 → 1.26 s, 공용 모듈 0.47 → 0.53 → 0.80 s,
   둘 다 93 MiB·NEG 전부 — 파일별이 파일당 ~0.04 s 더 든다. **무거운 파일별**(`multi/heavy/` — 파일마다 생성자 31 + Modifier 47을 꺼내 둠, 내보내지 않음): 1 → 5 → 20개 0.71 → 1.37 → 3.95 s,
   185 → 192 MiB, 어느 파일도 무너지지 않고 NEG 전부; Studio(`16-heavy-local`)도 NEG 잡힘. 즉 **한 파일의 무게는 그 파일에 갇히고 다른 모듈로 새지 않는다** — 넘치는 것은 내보낼 때뿐.
+
+## round13 Q87·Q127을 클래스 먼저 커리로 — `src/17-out-curry.luau`, `harness/compare/out-curry.luau` [2026-10-16 추가, 4절 5번]
+
+세 보류 문항(Q87 충돌 이름 여섯에서 `q.Out` 거짓 양성, Q122 디스크립터 두 벌, Q127 객체 참조 읽기 표면 non-nil)의 공통 뿌리는 31 클래스를 한 이름 맵(`PropTypesRead`)에 합친 것 —
+같은 이름이 클래스마다 다른 타입이면 `any`가 된다. 클래스 먼저 커리 `Out "ScrollingFrame" "CanvasSize" (src)`(Lib 모드 `readmap` — 클래스별 맵)로 재면(sync):
+- **Q87 해소**: `ScrollingFrame.CanvasSize`←`Source<UDim2>`, `UIGradient.Color`←`Source<ColorSequence>`, `UIGradient.Transparency`←`Source<NumberSequence>`, `UIStroke.Transparency`←`Source<number>` 무진단;
+  `CanvasSize`←`Source<Vector2>`, `UIGradient.Transparency`←`Source<number>`, `Frame`에 `"Text"`는 거부. (거부 메시지가 Source 메소드마다 펼쳐져 한 줄에 95건 — 지금 `OutFn`의 음성도 90건이었다, 모양만의 잡음.)
+- **Q127 (a)를 생성기가 아니라 타입 함수 규칙으로**: `readmap`이 Instance 계열(부모 사슬에 `Instance`가 있는 extern) 프로퍼티를 `T?`로 — `Out "Frame" "NextSelectionUp" (Source<GuiObject?>)`·
+  `Out "BillboardGui" "Adornee" (Source<Instance?>)` 통과, `OnChange "Frame" "NextSelectionUp" (function(v) local g: GuiObject = v end)`는 `nil`이 안 들어간다고 거부, `Size`는 그대로 `UDim2`.
+  타입 함수 안에서 클래스와 값 타입(UDim2 등)은 둘 다 `extern` 태그라 사슬 검사가 필요하다(`harness/compare/tagprobe.luau`).
+- 읽기 표면(ReadOnly 포함)은 이 프로브에서 아직 쓰기 표면 — 구현 때 ReadOnly를 빼지 않는 정책 데이터.
