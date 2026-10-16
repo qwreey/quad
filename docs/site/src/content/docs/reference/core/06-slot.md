@@ -537,7 +537,7 @@ current:Set(nil)                              -- 비워진다
 **시그니처**
 
 ```luau
-Lazy: (self: Slot<T>, fn: () -> SlotElement<T>?) -> Slot<T>
+Lazy: (self: Slot<T>, fn: () -> (SlotElement<T> | None)?) -> Slot<T>
 ```
 
 빈 Slot에 **한 번만 짓는 함수**를 겁니다. `fn`은 거는 순간이 아니라 이 Slot이 **처음 꽂혀 마운트될 때 한 번** 불리고, 돌려준 값 하나가 이 Slot의 내용이 됩니다 — 원소 하나, `State`(반응형 원소), 여러 원소를 담은 `Slot`, 또는 `nil`(빈 내용). 돌려준 값은 [`slot:Add`](#slotaddelement-index)로 넣은 것과 같이 다룹니다. 이름의 "게으름"은 [시작하기 19장](/getting-started/19-laziness/)의 그것과 같은 뜻입니다 — 필요한 순간(꽂히는 순간)까지 미룰 뿐, 엔진 스케줄러(`task.defer`)와는 무관하게 마운트 순회 안에서 그 자리에서 짓습니다. **[3.3.0부터]**
