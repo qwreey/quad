@@ -129,5 +129,6 @@
 - `naming-onevent-2026-10-16/` — **[2026-10-16, sonnet·Gemini 이름 탐색]** `OnChange`의 짝인 배열부 이벤트 디스크립터 — 둘 다 `OnEvent` 추천(차선 sonnet `On`, Gemini `Connect`).
 - `naming-ctor-2026-10-16/` — **[2026-10-16, sonnet·Gemini 이름 탐색]** 클래스 이름으로 요소 생성자를 꺼내는 함수 X·`q.New()` 개명·공용 모듈 네임스페이스 — X는 sonnet `Class`/Gemini `New`, 둘 다 `NewModule`·별도 테이블 권고.
 - `naming-arritem-2026-10-16/` — **[2026-10-16, sonnet·Gemini 이름 탐색]** props 배열 자리 값의 타입(지금 `<Class>Elem`) 새 이름 — sonnet `Entry`, Gemini `Content`(Roblox `Content` 타입과 충돌 — 메인 확인).
+- `naming-table-review-2026-10-16/` — **[2026-10-16, Gemini 체계 검토 + sonnet 찬반 토론]** Declaration 이름표 초안 검토 — Elem은 토론이 "값·타입 이름을 갈라도 되나"로 좁혀짐, Gemini `Ctor`·`ModifierInto`·`Spread<C>`·`PropertyMap`과 빠진 축 다섯.
 - `decl-typefn-probe-2026-10-16/` — **[2026-10-16, opus — CLI·LSP 하네스; Studio·VSCode는 사용자 몫]** Declaration을 타입 함수로 조립하는 첫 실측 — `New<<C>>`·`Modifier<<C>>`·`Spread<<C>>`·`OnEvent` 성립, 무주석 이벤트 콜백 인자는 unknown(커리 꼴만 됨, 생성 `OnChange`도 같다는 보고), override 없는 실사용자 환경에서 생성 D가 too complex로 무너짐, 체커 차이 중 API 버전 차이는 흡수 불가. `REPORT.md`
 - `doc-cleanup-2026-10-15/` — **[2026-10-15, Gemini 탐사 둘·opus 검증·메인 적용]** `.claude/` 코퍼스 stale·위치 정리 — 확정 22·놓친 것 8 반영(question.md·todos.md 대폭 정리), 기각 9, 사용자 판단 다섯.
