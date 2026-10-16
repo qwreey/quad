@@ -408,6 +408,29 @@ export type function Build(mode: type, cls: type, policy: type)
 		end
 		print("[R] " .. tostring(cls) .. " :: " .. table.concat(parts, " | "))
 		return types.string
+	elseif M == "brief" then
+		-- Studio check (2026-10-16): the whole Q5 report as ONE diagnostic — Studio has no way to copy many diagnostics at once.
+		-- `cls` may be a union; one line per class joined with " ;; ".
+		local list: { type } = if cls.tag == "union" then cls:components() else { cls }
+		local out: { string } = {}
+		for _, c in list do
+			local names, info = collect(c)
+			local np, ne = 0, 0
+			local injected: { string } = {}
+			for _, n in names do
+				if info[n].kind == "event" then ne += 1 else np += 1 end
+				if info[n].injected then injected[#injected + 1] = n end
+			end
+			-- compact: "Frame 38/26 +Transparency" ; flags only when something is off from the Linux expectation
+			local me = info["MouseEnter"]
+			local flags = ""
+			if info["BackgroundColor"] then flags ..= " !BgColor" end
+			if info["DataCost"] then flags ..= " !DataCost" end
+			if me ~= nil and tostring(me.ty) ~= "(number, number) -> ()" then flags ..= " ME=" .. string.sub(tostring(me.ty), 1, 30) end
+			out[#out + 1] = tostring(c) .. " " .. np .. "/" .. ne .. (if #injected > 0 then " +" .. table.concat(injected, ",") else "") .. flags
+		end
+		print("[BRIEF] " .. table.concat(out, "; "))
+		return types.string
 	elseif M == "names" then
 		-- Q5: the full policy-applied key list (props then events), for line-by-line diffing across checkers
 		local names, info = collect(cls)
@@ -437,6 +460,7 @@ export type ClassName<C> = Build<"classname", C, Policy>
 export type Events<C> = Build<"events", C, Policy>
 export type EventMap = Build<"events", Scope, Policy>
 export type Report<C> = Build<"report", C, Policy>
+export type Brief<C> = Build<"brief", C, Policy>
 export type Names<C> = Build<"names", C, Policy>
 export type EventArgs = Build<"eventargs", Scope, Policy>
 export type EventDesc<K> = { read __quadEvent: K }
