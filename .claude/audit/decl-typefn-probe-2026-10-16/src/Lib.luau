@@ -70,6 +70,10 @@ type Inject = {
 	TextBox: { FontSize: Enum.FontSize, TextWrap: boolean },
 }
 export type Policy = { Deny: Deny, DenyIn: DenyIn, Inject: Inject, Child: NewChild }
+-- [2026-10-16] Mapper axis: same props, plus child descriptors in the array part (generated `<Class>MapperElem = <Class>Elem | MapperDescriptor`)
+export type MapperDescriptor = { read _mapper: true }
+export type MapperRootKey = { read __quadMapperRoot: true }
+export type MapperPolicy = { Deny: Deny, DenyIn: DenyIn, Inject: Inject, Child: NewChild | MapperDescriptor }
 
 -- scope = the 31 classes the generated Declaration covers today (gen-d.py H-296)
 export type Scope = BillboardGui | Camera | CanvasGroup | Folder | Frame | ImageButton | ImageLabel | ScreenGui
@@ -453,6 +457,7 @@ end
 
 -- ── public aliases ─────────────────────────────────────────────────────────
 export type Props<C> = Build<"props", C, Policy>
+export type MapperProps<C> = Build<"props", C, MapperPolicy>
 export type Modifier<C> = Build<"modifier", C, Policy>
 export type Elem<C> = Build<"elem", C, Policy>
 export type SpreadMarker<C> = Build<"spreadmarker", C, Policy>

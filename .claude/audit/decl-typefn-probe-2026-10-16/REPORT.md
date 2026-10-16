@@ -53,3 +53,14 @@ opus 서브에이전트가 만들고 돌렸다(보고 본문을 메인이 요약
 - **인라인 비용(`NewN "C" {…}`·`SpreadC "C" {…}`를 호출마다, 5 클래스 순환)**: sync 기준 50 호출 0.63 s/192 MiB, 150 → 0.98 s/440 MiB, 200 → 572 MiB, 250 → 692 MiB에서
   멀쩡하다가 **300 호출에서 too complex 1 + 가짜 에러 402**(600 호출 1389). 사용자 VSCode 설정(vsc, 한도 override)도 같은 자리에서 무너진다 — 조용히 사라지지 않고
   가짜 에러가 쏟아지는 꼴. **파일 위에 꺼내 두면(`local Frame = NewN "Frame"` 뒤 `Frame {…}`) 50~600 호출이 0.52~0.62 s/92~113 MiB로 평평** — 인스턴스화가 바인딩마다 한 번.
+
+## Claim/Mapper 축·공용 모듈 꼴 — `src/09-mapper.luau`, `harness/compare/central/` [2026-10-16 추가]
+
+- **Mapper**: `Lib`에 `MapperPolicy`(Policy의 `Child`에 `MapperDescriptor`만 더함)와 `MapperProps<C> = Build<"props", C, MapperPolicy>`를 넣어 **같은 `Build`를 데이터만 바꿔 재사용** —
+  생성 `<Class>MapperElem = <Class>Elem | MapperDescriptor`와 같은 모양. 표면 `Mapper "Frame"` → `(key: string | Root) -> (props) -> MapperDescriptor`(커리 셋).
+  sync에서 `Claim(template, MFrame(Root)({ … MLabel "Title" {…}, MFrame "List" { MLabel "Inner" {…} }, Frame {…} }))` 무진단·hover `local ok: Frame`,
+  인라인 `MapperN "TextLabel" "Sub" {…}`·꺼내 둔 `MFrame "X" {…}` 자동완성 83/64. 부정 다섯 전부 잡힘: 값 둘, **New 요소 안의 Mapper 디스크립터 거부**(생성 `<Class>Elem`과 같음),
+  이름 오타, 키에 숫자.
+- **공용 모듈(사용자 2026-10-16 — 프로젝트 `quad.luau`에서 꺼내 export)**: 31 클래스의 생성자·Spread 62개를 한 모듈에서 꺼내 반환하는 `Ui.luau` 0.64 s/171 MiB,
+  그걸 require해 600 호출하는 파일 0.74 s/172 MiB(모듈 검사 포함) — 파일별 꺼내 두기와 같은 평평한 비용이 모듈 경계를 넘어서도 유지. 소비 쪽 `UI.` 자동완성 62,
+  `UI.Frame { ` 자동완성 64(0.11 s), 값 에러 둘 잡힘.
