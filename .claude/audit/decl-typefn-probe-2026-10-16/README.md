@@ -21,9 +21,9 @@
 | `harness/extern-shim/` | Studio처럼 이벤트가 extern 시그널일 때의 경로(CLI 전용 defs shim) | 프로퍼티 꼴 shim 통과, `function` 메소드 꼴 shim은 `Build` 전체가 런타임 에러 |
 | `harness/compare/` | 같은 자리를 생성 D로(`gend-lsp.luau`), 두 Modifier의 공존(`coexist.luau`), VSCode용 경로 require 비용 파일(`cost/`) | — |
 
-## Studio 최소 확인 [2026-10-16 추가 — 진단을 한꺼번에 복사할 방법이 없어서]
+## Studio 최소 확인 [2026-10-16 추가 — 같은 날 `studio-analysis`가 생겨 진단 부분은 메인이 읽음, `REPORT.md` 끝 절]
 
-Studio에는 스크립트 분석 진단을 한꺼번에 읽거나 복사하는 길이 없다(공식 API는 플러그인이 진단을 **넣는** `RegisterScriptAnalysisCallback`뿐, Script Analysis 창에도 전체 복사가 없음 — 메인·sonnet 조사).
+**[2026-10-16 정정]** 아래 첫 문장은 쓸 때의 사실이다 — 그 뒤 사용자 툴링에 `studio-analysis`(Script Analysis 창을 UIA로 읽음)가 생겨 (1)(2)는 메인이 읽었다; (3) 자동완성·hover만 사람 몫으로 남는다. Studio 자체에는 스크립트 분석 진단을 한꺼번에 읽거나 복사하는 길이 없다(공식 API는 플러그인이 진단을 **넣는** `RegisterScriptAnalysisCallback`뿐, Script Analysis 창에도 전체 복사가 없음 — 메인·sonnet 조사).
 그래서 Studio만 답할 수 있는 셋만 최소로 본다: (1) **`00-studio-brief.luau`의 `[BRIEF]` 진단 하나**를 hover해서 복사(05번 전체를 209자 한 줄로 모음 — 리눅스 기대값과 비교),
 (2) 06b에 "too complex"가 뜨는지와 맨 끝 NEG 두 줄에 빨간 줄이 있는지(예/아니오), (3) 01~04는 자동완성·hover가 눈으로 쓸 만한지 인상만. 파일별 진단 수 대조가 필요하면
 리눅스 vsc 기준 01=14, 02=7, 03=7, 04=18, 05=24, 06a=2, 06c=2(`out/cli-vsc.txt`) — Script Analysis 창의 스크립트별 개수와 비교.

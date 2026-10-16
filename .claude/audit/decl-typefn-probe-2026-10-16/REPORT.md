@@ -13,4 +13,15 @@ opus 서브에이전트가 만들고 돌렸다(보고 본문을 메인이 요약
 5. **체커 차이 흡수(사용자 가설)** — 두 defs에서 정책 적용 뒤 Frame 등 개수 일치, 31 클래스 키 집합이 생성 D `<Class>Param`과 글자까지 같은 것이 vsc 28/31·pin 29/31. 남은 차이는 전부 **API 버전 차이**(defs가 덤프보다 새것/오래됨) — 예외 데이터로 못 메움(타입 함수 표면은 사용자 체커를, 생성 D는 덤프를 따름). 발견: Object까지 걸어야 `Changed`, 오버로드 메소드(intersection)는 걸러야 함, **멤버 하나가 `parameters()`에서 죽으면 표면 전체가 never**(타입 함수 안엔 pcall 없음, 8.18).
 6. **비용** — (a) 파일 위에 한 번 만드는 타입 함수 꼴: 20 → 930 호출 0.48 → 0.77 s, 79 → 200 MiB, `sync`에서도 too complex 0. (b) 생성 D: 0.86 → 1.19 s, **`sync`(override 없는 실사용자 환경)에서 too complex 6건·NEG 0/2, `D.Frame({` 자동완성 0, hover `*error-type*`** — 8.28의 실사용자판 재현(사용자 VSCode는 override가 있어 괜찮음). (c) 호출마다 `L.New<<C>>`를 인스턴스화: 620 호출 too complex, 930 호출 2.8~3.07 GiB에서 예산 정지 → 파일 위에 한 번 만드는 꼴이 사실상 강제.
 
-**미완**: Studio·VSCode 관측 전부, 숏핸드·`As`/`Into`의 타입 함수화, Q87·Q127, 생성 D `Apply` hover 직접 대조, 930 호출 이상의 인라인 꼴.
+**미완**: Studio 자동완성·hover 인상, VSCode 관측 전부, 숏핸드·`As`/`Into`의 타입 함수화, Q87·Q127, 생성 D `Apply` hover 직접 대조, 930 호출 이상의 인라인 꼴.
+
+## Studio 진단 실측 [2026-10-16 — `studio-analysis`로 메인이 읽음]
+
+사용자 업스트림 툴링에 새로 생긴 `studio-analysis --place quad-test --json`(Windows UIA로 Script Analysis 창 목록을 읽음)으로 quad-test(HEAD `a8617c92` 싱크)의 진단을 통째로 받았다 — declprobe·Declaration 줄은 `out/studio-analysis.txt`. 자동완성·hover는 이 도구로 안 보이니 여전히 사람 몫.
+
+- **01·02·03·06a·06c는 리눅스 `vsc`와 진단이 위치·문구까지 같다**(14·7·7·2·2). 04는 16 대 18 — 빠진 둘은 `LocalUnused` 린트라 Studio 린트 설정 차이일 뿐 타입 결과는 같다.
+- **`[BRIEF]`**: `Frame 38/26; TextLabel 57/26; TextButton 63/34; ImageButton 58/34; UIScale 5/9; WorldModel 13/9; UIShadow 13/9`. `+` 표시가 하나도 없다 — Studio 체커는 Transparency·FontSize·TextWrap을 원래 가져서 `Inject`가 빈다(9/16과 같은 결론). `!` 표시도 없다. 05의 `[R]` 줄도 `MouseEnter=event:(number, number) -> ()`라 extern 경로가 Studio에서 돈다. 유일한 차이는 **WorldModel 13 대 8** — Studio에는 AutoSimulate·GravityDirection·SimulationRate·Wind·WindDirection이 더 있다(API 버전 차이). 타입 함수는 체커가 가진 클래스를 읽으므로 이 차이를 저절로 따라간다.
+- **06b(지금 생성 D) 진단 0건 — NEG 0/2.** 그 대신 `ReplicatedStorage.quad-roblox.src.Declaration` 모듈 안에 `Internal error: Code is too complex to typecheck!` 4건(5055·5056·5059·5062행 — `ModifierNS.GuiBase`·`GuiBase2d`·`GuiObject`·`Instance` 배정)이 났다. 리눅스 `sync`(override 없음)에서 본 붕괴와 같은 모양이고, 9/16 Studio(그때는 too complex 없음)와 달라졌다. 킷도 같은 `ReplicatedStorage.quad-roblox.src.Declaration`을 require하므로 **지금 Studio에서는 킷 코드의 D 타입 검사도 조용히 꺼진 상태로 봐야 한다**(한 번 읽은 결과, 반복 측정은 안 함).
+- **06a·06c(타입 함수 꼴)는 NEG 2/2, too complex 0** — 같은 Studio·같은 크기(k20m5)에서 타입 함수 쪽은 살아남았다.
+
+같이 읽힌 킷 쪽 Studio 진단(이번 트랙 밖, 기록만): material gallery의 `table.insert` 오버로드 모호 29건, `Code is too complex` 9건(devui `Inputs.InputText` 68·75행, material `Card`·`List`·`TextField.Field`·`ColorPicker.Material.Fields` 등), `Overlay` 404행 `*error-type*` 호출 1건, quad_base 3.2.0 패키지 사본의 `test/spec.versioncheck`(Unknown type·require 8건 — 패키지에 테스트가 딸려 들어간 것).
