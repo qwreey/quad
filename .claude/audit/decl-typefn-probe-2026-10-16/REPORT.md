@@ -41,3 +41,15 @@ opus 서브에이전트가 만들고 돌렸다(보고 본문을 메인이 요약
 진단이 위치·문구까지 같다: 오타 `NewN("Fraem")` 에러(`Property '"Fraem"' does not exist on type 'ClassMap'`), 따옴표 안 클래스 이름 자동완성 32,
 `Frame({ ` 자동완성 64·0.02 s, 값 에러·남의 프로퍼티(`Frame({ Text = … })`) 에러, 인라인 `NewN("Frame")({ Visible = 5 })`도 에러, 반환 hover `local ok2: TextLabel`.
 생성자 hover는 여전히 구조 전개. 맵을 "만들 수 있는 클래스"로만 채우면 추상 클래스 생성(1번의 약점)도 이름 단계에서 막힌다(맵 분리는 미측정).
+
+## Spread 모양·클래스맵 신원·인라인 비용 — `src/08-spread-shape.luau`, `harness/compare/inline/` [2026-10-16 추가]
+
+- **클래스맵이 전역 클래스를 재사용하는가**: 타입 함수 안에서 `ClassMap`의 `Frame` 자리와 전역 `Frame`이 `==` 참(`rawequal`은 거짓 — 타입 함수에 넘어오는 핸들이
+  매번 새 래퍼라서). 반환 hover에 클래스 문서(`A 2D user interface element…`)가 붙는 것도 선언된 클래스 그 자체라는 뜻. 31 클래스 맵을 단 파일이 600 호출에서
+  113 MiB로 평평 — 맵 비용은 측정에 안 잡힌다.
+- **두 인자 `Spread("Frame", {...})`는 틀린 꼴**: 올바른 `{ BackgroundTransparency = 0.5 }`가 `Expected this to be '<Props…>' but got '{ BackgroundTransparency: number }'`로
+  거부되고, 틀린 값도 값 자리가 아니라 테이블 통째로 잡힌다 — 같은 호출 안에서는 테이블 리터럴이 문맥 타입을 못 받는다(무주석 콜백과 같은 이유). 자동완성은 뜬다(64).
+  **커리 `Spread "Frame" {...}`는 정상**(값 자리 에러, 자동완성 64), 결과 마커는 `{ read __quadSpread: "GuiObject" }` — 이름 싱글턴만 남는다.
+- **인라인 비용(`NewN "C" {…}`·`SpreadC "C" {…}`를 호출마다, 5 클래스 순환)**: sync 기준 50 호출 0.63 s/192 MiB, 150 → 0.98 s/440 MiB, 200 → 572 MiB, 250 → 692 MiB에서
+  멀쩡하다가 **300 호출에서 too complex 1 + 가짜 에러 402**(600 호출 1389). 사용자 VSCode 설정(vsc, 한도 override)도 같은 자리에서 무너진다 — 조용히 사라지지 않고
+  가짜 에러가 쏟아지는 꼴. **파일 위에 꺼내 두면(`local Frame = NewN "Frame"` 뒤 `Frame {…}`) 50~600 호출이 0.52~0.62 s/92~113 MiB로 평평** — 인스턴스화가 바인딩마다 한 번.
