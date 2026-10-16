@@ -71,3 +71,11 @@ Modifier 값의 타입은 Spread와 달리 **메소드 표면 전체 + 태그**(
 검사(`Elem<C>`의 `{ read __quadModifier: "Frame" | 조상 }` 팔)만 태그 글자로 한다. 비용(sync): 함수 주석 `m: Modifier<Frame>, g: Modifier<GuiObject>` 50→300개 0.48→0.67 s,
 92→93 MiB(별칭 인스턴스화는 한 번); 인라인 `Modifier<<Frame>>():Visible(true)` 50→300번 0.57→1.26 s, 156→622 MiB(무너지진 않았지만 New 인라인처럼 자란다) — 이름 꼴 `Modifier "Frame"`이
 돌려주는 팩토리를 꺼내 두고(`local FrameModifier = Modifier "Frame"`) 쓰는 자리마다 `FrameModifier()`를 부르면 꺼내 두기와 같은 비용이 될 것(미측정).
+
+## 누적형 Spread(`:Add`) — `harness/compare/spread-acc.luau`, `harness/compare/modcost/spreadacc-*` [2026-10-16 추가, 사용자 질문]
+
+마커에 `Add: (self, props: Props<C>) -> self`를 단 `SpreadAcc<K, C> = { read __quadSpread: K, Add: … }`(값은 Modifier처럼 메소드를 가진 값이 된다; 이름 맵에는 추상 클래스
+GuiObject·GuiButton·GuiBase2d를 더함). sync: `s:Add { ` 자동완성 63(메소드 호출은 self가 C를 정해 두어 테이블이 문맥 타입을 받는다 — 커리와 같은 이유), 체인
+`FrameSpread {}:Add {…}:Add {…}`, `Frame { s, chained }`·`TextButton { s }` 무진단(메소드가 붙어도 요소 자리는 태그 팔만 본다), 틀린 값·남의 프로퍼티·`TextButton { Frame 묶음 }` 거부.
+비용: 꺼내 둔 `GuiSpread`로 `{…}:Add {…}` 뒤 요소에 넣기 50→300 호출 0.50→0.60 s, 92→97 MiB(평평). 잃는 것은 hover뿐 — `chained`가 `t1 where t1 = { Add: (self: t1, props: { [number]: …`로
+props 표면까지 펼쳐진다(마커 꼴은 `{ read __quadSpread: "GuiObject" }` 한 줄). 놓인 뒤 잠김(`:Add` 에러)은 런타임 몫 — 타입은 표현 못 함.
