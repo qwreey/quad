@@ -69,3 +69,17 @@
 - **`q.New()` → `NewModule`** 개명 동의(에러 메시지 문구에 이름이 들어가 있음 — 번호는 그대로).
 - **타입드 최상위는 quad-roblox 몫** — 사용자: Modifier 런타임은 base에 있지만 *"탑래벨에 얹는게 타입 상 들어갈 것을 아는 quad-roblox 가 담당해야"*, 그리고 타입 함수가 든 멤버를
   테이블에 흘렸을 때 q 타입이 온전한지가 관심사. 실측: 지금의 `Self & P` 병합 그대로 얹어도 온전(base `q.Modifier()`와 타입드 `q.Modifier "Frame"` 공존, base 표면 검사 유지).
+
+**[2026-10-16 같은 날 — 사용자, 위 문단의 "타입드 최상위" 정정] 교집합에 얹지 말고 백엔드 계약으로 분리.** 사용자: *"무리하게 나중에 luau 가 바뀔 경우 어떻게 될 지 모르는, 단지 지금 관측일 뿐인
+부분에 얹혀 있기 보다, breaking 이 날 위협이 있는 표면을 두기 보단 적절한 분리 표면이 있어야"* — `Self & P` 교집합에서 base `Modifier`와 타입드 `Modifier`가 공존한 것은 관측일 뿐.
+*"처음부터 Modifier/Spread 가 base 만 있을 땐 타입이 무정의가 맞으니까, 이건 탑 래밸에 있을만한 것이 아니라"*, Ref<T>·Slot<T>(내부 요소만 받고 확장 없음)와 경계가 다르고
+**정확히 Elem과 같은 경계**. 결정(사용자 *"전부 동의함"*):
+- base `Quad` 타입에서 `Modifier`를 빼고 Spread·Mapper·Elem도 두지 않는다. base 런타임은 그 최상위 이름에 `notInstalled` 스텁(Quad0108 — Tag·Attr·생명주기 op와 같은 장치).
+  quad-roblox가 런타임과 타입을 함께 채운다 — 이 집합(Elem·Spread·Modifier·Mapper·OnChange·OnEvent·Out)이 **백엔드 계약**(사용자: *"백엔드가 묶어야 진짜 프리미티브가 돼"*;
+  `OnChange`는 이미 이 모양).
+- 런타임·타입이 짝으로 떨어지는 것은 코틀린식 생성자 꼴, 그렇지 못한 base 원재료는 **`q.Raw` 네임스페이스**(사용자 제안 `new*`/`rawNew*`/`Raw.` 중 메인 권고 — Modifier 원재료가
+  `Overridden`·`TypedFactory`·`DefineSubtype`이 딸린 묶음이라 평평한 이름으로 못 풂, `q.Backend`(백엔드가 채우는 op)와 대칭): `Raw.Modifier`(지금 `q.Modifier` 통째),
+  `Raw.Spread`, `Raw.Mapper`(지금 `newMapperClass`). `Overridden`은 `Raw.Modifier.Overridden`과 메소드 꼴로 남고 타입드 `q.Modifier "Frame"`(함수)에는 매달지 않는다.
+  `MapperRoot`는 base `Claim`의 센티널이라 base에 남는다.
+- Spread가 클래스 이름을 런타임 태그로 심을지는 결정 불필요(사용자) — 타입만으로 충분.
+- 근거 실측(2026-10-16): 킷 둘은 base `q.Modifier()`를 0곳, 타입드 `D.Modifier.<Class>`를 176곳 쓴다; `TypedFactory`·`DefineSubtype`·`newMapperClass`는 quad-roblox 소스만 쓴다.
