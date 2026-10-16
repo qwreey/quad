@@ -776,7 +776,7 @@ H.section("modal input mode: parsing, errors, range, draft sync, OK gating", fun
 	assert(H.find(card, "Supporting").Text == "Enter date" or #named(card, "Supporting") == 2)
 	assert(field.Text == "2026-02-10", "field shows the draft: " .. field.Text)
 	local support = H.find(panel, "Supporting")
-	assert(support.Text == "YYYY-MM-DD", "hint")
+	assert(support.Text == "", "no hint under the field: Compose's supporting text is the error only")
 	local ok = buttonByLabel(card, "OK")
 	assert(ok.Interactable == true)
 	-- invalid text
@@ -794,13 +794,13 @@ H.section("modal input mode: parsing, errors, range, draft sync, OK gating", fun
 	assert(support.Text == "Date is not available")
 	-- valid, localized spelling
 	field.Text = " 2026/3/9 "
-	assert(support.Text == "YYYY-MM-DD" and ok.Interactable == true)
+	assert(support.Text == "" and ok.Interactable == true)
 	assert(H.find(card, "Headline").Text == "Mon, Mar 9", H.find(card, "Headline").Text)
 	field.Text = "Oct 5, 2026"
 	assert(H.find(card, "Headline").Text == "Mon, Oct 5")
 	-- empty -> nothing picked
 	field.Text = ""
-	assert(H.find(card, "Headline").Text == "\u{2013}" and ok.Interactable == false and support.Text == "YYYY-MM-DD")
+	assert(H.find(card, "Headline").Text == "\u{2013}" and ok.Interactable == false and support.Text == "")
 	field.Text = "2026-08-15"
 	assert(ok.Interactable == true)
 	-- back to the calendar: it follows the draft
@@ -857,7 +857,8 @@ H.section("modal input mode: the kit's Outlined TextField, the format placeholde
 	local panel = H.find(H.find(screen, "DatePickerModal"), "DateInput")
 	local host = H.find(panel, "DateField")
 	assert(H.countDescendants(panel) == 26, "panel descendants: " .. H.countDescendants(panel))
-	assert(host.ClassName == "Frame" and host.Position == UDim2.fromOffset(16, 16) and host.Size == UDim2.fromOffset(328, 0))
+	-- Compose InputTextFieldPadding: start 24, end 24, top 10
+	assert(host.ClassName == "Frame" and host.Position == UDim2.fromOffset(24, 10) and host.Size == UDim2.fromOffset(312, 0))
 	assert(#named(host, "OutlineBottom") == 1 and H.find(host, "Label").Text == "날짜", "Outlined, the label in the outline")
 	local box = H.find(host, "Input")
 	local ph = H.find(host, "Placeholder")
@@ -871,9 +872,16 @@ H.section("modal input mode: the kit's Outlined TextField, the format placeholde
 	target, time = fade(ph)
 	assert(target == 1 and time == Tokens.Motion.Duration.Short2, "blur while empty: fades out (FastEffects)")
 	H.finishTweens()
+	-- the supporting row: error text only, but it stays mounted (a fixed 20 px) while empty, so the field keeps its
+	-- height when an error appears (Compose: 32 dp under the container either way)
+	local support = H.find(host, "Supporting")
+	assert(support.Text == "" and support.Size == UDim2.new(1, 0, 0, 20), "empty: no hint, row kept")
 	box.Text = "2026"
 	assert(not ph.Visible, "typing hides it")
-	assert(H.find(host, "Supporting").Text:find("올바른") ~= nil, "the error text replaces the hint")
+	assert(support.Parent == host and support.Size == UDim2.new(1, 0, 0, 20), "same row, same height")
+	assert(support.Text:find("올바른") ~= nil, "the error text")
+	box.Text = "2026-02-03"
+	assert(support.Text == "", "valid: empty again")
 	q.dispose(screen)
 	H.assertNoDebugOutput("modal input placeholder")
 end)

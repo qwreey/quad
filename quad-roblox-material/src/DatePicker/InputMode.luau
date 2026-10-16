@@ -17,15 +17,25 @@
 	  * accepted forms are Calendar.parseLocalized's: 2026-10-05, 2026/10/5, 2026.10.5, 2026년 10월 5일,
 	    "Oct 5, 2026" in English. The field shows ISO `YYYY-MM-DD`.
 	  * the field is the kit's Outlined `TextField` (TextField/init.luau): the "Date" label floats in the outline, the
-	    format hint is its `Placeholder` (fades in on focus, out on blur — TextField/Field.luau PLACEHOLDER), the
-	    supporting row shows the hint, or the error text in the error color while `Error` holds one (error outline).
-	Canon: Compose `DateInput.kt` (androidx@26506f4) — `DateInputTextField` is an `OutlinedTextField` with
-	`label = DateInputLabel` and `placeholder = dateInputFormat.patternWithDelimiters.uppercase()`.
-	Deviations: Compose's supporting text is the error only (the hint lives in the placeholder and the label's
-	semantics); the kit keeps the hint in the supporting row too. Compose pads the field 24 / 24 / 10; the kit keeps 16
-	(the panel's former layout).
+	    format hint is its `Placeholder` (fades in on focus, out on blur — TextField/Field.luau PLACEHOLDER), and the
+	    supporting row shows only the error text, in the error color, while `Error` holds one (error outline) — empty
+	    otherwise, as in Compose (`supportingText = { if (errorText.isNotBlank()) Text(errorText) }`).
+	  * the field's height does not change when an error appears. Compose keeps 32 dp under the container either way:
+	    the supporting slot is `heightIn(min = 16.dp)` around a 4 dp top padding, so 16 empty + a 16 dp bottom padding,
+	    or 4 + 16 (one BodySmall line) + 16 - 4 (`InputTextNonErroneousBottomPadding` minus the supporting padding) with
+	    an error. The kit's supporting row is a fixed 20 px (4 + one line) that stays mounted while `ErrorText` is given,
+	    empty or not (TextField/Support.luau) — so the field is 56 + 20 in every state and no correction is needed; the
+	    remaining 12 of Compose's 32 falls inside this fixed-height panel.
+	  * the field sits at Compose's `InputTextFieldPadding` (start 24, end 24, top 10).
+Canon: Compose `DateInput.kt` (androidx@26506f4) — `DateInputTextField` is an `OutlinedTextField` with
+`label = DateInputLabel`, `placeholder = dateInputFormat.patternWithDelimiters.uppercase()` and the error-only
+supporting text (85-96, 181-213, 446-451); the supporting slot sizes in `internal/TextFieldImpl.kt` (`heightIn(min =
+MinSupportingTextLineHeight)` + `supportingTextPadding()`, 467-476, 2241-2250).
+Deviation: Compose sizes the input mode to its content (`DatePicker.kt` `SwitchableDateEntryContent`, an
+`AnimatedContent` with `SizeTransform`), so the dialog gets shorter in input mode; the kit keeps this panel at the
+calendar body's height so the modal card never resizes.
 	Instances: 27 — the panel + its TextField (Outlined + label: 22 incl. its host, + the Placeholder label, the error
-	mark, the supporting TextLabel + UIPadding); asserted in spec.datepicker.
+	mark, the supporting TextLabel + UIPadding — kept for `ErrorText`); asserted in spec.datepicker.
 ]]
 
 local q = require("../Quad")
@@ -113,14 +123,13 @@ local function new(o: Options): InputMode
 			Label = strings.DateLabel,
 			Value = text,
 			Placeholder = strings.Hint,
-			SupportingText = strings.Hint,
 			Error = isError,
 			ErrorText = errorText,
 			Theme = o.Theme,
 			Modifier = D.Modifier.Frame()
 				:Name("DateField")
-				:Size(UDim2.fromOffset(o.Width - 32, 0))
-				:Position(UDim2.fromOffset(16, 16)),
+				:Size(UDim2.fromOffset(o.Width - 48, 0))
+				:Position(UDim2.fromOffset(24, 10)),
 		}),
 	}
 
