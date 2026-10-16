@@ -13,7 +13,8 @@
 	  Label           string | State<string>?                      floats (BodyLarge -> BodySmall) when focused or non-empty
 	  Value           Source<string>?                             two-way (`Text = value` + `q.Out("Text", value)`); an
 	                                                              internal Source when omitted
-	  Placeholder     string?                                     shown once the label floated (always when no label)
+	  Placeholder     string?                                     while the field is empty: fades in on focus under a label
+	                                                              (shown at rest without one), out on blur (Field.luau PLACEHOLDER)
 	  SupportingText  string | State<string>?
 	  Error           boolean | State<boolean>?                   error colors; swaps the supporting text for `ErrorText`
 	  ErrorText       string | State<string>?
@@ -47,7 +48,7 @@
 	backdrop): three clipped copies of the outline, see Container.luau "OUTLINED NOTCH".
 	Instances at rest (asserted in the spec): Filled+label 14 incl. host; Outlined+label 22 incl. host (the notch: three
 	clip windows, each with its outline copy = Frame + UICorner + UIStroke, 12, plus one UISizeConstraint — in place of
-	the one UICorner + UIStroke an Outlined field without a label keeps).
+	the one UICorner + UIStroke an Outlined field without a label keeps). A `Placeholder` adds one TextLabel (inside the TextBox).
 ]]
 
 local q = require("./Quad")

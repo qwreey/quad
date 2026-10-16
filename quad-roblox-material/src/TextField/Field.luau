@@ -19,6 +19,19 @@
 	the field has no label; with a label, three clipped copies of the outline that leave the notch open (Container.luau
 	"OUTLINED NOTCH").
 
+	PLACEHOLDER: a TextLabel child of the TextBox ("Placeholder", over the TextBox's own box, input-transparent) instead of
+	the engine's `PlaceholderText` — the engine placeholder has no transparency of its own, so it could not fade. Canon:
+	Compose `internal/TextFieldImpl.kt` (androidx@26506f4) `placeholderOpacity`: one opacity per input phase — Focused 1,
+	UnfocusedEmpty 0 under a label that rests in the field (1 without a label), UnfocusedNotEmpty 0 — animated with
+	`MotionSchemeKeyTokens.SlowEffects` for UnfocusedEmpty -> Focused (the fade in on focus) and UnfocusedNotEmpty ->
+	UnfocusedEmpty, `FastEffects` for every other change (the fade out on blur); the placeholder is composed only while the
+	text is empty (`visualText.isEmpty()`), so typing hides it at once. The kit maps the two springs to the duration token
+	nearest their 1 % settling time like the sheets (Sheet/Parts.luau "MOTION"; StandardMotionTokens: FastEffects
+	damping 1.0 / stiffness 3800 -> 0.11 s = Short2, SlowEffects 1.0 / 800 -> 6.64 / sqrt(800) = 0.235 s = Medium1), with
+	the Standard easing. A disabled flip of the same phase keeps the content animation (Short4). MDC
+	(`TextInputLayout.java` material-components-android@60ff094, `createPlaceholderFadeTransition`) fades too: linear,
+	motionDurationShort2, the fade in delayed 67 ms (`PLACEHOLDER_START_DELAY`) — the kit follows Compose (no delay).
+
 	Write-back: `q.Out("Text", value)`. With `MaxLength` (or an `OnChange` callback) the write-back is
 	`q.OnChange("Text", fn)`: it clips the engine text to the limit and writes the clipped string with `value:Set` — NOT
 	`SetIfChanged`: when the source is already at the limit the clipped string equals the source, `SetIfChanged` would be a
@@ -33,6 +46,8 @@
 
 local q = require("../Quad")
 local Theme = require("../Theme")
+local Tokens = require("../Tokens")
+local MotionTokens = require("../Tokens/Motion")
 local Util = require("../Util")
 local Interaction = require("../Interaction")
 local Interactive = require("../Interactive")
@@ -60,6 +75,26 @@ local hostModifier = D.Modifier.Frame()
 	:BorderSizePixel(0)
 
 local inputStyle = Text.Box("BodyLarge")
+local placeholderStyle = Text.Label("BodyLarge")
+
+-- the placeholder fade (see PLACEHOLDER in the header)
+local PlaceholderFast = Tokens.Motion.options("Short2", "Standard") -- FastEffects
+local PlaceholderSlow = Tokens.Motion.options("Medium1", "Standard") -- SlowEffects
+local PlaceholderContent = Tokens.Motion.options("Short4", "Standard") -- a disabled flip (Style.animation)
+
+-- Compose's InputPhase
+type Phase = "Focused" | "UnfocusedEmpty" | "UnfocusedNotEmpty"
+type PlaceholderLook = { Phase: Phase, Transparency: number, Motion: MotionTokens.AnimateOptions }
+
+-- the motion of a phase change (TextFieldImpl.kt `placeholderOpacity` transitionSpec)
+local function placeholderMotion(from: Phase?, to: Phase): MotionTokens.AnimateOptions
+	if from == nil or from == to then
+		return PlaceholderContent
+	elseif (from == "UnfocusedEmpty" and to == "Focused") or (from == "UnfocusedNotEmpty" and to == "UnfocusedEmpty") then
+		return PlaceholderSlow
+	end
+	return PlaceholderFast
+end
 
 -- utf8-aware clip to `max` characters (invalid utf8 falls back to bytes)
 local function clip(s: string, max: number): string
@@ -165,18 +200,45 @@ local function build(props: Props): Parts
 	local padTop = if hasLabel and filled then 24 elseif multi then 16 else 0
 	local padBottom = if hasLabel and filled then 8 elseif multi then 16 else 0
 
-	local placeholder: string | q.State<string> = ""
+	-- the placeholder (see PLACEHOLDER in the header): its opacity follows the input phase, it shows only while empty
+	local placeholder: Instance? = nil
 	if props.Placeholder ~= nil then
-		local ph = props.Placeholder
-		if hasLabel then
-			-- the label occupies the empty field; the placeholder appears once it has floated
-			local phState: q.State<string> = focused:Compute(function(self)
-				return if self:Get() then ph else ""
-			end)
-			placeholder = phState
+		local look: q.State<PlaceholderLook> = focused:Compute(function(self, prev: PlaceholderLook?, ne, dis): PlaceholderLook
+			local phase: Phase = if self:Get() then "Focused" elseif ne:Get() then "UnfocusedNotEmpty" else "UnfocusedEmpty"
+			local alpha = if phase == "Focused" or (phase == "UnfocusedEmpty" and not hasLabel) then 1 else 0
+			local content = if dis:Get() then Style.DisabledContentTransparency else 0
+			return {
+				Phase = phase,
+				Transparency = 1 - (1 - content) * alpha,
+				Motion = placeholderMotion(if prev ~= nil then prev.Phase else nil, phase),
+			}
+		end, nonEmpty, disabled)
+		local transparency: q.State<q.Tween<number>> = look:Compute(function(self)
+			local l = self:Get()
+			return q.Tween({ Value = l.Transparency, Time = l.Motion.Time, Style = l.Motion.Style, Direction = l.Motion.Direction })
+		end)
+		local empty: q.State<boolean> = nonEmpty:Compute(function(self)
+			return not self:Get()
+		end)
+		local phMod = D.Modifier.TextLabel():TextXAlignment(Enum.TextXAlignment.Left)
+		if multi then
+			phMod = phMod:TextWrapped(true):TextYAlignment(Enum.TextYAlignment.Top)
 		else
-			placeholder = ph
+			phMod = phMod:TextWrapped(false):TextYAlignment(Enum.TextYAlignment.Center)
 		end
+		placeholder = D.TextLabel {
+			Name = "Placeholder",
+			placeholderStyle,
+			phMod,
+			Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			Interactable = false, -- clicks reach the TextBox under it
+			Text = props.Placeholder,
+			TextColor3 = theme.Color.OnSurfaceVariant,
+			TextTransparency = transparency,
+			Visible = empty,
+		}
 	end
 
 	local inputMod = D.Modifier.TextBox():TextXAlignment(Enum.TextXAlignment.Left)
@@ -211,8 +273,6 @@ local function build(props: Props): Parts
 		BorderSizePixel = 0,
 		ClearTextOnFocus = false,
 		Text = shown,
-		PlaceholderText = placeholder,
-		PlaceholderColor3 = theme.Color.OnSurfaceVariant,
 		TextColor3 = Style.disabledPick(disabled, theme.Raw.OnSurface, theme.Raw.OnSurface),
 		TextTransparency = c.ContentTransparency,
 		TextEditable = editable,
@@ -220,6 +280,7 @@ local function build(props: Props): Parts
 		Interactable = if readOnly then false else interactable,
 		LayoutOrder = 2,
 		D.UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
+		placeholder or q.None,
 		if readOnly
 			then q.None
 			elseif maxLength ~= nil or onChange ~= nil then q.OnChange("Text", writeBack)

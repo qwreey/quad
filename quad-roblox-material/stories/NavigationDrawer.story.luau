@@ -72,7 +72,7 @@ return StoryKit.story({
 			}
 		end, { Size = UDim2.fromOffset(640, 440) })
 
-		return StoryParts.page(theme, follow, {
+		return StoryParts.scrollPage(theme, follow, {
 			StoryParts.row({
 				Material.Button({
 					Theme = theme,

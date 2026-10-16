@@ -105,25 +105,20 @@ return StoryKit.story({
 				Material.Button({ Theme = brand, Label = "Filled", Modifier = D.Modifier.TextButton():LayoutOrder(1) }),
 				Material.Button({ Theme = brand, Variant = "Outlined", Label = "Outlined", Modifier = D.Modifier.TextButton():LayoutOrder(2) }),
 				Material.Switch({ Theme = brand, Value = q.Source(true), Modifier = D.Modifier.TextButton():LayoutOrder(3) }),
-				Material.LinearProgress({ Theme = brand, Value = 0.6, Modifier = D.Modifier.Frame():LayoutOrder(4) }),
+				-- the bar is full width by default: in this row it would run past the row's end, so it gets a fixed width
+				Material.LinearProgress({ Theme = brand, Value = 0.6, Modifier = D.Modifier.Frame():LayoutOrder(4):Size(UDim2.fromOffset(240, 4)) }),
 			}
 		end, { Size = UDim2.new(1, 0, 0, 80), AutomaticSize = Enum.AutomaticSize.None, LayoutOrder = 4 })
 
-		return D.Frame {
-			follow,
-			Name = "ThemeStory",
-			Size = UDim2.fromScale(1, 1),
-			BorderSizePixel = 0,
-			BackgroundColor3 = theme.Color.Surface,
-			UIPaddingOffset = 24,
-			D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12) },
+		-- taller than the UI Labs view: a scrolling page (StoryParts.scrollPage); the palette wraps to the page width
+		return StoryParts.scrollPage(theme, follow, {
 			text(theme, c.Scheme:Compute(function(self: q.StateData<any>): string
 				return `Color roles — scheme: {self:Get()}`
 			end), 1),
 			D.Frame {
 				Name = "Palette",
 				LayoutOrder = 2,
-				Size = UDim2.fromOffset(960, 0),
+				Size = UDim2.fromScale(1, 0),
 				AutomaticSize = Enum.AutomaticSize.Y,
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
@@ -137,6 +132,6 @@ return StoryKit.story({
 			},
 			text(theme, "Brand theme (Overrides.Primary from the Brand control)", 3),
 			brandRow,
-		}
+		}, 12)
 	end,
 })

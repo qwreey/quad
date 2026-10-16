@@ -59,7 +59,7 @@ return StoryKit.story({
 		local screens = StoryKit.rebuild<<Config>>(config, function(cfg: Config)
 			return D.Frame {
 				Name = "Screens",
-				Size = UDim2.fromOffset(640, 560),
+				Size = UDim2.fromOffset(640, 736),
 				BackgroundTransparency = 1,
 				D.Frame {
 					Name = "BarScreen",
@@ -78,7 +78,7 @@ return StoryKit.story({
 				D.Frame {
 					Name = "RailScreen",
 					Position = UDim2.fromOffset(0, 176),
-					Size = UDim2.fromOffset(640, 384),
+					Size = UDim2.fromOffset(640, 560), -- six destinations of the collapsed rail fit (the page scrolls)
 					BackgroundColor3 = theme.Color.SurfaceContainerLow,
 					ClipsDescendants = true,
 					Material.WideNavigationRail<<string>>({
@@ -96,9 +96,9 @@ return StoryKit.story({
 					}),
 				},
 			}
-		end, { Size = UDim2.fromOffset(640, 560) })
+		end, { Size = UDim2.fromOffset(640, 736) })
 
-		return StoryParts.page(theme, follow, {
+		return StoryParts.scrollPage(theme, follow, {
 			StoryParts.caption(theme, StoryParts.show<<string>>(page, "Selected = ", StoryParts.tostr)),
 			screens,
 			D.Frame { Name = "Sync", Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1, sync },

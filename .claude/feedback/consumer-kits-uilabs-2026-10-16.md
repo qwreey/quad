@@ -15,3 +15,5 @@
 1. 텍스트 필드의 placeholder("Type here")가 애니메이션 없이 나온다 — *"정상인가?"* 정본(Compose)은 placeholder를 페이드로 전환한다(빌더가 소스로 확인).
 2. 내비게이션 스토리가 커서 배경이 스크롤되지 않아 바닥에 닿을 수 없다 — 요소 자체는 정상, 스토리 레이아웃 문제.
 3. 테마 스토리도 커서 레이아웃이 잘린다 — UI Labs 배율로 줄여 볼 수는 있지만 스크롤이 필요한 자리.
+
+**처리 결과(같은 날).** (1) placeholder를 엔진 `PlaceholderText` 대신 TextBox 안의 라벨로 그려 Compose `TextFieldImpl.kt` `placeholderOpacity`대로 페이드(포커스 때 SlowEffects → Medium1, 블러 때 FastEffects → Short2, 타이핑하면 즉시 숨김, 레이블 없는 필드는 쉬는 동안 보임). (2)(3) 스토리를 세로 스크롤 페이지(`stories/StoryParts.luau` `scrollPage`)로 — Nav 레일 화면 높이 560, 테마 팔레트는 화면 폭에 맞춰 줄바꿈, 진행 막대 폭 고정. 부품 코드는 (1)만 바뀜. 남은 제안: prefix/suffix도 정본은 페이드(지금 즉시), DatePicker 입력 모드의 placeholder는 아직 엔진 것.
