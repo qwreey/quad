@@ -126,4 +126,5 @@
 - `gemini-core-2026-10-15/` — **[2026-10-15, Gemini 격리 worktree·메인 판정]** 3.2.0 이후 코어 변경의 라운드 사이 상호작용 — 주장한 결함 셋은 UB 장면·결정된 결과·무해로 판정(확정 결함 0), CHANGELOG 43행 BREAKING 표기만 반영.
 - `naming-defer-2026-10-15/` — **[2026-10-15, sonnet·Gemini 이름 검토]** 한 번만 짓는 Slot 설치의 이름 — 둘 다 `Lazy` 추천(`Defer`는 `task.defer`와 겹침), 사용자 동의로 `slot:Lazy(fn)`.
 - `naming-spread-2026-10-15/` — **[2026-10-15, sonnet·Gemini 이름 탐색]** 펴 넣는 묶음 도구의 이름 — 둘 다 `Spread` 추천, 사용자 동의(`research/component-flatten-sugar-plan.md` 5절).
+- `naming-onevent-2026-10-16/` — **[2026-10-16, sonnet·Gemini 이름 탐색]** `OnChange`의 짝인 배열부 이벤트 디스크립터 — 둘 다 `OnEvent` 추천(차선 sonnet `On`, Gemini `Connect`).
 - `doc-cleanup-2026-10-15/` — **[2026-10-15, Gemini 탐사 둘·opus 검증·메인 적용]** `.claude/` 코퍼스 stale·위치 정리 — 확정 22·놓친 것 8 반영(question.md·todos.md 대폭 정리), 기각 9, 사용자 판단 다섯.
