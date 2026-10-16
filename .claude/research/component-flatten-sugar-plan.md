@@ -138,3 +138,11 @@ D.Frame { Size = ..., Hoverable(enter, leave), MouseLeave = myLeave } -- 직접 
 3. 펴기 루프 재구성 — 지금 `quad-base/src/Dispatch/Modifier/init.luau`의 flatten이 Modifier만 역순으로 펴므로 "직접 쓴 키 보존 → Spread 전개 → Modifier" 세 단계가 된다(Gemini 추정, 메인 확인 전). `drive` 단계 순서 계약(`docs/reference/extend/02-dispatch-handler-contract.md`)이 바뀌는 작은 Changed.
 4. 타입 — 생성 `Declaration`의 props 타입이 이 값을 배열부에서 받게 하는 법(마커 타입), 펴진 문자 키의 타입 검사는 포기할지.
 5. 2절 "정해야 할 것" 일곱(컴포넌트 경계 flatten — `Split`의 `fields`/`rest`)과의 관계 — 같은 펴기 단계를 공유하는지, 따로 가는지.
+
+**[2026-10-16 사용자 회신 — 5절 문항 1~5]**
+- **(1) 같은 키 두 Spread → 뒤가 이김(Modifier와 같은 규칙), 단 props에만.** 사용자가 이벤트 문제를 짚음: *"이벤트는 props 와 다르게 한번만 쓸 수 있는것 아니고, 여러번 Connect 가능하잖아. 근데 이 시점에서 보면 우린 그걸 생각 안 하고 글자 필드에 놓은것 아닐까 … 이러면 사용자가 각각 spread 가 뭘 구독할 지 알고 겹침을 알아야해버려짐 … post/pre ref 를 받아서 구독해야한다면. 이건 API자체가 뭔가 잘못된 구석"*, *"props 는 진짜로 경쟁이 있으면 안 되는게 맞긴함"*. 사실 확인(메인): 이벤트는 문자 키 형태뿐(`quad-roblox/src/Handlers/Event.luau`), `OnChange`만 배열부 디스크립터라 여럿이 각각 연결된다 — 소비자 킷 C7의 PostRef + 직접 `:Connect` 훅이 이 빈칸의 증상. 메인 제안: (가) `OnChange`와 짝인 **배열부 이벤트 디스크립터**(이름 미정 — `q.On` 등)를 두고 문자 키 이벤트는 편의용 "한 칸"으로 남김 / (나) 펼 때 이벤트 키만 합치기(층이 섞이는 마법 — 비권장) / (다) 문자 키 값에 함수 배열(결국 합치기 규칙) — **사용자 결정 대기**.
+- **(2) 같은 Spread 값을 두 요소에 → 따로 막지 않음(메인 의견대로).** Spread는 만들 때 얼린 읽기 전용 값, 펼 때 내용을 복사; 안의 한 요소용 값(Ref·Observer·PreRef)은 자기 에러가 잡는다 — 레퍼런스에 "팩토리로 매번 새로" 한 줄.
+- **(3) 펴기 순서 Spread 전개 → Modifier → PreRef → 본문, 배열 값은 놓인 자리에 끼워 넣음 — 동의.**
+- **(4) 내용 타입은 포기, 대신 만드는 자리의 자동완성** — 사용자: *"Speard<Ty>({}) 에서 자동완성으로 쓰는데 돕는걸 두고, 결과적으로 나온건 내용물에 대한 타입을 하나도 안 받고, SpeardMarker<Ty> 가 나오고, 이것이 New 에 들어갈 수 있는 방향"*, *"Spead<Ty>({ Sperad<Ty>() }) 의 경우는 재귀적으로, Spread 함수 자체가 안에 있는 Spread 를 보고 펼쳐 주는 방식 … 그러면 New 에 쓴 인자를 그대로 Spread 에 받아넣을 수 있는것"* — 안쪽 Spread는 **만드는 시점**에 펴고 `drive`에는 한 겹만. 그리고 *"타입 함수를 통해서 구성하는걸 생각해뒀던 부분도 처리를 해야할 때가 와가는 느낌 … 그걸 처리하면서 같이 Speard 를 생각해보는게 좋겠음"* → 타입은 `research/declaration-surface-plan.md`(Declaration 표면을 타입 함수로) 트랙 안에서 같이 설계.
+- **(5) `Split`과의 관계 — 맞물린다는 데 동의, 처리 방식은 나중에**(*"Split/Flatten 슈거에서 어떻게 처리할지는 아직은 미정인것 같음. 나와 봐야 알것 같아"*).
+- **순서(메인 제안)**: 이벤트 디스크립터 결정 → Declaration 타입 함수 트랙(그 안에서 `Spread<Ty>`/`SpreadMarker<Ty>`) → `Spread` 런타임 → `Split`은 나중.
