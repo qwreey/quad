@@ -127,7 +127,7 @@ EpochBrand:Register(source)
 이 멤버십 하나만 보고, 회원의 훅(`_assertBindable`/`_afterBind`/`_beforeUnbind`)과 계약 필드 `Subscribed`를 쓴다
 (`base/lifecycle-pattern.md`의 "(0.5)" 절 배너). **내부 전용이라 `isX` wrapper도 `q.` 재노출도 없다** — 아래
 "`isX` wrapper" 절의 예외이고, 쓰는 자리가 `LifetimeHandle.luau` 하나라 `:Is`를 직접 부른다. 공개 등록 표면은
-백로그(`research/bindable-hooks-plan.md`).
+백로그(`backlog/bindable-brand-publication.md`).
 
 **[2026-10-06 round14 Q161 — 사용자 결정] 첫 공개 능력 브랜드 `q.Protocols.DispatchHint`.** 능력 브랜드는 처음부터
 **집합 테이블 하나**(`module.Protocols`)로 노출하고 이번엔 안내 브랜드만 채운다 — Bindable·Epoch는 프로토콜을 계약으로

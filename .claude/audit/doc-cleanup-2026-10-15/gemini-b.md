@@ -205,12 +205,12 @@
 
 ---
 
-### [발견 8] `research/operator-sugar-plan.md`가 구현 완료 후에도 `research/`에 방치됨
+### [발견 8] `base/operator-plan.md`가 구현 완료 후에도 `research/`에 방치됨
 
 - **종류**: 승격 / 이동 대상 문서
 - **확신도**: **[실측]**
 - **근거 1 (현재 위치 및 문서 머리)**:
-  - 파일: `.claude/research/operator-sugar-plan.md:3, 15`
+  - 파일: `.claude/base/operator-plan.md:3, 15`
   - 인용:
     ```markdown
     > **⭐ [2026-09-08 구현 — 사용자 범위 확정]** `quad-base/src/Operator.luau`(의존 없는 잎, `quad.Operator.*`), 스펙 `spec.operator`.
@@ -224,16 +224,16 @@
 - **문제점**:
   - `Operator.luau`는 2026-09-08에 구현 완료되어 quad의 정식 공개 표면(14개 오퍼레이터 함수)으로 제공되고 있습니다. 그러나 설계 문서가 여전히 `research/`에 방치되어 있어 `base/README.md` 색인에도 없고, 설계 정본이 아닌 리서치 단계로 오인됩니다.
 - **제안하는 처리**:
-  - `research/operator-sugar-plan.md`를 (제안 경로) base/operator-plan.md로 승격하고, `base/README.md` 및 `.claude/README.md` 색인에 반영합니다.
+  - `base/operator-plan.md`를 (제안 경로) base/operator-plan.md로 승격하고, `base/README.md` 및 `.claude/README.md` 색인에 반영합니다.
 
 ---
 
-### [발견 9] `research/bindable-hooks-plan.md`가 내부 정리 결정 완료 후에도 `research/`에 방치됨
+### [발견 9] `backlog/bindable-brand-publication.md`가 내부 정리 결정 완료 후에도 `research/`에 방치됨
 
 - **종류**: 승격 / 이동 대상 문서
 - **확신도**: **[실측]**
 - **근거 1 (현재 위치 및 문서 머리)**:
-  - 파일: `.claude/research/bindable-hooks-plan.md:3, 5`
+  - 파일: `.claude/backlog/bindable-brand-publication.md:3, 5`
   - 인용:
     ```markdown
     **상태**: research — 사용자 요청(2026-09-28 세션)으로 신설. **[2026-10-01 결정 — 내부 정리만 지금(2절 표 (A)~(F)가 전부 코드에서 빠졌다... 동작 변경 0)... 서드파티 확장은 서드파티 수요가 생길 때 — 백로그.**
@@ -244,16 +244,16 @@
 - **문제점**:
   - 2026-10-01에 사용자 결정으로 내부 정리가 완료되었고 서드파티 확장은 백로그로 정리되었습니다. 이 문서는 현재 아키텍처 내부 정리의 근거 기록이므로 `research/`에 남을 이유가 없으며 `reference/` 규약에 부합합니다.
 - **제안하는 처리**:
-  - `research/bindable-hooks-plan.md`를 `.claude/reference/bindable-hooks-composition.md`로 이동하고 `reference/README.md` 색인에 편입합니다.
+  - `backlog/bindable-brand-publication.md`를 `.claude/reference/bindable-hooks-composition.md`로 이동하고 `reference/README.md` 색인에 편입합니다.
 
 ---
 
-### [발견 10] `research/upward-flow-plan.md`가 결정 및 구현(`q.Out`) 완료 후에도 `research/`에 방치됨
+### [발견 10] `archive/surveys/2026-09-21-upward-flow-plan.md`가 결정 및 구현(`q.Out`) 완료 후에도 `research/`에 방치됨
 
 - **종류**: 승격 / 이동 대상 문서
 - **확신도**: **[실측]**
 - **근거 1 (현재 위치 및 문서 머리)**:
-  - 파일: `.claude/research/upward-flow-plan.md:3`
+  - 파일: `.claude/archive/surveys/2026-09-21-upward-flow-plan.md:3`
   - 인용:
     ```markdown
     **상태**: ~~research — 착수 안 함, 사용자 결정 대기~~ **[2026-09-21 밤 닫힘 — 7절 문항 다섯 전부 결정(각 항목 "닫힘" 마커), 되쓰기 슈거 `q.Out(name, src)` 구현·커밋(`quad-roblox/src/Handlers/OnChange.luau`, 문서 GS 06·roblox/05)]**. 이 파일이 `research/`에 남은 것은 8절 논거 원문을 `base/onchange-plan.md`로 옮기는 일이 백로그라서다(`question.md` 2절은 이제 이 문서를 가리키지 않음).
@@ -417,7 +417,7 @@ flowchart TD
 - **이유**: 저장소 설계 코퍼스의 최상위 진입 문서에서 프로젝트가 아직 코드 구현 전이라고 서술하는 것은, 코퍼스를 처음 읽는 모든 서브에이전트와 외부 모델에게 가장 치명적인 컨텍스트 왜곡을 일으킵니다.
 - **조치 제안**: 해당 문장을 삭제하거나 현재 구현 완료 및 안정화/소비자 킷 단계로 갱신.
 
-### 4) [발견 8] `research/operator-sugar-plan.md`를 (제안 경로) base/operator-plan.md로 승격
+### 4) [발견 8] `base/operator-plan.md`를 (제안 경로) base/operator-plan.md로 승격
 - **이유**: `q.Operator.*`는 2026-09-08에 이미 구현 완료되어 `quad-base`의 공개 표면이자 `docs/`의 정식 슈거로 제공되고 있습니다. 구현이 끝나 안정화된 설계 문서가 `research/`에 계속 방치되어 있어 `base/`만 읽는 에이전트가 오퍼레이터 설계를 놓치게 됩니다.
 - **조치 제안**: 문서를 (제안 경로) base/operator-plan.md로 이동하고 `base/README.md` 색인에 편입.
 

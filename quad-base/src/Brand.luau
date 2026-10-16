@@ -71,7 +71,7 @@ local AttrKeyBrand = Brand()
 -- may carry the private hooks `_assertBindable` / `_afterBind(inst)` / `_beforeUnbind()` (each
 -- optional — nil = skipped) and MUST carry the boolean `Subscribed` (the global-path arm of the
 -- liveness predicate, `H-111`). A capability brand like `EpochBrand`: Observer and Effect each
--- register into it next to their own brand at construction (`research/bindable-hooks-plan.md`).
+-- register into it next to their own brand at construction (`backlog/bindable-brand-publication.md`).
 -- A public registration surface is backlog (same document) — until then only quad-base types join.
 local BindableBrand = Brand()
 -- [2026-10-06 user decision, round14 Q161·Q182] the first PUBLIC capability (protocol) brand —

@@ -1,4 +1,6 @@
-# `bindLifetime`의 타입 지식 분리 — 수명 훅 브랜드 (계획, 결정 대기)
+# `BindableBrand` 공개 — 수명 훅 브랜드를 어떻게 바깥에 낼지 (백로그)
+
+> **[2026-10-16 이동 — 사용자 결정]** 옛 `backlog/bindable-brand-publication.md`. 내부 정리(`BindableBrand` + `_assertBindable`/`_afterBind`/`_beforeUnbind`)는 2026-10-01에 구현돼 코드(`quad-base/src/Brand.luau`·`LifetimeHandle.luau`)와 근거(`base/lifecycle-pattern.md`·`base/brand-plan.md`)에 있다. 남은 일은 **다듬어 문서화하고 공개 등록 표면을 어떻게 낼지**라서 조사가 아니라 백로그다(사용자: *"BindableBrand 는 이미 있고, 지금 할 일은 다듬어서 문서화와 퍼블릭에 어떻게 낼 지이고, 리서치는 아니라 백로깅으로"*). 아래는 옛 문서 원문(제목만 바꿈 — 옛 제목 "`bindLifetime`의 타입 지식 분리 — 수명 훅 브랜드 (계획, 결정 대기)").
 
 **[2026-10-01 신설 — 사용자 제안]** 상태: **[2026-10-01 결정]** 내부 정리만 지금(사용자: *"bindableTarget 는 우선은 내부 정리로 하자. 공개 관해서는 나중 해볼 일로 잡아두면 될것 같고. 이름은 셋 다 괜찮은것 같음. 훅이 던지는건 UB 맞아."*) — 내부 `BindableBrand` + `_assertBindable`/`_afterBind`/`_beforeUnbind`, 생존 판정은 데이터(브랜드 + `Subscribed`), 묶은 뒤 훅 throw는 UB. **공개 등록 표면은 백로그**(5절 1번의 "공개까지"는 나중 할 일). 아래 5절은 결정 전 기록.
 

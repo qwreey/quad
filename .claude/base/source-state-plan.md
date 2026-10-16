@@ -1246,7 +1246,7 @@ then return factory(self) else return factory:__apply(self) end end` — 즉
   `:Apply`는 그렇게 만든 팩토리를 체이닝 문법으로 적용하는 수단. 둘이
   합쳐지면 `state:Apply(makeFormatter("ko-KR"))`처럼 자연스럽게 이어짐.
 - **관용구 — 이름 붙여 재사용하는 콤비네이터는 항상 `:Apply`로 붙인다
-  (2026-08-12 세션, `research/operator-sugar-plan.md`/`base/tween-plan.md`의
+  (2026-08-12 세션, `base/operator-plan.md`/`base/tween-plan.md`의
   `Animate` 정정에서 도출)**: 그 자리에서 한 번 쓰고
   마는 인라인 람다(deps도 그 호출문에 바로 나열)는 `:Compute(fn,
   ...deps)`를 직접 쓰고, `local addTax = Sum(tax, shipping)`처럼 이름

@@ -189,7 +189,7 @@ export type State<T> = StateData<T> & {
   (`:Apply`의 factory가 대표적)는 이 방식으로 못 풀고
   `function(self: State<T>)`처럼 파라미터 주석이 필요합니다 —
   다만 `:Apply`는 이미 "이름 붙인 재사용 팩토리"를 권장하는 자리라
-  (`tween-plan.md`의 `Animate`, `research/operator-sugar-plan.md`의
+  (`tween-plan.md`의 `Animate`, `base/operator-plan.md`의
   `Sum`류) 그런 팩토리는 최상위 함수 선언이라 자연히 주석을 답니다.
 
 ### 그래서 우리가 하는 것 — ③ 선언 스타일: 인라인 대신 `typeof(named function)`
@@ -1150,7 +1150,7 @@ indexer`; (b) `Param & { [AttrKey]: V }` 교집합은 평범한 배열 리터럴
 
 > **[2026-10-06 정정 — 원인 서술과 "유일한 답" 결론; 근거 `audit/consumer-type-surface-2026-10-06/`의 "이미 알려진 한계와의 구분" 절]** 아래 표의 관측(다섯 모양 중 넷이 `q.Source("")`를 거부)은 그 조사의 원본 트리에서도 재현됐다(`probes/real/real_825` — 세 줄 그대로 실패). 그러나 **원인은 "교집합 조각을 따로 대조"가 아닐 가능성이 높다**: `StateData`·`State`·`Source`의 메소드를 `read` + 수신자 `self: any`로 바꾼 사본(`cov`)에서는 비제네릭 두 모양(`{ read Set: (self: any, value: string) -> any }`, `StateMarker<string> & { read Set: … }`)이 `q.Source("")`를 받고 음성(주석 단 `State<string>`, `q.Source(5)`)은 계속 거부했다. 즉 실제 원인은 **`Source`의 수신자 `self: Source<T>`가 목표의 `self: any`와 반공변 자리에서 맞지 않는 것**으로 보인다(제네릭 모양 `<T>(… M<T> & { read Set })`의 실패는 8.36의 A1 — 교집합 + 반공변 `T`). 결론의 "전체형 `Source<T>`가 유일한 답"도 반례가 있다 — 원본 타입 그대로에서 `self: never`로 적은 평평한 쓰기 마커(`{ read __quadState: true, read __quadStateValue: T, read Get: (self: never) -> T, read Set: (self: never, v: T) -> any }`)가 `q.Source`를 받고 파생 State·다른 `T`를 거부했다(`probes/real/real_never`, 어긋남 0). 다만 그 모양을 공개 타입으로 내는 갈래는 **사용자가 기각**했고(2026-10-06 — *"일시적 타입을 제공하는 꼴 같아서 … source 에만 선택적으로 이걸 풀어준다는건 다른 곳도 나도 해줘요 하고 나올 이유가 충분해"*), `q.Out`의 `src` 자리는 전체형 `Source<T>`(+ `type-surface: allow`) 그대로다 — 이 정정은 원인 기록이지 표면 변경이 아니다. 메인이 직접 다시 돌리지는 않았다(조사 결과 파일 `probes/results.txt` 대조).
 
-**계기**: `q.Out(name, src)`(되쓰기 슈거, `research/upward-flow-plan.md` 8절)의 `src` 자리를 8.11 규칙대로 마커로 받되 "쓸 수 있는
+**계기**: `q.Out(name, src)`(되쓰기 슈거, `archive/surveys/2026-09-21-upward-flow-plan.md` 8절)의 `src` 자리를 8.11 규칙대로 마커로 받되 "쓸 수 있는
 값"만 통과시키려고 `StateMarker<T> & { read Set: (self: any, value: T) -> any }`로 적었더니 `q.Source("")`를 넘기는 양성 호출이
 거부됐다. 에러가 조각별로 난다 — *"Expected `{ read Set: … }` but got `StateData<string>`"*, *"… but got t1(State 본체)"* — 즉
 `Source<T> = StateData<T> & State-part & { Revision, Set, Emit }`의 각 조각을 목표 `{ read Set }`에 따로 대조하고 하나라도 실패하면

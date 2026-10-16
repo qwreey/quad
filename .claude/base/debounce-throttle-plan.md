@@ -78,7 +78,7 @@
 > 안 함. 부수로 **Time/MaxTime을 `number | State<number>`로 확장**하는 것도
 > 이 라운드에 같이 확정(5-2절) — 원문은 위 세션 파일.
 
-`research/operator-sugar-plan.md`가 "`Operator.*` 카탈로그 밖의 별도
+`base/operator-plan.md`가 "`Operator.*` 카탈로그 밖의 별도
 설계 질문"으로 분리해뒀던 항목이 이 문서의 출발점(그 문서 "열린 질문 —
 포함 범위" 절의 Debounce/Throttle 항목). `archive/surveys/2026-08-06-additional-primitives-plan.md`가
 2026-08-06 조사에서 "Fusion/Vide/v1 어디에도 없으니 quad도 굳이 안
@@ -441,7 +441,7 @@ push, RxJS는 애초에 eager push 스트림)이라 "값이 지연된다"가 공
 
 ### 5-1. 붙이는 방법 — `:Apply` (`Operator` 관용구와 동일)
 
-`research/operator-sugar-plan.md`의 "왜 `:Apply`인가" 절이 확정한 규칙
+`base/operator-plan.md`의 "왜 `:Apply`인가" 절이 확정한 규칙
 ("이름 붙여 재사용하는 콤비네이터는 전부 `factory(self)` 모양 + `:Apply`")에
 그대로 맞음:
 

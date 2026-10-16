@@ -335,7 +335,7 @@ export type Context = {
 }
 export type ContextConstructor = setmetatable<{ Provider: <T>(name: string?) -> Provider<T> }, { __call: (self: any) -> Context }>
 
--- ── Operator (2026-09-08, `research/operator-sugar-plan.md` — 범위는 사용자 확정) ────────
+-- ── Operator (2026-09-08, `base/operator-plan.md` — 범위는 사용자 확정) ────────
 -- 전부 `factory(self) -> State<U>` 모양, `state:Apply`로 붙인다. 숫자 인자는 plain이거나 State<number>.
 export type NumArg = number | StateData<number>
 export type NumOp = (self: StateData<number>) -> State<number>
@@ -705,7 +705,7 @@ export type Quad = {
 	-- `err`는 `any`(문자열 가정 금지 — 그 문서 "`err: any`임을 반드시 문서화" 절).
 	Fallback: <Ok, Err, A...>(base: (A...) -> Ok, onError: (err: any) -> Err) -> (A...) -> Ok | Err,
 	Traceback: <Ok, Err, A...>(base: (A...) -> Ok, onError: (err: any, trace: string) -> Err) -> (A...) -> Ok | Err,
-	-- 명시적 값 컨테이너(`base/context-plan.md`)와 연산자 콤비네이터(`research/operator-sugar-plan.md`), 2026-09-08
+	-- 명시적 값 컨테이너(`base/context-plan.md`)와 연산자 콤비네이터(`base/operator-plan.md`), 2026-09-08
 	Context: ContextConstructor,
 	Operator: Operator,
 

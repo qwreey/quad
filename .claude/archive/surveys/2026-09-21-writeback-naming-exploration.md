@@ -1,6 +1,6 @@
 # 되쓰기 슈거 이름·걸러내기 탐사 원문 (2026-09-21 밤, sonnet 둘)
 
-> 판정 요약과 사용자 결정은 `research/upward-flow-plan.md` 8절. 여기는 두 탐사자의 보고 원문(외부자: Fusion/Vide를 써 본 Roblox 개발자 시점 / 내부자: 코퍼스 규약·충돌 실측).
+> 판정 요약과 사용자 결정은 `archive/surveys/2026-09-21-upward-flow-plan.md` 8절. 여기는 두 탐사자의 보고 원문(외부자: Fusion/Vide를 써 본 Roblox 개발자 시점 / 내부자: 코퍼스 규약·충돌 실측).
 
 ---
 

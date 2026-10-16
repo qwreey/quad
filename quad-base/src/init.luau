@@ -45,7 +45,7 @@ local DebounceModule = require("@self/Debounce") -- `Debounce`/`Throttle`(base/d
 local LifecycleHooks = require("@self/LifecycleHooks") -- `OnCreated`/`OnRendered`/`OnDestroyed`(base/lifecycle-hooks-plan) — 인스턴스별(`Effect`)
 local FallbackModule = require("@self/Fallback") -- `Fallback`/`Traceback`(base/fallback-plan) — 의존 없는 잎
 local ContextModule = require("@self/Context") -- 2026-09-08 `Context`/`Provider`(base/context-plan) — 의존 없는 잎
-local OperatorModule = require("@self/Operator") -- 2026-09-08 `Operator.*`(research/operator-sugar-plan) — 의존 없는 잎
+local OperatorModule = require("@self/Operator") -- 2026-09-08 `Operator.*`(base/operator-plan) — 의존 없는 잎
 
 type Quad = QuadTypes.Quad
 

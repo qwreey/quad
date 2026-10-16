@@ -532,7 +532,7 @@ vararg 유지(요소 개수가 대개 소수로 고정, 동적이면 Slot-in-Slo
 transitively 생존). `and`/`or` 삼항 관용구 전면 금지(기존 "항상-truthy면
 예외" 조항 폐기), 코퍼스 전체 실제 코드 6곳을 `if-then-else`로 교체.
 Attribute 자동 unset이 필요해지면 쓸 `:Apply` opt-in 유틸을
-`research/operator-sugar-plan.md`에 백로그로 추가(착수 안 함).
+`base/operator-plan.md`에 백로그로 추가(착수 안 함).
 
 **2026-08-12 열일곱 번째 세션 — 우선순위1 마지막 넷 전부 해소**
 (`session/2026-08-12-17-priority1-audit-resolved.md`)
@@ -567,7 +567,7 @@ typefunction.luau`/`17-modifier-index-tableclone-chaining.luau` 신규
 
 **2026-08-12 열아홉 번째 세션 — `Operator` 콤비네이터 슈가 외부 리서치**
 (`session/2026-08-12-19-operator-sugar-external-research.md`)
-서브 에이전트로 `research/operator-sugar-plan.md`의 `Operator.*` 카탈로그를
+서브 에이전트로 `base/operator-plan.md`의 `Operator.*` 카탈로그를
 다른 리액티브 라이브러리 실제 선례와 대조. 논리(`Not`/`And`/`Or`)/`Sum`/
 `Clamp`/`Min`/`Max`는 선례 뚜렷(VueUse `@vueuse/math` 등), 비트연산·비교
 연산자·`Sub`/`Div`는 리액티브 콤비네이터로서 선례 전무(드랍 후보). 업계
@@ -643,7 +643,7 @@ State/Source)가 같은 `(inst,k)`에 같은 핸들러를 중복 push시켜
 상관없이 처리 가능" 서술 정정. 부수적으로 `luau-test/04`가 이미 이
 시나리오를 스트레스 테스트로 갖고 있었지만 `retract`가 no-op 스텁이라
 이 버그를 절대 못 잡는 사각지대였음을 발견해 3~4단계를 "가드가 실제로
-걸리는지" 검증으로 재작성. `operator-sugar-plan.md`에 `Alternative` 후보
+걸리는지" 검증으로 재작성. `base/operator-plan.md`에 `Alternative` 후보
 신설, `.claude/README.md`/`question.md` 동기화.
 
 **2026-08-13 세 번째 세션 — v1 `objectListClass.__newIndex` 오타 기능,
@@ -736,7 +736,7 @@ lazy 핸들 계약이 Luau 추론과 충돌하는 게 드러나 `question.md` **
 `slot-plan.md` 여러 곳에 미반영, (2) 0-Y/0-Z가 실제로 의존하는 계약을
 서술하는 문서(`architecture.md`가 가장 중요 — 모든 세션이 "먼저 읽으라"는
 진입점인데 0-Z 포인터 전무, `tween-plan.md`/`effect-plan.md`/
-`operator-sugar-plan.md`도 마찬가지)에 포인터 부재 — 3~4라운드에서 grep
+`base/operator-plan.md`도 마찬가지)에 포인터 부재 — 3~4라운드에서 grep
 전수 스윕으로 완전히 해소. 그 외 `DI`→`D` 리네임이 미확정인데 두 곳에서
 앞서 확정된 것처럼 쓰인 것, `Slot:Splice`가 ROADMAP 체크리스트에서 누락된
 것, 이미 실측 통과된 `Overridden` 서브타입 이슈가 "미검증"으로 잔존한
@@ -2528,7 +2528,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
 
 - **[2026-09-21-03]** `session/2026-09-21-03-round12-gemini-judgment.md` — Gemini 3.1 Pro 여러 에이전트 합본(`qa-request/post-implementation-review-round12.md`) 판정: ① `H-589`(콜백 안 같은 자리 재진입은 Q5 (a) UB — 가드 대신 문서화, 잇는 자리는 `Completed`)·`H-590`(yield 중 파괴 창의 `dying = false`는 플래그 정의대로)·`H-591`(스킬 문서 현행화)·`H-592`(GS 18·19 장 번호)·`H-593`(tween-plan 철거 문장 정정 — 파괴 경로는 retractor를 안 돌린다), ② `Q71`(파괴 뒤 `Completed` 발화)·`Q72`(Unsubscribe가 소비한 cleanup 안 재해제) — **같은 날 저녁 닫힘**: Q71은 사용자 넷째 안 `H-594`(되돌리지 않고 `isClaimed`로 무시), Q72는 (a) core/05 한 줄, ③ G-27·S-17~S-25 확인. 부수: 컴팩트 전 `quad-site-tester`는 정상 종료(하네스 목록 잔상).
 
-- **[2026-09-21-03 후속]** 같은 세션 파일 — Q71 GC 후속(mock 프로브 + sonnet Studio 무한 트윈 실측: 엔진은 Lua 핸들을 안 붙잡고 시체 위 무한 트윈은 취소 불가로 영원) → docs-review 1-4를 사용자 지시로 `research/upward-flow-plan.md`(되돌아오는 흐름 — `OnChange`·`Bind` 검토, 문서 위치, 루트 `-ignoreme` 초안 여덟 흡수: 원문·팩트체크 `archive/surveys/2026-09-17-root-drafts/`)로 대체. 사용자 몫: 그 7절 문항 넷(다섯 중 실측 문항은 2026-09-10 실측이 이미 있어 닫음 — 감사자 발견).
+- **[2026-09-21-03 후속]** 같은 세션 파일 — Q71 GC 후속(mock 프로브 + sonnet Studio 무한 트윈 실측: 엔진은 Lua 핸들을 안 붙잡고 시체 위 무한 트윈은 취소 불가로 영원) → docs-review 1-4를 사용자 지시로 `archive/surveys/2026-09-21-upward-flow-plan.md`(되돌아오는 흐름 — `OnChange`·`Bind` 검토, 문서 위치, 루트 `-ignoreme` 초안 여덟 흡수: 원문·팩트체크 `archive/surveys/2026-09-17-root-drafts/`)로 대체. 사용자 몫: 그 7절 문항 넷(다섯 중 실측 문항은 2026-09-10 실측이 이미 있어 닫음 — 감사자 발견).
 
 - **[2026-09-21-03 밤]** 같은 세션 파일 — 되돌아오는 흐름 구현·문서화 일괄: `q.Out(name, src)`(in/out 나란히, 이름은 탐사 둘 수렴 `Out`, `typing-limits` 8.25 전체형 `Source` 예외), Tag 인자 nil = 없음(사용자 근거: 불변 Tag의 표현식 관용구), 시작하기 **22편**(새 `06-flowing-back.md`, 05장 `tag:Added(if … else nil)`·그룹 Attr State, 07~21 재번호 — 슬러그 잘린 링크 43곳을 잡고 `doc-check.py`에 마크다운 링크 실존 검사 신설), 오버뷰 `03-from-the-web.md`. 커밋 `9867078e`·`102a3935`·`97f6033c`·`07c9839b`. 남은 사용자 몫: 루트 `-ignoreme` 원본 삭제 여부.
 

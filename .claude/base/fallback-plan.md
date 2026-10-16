@@ -28,7 +28,7 @@
 자리 아님 — `pcall(MyComp, props)`만으로 React Error Boundary와 같은
 격리 효과를 프레임워크 지원 없이 얻는다"고 확정해둔 결론을 뒤집는 게
 아니라, **그 결론 위에 얹는 순수 슈가**(그 문서를 다시 열 필요 없음) —
-`Operator` 콤비네이터(`research/operator-sugar-plan.md`)가 `:Compute`/
+`Operator` 콤비네이터(`base/operator-plan.md`)가 `:Compute`/
 `:Apply` 위에 얹힌 것과 같은 관계. `Fallback`/`Traceback` 둘 다 `original`을
 호출하고 결과를 그대로 돌려주는 순수 함수일 뿐, 디스패치/Store/Handler
 계층에 아무것도 새로 안 만듦.

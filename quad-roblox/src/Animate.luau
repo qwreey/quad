@@ -4,7 +4,7 @@
 	`Tween{...}` with fixed options (M11 unit ③, round19). Canonical:
 	`.claude/base/tween-plan.md` "`Animate` 콤비네이터" 절 (pseudocode 1:1) and
 	"왜 `:Apply`로 정정됐는가" 절 (named combinators attach through `:Apply`,
-	never `:Compute` directly — `research/operator-sugar-plan.md`).
+	never `:Compute` directly — `base/operator-plan.md`).
 
 	  Position = mySource:Apply(Animate{ Style = Enum.EasingStyle.Bounce, Time = 0.3 })
 

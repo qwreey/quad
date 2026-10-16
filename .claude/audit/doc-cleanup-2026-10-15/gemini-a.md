@@ -11,7 +11,7 @@
 
 `.claude/` 코퍼스는 날짜 마커(`[YYYY-MM-DD]`)와 정정 배너를 의도적으로 남기는 훌륭한 추적 관례를 유지해 왔습니다. 그러나 2026-09-06 M0~M11 마일스톤 완결 및 2026-09-10 3.0.0 출시 이후 슈거 구현(09-08), 공개 표면 검토(09-13~16), 되돌아오는 흐름 구현(09-21), 에러 코드 롤아웃(09-22), 자율 루프(09-26~27), 소비자 킷 개발(10-05~15) 등 방대한 작업이 급격히 누적되면서 다음과 같은 구조적 부채가 누적되어 있습니다:
 
-1. **`research/` 문서의 승격 및 이동 누락**: 이미 모든 문항이 닫히고 구현까지 완료된 문서(`public-surface-pre-adoption-review.md`, `operator-sugar-plan.md`, `upward-flow-plan.md`, `bindable-hooks-plan.md`)가 여전히 `research/`에 머물러 있습니다.
+1. **`research/` 문서의 승격 및 이동 누락**: 이미 모든 문항이 닫히고 구현까지 완료된 문서(`public-surface-pre-adoption-review.md`, 옛 operator-sugar-plan.md, 옛 upward-flow-plan.md, 옛 bindable-hooks-plan.md)가 여전히 `research/`에 머물러 있습니다.
 2. **`question.md` 내 닫힌 문항 대량 잔존**: "사용자가 답해야 할 것만 담는다"는 문서 규약과 달리, 이미 회신 및 반영이 끝난 문항 수십 개(0번 절 전체, 2번 절 대부분)가 본문 그대로 방치되어 있습니다.
 3. **`todos.md` 00번의 규약 위반**: "종결 기록은 여기 쌓지 않는다"고 명시되어 있으나 2026-09-07부터의 종결 기록 수백 줄이 방치되어 있고, 내부 자기모순이 존재합니다.
 4. **`ROADMAP.md` 백로그 및 최적화 후보 미갱신**: 용어 정리 스윕, Q76 List 재정렬, 에러 식별자 롤아웃 등 이미 완료된 작업이 백로그 미완료 목록에 남아 있습니다.
@@ -50,18 +50,18 @@
 
 ---
 
-#### [발견 02] `operator-sugar-plan.md` 핵심 구현 완료에 따른 승격/아카이브 이동 누락
+#### [발견 02] 옛 operator-sugar-plan.md 핵심 구현 완료에 따른 승격/아카이브 이동 누락
 - **종류**: 승격/이동 대상
 - **근거 1 (낡은 상태 서술)**:
-  - 파일 및 줄: `.claude/research/operator-sugar-plan.md:15-18`, `:40`
+  - 파일 및 줄: `.claude/base/operator-plan.md:15-18`, `:40`
   - 인용:
     ```markdown
     15: **상태**: ~~research~~ **[2026-09-08 구현 완료 — 위 배너가 소스; 아래 이 문단은 착수 전 서술]** research — 사용자 요청(2026-08-12 세션)으로 신설 ... 구현은 맨 마지막으로 미룸(사용자 본인이 명시)
     40: reduceMotion:Apply(Operator.Not)  -- 네임스페이스 이름은 미정, 아래 참고
     ```
 - **근거 2 (뒤집거나 닫은 쪽)**:
-  - 파일 및 줄: `quad-base/src/Operator.luau:1-120` (실제 소스 실존), `.claude/research/operator-sugar-plan.md:3-13` [2026-09-08 구현 — 사용자 범위 확정], `session/2026-09-08-04-sugar-implementation.md`
-  - 인용 (`operator-sugar-plan.md:12-13`):
+  - 파일 및 줄: `quad-base/src/Operator.luau:1-120` (실제 소스 실존), `.claude/base/operator-plan.md:3-13` [2026-09-08 구현 — 사용자 범위 확정], `session/2026-09-08-04-sugar-implementation.md`
+  - 인용 (옛 `operator-sugar-plan.md:12-13`):
     `나머지 열린 절은 같은 밤 사용자 결정으로 각각 별도 백로그로 분리(ROADMAP 백로그) ... 이 문서는 카탈로그 기록으로 남는다.`
 - **제안하는 처리**:
   - 확정 및 구현된 Operator 카탈로그 사양을 (제안 경로) base/operator-plan.md로 승격하고, 원본 기획/조사 문서는 `.claude/archive/`로 이동 제안.
@@ -70,19 +70,19 @@
 
 ---
 
-#### [발견 03] `upward-flow-plan.md` 전체 결정·구현 완료 및 9절 끝 방치 문장
+#### [발견 03] 옛 upward-flow-plan.md 전체 결정·구현 완료 및 9절 끝 방치 문장
 - **종류**: 승격/이동 대상 및 낡은 상태 서술
 - **근거 1 (낡은 상태 서술)**:
-  - 파일 및 줄: `.claude/research/upward-flow-plan.md:180-181`
+  - 파일 및 줄: `.claude/archive/surveys/2026-09-21-upward-flow-plan.md:180-181`
   - 인용:
     ```markdown
     180: 사용자 결정 대기: 분리는 합의됐고, **자리(04 뒤 / 05 뒤)** 와 장 제목·예제.
     ```
 - **근거 2 (뒤집거나 닫은 쪽)**:
-  - 파일 및 줄: `.claude/research/upward-flow-plan.md:129` 및 `quad-roblox/src/Handlers/OnChange.luau:48-55`
-  - 인용 (`upward-flow-plan.md:129`):
+  - 파일 및 줄: `.claude/archive/surveys/2026-09-21-upward-flow-plan.md:129` 및 `quad-roblox/src/Handlers/OnChange.luau:48-55`
+  - 인용 (옛 `upward-flow-plan.md:129`):
     `3. ~~문서 위치~~ — 닫힘(사용자, 9절 탐사 뒤): 분리, 자리는 05 뒤 ... 새 06-flowing-back.md(다시 위로 올려보내기 — q.Out), 06~20 → 07~21 재번호 ...`
-  - 인용 (`upward-flow-plan.md:3`):
+  - 인용 (옛 `upward-flow-plan.md:3`):
     `[2026-09-21 밤 닫힘 — 7절 문항 다섯 전부 결정(각 항목 "닫힘" 마커), 되쓰기 슈거 q.Out(name, src) 구현·커밋... 이 파일이 research/에 남은 것은 8절 논거 원문을 base/onchange-plan.md로 옮기는 일이 백로그라서다]`
 - **제안하는 처리**:
   - 8절의 논거 원문(`Out` 네이밍 및 에코 방지 필터링)을 `.claude/base/onchange-plan.md` 끝 절로 병합 승격 제안.
@@ -92,10 +92,10 @@
 
 ---
 
-#### [발견 04] `bindable-hooks-plan.md` 내부 정리 구현 완료 후 5절 "정할 것" 방치
+#### [발견 04] 옛 bindable-hooks-plan.md 내부 정리 구현 완료 후 5절 "정할 것" 방치
 - **종류**: 승격/이동 대상 및 닫힌 문항
 - **근거 1 (낡은 상태 서술)**:
-  - 파일 및 줄: `.claude/research/bindable-hooks-plan.md:53-58`
+  - 파일 및 줄: `.claude/backlog/bindable-brand-publication.md:53-58`
   - 인용:
     ```markdown
     ## 5. 정할 것
@@ -104,8 +104,8 @@
     3. 묶은 뒤 훅이 던질 때 — UB 유지(권고, 감싸지 않는다 계약).
     ```
 - **근거 2 (뒤집거나 닫은 쪽)**:
-  - 파일 및 줄: `.claude/research/bindable-hooks-plan.md:3-16` [2026-10-01 결정 및 내부 정리 반영], `quad-base/src/Brand.luau`, `quad-base/src/LifetimeHandle.luau:167-173`
-  - 인용 (`bindable-hooks-plan.md:3`):
+  - 파일 및 줄: `.claude/backlog/bindable-brand-publication.md:3-16` [2026-10-01 결정 및 내부 정리 반영], `quad-base/src/Brand.luau`, `quad-base/src/LifetimeHandle.luau:167-173`
+  - 인용 (옛 `bindable-hooks-plan.md:3`):
     `[2026-10-01 신설 — 사용자 제안] 상태: [2026-10-01 결정] 내부 정리만 지금 ... 공개 등록 표면은 백로그(5절 1번의 "공개까지"는 나중 할 일). 아래 5절은 결정 전 기록.`
 - **제안하는 처리**:
   - `BindableBrand` 및 내부 훅 계약(`_assertBindable`, `_afterBind`, `_beforeUnbind`)을 `.claude/base/lifecycle-pattern.md`에 문서화 승격 제안.
@@ -253,7 +253,7 @@
     - 162줄: `Operator 콤비네이터 슈가 ... [2026-09-08 닫힘, 2026-09-27 정리] ... 원문은 archive/question-resolved.md로.`
     - 200줄: `round11 §4 Q59~Q63 ... -> round11 §4 열하나 전부 닫힘(2026-09-18).`
     - 202줄: `~~Q71·Q72~~ [같은 날 저녁 닫힘 — 사용자 회신]`
-    - 203줄: `[2026-09-21 밤 신설 — research/upward-flow-plan.md 7절이 소스] 되돌아오는 흐름 문항 다섯: ... 문항 다섯 전부 닫힘.`
+    - 203줄: `[2026-09-21 밤 신설 — archive/surveys/2026-09-21-upward-flow-plan.md 7절이 소스] 되돌아오는 흐름 문항 다섯: ... 문항 다섯 전부 닫힘.`
     - 204줄: `~~에러 식별자 문항 다섯~~ [같은 날 닫힘 — 다섯 다 권고대로 ...]`
     - 205줄: `[2026-09-16 밤 신설 — round10 §4 Q48~Q54; [2026-09-17 전부 해소 ...]]`
     - 206줄: `[해소 2026-09-16 — (a) 대칭 게이트 ...] 정적 자식 자리 D.Frame { foreign }에는 같은 게이트가 없다.`
@@ -539,7 +539,7 @@
 3. **`research/public-surface-pre-adoption-review.md`의 `archive/` 이동 (발견 01)**
    - **이유**: 11.8만 바이트(1,186줄)에 달하는 거대한 검토 문서로, 17개 결정 문항 전체가 2026-09-14~16에 닫히고 소스에 반영 완료되었습니다. `research/`에 방치되어 있으면 아직 열려 있는 미착수 연구로 오인될 수 있으므로 `archive/surveys/`로 이동해야 합니다.
 
-4. **`research/operator-sugar-plan.md` 및 `research/upward-flow-plan.md`의 승격/아카이브 (발견 02, 03)**
+4. **`base/operator-plan.md` 및 `archive/surveys/2026-09-21-upward-flow-plan.md`의 승격/아카이브 (발견 02, 03)**
    - **이유**: `Operator`와 `q.Out`은 이미 2026-09-08 및 2026-09-21에 소스 및 정식 문서에 구현·반영된 핵심 기능입니다. `research/`에 방치되어 본문의 낡은 서술("네임스페이스 이름 미정", "결정 대기")이 남아 있으므로, 논거를 `base/`로 승격하고 문서를 아카이브해야 합니다.
 
 5. **`ROADMAP.md`의 완료 백로그 갱신 (용어 정리 스윕, Q76, 에러 코드 롤아웃) (발견 14, 15, 16)**

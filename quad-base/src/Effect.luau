@@ -191,7 +191,7 @@ local function createImpl(module: any)
 		end
 	end
 
-	-- ── lifetime hooks (`BindableBrand`, 2026-10-01 — `research/bindable-hooks-plan.md`) ──
+	-- ── lifetime hooks (`BindableBrand`, 2026-10-01 — `backlog/bindable-brand-publication.md`) ──
 	-- `bindLifetime`/`unbindLifetime` know no Effect: they call these on any `BindableBrand` member
 	-- (`_assertBindable` above runs before the commit). Effect's own bodies — not Observer's
 	-- (conventions: heterogeneous types share no body, `H-144`); thin, so the named bodies below

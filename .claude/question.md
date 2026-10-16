@@ -29,7 +29,7 @@
   받게 되면서 그 손실 자체가 없어졌음**(`base/dispatch-core-plan.md`).
   남은 근거는 편의성과 Slot offset이 밀리고 당겨지는 케이스뿐이라
   우선순위가 더 내려감 — `state:Flatten()`류 콤비네이터 아이디어는
-  그대로 백로그. 상세는 `research/operator-sugar-plan.md` 마지막 절.
+  그대로 백로그. 상세는 `backlog/additional-operator-sugar.md`의 "중첩 State 평탄화" 절.
 - **`quad-debug` 세부 API 이름** — `research/debug-tooling-plan.md` 참고.
   채널 실현 가능성(BindableEvent/Function이 플러그인↔Play 중 게임 경계를
   넘는지)까지 사용자가 Studio에서 직접 실측 검증 완료 — 기술적 불확실성은

@@ -1,5 +1,5 @@
 --[[
-	Operator 계약 — `.claude/research/operator-sugar-plan.md` "메커니즘"(전부 `factory(self)` + `:Apply`, 커링 팩토리는 자기 deps를
+	Operator 계약 — `.claude/base/operator-plan.md` "메커니즘"(전부 `factory(self)` + `:Apply`, 커링 팩토리는 자기 deps를
 	스스로 `:Compute`에 넘겨 재사용해도 드리프트 없음 — "왜 `:Apply`인가" 1번), 범위는 사용자 확정(2026-09-08: 산술·비트·단항 Not·
 	Min/Max/Clamp·Alternative; And/Or·비교·Sub/Div 제외). 숫자 인자는 plain이거나 State<number>.
 ]]

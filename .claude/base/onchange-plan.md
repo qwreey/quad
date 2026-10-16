@@ -134,7 +134,7 @@
 `AttrKey`만 해시부 키로 남는다(값 세팅이라 `key = value`가 자연스럽다) —
 그 키의 strict 타이핑 사각은 **[2026-09-03 확정]** `H10-12`/`H10-15`로 닫혔다 — `AttrKey(name)`는 무타입 프리미티브로 두고 타입은 배열부 슈가(`StringAttr(name, value)`류)가 진다(`attribute-plan.md` 머리 배너).
 
-## [2026-09-21 사용자 결정 — `research/upward-flow-plan.md` 4·8절] `Out(name, src)` — `OnChange` 위의 되쓰기 슈거
+## [2026-09-21 사용자 결정 — `archive/surveys/2026-09-21-upward-flow-plan.md` 4·8절] `Out(name, src)` — `OnChange` 위의 되쓰기 슈거
 
 엔진이 바꾼 프로퍼티 값을 `Source`에 되쓰는 것은 그동안 `OnChange(name, function(v) src:Set(v) end)` 세 줄을 프로퍼티마다 손으로 적었다
 (how-to 02·03·04). 사용자 결정: **순수 슈거, in 하나·out 하나를 나란히** — *"명시적으로 out 으로 나가는 부분 하나, in 으로 들어가는 부분

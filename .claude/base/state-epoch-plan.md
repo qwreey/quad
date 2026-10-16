@@ -594,7 +594,7 @@ State 층 dedup이 못 닫던 갭이다 — `Effect`가 자기 맵을 들면 그
 - **곁가지 — 폴링용 슈가.** 사용자 제안: *"폴링을 위해서는 Apply(Realtime())
   같은 슈거를 주면 된다. 옵져버로 항상 get 하고 value 를 실시간으로 읽을 수
   있게 해주는것. 단순하게 `Ref<T>` 로 변환해주는 등"*. **이 문서의 결정과
-  독립**이고 `research/operator-sugar-plan.md`의 콤비네이터 계열에 속한다.
+  독립**이고 `base/operator-plan.md`의 콤비네이터 계열에 속한다.
 
 ## [2026-09-17 사용자 결정 — round10 Q50 (a)] `_recompute` 재진입 가드 — 세대 스탬프 하나, 되감기 없음
 

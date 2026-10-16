@@ -186,7 +186,7 @@ export type DeclarationMapper = DeclarationModule.DeclarationMapper
 export type OnChangeDescriptor = Types.OnChangeDescriptor
 export type PropTypes = DeclarationModule.PropTypes
 export type OnChangeFn = DeclarationModule.OnChangeFn
--- `Out(name, src)` (2026-09-21 사용자 결정 — `research/upward-flow-plan.md` 8절): write-back sugar over `OnChange`.
+-- `Out(name, src)` (2026-09-21 사용자 결정 — `archive/surveys/2026-09-21-upward-flow-plan.md` 8절): write-back sugar over `OnChange`.
 -- The Source parameter is an INPUT position, which by 8.11 should be a marker — but the sugar needs a WRITABLE
 -- value, and "marker + `{ read Set }`" did not accept a real Source in the new solver (typing-limits 8.25, scratch
 -- 2026-09-21 — first read as "every intersection component must satisfy the target"; the 2026-10-06 correction there

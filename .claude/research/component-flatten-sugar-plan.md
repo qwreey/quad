@@ -107,7 +107,7 @@ ref 나 named modifier 등을 지원하게 될 텐데, 이거는 일반 leaf 와
 - `base/component-composition-plan.md` "최종 결론" 절(관례 정본), `base/modifier-plan.md`
   11절(`Into`·`As` — 커스텀 서브타입의 런타임 틈이 `H-340`), `base/dispatch-core-plan.md`
   flatten 규칙, `archive/v2-initial-implementation/m9-implementation-round21.md` §4.
-- `research/operator-sugar-plan.md` — 같은 "순수 슈거는 나중에, 코어는 건드리지 않는다" 결.
+- `base/operator-plan.md` — 같은 "순수 슈거는 나중에, 코어는 건드리지 않는다" 결.
 
 ## 4. [2026-10-06 사용자 방향] 행동 묶음 — 첫 소비자 킷 피드백 C7과의 연결
 

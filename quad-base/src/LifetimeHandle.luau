@@ -34,7 +34,7 @@
 	A value outside the brand has no hooks — pure GC relation (`H-229`, lifecycle-pattern (0.5)).
 	A brandless table that happens to carry `_assertBindable` is no longer asked (it used to be,
 	by duck typing) — a private `_` name, not a public promise, so not BREAKING. A public
-	registration surface is backlog (`research/bindable-hooks-plan.md`).
+	registration surface is backlog (`backlog/bindable-brand-publication.md`).
 
 	Contract (types in `quad-types`):
 	  -- quad-base implements (this file):

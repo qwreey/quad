@@ -1,7 +1,7 @@
 --!strict
 --[[
 	Operator — named combinators over `:Compute`, applied with `state:Apply`
-	(`research/operator-sugar-plan.md` "메커니즘", "왜 `:Apply`인가"; scope fixed by the
+	(`base/operator-plan.md` "메커니즘", "왜 `:Apply`인가"; scope fixed by the
 	user 2026-09-08: arithmetic, bitwise, unary `Not`, plus the strong-precedent
 	`Min`/`Max`/`Clamp` and nil-coalescing `Alternative`. NOT included on purpose:
 	`And`/`Or` (user: "결합은 비추 — if/else를 쓰던 이유와 부딪힘"), comparisons

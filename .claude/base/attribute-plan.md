@@ -740,7 +740,7 @@ quad-roblox** 소속이었음 — 그런데 실제로 엔진에 종속된 건 �
   절의 결정 — 그래도 명시적 자동 unset이 갖고 싶으면 `Animate`와 같은
   모양의 `:Apply` opt-in 유틸(이전 이름 집합과 비교해 사라진 이름을
   `None`으로 채워주는 콤비네이터)을 나중에 추가할 수 있음, 착수 안 함 —
-  `research/operator-sugar-plan.md` "Attr 그룹 명시적 unset 유틸"
+  `backlog/additional-operator-sugar.md` "Attr 그룹 명시적 unset 유틸"
   절 참고.
 
 

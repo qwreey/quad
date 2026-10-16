@@ -339,7 +339,7 @@ gcconn 참조 복사, 타입별 후처리(`Observer:_catchUp`/`Effect:_bindDestr
 `_beforeUnbind` = `_unbindDestroying()`. 그래서 이 절의 규칙은 **"`BindableBrand`가 아니면 훅 없음 — 순수 GC
 릴레이션"**으로 읽는다. 바뀐 것 하나: 예전엔 브랜드 없는 테이블이라도 `_assertBindable` 필드가 있으면 불렸는데(덕
 타이핑) 이제 안 불린다 — 비공개 `_` 이름이라 공개 약속이 아니어서 BREAKING 아님. 훅을 공개 등록 표면으로 여는
-것은 백로그(`research/bindable-hooks-plan.md`).
+것은 백로그(`backlog/bindable-brand-publication.md`).
 
 **[2026-09-27 round13 Q94 검토 중]** `bindLifetime`이 원시값(숫자 등)을 받았을 때의 동작이 실행 탐사에서
 반증됐다 — 숫자 `1`이 gchold의 gcconn 자리를 덮어쓰는 경우가 나왔다(엔진 가정 하나 포함). 사용자 문항이

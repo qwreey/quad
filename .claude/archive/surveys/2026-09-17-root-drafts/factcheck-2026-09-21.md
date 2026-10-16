@@ -1,6 +1,6 @@
 # 루트 초안 여덟의 팩트체크 (2026-09-21, sonnet 둘 — 메인 검토)
 
-> 대상: 이 폴더의 여덟 파일(사용자가 2026-09-17에 루트에 `-ignoreme`로 둔 외부 모델 초안). 두 sonnet이 코드·레퍼런스·정본과 대조한 원문 보고를 그대로 잇는다. 종합 판정과 흡수 계획은 `research/upward-flow-plan.md`가 소스. `proposal-two-way-binding-and-motion.md`는 메인이 직접 읽고 판정(같은 문서 4절).
+> 대상: 이 폴더의 여덟 파일(사용자가 2026-09-17에 루트에 `-ignoreme`로 둔 외부 모델 초안). 두 sonnet이 코드·레퍼런스·정본과 대조한 원문 보고를 그대로 잇는다. 종합 판정과 흡수 계획은 `archive/surveys/2026-09-21-upward-flow-plan.md`가 소스. `proposal-two-way-binding-and-motion.md`는 메인이 직접 읽고 판정(같은 문서 4절).
 
 ---
 

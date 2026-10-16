@@ -1,5 +1,7 @@
 # 되돌아오는 흐름 — 엔진이 바꾼 값을 상태로 올리기: `OnChange`와 `Bind`
 
+> **[2026-10-16 archive로 이동 — 사용자 확인]** 문항 다섯이 2026-09-21 밤 전부 닫혔고 `q.Out`이 구현됐으며 8절 논거의 요지는 `base/onchange-plan.md`의 `Out(name, src)` 절에 있다. 옛 경로 `archive/surveys/2026-09-21-upward-flow-plan.md`.
+
 **상태**: ~~research — 착수 안 함, 사용자 결정 대기~~ **[2026-09-21 밤 닫힘 — 7절 문항 다섯 전부 결정(각 항목 "닫힘" 마커), 되쓰기 슈거 `q.Out(name, src)` 구현·커밋(`quad-roblox/src/Handlers/OnChange.luau`, 문서 GS 06·roblox/05)]**. 이 파일이 `research/`에 남은 것은 8절 논거 원문을 `base/onchange-plan.md`로 옮기는 일이 백로그라서다(`question.md` 2절은 이제 이 문서를 가리키지 않음). **[2026-09-21 신설]**
 
 **계기**: 문서 검토 합본 `research/docs-review-2026-09-14.md` 1-4("엔진이 바꾼 값을 받는 법"이 시작하기에 없다)를 닫으려다

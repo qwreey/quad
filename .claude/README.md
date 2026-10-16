@@ -27,6 +27,7 @@
 | `base/` | 결정 완료 + 프로젝트 전체에 걸치는 배경지식(plan/done 개념 없음) — 먼저 `base/architecture.md`. **파일 색인·기준 전문은 `base/README.md`** |
 | `reference/` | 결정 자체가 아니라 다른 문서가 근거로 인용하는 온디맨드 참고 자료 + 확정된 결정의 근거 기록 — **`reference/README.md`** |
 | `research/` | 아직 착수 전, 사용자와 스코프/설계를 더 상의해야 하는 것 — **`research/README.md`** |
+| `backlog/` | **[2026-10-16 신설]** 근거는 이미 있고 착수만 남은 일(조사가 아님) — **`backlog/README.md`** |
 | `qa-request/` | 구현 뒤 코드 리뷰 원장(post-implementation-review-round1 … 라운드는 계속 늘어남 — 최신 목록·각 라운드 요약은 **`qa-request/README.md`**) + 외부 모델 감사 진입점 `external-review-entry.md`. 끝난 v2 초기 구현 라운드는 `archive/v2-initial-implementation/` |
 | `archive/` | 완료됐거나 완전히 뒤집힌 것(`[역전됨]`) + 끝난 구현 구간의 원장 원문 — 능동 참고 불필요. **`archive/README.md`** |
 | `feedback/` | 실사용 피드백 — **[2026-10-05 신설]** quad를 실제로 소비해 보며 겪은 마찰(첫 소비자: 디버그 UI 킷·Material 킷). 파일 색인은 폴더 `README.md` |

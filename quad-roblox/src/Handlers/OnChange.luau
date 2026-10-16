@@ -74,7 +74,7 @@ local function OnChange(name: string, fn: (any) -> ()): OnChangeDescriptor
 	return (d :: any) :: OnChangeDescriptor
 end
 
--- [2026-09-21 사용자 결정 — `research/upward-flow-plan.md` 8절] `Out(name, src)`: the write-back sugar. A pure
+-- [2026-09-21 사용자 결정 — `archive/surveys/2026-09-21-upward-flow-plan.md` 8절] `Out(name, src)`: the write-back sugar. A pure
 -- factory over `OnChange` — no brand, no handler, nothing here changes. The downward direction stays the
 -- ordinary property key (`Text = src`); this is the explicit "out" placed next to it:
 --     TextBox { Text = textSrc, Out("Text", textSrc) }

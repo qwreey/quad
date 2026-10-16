@@ -4152,7 +4152,7 @@ state 가 안전히 성립 못해서, Apply 라는 이름을 그대로 쓰지는
 
 **`state<state<Frame>>`류로 offset이 밀리고 당겨지는 문제는 "그냥 확인된
 것"으로 수용**(사용자 판단) — `state<state<Tag>>`와 같은 범주로,
-평탄화 도구(`research/operator-sugar-plan.md`)가 처리할 요소이고 실사용
+평탄화 도구(`backlog/additional-operator-sugar.md` "중첩 State 평탄화" 절)가 처리할 요소이고 실사용
 케이스가 드묾. Dispatch/Slot에 별도 배관을 넣지 않음.
 
 ### [역전됨 — 원문은 archive로 이동] `State<Slot?>` 왕복 / 포탈 검토 두 절

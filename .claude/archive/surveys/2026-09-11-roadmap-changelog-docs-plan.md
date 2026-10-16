@@ -145,7 +145,7 @@ v1 `qwreey/quad@f867ccb` — 아래 v1 문서 파일 이름은 그 레포 기준
 | Slot 형제 순서 보장 | 다중 백엔드 관점의 순서 계약 — Roblox만이면 급하지 않음 | `ROADMAP.md` 백로그 | 아이디어 | 있음(약함) |
 | `quad-roblox-types` | `quad-types`와 같은 패턴으로 Roblox 백엔드의 타입만 필요한 모듈용 패키지 | `todos.md`, `base/quad-types-plan.md`의 "남은 것" 절 | 설계 확정·미구현 | 있음 |
 | `type-version-check` 분리 | 범용 유틸이라 독립 저장소로 — **사용자가 직접 할 일** | `HUMAN_TODO.md`, `base/quad-types-plan.md` | 사용자 결정 대기 | 있음 |
-| 슈거 넷 | `IfElse`+비교(`Eq`/`Lt`…), 컬렉션(`Concat`/`Sorted`/`Filtered`), `Attr` 그룹 명시적 unset, 중첩 `State` 평탄화 | `ROADMAP.md` 백로그, `research/operator-sugar-plan.md`, `base/attribute-plan.md`, `question.md` | 아이디어(타입 표면·코어 재검증 미정) | 있음 |
+| 슈거 넷 | `IfElse`+비교(`Eq`/`Lt`…), 컬렉션(`Concat`/`Sorted`/`Filtered`), `Attr` 그룹 명시적 unset, 중첩 `State` 평탄화 | `ROADMAP.md` 백로그, `base/operator-plan.md`, `base/attribute-plan.md`, `question.md` | 아이디어(타입 표면·코어 재검증 미정) | 있음 |
 | 타입드 `Indexed`/`Indexer` | 키·픽 함수에서 결과 타입을 추론하는 일반형 — 지금 솔버로는 불가 | `ROADMAP.md` 백로그, `base/typing-limits.md` | 아이디어(솔버 개선 대기) | 있음 |
 | 컴포넌트 경계 flatten 슈거 | `Component.Split(props)` 가칭 — 정해야 할 것 일곱이 열려 있음 | `ROADMAP.md` 백로그, `research/component-flatten-sugar-plan.md`, `question.md` 2절 | 사용자 결정 대기 | 있음 |
 | `source:SetAndDispose` | `Get`→`Set`→옛 값 `dispose` 3단계를 한 줄로 — **확정 형태까지 정해졌으나 소스에 없음** | `base/slot-plan.md` | 설계 확정·미구현 | 있음 |

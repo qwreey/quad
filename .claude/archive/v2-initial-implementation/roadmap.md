@@ -1878,6 +1878,6 @@ Luau 코드로 부딪혀본 적 없는 세 가지**를 던지는 코드로 검�
       두 번째/세 번째 세션, `base/tween-plan.md`): `Tween` opts(`Value` 제외)를
       `T|State<T>`로 받아 각 필드를 resolve한 뒤 `Tween{...}`을 반환하는
       `function(self)...end` — `:Apply(Animate{...})`로 체이닝(`:Compute`가
-      아님, `research/operator-sugar-plan.md` "왜 `:Apply`인가"). `CanAnimate`
+      아님, `base/operator-plan.md` "왜 `:Apply`인가"). `CanAnimate`
       필드 포함(`false`면 `Tween`으로 안 감싸고 plain 값 그대로). M11은
       **구현만** 하면 됨

@@ -213,7 +213,7 @@ Dispatch.process(inst, k, realv, index + 1)   -- retractFrom 선행 호출 없�
 
 **`state<state<Frame>>`류로 offset이 밀리고 당겨지는 문제는 "그냥 확인된
 것"으로 수용**(사용자 판단) — `state<state<Tag>>`와 같은 범주이고, 평탄화
-도구(`research/operator-sugar-plan.md`)로 처리할 요소이며 실사용 케이스가
+도구(`base/operator-plan.md`)로 처리할 요소이며 실사용 케이스가
 드묾. Dispatch에 별도 배관을 넣지 않음.
 
 ## 5. 남은 열린 항목 — Attribute 이름 소유권 (**하나뿐, 사용자 확인 필요**)

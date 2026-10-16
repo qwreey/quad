@@ -43,7 +43,7 @@ HEAD `752cbc1c` 사이, 판정 기준은 `audit/round14-principle-audit/PRINCIPL
 
 ## 3. 앞으로 BREAKING을 낼 수 있는 열린 결정
 
-닫힌 것 확인(실측): `research/public-surface-pre-adoption-review.md` 전부 닫힘, round14 §0 23문항·Q160~Q187 닫힘, `research/upward-flow-plan.md` 구현됨,
+닫힌 것 확인(실측): `research/public-surface-pre-adoption-review.md` 전부 닫힘, round14 §0 23문항·Q160~Q187 닫힘, `archive/surveys/2026-09-21-upward-flow-plan.md` 구현됨,
 `research/drive-hook-plan.md`는 "표면 무변경" 백로그, `question.md` 열린 항목은 추가·무관, 소스 `TODO` 0.
 
 - **3-1. 생성 Declaration 표면 재검토와 이번에 처음 게시하는 클래스 타입 109개.** `research/declaration-surface-plan.md`(09-30, 결정 없음)가 클래스별 복제를 생성기 문제로 보고

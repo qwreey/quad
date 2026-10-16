@@ -109,7 +109,7 @@ gcconn/gchold 복사가 전부다 — **`Destroying`도, cleanup 저장도, 그�
    **[2026-10-01 내부 정리 — 사용자 결정]** 타입 분기 `isEffect(value)`는 없어졌다 — 두 함수는 값이 내부 능력
    브랜드 `BindableBrand` 회원이면 그 값의 훅 `_afterBind(inst)`/`_beforeUnbind()`를 부르고, Effect의 그 두 본문이
    `_bindDestroying(inst)`/`_unbindDestroying()`을 부른다(`base/lifecycle-pattern.md`의 "(0.5)" 절 배너,
-   `research/bindable-hooks-plan.md`). **결론(`Destroying` 배선은 `bindLifetime` 경로에서 건다)은 그대로** — 아래
+   `backlog/bindable-brand-publication.md`). **결론(`Destroying` 배선은 `bindLifetime` 경로에서 건다)은 그대로** — 아래
    "`isEffect`를 보고"라는 서술은 그날 이전의 모양이고, 지금은 "브랜드 훅을 통해"로 읽는다.
    **[2026-08-24 재결정, `/code-review high` 지적]** 여기 한때 *"`EffectHandle`
    쪽이 자기 `bindLifetime` 직후에 건다"*고 적었는데 **그 호출부가 실재하지

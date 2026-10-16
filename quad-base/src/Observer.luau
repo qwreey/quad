@@ -236,7 +236,7 @@ local function createImpl(module: any)
 		end
 	end
 
-	-- ── lifetime hooks (`BindableBrand`, 2026-10-01 — `research/bindable-hooks-plan.md`) ──
+	-- ── lifetime hooks (`BindableBrand`, 2026-10-01 — `backlog/bindable-brand-publication.md`) ──
 	-- `bindLifetime` knows no Observer: it calls `_assertBindable` (above, before the commit) and this
 	-- one (after the commit) on any `BindableBrand` member. Observer's own body — Effect has its own
 	-- (conventions: heterogeneous types share no body, `H-144`). No `_beforeUnbind`: unbinding an

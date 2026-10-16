@@ -368,7 +368,7 @@ do
 end
 
 print()
-print("=== 2026-10-01 BindableBrand — bindLifetime/unbindLifetime know no type: the hooks come through the internal brand (research/bindable-hooks-plan.md) ===")
+print("=== 2026-10-01 BindableBrand — bindLifetime/unbindLifetime know no type: the hooks come through the internal brand (backlog/bindable-brand-publication.md) ===")
 do
 	-- (a) unbindLifetime runs Effect's `_beforeUnbind`: the Destroying connection goes, so the OLD host's
 	--     death consumes nothing (no other spec pinned this arm — dropping it left every spec green)

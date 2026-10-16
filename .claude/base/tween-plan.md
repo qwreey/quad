@@ -14,7 +14,7 @@ tweenData...)] = storeValue`)은 `archive/tween-special-bind-key-reversed.md`로
 시그니처까지 전부 확정됨**(아래 "확정: `Tween{...}` 최종 모양"/"`Animate`
 콤비네이터" 절), **같은 날 후속 논의에서 `Animate`의 호출 경로가
 `:Compute` 직결 → `:Apply`로 정정됨**(아래 "왜 `:Apply`로 정정됐는가" 절,
-`research/operator-sugar-plan.md`와 같은 근거). **같은 날 다섯 번째 후속
+`base/operator-plan.md`와 같은 근거). **같은 날 다섯 번째 후속
 논의에서 마지막 남은 질문(자연완료 시 북키핑 정리 여부)도 "정리 안 해도
 됨"으로 확정**(아래 "열린 질문" 절) — 이걸로 열린 설계 질문이 없어져
 `research/`에서 `base/`로 승격.
@@ -363,7 +363,7 @@ State여도..." 절과 같은 이유.
 `:Compute(fn)`의 콜백 시그니처(`fn(self, previous?, ...deps)`)와 모양이
 정확히 일치한다는 이유로 `state:Compute(Animate{...})`처럼 바로 넘기고
 `:Apply` 경유를 "불필요한 한 겹"으로 보고 피했음. 이후 `research/
-operator-sugar-plan.md`의 비슷한 콤비네이터(`Sum`/`Not` 등) 논의에서
+operator-plan.md`의 비슷한 콤비네이터(`Sum`/`Not` 등) 논의에서
 재검토됨 — 결론은 반대: **재사용 가능한 이름 붙은 콤비네이터는 스타일이
 아니라 정합성 때문에 `:Apply`가 맞음.**
 
@@ -375,7 +375,7 @@ operator-sugar-plan.md`의 비슷한 콤비네이터(`Sum`/`Not` 등) 논의에�
   값이 바뀌어도 재계산이 안 트리거됨 — `:Compute`의 구독 목록은 오직
   그 호출문 자체의 trailing args로만 채워짐). `:Apply`는 factory가
   내부에서 `self:Compute(fn, tax, shipping)`을 스스로 다시 전달하므로
-  이 문제가 없음. 상세 근거는 `research/operator-sugar-plan.md` "왜
+  이 문제가 없음. 상세 근거는 `base/operator-plan.md` "왜
   `:Apply`인가" 절 참고.
 - **일관성**: "이 라이브러리가 제공하는 이름 붙은 콤비네이터는 항상
   `:Apply`로 붙인다"는 단일 규칙이, "`Animate`만 예외적으로 `:Compute`
