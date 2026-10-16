@@ -127,6 +127,7 @@
 - `naming-defer-2026-10-15/` — **[2026-10-15, sonnet·Gemini 이름 검토]** 한 번만 짓는 Slot 설치의 이름 — 둘 다 `Lazy` 추천(`Defer`는 `task.defer`와 겹침), 사용자 동의로 `slot:Lazy(fn)`.
 - `naming-spread-2026-10-15/` — **[2026-10-15, sonnet·Gemini 이름 탐색]** 펴 넣는 묶음 도구의 이름 — 둘 다 `Spread` 추천, 사용자 동의(`research/component-flatten-sugar-plan.md` 5절).
 - `naming-onevent-2026-10-16/` — **[2026-10-16, sonnet·Gemini 이름 탐색]** `OnChange`의 짝인 배열부 이벤트 디스크립터 — 둘 다 `OnEvent` 추천(차선 sonnet `On`, Gemini `Connect`).
+- `code-review-2026-10-16/` — **[2026-10-16, `/code-review high`]** 10-15 재검사 뒤 코드(`:List`·`slot:Lazy`·devui 창·material·`publish.py`) — 셋 고침(Lazy None 타입·Quad0156 문구·429 판정), 다섯 사용자 결정 대기(Lazy Quad0272 정리, devui 전역 누름 넷).
 - `naming-ctor-2026-10-16/` — **[2026-10-16, sonnet·Gemini 이름 탐색]** 클래스 이름으로 요소 생성자를 꺼내는 함수 X·`q.New()` 개명·공용 모듈 네임스페이스 — X는 sonnet `Class`/Gemini `New`, 둘 다 `NewModule`·별도 테이블 권고.
 - `naming-arritem-2026-10-16/` — **[2026-10-16, sonnet·Gemini 이름 탐색]** props 배열 자리 값의 타입(지금 `<Class>Elem`) 새 이름 — sonnet `Entry`, Gemini `Content`(Roblox `Content` 타입과 충돌 — 메인 확인).
 - `naming-table-review-2026-10-16/` — **[2026-10-16, Gemini 체계 검토 + sonnet 찬반 토론]** Declaration 이름표 초안 검토 — Elem은 토론이 "값·타입 이름을 갈라도 되나"로 좁혀짐, Gemini `Ctor`·`ModifierInto`·`Spread<C>`·`PropertyMap`과 빠진 축 다섯.
