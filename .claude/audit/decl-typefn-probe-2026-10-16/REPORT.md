@@ -64,3 +64,10 @@ opus 서브에이전트가 만들고 돌렸다(보고 본문을 메인이 요약
 - **공용 모듈(사용자 2026-10-16 — 프로젝트 `quad.luau`에서 꺼내 export)**: 31 클래스의 생성자·Spread 62개를 한 모듈에서 꺼내 반환하는 `Ui.luau` 0.64 s/171 MiB,
   그걸 require해 600 호출하는 파일 0.74 s/172 MiB(모듈 검사 포함) — 파일별 꺼내 두기와 같은 평평한 비용이 모듈 경계를 넘어서도 유지. 소비 쪽 `UI.` 자동완성 62,
   `UI.Frame { ` 자동완성 64(0.11 s), 값 에러 둘 잡힘.
+
+## Modifier는 마커가 아니다 — 비용 `harness/compare/modcost/` [2026-10-16 추가, 사용자 질문]
+
+Modifier 값의 타입은 Spread와 달리 **메소드 표면 전체 + 태그**(`read __quadModifier: "Frame"`)다 — 만든 뒤에도 `m:Visible(true)`·`:Peek`·`:Apply`로 계속 쓰기 때문. 놓이는 자리의
+검사(`Elem<C>`의 `{ read __quadModifier: "Frame" | 조상 }` 팔)만 태그 글자로 한다. 비용(sync): 함수 주석 `m: Modifier<Frame>, g: Modifier<GuiObject>` 50→300개 0.48→0.67 s,
+92→93 MiB(별칭 인스턴스화는 한 번); 인라인 `Modifier<<Frame>>():Visible(true)` 50→300번 0.57→1.26 s, 156→622 MiB(무너지진 않았지만 New 인라인처럼 자란다) — 이름 꼴 `Modifier "Frame"`이
+돌려주는 팩토리를 꺼내 두고(`local FrameModifier = Modifier "Frame"`) 쓰는 자리마다 `FrameModifier()`를 부르면 꺼내 두기와 같은 비용이 될 것(미측정).
