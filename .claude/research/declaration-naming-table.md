@@ -32,7 +32,7 @@
 | 타입 `PropTypes`/`PropTypesRead`·`OnChangeDescriptor` | 0 | 0 | 3 | 21 |
 | 값 `D.Mapper.<C>` | 0 | 0 | 3 | 1 |
 
-주의: 공용 모듈 권장(`D = { Frame = X "Frame", … }`, 5절 2026-10-16)이면 **생성자 꺼내기 함수 X 자체는 클래스 수만큼 한 파일에만** 적히고, 매일 쓰이는 것은 사용자가 정한
+주의: 공용 모듈(`D = { Frame = X "Frame", … }` — 같은 날 기본 권장은 파일별 꺼내 두기로 정해졌고 공용 모듈은 작을 때의 대안, `declaration-surface-plan.md` 5절)을 쓰면, **생성자 꺼내기 함수 X 자체는 클래스 수만큼 한 파일에만** 적히고, 매일 쓰이는 것은 사용자가 정한
 `D.Frame`이다. Modifier도 같은 권장을 따르면(`D.FrameModifier = Modifier "Frame"` 꼴 — 사용자: *"Modifier 또한 적어놓고 쓰는게 권장되는 경로 아니냐"*) 꺼내기 함수 `Modifier`는 드물고
 매일 쓰이는 것은 꺼낸 값과 타입 `Modifier<Frame>`이다.
 
@@ -44,10 +44,10 @@
 |---|---|---|---|---|
 | 요소 생성자 꺼내기 | `D.<C>` 값, `D.New(name)` | **`Elem "Frame"`** → 생성자 | 꺼내기 자체는 드묾(공용 모듈), 결과 생성자는 매일 | **토론 대상**(4절). 이름 탐색: sonnet `Class`, Gemini `New` — 사용자는 둘 다 기각(`Class`는 Luau RFC `class` 문·묶음처럼 보임, `New`는 즉시 생성으로 읽힘) |
 | Modifier 꺼내기 | `D.Modifier.<C>(…)` | `Modifier "Frame"` → `(…) -> Modifier<Frame>` | 꺼내기는 드묾(꺼내 두기 권장 시), 결과 호출은 매일 | 값·타입 같은 이름(원칙 4) |
-| 속성 묶음 | (없음, 새로) | `Spread "Frame" {…}` → `SpreadMarker<Frame>`(`:Add`) | 중간 예상 | 커리(두 인자 꼴은 실측상 틀린 꼴) |
+| 속성 묶음 | (없음, 새로) | `Spread "Frame" {…}` → `Spread<Frame>`(`:Add`; 5절 — 마커는 입력 자리 전용) | 중간 예상 | 커리(두 인자 꼴은 실측상 틀린 꼴) |
 | 기존 트리 매퍼 | `D.Mapper.<C>(key)(props)` | `Mapper "Frame" (key) {…}` | 드묾(킷 0) | |
-| 프로퍼티 변화 | `q.OnChange(name, fn)` | 그대로 | 중간 | 무주석 콜백은 검사만 — 커리 꼴 여부는 열림(OnEvent와 같이) |
-| 이벤트 | (없음, 새로) `q.OnEvent(name, fn)` 확정 | 그대로 | 중간 예상 | 커리 꼴(`OnEvent "MouseEnter" (fn)`)만 콜백 인자에 문맥 타입이 흐름 — **모양 미정** |
+| 프로퍼티 변화 | `q.OnChange(name, fn)` | 그대로 | 중간 | 무주석 콜백은 검사만 — **→ 5절 확정: 클래스 먼저 커리 `OnChange "Frame" "Visible" (fn)`** |
+| 이벤트 | (없음, 새로) `q.OnEvent(name, fn)` 확정 | 그대로 | 중간 예상 | 커리 꼴만 콜백 인자에 문맥 타입이 흐름 — **→ 5절 확정: 클래스 먼저 커리 `OnEvent "Frame" "MouseEnter" (fn)`** |
 | 되쓰기 | `q.Out(name, src)` | 그대로 | 드묾 | |
 | base 원재료 | `q.Modifier`(통째)·`q.newMapperClass` | `q.Raw.Modifier`·`q.Raw.Spread`·`q.Raw.Mapper` | 드묾(킷 0, 백엔드·자기 Modifier 정의자만) | 사용자 결정 2026-10-16 |
 | 매퍼 루트 | `q.MapperRoot`·`D.Mapper.Root` | 그대로(base `Claim`의 센티널) | 드묾 | |
@@ -82,7 +82,7 @@
   `Modifier<T>` 타입과 `Modifier "" ()` 생성 경로가 그 모양이다(원칙 4).
 - **차이(단서)**: 다만 Elem은 *커링 함수의 결과가 생성자*이고, Modifier는 *생성자가 커링된 것*으로 볼 수 있다 — `Elem "Frame"`의 결과는 props를 받아 Frame을 만드는 생성자,
   `Modifier "Frame"`의 결과는 인자를 받아 Modifier 값을 만드는 팩토리. 둘 다 "이름 → (인자 → 값)"이지만 `Elem<Frame>` 타입이 생성자(함수)를, `Modifier<Frame>` 타입이 값을 가리킨다.
-- **반대 근거(빈도)**: 공용 모듈 권장이면 꺼내기 함수는 드물게 적히니 짧을 필요가 없다(원칙 1) — 서술형 이름이어도 된다. 이 근거는 Modifier에도 똑같이 적용된다(2절 끝).
+- **반대 근거(빈도)**: 꺼내 두기를 권장하면(파일별이든 공용 모듈이든) 꺼내기 함수는 파일 머리에만 적히니 짧을 필요가 없다(원칙 1) — 서술형 이름이어도 된다. 이 근거는 Modifier에도 똑같이 적용된다(2절 끝).
 
 **배열 자리 타입 이름 탐색에서 기각·탈락한 것**(같은 날): `Entry`(sonnet 1순위 — 사용자: Ref·PreRef까지 들어가는데 흔한 단어를 소진, `SlotEntry` 짝도 *"그닥"*), `Content`
 (Gemini 1순위 — Roblox 정의에 `declare extern type Content`·전역 `Content`가 있음, 메인 확인), `Child`·`ChildrenOf`(Modifier·디스크립터를 가림, 복수형은 `{ … }` 자리에서 이중 복수).

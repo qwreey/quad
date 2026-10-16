@@ -39,6 +39,8 @@
 
 ## 4. 이 문서가 정할 것(열림)
 
+> **[2026-10-16 상태]** 1·2번은 5절에서 결정됐다. 3·4번은 실측으로 방향이 나왔고(Policy 데이터 흡수·생성기는 데이터만) 사용자 확인 대기, 5번은 Q87·Q127이 클래스 먼저 커리로 실측상 해소 가능·Q122는 이름표로 정리 가능 — 셋 다 사용자 결정 대기. 진행 상태의 소스는 5절.
+
 1. 타입 함수 조립 표면의 모양 — 어떤 축(Modifier·Into·Elem·Out·OnChange·PropTypes)을 타입 함수로, 이름과 인자 모양.
 2. 생성 D(`q.Declaration`)를 유지·축소·대체할지, 기존 재수출(`<Class>Modifier` 등)의 운명(3.x 안정화 구간 — BREAKING 허용 여부).
 3. 체커 간 클래스 데이터 차이를 타입 함수 안에서 어떻게 흡수하는지 — 실측(Studio·VSCode luau-lsp·CLI) 필요.
@@ -94,6 +96,6 @@
 - **[결정 — 4절 2번 나머지]** 사용자: *"그러도록 하자. 3.3 을 내고, 재수출 - 복제해서 안 하고. 만드는걸로. 이전 기간은안 둬도 돼. 아직 사용자는 나 뿐이야"*.
   재수출 142개 중 클래스별 복제 125개(`<C>Modifier` 47·`Into<C>` 47·`<C>Elem` 31)는 별칭 없이 타입 함수 제네릭으로 대체(`research/declaration-naming-table.md` 5절), `Declaration`·`DeclarationMapper`는 D와 함께 삭제.
   **이전 기간 없음** — 한 릴리즈에서 바꾼다(옛 D는 이미 Studio에서 타입 검사가 꺼져 있고 레포 밖 소비자 table-sim은 vendor rev 고정·재수출 타입 0회). **변환 스크립트**를 레포 `scripts/`에 두고
-  킷·문서 이전에 먼저 쓴다(실측: 킷 파일당 생성자 중앙값 2·최대 9, 이름 충돌 0). **릴리즈 순서**: 지금 `[Unreleased]`로 3.3.0을 먼저 내고 Declaration 개편은 3.4.0의 BREAKING.
+  킷·문서 이전에 먼저 쓴다(실측: 킷 파일당 생성자 중앙값 2·최대 9, 이름 충돌 0). **릴리즈 순서**: 지금 `[Unreleased]`로 3.3.0을 먼저 내고(같은 날 bump·게시 — 일부 재게시 남음) Declaration 개편은 3.4.0의 BREAKING.
   `NewChild`는 내보내지 않는다(킷·table-sim·base 0회 — 새 표면에선 `Policy.Child` 데이터, 사용자가 쓰는 이름은 `PropsArrayItem<C>`); `RobloxExtension`은 그대로(q 타입 뒤에 붙는 확장 이름 — 사용자).
   `OnChangeFn`·`OutFn` 이름은 나중에(사용자).

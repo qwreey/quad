@@ -20,7 +20,7 @@
 ## 2. 낮은 우선순위 — 열려 있지만 급하지 않음
 
 
-- **[2026-10-15 신설] 펴 넣는 묶음 `q.Spread` — 이름은 확정, 표면 문항 다섯은 `research/component-flatten-sugar-plan.md` 5절**(같은 키 두 Spread, 같은 값 두 요소, 펴기 루프 세 단계, 타입, 2절 경계 flatten과의 관계).
+- **[2026-10-15 신설] 펴 넣는 묶음 `q.Spread` — 이름은 확정, 표면 문항 다섯은 `research/component-flatten-sugar-plan.md` 5절**(같은 키 두 Spread, 같은 값 두 요소, 펴기 루프 세 단계, 타입, 2절 경계 flatten과의 관계). **[2026-10-16] (1)~(4) 사용자 회신으로 닫힘**(타입은 Declaration 트랙에서 `Spread "Frame" {…}`·`Spread<C>`로), **(5) `Split`과의 관계만 보류**(*"나와 봐야 알것 같아"*).
 - **[2026-09-06 신설] 컴포넌트 경계 flatten 슈거 스캐폴딩 — `research/component-flatten-sugar-plan.md` 2절의 "정해야 할 것" 일곱(단위·State 취급·`rest` 형태·배열부 분리 범위·되꽂기 표기·경계 필드 이름 Q2·패키지).** 사용자가 "나중에 보고 답할게"라 한 항목. 구현은 순수 슈거라 코어를 막지 않는다.
 - **중첩 State 평탄화 `State<State<T>>` → `State<T>`(2026-08-13 여섯 번째
   세션 신설, 백로그)** — **[근거 축소, 열네 번째 세션]** 원래 이 항목의
@@ -69,4 +69,4 @@
 ## 4. 리뷰 원장 문항 — 열린 것 없음 [2026-10-15 기준]
 
 round13·round14 원장의 사용자 문항은 전부 닫혔다(round14 원장 끝 문단들, round13 §0 표의 [닫힘] 표시). round13에서 보류로 남은 Q87·Q122·Q127은
-`research/declaration-surface-plan.md`에 묶여 있다(Q76은 2026-10-15 닫힘). 이 절의 옛 포인터 서술은 `archive/question-resolved.md`의 "question.md에서 걷어낸 닫힌 항목 원문" 절.
+`research/declaration-surface-plan.md`에 묶여 있다(**[2026-10-16]** 셋 다 같은 뿌리 — 31 클래스를 한 이름 맵에 합친 것; Q87·Q127은 클래스 먼저 커리로 실측상 해소 가능, Q122는 이름표로 정리 가능 — 사용자 결정 대기)(Q76은 2026-10-15 닫힘). 이 절의 옛 포인터 서술은 `archive/question-resolved.md`의 "question.md에서 걷어낸 닫힌 항목 원문" 절.
