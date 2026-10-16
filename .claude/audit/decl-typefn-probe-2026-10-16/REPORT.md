@@ -33,3 +33,11 @@ opus 서브에이전트가 만들고 돌렸다(보고 본문을 메인이 요약
 **VSCode**(`harness/compare/gend-lsp.luau`, 지금 생성 D): `D.Frame({ `·`D.TextLabel({ ` 자동완성이 뜨고 항목 타입은 `(None | StateMarker<(TweenData<number> & t1) | number> | …)? where t1 = { Mapped: … }… *TRUNCATED*`. **지연: `D.Frame({`·`D.TextLabel({`는 약 1초, `m:`는 즉시**(한 번 열고 닫은 뒤 다시 부르면 조금 빠름). **생성 Modifier `m`의 hover도 `local m: t26 where t1 = { Subscribe: …` 구조 전개**다 — 1번의 "생성 D는 이름이 남음"은 Modifier에는 맞지 않는다(hover가 긴 것은 두 꼴 공통). `bad`(Visible = 5)는 에러가 난다(override 있는 사용자 VSCode에선 생성 D가 산다 — 리눅스 `vsc`와 같음).
 
 **OnChange 무주석 콜백(typing-limits 8.7 3번 확인)**: `oc`의 타입은 `{ Callback: (boolean) -> (), Name: "Visible" }`인데 **`v` hover는 `unknown`**(사용자). 하네스 `harness/compare/onchange-infer.luau`로 갈랐다 — 무주석 `v`를 잘못 쓰면(`local s: string = v`, 멤버 경유 `local s: string = v.X`) `function(v)` 자리에 `Expected this to be 'boolean', but got 'string'`이 뜨고, 틀린 주석(`function(v: string)`)도 잡힌다. 그러나 `v.` 자동완성은 없다. 즉 **검사는 되고 편집기 도움은 없다** — 본문 사용으로 `v`가 먼저 굳은 뒤 콜백 전체가 대조된다. `base/typing-limits.md` 8.7 3번·`base/onchange-plan.md`·`docs/reference/roblox/05-onchange.md`를 이 사실로 정정했다. 커리 꼴(4-g)만 문맥 타입이 파라미터로 흘러든다.
+
+## 이름만으로 클래스 잡기 — `src/07-new-by-name.luau` [2026-10-16 추가, 4절 1번 정리 전 메인이 채움]
+
+`<K>(name: K & keyof<ClassMap>) -> (Props<index<ClassMap, K>>) -> index<ClassMap, K>`(`ClassMap = { Frame: Frame, … }` — 31 클래스, 덤프에서 나올 데이터)로
+**`NewN("Frame")` 한 번에 클래스가 정해진다** — 명시 `<<Frame>>` 불필요. vsc·sync(override 없음) 같고 Studio(4 클래스 맵으로 싱크해 `studio-analysis`)도
+진단이 위치·문구까지 같다: 오타 `NewN("Fraem")` 에러(`Property '"Fraem"' does not exist on type 'ClassMap'`), 따옴표 안 클래스 이름 자동완성 32,
+`Frame({ ` 자동완성 64·0.02 s, 값 에러·남의 프로퍼티(`Frame({ Text = … })`) 에러, 인라인 `NewN("Frame")({ Visible = 5 })`도 에러, 반환 hover `local ok2: TextLabel`.
+생성자 hover는 여전히 구조 전개. 맵을 "만들 수 있는 클래스"로만 채우면 추상 클래스 생성(1번의 약점)도 이름 단계에서 막힌다(맵 분리는 미측정).
