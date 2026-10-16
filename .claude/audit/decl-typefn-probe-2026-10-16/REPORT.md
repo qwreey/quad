@@ -79,3 +79,12 @@ GuiObject·GuiButton·GuiBase2d를 더함). sync: `s:Add { ` 자동완성 63(메
 `FrameSpread {}:Add {…}:Add {…}`, `Frame { s, chained }`·`TextButton { s }` 무진단(메소드가 붙어도 요소 자리는 태그 팔만 본다), 틀린 값·남의 프로퍼티·`TextButton { Frame 묶음 }` 거부.
 비용: 꺼내 둔 `GuiSpread`로 `{…}:Add {…}` 뒤 요소에 넣기 50→300 호출 0.50→0.60 s, 92→97 MiB(평평). 잃는 것은 hover뿐 — `chained`가 `t1 where t1 = { Add: (self: t1, props: { [number]: …`로
 props 표면까지 펼쳐진다(마커 꼴은 `{ read __quadSpread: "GuiObject" }` 한 줄). 놓인 뒤 잠김(`:Add` 에러)은 런타임 몫 — 타입은 표현 못 함.
+
+## q 타입에 타입 함수 멤버를 얹기 — `harness/compare/qmerge/` [2026-10-16 추가, 사용자 질문]
+
+지금 q의 타입은 `UseProvider`가 돌려주는 `Self & P`(`Quad & RobloxExtension`, quad-types 672행)다. 실제 quad-types `Quad`에 타입 함수로 타이핑한 확장
+`{ Elem, Spread(:Add), Modifier, Mapper, OnEvent(커리) }`를 같은 교집합으로 얹어(`Ext.luau`) 소비 파일에서 쟀다(sync): 0.47 s/93 MiB, 맞는 줄 무진단,
+부정 넷(값·추상 클래스 `Elem "GuiObject"`·Frame Modifier를 TextButton에·base `Source:Set` 타입) 전부 잡힘 — **base 표면 검사도 그대로 산다**.
+**`Modifier`처럼 base와 이름이 겹치는 멤버**: 교집합이 되어도 `q.Modifier "Frame"`은 타입드(메소드 자동완성 40), `q.Modifier()`는 base `Modifier`(오류 메시지로 확인 —
+hover는 참조 타입까지 펼쳐 이상하게 보이나 타입은 `Modifier`), `q.Modifier.TypedFactory`도 보인다. `q.` 자동완성 base 64 → 68(새 이름 넷), `q.Sp`·`q.OnE`에
+서명이 뜬다. 즉 런타임은 base, 타입은 quad-roblox가 지금의 병합 경로 그대로 실을 수 있다(새 메커니즘 없음).
