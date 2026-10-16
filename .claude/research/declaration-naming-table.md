@@ -4,6 +4,8 @@
 > 배열 자리 타입 이름을 고르다 질문을 넓혔다: *"질문의 범위가 그렇게 국소적인게 아니라, 새로 들어올 Build 를 쓰는 네이밍들이 모두 자기서술적이고, 사용 빈도에 비해서
 > 네이밍이 그게 맞는가 의심되는 부분"*. 이 문서는 그 이름 전체를 한 표에 놓은 초안이다 — 초안 이름은 메인 제안이고 결정이 아니다. 실측 근거는
 > `audit/decl-typefn-probe-2026-10-16/REPORT.md`, 이름 탐색 둘은 `audit/naming-ctor-2026-10-16/`·`audit/naming-arritem-2026-10-16/`.
+>
+> **[2026-10-16 같은 날 — 검토(`audit/naming-table-review-2026-10-16/`) 뒤 사용자 결정]** 5절이 결정 목록이다 — 3절 표의 "초안" 칸 중 5절과 다른 것은 5절이 이긴다.
 
 ## 1. 원칙(사용자 2026-10-16, 메인 정리)
 
@@ -85,3 +87,20 @@
 **배열 자리 타입 이름 탐색에서 기각·탈락한 것**(같은 날): `Entry`(sonnet 1순위 — 사용자: Ref·PreRef까지 들어가는데 흔한 단어를 소진, `SlotEntry` 짝도 *"그닥"*), `Content`
 (Gemini 1순위 — Roblox 정의에 `declare extern type Content`·전역 `Content`가 있음, 메인 확인), `Child`·`ChildrenOf`(Modifier·디스크립터를 가림, 복수형은 `{ … }` 자리에서 이중 복수).
 `SlotElement<T>`는 그대로 둔다(사용자: Elem은 *"결정적으로 하나를 의미"* — 유니언이어도).
+
+## 5. 결정 [2026-10-16 — 사용자, 검토 뒤]
+
+검토는 `audit/naming-table-review-2026-10-16/`(Gemini 체계 검토 + sonnet 찬반 토론). 사용자: *"동의. ElemCtor 도 맞아보임. Into 도 ModifierInto 로 두는거 동의. modifierField 도 동의 … 다른 부분도 동의"*.
+- **값 `Elem "Frame"`은 그대로, 생성자 타입은 `ElemCtor<C>`**(타입 `Elem<C>`는 만들지 않는다). 토론이 "값·타입 이름을 갈라도 되나"로 좁혀졌고, 원칙 4를 "이름은 최종 산물을 가리킨다"로 읽으면
+  `Elem "Frame"`의 산물은 `Frame`이라 `Elem<…>` 타입이 없어야 깨지지 않는다(Modifier도 이 읽기 — `Modifier "Frame"`의 산물이 `Modifier<Frame>`). 생성자 타입은 드물어 길어도 된다(원칙 1).
+- **`Into<C>` → `ModifierInto<C>`**(무엇으로 into인지 + 부모 접두).
+- **`SpreadMarker<C>` → `Spread<C>`**(`:Add`가 붙은 값은 전체형, 요소 자리에서 받는 쪽만 마커 — quad-types의 마커 정의 "입력받는 자리 전용, 메소드가 필요한 자리는 전체형",
+  `State`/`StateMarker`·`Modifier`/`ModifierMarker`와 같은 짝; `Spread "Frame" {…}: Spread<Frame>`).
+- **`Field<T>`·`FieldOut<T>` → `ModifierField<T>`·`ModifierFieldOut<T>`.** 변형 열(`FieldP`·`FieldN`·`FieldPN`·`FieldV`·`FieldPV`·`FieldNV`·`FieldPNV`·`FieldOutP` — 보간 가능 여부·nil 수용
+  조합)은 **지금은 내보내지 않는다** — 사용자: *"바리에이션에 대해서는 좀 더 논의해보고. 지금은 내지 않고, 정해지는게 생기면 낼 지 보는정도로"*.
+- **이름→타입 맵은 `PropertyMap` 계열**(`EventMap`과 짝 — 읽기 쪽 이름은 미정), 나머지 표 행(`Props<C>`·`PropsArrayItem<C>`·`PropsHashPart<C>`·`MapperProps<C>`·`OnEventDescriptor`·
+  부품 비노출)도 동의.
+- **표에 빠졌던 축**(Gemini 발견, 메인 확인 — 이름은 다음 개정에서): 공용 모듈 레코드 타입(`Declaration`·`DeclarationMapper`·`DeclarationModifier`), 서명 타입 `OnChangeFn`·`OutFn`(·`OnEventFn`),
+  31 클래스 밖 동적 탈출구(지금 `D.New(name)`, 프로브 `NewLoose`), 매퍼 루트 센티널 타입.
+- **OnEvent·OnChange 커리** — 사용자: *"커리 꼴이 되면 타이핑 문제에 해결이 보일것 같다 … 오버라이딩으로 선택될 수 있는지 보는게 필요"*. 실측(`audit/decl-typefn-probe-2026-10-16/REPORT.md`
+  끝 절): 클래스 먼저 커리 `OnEvent "Frame" "MouseEnter" (fn)`는 제네릭·오버로드 둘 다 콜백에 문맥 타입이 흐르나 **오버로드는 이름 자동완성을 잃는다** — 확정 여부는 사용자 몫.

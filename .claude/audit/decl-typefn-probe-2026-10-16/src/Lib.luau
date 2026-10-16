@@ -341,6 +341,38 @@ export type function Build(mode: type, cls: type, policy: type)
 			props[types.singleton(n)] = { read = map[n] }
 		end
 		return types.newtable(props)
+	elseif M == "propmap" or M == "changeoverloads" then
+		-- [2026-10-16] per-class name -> value type (writable surface here; a read surface would use a policy without the ReadOnly deny)
+		local names, info = collect(cls)
+		local props: { [type]: { read: type?, write: type? } } = {}
+		local parts: { type } = {}
+		for _, n in names do
+			local i = info[n]
+			if i.kind == "prop" then
+				props[types.singleton(n)] = { read = i.ty }
+				local desc = rotbl({ __quadChange = types.singleton(n) })
+				local cb = types.newfunction({ head = { i.ty } }, { head = {} })
+				parts[#parts + 1] = types.newfunction({ head = { types.singleton(n) } },
+					{ head = { types.newfunction({ head = { cb } }, { head = { desc } }) } })
+			end
+		end
+		if M == "propmap" then
+			return types.newtable(props)
+		end
+		return types.intersectionof(table.unpack(parts))
+	elseif M == "eventoverloads" then
+		-- [2026-10-16] `OnEvent "Frame"` as an overloaded function: one `(name) -> (fn) -> desc` per event, picked by the literal
+		local names, info = collect(cls)
+		local parts: { type } = {}
+		for _, n in names do
+			local i = info[n]
+			if i.kind == "event" then
+				local desc = rotbl({ __quadEvent = types.singleton(n) })
+				parts[#parts + 1] = types.newfunction({ head = { types.singleton(n) } },
+					{ head = { types.newfunction({ head = { i.ty } }, { head = { desc } }) } })
+			end
+		end
+		return types.intersectionof(table.unpack(parts))
 	elseif M == "eventargs" then
 		-- like "events", but each entry is a fixed-arity record { a1..a4 } of the callback's parameters
 		-- (missing → nil), so OnEventP can spell the callback as an explicit 4-parameter function type —
@@ -468,6 +500,10 @@ export type Report<C> = Build<"report", C, Policy>
 export type Brief<C> = Build<"brief", C, Policy>
 export type Names<C> = Build<"names", C, Policy>
 export type EventArgs = Build<"eventargs", Scope, Policy>
+export type PropMap<C> = Build<"propmap", C, Policy>
+export type ChangeOverloads<C> = Build<"changeoverloads", C, Policy>
+export type EventOverloads<C> = Build<"eventoverloads", C, Policy>
+export type ChangeDesc<K> = { read __quadChange: K }
 export type EventDesc<K> = { read __quadEvent: K }
 export type Ctor<C> = (Props<C>) -> C
 

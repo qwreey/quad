@@ -88,3 +88,14 @@ props 표면까지 펼쳐진다(마커 꼴은 `{ read __quadSpread: "GuiObject" 
 **`Modifier`처럼 base와 이름이 겹치는 멤버**: 교집합이 되어도 `q.Modifier "Frame"`은 타입드(메소드 자동완성 40), `q.Modifier()`는 base `Modifier`(오류 메시지로 확인 —
 hover는 참조 타입까지 펼쳐 이상하게 보이나 타입은 `Modifier`), `q.Modifier.TypedFactory`도 보인다. `q.` 자동완성 base 64 → 68(새 이름 넷), `q.Sp`·`q.OnE`에
 서명이 뜬다. 즉 런타임은 base, 타입은 quad-roblox가 지금의 병합 경로 그대로 실을 수 있다(새 메커니즘 없음).
+
+## 클래스를 먼저 받는 커리 OnEvent·OnChange — `src/10-class-curry-events.luau`, `harness/compare/change-big.luau` [2026-10-16 추가, 사용자 질문]
+
+꼴 `OnEvent "Frame" "MouseEnter" (function(x, y) … end)`·`OnChange "Frame" "Visible" (function(v) … end)`. 둘째 호출 두 가지를 비교: **G**(제네릭 `K & keyof<Events<C>>`, 콜백 `index<…, K>`)와
+**O**(오버로드 교집합 — 이름마다 `(name) -> (fn) -> desc` 하나, Lib 모드 `eventoverloads`/`changeoverloads`; 프로퍼티는 쓰기 표면 `propmap` — 읽기 표면은 ReadOnly를 빼지 않는 정책이 필요, 미측정).
+- **둘 다 콜백에 문맥 타입이 흐른다** — 무주석 `x` hover `number`, `v` `boolean`, `input.` 자동완성 64, 오용(`local s: string = x`)이 **본문 줄**에서 `Expected 'string', got 'number'`로 잡힘
+  (비커리 `OnChange(name, fn)`은 `function(v)` 자리에서 잡히고 hover `unknown`이었다). 인라인 `OnEvent "Frame" "MouseMoved" (…)`도 같음. 클래스에 없는 이름 거부(G는 긴 메시지, O는 `None of the overloads …`).
+- **차이는 이름 자동완성**: G는 둘째 호출 따옴표 안에 그 클래스 이벤트 이름이 뜬다(27), **O는 0** — 오버로드로 고르는 꼴은 이름 목록을 잃는다.
+- O 비용: 프로퍼티 63개 TextButton·ScrollingFrame의 OnChange 오버로드도 too complex 없이 0.46 s/93 MiB(8.7의 "오버로드 교집합 37개부터 죽는다"는 235-이름 스코프 전체 교집합 이야기 —
+  클래스별로 나누면 버틴다). 파일 전체 0.48 s/93 MiB.
+- **Studio**(`studio-analysis`): 10번 진단이 위치·문구까지 CLI와 같다.
