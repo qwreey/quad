@@ -36,7 +36,7 @@ return function(S: Types.SlotInternal, module: any)
 		if cur ~= nil then
 			if not (fromDetached and cur == ownerKey) then
 				if ownerKey._listed then
-					S.Err.errorBefore("Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (a State or :List element is settled when its Slot mounts or the value changes, so two elements that became the same Instance - two States holding one value, an updateFn returning the same Instance twice - collide here, not at Add)" .. S.ZOMBIE_NOTE, S.SURFACE)
+					S.Err.errorBefore("Quad0156 Slot: this element is already mounted - multiple mounts are not allowed (a State or :List element is settled when its Slot mounts or the value changes, so two elements that became the same Instance - two States holding one value, an updateFn returning the same Instance twice, a :Lazy fn returning an element already mounted elsewhere - collide here, not at Add)" .. S.ZOMBIE_NOTE, S.SURFACE)
 				end
 				S.Err.errorBeforeNearest( -- error-code: inline if
 					if cur == ownerKey

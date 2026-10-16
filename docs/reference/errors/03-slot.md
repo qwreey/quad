@@ -135,9 +135,9 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ### Quad0156
 
-`Slot: this element is already mounted - multiple mounts are not allowed (a State or :List element is settled when its Slot mounts or the value changes, so two elements that became the same Instance - two States holding one value, an updateFn returning the same Instance twice - collide here, not at Add)` — `quad-base/src/Slot/Owner.luau`
+`Slot: this element is already mounted - multiple mounts are not allowed (a State or :List element is settled when its Slot mounts or the value changes, so two elements that became the same Instance - two States holding one value, an updateFn returning the same Instance twice, a :Lazy fn returning an element already mounted elsewhere - collide here, not at Add)` — `quad-base/src/Slot/Owner.luau`
 
-- **언제**: `:List`/`:Single`이나 `State` 원소(그 래퍼)가 원소를 정착시킬 때 — 마운트 때, 그 뒤엔 값이 바뀔 때 — 그 값이 이미 다른 자리에 마운트돼 있을 때(레지스트리는 Slot 원소·정적 자식·숏핸드 관리 자식이 하나를 같이 쓰지만, 정적 자식 자리는 Quad0160, 수동 Slot CRUD는 Quad0172·Quad0170이 냅니다). 흔한 원인은 한 Slot의 원소 둘이 마운트 때 같은 Instance가 된 것입니다 — 마운트 전 Slot에 같은 Instance를 쥔 `State` 둘(또는 그 Instance와 그것을 쥔 `State`)을 넣으면 넣는 줄은 통과하고(넣을 때 `State`의 값을 읽지 않습니다) 마운트 줄에서 이 에러가 납니다. `updateFn`이 같은 원소를 두 키에 돌려주거나 자기 Slot을 돌려준 경우도 이 문구입니다. 런타임 메시지 끝에는 "if its owner was destroyed outside quad …" 꼬리가 붙습니다.
+- **언제**: `:List`/`:Single`·`:Lazy`나 `State` 원소(그 래퍼)가 원소를 정착시킬 때(`:Lazy`는 `fn`이 이미 다른 자리에 마운트된 원소를 돌려줬을 때) — 마운트 때, 그 뒤엔 값이 바뀔 때 — 그 값이 이미 다른 자리에 마운트돼 있을 때(레지스트리는 Slot 원소·정적 자식·숏핸드 관리 자식이 하나를 같이 쓰지만, 정적 자식 자리는 Quad0160, 수동 Slot CRUD는 Quad0172·Quad0170이 냅니다). 흔한 원인은 한 Slot의 원소 둘이 마운트 때 같은 Instance가 된 것입니다 — 마운트 전 Slot에 같은 Instance를 쥔 `State` 둘(또는 그 Instance와 그것을 쥔 `State`)을 넣으면 넣는 줄은 통과하고(넣을 때 `State`의 값을 읽지 않습니다) 마운트 줄에서 이 에러가 납니다. `updateFn`이 같은 원소를 두 키에 돌려주거나 자기 Slot을 돌려준 경우도 이 문구입니다. 런타임 메시지 끝에는 "if its owner was destroyed outside quad …" 꼬리가 붙습니다.
 - **고치려면**: 한 Instance는 한 자리에만 — 원소마다 다른 Instance가 되게 하세요(`State`마다 다른 값, `updateFn`이 키마다 다른 원소). 다른 곳에 있던 값이면 먼저 옛 자리에서 빼세요(`Extract`, 데이터 키 삭제 등). 같은 원소를 두 키에 돌려줬다면 `Extract`는 `Quad0166`을 내니 `updateFn`을 고치고, 자기 Slot을 돌려준 경우는 뺄 옛 자리가 없으니 반환값을 고치세요. 그 값의 원래 owner가 quad 밖에서(`inst:Destroy()`) 파괴됐다면 되살릴 수 없습니다.
   <!-- 근거: 2026-09-27 mock 실측(저장소 내부 기록) -->
 - **관측 — 계약 아님**: 마운트 때 던지면 그 Slot은 자식이 빠진 채 남고 그 사슬의 다음 CRUD가 `Quad0167`로 막힙니다 — 그 Slot은 버리세요.

@@ -320,7 +320,8 @@ def already_published(name, version, target):
 def rate_limit_wait(out):
     """Seconds to wait if `pesde publish` failed on the registry's rate limit, else None.
     Observed (2026-10-16): `error: failed to publish package: 429 Too Many Requests (Too many requests, retry in 55s)`."""
-    if '429' not in out and 'Too Many Requests' not in out:
+    # match the status phrase, not a bare '429' (a byte count or hash in other failure output would loop for minutes)
+    if not re.search(r'\b429 Too Many Requests\b', out):
         return None
     m = re.search(r'retry in (\d+)\s*s', out)
     return (int(m.group(1)) if m else 60) + 5

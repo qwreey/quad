@@ -2843,6 +2843,19 @@ do
 	raises("Quad0148", function() once:Single(q.Source(1)) end)
 	raises("Quad0166", function() once:Add(Instance.new("Frame")) end)
 	raises("Quad0149", function() Slot({}):Lazy(function() return nil end) end)
+
+	-- 7. [2026-10-16 code review] q.None is empty content like nil — and the public type accepts it (strict)
+	local noneSlot = Slot():Lazy(function() return q.None end)
+	local p7 = Instance.new("Folder")
+	dispatch.drive(p7, { noneSlot })
+	assert(childCount(p7) == 0 and noneSlot.Length:Get() == 0, "None = empty")
+	-- 8. [2026-10-16 code review] fn returning an element mounted elsewhere: Quad0156 names the :Lazy cause
+	local taken = Instance.new("Frame")
+	dispatch.drive(Instance.new("Folder"), { Slot({ taken }) })
+	local okDup, errDup = pcall(function()
+		dispatch.drive(Instance.new("Folder"), { Slot():Lazy(function() return taken end) })
+	end)
+	assert(not okDup and string.find(tostring(errDup), "a :Lazy fn returning an element already mounted elsewhere", 1, true), "Quad0156 names :Lazy: " .. tostring(errDup))
 	print("PASS")
 end
 

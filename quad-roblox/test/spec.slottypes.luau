@@ -63,7 +63,14 @@ local function _neverCalled()
 	end, function(item: Row)
 		return item.Id
 	end)
-	local host = D.Frame({ mapped, mappedB, identity, literal, listed })
+	-- (6) [2026-10-16 code review] `:Lazy`'s fn may return q.None (empty content, like nil) on a typed Slot
+	local lazyNone = q.Slot<<Instance>>():Lazy(function()
+		if rows:Get()[1] == nil then
+			return q.None
+		end
+		return D.Frame({})
+	end)
+	local host = D.Frame({ mapped, mappedB, identity, literal, listed, lazyNone })
 	return host
 end
 

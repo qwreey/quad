@@ -577,7 +577,7 @@ export type Slot<T> = {
 	) -> Slot<T>,
 	-- [2026-10-15 사용자 결정] 한 번만 짓는 설치 — `fn`은 이 Slot이 처음 마운트될 때 한 번 불리고, 돌려준 값 하나
 	-- (원소·State·Slot, 또는 nil)가 내용이 된다. 다시 붙여도 다시 불리지 않는다. 반환이 둘 이상이면 런타임 `Quad0272`.
-	Lazy: (self: Slot<T>, fn: () -> SlotElement<T>?) -> Slot<T>,
+	Lazy: (self: Slot<T>, fn: () -> (SlotElement<T> | None)?) -> Slot<T>, -- None = empty content, like nil (runtime List.luau)
 }
 
 -- ── 공개 표면 — `Quad`(quad-base가 구현), `CheckedQuad`, 런타임 값(`Brand` 팩토리·상수) ───────
