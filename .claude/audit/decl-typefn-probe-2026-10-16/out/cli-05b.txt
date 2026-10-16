@@ -1,0 +1,70 @@
+== shim vsc
+harness/extern-shim/05b-extern-events.luau(7,10): TypeError: [R] ProbeButton chain=ProbeButton>GuiButton>GuiObject>GuiBase2d>GuiBase>Instance>Object>userdata props=44 events=35 injected={Transparency}
+harness/extern-shim/05b-extern-events.luau(7,10): TypeError: [R] ProbeButton :: Transparency=prop:number | FontSize=- | TextWrap=- | Font=- | FontFace=- | BackgroundColor=- | DataCost=- | AbsoluteSize=- | ClassName=- | Parent=- | MouseEnter=event:(number, numb
+harness/extern-shim/05b-extern-events.luau(10,28): TypeError: Expected this to be
+	'(((number, string) -> ()) | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: (((number, string) -> ()) | { read __quadNone: true })? })?'
+but got
+	'(string) -> ()'
+harness/extern-shim/05b-extern-events.luau(11,50): TypeError: Expected this to be
+	'(number, string) -> ()'
+but got
+	'(string, unknown) -> ()'; 
+Expected the 1st parameter to be a supertype of `number`, but got `string`
+== shim pin
+harness/extern-shim/05b-extern-events.luau(7,10): TypeError: [R] ProbeButton chain=ProbeButton>GuiButton>GuiObject>GuiBase2d>GuiBase>Instance>Object>userdata props=44 events=35 injected={}
+harness/extern-shim/05b-extern-events.luau(7,10): TypeError: [R] ProbeButton :: Transparency=prop:number | FontSize=- | TextWrap=- | Font=- | FontFace=- | BackgroundColor=- | DataCost=- | AbsoluteSize=- | ClassName=- | Parent=- | MouseEnter=event:(number, numb
+harness/extern-shim/05b-extern-events.luau(10,28): TypeError: Expected this to be
+	'(((number, string) -> ()) | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: (((number, string) -> ()) | { read __quadNone: true })? })?'
+but got
+	'(string) -> ()'
+harness/extern-shim/05b-extern-events.luau(11,50): TypeError: Expected this to be
+	'(number, string) -> ()'
+but got
+	'(string, unknown) -> ()'; 
+it takes the 1st entry in the type pack is `string` in the latter type and `number` in the former type, and `string` is not a supertype of `number`
+== shim-methods vsc
+harness/extern-shim/05b-extern-events.luau(7,10): TypeError: 'Build' type function errored at runtime: [string "Build"]:131: unsupported type pack type
+harness/extern-shim/05b-extern-events.luau(8,12): TypeError: 'Build' type function errored at runtime: [string "Build"]:131: unsupported type pack type
+harness/extern-shim/05b-extern-events.luau(9,15): TypeError: Expected this to be
+	'Build<"props", ProbeButton, Policy>'
+but got
+	'{ Activated: (unknown, unknown) -> (), Clicked: (unknown, unknown) -> (), Label: string }'; 
+the reduced type is `never`, and `{ Activated: (unknown, unknown) -> (), Clicked: (unknown, unknown) -> (), Label: string }` is not a subtype of `never`
+harness/extern-shim/05b-extern-events.luau(9,12): TypeError: 'Build' type function errored at runtime: [string "Build"]:131: unsupported type pack type
+harness/extern-shim/05b-extern-events.luau(10,16): TypeError: Expected this to be
+	'Build<"props", ProbeButton, Policy>'
+but got
+	'{ Clicked: (string) -> () }'; 
+the reduced type is `never`, and `{ Clicked: (string) -> () }` is not a subtype of `never`
+harness/extern-shim/05b-extern-events.luau(10,13): TypeError: 'Build' type function errored at runtime: [string "Build"]:131: unsupported type pack type
+harness/extern-shim/05b-extern-events.luau(11,39): TypeError: Expected this to be '"Clicked" & keyof<Build<"events", ProbeButton, Policy>>', but got '"Clicked"'; 
+the reduced type is `never`, and `"Clicked"` is not a subtype of `never`
+harness/extern-shim/05b-extern-events.luau(11,50): TypeError: Expected this to be
+	'index<Build<"events", ProbeButton, Policy>, "Clicked">'
+but got
+	'(string, unknown) -> ()'; 
+the reduced type is `never`, and `(string, unknown) -> ()` is not a subtype of `never`
+harness/extern-shim/05b-extern-events.luau(11,12): TypeError: 'Build' type function errored at runtime: [string "Build"]:131: unsupported type pack type
+== shim-methods pin
+harness/extern-shim/05b-extern-events.luau(7,10): TypeError: 'Build' type function errored at runtime: [string "Build"]:131: unsupported type pack type
+harness/extern-shim/05b-extern-events.luau(8,12): TypeError: 'Build' type function errored at runtime: [string "Build"]:131: unsupported type pack type
+harness/extern-shim/05b-extern-events.luau(9,15): TypeError: Expected this to be
+	'Build<"props", ProbeButton, Policy>'
+but got
+	'{ Activated: (unknown, unknown) -> (), Clicked: (unknown, unknown) -> (), Label: string }'; 
+it reduces to `never`, and `{ Activated: (unknown, unknown) -> (), Clicked: (unknown, unknown) -> (), Label: string }` is not a subtype of `never`
+harness/extern-shim/05b-extern-events.luau(9,12): TypeError: 'Build' type function errored at runtime: [string "Build"]:131: unsupported type pack type
+harness/extern-shim/05b-extern-events.luau(10,16): TypeError: Expected this to be
+	'Build<"props", ProbeButton, Policy>'
+but got
+	'{ Clicked: (string) -> () }'; 
+it reduces to `never`, and `{ Clicked: (string) -> () }` is not a subtype of `never`
+harness/extern-shim/05b-extern-events.luau(10,13): TypeError: 'Build' type function errored at runtime: [string "Build"]:131: unsupported type pack type
+harness/extern-shim/05b-extern-events.luau(11,39): TypeError: Expected this to be '"Clicked" & keyof<Build<"events", ProbeButton, Policy>>', but got '"Clicked"'; 
+in the 2nd component of the intersectionreduces to `never`, and `"Clicked"` is not a subtype of `never`
+harness/extern-shim/05b-extern-events.luau(11,50): TypeError: Expected this to be
+	'index<Build<"events", ProbeButton, Policy>, "Clicked">'
+but got
+	'(string, unknown) -> ()'; 
+it reduces to `never`, and `(string, unknown) -> ()` is not a subtype of `never`
+harness/extern-shim/05b-extern-events.luau(11,12): TypeError: 'Build' type function errored at runtime: [string "Build"]:131: unsupported type pack type

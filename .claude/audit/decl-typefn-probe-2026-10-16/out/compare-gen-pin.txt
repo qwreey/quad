@@ -1,0 +1,3 @@
+UIShadow: gen-only ['Inset', 'ShowBehindParent'] tf-only []
+WorldModel: gen-only ['UseWorkspaceCollisionGroups'] tf-only []
+mode=pin: 29/31 classes identical key sets (gen keys 1265, tf keys 1262)

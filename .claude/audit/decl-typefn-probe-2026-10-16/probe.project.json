@@ -1,0 +1,18 @@
+{
+	"name": "quad-decl-typefn-probe",
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"$className": "ReplicatedStorage",
+			"quad-roblox": {
+				"$className": "Folder",
+				"src": { "$path": "../../../quad-roblox/src" },
+				"luau_packages": { "$path": "../../../quad-roblox/luau_packages" }
+			}
+		},
+		"ServerScriptService": {
+			"$className": "ServerScriptService",
+			"declprobe": { "$path": "src" }
+		}
+	}
+}

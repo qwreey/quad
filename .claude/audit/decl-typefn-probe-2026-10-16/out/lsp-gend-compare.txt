@@ -1,0 +1,65 @@
+== vsc
+# mode=vsc bin=/code/.local/share/code-docker/code/extensions/johnnymorganz.luau-lsp-1.70.1-linux-x64/bin/server defs=globalTypes.PluginSecurity.d.luau flags=635 override=True
+# initialize 0.09s
+
+## gend-lsp.luau
+# first publishDiagnostics after open: 0.86s
+### diagnostics (1)
+  L12:33 [1000] TypeError: Expected this to be '(None | StateMarker<(TweenData<boolean> & t1) | boolean> | TweenData<boolean> | boolean)? where t1 = { Mapped: <T, U>({ read Cancelled: ((Instance, string, any) -> ())?, ... 13 more ... }, (T) -> U, (({ Map: ({ r
+### @c(gend-frame-Back) L6:23 ins='Back' — 67 items, 0.01s
+  prefix-matching 'Back': BackgroundColor3<5>[(Color3 | None | StateMarker<(TweenData<Color3> & t1) | Color3> | TweenData<Color3>)? where t1 = { Mapped: <T, U>({ read Cancelled: ((Instance, string, any) -> ())?, ... 13 more ... }, (T) -> U, (({ Map: ({ read Ca
+  fields/values (67): Active, AncestryChanged, AnchorPoint, Archivable, AttributeChanged, AutoLocalize, AutomaticSize, BackgroundColor3, BackgroundTransparency, BorderColor3, BorderMode, BorderSizePixel …
+  other kinds (0): 
+### @c(gend-label-Te) L7:27 ins='Te' — 87 items, 0.02s
+  prefix-matching 'Te': Text<5>[(None | StateMarker<string> | string)?], TextColor3<5>[(Color3 | None | StateMarker<(TweenData<Color3> & t1) | Color3> | TweenData<Color3>)? where t1 = { Mapped: <T, U>({ read Cancelled: ((Instance, string, any) -> ())?, ... 13 
+  fields/values (87): Active, AncestryChanged, AnchorPoint, Archivable, AttributeChanged, AutoLocalize, AutomaticSize, BackgroundColor3, BackgroundTransparency, BorderColor3, BorderMode, BorderSizePixel …
+  other kinds (0): 
+### @c(gend-mod-Back) L9:14 ins='Back' — 47 items, 0.03s
+  prefix-matching 'Back': BackgroundColor3<3>[(FrameModifier, (((((TweenData<Color3> & t2) | Color3 | None | t1)?) -> ((TweenData<Color3> & t2) | Color3 | None | StateMarker<(TweenData<Color3> & t2) | Color3>)?) | (TweenData<Color3> & t2) | Color3 | None | Sta
+  fields/values (0): 
+  other kinds (47): Active<3>, AnchorPoint<3>, Apply<3>, Archivable<3>, As<3>, AsFrame<3>, AutoLocalize<3>, AutomaticSize<3>, BackgroundColor3<3>, BackgroundTransparency<3>, BorderColor3<3>, BorderMode<3> …
+### @h(gend-hover-Frame) L10:18 0.01s — ```luau ⏎ function Declaration.Frame(DM.FrameParam<Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | At
+### @h(gend-hover-m) L11:16 0.00s — ```luau ⏎ local m: t27 where t1 = { ⏎     Get: (self: t1) -> (t41 & { ⏎         read Cancelled: ((inst: Instance, prop: string, value: any) -> ())?, ⏎         ... 13 more ... ⏎     }) | boolean, ⏎     ... 2 more ... ⏎ } ; t1
+== sync
+# mode=sync bin=/code/.local/share/code-docker/code/extensions/johnnymorganz.luau-lsp-1.70.1-linux-x64/bin/server defs=globalTypes.PluginSecurity.d.luau flags=634 override=False
+# initialize 0.09s
+
+## gend-lsp.luau
+# first publishDiagnostics after open: 0.82s
+### diagnostics (0)
+### @c(gend-frame-Back) L6:23 ins='Back' — 0 items, 0.00s
+  prefix-matching 'Back': 
+  fields/values (0): 
+  other kinds (0): 
+### @c(gend-label-Te) L7:27 ins='Te' — 0 items, 0.00s
+  prefix-matching 'Te': 
+  fields/values (0): 
+  other kinds (0): 
+### @c(gend-mod-Back) L9:14 ins='Back' — 0 items, 0.00s
+  prefix-matching 'Back': 
+  fields/values (0): 
+  other kinds (0): 
+### @h(gend-hover-Frame) L10:18 0.00s — ```luau ⏎ *error-type* ⏎ ```
+### @h(gend-hover-m) L11:16 0.00s — ```luau ⏎ local m: *error-type* ⏎ ```
+== pin
+# mode=pin bin=/code/.local/share/mise/installs/github-johnny-morganz-luau-lsp/1.69.0/luau-lsp defs=globalTypes.d.luau flags=635 override=True
+# initialize 0.01s
+
+## gend-lsp.luau
+# first publishDiagnostics after open: 1.27s
+### diagnostics (1)
+  L12:33 [1000] TypeError: Expected this to be '(None | StateMarker<(TweenData<boolean> & t1) | boolean> | TweenData<boolean> | boolean)? where t1 = { Mapped: <T, U>({ read Cancelled: ((Instance, string, any) -> ())?, ... 13 more ... }, (T) -> U, (({ Map: ({ r
+### @c(gend-frame-Back) L6:23 ins='Back' — 67 items, 0.02s
+  prefix-matching 'Back': BackgroundColor3<5>[(Color3 | None | StateMarker<(TweenData<Color3> & t1) | Color3> | TweenData<Color3>)? where t1 = { Mapped: <T, U>({ read Cancelled: ((Instance, string, any) -> ())?, ... 13 more ... }, (T) -> U, (({ Map: ({ read Ca
+  fields/values (67): Active, AncestryChanged, AnchorPoint, Archivable, AttributeChanged, AutoLocalize, AutomaticSize, BackgroundColor3, BackgroundTransparency, BorderColor3, BorderMode, BorderSizePixel …
+  other kinds (0): 
+### @c(gend-label-Te) L7:27 ins='Te' — 87 items, 0.03s
+  prefix-matching 'Te': Text<5>[(None | StateMarker<string> | string)?], TextColor3<5>[(Color3 | None | StateMarker<(TweenData<Color3> & t1) | Color3> | TweenData<Color3>)? where t1 = { Mapped: <T, U>({ read Cancelled: ((Instance, string, any) -> ())?, ... 13 
+  fields/values (87): Active, AncestryChanged, AnchorPoint, Archivable, AttributeChanged, AutoLocalize, AutomaticSize, BackgroundColor3, BackgroundTransparency, BorderColor3, BorderMode, BorderSizePixel …
+  other kinds (0): 
+### @c(gend-mod-Back) L9:14 ins='Back' — 47 items, 0.03s
+  prefix-matching 'Back': BackgroundColor3<3>[(FrameModifier, (((((TweenData<Color3> & t1) | Color3 | None | t2)?) -> ((TweenData<Color3> & t1) | Color3 | None | StateMarker<(TweenData<Color3> & t1) | Color3>)?) | (TweenData<Color3> & t1) | Color3 | None | Sta
+  fields/values (0): 
+  other kinds (47): Active<3>, AnchorPoint<3>, Apply<3>, Archivable<3>, As<3>, AsFrame<3>, AutoLocalize<3>, AutomaticSize<3>, BackgroundColor3<3>, BackgroundTransparency<3>, BorderColor3<3>, BorderMode<3> …
+### @h(gend-hover-Frame) L10:18 0.01s — ```luau ⏎ function Declaration.Frame(DM.FrameParam<Instance | SlotMarker<Instance> | StateMarker<(AttrMarker | EffectMarker | Instance | None | ObserverMarker | SlotMarker<Instance> | TagMarker)?> | None | TagMarker | At
+### @h(gend-hover-m) L11:16 0.00s — ```luau ⏎ local m: t25 where t1 = { ⏎     Subscribe: (self: t1) -> t1, ⏎     read Subscribed: boolean, ⏎     ... 4 more ... ⏎ } ; t10 = t9 & { ⏎     Apply: ((self: t9, factory: { ⏎         read __apply: any ⏎     }) -> any) 

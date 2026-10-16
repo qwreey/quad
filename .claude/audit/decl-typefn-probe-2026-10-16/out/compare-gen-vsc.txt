@@ -1,0 +1,4 @@
+Camera: gen-only [] tf-only ['OrthographicMode', 'OrthographicSize', 'ProjectionType', 'ViewStretch']
+Folder: gen-only [] tf-only ['IconTint']
+UIDragDetector: gen-only [] tf-only ['Selectable']
+mode=vsc: 28/31 classes identical key sets (gen keys 1265, tf keys 1271)
