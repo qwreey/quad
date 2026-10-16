@@ -1,6 +1,6 @@
 # round8 실기기 실측 — Q41·Q42·Q47 + 엔진 에러 문구 (2026-09-08 밤)
 
-**무엇**: round8 감사(`qa-request/post-implementation-review-round8.md`)가 "실기기 필요"로 남긴 셋과 CLI mock이 못 보는 엔진 문구를
+**무엇**: round8 감사(`archive/post-implementation-review/post-implementation-review-round8.md`)가 "실기기 필요"로 남긴 셋과 CLI mock이 못 보는 엔진 문구를
 `Place1.rbxl`(Edit 모드, MCP `execute_luau`, rojo 라이브 싱크 — 사용자가 172.17.7.3:34872로 Connect)에서 돌린 결과. 동기화 확인 마커는
 `s:Add(s)`가 `H-500` 게이트 메시지로 거부되는 것(오늘 커밋). 스크립트 원문은 세션 `session/2026-09-08-03-cumulative-audit.md` 8절.
 

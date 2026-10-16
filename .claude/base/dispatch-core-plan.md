@@ -815,7 +815,7 @@ end
 nop/leaf 핸들러(NilHandler·`Processed*`·Tag/Attr/Effect/Observer/Ref/Slot leaf, quad-roblox
 `OnChange`·`InstanceChild` 해제 팔)는 전부 그걸 부른다. 위 의사코드의 두 줄은 그 본문이고
 계약(순서·`anchor` 인자)은 그대로 — 손 복제가 패키지 경계 너머에도 남아 있던 것을 접은
-것뿐이다(원장 `qa-request/post-implementation-review-round1.md` §15).
+것뿐이다(원장 `archive/post-implementation-review/post-implementation-review-round1.md` §15).
 
 - **매치 범위는 `k`가 숫자인 자리로 한정** — 해시 자리의 `nil`은 그 키를
   원래 담당하던 핸들러(프로퍼티/이벤트)의 몫이다(`None` 재귀가 도착하는

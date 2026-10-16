@@ -296,7 +296,7 @@ UseProvider 버전 게이트·Slot 3단 중첩·Ref `:Wait`·retract 순서·Twe
 **사용자 의견 여덟(2026-09-07 낮)** → `archive/surveys/2026-09-07-source-layout-plan.md`(항목별 확인·이득·비용·권고) + `question.md` 2절.
 다음 순회는 §13부터, `H-417`부터.
 
-## §13 외부 리뷰 검증 — Gemini 사후 구현 종합 코드 리뷰 (`qa-request/post-implementation-review-round2.md`, 사용자 반입 2026-09-07)
+## §13 외부 리뷰 검증 — Gemini 사후 구현 종합 코드 리뷰 (`archive/post-implementation-review/post-implementation-review-round2.md`, 사용자 반입 2026-09-07)
 
 사용자: *"gemini 에이전트가 확인한 검사가 추가되었어. 진짜 실존 문제인지 확인하고 가져올래?"* — G-01~G-09 아홉과 건전성
 증명 S-01~S-06을 메인이 mock 실재현·코드 대조로 판정. **결함 셋 실존(①, 반영)**, 분석·확인 여섯은 기록만.

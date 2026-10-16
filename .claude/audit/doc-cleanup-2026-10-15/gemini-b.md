@@ -69,7 +69,7 @@
     ```
 - **근거 2 (뒤집은 결정)**:
   - 파일: `.claude/project-context.md:15-18` (2026-09-07)
-  - 인용: `마일스톤별 규약·발견 원장(round1~21)과 옛 ROADMAP.md 본문...은 2026-09-07 사용자 결정으로 .claude/archive/v2-initial-implementation/에 이름 그대로 이동했다... 구현 뒤 코드 리뷰 원장은 .claude/qa-request/post-implementation-review-round1.md...`
+  - 인용: `마일스톤별 규약·발견 원장(round1~21)과 옛 ROADMAP.md 본문...은 2026-09-07 사용자 결정으로 .claude/archive/v2-initial-implementation/에 이름 그대로 이동했다... 구현 뒤 코드 리뷰 원장은 .claude/archive/post-implementation-review/post-implementation-review-round1.md...`
   - 파일: `.claude/qa-request/README.md:5` (라운드 번호 1부터 새로 세며 `post-implementation-review-round*.md`로 전면 재편됨)
 - **문제점**:
   - `project-context.md`의 55-78행에서는 `research/`, `luau-test/`, `audit/` 등의 세부 파일 목록 나열이 stale해지는 것을 방지하기 위해 각 폴더의 `README.md`로 책임을 위임해 두었습니다. 그러나 정작 85-89행의 `qa-request/` 항목에서는 이미 archive로 이전된 옛 2026-08-18 시점의 `pre-implementation-qa-round1~3.md`를 열거하고 있습니다. 실제 현재 `.claude/qa-request/` 폴더에는 `pre-implementation-*` 파일이 0개이며 전부 `post-implementation-review-round*.md`입니다.

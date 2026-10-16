@@ -894,7 +894,7 @@ Field<UDim>`로 쪼개면 무주석 람다가 number 팔로 문맥 타이핑돼 
 — 생성자 `<T>(initial: { SlotElement<T> }?)`는 `T`가 `T | State<T> | Slot<T>` 안쪽이라
 인자에서 추론되지 않고, `nil :: { SlotElement<Instance> }?`·`{} :: {…}`·`local s:
 Slot<Instance> = q.Slot()`는 전부 "too complex" 또는 불일치(배열 타입 불변). 근거·
-측정은 `qa-request/post-implementation-review-round1.md`.
+측정은 `archive/post-implementation-review/post-implementation-review-round1.md`.
 
 ## 9. 미해결 / 추적 중
 
@@ -942,7 +942,7 @@ Slot<Instance> = q.Slot()`는 전부 "too complex" 또는 불일치(배열 타�
 `Quad` 표면 아래"로 순수 재배치됐다(10-3).
 
 **⭐ [2026-09-07 적용 — 사용자 결정 *"공변성/불변성 문제를 해결하기 위한 작업을 시작해볼래?"*, 원장
-`qa-request/post-implementation-review-round1.md` §16]** 이 절의 실측이 실물이 됐다. **승인의 범위(round3 Q24)**: 사용자가
+`archive/post-implementation-review/post-implementation-review-round1.md` §16]** 이 절의 실측이 실물이 됐다. **승인의 범위(round3 Q24)**: 사용자가
 승인한 것은 **방향**(입력 자리 = 마커 + T)과 **순수 팬텀 허용**이고, 별칭 이름(`SlotItem`·`FieldOut`)·`NewChild` 팔 모양·
 `LuauSolverConstraintLimit` 제거는 **메인 제안**이다 — 아래 "[2026-09-07 마커 — 사용자 결정]" 배너들도 같은 구분으로 읽을 것. **규칙**: 값을 *받는*
 자리(children 유니언 `NewChild`·`<Class>Elem`, 생성 D 슬롯 `PVn`·이벤트 슬롯, Modifier setter `FieldV<T>`,

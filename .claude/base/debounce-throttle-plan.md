@@ -14,7 +14,7 @@
 > 진행 중인 창을 건드리지 않는 진짜 no-op. (5) `Blocker:OffWithoutEmit()`은 플래그 뒤집기가 아니라 등록 핸들로 `emit(false)`를
 > 돌려 **보류분을 버린다** — 그래서 타이머 경로는 `emit()`으로 먼저 flush하고 그 다음에 창을 정리한다(빈 집합에서만 Off). 이 순서가
 > gate-plan 5번의 "두 경로" 표 그대로다. 아래 7절 의사코드는 **참고용으로만 남긴다(코드가 정본)**. 리뷰·감사(round9,
-> `qa-request/post-implementation-review-round9.md`) 반영 `H-509`~`H-516`; (h)~(j)는 같은 날 사용자 회신으로 닫힘 — (h) flush 중
+> `archive/post-implementation-review/post-implementation-review-round9.md`) 반영 `H-509`~`H-516`; (h)~(j)는 같은 날 사용자 회신으로 닫힘 — (h) flush 중
 > `Cancel`은 UB(*"flush 중 cancel 자체가 의미가 안 맞아서"*), (i) 재진입 leading 이중 통과는 그대로(스펙 10절이 계약), (j) 같은
 > `Handle` Ref로 두 번 `:Apply`는 **에러**(`Debounce.luau` `__apply`, 스펙 7c).
 

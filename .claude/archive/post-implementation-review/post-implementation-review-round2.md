@@ -7,7 +7,7 @@
 > **검토 대상 코퍼스**: `quad-base`, `quad-roblox`, `quad-types`, `quad-error`, `scripts/`  
 > **작성 기준 및 원칙**:
 > 1. 엔트리 문서 `CLAUDE.md`, `.claude/conventions.md`, `.claude/project-context.md`, `.claude/todos.md` 및 세부 설계 문서를 준수한다.
-> 2. 선행 리뷰 원장(`.claude/qa-request/post-implementation-review-round1.md`)에서 이미 보고되었거나, 의도적으로 기각/확인/UB로 확정된 사항은 **새로운 결함으로 중복 보고하지 않는다**.
+> 2. 선행 리뷰 원장(`.claude/archive/post-implementation-review/post-implementation-review-round1.md`)에서 이미 보고되었거나, 의도적으로 기각/확인/UB로 확정된 사항은 **새로운 결함으로 중복 보고하지 않는다**.
 > 3. 프레임워크의 기존 설계 철학("하나의 무언가가 두 일을 하지 않는다", "드문 오용에 복잡한 구조를 쓰지 않는다", "핫패스에 불필요한 비용을 얹지 않는다")을 존중하며 실질적 런타임/계약 결함에 집중한다.
 > 4. 의혹이 제기될 수 있으나 코드 분석 결과 건전성(Soundness)이 입증된 핵심 불변식은 **False Positive 반증**으로 명확히 기록하여 향후 불필요한 재의혹을 방지한다.
 

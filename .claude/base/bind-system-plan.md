@@ -238,7 +238,7 @@ D.Frame = New<<Frame>> "Frame" :: (({ ...타입명시 }) -> Frame)
   유니언**이고, **이후 마일스톤이 자기 핸들러가 도착할 때 유니언을
   확장한다**(확장 규칙 — M6 Slot, M8 `Ref`/`PreRef`/`PostRef`; **[2026-09-07 M6 확장
   실행 — `H-351`, 핸드오버 리뷰]** `Slot<Instance>` 합류(fork 슬라이스가 이 팔을
-  실행하지 않아 strict에서 children Slot이 막혀 있었다 — `qa-request/post-implementation-review-round1.md`;
+  실행하지 않아 strict에서 children Slot이 막혀 있었다 — `archive/post-implementation-review/post-implementation-review-round1.md`;
   `State<Slot<…>>` 팔은 **[2026-09-07 마커 — 사용자 결정]** 마커로 닫힘 — `StateMarker<(Instance | SlotMarker<Instance> | Tag | Attr | None)?>` 한 팔이 `State<Frame>`·`State<Instance?>`·`State<Slot<Frame>>`·`State<Tag>`·`State<Attr>`를 전부 받는다(`typing-limits.md` 8.11, 원장 §16); **[2026-09-07 Q2 (a) 사용자 확정]** `Observer`/`EffectHandle` 팔 합류, `H-355`); **[2026-09-03
   M10 확장 실행]** `Tag | State<Tag> | Attr | State<Attr>` 합류 —
   타입드 스칼라 슈가는 `Attr`를 돌려주므로 같은 멤버, `H10-15`. `OnChange`

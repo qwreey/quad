@@ -2375,7 +2375,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   §4 문항 둘(경계 필드 이름 Q2, `H-340` 커스텀 필드 제거 연산 `Without` 권고). **열린 마일스톤 없음.** **[12절]** 아침 회신 — `H-329` (a) 구현, Q2·`H-340` 보류(flatten 슈거), `H-343` `Override`
   문자열 싱글톤(사용자 결정 — `Tween` 순수 함수, `H-323`/`H-324` 소멸), 스파이크 `11` 폐기, Studio 재연결. **[13절, 2026-09-07]** 핸드오버 — 감사 A·B 반영(`ba222e9`), 전체 코드 리뷰
   여섯 동시(R1~R3 opus + `/code-review high`) → `/compact` 중 전부 중단 → 트랜스크립트 추출(sonnet) +
-  재실행. 원장 `qa-request/post-implementation-review-round1.md` `H-344`~`H-356`: 반영 10(Tag `Removed`
+  재실행. 원장 `archive/post-implementation-review/post-implementation-review-round1.md` `H-344`~`H-356`: 반영 10(Tag `Removed`
   검증·Attribute plain 가드·`BRAND_PROBES`·Store 키·에러 깊이 둘·`getOffsetAt` 베이스 재독·`NewChild`
   `Slot<Instance>`·유니언 PV 멤버별 팔), 기각(Effect 비함수 cleanup·Splice 물리 순서·Attribute "누수"는
   Luau GC 페이싱), 사용자 문항 Q1~Q3; `/code-review high` 재실행분 `H-357`~`H-361`(Effect UB 확장·
@@ -2447,7 +2447,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   summary)로 병렬 감사 — 확실 13 + 판단 3 + 의심 1 반영(3라운드 재검증 H가 개수 산술 하나를 잡음). 주 발견은 `66281ab` 일괄 치환이 외부 이름(Fusion 경로·Roblox 엔진 개념)·
   옛 이름 표지("구 `Attribute<T>`")·**사용자 인용문**까지 덮은 것 — 치환 전 원문으로 복원, 교훈은 세션 파일 §6.
 - **[2026-09-08-02] 사용자 반입 RFC 다섯(무시 파일) 판정·실측·반영**(`session/2026-09-08-02-rfc-triage.md`,
-  원장 `qa-request/post-implementation-review-round7.md`): 적용 `H-479`~`H-483` — Clear/ExtractAll O(N²)(제거마다 recompute, 실측
+  원장 `archive/post-implementation-review/post-implementation-review-round7.md`): 적용 `H-479`~`H-483` — Clear/ExtractAll O(N²)(제거마다 recompute, 실측
   1000개 130ms → 1~3ms; ExtractAll은 `rawSplice` 직접 — `H-385` 위임 blame) · List `prevKeys` 스왑(clone 제거) · `IndexOf` 역맵
   O(1)(State 요소는 언랩 폴백) · Modifier setter 클로저 캐시 · recompute abs 온디맨드(메인 기각 쪽 → 사용자 *"20줄 이내 패치라
   기각할 이유는 없어보이는데?"* → 적용, 0.42 → 0.11ms, `spec.lengthoffset` 6절 단언 교체) · `spec.slot` 26절 신설(Clear/ExtractAll에
@@ -2463,7 +2463,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   없앴다 — 던지면 새 키 영구 고아") 계약과 충돌 → 증분 기록 되돌리고 clone만 제거; 열셋→열둘, quad-types 과장 주석, 동률 경고
   버킷 인지 + 게이트 순서, spec 26절 역맵 직접 단언, Clear 주석 수치. 교훈: RFC의 등가 증명은 에러 경로까지.
 - **[2026-09-08-03] 누적 변경 감사 — 감사자 다섯 병렬(opus 넷 + sonnet 감사자), 메인 검증**(`session/2026-09-08-03-cumulative-audit.md`,
-  원장 `qa-request/post-implementation-review-round8.md`): 동작 회귀 0(53커밋 `.luau` 추가 2160줄 대조), archive 옛 사용자 결정
+  원장 `archive/post-implementation-review/post-implementation-review-round8.md`): 동작 회귀 0(53커밋 `.luau` 추가 2160줄 대조), archive 옛 사용자 결정
   역전 0. 반영 `H-486`~`H-491` — `H-480` 원장 논거 정정(clone은 순회 중 **삽입** UB를 막고 있었다, 재진입은 `slot-plan` UB 범주라
   복원 안 함), Q6 폴백 철회의 `claim-plan.md` 누락, Q14 `releaseOwner`를 부정하던 `slot-plan` 의사코드 둘, README 분리 뒤 옛
   표 포인터 일곱(외부 모델 진입점 포함), 주석 잔재 넷, `spec.lengthoffset` 14절(None 분기 되감기 — 커버리지 0이었음).
@@ -2494,7 +2494,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   `task.cancel`은 dead thread에 무해. 실측 `audit/sugar-studio-2026-09-08.md`(Throttle 0.00/0.51/1.01/1.79 — 정본 1-1절 일치).
   `Operator`는 이름·범위 미정이라 뺌. 사용자 몫 `question.md` 0절 (a)~(g)(마커 이름·핸들 메소드형·타이머 둘·Flush 무조건·Fallback
   부분 트리 갈래·Operator·스텝 op 예약). 시간·스텝 op 자리에 대한 메인 의견(base 주입 경로, spring은 별도 패키지)은 세션 파일 배경.
-  **round9**(`qa-request/post-implementation-review-round9.md`): opus 리뷰 HIGH 0 — `H-509` `openWindow` 읽기→상태 순서(`H-392`
+  **round9**(`archive/post-implementation-review/post-implementation-review-round9.md`): opus 리뷰 HIGH 0 — `H-509` `openWindow` 읽기→상태 순서(`H-392`
   선례 셋째)·`H-510`~`H-516` 반영, 감사자 다섯(배너가 부정하는 "맨 뒤" 문장), 문항 (h)~(j). test.sh exit 0(스펙 54), doc-check ERROR 0.
   **같은 밤 회신**: (a)~(j) 전부 닫힘((e) UB — 블래스트 범위 억제 목적·고아 미처리, (h) UB, (j) 에러 반영). 둘째 단위: `Operator`(이름·범위
   확정 — And/Or·비교 제외, `IfElse`는 문항), `Context`/`Provider`(`base/context-plan.md` — 암묵 맥락 기각과의 경계는 사용자 원문),
@@ -2517,7 +2517,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
   문제) + 8.22(프라이밍 규칙), `type-version-check` `_Prime`. **같은 날 후속(§5)**: 시한 있는 결정 문항 일곱 대화형 처리 — HUMAN_TODO F 잠정 10월,
   docs-review 2-6 여덟 반영, `question.md` §1 용어 여섯 전부 닫힘(`canExecute`는 sonnet 두 시각 뒤 유지), **Slot이 미claim 요소를 거부하는
   BREAKING 변경(계약 op `isClaimed`, 자동 claim은 마법 — 사용자)**, 클래스별 타입 루트 재수출(`<Class>Modifier`/`Into<Class>`/`<Class>Elem`, HUMAN_TODO D 해소). **밤(§6·§7)**: 체크포인트 code-review 10건 반영 +
-  정적 자식 자리 `isClaimed` 대칭 게이트(사용자 "권고대로") → 여섯 갈래 결함 탐사 **round10**(`qa-request/post-implementation-review-round10.md`):
+  정적 자식 자리 `isClaimed` 대칭 게이트(사용자 "권고대로") → 여섯 갈래 결함 탐사 **round10**(`archive/post-implementation-review/post-implementation-review-round10.md`):
   `H-517`~`H-530` 반영(HIGH `H-517` State 요소 검사가 삽입 뒤), 사용자 문항 `Q48`~`Q54`(HIGH Q48 정적 자식 소유권 부기 부재).
 
 - **[2026-09-18-01]** `session/2026-09-18-01-round11-batch-reply.md` — round11 원장 §4 `Q59`~`Q69` 열하나 대화형 회신 전부 닫힘. 코드: Q59 **생명주기 넷(`bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`)은 quad-base가 구현, 백엔드는 hold op 넷 `holdLifetime`/`releaseLifetime`/`isHeld`/`isHeldBy`만 주입**(사용자: base 경계와 백엔드 경계가 섞여 두 백엔드가 40줄을 복제 — 이름은 sonnet 둘 독립 의견 일치, attach/detach는 `q.Detach`와 반대라 기각; 프로바이더 계약 BREAKING) / Q61 `OwnsElements=false` Slot의 파괴 경로(dispose·소유 부모 Remove)만 원소 release+비움, Extract는 쥔 채 / Q63 해제 진입점은 `_running` 게이트 없음(던져 죽은 핸들 영구 킵 누수) + Q68 fn 반환 시 실행 불가면 cleanup 즉시 소진 / Q64 **Claim 1패스 `isClaimed` 게이트 + mock "claim됐다" 플래그 통일(`Instance.foreign` 신설, 프록시 `__tostring`)** — 메인 권고 (a)를 사용자가 뒤집고 blast 실측(갈라진 스펙 세 줄) / Q65 Tween 3-상태 기록은 (inst, k)에 인스턴스 수명 동안, 철거는 진행 중 트윈만 Cancel→`true`(사용자: "초기"의 단위는 프로퍼티 슬롯) / Q66 `OnChange("Parent")`·`AncestryChanged.parent` `Instance?`(타입 BREAKING, 생성기 닫힌 목록 + 표면 JSON 패치). 문서: Q60 캐비엇(+"선행 검증 계약"은 사용자 원칙이 아니라 손 트레이싱 6라운드 발견이었음을 기록) / Q62 UB(Q42 재확인) / Q67 props 재사용 UB 승격 / Q69 캐비엇. 교훈: 문항 갈래가 증상 층위·미실측 비용 추정에 갇힌 채 띄워진 것 넷.
@@ -2526,7 +2526,7 @@ Q4(`EffectHandle` 네 진입점 의사코드 — Observer 것 재사용, `Unsubs
 
 - **[2026-09-21-02]** `session/2026-09-21-02-docs-review-batch.md` — 문서 검토 합본 대화형 반영 1차: 1-1 용어 치환+각주 다이얼로그(popover 스크립트), 1-2 11·13장 코드 스냅샷, 1-6 09장 §4, 3-7 Agents 트랙, **1-5 Tween 콜백 `Started`/`Completed`/`Cancelled`**(엔진 실측 `audit/tween-completed-2026-09-21/` — 탐사자의 ephemeron 판정은 코드 무효라 메인 재실측: 약한 키는 ephemeron 아님; 이름은 sonnet 외부자·내부자 판정 뒤 사용자 권고 1 동의), 1-3 **15장 `q.Store` 독립 장 + 15~19 → 16~20 재번호**. 1-4부터 계속.
 
-- **[2026-09-21-03]** `session/2026-09-21-03-round12-gemini-judgment.md` — Gemini 3.1 Pro 여러 에이전트 합본(`qa-request/post-implementation-review-round12.md`) 판정: ① `H-589`(콜백 안 같은 자리 재진입은 Q5 (a) UB — 가드 대신 문서화, 잇는 자리는 `Completed`)·`H-590`(yield 중 파괴 창의 `dying = false`는 플래그 정의대로)·`H-591`(스킬 문서 현행화)·`H-592`(GS 18·19 장 번호)·`H-593`(tween-plan 철거 문장 정정 — 파괴 경로는 retractor를 안 돌린다), ② `Q71`(파괴 뒤 `Completed` 발화)·`Q72`(Unsubscribe가 소비한 cleanup 안 재해제) — **같은 날 저녁 닫힘**: Q71은 사용자 넷째 안 `H-594`(되돌리지 않고 `isClaimed`로 무시), Q72는 (a) core/05 한 줄, ③ G-27·S-17~S-25 확인. 부수: 컴팩트 전 `quad-site-tester`는 정상 종료(하네스 목록 잔상).
+- **[2026-09-21-03]** `session/2026-09-21-03-round12-gemini-judgment.md` — Gemini 3.1 Pro 여러 에이전트 합본(`archive/post-implementation-review/post-implementation-review-round12.md`) 판정: ① `H-589`(콜백 안 같은 자리 재진입은 Q5 (a) UB — 가드 대신 문서화, 잇는 자리는 `Completed`)·`H-590`(yield 중 파괴 창의 `dying = false`는 플래그 정의대로)·`H-591`(스킬 문서 현행화)·`H-592`(GS 18·19 장 번호)·`H-593`(tween-plan 철거 문장 정정 — 파괴 경로는 retractor를 안 돌린다), ② `Q71`(파괴 뒤 `Completed` 발화)·`Q72`(Unsubscribe가 소비한 cleanup 안 재해제) — **같은 날 저녁 닫힘**: Q71은 사용자 넷째 안 `H-594`(되돌리지 않고 `isClaimed`로 무시), Q72는 (a) core/05 한 줄, ③ G-27·S-17~S-25 확인. 부수: 컴팩트 전 `quad-site-tester`는 정상 종료(하네스 목록 잔상).
 
 - **[2026-09-21-03 후속]** 같은 세션 파일 — Q71 GC 후속(mock 프로브 + sonnet Studio 무한 트윈 실측: 엔진은 Lua 핸들을 안 붙잡고 시체 위 무한 트윈은 취소 불가로 영원) → docs-review 1-4를 사용자 지시로 `archive/surveys/2026-09-21-upward-flow-plan.md`(되돌아오는 흐름 — `OnChange`·`Bind` 검토, 문서 위치, 루트 `-ignoreme` 초안 여덟 흡수: 원문·팩트체크 `archive/surveys/2026-09-17-root-drafts/`)로 대체. 사용자 몫: 그 7절 문항 넷(다섯 중 실측 문항은 2026-09-10 실측이 이미 있어 닫음 — 감사자 발견).
 

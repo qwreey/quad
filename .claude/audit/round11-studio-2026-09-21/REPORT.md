@@ -1,6 +1,6 @@
 # round11 실측 라운드 — Studio 샌드박스(2026-09-21~)
 
-원장 `.claude/qa-request/post-implementation-review-round11.md`의 실기기 실측 항목(HUMAN_TODO 10~12, Q62 네 입구, B″-8, tweenSlots GC, 물리 순서)을 **작게 하나씩** sonnet 서브에이전트로 잰다. 조건(사용자 확인 2026-09-18): 샌드박스 실험 플레이스 `Place1.rbxl`, 스크래치 인스턴스만 만들고 전부 파괴, 기존 트리는 읽기도 고치기도 안 함. 사용자 지시(2026-09-21): **코드는 바꾸지 않고 사용자 의견을 기록해 나간다** — 반영은 뒤에 묶어서.
+원장 `.claude/archive/post-implementation-review/post-implementation-review-round11.md`의 실기기 실측 항목(HUMAN_TODO 10~12, Q62 네 입구, B″-8, tweenSlots GC, 물리 순서)을 **작게 하나씩** sonnet 서브에이전트로 잰다. 조건(사용자 확인 2026-09-18): 샌드박스 실험 플레이스 `Place1.rbxl`, 스크래치 인스턴스만 만들고 전부 파괴, 기존 트리는 읽기도 고치기도 안 함. 사용자 지시(2026-09-21): **코드는 바꾸지 않고 사용자 의견을 기록해 나간다** — 반영은 뒤에 묶어서.
 
 ## 1. `GetPropertyChangedSignal("className")` — 소문자 Deprecated 별칭 (HUMAN_TODO 10, 탐사 J′)
 

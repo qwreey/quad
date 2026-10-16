@@ -8,7 +8,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 > 신설 이후의 히스토리 blockquote 전부)은 **2026-09-07 사용자 결정으로 원문 그대로
 > `.claude/archive/v2-initial-implementation/roadmap.md`로 이동**했다 — 마일스톤별 규약·발견
 > 원장(`mN-implementation-roundNN(-brief).md`, pre-implementation 라운드 1~10)도 같은 폴더.
-> 구현 뒤 코드 리뷰(순회) 원장은 `.claude/qa-request/post-implementation-review-round1.md`.
+> 구현 뒤 코드 리뷰(순회) 원장은 `.claude/archive/post-implementation-review/post-implementation-review-round1.md`.
 > 남은 것은 아래 "특정 마일스톤에 안 묶이고 병행 가능"·"백로그" 절뿐(착수 순서는 사용자와).
 
 ## 완료된 마일스톤 (요약 표 — 본문은 archive)
@@ -41,7 +41,7 @@ quad-v2 구현 단계 실행 계획. 설계 근거/아키텍처 자체는 여기
 - [ ] **[2026-09-21 신설 — 외부 제안 흡수, 착수 안 함] 퇴장 애니메이션(`PresenceList`류 유저랜드 슈거).** 요소가 데이터에서 빠져도 트윈이 끝날 때까지 트리에 남기는 것 — `rawDetach`는 `nativeExtract`로 `Parent = nil`을 즉시 하므로 못 쓴다(코드 인용 맞음). 제안서 방향 A(원본 소스를 감싸 `isExiting` 마킹 → 트윈 뒤 `done()` → 배열에서 제거)가 코어 불변식을 안 건드려 권고, 방향 B(`:List` 코어에 지연 철거 훅)는 부기 복잡도 때문에 비권고. 원문 `archive/surveys/2026-09-17-root-drafts/proposal-two-way-binding-and-motion.md` Part 2, 판정 `archive/surveys/2026-09-21-upward-flow-plan.md` 6절.
 - [ ] **[2026-09-07 신설, 사용자 결정] 최적화 후보 목록 — 관측된 병목이 없어 보류한 것을 쌓아두는 자리**(사용자:
       *"당장은 더 치명적인 문제들이 있는지 확인해보자. 물론 보는 김에 최적화 할 대상을 쌓아둬도 좋아"*, 원장
-      `qa-request/post-implementation-review-round1.md` §15). 실측된 병목이 생기면 그때 착수, 그 전엔 여기만 늘린다:
+      `archive/post-implementation-review/post-implementation-review-round1.md` §15). 실측된 병목이 생기면 그때 착수, 그 전엔 여기만 늘린다:
       - **[2026-09-17 round11 L′ 실측]** 마운트된 Slot의 단일 CRUD가 전부 O(N): `Bookkeeping.recompute`가 `offsetSetUpTo` 커서를 재개 지점으로 쓰지 않고 `i = 1`부터 훑는다(10,000개 `Remove`/`Move`/`Swap` 1.4ms/회, 자리당 ~120ns, `prefix` 테이블 가비지 16B/자리) → 한 항목씩 붙이는 목록은 O(N²)(2,000줄 0.6초; `Splice(i, 0, 하나)` 반복도 같음), `Move`/`Swap` 루프는 배치 경로 없음. 처방 후보: 커서부터 재개(두 필드 설계의 원래 의미) + `prefix` 재사용. `:List` 사이클은 항상 O(전체 항목)(16,000행 1행 추가 12.9ms — 계약 하한). Modifier 클로저 캐시 계산된 이름·실패 캐스트 무한 성장(20,000개 +4~6MB).
       - `Slot:List` 재정렬 O(N²)(N=1000 역순 실측 82ms, 100은 1ms — round7 Q38)·~~reconcile마다 `table.clone(prevKeys)`~~(**[2026-09-08 `H-480`]** 제거됨)·`prepareElements` 전체
         재스캔(Q3 ①; **[2026-09-08 `H-506`]** 생성자 배치는 닫음 — 단일 `Add` N회 반복만 잔존). 아이디어(사용자): `rawOrder(newOrder)`식 일괄 재정렬 — 단 *"reconcile 자체가 재정렬 된건지 그런

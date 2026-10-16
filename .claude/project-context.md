@@ -14,7 +14,7 @@ Roblox 엔진에서 동작하는 DOMless UI 렌더러 **quad**를 처음부터 �
 마일스톤별 규약·발견 원장(round1~21)과 옛 `ROADMAP.md` 본문(M0~M11 체크박스·배너 원문)은
 2026-09-07 사용자 결정으로 `.claude/archive/v2-initial-implementation/`에 이름 그대로
 이동했다(히스토리 문서 — 절 인용·시한부 검사 면제). 구현 뒤 코드 리뷰 원장은
-`.claude/qa-request/post-implementation-review-round1.md`(옛 이름 handover-review-2026-09-07 →
+`.claude/archive/post-implementation-review/post-implementation-review-round1.md`(**[2026-10-16]** 회신이 끝난 round1~12는 `archive/post-implementation-review/`로 옮겨졌고 최근 원장은 `qa-request/`에 있다; 옛 이름 handover-review-2026-09-07 →
 post-implementation-review; 2026-09-07 사용자 결정으로 라운드 번호를 1부터 새로 세고 계속 늘어난다 —
 라운드 파일마다 자기 §4, 최신 목록은 `.claude/qa-request/README.md`)이고, 진행 상태는 `.claude/todos.md` 00번 + 루트
 `ROADMAP.md`(완료 표·병행·백로그)가 소스. **⚠️ [2026-08-24] M2와 M3의 번호·순서가
