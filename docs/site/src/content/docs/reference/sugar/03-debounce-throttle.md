@@ -32,6 +32,8 @@ type State<T> = q.State<T>
 - **`Debounce`**: 상류 신호가 올 때마다 창을 다시 엽니다 — 신호가 멎은 뒤에 통과.
 - **`Throttle`**: 창 길이가 고정입니다 — 신호가 창을 리셋하지 못합니다.
 - 구현은 하나이고 이 리셋 비트 하나만 다릅니다.
+- **같은 시각에 신호가 둘 오면** `Throttle`(`Leading = true`)은 첫 신호를 바로 통과시키고 둘째는 보류했다가 창이 끝날 때 통과시킵니다([2026-09-27 mock 실측]).
+- **창 끝과 같은 시각에 온 신호의 순서는 엔진 스케줄러에 달려 있습니다 — 계약이 아닙니다.** 창 끝 타이머가 먼저 도는지 신호가 먼저 도는지에 기대지 마세요.
 
 **게이트는 통지만 유보합니다.** 창이 열려 있는 동안에도 `:Get()`은 언제나 상류의 최신 값을 돌려줍니다 — 값을 가리는 게 아니라 하류 알림을 미루는 것입니다.
 
@@ -164,7 +166,7 @@ Quad0044 Debounce: Handle is already filled - one Handle Ref per :Apply (make a 
 
 보류분을 **버리고** idle로 돌아갑니다. 전파가 일어나지 않습니다. 상류의 값 자체는 그대로이므로 `:Get()`은 여전히 최신 값입니다 — 버려지는 것은 통지입니다.
 
-**flush 도중에 부르지 마세요.** 이 게이트가 값을 내보내는 도중(창 끝 통과·`MaxTime`·`handle:Flush()`, 그리고 leading 통과 — 상류 `:Set` 줄 안에서 바로 내보내는 것) 그 통지를 받은 하류 콜백 안에서 **같은 게이트**의 `Cancel`이나 `Flush`를 부르는 것은 **정의되지 않은 동작**입니다(팩토리 브로드캐스트로 부르는 것도 같습니다). 관측(계약 아님): 지금은 `Cancel`이 끝난 뒤 내보내던 쪽이 창을 다시 열어, 다음 leading 신호가 `Time` 하나를 더 기다렸다가 저절로 돌아옵니다. 취소는 그 콜백 밖에서 하세요. [`q.debug`](/reference/core/01-quad-module/#qdebug)를 켜면 이런 `Cancel`과 `Flush`가 한 줄로 드러납니다(동작은 그대로) — `Debounce: handle:Cancel() was called from a callback this gate's own flush reached (undefined - the window may reopen); call it outside that callback`(`Flush`면 `handle:Flush()`; **[2026-10-06 기준, 다음 릴리즈부터]** `Flush`와 leading 통과도 알립니다).
+**flush 도중에 부르지 마세요.** 이 게이트가 값을 내보내는 도중(창 끝 통과·`MaxTime`·`handle:Flush()`, 그리고 leading 통과 — 상류 `:Set` 줄 안에서 바로 내보내는 것) 그 통지를 받은 하류 콜백 안에서 **같은 게이트**의 `Cancel`이나 `Flush`를 부르는 것은 **정의되지 않은 동작**입니다(팩토리 브로드캐스트로 부르는 것도 같습니다). 관측(계약 아님): 지금은 `Cancel`이 끝난 뒤 내보내던 쪽이 창을 다시 열어, 다음 leading 신호가 `Time` 하나를 더 기다렸다가 저절로 돌아옵니다. 취소는 그 콜백 밖에서 하세요. [`q.debug`](/reference/core/01-quad-module/#qdebug)를 켜면 이런 `Cancel`과 `Flush`가 한 줄로 드러납니다(동작은 그대로) — `Debounce: handle:Cancel() was called from a callback this gate's own flush reached (undefined - the window may reopen); call it outside that callback`(`Flush`면 `handle:Flush()`; **[3.3.0부터]** `Flush`와 leading 통과도 알립니다).
 
 ---
 

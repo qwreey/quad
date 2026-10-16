@@ -215,9 +215,9 @@ end, small, big)
 - **증상**: 어느 쪽을 먼저 썼든, 나중에 쓴 쪽이 즉시 에러로 막힙니다.
   수동 CRUD(`:Add`/`:Remove`/`:Move`/`:Swap`/`:Extract`/`:Replace`/`:Splice`/
   `:Clear`/`:ExtractAll`) 뒤에 `:List`나 `:Single`을 걸면
-  `Quad0149 Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)`,
+  `Quad0149 Slot: cannot install :List/:Single/:Lazy on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)`,
   반대로 `:List`/`:Single`을 먼저 건 뒤에 수동 CRUD를 부르면
-  `Quad0166 Slot: manual CRUD is not allowed after :List/:Single`이 그 CRUD를
+  `Quad0166 Slot: manual CRUD is not allowed after :List/:Single/:Lazy`이 그 CRUD를
   부른 줄에서 납니다.
 - **원인**: 한 Slot은 태어날 때부터 **수동 모드**이거나 `:List`/`:Single`이
   설치된 **리스트 모드**이고, 이 둘은 같이 못 씁니다 — `Slot{ ... }`로
@@ -256,6 +256,8 @@ s2:List(items, function(ctx) return D.TextLabel { Text = ctx.Item :: string } en
 | **인스턴스가 아직 살아 있나** | `q.Backend.isClaimed(inst)` — quad가 만든(또는 `Claim`한) 인스턴스가 지금 quad 손에서 살아 있으면 참, quad가 죽였거나 처음부터 quad 것이 아니면 거짓. `Destroying` 처리 순서에 기대지 말 것(Deferred 시그널에서는 자손의 파괴 처리가 부모의 것보다 먼저 돌 수 있다) — [레퍼런스](/reference/core/10-lifetime-sentinels/#qbackendisclaimedinst) |
 | **`Effect`가 걸어 둔 비동기 콜백** | 콜백 첫 줄에 `if not q.Backend.canExecute(self) then return end`(`self`는 `fn`이 받은 핸들) — 핸들이 더는 돌 수 없게 된 뒤 cleanup이 연결을 끊기 전 틈에 온 호출을 건너뛴다. `fn` 안에서는 묻지 않는다(생성 자리의 첫 실행은 묶이기 전이라 늘 거짓) — [레퍼런스](/reference/core/10-lifetime-sentinels/#qbackendcanexecutevalue) |
 | **조건부 자식** | 숫자 키 자리에 `(if cond then D.TextLabel { ... } else q.None)`(12장·how-to 08의 `(cond and child) or q.None`도 같은 뜻) — 끝이 `nil`이면 안 된다, `nil`은 그 자리를 구멍으로 만든다 |
+| **없는 프로퍼티 키(`--!strict`)** | `D.TextLabel { Bogus = 1 }`의 진단은 `Expected this to be 'number', but got '"Bogus"'`(값 쪽에 긴 유니언 불일치 줄이 하나 더)입니다. "키가 숫자여야 한다"가 아니라 **"이 클래스에 그런 프로퍼티가 없다"**는 뜻입니다 — props 타입이 "아는 문자 키 + 숫자 키(자식)"라서 모르는 문자 키가 잘못된 숫자 키로 읽힙니다. `Frame`에 `Activated`를 준 것처럼 클래스가 틀린 이벤트도 같은 모양으로 뜹니다 |
+| **데이터에서 만든 자식 여러 개(`--!strict`)** | 프로퍼티와 자식을 한 표에 미리 섞어 `D.Frame(props)`로 넘기면 타입이 맞지 않습니다(props 타입은 리터럴 자리에서만 추론됩니다). 자식만 평범한 배열로 만들어 Slot의 초기값으로 넘기고 프로퍼티는 리터럴에 둡니다 — `local kids: { Instance } = {}` → 반복문에서 `table.insert(kids, D.TextButton { … })` → `D.Frame { Name = "Toolbar", q.Slot<<Instance>>(kids) }`. 데이터가 `State`로 바뀌는 목록이면 처음부터 `:List`를 씁니다([시작하기 14](/getting-started/14-lists/)) |
 | **파생 State의 결과 타입(`--!strict`)** | 다른 값에 쓰이는 파생 State는 만드는 줄에 결과 타입을 적는다 — `local label: q.State<string> = count:Compute(...)`. 주석 없이 받은 `:Compute` 결과는 그 변수를 쓰는 이후 코드 전체가 **조용히 무검사**다(있어야 할 진단이 **안 뜨는** 것이 증상 — `label:NoSuchMethod()`를 일부러 넣어 봐도 조용하면 이 구멍). 콜백 파라미터·반환 타입 주석으로는 메워지지 않는다. `:Apply`는 타입을 유지하는 연산자(`Op.Sum`·`Op.Clamp` 등)면 구멍이 없고, 타입을 바꾸거나 자기 상태를 가진 팩토리(`Op.Not`·`Op.Indexed`·`q.Animate`·`q.Blocker`·`q.Debounce`·`q.Throttle`)면 같은 구멍이 있다([2026-09-27 실측]; [시작하기 04](/getting-started/04-reacting/)의 접힌 설명) |
 
 ---

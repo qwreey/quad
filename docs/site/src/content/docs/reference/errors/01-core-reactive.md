@@ -19,6 +19,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 - **언제**: `blocker:__apply(x)`를 직접 불러 `x`에 `State`가 아닌 값을 넘겼을 때. `state:Apply(blocker)`는 언제나 그 `State` 자신을 넘기므로 그 경로에서는 나지 않습니다.
 - **고치려면**: `__apply`를 직접 부르지 말고 `state:Apply(blocker)`로 붙이세요.
+- **같은 실수를 다른 자리에서 알리는 것**: `Debounce`/`Throttle`의 팩토리는 Quad0043, Operator 콤비네이터와 `Tag`/`Modifier`의 `:Apply`로 넘긴 경우는 Quad0123입니다 — 같은 "`State`가 아닌 대상에 붙임" 실수를 붙인 대상에 따라 번호를 달리해 알립니다.
 - **참고**: [`state:Apply(blocker)`](/reference/sugar/06-blocker/#stateapplyblocker)
 
 ### Quad0035
@@ -91,6 +92,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 - **언제**: `factory:__apply(x)`를 직접 불러 `x`에 `State`가 아닌 값을 넘겼을 때(`factory`는 `Debounce{...}`/`Throttle{...}`가 돌려준 값). `state:Apply(factory)`는 언제나 그 `State` 자신을 넘기므로 그 경로에서는 나지 않습니다.
 - **고치려면**: `__apply`를 직접 부르지 말고 `state:Apply(factory)`로 붙이세요.
+- **같은 실수를 다른 자리에서 알리는 것**: `Blocker`는 Quad0018, Operator 콤비네이터와 `Tag`/`Modifier`의 `:Apply`로 넘긴 경우는 Quad0123입니다 — 같은 "`State`가 아닌 대상에 붙임" 실수를 붙인 대상에 따라 번호를 달리해 알립니다.
 - **참고**: [공통 계약](/reference/sugar/03-debounce-throttle/#공통-계약)
 
 ### Quad0044
@@ -179,6 +181,7 @@ description: "Source/State/Store/Blocker/Context/Operator/Debounce·Throttle/Gat
 
 - **언제**: Operator 콤비네이터가 `State`가 아닌 대상에 붙을 때 — `q.Tag(...):Apply(q.Operator.Not)`나 `modifier:Apply(q.Operator.Bnot)`처럼 `Tag`/`Modifier`의 `:Apply`에 넘기거나, `q.Operator.Not(5)`처럼 콤비네이터(또는 `q.Operator.Sum(1)`이 돌려준 함수)를 직접 불러 State가 아닌 값을 넘긴 경우입니다. `state:Apply(...)`로 붙이면 대상은 언제나 그 `State`라 나지 않습니다.
 - **고치려면**: Operator 콤비네이터는 `state:Apply(...)`로만 붙이세요.
+- **같은 실수를 다른 자리에서 알리는 것**: `Blocker`는 Quad0018, `Debounce`/`Throttle`의 팩토리는 Quad0043입니다 — 같은 "`State`가 아닌 대상에 붙임" 실수를 붙인 대상에 따라 번호를 달리해 알립니다.
 - **참고**: [공통 계약](/reference/sugar/02-operator/#공통-계약)
 
 ### Quad0124

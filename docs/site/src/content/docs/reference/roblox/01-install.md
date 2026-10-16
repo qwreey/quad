@@ -55,9 +55,9 @@ QuadRoblox: <T>(quad: T) -> RobloxExtension
    Quad0228 quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')
    ```
 
-   `{VERSION_PATTERN}`은 이 패키지에 박힌 상수이고 저장소 현재 값은 `"3.2^.0^"`(같은 메이저 안에서 3.2.0 이상), `{tostring(q.Version)}`은
+   `{VERSION_PATTERN}`은 이 패키지에 박힌 상수이고 저장소 현재 값은 `"3.3^.0^"`(같은 메이저 안에서 3.3.0 이상), `{tostring(q.Version)}`은
    넘어온 모듈의 `Version` 필드입니다. 하한은 릴리즈마다 그 릴리즈 버전으로 올라가고, 메이저 자리는
-   정확 일치라 메이저가 바뀌면 통과하지 않습니다. 프리릴리즈 빌드는 그 빌드를 정확히 적은 패턴(`"3.3.0-rc.2"`)을 써서
+   정확 일치라 메이저가 바뀌면 통과하지 않습니다. 프리릴리즈 빌드는 그 빌드를 정확히 적은 패턴(`"3.4.0-rc.2"`)을 써서
    같은 프리릴리즈의 quad-base만 받습니다 — 중간 빌드끼리 섞지 않기 위해서입니다.
 
    패턴은 `|`로 나뉜 대안 중 하나라도 맞으면 통과합니다. 대안마다 `+` 뒤 빌드 메타데이터를 버리고 첫 `-`에서
@@ -155,6 +155,7 @@ local fade: RobloxModule.Tween<number> = q.Tween({ Value = 0, Time = 0.2 })
 
 클래스별 타입도 같은 경로로 닿습니다 — 생성기가 루트에 찍어 두는 재익스포트 블록에 **`<Class>Modifier`**(`FrameModifier`,
 상위 클래스 `GuiObjectModifier`까지), **`Into<Class>`**(`IntoTextButton`), **`<Class>Elem`**(`FrameElem`)이 들어 있습니다.
+**[3.3.0 기준 — 4.0.0 전까지 바뀔 수 있음]** 이 클래스별 이름들은 모양이 바뀔 수 있습니다 — 클래스마다 복제한 이름 대신 타입 함수로 조립하는 쪽을 검토하고 있습니다(`Field`/`FieldOut`은 해당 없음).
 
 ```luau
 local function Button(props: { read Modifier: RobloxModule.TextButtonModifier? }): TextButton

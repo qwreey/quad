@@ -167,6 +167,8 @@ Quad0076 Dispatch: no handler matched key {키} (value: {typeof}, brand: {브랜
 
 꼬리 힌트는 키와 값에 따라 갈립니다. 값이 [`q.Protocols.DispatchHint`](#qprotocolsdispatchhint)에 속하면 그 값이 직접 원인 문장을 줍니다(`Store`·`Blocker`·`Tween` 등 — 아래 절). 그 밖에는 위처럼 숫자 키에 등록된 브랜드의 값이 온 경우의 일반 꼬리입니다(등록됐다는 것이 그 브랜드의 주인이 설치됐다는 뜻이라, quad-base 값이든 설치된 프로바이더의 값이든 같습니다). 등록된 술어에 하나도 걸리지 않는 값이면 숫자 키에선 `- check that the provider for this value (e.g. quad-roblox) is initialized`, **문자 키**에선 키 이름이 틀렸을 가능성과 프로바이더 미설치를 함께 적습니다. 전체 갈래는 [`Quad0076`](/reference/errors/02-dispatch-bookkeeping/#quad0076).
 
+**`Slot`은 양의 정수 키 자리에만 놓입니다.** 내장 Slot 핸들러의 조건이 "키가 1 이상의 정수이고 값이 `Slot`"이라, `process`를 직접 불러 `Slot`을 `0`·음수·소수 키에 놓으면 위 `Quad0076`(`brand: Slot`)으로 거부됩니다 — 문자 키의 `Slot`과 같은 거부이고 꼬리 문장만 다릅니다. `D.<Class>{ … }`의 배열부는 늘 1부터의 정수 키라 사용자 코드는 닿지 않습니다.
+
 값이 `nil`이면 뒤에 한 줄이 더 붙습니다 — 그 `nil`은 벗겨진 `None`일 수도, 반응형 `nil`일 수도 있고, 그 키를 맡은 핸들러가 `nil`을 받아들여야 한다는 안내입니다.
 
 핸들러가 retractor 함수를 돌려주지 않으면 프로바이더 계약 위반입니다. `nil`은 늘 그 자리에서, 함수가 아닌 다른 값은 [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때만 그 자리에서 거부합니다.
@@ -215,7 +217,7 @@ Quad0084 Dispatch.drive: inst must not be nil
 Quad0085 Dispatch.drive: array keys must be positive integers (got {키})
 ```
 
-둘째 문구는 `D.Frame(q.Source(1))`처럼 중괄호를 잊은 형태를 잡습니다 — 그 값의 내부 필드가 props로 해석되는 조용한 오작동을 막습니다. **[2026-10-01 기준, 다음 릴리즈부터]** 매 `drive`마다 도는 검사는 싼 것 둘뿐입니다 — 메타테이블이 있는 테이블, 그리고 메타테이블 없이 quad가 브랜드를 붙이는 `AttrKey`·매퍼 디스크립터. quad-base의 값은 전부 이 둘에 걸립니다. 모듈에 등록된 브랜드 술어(`q.BrandPredicates` — 설치된 프로바이더의 것까지) 전부를 훑는 전체 검사는 [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때만 돕니다 — 그래서 **메타테이블 없는 평범한 테이블에 브랜드를 붙이는 프로바이더 값**은 debug를 꺼 두면 이 문구 대신 그 필드들이 props로 해석됩니다(대개 `Quad0076`으로 끝납니다). 3.2.0까지는 전체 검사가 매번 돌았습니다.
+둘째 문구는 `D.Frame(q.Source(1))`처럼 중괄호를 잊은 형태를 잡습니다 — 그 값의 내부 필드가 props로 해석되는 조용한 오작동을 막습니다. **[3.3.0부터]** 매 `drive`마다 도는 검사는 싼 것 둘뿐입니다 — 메타테이블이 있는 테이블, 그리고 메타테이블 없이 quad가 브랜드를 붙이는 `AttrKey`·매퍼 디스크립터. quad-base의 값은 전부 이 둘에 걸립니다. 모듈에 등록된 브랜드 술어(`q.BrandPredicates` — 설치된 프로바이더의 것까지) 전부를 훑는 전체 검사는 [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때만 돕니다 — 그래서 **메타테이블 없는 평범한 테이블에 브랜드를 붙이는 프로바이더 값**은 debug를 꺼 두면 이 문구 대신 그 필드들이 props로 해석됩니다(대개 `Quad0076`으로 끝납니다). 3.2.0까지는 전체 검사가 매번 돌았습니다.
 
 ## `q.Protocols.DispatchHint`
 
@@ -227,7 +229,7 @@ Protocols: { [string]: Brand? } -- 지금 키는 DispatchHint 하나 — QuadTyp
 -- value:__dispatchHint(key: any) -> string?
 ```
 
-**동작** — **[2026-10-06 기준, 다음 릴리즈부터]** 디스패치의 매치 실패 진단을 돕는 **프로토콜**입니다. 이 브랜드에 속한 값이 어떤 핸들러에도 매치되지 않는 자리(`key`)에 놓이면([`Quad0076`](/reference/errors/02-dispatch-bookkeeping/#quad0076)), 디스패치는 그 값의 `__dispatchHint(key)`를 **한 번** 불러 돌려받은 문장을 에러의 원인 설명(` - ` 뒤)으로 씁니다. `nil`을 돌려주면 일반 꼬리를 씁니다. 에러의 위치(blame)는 바꾸지 않습니다 — 문장만 공급합니다. 에러를 만들 때만 불리므로 정상 경로 비용은 없습니다.
+**동작** — **[3.3.0부터]** 디스패치의 매치 실패 진단을 돕는 **프로토콜**입니다. 이 브랜드에 속한 값이 어떤 핸들러에도 매치되지 않는 자리(`key`)에 놓이면([`Quad0076`](/reference/errors/02-dispatch-bookkeeping/#quad0076)), 디스패치는 그 값의 `__dispatchHint(key)`를 **한 번** 불러 돌려받은 문장을 에러의 원인 설명(` - ` 뒤)으로 씁니다. `nil`을 돌려주면 일반 꼬리를 씁니다. 에러의 위치(blame)는 바꾸지 않습니다 — 문장만 공급합니다. 에러를 만들 때만 불리므로 정상 경로 비용은 없습니다.
 
 - **값 쪽에서 등록합니다** — 값을 만들 때 `quad.Protocols.DispatchHint:Register(value)`(타입은 `Brand?`라 한 번 `nil` 확인으로 좁힙니다 — 아래 예제), 그리고 그 값(대개 메타테이블의 `__index` 쪽)에 `__dispatchHint`를 둡니다. 훅이 아니라 **소속**이 판정이라, 같은 이름의 메서드가 있어도 등록되지 않은 값에는 묻지 않습니다. quad-base의 `Store`·`Context`·`Provider`·`Blocker`·`AttrKey`와 quad-roblox의 `Tween`이 자기 문장을 등록합니다(문장은 [`Quad0076`](/reference/errors/02-dispatch-bookkeeping/#quad0076)의 표).
 - **훅이 던지면 정의되지 않은 동작입니다** — 디스패치는 훅을 감싸지 않습니다. 돌려주는 값은 문장 하나(`string`) 또는 `nil`입니다. 문장 모양은 quad의 메시지 규약을 따르면 다른 꼬리와 어울립니다 — 소문자로 시작하고, 무엇이 틀렸는지와 어떻게 놓아야 하는지를 한 문장으로.
@@ -293,7 +295,7 @@ setLength: (ownerKey: any, i: number, len: number | StateMarker<number>, anchor:
 
 **동작** — 자리 `i`의 길이를 등록합니다. `len`이 `State`면 그 상태를 구독해 값이 바뀔 때마다 뒤 자리들의 오프셋을 다시 계산하고, 상수면 같은 게이트를 한 번 통과합니다. 등록은 그 자리 **뒤** 자리들의 캐시만 무효화합니다 — 자리 `i` 자신의 오프셋은 앞 자리들의 합이라 바뀌지 않습니다.
 
-`State` 길이의 값 검사는 두 번 돕니다. 등록할 때 그 `State`의 **현재 값**을 한 번 읽어 상수와 같은 검사를 하고 — 부기를 하나라도 쓰기 **전에**라, 잘못된 초기값(음수 등)은 `Quad0021`로 던지고 그 자리는 등록되지 않은 채 남습니다(`Compute`면 이 읽기에서 계산이 한 번 앞당겨 돕니다). 이후 값은 그 상태의 옵서버 안에서 검사합니다 — 재계산 창 안에서 던져 owner를 얼어붙게 만들지 않기 위해서입니다. **[2026-10-01 기준]** 등록 전 검사는 다음 릴리즈부터입니다 — 3.2.0까지는 잘못된 초기값이 길이 목록과 `N`을 쓴 뒤에 던져, 그 자리가 이후 값을 바꿔도 따라오지 않았습니다.
+`State` 길이의 값 검사는 두 번 돕니다. 등록할 때 그 `State`의 **현재 값**을 한 번 읽어 상수와 같은 검사를 하고 — 부기를 하나라도 쓰기 **전에**라, 잘못된 초기값(음수 등)은 `Quad0021`로 던지고 그 자리는 등록되지 않은 채 남습니다(`Compute`면 이 읽기에서 계산이 한 번 앞당겨 돕니다). 이후 값은 그 상태의 옵서버 안에서 검사합니다 — 재계산 창 안에서 던져 owner를 얼어붙게 만들지 않기 위해서입니다. **[2026-10-01 기준]** 등록 전 검사는 3.3.0부터입니다 — 3.2.0까지는 잘못된 초기값이 길이 목록과 `N`을 쓴 뒤에 던져, 그 자리가 이후 값을 바꿔도 따라오지 않았습니다.
 
 ## `q.Bookkeeping.setOffsetSource(ownerKey, i, source)`
 

@@ -659,7 +659,7 @@ export type Backend = {
 }
 
 export type Quad = {
-	Version: "3.2.0", -- quad-base/pesde.toml의 version과 항상 맞출 것
+	Version: "3.3.0", -- quad-base/pesde.toml의 version과 항상 맞출 것
 	debug: boolean,
 	New: () -> Quad,
 	RunInit: (self: Quad, initFn: (Quad) -> any) -> (),

@@ -31,7 +31,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `Slot:List: data must be a plain array - key "{tostring(k)}" is not an array position` — `quad-base/src/Slot/List.luau`
 
-- **언제**: 재조정 중 `data` 테이블에 정수가 아니거나 1보다 작은 키가 있을 때 — 딕셔너리(아이디 맵, 디코딩된 JSON 오브젝트 등)를 통째로 `:List`에 준 경우가 대표적입니다. **(3.2.0 다음 릴리즈부터)** 평소에는 배열 부분이 비어 있는데 다른 키가 있는 경우(바로 그 딕셔너리)만 봅니다 — 키 전수 검사는 재조정마다 O(N)이라 [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때만 돕니다. 그래서 배열에 문자 키가 **덧붙은** 데이터(`{ a, b, extra = 1 }`)는 debug를 꺼 두면 덧붙은 키가 조용히 무시되고 배열 부분만 재조정됩니다.
+- **언제**: 재조정 중 `data` 테이블에 정수가 아니거나 1보다 작은 키가 있을 때 — 딕셔너리(아이디 맵, 디코딩된 JSON 오브젝트 등)를 통째로 `:List`에 준 경우가 대표적입니다. **(3.3.0부터)** 평소에는 배열 부분이 비어 있는데 다른 키가 있는 경우(바로 그 딕셔너리)만 봅니다 — 키 전수 검사는 재조정마다 O(N)이라 [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때만 돕니다. 그래서 배열에 문자 키가 **덧붙은** 데이터(`{ a, b, extra = 1 }`)는 debug를 꺼 두면 덧붙은 키가 조용히 무시되고 배열 부분만 재조정됩니다.
 - **고치려면**: `data`를 1부터 시작하는 배열로 주세요.
 - **참고**: [`slot:List(data, updateFn, keyFn?, opts?)`](/reference/core/06-slot/#slotlistdata-updatefn-keyfn-opts)
 
@@ -69,7 +69,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ### Quad0148
 
-`Slot: already has :List/:Single installed` — `quad-base/src/Slot/List.luau`
+`Slot: already has :List/:Single/:Lazy installed` — `quad-base/src/Slot/List.luau`
 
 - **언제**: 이미 `:List`나 `:Single`을 건 `Slot`에 다시 `:List`/`:Single`을 걸려고 할 때 — 재조정 모드 설치는 한 Slot에 한 번뿐입니다.
 - **고치려면**: 다른 데이터를 반영하려면 그 `:List`가 참조하는 `data` State를 바꾸세요 — 재설치는 하지 않습니다.
@@ -77,7 +77,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ### Quad0149
 
-`Slot: cannot install :List/:Single on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)` — `quad-base/src/Slot/List.luau`
+`Slot: cannot install :List/:Single/:Lazy on a manual Slot (one that used CRUD or was built as Slot{ ... }, even empty)` — `quad-base/src/Slot/List.luau`
 
 - **언제**: 이미 수동 CRUD(`Add`/`Remove`/...)를 쓴 `Slot`이나, 생성자에 `initial` 테이블을 준 `Slot`(빈 `q.Slot({})`도 포함)에 `:List`/`:Single`을 걸려고 할 때 — 두 모드는 상호 배타입니다. 자기 검증에서 거부된 CRUD 호출은 수동으로 표시하지 않습니다.
 - **고치려면**: `:List`/`:Single`을 쓸 `Slot`은 CRUD 없이, 인자 없는 `q.Slot()`으로 만드세요.
@@ -154,6 +154,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 - **언제**: `claimOwnerAt`의 `inst`(그 자리의 주인 — ownerKey)로 `nil`을 넘겼을 때.
 - **고치려면**: 실제 owner를 넘기세요.
+- **같은 실수를 다른 자리에서 알리는 것**: 부기 함수(`getBookkeeping`/`setLength` 등)는 Quad0020, `releaseOwner`는 Quad0162입니다 — 같은 `nil` owner 실수를 부른 함수에 따라 번호를 달리해 알립니다.
 - **참고**: [`q.Bookkeeping.claimOwnerAt(element, inst, k)`](/reference/extend/02-dispatch-handler-contract/#qbookkeepingclaimowneratelement-inst-k)
 
 ### Quad0159
@@ -186,6 +187,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 - **언제**: `releaseOwner`의 `ownerKey`로 `nil`을 넘겼을 때.
 - **고치려면**: 실제 owner를 넘기세요.
+- **같은 실수를 다른 자리에서 알리는 것**: 부기 함수(`getBookkeeping`/`setLength` 등)는 Quad0020, `claimOwnerAt`은 Quad0158입니다 — 같은 `nil` owner 실수를 부른 함수에 따라 번호를 달리해 알립니다.
 - **참고**: [`q.Bookkeeping.releaseOwner(element, ownerKey)`](/reference/extend/02-dispatch-handler-contract/#qbookkeepingreleaseownerelement-ownerkey)
 
 ### Quad0163
@@ -215,7 +217,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ### Quad0166
 
-`Slot: manual CRUD is not allowed after :List/:Single` — `quad-base/src/Slot/init.luau`
+`Slot: manual CRUD is not allowed after :List/:Single/:Lazy` — `quad-base/src/Slot/init.luau`
 
 - **언제**: `:List`/`:Single`을 이미 건 `Slot`에 수동 CRUD(`Add`/`Remove`/`Replace`/...)를 쓰려고 할 때.
 - **고치려면**: `:List`/`:Single`을 건 `Slot`은 그 데이터 `State`를 통해서만 바꾸세요 — 수동 CRUD가 필요하면 그 설치 없이 새 `Slot`을 만드세요.
@@ -223,12 +225,38 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ### Quad0167
 
-`Slot: cannot mutate a Slot while it is being mounted (it, or a Slot inside it, is mid-mount) - a :List/:Single updateFn (or an Observer that fires during that mount) must not CRUD an ancestor Slot; do it after the mount has returned, outside the updateFn (or an earlier mount into this Slot or a Slot inside it threw mid-way - then this Slot stays unusable: dispose its host Instance)` — `quad-base/src/Slot/init.luau`
+`Slot: cannot mutate a Slot while it is being mounted or while one of its elements is being inserted/removed (it, or a Slot inside it, is mid-operation) - a :List/:Single updateFn, an Observer that fires during that mount, or a backend signal callback that runs synchronously inside the insert/remove (an element's parent changed) must not CRUD this Slot or an ancestor Slot; run it through slot:WhenIdle(fn) - fn runs as soon as the operation has finished (or an earlier operation on this Slot or a Slot inside it threw mid-way - then this Slot stays unusable: dispose its host Instance)` — `quad-base/src/Slot/init.luau`
 
-- **언제**: 이 `Slot`이나 그 안의 `Slot`이 마운트되는 동안(`_materializing`) 이 `Slot`에 CRUD나 `:List`/`:Single` 설치를 쓰려고 할 때 — 중첩된 `:List`의 첫 `updateFn`이나 그 안에서 도는 `Observer`가 조상 `Slot`을 건드리면 여기 걸립니다. 이미 마운트된 트리에 `Add`/`Splice`/`Replace`로 `:List` Slot을 넣을 때도 같고, 이때 막히는 범위는 바로 위 부모만이 아니라 **맨 위까지의 조상 `Slot` 전부**입니다(3.2.0 다음 릴리즈부터 — 전에는 바로 위 부모만 막아 조부모를 지우면 유령 자리가 남았습니다).
-- **고치려면**: 마운트가 끝난 뒤, `updateFn` 밖에서 하세요 — "`Observer`에서"라도 그 `Observer`가 마운트 중에 동기로 발화하면(첫 발화 포함) 같은 에러입니다. 그 안에서 시작해야 하는 일이면 지금 실행이 끝난 뒤로 미루세요(Roblox라면 `task.defer`). 앞선 마운트가 도중에 던진 뒤에 이 에러가 난다면 그 예외의 원인을 고치세요.
+- **언제**: 이 `Slot`이나 그 안의 `Slot`이 마운트되는 동안(`_materializing`) 이 `Slot`에 CRUD나 `:List`/`:Single` 설치를 쓰려고 할 때 — 중첩된 `:List`의 첫 `updateFn`이나 그 안에서 도는 `Observer`가 조상 `Slot`을 건드리면 여기 걸립니다. 이미 마운트된 트리에 `Add`/`Splice`/`Replace`로 `:List` Slot을 넣을 때도 같고, 이때 막히는 범위는 바로 위 부모만이 아니라 **맨 위까지의 조상 `Slot` 전부**입니다(3.3.0부터 — 3.2.0에는 이 거부가 없어 조상을 고치면 내부 에러로 죽거나 조부모를 지울 때 유령 자리가 남았습니다).
+- **언제(엔진 호출 안)**: [3.3.0부터] 원소를 붙이거나 떼는 **엔진 호출이 도는 동안**에도 같은 표시가 섭니다 — 그 호출 안에서 동기로 불리는 신호 콜백(Roblox에서 `SignalBehavior`가 Immediate일 때 원소의 `Parent` 변경 신호 — `q.OnChange("Parent", fn)`의 `fn`)이 **그 연산이 진행 중인 `Slot`과 그 위의 조상 `Slot`들**(원소를 받거나 내보내는 `Slot`과 맨 위까지의 조상, 통째로 붙고 있는 `Slot`과 그 안의 `Slot`, 파괴되고 있는 `Slot`)을 CRUD하면 여기 걸립니다. 조상까지 막는 이유는 자식 `Slot`의 `Length`가 엔진 호출이 끝난 뒤에야 갱신되기 때문입니다 — 그 사이 조상이 자식 뒤 자리를 계산하면 낡은 길이를 씁니다. 그 연산은 끝까지 마쳐지고 부기는 온전합니다(막힌 것은 콜백의 CRUD뿐). Deferred에서는 콜백이 연산이 끝난 뒤에 불리므로 걸리지 않습니다. 같은 부모 아래의 형제 `Slot`과 무관한 `Slot`은 막지 않고, 언마운트 도중의 콜백은 이미 떼어진 `Slot`을 보므로 막지 않습니다.
+- **고치려면**: 그 일을 [`slot:WhenIdle(fn)`](/reference/core/06-slot/#slotwhenidlefn)에 넘기세요 — `fn(slot)`은 그 `Slot`이 한가하면 바로, 연산 중이면 그 연산이 끝난 직후에 실행됩니다(신호 설정과 무관하게 같은 코드). index는 `fn` 안에서 다시 구하세요(`slot:IndexOf(element)`). `updateFn` 안에서 조상을 바꾸려던 것이라면 먼저 그 일이 `updateFn`의 몫인지 보세요 — `updateFn`은 항목 하나를 원소로 바꾸는 함수입니다. "`Observer`에서"라도 그 `Observer`가 마운트 중에 동기로 발화하면(첫 발화 포함) 같은 에러이고 처방도 같습니다. 앞선 연산이 도중에 던진 뒤에 이 에러가 난다면 그 예외의 원인을 고치세요.
+- **관측(계약 아님)**: 엔진 호출 자체가 던지면(예: 인스턴스를 자기 자손에 넣어 엔진이 순환을 거부) 그 `Slot`에 표시가 남아 이후의 CRUD가 이 에러로 막힙니다.
 - **관측(계약 아님)**: 마운트 도중 어디서든 던지면 그 마운트에 걸린 사슬 전체에 "마운트 중" 표시가 남아, 그 뒤 **이 `Slot`과 그 조상 `Slot`들**은 이 에러로 계속 막힙니다(quad는 사용자 코드의 예외를 복구하지 않습니다). `D.Frame({ outer })`처럼 호스트를 만드는 호출 자체가 던진 경우엔 호스트가 반환되지 않습니다.
 - **참고**: [`slot:List(data, updateFn, keyFn?, opts?)`](/reference/core/06-slot/#slotlistdata-updatefn-keyfn-opts)
+
+### Quad0269
+
+`Slot:List: data has a nil hole at index {hole} (the array goes on to index {highest}) - the list would end there and every item behind it would be treated as gone, its element destroyed; remove the nil or put a placeholder value there` — `quad-base/src/Slot/List.luau`
+
+- **언제**: [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있고, `slot:List`의 `data` 배열 중간에 `nil`이 있을 때(`{ "a", nil, "c" }`). 재조정이 아무것도 파괴하기 전에 멈춥니다. 꺼져 있으면 검사하지 않습니다 — 목록이 구멍에서 끝나고 구멍 뒤 항목의 원소는 "키가 사라졌다" 경로로 파괴됩니다(정의되지 않은 동작).
+- **고치려면**: 배열에 `nil`을 넣지 마세요. 빈 칸이 필요한 데이터면 자리표시 값(예: `false`나 전용 표식)을 넣고 `updateFn`에서 그 값을 다루세요. 끝자리의 `nil`은 구멍이 아닙니다(배열이 거기서 끝날 뿐).
+- **참고**: [`slot:List(data, updateFn, keyFn?, opts?)`](/reference/core/06-slot/#slotlistdata-updatefn-keyfn-opts)
+
+### Quad0270
+
+`Slot: initial elements have a nil hole at index {hole} (the array goes on to index {highest}) - the elements behind it would be ignored; build the array without the nil (a Slot element cannot be nil or None)` — `quad-base/src/Slot/init.luau`
+
+- **언제**: [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있고, `q.Slot({ a, nil, c })`처럼 `initial` 배열 중간에 `nil`이 있을 때(조건부 원소를 `cond and x or nil`로 넣은 경우가 흔합니다). 꺼져 있으면 구멍 뒤 원소가 조용히 무시됩니다(정의되지 않은 동작).
+- **고치려면**: 구멍 없이 배열을 만드세요 — 조건부 원소는 배열을 만든 뒤 `table.insert`로 넣거나, Slot을 만든 뒤 `slot:Add`로 넣습니다. Slot 원소 자리에는 `nil`도 `q.None`도 둘 수 없습니다.
+- **참고**: [`q.Slot<<T>>(initial?)`](/reference/core/06-slot/#qslottinitial)
+
+### Quad0268
+
+`Slot:WhenIdle: fn must be a function (got {typeof(fn)})` — `quad-base/src/Slot/init.luau`
+
+- **언제**: `slot:WhenIdle(fn)`의 `fn`이 함수가 아닐 때(`nil` 포함).
+- **고치려면**: `function(slot) … end`를 넘기세요.
+- **참고**: [`slot:WhenIdle(fn)`](/reference/core/06-slot/#slotwhenidlefn)
 
 ### Quad0168
 
@@ -265,7 +293,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `{surface}: the same element appears twice` — `quad-base/src/Slot/init.luau`
 
-- **언제**: [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때, 한 번의 호출(`Splice`, 생성자 `initial` 등) 안에 같은 값이 두 번 들어 있을 때 — 원소를 하나도 넣기 전에 받은 값 그대로 비교합니다(같은 `State` 두 번도 걸리지만, 같은 Instance를 쥔 서로 다른 `State` 둘은 값을 읽지 않으므로 여기서 걸리지 않고 마운트 때 [`Quad0156`](#quad0156)). **(3.2.0 다음 릴리즈부터)** debug 층 검사입니다 — 꺼 두면 두 번째 값이 자리에 들어가는 순간 [`Quad0170`](#quad0170)이 납니다.
+- **언제**: [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때, 한 번의 호출(`Splice`, 생성자 `initial` 등) 안에 같은 값이 두 번 들어 있을 때 — 원소를 하나도 넣기 전에 받은 값 그대로 비교합니다(같은 `State` 두 번도 걸리지만, 같은 Instance를 쥔 서로 다른 `State` 둘은 값을 읽지 않으므로 여기서 걸리지 않고 마운트 때 [`Quad0156`](#quad0156)). **(3.3.0부터)** debug 층 검사입니다 — 꺼 두면 두 번째 값이 자리에 들어가는 순간 [`Quad0170`](#quad0170)이 납니다.
 - **고치려면**: 배치 안의 원소를 중복 없이 주세요.
 - **참고**: [`q.Slot<<T>>(initial?)`](/reference/core/06-slot/)
 
@@ -281,7 +309,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `{surface}: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)` — `quad-base/src/Slot/init.luau`
 
-- **언제**: [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때, `Slot`을 자기 자신이나 자기 조상(원소 관계로 이어진)에 원소로 넣으려 할 때 — 그대로 두면 순환이 생겨 이후 CRUD·해체가 끝나지 않는 재귀로 들어갑니다(아래 관측 줄). **(3.2.0 다음 릴리즈부터)** 원소 관계를 따라 올라가는 이 검사는 넣는 Slot마다 깊이만큼 비용이 들어 debug 층으로 내려갔습니다 — 꺼 두면 넣는 줄은 그대로 통과하고 그 순환은 정의되지 않은 동작입니다. 개발 중에는 debug를 켜 두세요.
+- **언제**: [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때, `Slot`을 자기 자신이나 자기 조상(원소 관계로 이어진)에 원소로 넣으려 할 때 — 그대로 두면 순환이 생겨 이후 CRUD·해체가 끝나지 않는 재귀로 들어갑니다(아래 관측 줄). **(3.3.0부터)** 원소 관계를 따라 올라가는 이 검사는 넣는 Slot마다 깊이만큼 비용이 들어 debug 층으로 내려갔습니다 — 꺼 두면 넣는 줄은 그대로 통과하고 그 순환은 정의되지 않은 동작입니다. 개발 중에는 debug를 켜 두세요.
 - **고치려면**: 순환이 생기지 않게 구조를 바꾸세요. (인스턴스를 매개로 한 순환은 이 검사 밖입니다 — 정의되지 않은 동작.)
 - **관측(계약 아님)**: debug를 꺼 둔 채 순환을 넣으면 그 순환 트리의 다음 CRUD나 해체가 스택 오버플로나 내부 불변식 에러로 죽고(어느 쪽인지는 연산마다 다릅니다), 그 뒤의 부기 무결은 약속하지 않습니다.
 - **참고**: [`slot:Add(element, index?)`](/reference/core/06-slot/#slotaddelement-index)
@@ -397,3 +425,19 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 - **언제**: `:List`의 데이터 배열 항목 자체가 `q.KeyGone`일 때. 전에는 그 항목이 `Item = q.KeyGone`인 평범한 호출로 `updateFn`에 들어가 관용구 첫 줄(`if ctx.Item == q.KeyGone then …`)에서 조용히 빠졌습니다.
 - **고치려면**: 데이터에는 실제 값만 두세요 — 항목을 없애려면 배열에서 빼면 됩니다. `q.KeyGone`은 키가 사라질 때 `updateFn`이 **받는** 표시입니다.
 - **참고**: [`slot:List(data, updateFn, keyFn?, opts?)`](/reference/core/06-slot/#slotlistdata-updatefn-keyfn-opts)
+
+### Quad0271
+
+`Slot:Lazy: fn must be a function (got {typeof(fn)})` — `quad-base/src/Slot/List.luau`
+
+- **언제**: `slot:Lazy(fn)`에 함수가 아닌 값을 넘겼을 때.
+- **고치려면**: 이 Slot의 내용을 지어 돌려주는 함수를 넘기세요 — 이미 지은 원소라면 `Lazy` 없이 `q.Slot{ element }`로 넣으면 됩니다.
+- **참고**: [`slot:Lazy(fn)`](/reference/core/06-slot/#slotlazyfn)
+
+### Quad0272
+
+`Slot:Lazy: fn must return one value (got {n}) - put several elements in a Slot and return that` — `quad-base/src/Slot/List.luau`
+
+- **언제**: `slot:Lazy(fn)`의 `fn`이 값을 둘 이상 돌려줬을 때 — 그 Slot이 처음 마운트되는 자리에서 납니다.
+- **고치려면**: 여러 원소는 `q.Slot{ a, b, c }`에 담아 그 Slot 하나를 돌려주세요.
+- **참고**: [`slot:Lazy(fn)`](/reference/core/06-slot/#slotlazyfn)

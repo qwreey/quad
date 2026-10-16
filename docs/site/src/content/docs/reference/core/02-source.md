@@ -93,7 +93,7 @@ print(hp:Get()) --> 60
 
 ## `source:SetIfChanged(v)`
 
-> **[2026-10-01 기준]** `:SetIfChanged`는 게시된 3.2.0에는 없습니다 — 다음 릴리즈부터([변경 이력](/changelog/) `[Unreleased]`). 그전엔 `if v ~= src:Get() then src:Set(v) end`가 같은 일을 합니다.
+> **[2026-10-01 기준]** `:SetIfChanged`는 3.3.0부터 있습니다 — 3.2.0에는 없습니다([변경 이력](/changelog/) `[3.3.0]`). 그전엔 `if v ~= src:Get() then src:Set(v) end`가 같은 일을 합니다.
 
 **시그니처**
 
@@ -138,7 +138,7 @@ print(hp:Get()) --> 100
 
 ## `source:SetAndDispose(v)`
 
-> **[2026-10-01 기준]** `:SetAndDispose`는 게시된 3.2.0에는 없습니다 — 다음 릴리즈부터([변경 이력](/changelog/) `[Unreleased]`). 그전엔 `local old = src:Get(); src:Set(v); q.dispose(old)`가 같은 일을 합니다(옛 값이 `nil`이 아닐 때).
+> **[2026-10-01 기준]** `:SetAndDispose`는 3.3.0부터 있습니다 — 3.2.0에는 없습니다([변경 이력](/changelog/) `[3.3.0]`). 그전엔 `local old = src:Get(); src:Set(v); q.dispose(old)`가 같은 일을 합니다(옛 값이 `nil`이 아닐 때).
 
 **시그니처**
 

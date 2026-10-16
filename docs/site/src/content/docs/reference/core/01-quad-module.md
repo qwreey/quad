@@ -30,7 +30,7 @@ New: () -> Quad
 
 - **프로바이더는 들어 있지 않습니다.** `Quad.New()`로 만든 인스턴스는 백엔드가 없어서 `holdLifetime`·`isInst` 같은 슬롯이 안내 스텁 상태이고, `bindLifetime`을 부르면 그 스텁에 닿습니다 — [생명주기와 센티널](/reference/core/10-lifetime-sentinels/) 참고.
 - 인스턴스는 참조를 놓으면 수거됩니다. 모듈을 키로 삼는 전역 맵이 인스턴스를 붙잡지 않습니다 — 단 그 인스턴스가 만든 Instance를 `Destroy` 하지 않은 채 참조만 놓으면 그 Instance의 체인이 모듈의 클로저를 붙들어 둘 다 남습니다("quad가 만든 Instance는 `Destroy`로만 회수" 계약의 귀결 — [2026-09-27 mock 실측]; `Destroy`하면 둘 다 수거).
-- 잎 모듈은 공유됩니다: `Quad.New().Void == Quad.Void`, `Quad.New().Ref == Quad.Ref`. 반면 `Quad.New().Source ~= Quad.Source`입니다. 능력(프로토콜) 브랜드도 사본 단위라 공유됩니다 — `Quad.New().Protocols.DispatchHint == Quad.Protocols.DispatchHint`([`q.Protocols.DispatchHint`](/reference/extend/02-dispatch-handler-contract/#qprotocolsdispatchhint), 다음 릴리즈부터).
+- 잎 모듈은 공유됩니다: `Quad.New().Void == Quad.Void`, `Quad.New().Ref == Quad.Ref`. 반면 `Quad.New().Source ~= Quad.Source`입니다. 능력(프로토콜) 브랜드도 사본 단위라 공유됩니다 — `Quad.New().Protocols.DispatchHint == Quad.Protocols.DispatchHint`([`q.Protocols.DispatchHint`](/reference/extend/02-dispatch-handler-contract/#qprotocolsdispatchhint), 3.3.0부터).
 - **인스턴스끼리 값을 섞지 마세요.** 한 인스턴스가 만든 Observer·Effect·Slot·State를 다른 인스턴스의 트리 자리(숫자 키, 프로퍼티 값, `:List`의 데이터, `Slot`의 원소 자리 — `Add`/생성자/`Replace`/`Extract`/`Splice`, `State`에 담아서도)에 놓거나 `q.dispose`에 넘기면 그 자리에서 `…: this value was made by another quad module instance …`를 던집니다 — 생명주기 기록이 인스턴스마다 따로라, 막지 않으면 에러 없이 그 값이 돌지 않기 때문입니다. 소비자 프로젝트에 `quad_base` **사본이 둘** 생긴 경우는 다릅니다 — 브랜드 집합이 사본마다 따로라 다른 사본의 값은 이쪽의 `isState`류가 전부 거짓이고 이 가드까지 오지 못합니다. 그때 보이는 것은 `Quad0076 … check that the provider … is initialized`(원인과 무관한 안내)·`Quad0240`·`Quad0151`·`Quad0198`류이며, 프로퍼티 자리에선 그 테이블이 날값으로 엔진까지 갑니다([술어 레퍼런스](/reference/core/11-predicates/)의 사본 경계). 사본이 둘인지 먼저 의심하세요. **팩토리도 섞지 마세요** — `A.Source(0):Apply(Bare.Debounce{…})`처럼 다른 인스턴스의 `Debounce`/`Throttle`을 쓰면 가드는 지나지만 시간 op를 팩토리를 만든 인스턴스의 `Backend`에서 읽어 `Quad0108 … setTimeout is not available`이 나거나 남의 시계로 돕니다. 공유 잎 모듈의 값(`Ref`·`Blocker` 등)은 주인 인스턴스가 없어 검사하지 않으며, 그것을 두 인스턴스에 걸쳐 쓰는 것은 정의되지 않은 동작입니다. 의존성으로만 잇는 것(`q.Effect(fn, 다른 인스턴스의 Source)`)은 생명주기가 없어 검사하지 않지만, 그쪽도 **정의되지 않은 동작**입니다 — 막지 않을 뿐 보장하지 않습니다.
 
 **예제**
@@ -145,7 +145,7 @@ quad-roblox는 설치 시점에 quad-base 버전을 확인하고, 맞지 않으�
 quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')
 ```
 
-`{VERSION_PATTERN}` 자리에는 그 quad-roblox가 요구하는 패턴이 들어갑니다(이 저장소의 현재 값은 `3.2^.0^` — 같은 메이저 안에서 3.2.0 이상).
+`{VERSION_PATTERN}` 자리에는 그 quad-roblox가 요구하는 패턴이 들어갑니다(이 저장소의 현재 값은 `3.3^.0^` — 같은 메이저 안에서 3.3.0 이상).
 
 **예제**
 
@@ -160,7 +160,7 @@ print(q2 == q) --> true
 **시그니처**
 
 ```luau
-Version: "3.2.0"
+Version: "3.3.0"
 ```
 
 **동작** — 이 quad-base 사본의 버전 문자열. 타입이 싱글톤 문자열이라 타입 층에서도 값이 그대로 보입니다. 백엔드는 `UseProvider` 시점에 이 값을 자기 패턴과 대조하는 데 씁니다(위 참고).
@@ -181,7 +181,7 @@ debug: boolean
 
 - `q.Dispatch.addHandler`가 등록 시점에 같은 우선순위의 핸들러를 발견할 때([`../extend/02-dispatch-handler-contract.md`](/reference/extend/02-dispatch-handler-contract/)).
 - [`q:AddPlugin`](#qaddpluginpluginfn)이 기존 필드를 덮을 때.
-- 옵션 테이블에 모르는 키(오타·옛 이름)가 있을 때 — `q.Debounce`/`q.Throttle`, `slot:List`/`slot:Single`의 `opts`, `q.Tween`, `q.Animate`. 모르는 키는 꺼져 있을 때와 똑같이 무시됩니다. `q.Tween`/`q.Animate`는 `Info`와 편의 필드(`Time`·`Style`·`Direction`·`RepeatCount`·`Reverses`·`DelayTime`)를 함께 줬을 때도 알립니다 — `Info`가 이기므로 그 필드들은 무시됩니다(`q.Animate`의 `Info`가 `State`면 "그 `State`가 값을 가진 동안 무시"로 알립니다 — `nil`을 쥐는 동안은 편의 필드가 쓰입니다; **[2026-10-06 기준, 다음 릴리즈부터]**).
+- 옵션 테이블에 모르는 키(오타·옛 이름)가 있을 때 — `q.Debounce`/`q.Throttle`, `slot:List`/`slot:Single`의 `opts`, `q.Tween`, `q.Animate`. 모르는 키는 꺼져 있을 때와 똑같이 무시됩니다. `q.Tween`/`q.Animate`는 `Info`와 편의 필드(`Time`·`Style`·`Direction`·`RepeatCount`·`Reverses`·`DelayTime`)를 함께 줬을 때도 알립니다 — `Info`가 이기므로 그 필드들은 무시됩니다(`q.Animate`의 `Info`가 `State`면 "그 `State`가 값을 가진 동안 무시"로 알립니다 — `nil`을 쥐는 동안은 편의 필드가 쓰입니다; **[3.3.0부터]**).
 - [`q.Claim`](/reference/roblox/04-claim-mapper/)의 디스크립터가 이상할 때 — 자식 디스크립터의 키가 문자열이 아니거나, 루트 디스크립터에 키를 적어 무시될 때.
 
 위 넷은 그 호출 시점에 한 번 보므로 `q.debug`는 먼저 켜 두세요. 아래 일곱은 값이 처리되거나 쓰일 때마다 보므로 켜는 시점은 상관없습니다(켠 뒤의 실행부터 봅니다).
@@ -194,14 +194,15 @@ debug: boolean
 - quad가 claim하지 않은 인스턴스 — 파괴됐거나(`q.dispose`든 quad 밖이든) quad가 만들지 않은 것 — 에 디스패치가 돌 때(정의되지 않은 동작 — 핸들러가 그 시체 위에서 돌 수 있습니다, 예: 짝이 오지 않는 `Tween`의 `Started`) — `Dispatch: process on an instance that is not claimed by quad … at key {k} …`. `D.<Class> { … }`·`q.Dispatch.drive`·`q.Dispatch.process` 모두 이 한 자리를 지나며, 키마다 알립니다.
 - 마운트 대상 인스턴스가 더는 claim돼 있지 않은 `Slot`(호스트를 `q.dispose`했거나 quad 밖에서 파괴)에 CRUD를 부를 때(정의되지 않은 동작 — [06-slot](/reference/core/06-slot/#죽은-slot과-마운트-규칙)의 "마운트 대상이 파괴된 Slot") — `Slot: CRUD on a Slot whose host Instance is no longer claimed by quad …`. 부를 때마다 알립니다.
 
-이 일곱도 켜도 동작은 바뀌지 않습니다(정의되지 않은 동작을 정의된 동작으로 바꾸지 않습니다 — 보여 줄 뿐입니다). 진단 줄은 `print`이고 `QuadNNNN` 번호가 없습니다(에러가 아니라서 — 번호는 에러에만 붙습니다). **[2026-10-01 기준]** 게시된 3.2.0에는 첫 항목(우선순위 동률)만 있고 나머지는 다음 릴리즈부터입니다([변경 이력](/changelog/) `[Unreleased]`).
+이 일곱도 켜도 동작은 바뀌지 않습니다(정의되지 않은 동작을 정의된 동작으로 바꾸지 않습니다 — 보여 줄 뿐입니다). 진단 줄은 `print`이고 `QuadNNNN` 번호가 없습니다(에러가 아니라서 — 번호는 에러에만 붙습니다). **[2026-10-01 기준]** 3.2.0에는 첫 항목(우선순위 동률)만 있고 나머지는 3.3.0부터입니다([변경 이력](/changelog/) `[3.3.0]`).
 
-**비용이 드는 검사** — 평소 경로에 두기엔 자주 도는 자리라 꺼 두면 검사하지 않고, 켜면 그 자리에서 **에러로 멈춥니다**(꺼진 채로는 정지하거나 나중에 엉뚱한 자리에서 죽는 실수들입니다). **[2026-10-06 기준]** 전부 다음 릴리즈부터입니다 — `Quad0083`·`Quad0143`·`Quad0173`·`Quad0220`·`Quad0171`은 3.2.0까지 늘 돌던 검사를 이 층으로 내린 것입니다.
+**비용이 드는 검사** — 평소 경로에 두기엔 자주 도는 자리라 꺼 두면 검사하지 않고, 켜면 그 자리에서 **에러로 멈춥니다**(꺼진 채로는 정지하거나 나중에 엉뚱한 자리에서 죽는 실수들입니다). **[2026-10-06 기준]** 전부 3.3.0부터입니다 — `Quad0083`·`Quad0173`·`Quad0171`은 3.2.0까지 늘 돌던 검사를 이 층으로 내린 것이고, `Quad0220`과 `Quad0143`의 "배열에 키가 덧붙은 데이터" 갈래는 새로 넣은 검사입니다(꺼 두면 3.2.0과 같습니다).
 
 - 디스패치 핸들러의 `process`가 함수가 아닌 retractor(`true`·숫자·테이블)를 돌려줄 때 — `Quad0077`([핸들러 계약](/reference/extend/02-dispatch-handler-contract/#handler-레코드); 꺼져 있어도 `nil`은 늘 검사합니다).
 - `State`의 값 사슬이 자기에게 돌아올 때(`a:Set(b); b:Set(a)`, `s:Set(s)`) — `Quad0070`(props 자리에 놓인 `State`를 벗길 때와 Slot에 넣은 `State` 원소; 사슬을 끝까지 따라가는 검사; 꺼져 있으면 스택 오버플로로 끝나는 정의되지 않은 동작).
 - 중괄호를 잊은 `D.Frame(value)`에서 그 값이 메타테이블 없는 **프로바이더 브랜드** 값일 때 — `Quad0083`(모듈에 등록된 브랜드 술어를 전부 훑는 검사; 메타테이블이 있는 값과 quad-base 값은 꺼져 있어도 늘 잡습니다 — [핸들러 계약](/reference/extend/02-dispatch-handler-contract/#qdispatchdriveinst-flattened)).
 - `slot:List`의 `data` 배열에 배열이 아닌 키가 **덧붙어** 있을 때 — `Quad0143`(재조정마다 키 전수 검사; 배열 부분이 비어 있는 딕셔너리는 꺼져 있어도 늘 잡습니다 — [06-slot](/reference/core/06-slot/#slotlistdata-updatefn-keyfn-opts)).
+- `slot:List`의 `data` 배열이나 `q.Slot({ … })`의 `initial` 배열 **중간에 `nil` 구멍**이 있을 때 — `Quad0269`(`:List`)·`Quad0270`(`initial`). 위 `Quad0143` 검사가 이미 도는 키 훑기에 얹은 검사입니다(키 개수와 가장 큰 키가 다르면 구멍). 꺼져 있으면 정의되지 않은 동작 그대로입니다 — 목록이 구멍에서 끝나고, `:List`는 구멍 뒤 항목의 원소를 파괴합니다([06-slot](/reference/core/06-slot/#slotlistdata-updatefn-keyfn-opts)).
 - `Slot`을 자기 자신이나 조상 Slot에 원소로 넣을 때 — `Quad0173`(원소 관계를 따라 올라가는 검사; 꺼져 있으면 넣는 줄은 통과하고 그 순환은 정의되지 않은 동작입니다 — 관측(계약 아님): 그 순환 트리의 다음 CRUD나 해체가 스택 오버플로나 내부 불변식 에러로 죽고(어느 쪽인지는 연산마다 다릅니다), 그 뒤의 부기 무결은 약속하지 않습니다).
 - `Slot` CRUD 한 호출(생성자 `initial`·`Splice`) 안에 같은 값이 두 번 있을 때 — `Quad0171`(원소를 넣기 전에 받은 값 그대로 비교 — `State`의 값은 읽지 않습니다; 꺼져 있으면 둘째 값이 자리에 들어가는 순간 `Quad0170`이 나고 앞 원소는 이미 들어가 있습니다).
 - (quad-roblox) Instance를 자기 자신이나 자기 자손의 숫자 키 자리에 자식으로 놓을 때 — `Quad0220`(조상 사슬 걷기; 꺼져 있으면 엔진의 circular reference 에러가 대신 멈추되, quad가 자리를 잡은 뒤라 그 요소의 부기는 믿을 수 없습니다).

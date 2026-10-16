@@ -19,6 +19,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 - **언제**: `q.Bookkeeping`의 부기 함수(`getBookkeeping`/`getOffsetAt`/`setLength`/`setOffsetSource`/`setEmpty`)에 `ownerKey`(부기의 주인 — 요소 또는 Slot)로 `nil`을 넘겼을 때. `{fnName}`은 부른 함수 이름입니다. 같은 조건이라도 `claimOwnerAt`은 Quad0158, `releaseOwner`는 Quad0162로 따로 던집니다.
 - **고치려면**: 실제 owner를 넘기세요.
+- **같은 실수를 다른 자리에서 알리는 것**: `claimOwnerAt`은 Quad0158, `releaseOwner`는 Quad0162입니다 — 같은 `nil` owner 실수를 부른 함수에 따라 번호를 달리해 알립니다.
 - **참고**: [Length/Offset 부기](/reference/extend/02-dispatch-handler-contract/#lengthoffset-부기)
 
 ### Quad0021
@@ -242,7 +243,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `State: the value chain is circular (a State that eventually holds itself) - a State may hold another State, but not a cycle` — `quad-base/src/StateHandler.luau`
 
-- **언제**: [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때, props 자리에 놓인 State의 값을 따라가다(State가 다른 State를 값으로 들고 있으면 그 State도 마저 벗기는 재귀) 결국 자기 자신으로 돌아오는 순환을 만났을 때(예: `a:Set(b); b:Set(a)`). Slot에 넣은 State도 같습니다 — 원소 State의 값 사슬이 순환하면(`st:Set(st)` 등) Slot이 그 값을 읽는 때 — 마운트될 때(이미 마운트된 Slot이면 넣는 줄)나 그 `:Set` 줄 — 던집니다. **(3.2.0 다음 릴리즈부터)** 마운트 전 Slot에 넣는 줄에서는 던지지 않습니다 — 그 시점엔 원소 State의 값을 읽지 않으므로(지연 계산), debug에서도 값을 앞당겨 읽지 않습니다. **(3.2.0 다음 릴리즈부터)** 사슬을 끝까지 따라가는 이 검사는 emit마다 도는 자리라 debug 층으로 내려갔습니다 — `q.debug`를 꺼 두면 검사하지 않고, 순환은 스택 오버플로로 끝나는 **정의되지 않은 동작**입니다(Slot 원소 자리라면 그 Slot이 망가진 채 남을 수 있습니다). 개발 중에는 debug를 켜 두세요.
+- **언제**: [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때, props 자리에 놓인 State의 값을 따라가다(State가 다른 State를 값으로 들고 있으면 그 State도 마저 벗기는 재귀) 결국 자기 자신으로 돌아오는 순환을 만났을 때(예: `a:Set(b); b:Set(a)`). Slot에 넣은 State도 같습니다 — 원소 State의 값 사슬이 순환하면(`st:Set(st)` 등) Slot이 그 값을 읽는 때 — 마운트될 때(이미 마운트된 Slot이면 넣는 줄)나 그 `:Set` 줄 — 던집니다. **(3.3.0부터)** 마운트 전 Slot에 넣는 줄에서는 던지지 않습니다 — 그 시점엔 원소 State의 값을 읽지 않으므로(지연 계산), debug에서도 값을 앞당겨 읽지 않습니다. **(3.3.0부터)** 사슬을 끝까지 따라가는 이 검사는 emit마다 도는 자리라 debug 층으로 내려갔습니다 — `q.debug`를 꺼 두면 검사하지 않고, 순환은 스택 오버플로로 끝나는 **정의되지 않은 동작**입니다(Slot 원소 자리라면 그 Slot이 망가진 채 남을 수 있습니다). 개발 중에는 debug를 켜 두세요.
 - **관측(계약 아님)**: Slot 원소 자리에서 던진 뒤 그 Slot은 지금 이전 원소를 유지한 채 다음 정상 `:Set`으로 이어지는 것이 관측됩니다.
 - **고치려면**: State가 다른 State를 값으로 들고 있는 것 자체는 되지만, 그 사슬이 순환하면 안 됩니다 — 순환이 생기지 않게 값 대입을 정리하세요.
 - **참고**: [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진](/quadnomicon/08-extensible-dispatch-engine/) · [`slot:Add`](/reference/core/06-slot/#slotaddelement-index)
@@ -259,7 +260,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Dispatch.{fnName}: inst must not be nil` — `quad-base/src/Dispatch/init.luau`
 
-- **언제**: `q.Dispatch.process`/`q.Dispatch.retractFrom`/`q.Dispatch.getHandler`를 `inst = nil`로 직접 부를 때. `{fnName}`은 실제로 부른 함수 이름입니다(`getHandler`의 게이트는 3.2.0 다음 릴리즈부터).
+- **언제**: `q.Dispatch.process`/`q.Dispatch.retractFrom`/`q.Dispatch.getHandler`를 `inst = nil`로 직접 부를 때. `{fnName}`은 실제로 부른 함수 이름입니다(`getHandler`의 게이트는 3.3.0부터).
 - **고치려면**: 실제 대상 요소(`inst`)를 넘기세요.
 - **참고**: [`q.Dispatch.process(inst, key, value, index)`](/reference/extend/02-dispatch-handler-contract/#qdispatchprocessinst-key-value-index)
 
@@ -275,7 +276,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Dispatch.{fnName}: key must not be nil` — `quad-base/src/Dispatch/init.luau`
 
-- **언제**: `q.Dispatch.process`/`q.Dispatch.retractFrom`/`q.Dispatch.getHandler`를 `key = nil`로 부를 때(`getHandler`의 게이트는 3.2.0 다음 릴리즈부터).
+- **언제**: `q.Dispatch.process`/`q.Dispatch.retractFrom`/`q.Dispatch.getHandler`를 `key = nil`로 부를 때(`getHandler`의 게이트는 3.3.0부터).
 - **고치려면**: 실제 props 키(숫자 또는 문자열)를 넘기세요.
 - **참고**: [`q.Dispatch.process(inst, key, value, index)`](/reference/extend/02-dispatch-handler-contract/#qdispatchprocessinst-key-value-index)
 
@@ -293,7 +294,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `brand:` 뒤에는 그 값이 답하는 브랜드 이름이 **전부, 이름순으로** 쉼표로 이어 붙습니다 — 모듈의 `is<Brand>` 필드 가운데 [`q.BrandPredicates`](/reference/core/11-predicates/#qbrandpredicates)에 등록된 술어만 묻습니다(quad-base의 `q.isX` 술어도 모듈이 만들어질 때 같은 집합에 등록됩니다). 그래서 `q.PreRef()`는 `Epoch, PreRef, Ref`, `q.Source(1)`은 `Epoch, Source, State`처럼 포함 관계에 있는 이름이 함께 나옵니다. 등록되지 않은 `is*` 헬퍼는 묻지 않고, 등록된 술어가 던지면 그 술어는 걸리지 않은 것으로 칩니다.
 
-꼬리 힌트는 이렇게 정해집니다. **값이 [`q.Protocols.DispatchHint`](/reference/extend/02-dispatch-handler-contract/#qprotocolsdispatchhint)에 속하면** 그 값의 `__dispatchHint(key)`를 한 번 불러 돌려받은 문장을 ` - ` 뒤에 씁니다 — 브랜드가 자기 쓰임을 직접 말합니다. **(3.2.0 다음 릴리즈부터)** quad가 등록한 문장은 이렇습니다(문구는 API가 아닙니다):
+꼬리 힌트는 이렇게 정해집니다. **값이 [`q.Protocols.DispatchHint`](/reference/extend/02-dispatch-handler-contract/#qprotocolsdispatchhint)에 속하면** 그 값의 `__dispatchHint(key)`를 한 번 불러 돌려받은 문장을 ` - ` 뒤에 씁니다 — 브랜드가 자기 쓰임을 직접 말합니다. **(3.3.0부터)** quad가 등록한 문장은 이렇습니다(문구는 API가 아닙니다):
 
 | 값 | 꼬리 |
 |---|---|
@@ -354,7 +355,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Dispatch.drive: props must be a plain { ... } table - a quad value needs the braces (got {브랜드 이름들 또는 "a table with a metatable"})` — `quad-base/src/Dispatch/init.luau`
 
-- **언제**: `flattened` 자체가 메타테이블을 가진 값이거나, 메타테이블이 없는 quad 브랜드 값(`q.AttrKey(...)`·매퍼 디스크립터)일 때 — `D.Frame(q.Source(1))`처럼 중괄호를 잊어 quad 값 하나를 그대로 props로 넘긴 흔한 실수를 잡습니다. **(3.2.0 다음 릴리즈부터)** 프로바이더가 등록한 브랜드 술어(`q.BrandPredicates`)까지 훑는 검사는 [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때만 돕니다 — 메타테이블 없는 평범한 테이블에 브랜드를 붙이는 프로바이더 값은 debug를 꺼 두면 여기 걸리지 않고 그 필드들이 props로 해석됩니다(대개 `Quad0076`). quad-base 값은 전부 debug와 무관하게 걸립니다.
+- **언제**: `flattened` 자체가 메타테이블을 가진 값이거나, 메타테이블이 없는 quad 브랜드 값(`q.AttrKey(...)`·매퍼 디스크립터)일 때 — `D.Frame(q.Source(1))`처럼 중괄호를 잊어 quad 값 하나를 그대로 props로 넘긴 흔한 실수를 잡습니다. **(3.3.0부터)** 프로바이더가 등록한 브랜드 술어(`q.BrandPredicates`)까지 훑는 검사는 [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때만 돕니다 — 메타테이블 없는 평범한 테이블에 브랜드를 붙이는 프로바이더 값은 debug를 꺼 두면 여기 걸리지 않고 그 필드들이 props로 해석됩니다(대개 `Quad0076`). quad-base 값은 전부 debug와 무관하게 걸립니다.
 - **고치려면**: 항상 중괄호로 감싼 평범한 테이블을 넘기세요 — `D.Frame { Name = q.Source("x") }`, `D.Frame { q.Attr{...} }`, `D.Frame { child }`처럼. (`D.Frame { q.Source(1) }`은 감싸도 `Quad0076`입니다 — 숫자 키에 놓인 `Source<number>`를 받는 핸들러가 없습니다.)
 - **참고**: [`q.Dispatch.drive(inst, flattened)`](/reference/extend/02-dispatch-handler-contract/#qdispatchdriveinst-flattened)
 
@@ -394,7 +395,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Bookkeeping.recompute: rewound 10000 times in one pass - a subscriber keeps changing a length before the position it is told about (a Slot Offset callback that adds and removes on every value never settles)` — `quad-base/src/Bookkeeping.luau`
 
-- **언제**: 한 번의 자리 계산이 1만 번 넘게 되감았을 때 — 자리 계산 도중 발행된 `Offset`을 받은 콜백이 그 앞자리의 길이를 바꿔 계산이 그 자리부터 다시 돌기를 끝없이 되풀이하는 경우입니다. 흔한 모양은 `slot.Offset`을 보는 Observer·Effect가 값마다 옆 Slot의 원소를 넣었다 뺐다 하는 것입니다. 이 한도는 늘 켜져 있고([`q.debug`](/reference/core/01-quad-module/#qdebug)와 무관) [`Quad0263`](/reference/errors/04-ref-observer-effect/#quad0263)(`Effect`의 지연 재실행)과 같은 수입니다. 수렴하는 되감기는 정의된 동작이고(목록이 아무리 길어도 되감기가 끝나면 걸리지 않습니다), 수렴하지 않는 고리는 정의되지 않은 동작입니다 — 이 한도는 그 고리를 정의하는 것이 아니라 무한히 돌지 않고 끝나게 하는 장치입니다([`slot.Offset`](/reference/core/06-slot/#slotoffset)). 게시된 3.2.0에는 이 한도가 없어 같은 코드가 에러 없이 끝나지 않습니다. 에러는 그 계산을 시작한 줄(CRUD·`:Set`·`setLength`)을 가리킵니다.
+- **언제**: 한 번의 자리 계산이 1만 번 넘게 되감았을 때 — 자리 계산 도중 발행된 `Offset`을 받은 콜백이 그 앞자리의 길이를 바꿔 계산이 그 자리부터 다시 돌기를 끝없이 되풀이하는 경우입니다. 흔한 모양은 `slot.Offset`을 보는 Observer·Effect가 값마다 옆 Slot의 원소를 넣었다 뺐다 하는 것입니다. 이 한도는 늘 켜져 있고([`q.debug`](/reference/core/01-quad-module/#qdebug)와 무관) [`Quad0263`](/reference/errors/04-ref-observer-effect/#quad0263)(`Effect`의 지연 재실행)과 같은 수입니다. 수렴하는 되감기는 정의된 동작이고(목록이 아무리 길어도 되감기가 끝나면 걸리지 않습니다), 수렴하지 않는 고리는 정의되지 않은 동작입니다 — 이 한도는 그 고리를 정의하는 것이 아니라 무한히 돌지 않고 끝나게 하는 장치입니다([`slot.Offset`](/reference/core/06-slot/#slotoffset)). 3.2.0까지는 이 한도가 없어 같은 코드가 에러 없이 끝나지 않습니다. 에러는 그 계산을 시작한 줄(CRUD·`:Set`·`setLength`)을 가리킵니다.
 - **고치려면**: 콜백이 넣고 빼는 조건이 한 값에서 멈추게 하세요 — 받은 값에 따라 넣기와 빼기가 번갈아 참이 되면 끝나지 않습니다. 넣을지 말지를 콜백이 바꾸는 그 길이에 기대지 않는 값(데이터 개수 등)으로 정하세요.
 - **관측(계약 아님)**: 이 에러는 자리 계산 도중에 나므로 그 부모의 부기는 멈춘 채 남습니다([`slot.Offset`](/reference/core/06-slot/#slotoffset)의 caution).
 - **참고**: [`slot.Offset`](/reference/core/06-slot/#slotoffset), [Length/Offset 부기](/reference/extend/02-dispatch-handler-contract/#lengthoffset-부기)

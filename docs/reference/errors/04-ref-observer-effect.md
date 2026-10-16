@@ -273,7 +273,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 `{kind}: must be an array item, not the value of a {typeof(k)} key` — `quad-base/src/Ref/init.luau`
 
-- **언제**: `PreRef`/`PostRef`를 props의 문자 키 값 자리에 두었을 때(평범한 `Ref`는 이 가드가 없습니다 — 3.2.0 다음 릴리즈부터 [`Quad0076`](./02-dispatch-bookkeeping.md#quad0076)이 문자 키 꼬리로 같은 안내를 합니다) — 단 그 키가 클래스의 반영 프로퍼티나 이벤트 이름이면 프로퍼티·이벤트 핸들러가 먼저 받아 이 가드에 닿지 않습니다(`Name = ref`는 핸들러의 번호 없는 타입 에러, `Size = ref`는 조용히 대입, `Activated = ref`는 `Quad0218` — mock에서의 관측, 계약 아님; 생성 props 타입이 strict에서 이 자리를 거부합니다). 그런 자리는 [`q.debug`](../core/01-quad-module.md#qdebug)를 켜면 경고 한 줄(`{kind}: found at string key …`)로 드러납니다.
+- **언제**: `PreRef`/`PostRef`를 props의 문자 키 값 자리에 두었을 때(평범한 `Ref`는 이 가드가 없습니다 — 3.3.0부터 [`Quad0076`](./02-dispatch-bookkeeping.md#quad0076)이 문자 키 꼬리로 같은 안내를 합니다) — 단 그 키가 클래스의 반영 프로퍼티나 이벤트 이름이면 프로퍼티·이벤트 핸들러가 먼저 받아 이 가드에 닿지 않습니다(`Name = ref`는 핸들러의 번호 없는 타입 에러, `Size = ref`는 조용히 대입, `Activated = ref`는 `Quad0218` — mock에서의 관측, 계약 아님; 생성 props 타입이 strict에서 이 자리를 거부합니다). 그런 자리는 [`q.debug`](../core/01-quad-module.md#qdebug)를 켜면 경고 한 줄(`{kind}: found at string key …`)로 드러납니다.
 - **고치려면**: 숫자 키(배열부) 자리에만 놓으세요.
 - **참고**: [숫자 키 자리에만 놓는다](../core/07-ref.md#숫자-키-자리에만-놓는다)
 
@@ -304,7 +304,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 `Effect: fn re-ran 10000 times in one loop - the fn keeps setting one of its own deps (Source:Set propagates even an equal value; write with Source:SetIfChanged to skip it)` — `quad-base/src/Effect.luau`
 
-- **언제**: `Effect`의 지연 재실행 루프에서 `fn`이 1만 번 돈 뒤에도 또 다시 돌아야 할 때 — `fn`이 자기 의존성(이나 그 상류)을 계속 `:Set`해 끝나지 않는 경우입니다. 이 한도는 늘 켜져 있습니다([`q.debug`](../core/01-quad-module.md#qdebug)와 무관). 수렴하는 재실행은 정의된 동작이고, 수렴하지 않는 고리는 정의되지 않은 동작입니다 — 이 한도는 그 고리를 정의하는 것이 아니라 무한히 돌지 않고 끝나게 하는 장치입니다. 첫 실행이든, 구독한 뒤 어떤 `:Set`이 깨운 실행이든 같습니다. `source:Set`은 같은 값을 다시 넣어도 전파하므로 조건 없이 같은 값을 되쓰는 `fn`이 가장 흔한 원인입니다. 게시된 3.2.0에는 이 한도가 없어 같은 코드가 에러 없이 끝나지 않습니다. 에러는 첫 실행이면 `q.Effect` 줄, 이후 실행이면 반복을 시작한 `:Set` 줄을 가리킵니다.
+- **언제**: `Effect`의 지연 재실행 루프에서 `fn`이 1만 번 돈 뒤에도 또 다시 돌아야 할 때 — `fn`이 자기 의존성(이나 그 상류)을 계속 `:Set`해 끝나지 않는 경우입니다. 이 한도는 늘 켜져 있습니다([`q.debug`](../core/01-quad-module.md#qdebug)와 무관). 수렴하는 재실행은 정의된 동작이고, 수렴하지 않는 고리는 정의되지 않은 동작입니다 — 이 한도는 그 고리를 정의하는 것이 아니라 무한히 돌지 않고 끝나게 하는 장치입니다. 첫 실행이든, 구독한 뒤 어떤 `:Set`이 깨운 실행이든 같습니다. `source:Set`은 같은 값을 다시 넣어도 전파하므로 조건 없이 같은 값을 되쓰는 `fn`이 가장 흔한 원인입니다. 3.2.0까지는 이 한도가 없어 같은 코드가 에러 없이 끝나지 않습니다. 에러는 첫 실행이면 `q.Effect` 줄, 이후 실행이면 반복을 시작한 `:Set` 줄을 가리킵니다.
 - **고치려면**: 되쓰기를 [`dep:SetIfChanged(c)`](../core/02-source.md#sourcesetifchangedv)로 하세요 — 값이 같으면(`==`) 아무것도 하지 않아 반복이 끝납니다.
 - **에러 뒤**: 이 에러가 난 `Effect`는 `fn`이 던진 것과 같이 죽습니다(계약 — [`q.Effect`](../core/05-observer-effect.md#qeffectfn-deps)). 고친 뒤에는 새 `Effect`를 만드세요.
 - **참고**: [`q.Effect(fn, ...deps)`](../core/05-observer-effect.md#qeffectfn-deps), [`source:SetIfChanged(v)`](../core/02-source.md#sourcesetifchangedv)

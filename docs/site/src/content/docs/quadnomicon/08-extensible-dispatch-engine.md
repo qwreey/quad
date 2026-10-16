@@ -199,7 +199,7 @@ base가 소유하되 **최하위 밴드**에 등록됩니다.
    `Quad0076 Dispatch: no handler matched key 1 (value: boolean) - check
    that the provider for this value (e.g. quad-roblox) is initialized`.
    브랜드 조회는 매치 실패 진단과 drive의 props 검사(`Quad0083`)에서 돕니다 — props 검사 쪽은 3.1.0~3.2.0엔 매 drive마다,
-   **[2026-10-01 기준] 다음 릴리즈부터는 `q.debug`가 켜져 있을 때만** 이 전체 조회를 돌고(평소엔 메타테이블 유무와
+   **3.3.0부터는 `q.debug`가 켜져 있을 때만** 이 전체 조회를 돌고(평소엔 메타테이블 유무와
    quad-base의 메타테이블 없는 브랜드만 봅니다), 실패한 뒤 이름을 붙일 때는 여전히 씁니다. 모듈의 `is<Brand>` 필드 중 모듈의 `BrandPredicates`에 등록된 것만
    훑으므로, 프로바이더는 `isTween` 같은 술어를 모듈에 얹고 그 집합에 등록합니다(등록되지 않은 `is*` 헬퍼는 무시).
    quad-base 자신의 `q.isX` 술어도 모듈이 만들어질 때 같은 집합에 등록되니, 디스패치는

@@ -7,7 +7,7 @@ description: "프로퍼티 변경 신호를 숫자 키 자리 디스크립터로
 
 이 페이지의 심볼: [`q.OnChange(name, fn)`](#qonchangename-fn) · [`q.Out(name, src)`](#qoutname-src)
 
-> **[2026-09-27 기준]** `q.Out`은 게시된 3.2.0에는 없습니다 — 다음 릴리즈부터([변경 이력](/changelog/) `[Unreleased]`). 그전엔 `q.OnChange(name, function(v) if v ~= src:Get() then src:Set(v) end end)`가 같은 일을 합니다.
+> **[2026-09-27 기준]** `q.Out`은 3.3.0부터 있습니다 — 3.2.0에는 없습니다([변경 이력](/changelog/) `[3.3.0]`). 그전엔 `q.OnChange(name, function(v) if v ~= src:Get() then src:Set(v) end end)`가 같은 일을 합니다.
 
 :::note
 `OnChange`는 `quad-roblox` 백엔드 전용입니다 — 신호를 찾는 일 자체가 엔진의 지식이라
@@ -43,7 +43,7 @@ export type OnChangeDescriptor<K> = { Name: K, Callback: (index<PropTypesRead, K
 | 이름 | 타입 | 설명 |
 |---|---|---|
 | `name` | 프로퍼티 이름 문자열 | `PropTypesRead`의 키여야 한다 — 오타는 타입 에러 |
-| `fn` | `(newValue) -> ()` | 그 프로퍼티가 바뀔 때 불린다. 파라미터 타입은 이름에서 추론된다 |
+| `fn` | `(newValue) -> ()` | 그 프로퍼티가 바뀔 때 불린다. 파라미터 타입은 이름에서 정해진다 — 주석을 생략해도 잘못 쓰면 타입 에러가 나지만, 편집기의 hover·자동완성은 주석을 달아야 나온다 |
 
 **`"Parent"`의 콜백 인자는 `Instance?`입니다.** 인스턴스가 트리에서 빠지는 순간 엔진이 `nil`을 주고, 그 순간을 잡는 것이 `Parent`를 지켜보는 주된 이유라서 타입이 그렇게 생성됩니다 — `function(p: Instance)`로 주석하면 타입 에러이고, 본문에서 `nil`을 먼저 걸러야 합니다. 같은 이유로 `AncestryChanged` 이벤트의 둘째 인자 `parent`도 `Instance?`입니다([`02-d`](/reference/roblox/02-d/) 이벤트 절).
 
@@ -59,7 +59,7 @@ local box = D.Frame({
 	q.OnChange("AbsoluteSize", function(v: Vector2) -- 읽기 전용 프로퍼티도 된다
 		print(v.X, v.Y)
 	end),
-	q.OnChange("Visible", function(v)               -- 주석을 생략해도 boolean으로 추론된다
+	q.OnChange("Visible", function(v)               -- 주석을 생략해도 검사는 된다(v를 string으로 쓰면 에러) — hover·자동완성은 주석이 있어야
 		local _: boolean = v
 	end),
 })

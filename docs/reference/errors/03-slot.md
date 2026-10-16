@@ -33,7 +33,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `Slot:List: data must be a plain array - key "{tostring(k)}" is not an array position` — `quad-base/src/Slot/List.luau`
 
-- **언제**: 재조정 중 `data` 테이블에 정수가 아니거나 1보다 작은 키가 있을 때 — 딕셔너리(아이디 맵, 디코딩된 JSON 오브젝트 등)를 통째로 `:List`에 준 경우가 대표적입니다. **(3.2.0 다음 릴리즈부터)** 평소에는 배열 부분이 비어 있는데 다른 키가 있는 경우(바로 그 딕셔너리)만 봅니다 — 키 전수 검사는 재조정마다 O(N)이라 [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때만 돕니다. 그래서 배열에 문자 키가 **덧붙은** 데이터(`{ a, b, extra = 1 }`)는 debug를 꺼 두면 덧붙은 키가 조용히 무시되고 배열 부분만 재조정됩니다.
+- **언제**: 재조정 중 `data` 테이블에 정수가 아니거나 1보다 작은 키가 있을 때 — 딕셔너리(아이디 맵, 디코딩된 JSON 오브젝트 등)를 통째로 `:List`에 준 경우가 대표적입니다. **(3.3.0부터)** 평소에는 배열 부분이 비어 있는데 다른 키가 있는 경우(바로 그 딕셔너리)만 봅니다 — 키 전수 검사는 재조정마다 O(N)이라 [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때만 돕니다. 그래서 배열에 문자 키가 **덧붙은** 데이터(`{ a, b, extra = 1 }`)는 debug를 꺼 두면 덧붙은 키가 조용히 무시되고 배열 부분만 재조정됩니다.
 - **고치려면**: `data`를 1부터 시작하는 배열로 주세요.
 - **참고**: [`slot:List(data, updateFn, keyFn?, opts?)`](../core/06-slot.md#slotlistdata-updatefn-keyfn-opts)
 
@@ -232,8 +232,8 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `Slot: cannot mutate a Slot while it is being mounted or while one of its elements is being inserted/removed (it, or a Slot inside it, is mid-operation) - a :List/:Single updateFn, an Observer that fires during that mount, or a backend signal callback that runs synchronously inside the insert/remove (an element's parent changed) must not CRUD this Slot or an ancestor Slot; run it through slot:WhenIdle(fn) - fn runs as soon as the operation has finished (or an earlier operation on this Slot or a Slot inside it threw mid-way - then this Slot stays unusable: dispose its host Instance)` — `quad-base/src/Slot/init.luau`
 
-- **언제**: 이 `Slot`이나 그 안의 `Slot`이 마운트되는 동안(`_materializing`) 이 `Slot`에 CRUD나 `:List`/`:Single` 설치를 쓰려고 할 때 — 중첩된 `:List`의 첫 `updateFn`이나 그 안에서 도는 `Observer`가 조상 `Slot`을 건드리면 여기 걸립니다. 이미 마운트된 트리에 `Add`/`Splice`/`Replace`로 `:List` Slot을 넣을 때도 같고, 이때 막히는 범위는 바로 위 부모만이 아니라 **맨 위까지의 조상 `Slot` 전부**입니다(3.2.0 다음 릴리즈부터 — 3.2.0에는 이 거부가 없어 조상을 고치면 내부 에러로 죽거나 조부모를 지울 때 유령 자리가 남았습니다).
-- **언제(엔진 호출 안)**: [다음 릴리즈부터] 원소를 붙이거나 떼는 **엔진 호출이 도는 동안**에도 같은 표시가 섭니다 — 그 호출 안에서 동기로 불리는 신호 콜백(Roblox에서 `SignalBehavior`가 Immediate일 때 원소의 `Parent` 변경 신호 — `q.OnChange("Parent", fn)`의 `fn`)이 **그 연산이 진행 중인 `Slot`과 그 위의 조상 `Slot`들**(원소를 받거나 내보내는 `Slot`과 맨 위까지의 조상, 통째로 붙고 있는 `Slot`과 그 안의 `Slot`, 파괴되고 있는 `Slot`)을 CRUD하면 여기 걸립니다. 조상까지 막는 이유는 자식 `Slot`의 `Length`가 엔진 호출이 끝난 뒤에야 갱신되기 때문입니다 — 그 사이 조상이 자식 뒤 자리를 계산하면 낡은 길이를 씁니다. 그 연산은 끝까지 마쳐지고 부기는 온전합니다(막힌 것은 콜백의 CRUD뿐). Deferred에서는 콜백이 연산이 끝난 뒤에 불리므로 걸리지 않습니다. 같은 부모 아래의 형제 `Slot`과 무관한 `Slot`은 막지 않고, 언마운트 도중의 콜백은 이미 떼어진 `Slot`을 보므로 막지 않습니다.
+- **언제**: 이 `Slot`이나 그 안의 `Slot`이 마운트되는 동안(`_materializing`) 이 `Slot`에 CRUD나 `:List`/`:Single` 설치를 쓰려고 할 때 — 중첩된 `:List`의 첫 `updateFn`이나 그 안에서 도는 `Observer`가 조상 `Slot`을 건드리면 여기 걸립니다. 이미 마운트된 트리에 `Add`/`Splice`/`Replace`로 `:List` Slot을 넣을 때도 같고, 이때 막히는 범위는 바로 위 부모만이 아니라 **맨 위까지의 조상 `Slot` 전부**입니다(3.3.0부터 — 3.2.0에는 이 거부가 없어 조상을 고치면 내부 에러로 죽거나 조부모를 지울 때 유령 자리가 남았습니다).
+- **언제(엔진 호출 안)**: [3.3.0부터] 원소를 붙이거나 떼는 **엔진 호출이 도는 동안**에도 같은 표시가 섭니다 — 그 호출 안에서 동기로 불리는 신호 콜백(Roblox에서 `SignalBehavior`가 Immediate일 때 원소의 `Parent` 변경 신호 — `q.OnChange("Parent", fn)`의 `fn`)이 **그 연산이 진행 중인 `Slot`과 그 위의 조상 `Slot`들**(원소를 받거나 내보내는 `Slot`과 맨 위까지의 조상, 통째로 붙고 있는 `Slot`과 그 안의 `Slot`, 파괴되고 있는 `Slot`)을 CRUD하면 여기 걸립니다. 조상까지 막는 이유는 자식 `Slot`의 `Length`가 엔진 호출이 끝난 뒤에야 갱신되기 때문입니다 — 그 사이 조상이 자식 뒤 자리를 계산하면 낡은 길이를 씁니다. 그 연산은 끝까지 마쳐지고 부기는 온전합니다(막힌 것은 콜백의 CRUD뿐). Deferred에서는 콜백이 연산이 끝난 뒤에 불리므로 걸리지 않습니다. 같은 부모 아래의 형제 `Slot`과 무관한 `Slot`은 막지 않고, 언마운트 도중의 콜백은 이미 떼어진 `Slot`을 보므로 막지 않습니다.
 - **고치려면**: 그 일을 [`slot:WhenIdle(fn)`](../core/06-slot.md#slotwhenidlefn)에 넘기세요 — `fn(slot)`은 그 `Slot`이 한가하면 바로, 연산 중이면 그 연산이 끝난 직후에 실행됩니다(신호 설정과 무관하게 같은 코드). index는 `fn` 안에서 다시 구하세요(`slot:IndexOf(element)`). `updateFn` 안에서 조상을 바꾸려던 것이라면 먼저 그 일이 `updateFn`의 몫인지 보세요 — `updateFn`은 항목 하나를 원소로 바꾸는 함수입니다. "`Observer`에서"라도 그 `Observer`가 마운트 중에 동기로 발화하면(첫 발화 포함) 같은 에러이고 처방도 같습니다. 앞선 연산이 도중에 던진 뒤에 이 에러가 난다면 그 예외의 원인을 고치세요.
 - **관측(계약 아님)**: 엔진 호출 자체가 던지면(예: 인스턴스를 자기 자손에 넣어 엔진이 순환을 거부) 그 `Slot`에 표시가 남아 이후의 CRUD가 이 에러로 막힙니다.
 - **관측(계약 아님)**: 마운트 도중 어디서든 던지면 그 마운트에 걸린 사슬 전체에 "마운트 중" 표시가 남아, 그 뒤 **이 `Slot`과 그 조상 `Slot`들**은 이 에러로 계속 막힙니다(quad는 사용자 코드의 예외를 복구하지 않습니다). `D.Frame({ outer })`처럼 호스트를 만드는 호출 자체가 던진 경우엔 호스트가 반환되지 않습니다.
@@ -299,7 +299,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `{surface}: the same element appears twice` — `quad-base/src/Slot/init.luau`
 
-- **언제**: [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때, 한 번의 호출(`Splice`, 생성자 `initial` 등) 안에 같은 값이 두 번 들어 있을 때 — 원소를 하나도 넣기 전에 받은 값 그대로 비교합니다(같은 `State` 두 번도 걸리지만, 같은 Instance를 쥔 서로 다른 `State` 둘은 값을 읽지 않으므로 여기서 걸리지 않고 마운트 때 [`Quad0156`](#quad0156)). **(3.2.0 다음 릴리즈부터)** debug 층 검사입니다 — 꺼 두면 두 번째 값이 자리에 들어가는 순간 [`Quad0170`](#quad0170)이 납니다.
+- **언제**: [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때, 한 번의 호출(`Splice`, 생성자 `initial` 등) 안에 같은 값이 두 번 들어 있을 때 — 원소를 하나도 넣기 전에 받은 값 그대로 비교합니다(같은 `State` 두 번도 걸리지만, 같은 Instance를 쥔 서로 다른 `State` 둘은 값을 읽지 않으므로 여기서 걸리지 않고 마운트 때 [`Quad0156`](#quad0156)). **(3.3.0부터)** debug 층 검사입니다 — 꺼 두면 두 번째 값이 자리에 들어가는 순간 [`Quad0170`](#quad0170)이 납니다.
 - **고치려면**: 배치 안의 원소를 중복 없이 주세요.
 - **참고**: [`q.Slot<<T>>(initial?)`](../core/06-slot.md)
 
@@ -316,7 +316,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 `{surface}: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)` — `quad-base/src/Slot/init.luau`
 
-- **언제**: [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때, `Slot`을 자기 자신이나 자기 조상(원소 관계로 이어진)에 원소로 넣으려 할 때 — 그대로 두면 순환이 생겨 이후 CRUD·해체가 끝나지 않는 재귀로 들어갑니다(아래 관측 줄). **(3.2.0 다음 릴리즈부터)** 원소 관계를 따라 올라가는 이 검사는 넣는 Slot마다 깊이만큼 비용이 들어 debug 층으로 내려갔습니다 — 꺼 두면 넣는 줄은 그대로 통과하고 그 순환은 정의되지 않은 동작입니다. 개발 중에는 debug를 켜 두세요.
+- **언제**: [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때, `Slot`을 자기 자신이나 자기 조상(원소 관계로 이어진)에 원소로 넣으려 할 때 — 그대로 두면 순환이 생겨 이후 CRUD·해체가 끝나지 않는 재귀로 들어갑니다(아래 관측 줄). **(3.3.0부터)** 원소 관계를 따라 올라가는 이 검사는 넣는 Slot마다 깊이만큼 비용이 들어 debug 층으로 내려갔습니다 — 꺼 두면 넣는 줄은 그대로 통과하고 그 순환은 정의되지 않은 동작입니다. 개발 중에는 debug를 켜 두세요.
 - **고치려면**: 순환이 생기지 않게 구조를 바꾸세요. (인스턴스를 매개로 한 순환은 이 검사 밖입니다 — 정의되지 않은 동작.)
 - **관측(계약 아님)**: debug를 꺼 둔 채 순환을 넣으면 그 순환 트리의 다음 CRUD나 해체가 스택 오버플로나 내부 불변식 에러로 죽고(어느 쪽인지는 연산마다 다릅니다), 그 뒤의 부기 무결은 약속하지 않습니다.
 - **참고**: [`slot:Add(element, index?)`](../core/06-slot.md#slotaddelement-index)

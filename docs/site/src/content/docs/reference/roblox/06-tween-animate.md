@@ -81,6 +81,7 @@ local panel = D.Frame({ Size = size })
   기본값이 채워집니다.
 - **`Override`는 문자열**입니다 — `"Cancel"`(기본) 또는 `"Finish"`. 뜻은 [프로퍼티에서의 동작](#프로퍼티에서의-동작)에서.
 - **`Dedup`은 기본 켜짐**입니다(필드를 생략하면 `nil`이고 소비자가 참으로 취급). 끄려면 `Dedup = false`.
+- **[3.3.0 기준 — 4.0.0 전까지 다듬어질 수 있음]** 콜백 셋의 정의(언제·몇 번·어떤 순서로 불리는지)는 아직 설계를 더 보는 표면입니다.
 - **`Started`/`Completed`/`Cancelled`는 `(inst, prop, value)`를 받는 함수**입니다 — 인자가 필요 없으면 `function() … end`로 적어도 됩니다. 언제 불리는지는 [프로퍼티에서의 동작](#프로퍼티에서의-동작)에서. `:Mapped(fn)`로 만든 값에도 그대로 실리고(그때 `value`는 매핑된 값), 콜백만 바꾼 사본은 [`tween:Wrapped`](#tweenwrappedwrap)로 만듭니다.
 - **`Info` 없이 `Time = 0`이고 `DelayTime`/`RepeatCount`/`Reverses`도 없으면(또는 0·거짓) 엔진 트윈을 만들지 않고 값을 그 자리에서 씁니다** — 첫 세팅과 같은 스냅이라 콜백도 스냅 규칙을 따릅니다. 그 셋 중 하나라도 있으면 평소대로 엔진 트윈입니다.
 
@@ -107,7 +108,7 @@ local panel = D.Frame({ Size = size })
 `Info`/`Style`/`Direction`은 **생성 시점에 검사하지 않습니다** — 타입이 이미 정밀하고, 타입을 우회한
 값은 엔진이 자기 에러를 냅니다(`inst[k] = 잘못된값`과 같은 부류).
 
-`tostring(tween)`은 `Tween(10, 0.3s)`처럼 목표 값과(편의 필드로 준 경우) `Time`을 보여줍니다. `Info`를 줬으면 `Tween(10, Info)`처럼 `Info`를 보여 줍니다 — `Info`가 편의 필드보다 우선하므로(**[2026-10-06 기준, 다음 릴리즈부터]**; 3.2.0까지는 함께 준 `Time`을 보여 줬습니다). [`q.debug`](/reference/core/01-quad-module/#qdebug)를 켜면 `Info`와 편의 필드를 함께 준 것도 한 줄로 알립니다(`Tween`·`Animate` 모두 — `Animate`의 `Info`가 `State`면 그 `State`가 값을 가진 동안 무시된다는 문구로).
+`tostring(tween)`은 `Tween(10, 0.3s)`처럼 목표 값과(편의 필드로 준 경우) `Time`을 보여줍니다. `Info`를 줬으면 `Tween(10, Info)`처럼 `Info`를 보여 줍니다 — `Info`가 편의 필드보다 우선하므로(**[3.3.0부터]**; 3.2.0까지는 함께 준 `Time`을 보여 줬습니다). [`q.debug`](/reference/core/01-quad-module/#qdebug)를 켜면 `Info`와 편의 필드를 함께 준 것도 한 줄로 알립니다(`Tween`·`Animate` 모두 — `Animate`의 `Info`가 `State`면 그 `State`가 값을 가진 동안 무시된다는 문구로).
 
 ---
 
@@ -234,6 +235,8 @@ local guarded = alpha:Apply(q.Animate({
 
 local box = D.Frame({ BackgroundTransparency = animated })
 ```
+
+**결과는 `Tween` 값의 State입니다.** `state:Apply(q.Animate { … })`가 돌려주는 State의 `:Get()`은 원래 값(`number`·`Color3` …)이 아니라 그 값을 목표로 든 **`Tween` 레코드**입니다(`State<Tween<T>>`). 프로퍼티 자리에 놓으라고 있는 값이니 거기에만 쓰세요 — 그 State에서 다시 `:Compute`로 파생하면 콜백이 레코드를 받아 `attempt to compare table < number` 같은 런타임 에러로 죽습니다. "거의 투명한가" 같은 값이 더 필요하면 `Animate`를 걸기 **전**의 State에서 파생하세요. strict 타입은 이 실수를 늘 잡지는 못합니다 — 사슬이 주석 없는 인라인 `:Compute`에서 시작하면 그 결과가 무검사라, `local fade: State<number> = src:Compute(…):Apply(q.Animate { … })`처럼 틀린 주석도 통과합니다([디버깅 체크리스트](/how-to/10-debugging-and-troubleshooting/)의 "파생 State의 결과 타입").
 
 **동작**
 

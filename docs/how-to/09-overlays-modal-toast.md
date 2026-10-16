@@ -131,7 +131,7 @@ end
 
 `activeModal`을 다른 값으로 갈아 끼우면 **옛 인스턴스는 파괴되지 않고 트리에서 떼어지기만 합니다**([시작하기 11 §6](../getting-started/11-slot.md#6-하나만-갈아-끼우기--state를-자리에-놓기)) — 그래서 위 코드는 `:Set` 대신 [`:SetAndDispose`](../reference/core/02-source.md#sourcesetanddisposev)를 씁니다. 새 값을 앉혀 전파가 끝난 뒤 옛 값을 `q.dispose`로 파괴하므로, 닫을 때(`nil`)는 방금 닫힌 모달이, 하나가 떠 있는 동안 `openConfirmDialog`를 다시 부르면 먼저 떠 있던 모달이 정리됩니다(처음 열 때처럼 옛 값이 `nil`이면 지울 것이 없어 그냥 넘어갑니다). `:Set`만 쓰면 열 때마다 떼어진 모달이 하나씩 남습니다 — [2026-09-27 mock 실측]. 그래서 매번 새로 만드는 이 모양은 열 때마다 확실히 버릴 생각이 있을 때 씁니다.
 
-**[2026-10-01 기준]** `:SetAndDispose`는 게시된 3.2.0에는 없습니다 — 다음 릴리즈부터([변경 이력](../../CHANGELOG.md)의 `[Unreleased]`). 3.2.0에서는 `local old = activeModal:Get(); activeModal:Set(v); if old then q.dispose(old) end`로 읽으세요(같은 일을 합니다).
+**[2026-10-01 기준]** `:SetAndDispose`는 3.3.0부터 있습니다 — 3.2.0에는 없습니다([변경 이력](../../CHANGELOG.md)의 `[3.3.0]`). 3.2.0에서는 `local old = activeModal:Get(); activeModal:Set(v); if old then q.dispose(old) end`로 읽으세요(같은 일을 합니다).
 <!-- mock 실측 2026-10-01: 열기 → 다시 열기(첫 모달 파괴·새 모달이 자리에) → 확인(닫힌 모달 파괴·자리 빔), Activated 안에서 자기 모달을 파괴해도 에러 없음 -->
 
 </details>

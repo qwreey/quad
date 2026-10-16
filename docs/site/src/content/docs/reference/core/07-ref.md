@@ -61,7 +61,7 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 
 하나의 `Ref`는 **한 자리에만** 놓을 수 있습니다. 생명주기 결합이 그 자리에서 던집니다 — 같은 인스턴스의 두 자리면 `Quad0232 bindLifetime: value is already bound to this Instance (the same handle at two positions?)`, 다른 인스턴스면 `Quad0233 bindLifetime: value is already bound to another Instance`(이 두 문구는 quad-base의 것이라 어느 백엔드에서나 같습니다).
 
-`Source`에 담아 숫자 키 자리에 놓은 `Ref`의 콜백이 그 `Source`를 다시 `:Set`하는 것은 그 자리를 처리하는 도중 같은 자리로 다시 들어오는 재진입이라, 다른 값을 넣으면 정의되지 않은 동작입니다(어느 핸들러든 같은 자리를 처리하는 도중의 재진입은 정의하지 않습니다). 같은 값을 되쓰려면 [`:SetIfChanged`](/reference/core/02-source/#sourcesetifchangedv)를 쓰세요 — 값이 같으면 전파 자체가 없어 재진입이 생기지 않습니다.
+`Source`에 담아 숫자 키 자리에 놓은 `Ref`의 콜백이 그 `Source`를 다시 `:Set`하는 것은 그 자리를 처리하는 도중 같은 자리로 다시 들어오는 재진입이라, 다른 값을 넣으면 정의되지 않은 동작입니다(어느 핸들러든 같은 자리를 처리하는 도중의 재진입은 정의하지 않습니다 — 예외는 엔진이 quad가 쓴 값을 되돌려 보내는 `q.Out`·`OnChange` 왕복 하나입니다, [05](/reference/core/05-observer-effect/)의 "Observer는 최종 소비자" 문단). 같은 값을 되쓰려면 [`:SetIfChanged`](/reference/core/02-source/#sourcesetifchangedv)를 쓰세요 — 값이 같으면 전파 자체가 없어 재진입이 생기지 않습니다.
 
 `PreRef`/`PostRef`는 그 위에 **일회용**이기까지 합니다.
 

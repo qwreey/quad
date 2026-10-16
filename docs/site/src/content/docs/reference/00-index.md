@@ -108,6 +108,7 @@ quad 모듈 인스턴스를 만들고, 초기화 함수·플러그인·백엔드
 | `slot:Swap(indexA, indexB)` | [core/06](/reference/core/06-slot/) |
 | `slot:Get(index)` | [core/06](/reference/core/06-slot/) |
 | `slot:IndexOf(element)` | [core/06](/reference/core/06-slot/) |
+| `slot:WhenIdle(fn)` | [core/06](/reference/core/06-slot/) |
 | `slot:List(data, updateFn, keyFn?, opts?)` | [core/06](/reference/core/06-slot/) |
 | `slot:Single(state, updateFn?, opts?)` | [core/06](/reference/core/06-slot/) |
 
