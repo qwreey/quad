@@ -104,3 +104,6 @@
   31 클래스 밖 동적 탈출구(지금 `D.New(name)`, 프로브 `NewLoose`), 매퍼 루트 센티널 타입.
 - **OnEvent·OnChange 커리** — 사용자: *"커리 꼴이 되면 타이핑 문제에 해결이 보일것 같다 … 오버라이딩으로 선택될 수 있는지 보는게 필요"*. 실측(`audit/decl-typefn-probe-2026-10-16/REPORT.md`
   끝 절): 클래스 먼저 커리 `OnEvent "Frame" "MouseEnter" (fn)`는 제네릭·오버로드 둘 다 콜백에 문맥 타입이 흐르나 **오버로드는 이름 자동완성을 잃는다** — 확정 여부는 사용자 몫.
+- **[확정] OnEvent·OnChange는 클래스 먼저 커리 `OnEvent "Frame" "MouseEnter" (fn)`·`OnChange "Frame" "Visible" (fn)`, 둘째 호출은 제네릭(`K & keyof<…>` + `index<>`)** — 사용자:
+  *"모양 자체는 커링으로 같기에. breaking 자체는 없을것임. 지금 가장 안정적인 방법인 그것으로 가자"*. 즉 둘째 호출의 타이핑 방식(제네릭↔오버로드)은 모양이 같아 나중에 바꿔도
+  호환이 안 깨지고, 지금은 이름 자동완성까지 사는 제네릭으로 간다. 읽기 표면(ReadOnly 포함) 정책 데이터는 구현 때.
