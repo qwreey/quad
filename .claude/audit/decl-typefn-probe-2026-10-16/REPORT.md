@@ -99,3 +99,14 @@ hover는 참조 타입까지 펼쳐 이상하게 보이나 타입은 `Modifier`)
 - O 비용: 프로퍼티 63개 TextButton·ScrollingFrame의 OnChange 오버로드도 too complex 없이 0.46 s/93 MiB(8.7의 "오버로드 교집합 37개부터 죽는다"는 235-이름 스코프 전체 교집합 이야기 —
   클래스별로 나누면 버틴다). 파일 전체 0.48 s/93 MiB.
 - **Studio**(`studio-analysis`): 10번 진단이 위치·문구까지 CLI와 같다.
+
+## 생성 D 범위를 타입 함수로 다시 지으면 — 한도는 "모듈이 내보내는 타입"에 걸린다 — `src/11~16`, `harness/compare/fulld/`·`multi/` [2026-10-16 추가, 4절 2번]
+
+- **통째 D(`11-full-d`: 생성자 31 + Modifier 47 + Mapper 31을 한 모듈이 반환)**: sync(override 없음)에서 모듈 (1,1)에 too complex, 소비 파일(`12`) NEG 0 — vsc(override)에서만 NEG 3/3.
+  **Studio는 11·12 모두 진단 0건**(too complex 표시도 없이 NEG가 사라짐 — CLI보다 나쁜 조용한 실패).
+- **무엇이 넘기나(sync)**: 생성자+Mapper만 반환 171 MiB 정상, Modifier 47만 반환 정상, 생성자 31 + Modifier 32 반환 정상, **생성자 31 + Modifier 40 반환에서 too complex**.
+  리터럴을 나눠도(v2) 같고, **같은 양을 반환하지 않으면(v5 — 파일 안에서만 씀) 정상** — 한도는 모듈 반환 타입이 경계를 넘을 때 걸린다.
+- **쪼개 내보내기**(`13` 생성자+Mapper 모듈, `14` Modifier 47 모듈, `15`가 둘 다 require): sync·Studio 모두 NEG 3/3 — 모듈마다 한도 아래면 산다.
+- **파일별 vs 공용 모듈**(`multi/`, 파일 20개가 같은 생성자 8 + Modifier 4를 씀, 한 프로세스로 전체 검사, sync): 파일별 1 → 5 → 20개 0.53 → 0.66 → 1.26 s, 공용 모듈 0.47 → 0.53 → 0.80 s,
+  둘 다 93 MiB·NEG 전부 — 파일별이 파일당 ~0.04 s 더 든다. **무거운 파일별**(`multi/heavy/` — 파일마다 생성자 31 + Modifier 47을 꺼내 둠, 내보내지 않음): 1 → 5 → 20개 0.71 → 1.37 → 3.95 s,
+  185 → 192 MiB, 어느 파일도 무너지지 않고 NEG 전부; Studio(`16-heavy-local`)도 NEG 잡힘. 즉 **한 파일의 무게는 그 파일에 갇히고 다른 모듈로 새지 않는다** — 넘치는 것은 내보낼 때뿐.
