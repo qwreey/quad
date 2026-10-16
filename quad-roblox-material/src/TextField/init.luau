@@ -20,7 +20,8 @@
 	  ErrorText       string | State<string>?
 	  LeadingIcon     string?                                     image id, 24 px at x = 12
 	  TrailingIcon    string?                                     image id, 24 px at the right edge
-	  Prefix/Suffix   string?                                     shown after the label floated
+	  Prefix/Suffix   string?                                     under a label: fade in once it floated, out when it
+	                                                              drops back (Slots.luau AFFIX); always shown without one
 	  MaxLength       number?                                     utf8 characters; clips typing, shows `n/max`
 	  ShowCounter     boolean?                                    default true; false keeps the MaxLength clipping but drops `n/max`
 	  Disabled        boolean | State<boolean>?                   not editable/focusable, M3 disabled opacities

@@ -314,6 +314,9 @@ local function build(props: Props): Parts
 		end,
 	}
 
+	-- the prefix / suffix fade (Slots.luau AFFIX), shared by both
+	local affixFade = if props.Prefix ~= nil or props.Suffix ~= nil then Slots.affixTransparency(c) else nil
+
 	local row = D.Frame {
 		Name = "Row",
 		Size = UDim2.fromScale(1, 1),
@@ -331,9 +334,9 @@ local function build(props: Props): Parts
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = UDim.new(0, 2),
 		},
-		if props.Prefix ~= nil then Slots.affix(c, "Prefix", props.Prefix) else q.None,
+		if props.Prefix ~= nil then Slots.affix(c, "Prefix", props.Prefix, affixFade :: Theme.Animated) else q.None,
 		input,
-		if props.Suffix ~= nil then Slots.affix(c, "Suffix", props.Suffix) else q.None,
+		if props.Suffix ~= nil then Slots.affix(c, "Suffix", props.Suffix, affixFade :: Theme.Animated) else q.None,
 	}
 
 	local labelInst, notch = Container.label(c, inset)

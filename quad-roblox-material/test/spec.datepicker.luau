@@ -765,8 +765,8 @@ H.section("modal input mode: parsing, errors, range, draft sync, OK gating", fun
 		return d.Month == 5 and d.Day == 5
 	end })
 	local card = H.find(screen, "DatePickerModal")
-	local field = H.find(card, "Field")
 	local panel = H.find(card, "DateInput")
+	local field = H.find(panel, "Input")
 	local body = H.find(card, "DatePickerBody")
 	local toggle = H.find(card, "ModeToggle")
 	-- the toggle draws the Material edit / date_range images (Icons defaults; glyph fallback in spec.icons)
@@ -821,9 +821,9 @@ H.section("modal starts in input mode; field focus ring and error color follow t
 	local overlay, screen = setupModal()
 	Modal.open({ Overlay = overlay, Initial = date(2026, 2, 3), Today = TODAY, StartInInput = true, Locale = "ko" })
 	local card = H.find(screen, "DatePickerModal")
-	local field = H.find(card, "Field")
+	local field = H.find(H.find(card, "DateInput"), "Input")
 	assert(field.Text == "2026-02-03" and H.find(card, "DateInput").Visible == true and H.find(card, "Supporting").Text == "날짜 입력")
-	local outline = H.find(field, "Outline")
+	local outline = H.find(H.find(card, "DateField"), "Outline")
 	H.finishTweens()
 	assert(outline.Color == L.Outline and outline.Thickness == 1)
 	H.fire(field, "Focused")
@@ -839,6 +839,43 @@ H.section("modal starts in input mode; field focus ring and error color follow t
 	assert(outline.Color == L.Outline and outline.Thickness == 1)
 	q.dispose(screen)
 	H.assertNoDebugOutput("modal input start")
+end)
+
+-- the playing tween on `inst` that writes TextTransparency: its target and its time (mock TweenInfo: args[1])
+local function fade(inst: any): (number?, number?)
+	for _, entry in H.tweenLog() do
+		if entry.inst == inst and entry.tween.PlaybackState == "Playing" and entry.props.TextTransparency ~= nil then
+			return entry.props.TextTransparency, entry.info.args[1]
+		end
+	end
+	return nil, nil
+end
+
+H.section("modal input mode: the kit's Outlined TextField, the format placeholder fades with focus (Compose DateInput)", function()
+	local overlay, screen = setupModal()
+	Modal.open({ Overlay = overlay, Today = TODAY, StartInInput = true, Locale = "ko" })
+	local panel = H.find(H.find(screen, "DatePickerModal"), "DateInput")
+	local host = H.find(panel, "DateField")
+	assert(H.countDescendants(panel) == 26, "panel descendants: " .. H.countDescendants(panel))
+	assert(host.ClassName == "Frame" and host.Position == UDim2.fromOffset(16, 16) and host.Size == UDim2.fromOffset(328, 0))
+	assert(#named(host, "OutlineBottom") == 1 and H.find(host, "Label").Text == "날짜", "Outlined, the label in the outline")
+	local box = H.find(host, "Input")
+	local ph = H.find(host, "Placeholder")
+	assert(box.ClassName == "TextBox" and box.Text == "" and box.PlaceholderText ~= "YYYY-MM-DD", "no engine placeholder")
+	assert(ph.Parent == box and ph.Text == "YYYY-MM-DD" and ph.TextTransparency == 1, "empty, label at rest: placeholder out")
+	H.fire(box, "Focused")
+	local target, time = fade(ph)
+	assert(target == 0 and time == Tokens.Motion.Duration.Medium1, "focus: fades in (SlowEffects)")
+	H.finishTweens()
+	H.fire(box, "FocusLost", false, H.input({}))
+	target, time = fade(ph)
+	assert(target == 1 and time == Tokens.Motion.Duration.Short2, "blur while empty: fades out (FastEffects)")
+	H.finishTweens()
+	box.Text = "2026"
+	assert(not ph.Visible, "typing hides it")
+	assert(H.find(host, "Supporting").Text:find("올바른") ~= nil, "the error text replaces the hint")
+	q.dispose(screen)
+	H.assertNoDebugOutput("modal input placeholder")
 end)
 
 H.section("modal: Overlay empty after close, default overlay works, dispose mid-exit", function()

@@ -3,10 +3,22 @@
 	TextField slots: the leading icon, the trailing icon / glyph, the error mark and the prefix / suffix affixes.
 	All are positioned against the container (24 px icons 12 px from the edges, centered on the first line of a
 	multi-line field); the row's padding (Field.luau) makes room for them.
+
+	AFFIX: the prefix / suffix fade with the input phase like Compose `internal/TextFieldImpl.kt` (androidx@26506f4)
+	`affixOpacity`: Focused 1, UnfocusedEmpty 0 under a label that rests in the field (1 without a label),
+	UnfocusedNotEmpty 1 — i.e. shown once the label has floated (they would otherwise sit under the resting label) —
+	every change animated with `MotionSchemeKeyTokens.FastEffects` (damping 1.0 / stiffness 3800 -> 0.11 s = Short2, the
+	same mapping as the placeholder, Field.luau PLACEHOLDER), Standard easing; a disabled flip keeps the content
+	animation (Short4). Compose drops an affix from composition while its alpha is 0 (`showAffix`), so it also gives up
+	its width; the kit keeps the label in the row and only fades its text. The width it keeps is invisible: alpha 0 only
+	in UnfocusedEmpty under a label, where the input is empty and the placeholder is at 0 too, so the row draws nothing.
 ]]
 
 local q = require("../Quad")
 local Util = require("../Util")
+local Theme = require("../Theme")
+local Tokens = require("../Tokens")
+local MotionTokens = require("../Tokens/Motion")
 local Icons = require("../Icons")
 local Style = require("../Button/Style")
 local Text = require("../Text")
@@ -95,7 +107,35 @@ local function trailing(c: Ctx.Ctx): (Instance?, Instance?)
 	return el, mark
 end
 
-local function affix(c: Ctx.Ctx, name: string, text: string): Instance
+-- the affix fade (see AFFIX in the header)
+local AffixFast = Tokens.Motion.options("Short2", "Standard") -- FastEffects
+local AffixContent = Tokens.Motion.options("Short4", "Standard") -- a disabled flip (Style.animation)
+
+type AffixLook = { Shown: boolean, Transparency: number, Motion: MotionTokens.AnimateOptions }
+
+-- the text transparency both affixes share: without a label the affixes always show (opacity 1 in every phase), so the
+-- plain content transparency; with one, Compose's `affixOpacity` — out only while the label rests in the field
+local function affixTransparency(c: Ctx.Ctx): Theme.Animated
+	if not c.HasLabel then
+		return c.ContentTransparency
+	end
+	local look: q.State<AffixLook> = c.Floated:Compute(function(self, prev: AffixLook?, dis): AffixLook
+		local shown = self:Get()
+		local content = if dis:Get() then Style.DisabledContentTransparency else 0
+		return {
+			Shown = shown,
+			Transparency = if shown then content else 1,
+			Motion = if prev ~= nil and prev.Shown ~= shown then AffixFast else AffixContent,
+		}
+	end, c.Disabled)
+	return look:Compute(function(self)
+		local l = self:Get()
+		return q.Tween({ Value = l.Transparency, Time = l.Motion.Time, Style = l.Motion.Style, Direction = l.Motion.Direction })
+	end)
+end
+
+-- `transparency`: `affixTransparency(c)`, built once and shared by the prefix and the suffix
+local function affix(c: Ctx.Ctx, name: string, text: string, transparency: Theme.Animated): Instance
 	local R = c.Theme.Raw
 	return D.TextLabel {
 		Name = name,
@@ -106,11 +146,10 @@ local function affix(c: Ctx.Ctx, name: string, text: string): Instance
 		BorderSizePixel = 0,
 		Text = text,
 		TextColor3 = Style.disabledPick(c.Disabled, R.OnSurfaceVariant, R.OnSurface),
-		TextTransparency = c.ContentTransparency,
-		-- like M3, prefix/suffix only show once the label has floated (otherwise they would sit under it)
-		Visible = if c.HasLabel then c.Floated else true,
+		-- stays in the row while faded out (AFFIX in the header)
+		TextTransparency = transparency,
 		LayoutOrder = if name == "Prefix" then 1 else 3,
 	}
 end
 
-return { leading = leading, trailing = trailing, affix = affix }
+return { leading = leading, trailing = trailing, affix = affix, affixTransparency = affixTransparency }
