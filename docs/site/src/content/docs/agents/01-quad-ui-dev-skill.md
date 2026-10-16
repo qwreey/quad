@@ -29,7 +29,7 @@ Claude Code는 프로젝트의 `.claude/skills/<이름>/SKILL.md`를 스킬로 �
 
 ```sh
 # 쓰고 있는 quad 버전의 태그로 받습니다(예: 3.3.0). 태그는 릴리즈마다 붙습니다.
-git clone --depth 1 --branch 3.2.0 https://github.com/qwreey/quad /tmp/quad
+git clone --depth 1 --branch 3.3.0 https://github.com/qwreey/quad /tmp/quad
 mkdir -p .claude/skills
 cp -r /tmp/quad/docs/skills/quad-ui-dev .claude/skills/quad-ui-dev
 rm -rf /tmp/quad

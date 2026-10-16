@@ -59,7 +59,7 @@
 
 **[2026-10-16 4절 1번 회신 — 사용자]** 실측은 `audit/decl-typefn-probe-2026-10-16/REPORT.md` 끝 절들, 이름 탐색은 `audit/naming-ctor-2026-10-16/`.
 - **값은 이름, 타입은 클래스 타입** — 런타임에 부르는 것은 클래스 이름 문자열을 커리로 받고(`X "Frame"`, `Spread "Frame" {…}`, `Modifier "Frame"`, `Mapper "Frame"`),
-  주석 쪽은 클래스 타입을 받는 타입 함수(`Props<Frame>`·`Modifier<Frame>`·`SpreadMarker<Frame>`…). 이름→클래스는 덤프가 채우는 클래스맵 데이터(전역 클래스 타입을 그대로 가리킴 — 실측).
+  주석 쪽은 클래스 타입을 받는 타입 함수(`Props<Frame>`·`Modifier<Frame>`·`SpreadMarker<Frame>`… — 같은 날 이름표로 `Spread<C>`, `research/declaration-naming-table.md` 5절). 이름→클래스는 덤프가 채우는 클래스맵 데이터(전역 클래스 타입을 그대로 가리킴 — 실측).
 - **Spread는 커리 `Spread "Frame" {…}`** — 사용자는 New와 모양을 맞추려 했고, 실측으로 두 인자 꼴이 틀린 꼴(같은 호출 안 테이블이 문맥 타입을 못 받아 맞는 테이블도 거부)이라 기술적으로도 갈렸다.
   마커는 이름 싱글턴만(*"체크는 상위에서 해주니까"*). 누적형 `:Add`는 Modifier처럼 메소드를 가진 값이 되고 타입·비용 모두 성립(hover만 길어짐).
   재사용은 *"Spread 는 mutable 경로고 재사용 불가하게는 단순히 하위 Ref등이 묶임에 따라 처리되니 위임"* — 그대로 간다.

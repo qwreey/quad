@@ -63,7 +63,7 @@
 | props 배열 자리 원소 | `<C>Elem` | **`PropsArrayItem<C>`** | 드묾(킷 0) | 사용자 예시 `ArrItem`의 완어 + 부모 접두. `Entry`·`Content`·`Child`는 기각·탈락(아래 4절 끝) |
 | props 해시 자리(필드 집합) | (`<C>Param` 안) | **`PropsHashPart<C>`** | 드묾 | 사용자 *"나쁘지 않게"*. 해시 쪽은 원소 유니언이 아니라 필드 집합이라 `Item` 대신 `Part` |
 | 요소 생성자 타입 | (인라인 `(FrameParam<FrameElem>) -> Frame`) | `Elem<C>` = `(Props<C>) -> C`? | 가끔(생성자를 넘길 때) | **토론 대상**(4절) — 프로브 이름은 `Ctor<C>` |
-| Spread 결과 | (없음) | `SpreadMarker<C>` | 가끔(팩토리 반환 주석) | 누적형이면 메소드가 붙음 — `Marker`가 여전히 맞는가 |
+| Spread 결과 | (없음) | `SpreadMarker<C>` | 가끔(팩토리 반환 주석) | 누적형이면 메소드가 붙음 — **→ 5절: `Spread<C>`**(마커는 입력 자리 전용) |
 | Mapper props | `<C>Param<<C>MapperElem>` | `MapperProps<C>` | 드묾 | 배열 자리 원소가 필요하면 `MapperPropsArrayItem<C>` |
 | Modifier 필드 값·저장값 | `Field<T>`·`FieldOut<T>` | `ModifierField<T>`·`ModifierFieldOut<T>`? | 가끔(킷 8 — 자기 Modifier 정의) | 드문 쪽이라 부모 접두가 원칙에 맞음 |
 | 클래스별 Ref 마커 | `<C>RefMarker` | 내보내지 않음? | 드묾(킷 0) | 배열 자리 원소의 부품 |
