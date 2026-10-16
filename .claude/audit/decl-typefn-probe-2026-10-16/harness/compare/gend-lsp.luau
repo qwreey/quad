@@ -10,4 +10,7 @@ local c1 = m:BackgroundTransparency(0.5) -- @c(gend-mod-Back) at='m:' ins='Back'
 local hoverF = D.Frame -- @h(gend-hover-Frame) at='Frame -- @h'
 local hoverM = m -- @h(gend-hover-m) at='m -- @h'
 local bad = D.Frame({ Visible = 5 })
-return { ok1, ok2, c1, hoverF, hoverM, bad }
+-- [2026-10-16] VSCode check: hover `v` below — boolean (typing-limits 8.7 says unannotated inference works) or unknown (CLI harness said so)?
+local OnChange: DM.OnChangeFn = nil :: any
+local oc = OnChange("Visible", function(v) end) -- @h(gend-onchange-v) at='v) end'
+return { ok1, ok2, c1, hoverF, hoverM, bad, oc }
