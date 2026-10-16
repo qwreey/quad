@@ -736,9 +736,15 @@ enum은 문자열 싱글톤 `"a" | "b"`로 — Fusion 관례와 같다).
 3. **⭐ 되는 것: `name: K & keyof<Map>`, `fn: (index<Map, K>) -> ()`** —
    `keyof<>`가 같은 235-유니언인데도 `index<>`와 짝이면 통과한다. 이름 오타
    (`Property '"Positon"' does not exist`)와 콜백 파라미터 타입 불일치가
-   호출 자리에서 잡히고, **무주석 콜백의 파라미터가 추론된다**(`index<>`가
+   호출 자리에서 잡히고, ~~**무주석 콜백의 파라미터가 추론된다**(`index<>`가
    파라미터 타입을 직접 만들어 주므로 — §7·`type-recursive-issue-try-callback/`
-   의 "제네릭 콜백 인자에 컨텍스트가 안 흐른다"의 예외). 맵에서 이름이
+   의 "제네릭 콜백 인자에 컨텍스트가 안 흐른다"의 예외)~~.
+   **[2026-10-16 정정 — 사용자 VSCode 관측 + LSP 하네스, `audit/decl-typefn-probe-2026-10-16/`]** 예외가 아니다 —
+   무주석 콜백은 **검사만** 된다: 본문 사용으로 `v`의 타입이 먼저 굳고, 그 뒤 콜백 전체가 `(index<…>) -> ()`와 대조돼
+   잘못 쓰면 `function(v)` 자리에 `Expected this to be 'boolean', but got 'string'`이 뜬다(멤버를 거친 오용도 같음).
+   **문맥 타입은 파라미터로 흘러들지 않는다** — `v` hover는 `unknown`, `v.` 자동완성 없음(luau-lsp 1.70.1, Studio도 이벤트
+   쪽 같은 모양). 편집기 도움이 필요하면 주석을 달 것. 흘러드는 꼴은 커리(`OnChange("Visible")(function(v) … end)`) — 첫
+   호출이 K를 정해 둘째 호출의 fn 자리가 구체 함수 타입이 된다(같은 audit 4-g). 맵에서 이름이
    클래스마다 다른 타입이면 `any`로 찍을 것 — `index<>`가 유니언을 주면
    주석 콜백이 반공변으로 거부된다.
 4. **클래스 소속은 생성자 쪽 유니언으로** — `{ Name: "Position", Callback:

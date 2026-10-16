@@ -25,3 +25,11 @@ opus 서브에이전트가 만들고 돌렸다(보고 본문을 메인이 요약
 - **06a·06c(타입 함수 꼴)는 NEG 2/2, too complex 0** — 같은 Studio·같은 크기(k20m5)에서 타입 함수 쪽은 살아남았다.
 
 같이 읽힌 킷 쪽 Studio 진단(이번 트랙 밖, 기록만): material gallery의 `table.insert` 오버로드 모호 29건, `Code is too complex` 9건(devui `Inputs.InputText` 68·75행, material `Card`·`List`·`TextField.Field`·`ColorPicker.Material.Fields` 등), `Overlay` 404행 `*error-type*` 호출 1건, quad_base 3.2.0 패키지 사본의 `test/spec.versioncheck`(Unknown type·require 8건 — 패키지에 테스트가 딸려 들어간 것).
+
+## 사람 관측 — Studio 자동완성·VSCode 대조 [2026-10-16, 사용자]
+
+**Studio**(quad-test, 타입 함수 꼴): 01 24행 `Frame({ ` 뒤 `Back` → `BackgroundTransparency`(`number | …`)가 뜬다(`BackgroundColor3`는 같은 테이블에 이미 있어 빠진 것). 04 18행 따옴표 안 `Mouse` → MouseEnter·Leave·Moved…가 뜨고 서명 `OnEvent(name: K & ("Activated" | …))`이 보인다. **커리 76행 `input.`**은 처음에 Instance 멤버부터 뜨고 `User`로 좁히면 `UserInputType`·`UserInputState` 둘 — 문맥 타입이 흐른다. **비커리 36행은 안 뜬다.** 하네스 결과와 같다 — 타입 함수 표면은 Studio 편집기에서도 자동완성이 산다.
+
+**VSCode**(`harness/compare/gend-lsp.luau`, 지금 생성 D): `D.Frame({ `·`D.TextLabel({ ` 자동완성이 뜨고 항목 타입은 `(None | StateMarker<(TweenData<number> & t1) | number> | …)? where t1 = { Mapped: … }… *TRUNCATED*`. **지연: `D.Frame({`·`D.TextLabel({`는 약 1초, `m:`는 즉시**(한 번 열고 닫은 뒤 다시 부르면 조금 빠름). **생성 Modifier `m`의 hover도 `local m: t26 where t1 = { Subscribe: …` 구조 전개**다 — 1번의 "생성 D는 이름이 남음"은 Modifier에는 맞지 않는다(hover가 긴 것은 두 꼴 공통). `bad`(Visible = 5)는 에러가 난다(override 있는 사용자 VSCode에선 생성 D가 산다 — 리눅스 `vsc`와 같음).
+
+**OnChange 무주석 콜백(typing-limits 8.7 3번 확인)**: `oc`의 타입은 `{ Callback: (boolean) -> (), Name: "Visible" }`인데 **`v` hover는 `unknown`**(사용자). 하네스 `harness/compare/onchange-infer.luau`로 갈랐다 — 무주석 `v`를 잘못 쓰면(`local s: string = v`, 멤버 경유 `local s: string = v.X`) `function(v)` 자리에 `Expected this to be 'boolean', but got 'string'`이 뜨고, 틀린 주석(`function(v: string)`)도 잡힌다. 그러나 `v.` 자동완성은 없다. 즉 **검사는 되고 편집기 도움은 없다** — 본문 사용으로 `v`가 먼저 굳은 뒤 콜백 전체가 대조된다. `base/typing-limits.md` 8.7 3번·`base/onchange-plan.md`·`docs/reference/roblox/05-onchange.md`를 이 사실로 정정했다. 커리 꼴(4-g)만 문맥 타입이 파라미터로 흘러든다.
