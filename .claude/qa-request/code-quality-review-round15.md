@@ -10,6 +10,8 @@
 >
 > 판정자(opus 서브에이전트)는 네 보고를 묶고 파일:줄을 직접 열어 사실을 확인한 뒤 선 거르기를 했다. 남은 후보는 네 리뷰어에게 돌려 토론 1라운드를 거쳤고, 판정자가 항목마다 판정을 붙였다. 범위에서 생성 `quad-roblox/src/Declaration/`과 `scripts/gen-d.py`는 뺐다(3.4.0에서 대체 예정). 판정 기준은 `audit/round14-principle-audit/PRINCIPLES.md`의 B1·B2·B3과 `conventions.md` "설계 원칙" 절이다.
 >
+> **[2026-10-18 추가]** §6에 opus 독립 한 패스(H-927~H-939)와 모델별 수렴 대조를 붙였다.
+>
 > **이 문서는 결정이 아니다 — 3.4.0 뒤에 고를 후보 목록이다.** "채택 권고"도 판정자 권고일 뿐이다. 새 이름·필드·메커니즘이 걸린 것은 §4 문항으로 올렸다. BREAKING인 후보는 없다.
 
 ## §1 진행 기록
@@ -525,3 +527,281 @@
 - **quad-roblox 번들 진입점**(C): 설정 모듈 관례를 바꾸는 새 표면이다. 재수출 문제는 Declaration 트랙이 줄인다. C도 토론에서 철회했다(H-907).
 
 미완: 없음. 단, 리뷰어 A·B가 스스로 밝힌 미독 범위(§1)는 이번 라운드가 보지 않은 곳이다.
+
+## §6 opus 독립 한 패스와 모델별 수렴 (2026-10-18)
+
+> **[2026-10-18 추가 — 사용자 요청]** 사용자: *"opus 로 한 패스만 돌아보자. 목적은 거의 gemini 모델 시점으로만 보았는데, opus 시점에선 어떤지 보고자 함과 동시에 어느정도 의견이 수렴되는지 보고싶음(모델별 의견 수렴?)"*. 이 절도 결정이 아니라 3.4.0 뒤에 고를 후보다.
+
+**진행 방식.** opus 리뷰어 하나(E)를 두 단계로 돌렸다.
+- 1단계: 이 원장과 `audit/code-review-2026-10-16/`을 열지 않은 채로 독립 리뷰. 범위는 §1의 A·B와 같다(생성 Declaration과 `gen-d.py` 제외). A·B가 못 봤다고 밝힌 파일을 우선해서 정독하게 했다.
+- 2단계: 같은 에이전트에 이 원장을 보여 주고 대조하게 했다. 순서를 거꾸로 하면 opus가 앞선 결론에 끌려 수렴 정도를 잴 수 없어서 이 순서로 했다.
+
+E는 1단계에서 발견 20건(O1~O20)을 냈다. 2단계에서 기존 결정과 부딪히는 것 하나를 철회했고 하나는 범위를 줄였다. 메인이 파일:줄을 직접 열어 확인한 것은 O1·O2·O6·O7·O8·O9·O10 (d)·O11·O16이다. 인용은 전부 맞았다. 나머지는 E의 확인에 기댄다.
+
+E가 스스로 밝힌 미독 범위가 있다.
+- quad-base: `Ref/*`, Store, Blocker, Debounce 본문, `Dispatch/Ref.luau`, StateHandler, `Slot/List`·Owner·Elements 본문, Bookkeeping 본문
+- quad-roblox: `Handlers/Property.luau` 본문, InstanceChild, InstanceShorthand, Event
+- devui: Menu, Overlay, Style, Inputs, `Window/Manager`, TitleBar
+- material: 대부분(Overlay, ListReorder, TextField, Snackbar 등)
+
+**수렴 결과.**
+
+E의 발견 20건을 이 원장과 맞대면 이렇다.
+- 같음 3건: O3·O17은 H-906, O14는 H-923.
+- 부분 5건: 같은 대상인데 자리나 처방이 다르다. O8↔H-899, O9↔H-913, O13↔H-921, O15↔H-924, O19↔H-915.
+- 새것 12건: 이 가운데 O12는 철회했다.
+
+반대로 이 원장의 H 28건을 E의 1단계와 맞대면 이렇다.
+- 같게 찾음: 2건.
+- 다르게 찾음: 5건.
+- E가 본 범위 안이었는데 놓침: 10건. H-900·H-905·H-907·H-909·H-910·H-911·H-912·H-919·H-920·H-922다. 2단계에서 근거를 다시 열어 본 뒤 전부 동의했다. H-911·H-922는 단서를 달았다(아래).
+- E의 범위 밖: 11건.
+
+판정이 갈린 곳은 셋이다. H-913 기각, H-921 처방, H-924 (b)이고, 아래에 한 문단씩 적었다. 탈락 목록 §5에는 이의가 없었다.
+
+E 자신의 소감은 이렇다. 수렴이 높았던 것은 두 종류다.
+- grep으로 셀 수 있는 파일 사이 중복: 하네스 사본, `ctx` 재선언, 킷 에러, 디버그 print.
+- "새 공개 표면은 열지 말고 킷 내부나 문서까지"라는 설계 판단. 세 모델 계열이 같은 쪽으로 모였다.
+
+수렴이 낮았던 것은 한 파일 안을 정독해야 보이는 국소 중복과 틀린 주석이다. 다만 이건 모델 차이보다 범위 차이로 보인다. E의 새것 대부분이 A·B가 못 봤다고 밝힌 파일에서 나왔기 때문이다.
+
+반대로 코퍼스 전체를 세거나 피드백과 대조해야 얻는 DX 근거는 round15 쪽만 냈다. Heartbeat 일곱, IfElse 꼴 마흔셋, `table.unpack` 마흔셋, H-925의 `:Set` 문장이 그렇다. E의 정리는 이렇다. 단일 맥락 정독은 파일 안의 결함에 강하고, 여럿에 판정자를 붙인 구성은 횡단 세기와 문서 대조에 강해서 둘이 보완적이다.
+
+메인이 덧붙이면, E가 범위 안에서 놓친 열 건에는 두 꼴이 있다.
+- 봤지만 기존 관례나 의도로 여겨 넘긴 것.
+- 봤지만 패턴으로 세지 않은 것.
+
+같은 계열 안의 sonnet A·B도 비슷한 놓침을 자기 보고에 적었다. 그래서 이 차이를 모델 계열 탓으로 돌릴 근거는 이번 한 번으로는 약하다.
+
+### 새 후보
+
+번호는 이 원장의 H 순번을 잇는다. 판정은 메인 판정이다. E의 1단계 근거와 메인 확인을 합쳤고, 토론 라운드는 없었다.
+
+**H-927. Tween·Animate 옵션 이름 목록이 다섯 자리에 손으로 적혀 있다**(O1).
+
+상황: 같은 옵션 이름이 여러 자리에 따로 적혀 있다.
+- `quad-roblox/src/Animate.luau` 43행 `FIELDS`와 44행 `CALLBACK_FIELDS`(집합 모양).
+- `quad-roblox/src/Tween.luau`의 72행 `NUMBER_FIELDS`, 78행 `CALLBACK_FIELDS`(리스트 모양), 84~88행 `KNOWN_OPTIONS`, 96행 `INFO_FIELDS`.
+- 같은 파일 123행의 debug 메시지. 알려진 옵션 열세 개가 문자열 리터럴로 박혀 있다.
+
+round14 확인 패스가 `warnInfoOverlap`을 Tween 쪽 하나로 모으면서 "필드 목록과 줄이 복사돼 있었다"는 문제를 한 번 고쳤다(`Tween.luau` 92~93행). 그러나 목록 자체는 여전히 따로 산다.
+
+문제: 옵션을 하나 늘리면 다섯 자리를 다 고쳐야 한다. 하나를 빠뜨리면 `q.debug`가 정상 옵션을 "unknown option"으로 알리는 쪽으로 조용히 어긋난다.
+
+제안: 둘 중 하나다.
+- (가) Tween이 어휘 표 하나를 쥐고, 메시지는 그 표에서 `table.concat`으로 만든다. Animate에는 `install`이 이미 넘기는 반환 테이블(`RobloxFactory.luau` 60행)에 실어 보낸다.
+- (나) 메시지 문자열만 표에서 만든다.
+
+비용: 작음. 내부 정리다.
+
+판정: **채택 권고**(가). BREAKING 아님.
+
+**H-928. 키별 재활용 `:List` 본문이 킷 여러 자리에 손으로 다시 쓰였고, 공용 헬퍼가 이미 있다**(O2).
+
+상황: `quad-roblox-material/src/Chip/KeyedSlot.luau`가 "키별 재활용 `:List`" 모양을 이미 헬퍼로 갖고 있다. 모양은 이렇다.
+- KeyGone이면 nil을 돌려준다.
+- 앞 UserData가 있으면 `SetIfChanged` 두 번 하고 그대로 돌려준다.
+- 없으면 Source 둘을 만들어 render한다.
+
+그런데 이 헬퍼를 쓰는 곳은 Chip과 Tabs뿐이다. 같은 본문을 손으로 다시 쓴 자리가 있다. material `List.luau` 381~399행(ListData), devui `Table.luau` 206~252행, devui `Combo.luau` 141~172행이다. Swatches, YearView, ListReorder, devui Plot은 변형이다.
+
+KeyGone 갈래의 반환이 이미 세 모양으로 갈렸다(메인 확인).
+- `List.luau` 388행: `return nil, ctx.UserData`
+- `KeyedSlot.luau` 35행: `return nil`
+- `Table.luau` 208행: `return nil, nil`
+
+셋 다 정의된 동작이지만 같은 일을 하는 본문이 갈라진 것이다.
+
+문제: 이 관용구를 고칠 때 여러 자리를 따로 손봐야 하고, 이미 그 갈라짐이 시작됐다.
+
+제안: 둘 중 하나다.
+- (가) `KeyedSlot`을 킷 공용 자리(material `Util` 옆)로 올리고 ListData와 Table에서 쓴다.
+- (나) devui에도 같은 헬퍼를 하나 둔다.
+
+코어 쪽 슈거(Fusion ForKeys류)는 `base/slot-plan.md`가 `:List` 하나로 통합한다고 정했으므로 제안하지 않는다.
+
+비용: 작음. 킷 내부다.
+
+판정: **채택 권고**. BREAKING 아님. H-923(공개 `ctx` 타입 실측)과 같이 보면 재선언과 본문 사본이 한 번에 준다.
+
+**H-929. 백엔드 op 스텁이 세 파일에 흩어져 있고, `LifetimeHandle.luau`가 무관한 스텁 창고를 겸한다**(O4).
+
+상황: 스텁 설치 자리가 셋이다.
+- `quad-base/src/LifetimeHandle.luau` 116~121행과 244~277행. hold op 넷 말고도 `onDestroying`·`isInst`·`nativeClaim`·`isClaimed`·`nativeFindChild`·native 계열·`setTimeout`/`clearTimeout`의 스텁을 함께 설치한다.
+- `Tag.luau` 254~259행: `addTag`/`removeTag`.
+- `Attr/Key.luau` 95~97행: `setAttr`.
+
+이 셋을 합한 것이 `docs/reference/extend/01-backend-provider-contract.md` 32행의 "전부 20개"다. 관용구도 갈린다. 다른 스텁은 `if Backend.x == nil then` 가드 아래 설치되는데(245~246행 주석 "a provider may already be there"), `onDestroying`만 244행에서 무조건 덮어쓴다. 지금은 Init이 늘 프로바이더보다 먼저 돌아서 무해하다.
+
+문제: 생명주기 원시 넷을 구현하는 파일이 Slot 물리 op와 시간 op의 스텁 창고를 겸한다. B2의 파일 수준판이다. 또 문서의 "20개"를 대조할 원장이 코드에 없다.
+
+제안: op 인벤토리 표 하나(이름 → 묶음 → 안내 문구)를 base에 비공개로 두고, 한 루프로 스텁을 설치한다. 표가 있으면 문서 개수를 스크립트로 대조할 수 있고, H-938 진단의 바탕도 된다.
+
+비용: 중간. 스텁 설치 순서를 그대로 지켜야 한다.
+
+판정: **채택 권고(낮은 우선)**. 새 공개 이름 없음, BREAKING 아님. `LifetimeHandle.luau` 머리의 `H-373`은 스텁이 거기 놓인 경위일 뿐 분리를 막는 결정이 아니다(E 확인).
+
+**H-930. `Slot/Tree.luau`의 해체 두 갈래가 같은 해제 순서를 각자 적는다**(O5).
+
+상황 1: `teardownTree`(149~172행)와 `destroySlotTree`의 owned 갈래(245~256행)가 같은 해제 순서를 따로 쓴다. 순서는 "observers 전부 unbind → `_listObserver`·`_detachCleanup`·`_baseObserver` unbind → `_mounted`·`_mountedInst`·`_physicalTarget` 내림"이다. 그런데 `_detachCleanup`과 `_listObserver` 중 무엇이 앞인지가 두 갈래에서 다르다.
+
+상황 2: `destroySlotTree` 안에서 "`_elements` 순회 + `_detached` 순회" 쌍이 두 번 나온다.
+- 208~220행: `releaseOwner`와 래퍼 해제.
+- 234~244행: `releaseOwner`와 `destroyElement`.
+
+문제: 이 구역은 Q14·Q61·H6-19가 차례로 한 루프씩 고쳐 온 곳이고, 한쪽만 고친 실패가 이미 한 번 있었다. 주석 "The two destroySlotTree loops got the same line"이 그 흔적이다.
+
+제안: 둘 중 하나다.
+- (가) "이 Slot이 쥔 원소 전부에 fn" 헬퍼와 "생명주기 핸들 전부 unbind" 헬퍼, 지역 헬퍼 둘로 접는다.
+- (나) 해제 순서만 헬퍼 하나로 모은다.
+
+비용: 중간. 순서 차이가 의도인지 먼저 확인해야 한다. E도 메인도 아직 확인하지 않았다.
+
+판정: **채택 권고(순서 차이 확인이 선행)**. BREAKING 아님.
+
+**H-931. 커서 둘을 당기는 두 줄이 `Slot/Raw.luau`에 세 벌 있다**(O6).
+
+상황: 같은 두 줄이 세 자리에 있다. 두 줄은 `offsetCacheValidUpTo = math.min(…, index - 1)`과 `offsetSetUpTo = math.min(…, index - 1)`이다. 자리는 `spliceArraysUp` 49~50행, `spliceArraysDown` 65~66행, `invalidateFrom` 319~320행이다(메인 확인).
+
+`invalidateFrom`의 주석은 `H-113`이 반증한 공식("위치 자체와 `math.min`")을 경고한다. 그 경고가 지키려는 공식이 위 두 함수에는 헬퍼 없이 손으로 적혀 있다.
+
+문제: 이 공식의 정본이 한 곳이 아니다.
+
+제안: `invalidateFrom`을 파일 위쪽으로 올리고 두 splice가 그것을 부른다. 단 `Bookkeeping.luau` 312~313행과 353~354행은 `cur`/`i` 기준이라 공식이 다르다. 묶지 않는다.
+
+비용: 거의 0.
+
+판정: **채택 권고**. BREAKING 아님.
+
+**H-932. 센티널 생성자 `sentinel`을 세 값이 우회한다**(O7).
+
+상황: `quad-base/src/Dispatch/Handler.luau` 39~56행의 `sentinel(name)`은 머리 주석에서 스스로를 "every frozen marker sentinel"의 유일한 생성자라고 정의한다. 주석이 꼽는 사용처는 `None`, `ProcessedModifier`, `ProcessedPreRef`·`PostRef`이고, 이유는 "the sentinel convention cannot drift between copies"다. 그런데 같은 모양을 손으로 만드는 값이 셋 있다(메인 확인).
+- `Slot/init.luau` 51~52행: `Detach`, `KeyGone`.
+- `Claim.luau` 50~54행: `MapperRoot`.
+
+문제: 주석이 막으려던 사본이 셋 있다.
+
+제안: 둘 중 하나다.
+- (가) 셋을 `sentinel`로 바꾼다.
+- (나) 그대로 두고 `sentinel` 주석의 "every"를 사실에 맞게 고친다.
+
+`sentinel`은 `any`를 돌려주고 공개 타입은 quad-types가 따로 주므로 타입 쪽 이유는 아마 없다. 다만 확인은 안 했다. `H6-16` (a)는 표식 모양에 대한 결정이지 생성 경로에 대한 결정이 아니다(E 확인).
+
+비용: 거의 0.
+
+판정: **채택 권고**((가)가 안 되면 (나)). BREAKING 아님.
+
+**H-933. 코드와 어긋난 주석 넷 — H-899와 같은 부류, 다른 자리**(O8).
+
+H-899가 "끝난 일을 미래형으로 적은 주석"이라면, 이것은 사실과 틀린 주석이다. 자리는 하나도 겹치지 않는다(메인이 넷 다 확인).
+- `quad-base/src/Context.luau` 26~28행: "an immutable-clone `With` is an open item (`question.md`)". 그러나 `base/context-plan.md`는 `:With`류를 두지 않는다고 확정했고, `question.md`에 그 항목이 없다.
+- `quad-base/src/Slot/init.luau` 151~153행: "except the three wrappers above". 같은 파일 30~32행은 그 셋이 없어졌다고 말한다("the old wrapper trio was a leftover").
+- devui `Combo.luau` 373행: "same reason as ComboEnum's SelectedKey cast". ComboEnum에는 그 캐스트가 없고 `Combo.Combo`에 위임만 한다. 설명이 있는 곳은 334행이다.
+- material `Slider/Behavior.luau` 177행: "(`level` 3: the caller of the look's constructor)". 바로 아래 192·196·204행의 `error`는 레벨 4다.
+
+제안: 주석만 고친다. 마지막 자리는 레벨이 실제로 맞는지 한 번 실행해 보고 고친다.
+
+비용: 거의 0.
+
+판정: **채택 권고**. H-899와 같은 커밋에서 하면 좋다. BREAKING 아님.
+
+**H-934. material 모달 셋이 "레이어에 맞추는 배율" 공식을 따로 갖는다**(O9, H-913과 부분 대응).
+
+상황: 같은 공식 `max(하한, min(1, (W−m)/w, (H−m)/h))`가 세 자리에 있다(메인 확인).
+- `Dialog.luau` 446~457행: 여백 `2*LayerMargin`, 하한 `FitMin`.
+- `DatePicker/Modal.luau` 189~192행: 여백 32, 하한 0.25 리터럴.
+- `TimePicker/Modal.luau` 196~202행: 여백 32, 하한 0.25 리터럴.
+
+하한 0.25는 `Dialog.luau` 165행이 "the DatePicker modal's floor"라고 다른 파일을 가리키는 주석으로 맞춰 두었을 뿐이다.
+
+문제: H-913은 "크기만으로 나누는 것"이라 기각됐다. E는 그 기각 이유를 받아들였다. 그러나 이것은 크기가 아니라 이미 존재하는 공식 세 벌이라 B1의 "가상의 미래 요구"에 걸리지 않는다는 것이 E의 의견이다. 메인도 같은 판단이다.
+
+제안: 킷 `Util`에 `fitScale(layerSize, contentSize, margin)`과 공용 하한 상수를 둔다. 여백 48과 32가 M3 정본상 일부러 다른 것인지는 확인하지 않았다. 다르면 여백은 인자로 남긴다.
+
+비용: 작음. 킷 내부다.
+
+판정: **채택 권고**. BREAKING 아님.
+
+**H-935. 작은 정리 묶음**(O10). 다섯 갈래 모두 걸리는 결정이 없다(E 확인).
+- (a) `quad-base/src/Observer.luau` 205~215행 `_receive`가 두 갈래에서 똑같은 `if module.debug then checkUpstreamFeedback(…) end`를 부른다. 분기 위로 올리면 한 줄이 된다.
+- (b) devui `Plot.luau` 161~163행과 246~248행이 `keyFn`으로 `function(_item, i) return i end`를 넘긴다. 생략할 때의 기본값과 같으므로 지워도 된다.
+- (c) devui의 호스트 이름 Modifier 캐시 `hostName`이 `Tree.luau`, `Inputs/Choice.luau`, `Inputs/NumberField.luau`에 세 벌 있다. material에는 `Util.frameName`이 있다. 클래스별 타입 때문에 합치기 어려울 수 있어 셋 정도는 둬도 된다.
+- (d) `quad-base/src/init.luau`의 `AddPlugin`은 182행에서 `Quad0211`로 반환이 테이블인지 먼저 검사한다. 그 뒤 부르는 `mergeExtension`이 같은 검사를 `Quad0209`로 또 한다(163~164행). 그래서 AddPlugin 경로에서는 0209에 닿지 않고, 0209는 UseProvider 몫만 남는다(메인 확인). 같은 실수를 경로마다 다른 번호로 알리는 것이 의도인지 에러 색인과 맞춰 볼 자리다.
+- (e) 디버그 스택 탐색이 `State.luau` 82~96행 `stackHas`, `Observer.luau` 101~119행, Debounce에 따로 있다. 탐색 규칙이 달라 크게 합치기는 어렵다.
+
+판정: (a)·(b)는 **채택 권고**. (c)·(e)는 **보류**(합칠 이득이 작다). (d)는 **확인 뒤 판단**이다.
+
+**H-936. 버전 패턴 매처의 Python 사본을 아무 테스트도 대조하지 않는다**(O11).
+
+상황: `type-version-check/src/init.luau` 52행이 런타임, `type function`, `scripts/check-version.py`의 Python 포트를 같이 고치라고 요구한다. 그런데 `quad-base/test/spec.versioncheck.luau`는 앞의 둘만 본다. `check-version.py`의 `matches_pattern`(98행)에는 자체 벡터가 없다(메인 확인).
+
+문제: 세 번째 사본이 조용히 갈라질 수 있다.
+
+제안: 둘 중 하나다.
+- (가) 케이스 표를 데이터 파일 하나로 빼서 Luau spec과 Python이 같이 읽는다.
+- (나) Python 쪽에 같은 케이스를 복사한 셀프 테스트를 둔다.
+
+비용: 작음.
+
+판정: **채택 권고**. BREAKING 아님.
+
+**H-937. Observer 에러 문구가 "콜백이 던진 뒤" 상황을 말하지 않는다**(O16).
+
+상황: `quad-base/src/Observer.luau`의 Quad0109(235행), Quad0110(251행), Quad0113(282행)은 "from inside its own fn"만 말한다. 그런데 콜백이 한 번 던지면 `_running`이 내려가지 않아, 콜백 밖에서 불러도 같은 문구가 난다. `docs/reference/errors/04-ref-observer-effect.md`의 Quad0110 절은 이것을 설명한다. 반면 에러 자리의 문구는 "콜백 안"이라고만 해서 오도한다. Effect의 Quad0088·Quad0090(291·309행)은 "or after this Effect's fn or cleanup has thrown"을 문구에 담고 있다(메인 확인).
+
+제안: Observer 셋에 "(or its fn threw earlier)" 정도를 덧붙인다. 다만 round11 Q63이 Observer를 "죽지 않음, 자가 회복"으로 정했다. 그래서 "죽었다"가 아니라 "앞서 던졌을 수 있다"로 써야 한다. 에러 문구는 API가 아니므로 BREAKING이 아니다.
+
+비용: 거의 0. 에러 문서 절도 같은 커밋에서 맞춘다.
+
+판정: **채택 권고**.
+
+**H-938. 프로바이더가 op를 빠뜨려도 처음 그 op를 부를 때까지 모른다**(O18).
+
+상황: op 20개는 전부 필수다. 빠지면 Quad0108 스텁이 그 op를 처음 부를 때 던진다. `setAttr`를 빠뜨린 프로바이더는 첫 AttrKey 사용 때에야 안다.
+
+제안: `UseProvider`가 프로바이더 함수 반환 직후, `q.debug`가 켜져 있으면 아직 스텁인 op 이름을 한 줄로 알린다. H-929의 표가 있으면 몇 줄이다.
+
+함정: 소비자는 보통 `UseProvider` 뒤에 `q.debug = true`를 한다. 그래서 이 진단은 거의 돌지 않을 수 있다(`AddPlugin` 진단과 같은 문제). 디버그 층이 아닌 공개 점검 함수로 하면 새 공개 이름이라 사용자 문항감이다.
+
+판정: **보류**. 효용이 낮다. 서드파티 프로바이더가 실제로 나오면 다시 본다.
+
+**H-939. material README의 내부 문서 포인터**(O20, 2단계에서 축소).
+
+E는 1단계에서 `quad-roblox-material/README.md`의 실기기 체크리스트를 README 밖으로 옮기자고 했다. 2단계에서 그 부분은 철회했다. `consumer-kits-plan.md` 103행과 `feedback/consumer-kits-studio-qa-2026-10-07.md`가 그 체크리스트를 일부러 작업 도구로 쓰기 때문이다.
+
+남은 것은 798행의 `.claude/research/icon-pack-plan.md` 포인터 한 줄이다. 소비자 문서에 `.claude/` 경로를 두지 않는 규약과 결이 다르다.
+
+판정: **킷 게시 전 정리 후보**. 체크리스트를 게시 문서에 둘지는 킷 게시 때 같이 본다.
+
+### 기존 항목에 대한 다른 의견
+
+**H-921(킷 에러 형식)에 다른 구현 갈래.** E는 `Util.fail(component, msg)`가 레벨 인자를 계속 받으면 손으로 세는 문제가 헬퍼 안으로 옮겨질 뿐이라고 본다. H-933의 Slider 주석 3과 코드 4의 불일치가 실제 사례다.
+
+E가 낸 갈래는 이렇다. `Util.fail`의 본문을 quad-error 네임스페이스의 `errorBeforeNearest` 위에 짓고, 킷 공개 생성자를 킷 전용 레벨 값으로 태깅한다. 그러면 레벨 숫자가 사라진다. 새 공개 이름도 없다. 킷이 `quad_error.new()`로 자기 네임스페이스를 만드는 것은 이미 있는 공개 표면이다.
+
+메인 판단: Q191의 (가) "형식만 통일"과 겹치지 않고, 그 구현 방법으로 얹힌다. 채택하면 H-921의 처방이 이것으로 바뀐다.
+
+**H-915(`q.debug` 출력 헬퍼) 위에 공통 접두.** E는 진단 줄이 `Observer:`·`Claim:`·`Slot:`·`Tween:`처럼 접두가 제각각이라 Studio 출력에서 사용자 print와 섞인다고 짚었다(O19). 헬퍼가 생기면 공통 접두(예: `[quad debug]`)는 그 안에서 거의 공짜다. `warn` 전환은 킷 하네스와 spec들의 print 캡처를 같이 고쳐야 하므로 헬퍼 다음 단계로 둔다. E도 Q190 (가)에 동의한다.
+
+**H-924 (b) 기각 수용.** E는 1단계에서 "T 또는 State<T> → State<T>" 헬퍼를 핵심 슈거로 올리는 갈래를 냈다(O15). 2단계에서 `feedback/consumer-kits-2026-10-05.md` A1의 2026-10-06 결정을 보고 철회했다. 그 결정은 정본은 `StateMarker<T>` + 캐스트로 하고, 제네릭 판은 하한 문제가 있다는 것이다. 킷 내부 통합도 타입별 셋이 일부러 그 모양이라 거뒀다. 남은 의견은 how-to 레시피 (a)에 합류한다.
+
+**H-911·H-922 단서.**
+- H-911: 전이 표는 좋다. 다만 칸마다 고정 spec을 의무로 하면 표 하나에 spec 수십 개가 따라온다. 그래서 이미 있는 spec 위치를 적는 정도가 적당하다는 의견이다.
+- H-922: 키 목록이 props 타입과 이중 원장이 된다. 그래서 "새 컴포넌트부터"와 "debug에서만"이라는 단서가 꼭 필요하다는 의견이다.
+
+**철회 — 킷 spec을 `test.sh` 선택 플래그로**(O12). `consumer-kits-plan.md` 76행의 "기존 `./scripts/test.sh`는 손대지 않고"에 걸린다.
+
+**Q188~Q193.** E는 여섯 문항의 판정자 권고에 모두 동의했다. 덧붙인 의견은 셋이다.
+- Q188 (나): 이유 없이 번호만 남은 줄부터 손대는 것이 맞다.
+- Q192 (가): 실측할 때 H-928의 `KeyedSlot` 재사용도 같이 보면 좋다.
+- Q193 (나): material 쪽 페이크가 상위 집합이므로 정본은 material이 맞다. 하네스 두 벌의 diff는 5줄이고, material만 `UserInputService` 페이크를 더했다.
+
+**잘 돼 있어서 건드리지 말 것**(E의 의견). 메인 판단은 "건드리지 말 것" 목록으로 받는 것이다.
+- `quad-error/src/init.luau`가 sentinel 변환 넷을 일부러 헬퍼로 빼지 않은 것(`H-283`, -O2 인라인).
+- Observer와 Effect의 본문 분리(`H-144`).
+- Source, quad-roblox EngineOps, Operator의 응집.
+- Claim의 검증·커밋 두 패스.
+- `docs/reference/core/01-quad-module.md`의 `q.debug` 목록.
+- Slot 공개 CRUD 층의 `assertMutable` 관문.
+
+**실행 수.** opus 하나, 두 단계(이어 쓰기)다. 미완: 없음. 단 E가 밝힌 미독 범위(이 절 머리)는 이번 패스도 보지 않은 곳이다.
