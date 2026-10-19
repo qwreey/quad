@@ -70,4 +70,4 @@
 ## 4. 리뷰 원장 문항 — 열린 것 없음 [2026-10-15 기준]
 
 round13·round14 원장의 사용자 문항은 전부 닫혔다(round14 원장 끝 문단들, round13 §0 표의 [닫힘] 표시). round13에서 보류로 남은 Q87·Q122·Q127은
-`research/declaration-surface-plan.md`에 묶여 있다(**[2026-10-16]** 셋 다 같은 뿌리 — 31 클래스를 한 이름 맵에 합친 것; Q87·Q127은 클래스 먼저 커리로 실측상 해소 가능, Q122는 이름표로 정리 가능 — 사용자 결정 대기)(Q76은 2026-10-15 닫힘). 이 절의 옛 포인터 서술은 `archive/question-resolved.md`의 "question.md에서 걷어낸 닫힌 항목 원문" 절.
+`research/declaration-surface-plan.md`에 묶여 있다(**[2026-10-16]** 셋 다 같은 뿌리 — 31 클래스를 한 이름 맵에 합친 것; Q87·Q127은 클래스 먼저 커리로 실측상 해소 가능, Q122는 이름표로 정리 가능; **[2026-10-19] 셋 다 닫힘** — `Out` 클래스 먼저 커리·Q127 (a) 타입 함수 규칙·`OnChangeDescriptor<K>` 하나, 그 문서 5절 끝 문단)(Q76은 2026-10-15 닫힘). 이 절의 옛 포인터 서술은 `archive/question-resolved.md`의 "question.md에서 걷어낸 닫힌 항목 원문" 절.

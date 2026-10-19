@@ -12,7 +12,7 @@
    지웠다 — 각 결정은 `session-summary.md`의 해당 날짜 항목과 원장이 소스다(지운 원문은 git 히스토리).
    **지금 사용자 몫**(목록은 각 소스가 쥔다):
    - **[2026-10-16 기준]** 아이콘 팩 결정(`research/icon-pack-plan.md`), table-sim 리뷰 후속(`feedback/table-sim-2026-10-16.md`).
-   - **진행 중 트랙 — Declaration을 타입 함수로**(`research/declaration-surface-plan.md` 5절, 이름은 `research/declaration-naming-table.md` 5절, 경과 `session/2026-10-16-01-spread-onevent-decl-typefn.md`): 4절 1·2번 닫힘(생성 D 포기·파일별 꺼내 두기·재수출 정리·변환 스크립트) — 사용자 결정 대기는 3번(Policy 흡수로 닫기)·`Out` 클래스 먼저 커리·Q122·Q127 (a)(메인 정리 전달됨), 남은 칸은 이름표의 빠진 축(`OnChangeFn`·`OutFn` 등). 구현 착수 전(3.4.0 BREAKING 예정).
+   - **진행 중 트랙 — Declaration을 타입 함수로**(`research/declaration-surface-plan.md` 5절, 이름은 `research/declaration-naming-table.md` 5절, 경과 `session/2026-10-16-01-spread-onevent-decl-typefn.md`): 4절 1~5번 닫힘(**[2026-10-19]** 원천은 체커·덤프는 데이터만, 클래스 맵 둘, `Out` 커리, Q122·Q127 (a), `OnChangeFn` 등 비노출 — 그 문서 5절 끝 문단). 남은 것: 2차 실측 M1~M4(typeof·ReadOnly 읽기 표면·Modifier `As`/`Into`/숏핸드·클래스 맵 확장 — 진행 중), 그 뒤 이름 정리(읽기 쪽 맵·탈출구), H-929·Q188 등 엮인 리뷰 항목(사용자: 좀 이따). 구현 착수 전(3.4.0 BREAKING 예정).
    - 열린 질문 전체는 `.claude/question.md`, 사람 손 일은 루트 `HUMAN_TODO.md` 미해소 절, 계획서마다 걸린 결정은 `research/README.md` 표의 우선순위 칸.
    **다음 세션이 먼저 볼 것**: `conventions.md` 2026-09-06·09-07·09-08 항목(백그라운드 에이전트 종료 판정 / test.sh 판정은 exit code / 문항·발견은 평문).
 

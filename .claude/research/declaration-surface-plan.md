@@ -39,6 +39,8 @@
 
 ## 4. 이 문서가 정할 것(열림)
 
+> **[2026-10-19 상태]** 3·4·5번도 5절 끝 문단에서 닫혔다(남은 것은 2차 실측 M1~M4와 이름 정리).
+>
 > **[2026-10-16 상태]** 1·2번은 5절에서 결정됐다. 3·4번은 실측으로 방향이 나왔고(Policy 데이터 흡수·생성기는 데이터만) 사용자 확인 대기, 5번은 Q87·Q127이 클래스 먼저 커리로 실측상 해소 가능·Q122는 이름표로 정리 가능 — 셋 다 사용자 결정 대기. 진행 상태의 소스는 5절.
 
 1. 타입 함수 조립 표면의 모양 — 어떤 축(Modifier·Into·Elem·Out·OnChange·PropTypes)을 타입 함수로, 이름과 인자 모양.
@@ -99,3 +101,13 @@
   킷·문서 이전에 먼저 쓴다(실측: 킷 파일당 생성자 중앙값 2·최대 9, 이름 충돌 0). **릴리즈 순서**: 지금 `[Unreleased]`로 3.3.0을 먼저 내고(같은 날 bump·게시 — 일부 재게시 남음) Declaration 개편은 3.4.0의 BREAKING.
   `NewChild`는 내보내지 않는다(킷·table-sim·base 0회 — 새 표면에선 `Policy.Child` 데이터, 사용자가 쓰는 이름은 `PropsArrayItem<C>`); `RobloxExtension`은 그대로(q 타입 뒤에 붙는 확장 이름 — 사용자).
   `OnChangeFn`·`OutFn` 이름은 나중에(사용자).
+
+**[2026-10-19 — 사용자, 4절 3·4·5번 닫힘] 원천·클래스 맵·표면 모양.** 메인 정리(층 셋 — 원천 → 표면 모양 → 이름) 뒤 사용자 회신. 경과 `session/2026-10-19-01-decl-3-4-decisions.md`.
+- **원천(4절 3·4번)**: 덤프는 걷어내지 않는다 — **클래스맵·Policy(Deny·DenyIn·Inject·Child)·Hidden/Deprecated 되살림을 채우는 데만** 쓴다. 규칙(클래스 사슬 걷기, 오버로드 메소드 거르기, Instance 계열 `T?`)은 타입 함수 안. **체커마다 다른 요소(API 버전 차이 — Studio WorldModel 13 대 defs 8 등)는 흡수하지 않고 문서화해 인정한다.** 사용자 근거: *"타입 함수 자체가 유저 입력을 받아 처리하는것이고, 그 타입이란 부분도 Instance/Part/Frame 식으로 입력해둔 것 자체가 다른거니까. 이건 꼭 quad 가 아니더라도 `p: Part` 식으로 두더라도 p가 달라지는 부분이라 원래부터 유저가 인지해야할 부분"*. 남는 위험(타입 함수 안엔 pcall이 없어 멤버 하나가 `parameters()`에서 죽으면 그 클래스 표면 전체가 never)은 Policy Deny와 레포 핀 defs 게이트로 다룬다(구현 때).
+- **클래스 맵 둘**: `Elem`·`Mapper`용은 **만들 수 있는 클래스만**(추상 클래스 생성을 이름 단계에서 막음), `Modifier`·`Spread`용은 **추상 클래스 포함** — 사용자 동의. 31이라는 범위는 생성 D가 클래스마다 타입을 써 넣던 크기 한도에서 왔고, 타입 함수 꼴에선 맵이 전역 클래스를 가리키기만 하므로 넓힐 수 있는지 2차 실측(M4) 중 — 범위는 그 결과 뒤.
+- **`Out`도 클래스 먼저 커리 `Out "ScrollingFrame" "CanvasSize" (src)`**(Q87 해소) — 사용자: *"OnChange Class Prop (Fn) 형태 커링에서 유사히 Out Class Prop (Source) 모양의 유사 짝이 되어서 더 맞기도"*. 착수 전 실측: ReadOnly를 빼지 않는 읽기 표면(킷의 `Out("AbsoluteSize")` — M2).
+- **Q127 (a) 채택** — 읽기 표면에서 Instance 계열 extern 프로퍼티를 `T?`로(타입 함수 규칙). 쓰기 표면은 그대로(nil 쓰기는 `None`).
+- **Q122 닫힘** — `OnChangeDescriptor<K>`·`OnEventDescriptor<K>` 하나씩(`read` 필드, K = 프로퍼티·이벤트 이름; `Out`도 `OnChangeDescriptor<K>`를 돌려줌). K를 이름으로 두는 것은 놓인 자리 검사가 "그 클래스에 이 이름이 있나"여야 맞는 배치(`OnChange "Frame" "Visible"`을 TextButton에)를 통과시키기 때문.
+- **`OnChangeFn`·`OutFn`·`OnEventFn` 비노출** — 사용자 근거: 문서 없이는 오해를 부르는 이름(*"`OnChange .. .. (fn)` 자리의 fn 타입을 나타내는가? OnChange 함수 자체의 타입을 나타내는가?"*). 필요한 쪽은 `typeof(q.OnChange)` — 타입 함수가 든 서명이 `typeof`에서 깨지지 않는지 2차 실측(M1) 중.
+- **매퍼 루트는 지금처럼 값·타입 짝** — 사용자: Source()·Source<T>처럼 프리미티브는 런타임·타입을 짝으로 내보내니 싱글턴인 MapperRoot도 None과 같은 처리가 일치. 메인 확인: 이미 그렇다 — quad-types가 `None`·`Detach`·`KeyGone`·`MapperRoot` 넷 다 같은 이름의 `export type`과 q 값을 짝으로 둔다(`quad-types/src/init.luau` 89·90·97·103행, 값 744~779행). 생성 D와 함께 사라지는 것은 별칭 `D.Mapper.Root`뿐.
+- **이름 정리(읽기 쪽 맵 이름, 탈출구)는 "정리 이후 더 크게"**(사용자) — 2차 실측(M1~M4) 결과를 본 뒤.
