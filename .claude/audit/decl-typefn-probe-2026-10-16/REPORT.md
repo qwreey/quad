@@ -121,3 +121,301 @@ hover는 참조 타입까지 펼쳐 이상하게 보이나 타입은 `Modifier`)
   `Out "BillboardGui" "Adornee" (Source<Instance?>)` 통과, `OnChange "Frame" "NextSelectionUp" (function(v) local g: GuiObject = v end)`는 `nil`이 안 들어간다고 거부, `Size`는 그대로 `UDim2`.
   타입 함수 안에서 클래스와 값 타입(UDim2 등)은 둘 다 `extern` 태그라 사슬 검사가 필요하다(`harness/compare/tagprobe.luau`).
 - 읽기 표면(ReadOnly 포함)은 이 프로브에서 아직 쓰기 표면 — 구현 때 ReadOnly를 빼지 않는 정책 데이터.
+
+## Declaration 타입 함수 표면 2차 실측 보고 (2026-10-19) [2026-10-19 — opus 서브에이전트, 본문 그대로 저장]
+
+이 보고는 결정이 아니라 재료입니다. 재료와 지시문은 `.claude/audit/decl-typefn-probe-2026-10-16/` 아래에 있고, 1차 파일은 하나도 고치지 않았습니다. 바뀐 내용은 `src/Lib.luau`를 `src/Lib2.luau`로 복사해서 넣었습니다. 모드 이름은 1차와 같습니다. 기준은 **sync**(Roblox 동기 플래그, override 없음)이고, **vsc**는 사용자 VSCode(한도 override 셋 켬), **pin**은 레포에 핀 고정된 1.69.0과 `scripts/roblox-defs` 조합입니다. 판정은 새로 만든 `harness/diag-lines.py`가 줄 단위로 셉니다. 한 줄에 붙은 `-- NEG` / `-- OK` 표지를 대조하고, 린트 경고(LocalUnused 등)는 빼고 셉니다. 파일과 모드별 집계는 `out/r2/summary-neg-ok.txt`에 있고, 원 출력은 `out/r2/*.txt`에 줄을 잘라서 넣었습니다.
+
+### 요약
+
+- **M1(typeof로 서명 꺼내기)은 됩니다.** 제네릭이 무너지지 않고, 콜백 문맥 타입·이름 자동완성·오용 진단이 다 살아남습니다. 예외는 하나입니다. 다른 클래스로 부분 적용한 함수를 대입해도 막히지 않습니다.
+- **M2(읽기 표면에 ReadOnly 포함)도 됩니다.** 다만 체커 쪽에는 읽기 전용 표시가 전혀 없습니다. 그래서 ReadOnly를 쓰기 표면에서 빼는 일은 덤프에서 온 데이터(`DenyWrite`)로 해야 합니다.
+- **M3(Modifier의 As*/Into/Overridden/숏핸드)는 vsc에서는 킷이 쓰는 꼴이 전부 됩니다.** 그러나 sync에서는 `ModifierInto<GuiObject>`가 걸린 자리가 전부 "too complex"가 됩니다. 원인은 추상 클래스 Modifier의 As 트리 크기와, 따로 만들어진 사본끼리의 구조 비교입니다.
+- **M4(전체 클래스 맵)는 맵 자체는 싸지만, 클래스 이름 바운드가 sync 한도를 넘습니다.** 361개 클래스를 한 바운드에 넣으면 큰 클래스나 유니언 뒤쪽 클래스의 꺼내기 줄마다 too complex가 납니다. NEG 판정은 잃지 않았습니다. 84개짜리 분야별 맵은 깨끗합니다.
+
+---
+
+### M1. typeof로 서명 꺼내기
+
+파일은 `harness/compare/qtypeof/Ext2.luau`와 `use.luau`입니다. 1차 qmerge처럼 `QT.Quad & Ext`로 얹었습니다. `Ext`에는 확정 표면대로 `Elem`, 클래스 먼저 커리인 `OnChange`·`OnEvent`·`Out`이 들어 있고, `OnChange`·`Out`은 Lib2 readmap을 씁니다. Studio 사본은 `src/19-typeof-q.luau`(Ext2를 인라인)입니다.
+
+**실측: 진단** (`run-cli.sh`, sync·vsc·pin 세 모드 모두 같음)
+- NEG 25/26, OK 19/19이고 too complex는 0입니다. sync 비용은 0.81 s / 259 MiB입니다.
+- 지역 별칭 `type OnChangeT = typeof(q.OnChange)`(use.luau 10~13행)에 담은 값으로 부를 때 다음이 전부 진단됩니다.
+  - 본문 오용(21행), 이름 오타, 클래스 오타
+  - `Out`의 틀린 Source(31행)
+  - `Elem "Fraem"`, `Frame { Visible = 5 }`
+- 래퍼 함수의 파라미터를 그 별칭으로 주석해도 같습니다. `withChangeBad`(41행), 이름 오타, `withOutBad`, `withElemBad`가 잡히고, `withChange(function() end)` 같은 틀린 인자도 잡힙니다.
+- 부분 적용도 같습니다. `typeof(q.OnChange "Frame")`, `typeof(q.Elem "Frame")`, `typeof(q.Out "Frame")`를 꺼내도 본문 오용, 남의 이름(`fc "Text"`), 남의 생성자(`mk(q.Elem "TextLabel")`, 69행)가 잡힙니다. 확정 이름 `ElemCtor<Frame>`도 같은 결과입니다.
+- 제네릭으로 흘려도 검사가 유지됩니다. `id(q.OnChange)`(84행)와 테이블 필드 `{ OnChange: OnChangeT }`(86행) 둘 다입니다.
+- **놓친 하나는 65행 `local fcOther: FrameChange = q.OnChange "TextLabel"`입니다.** 바운드만 다른 두 제네릭 함수를 체커가 서로 대입 가능하다고 봅니다. 대입한 뒤의 `fcOther`는 Frame 이름표로 검사됩니다.
+
+**실측: LSP** (`lspc.py`, sync·vsc·pin 같음)
+- hover는 제네릭을 유지합니다.
+  - `OnChange` → `function OnChange<C0>(class: C0 & ("BillboardGui" | …)) …`
+  - `id(q.OnChange)` → `function oc2<C0>(…)`
+  - 부분 적용 → `function fcPartial<K>(name: K & ("AbsolutePosition" | …))`
+  - any나 unknown으로 무너진 곳은 없습니다. 다만 1차처럼 `keyof`가 리터럴로 풀려서 깁니다.
+- 무주석 콜백 인자의 hover도 살아 있습니다.
+  - 별칭으로 담은 지역: `v: boolean`, `x: number`
+  - 래퍼 파라미터 경유: `count: number`
+  - 부분 적용 별칭 경유: `v: boolean`
+  - ReadOnly 경유: `v: Vector2`, `v.` 뒤에 `Magnitude`
+- 자동완성 개수는 다음과 같습니다. 괄호 안 숫자는 하네스가 끼워 넣은 글자 1개를 포함한 값입니다.
+  - 클래스 따옴표 안: 48 (0.6 s)
+  - 이름 따옴표 안: Frame 읽기 표면 45
+  - 래퍼 파라미터 안 이름: 45, 이벤트: 27
+  - `input.` 뒤: 64
+  - `Frame { ` 뒤: 68
+
+---
+
+### M2. 읽기 표면에 ReadOnly 포함
+
+Lib2는 Policy를 두 갈래로 나눴습니다.
+- `Deny`: 양쪽 표면에서 막습니다.
+- `DenyWrite`: 쓰기 표면에서만 막습니다. 덤프의 readProps와 Parent가 들어갑니다.
+
+readmap은 `collect(c, true)`로 `DenyWrite`를 건너뜁니다(`src/Lib2.luau`의 collect와 readmap). 파일은 `harness/compare/readsurf/use.luau`이고, Studio 사본은 `src/18-read-surface.luau`입니다.
+
+**실측: 체커의 ReadOnly 표시** (Lib2 `rwreport` 모드, 타입 함수 안에서 `properties()`의 read/write 반쪽을 출력)
+- 결과 줄은 sync·vsc·pin에서 md5까지 같습니다.
+  `[RW] Frame AbsoluteSize=rw,AbsolutePosition=rw,TextBounds=-,ClassName=rw,Parent=rw,Size=rw,Text=-,Visible=rw write=38 readProps=44; TextLabel … write=57 readProps=67; ScrollingFrame … 55/63; TextBox … 65/75`
+- **ReadOnly 프로퍼티도 read와 write 반쪽이 둘 다 있고 서로 같습니다.** defs 텍스트에도 `read`/`write` 표기가 0개입니다.
+- 그래서 1차 8.22의 "표시 없음"이 타입 함수 API 수준에서도 사실입니다. **쓰기 표면에서 ReadOnly를 빼는 일은 덤프 데이터로 할 수밖에 없습니다.**
+- Studio 체커가 다르게 표시하는지는 미측정입니다. 아래 Studio 후보 1번입니다.
+
+**실측: 판정** (sync·vsc·pin 모두 NEG 16/16, OK 16/16, too complex 0; sync 0.98 s / 275 MiB)
+- 킷 기준 사례가 통과합니다.
+  - `Out "Frame" "AbsoluteSize" (pixels)`, 여기서 `pixels: Source<Vector2>` (26행)
+  - `Out "TextLabel" "TextBounds"`, `Out "TextBox" "Text" (value)`
+  - `TextBox { Out "TextBox" "Text" (value), Text = value }`
+  - `OnChange "ScrollingFrame" "CanvasPosition" (function(pos: Vector2) end)`
+  - 이름 붙은 콜백 `writeBack(text: string)`
+  - `OnChange "Frame" "AbsoluteSize" (function(v) … v.X … end)`, hover `v: Vector2` (33행)
+- 거부도 맞게 됩니다.
+  - 틀린 Source 타입(40·41행), 본문 오용, 틀린 주석
+  - Frame에 없는 이름, `DataCost`(양쪽 Deny)
+- 쓰기 표면은 여전히 ReadOnly를 거부합니다. `Frame { AbsoluteSize }`(48행), `TextLabel { TextBounds }`, `Parent`, Modifier 세터 `:AbsoluteSize`(51행), Spread 전부입니다.
+- **Q127 (a)와 같이 섭니다.**
+  - `NextSelectionUp`의 읽기 타입은 `GuiObject?`이고, `OnChange`에서 non-nil 지역 변수에 담으면 거부됩니다.
+  - `Parent`는 `Instance?`, `Size`는 `UDim2` 그대로입니다.
+  - 새로 본 것이 하나 있습니다. **`Out "Frame" "NextSelectionUp"`에 non-nil인 `Source<GuiObject>`를 주면 Source가 불변이라서 거부됩니다(56행).** 소비자는 `Source<GuiObject?>`로 선언해야 합니다. 킷은 이 자리를 쓰지 않습니다.
+- 디스크립터를 배열부에 넣으면 클래스의 읽기 이름과 대조됩니다. Lib2 elem에 `__quadChange` 팔을 추가했습니다. `Frame { Out "TextBox" "Text" (value) }`(63행)와 `Frame { Out "TextLabel" "TextBounds" … }`가 거부됩니다.
+- 잡음: 틀린 Source 한 건에 진단이 94~95줄 붙습니다. 1차와 같은 모양입니다.
+
+---
+
+### M3. Modifier의 As* / Into / Overridden / 숏핸드 setter
+
+**실측: 지금 생성 표면의 목록** (`quad-roblox/src/Declaration/init.luau`)
+- `<Class>Modifier`는 47벌입니다(5050~5096행 ModifierNS). 예약 메소드는 모두 같습니다.
+  - `Peek`
+  - `Apply(self: any)`
+  - `Overridden: (self, ...any) -> any`
+  - 무검사 `As: <T>(self, name: string?) -> T`
+  - 항등 `As<Self>`
+- 추상 클래스는 스코프 안 하위 클래스마다 `As<Desc>`를 가집니다. GuiObject는 항등을 포함해 13개입니다(2637행부터). 잎 클래스는 항등뿐입니다(Frame, 2399~2401행).
+- `Into<C> = { As<C>: (self: any) -> <C>Modifier }`가 47벌입니다(2446행 등).
+- 숏핸드 setter 넷(`UICorner`, `UIPadding`, `UIPaddingOffset`, `UIScale`)은 GuiObject 계열 13개 타입에 있습니다.
+
+**실측: 킷 grep** (quad-roblox-devui, quad-roblox-material)
+- `D.Modifier.<C>` 사용처: Frame 134, TextButton 61, TextLabel 13, TextBox 5, GuiObject 3
+- 이어 부르는 세터: Name 82, Size 57, LayoutOrder 28, BorderSizePixel 24, Position 22, BackgroundTransparency 13, AutomaticSize 8, AnchorPoint 6, FontFace·TextSize·LineHeight 각 3, ClipsDescendants·TextXAlignment 각 2, TextWrapped·AutoButtonColor·Text·ZIndex 각 1
+- As 사용: `AsGuiObject` 4, `AsTextButton` 2, `AsFrame` 2. 자리는 material `Card.luau` 214·237행, `List.luau` 267·299행이고 모두 `props.Modifier:AsGuiObject():As…()` 꼴입니다.
+- Into: `IntoGuiObject?`가 prop 타입으로 2곳(`Card.luau:81`, `List.luau:97`) 쓰이고, 나머지는 `Quad.luau`의 재수출뿐입니다.
+- 쓰이지 않는 것: Modifier `Overridden` 0곳(`isOverridden`은 무관), Modifier 숏핸드 setter 0곳(props 꼴 `UICorner = …`만 씀), Modifier의 `:Apply` 0곳
+- 나머지 꼴: prop 타입 `Modifier: <C>Modifier?` 약 120곳, 배열부에 `props.Modifier or q.None` 67곳, 모듈 수준 base Modifier를 다시 체인하는 꼴
+
+**Lib2 구현** (프로브 선택이지 결정이 아님)
+- `modOf`는 한 Build 호출 안에서 클래스별로 메모이즈하며 As 트리를 만듭니다. 하강 목록은 `Policy.Classes`(47 맵)에서 구합니다.
+- `ModifierInto<C> = IntoWith<C, Modifier<C>>`입니다. 별도 타입 함수가 이미 만든 Modifier를 인자로 받습니다.
+- 숏핸드는 별도 Policy 필드 `Shorthand`로 뺐습니다. `Inject`와 섞으면 한 데이터가 두 일을 하게 되기 때문입니다. 숏핸드 값의 State 팔은 nil과 None을 받습니다.
+- 비교용 손잡이로 `AsDepth`를 넣었습니다. 0은 항등만, 1은 하강 결과에 2단 하강이 없는 꼴입니다.
+
+**실측: 판정** (`harness/compare/modfull/use.luau`, Studio 사본 `src/20-modifier-as.luau`)
+- **vsc: NEG 14/15, OK 29/30.** 킷 꼴이 전부 섭니다.
+  - 모듈 수준 Name, 세터 체인, 저장한 base 재체인
+  - `Modifier<TextButton>?` prop
+  - `ModifierInto<GuiObject>?` prop과 `AsGuiObject():AsTextButton()` / `AsFrame()`, 커스텀 Into 구현
+  - 2단 하강, `As<<T>>()` 명시
+  - 숏핸드 setter와 props 숏핸드(GuiObject 밖에서는 거부)
+  - 형제 클래스·무관 클래스 배치 거부, 잎에서의 하강 거부, 검사형 상향 거부
+- **sync: OK 23/29, too complex 7.** Into가 걸린 줄(46·47·49·50·53·54행)이 전부입니다. NEG는 14/15로 유지됩니다.
+- **놓친 b2(40행, `Modifier<TextButton>?` prop이 Frame Modifier를 받음)와 잡음 d7(62행, 주석만으로 `As()`의 T 추론)은 생성 D에서도 똑같습니다.** 대조 파일은 `harness/compare/modfull/gend-control.luau`(vsc)입니다. 14·16행이 MISS, 19행이 NOISE입니다.
+  - 생성 D도 **옵셔널 함수 파라미터 `IntoGuiObject?`**에서 GuiObject Modifier를 거부합니다(8행).
+  - Lib2도 같습니다(`into-ident.luau` 14·15·17행, vsc).
+  - 킷이 쓰는 props 테이블 필드 꼴은 통과합니다.
+  - 즉 이 셋은 타입 함수 때문이 아니라 원래 있던 솔버 동작입니다.
+
+**실측: sync too complex의 원인 가르기** (`harness/compare/modfull/into-ident.luau`, use-as1/use-as0)
+- 같은 `Modifier<GuiObject>`라도 표기가 다르면 too complex입니다. `L.Modifier<GuiObject>`에 `Modifier<index<ModClassMap,"GuiObject">>`를 대입하면 19행에서 too complex입니다. 표기가 같으면(20행) 통과합니다.
+- IntoWith의 인자도 또 하나의 사본입니다.
+- AsDepth 0은 표기가 달라도 통과합니다(27행). AsDepth 1은 실패합니다(26행). 잎 Frame은 전체 트리여도 통과합니다.
+- AsDepth 0 변형 전체는 sync에서 too complex 0입니다. 대신 As 하강을 잃습니다.
+- **추정:** 타입 함수 결과는 축약할 때마다 새 사본이라 이름 정체성이 없습니다. 그래서 큰 그래프(추상 클래스와 하위 13벌)끼리 구조 비교가 일어납니다. 생성 D는 이름 붙은 별칭이라 정체성 비교로 끝납니다.
+
+**실측: 비용** (`harness/gen-modcost2.py` 생성, `cost-run.py`로 순차 실행)
+
+| 변형 | 50 사용 | 300 사용 | 비고 |
+|---|---|---|---|
+| full, Into 없음 (sync·vsc 같음) | 0.63 s / 127 MiB | 1.19 s / 151 MiB | NEG 2/2 |
+| full + Into, sync | too complex 11 | too complex 61 | NEG 2/2 |
+| full + Into, vsc | 0.96 s | 2.37 s | too complex 0 |
+| AsDepth 0 | 0.52 s / 94 MiB | 0.73 s / 118 MiB | |
+
+**실측: hover와 자동완성** (sync)
+- 팩토리 hover: `function FrameModifier(...: any): { Active: (*CYCLE*, …) … 47 more … }`
+- 값 hover: `t1 where t1 = { … 47 more }`. 1차, 생성 D와 같은 전개입니다.
+- `m:` 자동완성: Frame 47개(0.27 s), GuiObject 58개(As 13개 포함, 0.57 s)
+- `Overridden`의 반환 hover는 `any`입니다. 확정대로 타입드 `q.Modifier "Frame"`에는 `Overridden`이 없고, 값 타입의 메소드 꼴만 남습니다. `Raw.Modifier.Overridden`은 base 몫이라 이 프로브 밖입니다.
+
+**미측정**
+- 숏핸드 유니언 값 `number | UDim`의 Tween 팔. 생성 FieldN에는 있고 프로브에서는 생략했습니다.
+- 문자열 인자 As를 바깥 교집합으로 미루는 꼴. 세터가 self(Build 부분)만 돌려줘서 체인 뒤에 사라지는 구조라 시도만 검토하고 재지 않았습니다.
+
+---
+
+### M4. 클래스 맵 확장
+
+**덤프 출처.** `scripts/gen-d.py normalize`는 setup.rbxcdn.com의 raw `<ver>-API-Dump.json`을 읽습니다. 커밋된 `quad-roblox/dump/api-surface.json`에는 31개 클래스뿐이라, raw 덤프 둘을 스크래치패드에 내려받았습니다.
+- `version-268c7d941ba34c1a`: 지금 D가 만들어진 덤프입니다. 확장 defs에 353개 중 352개가 있습니다.
+- `version-4f087c32742644ab`: 오늘의 Studio 0.743 덤프입니다. 확장 defs(`globalTypes.PluginSecurity.d.luau`, 2026-10-19 09:54 갱신)에 361개가 전부 있어서 이쪽을 썼습니다.
+
+**실측: 개수** (4f08)
+
+| 집합 | 클래스 수 |
+|---|---|
+| Instance 하위 전체 | 908 |
+| 만들 수 있는 것(NotCreatable·Service 제외) | **361** (그중 Deprecated/NotBrowsable 45) |
+| 위 361 + 그 조상 | **417** |
+| Service가 아닌 것 전부 | 567 |
+
+**생성물.**
+- 생성기 `harness/gen-fullmaps.py`가 `src/FullMaps.luau`를 만듭니다(1027줄).
+  - `CreatableMapFull` 361, `ModClassMapFull` 417
+  - 이름 리터럴 유니언 둘
+  - 정의 클래스(owner) 기준 Policy: `DenyIn` 142 owner / 596 이름, `DenyWriteIn` 78 / 159
+  - 태그 규칙은 gen-d의 PROP_TAG_EXCLUDE, HIDDEN_NAME_KEEP, DEPRECATED_NAME_KEEP와 같습니다.
+- `src/FullMapsKeep.luau`는 같은 생성기에 `--keep-hidden Position,Orientation,WorldPosition,WorldOrientation`을 준 것입니다.
+
+**실측: 맵만 다는 비용**
+- 모듈 단독: 0.44 s / 68 MiB
+- 팩토리 셋의 타입만 단 소비 파일(`fullmap/maponly-full.luau`): 0.46 s / 67 MiB. 31 맵 대조군(`maponly-31`)과 같습니다.
+- 견고성: `brief` 모드로 361개를 한 유니언에서 돌리면(`fullmap/brief-all.luau`) 전부 표면이 나옵니다. 빈 클래스 0, 최대 HumanoidRigDescription 115, 중앙값 18입니다. 타입 함수 런타임 에러는 없었습니다. 1.53 s / 1090 MiB입니다.
+
+**실측: 판정** (`fullmap/use-lit.luau`, Studio 사본 `src/23-fullmap.luau`)
+- sync·vsc 모두 **NEG 21/21**입니다.
+- 통과하는 것:
+  - `Elem "Part" { Anchored = true, Size = Vector3… }`
+  - `Shape`, `Position`(Keep 판), `Transparency`, `CFrame`
+  - `Sound`, `ParticleEmitter`(ColorSequence) 값
+  - BasePart Modifier와 Spread를 Part에 넣기
+- 거부하는 것:
+  - `Anchored = 5`, `Size = UDim2`
+  - ReadOnly `AssemblyMass`, `Sound.TimeLength`
+  - `Parent`, Part에 `UICorner`
+  - 추상 클래스, 서비스(`Workspace`), 오타
+  - Part Modifier를 Frame에, GuiObject Modifier를 Part에, BasePart Spread를 Frame에 넣기
+  - Frame에 `Touched` 디스크립터
+
+**비GUI 클래스에서 Policy가 문제를 내는가 — 실측상 셋 냅니다.**
+1. **1차 Lib의 전역 이름 Deny가 `Part.Shape`를 지웁니다.** `Shape`가 어느 GUI 클래스에서 드롭된 이름이라서입니다(`fullmap/lib2policy-part.luau` 5행 거짓 양성). 정의 클래스 기준으로 바꾸면 통과합니다.
+2. **gen-d의 Hidden 규칙은 비GUI 핵심 프로퍼티를 지웁니다.** 덤프에서 BasePart의 `Position`·`Orientation`, Attachment의 `Position`·`Orientation`·`WorldPosition`·`WorldOrientation`이 Hidden 태그입니다. 그대로 두면 `Part { Position = … }`가 거부됩니다(`fullmap/use.luau` 22행). Keep 판에서는 통과하므로, 고치는 것은 허용목록 데이터를 늘리는 일입니다.
+3. **API 버전이 흘렀습니다.** 4f08에서 `GuiObject.Transparency`가 Hidden·NotReplicated에 더해 **Deprecated**가 됐습니다. 지금 규칙(DEPRECATED_NAME_KEEP에 Transparency가 없음)대로면 다음 덤프에서 이 프로퍼티가 조용히 빠집니다. Frame props가 67 대 68로 갈린 이유입니다.
+
+Child, Inject, Shorthand(GuiObject 키)는 비GUI에서 문제가 없었습니다.
+
+**실측: too complex — 원인은 클래스 이름 바운드입니다.** 맵 크기가 아닙니다.
+- `harness/compare/mapsize/`(반환이 클래스뿐): sync에서 `K & keyof<Map>`은 130개까지 깨끗하고 140개부터 too complex입니다. 이름을 리터럴 유니언으로 주면 361개에서도 깨끗합니다.
+- `mapsize2/`(반환이 Elem 모양 생성자): keyof는 130개까지, 200개부터 실패입니다. 리터럴 유니언은 361개에서도 깨끗합니다. **단 클래스가 유니언 앞쪽에 있을 때만입니다.**
+  - 같은 유니언을 알파벳순으로 두면(`lit-361-sorted`) Frame(143번째), Part(203번째), TextLabel(307번째)가 모두 too complex입니다. 역순도 같습니다.
+  - GUI를 앞에 둔 361 유니언(`guifirst-big-361.luau`, Studio 사본 `src/22-mapsize-position.luau`)에서는 MeshPart@214, ParticleEmitter@231, Seat@279, SpawnLocation@294, Tool@327, Trail@331, TrussPart@333, VehicleSeat@344, WedgePart@352가 실패합니다. 프로퍼티가 많은 **Beam은 96번째인데도** 실패합니다. Part/Sound/Model@1~3은 통과합니다.
+  - **즉 실패는 유니언 안의 위치와 클래스 표면 크기 둘 다에 걸립니다.**
+  - `K & string`은 K가 string으로 넓어져 쓸 수 없고, `K & (Names | string)`이나 `keyof & string`도 실패합니다(`alt-*`).
+- 모듈 경계를 넘을 때(`mapsize3/`): 앞쪽 배치 유니언은 361개에서도 깨끗하고, 팩토리째 export한 꼴도 깨끗합니다. `FullMaps`(알파벳순)에서 import했을 때만 실패합니다. 위치 효과입니다.
+- vsc(override)에서는 361개 생성자 바운드가 통과합니다. 하지만 **417개 ModClass 바운드는 vsc에서도 늦은 이름에서 실패합니다.** 8건이고, `Spread "PVInstance"`와 `OnChange "Part"` 등입니다.
+- **too complex가 나도 NEG는 잃지 않았습니다.** 전 파일에서 NEG가 다 잡혔고 타입은 흐릅니다. 대신 그런 꺼내기 줄마다 빨간 "Code is too complex" 에러가 남습니다.
+- 대안 재료: **분야별 맵 84개(3D/월드)**(`mapsize2/cat3d.luau`, Studio 사본 `src/24-cat3d.luau`)는 sync에서 큰 클래스 전부 깨끗합니다.
+
+**실측: 꺼내 둔 생성자의 사용량별 비용** (`harness/compare/fullcost/`, sync, 20 → 300 사용)
+
+| 변형 | 20 사용 | 300 사용 | too complex |
+|---|---|---|---|
+| map31 | 0.48 s / 78 MiB | 0.50 s / 94 MiB | 0 |
+| full | 0.75 s / 120 MiB | 0.78 s / 127 MiB | 5 (꺼내기 줄) |
+| fullnongui | 0.72 s / 106 MiB | 0.70 s / 112 MiB | 4 |
+| full, vsc | 1.53 s / 180 MiB | 1.64 s / 188 MiB | 0 |
+| map31, vsc | 0.47 s | 0.55 s | 0 |
+
+사용량에 대해서는 평평하고, 상수 비용이 sync 약 +0.3 s, vsc 약 +1.1 s 붙습니다.
+
+**실측: 자동완성 지연** (최소 파일 `fullmap/lat-full.luau` 대 `lat-31.luau`)
+
+| 자리 | 전체 맵 (sync / vsc) | 31 맵 |
+|---|---|---|
+| `Elem "` | 362개, 0.19 s / 0.50 s | 32개, 0.01 s |
+| `Frame { ` | 0.36 s / 0.92 s | 0.02 s |
+
+진단이 많은 큰 파일(use-lit)에서는 `Part { `가 1.20 s / 4.39 s였습니다.
+
+**실측: 417개 맵 위의 전체 As 트리** (`fullmap/modas-*`, sync)
+
+| 클래스 | 시간 / 메모리 |
+|---|---|
+| Part | 0.67 s / 109 MiB |
+| BasePart | 0.90 s / 275 MiB |
+| GuiObject | 0.83 s / 219 MiB |
+| PVInstance | 1.10 s / 485 MiB |
+| Instance | 3 GiB 상한에서 9.8 s 뒤 `std::bad_alloc` — 여기서 멈춤 |
+
+Instance 행은 N을 줄여서 다시 돌리지 않았습니다.
+
+**실측: pin 모드.** 확장 defs로 만든 맵은 레포 핀 defs에 없는 클래스를 가리킵니다(`Unknown type 'AdPlacement'` 등). 그래서 맵 전체가 깨지고 OK 0/20입니다.
+- **추정:** 생성 시점의 덤프나 defs와 사용자 체커의 클래스 집합이 어긋나면 맵 모듈이 통째로 깨집니다. 타입 함수 안에서 전역 클래스를 나열하는 API는 없는 것으로 보입니다(미확인).
+
+---
+
+### 종합 (결정 재료)
+
+1. **M1·M2는 확정 표면 그대로 섭니다.** M2에서 ReadOnly를 쓰기 표면에서 빼는 일은 체커에 표시가 없으므로 덤프 데이터(`DenyWrite`)로 갈라야 합니다. Q127 (a) 아래에서는 객체 참조를 쓰는 `Out`의 Source를 `T?`로 선언해야 합니다.
+2. **M3.** 타입 함수 Modifier는 킷 꼴을 vsc에서 전부 재현합니다. sync에서는 **추상 클래스의 As 트리와 Into의 조합이 무너집니다.** 재료로 갈래 셋이 보입니다. 정하는 것은 사용자입니다.
+   - (a) As 하강을 버리고 무검사 `As<<T>>()`만 둡니다. AsDepth 0이고, sync에서 깨끗합니다.
+   - (b) Into·As용 이름 별칭만 생성기로 남깁니다. 정체성 비교가 되는 길입니다. 다만 사용자가 클래스별 복제를 제거하기로 한 결정과 부딪힙니다.
+   - (c) 하강 대상 목록을 실사용(GuiObject→TextButton/Frame)으로 좁히는 데이터를 둡니다. 미측정입니다.
+3. **M4.** 맵과 Policy 데이터 자체는 싸고, 정의 클래스 기준 Policy가 비GUI 오판을 고칩니다. 하지만 **한 바운드에 361~417개 이름은 sync 한도에서 서지 못합니다.** 갈래는 둘이 보입니다.
+   - (a) 지금처럼 GUI 중심의 작은 맵을 유지합니다.
+   - (b) 분야별로 100개 이하인 맵 여러 개로 나눕니다. 84개 실측은 깨끗했습니다.
+   - 어느 쪽이든 Hidden 허용목록을 비GUI로 넓히는 일과 Transparency 드리프트 대응은 데이터 몫입니다.
+4. 놓침과 잡음 가운데 b2, 옵셔널 Into 파라미터, `As()` 추론은 생성 D와 같은 동작입니다. 이번 전환으로 새로 생기는 결함이 아닙니다.
+
+### Studio 확인 후보 (메인이 싱크해 `studio-analysis`로)
+
+1. `src/18-read-surface.luau`: `[RW]` 진단 한 줄이 핵심입니다. Studio 체커가 ReadOnly를 `r`만으로 표시하는지, 아니면 리눅스처럼 `rw`인지 봅니다. NEG 16개의 대조도 같이 봅니다.
+2. `src/20-modifier-as.luau`: 46~54행의 too complex가 Studio에서 sync와 같은지, 40행 MISS가 같은지 봅니다.
+3. `src/21-into-ident.luau`: 표기가 다른 Modifier 사본 비교(19·26행)에서 too complex가 나는지 봅니다.
+4. `src/22-mapsize-position.luau`: 어느 꺼내기 줄이 too complex인지, 위치와 크기 효과를 봅니다.
+5. `src/FullMapsKeep.luau`와 `src/23-fullmap.luau`: **Studio의 클래스 집합에 없는 이름 때문에 생기는 `Unknown type` 개수가 핵심입니다.** too complex 줄도 같이 봅니다.
+6. `src/24-cat3d.luau`: 진단이 3건(NEG만)이어야 정상입니다.
+7. `src/19-typeof-q.luau`: M1의 NEG 대조입니다. 인라인 블록 때문에 줄 번호가 harness 판과 다릅니다.
+
+### 새로 만든 파일
+
+모두 `이 폴더 ` 아래입니다.
+- `src/`
+  - `Lib2.luau`
+  - `FullMaps.luau`, `FullMapsKeep.luau` (생성물)
+  - `18-read-surface.luau`, `19-typeof-q.luau`, `20-modifier-as.luau`, `21-into-ident.luau`, `22-mapsize-position.luau`, `23-fullmap.luau`, `24-cat3d.luau`
+- `harness/` 도구
+  - `diag-lines.py`
+  - `gen-fullmaps.py`, `gen-modcost2.py`, `gen-fullcost.py`, `gen-mapsize.py`, `gen-mapsize2.py`, `gen-mapsize3.py`
+- `harness/compare/` 프로브 폴더
+  - `qtypeof/` (Ext2, use)
+  - `readsurf/use.luau`
+  - `modfull/` (use, use-as0, use-as1, into-ident, gend-control)
+  - `modcost2/` (8개)
+  - `fullmap/` (use, use-lit, iso-a~e, lat-31/full, maponly-31/full, modas-* 5개, lib2policy-part, brief-all)
+  - `fullcost/` (12개), `mapsize/` (24개), `mapsize2/` (28개), `mapsize3/` (24개)
+- `out/r2/`: 원 출력 29개와 `summary-neg-ok.txt`
+
+raw 덤프는 레포 밖 스크래치패드에 있습니다. 다시 받는 방법은 `curl -s -o X https://setup.rbxcdn.com/version-4f087c32742644ab-API-Dump.json`입니다.

@@ -1,0 +1,143 @@
+=== harness/compare/qtypeof/use.luau [sync]
+# lines with diagnostics: 27  too-complex: 0  (lint warnings skipped: 13)
+  NEG L65: MISS  local fcOther: FrameChange = q.OnChange "TextLabel" -- NEG? another class's curried fn
+# NEG 25/26  OK clean 19/19
+=== harness/compare/qtypeof/use.luau [vsc]
+# lines with diagnostics: 27  too-complex: 0  (lint warnings skipped: 13)
+  NEG L65: MISS  local fcOther: FrameChange = q.OnChange "TextLabel" -- NEG? another class's curried fn
+# NEG 25/26  OK clean 19/19
+=== harness/compare/readsurf/use.luau [sync]
+# lines with diagnostics: 18  too-complex: 0  (lint warnings skipped: 5)
+# NEG 16/16  OK clean 16/16
+=== harness/compare/readsurf/use.luau [vsc]
+# lines with diagnostics: 18  too-complex: 0  (lint warnings skipped: 5)
+# NEG 16/16  OK clean 16/16
+=== harness/compare/modfull/use.luau [sync]
+# lines with diagnostics: 20  too-complex: 7  (lint warnings skipped: 0)
+  NEG L40: MISS  local b2 = Button({ Text = "a", Modifier = FrameModifier():LayoutOrder(1) }) -- NEG Frame modifier for a TextB
+  OK  L46: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L47: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L49: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK
+  OK  L50: NOISE local k2 = CardF({ Modifier = surfaceSize() }) -- OK
+  OK  L53: NOISE local k4 = Card({ Modifier = custom }) -- OK custom Into implementation
+  OK  L62: NOISE local d7: L.Modifier<TextButton> = FrameModifier():As() -- OK unchecked As (type only)
+# NEG 14/15  OK clean 24/30
+=== harness/compare/modfull/use.luau [vsc]
+# lines with diagnostics: 15  too-complex: 0  (lint warnings skipped: 0)
+  NEG L40: MISS  local b2 = Button({ Text = "a", Modifier = FrameModifier():LayoutOrder(1) }) -- NEG Frame modifier for a TextB
+  OK  L62: NOISE local d7: L.Modifier<TextButton> = FrameModifier():As() -- OK unchecked As (type only)
+# NEG 14/15  OK clean 29/30
+=== harness/compare/modfull/use-as1.luau [sync]
+# lines with diagnostics: 21  too-complex: 7  (lint warnings skipped: 0)
+  NEG L41: MISS  local b2 = Button({ Text = "a", Modifier = FrameModifier():LayoutOrder(1) }) -- NEG Frame modifier for a TextB
+  OK  L47: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L48: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L50: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK
+  OK  L51: NOISE local k2 = CardF({ Modifier = surfaceSize() }) -- OK
+  OK  L54: NOISE local k4 = Card({ Modifier = custom }) -- OK custom Into implementation
+  OK  L63: NOISE local d7: L.ModifierAs1<TextButton> = FrameModifier():As() -- OK unchecked As (type only)
+  OK  L65: NOISE local d9 = GuiObjectModifier():AsGuiButton():AsTextButton():Text("x") -- OK two-step down-cast
+# NEG 14/15  OK clean 22/29
+=== harness/compare/modfull/use-as1.luau [vsc]
+# lines with diagnostics: 16  too-complex: 0  (lint warnings skipped: 0)
+  NEG L41: MISS  local b2 = Button({ Text = "a", Modifier = FrameModifier():LayoutOrder(1) }) -- NEG Frame modifier for a TextB
+  OK  L63: NOISE local d7: L.ModifierAs1<TextButton> = FrameModifier():As() -- OK unchecked As (type only)
+  OK  L65: NOISE local d9 = GuiObjectModifier():AsGuiButton():AsTextButton():Text("x") -- OK two-step down-cast
+# NEG 14/15  OK clean 27/29
+=== harness/compare/modfull/use-as0.luau [sync]
+# lines with diagnostics: 20  too-complex: 0  (lint warnings skipped: 0)
+  NEG L41: MISS  local b2 = Button({ Text = "a", Modifier = FrameModifier():LayoutOrder(1) }) -- NEG Frame modifier for a TextB
+  OK  L47: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L48: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L57: NOISE local d1 = GuiObjectModifier():AsTextButton():Text("x") -- OK down-cast keeps TextButton setters
+  OK  L58: NOISE local d2: L.ModifierAs0<TextButton> = GuiObjectModifier():AsTextButton() -- OK same structure as the alias
+  OK  L63: NOISE local d7: L.ModifierAs0<TextButton> = FrameModifier():As() -- OK unchecked As (type only)
+  OK  L65: NOISE local d9 = GuiObjectModifier():AsGuiButton():AsTextButton():Text("x") -- OK two-step down-cast
+# NEG 14/15  OK clean 23/29
+=== harness/compare/modfull/use-as0.luau [vsc]
+# lines with diagnostics: 20  too-complex: 0  (lint warnings skipped: 0)
+  NEG L41: MISS  local b2 = Button({ Text = "a", Modifier = FrameModifier():LayoutOrder(1) }) -- NEG Frame modifier for a TextB
+  OK  L47: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L48: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L57: NOISE local d1 = GuiObjectModifier():AsTextButton():Text("x") -- OK down-cast keeps TextButton setters
+  OK  L58: NOISE local d2: L.ModifierAs0<TextButton> = GuiObjectModifier():AsTextButton() -- OK same structure as the alias
+  OK  L63: NOISE local d7: L.ModifierAs0<TextButton> = FrameModifier():As() -- OK unchecked As (type only)
+  OK  L65: NOISE local d9 = GuiObjectModifier():AsGuiButton():AsTextButton():Text("x") -- OK two-step down-cast
+# NEG 14/15  OK clean 23/29
+=== harness/compare/modfull/into-ident.luau [sync]
+# lines with diagnostics: 13  too-complex: 11  (lint warnings skipped: 6)
+  OK  L14: NOISE A(GMdirect()) -- OK direct alias -> TF Into? (param)
+  OK  L15: NOISE A(GMindex()) -- OK index alias -> TF Into? (param)
+  OK  L16: NOISE An(GMindex()) -- OK index alias -> TF Into (param, non-optional)
+  OK  L17: NOISE B(GMindex()) -- OK index alias -> hand Into? (param)
+  OK  L18: NOISE T({ Modifier = GMindex() }) -- OK index alias -> TF Into? (table literal field)
+  OK  L19: NOISE local x1: L.Modifier<GuiObject> = GMindex() -- OK index vs direct alias, plain assignment
+  OK  L22: NOISE T({ Modifier = GMdirect() }) -- OK direct alias -> TF Into? (table literal field)
+  OK  L23: NOISE An(GMdirect()) -- OK direct alias -> TF Into (param, non-optional)
+  OK  L24: NOISE local GMhoist: () -> L.Modifier<GuiObject> = Modifier "GuiObject" -- OK hoist with a direct-alias annotation
+  OK  L25: NOISE T({ Modifier = GMhoist() }) -- OK
+  OK  L26: NOISE local y1: L.ModifierAs1<GuiObject> = (nil :: any) :: L.ModifierAs1<index<L.ModClassMap, "GuiObject">> -- OK As
+# NEG 2/2  OK clean 4/15
+=== harness/compare/modfull/into-ident.luau [vsc]
+# lines with diagnostics: 5  too-complex: 0  (lint warnings skipped: 6)
+  OK  L14: NOISE A(GMdirect()) -- OK direct alias -> TF Into? (param)
+  OK  L15: NOISE A(GMindex()) -- OK index alias -> TF Into? (param)
+  OK  L17: NOISE B(GMindex()) -- OK index alias -> hand Into? (param)
+# NEG 2/2  OK clean 12/15
+=== harness/compare/fullmap/use.luau [sync]
+# lines with diagnostics: 38  too-complex: 16  (lint warnings skipped: 5)
+  OK  L22: NOISE local p6 = Part { Position = Vector3.zero, Color = Color3.new(), Material = Enum.Material.Neon, Touched = func
+  OK  L45: NOISE local bpm = Modifier "BasePart" ():Anchored(true):CanCollide(false) -- OK abstract Modifier
+  OK  L48: NOISE local gm = Modifier "GuiObject" ():Size(UDim2.new()) -- OK
+  OK  L51: NOISE local sp = Spread "BasePart" { Anchored = true } -- OK
+  OK  L54: NOISE local sp2 = Spread "PVInstance" { } -- OK
+  OK  L56: NOISE local oc1 = OnChange "Part" "Position" (function(v) local n: number = v.X end) -- OK
+  OK  L57: NOISE local oc2 = OnChange "Part" "AssemblyMass" (function(v) local n: number = v end) -- OK ReadOnly readable
+  OK  L60: NOISE local ev1 = OnEvent "Part" "Touched" (function(hit) local b: BasePart = hit end) -- OK
+  OK  L62: NOISE local pe3 = Part { ev1, oc1 } -- OK descriptors of Part names
+# NEG 21/21  OK clean 11/20
+=== harness/compare/fullmap/use.luau [vsc]
+# lines with diagnostics: 30  too-complex: 8  (lint warnings skipped: 5)
+  OK  L22: NOISE local p6 = Part { Position = Vector3.zero, Color = Color3.new(), Material = Enum.Material.Neon, Touched = func
+  OK  L54: NOISE local sp2 = Spread "PVInstance" { } -- OK
+  OK  L56: NOISE local oc1 = OnChange "Part" "Position" (function(v) local n: number = v.X end) -- OK
+  OK  L57: NOISE local oc2 = OnChange "Part" "AssemblyMass" (function(v) local n: number = v end) -- OK ReadOnly readable
+  OK  L60: NOISE local ev1 = OnEvent "Part" "Touched" (function(hit) local b: BasePart = hit end) -- OK
+  OK  L62: NOISE local pe3 = Part { ev1, oc1 } -- OK descriptors of Part names
+# NEG 21/21  OK clean 14/20
+=== harness/compare/fullmap/use-lit.luau [sync]
+# lines with diagnostics: 36  too-complex: 16  (lint warnings skipped: 5)
+  OK  L46: NOISE local bpm = Modifier "BasePart" ():Anchored(true):CanCollide(false) -- OK abstract Modifier
+  OK  L49: NOISE local gm = Modifier "GuiObject" ():Size(UDim2.new()) -- OK
+  OK  L52: NOISE local sp = Spread "BasePart" { Anchored = true } -- OK
+  OK  L55: NOISE local sp2 = Spread "PVInstance" { } -- OK
+  OK  L57: NOISE local oc1 = OnChange "Part" "Position" (function(v) local n: number = v.X end) -- OK
+  OK  L58: NOISE local oc2 = OnChange "Part" "AssemblyMass" (function(v) local n: number = v end) -- OK ReadOnly readable
+  OK  L61: NOISE local ev1 = OnEvent "Part" "Touched" (function(hit) local b: BasePart = hit end) -- OK
+# NEG 21/21  OK clean 13/20
+=== harness/compare/fullmap/use-lit.luau [vsc]
+# lines with diagnostics: 28  too-complex: 8  (lint warnings skipped: 5)
+  OK  L55: NOISE local sp2 = Spread "PVInstance" { } -- OK
+  OK  L57: NOISE local oc1 = OnChange "Part" "Position" (function(v) local n: number = v.X end) -- OK
+  OK  L58: NOISE local oc2 = OnChange "Part" "AssemblyMass" (function(v) local n: number = v end) -- OK ReadOnly readable
+  OK  L61: NOISE local ev1 = OnEvent "Part" "Touched" (function(hit) local b: BasePart = hit end) -- OK
+# NEG 21/21  OK clean 16/20
+=== harness/compare/mapsize2/cat3d.luau [sync]
+# lines with diagnostics: 3  too-complex: 0  (lint warnings skipped: 0)
+# NEG 2/2  OK clean 0/0
+=== harness/compare/mapsize2/cat3d.luau [vsc]
+# lines with diagnostics: 3  too-complex: 0  (lint warnings skipped: 0)
+# NEG 2/2  OK clean 0/0
+=== harness/compare/mapsize2/guifirst-big-361.luau [sync]
+# lines with diagnostics: 10  too-complex: 10  (lint warnings skipped: 0)
+# NEG 0/0  OK clean 0/0
+=== harness/compare/mapsize2/guifirst-big-361.luau [vsc]
+# lines with diagnostics: 0  too-complex: 0  (lint warnings skipped: 0)
+# NEG 0/0  OK clean 0/0
+=== harness/compare/modfull/gend-control.luau [vsc]
+# lines with diagnostics: 4  too-complex: 0  (lint warnings skipped: 5)
+  OK  L8: NOISE A(D.Modifier.GuiObject()) -- OK optional param
+  NEG L14: MISS  Button({ Text = "a", Modifier = D.Modifier.Frame():LayoutOrder(1) }) -- NEG Frame modifier for a TextButton pr
+  NEG L16: MISS  Bp(D.Modifier.Frame()) -- NEG as param
+  OK  L19: NOISE local d7: DM.TextButtonModifier = D.Modifier.Frame():As() -- OK unchecked As (type only) — generic T from the 
+# NEG 2/4  OK clean 5/7

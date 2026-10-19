@@ -1,0 +1,12 @@
+full-020.luau                      sync    wall=  0.75s maxrss=  120MiB typeErrors(in file)=11 NEG caught=2/2 tooComplex(any)=5
+full-100.luau                      sync    wall=  0.76s maxrss=  122MiB typeErrors(in file)=11 NEG caught=2/2 tooComplex(any)=5
+full-300.luau                      sync    wall=  0.78s maxrss=  127MiB typeErrors(in file)=11 NEG caught=2/2 tooComplex(any)=5
+fulllit-020.luau                   sync    wall=  0.73s maxrss=  120MiB typeErrors(in file)=11 NEG caught=2/2 tooComplex(any)=5
+fulllit-100.luau                   sync    wall=  0.69s maxrss=  122MiB typeErrors(in file)=11 NEG caught=2/2 tooComplex(any)=5
+fulllit-300.luau                   sync    wall=  0.78s maxrss=  127MiB typeErrors(in file)=11 NEG caught=2/2 tooComplex(any)=5
+fullnongui-020.luau                sync    wall=  0.72s maxrss=  106MiB typeErrors(in file)=10 NEG caught=2/2 tooComplex(any)=4
+fullnongui-100.luau                sync    wall=  0.72s maxrss=  108MiB typeErrors(in file)=10 NEG caught=2/2 tooComplex(any)=4
+fullnongui-300.luau                sync    wall=  0.70s maxrss=  112MiB typeErrors(in file)=10 NEG caught=2/2 tooComplex(any)=4
+map31-020.luau                     sync    wall=  0.48s maxrss=   78MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+map31-100.luau                     sync    wall=  0.46s maxrss=   83MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+map31-300.luau                     sync    wall=  0.50s maxrss=   94MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0

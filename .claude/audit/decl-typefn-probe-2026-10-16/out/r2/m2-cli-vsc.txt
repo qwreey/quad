@@ -1,0 +1,617 @@
+harness/compare/readsurf/use.luau(17,12): TypeError: [RW] Frame AbsoluteSize=rw,AbsolutePosition=rw,TextBounds=-,ClassName=rw,Parent=rw,Size=rw,Text=-,Visible=rw write=38 readProps=44; TextLabel AbsoluteSize=rw,AbsolutePosition=rw,TextBounds=rw,ClassName=rw,Parent=rw,Size=rw,Text=rw,Visible=rw write=57 readProps=67; ScrollingFrame AbsoluteSize=rw,AbsolutePosition=rw,TextBounds=-,ClassName=rw,Parent=rw,Size=rw,Text=-,Visible=rw write=55 readProps=63; TextBox AbsoluteSize=rw,AbsolutePosition=rw,TextBounds=rw,ClassName=rw,Parent=rw,Size=rw,Text=rw,Visible=rw write=65 readProps=75
+harness/compare/readsurf/use.luau(38,29): TypeError: Expected this to be '"Abs" & ("AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "Name" | "NextSelectionDown" | "NextSelectionLeft" | "NextSelectionRight" | "NextSelectionUp" | "Parent" | "Position" | "RootLocalizationTable" | "Rotation"... *TRUNCATE
+`"Abs"` is not a subtype of `"AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "Name" | "NextSelectionDown" | "NextSelectionLeft" | "NextSelectionRight" | "NextSelectionUp" | "Parent" | "Position" | "RootLocalizationTable" | "Rotation"... *TRUNCATED*`
+harness/compare/readsurf/use.luau(38,12): TypeError: Property '"Abs"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiState.
+harness/compare/readsurf/use.luau(38,36): TypeError: Property '"Abs"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiState.
+harness/compare/readsurf/use.luau(38,12): TypeError: Property '"Abs"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiState.
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(40,40): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(41,42): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(42,75): TypeError: Expected this to be 'string', but got 'Vector2'
+harness/compare/readsurf/use.luau(43,56): TypeError: Expected this to be
+	'(Vector2) -> ()'
+but got
+	'(UDim2) -> ()'; 
+Expected the 1st parameter to be a supertype of `Vector2`, but got `UDim2`
+harness/compare/readsurf/use.luau(44,24): TypeError: Expected this to be
+	'"TextBounds" & ("AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "Name" | "NextSelectionDown" | "NextSelectionLeft" | "NextSelectionRight" | "NextSelectionUp" | "Parent" | "Position" | "RootLocalizationTable" | "Rotation"... *TRUNCATED*'
+but got
+	'"TextBounds"'; 
+`"TextBounds"` is not a subtype of `"AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "Name" | "NextSelectionDown" | "NextSelectionLeft" | "NextSelectionRight" | "NextSelectionUp" | "Parent" | "Position" | "RootLocalizationTable" | "Rotation"... *TRUNCATED*`
+harness/compare/readsurf/use.luau(44,12): TypeError: Property '"TextBounds"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read Gu
+harness/compare/readsurf/use.luau(44,12): TypeError: Property '"TextBounds"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read Gu
+harness/compare/readsurf/use.luau(45,24): TypeError: Expected this to be '"DataCost" & ("AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "Name" | "NextSelectionDown" | "NextSelectionLeft" | "NextSelectionRight" | "NextSelectionUp" | "Parent" | "Position" | "RootLocalizationTable" | "Rotation"... *TRU
+`"DataCost"` is not a subtype of `"AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "Name" | "NextSelectionDown" | "NextSelectionLeft" | "NextSelectionRight" | "NextSelectionUp" | "Parent" | "Position" | "RootLocalizationTable" | "Rotation"... *TRUNCATED*`
+harness/compare/readsurf/use.luau(45,12): TypeError: Property '"DataCost"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiS
+harness/compare/readsurf/use.luau(45,12): TypeError: Property '"DataCost"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiS
+harness/compare/readsurf/use.luau(46,39): TypeError: Expected this to be
+	'(string) -> ()'
+but got
+	'(number) -> ()'; 
+Expected the 1st parameter to be a supertype of `string`, but got `number`
+harness/compare/readsurf/use.luau(48,20): TypeError: Expected this to be 'number', but got '"AbsoluteSize"'
+harness/compare/readsurf/use.luau(48,35): TypeError: Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadEvent: "AncestryChanged" | "AttributeChanged" | "Changed" | "ChildAdded" | "ChildRemoved" | "DescendantAdded" | "DescendantRemoving" | "Destroying" | "InputBegan" | "InputChanged" | "InputEnded" | "MouseEn
+harness/compare/readsurf/use.luau(49,24): TypeError: Expected this to be 'number', but got '"TextBounds"'
+harness/compare/readsurf/use.luau(49,37): TypeError: Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiLabel" | "GuiObject" | "Instance" | "TextLabel" } | { read __quadSpread: "GuiBase" | "GuiBase2d" | "GuiLabel" | "GuiObject" | "Instance" | "TextLabel" } | { read __quadEvent: "AncestryChanged" | "AttributeChanged" | "Changed" | "ChildAdded" | "ChildRemoved" | "DescendantAdded" | "DescendantRemoving" | "Destroying" | "InputBegan" | "Input
+harness/compare/readsurf/use.luau(50,20): TypeError: Expected this to be 'number', but got '"Parent"'
+harness/compare/readsurf/use.luau(51,12): TypeError: Key 'AbsoluteSize' not found in table 't1 where t1 = { Active: (t1, (((boolean?) -> (boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean })?) | boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean })?) -> t1, AnchorPoint: (t1, (((Vector2?) -> (Vector2 | { read Value: Vector2, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read
+harness/compare/readsurf/use.luau(52,29): TypeError: Expected this to be 'number', but got '"AbsolutePosition"'
+harness/compare/readsurf/use.luau(52,48): TypeError: Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadEvent: "AncestryChanged" | "AttributeChanged" | "Changed" | "ChildAdded" | "ChildRemoved" | "DescendantAdded" | "DescendantRemoving" | "Destroying" | "InputBegan" | "InputChanged" | "InputEnded" | "MouseEn
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(56,43): TypeError: Expected this to be exactly
+but got
+harness/compare/readsurf/use.luau(57,81): TypeError: Expected this to be 'GuiObject', but got 'GuiObject?'; 
+`nil` is not a subtype of `GuiObject`
+harness/compare/readsurf/use.luau(63,20): TypeError: Expected this to be
+but got
+	'OnChangeDescriptor<"Text">'
+harness/compare/readsurf/use.luau(64,20): TypeError: Expected this to be
+but got
+	'OnChangeDescriptor<"TextBounds">'
+harness/compare/readsurf/use.luau(33,63): LocalUnused: Variable 'n' is never used; prefix with '_' to silence
+harness/compare/readsurf/use.luau(42,63): LocalUnused: Variable 's' is never used; prefix with '_' to silence
+harness/compare/readsurf/use.luau(57,66): LocalUnused: Variable 'g' is never used; prefix with '_' to silence
+harness/compare/readsurf/use.luau(58,66): LocalUnused: Variable 'g' is never used; prefix with '_' to silence
+harness/compare/readsurf/use.luau(59,57): LocalUnused: Variable 'p' is never used; prefix with '_' to silence

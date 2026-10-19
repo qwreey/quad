@@ -17,3 +17,7 @@
 - `OnChangeFn`·`OutFn`·`OnEventFn` 비노출 — 이름이 fn 자리 타입인지 함수 자체 타입인지 모호. `typeof`에서 타입 함수가 깨지지 않는지 보고 싶다 → 2차 실측 M1.
 - MapperRoot: *"Source() 와 Source<T> … 프리미티브의 경우 Ctor/Type 짝으로 내보내는데 MapperRoot 도 어찌보면 프리미티브이고(싱글턴인) … None 을 … 내보내고 있다면 똑같이"* — 메인 확인: 이미 값·타입 짝(quad-types). 메인 직전 권고("타입 이름 비노출")는 현황 확인 없이 낸 것이라 틀렸다.
 - 이름 정리·H-929·Q188 등은 "좀 이따". 재야 할 것은 재자 → 2차 실측(M1 typeof, M2 ReadOnly 읽기 표면, M3 Modifier `As`/`Into`/`Overridden`/숏핸드, M4 클래스 맵 확장) opus 서브에이전트로 착수.
+
+## 4. 2차 실측 M1~M4 결과 (opus 서브에이전트)
+
+본문은 `audit/decl-typefn-probe-2026-10-16/REPORT.md` 끝 절(그대로 저장). 요지: M1 `typeof` 서명 꺼내기 됨(놓침 하나 — 다른 클래스로 부분 적용한 함수 대입); M2 ReadOnly 포함 읽기 표면 됨, 체커엔 읽기 전용 표시가 전혀 없어 쓰기 표면 제외는 덤프 데이터(`DenyWrite`); M3 Modifier As·Into·숏핸드는 vsc에선 킷 꼴 전부 서지만 sync에선 추상 클래스 As 트리 + Into 자리가 too complex(타입 함수 결과에 이름 정체성이 없어 구조 비교 — 추정); M4 맵 자체는 싸나 한 바운드에 361~417 이름은 sync 한도를 넘음(위치·클래스 크기 효과), 분야별 84는 깨끗, 비GUI에서 Policy 문제 셋(전역 이름 Deny가 `Part.Shape`를 지움, Hidden 규칙이 `Position` 등을 지움, `GuiObject.Transparency`가 새 덤프에서 Deprecated로 흘러감). 시스템 업데이트 예약으로 사용자가 "중간에 끝나면 잠시 멈춰줘" — Studio 싱크·후속 실측은 하지 않고 멈춤. Instance As 트리 실측이 3 GiB 상한에서 `bad_alloc`으로 남긴 코어 덤프 둘(각 3 GiB, gitignore 대상)은 메인이 지웠다.

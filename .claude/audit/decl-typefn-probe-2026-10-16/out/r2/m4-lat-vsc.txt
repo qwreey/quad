@@ -1,0 +1,26 @@
+# mode=vsc bin=/code/.local/share/code-docker/code/extensions/johnnymorganz.luau-lsp-1.70.1-linux-x64/bin/server defs=globalTypes.PluginSecurity.d.luau flags=635 override=True
+# initialize 0.09s
+
+## lat-full.luau
+# first publishDiagnostics after open: 0.91s
+### diagnostics (0)
+### @c(lat-name) L7:18 ins='Te' — 362 items, 0.50s
+  prefix-matching 'Te': TeFrame<21>["TeFrame"], Team<21>["Accessory" | "AccessoryDescription" | "Accoutrement" | "Actor" | "AdGui" | "AdPlacement" | "AdPortal" | "AdvancedDragger" | "AirController" | "AlignOrientation" | "AlignPosition" | "AngularVelocity" | "Animation" | "AnimationConstraint" | "AnimationController" | "AnimationGraphDefinition" | "AnimationNodeDefinition" | "AnimationRigData" | "AnimationValueNodeDefinition" | "AnimationValueOutputDefinition" | "Animator" | "Annotation" | "ArcHandles" | "Atmosphere" | "AtmosphereSensor" | "Attachment"... *TRUNCATED*], TeleportOptions<21>["Acc
+  fields/values (362): Accessory, AccessoryDescription, Accoutrement, Actor, AdGui, AdPlacement, AdPortal, AdvancedDragger, AirController, AlignOrientation, AlignPosition, AngularVelocity, Animation, AnimationConstraint, AnimationController, AnimationGraphDefinition, AnimationNodeDefinition, AnimationRigData, AnimationValueNodeDefinition, AnimationValueOutputDefinition, Animator, Annotation, ArcHandles, Atmosphere, AtmosphereSensor, Attachment, AudioAnalyzer, AudioChannelMixer, AudioChannelSplitter, AudioChorus, AudioCompressor, AudioDeviceInput, AudioDeviceOutput, AudioDistortion, AudioEcho, 
+  other kinds (0): 
+### @c(lat-props) L8:20 ins='Back' — 67 items, 0.92s
+  prefix-matching 'Back': BackgroundColor3<5>[(Color3 | { read Value: Color3, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: Color3 })?], BackgroundTransparency<5>[(number | { read Value: number, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: number })?]
+  fields/values (67): Active, AncestryChanged, AnchorPoint, Archivable, AttributeChanged, AutoLocalize, AutomaticSize, BackgroundColor3, BackgroundTransparency, BorderColor3, BorderMode, BorderSizePixel, Capabilities, Changed, ChildAdded, ChildRemoved, ClipsDescendants, DescendantAdded, DescendantRemoving, Destroying, InputBegan, InputChanged, InputEnded, InputSink, Interactable, LayoutOrder, MouseEnter, MouseLeave, MouseMoved, MouseWheelBackward, MouseWheelForward, Name, NextSelectionDown, NextSelectionLeft, NextSelectionRight, NextSelectionUp, Position, RootLocalizationTable, Rotation, Sandb
+  other kinds (0): 
+
+## lat-31.luau
+# first publishDiagnostics after open: 0.48s
+### diagnostics (0)
+### @c(lat-name) L7:18 ins='Te' — 32 items, 0.01s
+  prefix-matching 'Te': TeFrame<21>["TeFrame"], TextBox<21>["BillboardGui" | "Camera" | "CanvasGroup" | "Folder" | "Frame" | "ImageButton" | "ImageLabel" | "ScreenGui" | "ScrollingFrame" | "SurfaceGui" | "TextBox" | "TextButton" | "TextLabel" | "UIAspectRatioConstraint" | "UICorner" | "UIDragDetector" | "UIFlexItem" | "UIGradient" | "UIGridLayout" | "UIListLayout" | "UIPadding" | "UIPageLayout" | "UIScale" | "UIShadow" | "UISizeConstraint" | "UIStroke" | "UITableLayout" | "UITextSizeConstraint" | "VideoFrame" | "ViewportFrame" | "WorldModel"], TextButton<21>["BillboardGui" | "Camera" | "Canvas
+  fields/values (32): BillboardGui, Camera, CanvasGroup, Folder, Frame, ImageButton, ImageLabel, ScreenGui, ScrollingFrame, SurfaceGui, TeFrame, TextBox, TextButton, TextLabel, UIAspectRatioConstraint, UICorner, UIDragDetector, UIFlexItem, UIGradient, UIGridLayout, UIListLayout, UIPadding, UIPageLayout, UIScale, UIShadow, UISizeConstraint, UIStroke, UITableLayout, UITextSizeConstraint, VideoFrame, ViewportFrame, WorldModel
+  other kinds (0): 
+### @c(lat-props) L8:20 ins='Back' — 68 items, 0.02s
+  prefix-matching 'Back': BackgroundColor3<5>[(Color3 | { read Value: Color3, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: Color3 })?], BackgroundTransparency<5>[(number | { read Value: number, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: number })?]
+  fields/values (68): Active, AncestryChanged, AnchorPoint, Archivable, AttributeChanged, AutoLocalize, AutomaticSize, BackgroundColor3, BackgroundTransparency, BorderColor3, BorderMode, BorderSizePixel, Capabilities, Changed, ChildAdded, ChildRemoved, ClipsDescendants, DescendantAdded, DescendantRemoving, Destroying, InputBegan, InputChanged, InputEnded, InputSink, Interactable, LayoutOrder, MouseEnter, MouseLeave, MouseMoved, MouseWheelBackward, MouseWheelForward, Name, NextSelectionDown, NextSelectionLeft, NextSelectionRight, NextSelectionUp, Position, RootLocalizationTable, Rotation, Sandb
+  other kinds (0): 

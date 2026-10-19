@@ -1,0 +1,486 @@
+harness/compare/readsurf/use.luau(17,12): TypeError: [RW] Frame AbsoluteSize=rw,AbsolutePosition=rw,TextBounds=-,ClassName=rw,Parent=rw,Size=rw,Text=-,Visible=rw write=38 readProps=44; TextLabel AbsoluteSize=rw,AbsolutePosition=rw,TextBounds=rw,ClassName=rw,Parent=rw,Size=rw,Text=rw,Visible=rw write=57 readProps=67; ScrollingFrame AbsoluteSize=rw,AbsolutePosition=rw,TextBounds=-,ClassName=rw,Parent=rw,Size=rw,Text=-,Visible=rw write=55 readProps=63; TextBox AbsoluteSize=rw,AbsolutePosition=rw,TextBounds=rw,ClassName=rw,Parent=rw,Size=rw,Text=rw,Visible=rw write=65 readProps=75
+harness/compare/readsurf/use.luau(38,29): TypeError: Expected this to be '"Abs" & ("ZIndex" | "Style" | "SelectionBehaviorRight" | "SelectionGroup" | "SelectionImageObject" | "SelectionBehaviorLeft" | "Parent" | "SelectionOrder" | "ClipsDescendants" | "Transparency" | "AbsoluteSize" | "BorderColor3" | "AbsoluteRotation" | "Selectable" | "LayoutOrder" | "NextSelectionUp" | "AbsolutePosition" | "Position" | "RootLocalizationTable" | "Visible" | "InputSink" | "NextSelectionDown" | "BorderMode" | "NextSelectionLeft" | "AutomaticSize" | "Rotation" | "Size" | "SizeConstraint" | "BorderSizePixel"... 
+the 2nd component of the intersection is `"ZIndex" | "Style" | "SelectionBehaviorRight" | "SelectionGroup" | "SelectionImageObject" | "SelectionBehaviorLeft" | "Parent" | "SelectionOrder" | "ClipsDescendants" | "Transparency" | "AbsoluteSize" | "BorderColor3" | "AbsoluteRotation" | "Selectable" | "LayoutOrder" | "NextSelectionUp" | "AbsolutePosition" | "Position" | "RootLocalizationTable" | "Visible" | "InputSink" | "NextSelectionDown" | "BorderMode" | "NextSelectionLeft" | "AutomaticSize" | "Rotation" | "Size" | "SizeConstraint" | "BorderSizePixel"... *TRUNCATED*`, and `"Abs"` is not a subtyp
+harness/compare/readsurf/use.luau(38,12): TypeError: Property '"Abs"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiState.
+harness/compare/readsurf/use.luau(38,36): TypeError: Property '"Abs"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiState.
+harness/compare/readsurf/use.luau(38,12): TypeError: Property '"Abs"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiState.
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be
+	'StateData<Vector2>'
+but got
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, (t1 & { Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, ({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read ... *TRUNCATED*'
+but got
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly
+	'{ read __apply: any }'
+but got
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, (t1 & { Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, ({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read ... *TRUNCATED*'
+but got
+	'StateData<UDim2>'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be
+	'StateData<Vector2>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, (t1 & { Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, ({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: ... *TRUNCATED*'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly
+	'{ read __apply: any }'
+but got
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly
+but got
+	'{ read __apply: any }'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be
+but got
+	'StateData<UDim2>'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly
+but got
+	'{ read __apply: any }'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, (t1 & { Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, ({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: ... *TRUNCATED*'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly
+	'{ read __apply: any }'
+but got
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly
+	'StateData<Vector2>'
+but got
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly
+	'StateData<Vector2>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, (t1 & { Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, ({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: ... *TRUNCATED*'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly
+	'((StateData<Vector2>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<UDim2>, Observer, (Epoch | EpochSet)?) -> ()'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly
+	'((StateData<Vector2>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<UDim2>, Observer, (Epoch | EpochSet)?) -> ()'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly
+	'((StateData<Vector2>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<UDim2>, Observer, (Epoch | EpochSet)?) -> ()'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly 'Vector2', but got 'UDim2'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, (t1 & { Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, ({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read ... *TRUNCATED*'
+but got
+	'StateData<UDim2>'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, (t1 & { Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, ({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: ... *TRUNCATED*'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly
+but got
+	'StateData<UDim2>'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, (t1 & { Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, ({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read ... *TRUNCATED*'
+but got
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly
+but got
+	'{ read __apply: any }'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly
+	'StateData<Vector2>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, (t1 & { Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, ({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: ... *TRUNCATED*'
+harness/compare/readsurf/use.luau(40,12): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, (t1 & { Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, ({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read ... *TRUNCATED*'
+but got
+	'StateData<UDim2>'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be
+	'StateData<Vector2>'
+but got
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, (t1 & { Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, ({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read ... *TRUNCATED*'
+but got
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly
+	'{ read __apply: any }'
+but got
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, (t1 & { Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, ({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read ... *TRUNCATED*'
+but got
+	'StateData<number>'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be
+	'StateData<Vector2>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue... *TRUNCATED*'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly
+	'{ read __apply: any }'
+but got
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly
+but got
+	'{ read __apply: any }'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be
+but got
+	'StateData<number>'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly
+but got
+	'{ read __apply: any }'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue... *TRUNCATED*'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly
+	'{ read __apply: any }'
+but got
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly
+	'StateData<Vector2>'
+but got
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly
+	'StateData<Vector2>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue... *TRUNCATED*'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly
+	'((StateData<Vector2>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<number>, Observer, (Epoch | EpochSet)?) -> ()'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly
+	'((StateData<Vector2>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<number>, Observer, (Epoch | EpochSet)?) -> ()'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly
+	'((StateData<Vector2>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<number>, Observer, (Epoch | EpochSet)?) -> ()'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly 'Vector2', but got 'number'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, (t1 & { Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, ({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read ... *TRUNCATED*'
+but got
+	'StateData<number>'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue... *TRUNCATED*'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly
+but got
+	'StateData<number>'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, (t1 & { Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, ({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read ... *TRUNCATED*'
+but got
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly
+but got
+	'{ read __apply: any }'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly
+	'StateData<Vector2>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue... *TRUNCATED*'
+harness/compare/readsurf/use.luau(41,12): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, (t1 & { Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read __quadStateValue: Vector2 }, ({ Get: (*CYCLE*) -> Vector2, read __quadState: true, read ... *TRUNCATED*'
+but got
+	'StateData<number>'
+harness/compare/readsurf/use.luau(42,75): TypeError: Expected this to be 'string', but got 'Vector2'
+harness/compare/readsurf/use.luau(43,56): TypeError: Expected this to be
+	'(Vector2) -> ()'
+but got
+	'(UDim2) -> ()'; 
+it takes the 1st entry in the type pack is `UDim2` in the latter type and `Vector2` in the former type, and `UDim2` is not a supertype of `Vector2`
+harness/compare/readsurf/use.luau(44,24): TypeError: Expected this to be
+	'"TextBounds" & ("ZIndex" | "Style" | "SelectionBehaviorRight" | "SelectionGroup" | "SelectionImageObject" | "SelectionBehaviorLeft" | "Parent" | "SelectionOrder" | "ClipsDescendants" | "Transparency" | "AbsoluteSize" | "BorderColor3" | "AbsoluteRotation" | "Selectable" | "LayoutOrder" | "NextSelectionUp" | "AbsolutePosition" | "Position" | "RootLocalizationTable" | "Visible" | "InputSink" | "NextSelectionDown" | "BorderMode" | "NextSelectionLeft" | "AutomaticSize" | "Rotation" | "Size" | "SizeConstraint" | "BorderSizePixel"... *TRUNCATED*'
+but got
+	'"TextBounds"'; 
+the 2nd component of the intersection is `"ZIndex" | "Style" | "SelectionBehaviorRight" | "SelectionGroup" | "SelectionImageObject" | "SelectionBehaviorLeft" | "Parent" | "SelectionOrder" | "ClipsDescendants" | "Transparency" | "AbsoluteSize" | "BorderColor3" | "AbsoluteRotation" | "Selectable" | "LayoutOrder" | "NextSelectionUp" | "AbsolutePosition" | "Position" | "RootLocalizationTable" | "Visible" | "InputSink" | "NextSelectionDown" | "BorderMode" | "NextSelectionLeft" | "AutomaticSize" | "Rotation" | "Size" | "SizeConstraint" | "BorderSizePixel"... *TRUNCATED*`, and `"TextBounds"` is not a
+harness/compare/readsurf/use.luau(44,12): TypeError: Property '"TextBounds"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read Gu
+harness/compare/readsurf/use.luau(44,12): TypeError: Property '"TextBounds"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read Gu
+harness/compare/readsurf/use.luau(45,24): TypeError: Expected this to be '"DataCost" & ("ZIndex" | "Style" | "SelectionBehaviorRight" | "SelectionGroup" | "SelectionImageObject" | "SelectionBehaviorLeft" | "Parent" | "SelectionOrder" | "ClipsDescendants" | "Transparency" | "AbsoluteSize" | "BorderColor3" | "AbsoluteRotation" | "Selectable" | "LayoutOrder" | "NextSelectionUp" | "AbsolutePosition" | "Position" | "RootLocalizationTable" | "Visible" | "InputSink" | "NextSelectionDown" | "BorderMode" | "NextSelectionLeft" | "AutomaticSize" | "Rotation" | "Size" | "SizeConstraint" | "BorderSizePixel
+the 2nd component of the intersection is `"ZIndex" | "Style" | "SelectionBehaviorRight" | "SelectionGroup" | "SelectionImageObject" | "SelectionBehaviorLeft" | "Parent" | "SelectionOrder" | "ClipsDescendants" | "Transparency" | "AbsoluteSize" | "BorderColor3" | "AbsoluteRotation" | "Selectable" | "LayoutOrder" | "NextSelectionUp" | "AbsolutePosition" | "Position" | "RootLocalizationTable" | "Visible" | "InputSink" | "NextSelectionDown" | "BorderMode" | "NextSelectionLeft" | "AutomaticSize" | "Rotation" | "Size" | "SizeConstraint" | "BorderSizePixel"... *TRUNCATED*`, and `"DataCost"` is not a s
+harness/compare/readsurf/use.luau(45,12): TypeError: Property '"DataCost"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiS
+harness/compare/readsurf/use.luau(45,12): TypeError: Property '"DataCost"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiS
+harness/compare/readsurf/use.luau(46,39): TypeError: Expected this to be
+	'(string) -> ()'
+but got
+	'(number) -> ()'; 
+it takes the 1st entry in the type pack is `number` in the latter type and `string` in the former type, and `number` is not a supertype of `string`
+harness/compare/readsurf/use.luau(48,20): TypeError: Expected this to be 'number', but got '"AbsoluteSize"'
+harness/compare/readsurf/use.luau(48,35): TypeError: Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadEvent: "AncestryChanged" | "AttributeChanged" | "Changed" | "ChildAdded" | "ChildRemoved" | "DescendantAdded" | "DescendantRemoving" | "Destroying" | "InputBegan" | "InputChanged" | "InputEnded" | "MouseEn
+harness/compare/readsurf/use.luau(49,24): TypeError: Expected this to be 'number', but got '"TextBounds"'
+harness/compare/readsurf/use.luau(49,37): TypeError: Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiLabel" | "GuiObject" | "Instance" | "TextLabel" } | { read __quadSpread: "GuiBase" | "GuiBase2d" | "GuiLabel" | "GuiObject" | "Instance" | "TextLabel" } | { read __quadEvent: "AncestryChanged" | "AttributeChanged" | "Changed" | "ChildAdded" | "ChildRemoved" | "DescendantAdded" | "DescendantRemoving" | "Destroying" | "InputBegan" | "Input
+harness/compare/readsurf/use.luau(50,20): TypeError: Expected this to be 'number', but got '"Parent"'
+harness/compare/readsurf/use.luau(51,12): TypeError: Key 'AbsoluteSize' not found in table 't1 where t1 = { Active: (t1, (((boolean?) -> (boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean })?) | boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean })?) -> t1, AnchorPoint: (t1, (((Vector2?) -> (Vector2 | { read Value: Vector2, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read
+harness/compare/readsurf/use.luau(52,29): TypeError: Expected this to be 'number', but got '"AbsolutePosition"'
+harness/compare/readsurf/use.luau(52,48): TypeError: Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadEvent: "AncestryChanged" | "AttributeChanged" | "Changed" | "ChildAdded" | "ChildRemoved" | "DescendantAdded" | "DescendantRemoving" | "Destroying" | "InputBegan" | "InputChanged" | "InputEnded" | "MouseEn
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be
+	'StateData<GuiObject?>'
+but got
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }, (t1 & { Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }, ({ Get: (*CYCLE*) -> GuiObject?, read ... *TRUNCATED*'
+but got
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }, (t1 & { Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }, ({ Get: (*CYCLE*) -> GuiObject?, read ... *TRUNCATED*'
+but got
+	'StateData<GuiObject>'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be
+but got
+	'StateData<GuiObject>'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be
+	'StateData<GuiObject?>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }, (t1 & { Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }, ({ Get: (*CYCLE*) -> GuiObject, read __quadState... *TRUNCATED*'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly
+	'{ read __apply: any }'
+but got
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly
+	'StateData<GuiObject?>'
+but got
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly
+but got
+	'{ read __apply: any }'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly
+but got
+	'{ read __apply: any }'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }, (t1 & { Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }, ({ Get: (*CYCLE*) -> GuiObject, read __quadState... *TRUNCATED*'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }, (t1 & { Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }, ({ Get: (*CYCLE*) -> GuiObject?, read ... *TRUNCATED*'
+but got
+	'StateData<GuiObject>'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly
+	'{ read __apply: any }'
+but got
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly
+	'StateData<GuiObject?>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }, (t1 & { Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }, ({ Get: (*CYCLE*) -> GuiObject, read __quadState... *TRUNCATED*'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly
+	'((StateData<GuiObject?>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<GuiObject>, Observer, (Epoch | EpochSet)?) -> ()'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly
+	'((StateData<GuiObject?>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<GuiObject>, Observer, (Epoch | EpochSet)?) -> ()'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly
+	'((StateData<GuiObject?>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<GuiObject>, Observer, (Epoch | EpochSet)?) -> ()'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly 'nil', but got 'GuiObject'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }, (t1 & { Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }, ({ Get: (*CYCLE*) -> GuiObject?, read ... *TRUNCATED*'
+but got
+	'StateData<GuiObject>'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }, (t1 & { Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }, ({ Get: (*CYCLE*) -> GuiObject, read __quadState... *TRUNCATED*'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly
+but got
+	'StateData<GuiObject>'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }, (t1 & { Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> GuiObject?, read __quadState: true, read __quadStateValue: GuiObject? }, ({ Get: (*CYCLE*) -> GuiObject?, read ... *TRUNCATED*'
+but got
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly
+but got
+	'{ read __apply: any }'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly
+	'StateData<GuiObject?>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }, (t1 & { Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> GuiObject, read __quadState: true, read __quadStateValue: GuiObject }, ({ Get: (*CYCLE*) -> GuiObject, read __quadState... *TRUNCATED*'
+harness/compare/readsurf/use.luau(56,12): TypeError: Expected this to be exactly
+	'{ read __apply: any }'
+but got
+harness/compare/readsurf/use.luau(57,81): TypeError: Expected this to be 'GuiObject', but got 'GuiObject?'; 
+the 2nd component of the union is `nil`, which is not a subtype of `GuiObject`
+harness/compare/readsurf/use.luau(63,20): TypeError: Expected this to be
+but got
+	'OnChangeDescriptor<"Text">'
+harness/compare/readsurf/use.luau(64,20): TypeError: Expected this to be
+but got
+	'OnChangeDescriptor<"TextBounds">'
+harness/compare/readsurf/use.luau(33,63): LocalUnused: Variable 'n' is never used; prefix with '_' to silence
+harness/compare/readsurf/use.luau(42,63): LocalUnused: Variable 's' is never used; prefix with '_' to silence
+harness/compare/readsurf/use.luau(57,66): LocalUnused: Variable 'g' is never used; prefix with '_' to silence
+harness/compare/readsurf/use.luau(58,66): LocalUnused: Variable 'g' is never used; prefix with '_' to silence
+harness/compare/readsurf/use.luau(59,57): LocalUnused: Variable 'p' is never used; prefix with '_' to silence

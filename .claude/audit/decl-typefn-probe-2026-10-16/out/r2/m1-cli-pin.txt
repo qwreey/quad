@@ -1,0 +1,410 @@
+harness/compare/qtypeof/use.luau(21,70): TypeError: Expected this to be 'string', but got 'boolean'
+harness/compare/qtypeof/use.luau(22,29): TypeError: Expected this to be '"Visibel" & ("ZIndex" | "Style" | "SelectionBehaviorRight" | "SelectionGroup" | "SelectionImageObject" | "SelectionBehaviorLeft" | "Parent" | "SelectionOrder" | "ClipsDescendants" | "Transparency" | "AbsoluteSize" | "BorderColor3" | "AbsoluteRotation" | "Selectable" | "LayoutOrder" | "NextSelectionUp" | "AbsolutePosition" | "Position" | "RootLocalizationTable" | "Visible" | "InputSink" | "NextSelectionDown" | "BorderMode" | "NextSelectionLeft" | "AutomaticSize" | "Rotation" | "Size" | "SizeConstraint" | "BorderSizePixel".
+the 2nd component of the intersection is `"ZIndex" | "Style" | "SelectionBehaviorRight" | "SelectionGroup" | "SelectionImageObject" | "SelectionBehaviorLeft" | "Parent" | "SelectionOrder" | "ClipsDescendants" | "Transparency" | "AbsoluteSize" | "BorderColor3" | "AbsoluteRotation" | "Selectable" | "LayoutOrder" | "NextSelectionUp" | "AbsolutePosition" | "Position" | "RootLocalizationTable" | "Visible" | "InputSink" | "NextSelectionDown" | "BorderMode" | "NextSelectionLeft" | "AutomaticSize" | "Rotation" | "Size" | "SizeConstraint" | "BorderSizePixel"... *TRUNCATED*`, and `"Visibel"` is not a su
+harness/compare/qtypeof/use.luau(22,12): TypeError: Property '"Visibel"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiSta
+harness/compare/qtypeof/use.luau(22,40): TypeError: Property '"Visibel"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiSta
+harness/compare/qtypeof/use.luau(22,12): TypeError: Property '"Visibel"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiSta
+harness/compare/qtypeof/use.luau(23,21): TypeError: Expected this to be '"UIGridLayout" | "CanvasGroup" | "UICorner" | "UITextSizeConstraint" | "TextLabel" | "UIPadding" | "BillboardGui" | "Camera" | "GuiLabel" | "LayerCollector" | "Instance" | "UIComponent" | "GuiObject" | "UIShadow" | "ViewportFrame" | "PVInstance" | "Folder" | "ScreenGui" | "UIGridStyleLayout" | "UIFlexItem" | "UIScale" | "WorldModel" | "TextButton" | "UILayout" | "UIPageLayout" | "ImageLabel" | "GuiBase" | "GuiBase2d" | "UIConstraint" | "TextBox" | "GuiButton" | "SurfaceGui" | "SurfaceGuiBase" | "UIGradient"... *TRUNCATED*
+harness/compare/qtypeof/use.luau(23,29): TypeError: Expected this to be '"Visible" & keyof<Build<"readmap", index<ModClassMap, "Fraem">, Policy>>', but got '"Visible"'; 
+in the 2nd component of the intersectionreduces to `never`, and `"Visible"` is not a subtype of `never`
+harness/compare/qtypeof/use.luau(23,12): TypeError: Property '"Fraem"' does not exist on type 'ModClassMap'
+harness/compare/qtypeof/use.luau(23,40): TypeError: Property '"Fraem"' does not exist on type 'ModClassMap'
+harness/compare/qtypeof/use.luau(23,12): TypeError: Property '"Fraem"' does not exist on type 'ModClassMap'
+harness/compare/qtypeof/use.luau(27,75): TypeError: Expected this to be 'string', but got 'number'
+harness/compare/qtypeof/use.luau(28,28): TypeError: Expected this to be
+	'"Activated" & ("AncestryChanged" | "AttributeChanged" | "Changed" | "ChildAdded" | "ChildRemoved" | "DescendantAdded" | "DescendantRemoving" | "Destroying" | "InputBegan" | "InputChanged" | "InputEnded" | "MouseEnter" | "MouseLeave" | "MouseMoved" | "MouseWheelBackward" | "MouseWheelForward" | "SelectionChanged" | "SelectionGained" | "SelectionLost" | "StyledPropertiesChanged" | "TouchLongPress" | "TouchPan" | "TouchPinch" | "TouchRotate" | "TouchSwipe" | "TouchTap")'
+but got
+	'"Activated"'; 
+the 2nd component of the intersection is `"AncestryChanged" | "AttributeChanged" | "Changed" | "ChildAdded" | "ChildRemoved" | "DescendantAdded" | "DescendantRemoving" | "Destroying" | "InputBegan" | "InputChanged" | "InputEnded" | "MouseEnter" | "MouseLeave" | "MouseMoved" | "MouseWheelBackward" | "MouseWheelForward" | "SelectionChanged" | "SelectionGained" | "SelectionLost" | "StyledPropertiesChanged" | "TouchLongPress" | "TouchPan" | "TouchPinch" | "TouchRotate" | "TouchSwipe" | "TouchTap"`, and `"Activated"` is not a subtype of `"AncestryChanged" | "AttributeChanged" | "Changed" | "ChildAd
+harness/compare/qtypeof/use.luau(28,12): TypeError: Property '"Activated"' does not exist on type '{ read AncestryChanged: (Instance, Instance?) -> (), read AttributeChanged: (string) -> (), read Changed: (string) -> (), read ChildAdded: (Instance) -> (), read ChildRemoved: (Instance) -> (), read DescendantAdded: (Instance) -> (), read DescendantRemoving: (Instance) -> (), read Destroying: () -> (), read InputBegan: (InputObject) -> (), read InputChanged: (InputObject) -> (), read InputEnded: (InputObject) -> (), read MouseEnter: (number, number) -> (), read MouseLeave: (number, number) -> (),
+harness/compare/qtypeof/use.luau(28,41): TypeError: Expected this to be
+	'index<{ read AncestryChanged: (Instance, Instance?) -> (), read AttributeChanged: (string) -> (), read Changed: (string) -> (), read ChildAdded: (Instance) -> (), read ChildRemoved: (Instance) -> (), read DescendantAdded: (Instance) -> (), read DescendantRemoving: (Instance) -> (), read Destroying: () -> (), read InputBegan: (InputObject) -> (), read InputChanged: (InputObject) -> (), read InputEnded: (InputObject) -> (), read MouseEnter: (number, number) -> (), read MouseLeave: (number, number) -> ... *TRUNCATED*'
+but got
+	'(...any) -> ()'; 
+it reduces to `never`, and `() -> ()` is not a subtype of `never`
+harness/compare/qtypeof/use.luau(28,12): TypeError: Property '"Activated"' does not exist on type '{ read AncestryChanged: (Instance, Instance?) -> (), read AttributeChanged: (string) -> (), read Changed: (string) -> (), read ChildAdded: (Instance) -> (), read ChildRemoved: (Instance) -> (), read DescendantAdded: (Instance) -> (), read DescendantRemoving: (Instance) -> (), read Destroying: () -> (), read InputBegan: (InputObject) -> (), read InputChanged: (InputObject) -> (), read InputEnded: (InputObject) -> (), read MouseEnter: (number, number) -> (), read MouseLeave: (number, number) -> (),
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be
+	'StateData<UDim2>'
+but got
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, (t1 & { Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, ({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: ... *TRUNCATED*'
+but got
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly
+	'{ read __apply: any }'
+but got
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, (t1 & { Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, ({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: ... *TRUNCATED*'
+but got
+	'StateData<number>'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be
+	'StateData<UDim2>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue... *TRUNCATED*'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly
+	'{ read __apply: any }'
+but got
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly
+but got
+	'{ read __apply: any }'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be
+but got
+	'StateData<number>'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly
+but got
+	'{ read __apply: any }'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue... *TRUNCATED*'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly
+	'{ read __apply: any }'
+but got
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly
+	'StateData<UDim2>'
+but got
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly
+	'StateData<UDim2>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue... *TRUNCATED*'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly
+	'((StateData<UDim2>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<number>, Observer, (Epoch | EpochSet)?) -> ()'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly
+	'((StateData<UDim2>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<number>, Observer, (Epoch | EpochSet)?) -> ()'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly
+	'((StateData<UDim2>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<number>, Observer, (Epoch | EpochSet)?) -> ()'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, (t1 & { Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, ({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: ... *TRUNCATED*'
+but got
+	'StateData<number>'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue... *TRUNCATED*'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly
+but got
+	'StateData<number>'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, (t1 & { Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, ({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: ... *TRUNCATED*'
+but got
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly
+but got
+	'{ read __apply: any }'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly
+	'StateData<UDim2>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue... *TRUNCATED*'
+harness/compare/qtypeof/use.luau(31,12): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, (t1 & { Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, ({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: ... *TRUNCATED*'
+but got
+	'StateData<number>'
+harness/compare/qtypeof/use.luau(32,24): TypeError: Expected this to be '"Siz" & ("ZIndex" | "Style" | "SelectionBehaviorRight" | "SelectionGroup" | "SelectionImageObject" | "SelectionBehaviorLeft" | "Parent" | "SelectionOrder" | "ClipsDescendants" | "Transparency" | "AbsoluteSize" | "BorderColor3" | "AbsoluteRotation" | "Selectable" | "LayoutOrder" | "NextSelectionUp" | "AbsolutePosition" | "Position" | "RootLocalizationTable" | "Visible" | "InputSink" | "NextSelectionDown" | "BorderMode" | "NextSelectionLeft" | "AutomaticSize" | "Rotation" | "Size" | "SizeConstraint" | "BorderSizePixel"... *
+the 2nd component of the intersection is `"ZIndex" | "Style" | "SelectionBehaviorRight" | "SelectionGroup" | "SelectionImageObject" | "SelectionBehaviorLeft" | "Parent" | "SelectionOrder" | "ClipsDescendants" | "Transparency" | "AbsoluteSize" | "BorderColor3" | "AbsoluteRotation" | "Selectable" | "LayoutOrder" | "NextSelectionUp" | "AbsolutePosition" | "Position" | "RootLocalizationTable" | "Visible" | "InputSink" | "NextSelectionDown" | "BorderMode" | "NextSelectionLeft" | "AutomaticSize" | "Rotation" | "Size" | "SizeConstraint" | "BorderSizePixel"... *TRUNCATED*`, and `"Siz"` is not a subtyp
+harness/compare/qtypeof/use.luau(32,12): TypeError: Property '"Siz"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiState..
+harness/compare/qtypeof/use.luau(32,12): TypeError: Property '"Siz"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiState..
+harness/compare/qtypeof/use.luau(35,30): TypeError: Expected this to be '(boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean })?', but got 'number'
+harness/compare/qtypeof/use.luau(36,20): TypeError: Expected this to be 'number', but got '"Vis"'
+harness/compare/qtypeof/use.luau(36,26): TypeError: Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadEvent: "AncestryChanged" | "AttributeChanged" | "Changed" | "ChildAdded" | "ChildRemoved" | "DescendantAdded" | "DescendantRemoving" | "Destroying" | "InputBegan" | "InputChanged" | "InputEnded" | "MouseEnt
+harness/compare/qtypeof/use.luau(37,17): TypeError: Expected this to be '"Fraem" & ("BillboardGui" | "Camera" | "CanvasGroup" | "Folder" | "Frame" | "ImageButton" | "ImageLabel" | "ScreenGui" | "ScrollingFrame" | "SurfaceGui" | "TextBox" | "TextButton" | "TextLabel" | "UIAspectRatioConstraint" | "UICorner" | "UIDragDetector" | "UIFlexItem" | "UIGradient" | "UIGridLayout" | "UIListLayout" | "UIPadding" | "UIPageLayout" | "UIScale" | "UIShadow" | "UISizeConstraint" | "UIStroke" | "UITableLayout" | "UITextSizeConstraint" | "VideoFrame" | "ViewportFrame" | "WorldModel")', but got '"Fraem"'; 
+the 2nd component of the intersection is `"BillboardGui" | "Camera" | "CanvasGroup" | "Folder" | "Frame" | "ImageButton" | "ImageLabel" | "ScreenGui" | "ScrollingFrame" | "SurfaceGui" | "TextBox" | "TextButton" | "TextLabel" | "UIAspectRatioConstraint" | "UICorner" | "UIDragDetector" | "UIFlexItem" | "UIGradient" | "UIGridLayout" | "UIListLayout" | "UIPadding" | "UIPageLayout" | "UIScale" | "UIShadow" | "UISizeConstraint" | "UIStroke" | "UITableLayout" | "UITextSizeConstraint" | "VideoFrame" | "ViewportFrame" | "WorldModel"`, and `"Fraem"` is not a subtype of `"BillboardGui" | "Camera" | "Canv
+harness/compare/qtypeof/use.luau(37,12): TypeError: Property '"Fraem"' does not exist on type 'CreatableMap'
+harness/compare/qtypeof/use.luau(41,105): TypeError: Expected this to be 'number', but got 'string'
+harness/compare/qtypeof/use.luau(42,68): TypeError: Expected this to be '"Txet" & ("ZIndex" | "TextSize" | "SelectionBehaviorRight" | "SelectionImageObject" | "LineHeight" | "Parent" | "SelectionBehaviorLeft" | "TextColor3" | "MaxVisibleGraphemes" | "AbsoluteRotation" | "Selectable" | "TextTransparency" | "Visible" | "Position" | "RootLocalizationTable" | "TextFits" | "RichText" | "TextYAlignment" | "NextSelectionDown" | "BorderMode" | "NextSelectionLeft" | "AutomaticSize" | "Rotation" | "Size" | "Text" | "BorderSizePixel" | "TextStrokeTransparency" | "NextSelectionRight" | "Archivable"... *TR
+the 2nd component of the intersection is `"ZIndex" | "TextSize" | "SelectionBehaviorRight" | "SelectionImageObject" | "LineHeight" | "Parent" | "SelectionBehaviorLeft" | "TextColor3" | "MaxVisibleGraphemes" | "AbsoluteRotation" | "Selectable" | "TextTransparency" | "Visible" | "Position" | "RootLocalizationTable" | "TextFits" | "RichText" | "TextYAlignment" | "NextSelectionDown" | "BorderMode" | "NextSelectionLeft" | "AutomaticSize" | "Rotation" | "Size" | "Text" | "BorderSizePixel" | "TextStrokeTransparency" | "NextSelectionRight" | "Archivable"... *TRUNCATED*`, and `"Txet"` is not a subtype 
+harness/compare/qtypeof/use.luau(42,53): TypeError: Property '"Txet"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read ContentTe
+harness/compare/qtypeof/use.luau(42,76): TypeError: Property '"Txet"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read ContentTe
+harness/compare/qtypeof/use.luau(42,53): TypeError: Property '"Txet"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read ContentTe
+harness/compare/qtypeof/use.luau(44,120): TypeError: Expected this to be 'string', but got 'number'
+harness/compare/qtypeof/use.luau(46,83): TypeError: Expected this to be
+but got
+this is because 
+	 * in the 1st component of the intersection, accessing `Get`, returns the 1st entry in the type pack is `number` in the latter type and `UDim2` in the former type, and `number` is not exactly `UDim2`
+	 * in the 1st component of the intersection, accessing `Get`, takes the 1st entry in the type pack, accessing `Get`, returns the 1st entry in the type pack is `number` in the latter type and `UDim2` in the former type, and `number` is not exactly `UDim2`
+	 * in the 1st component of the intersection, accessing `Get`, takes the 1st entry in the type pack, accessing `__quadStateValue` results in `number` in the latter type and `UDim2` in the former type, and `number` is not exactly `UDim2`
+harness/compare/qtypeof/use.luau(48,70): TypeError: Expected this to be '(string | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: string })?', but got 'number'
+harness/compare/qtypeof/use.luau(52,23): TypeError: Not all codepaths in this function return '<K>(K & keyof<Build<"readmap", index<ModClassMap, C0>, Policy>>) -> ((index<Build<"readmap", index<ModClassMap, C0>, Policy>, K>) -> ()) -> OnChangeDescriptor<K>'.
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly
+but got
+	'{ read __apply: any }'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, (t1 & { Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, ({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: ... *TRUNCATED*'
+but got
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be
+	'StateData<UDim2>'
+but got
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly
+	'{ read __apply: any }'
+but got
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be
+	'StateData<UDim2>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue... *TRUNCATED*'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, (t1 & { Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, ({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: ... *TRUNCATED*'
+but got
+	'StateData<number>'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly
+but got
+	'{ read __apply: any }'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue... *TRUNCATED*'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly
+but got
+	'{ read __apply: any }'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be
+but got
+	'StateData<number>'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly
+	'{ read __apply: any }'
+but got
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly
+	'{ read __apply: any }'
+but got
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, (t1 & { Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, ({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: ... *TRUNCATED*'
+but got
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly
+	'((StateData<UDim2>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<number>, Observer, (Epoch | EpochSet)?) -> ()'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly
+	'((StateData<UDim2>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<number>, Observer, (Epoch | EpochSet)?) -> ()'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly
+	'((StateData<UDim2>, Observer, (Epoch | EpochSet)?) -> ())?'
+but got
+	'(StateData<number>, Observer, (Epoch | EpochSet)?) -> ()'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly 'UDim2', but got 'number'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly
+	'StateData<UDim2>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue... *TRUNCATED*'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly
+but got
+	'StateData<number>'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue... *TRUNCATED*'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, (t1 & { Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, ({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: ... *TRUNCATED*'
+but got
+	'StateData<number>'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, (t1 & { Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: UDim2 }, ({ Get: (*CYCLE*) -> UDim2, read __quadState: true, read __quadStateValue: ... *TRUNCATED*'
+but got
+	'StateData<number>'
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly
+	'StateData<UDim2>'
+but got
+harness/compare/qtypeof/use.luau(54,20): TypeError: Expected this to be exactly
+	'StateData<UDim2>'
+but got
+	't1 where t1 = { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, (t1 & { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }) -> U) -> U), Compute: <U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, ({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue... *TRUNCATED*'
+harness/compare/qtypeof/use.luau(61,102): TypeError: Expected this to be 'string', but got 'boolean'
+harness/compare/qtypeof/use.luau(62,62): TypeError: Expected this to be '"Text" & ("ZIndex" | "Style" | "SelectionBehaviorRight" | "SelectionGroup" | "SelectionImageObject" | "SelectionBehaviorLeft" | "Parent" | "SelectionOrder" | "ClipsDescendants" | "Transparency" | "AbsoluteSize" | "BorderColor3" | "AbsoluteRotation" | "Selectable" | "LayoutOrder" | "NextSelectionUp" | "AbsolutePosition" | "Position" | "RootLocalizationTable" | "Visible" | "InputSink" | "NextSelectionDown" | "BorderMode" | "NextSelectionLeft" | "AutomaticSize" | "Rotation" | "Size" | "SizeConstraint" | "BorderSizePixel"... 
+the 2nd component of the intersection is `"ZIndex" | "Style" | "SelectionBehaviorRight" | "SelectionGroup" | "SelectionImageObject" | "SelectionBehaviorLeft" | "Parent" | "SelectionOrder" | "ClipsDescendants" | "Transparency" | "AbsoluteSize" | "BorderColor3" | "AbsoluteRotation" | "Selectable" | "LayoutOrder" | "NextSelectionUp" | "AbsolutePosition" | "Position" | "RootLocalizationTable" | "Visible" | "InputSink" | "NextSelectionDown" | "BorderMode" | "NextSelectionLeft" | "AutomaticSize" | "Rotation" | "Size" | "SizeConstraint" | "BorderSizePixel"... *TRUNCATED*`, and `"Text"` is not a subty
+harness/compare/qtypeof/use.luau(62,59): TypeError: Property '"Text"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiState.
+harness/compare/qtypeof/use.luau(62,70): TypeError: Property '"Text"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiState.
+harness/compare/qtypeof/use.luau(62,59): TypeError: Property '"Text"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiState.
+harness/compare/qtypeof/use.luau(67,63): TypeError: Expected this to be '(boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean })?', but got 'number'
+harness/compare/qtypeof/use.luau(69,12): TypeError: Expected this to be exactly
+but got
+	'{ read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiLabel" | "GuiObject" | "Instance" | "TextLabel" }'
+harness/compare/qtypeof/use.luau(69,12): TypeError: Expected this to be exactly
+but got
+	'{ read __quadSpread: "GuiBase" | "GuiBase2d" | "GuiLabel" | "GuiObject" | "Instance" | "TextLabel" }'
+harness/compare/qtypeof/use.luau(69,12): TypeError: Expected this to be 'Frame', but got 'TextLabel'
+harness/compare/qtypeof/use.luau(69,12): TypeError: Expected this to be exactly
+but got
+	'{ read __quadChange: "AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "ContentText" | "Font" | "FontFace" | "FontSize" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "LineHeight" | "MaxVisibleGraphemes" | "Name" | "NextSelectionDown" | "NextSelectionLeft"... *TRUNCATED*'
+harness/compare/qtypeof/use.luau(69,12): TypeError: Expected this to be exactly
+	'{ read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" }'
+but got
+harness/compare/qtypeof/use.luau(69,12): TypeError: Expected this to be exactly
+	'{ read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" }'
+but got
+harness/compare/qtypeof/use.luau(69,12): TypeError: Expected this to be exactly
+	'{ read __quadChange: "AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "Name" | "NextSelectionDown" | "NextSelectionLeft" | "NextSelectionRight" | "NextSelectionUp" | "Parent" | "Position" | "RootLocalizationTable"... *TRUNCATED*'
+but got
+harness/compare/qtypeof/use.luau(72,12): TypeError: Expected this to be exactly
+but got
+	'{ read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiLabel" | "GuiObject" | "Instance" | "TextLabel" }'
+harness/compare/qtypeof/use.luau(72,12): TypeError: Expected this to be exactly
+but got
+	'{ read __quadSpread: "GuiBase" | "GuiBase2d" | "GuiLabel" | "GuiObject" | "Instance" | "TextLabel" }'
+harness/compare/qtypeof/use.luau(72,12): TypeError: Expected this to be 'Frame', but got 'TextLabel'
+harness/compare/qtypeof/use.luau(72,12): TypeError: Expected this to be exactly
+but got
+	'{ read __quadChange: "AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "ContentText" | "Font" | "FontFace" | "FontSize" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "LineHeight" | "MaxVisibleGraphemes" | "Name" | "NextSelectionDown" | "NextSelectionLeft"... *TRUNCATED*'
+harness/compare/qtypeof/use.luau(72,12): TypeError: Expected this to be exactly
+	'{ read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" }'
+but got
+harness/compare/qtypeof/use.luau(72,12): TypeError: Expected this to be exactly
+	'{ read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" }'
+but got
+harness/compare/qtypeof/use.luau(72,12): TypeError: Expected this to be exactly
+	'{ read __quadChange: "AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "Name" | "NextSelectionDown" | "NextSelectionLeft" | "NextSelectionRight" | "NextSelectionUp" | "Parent" | "Position" | "RootLocalizationTable"... *TRUNCATED*'
+but got
+harness/compare/qtypeof/use.luau(74,88): TypeError: Expected this to be
+but got
+this is because 
+	 * in the 1st component of the intersection, accessing `Get`, returns the 1st entry in the type pack is `number` in the latter type and `boolean` in the former type, and `number` is not exactly `boolean`
+	 * in the 1st component of the intersection, accessing `Get`, takes the 1st entry in the type pack, accessing `Get`, returns the 1st entry in the type pack is `number` in the latter type and `boolean` in the former type, and `number` is not exactly `boolean`
+	 * in the 1st component of the intersection, accessing `Get`, takes the 1st entry in the type pack, accessing `__quadStateValue` results in `number` in the latter type and `boolean` in the former type, and `number` is not exactly `boolean`
+harness/compare/qtypeof/use.luau(84,65): TypeError: Expected this to be 'string', but got 'boolean'
+harness/compare/qtypeof/use.luau(86,74): TypeError: Expected this to be 'string', but got 'boolean'
+harness/compare/qtypeof/use.luau(87,43): TypeError: Expected this to be '(boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean })?', but got 'number'
+harness/compare/qtypeof/use.luau(89,8): TypeError: Property '"Fraem"' does not exist on type 'CreatableMap'
+harness/compare/qtypeof/use.luau(20,58): LocalUnused: Variable 'b' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(21,58): LocalUnused: Variable 's' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(26,63): LocalUnused: Variable 'n' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(27,63): LocalUnused: Variable 's' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(40,90): LocalUnused: Variable 's' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(41,93): LocalUnused: Variable 'n' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(43,105): LocalUnused: Variable 'n' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(44,108): LocalUnused: Variable 's' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(60,87): LocalUnused: Variable 'b' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(61,90): LocalUnused: Variable 's' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(82,65): LocalUnused: Variable 'n' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(84,53): LocalUnused: Variable 's' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(86,62): LocalUnused: Variable 's' is never used; prefix with '_' to silence

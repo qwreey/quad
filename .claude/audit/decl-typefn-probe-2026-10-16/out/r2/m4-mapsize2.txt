@@ -1,0 +1,16 @@
+keyof-034.luau                     sync    wall=  0.42s maxrss=   70MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+keyof-050.luau                     sync    wall=  0.46s maxrss=   72MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+keyof-064.luau                     sync    wall=  0.51s maxrss=   73MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+keyof-080.luau                     sync    wall=  0.49s maxrss=   74MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+keyof-100.luau                     sync    wall=  0.51s maxrss=   79MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+keyof-130.luau                     sync    wall=  0.56s maxrss=   85MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+keyof-200.luau                     sync    wall=  0.60s maxrss=   84MiB typeErrors(in file)=9 NEG caught=2/2 tooComplex(any)=3
+keyof-361.luau                     sync    wall=  0.59s maxrss=   81MiB typeErrors(in file)=9 NEG caught=2/2 tooComplex(any)=3
+lit-034.luau                       sync    wall=  0.47s maxrss=   70MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+lit-050.luau                       sync    wall=  0.47s maxrss=   70MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+lit-064.luau                       sync    wall=  0.44s maxrss=   70MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+lit-080.luau                       sync    wall=  0.42s maxrss=   71MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+lit-100.luau                       sync    wall=  0.45s maxrss=   71MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+lit-130.luau                       sync    wall=  0.44s maxrss=   71MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+lit-200.luau                       sync    wall=  0.46s maxrss=   73MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+lit-361.luau                       sync    wall=  0.50s maxrss=   75MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0

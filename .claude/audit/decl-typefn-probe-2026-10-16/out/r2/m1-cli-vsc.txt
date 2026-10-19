@@ -1,0 +1,486 @@
+harness/compare/qtypeof/use.luau(21,70): TypeError: Expected this to be 'string', but got 'boolean'
+harness/compare/qtypeof/use.luau(22,29): TypeError: Expected this to be '"Visibel" & ("AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "Name" | "NextSelectionDown" | "NextSelectionLeft" | "NextSelectionRight" | "NextSelectionUp" | "Parent" | "Position" | "RootLocalizationTable" | "Rotation"... *TRUNC
+`"Visibel"` is not a subtype of `"AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "Name" | "NextSelectionDown" | "NextSelectionLeft" | "NextSelectionRight" | "NextSelectionUp" | "Parent" | "Position" | "RootLocalizationTable" | "Rotation"... *TRUNCATED*`
+harness/compare/qtypeof/use.luau(22,12): TypeError: Property '"Visibel"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiSta
+harness/compare/qtypeof/use.luau(22,40): TypeError: Property '"Visibel"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiSta
+harness/compare/qtypeof/use.luau(22,12): TypeError: Property '"Visibel"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiSta
+harness/compare/qtypeof/use.luau(23,21): TypeError: Expected this to be 'C0 & ("BillboardGui" | "Camera" | "CanvasGroup" | "Folder" | "Frame" | "GuiBase" | "GuiBase2d" | "GuiButton" | "GuiLabel" | "GuiObject" | "ImageButton" | "ImageLabel" | "Instance" | "LayerCollector" | "Model" | "PVInstance" | "ScreenGui" | "ScrollingFrame" | "SurfaceGui" | "SurfaceGuiBase" | "TextBox" | "TextButton" | "TextLabel" | "UIAspectRatioConstraint" | "UIBase" | "UIComponent" | "UIConstraint" | "UICorner" | "UIDragDetector" | "UIFlexItem" | "UIGradient" | "UIGridLayout" | "UIGridStyleLayout" | ... *TRUNCATED*', bu
+harness/compare/qtypeof/use.luau(23,29): TypeError: Expected this to be '"Visible" & keyof<Build<"readmap", index<ModClassMap, "Fraem">, Policy>>', but got '"Visible"'; 
+the reduced type is `never`, and `"Visible"` is not a subtype of `never`
+harness/compare/qtypeof/use.luau(23,12): TypeError: Property '"Fraem"' does not exist on type 'ModClassMap'
+harness/compare/qtypeof/use.luau(23,40): TypeError: Property '"Fraem"' does not exist on type 'ModClassMap'
+harness/compare/qtypeof/use.luau(23,12): TypeError: Property '"Fraem"' does not exist on type 'ModClassMap'
+harness/compare/qtypeof/use.luau(27,75): TypeError: Expected this to be 'string', but got 'number'
+harness/compare/qtypeof/use.luau(28,28): TypeError: Expected this to be
+	'"Activated" & ("AncestryChanged" | "AttributeChanged" | "Changed" | "ChildAdded" | "ChildRemoved" | "DescendantAdded" | "DescendantRemoving" | "Destroying" | "InputBegan" | "InputChanged" | "InputEnded" | "MouseEnter" | "MouseLeave" | "MouseMoved" | "MouseWheelBackward" | "MouseWheelForward" | "SelectionChanged" | "SelectionGained" | "SelectionLost" | "StyledPropertiesChanged" | "TouchLongPress" | "TouchPan" | "TouchPinch" | "TouchRotate" | "TouchSwipe" | "TouchTap")'
+but got
+	'"Activated"'; 
+`"Activated"` is not a subtype of `"AncestryChanged" | "AttributeChanged" | "Changed" | "ChildAdded" | "ChildRemoved" | "DescendantAdded" | "DescendantRemoving" | "Destroying" | "InputBegan" | "InputChanged" | "InputEnded" | "MouseEnter" | "MouseLeave" | "MouseMoved" | "MouseWheelBackward" | "MouseWheelForward" | "SelectionChanged" | "SelectionGained" | "SelectionLost" | "StyledPropertiesChanged" | "TouchLongPress" | "TouchPan" | "TouchPinch" | "TouchRotate" | "TouchSwipe" | "TouchTap"`
+harness/compare/qtypeof/use.luau(28,12): TypeError: Property '"Activated"' does not exist on type '{ read AncestryChanged: (Instance, Instance?) -> (), read AttributeChanged: (string) -> (), read Changed: (string) -> (), read ChildAdded: (Instance) -> (), read ChildRemoved: (Instance) -> (), read DescendantAdded: (Instance) -> (), read DescendantRemoving: (Instance) -> (), read Destroying: () -> (), read InputBegan: (InputObject) -> (), read InputChanged: (InputObject) -> (), read InputEnded: (InputObject) -> (), read MouseEnter: (number, number) -> (), read MouseLeave: (number, number) -> (),
+harness/compare/qtypeof/use.luau(28,41): TypeError: Expected this to be
+	'index<{ read AncestryChanged: (Instance, Instance?) -> (), read AttributeChanged: (string) -> (), read Changed: (string) -> (), read ChildAdded: (Instance) -> (), read ChildRemoved: (Instance) -> (), read DescendantAdded: (Instance) -> (), read DescendantRemoving: (Instance) -> (), read Destroying: () -> (), read InputBegan: (InputObject) -> (), read InputChanged: (InputObject) -> (), read InputEnded: (InputObject) -> (), read MouseEnter: (number, number) -> (), read MouseLeave: (number, number) -> ... *TRUNCATED*'
+but got
+	'(...any) -> ()'; 
+the reduced type is `never`, and `() -> ()` is not a subtype of `never`
+harness/compare/qtypeof/use.luau(28,12): TypeError: Property '"Activated"' does not exist on type '{ read AncestryChanged: (Instance, Instance?) -> (), read AttributeChanged: (string) -> (), read Changed: (string) -> (), read ChildAdded: (Instance) -> (), read ChildRemoved: (Instance) -> (), read DescendantAdded: (Instance) -> (), read DescendantRemoving: (Instance) -> (), read Destroying: () -> (), read InputBegan: (InputObject) -> (), read InputChanged: (InputObject) -> (), read InputEnded: (InputObject) -> (), read MouseEnter: (number, number) -> (), read MouseLeave: (number, number) -> (),
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(31,32): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(32,24): TypeError: Expected this to be '"Siz" & ("AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "Name" | "NextSelectionDown" | "NextSelectionLeft" | "NextSelectionRight" | "NextSelectionUp" | "Parent" | "Position" | "RootLocalizationTable" | "Rotation"... *TRUNCATED
+`"Siz"` is not a subtype of `"AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "Name" | "NextSelectionDown" | "NextSelectionLeft" | "NextSelectionRight" | "NextSelectionUp" | "Parent" | "Position" | "RootLocalizationTable" | "Rotation"... *TRUNCATED*`
+harness/compare/qtypeof/use.luau(32,12): TypeError: Property '"Siz"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiState..
+harness/compare/qtypeof/use.luau(32,12): TypeError: Property '"Siz"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiState..
+harness/compare/qtypeof/use.luau(35,30): TypeError: Expected this to be '(boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean })?', but got 'number'
+harness/compare/qtypeof/use.luau(36,20): TypeError: Expected this to be 'number', but got '"Vis"'
+harness/compare/qtypeof/use.luau(36,26): TypeError: Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadEvent: "AncestryChanged" | "AttributeChanged" | "Changed" | "ChildAdded" | "ChildRemoved" | "DescendantAdded" | "DescendantRemoving" | "Destroying" | "InputBegan" | "InputChanged" | "InputEnded" | "MouseEnt
+harness/compare/qtypeof/use.luau(37,17): TypeError: Expected this to be '"Fraem" & ("BillboardGui" | "Camera" | "CanvasGroup" | "Folder" | "Frame" | "ImageButton" | "ImageLabel" | "ScreenGui" | "ScrollingFrame" | "SurfaceGui" | "TextBox" | "TextButton" | "TextLabel" | "UIAspectRatioConstraint" | "UICorner" | "UIDragDetector" | "UIFlexItem" | "UIGradient" | "UIGridLayout" | "UIListLayout" | "UIPadding" | "UIPageLayout" | "UIScale" | "UIShadow" | "UISizeConstraint" | "UIStroke" | "UITableLayout" | "UITextSizeConstraint" | "VideoFrame" | "ViewportFrame" | "WorldModel")', but got '"Fraem"'; 
+`"Fraem"` is not a subtype of `"BillboardGui" | "Camera" | "CanvasGroup" | "Folder" | "Frame" | "ImageButton" | "ImageLabel" | "ScreenGui" | "ScrollingFrame" | "SurfaceGui" | "TextBox" | "TextButton" | "TextLabel" | "UIAspectRatioConstraint" | "UICorner" | "UIDragDetector" | "UIFlexItem" | "UIGradient" | "UIGridLayout" | "UIListLayout" | "UIPadding" | "UIPageLayout" | "UIScale" | "UIShadow" | "UISizeConstraint" | "UIStroke" | "UITableLayout" | "UITextSizeConstraint" | "VideoFrame" | "ViewportFrame" | "WorldModel"`
+harness/compare/qtypeof/use.luau(37,12): TypeError: Property '"Fraem"' does not exist on type 'CreatableMap'
+harness/compare/qtypeof/use.luau(41,105): TypeError: Expected this to be 'number', but got 'string'
+harness/compare/qtypeof/use.luau(42,68): TypeError: Expected this to be '"Txet" & ("AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "ContentText" | "Font" | "FontFace" | "FontSize" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "LineHeight" | "MaxVisibleGraphemes" | "Name" | "NextSelectionDown" | "NextSelectionLeft" | "NextSelectionRight"... *T
+`"Txet"` is not a subtype of `"AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "ContentText" | "Font" | "FontFace" | "FontSize" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "LineHeight" | "MaxVisibleGraphemes" | "Name" | "NextSelectionDown" | "NextSelectionLeft" | "NextSelectionRight"... *TRUNCATED*`
+harness/compare/qtypeof/use.luau(42,53): TypeError: Property '"Txet"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read ContentTe
+harness/compare/qtypeof/use.luau(42,76): TypeError: Property '"Txet"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read ContentTe
+harness/compare/qtypeof/use.luau(42,53): TypeError: Property '"Txet"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read ContentTe
+harness/compare/qtypeof/use.luau(44,120): TypeError: Expected this to be 'string', but got 'number'
+harness/compare/qtypeof/use.luau(46,83): TypeError: Expected this to be
+but got
+this is because 
+	 * Expected property `__quadStateValue` of the 1st parameter of property `Apply` of the 1st parameter of property `Emit` to be exactly `UDim2`, but got `number`
+	 * Expected property `__quadStateValue` of the 1st parameter of property `Apply` of the 1st parameter of the 2nd parameter of property `Apply` to be exactly `UDim2`, but got `number`
+	 * Expected property `__quadStateValue` of the 1st parameter of property `Apply` to be exactly `UDim2`, but got `number`
+harness/compare/qtypeof/use.luau(48,70): TypeError: Expected this to be '(string | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: string })?', but got 'number'
+harness/compare/qtypeof/use.luau(52,23): TypeError: Not all codepaths in this function return '<K>(K & keyof<Build<"readmap", index<ModClassMap, C0>, Policy>>) -> ((index<Build<"readmap", index<ModClassMap, C0>, Policy>, K>) -> ()) -> OnChangeDescriptor<K>'.
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(54,27): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(61,102): TypeError: Expected this to be 'string', but got 'boolean'
+harness/compare/qtypeof/use.luau(62,62): TypeError: Expected this to be '"Text" & ("AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "Name" | "NextSelectionDown" | "NextSelectionLeft" | "NextSelectionRight" | "NextSelectionUp" | "Parent" | "Position" | "RootLocalizationTable" | "Rotation"... *TRUNCATE
+`"Text"` is not a subtype of `"AbsolutePosition" | "AbsoluteRotation" | "AbsoluteSize" | "Active" | "AnchorPoint" | "Archivable" | "AutoLocalize" | "AutomaticSize" | "BackgroundColor3" | "BackgroundTransparency" | "BorderColor3" | "BorderMode" | "BorderSizePixel" | "Capabilities" | "ClassName" | "ClipsDescendants" | "GuiState" | "InputSink" | "Interactable" | "LayoutOrder" | "Name" | "NextSelectionDown" | "NextSelectionLeft" | "NextSelectionRight" | "NextSelectionUp" | "Parent" | "Position" | "RootLocalizationTable" | "Rotation"... *TRUNCATED*`
+harness/compare/qtypeof/use.luau(62,59): TypeError: Property '"Text"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiState.
+harness/compare/qtypeof/use.luau(62,70): TypeError: Property '"Text"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiState.
+harness/compare/qtypeof/use.luau(62,59): TypeError: Property '"Text"' does not exist on type '{ read AbsolutePosition: Vector2, read AbsoluteRotation: number, read AbsoluteSize: Vector2, read Active: boolean, read AnchorPoint: Vector2, read Archivable: boolean, read AutoLocalize: boolean, read AutomaticSize: Enum.AutomaticSize, read BackgroundColor3: Color3, read BackgroundTransparency: number, read BorderColor3: Color3, read BorderMode: Enum.BorderMode, read BorderSizePixel: number, read Capabilities: SecurityCapabilities, read ClassName: string, read ClipsDescendants: boolean, read GuiState.
+harness/compare/qtypeof/use.luau(67,63): TypeError: Expected this to be '(boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean })?', but got 'number'
+harness/compare/qtypeof/use.luau(69,15): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(69,15): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(69,15): TypeError: Expected this to be 'Frame', but got 'TextLabel'
+harness/compare/qtypeof/use.luau(69,15): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(69,15): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(69,15): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(69,15): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(72,19): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(72,19): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(72,19): TypeError: Expected this to be 'Frame', but got 'TextLabel'
+harness/compare/qtypeof/use.luau(72,19): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(72,19): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(72,19): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(72,19): TypeError: Expected this to be exactly
+but got
+harness/compare/qtypeof/use.luau(74,88): TypeError: Expected this to be
+but got
+this is because 
+	 * Expected property `__quadStateValue` of the 1st parameter of property `Apply` of the 1st parameter of property `Emit` to be exactly `boolean`, but got `number`
+	 * Expected property `__quadStateValue` of the 1st parameter of property `Apply` of the 1st parameter of the 2nd parameter of property `Apply` to be exactly `boolean`, but got `number`
+	 * Expected property `__quadStateValue` of the 1st parameter of property `Apply` to be exactly `boolean`, but got `number`
+harness/compare/qtypeof/use.luau(84,65): TypeError: Expected this to be 'string', but got 'boolean'
+harness/compare/qtypeof/use.luau(86,74): TypeError: Expected this to be 'string', but got 'boolean'
+harness/compare/qtypeof/use.luau(87,43): TypeError: Expected this to be '(boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean })?', but got 'number'
+harness/compare/qtypeof/use.luau(89,8): TypeError: Property '"Fraem"' does not exist on type 'CreatableMap'
+harness/compare/qtypeof/use.luau(20,58): LocalUnused: Variable 'b' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(21,58): LocalUnused: Variable 's' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(26,63): LocalUnused: Variable 'n' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(27,63): LocalUnused: Variable 's' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(40,90): LocalUnused: Variable 's' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(41,93): LocalUnused: Variable 'n' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(43,105): LocalUnused: Variable 'n' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(44,108): LocalUnused: Variable 's' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(60,87): LocalUnused: Variable 'b' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(61,90): LocalUnused: Variable 's' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(82,65): LocalUnused: Variable 'n' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(84,53): LocalUnused: Variable 's' is never used; prefix with '_' to silence
+harness/compare/qtypeof/use.luau(86,62): LocalUnused: Variable 's' is never used; prefix with '_' to silence

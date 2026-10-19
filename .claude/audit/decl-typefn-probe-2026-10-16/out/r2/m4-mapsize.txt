@@ -1,0 +1,16 @@
+bound-031.luau                     sync    wall=  0.40s maxrss=   60MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+bound-064.luau                     sync    wall=  0.45s maxrss=   64MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+bound-100.luau                     sync    wall=  0.50s maxrss=   75MiB typeErrors(in file)=6 NEG caught=2/2 tooComplex(any)=0
+bound-150.luau                     sync    wall=  0.64s maxrss=   84MiB typeErrors(in file)=7 NEG caught=2/2 tooComplex(any)=1
+bound-200.luau                     sync    wall=  0.57s maxrss=   77MiB typeErrors(in file)=11 NEG caught=2/2 tooComplex(any)=5
+bound-250.luau                     sync    wall=  0.58s maxrss=   74MiB typeErrors(in file)=11 NEG caught=2/2 tooComplex(any)=5
+bound-300.luau                     sync    wall=  0.56s maxrss=   72MiB typeErrors(in file)=11 NEG caught=2/2 tooComplex(any)=5
+bound-361.luau                     sync    wall=  0.59s maxrss=   72MiB typeErrors(in file)=11 NEG caught=2/2 tooComplex(any)=5
+nobound-031.luau                   sync    wall=  0.40s maxrss=   60MiB typeErrors(in file)=9 NEG caught=2/2 tooComplex(any)=0
+nobound-064.luau                   sync    wall=  0.42s maxrss=   60MiB typeErrors(in file)=9 NEG caught=2/2 tooComplex(any)=0
+nobound-100.luau                   sync    wall=  0.46s maxrss=   60MiB typeErrors(in file)=9 NEG caught=2/2 tooComplex(any)=0
+nobound-150.luau                   sync    wall=  0.38s maxrss=   60MiB typeErrors(in file)=9 NEG caught=2/2 tooComplex(any)=0
+nobound-200.luau                   sync    wall=  0.39s maxrss=   61MiB typeErrors(in file)=9 NEG caught=2/2 tooComplex(any)=0
+nobound-250.luau                   sync    wall=  0.40s maxrss=   60MiB typeErrors(in file)=9 NEG caught=2/2 tooComplex(any)=0
+nobound-300.luau                   sync    wall=  0.41s maxrss=   60MiB typeErrors(in file)=9 NEG caught=2/2 tooComplex(any)=0
+nobound-361.luau                   sync    wall=  0.37s maxrss=   60MiB typeErrors(in file)=9 NEG caught=2/2 tooComplex(any)=0
