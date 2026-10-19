@@ -1,0 +1,5 @@
+vsc t2-with-050.luau(+0): 0.67s 110MiB TypeError=2 complex=0
+vsc t2-with-300.luau(+0): 1.12s 135MiB TypeError=2 complex=0
+vsc full-tagfn-050.luau(+0): 0.79s 156MiB TypeError=2 complex=0
+vsc full-tagfn-300.luau(+0): 1.42s 180MiB TypeError=2 complex=0
+vsc full-with-300.luau(+0): 2.67s 189MiB TypeError=2 complex=0

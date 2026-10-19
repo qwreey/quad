@@ -1,0 +1,15 @@
+split-body.luau(23,82): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+split-body.luau(24,78): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+split-body.luau(25,135): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+split-body.luau(26,83): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+split-body.luau(27,79): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+split-body.luau(14,7): LocalUnused: Variable 'FrameModifier' is never used; prefix with '_' to silence
+split-body.luau(16,7): LocalUnused: Variable 'GuiObjectModifier' is never used; prefix with '_' to silence
+split-body.luau(17,7): LocalUnused: Variable 'GuiBase2dModifier' is never used; prefix with '_' to silence
+split-body.luau(18,7): LocalUnused: Variable 'InstanceModifier' is never used; prefix with '_' to silence
+split-body.luau(19,7): LocalUnused: Variable 'ScreenGuiModifier' is never used; prefix with '_' to silence
+split-body.luau(23,16): FunctionUnused: Function 'Card' is never used; prefix with '_' to silence
+split-body.luau(24,16): FunctionUnused: Function 'CardF' is never used; prefix with '_' to silence
+split-body.luau(25,16): FunctionUnused: Function 'CardK' is never used; prefix with '_' to silence
+split-body.luau(26,16): FunctionUnused: Function 'CardS' is never used; prefix with '_' to silence
+split-body.luau(27,16): FunctionUnused: Function 'CardFS' is never used; prefix with '_' to silence

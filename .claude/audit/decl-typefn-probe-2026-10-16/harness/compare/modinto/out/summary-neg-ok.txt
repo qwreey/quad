@@ -1,0 +1,1420 @@
+=== iso-body-sync
+# lines with diagnostics: 1  too-complex: 1  (lint warnings skipped: 2)
+# NEG 0/0  OK clean 12/12
+=== iso-into-sync
+# lines with diagnostics: 5  too-complex: 5  (lint warnings skipped: 6)
+  OK  L15: NOISE local function h4(m: IntoG) return TextButton { m:AsGuiObject():AsTextButton() } end -- OK into element
+  OK  L20: NOISE local function h9(m: IntoG?) return TextButton { if m then m:AsGuiObject():AsTextButton() else None } end -- O
+  OK  L21: NOISE local function h10(m: IntoG?) local x = if m then m:AsGuiObject():AsTextButton() else None return TextButton {
+  OK  L22: NOISE local function h11(m: IntoG) return TextButton { m:AsGuiObject():AsTextButton() :: Mod<TextButton> } end -- OK
+  OK  L23: NOISE local function h12(m: IntoG) return TextButton { (m:AsGuiObject()):AsTextButton() } end -- OK parenthesised fi
+# NEG 0/0  OK clean 7/12
+=== iso-tagfn-sync
+# lines with diagnostics: 4  too-complex: 0  (lint warnings skipped: 0)
+  NEG L23: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then ToGui(props.Modifier):AsTextBut
+  NEG L24: HIT   local function CardBad2(props: CardProps) return Frame { if props.Modifier then ToGui(props.Modifier):AsFrame(
+  NEG L27: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG
+  NEG L28: HIT   local n2 = Card({ Modifier = Modifier "ScreenGui" () }) -- NEG
+# NEG 4/4  OK clean 5/5
+=== iso-tagfn-vsc
+# lines with diagnostics: 4  too-complex: 0  (lint warnings skipped: 0)
+  NEG L23: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then ToGui(props.Modifier):AsTextBut
+  NEG L24: HIT   local function CardBad2(props: CardProps) return Frame { if props.Modifier then ToGui(props.Modifier):AsFrame(
+  NEG L27: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG
+  NEG L28: HIT   local n2 = Card({ Modifier = Modifier "ScreenGui" () }) -- NEG
+# NEG 4/4  OK clean 5/5
+=== iso-thin-parts-sync
+# lines with diagnostics: 3  too-complex: 0  (lint warnings skipped: 0)
+  NEG L19: HIT   A({ Modifier = FrameModifier() }) -- NEG tag only rejects Frame
+  NEG L22: HIT   B({ Modifier = FrameModifier() }) -- NEG
+  NEG L25: HIT   C({ Modifier = FrameModifier() }) -- NEG
+# NEG 3/3  OK clean 6/6
+=== iso-thin-parts-vsc
+# lines with diagnostics: 3  too-complex: 0  (lint warnings skipped: 0)
+  NEG L19: HIT   A({ Modifier = FrameModifier() }) -- NEG tag only rejects Frame
+  NEG L22: HIT   B({ Modifier = FrameModifier() }) -- NEG
+  NEG L25: HIT   C({ Modifier = FrameModifier() }) -- NEG
+# NEG 3/3  OK clean 6/6
+=== split-body-sync
+# lines with diagnostics: 5  too-complex: 5  (lint warnings skipped: 10)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+# NEG 0/0  OK clean 1/6
+=== split-call-sync
+# lines with diagnostics: 8  too-complex: 4  (lint warnings skipped: 13)
+  OK  L26: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L27: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L28: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L29: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L31: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L32: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L33: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L34: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+# NEG 4/4  OK clean 2/6
+=== use-full-hand-direct-sync
+# lines with diagnostics: 23  too-complex: 14  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 12/12  OK clean 16/27
+=== use-full-hand-pin
+# lines with diagnostics: 12  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 12/12  OK clean 27/27
+=== use-full-hand-sync
+# lines with diagnostics: 27  too-complex: 20  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L45: NOISE local i4: Mod<GuiObject> = GuiObjectModifier() -- OK cross spelling (Lib2 into-ident x1 was too complex in syn
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 12/12  OK clean 13/27
+=== use-full-hand-vsc
+# lines with diagnostics: 12  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 12/12  OK clean 27/27
+=== use-full-thin-pin
+# lines with diagnostics: 13  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 12/12  OK clean 27/27
+=== use-full-thin-sync
+# lines with diagnostics: 27  too-complex: 21  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L45: NOISE local i4: Mod<GuiObject> = GuiObjectModifier() -- OK cross spelling (Lib2 into-ident x1 was too complex in syn
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 12/12  OK clean 13/27
+=== use-full-thin-vsc
+# lines with diagnostics: 13  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 12/12  OK clean 27/27
+=== use-full-thinhand-direct-sync
+# lines with diagnostics: 24  too-complex: 15  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 12/12  OK clean 16/27
+=== use-full-thinhand-pin
+# lines with diagnostics: 13  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 12/12  OK clean 27/27
+=== use-full-thinhand-sync
+# lines with diagnostics: 27  too-complex: 21  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L45: NOISE local i4: Mod<GuiObject> = GuiObjectModifier() -- OK cross spelling (Lib2 into-ident x1 was too complex in syn
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 12/12  OK clean 13/27
+=== use-full-thinhand-vsc
+# lines with diagnostics: 13  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 12/12  OK clean 27/27
+=== use-full-thinwith-direct-sync
+# lines with diagnostics: 26  too-complex: 19  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 12/12  OK clean 14/27
+=== use-full-thinwith-pin
+# lines with diagnostics: 13  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 12/12  OK clean 27/27
+=== use-full-thinwith-sync
+# lines with diagnostics: 27  too-complex: 21  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L45: NOISE local i4: Mod<GuiObject> = GuiObjectModifier() -- OK cross spelling (Lib2 into-ident x1 was too complex in syn
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 12/12  OK clean 13/27
+=== use-full-thinwith-vsc
+# lines with diagnostics: 13  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 12/12  OK clean 27/27
+=== use-full-with-direct-sync
+# lines with diagnostics: 26  too-complex: 18  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 12/12  OK clean 14/27
+=== use-full-with-pin
+# lines with diagnostics: 12  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 12/12  OK clean 27/27
+=== use-full-with-sync
+# lines with diagnostics: 27  too-complex: 20  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L45: NOISE local i4: Mod<GuiObject> = GuiObjectModifier() -- OK cross spelling (Lib2 into-ident x1 was too complex in syn
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 12/12  OK clean 13/27
+=== use-full-with-vsc
+# lines with diagnostics: 12  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 12/12  OK clean 27/27
+=== use-t10-with-direct-sync
+# lines with diagnostics: 29  too-complex: 18  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 15/15  OK clean 11/24
+=== use-t10-with-sync
+# lines with diagnostics: 30  too-complex: 20  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L45: NOISE local i4: Mod<GuiObject> = GuiObjectModifier() -- OK cross spelling (Lib2 into-ident x1 was too complex in syn
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 15/15  OK clean 10/24
+=== use-t13-with-direct-sync
+# lines with diagnostics: 29  too-complex: 18  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 15/15  OK clean 11/24
+=== use-t13-with-pin
+# lines with diagnostics: 15  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 15/15  OK clean 24/24
+=== use-t13-with-sync
+# lines with diagnostics: 30  too-complex: 20  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L45: NOISE local i4: Mod<GuiObject> = GuiObjectModifier() -- OK cross spelling (Lib2 into-ident x1 was too complex in syn
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 15/15  OK clean 10/24
+=== use-t13-with-vsc
+# lines with diagnostics: 15  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 15/15  OK clean 24/24
+=== use-t13n-thinhand-sync
+# lines with diagnostics: 29  too-complex: 21  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L45: NOISE local i4: Mod<GuiObject> = GuiObjectModifier() -- OK cross spelling (Lib2 into-ident x1 was too complex in syn
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 14/14  OK clean 11/25
+=== use-t13n-thinwith-sync
+# lines with diagnostics: 29  too-complex: 21  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L45: NOISE local i4: Mod<GuiObject> = GuiObjectModifier() -- OK cross spelling (Lib2 into-ident x1 was too complex in syn
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 14/14  OK clean 11/25
+=== use-t13n-with-direct-sync
+# lines with diagnostics: 28  too-complex: 18  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 14/14  OK clean 12/25
+=== use-t13n-with-pin
+# lines with diagnostics: 14  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 14/14  OK clean 25/25
+=== use-t13n-with-sync
+# lines with diagnostics: 29  too-complex: 20  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L45: NOISE local i4: Mod<GuiObject> = GuiObjectModifier() -- OK cross spelling (Lib2 into-ident x1 was too complex in syn
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 14/14  OK clean 11/25
+=== use-t13n-with-vsc
+# lines with diagnostics: 14  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 14/14  OK clean 25/25
+=== use-t2-thinhand-pin
+# lines with diagnostics: 19  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L50: HIT   local o1 = GuiObjectModifier():AsTextLabel():Text("x") -- NEG list: TextLabel
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 18/18  OK clean 21/21
+=== use-t2-thinhand-sync
+# lines with diagnostics: 21  too-complex: 2  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L50: HIT   local o1 = GuiObjectModifier():AsTextLabel():Text("x") -- NEG list: TextLabel
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 18/18  OK clean 19/21
+=== use-t2-thinhand-vsc
+# lines with diagnostics: 19  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L50: HIT   local o1 = GuiObjectModifier():AsTextLabel():Text("x") -- NEG list: TextLabel
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 18/18  OK clean 21/21
+=== use-t2-thinwith-pin
+# lines with diagnostics: 19  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L50: HIT   local o1 = GuiObjectModifier():AsTextLabel():Text("x") -- NEG list: TextLabel
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 18/18  OK clean 21/21
+=== use-t2-thinwith-sync
+# lines with diagnostics: 21  too-complex: 2  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L50: HIT   local o1 = GuiObjectModifier():AsTextLabel():Text("x") -- NEG list: TextLabel
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 18/18  OK clean 19/21
+=== use-t2-thinwith-vsc
+# lines with diagnostics: 19  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L50: HIT   local o1 = GuiObjectModifier():AsTextLabel():Text("x") -- NEG list: TextLabel
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 18/18  OK clean 21/21
+=== use-t2-with-direct-sync
+# lines with diagnostics: 20  too-complex: 2  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L50: HIT   local o1 = GuiObjectModifier():AsTextLabel():Text("x") -- NEG list: TextLabel
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 18/18  OK clean 19/21
+=== use-t2-with-pin
+# lines with diagnostics: 18  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L50: HIT   local o1 = GuiObjectModifier():AsTextLabel():Text("x") -- NEG list: TextLabel
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 18/18  OK clean 21/21
+=== use-t2-with-sync
+# lines with diagnostics: 20  too-complex: 2  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L50: HIT   local o1 = GuiObjectModifier():AsTextLabel():Text("x") -- NEG list: TextLabel
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 18/18  OK clean 19/21
+=== use-t2-with-vsc
+# lines with diagnostics: 18  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L50: HIT   local o1 = GuiObjectModifier():AsTextLabel():Text("x") -- NEG list: TextLabel
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 18/18  OK clean 21/21
+=== use-t2big-with-sync
+# lines with diagnostics: 28  too-complex: 2  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L46: NOISE local i5: Mod<TextButton> = GuiObjectModifier():AsTextButton() -- OK
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L50: HIT   local o1 = GuiObjectModifier():AsTextLabel():Text("x") -- NEG list: TextLabel
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  OK  L54: NOISE local o5 = InstanceModifier():AsGuiObject():AsFrame() -- OK ancestor → GuiObject → Frame
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  OK  L60: NOISE local d1 = TextButton { GuiObjectModifier():AsTextButton():Text("x") } -- OK
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 17/17  OK clean 11/22
+=== use-t3-with-pin
+# lines with diagnostics: 17  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 17/17  OK clean 22/22
+=== use-t3-with-sync
+# lines with diagnostics: 21  too-complex: 4  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L45: NOISE local i4: Mod<GuiObject> = GuiObjectModifier() -- OK cross spelling (Lib2 into-ident x1 was too complex in syn
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 17/17  OK clean 19/22
+=== use-t3-with-vsc
+# lines with diagnostics: 17  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 17/17  OK clean 22/22
+=== use-t4-with-direct-sync
+# lines with diagnostics: 24  too-complex: 7  (lint warnings skipped: 2)
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 17/17  OK clean 16/22
+=== use-t4-with-pin
+# lines with diagnostics: 17  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 17/17  OK clean 22/22
+=== use-t4-with-sync
+# lines with diagnostics: 25  too-complex: 9  (lint warnings skipped: 2)
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L45: NOISE local i4: Mod<GuiObject> = GuiObjectModifier() -- OK cross spelling (Lib2 into-ident x1 was too complex in syn
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 17/17  OK clean 15/22
+=== use-t4-with-vsc
+# lines with diagnostics: 17  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 17/17  OK clean 22/22
+=== use-t5-with-sync
+# lines with diagnostics: 32  too-complex: 20  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L45: NOISE local i4: Mod<GuiObject> = GuiObjectModifier() -- OK cross spelling (Lib2 into-ident x1 was too complex in syn
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 17/17  OK clean 8/22
+=== use-t6-with-sync
+# lines with diagnostics: 32  too-complex: 20  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L45: NOISE local i4: Mod<GuiObject> = GuiObjectModifier() -- OK cross spelling (Lib2 into-ident x1 was too complex in syn
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L51: HIT   local o2 = GuiObjectModifier():AsScrollingFrame():CanvasSize(UDim2.new()) -- NEG list: ScrollingFrame
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 17/17  OK clean 8/22
+=== use-t7-thinhand-sync
+# lines with diagnostics: 31  too-complex: 19  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L45: NOISE local i4: Mod<GuiObject> = GuiObjectModifier() -- OK cross spelling (Lib2 into-ident x1 was too complex in syn
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 16/16  OK clean 9/23
+=== use-t7-thinwith-sync
+# lines with diagnostics: 31  too-complex: 21  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L45: NOISE local i4: Mod<GuiObject> = GuiObjectModifier() -- OK cross spelling (Lib2 into-ident x1 was too complex in syn
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 16/16  OK clean 9/23
+=== use-t7-with-direct-sync
+# lines with diagnostics: 30  too-complex: 18  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 16/16  OK clean 10/23
+=== use-t7-with-pin
+# lines with diagnostics: 16  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 16/16  OK clean 23/23
+=== use-t7-with-sync
+# lines with diagnostics: 31  too-complex: 20  (lint warnings skipped: 2)
+  OK  L23: NOISE local function Card(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject():
+  OK  L24: NOISE local function CardF(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsFr
+  OK  L25: NOISE local function CardK(props: CardProps) return TextButton { buttonName, TextButtonModifier():Size(UDim2.new()),
+  OK  L26: NOISE local function CardS(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObject()
+  OK  L27: NOISE local function CardFS(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():AsF
+  OK  L29: NOISE local k1 = Card({ Modifier = surfaceSize() }) -- OK GuiObject modifier (helper return)
+  OK  L30: NOISE local k2 = CardF({ Modifier = GuiObjectModifier() }) -- OK
+  OK  L31: NOISE local k3 = Card({ Modifier = GuiBase2dModifier() }) -- OK ancestor GuiBase2d modifier
+  OK  L32: NOISE local k4 = Card({ Modifier = InstanceModifier():Name("x") }) -- OK ancestor Instance modifier
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  OK  L42: NOISE local i1: IntoG = GuiObjectModifier() -- OK
+  OK  L43: NOISE local i2: IntoG = InstanceModifier() -- OK ancestor
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  OK  L45: NOISE local i4: Mod<GuiObject> = GuiObjectModifier() -- OK cross spelling (Lib2 into-ident x1 was too complex in syn
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+  OK  L67: NOISE local function Probe(props: CardProps) local x = props.Modifier and props.Modifier:AsGuiObject() return x end 
+  OK  L68: NOISE local function Probe2(props: CardProps) local y = props.Modifier and props.Modifier:AsGuiObject():AsTextButton
+# NEG 16/16  OK clean 9/23
+=== use-t7-with-vsc
+# lines with diagnostics: 16  too-complex: 0  (lint warnings skipped: 2)
+  NEG L34: HIT   local n1 = Card({ Modifier = FrameModifier() }) -- NEG descendant Frame modifier into Into<GuiObject>
+  NEG L35: HIT   local n2 = Card({ Modifier = TextButtonModifier() }) -- NEG
+  NEG L36: HIT   local n3 = Card({ Modifier = ScreenGuiModifier() }) -- NEG sibling branch (LayerCollector)
+  NEG L37: HIT   local n4 = Card({ Modifier = Modifier "UIListLayout" () }) -- NEG unrelated class
+  NEG L38: HIT   local function CardBad(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():As
+  NEG L39: HIT   local function CardBad2(props: CardProps) return TextButton { if props.Modifier then props.Modifier:AsGuiObjec
+  NEG L40: HIT   local function CardBad3(props: CardProps) return Frame { if props.Modifier then props.Modifier:AsGuiObject():A
+  NEG L44: HIT   local i3: IntoG = FrameModifier() -- NEG
+  NEG L48: HIT   local l1 = FrameModifier():AsTextButton() -- NEG leaf has no down-cast
+  NEG L49: HIT   local l2 = TextButtonModifier():AsGuiObject() -- NEG no checked up-cast
+  NEG L52: HIT   local o3 = GuiObjectModifier():AsViewportFrame() -- NEG list: ViewportFrame
+  NEG L53: HIT   local o4 = GuiObjectModifier():AsGuiButton():AsTextButton() -- NEG list: GuiButton second hop
+  NEG L55: HIT   local o6 = InstanceModifier():AsFrame() -- NEG list: Instance → Frame direct
+  NEG L56: HIT   local o7 = GuiBase2dModifier():AsTextButton() -- NEG list: GuiBase2d → TextButton direct
+  NEG L59: HIT   local p2 = TextButton { FrameModifier() } -- NEG sibling class
+  NEG L61: HIT   local d2 = Frame { GuiObjectModifier():AsTextButton() } -- NEG
+# NEG 16/16  OK clean 23/23

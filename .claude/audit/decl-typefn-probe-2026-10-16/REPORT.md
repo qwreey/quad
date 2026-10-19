@@ -419,3 +419,211 @@ Instance 행은 N을 줄여서 다시 돌리지 않았습니다.
 - `out/r2/`: 원 출력 29개와 `summary-neg-ok.txt`
 
 raw 덤프는 레포 밖 스크래치패드에 있습니다. 다시 받는 방법은 `curl -s -o X https://setup.rbxcdn.com/version-4f087c32742644ab-API-Dump.json`입니다.
+
+## Declaration 타입 함수 표면 M3 후속 실측 보고: Into 자리의 too complex (2026-10-19) [opus 서브에이전트, 본문 그대로 저장]
+
+이 보고는 결정이 아니라 재료입니다. 기존 파일은 고치지 않았습니다. 새 파일은 `src/Lib3.luau`, `src/25~29-*.luau`, `harness/compare/modinto/` 아래에만 있습니다. git 조작은 하지 않았고 코어 덤프도 없습니다. 모든 실행은 `run-cli.sh`(choom 1000, prlimit 3 GiB)를 거쳐 순차로 돌렸고 `RLIMIT_CORE=0`을 걸었습니다. 모드 이름은 2차와 같습니다. sync가 기준이고, vsc는 override를 켠 상태, pin은 1.69.0입니다.
+
+### 요약
+
+- **(다) 하강 목록 좁히기는 효과가 있습니다.** 문턱은 다음과 같습니다(sync, Lib2 꼴 `IntoWith`).
+  - GuiObject 하강이 **2~3개**면 킷 꼴(본문과 호출 자리)이 전부 깨끗하고 NEG도 전부 잡힙니다.
+  - **4개**에서는 본문은 깨끗하지만 호출 자리(`Card({ Modifier = … })`)가 too complex입니다.
+  - **5개 이상**이면 전체(13)와 똑같이 다 무너집니다.
+  - 실사용 최소(Frame·TextButton)는 300 사용에서도 too complex가 0입니다.
+- **(라) 얇은 Into는 sync에서 아무것도 바꾸지 못합니다.** 자기 생성 꼴, `IntoThinWith` 꼴, 같은 모듈 별칭 반환을 손으로 쓴 꼴, 생성 D 모양을 손으로 쓴 꼴 모두, 같은 As 트리 크기에서 전체 Into와 같은 줄이 무너집니다.
+  - 원인은 태그가 아니라 **메소드 반환 `Modifier<GuiObject>`끼리의 사본 비교**입니다. 태그만 있거나, 태그에 `any`나 한 필드 테이블을 반환하는 메소드를 붙이면 전체 트리에서도 깨끗합니다.
+- **곁가지 실측(새 메커니즘이라 사용자 문항감):** prop을 **태그만 있는 Into**로 두고 본문에서 **자유 함수** `ToGui(m)`로 바꾸면 전체 13 트리에서도 sync too complex가 0입니다. NEG도 다 잡힙니다. 킷 표기는 `props.Modifier:AsGuiObject()`에서 함수 호출로 바뀝니다.
+- **vsc·pin에서는** (다)·(라) 모든 변형이 too complex 0이고 OK 전부 깨끗, NEG 전부 적중입니다.
+
+### 공통 재료
+
+- **Lib3**(`src/Lib3.luau`)은 Lib2를 복사한 뒤 다음을 더한 것입니다.
+  - `Policy.AsTargets = { [Class]: { [Desc]: true } }`: 이 필드가 있으면 `modOf`가 나열된 하강만 만들고, 나열되지 않은 클래스는 항등만 가집니다(`modOf`의 `allow` 분기).
+  - 정책 `PolicyT2/T2big/T3/T4/T5/T6/T7/T10/T13/T13n`과 `PolicyFull`(Lib2와 같은 트리)
+  - `Build "intothin"`, `IntoThinWith`
+  - 정책을 인자로 받는 별칭 `ModP/IntoP/IntoThinP/IntoThinWithP`
+  - Deny 계열 export
+- T 목록에서 조상 셋(GuiBase2d·GuiBase·Instance)은 `{ GuiObject }`만 갖도록 데이터로 넣었습니다. 그래야 조상 Modifier가 Into<GuiObject>에 들어갑니다.
+- **템플릿 `modinto/gen-use.py`**는 변형마다 줄 번호가 같은 파일을 만듭니다(`use-<정책>-<Into꼴>[-direct].luau`, 27개).
+  - 킷 꼴(22~32행): prop `Modifier: IntoG?`, 본문 `props.Modifier:AsGuiObject():AsTextButton()`/`AsFrame()`, 킷처럼 다른 props와 섞은 요소(25행), 체인 뒤 세터(26·27행), GuiObject·GuiBase2d·Instance Modifier 넣기
+  - 부정 사례:
+    - 하강 클래스(Frame·TextButton)와 형제 가지(ScreenGui)·무관 클래스(UIListLayout)를 Into에 넣기(34~37행)
+    - 잘못된 요소나 세터(38~40행)
+    - 잎·상향(48·49행)
+    - 목록 밖 하강(50~56행, 정책마다 NEG/OK 표지가 바뀜)
+  - 판정은 `diag-lines.py`로 했습니다. 64행 custom Into는 `-- SEMANTIC` 표지라 집계에서 뺐습니다.
+- 출력: `modinto/out/summary-neg-ok.txt`(전 파일·전 모드), `out/<파일>-<모드>.txt`(원 출력, 줄을 잘랐음), `out/cost-*.txt`, `out/lsp-*.txt`
+
+### (다) 하강 대상을 데이터로 좁히기
+
+**실측(sync, `use-*-with.luau`, Into = Lib2 꼴 `IntoWith`, 팩토리는 `Modifier "X"`)**
+
+| 정책 (GuiObject 하강 수) | 본문 23~27행 | 호출 자리 29~32행 | `local i: IntoG =` 42·43행 | i4 교차 표기 | NEG | too complex | 시간 / RSS |
+|---|---|---|---|---|---|---|---|
+| T2 (Frame, TextButton) | 깨끗 | 깨끗 | ✗ | 깨끗 | 18/18 | 2 | 0.67 s / 129 MiB |
+| T2big (TextBox, ScrollingFrame) | (목록상 정상 에러) | 깨끗 | ✗ | – | 17/17 | 2 | 0.70 s / 129 MiB |
+| T3 (+TextLabel) | 깨끗 | 깨끗 | ✗ | ✗ | 17/17 | 4 | 0.69 s / 144 MiB |
+| T4 (+TextBox) | 깨끗 | **✗** | ✗ | ✗ | 17/17 | 9 | 0.83 s / 157 MiB |
+| T5 (+ImageButton) | ✗ | ✗ | ✗ | ✗ | 17/17 | 20 | 0.80 s / 169 MiB |
+| T6, T7, T10, T13(평평), T13n(2단) | ✗ | ✗ | ✗ | ✗ | 전부 적중 | 20 | 0.85~1.27 s / 179~270 MiB |
+| full (Lib2 트리, 대조군) | ✗ | ✗ | ✗ | ✗ | 12/12 | 20 | 1.76 s / 423 MiB |
+
+- 문턱은 **클래스 표면 크기가 아니라 트리의 노드 수**를 따라가는 것으로 보입니다. 큰 잎 둘인 T2big도 호출 자리가 깨끗합니다.
+- 표의 노드 수는 GuiObject 하나에 하강 N개입니다. T 정책에서 조상 Modifier는 GuiObject 노드를 하나 더 가집니다.
+- 지역 변수 주석 꼴 `local i1: IntoG = GuiObjectModifier()`는 T2에서도 too complex입니다. 킷은 이 꼴을 쓰지 않고 props 테이블 필드만 씁니다. 옵셔널 함수 파라미터 꼴은 이번에 재지 않았습니다.
+- 목록 밖 하강은 정책 표지 그대로 전부 NEG로 잡힙니다.
+  - 예: T2의 `AsTextLabel`·`AsScrollingFrame`·`AsViewportFrame`·`AsGuiButton():AsTextButton()`
+  - `InstanceModifier():AsFrame()`과 `GuiBase2dModifier():AsTextButton()` 직행은 T 목록에서 NEG입니다. 생성 D는 Instance→46개 전부를 허용하므로 **의미가 달라집니다.**
+- **vsc·pin**: T2~T13n과 full이 모두 too complex 0, OK 전부 깨끗, NEG 전부 적중입니다(`out/summary-neg-ok.txt`). pin은 느립니다(full 2.68 s / 697 MiB, T2 1.17 s / 168 MiB).
+- 데이터 비용(추정): 이 목록은 "어느 클래스가 무엇으로 하강하는가"를 클래스마다 적는 데이터입니다. 목록에 없는 추상 클래스(GuiButton, UIComponent, LayerCollector 등)는 하강을 잃습니다. 조상→GuiObject 행처럼 조상 쪽 행도 따로 적어야 합니다.
+
+### (라) 얇은 `ModifierInto<C>`
+
+**실측(sync)**
+
+| Into 꼴 | full 트리 | T2 | T7 | T13n |
+|---|---|---|---|---|
+| with (Lib2 `IntoWith`) | tc 20, 본문과 호출 ✗ | tc 2 (i1·i2만) | tc 20 | tc 20 |
+| thin (자기 생성, 태그 + `As<C>`) | tc 21, 같은 줄 ✗ | – | – | – |
+| thinwith (`IntoThinWith<C, Modifier<C>>`) | tc 21 | tc 2 | tc 21 | tc 21 |
+| thinhand (손 별칭: 태그 + `AsGuiObject: (self: any) -> Mod<GuiObject>`) | tc 21 | tc 2 | tc 19 | tc 21 |
+| hand (생성 D 모양, 태그 없음, 별칭 반환) | tc 20 | – | – | – |
+
+- **대입 비교는 태그와 메소드 하나로 줄어들지 않습니다.** 메소드 반환 `Modifier<GuiObject>`와 값 쪽 `AsGuiObject`의 반환(값 자신의 그래프)을 사본끼리 구조 비교하기 때문입니다.
+- 근거: `modinto/iso-thin-parts.luau`, full 트리, sync와 vsc 모두 NEG 3/3, OK 6/6, too complex 0입니다.
+  - 태그만: 깨끗
+  - 태그 + `AsGuiObject: (self: any) -> any`: 깨끗
+  - 태그 + `-> { read __quadModifier: "GuiObject" }`: 깨끗
+  - 즉 태그 검사는 싸고, Modifier 사본을 반환하는 메소드를 붙이는 순간만 무너집니다.
+- **같은 모듈 별칭으로 반환을 명시해도(thinhand) 사본 비교가 일어납니다.**
+- **팩토리를 직접 표기한 변형**(`-direct`: `(...any) -> Mod<GuiObject>`)도 재봤습니다.
+  - hand와 thinhand에서만 같은 클래스 값(k1·k2)과 i4가 깨끗해집니다. 정체성이 맞기 때문입니다.
+  - 조상 값(k3·k4)과 본문은 여전히 ✗입니다. 조상 그래프 안의 GuiObject 노드는 또 다른 사본입니다.
+  - with와 thinwith는 직접 표기여도 k1·k2가 ✗입니다. 타입 함수 인자로 넘긴 Modifier는 정체성이 유지되지 않는 것으로 보입니다(추정).
+- 의미 차이(실측): 태그 없는 custom Into(`{ AsGuiObject = function … }`, 64행)는 다음과 같습니다.
+  - with와 hand는 받습니다.
+  - thin 계열은 vsc·sync(T2)에서 `Expected 'IntoG?', got 'custom'`으로 거부합니다.
+  - 킷은 custom Into를 쓰지 않습니다(2차 grep).
+- vsc·pin: 모든 thin 변형이 too complex 0입니다. NEG와 OK는 with와 같고, 진단 줄이 하나 더 있는 것은 위 custom 거부입니다.
+
+### 본문(`AsGuiObject():AsTextButton()`)이 무너지는 자리
+
+`modinto/iso-into.luau`(full, 생성 D 모양의 hand Into, sync)에서 갈랐습니다.
+
+| 꼴 | 행 | 결과 |
+|---|---|---|
+| `local x = m:AsGuiObject():AsTextButton()` | 14 | 깨끗 |
+| 첫 홉만 지역에 담은 뒤 `TextButton { g:AsTextButton() }` | 16 | 깨끗 |
+| 같은 표기 주석 | 17 | 깨끗 |
+| Into 없이 `m: Mod<GuiObject>`로 같은 체인을 요소에 인라인 | 18·19 | 깨끗 |
+| 요소 안 인라인 체인 | 15 | ✗ |
+| 킷 꼴 `if m then … else None` | 20 | ✗ |
+| if 식 전체를 지역에 담기 | 21 | ✗ |
+| `:: Mod<TextButton>` 캐스트 | 22 | ✗ |
+| 첫 호출을 괄호로 묶기 | 23 | ✗ |
+
+- 에러 열은 체인 식의 시작입니다.
+- **추정:** Into 메소드가 돌려준 Modifier에 다시 메소드를 부르는 식이 기대 타입(요소의 배열부 유니언이나 None 유니언)과 함께 검사될 때 한도를 넘습니다.
+- `iso-body.luau`(Into 없음, 12꼴)는 줄 진단이 0입니다. 그러나 경로가 `../../../../../../../../..(1,1)`인 too complex가 한 건 붙습니다. 어느 모듈인지는 특정하지 못했습니다.
+
+### 곁가지 실측: 태그만 있는 Into와 자유 함수
+
+새 이름과 메커니즘이므로 결정이 아니라 문항감입니다.
+
+- `modinto/iso-tagfn.luau`, full 트리입니다.
+  - prop: `{ read __quadModifier: "GuiObject" | "GuiBase2d" | "GuiBase" | "Instance" }?`
+  - 본문: `ToGui(props.Modifier):AsTextButton()`, 여기서 `ToGui: (m: IntoTag) -> Mod<GuiObject>`
+- 결과: sync와 vsc 모두 NEG 4/4, OK 5/5, too complex 0입니다.
+  - 잡히는 것: Frame·ScreenGui 값 거부, 잘못된 요소, Frame에 Text
+  - 통과하는 것: 조상 Instance 값, 체인 뒤 세터
+- 비용(300 사용, sync): 1.34 s / 181 MiB입니다. Into를 쓰지 않는 대조군은 1.35 s / 151 MiB입니다.
+- 킷 표기는 메소드 꼴 `props.Modifier:AsGuiObject()`에서 함수 꼴로 바뀝니다.
+
+### 비용
+
+`modinto/gen-cost3.py`로 생성하고 `cost-run.py`로 순차 실행했습니다. sync 기준이며, 5번째 사용마다 GuiObject Modifier를 Card에 넘깁니다. 출력은 `out/cost-sync.txt`, `out/cost-vsc.txt`입니다.
+
+| 변형 | 50 사용 | 300 사용 | too complex (50 / 300) |
+|---|---|---|---|
+| full, Into 없음 | 0.71 s / 127 MiB | 1.35 s / 151 MiB | 0 / 0 |
+| full + with | 0.89 s / 173 MiB | 1.75 s / 198 MiB | 11 / 61 |
+| full + tagfn | 0.78 s / 156 MiB | 1.34 s / 181 MiB | 0 / 0 |
+| T2, Into 없음 | 0.60 s / 102 MiB | 0.80 s / 126 MiB | 0 / 0 |
+| T2 + with | 0.66 s / 111 MiB | 1.09 s / 135 MiB | 0 / 0 |
+| T2 + thinwith | 0.65 s / 111 MiB | 1.07 s / 135 MiB | 0 / 0 |
+| T3 + with | 0.65 s / 115 MiB | 1.19 s / 139 MiB | 0 / 0 |
+| T4 + with | 0.64 s / 122 MiB | 1.01 s / 147 MiB | 10 / 60 |
+| T7 + with | 0.75 s / 137 MiB | 1.20 s / 162 MiB | 11 / 61 |
+
+- vsc 수치: T2+with 0.67 s / 1.12 s, full+tagfn 0.79 s / 1.42 s, full+with(300) 2.67 s. 모두 too complex 0입니다.
+- T4의 10→60은 호출 자리 수와 정확히 같습니다. **too complex는 모듈 전체 예산이 아니라 자리마다 납니다**(실측).
+- NEG 2/2는 모든 파일에서 유지됐습니다.
+
+### hover와 `m:` 자동완성
+
+`out/lsp-sync.txt`, `out/lsp-vsc.txt`에 있습니다.
+
+| 파일 | `GuiObjectModifier():` 개수 (As 수) | Into `props.Modifier:` | Into 체인 뒤 `AsGuiObject():` |
+|---|---|---|---|
+| full-with | sync 58 (14), 1.17 s / vsc 58, 1.12 s | 1개(AsGuiObject), 2.07 s | **sync는 쓰레기 1개(`AAsTextButton`)로 깨짐** / vsc 58 |
+| T2-with | 48 (4: As, AsFrame, AsGuiObject, AsTextButton), 0.22 s | 1개, 0.39 s | sync 48, 0.22 s / vsc 48 |
+| T3-with | 49 (5), 0.26 s | 1개, 0.50 s | 49 |
+| T13n-with | 58 (14), 0.83 s | 1개, 1.52 s | sync 깨짐 |
+| full-thinhand | 58 (14), 1.37 s | 1개, 2.38 s | sync 깨짐 |
+| T2-thinwith | 48 (4), 0.23 s | 1개(태그 필드는 안 보임), 0.49 s | 48 |
+
+- hover: Modifier 값은 2차와 같은 `t1 where t1 = {…}` 전개입니다.
+- Into prop hover:
+  - with 꼴은 `AsGuiObject: (any) -> { Active: … }`로 트리 전체를 펼칩니다(full 1.05 s, T2 0.18 s).
+  - thinhand 꼴은 `AsGuiObject: (self: any) -> t16, … 1 more …`로 나옵니다. 별칭 이름은 유지되지 않습니다.
+
+### 따로 표시: 2차의 b2(40행)와 d7(62행)
+
+이번 템플릿에는 넣지 않았습니다. 생성 D와 같은 솔버 동작으로, 2차의 `modfull/use.luau`·`gend-control.luau` 판정 그대로입니다. 위 집계와는 무관합니다.
+
+### 미측정
+
+- 모듈 경계 넘기: Into 별칭과 팩토리를 다른 모듈에서 import하는 실제 킷 구조에서의 정체성과 문턱
+- 옵셔널 함수 파라미터 꼴 Into
+- Into<C>에서 C가 GuiObject가 아닌 경우
+- pin 모드 LSP
+- Studio
+
+### 종합 (재료)
+
+1. **(다)가 sync에서 킷 꼴을 살리는 유일한 갈래였습니다.** 단 GuiObject 하강을 2~3개로 좁혀야 합니다. 킷 실사용은 Frame·TextButton 둘입니다.
+   - 4개면 호출 자리가, 5개 이상이면 전부 무너집니다.
+   - 대가는 셋입니다. 목록에 없는 하강과 조상 직행 하강이 NEG가 되고, 하강 목록 데이터를 따로 유지해야 하며, 목록이 늘면 문턱을 다시 넘습니다.
+   - 지역 주석 꼴 Into는 T2에서도 too complex입니다.
+2. **(라)는 sync에서 효과가 없습니다.** 메소드 반환이 Modifier 사본인 한 비교 비용이 그대로이고, 태그 없는 custom Into를 거부하는 의미 차이만 생깁니다.
+3. **태그만 있는 Into와 자유 변환 함수**는 전체 트리에서도 sync가 깨끗했습니다. 다만 킷 표기와 공개 표면이 바뀌므로 사용자 결정 사항입니다.
+4. vsc·pin에서는 어느 갈래든 다 섭니다. 문제는 override 없는 sync(Studio 기본 한도)에만 있습니다.
+
+### Studio 확인 후보 (메인이 싱크해 `studio-analysis`로)
+
+각 사본은 원본과 줄 번호가 같습니다(2행만 안내문으로 바꿨고, require는 `./Lib3`).
+
+1. `src/25-modinto-t2.luau`: too complex가 42·43행 두 줄뿐인지, NEG 18개가 맞는지 봅니다.
+2. `src/26-modinto-t4.luau`: 호출 자리 29~32행만 too complex인지 봅니다(문턱 확인).
+3. `src/27-modinto-full-thinhand.luau`: (라)가 Studio에서도 같은 줄(23~32, 42, 43, 45, 64, 67, 68행)에서 무너지는지 봅니다.
+4. `src/28-modinto-tagfn.luau`: 진단 4건(NEG만)이 정상입니다.
+5. `src/29-modinto-iso-into.luau`: 15·20~23행만 too complex인지 봅니다(체인 위치 효과).
+
+### 새 파일
+
+- `이 폴더 src/Lib3.luau`
+- `이 폴더 src/25-modinto-t2.luau`, `26-modinto-t4.luau`, `27-modinto-full-thinhand.luau`, `28-modinto-tagfn.luau`, `29-modinto-iso-into.luau` (같은 폴더)
+- `이 폴더 harness/compare/modinto/` 아래:
+  - `gen-use.py`, `use-*.luau` 27개
+  - `iso-body.luau`, `iso-into.luau`, `iso-thin-parts.luau`, `iso-tagfn.luau`
+  - `split-body.luau`, `split-call.luau`
+  - `gen-cost3.py`, `cost/*.luau` 18개
+  - `out/`: `summary-neg-ok.txt`, `cost-sync.txt`, `cost-vsc.txt`, `lsp-sync.txt`, `lsp-vsc.txt`, 파일·모드별 원 출력
+- 스크래치(레포 밖): `/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/runall.py`(순차 실행기), 같은 폴더의 `r3/`(원 출력 원본)
+
+### 메인 추가 실측 — 놓기만 하는 prop은 마커로 [2026-10-19, 메인]
+
+계기: 킷의 Into 자리(material `Card.luau` 214·237행, `List.luau` 267·299행)는 하강한 Modifier에 세터를 더 부르지 않고 요소에 **놓기만** 한다. 런타임은 놓는 자리에서 태그를 보지 않는다(`quad-base/src/Dispatch/Modifier/init.luau` 84행 "a tag only ever gates `As<Name>()`"). 그래서 As 없이 놓는 꼴 둘을 쟀다(정책 full, `harness/compare/modinto/`).
+- **`main-place.luau`** — prop을 전체형 `Modifier<GuiObject>?`로 두고 As 없이 놓기, 그리고 원래 설계의 헬퍼 꼴 `Bold(m: Into<TextLabel>)`(`base/modifier-plan.md` 11절). sync: too complex 7(23·24행 호출 자리, 31·35행 GuiObject Modifier를 잎 Into에), NEG 5/7·OK 5/9; vsc: too complex 0, NEG 5/7(25·26행 MISS — Frame·ScreenGui Modifier가 `Modifier<GuiObject>?`에 들어감, 2차 b2와 같은 솔버 동작), OK 9/9. 즉 **사본 비교 문제는 Into 고유가 아니다** — 추상 클래스 Modifier를 다른 표기의 주석 자리로 넘기면 어디서든 sync에서 무너진다(잎 클래스 사이는 2차대로 깨끗).
+- **`main-marker.luau`** — prop을 마커 `{ read __quadModifier: "GuiObject" | "GuiBase2d" | "GuiBase" | "Instance" }?`(C와 조상 태그만, 메소드 없음)로 두고 `props.Modifier or None`을 TextButton·Frame에 그대로 놓기. **sync·vsc·pin 모두 too complex 0, NEG 5/5, OK 5/5** — 조상 Instance Modifier 통과, Frame·ScreenGui Modifier 거부(전체형이 놓치던 둘), 없는 세터·숫자 거부, 비GUI 요소(UIListLayout)에 놓기 거부.

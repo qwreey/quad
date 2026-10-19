@@ -1,0 +1,11 @@
+iso-into.luau(21,51): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+iso-into.luau(15,49): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+iso-into.luau(20,60): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+iso-into.luau(22,50): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+iso-into.luau(23,51): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+iso-into.luau(12,55): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+iso-into.luau(13,56): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+iso-into.luau(14,70): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+iso-into.luau(16,55): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+iso-into.luau(17,71): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+iso-into.luau(21,92): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence

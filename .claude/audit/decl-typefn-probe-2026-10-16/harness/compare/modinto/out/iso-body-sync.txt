@@ -1,0 +1,3 @@
+../../../../../../../../..(1,1): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+iso-body.luau(20,64): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
+iso-body.luau(22,81): SameLineStatement: A new statement is on the same line; add semi-colon on previous statement to silence
