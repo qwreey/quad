@@ -24,7 +24,8 @@
 	a two-way split), and a floating window is a group whose node is a tab set with one tab. This devui writes and reads
 	only one-tab nodes; a layout with a wider tab set or a split is rejected until docking reads them. A window's own
 	facts (its Kind, whether it is open) live in `Windows`, the group's (rectangle, collapsed) in `Floating`.
-	Z-order and focus are not saved; neither is the content.
+	`Floating` is in stacking order, bottom first (the keyed windows' z-order; Window/Manager header STACKING). The
+	focus is not saved; neither is the content.
 ]]
 
 local Util = require("../Util")

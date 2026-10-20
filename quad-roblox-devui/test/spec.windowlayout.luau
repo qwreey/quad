@@ -230,7 +230,7 @@ H.section("factories: by Kind, called with the key, only for keys open when save
 	H.assertNoDebugOutput("factories")
 end)
 
-H.section("the Layout output: emitted when the layout changes, not on focus or on a no-op import", function()
+H.section("the Layout output: emitted when the layout changes (a raise reorders it), not on a no-op import", function()
 	local m = Devui.WindowManager.new()
 	local seen: { WindowLayout } = {}
 	local obs = m.Layout:Observer(function(self)
@@ -248,25 +248,131 @@ H.section("the Layout output: emitted when the layout changes, not on focus or o
 	assert(#seen == base + 3 and seen[#seen].Floating[1].Position[2] == 5, "a move")
 	pos:Set(UDim2.fromOffset(5, 5)) -- same value (Set re-emits the Source): no new layout
 	assert(#seen == base + 3)
-	oa:Set(true) -- raises and focuses A (z-order and focus are not part of the layout)
-	assert(m.Focused:Get() ~= 0 and #seen == base + 3, "focus changes nothing")
+	oa:Set(true) -- raises and focuses A: the stacking is part of the layout (the focus is not)
+	assert(m.Focused:Get() ~= 0 and #seen == base + 4, "a raise reorders the layout")
+	assert(seen[#seen].Floating[2].Node.Tabs[1] == "a", "A on top now")
+	oa:Set(true) -- already on top and focused
+	assert(#seen == base + 4, "raising the top window again changes nothing")
 	local loose = Devui.Window({ Title = "loose", Manager = m })
-	assert(#seen == base + 3, "a key-less window changes nothing")
+	assert(#seen == base + 4, "a key-less window changes nothing")
 	-- an import that moves two windows emits once
 	local l = m:ExportLayout()
 	l.Floating[1].Position[2] = 100
 	l.Floating[2].Position[2] = 200
 	m:ImportLayout(l)
-	assert(#seen == base + 4, `one emission per import ({#seen - base})`)
+	assert(#seen == base + 5, `one emission per import ({#seen - base})`)
 	m:ImportLayout(l)
-	assert(#seen == base + 4, "a no-op import emits nothing")
+	assert(#seen == base + 5, "a no-op import emits nothing")
 	q.dispose(a)
-	assert(#seen == base + 4, "a destroyed keyed window leaves the layout as it was")
+	assert(#seen == base + 5, "a destroyed keyed window leaves the layout as it was")
 	obs:Unsubscribe()
 	q.dispose(b)
 	q.dispose(loose)
 	assert(#H.output() == 1, "the key-less window was noticed (once)")
 	H.resetOutput()
+end)
+
+-- the surface ZIndex of each window, bottom first, as names
+local function stack(wins: { [string]: any }): string
+	local names: { string } = {}
+	for name in wins do
+		table.insert(names, name)
+	end
+	table.sort(names, function(x, y)
+		return wins[x].ZIndex < wins[y].ZIndex
+	end)
+	return table.concat(names, ",")
+end
+
+local function tabsOf(layout: WindowLayout): string
+	local out: { string } = {}
+	for _, g in layout.Floating do
+		table.insert(out, g.Node.Tabs[1])
+	end
+	return table.concat(out, ",")
+end
+
+H.section("stacking: exported bottom first, a raise moves the key up, windows built after an import stack as saved", function()
+	local m = Devui.WindowManager.new()
+	local a = Devui.Window({ Title = "A", Key = "a", Manager = m })
+	local b = Devui.Window({ Title = "B", Key = "b", Manager = m })
+	local c = Devui.Window({ Title = "C", Key = "c", Manager = m })
+	assert(tabsOf(m:ExportLayout()) == "a,b,c", "registration order = stacking order")
+	-- rebuilt with a Focused Source (setting it true raises the window, as a press does)
+	local focusedA = q.Source(false)
+	q.dispose(a)
+	a = Devui.Window({ Title = "A", Key = "a", Manager = m, Focused = focusedA })
+	assert(tabsOf(m:ExportLayout()) == "a,b,c", "a destroyed and rebuilt window takes its saved place back")
+	assert(stack({ a = a, b = b, c = c }) == "a,b,c", stack({ a = a, b = b, c = c }))
+	focusedA:Set(true)
+	assert(tabsOf(m:ExportLayout()) == "b,c,a", tabsOf(m:ExportLayout()))
+	local saved = m:ExportLayout()
+	for _, w in { a, b, c } do
+		q.dispose(w)
+	end
+	-- a fresh manager: import first, then build the windows in another order
+	local m2 = Devui.WindowManager.new()
+	m2:ImportLayout(json(saved))
+	local loose = Devui.Window({ Title = "loose", Manager = m2 })
+	local a2 = Devui.Window({ Title = "A", Key = "a", Manager = m2 })
+	local c2 = Devui.Window({ Title = "C", Key = "c", Manager = m2 })
+	local b2 = Devui.Window({ Title = "B", Key = "b", Manager = m2 })
+	assert(stack({ a = a2, b = b2, c = c2 }) == "b,c,a", stack({ a = a2, b = b2, c = c2 }))
+	assert((loose :: any).ZIndex < (b2 :: any).ZIndex, "the key-less window kept its slot (the bottom)")
+	assert(m2.Focused:Get() == 0, "the stacking moves no focus")
+	-- an import on screen restacks the windows it names; an unnamed key rides with the named key below it
+	local d2 = Devui.Window({ Title = "D", Key = "d", Manager = m2 }) -- on top: b,c,a,d
+	m2:ImportLayout({
+		Version = 1,
+		Windows = { a = saved.Windows.a, b = saved.Windows.b },
+		Floating = { saved.Floating[3], saved.Floating[1] }, -- a below b
+	})
+	assert(tabsOf(m2:ExportLayout()) == "a,d,b,c", tabsOf(m2:ExportLayout())) -- c rode with b, d with a
+	assert(stack({ a = a2, b = b2, c = c2, d = d2 }) == "a,d,b,c", stack({ a = a2, b = b2, c = c2, d = d2 }))
+	for _, w in { a2, b2, c2, d2, loose } do
+		q.dispose(w)
+	end
+	H.resetOutput()
+end)
+
+H.section("ForgetWindow: a pending key goes at once, a live one when its window goes away", function()
+	local m = Devui.WindowManager.new()
+	local seen = 0
+	local obs = m.Layout:Observer(function()
+		seen += 1
+	end)
+	obs:Subscribe()
+	m:ImportWindow("ghost", { Kind = "ghost", Open = true, Collapsed = false, Position = { 0, 1, 0, 1 }, Size = { 50, 50 } })
+	local before = seen
+	m:ForgetWindow("ghost")
+	assert(m:ExportWindow("ghost") == nil and m:ExportLayout().Windows.ghost == nil and seen == before + 1, "pending: gone")
+	m:ForgetWindow("ghost") -- unknown now: a no-op
+	m:ForgetWindow("never")
+	assert(seen == before + 1)
+	-- live: forget, then destroy (a File > Exit item) — the same as destroy, then forget
+	local open = q.Source(true)
+	local w = Devui.Window({ Title = "W", Key = "w", Manager = m, Open = open, Position = q.Source(UDim2.fromOffset(40, 40)) })
+	m:ForgetWindow("w")
+	assert(m:ExportLayout().Windows.w ~= nil, "a live window stays in the layout while it is on screen")
+	q.dispose(w)
+	assert(m:ExportLayout().Windows.w == nil, "dropped when it went away")
+	local pos = q.Source(UDim2.fromOffset(0, 0))
+	local w2 = Devui.Window({ Title = "W", Key = "w", Manager = m, Position = pos })
+	assert(pos:Get() == UDim2.fromOffset(0, 0), "a window built again with that key starts fresh")
+	q.dispose(w2)
+	m:ForgetWindow("w")
+	assert(m:ExportLayout().Windows.w == nil, "destroy, then forget")
+	-- importing the key again before the window goes away cancels the forget
+	local w3 = Devui.Window({ Title = "W", Key = "w", Manager = m })
+	m:ForgetWindow("w")
+	m:ImportWindow("w", m:ExportWindow("w") :: WindowState)
+	q.dispose(w3)
+	assert(m:ExportLayout().Windows.w ~= nil, "imported again: kept pending")
+	obs:Unsubscribe()
+	assert(string.find(err(function()
+		m:ForgetWindow(5 :: any)
+	end), "Devui.WindowManager:ForgetWindow: key must be a string", 1, true) ~= nil)
+	H.assertNoDebugOutput("forget")
 end)
 
 H.section("ExportWindow / ImportWindow: one window's state, live or pending", function()

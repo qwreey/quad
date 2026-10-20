@@ -42,12 +42,13 @@
 	manager's live windows — a second one raises) is part of the layout; its `Kind` (its TYPE, default = the Key) is
 	saved with it so a loader can make it again. A window without a Key behaves the same and is only left out of the
 	layout (with `q.debug`, one notice per manager once the app uses the layout API). What is saved per window: Open,
-	Collapsed, Position and Size (the floating outer rectangle). Not saved: the title, the content, the focus, the
-	z-order.
-		manager:ExportLayout() -> WindowLayout          every known key (live or pending), in first-seen order
+	Collapsed, Position and Size (the floating outer rectangle), and the stacking order of the keyed windows (the
+	export order). Not saved: the title, the content, the focus.
+		manager:ExportLayout() -> WindowLayout          every known key (live or pending), bottom first
 		manager:ImportLayout(layout, factories?)          put the windows where the layout says (rules below)
 		manager:ExportWindow(key) -> WindowState?         one window's state (nil = an unknown key)
-		manager:ImportWindow(key, state)                  one window: the same rules, no factory
+		manager:ImportWindow(key, state)                  one window: the same rules, no factory, no stacking
+		manager:ForgetWindow(key)                         drop a key from the layout (rules below)
 		manager.Layout : State<WindowLayout>              re-emitted when the layout changes (frozen tables; an Observer
 		                                                  on it is the app's auto-save — debounce it, a drag writes on
 		                                                  every move)
@@ -59,7 +60,16 @@
 	window of this identity exist" (the app builds it and puts it where it wants; devui never parents a root): it is
 	called once per key that was OPEN when saved and is not registered yet; a Kind missing from the map stays pending.
 	A keyed window that is destroyed leaves its last state pending (an app rebuilding its UI gets its windows back,
-	and the Layout output does not change).
+	and the Layout output does not change). `ForgetWindow(key)` [2026-10-20 user decision — an app that really closes a
+	window (a File > Exit item) must be able to say so] drops a pending key at once, and a live one the moment its
+	window goes away (so "forget, then destroy" and "destroy, then forget" are the same); importing that key again
+	before then cancels it. An unknown key is a no-op.
+	STACKING [2026-10-20 user decision — a small window restored under a big one would have to be dug out]: the keys are
+	kept bottom first (`known`); raising a keyed window moves its key to the top, and a keyed window that registers
+	takes its place among the other keyed windows by that order (an app that imports first and then builds its windows
+	in any order gets them stacked as saved). Windows without a Key keep their own slots. An import restacks the
+	windows it names into the layout's order; a known key it does not name rides with the named key it was above (or
+	stays at the bottom). The focus is not saved: an import moves nothing to the front by itself.
 
 	PRESS TO FRONT. A press stops at the first GuiButton / TextBox under the pointer (engine rule): the window frame
 	behind a button, a checkbox or a text box never sees an InputBegan. So the manager listens to ONE global press
@@ -126,6 +136,7 @@ export type Manager = {
 	ImportLayout: (self: Manager, layout: WindowLayout, factories: { [string]: (key: string) -> () }?) -> (),
 	ExportWindow: (self: Manager, key: string) -> WindowState?,
 	ImportWindow: (self: Manager, key: string, state: WindowState) -> (),
+	ForgetWindow: (self: Manager, key: string) -> (),
 }
 
 type Entry = {
@@ -168,11 +179,13 @@ function Manager.new(): Manager
 	local hooked = 0
 	local offPress: (() -> ())? = nil
 
-	-- LAYOUT (header "LAYOUT"): every key this manager knows, in first-seen order (the export order); a known key is
-	-- either live (a registered window holds it) or pending (its state waits for that window)
+	-- LAYOUT (header "LAYOUT"): every key this manager knows, bottom first (header STACKING; the export order); a
+	-- known key is either live (a registered window holds it) or pending (its state waits for that window)
 	local known: { string } = {}
 	local live: { [string]: Entry } = {}
 	local pending: { [string]: WindowState } = {}
+	-- live keys asked to be forgotten: dropped instead of left pending when their window goes away
+	local forgetting: { [string]: true } = {}
 	local layoutOut: Source<WindowLayout> = q.Source(Layout.freeze(Layout.empty()))
 	local batching = 0
 	local layoutDirty = false
@@ -257,6 +270,66 @@ function Manager.new(): Manager
 		Pointer.invalidate()
 	end
 
+	local function liveKey(entry: Entry): string?
+		local key = entry.Key
+		return if key ~= nil and live[key] == entry then key else nil
+	end
+
+	-- put the keyed live windows in `known`'s order, each in one of the slots the keyed windows hold now (header
+	-- STACKING: the windows without a Key keep theirs)
+	local function restack()
+		local at: { [string]: number } = {}
+		for i, key in known do
+			at[key] = i
+		end
+		local slots: { number } = {}
+		local keyed: { Entry } = {}
+		for i, entry in order do
+			if liveKey(entry) ~= nil then
+				table.insert(slots, i)
+				table.insert(keyed, entry)
+			end
+		end
+		table.sort(keyed, function(x: Entry, y: Entry): boolean
+			return at[x.Key :: string] < at[y.Key :: string]
+		end)
+		for j, i in slots do
+			order[i] = keyed[j]
+		end
+		renumber()
+	end
+
+	-- `layoutKeys` (an import, bottom first) become the order of the keys they name; every other known key rides with
+	-- the named key just below it (or stays at the bottom when none is)
+	local function stackAs(layoutKeys: { string })
+		local named: { [string]: true } = {}
+		for _, key in layoutKeys do
+			named[key] = true
+		end
+		local bottom: { string } = {}
+		local above: { [string]: { string } } = {}
+		local under: string? = nil
+		for _, key in known do
+			if named[key] then
+				under = key
+			elseif under == nil then
+				table.insert(bottom, key)
+			else
+				local riders = above[under] or {}
+				above[under] = riders
+				table.insert(riders, key)
+			end
+		end
+		local out = bottom
+		for _, key in layoutKeys do
+			table.insert(out, key)
+			for _, rider in above[key] or {} do
+				table.insert(out, rider)
+			end
+		end
+		known = out
+	end
+
 	local function focus(entry: Entry)
 		if focusedId:Get() == entry.Id and order[#order] == entry then
 			return -- already focused AND on top (a newer registration may cover a focused window)
@@ -268,6 +341,13 @@ function Manager.new(): Manager
 		table.remove(order, at)
 		table.insert(order, entry)
 		renumber()
+		-- a keyed window raised: its key goes to the top of the saved order (header STACKING)
+		local key = liveKey(entry)
+		if key ~= nil and known[#known] ~= key then
+			table.remove(known, table.find(known, key) :: number)
+			table.insert(known, key)
+			refresh()
+		end
 		focusedId:SetIfChanged(entry.Id) -- (a focused window that was only covered: the rank changed, the focus did not)
 	end
 
@@ -413,15 +493,16 @@ function Manager.new(): Manager
 			layoutUsed = true
 			noticeKeyless()
 			batch(function()
-				-- the export order follows the layout; keys it does not name keep their order after it
-				local reordered: { string } = table.clone(keys)
-				for _, key in known do
-					if states[key] == nil then
-						table.insert(reordered, key)
+				-- any key without a window waits for it (known and pending together: an app Source that throws in the
+				-- loop below leaves no known key without a state)
+				for _, key in keys do
+					remember(key)
+					forgetting[key] = nil -- imported again: no longer forgotten (header LAYOUT)
+					if live[key] == nil then
+						pending[key] = states[key]
 					end
 				end
-				known = reordered
-				-- a window already on screen moves to its saved place; any other key waits for its window
+				-- a window already on screen moves to its saved place (one an app Source destroyed meanwhile waits)
 				for _, key in keys do
 					local entry = live[key]
 					if entry ~= nil then
@@ -430,6 +511,11 @@ function Manager.new(): Manager
 						pending[key] = states[key]
 					end
 				end
+				-- the stacking after the moves (opening a closed window above raised it) and before the factories (a
+				-- window a factory makes takes its place by `known` as it registers, so a factory that throws leaves
+				-- the order applied)
+				stackAs(keys)
+				restack()
 				layoutDirty = true
 				-- "make the window of this identity exist": only for keys open when saved, never for a registered one;
 				-- a Kind missing from the map stays pending (its window may come later)
@@ -465,6 +551,7 @@ function Manager.new(): Manager
 			layoutUsed = true
 			noticeKeyless()
 			batch(function()
+				forgetting[key] = nil
 				local entry = live[key]
 				if entry ~= nil then
 					apply(entry, copy)
@@ -474,6 +561,20 @@ function Manager.new(): Manager
 				end
 				layoutDirty = true
 			end)
+		end,
+		ForgetWindow = function(_self: Manager, key: string)
+			if type(key) ~= "string" then
+				Util.fail("WindowManager:ForgetWindow", `key must be a string, got {typeof(key)}`)
+			end
+			layoutUsed = true
+			noticeKeyless()
+			if live[key] ~= nil then
+				forgetting[key] = true -- dropped when its window goes away (Release)
+			elseif pending[key] ~= nil then
+				pending[key] = nil
+				table.remove(known, table.find(known, key) :: number)
+				refresh()
+			end
 		end,
 		Register = function(_self: Manager): Slot
 			nextId += 1
@@ -560,11 +661,18 @@ function Manager.new(): Manager
 						hook(-1)
 					end
 					-- a keyed window that goes away leaves its last state pending (an app tearing its UI down and building
-					-- it again gets its windows back where they were; the Layout output does not change)
+					-- it again gets its windows back where they were; the Layout output does not change) — unless the app
+					-- asked to forget it
 					local key = entry.Key
 					if key ~= nil and live[key] == entry then
-						pending[key] = snapshot(entry)
 						live[key] = nil
+						if forgetting[key] then
+							forgetting[key] = nil
+							table.remove(known, table.find(known, key) :: number)
+							refresh()
+						else
+							pending[key] = snapshot(entry)
+						end
 					end
 					keyless[entry] = nil
 					local deco = entry.Deco
@@ -601,6 +709,8 @@ function Manager.new(): Manager
 							pending[key] = nil
 							apply(entry, waiting)
 						end
+						-- its place among the keyed windows (header STACKING)
+						restack()
 					else
 						entry.Hints = hints
 						keyless[entry] = if type(hints.Title) == "string" then hints.Title else hints.Title:Get()

@@ -93,7 +93,7 @@ function TitleBar.new(spec: TitleBarSpec): Frame
 	local sidePad: State<UDim> = Util.pxX(style.Metrics.FramePadding)
 
 	-- background: focused > idle (colour and transparency). The bar is never seen collapsed — a collapsed window is
-	-- an icon (Window/Decoration.luau), so the TitleBgCollapsed tokens and the right-pointing arrow are not used here.
+	-- an icon (Window/Decoration.luau), so there is no collapsed colour and no right-pointing arrow here.
 	local bg: State<Color3> = spec.Focused:Compute(function(self, _prev, n, a)
 		return if self:Get() then a:Get() else n:Get()
 	end, style.Color.TitleBg, style.Color.TitleBgActive)
