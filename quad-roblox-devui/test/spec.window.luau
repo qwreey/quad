@@ -486,6 +486,20 @@ H.section("z-order is a rank: 2000 focus switches never reach the overlay layer;
 end)
 
 
+H.section("ContentSize: the content area's visible size minus the window padding, written on change", function()
+	local out = q.Source(Vector2.new(-1, -1))
+	local win = Devui.Window({ Title = "c", ContentSize = out })
+	local content = get(win, "Content")
+	content.AbsoluteWindowSize = Vector2.new(300, 281)
+	assert(out:Get() == Vector2.new(284, 265), `{out:Get()}`)
+	content.AbsoluteWindowSize = Vector2.new(288, 431) -- taller, and a scrollbar took 12 px
+	assert(out:Get() == Vector2.new(272, 415))
+	content.AbsoluteWindowSize = Vector2.new(10, 10)
+	assert(out:Get() == Vector2.new(0, 0), "never negative")
+	q.dispose(win)
+	H.assertNoDebugOutput("ContentSize")
+end)
+
 H.section("click sink: the window's empty area is covered by one invisible GuiButton under every other child", function()
 	local win = Devui.Window({ Title = "sink" })
 	local sink: any = win:FindFirstChild("ClickSink")

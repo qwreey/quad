@@ -11,6 +11,7 @@
 			                                    -- to the front with the focus (also when it is already open — `:SetIfChanged(true)`
 			                                    -- only syncs the state without raising)
 			Focused: Source<boolean>?,          -- output: the window writes whether it is the focused one (like Position on a drag)
+			ContentSize: Source<Vector2>?,      -- output: the room the children get (visible content area minus padding)
 			Collapsed: Source<boolean>?,        -- the arrow toggles it; collapsed = title bar only
 			NoTitleBar / NoResize / NoMove / NoClose / NoCollapse: boolean?,   -- static flags
 			MinSize: Vector2?,                  -- resize floor (default 2 x frame height square)
@@ -18,6 +19,13 @@
 			Style: Style?,
 			Modifier: FrameModifier?,           -- extra root-frame styling (inline props still win)
 		}
+
+	FILLING THE HEIGHT [2026-10-20, Studio-confirmed]: give one child `D.UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill })`
+	and it takes the height the other children leave (the content list is a UIListLayout): a 300 x 300 window gave a
+	20 px-tall fill 258 px, and it follows a resize; when the window is smaller than the children it shrinks below its
+	own Size instead of scrolling. `ContentSize` (an output Source, like `Focused`) is the room the children get — the
+	content area's visible size (AbsoluteWindowSize: a shown scrollbar is left out) minus the window padding — for
+	layouts that need a number; a container that sets the window's size (a future dock) moves both the same way.
 
 	Returns the root Frame (place it in a ScreenGui / a Frame container: windows that share a container are layered
 	by the manager). Structure (about eight GuiObjects): root > ClickSink, TitleBar (CollapseButton, Title, CloseButton), Content
@@ -69,6 +77,7 @@ export type WindowProps = {
 	read Size: Source<Vector2>?,
 	read Open: Source<boolean>?,
 	read Focused: Source<boolean>?,
+	read ContentSize: Source<Vector2>?,
 	read Collapsed: Source<boolean>?,
 	read NoTitleBar: boolean?,
 	read NoResize: boolean?,
@@ -246,10 +255,25 @@ local function Window(props: WindowProps): Frame
 		end)
 		else q.None
 
+	-- `ContentSize` (output): the content area's visible size minus the window padding (see the header)
+	local contentOut = props.ContentSize
+	local visibleArea: Source<Vector2> = q.Source(Vector2.zero)
+	local contentMirror = if contentOut
+		then visibleArea
+			:Compute(function(self, _prev, pad)
+				local v, p = self:Get(), pad:Get()
+				return Vector2.new(math.max(0, v.X - 2 * p.X), math.max(0, v.Y - 2 * p.Y))
+			end, style.Metrics.WindowPadding)
+			:Observer(function(self)
+				contentOut:SetIfChanged(self:Get())
+			end)
+		else q.None
+
 	local built = D.Frame({
 		windowName,
 		raiseOnOpen,
 		focusedMirror,
+		contentMirror,
 		props.Modifier or q.None,
 		slot.Hook,
 		Position = position,
@@ -306,6 +330,7 @@ local function Window(props: WindowProps): Frame
 			ScrollBarThickness = style.Metrics.ScrollbarSize,
 			ScrollBarImageColor3 = style.Color.ScrollbarGrab,
 			ScrollBarImageTransparency = style.Transparency.ScrollbarGrab,
+			if contentOut then q.Out("AbsoluteWindowSize", visibleArea) else q.None,
 			D.UIPadding({
 				PaddingLeft = Util.pxX(style.Metrics.WindowPadding),
 				PaddingRight = Util.pxX(style.Metrics.WindowPadding),
