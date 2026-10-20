@@ -10893,5 +10893,1176 @@
   "WorldModel.className: tags ['Deprecated', 'ReadOnly']"
  ],
  "dumpVersion": "version-268c7d941ba34c1a",
+ "policy": {
+  "denyIn": {
+   "AccessoryDescription": [
+    "Puffiness"
+   ],
+   "Accoutrement": [
+    "AttachmentForward",
+    "AttachmentPos",
+    "AttachmentRight",
+    "AttachmentUp"
+   ],
+   "AdGui": [
+    "adGuiStateChanged"
+   ],
+   "AdPortal": [
+    "PortalInvalidReason",
+    "PortalVersion"
+   ],
+   "AirController": [
+    "LinearImpulse"
+   ],
+   "AnimationClip": [
+    "Guid"
+   ],
+   "AnimationConstraint": [
+    "C0",
+    "C1",
+    "EnableSkinning",
+    "Part0",
+    "Part1"
+   ],
+   "AnimationController": [
+    "AnimationPlayed"
+   ],
+   "AnimationNodeDefinition": [
+    "NodeId"
+   ],
+   "Animator": [
+    "AnimationPlayedCoreScript",
+    "AnimationStreamTrackPlayed"
+   ],
+   "Annotation": [
+    "AuthorColor3",
+    "AuthorId",
+    "ChannelId",
+    "Contents",
+    "CreationTimeUnix",
+    "LastModifiedTimeUnix",
+    "LoadingReplies",
+    "ReplyCount",
+    "RequestCompleted",
+    "RequestInitiated",
+    "Resolved",
+    "TaggedUsers"
+   ],
+   "Attachment": [
+    "Rotation",
+    "WorldRotation"
+   ],
+   "AudioCompressor": [
+    "Editor"
+   ],
+   "AudioDeviceInput": [
+    "EchoCancellation",
+    "GainControl",
+    "IsReady",
+    "MutedByLocalUser",
+    "NoiseSuppression"
+   ],
+   "AudioEmitter": [
+    "AngleAttenuation",
+    "DistanceAttenuation",
+    "SimulationFidelity"
+   ],
+   "AudioEqualizer": [
+    "Editor"
+   ],
+   "AudioFilter": [
+    "Editor"
+   ],
+   "AudioLimiter": [
+    "Editor"
+   ],
+   "AudioListener": [
+    "AngleAttenuation",
+    "DistanceAttenuation",
+    "SimulationFidelity"
+   ],
+   "AudioPlayer": [
+    "AssetId",
+    "AssetRepresentation",
+    "AudioContent"
+   ],
+   "AudioSearchParams": [
+    "AudioSubtype"
+   ],
+   "AudioSpeechToText": [
+    "DictationEnabled",
+    "DisableVoiceDetection",
+    "EnableVolumeCheck",
+    "VoiceDetectedOverride"
+   ],
+   "AvatarAbilityRules": [
+    "CharacterControllerMode",
+    "EnableClimbing",
+    "EnableCrouching",
+    "EnableFallingDown",
+    "EnableGettingUp",
+    "EnableHolding",
+    "EnableJumping",
+    "EnableReaching",
+    "EnableRunning",
+    "EnableSitting",
+    "EnableSprinting",
+    "EnableSwimming",
+    "EnableTurning"
+   ],
+   "AvatarAccessoryRules": [
+    "AccessoryMode",
+    "CustomAccessoryMode",
+    "CustomBackAccessoryEnabled",
+    "CustomBackAccessoryId",
+    "CustomFaceAccessoryEnabled",
+    "CustomFaceAccessoryId",
+    "CustomFrontAccessoryEnabled",
+    "CustomFrontAccessoryId",
+    "CustomHairAccessoryEnabled",
+    "CustomHairAccessoryId",
+    "CustomHeadAccessoryEnabled",
+    "CustomHeadAccessoryId",
+    "CustomNeckAccessoryEnabled",
+    "CustomNeckAccessoryId",
+    "CustomShoulderAccessoryEnabled",
+    "CustomShoulderAccessoryId",
+    "CustomWaistAccessoryEnabled",
+    "CustomWaistAccessoryId",
+    "EnableEmissives",
+    "EnableSound",
+    "EnableVFX",
+    "LimitBounds",
+    "LimitMethod"
+   ],
+   "AvatarAnimationRules": [
+    "AnimationClipsMode",
+    "AnimationPacksMode",
+    "CustomClimbAnimationEnabled",
+    "CustomClimbAnimationId",
+    "CustomFallAnimationEnabled",
+    "CustomFallAnimationId",
+    "CustomIdleAlt1AnimationEnabled",
+    "CustomIdleAlt1AnimationId",
+    "CustomIdleAlt2AnimationEnabled",
+    "CustomIdleAlt2AnimationId",
+    "CustomIdleAnimationEnabled",
+    "CustomIdleAnimationId",
+    "CustomJumpAnimationEnabled",
+    "CustomJumpAnimationId",
+    "CustomRunAnimationEnabled",
+    "CustomRunAnimationId",
+    "CustomSwimAnimationEnabled",
+    "CustomSwimAnimationId",
+    "CustomSwimIdleAnimationEnabled",
+    "CustomSwimIdleAnimationId",
+    "CustomWalkAnimationEnabled",
+    "CustomWalkAnimationId"
+   ],
+   "AvatarBodyRules": [
+    "AppearanceMode",
+    "BuildMode",
+    "CustomBodyBundleId",
+    "CustomBodyType",
+    "CustomBodyTypeScale",
+    "CustomEyebrowEnabled",
+    "CustomEyebrowId",
+    "CustomEyelashEnabled",
+    "CustomEyelashId",
+    "CustomFaceEnabled",
+    "CustomFaceId",
+    "CustomHeadEnabled",
+    "CustomHeadId",
+    "CustomHeadScale",
+    "CustomHeight",
+    "CustomHeightScale",
+    "CustomLeftArmEnabled",
+    "CustomLeftArmId",
+    "CustomLeftLegEnabled",
+    "CustomLeftLegId",
+    "CustomMoodEnabled",
+    "CustomMoodId",
+    "CustomProportionsScale",
+    "CustomRightArmEnabled",
+    "CustomRightArmId",
+    "CustomRightLegEnabled",
+    "CustomRightLegId",
+    "CustomTorsoEnabled",
+    "CustomTorsoId",
+    "CustomWidthScale",
+    "KeepPlayerHead",
+    "ScaleMode"
+   ],
+   "AvatarClothingRules": [
+    "ClothingMode",
+    "CustomClassicPantsAccessoryEnabled",
+    "CustomClassicPantsAccessoryId",
+    "CustomClassicShirtsAccessoryEnabled",
+    "CustomClassicShirtsAccessoryId",
+    "CustomClassicTShirtsAccessoryEnabled",
+    "CustomClassicTShirtsAccessoryId",
+    "CustomClothingMode",
+    "CustomDressSkirtAccessoryEnabled",
+    "CustomDressSkirtAccessoryId",
+    "CustomJacketAccessoryEnabled",
+    "CustomJacketAccessoryId",
+    "CustomLeftShoesAccessoryEnabled",
+    "CustomLeftShoesAccessoryId",
+    "CustomPantsAccessoryEnabled",
+    "CustomPantsAccessoryId",
+    "CustomRightShoesAccessoryEnabled",
+    "CustomRightShoesAccessoryId",
+    "CustomShirtAccessoryEnabled",
+    "CustomShirtAccessoryId",
+    "CustomShortsAccessoryEnabled",
+    "CustomShortsAccessoryId",
+    "CustomSweaterAccessoryEnabled",
+    "CustomSweaterAccessoryId",
+    "CustomTShirtAccessoryEnabled",
+    "CustomTShirtAccessoryId",
+    "LimitBounds"
+   ],
+   "AvatarCollisionRules": [
+    "CollisionMode",
+    "HitAndTouchDetectionMode",
+    "LegacyCollisionMode",
+    "SingleColliderSize"
+   ],
+   "AvatarRules": [
+    "AvatarType"
+   ],
+   "BallSocketConstraint": [
+    "EnableSkinning"
+   ],
+   "BasePart": [
+    "BackParamA",
+    "BackParamB",
+    "BackSurfaceInput",
+    "BottomParamA",
+    "BottomParamB",
+    "BottomSurfaceInput",
+    "CollisionGroupId",
+    "Elasticity",
+    "Friction",
+    "FrontParamA",
+    "FrontParamB",
+    "FrontSurfaceInput",
+    "LeftParamA",
+    "LeftParamB",
+    "LeftSurfaceInput",
+    "LocalSimulationTouched",
+    "LocalTransparencyModifier",
+    "OutfitChanged",
+    "ReceiveAge",
+    "RightParamA",
+    "RightParamB",
+    "RightSurfaceInput",
+    "RotVelocity",
+    "SpecificGravity",
+    "StoppedTouching",
+    "TopParamA",
+    "TopParamB",
+    "TopSurfaceInput",
+    "Velocity",
+    "brickColor"
+   ],
+   "BaseScript": [
+    "LinkedSource"
+   ],
+   "BaseWrap": [
+    "HSRAssetId",
+    "HSRContent",
+    "VerticesModified"
+   ],
+   "Beam": [
+    "LocalTransparencyModifier"
+   ],
+   "BillboardGui": [
+    "DistanceLowerLimit",
+    "DistanceUpperLimit"
+   ],
+   "BodyAngularVelocity": [
+    "angularvelocity",
+    "maxTorque"
+   ],
+   "BodyForce": [
+    "force"
+   ],
+   "BodyGyro": [
+    "cframe",
+    "maxTorque"
+   ],
+   "BodyPosition": [
+    "maxForce",
+    "position"
+   ],
+   "BodyThrust": [
+    "force",
+    "location"
+   ],
+   "BodyVelocity": [
+    "maxForce",
+    "velocity"
+   ],
+   "Bone": [
+    "TransformedCFrame"
+   ],
+   "BoolValue": [
+    "changed"
+   ],
+   "Breakpoint": [
+    "Condition",
+    "ContinueExecution",
+    "Enabled",
+    "Id",
+    "Line",
+    "LogMessage",
+    "MetaBreakpointId",
+    "RemoveOnHit",
+    "Script",
+    "Valid",
+    "Verified"
+   ],
+   "BrickColorValue": [
+    "changed"
+   ],
+   "CFrameValue": [
+    "changed"
+   ],
+   "Camera": [
+    "CoordinateFrame",
+    "FirstPersonTransition",
+    "focus"
+   ],
+   "CanvasGroup": [
+    "ResolutionScale"
+   ],
+   "ClickDetector": [
+    "mouseClick"
+   ],
+   "Color3Value": [
+    "changed"
+   ],
+   "CylindricalConstraint": [
+    "SoftlockAngularServoUponReachingTarget"
+   ],
+   "Decal": [
+    "LocalTransparencyModifier",
+    "MetalnessMap",
+    "NormalMap",
+    "RoughnessMap",
+    "Shiny",
+    "Specular",
+    "TexturePack",
+    "TexturePackContent"
+   ],
+   "DoubleConstrainedValue": [
+    "ConstrainedValue",
+    "changed"
+   ],
+   "Explosion": [
+    "LocalTransparencyModifier"
+   ],
+   "FaceControls": [
+    "ChinRaiser",
+    "ChinRaiserUpperLip",
+    "Corrugator",
+    "EyesLookDown",
+    "EyesLookLeft",
+    "EyesLookRight",
+    "EyesLookUp",
+    "FlatPucker",
+    "Funneler",
+    "InternalFacsOverrideChanged",
+    "JawDrop",
+    "JawLeft",
+    "JawRight",
+    "LeftBrowLowerer",
+    "LeftCheekPuff",
+    "LeftCheekRaiser",
+    "LeftDimpler",
+    "LeftEyeClosed",
+    "LeftEyeUpperLidRaiser",
+    "LeftInnerBrowRaiser",
+    "LeftLipCornerDown",
+    "LeftLipCornerPuller",
+    "LeftLipStretcher",
+    "LeftLowerLipDepressor",
+    "LeftNoseWrinkler",
+    "LeftOuterBrowRaiser",
+    "LeftUpperLipRaiser",
+    "LipPresser",
+    "LipsTogether",
+    "LowerLipSuck",
+    "MouthLeft",
+    "MouthRight",
+    "Pucker",
+    "RightBrowLowerer",
+    "RightCheekPuff",
+    "RightCheekRaiser",
+    "RightDimpler",
+    "RightEyeClosed",
+    "RightEyeUpperLidRaiser",
+    "RightInnerBrowRaiser",
+    "RightLipCornerDown",
+    "RightLipCornerPuller",
+    "RightLipStretcher",
+    "RightLowerLipDepressor",
+    "RightNoseWrinkler",
+    "RightOuterBrowRaiser",
+    "RightUpperLipRaiser",
+    "TongueDown",
+    "TongueOut",
+    "TongueUp",
+    "UpperLipSuck"
+   ],
+   "Fire": [
+    "LocalTransparencyModifier",
+    "size"
+   ],
+   "FormFactorPart": [
+    "FormFactor",
+    "formFactor"
+   ],
+   "GuiBase2d": [
+    "ClippedRect",
+    "IsNotOccluded",
+    "Localize",
+    "RawRect2D",
+    "TotalGroupScale"
+   ],
+   "GuiBase3d": [
+    "Color"
+   ],
+   "GuiObject": [
+    "BackgroundColor",
+    "BorderColor",
+    "DragBegin",
+    "DragStopped",
+    "Draggable",
+    "SelectionRect2D"
+   ],
+   "HandleAdornment": [
+    "GizmoReference"
+   ],
+   "Highlight": [
+    "LineThickness",
+    "ReservedId"
+   ],
+   "HingeConstraint": [
+    "SoftlockServoUponReachingTarget"
+   ],
+   "Humanoid": [
+    "AnimationPlayed",
+    "ClusterCompositionFinished",
+    "CollisionType",
+    "CustomStatusAdded",
+    "CustomStatusRemoved",
+    "EmoteTriggered",
+    "InternalDisplayName",
+    "LeftLeg",
+    "RightLeg",
+    "StatusAdded",
+    "StatusRemoved",
+    "Torso",
+    "maxHealth"
+   ],
+   "HumanoidDescription": [
+    "AccessoryBlob",
+    "NumberEmotesLoaded",
+    "ResetIncludesBodyParts"
+   ],
+   "HumanoidRigDescription": [
+    "OriginOffset"
+   ],
+   "ImageButton": [
+    "ContentImageSize",
+    "LocalizedImageContent"
+   ],
+   "ImageLabel": [
+    "ContentImageSize",
+    "LocalizedImageContent"
+   ],
+   "InputAction": [
+    "BoolState",
+    "Direction1DState",
+    "Direction2DState",
+    "Direction3DState",
+    "InputBindingsChanged",
+    "ViewportPositionState"
+   ],
+   "InputContext": [
+    "InputActionsChanged"
+   ],
+   "Instance": [
+    "DataCost",
+    "IsInSandbox",
+    "PredictionMode",
+    "RobloxLocked",
+    "SourceAssetId",
+    "UniqueId",
+    "archivable",
+    "childAdded"
+   ],
+   "IntConstrainedValue": [
+    "ConstrainedValue",
+    "changed"
+   ],
+   "IntValue": [
+    "changed"
+   ],
+   "JointInstance": [
+    "part1"
+   ],
+   "KeyframeSequence": [
+    "AuthoredHipHeight"
+   ],
+   "LayerCollector": [
+    "TabKeyboardNavigation"
+   ],
+   "LocalizationTable": [
+    "DevelopmentLanguage",
+    "Root"
+   ],
+   "MaterialVariant": [
+    "ColorMap",
+    "ColorMapContent",
+    "EmissiveMaskContent",
+    "MetalnessMap",
+    "MetalnessMapContent",
+    "NormalMap",
+    "NormalMapContent",
+    "RoughnessMap",
+    "RoughnessMapContent"
+   ],
+   "MeshPart": [
+    "HasJointOffset",
+    "HasSkinnedMesh",
+    "JointOffset"
+   ],
+   "Model": [
+    "LevelOfDetail",
+    "Scale"
+   ],
+   "ModuleScript": [
+    "LinkedSource"
+   ],
+   "Motor6D": [
+    "ChildName",
+    "EnableSkinning",
+    "ParentName",
+    "Transform"
+   ],
+   "Noise": [
+    "NoiseType",
+    "Seed"
+   ],
+   "NumberValue": [
+    "changed"
+   ],
+   "ObjectValue": [
+    "changed"
+   ],
+   "PVInstance": [
+    "Origin",
+    "Pivot Offset"
+   ],
+   "ParabolaAdornment": [
+    "A",
+    "B",
+    "C",
+    "Range",
+    "Thickness"
+   ],
+   "ParticleEmitter": [
+    "LocalTransparencyModifier",
+    "VelocitySpread"
+   ],
+   "Path2D": [
+    "SelectedControlPoint",
+    "SelectedControlPointData",
+    "Transparency"
+   ],
+   "Path3D": [
+    "ControlPointChanged"
+   ],
+   "Player": [
+    "AppearanceDidLoad",
+    "BlockListChanged",
+    "CharacterAppearance",
+    "ChatAvailabilityStatus",
+    "ChatMode",
+    "CloudEditSelectionChanged",
+    "DataComplexity",
+    "DataComplexityLimit",
+    "DataReady",
+    "FriendStatusChanged",
+    "GameplayPaused",
+    "Guest",
+    "InputLatency",
+    "InstancePinned",
+    "InstanceUnpinned",
+    "LocaleId",
+    "MaximumSimulationRadius",
+    "OsPlatform",
+    "PartyId",
+    "PlatformName",
+    "SimulationRadius",
+    "SimulationRadiusChanged",
+    "StepIdOffset",
+    "StreamingPinComplete",
+    "Teleported",
+    "TeleportedIn",
+    "ThirdPartyTextChatRestrictionStatus",
+    "UnfilteredChat",
+    "VRDevice",
+    "VREnabled",
+    "VoiceChatVolume",
+    "userId"
+   ],
+   "PluginAction": [
+    "Checked",
+    "DefaultShortcut",
+    "Enabled",
+    "Triggered",
+    "Visible"
+   ],
+   "PluginCapabilities": [
+    "Manifest"
+   ],
+   "Pose": [
+    "MaskWeight"
+   ],
+   "RTAnimationTracker": [
+    "Active",
+    "EnableFallbackAudioInput",
+    "SessionName",
+    "TrackerMode",
+    "TrackerType"
+   ],
+   "RayValue": [
+    "changed"
+   ],
+   "RealtimeMedia": [
+    "ForwardInput"
+   ],
+   "ReflectionMetadataClass": [
+    "ServiceVisibility"
+   ],
+   "RenderingTest": [
+    "Orientation",
+    "Position"
+   ],
+   "RigidConstraint": [
+    "EnableSkinning"
+   ],
+   "ScreenGui": [
+    "IgnoresTitleBarReservation",
+    "OnTopOfCoreBlur"
+   ],
+   "ScrollingFrame": [
+    "DraggingScrollBar",
+    "HorizontalBarRect",
+    "MaxCanvasPosition",
+    "ScrollRate",
+    "ScrollVelocity",
+    "SmoothScroll",
+    "VerticalBarRect"
+   ],
+   "SelectionBox": [
+    "StudioSelectionBox",
+    "SurfaceColor"
+   ],
+   "SelectionSphere": [
+    "SurfaceColor"
+   ],
+   "SkateboardPlatform": [
+    "equipped",
+    "unequipped"
+   ],
+   "SlidingBallConstraint": [
+    "SoftlockServoUponReachingTarget"
+   ],
+   "Smoke": [
+    "LocalTransparencyModifier"
+   ],
+   "Sound": [
+    "AssetRepresentation",
+    "AudioContent",
+    "ChannelCount",
+    "EmitterSize",
+    "IsPaused",
+    "IsPlaying",
+    "IsSpatial",
+    "MaxDistance",
+    "MinDistance",
+    "Pitch",
+    "RollOffGain",
+    "UsageContextPermission",
+    "isPlaying"
+   ],
+   "Sparkles": [
+    "Color",
+    "LocalTransparencyModifier"
+   ],
+   "StateMachineDefinition": [
+    "NodeId"
+   ],
+   "StringValue": [
+    "changed"
+   ],
+   "StudioCallout": [
+    "AnchorPoint",
+    "IsArrowVisible",
+    "IsNextVisible",
+    "RowName",
+    "Text",
+    "Title"
+   ],
+   "StyleQuery": [
+    "AspectRatioRange",
+    "MaxSize",
+    "MinSize",
+    "PreferredInput",
+    "PreferredTextSize",
+    "ReducedMotionEnabled",
+    "ViewportDisplaySize"
+   ],
+   "StyleRule": [
+    "StyleRulePropertyChanged"
+   ],
+   "SurfaceAppearance": [
+    "ColorMap",
+    "ColorMapContent",
+    "MetalnessMap",
+    "MetalnessMapContent",
+    "NormalMap",
+    "NormalMapContent",
+    "RoughnessMap",
+    "RoughnessMapContent",
+    "TexturePack",
+    "TexturePackContent"
+   ],
+   "SurfaceGui": [
+    "HorizontalCurvature",
+    "Shape"
+   ],
+   "Team": [
+    "AutoColorCharacters",
+    "ChildOrder",
+    "Score"
+   ],
+   "TerrainDetail": [
+    "ColorMap",
+    "ColorMapContent",
+    "EmissiveMaskContent",
+    "MetalnessMap",
+    "MetalnessMapContent",
+    "NormalMap",
+    "NormalMapContent",
+    "RoughnessMap",
+    "RoughnessMapContent"
+   ],
+   "TerrainRegion": [
+    "IsSmooth"
+   ],
+   "TextBox": [
+    "LocalizationMatchIdentifier",
+    "LocalizationMatchedSourceText",
+    "ManualFocusRelease",
+    "OverlayNativeInput",
+    "ReturnKeyType",
+    "ShouldEmitReturnEvents",
+    "ShouldEmitTabEvents",
+    "ShouldEmitUpAndDownArrowEvents",
+    "TextColor",
+    "TextInputType"
+   ],
+   "TextButton": [
+    "LocalizationMatchIdentifier",
+    "LocalizationMatchedSourceText",
+    "LocalizedText",
+    "TextColor"
+   ],
+   "TextChannelWindow": [
+    "IsRendering"
+   ],
+   "TextLabel": [
+    "LocalizationMatchIdentifier",
+    "LocalizationMatchedSourceText",
+    "LocalizedText",
+    "TextColor"
+   ],
+   "Tool": [
+    "GripForward",
+    "GripPos",
+    "GripRight",
+    "GripUp"
+   ],
+   "TorsionSpringConstraint": [
+    "LimitEnabled"
+   ],
+   "Trail": [
+    "LocalTransparencyModifier"
+   ],
+   "TriangleMeshPart": [
+    "UnscaledCofm",
+    "UnscaledVolInertiaDiags",
+    "UnscaledVolInertiaOffDiags",
+    "UnscaledVolume"
+   ],
+   "Vector3Value": [
+    "changed"
+   ],
+   "VideoFrame": [
+    "InternalVideoUsage",
+    "MaximumResolution"
+   ],
+   "VideoPlayer": [
+    "AutoLoadInStudio",
+    "AutoPlayInStudio",
+    "InternalVideoUsage",
+    "MaximumResolution"
+   ],
+   "ViewportFrame": [
+    "IsMirrored"
+   ],
+   "VisualizationMode": [
+    "Enabled",
+    "Title",
+    "ToolTip"
+   ],
+   "VisualizationModeCategory": [
+    "Enabled",
+    "Title"
+   ],
+   "Weld": [
+    "EnableSkinning"
+   ],
+   "WorkspaceAnnotation": [
+    "Adornee",
+    "AdorneeOffset"
+   ],
+   "WorldRoot": [
+    "PhysicsStepTime"
+   ],
+   "WrapLayer": [
+    "Color",
+    "DebugMode",
+    "MaxSize",
+    "Offset",
+    "Puffiness",
+    "ShrinkFactor"
+   ],
+   "WrapTarget": [
+    "Color",
+    "DebugMode",
+    "Stiffness"
+   ]
+  },
+  "denyWriteIn": {
+   "AdGui": [
+    "Status"
+   ],
+   "AdPortal": [
+    "Status"
+   ],
+   "AnimationClip": [
+    "Length"
+   ],
+   "Animator": [
+    "EvaluationThrottled",
+    "RootMotion",
+    "RootMotionWeight"
+   ],
+   "AtmosphereSensor": [
+    "AirDensity",
+    "RelativeWindVelocity"
+   ],
+   "AudioAnalyzer": [
+    "PeakLevel",
+    "RmsLevel"
+   ],
+   "AudioDeviceInput": [
+    "Active"
+   ],
+   "AudioPlayer": [
+    "IsPlaying",
+    "IsReady",
+    "TimeLength"
+   ],
+   "AudioRecorder": [
+    "IsRecording",
+    "TimeLength"
+   ],
+   "AudioSpeechToText": [
+    "VoiceDetected"
+   ],
+   "AudioTextToSpeech": [
+    "IsLoaded",
+    "IsPlaying",
+    "TimeLength"
+   ],
+   "BasePart": [
+    "AssemblyCenterOfMass",
+    "AssemblyMass",
+    "AssemblyRootPart",
+    "CenterOfMass",
+    "CurrentPhysicalProperties",
+    "ExtentsCFrame",
+    "ExtentsSize",
+    "Mass",
+    "ResizeIncrement",
+    "ResizeableFaces"
+   ],
+   "BaseScript": [
+    "RunContext"
+   ],
+   "BaseWrap": [
+    "CageMeshContent",
+    "CageMeshId",
+    "CageOrigin",
+    "CageOriginWorld",
+    "ImportOrigin",
+    "ImportOriginWorld"
+   ],
+   "BillboardGui": [
+    "CurrentDistance"
+   ],
+   "Bone": [
+    "TransformedWorldCFrame"
+   ],
+   "Camera": [
+    "NearPlaneZ",
+    "ViewportSize"
+   ],
+   "Constraint": [
+    "Active"
+   ],
+   "ControllerBase": [
+    "Active"
+   ],
+   "CylindricalConstraint": [
+    "CurrentAngle",
+    "WorldRotationAxis"
+   ],
+   "Decal": [
+    "EmissiveMaskContent",
+    "MetalnessMapContent",
+    "NormalMapContent",
+    "RoughnessMapContent"
+   ],
+   "FloatCurve": [
+    "Length"
+   ],
+   "FluidForceSensor": [
+    "CenterOfPressure",
+    "Force",
+    "Torque"
+   ],
+   "GuiBase2d": [
+    "AbsolutePosition",
+    "AbsoluteRotation",
+    "AbsoluteSize"
+   ],
+   "GuiObject": [
+    "GuiState"
+   ],
+   "HingeConstraint": [
+    "CurrentAngle"
+   ],
+   "Humanoid": [
+    "FloorMaterial",
+    "MoveDirection",
+    "RootPart",
+    "SeatPart"
+   ],
+   "ImageButton": [
+    "IsLoaded"
+   ],
+   "ImageLabel": [
+    "IsLoaded"
+   ],
+   "InputAction": [
+    "PreferredBinding"
+   ],
+   "InputActionLabel": [
+    "ResolvedImageContent",
+    "ResolvedText"
+   ],
+   "Instance": [
+    "Parent"
+   ],
+   "JointInstance": [
+    "Active"
+   ],
+   "MarkerCurve": [
+    "Length"
+   ],
+   "MaterialVariant": [
+    "BaseMaterial"
+   ],
+   "MeshPart": [
+    "MeshContent",
+    "MeshId",
+    "RenderFidelity"
+   ],
+   "PartOperation": [
+    "RenderFidelity",
+    "SmoothingAngle",
+    "TriangleCount"
+   ],
+   "Player": [
+    "AccountAge",
+    "AgeChecked",
+    "FollowUserId",
+    "HasRobloxSubscription",
+    "MembershipType",
+    "User"
+   ],
+   "PluginAction": [
+    "ActionId",
+    "AllowBinding",
+    "StatusTip",
+    "Text"
+   ],
+   "ProceduralModel": [
+    "GenerationError"
+   ],
+   "RealtimeMedia": [
+    "AudioInputActive",
+    "IsConnected"
+   ],
+   "RodConstraint": [
+    "CurrentDistance"
+   ],
+   "RopeConstraint": [
+    "CurrentDistance"
+   ],
+   "RotationCurve": [
+    "Length"
+   ],
+   "ScrollingFrame": [
+    "AbsoluteCanvasSize",
+    "AbsoluteWindowSize"
+   ],
+   "Seat": [
+    "Occupant"
+   ],
+   "SkateboardController": [
+    "Steer",
+    "Throttle"
+   ],
+   "SkateboardPlatform": [
+    "Controller",
+    "ControllingHumanoid"
+   ],
+   "SlidingBallConstraint": [
+    "CurrentPosition"
+   ],
+   "Sound": [
+    "IsLoaded",
+    "PlaybackLoudness",
+    "TimeLength"
+   ],
+   "SpringConstraint": [
+    "CurrentLength"
+   ],
+   "StyleQuery": [
+    "IsActive"
+   ],
+   "StyleRule": [
+    "SelectorError"
+   ],
+   "SurfaceAppearance": [
+    "EmissiveMaskContent"
+   ],
+   "TerrainRegion": [
+    "SizeInCells"
+   ],
+   "TextBox": [
+    "ContentText",
+    "OpenTypeFeaturesError",
+    "TextBounds",
+    "TextFits"
+   ],
+   "TextButton": [
+    "ContentText",
+    "OpenTypeFeaturesError",
+    "TextBounds",
+    "TextFits"
+   ],
+   "TextChannel": [
+    "DirectChatRequester"
+   ],
+   "TextLabel": [
+    "ContentText",
+    "OpenTypeFeaturesError",
+    "TextBounds",
+    "TextFits"
+   ],
+   "TorsionSpringConstraint": [
+    "CurrentAngle"
+   ],
+   "TriangleMeshPart": [
+    "CollisionFidelity",
+    "CollisionPrecision",
+    "FluidFidelity",
+    "MeshSize"
+   ],
+   "Tween": [
+    "Instance",
+    "TweenInfo"
+   ],
+   "TweenBase": [
+    "PlaybackState"
+   ],
+   "UIGridLayout": [
+    "AbsoluteCellCount",
+    "AbsoluteCellSize"
+   ],
+   "UIGridStyleLayout": [
+    "AbsoluteContentSize"
+   ],
+   "UIPageLayout": [
+    "CurrentPage"
+   ],
+   "ValueCurve": [
+    "Length",
+    "ValueType"
+   ],
+   "VehicleSeat": [
+    "AreHingesDetected",
+    "Occupant"
+   ],
+   "VideoDeviceInput": [
+    "IsReady"
+   ],
+   "VideoFrame": [
+    "IsLoaded",
+    "Resolution",
+    "TimeLength"
+   ],
+   "VideoPlayer": [
+    "IsLoaded",
+    "IsPlaying",
+    "Resolution",
+    "TimeLength"
+   ],
+   "WeldConstraint": [
+    "Active"
+   ],
+   "Wire": [
+    "Connected"
+   ],
+   "WrapLayer": [
+    "BindOffset",
+    "ReferenceMeshContent",
+    "ReferenceMeshId",
+    "ReferenceOrigin",
+    "ReferenceOriginWorld"
+   ]
+  }
+ },
  "scopeRule": "creatable AND (GuiObject|UIComponent|LayerCollector descendant) OR {Folder,Camera,WorldModel} (H-296 a)"
 }

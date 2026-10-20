@@ -39,3 +39,7 @@
 ## 7. 단위 0 실측
 
 섞인 대형 파일: 지금 꼴은 약 2300줄(호출 약 1500)에서 too complex — 원인 `LuauSolverConstraintLimit=1500`(Studio 동기화 값), 호출마다 줄지 않은 타입 함수 제약. 처방: 생성자·Spread·Modifier 팩토리 함수 타입을 통째 타입 함수로(`ctor` 모드) — 5730줄 깨끗, 자동완성·hover 같음 → 단위 2 구현 꼴로. 이벤트 디스크립터는 모듈당 약 1200 문턱. pin 1.69.0만 테이블 안 OnEvent 콜백 문맥 타입 없음 → 핀 올리기 사용자 문항.
+
+## 8. 단위 1 완료(정책 데이터와 생성기)
+
+gen-d.py: LEGACY_KEEP(정의 클래스 기준, 태그 무관 — Transparency 드리프트 해소), HIDDEN_CORE_KEEP(비GUI), normalize `policy`(만들 수 있는 클래스 사슬), emit → `quad-roblox/src/Surface/Data.luau`(데이터만), check 게이트 포함. 지금 덤프에서 옛 D·api-surface 클래스 부분 변화 0. 체커 차이 관측: 확장 defs는 `GuiObject.Transparency`가 없고 핀 defs는 있음 → Inject는 되살린 멤버 전부를 넣고 타입 함수가 덮어쓴다(단위 2).

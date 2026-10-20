@@ -8,6 +8,9 @@
         Parent 제외는 여기 덤프 층)
   emit
       → quad-roblox/src/Declaration/init.luau  (커밋되는 최종 산출물)
+      → quad-roblox/src/Surface/Data.luau      ([2026-10-20 3.4.0 단위 1] 타입 함수가 읽는 데이터만 — 클래스 맵 둘,
+        정의 클래스 기준 정책(normalized `policy` — 만들 수 있는 모든 클래스 사슬), Inject·Shorthand. 옛 Declaration과
+        공존하다 3.4.0 갈아타기(`research/release-3.4.0-plan.md` 단위 6)에서 옛 쪽이 떨어진다)
 
 raw 덤프 취득(재생성 때만 네트워크 필요 — 테스트 경로 의존 아님):
   VER=$(curl -s https://clientsettings.roblox.com/v2/client-version/WindowsStudio64 \
@@ -23,7 +26,7 @@ raw 덤프 취득(재생성 때만 네트워크 필요 — 테스트 경로 의�
   H-297 (a) ReadOnly/Deprecated/NotScriptable/Hidden/보안≠None 프로퍼티 제외
             — [사용자 결정 2026-09-09] Deprecated/Hidden 갈래는 좁혀졌다: v1 마이그레이션
               자동완성을 위해 Deprecated는 통째로, Hidden은 이름 허용목록(`Font`/`Transparency`)만
-              표면에 남기고 `-- @deprecated` 주석으로 표시한다(PROP_TAG_LEGACY/HIDDEN_NAME_KEEP/DEPRECATED_NAME_KEEP — [2026-09-21] Deprecated도 허용목록;
+              표면에 남기고 `-- @deprecated` 주석으로 표시한다(PROP_TAG_LEGACY/옛 HIDDEN_NAME_KEEP·DEPRECATED_NAME_KEEP → [2026-10-20] 정의 클래스 기준 LEGACY_KEEP — [2026-09-21] Deprecated도 허용목록;
               실측·선택지는 `.claude/audit/deprecated-props-spike-2026-09-09/REPORT.md`).
               ReadOnly는 그대로 Q19 (a)의 readProps 경로, NotScriptable/보안은 그대로 제외.
   H-298 (a)+H-326 스칼라 = T | TweenData<T> | StateMarker<T | Tween<T>> | None(2026-09-07 마커; Tween 팔은 보간 가능 타입만 — Q34, 2026-09-08),
@@ -42,6 +45,7 @@ ROOT = Path(__file__).resolve().parent.parent
 SURFACE = ROOT / "quad-roblox" / "dump" / "api-surface.json"
 OUT = ROOT / "quad-roblox" / "src" / "Declaration" / "init.luau"
 ROOT_INIT = ROOT / "quad-roblox" / "src" / "init.luau"  # [2026-09-15] generated root export block lives here
+DATA_OUT = ROOT / "quad-roblox" / "src" / "Surface" / "Data.luau"  # [2026-10-20 3.4.0] data only — the type functions read it
 
 SCOPE_ROOTS = ("GuiObject", "UIComponent", "LayerCollector")
 SCOPE_EXTRA = {"Folder", "Camera", "WorldModel"}  # H-296 (a) 화이트리스트(vide 반례)
@@ -59,16 +63,25 @@ PROP_TAG_EXCLUDE = {"ReadOnly", "Deprecated", "NotScriptable", "Hidden"}
 # ⚠️ [2026-09-27 round13 E25] 그 실측은 `GetPropertiesOfClass("TextLabel")` 하나다 — `Font`/`FontSize`/`TextWrap`은
 # TextLabel·TextButton·TextBox가 각자 선언한 멤버라 뒤의 둘은 미실측(HUMAN_TODO I)).
 # 정책: ~~Deprecated 태그는 통째로~~ **[2026-09-21 사용자 결정 — round11 실측 1번]** Deprecated도 이름
-# 허용목록(`DEPRECATED_NAME_KEEP`)만 — 의도는 처음부터 "자주 쓰이던 것만"이었고(재작성 노고가 큰 것),
+# 허용목록(옛 `DEPRECATED_NAME_KEEP`, 지금 `LEGACY_KEEP`)만 — 의도는 처음부터 "자주 쓰이던 것만"이었고(재작성 노고가 큰 것),
 # 소문자 별칭(`className`/`focus`)은 quad v1 이전의 유물이라 뺀다(`className`의 변경 시그널은 Studio
 # 실측에서 만들어지지만 발화하지 않는 죽은 시그널 — `audit/round11-studio-2026-09-21/REPORT.md` 1번);
-# `Draggable`·`DistanceLowerLimit`/`DistanceUpperLimit`도 사용자 판단으로 뺀다. Hidden은 이름 허용목록(`HIDDEN_NAME_KEEP`)만.
+# `Draggable`·`DistanceLowerLimit`/`DistanceUpperLimit`도 사용자 판단으로 뺀다. Hidden은 이름 허용목록(옛 `HIDDEN_NAME_KEEP`, 지금 `LEGACY_KEEP`)만.
 # `Font`/`Transparency`는 Deprecated가 아니라 Hidden(+NotReplicated)이라 이름으로 연다.
 # 되살린 프로퍼티는 필드 위 `---` 독 주석 + 뒤따르는 `-- @deprecated` 주석으로 표시한다 —
 # 주석이 유일한 채널이다(Luau `@deprecated` 속성은 함수 전용, 테이블 타입 필드 앞은 SyntaxError).
 PROP_TAG_LEGACY = {"Deprecated", "Hidden"}
-HIDDEN_NAME_KEEP = {"Font", "Transparency"}
-DEPRECATED_NAME_KEEP = {"FontSize", "TextWrap"}  # [2026-09-21] v1-era text props with real rewrite cost
+# [2026-10-20 3.4.0 단위 1] the allow-list is keyed by the DECLARING class and keeps the member whichever of
+# Deprecated/Hidden it carries — the name-per-tag lists (`Font`/`Transparency` for Hidden, `FontSize`/`TextWrap` for
+# Deprecated) dropped `GuiObject.Transparency` the moment a newer dump tagged it Deprecated too (M4,
+# `audit/decl-typefn-probe-2026-10-16/REPORT.md`). Same members as before for the committed dump.
+LEGACY_KEEP = {("GuiObject", "Transparency")} | {
+    (c, n) for c in ("TextLabel", "TextButton", "TextBox") for n in ("Font", "FontSize", "TextWrap")
+}
+# [2026-10-20] core props the dump tags Hidden although scripts use them every day — policy data only (outside the
+# GUI scope; they reach users through `q.ForClasses`). Not legacy: no `@deprecated` note.
+HIDDEN_CORE_KEEP = {("BasePart", "Position"), ("BasePart", "Orientation"), ("Attachment", "Position"),
+    ("Attachment", "Orientation"), ("Attachment", "WorldPosition"), ("Attachment", "WorldOrientation")}
 EVENT_TAG_EXCLUDE = {"Deprecated", "Hidden"}
 # [Q34 (a), 2026-09-08] property types TweenService can interpolate — the ONLY ones that get a Tween arm
 TWEENABLE = {"number", "boolean", "CFrame", "Rect", "Color3", "UDim", "UDim2", "Vector2", "Vector2int16", "Vector3"}
@@ -221,6 +234,45 @@ def class_chain(classes, name):
 DEFS = ROOT / "scripts" / "roblox-defs" / "globalTypes.d.luau"
 
 
+def policy_of(classes):
+    """[2026-10-20 3.4.0 단위 1] owner-keyed member policy for EVERY Instance class (not only the GUI scope) — the
+    type functions (`quad-roblox/src/Surface/`) check a member against the class that DECLARES it, so a name denied on
+    one class never leaks to another (M4: a global-name Deny erased `Part.Shape`). `q.ForClasses` maps reach any class.
+      denyIn       both surfaces — Deprecated/NotScriptable/Hidden (minus LEGACY_KEEP/HIDDEN_CORE_KEEP), Read security,
+                   events tagged Deprecated/Hidden or with security
+      denyWriteIn  write surface only — ReadOnly, Write security, Parent (H-142)
+    Same tag rules as the scope surface below; methods/callbacks are not listed (the type functions skip them)."""
+    deny, deny_write = {}, {}
+    # owners = the chains of every creatable (non-Service) Instance class — what a user map can name or an ancestor of it
+    owners = set()
+    for name, c in classes.items():
+        ctags = set(c.get("Tags") or [])
+        chain = class_chain(classes, name)
+        if "Instance" in chain and not (ctags & {"NotCreatable", "Service"}):
+            owners.update(chain)
+    for owner in sorted(owners):
+        for m in classes[owner].get("Members", []):
+            mtags = set(m.get("Tags") or [])
+            nm = m["Name"]
+            if m["MemberType"] == "Property":
+                if nm == "Parent":
+                    deny_write.setdefault(owner, set()).add(nm)
+                    continue
+                keep = (mtags & PROP_TAG_LEGACY) if (owner, nm) in LEGACY_KEEP | HIDDEN_CORE_KEEP else set()
+                sec = m.get("Security") or {}
+                if mtags & (PROP_TAG_EXCLUDE - {"ReadOnly"} - keep) or sec.get("Read") != "None":
+                    deny.setdefault(owner, set()).add(nm)
+                elif "ReadOnly" in mtags or sec.get("Write") != "None":
+                    deny_write.setdefault(owner, set()).add(nm)
+            elif m["MemberType"] == "Event":
+                if mtags & EVENT_TAG_EXCLUDE or m.get("Security") != "None":
+                    deny.setdefault(owner, set()).add(nm)
+    return {
+        "denyIn": {o: sorted(v) for o, v in sorted(deny.items())},
+        "denyWriteIn": {o: sorted(v) for o, v in sorted(deny_write.items())},
+    }
+
+
 def normalize(raw_path, version):
     raw = json.loads(Path(raw_path).read_text())
     classes = load_classes(raw)
@@ -261,10 +313,10 @@ def normalize(raw_path, version):
                 # are not in the WRITE surface but ARE the main OnChange targets — they go to a
                 # separate READ list that only the OnChange typing consumes (`PropTypesRead`,
                 # `<Class>OnChange`). NotScriptable는 여전히 드롭이고, Deprecated/Hidden은
-                # [사용자 결정 2026-09-09] legacy 정책(PROP_TAG_LEGACY/HIDDEN_NAME_KEEP)이 정한다.
+                # [사용자 결정 2026-09-09] legacy 정책(PROP_TAG_LEGACY/LEGACY_KEEP)이 정한다.
                 # [2026-09-09 사용자 결정] ~~Deprecated 태그는 통째로~~ [2026-09-21] Deprecated·Hidden 둘 다 이름 허용목록 —
                 # 두 팔을 따로 계산해 Deprecated∧Hidden 쌍둥이가 한쪽 팔을 타고 딸려오지 않게 한다
-                keep = ({"Deprecated"} if "Deprecated" in mtags and m["Name"] in DEPRECATED_NAME_KEEP else set()) | ({"Hidden"} if m["Name"] in HIDDEN_NAME_KEEP else set())
+                keep = (mtags & PROP_TAG_LEGACY) if (owner, m["Name"]) in LEGACY_KEEP else set()
                 other_excluded = mtags & (PROP_TAG_EXCLUDE - {"ReadOnly"} - keep)
                 read_only = "ReadOnly" in mtags and not other_excluded
                 if other_excluded:
@@ -317,6 +369,7 @@ def normalize(raw_path, version):
         # 밖(비생성)이라 별도 항목이 없고, 프로퍼티는 하위의 owner로 되짚는다
         surface[name] = {"props": props, "readProps": read_props, "events": events, "chain": class_chain(classes, name)[1:]}
     out = {
+        "policy": policy_of(classes),
         "dumpVersion": version,
         "apiVersion": raw.get("Version"),
         "scopeRule": "creatable AND (GuiObject|UIComponent|LayerCollector descendant) OR {Folder,Camera,WorldModel} (H-296 a)",
@@ -838,7 +891,11 @@ def emit():
     if not m:
         raise SystemExit(f"gate: GENERATED ROOT EXPORTS markers not found in {ROOT_INIT}")
     new_root = root_text[:m.start(2)] + "\n".join(R) + "\n" + root_text[m.start(3):]
+    data_text = emit_data(data, names, mod_classes, SHORTHAND)
     if CHECK_ONLY:
+        current_data = DATA_OUT.read_text() if DATA_OUT.exists() else ""
+        if current_data != data_text:
+            raise SystemExit(f"gen-d check: {DATA_OUT} differs from a fresh emit — run `python3 scripts/gen-d.py emit` and commit")
         if new_root != root_text:
             raise SystemExit(f"gen-d check: the generated root export block in {ROOT_INIT} is stale — run `python3 scripts/gen-d.py emit` and commit")
         # [7순회 H-423] `check` — test.sh gate: the committed D must equal a fresh emit
@@ -851,8 +908,50 @@ def emit():
         return
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(text)
+    DATA_OUT.parent.mkdir(parents=True, exist_ok=True)
+    DATA_OUT.write_text(data_text)
     ROOT_INIT.write_text(new_root)
     print(f"emit: {len(names)} classes -> {OUT}")
+
+
+def luau_key(n):
+    return n if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", n) and n not in RESERVED else f'["{n}"]'
+
+
+def emit_data(data, names, mod_classes, shorthand):
+    """[2026-10-20 3.4.0 단위 1] `quad-roblox/src/Surface/Data.luau` — DATA ONLY (2026-10-19 사용자 결정: the dump fills
+    class maps and policy; every rule lives in the type functions). Two class maps (2026-10-19): creatable classes for
+    `Elem`/`Mapper`, the same plus abstract ancestors for `Modifier`/`Spread`; both stay the small GUI scope (M4 (a)).
+    The owner-keyed policy covers every creatable class chain (see `policy_of`) so `q.ForClasses` maps type right."""
+    pol = data["policy"]
+    L = [
+        "--!strict",
+        "-- GENERATED FILE — scripts/gen-d.py emit (do not edit by hand). Data only: the rules are the type functions",
+        f"-- beside this file. Dump {data['dumpVersion']} (API {data['apiVersion']}); normalized surface quad-roblox/dump/api-surface.json.",
+        "",
+        "-- the names `q.Elem`/`q.Mapper` accept (creatable classes in the GUI scope)",
+        "export type CreatableMap = {",
+    ]
+    L += [f"\t{n}: {n}," for n in names]
+    L += ["}", "-- the names `q.Modifier`/`q.Spread` accept (the scope plus its abstract ancestors)", "export type ModClassMap = {"]
+    L += [f"\t{n}: {n}," for n in mod_classes]
+    L += ["}", "-- both surfaces: members denied on the class that DECLARES them", "export type DenyIn = {"]
+    for o, ms in pol["denyIn"].items():
+        L.append(f"\t{luau_key(o)}: {{ " + ", ".join(f"{luau_key(m)}: true" for m in ms) + " },")
+    L += ["}", "-- write surface only (ReadOnly, write security, Parent)", "export type DenyWriteIn = {"]
+    for o, ms in pol["denyWriteIn"].items():
+        L.append(f"\t{luau_key(o)}: {{ " + ", ".join(f"{luau_key(m)}: true" for m in ms) + " },")
+    inject = {}
+    for c in names:
+        for p in data["classes"][c]["props"]:
+            if p.get("legacy"):
+                inject.setdefault(p["owner"], {})[p["name"]] = p["type"]
+    L += ["}", "-- engine-legacy members the checker's class types lack (kept for v1 migration — gen-d LEGACY_KEEP)", "export type Inject = {"]
+    for o in sorted(inject):
+        L.append(f"\t{luau_key(o)}: {{ " + ", ".join(f"{luau_key(n)}: {t}" for n, t in sorted(inject[o].items())) + " },")
+    L += ["}", "-- shorthand keys (Handlers/InstanceShorthand.luau TABLE — gated in emit)", "export type Shorthand = {",
+          "\tGuiObject: { " + ", ".join(f"{k}: {t}" for k, t in shorthand) + " },", "}", "", "return {}", ""]
+    return "\n".join(L)
 
 
 CHECK_ONLY = False
