@@ -113,7 +113,7 @@ Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) - not filled yet, or never 
   `Quad0076 Dispatch: no handler matched key Ref (value: table, brand: Epoch, Ref) - a quad value at a string key: it belongs in a numeric (array) slot`가, `PreRef`/`PostRef`는 `Quad0137 PreRef: must be an array item, not the value of a string key`(주어만 바뀜)가 납니다 — 단 그 문자 키가 **실제 반영 프로퍼티나 이벤트 이름**이면 이 에러에 닿기 전에 프로퍼티·이벤트 핸들러가 값을 받아 다른 결과가 납니다(`Name = ref`는 번호 없는 타입 에러, `Size = ref`는 에러 없이 `Ref` 테이블이 대입되는 조용한 오염, `Activated = ref`는 `Quad0218` — [Ref 레퍼런스](/reference/core/07-ref/)의 "숫자 키 자리에만 놓는다" 절; strict가 이 자리를 잡아 줍니다).
 - **원인**: `Modifier`는 여러 인스턴스에 재사용되는 스타일 가방이라, 단일
   인스턴스에 바인딩되는 핸들러 층 값(`Ref`/`Observer`/`Effect`/`Slot`/
-  `Modifier`)을 담을 수 없습니다. 그리고 이 값들은 props의 **숫자 키 자리**에
+  `Modifier`/`Spread`)을 담을 수 없습니다. 그리고 이 값들은 props의 **숫자 키 자리**에
   놓는 것이 계약입니다 — `Ref = ...`처럼 문자 키로 주면 어떤 핸들러도 그
   키를 받지 않습니다.
 
@@ -246,7 +246,7 @@ s2:List(items, function(ctx) return q.Elem "TextLabel" { Text = ctx.Item :: stri
 | 점검 항목 | 올바른 작성법 |
 |---|---|
 | **선택적 값 전달** | `props.Modifier or q.None` — 숫자 키 자리의 `nil`은 구멍이다 |
-| **핸들러 층 값 자리** | `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier`는 숫자 키 자리 |
+| **핸들러 층 값 자리** | `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier`/`Spread`는 숫자 키 자리 |
 | **Ref 대기** | `if ref.Value then ref.Value else ref:Wait().Value`, 또는 `ref:Unwrap()` |
 | **프로퍼티 감시** | `q.OnChange "Class" "PropertyName" (function(v) ... end)` — 숫자 키 자리 |
 | **어트리뷰트 삭제** | `q.Attr { MyKey = q.None }` — 그룹에서 이름을 빼는 것만으로는 지워지지 않는다 |

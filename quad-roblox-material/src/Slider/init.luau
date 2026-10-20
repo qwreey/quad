@@ -19,7 +19,7 @@
 	    Slider({ Value = volume, Min = 0, Max = 100, Size = "M", TrackIconActiveStart = "rbxassetid://123" })  -- inset icon
 
 	Props: the shared `Behavior.SliderProps` (`./Behavior.luau` — value, pointer, keys and callbacks are documented there
-	and shared with the M2 look): Value, Min, Max, Step, ShowTicks, KeyStep, Format, ShowLabel, Disabled, OnChange,
+	and shared with the M2 look): Value, Min, Max, Step, ShowTicks, KeyStep, Format, Unit, ShowLabel, Disabled, OnChange,
 	OnChangeEnd, Theme, Modifier (Frame Modifier after the base — default size: the parent's length along the axis, the
 	handle height across, `UDim2.new(1, 0, 0, 44)` for the default), Hooks; and the M3 variants (all static):
 	  Size          "XS" | "S" | "M" | "L" | "XL"   default "XS" — track / outer corner / handle height / inset icon:

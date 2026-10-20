@@ -90,6 +90,7 @@ export type Handler = {
 | `NORMAL + 1` | `InstanceShorthand`(`UICorner` 등 특수 키) |
 | `NORMAL` | 백엔드의 실제 일 — `Property`, `InstanceChild` |
 | `NORMAL - 1` | `Event`, `OnChange`(`Property`/`InstanceChild`와 서로소 술어라 순서가 문제되진 않지만, 동률 미정의 순서를 피하려고 한 밴드 내려 앉힙니다) |
+| `NORMAL - 2` | `OnEvent`(3.4.0 — 배열부 이벤트 디스크립터, `OnChange`와 서로소라 같은 이유로 한 칸 더) |
 | `FALLBACK` | base가 알고리즘을 소유하고 효과만 주입받는 것 — `TagFallbackHandler`, `AttrKeyFallbackHandler`, `AttrGroupFallbackHandler`(§5); 그리고 동적 경로로 온 `PreRef`/`PostRef`/`Observer`/`Effect`를 즉시 거부하는 가드([2026-10-02 기준] — 문자 키의 `Ref`·`Slot`은 가드 없이 매치 실패 에러가 안내합니다) |
 
 **base 소속이라고 전부 위에 오는 게 아닙니다.** `StateHandler`는 프로퍼티 세터보다 먼저
@@ -97,7 +98,7 @@ export type Handler = {
 처리할 수 있어야 하므로 `FALLBACK`입니다.
 
 목록에 **`Modifier` 핸들러가 없다는 점**도 봐 둘 만합니다. `Modifier`는 스캔에 들어오지
-않습니다 — `drive`의 첫 pre-pass인 `flatten`이 숫자 키(테이블의 배열 부분)의 Modifier 슬롯을 그 자리에서
+않습니다 — `drive`의 pre-pass인 `flatten`(3.4.0부터는 Spread 전개 `expand` 바로 다음)이 숫자 키(테이블의 배열 부분)의 Modifier 슬롯을 그 자리에서
 소진해 필드를 문자 키(해시 부분)으로 합치고, 빈 슬롯에는 `ProcessedModifier` 센티널을 남깁니다.
 스캔이 보는 것은 그 센티널이고, 그 핸들러가 하는 일은 "이 자리는 길이 0"이라고
 부기에 등록하는 것뿐입니다. `PreRef`/`PostRef`도 같은 모양입니다.
