@@ -23,7 +23,6 @@ quad에서 권장하는 모양은 하나입니다 — **외부 신호는 `Source
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.Declaration
 ```
 
 ---
@@ -64,7 +63,6 @@ UI 레이어는 `RemoteEvent`의 존재를 모릅니다.
 ```luau
 -- GoldDisplay.luau (UI 레이어)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad") -- 01장의 설정 모듈
-local D = q.Declaration
 local ProfileStore = require("./PlayerProfileState")
 
 local function withCommas(n: number): string
@@ -83,7 +81,7 @@ local function GoldDisplay()
         return `보유 골드: {withCommas(gold:Get())} G`
     end)
 
-    return D.TextLabel {
+    return q.Elem "TextLabel" {
         Text = goldText,
         TextColor3 = Color3.fromRGB(255, 215, 0),
         FontFace = Font.fromEnum(Enum.Font.GothamBold),
@@ -92,7 +90,7 @@ end
 ```
 
 > **글꼴은 `FontFace`가 현행 API입니다.** **[2026-09-09]** 옛 `Font = Enum.Font.GothamBold`도
-> 생성 `D`에 있어 타입 검사를 통과하지만 엔진이 `Hidden`으로 표시한 레거시입니다(필드에
+> 타입 표면에 남겨 두어 타입 검사를 통과하지만 엔진이 `Hidden`으로 표시한 레거시입니다(필드에
 > `-- @deprecated` 주석) — v1 이식 중에만 쓰세요.
 
 > ⚠️ `:Compute` 콜백의 첫 인자는 **값이 아니라 State 핸들**입니다 —
@@ -124,14 +122,14 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 end)
 
 local function InventoryModal()
-    return D.Frame {
+    return q.Elem "Frame" {
         Size = UDim2.fromOffset(500, 400),
         AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.fromScale(0.5, 0.5),
 
         Visible = isInventoryOpen,
 
-        D.TextButton {
+        q.Elem "TextButton" {
             Text = "X",
             MouseButton1Click = function()
                 isInventoryOpen:Set(false)
@@ -153,13 +151,13 @@ local HOME = UDim2.fromScale(0.5, 0.5)
 local home = q.Source(HOME)        -- 놓으면 돌아갈 목표 — 애니메이션이 걸린 원천
 local dragged = q.Source(HOME)     -- 드래그 중 위치 — 읽기 전용으로 받아 둠
 
-local card = D.Frame {
+local card = q.Elem "Frame" {
     Size = UDim2.fromOffset(120, 160),
     AnchorPoint = Vector2.new(0.5, 0.5),
     Position = home:Apply(q.Animate { Time = 0.25, Dedup = false }),
-    q.Out("Position", dragged),
+    q.Out "Frame" "Position" (dragged),
 
-    D.UIDragDetector {
+    q.Elem "UIDragDetector" {
         DragEnd = function()
             home:Set(HOME) -- 같은 목표로 다시 — Dedup = false라 매번 돌아간다
         end,
@@ -189,7 +187,7 @@ local function CrosshairOverlay()
         return UDim2.fromOffset(p.X, p.Y)
     end)
 
-    return D.Frame {
+    return q.Elem "Frame" {
         Size = UDim2.fromScale(1, 1),
         BackgroundTransparency = 1,
 
@@ -205,7 +203,7 @@ local function CrosshairOverlay()
             end
         end),
 
-        D.Frame {
+        q.Elem "Frame" {
             Size = UDim2.fromOffset(8, 8),
             Position = dotPosition,
             BackgroundColor3 = Color3.fromRGB(255, 0, 0),
@@ -232,7 +230,7 @@ local function StatusPanel()
     -- 컴포넌트를 만들 때 연결하고, 파괴될 때 끊는다
     local conn = SomeSignal:Connect(function(...) --[[ … ]] end)
 
-    return D.Frame {
+    return q.Elem "Frame" {
         -- 숫자 키 자리에 둔다 — 돌려주는 Effect이 이 인스턴스의 수명에 묶여야 파괴 때 돈다
         q.OnDestroyed(function()
             conn:Disconnect()

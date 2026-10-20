@@ -10,7 +10,7 @@
 			Format: string?,                       default "%d" for an integral Step, else "%.3f"
 			OnChange: ((n: number) -> ())?,        after Value changed through the UI
 			Disabled: (boolean | State<boolean>)?,
-			Style: Style?, Modifier: FrameModifier?, FieldModifier: TextBoxModifier?, FieldSpread: Spread<TextBox>?,
+			Style: Style?, Modifier: ModifierInto<Frame>?, FieldModifier: ModifierInto<TextBox>?, FieldSpread: SpreadInto<TextBox>?,
 		}
 
 	The drag uses Interaction.drag (global pointer tracking only while the button is held; closed on release, focus

@@ -11,9 +11,9 @@ description: "시작하기에서 만든 것을 한 줄씩 되짚고, 다음에 �
 
 ## 여기까지 만든 것
 
-- [00](/getting-started/00-installation/) pesde와 Rojo로 **패키지 셋을 깔고**, 편집기와 CI에 타입 검사 플래그 넷을 넣었습니다.
+- [00](/getting-started/00-installation/) pesde와 Rojo로 **패키지 셋을 깔고**, 편집기와 CI에 타입 검사 플래그를 넣었습니다.
 - [01](/getting-started/01-setup/) **설정 모듈** 하나에 `q`를 만들어 두고, 진입점에서 `ScreenGui`를 띄웠습니다.
-- [02](/getting-started/02-first-screen/) `D.Frame`으로 **카드**를 그렸습니다 — 문자 키는 프로퍼티, 숫자 키는 자식, `Parent`는 밖에서.
+- [02](/getting-started/02-first-screen/) `q.Elem "Frame"`으로 **카드**를 그렸습니다 — 문자 키는 프로퍼티, 숫자 키는 자식, `Parent`는 밖에서.
 - [03](/getting-started/03-flowing-values/) `q.Source`와 `:Compute`로 값이 **원천에서 프로퍼티까지 흐르게** 했습니다.
 - [04](/getting-started/04-reacting/) 버튼 **이벤트**로 원천을 바꿔 카운터를 완결시켰습니다.
 - [05](/getting-started/05-tag-attr/) `q.Tag`와 `q.Attr`로 인스턴스에 **이름표와 속성**을 달아 밖에서 찾을 수 있게 했습니다.
@@ -50,7 +50,7 @@ q.dispose(screen)
 결과는 같습니다. `q.dispose`도 결국 인스턴스를 파괴하고, quad는 인스턴스의 엔진 연결이 끊긴 것으로 죽음을 알아채므로 밖에서 `Destroy()`해도 위와 똑같이 정리됩니다. 다른 점은 **버리면 안 되는 값을 막아 주는지**입니다.
 
 - **Slot 안에 있는 원소**를 `q.dispose`에 넘기면 파괴하지 않고 에러를 냅니다 — `Quad0179 dispose: this value is still held by a Slot or a mounted position - …`. 먼저 `:Extract`로 자리에서 빼거나(11장), `:List`라면 데이터에서 그 키를 지우세요. `Destroy()`는 그 확인 없이 지워서 Slot이 죽은 원소를 든 채로 남습니다.
-- **숫자 키 자리에 지금 놓인 원소** — `D.Frame { child }`의 정적 자식, `State<Instance?>` 자리에 지금 놓인 원소, `UICorner = 8`이 만든 관리 자식 — 도 같은 에러로 막힙니다. 먼저 `cur:Set(nil)`(또는 다른 값)으로 자리에서 내려놓은 뒤 버리세요 — 11장 §6의 `cur:SetAndDispose(nil)`이 이 두 단계를 이 순서로 한 번에 합니다. 11장 §6에서 갈아 끼워 떼어진 옛 원소는 이미 내려와 있으니 바로 `q.dispose`하면 됩니다.
+- **숫자 키 자리에 지금 놓인 원소** — `q.Elem "Frame" { child }`의 정적 자식, `State<Instance?>` 자리에 지금 놓인 원소, `UICorner = 8`이 만든 관리 자식 — 도 같은 에러로 막힙니다. 먼저 `cur:Set(nil)`(또는 다른 값)으로 자리에서 내려놓은 뒤 버리세요 — 11장 §6의 `cur:SetAndDispose(nil)`이 이 두 단계를 이 순서로 한 번에 합니다. 11장 §6에서 갈아 끼워 떼어진 옛 원소는 이미 내려와 있으니 바로 `q.dispose`하면 됩니다.
 - 루트처럼 어디에도 놓이지 않은 값은 둘 중 무엇을 써도 같습니다. 그래도 `q.dispose`로 통일해 두면, 나중에 그 값이 어딘가에 놓이게 됐을 때 실수를 에러로 잡습니다.
 
 </details>

@@ -13,7 +13,6 @@ description: None/Detach/KeyGone/Void 센티널, q.dispose, 매퍼 루트, 그�
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.Declaration
 ```
 
 ## `q.None`
@@ -38,9 +37,9 @@ None: None
 
 ```luau
 local function Card(props)
-	return D.Frame {
+	return q.Elem "Frame" {
 		props.Modifier or q.None, -- 숫자 키 자리: nil을 넣으면 뒤 항목이 사라진다
-		D.TextLabel { Text = props.Title },
+		q.Elem "TextLabel" { Text = props.Title },
 	}
 end
 ```
@@ -123,7 +122,7 @@ Quad0180 dispose: this backend cannot dispose this value
 
 ```luau
 local slot = q.Slot()
-local child = D.Frame {}
+local child = q.Elem "Frame" {}
 slot:Add(child)
 
 slot:Extract(1) -- 파괴하지 않고 자리에서 뺀다(Remove는 파괴한다)
@@ -159,10 +158,10 @@ bindLifetime: (inst: any, value: any) -> ()
 Quad0265 bindLifetime: value must be a table, function or userdata (got number) - a primitive has no identity to bind
 ```
 
-**이 네 함수는 quad-base 것입니다.** 값 쪽 지식(nil 게이트, 거부 메시지, `Observer`/`Effect`의 훅, 전역 구독 상태)은 여기 있고, 인스턴스 쪽 부기만 백엔드가 심는 hold op 넷(`holdLifetime`/`releaseLifetime`/`isHeld`/`isHeldBy`)에 맡깁니다. quad-base는 임의의 엔진에서 그 부기의 "옳은" 기본값을 추측할 수 없으므로, 그 넷의 자리엔 조용한 no-op 대신 **크게 우는 스텁**을 둡니다. 프로바이더를 설치하지 않은 `Quad.New()`에서 `bindLifetime`을 부르면 그 스텁에 닿습니다:
+**이 네 함수는 quad-base 것입니다.** 값 쪽 지식(nil 게이트, 거부 메시지, `Observer`/`Effect`의 훅, 전역 구독 상태)은 여기 있고, 인스턴스 쪽 부기만 백엔드가 심는 hold op 넷(`holdLifetime`/`releaseLifetime`/`isHeld`/`isHeldBy`)에 맡깁니다. quad-base는 임의의 엔진에서 그 부기의 "옳은" 기본값을 추측할 수 없으므로, 그 넷의 자리엔 조용한 no-op 대신 **크게 우는 스텁**을 둡니다. 프로바이더를 설치하지 않은 `Quad.NewModule()`에서 `bindLifetime`을 부르면 그 스텁에 닿습니다:
 
 ```
-Quad0108 quad: isHeld is not available - no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider - a bare Quad.New() has none; headless tests install their own provider the same way)
+Quad0108 quad: isHeld is not available - no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider - a bare Quad.NewModule() has none; headless tests install their own provider the same way)
 ```
 
 같은 문구가 이름만 바뀌어 hold op `holdLifetime`·`releaseLifetime`·`isHeldBy`, 엔진 op `onDestroying`·`isInst`·`nativeClaim`·`isClaimed`·`nativeFindChild`·`nativeInsert`·`nativeExtract`·`nativeRemove`·`nativeMove`·`nativeSwap`·`nativeDispose`, 시간 op `setTimeout`·`clearTimeout`에도 걸립니다. 각 슬롯이 무엇을 약속해야 하는지는 [`../extend/01-backend-provider-contract.md`](/reference/extend/01-backend-provider-contract/)가 정본입니다.
@@ -201,7 +200,7 @@ canExecute: (value: any) -> boolean
 
 ```luau
 local RunService = game:GetService("RunService")
-local spin = D.Frame {
+local spin = q.Elem "Frame" {
 	q.Effect(function(self)
 		local conn = RunService.Heartbeat:Connect(function(dt: number)
 			if not q.Backend.canExecute(self) then
@@ -224,7 +223,7 @@ local spin = D.Frame {
 isClaimed: (inst: any) -> boolean
 ```
 
-**동작** — "이 인스턴스는 살아 있는 동안 quad 손에 닿았고, 지금도 살아 있는가". `Declaration`이 만든 인스턴스와 `q.Claim`이 넘겨받은 인스턴스는 참이고, quad 밖에서 만든 인스턴스와 이미 죽은 인스턴스는 거짓입니다. 이 술어는 백엔드가 심는 주입 op이지만 앱 코드에서 물어도 되는 표면입니다 — quad 자신도 같은 질문을 이 op로 합니다(Slot이 원소를 받을 때, 정적 자식 자리, [`q.debug`](/reference/core/01-quad-module/#qdebug)의 검사들).
+**동작** — "이 인스턴스는 살아 있는 동안 quad 손에 닿았고, 지금도 살아 있는가". `q.Elem`이 만든 인스턴스와 `q.Claim`이 넘겨받은 인스턴스는 참이고, quad 밖에서 만든 인스턴스와 이미 죽은 인스턴스는 거짓입니다. 이 술어는 백엔드가 심는 주입 op이지만 앱 코드에서 물어도 되는 표면입니다 — quad 자신도 같은 질문을 이 op로 합니다(Slot이 원소를 받을 때, 정적 자식 자리, [`q.debug`](/reference/core/01-quad-module/#qdebug)의 검사들).
 
 - **quad가 죽인 인스턴스는 그 즉시 거짓입니다** — `q.dispose`나 Slot 철거로 파괴된 인스턴스. 모든 백엔드가 지키는 계약입니다.
 - **quad 밖에서 직접 파괴한 인스턴스**(`inst:Destroy()`)는 엔진이 파괴를 그 자리에서 알려 줄 수 있으면 역시 즉시 거짓입니다 — Roblox 백엔드가 그렇습니다(파괴가 `Destroy()` 안에서 동기로 보입니다). 그걸 알려 주지 못하는 엔진의 백엔드에서는 quad 밖 파괴 뒤의 결과가 정의되지 않으니, 그런 백엔드에서는 quad가 만든 인스턴스를 `q.dispose`로 죽이세요.

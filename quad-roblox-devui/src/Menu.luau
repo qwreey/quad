@@ -2,7 +2,7 @@
 --[[
 	Menus (Iris: MenuBar / Menu / MenuItem / MenuToggle).
 
-		MenuBar    { Children: Slot<Instance>?, Style?, Modifier: FrameModifier? }       a horizontal bar (MenubarBg)
+		MenuBar    { Children: Slot<Instance>?, Style?, Modifier: ModifierInto<Frame>? }       a horizontal bar (MenubarBg)
 		Menu       { Text, Children: (scope: MenuScope) -> Slot<Instance>, Scope: MenuScope?, Disabled?, Overlay?, Style? }
 		MenuItem   { Text, OnClick: () -> (), Shortcut: string?, Disabled?, Scope: MenuScope?, Style? }
 		MenuToggle { Text, Value: Source<boolean>? | Checked: State<boolean>? + OnToggle?, Shortcut?, Disabled?, Scope?, Style? }

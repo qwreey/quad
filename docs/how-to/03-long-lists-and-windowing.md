@@ -24,7 +24,6 @@ description: "Slot List로 긴 목록을 재활용과 윈도잉으로 효율적�
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.Declaration
 ```
 
 ---
@@ -74,7 +73,7 @@ local function updateFn(ctx: {
         local order: q.State<number> = layoutOrder:Depend(ctx.Offset):Compute(function(i)
             return i:Get() + ctx.Offset:Get()
         end)
-        return D.Frame {
+        return q.Elem "Frame" {
             LayoutOrder = order,
             -- ...
         }, { layoutOrder = layoutOrder }
@@ -145,12 +144,12 @@ local function VirtualList(props: { Items: { { id: string, label: string } } })
         local position: q.State<UDim2> = abs:Compute(function(a)
             return UDim2.new(0, 0, 0, (a:Get() - 1) * ROW)
         end)
-        local row = D.Frame {
+        local row = q.Elem "Frame" {
             Size = UDim2.new(1, 0, 0, ROW),
             Position = position,
             BackgroundTransparency = 1,
 
-            D.TextLabel {
+            q.Elem "TextLabel" {
                 Size = UDim2.fromScale(1, 1),
                 BackgroundTransparency = 1,
                 TextXAlignment = Enum.TextXAlignment.Left,
@@ -162,15 +161,15 @@ local function VirtualList(props: { Items: { { id: string, label: string } } })
         return entry.item.id
     end) -- 생성자의 제네릭은 추론되지 않는다 — `q.Slot<<Instance>>()`처럼 명시 타입 인자로 준다
 
-    return D.ScrollingFrame {
+    return q.Elem "ScrollingFrame" {
         Size = UDim2.fromScale(1, 1),
         CanvasSize = UDim2.new(0, 0, 0, #items * ROW),
         ScrollBarThickness = 6,
 
-        q.OnChange("CanvasPosition", function(pos: Vector2)
+        q.OnChange "ScrollingFrame" "CanvasPosition" (function(pos: Vector2)
             scrollY:Set(pos.Y)
         end),
-        q.OnChange("AbsoluteWindowSize", function(size: Vector2)
+        q.OnChange "ScrollingFrame" "AbsoluteWindowSize" (function(size: Vector2)
             viewportHeight:Set(size.Y)
         end),
 
@@ -179,7 +178,7 @@ local function VirtualList(props: { Items: { { id: string, label: string } } })
 end
 ```
 
-`q.OnChange(name, fn)`는 **숫자 키 자리에** 놓는 디스크립터입니다(문자 키가
+`q.OnChange "Class" "Name" (fn)`는 **숫자 키 자리에** 놓는 디스크립터입니다(문자 키가
 아닙니다). 콜백은 엔진 인자만 받습니다.
 
 ---

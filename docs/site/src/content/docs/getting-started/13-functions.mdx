@@ -27,7 +27,7 @@ Lua의 함수는 숫자나 테이블과 똑같은 **값**입니다. 변수에 �
 -- 지금까지 세 번 했습니다
 count:Compute(function(c) return `카운트: {c:Get()}` end)   -- 값이 필요할 때 quad가 부른다
 count:Observer(function(t) print(t:Get()) end)              -- 값이 바뀔 때 quad가 부른다
-D.TextButton { Activated = function() count:Set(1) end }    -- 눌렸을 때 엔진이 부른다
+q.Elem "TextButton" { Activated = function() count:Set(1) end }    -- 눌렸을 때 엔진이 부른다
 ```
 
 셋 다 "지금 실행해서 결과를 넘기는 것"이 아니라 **함수 자체를 넘기는 것**입니다. `count:Compute(f())`처럼 괄호를 붙이면 결과값이 넘어가 버립니다 — 괄호가 없는 것이 핵심입니다.
@@ -40,7 +40,7 @@ D.TextButton { Activated = function() count:Set(1) end }    -- 눌렸을 때 엔
 -- (04장에서 만든 그 버튼입니다)
 const count = q.Source(0)
 
-const button = D.TextButton {
+const button = q.Elem "TextButton" {
     Text = "+ 1",
     Activated = function()
         count:Set(count:Get() + 1)   -- ← 바깥의 count를 기억한다
@@ -56,7 +56,7 @@ quad에서 이 성질은 계속 나옵니다 — 컴포넌트 안에서 만든 `
 
 ## 3. 값을 돌려주는 함수 — 팩토리
 
-`q.Ref(...)`·`q.Effect(...)`·`D.Modifier.Frame {...}`·컴포넌트는 전부 **부르면 값이 나오는 함수**입니다. 그렇다면 그 호출을 **내 함수로 한 겹 감싸는** 것도 당연히 됩니다. 그런 함수를 **팩토리**라고 부릅니다.
+`q.Ref(...)`·`q.Effect(...)`·`q.Modifier "Frame" {...}`·컴포넌트는 전부 **부르면 값이 나오는 함수**입니다. 그렇다면 그 호출을 **내 함수로 한 겹 감싸는** 것도 당연히 됩니다. 그런 함수를 **팩토리**라고 부릅니다.
 
 quad에서 팩토리가 쓰이는 자리는 둘입니다 — **값을 만들어 돌려주는 것**, 그리고 **그 팩토리 자체를 컴포넌트에 넘기는 것**.
 
@@ -80,7 +80,7 @@ end
 
 ```luau
 -- … (Counter.luau) 버튼의 BackgroundColor3을 이렇게 고칩니다
-        D.TextButton {
+        q.Elem "TextButton" {
             -- …나머지 프로퍼티 생략…
             BackgroundColor3 = highlightColor(count, 10),   -- ← 문자 키의 값 자리
             Text = "+ 1",
@@ -97,7 +97,7 @@ end
 이럴 때 상태를 밖으로 내주는 대신 **팩토리를 받습니다.** 컴포넌트가 자기 `count`를 그 함수에 건네고, 돌려받은 것을 자기 숫자 키 자리에 놓습니다.
 
 ```luau
--- … (Counter.luau) 돌려주는 D.Frame의 끝, props.Children 뒤에 한 줄을 더합니다
+-- … (Counter.luau) 돌려주는 q.Elem "Frame의" 끝, props.Children 뒤에 한 줄을 더합니다
         props.Children or q.None,
 
         if props.Watch then props.Watch(count) else q.None,
@@ -169,7 +169,7 @@ local function logWith(prefix)
     end
 end
 
-const label = D.TextLabel {
+const label = q.Elem "TextLabel" {
     Text = "…",
     count:Observer(logWith("카운트:")),
 }

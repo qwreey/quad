@@ -7,17 +7,16 @@ description: 불변 프로퍼티 가방 — 생성·setter 체인·Peek/Apply/Ov
 
 모든 연산이 **새 값을 돌려줍니다.** setter 하나를 부를 때마다 얕은 clone이 하나 생기고 원본은 그대로 남습니다(값 자체도 `table.freeze`돼 있습니다). 그래서 하나의 기본 Modifier에서 갈라져 나온 형제 가지들이 서로를 오염시킬 수 없습니다.
 
-`q.Modifier(...)`는 **무타입** Modifier를 만듭니다. quad-roblox를 설치하면 클래스 태그가 붙은 타입드 생성자 `D.Modifier.<Class>(...)`가 같이 생기는데, 그건 `q.Modifier.TypedFactory("<Class>")`가 돌려준 생성자에 생성된 필드 setter 타입을 입힌 것입니다(자세한 것은 quad-roblox 레퍼런스).
+`q.Raw.Modifier(...)`는 **무타입** Modifier를 만듭니다. quad-roblox를 설치하면 클래스 태그가 붙은 타입드 생성자 `q.Modifier "Class" (...)`가 같이 생깁니다. 런타임은 `q.Raw.Modifier.TypedFactory("<Class>")`가 돌려준 생성자 그대로이고, 필드 setter 타입은 타입 함수가 그 클래스 타입에서 계산합니다([roblox/03 — Modifier와 Spread](/reference/roblox/03-modifier-spread/)). 3.3까지는 이 무타입 생성자의 이름이 `q.Modifier`였습니다.
 
-이 페이지의 심볼: [`q.Modifier`](#qmodifier) · [`mod:<Field>`](#modfieldvalue) · [`mod:Peek`](#modpeektkey) · [`mod:Apply`](#modapplyfactory) · [`mod:Overridden`](#modoverridden) · [`mod:As(name)`](#modasname) · [`mod:As<Class>()`](#modasclass) · [`q.Modifier.Overridden`](#qmodifieroverridden) · [`q.Modifier.TypedFactory`](#qmodifiertypedfactorytname) · [`q.Modifier.DefineSubtype`](#qmodifierdefinesubtypeparent-subtype)
+이 페이지의 심볼: [`q.Raw.Modifier`](#qrawmodifier) · [`mod:<Field>`](#modfieldvalue) · [`mod:Peek`](#modpeektkey) · [`mod:Apply`](#modapplyfactory) · [`mod:Overridden`](#modoverridden) · [`mod:As(name)`](#modasname) · [`mod:As<Class>()`](#modasclass) · [`q.Raw.Modifier.Overridden`](#qrawmodifieroverridden) · [`q.Raw.Modifier.TypedFactory`](#qrawmodifiertypedfactorytname) · [`q.Raw.Modifier.DefineSubtype`](#qrawmodifierdefinesubtypeparent-subtype)
 
 이 페이지의 모든 예제는 아래 프롤로그를 전제합니다.
 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local QuadTypes = require("@game/ReplicatedStorage/roblox_packages/quad_types") -- 설정 모듈이 다시 내보내지 않는 타입(`QuadTypes.FieldOut<T>` 등)
-local D = q.Declaration
+local QuadTypes = require("@game/ReplicatedStorage/roblox_packages/quad_types") -- 설정 모듈이 다시 내보내지 않는 타입(`QuadTypes.ModifierFieldOut<T>` 등)
 ```
 
 ## 공통 타입
@@ -25,19 +24,19 @@ local D = q.Declaration
 ```luau
 type Modifier = {
     read __quadModifier: true, -- 무타입 Modifier의 클래스 태그. 타입드면 클래스 이름 문자열
-    Peek: <T>(self: Modifier, key: string) -> FieldOut<T>?,
+    Peek: <T>(self: Modifier, key: string) -> ModifierFieldOut<T>?,
     Apply: <U>(self: any, factory: (any) -> U) -> U,
     Overridden: (self: Modifier, ...any) -> any,
     As: <T>(self: Modifier, name: string?) -> T,
 }
 
 -- 필드에 "저장된 그대로"의 값: 리터럴 | State 핸들 자체 | None(명시 해제)
-type FieldOut<T> = T | State<T> | None
+type ModifierFieldOut<T> = T | State<T> | None
 ```
 
 `Peek`/`As`는 결과 타입을 호출자가 명시하는 자리이고(`mod:Peek<<UDim2>>("Size")`), `Apply`의 `self`와 factory 인자가 `any`인 것은 children 유니언의 클래스 검사를 살리기 위한 의도된 절충입니다.
 
-**`Peek<<T>>`의 `T`는 어디까지인가 — 층 나눔.** `FieldOut<T>`가 감싸는 것은 **quad-base가 소유한 층뿐**입니다 — `State<T>`, `None`, 그리고 반환의 `?`(값이 없음). 백엔드가 더하는 값 층(Roblox의 `Tween<T>` 같은 것)은 quad-base가 알 수 없으므로 **`T` 안에 호출자가 넣습니다.** 백엔드마다 어떤 층이 있는지는 그 백엔드의 레퍼런스가 적습니다(quad-roblox: [roblox/03](/reference/roblox/03-modifier-spread/)). 백엔드가 생성한 클래스별 Modifier의 `Peek`는 그 층을 이미 채워 두므로, 호출자가 층을 챙겨야 하는 것은 **무타입 `q.Modifier()`**를 쓸 때뿐입니다.
+**`Peek<<T>>`의 `T`는 어디까지인가 — 층 나눔.** `ModifierFieldOut<T>`가 감싸는 것은 **quad-base가 소유한 층뿐**입니다 — `State<T>`, `None`, 그리고 반환의 `?`(값이 없음). 백엔드가 더하는 값 층(Roblox의 `Tween<T>` 같은 것)은 quad-base가 알 수 없으므로 **`T` 안에 호출자가 넣습니다.** 백엔드마다 어떤 층이 있는지는 그 백엔드의 레퍼런스가 적습니다(quad-roblox: [roblox/03](/reference/roblox/03-modifier-spread/)). 백엔드의 타입드 Modifier(quad-roblox의 `q.Modifier "Frame"`)의 `Peek`는 그 층을 이미 채워 두므로, 호출자가 층을 챙겨야 하는 것은 **무타입 `q.Raw.Modifier()`**를 쓸 때뿐입니다.
 
 ## 숫자 키 자리에 놓는다
 
@@ -52,12 +51,12 @@ Modifier는 props의 **숫자 키** 항목입니다. 문자 키의 값 자리에
 3. 소비된 숫자 키 자리는 내부 센티널로 채워져 배열에 구멍이 생기지 않습니다.
 
 ```luau
-local base = q.Modifier { BackgroundTransparency = 1 }
-local accent = q.Modifier { BackgroundTransparency = 0.5 }
-local box = D.Frame { base, accent, Name = "Box" } -- accent가 이겨 0.5
+local base = q.Raw.Modifier { BackgroundTransparency = 1 }
+local accent = q.Raw.Modifier { BackgroundTransparency = 0.5 }
+local box = q.Elem "Frame" { base, accent, Name = "Box" } -- accent가 이겨 0.5
 ```
 
-## `q.Modifier(...)`
+## `q.Raw.Modifier(...)`
 
 **시그니처**
 
@@ -81,7 +80,7 @@ Modifier: setmetatable<{
 
 **동작**
 
-- 인자가 없으면 빈 Modifier입니다 — `q.Modifier()`와 `q.Modifier({})`는 같습니다.
+- 인자가 없으면 빈 Modifier입니다 — `q.Raw.Modifier()`와 `q.Raw.Modifier({})`는 같습니다.
 - 필드 테이블은 **메타테이블 없는 평범한 테이블**이어야 합니다. `Source`/`Ref`/`Tag` 같은 quad 값을 넘기면 그 내부 필드가 합쳐지는 대신 거부됩니다.
 - 초기 필드 테이블의 값으로 **함수는 못 씁니다.** setter 자리에서 함수는 변환 함수라 의미가 갈리기 때문입니다 — 변환이 필요하면 `mod:Field(fn)`을 쓰세요.
 - 핸들러 계층 값(`Ref`/`Observer`/`Effect`/`Slot`/`Modifier`)은 필드가 될 수 없습니다. `State`/`Source`는 통과합니다.
@@ -99,12 +98,12 @@ Modifier: setmetatable<{
 **예제**
 
 ```luau
-local card = q.Modifier {
+local card = q.Raw.Modifier {
     BackgroundTransparency = 0.2,
     BorderSizePixel = 0,
 }
-local wide = q.Modifier(card, { Size = UDim2.fromScale(1, 0.4) }) -- card를 깔고 Size를 얹는다
-local panel = D.Frame { wide }
+local wide = q.Raw.Modifier(card, { Size = UDim2.fromScale(1, 0.4) }) -- card를 깔고 Size를 얹는다
+local panel = q.Elem "Frame" { wide }
 ```
 
 **관련** — [테마와 동적 스타일링](/how-to/05-theme-and-dynamic-styling/), [컴포넌트 경계 규약](/how-to/01-component-conventions/)
@@ -113,10 +112,10 @@ local panel = D.Frame { wide }
 
 예약 메소드(`Peek`/`Apply`/`Overridden`/`As`)와 캐스트 접두사(`As` + 대문자)를 뺀 **문자열인 키는 전부 setter**입니다. 클래스별 코드가 따로 생성되는 게 아니라 하나의 제네릭 `__index`가 그때그때 setter를 만들어 줍니다.
 
-**시그니처(생성된 클래스 타입에서의 모양)**
+**시그니처(타입드 Modifier에서의 모양 — quad-roblox라면 `Modifier<C>`)**
 
 ```luau
-<Field>: (self: <Class>Modifier, value: Field<T>) -> <Class>Modifier
+<Field>: (self: Modifier<C>, value: ModifierField<T>) -> Modifier<C>
 ```
 
 **동작** — 인자에 따라 넷으로 갈립니다.
@@ -139,7 +138,7 @@ local panel = D.Frame { wide }
 setter는 태그를 유지합니다 — 타입드 Modifier에 setter를 걸어도 클래스가 그대로 남습니다.
 
 :::note
-setter는 런타임에 어떤 이름으로든 생기지만, **타입은 클래스별 Modifier 타입에만 있습니다.** 무타입 `q.Modifier()`의 타입에는 예약 메소드 넷뿐이라 `--!strict`에서 `q.Modifier():Size(...)`는 없는 속성입니다. strict 코드에서는 타입드 생성자(`D.Modifier.<Class>` 또는 [`q.Modifier.TypedFactory`](#qmodifiertypedfactorytname))를 쓰거나, 필드를 생성자 테이블(`q.Modifier { Size = … }`)로 넘기세요.
+setter는 런타임에 어떤 이름으로든 생기지만, **타입은 클래스별 Modifier 타입에만 있습니다.** 무타입 `q.Raw.Modifier()`의 타입에는 예약 메소드 넷뿐이라 `--!strict`에서 `q.Raw.Modifier():Size(...)`는 없는 속성입니다. strict 코드에서는 타입드 생성자(`q.Modifier "Class"` 또는 [`q.Raw.Modifier.TypedFactory`](#qrawmodifiertypedfactorytname))를 쓰거나, 필드를 생성자 테이블(`q.Raw.Modifier { Size = … }`)로 넘기세요.
 :::
 
 **에러**
@@ -152,7 +151,7 @@ setter는 런타임에 어떤 이름으로든 생기지만, **타입은 클래�
 
 ```luau
 local scale = q.Source(1)
-local base = D.Modifier.Frame { BackgroundTransparency = 0.5, LayoutOrder = 1 }
+local base = q.Modifier "Frame" { BackgroundTransparency = 0.5, LayoutOrder = 1 }
 
 local dimmed = base:BackgroundTransparency(0.9)     -- 리터럴
 local live = base:LayoutOrder(scale)                -- State 핸들 그대로
@@ -168,15 +167,15 @@ end)
 -- base 는 여전히 0.5 — 전부 새 값이다
 ```
 
-그 필드가 아직 없으면 `old`는 `nil`입니다 — 타입도 `FieldOut<T>?`로 그걸 말합니다. `--!strict`에서는 `old`가 그 필드의 값 대수 전부라 위처럼 필요한 팔로 캐스트해야 합니다.
+그 필드가 아직 없으면 `old`는 `nil`입니다 — 타입도 `ModifierFieldOut<T>?`로 그걸 말합니다. `--!strict`에서는 `old`가 그 필드의 값 대수 전부라 위처럼 필요한 팔로 캐스트해야 합니다.
 
 ## `mod:Peek<<T>>(key)`
 
 **시그니처**
 
 ```luau
-Peek: <T>(self: Modifier, key: string) -> FieldOut<T>?
-type FieldOut<T> = T | State<T> | None
+Peek: <T>(self: Modifier, key: string) -> ModifierFieldOut<T>?
+type ModifierFieldOut<T> = T | State<T> | None
 ```
 
 **인자**
@@ -199,7 +198,7 @@ type FieldOut<T> = T | State<T> | None
 
 ```luau
 local size = q.Source(UDim2.fromOffset(100, 40))
-local mod = q.Modifier { Size = size, Visible = true }
+local mod = q.Raw.Modifier { Size = size, Visible = true }
 
 local storedSize = mod:Peek<<UDim2>>("Size")   -- Source 핸들 자체가 나온다
 local visible = mod:Peek<<boolean>>("Visible") -- true
@@ -233,7 +232,7 @@ local function rounded(mod: any)
     return mod:BorderSizePixel(0):BackgroundTransparency(0.1)
 end
 
-local styled = q.Modifier():Apply(rounded)
+local styled = q.Raw.Modifier():Apply(rounded)
 ```
 
 ## `mod:Overridden(...)`
@@ -246,7 +245,7 @@ Overridden: (self: Modifier, ...any) -> any
 
 **반환** — 합쳐진 새 Modifier(태그 `true` — **무타입**).
 
-**동작** — 필드 단위 합성이고 **뒤 인자가 이깁니다.** 콜론 형태 `a:Overridden(b)`와 네임스페이스 형태 `q.Modifier.Overridden(a, b)`는 정확히 같은 함수입니다(자세한 계약은 [`q.Modifier.Overridden`](#qmodifieroverridden)).
+**동작** — 필드 단위 합성이고 **뒤 인자가 이깁니다.** 콜론 형태 `a:Overridden(b)`와 네임스페이스 형태 `q.Raw.Modifier.Overridden(a, b)`는 정확히 같은 함수입니다(자세한 계약은 [`q.Raw.Modifier.Overridden`](#qrawmodifieroverridden)).
 
 결과는 무타입이 됩니다 — 입력들의 태그가 서로 다를 수 있고 합성은 그중 하나를 고르지 않기 때문입니다. 클래스가 필요하면 [`mod:As<Class>()`](#modasclass)로 다시 태그하세요.
 
@@ -281,7 +280,7 @@ As: <T>(self: Modifier, name: string?) -> T
 **시그니처**
 
 ```luau
-As<Class>: (self: <Ancestor>Modifier) -> <Class>Modifier -- 클래스별로 생성되는 메소드
+As<Class>: (self: Modifier<Ancestor>) -> Modifier<Class> -- 하위 클래스마다 하나씩(타입 함수가 계산)
 ```
 
 **반환** — 그 클래스로 태그된 새 Modifier.
@@ -301,11 +300,11 @@ As<Class>: (self: <Ancestor>Modifier) -> <Class>Modifier -- 클래스별로 생�
 **예제**
 
 ```luau
-local common = D.Modifier.GuiObject():Visible(true) -- GuiObject 태그
+local common = q.Modifier "GuiObject" ():Visible(true) -- GuiObject 태그
 local button = common:AsTextButton()                -- 조상 → 자손: 통과
 ```
 
-## `q.Modifier.Overridden(...)`
+## `q.Raw.Modifier.Overridden(...)`
 
 **시그니처**
 
@@ -321,7 +320,7 @@ Overridden: (...any) -> any
 
 **반환** — 새 무타입 Modifier.
 
-**동작** — 필드 단위로 합치고 **뒤 인자가 이깁니다.** [`q.Modifier(...)`](#qmodifier)의 병합 정책과 같지만, 이쪽은 **Modifier만** 받습니다(평범한 필드 테이블을 못 받습니다).
+**동작** — 필드 단위로 합치고 **뒤 인자가 이깁니다.** [`q.Raw.Modifier(...)`](#qrawmodifier)의 병합 정책과 같지만, 이쪽은 **Modifier만** 받습니다(평범한 필드 테이블을 못 받습니다).
 
 `State`/함수 분기가 없습니다 — 값은 이미 구워진 상태라 그대로 옮겨집니다.
 
@@ -333,16 +332,16 @@ Overridden: (...any) -> any
 **예제**
 
 ```luau
-local theme = q.Modifier { BackgroundTransparency = 0.2 }
-local danger = q.Modifier { BackgroundTransparency = 0 }
+local theme = q.Raw.Modifier { BackgroundTransparency = 0.2 }
+local danger = q.Raw.Modifier { BackgroundTransparency = 0 }
 
-local merged = q.Modifier.Overridden(theme, danger) -- danger가 이긴다
+local merged = q.Raw.Modifier.Overridden(theme, danger) -- danger가 이긴다
 local same = theme:Overridden(danger)               -- 같은 함수, 같은 결과
 ```
 
 **관련** — [테마와 동적 스타일링](/how-to/05-theme-and-dynamic-styling/)
 
-## `q.Modifier.TypedFactory<<T>>(name)`
+## `q.Raw.Modifier.TypedFactory<<T>>(name)`
 
 **시그니처**
 
@@ -356,11 +355,11 @@ TypedFactory: <T>(name: string) -> (...(Modifier | { [string]: any })) -> T
 |---|---|---|
 | `name` | `string` | Modifier **클래스** 이름(빈 문자열 불가) |
 
-**반환** — 그 클래스로 태그된 생성자. 호출 모양은 `q.Modifier(...)`와 같습니다.
+**반환** — 그 클래스로 태그된 생성자. 호출 모양은 `q.Raw.Modifier(...)`와 같습니다.
 
-**동작** — 하는 일이 **하나**입니다. 이름을 등록해 알려진 클래스로 만들고, 그 태그를 심는 생성자를 돌려줍니다. 상속 관계는 아무것도 모릅니다 — 그건 [`DefineSubtype`](#qmodifierdefinesubtypeparent-subtype)의 몫입니다.
+**동작** — 하는 일이 **하나**입니다. 이름을 등록해 알려진 클래스로 만들고, 그 태그를 심는 생성자를 돌려줍니다. 상속 관계는 아무것도 모릅니다 — 그건 [`DefineSubtype`](#qrawmodifierdefinesubtypeparent-subtype)의 몫입니다.
 
-**공개 API입니다.** 백엔드가 자기 엔진 클래스를 등록하는 데 첫 번째로 쓰지만, 컴포넌트 작성자가 자기 가상 클래스를 등록하는 길도 똑같습니다 — 커스텀 필드를 가진 `MaterialButtonModifier`는 `FrameModifier`와 동등한 일급 시민입니다.
+**공개 API입니다.** 백엔드가 자기 엔진 클래스를 등록하는 데 첫 번째로 쓰지만, 컴포넌트 작성자가 자기 가상 클래스를 등록하는 길도 똑같습니다 — 커스텀 필드를 가진 `MaterialButtonModifier`도 런타임에서는 엔진 클래스의 Modifier와 같은 일급 값입니다(태그, `As` 검사, 병합). 타입에서는 다릅니다 — quad-roblox의 입력 자리 마커 `ModifierInto<C>`는 엔진 클래스 태그만 보므로, 커스텀 클래스 값은 `:AsTextButton()`처럼 그 클래스로 내려서 넘깁니다([roblox/03](/reference/roblox/03-modifier-spread/#modifierc--modifierintoc--spreadc--spreadintoc)).
 
 같은 이름으로 다시 부르면 **같은 생성자 객체**가 나옵니다(dedup). 두 모듈이 같은 클래스를 등록해도 안전합니다.
 
@@ -374,15 +373,15 @@ TypedFactory: <T>(name: string) -> (...(Modifier | { [string]: any })) -> T
 type CardModifier = {
     read __quadModifier: "Card",
     Elevation: (self: CardModifier, value: number) -> CardModifier,
-    Peek: <T>(self: CardModifier, key: string) -> QuadTypes.FieldOut<T>?,
+    Peek: <T>(self: CardModifier, key: string) -> QuadTypes.ModifierFieldOut<T>?,
     As: <T>(self: CardModifier, name: string?) -> T,
 }
 
-local Card = q.Modifier.TypedFactory<<CardModifier>>("Card")
+local Card = q.Raw.Modifier.TypedFactory<<CardModifier>>("Card")
 local raised = Card({ Elevation = 2 })
 ```
 
-## `q.Modifier.DefineSubtype(parent, subtype)`
+## `q.Raw.Modifier.DefineSubtype(parent, subtype)`
 
 **시그니처**
 
@@ -416,7 +415,7 @@ DefineSubtype: (parent: string, subtype: string) -> ()
 **예제**
 
 ```luau
-q.Modifier.TypedFactory<<any>>("Clickable")
-q.Modifier.TypedFactory<<any>>("Card")
-q.Modifier.DefineSubtype("Clickable", "Card") -- Card ⊂ Clickable
+q.Raw.Modifier.TypedFactory<<any>>("Clickable")
+q.Raw.Modifier.TypedFactory<<any>>("Card")
+q.Raw.Modifier.DefineSubtype("Clickable", "Card") -- Card ⊂ Clickable
 ```

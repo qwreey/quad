@@ -3,7 +3,7 @@
 	Loop: a per-frame driver that exists ONLY while its owner is alive and wanted (internal to Progress).
 
 	    local hook, effect = Loop.new(visible, function(t: number, dt: number) ... end)
-	    D.Frame { hook, effect, ... }        -- both go in the host's array part
+	    q.Elem "Frame" { hook, effect, ... }        -- both go in the host's array part
 
 	`step(t, dt)` runs on every `RunService.Heartbeat` with the seconds since the loop (re)started connecting and the
 	frame delta — and at no other time:

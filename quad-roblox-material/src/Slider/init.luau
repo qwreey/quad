@@ -15,7 +15,7 @@
 	    Slider({ Value = ratio, Min = 0, Max = 10000, Step = 1, KeyStep = 100, Unit = { Scale = 0.01, Suffix = "%" } })
 	        -- the value stays an INTEGER (0..10000), the label reads "37.25%" (`../Unit.luau`)
 	    Slider({ Value = pan, Min = -50, Max = 50, Centered = true })                     -- centered
-	    Slider({ Value = volume, Min = 0, Max = 100, Orientation = "Vertical", Modifier = D.Modifier.Frame():Size(UDim2.fromOffset(44, 200)) })
+	    Slider({ Value = volume, Min = 0, Max = 100, Orientation = "Vertical", Modifier = q.Modifier "Frame" ():Size(UDim2.fromOffset(44, 200)) })
 	    Slider({ Value = volume, Min = 0, Max = 100, Size = "M", TrackIconActiveStart = "rbxassetid://123" })  -- inset icon
 
 	Props: the shared `Behavior.SliderProps` (`./Behavior.luau` — value, pointer, keys and callbacks are documented there

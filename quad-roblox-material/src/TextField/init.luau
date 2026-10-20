@@ -11,7 +11,7 @@
 	Props (all `read`):
 	  Variant         "Filled" | "Outlined"                       default "Filled"
 	  Label           string | State<string>?                      floats (BodyLarge -> BodySmall) when focused or non-empty
-	  Value           Source<string>?                             two-way (`Text = value` + `q.Out("Text", value)`); an
+	  Value           Source<string>?                             two-way (`Text = value` + `q.Out "TextBox" "Text" (value)`); an
 	                                                              internal Source when omitted
 	  Placeholder     string?                                     while the field is empty: fades in on focus under a label
 	                                                              (shown at rest without one), out on blur (Field.luau PLACEHOLDER)

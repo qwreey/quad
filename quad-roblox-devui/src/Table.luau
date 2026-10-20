@@ -9,7 +9,7 @@
 		           Header: boolean?,                                 -- column title row (default true)
 		           RowBg: boolean?,                                  -- zebra striping from the TableRowBg / TableRowBgAlt tokens
 		           Borders: boolean?,                                -- outer stroke + hairlines between rows and columns
-		           Style: Style?, Modifier: FrameModifier? }
+		           Style: Style?, Modifier: ModifierInto<Frame>? }
 
 	No type argument needed: `T` is inferred from the annotated parameter of `Key` (`Key = function(r: Row) ... end`) —
 	unlike Combo / ComboArray / RadioButton / SelectableOption, whose `Source<T>` argument forces `Combo<<T>>{ ... }`.

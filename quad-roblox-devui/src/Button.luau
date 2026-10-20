@@ -4,7 +4,7 @@
 
 		Button      { Text: string | State<string>, OnClick: (() -> ())?, Size: UDim2 | State<UDim2>?,
 		              Disabled: (boolean | State<boolean>)?, Toggled: (boolean | State<boolean>)?, Hooks: { any }?,
-		              Style: Style?, Modifier: TextButtonModifier? }
+		              Style: Style?, Modifier: ModifierInto<TextButton>? }
 		SmallButton { same }                 no vertical padding (inline with text)
 
 	`Hooks` is a list of hook values (`Tooltip` handle `.Hook`, `Interaction.pointerDown(fn)`, `q.OnRendered(...)`, a Ref ...)

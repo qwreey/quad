@@ -11,7 +11,7 @@
 	visible(v)      Visible default: nil -> true, else the value / State as given
 	hooks(h)        `Hooks?` -> a table safe to `table.unpack` into a host's array part
 	frameName(name) the host-`Name` Modifier of a Frame host whose name is an argument (one Modifier per distinct name,
-	                cached); a fixed name is a module-level `D.Modifier.<Class>():Name(...)` constant in the component
+	                cached); a fixed name is a module-level `q.Modifier "Class" ():Name(...)` constant in the component
 	preHook / postHook   lifecycle hooks (see below)
 	clickSink(hooks?)   an invisible full-cover TextButton "ClickSink" for a surface shown above a dismissing scrim; it is
 	                also the instance that receives the surface's presses (below)

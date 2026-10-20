@@ -37,7 +37,7 @@ rendered:Callback(function(inst)
     end
 end)
 
-const card = D.Frame {
+const card = q.Elem "Frame" {
     -- …프로퍼티 생략(UICorner = 12까지 그대로)…
     -- …05·08장에서 붙인 숫자 키(Tag·Attr·Effect)들도 그대로…
 
@@ -49,8 +49,8 @@ const card = D.Frame {
         end
     end),
 
-    D.TextLabel { --[[ …생략… ]] },
-    D.TextButton { --[[ …생략… ]] },
+    q.Elem "TextLabel" { --[[ …생략… ]] },
+    q.Elem "TextButton" { --[[ …생략… ]] },
 }
 ```
 
@@ -87,7 +87,7 @@ cleanup만 남겨 두었다가 매달린 인스턴스가 죽을 때 그것을 �
 
 ```luau
 -- … 위쪽 코드에 이어집니다(1절에서 만든 상자 둘을 지우고 card를 이렇게 고칩니다)
-const card = D.Frame {
+const card = q.Elem "Frame" {
     -- …프로퍼티 생략…
     -- …05·08장에서 붙인 숫자 키들도 그대로…
 
@@ -102,8 +102,8 @@ const card = D.Frame {
         print("없어짐")
     end),
 
-    D.TextLabel { --[[ …생략… ]] },
-    D.TextButton { --[[ …생략… ]] },
+    q.Elem "TextLabel" { --[[ …생략… ]] },
+    q.Elem "TextButton" { --[[ …생략… ]] },
 }
 ```
 

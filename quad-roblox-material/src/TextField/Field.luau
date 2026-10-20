@@ -32,8 +32,8 @@
 	(`TextInputLayout.java` material-components-android@60ff094, `createPlaceholderFadeTransition`) fades too: linear,
 	motionDurationShort2, the fade in delayed 67 ms (`PLACEHOLDER_START_DELAY`) — the kit follows Compose (no delay).
 
-	Write-back: `q.Out("Text", value)`. With `MaxLength` (or an `OnChange` callback) the write-back is
-	`q.OnChange("Text", fn)`: it clips the engine text to the limit and writes the clipped string with `value:Set` — NOT
+	Write-back: `q.Out "TextBox" "Text" (value)`. With `MaxLength` (or an `OnChange` callback) the write-back is
+	`q.OnChange "TextBox" "Text" (fn)`: it clips the engine text to the limit and writes the clipped string with `value:Set` — NOT
 	`SetIfChanged`: when the source is already at the limit the clipped string equals the source, `SetIfChanged` would be a
 	no-op and the TextBox would keep the overflowing characters (the property binding only rewrites on a publish). `:Set`
 	republishes, the `Text = value` binding rewrites the TextBox. This is the docs' "truncate in the write-back

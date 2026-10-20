@@ -1,6 +1,6 @@
 ---
 title: "02. 첫 화면 — 카드 하나 그리기"
-description: "D.Frame 하나와 그 안의 라벨을 만들어, props 테이블의 문자 키와 숫자 키가 각각 무엇인지 봅니다"
+description: "q.Elem \"Frame\" 하나와 그 안의 라벨을 만들어, props 테이블의 문자 키와 숫자 키가 각각 무엇인지 봅니다"
 ---
 
 import { Quiz, QuizResults } from 'starlight-quiz/components';
@@ -17,12 +17,11 @@ import { Quiz, QuizResults } from 'starlight-quiz/components';
 
 ## 준비 코드
 
-01장에서 만든 진입점 `Main.client.luau` 안에서 계속 짭니다. 01장의 `screen`·`playerGui` 줄은 그대로 두고 `hello` 라벨만 지웁니다. 이 장부터는 그 줄들과 아래 `q`·`D` 두 줄을 코드에서 반복해 적지 않습니다.
+01장에서 만든 진입점 `Main.client.luau` 안에서 계속 짭니다. 01장의 `screen`·`playerGui` 줄은 그대로 두고 `hello` 라벨만 지웁니다. 이 장부터는 그 줄들과 아래 `q` 한 줄을 코드에서 반복해 적지 않습니다.
 
 ```luau
 -- (Main.client.luau 계속 — 01장에서 만든 진입점입니다)
 const q = require("@game/ReplicatedStorage/Client/UI/Quad")
-const D = q.Declaration
 ```
 
 ---
@@ -33,7 +32,7 @@ const D = q.Declaration
 
 ```luau
 -- … 위쪽 코드에 이어집니다
-const card = D.Frame {
+const card = q.Elem "Frame" {
     AnchorPoint = Vector2.new(0.5, 0.5),
     Position = UDim2.fromScale(0.5, 0.5),
     Size = UDim2.fromOffset(240, 160),
@@ -45,8 +44,10 @@ card.Parent = screen
 
 **실행하면** 화면 한가운데에 모서리가 둥근 어두운 사각형이 하나 뜹니다.
 
+`q.Elem "Frame"`은 `Frame`을 만드는 **생성자**를 돌려주고, 바로 뒤의 `{ … }`가 그 생성자를 부릅니다(Luau는 인자가 문자열 하나나 테이블 하나면 괄호를 생략할 수 있습니다). 같은 클래스를 여러 번 만드는 파일이라면 `const Frame = q.Elem "Frame"`처럼 파일 머리에서 꺼내 두고 `Frame { … }`로 써도 됩니다 — 동작은 같고, 큰 모듈에서는 그쪽이 타입 검사도 가볍습니다. 이 튜토리얼은 무엇을 만드는지가 한눈에 보이도록 `q.Elem "Frame" { … }`을 그대로 씁니다.
+
 <details>
-<summary><strong><code>D.Frame &#123; … &#125;</code>이 돌려주는 건 뭔가요?</strong></summary>
+<summary><strong><code>q.Elem "Frame" &#123; … &#125;</code>이 돌려주는 건 뭔가요?</strong></summary>
 
 **부른 그 순간 만들어진 진짜 Roblox Instance입니다.** 나중에 렌더러가 만들어 줄 "설계도"를 받은 게 아닙니다. 그래서 이렇게 바로 읽힙니다.
 
@@ -73,7 +74,7 @@ print(card.ClassName) --> "Frame"
 Quad0076 Dispatch: no handler matched key Parent (value: Instance) - this key may not be a field of this element (a typo, a read-only field, or one from another class), or the provider that handles it (e.g. quad-roblox) is not initialized
 ```
 
-꼬리 힌트는 흔한 두 원인(키 이름이 틀렸거나, 프로바이더가 안 붙었거나)을 적지만 `Parent`는 어느 쪽도 아닙니다. 일부러 막아 두었습니다. `D.…`가 돌려주는 것은 이미 실물 Instance이고, "부모에 붙이는 일"은 만든 쪽이 아니라 **쓰는 쪽**이 정하는 것이기 때문입니다. 그래야 같은 컴포넌트를 어디에 붙일지가 호출 지점에 그대로 보입니다.
+꼬리 힌트는 흔한 두 원인(키 이름이 틀렸거나, 프로바이더가 안 붙었거나)을 적지만 `Parent`는 어느 쪽도 아닙니다. 일부러 막아 두었습니다. `q.Elem`의 생성자가 돌려주는 것은 이미 실물 Instance이고, "부모에 붙이는 일"은 만든 쪽이 아니라 **쓰는 쪽**이 정하는 것이기 때문입니다. 그래야 같은 컴포넌트를 어디에 붙일지가 호출 지점에 그대로 보입니다.
 
 </details>
 
@@ -87,7 +88,7 @@ Quad0076 Dispatch: no handler matched key Parent (value: Instance) - this key ma
 
 ```luau
 -- … 위쪽 코드에 이어집니다(방금 만든 card를 이렇게 고칩니다)
-const card = D.Frame {
+const card = q.Elem "Frame" {
     AnchorPoint = Vector2.new(0.5, 0.5),
     Position = UDim2.fromScale(0.5, 0.5),
     Size = UDim2.fromOffset(240, 160),
@@ -95,7 +96,7 @@ const card = D.Frame {
     UICorner = 12,
 
     -- 여기부터가 숫자 키 자리: 키 없는 원소는 자식이 된다
-    D.TextLabel {
+    q.Elem "TextLabel" {
         Position = UDim2.fromOffset(16, 0),
         Size = UDim2.new(1, -32, 0, 48),
         BackgroundTransparency = 1,
@@ -120,10 +121,10 @@ Lua 테이블 리터럴에서 `{ a, nil, b }`처럼 중간 원소가 `nil`이면
 ```luau
 -- 새 예시: 별도 스크립트
 const maybe = nil
-const card = D.Frame {
-    D.TextLabel { Text = "a" },
+const card = q.Elem "Frame" {
+    q.Elem "TextLabel" { Text = "a" },
     maybe,                        -- ← 구멍
-    D.TextLabel { Text = "b" },
+    q.Elem "TextLabel" { Text = "b" },
 }
 ```
 
@@ -141,9 +142,9 @@ Quad0023 Bookkeeping.recompute: sourceList[2] is nil - a nil hole in the numeric
 
 ## 이해 점검
 
-<Quiz title={"`D.Frame`이 돌려주는 것"}>
+<Quiz title={"`q.Elem \"Frame\"`이 돌려주는 것"}>
 
-`D.Frame { … }`을 부른 직후 손에 들어오는 것은 무엇인가요?
+`q.Elem "Frame" { … }`을 부른 직후 손에 들어오는 것은 무엇인가요?
 
 - [x] 그 자리에서 만들어진 진짜 Roblox Instance라 `card.ClassName`이 바로 읽힙니다
 - [ ] 렌더러가 나중에 인스턴스로 바꿔 줄 설계도라 그때까지는 프로퍼티를 읽을 수 없습니다
@@ -181,8 +182,8 @@ props 테이블에서 이름 없이 순서대로 놓인 원소(숫자 키)는 �
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `Declaration` — Instance 생성](/reference/roblox/02-elem/) — 문자 키·숫자 키에 올 수 있는 것 전부, 숏핸드 키 넷, `D`에 별칭이 없는 클래스를 만드는 `D.New`
-- [00. 설치](/getting-started/00-installation/) §2 3단계 — 타입 검사 플래그 넷(편집기와 CI에 같은 값을 넣어야 합니다)
+- [레퍼런스: `q.Elem` — Instance 생성](/reference/roblox/02-elem/) — 문자 키·숫자 키에 올 수 있는 것 전부, 숏핸드 키 넷, 기본 클래스 맵 밖의 클래스(파트·모델 등)를 쓰는 `q.ForClasses`
+- [00. 설치](/getting-started/00-installation/) §2 3단계 — 타입 검사 플래그(새 솔버는 필수, 한도 셋은 권장 — 편집기와 CI에 같은 값을 넣습니다)
 
 [^handler]: quad는 props의 자리(키)마다 그 값을 맡을 담당을 고릅니다. 그 담당을 **핸들러**라 부르고, 고르는 일을 **디스패치**라 부릅니다. 어떤 핸들러들이 있는지는 [20장](/getting-started/20-handlers/)에서 봅니다.
 

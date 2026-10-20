@@ -12,7 +12,7 @@
 			Speed: number?,                        Drag only
 			OnChange: ((v: Vector2) -> ())?,       after Value changed through the UI
 			Disabled: (boolean | State<boolean>)?,
-			Style: Style?, Modifier: FrameModifier?,
+			Style: Style?, Modifier: ModifierInto<Frame>?,
 		}
 
 		InputUDim2 { same minus Min/Max/Step/Format/Speed }   four fields: scale X, offset X, scale Y, offset Y

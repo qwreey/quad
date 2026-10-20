@@ -3,7 +3,7 @@
 	PlotLines / PlotHistogram (Iris: PlotLines / PlotHistogram).
 
 		PlotLines     { Values: State<{ number }>, Min: number?, Max: number?, Height: number?, Text: string | State<string>?,
-		                Style: Style?, Modifier: FrameModifier? }
+		                Style: Style?, Modifier: ModifierInto<Frame>? }
 		PlotHistogram { same }
 
 	`Values` is the whole series, oldest first (replace the array to update: `values:Set(newArray)`; in-place edits are not
@@ -18,7 +18,7 @@
 	LINES: one thin Frame per segment between consecutive points, keyed by the segment's index (also Slot:List); each is
 	positioned by its centre and rotated by atan2 of the pixel delta (one geometry Compute per segment, three cheap
 	projections of it for Position / Size / Rotation). That needs the plot's pixel size, which the widget
-	reads with `q.Out("AbsoluteSize", ...)` — until the engine has laid the frame out (size 0) segments collapse to
+	reads with `q.Out "Frame" "AbsoluteSize" (...)` — until the engine has laid the frame out (size 0) segments collapse to
 	zero length and appear on the first layout pass. Segments are 1 px thick, PlotLines token colour. UDim offsets are whole pixels, so segment centres/lengths are
 	rounded to the pixel (the rotation is exact).
 

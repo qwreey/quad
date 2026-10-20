@@ -5,7 +5,7 @@
 
 	    local Theme = require("./Theme")
 	    local theme = Theme.new({ Scheme = "dark" })            -- or just use `Theme.default`
-	    D.Frame { BackgroundColor3 = theme.Color.Surface }       -- animated State<Color3>, follows scheme switches
+	    q.Elem "Frame" { BackgroundColor3 = theme.Color.Surface }       -- animated State<Color3>, follows scheme switches
 	    theme:SetScheme("light")                                 -- every bound property tweens to the light role
 	    theme.Scheme                                             -- Source<"light"|"dark">, also writable directly
 

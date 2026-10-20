@@ -3,7 +3,7 @@
 	M3 plain tooltip: a small inverseSurface label that appears after hovering an element for a moment.
 
 	    local tip = Tooltip.hook({ Text = "Add to favorites" })               -- optional: Delay, Overlay, Theme, Gap, Disabled
-	    D.TextButton { tip.Hook, Text = "Save" }                              -- the hook goes in the target array part
+	    q.Elem "TextButton" { tip.Hook, Text = "Save" }                              -- the hook goes in the target array part
 	    Button({ Label = "Save", Hooks = { tip.Hook } })                      -- every kit component takes `Hooks` for this
 	    tip.IsOpen                                                            -- State<boolean>: is the tooltip up
 	    tip.Close()                                                           -- hide right now (also cancels a pending show)

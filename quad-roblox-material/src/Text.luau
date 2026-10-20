@@ -4,10 +4,10 @@
 	in a module-level local) carrying FontFace (Roboto), TextSize and LineHeight for one type role. Color is
 	NOT included (it comes from the theme role the component uses).
 
-	    D.TextLabel { Text = "Hello", Text_.Label("BodyLarge"), TextColor3 = theme.Color.OnSurface }
-	  Text.Label(role)   -> D.Modifier.TextLabel()    for TextLabel
-	  Text.Button(role)  -> D.Modifier.TextButton()   for TextButton
-	  Text.Box(role)     -> D.Modifier.TextBox()      for TextBox
+	    q.Elem "TextLabel" { Text = "Hello", Text_.Label("BodyLarge"), TextColor3 = theme.Color.OnSurface }
+	  Text.Label(role)   -> q.Modifier "TextLabel" ()    for TextLabel
+	  Text.Button(role)  -> q.Modifier "TextButton" ()   for TextButton
+	  Text.Box(role)     -> q.Modifier "TextBox" ()      for TextBox
 	`role` is a `Tokens.Typography` role name ("LabelLarge", "BodyMedium", ...). `family` (optional) replaces
 	the Roboto family (`Typography.FallbackFamily` is the documented fallback).
 	Roblox `LineHeight` is a multiplier, so the spec line height (e.g. 20 px at 14 px) becomes 20/14.

@@ -6,7 +6,7 @@
 	`Look.Travel`, the px the handle center moves between the off and the on end.
 
 	    local s = Behavior.new(props, { Name = "Switch", Travel = 20 })
-	    D.TextButton { s.DragHook, Activated = s.Activated, Interactable = s.Interactable, ... }
+	    q.Elem "TextButton" { s.DragHook, Activated = s.Activated, Interactable = s.Interactable, ... }
 	    -- s.On (what to show), s.DragFrac (nil, or 0 = off end .. 1 = on end while dragged), s.Dragging
 
 	Props (the public props of both looks; all `read`):

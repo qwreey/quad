@@ -10,7 +10,6 @@ description: "quad 에러 메시지를 읽고 표면 blame으로 문제의 소�
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.Declaration
 ```
 
 ---
@@ -35,7 +34,7 @@ ReplicatedStorage.Client.UI.UserProfile:42: Quad0218 Event: handler for "Activat
   부분에만 들어갑니다.
 - 대부분의 경우 `파일:줄` 접두는 **사용자의 선언 줄**을 가리킵니다.
 - **어느 줄을 가리키는지의 규칙** — 인자를 직접 검증하는 표면은 늘 그 호출 줄을 가리킵니다(콜백 안에서 불렀다면 콜백 안의
-  그 줄). quad가 대신 불러 주는 핸들러를 여러 겹 거쳐야 판정되는 소수의 자리(선언의 디스패치 — `D.Frame {}`·`q.Dispatch.drive`,
+  그 줄). quad가 대신 불러 주는 핸들러를 여러 겹 거쳐야 판정되는 소수의 자리(선언의 디스패치 — `q.Elem "Frame" {}`·`q.Dispatch.drive`,
   그리고 핸들러 작성자용 `bindLifetime`·`getOffsetAt`)만 콜백을 깨운 가장 바깥 진입 줄을 가리킵니다(아래 한계 2).
 
 ### 기대하면 안 되는 것 — 알려진 한계 셋
@@ -44,7 +43,7 @@ ReplicatedStorage.Client.UI.UserProfile:42: Quad0218 Event: handler for "Activat
    (`pcall(quad함수, ...)`처럼 quad 함수를 그대로 넘기는 경우). 메시지는 살아남습니다 —
    접두가 필요하면 `pcall(function() ... end)`으로 감싸세요.
 2. **콜백 안에서 일어난 디스패치는 바깥 진입 줄이 blame됩니다.** `Observer`·`Compute`·`Effect`·`slot:List`의 `updateFn` 안에서
-   `D.Frame {}`을 만들거나 `q.Dispatch.drive`처럼 최외곽 스캔으로 던지는 표면을 부르면, 콜백 안의 그 줄이 아니라
+   `q.Elem "Frame" {}`을 만들거나 `q.Dispatch.drive`처럼 최외곽 스캔으로 던지는 표면을 부르면, 콜백 안의 그 줄이 아니라
    그 콜백을 깨운 바깥 줄(`:Set`·`:Get`·마운트 줄)이 blame됩니다. 인자 검증 계열(`Slot:Add(nil)`·`q.Tag("")`·`q.Claim(...)` 안의 검사 등)은 콜백 안에서도
    그 줄을 정확히 가리킵니다.
 3. **quad가 대신 읽거나 쓰는 자리에서 난 에러는 quad 내부 파일을 가리킬 수 있습니다.** 계산 함수가 던졌거나 (정의되지 않은 동작인) yield를 해서
@@ -72,10 +71,10 @@ ReplicatedStorage.Client.UI.UserProfile:42: Quad0218 Event: handler for "Activat
 
 ```luau
 -- ❌ props.Modifier가 nil이면 배열에 구멍이 생긴다
-D.Frame { props.Modifier, props.Ref, Size = UDim2.new() }
+q.Elem "Frame" { props.Modifier, props.Ref, Size = UDim2.new() }
 
 -- ✅
-D.Frame { props.Modifier or q.None, props.Ref or q.None, Size = UDim2.new() }
+q.Elem "Frame" { props.Modifier or q.None, props.Ref or q.None, Size = UDim2.new() }
 ```
 
 ---
@@ -120,7 +119,7 @@ Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) - not filled yet, or never 
 ```luau
 -- ✅ 숫자 키 자리에 그대로
 local function CustomInput(props: { InputRef: q.Ref<TextBox?>? })
-    return D.TextBox {
+    return q.Elem "TextBox" {
         props.InputRef or q.None,
         PlaceholderText = "...",
     }
@@ -132,7 +131,7 @@ end
 ### 함정 4: 이미 claim된 인스턴스에 다시 `Claim`
 
 - **증상**: `Quad0029 Claim: … is already claimed by quad …`(`Claim`이 1패스에서 잡습니다; 백엔드 쪽 `Quad0225 nativeClaim: …`는 파괴된 인스턴스를 GC 전에 다시 claim하는 정의되지 않은 경로에서만 봅니다).
-- **원인**: 한 인스턴스는 생애 동안 한 번만 claim됩니다. `D.New`가 만든
+- **원인**: 한 인스턴스는 생애 동안 한 번만 claim됩니다. `q.Elem`가 만든
   인스턴스도 이미 claim된 상태이고, 부모를 `Claim`할 때 매핑된 자식도 같이
   claim되므로 그 자식에 다시 걸면 여기서 막힙니다. 자세한 계약은
   [07. Studio에서 만든 UI에 반응성 붙이기](./07-studio-ui-binding-and-claim.md).
@@ -151,10 +150,10 @@ end
 local themeColor = q.Source(Color3.fromRGB(255, 0, 0))
 
 -- 빌더 체인
-local dynamicStyle = D.Modifier.Frame():BackgroundColor3(themeColor)
+local dynamicStyle = q.Modifier "Frame" ():BackgroundColor3(themeColor)
 
 -- 초기 필드 테이블도 같은 값
-local dynamicStyle2 = D.Modifier.Frame { BackgroundColor3 = themeColor }
+local dynamicStyle2 = q.Modifier "Frame" { BackgroundColor3 = themeColor }
 ```
 
 ---
@@ -231,12 +230,12 @@ end, small, big)
 ```luau
 -- ❌ 수동으로 시작했다가 나중에 :List로 갈아타기
 local s = q.Slot()
-s:Add(D.Frame {})
-s:List(items, function(ctx) return D.TextLabel { Text = ctx.Item :: string } end) -- 에러
+s:Add(q.Elem "Frame" {})
+s:List(items, function(ctx) return q.Elem "TextLabel" { Text = ctx.Item :: string } end) -- 에러
 
 -- ✅ 데이터 배열이 있다면 처음부터 :List
 local s2 = q.Slot()
-s2:List(items, function(ctx) return D.TextLabel { Text = ctx.Item :: string } end)
+s2:List(items, function(ctx) return q.Elem "TextLabel" { Text = ctx.Item :: string } end)
 ```
 
 ---
@@ -248,15 +247,15 @@ s2:List(items, function(ctx) return D.TextLabel { Text = ctx.Item :: string } en
 | **선택적 값 전달** | `props.Modifier or q.None` — 숫자 키 자리의 `nil`은 구멍이다 |
 | **핸들러 층 값 자리** | `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier`는 숫자 키 자리 |
 | **Ref 대기** | `if ref.Value then ref.Value else ref:Wait().Value`, 또는 `ref:Unwrap()` |
-| **프로퍼티 감시** | `q.OnChange("PropertyName", function(v) ... end)` — 숫자 키 자리 |
+| **프로퍼티 감시** | `q.OnChange "Class" "PropertyName" (function(v) ... end)` — 숫자 키 자리 |
 | **어트리뷰트 삭제** | `q.Attr { MyKey = q.None }` — 그룹에서 이름을 빼는 것만으로는 지워지지 않는다 |
 | **부모 붙이기** | `Parent`는 props가 아니다 — 만든 뒤 밖에서 `inst.Parent = ...` |
 | **이벤트 콜백** | 엔진 인자만 온다(self 없음). self가 필요하면 `PreRef`로 인스턴스를 잡아둘 것 |
 | **인스턴스가 아직 살아 있나** | `q.Backend.isClaimed(inst)` — quad가 만든(또는 `Claim`한) 인스턴스가 지금 quad 손에서 살아 있으면 참, quad가 죽였거나 처음부터 quad 것이 아니면 거짓. `Destroying` 처리 순서에 기대지 말 것(Deferred 시그널에서는 자손의 파괴 처리가 부모의 것보다 먼저 돌 수 있다) — [레퍼런스](../reference/core/10-lifetime-sentinels.md#qbackendisclaimedinst) |
 | **`Effect`가 걸어 둔 비동기 콜백** | 콜백 첫 줄에 `if not q.Backend.canExecute(self) then return end`(`self`는 `fn`이 받은 핸들) — 핸들이 더는 돌 수 없게 된 뒤 cleanup이 연결을 끊기 전 틈에 온 호출을 건너뛴다. `fn` 안에서는 묻지 않는다(생성 자리의 첫 실행은 묶이기 전이라 늘 거짓) — [레퍼런스](../reference/core/10-lifetime-sentinels.md#qbackendcanexecutevalue) |
-| **조건부 자식** | 숫자 키 자리에 `(if cond then D.TextLabel { ... } else q.None)`(12장·how-to 08의 `(cond and child) or q.None`도 같은 뜻) — 끝이 `nil`이면 안 된다, `nil`은 그 자리를 구멍으로 만든다 |
-| **없는 프로퍼티 키(`--!strict`)** | `D.TextLabel { Bogus = 1 }`의 진단은 `Expected this to be 'number', but got '"Bogus"'`(값 쪽에 긴 유니언 불일치 줄이 하나 더)입니다. "키가 숫자여야 한다"가 아니라 **"이 클래스에 그런 프로퍼티가 없다"**는 뜻입니다 — props 타입이 "아는 문자 키 + 숫자 키(자식)"라서 모르는 문자 키가 잘못된 숫자 키로 읽힙니다. `Frame`에 `Activated`를 준 것처럼 클래스가 틀린 이벤트도 같은 모양으로 뜹니다 |
-| **데이터에서 만든 자식 여러 개(`--!strict`)** | 프로퍼티와 자식을 한 표에 미리 섞어 `D.Frame(props)`로 넘기면 타입이 맞지 않습니다(props 타입은 리터럴 자리에서만 추론됩니다). 자식만 평범한 배열로 만들어 Slot의 초기값으로 넘기고 프로퍼티는 리터럴에 둡니다 — `local kids: { Instance } = {}` → 반복문에서 `table.insert(kids, D.TextButton { … })` → `D.Frame { Name = "Toolbar", q.Slot<<Instance>>(kids) }`. 데이터가 `State`로 바뀌는 목록이면 처음부터 `:List`를 씁니다([시작하기 14](../getting-started/14-lists.md)) |
+| **조건부 자식** | 숫자 키 자리에 `(if cond then q.Elem "TextLabel" { ... } else q.None)`(12장·how-to 08의 `(cond and child) or q.None`도 같은 뜻) — 끝이 `nil`이면 안 된다, `nil`은 그 자리를 구멍으로 만든다 |
+| **없는 프로퍼티 키(`--!strict`)** | `q.Elem "TextLabel" { Bogus = 1 }`의 진단은 `Expected this to be 'number', but got '"Bogus"'`(값 쪽에 긴 유니언 불일치 줄이 하나 더)입니다. "키가 숫자여야 한다"가 아니라 **"이 클래스에 그런 프로퍼티가 없다"**는 뜻입니다 — props 타입이 "아는 문자 키 + 숫자 키(자식)"라서 모르는 문자 키가 잘못된 숫자 키로 읽힙니다. `Frame`에 `Activated`를 준 것처럼 클래스가 틀린 이벤트도 같은 모양으로 뜹니다 |
+| **데이터에서 만든 자식 여러 개(`--!strict`)** | 프로퍼티와 자식을 한 표에 미리 섞어 `q.Elem "Frame" (props)`로 넘기면 타입이 맞지 않습니다(props 타입은 리터럴 자리에서만 추론됩니다). 자식만 평범한 배열로 만들어 Slot의 초기값으로 넘기고 프로퍼티는 리터럴에 둡니다 — `local kids: { Instance } = {}` → 반복문에서 `table.insert(kids, q.Elem "TextButton" { … })` → `q.Elem "Frame" { Name = "Toolbar", q.Slot<<Instance>>(kids) }`. 데이터가 `State`로 바뀌는 목록이면 처음부터 `:List`를 씁니다([시작하기 14](../getting-started/14-lists.md)) |
 | **파생 State의 결과 타입(`--!strict`)** | 다른 값에 쓰이는 파생 State는 만드는 줄에 결과 타입을 적는다 — `local label: q.State<string> = count:Compute(...)`. 주석 없이 받은 `:Compute` 결과는 그 변수를 쓰는 이후 코드 전체가 **조용히 무검사**다(있어야 할 진단이 **안 뜨는** 것이 증상 — `label:NoSuchMethod()`를 일부러 넣어 봐도 조용하면 이 구멍). 콜백 파라미터·반환 타입 주석으로는 메워지지 않는다. `:Apply`는 타입을 유지하는 연산자(`Op.Sum`·`Op.Clamp` 등)면 구멍이 없고, 타입을 바꾸거나 자기 상태를 가진 팩토리(`Op.Not`·`Op.Indexed`·`q.Animate`·`q.Blocker`·`q.Debounce`·`q.Throttle`)면 같은 구멍이 있다([2026-09-27 실측]; [시작하기 04](../getting-started/04-reacting.md)의 접힌 설명) |
 
 ---

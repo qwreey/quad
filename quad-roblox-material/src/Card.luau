@@ -20,7 +20,7 @@
 	  Gap        number?                vertical stack of the children with this spacing (adds ONE UIListLayout);
 	                                    default none — without it the children position themselves
 	  LayoutOrder number | State<number>?
-	  Theme, Modifier                   Modifier: any GuiObject modifier (`D.Modifier.GuiObject()...`), applied AFTER
+	  Theme, Modifier                   Modifier: any GuiObject modifier (`q.Modifier "GuiObject" ()...`), applied AFTER
 	                                    the base style (later wins). The base Size is `0,0` + AutomaticSize XY
 	                                    (shrink-wrap): pass `Size`/`AutomaticSize` to fix a width.
 	Returns the host (Frame, or TextButton when `OnClick`).

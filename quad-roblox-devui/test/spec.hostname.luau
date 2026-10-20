@@ -1,6 +1,6 @@
 --!strict
 -- Host Name rule (src/init.luau "HOW TO WRITE A DEVUI WIDGET"): a host's default Name sits in the kit's base Modifier, so a
--- caller's `Modifier = D.Modifier.<Class>():Name("X")` renames it; without one the default name is unchanged.
+-- caller's `Modifier = q.Modifier "Class" ():Name("X")` renames it; without one the default name is unchanged.
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true

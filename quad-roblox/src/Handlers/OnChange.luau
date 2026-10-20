@@ -94,7 +94,7 @@ local function makeOut(name: string, src: any): OnChangeDescriptor
 	end
 	if isSource == nil or not isSource(src) then
 		local got = if isState ~= nil and isState(src) then "a read-only State (a :Compute result?)" else typeof(src)
-		errNS.errorBeforeNearest(`Quad0224 Out: second argument for "{name}" must be a Source to write back into (got {got})`, SURFACE)
+		errNS.errorBeforeNearest(`Quad0224 Out: "{name}" needs a Source to write back into (got {got})`, SURFACE)
 	end
 	return makeOnChange(name, function(v: any)
 		src:SetIfChanged(v) -- the echo skip above (2026-10-01: the opt-in comparing write, same `==`)

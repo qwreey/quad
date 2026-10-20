@@ -3,7 +3,11 @@ title: "Vol. 4 — 불변성 우회: 공변 마커로 New Solver를 길들이다
 description: "공변 마커로 Luau New Solver의 불변성 제약과 유니언 폭발 문제를 우회하는 설계를 설명합니다"
 ---
 > **작성 목적**: 프레임워크 아키텍트 및 타입 시스템 엔지니어를 위한 기술 해설서
-> **관련 소스**: `quad-types/src/init.luau`, 옛 `quad-roblox/src/Declaration/init.luau`(생성 파일), `scripts/gen-d.py`
+> **관련 소스**: `quad-types/src/init.luau`, `quad-roblox/src/Surface/init.luau`(3.4.0), 옛 `quad-roblox/src/Declaration/init.luau`(3.3까지의 생성 파일), `scripts/gen-d.py`
+
+:::note
+**[3.4.0]** 이 권의 "생성된 `Declaration`"과 한도 플래그 이야기는 3.3까지의 표면입니다. 3.4.0부터 생성자와 Modifier의 타입은 생성 파일이 아니라 타입 함수(`quad-roblox/src/Surface/init.luau`)가 사용자의 검사기가 가진 클래스 타입에서 계산하고, 한도 플래그는 필수가 아니라 권장이 됐습니다([00. 설치](/getting-started/00-installation/)의 3단계). 공변 마커 자체는 그대로 쓰입니다 — 입력 자리의 `StateMarker<T>`도, 새로 생긴 `ModifierInto<C>`·`SpreadInto<C>`(태그만 보는 마커)도 같은 설계입니다.
+:::
 
 :::danger
 이 권은 공개 타입 표면의 변성 설계와 솔버 한도를 다룹니다. 애플리케이션을 만들려고 quad를 배우는 중이라면 [Getting Started](/getting-started/00-installation/)부터 보십시오.

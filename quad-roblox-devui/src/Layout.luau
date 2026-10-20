@@ -2,7 +2,7 @@
 --[[
 	Layout widgets (Iris: SameLine / Group / Indent / Separator / SeparatorText).
 
-		SameLine      { Children: Slot<Instance>?, Spacing: number?, Style: Style?, Modifier: FrameModifier? }
+		SameLine      { Children: Slot<Instance>?, Spacing: number?, Style: Style?, Modifier: ModifierInto<Frame>? }
 		              a horizontal row (children keep their own widths); Spacing defaults to Style ItemSpacing.X
 		Group         { Children, Style?, Modifier? }                 a vertical stack (ItemSpacing.Y apart)
 		Indent        { Children, Width: number?, Style?, Modifier? } a vertical stack indented by IndentSpacing

@@ -33,7 +33,7 @@ description: "값 여럿을 한 번에 바꿀 때 중간 상태가 새지 않도
 
 ```luau
 -- … (Counter.luau) 카드의 숫자 키 자리에 이어집니다
-        D.TextButton {
+        q.Elem "TextButton" {
             Text = "단위 바꾸기",
             Activated = function()
                 const toPoint = unit:Get() == "점"
@@ -126,7 +126,7 @@ flowchart LR
 
 ```luau
 -- … (Counter.luau) 카드의 숫자 키 자리에 버튼 하나 더
-        D.TextButton {
+        q.Elem "TextButton" {
             Text = "일시정지",
             Activated = function()
                 if blocker.Blocking then blocker:Off() else blocker:On() end

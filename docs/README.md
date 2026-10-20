@@ -28,7 +28,7 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 | **Overview** | 이미 Fusion·Vide·react-lua를 쓰며 "넘어올 값이 있나"를 판단하려는 엔지니어, quad v1 사용자 | 솔직, 대가를 같이 적음, 예정된 것은 예정으로 | 도구별 "잘하는 것 → 겪는 문제 → Quad의 풀이 → 넘어올/안 넘어올 이유", 차이표, 설계 선택과 대가, 없는 것의 이유(일부러/계획/한계); v1에서 무엇이 왜 달라졌고 어떤 틀로 옮기나 |
 | **Getting Started** | Quad를 처음 접하는 Roblox 개발자 | 친절, 선형, 최소 | 설치·설정부터 목록·애니메이션까지 카운터 하나를 키우며 완주 |
 | **How-To Guides** | 실제 프로덕트에 도입하는 엔지니어 | 간결, 해결책 중심 | 컴포넌트 경계 규약, 폼 검증, 긴 목록, 외부 시그널, 테마, 헤드리스 테스트, `Claim`, v1 이관, 오버레이(모달·토스트), 그리고 부록인 디버깅 |
-| **API Reference** | 일상 사용자·프레임워크 확장자 | 엄밀한 시그니처·에러 문구 | 타입당 1페이지 심볼 룩업(core/sugar/roblox/extend), `D`는 표면만·Roblox 문서로 유도 |
+| **API Reference** | 일상 사용자·프레임워크 확장자 | 엄밀한 시그니처·에러 문구 | 타입당 1페이지 심볼 룩업(core/sugar/roblox/extend), `q.Elem`은 표면만·Roblox 문서로 유도 |
 | **The Quadnomicon** | 프레임워크 설계자, 아키텍트 | 분석적, 한계를 숨기지 않음 | Revision/EpochMap, Slot 부분합 트리, 메모리 토폴로지, 마커 타입, 디스패치 엔진 등 내부 설계 |
 | **Agents** | AI 코딩 에이전트에게 quad 코드를 맡기는 개발자 | 절차 중심, 짧게 | 스킬 `quad-ui-dev`의 설치·호출·다른 에이전트에 붙이기·갱신(스킬 본문은 영문, 레포에만) |
 
@@ -45,9 +45,9 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 
 ### Getting Started (시작하기) — 22편(선형 튜토리얼)
 **[2026-09-10 재구성, 2026-09-11 재편]** 사용자 피드백으로 "설정을 앞으로 / 정리 페이지 해체 / Slot을 컴포넌트 앞으로"를 반영해 7편에서 16편으로 늘렸고(옛 `13-blocker.md`(지금 `18-blocker.md`)와 `05-tag-attr.md`는 같은 날 추가), 2026-09-11에 `Ref`와 `Observer`/`Effect`를 갈라 두 장으로(옛 06 `ref-and-effect` 해체, 옛 04 §2 Observer가 07로) + 함수형 패턴 장(11) 신설로 18편이 됐다. 같은 날 생명주기 훅 장(08)이 더해져 19편, 같은 날 밤 핸들러 맛보기 장(18)이 더해져 20편, **[2026-09-21]** `Store` 단독 장(15)이 더해져 21편, 같은 날 밤 반대 방향(엔진이 바꾼 값을 상태로 올리기)을 다루는 `q.Out` 장(06, 05장 뒤)이 더해져 22편이 됐다. 페이지 구조는 목표 한 줄 → (필요한 장에서는) 지금까지의 코드 → 이번에 바꾸는 몇 줄 → 실행하면 보이는 것 → 개념 한 문단 → 더 알고 싶다면이고, 곁가지는 **질문 제목의 `<details>`를 그 궁금증이 생기는 문장 바로 뒤**에 둔다(사용자 결정: "안 궁금한 지식을 마구 주입받을 필요는 없거든"). `## 다음 단계` 절은 전 페이지에서 뺐다(사이트가 이전/다음 버튼을 단다). **[2026-09-14]** 시작하기(정리 장 제외)·실전 레시피 전편 끝에 `## 이해 점검` 절(오버뷰에는 두지 않는다 — 새 개념을 배우는 자리가 아니라 판단하는 자리라 "잘 읽었나" 검사가 되기 때문, 사용자 판단 2026-09-14) — ```quiz 코드펜스(GitHub에선 코드 블록으로 보임)를 `site/sync-docs.py`가 starlight-quiz `<Quiz>`로 펼치고 그 페이지만 `.mdx`로 쓴다. 문항은 그 페이지 본문만 근거로(작성 규칙은 스크래치 브리프, 검수는 sonnet 두 패스).
-- [`00-installation.md`](./getting-started/00-installation.md) — 까는 것만: 배포 경로 표(**[2026-09-10 기준] pesde만 제공**), pesde 의존성 **셋**(`quad_types`도 직접 — 01의 타입 재수출이 그 링커를 쓴다), Rojo 매핑(rojo sourcemap으로 검증), 타입 검사 플래그 넷. Wally·`.rbxm`은 `<details>` 하나로 접었다.
+- [`00-installation.md`](./getting-started/00-installation.md) — 까는 것만: 배포 경로 표(**[2026-09-10 기준] pesde만 제공**), pesde 의존성 **셋**(`quad_types`도 직접 — 01의 타입 재수출이 그 링커를 쓴다), Rojo 매핑(rojo sourcemap으로 검증), 타입 검사 플래그(새 솔버 필수·한도 셋 권장). Wally·`.rbxm`은 `<details>` 하나로 접었다.
 - [`01-setup.md`](./getting-started/01-setup.md) — 프레임워크 설정하기: 설정 모듈 `ReplicatedStorage/Client/UI/Quad`(문자열 `@game/…` require + 타입 재수출 + `UseProvider`)와 진입점 `StarterPlayerScripts/Main`(첫 `ScreenGui`·확인용 라벨). quad-base/quad-roblox가 왜 나뉘는지가 여기서 나온다.
-- [`02-first-screen.md`](./getting-started/02-first-screen.md) — 첫 화면: `D.Frame` 카드 + 라벨 자식. 문자 키=프로퍼티, 숫자 키=자식, `Parent`는 밖에서, 숏핸드 `UICorner`.
+- [`02-first-screen.md`](./getting-started/02-first-screen.md) — 첫 화면: `q.Elem "Frame"` 카드 + 라벨 자식. 문자 키=프로퍼티, 숫자 키=자식, `Parent`는 밖에서, 숏핸드 `UICorner`.
 - [`03-flowing-values.md`](./getting-started/03-flowing-values.md) — 값이 흐르게 하기: 원천(`q.Source`) → 프로퍼티에 그대로 꽂기 → 중간에 값을 **처리하는** 파이프(`:Compute`) → `Source`/`State` 이름 붙이기. 게으름은 암시 한 문단만(본문은 19편).
 - [`04-reacting.md`](./getting-started/04-reacting.md) — 반응하기(이벤트만): `Activated`로 `count:Set`, 이벤트는 문자 키 부분·엔진 인자만. 관측은 08로 넘긴다.
 - [`05-tag-attr.md`](./getting-started/05-tag-attr.md) — 이름표와 속성: 숫자 키 부분의 `q.Tag`(자리별 참조 계수·State에서 나오는 태그)와 `q.Attr`/`q.BooleanAttr`, 붙인 것을 `Instance:QueryDescendants`로 찾기(선택자 표는 Studio 실측), 스타일시트는 공식 문서로.
@@ -55,7 +55,7 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 - [`07-ref.md`](./getting-started/07-ref.md) — 인스턴스를 손에 쥐기: `q.Ref`(`<<T>>` 타입 인자 소개), 같은 props 안에서 쓰는 `q.PreRef`+`:Unwrap`, 채워질 때 받는 `:Callback`/`:Wait`, 인스턴스마다 새로 만드는 이유(Destroy해도 안 비워진다), `q.PostRef`.
 - [`08-observer-effect.md`](./getting-started/08-observer-effect.md) — 관측하기: `:Observer`(인스턴스가 파괴되면 관측이 멈춘다·보류와 재생)와 `q.Effect`(의존 여럿·cleanup), §3 화면 안쪽은 `Effect`가 아니라 값으로(프로퍼티 직접 쓰기 안티패턴), §4 `Ref`를 의존성으로(게임패드 선택 — cleanup이 실제로 필요한 예). 접힘으로 핸들을 State에 담아 끄는 법.
 - [`09-lifecycle-hooks.md`](./getting-started/09-lifecycle-hooks.md) — 생성만 보고 싶다면: `PreRef`+`:Callback`/`PostRef`+`:Callback`/cleanup만 있는 `Effect`를 손으로 짠 뒤, 그것과 **정확히 같은 것**이 `q.OnCreated`/`q.OnRendered`/`q.OnDestroyed`임을 실제 구현 열 줄로 보인다(바텀업).
-- [`10-modifier.md`](./getting-started/10-modifier.md) — 스타일을 값으로: 평범한 잎에 `D.Modifier.Frame {…}`, 필드에 State가 흐른다, 팩토리 + 스타일 모듈 하나.
+- [`10-modifier.md`](./getting-started/10-modifier.md) — 스타일을 값으로: 평범한 잎에 `q.Modifier "Frame" {…}`, 필드에 State가 흐른다, 팩토리 + 스타일 모듈 하나.
 - [`11-slot.md`](./getting-started/11-slot.md) — 자식이 들어갈 자리: `Slot`을 숫자 키 부분에, CRUD, `Offset`/`Length`를 print로 확인, Slot in Slot, 자리 하나를 `State`로 갈아 끼우기(자식 처리기가 맡는다 — 옛 원소는 내려질 뿐; 옛 서술 "내부적으로 `:Single`"은 2026-09-11 정정). `:List`는 암시만.
 - [`12-components.md`](./getting-started/12-components.md) — 컴포넌트로 쪼개기: 평범한 함수·props·둘 나란히, 상태는 안에서 만들거나 밖에서 받은 원천을 되돌려 쓰고(체크박스), 자식은 11의 `Slot`을 `props.Children or q.None`으로 받는다.
 - [`13-functions.md`](./getting-started/13-functions.md) — 함수로 묶기: 콜백·클로저·팩토리·커링에 이름 붙이기(새 API 없음). 값을 돌려주는 팩토리(`highlightColor`)와 컴포넌트에 팩토리를 넘기는 패턴(`props.Watch` → Effect), 손으로 만든 `Sum`에서 `q.Operator.Sum`+`:Apply`로, `:Apply`의 `__apply` 객체 팔 예고(18의 Blocker), Hook 규칙이 없는 이유.
@@ -70,14 +70,14 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 
 ### How-To Guides (실전 레시피) — 10편
 **[2026-09-10]** 사용자 결정으로 `01`↔`09`를 맞바꿨다 — 컴포넌트 경계 규약이 첫 장, 디버깅은 순서 없는 부록으로 맨 뒤. **[2026-09-25]** docs-review 2-4로 `09-overlays-modal-toast.md`를 신설하면서 옛 09번이던 에러 읽는 법 부록은 `10-debugging-and-troubleshooting.md`로 옮겼다 — 부록은 여전히 순서 없이 맨 뒤.
-- [`01-component-conventions.md`](./how-to/01-component-conventions.md) — 컴포넌트 경계 규약과 스타일 합성: props 두 부분의 규칙 넷, `props.X or None`(nil-hole), 우선순위 불변식 셋, 자식은 `Slot`으로 받기, `Tag`/`Attr`, Hook 규칙 없는 팩토리와 `--!strict` 주석 안내, 체크리스트.
+- [`01-component-conventions.md`](./how-to/01-component-conventions.md) — 컴포넌트 경계 규약과 스타일 합성: props 두 부분의 규칙 넷, `props.X or None`(nil-hole), 우선순위 불변식 셋, 안쪽 요소에 꽂을 자리 `Spread`(먼저가 이김)와 Store·Context·Modifier·Spread·토큰 고르기, 자식은 `Slot`으로 받기, `Tag`/`Attr`, Hook 규칙 없는 팩토리와 `--!strict` 주석 안내, 체크리스트.
 - [`02-form-validation-pattern.md`](./how-to/02-form-validation-pattern.md) — 값을 밖에서 받는 체크박스로 시작해, 폼 상태를 테이블 하나로 묶어 컴포넌트에 주입하고, 후행 의존성 `:Compute`로 실시간 검증·버튼 제어, 제출 결과는 바깥이 관측, 입력 다듬기(원본은 입력창과 양방향·다듬은 값은 파생·표시 정리는 `FocusLost` — 2026-10-01 추가).
 - [`03-long-lists-and-windowing.md`](./how-to/03-long-lists-and-windowing.md) — 긴 목록: 기본 계약은 [시작하기 14](./getting-started/14-lists.md)로 보내고, `LayoutOrder`/`Position` 바인딩·윈도잉·`Throttle`·"안 해주는 것"만 다룬다.
 - [`04-network-and-input-bridge.md`](./how-to/04-network-and-input-bridge.md) — `RemoteEvent`·`UserInputService`를 `Source:Set`으로 격리, `Effect` cleanup과 생명주기 훅.
 - [`05-theme-and-dynamic-styling.md`](./how-to/05-theme-and-dynamic-styling.md) — 디자인 토큰, `state:Apply(q.Animate{...})`, `Modifier.Overridden`, 명시적 `q.Context`로 계층 건너 전달.
 - [`06-headless-testing.md`](./how-to/06-headless-testing.md) — 반응형 그래프(`Source`/`Compute`/`Store`/`Blocker`)는 평범한 `luau` CLI에서 실측된 require 경로로 그대로 검증됩니다. 프로바이더 주입·`Observer`/`Effect`의 생명주기 결합·`Slot` 조립은 공개 `quad-mock`이 아직 없어 자기 프로바이더가 필요합니다. 이 저장소 자체의 테스트는 `CONTRIBUTING.md`.
-- [`07-studio-ui-binding-and-claim.md`](./how-to/07-studio-ui-binding-and-claim.md) — `q.Claim(inst, q.Declaration.Mapper...)` 디스크립터, claim-once·직계 자식 전부 매핑·공동 소유 컨테이너는 대상 밖.
-- [`08-migrating-from-v1.md`](./how-to/08-migrating-from-v1.md) — quad v1(`Init(id)`/`Class "Frame"`/`Store.GetStore`)에서의 이관: 툴체인 플래그 넷, 개념 대응표, 제거된 기능과 경로, strict 블로커 열여덟.
+- [`07-studio-ui-binding-and-claim.md`](./how-to/07-studio-ui-binding-and-claim.md) — `q.Claim(inst, q.Mapper...)` 디스크립터, claim-once·직계 자식 전부 매핑·공동 소유 컨테이너는 대상 밖.
+- [`08-migrating-from-v1.md`](./how-to/08-migrating-from-v1.md) — quad v1(`Init(id)`/`Class "Frame"`/`Store.GetStore`)에서의 이관: 툴체인 플래그, 개념 대응표, 제거된 기능과 경로, strict 블로커 열여덟.
 - [`09-overlays-modal-toast.md`](./how-to/09-overlays-modal-toast.md) — **[2026-09-25 신설]** 떠 있는 것 열고 닫기: `Visible` 유지 vs 조건부 자식(`State<Instance?>`)으로 모달을 열고 닫기, `q.Context`로 깊은 트리거에서 뿌리의 오버레이를 열기, `Slot:List`로 토스트 큐, `q.Fallback`으로 던진 에러를 에러 모달에 담기.
 - [`10-debugging-and-troubleshooting.md`](./how-to/10-debugging-and-troubleshooting.md) — **부록**(순서 없음): 에러 메시지 모양(`주어: 이유`, 받은 값을 말할 땐 `(got X)`)과 표면 blame의 한계, 현업 함정 일곱(문구는 소스 verbatim).
 
@@ -89,7 +89,7 @@ Roblox 공식 레퍼런스로 유도(React가 DOM 요소를 설명하지 않듯)
 - [`00-index.md`](./reference/00-index.md) — 심볼 → 페이지 색인.
 - `core/`(quad-base) 11편 — [모듈](./reference/core/01-quad-module.md)(New/RunInit/AddPlugin/UseProvider) · [Source](./reference/core/02-source.md) · [State](./reference/core/03-state.md) · [Store](./reference/core/04-store.md) · [Observer·Effect](./reference/core/05-observer-effect.md) · [Slot](./reference/core/06-slot.md) · [Ref](./reference/core/07-ref.md) · [Modifier](./reference/core/08-modifier.md) · [Tag·Attr](./reference/core/09-tag-attr.md) · [센티널·수명 스텁](./reference/core/10-lifetime-sentinels.md) · [술어 `is*`](./reference/core/11-predicates.md).
 - `sugar/` 6편(사이트 사이드바에서는 Core 아래 하위 그룹 — quad-base 안의 순수 슈거) — [Context](./reference/sugar/01-context.md) · [Operator](./reference/sugar/02-operator.md) · [Debounce·Throttle](./reference/sugar/03-debounce-throttle.md) · [생명주기 훅](./reference/sugar/04-lifecycle-hooks.md) · [Fallback·Traceback](./reference/sugar/05-fallback-traceback.md) · [Blocker](./reference/sugar/06-blocker.md)(`state:Gate` 위의 정책 — 2026-09-11 사용자 결정으로 core에서 이동).
-- `roblox/`(quad-roblox, 배지 Roblox) 6편 — [설치·확장 표면](./reference/roblox/01-install.md) · [`Declaration`](./reference/roblox/02-elem.md)(표면 한 예시 + Roblox 문서 유도, 레거시 프로퍼티) · [`D.Modifier`](./reference/roblox/03-modifier-spread.md) · [Claim·Mapper](./reference/roblox/04-claim-mapper.md) · [OnChange](./reference/roblox/05-onchange.md) · [Tween·Animate](./reference/roblox/06-tween-animate.md).
+- `roblox/`(quad-roblox, 배지 Roblox) 6편 — [설치·확장 표면](./reference/roblox/01-install.md) · [`q.Elem`](./reference/roblox/02-elem.md)(표면 한 예시 + Roblox 문서 유도, 레거시 프로퍼티, 클래스 맵·`q.ForClasses`) · [`q.Modifier`·`q.Spread`](./reference/roblox/03-modifier-spread.md) · [Claim·Mapper](./reference/roblox/04-claim-mapper.md) · [OnChange·OnEvent·Out](./reference/roblox/05-onchange.md) · [Tween·Animate](./reference/roblox/06-tween-animate.md).
 - `extend/`(배지 Advanced) 2편 — [백엔드 프로바이더 규약](./reference/extend/01-backend-provider-contract.md)(옛 reference/01 에세이 그대로) · [Dispatch·Handler 계약](./reference/extend/02-dispatch-handler-contract.md).
 - `errors/`(배지 QuadNNNN) 10편 — **[2026-09-22 신설]** [에러 코드 색인](./reference/errors/00-index.md) + 층별 아홉 페이지(`### QuadNNNN` 절마다 메시지·언제·고치려면·참고). 소스의 번호와 절의 정합은 `scripts/error-codes.py`가 지킨다(test.sh 게이트).
 
@@ -99,7 +99,7 @@ Roblox 공식 레퍼런스로 유도(React가 DOM 요소를 설명하지 않듯)
 - [Vol. 1](./quadnomicon/01-revision-and-epochmap.md) 32-bit Wrapping Revision과 EpochMap — `bit32.bnot(-rev)` 랩어라운드 감소(성능이 이유), 2^32 랩은 도달 가능하지만 오판정 조건이 한 점.
 - [Vol. 2](./quadnomicon/02-slot-prefix-sum-tree.md) Slot-in-Slot 부분합 트리 — `rawSplice`의 부기 먼저·물리 한 번, Roblox `nativeMove`/`nativeSwap`는 의도된 no-op.
 - [Vol. 3](./quadnomicon/03-luau-memory-topology.md) Luau 메모리 토폴로지 — Ephemeron 없는 weak 테이블과 `Relate`, `bindLifetime` 앵커, "quad가 만든 Instance는 Destroy로만 회수된다".
-- [Vol. 4](./quadnomicon/04-covariant-markers.md) 공변 마커 — 입력 자리의 `StateMarker<T>`(슬롯 유니언이 최대 11팔에서 기본 세 팔, 보간 가능 타입은 네 팔로), 한도 플래그 넷의 계기.
+- [Vol. 4](./quadnomicon/04-covariant-markers.md) 공변 마커 — 입력 자리의 `StateMarker<T>`(슬롯 유니언이 최대 11팔에서 기본 세 팔, 보간 가능 타입은 네 팔로), 한도 플래그의 계기(3.3까지의 생성 표면 이야기).
 - [Vol. 5](./quadnomicon/05-non-destructive-portal-and-ownership.md) 비파괴 언마운트와 소유권 공리 — 비파괴는 `State<Slot>` 교체와 `OwnsElements = false`에 한정, 기본 `OwnsElements = true`는 파괴.
 - [Vol. 6](./quadnomicon/06-liveness-gate-and-isolation.md) 단일 인자 생존 게이트 — `canBound(v) == not canExecute(v)`, GC 앵커는 `nativeClaim`의 `ClassName` 커넥션.
 - [Vol. 7](./quadnomicon/07-instance-identity-and-gc-philosophy.md) 인스턴스 신원·네이티브 GC·`Claim` 계약.

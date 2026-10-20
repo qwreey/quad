@@ -18,7 +18,7 @@ import { Quiz, QuizResults } from 'starlight-quiz/components';
 
 ```luau
 -- … 위쪽 코드에 이어집니다(card 위에 한 덩이를 둡니다)
-const CardStyle = D.Modifier.Frame {
+const CardStyle = q.Modifier "Frame" {
     BackgroundColor3 = Color3.fromRGB(35, 35, 42),
     BorderSizePixel = 0,
 }
@@ -28,7 +28,7 @@ const CardStyle = D.Modifier.Frame {
 
 ```luau
 -- … 위쪽 코드에 이어집니다
-const card = D.Frame {
+const card = q.Elem "Frame" {
     CardStyle,                       -- ← 숫자 키
 
     Size = UDim2.fromOffset(240, 160),
@@ -40,7 +40,7 @@ const card = D.Frame {
 
 **실행하면** 겉모습은 그대로입니다(`BorderSizePixel = 0`이 새로 들어가 검은 1px 테두리가 빠지는 것 말고는) — 다만 이제 그 스타일은 값이라, 다른 인스턴스에도 같은 것을 놓을 수 있습니다.
 
-`D.Modifier.<Class>`는 **클래스 태그가 붙은** 생성자입니다. `TextButton` 전용 `Modifier`를 `Frame`의 숫자 키 자리에 넣으면 타입 검사에서 걸립니다. 테이블을 넘기는 위 형태와 빌더 체인 형태(`D.Modifier.TextButton():TextSize(16)`) 둘 다 됩니다. 필드 이름·값 타입까지 검사받는 건 체인 형태뿐입니다(테이블 형태는 클래스 태그만 붙고 필드는 런타임에서 잡힙니다).
+`q.Modifier "Class"`는 **클래스 태그가 붙은** 생성자입니다. `TextButton` 전용 `Modifier`를 `Frame`의 숫자 키 자리에 넣으면 타입 검사에서 걸립니다. 테이블을 넘기는 위 형태와 빌더 체인 형태(`q.Modifier "TextButton" ():TextSize(16)`) 둘 다 됩니다. 필드 이름·값 타입까지 검사받는 건 체인 형태뿐입니다(테이블 형태는 클래스 태그만 붙고 필드는 런타임에서 잡힙니다).
 
 ---
 
@@ -58,12 +58,12 @@ const cardColor: q.State<Color3> = hot:Compute(function(h)
         else Color3.fromRGB(35, 35, 42)
 end)
 
-const CardStyle = D.Modifier.Frame {
+const CardStyle = q.Modifier "Frame" {
     BackgroundColor3 = cardColor, -- Compute를 테이블 안에 바로 쓰면 strict가 콜백 타입을 못 잡습니다 — 지역 변수로 빼세요
     BorderSizePixel = 0,
 }
 
-const card = D.Frame { CardStyle, Size = UDim2.fromOffset(240, 160), UICorner = 12 } -- …05·07~09장에서 붙인 숫자 키와 자식들은 그대로…
+const card = q.Elem "Frame" { CardStyle, Size = UDim2.fromOffset(240, 160), UICorner = 12 } -- …05·07~09장에서 붙인 숫자 키와 자식들은 그대로…
 
 hot:Set(true)   -- 카드 배경이 빨강으로 바뀐다(확인이 끝나면 이 줄은 지웁니다)
 ```
@@ -76,7 +76,7 @@ hot:Set(true)   -- 카드 배경이 빨강으로 바뀐다(확인이 끝나면 �
 
 ```luau
 -- … 위쪽 코드에 이어집니다
-const base = D.Modifier.TextButton { TextSize = 16 }
+const base = q.Modifier "TextButton" { TextSize = 16 }
 const big = base:TextSize(24)     -- base는 그대로 16
 ```
 
@@ -85,13 +85,15 @@ const big = base:TextSize(24)     -- base는 그대로 16
 
 무엇이 무엇을 덮는지는 규칙 셋뿐입니다.
 
-1. **직접 적은 문자 키가 이깁니다.** `D.TextButton { SomeMod, Text = "확정" }`에서 `Text`는 어떤 `Modifier`가 무엇을 갖고 오든 그대로 유지됩니다.
+1. **직접 적은 문자 키가 이깁니다.** `q.Elem "TextButton" { SomeMod, Text = "확정" }`에서 `Text`는 어떤 `Modifier`가 무엇을 갖고 오든 그대로 유지됩니다.
 2. **숫자 키 자리에서는 뒤에 온 `Modifier`가 앞의 것을 필드 단위로 덮습니다.**
 3. **`Modifier.Overridden(A, B)`도 같은 방향**입니다 — 뒤 인자가 앞 인자를 덮습니다. 닷 형태와 콜론 형태(`a:Overridden(b)`) 둘 다 됩니다.
 
 빈 자리를 명시적으로 비우고 싶으면 `q.None`을 넣습니다. `nil`은 "이 `Modifier`는 그 필드에 관심 없음"이고, `q.None`은 "그 필드를 비워라"입니다 — 뜻이 다릅니다.
 
 컴포넌트가 바깥에서 `Modifier`를 받아 자기 안쪽에 꽂을 때의 경계 규약(`props.Modifier or q.None`)과 상위 클래스 `Modifier`를 받는 법은 [01. 컴포넌트 경계 규약과 스타일 합성](/how-to/01-component-conventions/) §2·§3에 있습니다.
+
+`Modifier`는 **프로퍼티만** 담습니다. 이벤트 핸들러·`Ref`·자식까지 한 묶음으로 넘기고 싶다면 요소 테이블 조각인 `q.Spread "Class" { … }`가 있습니다 — 같은 키에서는 `Modifier`와 반대로 **먼저 놓인 쪽**이 이깁니다. 그것도 같은 문서의 §3에 있습니다.
 
 </details>
 
@@ -104,14 +106,14 @@ const big = base:TextSize(24)     -- base는 그대로 16
 ```luau
 -- 새 예시: 별도 스크립트
 local function accent(color)
-    return D.Modifier.TextButton {
+    return q.Modifier "TextButton" {
         BackgroundColor3 = color,
         TextColor3 = Color3.fromRGB(255, 255, 255),
         BorderSizePixel = 0,
     }
 end
 
-const button = D.TextButton { accent(Color3.fromRGB(0, 162, 255)), Text = "+ 1" }
+const button = q.Elem "TextButton" { accent(Color3.fromRGB(0, 162, 255)), Text = "+ 1" }
 ```
 
 이 버튼을 화면에 붙이면 넘긴 색으로 칠해집니다 — 흰 글자와 `BorderSizePixel = 0`은 팩토리 안에 그대로 있어서, 색만 다른 버튼을 얼마든지 찍어낼 수 있습니다.
@@ -121,10 +123,9 @@ const button = D.TextButton { accent(Color3.fromRGB(0, 162, 255)), Text = "+ 1" 
 ```luau
 -- 새 파일: ReplicatedStorage/Client/UI/Styles
 const q = require("@game/ReplicatedStorage/Client/UI/Quad")
-const D = q.Declaration
 
 local function accent(color)
-    return D.Modifier.TextButton {
+    return q.Modifier "TextButton" {
         BackgroundColor3 = color,
         TextColor3 = Color3.fromRGB(255, 255, 255),
         BorderSizePixel = 0,
@@ -132,7 +133,7 @@ local function accent(color)
 end
 
 return {
-    Card = D.Modifier.Frame {
+    Card = q.Modifier "Frame" {
         BackgroundColor3 = Color3.fromRGB(35, 35, 42),
         BorderSizePixel = 0,
     },
@@ -152,7 +153,7 @@ return {
 ```luau
 -- … 위쪽 코드에 이어집니다(§3 Styles 모듈의 accent 함수를 이 스크립트에도 같은 모양으로 정의해 둔 것으로 칩니다 — 모듈로 만들었다면 Styles.Accent)
 const accentColor = q.Source(Color3.fromRGB(0, 162, 255))
-const button = D.TextButton { accent(accentColor), Text = "+ 1" }
+const button = q.Elem "TextButton" { accent(accentColor), Text = "+ 1" }
 
 accentColor:Set(Color3.fromRGB(240, 60, 60))   -- 버튼 색만 바뀐다(확인이 끝나면 이 줄은 지웁니다)
 ```
@@ -169,8 +170,8 @@ local function emphasis(size)
     end
 end
 
-const title = D.Modifier.TextLabel { BackgroundTransparency = 1 }:Apply(emphasis(24))
-const label = D.TextLabel { title, Text = "카운터" }
+const title = q.Modifier "TextLabel" { BackgroundTransparency = 1 }:Apply(emphasis(24))
+const label = q.Elem "TextLabel" { title, Text = "카운터" }
 ```
 
 `emphasis(24)`가 돌려준 것은 값이 아니라 **함수**이고, 그 함수는 `24`를 기억합니다. `:Apply`는 넘긴 것이 함수인지만 검사하는 순수한 호출이라 `emphasis(24)(base)`와 같지만, 체인 안에서 읽히는 순서가 코드 순서와 같아집니다. 이 "함수를 돌려주는 함수" 모양에는 [13장](/getting-started/13-functions/)에서 이름(커링)을 붙입니다.
@@ -181,7 +182,7 @@ const label = D.TextLabel { title, Text = "카운터" }
 
 <Quiz title={"누가 누구를 덮나"}>
 
-`D.TextButton { SomeMod, Text = "확정" }`에서 `SomeMod`도 `Text`를 갖고 있다면 어느 값이 남나요?
+`q.Elem "TextButton" { SomeMod, Text = "확정" }`에서 `SomeMod`도 `Text`를 갖고 있다면 어느 값이 남나요?
 
 - [x] 직접 적은 문자 키가 이기므로 `"확정"`이 그대로 남습니다
 - [ ] 숫자 키가 먼저 처리되므로 `Modifier`가 갖고 온 값이 남습니다
@@ -208,7 +209,7 @@ const label = D.TextLabel { title, Text = "카운터" }
 ## 더 알고 싶다면
 
 - [레퍼런스: `Modifier`](/reference/core/08-modifier/) — setter 체인, `Peek`, `Overridden`, 클래스 태그와 다운캐스트
-- [레퍼런스: `D.Modifier`](/reference/roblox/03-modifier-spread/) — 클래스별 생성자와 생성된 setter 타입
+- [레퍼런스: `q.Modifier`](/reference/roblox/03-modifier-spread/) — 클래스별 생성자와 setter 타입, 요소 테이블 조각을 넘기는 `q.Spread`
 - [05. 디자인 토큰과 테마 전환](/how-to/05-theme-and-dynamic-styling/) — 토큰을 모아 두고 테마를 갈아 끼우는 실전 배치
 
 <QuizResults />

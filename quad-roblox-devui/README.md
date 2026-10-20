@@ -10,7 +10,6 @@ API 모양은 Iris를 따르지 않고 quad의 방식 — **retained(유지형)�
 ```luau
 local Devui = require("<이 폴더>/src")
 local q = require("<이 폴더>/src/Quad")
-local D = q.Declaration
 local Kids = Devui.Kids
 
 local count = q.Source(0)
@@ -19,7 +18,7 @@ local label: q.State<string> = count:Compute(function(self)
 end)
 
 local overlay = Devui.Overlay.new() -- ScreenGui마다 하나: 팝업(Combo / Menu / Tooltip)이 그려지는 층
-local screen = D.ScreenGui {
+local screen = q.Elem "ScreenGui" {
 	ResetOnSpawn = false, -- 층은 quad가 만든 인스턴스라 리스폰으로 다시 만들어지면 안 됨
 	ZIndexBehavior = Enum.ZIndexBehavior.Sibling, -- 필수(아래)
 	Devui.Window {
@@ -38,7 +37,7 @@ local screen = D.ScreenGui {
 screen.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 ```
 
-**`ScreenGui`는 `ZIndexBehavior = Sibling`이어야 합니다.** 코드로 만든 `ScreenGui`(`D.ScreenGui`·`Instance.new`)의 기본값은
+**`ScreenGui`는 `ZIndexBehavior = Sibling`이어야 합니다.** 코드로 만든 `ScreenGui`(`q.Elem "ScreenGui"`·`Instance.new`)의 기본값은
 `Global`이고, 이 키트는 창의 겹침 순서(창 루트의 `ZIndex` = 서열 1..n)와 팝업 층(`ZIndex` 1000)을 형제 사이의 `ZIndex`로
 정합니다. `Global`에서는 `ZIndex`가 `ScreenGui` 전체에서 비교되어, 서열 2 이상인 창의 배경이 자기 내용(`ZIndex` 1)과 팝업
 위에 그려집니다. `q.debug`가 켜져 있으면 팝업이 처음 열릴 때 한 줄로 알립니다. Studio에서 손으로 넣은 `ScreenGui`는 기본이
@@ -55,7 +54,7 @@ Sibling입니다.
 
 - **인스턴스 없이 도는 구독**(데이터 모듈의 Observer): `:Subscribe()`/`:WeakSubscribe()` — Observer는 요소에 매달거나 구독해야 돕니다.
   [core/05](../docs/reference/core/05-observer-effect.md), 스킬의 `rules-and-invariants.md`. Observer는 등록할 때 한 번 부릅니다.
-- **코드와 사용자가 같이 쓰는 입력 상자**: `Text = src` + `q.Out("Text", src)` — 메아리를 손으로 거르지 마세요. `Devui.InputText`가 이 모양입니다.
+- **코드와 사용자가 같이 쓰는 입력 상자**: `Text = src` + `q.Out "TextBox" "Text" (src)` — 메아리를 손으로 거르지 마세요. `Devui.InputText`가 이 모양입니다.
   [roblox/05](../docs/reference/roblox/05-onchange.md), [시작하기 06](../docs/getting-started/06-flowing-back.md).
 - **검색창 디바운스·갱신 합치기**: [`q.Debounce`/`q.Throttle`](../docs/reference/sugar/03-debounce-throttle.md). 여러 원천을 한 번에 갱신하려면 Effect 하나로 모은 뒤 붙입니다.
 - **바깥 신호(`UserInputService` 등)의 수명**: [`q.OnDestroyed`](../docs/reference/sugar/04-lifecycle-hooks.md)나 Effect cleanup에 묶습니다 — `Destroying:Connect`나 표지용 Folder가 필요 없습니다.
@@ -69,7 +68,7 @@ Sibling입니다.
   `{ table.unpack(list) }`로 자식을 펴는 대신 `q.Slot<<Instance>>(list)`를 배열부 아무 자리에나 놓습니다.
 - **이벤트 prop에 미리 만든 함수**: `local f: () -> () = ...`처럼 주석한 무인자 함수는 `Activated` 같은 자리에 안 들어갑니다(Luau 새 솔버 규칙) —
   `local function f() end`나 인라인 함수를 넘기세요.
-- **배치 속성**: `LayoutOrder`·`Position` 같은 루트 꾸밈은 Modifier로(`D.Modifier.Frame():LayoutOrder(2)`). Button은 `Size`를 받으면 자동 크기가 꺼집니다.
+- **배치 속성**: `LayoutOrder`·`Position` 같은 루트 꾸밈은 Modifier로(`q.Modifier "Frame" ():LayoutOrder(2)`). Button은 `Size`를 받으면 자동 크기가 꺼집니다.
 
 ## Iris와 무엇이 다른가
 
@@ -172,7 +171,7 @@ DEVUI WIDGET"입니다.
   라벨이 `Label`입니다(Dear ImGui의 `LabelText` 순서).
 - `Value` = 위젯이 읽고 쓰는 `Source`, `Option` = 선택 위젯이 고르는 값(`RadioButton`/`SelectableOption`: `Value: Source<T>` + `Option: T`),
   `Disabled` = 회색 처리(`boolean | State<boolean>`), `Modifier` = 그 위젯 루트 요소의 Modifier(`LabelText`는 가로 줄 Frame).
-- **호스트 `Name`은 소비자가 `Modifier`로 바꿀 수 있습니다** — `Devui.Button { Modifier = D.Modifier.TextButton():Name("Save") }`. 킷은 기본 이름(`Button` 등)을 기본 Modifier에 두므로 소비자의 `:Name(...)`이 이깁니다(`InputText`의 `FieldModifier` 필드·`SliderNum`의 `TrackModifier` 트랙도 같음). 안쪽 자식 이름(`Track`·`Arrow` 등)은 고정입니다.
+- **호스트 `Name`은 소비자가 `Modifier`로 바꿀 수 있습니다** — `Devui.Button { Modifier = q.Modifier "TextButton" ():Name("Save") }`. 킷은 기본 이름(`Button` 등)을 기본 Modifier에 두므로 소비자의 `:Name(...)`이 이깁니다(`InputText`의 `FieldModifier` 필드·`SliderNum`의 `TrackModifier` 트랙도 같음). 안쪽 자식 이름(`Track`·`Arrow` 등)은 고정입니다.
 - **`Hooks: { any }?`** — 리프 위젯(`Button`/`SmallButton`/`Selectable`/`SelectableOption`/`Checkbox`/`RadioButton`/`Text` 계열)이 가진 탈출구입니다.
   리스트의 훅 값(`Tooltip` 핸들의 `.Hook`, `Interaction.pointerDown(fn)`, `q.OnRendered(...)` …)이 요소 배열 부분의 **끝**에 붙습니다:
   `Devui.Button { Text = "Save", Hooks = { tip.Hook } }`.
@@ -223,7 +222,7 @@ ScreenGui는 **`ResetOnSpawn = false`**로 만드세요 — 층은 quad가 만�
 같은 스토리 호스트의 플러그인 위젯)에서는 창 사각형으로 판정하고, 입력을 받는 열린 팝업 위의 누름만 거릅니다. 직접 만든 창 모양에
 `manager:Register()`를 쓰면 `slot.Hook`을 그 루트의 배열부에 넣어야 이 동작이 붙습니다. 포커스된 창을 닫거나 파괴하면 남은 열린 창 가운데 맨 위
 창이 포커스를 받고, 닫았던 창을 다시 열면 맨 앞으로 오며 포커스를 받습니다. **남은 높이 채우기**: 창 안 자식 하나에
-`D.UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill })`을 주면 다른 자식이 남긴 높이를 차지하고 창 크기를 따라갑니다(Studio 확인 2026-10-20 —
+`q.Elem "UIFlexItem" { FlexMode = Enum.UIFlexMode.Fill }`을 주면 다른 자식이 남긴 높이를 차지하고 창 크기를 따라갑니다(Studio 확인 2026-10-20 —
 창보다 자식이 크면 스크롤 대신 그 자식이 줄어듭니다). 숫자가 필요하면 `AvailableSize = Source<Vector2>`를 넘기세요 — 자식이 쓸 수 있는
 크기(보이는 내용 영역에서 스크롤바와 창 안쪽 여백을 뺀 값)를 창이 거기 씁니다. 밖에서 창을 다루는 길은 주인이 쥔 Source입니다 — 넘긴 `Open`에 `:Set(true)`를 하면 이미 열린 창도 맨 앞으로 올라오고(quad의 `Set`은 같은 값도 전파합니다; 상태만 맞추고 올리지 않으려면 `:SetIfChanged(true)`), `Focused = Source<boolean>`은 양방향입니다 — 창이 포커스 여부를 거기 쓰고, 밖에서 `true`를 쓰면 그 창을 앞으로 올려 포커스를 주고 `false`를 쓰면 포커스를 놓습니다(어느 창도 포커스 없음; 닫힌 창은 `true`를 무시하니 `Open:Set(true)`로 여세요; 핸들 객체는 없습니다)(Dear ImGui와 같음 — 처음부터 열린 창은 포커스를 빼앗지 않음. 다만 처음부터 `true`인 `Focused`를 넘기면 그것은 요청으로 봅니다). 창의 빈 곳을 누른
 것은 창 전체를 덮는 투명 버튼 `ClickSink`(ZIndex 0)에서 멈춰 아래 창의 위젯으로 새지 않습니다. 타이틀바로 끌 때 창은 컨테이너 안에 타이틀바가 남도록 잘리고(Dear ImGui와 같은 규칙 — 가로로 `FrameHeight`(기본 19)

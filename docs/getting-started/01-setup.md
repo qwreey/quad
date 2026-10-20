@@ -48,7 +48,7 @@ return Quad:UseProvider(QuadRoblox)
 **`const`**는 Luau의 **재대입할 수 없는 바인딩**입니다. `local`과 같은 자리에 쓰되 나중에 다른 값을 넣을 수 없다는 것만 다릅니다.
 
 ```luau
-const D = q.Declaration   -- 이 이름은 이제 바뀌지 않는다
+const Frame = q.Elem "Frame"   -- 이 이름은 이제 바뀌지 않는다
 local n = 0     -- 이쪽은 바뀔 수 있다
 ```
 
@@ -67,13 +67,13 @@ local n = 0     -- 이쪽은 바뀔 수 있다
 <details>
 <summary><strong>패키지가 왜 <code>Quad</code>, <code>QuadRoblox</code> 둘인가요?</strong></summary>
 
-**`quad-base`**는 엔진을 모르는 코어입니다 — `Source`/`State`/`Slot`/`Modifier`와 props 테이블을 처리하는 엔진이 여기 있고, 이것만으로는 Roblox `Instance`를 하나도 만들 수 없습니다. **`quad-roblox`**는 Roblox 백엔드로, `D`(Instance 생성기)·`Tween`·`Animate`·`OnChange`가 여기서 옵니다.
+**`quad-base`**는 엔진을 모르는 코어입니다 — `Source`/`State`/`Slot`/`Modifier`와 props 테이블을 처리하는 엔진이 여기 있고, 이것만으로는 Roblox `Instance`를 하나도 만들 수 없습니다. **`quad-roblox`**는 Roblox 백엔드로, `q.Elem`(Instance 생성자)·`q.Modifier`·`q.Spread`·`q.OnChange`·`Tween`·`Animate`가 여기서 옵니다.
 
-`UseProvider` 전까지 `Quad.Declaration`·`Quad.Tween`·`Quad.Animate`·`Quad.OnChange`는 전부 `nil`입니다. 코어가 엔진 어휘를 모르기 때문에 같은 코어 위에 다른 백엔드(헤드리스 테스트용 mock 등)를 붙일 수 있고, 그 갈아 끼우는 자리가 바로 이 한 줄입니다.
+`UseProvider` 전까지 `Quad.Elem`·`Quad.OnChange` 같은 백엔드 표면은 부르면 "설치된 백엔드가 없다"는 에러(`Quad0108`)를 내는 자리표시이고, `Quad.Tween`·`Quad.Animate`는 `nil`입니다. 코어가 엔진 어휘를 모르기 때문에 같은 코어 위에 다른 백엔드(헤드리스 테스트용 mock 등)를 붙일 수 있고, 그 갈아 끼우는 자리가 바로 이 한 줄입니다.
 
 </details>
 
-반환 타입은 `UseProvider`가 돌려주는 `Self & P`라, 이 모듈을 require한 쪽에서도 `q.Declaration`·`q.Tween`이 타입으로 그대로 보입니다. 다시 내보낸 타입 아홉도 마찬가지로 `q.State<number>`처럼 그대로 쓸 수 있습니다.
+반환 타입은 `UseProvider`가 돌려주는 `Self & P`라, 이 모듈을 require한 쪽에서도 `q.Elem`·`q.Tween`이 타입으로 그대로 보입니다. 다시 내보낸 타입 아홉도 마찬가지로 `q.State<number>`처럼 그대로 쓸 수 있습니다.
 
 <details>
 <summary><strong>다른 모듈에서 <code>UseProvider</code>를 또 부르면 어떻게 되나요?</strong></summary>
@@ -87,7 +87,7 @@ local n = 0     -- 이쪽은 바뀔 수 있다
 <details>
 <summary><strong>인스턴스를 따로 만들 수 있나요?</strong></summary>
 
-`Quad.New()`가 끼어드는 자리도 이 설정 모듈입니다. 싱글턴과 **분리된** 인스턴스가 필요할 때가 있습니다 — 같은 게임 안의 다른 quad 소비자와 프로바이더·플러그인 구성을 공유하고 싶지 않을 때, 또는 헤드리스 테스트에서 mock 프로바이더를 붙일 때입니다. 그럴 땐 이 모듈의 그 줄만 `Quad.New():UseProvider(...)`로 바꾸면 되고 나머지 코드는 그대로입니다. 새 인스턴스에는 프로바이더가 들어 있지 않으니 설치는 여기서 해야 합니다 — 세부는 [레퍼런스: Quad 모듈](../reference/core/01-quad-module.md).
+`Quad.NewModule()`가 끼어드는 자리도 이 설정 모듈입니다. 싱글턴과 **분리된** 인스턴스가 필요할 때가 있습니다 — 같은 게임 안의 다른 quad 소비자와 프로바이더·플러그인 구성을 공유하고 싶지 않을 때, 또는 헤드리스 테스트에서 mock 프로바이더를 붙일 때입니다. 그럴 땐 이 모듈의 그 줄만 `Quad.NewModule():UseProvider(...)`로 바꾸면 되고 나머지 코드는 그대로입니다. 새 인스턴스에는 프로바이더가 들어 있지 않으니 설치는 여기서 해야 합니다 — 세부는 [레퍼런스: Quad 모듈](../reference/core/01-quad-module.md).
 
 </details>
 
@@ -104,13 +104,12 @@ const Players = game:GetService("Players")
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 const q = require("@game/ReplicatedStorage/Client/UI/Quad")
-const D = q.Declaration
 
 const playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
-const screen = D.ScreenGui { ResetOnSpawn = false } -- 리스폰 때 엔진이 이 화면을 지우지 않게
+const screen = q.Elem "ScreenGui" { ResetOnSpawn = false } -- 리스폰 때 엔진이 이 화면을 지우지 않게
 
-const hello = D.TextLabel {
+const hello = q.Elem "TextLabel" {
     AnchorPoint = Vector2.new(0.5, 0.5),
     Position = UDim2.fromScale(0.5, 0.5),
     Size = UDim2.fromOffset(240, 40),
@@ -151,9 +150,9 @@ screen.Parent = playerGui
 
 - [ ] 두 번째 호출이 새 quad 인스턴스를 만들어, 앞서 만든 `State`와 섞어 쓸 수 없게 됩니다
 - [x] 같은 프로바이더면 두 번째부터는 아무 일도 하지 않고, 다른 프로바이더를 넘길 때만 에러가 납니다
-- [ ] 프로바이더가 두 번 설치되어 `Declaration`이 만드는 인스턴스가 둘씩 생깁니다
+- [ ] 프로바이더가 두 번 설치되어 `q.Elem`이 만드는 인스턴스가 둘씩 생깁니다
 
-`require`가 돌려주는 것은 어느 ModuleScript에서 require해도 같은 하나(싱글턴)이고, `UseProvider`는 그 싱글턴에 백엔드를 설치하는 것이라 같은 프로바이더면 멱등입니다. 싱글턴과 분리된 인스턴스가 필요할 때 쓰는 것이 `Quad.New()`입니다.
+`require`가 돌려주는 것은 어느 ModuleScript에서 require해도 같은 하나(싱글턴)이고, `UseProvider`는 그 싱글턴에 백엔드를 설치하는 것이라 같은 프로바이더면 멱등입니다. 싱글턴과 분리된 인스턴스가 필요할 때 쓰는 것이 `Quad.NewModule()`입니다.
 ```
 
 ```quiz

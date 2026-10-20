@@ -8,7 +8,7 @@ description: "인스턴스에서 상태로 거슬러 올라오는 흐름을 q.Ou
 > **목표**: 엔진이 스스로 바꾸는 프로퍼티(입력창의 `Text`)를 다시 `Source`로 끌어올리기
 
 :::caution
-**[2026-09-27 기준] `q.Out`은 3.3.0부터 있습니다** — 3.2.0에는 없습니다([변경 이력](../../CHANGELOG.md)의 `[3.3.0]`). 3.2.0을 쓰고 있다면 이 장의 `q.Out(...)` 자리를 `q.OnChange(name, function(v) if v ~= src:Get() then src:Set(v) end end)`로 읽으세요(동작은 같습니다 — `if v ~= src:Get()` 비교는 왕복을 끊기 위한 게 아니라(엔진은 같은 값 재대입에 신호를 내지 않아 고리는 저절로 멈춥니다) 첫 쓰기의 메아리로 구독자가 한 번 더 도는 것을 건너뛰기 위한 것입니다 — 자세한 이유는 레퍼런스 [`q.OnChange`](../reference/roblox/05-onchange.md)의 "동작").
+**[2026-09-27 기준] `q.Out`은 3.3.0부터 있습니다** — 3.2.0에는 없습니다([변경 이력](../../CHANGELOG.md)의 `[3.3.0]`). 3.2.0을 쓰고 있다면 이 장의 `q.Out` 자리를 `q.OnChange(name, function(v) if v ~= src:Get() then src:Set(v) end end)`로 읽으세요(3.4.0부터는 클래스를 먼저 받는 `q.Out "TextBox" "Text" (src)` 꼴입니다 — 이 장의 코드가 그 꼴입니다)(동작은 같습니다 — `if v ~= src:Get()` 비교는 왕복을 끊기 위한 게 아니라(엔진은 같은 값 재대입에 신호를 내지 않아 고리는 저절로 멈춥니다) 첫 쓰기의 메아리로 구독자가 한 번 더 도는 것을 건너뛰기 위한 것입니다 — 자세한 이유는 레퍼런스 [`q.OnChange`](../reference/roblox/05-onchange.md)의 "동작").
 :::
 
 01장부터 지금까지 값은 늘 한 방향으로만 흘렀습니다 — 원천에서 인스턴스로 **내려가는**
@@ -27,11 +27,11 @@ const count = q.Source(0)
 const countText: q.State<string> = count:Compute(function(c) return `카운트: {c:Get()}` end)
 const active = q.Source(true)
 
-const card = D.Frame {
+const card = q.Elem "Frame" {
     -- …05장까지의 Tag/Attr 자리 그대로…
 
-    D.TextLabel { Text = countText },
-    D.TextButton { Text = "+ 1", Activated = function() count:Set(count:Get() + 1) end },
+    q.Elem "TextLabel" { Text = countText },
+    q.Elem "TextButton" { Text = "+ 1", Activated = function() count:Set(count:Get() + 1) end },
 }
 ```
 
@@ -45,7 +45,7 @@ const card = D.Frame {
 -- … 위쪽 코드에 이어집니다
 const name = q.Source("quad")
 
-const nameLabel = D.TextLabel {
+const nameLabel = q.Elem "TextLabel" {
     Size = UDim2.fromOffset(240, 28),
     BackgroundTransparency = 1,
     TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -53,7 +53,7 @@ const nameLabel = D.TextLabel {
 }
 nameLabel.Parent = screen
 
-const nameBox = D.TextBox {
+const nameBox = q.Elem "TextBox" {
     Size = UDim2.fromOffset(240, 32),
     BackgroundColor3 = Color3.fromRGB(50, 50, 58),
     TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -77,8 +77,8 @@ nameBox.Parent = screen
 
 ```luau
 -- … 위쪽 코드에 이어집니다(nameBox를 이렇게 고칩니다)
-const nameBox = D.TextBox {
-    q.Out("Text", name),   -- ← 숫자 키: 엔진이 바꾼 Text를 name으로 되쓴다
+const nameBox = q.Elem "TextBox" {
+    q.Out "TextBox" "Text" (name),   -- ← 숫자 키: 엔진이 바꾼 Text를 name으로 되쓴다
 
     Size = UDim2.fromOffset(240, 32),
     BackgroundColor3 = Color3.fromRGB(50, 50, 58),
@@ -93,7 +93,7 @@ nameBox.Parent = screen
 
 ```luau
 -- (Main.client.luau 계속 — nameBox 뒤에)
-const resetButton = D.TextButton {
+const resetButton = q.Elem "TextButton" {
     Size = UDim2.fromOffset(120, 28),
     Text = "이름 되돌리기",
     Activated = function() name:Set("quad") end,
@@ -105,10 +105,10 @@ resetButton.Parent = screen
 입력창도 `quad`로 되돌아갑니다 — 양쪽 다 됩니다.
 
 한 줄 요약하면 **in 한 줄, out 한 줄**입니다. `Text = name`은 있던 그대로(상태 → 프로퍼티)이고,
-`q.Out("Text", name)`이 반대 방향(프로퍼티 → 상태)을 담당합니다. `q.Out`도 05장의 `q.Tag`나
+`q.Out "TextBox" "Text" (name)`이 반대 방향(프로퍼티 → 상태)을 담당합니다. 클래스·프로퍼티 이름·되쓸 `Source`를 차례로 받고, 프로퍼티의 타입은 그 클래스에서 정해집니다. `q.Out`도 05장의 `q.Tag`나
 [레퍼런스의 생명주기 훅](../reference/sugar/04-lifecycle-hooks.md)과 같은 부류입니다 —
 **숫자 키 자리에 놓는 값**이고, 콜백을 이름 있는 자리(문자 키)에 적는 이벤트와는 다릅니다.
-`q.Out(name, src)`은 사실 `q.OnChange(name, fn)` 위에 얹은 슈거일 뿐이라, 뒤에서 직접
+`q.Out`은 사실 `q.OnChange "TextBox" "Text" (fn)` 위에 얹은 슈거일 뿐이라, 뒤에서 직접
 `OnChange`를 쓰는 것도 봅니다.
 
 ```luau
@@ -156,9 +156,9 @@ print(emits)          --> 1   (등록 즉시 한 번)
 ```luau
 const shout = q.Source("")
 
-D.TextBox {
+q.Elem "TextBox" {
     Text = name,
-    q.OnChange("Text", function(v)
+    q.OnChange "TextBox" "Text" (function(v)
         shout:Set(string.upper(v))
     end),
 }
@@ -183,8 +183,8 @@ D.TextBox {
 
 ```luau
 const derived = name:Compute(function(n) return n:Get() end)
-D.TextBox { q.Out("Text", derived) }
--- Quad0224 Out: second argument for "Text" must be a Source to write back into (got a read-only State (a :Compute result?))
+q.Elem "TextBox" { q.Out "TextBox" "Text" (derived) }
+-- Quad0224 Out: "Text" needs a Source to write back into (got a read-only State (a :Compute result?))
 ```
 
 </details>
@@ -230,7 +230,7 @@ D.TextBox { q.Out("Text", derived) }
 ```quiz
 # 왕복인데 안 도는 이유
 
-`Text = name`과 `q.Out("Text", name)`을 같이 놓으면 왕복 구조인데도 무한히 돌지 않는 진짜 이유는 무엇인가요?
+`Text = name`과 `q.Out "TextBox" "Text" (name)`을 같이 놓으면 왕복 구조인데도 무한히 돌지 않는 진짜 이유는 무엇인가요?
 
 - [ ] `q.Out`이 값을 되쓸 때 구독을 잠깐 끊어 두기 때문입니다
 - [x] 엔진이 같은 값을 다시 대입해도 변경 신호를 내지 않아, 되쓴 값이 프로퍼티에 다시 쓰여도 거기서 신호가 멈추기 때문입니다
@@ -242,18 +242,18 @@ D.TextBox { q.Out("Text", derived) }
 ```quiz
 # :Compute 결과를 q.Out에 넘기면
 
-`q.Out("Text", derived)`에서 `derived`가 `:Compute` 결과라면 어떻게 되나요?
+`q.Out "TextBox" "Text" (derived)`에서 `derived`가 `:Compute` 결과라면 어떻게 되나요?
 
 - [ ] 되쓴 값이 그 즉시 다시 파생되어 계산되므로 아무 문제 없이 동작합니다
 - [x] `:Compute` 결과는 읽기 전용 `State`라 `Set`이 없어 거부됩니다 — strict에서는 타입 검사가, 우회하면 런타임이 막습니다
 - [ ] 파생 값이라는 것을 quad가 알아서 감지해 자동으로 새 `Source`를 만들어 대신 받습니다
 
-`q.Out`의 둘째 자리는 쓸 수 있는 `Source`만 받습니다. `:Compute` 결과는 `Set`이 없는 읽기 전용 `State`라 strict 타입 검사에서부터 걸리고, 우회해서 넘기면 런타임 에러 문구가 그 사실을 그대로 알려줍니다.
+`q.Out`의 마지막 자리는 쓸 수 있는 `Source`만 받습니다. `:Compute` 결과는 `Set`이 없는 읽기 전용 `State`라 strict 타입 검사에서부터 걸리고, 우회해서 넘기면 런타임 에러 문구가 그 사실을 그대로 알려줍니다.
 ```
 
 ---
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `q.OnChange` / `q.Out`](../reference/roblox/05-onchange.md) — 읽기 표면 `PropTypesRead`, 초기값 발화 계약, `State`로 바꿔 끼우기
+- [레퍼런스: `q.OnChange` / `q.OnEvent` / `q.Out`](../reference/roblox/05-onchange.md) — 클래스의 읽기 표면, 초기값 발화 계약, `State`로 바꿔 끼우기
 - [02. 폼 유효성 검사와 제출 버튼 제어](../how-to/02-form-validation-pattern.md) — 입력창 여럿을 `q.Out`으로 올려 `Store`에 모으는 실제 사용

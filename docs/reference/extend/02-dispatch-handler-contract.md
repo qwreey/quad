@@ -4,7 +4,7 @@ description: Handler 레코드와 retractor 계약, 우선순위 밴드, q.Dispa
 ---
 # 디스패치 핸들러 계약
 
-`D.Frame { ... }` 같은 리터럴이 실제 요소를 만들 때, quad는 props의 **자리 하나하나**를 디스패치 엔진에 넘깁니다. 엔진은 등록된 핸들러들을 우선순위대로 훑어 그 (요소, 키, 값) 조합을 처리할 첫 핸들러를 찾고, 그 핸들러가 돌려준 **retractor**를 그 자리에 보관합니다. 나중에 같은 자리에 다른 값이 오면 보관해둔 retractor로 이전 상태를 무릅니다.
+`q.Elem "Frame" { ... }` 같은 리터럴이 실제 요소를 만들 때, quad는 props의 **자리 하나하나**를 디스패치 엔진에 넘깁니다. 엔진은 등록된 핸들러들을 우선순위대로 훑어 그 (요소, 키, 값) 조합을 처리할 첫 핸들러를 찾고, 그 핸들러가 돌려준 **retractor**를 그 자리에 보관합니다. 나중에 같은 자리에 다른 값이 오면 보관해둔 retractor로 이전 상태를 무릅니다.
 
 이 페이지는 **핸들러를 직접 작성하는 사람**을 위한 계약입니다. 새 값 타입(백엔드의 `Tween`, 플러그인의 스프링 값)이나 새 props 어휘를 추가하려면 여기 규약을 지키는 테이블 하나를 `q.Dispatch.addHandler`로 등록하면 됩니다.
 
@@ -13,7 +13,6 @@ description: Handler 레코드와 retractor 계약, 우선순위 밴드, q.Dispa
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.Declaration
 ```
 
 `q.Dispatch`는 모듈 인스턴스마다 따로 있는 네임스페이스입니다 — 핸들러 레지스트리와 부기는 인스턴스별 상태라, 한 인스턴스에 등록한 핸들러는 다른 인스턴스에서 보이지 않습니다.
@@ -201,7 +200,7 @@ retractFrom: (inst: any, key: any, index: number) -> ()
 drive: (inst: any, flattened: { [any]: any }) -> ()
 ```
 
-**동작** — props 테이블 하나를 요소에 통째로 적용하는 파이프라인입니다. 백엔드의 생성 경로(`D.<Class>{ ... }`)와 `Claim`이 같은 함수를 부릅니다. 이미 `D`가 만든 요소에 **다시** `drive(inst, { a, b })`를 부르면 숫자 키 자리 1, 2, …를 다시 처리합니다 — 거기 앉아 있던 것은 파괴가 아니라 **철거**됩니다(Effect는 그 자리에서 `cleanup(false)`, `OnDestroyed`는 조용히 풀려 영영 안 불림; 위 자리 교체 규칙 그대로 — [2026-09-27 mock 실측]). 자식을 덧붙이려면 처음부터 선언한 Slot에 `Add`하세요. 순서:
+**동작** — props 테이블 하나를 요소에 통째로 적용하는 파이프라인입니다. 백엔드의 생성 경로(`q.Elem "Class" { ... }`)와 `Claim`이 같은 함수를 부릅니다. 이미 `q.Elem`이 만든 요소에 **다시** `drive(inst, { a, b })`를 부르면 숫자 키 자리 1, 2, …를 다시 처리합니다 — 거기 앉아 있던 것은 파괴가 아니라 **철거**됩니다(Effect는 그 자리에서 `cleanup(false)`, `OnDestroyed`는 조용히 풀려 영영 안 불림; 위 자리 교체 규칙 그대로 — [2026-09-27 mock 실측]). 자식을 덧붙이려면 처음부터 선언한 Slot에 `Add`하세요. 순서:
 
 1. **flatten** — 먼저 문자 키 부분을 한 번 훑으며 숫자 키 자리 도메인(양의 정수 — 어떤 핸들러가 부기를 만지기 전에)과 문자 키의 Modifier를 검사하고, 숫자 키 자리의 Modifier를 그 자리에서 소비해 그 필드들을 문자 키 자리에 병합합니다. 배열 길이는 바뀌지 않습니다.
 2. **배치 게이트 열기** — 숫자 키가 있을 때만 그 요소의 배치 Blocker를 켭니다(자식이 없는 요소가 괜히 부기를 키우지 않도록).
@@ -219,7 +218,7 @@ Quad0084 Dispatch.drive: inst must not be nil
 Quad0085 Dispatch.drive: array keys must be positive integers (got {키})
 ```
 
-둘째 문구는 `D.Frame(q.Source(1))`처럼 중괄호를 잊은 형태를 잡습니다 — 그 값의 내부 필드가 props로 해석되는 조용한 오작동을 막습니다. **[3.3.0부터]** 매 `drive`마다 도는 검사는 싼 것 둘뿐입니다 — 메타테이블이 있는 테이블, 그리고 메타테이블 없이 quad가 브랜드를 붙이는 `AttrKey`·매퍼 디스크립터. quad-base의 값은 전부 이 둘에 걸립니다. 모듈에 등록된 브랜드 술어(`q.BrandPredicates` — 설치된 프로바이더의 것까지) 전부를 훑는 전체 검사는 [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때만 돕니다 — 그래서 **메타테이블 없는 평범한 테이블에 브랜드를 붙이는 프로바이더 값**은 debug를 꺼 두면 이 문구 대신 그 필드들이 props로 해석됩니다(대개 `Quad0076`으로 끝납니다). 3.2.0까지는 전체 검사가 매번 돌았습니다.
+둘째 문구는 `q.Elem "Frame" (q.Source(1))`처럼 중괄호를 잊은 형태를 잡습니다 — 그 값의 내부 필드가 props로 해석되는 조용한 오작동을 막습니다. **[3.3.0부터]** 매 `drive`마다 도는 검사는 싼 것 둘뿐입니다 — 메타테이블이 있는 테이블, 그리고 메타테이블 없이 quad가 브랜드를 붙이는 `AttrKey`·매퍼 디스크립터. quad-base의 값은 전부 이 둘에 걸립니다. 모듈에 등록된 브랜드 술어(`q.BrandPredicates` — 설치된 프로바이더의 것까지) 전부를 훑는 전체 검사는 [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때만 돕니다 — 그래서 **메타테이블 없는 평범한 테이블에 브랜드를 붙이는 프로바이더 값**은 debug를 꺼 두면 이 문구 대신 그 필드들이 props로 해석됩니다(대개 `Quad0076`으로 끝납니다). 3.2.0까지는 전체 검사가 매번 돌았습니다.
 
 ## `q.Protocols.DispatchHint`
 

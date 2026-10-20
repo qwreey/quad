@@ -9,10 +9,10 @@
 	        OnColor = theme.Color.OnPrimary,        -- state layer + ripple color
 	        Corner = Shape.corner("Full"),          -- must equal the host's UICorner
 	    })
-	    return D.TextButton {
+	    return q.Elem "TextButton" {
 	        fx.Hook,                                -- 1. wires input (array part)
 	        fx.Layer,                               -- 2. the state layer Frame (array part; BEFORE the content)
-	        D.TextLabel { ... },                    -- 3. content, drawn above the layer
+	        q.Elem "TextLabel" { ... },                    -- 3. content, drawn above the layer
 	        Activated = props.OnClick,
 	        UICorner = fx.Corner,
 	    }

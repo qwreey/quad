@@ -13,7 +13,6 @@ description: "명시적 타입드 값 가방 Context와 그 키 Provider의 생�
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.Declaration
 ```
 
 ---
@@ -172,12 +171,12 @@ local UserProvider = q.Context.Provider<<{ Name: string }>>("User")
 -- 리프 컴포넌트 — 필요한 키만 꺼내 쓴다
 local function ThemedButton(props: { Context: q.Context }): TextButton
     local theme = props.Context:Get(ThemeProvider)
-    return D.TextButton { BackgroundColor3 = theme.ButtonBg }
+    return q.Elem "TextButton" { BackgroundColor3 = theme.ButtonBg }
 end
 
 -- 중간 셸 — Theme/User가 뭔지 모른 채 가방만 내려보낸다
 local function AppShell(props: { Context: q.Context, Content: Instance }): Frame
-    return D.Frame {
+    return q.Elem "Frame" {
         ThemedButton({ Context = props.Context }),
         props.Content,
     }
@@ -188,7 +187,7 @@ local rootCtx = q.Context()
     :Set(UserProvider, { Name = "q" })
 
 local maybeUser: { Name: string }? = rootCtx:Peek(UserProvider) -- 없으면 nil
-local shell = AppShell({ Context = rootCtx, Content = D.Frame {} })
+local shell = AppShell({ Context = rootCtx, Content = q.Elem "Frame" {} })
 ```
 
 ---

@@ -5,11 +5,11 @@
 	wins — they do not add up; nothing shows while disabled). Optionally it also hosts the pressed ripple
 	and the gamepad focus ring, so the whole interaction visual of a component is this single child.
 
-	    D.TextButton {
+	    q.Elem "TextButton" {
 	        ...,                       -- container (rounded, has the same `Corner`)
 	        StateLayer.new({ Color = theme.Color.OnPrimary, Corner = Shape.corner("Full"),
 	                         Hovered = ix.Hovered, Pressed = ix.Pressed, Focused = ix.Focused }),
-	        D.TextLabel { ... },       -- content AFTER the layer (siblings draw in array order)
+	        q.Elem "TextLabel" { ... },       -- content AFTER the layer (siblings draw in array order)
 	    }
 	Normally you do not call this directly — `Interactive.new` builds Interaction + StateLayer + Ripple
 	together and returns the pieces to place.

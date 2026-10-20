@@ -10,7 +10,7 @@
 			Format: string?,                       string.format pattern; default "%d" for an integral Step, else "%.3f"
 			OnChange: ((n: number) -> ())?,        after Value changed through the UI (not for external :Set)
 			Disabled: (boolean | State<boolean>)?,
-			Style: Style?, Modifier: FrameModifier?, FieldModifier: TextBoxModifier?, FieldSpread: Spread<TextBox>?,
+			Style: Style?, Modifier: ModifierInto<Frame>?, FieldModifier: ModifierInto<TextBox>?, FieldSpread: SpreadInto<TextBox>?,
 		}
 
 	Typing commits on Enter / focus loss (parse -> clamp/snap); text that does not parse reverts to the current value.

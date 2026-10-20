@@ -11,8 +11,7 @@ description: "디자인 토큰과 Animate, Modifier Overridden으로 다크 라�
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.Declaration
--- 클래스별 Modifier 타입(`FrameModifier`/`IntoTextButton` 등)은 quad_roblox 패키지 루트가 내보낸다
+-- Modifier 타입(`Modifier<Frame>`/`ModifierInto<TextButton>` 등)은 quad_roblox 패키지 루트가 내보낸다
 local RobloxModule = require("@game/ReplicatedStorage/roblox_packages/quad_roblox")
 ```
 
@@ -168,14 +167,14 @@ plain 값이어야 합니다(State를 넣으면 에러입니다). 값이 바뀔 
 local Theme = require("./Theme")
 
 return {
-    Button = D.Modifier.TextButton()
+    Button = q.Modifier "TextButton" ()
         :Size(UDim2.new(0, 120, 0, 40))
         :BackgroundColor3(Theme.Tokens.Accent)
         :BorderSizePixel(0),
 }
 ```
 
-초기 필드 테이블 형태도 같은 값입니다 — `D.Modifier.TextButton { Size = ... }`. 다만 테이블 형태는 필드 이름·값 타입을 strict가 검사하지 않습니다(체인 형태만).
+초기 필드 테이블 형태도 같은 값입니다 — `q.Modifier "TextButton" { Size = ... }`. 다만 테이블 형태는 필드 이름·값 타입을 strict가 검사하지 않습니다(체인 형태만).
 
 ```luau
 -- ThemedButton.luau
@@ -184,14 +183,14 @@ local Styles = require("./Styles")
 local function ThemedButton(props: {
     read Text: string?,
     read OnClick: () -> (),
-    read Modifier: RobloxModule.IntoTextButton?,
+    read Modifier: RobloxModule.ModifierInto<TextButton>?,
 })
     -- 호출자 오버라이드가 있으면 기본 스타일 위에 얹는다(뒤가 이긴다)
     local effective = if props.Modifier
-        then q.Modifier.Overridden(Styles.Button, props.Modifier:AsTextButton())
+        then q.Raw.Modifier.Overridden(Styles.Button, props.Modifier:AsTextButton())
         else Styles.Button
 
-    return D.TextButton {
+    return q.Elem "TextButton" {
         effective,
         Text = props.Text or "",
         TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -207,15 +206,15 @@ return ThemedButton
 ```
 
 > **글꼴은 `FontFace`로 쓰세요.** 예제가 전부 `FontFace = Font.fromEnum(...)`인 이유는 그게
-> 현행 API이기 때문입니다. **[2026-09-09]** 옛 `Font = Enum.Font.GothamBold`도 생성 `D`에
+> 현행 API이기 때문입니다. **[2026-09-09]** 옛 `Font = Enum.Font.GothamBold`도 타입 표면에
 > 있어 타입 검사를 통과하지만, 엔진이 `Hidden`으로 표시한 레거시라 필드에 `-- @deprecated`
 > 주석이 붙어 있습니다 — quad v1 코드를 옮기는 동안에만 쓰고 새 코드에는 `FontFace`를 쓰세요.
 
 - `Modifier.Overridden(a, b, ...)`는 **필드 단위로 합치고 뒤 인자가
   이깁니다**. 닷 형태와 콜론 형태(`a:Overridden(b)`)가 같은 함수입니다. 결과는 두 `Modifier`를 숫자 키 자리에 순서대로 놓은 것([01](./01-component-conventions.md))과 같습니다 — 합친 값을 변수 하나로 들고 다니거나 넘겨야 할 때 이쪽을 씁니다.
-- props로 받은 `Modifier`는 `IntoTextButton` 인터페이스로 받고
+- props로 받은 `Modifier`는 입력 자리 마커 `ModifierInto<TextButton>`으로 받고
   `:AsTextButton()`으로 검사형 하강을 합니다 — 상위 클래스 Modifier
-  (`D.Modifier.GuiObject()`)도 그대로 들어옵니다. `mod:As<<T>>()`는 **무검사**
+  (`q.Modifier "GuiObject" ()`)도 그대로 들어옵니다. `mod:As<<T>>()`는 **무검사**
   캐스트이니 필요할 때만 쓰세요.
 - `Modifier`는 숫자 키 자리에 놓습니다. 선택적이면 `props.Modifier or q.None`
   관용구를 씁니다.
@@ -230,7 +229,7 @@ local Theme = require("./Theme")
 local ThemedButton = require("./ThemedButton")
 
 local function SettingsCard()
-    return D.Frame {
+    return q.Elem "Frame" {
         Size = UDim2.new(0, 360, 0, 240),
         Position = UDim2.new(0.5, -180, 0.5, -120),
         BackgroundColor3 = Theme.Tokens.Surface,
@@ -238,7 +237,7 @@ local function SettingsCard()
 
         UICorner = UDim.new(0, 12), -- 숏핸드: 관리 자식 UICorner를 만들어 붙인다
 
-        D.TextLabel {
+        q.Elem "TextLabel" {
             Size = UDim2.new(1, -40, 0, 30),
             Position = UDim2.new(0, 20, 0, 20),
             BackgroundTransparency = 1,
@@ -249,7 +248,7 @@ local function SettingsCard()
             Text = "화면 설정",
         },
 
-        D.TextLabel {
+        q.Elem "TextLabel" {
             Size = UDim2.new(1, -40, 0, 20),
             Position = UDim2.new(0, 20, 0, 55),
             BackgroundTransparency = 1,
@@ -263,7 +262,7 @@ local function SettingsCard()
         ThemedButton {
             Text = "테마 전환",
             OnClick = Theme.Toggle,
-            Modifier = D.Modifier.TextButton()
+            Modifier = q.Modifier "TextButton" ()
                 :Position(UDim2.new(0, 20, 1, -60))
                 :Size(UDim2.new(0, 140, 0, 38)),
         },

@@ -4,7 +4,7 @@
 
 		Tree             { Text: string | State<string>, Open: Source<boolean>?, OnChange: ((open: boolean) -> ())?,
 		                   Children: Slot<Instance>?, SpanAvailWidth: boolean?, NoIndent: boolean?, Style: Style?,
-		                   Modifier: FrameModifier? }
+		                   Modifier: ModifierInto<Frame>? }
 		CollapsingHeader { Text, Open?, OnChange?, Children?, Style?, Modifier? }     full-width header bar, children not indented
 
 	Structure: root Frame (vertical list) > Header (TextButton: the label, a hover/active highlight, UICorner/UIPadding)

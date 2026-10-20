@@ -9,7 +9,7 @@
 		                Format: ((T) -> string)?,              -- option -> row text (default tostring)
 		                OnChange: ((value: T) -> ())?,         -- after the USER picked a different option (not for :Set)
 		                Disabled: (boolean | State<boolean>)?, -- the box neither opens nor shows hover colours
-		                Overlay: Overlay?, MaxHeight: number?, Style: Style?, Modifier: FrameModifier? }
+		                Overlay: Overlay?, MaxHeight: number?, Style: Style?, Modifier: ModifierInto<Frame>? }
 		ComboArray<T> { Text, Index: Source<number>, Options: { T } | State<{ T }>, Format?, OnChange: ((index, item) -> ())?, ... }
 		                the same, but the Source holds the 1-based INDEX into Options (duplicates are fine)
 		ComboEnum     { Text, Value: Source<EnumItem>, Enum: Enum, Format?, OnChange: ((EnumItem) -> ())?, ... }

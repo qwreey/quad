@@ -6,7 +6,7 @@
 	that slides out (Hidden) and back (Expanded).
 
 	    local side = Material.SheetState({ InitialValue = "Expanded", EnabledValues = { "Hidden", "Expanded" } })
-	    D.Frame { ClipsDescendants = true, Size = ..., content, Material.SideSheet({ SheetState = side, Headline = "Filters",
+	    q.Elem "Frame" { ClipsDescendants = true, Size = ..., content, Material.SideSheet({ SheetState = side, Headline = "Filters",
 	        Children = q.Slot<<Instance>>({ ... }) }) }
 	    side.Hide() / side.Expand()
 

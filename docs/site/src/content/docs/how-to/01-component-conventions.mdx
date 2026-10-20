@@ -1,12 +1,12 @@
 ---
 title: "01. 컴포넌트 경계 규약과 스타일 합성"
-description: "props 테이블의 두 부분이 지키는 규칙, or None 경계 관용구, Modifier 우선순위 불변식 셋, Tag/Attr, 재사용 로직 추출을 정리합니다"
+description: "props 테이블의 두 부분이 지키는 규칙, or None 경계 관용구, Modifier·Spread 우선순위, Store·Context·Modifier·Spread·토큰 고르기, Tag/Attr, 재사용 로직 추출을 정리합니다"
 ---
 
 import { Quiz, QuizResults } from 'starlight-quiz/components';
 
 > **대상 독자**: 재사용 가능한 컴포넌트를 만들어 여러 화면에 나눠 쓰려는 개발자
-> **다루는 개념**: props 테이블의 병합 규칙, 숫자 키 자리의 `or None` 관용구, `Modifier` 우선순위, `Tag`/`Attr`, Hook 규칙 없는 팩토리
+> **다루는 개념**: props 테이블의 병합 규칙, 숫자 키 자리의 `or None` 관용구, `Modifier`·`Spread` 우선순위, 값을 넘기는 다섯 가지 길, `Tag`/`Attr`, Hook 규칙 없는 팩토리
 
 [시작하기 12. 컴포넌트로 쪼개기](/getting-started/12-components/)에서 컴포넌트가 평범한 함수라는 것을, [10. 스타일을 값으로 들고 다니기](/getting-started/10-modifier/)에서 스타일을 숫자 키 자리에 놓는다는 것을 봤습니다. 이 문서는 그 경계에서 지켜야 하는 규약을 모아 둔 곳입니다.
 
@@ -15,30 +15,29 @@ import { Quiz, QuizResults } from 'starlight-quiz/components';
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.Declaration
 local None = q.None
 
 -- 값이 아니라 '타입 이름'을 가져오는 모듈
 local QuadTypes = require("@game/ReplicatedStorage/roblox_packages/quad_types") -- 설정 모듈이 다시 내보내지 않는 타입(`QuadTypes.StateMarker<T>` 등)
--- 클래스별 Modifier·요소 타입(`TextButtonModifier`/`IntoTextButton`/`FrameElem` 등)은 quad_roblox 패키지 루트가 내보낸다
+-- 클래스를 인자로 받는 타입(`Modifier<C>`/`ModifierInto<C>`/`SpreadInto<C>`/`PropsArrayItem<C>` 등)은 quad_roblox 패키지 루트가 내보낸다
 local RobloxModule = require("@game/ReplicatedStorage/roblox_packages/quad_roblox")
 ```
 
-아래 예제에서 `RobloxModule`로 쓰는 클래스별 타입(`TextButtonModifier`, `IntoTextButton`, `FrameElem` …)은 `quad_roblox` 패키지 루트가 그대로 내보내므로 설치 방식과 무관하게 이 경로로 닿습니다(전체 목록은 [레퍼런스: 설치](/reference/roblox/01-install/)의 타입 재익스포트 절).
+아래 예제에서 `RobloxModule`로 쓰는 타입(`Modifier<C>`, `ModifierInto<C>`, `SpreadInto<C>`, `PropsArrayItem<C>` …)은 `quad_roblox` 패키지 루트가 그대로 내보내므로 설치 방식과 무관하게 이 경로로 닿습니다(전체 목록은 [레퍼런스: 설치](/reference/roblox/01-install/)의 `RobloxExtension` 절).
 
 ---
 
 ## 1. props 테이블의 두 부분이 지키는 규칙 넷
 
-`D.Frame { ... }`에 넘기는 테이블은 단순한 설정 딕셔너리가 아닙니다. **문자 키**와 **숫자 키**가 각각 다른 뜻을 갖습니다.
+`q.Elem "Frame" { ... }`에 넘기는 테이블은 단순한 설정 딕셔너리가 아닙니다. **문자 키**와 **숫자 키**가 각각 다른 뜻을 갖습니다.
 
 ```luau
 local isHovered = q.Source(false)
-local CommonButtonModifier = D.Modifier.Frame {
+local CommonButtonModifier = q.Modifier "Frame" {
     BorderSizePixel = 0,
 }
 
-D.Frame {
+q.Elem "Frame" {
     -- [1] 문자 키: 프로퍼티 바인딩 (정적 값 또는 반응형 State/Tween)
     Size = UDim2.new(0, 200, 0, 50),
     BackgroundColor3 = isHovered:Compute(function(h)  -- 편집기 타입 검사까지 보려면 지역 변수로 빼세요(02 §4)
@@ -53,13 +52,13 @@ D.Frame {
     CommonButtonModifier,
 
     -- [4] 숫자 키: 자식 요소
-    D.TextLabel {
+    q.Elem "TextLabel" {
         Text = "클릭하세요",
     },
 }
 ```
 
-1. **숫자 키**: 자식 인스턴스, `Modifier`, `Ref`/`PreRef`/`PostRef`, `Slot`, `Observer`/`Effect`, `Tag`/`Attr`, `q.OnChange(...)`가 들어가는 자리입니다. **순서가 의미를 갖습니다** — 뒤에 온 `Modifier`가 앞의 것을 필드 단위로 덮습니다. 자식 전용 키는 따로 없습니다 — **이름 없는 자리(숫자 키)가 곧 자식**입니다.
+1. **숫자 키**: 자식 인스턴스, `Modifier`, `Spread`, `Ref`/`PreRef`/`PostRef`, `Slot`, `Observer`/`Effect`, `Tag`/`Attr`, `q.OnChange "Class" "Name" (...)`·`q.OnEvent`가 들어가는 자리입니다. **순서가 의미를 갖습니다** — 뒤에 온 `Modifier`가 앞의 것을 필드 단위로 덮고, `Spread`는 거꾸로 먼저 자리 잡은 것이 이깁니다(§3). 자식 전용 키는 따로 없습니다 — **이름 없는 자리(숫자 키)가 곧 자식**입니다.
 2. **문자 키**: 프로퍼티·이벤트가 각자 전용 핸들러를 통해 인스턴스에 바인딩됩니다. 문자 키에 직접 적은 프로퍼티는 숫자 키의 어떤 `Modifier`보다 우선합니다. 다만 `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale` 네 키는 프로퍼티가 아니라 **관리 자식을 만드는 숏핸드**입니다(quad가 그 자리에 `UICorner` 같은 자식을 만들어 붙이고 관리합니다).
 3. **한 번에 처리된다**: 숫자 키 자리가 있으면 그 전체가 하나의 배치로 묶여 재계산이 **끝에 한 번** 일어납니다. 그 안에서 어떤 핸들러가 어떤 순서로 매칭되는지는 [Quadnomicon Vol. 8 — 확장 가능한 디스패치 엔진](/quadnomicon/08-extensible-dispatch-engine/)이 다룹니다.
 4. **정리(Teardown)**: 인스턴스를 `Destroy()`하면 거기 묶인 구독과 트윈은 더 이상 실행되지 않습니다. Quad는 인스턴스마다 걸어 둔 엔진 연결이 끊겼는지로 생존을 판정하고, 실제 메모리 회수는 Luau GC에 맡깁니다. 수동으로 disconnect할 것은 없고, **정리해야 할 것들을 담아 들고 다니는 스코프 객체도 없습니다**(Fusion의 `Scope`, Vide의 소유 스코프 자리에 해당하는 것이 quad에는 없습니다).
@@ -73,8 +72,8 @@ D.Frame {
 `Ref`는 `q.Ref<<TextButton?>>(nil)`처럼 담길 타입을 적어 만들어 숫자 키 자리에 놓아 두면 **quad가 만들어진 인스턴스를 채워 주는 빈 상자**입니다 — 나중에 `ref.Value`로 꺼내 씁니다(타입 인자를 빼면 `Ref<nil>`이 되어 그 자리에서 막힙니다 — [시작하기 07](/getting-started/07-ref/)).
 
 ```luau
-local function MaterialButton(props: { read Text: string?, read Modifier: RobloxModule.TextButtonModifier?, read Ref: q.Ref<TextButton?>? }): TextButton
-    return D.TextButton {
+local function MaterialButton(props: { read Text: string?, read Modifier: RobloxModule.ModifierInto<TextButton>?, read Ref: q.Ref<TextButton?>? }): TextButton
+    return q.Elem "TextButton" {
         props.Modifier or None, -- ⭐ 숫자 키 자리에서만 의미가 있는 관용구
         props.Ref or None,
 
@@ -93,10 +92,10 @@ end
 
 ```luau
 -- ❌ props.Modifier가 없으면 1번 자리가 구멍이 된다 — 뒤에 값(props.Ref)이 오면 그 자리에서 에러, 둘 다 없으면 꼬리 구멍이라 우연히 통과(어느 쪽도 계약 밖)
-D.TextButton { props.Modifier, props.Ref, Text = "x" }
+q.Elem "TextButton" { props.Modifier, props.Ref, Text = "x" }
 
 -- ✅ None이 자리를 지킨다 — 기여는 0이지만 위치는 그대로
-D.TextButton { props.Modifier or None, props.Ref or None, Text = "x" }
+q.Elem "TextButton" { props.Modifier or None, props.Ref or None, Text = "x" }
 ```
 
 `None`은 "여기에 아무것도 없다"를 뜻하는 명시적 센티널입니다. 자리를 유지하되 아무것도 기여하지 않으므로, 호출자가 `Modifier`만 생략하든 `Ref`만 생략하든 나머지 원소는 원래 위치 그대로 꽂힙니다. 센티널 전체는 [레퍼런스: 생명주기와 센티널](/reference/core/10-lifetime-sentinels/)에 있습니다.
@@ -109,14 +108,14 @@ D.TextButton { props.Modifier or None, props.Ref or None, Text = "x" }
 
 ## 3. 스타일 합성 및 우선순위 3대 불변식
 
-컴포넌트가 자체 기본 디자인을 가지면서도 호출자의 커스텀 스타일을 수용해야 할 때가 있습니다. 병합 규칙은 셋뿐입니다(`Modifier` 값 자체의 표면은 [레퍼런스: `Modifier`](/reference/core/08-modifier/), 클래스별 생성자는 [레퍼런스: `D.Modifier`](/reference/roblox/03-modifier-spread/)에 있습니다).
+컴포넌트가 자체 기본 디자인을 가지면서도 호출자의 커스텀 스타일을 수용해야 할 때가 있습니다. 병합 규칙은 셋뿐입니다(`Modifier` 값 자체의 표면은 [레퍼런스: `Modifier`](/reference/core/08-modifier/), 클래스별 생성자는 [레퍼런스: `q.Modifier`](/reference/roblox/03-modifier-spread/)에 있습니다).
 
 1. **직접 적은 문자 키가 이긴다**:
-   `D.TextButton { props.Modifier or None, Text = "확정" }`에서 `Text`는 어떤 `Modifier`가 무엇을 갖고 오든 그대로 유지됩니다. 평탄화는 이미 채워진 키를 건너뛰기 때문입니다.
+   `q.Elem "TextButton" { props.Modifier or None, Text = "확정" }`에서 `Text`는 어떤 `Modifier`가 무엇을 갖고 오든 그대로 유지됩니다. 평탄화는 이미 채워진 키를 건너뛰기 때문입니다.
 2. **숫자 키 자리에서는 뒤에 온 `Modifier`가 이긴다**:
-   `D.TextButton { BaseMod, props.Modifier or None }`에서 뒤쪽 `Modifier`의 필드가 앞쪽을 덮습니다(역방향 스캔으로 마지막 것이 먼저 기록되고, 이미 기록된 키는 건너뜁니다).
+   `q.Elem "TextButton" { BaseMod, props.Modifier or None }`에서 뒤쪽 `Modifier`의 필드가 앞쪽을 덮습니다(역방향 스캔으로 마지막 것이 먼저 기록되고, 이미 기록된 키는 건너뜁니다).
 3. **`Modifier.Overridden(A, B)`도 같은 방향**:
-   명시적 합성에서도 뒤 인자(`B`)가 앞 인자(`A`)의 같은 필드를 덮습니다. 닷 형태 `q.Modifier.Overridden(a, b)`와 콜론 형태 `a:Overridden(b)` 둘 다 됩니다.
+   명시적 합성에서도 뒤 인자(`B`)가 앞 인자(`A`)의 같은 필드를 덮습니다. 닷 형태 `q.Raw.Modifier.Overridden(a, b)`와 콜론 형태 `a:Overridden(b)` 둘 다 됩니다.
 
 ### 클래스 태그가 붙은 Modifier 팩토리
 
@@ -128,20 +127,20 @@ D.TextButton { props.Modifier or None, props.Ref or None, Text = "x" }
 type ButtonProps = {
     read Text: string | QuadTypes.StateMarker<string>,
     read OnClick: () -> (),
-    read Modifier: RobloxModule.TextButtonModifier?,
+    read Modifier: RobloxModule.ModifierInto<TextButton>?, -- 입력 자리 마커: TextButton과 그 조상 클래스의 Modifier
     read Ref: q.Ref<TextButton?>?,
 }
 
 local function CustomButton(props: ButtonProps): TextButton
     -- [1] TextButton 전용으로 태그된 기본 스타일
-    local baseStyle = D.Modifier.TextButton {
+    local baseStyle = q.Modifier "TextButton" {
         Size = UDim2.fromOffset(140, 40),
         BackgroundColor3 = Color3.fromRGB(0, 140, 240),
         TextColor3 = Color3.fromRGB(255, 255, 255),
         TextSize = 16,
     }
 
-    return D.TextButton {
+    return q.Elem "TextButton" {
         -- [2] 불변식 2 — 뒤에 온 props.Modifier가 baseStyle을 필드 단위로 덮는다
         baseStyle,
         props.Modifier or None,
@@ -155,7 +154,7 @@ local function CustomButton(props: ButtonProps): TextButton
 end
 ```
 
-`D.Modifier.<Class>`는 위처럼 테이블을 넘기는 형태와 빌더 체인 형태(`D.Modifier.TextButton():TextSize(16):Text("x")`) 둘 다 지원합니다. 다만 **타입 검사는 체인 형태에서만 삽니다** — 테이블 형태의 필드는 이름도 값 타입도 검사되지 않고(`{ Sise = 1 }`도 통과), 틀린 것은 런타임 drive에서 `Quad0076`류로 잡힙니다. strict의 도움을 받고 싶으면 체인 형태로 쓰세요([Modifier 레퍼런스](/reference/roblox/03-modifier-spread/)).
+`q.Modifier "Class"`는 위처럼 테이블을 넘기는 형태와 빌더 체인 형태(`q.Modifier "TextButton" ():TextSize(16):Text("x")`) 둘 다 지원합니다. 다만 **타입 검사는 체인 형태에서만 삽니다** — 테이블 형태의 필드는 이름도 값 타입도 검사되지 않고(`{ Sise = 1 }`도 통과), 틀린 것은 런타임 drive에서 `Quad0076`류로 잡힙니다. strict의 도움을 받고 싶으면 체인 형태로 쓰세요([Modifier 레퍼런스](/reference/roblox/03-modifier-spread/)).
 
 ### 사용하는 쪽에서의 유연성
 
@@ -167,7 +166,7 @@ local btn1 = CustomButton { Text = "확인", OnClick = function() print("기본 
 local btn2 = CustomButton {
     Text = "삭제",
     OnClick = function() print("삭제 버튼") end,
-    Modifier = D.Modifier.TextButton {
+    Modifier = q.Modifier "TextButton" {
         BackgroundColor3 = Color3.fromRGB(240, 60, 60),
         Size = UDim2.fromOffset(100, 36),
     },
@@ -176,7 +175,57 @@ local btn2 = CustomButton {
 
 케이스 B에서 `BackgroundColor3`와 `Size`는 덮어씌워지고, 기본 스타일의 `TextColor3`/`TextSize`는 그대로 남습니다.
 
-> 상위 클래스 `Modifier`(예: `D.Modifier.GuiObject { ... }`)까지 받고 싶다면 `props.Modifier`를 인터페이스 타입 `RobloxModule.IntoTextButton?`으로 선언하고, 꽂을 때 `if props.Modifier then props.Modifier:AsTextButton() else None`으로 내려받으세요.
+> `ModifierInto<TextButton>`은 **입력 자리 마커**입니다 — `TextButton`과 그 조상 클래스(`q.Modifier "GuiObject" { ... }` 등)의 Modifier를 받고, 형제 클래스(`q.Modifier "TextLabel"`)의 것은 타입에서 거부합니다. 받은 값은 그대로 숫자 키 자리에 놓으면 됩니다. 마커에는 메소드가 없으니, 받은 Modifier에 setter를 더 불러야 하는 컴포넌트라면 `RobloxModule.Modifier<TextButton>?`으로 받으세요(그때 조상 클래스 값은 부르는 쪽이 `:AsTextButton()`으로 내려서 넘깁니다).
+
+### 안쪽 요소에 무엇이든 더 꽂을 자리 — `Spread`
+
+`Modifier`는 **프로퍼티 필드만** 담습니다. 컴포넌트 안쪽 요소에 호출자가 이벤트 핸들러·`Ref`·`q.OnChange` 디스크립터·자식까지 더 꽂게 하려면 [`Spread`](/reference/roblox/03-modifier-spread/#qspread-class-props)를 받습니다. Spread는 요소 테이블과 같은 모양으로 적은 조각이고, 숫자 키 자리에 놓으면 그 자리에 펼쳐집니다.
+
+```luau
+local function SearchBox(props: { read Placeholder: string?, read FieldSpread: RobloxModule.SpreadInto<TextBox>? })
+    return q.Elem "Frame" {
+        Size = UDim2.fromOffset(240, 32),
+        q.Elem "TextBox" {
+            props.FieldSpread or None,              -- 호출자가 넘긴 조각이 이 자리에 펼쳐진다
+            PlaceholderText = props.Placeholder or "",
+            ClearTextOnFocus = false,
+        },
+    }
+end
+
+local focused = q.Source(false)
+local box = SearchBox {
+    FieldSpread = q.Spread "TextBox" {
+        q.OnEvent "TextBox" "Focused" (function() focused:Set(true) end),
+        q.OnEvent "TextBox" "FocusLost" (function() focused:Set(false) end),
+        TextSize = 18,
+    },
+}
+```
+
+같은 키가 여러 곳에 있으면 순위는 이렇습니다.
+
+| 순위 | 어디에 적힌 키 | 규칙 |
+|---|---|---|
+| 1 | 요소 테이블에 직접 적은 문자 키 | 항상 이긴다 |
+| 2 | `Spread`가 가져온 키 | **먼저 자리 잡은 `Spread`가 이긴다** |
+| 3 | `Modifier`가 가져온 키 | **뒤에 오는 `Modifier`가 이긴다** |
+
+`Spread`의 "먼저가 이긴다"는 JavaScript의 객체 펼치기(`{...a, ...b}` — 뒤가 이김)와 반대입니다. Luau 테이블 생성자는 문자 키와 배열 값 사이의 순서를 남기지 않아서, 직접 적은 키를 언제나 맨 앞 층으로 두려면 "먼저 자리 잡은 것이 이긴다"여야 합니다. 그래서 위 `SearchBox`의 `ClearTextOnFocus = false`는 호출자가 바꿀 수 없고, 호출자의 `TextSize = 18`은 안쪽에 같은 키가 없으니 들어갑니다. 같은 이벤트를 컴포넌트와 호출자가 둘 다 들어야 한다면 문자 키(`Focused = fn` — 하나만 남음) 대신 위처럼 `q.OnEvent` 디스크립터를 쓰세요 — 디스크립터는 배열 값이라 서로 밀어내지 않습니다.
+
+컴포넌트가 자기 조각에 호출자의 조각을 덧붙이려면 `spread:Append(other)`를 씁니다(아무것도 돌려주지 않습니다). 요소에 놓이거나 다른 Spread에 펼쳐진 Spread는 잠겨 더 이상 `:Append`할 수 없습니다 — 인스턴스마다 새로 만드세요.
+
+### 무엇으로 넘길까 — `Store`·`Context`·`Modifier`·`Spread`·토큰
+
+다섯 다 "값을 어딘가로 넘긴다"처럼 보이지만 하는 일이 다릅니다.
+
+- **[`Store`](/reference/core/04-store/)** — `:Set`할 수 있는 필드들의 묶음입니다. 상태의 원천이고, 한 필드를 다른 필드에서 파생시키지는 않습니다.
+- **[`Context`](/reference/sugar/01-context/)** — 트리 아래로 **명시적으로** 넘기는 값 가방입니다. 깊이 있는 컴포넌트까지 props를 줄줄이 넘기지 않으려고 씁니다.
+- **[`Modifier`](/reference/roblox/03-modifier-spread/)** — 요소 하나의 **프로퍼티**를 덮는 불변 값입니다. 만들어 두고 여러 곳에 놓습니다. 인라인 키를 이기지 못합니다.
+- **[`Spread`](/reference/roblox/03-modifier-spread/#qspread-class-props)** — 요소 테이블 조각입니다. 프로퍼티뿐 아니라 이벤트·`Ref`·디스크립터·자식까지 담고, 한 번 놓이면 끝나는 일회용 값입니다.
+- **토큰 묶음** — 색·간격 같은 디자인 값을 `State`로 쥐고, 토큰이 다른 토큰에서 계산되는 묶음입니다(CSS 변수에 가깝습니다). quad에 전용 원시 기능은 아직 없고, 레시피는 [05. 디자인 토큰과 테마 전환](/how-to/05-theme-and-dynamic-styling/)에 있습니다.
+
+고르는 기준은 셋입니다. 상태를 바꿀 원천이면 `Store`를 씁니다. 트리 아래로 멀리 보낼 값이면 `Context`를 씁니다. 특정 요소에 꽂을 것이면 둘 중 하나를 씁니다 — 프로퍼티만이고 재사용할 값이면 `Modifier`, 핸들러·`Ref`·자식까지 섞인 한 번짜리면 `Spread`입니다.
 
 ---
 
@@ -186,18 +235,18 @@ local btn2 = CustomButton {
 
 ```luau
 local function ModalDialog(props: { read Title: string, read Children: q.Slot<Instance>? }): Frame
-    return D.Frame {
+    return q.Elem "Frame" {
         Size = UDim2.fromOffset(400, 300),
         BackgroundColor3 = Color3.fromRGB(25, 25, 30),
 
         -- 헤더 타이틀
-        D.TextLabel {
+        q.Elem "TextLabel" {
             Text = props.Title,
             Size = UDim2.new(1, 0, 0, 40),
         },
 
         -- 전달받은 Slot을 컨텐츠 영역의 한 자리로 놓는다
-        D.Frame {
+        q.Elem "Frame" {
             Position = UDim2.fromOffset(0, 40),
             Size = UDim2.new(1, 0, 1, -40),
             BackgroundTransparency = 1,
@@ -216,12 +265,12 @@ end
 
 ### 자식 **배열**을 그대로 넘기지 않는 이유
 
-props에 `{ RobloxModule.FrameElem }` 같은 배열을 받아 펼치는 모양도 문법상으로는 가능하지만, 두 가지 제약이 따라옵니다.
+props에 `{ RobloxModule.PropsArrayItem<Frame> }` 같은 배열을 받아 펼치는 모양도 문법상으로는 가능하지만, 두 가지 제약이 따라옵니다.
 
 - `table.unpack(...)`은 **테이블 리터럴의 마지막 원소일 때만** 전부 펼쳐집니다. 중간에 두면 첫 값 하나만 들어갑니다.
-- **자식 배열을 담은 변수를 props 테이블 자리에 그대로 넘길 수는 없습니다** — `D.Frame(children)`은 타입이 맞지 않아 거부됩니다. props 테이블은 리터럴 자리에서만 추론이 살아 있습니다.
+- **자식 배열을 담은 변수를 props 테이블 자리에 그대로 넘길 수는 없습니다** — `q.Elem "Frame" (children)`은 타입이 맞지 않아 거부됩니다. props 테이블은 리터럴 자리에서만 추론이 살아 있습니다.
 
-그래서 이 문서는 자식 전달을 `Slot`으로 통일합니다. `<Class>Elem` 타입 자체는 여전히 유용합니다 — 그 클래스의 숫자 키 자리에 올 수 있는 것들의 유니언이라, 자식 Instance뿐 아니라 `Modifier`·`Ref`·`Slot` 같은 디스크립터도 들어 있습니다.
+그래서 이 문서는 자식 전달을 `Slot`으로 통일합니다(요소 테이블 조각을 통째로 넘기고 싶다면 위의 `Spread`입니다). `PropsArrayItem<C>` 타입 자체는 여전히 유용합니다 — 그 클래스의 숫자 키 자리에 올 수 있는 것들의 유니언이라, 자식 Instance뿐 아니라 `Modifier`·`Spread`·`Ref`·`Slot` 같은 디스크립터도 들어 있습니다.
 
 반대로 **컴포넌트가 형제 여럿을 돌려줘야** 할 때도 `Slot`입니다. 래퍼 `Frame`을 만드는 대신 `Slot` 하나를 돌려주면, 부르는 쪽은 그 반환값을 숫자 키 자리에 그대로 놓습니다.
 
@@ -229,13 +278,13 @@ props에 `{ RobloxModule.FrameElem }` 같은 배열을 받아 펼치는 모양�
 local function Rows(props: { read Items: { string } })
     local rows = q.Slot<<Instance>>()
     for _, text in props.Items do
-        rows:Add(D.TextLabel { Text = text })
+        rows:Add(q.Elem "TextLabel" { Text = text })
     end
     return rows
 end
 
-local list = D.Frame {
-    D.TextLabel { Text = "머리" },
+local list = q.Elem "Frame" {
+    q.Elem "TextLabel" { Text = "머리" },
     Rows { Items = { "a", "b" } },   -- 자식 셋: 머리 + a + b
 }
 ```
@@ -248,7 +297,7 @@ Roblox의 `CollectionService` 태그와 인스턴스 어트리뷰트도 숫자 �
 
 ```luau
 local function CharacterBadge(props: { read Name: string, read Level: QuadTypes.StateMarker<number> }): Frame
-    return D.Frame {
+    return q.Elem "Frame" {
         -- [1] CollectionService 태그 (여러 자리의 요구를 합집합으로 관리)
         q.Tag("PlayerBadge", "Interactable"),
 
@@ -259,7 +308,7 @@ local function CharacterBadge(props: { read Name: string, read Level: QuadTypes.
             Guild = "Alpha",
         },
 
-        D.TextLabel {
+        q.Elem "TextLabel" {
             Text = props.Name,
         },
     }
@@ -326,7 +375,7 @@ local function ValueLabel<T>(props: ValueLabelProps<T>): TextLabel
     local text: q.State<string> = value:Compute(function(v: q.StateData<T>): string
         return props.Format(v:Get())
     end)
-    return D.TextLabel { Text = text }
+    return q.Elem "TextLabel" { Text = text }
 end
 
 -- 쓰는 자리: 역시 마커로 받고 본문에서 Source로 캐스트 — 입구에서 쓸 수 있는 값인지 확인
@@ -340,7 +389,7 @@ local function RadioButton<T>(props: RadioButtonProps<T>): TextButton
         error("RadioButton: Value must be a Source - a derived State cannot be written", 2)
     end
     local value = (props.Value :: any) :: q.Source<T>
-    return D.TextButton {
+    return q.Elem "TextButton" {
         Text = props.Text,
         Activated = function()
             value:Set(props.Option)
@@ -358,8 +407,8 @@ local linear = RadioButton { Value = style, Option = Enum.EasingStyle.Linear, Te
 
 같은 자리에서 자주 만나는 셋도 함께 적어 둡니다.
 
-- **props 자리에 인라인으로 쓴 `:Compute`** — `D.TextLabel { Text = n:Compute(function(self) … end) }`처럼 다른 호출에 넘기는 테이블 안에 콜백을 바로 쓰면 콜백 매개변수의 타입이 정해지지 않아 에러가 납니다. `function(self: q.StateData<number>)`처럼 매개변수에 주석을 달거나, 결과를 주석 단 지역 변수로 먼저 빼세요.
-- **자식 배열 안에 인라인으로 쓴 콜백** — `D.Frame { q.PreRef(nil :: Frame?):Callback(function(inst) … end) }`나 `count:Observer(function(t) … end)`도 같은 이유로 매개변수 주석이 필요합니다 — `function(inst: Frame?)`, `function(t: q.StateData<number>)`. 같은 콜백을 독립 문장으로 쓰면 주석 없이도 됩니다.
+- **props 자리에 인라인으로 쓴 `:Compute`** — `q.Elem "TextLabel" { Text = n:Compute(function(self) … end) }`처럼 다른 호출에 넘기는 테이블 안에 콜백을 바로 쓰면 콜백 매개변수의 타입이 정해지지 않아 에러가 납니다. `function(self: q.StateData<number>)`처럼 매개변수에 주석을 달거나, 결과를 주석 단 지역 변수로 먼저 빼세요.
+- **자식 배열 안에 인라인으로 쓴 콜백** — `q.Elem "Frame" { q.PreRef(nil :: Frame?):Callback(function(inst) … end) }`나 `count:Observer(function(t) … end)`도 같은 이유로 매개변수 주석이 필요합니다 — `function(inst: Frame?)`, `function(t: q.StateData<number>)`. 같은 콜백을 독립 문장으로 쓰면 주석 없이도 됩니다.
 - **`Slot:List`에 함수 값으로 넘기는 key 함수**(제네릭 함수 안이든 아니든) — 매개변수 타입을 `(T, number) -> any`로 적으세요. 인자를 하나만 받는 함수 값(`(T) -> string`)은 인자를 둘 받는 함수 자리에 들어가지 않습니다(그 자리에 바로 쓴 람다는 괜찮습니다).
 
 
@@ -368,8 +417,8 @@ local linear = RadioButton { Value = style, Option = Enum.EasingStyle.Linear, Te
 ## 7. 컴포넌트 작성 체크리스트
 
 - [ ] 컴포넌트는 1회 실행되는 셋업 함수인가?
-- [ ] 외부에서 주입받는 `Modifier`/`Ref`를 **숫자 키 자리**에 놓고 `or None`으로 nil-hole을 막았는가?
-- [ ] 문자 키 > 후행 `Modifier` > 선행 `Modifier` 우선순위를 알고 설계했는가?
+- [ ] 외부에서 주입받는 `Modifier`/`Spread`/`Ref`를 **숫자 키 자리**에 놓고 `or None`으로 nil-hole을 막았는가?
+- [ ] 문자 키 > 선행 `Spread` > 후행 `Spread` > 후행 `Modifier` > 선행 `Modifier` 우선순위를 알고 설계했는가?
 - [ ] `Attr` 값을 지울 때 `None`(또는 State의 `nil`)을 쓰고, 그룹 교체만으로는 값이 안 지워진다는 걸 아는가?
 - [ ] 반응형 로직을 담은 헬퍼 함수를 React Hook의 제약 없이 자유롭게 분리했는가?
 - [ ] 던질 수 있는 컴포넌트를 `q.Fallback`으로 감싸고 그 에러를 받는 자리를 정했는가? → [09. 떠 있는 것 열고 닫기 — 모달과 토스트](/how-to/09-overlays-modal-toast/) §5

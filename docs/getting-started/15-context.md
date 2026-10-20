@@ -77,7 +77,7 @@ return function(props)
 
     -- …중간 생략…
 
-        D.TextButton {
+        q.Elem "TextButton" {
             BackgroundColor3 = theme.Accent,      -- ← 13장의 highlightColor(count, 10) 대신 가방에서 온 색
             Text = "+ 1",
             -- …나머지 생략…

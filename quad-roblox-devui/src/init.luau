@@ -11,12 +11,11 @@
 	QUICK START
 		local Devui = require("<path to this folder>")
 		local q = require("<path>/Quad")                    -- the kit's setup module (installs the Roblox provider)
-		local D = q.Declaration
 		local Kids = Devui.Kids                              -- Kids(a, b) = q.Slot({ a, b })
 
 		local overlay = Devui.Overlay.new()                  -- one popup layer per ScreenGui (see "OVERLAY" below)
 		local open = q.Source(true)
-		local screen = D.ScreenGui {
+		local screen = q.Elem "ScreenGui" {
 			ResetOnSpawn = false,                            -- the layer is a quad-made instance: no respawn rebuilds
 			ZIndexBehavior = Enum.ZIndexBehavior.Sibling,    -- REQUIRED: a code-made ScreenGui is Global, and windows /
 			                                                 -- popups are layered by sibling ZIndex (Window/Manager)
@@ -51,11 +50,11 @@
 	   (or a Slot when it produces siblings). Props type: `read` fields, optional ones `?`.
 	2. Standard props, in this order of appearance in the type: the widget's own data (`Text`, `Value`, ...), callbacks
 	   (`OnClick`, `OnChange` — plain functions, called from engine events), then `Style: Style?` and
-	   `Modifier: <Class>Modifier?` (use `Quad.FrameModifier` etc.; for a class not yet there, add a re-export line to
-	   `src/Quad.luau`: `export type <Class>Modifier = RobloxModule.<Class>Modifier`, and likewise `Into<Class>`).
-	   The host's `Name` lives in a module-level base Modifier (`local fooName = D.Modifier.Frame():Name("Foo")`), first in the
+	   `Modifier: ModifierInto<Class>?` (`Quad.ModifierInto<Frame>` etc. — the generic re-exports in `src/Quad.luau`;
+	   an inner element's slot is `FieldModifier`/`TrackModifier` beside `FieldSpread`/`TrackSpread: SpreadInto<Class>?`).
+	   The host's `Name` lives in a module-level base Modifier (`local fooName = q.Modifier "Frame" ():Name("Foo")`), first in the
 	   array part and BEFORE `props.Modifier` (later wins) — never `Name = "Foo"` inline on the host: an inline key always beats
-	   a Modifier, so the caller's `D.Modifier.Frame():Name("X")` could not rename it. Inner children keep inline names; a
+	   a Modifier, so the caller's `q.Modifier "Frame" ():Name("X")` could not rename it. Inner children keep inline names; a
 	   name that is an argument (Choice, Tree, NumberField) goes through a small per-name Modifier cache.
 	   Display values that can change take `T | State<T>`. Values a widget WRITES BACK are `Source<T>` props (e.g.
 	   Window `Open`/`Position`): the widget creates an internal Source when the caller passes none, so it works both

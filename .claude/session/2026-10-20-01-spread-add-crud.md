@@ -67,3 +67,11 @@ gen-d.py: LEGACY_KEEP(정의 클래스 기준, 태그 무관 — Transparency �
 계획에서 벗어난 것 둘 — 사용자에게 보고: 변환 함수 `old`·`Peek`의 State·Tween 팔이 읽기 뷰(`StateView`·`TweenView`)다. 타입 함수 안에 전체 `QuadTypes.State<T>`를 넣으면 "*error-type*"으로 깨져서다(실측). round3 Q23 (a)는 전체형이었다. 둘째, 커스텀 클래스 Modifier가 `ModifierInto<C>` 마커에 바로 들어가지 않는다(3.3 `Into<Class>`는 메소드 인터페이스였다). 새 에러 `Quad0281`(클래스 단계에 인자 둘 이상 — 3.3 `q.OnChange("Text", fn)`이 조용히 단계 함수가 되어 요소에 놓이던 것).
 
 doc-coverage가 새 표면 헤딩을 요구해 단위 7 일부를 당겼다: reference/roblox 01~05 다시 씀(파일 이름 `02-elem.md`·`03-modifier-spread.md`), core/01·core/10·errors·00-index·CHANGELOG BREAKING. 문서 쓰며 확인한 것(신 솔버·한도 플래그 셋): `q.Out "UIStroke" "Color"`가 올바른 `Source<Color3>`를 받는다(3.3의 충돌 이름 거짓 양성 해소), `q.Out "BillboardGui" "Adornee"`가 `Source<Instance?>`를 받는다, `q.OnChange "UIStroke" "Color" (function(v: number))`·`"Parent"` 콜백에 `Instance` 주석·`Source(5)`를 `Size`에 — 전부 거부.
+
+## 14. 단위 7 완료(사용자 문서)
+
+코드 블록은 일회용 변환 스크립트로, 산문은 손으로. how-to 01에 Spread 절(우선순위 표, JS 펼치기와 반대인 이유)과 Store·Context·Modifier·Spread·토큰 다섯 비교(사용자 2026-10-20 요청 — `research/design-token-plan.md` 3절의 사용자 정리를 문서로). 입력 자리 예제는 `ModifierInto<C>`로(3.3 `Into<Class>` + `:AsTextButton()` 관용구는 필요 없어짐 — 마커가 조상 클래스를 받는다). 킷 소스 주석·README도 같이.
+
+실측: 한도 플래그 없이 킷 둘은 깨끗, quad-roblox 스펙 두 자리만 too complex — 조상 클래스 Modifier 타입을 주석으로 비교하는 자리(`Modifier<GuiObject>`·`Modifier<GuiButton>` 주석). 구체 클래스·마커·무주석은 깨끗. 설치 문서를 "새 솔버 필수, 한도 셋 권장"으로. 사용자 보고 항목: Studio에서는 플래그를 못 바꾸므로 그 한 자리는 피하라고 문서에 적었다 — 처방(예: 조상 클래스 `Modifier<C>`의 As 트리를 줄이는 것)은 새 메커니즘이라 사용자 몫.
+
+`Quad0224` 메시지 "second argument" → `"{name}" needs a Source to write back into`(커리 꼴에서 둘째 인자가 아님).

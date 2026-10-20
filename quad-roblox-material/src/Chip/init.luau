@@ -8,7 +8,7 @@
 	    Chip.Suggestion({ Label = "Cheap flights", Elevated = true, OnClick = pick })
 	    Chip.ChipSet({ Items = tags, Key = function(t) return t.Id end, Render = function(tag, order)
 	        return Chip.Input({ Label = tag:Compute(function(self) return self:Get().Name end),
-	            Modifier = D.Modifier.TextButton():LayoutOrder(order), OnRemove = ... })
+	            Modifier = q.Modifier "TextButton" ():LayoutOrder(order), OnRemove = ... })
 	    end })
 
 	Common props (all `read`): Label (string | State<string>), Icon (image asset id; leading 18 px; presence is

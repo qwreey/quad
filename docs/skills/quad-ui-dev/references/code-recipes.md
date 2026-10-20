@@ -7,11 +7,10 @@ this prologue once per module; nothing else is implicit.
 --!strict
 -- install path depends on the project layout
 local Quad = require(<quad-base module>)              -- already a live instance
-local RobloxModule = require(<quad-roblox module>)   -- value + the only public path to generated types (RobloxModule.TextButtonModifier …)
+local RobloxModule = require(<quad-roblox module>)   -- value + the only public path to generated types (RobloxModule.Modifier<TextButton> …)
 local QuadRoblox = RobloxModule.QuadRoblox
 local QuadTypes = require(<quad-types module>)        -- types only: State<T>, Source<T>, Slot<T>, Provider<T>
-local q = Quad:UseProvider(QuadRoblox)                -- installs Declaration / OnChange / Out / Animate / Tween / isTween
-local D = q.Declaration
+local q = Quad:UseProvider(QuadRoblox)                -- installs Elem / Modifier / Spread / Mapper / OnChange / OnEvent / Out / ForClasses / Animate / Tween / isTween
 ```
 
 ---
@@ -33,23 +32,23 @@ local function Counter()
         Style = Enum.EasingStyle.Quad,
     })
 
-    return D.ScreenGui {
+    return q.Elem "ScreenGui" {
         ResetOnSpawn = false,
 
-        D.Frame {
+        q.Elem "Frame" {
             Size = UDim2.fromOffset(200, 100),
             Position = UDim2.fromScale(0.5, 0.5),
             AnchorPoint = Vector2.new(0.5, 0.5),
             BackgroundColor3 = frameBg,
 
-            D.TextLabel {
+            q.Elem "TextLabel" {
                 Size = UDim2.new(1, 0, 0.5, 0),
                 Text = countText,
                 TextColor3 = Color3.fromRGB(255, 255, 255),
                 BackgroundTransparency = 1,
             },
 
-            D.TextButton {
+            q.Elem "TextButton" {
                 Size = UDim2.new(1, 0, 0.5, 0),
                 Position = UDim2.new(0, 0, 0.5, 0),
                 Text = "Increment (+1)",
@@ -120,18 +119,18 @@ local function Leaderboard(itemsState: QuadTypes.State<{ Item }>)
         local scoreSrc = q.Source(`Score: {data.Score}`)
         local orderSrc = q.Source(ctx.Index)
 
-        local row = D.Frame {
+        local row = q.Elem "Frame" {
             LayoutOrder = orderSrc,
             Size = UDim2.new(1, 0, 0, 36),
             BackgroundColor3 = Color3.fromRGB(30, 30, 30),
 
-            D.TextLabel {
+            q.Elem "TextLabel" {
                 Size = UDim2.new(0.7, 0, 1, 0),
                 Text = titleSrc,
                 TextColor3 = Color3.fromRGB(255, 255, 255),
             },
 
-            D.TextLabel {
+            q.Elem "TextLabel" {
                 Size = UDim2.new(0.3, 0, 1, 0),
                 Position = UDim2.new(0.7, 0, 0, 0),
                 Text = scoreSrc,
@@ -156,12 +155,11 @@ its rows mount directly under that Instance.
 ## 3. Studio Prefab Binding (`q.Claim`)
 
 `q.Claim(inst, descriptor)` takes an existing tree into quad ownership and drives it in
-one call. The descriptor comes from `D.Mapper`: `M.<Class>(key)(props)`, where `key` is
-the child's `Name` and `M.Root` marks the claimed instance itself. `Claim` returns the
+one call. The descriptor comes from `q.Mapper`: `M.<Class>(key)(props)`, where `key` is
+the child's `Name` and `q.MapperRoot` marks the claimed instance itself. `Claim` returns the
 same instance. A descriptor value is one-shot — build a fresh one per call.
 
 ```luau
-local M = D.Mapper
 
 local function BindPlayerCard(
     prefab: Instance,
@@ -174,17 +172,17 @@ local function BindPlayerCard(
         return `Lv. {self:Get().Level}`
     end)
 
-    return q.Claim(prefab, M.Frame(M.Root)({
-        M.TextLabel("PlayerName")({ Text = nameText }),
-        M.TextLabel("PlayerLevel")({ Text = levelText }),
+    return q.Claim(prefab, q.Mapper "Frame" (q.MapperRoot)({
+        q.Mapper "TextLabel" ("PlayerName")({ Text = nameText }),
+        q.Mapper "TextLabel" ("PlayerLevel")({ Text = levelText }),
     }))
 end
 ```
 
-Mapped children accept the same props as `D.*` calls (plain values, States, Modifiers,
-events), and freshly built `D.*` children may be mixed into the same array. Claiming an
-Instance twice — including anything `D.*` produced — errors with
-`Quad0029 Claim: <instance> is already claimed by quad - a Declaration-made or already-Claimed
+Mapped children accept the same props as `q.Elem` constructors (plain values, States, Modifiers,
+events), and freshly built `q.Elem` children may be mixed into the same array. Claiming an
+Instance twice — including anything `q.Elem` produced — errors with
+`Quad0029 Claim: <instance> is already claimed by quad - an Instance quad made (q.Elem) or already Claimed
 Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or
 dispose it and rebuild)`.
 
@@ -208,24 +206,24 @@ local function RegistrationForm()
         return if self:Get() then Color3.fromRGB(0, 180, 80) else Color3.fromRGB(80, 80, 80)
     end)
 
-    return D.Frame {
+    return q.Elem "Frame" {
         Size = UDim2.fromOffset(300, 200),
 
-        D.TextBox {
+        q.Elem "TextBox" {
             PlaceholderText = "Username (min 3 chars)",
-            q.OnChange("Text", function(newText)
+            q.OnChange "TextBox" "Text" (function(newText)
                 form.Username:Set(newText)
             end),
         },
 
-        D.TextBox {
+        q.Elem "TextBox" {
             PlaceholderText = "Password (min 6 chars)",
-            q.OnChange("Text", function(newText)
+            q.OnChange "TextBox" "Text" (function(newText)
                 form.Password:Set(newText)
             end),
         },
 
-        D.TextButton {
+        q.Elem "TextButton" {
             Text = "Submit",
             BackgroundColor3 = submitColor,
             AutoButtonColor = isValid,
@@ -239,7 +237,7 @@ local function RegistrationForm()
 end
 ```
 
-`q.OnChange(name, fn)` is a descriptor and goes in the **array part**, not as a hash key.
+`q.OnChange "Class" "Name" (fn)` is a descriptor and goes in the **array part**, not as a hash key.
 `#pwd` on the raw dep handle would be `0` with no error — always `:Get()` first.
 
 ---
@@ -271,20 +269,20 @@ local function SearchBar(onSearch: (string) -> ())
 
     local inputRef = q.PreRef<<TextBox?>>(nil)   -- strict needs the element type
 
-    return D.Frame {
+    return q.Elem "Frame" {
         Size = UDim2.new(1, 0, 0, 40),
         searchObserver,
 
-        D.TextBox {
+        q.Elem "TextBox" {
             inputRef,
             Size = UDim2.new(1, -40, 1, 0),
             PlaceholderText = "Search items...",
-            q.OnChange("Text", function(text)
+            q.OnChange "TextBox" "Text" (function(text)
                 rawQuery:Set(text)
             end),
         },
 
-        D.TextButton {
+        q.Elem "TextButton" {
             Size = UDim2.fromOffset(36, 36),
             Position = UDim2.new(1, -38, 0.5, 0),
             AnchorPoint = Vector2.new(0, 0.5),
@@ -328,7 +326,7 @@ local function CoinDisplay(props: { Context: QuadTypes.Context })
         return `Coins: {self:Get()}`
     end)
 
-    return D.TextLabel {
+    return q.Elem "TextLabel" {
         Text = coinText,
         TextColor3 = theme.Accent,
     }
@@ -347,9 +345,9 @@ local function RootApp()
         :Set(ThemeProvider, themeStore)
         :Set(InventoryProvider, inventoryStore)
 
-    return D.ScreenGui {
+    return q.Elem "ScreenGui" {
         ResetOnSpawn = false,
-        CoinDisplay { Context = ctx },   -- components are plain functions, not D.* entries
+        CoinDisplay { Context = ctx },   -- components are plain functions, not q.Elem entries
     }
 end
 ```

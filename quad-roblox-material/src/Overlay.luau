@@ -7,7 +7,7 @@
 
 	    -- app root, once:
 	    local overlay = Overlay.new()                    -- or Overlay.default()
-	    local screen = D.ScreenGui { ResetOnSpawn = false, DisplayOrder = 10, App(), overlay.Layer }
+	    local screen = q.Elem "ScreenGui" { ResetOnSpawn = false, DisplayOrder = 10, App(), overlay.Layer }
 	    -- anywhere:
 	    local handle = overlay:Open({
 	        Content = function(h) return MyDialog({ OnDone = function() h.Close() end }) end,  -- or an Instance

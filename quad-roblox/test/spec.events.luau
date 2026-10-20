@@ -180,7 +180,7 @@ do
 	assert(not okN, "non-string name rejected")
 	mock.assertBlamesUser(errN, SPEC_FILE, "Out(42)")
 	local okV, errV = pcall(function() return q.Out "TextButton" "Text" (5) end)
-	assert(not okV and string.find(errV, "must be a Source", 1, true) ~= nil, "non-Source rejected: " .. tostring(errV))
+	assert(not okV and string.find(errV, "needs a Source", 1, true) ~= nil, "non-Source rejected: " .. tostring(errV))
 	mock.assertBlamesUser(errV, SPEC_FILE, "Out(name, 5)")
 	local okS, errS = pcall(function() return q.Out "TextButton" "Text" (src:Compute(function(s) return s:Get() end)) end)
 	assert(not okS and string.find(errS, "read-only State", 1, true) ~= nil, "a :Compute State is named as read-only: " .. tostring(errS))

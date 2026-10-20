@@ -78,20 +78,19 @@ flowchart TB
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.Declaration
 local Slot = q.Slot
 
 local function ButtonGroup()
 	return q.Slot<<Instance>>({
-		D.TextButton { Name = "SaveButton", Text = "Save" },
-		D.TextButton { Name = "CancelButton", Text = "Cancel" },
+		q.Elem "TextButton" { Name = "SaveButton", Text = "Save" },
+		q.Elem "TextButton" { Name = "CancelButton", Text = "Cancel" },
 	})
 end
 
-local root = D.Frame {
-	D.Frame { Name = "Header" },
+local root = q.Elem "Frame" {
+	q.Elem "Frame" { Name = "Header" },
 	ButtonGroup(),
-	D.Frame { Name = "Footer" },
+	q.Elem "Frame" { Name = "Footer" },
 }
 -- root의 실제 자식은 넷: Header, SaveButton, CancelButton, Footer
 ```
@@ -150,7 +149,7 @@ list:List(data, function(ctx)
 	local layoutOrder: q.State<number> = order:Depend(ctx.Offset):Compute(function(i: q.StateData<number>): number
 		return i:Get() + ctx.Offset:Get()
 	end)
-	return D.TextButton { Text = ctx.Item :: string, LayoutOrder = layoutOrder }, { order = order }
+	return q.Elem "TextButton" { Text = ctx.Item :: string, LayoutOrder = layoutOrder }, { order = order }
 end, function(item) return item end) -- keyFn: 문자열 자신이 키(생략하면 배열 index가 키)
 ```
 
@@ -161,11 +160,11 @@ end, function(item) return item end) -- keyFn: 문자열 자신이 키(생략하
 DOMless Slot의 직접적인 귀결은 **컴포넌트의 반환 타입이 하나로 고정되지 않는다**는
 것입니다. 컴포넌트는 다음 중 무엇이든 반환할 수 있습니다.
 
-- `Instance` 하나 — `D.Frame { … }`
-- 정적인 형제 묶음 — `Slot { D.TextButton { … }, D.ImageLabel { … } }`
+- `Instance` 하나 — `q.Elem "Frame" { … }`
+- 정적인 형제 묶음 — `Slot { q.Elem "TextButton" { … }, q.Elem "ImageLabel" { … } }`
 - 동적인 목록 — `Slot():List(data, updateFn)`
 
-배열에 들어가는 것은 **호출이 끝난 값**이어야 합니다. `Slot { D.TextButton }`처럼
+배열에 들어가는 것은 **호출이 끝난 값**이어야 합니다. `Slot { q.Elem "TextButton" }`처럼
 호출하지 않은 생성자를 넣으면 요소 타입 화이트리스트에 걸려 즉시 error입니다:
 `Quad0240 Slot: this backend cannot mount this value`. `Ref`/`Observer`/`Effect`/`Modifier`
 같은 핸들러 층 값도 요소가 될 수 없습니다(그것들은 props 숫자 키(배열 부분)의 자리이지 Slot 요소가

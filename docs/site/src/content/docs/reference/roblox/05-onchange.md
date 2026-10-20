@@ -6,7 +6,7 @@ description: "프로퍼티 변경 신호와 엔진 이벤트를 숫자 키 자�
 [`Tag`](/reference/core/09-tag-attr/)나 [생명주기 훅](/reference/sugar/04-lifecycle-hooks/)과 같은 자리에 놓입니다. 셋 다 클래스를 먼저 받고,
 그다음 이름, 마지막에 콜백(또는 되쓸 `Source`)을 받습니다.
 
-> **[3.4.0]** 3.3까지는 `q.OnChange("Text", fn)`·`q.Out("Text", src)`처럼 이름부터 받았고, 이름 집합은 생성 범위 전체를 합친
+> **[3.4.0]** 3.3까지는 `q.OnChange "TextBox" "Text" (fn)`·`q.Out "TextBox" "Text" (src)`처럼 이름부터 받았고, 이름 집합은 생성 범위 전체를 합친
 > 맵이었습니다(클래스마다 타입이 다른 이름은 `any`). 3.4.0부터 클래스를 먼저 받아(`q.OnChange "TextLabel" "Text" (fn)`) 그
 > 클래스의 타입으로 검사합니다. 옛 두 인자 꼴은 `Quad0281`로 거부됩니다. `q.OnEvent`는 3.4.0에 새로 생겼습니다.
 
@@ -119,7 +119,7 @@ q.OnChange "TextLabel" "TextBounds" (function(v: Vector2) end)   -- OK
 | 상황 | 문구 |
 |---|---|
 | 클래스 이름이 문자열이 아니거나 `""` | `Quad0278 OnChange: the first argument must be a class name string (got {…})` |
-| 클래스 단계에 인자를 둘 이상(3.3의 `q.OnChange("Text", fn)`) | `Quad0281 OnChange: takes the class name only - write q.OnChange "Class" "Name" (…) (3.3's q.OnChange(name, …) form is gone)` |
+| 클래스 단계에 인자를 둘 이상(3.3의 `q.OnChange "TextBox" "Text" (fn)`) | `Quad0281 OnChange: takes the class name only - write q.OnChange "Class" "Name" (…) (3.3's q.OnChange(name, …) form is gone)` |
 | 이름이 문자열이 아니거나 `""` | `Quad0221 OnChange: property name must be a non-empty string` |
 | 콜백이 함수가 아님 | `Quad0222 OnChange: callback for "{name}" must be a function (got {typeof(fn)})` |
 
@@ -212,7 +212,7 @@ local box = q.Elem "TextBox" {
 |---|---|
 | 클래스 단계(`Quad0278`·`Quad0281`) | `OnChange`와 같습니다 |
 | 이름이 문자열이 아니거나 `""` | `Quad0223 Out: property name must be a non-empty string` |
-| 셋째 인자가 `Source`가 아님 | `Quad0224 Out: second argument for "{name}" must be a Source to write back into (got {…})` — `:Compute` 결과면 `got a read-only State (a :Compute result?)` |
+| 셋째 인자가 `Source`가 아님 | `Quad0224 Out: "{name}" needs a Source to write back into (got {…})` — `:Compute` 결과면 `got a read-only State (a :Compute result?)` |
 
 :::caution
 **애니메이션 중인 프로퍼티에는 걸지 마세요.** **[2026-09-26 기준]** 같은 프로퍼티에 [`q.Tween`](/reference/roblox/06-tween-animate/)/[`q.Animate`](/reference/roblox/06-tween-animate/)와 `q.Out`을 같이 걸면, 트윈이 매 프레임 쓰는 중간값이 `q.Out`을 거쳐 되쓸 `Source`에 앉고, `Animate`는 그 새 값을 다음 목표로 받아 방금 만든 트윈을 취소한 뒤 다시 만듭니다 — 그 결과 애니메이션이 첫 프레임에서 멈춘 것처럼 보입니다(mock에서 엔진의 프레임 쓰기를 대입 한 번으로 흉내 내 확인; 실기기에서 트윈 보간이 프레임마다 변경 신호를 내는지는 [2026-09-26 기준] 미실측입니다). `q.Out`은 사용자가 직접 바꾸는 프로퍼티(입력창의 `Text` 등)를 위한 것이고, 애니메이션이 거는 프로퍼티는 그 대상이 아닙니다 — 드래그하는 동안엔 `q.Out`으로 받고, 놓은 뒤 스냅은 애니메이션이 걸린 **다른** `Source`로 넘기는 식으로 두 원천을 가르세요 — 그 애니메이션에는 `Dedup = false`를 주세요(엔진이 드래그로 옮긴 뒤 같은 목표로 되돌릴 때 기록만 보고 건너뛰지 않게 — [관용구](/how-to/04-network-and-input-bridge/#끌어다-놓으면-제자리로-돌아가는-카드)).

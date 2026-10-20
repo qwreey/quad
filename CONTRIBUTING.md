@@ -33,12 +33,13 @@
   `mise.toml`에 핀한 luau-lsp 내장)와 설정입니다. `quad-roblox`만 Roblox 타입 정의를 얹고
   봅니다.
 - 그다음 `quad-base/test/smoke.*.luau`, `quad-base/test/spec.*.luau`,
-  `quad-roblox/test/spec.*.luau`를 하나씩 실행하고, 마지막으로 게이트 넷이 돕니다 —
-  타입 표면(`scripts/type-surface-check.py` — 마커·프라이밍), 에러 ID
+  `quad-roblox/test/spec.*.luau`를 하나씩 실행하고, 마지막으로 게이트 다섯이 돕니다 —
+  타입 표면(`scripts/type-surface-check.py` — 마커·프라이밍), 클래스 먼저 표면
+  (`scripts/surface-gate.py` — 음성 고정물과 모든 클래스 표면이 비지 않는가), 에러 ID
   (`scripts/error-codes.py check` — 모든 raise 자리에 `QuadNNNN`과 문서 절), 문서
   커버리지(`scripts/doc-coverage.py`), 버전 정합성(`scripts/check-version.py`).
-  타입 검사 앞에도 손질 넷이 있습니다: 생성 `Declaration`의 `Parent` 필드 유출·
-  `scripts/gen-d.py check`(생성 파일이 dump와 같은가)·모듈 스코프 전역 함수 grep·
+  타입 검사 앞에도 손질이 있습니다: `scripts/gen-d.py check`(정책 데이터
+  `quad-roblox/src/Surface/Data.luau`가 dump와 같은가)·모듈 스코프 전역 함수 grep·
   `GENERATED FILE` 배너 존재. 무엇이 실패했는지는 `test.sh` 출력이 단계 이름과
   같이 찍습니다 — 판정은 exit code입니다.
 

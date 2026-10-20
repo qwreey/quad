@@ -100,24 +100,24 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 `Modifier: unknown modifier class "{name}" - Modifier.TypedFactory/DefineSubtype it first` — `quad-base/src/Dispatch/Modifier/init.luau`
 
 - **언제**: `mod:As(name)`에 준 `name`이 아직 `Modifier.TypedFactory`나 `DefineSubtype`으로 등록되지 않은 클래스일 때.
-- **고치려면**: 먼저 `q.Modifier.TypedFactory(name)`이나 `DefineSubtype`으로 그 이름을 등록하세요.
+- **고치려면**: 먼저 `q.Raw.Modifier.TypedFactory(name)`이나 `DefineSubtype`으로 그 이름을 등록하세요.
 - **참고**: [`mod:As(name)`](/reference/core/08-modifier/#modasname)
 
 ### Quad0053
 
 `Modifier.Overridden: must be given at least one Modifier` — `quad-base/src/Dispatch/Modifier/init.luau`
 
-- **언제**: `q.Modifier.Overridden(...)`을 인자 없이 부를 때. 콜론 형태 `mod:Overridden()`은 `mod` 자신이 첫 인자로 들어가므로 이 에러가 나지 않습니다.
+- **언제**: `q.Raw.Modifier.Overridden(...)`을 인자 없이 부를 때. 콜론 형태 `mod:Overridden()`은 `mod` 자신이 첫 인자로 들어가므로 이 에러가 나지 않습니다.
 - **고치려면**: 합칠 Modifier를 최소 하나 넘기세요.
-- **참고**: [`q.Modifier.Overridden(...)`](/reference/core/08-modifier/#qmodifieroverridden)
+- **참고**: [`q.Raw.Modifier.Overridden(...)`](/reference/core/08-modifier/#qrawmodifieroverridden)
 
 ### Quad0054
 
 `Modifier.Overridden: argument #{i} is not a Modifier (got {typeof(arg)})` — `quad-base/src/Dispatch/Modifier/init.luau`
 
-- **언제**: `Overridden`에 넘긴 인자 중 하나가 Modifier가 아닐 때 — `q.Modifier(...)`와 달리 평범한 필드 테이블은 받지 않습니다.
-- **고치려면**: 모든 인자를 Modifier로 넘기세요 — 평범한 테이블을 합치려면 `q.Modifier(...)`를 쓰세요.
-- **참고**: [`q.Modifier.Overridden(...)`](/reference/core/08-modifier/#qmodifieroverridden)
+- **언제**: `Overridden`에 넘긴 인자 중 하나가 Modifier가 아닐 때 — `q.Raw.Modifier(...)`와 달리 평범한 필드 테이블은 받지 않습니다.
+- **고치려면**: 모든 인자를 Modifier로 넘기세요 — 평범한 테이블을 합치려면 `q.Raw.Modifier(...)`를 쓰세요.
+- **참고**: [`q.Raw.Modifier.Overridden(...)`](/reference/core/08-modifier/#qrawmodifieroverridden)
 
 ### Quad0055
 
@@ -139,7 +139,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)` — `quad-base/src/Dispatch/Modifier/init.luau`
 
-- **언제**: `mod:Field(value)`의 `value`(리터럴이든 변환 함수의 반환이든)가 `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier` 같은 핸들러 계층 값이거나 `Claim`/`Mapper`의 디스크립터(`M.Frame("Title")` 등 — 숫자 키 자리에서만 해석되는 값)일 때. `State`/`Source`는 통과합니다(`State`가 디스크립터를 담은 경우는 만들 때 값을 읽지 않으므로 여기서 걸리지 않습니다).
+- **언제**: `mod:Field(value)`의 `value`(리터럴이든 변환 함수의 반환이든)가 `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier` 같은 핸들러 계층 값이거나 `Claim`/`Mapper`의 디스크립터(`q.Mapper "Frame" ("Title")` 등 — 숫자 키 자리에서만 해석되는 값)일 때. `State`/`Source`는 통과합니다(`State`가 디스크립터를 담은 경우는 만들 때 값을 읽지 않으므로 여기서 걸리지 않습니다).
 - **고치려면**: 그 값은 필드가 아니라 props의 숫자 키 자리에 놓으세요.
 - **참고**: [`mod:<Field>(value)`](/reference/core/08-modifier/#modfieldvalue)
 
@@ -157,7 +157,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 - **언제**: `q.Raw.Modifier{ ... }`/`q.Modifier "Class" { ... }` 생성자에 넘긴 필드 테이블의 키가 빈 문자열이거나 문자열이 아닐 때.
 - **고치려면**: 필드 이름은 비어있지 않은 문자열로 쓰세요.
-- **참고**: [`q.Modifier(...)`](/reference/core/08-modifier/#qmodifier)
+- **참고**: [`q.Raw.Modifier(...)`](/reference/core/08-modifier/#qrawmodifier)
 
 ### Quad0060
 
@@ -165,7 +165,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 - **언제**: 초기 필드 테이블의 키가 `Peek`/`Apply`/`Overridden`/`As` 같은 예약 메소드 이름과 같을 때 — setter 경로에서는 애초에 만들어질 수 없는 필드라 생성자도 같은 이름을 거부합니다.
 - **고치려면**: 그 이름을 피하세요 — 예약 메소드는 필드가 될 수 없습니다.
-- **참고**: [`q.Modifier(...)`](/reference/core/08-modifier/#qmodifier)
+- **참고**: [`q.Raw.Modifier(...)`](/reference/core/08-modifier/#qrawmodifier)
 
 ### Quad0061
 
@@ -173,7 +173,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 - **언제**: 초기 필드 테이블의 키가 `As` + 대문자로 시작하는 예약된 캐스트 접두사 모양일 때.
 - **고치려면**: 그 이름을 피하세요 — `As<Class>` 모양은 항상 캐스트 메소드로 예약돼 있습니다.
-- **참고**: [`q.Modifier(...)`](/reference/core/08-modifier/#qmodifier)
+- **참고**: [`q.Raw.Modifier(...)`](/reference/core/08-modifier/#qrawmodifier)
 
 ### Quad0062
 
@@ -181,7 +181,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 - **언제**: 초기 필드 테이블의 키가 `"__"`로 시작할 때 — setter 경로(`__index`)도 그런 이름엔 항상 `nil`을 돌려주므로 생성자에서도 같은 이름을 막습니다.
 - **고치려면**: `"__"`로 시작하지 않는 필드 이름을 쓰세요.
-- **참고**: [`q.Modifier(...)`](/reference/core/08-modifier/#qmodifier)
+- **참고**: [`q.Raw.Modifier(...)`](/reference/core/08-modifier/#qrawmodifier)
 
 ### Quad0063
 
@@ -189,7 +189,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 - **언제**: 초기 필드 테이블의 값으로 함수를 줬을 때 — setter 자리에서 함수는 변환 함수라는 다른 뜻이라, 생성자에서 그대로 받으면 두 경로가 조용히 갈립니다.
 - **고치려면**: 변환이 필요하면 `mod:{k}(fn)`을 쓰고, 이벤트 핸들러라면 Modifier가 아니라 요소의 인라인 키나 State로 넘기세요.
-- **참고**: [`q.Modifier(...)`](/reference/core/08-modifier/#qmodifier)
+- **참고**: [`q.Raw.Modifier(...)`](/reference/core/08-modifier/#qrawmodifier)
 
 ### Quad0064
 
@@ -197,7 +197,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 - **언제**: 초기 필드 테이블의 값이 핸들러 계층 값(`Ref`/`Observer`/`Effect`/`Slot`/`Modifier`)이거나 `Claim`/`Mapper`의 디스크립터일 때 — setter 경로(Quad0057)와 같은 규칙을 생성자에도 적용합니다.
 - **고치려면**: 그 값은 필드가 아니라 props의 숫자 키 자리에 놓으세요.
-- **참고**: [`q.Modifier(...)`](/reference/core/08-modifier/#qmodifier)
+- **참고**: [`q.Raw.Modifier(...)`](/reference/core/08-modifier/#qrawmodifier)
 
 ### Quad0065
 
@@ -205,23 +205,23 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 - **언제**: `q.Raw.Modifier(...)`/`q.Modifier "Class" (...)`에 넘긴 인자가 Modifier도, 메타테이블 없는 평범한 필드 테이블도 아닐 때(`Source`/`Ref`/`Tag` 같은 다른 quad 값을 넘긴 경우 등).
 - **고치려면**: Modifier나 평범한 `{ field = value }` 테이블만 넘기세요.
-- **참고**: [`q.Modifier(...)`](/reference/core/08-modifier/#qmodifier)
+- **참고**: [`q.Raw.Modifier(...)`](/reference/core/08-modifier/#qrawmodifier)
 
 ### Quad0066
 
 `Modifier.{fn}: {what} must be a non-empty class name string (got {typeof(name)})` — `quad-base/src/Dispatch/Modifier/init.luau`
 
-- **언제**: `q.Modifier.TypedFactory(name)`의 `name`이나 `q.Modifier.DefineSubtype(parent, subtype)`의 `parent`/`subtype`이 빈 문자열이거나 문자열이 아닐 때. `{fn}`/`{what}`은 실제로 부른 함수와 검사한 인자 이름입니다.
+- **언제**: `q.Raw.Modifier.TypedFactory(name)`의 `name`이나 `q.Raw.Modifier.DefineSubtype(parent, subtype)`의 `parent`/`subtype`이 빈 문자열이거나 문자열이 아닐 때. `{fn}`/`{what}`은 실제로 부른 함수와 검사한 인자 이름입니다.
 - **고치려면**: 비어있지 않은 클래스 이름 문자열을 넘기세요.
-- **참고**: [`q.Modifier.TypedFactory<<T>>(name)`](/reference/core/08-modifier/#qmodifiertypedfactorytname)
+- **참고**: [`q.Raw.Modifier.TypedFactory<<T>>(name)`](/reference/core/08-modifier/#qrawmodifiertypedfactorytname)
 
 ### Quad0067
 
 `Modifier.DefineSubtype: cannot make "{subtype}" a subtype of "{parent}" - that would make a cycle` — `quad-base/src/Dispatch/Modifier/init.luau`
 
-- **언제**: `q.Modifier.DefineSubtype(parent, subtype)`이 등록하려는 간선이 이미 있는 조상 관계를 거슬러 올라가 순환을 만들 때.
+- **언제**: `q.Raw.Modifier.DefineSubtype(parent, subtype)`이 등록하려는 간선이 이미 있는 조상 관계를 거슬러 올라가 순환을 만들 때.
 - **고치려면**: 순환이 생기지 않는 방향으로 등록하세요.
-- **참고**: [`q.Modifier.DefineSubtype(parent, subtype)`](/reference/core/08-modifier/#qmodifierdefinesubtypeparent-subtype)
+- **참고**: [`q.Raw.Modifier.DefineSubtype(parent, subtype)`](/reference/core/08-modifier/#qrawmodifierdefinesubtypeparent-subtype)
 
 ### Quad0068
 
@@ -355,8 +355,8 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Dispatch.drive: props must be a plain { ... } table - a quad value needs the braces (got {브랜드 이름들 또는 "a table with a metatable"})` — `quad-base/src/Dispatch/init.luau`
 
-- **언제**: `flattened` 자체가 메타테이블을 가진 값이거나, 메타테이블이 없는 quad 브랜드 값(`q.AttrKey(...)`·매퍼 디스크립터)일 때 — `D.Frame(q.Source(1))`처럼 중괄호를 잊어 quad 값 하나를 그대로 props로 넘긴 흔한 실수를 잡습니다. **(3.3.0부터)** 프로바이더가 등록한 브랜드 술어(`q.BrandPredicates`)까지 훑는 검사는 [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때만 돕니다 — 메타테이블 없는 평범한 테이블에 브랜드를 붙이는 프로바이더 값은 debug를 꺼 두면 여기 걸리지 않고 그 필드들이 props로 해석됩니다(대개 `Quad0076`). quad-base 값은 전부 debug와 무관하게 걸립니다.
-- **고치려면**: 항상 중괄호로 감싼 평범한 테이블을 넘기세요 — `D.Frame { Name = q.Source("x") }`, `D.Frame { q.Attr{...} }`, `D.Frame { child }`처럼. (`D.Frame { q.Source(1) }`은 감싸도 `Quad0076`입니다 — 숫자 키에 놓인 `Source<number>`를 받는 핸들러가 없습니다.)
+- **언제**: `flattened` 자체가 메타테이블을 가진 값이거나, 메타테이블이 없는 quad 브랜드 값(`q.AttrKey(...)`·매퍼 디스크립터)일 때 — `q.Elem "Frame" (q.Source(1))`처럼 중괄호를 잊어 quad 값 하나를 그대로 props로 넘긴 흔한 실수를 잡습니다. **(3.3.0부터)** 프로바이더가 등록한 브랜드 술어(`q.BrandPredicates`)까지 훑는 검사는 [`q.debug`](/reference/core/01-quad-module/#qdebug)가 켜져 있을 때만 돕니다 — 메타테이블 없는 평범한 테이블에 브랜드를 붙이는 프로바이더 값은 debug를 꺼 두면 여기 걸리지 않고 그 필드들이 props로 해석됩니다(대개 `Quad0076`). quad-base 값은 전부 debug와 무관하게 걸립니다.
+- **고치려면**: 항상 중괄호로 감싼 평범한 테이블을 넘기세요 — `q.Elem "Frame" { Name = q.Source("x") }`, `q.Elem "Frame" { q.Attr{...} }`, `q.Elem "Frame" { child }`처럼. (`q.Elem "Frame" { q.Source(1) }`은 감싸도 `Quad0076`입니다 — 숫자 키에 놓인 `Source<number>`를 받는 핸들러가 없습니다.)
 - **참고**: [`q.Dispatch.drive(inst, flattened)`](/reference/extend/02-dispatch-handler-contract/#qdispatchdriveinst-flattened)
 
 ### Quad0084
@@ -379,7 +379,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Modifier: the transform for field "{key}" returned a function - a field cannot hold a function (an event handler does not belong in a Modifier; put it as an inline key on the element, or wrap it in a State)` — `quad-base/src/Dispatch/Modifier/init.luau`
 
-- **언제**: `mod:Field(fn)`의 변환 함수가 **함수를 돌려줬을 때**(지금 필드 값이 평범한 값인 갈래) — 흔히 `q.Modifier():Activated(function(_old) return function() … end end)`처럼 이벤트 핸들러를 Modifier에 넣으려는 우회입니다. 초기 필드 테이블로 같은 값을 넣으면 [`Quad0063`](#quad0063)으로 거부되는데, 이 길로는 생 함수가 필드에 들어가 두 경로가 갈렸습니다. 지금 필드 값이 `State`면 변환이 `:Compute`로 미뤄져 여기서 걸리지 않습니다.
+- **언제**: `mod:Field(fn)`의 변환 함수가 **함수를 돌려줬을 때**(지금 필드 값이 평범한 값인 갈래) — 흔히 `q.Raw.Modifier():Activated(function(_old) return function() … end end)`처럼 이벤트 핸들러를 Modifier에 넣으려는 우회입니다. 초기 필드 테이블로 같은 값을 넣으면 [`Quad0063`](#quad0063)으로 거부되는데, 이 길로는 생 함수가 필드에 들어가 두 경로가 갈렸습니다. 지금 필드 값이 `State`면 변환이 `:Compute`로 미뤄져 여기서 걸리지 않습니다.
 - **고치려면**: 이벤트 핸들러는 Modifier가 아니라 요소의 인라인 키(`q.Elem "TextButton" { Activated = fn }`)로 넘기세요. 꼭 Modifier로 옮겨야 하면 `State`에 담아 넘기세요.
 - **참고**: [`mod:<Field>(value)`](/reference/core/08-modifier/#modfieldvalue)
 

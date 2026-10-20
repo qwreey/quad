@@ -13,7 +13,7 @@
 
 		-- hover / pressed -> State<boolean> for styling
 		local hover = Interaction.hover()
-		D.TextButton {
+		q.Elem "TextButton" {
 			hover.Hook,                          -- array part
 			BackgroundColor3 = hover.Hovered:Compute(...),   -- hover.Hovered / hover.Pressed : State<boolean>
 		}
@@ -34,10 +34,10 @@
 			Enabled = state,                                   -- optional State<boolean>; while false a press starts nothing
 			                                                   -- (no global connection is opened for a disabled widget)
 		})
-		D.Frame { drag.Hook, ... }                           -- drag.Dragging : State<boolean>, drag:Cancel()
+		q.Elem "Frame" { drag.Hook, ... }                           -- drag.Dragging : State<boolean>, drag:Cancel()
 
 		-- plain "pointer went down on me" (MouseButton1 / Touch); it stops at the first GuiButton / TextBox under the pointer
-		D.Frame { Interaction.pointerDown(function(input) ... end) }
+		q.Elem "Frame" { Interaction.pointerDown(function(input) ... end) }
 
 	Coordinates are `InputObject.Position` space — the same space as `AbsolutePosition` (and the same for begin/move/end,
 	so deltas are exact). Convert to

@@ -3,7 +3,7 @@
 	KeyedSlot: the "data array -> one element per key" pattern shared by `ChipSet` and `Tabs` (internal to the kit).
 
 	    local slot = KeyedSlot.new(items, function(item) return item.Id end, function(item, order)
-	        return Chip.Assist({ Label = item:Compute(...), Modifier = D.Modifier.TextButton():LayoutOrder(order) })
+	        return Chip.Assist({ Label = item:Compute(...), Modifier = q.Modifier "TextButton" ():LayoutOrder(order) })
 	    end)
 
 	`items` is a State of an array; `key(item)` must be unique per element. Each key is rendered ONCE: its element

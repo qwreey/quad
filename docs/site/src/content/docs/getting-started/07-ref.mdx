@@ -25,9 +25,9 @@ import { Quiz, QuizResults } from 'starlight-quiz/components';
 -- … 위쪽 코드에 이어집니다(card의 버튼을 이렇게 고칩니다)
 const buttonRef = q.Ref<<TextButton?>>(nil)
 
-const card = D.Frame {
+const card = q.Elem "Frame" {
     -- …생략…
-    D.TextButton {
+    q.Elem "TextButton" {
         buttonRef,                  -- ← 숫자 키: 만들어진 버튼이 여기 담긴다
         Text = "+ 1",
         Activated = function()
@@ -61,7 +61,7 @@ const b = q.Ref<<TextButton?>>(nil)     -- Ref<TextButton?> — 비어 있다가
 
 </details>
 
-**채워지는 시점은 "그 숫자 키 자리가 처리될 때"입니다.** 위 예제에서는 `D.TextButton { ... }`이 만들어지는 그 순간이고, 그래서 `card`가 완성된 뒤에는 이미 들어 있습니다. 반대로 말하면 **그 앞줄에서는 아직 비어 있습니다** — 상자를 만든 직후부터 그 자리가 처리되기 전까지는 `ref.Value`가 `nil`입니다.
+**채워지는 시점은 "그 숫자 키 자리가 처리될 때"입니다.** 위 예제에서는 `q.Elem "TextButton" { ... }`이 만들어지는 그 순간이고, 그래서 `card`가 완성된 뒤에는 이미 들어 있습니다. 반대로 말하면 **그 앞줄에서는 아직 비어 있습니다** — 상자를 만든 직후부터 그 자리가 처리되기 전까지는 `ref.Value`가 `nil`입니다.
 
 ---
 
@@ -76,7 +76,7 @@ const b = q.Ref<<TextButton?>>(nil)     -- Ref<TextButton?> — 비어 있다가
 const buttonRef = q.PreRef<<TextButton?>>(nil)
 
     -- … 그리고 card의 숫자 키 자리, 버튼을 이렇게 고칩니다
-    D.TextButton {
+    q.Elem "TextButton" {
         buttonRef,
         Text = "+ 1",
         BackgroundTransparency = 0,
@@ -117,9 +117,9 @@ buttonRef:Callback(function(inst)
     print("상자:", if inst then inst.ClassName else "nil")
 end)
 
-const card = D.Frame {
+const card = q.Elem "Frame" {
     -- …생략…
-    D.TextButton { buttonRef, Text = "+ 1", --[[ …BackgroundTransparency 두 줄과 Activated는 §2 그대로… ]] },
+    q.Elem "TextButton" { buttonRef, Text = "+ 1", --[[ …BackgroundTransparency 두 줄과 Activated는 §2 그대로… ]] },
 }
 ```
 
@@ -189,10 +189,10 @@ doneRef:Callback(function(inst)
     end
 end)
 
-const card = D.Frame {
+const card = q.Elem "Frame" {
     doneRef,
-    D.TextLabel { Text = "A" },
-    D.TextLabel { Text = "B" },
+    q.Elem "TextLabel" { Text = "A" },
+    q.Elem "TextLabel" { Text = "B" },
 }
 ```
 

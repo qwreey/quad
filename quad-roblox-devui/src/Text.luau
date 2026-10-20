@@ -2,11 +2,11 @@
 --[[
 	Text widgets (Iris: Text / TextWrapped / TextColored / LabelText).
 
-		Text         { Text: string | State<string>, RichText: boolean?, Hooks: { any }?, Style: Style?, Modifier: TextLabelModifier? }
+		Text         { Text: string | State<string>, RichText: boolean?, Hooks: { any }?, Style: Style?, Modifier: ModifierInto<TextLabel>? }
 		TextWrapped  { same }              wraps at the available width (fills width, grows in height)
 		TextColored  { same + Color: Color3 | State<Color3> }
 		TextDisabled { same }              the dimmed token
-		LabelText    { Label: string | State<string>, Text: string | State<string>, Hooks?, Style?, Modifier: FrameModifier? }
+		LabelText    { Label: string | State<string>, Text: string | State<string>, Hooks?, Style?, Modifier: ModifierInto<Frame>? }
 		             value first, label after it (Dear ImGui LabelText order), one row; `Modifier` / `Hooks` go on the row Frame
 
 	`Hooks` is a list of hook values appended at the END of the element's array part (see Button).

@@ -20,14 +20,14 @@ description: "인스턴스에 CollectionService 태그와 Attribute를 숫자 �
 const count = q.Source(0)
 const countText: q.State<string> = count:Compute(function(c) return `카운트: {c:Get()}` end)
 
-const card = D.Frame {
+const card = q.Elem "Frame" {
     Size = UDim2.fromOffset(240, 160),
     BackgroundColor3 = Color3.fromRGB(35, 35, 42),
     UICorner = 12,
 
     -- 라벨과 버튼(크기·색 같은 프로퍼티는 04장 그대로라 여기선 줄였습니다)
-    D.TextLabel { Text = countText },
-    D.TextButton { Text = "+ 1", Activated = function() count:Set(count:Get() + 1) end },
+    q.Elem "TextLabel" { Text = countText },
+    q.Elem "TextButton" { Text = "+ 1", Activated = function() count:Set(count:Get() + 1) end },
 }
 ```
 
@@ -39,7 +39,7 @@ const card = D.Frame {
 
 ```luau
 -- … 위쪽 코드에 이어집니다
-const card = D.Frame {
+const card = q.Elem "Frame" {
     q.Tag("Card"),          -- ← 숫자 키
 
     Size = UDim2.fromOffset(240, 160),
@@ -71,7 +71,7 @@ quad-base는 태그 채널을 직접 건드리지 않습니다. 이름 집합을
 **마지막 자리가 물러날 때** 비로소 엔진에서 뗍니다.
 
 ```luau
-const inst = D.Frame { q.Tag("Card"), q.Tag("Card", "Panel") }
+const inst = q.Elem "Frame" { q.Tag("Card"), q.Tag("Card", "Panel") }
 -- 태그 {Card, Panel} — 엔진 호출은 addTag:Card, addTag:Panel 둘뿐(Card는 한 번만)
 ```
 
@@ -90,7 +90,7 @@ const inst = D.Frame { q.Tag("Card"), q.Tag("Card", "Panel") }
 돌려줍니다.** 그래서 조건은 `if`문으로 감싸는 게 아니라 인자 **안**에 씁니다.
 
 ```luau
-const card = D.Frame {
+const card = q.Elem "Frame" {
     q.Tag("Card"),
     count:Compute(function(c: q.StateData<number>) -- 숫자 키 자리의 인라인 Compute도 파라미터 타입을 적어야 strict가 봅니다
         return q.Tag("Card"):Added(if c:Get() % 2 == 0 then "Even" else nil)
@@ -152,7 +152,7 @@ count:Set(3)   -- 짝수 → 홀수: 집합이 {Card}가 되어 removeTag:Even �
 -- … 위쪽 코드에 이어집니다
 const active = q.Source<<boolean | typeof(q.None)>>(true) -- 뒤에서 q.None을 넣어 속성을 지울 것이라 타입에 None을 넣는다
 
-const card = D.Frame {
+const card = q.Elem "Frame" {
     q.Tag("Card"),
     -- …§2의 짝수/홀수 파이프 그대로…
 
@@ -210,7 +210,7 @@ active:Set(q.None)           -- 이제 {Kind = "counter", Count = 2}   — Activ
 **이기는 쪽이 없습니다 — 그 자리에서 에러가 납니다.**
 
 ```luau
-D.Frame { q.Attr { Kind = "counter" }, q.Attr { Kind = "other" } }
+q.Elem "Frame" { q.Attr { Kind = "counter" }, q.Attr { Kind = "other" } }
 -- Quad0002 AttrKey: attribute "Kind" is already bound by another owner
 ```
 

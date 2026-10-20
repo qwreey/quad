@@ -8,7 +8,7 @@
 	                   9999-year calendar). Clamped to 1..9999.
 	  layout           row height 52, column width 112, viewport 5 rows (260 px). Chips are positioned
 	                   absolutely from the year (`Position`), CanvasSize is fixed (rows * 52) — how-to 03 windowing.
-	  window           `firstRow` Source is written by a `q.OnChange("CanvasPosition")` handler with SetIfChanged
+	  window           `firstRow` Source is written by a `q.OnChange "ScrollingFrame" "CanvasPosition"` handler with SetIfChanged
 	                   (so a scroll only re-cuts the list when the first row changes); the keyed `Slot:List` over
 	                   the cut keeps the chips whose year stays in the window and creates/destroys the rest.
 	  instances        the scroll frame + at most (ceil(height / 52) + 2) * 3 chips (3 instances each) — 27 chips

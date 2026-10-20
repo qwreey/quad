@@ -7,7 +7,7 @@
 			Value: Source<Color3>?,                two-way; an internal Source (white) when omitted
 			OnChange: ((c: Color3) -> ())?,        after Value changed through the UI
 			Disabled: (boolean | State<boolean>)?,
-			Style: Style?, Modifier: FrameModifier?,
+			Style: Style?, Modifier: ModifierInto<Frame>?,
 		}
 
 	Swatch (Frame, UICorner + UIStroke) | R | G | B (DragNum fields: drag, or click to type, 0-255 integers) | hex box

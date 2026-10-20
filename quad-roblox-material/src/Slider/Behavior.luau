@@ -10,11 +10,11 @@
 	bottom) and `Look.Centered` (an own Value starts at the middle). The M2 look passes none of the three.
 
 	    local b = Behavior.single(props, { Name = "Slider", Inset = 8 })
-	    D.Frame { b.InteractionHook, b.DragHook, b.KeyHook, Interactable = b.Interactable, Selectable = b.Interactable, ... }
+	    q.Elem "Frame" { b.InteractionHook, b.DragHook, b.KeyHook, Interactable = b.Interactable, Selectable = b.Interactable, ... }
 	    -- b.Value / b.Frac / b.Dragging / b.Focused / b.Width ... drive the look
 
 	    local r = Behavior.range(props, { Name = "RangeSlider", Inset = 8 })
-	    D.Frame { r.InteractionHook, r.DragHook, r.KeyHook, MouseMoved = r.MouseMoved, ... }
+	    q.Elem "Frame" { r.InteractionHook, r.DragHook, r.KeyHook, MouseMoved = r.MouseMoved, ... }
 	    local s = r.handle("Start")   -- { IsKey, Hovered, Focused, Dragged } of one handle
 
 	Props (both shapes are the public props of the looks; all `read`):

@@ -13,7 +13,7 @@
 			Disabled: (boolean | State<boolean>)?,
 			Focused: Source<boolean>?,             two-way focus: true asks for it, false releases it, the user's own
 			                                       focus changes are written back
-			Style: Style?, Modifier: FrameModifier?, FieldModifier: TextBoxModifier?, FieldSpread: Spread<TextBox>?,
+			Style: Style?, Modifier: ModifierInto<Frame>?, FieldModifier: ModifierInto<TextBox>?, FieldSpread: SpreadInto<TextBox>?,
 		}
 
 	`Focused` [2026-10-20 user decision, a consumer focused nine boxes by hand after mount]: `CaptureFocus` does nothing
@@ -24,7 +24,7 @@
 	A box hidden by an ANCESTOR fires nothing — set `Focused` again after showing it. A disabled box does not take the
 	focus. Clicking elsewhere writes `false`, clicking the box writes `true`.
 
-	"change" mode is the plain `Text = value` + `q.Out("Text", value)` pair (with an `OnChange` callback it is the
+	"change" mode is the plain `Text = value` + `q.Out "TextBox" "Text" (value)` pair (with an `OnChange` callback it is the
 	equivalent `q.OnChange` write-back that only calls back for changes the user made — an echo of a programmatic
 	`:Set` is skipped). "submit" mode never writes mid-edit: the text typed so far lives in the box, the Source is
 	written once at FocusLost, so downstream consumers see one value per edit (how-to 02 section 6). An external

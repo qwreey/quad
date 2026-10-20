@@ -6,7 +6,7 @@
 	parent's `UICorner`; GPU blur — no image asset, no 9-slice). Level numbers come from
 	`Tokens/Elevation.luau` (blur / y-offset / spread / transparency), the color is the theme's `Shadow` role.
 
-	    D.TextButton {
+	    q.Elem "TextButton" {
 	        ...,
 	        Elevation.Shadow({ Level = hoverLevel }),     -- State<number> | number; tweens between levels
 	    }
@@ -17,7 +17,7 @@
 	    "level > 0" and flips at once (a drop to 0 hides the shadow immediately — levels 1-5 tween).
 
 	RISK / FALLBACK: `UIShadow` is the newest of the UI classes this kit uses. It exists in the engine API
-	dump quad generates its Declaration from, but it could not be verified in a live Studio from this
+	dump quad generates its surface data from, but it could not be verified in a live Studio from this
 	environment (no Studio session was allowed) — if a place runs on a client without it, the instance is
 	inert/invalid, so keep the fallback in mind:
 	  Elevation.Backdrop(opts) -> ImageLabel     ONE 9-slice `ImageLabel` (not 8), `Config.BackdropImage`

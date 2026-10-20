@@ -17,12 +17,12 @@ import { Quiz, QuizResults } from 'starlight-quiz/components';
 ```luau
 -- (Main.client.luau 계속 — 카드를 화면 가운데 놓는 AnchorPoint/Position은
 --  이 장부터 생략합니다. 02장 그대로 두면 됩니다)
-const card = D.Frame {
+const card = q.Elem "Frame" {
     Size = UDim2.fromOffset(240, 160),
     BackgroundColor3 = Color3.fromRGB(35, 35, 42),
     UICorner = 12,
 
-    D.TextLabel {
+    q.Elem "TextLabel" {
         Position = UDim2.fromOffset(16, 0),
         Size = UDim2.new(1, -32, 0, 48),
         BackgroundTransparency = 1,
@@ -45,9 +45,9 @@ const card = D.Frame {
 -- … 위쪽 코드에 이어집니다
 const label = q.Source("카운트: 0")   -- ① 값의 원천
 
-const card = D.Frame {
+const card = q.Elem "Frame" {
     -- …생략…
-    D.TextLabel {
+    q.Elem "TextLabel" {
         -- …생략…
         Text = label,                  -- ② 리터럴 대신 원천을 그대로 꽂는다
     },
@@ -74,9 +74,9 @@ const countText: q.State<string> = count:Compute(function(c)    -- ② 파이프
     return `카운트: {c:Get()}`
 end)
 
-const card = D.Frame {
+const card = q.Elem "Frame" {
     -- …생략…
-    D.TextLabel {
+    q.Elem "TextLabel" {
         -- …생략…
         Text = countText,                       -- ③ 파이프의 끝을 프로퍼티에 꽂는다
     },

@@ -3,7 +3,7 @@
 	TabBar / Tab (Iris: TabBar / Tab).
 
 		TabBar<K> { Tabs: { TabDef<K> }, Selected: Source<K>?, OnChange: ((key: K) -> ())?, NoPages: boolean?,
-		            Style: Style?, Modifier: FrameModifier? }
+		            Style: Style?, Modifier: ModifierInto<Frame>? }
 		Tab<K>    { Key: K, Text: string | State<string>, Children: Slot<Instance>? }   -- returns a plain descriptor
 
 	API shape: `Tab{...}` builds NO instance — it is a descriptor (identity + label + content Slot) the TabBar reads, so the

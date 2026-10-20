@@ -22,7 +22,6 @@ Quad에서 컴포넌트는 특수한 클래스도 매크로도 아닙니다. **p
 ```luau
 -- 새 파일: ReplicatedStorage/Client/UI/Counter
 const q = require("./Quad")     -- 같은 폴더의 설정 모듈
-const D = q.Declaration
 
 return function(props)
     -- 상태는 컴포넌트 안에서 만든다 — 부른 쪽마다 자기 것을 갖는다
@@ -32,12 +31,12 @@ return function(props)
         return `{props.Label}: {c:Get()}`
     end)
 
-    return D.Frame {
+    return q.Elem "Frame" {
         Size = UDim2.fromOffset(200, 120),
         BackgroundColor3 = Color3.fromRGB(35, 35, 42),
         UICorner = 12,
 
-        D.TextLabel {
+        q.Elem "TextLabel" {
             Position = UDim2.fromOffset(12, 0),
             Size = UDim2.new(1, -24, 0, 48),
             BackgroundTransparency = 1,
@@ -46,7 +45,7 @@ return function(props)
             Text = countText,
         },
 
-        D.TextButton {
+        q.Elem "TextButton" {
             Size = UDim2.new(1, -24, 0, 40),
             Position = UDim2.new(0, 12, 1, -52),
             BackgroundColor3 = Color3.fromRGB(0, 162, 255),
@@ -68,13 +67,13 @@ end
 -- (Main.client.luau 계속 — 이제 진입점은 부르기만 합니다)
 const Counter = require("@game/ReplicatedStorage/Client/UI/Counter")
 
-const row = D.Frame {
+const row = q.Elem "Frame" {
     AnchorPoint = Vector2.new(0.5, 0.5),
     Position = UDim2.fromScale(0.5, 0.5),
     Size = UDim2.fromOffset(420, 120),
     BackgroundTransparency = 1,
 
-    D.UIListLayout { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 12) },
+    q.Elem "UIListLayout" { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 12) },
 
     Counter { Label = "왼쪽", Start = 0 },
     Counter { Label = "오른쪽", Start = 10 },
@@ -84,7 +83,7 @@ row.Parent = screen
 
 **실행하면** 카운터 두 개가 나란히 뜨고, 각자 따로 셉니다. `Counter`를 부를 때마다 그 안의 `q.Source(...)`가 새로 만들어지기 때문입니다 — 컴포넌트는 **한 번 실행되는 셋업 함수**이고, 상태는 그 실행에 속합니다.
 
-`Counter { ... }`는 `Counter({ ... })`의 Lua 슈거입니다 — `D.Frame { ... }`과 같은 모양이라 부르는 쪽에서 구분되지 않습니다.
+`Counter { ... }`는 `Counter({ ... })`의 Lua 슈거입니다 — `q.Elem "Frame" { ... }`과 같은 모양이라 부르는 쪽에서 구분되지 않습니다.
 
 > **철학: 마법은 없다 (No Magic)**
 > 컴포넌트가 뒤에서 몰래 전역 상태를 만들거나 부모의 라이프사이클을 가로채지 않습니다. **필요한 것은 전부 `props`로 명시적으로 들어옵니다** — 트리를 거슬러 올라가 값을 찾아 주는 장치도 없습니다([15. 층을 건너 값 넘기기](./15-context.md)).
@@ -100,7 +99,6 @@ row.Parent = screen
 ```luau
 -- (Counter.luau — 방금 옮긴 전체 모습)
 const q = require("./Quad")     -- 같은 폴더의 설정 모듈
-const D = q.Declaration
 
 return function(props)
     -- 상태는 컴포넌트 안에서 만든다 — 부른 쪽마다 자기 것을 갖는다
@@ -110,12 +108,12 @@ return function(props)
         return `{props.Label}: {c:Get()}`
     end)
 
-    return D.Frame {
+    return q.Elem "Frame" {
         Size = UDim2.fromOffset(200, 120),
         BackgroundColor3 = Color3.fromRGB(35, 35, 42),
         UICorner = 12,
 
-        D.TextLabel {
+        q.Elem "TextLabel" {
             Position = UDim2.fromOffset(12, 0),
             Size = UDim2.new(1, -24, 0, 48),
             BackgroundTransparency = 1,
@@ -124,7 +122,7 @@ return function(props)
             Text = countText,
         },
 
-        D.TextButton {
+        q.Elem "TextButton" {
             Size = UDim2.new(1, -24, 0, 40),
             Position = UDim2.new(0, 12, 1, -52),
             BackgroundColor3 = Color3.fromRGB(0, 162, 255),
@@ -149,21 +147,20 @@ const Players = game:GetService("Players")
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 const q = require("@game/ReplicatedStorage/Client/UI/Quad")
-const D = q.Declaration
 
 const playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
-const screen = D.ScreenGui { ResetOnSpawn = false } -- 리스폰 때 엔진이 이 화면을 지우지 않게
+const screen = q.Elem "ScreenGui" { ResetOnSpawn = false } -- 리스폰 때 엔진이 이 화면을 지우지 않게
 
 const Counter = require("@game/ReplicatedStorage/Client/UI/Counter")
 
-const row = D.Frame {
+const row = q.Elem "Frame" {
     AnchorPoint = Vector2.new(0.5, 0.5),
     Position = UDim2.fromScale(0.5, 0.5),
     Size = UDim2.fromOffset(420, 120),
     BackgroundTransparency = 1,
 
-    D.UIListLayout { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 12) },
+    q.Elem "UIListLayout" { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 12) },
 
     Counter { Label = "왼쪽", Start = 0 },
     Counter { Label = "오른쪽", Start = 10 },
@@ -186,7 +183,6 @@ screen.Parent = playerGui
 ```luau
 -- 새 예시: 별도 스크립트(ReplicatedStorage/Client/UI/Checkbox)
 const q = require("./Quad")     -- 같은 폴더의 설정 모듈
-const D = q.Declaration
 
 return function(props)
     -- 상태를 만들지 않는다 — 받은 원천을 읽어 그리고, 눌리면 되돌려 쓴다
@@ -196,7 +192,7 @@ return function(props)
         return `{if c:Get() then "☑" else "☐"} {props.Label}`
     end)
 
-    return D.TextButton {
+    return q.Elem "TextButton" {
         Size = UDim2.new(1, 0, 0, 32),
         BackgroundTransparency = 1,
         TextXAlignment = Enum.TextXAlignment.Left,
@@ -222,16 +218,16 @@ const statusText: q.State<string> = agreed:Compute(function(c)
     return if c:Get() then "켜짐" else "꺼짐"
 end)
 
-const panel = D.Frame {
+const panel = q.Elem "Frame" {
     Size = UDim2.fromOffset(260, 80),
     BackgroundColor3 = Color3.fromRGB(35, 35, 42),
     UICorner = 12,
 
-    D.UIListLayout { FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 4) },
+    q.Elem "UIListLayout" { FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 4) },
 
     Checkbox { Label = "약관에 동의합니다", Value = agreed },
 
-    D.TextLabel {
+    q.Elem "TextLabel" {
         Size = UDim2.new(1, 0, 0, 24),
         BackgroundTransparency = 1,
         TextColor3 = Color3.fromRGB(180, 180, 190),
@@ -266,10 +262,10 @@ const readOnly = agreed:Compute(function(c) return c:Get() end)
 
 ## 3. 자식을 넘겨받기
 
-부르는 쪽이 카운터 안에 무언가를 더 넣고 싶다면, [11장](./11-slot.md)에서 만든 `Slot`을 props로 받으면 됩니다. `Counter`가 돌려주는 `D.Frame`의 **마지막 원소**로 한 줄을 더합니다.
+부르는 쪽이 카운터 안에 무언가를 더 넣고 싶다면, [11장](./11-slot.md)에서 만든 `Slot`을 props로 받으면 됩니다. `Counter`가 돌려주는 `q.Elem "Frame"`의 **마지막 원소**로 한 줄을 더합니다.
 
 ```luau
--- … (Counter.luau 계속) 돌려주는 D.Frame의 마지막 원소로
+-- … (Counter.luau 계속) 돌려주는 q.Elem "Frame의" 마지막 원소로
         -- …버튼 생략…
 
         props.Children or q.None,
@@ -285,7 +281,7 @@ Counter {
     Label = "오른쪽",
     Start = 10,
     Children = q.Slot {
-        D.TextLabel { Text = "덤으로 붙는 자식", TextSize = 12 },
+        q.Elem "TextLabel" { Text = "덤으로 붙는 자식", TextSize = 12 },
     },
 },
 ```
@@ -296,13 +292,13 @@ Counter {
 
 ```luau
 -- ❌ props.Children이 없으면 이 자리가 구멍이 된다(뒤에 원소가 오면 에러)
-D.Frame { D.TextLabel { … }, props.Children }
+q.Elem "Frame" { q.Elem "TextLabel" { … }, props.Children }
 
 -- ✅ None이 자리를 지킨다 — 기여는 0이지만 위치는 그대로
-D.Frame { D.TextLabel { … }, props.Children or q.None }
+q.Elem "Frame" { q.Elem "TextLabel" { … }, props.Children or q.None }
 ```
 
-`q.None`은 "여기에 아무것도 없다"를 뜻하는 약속된 값입니다. 바깥에서 받은 것을 자기 숫자 키 자리에 꽂는 것이라면 `Modifier`든 `Ref`든 전부 같은 관용구를 씁니다. 조건에 따라 자식을 넣고 빼는 자리도 같은 값을 씁니다 — `(showBadge and D.TextLabel { … }) or q.None`. `and`가 만드는 `false`는 그 자리에서 `Quad0076 Dispatch: no handler matched key 1 (value: boolean) - …`로 거부되므로 `or q.None`을 빠뜨리면 안 됩니다.
+`q.None`은 "여기에 아무것도 없다"를 뜻하는 약속된 값입니다. 바깥에서 받은 것을 자기 숫자 키 자리에 꽂는 것이라면 `Modifier`든 `Ref`든 전부 같은 관용구를 씁니다. 조건에 따라 자식을 넣고 빼는 자리도 같은 값을 씁니다 — `(showBadge and q.Elem "TextLabel" { … }) or q.None`. `and`가 만드는 `false`는 그 자리에서 `Quad0076 Dispatch: no handler matched key 1 (value: boolean) - …`로 거부되므로 `or q.None`을 빠뜨리면 안 됩니다.
 <!-- 근거: 2026-09-11 mock 실측(저장소 내부 기록) — false 자식은 위 에러, or q.None이면 자리만 비운다 -->
 
 <details>
@@ -310,12 +306,12 @@ D.Frame { D.TextLabel { … }, props.Children or q.None }
 
 `props.Children`이라는 이름부터가 이 문서가 따르는 관례이고, 언어나 엔진이 강제하는 것은 아닙니다.
 
-넘길 수는 있습니다 — 위 코드가 그렇게 합니다. 못 하는 것은 **꽂는 쪽**입니다. `D.Frame { Children = props.Children }`처럼 문자 키의 **값 자리**에 두면 디스패치가 거부합니다.
+넘길 수는 있습니다 — 위 코드가 그렇게 합니다. 못 하는 것은 **꽂는 쪽**입니다. `q.Elem "Frame" { Children = props.Children }`처럼 문자 키의 **값 자리**에 두면 디스패치가 거부합니다.
 
 props 테이블의 두 부분이 서로 다른 것을 받기 때문입니다.
 
 - **문자 키**(`이름 = 값`)에는 **프로퍼티와 이벤트**가 옵니다. 값 자리에는 리터럴·`State`·`Tween`·`None`이 올 수 있고, 어떤 이름이 프로퍼티이고 어떤 이름이 이벤트인지는 엔진 리플렉션이 판정합니다. `UICorner`/`UIPadding`/`UIPaddingOffset`/`UIScale` 네 키만은 프로퍼티가 아니라 관리 자식을 만드는 숏핸드입니다.
-- **숫자 키**(이름 없이 놓인 원소)에는 **자식 인스턴스와 자리에 놓는 값들**이 옵니다 — `Modifier`, `Ref`/`PreRef`/`PostRef`, `Slot`, `Observer`/`Effect`, `Tag`/`Attr`, `q.OnChange(...)`, 구멍을 메우는 `q.None`, 그리고 **위의 것들을 담은 `State`**([11장](./11-slot.md) 6절). **순서가 의미를 갖습니다.**
+- **숫자 키**(이름 없이 놓인 원소)에는 **자식 인스턴스와 자리에 놓는 값들**이 옵니다 — `Modifier`, `Spread`, `Ref`/`PreRef`/`PostRef`, `Slot`, `Observer`/`Effect`, `Tag`/`Attr`, `q.OnChange "Class" "Name" (…)`, 구멍을 메우는 `q.None`, 그리고 **위의 것들을 담은 `State`**([11장](./11-slot.md) 6절). **순서가 의미를 갖습니다.**
 
 그래서 컴포넌트는 그런 값을 props의 아무 이름으로나 받되(`props.Children`, `props.Modifier`, `props.Ref`), 자기 안쪽에 꽂을 때는 **숫자 키 자리에 `or q.None`을 붙여** 놓습니다. 이 경계 규약 전체는 [01. 컴포넌트 경계 규약과 스타일 합성](../how-to/01-component-conventions.md) §1·§2에 있습니다.
 

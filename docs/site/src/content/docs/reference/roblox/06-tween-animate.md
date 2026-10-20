@@ -19,7 +19,6 @@ description: "값-레벨 트윈 래퍼, 프로퍼티에서의 3-상태 동작(�
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 local RobloxModule = require("@game/ReplicatedStorage/roblox_packages/quad_roblox") -- `Tween<T>` 타입
-local D = q.Declaration
 ```
 
 ---
@@ -71,7 +70,7 @@ local size: q.State<RobloxModule.Tween<UDim2>> = open:Compute(function(self: q.S
 	})
 end)
 
-local panel = D.Frame({ Size = size })
+local panel = q.Elem "Frame" { Size = size }
 ```
 
 **옵션**
@@ -233,7 +232,7 @@ local guarded = alpha:Apply(q.Animate({
 	end),
 }))
 
-local box = D.Frame({ BackgroundTransparency = animated })
+local box = q.Elem "Frame" { BackgroundTransparency = animated }
 ```
 
 **결과는 `Tween` 값의 State입니다.** `state:Apply(q.Animate { … })`가 돌려주는 State의 `:Get()`은 원래 값(`number`·`Color3` …)이 아니라 그 값을 목표로 든 **`Tween` 레코드**입니다(`State<Tween<T>>`). 프로퍼티 자리에 놓으라고 있는 값이니 거기에만 쓰세요 — 그 State에서 다시 `:Compute`로 파생하면 콜백이 레코드를 받아 `attempt to compare table < number` 같은 런타임 에러로 죽습니다. "거의 투명한가" 같은 값이 더 필요하면 `Animate`를 걸기 **전**의 State에서 파생하세요. strict 타입은 이 실수를 늘 잡지는 못합니다 — 사슬이 주석 없는 인라인 `:Compute`에서 시작하면 그 결과가 무검사라, `local fade: State<number> = src:Compute(…):Apply(q.Animate { … })`처럼 틀린 주석도 통과합니다([디버깅 체크리스트](/how-to/10-debugging-and-troubleshooting/)의 "파생 State의 결과 타입").
@@ -275,7 +274,7 @@ local box = D.Frame({ BackgroundTransparency = animated })
 ```luau
 -- 첫 값은 즉시 10, 그다음 Set부터 애니메이션
 local size = q.Source(q.Tween({ Value = 10, Time = 0.3 }))
-local box = D.Frame({ BackgroundTransparency = size })
+local box = q.Elem "Frame" { BackgroundTransparency = size }
 ```
 
 **같은 목표는 다시 재생하지 않습니다 — `Dedup`**

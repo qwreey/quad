@@ -11,7 +11,7 @@
 			Overlay = ..., Style = ...,
 		})
 		Devui.Button({ Text = "Save", Hooks = { tip.Hook } })   -- leaf widgets take `Hooks`; on a raw element put `tip.Hook`
-		D.Frame({ tip.Hook, ... })                            --   in its ARRAY PART
+		q.Elem "Frame" ({ tip.Hook, ... })                            --   in its ARRAY PART
 		tip.Visible                                           -- State<boolean>: is the tooltip showing
 
 	One handle per target element (it owns the pending timer / popup). The hook connects the target's MouseEnter /

@@ -72,14 +72,14 @@
 	      action). The only plain `Text` is the message of a Snackbar (and display text of read-only labels).
 	    * `Disabled: boolean | State<boolean>` on everything that can be disabled (including list/menu items and radio options).
 	  Hosts
-	    * `Theme: Theme?` (default `Theme.default`), `Modifier: q.<Class>Modifier?` (the host's class — `q.TextButtonModifier`,
-	      `q.FrameModifier`, ... from `Quad.luau`; never a local `typeof(D.Modifier.X())` alias), `Hooks: Hooks?` on every
+	    * `Theme: Theme?` (default `Theme.default`), `Modifier: q.ModifierInto<Class>?` (the host's class — `q.ModifierInto<TextButton>`,
+	      `q.ModifierInto<Frame>`, ... from `Quad.luau`; never a local `typeof(q.Modifier "X" ())` alias), `Hooks: Hooks?` on every
 	      component that returns a host instance. `Hooks = { any }` is the one exported alias: values placed in the host's
 	      ARRAY part (a `Tooltip.hook(...).Hook`, `q.OnChange`, a ref, ...). Use `table.unpack(Util.hooks(props.Hooks))` as
 	      the LAST entry of the host constructor (a multi-value call is truncated anywhere else).
-	    * The host's `Name` lives in the component's base Modifier (`local hostName = D.Modifier.TextButton():Name("Button")`
+	    * The host's `Name` lives in the component's base Modifier (`local hostName = q.Modifier "TextButton" ():Name("Button")`
 	      at module level), NOT inline in the host's string keys: an inline key always beats a Modifier, so the caller's
-	      `Modifier = D.Modifier.TextButton():Name("SaveButton")` could not rename it. Order in the array part: kit base
+	      `Modifier = q.Modifier "TextButton" ():Name("SaveButton")` could not rename it. Order in the array part: kit base
 	      Modifier(s), then `props.Modifier` (later wins). Names of the host's inner children (`Label`, `Icon`, `Outline`,
 	      `Content` ...) stay inline. A component that builds its host through another kit component passes its
 	      Modifier along (the caller's still wins).
@@ -126,7 +126,7 @@
 	7. Optional caller styling: `props.Modifier` goes in the array part AFTER the component's base Modifier
 	   (later wins), never `or nil` — `props.Modifier or q.None`. Keep Size/AutomaticSize in the base Modifier
 	   (not inline) so callers can override them. The host's `Name` goes in a base Modifier too (a module-level
-	   `D.Modifier.<Class>():Name("...")`, first in the array part) — never `Name = "..."` inline on the host, which would beat
+	   `q.Modifier "Class" ():Name("...")`, first in the array part) — never `Name = "..."` inline on the host, which would beat
 	   the caller's `:Name(...)`; inner children keep inline names. `props.Hooks` goes last (`table.unpack(Util.hooks(props.Hooks))`).
 	8. Overlays (menus, dialogs, snackbars, tooltips): do not parent them yourself — `Overlay.default():Open({
 	   Content = ..., Scrim = ..., DismissOnEscape = ..., TrapSelection = ... })` (or the app's own `Overlay.new()`);

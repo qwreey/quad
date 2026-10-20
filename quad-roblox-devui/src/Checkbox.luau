@@ -8,7 +8,7 @@
 			OnChange: ((checked: boolean) -> ())?, after Value was toggled by the user (not for external :Set)
 			Disabled: (boolean | State<boolean>)?,
 			Hooks: { any }?,                       appended at the end of the element's array part (see Button)
-			Style: Style?, Modifier: TextButtonModifier?,
+			Style: Style?, Modifier: ModifierInto<TextButton>?,
 		}
 
 	One TextButton (the whole row is clickable) + box Frame + check ImageLabel — see Inputs/Choice.luau. Activated

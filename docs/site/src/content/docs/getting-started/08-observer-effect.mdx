@@ -20,7 +20,7 @@ import { Quiz, QuizResults } from 'starlight-quiz/components';
 
 ```luau
     -- … card 안의 라벨에 이어집니다
-    D.TextLabel {
+    q.Elem "TextLabel" {
         -- …프로퍼티 생략…
         Text = countText,
 
@@ -75,7 +75,7 @@ const logger = q.Source<<q.Observer?>>(count:Observer(function(t)
     print("카운트", t:Get())
 end))
 
-const card = D.Frame {
+const card = q.Elem "Frame" {
     logger,
     -- …자식들 생략…
 }
@@ -137,7 +137,7 @@ logger:Set(nil)     -- 이 시점부터 위 print는 더 이상 돌지 않는다
 
 ```luau
 -- … card 안의 버튼에 한 줄을 더합니다
-    D.TextButton {
+    q.Elem "TextButton" {
         -- …buttonRef·Text·BackgroundTransparency = 0·Activated(07장 2절 그대로)…
         BackgroundColor3 = count:Compute(function(c: q.StateData<number>) -- 인라인 자리라 파라미터 타입을 적습니다(위 접힘)
             return if c:Get() >= 10
@@ -177,9 +177,9 @@ logger:Set(nil)     -- 이 시점부터 위 print는 더 이상 돌지 않는다
 const GuiService = game:GetService("GuiService")
 const isBig: q.State<boolean> = count:Compute(function(c) return c:Get() >= 10 end)
 
-const card = D.Frame {
+const card = q.Elem "Frame" {
     -- …생략…
-    D.TextButton {
+    q.Elem "TextButton" {
         buttonRef,                                  -- ← 07장과 같은 평범한 Ref(인스턴스마다 새로 만든다)
         Text = "+ 1",
         -- …3절의 BackgroundColor3 파이프와 07장 2절의 BackgroundTransparency·Activated는 그대로…
@@ -209,7 +209,7 @@ const card = D.Frame {
 <details>
 <summary><strong>이 <code>Effect</code>는 <code>buttonRef</code>가 차기 전에 도는 것 아닌가요?</strong></summary>
 
-여기서는 아닙니다. Lua는 테이블 리터럴의 원소를 **위에서 아래로** 평가하므로, `D.TextButton { buttonRef, … }`가 먼저 실행되어 버튼이 만들어지고 `buttonRef`가 채워진 다음에야 `q.Effect(...)`가 만들어집니다. `Effect`의 첫 실행은 만들어지는 그 자리에서 돌기 때문에, 그때 이미 상자에 값이 있습니다.
+여기서는 아닙니다. Lua는 테이블 리터럴의 원소를 **위에서 아래로** 평가하므로, `q.Elem "TextButton" { buttonRef, … }`가 먼저 실행되어 버튼이 만들어지고 `buttonRef`가 채워진 다음에야 `q.Effect(...)`가 만들어집니다. `Effect`의 첫 실행은 만들어지는 그 자리에서 돌기 때문에, 그때 이미 상자에 값이 있습니다.
 
 바꿔 말하면 **순서를 뒤집으면 첫 실행이 빈 상자를 봅니다**(그래서 위 코드에 `if inst and …` 가드가 있습니다). 그 뒤 상자가 채워지면 `Ref`가 의존성이므로 `Effect`는 어차피 한 번 더 돕니다 — 다만 그때까지의 한 사이클은 아무 일도 안 한 셈이 됩니다.
 

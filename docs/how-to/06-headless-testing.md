@@ -120,7 +120,7 @@ gate:Off()          -- 여기서 밀린 전파가 정확히 한 번
 > ⚠️ **공개 mock 패키지는 아직 없습니다.** 이 저장소가 쓰는
 > `quad-base/test/mock.luau`는 테스트 내부물이고 배포되지 않습니다 — 물리
 > 트리 조작·판정·훅·생명주기 hold op 넷·태그/어트리뷰트·시간 op를 전부
-> 심지만 그 위에 공개 표면(`D` 등)은 없습니다. 범용 렌더 디버깅 도구
+> 심지만 그 위에 공개 표면(`q.Elem` 등)은 없습니다. 범용 렌더 디버깅 도구
 > `quad-mock`은 백로그입니다 — 언젠가 사용자 대면 패키지가 될 예정이지만
 > 지금은 아닙니다. 지금 `Observer`/`Effect`/`Slot`을 헤드리스로 검증하려면
 > **자기 프로바이더를 직접 쓰거나**, 이 저장소의 spec을 본보기로 삼으세요.
@@ -134,7 +134,7 @@ gate:Off()          -- 여기서 밀린 전파가 정확히 한 번
 > **strict 한 줄** — 자기 프로바이더 함수의 **반환 타입을 `any`나 인덱서 테이블(`{ [any]: any }`)로 주석하지 마세요.** `:UseProvider`는 `Self & P`를 돌려주므로(`P`가 프로바이더 반환 타입) 그 뒤 모든 `q.<멤버>` 호출이 strict에서 `Cannot call a value of type *error-type* in union`으로 죽습니다(`{}`·구체 필드 테이블·실 프로바이더는 문제없음 — [2026-09-27 실측]). 이 저장소의 `mock.luau` 프로바이더가 바로 그 인덱서 모양이라 본보기로 옮길 때 주석은 떼거나 구체 타입으로 바꾸세요.
 
 ```luau
-local q = Quad.New():UseProvider(myProvider)
+local q = Quad.NewModule():UseProvider(myProvider)
 ```
 
 - `UseProvider`는 **모듈당 한 슬롯**입니다. 같은 프로바이더 함수로 다시 부르면
@@ -142,7 +142,7 @@ local q = Quad.New():UseProvider(myProvider)
   `Quad0213 UseProvider: this Quad module already has a provider - a module cannot serve two backends`
   에러입니다.
 - `require(quad-base)`가 돌려주는 값은 이미 만들어진 기본 인스턴스입니다.
-  테스트마다 격리된 인스턴스가 필요하면 `Quad.New()`를 쓰세요.
+  테스트마다 격리된 인스턴스가 필요하면 `Quad.NewModule()`를 쓰세요.
 
 ### 생명주기에 묶이기 전까지 `Observer`는 발화하지 않는다
 

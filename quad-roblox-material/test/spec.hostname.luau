@@ -1,6 +1,6 @@
 --!strict
 -- Host Name rule (src/init.luau "API CONVENTIONS -> Hosts"): the host's default Name sits in the kit's base Modifier, so a
--- caller's `Modifier = D.Modifier.<Class>():Name("X")` renames it; without one the default name is unchanged.
+-- caller's `Modifier = q.Modifier "Class" ():Name("X")` renames it; without one the default name is unchanged.
 local H = require("./support/harness")
 local Q = require("../src/Quad")
 local q = H.attach(Q)

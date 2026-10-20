@@ -72,7 +72,7 @@ export type Handler = {
 핸들러 ∪ 선언하지 않은 핸들러이며, 순서는 전체 목록과 같습니다.
 
 조회는 `type(k)`에 해당하는 버킷만 훑습니다. 문자열 프로퍼티
-10개짜리 `D.Frame` 하나가 핸들러 22개에 150번을 물었는데 그중 12개는 애초에 숫자
+10개짜리 `q.Elem "Frame"` 하나가 핸들러 22개에 150번을 물었는데 그중 12개는 애초에 숫자
 키만 매치할 수 있었던 것이 이 최적화의 계기입니다. 판정 자체는 여전히 `isHandlable`이 합니다(`keyType`은 스캔
 범위만 좁힙니다).
 
@@ -209,7 +209,7 @@ base가 소유하되 **최하위 밴드**에 등록됩니다.
    오면 대신 `… - this quad value has no handler at an array position`가 붙습니다.
 2. **매치는 됐는데 엔진 op이 없으면** 그 op 자리에 심어진 안내 스텁이 던집니다:
    `Quad0108 quad: addTag is not available - no backend has installed the tag ops (install a
-   provider with quad:UseProvider - a bare Quad.New() has none)`.
+   provider with quad:UseProvider - a bare Quad.NewModule() has none)`.
    base가 "그럴듯한 기본 동작"(조용한 no-op)을 추측하지 않는 이유는 단순합니다 — 임의의
    엔진에 무엇이 맞는 기본값인지 base는 알 수 없고, 조용한 no-op은 프로바이더 설치를
    잊은 실수를 그대로 가립니다.

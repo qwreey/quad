@@ -10,7 +10,6 @@ description: "화면 뿌리에 오버레이 자리를 두고, 트리 깊은 곳�
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 const q = require("@game/ReplicatedStorage/Client/UI/Quad")
-const D = q.Declaration
 const None = q.None
 ```
 
@@ -51,7 +50,7 @@ local function Modal(props: {
     read OnCancel: () -> (),
     read Children: q.Slot<Instance>?,
 }): Frame
-    return D.Frame {
+    return q.Elem "Frame" {
         Size = UDim2.fromOffset(360, 220),
         AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.fromScale(0.5, 0.5),
@@ -59,14 +58,14 @@ local function Modal(props: {
 
         Visible = props.Open,
 
-        D.TextLabel {
+        q.Elem "TextLabel" {
             Text = props.Title,
             Size = UDim2.new(1, 0, 0, 40),
         },
 
         props.Children or None, -- ⭐ 숫자 키 자리, or None으로 nil-hole 방지(실전 레시피 01)
 
-        D.TextButton {
+        q.Elem "TextButton" {
             Text = "확인",
             Position = UDim2.new(0, 20, 1, -48),
             Size = UDim2.fromOffset(140, 36),
@@ -75,7 +74,7 @@ local function Modal(props: {
                 props.OnConfirm()
             end,
         },
-        D.TextButton {
+        q.Elem "TextButton" {
             Text = "취소",
             Position = UDim2.new(1, -160, 1, -48),
             Size = UDim2.fromOffset(140, 36),
@@ -161,7 +160,7 @@ const ModalContext = require("@game/ReplicatedStorage/Client/UI/ModalContext")
 const open = q.Source(false)
 const ctx = q.Context():Set(ModalContext.Provider, { Open = open })
 
-const screen = D.ScreenGui {
+const screen = q.Elem "ScreenGui" {
     DeepPanel { Ctx = ctx }, -- 이 안 몇 층 아래에 삭제 버튼이 있다
 
     Modal {
@@ -180,7 +179,7 @@ const screen = D.ScreenGui {
 local function DeleteButton(props: { read Ctx: q.Context }): TextButton
     const modal = props.Ctx:Get(ModalContext.Provider)
 
-    return D.TextButton {
+    return q.Elem "TextButton" {
         Text = "삭제",
         Activated = function()
             modal.Open:Set(true)
@@ -211,7 +210,7 @@ toastList:List(toasts, function(ctx): (any, nil)
         return ctx.Prev, ctx.UserData -- 이미 있는 토스트 → 그대로 둔다
     end
     const toast = ctx.Item :: Toast -- KeyGone 팔을 위에서 걸렀으니 좁혀 준다(props 타입이 있는 컴포넌트에 넘길 때 strict가 요구)
-    return D.TextLabel {
+    return q.Elem "TextLabel" {
         Text = toast.Text,
         Size = UDim2.new(1, 0, 0, 32),
         BackgroundColor3 = Color3.fromRGB(40, 40, 48),
@@ -242,13 +241,13 @@ local function pushToast(text: string)
     end)
 end
 
-const toastHost = D.Frame {
-    D.UIListLayout { Padding = UDim.new(0, 4) },
+const toastHost = q.Elem "Frame" {
+    q.Elem "UIListLayout" { Padding = UDim.new(0, 4) },
     toastList,
 }
 ```
 
-> `updateFn`의 반환 타입 주석 `): (any, nil)`을 빼지 마세요 — 첫 리턴(`return nil, ctx.UserData`)이 `nil`을 먼저 내놓으면 그 뒤 `D.TextLabel {...}`을 돌려주는 리턴까지 `nil`로 굳어 strict에서 막힙니다. **strict에서는 반환 타입 주석을 붙이세요 — how-to 08 §7 13행**([시작하기 14](../getting-started/14-lists.md)는 nonstrict 장이라 이 주석 없이도 통과합니다).
+> `updateFn`의 반환 타입 주석 `): (any, nil)`을 빼지 마세요 — 첫 리턴(`return nil, ctx.UserData`)이 `nil`을 먼저 내놓으면 그 뒤 `q.Elem "TextLabel" {...}`을 돌려주는 리턴까지 `nil`로 굳어 strict에서 막힙니다. **strict에서는 반환 타입 주석을 붙이세요 — how-to 08 §7 13행**([시작하기 14](../getting-started/14-lists.md)는 nonstrict 장이라 이 주석 없이도 통과합니다).
 
 `toastList`는 **처음 앉은 호스트에 묶입니다.** 모듈 스코프에 두었으니 화면을 다시 지을 때 `toastHost`가 파괴되면(엔진이 지우는 경우도 포함) 그 Slot은 그 사실을 모릅니다 — `:List`는 조용히 재조정을 멈추고, 보류 중이던 `task.delay`의 `toasts:Set`은 에러 없이 흘러가며, 새 호스트에 다시 앉히면 `Quad0160 … cannot be reused after its parent is destroyed`로 막힙니다([Slot 레퍼런스](../reference/core/06-slot.md)의 "quad 밖에서 파괴된" 캐비엇). 화면을 다시 짓는 앱이면 `toastList`도 화면과 함께 새로 만들거나, 호스트를 파괴하지 말고 숨기세요.
 
@@ -258,7 +257,7 @@ const toastHost = D.Frame {
 
 ## 5. 던진 것을 에러 모달이 받는다
 
-컴포넌트 안에서 던진 에러를 화면 어딘가의 "에러 모달"이 받아 보여주고 싶을 때가 있습니다. [Fallback/Traceback 레퍼런스](../reference/sugar/05-fallback-traceback.md)의 계약을 그대로 씁니다 — `q.Fallback(base, onError)`가 돌려주는 함수는 `base`가 던지면 `onError(err)`의 **대체 값을 돌려줘야** 합니다. 그 자리를 채우는 것과, 에러를 모달에 보이는 것은 **다른 일**입니다 — 대체 값은 그 자리를 메우는 빈 값(`D.Frame {}`)으로 두고, 에러 자체는 바깥에서 관측할 수 있는 상태에 적습니다.
+컴포넌트 안에서 던진 에러를 화면 어딘가의 "에러 모달"이 받아 보여주고 싶을 때가 있습니다. [Fallback/Traceback 레퍼런스](../reference/sugar/05-fallback-traceback.md)의 계약을 그대로 씁니다 — `q.Fallback(base, onError)`가 돌려주는 함수는 `base`가 던지면 `onError(err)`의 **대체 값을 돌려줘야** 합니다. 그 자리를 채우는 것과, 에러를 모달에 보이는 것은 **다른 일**입니다 — 대체 값은 그 자리를 메우는 빈 값(`q.Elem "Frame" {}`)으로 두고, 에러 자체는 바깥에서 관측할 수 있는 상태에 적습니다.
 
 ```luau
 -- 예시 컴포넌트 — Text가 비어 있으면 던진다(던지는 쪽은 아무 컴포넌트여도 됩니다)
@@ -266,8 +265,8 @@ local function Card(props: { read Text: string }): Frame
     if props.Text == "" then
         error("Card: Text must not be empty")
     end
-    return D.Frame {
-        D.TextLabel { Text = props.Text },
+    return q.Elem "Frame" {
+        q.Elem "TextLabel" { Text = props.Text },
     }
 end
 
@@ -275,7 +274,7 @@ const errorState = q.Source<<any>>(nil)
 
 local function onError(err: any): Instance
     errorState:Set(err)
-    return D.Frame {} -- 자리표시 값 — Card가 있어야 할 자리를 채우기만 한다
+    return q.Elem "Frame" {} -- 자리표시 값 — Card가 있어야 할 자리를 채우기만 한다
 end
 
 const SafeCard = q.Fallback(Card, onError)
@@ -298,20 +297,20 @@ local function ErrorModal(props: {
         return if value == nil then "" else tostring(value)
     end)
 
-    return D.Frame {
+    return q.Elem "Frame" {
         Visible = visible,
 
-        D.TextLabel {
+        q.Elem "TextLabel" {
             Text = text,
         },
 
-        D.TextButton {
+        q.Elem "TextButton" {
             Text = "신고",
             Activated = function()
                 props.OnReport(props.Error:Get())
             end,
         },
-        D.TextButton {
+        q.Elem "TextButton" {
             Text = "확인",
             Activated = function()
                 props.OnConfirm()
@@ -326,7 +325,7 @@ end
 부르는 쪽에서 `SafeCard`와 `ErrorModal`을 같은 화면에 놓고, `errorState`를 지우는 쪽(`OnConfirm`)만 정해 주면 됩니다.
 
 ```luau
-const screen = D.ScreenGui {
+const screen = q.Elem "ScreenGui" {
     SafeCard { Text = someUnsafeText }, -- 던지면 자리표시 값이 대신 앉는다
 
     ErrorModal {
@@ -340,7 +339,7 @@ const screen = D.ScreenGui {
 `err`가 문자열이면 Luau가 붙인 위치 접두와 함께 quad 에러의 `QuadNNNN` 식별자가 그대로 들어 있으니, [에러 코드 색인](../reference/errors/00-index.md)에서 번호로 찾을 수 있습니다. 트레이스백까지 필요하면 `q.Fallback` 대신 `q.Traceback(Card, onError)`을 쓰세요 — `onError`가 `(err, trace)` 두 인자를 받는 것만 다릅니다.
 
 :::caution
-[Fallback/Traceback 레퍼런스](../reference/sugar/05-fallback-traceback.md#공통-계약)의 caution 그대로입니다 — **던지기 전에 이미 만들어진 부분 트리는 이 경계가 정리해 주지 않고**, **예외가 지나간 자리의 quad 부기도 복구되지 않습니다**(`Declaration`이 중간에 던지면 배치 게이트가 켜진 채 남는 등). 이 경계 안에서 던진 인스턴스는 계속 쓰지 말고, 대체 UI는 항상 새 인스턴스로 만드세요.
+[Fallback/Traceback 레퍼런스](../reference/sugar/05-fallback-traceback.md#공통-계약)의 caution 그대로입니다 — **던지기 전에 이미 만들어진 부분 트리는 이 경계가 정리해 주지 않고**, **예외가 지나간 자리의 quad 부기도 복구되지 않습니다**(요소 생성자가 중간에 던지면 배치 게이트가 켜진 채 남는 등). 이 경계 안에서 던진 인스턴스는 계속 쓰지 말고, 대체 UI는 항상 새 인스턴스로 만드세요.
 :::
 
 ---

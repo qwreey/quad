@@ -27,7 +27,6 @@ description: "값을 밖에서 받는 체크박스에서 시작해, 폼 상태�
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.Declaration
 ```
 
 ---
@@ -46,7 +45,7 @@ local function Checkbox(props: { read Value: q.Source<boolean>, read Label: stri
         return `{if c:Get() then "☑" else "☐"} {props.Label}`
     end)
 
-    return D.TextButton {
+    return q.Elem "TextButton" {
         Size = UDim2.new(1, 0, 0, 32),
         BackgroundTransparency = 1,
         TextXAlignment = Enum.TextXAlignment.Left,
@@ -77,12 +76,12 @@ local submitColor: q.State<Color3> = canSubmit:Compute(function(enabled)
         else Color3.fromRGB(80, 80, 90)
 end)
 
-local panel = D.Frame {
-    D.UIListLayout { Padding = UDim.new(0, 8) },
+local panel = q.Elem "Frame" {
+    q.Elem "UIListLayout" { Padding = UDim.new(0, 8) },
 
     Checkbox { Label = "약관에 동의합니다", Value = agreed },
 
-    D.TextButton {
+    q.Elem "TextButton" {
         Text = "가입하기",
         Interactable = canSubmit, -- false면 눌리지 않는다
         BackgroundColor3 = submitColor,
@@ -209,36 +208,36 @@ local function RegistrationForm(props: { read Form: FormState }): Frame
             else Color3.fromRGB(80, 80, 90)
     end)
 
-    return D.Frame {
+    return q.Elem "Frame" {
         Size = UDim2.new(0, 320, 0, 240),
         BackgroundColor3 = Color3.fromRGB(30, 30, 35),
 
         -- 세로로 쌓는다(각 요소의 Size 같은 모양 프로퍼티는 줄이려고 생략했다)
-        D.UIListLayout { Padding = UDim.new(0, 8) },
+        q.Elem "UIListLayout" { Padding = UDim.new(0, 8) },
 
         -- 아이디 입력창
-        D.TextBox {
+        q.Elem "TextBox" {
             PlaceholderText = "아이디 (4자 이상)",
             Text = store.Username,          -- in: 상태 → 입력창
-            q.Out("Text", store.Username), -- out: 입력창 → 상태 (OnChange 위 슈거)
+            q.Out "TextBox" "Text" (store.Username), -- out: 입력창 → 상태 (OnChange 위 슈거)
         },
 
         -- 아이디 에러 메시지
-        D.TextLabel {
+        q.Elem "TextLabel" {
             Text = "아이디는 4글자 이상이어야 합니다.",
             TextColor3 = Color3.fromRGB(255, 100, 100),
             Visible = showUsernameError,
         },
 
         -- 비밀번호 입력창
-        D.TextBox {
+        q.Elem "TextBox" {
             PlaceholderText = "비밀번호 (8자 이상, 숫자 포함)",
             Text = store.Password,
-            q.Out("Text", store.Password),
+            q.Out "TextBox" "Text" (store.Password),
         },
 
         -- 제출 버튼 — 결과를 직접 처리하지 않고 상태에 적기만 한다
-        D.TextButton {
+        q.Elem "TextButton" {
             Text = "가입하기",
             Interactable = form.CanSubmit, -- false면 눌리지 않는다
             BackgroundColor3 = submitColor,
@@ -259,7 +258,7 @@ end
 
 > `Text = store.Username`으로 값을 내려보내면서 같은 `Text`를 `q.Out`으로 되쓰는 모양이 순환처럼 보이지만, 되먹임은 생기지 않습니다 — 되쓴 값은 입력창이 이미 가진 값이고, Roblox는 같은 값을 다시 대입해도 변경 이벤트를 발화하지 않습니다(엔진 동작). quad 쪽은 같은 값에도 emit을 하므로 `q.Out`은 새 값이 `Source`의 현재 값과 같으면 `:Set`을 건너뜁니다 — 첫 쓰기가 되돌아오는 메아리를 막기 위해서입니다.
 
-`q.Out(name, src)`은 `q.OnChange(name, fn)` 위에 얹은 슈거입니다 — 둘 다 **숫자 키 자리에 놓는 디스크립터**이고(문자 키가
+`q.Out "Class" "Name" (src)`은 `q.OnChange "Class" "Name" (fn)` 위에 얹은 슈거입니다 — 둘 다 **숫자 키 자리에 놓는 디스크립터**이고(문자 키가
 아닙니다), 콜백을 직접 써야 할 때(값을 가공해서 넣거나 다른 상태를 같이 바꿀 때)는 `OnChange`를 씁니다. 콜백은 엔진이 주는 인자만 받습니다 — `self`는 넘어오지 않습니다.
 이벤트 핸들러(`MouseButton1Click` 등)는 반대로 문자 키에 놓습니다. 읽기 전용
 프로퍼티까지 포함한 이름 표면과 초기값 발화 계약은
@@ -284,7 +283,7 @@ end
 -- 진입점(예: Main.client.luau)
 local form = makeFormState()
 
-local screen = D.ScreenGui {
+local screen = q.Elem "ScreenGui" {
     RegistrationForm { Form = form },
 
     -- 숫자 키 자리의 Observer — 이 ScreenGui가 사는 동안만 관측한다
@@ -369,9 +368,9 @@ local trimmedUsername: q.State<string> = store.Username:Compute(function(self)
     return trim(self:Get())
 end)
 
-D.TextBox {
+q.Elem "TextBox" {
     Text = trimmedUsername,         -- 다듬은 값을 입력창에
-    q.Out("Text", store.Username), -- 입력창 → 원본
+    q.Out "TextBox" "Text" (store.Username), -- 입력창 → 원본
 }
 ```
 
@@ -404,10 +403,10 @@ end)
 
 ```luau
 -- RegistrationForm 안의 아이디 입력창
-D.TextBox {
+q.Elem "TextBox" {
     PlaceholderText = "아이디 (4자 이상)",
     Text = store.Username,          -- 표시는 원본 그대로 — 치는 동안은 건드리지 않는다
-    q.Out("Text", store.Username),
+    q.Out "TextBox" "Text" (store.Username),
     FocusLost = function()
         -- 입력을 마친 시점에 다듬은 값을 원본에 적는다
         store.Username:Set(form.Username:Get())

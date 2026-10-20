@@ -25,7 +25,7 @@ description: "quad-base가 백엔드에 요구하는 주입 op 전체와 UseProv
 백엔드는 `quad:UseProvider(providerFn)`으로 설치되며, 프로바이더 함수는 두 가지 일을 합니다.
 
 1. 모듈 인스턴스를 **뮤테이션**해서 아래 주입 슬롯들을 채웁니다.
-2. 백엔드 고유 표면(Roblox라면 `Declaration`/`OnChange`/`Animate`/`Tween`/`isTween`)을 담은 **확장 테이블**을 반환합니다. `UseProvider`가 이걸 모듈에 병합합니다.
+2. 백엔드 고유 표면(Roblox라면 `Elem`/`Modifier`/`Spread`/`Mapper`/`OnChange`/`OnEvent`/`Out`/`ForClasses`/`Animate`/`Tween`/`isTween`)을 담은 **확장 테이블**을 반환합니다. `UseProvider`가 이걸 모듈에 병합합니다.
 
 **`q.Backend`는 엔진 경계입니다** — 답이 설치된 백엔드(엔진)의 사실에 따라 달라지는 op가 사는 자리입니다. 소속 기준은 하나입니다: quad-base가 가진 데이터만으로 답이 나오면 `Backend`가 아니고(브랜드 술어 `q.isX`, 자리 부기 `q.Bookkeeping`), 엔진에 물어야 답이 나오면 `Backend`입니다. 그 안의 op는 **두 층**입니다.
 
@@ -126,7 +126,7 @@ nativeFindChild (inst: any, key: any, className: string?) -> any
 | `quad.BrandPredicates:Register(isX)` | 브랜드 **술어** `isX`를 등록합니다 — 설치 함수가 받은 모듈의 필드이고(`Brand()` 인스턴스 하나), 디스패치 진단이 믿는 `is*` 함수의 집합입니다(아래) |
 
 - 멤버 집합은 **약한 키**입니다 — 값이 GC되면 항목도 사라지고, 등록 해제 op는 없습니다. 역조회(어느 브랜드인가)도 없습니다.
-- 브랜드를 붙였으면 **모듈 표면에 `is<Brand>` 술어를 얹고, 그 술어를 설치 때 받은 모듈의 `quad.BrandPredicates`에 등록**하세요(`q.isTween`이 그 예) — 디스패치가 매치 실패 진단과 props 검사에서 값의 브랜드 이름을 찾을 때 모듈의 `is*` 필드 중 등록된 함수만 봅니다(사용자가 붙인 `is*` 헬퍼를 브랜드 술어로 오인하지 않기 위해서입니다). quad-base의 `q.isX` 술어도 같은 경로입니다 — `q.New()`가 같은 집합에 등록하고, 디스패치는 base 브랜드를 따로 이름으로 알지 않습니다. 등록됐다는 것은 그 브랜드의 주인이 설치됐다는 뜻이라, 등록된 술어에 걸린 값은 매치 실패 메시지에 걸린 브랜드 이름이 전부 실리고 "프로바이더가 설치됐는지 확인하라"는 꼬리 대신 quad 값용 꼬리를 받습니다. 등록을 빠뜨려도 동작은 그대로이고, 그 브랜드의 값이 매치 실패 메시지에 브랜드 이름 없이(그리고 프로바이더 미설치 꼬리로) 찍히고 `D.Frame(yourValue)`처럼 중괄호를 빠뜨린 호출을 못 막을 뿐입니다([술어 레퍼런스](../core/11-predicates.md), [`Quad0076`](../errors/02-dispatch-bookkeeping.md#quad0076)).
+- 브랜드를 붙였으면 **모듈 표면에 `is<Brand>` 술어를 얹고, 그 술어를 설치 때 받은 모듈의 `quad.BrandPredicates`에 등록**하세요(`q.isTween`이 그 예) — 디스패치가 매치 실패 진단과 props 검사에서 값의 브랜드 이름을 찾을 때 모듈의 `is*` 필드 중 등록된 함수만 봅니다(사용자가 붙인 `is*` 헬퍼를 브랜드 술어로 오인하지 않기 위해서입니다). quad-base의 `q.isX` 술어도 같은 경로입니다 — `q.NewModule()`가 같은 집합에 등록하고, 디스패치는 base 브랜드를 따로 이름으로 알지 않습니다. 등록됐다는 것은 그 브랜드의 주인이 설치됐다는 뜻이라, 등록된 술어에 걸린 값은 매치 실패 메시지에 걸린 브랜드 이름이 전부 실리고 "프로바이더가 설치됐는지 확인하라"는 꼬리 대신 quad 값용 꼬리를 받습니다. 등록을 빠뜨려도 동작은 그대로이고, 그 브랜드의 값이 매치 실패 메시지에 브랜드 이름 없이(그리고 프로바이더 미설치 꼬리로) 찍히고 `q.Elem "Frame" (yourValue)`처럼 중괄호를 빠뜨린 호출을 못 막을 뿐입니다([술어 레퍼런스](../core/11-predicates.md), [`Quad0076`](../errors/02-dispatch-bookkeeping.md#quad0076)).
 
   ```luau
   local SpringBrand = QuadTypes.Brand()
@@ -202,7 +202,6 @@ clearTimeout (timeout: Timeout) -> ()
 local Quad = require("@game/ReplicatedStorage/roblox_packages/quad_base")
 local QuadRoblox = require("@game/ReplicatedStorage/roblox_packages/quad_roblox").QuadRoblox
 local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
-local D = q.Declaration
 ```
 
 커스텀 백엔드를 쓴다면 프로바이더 함수의 모양은 이렇습니다.
@@ -230,7 +229,7 @@ local function CustomProvider(quad: any)
     }
 end
 
-local q = Quad.New():UseProvider(CustomProvider)
+local q = Quad.NewModule():UseProvider(CustomProvider)
 ```
 
 계약 넷:
@@ -241,9 +240,11 @@ local q = Quad.New():UseProvider(CustomProvider)
    `Quad0213 UseProvider: this Quad module already has a provider - a module cannot serve two backends`
 4. **슬롯 마킹은 프로바이더 함수가 성공적으로 반환한 뒤**에 일어납니다. 설치 도중 던지면 슬롯이 점유되지 않으므로, 원인을 고치고 다시 부를 수 있습니다.
 
-반환된 확장 테이블은 모듈에 키 단위로 병합됩니다(얕은 복사). quad-roblox가 반환하는 확장(`RobloxExtension`)은 여섯 개 키입니다 — `Declaration`(생성된 클래스 네임스페이스), `OnChange`, `Out`, `Animate`, `Tween`, `isTween`. 병합 뒤에는 `q.Declaration`처럼 모듈에서 바로 꺼내 쓰면 되고, 반환 타입이 교집합으로 합쳐지므로 캐스트가 필요 없습니다.
+반환된 확장 테이블은 모듈에 키 단위로 병합됩니다(얕은 복사). quad-roblox가 반환하는 확장(`RobloxExtension`)은 `Elem`·`Modifier`·`Spread`·`Mapper`·`OnChange`·`OnEvent`·`Out`·`ForClasses`·`Animate`·`Tween`·`isTween`입니다. 병합 뒤에는 `q.Elem`처럼 모듈에서 바로 꺼내 쓰면 되고, 반환 타입이 교집합으로 합쳐지므로 캐스트가 필요 없습니다.
 
-**백엔드가 값 층을 더한다면 자기 레퍼런스에 적습니다.** quad-base의 `FieldOut<T>`(Modifier `Peek` 반환·setter 변환 함수의 `old`)는 base가 소유한 층(`State`·`None`·`nil`)만 감쌉니다. 백엔드 고유의 값 층(quad-roblox의 `Tween<T>`)은 base가 알 수 없으므로, 백엔드가 생성하는 클래스별 타입에서 채우고 **무타입 `q.Modifier()`에서는 호출자가 `T` 안에 넣는다**는 것을 그 백엔드 문서에 밝혀 두세요([core/08의 층 나눔](../core/08-modifier.md)).
+**[3.4.0] 최상위 백엔드 표면의 이름 여덟은 base가 정합니다** — `Elem`·`Modifier`·`Spread`·`Mapper`·`OnChange`·`OnEvent`·`Out`·`ForClasses`. quad-base는 이 여덟 자리에 `Quad0108` 안내 스텁을 깔아 두고(`quad-base/src/BackendStubs.luau`), 프로바이더가 확장 테이블로 덮어씁니다. 다른 백엔드도 같은 이름으로 같은 일을 하는 표면을 내면 소비자 코드가 백엔드를 바꿔도 이름이 그대로입니다. 타입 없는 원재료(`q.Raw.Modifier`·`q.Raw.Spread`·`q.Raw.Mapper`)는 base에 있으니 타입드 표면은 그 위에 얹으면 됩니다.
+
+**백엔드가 값 층을 더한다면 자기 레퍼런스에 적습니다.** quad-base의 `ModifierFieldOut<T>`(Modifier `Peek` 반환·setter 변환 함수의 `old`)는 base가 소유한 층(`State`·`None`·`nil`)만 감쌉니다. 백엔드 고유의 값 층(quad-roblox의 `Tween<T>`)은 base가 알 수 없으므로, 백엔드의 타입드 표면에서 채우고 **무타입 `q.Raw.Modifier()`에서는 호출자가 `T` 안에 넣는다**는 것을 그 백엔드 문서에 밝혀 두세요([core/08의 층 나눔](../core/08-modifier.md)).
 
 `QuadRoblox`는 설치 시점에 받은 quad-base 인스턴스의 `Version`을 자기 패턴과 대조하고, 안 맞으면 그 자리에서 던집니다. 패턴(`type_version_check`의 문법)은 이렇게 읽힙니다.
 
@@ -261,7 +262,7 @@ local q = Quad.New():UseProvider(CustomProvider)
 quad-base는 위 20슬롯 전부에 **안내 스텁**을 깔아둡니다. 백엔드 없이 부르면 nil 호출 크래시가 아니라 이름이 박힌 에러가 호출자 줄에서 납니다.
 
 ```
-Quad0108 quad: nativeInsert is not available - no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider - a bare Quad.New() has none; headless tests install their own provider the same way)
+Quad0108 quad: nativeInsert is not available - no backend has installed the lifetime primitives / engine ops (install a provider with quad:UseProvider - a bare Quad.NewModule() has none; headless tests install their own provider the same way)
 ```
 
 이 스텁은 프로바이더가 덮어쓸 때까지만 공개 표면에 앉아 있습니다. 즉 **백엔드가 슬롯 하나를 빠뜨리면 그 op를 처음 쓰는 순간 그 이름이 그대로 에러 메시지에 나옵니다** — 조합으로 대신 만들어 주는 폴백은 없습니다.

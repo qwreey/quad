@@ -17,8 +17,8 @@
 	        end }),
 	        SnackbarHost = snackbarLayer.Layer,
 	        Content = function(innerPadding)
-	            return D.ScrollingFrame { Size = UDim2.fromScale(1, 1), scroll.Hook,   -- Compose: Modifier.nestedScroll(...)
-	                D.UIPadding { PaddingTop = innerPadding.Top }, … }
+	            return q.Elem "ScrollingFrame" { Size = UDim2.fromScale(1, 1), scroll.Hook,   -- Compose: Modifier.nestedScroll(...)
+	                q.Elem "UIPadding" { PaddingTop = innerPadding.Top }, … }
 	        end,
 	    })
 

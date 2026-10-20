@@ -5,7 +5,7 @@
 
 	A box needs no hand synchronization:
 	  shown text = focused ? buffer : model text            (a Compute of three things)
-	  buffer     = what the engine currently holds           (`q.OnChange("Text")` echo)
+	  buffer     = what the engine currently holds           (`q.OnChange "TextBox" "Text"` echo)
 	  typing     -> buffer, and when the text parses AND differs from what the model shows, `model.typeField` commits it
 	                LIVE (invalid or empty text is simply not committed)
 	  FocusLost  -> final commit of an edited buffer, `model.remember()` when this focus session committed anything

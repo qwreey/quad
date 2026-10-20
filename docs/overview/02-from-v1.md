@@ -44,7 +44,7 @@ v1에서 자주 쓰이던 기능 중 v2가 **의도적으로 되살리지 않은
 | `Mount(parent, obj)` / `mounts:Add` / `:Unmount` | `.Parent` 대입 + `Slot` | v1의 mount 모듈이 부모 부기·자식 레지스트리·생명주기 파괴를 한꺼번에 지고 있었습니다. 자식 CRUD는 `Slot`이 전담하고, 단일 부착은 엔진의 `.Parent`가 그대로 가져갑니다. |
 | `Quad.Lang` | 없음 — 라이브러리 밖 | 로케일 상태·번역 표는 렌더러가 질 책임이 아니라고 봤습니다 — 프로젝트의 로컬라이제이션 층(또는 `LocalizationService`)이 값을 만들고, quad는 그 값을 `Source`로 받아 그리기만 합니다. |
 | `tracker.lua`(핫리로드 감시) | 없음 | 2.24 튜토리얼이 `require(Quad.tracker)`로 안내하던 자동 리로드입니다. 그 자리는 이미 있는 스토리북 도구(ui-labs 등)가 대신합니다 — quad가 만들 계획은 없습니다. |
-| `Init(QuadId)` 네임스페이스 공유 | 기본 인스턴스 + 필요할 때만 `Quad.New()` | `require`가 이미 만들어진 기본 인스턴스를 돌려주므로, 파일마다 각자 인스턴스를 만들다 스코프가 조용히 갈라지는 사고가 구조적으로 없습니다. 공유는 모듈 export나 `q.Context`로 명시합니다. |
+| `Init(QuadId)` 네임스페이스 공유 | 기본 인스턴스 + 필요할 때만 `Quad.NewModule()` | `require`가 이미 만들어진 기본 인스턴스를 돌려주므로, 파일마다 각자 인스턴스를 만들다 스코프가 조용히 갈라지는 사고가 구조적으로 없습니다. 공유는 모듈 export나 `q.Context`로 명시합니다. |
 
 ### id 조회가 없다는 게 실제로 뜻하는 것
 
@@ -81,7 +81,7 @@ v1에 없던 것들입니다. 각 항목이 무엇을 푸는지 한 줄로 적�
 - **`Context` — 계층을 건너 명시적으로 넘기는 가방.** `Init(id)` 네임스페이스로 암묵적으로 공유하던 것을 명시적 전달로 바꿉니다. 다만 트리를 거슬러 올라가 조회하지는 않습니다 — 중간 계층이 손으로 넘겨야 합니다. → [Context 레퍼런스](../reference/sugar/01-context.md)
 - **`Debounce` / `Throttle` — 시간 기반 전파 게이트.** v1 공개 표면에 대응하는 것이 없던 기능입니다. 전파를 묶는 `Blocker`·`:Gate` 위에 얹힌 슈거이고, `state:Apply(...)`로 붙입니다. → [Debounce·Throttle 레퍼런스](../reference/sugar/03-debounce-throttle.md)
 - **grep 가능한 에러.** 메시지는 `주어: 이유` 모양이고, 받은 값을 말할 때만 `(got X)` 꼬리가 붙습니다. 대부분의 경우 라이브러리 안쪽이 아니라 그걸 부른 **사용자 줄**을 blame합니다. 로그에 찍힌 문장을 그대로 들고 소스로 되돌아갈 수 있습니다(한계도 함께 문서화돼 있습니다). → [10. 부록 — quad 에러 읽는 법](../how-to/10-debugging-and-troubleshooting.md)
-- **strict 타입 검사가 이관 체크리스트를 상당 부분 대신합니다.** v1의 props는 타입 없는 가방이었지만, v2는 생성된 프로퍼티 타입과 입력 자리의 공변 마커(`StateMarker`/`SlotMarker`) 덕에 직역이 대부분 타입 검사에서 막힙니다. 단, 이건 공짜가 아닙니다 — luau 플래그 넷을 켠 환경이 **필수**입니다. → [08 §7 strict 체크리스트](../how-to/08-migrating-from-v1.md), [Quadnomicon Vol. 4 — 공변 마커](../quadnomicon/04-covariant-markers.md)
+- **strict 타입 검사가 이관 체크리스트를 상당 부분 대신합니다.** v1의 props는 타입 없는 가방이었지만, v2는 클래스 타입에서 계산한 프로퍼티 타입과 입력 자리의 공변 마커(`StateMarker`/`SlotMarker`) 덕에 직역이 대부분 타입 검사에서 막힙니다. 단, 이건 공짜가 아닙니다 — Luau의 새 솔버(`LuauSolverV2`)를 켠 환경이 **필수**입니다. → [08 §7 strict 체크리스트](../how-to/08-migrating-from-v1.md), [Quadnomicon Vol. 4 — 공변 마커](../quadnomicon/04-covariant-markers.md)
 - **엔진 없이 도는 코어.** `quad-base`는 백엔드 op를 주입받는 순수 코어라, `Store`/`State`만 소비하도록 짜둔 로직은 Roblox 없이 상태 전이를 검증할 수 있습니다. → [06. Roblox Studio 없이 헤드리스로 테스트하기](../how-to/06-headless-testing.md)
 
 ---
@@ -182,8 +182,8 @@ v2에서는 그게 체크리스트의 대부분을 대신합니다.
 
 이관이 아니라 새 프로젝트를 v2로 시작하는 경우, v1 감각과 가장 크게 어긋나는 자리들입니다.
 
-1. **타입 검사 환경부터 만듭니다.** luau 플래그 넷을 켜지 않으면 quad 소스의 타입 검사가
-   실패합니다. 편집기에도 같은 플래그가 필요합니다 —
+1. **타입 검사 환경부터 만듭니다.** Luau의 새 솔버를 켜지 않으면 quad 소스의 타입 검사가
+   실패합니다. 편집기에도 같은 플래그가 필요합니다(한도 플래그 셋은 권장) —
    [00. 설치](../getting-started/00-installation.md)의 타입 검사 절.
 2. **`Destroy`가 회수의 전부입니다.** 참조를 놓는 것만으로는 회수되지 않습니다. 화면을
    버리는 자리에 `Destroy()`가 반드시 있어야 합니다.
@@ -206,7 +206,7 @@ v2에서는 그게 체크리스트의 대부분을 대신합니다.
 
 ## 6. 다음 걸음
 
-- **절차가 필요하면**: [08. quad v1에서 v2로 옮기기](../how-to/08-migrating-from-v1.md) — 툴체인 플래그 넷, 개념 1:1 대응표, 제거된 기능과 이관 경로, strict 블로커 열여덟.
+- **절차가 필요하면**: [08. quad v1에서 v2로 옮기기](../how-to/08-migrating-from-v1.md) — 툴체인 플래그, 개념 1:1 대응표, 제거된 기능과 이관 경로, strict 블로커 열여덟.
 - **v1 습관이 가장 자주 걸리는 자리**: [21. 정리 — 여기서부터 어디로](../getting-started/21-wrap-up.md)의 "v1을 쓰던 손버릇" 접힘 블록.
 - **도입 여부를 아직 저울질 중이라면**: [왜 Quad인가](./01-why-quad.md) — 설계 선택마다의 대가와, 오늘 시점의 차단기 목록.
 - **에이전트에게 맡긴다면**: [v1 이관 스킬 레퍼런스](../skills/quad-ui-dev/references/v1-migration.md)(영문, 레포의 `docs/skills/quad-ui-dev/`).

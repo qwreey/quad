@@ -10,7 +10,7 @@
 			OnChange: ((option: T) -> ())?,        after the user selected this option (not when it was already selected)
 			Disabled: (boolean | State<boolean>)?,
 			Hooks: { any }?,                       appended at the end of the element's array part (see Button)
-			Style: Style?, Modifier: TextButtonModifier?,
+			Style: Style?, Modifier: ModifierInto<TextButton>?,
 		}
 
 		local pick = q.Source("a")

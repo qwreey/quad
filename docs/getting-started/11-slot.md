@@ -22,11 +22,11 @@ description: "숫자 키의 한 자리를 Slot으로 잡아 두고 CRUD로 자�
 ```luau
 -- 새 예시: 별도 스크립트(카운터와 무관)
 const items = q.Slot {
-    D.TextLabel { Text = "첫째" },
-    D.TextLabel { Text = "둘째" },
+    q.Elem "TextLabel" { Text = "첫째" },
+    q.Elem "TextLabel" { Text = "둘째" },
 }
 
-const box = D.Frame {
+const box = q.Elem "Frame" {
     Size = UDim2.fromOffset(240, 160),
     BackgroundColor3 = Color3.fromRGB(35, 35, 42),
 
@@ -50,7 +50,7 @@ print(#box:GetChildren())   --> 2
 
 ```luau
 const items = q.Slot<<Instance>>({
-    D.TextLabel { Text = "첫째" },
+    q.Elem "TextLabel" { Text = "첫째" },
 })
 ```
 
@@ -71,10 +71,10 @@ const items = q.Slot<<Instance>>({
 
 ```luau
 -- … 위쪽 코드에 이어집니다
-items:Add(D.TextLabel { Text = "셋째" })
+items:Add(q.Elem "TextLabel" { Text = "셋째" })
 print(#box:GetChildren())   --> 3
 
-items:Add(D.TextLabel { Text = "앞에" }, 1)   -- 1번 자리에 끼워 넣기
+items:Add(q.Elem "TextLabel" { Text = "앞에" }, 1)   -- 1번 자리에 끼워 넣기
 print(#box:GetChildren())   --> 4
 
 items:Remove(1)              -- 그 자리 원소를 떼고 파괴한다
@@ -124,11 +124,11 @@ Slot은 자기 상태를 두 개의 `Source`로 들고 있습니다.
 
 ```luau
 -- 새 예시: 별도 스크립트
-const slotA = q.Slot { D.TextLabel { Text = "A1" }, D.TextLabel { Text = "A2" } }
-const slotB = q.Slot { D.TextLabel { Text = "B1" } }
+const slotA = q.Slot { q.Elem "TextLabel" { Text = "A1" }, q.Elem "TextLabel" { Text = "A2" } }
+const slotB = q.Slot { q.Elem "TextLabel" { Text = "B1" } }
 
-const panel = D.Frame {
-    D.TextLabel { Text = "머리" },   -- 고정 자식 하나
+const panel = q.Elem "Frame" {
+    q.Elem "TextLabel" { Text = "머리" },   -- 고정 자식 하나
     slotA,
     slotB,
 }
@@ -148,7 +148,7 @@ print(slotB.Offset:Get(), slotB.Length:Get())   --> 3  1
 
 ```luau
 -- … 위쪽 코드에 이어집니다
-slotA:Add(D.TextLabel { Text = "A3" })
+slotA:Add(q.Elem "TextLabel" { Text = "A3" })
 
 print(slotA.Offset:Get(), slotA.Length:Get())   --> 1  3
 print(slotB.Offset:Get(), slotB.Length:Get())   --> 4  1
@@ -166,16 +166,16 @@ Slot의 원소로 다른 Slot을 넣을 수 있습니다. 바깥 Slot의 **한 �
 
 ```luau
 -- 새 예시: 별도 스크립트
-const innerA = q.Slot { D.TextLabel { Text = "Inner1" }, D.TextLabel { Text = "Inner2" } }
-const innerB = q.Slot { D.TextLabel { Text = "Inner3" } }
+const innerA = q.Slot { q.Elem "TextLabel" { Text = "Inner1" }, q.Elem "TextLabel" { Text = "Inner2" } }
+const innerB = q.Slot { q.Elem "TextLabel" { Text = "Inner3" } }
 
 const outer = q.Slot {
     innerA,                          -- 원소 둘
-    D.TextLabel { Text = "Outer" },  -- 원소 하나
+    q.Elem "TextLabel" { Text = "Outer" },  -- 원소 하나
     innerB,                          -- 원소 하나
 }
 
-const host = D.Frame { outer }
+const host = q.Elem "Frame" { outer }
 
 print(#host:GetChildren(), outer.Offset:Get(), outer.Length:Get())   --> 4  0  4
 print(innerA.Offset:Get(), innerA.Length:Get())                      --> 0  2
@@ -193,7 +193,7 @@ print(innerB.Offset:Get(), innerB.Length:Get())                      --> 3  1
 
 ```luau
 -- … 위쪽 코드에 이어집니다
-innerA:Add(D.TextLabel { Text = "Inner4" })
+innerA:Add(q.Elem "TextLabel" { Text = "Inner4" })
 
 print(#host:GetChildren(), outer.Length:Get())   --> 5  5
 print(innerB.Offset:Get(), innerB.Length:Get())  --> 4  1
@@ -213,7 +213,7 @@ print(innerB.Offset:Get(), innerB.Length:Get())  --> 4  1
 
 ```luau
 -- … 3절의 panel 예시에 이어집니다(slotA에 A3를 넣은 뒤라 slotB.Offset은 4입니다)
-slotB:Add(D.TextLabel {
+slotB:Add(q.Elem "TextLabel" {
     Text = "B2",
     -- 이 Slot의 둘째 원소가 부모 전체에서 몇 번째인가: Offset + 2
     LayoutOrder = slotB.Offset:Compute(function(o: q.StateData<number>) return o:Get() + 2 end),   -- 지금은 6 (테이블 안 인라인 Compute는 파라미터 타입을 적어야 strict가 봅니다)
@@ -235,18 +235,18 @@ slotB:Add(D.TextLabel {
 -- 새 예시: 별도 스크립트
 const cur = q.Source<<Instance?>>(nil)
 
-const host = D.Frame {
-    D.TextLabel { Text = "머리" },   -- 고정 자식 하나
+const host = q.Elem "Frame" {
+    q.Elem "TextLabel" { Text = "머리" },   -- 고정 자식 하나
     cur,                             -- ← 이 자리는 cur가 가리키는 것 하나
 }
 
 print(#host:GetChildren())   --> 1                  (아직 비어 있다)
 
-const a = D.TextLabel { Text = "A" }
+const a = q.Elem "TextLabel" { Text = "A" }
 cur:Set(a)
 print(#host:GetChildren(), host:GetChildren()[2].Text)   --> 2  "A"
 
-const b = D.TextLabel { Text = "B" }
+const b = q.Elem "TextLabel" { Text = "B" }
 cur:Set(b)
 print(#host:GetChildren(), host:GetChildren()[2].Text)   --> 2  "B"
 

@@ -4,7 +4,7 @@
 
 		ProgressBar { Value: number | State<number>,        -- 0..1 (clamped)
 		              Text: string | State<string>?,        -- overlay text; default is the percentage ("42%")
-		              Style: Style?, Modifier: FrameModifier? }
+		              Style: Style?, Modifier: ModifierInto<Frame>? }
 
 	Two GuiObjects (track Frame + Fill Frame) and one TextLabel overlay, plus UICorner helpers. Full width,
 	FrameHeight tall. The fill colour is the PlotHistogram token, the track FrameBg.

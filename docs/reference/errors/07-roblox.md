@@ -59,33 +59,33 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 `OnChange: property name must be a non-empty string` — `quad-roblox/src/Handlers/OnChange.luau`
 
-- **언제**: `q.OnChange(name, fn)`의 `name`이 문자열이 아니거나 빈 문자열일 때.
+- **언제**: `q.OnChange "Class" "Name" (fn)`의 이름 자리(`"Name"`)가 문자열이 아니거나 빈 문자열일 때.
 - **고치려면**: 비어 있지 않은 프로퍼티 이름 문자열을 넘기세요.
-- **참고**: [`q.OnChange(name, fn)`](../roblox/05-onchange.md#qonchange-class-name-fn)
+- **참고**: [`q.OnChange "Class" "Name" (fn)`](../roblox/05-onchange.md#qonchange-class-name-fn)
 
 ### Quad0222
 
 `OnChange: callback for "{name}" must be a function (got {typeof(fn)})` — `quad-roblox/src/Handlers/OnChange.luau`
 
-- **언제**: `q.OnChange(name, fn)`의 `fn`이 함수가 아닐 때.
+- **언제**: `q.OnChange "Class" "Name" (fn)`의 `fn`이 함수가 아닐 때.
 - **고치려면**: `(newValue) -> ()` 모양의 함수를 넘기세요.
-- **참고**: [`q.OnChange(name, fn)`](../roblox/05-onchange.md#qonchange-class-name-fn)
+- **참고**: [`q.OnChange "Class" "Name" (fn)`](../roblox/05-onchange.md#qonchange-class-name-fn)
 
 ### Quad0223
 
 `Out: property name must be a non-empty string` — `quad-roblox/src/Handlers/OnChange.luau`
 
-- **언제**: `q.Out(name, src)`의 `name`이 문자열이 아니거나 빈 문자열일 때.
+- **언제**: `q.Out "Class" "Name" (src)`의 이름 자리(`"Name"`)가 문자열이 아니거나 빈 문자열일 때.
 - **고치려면**: 비어 있지 않은 프로퍼티 이름 문자열을 넘기세요.
-- **참고**: [`q.Out(name, src)`](../roblox/05-onchange.md#qout-class-name-src)
+- **참고**: [`q.Out "Class" "Name" (src)`](../roblox/05-onchange.md#qout-class-name-src)
 
 ### Quad0224
 
-`Out: second argument for "{name}" must be a Source to write back into (got {got})` — `quad-roblox/src/Handlers/OnChange.luau`
+`Out: "{name}" needs a Source to write back into (got {got})` — `quad-roblox/src/Handlers/OnChange.luau`
 
-- **언제**: `q.Out(name, src)`의 `src`가 `Source`가 아닐 때 — `:Compute` 결과 같은 읽기 전용 `State`는 `Set`이 없어 `{got}`가 `"a read-only State (a :Compute result?)"`로 나옵니다.
+- **언제**: `q.Out "Class" "Name" (src)`의 `src`가 `Source`가 아닐 때 — `:Compute` 결과 같은 읽기 전용 `State`는 `Set`이 없어 `{got}`가 `"a read-only State (a :Compute result?)"`로 나옵니다.
 - **고치려면**: `Source`를 넘기세요.
-- **참고**: [`q.Out(name, src)`](../roblox/05-onchange.md#qout-class-name-src)
+- **참고**: [`q.Out "Class" "Name" (src)`](../roblox/05-onchange.md#qout-class-name-src)
 
 ### Quad0225
 
@@ -140,5 +140,5 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 `{fn}: takes the class name only - write q.{fn} "Class" "Name" (…) (3.3's q.{fn}(name, …) form is gone)` — `quad-roblox/src/Surface/Runtime.luau`
 
-- **언제**: `q.OnChange`·`q.Out`·`q.OnEvent`의 클래스 단계에 인자를 둘 이상 넘겼을 때 — 흔히 3.3의 `q.OnChange("Text", fn)`을 그대로 둔 코드입니다. 이 꼴은 첫 인자 `"Text"`를 클래스 이름으로 받아 단계 함수를 돌려주므로, 막지 않으면 그 함수가 요소에 놓여 한참 뒤 Dispatch에서 엉뚱한 에러가 납니다.
+- **언제**: `q.OnChange`·`q.Out`·`q.OnEvent`의 클래스 단계에 인자를 둘 이상 넘겼을 때 — 흔히 3.3의 `q.OnChange "TextBox" "Text" (fn)`을 그대로 둔 코드입니다. 이 꼴은 첫 인자 `"Text"`를 클래스 이름으로 받아 단계 함수를 돌려주므로, 막지 않으면 그 함수가 요소에 놓여 한참 뒤 Dispatch에서 엉뚱한 에러가 납니다.
 - **고치려면**: 클래스 → 이름 → 콜백 순서로 따로 부르세요(`q.OnChange "TextLabel" "Text" (fn)`). 옮기기는 `scripts/migrate-3.4.py`가 해 줍니다.

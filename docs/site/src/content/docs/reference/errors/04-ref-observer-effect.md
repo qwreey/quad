@@ -18,7 +18,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 `Effect: cannot bind an Effect from inside its own fn or cleanup` — `quad-base/src/Effect.luau`
 
-- **언제**: **그 핸들 자신**의 `fn`이나 cleanup이 도는 동안 같은 핸들을 다시 바인딩하려 할 때 — 예: fn 안에서 자기 인스턴스를 `q.dispose`한 뒤 `D.Frame { self }`, 또는 `:Unsubscribe()`가 부른 cleanup 안에서 `D.Frame { self }`. fn/cleanup 안에서 **새로 만든** 핸들을 놓는 것은 에러 없이 통과합니다. `fn`(이나 cleanup)이 한 번 던졌거나 Quad0086·Quad0263으로 멈춘 `Effect`는 죽은 핸들이라([`q.Effect`](/reference/core/05-observer-effect/#qeffectfn-deps)의 계약), 그 뒤에는 fn 밖에서 불러도 이 에러가 납니다.
+- **언제**: **그 핸들 자신**의 `fn`이나 cleanup이 도는 동안 같은 핸들을 다시 바인딩하려 할 때 — 예: fn 안에서 자기 인스턴스를 `q.dispose`한 뒤 `q.Elem "Frame" { self }`, 또는 `:Unsubscribe()`가 부른 cleanup 안에서 `q.Elem "Frame" { self }`. fn/cleanup 안에서 **새로 만든** 핸들을 놓는 것은 에러 없이 통과합니다. `fn`(이나 cleanup)이 한 번 던졌거나 Quad0086·Quad0263으로 멈춘 `Effect`는 죽은 핸들이라([`q.Effect`](/reference/core/05-observer-effect/#qeffectfn-deps)의 계약), 그 뒤에는 fn 밖에서 불러도 이 에러가 납니다.
 - **고치려면**: 자기 자신을 실행 중에 다시 놓지 마세요 — 다시 묶으려면 fn/cleanup이 끝난 뒤에. fn이 던져 죽은 `Effect`라면 그 예외의 원인을 고친 뒤 새 `Effect`를 만드세요(죽은 핸들은 다시 돌지 않습니다).
 - **참고**: [`q.Effect(fn, ...deps)`](/reference/core/05-observer-effect/#qeffectfn-deps)
 

@@ -10,13 +10,12 @@ quad의 방식 — **한 번 만들고 값만 흘려 보내는 retained, 반응�
 ```luau
 local Material = require("<이 폴더>/src")
 local q = require("<이 폴더>/src/Quad")
-local D = q.Declaration
 
 local agreed = q.Source(false)
-local screen = D.ScreenGui {
+local screen = q.Elem "ScreenGui" {
 	ResetOnSpawn = false,
 	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,   -- 필수(아래)
-	D.Frame {
+	q.Elem "Frame" {
 		Size = UDim2.fromScale(1, 1),
 		BackgroundColor3 = Material.Theme.default.Color.Surface,
 		Material.Button { Label = "Save", OnClick = function() print("saved") end },
@@ -26,7 +25,7 @@ local screen = D.ScreenGui {
 screen.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 ```
 
-**`ScreenGui`는 `ZIndexBehavior = Sibling`이어야 합니다.** 코드로 만든 `ScreenGui`(`D.ScreenGui`·`Instance.new`)의 기본값은
+**`ScreenGui`는 `ZIndexBehavior = Sibling`이어야 합니다.** 코드로 만든 `ScreenGui`(`q.Elem "ScreenGui"`·`Instance.new`)의 기본값은
 `Global`이고, 그 아래에서는 `CanvasGroup`이 자식을 자르지도 그룹 투명도를 자식에 입히지도 않습니다(Studio 실측 2026-10-13) —
 대화 상자·선택기 카드의 내용이 카드 밖으로 그려지고 여닫는 페이드가 배경에만 먹습니다. 킷의 겹침 순서도 Sibling을 전제로
 합니다. Studio에서 손으로 넣은 `ScreenGui`는 기본이 Sibling입니다.
@@ -181,7 +180,7 @@ local q = Quad:UseProvider(RobloxModule.QuadRoblox)
 모든 컴포넌트는 같은 규칙을 따릅니다(`src/init.luau` 머리의 열 항목 체크리스트가 소스).
 
 - **평범한 함수 하나**가 호스트 인스턴스를 돌려줍니다: `Material.Button { ... }`.
-- **호스트 `Name`은 `Modifier`로 바꿀 수 있습니다**: 컴포넌트는 호스트 이름(`Button`, `Card`, ...)을 기본 Modifier에 두므로 `Modifier = D.Modifier.TextButton():Name("SaveButton")`처럼 주면 그 이름이 됩니다(안 주면 기본 이름 그대로). 안쪽 자식의 이름은 바꿀 수 없습니다.
+- **호스트 `Name`은 `Modifier`로 바꿀 수 있습니다**: 컴포넌트는 호스트 이름(`Button`, `Card`, ...)을 기본 Modifier에 두므로 `Modifier = q.Modifier "TextButton" ():Name("SaveButton")`처럼 주면 그 이름이 됩니다(안 주면 기본 이름 그대로). 안쪽 자식의 이름은 바꿀 수 없습니다.
 - **`Theme` 폴백**: `props.Theme`가 없으면 `Theme.default`. 앱 전체에 테마 하나를 쓰면 아무것도 안 넘겨도 됩니다.
 - **`T | State<T>` 입력**: 값이 바뀔 수 있는 입력(`Label`, `Disabled`, `Error`, ...)은 값 또는 State를 받습니다. State를
   넘기면 그 프로퍼티만 갱신됩니다.
@@ -227,7 +226,7 @@ local q = Quad:UseProvider(RobloxModule.QuadRoblox)
 - **`Modifier`**: 배열 부분에서 컴포넌트의 기본 스타일 **뒤에** 적용되므로(나중 것이 이김) 크기·위치·`LayoutOrder`를
   호출한 쪽이 바꿀 수 있습니다.
 - **`Hooks`**: 호스트 인스턴스가 있는 **모든** 컴포넌트는 배열 부분에 추가로 꽂을 값(예: `Tooltip.hook(...).Hook`, `q.OnChange`, ref)을 받습니다.
-  타입은 하나의 별칭 `Material.Hooks = { any }`입니다. `Modifier`의 타입은 호스트 클래스의 `q.<Class>Modifier`(`q.TextButtonModifier` 등)입니다.
+  타입은 하나의 별칭 `Material.Hooks = { any }`입니다. `Modifier`의 타입은 호스트 클래스의 입력 자리 마커 `q.ModifierInto<Class>`(`q.ModifierInto<TextButton>` 등)입니다 — 그 클래스와 조상 클래스의 Modifier를 받습니다.
 - **`ListData`의 줄은 키마다 한 번 만들고 `item` State만 갈아 끼웁니다.** 그래서 줄 안의 `OnClick` 같은 콜백은 값을 **불릴 때** 읽어야 합니다(`item:Get()`) — 줄을 만들 때 읽어 둔 값은 같은 키에 다른 항목이 들어오면 낡습니다(키를 목록 안의 자리로 준 경우가 그렇습니다).
 - **끌어서 순서 바꾸기 — `ListData`의 `OnReorder: ((from: number, to: number) -> ())?`**(2026-10-13). 이 prop이 있으면 줄마다 끝에 손잡이(`Icons` "dragHandle")가
   생기고, 손잡이를 누르고 끌면 그 줄이 떠서(tertiaryContainer·모서리 16·엘리베이션 4) 포인터를 세로로 따라가며 나머지 줄이 자리를 내줍니다. 놓으면
@@ -296,7 +295,7 @@ theme.Color.Surface`). 색 계산이 필요하면 애니메이션 없는 `theme.
 
 ```luau
 local overlay = Material.Overlay.new()
-local gui = D.ScreenGui {
+local gui = q.Elem "ScreenGui" {
 	ResetOnSpawn = false,
 	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 	DisplayOrder = 10,
@@ -408,7 +407,7 @@ Material.ModalNavigationDrawer({
 
 - **모달 시트의 `Children`은 간격 없이 세로로만 쌓입니다.** 시트 몸통은 `UIListLayout`(세로, `LayoutOrder`)이고 `Padding`을 주지 않습니다
   (`ModalSideSheet`·`SideSheet`는 몸통 바깥에 16 px 안쪽 여백만 있고, 하단 시트는 그것도 없음) — Compose의 시트 content가 간격 없는
-  Column인 것과 같습니다. 자식 사이 간격이 필요하면 자식들을 `UIListLayout`(`Padding`)을 가진 자기 `D.Frame` 하나로 싸서 `Children`에 넣으세요.
+  Column인 것과 같습니다. 자식 사이 간격이 필요하면 자식들을 `UIListLayout`(`Padding`)을 가진 자기 `q.Elem "Frame"` 하나로 싸서 `Children`에 넣으세요.
 - **시트는 내용을 스크롤하지 않습니다.** 내용이 시트보다 길면 `ScrollingFrame`으로 싸서 `Children`에 넣으세요. 측면 시트의 내용 영역은 시트 안쪽 16 px 여백 안이고, `Headline`을 주면 그 위에 머리글 줄(제목 + 닫기 버튼)과 24 px 간격이 먼저 놓입니다 — 안쪽에 좌우 여백을 한 번 더 주지 마세요.
 - **연 시트는 그것을 연 화면의 수명과 묶이지 않습니다.** `ModalBottomSheet.open`·`ModalSideSheet.open`은 `Overlay`에 걸리므로, 연 화면을
   숨기거나 바꿔도 시트는 남습니다. 화면을 떠날 때 돌려받은 핸들의 `handle.Close()`를 부르세요.
@@ -461,7 +460,7 @@ Material.ShortNavigationBar<<string>>({ Selected = page, Items = items })
 local rail = Material.WideNavigationRailState()
 Material.WideNavigationRail<<string>>({ State = rail, Selected = page, Items = items,
 	Header = Material.IconButton({ Icon = Material.Icons.asset("menu") or "", TouchTarget = true, OnClick = rail.Toggle,
-		Modifier = q.Declaration.Modifier.TextButton():Position(UDim2.fromOffset(24, 0)) }) })
+		Modifier = q.Modifier "TextButton" ():Position(UDim2.fromOffset(24, 0)) }) })
 
 -- 앱 바 + 스크롤: Scaffold에 바를 주고, 목록은 내용 영역(바의 지금 아래 끝부터)을 채우며 innerPadding.Top을 위 여백으로
 local scroll = Material.TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -470,8 +469,8 @@ Material.Scaffold({
 		NavigationIcon = { Icon = "menu", Label = "Menu", OnClick = drawer.Open },
 		Actions = { { Icon = "rbxassetid://6031154871", Label = "Search", OnClick = search } } }),
 	Content = function(innerPadding)
-		return q.Declaration.ScrollingFrame { Size = UDim2.fromScale(1, 1), scroll.Hook,
-			q.Declaration.UIPadding { PaddingTop = innerPadding.Top }, … }
+		return q.Elem "ScrollingFrame" { Size = UDim2.fromScale(1, 1), scroll.Hook,
+			q.Elem "UIPadding" { PaddingTop = innerPadding.Top }, … }
 	end,
 })
 
@@ -527,8 +526,8 @@ Material.Scaffold({
 	FloatingActionButtonPosition = "End",                              -- "Start" | "Center" | "End" | "EndOverlay"
 	SnackbarHost = snackbarLayer.Layer,
 	Content = function(innerPadding)                                   -- 또는 GuiObject 하나(여백이 필요 없을 때)
-		return q.Declaration.ScrollingFrame { Size = UDim2.fromScale(1, 1), scroll.Hook,
-			q.Declaration.UIPadding { PaddingTop = innerPadding.Top }, … }
+		return q.Elem "ScrollingFrame" { Size = UDim2.fromScale(1, 1), scroll.Hook,
+			q.Elem "UIPadding" { PaddingTop = innerPadding.Top }, … }
 	end,
 })
 ```

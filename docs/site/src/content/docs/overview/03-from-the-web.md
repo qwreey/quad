@@ -15,12 +15,12 @@ description: "React·Vue·Solid·Svelte 같은 웹 프레임워크의 개념을 
 | Signals(`useState`, `ref()`, `createSignal`) | `q.Source` — 값을 담는 원자 | [시작하기 03](/getting-started/03-flowing-values/) · [레퍼런스 Source](/reference/core/02-source/) |
 | `createMemo`/`useMemo`(다이아몬드에서도 한 번만 계산) | `:Compute(fn, ...deps)` — 읽을 때(pull) 계산되는 파생 값, 의존성은 인자로 명시 | [시작하기 03](/getting-started/03-flowing-values/) · [레퍼런스 State](/reference/core/03-state/) |
 | `createEffect`/`useEffect` | `q.Effect(fn, ...deps)`(+ 단일 State엔 `state:Observer(fn)`) | [시작하기 08](/getting-started/08-observer-effect/) · [레퍼런스 Observer·Effect](/reference/core/05-observer-effect/) |
-| JSX가 VNode를 만들고 나중에 실제 DOM과 diff | `D.Frame { … }`을 부르는 그 자리에서 진짜 `Instance`가 만들어짐 — 비교할 이전 트리도, diff 단계도 없음 | [왜 Quad인가](/overview/01-why-quad/) · [시작하기 02](/getting-started/02-first-screen/) |
+| JSX가 VNode를 만들고 나중에 실제 DOM과 diff | `q.Elem "Frame" { … }`을 부르는 그 자리에서 진짜 `Instance`가 만들어짐 — 비교할 이전 트리도, diff 단계도 없음 | [왜 Quad인가](/overview/01-why-quad/) · [시작하기 02](/getting-started/02-first-screen/) |
 | key 붙은 리스트 재조정(`.map(item => <Card key=… />)`) | `slot:List(data, updateFn, keyFn)` — 키가 같은 항목은 재사용, 사라진 키만 파괴 | [시작하기 14](/getting-started/14-lists/) · [레퍼런스 Slot](/reference/core/06-slot/) |
 | `ref`/`useRef`/콜백 ref | `Ref`/`PreRef`/`PostRef` — 발화 시점이 셋으로 갈림(자식·프로퍼티 처리 전/그 순서대로/전부 끝난 뒤) | [시작하기 07](/getting-started/07-ref/) · [레퍼런스 Ref](/reference/core/07-ref/) |
 | Context API(`createContext`/`useContext`, 트리를 거슬러 조회) | `q.Context`/`Provider` — 명시적으로 아래로 넘기는 가방, 위로 조회하지 않음 | [시작하기 15](/getting-started/15-context/) · [레퍼런스 Context](/reference/sugar/01-context/) |
-| 양방향 바인딩(`v-model`, 제어 컴포넌트) | `Text = src`(in 한 줄) + `q.Out("Text", src)`(out 한 줄 — [2026-09-27 기준] 3.3.0부터, 3.2.0에는 없어, 그전엔 `q.OnChange`로) — 각각 따로 적는 명시적 두 줄 | [시작하기 06](/getting-started/06-flowing-back/) · [레퍼런스 OnChange](/reference/roblox/05-onchange/) |
-| `onChange` 핸들러 | `q.OnChange(name, fn)` | [레퍼런스 OnChange](/reference/roblox/05-onchange/) |
+| 양방향 바인딩(`v-model`, 제어 컴포넌트) | `Text = src`(in 한 줄) + `q.Out "TextBox" "Text" (src)`(out 한 줄 — [2026-09-27 기준] 3.3.0부터, 3.2.0에는 없어, 그전엔 `q.OnChange`로) — 각각 따로 적는 명시적 두 줄 | [시작하기 06](/getting-started/06-flowing-back/) · [레퍼런스 OnChange](/reference/roblox/05-onchange/) |
+| `onChange` 핸들러 | `q.OnChange "Class" "Name" (fn)` | [레퍼런스 OnChange](/reference/roblox/05-onchange/) |
 | 에러 바운더리(`<ErrorBoundary>`, `error.tsx`) | `q.Fallback(base, onError)` / `q.Traceback(base, onError)` | [레퍼런스 Fallback·Traceback](/reference/sugar/05-fallback-traceback/) |
 | debounce/throttle 훅 | `state:Apply(q.Debounce{ Time = … })` / `q.Throttle{ Time = … }` | [레퍼런스 Debounce·Throttle](/reference/sugar/03-debounce-throttle/) |
 | 배치/트랜잭션(`batch()`, `unstable_batchedUpdates`) | `q.Blocker` — 여러 값을 바꾸는 동안 통지를 모았다가 한 번에 | [시작하기 18](/getting-started/18-blocker/) · [레퍼런스 Blocker](/reference/sugar/06-blocker/) |

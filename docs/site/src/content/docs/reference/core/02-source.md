@@ -9,7 +9,6 @@ description: 값을 직접 쓸 수 있는 반응형 루트 노드 — Set/SetIfC
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.Declaration
 ```
 
 `Source`의 생성·읽기·쓰기와 `:Compute`/`:Depend` 같은 파생 자체는 백엔드가 없어도 동작합니다. 백엔드가 필요한 것은 이 노드에 붙는 **구독 핸들의 생명주기**입니다 — `:Observer`로 만든 핸들을 실제로 살리는 것(`:Subscribe`, 인스턴스 바인딩)부터가 백엔드 몫입니다([05-observer-effect](/reference/core/05-observer-effect/) 참고).
@@ -172,10 +171,10 @@ SetAndDispose: (self: Source<T>, v: T) -> Source<T>
 
 ```luau
 local panel = q.Source<<Instance?>>(nil)
-local screen = D.Frame { panel } -- panel이 쥔 Frame이 이 자리에 앉는다
+local screen = q.Elem "Frame" { panel } -- panel이 쥔 Frame이 이 자리에 앉는다
 
-panel:SetAndDispose(D.Frame {}) -- 처음: 옛 값이 nil이라 지울 것이 없다
-panel:SetAndDispose(D.Frame {}) -- 바꾸기: 새 Frame이 앉은 뒤 옛 Frame이 파괴된다
+panel:SetAndDispose(q.Elem "Frame" {}) -- 처음: 옛 값이 nil이라 지울 것이 없다
+panel:SetAndDispose(q.Elem "Frame" {}) -- 바꾸기: 새 Frame이 앉은 뒤 옛 Frame이 파괴된다
 panel:SetAndDispose(nil)        -- 비우기: 자리를 비운 뒤 마지막 Frame을 파괴한다
 ```
 

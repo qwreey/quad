@@ -37,7 +37,6 @@ const rows = q.Source({
 ```luau
 -- 새 파일: ReplicatedStorage/Client/UI/CounterBoard
 const q = require("./Quad")
-const D = q.Declaration
 const Counter = require("./Counter")
 
 return function(props)
@@ -55,11 +54,11 @@ return function(props)
         return item.Id                        -- 신원은 Id
     end)
 
-    return D.Frame {
+    return q.Elem "Frame" {
         Size = UDim2.fromOffset(640, 140),
         BackgroundTransparency = 1,
 
-        D.UIListLayout { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 12) },
+        q.Elem "UIListLayout" { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 12) },
 
         list,
     }
@@ -111,11 +110,10 @@ const Players = game:GetService("Players")
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 const q = require("@game/ReplicatedStorage/Client/UI/Quad")
-const D = q.Declaration
 
 const playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
-const screen = D.ScreenGui { ResetOnSpawn = false } -- 리스폰 때 엔진이 이 화면을 지우지 않게
+const screen = q.Elem "ScreenGui" { ResetOnSpawn = false } -- 리스폰 때 엔진이 이 화면을 지우지 않게
 
 const rows = q.Source({
     { Id = "a", Label = "왼쪽", Start = 0 },
@@ -135,7 +133,6 @@ screen.Parent = playerGui
 ```luau
 -- (CounterBoard.luau — 방금 만든 전체 모습)
 const q = require("./Quad")
-const D = q.Declaration
 const Counter = require("./Counter")
 
 return function(props)
@@ -153,11 +150,11 @@ return function(props)
         return item.Id                        -- 신원은 Id
     end)
 
-    return D.Frame {
+    return q.Elem "Frame" {
         Size = UDim2.fromOffset(640, 140),
         BackgroundTransparency = 1,
 
-        D.UIListLayout { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 12) },
+        q.Elem "UIListLayout" { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 12) },
 
         list,
     }
@@ -173,8 +170,8 @@ end
 항목을 추가하는 버튼을 하나 답니다. 하는 일은 **`props.Rows`에 새 배열을 넣는 것뿐**입니다 — 보드가 받은 그 `Source`를 그대로 씁니다.
 
 ```luau
--- … (CounterBoard.luau) 돌려주는 D.Frame의 list 뒤에 원소 하나 더
-        D.TextButton {
+-- … (CounterBoard.luau) 돌려주는 q.Elem "Frame의" list 뒤에 원소 하나 더
+        q.Elem "TextButton" {
             Size = UDim2.fromOffset(120, 40),
             Text = "+ 카운터",
             Activated = function()
@@ -250,12 +247,12 @@ list:List(logRows, function(ctx)
         return ctx.Prev, ctx.UserData
     end
     const label = q.Source(ctx.Item.Label)
-    return D.TextLabel { Text = label }, label   -- ← 두 번째 반환이 다음 ctx.UserData
+    return q.Elem "TextLabel" { Text = label }, label   -- ← 두 번째 반환이 다음 ctx.UserData
 end, function(item)
     return item.Id
 end)
 
-const box = D.Frame { BackgroundTransparency = 1, list }
+const box = q.Elem "Frame" { BackgroundTransparency = 1, list }
 ```
 
 `a` 항목의 라벨만 바꿔 넣고, 새 키 `c`를 하나 더합니다.
@@ -296,16 +293,16 @@ const single = q.Slot<<Instance>>():Single(cur, function(ctx)
     if ctx.Item == q.KeyGone then
         return nil                        -- 값이 nil이 되면 그 원소를 파괴한다
     end
-    return D.TextLabel {
+    return q.Elem "TextLabel" {
         Text = ctx.Item,
         LayoutOrder = ctx.Offset:Compute(function(o: q.StateData<number>) return o:Get() + 1 end),
     }
 end)
 
-const top = q.Slot { D.TextLabel { Text = "T1" }, D.TextLabel { Text = "T2" } }
+const top = q.Slot { q.Elem "TextLabel" { Text = "T1" }, q.Elem "TextLabel" { Text = "T2" } }
 
-const panel = D.Frame {
-    D.TextLabel { Text = "머리" },   -- 고정 자식 하나
+const panel = q.Elem "Frame" {
+    q.Elem "TextLabel" { Text = "머리" },   -- 고정 자식 하나
     top,                             -- 앞 구간(지금은 둘)
     single,
 }
@@ -313,7 +310,7 @@ const panel = D.Frame {
 cur:Set("지금 화면")
 print(single:Get(1).LayoutOrder)   --> 4      (머리 하나 + top 둘 = Offset 3; :Get(index)는 그 자리의 원소를 읽습니다)
 
-top:Add(D.TextLabel { Text = "T3" })
+top:Add(q.Elem "TextLabel" { Text = "T3" })
 print(single:Get(1).LayoutOrder)   --> 5      (앞이 자라 밀렸다)
 
 top:Remove(1)

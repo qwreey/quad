@@ -18,10 +18,10 @@
 			MinSize: Vector2?,                  -- resize floor (default 2 x frame height square)
 			Manager: WindowManager?,            -- z-order/focus group (default Manager.default)
 			Style: Style?,
-			Modifier: FrameModifier?,           -- extra root-frame styling (inline props still win)
+			Modifier: ModifierInto<Frame>?,           -- extra root-frame styling (inline props still win)
 		}
 
-	FILLING THE HEIGHT [2026-10-20, Studio-confirmed]: give one child `D.UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill })`
+	FILLING THE HEIGHT [2026-10-20, Studio-confirmed]: give one child `q.Elem "UIFlexItem" ({ FlexMode = Enum.UIFlexMode.Fill })`
 	and it takes the height the other children leave (the content list is a UIListLayout): a 300 x 300 window gave a
 	20 px-tall fill 258 px, and it follows a resize; when the window is smaller than the children it shrinks below its
 	own Size instead of scrolling. `AvailableSize` (an output Source the window writes; named after ImGui's content region

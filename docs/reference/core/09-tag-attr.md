@@ -21,7 +21,6 @@ description: 숫자 키 값 객체 둘 — 태그 집합과 속성 그룹, AttrK
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
 local QuadTypes = require("@game/ReplicatedStorage/roblox_packages/quad_types") -- 설정 모듈이 다시 내보내지 않는 타입(`QuadTypes.None` 등)
-local D = q.Declaration
 ```
 
 ---
@@ -87,7 +86,7 @@ Tag: setmetatable<{ Merged: (...TagMarker?) -> Tag }, { __call: (self: any, ...T
 
 ```luau
 local interactive = q.Tag("clickable", "focusable")
-local button = D.TextButton {
+local button = q.Elem "TextButton" {
     interactive,
     q.Tag("primary"),
     Text = "확인",
@@ -285,9 +284,9 @@ __call: (self: any, ...any) -> Attr
 
 ```luau
 local hp = q.Source<<number | QuadTypes.None>>(100)
-local stats = D.Frame {
+local stats = q.Elem "Frame" {
     q.Attr({ Hp = hp, Name = "hero" }),
-    D.TextLabel { Text = "체력" },
+    q.Elem "TextLabel" { Text = "체력" },
 }
 hp:Set(80)      -- 속성 Hp가 따라 바뀐다
 hp:Set(q.None)  -- 속성 Hp가 삭제된다
@@ -372,7 +371,7 @@ type AttrKeyObject = { read Name: string }
 
 **반환** — 그 이름의 키 객체.
 
-**동작** — 속성 **단일 키** 프리미티브입니다. props의 **문자 키 자리**에 놓아 씁니다 — `D.Frame { [q.AttrKey("Hp")] = 100 }`.
+**동작** — 속성 **단일 키** 프리미티브입니다. props의 **문자 키 자리**에 놓아 씁니다 — `q.Elem "Frame" { [q.AttrKey("Hp")] = 100 }`.
 
 - **값 타입을 모르는 무타입 프리미티브입니다.** 값 검증은 백엔드의 `setAttr` 몫입니다. 패밀리 슈가(`StringAttr` 등)가 못 덮는 엔진 고유 타입(`Color3`, `UDim2`, `Instance` …)이 이 키의 자리입니다.
 - 이름별 **weak 캐시**를 지납니다 — 무언가가 붙들고 있는 동안 `q.AttrKey("Hp") == q.AttrKey("Hp")`가 성립합니다.
@@ -384,13 +383,13 @@ type AttrKeyObject = { read Name: string }
 - `Quad0001 AttrKey: name must be a non-empty string`
 
 :::caution
-**문자 키 형태는 런타임 전용입니다.** `D.Frame { [q.AttrKey("Hp")] = v }`는 정상 동작하지만, `--!strict` 신 솔버에서는 생성된 props 타입의 배열 인덱서에 걸려 키와 값 둘 다 타입 에러가 납니다(테이블 타입은 인덱서를 하나만 가질 수 있어 열어줄 방법이 없습니다). strict 모듈에서는 숫자 키 슈가 — [`q.Attr`](#qattr)이나 [`q.StringAttr`](#qstringattrname-value) 계열 — 을 쓰세요.
+**문자 키 형태는 런타임 전용입니다.** `q.Elem "Frame" { [q.AttrKey("Hp")] = v }`는 정상 동작하지만, `--!strict` 신 솔버에서는 생성된 props 타입의 배열 인덱서에 걸려 키와 값 둘 다 타입 에러가 납니다(테이블 타입은 인덱서를 하나만 가질 수 있어 열어줄 방법이 없습니다). strict 모듈에서는 숫자 키 슈가 — [`q.Attr`](#qattr)이나 [`q.StringAttr`](#qstringattrname-value) 계열 — 을 쓰세요.
 :::
 
 **예제**
 
 ```luau
-local marker = D.Frame {
+local marker = q.Elem "Frame" {
     [q.AttrKey("SpawnColor")] = Color3.new(1, 0, 0), -- 패밀리가 못 덮는 엔진 타입
 }
 ```
@@ -427,12 +426,12 @@ type AttrSugar<T> = (name: string, value: T | StateMarker<(T | None)?> | None) -
 
 ```luau
 local label = q.Source("hero")
-local card = D.Frame {
+local card = q.Elem "Frame" {
     q.StringAttr("Label", label),
     q.StringAttr("Kind", "unit"),
 }
 label:Set("villain")                                    -- 속성 Label이 따라 바뀐다
-local blank = D.Frame { q.StringAttr("Label", q.None) } -- 값 자리의 None: 그 속성을 지운다
+local blank = q.Elem "Frame" { q.StringAttr("Label", q.None) } -- 값 자리의 None: 그 속성을 지운다
 ```
 
 ## `q.NumberAttr(name, value)`
@@ -463,7 +462,7 @@ BooleanAttr: AttrSugar<boolean>
 
 ```luau
 local hp = q.Source(100)
-local alive = D.Frame {
+local alive = q.Elem "Frame" {
     q.NumberAttr("Hp", hp),
     q.BooleanAttr("Friendly", true),
 }

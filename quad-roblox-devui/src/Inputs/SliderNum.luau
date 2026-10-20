@@ -10,7 +10,7 @@
 			Format: string?,                       default "%d" for an integral Step, else "%.3f"
 			OnChange: ((n: number) -> ())?,        after Value changed through the UI
 			Disabled: (boolean | State<boolean>)?,
-			Style: Style?, Modifier: FrameModifier?, TrackModifier: FrameModifier?, TrackSpread: Spread<Frame>?,
+			Style: Style?, Modifier: ModifierInto<Frame>?, TrackModifier: ModifierInto<Frame>?, TrackSpread: SpreadInto<Frame>?,
 		}
 
 	Press / drag anywhere on the track: the grab centre follows the pointer (x taken from the input position against

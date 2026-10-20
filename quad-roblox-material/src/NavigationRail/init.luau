@@ -14,7 +14,7 @@
 	    Material.WideNavigationRail<<string>>({
 	        State = rail,
 	        Header = Material.IconButton({ Icon = Material.Icons.asset("menu") or "", TouchTarget = true, OnClick = rail.Toggle,
-	            Modifier = q.Declaration.Modifier.TextButton():Position(UDim2.fromOffset(24, 0)) }),
+	            Modifier = q.Modifier "TextButton"():Position(UDim2.fromOffset(24, 0)) }),
 	        Selected = page,
 	        Items = { { Key = "home", Label = "Home", Icon = "rbxassetid://…" }, { Key = "search", Label = "Search", Icon = "…" } },
 	    })

@@ -11,7 +11,7 @@
 			RowHeight: (number | State<number>)?,      -- px; default: style FrameHeight rounded
 			Overscan: number?,                         -- extra rows kept above and below the viewport (default 2)
 			ScrollToRow: Source<number?>?,             -- write a row index to scroll it into view (see below)
-			Style: Style?, Modifier: ScrollingFrameModifier?,
+			Style: Style?, Modifier: ModifierInto<ScrollingFrame>?,
 		}                                              -> ScrollingFrame
 
 	HOW IT DIFFERS from the other widgets
@@ -30,14 +30,14 @@
 	Slots are assigned by RowWindow.assign: a slot whose index is still in view keeps it, only freed slots move.
 
 	ENGINE SIDE. AutomaticCanvasSize is None (the canvas height is Count * RowHeight, set here) and ScrollingDirection
-	is Y. The viewport size and scroll position come from `q.OnChange("AbsoluteWindowSize" / "CanvasPosition")`, so
+	is Y. The viewport size and scroll position come from `q.OnChange "ScrollingFrame" "AbsoluteWindowSize"` / `"CanvasPosition"`, so
 	quad ties those connections to the instance: `q.dispose` / Destroy closes them, and this module opens none itself.
 	The real size is known only after layout, so there are no rows before the first layout pass.
 
 	Size is `UDim2.fromScale(1, 1)` of its parent. Inside a Window, wrap it in a Frame that takes the height left over
 	(a Modifier cannot carry the UIFlexItem child — Quad0059):
-		D.Frame({ Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1,
-			D.UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill }), Devui.VirtualRows({ ... }) })
+		q.Elem "Frame" ({ Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1,
+			q.Elem "UIFlexItem" ({ FlexMode = Enum.UIFlexMode.Fill }), Devui.VirtualRows({ ... }) })
 	(Studio 2026-10-20: 10,000 rows in a 300 x 300 window made 20 row slots; wheel scrolling rebound them, none made.)
 ]]
 

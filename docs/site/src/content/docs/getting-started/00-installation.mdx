@@ -1,6 +1,6 @@
 ---
 title: "00. 설치"
-description: "pesde와 Rojo로 Quad를 프로젝트에 깔고, 타입 검사 플래그 넷을 편집기와 CI에 넣습니다"
+description: "pesde와 Rojo로 Quad를 프로젝트에 깔고, 새 솔버 플래그와 권장 한도 플래그를 편집기와 CI에 넣습니다"
 ---
 
 import { Quiz, QuizResults } from 'starlight-quiz/components';
@@ -49,7 +49,7 @@ quad_types = { name = "qwreey/quad_types", version = "^3.0.0" }
 
 셋을 **직접** 적는 데는 각각 이유가 있습니다.
 
-- **`quad_roblox`** — Roblox 백엔드. 여러분이 실제로 쓰는 `D`가 여기서 옵니다.
+- **`quad_roblox`** — Roblox 백엔드. 여러분이 실제로 쓰는 `q.Elem`·`q.Modifier` 등이 여기서 옵니다.
 - **`quad_base`** — `quad_roblox`는 이걸 **개발 의존성**으로만 잡습니다(런타임에는 모듈 인스턴스를 인자로 받으므로 require하지 않습니다). 개발 의존성은 소비자에게 전파되지 않으니 직접 적어야 합니다.
 - **`quad_types`** — 타입만 든 패키지입니다. [01장](/getting-started/01-setup/)의 설정 모듈이 이걸 require해 타입을 다시 내보내는데, **직접 의존성으로 적어야** 최상위에 링커가 생겨 그 require가 풀립니다.
 
@@ -112,16 +112,18 @@ roblox_packages/              → ReplicatedStorage/roblox_packages
 
 ### 3단계: 타입 검사 플래그
 
-Quad를 쓰는 코드는 **아래 네 Luau 플래그가 전부 켜져 있어야** 타입 검사가 돕니다.
+Quad의 타입은 Luau의 **새 솔버**로만 검사됩니다. 그 플래그 하나는 필수이고, 한도 플래그 셋은 권장입니다.
 
 | 플래그 | 값 | 없으면 |
 |---|---|---|
-| `LuauSolverV2` | `true` | quad 소스의 타입 검사가 실패합니다 — `TypeError: read keyword is illegal here` |
-| `LuauTarjanChildLimit` | `160000` | `D.Frame { Name = "x" }` 한 줄만 있어도 `TypeError: Internal error: Code is too complex to typecheck!`로 죽습니다(편집기에서는 에러 없이 타입이 `*error-type*`으로 무너집니다). 생성된 `D`의 프로퍼티 유니언이 크기 때문입니다 |
-| `LuauSubtypingIterationLimit` | `100000` | 컴포넌트가 커질 때 같은 이유로 필요해집니다 |
-| `LuauTypeInferIterationLimit` | `1000000` | 〃 |
+| `LuauSolverV2` | `true` | **필수.** quad 소스의 타입 검사가 실패합니다 — `TypeError: read keyword is illegal here` |
+| `LuauTarjanChildLimit` | `160000` | 권장. 아래 한 가지 자리가 `Code is too complex to typecheck!`로 무너집니다 |
+| `LuauSubtypingIterationLimit` | `100000` | 권장(위와 같이 넣습니다) |
+| `LuauTypeInferIterationLimit` | `1000000` | 권장(위와 같이 넣습니다) |
 
-편집기와 CI 양쪽에 같은 값을 넣으세요.
+**[2026-10-20 실측]** 3.4.0부터 생성자와 Modifier의 타입은 여러분의 검사기가 가진 Roblox 클래스 타입에서 타입 함수가 계산합니다. 그래서 한도 플래그가 없어도 대부분의 코드가 검사됩니다(이 저장소의 킷 둘, 330파일이 깨끗했습니다). 기본 한도에서 무너지는 것으로 확인된 자리는 하나입니다 — **조상 클래스 Modifier의 타입을 주석에 적고 값을 그 자리로 넘길 때**(`local m: Modifier<GuiObject> = q.Modifier "GuiObject" ()`, 파라미터 `m: Modifier<GuiButton>`)입니다. 구체 클래스(`Modifier<Frame>`)·입력 자리 마커(`ModifierInto<C>`)·주석 없는 추론은 기본 한도에서도 됩니다. 한도 플래그 셋을 넣으면 그 자리도 검사됩니다.
+
+Studio의 스크립트 분석은 플래그를 바꿀 수 없으니, Studio에서도 검사받아야 하는 코드라면 그 자리를 피하세요 — 입력 자리는 `ModifierInto<C>`로 받고, 지역 변수는 주석 없이 둡니다. 편집기와 CI에는 같은 값을 넣으세요.
 
 #### VS Code — Luau Language Server 확장
 
@@ -146,7 +148,7 @@ Quad를 쓰는 코드는 **아래 네 Luau 플래그가 전부 켜져 있어야*
 - **확장은 기본으로 Roblox가 공개한 Luau 플래그를 받아와 적용합니다**(`luau-lsp.fflags.sync`). `override`가 그 뒤에 적용되므로 위 값이 이깁니다.
 - 설정을 바꾸면 확장이 언어 서버를 다시 띄우라는 알림을 냅니다. 알림에서 다시 띄우거나 VS Code 창을 다시 로드하세요(명령 팔레트 → `Developer: Reload Window`).
 
-적용됐는지는 `D.Frame { Name = "x" }` 한 줄로 확인할 수 있습니다. 편집기에서는 한도 플래그가 빠져도 **눈에 띄는 에러 없이 조용히 무너지는 경우가 많습니다** — `D.`나 props 안에서 자동완성이 안 나오거나, 마우스를 올린 타입이 `*error-type*`으로 보이면 설정이 먹지 않은 것입니다. CLI에서는 같은 상황이 "too complex to typecheck" 에러로 드러납니다.
+적용됐는지는 `q.Elem "Frame" { Name = 5 }` 한 줄로 확인할 수 있습니다 — `Name`에 숫자를 넣은 자리가 타입 에러로 잡히면 새 솔버가 켜진 것입니다. 편집기에서는 한도에 걸린 자리가 **눈에 띄는 에러 없이 조용히 무너지는 경우가 많습니다** — props 안에서 자동완성이 안 나오거나, 마우스를 올린 타입이 `*error-type*`으로 보이면 그 자리가 한도에 걸린 것입니다. CLI에서는 같은 상황이 "too complex to typecheck" 에러로 드러납니다.
 
 #### CI와 터미널 — `luau-lsp analyze`
 
@@ -187,13 +189,13 @@ luau-lsp analyze \
 
 <Quiz title={"타입 검사 플래그"}>
 
-`D.Frame { Name = "x" }` 한 줄을 적었더니, CLI 검사는 `Code is too complex to typecheck!`로 죽고 VS Code에서는 에러 없이 자동완성이 안 나오며 타입이 `*error-type*`으로 보입니다. 무엇이 빠진 것인가요?
+`local m: Modifier<GuiObject> = q.Modifier "GuiObject" ()` 한 줄에서 CLI 검사가 `Code is too complex to typecheck!`로 죽고, 같은 파일의 `q.Elem "Frame" { … }`들은 멀쩡합니다. 무엇을 바꾸면 되나요?
 
-- [ ] `LuauSolverV2=true` — 새 솔버가 꺼져 있을 때 나는 증상입니다
-- [x] `LuauTarjanChildLimit` 같은 한도 플래그 — 생성된 `D`의 프로퍼티 유니언이 커서 한도를 올려야 합니다
-- [ ] 아무것도 빠지지 않았습니다 — VS Code 확장이 한도를 넉넉히 잡아 두므로 편집기 쪽은 CLI의 에러와 무관합니다
+- [ ] `LuauSolverV2=true`를 넣습니다 — 새 솔버가 꺼져 있을 때 나는 증상입니다
+- [x] 한도 플래그 셋을 넣거나, 그 자리의 주석을 빼고 추론에 맡깁니다(입력 자리라면 `ModifierInto<C>`로 받습니다)
+- [ ] `q.Modifier "GuiObject"`를 `q.Modifier "Frame"`으로 바꿔야 합니다 — 조상 클래스의 Modifier는 만들 수 없습니다
 
-생성된 `D`의 프로퍼티 유니언이 크기 때문에, 한도를 올리지 않으면 한 줄짜리 선언에서도 검사가 무너집니다. CLI는 그걸 에러로 알려 주지만 편집기는 조용히 타입을 잃는 쪽으로 드러날 뿐 원인은 같고, VS Code 확장도 한도를 따로 넓혀 두지 않으니 `luau-lsp.fflags.override`에 넣어야 합니다. `LuauSolverV2=true`가 빠졌을 때 나는 것은 `read keyword is illegal here`입니다.
+조상 클래스 Modifier의 타입을 주석으로 비교하는 자리가 기본 한도를 넘는 것으로 확인된 유일한 자리입니다. 한도 플래그 셋을 넣으면 검사되고, 플래그를 바꿀 수 없는 Studio에서는 주석을 빼거나 입력 자리를 마커로 받아 피합니다. 조상 클래스의 Modifier 자체는 만들 수 있고 쓸모 있습니다 — "GuiObject라면 무엇에든 붙는 스타일"이 그것입니다. `LuauSolverV2=true`가 빠졌을 때 나는 것은 `read keyword is illegal here`입니다.
 
 </Quiz>
 

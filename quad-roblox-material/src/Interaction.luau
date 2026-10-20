@@ -9,7 +9,7 @@
 
 	    local ix = Interaction.new({ Disabled = props.Disabled })
 	    local layerOpacity = ix.Hovered:Compute(function(self, _, pressed) ... end, ix.Pressed)
-	    return D.TextButton {
+	    return q.Elem "TextButton" {
 	        ix.Hook,                                   -- <- connects MouseEnter/Leave, InputBegan/Ended, SelectionGained/Lost
 	        Activated = props.OnClick,
 	        ...

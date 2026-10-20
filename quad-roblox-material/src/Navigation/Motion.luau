@@ -8,7 +8,7 @@
 	together, and there is ONE `RunService.Heartbeat` connection per animating progress, none at rest.
 
 	    local value, effect = Motion.progress(selected, Tokens.Motion.Duration.Short4)
-	    D.Frame { effect, Size = value:Compute(function(self) return UDim2.fromOffset(56 * self:Get(), 32) end) }
+	    q.Elem "Frame" { effect, Size = value:Compute(function(self) return UDim2.fromOffset(56 * self:Get(), 32) end) }
 
 	`value` starts AT the target (a mount never animates). A change animates from the current value to the new end (0 or 1)
 	over `duration * |distance|` (an interrupted motion turns around from where it is), with the kit's Standard easing

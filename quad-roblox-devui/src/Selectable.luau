@@ -4,7 +4,7 @@
 
 		Selectable          { Text: string | State<string>, Selected: Source<boolean>?,   -- toggle: a click flips it
 		                      OnClick: (() -> ())?, Disabled: (boolean | State<boolean>)?, Hooks: { any }?,
-		                      Style: Style?, Modifier: TextButtonModifier? }
+		                      Style: Style?, Modifier: ModifierInto<TextButton>? }
 		SelectableOption<T> { Text, Value: Source<T>, Option: T, OnClick?, Disabled?, Hooks?, Style?, Modifier? }
 		                      group mode (exactly like RadioButton): the row is selected while `Value:Get() == Option`, a
 		                      click sets `Value` to `Option`; several rows share one `Value` Source

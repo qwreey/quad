@@ -10,12 +10,12 @@
 	USAGE
 		local Overlay = require("./Overlay")
 		local overlay = Overlay.new()            -- one per ScreenGui (the layer dies with it), or Overlay.getDefault()
-		D.ScreenGui { ResetOnSpawn = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, windowsFrame, overlay.Layer }
+		q.Elem "ScreenGui" { ResetOnSpawn = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, windowsFrame, overlay.Layer }
 		-- ZIndexBehavior = Sibling is REQUIRED: a ScreenGui made in code defaults to Global, where the layer's ZIndex
 		-- does not lift its popups (their own ZIndex is 1) above a window whose root has a higher rank
 
 		local popup = overlay:Open({
-			Content = D.Frame { ... },           -- a quad-made element; the overlay owns it from now on
+			Content = q.Elem "Frame" { ... },           -- a quad-made element; the overlay owns it from now on
 			Position = Vector2.new(x, y),        -- absolute screen position (same space as AbsolutePosition)
 			Anchor = Vector2.new(0, 0),          -- which point of Content sits at Position (default 0,0)
 			CloseOnClickOutside = true,          -- default true; false for tooltips (no catcher, input falls through)

@@ -22,12 +22,12 @@ const countText: q.State<string> = count:Compute(function(c)
     return `카운트: {c:Get()}`
 end)
 
-const card = D.Frame {
+const card = q.Elem "Frame" {
     Size = UDim2.fromOffset(240, 160),
     BackgroundColor3 = Color3.fromRGB(35, 35, 42),
     UICorner = 12,
 
-    D.TextLabel {
+    q.Elem "TextLabel" {
         Position = UDim2.fromOffset(16, 0),
         Size = UDim2.new(1, -32, 0, 48),
         BackgroundTransparency = 1,
@@ -53,7 +53,7 @@ const card = D.Frame {
 
 ```luau
     -- … card의 숫자 키 자리, 라벨 바로 아래에 이어집니다
-    D.TextButton {
+    q.Elem "TextButton" {
         Size = UDim2.new(1, -40, 0, 42),
         Position = UDim2.new(0, 20, 1, -62),
         BackgroundColor3 = Color3.fromRGB(0, 162, 255),
@@ -122,5 +122,5 @@ const card = D.Frame {
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `D` — 문자 키](../reference/roblox/02-elem.md#문자-키--프로퍼티와-이벤트) — 이벤트 값 자리에 올 수 있는 것, 콜백이 아닌 값을 넣었을 때의 에러
+- [레퍼런스: `q.Elem` — 문자 키](../reference/roblox/02-elem.md#문자-키--프로퍼티와-이벤트) — 이벤트 값 자리에 올 수 있는 것, 콜백이 아닌 값을 넣었을 때의 에러
 - [04. RemoteEvent와 엔진 입력을 상태로 브릿징하기](../how-to/04-network-and-input-bridge.md) — `RemoteEvent`·`UserInputService`를 `Source:Set`으로 격리하기

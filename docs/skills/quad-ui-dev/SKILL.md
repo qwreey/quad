@@ -41,7 +41,7 @@ of guessing.**
   - `reference/core/01`…`11` (module, Source, State, Store, Observer·Effect, Slot, Ref, Modifier,
     Tag·Attr, sentinels, predicates), `reference/sugar/01`…`06` (Context, Operator,
     Debounce·Throttle, lifecycle hooks, Fallback·Traceback, Blocker), `reference/roblox/01`…`06`
-    (install, `Declaration` (`D` in examples), `D.Modifier`, Claim·`D.Mapper`, OnChange, Tween·Animate), `reference/extend/01`·`02`
+    (install, `q.Elem` + `q.ForClasses`, `q.Modifier`·`q.Spread`, Claim·`q.Mapper`, OnChange·OnEvent·Out, Tween·Animate), `reference/extend/01`·`02`
     (backend provider / dispatch handler contracts). One type per page: signature → args → return →
     example → behavior → **error table (verbatim strings)** → related.
   - `how-to/01`…`10` — recipes: component boundary conventions, form validation, long lists,
@@ -74,25 +74,24 @@ layout if it differs.
 --!strict
 -- install path depends on the project layout
 local Quad = require(<quad-base module>)              -- already a live instance
-local RobloxModule = require(<quad-roblox module>)   -- value + the ONLY public path to generated types (RobloxModule.TextButtonModifier, .Field<T>, …)
+local RobloxModule = require(<quad-roblox module>)   -- value + the ONLY public path to generated types (RobloxModule.Modifier<TextButton>, .Field<T>, …)
 local QuadRoblox = RobloxModule.QuadRoblox
 local QuadTypes = require(<quad-types module>)        -- types only
-local q = Quad:UseProvider(QuadRoblox)                -- installs Declaration / OnChange / Out / Animate / Tween / isTween
-local D = q.Declaration
+local q = Quad:UseProvider(QuadRoblox)                -- installs Elem / Modifier / Spread / Mapper / OnChange / OnEvent / Out / ForClasses / Animate / Tween / isTween
 ```
 
 Snippets below assume this prologue.
 
-- `require(quad-base)` **is** the default instance; `Quad.New()` only for isolated ones.
-- Mounting the root: build a `D.ScreenGui { ResetOnSpawn = false, … }` in a client script and assign
+- `require(quad-base)` **is** the default instance; `Quad.NewModule()` only for isolated ones.
+- Mounting the root: build a `q.Elem "ScreenGui" { ResetOnSpawn = false, … }` in a client script and assign
   `screen.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")` from outside — `Parent` is never a prop
   (`getting-started/01-setup` has the full entry script). Never `q.Claim` the `PlayerGui` itself (§5).
 - `UseProvider` is one slot per module: a *different* provider function errors
   (`Quad0213 UseProvider: this Quad module already has a provider`); the same one is a no-op.
 - Types come from `quad-types` (`QuadTypes.State<T>`, `Source<T>`, `Slot<T>`, `Store<T>`,
-  `Provider<T>`, `Context`) and, for the generated `Declaration` types, the **quad-roblox module root**
-  (`RobloxModule.FrameModifier`, `RobloxModule.IntoTextButton`, `RobloxModule.Field<T>`, `RobloxModule.OnChangeFn`, …
-  — the generated module itself has no public require path; an unbound `SomeName.X` type reference is
+  `Provider<T>`, `Context`) and, for the backend surface types, the **quad-roblox module root**
+  (`RobloxModule.Modifier<Frame>`, `RobloxModule.ModifierInto<TextButton>`, `RobloxModule.SpreadInto<TextBox>`, `RobloxModule.Props<Frame>`, `RobloxModule.ModifierField<T>`, …
+  — computed by type functions from the checker's own Roblox class types (3.4.0; no generated module); an unbound `SomeName.X` type reference is
   **silently unchecked** in strict, so a typo here removes the check without a diagnostic). **`q.State<T>` does not exist on the module value itself** — `q` is a value, not a type (the `q.State<T>` form in the reference works only because the setup module re-exports the types under its own name).
 
 ### 1.2 Core Ontological Grammar
@@ -103,8 +102,10 @@ Snippets below assume this prologue.
 | **`State<T>`** | Return of `:Compute`/`:Apply`/`:Gate` | Read-only derived | `:Get()`, `:Compute(fn, ...deps)`, `:Depend(...)`, `:Apply(f)`, `:Observer(fn)` (see 6.3). |
 | **`Store`** | `q.Store{ key = q.Source(v) }` | Bag of Sources | Reset per field: `store.Field:Set(v)`. |
 | **`Context`** | `q.Context()` | Explicit value bag | Keys are `q.Context.Provider(name?)`. Passed through props — no tree walk. |
-| **`Slot`** | `q.Slot<<T>>(initial?)` | Dynamic child container | `:Add(el, index?)`, `:Remove(index)`, `:Replace`, `:Splice`, `:Clear`, `:List(...)`, `:Single(...)`, `:WhenIdle(fn)` (CRUD a Slot from a callback that runs inside its own or a nested Slot's insert/remove — `q.OnDestroyed`, `q.OnChange("Parent")`; a direct CRUD there is `Quad0167`). DOMless. |
-| **`Modifier`** | `q.Modifier{...}` / `D.Modifier.<Class>()` | Immutable property bag | Chaining clones (`mod:Size(...)`). Later array entry wins. |
+| **`Slot`** | `q.Slot<<T>>(initial?)` | Dynamic child container | `:Add(el, index?)`, `:Remove(index)`, `:Replace`, `:Splice`, `:Clear`, `:List(...)`, `:Single(...)`, `:WhenIdle(fn)` (CRUD a Slot from a callback that runs inside its own or a nested Slot's insert/remove — `q.OnDestroyed`, `q.OnChange "Frame" "Parent"`; a direct CRUD there is `Quad0167`). DOMless. |
+| **`Elem`** | `q.Elem "Frame" { ... }` (hoist: `local Frame = q.Elem "Frame"`) | Instance constructor | Class first, then one props table. Classes outside the built-in GUI map go through `q.ForClasses<<Map>>()` (keep a map under ~100 classes). |
+| **`Modifier`** | `q.Modifier "Class" ()` / `q.Raw.Modifier{...}` (untyped) | Immutable property bag | Chaining clones (`mod:Size(...)`). Later array entry wins. Input slot type `ModifierInto<C>` (tag marker, no methods). |
+| **`Spread`** | `q.Spread "Class" { ... }` | One-shot element-table fragment | Props, events, Refs, descriptors, children. Earlier Spread wins; `:Append(otherSpread)` returns nothing; locked once placed. Input slot type `SpreadInto<C>`. |
 | **`Ref<T>`** | `q.Ref<<Frame?>>(nil)`, `q.PreRef(...)`, `q.PostRef(...)` | Instance box | The initial value is a required argument at the type level (`Ref: <T>(default: T)`; the runtime does not check). `ref.Value` may be nil; `ref:Unwrap()` errors when empty; `:Wait()` awaits the NEXT `:Set`. |
 | **`Tween<T>`** | `q.Tween{ Value = v, Time = 0.3 }` | Value container | `Value` must be plain (never a State). `Override`, `Dedup`. |
 | **`Animate`** | `q.Animate{ Time = 0.2, ... }` | Applicative sugar | `state:Apply(q.Animate{ Time = 0.2 })`. |
@@ -126,9 +127,11 @@ as-is, and its errors (not disposable, still held elsewhere — e.g. a `Debounce
 seat) are raised AFTER the write. Returns self.
 
 Values that belong in the **array part** of a props table, never as hash keys:
-`Ref`/`PreRef`/`PostRef`, `Observer`, `Effect`, `Slot`, `Modifier`, `Tag`, `Attr`,
-`q.OnChange(...)`, `q.Out(...)`, `q.OnCreated/OnRendered/OnDestroyed(...)`, and child instances.
-`q.Out("Text", src)` is the write-back sugar over `OnChange`: put it next to the plain `Text = src`
+`Ref`/`PreRef`/`PostRef`, `Observer`, `Effect`, `Slot`, `Modifier`, `Spread`, `Tag`, `Attr`,
+`q.OnChange "Class" "Name" (fn)`, `q.OnEvent "Class" "Name" (fn)`, `q.Out "Class" "Name" (src)`, `q.OnCreated/OnRendered/OnDestroyed(...)`, and child instances.
+Same key in several places: inline hash key > earlier `Spread` > later `Spread` > later `Modifier` > earlier `Modifier`
+(Spread: first placed wins — the opposite of JS object spread; Modifier: last wins).
+`q.Out "TextBox" "Text" (src)` is the write-back sugar over `OnChange`: put it next to the plain `Text = src`
 binding (in and out stay two visible lines); `src` must be a `Source` — a `:Compute` State has no `Set`.
 `AttrKey` is the exception — a hash key: `[q.AttrKey("Hp")] = hpState` (see 6.2).
 
@@ -212,13 +215,13 @@ export type ButtonProps = {
     Text: string | QuadTypes.State<string>,
     -- the handler type must match the engine signature exactly, arity included
     OnClick: (inputObject: InputObject, clickCount: number) -> (),
-    Modifier: any?,   -- typed boundary: RobloxModule.TextButtonModifier? (plug it in as-is). RobloxModule.IntoTextButton?
+    Modifier: any?,   -- typed boundary: RobloxModule.Modifier<TextButton>? (plug it in as-is). RobloxModule.ModifierInto<TextButton>?
                       -- accepts parent-class modifiers too, but then plug `props.Modifier:AsTextButton()` — the interface
                       -- type itself is NOT a valid array-part value (strict rejects it)
 }
 
 local function Button(props: ButtonProps)
-    return D.TextButton {
+    return q.Elem "TextButton" {
         -- 1. inline properties (highest priority)
         Text = props.Text,
         AutoButtonColor = true,
@@ -237,7 +240,7 @@ the array walk, and the drive dies inside bookkeeping rather than at the author'
 
 A component that takes children receives a **`Slot`** (the convention in `how-to/01-component-conventions`):
 declare `read Children: QuadTypes.Slot<Instance>?` in the props type, put `props.Children or q.None` in the
-array part, and callers pass `Children = q.Slot<<Instance>>({ D.TextLabel { … }, … })`. `initial` is a plain
+array part, and callers pass `Children = q.Slot<<Instance>>({ q.Elem "TextLabel" { … }, … })`. `initial` is a plain
 array — braces even for one element (a bare element raises `Quad0176`) — and a Slot built with `initial`
 (even `{}`) is a manual-CRUD Slot, so `:List`/`:Single` cannot be installed on it later. Do not forward a
 `{ table.unpack(children) }` array in new code; that shape is only the v1 translation in `references/v1-migration.md`.
@@ -256,12 +259,12 @@ array — braces even for one element (a bare element raises `Quad0176`) — and
 -- `{ Size = "x" }`, `{ Activated = fn }` all pass strict. At runtime: `{ Sise = 1 }` → Quad0076 at drive,
 -- `{ Activated = fn }` → Quad0063 when the Modifier is built, `{ Size = "x" }` → quad does not check value
 -- types (the engine assignment rejects it — not measured on a device). Prefer the chain form in generated code.
-local buttonMod = D.Modifier.TextButton():BackgroundTransparency(0.5):Text("Go")
-local sameRuntimeValue = D.Modifier.TextButton{ BackgroundTransparency = 0.5, Text = "Go" }
+local buttonMod = q.Modifier "TextButton" ():BackgroundTransparency(0.5):Text("Go")
+local sameRuntimeValue = q.Modifier "TextButton"{ BackgroundTransparency = 0.5, Text = "Go" }
 
-local base = D.Modifier.GuiObject():Visible(true)
+local base = q.Modifier "GuiObject" ():Visible(true)
 local checked   = base:AsTextButton():Text("ok")            -- CHECKED: one method per subclass
-local unchecked = base:As<<RobloxModule.TextLabelModifier>>()     -- UNCHECKED: caller asserts the type
+local unchecked = base:As<<RobloxModule.Modifier<TextLabel>>>()     -- UNCHECKED: caller asserts the type
 ```
 
 `:As<<T>>()` performs no ancestry check. Its optional string argument must be an already
@@ -270,7 +273,7 @@ registered Modifier class name (`Modifier.TypedFactory`/`DefineSubtype`); an unk
 `:As<Class>()` methods — their existence is the check.
 
 A reusable style is a plain function that returns a Modifier; annotate its return with the generated class
-type from the module root (`: RobloxModule.GuiObjectModifier`, `: RobloxModule.TextButtonModifier`, …).
+type from the module root (`: RobloxModule.Modifier<GuiObject>`, `: RobloxModule.Modifier<TextButton>`, …).
 Chain setters take a `State` as well as a plain value — `:BackgroundColor3(accentState)` stays reactive
 (the property follows every publish).
 
@@ -341,9 +344,9 @@ local function ItemList(itemsState: QuadTypes.State<{ ItemData }>)
 
         local titleSrc = q.Source(data.Title)
         local orderSrc = q.Source(ctx.Index)
-        local row = D.Frame {
+        local row = q.Elem "Frame" {
             LayoutOrder = orderSrc,
-            D.TextLabel { Text = titleSrc },
+            q.Elem "TextLabel" { Text = titleSrc },
         }
         return row, { titleSrc = titleSrc, orderSrc = orderSrc }
     end, function(item: ItemData)
@@ -385,10 +388,10 @@ the children come in as a `Slot` (`props.Children or None` in the numeric positi
 
 ```luau
 local function Modal(props: { read Open: q.Source<boolean>, read OnConfirm: () -> (), read Children: q.Slot<Instance>? }): Frame
-    return D.Frame {
+    return q.Elem "Frame" {
         Visible = props.Open,
         props.Children or None,
-        D.TextButton { Text = "OK", Activated = function() props.Open:Set(false); props.OnConfirm() end },
+        q.Elem "TextButton" { Text = "OK", Activated = function() props.Open:Set(false); props.OnConfirm() end },
     }
 end
 ```
@@ -404,30 +407,29 @@ mapping `:Single(state, updateFn)` for an overlay, write the type arguments (`sl
 
 `q.Claim(inst, descriptor)` takes an existing tree (a Studio prefab clone) into quad
 ownership and drives it. Both arguments are required; it returns the same instance.
-The descriptor is built from `D.Mapper` and maps children by `Name`.
+The descriptor is built from `q.Mapper` and maps children by `Name`.
 
 ```luau
-local M = D.Mapper
 
 local function InventoryCard(template: Instance, itemData: { Id: string, Name: string, IconId: string })
     local card = template:Clone()
 
-    return q.Claim(card, M.Frame(M.Root)({
-        M.TextLabel("ItemName")({ Text = itemData.Name }),
-        M.ImageLabel("Icon")({ Image = itemData.IconId }),
+    return q.Claim(card, q.Mapper "Frame" (q.MapperRoot)({
+        q.Mapper "TextLabel" ("ItemName")({ Text = itemData.Name }),
+        q.Mapper "ImageLabel" ("Icon")({ Image = itemData.IconId }),
         BackgroundTransparency = 0.25,          -- props of the claimed root
     }))
 end
 ```
 
-Mapped children take the same props as `D.*` calls (values, States, Modifiers, events),
-and freshly built `D.*` children may be mixed into the same array.
+Mapped children take the same props as `q.Elem` constructors (values, States, Modifiers, events),
+and freshly built `q.Elem` children may be mixed into the same array.
 
 ### Invariants of `Claim`
 
-1. **Claim-once**: an Instance can be claimed once. Instances made by `D.*` are already
-   claimed — `Quad0029 Claim: <instance> is already claimed by quad - a Declaration-made or
-   already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive
+1. **Claim-once**: an Instance can be claimed once. Instances made by `q.Elem` are already
+   claimed — `Quad0029 Claim: <instance> is already claimed by quad - an Instance quad made (q.Elem) or
+   already Claimed cannot be claimed again (leave it out of the descriptor and drive
    it separately, or dispose it and rebuild)`. This is `q.Claim`'s own pre-check (it runs
    before any claim in the descriptor tree is committed, root and mapped children alike).
    `Quad0225 nativeClaim: Instance is already claimed by quad` is the lower-level backend guard the
@@ -537,7 +539,7 @@ the way to drop `nil` from the type.
 local function InteractiveCard()
     local cardRef = q.PreRef<<TextButton?>>(nil)   -- strict needs the element type
 
-    return D.TextButton {              -- Frame has no Activated; use a GuiButton class
+    return q.Elem "TextButton" {              -- Frame has no Activated; use a GuiButton class
         cardRef,
         Activated = function()
             cardRef:Unwrap().BackgroundColor3 = Color3.fromRGB(255, 0, 0)
@@ -600,13 +602,13 @@ control handle; one handle per `:Apply`.
 
 ```luau
 local function ProfileCard(userId: number): TextLabel
-    return D.TextLabel { Text = `user {userId}` }   -- may error
+    return q.Elem "TextLabel" { Text = `user {userId}` }   -- may error
 end
 
 local SafeProfile = q.Fallback(ProfileCard, function(err)
-    return D.TextLabel { Text = "Failed to load profile" }
+    return q.Elem "TextLabel" { Text = "Failed to load profile" }
 end)
-local Traced = q.Traceback(ProfileCard, function(err, trace) return D.TextLabel { Text = trace } end)
+local Traced = q.Traceback(ProfileCard, function(err, trace) return q.Elem "TextLabel" { Text = trace } end)
 ```
 
 `err` is `any` — never assume it is a string. The base function must have a return type
@@ -625,8 +627,8 @@ the solver can see; `Fallback` returns `Ok | Err`.
 | Reading a `:Compute` dep without `:Get()` | No error for `#handle` (`0`) and `` `{handle}` `` (garbage); `handle .. ""` throws `attempt to concatenate table with string` | `dep:Get()` |
 | `Modifier` inside a `Source` | `Quad0182 Source: cannot hold a Modifier as a Source value` | Keep modifiers out of reactive values |
 | `q.Tween{ Value = someState }` | `Quad0250 Tween: Value must be a plain value, not a State` | `state:Apply(q.Animate{...})`, or build the Tween inside a `:Compute` |
-| `q.Claim(inst)` with one argument | `Quad0034 Claim: second argument must be a D.Mapper descriptor` | `q.Claim(inst, D.Mapper.<Class>(D.Mapper.Root)({...}))` |
-| Reusing a `D.Mapper` descriptor | `Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)` | Build a fresh descriptor per `Claim` |
+| `q.Claim(inst)` with one argument | `Quad0034 Claim: second argument must be a mapper descriptor (q.Mapper "Frame" (key) {…})` | `q.Claim(inst, q.Mapper "Class" (q.MapperRoot)({...}))` |
+| Reusing a `q.Mapper` descriptor | `Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)` | Build a fresh descriptor per `Claim` |
 | `A:Add(B); B:Add(A)` | With `q.debug` on, immediate error: `Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)`; with it off (next release on) the `Add` passes and the cycle is undefined behaviour (observed, not a contract: a later CRUD, mount or dispose of that tree dies in a stack overflow or an internal-invariant error, varying by operation) | Keep the slot graph acyclic; develop with `q.debug = true` |
 | `Parent = ...` as a prop | `Quad0076 Dispatch: no handler matched key Parent (value: Instance)` (the `value:` part is `typeof(v)`) | Set `.Parent` from outside after creation |
 | `Activated` on a `Frame` | `Quad0076 Dispatch: no handler matched key Activated (value: function)`; `FrameParam` has no such field in `--!strict` | Use `TextButton`/`ImageButton` |

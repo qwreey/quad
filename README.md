@@ -24,7 +24,7 @@ quad_roblox = { name = "qwreey/quad_roblox", version = "^3.0.0" }
 quad_types = { name = "qwreey/quad_types", version = "^3.0.0" }
 ```
 
-> **[2026-10-16 기준]** pesde 레지스트리에 `3.3.0`이 게시돼 있습니다(문서: <https://quad.qwreey.moe/>). 2.x는 v1(`master` 브랜치)의 번호입니다. Rojo 매핑(`roblox_packages` 하나)과 타입 검사 플래그 넷은 [설치 문서](./docs/getting-started/00-installation.md)를 보세요.
+> **[2026-10-16 기준]** pesde 레지스트리에 `3.3.0`이 게시돼 있습니다(문서: <https://quad.qwreey.moe/>). 2.x는 v1(`master` 브랜치)의 번호입니다. Rojo 매핑(`roblox_packages` 하나)과 타입 검사 플래그(새 솔버 필수·한도 셋 권장)는 [설치 문서](./docs/getting-started/00-installation.md)를 보세요.
 
 ## 첫 줄
 
@@ -36,11 +36,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 -- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 2절의 Rojo 매핑에 맞출 것)
 local Quad = require(ReplicatedStorage.roblox_packages.quad_base)
 local QuadRoblox = require(ReplicatedStorage.roblox_packages.quad_roblox).QuadRoblox
-local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
-local D = q.Declaration
+local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: q.Elem 등과 Tween/Animate가 생긴다
 ```
 
-`Quad:UseProvider(QuadRoblox)` 전에는 `Declaration`/`Tween`/`Animate`/`OnChange`가 없습니다. 이어지는 카운터 컴포넌트는 [02. 첫 화면](./docs/getting-started/02-first-screen.md)부터 이어지는 열여섯 장에서 한 걸음씩 만듭니다.
+`Quad:UseProvider(QuadRoblox)` 전에는 `q.Elem`·`q.Modifier`·`q.OnChange` 같은 백엔드 표면과 `Tween`/`Animate`가 없습니다. 이어지는 카운터 컴포넌트는 [02. 첫 화면](./docs/getting-started/02-first-screen.md)부터 이어지는 열여섯 장에서 한 걸음씩 만듭니다.
 
 ## 변경 이력과 버전
 

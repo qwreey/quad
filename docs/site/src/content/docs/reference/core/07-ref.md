@@ -14,7 +14,6 @@ description: 값 상자 프리미티브 — Ref/PreRef/PostRef, 콜백 등록, :
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.Declaration
 ```
 
 ## 공통 타입
@@ -67,7 +66,7 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 
 - `Quad0069 PreRef: already used - a PreRef is one-shot (used up once quad places it, fired or not); make a new one for each instance`
 
-[`Fallback`/`Traceback`](/reference/sugar/05-fallback-traceback/) 경계 **밖**에서 만들어 안에 넘긴 `Ref`류도 이 두 제약을 그대로 받습니다. 던진 뒤의 상태는 계약이 아니고, 아래는 지금의 관측입니다 — 던지기 전에 처리된 자리에 놓였다면 이미 위 두 에러 중 하나로 그대로는 다시 쓸 수 없고(`Ref`/`PreRef`), `PostRef`는 pre-pass가 그 항목에 닿은 뒤 본문 루프나 앞선 `PostRef` 콜백이 던졌으면 **배열에서 던진 항목보다 뒤에 놓였어도** 발화 없이 소진됩니다(`D.Frame { throwingRef, post }`의 `post` — 재사용은 `Quad0069`; 반대로 앞 자리 `PreRef` 콜백이 pre-pass 안에서 던지면 뒤 자리 `PostRef`는 소비되지 않아 다시 쓸 수 있습니다 — [2026-09-27 mock 관측]). `Ref`는 던진 고아 인스턴스(`ref.Value`)를 `q.dispose`하면 풀려 재사용할 수 있었고(관측 — 계약 아님, mock 확인 [2026-09-27 기준]), `PreRef`/`PostRef`는 일회용이라 재시도 때 새로 만들어야 합니다.
+[`Fallback`/`Traceback`](/reference/sugar/05-fallback-traceback/) 경계 **밖**에서 만들어 안에 넘긴 `Ref`류도 이 두 제약을 그대로 받습니다. 던진 뒤의 상태는 계약이 아니고, 아래는 지금의 관측입니다 — 던지기 전에 처리된 자리에 놓였다면 이미 위 두 에러 중 하나로 그대로는 다시 쓸 수 없고(`Ref`/`PreRef`), `PostRef`는 pre-pass가 그 항목에 닿은 뒤 본문 루프나 앞선 `PostRef` 콜백이 던졌으면 **배열에서 던진 항목보다 뒤에 놓였어도** 발화 없이 소진됩니다(`q.Elem "Frame" { throwingRef, post }`의 `post` — 재사용은 `Quad0069`; 반대로 앞 자리 `PreRef` 콜백이 pre-pass 안에서 던지면 뒤 자리 `PostRef`는 소비되지 않아 다시 쓸 수 있습니다 — [2026-09-27 mock 관측]). `Ref`는 던진 고아 인스턴스(`ref.Value`)를 `q.dispose`하면 풀려 재사용할 수 있었고(관측 — 계약 아님, mock 확인 [2026-09-27 기준]), `PreRef`/`PostRef`는 일회용이라 재시도 때 새로 만들어야 합니다.
 
 ## `q.Ref<<T>>(default)`
 
@@ -98,9 +97,9 @@ Ref: <T>(default: T) -> Ref<T>
 
 ```luau
 local boxRef = q.Ref<<Frame?>>(nil)
-local panel = D.Frame {
+local panel = q.Elem "Frame" {
     boxRef,                       -- 숫자 키: 만들어진 Frame이 여기 담긴다
-    D.TextLabel { Text = "제목" },
+    q.Elem "TextLabel" { Text = "제목" },
 }
 ```
 
@@ -120,15 +119,15 @@ PreRef: <T>(default: T) -> PreRef<T>
 
 일회용입니다 — 한 번 발화한 `PreRef`를 다른 인스턴스에 다시 놓으면 에러입니다. 인스턴스마다 새로 만드세요.
 
-`PreRef` 콜백 안에서 그 인스턴스를 `Destroy`하는 것은 정의되지 않은 동작입니다 — drive는 멈추지 않고 끝까지 돌아, 같은 인스턴스의 `PostRef`가 파괴된 인스턴스로 발화하고 `Declaration`도 파괴된 인스턴스를 돌려줍니다([2026-09-27 mock 관측 — 계약 아님]).
+`PreRef` 콜백 안에서 그 인스턴스를 `Destroy`하는 것은 정의되지 않은 동작입니다 — drive는 멈추지 않고 끝까지 돌아, 같은 인스턴스의 `PostRef`가 파괴된 인스턴스로 발화하고 요소 생성자도 파괴된 인스턴스를 돌려줍니다([2026-09-27 mock 관측 — 계약 아님]).
 
 **예제**
 
 ```luau
 local inputRef = q.PreRef<<TextBox?>>(nil)
-local form = D.Frame {
-    D.TextBox { inputRef },
-    D.TextButton {
+local form = q.Elem "Frame" {
+    q.Elem "TextBox" { inputRef },
+    q.Elem "TextButton" {
         Text = "지우기",
         Activated = function()
             inputRef:Unwrap().Text = "" -- pre-pass가 이미 채웠다
@@ -157,10 +156,10 @@ PostRef: <T>(default: T) -> PostRef<T>
 
 ```luau
 local doneRef = q.PostRef<<Frame?>>(nil)
-local card = D.Frame {
+local card = q.Elem "Frame" {
     doneRef,
-    D.TextLabel { Text = "A" },
-    D.TextLabel { Text = "B" },
+    q.Elem "TextLabel" { Text = "A" },
+    q.Elem "TextLabel" { Text = "B" },
 }
 doneRef:Callback(function(inst)
     if inst then
@@ -349,7 +348,7 @@ ref:Set("hello")
 ```
 
 :::caution
-- 대기자는 그 Ref를 채우는 **`:Set` 안에서** 곧바로 깨어나 그 자리에서 돕니다 — Declaration이 자리를 채우는 마운트 파동, 자리를 비우는 철거 파동 안입니다. 대기자 본문이 던지면 그 에러는 그 `:Set`(마운트/철거)로 되돌아갑니다 — `task.spawn`으로 띄웠어도 `:Wait()`에 멈춘 순간 그 격리는 사라집니다.
+- 대기자는 그 Ref를 채우는 **`:Set` 안에서** 곧바로 깨어나 그 자리에서 돕니다 — 요소 생성자가 자리를 채우는 마운트 파동, 자리를 비우는 철거 파동 안입니다. 대기자 본문이 던지면 그 에러는 그 `:Set`(마운트/철거)로 되돌아갑니다 — `task.spawn`으로 띄웠어도 `:Wait()`에 멈춘 순간 그 격리는 사라집니다.
 - 숫자 키 자리가 철거되면 `:Set(nil)`이 오므로 대기자는 **nil로도 깨어납니다.** `ref:Wait():Unwrap()`은 그때 던집니다 — 철거 뒤에 깨어날 수 있는 대기자는 `ref:Wait().Value`를 nil 검사하세요.
 - 영영 채워지지 않는 대기자는 그 Ref가 사는 동안 `Callbacks`에 남습니다(취소 수단 없음). 인스턴스가 파괴돼도 `:Set`이 오지 않으면 남습니다.
 - **다른 Ref의 `:Wait()`에 멈춰 있는 코루틴을 `:Wait(thread)`로 등록하는 것은 정의되지 않은 동작입니다.** `r2:Wait(thread)`로 등록한 코루틴이 실은 `r1:Wait()`에 멈춰 있었다면, `r2:Set`이 그 코루틴을 깨울 때 `r1:Wait().Value`가 **r1의 옛 값**을 조용히 돌려주고, r1에는 그 코루틴의 등록이 그대로 남습니다([2026-09-27 mock 실측 — 관측, 계약 아님]).
@@ -377,7 +376,7 @@ Unwrap: (self: Ref<T>) -> StripNil<T> -- StripNil은 T에서 nil 성분만 벗�
 
 ```luau
 local btnRef = q.PreRef<<TextButton?>>(nil)
-local button = D.TextButton {
+local button = q.Elem "TextButton" {
     btnRef,
     Text = "보내기",
     Activated = function()

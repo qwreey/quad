@@ -61,7 +61,7 @@ const total = n:Compute(function(s, previous, d)
     return s:Get() + d:Get()
 end, doubled)                       -- n으로부터 직접 + doubled를 거쳐 두 경로
 
-const label = D.TextLabel { Text = total:Compute(function(s) return tostring(s:Get()) end) }
+const label = q.Elem "TextLabel" { Text = total:Compute(function(s) return tostring(s:Get()) end) }
 print(calls, label.Text)  --> 1   "3"
 
 n:Set(5)
@@ -116,7 +116,7 @@ print(#log, log[2])  --> 2   60   (보류분 1회 재생, 최신값)
 -- (14장의 목록을 한 파일로 줄이고 updateFn 안에 updates += 1을 넣은 조각)
 print(updates)   --> 0   (:List를 걸어만 뒀을 때 — 아직 마운트 전)
 
-const board = D.Frame { list }
+const board = q.Elem "Frame" { list }
 print(updates)   --> 2   (키 둘)
 
 rows:Set({
@@ -140,7 +140,7 @@ print(updates)   --> 5   (a·b·c 세 번 — a·b는 prev를 돌려받는 싼 �
 -- (17장 §2의 numberColor에 Animate를 얹되, 옵션 Time만 State로 둔 경우)
 const time = q.Source(0.3)
 const animated = numberColor:Apply(q.Animate { Time = time })
-const label = D.TextLabel { TextColor3 = animated }
+const label = q.Elem "TextLabel" { TextColor3 = animated }
 
 time:Set(1.0)     -- 엔진 트윈이 새로 생기지 않는다
 count:Set(1)      -- 짝수에서 홀수로 색이 바뀌는 여기서 비로소 트윈이 하나 생기고, Time은 1.0이 쓰인다

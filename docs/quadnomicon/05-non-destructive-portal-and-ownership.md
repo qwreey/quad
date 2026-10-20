@@ -34,7 +34,6 @@ quad는 이 둘을 분리합니다:
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.Declaration
 ```
 
 ---
@@ -90,7 +89,7 @@ flowchart LR
 ### 맨 State를 넣으면 quad가 래퍼를 만든다
 
 ```luau
-D.Frame {
+q.Elem "Frame" {
     q.Slot<<Instance>> { myInstanceState }, -- 맨 State 요소는 Slot():Single(state, nil, { OwnsElements = false })로 감싸진다
 }
 ```

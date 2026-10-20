@@ -148,7 +148,7 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 `bindLifetime: value is already bound to this Instance (the same handle at two positions?)` — `quad-base/src/LifetimeHandle.luau`
 
-- **언제**: 이미 어떤 요소의 자리에 묶여 있는 값을 **같은** 요소의 다른 자리에 또 묶으려 할 때 — 같은 핸들을 한 인스턴스 안 두 자리(`D.Frame { eff, eff }` 등)에 놓은 경우입니다.
+- **언제**: 이미 어떤 요소의 자리에 묶여 있는 값을 **같은** 요소의 다른 자리에 또 묶으려 할 때 — 같은 핸들을 한 인스턴스 안 두 자리(`q.Elem "Frame" { eff, eff }` 등)에 놓은 경우입니다.
 - **고치려면**: 새 핸들을 만들어 두 번째 자리에 놓으세요 — 하나의 핸들은 한 자리에만 묶일 수 있습니다.
 - **참고**: [`q.Backend.bindLifetime(inst, value)`](../core/10-lifetime-sentinels.md#qbackendbindlifetimeinst-value)
 

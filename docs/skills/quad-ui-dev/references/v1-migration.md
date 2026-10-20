@@ -15,25 +15,25 @@ luau-lsp analyze --flag:LuauSolverV2=true --flag:LuauTarjanChildLimit=160000 \
 ```
 
 - No `LuauSolverV2` → type-checking quad's own sources fails: `TypeError: read keyword is illegal here`.
-- No `LuauTarjanChildLimit` → even `D.Frame { Name = "x" }` dies:
+- No `LuauTarjanChildLimit` → even `q.Elem "Frame" { Name = "x" }` dies:
   `TypeError: Internal error: Code is too complex to typecheck!`
 
 Bootstrap: `require(path).Init(id)` → two modules plus `Quad:UseProvider(QuadRoblox)`.
 `require(quad-base)` **is** the default instance; there is no id-keyed instance registry
-(`Quad.New()` for an isolated one; share state by exporting the `Store` or via `q.Context`).
+(`Quad.NewModule()` for an isolated one; share state by exporting the `Store` or via `q.Context`).
 
 ## 1. Mapping table
 
 | v1 | v2 |
 | :--- | :--- |
-| `Class "Frame"` → `Frame {...}` | `D.Frame {...}` |
-| `Class "<class not in D>"` | `D.New<<T>>("ClassName")(props)` |
+| `Class "Frame"` → `Frame {...}` | `q.Elem "Frame" {...}` |
+| `Class "<class not in D>"` | `q.Elem<<T>>("ClassName")(props)` |
 | `Frame "id" {...}` | removed (id lookup is gone) |
 | `Mount(parent, obj)` | `obj.Parent = parent` (`Parent` is never a prop) |
 | `Mount(to, a, b)` | array part; a children **variable** only as `{ table.unpack(children) }`, last element |
 | `mounts:Add(item)` / `mounts:Unmount()` | `q.Slot<<Instance>>()` + `:Add(el, index?)` / `:Clear()`; keyed data → `slot:List` |
 | `[Event "Activated"] = fn(self, ...)` | hash key `Activated = fn(...)`, **no `self`**, arity must match |
-| `[Event.Prop "Text"] = fn` | `q.OnChange("Text", fn)` in the array part (fn gets the new value) |
+| `[Event.Prop "Text"] = fn` | `q.OnChange "TextBox" "Text" (fn)` in the array part (fn gets the new value) |
 | `Event.Created` / `Event.CreatedAsync` | `q.OnCreated<<T>>(fn)` / `q.OnRendered<<T>>(fn)` |
 | `Class.Extend()` + `:Render(props)` | a plain function |
 | `:Init` + `props:Default("Size", v)` | `props.Size or default` |
@@ -50,9 +50,9 @@ Bootstrap: `require(path).Init(id)` → two modules plus `Quad:UseProvider(QuadR
 | `register:Tween{ Time = 2 }` | `state:Apply(q.Animate { Time = 2 })` |
 | `register:Register(fn)` | `state:Observer(fn)` — callback gets `(targetState, observer, emitFrom?)`, not the value |
 | `register:Observe(fn)` | `Observer` + `:Subscribe()`, or `q.Effect(fn, ...deps)` |
-| `Style {...}`; `Frame { s }` | `D.Modifier.<Class>{...}` in the array part; later entry wins |
+| `Style {...}`; `Frame { s }` | `q.Modifier "Class"{...}` in the array part; later entry wins |
 | `Corner` / `PaddingAll` / `PaddingAllOffset` / `Scale` | `UICorner` / `UIPadding` / `UIPaddingOffset` / `UIScale` |
-| `Font = Enum.Font.X` | works — kept in the generated `D` as engine-legacy (Roblox tags it `Hidden`), marked `-- @deprecated`. Fine for a literal port; `FontFace = Font.fromEnum(...)` is the current API. Same for `FontSize` / `TextWrap` / `Transparency` |
+| `Font = Enum.Font.X` | works — kept on the typed surface as engine-legacy (Roblox tags it `Hidden`; no editor deprecation mark). Fine for a literal port; `FontFace = Font.fromEnum(...)` is the current API. Same for `FontSize` / `TextWrap` / `Transparency` |
 
 **v2 has no `:With`.** v1 `register:With(fn)` = derive → v2 `:Compute(fn, ...deps)`.
 v2's `state:Depend(...)` only widens the subscription (mints one extra node, passes no value, takes no callback) —
@@ -64,7 +64,7 @@ it is *not* the port of `:With`. Never map by name alone.
   for classification, and a `Ref` placed *at the element* for a direct reference.
   **`Ref` is not an id-lookup replacement**: it wraps an instance you already hold, it does not find one.
 - **`Style "Child" {}`** (name-targeted styling) — pass a `Modifier` to the element itself.
-- **`Init(QuadId)` namespaces** — singleton + opt-in `Quad.New()`.
+- **`Init(QuadId)` namespaces** — singleton + opt-in `Quad.NewModule()`.
 - **`Class.Extend` OOP surface** — `Getter` / `Setter` / `UpdateTriggers` / `:Update()`. Updates are
   per-property; there is no re-render.
 - **register metatable chaining** (`:With`→`:Add`→`:Tween` accumulating) — each step is an explicit node.
@@ -73,7 +73,7 @@ it is *not* the port of `:With`. Never map by name alone.
   `Ended`, tweening plain tables. Only declarative `q.Tween{}` / `q.Animate{}`; overlap is settled by
   `Override = "Cancel" | "Finish"`.
 - **`Apply(inst){props}` rebinding** (only on `master`'s unreleased 2.25 line; not in the 2.24 release) —
-  rejected; only `q.Claim(inst, D.Mapper…)` survives (claim-once, all direct children mapped, never a
+  rejected; only `q.Claim(inst, q.Mapper…)` survives (claim-once, all direct children mapped, never a
   shared engine container).
 - **`Signal.Bindable` / `Disconnecter`** — cleanup is bound to instance lifetime; disconnect your own
   connections in `q.OnDestroyed`.
@@ -90,24 +90,24 @@ it is *not* the port of `:With`. Never map by name alone.
 | `q.Slot()` | `… but got 'Slot<unknown>'` | `q.Slot<<Instance>>()`; single angle brackets are a **SyntaxError** |
 | `q.OnCreated(function(inst: Frame) end)` — annotated param | `Type functions do not currently support types of the form '*error-type*'` | `q.OnCreated<<Frame>>(fn)` (same for `OnRendered`) |
 | `q.OnCreated(function(inst) end)` — fully unannotated param | none — passes silently, but `inst` never gets a specialized type (no autocomplete) | same fix: `q.OnCreated<<Frame>>(fn)` |
-| key not in generated `D` (v1 `Corner`/`PaddingAllOffset`/`Scale`) | `Expected this to be 'number', but got '"Corner"'` + an array-union mismatch line | this two-line shape means "no such property" (the key is read as an array index) |
+| key not on the typed surface (v1 `Corner`/`PaddingAllOffset`/`Scale`) | `Expected this to be 'number', but got '"Corner"'` + an array-union mismatch line | this two-line shape means "no such property" (the key is read as an array index) |
 | event callback with leading `self` (v1's `fn(self, …)`, e.g. `Activated`) | `Expected this to be '(((InputObject, number) -> ()) \| None \| StateMarker<…>)?' but got '(InputObject, number, unknown) -> ()'` | drop `self` and match the engine's exact arity — **shrinking to exactly 2 args instead** (`function(self, inputObject)`) passes with **zero diagnostics**: bidirectional inference binds `self` to `InputObject` and the second param to `number` (clickCount), so arguments are shifted by one at runtime. Write `function(inputObject, clickCount)` with no `self` |
 | `Activated` on a `Frame` | `Expected this to be 'number', but got '"Activated"'` | use a `GuiButton` class |
 | `nil` in the array part | `the 2nd component of the union is 'nil', which is not a subtype of …` | `props.X or q.None` |
-| prebuilt props table `D.Frame(props)` | `Expected this to be 'FrameParam<…>' … 'string' is not exactly 'StateMarker<string>'` | bidirectional inference only works at the literal site |
-| children array variable `D.ScreenGui(children)` | same family of param mismatch | `D.ScreenGui { table.unpack(children) }` |
+| prebuilt props table `q.Elem "Frame" (props)` | `Expected this to be 'FrameParam<…>' … 'string' is not exactly 'StateMarker<string>'` | bidirectional inference only works at the literal site |
+| children array variable `q.Elem "ScreenGui" (children)` | same family of param mismatch | `q.Elem "ScreenGui" { table.unpack(children) }` |
 | `q.Store()` then `store.Text = v` | `Cannot add property 'Text' to table '{ } & { Names: …, Of: … }'` | declare in defaults, or `store:Of<<string>>("Text")` |
 | `State<Frame>` into a `State<Instance>` param | `'Frame' is not exactly 'Instance'` (hundreds of lines) | `State<T>` is invariant — declare inputs as the generated prop type (covariant marker) or `State<Instance>` |
 | `Slot:List` updateFn returning `nil` first | `Expected this to be 'nil', but got 'TextLabel'` | annotate both `ctx` and the return pack: `function(ctx: RowCtx): (any, RowUD?)` (the return pack alone clears the diagnostic but leaves `ctx.Item` fields unchecked; `== q.KeyGone` does not narrow, so cast `ctx.Item :: Row` after it) |
 | `q.Context.Provider("Theme")` uncast | `Get()` resolves to `unknown`, fails at the prop site | `q.Context.Provider<<Theme>>("Theme")` |
 | `q.Ref(nil)` | `… but got 'Ref<nil>'` | `q.Ref<<Frame?>>(nil)` |
 | `[q.AttrKey("Hp")] = v` | `Expected this to be 'number', but got 'AttrKeyObject'` | runtime is fine, types are not opened — use array-part `q.Attr{...}` / `q.NumberAttr(...)` |
-| `D.New("Folder")({...})` result used | `Type 'unknown' does not have key 'Name'` | `D.New<<Folder>>("Folder")({...})` |
+| `q.Elem("Folder")({...})` result used | `Type 'unknown' does not have key 'Name'` | `q.Elem<<Folder>>("Folder")({...})` |
 | `Text = 42` | `Expected this to be '(None \| StateMarker<string> \| string)?', but got 'number'` | `tostring(42)` |
 | `Op.Sum(UDim2 …)` | `None of the overloads for function that accept 2 arguments are compatible` | arithmetic/bitwise operators are number-only; other types go through `:Compute` |
 
 Explicit type arguments use **double** angle brackets: `q.Slot<<Instance>>()`,
-`q.OnCreated<<Frame>>(fn)`, `store:Of<<string>>("Text")`, `D.New<<Folder>>("Folder")`,
+`q.OnCreated<<Frame>>(fn)`, `store:Of<<string>>("Text")`, `q.Elem<<Folder>>("Folder")`,
 `q.Operator.Indexed<<Color3>>("Primary")`, `q.Ref<<Frame?>>(nil)`.
 
 ## 4. What strict mode does NOT catch

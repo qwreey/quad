@@ -18,11 +18,10 @@ description: leaf 구독 핸들 둘 — state:Observer(fn)과 q.Effect(fn, ...de
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.Declaration
 ```
 
 :::note
-**생존 판정의 인스턴스 쪽 절반은 백엔드가 심습니다.** 판정 자체(`canBound`/`canExecute`)와 바인딩(`bindLifetime`)은 quad-base 것이고, 그 아래 "이 값이 살아 있는 인스턴스에 묶여 있는가"만 백엔드의 hold op(`isHeld` 등)에 묻습니다. 프로바이더를 설치하지 않은 맨 `Quad.New()`에서 `:Subscribe()`를 부르면 `quad: {name} is not available - no backend has installed {what}` 로 시작하는 에러(뒤에 프로바이더를 설치하라는 안내가 붙습니다)가 납니다. 판정 자체의 설계는 [Quadnomicon Vol. 6](/quadnomicon/06-liveness-gate-and-isolation/).
+**생존 판정의 인스턴스 쪽 절반은 백엔드가 심습니다.** 판정 자체(`canBound`/`canExecute`)와 바인딩(`bindLifetime`)은 quad-base 것이고, 그 아래 "이 값이 살아 있는 인스턴스에 묶여 있는가"만 백엔드의 hold op(`isHeld` 등)에 묻습니다. 프로바이더를 설치하지 않은 맨 `Quad.NewModule()`에서 `:Subscribe()`를 부르면 `quad: {name} is not available - no backend has installed {what}` 로 시작하는 에러(뒤에 프로바이더를 설치하라는 안내가 붙습니다)가 납니다. 판정 자체의 설계는 [Quadnomicon Vol. 6](/quadnomicon/06-liveness-gate-and-isolation/).
 :::
 
 ---
@@ -36,14 +35,14 @@ local D = q.Declaration
 
 파괴 순서에 관해 정해 둔 것은 없습니다. **서브트리 안 인스턴스들의 파괴 순서는 정하지 않습니다** — 한 인스턴스 안의 cleanup·`OnDestroyed`가 다른 인스턴스의 것보다 먼저 도는지에 기대지 마세요. 또 **죽어 가는 호스트의 `Slot`을 cleanup·`OnDestroyed` 안에서 CRUD하는 것은 정의되지 않은 동작입니다**([죽은 Slot과 마운트 규칙](/reference/core/06-slot/#죽은-slot과-마운트-규칙)).
 
-**둘을 겹칠 수는 없습니다.** 이미 한쪽으로 살아 있는 핸들을 다른 쪽으로 다시 살리려 하면 거절합니다 — 묶인 핸들에 `:Subscribe()`/`:WeakSubscribe()`를 부르면 `Observer: already bound to an Instance`(`Effect`도 주어만 바뀐 같은 문구), 반대로 구독된 핸들을 숫자 키 자리(`D.Frame { h }`)에 놓으면 `Quad0104 bindLifetime: value is already subscribed`([2026-09-27 mock 실측] — 강한·약한 구독 둘 다).
+**둘을 겹칠 수는 없습니다.** 이미 한쪽으로 살아 있는 핸들을 다른 쪽으로 다시 살리려 하면 거절합니다 — 묶인 핸들에 `:Subscribe()`/`:WeakSubscribe()`를 부르면 `Observer: already bound to an Instance`(`Effect`도 주어만 바뀐 같은 문구), 반대로 구독된 핸들을 숫자 키 자리(`q.Elem "Frame" { h }`)에 놓으면 `Quad0104 bindLifetime: value is already subscribed`([2026-09-27 mock 실측] — 강한·약한 구독 둘 다).
 
 ### 숫자 키 자리에 넣기
 
 ```luau
 local hp = q.Source(100)
 
-local label = D.TextLabel {
+local label = q.Elem "TextLabel" {
 	Text = hp:Compute(function(self: q.StateData<number>)
 		return `HP {self:Get()}`
 	end),
@@ -119,7 +118,7 @@ export type Observer = {
 - 인자 검증: `Quad0190 State: Observer fn must be a function or nil (got {typeof(fn)}) - nil makes the always-observe utility`
 - 같은 원천을 구독한 Observer·Effect끼리의 **발화 순서는 정해져 있지 않습니다** — 등록 순서도 아닙니다. 순서가 필요하면 한 콜백 안에서 차례대로 부르세요.
 - 콜백 안에서 **yield하지 마세요**(Roblox의 `task.wait` 등) — 정의되지 않은 동작입니다. 파동이 그 자리에서 멈추거나 같은 콜백이 겹쳐 돌 수 있고, 겹치면 나중 값의 콜백이 먼저 끝나 **마지막으로 처리한 값이 낡은 값**이 됩니다. 기다릴 일은 따로 띄운 코루틴으로 떼어 내세요.
-- 숫자 키 자리에 놓여 **묶이는 순간** 보류돼 있던 통지가 한 번 재생되는데, 그 콜백이 던지면 `Declaration`은 에러로 끝나지만 그 핸들은 실패한 인스턴스에 묶인 채 남습니다(정의되지 않은 동작 — `Effect`도 같습니다). 같은 핸들로 다시 놓으면 원인 대신 `Quad0233 bindLifetime: value is already bound to another Instance`가 납니다. 재시도는 새 핸들로 하세요 — `Declaration` 안에서 인라인으로 만드는 보통 코드는 자연히 그렇게 됩니다.
+- 숫자 키 자리에 놓여 **묶이는 순간** 보류돼 있던 통지가 한 번 재생되는데, 그 콜백이 던지면 요소 생성자는 에러로 끝나지만 그 핸들은 실패한 인스턴스에 묶인 채 남습니다(정의되지 않은 동작 — `Effect`도 같습니다). 같은 핸들로 다시 놓으면 원인 대신 `Quad0233 bindLifetime: value is already bound to another Instance`가 납니다. 재시도는 새 핸들로 하세요 — `Declaration` 안에서 인라인으로 만드는 보통 코드는 자연히 그렇게 됩니다.
 
 **예제**
 

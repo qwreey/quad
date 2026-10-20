@@ -18,9 +18,9 @@ have no ID yet — flagged inline; treat them as a source gap, not a doc error.
 | `Quad0203 Tag: names must be strings, Tags, or a plain {...} list of those - a name list cannot have nil holes` | A `nil` gap in a name list: `{ "Tag1", nil, "Tag2" }` | Filter the list before passing it. `q.None` is **not** a substitute — it is rejected as "a table with a metatable" |
 | `Quad0134 Ref: Wait() must be called from a yieldable coroutine` | `ref:Wait()` on a non-yieldable thread | Call it inside `task.spawn`, or pass a thread to register a waiter without yielding |
 | `Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) - not filled yet, or never placed` | `:Unwrap()` before the Ref was filled, or the Ref was never put in an array part | Place the `PreRef` in the children array; unwrap only after the instance exists |
-| `Quad0029 Claim: <instance> is already claimed by quad - a Declaration-made or already-Claimed Instance cannot be claimed again (…)` | `q.Claim` on the same Instance twice, or on something `D.*` produced | Claim only unmanaged instances |
-| `Quad0226 bindLifetime: this Instance is not claimed by quad` | A foreign Instance (never created by `D.*` nor claimed), or an already-destroyed one | `q.Claim(inst, descriptor)` first; never reuse a destroyed Instance |
-| `Quad0034 Claim: second argument must be a D.Mapper descriptor` | `q.Claim(inst)` with one argument | `q.Claim(inst, D.Mapper.<Class>(D.Mapper.Root)({ ... }))` |
+| `Quad0029 Claim: <instance> is already claimed by quad - an Instance quad made (q.Elem) or already Claimed cannot be claimed again (…)` | `q.Claim` on the same Instance twice, or on something `D.*` produced | Claim only unmanaged instances |
+| `Quad0226 bindLifetime: this Instance is not claimed by quad` | A foreign Instance (never created by `q.Elem` nor claimed), or an already-destroyed one | `q.Claim(inst, descriptor)` first; never reuse a destroyed Instance |
+| `Quad0034 Claim: second argument must be a mapper descriptor (q.Mapper "Frame" (key) {…})` | `q.Claim(inst)` with one argument | `q.Claim(inst, q.Mapper "Class" (q.MapperRoot)({ ... }))` |
 | `Quad0068 Modifier: a Modifier cannot be a value of key "..." - place it in the array part` | `{ Modifier = myMod }` as a hash key | Put it in the array part: `{ myMod }` |
 | `Quad0182 Source: cannot hold a Modifier as a Source value` | `q.Source(someModifier)` | Keep Modifiers out of reactive values |
 | `Quad0250 Tween: Value must be a plain value, not a State` | `q.Tween { Value = myState }` | `myState:Apply(q.Animate{...})`, or build the Tween inside a `:Compute` |
@@ -28,12 +28,12 @@ have no ID yet — flagged inline; treat them as a source gap, not a doc error.
 | `Quad0168 Slot:Remove: index must be a positive integer (got ...)` | `slot:Remove(childInstance)` — CRUD takes indices | `slot:Remove(slot:IndexOf(child))` |
 | `Quad0242 Slot: destroyed Slot cannot be an element` / `Quad0140`/`Quad0164 ... cannot be mounted` / `Quad0165 ... cannot be reused` | Reusing a Slot that was **destroyed as an element** — an owning parent Slot `:Remove`/`:Clear`d it, its `:List` key disappeared, or `q.dispose(slot)` ran | Create a fresh `q.Slot()` |
 | `... (if its owner was destroyed outside quad - inst:Destroy() - the value went with it ...)` | A different case, appended as a note to other messages ("already mounted", `dispose:`): the mount target Instance was destroyed outside quad. This is a shared suffix on several IDs (`Quad0156`/`Quad0160`/`Quad0172`/`Quad0179`), not a message of its own — no single ID to prefix it with | Extract the value before destroying its owner, as with an Instance |
-| `Quad0241 Slot: this element is not claimed by quad - build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one - a destroyed Instance cannot be reused)` | Putting an Instance quad does not own (`Instance.new`, another library's tree) into a Slot (`Add`/constructor/`Replace`/`Splice`/`List`) | `q.Claim` it first, or build it with `D.<Class> { … }` — Slot never claims on your behalf |
-| `Quad0219 Dispatch: this Instance is not claimed by quad - build it with the Declaration or take it over with Claim first (…)` | The same rule at a static numeric-key slot: `D.Frame { Instance.new("TextLabel") }` | `q.Claim` it first, or build it with `D.<Class> { … }` |
-| `Quad0032 Claim: no child matched key {key} under {inst} (mapper {class}) - a child with that name must also be a {class}` | The template has no child by that name, or the child by that name is not that class (`IsA`) — e.g. `M.TextLabel("Kid")` over an `ImageLabel` named Kid | Fix the name or the mapper class to match the template |
-| `Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value takes one seat, so the same element cannot sit in two parent tables, twice in one table, or in two Slots` | One value, one seat: the same Instance put under two parents (`D.Frame { c }` twice, `{ c, c }`), a Slot element placed as a static child, a shorthand-managed child (`_quad_round`) placed anywhere | Retract it from the first seat (`:Set(nil)` the State holding it, or `slot:Extract`) before re-using it — a value seated as a **literal static child** (`D.Frame { c }`) has no public way out (`c.Parent = nil` does not release it, measured 2026-09-27): values that move must live in a State seat or a Slot from the start; build a second Instance if you need two |
+| `Quad0241 Slot: this element is not claimed by quad - build it with q.Elem or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one - a destroyed Instance cannot be reused)` | Putting an Instance quad does not own (`Instance.new`, another library's tree) into a Slot (`Add`/constructor/`Replace`/`Splice`/`List`) | `q.Claim` it first, or build it with `D.<Class> { … }` — Slot never claims on your behalf |
+| `Quad0219 Dispatch: this Instance is not claimed by quad - build it with q.Elem or take it over with Claim first (…)` | The same rule at a static numeric-key slot: `q.Elem "Frame" { Instance.new("TextLabel") }` | `q.Claim` it first, or build it with `D.<Class> { … }` |
+| `Quad0032 Claim: no child matched key {key} under {inst} (mapper {class}) - a child with that name must also be a {class}` | The template has no child by that name, or the child by that name is not that class (`IsA`) — e.g. `q.Mapper "TextLabel" ("Kid")` over an `ImageLabel` named Kid | Fix the name or the mapper class to match the template |
+| `Quad0160 Bookkeeping.claimOwnerAt: this element is already mounted elsewhere - one value takes one seat, so the same element cannot sit in two parent tables, twice in one table, or in two Slots` | One value, one seat: the same Instance put under two parents (`q.Elem "Frame" { c }` twice, `{ c, c }`), a Slot element placed as a static child, a shorthand-managed child (`_quad_round`) placed anywhere | Retract it from the first seat (`:Set(nil)` the State holding it, or `slot:Extract`) before re-using it — a value seated as a **literal static child** (`q.Elem "Frame" { c }`) has no public way out (`c.Parent = nil` does not release it, measured 2026-09-27): values that move must live in a State seat or a Slot from the start; build a second Instance if you need two |
 | `Quad0184 State: Compute fn is already running for this value - a dependency cycle (…), a yield inside the fn, or an earlier read that threw (…)` | A `:Compute` fn reads its own result (directly or via a downstream State), yields and is read again meanwhile (undefined behavior — current observation, not a contract), or threw on an earlier read of the same value generation | Break the cycle (read only upstream nodes), never yield in a Compute (undefined behavior — `q.debug` warns when a new run starts over a parked one); after a throw, fix and `:Set` the upstream — the fn runs again on the new generation |
-| `Quad0167 Slot: cannot mutate a Slot while it is being mounted or while one of its elements is being inserted/removed (…) - …` | A `:List`/`:Single` `updateFn` (first mount) or an Observer fired during the mount did `Add`/`Remove`/… or `:List` on an **ancestor** Slot (any Slot up the owner chain, not only the direct parent) that is being mounted — or an engine signal callback that runs synchronously inside an insert/remove (Roblox Immediate `SignalBehavior`: an element's `q.OnChange("Parent", fn)`) did CRUD on the Slot whose operation is in progress or on one of its ancestor Slots (the outer operation still completes; with Deferred signals the callback runs afterwards and is not refused) | Hand the work to `slot:WhenIdle(function(slot) … end)` — `fn` runs now when the Slot is idle, right after the operation otherwise, in every signal mode and in the mock (no `task.defer`); take indices inside `fn` (`slot:IndexOf(el)`), never before. Keep `updateFn` to building this item (its own child Slots are fine). A throw inside the mount or the engine call leaves every Slot on that chain refusing CRUD: dispose the host |
+| `Quad0167 Slot: cannot mutate a Slot while it is being mounted or while one of its elements is being inserted/removed (…) - …` | A `:List`/`:Single` `updateFn` (first mount) or an Observer fired during the mount did `Add`/`Remove`/… or `:List` on an **ancestor** Slot (any Slot up the owner chain, not only the direct parent) that is being mounted — or an engine signal callback that runs synchronously inside an insert/remove (Roblox Immediate `SignalBehavior`: an element's `q.OnChange "Frame" "Parent" (fn)`) did CRUD on the Slot whose operation is in progress or on one of its ancestor Slots (the outer operation still completes; with Deferred signals the callback runs afterwards and is not refused) | Hand the work to `slot:WhenIdle(function(slot) … end)` — `fn` runs now when the Slot is idle, right after the operation otherwise, in every signal mode and in the mock (no `task.defer`); take indices inside `fn` (`slot:IndexOf(el)`), never before. Keep `updateFn` to building this item (its own child Slots are fine). A throw inside the mount or the engine call leaves every Slot on that chain refusing CRUD: dispose the host |
 | `Quad0173 Slot:Add: cannot add a Slot to itself or to one of its own descendants (that would be a cycle)` | Circular parenting: `a:Add(b); b:Add(a)` | Keep the slot graph acyclic — with `q.debug` on this errors immediately at the `Add` line; with it off (next release on) the `Add` passes and the cycle is undefined behaviour (observed, not a contract: a later CRUD / teardown of that tree dies in a stack overflow or an internal-invariant error, varying by operation), so develop with `q.debug = true` |
 | `Quad0038 Context:Get: no value for Provider(...)` | Reading a provider key the Context never `:Set` | `:Set` it at the root, or probe with `:Peek` |
 | `Quad0037 Context:Set: value for ... must not be nil` | `ctx:Set(provider, nil)` | Absence is "not set" — omit the key |
@@ -53,14 +53,14 @@ fails. Input positions are covariant markers, so the same value *does* go into a
 `Slot<Instance>` element slot, a child array, or a Modifier field.
 
 - Annotate derived states with the concrete class: `QuadTypes.State<Frame>`.
-- Types live in `quad-types` and, for generated `Declaration` types, the quad-roblox module root (`RobloxModule.FrameModifier` …) — `q.State<T>` is not a type.
+- Types live in `quad-types` and, for the backend surface types, the quad-roblox module root (`RobloxModule.Modifier<Frame>`, `ModifierInto<C>`, `SpreadInto<C>` …) — `q.State<T>` is not a type.
 
 ### 2.2 Modifier Downcasting
 
 ```luau
-local base = D.Modifier.GuiObject():Visible(true)
+local base = q.Modifier "GuiObject" ():Visible(true)
 local checked = base:AsTextButton():Text("go")                    -- CHECKED (one method per subclass)
-local forced  = base:As<<RobloxModule.TextLabelModifier>>()            -- UNCHECKED, caller asserts
+local forced  = base:As<<RobloxModule.Modifier<TextLabel>>>()            -- UNCHECKED, caller asserts
 ```
 
 `:As<<T>>()` does no ancestry check. Its optional string argument must be an already
@@ -87,12 +87,12 @@ engine signature out in component prop types.
 
 ### 2.4 `q.OnChange` vs Events
 
-`q.OnChange(name, fn)` is a descriptor value and belongs in the **array part**, not as a
+`q.OnChange "Class" "Name" (fn)` is a descriptor value and belongs in the **array part**, not as a
 hash key. The callback receives the new property value:
 
 ```luau
-D.TextBox {
-    q.OnChange("Text", function(newText: string)
+q.Elem "TextBox" {
+    q.OnChange "TextBox" "Text" (function(newText: string)
         print("Text changed to:", newText)
     end),
 }
@@ -126,7 +126,7 @@ D.TextBox {
 Three diagnostics a first strict consumer hits whether or not it ports v1 code (the full verbatim table
 is `v1-migration.md` §3 — read it even for new code):
 
-- **Unknown property key** — `D.TextLabel { Bogus = 1 }` reports
+- **Unknown property key** — `q.Elem "TextLabel" { Bogus = 1 }` reports
   `Expected this to be 'number', but got '"Bogus"'` plus a long array-union mismatch line on the value.
   It means **"this class has no such property"**: the props type is "known string keys + numeric child
   keys", so an unknown string key is read as a bad array index. The same two-line shape appears for an
@@ -139,7 +139,7 @@ is `v1-migration.md` §3 — read it even for new code):
   `function(self: QuadTypes.StateData<number>): string` — or hoist to an annotated local
   (`local label: QuadTypes.State<string> = n:Compute(...)`). No helper function is needed.
 - **Children built from data** — a prebuilt table mixing string keys and children
-  (`local props = { Name = "Toolbar" }; table.insert(props, child); D.Frame(props)`) fails with
+  (`local props = { Name = "Toolbar" }; table.insert(props, child); q.Elem "Frame" (props)`) fails with
   `Expected this to be 'FrameParam<…>' … 'string' is not exactly 'StateMarker<string>'`: the props type
   is only inferred at the literal site. Build the children as a plain array and hand them to a Slot's
   `initial`, keeping the properties in the literal:
@@ -147,9 +147,9 @@ is `v1-migration.md` §3 — read it even for new code):
   ```luau
   local kids: { Instance } = {}
   for _, tool in tools do
-      table.insert(kids, D.TextButton { Text = tool.Label })
+      table.insert(kids, q.Elem "TextButton" { Text = tool.Label })
   end
-  local bar = D.Frame { Name = "Toolbar", D.UIListLayout {}, q.Slot<<Instance>>(kids) }
+  local bar = q.Elem "Frame" { Name = "Toolbar", q.Elem "UIListLayout" {}, q.Slot<<Instance>>(kids) }
   ```
 
   (A Slot built with `initial` is a manual-CRUD Slot — `:Add`/`:Remove` work on it, `:List`/`:Single`

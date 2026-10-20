@@ -1,8 +1,8 @@
 --!strict
 --[[
-	Shared type aliases of the kit. Only `GuiHook` lives here: the class-specific Modifier types
-	(`FrameModifier`, `TextButtonModifier`, ...) are the setup module's re-exports (`Quad.luau`), which name the generated
-	`<Class>Modifier` types from the quad-roblox package root — use those (`Quad.FrameModifier`), do not derive copies.
+	Shared type aliases of the kit. Only `GuiHook` lives here: the Modifier/Spread types (`Modifier<C>`, `ModifierInto<C>`,
+	`SpreadInto<C>`, ...) are the setup module's re-exports (`Quad.luau`) of the quad-roblox package root's generic names —
+	use those (`Quad.ModifierInto<Frame>`), do not derive copies.
 ]]
 
 local q = require("./Quad")

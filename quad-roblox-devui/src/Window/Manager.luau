@@ -3,7 +3,7 @@
 	WindowManager — z-order and focus for a group of windows (focus-on-press, "bring to front").
 
 	Windows hosted as siblings in one container are layered by ZIndex. This needs `ScreenGui.ZIndexBehavior = Sibling`,
-	which is the default only for a ScreenGui inserted in Studio: one made in code (`D.ScreenGui`, `Instance.new`) is
+	which is the default only for a ScreenGui inserted in Studio: one made in code (`q.Elem "ScreenGui"`, `Instance.new`) is
 	Global unless you set it, and under Global a window root with rank 2+ draws over its own content (a ZIndex is then
 	compared across the whole ScreenGui, and the content's is 1). The manager keeps the windows in stacking order (bottom first) and a window's ZIndex is its RANK in that
 	list (1..n): `Focus` moves the window to the end and renumbers, so the ZIndex never grows past the number of live
