@@ -95,6 +95,8 @@ python3 scripts/doc-coverage.py || fail=1
 # [2026-09-15 사용자 결정] 입력 자리 = 마커 규칙(typing-limits 8.11) — 공개 타입의 입력 극성 자리에 전체형 State/Source가 오면 실패
 echo "=== type-surface-check (input positions use markers)"
 python3 scripts/type-surface-check.py || fail=1
+# [2026-10-20 3.4.0 단위 2] typed surface: NEG fixture + every class surface non-empty (scripts/surface-gate.py)
+python3 scripts/surface-gate.py || fail=1
 echo "=== error-codes (every raise carries a QuadNNNN id with a docs/reference/errors section)"
 python3 scripts/error-codes.py check || fail=1
 

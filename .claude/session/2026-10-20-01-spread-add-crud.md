@@ -43,3 +43,7 @@
 ## 8. 단위 1 완료(정책 데이터와 생성기)
 
 gen-d.py: LEGACY_KEEP(정의 클래스 기준, 태그 무관 — Transparency 드리프트 해소), HIDDEN_CORE_KEEP(비GUI), normalize `policy`(만들 수 있는 클래스 사슬), emit → `quad-roblox/src/Surface/Data.luau`(데이터만), check 게이트 포함. 지금 덤프에서 옛 D·api-surface 클래스 부분 변화 0. 체커 차이 관측: 확장 defs는 `GuiObject.Transparency`가 없고 핀 defs는 있음 → Inject는 되살린 멤버 전부를 넣고 타입 함수가 덮어쓴다(단위 2).
+
+## 9. 단위 2 완료(타입 함수 본체)
+
+`quad-roblox/src/Surface/init.luau` + 게이트 `scripts/surface-gate.py`(NEG 23/23, 클래스 47개). 프로브와 다른 점: 전역 이름 Deny 없음, 입력 마커는 조상 사슬 전체(ForClasses 때문 — GUI 맵으로 거르면 `W.Modifier "BasePart"`가 `Part`에서 거부), 팩토리 함수 타입 통째. 공개 별칭은 루트 미노출(단위 6).
