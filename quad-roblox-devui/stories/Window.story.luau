@@ -1,5 +1,5 @@
 --!strict
--- Window: title, collapse (to an icon), close, resize, and saving / restoring the layout. Title / Open / Collapsed are
+-- Window: title, collapse (to an icon), close, resize, edge docking, and saving / restoring the layout. Title / Open / Collapsed are
 -- control-panel Sources the window binds directly; dragging the grip, the title bar or the collapsed icon shows up in
 -- the readouts below (Size / Position are Sources the window writes). "save layout" keeps the manager's export in a
 -- local; move / collapse / close the window, then "restore layout" puts it back (ImportLayout writes the same Sources).
@@ -32,7 +32,7 @@ return StoryKit.story({
 			Size = size,
 			Position = position,
 			Children = Kids(
-				Devui.Text({ Text = "Drag the title bar, the corner grip, collapse to an icon (press it to expand, drag it to move) or close me." }),
+				Devui.Text({ Text = "Drag the title bar, the corner grip, collapse to an icon (press it to expand, drag it to move) or close me. Drag the title bar to the left or right edge to dock me; drag it off again to float." }),
 				Devui.Separator({}),
 				Shared.show("Open", c.Open),
 				Shared.show("Collapsed", c.Collapsed),
@@ -61,7 +61,13 @@ return StoryKit.story({
 				local layout = manager:ExportLayout()
 				saved = layout
 				local g = layout.Floating[1]
-				savedText:Set(`saved: ({g.Position[2]}, {g.Position[4]}) {g.Size[1]} x {g.Size[2]}, collapsed {g.Collapsed}, open {layout.Windows.story.Open}`)
+				local dock = layout.Left or layout.Right
+				if g ~= nil then
+					savedText:Set(`saved: ({g.Position[2]}, {g.Position[4]}) {g.Size[1]} x {g.Size[2]}, collapsed {g.Collapsed}, open {layout.Windows.story.Open}`)
+				elseif dock ~= nil then
+					local edge = if layout.Left ~= nil then "left" else "right"
+					savedText:Set(`saved: docked {edge}, width {dock.Width}, collapsed {dock.Collapsed}, open {layout.Windows.story.Open}`)
+				end
 			end),
 			button("restore layout", 340, function()
 				if saved ~= nil then

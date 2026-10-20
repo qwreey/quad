@@ -42,9 +42,11 @@
 	manager's live windows — a second one raises) is part of the layout; its `Kind` (its TYPE, default = the Key) is
 	saved with it so a loader can make it again. A window without a Key behaves the same and is only left out of the
 	layout (with `q.debug`, one notice per manager once the app uses the layout API). What is saved per window: Open,
-	Collapsed, Position and Size (the floating outer rectangle), and the stacking order of the keyed windows (the
-	export order). Not saved: the title, the content, the focus.
-		manager:ExportLayout() -> WindowLayout          every known key (live or pending), bottom first
+	Collapsed, Position and Size (the floating outer rectangle, also for a docked window), the edge it is docked on and
+	its dock width (header DOCK), and the stacking order of the keyed FLOATING windows (the export order). Not saved:
+	the title, the content, the focus, the stacking of the docked windows.
+		manager:ExportLayout() -> WindowLayout          every known key (live or pending): floating bottom first, docked
+		                                                on its edge (`Left` / `Right`)
 		manager:ImportLayout(layout, factories?)          put the windows where the layout says (rules below)
 		manager:ExportWindow(key) -> WindowState?         one window's state (nil = an unknown key)
 		manager:ImportWindow(key, state)                  one window: the same rules, no factory, no stacking
@@ -68,8 +70,30 @@
 	kept bottom first (`known`); raising a keyed window moves its key to the top, and a keyed window that registers
 	takes its place among the other keyed windows by that order (an app that imports first and then builds its windows
 	in any order gets them stacked as saved). Windows without a Key keep their own slots. An import restacks the
-	windows it names into the layout's order; a known key it does not name rides with the named key it was above (or
-	stays at the bottom). The focus is not saved: an import moves nothing to the front by itself.
+	windows it names into the layout's order — its docked keys first, then the `Floating` order, so the docked windows
+	start UNDER the floating ones [2026-10-20 user decision — their strip is never covered, so the docked windows'
+	stacking is not saved]; a known key it does not name rides with the named key it was above (or stays at the bottom).
+	A docked window raised at run time still moves its key to the top of `known`; that place only ever orders `Floating`
+	(where a docked key is not). The focus is not saved: an import moves nothing to the front by itself.
+
+	DOCK [2026-10-20 user decisions — docking stage 2, edge docking; the look and the drag rules are in
+	Window/Decoration.luau header "DOCKED"]. A docked window is still one window of `order`: the same ZIndex chunk, the
+	same raise / focus / succession rules (expanding it raises and focuses it, a press brings it to the front, a press on
+	another window brings that one up — a panel covers floating windows, nothing is pushed aside). Only its placement
+	differs. Per window the manager keeps the edge (`Side`, nil = floating) and the dock width; one OPEN window per edge
+	per manager (a second edge drag shows no preview and does not dock). Closing a docked window hides its panel and
+	strip and frees the edge, but the window keeps the edge and width: `Open:Set(true)` docks it there again, or floats
+	it (its kept Position / Size) when another open window took that edge meanwhile. A layout state with a `Dock` docks
+	the window the same way (an open one floats when the edge is held; a closed one keeps the edge remembered); a
+	pending key docks when its window registers. A docked window's strip walls the floating windows of the same
+	container (the parent of its surface root): their staying-on-screen stops at it, and a strip that appears (dock,
+	reopen, import) brings the ones already over it out (the container-shrink path), as does a floating window placed
+	over a strip (an import, a reopen that floats it, a move into the container). Saving: the edge group holds the
+	open window docked there, else the topmost known key that remembers that edge (closed or pending); any other key
+	remembering an edge is saved in `Floating`, so a saved layout never has two windows on one edge. A window without a
+	Key docks the same and is only left out of the layout. Strip press rule: the strip asks whether its window had the
+	focus BEFORE the press — the manager's global press (PRESS TO FRONT) focuses first and records that (`lastPress`,
+	read once by the strip's Activated); a gamepad / keyboard activation (no global press) reads the current focus.
 
 	PRESS TO FRONT. A press stops at the first GuiButton / TextBox under the pointer (engine rule): the window frame
 	behind a button, a checkbox or a text box never sees an InputBegan. So the manager listens to ONE global press
@@ -127,6 +151,7 @@ export type Slot = {
 
 export type WindowLayout = Layout.WindowLayout
 export type WindowState = Layout.WindowState
+type Side = Layout.Side
 
 export type Manager = {
 	Focused: State<number>,
@@ -148,7 +173,14 @@ type Entry = {
 	Hints: Decoration.Hints?, -- decorated windows: the Sources a layout is read from and written into
 	Key: string?, -- decorated windows with a Key: their identity in the layout
 	Kind: string,
+	-- the edge dock (header DOCK): the side it is docked on (nil = floating; kept while closed) and its panel width
+	Side: Source<Side?>,
+	DockWidth: Source<number>,
 }
+
+-- the press the strip rule asks about (header DOCK): the window the last global press went to and whether it had
+-- the focus before that press focused it
+type PressRecord = { Entry: Entry, WasFocused: boolean }
 
 -- ZIndex values per window (decoration frame, surface, resize grip): see the header
 local SPAN = 3
@@ -200,14 +232,98 @@ function Manager.new(): Manager
 		end
 	end
 
+	local function liveKey(entry: Entry): string?
+		local key = entry.Key
+		return if key ~= nil and live[key] == entry then key else nil
+	end
+
+	-- the press the strip rule asks about (header DOCK); nil = the last press went to no window
+	local lastPress: PressRecord? = nil
+
+	-- the open window docked on `side` other than `except` (header DOCK: one open window per edge)
+	local function occupant(side: Side, except: Entry?): Entry?
+		for _, entry in order do
+			local h = entry.Hints
+			if entry ~= except and h ~= nil and entry.Side:Get() == side and h.Open:Get() then
+				return entry
+			end
+		end
+		return nil
+	end
+
+	-- the windows sharing `entry`'s container (the parent of its surface root), other than itself
+	local function neighbours(entry: Entry): { Entry }
+		local root = entry.Root
+		local container = if root then root.Parent else nil
+		local out: { Entry } = {}
+		if container == nil then
+			return out
+		end
+		for _, other in order do
+			local otherRoot = other.Root
+			if other ~= entry and otherRoot ~= nil and otherRoot.Parent == container then
+				table.insert(out, other)
+			end
+		end
+		return out
+	end
+
+	-- `entry` was just placed (docked, floated, opened, moved to a container, imported): no floating window may sit
+	-- over a strip (header DOCK). A docked open window brings the floating windows of its container out of its strip;
+	-- a floating one is brought out of the strips already there itself (the same path as a shrinking container).
+	local function settle(entry: Entry)
+		local h = entry.Hints
+		if h == nil then
+			return
+		end
+		-- (a closed window is left where it is: it is settled when it opens, and a hidden move would make an
+		-- imported layout export differently)
+		if not h.Open:Get() then
+			return
+		end
+		if entry.Side:Get() == nil then
+			local deco = entry.Deco
+			if deco ~= nil then
+				deco.Reclamp()
+			end
+			return
+		end
+		for _, other in neighbours(entry) do
+			local deco, oh = other.Deco, other.Hints
+			if deco ~= nil and oh ~= nil and oh.Open:Get() then
+				deco.Reclamp()
+			end
+		end
+	end
+
+	-- the strip widths (left, right) that wall a floating `entry` in its container (the docked windows' own FrameHeight)
+	local function insets(entry: Entry): (number, number)
+		local left, right = 0, 0
+		for _, other in neighbours(entry) do
+			local h = other.Hints
+			if h ~= nil and h.Open:Get() then
+				local at = other.Side:Get()
+				if at == "Left" then
+					left = math.max(left, h.Style.FrameHeight:Get())
+				elseif at == "Right" then
+					right = math.max(right, h.Style.FrameHeight:Get())
+				end
+			end
+		end
+		return left, right
+	end
+
 	local function snapshot(entry: Entry): WindowState
 		local h = entry.Hints :: Decoration.Hints
+		local side = entry.Side:Get()
 		return {
 			Kind = entry.Kind,
 			Open = h.Open:Get(),
 			Collapsed = h.Collapsed:Get(),
 			Position = Layout.positionOf(h.Position:Get()),
 			Size = Layout.sizeOf(h.Size:Get()),
+			Dock = side,
+			DockWidth = if side ~= nil then entry.DockWidth:Get() else nil,
 		}
 	end
 
@@ -218,12 +334,54 @@ function Manager.new(): Manager
 
 	-- write a saved state into a window's own Sources (the app's Sources change; the window follows them). The
 	-- window's Kind is its own: a saved Kind never renames a live window.
+	-- A state without a floating rectangle (an edge group of a layout saved without one) leaves Position / Size alone.
+	-- A docked state docks the window, except that an OPEN window cannot take an edge another open window holds — it
+	-- floats; a closed one keeps the edge remembered (header DOCK).
 	local function apply(entry: Entry, state: WindowState)
 		local h = entry.Hints :: Decoration.Hints
 		h.Collapsed:SetIfChanged(state.Collapsed)
-		h.Size:SetIfChanged(Layout.toSize(state.Size))
-		h.Position:SetIfChanged(Layout.toPosition(state.Position))
+		local size, position = state.Size, state.Position
+		if size ~= nil then
+			h.Size:SetIfChanged(Layout.toSize(size))
+		end
+		if position ~= nil then
+			h.Position:SetIfChanged(Layout.toPosition(position))
+		end
+		local side = state.Dock
+		if side ~= nil then
+			local width = state.DockWidth :: number
+			local deco = entry.Deco
+			entry.DockWidth:SetIfChanged(if deco ~= nil then deco.FitDockWidth(width) else width)
+			if state.Open and occupant(side, entry) ~= nil then
+				side = nil
+			end
+		end
+		entry.Side:SetIfChanged(side)
 		h.Open:SetIfChanged(state.Open)
+		settle(entry)
+	end
+
+	-- the key saved on each edge: the open window there (none when it has no Key), else the topmost known key whose
+	-- state remembers that edge (a closed or pending one); every other key remembering an edge is saved as floating
+	local function holders(): { [Side]: string }
+		local out: { [Side]: string } = {}
+		for _, side: Side in { "Left" :: Side, "Right" :: Side } do
+			local holder = occupant(side, nil)
+			if holder ~= nil then
+				local key = liveKey(holder)
+				if key ~= nil then
+					out[side] = key
+				end
+			else
+				for i = #known, 1, -1 do
+					if stateOf(known[i]).Dock == side then
+						out[side] = known[i]
+						break
+					end
+				end
+			end
+		end
+		return out
 	end
 
 	local function refresh()
@@ -232,7 +390,7 @@ function Manager.new(): Manager
 			return
 		end
 		layoutDirty = false
-		local nextLayout = Layout.build(known, stateOf)
+		local nextLayout = Layout.build(known, stateOf, holders())
 		if not Layout.same(nextLayout, layoutOut:Get()) then
 			layoutOut:Set(Layout.freeze(nextLayout))
 		end
@@ -270,10 +428,6 @@ function Manager.new(): Manager
 		Pointer.invalidate()
 	end
 
-	local function liveKey(entry: Entry): string?
-		local key = entry.Key
-		return if key ~= nil and live[key] == entry then key else nil
-	end
 
 	-- put the keyed live windows in `known`'s order, each in one of the slots the keyed windows hold now (header
 	-- STACKING: the windows without a Key keep theirs)
@@ -403,10 +557,17 @@ function Manager.new(): Manager
 		return nil
 	end
 
+	-- a press went to `entry`: remember whether it had the focus before (the strip rule), then focus it
+	local function pressed(entry: Entry)
+		lastPress = { Entry = entry, WasFocused = focusedId:Get() == entry.Id }
+		focus(entry)
+	end
+
 	local function onPress(input: InputObject)
 		if not isPrimaryDown(input) then
 			return
 		end
+		lastPress = nil
 		local x, y = input.Position.X, input.Position.Y
 		local list = nil
 		for i = #order, 1, -1 do
@@ -422,7 +583,7 @@ function Manager.new(): Manager
 			for _, o in list do
 				local entry = windowOf(o)
 				if entry ~= nil then
-					focus(entry)
+					pressed(entry)
 					return
 				elseif Pointer.takesClick(o) then
 					return -- the press went to something that is not a window (a popup, another ScreenGui's button)
@@ -449,7 +610,7 @@ function Manager.new(): Manager
 					end
 				end
 				if hit then
-					focus(entry)
+					pressed(entry)
 					return
 				end
 			end
@@ -475,7 +636,7 @@ function Manager.new(): Manager
 		ExportLayout = function(_self: Manager): WindowLayout
 			layoutUsed = true
 			noticeKeyless()
-			return Layout.build(known, stateOf)
+			return Layout.build(known, stateOf, holders())
 		end,
 		ImportLayout = function(_self: Manager, layout: WindowLayout, factories: { [string]: (key: string) -> () }?)
 			local keys, states = Layout.read("WindowManager:ImportLayout", layout)
@@ -500,6 +661,14 @@ function Manager.new(): Manager
 					forgetting[key] = nil -- imported again: no longer forgotten (header LAYOUT)
 					if live[key] == nil then
 						pending[key] = states[key]
+					end
+				end
+				-- an edge may change hands in one import (A goes left, B leaves it): every named window first lets go of an
+				-- edge it will not keep, so the order of the keys never decides who gets one
+				for _, key in keys do
+					local entry = live[key]
+					if entry ~= nil and entry.Side:Get() ~= states[key].Dock then
+						entry.Side:SetIfChanged(nil)
 					end
 				end
 				-- a window already on screen moves to its saved place (one an app Source destroyed meanwhile waits)
@@ -580,7 +749,18 @@ function Manager.new(): Manager
 			nextId += 1
 			local id = nextId
 			local rank: Source<number> = q.Source(#order + 1)
-			local entry: Entry = { Id = id, Rank = rank, Root = nil, Open = nil, Deco = nil, Hints = nil, Key = nil, Kind = "" }
+			local entry: Entry = {
+				Id = id,
+				Rank = rank,
+				Root = nil,
+				Open = nil,
+				Deco = nil,
+				Hints = nil,
+				Key = nil,
+				Kind = "",
+				Side = q.Source(nil :: Side?),
+				DockWidth = q.Source(0),
+			}
 			table.insert(order, entry)
 			local isFocused: State<boolean> = focusedId:Compute(function(self)
 				return self:Get() == id
@@ -598,8 +778,10 @@ function Manager.new(): Manager
 					return
 				end
 				deco.SetParent(root.Parent)
+				settle(entry)
 				parentConn = root:GetPropertyChangedSignal("Parent"):Connect(function()
 					deco.SetParent(root.Parent)
+					settle(entry) -- moved to another container: a docked window walls that one now, a floating one meets its strips
 				end)
 			end
 
@@ -661,8 +843,9 @@ function Manager.new(): Manager
 						hook(-1)
 					end
 					-- a keyed window that goes away leaves its last state pending (an app tearing its UI down and building
-					-- it again gets its windows back where they were; the Layout output does not change) — unless the app
-					-- asked to forget it
+					-- it again gets its windows back where they were; the Layout output does not change, except when a
+					-- docked window leaves its edge to another key that remembers it — below) — unless the app asked to
+					-- forget it
 					local key = entry.Key
 					if key ~= nil and live[key] == entry then
 						live[key] = nil
@@ -675,10 +858,17 @@ function Manager.new(): Manager
 						end
 					end
 					keyless[entry] = nil
+					local record = lastPress
+					if record ~= nil and record.Entry == entry then
+						lastPress = nil
+					end
 					local deco = entry.Deco
 					if deco ~= nil then
 						entry.Deco = nil
 						deco.Destroy()
+					end
+					if entry.Side:Get() ~= nil then
+						refresh() -- a docked window left its edge: who is saved on that edge may change (header DOCK)
 					end
 					if focusedId:Get() == id then
 						succeed()
@@ -730,6 +920,34 @@ function Manager.new(): Manager
 							focus(entry)
 						end,
 						Changed = if key ~= nil then refresh else nil,
+						Side = entry.Side,
+						DockWidth = entry.DockWidth,
+						SideTaken = function(side: Side): boolean
+							return occupant(side, entry) ~= nil
+						end,
+						-- (refresh also for a window without a Key: who holds an edge decides where the keyed windows that remember
+						-- it are saved; an unchanged layout emits nothing)
+						Dock = function(side: Side, width: number)
+							entry.DockWidth:SetIfChanged(width)
+							entry.Side:SetIfChanged(side)
+							settle(entry)
+							refresh()
+						end,
+						Undock = function()
+							entry.Side:SetIfChanged(nil)
+							refresh()
+						end,
+						Insets = function(): (number, number)
+							return insets(entry)
+						end,
+						FocusedBeforePress = function(): boolean
+							local record = lastPress
+							lastPress = nil
+							if record ~= nil and record.Entry == entry then
+								return record.WasFocused
+							end
+							return isFocused:Get()
+						end,
 					})
 					entry.Deco = deco
 					entry.Open = hints.Open
@@ -741,10 +959,21 @@ function Manager.new(): Manager
 				end,
 				setOpen = function(open: boolean)
 					Pointer.invalidate()
+					local wasDocked = entry.Side:Get() ~= nil
 					if open then
+						-- a docked window opening again goes back to its edge, unless another open window took it meanwhile: then it
+						-- opens floating, at its kept Position / Size (header DOCK)
+						local at = entry.Side:Get()
+						if at ~= nil and occupant(at, entry) ~= nil then
+							entry.Side:Set(nil)
+						end
+						settle(entry)
 						focus(entry) -- opened (or asked again with `Open:Set(true)`): to the front with the focus
 					elseif focusedId:Get() == id then
 						succeed()
+					end
+					if wasDocked then
+						refresh() -- an edge freed or taken again (see Dock above)
 					end
 				end,
 				parts = function(): { Instance }

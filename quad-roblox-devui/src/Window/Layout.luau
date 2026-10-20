@@ -17,25 +17,53 @@
 				  Node = { Tabs = { "outline" }, Selected = "outline" } },
 				...
 			},
+			Left = {                                                         -- optional: the window docked on that edge
+				Width = 280,                        -- the dock width in pixels
+				Collapsed = false,
+				Node = { Tabs = { "explorer" }, Selected = "explorer" },
+				Position = { 0, 60, 0, 60 },        -- optional: the floating rectangle it goes back to when undocked
+				Size = { 300, 200 },                --   (written for a live window; a pending key read from an older save without them may lack them)
+			},
+			Right = { ... },                                                 -- optional, the same shape
 		}
-		WindowState = { Kind = "outline", Open = true, Collapsed = false, Position = { 0, 60, 0, 60 }, Size = { 300, 200 } }
+		WindowState = { Kind = "outline", Open = true, Collapsed = false, Position = { 0, 60, 0, 60 }, Size = { 300, 200 },
+		                Dock = "Left", DockWidth = 280 }   -- Dock / DockWidth: nil = floating
 
 	The layout is a TREE from the start (`.claude/research/devui-docking-plan.md` 2.5): a node is a tab set (later also
 	a two-way split), and a floating window is a group whose node is a tab set with one tab. This devui writes and reads
 	only one-tab nodes; a layout with a wider tab set or a split is rejected until docking reads them. A window's own
-	facts (its Kind, whether it is open) live in `Windows`, the group's (rectangle, collapsed) in `Floating`.
+	facts (its Kind, whether it is open) live in `Windows`, the group's (rectangle, collapsed) in `Floating`, `Left` and
+	`Right`. Every key of `Windows` has exactly one place (a floating group or an edge).
 	`Floating` is in stacking order, bottom first (the keyed windows' z-order; Window/Manager header STACKING). The
-	focus is not saved; neither is the content.
+	edge-docked windows' stacking is not saved: a load puts them under the floating ones [2026-10-20 user decision —
+	their strip at the screen edge is never covered, so they cannot get buried]. An edge group carries the docked
+	window's floating rectangle too [2026-10-20 user decision], optional on read: a group without it leaves the
+	window's Position / Size Sources as they are, which is why `WindowState.Position` / `Size` are optional. The focus
+	is not saved; neither is the content.
 ]]
 
 local Util = require("../Util")
+
+-- the screen edge a window is docked on
+export type Side = "Left" | "Right"
 
 export type WindowState = {
 	Kind: string,
 	Open: boolean,
 	Collapsed: boolean,
-	Position: { number },
-	Size: { number },
+	-- the FLOATING outer rectangle (also while docked); nil only in a state read from a layout's edge group
+	Position: { number }?,
+	Size: { number }?,
+	Dock: Side?, -- nil = floating
+	DockWidth: number?, -- the dock width (nil when floating)
+}
+
+export type DockGroup = {
+	Width: number,
+	Collapsed: boolean,
+	Node: { Tabs: { string }, Selected: string },
+	Position: { number }?, -- the floating rectangle it goes back to when undocked (exported for a live window; a pending key may lack it)
+	Size: { number }?,
 }
 
 export type WindowLayout = {
@@ -47,11 +75,18 @@ export type WindowLayout = {
 		Collapsed: boolean,
 		Node: { Tabs: { string }, Selected: string },
 	} },
+	Left: DockGroup?,
+	Right: DockGroup?,
 }
 
 local Layout = {}
 
 Layout.VERSION = 1
+
+-- a floating group must have a rectangle: a still-pending docked state that has to be saved as floating (its edge is
+-- held by another window) and was never given one gets Window's own defaults
+local DEFAULT_POSITION = { 0, 60, 0, 60 }
+local DEFAULT_SIZE = { 300, 200 }
 
 function Layout.positionOf(p: UDim2): { number }
 	return { p.X.Scale, p.X.Offset, p.Y.Scale, p.Y.Offset }
@@ -70,12 +105,15 @@ function Layout.toSize(t: { number }): Vector2
 end
 
 function Layout.copyState(s: WindowState): WindowState
+	local position, size = s.Position, s.Size
 	return {
 		Kind = s.Kind,
 		Open = s.Open,
 		Collapsed = s.Collapsed,
-		Position = table.clone(s.Position),
-		Size = table.clone(s.Size),
+		Position = if position ~= nil then table.clone(position) else nil,
+		Size = if size ~= nil then table.clone(size) else nil,
+		Dock = s.Dock,
+		DockWidth = if s.Dock ~= nil then s.DockWidth else nil,
 	}
 end
 
@@ -84,18 +122,42 @@ function Layout.empty(): WindowLayout
 	return { Version = Layout.VERSION, Windows = {}, Floating = {} }
 end
 
--- the layout of `keys` (in that order), each one's state from `stateOf`
-function Layout.build(keys: { string }, stateOf: (key: string) -> WindowState): WindowLayout
+local function tab(key: string): { Tabs: { string }, Selected: string }
+	return { Tabs = { key }, Selected = key }
+end
+
+-- the layout of `keys` (in that order), each one's state from `stateOf`. `holders` names the key saved on each edge;
+-- any other key whose state is docked there is saved as floating (a saved layout never holds two windows on one edge)
+function Layout.build(keys: { string }, stateOf: (key: string) -> WindowState, holders: { [Side]: string }): WindowLayout
 	local out = Layout.empty()
 	for _, key in keys do
 		local s = stateOf(key)
 		out.Windows[key] = { Kind = s.Kind, Open = s.Open }
-		table.insert(out.Floating, {
-			Position = table.clone(s.Position),
-			Size = table.clone(s.Size),
-			Collapsed = s.Collapsed,
-			Node = { Tabs = { key }, Selected = key },
-		})
+		local side = s.Dock
+		if side ~= nil and holders[side] == key then
+			local position, size = s.Position, s.Size
+			local group: DockGroup = {
+				Width = s.DockWidth :: number,
+				Collapsed = s.Collapsed,
+				Node = tab(key),
+				-- (absent only for a still-pending state read from a group without them)
+				Position = if position ~= nil then table.clone(position) else nil,
+				Size = if size ~= nil then table.clone(size) else nil,
+			}
+			if side == "Left" then
+				out.Left = group
+			else
+				out.Right = group
+			end
+		else
+			local position, size = s.Position, s.Size
+			table.insert(out.Floating, {
+				Position = table.clone(position or DEFAULT_POSITION),
+				Size = table.clone(size or DEFAULT_SIZE),
+				Collapsed = s.Collapsed,
+				Node = tab(key),
+			})
+		end
 	end
 	return out
 end
@@ -131,6 +193,10 @@ end
 
 -- ── reading what the app hands back (it may come from JSON or from an old save: checked, never trusted) ─────────
 
+local function isFinite(x: any): boolean
+	return type(x) == "number" and x == x and x ~= math.huge and x ~= -math.huge
+end
+
 local function isNumberArray(v: any, n: number): boolean
 	if type(v) ~= "table" or #v ~= n then
 		return false
@@ -143,20 +209,28 @@ local function isNumberArray(v: any, n: number): boolean
 		return false
 	end
 	for i = 1, n do
-		local x = v[i]
-		if type(x) ~= "number" or x ~= x or x == math.huge or x == -math.huge then
+		if not isFinite(v[i]) then
 			return false
 		end
 	end
 	return true
 end
 
-local function checkRect(where: string, component: string, position: any, size: any)
+local function checkPosition(where: string, component: string, position: any)
 	if not isNumberArray(position, 4) then
 		Util.fail(component, `{where}.Position must be an array of 4 numbers (UDim2 X.Scale, X.Offset, Y.Scale, Y.Offset)`)
 	end
+end
+
+local function checkSize(where: string, component: string, size: any)
 	if not isNumberArray(size, 2) then
 		Util.fail(component, `{where}.Size must be an array of 2 numbers (width, height in pixels)`)
+	end
+end
+
+local function checkWidth(where: string, component: string, width: any)
+	if not isFinite(width) or width <= 0 then
+		Util.fail(component, `{where} must be a positive number (the dock width in pixels)`)
 	end
 end
 
@@ -171,11 +245,50 @@ function Layout.readState(component: string, state: any): WindowState
 	if type(state.Open) ~= "boolean" or type(state.Collapsed) ~= "boolean" then
 		Util.fail(component, "state.Open and state.Collapsed must be booleans")
 	end
-	checkRect("state", component, state.Position, state.Size)
+	-- the floating rectangle may be left out (the window keeps the one its Sources hold)
+	if state.Position ~= nil then
+		checkPosition("state", component, state.Position)
+	end
+	if state.Size ~= nil then
+		checkSize("state", component, state.Size)
+	end
+	local dock = state.Dock
+	if dock ~= nil and dock ~= "Left" and dock ~= "Right" then
+		Util.fail(component, `state.Dock must be "Left", "Right" or nil, got {tostring(dock)}`)
+	end
+	if dock ~= nil then
+		checkWidth("state.DockWidth", component, state.DockWidth)
+	elseif state.DockWidth ~= nil then
+		Util.fail(component, "state.DockWidth must be nil when state.Dock is nil (a floating window has no dock width)")
+	end
 	return Layout.copyState(state)
 end
 
--- a WindowLayout from the app (ImportLayout): its windows in Floating order, as (key, private state) pairs
+-- one tab-set node holding one key (the only node this devui reads); returns that key
+local function readNode(component: string, where: string, node: any): string
+	if type(node) ~= "table" or type(node.Tabs) ~= "table" then
+		Util.fail(component, `{where}.Node must be a tab set \{ Tabs = \{ key }, Selected = key }`)
+	end
+	if #node.Tabs ~= 1 or node.Split ~= nil then
+		Util.fail(component, `{where}.Node: tab groups and splits are not supported by this devui yet (one tab per group)`)
+	end
+	local key = node.Tabs[1]
+	if type(key) ~= "string" or node.Selected ~= key then
+		Util.fail(component, `{where}.Node: Tabs[1] must be a string key and Selected the same key`)
+	end
+	return key
+end
+
+local function windowOf(component: string, windows: any, key: string): { Kind: string, Open: boolean }
+	local w = windows[key]
+	if type(w) ~= "table" or type(w.Kind) ~= "string" or type(w.Open) ~= "boolean" then
+		Util.fail(component, `layout.Windows["{key}"] must be \{ Kind = string, Open = boolean }`)
+	end
+	return w
+end
+
+-- a WindowLayout from the app (ImportLayout): its windows as (key, private state) pairs, the edge-docked keys first
+-- and then the floating ones in Floating order (the stacking an import applies: docked windows under the floating)
 function Layout.read(component: string, layout: any): ({ string }, { [string]: WindowState })
 	if type(layout) ~= "table" then
 		Util.fail(component, `layout must be a WindowLayout table, got {typeof(layout)}`)
@@ -189,45 +302,74 @@ function Layout.read(component: string, layout: any): ({ string }, { [string]: W
 	end
 	local keys: { string } = {}
 	local states: { [string]: WindowState } = {}
+	local placedAt: { [string]: string } = {}
+	local function place(key: string, where: string)
+		local before = placedAt[key]
+		if before ~= nil then
+			Util.fail(component, `window "{key}" is placed twice in the layout ({before} and {where})`)
+		end
+		placedAt[key] = where
+		table.insert(keys, key)
+	end
+	for _, side: Side in { "Left" :: Side, "Right" :: Side } do
+		local found: any = layout[side]
+		if found ~= nil then
+			local where = `layout.{side}`
+			if type(found) ~= "table" then
+				Util.fail(component, `{where} must be \{ Width = number, Collapsed = boolean, Node = \{ Tabs = \{ key }, Selected = key } } or nil`)
+			end
+			local group: any = found
+			checkWidth(`{where}.Width`, component, group.Width)
+			-- the floating rectangle is optional here (a save from before it was written)
+			if group.Position ~= nil then
+				checkPosition(where, component, group.Position)
+			end
+			if group.Size ~= nil then
+				checkSize(where, component, group.Size)
+			end
+			if type(group.Collapsed) ~= "boolean" then
+				Util.fail(component, `{where}.Collapsed must be a boolean`)
+			end
+			local key = readNode(component, where, group.Node)
+			place(key, where)
+			local w = windowOf(component, windows, key)
+			states[key] = {
+				Kind = w.Kind,
+				Open = w.Open,
+				Collapsed = group.Collapsed,
+				Position = if group.Position ~= nil then table.clone(group.Position) else nil,
+				Size = if group.Size ~= nil then table.clone(group.Size) else nil,
+				Dock = side,
+				DockWidth = group.Width,
+			}
+		end
+	end
 	for i, group in floating do
 		local where = `layout.Floating[{i}]`
 		if type(i) ~= "number" or type(group) ~= "table" then
 			Util.fail(component, "layout.Floating must be an array of tables")
 		end
-		checkRect(where, component, group.Position, group.Size)
+		checkPosition(where, component, group.Position)
+		checkSize(where, component, group.Size)
 		if type(group.Collapsed) ~= "boolean" then
 			Util.fail(component, `{where}.Collapsed must be a boolean`)
 		end
-		local node = group.Node
-		if type(node) ~= "table" or type(node.Tabs) ~= "table" then
-			Util.fail(component, `{where}.Node must be a tab set \{ Tabs = \{ key }, Selected = key }`)
-		end
-		if #node.Tabs ~= 1 or node.Split ~= nil then
-			Util.fail(component, `{where}.Node: tab groups and splits are not supported by this devui yet (one tab per floating group)`)
-		end
-		local key = node.Tabs[1]
-		if type(key) ~= "string" or node.Selected ~= key then
-			Util.fail(component, `{where}.Node: Tabs[1] must be a string key and Selected the same key`)
-		end
-		if states[key] ~= nil then
-			Util.fail(component, `window "{key}" is placed twice in layout.Floating`)
-		end
-		local w = windows[key]
-		if type(w) ~= "table" or type(w.Kind) ~= "string" or type(w.Open) ~= "boolean" then
-			Util.fail(component, `layout.Windows["{key}"] must be \{ Kind = string, Open = boolean }`)
-		end
-		table.insert(keys, key)
+		local key = readNode(component, where, group.Node)
+		place(key, where)
+		local w = windowOf(component, windows, key)
 		states[key] = {
 			Kind = w.Kind,
 			Open = w.Open,
 			Collapsed = group.Collapsed,
 			Position = table.clone(group.Position),
 			Size = table.clone(group.Size),
+			Dock = nil,
+			DockWidth = nil,
 		}
 	end
 	for key in windows do
 		if type(key) ~= "string" or states[key] == nil then
-			Util.fail(component, `layout.Windows["{tostring(key)}"] has no place in layout.Floating`)
+			Util.fail(component, `layout.Windows["{tostring(key)}"] has no place in layout.Floating, layout.Left or layout.Right`)
 		end
 	end
 	return keys, states

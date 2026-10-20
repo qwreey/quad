@@ -11,6 +11,9 @@
 	Input.use(listener?)   -> install a listener (story mode) / nil restores the engine service
 	Input.isOverridden()
 	Input.guiInset()       -> GuiService:GetGuiInset() top-left in game mode; Vector2.zero while overridden
+	Input.topbarHeight()   -> GuiService.TopbarInset.Max.Y in game mode (the Roblox top bar's bottom, screen space);
+	                          0 while overridden or where the service has no TopbarInset (a mock)
+	Input.onTopbarChanged(fn) -> disconnect: `fn` runs when TopbarInset changes (a no-op where it cannot change)
 
 	While overridden: the three Input* signals come from the listener, GetMouseLocation() is the last `MouseMoved`
 	position (ONE connection, dropped on the next `use`), WindowFocusReleased never fires, writes such as
@@ -137,6 +140,36 @@ function Input.guiInset(): Vector2
 		return inset
 	end
 	return Vector2.zero
+end
+
+-- read through pcall: a service table without the property (the spec mock, an old engine) is "no top bar"
+function Input.topbarHeight(): number
+	if overridden ~= nil then
+		return 0
+	end
+	local guiService: any = game:GetService("GuiService")
+	local ok, rect = pcall(function()
+		return guiService.TopbarInset
+	end)
+	if ok and typeof(rect) == "Rect" then
+		return math.max(0, rect.Max.Y)
+	end
+	return 0
+end
+
+function Input.onTopbarChanged(fn: () -> ()): () -> ()
+	local guiService = game:GetService("GuiService") :: any
+	-- (pcall: a service table without the method is "never changes")
+	local ok, signal = pcall(function()
+		return guiService:GetPropertyChangedSignal("TopbarInset")
+	end)
+	if not ok or signal == nil then
+		return function() end
+	end
+	local conn = (signal :: RBXScriptSignal):Connect(fn)
+	return function()
+		conn:Disconnect()
+	end
 end
 
 return Input

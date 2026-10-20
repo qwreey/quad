@@ -15,6 +15,7 @@
 			AvailableSize: Source<Vector2>?,    -- output: the room the children get (visible content area minus padding)
 			Collapsed: Source<boolean>?,        -- the arrow sets it; collapsed = a small icon (press: expand, drag: move)
 			NoTitleBar / NoResize / NoMove / NoClose / NoCollapse: boolean?,   -- static flags
+			NoDock: boolean?,                   -- static: dragging the title bar to a screen edge does not dock it (a layout may)
 			OnCloseRequest: (() -> ())?,        -- given: the close button only calls it and leaves Open alone — the app decides
 			                                    -- (ask in a dialog, then `Open:Set(false)`, destroy, `ForgetWindow`); nil: it closes
 			MinSize: Vector2?,                  -- resize floor (default 2 x frame height square)
@@ -40,6 +41,19 @@
 	`Position` (the outer top-left) — the `Icon` image, or the title's first letter on a rounded square. Pressing it
 	expands the window; dragging it moves the window. There is no "title bar only" look any more.
 
+	DOCKED AT A SCREEN EDGE [2026-10-20 user decisions — docking stage 2]: drag the title bar until the pointer is at the
+	left or right edge of the container (a preview shows) and release: the window docks there — a strip over the
+	container's full height at the edge (`WindowDockStrip`, floating windows of that container never enter it) and the
+	panel right inside it, as wide as the dock width and as tall as the container (below the Roblox top bar when the
+	container reaches under it). One open window per edge. Pressing the strip expands a collapsed panel (and focuses
+	it), focuses an expanded one without the focus, and collapses the focused one (`Collapsed`: the panel hides, the
+	strip stays). A handle on the panel's inner edge (`WindowDockResize`) sets the width; dragging the title bar off the
+	edge makes the window float again. While docked, `Position` / `Size` keep the FLOATING rectangle (an app writing
+	them moves nothing until it floats); the real size is `AvailableSize` (or the surface root's AbsoluteSize). Closing
+	keeps the edge: `Open:Set(true)` docks it there again, or opens it floating when another window took that edge.
+	`NoDock` stops the drag from docking (a layout may still dock it); `NoMove` stops docking and undocking by drag.
+	Rules in Window/Decoration.luau header "DOCKED" and Window/Manager header "DOCK".
+
 	SAVING THE LAYOUT: give a window `Key` (its identity — unique among its manager's live windows, a duplicate raises)
 	and optionally `Kind` (its type, default = the Key; two windows of one type get the same Kind and different Keys).
 	The manager then exports / imports its Position, Size, Open and Collapsed as plain JSON-ready tables (Window/Manager
@@ -51,7 +65,7 @@
 	own Size instead of scrolling. `AvailableSize` (an output Source the window writes; named after ImGui's content region
 	"avail" — Roblox's AbsoluteContentSize means the children's total, the opposite) is the room the children get — the
 	content area's visible size (AbsoluteWindowSize: a shown scrollbar is left out) minus the window padding — for
-	layouts that need a number; a container that sets the window's size (a future dock) moves both the same way.
+	layouts that need a number; a docked panel (sized by its edge, not by `Size`) moves both the same way.
 
 	Returns the surface root Frame (named "Window"): root > Content (ScrollingFrame + UIListLayout + UIPadding). It is
 	shown while the window is open and not collapsed. Closing keeps the instances and hides them — `Open:Set(true)`
@@ -104,6 +118,7 @@ export type WindowProps = {
 	read NoMove: boolean?,
 	read NoClose: boolean?,
 	read NoCollapse: boolean?,
+	read NoDock: boolean?,
 	read OnCloseRequest: (() -> ())?,
 	read MinSize: Vector2?,
 	read Icon: string?,
@@ -148,6 +163,7 @@ local function Window(props: WindowProps): Frame
 		NoMove = props.NoMove == true,
 		NoClose = props.NoClose == true,
 		NoCollapse = props.NoCollapse == true,
+		NoDock = props.NoDock == true,
 		OnCloseRequest = onCloseRequest,
 		MinSize = props.MinSize,
 		Icon = props.Icon,

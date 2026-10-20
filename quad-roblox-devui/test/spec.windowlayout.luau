@@ -153,7 +153,7 @@ end)
 H.section("pending keys survive a round trip: an unknown key is exported again unchanged", function()
 	local m = Devui.WindowManager.new()
 	local a = Devui.Window({ Title = "A", Key = "a", Manager = m })
-	local server = {
+	local server: WindowLayout = {
 		Version = 1,
 		Windows = { a = { Kind = "a", Open = true }, server = { Kind = "serverProps", Open = true } },
 		Floating = {
@@ -382,7 +382,8 @@ H.section("ExportWindow / ImportWindow: one window's state, live or pending", fu
 	local s = m:ExportWindow("w") :: WindowState
 	assertPlain(s, "state")
 	assert(s.Kind == "inspector" and s.Open == true and s.Collapsed == false)
-	assert(s.Position[2] == 30 and s.Position[4] == 40 and s.Size[1] == 300 and s.Size[2] == 200)
+	local sp, ss = s.Position :: { number }, s.Size :: { number } -- (always filled for a live window)
+	assert(sp[2] == 30 and sp[4] == 40 and ss[1] == 300 and ss[2] == 200 and s.Dock == nil and s.DockWidth == nil)
 	pos:Set(UDim2.fromOffset(0, 0))
 	m:ImportWindow("w", json(s))
 	assert(pos:Get() == UDim2.fromOffset(30, 40), "live: moved back")
@@ -465,6 +466,190 @@ H.section("q.debug: one notice per manager about key-less windows, only once the
 	q.dispose(a)
 	q.dispose(b)
 	H.resetOutput()
+end)
+
+-- ── edge docking (docking stage 2): Left / Right, WindowState.Dock / DockWidth ──────────────────────────────────────
+
+local function dockGroup(key: string, width: number, patch: { [string]: any }?): any
+	local g: { [string]: any } = { Width = width, Collapsed = false, Node = { Tabs = { key }, Selected = key }, Position = { 0, 40, 0, 50 }, Size = { 260, 180 } }
+	for k, v in patch or {} do
+		g[k] = v
+	end
+	return g
+end
+local function floatGroup(key: string, x: number): any
+	return { Position = { 0, x, 0, 0 }, Size = { 200, 100 }, Collapsed = false, Node = { Tabs = { key }, Selected = key } }
+end
+
+H.section("Left / Right: written with the floating rectangle, read back (JSON round trip), a pending key docks at registration", function()
+	local m = Devui.WindowManager.new()
+	m:ImportLayout({
+		Version = 1,
+		Windows = { explorer = { Kind = "explorer", Open = true }, props = { Kind = "props", Open = true }, out = { Kind = "out", Open = true } },
+		Floating = { floatGroup("out", 300) },
+		Left = dockGroup("explorer", 280),
+		Right = dockGroup("props", 220, { Collapsed = true }),
+	})
+	local pos, size = q.Source(UDim2.new()), q.Source(Vector2.new(1, 1))
+	local explorer = Devui.Window({ Title = "Explorer", Key = "explorer", Manager = m, Position = pos, Size = size })
+	local props = Devui.Window({ Title = "Props", Key = "props", Manager = m })
+	local out = Devui.Window({ Title = "Out", Key = "out", Manager = m })
+	local st = m:ExportWindow("explorer") :: WindowState
+	assert(st.Dock == "Left" and st.DockWidth == 280, "docked at registration")
+	assert(pos:Get() == UDim2.fromOffset(40, 50) and size:Get() == Vector2.new(260, 180), "its floating rectangle written into the Sources")
+	assert((m:ExportWindow("props") :: WindowState).Dock == "Right" and (m:ExportWindow("props") :: WindowState).Collapsed == true)
+	local layout = m:ExportLayout()
+	assertPlain(layout, "layout")
+	local left, right = layout.Left :: any, layout.Right :: any
+	assert(left.Width == 280 and left.Node.Tabs[1] == "explorer" and left.Position[2] == 40 and left.Size[1] == 260)
+	assert(right.Width == 220 and right.Collapsed == true and right.Node.Selected == "props")
+	assert(#layout.Floating == 1 and layout.Floating[1].Node.Tabs[1] == "out", "Floating holds only the floating key")
+	assert(layout.Windows.explorer.Open == true and layout.Windows.props.Kind == "props", "Windows lists the docked keys too")
+	local back = json(layout)
+	assert(back.Left.Width == 280 and back.Right.Node.Tabs[1] == "props", "JSON round trip")
+	m:ImportLayout(back)
+	assert(serde.encode("json", m:ExportLayout()) == serde.encode("json", layout), "importing it back changes nothing")
+	for _, w in { explorer, props, out } do
+		q.dispose(w)
+	end
+	H.assertNoDebugOutput("dock layout")
+end)
+
+H.section("an edge group without Position / Size (an older save) is read: the window keeps its Sources' rectangle", function()
+	local m = Devui.WindowManager.new()
+	local layout: any = {
+		Version = 1,
+		Windows = { explorer = { Kind = "explorer", Open = true } },
+		Floating = {},
+		Left = { Width = 280, Collapsed = false, Node = { Tabs = { "explorer" }, Selected = "explorer" } },
+	}
+	m:ImportLayout(layout)
+	local waiting = m:ExportWindow("explorer") :: WindowState
+	assert(waiting.Position == nil and waiting.Size == nil and waiting.Dock == "Left", "a pending state without a rectangle")
+	assert(m:ExportLayout().Left ~= nil and (m:ExportLayout().Left :: any).Position == nil, "exported again as it came")
+	local pos, size = q.Source(UDim2.fromOffset(7, 8)), q.Source(Vector2.new(90, 80))
+	local w = Devui.Window({ Title = "E", Key = "explorer", Manager = m, Position = pos, Size = size })
+	assert(pos:Get() == UDim2.fromOffset(7, 8) and size:Get() == Vector2.new(90, 80), "nil Position / Size: the Sources are left alone")
+	local live = m:ExportWindow("explorer") :: WindowState
+	assert((live.Position :: { number })[2] == 7 and (live.Size :: { number })[1] == 90, "a live window's state always has them")
+	assert(((m:ExportLayout().Left :: any).Position :: { number })[4] == 8, "and the edge group too, once live")
+	-- ImportWindow without a rectangle, live: only the other facts change
+	m:ImportWindow("explorer", { Kind = "explorer", Open = true, Collapsed = true, Dock = "Left", DockWidth = 300 })
+	assert(pos:Get() == UDim2.fromOffset(7, 8) and (m:ExportWindow("explorer") :: WindowState).DockWidth == 300)
+	q.dispose(w)
+	H.assertNoDebugOutput("old save")
+end)
+
+H.section("stacking after a load: the docked windows start under the floating ones (their order is not saved)", function()
+	local m = Devui.WindowManager.new()
+	local a = Devui.Window({ Title = "A", Key = "a", Manager = m })
+	local b = Devui.Window({ Title = "B", Key = "b", Manager = m })
+	local d = Devui.Window({ Title = "D", Key = "d", Manager = m }) -- built last: on top
+	m:ImportLayout({
+		Version = 1,
+		Windows = { a = { Kind = "a", Open = true }, b = { Kind = "b", Open = true }, d = { Kind = "d", Open = true } },
+		Floating = { floatGroup("a", 0), floatGroup("b", 10) },
+		Left = dockGroup("d", 250),
+	})
+	assert(stack({ a = a, b = b, d = d }) == "d,a,b", stack({ a = a, b = b, d = d }))
+	-- raising the docked window at run time puts it on top; the saved Floating order is the floating keys only
+	m:ImportWindow("d", m:ExportWindow("d") :: WindowState)
+	local focusD = q.Source(false)
+	q.dispose(d)
+	d = Devui.Window({ Title = "D", Key = "d", Manager = m, Focused = focusD })
+	focusD:Set(true)
+	assert(stack({ a = a, b = b, d = d }) == "a,b,d", "raised like any window")
+	assert(tabsOf(m:ExportLayout()) == "a,b" and (m:ExportLayout().Left :: any).Node.Tabs[1] == "d")
+	-- built after an import in another order: the same
+	local saved = m:ExportLayout()
+	for _, w in { a, b, d } do
+		q.dispose(w)
+	end
+	local m2 = Devui.WindowManager.new()
+	m2:ImportLayout(json(saved))
+	local b2 = Devui.Window({ Title = "B", Key = "b", Manager = m2 })
+	local a2 = Devui.Window({ Title = "A", Key = "a", Manager = m2 })
+	local d2 = Devui.Window({ Title = "D", Key = "d", Manager = m2 })
+	assert(stack({ a = a2, b = b2, d = d2 }) == "d,a,b", stack({ a = a2, b = b2, d = d2 }))
+	for _, w in { a2, b2, d2 } do
+		q.dispose(w)
+	end
+	H.assertNoDebugOutput("dock stacking")
+end)
+
+H.section("one window per edge: a pending docked key finds its edge held -> floats; a closed docked window behind an open one is saved floating", function()
+	local m = Devui.WindowManager.new()
+	local holder = Devui.Window({ Title = "H", Key = "holder", Manager = m })
+	m:ImportWindow("holder", { Kind = "holder", Open = true, Collapsed = false, Dock = "Left", DockWidth = 200 })
+	m:ImportWindow("late", { Kind = "late", Open = true, Collapsed = false, Dock = "Left", DockWidth = 300, Position = { 0, 70, 0, 80 }, Size = { 150, 100 } })
+	local lp = q.Source(UDim2.new())
+	local late = Devui.Window({ Title = "L", Key = "late", Manager = m, Position = lp })
+	assert((m:ExportWindow("late") :: WindowState).Dock == nil and lp:Get() == UDim2.fromOffset(70, 80), "the edge is held: it starts floating")
+	q.dispose(late)
+	-- a closed window remembering the edge while another one holds it: saved floating
+	local co = q.Source(false)
+	local closed = Devui.Window({ Title = "C", Key = "closed", Manager = m, Open = co })
+	m:ImportWindow("closed", { Kind = "closed", Open = false, Collapsed = false, Dock = "Left", DockWidth = 120 })
+	assert((m:ExportWindow("closed") :: WindowState).Dock == "Left", "a closed window keeps the edge remembered")
+	local layout = m:ExportLayout()
+	assert((layout.Left :: any).Node.Tabs[1] == "holder", "the open one holds the edge")
+	local floating: { string } = {}
+	for _, g in layout.Floating do
+		table.insert(floating, g.Node.Tabs[1])
+	end
+	table.sort(floating)
+	assert(table.concat(floating, ",") == "closed,late", table.concat(floating, ","))
+	-- the saved layout reads back (no key placed twice)
+	m:ImportLayout(json(layout))
+	q.dispose(holder)
+	q.dispose(closed)
+	H.assertNoDebugOutput("one per edge")
+end)
+
+H.section("bad edge groups and dock states raise", function()
+	local m = Devui.WindowManager.new()
+	local function bad(layout: any, expect: string)
+		local e2 = err(function()
+			m:ImportLayout(layout)
+		end)
+		assert(string.find(e2, expect, 1, true) ~= nil, `{expect}: {e2}`)
+	end
+	local wa = { a = { Kind = "a", Open = true } }
+	local wab = { a = { Kind = "a", Open = true }, b = { Kind = "b", Open = true } }
+	bad({ Version = 1, Windows = wa, Floating = {}, Left = 5 }, "layout.Left must be { Width = number")
+	bad({ Version = 1, Windows = wa, Floating = {}, Left = dockGroup("a", 0) }, "layout.Left.Width must be a positive number")
+	bad({ Version = 1, Windows = wa, Floating = {}, Right = dockGroup("a", 0 / 0) }, "layout.Right.Width must be a positive number")
+	bad({ Version = 1, Windows = wa, Floating = {}, Left = dockGroup("a", 200, { Collapsed = 1 }) }, "layout.Left.Collapsed must be a boolean")
+	bad({ Version = 1, Windows = wab, Floating = {}, Left = dockGroup("a", 200, { Node = { Tabs = { "a", "b" }, Selected = "a" } }) }, "tab groups and splits are not supported")
+	bad({ Version = 1, Windows = wa, Floating = {}, Left = dockGroup("a", 200, { Position = { 0, 0 } }) }, "layout.Left.Position must be an array of 4 numbers")
+	bad({ Version = 1, Windows = wa, Floating = {}, Left = dockGroup("a", 200, { Size = { 1 } }) }, "layout.Left.Size must be an array of 2 numbers")
+	bad({ Version = 1, Windows = wa, Floating = { floatGroup("a", 0) }, Left = dockGroup("a", 200) }, 'window "a" is placed twice in the layout (layout.Left and layout.Floating[1])')
+	bad({ Version = 1, Windows = wa, Floating = {}, Left = dockGroup("a", 200), Right = dockGroup("a", 200) }, 'window "a" is placed twice in the layout (layout.Left and layout.Right)')
+	bad({ Version = 1, Windows = {}, Floating = {}, Left = dockGroup("a", 200) }, 'layout.Windows["a"] must be')
+	bad({ Version = 1, Windows = wab, Floating = {}, Left = dockGroup("a", 200) }, 'layout.Windows["b"] has no place in layout.Floating, layout.Left or layout.Right')
+	local function badState(state: any, expect: string)
+		local e2 = err(function()
+			m:ImportWindow("a", state)
+		end)
+		assert(string.find(e2, "Devui.WindowManager:ImportWindow: " .. expect, 1, true) ~= nil, `{expect}: {e2}`)
+	end
+	local base = { Kind = "a", Open = true, Collapsed = false }
+	local function with(patch: { [string]: any }): any
+		local t = table.clone(base) :: { [string]: any }
+		for k, v in patch do
+			t[k] = v
+		end
+		return t
+	end
+	badState(with({ Dock = "Up", DockWidth = 100 }), 'state.Dock must be "Left", "Right" or nil, got Up')
+	badState(with({ Dock = "Left" }), "state.DockWidth must be a positive number")
+	badState(with({ Dock = "Left", DockWidth = -3 }), "state.DockWidth must be a positive number")
+	badState(with({ DockWidth = 100 }), "state.DockWidth must be nil when state.Dock is nil")
+	badState(with({ Position = { 0, 0, 0 } }), "state.Position must be an array of 4 numbers")
+	-- nil Position / Size is fine
+	m:ImportWindow("a", with({}))
+	assert((m:ExportWindow("a") :: WindowState).Position == nil)
+	H.assertNoDebugOutput("bad dock")
 end)
 
 H.done()
