@@ -40,3 +40,12 @@ devplorer가 `quad-upstream-2026-10-20.md`를 냈다(사용자: 핵심 셋 — q
 - **킷 규모 시험**(opus, `audit/decl-typefn-probe-2026-10-16/REPORT.md` 끝 절): 두 킷 330파일을 변환 시제품으로 새 표면에 옮겨 검사 — 마커 결정 때문의 새 오류 0, too complex 세 모드 0, 입력 Modifier에 메소드가 필요한 자리 0; sync(override 없음)에서 기준선은 파일마다 심은 오류 0/194를 잡고(생성 D가 무너져 검사가 꺼진 상태) 변환본은 194/194; 옛 b2 놓침 81/81 닫힘. 기계 변환 1382/1384, 못 바꾼 자리 둘(모듈 밖으로 나가는 OnChange 훅, any 캐스트로 묶은 D). 실제 타입 함수 구현에 필요한 보강 셋(진짜 `NewChild`, Ref 마커 팔, `StateMarker<T | Tween<T>>`)과 base `Modifier`는 quad-types를 직접 고쳐야 뺄 수 있다는 것, 변환 스크립트 고칠 점 열하나.
 - **devui 문서 손질**(`2237890c`) — devplorer 보고 S 묶음. **U17** 재현 안 됨(모의·Studio). **Studio**: 18번 `[RW]` 줄이 리눅스와 같음(Studio도 읽기 전용 표시 없음), `studio-analysis`가 목록 일부만 읽어 19~29번 미완.
 - 사용자에게 묶음 가(포인터 아래 맨 위 판정 — 10-16 리뷰 5·6·7·8 포함) 결정 재료 전달.
+
+## 9. 2026-10-20 (뒤) — 묶음 가 구현, 결정 묶음, 위임 수단 추가
+
+- **묶음 가 구현**(`a5a4145b`): 내부 `Pointer`(클릭이 갈 곳 하나로 hover·툴팁·창 올리기) + `GlobalInput`(Input.use 재연결). Studio 실측으로 재판정 시점을 "다음 PreRender 뒤 Heartbeat"로 바꿈(엔진 목록은 렌더 뒤에야 갱신). 사용자 질문 "TextButton으로 가리면 MouseEnter가 안 내려가지 않나"는 Studio에서 내려감으로 확인(막히는 건 클릭).
+- **10-16 리뷰 4번은 고치지 않음**(사용자: *"고치면 약간 마법 … Fallback 이나 다른 곳도 사용자 문제나 에러로 인해 깨진 경우에 뒷 처리를 안 해주는데"*) — 대신 `Quad0272` 메시지·문서에 "만든 원소는 남고 Slot은 빈 채"를 적음(`b474912b`).
+- **devplorer 묶음 결정**: 나 권고대로, 다 보류(저쪽이 다듬는 중), 라 그대로 올림, 마 채우기+안쪽 크기, 바 처리(기본 투명 유지), devui는 inspired일 뿐 정본 없음, S12 디버그 무관 1회 경고(구현). 원문은 `feedback/devplorer-2026-10-20.md` 묶음 앞 결정 문단.
+- **도킹 바람**(사용자 메모 → sonnet 정리) ROADMAP 백로그로. 마를 "컨테이너가 높이를 정해도 되는 채우기 + 읽기용 안쪽 크기"로 하면 디딤돌이라는 판단.
+- **codex 위임 가능**(sonnet 조사): codex-cli 0.163.0, 최소 모델 `gpt-6-luna`, `codex exec -m gpt-6-luna -c model_reasoning_effort=low -c approval_policy=never -s read-only --skip-git-repo-check --ephemeral --ignore-user-config -C <dir> -o <답 파일> - < <프롬프트>`로 1회 성공(1,953 토큰). 사용자: Plus라 쿼터가 작고 사용량은 사용자가 확인. 이름 정리 같은 객관 평가에 Gemini·sonnet과 함께 쓸 수 있다. 스크립트 초안은 스크래치에만(미검증 — 낮은 uid에서 bubblewrap 동작 미확인).
+- studio-analysis: 사용자가 스크롤 종료 판정 로직을 고치는 중(같은 줄 수의 중복 에러에서 멈춤).

@@ -157,14 +157,19 @@ H.section("the layer dying closes every open popup: OnClose once each (newest fi
 	H.assertNoDebugOutput("layer death")
 end)
 
-H.section("debug line when the layer is not mounted; a detached entry closes without Slot ops", function()
+H.section("warning when the layer is not mounted (once per overlay, without q.debug too); a detached entry closes without Slot ops", function()
 	Overlay.warnUnmounted = true
+	q.debug = false
 	H.resetOutput()
 	local o = Overlay.new()
 	local bare = o:Open({ Content = D.Frame({}), Position = Vector2.new(0, 0) })
 	local out = H.output()
-	assert(#out == 1 and string.find(out[1], "not mounted", 1, true) ~= nil, "one debug line for an unmounted layer")
+	assert(#out == 1 and string.find(out[1], "not mounted", 1, true) ~= nil, "one warning for an unmounted layer, debug off")
 	bare:Close()
+	bare = o:Open({ Content = D.Frame({}), Position = Vector2.new(0, 0) })
+	assert(#H.output() == 1, "once per overlay")
+	bare:Close()
+	q.debug = true
 	H.resetOutput()
 	local gui = D.ScreenGui({ o.Layer })
 	local mounted = o:Open({ Content = D.Frame({}), Position = Vector2.new(0, 0) })

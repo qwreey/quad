@@ -267,6 +267,19 @@ setGlobal("print", function(...: any)
 	end
 end)
 
+-- `warn` goes to the same capture (the kit warns where a mistake would otherwise be silent, e.g. an unmounted Overlay)
+setGlobal("warn", function(...: any)
+	local parts = {}
+	for i = 1, select("#", ...) do
+		parts[i] = tostring((select(i, ...)))
+	end
+	local line = table.concat(parts, " ")
+	table.insert(captured, line)
+	if echo then
+		realPrint("[warn] " .. line)
+	end
+end)
+
 local H = {}
 
 H.mock = mock

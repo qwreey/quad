@@ -39,9 +39,10 @@ under Deferred signals) (the ScreenGui was rebuilt, e.g. ResetOnSpawn) makes a f
 	layer is never handed out again, so rebuilding a UI never re-parents a destroyed instance (Quad0219). Put
 	`Overlay.getDefault().Layer` into the ONE ScreenGui that shows popups (the layer is a single instance: two live
 	ScreenGuis cannot both hold it — Quad0160); for several ScreenGuis create your own `Overlay.new()` per ScreenGui and pass
-	it to the widgets (`Overlay = overlay`). With `q.debug` on, `Open` prints one line when the layer is not mounted
-	(`Layer.Parent == nil`): the popup would be invisible; and one line (once per overlay) when the ScreenGui above the
-	layer is not `ZIndexBehavior = Sibling` (see below). Always create the ScreenGui with `ResetOnSpawn = false` (the layer is a
+	it to the widgets (`Overlay = overlay`). The first `Open` on a layer that is not mounted (`Layer.Parent == nil`) warns
+	once per overlay, with or without `q.debug` (the popup would be invisible and nothing else says so — user decision
+	2026-10-20, a consumer lost time on it); with `q.debug` on, one line (once per overlay) also says when the ScreenGui
+	above the layer is not `ZIndexBehavior = Sibling` (see below). Always create the ScreenGui with `ResetOnSpawn = false` (the layer is a
 	quad-made instance, a respawn would destroy it behind quad's back).
 
 	WHEN THE LAYER DIES every popup still open is closed on the spot: `IsOpen` goes false, `OnClose` runs once (so owners
@@ -93,8 +94,8 @@ export type Overlay = {
 
 local Overlay = {}
 
--- debug aid switch (default on): `Open` prints one line under `q.debug` when the layer is not in a ScreenGui. Specs that
--- open popups on a bare layer turn it off; nothing else should.
+-- switch (default on): the first `Open` on an unmounted layer warns once per overlay. Specs that open popups on a bare
+-- layer turn it off; nothing else should.
 Overlay.warnUnmounted = true
 
 -- synchronous death checks (weak keys) so `getDefault` never hands out an overlay whose layer was just destroyed
@@ -161,12 +162,15 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 	-- root with rank 2+ then draws over its own content and over every popup (their ZIndex is 1). Nothing raises, so the
 	-- first Open under such a ScreenGui says it (as the material kit's Overlay does).
 	local zIndexChecked = false
+	local unmountedWarned = false
 	local function openPopup(self: Overlay, opts: PopupOptions): Popup
 		if isDead() then
 			error("Overlay:Open: the overlay layer was destroyed", 2)
 		end
-		if q.debug and Overlay.warnUnmounted and layer.Parent == nil then
-			print("Overlay:Open: overlay layer is not mounted — the popup will not be visible")
+		-- not debug-gated (once per overlay, not per frame): an invisible popup is otherwise silent
+		if Overlay.warnUnmounted and not unmountedWarned and layer.Parent == nil then
+			unmountedWarned = true
+			warn("Devui.Overlay:Open: the overlay layer is not mounted — the popup will not be visible. Put `overlay.Layer` (or `Devui.Overlay.getDefault().Layer`) into the ScreenGui that shows popups")
 		end
 		if q.debug and not zIndexChecked then
 			-- by ClassName, not IsA("LayerCollector"): the spec mock has no class hierarchy
