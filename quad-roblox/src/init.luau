@@ -60,7 +60,6 @@ export type TweenData<T> = Types.TweenData<T>
 export type TweenOptions<T> = Types.TweenOptions<T>
 export type TweenOverride = Types.TweenOverride
 export type TweenConstructor = Types.TweenConstructor
-export type NewChild = Types.NewChild
 export type AnimateInfo = Types.AnimateInfo
 export type AnimateFn = Types.AnimateFn
 -- M11 단위 ③: `Animate`(tween-plan "`Animate` 콤비네이터" 절)도 같은 병합 —

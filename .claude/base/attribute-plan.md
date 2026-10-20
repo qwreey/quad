@@ -1,5 +1,7 @@
 # Attr — 단일 키(`AttrKey`)와 그룹(`Attr(...)`) 두 프리미티브
 
+> **[2026-10-20 — 3.4.0 표면]** 이 문서의 `D.Frame {…}`·`Declaration`(관례 별칭 `D`)·`<Class>Param<E>`는 지금 `q.Elem "Frame" {…}`·`Props<C>`다(`base/surface-plan.md`). Attr 의미론은 그대로.
+
 > **[2026-09-08 사용자 결정] `Attribute` → `Attr` 축약 반영** — 공개 이름 전부(`Attr`/`AttrKey`/`StringAttr`/
 > `NumberAttr`/`BooleanAttr`/`isAttr`/`isAttrKey`), quad-types 타입(`Attr`/`AttrConstructor`/`AttrSugar<T>`/
 > `AttrMarker`, 마커 필드 `__quadAttr`), 소스 폴더 `quad-base/src/Attr/`(옛 `Attribute/`), 엔진 op `setAttr`(옛

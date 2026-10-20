@@ -1,5 +1,7 @@
 # Slot — 뮤터블 자식 배열, 엄격한 단일 마운트 소유권 (base로 승격됨)
 
+> **[2026-10-20 — 3.4.0 표면]** 이 문서의 `D.InstSlot`·`D.Frame{ s }` 같은 생성 표기는 지금 `q.Elem "Frame" { s }` 꼴이다(`base/surface-plan.md`). Slot 의미론은 그대로.
+
 > **[2026-09-15 표기 변경 — 공개 표면 (30) 사용자 결정]** 백엔드가 심는 계약 op는 `module.Backend.<op>`(`native*`·`isInst`·`nativeClaim`·`isClaimed`·`nativeFindChild`·`onDestroying`·`addTag`/`removeTag`/`setAttr`·`setTimeout`/`clearTimeout`·**[2026-09-18 round11 Q59]** hold op 넷 `holdLifetime`/`releaseLifetime`/`isHeld`/`isHeldBy`, 이름 그대로 — `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`도 같은 네임스페이스에 살지만 그 넷은 quad-base가 직접 구현한다, `lifecycle-pattern.md` (1-2))로, Length/Offset 부기는 `module.Bookkeeping.<fn>`(옛 `Dispatch.setLength` 등 재수출·비공개 `_bookkeeping`)으로 옮겨졌다. 이 문서 본문의 `module.<op>`·`Dispatch.setLength` 표기는 그 전 이름이다 — 설계 내용은 그대로 유효.
 
 > **✅ [2026-08-13 열네 번째 세션] 하강 diff 재디스패치 반영 완료.**
@@ -3643,7 +3645,7 @@ local function wrapElement(v)
             error("Slot: this backend cannot mount this value", 2)
         end
         if not isClaimed(v) then  -- [2026-09-16 사용자 결정] 미claim 요소 거부 — 자동 claim은 마법(`claim-plan.md` 14번)
-            error("Slot: this element is not claimed by quad - build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one - a destroyed Instance cannot be reused)", 2) -- 꼬리 구절: round10 Q54 (2026-09-17)
+            error("Slot: this element is not claimed by quad - build it with q.Elem or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one - a destroyed Instance cannot be reused)", 2) -- 꼬리 구절: round10 Q54 (2026-09-17)
         end
         return v
     end

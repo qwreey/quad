@@ -1,5 +1,7 @@
 # UI 편의 숏핸드 (UICorner/UIPadding/UIScale) — 인라인 적용
 
+> **[2026-10-20 — 3.4.0 표면]** 생성 `Declaration`은 지워졌다. 이 문서의 `quad.Declaration.New(class)`는 지금 `quad.Elem(class)`(`quad-roblox/src/Handlers/InstanceShorthand.luau`), `<Class>Param`·`<Class>Modifier`·`FrameModifier`류 타입과 "생성 D" 서술은 3.3까지의 것 — 지금 표면은 `base/surface-plan.md`.
+
 **상태**: base — 기능 필요 여부·이름·메커니즘·패키지 배치·store-bind 가능성까지
 전부 확정(2026-08-07 문서 정리에서 `research/`→`base/` 승격). 남은 건 구현
 단계의 세부 시그니처뿐.
@@ -58,7 +60,7 @@ Roblox Instance 이름과 맞춘 `UICorner`/`UIPadding`(+`UIPaddingOffset`)/
 **[2026-09-06 구현됨 — M10 잔여, round20 `H-335`~`H-337`]** `quad-roblox/src/Handlers/
 InstanceShorthand.luau` — 아래 "남은 열린 질문"의 단순화 후보대로 **룩업 표 하나**
 (`{ key → { class, childName, props, wrap } }`)로 키 넷을 구동한다. 우선순위
-`HANDLER_PRIORITY_NORMAL + 1`, 자식은 `quad.Declaration.New(class)({ Name = childName })`로
+`HANDLER_PRIORITY_NORMAL + 1`, 자식은 `quad.Elem(class)({ Name = childName })`(**[2026-10-20]** 옛 `quad.Declaration.New(class)`)로
 (`UI-5` 자동 충족) 만들어 핸들러가 부착, 조회는 `Relate`. 값 모양: `UICorner: number |
 UDim`(number → offset), `UIPadding: UDim`, `UIPaddingOffset: number`, `UIScale: number`.
 **캐비엇 `H-335`**: `UIPadding`/`UIPaddingOffset`은 v1처럼 `_quad_padding` 하나를 공유한다

@@ -1,5 +1,7 @@
 # Tween / 애니메이션 플러깅 (전부 확정 — `base/`로 승격)
 
+> **[2026-10-20 — 3.4.0 표면]** 아래 quad-types `FieldOut<X>`와 "생성 D가 재별칭", `DeclarationMapper`는 3.3까지의 것이다. 지금은 quad-types `ModifierFieldOut<X>`와 quad-roblox `ModifierFieldOut<T> = T | TweenView<T> | StateView<T | TweenView<T>> | None`(`quad-roblox/src/types.luau`, 읽기 뷰인 이유는 `typing-limits.md` 8.39).
+
 **상태**: base — **2026-08-10 세션에서 구조 전체가 재설계됨.** 기존
 "`v`가 Store인 아무 `k`나 잡는 우선순위 최상위 Dispatch 핸들러" 모델은
 `archive/surveys/2026-08-06-pre-implementation-audit.md` 1-1이 지적한 구조적 모호함("애니메이션

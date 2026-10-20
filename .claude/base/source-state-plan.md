@@ -1,5 +1,7 @@
 # Source / State — 반응형 코어 (값의 원천과 그 위의 캐시 레이어)
 
+> **[2026-10-20 — 3.4.0 표면]** 본문의 "생성 D 슬롯"·`D.<Class>` 표기는 지금 `q.Elem` 표면(`base/surface-plan.md`)의 같은 자리를 뜻한다.
+
 > **📄 [2026-08-14 신설] `bind-system-plan.md` 3단계 분할 + store-semantics.md
 > 흡수.** `bind-system-plan.md`(반응형 코어)와 store-semantics.md(온톨로지
 > 배경)에 같은 내용이 반씩 흩어져 서로를 "상세는 저쪽 참고"로 가리키고 있던

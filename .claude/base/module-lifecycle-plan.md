@@ -1,5 +1,7 @@
 # 모듈 라이프사이클 — Handler 패턴, bind/store는 누가 구현하는가 (base로 승격됨)
 
+> **[2026-10-20 — 3.4.0 표면]** 아래 `RobloxExtension = { D: D }`·`q.Declaration`은 3.3까지의 모양이다. 지금 `RobloxExtension`은 표면 여덟(`Elem`·`Modifier`·`Spread`·`Mapper`·`OnChange`·`OnEvent`·`Out`·`ForClasses`)과 `Animate`·`Tween`·`isTween`(`quad-roblox/src/init.luau`), `Self & P` 교집합으로 풀 타입이 실리는 이득은 그대로다.
+
 **상태**: base — "누가 store를 구현하는가"까지 포함해 전부 확정되어
 `research/`에서 승격됨(`base/architecture.md`의 "구현 착수: 소스 트리 구조
 확정" 절 참고). 원본:

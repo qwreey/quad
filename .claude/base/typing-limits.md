@@ -639,6 +639,8 @@ local extended = checked:AddPlugin(somePlugin) -- 안 깨짐 — checked의 T �
 
 ## 8.5. 대형 생성 타입은 체커의 `LuauTarjanChildLimit`(기본 10000)을 넘는다
 
+> **[2026-10-20 — 3.4.0]** 이 절의 대상(생성 `Declaration`·`DeclarationMapper`·`DeclarationModifier`)은 지워졌다. 3.4.0 표면의 한도 상황은 8.40.
+
 **[2026-09-06 보강 — round20 `H-337`]** 한도 플래그는 증상별로 다르다: GuiObject 계열
 10클래스의 Param/Modifier에 숏핸드 키 넷을 얹자 `export type D`가 "too complex"였고,
 Tarjan·TypeInfer 상향은 무효, **`LuauSolverConstraintLimit`**(기본값 작음)을 100만으로

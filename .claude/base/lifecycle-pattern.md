@@ -1,5 +1,7 @@
 # 라이프사이클 패턴 — rbvm의 `Connected` + GC 관용구 채택
 
+> **[2026-10-20 — 3.4.0 표면]** 본문의 "Declaration 안에서"는 지금 `q.Elem` 생성자 테이블 안을 뜻한다.
+
 > **[2026-09-15 표기 변경 — 공개 표면 (30) 사용자 결정]** 백엔드가 심는 계약 op는 `module.Backend.<op>`(`native*`·`isInst`·`nativeClaim`·`isClaimed`·`nativeFindChild`·`onDestroying`·`addTag`/`removeTag`/`setAttr`·`setTimeout`/`clearTimeout`·**[2026-09-18 round11 Q59]** hold op 넷 `holdLifetime`/`releaseLifetime`/`isHeld`/`isHeldBy`, 이름 그대로 — `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`도 같은 네임스페이스에 살지만 그 넷은 quad-base가 직접 구현한다, `lifecycle-pattern.md` (1-2))로, Length/Offset 부기는 `module.Bookkeeping.<fn>`(옛 `Dispatch.setLength` 등 재수출·비공개 `_bookkeeping`)으로 옮겨졌다. 이 문서 본문의 `module.<op>`·`Dispatch.setLength` 표기는 그 전 이름이다 — 설계 내용은 그대로 유효.
 
 **상태**: 결정됨(base) — quad-v2가 채택할 라이프사이클/정리(`retract`) 전략의 원본.

@@ -9,7 +9,7 @@
 ## 1. 범위 — 바뀌는 자리 (2026-10-20 인벤토리 요지)
 
 - **quad-types** (`src/init.luau` 한 파일): `Quad` 타입의 `New`→`NewModule`, `Modifier`(→ `Raw.Modifier`), `newMapperClass`(→ `Raw.Mapper`), 새 `Raw`, 이름 정리(`FieldOut`→`ModifierFieldOut` 등). `Quad`에는 원래 `Declaration`·`OnChange`·`Out`이 없다 — `RobloxExtension` 교집합으로 실린다.
-- **quad-base**: 모듈 테이블의 `New`·`Modifier`(init.luau), `newMapperClass`(Claim.luau가 심음) 자리 이동, 스텁 표(H-929) + 최상위 일곱 스텁, `Raw.Spread` 런타임과 펴기 단계 확장(`Dispatch/Modifier/init.luau` flatten). 문구에 옛 이름이 든 에러 일곱(Quad0026·0029·0034·0106·0108·0241, quad-roblox의 0219) — 번호는 그대로, 문구와 `docs/reference/errors/` 절만.
+- **quad-base**: 모듈 테이블의 `New`·`Modifier`(init.luau), `newMapperClass`(Claim.luau가 심음) 자리 이동, 스텁 표(H-929) + 최상위 일곱(단위 6에서 `Modifier`가 합류해 여덟) 스텁, `Raw.Spread` 런타임과 펴기 단계 확장(`Dispatch/Modifier/init.luau` flatten). 문구에 옛 이름이 든 에러 일곱(Quad0026·0029·0034·0106·0108·0241, quad-roblox의 0219) — 번호는 그대로, 문구와 `docs/reference/errors/` 절만.
 - **quad-roblox**: 생성 모듈 `src/Declaration/init.luau`(5145줄 — 런타임은 끝 180줄: `Instance.new`+`nativeClaim`+`drive`, `TypedFactory`·`DefineSubtype`·`newMapperClass` 등록)와 `init.luau`의 GENERATED ROOT EXPORTS 블록(약 128줄)·손 재수출(`Declaration`·`DeclarationMapper`·`PropTypes`·`OnChangeFn`·`OutFn`) 삭제, `RobloxFactory.luau` 반환 테이블 교체, `Handlers/OnChange.luau`의 `OnChange`/`Out`을 클래스 먼저 커리로(Quad0221~0224), 새 `OnEvent` 디스크립터 핸들러(`OnChange`와 같은 모양), 새 `ForClasses`, 타입 함수 본체와 정책 데이터.
 - **scripts·게이트**: `gen-d.py`(emit → 데이터만), `test.sh` 17·22·29행(생성 파일 검사)과 luau-lsp 한도 플래그 셋, `type-surface-check.py`의 파일 목록, `publish.py` 스테이징의 `gen-d.py emit`, `doc-coverage.py`(새 `q.*` 이름마다 reference 헤딩 필요), 새 변환 스크립트.
 - **스펙**: quad-base 테스트의 `q.New()` 17파일·`q.Modifier` 6파일, quad-roblox 테스트 20파일(Declaration 226 히트, `spec.rootexports`·`spec.d`는 성격이 바뀜).
@@ -47,7 +47,7 @@
 
 ## 4. 남은 결정 (사용자)
 
-- **레포 핀 luau-lsp를 1.69.0 → 1.70.1로 올릴지.** 단위 0에서 1.69.0만 요소·Spread 테이블 안의 `OnEvent` 콜백 인자를 `unknown`으로 둬 거짓 양성을 낸다(1.70.1은 사용자 VSCode 확장 판). 3.4.0 스펙이 그 꼴을 쓰므로 게이트가 걸린다. 메인 권고: 올린다(`mise.toml` 한 줄 + 게이트 재확인).
+- **[2026-10-20 닫힘 — 사용자 동의, `mise.toml` 1.70.1] 레포 핀 luau-lsp를 1.69.0 → 1.70.1로 올릴지.** 단위 0에서 1.69.0만 요소·Spread 테이블 안의 `OnEvent` 콜백 인자를 `unknown`으로 둬 거짓 양성을 낸다(1.70.1은 사용자 VSCode 확장 판). 3.4.0 스펙이 그 꼴을 쓰므로 게이트가 걸린다. 메인 권고: 올린다(`mise.toml` 한 줄 + 게이트 재확인).
 
 - **[2026-10-20 닫힘] 커리 첫 인자의 런타임 검사 — 문자열인가만.** 클래스 존재는 타입과 엔진(`Instance.new`)에 맡긴다. 사용자: *"사용 될 때 애초에 안 맞는 new 가 에러가 확실해서 그렇게 하는거 문제 없다고 보임."* `Modifier "Fraem"`처럼 엔진이 안 부르는 자리는 지금 `TypedFactory`처럼 조용히 통과한다.
 - **[2026-10-20 닫힘] 릴리즈 시점 — 문서(단위 7)까지 끝낸 뒤 한 번에.** BREAKING이라 옮기는 법 없이 내지 않는다. 사용자: *"릴리즈 시점도 동의. 작업 진행 하면 될 것 같아."* bump·태그·게시 실행은 그때 다시 확인.

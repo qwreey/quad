@@ -18,7 +18,9 @@
 	PropertyHandler consumption is unit ②.
 
 	`NewChild` — the backend-agnostic core of the children-array element
-	union. The per-class array item (`PropsArrayItem<C>`, `Surface/init.luau` since 3.4.0 — the generated
+	union. Internal since 3.4.0: the package root no longer re-exports it — users name the
+	child slot `PropsArrayItem<C>`, and this union is only a part of that item (decided with the
+	surface rename, Ref: research/declaration-surface-plan.md section 5). The per-class array item (`PropsArrayItem<C>`, `Surface/init.luau` since 3.4.0 — the generated
 	`<Class>Elem` before it) is `NewChild` plus the descriptor kinds and the class-tag markers
 	(`base/onchange-plan.md` "타이핑" 절, `base/modifier-plan.md` 11절) —
 	array-part descriptor kinds join THAT item, not this union

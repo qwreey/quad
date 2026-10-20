@@ -155,7 +155,7 @@ export type RobloxExtension = {
   `Spread<C>` / `SpreadInto<C>`([03-modifier-spread](./03-modifier-spread.md#modifierc--modifierintoc--spreadc--spreadintoc))
 - 디스크립터: `OnChangeDescriptor<K>` / `OnEventDescriptor<K>`
 - Modifier 필드 값: `ModifierField<T>` / `ModifierFieldOut<T>`
-- 값 층: `Tween<T>` / `TweenData<T>` / `TweenOptions<T>` / `TweenOverride` / `TweenConstructor` / `NewChild` / `AnimateInfo` / `AnimateFn`
+- 값 층: `Tween<T>` / `TweenData<T>` / `TweenOptions<T>` / `TweenOverride` / `TweenConstructor` / `AnimateInfo` / `AnimateFn`
 - 위 키들의 모양인 `RobloxExtension`
 
 ```luau

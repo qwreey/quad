@@ -1,5 +1,7 @@
 # Ref / PreRef / PostRef — 지연 없는 확정 값 박스
 
+> **[2026-10-20 — 3.4.0 표면]** "children 자리의 타입" 절의 클래스별 `<Class>Elem`·`FrameRefMarker`·`DeclarationModule` 표기는 3.3 생성 D의 것이다. 같은 규칙(Frame 자리는 `Ref<Frame?>`·조상 상자를 받고 형제 Ref는 거부)은 지금 `PropsArrayItem<C>`(`quad-roblox/src/Surface/init.luau`)가 진다.
+
 > **[2026-08-14 아홉 번째 세션] `PostRef` 확정·이 문서에 편입.**
 > `base/lifecycle-hooks-plan.md`(당시 `research/`)가 백로그 후보로만 들고 있던 스케치를
 > 사용자가 확정("Pre-Post 둘을 지원 안 할 이유가 없고 구현 난이도가 아주
