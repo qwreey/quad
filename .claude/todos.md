@@ -16,6 +16,7 @@
    - **[2026-10-20 신설] `q.Spread` 정의 확장 트랙 시작**(사용자: *"spread 에 대한 개발도 하긴 해야겠네. 정의 확장을 시작하긴 해야할듯"* — devui `InputText`의 안쪽 상자 Ref·훅 자리를 `FieldHooks` 대신 Spread로 받기로 하면서). 정의의 소스는 `research/component-flatten-sugar-plan.md` 5절(이름·(1)~(4) 닫힘, `Split` 관계 보류), 타입은 Declaration 트랙. 남은 것: Add·CRUD 정의 완결, 키트의 안쪽 요소 자리(`FieldModifier` 등)를 Spread로 받을지(입력 자리 마커와 같은 축). 메인이 결정 재료를 낸다.
    - **[2026-10-20] devplorer 묶음 바** — 구현됨(`audit/naming-devui-2026-10-20/` README가 결정 요약); 파생 Style(U9)은 넣지 않음(사용자: Style은 그대로, 대신 base 토큰 지원 후보 — `research/design-token-plan.md`); 라벨 없는 compact(U10)만 남음. **Spread가 들어올 때 Store·Context·Modifier·Spread·토큰 다섯의 차이를 사용자 문서 한 곳에**(사용자 2026-10-20).
    - 열린 질문 전체는 `.claude/question.md`, 사람 손 일은 루트 `HUMAN_TODO.md` 미해소 절, 계획서마다 걸린 결정은 `research/README.md` 표의 우선순위 칸.
+   **[2026-10-20 핸드오버]** 긴 세션을 새 세션으로 넘김 — 이어받을 것과 진행 순서는 `session/2026-10-19-01-decl-3-4-decisions.md` §10 끝 "다음" 줄과 §11.
    **다음 세션이 먼저 볼 것**: `conventions.md` 2026-09-06·09-07·09-08 항목(백그라운드 에이전트 종료 판정 / test.sh 판정은 exit code / 문항·발견은 평문).
 
 4. **[백로그]** 착수 전 백로그 전체(`quad-mock`·`quad-debug`·`fastscroll`·`spring`·`quad-roblox-types`·렌더 스텝 op 등)는 루트 `ROADMAP.md` 백로그 절이 소스다.

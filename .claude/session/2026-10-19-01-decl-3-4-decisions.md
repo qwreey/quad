@@ -60,3 +60,14 @@ devplorer가 `quad-upstream-2026-10-20.md`를 냈다(사용자: 핵심 셋 — q
 - **이름 검토 세 계열**(`audit/naming-devui-2026-10-20/`): codex(`gpt-6-luna`) 첫 실사용 — uid 61000·빈 디렉터리·read-only로 동작, `auth_mode: chatgpt`(구독 과금, API 키 없음; 사용자 화면에 사용량 100% 그대로 — luna가 싸서로 추정). 수렴: `Toggled`(셋 다)·`NoPages`·`TabRounding` 유지; 갈림 뒤 메인 권고 `OnFrame`·`AvailableSize`(Roblox `AbsoluteContentSize`와 반대 뜻 — Gemini 근거)·`ScrollToRow`; `Focused` 방향 혼재는 Window도 양방향으로(+`ManagerSlot:Blur()`). 사용자 *"전부 동의해"*. README 값 규약에 `Source` 방향 셋(양방향·출력·명령).
 - 커밋: `171a6c83`(Focused·S17·S18) `870c0a44`(AvailableSize 전신) `d99f23c2`(VirtualRows) `9bf47ef4`(todos) `65cca807`(design-token) `f02fe182`(바·개명·양방향).
 - **다음**: Spread 정의 확장 결정 재료(메인), 3.4.0 이름 정리(읽기 쪽 맵·탈출구 — 세 계열로), H-929·Q188, U10 compact, devplorer 묶음 다(팝업 — 저쪽 안정 뒤), 토큰 연구(사용자 결정 뒤).
+
+## 11. 2026-10-20 — 세션 핸드오버 (사용자 요청)
+
+이 대화 하나가 2026-10-16 Declaration 트랙부터 이어져 트랜스크립트가 약 177 MB(5만 줄, 압축 24회)에 이르렀다. 다른 세션은 1 MB 아래다. 사용자가 "언젠가 터질 수 있나"를 물었고, 메인 판단은 이렇다. 맥락 창 자체는 자동 압축이 막아 주므로 당장 넘치지는 않는다. 다만 압축이 거듭될수록 요약의 요약이 되어 세부가 빠지고, 재개(`--resume`) 때 큰 파일을 다시 읽는 비용이 커진다. 그래서 새 세션으로 넘기기로 했다. 모든 작업은 커밋됐고(이 절 직전 HEAD `5638f541`), push는 하지 않았다.
+
+새 세션이 이어받을 것은 아래와 같다. 진행 순서는 §10 끝 "다음" 줄이 소스다.
+
+- **처음 할 일**: Spread 정의 확장 결정 재료를 메인이 준비한다. 소스는 `research/component-flatten-sugar-plan.md` 5절이다(이름과 (1)~(4)는 닫혔고 `Split` 관계만 보류). 남은 것은 Add·CRUD 정의 완결과, 키트 안쪽 요소 자리(`InputText.FieldModifier`, 상자 Ref·훅)를 Spread로 받을지다. 후자는 입력 자리 마커(`ModifierInto`, §6)와 같은 축이다. 런타임 `q.Spread`는 아직 없다.
+- **결정 요청 방식**: 주제별 산문으로 메인 의견과 근거를 같이 낸다(메모리 `feedback-decision-presentation-style`). 새 공개 이름은 세 계열(Gemini agy·sonnet·codex `gpt-6-luna`) 검토 뒤 사용자가 정한다. codex 절차는 메모리 `reference-codex-delegation`, 지난 검토의 꼴은 `audit/naming-devui-2026-10-20/`.
+- **이 세션에서 지켜 온 제약**(대부분 conventions·메모리에 있고, 없던 것은 메모리 `feedback-session-operating-constraints`로 옮김): push 금지(origin 자유, github는 요청 때만, upstream 금지), `git stash`·`checkout`·`restore` 금지, Studio는 quad-test(PlaceId 105962699098904)만 쓰고 실행 전에 PlaceId를 assert, table-sim·devplorer 레포는 읽기 전용, 무거운 실행은 `choom -n 1000`과 `ulimit -c 0`(§4의 3 GiB 코어 덤프 사고), devui 커밋 게이트는 `quad-roblox-devui/test/run.sh` exit 0.
+- **사용자가 고치는 중인 것**: `studio-analysis`(같은 줄 수의 중복 에러가 이어지면 스크롤 끝으로 오판). 고쳐지면 2차 실측 19~29번 Studio 진단을 다시 읽는다(§8).
