@@ -7,6 +7,8 @@ local Style = Devui.Style
 local Kids = Devui.Kids
 
 local UIS = H.UserInputService
+-- windows the press-to-front must hit live in a LayerCollector (a detached window is not on screen)
+local screen = Instance.new("ScreenGui")
 local function conns(): number
 	local function n(sig: any): number
 		return #sig.connections
@@ -140,7 +142,9 @@ end)
 H.section("focus on press: z-order, active title colour", function()
 	local manager = Devui.WindowManager.new()
 	local a = Devui.Window({ Title = "A", Manager = manager })
+	a.Parent = screen
 	local b = Devui.Window({ Title = "B", Manager = manager })
+	b.Parent = screen
 	-- the mock has no layout: A at (0,0) 300x200, B overlapping it at (100,100) 300x200
 	H.setAbs(a, 0, 0, 300, 200)
 	H.setAbs(b, 100, 100, 300, 200)
@@ -188,9 +192,11 @@ H.section("focus on press: z-order, active title colour", function()
 	-- a focused window covered by a newly registered one rises on press
 	local m2 = Devui.WindowManager.new()
 	local wa = Devui.Window({ Title = "A", Manager = m2 })
+	wa.Parent = screen
 	H.setAbs(wa, 0, 0, 100, 100)
 	press(5, 5)
 	local wb = Devui.Window({ Title = "B", Manager = m2 })
+	wb.Parent = screen
 	H.setAbs(wb, 500, 500, 100, 100)
 	assert((wb :: any).ZIndex > (wa :: any).ZIndex, "B registered on top")
 	press(5, 5)
@@ -204,9 +210,11 @@ H.section("press-to-front: hidden windows and popups are not hit; one listener p
 	local began0 = #(UIS.InputBegan :: any).connections
 	local manager = Devui.WindowManager.new()
 	local a = Devui.Window({ Title = "A", Manager = manager })
+	a.Parent = screen
 	assert(#(UIS.InputBegan :: any).connections == began0 + 1, "one global press listener")
 	local openB = q.Source(true)
 	local b2 = Devui.Window({ Title = "B", Open = openB, Manager = manager })
+	b2.Parent = screen
 	assert(#(UIS.InputBegan :: any).connections == began0 + 1, "still one for two windows")
 	H.setAbs(a, 0, 0, 300, 200)
 	H.setAbs(b2, 0, 0, 300, 200)
@@ -223,6 +231,7 @@ H.section("press-to-front: hidden windows and popups are not hit; one listener p
 
 	-- a hidden ancestor (the container) hides every window in it
 	local container = Instance.new("Frame")
+	container.Parent = screen
 	H.setAbs(container, 0, 0, 1000, 1000)
 	a.Parent = container
 	b2.Parent = container
@@ -238,21 +247,30 @@ H.section("press-to-front: hidden windows and popups are not hit; one listener p
 	press(650, 650)
 	assert((other :: any).ZIndex > (top :: any).ZIndex, "shown again: hit")
 
-	-- a press on an open popup (or its click-outside catcher) does not change focus
+	-- a press on an open popup that takes input (or on its click-outside catcher) does not change focus; a popup that
+	-- takes no input (a tooltip) does not shield the window under it (no PlayerGui here: the PopupHits fallback)
 	local OverlayModule = require("../src/Overlay")
 	OverlayModule.warnUnmounted = false
 	local overlay = OverlayModule.new()
 	H.setAbs(overlay.Layer, 0, 0, 1000, 1000)
-	local tip = overlay:Open({ Content = q.Declaration.Frame({}), Position = Vector2.new(400, 400), CloseOnClickOutside = false })
-	H.setAbs(tip.Holder, 400, 400, 50, 20)
-	press(5, 5) -- not on the tooltip: focus moves as usual
+	local D = q.Declaration
+	local sub = overlay:Open({ Content = D.Frame({ D.TextButton({ Text = "" }) }), Position = Vector2.new(400, 400), CloseOnClickOutside = false })
+	H.setAbs(sub.Holder, 400, 400, 50, 20)
+	press(5, 5) -- not on the popup: focus moves as usual
 	local focusedNow = manager.Focused:Get()
 	local under = if (a :: any).ZIndex > (b2 :: any).ZIndex then b2 else a
 	H.setAbs(under, 380, 380, 100, 100)
-	press(410, 405) -- on the tooltip holder, which lies over `under`
-	assert(manager.Focused:Get() == focusedNow, "press on a popup: no focus change")
-	press(470, 470) -- `under` outside the tooltip: focused
+	press(410, 405) -- on the popup holder, which lies over `under`
+	assert(manager.Focused:Get() == focusedNow, "press on a popup with a button: no focus change")
+	press(470, 470) -- `under` outside the popup: focused
 	assert(manager.Focused:Get() ~= focusedNow, "outside the popup: focus moves")
+	sub:Close()
+	press(5, 5)
+	focusedNow = manager.Focused:Get()
+	local tip = overlay:Open({ Content = D.TextLabel({ Text = "hint" }), Position = Vector2.new(400, 400), CloseOnClickOutside = false })
+	H.setAbs(tip.Holder, 400, 400, 50, 20)
+	press(410, 405) -- on the tooltip, over `under`
+	assert(manager.Focused:Get() ~= focusedNow, "a tooltip takes no input: the window under it is focused")
 	tip:Close()
 	local modal = overlay:Open({ Content = q.Declaration.Frame({}), Position = Vector2.new(0, 0) })
 	local focusedModal = manager.Focused:Get()
@@ -278,6 +296,7 @@ H.section("focus succession: closing or destroying the focused window focuses th
 	local w: { any } = {}
 	for i = 1, 3 do
 		w[i] = Devui.Window({ Title = `w{i}`, Open = opens[i], Manager = manager })
+		w[i].Parent = screen
 		H.setAbs(w[i], i * 400, 0, 300, 200)
 	end
 	local function focusedIndex(): number?
@@ -424,6 +443,7 @@ H.section("z-order is a rank: 2000 focus switches never reach the overlay layer;
 	local wins: { any } = {}
 	for i = 1, 3 do
 		wins[i] = Devui.Window({ Title = `w{i}`, Manager = manager })
+		wins[i].Parent = screen
 		H.setAbs(wins[i], i * 400, 0, 300, 200)
 	end
 	local last = 0
@@ -452,6 +472,7 @@ H.section("z-order is a rank: 2000 focus switches never reach the overlay layer;
 		end
 	end
 	local fresh = Devui.Window({ Title = "fresh", Manager = manager })
+	fresh.Parent = screen
 	assert((fresh :: any).ZIndex == 3)
 	for i, w in wins do
 		if i ~= mid then
@@ -484,7 +505,9 @@ H.section("owner Sources: open:Set(true) raises an open window, SetIfChanged doe
 	local openA, openB = q.Source(true), q.Source(true)
 	local focusedA = q.Source(false)
 	local a = Devui.Window({ Title = "A", Open = openA, Focused = focusedA, Manager = manager })
+	a.Parent = screen
 	local b = Devui.Window({ Title = "B", Open = openB, Manager = manager })
+	b.Parent = screen
 	assert((b :: any).ZIndex > (a :: any).ZIndex and manager.Focused:Get() == 0, "open from the start: no focus stolen")
 	assert(focusedA:Get() == false, "Focused written at install")
 	openA:SetIfChanged(true)

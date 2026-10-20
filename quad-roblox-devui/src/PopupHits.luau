@@ -1,9 +1,11 @@
 --!strict
 --[[
-	PopupHits — internal registry of the open Overlay popups, for "is this point on a popup?" (not exported from
-	init.luau). Overlay adds a record when a popup opens and removes it when it closes; the window manager asks
-	`covers(x, y)` before it focuses the window under a press, so pressing a popup (a Combo list, a Menu, a tooltip, or
-	the click-outside catcher of a popup with one) never changes which window is focused.
+	PopupHits — internal registry of the open Overlay popups that take input, for "is this point on a popup?" (not
+	exported from init.luau). Used only where there is no PlayerGui (a story host's plugin widget); in a game the
+	window manager asks the internal Pointer rule instead. Overlay adds a record when a popup opens and removes it when
+	it closes; the window manager asks `covers(x, y)` before it focuses the window under a press, so pressing a popup
+	(a Combo list, a Menu, or the click-outside catcher of a popup with one) never changes which window is focused. A
+	popup that takes no input (a tooltip) is not listed: a press through it raises the window behind.
 
 		PopupHits.add(record) / PopupHits.remove(record)
 		PopupHits.covers(x, y) -> boolean      x, y in AbsolutePosition space (InputObject.Position)

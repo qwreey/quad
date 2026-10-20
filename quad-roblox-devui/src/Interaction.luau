@@ -17,6 +17,10 @@
 			hover.Hook,                          -- array part
 			BackgroundColor3 = hover.Hovered:Compute(...),   -- hover.Hovered / hover.Pressed : State<boolean>
 		}
+		-- Hovered is true only while the element is ON TOP under the pointer: the engine sends MouseEnter to covered
+		-- elements too (another window, an open popup's click-outside catcher, any button in another ScreenGui), so
+		-- between MouseEnter and MouseLeave the element asks the internal Pointer rule on every mouse move and when a
+		-- popup opens / closes or a window is raised / hidden. Under a story host (no PlayerGui) it is MouseEnter alone.
 
 		-- drag (begin on the element, then track the pointer GLOBALLY until release / focus loss / destroy)
 		local drag = Interaction.drag({
@@ -40,6 +44,7 @@
 ]]
 
 local Input = require("./Input")
+local Pointer = require("./Pointer")
 local Quad = require("./Quad")
 local q = Quad
 local Types = require("./Types")
@@ -89,11 +94,25 @@ end
 function Interaction.hover(): HoverHandle
 	local hovered: Source<boolean> = q.Source(false)
 	local pressed: Source<boolean> = q.Source(false)
+	-- set between MouseEnter and MouseLeave: re-judges "on top" on mouse moves and Pointer.invalidate
+	local unwatch: (() -> ())? = nil
+	local function stopWatching()
+		local off = unwatch
+		if off then
+			unwatch = nil
+			off()
+		end
+	end
 	local function reset()
+		stopWatching()
 		hovered:SetIfChanged(false)
 		pressed:SetIfChanged(false)
 	end
 	local hook = hookInto(function(inst)
+		local function judge(x: number, y: number)
+			-- nil (no PlayerGui: a story host) keeps the engine's answer
+			hovered:SetIfChanged(Pointer.isTop(inst, x, y) ~= false)
+		end
 		-- the element's OWN `Visible` going false drops the looks (a hidden element gets no MouseLeave / InputEnded).
 		-- An ANCESTOR being hidden fires no signal on the element (Visible changes do not propagate as events), so an
 		-- owner that hides an ancestor (Window close) calls `Reset`; AncestryChanged covers reparent / removal only.
@@ -104,13 +123,19 @@ function Interaction.hover(): HoverHandle
 		end)
 		inst.AncestryChanged:Connect(reset)
 		inst.MouseEnter:Connect(function()
-			hovered:SetIfChanged(true)
+			if unwatch == nil then
+				unwatch = Pointer.watch(judge)
+			end
+			local m = Pointer.mouse()
+			judge(m.X, m.Y)
 		end)
 		inst.MouseLeave:Connect(function()
+			stopWatching()
 			hovered:SetIfChanged(false)
 			-- a release outside the element may never reach it: drop the pressed look on leave
 			pressed:SetIfChanged(false)
 		end)
+		inst.Destroying:Connect(stopWatching)
 		inst.InputBegan:Connect(function(input: InputObject)
 			if isPrimaryDown(input) then
 				pressed:SetIfChanged(true)

@@ -15,10 +15,13 @@
 	While overridden: the three Input* signals come from the listener, GetMouseLocation() is the last `MouseMoved`
 	position (ONE connection, dropped on the next `use`), WindowFocusReleased never fires, writes such as
 	`MouseIconEnabled = false` are kept locally (never reach the engine), every other member falls back to the engine
-	service (functions are called with the engine service as self).
+	service (functions are called with the engine service as self). The kit's long-lived connections (window
+	press-to-front, hover tracking) are re-made on the new service by `use` (internal GlobalInput).
 
 	GuiService gamepad / selection APIs have no widget substitute: check them in play mode only.
 ]]
+
+local GlobalInput = require("./GlobalInput")
 
 export type Listener = {
 	InputBegan: RBXScriptSignal,
@@ -116,6 +119,8 @@ function Input.use(listener: Listener?)
 	else
 		overridden = build(listener)
 	end
+	-- the kit's long-lived connections (window press-to-front, hover tracking) move to the new service
+	GlobalInput.rebind(Input.service())
 end
 
 function Input.isOverridden(): boolean

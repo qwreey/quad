@@ -12,10 +12,10 @@
 3. **[고침 `1673b859`] `publish.py`가 출력의 아무 '429'에나 반응** — `\b429 Too Many Requests\b`로 좁힘.
 4. **[사용자 결정 대기] Lazy `fn`이 값 둘 이상을 돌려 `Quad0272`로 던질 때 만든 원소를 정리하지 않고, Slot은 빈 채 굳음** — 지금은 사용자 예외 뒤 상태처럼 미정의. quad 자신의 검증 raise라
    결과를 dispose하고 던지는 비용은 작다(리뷰 의견) — 새 동작이라 사용자 몫.
-5. **[사용자 결정 대기] devui 전역 누름이 실제로 누름을 받은 GUI를 보지 않고 창 사각형만 대조** — 창 위에 DisplayOrder 높은 HUD나 material 팝업이 겹치면 그 누름에 아래 창이 앞으로 온다
+5. **[고침 2026-10-20 — 사용자 결정(devplorer 묶음 가와 한 번에), 내부 `Pointer` 판정]** devui 전역 누름이 실제로 누름을 받은 GUI를 보지 않고 창 사각형만 대조** — 창 위에 DisplayOrder 높은 HUD나 material 팝업이 겹치면 그 누름에 아래 창이 앞으로 온다
    (옛 창 루트 `InputBegan`은 막힌 누름에 반응하지 않았다). 서로 다른 ScreenGui의 창이 `Manager.default`를 같이 쓰면 화면 순서와 관리자 순서가 다를 수 있다. 처방(`GetGuiObjectsAtPosition`
    류)은 구조 변경 — 관측된 문제가 아니라 원칙상 미룰 수도.
-6. **[사용자 결정 대기] 트리에서 뗀(부모 nil) 창 루트도 누름 판정 대상**(`Visibility.isShown`이 LayerCollector를 못 찾으면 true), `succeed()`는 `root.Visible`만 봄 — 숨긴 컨테이너 안 창에 포커스가 갈 수 있다.
-7. **[사용자 결정 대기] 전역 누름 연결이 첫 창 훅 때의 `Input.service()`에 고정** — `Input.luau` 머리의 "사용 시점에 묻는다(Input.use 뒤 재라우팅)" 약속과 어긋남(창이 열린 채 `Input.use`를 바꾸면 옛 신호만 듣는다).
-8. **[사용자 결정 대기] 툴팁도 PopupHits에 등록돼, 툴팁을 뚫고 뒤 창 버튼을 눌러도 창이 앞으로 안 온다** — `PopupHits.luau` 머리가 툴팁을 일부러 포함한 설계라 결함이 아니라 2026-10-15
+6. **[고침 2026-10-20 — 사용자 결정(devplorer 묶음 가와 한 번에), 내부 `Pointer` 판정]** 트리에서 뗀(부모 nil) 창 루트도 누름 판정 대상**(`Visibility.isShown`이 LayerCollector를 못 찾으면 true), `succeed()`는 `root.Visible`만 봄 — 숨긴 컨테이너 안 창에 포커스가 갈 수 있다.
+7. **[고침 2026-10-20 — 사용자 결정(devplorer 묶음 가와 한 번에), 내부 `Pointer` 판정]** 전역 누름 연결이 첫 창 훅 때의 `Input.service()`에 고정** — `Input.luau` 머리의 "사용 시점에 묻는다(Input.use 뒤 재라우팅)" 약속과 어긋남(창이 열린 채 `Input.use`를 바꾸면 옛 신호만 듣는다).
+8. **[고침 2026-10-20 — 사용자 결정(devplorer 묶음 가와 한 번에), 내부 `Pointer` 판정]** 툴팁도 PopupHits에 등록돼, 툴팁을 뚫고 뒤 창 버튼을 눌러도 창이 앞으로 안 온다** — `PopupHits.luau` 머리가 툴팁을 일부러 포함한 설계라 결함이 아니라 2026-10-15
    결정("뒤 창 위젯을 누르면 앞으로")과의 충돌. 입력을 실제로 가로채는 팝업(바깥 닫기 받이·버튼 holder)만 등록하는 쪽이 리뷰 제안.

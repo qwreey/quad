@@ -18,10 +18,12 @@
 	MouseLeave / Destroying. On enter a `task.delay` is scheduled; on leave or destroy it is cancelled and an open
 	tooltip is closed — nothing is left behind. When the timer fires the target must still be shown (its own and its
 	ancestors' `Visible`, the ScreenGui's `Enabled`): hiding an ancestor — closing the window the target is in — sends
-	no MouseLeave, so without that check a hint would appear for a closed window. A tooltip already showing when its
+	no MouseLeave, so without that check a hint would appear for a closed window. It must also be ON TOP under the
+	pointer (the internal Pointer rule — the engine sends MouseEnter to covered elements too): no hint for a row under
+	another window or under an open popup. A tooltip already showing when its
 	window closes goes on the next mouse move (the engine re-evaluates hover and sends MouseLeave — Studio-confirmed). The tooltip appears at the mouse position read when it SHOWS
-	(`UserInputService:GetMouseLocation()`) and does not follow the mouse. It has no click-outside catcher (input falls
-	through to the UI underneath). Text may be a State: the open tooltip follows it.
+	(`UserInputService:GetMouseLocation()`) and does not follow the mouse. It has no click-outside catcher and takes no
+	input: a press through it reaches the UI underneath, and a window behind it comes to the front. Text may be a State: the open tooltip follows it.
 
 	PLACEMENT [unverified on a device]: `UserInputService:GetMouseLocation()` does NOT account for the GUI inset (it is
 	measured from the very top-left of the screen), while a GuiObject's `AbsolutePosition` is in inset-adjusted GUI space.
@@ -33,7 +35,7 @@
 	overlay does nothing (no error from the delayed thread).
 ]]
 
-local Input = require("./Input")
+local Pointer = require("./Pointer")
 local Quad = require("./Quad")
 local q = Quad
 local D = q.Declaration
@@ -132,13 +134,17 @@ function Tooltip.hook(props: TooltipProps): TooltipHandle
 		if t == nil or not Visibility.isShown(t) then
 			return
 		end
+		-- GetMouseLocation ignores the GUI inset; AbsolutePosition space includes it (see the header)
+		local mouse = Pointer.mouse()
+		-- covered (another window, an open popup's catcher, a button of another ScreenGui): no hint for what the
+		-- pointer is not really on — the engine sent MouseEnter anyway
+		if Pointer.isTop(t, mouse.X, mouse.Y) == false then
+			return
+		end
 		local overlay = props.Overlay or Overlay.getDefault()
 		if not overlay.Alive:Get() then
 			return
 		end
-		local mouse = Input.service():GetMouseLocation()
-		-- GetMouseLocation ignores the GUI inset; AbsolutePosition space includes it (see the header)
-		mouse -= Input.guiInset()
 		popup = overlay:Open({
 			Content = build(),
 			Position = mouse + offset,

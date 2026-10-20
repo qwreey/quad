@@ -373,6 +373,82 @@ function H.setAbs(inst: any, x: number, y: number, w: number, h: number)
 	inst.AbsoluteSize = Vector2.new(w, h)
 end
 
+-- A PlayerGui stand-in for the Pointer rule (hover / tooltip / press-to-front): put ScreenGuis under it and give the
+-- objects that matter a rectangle with `H.setAbs`. `GetGuiObjectsAtPosition(x, y)` lists the visible GuiObjects whose
+-- rectangle holds the point, topmost first, in the engine's draw order for `ZIndexBehavior = Sibling`: ScreenGuis by
+-- DisplayOrder, then a parent below its children, siblings by ZIndex then child order. No clipping.
+local GUI_CLASSES = {
+	Frame = true,
+	ScrollingFrame = true,
+	CanvasGroup = true,
+	TextButton = true,
+	TextLabel = true,
+	TextBox = true,
+	ImageButton = true,
+	ImageLabel = true,
+	ViewportFrame = true,
+	VideoFrame = true,
+}
+local function ordered(list: { any }, key: (any) -> number): { any }
+	local tagged = {}
+	for i, c in list do
+		table.insert(tagged, { c, key(c), i })
+	end
+	table.sort(tagged, function(a, b)
+		if a[2] ~= b[2] then
+			return a[2] < b[2]
+		end
+		return a[3] < b[3]
+	end)
+	local out = {}
+	for _, t in tagged do
+		table.insert(out, t[1])
+	end
+	return out
+end
+function H.playerGui(): any
+	local pg = Instance.new("PlayerGui")
+	pg.Name = "PlayerGui"
+	pg.GetGuiObjectsAtPosition = function(self: any, x: number, y: number): { any }
+		local painted = {} -- bottom first
+		local function paint(node: any)
+			local kids = {}
+			for _, c in node:GetChildren() do
+				if GUI_CLASSES[c.ClassName] and c.Visible ~= false then
+					table.insert(kids, c)
+				end
+			end
+			for _, c in ordered(kids, function(c)
+				return c.ZIndex or 1
+			end) do
+				table.insert(painted, c)
+				paint(c)
+			end
+		end
+		local guis = {}
+		for _, c in self:GetChildren() do
+			if c.ClassName == "ScreenGui" and c.Enabled ~= false then
+				table.insert(guis, c)
+			end
+		end
+		for _, g in ordered(guis, function(g)
+			return g.DisplayOrder or 0
+		end) do
+			paint(g)
+		end
+		local out = {}
+		for i = #painted, 1, -1 do
+			local o = painted[i]
+			local p, sz = o.AbsolutePosition, o.AbsoluteSize
+			if x >= p.X and y >= p.Y and x < p.X + sz.X and y < p.Y + sz.Y then
+				table.insert(out, o)
+			end
+		end
+		return out
+	end
+	return pg
+end
+
 -- Depth-first search by Name under `root` (mock has no FindFirstChild(name, true)).
 function H.find(root: any, name: string): any?
 	for _, c in root:GetChildren() do

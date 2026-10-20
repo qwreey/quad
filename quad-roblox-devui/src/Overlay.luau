@@ -49,14 +49,17 @@ under Deferred signals) (the ScreenGui was rebuilt, e.g. ResetOnSpawn) makes a f
 	popup's entry is no longer parented to the layer (with Deferred signals a descendant's Destroying can run before the
 	layer's OnDestroyed, so a close path must not rely on the dead flag alone). `Open` on a dead overlay raises.
 
-	The window manager does not move focus for a press on an open popup or on its click-outside catcher (each open popup
-	is listed in the internal PopupHits registry while it is open).
+	The window manager does not move focus for a press on an open popup that takes input or on its click-outside catcher
+	(the internal Pointer rule; under a story host without PlayerGui, the internal PopupHits registry, which lists a popup
+	while it is open if it has a catcher or holds a button / text box / Active object — a tooltip is not listed, a press
+	through it raises the window behind). Opening and closing a popup makes hover looks re-judge what is on top.
 
 	Positioning: `Position` is converted into layer space at open time (minus Layer.AbsolutePosition), so the layer may
 	sit under a ScreenGui with or without GuiInset. Anchor the content with `Anchor` to open upward/leftward; clamping
 	to the screen edge needs the content's size (known only after layout) — do it in the opener if needed.
 ]]
 
+local Pointer = require("./Pointer")
 local PopupHits = require("./PopupHits")
 local Quad = require("./Quad")
 local q = Quad
@@ -229,14 +232,21 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 			end,
 			Holder = holder,
 		}
-		-- the window manager does not move focus for a press on a popup (or on its click-outside catcher: the layer)
-		local hits: PopupHits.Record = { Area = if closeOutside then layer else holder }
+		-- the window manager does not move focus for a press on a popup that takes input (or on its click-outside
+		-- catcher: the layer); a popup that takes no input (a tooltip) is not listed — a press goes through it
+		local hits: PopupHits.Record? = if closeOutside
+			then { Area = layer }
+			elseif Pointer.containsTaker(opts.Content) then { Area = holder }
+			else nil
 		closeImpl = function()
 			if not isOpen:Get() then
 				return
 			end
 			isOpen:Set(false)
-			PopupHits.remove(hits)
+			if hits then
+				PopupHits.remove(hits)
+			end
+			Pointer.invalidate()
 			local i = table.find(open, popup)
 			if i then
 				table.remove(open, i)
@@ -268,7 +278,10 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 			end
 		end
 		slot:Add(entry)
-		PopupHits.add(hits)
+		if hits then
+			PopupHits.add(hits)
+		end
+		Pointer.invalidate()
 		table.insert(open, popup)
 		count:Set(#open)
 		return popup
