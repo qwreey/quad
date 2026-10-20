@@ -111,3 +111,9 @@
 - **`OnChangeFn`·`OutFn`·`OnEventFn` 비노출** — 사용자 근거: 문서 없이는 오해를 부르는 이름(*"`OnChange .. .. (fn)` 자리의 fn 타입을 나타내는가? OnChange 함수 자체의 타입을 나타내는가?"*). 필요한 쪽은 `typeof(q.OnChange)` — 타입 함수가 든 서명이 `typeof`에서 깨지지 않는지 2차 실측(M1) 중.
 - **매퍼 루트는 지금처럼 값·타입 짝** — 사용자: Source()·Source<T>처럼 프리미티브는 런타임·타입을 짝으로 내보내니 싱글턴인 MapperRoot도 None과 같은 처리가 일치. 메인 확인: 이미 그렇다 — quad-types가 `None`·`Detach`·`KeyGone`·`MapperRoot` 넷 다 같은 이름의 `export type`과 q 값을 짝으로 둔다(`quad-types/src/init.luau` 89·90·97·103행, 값 744~779행). 생성 D와 함께 사라지는 것은 별칭 `D.Mapper.Root`뿐.
 - **이름 정리(읽기 쪽 맵 이름, 탈출구)는 "정리 이후 더 크게"**(사용자) — 2차 실측(M1~M4) 결과를 본 뒤.
+
+**[2026-10-20 — 사용자, 2차 실측 M3·M4 뒤] 입력 자리의 Modifier는 마커, 클래스 맵은 GUI 중심 유지.** 실측은 `audit/decl-typefn-probe-2026-10-16/REPORT.md` 끝 절들(2차 M1~M4, M3 후속, 메인 추가 실측). 경과 `session/2026-10-19-01-decl-3-4-decisions.md` 5·6절.
+- **`ModifierInto<C>` = 마커** — `{ read __quadModifier: "C" | <C의 조상 이름들> }`, 메소드 없음. "C에 들어갈 수 있는 Modifier". 근거(실측): 타입 함수 Modifier는 사본마다 이름 정체성이 없어, 추상 클래스 Modifier를 표기가 다른 주석 자리(전체형 prop·옛 Into 인터페이스·잎 Into 헬퍼)로 넘기면 override 없는 설정에서 too complex — 마커 prop을 As 없이 그대로 놓는 꼴은 sync·vsc·pin 모두 깨끗하고 전체형이 놓치던 형제 클래스 Modifier까지 거부. quad-types의 "입력받는 자리 전용은 마커, 메소드가 필요한 자리는 전체형" 규칙을 Modifier prop에 그대로 적용한 것. 사용자: *"그냥 입력 받는 부는 전부 Into 를 마커 필드로써 될 수 있는걸로 두고 많은 부분이 해결될 것으로 보이긴함. 시도해보자"* — 킷 규모 시험 중(같은 세션 파일 6절).
+  - 물러나는 것: `base/modifier-plan.md` 11절의 Rust식 `Into` 인터페이스(`As<C>` 메소드 하나만 구현한 값도 받는 성질) — 킷 사용 0, 추상 클래스 원천에서 어차피 무너짐. 그 절에 배너를 달았다(구현은 3.4.0).
+  - 그대로인 것: Modifier 값의 `As<Desc>` 하강 메소드(주석 경계를 넘지 않으면 비용 없음, 하강 뒤 세터를 부를 저자용), 무검사 `As<<T>>()`.
+- **클래스 맵은 GUI 중심의 작은 맵 유지(M4 (가))** — 361~417 이름을 한 바운드에 넣으면 override 없는 설정에서 꺼내기 줄마다 too complex(위치·클래스 크기 효과), 분야별 맵은 새 공개 이름 문제라 수요가 보일 때. 탈출구 이름은 이름 정리 때. 범위와 무관한 데이터 손질(태그가 여럿 붙어도 허용목록 적용 — `GuiObject.Transparency`가 새 덤프에서 Deprecated로 흘러 빠지는 것 방지, Deny는 정의 클래스 기준)은 구현 때.

@@ -93,7 +93,7 @@
 검토는 `audit/naming-table-review-2026-10-16/`(Gemini 체계 검토 + sonnet 찬반 토론). 사용자: *"동의. ElemCtor 도 맞아보임. Into 도 ModifierInto 로 두는거 동의. modifierField 도 동의 … 다른 부분도 동의"*.
 - **값 `Elem "Frame"`은 그대로, 생성자 타입은 `ElemCtor<C>`**(타입 `Elem<C>`는 만들지 않는다). 토론이 "값·타입 이름을 갈라도 되나"로 좁혀졌고, 원칙 4를 "이름은 최종 산물을 가리킨다"로 읽으면
   `Elem "Frame"`의 산물은 `Frame`이라 `Elem<…>` 타입이 없어야 깨지지 않는다(Modifier도 이 읽기 — `Modifier "Frame"`의 산물이 `Modifier<Frame>`). 생성자 타입은 드물어 길어도 된다(원칙 1).
-- **`Into<C>` → `ModifierInto<C>`**(무엇으로 into인지 + 부모 접두).
+- **`Into<C>` → `ModifierInto<C>`**(무엇으로 into인지 + 부모 접두). **[2026-10-20]** 뜻은 "C에 들어갈 수 있는 Modifier" 마커로 바뀐다(인터페이스 아님) — `research/declaration-surface-plan.md` 5절 끝 문단.
 - **`SpreadMarker<C>` → `Spread<C>`**(`:Add`가 붙은 값은 전체형, 요소 자리에서 받는 쪽만 마커 — quad-types의 마커 정의 "입력받는 자리 전용, 메소드가 필요한 자리는 전체형",
   `State`/`StateMarker`·`Modifier`/`ModifierMarker`와 같은 짝; `Spread "Frame" {…}: Spread<Frame>`).
 - **`Field<T>`·`FieldOut<T>` → `ModifierField<T>`·`ModifierFieldOut<T>`.** 변형 열(`FieldP`·`FieldN`·`FieldPN`·`FieldV`·`FieldPV`·`FieldNV`·`FieldPNV`·`FieldOutP` — 보간 가능 여부·nil 수용

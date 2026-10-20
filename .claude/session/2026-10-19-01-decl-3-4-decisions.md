@@ -25,3 +25,8 @@
 ## 5. M3 후속 — Into 자리 too complex의 갈래
 
 사용자 *"실측 띄워줘"*. opus 서브에이전트가 (다) 하강 목록 좁히기·(라) 얇은 Into를 쟀다(본문 `audit/decl-typefn-probe-2026-10-16/REPORT.md` 끝 절): (다)는 GuiObject 하강 2~3개까지만 sync 깨끗(4개면 호출 자리, 5개 이상 전부 무너짐 — 노드 수 문턱), (라)는 효과 없음(메소드 반환 Modifier 사본끼리 비교가 원인, 태그만은 깨끗). 메인이 킷 꼴을 다시 보니 Into 자리 넷은 하강한 값을 놓기만 하고, 런타임은 놓는 자리에서 태그를 안 본다 — 메인 추가 실측: 전체형 `Modifier<GuiObject>?` prop도 sync에서 무너짐(사본 비교는 Into 고유가 아님), **마커 prop(C와 조상 태그만)을 As 없이 놓는 꼴은 세 모드 모두 깨끗·NEG 전부**(전체형이 놓치던 Frame·ScreenGui Modifier까지 거부). 이 방향(놓기만 하는 Modifier prop은 마커 — quad-types "입력 자리 = 마커" 규칙 그대로)과 이름은 사용자 결정 대기. 메인 실수 하나: `pkill -f`가 자기 셸을 맞혀 명령이 exit 144로 끊김(메모리 `feedback-pgrep-self-match`가 이미 경고한 것 — 피해 없음).
+
+## 6. 2026-10-20 — 마커 결정, 킷 규모 시험
+
+사용자: M3 추천 (가) 동의(`ModifierInto<C>`가 마커, 옛 Rust식 인터페이스는 물러남), M4 (가) 동의(GUI 중심 맵 유지), *"그냥 입력 받는 부는 전부 Into 를 마커 필드로써 될 수 있는걸로 두고 많은 부분이 해결될 것으로 보이긴함. 시도해보자"*. 결정은 `research/declaration-surface-plan.md` 5절 끝 문단(2026-10-20), `base/modifier-plan.md` 11절 Into 자리에 3.4.0 변경 배너. 시험: opus 서브에이전트가 변환 스크립트 시제품으로 두 킷 전체를 새 표면 사본(스크래치)으로 바꿔 sync·vsc·pin 타입 검사 — 기준선(변환 전) 대비, 입력 Modifier에 메소드가 필요한 자리 수, 기계 변환 실패 목록.
+같은 날: devplorer 상향 보고 프롬프트를 사용자에게 써 줌(devplorer `.claude/feedback/devui.md`를 출발점으로 층 다섯 — quad 코어·quad-roblox/타입·devui 빈칸·devui 상향 후보·문서 공백; 출력 `devplorer/.claude/feedback/quad-upstream-2026-10-20.md`), 사용자가 넣어 둠.
