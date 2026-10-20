@@ -1280,3 +1280,10 @@ E56). 무주석 매개변수를 가진 함수 값은 제네릭 함수라 `any` �
 잃는 것은 "`__apply`가 함수가 아닌 표"를 타입이 못 잡게 되는 것뿐이고(런타임 `Quad0191`이 잡는다), 넓히기만 하므로 BREAKING이 아니다. `__apply`는 공개 프로토콜
 훅이라(2026-10-06 `__` 규약) 사용자 구현이 타입을 통과하는 것이 그 계약의 일부다 — "Luau 한계를 우회하는 공개 타입을 두지 않는다"와 부딪히지 않는다(새 타입이
 아니라 기존 팔의 넓힘). 게이트: `quad-roblox/test/spec.componenttypes.luau`의 `_applyObjects`. 결과 State의 타입이 `any`인 것(8.29의 무검사)은 그대로다.
+
+## 8.38. luau-lsp 1.70.1에서 새로 걸리는 꼴 셋 — 레포 핀을 1.69.0에서 올리며 밟음 (2026-10-20 실측)
+
+3.4.0 단위 0 뒤 핀을 1.70.1로 올리자(사용자 동의, `research/release-3.4.0-plan.md` 4절) 1.69.0이 통과시키던 자리가 셋 걸렸다. 고친 방법이 곧 레시피다.
+1. **고의 오용 스펙의 정적 거부가 늘었다** — `q.Tag(123)`, `q.Tag({ "a", nil, "c" })`, `Operator.Band(Source(nil :: any))`(`Source<any>`를 `StateData<number>` 자리에서 거부). 런타임 게이트를 재는 줄이라 `:: any` 캐스트(이미 쓰던 관용구).
+2. **재대입되는 옵셔널 함수 업밸류를 `~= nil`로 좁혀 부르면 "Cannot call a value of type `((GuiObject) -> ()) & ~nil` in union"** — 지역 사본으로 옮겨도 같다. 옵셔널 대신 아무 일도 안 하는 기본 함수로 둔다(material `Dialog.luau`).
+3. **제네릭 함수 `live<T>` 안의 인라인 람다 `return true`가 바깥의 `T`와 대조된다**("Expected this to be 'T', but got 'boolean'") — 람다를 제네릭 함수 밖 지역 함수로 꺼낸다(material `test/spec.progress.luau`).

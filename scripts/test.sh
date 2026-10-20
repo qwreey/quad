@@ -45,7 +45,7 @@ printf '%s\n' "$analyze_out"
 if printf '%s' "$analyze_out" | grep -q "GlobalUsedAsLocal"; then echo "FAIL: implicit global function definition (add a forward \`local\` declaration)"; fail=1; fi
 # [2026-09-10 사용자 결정 "test.sh에 뉴 솔버 붙이기 -> 좋아. 실제로 지금은 뉴 솔버 쓰는 사람들이 더 많아. 구 솔버는 거의 fallback"]
 # [2026-09-15 정정] luau-analyze 0.734도 기본값이 신 솔버다(`--solver=old`만 구 솔버 — 그건 `read` 필드를 거부해 이 코퍼스를 못 읽는다).
-# 두 패스의 차이는 솔버 종류가 아니라 Luau 빌드(luau 0.734 vs luau-lsp 1.69.0 내장 release 729)와 설정이다(원인 좁히지 않음).
+# 두 패스의 차이는 솔버 종류가 아니라 Luau 빌드(luau 0.734 vs luau-lsp 내장 Luau — 판은 mise.toml 핀)와 설정이다(원인 좁히지 않음).
 # 엔진 무관 그룹을 luau-lsp 신 솔버(LuauSolverV2)로 한 번 더 본다 — 위 luau-analyze는 (옛 서술로) 구 솔버라
 # 사용자 에디터에서만 나던 타입 에러(2026-09-08 `Debounce.luau` 사례)를 못 잡았다. defs 없이·
 # --platform=standard(Roblox 전역을 쓰면 여기서도 걸린다). 실측 0.45s. 린트만 남으면 exit 0이다.

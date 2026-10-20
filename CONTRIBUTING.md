@@ -30,7 +30,7 @@
   두 패스로 분석해서 엔진 전역이 새어 들어오면 그 자리에서 걸립니다 —
   `luau-analyze` 한 번, `luau-lsp analyze --flag:LuauSolverV2=true` 한 번입니다.
   둘 다 신 솔버이고, 차이는 솔버 종류가 아니라 Luau 빌드(luau-analyze 0.734 /
-  luau-lsp 1.69.0 내장)와 설정입니다. `quad-roblox`만 Roblox 타입 정의를 얹고
+  `mise.toml`에 핀한 luau-lsp 내장)와 설정입니다. `quad-roblox`만 Roblox 타입 정의를 얹고
   봅니다.
 - 그다음 `quad-base/test/smoke.*.luau`, `quad-base/test/spec.*.luau`,
   `quad-roblox/test/spec.*.luau`를 하나씩 실행하고, 마지막으로 게이트 넷이 돕니다 —

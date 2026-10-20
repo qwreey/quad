@@ -147,7 +147,7 @@ do
 	local ok2, err2 = pcall(function() return total:Get() end)
 	assert(not ok2 and string.find(tostring(err2), "current value must be a number (got string)", 1, true) ~= nil, "wrong-type current value: " .. tostring(err2))
 	local mask = Source(0xFF)
-	local band = mask:Apply(Operator.Band(Source(nil :: any)))
+	local band = mask:Apply(Operator.Band(Source(nil :: any) :: any)) -- luau-lsp 1.70.1 no longer accepts Source<any> for StateData<number>
 	local ok3, err3 = pcall(function() return band:Get() end)
 	assert(not ok3 and string.find(tostring(err3), "Operator.Band: argument #1 is a State whose current value is nil", 1, true) ~= nil, "bitwise too: " .. tostring(err3))
 	local selfNil = (Source(nil :: any) :: any):Apply(Operator.Sum(1))

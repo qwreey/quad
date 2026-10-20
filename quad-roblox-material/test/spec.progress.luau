@@ -16,11 +16,13 @@ local baseBeats = beats()
 
 -- The loop only runs under a LayerCollector (ScreenGui, SurfaceGui, BillboardGui, plugin GUIs). The mock does not fire AncestryChanged on re-parenting, so
 -- `live(host)` seats the host in a ScreenGui and fires the event the engine would.
+-- the predicate sits outside `live<T>`: luau-lsp 1.70.1 checks an inline lambda's `return true` against the enclosing generic `T`
+local function always(_: any): boolean
+	return true
+end
 local function live<T>(host: T): (T, any)
 	local gui = D.ScreenGui { host :: any }
-	for _, d in H.findAll(gui, function()
-		return true
-	end) do
+	for _, d in H.findAll(gui, always) do
 		local anyD: any = d
 		anyD.AncestryChanged:Fire(d, gui)
 	end
@@ -469,7 +471,7 @@ H.section("LoadingIndicator: 8 instances, morphs + turns from Heartbeat while mo
 	-- the shape stays inside its 38 px box (spring overshoot is bounded by the sizes)
 	for _ = 1, 60 do
 		H.advance(0.05)
-		for _, f in { s1, s2, H.find(ind, "Shape3") } do
+		for _, f in { s1, s2, H.find(ind, "Shape3") } :: { any } do
 			assert(f.Size.X.Offset <= 38 * 1.15 and f.Size.Y.Offset <= 38 * 1.15, "inside the shape box: " .. tostring(f.Size))
 			local c = class(f, "UICorner")[1]
 			assert(c.CornerRadius.Scale >= 0 and c.CornerRadius.Scale <= 0.5)
@@ -536,7 +538,7 @@ H.section("WavyProgress: Stretch periods of a sheet cell clipped to the value, r
 	assert(p0.Size == UDim2.fromOffset(40, 10) and p0.Image == "rbxassetid://96568777229073", "the amplitude sheet")
 	assert(p0.ImageRectSize == Vector2.new(480, 64) and frameOf(p0) == 0, "one cell, full amplitude")
 	assert(p0.ImageColor3 == L.Primary and H.find(track, "Stop").BackgroundColor3 == L.Primary)
-	for _, cap in { s, e } do
+	for _, cap in { s, e } :: { any } do
 		assert(cap.Size == UDim2.fromOffset(4, 4) and cap.AnchorPoint == Vector2.new(0.5, 0.5) and cap.BackgroundColor3 == L.Primary)
 		assert(#class(cap, "UICorner") == 1 and cap.Visible == true and cap.Parent == wave)
 	end

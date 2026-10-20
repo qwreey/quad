@@ -254,7 +254,9 @@ local function open(o: OpenOptions): Handle
 		local b = o.Body
 		local bodyInner: GuiObject? = nil
 		-- set when the body sits in the scroll wrapper: starts the measurements (run from the card's PostRef hook)
-		local watchLayout: ((card: GuiObject) -> ())? = nil
+		-- a no-op until the body sits in the scroll wrapper (not an optional: luau-lsp 1.70.1 cannot call a refined
+		-- optional-function upvalue — `((GuiObject) -> ()) & ~nil` in a union)
+		local watchLayout: (card: GuiObject) -> () = function(_card: GuiObject) end
 		if type(b) == "string" then
 			bodyInner = D.TextLabel {
 				Name = "Body",
@@ -439,9 +441,7 @@ local function open(o: OpenOptions): Handle
 			Util.clickSink(),
 			Util.postHook(function(card: GuiObject)
 				entered:Set(true)
-				if watchLayout ~= nil then
-					watchLayout(card)
-				end
+				watchLayout(card)
 				if fitMode and measured then
 					local function refit()
 						local abs = card.AbsoluteSize

@@ -64,7 +64,7 @@ do
 	mock.assertBlamesUser(err, "spec.tag.luau", "stub blame")
 	-- 통합 감사 2라운드: 생성자·합성 검증도 사용자 줄을 blame(H-238 태깅)
 	local okC, errC = pcall(function()
-		q.Tag(123)
+		q.Tag(123 :: any) -- deliberate misuse (runtime gate); luau-lsp 1.70.1 rejects it statically
 	end)
 	assert(not okC and string.find(tostring(errC), "names must be strings", 1, true) ~= nil, "constructor validates: " .. tostring(errC))
 	mock.assertBlamesUser(errC, "spec.tag.luau", "constructor blame")
@@ -87,7 +87,7 @@ do
 	local slotTag = q.Tag("a", nil, "c")
 	assert(slotTag:Contains("a") and slotTag:Contains("c"), "a nil vararg slot is nothing — names after it are kept")
 	local okH, errH = pcall(function()
-		q.Tag({ "a", nil, "c" })
+		q.Tag({ "a", nil, "c" } :: any) -- deliberate misuse; luau-lsp 1.70.1 rejects it statically
 	end)
 	assert(not okH and string.find(tostring(errH), "nil holes", 1, true) ~= nil, "a nil HOLE in a list is still a validation error: " .. tostring(errH))
 	assert(q.Tag.Merged(q.Tag("a"), nil, q.Tag("b")):Contains("b"), "Merged skips nil slots")
