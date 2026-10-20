@@ -1008,7 +1008,7 @@ D 파일 안에서 유니언을 새로 조립하거나 유니언 인자로 인�
 
 ## 8.13. 신 솔버(`luau-lsp --flag:LuauSolverV2`)는 함수 인자 테이블 리터럴 안의 인라인 무주석 `:Compute`를 못 푼다; 테이블 인덱서는 불변이라 `{ E }` 변수는 `<Class>Param<E>`가 아니다 (2026-09-08 round8 3차 M 실측)
 
-> **[2026-10-20 — 3.4.0 실측, luau-lsp 1.70.1]** 클래스 먼저 표면의 요소 테이블에서는 이 진단이 나지 않는다(`q.Elem "Frame" { Size = n:Compute(function(h) … end) }` 깨끗). 대신 §1이 그대로 드러난다 — 인라인·파라미터 주석·바인딩 주석(`local c: State<UDim2> = n:Compute(…)`)·꺼내 둔 변수 어느 꼴이든 **틀린 반환 타입(UDim2 자리에 숫자)이 통과**하고, 평범한 `Source<number>`를 놓은 자리만 잡힌다. 사용자 문서 how-to 08 표 첫 행이 이 서술.
+> **[2026-10-20 — 3.4.0 실측, luau-lsp 1.70.1]** 클래스 먼저 표면의 요소 테이블에서는 이 진단이 나지 않는다(`q.Elem "Frame" { Size = n:Compute(function(h) … end) }` 깨끗). 대신 §1이 그대로 드러난다 — 인라인·파라미터 주석·바인딩 주석(`local c: State<UDim2> = n:Compute(…)`)·꺼내 둔 변수 어느 꼴이든 **틀린 반환 타입(UDim2 자리에 숫자)이 통과**하고, 평범한 `Source<number>`를 놓은 자리만 잡힌다. 사용자 문서 how-to 08 표 첫 행이 이 서술. **같은 날 갈라 잼(사용자 질문 "luau-lsp 버전을 올린 영향인가")**: 표면 둘(3.3 생성 D — 커밋 `04e5bdcd` 임시 worktree / 3.4.0) × luau-lsp 둘(1.69.0 / 1.70.1) 네 칸 모두 B·C·D(주석 있는 꼴)는 통과, E만 에러 — 구멍은 표면·버전과 무관한 §1. 갈린 것은 인라인 무주석 A 하나로, 1.69.0에서만 8.13 진단이 나고(표면 무관) 1.70.1에서 사라졌다 — 그 진단의 기대 타입도 `-> number`(소스 쪽)라 원래 프로퍼티 대조가 아니었다.
 
 - **인라인 `:Compute`**: `q.Declaration.Frame({ ZIndex = n:Compute(function(h) return h:Get() + 1 end) })`가 strict + 신 솔버에서 TypeError(*"Expected
   `(StateData<number>, number?, ...any) -> number` but got `<a>(t1) -> add<a, number>` … `Get` is a read-only property"*). 함수 **인자로 넘기는 테이블
