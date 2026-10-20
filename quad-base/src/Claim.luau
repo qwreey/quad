@@ -212,6 +212,7 @@ local function Init(module: any)
 	module.Claim = Claim
 	module.MapperRoot = MapperRoot
 	module.newMapperClass = newMapperClass
+	module.Raw.Mapper = newMapperClass -- [2026-10-20 3.4.0] the new name (`newMapperClass` goes at the switch)
 	-- isMapperDescriptor는 init.luau 리터럴이 단일 소유(리뷰 — 이중 대입 제거)
 	Err.setFuncLevel(SURFACE, Claim, newMapperClass)
 end

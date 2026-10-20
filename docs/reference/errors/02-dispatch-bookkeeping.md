@@ -405,3 +405,38 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 - **고치려면**: 콜백이 넣고 빼는 조건이 한 값에서 멈추게 하세요 — 받은 값에 따라 넣기와 빼기가 번갈아 참이 되면 끝나지 않습니다. 넣을지 말지를 콜백이 바꾸는 그 길이에 기대지 않는 값(데이터 개수 등)으로 정하세요.
 - **관측(계약 아님)**: 이 에러는 자리 계산 도중에 나므로 그 부모의 부기는 멈춘 채 남습니다([`slot.Offset`](../core/06-slot.md#slotoffset)의 caution).
 - **참고**: [`slot.Offset`](../core/06-slot.md#slotoffset), [Length/Offset 부기](../extend/02-dispatch-handler-contract.md#lengthoffset-부기)
+
+### Quad0273
+
+`Spread: the argument must be a plain table written like an element table (got {typeof(t)})` — `quad-base/src/Dispatch/Spread.luau`
+
+- **언제**: `q.Raw.Spread(…)`에 평범한 테이블이 아닌 값을 넘겼을 때 — 아무것도 안 넘기거나(`nil`), quad 값(Modifier·State 등 메타테이블이 붙은 값)을 그대로 넘긴 경우입니다. Spread는 요소 테이블과 같은 모양의 테이블에서만 만들어집니다.
+- **고치려면**: 요소에 쓰듯 중괄호 테이블을 넘기세요(`q.Raw.Spread { Visible = true, someRef }`). 다른 Spread를 합치려면 그 테이블의 숫자 키 자리에 넣거나 `:Append`를 쓰세요.
+
+### Quad0274
+
+`Spread: a Spread cannot be the value of key "{tostring(k)}" - place it in the array part` — `quad-base/src/Dispatch/Spread.luau`
+
+- **언제**: Spread를 만드는 테이블에서 다른 Spread를 문자 키 값 자리에 뒀을 때 — 펼칠 수 있는 자리는 숫자 키(배열부)뿐입니다. 1부터 빈틈 없이 이어지는 배열부 밖의 숫자 키도 같은 에러가 납니다.
+- **고치려면**: 안쪽 Spread는 숫자 키 자리에 놓으세요(`q.Raw.Spread { Visible = true, inner }`).
+
+### Quad0275
+
+`Spread:Append: this Spread is locked - it was already placed in an element or spread into another Spread (a Spread cannot be appended to itself)` — `quad-base/src/Dispatch/Spread.luau`
+
+- **언제**: 이미 요소에 놓였거나 다른 Spread에 펼쳐진 Spread에 `:Append`를 불렀을 때, 또는 `s:Append(s)`처럼 자기 자신을 넣었을 때. Spread는 놓이거나 펼쳐지는 순간 내용이 복사되므로, 그 뒤의 `:Append`는 이미 복사된 쪽에 보이지 않습니다 — 그 어긋남을 막으려고 잠급니다. 잠긴 Spread를 읽거나 다시 놓는 것은 됩니다.
+- **고치려면**: 더할 내용은 놓기 전에 `:Append`하세요. 놓은 뒤에 내용이 바뀌어야 하면 새 Spread를 만들어 그 요소에 함께 놓으세요.
+
+### Quad0276
+
+`Spread:Append: the argument must be a Spread (got {typeof(other)})` — `quad-base/src/Dispatch/Spread.luau`
+
+- **언제**: `:Append`에 Spread가 아닌 값을 넘겼을 때 — 프로퍼티 테이블이나 Ref·Observer 같은 값을 바로 넘긴 경우입니다. `:Append`는 Spread만 받습니다.
+- **고치려면**: 더할 내용을 Spread로 감싸 넘기세요(`s:Append(q.Raw.Spread { obs })`).
+
+### Quad0277
+
+`Dispatch.drive: a Spread cannot be the value of key "{tostring(k)}" - place it in the array part` — `quad-base/src/Dispatch/Modifier/init.luau`
+
+- **언제**: Spread를 props의 문자 키 값 자리에 뒀을 때 — 펼칠 수 있는 자리는 숫자 키(배열부)뿐입니다. 1부터 빈틈 없이 이어지는 배열부 밖의 숫자 키도 같은 에러가 납니다. [`Quad0068`](#quad0068)(Modifier)의 Spread 짝입니다.
+- **고치려면**: Spread는 1부터 빈틈 없이 이어지는 숫자 키 자리에 놓으세요(`props.FieldSpread or q.None`처럼 비어 있을 수 있으면 `None`으로 자리를 채웁니다).

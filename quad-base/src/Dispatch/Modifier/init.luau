@@ -91,6 +91,7 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local ModifierBrand = Brand.ModifierBrand
 local isModifier = Brand.isModifier
+local isSpread = Brand.isSpread
 local isState = Brand.isState
 local isRef = Brand.isRef -- covers PreRef/PostRef (Brand.luau predicate)
 local isObserver = Brand.isObserver
@@ -543,6 +544,10 @@ local function flatten(input: { [any]: any }): { [any]: any }
 		-- so most prop values (numbers, strings, userdata) skip the brand lookup
 		if type(v) == "table" and isModifier(v) then
 			Err.errorBefore(`Quad0068 Modifier: a Modifier cannot be a value of key "{tostring(k)}" - place it in the array part`, SURFACE)
+		end
+		-- [2026-10-20 3.4.0] the Spread twin of Quad0068 (the array-part Spreads were expanded just before — Dispatch drive)
+		if type(v) == "table" and isSpread(v) then
+			Err.errorBefore(`Quad0277 Dispatch.drive: a Spread cannot be the value of key "{tostring(k)}" - place it in the array part`, SURFACE)
 		end
 	end
 	for i = n, 1, -1 do -- ⚠️ reverse: the LAST modifier must write first

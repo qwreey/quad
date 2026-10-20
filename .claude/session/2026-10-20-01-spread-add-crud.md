@@ -47,3 +47,7 @@ gen-d.py: LEGACY_KEEP(정의 클래스 기준, 태그 무관 — Transparency �
 ## 9. 단위 2 완료(타입 함수 본체)
 
 `quad-roblox/src/Surface/init.luau` + 게이트 `scripts/surface-gate.py`(NEG 23/23, 클래스 47개). 프로브와 다른 점: 전역 이름 Deny 없음, 입력 마커는 조상 사슬 전체(ForClasses 때문 — GUI 맵으로 거르면 `W.Modifier "BasePart"`가 `Part`에서 거부), 팩토리 함수 타입 통째. 공개 별칭은 루트 미노출(단위 6).
+
+## 10. 단위 3 완료(base 런타임)
+
+`Dispatch/Spread.luau`(깊이 1·먼저가 이김·`:Append`·잠금·debug 경고), drive 선처리 `expand`(flatten 앞), 에러 Quad0273~0277, `BackendStubs.luau`(H-929 스텁 표 — 일곱 중 Modifier는 단위 6), `q.NewModule`·`q.Raw`(+ 01-quad-module 헤딩, CHANGELOG Added), `ModifierField`/`ModifierFieldOut` 옆 이름. 남은 것: Surface 변환 함수 `old` 타입(단위 6). test.sh·devui·material exit 0.

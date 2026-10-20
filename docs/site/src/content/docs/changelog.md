@@ -11,6 +11,12 @@ description: "3.x 릴리즈마다 무엇이 생기고 바뀌고 없어졌는지 
 
 _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다. 비어 있으면 게시된 최신 버전이 곧 현재 상태입니다._
 
+### Added
+
+- `q.NewModule()` — `q.New()`의 새 이름(같은 함수). 3.4.0에서 `q.New()`는 빠집니다.
+- `q.Raw` — 백엔드가 타입드 표면을 짓는 base 원재료: `q.Raw.Modifier`(지금의 `q.Modifier` 묶음), `q.Raw.Spread`, `q.Raw.Mapper`(지금의 `q.newMapperClass`).
+- Spread — 요소 테이블처럼 쓴 테이블을 요소의 숫자 키 자리에 펼쳐 넣는 일회용 묶음(`q.Raw.Spread {…}`). 같은 키는 먼저 자리 잡은 쪽이 이기고(인라인 키가 맨 앞), Modifier보다 앞섭니다. 안에 놓인 Spread는 만들 때 펴지고, `spread:Append(other)`는 다른 Spread만 받아 끝에 더하며 아무것도 돌려주지 않습니다. 요소에 놓이거나 다른 Spread에 펴진 Spread는 잠겨 더 이상 `:Append`할 수 없습니다. `q.debug`이면 앞선 Spread에 밀려난 함수 값을 알립니다.
+
 ### Fixed
 
 - `slot:Lazy(fn)`의 `fn`이 `q.None`을 돌려주는 것을 strict 타입 검사가 거부하던 것 — 런타임은 `nil`처럼 빈 내용으로 받는데 타입이 막았습니다. 이제 `fn: () -> (SlotElement<T> | None)?`입니다.

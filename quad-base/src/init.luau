@@ -40,6 +40,8 @@ local TagModule = require("@self/Tag")
 local AttrKeyModule = require("@self/Attr/Key")
 local AttrModule = require("@self/Attr")
 local ModifierModule = require("@self/Dispatch/Modifier") -- M7 단위 ①(값 런타임 — 핸들러는 단위 ②)
+local SpreadModule = require("@self/Dispatch/Spread") -- [2026-10-20 3.4.0] untyped Spread (q.Raw.Spread)
+local InitBackendStubs = require("@self/BackendStubs") -- [2026-10-20 3.4.0, round15 H-929] top-level backend-contract stubs
 -- 2026-09-08 순수 슈거 셋(사용자 결정 "간단히 만들어 놓고 다듬기" — 문서화 전에 표면부터)
 local DebounceModule = require("@self/Debounce") -- `Debounce`/`Throttle`(base/debounce-throttle-plan) — 인스턴스별(주입 시간 op를 읽는다)
 local LifecycleHooks = require("@self/LifecycleHooks") -- `OnCreated`/`OnRendered`/`OnDestroyed`(base/lifecycle-hooks-plan) — 인스턴스별(`Effect`)
@@ -71,6 +73,15 @@ local function New(): Quad
 	end
 	local module = {
 		New = New,
+		-- [2026-10-20 3.4.0] the new name of `New` (declaration-surface-plan 5절, 사용자 동의 2026-10-16); `New` goes at the switch
+		NewModule = New,
+		-- [2026-10-20 3.4.0] base raw materials — the untyped constructors a backend builds its typed surface on
+		-- (declaration-surface-plan 5절 `q.Raw`, 사용자 2026-10-16). `Mapper` is filled by Claim's Init (per instance).
+		Raw = {
+			Modifier = ModifierModule.Modifier,
+			Spread = SpreadModule.Spread,
+			Mapper = nil :: any,
+		},
 		Version = "3.3.0",
 		-- [2026-09-15 공개 표면 (12)] per-instance identity token — an EMPTY table, never the module
 		-- itself (holds nothing). Subsystems store it on their per-instance impl and compare it where a
@@ -260,6 +271,7 @@ local function New(): Quad
 	-- 2026-09-08 슈거 — 시간 게이트(주입 `setTimeout`/`clearTimeout` 위)와 생명주기 훅(`Effect` 위)
 	module:RunInit(DebounceModule.Init)
 	module:RunInit(LifecycleHooks.Init)
+	module:RunInit(InitBackendStubs) -- [2026-10-20 3.4.0, round15 H-929] after every Init: a name a subsystem set is not stubbed
 	-- 서브시스템이 늘어날 때마다 이 자리에 module:RunInit(InitXxx)를 순서 무관하게 추가
 
 	-- `H-231`: 모듈 표면도 태그 레이어에 — 인스턴스별 클로저라 여기서

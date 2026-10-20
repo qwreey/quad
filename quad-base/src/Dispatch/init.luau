@@ -44,6 +44,7 @@ local Brand = require("./Brand") -- `isPlainBranded` — the `H-470` props gate'
 local DispatchHintBrand = Brand.DispatchHintBrand -- `noMatchMessage`'s hook brand (the same object as `q.Protocols.DispatchHint`)
 local ModifierModule = require("@self/Modifier")
 local flatten = ModifierModule.flatten -- M7 단위 ② — drive의 첫 pre-pass(round17 Q4 (a))
+local expandSpreads = require("@self/Spread").expand -- [2026-10-20 3.4.0] the pre-pass before flatten
 local ProcessedModifier = ModifierModule.ProcessedModifier -- M7 단위 ② — flatten's consumed-slot sentinel
 local RefPrePass = require("@self/Ref") -- M8 단위 ② — (a) PreRef/PostRef pre-pass + (c) postRefList
 
@@ -606,9 +607,13 @@ local function Init(module: any)
 		-- ③ flatten — Modifier slots consumed in place (`ProcessedModifier`),
 		-- fields merged into the hash part. Owned HERE, not by `New` (round17
 		-- §0 Q4 (a), 2026-09-04): one call site serves `New` and `Claim` alike.
-		-- Runs before the batching test — it never changes the array length.
+		-- [2026-10-20 3.4.0] Spreads are expanded FIRST (canon order: Spread → Modifier → PreRef → body —
+		-- component-flatten-sugar-plan 5절 (3)): their array values take the Spread's slot (the array
+		-- length can change — so this, too, runs before the batching test), their keys fill keys still
+		-- empty, and Modifier flatten then fills what remains.
 		-- flatten's hash-part walk also carries the array-key domain check
 		-- (`Quad0085`, `H-495`) — no separate full pass here (2026-10-02 사용자).
+		expandSpreads(flattened, module.debug)
 		flatten(flattened)
 		local batching = flattened[1] ~= nil
 		local blocker = if batching then bookkeeping._getBlocker(inst) else nil

@@ -551,4 +551,12 @@ export type ForClasses = <M>() -> Surface<M, M, PolicyFor<M>, MapperPolicyFor<M>
 -- surface gate (scripts/test.sh): one line per class of both maps — counts, never a `never` surface
 export type SurfaceBrief<C> = Build<"brief", C, Policy>
 
+-- [2026-10-20 3.4.0] a custom Modifier class's setter value / stored value (the generated D's `Field<T>`/`FieldOut<T>`
+-- under the decided names — declaration-naming-table 5절): literal | Tween | State marker | None | transform (old =
+-- the stored value as-is). Not type functions — a kit writes them in its own Modifier type.
+export type ModifierFieldOut<T> = Types.FieldOut<T>
+export type ModifierField<T> =
+	(T | Types.Tween<T> | QuadTypes.StateMarker<T | Types.Tween<T>> | QuadTypes.None)?
+	| ((old: ModifierFieldOut<T>?) -> (T | Types.Tween<T> | QuadTypes.StateMarker<T | Types.Tween<T>> | QuadTypes.None)?)
+
 return {}

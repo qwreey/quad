@@ -6,7 +6,7 @@ description: require 결과가 곧 기본 인스턴스 — New/RunInit/AddPlugin
 
 한 인스턴스는 자기만의 디스패치 핸들러 레지스트리, 부기(bookkeeping), 프로바이더 슬롯을 가집니다. `Void`/`Ref`/`Relate`/`Blocker` 같은 의존 없는 잎 모듈은 인스턴스끼리 공유되지만, `Source`/`Effect`처럼 인스턴스 상태를 닫아 쥐는 팩토리는 인스턴스마다 다른 함수입니다.
 
-이 페이지의 심볼: [q.New()](#qnew) · [q:RunInit(initFn)](#qruninitinitfn) · [q:AddPlugin(pluginFn)](#qaddpluginpluginfn) · [q:UseProvider(providerFn)](#quseproviderproviderfn) · [q.Version](#qversion) · [q.debug](#qdebug) · [q.errorNamespace](#qerrornamespace) · [q.moduleIdentity](#qmoduleidentity) · [q.Relate()](#qrelate)
+이 페이지의 심볼: [q.New()](#qnew) · [q.NewModule()](#qnewmodule) · [q.Raw](#qraw) · [q:RunInit(initFn)](#qruninitinitfn) · [q:AddPlugin(pluginFn)](#qaddpluginpluginfn) · [q:UseProvider(providerFn)](#quseproviderproviderfn) · [q.Version](#qversion) · [q.debug](#qdebug) · [q.errorNamespace](#qerrornamespace) · [q.moduleIdentity](#qmoduleidentity) · [q.Relate()](#qrelate)
 
 ```luau
 -- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
@@ -38,6 +38,36 @@ New: () -> Quad
 ```luau
 local isolated = Quad.New() -- 테스트나 격리된 서브시스템용
 ```
+
+## `q.NewModule()`
+
+**시그니처**
+
+```luau
+NewModule: () -> Quad
+```
+
+**반환** — 새 `Quad` 모듈 인스턴스. [`q.New()`](#qnew)와 같은 함수입니다.
+
+**동작** — 3.4.0에서 `q.New()`의 새 이름입니다. 무엇을 만드는지가 이름에 드러나도록 바꿨고, `q.New()`는 3.4.0에서 빠집니다. 동작은 위 `q.New()` 그대로입니다.
+
+## `q.Raw`
+
+**시그니처**
+
+```luau
+Raw: {
+	Modifier: ModifierConstructor,
+	Spread: (t: { [any]: any }) -> { read __quadSpread: true, Append: (self: any, other: any) -> () },
+	Mapper: (className: string) -> (key: any) -> (props: any) -> MapperDescriptor,
+}
+```
+
+**동작** — 백엔드가 자기 타입드 표면(`q.Modifier "Frame"`, `q.Spread "Frame" {…}`, `q.Mapper "Frame"`)을 짓는 base의 원재료입니다. 셋 다 클래스를 모르고 타입도 붙지 않습니다. 앱 코드는 보통 백엔드가 주는 타입드 쪽을 씁니다 — `q.Raw`는 백엔드·플러그인 작성자, 그리고 자기 Modifier 클래스를 정의하는 사람의 자리입니다.
+
+- **`q.Raw.Modifier`** — base의 Modifier 생성자 묶음(`Overridden`·`TypedFactory`·`DefineSubtype` 포함). 3.4.0 전까지 `q.Modifier`였던 것입니다.
+- **`q.Raw.Spread(t)`** — 요소 테이블처럼 쓴 테이블로 Spread를 만듭니다. 안에 놓인 Spread는 그 자리에서 펴지고(깊이 1), 같은 키는 먼저 자리 잡은 쪽이 이깁니다(인라인 키가 첫 층). `spread:Append(other)`는 다른 Spread만 받아 끝에 펴 넣고 아무것도 돌려주지 않습니다. 요소에 놓이거나 다른 Spread에 펴진 Spread는 잠겨 `:Append`가 [`Quad0275`](/reference/errors/02-dispatch-bookkeeping/#quad0275)이 됩니다.
+- **`q.Raw.Mapper(className)`** — Claim 매퍼 디스크립터의 클래스별 팩토리. 3.4.0 전까지 `q.newMapperClass`였던 것입니다.
 
 ## `q:RunInit(initFn)`
 

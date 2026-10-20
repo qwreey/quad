@@ -59,6 +59,8 @@ local RefBrand = Brand()
 local PreRefBrand = Brand()
 local PostRefBrand = Brand()
 local ModifierBrand = Brand()
+-- [2026-10-20 3.4.0] internal only, NOT on `q.` (a public `q.isSpread` would be a new name — not decided)
+local SpreadBrand = Brand()
 local EpochBrand = Brand()
 local MapperBrand = Brand() -- M5 단위 ④ — Claim의 MapperDescriptor(claim-plan §2)
 -- M10 (round16): the attribute single-key objects get their own brand — the
@@ -111,6 +113,9 @@ local function isBlocker(x: any): boolean
 end
 local function isModifier(x: any): boolean
 	return ModifierBrand:Is(x)
+end
+local function isSpread(x: any): boolean
+	return SpreadBrand:Is(x)
 end
 local function isMapperDescriptor(x: any): boolean
 	return MapperBrand:Is(x)
@@ -178,6 +183,7 @@ return {
 	PreRefBrand = PreRefBrand,
 	PostRefBrand = PostRefBrand,
 	ModifierBrand = ModifierBrand,
+	SpreadBrand = SpreadBrand, -- internal (no public `is*` predicate)
 	EpochBrand = EpochBrand,
 	AttrKeyBrand = AttrKeyBrand,
 	BindableBrand = BindableBrand, -- internal (no `is*` predicate, not re-exported on `q.`)
@@ -193,6 +199,7 @@ return {
 	isContext = isContext,
 	isProvider = isProvider,
 	isModifier = isModifier,
+	isSpread = isSpread, -- internal (Dispatch/Spread.luau, Dispatch/Modifier flatten) — not re-exported on `q.`
 	isRef = isRef,
 	isPreRef = isPreRef,
 	isPostRef = isPostRef,

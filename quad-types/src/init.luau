@@ -196,6 +196,8 @@ export type StateData<T> = { read __quadState: true, read __quadStateValue: T, G
 -- ⚠️ 프로바이더 아래에서도 base `Modifier()`의 `Peek`는 이 정의를 쓰므로 `Peek<<UDim2>>`는 Tween 팔이 없다 —
 -- 그 필드가 Tween을 품을 수 있으면 `Peek<<UDim2 | Tween<UDim2>>>`로 부를 것(T = 값 대수 전부, `H-459`).
 export type FieldOut<T> = T | State<T> | None
+-- [2026-10-20 3.4.0] the new name (declaration-naming-table 5절 — 부모 접두); `FieldOut` goes at the 3.4.0 switch
+export type ModifierFieldOut<T> = FieldOut<T>
 
 export type State<T> = StateData<T> & {
 	-- deps는 `...any`다 — 타입팩 `D...`로 위치 인자를 좁히는 형태는 strict에서 콜백 dep
@@ -662,6 +664,16 @@ export type Quad = {
 	Version: "3.3.0", -- quad-base/pesde.toml의 version과 항상 맞출 것
 	debug: boolean,
 	New: () -> Quad,
+	-- [2026-10-20 3.4.0] the new name of `New` (`New` is removed at the 3.4.0 switch)
+	NewModule: () -> Quad,
+	-- [2026-10-20 3.4.0] base raw materials (untyped) — a backend builds its typed `q.Modifier "Frame"` /
+	-- `q.Spread "Frame" {…}` / `q.Mapper "Frame"` on these. The Spread result type is deliberately unnamed
+	-- (a public name would be a new name — typed code uses the backend's `Spread<C>`).
+	Raw: {
+		Modifier: ModifierConstructor,
+		Spread: (t: { [any]: any }) -> { read __quadSpread: true, Append: (self: any, other: any) -> () },
+		Mapper: (className: string) -> (key: any) -> (props: any) -> MapperDescriptor,
+	},
 	RunInit: (self: Quad, initFn: (Quad) -> any) -> (),
 	AddPlugin: <Self, P>(self: Self, pluginFn: (Self) -> P) -> Self & P,
 	-- 백엔드(프로바이더) 설치 전용(`H-305` (d′), 2026-09-02 사용자 확정) —
