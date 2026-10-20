@@ -66,7 +66,7 @@
 - **문자 키 함수 값은 막지 않는다** — `q.debug`일 때 앞선 Spread에 밀려난 함수만 알린다. 여러 핸들러가 필요한 이벤트는 배열부
   `q.OnEvent` 디스크립터(문자 키 이벤트는 손으로 쓸 때의 "한 칸"으로 남음).
 - 에러: `Quad0273`(평범한 테이블 아님)·`Quad0274`(Spread를 키 값으로 — 생성)·`Quad0277`(같은 것 — drive)·`Quad0276`(`:Append`에
-  Spread 아닌 값).
+  Spread 아닌 값), Modifier 필드 값으로 넣은 Spread는 `Quad0064`/`Quad0057`(핸들러 계층 값 목록).
 - 키트 안쪽 요소 자리는 `FieldModifier`/`TrackModifier` 옆에 `FieldSpread`/`TrackSpread`(마커 `SpreadInto<C>`). `Split`과의 관계는
   보류(research 5절).
 

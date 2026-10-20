@@ -37,7 +37,7 @@ local sentinel = require("./Dispatch/Handler").sentinel
 local QuadTypes = require("../luau_packages/quad_types")
 
 -- `H-300` (a, 사용자 확정 2026-09-02): the sentinel carries one MARKER field so
--- its TYPE becomes structurally expressible (`QuadTypes.None` — the generated
+-- its TYPE becomes structurally expressible (`QuadTypes.None` —
 -- the backend prop/children unions need it; an empty table type would match every
 -- table; "marker" on purpose — NOT a `Brand.luau` Brand, which this value
 -- deliberately has none of). Runtime judgement is STILL identity (`v == None`) — the field is

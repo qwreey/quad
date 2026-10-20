@@ -54,7 +54,7 @@
 	Every `As%u` key is reserved for casts — it can never become a field setter
 	(a typo `AsTextLabl` errors instead of silently minting a field). Tags live
 	in the `__quadModifier` literal (H-300 marker): `true` for untyped, the
-	class name for tagged values — the generated per-class types declare the
+	class name for tagged values — the backend's per-class types (quad-roblox `Modifier<C>`) declare the
 	same literal, so the tag the type promises IS the tag the value carries.
 
 	Runtime is ONE generic `__index` (no per-class code): reserved methods
@@ -430,7 +430,7 @@ local function construct(tag: any, ...: any): any
 				if type(v) == "function" then
 					-- [2026-09-16 hunt C] the old hint "use mod:{k}(fn)" pointed an EVENT handler at the
 					-- transform-function arm (the setter would call it once with old=nil and store nil).
-					-- Modifiers carry no events (modifier-plan: the generated <Class>Modifier omits them).
+					-- Modifiers carry no events (modifier-plan: the backend's `Modifier<C>` type omits them).
 					Err.errorBeforeNearest(`Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function - a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the element, or wrap it in a State)`, SURFACE)
 				end
 				if isHandlerLayerValue(v) then

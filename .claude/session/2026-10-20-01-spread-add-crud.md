@@ -92,3 +92,5 @@ doc-coverage가 새 표면 헤딩을 요구해 단위 7 일부를 당겼다: ref
 - 덤: `surface-gate.py`가 늘 한도 셋을 넘겨 "플래그 없이" 주장을 지키는 게이트는 없다(리뷰 지적) — 8.40 실측은 손으로 한 것.
 
 **감사 2라운드(docs·인덱스) 반영.** 스킬 문서(`Field<T>`·`D.<Class>`·"generated" 다섯 곳, v1-migration의 "플래그 넷 필수"와 `q.Elem<<T>>`·Folder 행 — Folder는 Elem 맵에 있고 맵 밖 클래스는 `q.ForClasses`), HUMAN_TODO(`D.Mapper` 둘, 클래스별 이름 해소 줄, H절 커버리지 수치에 날짜·3.4.0 영향), question.md quad-debug 줄, reference 01-install 한도 예외 한 문장, 03의 `q.SpreadInto` → `RobloxModule.SpreadInto`, 00-index 타입 행 보충. 게이트 test.sh·devui·material exit 0, doc-check ERROR 0.
+
+**감사 3라운드(반영분·킷) 반영.** 직전 수정이 남긴 자리: 05-onchange 에러 표의 Quad0281 옛 문구와 3.3 예시 오기(3.4 꼴을 3.3이라 적음), 08-modifier 필드 목록의 Spread, `base/modifier-plan.md` 정본 목록에 Spread 합류 한 줄(헤딩은 인용되므로 그대로), `surface-plan.md` 에러 목록에 0064/0057. 머리 주석의 `.New()`(quad-base init·ImplRegistry·LifetimeHandle)·"generated D/<Class>Modifier"(Event·Modifier·None), material 갤러리 표의 `FrameModifier`·스펙 주석의 `IntoGuiObject`, devui README에 `FieldSpread`·`TrackSpread` 한 문장. `D.Frame{}` 꼴 예시 주석(Dispatch 여러 곳)은 역사 서술로 두었다. 킷 CHANGELOG가 없는 것은 사용자 문항. 게이트 셋 exit 0, doc-check ERROR 0.

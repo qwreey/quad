@@ -12,7 +12,7 @@
 	(a) form: "RunInit 뒤의 비공개 필드로 형제 Init에 넘김"). A weak-key map
 	keyed by `module` would never collect: the impl's closures capture
 	`module`, and Luau has no ephemerons (`relate-plan.md`), so every
-	`Quad.New()` would be pinned (`H-181`).
+	`Quad.NewModule()` would be pinned (`H-181`).
 ]]
 
 local function implsOf(module: any): { [string]: any }

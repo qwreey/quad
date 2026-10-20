@@ -393,6 +393,7 @@ Roblox API에 전혀 의존 안 하는 순수 Lua 테이블 조작이라, "base�
 
 **Modifier 필드에 핸들러 계층 값(Ref/PreRef/PostRef/Observer/Effect/Slot/
 Modifier)이 들어오면 즉시 error — UB 아님(2026-08-09 세션, 정정).**
+**[2026-10-20 3.4.0]** `Spread`도 이 목록에 합류했다 — 필드는 문자 키에 놓이고 문자 키 자리의 Spread는 에러로 정해져 있는데, drive의 `Quad0277` 검사가 필드 병합 전이라 새던 길(`quad-base/src/Dispatch/Modifier/init.luau` `isHandlerLayerValue`).
 이전 버전("권장 사용법은 아니지만 막을 이유도 없음 — 방어 로직 없는
 UB로 남겨둠")은 폐기. 재검토 근거(사용자): Modifier는 애초에 자식/Ref
 같은 걸 다루는 목적이 아니고, 이런 값이 실제로 쓸모 있는 use case가

@@ -35,7 +35,7 @@
 	current engine — `signal:Connect(5)` returns an RBXScriptConnection and only
 	prints "Attempt to connect failed: Passed value is not a function" to the
 	output (pcall sees no error), blaming `Handlers/Event.luau`. So `process`
-	gates it: outermost (dispatch depth). The generated `D` types still pin
+	gates it: outermost (dispatch depth). The surface types (`Props<C>`, 3.4.0) still pin
 	the callback signature statically; this is the runtime seam for `:: any`
 	and State-carried values (StateHandler unwraps before we see them).
 

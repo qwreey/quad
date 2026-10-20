@@ -85,7 +85,7 @@ Modifier: setmetatable<{
 - 인자가 없으면 빈 Modifier입니다 — `q.Raw.Modifier()`와 `q.Raw.Modifier({})`는 같습니다.
 - 필드 테이블은 **메타테이블 없는 평범한 테이블**이어야 합니다. `Source`/`Ref`/`Tag` 같은 quad 값을 넘기면 그 내부 필드가 합쳐지는 대신 거부됩니다.
 - 초기 필드 테이블의 값으로 **함수는 못 씁니다.** setter 자리에서 함수는 변환 함수라 의미가 갈리기 때문입니다 — 변환이 필요하면 `mod:Field(fn)`을 쓰세요.
-- 핸들러 계층 값(`Ref`/`Observer`/`Effect`/`Slot`/`Modifier`)은 필드가 될 수 없습니다. `State`/`Source`는 통과합니다.
+- 핸들러 계층 값(`Ref`/`Observer`/`Effect`/`Slot`/`Modifier`/`Spread`)은 필드가 될 수 없습니다. `State`/`Source`는 통과합니다.
 
 **에러**
 

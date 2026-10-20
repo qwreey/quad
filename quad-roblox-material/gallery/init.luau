@@ -18,7 +18,7 @@
 	                                  "Chips" | "Pickers" | "Theme"); two-way, default "Buttons"
 	  Icon      string?               image asset id used by the icon demos (the kit ships no art). The default is a
 	                                  placeholder id that is NOT verified on a device — pass your own to see real icons
-	  Modifier  FrameModifier?        applied to the root after the base style
+	  Modifier  ModifierInto<Frame>?  applied to the root after the base style
 
 	Layout: root Frame (Surface) > Tabs (48 px) + ScrollingFrame "Scroller" (AutomaticCanvasSize Y, below the tabs) >
 	"Page" Frame (AutomaticSize Y) holding ONE section at a time.

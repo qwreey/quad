@@ -68,7 +68,7 @@
 	2순회 `H-373`: so are `isInst`/`nativeClaim`/`nativeFindChild` (and, since
 	2026-09-16, `isClaimed`) — the ops `architecture.md` (EngineOps line) and `slot-plan.md` ("기본 구현(조합
 	폴백) — 미주입이 에러가 아니다") classify with `onDestroying` as "cannot be
-	composed, so missing = a clear error"; without stubs a bare `Quad.New()`
+	composed, so missing = a clear error"; without stubs a bare `Quad.NewModule()`
 	raised a nil-call from `Slot/Elements.luau`/`Claim.luau` and blamed quad internals.
 ]]
 

@@ -51,7 +51,7 @@ H.section("every host: its default Name is unchanged, and the caller's Modifier 
 		local class = plain.ClassName
 		q.dispose(plain)
 		local custom = "Custom_" .. label
-		-- Card and ListItem take any GuiObject modifier (an `IntoGuiObject`, cast to the host class); the rest take the host class's
+		-- Card and ListItem take any GuiObject modifier (a `ModifierInto<GuiObject>`, cast to the host class); the rest take the host class's
 		local modClass = if string.find(label, "^Card") or string.find(label, "^ListItem") then "GuiObject" else class
 		local mod = ((q.Modifier :: any)(modClass) :: any)():Name(custom)
 		local host = build(mod)

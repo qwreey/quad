@@ -122,7 +122,7 @@ q.OnChange "TextLabel" "TextBounds" (function(v: Vector2) end)   -- OK
 | 상황 | 문구 |
 |---|---|
 | 클래스 이름이 문자열이 아니거나 `""` | `Quad0278 OnChange: the first argument must be a class name string (got {…})` |
-| 클래스 단계에 인자를 둘 이상(3.3의 `q.OnChange "TextBox" "Text" (fn)`) | `Quad0281 OnChange: takes the class name only - write q.OnChange "Class" "Name" (…) (3.3's q.OnChange(name, …) form is gone)` |
+| 클래스 단계나 이름 단계에 인자를 둘 이상(3.3의 `q.OnChange("Text", fn)`, 또는 손으로 옮기다 만 `q.OnChange "TextLabel" ("Text", fn)`) | `Quad0281 OnChange: each stage takes one argument - write q.OnChange "Class" "Name" (…) (3.3's q.OnChange(name, …) form is gone)` |
 | 이름이 문자열이 아니거나 `""` | `Quad0221 OnChange: property name must be a non-empty string` |
 | 콜백이 함수가 아님 | `Quad0222 OnChange: callback for "{name}" must be a function (got {typeof(fn)})` |
 
@@ -163,7 +163,7 @@ Frame {
 
 | 상황 | 문구 |
 |---|---|
-| 클래스 단계(`Quad0278`·`Quad0281`) | `OnChange`와 같습니다 |
+| 클래스·이름 단계(`Quad0278`·`Quad0281`) | `OnChange`와 같습니다 |
 | 이벤트 이름이 문자열이 아니거나 `""` | `Quad0279 OnEvent: event name must be a non-empty string` |
 | 콜백이 함수가 아님 | `Quad0280 OnEvent: callback for "{name}" must be a function (got {typeof(fn)})` |
 
@@ -213,7 +213,7 @@ local box = q.Elem "TextBox" {
 
 | 상황 | 문구 |
 |---|---|
-| 클래스 단계(`Quad0278`·`Quad0281`) | `OnChange`와 같습니다 |
+| 클래스·이름 단계(`Quad0278`·`Quad0281`) | `OnChange`와 같습니다 |
 | 이름이 문자열이 아니거나 `""` | `Quad0223 Out: property name must be a non-empty string` |
 | 셋째 인자가 `Source`가 아님 | `Quad0224 Out: "{name}" needs a Source to write back into (got {…})` — `:Compute` 결과면 `got a read-only State (a :Compute result?)` |
 
