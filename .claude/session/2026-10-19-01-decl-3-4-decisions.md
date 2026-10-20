@@ -49,3 +49,14 @@ devplorer가 `quad-upstream-2026-10-20.md`를 냈다(사용자: 핵심 셋 — q
 - **도킹 바람**(사용자 메모 → sonnet 정리) ROADMAP 백로그로. 마를 "컨테이너가 높이를 정해도 되는 채우기 + 읽기용 안쪽 크기"로 하면 디딤돌이라는 판단.
 - **codex 위임 가능**(sonnet 조사): codex-cli 0.163.0, 최소 모델 `gpt-6-luna`, `codex exec -m gpt-6-luna -c model_reasoning_effort=low -c approval_policy=never -s read-only --skip-git-repo-check --ephemeral --ignore-user-config -C <dir> -o <답 파일> - < <프롬프트>`로 1회 성공(1,953 토큰). 사용자: Plus라 쿼터가 작고 사용량은 사용자가 확인. 이름 정리 같은 객관 평가에 Gemini·sonnet과 함께 쓸 수 있다. 스크립트 초안은 스크래치에만(미검증 — 낮은 uid에서 bubblewrap 동작 미확인).
 - studio-analysis: 사용자가 스크롤 종료 판정 로직을 고치는 중(같은 줄 수의 중복 에러에서 멈춤).
+
+## 10. 2026-10-20 (밤) — devplorer 묶음 나·라·마·바, S17·S18, 이름 검토 세 계열, 토큰 연구
+
+- **S17**(사용자 확인): quad 타입은 devui가 다시 내보내지 않고(quad 타입의 문은 키트의 `Quad` 모듈 하나), devui 자기 타입은 `Devui`에서 다(`HoverHandle`·`DragOptions`·`DragHandle`·`InputListener` 추가). **S18**: 스토리·스펙에서도 돌 화면이면 앱 코드도 `Devui.Input` — 사용자가 "에이전트가 가짜 입력(터치 등)을 코드로 넣어 시험할 수 있다"를 근거로 더함.
+- **나**: `InputText.Focused`(양방향). Studio 실측 둘이 구현을 바꿈 — 놓이지 않은 ScreenGui 안 상자의 `CaptureFocus`는 곧 잃고, `AncestryChanged` 안의 캡처는 같은 프레임 `FocusLost` → 한 `task.defer` 뒤. `Visibility.isOnScreen`은 "놓인 LayerCollector"로 좁힘. Ref·훅 자리(`FieldHooks` 제안)는 사용자가 "Spread or None으로 되지 않나" → Spread가 들어오면 그 자리로, `FieldHooks`는 안 만듦. 사용자: *"spread 에 대한 개발도 하긴 해야겠네. 정의 확장을 시작하긴 해야할듯"* → todos 트랙.
+- **마**: Studio 실측으로 채우기는 새 이름 불필요(창 안 자식에 `UIFlexItem` Fill — 300×300에서 20px→258px, 창보다 크면 줄어듦), 숫자용 출력 `AvailableSize`(처음 `ContentSize` → 이름 검토로 개명).
+- **라**: `VirtualRows`+내부 `RowWindow`(+순수 스펙) devplorer에서 이식 — `const`→`local`(Lune), 영어 주석, devui Style, Window 안 레시피(Modifier는 UIFlexItem 자식 불가 Quad0059 → Fill 프레임으로 감쌈). Studio 1만 행 슬롯 20.
+- **바**: 사용자 질문 "파생 Style을 Modifier로 하면 안 되나" → 안 되는 이유 셋(인라인 우선·토큰은 계산 재료·안쪽 부품). 사용자 정리: Store(전부 Set, 파생 없음)·Spread(한 곳·mut)·Modifier(immut·여러 곳)·Context·토큰(CSS 변수 같은 파생)은 다 다르다 → `style:With` 안 넣음, base 토큰 지원은 `research/design-token-plan.md`, 다섯 비교 문서는 Spread와 함께. 나머지는 `Button.Toggled`·`TabBar.NoPages`·`TabRounding`·`drag OnFrame`.
+- **이름 검토 세 계열**(`audit/naming-devui-2026-10-20/`): codex(`gpt-6-luna`) 첫 실사용 — uid 61000·빈 디렉터리·read-only로 동작, `auth_mode: chatgpt`(구독 과금, API 키 없음; 사용자 화면에 사용량 100% 그대로 — luna가 싸서로 추정). 수렴: `Toggled`(셋 다)·`NoPages`·`TabRounding` 유지; 갈림 뒤 메인 권고 `OnFrame`·`AvailableSize`(Roblox `AbsoluteContentSize`와 반대 뜻 — Gemini 근거)·`ScrollToRow`; `Focused` 방향 혼재는 Window도 양방향으로(+`ManagerSlot:Blur()`). 사용자 *"전부 동의해"*. README 값 규약에 `Source` 방향 셋(양방향·출력·명령).
+- 커밋: `171a6c83`(Focused·S17·S18) `870c0a44`(AvailableSize 전신) `d99f23c2`(VirtualRows) `9bf47ef4`(todos) `65cca807`(design-token) `f02fe182`(바·개명·양방향).
+- **다음**: Spread 정의 확장 결정 재료(메인), 3.4.0 이름 정리(읽기 쪽 맵·탈출구 — 세 계열로), H-929·Q188, U10 compact, devplorer 묶음 다(팝업 — 저쪽 안정 뒤), 토큰 연구(사용자 결정 뒤).
