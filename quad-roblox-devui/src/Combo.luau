@@ -20,7 +20,7 @@
 
 	NO VIRTUALIZATION: every open builds one row per option (a `Slot:List` keyed by option) inside a ScrollingFrame capped at
 	MaxHeight — fine for tens or a few hundred options, but a list of thousands makes the open slow and heavy; filter the
-	`Options` State (e.g. by a search box) or page it yourself for such lists.
+	`Options` State (e.g. by a search box) or page it yourself for such lists. A windowed long list (only the rows on screen exist) is quad's recipe `docs/how-to/03-long-lists-and-windowing.md` (quad repo).
 
 	Structure: root Frame (row) > Box (TextButton: preview text + arrow image) + label. Clicking the box opens the list in
 	the Overlay under the box (position and width read from the box's AbsolutePosition / AbsoluteSize at open time); the

@@ -31,7 +31,8 @@
 		-- plain "pointer went down on me" (MouseButton1 / Touch); it stops at the first GuiButton / TextBox under the pointer
 		D.Frame { Interaction.pointerDown(function(input) ... end) }
 
-	Coordinates are `InputObject.Position` space (the same space for begin/move/end, so deltas are exact). Convert to
+	Coordinates are `InputObject.Position` space — the same space as `AbsolutePosition` (and the same for begin/move/end,
+	so deltas are exact). Convert to
 	element space yourself if you need absolute positions (subtract the element's AbsolutePosition at press time).
 
 	Touch: only the touch that began the drag is tracked (InputObject identity); mouse: MouseMovement while MouseButton1

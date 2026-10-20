@@ -46,6 +46,31 @@ Sibling입니다.
 
 전체 위젯을 한 번에 보려면 데모 창을 띄우세요(아래 "데모").
 
+## 앱 코드를 짤 때 먼저 볼 것
+
+이 README와 위젯 머리 주석은 **키트**만 설명합니다. quad 자체의 관용구는 quad 저장소의 에이전트 스킬
+[`docs/skills/quad-ui-dev/SKILL.md`](../docs/skills/quad-ui-dev/SKILL.md)와 [how-to](../docs/how-to/)에 있습니다 — 키트로 앱을 짜다가
+"quad로는 안 되나" 싶은 것은 대부분 거기 이미 있습니다(2026-10-20 devplorer 보고: 한계로 보였던 것이 전부 이미 있었고, 소비자가 이 README에서
+거기로 가는 길을 못 찾았음). 자주 찾는 것:
+
+- **인스턴스 없이 도는 구독**(데이터 모듈의 Observer): `:Subscribe()`/`:WeakSubscribe()` — Observer는 요소에 매달거나 구독해야 돕니다.
+  [core/05](../docs/reference/core/05-observer-effect.md), 스킬의 `rules-and-invariants.md`. Observer는 등록할 때 한 번 부릅니다.
+- **코드와 사용자가 같이 쓰는 입력 상자**: `Text = src` + `q.Out("Text", src)` — 메아리를 손으로 거르지 마세요. `Devui.InputText`가 이 모양입니다.
+  [roblox/05](../docs/reference/roblox/05-onchange.md), [시작하기 06](../docs/getting-started/06-flowing-back.md).
+- **검색창 디바운스·갱신 합치기**: [`q.Debounce`/`q.Throttle`](../docs/reference/sugar/03-debounce-throttle.md). 여러 원천을 한 번에 갱신하려면 Effect 하나로 모은 뒤 붙입니다.
+- **바깥 신호(`UserInputService` 등)의 수명**: [`q.OnDestroyed`](../docs/reference/sugar/04-lifecycle-hooks.md)나 Effect cleanup에 묶습니다 — `Destroying:Connect`나 표지용 Folder가 필요 없습니다.
+  [how-to/04](../docs/how-to/04-network-and-input-bridge.md).
+- **quad가 만든 인스턴스의 변화**: 선언 밖에서 `:Connect`하지 말고 같은 선언 안의 `q.OnChange`·이벤트 prop으로(파괴와 함께 풀림). 읽기 전용 프로퍼티(`AbsoluteSize`·`CanvasPosition`)도 됩니다.
+- **긴 목록**: Table·Combo·Tree는 가상화가 없습니다. 화면에 보이는 행만 만드는 레시피는 [how-to/03](../docs/how-to/03-long-lists-and-windowing.md).
+  배치 전(크기 0)에는 행이 0개인 것이 정상입니다.
+- **파생 값의 타입**: `:Compute` 결과는 만드는 줄에서 주석합니다(`local shown: q.State<boolean> = n:Compute(...)`) — 인라인으로 prop에 넣으면 오류 문구가 길어집니다.
+  `Source`와 `State`를 한 변수에 받을 땐 주석 붙인 if-식(`local h: q.State<number> = if s then s else q.Source(1)`)이나 값을 돌려주는 함수로 — 분기마다 대입하면 유니언이 되어 `:Compute`를 못 부릅니다.
+- **Slot**: 요소의 배열부에 빈 Slot을 놓을 땐 `q.Slot<<Instance>>()`. `Kids(...)`(= Slot)의 원소는 `nil`·`q.None`이 될 수 없습니다(요소의 배열부와 다름).
+  `{ table.unpack(list) }`로 자식을 펴는 대신 `q.Slot<<Instance>>(list)`를 배열부 아무 자리에나 놓습니다.
+- **이벤트 prop에 미리 만든 함수**: `local f: () -> () = ...`처럼 주석한 무인자 함수는 `Activated` 같은 자리에 안 들어갑니다(Luau 새 솔버 규칙) —
+  `local function f() end`나 인라인 함수를 넘기세요.
+- **배치 속성**: `LayoutOrder`·`Position` 같은 루트 꾸밈은 Modifier로(`D.Modifier.Frame():LayoutOrder(2)`). Button은 `Size`를 받으면 자동 크기가 꺼집니다.
+
 ## Iris와 무엇이 다른가
 
 | | Iris (immediate mode) | 이 키트 (retained, 반응형) |
@@ -314,6 +339,15 @@ Lune으로. 종료 코드가 판정입니다.
   주므로 남지 않습니다(Studio 확인 2026-10-15; 다시 열 때도 마우스가 움직여야 `MouseEnter`가 옵니다). Tooltip은 대기 타이머가 끝날 때 대상이 아직
   보이는지(자신·조상의 `Visible`, ScreenGui의 `Enabled`) 보고, 숨었으면 띄우지 않습니다.
 - `Demo`는 인스턴스를 많이 씁니다(전체 약 860개, 닫힌 도구 창 포함) — 데모일 뿐 위젯 하나의 비용이 아닙니다.
+
+### 게임 안에서 만나는 엔진 함정
+
+키트가 고칠 수 없는 엔진 동작이지만, 각각 디버깅 한 라운드를 쓰게 만듭니다(2026-10-19~20 devplorer가 Studio Play에서 관측).
+
+- **Escape로 팝업을 닫으면 Roblox 메뉴도 열립니다**(`GuiService.MenuIsOpen`). 열린 동안 클릭이 먹통이 되고, 게임 스크립트로는 막을 수 없습니다 — 게임 안 대화 상자는 바깥 클릭과 단추로 닫게 하세요.
+- **Shift+P는 Roblox 내장 개발자 Freecam입니다** — 그것을 포함한 단축키(예: Ctrl+Shift+P)는 모든 ScreenGui를 숨깁니다.
+- **사용자가 다른 TextBox에 포커스를 둔 상태에서 포커스 없는 TextBox의 `CursorPosition`을 쓰면 포커스가 그 상자로 넘어갑니다.** 커서는 그 상자에 포커스가 있을 때만 옮기세요. 코드로 `CaptureFocus`한 상자끼리 흉내 내면 재현되지 않으니 실제 입력으로 확인하세요.
+- **RichText 라벨에 남이 정한 이름을 넣을 땐 이스케이프하세요** — 이름 안의 태그가 화면을 꾸며 다른 글처럼 보이게 할 수 있습니다.
 
 ## 라이선스와 출처
 

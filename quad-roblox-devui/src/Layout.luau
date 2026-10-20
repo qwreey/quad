@@ -6,9 +6,12 @@
 		              a horizontal row (children keep their own widths); Spacing defaults to Style ItemSpacing.X
 		Group         { Children, Style?, Modifier? }                 a vertical stack (ItemSpacing.Y apart)
 		Indent        { Children, Width: number?, Style?, Modifier? } a vertical stack indented by IndentSpacing
-		Separator     { Style?, Modifier? }                           a 1px horizontal rule
+		Separator     { Style?, Modifier? }                           a 1px horizontal rule (scale width 1: inside an
+		              AutomaticSize-X popup it grows to the popup's limit — give it a fixed width or a UIFlexItem there)
 		SeparatorText { Text: string | State<string>, Style?, Modifier? }   rule - text - rule
-		Kids(...)     helper: `Kids(a, b, c)` = `q.Slot({ a, b, c })` (a manual-CRUD Slot<Instance>)
+		Kids(...)     helper: `Kids(a, b, c)` = `q.Slot({ a, b, c })` (a manual-CRUD Slot<Instance>) — Instances only:
+		              a Slot element cannot be nil or `q.None` (unlike an element's array part); build the list first for
+		              conditional children. An empty Slot in an element's array part is `q.Slot<<Instance>>()`.
 
 	Containers are ONE Frame (+ one UIListLayout); they grow with their content (AutomaticSize Y, full width) and take
 	their children as a Slot (docs/how-to/01 §4) so a caller can add/remove children later.

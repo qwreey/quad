@@ -22,6 +22,8 @@
 	zero length and appear on the first layout pass. Segments are 1 px thick, PlotLines token colour. UDim offsets are whole pixels, so segment centres/lengths are
 	rounded to the pixel (the rotation is exact).
 
+	WIDTH: the widget fills its parent's width (`Size = UDim2.new(1, 0, 0, Height)`); put it in a frame of the width you want.
+
 	No per-frame work beyond the Compute nodes that depend on `Values`; the widget never polls. COST OF ONE `Values:Set`:
 	every drawn segment (bar) is recomputed — a rolling series moves all of them — so a full 200-point PlotLines runs
 	about 800 Compute nodes and rewrites up to 600 properties per Set (about 4 ms under the spec mock). Sample a live

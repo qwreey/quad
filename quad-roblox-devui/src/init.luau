@@ -3,6 +3,11 @@
 	quad devui — a developer/debug UI kit in quad's reactive, retained-mode idiom (the widget SET of Iris / Dear ImGui,
 	not its immediate-mode API). Look: Dear ImGui dark style — compact text, flat frames, blue accents (Style tokens).
 
+	READ FIRST FOR APP CODE: this header covers the kit only. quad's own idioms — module-level subscriptions
+	(`:Subscribe()`), echo-free write-back (`q.Out`), `q.Debounce`/`q.Throttle`, `q.OnDestroyed` and Effect cleanup,
+	`q.OnChange`, Slot rules — are in the quad repo's `docs/skills/quad-ui-dev/SKILL.md` and `docs/how-to/`
+	(README "앱 코드를 짤 때 먼저 볼 것" lists them by need).
+
 	QUICK START
 		local Devui = require("<path to this folder>")
 		local q = require("<path>/Quad")                    -- the kit's setup module (installs the Roblox provider)
