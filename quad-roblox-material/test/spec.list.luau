@@ -200,7 +200,7 @@ H.section("ListData: keyed rows are built once, edits update the item State, rem
 	H.assertNoDebugOutput("data")
 end)
 
--- ── drag-to-reorder (`OnReorder`, src/ListReorder.luau) ─────────────────────────────────────────────────────────────
+-- ── drag-to-reorder (`OnReorder`, src/ListReorder/) ─────────────────────────────────────────────────────────────────
 -- The mock has no layout: `layout` stands in for the engine's UIListLayout (hosts stacked by LayoutOrder, each as tall as
 -- the spec says its row is), and a tween only lands when `H.finishTweens()` runs — until then the property still holds
 -- the value it had when the tween started, which is what "where the row is on screen right now" means below.

@@ -65,8 +65,7 @@ local q = require("../Quad")
 local Tokens = require("../Tokens")
 local Util = require("../Util")
 local Input = require("../Input")
-
-local RunService = game:GetService("RunService")
+local FrameDriver = require("../FrameDriver")
 
 export type Kind = "Pinned" | "EnterAlways" | "ExitUntilCollapsed"
 
@@ -157,12 +156,12 @@ local function behavior(kind: Kind, o: BehaviorOptions?): TopAppBarScrollBehavio
 	local frame: ScrollingFrame? = nil
 	local prevY = 0
 	local version = 0
-	local settling: RBXScriptConnection? = nil
+	local settling: (() -> ())? = nil -- stops the running settle (FrameDriver)
 	local written = 0 -- the canvas Y the running settle wrote last (a different value means someone else scrolled)
 
 	local function stopSettle()
 		if settling then
-			settling:Disconnect()
+			settling()
 			settling = nil
 		end
 	end
@@ -206,7 +205,7 @@ local function behavior(kind: Kind, o: BehaviorOptions?): TopAppBarScrollBehavio
 		local t = 0
 		stopSettle()
 		written = fromY
-		settling = RunService.Heartbeat:Connect(function(dt: number)
+		settling = FrameDriver.run(function(dt: number)
 			if inst ~= nil and math.abs(inst.CanvasPosition.Y - written) >= EPS then
 				stopSettle() -- the user scrolled (wheel, drag, scrollbar): the scroll wins
 				return

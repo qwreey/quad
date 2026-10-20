@@ -245,7 +245,7 @@ local q = Quad:UseProvider(RobloxModule.QuadRoblox)
   창 가장자리를 넘는 동안 캔버스가 굴러갑니다. 키보드·게임패드: 손잡이를 선택하고 Enter / A로 잡은 뒤 위·아래로 한 칸씩(누를 때마다 바로
   `OnReorder`), Enter / A / B / Escape로 놓습니다. 키로 옮긴 줄이 `ScrollingFrame`의 창 밖으로 나가면 새 순서가 올 때 그 줄이 보이도록 캔버스를 옮깁니다
   (선택이 그대로라 엔진은 스크롤해 주지 않습니다). `Render`가 돌려준 줄은 손잡이와 함께 감싸지므로 줄에 `LayoutOrder = index`를 줄 필요가 없습니다.
-  `OnReorder`가 없으면 `ListData`는 전과 똑같습니다(인스턴스도 그대로). 근거·구조·기다림 규칙은 `src/ListReorder.luau` 머리, 한계는 아래 "알려진 한계".
+  `OnReorder`가 없으면 `ListData`는 전과 똑같습니다(인스턴스도 그대로). 근거·구조·기다림 규칙은 `src/ListReorder/init.luau` 머리, 한계는 아래 "알려진 한계".
 - 자식을 받는 컴포넌트(`Card`, `List`, 시트·드로어 면)는 `q.Slot<<Instance>>({ ... })`를 `Children`으로 받습니다(`BottomSheetScaffold`는
   `SheetContent`·`Content`, 드로어 레이아웃은 `Content` Slot + `DrawerContent` 인스턴스 하나 — Compose의 이름).
 

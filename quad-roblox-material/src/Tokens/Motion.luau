@@ -15,7 +15,8 @@
 	  EmphasizedDecelerate  (.05, .7, .1, 1)   -> Quint Out
 	  EmphasizedAccelerate  (.3, 0, .8, .15)   -> Quint In
 	  Linear                                   -> Linear
-	Exact bezier evaluation would need a per-frame Heartbeat driver — not worth it for UI micro-motion.
+	Exact bezier evaluation would move every kit tween off the engine's TweenService into per-frame Lua (the kit's
+	FrameDriver.luau, which today only runs the shapes a tween cannot express) — not worth it for UI micro-motion.
 
 	Pure data (the Enum lookup happens in `style()`/`options()` at call time).
 ]]

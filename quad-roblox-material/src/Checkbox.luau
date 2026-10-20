@@ -51,13 +51,12 @@ local Util = require("./Util")
 local Interactive = require("./Interactive")
 local Style = require("./Button/Style")
 local ControlLabel = require("./ControlLabel")
+local FrameDriver = require("./FrameDriver")
 local Frame = q.Elem "Frame"
 local TextButton = q.Elem "TextButton"
 local UIStroke = q.Elem "UIStroke"
 local TextButtonModifier = q.Modifier "TextButton"
 local checkboxName = TextButtonModifier():Name("Checkbox")
-
-local RunService = game:GetService("RunService")
 
 
 export type Props = {
@@ -121,8 +120,7 @@ local function Checkbox(props: Props)
 			return nil :: any
 		end
 		local t = closing:Get() * HALF -- an interrupted motion resumes from the current bar width
-		local conn: RBXScriptConnection
-		conn = RunService.Heartbeat:Connect(function(dt: number)
+		return FrameDriver.run(function(dt: number, stop: FrameDriver.Stop)
 			t += dt
 			if t < HALF then
 				closing:Set(t / HALF)
@@ -132,12 +130,9 @@ local function Checkbox(props: Props)
 			local k = math.max(0, 1 - (t - HALF) / HALF)
 			closing:Set(k)
 			if k == 0 then
-				conn:Disconnect()
+				stop()
 			end
 		end)
-		return function()
-			conn:Disconnect()
-		end
 	end, look)
 	local shownMarked: q.State<boolean> = displayed:Compute(function(self)
 		return self:Get() ~= "none"

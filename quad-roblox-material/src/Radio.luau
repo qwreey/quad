@@ -36,6 +36,7 @@ local Util = require("./Util")
 local Interactive = require("./Interactive")
 local Style = require("./Button/Style")
 local ControlLabel = require("./ControlLabel")
+local FrameDriver = require("./FrameDriver")
 local Frame = q.Elem "Frame"
 local ImageLabel = q.Elem "ImageLabel"
 local TextButton = q.Elem "TextButton"
@@ -44,8 +45,6 @@ local FrameModifier = q.Modifier "Frame"
 local TextButtonModifier = q.Modifier "TextButton"
 local groupName = FrameModifier():Name("RadioGroup")
 local radioName = TextButtonModifier():Name("Radio")
-
-local RunService = game:GetService("RunService")
 
 
 -- KIT WORKAROUND for a quad typing limit (kit feedback A1): the fields below MIRROR quad's phantom fields
@@ -149,18 +148,14 @@ local function Radio<T>(props: Props<T>)
 		end
 		local pos = frame:Get()
 		local dir = if goal > pos then 1 else -1
-		local conn: RBXScriptConnection
-		conn = RunService.Heartbeat:Connect(function(dt: number)
+		return FrameDriver.run(function(dt: number, stop: FrameDriver.Stop)
 			pos += dir * dt * LAST / STEP_TIME
 			if (dir == 1 and pos >= goal) or (dir == -1 and pos <= goal) then
 				pos = goal
-				conn:Disconnect()
+				stop()
 			end
 			frame:SetIfChanged(if dir == 1 then math.floor(pos) else math.ceil(pos))
 		end)
-		return function()
-			conn:Disconnect()
-		end
 	end, selected)
 	local rectOffset: q.State<Vector2> = frame:Compute(function(self)
 		return Vector2.new(FRAME * self:Get(), 0)

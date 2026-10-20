@@ -15,6 +15,10 @@
 	seconds; then they glide back. `Render` gets the row's `dragged` State as its third argument (give it to
 	`ListItem`'s `Dragged`: the content takes the dragged colors).
 
+	FILES  init.luau — the session (phases, timers, pointer / key / edge-scroll input, the rows' instances);
+	       Geometry.luau — its arithmetic (resting places, the nearest place, giving way, the drag range, re-stacking,
+	       the edge-scroll curve), pure so `test/spec.pure.listgeometry.luau` runs it without an engine.
+
 	SOURCES (read 2026-10-13; m3.material.io/components/lists is script-rendered and returned no text — "site not compared")
 	  Compose material3 has no reorderable list component. What it does have is the DRAGGED state of a list item:
 	    androidx/androidx@b6bfe62 compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/
@@ -147,13 +151,13 @@ local Elevation = require("./Elevation")
 local GlyphButton = require("./GlyphButton")
 local Icons = require("./Icons")
 local Style = require("./Button/Style")
+local FrameDriver = require("./FrameDriver")
+local Geometry = require("@self/Geometry")
 local Frame = q.Elem "Frame"
 local UICorner = q.Elem "UICorner"
 local UIFlexItem = q.Elem "UIFlexItem"
 local UIListLayout = q.Elem "UIListLayout"
 local UIPadding = q.Elem "UIPadding"
-
-local RunService = game:GetService("RunService")
 
 export type Config = {
 	Items: q.State<{ any }>,
@@ -178,10 +182,6 @@ local LIFT = Tokens.Motion.options("Short4", "Standard")
 local LIFT_LEVEL = 4
 local HANDLE = 40
 local END_PADDING = 8 -- + the 8 px around the 24 px glyph in the 40 px handle = M3's 16 px trailing space
--- ItemTouchHelper: 20 dp per frame (a 60 Hz frame) at most, reached after 2 s out of bounds
-local SCROLL_MAX = 20
-local SCROLL_ACCEL = 2
-
 type Pos = { Offset: number, Time: number }
 type Phase = "Idle" | "Dragging" | "Pending" | "Settling"
 
@@ -233,7 +233,7 @@ local function new(cfg: Config): Reorder
 	local owner: Row? = nil -- the row whose press holds the gesture
 	local timer: thread? = nil
 	local escapeConn: RBXScriptConnection? = nil
-	local stepConn: RBXScriptConnection? = nil
+	local stopStep: (() -> ())? = nil -- the edge-scroll driver (FrameDriver), only under a ScrollingFrame
 	local releaseHold: (() -> ())? = nil
 	local reordering = cfg.Reordering
 	local answerComing = false -- `Reordering` has been true since the release: its turning false is a refusal
@@ -377,30 +377,14 @@ local function new(cfg: Config): Reorder
 		local top = host.AbsolutePosition.Y + row.top * scale
 		local bottom = top + row.height * scale
 		local windowTop = sf.AbsolutePosition.Y
-		local windowBottom = windowTop + sf.AbsoluteWindowSize.Y
-		local delta = 0
-		if top < windowTop then
-			delta = top - windowTop
-		elseif bottom > windowBottom then
-			delta = bottom - windowBottom
-		end
+		local delta = Geometry.reveal(top, bottom, windowTop, windowTop + sf.AbsoluteWindowSize.Y)
 		if delta ~= 0 then
 			local canvas = sf.CanvasPosition
-			local max = math.max(sf.AbsoluteCanvasSize.Y - sf.AbsoluteWindowSize.Y, 0)
-			sf.CanvasPosition = Vector2.new(canvas.X, math.clamp(canvas.Y + delta, 0, max))
+			sf.CanvasPosition = Vector2.new(
+				canvas.X,
+				Geometry.canvasY(canvas.Y, delta, sf.AbsoluteCanvasSize.Y, sf.AbsoluteWindowSize.Y)
+			)
 		end
-	end
-
-	local function targetOf(top: number): number
-		local best = to
-		local bestDistance = math.abs(top - slots[to])
-		for place, slotTop in slots do
-			local distance = math.abs(top - slotTop)
-			if distance < bestDistance then
-				best, bestDistance = place, distance
-			end
-		end
-		return best
 	end
 
 	local function shiftOthers()
@@ -408,12 +392,7 @@ local function new(cfg: Config): Reorder
 		local step = d.height + gap
 		for i, row in order do
 			if i ~= from then
-				local offset = 0
-				if from < to and i > from and i <= to then
-					offset = -step
-				elseif to < from and i >= to and i < from then
-					offset = step
-				end
+				local offset = Geometry.giveWay(i, from, to, step)
 				if row.shift ~= offset then
 					setPos(row, offset, MOVE.Time)
 				end
@@ -427,20 +406,15 @@ local function new(cfg: Config): Reorder
 		if phase ~= "Dragging" or d == nil or host == nil then
 			return
 		end
-		local last = order[#order]
-		local lo = order[1].top - d.top
-		local hi = last.top + last.height - (d.top + d.height)
-		if lo > hi then
-			lo, hi = 0, 0
-		end
+		local lo, hi = Geometry.range(order, d)
 		-- the list's own movement since the press (an edge scroll) is taken back out: the row stays under the pointer
-		local delta = math.clamp((lastY - startY) / scale - (host.AbsolutePosition.Y - startListY) / scale, lo, hi)
+		local delta = Geometry.follow(lastY - startY, host.AbsolutePosition.Y - startListY, scale, lo, hi)
 		if delta ~= d.shift or not d.moved then
 			d.shift = delta
 			d.moved = true
 			d.pos:Set({ Offset = delta, Time = 0 })
 		end
-		local target = targetOf(d.top + delta)
+		local target = Geometry.target(slots, to, d.top + delta)
 		if target ~= to then
 			to = target
 			shiftOthers()
@@ -456,25 +430,14 @@ local function new(cfg: Config): Reorder
 		local top = host.AbsolutePosition.Y + (d.top + d.shift) * scale
 		local bottom = top + d.height * scale
 		local windowTop = sf.AbsolutePosition.Y
-		local windowBottom = windowTop + sf.AbsoluteWindowSize.Y
-		local travelled = lastY - startY
-		local out = 0
-		if travelled < 0 and top < windowTop then
-			out = top - windowTop
-		elseif travelled > 0 and bottom > windowBottom then
-			out = bottom - windowBottom
-		end
+		local out = Geometry.overflow(top, bottom, windowTop, windowTop + sf.AbsoluteWindowSize.Y, lastY - startY)
 		if out == 0 then
 			scrollTime = 0
 		else
 			scrollTime += dt
-			local ratio = math.min(1, math.abs(out) / math.max(d.height * scale, 1))
-			local cap = (ratio - 1) ^ 5 + 1
-			local time = math.min(1, scrollTime / SCROLL_ACCEL)
-			local amount = math.max(SCROLL_MAX * scale * cap * time ^ 5 * dt * 60, 1) * math.sign(out)
+			local amount = Geometry.scrollAmount(out, d.height * scale, scrollTime, dt, scale)
 			local canvas = sf.CanvasPosition
-			local max = math.max(sf.AbsoluteCanvasSize.Y - sf.AbsoluteWindowSize.Y, 0)
-			local y = math.clamp(canvas.Y + amount, 0, max)
+			local y = Geometry.canvasY(canvas.Y, amount, sf.AbsoluteCanvasSize.Y, sf.AbsoluteWindowSize.Y)
 			if y ~= canvas.Y then
 				sf.CanvasPosition = Vector2.new(canvas.X, y)
 			end
@@ -488,10 +451,10 @@ local function new(cfg: Config): Reorder
 			escapeConn = nil
 			e:Disconnect()
 		end
-		local s = stepConn
+		local s = stopStep
 		if s ~= nil then
-			stepConn = nil
-			s:Disconnect()
+			stopStep = nil
+			s()
 		end
 		scroller = nil
 		local release = releaseHold
@@ -539,10 +502,7 @@ local function new(cfg: Config): Reorder
 		startY, lastY = y, y
 		startListY = host.AbsolutePosition.Y
 		-- where the row would rest at each place: above it the others' own tops, below it their bottoms less its height
-		slots = table.create(#order, 0)
-		for i, other in order do
-			slots[i] = if i > at then other.top + other.height - row.height else other.top
-		end
+		slots = Geometry.slots(order, at, row.height)
 		freeze()
 		row.raised:Set(true)
 		row.held:Set(true)
@@ -556,7 +516,7 @@ local function new(cfg: Config): Reorder
 		scroller = findScroller(host)
 		scrollTime = 0
 		if scroller ~= nil then
-			stepConn = RunService.Heartbeat:Connect(step)
+			stopStep = FrameDriver.run(step)
 		end
 		return true
 	end
@@ -618,11 +578,10 @@ local function new(cfg: Config): Reorder
 			end
 			next[i] = row
 		end
-		local y = order[1].top
-		for _, row in next do
+		local tops = Geometry.stack(next, order[1].top, gap)
+		for i, row in next do
 			local seen = row.top + offsetNow(row)
-			row.top = y
-			y += row.height + gap
+			row.top = tops[i]
 			local offset = seen - row.top
 			if math.abs(offset) >= 0.5 then
 				row.shift = offset

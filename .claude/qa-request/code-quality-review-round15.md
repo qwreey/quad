@@ -197,7 +197,7 @@
 
 판정: **채택 권고(문서만)**. BREAKING 아님.
 
-**H-908. `quad-roblox-material/src/ListReorder.luau`의 `new`(220~907행)가 687줄 클로저 하나다.**
+**H-908. 옛 `quad-roblox-material/src/ListReorder.luau`(2026-10-20부터 `ListReorder/init.luau`)의 `new`(220~907행)가 687줄 클로저 하나다.**
 
 상황: 한 클로저 안에 드래그, 엣지 오토스크롤, 키 탐색, 높이 기반 배치, 대기·취소 상태가 상위값을 공유한다. 같은 킷은 `DatePicker/Calendar`·`TimePicker/Clock`·`ColorModel`을 순수 모듈 + `spec.pure.*`로 이미 나눠 둔다.
 
@@ -330,7 +330,7 @@
 
 **H-918. 프레임 구동 애니메이션을 material 킷이 손으로 일곱 번 짰다.**
 
-상황: `RunService.Heartbeat:Connect`가 일곱 곳이다: `Radio.luau` 148, `Checkbox.luau` 122, `Ripple.luau` 317, `Navigation/Motion.luau` 63, `AppBar/Scroll.luau` 209, `Progress/Loop.luau` 59, `ListReorder.luau` 561. 정작 `Tokens/Motion.luau` 18행은 "per-frame Heartbeat driver — not worth it"이라 적는다. "보일 때만 연결"을 제대로 한 것은 `Progress/Loop.luau`뿐이다.
+상황: `RunService.Heartbeat:Connect`가 일곱 곳이다: `Radio.luau` 148, `Checkbox.luau` 122, `Ripple.luau` 317, `Navigation/Motion.luau` 63, `AppBar/Scroll.luau` 209, `Progress/Loop.luau` 59, 옛 `ListReorder.luau` 561. 정작 `Tokens/Motion.luau` 18행은 "per-frame Heartbeat driver — not worth it"이라 적는다. "보일 때만 연결"을 제대로 한 것은 `Progress/Loop.luau`뿐이다.
 
 이미 있는 자리: ROADMAP 백로그의 렌더 스텝 op(`onStep`), `research/spring-plan.md`, 연결 cleanup 슈거 `Disconnector`(가칭), 레퍼런스 core/10의 Heartbeat 예제(216행 근처). 수명에 묶는 기본형은 있지만 "보일 때만"은 없다.
 
@@ -396,7 +396,7 @@
 
 **H-923. `Slot:List`의 `ctx` 타입에 공개 이름이 없어 킷이 `RowCtx`를 네 번 다시 선언한다.**
 
-상황: 재선언 자리는 `quad-roblox-material/src/List.luau` 358, `ListReorder.luau` 204, `quad-roblox-devui/src/Combo.luau` 109, `Table.luau` 72다. quad-types도 `:List`(561행)와 `:Single`(575행) 시그니처에 같은 모양을 인라인으로 두 번 적는다.
+상황: 재선언 자리는 `quad-roblox-material/src/List.luau` 358, 옛 `ListReorder.luau` 204, `quad-roblox-devui/src/Combo.luau` 109, `Table.luau` 72다. quad-types도 `:List`(561행)와 `:Single`(575행) 시그니처에 같은 모양을 인라인으로 두 번 적는다.
 
 판정자 확인: `quad-types/src/init.luau` 535~536행이 **일부러** 별칭을 빼지 않았다. `Slot<T>`↔`SlotElement<T>` 재귀 그룹 안에서 메소드 제네릭을 받는 별칭은 "다른 파라미터의 재귀"로 거부된다. 재귀 그룹 **밖**에 소비자용 별칭을 따로 두는 건 될 수도 있지만 실측 전이다. 레퍼런스 core/06(452행 근처)은 "ctx 타입이 길면 파일 안에 별칭을 두라"고 안내한다.
 
@@ -868,7 +868,7 @@ E가 낸 갈래는 이렇다. `Util.fail`의 본문을 quad-error 네임스페�
 
 **남은 것.**
 - 문서 묶음 — **[2026-10-20 같은 날 반영]** H-907(새 `docs/how-to/11-library-on-quad.md` — 설정 모듈·같은 quad 인스턴스 확인(`moduleIdentity`)·타입 재수출·`q.errorNamespace`), H-909 (나)(`docs/how-to/09-overlays-modal-toast.md` §6 죽지 않는 기본 레이어·§7 바깥 누름으로 닫기·§8 Escape 스택 — opus 서브에이전트, 두 킷 코드에 기댄 레시피를 mock 실측·strict 검사, Deferred 순서·토글 문제 등은 `[2026-10-20 기준]` 미실측 표시), H-924 (a)(how-to 01 "값이든 State든 받는 prop" — 타입별 헬퍼는 통과·제네릭 판은 State 인자에서 타입 에러, luau-lsp 1.70.1 실측), H-925(how-to 02 §6 "길이 제한" + onchange `q.Out` 한 줄), 근거 기록 H-918 (b)(ROADMAP 렌더 스텝 op)·H-919(`backlog/additional-operator-sugar.md`)·H-920(`research/component-flatten-sugar-plan.md` 끝, 55로 정정)·H-926(`research/debug-tooling-plan.md` 핵심 설계 방향 1절).
-- 킷 내부: H-908(ListReorder 기하부터), H-918 (a)(Heartbeat 드라이버 — material 일곱, devui 둘은 다른 킷), **H-921은 [2026-10-20] 반영**(opus 서브에이전트: 킷마다 `Util.fail(component, msg)` = `q.errorNamespace.errorBeforeNearest("<Kit>.<Component>: …", SURFACE)`, `Util.tagSurface`로 내보내기 테이블을 한 번 순회해 태깅(devui 함수 80·material 223), 생성자가 만든 객체 메소드는 생성자가 태깅; 순수 모듈 셋(`Unit`·`TimePicker/Clock`·`DatePicker/Calendar`)은 Quad 없이 require되므로 접두만 바꾸고 손 레벨 유지, 공개 `Unit.check(unit, level?)`의 레벨 인자도 계약이라 유지 — 없애려면 새 이름이 필요; 부수 효과로 킷 컴포넌트 안에서 quad가 던지는 에러도 컴포넌트를 부른 사용자 줄을 가리킨다 — 킷 CHANGELOG 둘에 적음; `fail`·`tagSurface`는 킷 내부용으로 README 표기, extend/01에 `errorNamespace` 사용법), H-928 devui 쪽(`Table`·`Combo`의 키별 재활용 본문 — 다른 킷이라 devui에 헬퍼를 따로 둘지부터).
+- 킷 내부: **H-908 B안·H-918 (a)는 [2026-10-20] 반영**(opus 서브에이전트: `ListReorder.luau`를 폴더 `ListReorder/`로 — `init.luau` + 순수 모듈 `Geometry.luau`(자리 top·대상 인덱스·비켜 주기·범위·쌓기·드러내기·오토스크롤 곡선), `spec.pure.listgeometry.luau` 69검사, HEAD 산식과 무작위 2만 회 차분 0; C안(드래그·스크롤·키 분리)은 하지 않음. 내부 `FrameDriver.run(step(dt, stop)) -> stop` 하나로 Heartbeat 일곱 자리를 모음 — 끊는 시점·조건은 자리마다 그대로, 킷 안 `RunService` 직접 사용은 `FrameDriver` 하나; "보일 때만"으로 바꿀 강한 후보는 없음(끝없는 루프는 이미 보일 때만 도는 `Progress/Loop` 하나, 나머지 여섯은 끝이 정해짐), devui 둘은 다른 킷이라 남김), **H-921은 [2026-10-20] 반영**(opus 서브에이전트: 킷마다 `Util.fail(component, msg)` = `q.errorNamespace.errorBeforeNearest("<Kit>.<Component>: …", SURFACE)`, `Util.tagSurface`로 내보내기 테이블을 한 번 순회해 태깅(devui 함수 80·material 223), 생성자가 만든 객체 메소드는 생성자가 태깅; 순수 모듈 셋(`Unit`·`TimePicker/Clock`·`DatePicker/Calendar`)은 Quad 없이 require되므로 접두만 바꾸고 손 레벨 유지, 공개 `Unit.check(unit, level?)`의 레벨 인자도 계약이라 유지 — 없애려면 새 이름이 필요; 부수 효과로 킷 컴포넌트 안에서 quad가 던지는 에러도 컴포넌트를 부른 사용자 줄을 가리킨다 — 킷 CHANGELOG 둘에 적음; `fail`·`tagSurface`는 킷 내부용으로 README 표기, extend/01에 `errorNamespace` 사용법), H-928 devui 쪽(`Table`·`Combo`의 키별 재활용 본문 — 다른 킷이라 devui에 헬퍼를 따로 둘지부터).
 - 범위 한정·낮은 우선: H-929 나머지(Backend op 스무 개를 표로, `onDestroying` 무조건 덮어쓰기 가드). **[2026-10-20 같은 날] H-902는 진단만 반영** — `quad-base/src/Dispatch/Diagnostics.luau`(`brandNamesOf`·`brandNameOf`·`noMatchMessage`, 모듈의 등록 술어와 `DispatchHint` 브랜드만 읽는 순수 조각). 레지스트리(`handlers`·`debugHandlers`·버킷·`rebuildBuckets`)는 `getHandler`·`addHandler`와 가변 상태를 나눠 떼면 상태를 인자로 넘기는 층이 생기므로 남겼다(A의 조건 "단독 spec 후보가 있을 때" — 아직 없음). `drive`는 drive-hook-plan 결정 뒤 그대로.
 - **H-930은 보류로 낮춘다(메인 판단).** owned 갈래는 원소를 먼저 파괴하고 관찰자를 나중에 푼다. teardown은 관찰자부터 푼다. 이 차이가 의도인지 주석에도 `base/slot-plan.md`에도 근거가 없고 관측된 장애도 없다. 헬퍼로 합치면 순서 하나를 강제하게 되므로 오히려 위험하다.
 - **다음 릴리즈 때**: `QuadTypes.SlotCtx`(Q192, 2026-10-20 반영)가 게시되면 `ctx` 레코드를 손으로 적은 예제 다섯(`docs/reference/core/06-slot.md` 둘, `docs/skills/quad-ui-dev/SKILL.md`, `docs/skills/quad-ui-dev/references/code-recipes.md`, `docs/how-to/08-migrating-from-v1.md`)을 `SlotCtx` 한 줄로 — 게시 전에 바꾸면 3.4.0 사용자에게 컴파일되지 않는 예제가 된다.

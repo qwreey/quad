@@ -26,8 +26,7 @@
 
 local q = require("../Quad")
 local Util = require("../Util")
-
-local RunService = game:GetService("RunService")
+local FrameDriver = require("../FrameDriver")
 
 local LiveRoots = { ScreenGui = true, BillboardGui = true, SurfaceGui = true, DockWidgetPluginGui = true, QWidgetPluginGui = true }
 
@@ -56,13 +55,10 @@ local function new(active: q.State<boolean>, step: (t: number, dt: number) -> ()
 			return nil :: any
 		end
 		local t = 0
-		local conn = RunService.Heartbeat:Connect(function(dt: number)
+		return FrameDriver.run(function(dt: number)
 			t += dt
 			step(t, dt)
 		end)
-		return function()
-			conn:Disconnect()
-		end
 	end, mounted, active)
 	return hook, effect
 end

@@ -28,7 +28,7 @@
 	                                                 look with the same props and behaviour — `M2/init.luau`)
 	    TextField, Select, Menu                       text input and menus
 	    Card, Divider, List, ListItem, ListData       surfaces (`ListData` with `OnReorder` is the drag-to-reorder list:
-	                                                 a handle per row, the owner edits `Items` — ListReorder.luau)
+	                                                 a handle per row, the owner edits `Items` — ListReorder/)
 	    Dialog, Snackbar, Tooltip                     things that float (opened through an Overlay)
 	    Chip, Tabs, LinearProgress, CircularProgress  chips, tabs, progress (+ the M3 Expressive LoadingIndicator and
 	                                                 WavyProgress)

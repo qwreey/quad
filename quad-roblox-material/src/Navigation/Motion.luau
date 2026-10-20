@@ -21,8 +21,7 @@
 ]]
 
 local q = require("../Quad")
-
-local RunService = game:GetService("RunService")
+local FrameDriver = require("../FrameDriver")
 
 local function ease(x: number): number
 	local u = 1 - x
@@ -59,12 +58,11 @@ local function progress(target: q.State<boolean>, duration: number, opts: Option
 		end
 		local total = duration * math.abs(goal - start)
 		local t = 0
-		local conn: RBXScriptConnection
-		conn = RunService.Heartbeat:Connect(function(dt: number)
+		return FrameDriver.run(function(dt: number, stop: FrameDriver.Stop)
 			t += dt
 			if t >= total then
 				value:Set(goal)
-				conn:Disconnect()
+				stop()
 				if onSettle then
 					onSettle(goal == 1)
 				end
@@ -72,9 +70,6 @@ local function progress(target: q.State<boolean>, duration: number, opts: Option
 			end
 			value:Set(start + (goal - start) * ease(t / total))
 		end)
-		return function()
-			conn:Disconnect()
-		end
 	end, target, snap)
 	return value, effect
 end

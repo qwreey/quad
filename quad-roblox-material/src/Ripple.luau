@@ -109,11 +109,11 @@
 local q = require("./Quad")
 local Tokens = require("./Tokens")
 local Theme = require("./Theme")
+local FrameDriver = require("./FrameDriver")
 local CanvasGroup = q.Elem "CanvasGroup"
 local ImageLabel = q.Elem "ImageLabel"
 
 local Motion = Tokens.Motion
-local RunService = game:GetService("RunService")
 local EXPAND_TIME = Motion.Duration.Long1
 -- the uploaded disc texture (an IMAGE id; 1024 x 1024, see header)
 local DISC_IMAGE = "rbxassetid://89858938964426"
@@ -141,7 +141,7 @@ export type Ripple = {
 	Count: (self: Ripple) -> number,
 }
 
-type Live = { group: Instance, held: boolean, fade: () -> (), timer: thread?, conn: RBXScriptConnection? }
+type Live = { group: Instance, held: boolean, fade: () -> (), timer: thread?, stop: (() -> ())? }
 
 local Module = {
 	-- Subtracted from press positions before they are compared with AbsolutePosition (see header).
@@ -190,8 +190,8 @@ local function new(opts: Options): Ripple
 				if l.timer then
 					task.cancel(l.timer)
 				end
-				if l.conn then
-					l.conn:Disconnect()
+				if l.stop then
+					l.stop()
 				end
 			end
 			table.clear(live)
@@ -205,9 +205,9 @@ local function new(opts: Options): Ripple
 				if l.timer then
 					task.cancel(l.timer)
 				end
-				if l.conn then
-					l.conn:Disconnect()
-					l.conn = nil
+				if l.stop then
+					l.stop()
+					l.stop = nil
 				end
 				break
 			end
@@ -263,7 +263,7 @@ local function new(opts: Options): Ripple
 		local fadeTween = q.Animate(fadeOpts)
 
 		local circleRef = q.PreRef(nil :: ImageLabel?)
-		local entry: Live = { group = nil :: any, held = true, fade = function() end, timer = nil, conn = nil }
+		local entry: Live = { group = nil :: any, held = true, fade = function() end, timer = nil, stop = nil }
 
 		-- one frame of the expand: the part of the disc of radius `r` around the press point that lies inside the host
 		-- rectangle (see BOUNDED in the header). Returns true once the disc covers the whole host (FULL COVER).
@@ -315,14 +315,14 @@ local function new(opts: Options): Ripple
 			-- ripple, disconnected at the end of the expand or when the ripple is dropped)
 			Util.postHook(function()
 				local t = 0
-				entry.conn = RunService.Heartbeat:Connect(function(dt: number)
+				entry.stop = FrameDriver.run(function(dt: number, stop: FrameDriver.Stop)
 					t += dt
 					local a = math.min(t / EXPAND_TIME, 1)
 					-- Quart Out = the M3 Standard easing's kit mapping; once the disc covers the host nothing changes any more
 					local covered = shape(radius * (1 - (1 - a) ^ 4))
-					if (covered or a >= 1) and entry.conn ~= nil then
-						entry.conn:Disconnect()
-						entry.conn = nil
+					if (covered or a >= 1) and entry.stop ~= nil then
+						stop()
+						entry.stop = nil
 					end
 				end)
 			end),

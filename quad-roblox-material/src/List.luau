@@ -27,7 +27,7 @@
 	                             EVERY content role — headline, supporting, overline, leading / trailing image, trailing
 	                             text — turns onTertiaryContainer (Compose ReorderListTokens.kt 22-47, the defaults of
 	                             ListItemDefaults.kt 231-240). Content only: the tertiaryContainer fill, the shape and the
-	                             shadow of a dragged row are drawn around the row by the list (ListReorder.luau), so the
+	                             shadow of a dragged row are drawn around the row by the list (ListReorder/), so the
 	                             item's own `Selected` fill steps aside while dragged. Precedence, as Compose resolves
 	                             every list color (ListItemDefaults.kt 751-835): disabled, then dragged, then selected.
 	                             Same motion as the other color changes (Short4 / Standard).
@@ -54,7 +54,7 @@
 	             others give way, and the release calls `OnReorder(from, to)` — places from 1, `to` counted AFTER the move
 	             (`table.insert(t, to, table.remove(t, from))`), never with `from == to`. The list does not edit `Items`:
 	             set it in the callback (or when a server answers) and the rows settle in that order; leave it and they go
-	             back after a moment. Everything else — sources, the waiting rule, keys, limits — is in ListReorder.luau.
+	             back after a moment. Everything else — sources, the waiting rule, keys, limits — is in ListReorder/init.luau.
 	             Without `OnReorder` nothing of this exists (same instances as before).
 	  Reordering State<boolean>?   (with `OnReorder`) the owner's "an answer is on its way": while true after a release the
 	             rows stay where they were dropped, with no time limit; turning false with `Items` unchanged = refused, the
