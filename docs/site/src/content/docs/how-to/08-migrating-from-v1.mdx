@@ -380,7 +380,7 @@ v1에 없던 것도 챙겨두면 좋습니다 — `q.Tag`/`q.Attr`(선언적 메
 
 ## 7. strict 체크리스트
 
-v1 코드를 직역하면 아래 열아홉 가지에서 막힙니다. 진단 문구는 실제로 나오는 문자열의 머리 부분입니다.
+v1 코드를 직역하면 아래 열아홉 가지에서 막힙니다. 진단 문구는 실제로 나오는 문자열의 머리 부분입니다(**[2026-10-20]** 3.4.0 표면에서 바뀐 세 줄 — 이벤트 콜백 `self`, 미리 만든 props 테이블, `Text = 42` — 은 그날 다시 쟀습니다).
 
 | v1 직역 모양 | 진단 | 처방 |
 |---|---|---|
@@ -389,10 +389,10 @@ v1 코드를 직역하면 아래 열아홉 가지에서 막힙니다. 진단 문
 | `q.OnCreated(function(inst: Frame) end)` — 콜백 파라미터에 타입 주석 | `Type functions do not currently support types of the form '*error-type*'` | `q.OnCreated<<Frame>>(fn)` (`OnRendered`도 같음) |
 | `q.OnCreated(function(inst) end)` — 콜백 파라미터가 완전 무주석 | 진단이 나지 않습니다 — 조용히 통과하지만 `inst`가 특화 타입을 얻지 못해 자동완성이 안 뜹니다 | 위와 똑같이 `q.OnCreated<<Frame>>(fn)` |
 | 타입 표면에 없는 키(v1의 `Corner`/`PaddingAllOffset`/`Scale`) | `Expected this to be 'number', but got '"Corner"'` + 배열 유니언 불일치 한 줄 | 두 줄짜리 이 모양은 "그런 프로퍼티가 없다"는 뜻입니다(키가 배열 인덱스로 오독됩니다). `UICorner`/`UIPaddingOffset`/`UIScale` 숏핸드로 바꾸세요 |
-| 이벤트 콜백 첫 인자에 `self`(예: `Activated`) | `Expected this to be '(((InputObject, number) -> ()) \| None \| StateMarker<(InputObject, number) -> ()>)?' but got '(InputObject, number, unknown) -> ()'` | `self`를 지우고 엔진 그대로의 인자 수·순서로 맞추세요 — **정확히 2개로만 줄이면**(`function(self, inputObject)`) **진단 없이 통과합니다**: 양방향 추론이 `self`를 `InputObject`, 둘째를 `number`(clickCount)에 맞춰버려 런타임에 인자가 한 칸 밀립니다. `self` 없이 `function(inputObject, clickCount)`로 쓰세요 |
+| 이벤트 콜백 첫 인자에 `self`(예: `Activated`) | `Expected this to be '(((InputObject, number) -> ()) \| { read __quadNone: true } \| { read __quadState: true, … })?' but got '(InputObject, number, unknown) -> ()'` | `self`를 지우고 엔진 그대로의 인자 수·순서로 맞추세요 — **정확히 2개로만 줄이면**(`function(self, inputObject)`) **진단 없이 통과합니다**: 양방향 추론이 `self`를 `InputObject`, 둘째를 `number`(clickCount)에 맞춰버려 런타임에 인자가 한 칸 밀립니다. `self` 없이 `function(inputObject, clickCount)`로 쓰세요 |
 | `Frame`에 `Activated` | `Expected this to be 'number', but got '"Activated"'` | `TextButton` / `ImageButton` 같은 `GuiButton` 계열로 |
 | 숫자 키 자리에 `nil`이 들어감 | `the 2nd component of the union is 'nil', which is not a subtype of …` | `props.Modifier or q.None` |
-| 미리 만들어둔 props 테이블을 `q.Elem "Frame" (props)` | `Expected this to be 'FrameParam<…>' … 'string' is not exactly 'StateMarker<string>'` | 양방향 추론은 **리터럴 자리에서만** 삽니다. 테이블 리터럴로 직접 쓰세요 |
+| 미리 만들어둔 props 테이블을 `q.Elem "Frame" (props)` | `Expected this to be '{ [number]: Instance | … }'` … ``Expected property `Name` to be exactly `{ read __quadState: true, read __quadStateValue: string }`, but got `string` `` | 양방향 추론은 **리터럴 자리에서만** 삽니다. 테이블 리터럴로 직접 쓰세요 |
 | 자식 배열 변수를 `q.Elem "ScreenGui" (children)` | 같은 계열의 파라미터 불일치 | `q.Elem "ScreenGui" { table.unpack(children) }` — 리터럴의 **마지막** 원소일 때만 전부 펼쳐집니다 |
 | `q.Store()` 뒤 `store.Text = v` | `Cannot add property 'Text' to table '{ } & { Names: …, Of: … }'` | `defaults`에 선언하거나 `store:Of<<string>>("Text")` |
 | `State<Frame>`을 `State<Instance>` 파라미터에 | `'Frame' is not exactly 'Instance'` (수백 줄) | `State<T>`는 불변입니다. 입력 자리는 생성 prop 타입(공변 마커)으로 선언하세요. **지역 변수 주석만으론 안 됩니다** — 불변 `State`라 `Source<Frame>` 추론이 먼저 굳습니다. 생성자에 타입 인자를 주세요: `q.Source<<Instance>>(q.Elem "Frame"{})` |
@@ -401,7 +401,7 @@ v1 코드를 직역하면 아래 열아홉 가지에서 막힙니다. 진단 문
 | `q.Ref(nil)` | `… but got 'Ref<nil>'` | `q.Ref<<Frame?>>(nil)` — 타입 인자로 넓힙니다 |
 | `[q.AttrKey("Hp")] = v` (문자 키) | `Expected this to be 'number', but got 'AttrKeyObject'` | 런타임은 정상이지만 타입이 안 열립니다. 숫자 키 자리의 `q.Attr{ Hp = v }` / `q.NumberAttr("Hp", v)`를 쓰세요 |
 | `q.Elem("Folder")({...})`의 결과를 사용 | `Type 'unknown' does not have key 'Name'` | `q.Elem<<Folder>>("Folder")({...})` |
-| `Text = 42` | `Expected this to be '(None \| StateMarker<string> \| string)?', but got 'number'` | `tostring(42)` — 암묵 변환은 없습니다 |
+| `Text = 42` | `Expected this to be '(string \| { read __quadNone: true } \| { read __quadState: true, read __quadStateValue: string })?', but got 'number'` | `tostring(42)` — 암묵 변환은 없습니다 |
 | `Op.Sum(UDim2…)` 같은 비숫자 | `None of the overloads for function that accept 2 arguments are compatible` | 산술·비트 연산자는 숫자 전용입니다. 다른 타입은 `:Compute`로 |
 
 > **`<<T>>` 표기**: quad는 Luau의 **명시적 타입 인자** 문법을 씁니다. 화살괄호가 **둘**입니다 — `q.Slot<<Instance>>()`, `q.OnCreated<<Frame>>(fn)`, `store:Of<<string>>("Text")`, `q.Elem<<Folder>>("Folder")`, `Op.Indexed<<Color3>>("Primary")`, `q.Ref<<Frame?>>(nil)`. 하나만 쓰면 비교 연산으로 파싱돼 문법 오류가 납니다.

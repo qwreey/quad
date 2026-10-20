@@ -251,6 +251,8 @@ array — braces even for one element (a bare element raises `Quad0176`) — and
 2. Among modifiers in the array part, the **later** one wins per field.
 3. `Modifier.Overridden(A, B)` (or `A:Overridden(B)`) — `B` wins per field.
 
+A Spread sits between 1 and 2: inline keys > earlier Spread > later Spread > Modifiers (§1.2 end, `reference/roblox/03-modifier-spread`).
+
 ### 3.3 Typed Modifiers & Downcasting
 
 ```luau
@@ -384,13 +386,13 @@ slot:Single(selected, nil, { OwnsElements = false })
 ### 4.4 Modal / overlay recipe (same shape as `how-to/09`)
 
 Default: keep the instance and toggle `Visible`; the open flag lives in a `Source` **outside** the component,
-the children come in as a `Slot` (`props.Children or None` in the numeric position).
+the children come in as a `Slot` (`props.Children or q.None` in the numeric position).
 
 ```luau
-local function Modal(props: { read Open: q.Source<boolean>, read OnConfirm: () -> (), read Children: q.Slot<Instance>? }): Frame
+local function Modal(props: { read Open: QuadTypes.Source<boolean>, read OnConfirm: () -> (), read Children: QuadTypes.Slot<Instance>? }): Frame
     return q.Elem "Frame" {
         Visible = props.Open,
-        props.Children or None,
+        props.Children or q.None,
         q.Elem "TextButton" { Text = "OK", Activated = function() props.Open:Set(false); props.OnConfirm() end },
     }
 end

@@ -92,10 +92,10 @@ it is *not* the port of `:With`. Never map by name alone.
 | `q.OnCreated(function(inst: Frame) end)` — annotated param | `Type functions do not currently support types of the form '*error-type*'` | `q.OnCreated<<Frame>>(fn)` (same for `OnRendered`) |
 | `q.OnCreated(function(inst) end)` — fully unannotated param | none — passes silently, but `inst` never gets a specialized type (no autocomplete) | same fix: `q.OnCreated<<Frame>>(fn)` |
 | key not on the typed surface (v1 `Corner`/`PaddingAllOffset`/`Scale`) | `Expected this to be 'number', but got '"Corner"'` + an array-union mismatch line | this two-line shape means "no such property" (the key is read as an array index) |
-| event callback with leading `self` (v1's `fn(self, …)`, e.g. `Activated`) | `Expected this to be '(((InputObject, number) -> ()) \| None \| StateMarker<…>)?' but got '(InputObject, number, unknown) -> ()'` | drop `self` and match the engine's exact arity — **shrinking to exactly 2 args instead** (`function(self, inputObject)`) passes with **zero diagnostics**: bidirectional inference binds `self` to `InputObject` and the second param to `number` (clickCount), so arguments are shifted by one at runtime. Write `function(inputObject, clickCount)` with no `self` |
+| event callback with leading `self` (v1's `fn(self, …)`, e.g. `Activated`) | `Expected this to be '(((InputObject, number) -> ()) \| { read __quadNone: true } \| { read __quadState: true, … })?' but got '(InputObject, number, unknown) -> ()'` | drop `self` and match the engine's exact arity — **shrinking to exactly 2 args instead** (`function(self, inputObject)`) passes with **zero diagnostics**: bidirectional inference binds `self` to `InputObject` and the second param to `number` (clickCount), so arguments are shifted by one at runtime. Write `function(inputObject, clickCount)` with no `self` |
 | `Activated` on a `Frame` | `Expected this to be 'number', but got '"Activated"'` | use a `GuiButton` class |
 | `nil` in the array part | `the 2nd component of the union is 'nil', which is not a subtype of …` | `props.X or q.None` |
-| prebuilt props table `q.Elem "Frame" (props)` | `Expected this to be 'FrameParam<…>' … 'string' is not exactly 'StateMarker<string>'` | bidirectional inference only works at the literal site |
+| prebuilt props table `q.Elem "Frame" (props)` | `Expected this to be '{ [number]: Instance | … }'` … ``Expected property `Name` to be exactly `{ read __quadState: true, read __quadStateValue: string }`, but got `string` `` | bidirectional inference only works at the literal site |
 | children array variable `q.Elem "ScreenGui" (children)` | same family of param mismatch | `q.Elem "ScreenGui" { table.unpack(children) }` |
 | `q.Store()` then `store.Text = v` | `Cannot add property 'Text' to table '{ } & { Names: …, Of: … }'` | declare in defaults, or `store:Of<<string>>("Text")` |
 | `State<Frame>` into a `State<Instance>` param | `'Frame' is not exactly 'Instance'` (hundreds of lines) | `State<T>` is invariant — declare inputs as the prop type (covariant marker) or `State<Instance>` |
@@ -103,7 +103,7 @@ it is *not* the port of `:With`. Never map by name alone.
 | `q.Context.Provider("Theme")` uncast | `Get()` resolves to `unknown`, fails at the prop site | `q.Context.Provider<<Theme>>("Theme")` |
 | `q.Ref(nil)` | `… but got 'Ref<nil>'` | `q.Ref<<Frame?>>(nil)` |
 | `[q.AttrKey("Hp")] = v` | `Expected this to be 'number', but got 'AttrKeyObject'` | runtime is fine, types are not opened — use array-part `q.Attr{...}` / `q.NumberAttr(...)` |
-| `Text = 42` | `Expected this to be '(None \| StateMarker<string> \| string)?', but got 'number'` | `tostring(42)` |
+| `Text = 42` | `Expected this to be '(string \| { read __quadNone: true } \| { read __quadState: true, read __quadStateValue: string })?', but got 'number'` | `tostring(42)` |
 | `Op.Sum(UDim2 …)` | `None of the overloads for function that accept 2 arguments are compatible` | arithmetic/bitwise operators are number-only; other types go through `:Compute` |
 
 Explicit type arguments use **double** angle brackets: `q.Slot<<Instance>>()`,

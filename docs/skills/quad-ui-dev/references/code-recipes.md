@@ -183,7 +183,7 @@ Mapped children accept the same props as `q.Elem` constructors (plain values, St
 events), and freshly built `q.Elem` children may be mixed into the same array. Claiming an
 Instance twice — including anything `q.Elem` produced — errors with
 `Quad0029 Claim: <instance> is already claimed by quad - an Instance quad made (q.Elem) or already Claimed
-Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or
+cannot be claimed again (leave it out of the descriptor and drive it separately, or
 dispose it and rebuild)`.
 
 ---
