@@ -81,7 +81,7 @@ Quad0025 Bookkeeping.setOffsetSource: source must be a Source<number> or None (g
 flowchart TB
     subgraph CS["호출 스택"]
         direction TB
-        F1["<b>[프레임 1]</b> 사용자 스크립트: MyButton.luau:15<br/>→ q.Elem "Frame" { ... }  (SURFACE 경계)"]
+        F1["<b>[프레임 1]</b> 사용자 스크립트: MyButton.luau:15<br/>→ q.Elem #quot;Frame#quot; { ... }  (SURFACE 경계)"]
         F2["<b>[프레임 2]</b> quad-base: Dispatch/init.luau<br/>(drive / process)"]
         F3["<b>[프레임 3]</b> quad-roblox: Handlers/Property.luau<br/>→ 여기서 던진다"]
         F1 --> F2
