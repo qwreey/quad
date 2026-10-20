@@ -81,7 +81,7 @@ local function New(): Quad
 			Spread = SpreadModule.Spread,
 			Mapper = nil :: any,
 		},
-		Version = "3.3.0",
+		Version = "3.4.0",
 		-- [2026-09-15 공개 표면 (12)] per-instance identity token — an EMPTY table, never the module
 		-- itself (holds nothing). Subsystems store it on their per-instance impl and compare it where a
 		-- value may come from another instance (`ModuleIdentity.luau`).

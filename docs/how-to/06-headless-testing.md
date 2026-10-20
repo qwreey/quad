@@ -48,7 +48,7 @@ default = "https://github.com/pesde-pkg/index"
 environment = "luau"
 
 [dependencies]
-quad_base = { name = "qwreey/quad_base", version = "^3.3.0" }
+quad_base = { name = "qwreey/quad_base", version = "^3.4.0" }
 ```
 
 ```bash
@@ -60,7 +60,7 @@ pesde install
 ```
 luau_packages/
 ├── quad_base.luau                              -- 링커: require("./.pesde/.../quad_base/src")로 위임
-└── .pesde/qwreey+quad_base/3.3.0/quad_base/src/...
+└── .pesde/qwreey+quad_base/3.4.0/quad_base/src/...
 ```
 
 `quad_base.luau`도 그 아래 `.pesde/` 실체도 **전부 일반 파일**입니다 —

@@ -28,8 +28,8 @@ quad 레포의 `docs/skills/quad-ui-dev/`는 Claude Code의 스킬 형식(`SKILL
 Claude Code는 프로젝트의 `.claude/skills/<이름>/SKILL.md`를 스킬로 읽습니다. 폴더를 **통째로** 복사하면 됩니다 — `SKILL.md`가 `references/…`를 상대 경로로 가리키므로 파일 하나만 옮기면 참고 파일을 못 찾습니다.
 
 ```sh
-# 쓰고 있는 quad 버전의 태그로 받습니다(예: 3.3.0). 태그는 릴리즈마다 붙습니다.
-git clone --depth 1 --branch 3.3.0 https://github.com/qwreey/quad /tmp/quad
+# 쓰고 있는 quad 버전의 태그로 받습니다(예: 3.4.0). 태그는 릴리즈마다 붙습니다.
+git clone --depth 1 --branch 3.4.0 https://github.com/qwreey/quad /tmp/quad
 mkdir -p .claude/skills
 cp -r /tmp/quad/docs/skills/quad-ui-dev .claude/skills/quad-ui-dev
 rm -rf /tmp/quad
