@@ -7,7 +7,7 @@
 			Children: Slot<Instance>?,          -- the content (laid out top-down; use Layout.* / Text / Button inside)
 			Position: Source<UDim2>?,           -- two-way: dragging the title bar writes it (default: an internal Source)
 			Size: Source<Vector2>?,             -- pixels; two-way: the resize grip writes it (default 300 x 200)
-			Open: Source<boolean>?,             -- the close button sets it false; every `:Set(true)` shows the window AND brings it
+			Open: Source<boolean>?,             -- the close button sets it false (unless OnCloseRequest is given); every `:Set(true)` shows the window AND brings it
 			                                    -- to the front with the focus (also when it is already open — `:SetIfChanged(true)`
 			                                    -- only syncs the state without raising)
 			Focused: Source<boolean>?,          -- two-way: the window writes whether it is the focused one; set true to raise
@@ -15,6 +15,8 @@
 			AvailableSize: Source<Vector2>?,    -- output: the room the children get (visible content area minus padding)
 			Collapsed: Source<boolean>?,        -- the arrow sets it; collapsed = a small icon (press: expand, drag: move)
 			NoTitleBar / NoResize / NoMove / NoClose / NoCollapse: boolean?,   -- static flags
+			OnCloseRequest: (() -> ())?,        -- given: the close button only calls it and leaves Open alone — the app decides
+			                                    -- (ask in a dialog, then `Open:Set(false)`, destroy, `ForgetWindow`); nil: it closes
 			MinSize: Vector2?,                  -- resize floor (default 2 x frame height square)
 			Icon: string?,                      -- the collapsed icon's image (default: the title's first letter)
 			Key: string?,                       -- the window's identity in its manager (unique; saved in the layout)
@@ -102,6 +104,7 @@ export type WindowProps = {
 	read NoMove: boolean?,
 	read NoClose: boolean?,
 	read NoCollapse: boolean?,
+	read OnCloseRequest: (() -> ())?,
 	read MinSize: Vector2?,
 	read Icon: string?,
 	read Key: string?,
@@ -118,6 +121,10 @@ local function Window(props: WindowProps): Frame
 	end
 	if kind ~= nil and type(kind) ~= "string" then
 		Util.fail("Window", `Kind must be a string (the window's type), got {typeof(kind)}`)
+	end
+	local onCloseRequest = props.OnCloseRequest
+	if onCloseRequest ~= nil and type(onCloseRequest) ~= "function" then
+		Util.fail("Window", `OnCloseRequest must be a function, got {typeof(onCloseRequest)}`)
 	end
 	local style = props.Style or Style.default
 	local manager = props.Manager or Manager.default
@@ -141,6 +148,7 @@ local function Window(props: WindowProps): Frame
 		NoMove = props.NoMove == true,
 		NoClose = props.NoClose == true,
 		NoCollapse = props.NoCollapse == true,
+		OnCloseRequest = onCloseRequest,
 		MinSize = props.MinSize,
 		Icon = props.Icon,
 		Key = props.Key,

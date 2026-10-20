@@ -10,6 +10,7 @@
 
 - `Window`의 `Key: string?`(창의 신원 — 한 `WindowManager` 안에서 유일, 겹치면 `Devui.Window:` 에러)·`Kind: string?`(창의 종류, 생략하면 `Key`)·`Icon: string?`(접힌 창 아이콘의 이미지, 없으면 제목 첫 글자).
 - `WindowManager:ExportLayout(): WindowLayout`·`:ImportLayout(layout, factories?)`·`:ExportWindow(key): WindowState?`·`:ImportWindow(key, state)`와 출력 `WindowManager.Layout: State<WindowLayout>`, 타입 `Devui.WindowLayout`·`Devui.WindowState` — 키 있는 창의 열림·접힘·위치·크기를 JSON으로 바꿀 수 있는 평범한 표로 내주고 받습니다(저장은 앱 몫, 창 내용은 저장하지 않음). 불러오기는 언제 불러도 되고, 아직 없는 키는 그 창이 등록될 때 적용되며, 배치에 없는 창은 그대로 둡니다. `factories`(`Kind` → `function(key)`)는 저장 때 열려 있었고 아직 등록되지 않은 키에만 불립니다. `Floating`의 차례가 키 있는 창들의 겹침 순서(아래에서 위)라서 불러온 뒤 창을 어떤 차례로 만들어도 저장된 대로 쌓입니다. 형식은 README의 "창 배치 저장" 절.
+- `Window`의 `OnCloseRequest: (() -> ())?` — 주면 × 단추가 이 함수만 부르고 `Open`을 건드리지 않습니다(앱이 저장할지 묻고 닫는 경로). 주지 않으면 지금처럼 닫힙니다.
 - `WindowManager:ForgetWindow(key)` — 키를 배치에서 지웁니다(앱이 창을 정말로 닫을 때). 대기 키는 바로, 살아 있는 창의 키는 그 창이 사라질 때 지우고, 같은 키로 다시 만든 창은 처음부터 시작합니다.
 - `InputText`·`InputNum`·`DragNum`의 `FieldSpread`, `SliderNum`의 `TrackSpread` — 안쪽 상자·트랙에 Ref·`q.OnEvent`·키 묶음을 펼쳐 넣는 자리(`q.Spread "TextBox" {…}` 등). 기본값 경로인 `FieldModifier`/`TrackModifier`는 그대로입니다.
 

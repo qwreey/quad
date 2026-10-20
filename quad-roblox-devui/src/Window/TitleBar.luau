@@ -29,6 +29,7 @@ export type TitleBarSpec = {
 	Focused: State<boolean>,
 	NoCollapse: boolean,
 	NoClose: boolean,
+	OnCloseRequest: (() -> ())?,
 	Drag: Interaction.DragHandle?,
 }
 
@@ -160,7 +161,13 @@ function TitleBar.new(spec: TitleBarSpec): Frame
 		if spec.NoClose
 			then q.None
 			else titleButton(style, closeIcon, function()
-				spec.Open:Set(false)
+				-- a close REQUEST when the app asked for one (it may ask to save first), else the close itself
+				local request = spec.OnCloseRequest
+				if request ~= nil then
+					request()
+				else
+					spec.Open:Set(false)
+				end
 			end, "Right", buttonSize, shown),
 	})
 end

@@ -76,6 +76,7 @@ export type Hints = {
 	NoMove: boolean,
 	NoClose: boolean,
 	NoCollapse: boolean,
+	OnCloseRequest: (() -> ())?, -- the close button asks the app instead of closing
 	MinSize: Vector2?,
 	Icon: string?,
 	Key: string?, -- the window's identity in its manager (saved in the layout); nil = left out of the layout
@@ -366,6 +367,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 				Focused = control.Focused,
 				NoCollapse = hints.NoCollapse,
 				NoClose = hints.NoClose,
+				OnCloseRequest = hints.OnCloseRequest,
 				Drag = titleDrag,
 			}),
 	})

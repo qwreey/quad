@@ -203,6 +203,24 @@ H.section("collapse and close", function()
 	H.assertNoDebugOutput("collapse/close")
 end)
 
+H.section("OnCloseRequest: the close button asks the app and leaves Open alone", function()
+	local open = q.Source(true)
+	local asked = 0
+	local win = Devui.Window({ Title = "w", Open = open, OnCloseRequest = function()
+		asked += 1
+	end })
+	H.fire(get(win, "CloseButton"), "Activated", H.input({}), 1)
+	assert(asked == 1 and open:Get() == true and (win :: any).Visible == true, "asked, still open")
+	open:Set(false) -- the app decided
+	assert((win :: any).Visible == false)
+	q.dispose(win)
+	local ok, e = pcall(function()
+		Devui.Window({ Title = "w", OnCloseRequest = true :: any })
+	end)
+	assert(not ok and string.find(tostring(e), "Devui.Window: OnCloseRequest must be a function", 1, true) ~= nil, tostring(e))
+	H.assertNoDebugOutput("close request")
+end)
+
 H.section("focus on press: z-order, active title colour", function()
 	local manager = Devui.WindowManager.new()
 	local a = Devui.Window({ Title = "A", Manager = manager })
