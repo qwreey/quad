@@ -25,7 +25,7 @@
 	NO VIRTUALIZATION: every row of `Rows` is built, on screen or not — 3 instances per row plus 4 to 6 per column with a
 	one-label cell (3 columns with Borders: about 20 per row, so 500 rows are 10,000 instances and most of a second to build).
 	Updates are cheap (a surviving key only republishes its row State), the first build is not: for thousands of rows
-	filter or page the `Rows` State yourself. A windowed long list (only the rows on screen exist) is quad's recipe `docs/how-to/03-long-lists-and-windowing.md` (quad repo).
+	filter or page the `Rows` State yourself. For a long list where only the rows on screen exist, use `VirtualRows` (fixed-height rows, a reused slot pool — nothing is built or destroyed while scrolling); quad's keyed recipe is `docs/how-to/03-long-lists-and-windowing.md` (quad repo).
 
 	DEVIATION FROM THE FIRST SKETCH: `Cell` takes `State<T>`, not `T`, because with a plain `T` a surviving key could never
 	show new values.

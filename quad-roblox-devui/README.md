@@ -61,7 +61,7 @@ Sibling입니다.
 - **바깥 신호(`UserInputService` 등)의 수명**: [`q.OnDestroyed`](../docs/reference/sugar/04-lifecycle-hooks.md)나 Effect cleanup에 묶습니다 — `Destroying:Connect`나 표지용 Folder가 필요 없습니다.
   [how-to/04](../docs/how-to/04-network-and-input-bridge.md).
 - **quad가 만든 인스턴스의 변화**: 선언 밖에서 `:Connect`하지 말고 같은 선언 안의 `q.OnChange`·이벤트 prop으로(파괴와 함께 풀림). 읽기 전용 프로퍼티(`AbsoluteSize`·`CanvasPosition`)도 됩니다.
-- **긴 목록**: Table·Combo·Tree는 가상화가 없습니다. 화면에 보이는 행만 만드는 레시피는 [how-to/03](../docs/how-to/03-long-lists-and-windowing.md).
+- **긴 목록**: Table·Combo·Tree는 가상화가 없습니다. 수천~수만 행은 `VirtualRows`를 쓰세요 — 행 높이가 고정이고, 화면에 걸친 만큼의 슬롯만 만들어 스크롤할 땐 행 번호만 다시 묶습니다(만들기·파괴 0). 키로 재활용하는 quad 레시피는 [how-to/03](../docs/how-to/03-long-lists-and-windowing.md).
   배치 전(크기 0)에는 행이 0개인 것이 정상입니다.
 - **파생 값의 타입**: `:Compute` 결과는 만드는 줄에서 주석합니다(`local shown: q.State<boolean> = n:Compute(...)`) — 인라인으로 prop에 넣으면 오류 문구가 길어집니다.
   `Source`와 `State`를 한 변수에 받을 땐 주석 붙인 if-식(`local h: q.State<number> = if s then s else q.Source(1)`)이나 값을 돌려주는 함수로 — 분기마다 대입하면 유니언이 되어 `:Compute`를 못 부릅니다.
@@ -134,7 +134,7 @@ Heartbeat는 `gallery/Clock.luau`의 `ticker`만 건드리고, 그 연결은 그
 | 버튼 | `Button`, `SmallButton` | 클릭 가능한 버튼(작은 쪽은 세로 패딩 없음) |
 | 선택 | `Checkbox`, `RadioButton`, `Selectable`, `SelectableOption` | 체크 / 라디오(같은 `Source` 공유) / 한 줄 선택 행 |
 | 입력 | `InputText`, `InputNum`, `DragNum`, `SliderNum`, `InputVector2`, `InputUDim2`, `InputColor3` | 글·숫자(±버튼)·드래그 숫자·슬라이더·벡터·UDim2·색 |
-| 구조 | `Tree`, `CollapsingHeader`, `TabBar` / `Tab`, `Table` | 접히는 노드·헤더, 탭, 키로 재활용되는 표 |
+| 구조 | `Tree`, `CollapsingHeader`, `TabBar` / `Tab`, `Table`, `VirtualRows` | 접히는 노드·헤더, 탭, 키로 재활용되는 표, 가상화된 고정 높이 행 목록 |
 | 표시 | `ProgressBar`, `PlotLines`, `PlotHistogram` | 진행 막대, 선 그래프, 막대 그래프 |
 | 팝업 | `Combo`, `ComboArray`, `ComboEnum`, `MenuBar` / `Menu` / `MenuItem` / `MenuToggle`, `Tooltip` | 드롭다운, 메뉴(중첩 가능), 호버 툴팁 |
 | 기반 | `Style`, `Interaction`, `Overlay`, `WindowManager`, `NumberFormat` | 테마·입력 훅·팝업 층·창 z-순서·숫자/색 문자열 도우미 |

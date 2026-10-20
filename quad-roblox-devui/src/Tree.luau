@@ -21,8 +21,8 @@
 	rendering): opening is instant, widget/Source state inside survives a collapse, and a Slot stays a plain
 	DOMless child list (a literal child is bound to its host's lifetime, so a mount/unmount design would need a State-held
 	child slot per Tree). The cost is that closed subtrees keep their instances alive — a debug tree with thousands of
-	nodes should build children lazily itself (e.g. a `Slot:Single` fed from `Open`); for a flat windowed view see
-	`docs/how-to/03-long-lists-and-windowing.md` (quad repo).
+	nodes should build children lazily itself (e.g. a `Slot:Single` fed from `Open`); for a flat windowed view flatten the open
+	nodes into rows and show them with `VirtualRows` (or quad's recipe `docs/how-to/03-long-lists-and-windowing.md`).
 ]]
 
 local Quad = require("./Quad")
