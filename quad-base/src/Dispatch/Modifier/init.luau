@@ -446,8 +446,8 @@ end
 -- component authors register theirs the same way (a `MaterialButtonModifier`
 -- with custom fields is as first-class as `FrameModifier`). Dedup: the same
 -- name always returns the same constructor (two modules may both ask).
-local function TypedFactory(name: any): any
-	checkName("TypedFactory", "name", name)
+-- untagged body of TypedFactory (also the 3.4.0 coexistence string arm of `Modifier(...)` below)
+local function typedFactoryOf(name: any): any
 	local existing = constructors[name]
 	if existing ~= nil then
 		return existing
@@ -459,6 +459,11 @@ local function TypedFactory(name: any): any
 	Err.setFuncLevel(SURFACE, ctor) -- `H-238`: the user's `D.Modifier.Frame(...)` line is blamed
 	constructors[name] = ctor
 	return ctor
+end
+
+local function TypedFactory(name: any): any
+	checkName("TypedFactory", "name", name)
+	return typedFactoryOf(name)
 end
 
 -- Modifier.DefineSubtype(parent, subtype) (11절): ONE job — register the edge
@@ -484,6 +489,14 @@ end
 
 local Modifier = setmetatable({ Overridden = Overridden, TypedFactory = TypedFactory, DefineSubtype = DefineSubtype }, {
 	__call = function(_self: any, ...: any): any
+		-- [2026-10-20 3.4.0 coexistence — removed at the switch, plan unit 6] `q.Modifier "Frame"` (one string) is the
+		-- typed factory the backend surface gives; here so quad-roblox needs no wrapper over this tagged call (a
+		-- wrapper would make every old-form error blame the wrapper's line)
+		local first = ...
+		if type(first) == "string" and select("#", ...) == 1 then
+			checkName("call", "the class name", first)
+			return typedFactoryOf(first)
+		end
 		return construct(true, ...)
 	end,
 })

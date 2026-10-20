@@ -51,3 +51,7 @@ gen-d.py: LEGACY_KEEP(정의 클래스 기준, 태그 무관 — Transparency �
 ## 10. 단위 3 완료(base 런타임)
 
 `Dispatch/Spread.luau`(깊이 1·먼저가 이김·`:Append`·잠금·debug 경고), drive 선처리 `expand`(flatten 앞), 에러 Quad0273~0277, `BackendStubs.luau`(H-929 스텁 표 — 일곱 중 Modifier는 단위 6), `q.NewModule`·`q.Raw`(+ 01-quad-module 헤딩, CHANGELOG Added), `ModifierField`/`ModifierFieldOut` 옆 이름. 남은 것: Surface 변환 함수 `old` 타입(단위 6). test.sh·devui·material exit 0.
+
+## 11. 단위 4 완료(quad-roblox 런타임)
+
+`Surface/Runtime.luau`·`Handlers/OnEvent.luau`, Quad0278~0280, gen-d `Superclass` 런타임 표. 공존: OnChange·Out은 인자 개수로, Modifier는 base `__call`의 임시 한 문자열 갈래(래퍼는 옛 꼴 에러 blame을 깨서 버림 — spec.claim). 태그된 함수끼리 부르면 blame이 quad 줄로 간다는 것을 다시 밟아 공개 단계 → 태그 없는 본체 구조로. test.sh·킷 둘 exit 0.

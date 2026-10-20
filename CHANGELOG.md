@@ -14,6 +14,7 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 - `q.NewModule()` — `q.New()`의 새 이름(같은 함수). 3.4.0에서 `q.New()`는 빠집니다.
 - `q.Raw` — 백엔드가 타입드 표면을 짓는 base 원재료: `q.Raw.Modifier`(지금의 `q.Modifier` 묶음), `q.Raw.Spread`, `q.Raw.Mapper`(지금의 `q.newMapperClass`).
 - Spread — 요소 테이블처럼 쓴 테이블을 요소의 숫자 키 자리에 펼쳐 넣는 일회용 묶음(`q.Raw.Spread {…}`). 같은 키는 먼저 자리 잡은 쪽이 이기고(인라인 키가 맨 앞), Modifier보다 앞섭니다. 안에 놓인 Spread는 만들 때 펴지고, `spread:Append(other)`는 다른 Spread만 받아 끝에 더하며 아무것도 돌려주지 않습니다. 요소에 놓이거나 다른 Spread에 펴진 Spread는 잠겨 더 이상 `:Append`할 수 없습니다. `q.debug`이면 앞선 Spread에 밀려난 함수 값을 알립니다.
+- quad-roblox: 클래스를 먼저 받는 생성자 — `q.Elem "Frame" {…}`, `q.Modifier "Frame" ()`, `q.Spread "Frame" {…}`, `q.Mapper "Frame" (key) {…}`, `q.OnChange "Frame" "Text" (fn)`, `q.Out "Frame" "Text" (src)`, 새 `q.OnEvent "Frame" "MouseEnter" (fn)`(같은 이벤트를 여러 번 걸 수 있는 배열부 디스크립터), 그리고 자기 클래스 맵으로 같은 표면을 받는 `q.ForClasses<<Map>>()`. 기존 `q.Declaration`·`q.OnChange(name, fn)`·`q.Out(name, src)`는 아직 그대로 동작합니다.
 
 ### Fixed
 

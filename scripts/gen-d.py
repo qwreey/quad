@@ -267,9 +267,13 @@ def policy_of(classes):
             elif m["MemberType"] == "Event":
                 if mtags & EVENT_TAG_EXCLUDE or m.get("Security") != "None":
                     deny.setdefault(owner, set()).add(nm)
+    # [2026-10-20 3.4.0 단위 4] the superclass of every owner — the runtime registers `As<Class>` edges from it
+    # (`q.Modifier "Part"` under a `q.ForClasses` map needs Part's chain without a scope class type)
+    superclass = {o: classes[o]["Superclass"] for o in sorted(owners) if classes[o].get("Superclass") in owners}
     return {
         "denyIn": {o: sorted(v) for o, v in sorted(deny.items())},
         "denyWriteIn": {o: sorted(v) for o, v in sorted(deny_write.items())},
+        "superclass": superclass,
     }
 
 
@@ -950,7 +954,12 @@ def emit_data(data, names, mod_classes, shorthand):
     for o in sorted(inject):
         L.append(f"\t{luau_key(o)}: {{ " + ", ".join(f"{luau_key(n)}: {t}" for n, t in sorted(inject[o].items())) + " },")
     L += ["}", "-- shorthand keys (Handlers/InstanceShorthand.luau TABLE — gated in emit)", "export type Shorthand = {",
-          "\tGuiObject: { " + ", ".join(f"{k}: {t}" for k, t in shorthand) + " },", "}", "", "return {}", ""]
+          "\tGuiObject: { " + ", ".join(f"{k}: {t}" for k, t in shorthand) + " },", "}", "",
+          "-- RUNTIME: the superclass of every creatable class's chain — `q.Modifier \"<Class>\"` registers the `As<Class>`",
+          "-- edges of the class it is asked for from this (the chain ends at Instance)",
+          "return {", "\tSuperclass = {"]
+    L += [f"\t\t{luau_key(c)} = \"{s}\"," for c, s in pol["superclass"].items()]
+    L += ["\t},", "}", ""]
     return "\n".join(L)
 
 

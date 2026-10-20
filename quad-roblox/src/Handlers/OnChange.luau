@@ -61,7 +61,9 @@ local function isOnChange(x: any): boolean
 	return descriptors[x] == true
 end
 
-local function OnChange(name: string, fn: (any) -> ()): OnChangeDescriptor
+-- untagged bodies: the tagged public `OnChange`/`Out` below and the 3.4.0 curried stages (`Surface/Runtime.luau` —
+-- a tagged stage calling a tagged factory would blame the stage's line, not the user's) both call these
+local function makeOnChange(name: string, fn: (any) -> ()): OnChangeDescriptor
 	if type(name) ~= "string" or name == "" then
 		-- round3 `H-440` (외부 리뷰 G-10, `H-417` 짝): "" reached `GetPropertyChangedSignal` at dispatch depth
 		errNS.errorBeforeNearest("Quad0221 OnChange: property name must be a non-empty string", SURFACE)
@@ -86,7 +88,7 @@ end
 -- of `src` would re-run once per bind. Hence `Source:SetIfChanged` (no write, no emit when `==`).
 local isSource: ((any) -> boolean)? = nil
 local isState: ((any) -> boolean)? = nil
-local function Out(name: string, src: any): OnChangeDescriptor
+local function makeOut(name: string, src: any): OnChangeDescriptor
 	if type(name) ~= "string" or name == "" then
 		errNS.errorBeforeNearest("Quad0223 Out: property name must be a non-empty string", SURFACE)
 	end
@@ -94,9 +96,16 @@ local function Out(name: string, src: any): OnChangeDescriptor
 		local got = if isState ~= nil and isState(src) then "a read-only State (a :Compute result?)" else typeof(src)
 		errNS.errorBeforeNearest(`Quad0224 Out: second argument for "{name}" must be a Source to write back into (got {got})`, SURFACE)
 	end
-	return OnChange(name, function(v: any)
+	return makeOnChange(name, function(v: any)
 		src:SetIfChanged(v) -- the echo skip above (2026-10-01: the opt-in comparing write, same `==`)
 	end)
+end
+
+local function OnChange(name: string, fn: (any) -> ()): OnChangeDescriptor
+	return makeOnChange(name, fn)
+end
+local function Out(name: string, src: any): OnChangeDescriptor
+	return makeOut(name, src)
 end
 
 -- [2026-10-06 user decision, round14 Q174 보강 2 (1)] the ONE function the engine's changed signal reaches quad
@@ -152,6 +161,8 @@ end
 return {
 	OnChange = OnChange,
 	Out = Out,
+	makeOnChange = makeOnChange, -- untagged (Surface/Runtime.luau)
+	makeOut = makeOut,
 	isOnChange = isOnChange,
 	install = install,
 }

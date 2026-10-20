@@ -114,3 +114,24 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 - **언제**: `q:UseProvider(QuadRoblox)`에 넘긴 `quad-base` 모듈의 `Version`이 이 quad-roblox 사본이 요구하는 버전 패턴과 맞지 않을 때(`{VERSION_PATTERN}`은 이 패키지에 박힌 상수, `{tostring(q.Version)}`은 넘어온 모듈의 실제 버전).
 - **고치려면**: quad-base와 quad-roblox의 버전을 맞추세요 — 저장소 현재 패턴 `"3.3^.0^"` 기준으로 같은 메이저에서 3.3.0 이상의 **릴리즈** 빌드(하한은 bump마다 패치까지 올라갑니다). quad-base가 프리릴리즈(`3.4.0-rc.1`)면 꼬리 유무가 달라 이 조건을 만족해도 막히니, 그 rc를 정확히 적은 quad-roblox 빌드를 쓰세요([설치](../roblox/01-install.md#quadroblox)의 문법).
 - **참고**: [`QuadRoblox`](../roblox/01-install.md#quadroblox)
+
+### Quad0278
+
+`{fn}: the first argument must be a class name string (got {typeof(name)})` — `quad-roblox/src/Surface/Runtime.luau`
+
+- **언제**: 클래스를 먼저 받는 생성자(`q.Elem`·`q.Modifier`·`q.Spread`·`q.Mapper`·`q.OnChange`·`q.OnEvent`·`q.Out`, `q.ForClasses`가 돌려주는 같은 이름들)의 첫 인자가 문자열이 아니거나 빈 문자열일 때. `{fn}`은 그 생성자 이름입니다. 런타임은 문자열인지만 봅니다 — 없는 클래스 이름은 타입 검사가 먼저 잡고, 런타임에선 엔진이 그 클래스를 만나는 자리(`Instance.new`, 시그널 조회)에서 엔진 에러가 납니다.
+- **고치려면**: 클래스 이름 문자열을 먼저 넘기세요(`q.Elem "Frame" { … }`).
+
+### Quad0279
+
+`OnEvent: event name must be a non-empty string` — `quad-roblox/src/Handlers/OnEvent.luau`
+
+- **언제**: `q.OnEvent "Frame" (name)`의 이벤트 이름이 문자열이 아니거나 빈 문자열일 때.
+- **고치려면**: 비어 있지 않은 이벤트 이름 문자열을 넘기세요(`q.OnEvent "Frame" "MouseEnter" (fn)`).
+
+### Quad0280
+
+`OnEvent: callback for "{name}" must be a function (got {typeof(fn)})` — `quad-roblox/src/Handlers/OnEvent.luau`
+
+- **언제**: `q.OnEvent "Frame" "MouseEnter" (fn)`의 `fn`이 함수가 아닐 때.
+- **고치려면**: 그 이벤트의 인자를 받는 함수를 넘기세요.
