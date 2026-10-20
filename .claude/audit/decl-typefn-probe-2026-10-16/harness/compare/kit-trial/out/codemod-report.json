@@ -1,0 +1,6234 @@
+[
+ {
+  "file": "quad-roblox-material/src/Icons.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/init.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Divider.luau",
+  "elems": [
+   "Frame",
+   "UIPadding"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    28,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 9
+ },
+ {
+  "file": "quad-roblox-material/src/Tooltip.luau",
+  "elems": [
+   "TextLabel",
+   "UIPadding",
+   "UISizeConstraint"
+  ],
+  "mods": [
+   "TextLabel"
+  ],
+  "types": [
+   [
+    52,
+    "q.TextLabelModifier",
+    "q.ModifierInto<TextLabel>",
+    "input",
+    "Modifier"
+   ],
+   [
+    143,
+    "q.TextLabelModifier",
+    "q.Modifier<TextLabel>",
+    "full",
+    null
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 9
+ },
+ {
+  "file": "quad-roblox-material/src/GlyphButton.luau",
+  "elems": [
+   "Frame",
+   "ImageButton",
+   "ImageLabel",
+   "TextButton",
+   "TextLabel"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/src/ControlLabel.luau",
+  "elems": [
+   "TextLabel"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/src/Theme.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/IconView.luau",
+  "elems": [
+   "ImageLabel",
+   "TextLabel"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/src/Elevation.luau",
+  "elems": [
+   "ImageLabel",
+   "UIShadow"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/src/Select.luau",
+  "elems": [],
+  "mods": [],
+  "types": [
+   [
+    55,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 1
+ },
+ {
+  "file": "quad-roblox-material/src/Dialog.luau",
+  "elems": [
+   "CanvasGroup",
+   "Frame",
+   "ImageLabel",
+   "ScrollingFrame",
+   "TextLabel",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 14
+ },
+ {
+  "file": "quad-roblox-material/src/Util.luau",
+  "elems": [
+   "TextButton"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    142,
+    "q.FrameModifier",
+    "q.Modifier<Frame>",
+    "full",
+    null
+   ],
+   [
+    143,
+    "q.FrameModifier",
+    "q.Modifier<Frame>",
+    "full",
+    null
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 5
+ },
+ {
+  "file": "quad-roblox-material/src/Card.luau",
+  "elems": [
+   "Frame",
+   "TextButton",
+   "UIListLayout",
+   "UIStroke"
+  ],
+  "mods": [
+   "Frame",
+   "TextButton"
+  ],
+  "types": [
+   [
+    81,
+    "q.IntoGuiObject",
+    "q.ModifierInto<GuiObject>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [
+   [
+    214,
+    "props.Modifier:AsGuiObject():AsTextButton()"
+   ],
+   [
+    237,
+    "props.Modifier:AsGuiObject():AsFrame()"
+   ]
+  ],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 13
+ },
+ {
+  "file": "quad-roblox-material/src/Text.luau",
+  "elems": [],
+  "mods": [
+   "TextBox",
+   "TextButton",
+   "TextLabel"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 4
+ },
+ {
+  "file": "quad-roblox-material/src/Interactive.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-material/src/Toolbar.luau",
+  "elems": [
+   "Frame",
+   "UIListLayout"
+  ],
+  "mods": [
+   "Frame",
+   "TextButton"
+  ],
+  "types": [
+   [
+    84,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    99,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    114,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 15
+ },
+ {
+  "file": "quad-roblox-material/src/Ripple.luau",
+  "elems": [
+   "CanvasGroup",
+   "ImageLabel"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/src/Menu.luau",
+  "elems": [
+   "Frame",
+   "ImageLabel",
+   "ScrollingFrame",
+   "TextButton",
+   "TextLabel",
+   "UIFlexItem",
+   "UIListLayout",
+   "UIPadding",
+   "UIScale"
+  ],
+  "mods": [],
+  "types": [
+   [
+    568,
+    "q.TextButtonModifier",
+    "q.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 19
+ },
+ {
+  "file": "quad-roblox-material/src/Radio.luau",
+  "elems": [
+   "Frame",
+   "ImageLabel",
+   "TextButton",
+   "UIListLayout"
+  ],
+  "mods": [
+   "Frame",
+   "TextButton"
+  ],
+  "types": [
+   [
+    68,
+    "q.TextButtonModifier",
+    "q.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ],
+   [
+    82,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 13
+ },
+ {
+  "file": "quad-roblox-material/src/Unit.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Checkbox.luau",
+  "elems": [
+   "Frame",
+   "TextButton",
+   "UIStroke"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [
+   [
+    69,
+    "q.TextButtonModifier",
+    "q.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 12
+ },
+ {
+  "file": "quad-roblox-material/src/StateLayer.luau",
+  "elems": [
+   "Frame",
+   "UIStroke"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/src/Badge.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIPadding",
+   "UISizeConstraint"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    34,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 10
+ },
+ {
+  "file": "quad-roblox-material/src/ListReorder.luau",
+  "elems": [
+   "Frame",
+   "UICorner",
+   "UIFlexItem",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 8
+ },
+ {
+  "file": "quad-roblox-material/src/Input.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/NavigationBar.luau",
+  "elems": [
+   "Frame",
+   "TextButton",
+   "TextLabel",
+   "UIListLayout",
+   "UISizeConstraint"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    82,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [
+   [
+    129,
+    "OnChange",
+    "TextLabel",
+    "AbsoluteSize",
+    "via variable `measure` (L218)"
+   ]
+  ],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 13
+ },
+ {
+  "file": "quad-roblox-material/src/NumberField.luau",
+  "elems": [],
+  "mods": [],
+  "types": [
+   [
+    69,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 1
+ },
+ {
+  "file": "quad-roblox-material/src/List.luau",
+  "elems": [
+   "Frame",
+   "ImageLabel",
+   "TextButton",
+   "TextLabel",
+   "UIFlexItem",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [
+   "Frame",
+   "TextButton"
+  ],
+  "types": [
+   [
+    97,
+    "q.IntoGuiObject",
+    "q.ModifierInto<GuiObject>",
+    "input",
+    "Modifier"
+   ],
+   [
+    106,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    319,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "modifier"
+   ],
+   [
+    353,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [
+   [
+    267,
+    "props.Modifier:AsGuiObject():AsTextButton()"
+   ],
+   [
+    299,
+    "props.Modifier:AsGuiObject():AsFrame()"
+   ]
+  ],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 29
+ },
+ {
+  "file": "quad-roblox-material/src/Scaffold.luau",
+  "elems": [
+   "Frame",
+   "UIFlexItem",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    99,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 11
+ },
+ {
+  "file": "quad-roblox-material/src/Overlay.luau",
+  "elems": [
+   "Frame",
+   "TextButton"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 4
+ },
+ {
+  "file": "quad-roblox-material/src/Tabs.luau",
+  "elems": [
+   "Frame",
+   "ImageLabel",
+   "TextButton",
+   "TextLabel",
+   "UIFlexItem",
+   "UIListLayout"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    71,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [
+   [
+    226,
+    "OnChange",
+    "TextLabel",
+    "AbsoluteSize",
+    "enclosing element"
+   ]
+  ],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 17
+ },
+ {
+  "file": "quad-roblox-material/src/KeyNav.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Interaction.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Quad.luau",
+  "setup": true,
+  "notes": []
+ },
+ {
+  "file": "quad-roblox-material/src/ColorPicker/init.luau",
+  "elems": [
+   "Frame",
+   "UIListLayout"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    107,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 11
+ },
+ {
+  "file": "quad-roblox-material/src/ColorPicker/ColorModel.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/ColorPicker/Material/Preview.luau",
+  "elems": [
+   "Frame",
+   "UIGradient",
+   "UIStroke"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 4
+ },
+ {
+  "file": "quad-roblox-material/src/ColorPicker/Material/HexField.luau",
+  "elems": [],
+  "mods": [],
+  "types": [
+   [
+    32,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 1
+ },
+ {
+  "file": "quad-roblox-material/src/ColorPicker/Material/SVArea.luau",
+  "elems": [
+   "Frame",
+   "UIGradient",
+   "UIStroke"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 9
+ },
+ {
+  "file": "quad-roblox-material/src/ColorPicker/Material/Fields.luau",
+  "elems": [
+   "Frame",
+   "TextBox",
+   "TextButton",
+   "TextLabel",
+   "UIFlexItem",
+   "UIListLayout",
+   "UIStroke"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [
+   [
+    156,
+    "OnChange",
+    "TextBox",
+    "Text",
+    "enclosing element"
+   ]
+  ],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 14
+ },
+ {
+  "file": "quad-roblox-material/src/ColorPicker/Material/Swatches.luau",
+  "elems": [
+   "Frame",
+   "ImageButton",
+   "TextButton",
+   "TextLabel",
+   "UIListLayout",
+   "UIStroke"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 9
+ },
+ {
+  "file": "quad-roblox-material/src/ColorPicker/Material/Model.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/ColorPicker/Material/HueSlider.luau",
+  "elems": [
+   "Frame",
+   "UIGradient",
+   "UIStroke"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/src/NavigationDrawer/init.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/NavigationDrawer/Drawer.luau",
+  "elems": [
+   "Frame",
+   "UIFlexItem",
+   "UIListLayout"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    56,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    66,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 13
+ },
+ {
+  "file": "quad-roblox-material/src/NavigationDrawer/State.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/NavigationDrawer/Item.luau",
+  "elems": [
+   "Frame",
+   "TextButton",
+   "TextLabel",
+   "UIFlexItem",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [
+   "Frame",
+   "TextButton",
+   "TextLabel"
+  ],
+  "types": [
+   [
+    68,
+    "q.TextButtonModifier",
+    "q.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ],
+   [
+    76,
+    "q.TextLabelModifier",
+    "q.ModifierInto<TextLabel>",
+    "input",
+    "Modifier"
+   ],
+   [
+    83,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    96,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 27
+ },
+ {
+  "file": "quad-roblox-material/src/NavigationDrawer/Sheet.luau",
+  "elems": [
+   "Frame",
+   "ScrollingFrame",
+   "UICorner",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    39,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 8
+ },
+ {
+  "file": "quad-roblox-material/src/Navigation/Destination.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Navigation/Motion.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Navigation/Item.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/src/Switch/init.luau",
+  "elems": [
+   "Frame",
+   "ImageLabel",
+   "TextButton",
+   "UIStroke"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 8
+ },
+ {
+  "file": "quad-roblox-material/src/Switch/Behavior.luau",
+  "elems": [],
+  "mods": [],
+  "types": [
+   [
+    54,
+    "q.TextButtonModifier",
+    "q.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 1
+ },
+ {
+  "file": "quad-roblox-material/src/TextField/Support.luau",
+  "elems": [
+   "TextLabel",
+   "UIPadding"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 4
+ },
+ {
+  "file": "quad-roblox-material/src/TextField/init.luau",
+  "elems": [],
+  "mods": [],
+  "types": [
+   [
+    85,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 1
+ },
+ {
+  "file": "quad-roblox-material/src/TextField/Field.luau",
+  "elems": [
+   "Frame",
+   "TextBox",
+   "TextLabel",
+   "UIFlexItem",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [
+   "Frame",
+   "TextBox",
+   "TextLabel"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [
+   [
+    286,
+    "OnChange",
+    "TextBox",
+    "Text",
+    "enclosing element"
+   ],
+   [
+    287,
+    "Out",
+    "TextBox",
+    "Text",
+    "enclosing element"
+   ]
+  ],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 15
+ },
+ {
+  "file": "quad-roblox-material/src/TextField/Palette.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/TextField/Slots.luau",
+  "elems": [
+   "ImageLabel",
+   "TextLabel"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 6
+ },
+ {
+  "file": "quad-roblox-material/src/TextField/Ctx.luau",
+  "elems": [],
+  "mods": [],
+  "types": [
+   [
+    45,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 1
+ },
+ {
+  "file": "quad-roblox-material/src/TextField/Container.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UISizeConstraint",
+   "UIStroke"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 11
+ },
+ {
+  "file": "quad-roblox-material/src/BottomSheet/init.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/BottomSheet/Modal.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-material/src/BottomSheet/Sheet.luau",
+  "elems": [
+   "Frame",
+   "UIListLayout",
+   "UISizeConstraint"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [
+   [
+    222,
+    "OnChange",
+    "Frame",
+    "AbsoluteSize",
+    "enclosing element"
+   ]
+  ],
+  "unresolved": [
+   [
+    235,
+    "q.OnChange(\"AbsoluteSize\", …): placing element not found"
+   ]
+  ],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/src/BottomSheet/Scaffold.luau",
+  "elems": [
+   "Frame",
+   "UIPadding"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    56,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/src/Progress/init.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    53,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 10
+ },
+ {
+  "file": "quad-roblox-material/src/Progress/Loop.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Progress/LoadingIndicator.luau",
+  "elems": [
+   "Frame",
+   "UICorner"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    40,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/src/Progress/Wavy.luau",
+  "elems": [
+   "Frame",
+   "ImageLabel"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    125,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 12
+ },
+ {
+  "file": "quad-roblox-material/src/Progress/Circular.luau",
+  "elems": [
+   "Frame",
+   "ImageLabel"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    135,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/src/SideSheet/Standard.luau",
+  "elems": [],
+  "mods": [],
+  "types": [
+   [
+    50,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 1
+ },
+ {
+  "file": "quad-roblox-material/src/SideSheet/Surface.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UICorner",
+   "UIListLayout"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    96,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 11
+ },
+ {
+  "file": "quad-roblox-material/src/SideSheet/init.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/SideSheet/Modal.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-material/src/TimePicker/Parts.luau",
+  "elems": [
+   "Frame",
+   "TextButton",
+   "TextLabel"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/src/TimePicker/init.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/TimePicker/Dial.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    61,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 6
+ },
+ {
+  "file": "quad-roblox-material/src/TimePicker/Clock.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/TimePicker/Modal.luau",
+  "elems": [
+   "CanvasGroup",
+   "Frame",
+   "TextLabel",
+   "UIListLayout"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 8
+ },
+ {
+  "file": "quad-roblox-material/src/TimePicker/ClockFace.luau",
+  "elems": [
+   "CanvasGroup",
+   "Frame",
+   "TextLabel",
+   "UIStroke"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 10
+ },
+ {
+  "file": "quad-roblox-material/src/TimePicker/Model.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/TimePicker/Strings.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/TimePicker/Input.luau",
+  "elems": [
+   "Frame",
+   "TextBox",
+   "TextLabel",
+   "UIStroke"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    66,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 9
+ },
+ {
+  "file": "quad-roblox-material/src/DatePicker/Chip.luau",
+  "elems": [
+   "TextButton",
+   "UIStroke"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/src/DatePicker/Docked.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    64,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 5
+ },
+ {
+  "file": "quad-roblox-material/src/DatePicker/init.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/DatePicker/Calendar.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/DatePicker/YearView.luau",
+  "elems": [
+   "ScrollingFrame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [
+   [
+    157,
+    "OnChange",
+    "ScrollingFrame",
+    "CanvasPosition",
+    "enclosing element"
+   ]
+  ],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/src/DatePicker/Body.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/src/DatePicker/RangeDocked.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    58,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 5
+ },
+ {
+  "file": "quad-roblox-material/src/DatePicker/Modal.luau",
+  "elems": [
+   "CanvasGroup",
+   "Frame",
+   "TextLabel",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 10
+ },
+ {
+  "file": "quad-roblox-material/src/DatePicker/MonthView.luau",
+  "elems": [
+   "Frame",
+   "TextLabel"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 5
+ },
+ {
+  "file": "quad-roblox-material/src/DatePicker/View.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/DatePicker/Status.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/DatePicker/InputMode.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/src/DatePicker/Strings.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/NavigationRail/init.luau",
+  "elems": [
+   "Frame",
+   "TextButton",
+   "TextLabel"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    90,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [
+   [
+    222,
+    "OnChange",
+    "TextLabel",
+    "AbsoluteSize",
+    "via variable `measure` (L332)"
+   ]
+  ],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 11
+ },
+ {
+  "file": "quad-roblox-material/src/NavigationRail/State.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Slider/init.luau",
+  "elems": [
+   "Frame",
+   "UIStroke"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    109,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/src/Slider/Track.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 5
+ },
+ {
+  "file": "quad-roblox-material/src/Slider/Range.luau",
+  "elems": [
+   "Frame",
+   "UIStroke"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    60,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/src/Slider/Behavior.luau",
+  "elems": [],
+  "mods": [],
+  "types": [
+   [
+    77,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    96,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-material/src/Slider/Bubble.luau",
+  "elems": [
+   "TextLabel",
+   "UIPadding"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/src/Button/init.luau",
+  "elems": [
+   "Frame",
+   "TextButton",
+   "TextLabel",
+   "UIListLayout",
+   "UIPadding",
+   "UIStroke"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [
+   [
+    95,
+    "q.TextButtonModifier",
+    "q.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ],
+   [
+    161,
+    "q.TextButtonModifier",
+    "q.Modifier<TextButton>",
+    "full",
+    null
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 12
+ },
+ {
+  "file": "quad-roblox-material/src/Button/Style.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Button/Group.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIListLayout"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    133,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    252,
+    "q.FrameModifier",
+    "q.Modifier<Frame>",
+    "full",
+    null
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 10
+ },
+ {
+  "file": "quad-roblox-material/src/Button/FAB.luau",
+  "elems": [
+   "Frame",
+   "ImageLabel",
+   "TextButton",
+   "TextLabel",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [
+   [
+    49,
+    "q.TextButtonModifier",
+    "q.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 10
+ },
+ {
+  "file": "quad-roblox-material/src/Button/Split.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIListLayout"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    107,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 8
+ },
+ {
+  "file": "quad-roblox-material/src/Button/IconButton.luau",
+  "elems": [
+   "Frame",
+   "ImageLabel",
+   "TextButton",
+   "UIStroke"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [
+   [
+    54,
+    "q.TextButtonModifier",
+    "q.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 9
+ },
+ {
+  "file": "quad-roblox-material/src/Button/Segment.luau",
+  "elems": [
+   "Frame",
+   "TextButton",
+   "UIPadding",
+   "UIStroke"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 10
+ },
+ {
+  "file": "quad-roblox-material/src/M2/init.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/M2/SliderTicks.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-material/src/M2/Slider.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 9
+ },
+ {
+  "file": "quad-roblox-material/src/M2/Switch.luau",
+  "elems": [
+   "Frame",
+   "TextButton"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/src/M2/RangeSlider.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 9
+ },
+ {
+  "file": "quad-roblox-material/src/Snackbar/init.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Snackbar/View.luau",
+  "elems": [
+   "CanvasGroup",
+   "Frame",
+   "TextButton",
+   "TextLabel",
+   "UIFlexItem",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 12
+ },
+ {
+  "file": "quad-roblox-material/src/Sheet/Parts.luau",
+  "elems": [
+   "Frame",
+   "TextButton"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 5
+ },
+ {
+  "file": "quad-roblox-material/src/Sheet/State.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Sheet/Anchored.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Sheet/Slide.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Tokens/init.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Tokens/Motion.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Tokens/Typography.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Tokens/Elevation.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Tokens/Shape.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Tokens/State.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Tokens/Color.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/Chip/init.luau",
+  "elems": [
+   "Frame",
+   "ImageLabel",
+   "TextButton",
+   "TextLabel",
+   "UIListLayout",
+   "UIPadding",
+   "UIStroke"
+  ],
+  "mods": [
+   "Frame",
+   "TextButton"
+  ],
+  "types": [
+   [
+    69,
+    "q.TextButtonModifier",
+    "q.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ],
+   [
+    84,
+    "q.TextButtonModifier",
+    "q.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ],
+   [
+    97,
+    "q.TextButtonModifier",
+    "q.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ],
+   [
+    115,
+    "q.TextButtonModifier",
+    "q.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ],
+   [
+    428,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 21
+ },
+ {
+  "file": "quad-roblox-material/src/Chip/KeyedSlot.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/AppBar/Scroll.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/AppBar/init.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/src/AppBar/Actions.luau",
+  "elems": [],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/src/AppBar/Bottom.luau",
+  "elems": [
+   "Frame",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [
+   "Frame",
+   "TextButton"
+  ],
+  "types": [
+   [
+    55,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    68,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 15
+ },
+ {
+  "file": "quad-roblox-material/src/AppBar/Top.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIListLayout"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    82,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 13
+ },
+ {
+  "file": "quad-roblox-material/stories/Dialog.story.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIListLayout"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 6
+ },
+ {
+  "file": "quad-roblox-material/stories/BottomSheet.story.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-material/stories/NavigationBar.story.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "Frame",
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/stories/Menu.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/stories/Toolbar.story.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 6
+ },
+ {
+  "file": "quad-roblox-material/stories/AppBar.story.luau",
+  "elems": [
+   "Frame",
+   "ScrollingFrame",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/stories/List.story.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIListLayout"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 13
+ },
+ {
+  "file": "quad-roblox-material/stories/SideSheet.story.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-material/stories/TimePicker.story.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIListLayout"
+  ],
+  "mods": [
+   "Frame",
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 9
+ },
+ {
+  "file": "quad-roblox-material/stories/M2Switch.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/stories/Chip.story.luau",
+  "elems": [],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-material/stories/Tooltip.story.luau",
+  "elems": [
+   "Frame",
+   "UIListLayout"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 4
+ },
+ {
+  "file": "quad-roblox-material/stories/StoryParts.luau",
+  "elems": [
+   "Frame",
+   "ScrollingFrame",
+   "TextLabel",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 12
+ },
+ {
+  "file": "quad-roblox-material/stories/Switch.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/stories/Radio.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/stories/ButtonGroup.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/stories/IconButton.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/stories/Select.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/stories/Button.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/stories/Card.story.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIListLayout"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 6
+ },
+ {
+  "file": "quad-roblox-material/stories/FAB.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/stories/ColorPicker.story.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIListLayout"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 8
+ },
+ {
+  "file": "quad-roblox-material/stories/M2Slider.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/stories/Scaffold.story.luau",
+  "elems": [
+   "Frame",
+   "ScrollingFrame",
+   "TextLabel",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/stories/StoryKit.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-material/stories/Tabs.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/stories/SplitButton.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/stories/NavigationDrawer.story.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-material/stories/Material.storybook.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/stories/M2RangeSlider.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/stories/Divider.story.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIListLayout"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 8
+ },
+ {
+  "file": "quad-roblox-material/stories/DatePicker.story.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIListLayout"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 8
+ },
+ {
+  "file": "quad-roblox-material/stories/Theme.story.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIListLayout",
+   "UIStroke"
+  ],
+  "mods": [
+   "Frame",
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 15
+ },
+ {
+  "file": "quad-roblox-material/stories/TextField.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/stories/RangeSlider.story.luau",
+  "elems": [],
+  "mods": [
+   "Frame"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/stories/Snackbar.story.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIListLayout"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/stories/Slider.story.luau",
+  "elems": [],
+  "mods": [
+   "Frame"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/stories/Progress.story.luau",
+  "elems": [
+   "Frame",
+   "UIListLayout"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 5
+ },
+ {
+  "file": "quad-roblox-material/stories/Gallery.story.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-material/stories/Checkbox.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/stories/Quad.luau",
+  "setup": true,
+  "notes": []
+ },
+ {
+  "file": "quad-roblox-material/gallery/init.luau",
+  "elems": [
+   "Frame",
+   "ScreenGui",
+   "ScrollingFrame"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    62,
+    "q.FrameModifier",
+    "q.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/gallery/Pickers.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-material/gallery/TextInput.luau",
+  "elems": [
+   "Frame",
+   "UIGradient"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/gallery/Buttons.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/gallery/Theme.luau",
+  "elems": [
+   "Frame",
+   "TextLabel"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/gallery/Navigation.luau",
+  "elems": [
+   "Frame",
+   "ScrollingFrame",
+   "TextLabel",
+   "UIFlexItem",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [
+   "Frame",
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 22
+ },
+ {
+  "file": "quad-roblox-material/gallery/MaterialGallery.client.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/gallery/Selection.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    274,
+    "q.FrameModifier",
+    "q.Modifier<Frame>",
+    "full",
+    null
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 4
+ },
+ {
+  "file": "quad-roblox-material/gallery/Overlays.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 4
+ },
+ {
+  "file": "quad-roblox-material/gallery/ChipsTabsProgress.luau",
+  "elems": [],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-material/gallery/Common.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIListLayout",
+   "UIStroke"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 17
+ },
+ {
+  "file": "quad-roblox-material/gallery/Surfaces.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIListLayout"
+  ],
+  "mods": [
+   "GuiObject"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 8
+ },
+ {
+  "file": "quad-roblox-material/gallery/Quad.luau",
+  "setup": true,
+  "notes": []
+ },
+ {
+  "file": "quad-roblox-material/test/spec.dialog.luau",
+  "elems": [
+   "Frame",
+   "TextBox",
+   "TextButton",
+   "TextLabel"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 12
+ },
+ {
+  "file": "quad-roblox-material/test/spec.appbar.luau",
+  "elems": [
+   "Frame",
+   "ScrollingFrame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/test/spec.menu.luau",
+  "elems": [
+   "Frame",
+   "TextButton"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 5
+ },
+ {
+  "file": "quad-roblox-material/test/spec.ripple.luau",
+  "elems": [
+   "Frame",
+   "TextButton"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/test/spec.pure.tokens.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/test/spec.switch.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/test/spec.sidesheet.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 6
+ },
+ {
+  "file": "quad-roblox-material/test/spec.chip.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/test/spec.card.luau",
+  "elems": [
+   "Frame",
+   "TextLabel"
+  ],
+  "mods": [
+   "Frame",
+   "GuiObject"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 8
+ },
+ {
+  "file": "quad-roblox-material/test/spec.list.luau",
+  "elems": [
+   "Frame",
+   "ScrollingFrame",
+   "UIScale"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 9
+ },
+ {
+  "file": "quad-roblox-material/test/spec.button.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 4
+ },
+ {
+  "file": "quad-roblox-material/test/spec.tabs.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/test/spec.overlay.luau",
+  "elems": [
+   "Frame",
+   "ScreenGui",
+   "TextBox",
+   "TextButton",
+   "TextLabel"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 29
+ },
+ {
+  "file": "quad-roblox-material/test/spec.pure.unit.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/test/spec.theme.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-material/test/spec.input.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/test/spec.hostname.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "dynamic": [
+   [
+    56,
+    "(D.Modifier :: any)[modClass]"
+   ]
+  ],
+  "n_edits": 5
+ },
+ {
+  "file": "quad-roblox-material/test/spec.icons.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 4
+ },
+ {
+  "file": "quad-roblox-material/test/spec.colorpicker.luau",
+  "elems": [
+   "Frame",
+   "ScrollingFrame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/test/spec.numberfield.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/test/spec.tokens.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/test/spec.navigationbar.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/test/spec.api.luau",
+  "elems": [
+   "Frame",
+   "TextButton"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 15
+ },
+ {
+  "file": "quad-roblox-material/test/spec.pure.colormodel.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/test/spec.snackbar.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 5
+ },
+ {
+  "file": "quad-roblox-material/test/spec.checkbox.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/test/spec.elevation.luau",
+  "elems": [
+   "Frame",
+   "TextBox",
+   "TextButton",
+   "TextLabel"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 8
+ },
+ {
+  "file": "quad-roblox-material/test/spec.slider.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/test/spec.rangeslider.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/test/spec.interaction.luau",
+  "elems": [
+   "Frame",
+   "TextButton"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/test/spec.gallery.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-material/test/spec.keynav.luau",
+  "elems": [
+   "Frame",
+   "TextBox"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 10
+ },
+ {
+  "file": "quad-roblox-material/test/spec.toolbar.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/test/spec.stories.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/test/spec.navigationdrawer.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 6
+ },
+ {
+  "file": "quad-roblox-material/test/spec.datepicker.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/test/spec.glyphbutton.luau",
+  "elems": [
+   "Frame",
+   "UIScale"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/test/spec.radio.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/test/spec.pure.calendar.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/test/spec.progress.luau",
+  "elems": [
+   "Frame",
+   "ScreenGui"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 5
+ },
+ {
+  "file": "quad-roblox-material/test/spec.tooltip.luau",
+  "elems": [
+   "Frame",
+   "TextButton"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 12
+ },
+ {
+  "file": "quad-roblox-material/test/spec.timepicker.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/test/spec.bottomsheet.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-material/test/spec.reviewfix.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 14
+ },
+ {
+  "file": "quad-roblox-material/test/spec.buttongroup.luau",
+  "elems": [],
+  "mods": [
+   "Frame"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-material/test/spec.textfield.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/test/spec.select.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-material/test/spec.pure.clock.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-material/test/spec.scaffold.luau",
+  "elems": [
+   "Frame",
+   "ScrollingFrame",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 14
+ },
+ {
+  "file": "quad-roblox-devui/src/Plot.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIListLayout"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    49,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [
+   [
+    258,
+    "Out",
+    "Frame",
+    "AbsoluteSize",
+    "enclosing element"
+   ]
+  ],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 11
+ },
+ {
+  "file": "quad-roblox-devui/src/init.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/src/Tooltip.luau",
+  "elems": [
+   "TextLabel",
+   "UIPadding",
+   "UISizeConstraint"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 4
+ },
+ {
+  "file": "quad-roblox-devui/src/Progress.luau",
+  "elems": [
+   "Frame",
+   "TextLabel"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    26,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 6
+ },
+ {
+  "file": "quad-roblox-devui/src/Combo.luau",
+  "elems": [
+   "Frame",
+   "ImageLabel",
+   "ScrollingFrame",
+   "TextButton",
+   "UIListLayout",
+   "UIPadding",
+   "UISizeConstraint"
+  ],
+  "mods": [
+   "Frame",
+   "TextLabel"
+  ],
+  "types": [
+   [
+    62,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    75,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    88,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    105,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 15
+ },
+ {
+  "file": "quad-roblox-devui/src/RadioButton.luau",
+  "elems": [],
+  "mods": [],
+  "types": [
+   [
+    43,
+    "Quad.TextButtonModifier",
+    "Quad.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 1
+ },
+ {
+  "file": "quad-roblox-devui/src/Style.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/src/Selectable.luau",
+  "elems": [
+   "TextButton",
+   "UIPadding"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [
+   [
+    41,
+    "Quad.TextButtonModifier",
+    "Quad.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ],
+   [
+    52,
+    "Quad.TextButtonModifier",
+    "Quad.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ],
+   [
+    61,
+    "Quad.TextButtonModifier",
+    "Quad.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-devui/src/Tree.luau",
+  "elems": [
+   "Frame",
+   "ImageLabel",
+   "TextButton",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    31,
+    "Quad.FrameModifier",
+    "Quad.Modifier<Frame>",
+    "full",
+    null
+   ],
+   [
+    32,
+    "Quad.FrameModifier",
+    "Quad.Modifier<Frame>",
+    "full",
+    null
+   ],
+   [
+    58,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    67,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    80,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 15
+ },
+ {
+  "file": "quad-roblox-devui/src/Layout.luau",
+  "elems": [
+   "Frame",
+   "UIFlexItem",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [
+   "Frame",
+   "TextLabel"
+  ],
+  "types": [
+   [
+    36,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    43,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    50,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    55,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    61,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 26
+ },
+ {
+  "file": "quad-roblox-devui/src/Util.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/src/Text.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [
+   "Frame",
+   "TextLabel"
+  ],
+  "types": [
+   [
+    36,
+    "Quad.TextLabelModifier",
+    "Quad.ModifierInto<TextLabel>",
+    "input",
+    "Modifier"
+   ],
+   [
+    45,
+    "Quad.TextLabelModifier",
+    "Quad.ModifierInto<TextLabel>",
+    "input",
+    "Modifier"
+   ],
+   [
+    53,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    63,
+    "Quad.TextLabelModifier",
+    "Quad.ModifierInto<TextLabel>",
+    "input",
+    "modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 13
+ },
+ {
+  "file": "quad-roblox-devui/src/Visibility.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/src/PopupParts.luau",
+  "elems": [
+   "ImageLabel",
+   "TextButton",
+   "TextLabel",
+   "UIFlexItem",
+   "UIListLayout",
+   "UIPadding",
+   "UIStroke"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 11
+ },
+ {
+  "file": "quad-roblox-devui/src/Menu.luau",
+  "elems": [
+   "Frame",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    71,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 8
+ },
+ {
+  "file": "quad-roblox-devui/src/Checkbox.luau",
+  "elems": [],
+  "mods": [],
+  "types": [
+   [
+    35,
+    "Quad.TextButtonModifier",
+    "Quad.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 1
+ },
+ {
+  "file": "quad-roblox-devui/src/Table.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIFlexItem",
+   "UIListLayout",
+   "UIPadding",
+   "UIStroke"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    66,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 19
+ },
+ {
+  "file": "quad-roblox-devui/src/Tab.luau",
+  "elems": [
+   "Frame",
+   "TextButton",
+   "UIListLayout",
+   "UIPadding"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    62,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 14
+ },
+ {
+  "file": "quad-roblox-devui/src/Types.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/src/Common.luau",
+  "elems": [
+   "TextLabel",
+   "UIListLayout",
+   "UIStroke"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 4
+ },
+ {
+  "file": "quad-roblox-devui/src/Button.luau",
+  "elems": [
+   "TextButton",
+   "UIPadding"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [
+   [
+    38,
+    "Quad.TextButtonModifier",
+    "Quad.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 6
+ },
+ {
+  "file": "quad-roblox-devui/src/Input.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/src/Overlay.luau",
+  "elems": [
+   "Frame",
+   "TextButton"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 5
+ },
+ {
+  "file": "quad-roblox-devui/src/PopupHits.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/src/Interaction.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/src/Quad.luau",
+  "setup": true,
+  "notes": []
+ },
+ {
+  "file": "quad-roblox-devui/src/Window/init.luau",
+  "elems": [
+   "Frame",
+   "ImageButton",
+   "ScrollingFrame",
+   "TextButton",
+   "UIListLayout",
+   "UIPadding",
+   "UIStroke"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    81,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 10
+ },
+ {
+  "file": "quad-roblox-devui/src/Window/TitleBar.luau",
+  "elems": [
+   "Frame",
+   "ImageButton",
+   "ImageLabel",
+   "TextLabel",
+   "UIPadding"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-devui/src/Window/Manager.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/src/Inputs/NumberFormat.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/src/Inputs/init.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/src/Inputs/SliderNum.luau",
+  "elems": [
+   "Frame",
+   "TextLabel",
+   "UIFlexItem"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    45,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    46,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "TrackModifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 10
+ },
+ {
+  "file": "quad-roblox-devui/src/Inputs/InputVector.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    50,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    60,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-devui/src/Inputs/InputNum.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "Frame",
+   "TextButton"
+  ],
+  "types": [
+   [
+    44,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    45,
+    "Quad.TextBoxModifier",
+    "Quad.ModifierInto<TextBox>",
+    "input",
+    "FieldModifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-devui/src/Inputs/InputText.luau",
+  "elems": [
+   "Frame",
+   "TextBox",
+   "UIFlexItem",
+   "UIPadding"
+  ],
+  "mods": [
+   "Frame",
+   "TextBox"
+  ],
+  "types": [
+   [
+    47,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    48,
+    "Quad.TextBoxModifier",
+    "Quad.ModifierInto<TextBox>",
+    "input",
+    "FieldModifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [
+   [
+    68,
+    "OnChange",
+    "TextBox",
+    "Text",
+    "via variable `writeBack` (L92)"
+   ],
+   [
+    75,
+    "Out",
+    "TextBox",
+    "Text",
+    "via variable `writeBack` (L92)"
+   ]
+  ],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 11
+ },
+ {
+  "file": "quad-roblox-devui/src/Inputs/InputColor3.luau",
+  "elems": [
+   "Frame",
+   "TextBox",
+   "UIPadding"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    39,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-devui/src/Inputs/DragNum.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [
+   "Frame"
+  ],
+  "types": [
+   [
+    45,
+    "Quad.FrameModifier",
+    "Quad.ModifierInto<Frame>",
+    "input",
+    "Modifier"
+   ],
+   [
+    46,
+    "Quad.TextBoxModifier",
+    "Quad.ModifierInto<TextBox>",
+    "input",
+    "FieldModifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 5
+ },
+ {
+  "file": "quad-roblox-devui/src/Inputs/Choice.luau",
+  "elems": [
+   "Frame",
+   "ImageLabel",
+   "TextButton",
+   "UICorner",
+   "UIPadding"
+  ],
+  "mods": [
+   "TextButton"
+  ],
+  "types": [
+   [
+    17,
+    "Quad.TextButtonModifier",
+    "Quad.Modifier<TextButton>",
+    "full",
+    null
+   ],
+   [
+    18,
+    "Quad.TextButtonModifier",
+    "Quad.Modifier<TextButton>",
+    "full",
+    null
+   ],
+   [
+    41,
+    "Quad.TextButtonModifier",
+    "Quad.ModifierInto<TextButton>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 11
+ },
+ {
+  "file": "quad-roblox-devui/src/Inputs/NumberField.luau",
+  "elems": [
+   "TextBox",
+   "UIFlexItem",
+   "UIPadding"
+  ],
+  "mods": [
+   "TextBox"
+  ],
+  "types": [
+   [
+    30,
+    "Quad.TextBoxModifier",
+    "Quad.Modifier<TextBox>",
+    "full",
+    null
+   ],
+   [
+    31,
+    "Quad.TextBoxModifier",
+    "Quad.Modifier<TextBox>",
+    "full",
+    null
+   ],
+   [
+    59,
+    "Quad.TextBoxModifier",
+    "Quad.ModifierInto<TextBox>",
+    "input",
+    "Modifier"
+   ]
+  ],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 8
+ },
+ {
+  "file": "quad-roblox-devui/stories/Choices.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/stories/Menu.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/stories/Tooltip.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/stories/Inputs.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/stories/Tree.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/stories/Window.story.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-devui/stories/Shared.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/stories/Button.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/stories/Devui.storybook.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/stories/StoryKit.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-devui/stories/Text.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/stories/Plots.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/stories/Combo.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/stories/Layout.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/stories/Table.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/stories/Demo.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/stories/Style.story.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-devui/stories/Progress.story.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/gallery/init.luau",
+  "elems": [
+   "ScreenGui"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-devui/gallery/Tables.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/gallery/Trees.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/gallery/Clock.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-devui/gallery/StyleEditor.luau",
+  "elems": [
+   "Frame",
+   "UIListLayout"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 5
+ },
+ {
+  "file": "quad-roblox-devui/gallery/RuntimeInfo.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/gallery/Context.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/gallery/Basic.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/gallery/Plots.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/gallery/Popups.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/gallery/DevuiDemo.client.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/gallery/Inputs.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-devui/gallery/Quad.luau",
+  "setup": true,
+  "notes": []
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.inputvector.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.inputnum.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.menu.luau",
+  "elems": [
+   "Frame",
+   "ScreenGui"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 5
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.combo.luau",
+  "elems": [
+   "Frame",
+   "ScreenGui"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 6
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.clock.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.overlay.luau",
+  "elems": [
+   "Frame",
+   "ScreenGui",
+   "TextButton",
+   "TextLabel"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 24
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.input.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.hostname.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "dynamic": [
+   [
+    41,
+    "(D.Modifier :: any)[class]"
+   ]
+  ],
+  "n_edits": 4
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.window.luau",
+  "elems": [
+   "Frame"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 3
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.selectable.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.smoke.luau",
+  "elems": [
+   "TextBox",
+   "TextButton"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [
+   [
+    14,
+    "Out",
+    "TextBox",
+    "Text",
+    "enclosing element"
+   ]
+  ],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 4
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.checkbox.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.slider.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.interaction.luau",
+  "elems": [
+   "Frame",
+   "TextButton"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 9
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.tree.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.tab.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.stories.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.demo.luau",
+  "elems": [
+   "ScreenGui"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 4
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.pure.numberformat.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.radio.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.style.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.progress.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.tooltip.luau",
+  "elems": [
+   "Frame",
+   "ScreenGui",
+   "TextButton",
+   "TextLabel"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 15
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.inputtext.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.basic.luau",
+  "elems": [],
+  "mods": [
+   "Frame"
+  ],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 2
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.plot.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 0
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.reviewfix.luau",
+  "elems": [
+   "Frame",
+   "ScreenGui"
+  ],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [],
+  "n_edits": 7
+ },
+ {
+  "file": "quad-roblox-devui/test/spec.table.luau",
+  "elems": [],
+  "mods": [],
+  "types": [],
+  "needs_full": [],
+  "as_stripped": [],
+  "onchange": [],
+  "unresolved": [],
+  "collisions": [],
+  "notes": [
+   "D binding with no D.<C> use removed",
+   "L266: keep-alive `local _ = D` dropped"
+  ],
+  "n_edits": 2
+ }
+]

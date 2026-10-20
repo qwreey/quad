@@ -30,3 +30,7 @@
 
 사용자: M3 추천 (가) 동의(`ModifierInto<C>`가 마커, 옛 Rust식 인터페이스는 물러남), M4 (가) 동의(GUI 중심 맵 유지), *"그냥 입력 받는 부는 전부 Into 를 마커 필드로써 될 수 있는걸로 두고 많은 부분이 해결될 것으로 보이긴함. 시도해보자"*. 결정은 `research/declaration-surface-plan.md` 5절 끝 문단(2026-10-20), `base/modifier-plan.md` 11절 Into 자리에 3.4.0 변경 배너. 시험: opus 서브에이전트가 변환 스크립트 시제품으로 두 킷 전체를 새 표면 사본(스크래치)으로 바꿔 sync·vsc·pin 타입 검사 — 기준선(변환 전) 대비, 입력 Modifier에 메소드가 필요한 자리 수, 기계 변환 실패 목록.
 같은 날: devplorer 상향 보고 프롬프트를 사용자에게 써 줌(devplorer `.claude/feedback/devui.md`를 출발점으로 층 다섯 — quad 코어·quad-roblox/타입·devui 빈칸·devui 상향 후보·문서 공백; 출력 `devplorer/.claude/feedback/quad-upstream-2026-10-20.md`), 사용자가 넣어 둠.
+
+## 7. 2026-10-20 — devplorer 상향 보고서 판정
+
+devplorer가 `quad-upstream-2026-10-20.md`를 냈다(사용자: 핵심 셋 — quad 코어로 못 한 것 없음, 가장 큰 덩어리는 "있는데 못 찾음", 진짜 결핍은 devui의 막힘 셋 U2·U3·U7). 메인이 원문을 다 읽고 `feedback/devplorer-2026-10-20.md`에 판정: devui 결핍·상향 후보를 장치별 묶음 여섯(가 포인터 아래 맨 위 판정 — 10-16 코드 리뷰 5·6·8과 같은 장치, 메인이 `Window/Manager.luau` 126행·`Interaction.luau` 105~108행으로 확인; 나 입력 상자; 다 팝업; 라 목록 가상화; 마 창 채우기; 바 위젯 prop·Style)으로, 문서 공백은 devui README·위젯 주석에서 quad 스킬로 가는 링크 한 처방으로. 묶음은 전부 사용자 결정, 문서 줄과 U17(PlotLines X 모양) 원인 조사는 메인 자율.
