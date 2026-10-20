@@ -44,7 +44,7 @@
 |---|---|---|---|---|
 | 요소 생성자 꺼내기 | `D.<C>` 값, `D.New(name)` | **`Elem "Frame"`** → 생성자 | 꺼내기 자체는 드묾(공용 모듈), 결과 생성자는 매일 | **토론 대상**(4절). 이름 탐색: sonnet `Class`, Gemini `New` — 사용자는 둘 다 기각(`Class`는 Luau RFC `class` 문·묶음처럼 보임, `New`는 즉시 생성으로 읽힘) |
 | Modifier 꺼내기 | `D.Modifier.<C>(…)` | `Modifier "Frame"` → `(…) -> Modifier<Frame>` | 꺼내기는 드묾(꺼내 두기 권장 시), 결과 호출은 매일 | 값·타입 같은 이름(원칙 4) |
-| 속성 묶음 | (없음, 새로) | `Spread "Frame" {…}` → `Spread<Frame>`(`:Add`; 5절 — 마커는 입력 자리 전용) | 중간 예상 | 커리(두 인자 꼴은 실측상 틀린 꼴) |
+| 속성 묶음 | (없음, 새로) | `Spread "Frame" {…}` → `Spread<Frame>`(`:Append` — 2026-10-20 `:Add`에서 개명; 5절 — 마커는 입력 자리 전용) | 중간 예상 | 커리(두 인자 꼴은 실측상 틀린 꼴) |
 | 기존 트리 매퍼 | `D.Mapper.<C>(key)(props)` | `Mapper "Frame" (key) {…}` | 드묾(킷 0) | |
 | 프로퍼티 변화 | `q.OnChange(name, fn)` | 그대로 | 중간 | 무주석 콜백은 검사만 — **→ 5절 확정: 클래스 먼저 커리 `OnChange "Frame" "Visible" (fn)`** |
 | 이벤트 | (없음, 새로) `q.OnEvent(name, fn)` 확정 | 그대로 | 중간 예상 | 커리 꼴만 콜백 인자에 문맥 타입이 흐름 — **→ 5절 확정: 클래스 먼저 커리 `OnEvent "Frame" "MouseEnter" (fn)`** |
@@ -94,7 +94,7 @@
 - **값 `Elem "Frame"`은 그대로, 생성자 타입은 `ElemCtor<C>`**(타입 `Elem<C>`는 만들지 않는다). 토론이 "값·타입 이름을 갈라도 되나"로 좁혀졌고, 원칙 4를 "이름은 최종 산물을 가리킨다"로 읽으면
   `Elem "Frame"`의 산물은 `Frame`이라 `Elem<…>` 타입이 없어야 깨지지 않는다(Modifier도 이 읽기 — `Modifier "Frame"`의 산물이 `Modifier<Frame>`). 생성자 타입은 드물어 길어도 된다(원칙 1).
 - **`Into<C>` → `ModifierInto<C>`**(무엇으로 into인지 + 부모 접두). **[2026-10-20]** 뜻은 "C에 들어갈 수 있는 Modifier" 마커로 바뀐다(인터페이스 아님) — `research/declaration-surface-plan.md` 5절 끝 문단.
-- **`SpreadMarker<C>` → `Spread<C>`**(`:Add`가 붙은 값은 전체형, 요소 자리에서 받는 쪽만 마커 — quad-types의 마커 정의 "입력받는 자리 전용, 메소드가 필요한 자리는 전체형",
+- **`SpreadMarker<C>` → `Spread<C>`**(`:Add`(2026-10-20 `:Append`로 개명)가 붙은 값은 전체형, 요소 자리에서 받는 쪽만 마커 — quad-types의 마커 정의 "입력받는 자리 전용, 메소드가 필요한 자리는 전체형",
   `State`/`StateMarker`·`Modifier`/`ModifierMarker`와 같은 짝; `Spread "Frame" {…}: Spread<Frame>`).
 - **`Field<T>`·`FieldOut<T>` → `ModifierField<T>`·`ModifierFieldOut<T>`.** 변형 열(`FieldP`·`FieldN`·`FieldPN`·`FieldV`·`FieldPV`·`FieldNV`·`FieldPNV`·`FieldOutP` — 보간 가능 여부·nil 수용
   조합)은 **지금은 내보내지 않는다** — 사용자: *"바리에이션에 대해서는 좀 더 논의해보고. 지금은 내지 않고, 정해지는게 생기면 낼 지 보는정도로"*.
