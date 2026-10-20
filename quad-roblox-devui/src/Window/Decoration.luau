@@ -9,13 +9,24 @@
 	Instances (made here, placed by the manager as SIBLINGS of the surface root, in its parent):
 		WindowDecoration (Frame, the outer rectangle: Position / Size, title bar included)
 			UICorner, UIStroke, ClickSink (TextButton, ZIndex 0), TitleBar (Window/TitleBar.luau)
+		WindowIcon (TextButton, the collapsed window — see COLLAPSED = ICON)
+			UICorner, UIStroke, Image (ImageLabel, only with an `Icon` hint)
 		WindowResizeGrip (ImageButton, anchored at the outer rectangle's bottom-right corner)
 	The frame sits BELOW the surface (it paints the background the surface is drawn on) and the grip ABOVE it (it
 	overlaps the content's corner): the manager gives each window three consecutive ZIndex ranks (frame, surface, grip).
+	The icon takes the grip's rank (it is shown only while the frame, the surface and the grip are hidden).
+
+	COLLAPSED = ICON [2026-10-20 user decision — one `Collapsed`, its look decided by where the window is]: a collapsed
+	floating window shows only a small square icon (2 x FrameHeight) at its `Position` (the outer rectangle's top-left,
+	so expanding opens the window right where the icon was). Its picture is the `Icon` hint (an image id), else the first
+	letter of the title on a rounded square — no uploaded image needed. Pressing the icon expands the window
+	(`Collapsed:Set(false)`); dragging it moves the window (writes `Position`, kept on screen like a title-bar drag with
+	the icon as the window). Press and drag are told apart by a few pixels of movement (Window/PressOrDrag.luau). A
+	gamepad / keyboard activation of the selected icon expands too. There is no "title bar only" collapsed look.
 
 	Why the background and border are decoration, not surface: they enclose the whole outer rectangle (title bar
-	included), which only the compositor knows; a collapsed window keeps the frame (title bar + border) while the
-	surface is hidden; and a future group of surfaces (tabs) shares one frame. The surface stays transparent, and a
+	included), which only the compositor knows; a collapsed window swaps the whole frame for its icon, which only the
+	compositor draws; and a future group of surfaces (tabs) shares one frame. The surface stays transparent, and a
 	press on its empty area falls through to the frame's ClickSink right under it (still this window's chunk).
 
 	The surface's placement is answered here too (`Surface`): under the title bar, the rest of Size, shown while open and
@@ -40,9 +51,12 @@ local Frame = q.Elem "Frame"
 local ImageButton = q.Elem "ImageButton"
 local TextButton = q.Elem "TextButton"
 local UIStroke = q.Elem "UIStroke"
+local ImageLabel = q.Elem "ImageLabel"
+local UICorner = q.Elem "UICorner"
 local Interaction = require("../Interaction")
 local Style = require("../Style")
 local Visibility = require("../Visibility")
+local PressOrDrag = require("./PressOrDrag")
 local TitleBar = require("./TitleBar")
 
 type State<T> = Quad.State<T>
@@ -63,6 +77,9 @@ export type Hints = {
 	NoClose: boolean,
 	NoCollapse: boolean,
 	MinSize: Vector2?,
+	Icon: string?,
+	Key: string?, -- the window's identity in its manager (saved in the layout); nil = left out of the layout
+	Kind: string?, -- the window's type (factory lookup on load); defaults to Key
 }
 
 -- where the compositor puts the surface root
@@ -78,6 +95,7 @@ export type Control = {
 	FrontZ: State<number>, -- the grip (above the surface)
 	Focused: State<boolean>,
 	Raise: () -> (),
+	Changed: (() -> ())?, -- Position / Size / Open / Collapsed changed (the manager's Layout output; keyed windows)
 }
 
 export type Decoration = {
@@ -112,16 +130,16 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		return self:Get() and isExpanded:Get()
 	end, expanded)
 
-	local frameSize: State<UDim2> = size:Compute(function(self, _prev, isCollapsed, titleH)
+	local frameSize: State<UDim2> = size:Compute(function(self)
 		local s = self:Get()
-		if isCollapsed:Get() then
-			return UDim2.fromOffset(s.X, titleH:Get())
-		end
 		return UDim2.fromOffset(s.X, s.Y)
-	end, collapsed, titleHeight)
-	local frameAlpha: State<number> = collapsed:Compute(function(self, _prev, alpha)
-		return if self:Get() then 1 else alpha:Get()
-	end, style.Transparency.WindowBg)
+	end)
+	local iconShown: State<boolean> = open:Compute(function(self, _prev, isCollapsed)
+		return self:Get() and isCollapsed:Get()
+	end, collapsed)
+	local iconSide: State<number> = style.FrameHeight:Compute(function(self)
+		return self:Get() * 2
+	end)
 
 	local surfacePosition: State<UDim2> = position:Compute(function(self, _prev, titleH)
 		local p = self:Get()
@@ -141,12 +159,15 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		return UDim2.fromOffset(s, s)
 	end, style.Metrics.FramePadding)
 
-	-- assigned right after the frame is built; read only from event handlers
+	-- assigned right after the frame / icon are built; read only from event handlers
 	local frame: Frame? = nil
+	local iconButton: TextButton? = nil
 
 	-- keep the window reachable inside its container (header "STAYING ON SCREEN"); `pos` unchanged when it already is
 	local function clampToContainer(pos: UDim2): UDim2
-		local f = frame
+		-- a collapsed window is its icon: the icon is the whole window (its band too)
+		local isIcon = collapsed:Get()
+		local f: GuiObject? = if isIcon then iconButton else frame
 		local container = if f then f.Parent else nil
 		if f == nil or container == nil or not Visibility.hasArea(container) then
 			return pos
@@ -157,8 +178,9 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		end
 		local s = size:Get()
 		local titleH = titleHeight:Get()
-		local w = s.X
-		local h = if collapsed:Get() then titleH else s.Y
+		local side = iconSide:Get()
+		local w = if isIcon then side else s.X
+		local h = if isIcon then side else s.Y
 		-- AbsoluteSize is in screen pixels, Position offsets in the window's own units: an ancestor UIScale divides
 		local abs = f.AbsoluteSize
 		local scale = if w > 0 and abs.X > 0 then abs.X / w else 1
@@ -166,7 +188,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		local safe = style.Metrics.DisplaySafeAreaPadding:Get()
 		local frameH = style.FrameHeight:Get()
 		local padX, padY = math.max(frameH, safe.X), math.max(frameH, safe.Y)
-		local band = if titleH > 0 then titleH else h
+		local band = if titleH > 0 and not isIcon then titleH else h
 		local x = pos.X.Scale * cw + pos.X.Offset
 		local y = pos.Y.Scale * ch + pos.Y.Offset
 		local cx = math.max(padX - w, math.min(cw - padX, x))
@@ -191,6 +213,65 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 			end,
 		})
 	end
+
+	-- the collapsed window's icon: press expands, drag moves (kept on screen with the icon as the window)
+	local iconStart = UDim2.new()
+	local iconGesture = PressOrDrag.new({
+		OnPress = function()
+			collapsed:Set(false)
+		end,
+		OnDragBegin = if hints.NoMove
+			then nil
+			else function()
+				control.Raise()
+				iconStart = position:Get()
+			end,
+		OnDrag = if hints.NoMove
+			then nil
+			else function(dx: number, dy: number)
+				position:Set(clampToContainer(UDim2.new(iconStart.X.Scale, iconStart.X.Offset + dx, iconStart.Y.Scale, iconStart.Y.Offset + dy)))
+			end,
+	})
+	local iconHover = Interaction.hover()
+	-- pressed > hovered > focused > idle (the title bar's colours at rest, the button's under the pointer)
+	local function iconLook(pick: (token: string) -> State<any>): State<any>
+		return iconHover.Hovered:Compute(function(self, _prev, isPressed, isFocused, idle, active, hovered, pressed)
+			if isPressed:Get() then
+				return pressed:Get()
+			elseif self:Get() then
+				return hovered:Get()
+			elseif isFocused:Get() then
+				return active:Get()
+			end
+			return idle:Get()
+		end, iconHover.Pressed, control.Focused, pick("TitleBg"), pick("TitleBgActive"), pick("ButtonHovered"), pick("ButtonActive"))
+	end
+	local iconBg: State<Color3> = iconLook(function(token)
+		return style:ColorOf(token)
+	end)
+	local iconAlpha: State<number> = iconLook(function(token)
+		return style:AlphaOf(token)
+	end)
+	local iconBox: State<UDim2> = iconSide:Compute(function(self)
+		return UDim2.fromOffset(self:Get(), self:Get())
+	end)
+	local letterSize: State<number> = iconSide:Compute(function(self)
+		return math.floor(self:Get() * 0.5)
+	end)
+	-- the first letter of the title (skipping leading spaces; one UTF-8 character, upper-cased when ASCII)
+	local function firstLetter(title: string): string
+		local s = string.gsub(title, "^%s+", "")
+		local nextAt = utf8.offset(s, 2)
+		local first = if nextAt ~= nil then string.sub(s, 1, nextAt - 1) else s
+		return string.upper(first)
+	end
+	local title = hints.Title
+	local letter: string | State<string> = if type(title) == "string"
+		then firstLetter(title)
+		else (title :: State<string>):Compute(function(self)
+			return firstLetter(self:Get())
+		end)
+	local iconImage = hints.Icon
 
 	-- resize grip
 	local startSize = Vector2.new()
@@ -249,10 +330,10 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		Position = position,
 		Size = frameSize,
 		ZIndex = control.BackZ,
-		Visible = open,
+		Visible = shown,
 		Active = true,
 		BackgroundColor3 = style.Color.WindowBg,
-		BackgroundTransparency = frameAlpha,
+		BackgroundTransparency = style.Transparency.WindowBg,
 		BorderSizePixel = 0,
 		UICorner = style.Metrics.WindowRounding,
 		UIStroke({
@@ -289,7 +370,60 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 			}),
 	})
 	frame = built
-	local parts: { Instance } = { built }
+	local icon = TextButton({
+		iconHover.Hook,
+		iconGesture.Hook,
+		Name = "WindowIcon",
+		Position = position,
+		Size = iconBox,
+		ZIndex = control.FrontZ,
+		Visible = iconShown,
+		Active = true,
+		AutoButtonColor = false,
+		BackgroundColor3 = iconBg,
+		BackgroundTransparency = iconAlpha,
+		BorderSizePixel = 0,
+		Text = if iconImage ~= nil then "" else letter,
+		FontFace = style.Metrics.TextFont,
+		TextSize = letterSize,
+		TextColor3 = style.Color.Text,
+		TextTransparency = style.Transparency.Text,
+		-- a gamepad / keyboard activation of the selected icon (a pointer press is the gesture above)
+		Activated = function(input: InputObject)
+			local t = input.UserInputType
+			if t ~= Enum.UserInputType.MouseButton1 and t ~= Enum.UserInputType.Touch then
+				collapsed:Set(false)
+			end
+		end,
+		-- "a rounded square" whatever the density's WindowRounding (0 in Compact): a quarter of the side
+		UICorner({ CornerRadius = UDim.new(0.25, 0) }),
+		UIStroke({
+			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+			Thickness = style.Metrics.WindowBorderSize,
+			Color = style.Color.Border,
+			Transparency = style.Transparency.Border,
+		}),
+		if iconImage ~= nil
+			then ImageLabel({
+				Name = "Image",
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromScale(0.5, 0.5),
+				Size = UDim2.fromScale(0.7, 0.7),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				Image = iconImage,
+				ScaleType = Enum.ScaleType.Fit,
+			})
+			else q.None,
+		-- the manager's Layout output (keyed windows only): any of the four floating facts changed
+		if control.Changed ~= nil
+			then q.Effect(function()
+				(control.Changed :: () -> ())()
+			end, position, size, open, collapsed)
+			else q.None,
+	})
+	iconButton = icon
+	local parts: { Instance } = { built, icon }
 	if grip then
 		table.insert(
 			parts,

@@ -127,7 +127,7 @@ Heartbeat는 `gallery/Clock.luau`의 `ticker`만 건드리고, 그 연결은 그
 
 | 그룹 | 위젯 | 한 줄 설명 |
 |---|---|---|
-| 창 | `Window`, `WindowManager` | 드래그·크기 조절·접기·닫기 되는 창, 클릭하면 맨 앞으로(`ZIndex` 관리) |
+| 창 | `Window`, `WindowManager` | 드래그·크기 조절·아이콘으로 접기·닫기 되는 창, 클릭하면 맨 앞으로(`ZIndex` 관리), 배치 내보내기·불러오기 |
 | 레이아웃 | `SameLine`, `Group`, `Indent`, `Separator`, `SeparatorText` | 가로 줄 / 세로 묶음 / 들여쓰기 / 구분선 |
 | 글 | `Text`, `TextWrapped`, `TextColored`, `TextDisabled`, `LabelText` | 한 줄·줄바꿈·색·흐림·`값 라벨` 한 줄 |
 | 버튼 | `Button`, `SmallButton` | 클릭 가능한 버튼(작은 쪽은 세로 패딩 없음), `Toggled`로 켜짐 모양(토글 단추·필터 칩) |
@@ -218,7 +218,14 @@ ScreenGui는 **`ResetOnSpawn = false`**로 만드세요 — 층은 quad가 만�
 내용 표면(스크롤 영역)뿐이고, 창틀(배경·테두리)과 제목줄을 담은 `WindowDecoration`, 크기 손잡이 `WindowResizeGrip`은 관리자가 만들어 **루트와 같은
 부모에 형제로** 놓습니다. 루트는 앱이 놓은 자리에 그대로 두고, 장식이 루트의 `Parent`를 따라가며(부모가 없으면 장식도 없음) 루트가 지워질 때 같이
 지워집니다 — 장식을 직접 옮기지 마세요. `Position`·`Size`는 제목줄을 포함한 바깥 사각형이고 루트는 제목줄 아래 나머지 자리에 놓입니다.
-`Title`·`No*` 플래그·`MinSize`는 표면이 관리자에게 주는 힌트입니다.
+`Title`·`No*` 플래그·`MinSize`·`Icon`은 표면이 관리자에게 주는 힌트입니다.
+
+**접기 — 아이콘.** 접힌 창은 제목줄만 남지 않고 작은 정사각 아이콘(`WindowIcon`, 한 변 = `FrameHeight` 두 배, 루트의 형제)이 됩니다.
+아이콘은 창의 `Position`(바깥 사각형 왼쪽 위)에 놓이므로 펼치면 그 자리에서 열립니다. 그림은 `Icon = "rbxassetid://…"`, 없으면 제목 첫 글자를
+둥근 사각형에 그립니다(이미지 업로드 필요 없음). 아이콘을 **누르면** 펼쳐지고(`Collapsed:Set(false)`), **끌면** 창이 옮겨집니다(`Position`에 씀,
+제목줄 끌기처럼 화면 안에 남음 — 아이콘 자체가 창). 둘은 6픽셀(Dear ImGui `MouseDragThreshold`) 문턱으로 가릅니다. 게임패드·키보드로
+고른 아이콘을 누르면(`Activated`) 펼쳐집니다. 접힌 동안 창틀·제목줄·크기 손잡이·표면은 숨고, 아이콘을 눌러도 그 창이 앞으로 옵니다.
+접기는 닫기가 아니라 포커스 넘김에 걸리지 않습니다.
 
 창 안의 **어떤 위젯을 눌러도**(버튼·체크박스·입력 칸 포함) 그 창이 앞으로 옵니다 — 누름은 포인터 아래 첫 버튼·입력 칸에서 멈춰 창 프레임에
 오지 않으므로, `WindowManager`가 전역 누름(`UserInputService.InputBegan`, 마우스 왼쪽·터치) 하나를 듣고 그 누름이 간 창을 앞으로 올립니다(창이
@@ -252,6 +259,81 @@ end
 Devui.Window({ Title = "Tools", Open = win.Open, Focused = win.Focused, Children = q.Slot({
 	SomePanel({ Context = ctx }),                          -- 그 안 어딘가의 버튼: OnClick = function() focusWindow(ctx) end
 }) })
+```
+
+### 창 배치 저장
+
+devui는 **저장하지 않습니다** — 창 배치를 JSON으로 바꿀 수 있는 평범한 표(문자열·수·참거짓·배열·문자열 키 표)로 내주고 받기만 하고,
+어디에 둘지(플러그인 설정, DataStore, 속성)는 앱이 정합니다. **창 내용은 저장하지 않습니다.**
+
+- **`Key: string?`** — 창의 **신원**. 한 `WindowManager`의 살아 있는 창 사이에서 유일해야 하고, 겹치면 `Devui.Window: Key "…" is already used`
+  에러입니다. **`Kind: string?`** — 창의 **종류**(생략하면 `Key`와 같음). 같은 종류의 창 둘(메모장 둘)은 `Kind`가 같고 `Key`가 다릅니다.
+  `Kind`는 `Key`가 있을 때만 쓰입니다. 키 없는 창도 똑같이 동작하고 **배치에서만 빠집니다**(`q.debug`가 켜져 있으면 앱이 배치 API를 처음 쓴 뒤
+  관리자마다 한 번 알림).
+- 창 하나에 싣는 것: 열림(`Open`), 접힘(`Collapsed`), `Position`(UDim2), `Size` — 떠 있을 때의 **바깥** 사각형(제목줄 포함). 제목·내용·포커스·
+  z-순서는 싣지 않습니다.
+
+```luau
+local manager = Devui.WindowManager.new()          -- (Devui.WindowManager.default도 같은 메소드를 가짐)
+manager:ExportLayout(): WindowLayout                -- 지금 배치(아는 키 전부)
+manager:ImportLayout(layout, factories?)            -- 배치 불러오기(아래 규칙)
+manager:ExportWindow(key): WindowState?             -- 창 하나(모르는 키면 nil)
+manager:ImportWindow(key, state)                    -- 창 하나 불러오기(팩토리 없음, 나머지 규칙은 같음)
+manager.Layout: State<WindowLayout>                 -- 배치가 바뀔 때마다 새 값(얼린 표) — 자동 저장은 여기에 Observer
+```
+
+**불러오기 규칙**(한 API — 언제 불러도 됩니다):
+
+- 이미 등록된 키의 창은 그 자리로 옮깁니다 — 창의 `Position`·`Size`·`Open`·`Collapsed` Source에 값을 써 넣으므로 **앱이 쥔 Source가 그대로
+  바뀝니다**. 저장된 `Kind`가 달라도 살아 있는 창의 `Kind`가 이깁니다.
+- 아직 등록되지 않은 키는 **대기**로 두었다가 그 키의 창이 등록되는 순간 적용합니다(= 초기값 — 창을 만들기 전에 불러도 됩니다).
+- **배치에 없는 창은 그대로 둡니다.** 대기 키는 다시 내보낼 때 그대로 실립니다(모르는 키를 지우지 않음 — 서버 없이 연 세션에서 저장해도
+  서버 창 자리가 남음).
+- 키 있는 창이 파괴되면 마지막 상태가 대기로 남습니다(UI를 부수고 다시 지으면 창이 제자리로 돌아오고, `Layout`도 바뀌지 않음).
+- **`factories`**: `{ [Kind] = function(key) }`. "이 신원의 창을 있게 하라" — 앱이 창을 만들고 부모를 정합니다(devui는 루트를 놓지 않음).
+  **저장 때 열려 있던 키**에만, **아직 등록되지 않은 키**에만, 불러오기 한 번에 키마다 한 번 부릅니다(같은 종류 둘이면 두 키로 한 번씩 — 팩토리가 창을 만들기 전에 다시 불러오면 다시 불립니다). 맵에 없는 종류는
+  대기로 남습니다. 팩토리가 그 키로 창을 만들면 대기 상태가 그 창에 적용됩니다.
+- 모르는 `Version`이나 모양이 틀린 표는 `Devui.WindowManager:ImportLayout: …` 에러입니다(앱이 `pcall`로 감싸 옛 저장을 버릴 수 있음).
+
+`Layout`은 위치·크기·열림·접힘이 바뀌거나 키 있는 창이 등록될 때 새 값을 냅니다 — 내용이 같으면 내지 않고(포커스·z-순서 변경, 같은 배치
+다시 불러오기), 불러오기 한 번은 한 번만 냅니다. 창을 끄는 동안에는 움직일 때마다 내므로 저장은 `q.Debounce`로 늦추세요.
+
+**형식**(Version 1). 처음부터 트리 모양입니다 — 노드는 탭 셋(나중에 이진 분할도), 떠 있는 창 하나는 "탭 하나짜리 노드"를 가진 떠 있는
+묶음입니다. 이 devui는 탭 하나짜리 노드만 쓰고 읽습니다(탭 묶음·분할은 도킹이 들어올 때).
+
+```luau
+{
+	Version = 1,
+	Windows = {                                    -- 창마다(키로): 종류와 열림
+		outline = { Kind = "outline", Open = true },
+		["note-1"] = { Kind = "notepad", Open = false },
+	},
+	Floating = {                                   -- 떠 있는 묶음(내보낸 순서 = 처음 알게 된 순서)
+		{
+			Position = { 0, 60, 0, 60 },           -- UDim2: X.Scale, X.Offset, Y.Scale, Y.Offset (바깥 왼쪽 위)
+			Size = { 300, 200 },                   -- 픽셀: 너비, 높이 (바깥, 제목줄 포함)
+			Collapsed = false,
+			Node = { Tabs = { "outline" }, Selected = "outline" },
+		},
+		-- …
+	},
+}
+-- WindowState (창 하나):
+{ Kind = "outline", Open = true, Collapsed = false, Position = { 0, 60, 0, 60 }, Size = { 300, 200 } }
+```
+
+```luau
+-- 자동 저장과 시작 때 불러오기 (plugin:SetSetting 예)
+local HttpService = game:GetService("HttpService")
+local saved = plugin:GetSetting("layout")
+if saved then
+	pcall(manager.ImportLayout, manager, HttpService:JSONDecode(saved), {
+		notepad = function(key) openNotepad(key) end,   -- 열려 있던 메모장마다 한 번
+	})
+end
+manager.Layout:Apply(q.Debounce { Time = 1 })            -- 끄는 동안은 한 번에 모아서
+	:Observer(function(self) plugin:SetSetting("layout", HttpService:JSONEncode(self:Get())) end)
+	:Subscribe()
 ```
 
 ## UI Labs / 입력 주입
@@ -305,7 +387,7 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 
 | # | 볼 것 | 어디서 | 기대 | 관측 |
 |---|---|---|---|---|
-| 1 | 창 드래그·크기조절·접기·닫기 | Window 스토리 / 플레이 | 타이틀바 드래그로 이동, 우하단 그립으로 크기 조절 |  |
+| 1 | 창 드래그·크기조절·접기·닫기 | Window 스토리 / 플레이 | 타이틀바 드래그로 이동, 우하단 그립으로 크기 조절, 접으면 아이콘(누르면 펼침·끌면 이동) |  |
 | 2 | z-순서 — 클릭한 창이 위로, 팝업은 항상 창 위 | 플레이: 데모의 창 셋 | 클릭한 창이 맨 위, Combo/Menu 목록은 창 위 |  |
 | 3 | UIFlexItem Fill(SeparatorText·입력 필드 폭) | Layout·Inputs 스토리 | 선이 남은 폭을 채우고 필드가 행을 채움 |  |
 | 4 | Iris 아이콘 에셋(화살표·체크·닫기) | Tree·Checkbox·Window | 아이콘이 보임 |  |

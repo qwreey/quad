@@ -13,9 +13,12 @@
 			Focused: Source<boolean>?,          -- two-way: the window writes whether it is the focused one; set true to raise
 			                                    -- and focus it, false to drop its focus (no window focused)
 			AvailableSize: Source<Vector2>?,    -- output: the room the children get (visible content area minus padding)
-			Collapsed: Source<boolean>?,        -- the arrow toggles it; collapsed = title bar only
+			Collapsed: Source<boolean>?,        -- the arrow sets it; collapsed = a small icon (press: expand, drag: move)
 			NoTitleBar / NoResize / NoMove / NoClose / NoCollapse: boolean?,   -- static flags
 			MinSize: Vector2?,                  -- resize floor (default 2 x frame height square)
+			Icon: string?,                      -- the collapsed icon's image (default: the title's first letter)
+			Key: string?,                       -- the window's identity in its manager (unique; saved in the layout)
+			Kind: string?,                      -- the window's type (default Key): the factory a layout loader calls
 			Manager: WindowManager?,            -- z-order/focus group and decorations (default Manager.default)
 			Style: Style?,
 			Modifier: ModifierInto<Frame>?,           -- extra styling of the returned surface root (inline props still win)
@@ -30,6 +33,15 @@
 	them yourself. Title, the No* flags and MinSize are hints the surface gives its compositor (same names, same
 	meaning). Position / Size are the window's OUTER rectangle, title bar included (the root sits under the title bar
 	and gets the rest).
+
+	COLLAPSED [2026-10-20 user decision]: a collapsed floating window is a small square icon drawn by the compositor at
+	`Position` (the outer top-left) — the `Icon` image, or the title's first letter on a rounded square. Pressing it
+	expands the window; dragging it moves the window. There is no "title bar only" look any more.
+
+	SAVING THE LAYOUT: give a window `Key` (its identity — unique among its manager's live windows, a duplicate raises)
+	and optionally `Kind` (its type, default = the Key; two windows of one type get the same Kind and different Keys).
+	The manager then exports / imports its Position, Size, Open and Collapsed as plain JSON-ready tables (Window/Manager
+	header "LAYOUT"). A window without a Key works the same and is just left out of the layout.
 
 	FILLING THE HEIGHT [2026-10-20, Studio-confirmed]: give one child `q.Elem "UIFlexItem" ({ FlexMode = Enum.UIFlexMode.Fill })`
 	and it takes the height the other children leave (the content list is a UIListLayout): a 300 x 300 window gave a
@@ -73,6 +85,8 @@ type Style = Style.Style
 
 export type Manager = Manager.Manager
 export type ManagerSlot = Manager.Slot
+export type WindowLayout = Manager.WindowLayout
+export type WindowState = Manager.WindowState
 
 export type WindowProps = {
 	read Title: string | State<string>,
@@ -89,12 +103,22 @@ export type WindowProps = {
 	read NoClose: boolean?,
 	read NoCollapse: boolean?,
 	read MinSize: Vector2?,
+	read Icon: string?,
+	read Key: string?,
+	read Kind: string?,
 	read Manager: Manager.Manager?,
 	read Style: Style?,
 	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 local function Window(props: WindowProps): Frame
+	local key, kind = props.Key, props.Kind
+	if key ~= nil and type(key) ~= "string" then
+		Util.fail("Window", `Key must be a string (the window's identity), got {typeof(key)}`)
+	end
+	if kind ~= nil and type(kind) ~= "string" then
+		Util.fail("Window", `Kind must be a string (the window's type), got {typeof(kind)}`)
+	end
 	local style = props.Style or Style.default
 	local manager = props.Manager or Manager.default
 	local slot = manager:Register()
@@ -118,6 +142,9 @@ local function Window(props: WindowProps): Frame
 		NoClose = props.NoClose == true,
 		NoCollapse = props.NoCollapse == true,
 		MinSize = props.MinSize,
+		Icon = props.Icon,
+		Key = props.Key,
+		Kind = props.Kind,
 	})
 
 	-- [2026-10-15 user decision] the owner drives the window through the Sources it already holds, no handle:

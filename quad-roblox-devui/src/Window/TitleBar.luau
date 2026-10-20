@@ -35,7 +35,7 @@ export type TitleBarSpec = {
 local TitleBar = {}
 
 -- transparent until hovered/pressed, then the Header look
-local function titleButton(style: Style, icon: string | State<string>, onClick: () -> (), side: "Left" | "Right", size: State<number>, open: State<boolean>)
+local function titleButton(style: Style, icon: string | State<string>, onClick: () -> (), side: "Left" | "Right", size: State<number>, shown: State<boolean>)
 	local hover = Interaction.hover()
 	local look = Common.headerLook(style, hover, nil, false)
 	local box: State<UDim2> = size:Compute(function(self)
@@ -47,12 +47,13 @@ local function titleButton(style: Style, icon: string | State<string>, onClick: 
 	end)
 	return ImageButton({
 		hover.Hook,
-		-- closing the window hides an ANCESTOR of the button: no MouseLeave comes, so drop the hover look explicitly
+		-- closing or collapsing the window hides an ANCESTOR of the button (the decoration frame): no MouseLeave comes,
+		-- so drop the hover look explicitly
 		q.Effect(function()
-			if not open:Get() then
+			if not shown:Get() then
 				hover.Reset()
 			end
-		end, open),
+		end, shown),
 		Name = if side == "Left" then "CollapseButton" else "CloseButton",
 		AnchorPoint = Vector2.new(if side == "Left" then 0 else 1, 0.5),
 		Position = UDim2.new(if side == "Left" then 0 else 1, 0, 0.5, 0),
@@ -91,28 +92,21 @@ function TitleBar.new(spec: TitleBarSpec): Frame
 	end, style.Metrics.FramePadding)
 	local sidePad: State<UDim> = Util.pxX(style.Metrics.FramePadding)
 
-	-- background: collapsed > focused > idle (colour and transparency)
-	local bg: State<Color3> = collapsed:Compute(function(self, _prev, isFocused, n, a, f)
-		if self:Get() then
-			return f:Get()
-		elseif isFocused:Get() then
-			return a:Get()
-		end
-		return n:Get()
-	end, spec.Focused, style.Color.TitleBg, style.Color.TitleBgActive, style.Color.TitleBgCollapsed)
-	local bgAlpha: State<number> = collapsed:Compute(function(self, _prev, isFocused, n, a, f)
-		if self:Get() then
-			return f:Get()
-		elseif isFocused:Get() then
-			return a:Get()
-		end
-		return n:Get()
-	end, spec.Focused, style.Transparency.TitleBg, style.Transparency.TitleBgActive, style.Transparency.TitleBgCollapsed)
+	-- background: focused > idle (colour and transparency). The bar is never seen collapsed — a collapsed window is
+	-- an icon (Window/Decoration.luau), so the TitleBgCollapsed tokens and the right-pointing arrow are not used here.
+	local bg: State<Color3> = spec.Focused:Compute(function(self, _prev, n, a)
+		return if self:Get() then a:Get() else n:Get()
+	end, style.Color.TitleBg, style.Color.TitleBgActive)
+	local bgAlpha: State<number> = spec.Focused:Compute(function(self, _prev, n, a)
+		return if self:Get() then a:Get() else n:Get()
+	end, style.Transparency.TitleBg, style.Transparency.TitleBgActive)
 
-	local arrow: State<string> = collapsed:Compute(function(self)
-		return if self:Get() then icons.RightTriangle else icons.DownTriangle
-	end)
+	local arrow = icons.DownTriangle
 	local closeIcon = icons.Close
+	-- the bar is on screen (its frame is hidden while closed or collapsed — a collapsed window is an icon)
+	local shown: State<boolean> = spec.Open:Compute(function(self, _prev, isCollapsed)
+		return self:Get() and not isCollapsed:Get()
+	end, collapsed)
 
 	local align: State<Enum.TextXAlignment> = style.Metrics.WindowTitleAlign:Compute(function(self)
 		local a = self:Get()
@@ -148,7 +142,7 @@ function TitleBar.new(spec: TitleBarSpec): Frame
 			then q.None
 			else titleButton(style, arrow, function()
 				collapsed:Set(not collapsed:Get())
-			end, "Left", buttonSize, spec.Open),
+			end, "Left", buttonSize, shown),
 		TextLabel({
 			Name = "Title",
 			Size = UDim2.fromScale(1, 1),
@@ -167,7 +161,7 @@ function TitleBar.new(spec: TitleBarSpec): Frame
 			then q.None
 			else titleButton(style, closeIcon, function()
 				spec.Open:Set(false)
-			end, "Right", buttonSize, spec.Open),
+			end, "Right", buttonSize, shown),
 	})
 end
 

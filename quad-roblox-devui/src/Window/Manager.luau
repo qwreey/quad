@@ -37,6 +37,30 @@
 
 	A newly registered window starts on top but does NOT steal focus (the first press focuses it).
 
+	LAYOUT [2026-10-20 user decision — devui does not store anything: it hands out and takes back plain JSON-ready
+	tables, the app keeps them; format in Window/Layout.luau]. A window with a `Key` (its IDENTITY, unique among this
+	manager's live windows — a second one raises) is part of the layout; its `Kind` (its TYPE, default = the Key) is
+	saved with it so a loader can make it again. A window without a Key behaves the same and is only left out of the
+	layout (with `q.debug`, one notice per manager once the app uses the layout API). What is saved per window: Open,
+	Collapsed, Position and Size (the floating outer rectangle). Not saved: the title, the content, the focus, the
+	z-order.
+		manager:ExportLayout() -> WindowLayout          every known key (live or pending), in first-seen order
+		manager:ImportLayout(layout, factories?)          put the windows where the layout says (rules below)
+		manager:ExportWindow(key) -> WindowState?         one window's state (nil = an unknown key)
+		manager:ImportWindow(key, state)                  one window: the same rules, no factory
+		manager.Layout : State<WindowLayout>              re-emitted when the layout changes (frozen tables; an Observer
+		                                                  on it is the app's auto-save — debounce it, a drag writes on
+		                                                  every move)
+	Import rules (one API, callable at any time): a key whose window is registered moves there at once (the state is
+	written into the window's own Position / Size / Open / Collapsed Sources — the app's Sources change); a key with no
+	window yet is PENDING and becomes that window's initial state the moment a window with that Key registers. Windows
+	the layout does not name are left as they are. Pending keys are exported again unchanged (an unknown key is never
+	dropped: a session without some window keeps its place). `factories` maps a Kind to `function(key)` = "make the
+	window of this identity exist" (the app builds it and puts it where it wants; devui never parents a root): it is
+	called once per key that was OPEN when saved and is not registered yet; a Kind missing from the map stays pending.
+	A keyed window that is destroyed leaves its last state pending (an app rebuilding its UI gets its windows back,
+	and the Layout output does not change).
+
 	PRESS TO FRONT. A press stops at the first GuiButton / TextBox under the pointer (engine rule): the window frame
 	behind a button, a checkbox or a text box never sees an InputBegan. So the manager listens to ONE global press
 	(`UserInputService.InputBegan`, mouse button 1 / touch — through `Input.service()`, opened while at least one root is
@@ -73,8 +97,10 @@ local Quad = require("../Quad")
 local q = Quad
 local Types = require("../Types")
 local Visibility = require("../Visibility")
+local Util = require("../Util")
 local Compositor = require("./Compositor")
 local Decoration = require("./Decoration")
+local Layout = require("./Layout")
 
 type State<T> = Quad.State<T>
 type Source<T> = Quad.Source<T>
@@ -89,9 +115,17 @@ export type Slot = {
 	Release: (self: Slot) -> (),
 }
 
+export type WindowLayout = Layout.WindowLayout
+export type WindowState = Layout.WindowState
+
 export type Manager = {
 	Focused: State<number>,
+	Layout: State<WindowLayout>,
 	Register: (self: Manager) -> Slot,
+	ExportLayout: (self: Manager) -> WindowLayout,
+	ImportLayout: (self: Manager, layout: WindowLayout, factories: { [string]: (key: string) -> () }?) -> (),
+	ExportWindow: (self: Manager, key: string) -> WindowState?,
+	ImportWindow: (self: Manager, key: string, state: WindowState) -> (),
 }
 
 type Entry = {
@@ -100,6 +134,9 @@ type Entry = {
 	Root: GuiObject?,
 	Open: State<boolean>?, -- the surface's open state (decorated windows only; nil = the root's Visible decides)
 	Deco: Decoration.Decoration?,
+	Hints: Decoration.Hints?, -- decorated windows: the Sources a layout is read from and written into
+	Key: string?, -- decorated windows with a Key: their identity in the layout
+	Kind: string,
 }
 
 -- ZIndex values per window (decoration frame, surface, resize grip): see the header
@@ -130,6 +167,87 @@ function Manager.new(): Manager
 	-- entries whose root is hooked (the global press listener is open while this is > 0)
 	local hooked = 0
 	local offPress: (() -> ())? = nil
+
+	-- LAYOUT (header "LAYOUT"): every key this manager knows, in first-seen order (the export order); a known key is
+	-- either live (a registered window holds it) or pending (its state waits for that window)
+	local known: { string } = {}
+	local live: { [string]: Entry } = {}
+	local pending: { [string]: WindowState } = {}
+	local layoutOut: Source<WindowLayout> = q.Source(Layout.freeze(Layout.empty()))
+	local batching = 0
+	local layoutDirty = false
+	-- the q.debug notice about windows without a Key: once per manager, after the app used the layout API
+	local layoutUsed = false
+	local keylessNoticed = false
+	local keyless: { [Entry]: string } = {} -- decorated windows without a Key -> their title (for the notice)
+
+	local function remember(key: string)
+		if live[key] == nil and pending[key] == nil then
+			table.insert(known, key)
+		end
+	end
+
+	local function snapshot(entry: Entry): WindowState
+		local h = entry.Hints :: Decoration.Hints
+		return {
+			Kind = entry.Kind,
+			Open = h.Open:Get(),
+			Collapsed = h.Collapsed:Get(),
+			Position = Layout.positionOf(h.Position:Get()),
+			Size = Layout.sizeOf(h.Size:Get()),
+		}
+	end
+
+	local function stateOf(key: string): WindowState
+		local entry = live[key]
+		return if entry ~= nil then snapshot(entry) else pending[key]
+	end
+
+	-- write a saved state into a window's own Sources (the app's Sources change; the window follows them). The
+	-- window's Kind is its own: a saved Kind never renames a live window.
+	local function apply(entry: Entry, state: WindowState)
+		local h = entry.Hints :: Decoration.Hints
+		h.Collapsed:SetIfChanged(state.Collapsed)
+		h.Size:SetIfChanged(Layout.toSize(state.Size))
+		h.Position:SetIfChanged(Layout.toPosition(state.Position))
+		h.Open:SetIfChanged(state.Open)
+	end
+
+	local function refresh()
+		if batching > 0 then
+			layoutDirty = true
+			return
+		end
+		layoutDirty = false
+		local nextLayout = Layout.build(known, stateOf)
+		if not Layout.same(nextLayout, layoutOut:Get()) then
+			layoutOut:Set(Layout.freeze(nextLayout))
+		end
+	end
+
+	-- run `body` with the Layout output held back, then emit once (also when body throws: the error goes on)
+	local function batch(body: () -> ())
+		batching += 1
+		local ok, err = pcall(body)
+		batching -= 1
+		if batching == 0 and layoutDirty then
+			refresh()
+		end
+		if not ok then
+			error(err, 0)
+		end
+	end
+
+	local function noticeKeyless()
+		if not q.debug or keylessNoticed or not layoutUsed then
+			return
+		end
+		local _, title = next(keyless)
+		if title ~= nil then
+			keylessNoticed = true
+			print(`Devui.WindowManager: a window without Key ("{title}") is left out of the layout — give each window you want saved a Key (its identity in the manager)`)
+		end
+	end
 
 	local function renumber()
 		for i, entry in order do
@@ -269,13 +387,99 @@ function Manager.new(): Manager
 		end
 	end
 
-	return {
-		Focused = focusedId,
+	local focusedOut: State<number> = focusedId
+	local layoutState: State<WindowLayout> = layoutOut
+	local manager: Manager = {
+		Focused = focusedOut,
+		Layout = layoutState,
+		ExportLayout = function(_self: Manager): WindowLayout
+			layoutUsed = true
+			noticeKeyless()
+			return Layout.build(known, stateOf)
+		end,
+		ImportLayout = function(_self: Manager, layout: WindowLayout, factories: { [string]: (key: string) -> () }?)
+			local keys, states = Layout.read("WindowManager:ImportLayout", layout)
+			if factories ~= nil and type(factories) ~= "table" then
+				Util.fail("WindowManager:ImportLayout", `factories must be a table \{ [Kind] = function(key) }, got {typeof(factories)}`)
+			end
+			-- check every entry up front: a bad one must fail whether or not this layout happens to need it
+			if factories ~= nil then
+				for kind, make in factories do
+					if type(kind) ~= "string" or type(make) ~= "function" then
+						Util.fail("WindowManager:ImportLayout", `factories must map a Kind string to a function(key), got [{typeof(kind)}] = {typeof(make)}`)
+					end
+				end
+			end
+			layoutUsed = true
+			noticeKeyless()
+			batch(function()
+				-- the export order follows the layout; keys it does not name keep their order after it
+				local reordered: { string } = table.clone(keys)
+				for _, key in known do
+					if states[key] == nil then
+						table.insert(reordered, key)
+					end
+				end
+				known = reordered
+				-- a window already on screen moves to its saved place; any other key waits for its window
+				for _, key in keys do
+					local entry = live[key]
+					if entry ~= nil then
+						apply(entry, states[key])
+					else
+						pending[key] = states[key]
+					end
+				end
+				layoutDirty = true
+				-- "make the window of this identity exist": only for keys open when saved, never for a registered one;
+				-- a Kind missing from the map stays pending (its window may come later)
+				if factories ~= nil then
+					for _, key in keys do
+						local state = states[key]
+						local make = factories[state.Kind]
+						if state.Open and live[key] == nil and make ~= nil then
+							make(key)
+						end
+					end
+				end
+			end)
+		end,
+		ExportWindow = function(_self: Manager, key: string): WindowState?
+			if type(key) ~= "string" then
+				Util.fail("WindowManager:ExportWindow", `key must be a string, got {typeof(key)}`)
+			end
+			layoutUsed = true
+			noticeKeyless()
+			local entry = live[key]
+			if entry ~= nil then
+				return snapshot(entry)
+			end
+			local waiting = pending[key]
+			return if waiting ~= nil then Layout.copyState(waiting) else nil
+		end,
+		ImportWindow = function(_self: Manager, key: string, state: WindowState)
+			if type(key) ~= "string" then
+				Util.fail("WindowManager:ImportWindow", `key must be a string, got {typeof(key)}`)
+			end
+			local copy = Layout.readState("WindowManager:ImportWindow", state)
+			layoutUsed = true
+			noticeKeyless()
+			batch(function()
+				local entry = live[key]
+				if entry ~= nil then
+					apply(entry, copy)
+				else
+					remember(key)
+					pending[key] = copy
+				end
+				layoutDirty = true
+			end)
+		end,
 		Register = function(_self: Manager): Slot
 			nextId += 1
 			local id = nextId
 			local rank: Source<number> = q.Source(#order + 1)
-			local entry: Entry = { Id = id, Rank = rank, Root = nil, Open = nil, Deco = nil }
+			local entry: Entry = { Id = id, Rank = rank, Root = nil, Open = nil, Deco = nil, Hints = nil, Key = nil, Kind = "" }
 			table.insert(order, entry)
 			local isFocused: State<boolean> = focusedId:Compute(function(self)
 				return self:Get() == id
@@ -341,6 +545,7 @@ function Manager.new(): Manager
 					end
 					table.remove(order, at)
 					renumber()
+					Compositor.unbind(slot, entry.Root)
 					if entry.Root ~= nil then
 						entry.Root = nil
 						local vc, pc = visibleConn, parentConn
@@ -354,6 +559,14 @@ function Manager.new(): Manager
 						end
 						hook(-1)
 					end
+					-- a keyed window that goes away leaves its last state pending (an app tearing its UI down and building
+					-- it again gets its windows back where they were; the Layout output does not change)
+					local key = entry.Key
+					if key ~= nil and live[key] == entry then
+						pending[key] = snapshot(entry)
+						live[key] = nil
+					end
+					keyless[entry] = nil
 					local deco = entry.Deco
 					if deco ~= nil then
 						entry.Deco = nil
@@ -367,6 +580,32 @@ function Manager.new(): Manager
 
 			Compositor.bind(slot, {
 				decorate = function(hints: Decoration.Hints): Decoration.Placement
+					local key = hints.Key
+					if key ~= nil then
+						if live[key] ~= nil then
+							slot:Release()
+							return Util.fail(
+								"Window",
+								`Key "{key}" is already used by another window of this WindowManager (Key is the window's identity; give two windows of one type the same Kind and different Keys)`
+							)
+						end
+						entry.Key = key
+						entry.Kind = hints.Kind or key
+						entry.Hints = hints
+						-- a state waiting for this key (ImportLayout / ImportWindow before the window existed) is its
+						-- initial state: written into its Sources before anything is built from them
+						local waiting = pending[key]
+						remember(key)
+						live[key] = entry
+						if waiting ~= nil then
+							pending[key] = nil
+							apply(entry, waiting)
+						end
+					else
+						entry.Hints = hints
+						keyless[entry] = if type(hints.Title) == "string" then hints.Title else hints.Title:Get()
+						noticeKeyless()
+					end
 					local backZ: State<number> = rank:Compute(function(self)
 						return (self:Get() - 1) * SPAN + 1
 					end)
@@ -380,10 +619,14 @@ function Manager.new(): Manager
 						Raise = function()
 							focus(entry)
 						end,
+						Changed = if key ~= nil then refresh else nil,
 					})
 					entry.Deco = deco
 					entry.Open = hints.Open
 					follow()
+					if key ~= nil then
+						refresh()
+					end
 					return deco.Surface
 				end,
 				setOpen = function(open: boolean)
@@ -402,6 +645,9 @@ function Manager.new(): Manager
 			return slot
 		end,
 	}
+	-- the methods are public surface: a usage error inside them blames the app's calling line
+	Util.tagSurface(manager)
+	return manager
 end
 
 Manager.default = Manager.new()
