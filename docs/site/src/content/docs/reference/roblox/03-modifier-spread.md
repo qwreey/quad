@@ -276,6 +276,10 @@ Spread: <K>(name: K & keyof<ModClassMap>) -> (props: Props<Class>) -> Spread<Cla
 
 **반환** — `Spread<Class>`. 요소의 숫자 키 자리에 놓으면 그 자리에 펼쳐집니다.
 
+Roblox 요소에는 이 생성자를 쓰세요. base의 `q.Raw.Spread {…}`는 런타임으로는 같은 값을 만들지만 클래스 태그가 없어(타입
+`__quadSpread: true`) `q.Elem` 배열부의 `SpreadInto<C>` 자리에 들어가지 않습니다 — 클래스 검사를 끄는 자리를 열지 않으려고
+일부러 받지 않습니다. `q.Raw.Spread`는 백엔드를 짓는 쪽의 원재료입니다.
+
 ```luau
 local hoverHook = q.Spread "GuiObject" {
 	q.OnEvent "GuiObject" "MouseEnter" (function() hovered:Set(true) end),
