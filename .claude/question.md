@@ -20,7 +20,7 @@
 ## 2. 낮은 우선순위 — 열려 있지만 급하지 않음
 
 
-- **[2026-10-16 신설] 코드 품질 round15 문항 여섯 `Q188`~`Q193` — `qa-request/code-quality-review-round15.md` §4**(소스 주석의 원장 번호, 킷 Overlay·Interaction 공통 층, `q.debug` 진단 번호·훅, 킷 에러 번호, `:List` ctx 공개 타입 이름, quad-mock 시기). 사용자: *"3.4 이 나온 다음에 할 일이 쌓여있도록 하는 그런 장치"* — 3.4.0 뒤에 본다.
+- **[2026-10-16 신설] 코드 품질 round15 문항 여섯 `Q188`~`Q193` — `qa-request/code-quality-review-round15.md` §4**(소스 주석의 원장 번호, 킷 Overlay·Interaction 공통 층, `q.debug` 진단 번호·훅, 킷 에러 번호, `:List` ctx 공개 타입 이름, quad-mock 시기). 사용자: *"3.4 이 나온 다음에 할 일이 쌓여있도록 하는 그런 장치"* — 3.4.0 뒤에 본다. **[2026-10-20] Q188 닫힘**(만질 때 + 여유 신호 때 천천히, 번호는 `Ref:` 꼬리로 남김 — 원장 §4).
 - **[2026-10-15 신설] 펴 넣는 묶음 `q.Spread` — 이름은 확정, 표면 문항 다섯은 `research/component-flatten-sugar-plan.md` 5절**(같은 키 두 Spread, 같은 값 두 요소, 펴기 루프 세 단계, 타입, 2절 경계 flatten과의 관계). **[2026-10-16] (1)~(4) 사용자 회신으로 닫힘**(타입은 Declaration 트랙에서 `Spread "Frame" {…}`·`Spread<C>`로), **(5) `Split`과의 관계만 보류**(*"나와 봐야 알것 같아"*).
 - **[2026-09-06 신설] 컴포넌트 경계 flatten 슈거 스캐폴딩 — `research/component-flatten-sugar-plan.md` 2절의 "정해야 할 것" 일곱(단위·State 취급·`rest` 형태·배열부 분리 범위·되꽂기 표기·경계 필드 이름 Q2·패키지).** 사용자가 "나중에 보고 답할게"라 한 항목. 구현은 순수 슈거라 코어를 막지 않는다.
 - **중첩 State 평탄화 `State<State<T>>` → `State<T>`(2026-08-13 여섯 번째
