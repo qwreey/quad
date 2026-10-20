@@ -55,3 +55,7 @@ gen-d.py: LEGACY_KEEP(정의 클래스 기준, 태그 무관 — Transparency �
 ## 11. 단위 4 완료(quad-roblox 런타임)
 
 `Surface/Runtime.luau`·`Handlers/OnEvent.luau`, Quad0278~0280, gen-d `Superclass` 런타임 표. 공존: OnChange·Out은 인자 개수로, Modifier는 base `__call`의 임시 한 문자열 갈래(래퍼는 옛 꼴 에러 blame을 깨서 버림 — spec.claim). 태그된 함수끼리 부르면 blame이 quad 줄로 간다는 것을 다시 밟아 공개 단계 → 태그 없는 본체 구조로. test.sh·킷 둘 exit 0.
+
+## 12. 단위 5 완료(변환 스크립트)
+
+`scripts/migrate-3.4.py`. 레포 사본 적용: 킷 Lune 스펙 원본과 동일 통과(184·507), 못 정함 1·캐스트 D 1(시제품과 같은 자리). 스펙 쪽 손 몫과 `InstanceShorthand`의 `Declaration.New` 내부 의존은 단위 6.
