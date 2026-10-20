@@ -56,6 +56,10 @@ local r1 = s1:Append(GuiSpread {}) -- NEG :Append returns nothing
 local s2 = FrameSpread { Visible = "x" } -- NEG Spread value
 local f10 = Frame { s1, GuiSpread { Active = true } } -- OK
 local l2 = TextLabel { ButtonSpread {} } -- NEG sibling Spread on an element
+local rawMod = (nil :: any) :: QuadTypes.Modifier -- base's untyped `q.Raw.Modifier` value (tag `true`)
+local rawSpread = (nil :: any) :: { read __quadSpread: true } -- base's untyped `q.Raw.Spread` value
+local f11 = Frame { rawMod } -- NEG untyped Modifier: use q.Modifier "Class"
+local f12 = Frame { rawSpread } -- NEG untyped Spread: use q.Spread "Class"
 
 -- descriptors
 local FrameOnEvent = q.OnEvent "Frame"

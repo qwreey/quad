@@ -105,8 +105,8 @@ local function _neverCalled(custom: MaterialButtonModifier)
 	local f = Frame({ m2, Name = "typed", FrameModifier():Visible(false), g, inst })
 	local l = TextLabel({ g, t, inst, Text = "hi" })
 	local tb = TextButton({ btn, g, GuiButtonModifier():Modal(true), i1 })
-	local baseMod = q.Raw.Modifier() -- base 무타입 Modifier는 `true` 마커로 명시 허용
-	local f2 = Frame({ baseMod })
+	-- base 무타입 Modifier(`q.Raw.Modifier`, 태그 `true`)는 3.4.0부터 타입드 요소가 받지 않는다 — 음성은 surface/cases.luau
+	local f2 = Frame({ FrameModifier() })
 	local mapped = q.Mapper "TextLabel"("Body")({ g, t })
 	return peeked, b, b2, merged, merged2, same, forced, toCustom, fr, i2, i3, i4, f, l, tb, f2, mapped, made
 end

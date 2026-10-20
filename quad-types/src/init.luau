@@ -77,9 +77,9 @@ export type ObserverMarker = { read __quadObserver: true }
 
 export type EffectMarker = { read __quadEffect: true }
 
--- children 유니언용 마커 타입 — 무타입 base Modifier의 것(`true`). 클래스 태그
--- 마커 `{ read __quadModifier: "Frame" | "GuiObject" | … }`는 생성기가 클래스별
--- `<Class>Elem`에 찍는다(조상 체인 — 상위 클래스 Modifier가 하위 자식 자리에 감)
+-- 무타입 base Modifier(`q.Raw.Modifier`)의 마커(`true`). 백엔드 무관 자리(quad-base 스펙 등)에서 쓴다 — quad-roblox의
+-- 타입드 요소는 3.4.0부터 이 팔을 받지 않고 클래스 태그 마커 `{ read __quadModifier: "Frame" | "GuiObject" | … }`만
+-- 받는다(`PropsArrayItem<C>` — 조상 체인, 상위 클래스 Modifier가 하위 자식 자리에 감)
 export type ModifierMarker = { read __quadModifier: true }
 
 -- 센티널 둘 — `None`과 같은 신원 값(재export). 판정은 `v == Detach` 신원

@@ -9,6 +9,8 @@ description: 불변 프로퍼티 가방 — 생성·setter 체인·Peek/Apply/Ov
 
 `q.Raw.Modifier(...)`는 **무타입** Modifier를 만듭니다. quad-roblox를 설치하면 클래스 태그가 붙은 타입드 생성자 `q.Modifier "Class" (...)`가 같이 생깁니다. 런타임은 `q.Raw.Modifier.TypedFactory("<Class>")`가 돌려준 생성자 그대로이고, 필드 setter 타입은 타입 함수가 그 클래스 타입에서 계산합니다([roblox/03 — Modifier와 Spread](/reference/roblox/03-modifier-spread/)). 3.3까지는 이 무타입 생성자의 이름이 `q.Modifier`였습니다.
 
+**Roblox 요소에는 `q.Modifier "Class"`를 쓰세요.** 무타입 Modifier는 필드가 하나도 타입 검사되지 않아, 3.4.0부터 quad-roblox의 타입드 요소(`q.Elem "Frame" {…}`) 배열부는 이것을 받지 않습니다(런타임은 그대로 동작합니다 — 막는 것은 타입입니다). 이 페이지의 무타입 예제는 base 층의 동작 설명이고, 요소에 놓는 예제는 타입드 생성자로 적었습니다.
+
 이 페이지의 심볼: [`q.Raw.Modifier`](#qrawmodifier) · [`mod:<Field>`](#modfieldvalue) · [`mod:Peek`](#modpeektkey) · [`mod:Apply`](#modapplyfactory) · [`mod:Overridden`](#modoverridden) · [`mod:As(name)`](#modasname) · [`mod:As<Class>()`](#modasclass) · [`q.Raw.Modifier.Overridden`](#qrawmodifieroverridden) · [`q.Raw.Modifier.TypedFactory`](#qrawmodifiertypedfactorytname) · [`q.Raw.Modifier.DefineSubtype`](#qrawmodifierdefinesubtypeparent-subtype)
 
 이 페이지의 모든 예제는 아래 프롤로그를 전제합니다.
@@ -51,8 +53,8 @@ Modifier는 props의 **숫자 키** 항목입니다. 문자 키의 값 자리에
 3. 소비된 숫자 키 자리는 내부 센티널로 채워져 배열에 구멍이 생기지 않습니다.
 
 ```luau
-local base = q.Raw.Modifier { BackgroundTransparency = 1 }
-local accent = q.Raw.Modifier { BackgroundTransparency = 0.5 }
+local base = q.Modifier "Frame" { BackgroundTransparency = 1 }
+local accent = q.Modifier "Frame" { BackgroundTransparency = 0.5 }
 local box = q.Elem "Frame" { base, accent, Name = "Box" } -- accent가 이겨 0.5
 ```
 
@@ -98,11 +100,11 @@ Modifier: setmetatable<{
 **예제**
 
 ```luau
-local card = q.Raw.Modifier {
+local card = q.Modifier "Frame" {
     BackgroundTransparency = 0.2,
     BorderSizePixel = 0,
 }
-local wide = q.Raw.Modifier(card, { Size = UDim2.fromScale(1, 0.4) }) -- card를 깔고 Size를 얹는다
+local wide = q.Modifier "Frame" (card, { Size = UDim2.fromScale(1, 0.4) }) -- card를 깔고 Size를 얹는다
 local panel = q.Elem "Frame" { wide }
 ```
 

@@ -68,8 +68,11 @@
 - 에러: `Quad0273`(평범한 테이블 아님)·`Quad0274`(Spread를 키 값으로 — 생성)·`Quad0277`(같은 것 — drive)·`Quad0276`(`:Append`에
   Spread 아닌 값), Modifier 필드 값으로 넣은 Spread는 `Quad0064`/`Quad0057`(핸들러 계층 값 목록).
 - **`q.Raw.Spread`(타입 `__quadSpread: true`)는 타입드 요소 배열부가 받지 않는다**(사용자 2026-10-20 *"raw spread 는 안 받는 쪽으로"*) —
-  런타임 값은 `q.Spread "Class"`와 같으니 잃는 것이 없고, 받으면 `SpreadInto<C>`의 형제 클래스 거부가 그 경로에서 꺼진다. `q.Raw.Modifier`를
-  받는 `true` 팔과 비대칭이지만 그쪽은 3.3 무타입 Modifier 자리를 이은 것이라 그대로 둔다(/code-review 지적에서 나온 문항).
+  런타임 값은 `q.Spread "Class"`와 같으니 잃는 것이 없고, 받으면 `SpreadInto<C>`의 형제 클래스 거부가 그 경로에서 꺼진다(/code-review
+  지적에서 나온 문항). **같은 날 `q.Raw.Modifier`를 받던 `true` 팔도 걷었다**(사용자 *"걷어내도 무방할 것 같아"*) — M7(2026-09-04)에
+  무타입 base `q.Modifier`가 유일한 공개 생성자이던 시절의 명시 허용이었고, 필드가 하나도 검사되지 않는 같은 구멍이다. 비용: `types.luau`
+  `NewChild`의 팔 한 줄, 음성 고정물 둘(`quad-roblox/test/surface/cases.luau`), core/08 예제, `migrate-3.4.py`가 요소에 놓일 무타입
+  Modifier를 미해결로 보고(고치지 않음 — 클래스는 놓인 요소의 것). 킷·table-sim·devplorer 사용 0곳.
 - 키트 안쪽 요소 자리는 `FieldModifier`/`TrackModifier` 옆에 `FieldSpread`/`TrackSpread`(마커 `SpreadInto<C>`). `Split`과의 관계는
   보류(research 5절).
 

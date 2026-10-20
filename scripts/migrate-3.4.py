@@ -511,6 +511,10 @@ class Rewriter:
                 if re.match(r"\s*(\(|\{|\.\s*(Overridden|TypedFactory|DefineSubtype)\b)", rest) or "quad-base/" in self.rel:
                     self.edit(m.start(), m.end(), f"{qn}.Raw.Modifier")
                     rep["base"].append((self.ln(m.start()), "Modifier → Raw.Modifier"))
+                    # an untyped Modifier VALUE (a call / table call, not the namespace fields) is refused by 3.4.0's
+                    # typed elements — not rewritten (the class is the element's, which may be far away), but reported
+                    if "quad-base/" not in self.rel and re.match(r"\s*(\(|\{)", rest):
+                        rep["unresolved"].append((self.ln(m.start()), "untyped Modifier: 3.4.0 typed elements refuse it - if it goes on an element, build it with q.Modifier \"Class\" (…)"))
             for m in re.finditer(r"(?<![\w.:])" + re.escape(qn) + r"\s*\.\s*newMapperClass\b", ms):
                 if self.free(m.start(), m.end()):
                     self.edit(m.start(), m.end(), f"{qn}.Raw.Mapper")

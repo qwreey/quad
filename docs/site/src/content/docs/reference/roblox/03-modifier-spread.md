@@ -20,7 +20,8 @@ description: "q.Modifier \"Class\" — 타입드 프로퍼티 묶음(setter 체�
 
 :::note
 `q.Modifier`·`q.Spread`는 `quad-roblox` 백엔드 전용입니다 — `q = Quad:UseProvider(QuadRoblox)` 뒤에만 존재합니다.
-타입 없는 기본은 `quad-base`의 [`q.Raw.Modifier`](/reference/core/01-quad-module/#qraw)·`q.Raw.Spread`이고, 예약 메소드
+타입 없는 기본은 `quad-base`의 [`q.Raw.Modifier`](/reference/core/01-quad-module/#qraw)·`q.Raw.Spread`입니다 — 둘 다 필드가
+검사되지 않아 이 페이지의 타입드 요소 배열부는 받지 않습니다(백엔드를 짓는 쪽의 원재료). 예약 메소드
 (`Apply`/`Peek`/`Overridden`/`As`)의 정본은 [core/08 — Modifier](/reference/core/08-modifier/)입니다. 이 페이지는 **클래스가
 붙었을 때 달라지는 것**을 다룹니다.
 :::

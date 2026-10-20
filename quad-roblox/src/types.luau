@@ -195,13 +195,11 @@ export type NewChild =
 	-- handlers in `Observer.luau`/`Effect.luau`), missing from the M5 widening list (`H-355`).
 	| QuadTypes.ObserverMarker
 	| QuadTypes.EffectMarker
-	-- M7 단위 ③·④: Modifier는 MARKER로만 — 클래스별 `<Class>Modifier`를 유니언에
-	-- 직접 넣으면 큰 클래스의 캐스트 자리에서 "too complex"(2026-09-04 실측,
-	-- typing-limits 8.8절). 여기(`true`)는 무타입 base `Modifier()`의 명시 허용이고,
-	-- 클래스 태그 마커 `{ read __quadModifier: "Frame" | "GuiObject" | … }`(자기 +
-	-- 조상 체인)는 `PropsArrayItem<C>`(3.4.0 전엔 생성 `<Class>Elem`)가 담는다 — 그래서 형제 클래스 Modifier는
-	-- 거부된다(단위 ④, modifier-plan 11절). `State<Modifier>`는 7절이 error라 없다.
-	| QuadTypes.ModifierMarker
+-- Modifiers are not in this union: the class-tag marker `{ read __quadModifier: "Frame" | "GuiObject" | … }` (own class
+-- + ancestors) lives in `PropsArrayItem<C>`, so a sibling class's Modifier is refused. The untyped base Modifier
+-- (`q.Raw.Modifier`, tag `true`) had its own arm here from M7 (2026-09-04, when base's untyped `q.Modifier` was the only
+-- public constructor); 3.4.0 dropped it with the user's decision — its fields are never type-checked, the same hole for
+-- which `q.Raw.Spread` is refused. `State<Modifier>` is an error (modifier-plan 7절). Ref: 2026-10-20 user decision
 
 -- OnChange descriptor (M10, `base/onchange-plan.md` — array-part value since the 2026-09-03 reversal): frozen
 -- `{ Name, Callback }`, Handlers/OnChange.luau. This is the RUNTIME shape; the checked curried factory
