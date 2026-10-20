@@ -12,7 +12,8 @@
 		local overlay = Overlay.new()            -- one per ScreenGui (the layer dies with it), or Overlay.getDefault()
 		q.Elem "ScreenGui" { ResetOnSpawn = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, windowsFrame, overlay.Layer }
 		-- ZIndexBehavior = Sibling is REQUIRED: a ScreenGui made in code defaults to Global, where the layer's ZIndex
-		-- does not lift its popups (their own ZIndex is 1) above a window whose root has a higher rank
+		-- does not lift its popups (their own ZIndex is 1) above a window's frame or surface (a window of rank r takes
+		-- ZIndex 3r-2..3r)
 
 		local popup = overlay:Open({
 			Content = q.Elem "Frame" { ... },           -- a quad-made element; the overlay owns it from now on
@@ -159,9 +160,9 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 		end),
 	})
 
-	-- `q.debug` only, once per overlay: the kit layers by ZIndex among SIBLINGS (window rank 1..n, this layer 1000). A
+	-- `q.debug` only, once per overlay: the kit layers by ZIndex among SIBLINGS (a window of rank r takes ZIndex 3r-2..3r — frame, surface, grip — this layer 1000). A
 	-- ScreenGui made in code is ZIndexBehavior Global, where a ZIndex is compared across the whole ScreenGui: a window
-	-- root with rank 2+ then draws over its own content and over every popup (their ZIndex is 1). Nothing raises, so the
+	-- frame of rank 2+ then draws over its window's content and over every popup (their ZIndex is 1). Nothing raises, so the
 	-- first Open under such a ScreenGui says it (as the material kit's Overlay does).
 	local zIndexChecked = false
 	local unmountedWarned = false

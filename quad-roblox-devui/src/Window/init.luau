@@ -16,10 +16,20 @@
 			Collapsed: Source<boolean>?,        -- the arrow toggles it; collapsed = title bar only
 			NoTitleBar / NoResize / NoMove / NoClose / NoCollapse: boolean?,   -- static flags
 			MinSize: Vector2?,                  -- resize floor (default 2 x frame height square)
-			Manager: WindowManager?,            -- z-order/focus group (default Manager.default)
+			Manager: WindowManager?,            -- z-order/focus group and decorations (default Manager.default)
 			Style: Style?,
-			Modifier: ModifierInto<Frame>?,           -- extra root-frame styling (inline props still win)
+			Modifier: ModifierInto<Frame>?,           -- extra styling of the returned surface root (inline props still win)
 		}
+
+	SURFACE AND DECORATION [2026-10-20 user decision — the WindowManager is a compositor]: the returned root is the
+	window's content SURFACE only (the scrolling content area). The frame (background, border), the title bar and the
+	resize grip are DECORATION that the window's manager draws (Window/Decoration.luau, like Wayland's server-side
+	decorations) as SIBLINGS of the root, in whatever parent you give the root: they follow its `Parent` (nil parent =
+	nothing on screen) and are disposed with it. Put the root in a ScreenGui / a Frame container as before — the
+	decoration instances appear next to it (`WindowDecoration` holding the TitleBar, `WindowResizeGrip`); never parent
+	them yourself. Title, the No* flags and MinSize are hints the surface gives its compositor (same names, same
+	meaning). Position / Size are the window's OUTER rectangle, title bar included (the root sits under the title bar
+	and gets the rest).
 
 	FILLING THE HEIGHT [2026-10-20, Studio-confirmed]: give one child `q.Elem "UIFlexItem" ({ FlexMode = Enum.UIFlexMode.Fill })`
 	and it takes the height the other children leave (the content list is a UIListLayout): a 300 x 300 window gave a
@@ -29,47 +39,32 @@
 	content area's visible size (AbsoluteWindowSize: a shown scrollbar is left out) minus the window padding — for
 	layouts that need a number; a container that sets the window's size (a future dock) moves both the same way.
 
-	Returns the root Frame (place it in a ScreenGui / a Frame container: windows that share a container are layered
-	by the manager). Structure (about eight GuiObjects): root > ClickSink, TitleBar (CollapseButton, Title, CloseButton), Content
-	(ScrollingFrame + UIListLayout + UIPadding), ResizeGrip. Closing keeps the instance and hides it (Visible=false) —
-	`Open:Set(true)` brings it back with its state intact.
+	Returns the surface root Frame (named "Window"): root > Content (ScrollingFrame + UIListLayout + UIPadding). It is
+	shown while the window is open and not collapsed. Closing keeps the instances and hides them — `Open:Set(true)`
+	brings the window back with its state intact.
 
 	Dragging uses Interaction.drag (global tracking only while a drag is active, closed on release / focus loss /
-	destroy). Pressing anywhere in the window — a button, a text box or any other widget in it included — focuses it
-	(raises it to the front): the manager's one global press listener (Manager header "PRESS TO FRONT"). Closing the
-	focused window passes the focus to the topmost open one; opening it again brings it to the front with the focus.
-	A press on the window's empty area stops at an invisible full-cover `ClickSink` button (ZIndex 0) instead of falling
-	through to a widget of a window beneath.
-
-	STAYING ON SCREEN (Dear ImGui `ClampWindowPos`, imgui.cpp — `DisplayWindowPadding` 19 at the default size, applied
-	with the title bar as the window's height when the window moves by its title bar only): the window's top-left is
-	kept in [pad - width, W - pad] x [pad - band, H - pad] of its container (W x H = the container's size, pad =
-	max(FrameHeight, DisplaySafeAreaPadding) — FrameHeight is 19 at the default size like ImGui's padding and scales
-	with the style; band = the title bar height, or the window height without a title bar). With the title bar that
-	is: at least `pad` pixels of the title bar stay inside horizontally and the whole title bar vertically (its top
-	never goes above the container). Applied (1) while dragging the title bar and (2) when the container SHRINKS (its
-	AbsoluteSize gets smaller in either axis, not to zero) — then an out-of-bounds window is brought back in by writing
-	the Position Source. A position the program sets is otherwise left alone (also one outside the container), and a
-	container that grows clamps nothing.
+	destroy). Pressing anywhere in the window — a button, a text box or any other widget in it, or its decoration —
+	focuses it (raises it to the front): the manager's one global press listener (Manager header "PRESS TO FRONT").
+	Closing the focused window passes the focus to the topmost open one; opening it again brings it to the front with
+	the focus — the window reports its `Open` state to the manager (collapsing hides the root but is not a close). A
+	press on the window's empty area stops at an invisible full-cover `ClickSink` button in the decoration frame, right
+	under the surface, instead of falling through to a widget of a window beneath. Staying on screen while dragging and
+	when the container shrinks: Window/Decoration.luau header "STAYING ON SCREEN".
 ]]
 
 local Quad = require("./Quad")
 local q = Quad
 local Frame = q.Elem "Frame"
-local ImageButton = q.Elem "ImageButton"
 local ScrollingFrame = q.Elem "ScrollingFrame"
-local TextButton = q.Elem "TextButton"
 local UIListLayout = q.Elem "UIListLayout"
 local UIPadding = q.Elem "UIPadding"
-local UIStroke = q.Elem "UIStroke"
 local FrameModifier = q.Modifier "Frame"
 local windowName = FrameModifier():Name("Window")
-local Interaction = require("./Interaction")
 local Style = require("./Style")
 local Util = require("./Util")
-local Visibility = require("./Visibility")
 local Manager = require("@self/Manager")
-local TitleBar = require("@self/TitleBar")
+local Compositor = require("@self/Compositor")
 
 type State<T> = Quad.State<T>
 type Source<T> = Quad.Source<T>
@@ -108,158 +103,39 @@ local function Window(props: WindowProps): Frame
 	local size: Source<Vector2> = props.Size or q.Source(Vector2.new(300, 200))
 	local open: Source<boolean> = props.Open or q.Source(true)
 	local collapsed: Source<boolean> = props.Collapsed or q.Source(false)
-	local noTitleBar = props.NoTitleBar == true
 
-	-- title bar height (0 without a title bar)
-	local noHeight: State<number> = q.Source(0)
-	local titleHeight: State<number> = if noTitleBar then noHeight else style.FrameHeight
-
-	local rootSize: State<UDim2> = size:Compute(function(self, _prev, isCollapsed, titleH)
-		local s = self:Get()
-		if isCollapsed:Get() then
-			return UDim2.fromOffset(s.X, titleH:Get())
-		end
-		return UDim2.fromOffset(s.X, s.Y)
-	end, collapsed, titleHeight)
-
-	local expanded: State<boolean> = collapsed:Compute(function(self)
-		return not self:Get()
-	end)
-	local rootAlpha: State<number> = collapsed:Compute(function(self, _prev, alpha)
-		return if self:Get() then 1 else alpha:Get()
-	end, style.Transparency.WindowBg)
-
-	local contentPos: State<UDim2> = titleHeight:Compute(function(self)
-		return UDim2.fromOffset(0, self:Get())
-	end)
-	local contentSize: State<UDim2> = titleHeight:Compute(function(self)
-		return UDim2.new(1, 0, 1, -self:Get())
-	end)
-	local gripSize: State<UDim2> = style.Metrics.TextSize:Compute(function(self, _prev, padding)
-		local s = self:Get() + padding:Get().X
-		return UDim2.fromOffset(s, s)
-	end, style.Metrics.FramePadding)
-	local gripVisible: State<boolean> = expanded
-
-	-- assigned right after the root is built; read only from event handlers
-	local root: Frame? = nil
-
-	-- keep the window reachable inside its container (header "STAYING ON SCREEN"); `pos` unchanged when it already is
-	local function clampToContainer(pos: UDim2): UDim2
-		local r = root
-		local container = if r then r.Parent else nil
-		if r == nil or container == nil or not Visibility.hasArea(container) then
-			return pos
-		end
-		local area = (container :: GuiBase2d).AbsoluteSize
-		if area.X <= 0 or area.Y <= 0 then
-			return pos -- (a zero-sized container: minimised / not laid out yet — Dear ImGui skips it too)
-		end
-		local s = size:Get()
-		local titleH = titleHeight:Get()
-		local w = s.X
-		local h = if collapsed:Get() then titleH else s.Y
-		-- AbsoluteSize is in screen pixels, Position offsets in the window's own units: an ancestor UIScale divides
-		local abs = r.AbsoluteSize
-		local scale = if w > 0 and abs.X > 0 then abs.X / w else 1
-		local cw, ch = area.X / scale, area.Y / scale
-		local safe = style.Metrics.DisplaySafeAreaPadding:Get()
-		local frame = style.FrameHeight:Get()
-		local padX, padY = math.max(frame, safe.X), math.max(frame, safe.Y)
-		local band = if titleH > 0 then titleH else h
-		local anchor = r.AnchorPoint or Vector2.zero -- (`or`: the spec mock has no property defaults)
-		local x = pos.X.Scale * cw + pos.X.Offset - anchor.X * w
-		local y = pos.Y.Scale * ch + pos.Y.Offset - anchor.Y * h
-		local cx = math.max(padX - w, math.min(cw - padX, x))
-		local cy = math.max(padY - band, math.min(ch - padY, y))
-		if cx == x and cy == y then
-			return pos
-		end
-		return UDim2.new(pos.X.Scale, pos.X.Offset + math.round(cx - x), pos.Y.Scale, pos.Y.Offset + math.round(cy - y))
-	end
-
-	-- title-bar drag moves the window (pixel deltas added to the Position offsets)
-	local startPos = UDim2.new()
-	local titleDrag: Interaction.DragHandle? = nil
-	if not props.NoMove then
-		titleDrag = Interaction.drag({
-			OnBegin = function()
-				slot:Focus()
-				startPos = position:Get()
-			end,
-			OnMove = function(_x, _y, dx, dy)
-				position:Set(clampToContainer(UDim2.new(startPos.X.Scale, startPos.X.Offset + dx, startPos.Y.Scale, startPos.Y.Offset + dy)))
-			end,
-		})
-	end
-
-	-- resize grip
-	local startSize = Vector2.new()
-	local minSize = props.MinSize
-	local grip: Interaction.DragHandle? = nil
-	local gripHover = Interaction.hover()
-	local gripLook = Style.interactive(style, "ResizeGrip", gripHover.Hovered, gripHover.Pressed)
-	if not props.NoResize then
-		grip = Interaction.drag({
-			OnBegin = function()
-				slot:Focus()
-				startSize = size:Get()
-			end,
-			OnMove = function(_x, _y, dx, dy)
-				local floor = if minSize then minSize else Vector2.new(style.FrameHeight:Get() * 2, style.FrameHeight:Get() * 2)
-				size:Set(Vector2.new(math.max(floor.X, startSize.X + dx), math.max(floor.Y, startSize.Y + dy)))
-			end,
-		})
-	end
-
-	local strokeThickness: State<number> = style.Metrics.WindowBorderSize
-
-	-- the container shrinking brings an out-of-bounds window back in (one connection, on the current container)
-	local containerConn: RBXScriptConnection? = nil
-	local lastArea = Vector2.zero
-	local function watchContainer()
-		local c = containerConn
-		if c then
-			containerConn = nil
-			c:Disconnect()
-		end
-		local r = root
-		local container = if r then r.Parent else nil
-		if container == nil or not Visibility.hasArea(container) then
-			return
-		end
-		local gui = container :: GuiBase2d
-		lastArea = gui.AbsoluteSize
-		containerConn = gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-			local area = gui.AbsoluteSize
-			local shrank = area.X < lastArea.X or area.Y < lastArea.Y
-			lastArea = area
-			if shrank and area.X > 0 and area.Y > 0 then
-				local current = position:Get()
-				local inside = clampToContainer(current)
-				if inside ~= current then
-					position:Set(inside)
-				end
-			end
-		end)
-	end
+	-- the compositor draws the frame, title bar and grip from these hints and answers where the surface goes
+	local placement = Compositor.decorate(slot, {
+		Style = style,
+		Title = props.Title,
+		Position = position,
+		Size = size,
+		Open = open,
+		Collapsed = collapsed,
+		NoTitleBar = props.NoTitleBar == true,
+		NoResize = props.NoResize == true,
+		NoMove = props.NoMove == true,
+		NoClose = props.NoClose == true,
+		NoCollapse = props.NoCollapse == true,
+		MinSize = props.MinSize,
+	})
 
 	-- [2026-10-15 user decision] the owner drives the window through the Sources it already holds, no handle:
 	-- `open:Set(true)` raises (quad's `Set` re-emits an equal value, `SetIfChanged` does not). The install run of the
-	-- Observer is skipped — a window open from the start does not steal the focus.
+	-- Observer is skipped — a window open from the start does not steal the focus. Every later emission is reported
+	-- to the compositor (open raises with the focus, closed passes the focus on): the window's open state, not its
+	-- root's Visible, is what "closed" means to the manager.
 	-- [2026-10-20 user decision] `Focused` is TWO-WAY like InputText's (one meaning for `Focused` across the kit, after a
 	-- three-model naming review flagged the output-only / two-way split): the window writes its focus state, and a
 	-- write from outside asks — true raises and focuses (`slot:Focus()`), false drops the focus (`slot:Blur()`). A
 	-- `true` the Source already holds when the window is built is a request too (an explicit ask, unlike the default).
 	local openInstalled = false
-	local raiseOnOpen = open:Observer(function(self)
+	local reportOpen = open:Observer(function(self)
 		if not openInstalled then
 			openInstalled = true
 			return
 		end
-		if self:Get() then
-			slot:Focus()
-		end
+		Compositor.setOpen(slot, self:Get())
 	end)
 	local focusedOut = props.Focused
 	-- the outside asks through `Focused` (runs before the mirror below; the mirror's own writes come back here as no-ops:
@@ -296,59 +172,25 @@ local function Window(props: WindowProps): Frame
 			end)
 		else q.None
 
-	local built = Frame({
+	return Frame({
 		windowName,
-		raiseOnOpen,
+		reportOpen,
 		focusRequest,
 		focusedMirror,
 		availableMirror,
 		props.Modifier or q.None,
 		slot.Hook,
-		Position = position,
-		Size = rootSize,
+		Position = placement.Position,
+		Size = placement.Size,
 		ZIndex = slot.ZIndex,
-		Visible = open,
+		Visible = placement.Visible,
 		Active = true,
-		BackgroundColor3 = style.Color.WindowBg,
-		BackgroundTransparency = rootAlpha,
+		-- the decoration frame under the surface paints the window background (Window/Decoration.luau header)
+		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		UICorner = style.Metrics.WindowRounding,
-		UIStroke({
-			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-			Thickness = strokeThickness,
-			Color = style.Color.Border,
-			Transparency = style.Transparency.Border,
-		}),
-		-- a press on the window's empty area must not fall through to a window beneath: a plain Frame / ScrollingFrame
-		-- passes a click on to the GuiButton under it (`Active` does not stop it), only a GuiButton sinks it. Direct
-		-- child at ZIndex 0 (the root lays nothing out), so every other child stays above it (user decision 2026-10-15).
-		TextButton({
-			Name = "ClickSink",
-			Size = UDim2.fromScale(1, 1),
-			ZIndex = 0,
-			BackgroundTransparency = 1,
-			BorderSizePixel = 0,
-			Text = "",
-			AutoButtonColor = false,
-			Selectable = false,
-		}),
-		if noTitleBar
-			then q.None
-			else TitleBar.new({
-				Style = style,
-				Title = props.Title,
-				Collapsed = collapsed,
-				Open = open,
-				Focused = slot.Focused,
-				NoCollapse = props.NoCollapse == true,
-				NoClose = props.NoClose == true,
-				Drag = titleDrag,
-			}),
 		ScrollingFrame({
 			Name = "Content",
-			Position = contentPos,
-			Size = contentSize,
-			Visible = expanded,
+			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			Active = true,
@@ -372,37 +214,11 @@ local function Window(props: WindowProps): Frame
 			}),
 			props.Children or q.None,
 		}),
+		-- leaving the manager disposes the decoration too
 		q.OnDestroyed(function()
 			slot:Release()
-			local c = containerConn
-			if c then
-				containerConn = nil
-				c:Disconnect()
-			end
 		end),
-		if grip
-			then ImageButton({
-				gripHover.Hook,
-				grip.Hook,
-				Name = "ResizeGrip",
-				AnchorPoint = Vector2.new(1, 1),
-				Position = UDim2.fromScale(1, 1),
-				Size = gripSize,
-				ZIndex = 2,
-				Visible = gripVisible,
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				AutoButtonColor = false,
-				Image = style.Icons.ResizeGrip,
-				ImageColor3 = gripLook.Color,
-				ImageTransparency = gripLook.Transparency,
-			})
-			else q.None,
 	})
-	root = built
-	built:GetPropertyChangedSignal("Parent"):Connect(watchContainer)
-	watchContainer()
-	return built
 end
 
 return {

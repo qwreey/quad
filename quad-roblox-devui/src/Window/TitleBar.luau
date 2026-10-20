@@ -1,7 +1,8 @@
 --!strict
 --[[
-	Window title bar (internal part of Window): collapse arrow, title, close button. One Frame + three children
-	(ImageButton / TextLabel / ImageButton). Drag and focus are wired by the caller (`Drag` handle, `OnPointerDown`).
+	Window title bar (internal part of the window decoration, Window/Decoration.luau): collapse arrow, title, close
+	button. One Frame + three children (ImageButton / TextLabel / ImageButton). Drag and focus are wired by the caller
+	(`Drag` handle).
 ]]
 
 local Quad = require("../Quad")

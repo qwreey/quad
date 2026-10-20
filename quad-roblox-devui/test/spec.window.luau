@@ -3,6 +3,7 @@ local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
 local Devui = require("../src")
+local Compositor = require("../src/Window/Compositor")
 local Style = Devui.Style
 local Kids = Devui.Kids
 
@@ -23,10 +24,59 @@ end
 local function press(x: number, y: number)
 	UIS.InputBegan:Fire(mouse(Enum.UserInputType.MouseButton1, x, y), true)
 end
-local function get(root: Instance, name: string): any
-	local found = H.find(root, name)
+-- the window's decoration (made by its manager, siblings of the surface root): the frame and the resize grip
+local function deco(win: Instance): (any, any)
+	local frame, grip = nil, nil
+	for _, part: any in Compositor.partsOf(win) do
+		if part.Name == "WindowDecoration" then
+			frame = part
+		elseif part.Name == "WindowResizeGrip" then
+			grip = part
+		end
+	end
+	assert(frame ~= nil, "a window has a decoration frame")
+	return frame, grip
+end
+-- a named instance in the surface or in its decoration (nil when absent)
+local function lookup(win: Instance, name: string): any?
+	local found = H.find(win, name)
+	if found ~= nil then
+		return found
+	end
+	for _, part: any in Compositor.partsOf(win) do
+		if part.Name == name then
+			return part
+		end
+		local hit = H.find(part, name)
+		if hit ~= nil then
+			return hit
+		end
+	end
+	return nil
+end
+local function get(win: Instance, name: string): any
+	local found = lookup(win, name)
 	assert(found ~= nil, `missing {name}`)
 	return found
+end
+-- layout stand-in for a window: its outer rectangle at x, y (w x h): the frame, the surface under a title bar of
+-- `titleH` (default 19), the grip in the bottom-right corner
+local function place(win: Instance, x: number, y: number, w: number, h: number, titleH: number?)
+	local bar = titleH or 19
+	local frame, grip = deco(win)
+	H.setAbs(frame, x, y, w, h)
+	H.setAbs(win, x, y + bar, w, h - bar)
+	if grip ~= nil then
+		H.setAbs(grip, x + w - 15, y + h - 15, 15, 15)
+	end
+end
+-- every instance of a window: the surface root and its descendants, the decoration parts and theirs
+local function countAll(win: Instance): number
+	local n = 1 + H.countDescendants(win)
+	for _, part in Compositor.partsOf(win) do
+		n += 1 + H.countDescendants(part)
+	end
+	return n
 end
 
 H.section("mount: structure, bindings, small instance count", function()
@@ -36,8 +86,17 @@ H.section("mount: structure, bindings, small instance count", function()
 		Children = Kids(Devui.Text({ Text = "body" }), Devui.Button({ Text = "ok" })),
 	})
 	local win2: any = win
-	assert(win2.Name == "Window" and win2.Position == UDim2.fromOffset(60, 60) and win2.Size == UDim2.fromOffset(300, 200))
-	assert(win2.BackgroundColor3 == Color3.fromRGB(15, 15, 15) and win2.Visible == true and win2.Active == true)
+	-- the returned root is the content SURFACE, under the title bar; Position / Size stay the outer rectangle
+	assert(win2.Name == "Window" and win2.Position == UDim2.fromOffset(60, 79) and win2.Size == UDim2.fromOffset(300, 181))
+	assert(win2.BackgroundTransparency == 1 and win2.Visible == true and win2.Active == true)
+	assert(H.find(win, "TitleBar") == nil and H.find(win, "ClickSink") == nil, "no title bar or sink inside the surface")
+	local frame, grip = deco(win)
+	assert(frame.Position == UDim2.fromOffset(60, 60) and frame.Size == UDim2.fromOffset(300, 200), "frame = outer rectangle")
+	assert(frame.BackgroundColor3 == Color3.fromRGB(15, 15, 15) and frame.Visible == true)
+	assert(grip.Position == UDim2.fromOffset(360, 260) and grip.AnchorPoint == Vector2.new(1, 1), "grip at the outer corner")
+	assert(frame.ZIndex < win2.ZIndex and win2.ZIndex < grip.ZIndex, "frame below the surface, grip above it")
+	assert(frame.Parent == nil and grip.Parent == nil, "an unplaced surface: the decoration is not placed either")
+	assert(get(frame, "TitleBar").Parent == frame)
 	local title = get(win, "Title")
 	assert(title.Text == "Debug")
 	label:Set("Renamed")
@@ -45,18 +104,21 @@ H.section("mount: structure, bindings, small instance count", function()
 	local bar = get(win, "TitleBar")
 	assert(bar.Size == UDim2.new(1, 0, 0, 19), "title bar = frame height")
 	local content = get(win, "Content")
-	assert(content.ClassName == "ScrollingFrame" and content.Position == UDim2.fromOffset(0, 19))
-	assert(content.Size == UDim2.new(1, 0, 1, -19) and content.AutomaticCanvasSize == Enum.AutomaticSize.Y)
+	assert(content.ClassName == "ScrollingFrame" and content.Parent == win)
+	assert(content.Size == UDim2.fromScale(1, 1) and content.AutomaticCanvasSize == Enum.AutomaticSize.Y)
 	local body = H.findAll(content, function(i: any)
 		return i.Name == "Text"
 	end)[1] :: any
 	assert(body.Text == "body" and body.Parent == content, "children live in the scrolling content")
-	assert(get(win, "ResizeGrip").Visible == true)
+	assert(grip.Visible == true)
 
-	-- window chrome = 17 instances (9 GuiObjects incl. the ClickSink + corner/stroke/padding/list helpers); the 2 widgets add 6 more
-	assert(H.countDescendants(win) == 23, `unexpected instance count {H.countDescendants(win)}`)
+	-- surface = root + Content + padding/list (4); decoration = frame + corner/stroke + ClickSink + title bar (10 with
+	-- its buttons and icons) + grip (15); the 2 widgets add 6 more
+	assert(1 + H.countDescendants(win) == 10, `surface instance count {1 + H.countDescendants(win)}`)
+	assert(countAll(win) == 25, `unexpected instance count {countAll(win)}`)
 
 	q.dispose(win)
+	assert(H.isDestroyed(frame) and H.isDestroyed(grip), "disposing the surface disposes its decoration")
 	H.assertNoDebugOutput("mount")
 end)
 
@@ -64,19 +126,21 @@ H.section("title-bar drag writes the Position Source; connections closed after",
 	local base = conns()
 	local pos = q.Source(UDim2.new(0.5, 10, 0, 20))
 	local win = Devui.Window({ Title = "w", Position = pos })
+	local frame = deco(win)
 	local bar = get(win, "TitleBar")
 	H.fire(bar, "InputBegan", mouse(Enum.UserInputType.MouseButton1, 100, 100))
 	assert(conns() == base + 3)
 	UIS.InputChanged:Fire(mouse(Enum.UserInputType.MouseMovement, 130, 90), false)
 	assert(pos:Get() == UDim2.new(0.5, 40, 0, 10), "scale kept, offsets moved by the delta")
-	assert((win :: any).Position == UDim2.new(0.5, 40, 0, 10), "UI follows the Source")
+	assert(frame.Position == UDim2.new(0.5, 40, 0, 10), "UI follows the Source")
+	assert((win :: any).Position == UDim2.new(0.5, 40, 0, 29), "the surface moves with it, under the title bar")
 	UIS.InputChanged:Fire(mouse(Enum.UserInputType.MouseMovement, 70, 160), false)
 	assert(pos:Get() == UDim2.new(0.5, -20, 0, 80), "delta is from the press point, not cumulative")
 	UIS.InputEnded:Fire(mouse(Enum.UserInputType.MouseButton1, 70, 160, Enum.UserInputState.End), false)
 	assert(conns() == base)
 	-- external writes move the window too (two-way)
 	pos:Set(UDim2.fromOffset(5, 5))
-	assert((win :: any).Position == UDim2.fromOffset(5, 5))
+	assert(frame.Position == UDim2.fromOffset(5, 5) and (win :: any).Position == UDim2.fromOffset(5, 24))
 	q.dispose(win)
 	assert(conns() == base)
 	H.assertNoDebugOutput("drag")
@@ -85,20 +149,21 @@ end)
 H.section("resize grip: grows, respects the minimum, writes the Size Source", function()
 	local size = q.Source(Vector2.new(300, 200))
 	local win = Devui.Window({ Title = "w", Size = size })
-	local grip = get(win, "ResizeGrip")
+	local frame, grip = deco(win)
 	H.fire(grip, "InputBegan", mouse(Enum.UserInputType.MouseButton1, 300, 200))
 	UIS.InputChanged:Fire(mouse(Enum.UserInputType.MouseMovement, 340, 260), false)
-	assert(size:Get() == Vector2.new(340, 260) and (win :: any).Size == UDim2.fromOffset(340, 260))
+	assert(size:Get() == Vector2.new(340, 260) and frame.Size == UDim2.fromOffset(340, 260))
+	assert((win :: any).Size == UDim2.fromOffset(340, 241) and grip.Position == UDim2.fromOffset(400, 320), "surface and grip follow")
 	UIS.InputChanged:Fire(mouse(Enum.UserInputType.MouseMovement, 0, 0), false)
 	assert(size:Get() == Vector2.new(38, 38), "min = 2 x frame height (19)")
 	UIS.InputEnded:Fire(mouse(Enum.UserInputType.MouseButton1, 0, 0, Enum.UserInputState.End), false)
 	q.dispose(win)
 
 	local custom = Devui.Window({ Title = "c", Size = q.Source(Vector2.new(200, 100)), MinSize = Vector2.new(150, 90) })
-	local g2 = get(custom, "ResizeGrip")
+	local f2, g2 = deco(custom)
 	H.fire(g2, "InputBegan", mouse(Enum.UserInputType.MouseButton1, 0, 0))
 	UIS.InputChanged:Fire(mouse(Enum.UserInputType.MouseMovement, -500, -500), false)
-	assert((custom :: any).Size == UDim2.fromOffset(150, 90))
+	assert(f2.Size == UDim2.fromOffset(150, 90))
 	UIS.InputEnded:Fire(mouse(Enum.UserInputType.MouseButton1, 0, 0, Enum.UserInputState.End), false)
 	q.dispose(custom)
 end)
@@ -108,23 +173,22 @@ H.section("collapse and close", function()
 	local open = q.Source(true)
 	local win = Devui.Window({ Title = "w", Collapsed = collapsed, Open = open })
 	local arrow = get(win, "CollapseButton")
-	local content = get(win, "Content")
-	local grip = get(win, "ResizeGrip")
+	local frame, grip = deco(win)
 	local icon = get(arrow, "Icon")
 	local expandedIcon = icon.Image
 	H.fire(arrow, "Activated", H.input({}), 1)
 	assert(collapsed:Get() == true)
-	assert((win :: any).Size == UDim2.fromOffset(300, 19), "collapsed = title bar only")
-	assert(content.Visible == false and grip.Visible == false and (win :: any).BackgroundTransparency == 1)
+	assert(frame.Size == UDim2.fromOffset(300, 19) and frame.Visible == true, "collapsed = title bar only")
+	assert((win :: any).Visible == false and grip.Visible == false and frame.BackgroundTransparency == 1, "surface hidden")
 	assert(icon.Image ~= expandedIcon, "arrow flips")
 	assert(get(win, "TitleBar").BackgroundColor3 == Color3.new(0, 0, 0), "collapsed title colour")
 	collapsed:Set(false) -- external control
-	assert((win :: any).Size == UDim2.fromOffset(300, 200) and content.Visible == true and grip.Visible == true)
+	assert(frame.Size == UDim2.fromOffset(300, 200) and (win :: any).Visible == true and grip.Visible == true)
 
 	H.fire(get(win, "CloseButton"), "Activated", H.input({}), 1)
-	assert(open:Get() == false and (win :: any).Visible == false)
+	assert(open:Get() == false and (win :: any).Visible == false and frame.Visible == false and grip.Visible == false)
 	open:Set(true)
-	assert((win :: any).Visible == true, "re-open brings it back")
+	assert((win :: any).Visible == true and frame.Visible == true and grip.Visible == true, "re-open brings it back")
 
 	-- closing hides an ANCESTOR of the buttons (no MouseLeave): their hover look must not stay stuck
 	local closeBtn = get(win, "CloseButton")
@@ -147,15 +211,15 @@ H.section("focus on press: z-order, active title colour", function()
 	local b = Devui.Window({ Title = "B", Manager = manager })
 	b.Parent = screen
 	-- the mock has no layout: A at (0,0) 300x200, B overlapping it at (100,100) 300x200
-	H.setAbs(a, 0, 0, 300, 200)
-	H.setAbs(b, 100, 100, 300, 200)
+	place(a, 0, 0, 300, 200)
+	place(b, 100, 100, 300, 200)
 	local za, zb = (a :: any).ZIndex, (b :: any).ZIndex
 	assert(zb > za, "later window starts on top")
 	local idle = get(a, "TitleBar").BackgroundColor3
 	assert(idle == Color3.fromRGB(10, 10, 10))
 
-	press(5, 5)
-	assert((a :: any).ZIndex > (b :: any).ZIndex and manager.Focused:Get() ~= 0)
+	press(5, 5) -- on A's title bar: a decoration, outside the surface rectangle
+	assert((a :: any).ZIndex > (b :: any).ZIndex and manager.Focused:Get() ~= 0, "a press on the decoration raises")
 	assert(get(a, "TitleBar").BackgroundColor3 == Color3.fromRGB(41, 74, 122), "active colour")
 	assert(get(b, "TitleBar").BackgroundColor3 == idle)
 
@@ -194,11 +258,11 @@ H.section("focus on press: z-order, active title colour", function()
 	local m2 = Devui.WindowManager.new()
 	local wa = Devui.Window({ Title = "A", Manager = m2 })
 	wa.Parent = screen
-	H.setAbs(wa, 0, 0, 100, 100)
+	place(wa, 0, 0, 100, 100)
 	press(5, 5)
 	local wb = Devui.Window({ Title = "B", Manager = m2 })
 	wb.Parent = screen
-	H.setAbs(wb, 500, 500, 100, 100)
+	place(wb, 500, 500, 100, 100)
 	assert((wb :: any).ZIndex > (wa :: any).ZIndex, "B registered on top")
 	press(5, 5)
 	assert((wa :: any).ZIndex > (wb :: any).ZIndex, "press on the focused-but-covered A raises it")
@@ -217,8 +281,8 @@ H.section("press-to-front: hidden windows and popups are not hit; one listener p
 	local b2 = Devui.Window({ Title = "B", Open = openB, Manager = manager })
 	b2.Parent = screen
 	assert(#(UIS.InputBegan :: any).connections == began0 + 1, "still one for two windows")
-	H.setAbs(a, 0, 0, 300, 200)
-	H.setAbs(b2, 0, 0, 300, 200)
+	place(a, 0, 0, 300, 200)
+	place(b2, 0, 0, 300, 200)
 	press(5, 5)
 	assert((b2 :: any).ZIndex > (a :: any).ZIndex)
 	-- a closed window is not hit: the press goes to the open one beneath
@@ -239,7 +303,7 @@ H.section("press-to-front: hidden windows and popups are not hit; one listener p
 	press(5, 5)
 	local top = if (a :: any).ZIndex > (b2 :: any).ZIndex then a else b2
 	local other = if top == a then b2 else a
-	H.setAbs(other, 600, 600, 300, 200) -- only `other` under (650, 650)
+	place(other, 600, 600, 300, 200) -- only `other` under (650, 650)
 	container.Visible = false
 	local before = manager.Focused:Get()
 	press(650, 650)
@@ -262,7 +326,7 @@ H.section("press-to-front: hidden windows and popups are not hit; one listener p
 	press(5, 5) -- not on the popup: focus moves as usual
 	local focusedNow = manager.Focused:Get()
 	local under = if (a :: any).ZIndex > (b2 :: any).ZIndex then b2 else a
-	H.setAbs(under, 380, 380, 100, 100)
+	place(under, 380, 380, 100, 100)
 	press(410, 405) -- on the popup holder, which lies over `under`
 	assert(manager.Focused:Get() == focusedNow, "press on a popup with a button: no focus change")
 	press(470, 470) -- `under` outside the popup: focused
@@ -300,7 +364,7 @@ H.section("focus succession: closing or destroying the focused window focuses th
 	for i = 1, 3 do
 		w[i] = Devui.Window({ Title = `w{i}`, Open = opens[i], Manager = manager })
 		w[i].Parent = screen
-		H.setAbs(w[i], i * 400, 0, 300, 200)
+		place(w[i], i * 400, 0, 300, 200)
 	end
 	local function focusedIndex(): number?
 		for i = 1, 3 do
@@ -341,7 +405,7 @@ H.section("staying on screen: dragging keeps the title bar inside; a shrinking c
 	local pos = q.Source(UDim2.fromOffset(100, 100))
 	local win = Devui.Window({ Title = "w", Position = pos, Size = q.Source(Vector2.new(300, 200)) })
 	win.Parent = container
-	H.setAbs(win, 100, 100, 300, 200)
+	place(win, 100, 100, 300, 200)
 	local bar = get(win, "TitleBar")
 	local function dragBy(dx: number, dy: number)
 		H.fire(bar, "InputBegan", mouse(Enum.UserInputType.MouseButton1, 0, 0))
@@ -408,14 +472,17 @@ H.section("flags remove parts", function()
 	local base = conns()
 	local pos = q.Source(UDim2.fromOffset(0, 0))
 	local fixed = Devui.Window({ Title = "f", Position = pos, NoMove = true, NoResize = true, NoClose = true, NoCollapse = true })
-	assert(H.find(fixed, "ResizeGrip") == nil and H.find(fixed, "CloseButton") == nil and H.find(fixed, "CollapseButton") == nil)
+	assert(lookup(fixed, "WindowResizeGrip") == nil and lookup(fixed, "CloseButton") == nil and lookup(fixed, "CollapseButton") == nil)
+	assert(#Compositor.partsOf(fixed) == 1, "NoResize: the frame only")
 	H.fire(get(fixed, "TitleBar"), "InputBegan", mouse(Enum.UserInputType.MouseButton1, 0, 0))
 	assert(conns() == base and pos:Get() == UDim2.fromOffset(0, 0), "NoMove: no drag starts")
 	q.dispose(fixed)
 
 	local bare = Devui.Window({ Title = "b", NoTitleBar = true })
-	assert(H.find(bare, "TitleBar") == nil)
-	assert(get(bare, "Content").Position == UDim2.fromOffset(0, 0) and get(bare, "Content").Size == UDim2.new(1, 0, 1, 0))
+	assert(lookup(bare, "TitleBar") == nil)
+	assert((bare :: any).Position == UDim2.fromOffset(60, 60) and (bare :: any).Size == UDim2.fromOffset(300, 200), "the surface fills the frame")
+	local bareFrame = deco(bare)
+	assert(bareFrame.Size == UDim2.fromOffset(300, 200) and get(bareFrame, "ClickSink") ~= nil, "the frame and its sink stay")
 	q.dispose(bare)
 	H.assertNoDebugOutput("flags")
 end)
@@ -423,16 +490,24 @@ end)
 H.section("theme and density follow live; dispose destroys everything", function()
 	local s = Style.new()
 	local win = Devui.Window({ Title = "t", Style = s, Children = Kids(Devui.Text({ Text = "x", Style = s })) })
-	local n = H.countDescendants(win)
+	local n = countAll(win)
+	local frame = deco(win)
 	s:SetScheme("Light")
-	assert((win :: any).BackgroundColor3 == Color3.fromRGB(240, 240, 240))
+	assert(frame.BackgroundColor3 == Color3.fromRGB(240, 240, 240))
 	assert(get(win, "Title").TextColor3 == Color3.fromRGB(0, 0, 0))
 	s:SetDensity("Clear")
 	assert(get(win, "TitleBar").Size == UDim2.new(1, 0, 0, 23))
-	assert(H.countDescendants(win) == n, "switching never adds or removes instances")
+	assert((win :: any).Position == UDim2.fromOffset(60, 83), "the surface follows the title bar height")
+	assert(countAll(win) == n, "switching never adds or removes instances")
 	local kids = H.findAll(win, function()
 		return true
 	end)
+	for _, part in Compositor.partsOf(win) do
+		table.insert(kids, part)
+		H.findAll(part, function()
+			return true
+		end, kids)
+	end
 	q.dispose(win)
 	for _, k in kids do
 		assert(H.isDestroyed(k), "descendant destroyed")
@@ -447,36 +522,39 @@ H.section("z-order is a rank: 2000 focus switches never reach the overlay layer;
 	for i = 1, 3 do
 		wins[i] = Devui.Window({ Title = `w{i}`, Manager = manager })
 		wins[i].Parent = screen
-		H.setAbs(wins[i], i * 400, 0, 300, 200)
+		place(wins[i], i * 400, 0, 300, 200)
 	end
 	local last = 0
 	for i = 1, 2000 do
 		last = (i * 7) % 3 + 1
 		press(last * 400 + 5, 5)
 	end
+	-- rank r owns the chunk 3r-2 (frame), 3r-1 (surface), 3r (grip)
 	local seen: { [number]: boolean } = {}
 	for _, w in wins do
 		local z = (w :: any).ZIndex
-		assert(z >= 1 and z <= 3 and z < layerZ and not seen[z], `rank {z}`)
+		local frame, grip = deco(w)
+		assert(z % 3 == 2 and z >= 2 and z <= 8 and not seen[z], `surface z {z}`)
+		assert(frame.ZIndex == z - 1 and grip.ZIndex == z + 1 and grip.ZIndex < layerZ, "one contiguous chunk per window")
 		seen[z] = true
 	end
-	assert(wins[last].ZIndex == 3, "the last focused window is on top")
+	assert(wins[last].ZIndex == 8, "the last focused window is on top")
 	-- destroying the middle one closes ranks; a new window starts on top again
 	local mid = 1
 	for i, w in wins do
-		if (w :: any).ZIndex == 2 then
+		if (w :: any).ZIndex == 5 then
 			mid = i
 		end
 	end
 	q.dispose(wins[mid])
 	for i, w in wins do
 		if i ~= mid then
-			assert((w :: any).ZIndex <= 2, "ranks closed up")
+			assert((w :: any).ZIndex <= 5 and select(2, deco(w)).ZIndex <= 6, "ranks closed up")
 		end
 	end
 	local fresh = Devui.Window({ Title = "fresh", Manager = manager })
 	fresh.Parent = screen
-	assert((fresh :: any).ZIndex == 3)
+	assert((fresh :: any).ZIndex == 8 and deco(fresh).ZIndex == 7)
 	for i, w in wins do
 		if i ~= mid then
 			q.dispose(w)
@@ -532,18 +610,20 @@ H.section("AvailableSize: the content area's visible size minus the window paddi
 	H.assertNoDebugOutput("AvailableSize")
 end)
 
-H.section("click sink: the window's empty area is covered by one invisible GuiButton under every other child", function()
+H.section("click sink: the window's empty area is covered by one invisible GuiButton in the frame, under the surface", function()
 	local win = Devui.Window({ Title = "sink" })
-	local sink: any = win:FindFirstChild("ClickSink")
-	assert(sink ~= nil and sink.ClassName == "TextButton", "a TextButton ClickSink is a direct child of the root")
+	local frame = deco(win)
+	local sink: any = frame:FindFirstChild("ClickSink")
+	assert(sink ~= nil and sink.ClassName == "TextButton", "a TextButton ClickSink is a direct child of the decoration frame")
 	assert(sink.ZIndex == 0 and sink.Size == UDim2.fromScale(1, 1), "full cover at ZIndex 0")
 	assert(sink.BackgroundTransparency == 1 and sink.Text == "" and sink.AutoButtonColor == false and sink.Selectable == false,
 		"invisible, no hover tint, off the gamepad path")
-	for _, child: any in win:GetChildren() do
+	for _, child: any in frame:GetChildren() do
 		if child ~= sink and child.ZIndex ~= nil then
 			assert(child.ZIndex >= 1, `{child.Name} draws above the sink`)
 		end
 	end
+	assert((win :: any).ZIndex == frame.ZIndex + 1, "the surface sits right above the frame (its empty area falls to the sink)")
 	q.dispose(win)
 end)
 
@@ -566,5 +646,100 @@ H.section("owner Sources: open:Set(true) raises an open window, SetIfChanged doe
 	assert((b :: any).ZIndex > (a :: any).ZIndex and focusedA:Get() == false, "the other one raised; A's Focused written false")
 	q.dispose(a)
 	q.dispose(b)
+end)
+H.section("decoration follows the surface root's parent; the parent's dispose or an engine Destroy takes it along", function()
+	local began0 = #(UIS.InputBegan :: any).connections
+	local manager = Devui.WindowManager.new()
+	local win = Devui.Window({ Title = "f", Manager = manager })
+	local frame, grip = deco(win)
+	assert(frame.Parent == nil and grip.Parent == nil)
+	local c1 = Instance.new("Frame")
+	c1.Parent = screen
+	win.Parent = c1
+	assert(frame.Parent == c1 and grip.Parent == c1, "placed: the decoration joins the surface as its siblings")
+	local c2 = Instance.new("Frame")
+	c2.Parent = screen
+	win.Parent = c2
+	assert(frame.Parent == c2 and grip.Parent == c2 and #c1:GetChildren() == 0, "moved: it follows")
+	win.Parent = nil
+	assert(frame.Parent == nil and grip.Parent == nil, "detached: so is the decoration")
+	win.Parent = c2
+	assert(win.Parent == c2 and frame.Parent == c2, "the surface root stays where the app put it")
+	-- a quad static child: the parent's build places it, the parent's dispose takes everything
+	local holder = q.Elem "Frame" ({ Devui.Window({ Title = "static", Manager = manager }) })
+	local inner = H.find(holder, "Window") :: any
+	local f2, g2 = deco(inner)
+	assert(f2.Parent == holder and g2.Parent == holder)
+	q.dispose(holder)
+	assert(H.isDestroyed(inner) and H.isDestroyed(f2) and H.isDestroyed(g2), "disposed with the parent")
+	-- the engine destroying the container (outside quad): no error, the manager lets go
+	c2:Destroy()
+	assert(H.isDestroyed(win) and H.isDestroyed(frame) and H.isDestroyed(grip))
+	assert(#(UIS.InputBegan :: any).connections == began0, "no window left: the press listener closed")
+	q.dispose(c1)
+	H.assertNoDebugOutput("follow")
+end)
+
+H.section("press-to-front through the engine list (PlayerGui): the title bar and the grip count as their window", function()
+	local pg = H.playerGui()
+	local gui = Instance.new("ScreenGui")
+	gui.Parent = pg
+	local manager = Devui.WindowManager.new()
+	local fa, fb = q.Source(false), q.Source(false)
+	local a = Devui.Window({ Title = "A", Manager = manager, Focused = fa })
+	a.Parent = gui
+	local b = Devui.Window({ Title = "B", Manager = manager, Focused = fb })
+	b.Parent = gui
+	place(a, 0, 0, 300, 200)
+	place(b, 100, 0, 300, 150) -- on top: covers A's title bar from x = 100, not A's grip (285..300 x 185..200)
+	assert((b :: any).ZIndex > (a :: any).ZIndex)
+	press(290, 190) -- A's resize grip
+	assert(fa:Get() and (a :: any).ZIndex > (b :: any).ZIndex, "a press on the back window's grip raises it")
+	press(350, 5) -- B's title bar, outside A
+	assert(fb:Get() and (b :: any).ZIndex > (a :: any).ZIndex, "a press on the back window's title bar raises it")
+	press(150, 10) -- B's title bar over A's
+	assert(fb:Get() and not fa:Get(), "the front window's decoration takes the press over the back one")
+	press(50, 100) -- A's content, outside B
+	assert(fa:Get(), "the surface still counts")
+	press(150, 100) -- A (front now) over B's content
+	assert(fa:Get() and (a :: any).ZIndex > (b :: any).ZIndex)
+	gui:Destroy()
+	H.assertNoDebugOutput("engine list")
+end)
+
+H.section("focus succession follows Open, not the surface's visibility: collapsing keeps the focus; a collapsed or bare window can take it", function()
+	local manager = Devui.WindowManager.new()
+	local open1, open2, open3 = q.Source(true), q.Source(true), q.Source(true)
+	local col1 = q.Source(false)
+	local f1, f2, f3 = q.Source(false), q.Source(false), q.Source(false)
+	local w1 = Devui.Window({ Title = "1", Manager = manager, Open = open1, Collapsed = col1, Focused = f1 })
+	local w2 = Devui.Window({ Title = "2", Manager = manager, Open = open2, Focused = f2 })
+	local w3 = Devui.Window({ Title = "3", Manager = manager, Open = open3, Focused = f3, NoTitleBar = true })
+	for i, w in { w1, w2, w3 } do
+		w.Parent = screen
+		place(w, i * 400, 0, 300, 200, if w == w3 then 0 else nil)
+	end
+	press(405, 5)
+	assert(f1:Get(), "w1 focused")
+	col1:Set(true) -- the surface root is hidden; the window is still open
+	assert((w1 :: any).Visible == false and f1:Get() and manager.Focused:Get() ~= 0, "collapsing is not a close")
+	press(1205, 100) -- the bare window: its surface is the whole rectangle
+	assert(f3:Get() and (w3 :: any).ZIndex > (w1 :: any).ZIndex, "a window without a title bar is hit on its surface")
+	press(805, 5)
+	assert(f2:Get())
+	open2:Set(false)
+	assert(f3:Get(), "closed: the topmost open window (the bare w3) takes the focus")
+	open3:Set(false)
+	assert(f1:Get() and (w1 :: any).Visible == false, "then the collapsed w1 (open, its title bar on screen)")
+	press(405, 5) -- the collapsed window's title bar
+	assert(f1:Get())
+	open1:Set(false)
+	assert(manager.Focused:Get() == 0, "no open window left")
+	open3:Set(true)
+	assert(f3:Get(), "reopening focuses")
+	q.dispose(w1)
+	q.dispose(w2)
+	q.dispose(w3)
+	H.assertNoDebugOutput("succession by Open")
 end)
 H.done()

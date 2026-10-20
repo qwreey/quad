@@ -6,6 +6,7 @@ local ScreenGui = q.Elem "ScreenGui"
 local Demo = require("../gallery")
 local Style = require("../src/Style")
 local Plot = require("../src/Plot")
+local Compositor = require("../src/Window/Compositor")
 
 local UIS = H.UserInputService
 local Heartbeat = H.RunService.Heartbeat :: any
@@ -35,18 +36,28 @@ end
 local function click(inst: any)
 	H.fire(inst, "Activated", H.input({}), 1)
 end
+-- a window's title lives in its decoration (made by the manager beside the surface root)
+local function titleOf(w: Instance): string
+	for _, part in Compositor.partsOf(w) do
+		local label = H.find(part, "Title")
+		if label ~= nil then
+			return (label :: any).Text
+		end
+	end
+	error("a window without a title bar")
+end
 local function visibleWindows(gui: Instance): { string }
 	local out: { string } = {}
 	for _, w in byName(gui, "Window") do
 		if (w :: any).Visible then
-			table.insert(out, (H.find(w, "Title") :: any).Text)
+			table.insert(out, titleOf(w))
 		end
 	end
 	return out
 end
 local function windowOf(gui: Instance, title: string): any
 	for _, w in byName(gui, "Window") do
-		if (H.find(w, "Title") :: any).Text == title then
+		if titleOf(w) == title then
 			return w
 		end
 	end

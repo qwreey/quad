@@ -38,8 +38,8 @@ screen.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 ```
 
 **`ScreenGui`는 `ZIndexBehavior = Sibling`이어야 합니다.** 코드로 만든 `ScreenGui`(`q.Elem "ScreenGui"`·`Instance.new`)의 기본값은
-`Global`이고, 이 키트는 창의 겹침 순서(창 루트의 `ZIndex` = 서열 1..n)와 팝업 층(`ZIndex` 1000)을 형제 사이의 `ZIndex`로
-정합니다. `Global`에서는 `ZIndex`가 `ScreenGui` 전체에서 비교되어, 서열 2 이상인 창의 배경이 자기 내용(`ZIndex` 1)과 팝업
+`Global`이고, 이 키트는 창의 겹침 순서(서열 r인 창의 창틀·표면·손잡이가 `ZIndex` 3r−2..3r 세 칸)와 팝업 층(`ZIndex` 1000)을 형제 사이의 `ZIndex`로
+정합니다. `Global`에서는 `ZIndex`가 `ScreenGui` 전체에서 비교되어, 서열 2 이상인 창의 창틀이 자기 내용(`ZIndex` 1)과 팝업
 위에 그려집니다. `q.debug`가 켜져 있으면 팝업이 처음 열릴 때 한 줄로 알립니다. Studio에서 손으로 넣은 `ScreenGui`는 기본이
 Sibling입니다.
 
@@ -211,8 +211,14 @@ Devui.Button { Text = "red", Style = mine }
   만들어 첫 ScreenGui와 함께 죽던 싱글턴이었습니다.)
 
 ScreenGui는 **`ResetOnSpawn = false`**로 만드세요 — 층은 quad가 만든 인스턴스라 리스폰이 뒤에서 파괴하면 안 됩니다. 층은 투명하고 `Active`가
-아니라 팝업이 없는 곳의 클릭은 그대로 통과합니다. `Window`의 `ZIndex`는 `WindowManager`가 **순위(1..n)**로 관리하므로 포커스를 몇 번 옮겨도
-층(ZIndex 1000)을 넘지 않습니다(살아 있는 창 999개까지).
+아니라 팝업이 없는 곳의 클릭은 그대로 통과합니다. `Window`의 `ZIndex`는 `WindowManager`가 **순위**로 관리하므로 포커스를 몇 번 옮겨도
+층(ZIndex 1000)을 넘지 않습니다 — 창 하나가 순위 덩어리 세 칸(창틀·표면·크기 손잡이)을 쓰므로 살아 있는 창 333개까지입니다.
+
+**창의 구조 — 표면과 장식.** `WindowManager`는 컴포지터입니다(Wayland의 서버 쪽 장식과 같은 자리). `Window`가 돌려주는 루트(`Name = "Window"`)는
+내용 표면(스크롤 영역)뿐이고, 창틀(배경·테두리)과 제목줄을 담은 `WindowDecoration`, 크기 손잡이 `WindowResizeGrip`은 관리자가 만들어 **루트와 같은
+부모에 형제로** 놓습니다. 루트는 앱이 놓은 자리에 그대로 두고, 장식이 루트의 `Parent`를 따라가며(부모가 없으면 장식도 없음) 루트가 지워질 때 같이
+지워집니다 — 장식을 직접 옮기지 마세요. `Position`·`Size`는 제목줄을 포함한 바깥 사각형이고 루트는 제목줄 아래 나머지 자리에 놓입니다.
+`Title`·`No*` 플래그·`MinSize`는 표면이 관리자에게 주는 힌트입니다.
 
 창 안의 **어떤 위젯을 눌러도**(버튼·체크박스·입력 칸 포함) 그 창이 앞으로 옵니다 — 누름은 포인터 아래 첫 버튼·입력 칸에서 멈춰 창 프레임에
 오지 않으므로, `WindowManager`가 전역 누름(`UserInputService.InputBegan`, 마우스 왼쪽·터치) 하나를 듣고 그 누름이 간 창을 앞으로 올립니다(창이
@@ -225,7 +231,8 @@ ScreenGui는 **`ResetOnSpawn = false`**로 만드세요 — 층은 quad가 만�
 `q.Elem "UIFlexItem" { FlexMode = Enum.UIFlexMode.Fill }`을 주면 다른 자식이 남긴 높이를 차지하고 창 크기를 따라갑니다(Studio 확인 2026-10-20 —
 창보다 자식이 크면 스크롤 대신 그 자식이 줄어듭니다). 숫자가 필요하면 `AvailableSize = Source<Vector2>`를 넘기세요 — 자식이 쓸 수 있는
 크기(보이는 내용 영역에서 스크롤바와 창 안쪽 여백을 뺀 값)를 창이 거기 씁니다. 밖에서 창을 다루는 길은 주인이 쥔 Source입니다 — 넘긴 `Open`에 `:Set(true)`를 하면 이미 열린 창도 맨 앞으로 올라오고(quad의 `Set`은 같은 값도 전파합니다; 상태만 맞추고 올리지 않으려면 `:SetIfChanged(true)`), `Focused = Source<boolean>`은 양방향입니다 — 창이 포커스 여부를 거기 쓰고, 밖에서 `true`를 쓰면 그 창을 앞으로 올려 포커스를 주고 `false`를 쓰면 포커스를 놓습니다(어느 창도 포커스 없음; 닫힌 창은 `true`를 무시하니 `Open:Set(true)`로 여세요; 핸들 객체는 없습니다)(Dear ImGui와 같음 — 처음부터 열린 창은 포커스를 빼앗지 않음. 다만 처음부터 `true`인 `Focused`를 넘기면 그것은 요청으로 봅니다). 창의 빈 곳을 누른
-것은 창 전체를 덮는 투명 버튼 `ClickSink`(ZIndex 0)에서 멈춰 아래 창의 위젯으로 새지 않습니다. 타이틀바로 끌 때 창은 컨테이너 안에 타이틀바가 남도록 잘리고(Dear ImGui와 같은 규칙 — 가로로 `FrameHeight`(기본 19)
+것은 창틀(`WindowDecoration`) 전체를 덮는 투명 버튼 `ClickSink`(ZIndex 0)에서 멈춰 아래 창의 위젯으로 새지 않습니다(표면의 빈 곳을 누른 것도 바로
+아래의 이 버튼에 닿습니다). 포커스 넘김은 창의 `Open`을 따르므로 접기(루트가 숨음)는 닫기로 치지 않습니다. 타이틀바로 끌 때 창은 컨테이너 안에 타이틀바가 남도록 잘리고(Dear ImGui와 같은 규칙 — 가로로 `FrameHeight`(기본 19)
 픽셀, 세로로 타이틀바 전체), 컨테이너가 **줄어들면** 바깥으로 나간 창을 안으로 데려옵니다(`Position` Source에 씀). 프로그램이 준 위치는 그 밖에는
 건드리지 않습니다.
 
@@ -350,7 +357,7 @@ Lune으로. 종료 코드가 판정입니다.
 - **Table**: `Cell`은 (행 키, 열)당 한 번만 불리고 값이 바뀌면 `row` State가 다시 발행됩니다 — 행은 제자리 수정이 아니라
   새 테이블로 교체하세요. 열 너비는 픽셀 또는 균등 분할만 지원합니다.
 - **PlotLines**는 위젯의 픽셀 크기를 알아야 해서 레이아웃이 한 번 돈 뒤에야 선이 보입니다. 마지막 200점만 그립니다.
-- **Style**: 토큰 단위 실시간 setter 없음(위 참고). **Window**는 닫아도 인스턴스가 남고 `Visible = false`가 됩니다.
+- **Style**: 토큰 단위 실시간 setter 없음(위 참고). **Window**는 닫아도 인스턴스(표면 루트와 장식)가 남고 `Visible = false`가 됩니다.
 - **Combo·Menu·Tooltip은 화면 가장자리에서 뒤집히거나 밀려 들어오지 않습니다** — 화면 아래쪽의 콤보 목록, 오른쪽 끝의 메뉴, 커서 옆 툴팁은
   화면 밖으로 나갈 수 있습니다.
 - **Combo**: 옵션 값은 서로 달라야 합니다(리스트 키). 중복이 필요하면 `ComboArray`. **가상화가 없습니다** — 열 때마다 옵션 수만큼 행을
