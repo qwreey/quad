@@ -6,6 +6,7 @@
 
 | 문서 | 내용 | 우선순위 |
 |---|---|---|
+| `design-token-plan.md` | **[2026-10-20 신설 — 착수 아님]** devui `Style`·material `Theme`가 따로 만든 "파생되는 토큰 묶음"(CSS 변수 같은 것)을 base가 받칠지 — 킷이 Modifier로 못 간 이유 셋(인라인 우선·토큰은 계산 재료·안쪽 부품), 사용자 정리(Store·Spread·Modifier·Context·토큰 다섯이 다 다르다), 열린 것((가) base 원시 기능 (나) 넘기는 길 (다) 다섯 비교 사용자 문서 — Spread와 함께) | 중 — 사용자 결정 뒤 조사 |
 | `icon-pack-plan.md` | **[2026-10-08 신설 — 사용자 요청, 착수 아님]** Material Symbols 아틀라스(여백 넣은 1024 시트·이름 → ImageRect 색인) + 옛 IconPack 플러그인을 quad·material 킷으로 다시 짜기 — 옛 플러그인 실사(아이콘 1482개를 개별 이미지로 로드), 원천·라이선스(Apache 2.0, SVG 23565개), Open Cloud 업로드 사실(소유자는 사용자/그룹, 이미지 기본 Open Use, 데칼 id 반환 → resolve 필요), 시트 장수 표, 메인 제안(quad 레포 밖·문서에서 링크), 사용자 결정 다섯 | 중 — 사용자 결정 뒤 별도 레포로 |
 | `consumer-kits-plan.md` | **[2026-10-05 신설 — 사용자 요청]** quad의 첫 실사용 소비자 둘(디버그 UI 킷 `quad-roblox-devui`·Material 3 킷 `quad-roblox-material`, 이름은 가칭 — 도그푸딩 뒤 결정)의 타당성 판단·구조(설정 모듈·명시적 테마 객체·Overlay·Interaction)·Color picker 이식 순서·검증(Lune 하네스·strict·리뷰 라운드). 소비하며 겪은 quad 마찰은 `feedback/consumer-kits-2026-10-05.md` | 중 — 결과 보고 뒤 사용자 검토 |
 | `perf-measurement-plan.md` | **[2026-09-26 신설 — 사용자 결정으로 착수 예정, 문항 §4 다섯]** BREAKING 허용 주간 안에 성능 실측을 여러 회차 돌려 구조를 바꿀 병목이 있는지 4.0.0 전에 알아내는 계획 — 측정 후보 P1~P6(대량 마운트·List 갱신·Compute 전파·프로퍼티 폭주·Tween 다수·GC 잔존), CLI 산술 vs Studio 실기기 구분, 스위트 `bench/`(가칭). ROADMAP 벤치마크 백로그가 이 문서로 착수 | 상 — **[2026-09-26 밤]** CLI 산술 회차 완료(`audit/perf-cli-2026-09-26/`), Studio 회차·문항 §4는 사용자 대기 |
