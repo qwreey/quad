@@ -12,5 +12,5 @@
 `PropsItem`·`Node`·`DeclItem`은 하위. `ChildrenOf`는 이중 복수, `ArrItem`은 도메인 누수·약어. `Elem`/`Element` 어근은 타입 쪽에서 완전히 뺄 것.
 
 **메인 검증**: Roblox 정의(`scripts/roblox-defs/globalTypes.d.luau`)에 `declare extern type Content`(7845행)와 전역 `declare Content`(19014행)가 실제로 있다 — Gemini는
-`ContentText` 속성만 보고 충돌을 작게 봤다. `Entry`·`Child`·`Node`·`Item` 이름의 선언은 없다. 생성 `FrameElem` 정의(`quad-roblox/src/Declaration/init.luau` 2448행)와
+`ContentText` 속성만 보고 충돌을 작게 봤다. `Entry`·`Child`·`Node`·`Item` 이름의 선언은 없다. 생성 `FrameElem` 정의(옛 `quad-roblox/src/Declaration/init.luau` 2448행)와
 `SlotElement<T>`(quad-types)의 존재는 사실.

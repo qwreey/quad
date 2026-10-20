@@ -44,7 +44,8 @@ local Theme = require("../Theme")
 local TextField = require("../TextField")
 local Calendar = require("./Calendar")
 local Strings = require("./Strings")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local FrameModifier = q.Modifier "Frame"
 
 type Date = Calendar.Date
 type State<T> = q.State<T>
@@ -110,7 +111,7 @@ local function new(o: Options): InputMode
 		return self:Get() or ""
 	end)
 
-	local frame = D.Frame {
+	local frame = Frame {
 		Name = "DateInput",
 		Position = o.Position or UDim2.new(),
 		Size = UDim2.fromOffset(o.Width, o.Height),
@@ -126,7 +127,7 @@ local function new(o: Options): InputMode
 			Error = isError,
 			ErrorText = errorText,
 			Theme = o.Theme,
-			Modifier = D.Modifier.Frame()
+			Modifier = FrameModifier()
 				:Name("DateField")
 				:Size(UDim2.fromOffset(o.Width - 48, 0))
 				:Position(UDim2.fromOffset(24, 10)),

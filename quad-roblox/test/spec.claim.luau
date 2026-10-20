@@ -20,10 +20,10 @@ local REFLECTED: { [string]: { any } } = {
 }
 local gameShim = mock.gameShim(REFLECTED)
 
-local q: any = Quad.New():UseProvider(QuadRoblox)
+local q: any = Quad.NewModule():UseProvider(QuadRoblox)
 ;(getfenv(installProperty) :: any).game = gameShim
 ;(getfenv(installEvent) :: any).game = gameShim
-;(getfenv(q.Declaration.New) :: any).Instance = { new = mock.Instance.new }
+;(getfenv(q.Elem) :: any).Instance = { new = mock.Instance.new }
 q.Backend.isInst = mock.isMockInstance
 
 -- "이미 있는 트리" — Studio/Clone 사본의 mock 대역
@@ -41,13 +41,12 @@ local function makeTemplate()
 	return root, title, list, inner
 end
 
-local M = q.Declaration.Mapper
 
 print("=== 1. 기본 Claim — 소유 + 매핑 자식 props 적용 + 배열 슬롯 교체·부기 ===")
 do
 	local root, title = makeTemplate()
-	local out = q.Claim(root, M.Frame(M.Root)({
-		M.TextLabel("Title")({ Text = "Hello" }),
+	local out = q.Claim(root, q.Mapper "Frame" (q.MapperRoot)({
+		q.Mapper "TextLabel" ("Title")({ Text = "Hello" }),
 		BackgroundTransparency = 0.25,
 	}))
 	assert(out == root, "Claim returns the same inst (<T> passthrough)")
@@ -71,9 +70,9 @@ print()
 print("=== 2. 중첩 매핑 — DFS bottom-up, 안쪽 먼저 drive ===")
 do
 	local root, _, list, inner = makeTemplate()
-	q.Claim(root, M.Frame(M.Root)({
-		M.Frame("List")({
-			M.TextLabel("Inner")({ Text = "deep" }),
+	q.Claim(root, q.Mapper "Frame" (q.MapperRoot)({
+		q.Mapper "Frame" ("List")({
+			q.Mapper "TextLabel" ("Inner")({ Text = "deep" }),
 		}),
 	}))
 	assert(inner.Text == "deep", "nested mapped child driven")
@@ -89,7 +88,7 @@ print("=== 3. 1회용 디스크립터 — 재사용은 error(PreRef _fired 관�
 do
 	local rootA = select(1, makeTemplate())
 	local rootB = select(1, makeTemplate())
-	local desc = M.Frame(M.Root)({})
+	local desc = q.Mapper "Frame" (q.MapperRoot)({})
 	q.Claim(rootA, desc)
 	local ok, err = pcall(function()
 		q.Claim(rootB, desc)
@@ -115,9 +114,9 @@ print()
 print("=== 5. New 자식 혼입(§7-3) — 매핑과 생성이 한 배열에 ===")
 do
 	local root, title = makeTemplate()
-	local made = q.Declaration.TextLabel({ Text = "fresh" })
-	q.Claim(root, M.Frame(M.Root)({
-		M.TextLabel("Title")({ Text = "mapped" }),
+	local made = q.Elem "TextLabel"({ Text = "fresh" })
+	q.Claim(root, q.Mapper "Frame" (q.MapperRoot)({
+		q.Mapper "TextLabel" ("Title")({ Text = "mapped" }),
 		made,
 	}))
 	assert(title.Text == "mapped" and made.Parent == root, "mapped + freshly-made children coexist")
@@ -125,9 +124,9 @@ do
 
 	-- H-304: None 채움(관용구) 뒤의 디스크립터도 해석된다 — drive 동형 순회
 	local root2, title2 = makeTemplate()
-	q.Claim(root2, M.Frame(M.Root)({
+	q.Claim(root2, q.Mapper "Frame" (q.MapperRoot)({
 		q.None, -- 조건부 자리의 관용구(`or None`)
-		M.TextLabel("Title")({ Text = "after-none" }),
+		q.Mapper "TextLabel" ("Title")({ Text = "after-none" }),
 	}))
 	assert(title2.Text == "after-none", "descriptor after a None filler is still resolved (H-304)")
 	print("PASS")
@@ -138,8 +137,8 @@ print("=== 6. 반응형 — claim된 트리에서 store-bind가 그대로 돈다
 do
 	local root, title = makeTemplate()
 	local src = q.Source("a")
-	q.Claim(root, M.Frame(M.Root)({
-		M.TextLabel("Title")({ Text = src }),
+	q.Claim(root, q.Mapper "Frame" (q.MapperRoot)({
+		q.Mapper "TextLabel" ("Title")({ Text = src }),
 	}))
 	assert(title.Text == "a", "reactive prop drove on claim")
 	src:Set("b")
@@ -152,15 +151,15 @@ print("=== 7. 탐사자 승격 — New 배열의 디스크립터 no-match / Clai
 do
 	-- §2 load-bearing: New children엔 MapperDescriptor가 오면 안 되고, 오면 no-match
 	local ok, err = pcall(function()
-		q.Declaration.Frame({ M.TextLabel("X")({}) })
+		q.Elem "Frame"({ q.Mapper "TextLabel" ("X")({}) })
 	end)
 	assert(not ok and string.find(tostring(err), "no handler matched", 1, true) ~= nil, "descriptor in New children must hit no-match: " .. tostring(err))
 	assert(string.find(tostring(err), "brand: MapperDescriptor", 1, true) ~= nil, "`H-346`: the no-match names the brand: " .. tostring(err))
 
 	-- Claim 표면 경유의 이중 claim(New-made inst)
-	local made = q.Declaration.Frame({})
+	local made = q.Elem "Frame"({})
 	local ok2, err2 = pcall(function()
-		q.Claim(made, M.Frame(M.Root)({}))
+		q.Claim(made, q.Mapper "Frame" (q.MapperRoot)({}))
 	end)
 	assert(not ok2 and string.find(tostring(err2), "already claimed", 1, true) ~= nil, "claiming a New-made inst errors through the Claim surface")
 	mock.assertBlamesUser(err2, "spec.claim.luau", "double claim via Claim")
@@ -168,10 +167,10 @@ do
 	-- 깊이 2 매핑 자식의 반응형 + New 혼입 동시(탐사 스파이크 A 승격)
 	local root, _, list, inner = makeTemplate()
 	local src = q.Source("d2")
-	local made2 = q.Declaration.TextLabel({ Text = "mixed" })
-	q.Claim(root, M.Frame(M.Root)({
-		M.Frame("List")({
-			M.TextLabel("Inner")({ Text = src }),
+	local made2 = q.Elem "TextLabel"({ Text = "mixed" })
+	q.Claim(root, q.Mapper "Frame" (q.MapperRoot)({
+		q.Mapper "Frame" ("List")({
+			q.Mapper "TextLabel" ("Inner")({ Text = src }),
 			made2,
 		}),
 	}))
@@ -187,9 +186,9 @@ print("=== 8. Modifier 혼입(M7 단위 ②) — 루트·매핑 자식 props의 
 do
 	local root, title = makeTemplate()
 	local src = q.Source(0.75)
-	q.Claim(root, M.Frame(M.Root)({
-		q.Modifier():BackgroundTransparency(src),
-		M.TextLabel("Title")({ q.Modifier():Text("from mod"):Name("FromMod"), Name = "Inline" }),
+	q.Claim(root, q.Mapper "Frame" (q.MapperRoot)({
+		q.Raw.Modifier():BackgroundTransparency(src),
+		q.Mapper "TextLabel" ("Title")({ q.Raw.Modifier():Text("from mod"):Name("FromMod"), Name = "Inline" }),
 	}))
 	assert(root.BackgroundTransparency == 0.75, "root modifier field driven (State unwrapped)")
 	assert(title.Text == "from mod" and title.Name == "Inline", "child modifier fields driven; inline key wins")
@@ -205,7 +204,7 @@ print("=== 9. 없는 키 — leaf 모듈 크래시 대신 Claim 메시지(hunt C
 do
 	local root = makeTemplate()
 	local ok, err = pcall(function()
-		return q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Nope")({ Text = "x" }) }))
+		return q.Claim(root, q.Mapper "Frame" (q.MapperRoot)({ q.Mapper "TextLabel" ("Nope")({ Text = "x" }) }))
 	end)
 	assert(not ok and string.find(tostring(err), "Claim: no child matched key Nope", 1, true) ~= nil, "missing key names the key: " .. tostring(err))
 	assert(string.find(tostring(err), "LifetimeHandle", 1, true) == nil, "no leaf module in the message")
@@ -214,16 +213,16 @@ do
 end
 
 print()
-print("=== 10. 루트 디스크립터의 문자열 키·자식 자리의 M.Root — claim-plan §7-1대로 런타임 가드 없음(debug 검사만), 자식 M.Root는 '부재' 메시지(round10 G-4·G-5 축소) ===")
+print("=== 10. 루트 디스크립터의 문자열 키·자식 자리의 q.MapperRoot — claim-plan §7-1대로 런타임 가드 없음(debug 검사만), 자식 M.Root는 '부재' 메시지(round10 G-4·G-5 축소) ===")
 do
 	local root = makeTemplate()
-	local out = q.Claim(root, M.Frame("Title")({ Name = "x" })) -- the root key is ignored (debug prints a note)
+	local out = q.Claim(root, q.Mapper "Frame" ("Title")({ Name = "x" })) -- the root key is ignored (debug prints a note)
 	assert(out == root and root.Name == "x", "root-key form claims the root itself, as before")
 	local root2 = makeTemplate()
 	local ok2, err2 = pcall(function()
-		return q.Claim(root2, M.Frame(M.Root)({ M.TextLabel(M.Root)({}) }))
+		return q.Claim(root2, q.Mapper "Frame" (q.MapperRoot)({ q.Mapper "TextLabel" (q.MapperRoot)({}) }))
 	end)
-	assert(not ok2 and string.find(tostring(err2), "Claim: no child matched key", 1, true) ~= nil, "M.Root as a child key: the mock finds nothing → absence message: " .. tostring(err2))
+	assert(not ok2 and string.find(tostring(err2), "Claim: no child matched key", 1, true) ~= nil, "q.MapperRoot as a child key: the mock finds nothing → absence message: " .. tostring(err2))
 	print("PASS")
 end
 
@@ -232,13 +231,13 @@ print("=== 11. round10 Q49 (a) (2026-09-17) — 이름은 맞고 클래스가 �
 do
 	local root, title = makeTemplate() -- Title is a TextLabel
 	local ok, err = pcall(function()
-		return q.Claim(root, M.Frame(M.Root)({ M.ImageLabel("Title")({ Name = "x" }) }))
+		return q.Claim(root, q.Mapper "Frame" (q.MapperRoot)({ q.Mapper "ImageLabel" ("Title")({ Name = "x" }) }))
 	end)
 	assert(not ok and string.find(tostring(err), "Claim: no child matched key Title", 1, true) ~= nil and string.find(tostring(err), "must also be a ImageLabel", 1, true) ~= nil, "class mismatch is a fail-fast absence: " .. tostring(err))
 	assert(title.Name == "Title", "nothing was applied to the wrong-class child")
 	mock.assertBlamesUser(err, "spec.claim.luau", "class-mismatch error blames the Claim line")
 	local root2, title2 = makeTemplate()
-	q.Claim(root2, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "ok" }) }))
+	q.Claim(root2, q.Mapper "Frame" (q.MapperRoot)({ q.Mapper "TextLabel" ("Title")({ Name = "ok" }) }))
 	assert(title2.Name == "ok", "matching class still resolves")
 	print("PASS")
 end
@@ -249,22 +248,22 @@ print("=== 12. round11 H-539 (2026-09-17) — 해석은 두 패스: 자식 부�
 do
 	local root, title = makeTemplate()
 	local ok, err = pcall(function()
-		return q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "t" }), M.Frame("Wrong")({}) }))
+		return q.Claim(root, q.Mapper "Frame" (q.MapperRoot)({ q.Mapper "TextLabel" ("Title")({ Name = "t" }), q.Mapper "Frame" ("Wrong")({}) }))
 	end)
 	assert(not ok and string.find(tostring(err), "Claim: no child matched key Wrong", 1, true) ~= nil, "the real cause: " .. tostring(err))
 	assert(title.Name == "Title", "nothing was driven")
 	-- fixed retry on the SAME root: `nativeClaim` (mock: gchold presence, same as the real provider) would
 	-- say "already claimed" if root or the earlier sibling had been claimed by the failed call
-	local out = q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "t" }) }))
+	local out = q.Claim(root, q.Mapper "Frame" (q.MapperRoot)({ q.Mapper "TextLabel" ("Title")({ Name = "t" }) }))
 	assert(out == root and title.Name == "t", "a fixed retry claims and drives normally (nothing was claimed by the failed call)")
 	-- the same descriptor object at two slots of one tree: rejected before any claim
 	local root2, title2 = makeTemplate()
-	local d = M.TextLabel("Title")({ Name = "x" })
+	local d = q.Mapper "TextLabel" ("Title")({ Name = "x" })
 	local ok2, err2 = pcall(function()
-		return q.Claim(root2, M.Frame(M.Root)({ d, d }))
+		return q.Claim(root2, q.Mapper "Frame" (q.MapperRoot)({ d, d }))
 	end)
 	assert(not ok2 and string.find(tostring(err2), "already used", 1, true) ~= nil, "same descriptor twice: " .. tostring(err2))
-	local out2 = q.Claim(root2, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "y" }) }))
+	local out2 = q.Claim(root2, q.Mapper "Frame" (q.MapperRoot)({ q.Mapper "TextLabel" ("Title")({ Name = "y" }) }))
 	assert(out2 == root2 and title2.Name == "y", "still nothing was claimed by the rejected call")
 	print("PASS")
 end
@@ -275,26 +274,26 @@ do
 	local root, title = makeTemplate()
 	q.Backend.nativeClaim(root) -- someone owns the root already
 	local ok, err = pcall(function()
-		return q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "t" }) }))
+		return q.Claim(root, q.Mapper "Frame" (q.MapperRoot)({ q.Mapper "TextLabel" ("Title")({ Name = "t" }) }))
 	end)
 	assert(not ok and string.find(tostring(err), "already claimed", 1, true) ~= nil, tostring(err))
 	assert(title.Name == "Title", "the child was neither driven …")
-	q.Claim(title, M.TextLabel(M.Root)({ Name = "u" })) -- … nor claimed: a direct Claim on it still works
+	q.Claim(title, q.Mapper "TextLabel" (q.MapperRoot)({ Name = "u" })) -- … nor claimed: a direct Claim on it still works
 	assert(title.Name == "u")
 	local root2, title2 = makeTemplate()
 	local ok2, err2 = pcall(function()
-		return q.Claim(root2, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "a" }), M.TextLabel("Title")({ Name = "b" }) }))
+		return q.Claim(root2, q.Mapper "Frame" (q.MapperRoot)({ q.Mapper "TextLabel" ("Title")({ Name = "a" }), q.Mapper "TextLabel" ("Title")({ Name = "b" }) }))
 	end)
 	assert(not ok2 and string.find(tostring(err2), "Claim: two mapper descriptors resolved to the same Instance", 1, true) ~= nil, tostring(err2))
 	assert(title2.Name == "Title", "nothing driven")
-	q.Claim(root2, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "c" }) })) -- nothing was claimed by the rejected call
+	q.Claim(root2, q.Mapper "Frame" (q.MapperRoot)({ q.Mapper "TextLabel" ("Title")({ Name = "c" }) })) -- nothing was claimed by the rejected call
 	assert(title2.Name == "c")
 	-- array-key domain: [2026-10-01 user decision — round11 H-560 withdrawn] pass 1 is a pure mapping pass.
 	-- A [0] descriptor is resolved, claimed and driven like any other; the bad key is drive's Quad0085 on
 	-- the parent, AFTER the claims (documented in roblox/04 — the honest path, not a pass-1 check).
 	local root3, title3 = makeTemplate()
 	local ok3, err3 = pcall(function()
-		return q.Claim(root3, M.Frame(M.Root)({ [0] = M.TextLabel("Title")({ Name = "z" }) }))
+		return q.Claim(root3, q.Mapper "Frame" (q.MapperRoot)({ [0] = q.Mapper "TextLabel" ("Title")({ Name = "z" }) }))
 	end)
 	assert(not ok3 and string.find(tostring(err3), "Quad0085 Dispatch.drive: array keys must be positive integers (got 0)", 1, true) ~= nil, tostring(err3))
 	assert(q.Backend.isClaimed(root3) and q.Backend.isClaimed(title3) and title3.Name == "z", "the claims (and the child's drive) already happened")
@@ -302,12 +301,12 @@ do
 end
 
 print()
-print("=== 14. round11 H-568 (2026-09-17) — newMapperClass 이름 게이트 ===")
+print("=== 14. round11 H-568 (2026-09-17) — q.Raw.Mapper(옛 newMapperClass) 이름 게이트 ===")
 do
 	local ok, err = pcall(function()
-		return q.newMapperClass(5 :: any)
+		return q.Raw.Mapper(5 :: any)
 	end)
-	assert(not ok and string.find(tostring(err), "newMapperClass: className must be a non-empty string (got number)", 1, true) ~= nil, tostring(err))
+	assert(not ok and string.find(tostring(err), "Raw.Mapper: className must be a non-empty string (got number)", 1, true) ~= nil, tostring(err))
 	print("PASS")
 end
 
@@ -319,12 +318,12 @@ do
 	q.Backend.nativeClaim(widget) -- a quad-owned widget parked in the template
 	widget.Parent = root
 	local ok, err = pcall(function()
-		return q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "t" }), M.Frame("Widget")({}) }))
+		return q.Claim(root, q.Mapper "Frame" (q.MapperRoot)({ q.Mapper "TextLabel" ("Title")({ Name = "t" }), q.Mapper "Frame" ("Widget")({}) }))
 	end)
 	assert(not ok and string.find(tostring(err), "Claim: ", 1, true) ~= nil and string.find(tostring(err), "already claimed by quad", 1, true) ~= nil and string.find(tostring(err), "Widget", 1, true) ~= nil, "pass 1 names the owned child: " .. tostring(err))
 	assert(not q.Backend.isClaimed(root) and not q.Backend.isClaimed(title) and title.Name == "Title", "root and the earlier sibling were not claimed nor driven")
 	-- leave the owned child out of the descriptor: the retry claims the rest normally
-	local out = q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "t" }) }))
+	local out = q.Claim(root, q.Mapper "Frame" (q.MapperRoot)({ q.Mapper "TextLabel" ("Title")({ Name = "t" }) }))
 	assert(out == root and title.Name == "t" and q.Backend.isClaimed(root), "retry on the same root works")
 	print("PASS")
 end
@@ -335,25 +334,25 @@ do
 	for _, badKey in { 0, 2.5, -1 } do
 		local root, title = makeTemplate()
 		local ok, err = pcall(function()
-			return q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "t" }), [badKey] = q.Declaration.Frame({}) }))
+			return q.Claim(root, q.Mapper "Frame" (q.MapperRoot)({ q.Mapper "TextLabel" ("Title")({ Name = "t" }), [badKey] = q.Elem "Frame"({}) }))
 		end)
 		assert(not ok and string.find(tostring(err), `Quad0085 Dispatch.drive: array keys must be positive integers (got {badKey})`, 1, true) ~= nil, tostring(err))
 		-- pass 1 is a mapping pass (user decision 2026-10-01): the root and the mapped child are claimed and
 		-- the child driven before the root's drive refuses the key — so a retry on the same root is Quad0029
 		assert(q.Backend.isClaimed(root) and q.Backend.isClaimed(title) and title.Name == "t", "claimed and the child driven before drive's Quad0085")
 		local okR, errR = pcall(function()
-			return q.Claim(root, M.Frame(M.Root)({ M.TextLabel("Title")({ Name = "t" }) }))
+			return q.Claim(root, q.Mapper "Frame" (q.MapperRoot)({ q.Mapper "TextLabel" ("Title")({ Name = "t" }) }))
 		end)
 		assert(not okR and string.find(tostring(errR), "Quad0029", 1, true) ~= nil, tostring(errR))
 	end
 	-- a mapper descriptor inside a Modifier field: refused where the Modifier is made (initial table / setter)
 	local okA, errA = pcall(function()
-		return q.Modifier({ Title = M.TextLabel("Title")({}) })
+		return q.Raw.Modifier({ Title = q.Mapper "TextLabel" ("Title")({}) })
 	end)
 	assert(not okA and string.find(tostring(errA), "Quad0064", 1, true) ~= nil and string.find(tostring(errA), "mapper descriptor", 1, true) ~= nil, tostring(errA))
 	mock.assertBlamesUser(errA, "spec.claim.luau", "Quad0064 blame")
 	local okB, errB = pcall(function()
-		return (q.Modifier() :: any):Title(M.TextLabel("Title")({}))
+		return (q.Raw.Modifier() :: any):Title(q.Mapper "TextLabel" ("Title")({}))
 	end)
 	assert(not okB and string.find(tostring(errB), "Quad0057", 1, true) ~= nil, tostring(errB))
 	mock.assertBlamesUser(errB, "spec.claim.luau", "Quad0057 blame")
@@ -371,7 +370,7 @@ do
 		assert(not ok and string.find(tostring(err), id, 1, true) ~= nil, what .. ": expected " .. id .. ", got " .. tostring(err))
 		return err
 	end
-	for _, notDescriptor in { { _props = {} }, {}, "Frame", 5, M.Frame, M.Frame(M.Root) } :: { any } do
+	for _, notDescriptor in { { _props = {} }, {}, "Frame", 5, q.Mapper "Frame", q.Mapper "Frame" (q.MapperRoot) } :: { any } do
 		local root = makeTemplate()
 		local err = raises("Quad0034", "second argument " .. typeof(notDescriptor), function()
 			q.Claim(root, notDescriptor)
@@ -386,11 +385,11 @@ do
 
 	for _, badName in { "", 5, false } :: { any } do
 		raises("Quad0026", "newMapperClass(" .. tostring(badName) .. ")", function()
-			q.newMapperClass(badName)
+			q.Raw.Mapper(badName)
 		end)
 	end
 	local okNoName, errNoName = pcall(function()
-		return (q.newMapperClass :: any)()
+		return (q.Raw.Mapper :: any)()
 	end)
 	assert(not okNoName and string.find(tostring(errNoName), "Quad0026", 1, true) ~= nil, "newMapperClass(): " .. tostring(errNoName))
 	print("PASS")

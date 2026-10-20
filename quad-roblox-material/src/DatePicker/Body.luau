@@ -45,7 +45,8 @@ local MonthView = require("./MonthView")
 local Strings = require("./Strings")
 local View = require("./View")
 local YearView = require("./YearView")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextButtonModifier = q.Modifier "TextButton"
 
 type State<T> = q.State<T>
 type Date = Calendar.Date
@@ -168,7 +169,7 @@ local function new(o: Options): Body
 		end, followSource)
 	end
 
-	local frame = D.Frame {
+	local frame = Frame {
 		Name = "DatePickerBody",
 		Position = o.Position or UDim2.new(),
 		Visible = Util.visible(o.Visible),
@@ -185,7 +186,7 @@ local function new(o: Options): Body
 			OnClick = function()
 				showYears:Set(not showYears:Get())
 			end,
-			Modifier = D.Modifier.TextButton():Position(UDim2.fromOffset(PAD - 8, 8)),
+			Modifier = TextButtonModifier():Position(UDim2.fromOffset(PAD - 8, 8)),
 		}),
 		GlyphButton.new({
 			Name = "Prev",

@@ -48,8 +48,12 @@ local Clock = require("./Clock")
 local Model = require("./Model")
 local Parts = require("./Parts")
 local Strings = require("./Strings")
-local D = q.Declaration
-local inputName = D.Modifier.Frame():Name("TimePickerInput")
+local Frame = q.Elem "Frame"
+local TextBox = q.Elem "TextBox"
+local TextLabel = q.Elem "TextLabel"
+local UIStroke = q.Elem "UIStroke"
+local FrameModifier = q.Modifier "Frame"
+local inputName = FrameModifier():Name("TimePickerInput")
 
 type State<T> = q.State<T>
 type Time = Clock.Time
@@ -63,7 +67,7 @@ export type Props = {
 	read Locale: Locale?,
 	read OnChange: ((time: Time) -> ())?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -236,7 +240,7 @@ local function build(o: BuildOptions): Built
 		end, raw.OnSurfaceVariant, raw.Error)
 		texts[kind] = display(kind)
 		return {
-			D.TextBox {
+			TextBox {
 				Name = if kind == "Hour" then "HourField" else "MinuteField",
 				fieldStyle,
 				Size = UDim2.fromOffset(FIELD_W, FIELD_H),
@@ -266,7 +270,7 @@ local function build(o: BuildOptions): Built
 						end
 					end)
 				end),
-				D.UIStroke {
+				UIStroke {
 					Name = "Outline",
 					ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 					Color = stroke:Apply(animation()),
@@ -274,7 +278,7 @@ local function build(o: BuildOptions): Built
 					Enabled = editing,
 				},
 			},
-			D.TextLabel {
+			TextLabel {
 				Name = if kind == "Hour" then "HourSupport" else "MinuteSupport",
 				supportStyle,
 				Size = UDim2.fromOffset(FIELD_W, SUPPORT_H),
@@ -311,7 +315,7 @@ local function build(o: BuildOptions): Built
 			})
 		)
 	end
-	local frame = D.Frame {
+	local frame = Frame {
 		Name = o.Name or "TimeInput",
 		Size = UDim2.fromOffset(total.X, total.Y),
 		Position = o.Position or UDim2.new(),
@@ -340,9 +344,9 @@ local function Input(props: Props): Frame
 	local model = Model.new({ Value = props.Value, Is24Hour = props.Is24Hour == true, OnChange = props.OnChange })
 	local built = build({ Model = model, Theme = theme, Locale = props.Locale or "en" })
 	local total = built.Size
-	return D.Frame {
+	return Frame {
 		inputName,
-		D.Modifier.Frame():Size(UDim2.fromOffset(total.X, total.Y)):BorderSizePixel(0):BackgroundTransparency(1),
+		FrameModifier():Size(UDim2.fromOffset(total.X, total.Y)):BorderSizePixel(0):BackgroundTransparency(1),
 		props.Modifier or q.None,
 		model.Sync,
 		built.Frame,

@@ -4,7 +4,7 @@ local ClickSink = require("./support/clicksink")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Tokens = require("../src/Tokens")
 local Overlay = require("../src/Overlay")
 local Interactive = require("../src/Interactive")
@@ -662,7 +662,7 @@ end)
 -- ── modal ───────────────────────────────────────────────────────────────────
 local function setupModal()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	return overlay, screen
 end
 
@@ -887,7 +887,7 @@ H.section("modal input mode: the kit's Outlined TextField, the format placeholde
 end)
 
 H.section("modal: Overlay empty after close, default overlay works, dispose mid-exit", function()
-	local screen = D.Frame { Overlay.default().Layer }
+	local screen = Frame { Overlay.default().Layer }
 	local handle = Modal.open({ Today = TODAY })
 	assert(H.find(screen, "DatePickerModal") ~= nil)
 	handle.Close()

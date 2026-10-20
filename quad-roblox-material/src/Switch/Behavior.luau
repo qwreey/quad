@@ -51,7 +51,7 @@ export type Props = {
 	read Disabled: (boolean | q.State<boolean>)?,
 	read OnChange: ((value: boolean) -> ())?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.TextButtonModifier?,
+	read Modifier: q.ModifierInto<TextButton>?,
 	read Hooks: Util.Hooks?,
 }
 

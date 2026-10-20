@@ -12,8 +12,10 @@
 
 local Quad = require("./Quad")
 local q = Quad
-local D = q.Declaration
-local progressBarName = D.Modifier.Frame():Name("ProgressBar")
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local FrameModifier = q.Modifier "Frame"
+local progressBarName = FrameModifier():Name("ProgressBar")
 local Style = require("./Style")
 
 type State<T> = Quad.State<T>
@@ -23,7 +25,7 @@ export type ProgressBarProps = {
 	read Value: number | State<number>,
 	read Text: (string | State<string>)?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 local function asState(v: number | State<number>): State<number>
@@ -54,7 +56,7 @@ local function ProgressBar(props: ProgressBarProps): Frame
 	local height: State<UDim2> = style.FrameHeight:Compute(function(self)
 		return UDim2.new(1, 0, 0, self:Get())
 	end)
-	return D.Frame({
+	return Frame({
 		progressBarName,
 		props.Modifier or q.None,
 		Size = height,
@@ -63,14 +65,14 @@ local function ProgressBar(props: ProgressBarProps): Frame
 		BorderSizePixel = 0,
 		ClipsDescendants = true,
 		UICorner = style.Metrics.FrameRounding,
-		D.Frame({
+		Frame({
 			Name = "Fill",
 			Size = fillSize,
 			BackgroundColor3 = style.Color.PlotHistogram,
 			BackgroundTransparency = style.Transparency.PlotHistogram,
 			BorderSizePixel = 0,
 		}),
-		D.TextLabel({
+		TextLabel({
 			Name = "Label",
 			Size = UDim2.fromScale(1, 1),
 			Text = label,

@@ -24,15 +24,16 @@ local Style = require("../Button/Style")
 local Behavior = require("../Slider/Behavior")
 local Bubble = require("../Slider/Bubble")
 local Ticks = require("./SliderTicks")
-local D = q.Declaration
-local rangeName = D.Modifier.Frame():Name("M2RangeSlider")
+local Frame = q.Elem "Frame"
+local FrameModifier = q.Modifier "Frame"
+local rangeName = FrameModifier():Name("M2RangeSlider")
 
 export type Props = Behavior.RangeSliderProps
 
 local INSET = 10 -- handle radius: rail margin on both sides (as M2 Slider)
 local BAR = 4
 
-local baseModifier = D.Modifier.Frame():Size(UDim2.new(1, 0, 0, 40)):BackgroundTransparency(1):BorderSizePixel(0)
+local baseModifier = FrameModifier():Size(UDim2.new(1, 0, 0, 40)):BackgroundTransparency(1):BorderSizePixel(0)
 
 local function RangeSlider(props: Props)
 	local theme = Theme.resolve(props.Theme)
@@ -93,7 +94,7 @@ local function RangeSlider(props: Props)
 		local zIndex: q.State<number> = s.IsKey:Compute(function(self)
 			return if self:Get() then 2 else 1
 		end)
-		return D.Frame {
+		return Frame {
 			Name = "Halo" .. h,
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = position,
@@ -102,7 +103,7 @@ local function RangeSlider(props: Props)
 			BorderSizePixel = 0,
 			ZIndex = zIndex,
 			layer,
-			D.Frame {
+			Frame {
 				Name = "Handle",
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				Position = UDim2.fromScale(0.5, 0.5),
@@ -116,7 +117,7 @@ local function RangeSlider(props: Props)
 		}
 	end
 
-	return D.Frame {
+	return Frame {
 		rangeName,
 		baseModifier,
 		props.Modifier or q.None,
@@ -126,13 +127,13 @@ local function RangeSlider(props: Props)
 		Interactable = r.Interactable,
 		Selectable = r.Interactable,
 		MouseMoved = r.MouseMoved,
-		D.Frame {
+		Frame {
 			Name = "Rail",
 			Position = UDim2.fromOffset(INSET, 0),
 			Size = UDim2.new(1, -2 * INSET, 1, 0),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.Frame {
+			Frame {
 				Name = "Inactive",
 				AnchorPoint = Vector2.new(0, 0.5),
 				Position = UDim2.fromScale(0, 0.5),
@@ -142,7 +143,7 @@ local function RangeSlider(props: Props)
 				BorderSizePixel = 0,
 				UICorner = corner,
 			},
-			D.Frame {
+			Frame {
 				Name = "Active",
 				AnchorPoint = Vector2.new(0, 0.5),
 				Position = activePosition,

@@ -2,7 +2,7 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local ScreenGui = q.Elem "ScreenGui"
 local Demo = require("../gallery")
 local Style = require("../src/Style")
 local Plot = require("../src/Plot")
@@ -276,7 +276,7 @@ end)
 H.section("DemoWindow alone: default overlay, own Sources, dispose", function()
 	local win = Demo.DemoWindow()
 	assert((win :: any).Name == "Window")
-	local screen = D.ScreenGui({ win })
+	local screen = ScreenGui({ win })
 	local n = H.countDescendants(screen)
 	print(`[demo] DemoWindow alone: {n} instances`)
 	H.resetOutput()
@@ -289,7 +289,7 @@ end)
 H.section("a hidden demo window has no Heartbeat connection; showing it connects again", function()
 	local open = q.Source(false)
 	local win = Demo.DemoWindow({ Open = open })
-	local screen = D.ScreenGui({ win })
+	local screen = ScreenGui({ win })
 	assert(beats() == baseBeats, "closed window: its ticker is idle")
 	open:Set(true)
 	assert(beats() == baseBeats + 1)
@@ -304,7 +304,7 @@ H.section("style editor: dragging a field many times rebuilds the preview once (
 	local Context = Demo.Context
 	local ctx = Context.new(Style.new(), nil)
 	local editor = Demo.StyleEditorWindow({ Context = ctx })
-	local screen = D.ScreenGui({ editor })
+	local screen = ScreenGui({ editor })
 	local host = H.find(editor, "PreviewHost") :: any
 	local first = H.find(host, "Preview") :: any
 	assert(first ~= nil)

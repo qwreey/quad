@@ -110,7 +110,14 @@ local Util = require("./Util")
 local Text = require("./Text")
 local Overlay = require("./Overlay")
 local Button = require("./Button")
-local D = q.Declaration
+local CanvasGroup = q.Elem "CanvasGroup"
+local Frame = q.Elem "Frame"
+local ImageLabel = q.Elem "ImageLabel"
+local ScrollingFrame = q.Elem "ScrollingFrame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local TextButtonModifier = q.Modifier "TextButton"
 
 export type Action = {
 	read Label: string,
@@ -221,7 +228,7 @@ local function open(o: OpenOptions): Handle
 		local hasIcon = o.Icon ~= nil
 		local icon: Instance? = nil
 		if o.Icon ~= nil then
-			icon = D.ImageLabel {
+			icon = ImageLabel {
 				Name = "Icon",
 				Size = UDim2.fromOffset(24, 24),
 				BackgroundTransparency = 1,
@@ -234,7 +241,7 @@ local function open(o: OpenOptions): Handle
 
 		local headline: GuiObject? = nil
 		if o.Headline ~= nil then
-			headline = D.TextLabel {
+			headline = TextLabel {
 				Name = "Headline",
 				headlineStyle,
 				Size = UDim2.fromScale(1, 0),
@@ -258,7 +265,7 @@ local function open(o: OpenOptions): Handle
 		-- optional-function upvalue — `((GuiObject) -> ()) & ~nil` in a union)
 		local watchLayout: (card: GuiObject) -> () = function(_card: GuiObject) end
 		if type(b) == "string" then
-			bodyInner = D.TextLabel {
+			bodyInner = TextLabel {
 				Name = "Body",
 				bodyStyle,
 				Size = UDim2.fromScale(1, 0),
@@ -273,7 +280,7 @@ local function open(o: OpenOptions): Handle
 				LayoutOrder = 3,
 			}
 		elseif b ~= nil then
-			bodyInner = D.Frame {
+			bodyInner = Frame {
 				Name = "Body",
 				Size = UDim2.fromScale(1, 0),
 				AutomaticSize = Enum.AutomaticSize.Y,
@@ -353,7 +360,7 @@ local function open(o: OpenOptions): Handle
 					local height = self:Get()
 					return UDim2.fromOffset(0, if height > cap:Get() then height else 0)
 				end, maxBody)
-				body = D.ScrollingFrame {
+				body = ScrollingFrame {
 					Name = "BodyScroll",
 					Size = scrollSize,
 					CanvasSize = canvasSize,
@@ -365,7 +372,7 @@ local function open(o: OpenOptions): Handle
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
 					LayoutOrder = 3,
-					D.Frame {
+					Frame {
 						Name = "BodyRoom",
 						Size = UDim2.new(1, 0, 0, BodyRoom),
 						BackgroundTransparency = 1,
@@ -400,22 +407,22 @@ local function open(o: OpenOptions): Handle
 							end
 							close(a.Result)
 						end,
-						Modifier = D.Modifier.TextButton():LayoutOrder(i),
+						Modifier = TextButtonModifier():LayoutOrder(i),
 					})
 				if firstAction == nil and not Util.peekBool(a.Disabled) then
 					firstAction = btn
 				end
 				table.insert(buttons, btn)
 			end
-			actionsRow = D.Frame {
+			actionsRow = Frame {
 				Name = "Actions",
 				Size = UDim2.fromScale(1, 0),
 				AutomaticSize = Enum.AutomaticSize.Y,
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				LayoutOrder = 4,
-				D.UIPadding { PaddingTop = UDim.new(0, 8) }, -- 16 list gap + 8 = M3's 24 above the actions
-				D.UIListLayout {
+				UIPadding { PaddingTop = UDim.new(0, 8) }, -- 16 list gap + 8 = M3's 24 above the actions
+				UIListLayout {
 					FillDirection = Enum.FillDirection.Horizontal,
 					HorizontalAlignment = Enum.HorizontalAlignment.Right,
 					VerticalAlignment = Enum.VerticalAlignment.Center,
@@ -426,7 +433,7 @@ local function open(o: OpenOptions): Handle
 			}
 		end
 
-		return D.CanvasGroup {
+		return CanvasGroup {
 			Name = "Dialog",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.fromScale(0.5, 0.5),
@@ -460,14 +467,14 @@ local function open(o: OpenOptions): Handle
 					refit()
 				end
 			end),
-			D.Frame {
+			Frame {
 				Name = "Content",
 				Size = UDim2.fromScale(1, 0),
 				AutomaticSize = Enum.AutomaticSize.Y,
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				UIPaddingOffset = 24,
-				D.UIListLayout {
+				UIListLayout {
 					FillDirection = Enum.FillDirection.Vertical,
 					HorizontalAlignment = if hasIcon then Enum.HorizontalAlignment.Center else Enum.HorizontalAlignment.Left,
 					SortOrder = Enum.SortOrder.LayoutOrder,

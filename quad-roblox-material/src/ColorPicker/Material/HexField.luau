@@ -29,7 +29,7 @@ export type Props = {
 	read Model: Model.Model,
 	read Theme: Theme.Theme?,
 	read Disabled: (boolean | q.State<boolean>)?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 }
 
 export type Hex = { read Field: Frame, read Sync: q.Effect }

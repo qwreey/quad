@@ -8,7 +8,7 @@
 
 local Quad = require("../src")
 
-local q = Quad.New()
+local q = Quad.NewModule()
 
 print("=== 1. 던진 문자열은 `파일:줄: QuadNNNN 주어: …` 모양이다 ===")
 do

@@ -90,8 +90,11 @@ local IconView = require("../IconView")
 local Style = require("./Style")
 local Segment = require("./Segment")
 local ColorTokens = require("../Tokens/Color")
-local D = q.Declaration
-local splitName = D.Modifier.Frame():Name("SplitButton")
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local FrameModifier = q.Modifier "Frame"
+local splitName = FrameModifier():Name("SplitButton")
 
 export type Variant = "Filled" | "Tonal" | "Elevated" | "Outlined"
 
@@ -104,7 +107,7 @@ export type Props = {
 	read Selected: (boolean | q.State<boolean>)?,
 	read Disabled: (boolean | q.State<boolean>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -216,7 +219,7 @@ local function SplitButton(props: Props)
 	if props.Icon ~= nil then
 		table.insert(
 			leadingContent,
-			D.UIListLayout {
+			UIListLayout {
 				FillDirection = Enum.FillDirection.Horizontal,
 				HorizontalAlignment = Enum.HorizontalAlignment.Left,
 				VerticalAlignment = Enum.VerticalAlignment.Center,
@@ -236,7 +239,7 @@ local function SplitButton(props: Props)
 	end
 	table.insert(
 		leadingContent,
-		D.TextLabel {
+		TextLabel {
 			Name = "Label",
 			labelStyle,
 			Size = UDim2.fromScale(0, 1),
@@ -288,15 +291,15 @@ local function SplitButton(props: Props)
 		Optical = true,
 	})
 
-	return D.Frame {
+	return Frame {
 		splitName,
-		D.Modifier.Frame()
+		FrameModifier()
 			:Size(UDim2.fromOffset(0, HEIGHT))
 			:AutomaticSize(Enum.AutomaticSize.X)
 			:BackgroundTransparency(1)
 			:BorderSizePixel(0),
 		props.Modifier or q.None,
-		D.UIListLayout {
+		UIListLayout {
 			FillDirection = Enum.FillDirection.Horizontal,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			VerticalAlignment = Enum.VerticalAlignment.Center,

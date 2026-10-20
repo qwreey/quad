@@ -51,8 +51,11 @@ local Util = require("./Util")
 local Interactive = require("./Interactive")
 local Style = require("./Button/Style")
 local ControlLabel = require("./ControlLabel")
-local D = q.Declaration
-local checkboxName = D.Modifier.TextButton():Name("Checkbox")
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
+local UIStroke = q.Elem "UIStroke"
+local TextButtonModifier = q.Modifier "TextButton"
+local checkboxName = TextButtonModifier():Name("Checkbox")
 
 local RunService = game:GetService("RunService")
 
@@ -66,7 +69,7 @@ export type Props = {
 	read OnChange: ((value: boolean) -> ())?,
 	read Label: (string | q.State<string>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.TextButtonModifier?,
+	read Modifier: q.ModifierInto<TextButton>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -80,7 +83,7 @@ local OVERLAP = 1 -- the bars frame reaches this far (per side) OVER the outline
 
 type Look = "none" | "check" | "dash"
 
-local baseModifier = D.Modifier.TextButton()
+local baseModifier = TextButtonModifier()
 	:Size(UDim2.fromOffset(48, 48))
 	:BackgroundTransparency(1)
 	:BorderSizePixel(0)
@@ -218,7 +221,7 @@ local function Checkbox(props: Props)
 	local markColor = Style.animated(markRaw)
 
 	local function leg(name: string, size: UDim2, position: UDim2, rotation: number)
-		return D.Frame {
+		return Frame {
 			Name = name,
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = position,
@@ -233,7 +236,7 @@ local function Checkbox(props: Props)
 	-- one closing bar (inside the `Bars` frame, which is ZIndex 2 over the marks); color = the displayed look's outline color, not animated (the
 	-- bars are zero-sized at rest, so a scheme change needs no cross-fade)
 	local function bar(name: string, anchor: Vector2, size: q.State<UDim2>)
-		return D.Frame {
+		return Frame {
 			Name = name,
 			AnchorPoint = anchor,
 			Position = UDim2.fromScale(anchor.X, anchor.Y),
@@ -244,7 +247,7 @@ local function Checkbox(props: Props)
 		}
 	end
 
-	local box = D.Frame {
+	local box = Frame {
 		Name = "Box",
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
@@ -253,7 +256,7 @@ local function Checkbox(props: Props)
 		BackgroundTransparency = fillTransparency,
 		BorderSizePixel = 0,
 		UICorner = UDim.new(0, 2),
-		D.UIStroke {
+		UIStroke {
 			Name = "Outline",
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 			BorderStrokePosition = Enum.BorderStrokePosition.Inner,
@@ -265,7 +268,7 @@ local function Checkbox(props: Props)
 		-- placed from the CENTER so the swell of the motion keeps them still)
 		leg("CheckShort", UDim2.fromOffset(6, 2), UDim2.new(0.5, -4, 0.5, 2), 45),
 		leg("CheckLong", UDim2.fromOffset(11, 2), UDim2.new(0.5, 2, 0.5, 0), -45),
-		D.Frame {
+		Frame {
 			Name = "Dash",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.fromScale(0.5, 0.5),
@@ -282,7 +285,7 @@ local function Checkbox(props: Props)
 		-- Draw order of the bars (ZIndex 2 child) vs the UIStroke is not provable from code — Studio check: the bars
 		-- should paint over the outline's inner 1 px. If a gap still shows, lower SWELL (memo only; value is the
 		-- user's call after Studio) or raise OVERLAP.
-		D.Frame {
+		Frame {
 			Name = "Bars",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.fromScale(0.5, 0.5),
@@ -298,7 +301,7 @@ local function Checkbox(props: Props)
 	}
 	local hasLabel = props.Label ~= nil
 
-	return D.TextButton {
+	return TextButton {
 		checkboxName,
 		baseModifier,
 		if hasLabel then ControlLabel.host else q.None,
@@ -318,7 +321,7 @@ local function Checkbox(props: Props)
 				props.OnChange(nextValue)
 			end
 		end,
-		D.Frame {
+		Frame {
 			Name = "Target",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = if hasLabel then ControlLabel.TargetPosition else UDim2.fromScale(0.5, 0.5),

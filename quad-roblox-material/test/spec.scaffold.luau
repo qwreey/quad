@@ -7,7 +7,10 @@ local H = require("./support/harness")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ScrollingFrame = q.Elem "ScrollingFrame"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
 local Tokens = require("../src/Tokens")
 local Overlay = require("../src/Overlay")
 local Snackbar = require("../src/Snackbar")
@@ -41,16 +44,16 @@ end
 local function list(rows: number, padding: ScaffoldModule.PaddingValues, hook: any?): ScrollingFrame
 	local items: { Instance } = {}
 	for i = 1, rows do
-		table.insert(items, D.Frame { Name = "Row", Size = UDim2.new(1, 0, 0, 48), LayoutOrder = i })
+		table.insert(items, Frame { Name = "Row", Size = UDim2.new(1, 0, 0, 48), LayoutOrder = i })
 	end
-	return D.ScrollingFrame {
+	return ScrollingFrame {
 		Name = "List",
 		Size = UDim2.fromScale(1, 1),
 		CanvasSize = UDim2.fromOffset(0, 0),
 		AutomaticCanvasSize = Enum.AutomaticSize.Y,
 		hook or q.None,
-		D.UIPadding { PaddingTop = padding.Top, PaddingLeft = UDim.new(0, 16) },
-		D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder },
+		UIPadding { PaddingTop = padding.Top, PaddingLeft = UDim.new(0, 16) },
+		UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder },
 		q.Slot<<Instance>>(items),
 	}
 end
@@ -60,7 +63,7 @@ local function padTop(scroller: any): number
 end
 
 H.section("content only: Scaffold + Body (2), background color, the content fills the whole region; an Instance content is placed as given", function()
-	local content = D.Frame { Name = "Page", Size = UDim2.fromScale(1, 1) }
+	local content = Frame { Name = "Page", Size = UDim2.fromScale(1, 1) }
 	local s: any = Scaffold({ Content = content })
 	assert(s.Name == "Scaffold" and s.Size == UDim2.fromScale(1, 1) and s.BackgroundColor3 == L.Background)
 	local body = own(s, "Body")
@@ -73,7 +76,7 @@ H.section("content only: Scaffold + Body (2), background color, the content fill
 		ContainerColor = Color3.new(1, 0, 0),
 		Content = function(p: ScaffoldModule.PaddingValues): GuiObject
 			seen = p
-			return D.Frame { Name = "Page" }
+			return Frame { Name = "Page" }
 		end,
 	})
 	assert(s2.BackgroundColor3 == Color3.new(1, 0, 0))
@@ -152,20 +155,20 @@ H.section("a top app bar without a scroll behavior, and a foreign bar measured b
 		TopBar = medium,
 		Content = function(p: ScaffoldModule.PaddingValues): GuiObject
 			p0 = p
-			return D.Frame {}
+			return Frame {}
 		end,
 	})
 	assert(own(s, "Body").Position == UDim2.fromOffset(0, 152) and (p0 :: any).Top:Get() == UDim.new(0, 0))
 	q.dispose(s)
-	local foreign = D.Frame { Name = "MyBar", Size = UDim2.new(1, 0, 0, 50) }
-	local foot = D.Frame { Name = "MyFoot", Size = UDim2.new(1, 0, 0, 30) }
+	local foreign = Frame { Name = "MyBar", Size = UDim2.new(1, 0, 0, 50) }
+	local foot = Frame { Name = "MyFoot", Size = UDim2.new(1, 0, 0, 30) }
 	local p1: ScaffoldModule.PaddingValues? = nil
 	local s2: any = Scaffold({
 		TopBar = foreign,
 		BottomBar = foot,
 		Content = function(p: ScaffoldModule.PaddingValues): GuiObject
 			p1 = p
-			return D.Frame {}
+			return Frame {}
 		end,
 	})
 	local body = own(s2, "Body")
@@ -185,7 +188,7 @@ H.section("FAB: 16 from the edge (Start / Center / End), its bottom 16 above the
 		for _, withBar in { true, false } do
 			local fab: any = FAB({ Icon = "rbxassetid://1" })
 			local bar: any? = if withBar then ShortNavigationBar<<string>>({ Items = { { Key = "a", Label = "A" } }, Selected = q.Source("a") }) else nil
-			local content = D.Frame {}
+			local content = Frame {}
 			local s: any = Scaffold({
 				BottomBar = bar,
 				FloatingActionButton = fab,
@@ -215,7 +218,7 @@ end)
 H.section("snackbar host: alone it fills down to the bottom bar's top; with a FAB it fills above the FAB; a shown snackbar opens in it", function()
 	local layer = Overlay.new()
 	local bar: any = AppBar.BottomAppBar({})
-	local s: any = Scaffold({ BottomBar = bar, SnackbarHost = layer.Layer, Content = D.Frame {} })
+	local s: any = Scaffold({ BottomBar = bar, SnackbarHost = layer.Layer, Content = Frame {} })
 	local floating = own(s, "Floating")
 	assert(layer.Layer.Parent == floating and floating.Size == UDim2.new(1, 0, 1, -80), "alone: ends at the bar's top")
 	assert(own(floating, "UIListLayout") == nil and own(floating, "UIPadding") == nil)
@@ -225,7 +228,7 @@ H.section("snackbar host: alone it fills down to the bottom bar's top; with a FA
 	local host = Snackbar.new({ Overlay = layer2 })
 	local fab: any = FAB({ Icon = "rbxassetid://1", Label = "Compose" })
 	local nav: any = ShortNavigationBar<<string>>({ Items = { { Key = "a", Label = "A" } }, Selected = q.Source("a") })
-	local content = D.Frame {}
+	local content = Frame {}
 	local s2: any = Scaffold({ BottomBar = nav, FloatingActionButton = fab, SnackbarHost = layer2.Layer, Content = content })
 	local floating2 = own(s2, "Floating")
 	local wrap = own(floating2, "SnackbarHost")

@@ -38,8 +38,12 @@ local Util = require("../Util")
 local Interactive = require("../Interactive")
 local Style = require("./Style")
 local ColorTokens = require("../Tokens/Color")
-local D = q.Declaration
-local iconButtonName = D.Modifier.TextButton():Name("IconButton")
+local Frame = q.Elem "Frame"
+local ImageLabel = q.Elem "ImageLabel"
+local TextButton = q.Elem "TextButton"
+local UIStroke = q.Elem "UIStroke"
+local TextButtonModifier = q.Modifier "TextButton"
+local iconButtonName = TextButtonModifier():Name("IconButton")
 
 export type Variant = "Standard" | "Filled" | "Tonal" | "Outlined"
 
@@ -51,7 +55,7 @@ export type Props = {
 	read Disabled: (boolean | q.State<boolean>)?,
 	read OnClick: (() -> ())?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.TextButtonModifier?,
+	read Modifier: q.ModifierInto<TextButton>?,
 	read Hooks: Util.Hooks?,
 	read TouchTarget: boolean?,
 	read ContentColor: (Color3 | q.State<Color3>)?,
@@ -83,7 +87,7 @@ local Specs: { [Variant]: Spec } = {
 	},
 }
 
-local baseModifier = D.Modifier.TextButton()
+local baseModifier = TextButtonModifier()
 	:Size(UDim2.fromOffset(40, 40))
 	:BorderSizePixel(0)
 	:AutoButtonColor(false)
@@ -152,7 +156,7 @@ local function IconButton(props: Props)
 			-- OutlinedIconButtonTokens.DisabledOpacity 0.38 (outlinedIconButtonBorder): the outline fades like the icon
 			return if dis:Get() then Style.DisabledContentTransparency else 0
 		end, disabled)
-		stroke = D.UIStroke {
+		stroke = UIStroke {
 			Name = "Outline",
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 			Thickness = 1,
@@ -163,7 +167,7 @@ local function IconButton(props: Props)
 	local interactable: q.State<boolean> = Util.interactable(disabled)
 	local hooks = Util.hooks(props.Hooks)
 
-	local icon = D.ImageLabel {
+	local icon = ImageLabel {
 		Name = "Icon",
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
@@ -181,7 +185,7 @@ local function IconButton(props: Props)
 	end
 
 	if props.TouchTarget == true then
-		return D.TextButton {
+		return TextButton {
 			iconButtonName,
 			Size = UDim2.fromOffset(48, 48),
 			BackgroundTransparency = 1,
@@ -192,7 +196,7 @@ local function IconButton(props: Props)
 			fx.Hook,
 			Interactable = interactable,
 			Activated = activated,
-			D.Frame {
+			Frame {
 				Name = "Container",
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				Position = UDim2.fromScale(0.5, 0.5),
@@ -209,7 +213,7 @@ local function IconButton(props: Props)
 		}
 	end
 
-	return D.TextButton {
+	return TextButton {
 		iconButtonName,
 		baseModifier,
 		props.Modifier or q.None,

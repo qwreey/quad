@@ -10,15 +10,8 @@ if [ "${#files[@]}" -eq 0 ]; then
 	exit 1
 fi
 fail=0
-# 생성 산출물 게이트(M5 단위 ②) — Parent 필드는 덤프 층에서 제외돼야 한다
-# (H-142/Q5 (a); CLI Luau엔 io가 없어 spec이 못 보므로 여기서 커밋 산출물을 직접 봄)
-# [Q35 (a), 2026-09-08] the READ surface (`PropTypesRead`, OnChange only) carries Parent on purpose —
-# the gate looks at every other block (write surface: PropTypes / <Class>Param / Modifier setters)
-if awk '/^export type PropTypesRead = \{/{skip=1} skip && /^\}/{skip=0; next} !skip && /^\tParent:/{found=1} END{exit !found}' quad-roblox/src/Declaration/init.luau; then
-	echo "gen-d gate: Parent field leaked into the generated WRITE surface" >&2
-	fail=1
-fi
-# [7순회 H-423] 커밋된 D == 새 emit(생성기의 SystemExit 게이트 전부 포함) — 손 편집·재생성 누락 차단
+# [7순회 H-423 → 2026-10-20 3.4.0] 커밋된 Surface/Data.luau == 새 emit(생성기의 SystemExit 게이트 전부 포함) — 손 편집·
+# 재생성 누락 차단. (옛 생성 Declaration의 Parent 누출 게이트는 surface-gate 고정물의 `Parent = …` NEG 줄이 대신한다.)
 python3 scripts/gen-d.py check || fail=1
 # [7순회 H-422] 모듈 스코프 `function name()`(앞선 local 없음)은 luau-analyze가 lint조차 안 낸다 —
 # H-404 게이트(GlobalUsedAsLocal)는 함수 안 중첩 정의만 잡으므로 여기서 정규식으로 본다
@@ -26,7 +19,7 @@ if grep -rnE '^function [A-Za-z_][A-Za-z0-9_]*[[:space:]]*\(' --include='*.luau'
 	echo "FAIL: module-scope global function definition (prefix with local)" >&2
 	fail=1
 fi
-if ! grep -q "GENERATED FILE" quad-roblox/src/Declaration/init.luau; then
+if ! grep -q "GENERATED FILE" quad-roblox/src/Surface/Data.luau; then
 	echo "gen-d gate: generated banner missing" >&2
 	fail=1
 fi

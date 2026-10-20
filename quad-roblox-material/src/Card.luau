@@ -63,9 +63,14 @@ local Interactive = require("./Interactive")
 local Elevation = require("./Elevation")
 local Style = require("./Button/Style")
 local ColorTokens = require("./Tokens/Color")
-local D = q.Declaration
-local cardFrameName = D.Modifier.Frame():Name("Card")
-local cardButtonName = D.Modifier.TextButton():Name("Card")
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
+local UIListLayout = q.Elem "UIListLayout"
+local UIStroke = q.Elem "UIStroke"
+local FrameModifier = q.Modifier "Frame"
+local TextButtonModifier = q.Modifier "TextButton"
+local cardFrameName = FrameModifier():Name("Card")
+local cardButtonName = TextButtonModifier():Name("Card")
 
 export type Variant = "Elevated" | "Filled" | "Outlined"
 
@@ -78,7 +83,7 @@ export type Props = {
 	read Gap: number?,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.IntoGuiObject?,
+	read Modifier: q.ModifierInto<GuiObject>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -123,8 +128,8 @@ local function composite(theme: Theme.Theme, c: Composite, alpha: number): q.Sta
 	end, theme.Raw[c.Over])
 end
 
-local baseFrame = D.Modifier.Frame():Size(UDim2.fromOffset(0, 0)):AutomaticSize(Enum.AutomaticSize.XY):BorderSizePixel(0)
-local baseButton = D.Modifier.TextButton()
+local baseFrame = FrameModifier():Size(UDim2.fromOffset(0, 0)):AutomaticSize(Enum.AutomaticSize.XY):BorderSizePixel(0)
+local baseButton = TextButtonModifier()
 	:Size(UDim2.fromOffset(0, 0))
 	:AutomaticSize(Enum.AutomaticSize.XY)
 	:BorderSizePixel(0)
@@ -171,7 +176,7 @@ local function Card(props: Props): GuiObject
 
 	local stroke: Instance? = nil
 	if spec.Stroke then
-		stroke = D.UIStroke {
+		stroke = UIStroke {
 			Name = "Outline",
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 			Thickness = 1,
@@ -183,7 +188,7 @@ local function Card(props: Props): GuiObject
 
 	local layout: Instance? = nil
 	if props.Gap ~= nil then
-		layout = D.UIListLayout {
+		layout = UIListLayout {
 			FillDirection = Enum.FillDirection.Vertical,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = UDim.new(0, props.Gap),
@@ -193,7 +198,7 @@ local function Card(props: Props): GuiObject
 	-- padding / layout / children live on an inner transparent Content frame for BOTH forms (one code path): the
 	-- state layer + ripple must be a direct child of a host without UIPadding / UIListLayout (Interactive.luau).
 	local function content(): Frame
-		return D.Frame {
+		return Frame {
 			Name = "Content",
 			Size = UDim2.fromOffset(0, 0),
 			AutomaticSize = Enum.AutomaticSize.XY,
@@ -208,10 +213,10 @@ local function Card(props: Props): GuiObject
 	if interactive then
 		local f = fx :: Interactive.Interactive
 		local interactable: q.State<boolean> = Util.interactable(disabled)
-		return D.TextButton {
+		return TextButton {
 			cardButtonName,
 			baseButton,
-			if props.Modifier then props.Modifier:AsGuiObject():AsTextButton() else q.None,
+			if props.Modifier then props.Modifier else q.None,
 			f.Hook,
 			BackgroundColor3 = container,
 			BackgroundTransparency = 0,
@@ -231,10 +236,10 @@ local function Card(props: Props): GuiObject
 		} :: GuiObject
 	end
 
-	return D.Frame {
+	return Frame {
 		cardFrameName,
 		baseFrame,
-		if props.Modifier then props.Modifier:AsGuiObject():AsFrame() else q.None,
+		if props.Modifier then props.Modifier else q.None,
 		BackgroundColor3 = container,
 		BackgroundTransparency = 0,
 		LayoutOrder = props.LayoutOrder,

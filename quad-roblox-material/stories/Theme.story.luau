@@ -5,7 +5,12 @@
 local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local UIStroke = q.Elem "UIStroke"
+local FrameModifier = q.Modifier "Frame"
+local TextButtonModifier = q.Modifier "TextButton"
 local StoryParts = require("./StoryParts")
 local themed = StoryParts.themed
 
@@ -22,7 +27,7 @@ local ROLES: { Material.Role } = {
 }
 
 local function text(theme: Material.Theme, value: string | q.State<string>, order: number): TextLabel
-	return D.TextLabel {
+	return TextLabel {
 		Material.Text.Label("TitleMedium"),
 		LayoutOrder = order,
 		Size = UDim2.new(1, 0, 0, 20),
@@ -46,23 +51,23 @@ return StoryKit.story({
 		for i, role in ROLES do
 			table.insert(
 				cells,
-				D.Frame {
+				Frame {
 					Name = role,
 					LayoutOrder = i,
 					Size = UDim2.fromOffset(112, 72),
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
-					D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4) },
-					D.Frame {
+					UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4) },
+					Frame {
 						Name = "Swatch",
 						LayoutOrder = 1,
 						Size = UDim2.new(1, 0, 0, 44),
 						BorderSizePixel = 0,
 						BackgroundColor3 = theme.Color[role],
 						UICorner = UDim.new(0, 8),
-						D.UIStroke { Color = theme.Color.OutlineVariant, Thickness = 1 },
+						UIStroke { Color = theme.Color.OutlineVariant, Thickness = 1 },
 					},
-					D.TextLabel {
+					TextLabel {
 						Material.Text.Label("LabelSmall"),
 						LayoutOrder = 2,
 						Size = UDim2.new(1, 0, 0, 16),
@@ -88,7 +93,7 @@ return StoryKit.story({
 			local follow2 = q.Effect(function()
 				brand.Scheme:SetIfChanged(c.Scheme:Get())
 			end, c.Scheme)
-			return D.Frame {
+			return Frame {
 				follow2,
 				Name = "BrandRow",
 				Size = UDim2.fromScale(1, 1),
@@ -96,17 +101,17 @@ return StoryKit.story({
 				BackgroundColor3 = brand.Color.Surface,
 				UICorner = UDim.new(0, 16),
 				UIPaddingOffset = 16,
-				D.UIListLayout {
+				UIListLayout {
 					FillDirection = Enum.FillDirection.Horizontal,
 					SortOrder = Enum.SortOrder.LayoutOrder,
 					VerticalAlignment = Enum.VerticalAlignment.Center,
 					Padding = UDim.new(0, 12),
 				},
-				Material.Button({ Theme = brand, Label = "Filled", Modifier = D.Modifier.TextButton():LayoutOrder(1) }),
-				Material.Button({ Theme = brand, Variant = "Outlined", Label = "Outlined", Modifier = D.Modifier.TextButton():LayoutOrder(2) }),
-				Material.Switch({ Theme = brand, Value = q.Source(true), Modifier = D.Modifier.TextButton():LayoutOrder(3) }),
+				Material.Button({ Theme = brand, Label = "Filled", Modifier = TextButtonModifier():LayoutOrder(1) }),
+				Material.Button({ Theme = brand, Variant = "Outlined", Label = "Outlined", Modifier = TextButtonModifier():LayoutOrder(2) }),
+				Material.Switch({ Theme = brand, Value = q.Source(true), Modifier = TextButtonModifier():LayoutOrder(3) }),
 				-- the bar is full width by default: in this row it would run past the row's end, so it gets a fixed width
-				Material.LinearProgress({ Theme = brand, Value = 0.6, Modifier = D.Modifier.Frame():LayoutOrder(4):Size(UDim2.fromOffset(240, 4)) }),
+				Material.LinearProgress({ Theme = brand, Value = 0.6, Modifier = FrameModifier():LayoutOrder(4):Size(UDim2.fromOffset(240, 4)) }),
 			}
 		end, { Size = UDim2.new(1, 0, 0, 80), AutomaticSize = Enum.AutomaticSize.None, LayoutOrder = 4 })
 
@@ -115,14 +120,14 @@ return StoryKit.story({
 			text(theme, c.Scheme:Compute(function(self: q.StateData<any>): string
 				return `Color roles — scheme: {self:Get()}`
 			end), 1),
-			D.Frame {
+			Frame {
 				Name = "Palette",
 				LayoutOrder = 2,
 				Size = UDim2.fromScale(1, 0),
 				AutomaticSize = Enum.AutomaticSize.Y,
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIListLayout {
+				UIListLayout {
 					FillDirection = Enum.FillDirection.Horizontal,
 					Wraps = true,
 					SortOrder = Enum.SortOrder.LayoutOrder,

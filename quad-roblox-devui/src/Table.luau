@@ -40,8 +40,14 @@
 
 local Quad = require("./Quad")
 local q = Quad
-local D = q.Declaration
-local tableName = D.Modifier.Frame():Name("Table")
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIFlexItem = q.Elem "UIFlexItem"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local UIStroke = q.Elem "UIStroke"
+local FrameModifier = q.Modifier "Frame"
+local tableName = FrameModifier():Name("Table")
 local Style = require("./Style")
 local Util = require("./Util")
 
@@ -63,7 +69,7 @@ export type TableProps<T> = {
 	read RowBg: boolean?,
 	read Borders: boolean?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 -- per-row data kept in Slot:List userdata (the reused row's State/Source handles)
@@ -115,7 +121,7 @@ local function Table<T>(props: TableProps<T>): Frame
 			position = columnRulePosition
 			size = columnRuleSize
 		end
-		return D.Frame({
+		return Frame({
 			Name = if vertical then "ColumnRule" else "RowRule",
 			AnchorPoint = if vertical then Vector2.new(1, 0) else Vector2.new(0, 1),
 			Position = position,
@@ -130,15 +136,15 @@ local function Table<T>(props: TableProps<T>): Frame
 	-- one cell Frame around `content`
 	local function cellFrame(col: number, content: Instance): Frame
 		local width = columns[col].Width
-		return D.Frame({
+		return Frame({
 			Name = "Cell",
 			LayoutOrder = col,
 			AutomaticSize = Enum.AutomaticSize.Y,
 			Size = cellSizing(width),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			if width then q.None else D.UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill }),
-			D.UIPadding({ PaddingLeft = cellPadX, PaddingRight = cellPadX, PaddingTop = cellPadY, PaddingBottom = cellPadY }),
+			if width then q.None else UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill }),
+			UIPadding({ PaddingLeft = cellPadX, PaddingRight = cellPadX, PaddingTop = cellPadY, PaddingBottom = cellPadY }),
 			content,
 			if borders and col < last then hairline(true, false) else q.None,
 		})
@@ -146,13 +152,13 @@ local function Table<T>(props: TableProps<T>): Frame
 
 	-- the horizontal list of cells; the row's rule is NOT a child of it (see the header)
 	local function cellsRow(cells: Quad.Slot<Instance>): Frame
-		return D.Frame({
+		return Frame({
 			Name = "Cells",
 			AutomaticSize = Enum.AutomaticSize.Y,
 			Size = UDim2.new(1, 0, 0, 0),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIListLayout({
+			UIListLayout({
 				FillDirection = Enum.FillDirection.Horizontal,
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding = UDim.new(0, 0),
@@ -166,7 +172,7 @@ local function Table<T>(props: TableProps<T>): Frame
 		local titles: { Instance } = {}
 		for i, col in columns do
 			local width = col.Width
-			titles[i] = D.TextLabel({
+			titles[i] = TextLabel({
 				Name = "HeaderCell",
 				LayoutOrder = i,
 				Text = col.Title,
@@ -180,8 +186,8 @@ local function Table<T>(props: TableProps<T>): Frame
 				BorderSizePixel = 0,
 				AutomaticSize = Enum.AutomaticSize.Y,
 				Size = cellSizing(width),
-				if width then q.None else D.UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill }),
-				D.UIPadding({
+				if width then q.None else UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill }),
+				UIPadding({
 					PaddingLeft = cellPadX,
 					PaddingRight = cellPadX,
 					PaddingTop = cellPadY,
@@ -190,7 +196,7 @@ local function Table<T>(props: TableProps<T>): Frame
 				if borders and i < last then hairline(true, false) else q.None,
 			})
 		end
-		header = D.Frame({
+		header = Frame({
 			Name = "Header",
 			LayoutOrder = 0,
 			AutomaticSize = Enum.AutomaticSize.Y,
@@ -235,7 +241,7 @@ local function Table<T>(props: TableProps<T>): Frame
 		for col = 1, last do
 			cells[col] = cellFrame(col, cellFn(rowSrc, col))
 		end
-		local row = D.Frame({
+		local row = Frame({
 			Name = "Row",
 			LayoutOrder = indexSrc,
 			AutomaticSize = Enum.AutomaticSize.Y,
@@ -251,20 +257,20 @@ local function Table<T>(props: TableProps<T>): Frame
 		return keyFn(item)
 	end)
 
-	return D.Frame({
+	return Frame({
 		tableName,
 		props.Modifier or q.None,
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIListLayout({
+		UIListLayout({
 			FillDirection = Enum.FillDirection.Vertical,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = UDim.new(0, 0),
 		}),
 		if borders
-			then D.UIStroke({
+			then UIStroke({
 				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 				Thickness = 1,
 				Color = style.Color.TableBorderStrong,
@@ -272,14 +278,14 @@ local function Table<T>(props: TableProps<T>): Frame
 			})
 			else q.None,
 		header,
-		D.Frame({
+		Frame({
 			Name = "Rows",
 			LayoutOrder = 1,
 			AutomaticSize = Enum.AutomaticSize.Y,
 			Size = UDim2.new(1, 0, 0, 0),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIListLayout({
+			UIListLayout({
 				FillDirection = Enum.FillDirection.Vertical,
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding = UDim.new(0, 0),

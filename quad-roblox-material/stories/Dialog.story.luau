@@ -4,7 +4,9 @@
 local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
 local StoryParts = require("./StoryParts")
 local themed = StoryParts.themed
 
@@ -25,12 +27,12 @@ return StoryKit.story({
 		end
 
 		local function row(...: Instance): Frame
-			return D.Frame {
+			return Frame {
 				Name = "Row",
 				Size = UDim2.fromOffset(420, 40),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIListLayout {
+				UIListLayout {
 					FillDirection = Enum.FillDirection.Horizontal,
 					SortOrder = Enum.SortOrder.LayoutOrder,
 					VerticalAlignment = Enum.VerticalAlignment.Center,
@@ -40,14 +42,14 @@ return StoryKit.story({
 			}
 		end
 
-		return D.Frame {
+		return Frame {
 			follow,
 			Name = "DialogStory",
 			Size = UDim2.fromScale(1, 1),
 			BorderSizePixel = 0,
 			BackgroundColor3 = theme.Color.Surface,
 			UIPaddingOffset = 24,
-			D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12) },
+			UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12) },
 			row(
 				Material.Button({
 					Theme = theme,
@@ -109,7 +111,7 @@ return StoryKit.story({
 					end,
 				})
 			),
-			D.TextLabel {
+			TextLabel {
 				Material.Text.Label("BodyMedium"),
 				Name = "Result",
 				LayoutOrder = 2,

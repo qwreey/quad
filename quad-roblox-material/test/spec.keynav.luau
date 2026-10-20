@@ -3,7 +3,8 @@ local H = require("./support/harness")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextBox = q.Elem "TextBox"
 local KeyNav = require("../src/KeyNav")
 
 local UIS = H.UserInputService
@@ -19,7 +20,7 @@ end
 H.section("one InputBegan connection only while the host holds selection; closed on lost and on destroy", function()
 	local got: { string } = {}
 	local ends = 0
-	local host = D.Frame {
+	local host = Frame {
 		Selectable = true,
 		KeyNav.hook(function(input: InputObject)
 			table.insert(got, input.KeyCode.Name)
@@ -43,13 +44,13 @@ H.section("one InputBegan connection only while the host holds selection; closed
 end)
 
 H.section("Pin: Horizontal (default) pins Left/Right, None pins nothing", function()
-	local a = D.Frame { Selectable = true, KeyNav.hook(function() end) }
+	local a = Frame { Selectable = true, KeyNav.hook(function() end) }
 	assert(a.NextSelectionLeft == a and a.NextSelectionRight == a and a.NextSelectionUp == nil)
-	local b = D.Frame { Selectable = true, KeyNav.hook(function() end, nil, { Pin = "None" }) }
+	local b = Frame { Selectable = true, KeyNav.hook(function() end, nil, { Pin = "None" }) }
 	assert(b.NextSelectionLeft == nil and b.NextSelectionRight == nil)
-	local n: any = D.Frame { Selectable = true, KeyNav.hook(function() end, nil, { Pin = "None" }) }
+	local n: any = Frame { Selectable = true, KeyNav.hook(function() end, nil, { Pin = "None" }) }
 	assert(n.NextSelectionUp == nil and n.NextSelectionDown == nil, "None pins nothing (the date grid)")
-	local c: any = D.Frame { Selectable = true, KeyNav.hook(function() end, nil, { Pin = "All" }) }
+	local c: any = Frame { Selectable = true, KeyNav.hook(function() end, nil, { Pin = "All" }) }
 	assert(c.NextSelectionLeft == c and c.NextSelectionRight == c and c.NextSelectionUp == c and c.NextSelectionDown == c, "All pins four directions")
 	q.dispose(a)
 	q.dispose(b)
@@ -58,16 +59,16 @@ end)
 
 H.section("a focused TextBox suppresses every key; HonorProcessed drops engine-processed keys", function()
 	local got = 0
-	local plain = D.Frame { Selectable = true, KeyNav.hook(function() got += 1 end) }
+	local plain = Frame { Selectable = true, KeyNav.hook(function() got += 1 end) }
 	local honoring = 0
-	local picky = D.Frame { Selectable = true, KeyNav.hook(function() honoring += 1 end, nil, { Pin = "None", HonorProcessed = true }) }
+	local picky = Frame { Selectable = true, KeyNav.hook(function() honoring += 1 end, nil, { Pin = "None", HonorProcessed = true }) }
 	H.fire(plain, "SelectionGained")
 	H.fire(picky, "SelectionGained")
 	press(Enum.KeyCode.Left, true)
 	assert(got == 1 and honoring == 0, "processed: delivered by default, dropped when honored")
 	press(Enum.KeyCode.Left, false)
 	assert(got == 2 and honoring == 1)
-	;(UIS :: any).FocusedTextBox = D.TextBox {}
+	;(UIS :: any).FocusedTextBox = TextBox {}
 	press(Enum.KeyCode.Left, false)
 	assert(got == 2 and honoring == 1, "typing wins")
 	;(UIS :: any).FocusedTextBox = nil
@@ -80,7 +81,7 @@ end)
 H.section("Engage mode: A engages (pins all four), B disengages and never dismisses a dialog meanwhile", function()
 	local got = 0
 	local engaged = q.Source(false)
-	local host: any = D.Frame { Selectable = true, KeyNav.hook(function() got += 1 end, nil, { Pin = "Engage", Engaged = engaged }) }
+	local host: any = Frame { Selectable = true, KeyNav.hook(function() got += 1 end, nil, { Pin = "Engage", Engaged = engaged }) }
 	H.fire(host, "SelectionGained")
 	press(Enum.KeyCode.Left)
 	assert(got == 0 and host.NextSelectionUp == nil, "not engaged: keys ignored, nothing pinned")

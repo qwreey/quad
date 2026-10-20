@@ -3,7 +3,10 @@ local H = require("./support/harness")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ScrollingFrame = q.Elem "ScrollingFrame"
+local UIScale = q.Elem "UIScale"
+local FrameModifier = q.Modifier "Frame"
 local Tokens = require("../src/Tokens")
 local ListModule = require("../src/List")
 local List, ListItem, ListData = ListModule.List, ListModule.ListItem, ListModule.ListData
@@ -81,7 +84,7 @@ end)
 
 H.section("leading/trailing: image ids, State ids, elements, trailing text", function()
 	local icon = q.Source("rbxassetid://1")
-	local avatar = D.Frame { Name = "Avatar", Size = UDim2.fromOffset(40, 40) }
+	local avatar = Frame { Name = "Avatar", Size = UDim2.fromOffset(40, 40) }
 	local item: any = ListItem({
 		Headline = "H",
 		Leading = icon,
@@ -144,7 +147,7 @@ end)
 
 H.section("List with a Children Slot; Gap; caller Modifier; Slot CRUD", function()
 	local children = q.Slot({ ListItem({ Headline = "A" }), ListItem({ Headline = "B" }) } :: { Instance })
-	local list: any = List({ Children = children, Gap = 4, Modifier = D.Modifier.Frame():Size(UDim2.fromOffset(300, 0)) })
+	local list: any = List({ Children = children, Gap = 4, Modifier = FrameModifier():Size(UDim2.fromOffset(300, 0)) })
 	assert(list.Name == "List" and list.Size == UDim2.fromOffset(300, 0) and list.AutomaticSize == Enum.AutomaticSize.Y)
 	assert(class(list, "UIListLayout")[1].Padding == UDim.new(0, 4) and class(list, "UIListLayout")[1].FillDirection == Enum.FillDirection.Vertical)
 	assert(#class(list, "Frame") >= 2)
@@ -721,7 +724,7 @@ end)
 
 H.section("reorder: under a UIScale the pointer and the measures are divided by it", function()
 	local r = reorderable({ "A", "B", "C" }, { A = 112, B = 112, C = 112 }) -- screen pixels of 56-unit rows at scale 2
-	local scaled = D.Frame { D.UIScale { Scale = 2 }, r.list }
+	local scaled = Frame { UIScale { Scale = 2 }, r.list }
 	local y = r.press("A")
 	H.finishTweens()
 	assert(r.row("A").Size == UDim2.new(1, 0, 0, 56), "frozen in local units")
@@ -746,7 +749,7 @@ H.section("reorder: edge scroll — the ancestor ScrollingFrame scrolls while th
 		titles[i] = "R" .. i
 	end
 	local r = reorderable(titles)
-	local scroll: any = D.ScrollingFrame { r.list }
+	local scroll: any = ScrollingFrame { r.list }
 	H.setAbs(scroll, 0, 100, 360, 200)
 	scroll.AbsoluteWindowSize = Vector2.new(360, 200)
 	scroll.AbsoluteCanvasSize = Vector2.new(360, 560)
@@ -1110,7 +1113,7 @@ H.section("reorder: keys in a ScrollingFrame — the moved row is scrolled into 
 		titles[i] = "R" .. i
 	end
 	local r = reorderable(titles, nil, true)
-	local scroll: any = D.ScrollingFrame { r.list }
+	local scroll: any = ScrollingFrame { r.list }
 	H.setAbs(scroll, 0, 100, 360, 200)
 	scroll.AbsoluteWindowSize = Vector2.new(360, 200)
 	scroll.AbsoluteCanvasSize = Vector2.new(360, 560)
@@ -1162,7 +1165,7 @@ end)
 H.section("reorder: Escape during a drag does not dismiss an overlay around the list; dispose mid-drag leaves nothing", function()
 	local base, began, beat = dragConns(), beganConns(), heartbeatConns()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local r = reorderable({ "A", "B" })
 	local entry = overlay:Open({ Content = r.list, DismissOnEscape = true })
 	r.layout()
@@ -1204,7 +1207,7 @@ H.section("reorder: Escape during a drag does not dismiss an overlay around the 
 end)
 
 H.section("dispose: full tree of items destroyed, no timers", function()
-	local root = D.Frame {
+	local root = Frame {
 		List({ Children = q.Slot({ ListItem({ Headline = "x", OnClick = function() end, Leading = "rbxassetid://1" }) } :: { Instance }) }),
 	}
 	local all = H.findAll(root, function()

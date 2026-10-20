@@ -39,8 +39,10 @@ local Behavior = require("./Behavior")
 local Unit = require("../Unit")
 local Track = require("./Track")
 local Bubble = require("./Bubble")
-local D = q.Declaration
-local rangeName = D.Modifier.Frame():Name("RangeSlider")
+local Frame = q.Elem "Frame"
+local UIStroke = q.Elem "UIStroke"
+local FrameModifier = q.Modifier "Frame"
+local rangeName = FrameModifier():Name("RangeSlider")
 
 export type Props = {
 	read Start: q.Source<number>?,
@@ -57,7 +59,7 @@ export type Props = {
 	read OnChange: ((startValue: number, endValue: number) -> ())?,
 	read OnChangeEnd: ((startValue: number, endValue: number) -> ())?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 	-- M3 variants (as Slider)
 	read Size: Track.SizeName?,
@@ -176,7 +178,7 @@ local function RangeSlider(props: Props)
 				AnchorPoint = labelAnchor,
 			})
 		end
-		return D.Frame {
+		return Frame {
 			Name = "Handle" .. h,
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = position,
@@ -186,7 +188,7 @@ local function RangeSlider(props: Props)
 			BorderSizePixel = 0,
 			ZIndex = zIndex,
 			UICorner = Tokens.Shape.corner("Full"),
-			D.UIStroke {
+			UIStroke {
 				Name = "FocusRing",
 				Color = theme.Color.Secondary,
 				Thickness = 3,
@@ -199,9 +201,9 @@ local function RangeSlider(props: Props)
 		}
 	end
 
-	return D.Frame {
+	return Frame {
 		rangeName,
-		D.Modifier.Frame():Size(g.hostSize()):BackgroundTransparency(1):BorderSizePixel(0),
+		FrameModifier():Size(g.hostSize()):BackgroundTransparency(1):BorderSizePixel(0),
 		props.Modifier or q.None,
 		r.InteractionHook,
 		r.DragHook,

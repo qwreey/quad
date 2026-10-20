@@ -13,7 +13,7 @@
 			Disabled: (boolean | State<boolean>)?,
 			Focused: Source<boolean>?,             two-way focus: true asks for it, false releases it, the user's own
 			                                       focus changes are written back
-			Style: Style?, Modifier: FrameModifier?, FieldModifier: TextBoxModifier?,
+			Style: Style?, Modifier: FrameModifier?, FieldModifier: TextBoxModifier?, FieldSpread: Spread<TextBox>?,
 		}
 
 	`Focused` [2026-10-20 user decision, a consumer focused nine boxes by hand after mount]: `CaptureFocus` does nothing
@@ -33,9 +33,14 @@
 
 local Quad = require("../Quad")
 local q = Quad
-local D = q.Declaration
-local inputTextName = D.Modifier.Frame():Name("InputText")
-local fieldName = D.Modifier.TextBox():Name("Field")
+local Frame = q.Elem "Frame"
+local TextBox = q.Elem "TextBox"
+local UIFlexItem = q.Elem "UIFlexItem"
+local UIPadding = q.Elem "UIPadding"
+local FrameModifier = q.Modifier "Frame"
+local TextBoxModifier = q.Modifier "TextBox"
+local inputTextName = FrameModifier():Name("InputText")
+local fieldName = TextBoxModifier():Name("Field")
 local Common = require("../Common")
 local Interaction = require("../Interaction")
 local Style = require("../Style")
@@ -56,8 +61,9 @@ export type InputTextProps = {
 	read Disabled: (boolean | State<boolean>)?,
 	read Focused: Source<boolean>?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
-	read FieldModifier: Quad.TextBoxModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
+	read FieldModifier: Quad.ModifierInto<TextBox>?,
+	read FieldSpread: Quad.SpreadInto<TextBox>?, -- [3.4.0] spread into the inner box (refs, hooks, descriptors)
 }
 
 local function InputText(props: InputTextProps): Frame
@@ -77,14 +83,14 @@ local function InputText(props: InputTextProps): Frame
 	local writeBack: any = q.None
 	if not submitMode then
 		if onChange then
-			writeBack = q.OnChange("Text", function(t: string)
+			writeBack = q.OnChange "TextBox" "Text" (function(t: string)
 				if t ~= value:Get() then
 					value:Set(t)
 					onChange(t)
 				end
 			end)
 		else
-			writeBack = q.Out("Text", value)
+			writeBack = q.Out "TextBox" "Text" (value)
 		end
 	end
 
@@ -123,7 +129,7 @@ local function InputText(props: InputTextProps): Frame
 		end)
 		else q.None
 
-	return D.Frame({
+	return Frame({
 		inputTextName,
 		props.Modifier or q.None,
 		AutomaticSize = Enum.AutomaticSize.Y,
@@ -131,9 +137,10 @@ local function InputText(props: InputTextProps): Frame
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Common.rowLayout(style),
-		D.TextBox({
+		TextBox({
 			fieldName,
 			props.FieldModifier or q.None,
+			props.FieldSpread or q.None,
 			boxRef,
 			hover.Hook,
 			writeBack,
@@ -178,9 +185,9 @@ local function InputText(props: InputTextProps): Frame
 				end
 			end,
 			UICorner = style.Metrics.FrameRounding,
-			D.UIPadding({ PaddingLeft = padX, PaddingRight = padX }),
+			UIPadding({ PaddingLeft = padX, PaddingRight = padX }),
 			Common.stroke(style),
-			D.UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill }),
+			UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill }),
 		}),
 		if props.Text then Common.label(style, props.Text, enabled, 2) else q.None,
 	})

@@ -32,7 +32,13 @@ local Text = require("../Text")
 local Interactive = require("../Interactive")
 local Icons = require("../Icons")
 local GlyphButton = require("../GlyphButton")
-local D = q.Declaration
+local CanvasGroup = q.Elem "CanvasGroup"
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
+local UIFlexItem = q.Elem "UIFlexItem"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
 
 export type Action = { read Label: string, read OnClick: () -> () }
 
@@ -64,7 +70,7 @@ local function actionButton(o: Options, act: Action): Instance
 	local corner = Tokens.Shape.corner("Full")
 	local color = theme.Color.InversePrimary
 	local fx = Interactive.new({ Theme = theme, OnColor = color, Corner = corner })
-	return D.TextButton {
+	return TextButton {
 		Name = "Action",
 		Size = UDim2.fromOffset(0, 48),
 		AutomaticSize = Enum.AutomaticSize.X,
@@ -91,7 +97,7 @@ local function actionButton(o: Options, act: Action): Instance
 			act.OnClick()
 			o.OnAction()
 		end,
-		D.Frame {
+		Frame {
 			Name = "Visual",
 			AnchorPoint = Vector2.new(0, 0.5),
 			Position = UDim2.fromScale(0, 0.5),
@@ -101,14 +107,14 @@ local function actionButton(o: Options, act: Action): Instance
 			BorderSizePixel = 0,
 			UICorner = corner,
 			fx.Layer,
-			D.Frame {
+			Frame {
 				Name = "Content",
 				Size = UDim2.fromOffset(0, 36),
 				AutomaticSize = Enum.AutomaticSize.X,
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIPadding { PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12) },
-				D.TextLabel {
+				UIPadding { PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12) },
+				TextLabel {
 					Name = "Label",
 					actionStyle,
 					Size = UDim2.fromOffset(0, 36),
@@ -170,7 +176,7 @@ local function build(o: Options): GuiObject
 	local fade = fadeTarget:Apply(q.Animate(Tokens.Motion.options("Short4", "Linear")))
 	local position = yTarget:Apply(q.Animate(Tokens.Motion.options("Medium1", "EmphasizedDecelerate")))
 
-	local message = D.TextLabel {
+	local message = TextLabel {
 		Name = "Message",
 		bodyStyle,
 		Size = UDim2.fromScale(0, 0),
@@ -183,17 +189,17 @@ local function build(o: Options): GuiObject
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextYAlignment = Enum.TextYAlignment.Center,
 		LayoutOrder = 1,
-		D.UIPadding {
+		UIPadding {
 			PaddingLeft = UDim.new(0, 8),
 			PaddingRight = UDim.new(0, 8),
 			PaddingTop = UDim.new(0, 14),
 			PaddingBottom = UDim.new(0, 14),
 		},
-		D.UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
+		UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
 	}
 
 	local act = o.Action
-	return D.CanvasGroup {
+	return CanvasGroup {
 		Name = "Snackbar",
 		AnchorPoint = Vector2.new(0.5, if atTop then 0 else 1),
 		Position = position,
@@ -216,13 +222,13 @@ local function build(o: Options): GuiObject
 		Util.postHook(function()
 			entered:Set(true)
 		end),
-		D.UIListLayout {
+		UIListLayout {
 			FillDirection = Enum.FillDirection.Horizontal,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = UDim.new(0, 0),
 		},
-		D.UIPadding { PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) },
+		UIPadding { PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) },
 		message,
 		if act ~= nil then actionButton(o, act) else q.None,
 		if o.Close == true then closeButton(o) else q.None,

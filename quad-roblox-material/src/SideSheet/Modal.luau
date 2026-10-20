@@ -40,7 +40,7 @@ local StateModule = require("../Sheet/State")
 local Anchored = require("../Sheet/Anchored")
 local Parts = require("../Sheet/Parts")
 local Surface = require("./Surface")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 
 export type OpenOptions = {
 	read Children: q.Slot<Instance>?,
@@ -103,7 +103,7 @@ local function open(o: OpenOptions?): Handle
 			end,
 		})
 		built = b
-		return D.Frame {
+		return Frame {
 			Name = "ModalSideSheet",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,

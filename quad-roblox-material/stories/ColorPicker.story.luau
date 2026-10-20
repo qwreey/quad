@@ -5,7 +5,9 @@
 local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
 local StoryParts = require("./StoryParts")
 local themed = StoryParts.themed
 
@@ -44,28 +46,28 @@ return StoryKit.story({
 			})
 		end, { Size = UDim2.fromOffset(360, 560), AutomaticSize = Enum.AutomaticSize.None, LayoutOrder = 1 })
 
-		return D.Frame {
+		return Frame {
 			follow,
 			Name = "ColorPickerStory",
 			Size = UDim2.fromScale(1, 1),
 			BorderSizePixel = 0,
 			BackgroundColor3 = theme.Color.Surface,
 			UIPaddingOffset = 24,
-			D.UIListLayout {
+			UIListLayout {
 				FillDirection = Enum.FillDirection.Horizontal,
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding = UDim.new(0, 32),
 			},
 			panel,
-			D.Frame {
+			Frame {
 				Name = "Side",
 				LayoutOrder = 2,
 				Size = UDim2.fromOffset(240, 0),
 				AutomaticSize = Enum.AutomaticSize.Y,
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12) },
-				D.Frame {
+				UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12) },
+				Frame {
 					Name = "Swatch",
 					LayoutOrder = 1,
 					Size = UDim2.fromOffset(240, 96),
@@ -73,7 +75,7 @@ return StoryKit.story({
 					BackgroundColor3 = brand,
 					UICorner = UDim.new(0, 16),
 				},
-				D.TextLabel {
+				TextLabel {
 					Material.Text.Label("TitleMedium"),
 					Name = "Hex",
 					LayoutOrder = 2,
@@ -86,7 +88,7 @@ return StoryKit.story({
 						return hex(self:Get())
 					end),
 				},
-				D.TextLabel {
+				TextLabel {
 					Material.Text.Label("BodyMedium"),
 					Name = "Changes",
 					LayoutOrder = 3,

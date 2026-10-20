@@ -48,9 +48,9 @@ return function(S: Types.SlotInternal, module: any)
 		-- claimed) is rejected here rather than silently accepted: Add only did elementOwner
 		-- bookkeeping, so an unclaimed element had no death tracking and any leaf binding on it
 		-- died later at bindLifetime (`H-290`). Auto-claiming on Add was rejected as magic —
-		-- the user takes ownership first with `Claim` (or builds it with the Declaration).
+		-- the user takes ownership first with `Claim` (or builds it with `q.Elem`).
 		if not module.Backend.isClaimed(v) then
-			raise("Quad0241 Slot: this element is not claimed by quad - build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one - a destroyed Instance cannot be reused)", S.SURFACE)
+			raise("Quad0241 Slot: this element is not claimed by quad - build it with q.Elem or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one - a destroyed Instance cannot be reused)", S.SURFACE)
 		end
 	end
 

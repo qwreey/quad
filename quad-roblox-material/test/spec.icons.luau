@@ -2,7 +2,7 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Icons = require("../src/Icons")
 local Chip = require("../src/Chip")
 local Select = require("../src/Select")
@@ -56,7 +56,7 @@ H.section("glyph fallback: with the images overridden away every icon place draw
 	local input: any = Chip.Input({ Label = "I", OnRemove = function() end })
 	assert(H.find(input, "Remove").ClassName == "TextButton" and H.find(input, "Remove").Text == "\u{00D7}", "chip remove glyph")
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local select: any = Select({ Label = "S", Options = { "a" }, Value = q.Source(nil :: string?), Overlay = overlay })
 	assert(H.find(select, "TrailingIcon") == nil and H.find(select, "TrailingGlyph") ~= nil, "select arrow glyph")
 	DatePicker.Modal.open({ Overlay = overlay, Today = Calendar.date(2026, 10, 8) })
@@ -84,7 +84,7 @@ H.section("default images reach every icon place", function()
 	local chip: any = Chip.Filter({ Label = "F", Selected = q.Source(true) })
 	assert(H.find(chip, "Check").ClassName == "ImageLabel" and H.find(chip, "Check").Image == EXPECTED.check)
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local select: any = Select({ Label = "S", Options = { "a" }, Value = q.Source(nil :: string?), Overlay = overlay })
 	assert(H.find(select, "TrailingIcon").Image == EXPECTED.arrowDown and H.find(select, "TrailingGlyph") == nil)
 	DatePicker.Modal.open({ Overlay = overlay, Today = Calendar.date(2026, 10, 8) })
@@ -132,7 +132,7 @@ H.section("override swaps in another image without touching components; false re
 	local own: any = Chip.Input({ Label = "I", OnRemove = function() end, RemoveIcon = "rbxassetid://99" })
 	assert(H.find(H.find(own, "Remove"), "Icon").Image == "rbxassetid://99", "the chip's own prop wins")
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local select: any = Select({ Label = "S", Options = { "a" }, Value = q.Source(nil :: string?), Overlay = overlay })
 	assert(H.find(select, "TrailingIcon") ~= nil and H.find(select, "TrailingIcon").Image == "rbxassetid://13" and H.find(select, "TrailingGlyph") == nil)
 	Icons.override({ check = false, close = false, arrowDown = false })

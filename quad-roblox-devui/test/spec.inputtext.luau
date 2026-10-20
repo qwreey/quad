@@ -165,6 +165,29 @@ H.section("Focused: true before mount is taken once on screen; two-way; disabled
 	H.assertNoDebugOutput("focused")
 end)
 
+H.section("FieldSpread: a Ref, an OnEvent hook and a property reach the inner box; inline keys still win", function()
+	local ref = q.Ref<<TextBox?>>(nil)
+	local focused = 0
+	local spread = q.Spread "TextBox" {
+		ref,
+		q.OnEvent "TextBox" "Focused" (function()
+			focused += 1
+		end),
+		ClearTextOnFocus = true, -- the box writes ClearTextOnFocus = false inline: the inline key wins
+		MaxVisibleGraphemes = 12,
+	}
+	local row = Input.InputText({ Value = q.Source("x"), FieldSpread = spread })
+	local box = field(row)
+	assert(ref.Value == box, "the Spread's Ref took the inner box")
+	assert(box.MaxVisibleGraphemes == 12, "a property only the Spread sets")
+	assert(box.ClearTextOnFocus == false, "an inline key of the box wins over the Spread")
+	box:CaptureFocus()
+	assert(focused == 1, "the Spread's OnEvent descriptor is bound")
+	box:ReleaseFocus()
+	q.dispose(row)
+	H.assertNoDebugOutput("field spread")
+end)
+
 H.section("dispose: destroyed, Source still usable", function()
 	local v = q.Source("x")
 	local row = Input.InputText({ Value = v })

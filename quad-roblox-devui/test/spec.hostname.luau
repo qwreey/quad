@@ -4,7 +4,7 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Layout = require("../src/Layout")
 local Text = require("../src/Text")
 local Button = require("../src/Button")
@@ -38,7 +38,7 @@ H.section("every host: its default Name is unchanged, and the caller's Modifier 
 		local class = t.ClassName
 		q.dispose(plain)
 		local custom = "Custom_" .. label
-		local mod = ((D.Modifier :: any)[class] :: any)():Name(custom)
+		local mod = ((q.Modifier :: any)(class) :: any)():Name(custom)
 		local host = build(mod)
 		local renamed = target(host, custom)
 		assert(renamed ~= nil and renamed.Name == custom, label .. ": Modifier Name did not win")
@@ -47,7 +47,7 @@ H.section("every host: its default Name is unchanged, and the caller's Modifier 
 	end
 	local overlay = Overlay.new()
 	local kids = function()
-		return q.Slot({ D.Frame {} })
+		return q.Slot({ Frame {} })
 	end
 	probe("SameLine", "SameLine", function(m) return Layout.SameLine({ Modifier = m }) end)
 	probe("Group", "Group", function(m) return Layout.Group({ Modifier = m }) end)
@@ -79,7 +79,7 @@ H.section("every host: its default Name is unchanged, and the caller's Modifier 
 			Columns = { { Title = "N", Width = 80 } },
 			Rows = ({ { Id = "a" } } :: any),
 			Key = function(r: any): any return r.Id end,
-			Cell = function(_r: any, _c: number) return D.Frame {} end,
+			Cell = function(_r: any, _c: number) return Frame {} end,
 			Modifier = m,
 		})
 	end)

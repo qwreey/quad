@@ -5,7 +5,7 @@ local Devui = require("../src")
 local q = require("../src/Quad")
 local StoryKit = require("./StoryKit")
 local Shared = require("./Shared")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Kids = Devui.Kids
 
 return StoryKit.story({
@@ -32,12 +32,12 @@ return StoryKit.story({
 				Shared.show("Position", position)
 			),
 		})
-		return D.Frame({
+		return Frame({
 			Name = "WindowStory",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
 			window,
-			D.Frame({
+			Frame({
 				Name = "Reopen",
 				Position = UDim2.new(0, 20, 1, -40),
 				Size = UDim2.fromOffset(160, 24),

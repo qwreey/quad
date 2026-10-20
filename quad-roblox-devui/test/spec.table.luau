@@ -7,7 +7,6 @@ local Table = TableModule.Table
 local Text = require("../src/Text")
 local Style = require("../src/Style")
 local style = Style.default
-local D = q.Declaration
 
 type Row = { Id: string, Name: string, Hp: number }
 
@@ -263,5 +262,4 @@ H.section("Table: Borders rules are never children of a list-layout parent (a ho
 	H.assertNoDebugOutput("table rules")
 end)
 
-local _ = D
 H.done()

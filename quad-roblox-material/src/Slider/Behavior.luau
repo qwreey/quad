@@ -74,7 +74,7 @@ export type SliderProps = {
 	read OnChange: ((value: number) -> ())?,
 	read OnChangeEnd: ((value: number) -> ())?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -93,7 +93,7 @@ export type RangeSliderProps = {
 	read OnChange: ((startValue: number, endValue: number) -> ())?,
 	read OnChangeEnd: ((startValue: number, endValue: number) -> ())?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 

@@ -34,7 +34,7 @@ print()
 print("=== 2. Modifier:Apply — factory는 함수(hunt F 2, H-497 형제) ===")
 do
 	local q = mock.newQuad()
-	local mod = q.Modifier({ Visible = true })
+	local mod = q.Raw.Modifier({ Visible = true })
 	local err = failsWith(function() return mod:Apply(nil) end, "Modifier:Apply: factory must be a function (got nil)", "nil factory")
 	mock.assertBlamesUser(err, "spec.inputgates.luau", "Apply gate blames the caller")
 	failsWith(function() return mod:Apply(5) end, "factory must be a function (got number)", "number factory")
@@ -59,7 +59,7 @@ end
 print()
 print("=== 4. AddPlugin/UseProvider — 함수가 아니면 거부, 확장 테이블을 안 돌려주면 거부(hunt F 4) ===")
 do
-	local q = Quad.New()
+	local q = Quad.NewModule()
 	local err = failsWith(function() q:AddPlugin(nil) end, "AddPlugin: plugin must be a function (got nil)", "AddPlugin(nil)")
 	mock.assertBlamesUser(err, "spec.inputgates.luau", "AddPlugin gate blames the caller")
 	failsWith(function() q:UseProvider(nil) end, "UseProvider: provider must be a function (got nil)", "UseProvider(nil) used to be a silent no-op")

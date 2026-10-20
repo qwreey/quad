@@ -46,7 +46,9 @@ local Anchored = require("../Sheet/Anchored")
 local Slide = require("../Sheet/Slide")
 local Parts = require("../Sheet/Parts")
 local StateModule = require("../Sheet/State")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local UIListLayout = q.Elem "UIListLayout"
+local UISizeConstraint = q.Elem "UISizeConstraint"
 
 type SheetValue = StateModule.SheetValue
 
@@ -189,7 +191,7 @@ local function build(cfg: Config): Built
 		})
 	end
 
-	local sheet = D.Frame {
+	local sheet = Frame {
 		Name = "BottomSheet",
 		Size = size,
 		AnchorPoint = Vector2.new(0.5, 0),
@@ -200,11 +202,11 @@ local function build(cfg: Config): Built
 		ZIndex = 2,
 		UICorner = UDim.new(0, CORNER),
 		Util.clickSink({ slide.Hook() }),
-		D.UISizeConstraint { MaxSize = Vector2.new(cfg.MaxWidth, math.huge) },
+		UISizeConstraint { MaxSize = Vector2.new(cfg.MaxWidth, math.huge) },
 		if cfg.Shadow then Elevation.Shadow({ Level = cfg.Shadow, Theme = theme }) else q.None,
 		Parts.patch("Bottom", CORNER, theme.Color.SurfaceContainerLow),
 		handle or q.None,
-		D.Frame {
+		Frame {
 			Name = "ContentClip",
 			Position = UDim2.fromOffset(0, handleH),
 			Size = UDim2.new(1, 0, 1, -handleH),
@@ -212,14 +214,14 @@ local function build(cfg: Config): Built
 			BorderSizePixel = 0,
 			ClipsDescendants = true,
 			ZIndex = 2,
-			D.Frame {
+			Frame {
 				Name = "Content",
 				Size = UDim2.fromScale(1, 0),
 				AutomaticSize = Enum.AutomaticSize.Y,
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIListLayout { FillDirection = Enum.FillDirection.Vertical, SortOrder = Enum.SortOrder.LayoutOrder },
-				q.OnChange("AbsoluteSize", function(v: Vector2)
+				UIListLayout { FillDirection = Enum.FillDirection.Vertical, SortOrder = Enum.SortOrder.LayoutOrder },
+				q.OnChange "Frame" "AbsoluteSize" (function(v: Vector2)
 					contentMeasured = contentMeasured or v.X > 0
 					contentH = v.Y
 					relayout()
@@ -232,7 +234,8 @@ local function build(cfg: Config): Built
 		end),
 	} :: Frame
 
-	local hostHook = q.OnChange("AbsoluteSize", function(v: Vector2)
+	-- placed by the caller on its host Frame (Scaffold/Modal)
+	local hostHook = q.OnChange "Frame" "AbsoluteSize" (function(v: Vector2)
 		full = v.Y
 		relayout()
 	end)

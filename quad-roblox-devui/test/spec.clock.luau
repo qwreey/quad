@@ -2,7 +2,7 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Clock = require("../gallery/Clock")
 
 local Heartbeat = H.RunService.Heartbeat :: any
@@ -15,7 +15,7 @@ H.section("ticker connects Heartbeat only while Active; cleanup on every switch 
 	local active = q.Source(false)
 	local ticks = 0
 	local last = 0
-	local root = D.Frame({
+	local root = Frame({
 		Clock.ticker(0.1, function(elapsed: number)
 			ticks += 1
 			last = elapsed
@@ -47,7 +47,7 @@ end)
 H.section("no Active given: always on, still closed on death", function()
 	local base = beats()
 	local ticks = 0
-	local root = D.Frame({
+	local root = Frame({
 		Clock.ticker(0.5, function()
 			ticks += 1
 		end),

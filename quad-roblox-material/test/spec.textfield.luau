@@ -388,9 +388,8 @@ H.section("Outlined notch: the cut follows the measured label (rest estimate, fl
 	q.dispose(tf)
 
 	-- under UIScale 1.5 the label's AbsoluteSize is screen pixels: 45 px = 30 local units
-	local D = (require("../src/Quad") :: any).Declaration
 	local tf2 = TextField({ Variant = "Outlined", Label = "Email", Value = q.Source("x") })
-	local root = D.Frame { D.UIScale { Scale = 1.5 }, tf2 }
+	local root = q.Elem "Frame" { q.Elem "UIScale" { Scale = 1.5 }, tf2 }
 	layoutLabel(H.find(tf2, "Label"), 45, 18)
 	assert(H.find(tf2, "OutlineEnd").Size == UDim2.new(1, 2 - (16 + 30 + 4), 0, 10), "local units: " .. tostring(H.find(tf2, "OutlineEnd").Size))
 	q.dispose(root)
@@ -589,7 +588,7 @@ H.section("dispose destroys everything, connections baseline, Modifier applies",
 	local tf = TextField({
 		Label = "M",
 		Value = q.Source("v"),
-		Modifier = require("../src/Quad").Declaration.Modifier.Frame():Size(UDim2.new(1, 0, 0, 0)),
+		Modifier = require("../src/Quad").Modifier "Frame"():Size(UDim2.new(1, 0, 0, 0)),
 	})
 	assert(tf.Size == UDim2.new(1, 0, 0, 0), "caller Size wins")
 	local inner = H.findAll(tf, function()

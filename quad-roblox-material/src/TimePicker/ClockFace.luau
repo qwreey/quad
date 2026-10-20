@@ -54,7 +54,10 @@ local KeyNav = require("../KeyNav")
 local Ripple = require("../Ripple")
 local Clock = require("./Clock")
 local Model = require("./Model")
-local D = q.Declaration
+local CanvasGroup = q.Elem "CanvasGroup"
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIStroke = q.Elem "UIStroke"
 
 type State<T> = q.State<T>
 type Time = Clock.Time
@@ -93,7 +96,7 @@ local function ring(values: { number }, radius: number, color: Color3 | Theme.An
 		local x, y = Clock.labelOffset(i - 1, #values, radius, SIZE, CELL)
 		table.insert(
 			out,
-			D.TextLabel {
+			TextLabel {
 				Name = "Number",
 				labelStyle,
 				Size = UDim2.fromOffset(CELL, CELL),
@@ -117,7 +120,7 @@ local function face(name: string, kind: Selection, is24: boolean, color: Color3 
 			table.insert(cells, c)
 		end
 	end
-	return D.Frame {
+	return Frame {
 		Name = name,
 		Size = UDim2.fromOffset(SIZE, SIZE),
 		BackgroundTransparency = 1,
@@ -314,7 +317,7 @@ local function new(o: Options): Frame
 	local onPrimary = theme.Color.OnPrimary
 	local onSurface = theme.Color.OnSurface
 
-	return D.Frame {
+	return Frame {
 		Name = "ClockFace",
 		Size = UDim2.fromOffset(SIZE, SIZE),
 		Position = o.Position or UDim2.new(),
@@ -332,7 +335,7 @@ local function new(o: Options): Frame
 				alive = false
 			end)
 		end),
-		D.UIStroke {
+		UIStroke {
 			Name = "FocusRing",
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 			Thickness = 3,
@@ -341,27 +344,27 @@ local function new(o: Options): Frame
 		},
 		face("Hours", "Hour", is24, onSurface, hourFade),
 		face("Minutes", "Minute", is24, onSurface, minuteFade),
-		D.Frame {
+		Frame {
 			Name = "Hand",
 			Size = UDim2.fromOffset(SIZE, SIZE),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			Rotation = handRotation,
-			D.Frame {
+			Frame {
 				Name = "Line",
 				Position = linePosition,
 				Size = lineSize,
 				BackgroundColor3 = primary,
 				BorderSizePixel = 0,
 			},
-			D.CanvasGroup {
+			CanvasGroup {
 				Name = "Handle",
 				Position = handlePosition,
 				Size = UDim2.fromOffset(HANDLE, HANDLE),
 				BackgroundColor3 = primary,
 				BorderSizePixel = 0,
 				UICorner = Tokens.Shape.corner("Full"),
-				D.Frame {
+				Frame {
 					Name = "Mirror",
 					Position = mirrorPosition,
 					Size = UDim2.fromOffset(SIZE, SIZE),
@@ -372,7 +375,7 @@ local function new(o: Options): Frame
 					face("Minutes", "Minute", is24, onPrimary, minuteFade),
 				},
 			},
-			D.Frame {
+			Frame {
 				Name = "Dot",
 				Position = UDim2.fromOffset(CENTER - DOT / 2, CENTER - DOT / 2),
 				Size = UDim2.fromOffset(DOT, DOT),

@@ -5,7 +5,9 @@
 local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
 local StoryParts = require("./StoryParts")
 local themed = StoryParts.themed
 
@@ -46,7 +48,7 @@ return StoryKit.story({
 			})
 		end
 
-		return D.Frame {
+		return Frame {
 			follow,
 			-- the hosts die with the story root (the overlay layer's death would finalize them too)
 			q.OnDestroyed(function()
@@ -58,14 +60,14 @@ return StoryKit.story({
 			BorderSizePixel = 0,
 			BackgroundColor3 = theme.Color.Surface,
 			UIPaddingOffset = 24,
-			D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12) },
-			D.Frame {
+			UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12) },
+			Frame {
 				Name = "Row",
 				LayoutOrder = 1,
 				Size = UDim2.fromOffset(460, 40),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIListLayout {
+				UIListLayout {
 					FillDirection = Enum.FillDirection.Horizontal,
 					SortOrder = Enum.SortOrder.LayoutOrder,
 					VerticalAlignment = Enum.VerticalAlignment.Center,
@@ -96,7 +98,7 @@ return StoryKit.story({
 					end,
 				}),
 			},
-			D.TextLabel {
+			TextLabel {
 				Material.Text.Label("BodyMedium"),
 				Name = "Status",
 				LayoutOrder = 2,
@@ -109,7 +111,7 @@ return StoryKit.story({
 					return `Waiting in the queue: {self:Get() + top:Get()}`
 				end, topBar.Pending),
 			},
-			D.TextLabel {
+			TextLabel {
 				Material.Text.Label("BodyMedium"),
 				Name = "Last",
 				LayoutOrder = 3,

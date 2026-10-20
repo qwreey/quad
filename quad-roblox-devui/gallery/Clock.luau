@@ -15,7 +15,7 @@
 ]]
 
 local q = require("./Quad")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 
 local RunService = game:GetService("RunService")
 
@@ -27,7 +27,7 @@ local function noCleanup(_dying: boolean) end
 function Clock.ticker(period: number, fn: (elapsed: number) -> (), active: q.State<boolean>?): Frame
 	local gate = active or ALWAYS
 	local acc = 0
-	return D.Frame({
+	return Frame({
 		Name = "Ticker",
 		Visible = false,
 		Size = UDim2.fromOffset(0, 0),

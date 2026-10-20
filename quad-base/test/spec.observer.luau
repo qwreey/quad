@@ -14,7 +14,7 @@ type Observer = QuadTypes.Observer
 -- strict 모드에서 `collectgarbage`는 선언 안 된 전역 — 표준 luau CLI엔 있다(Roblox엔 없음)
 local collectgarbage = (_G :: any).collectgarbage :: () -> ()
 
-local quad = Quad.New()
+local quad = Quad.NewModule()
 mock.installLifetime(quad)
 local Source = quad.Source
 local Instance = mock.Instance
@@ -197,7 +197,7 @@ do
 	assert(late ~= nil and lateCalls == 0, "subscriber added mid-wave is not visited in that wave")
 	s:Set(3)
 	assert(lateCalls == 1, "…but from the next wave")
-	local other = Quad.New()
+	local other = Quad.NewModule()
 	mock.installLifetime(other)
 	local oo = other.Source(0):Observer(function() end)
 	assert(getmetatable(oo :: any) ~= getmetatable(late :: any), "each quad instance has its own Observer impl (H-174)")

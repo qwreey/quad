@@ -41,8 +41,10 @@ local Util = require("../Util")
 local StateModule = require("../Sheet/State")
 local Anchored = require("../Sheet/Anchored")
 local Sheet = require("./Sheet")
-local D = q.Declaration
-local scaffoldName = D.Modifier.Frame():Name("BottomSheetScaffold")
+local Frame = q.Elem "Frame"
+local UIPadding = q.Elem "UIPadding"
+local FrameModifier = q.Modifier "Frame"
+local scaffoldName = FrameModifier():Name("BottomSheetScaffold")
 
 export type Props = {
 	read SheetContent: q.Slot<Instance>?,
@@ -53,14 +55,14 @@ export type Props = {
 	read SheetSwipeEnabled: boolean?,
 	read SheetDragHandle: boolean?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
 local PEEK = 56 -- BottomSheetDefaults.SheetPeekHeight
 local MAX_WIDTH = 640 -- BottomSheetDefaults.SheetMaxWidth
 
-local baseModifier = D.Modifier.Frame():Size(UDim2.fromScale(1, 1)):BorderSizePixel(0):ClipsDescendants(true)
+local baseModifier = FrameModifier():Size(UDim2.fromScale(1, 1)):BorderSizePixel(0):ClipsDescendants(true)
 
 local function BottomSheetScaffold(props: Props?): Frame
 	local p: Props = props or {}
@@ -96,18 +98,18 @@ local function BottomSheetScaffold(props: Props?): Frame
 		end,
 	})
 
-	return D.Frame {
+	return Frame {
 		scaffoldName,
 		baseModifier,
 		BackgroundColor3 = theme.Color.Surface,
 		p.Modifier or q.None,
 		built.HostHook,
-		D.Frame {
+		Frame {
 			Name = "Body",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIPadding { PaddingBottom = UDim.new(0, peek) },
+			UIPadding { PaddingBottom = UDim.new(0, peek) },
 			p.Content or q.None,
 		},
 		built.Sheet,

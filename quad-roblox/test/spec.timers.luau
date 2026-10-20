@@ -56,7 +56,7 @@ end
 
 ;(getfenv(installEngineOps) :: any).task = taskShim
 
-local q = Quad.New():UseProvider(QuadRoblox)
+local q = Quad.NewModule():UseProvider(QuadRoblox)
 
 print("=== 1. setTimeout — 인자 순서 뒤집어 task.delay로; Timeout 마커; 게이트(함수/음수) ===")
 do

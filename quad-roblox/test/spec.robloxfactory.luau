@@ -27,8 +27,8 @@ local SPEC_FILE = "spec.robloxfactory.luau"
 
 print("=== 1. 진입점 — UseProvider identity 락: 같은 fn no-op·다른 identity error (H-305 d′) ===")
 do
-	local q = Quad.New():UseProvider(QuadRoblox)
-	assert(type((q :: any).Declaration) == "table", "extension merge lands Declaration on the module")
+	local q = Quad.NewModule():UseProvider(QuadRoblox)
+	assert(type((q :: any).Elem) == "function", "extension merge lands the surface (q.Elem) on the module")
 	local before = (q :: any).bindLifetime
 	local again = (q :: any):UseProvider(QuadRoblox)
 	assert(again == q and (q :: any).bindLifetime == before, "same provider fn again is a no-op (functions untouched)")
@@ -52,7 +52,7 @@ do
 		mock.installLifetime(q :: any)
 	end)
 	assert(not okMockOver, "mock must not silently overwrite the roblox backend")
-	local mocked = Quad.New()
+	local mocked = Quad.NewModule()
 	mock.installLifetime(mocked)
 	mock.installLifetime(mocked) -- 같은 identity 재설치 — no-op이어야 함
 	local okRobloxOver, err2 = pcall(function()
@@ -65,7 +65,7 @@ do
 	-- 성공 후라서, 실패한 설치 뒤 정상 재시도가 no-op로 삼켜지지 않는다
 	-- (4순회 `H-383`: 이건 슬롯 얘기다 — 부분 변경 뒤 던지는 팩토리의 재시도는
 	-- 그 위에 다시 돌아 핸들러가 중복된다, mutate-then-throw는 UB — module-lifecycle-plan)
-	local fresh = Quad.New()
+	local fresh = Quad.NewModule()
 	local function throwingProvider(_quad: any): any
 		error("install exploded midway", 0)
 	end
@@ -74,12 +74,12 @@ do
 	end)
 	assert(not okThrow, "the throwing provider propagates its error")
 	local recovered = (fresh :: any):UseProvider(QuadRoblox)
-	assert(type(recovered.Declaration) == "table", "H-307: a failed install must not poison the slot — retry installs fully")
+	assert(type(recovered.Elem) == "function", "H-307: a failed install must not poison the slot — retry installs fully")
 
 	-- `H-306` (a): 런타임 버전 게이트 — 컴파일 타임 배선은 UseProvider
 	-- 간접 흐름에서 불활성임이 실측돼(탐사자) 런타임 검사로 전환됐다.
 	-- 이 음성 대조군이 spike 29의 커버리지 구멍(버전 음성 부재)을 메운다.
-	local wrongVersion = Quad.New()
+	local wrongVersion = Quad.NewModule()
 	;(wrongVersion :: any).Version = "9.9.9"
 	local okVer, errVer = pcall(function()
 		(wrongVersion :: any):UseProvider(QuadRoblox)
@@ -91,13 +91,13 @@ do
 	-- H-307과의 합류 확인 — 실패한 설치가 슬롯을 안 잡았으니 정정 후 재시도 완주
 	;(wrongVersion :: any).Version = "3.3.0"
 	local fixed = (wrongVersion :: any):UseProvider(QuadRoblox)
-	assert(type(fixed.Declaration) == "table", "corrected version installs fully on retry")
+	assert(type(fixed.Elem) == "function", "corrected version installs fully on retry")
 	print("PASS")
 end
 
 -- [단위 ⑤ `H-25` 반영] native*/isInst 등 op 필드는 이제 `Quad` 공개 타입에
 -- 있다(H-80 규약) — 여기 any는 mock instance를 넘기는 단언들 편의.
-local q: any = Quad.New():UseProvider(QuadRoblox)
+local q: any = Quad.NewModule():UseProvider(QuadRoblox)
 
 print()
 print("=== 2. nativeClaim — 1회 셋업, 이중 claim은 셋업 유무만으로 error ===")
@@ -217,7 +217,7 @@ do
 	-- EngineOps가 실물 op을 심으므로 "스텁이 아님"을 단언한다(동작은
 	-- spec.tagattribute가 본다). [2026-09-08] 시간 op 둘도 EngineOps가 심는다
 	-- (`task.delay`/`task.cancel` — 동작은 spec.timers가 본다); 맨 quad-base는 안내 스텁.
-	local bare = Quad.New()
+	local bare = Quad.NewModule()
 	for _, name in { "addTag", "removeTag", "setAttr", "setTimeout", "clearTimeout" } do
 		local fn: any = (q :: any).Backend[name]
 		assert(type(fn) == "function", name .. " installed")

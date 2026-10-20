@@ -96,7 +96,7 @@ function StoryKit.rebuild<T>(key: q.State<T>, build: (value: T) -> Instance, opt
 		return build(ctx.Item :: T), nil
 	end)
 	local o: RebuildOptions = options or {}
-	return q.Declaration.Frame({
+	return q.Elem "Frame"({
 		Name = "Rebuild",
 		BackgroundTransparency = 1,
 		Size = o.Size or UDim2.fromScale(1, 0),

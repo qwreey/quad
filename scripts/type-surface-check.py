@@ -18,7 +18,7 @@
 import os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FILES = ['quad-types/src/init.luau', 'quad-roblox/src/types.luau', 'quad-roblox/src/Declaration/init.luau']
+FILES = ['quad-types/src/init.luau', 'quad-roblox/src/types.luau', 'quad-roblox/src/Surface/init.luau', 'quad-roblox/src/init.luau']  # [2026-10-20 3.4.0] the generated Declaration is gone
 INPUT_RECORD = re.compile(r'^export type ([A-Za-z_]+(?:Options|Opts|Info))(?:<[^>]*>)? = \{', re.M)
 # [2026-09-15 code-review] quad-roblox writes the qualified form `QuadTypes.State<…>` — without the optional prefix that file had zero tokens
 TOKEN = re.compile(r'(?<![A-Za-z0-9_.])(?:QuadTypes\.)?(State|Source)<')

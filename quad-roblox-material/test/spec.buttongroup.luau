@@ -6,7 +6,7 @@ local H = require("./support/harness")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local FrameModifier = q.Modifier "Frame"
 local Theme = require("../src/Theme")
 local Tokens = require("../src/Tokens")
 local ButtonGroup = require("../src/Button/Group")
@@ -528,7 +528,7 @@ H.section("host: Modifier renames / reorders, LayoutOrder, Hooks, theme (dark, p
 		Value = value,
 		Theme = theme,
 		LayoutOrder = 7,
-		Modifier = D.Modifier.Frame():Name("ViewSwitch"),
+		Modifier = FrameModifier():Name("ViewSwitch"),
 		Hooks = { Util.preHook(function()
 			hooked += 1
 		end) },

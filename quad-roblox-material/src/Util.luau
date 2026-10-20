@@ -122,7 +122,7 @@ end
 ]]
 local EMPTY_HOOKS: Hooks = table.freeze({} :: Hooks)
 local function clickSink(hooks: Hooks?): TextButton
-	return q.Declaration.TextButton {
+	return q.Elem "TextButton" {
 		Name = "ClickSink",
 		Size = UDim2.fromScale(1, 1),
 		BackgroundTransparency = 1,
@@ -139,11 +139,11 @@ local function hooks(h: Hooks?): Hooks
 	return h or EMPTY_HOOKS
 end
 
-local frameNames: { [string]: q.FrameModifier } = {}
-local function frameName(name: string): q.FrameModifier
+local frameNames: { [string]: q.Modifier<Frame> } = {}
+local function frameName(name: string): q.Modifier<Frame>
 	local m = frameNames[name]
 	if m == nil then
-		m = q.Declaration.Modifier.Frame():Name(name)
+		m = q.Modifier "Frame"():Name(name)
 		frameNames[name] = m
 	end
 	return m

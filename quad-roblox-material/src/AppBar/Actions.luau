@@ -35,7 +35,7 @@ local IconButton = require("../Button/IconButton")
 local Tooltip = require("../Tooltip")
 local Menu = require("../Menu")
 local Overlay = require("../Overlay")
-local D = q.Declaration
+local TextButtonModifier = q.Modifier "TextButton"
 
 export type Action = {
 	read Icon: string,
@@ -98,7 +98,7 @@ local function button(a: Action, o: Options, order: number): Instance
 		OnClick = function()
 			activate(a)
 		end,
-		Modifier = D.Modifier.TextButton():LayoutOrder(order),
+		Modifier = TextButtonModifier():LayoutOrder(order),
 		Hooks = { tip.Hook },
 	})
 end
@@ -135,7 +135,7 @@ local function build(entries: { Entry }, o: Options, axis: ("X" | "Y")?): ({ Ins
 				TouchTarget = true,
 				ContentColor = o.Color,
 				Theme = o.Theme,
-				Modifier = D.Modifier.TextButton():LayoutOrder(count + 1),
+				Modifier = TextButtonModifier():LayoutOrder(count + 1),
 				Hooks = { tip.Hook, anchor },
 				OnClick = function()
 					if handle ~= nil and handle.IsOpen:Get() then

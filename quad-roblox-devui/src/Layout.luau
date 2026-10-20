@@ -19,12 +19,17 @@
 
 local Quad = require("./Quad")
 local q = Quad
-local D = q.Declaration
-local sameLineName = D.Modifier.Frame():Name("SameLine")
-local groupName = D.Modifier.Frame():Name("Group")
-local indentName = D.Modifier.Frame():Name("Indent")
-local separatorName = D.Modifier.Frame():Name("Separator")
-local separatorTextName = D.Modifier.Frame():Name("SeparatorText")
+local Frame = q.Elem "Frame"
+local UIFlexItem = q.Elem "UIFlexItem"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local FrameModifier = q.Modifier "Frame"
+local TextLabelModifier = q.Modifier "TextLabel"
+local sameLineName = FrameModifier():Name("SameLine")
+local groupName = FrameModifier():Name("Group")
+local indentName = FrameModifier():Name("Indent")
+local separatorName = FrameModifier():Name("Separator")
+local separatorTextName = FrameModifier():Name("SeparatorText")
 local Style = require("./Style")
 local Text = require("./Text")
 local Util = require("./Util")
@@ -36,32 +41,32 @@ type Style = Style.Style
 export type ContainerProps = {
 	read Children: Slot<Instance>?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 export type SameLineProps = {
 	read Children: Slot<Instance>?,
 	read Spacing: number?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 export type IndentProps = {
 	read Children: Slot<Instance>?,
 	read Width: number?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 export type SeparatorProps = {
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 export type SeparatorTextProps = {
 	read Text: string | State<string>,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 local Layout = {}
@@ -78,14 +83,14 @@ function Layout.SameLine(props: SameLineProps): Frame
 	else
 		spacing = Util.pxX(style.Metrics.ItemSpacing)
 	end
-	return D.Frame({
+	return Frame({
 		sameLineName,
 		props.Modifier or q.None,
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIListLayout({
+		UIListLayout({
 			FillDirection = Enum.FillDirection.Horizontal,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = spacing,
@@ -97,14 +102,14 @@ end
 
 function Layout.Group(props: ContainerProps): Frame
 	local style = props.Style or Style.default
-	return D.Frame({
+	return Frame({
 		groupName,
 		props.Modifier or q.None,
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIListLayout({
+		UIListLayout({
 			FillDirection = Enum.FillDirection.Vertical,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = Util.pxY(style.Metrics.ItemSpacing),
@@ -121,15 +126,15 @@ function Layout.Indent(props: IndentProps): Frame
 	else
 		width = Util.px(style.Metrics.IndentSpacing)
 	end
-	return D.Frame({
+	return Frame({
 		indentName,
 		props.Modifier or q.None,
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIPadding({ PaddingLeft = width }),
-		D.UIListLayout({
+		UIPadding({ PaddingLeft = width }),
+		UIListLayout({
 			FillDirection = Enum.FillDirection.Vertical,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = Util.pxY(style.Metrics.ItemSpacing),
@@ -140,7 +145,7 @@ end
 
 function Layout.Separator(props: SeparatorProps): Frame
 	local style = props.Style or Style.default
-	return D.Frame({
+	return Frame({
 		separatorName,
 		props.Modifier or q.None,
 		Size = UDim2.new(1, 0, 0, 1),
@@ -159,21 +164,21 @@ function Layout.SeparatorText(props: SeparatorTextProps): Frame
 		return UDim2.new(1, 0, 0, math.max(1, self:Get() - 2))
 	end)
 	local padY: State<UDim> = Util.pxY(style.Metrics.SeparatorTextPadding)
-	return D.Frame({
+	return Frame({
 		separatorTextName,
 		props.Modifier or q.None,
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIPadding({ PaddingTop = padY, PaddingBottom = padY }),
-		D.UIListLayout({
+		UIPadding({ PaddingTop = padY, PaddingBottom = padY }),
+		UIListLayout({
 			FillDirection = Enum.FillDirection.Horizontal,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = Util.pxX(style.Metrics.ItemSpacing),
 			VerticalAlignment = Enum.VerticalAlignment.Center,
 		}),
-		D.Frame({
+		Frame({
 			Name = "Left",
 			LayoutOrder = 1,
 			Size = thickness,
@@ -181,15 +186,15 @@ function Layout.SeparatorText(props: SeparatorTextProps): Frame
 			BackgroundTransparency = style.Transparency.Separator,
 			BorderSizePixel = 0,
 		}),
-		Text.Text({ Text = props.Text, Style = style, Modifier = D.Modifier.TextLabel():LayoutOrder(2) }),
-		D.Frame({
+		Text.Text({ Text = props.Text, Style = style, Modifier = TextLabelModifier():LayoutOrder(2) }),
+		Frame({
 			Name = "Right",
 			LayoutOrder = 3,
 			Size = fillThickness,
 			BackgroundColor3 = style.Color.Separator,
 			BackgroundTransparency = style.Transparency.Separator,
 			BorderSizePixel = 0,
-			D.UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill }),
+			UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill }),
 		}),
 	})
 end

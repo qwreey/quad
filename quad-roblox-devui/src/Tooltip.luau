@@ -38,7 +38,9 @@
 local Pointer = require("./Pointer")
 local Quad = require("./Quad")
 local q = Quad
-local D = q.Declaration
+local TextLabel = q.Elem "TextLabel"
+local UIPadding = q.Elem "UIPadding"
+local UISizeConstraint = q.Elem "UISizeConstraint"
 local Overlay = require("./Overlay")
 local PopupParts = require("./PopupParts")
 local Style = require("./Style")
@@ -90,7 +92,7 @@ function Tooltip.hook(props: TooltipProps): TooltipHandle
 		end
 		local pad: State<UDim> = Util.pxX(style.Metrics.WindowPadding)
 		local padY: State<UDim> = Util.pxY(style.Metrics.WindowPadding)
-		return D.TextLabel({
+		return TextLabel({
 			Name = "Tooltip",
 			Text = text :: string | State<string>,
 			FontFace = style.Metrics.TextFont,
@@ -106,8 +108,8 @@ function Tooltip.hook(props: TooltipProps): TooltipHandle
 			Size = UDim2.fromOffset(0, 0),
 			UICorner = style.Metrics.PopupRounding,
 			PopupParts.stroke(style),
-			D.UISizeConstraint({ MaxSize = Vector2.new(maxWidth, math.huge) }),
-			D.UIPadding({ PaddingLeft = pad, PaddingRight = pad, PaddingTop = padY, PaddingBottom = padY }),
+			UISizeConstraint({ MaxSize = Vector2.new(maxWidth, math.huge) }),
+			UIPadding({ PaddingLeft = pad, PaddingRight = pad, PaddingTop = padY, PaddingBottom = padY }),
 		})
 	end
 

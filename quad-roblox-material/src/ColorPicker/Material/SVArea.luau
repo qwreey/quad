@@ -30,7 +30,9 @@ local Style = require("../../Button/Style")
 local Util = require("../../Util")
 local KeyNav = require("../../KeyNav")
 local Model = require("./Model")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local UIGradient = q.Elem "UIGradient"
+local UIStroke = q.Elem "UIStroke"
 
 local KEY_STEP = 0.02
 local PAGE = 10
@@ -140,7 +142,7 @@ local function SVArea(props: Props)
 		end, engaged)
 		:Apply(Style.animation())
 
-	return D.Frame {
+	return Frame {
 		Name = "SVArea",
 		LayoutOrder = props.LayoutOrder or 0,
 		drag.Hook,
@@ -153,29 +155,29 @@ local function SVArea(props: Props)
 		Active = true,
 		Selectable = interactable,
 		UICorner = corner,
-		D.UIStroke {
+		UIStroke {
 			Name = "Outline",
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 			Color = outline,
 			Thickness = outlineThickness,
 		},
-		D.Frame {
+		Frame {
 			Name = "WhiteOverlay",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundColor3 = WHITE,
 			BorderSizePixel = 0,
 			UICorner = corner,
-			D.UIGradient { Transparency = toRight },
+			UIGradient { Transparency = toRight },
 		},
-		D.Frame {
+		Frame {
 			Name = "BlackOverlay",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundColor3 = BLACK,
 			BorderSizePixel = 0,
 			UICorner = corner,
-			D.UIGradient { Transparency = toDown, Rotation = 90 },
+			UIGradient { Transparency = toDown, Rotation = 90 },
 		},
-		D.Frame {
+		Frame {
 			Name = "Thumb",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = thumbPos,
@@ -183,7 +185,7 @@ local function SVArea(props: Props)
 			BackgroundColor3 = model.color,
 			BorderSizePixel = 0,
 			UICorner = Tokens.Shape.corner("Full"),
-			D.UIStroke {
+			UIStroke {
 				Name = "Ring",
 				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 				Thickness = 3,

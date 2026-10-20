@@ -11,7 +11,7 @@ local q = require("./Quad")
 
 type Context = Context.Context
 
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Kids = Devui.Kids
 
 local function Inputs(ctx: Context): Instance
@@ -63,7 +63,7 @@ local function Inputs(ctx: Context): Instance
 			Devui.TextWrapped({ Text = readout, Style = style }),
 			Devui.TextDisabled({ Text = vecText, Style = style }),
 			-- a swatch bound to the tint Source (one Frame)
-			D.Frame({
+			Frame({
 				Name = "TintSwatch",
 				Size = UDim2.new(1, 0, 0, 14),
 				BackgroundColor3 = ctx.Tint,

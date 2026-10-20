@@ -2,7 +2,8 @@
 local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local UIListLayout = q.Elem "UIListLayout"
 local StoryParts = require("./StoryParts")
 local holder = StoryParts.holder
 local caption = StoryParts.caption
@@ -43,12 +44,12 @@ return StoryKit.story({
 				260,
 				StoryKit.rebuild<<Look>>(look, function(l: Look)
 					local value = if l.Indeterminate then nil else c.Value
-					return D.Frame {
+					return Frame {
 						Name = "Indicators",
 						Size = UDim2.fromScale(1, 1),
 						BackgroundTransparency = 1,
 						BorderSizePixel = 0,
-						D.UIListLayout {
+						UIListLayout {
 							FillDirection = Enum.FillDirection.Vertical,
 							SortOrder = Enum.SortOrder.LayoutOrder,
 							Padding = UDim.new(0, 16),
@@ -58,12 +59,12 @@ return StoryKit.story({
 							then Material.WavyProgress({ Value = value, Visible = c.Visible, Theme = theme })
 							else q.None,
 						Material.LoadingIndicator({ Size = l.Size, Contained = l.Contained, Visible = c.Visible, Theme = theme }),
-						D.Frame {
+						Frame {
 							Name = "Rings",
 							Size = UDim2.new(1, 0, 0, l.Size),
 							BackgroundTransparency = 1,
 							BorderSizePixel = 0,
-							D.UIListLayout {
+							UIListLayout {
 								FillDirection = Enum.FillDirection.Horizontal,
 								SortOrder = Enum.SortOrder.LayoutOrder,
 								Padding = UDim.new(0, 12),

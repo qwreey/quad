@@ -38,8 +38,11 @@ local Theme = require("./Theme")
 local Util = require("./Util")
 local Text = require("./Text")
 local Overlay = require("./Overlay")
-local D = q.Declaration
-local tooltipName = D.Modifier.TextLabel():Name("Tooltip")
+local TextLabel = q.Elem "TextLabel"
+local UIPadding = q.Elem "UIPadding"
+local UISizeConstraint = q.Elem "UISizeConstraint"
+local TextLabelModifier = q.Modifier "TextLabel"
+local tooltipName = TextLabelModifier():Name("Tooltip")
 
 local _hookProto = Util.preHook(function() end)
 export type Hook = typeof(_hookProto)
@@ -49,7 +52,7 @@ export type PlainProps = {
 	read Closing: q.State<boolean>?,
 	read MaxWidth: number?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.TextLabelModifier?,
+	read Modifier: q.ModifierInto<TextLabel>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -70,7 +73,7 @@ export type Handle = {
 }
 
 local labelStyle = Text.Label("BodySmall")
-local baseModifier = D.Modifier.TextLabel():AutomaticSize(Enum.AutomaticSize.XY):BorderSizePixel(0):TextWrapped(true)
+local baseModifier = TextLabelModifier():AutomaticSize(Enum.AutomaticSize.XY):BorderSizePixel(0):TextWrapped(true)
 
 local function Plain(props: PlainProps): TextLabel
 	local theme = Theme.resolve(props.Theme)
@@ -83,7 +86,7 @@ local function Plain(props: PlainProps): TextLabel
 		return if self:Get() then 0 else 1
 	end)
 	local fade = transparency:Apply(q.Animate(Tokens.Motion.options("Short3", "Linear")))
-	return D.TextLabel {
+	return TextLabel {
 		tooltipName,
 		baseModifier,
 		labelStyle,
@@ -97,13 +100,13 @@ local function Plain(props: PlainProps): TextLabel
 		TextXAlignment = Enum.TextXAlignment.Center,
 		TextYAlignment = Enum.TextYAlignment.Center,
 		UICorner = Tokens.Shape.corner("ExtraSmall"),
-		D.UIPadding {
+		UIPadding {
 			PaddingLeft = UDim.new(0, 8),
 			PaddingRight = UDim.new(0, 8),
 			PaddingTop = UDim.new(0, 4),
 			PaddingBottom = UDim.new(0, 4),
 		},
-		D.UISizeConstraint { MaxSize = Vector2.new(props.MaxWidth or 200, math.huge) },
+		UISizeConstraint { MaxSize = Vector2.new(props.MaxWidth or 200, math.huge) },
 		Util.postHook(function()
 			entered:Set(true)
 		end),
@@ -140,8 +143,8 @@ local function hook(o: Options): Handle
 		end
 	end
 
-	local function placement(): q.TextLabelModifier
-		local mod = D.Modifier.TextLabel()
+	local function placement(): q.Modifier<TextLabel>
+		local mod = TextLabelModifier()
 		local host = target
 		if host == nil then
 			return mod

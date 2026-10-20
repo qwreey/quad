@@ -68,9 +68,9 @@ do
 	assert(tostring(slot) == "Slot(len=1, mounted)", tostring(slot))
 	parent:Destroy()
 
-	local m = q.Modifier():Size(1)
+	local m = q.Raw.Modifier():Size(1)
 	assert(tostring(m) == "Modifier(1 fields)", tostring(m))
-	local Label = q.Modifier.TypedFactory("SpecTostringLabel")
+	local Label = q.Raw.Modifier.TypedFactory("SpecTostringLabel")
 	assert(tostring(Label({ Text = "a", Size = 1 })) == "Modifier<SpecTostringLabel>(2 fields)", tostring(Label({ Text = "a", Size = 1 })))
 end
 

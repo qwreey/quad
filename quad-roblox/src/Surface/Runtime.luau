@@ -10,9 +10,8 @@
 	an unknown class fails where the engine meets it (`Instance.new`, the signal lookup). The class never reaches the
 	Spread/Mapper runtime: it lives in the types.
 
-	Coexistence (unit 4 → 6): `OnChange`/`Out`/`Modifier` keep their old shapes beside the new ones until the switch —
-	the old `OnChange(name, fn)`/`Out(name, src)` take two arguments, the new class stage one; base's own
-	`Modifier(...)` takes the one-string form itself (no wrapper here). Unit 6 removes the old arms.
+	3.4.0 removed the 3.3 forms (`q.Declaration`, `q.OnChange(name, fn)`, `q.Out(name, src)`, base's `q.Modifier(...)` —
+	now `q.Raw.Modifier(...)`); `scripts/migrate-3.4.py` rewrites them.
 ]]
 
 local QuadTypes = require("../../luau_packages/quad_types")
@@ -24,9 +23,17 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 local errNS: any = nil
 
 -- the class stage of every curried constructor
-local function checkClass(fn: string, name: any)
+local function checkClass(fn: string, name: any, hint: string?)
 	if type(name) ~= "string" or name == "" then
-		errNS.errorBeforeNearest(`Quad0278 {fn}: the first argument must be a class name string (got {if name == "" then '""' else typeof(name)})`, SURFACE)
+		errNS.errorBeforeNearest(`Quad0278 {fn}: the first argument must be a class name string (got {if name == "" then '""' else typeof(name)}){hint or ""}`, SURFACE)
+	end
+end
+
+-- the 3.3 two-argument descriptor forms (`q.OnChange("Text", fn)`) would pass the class check with "Text" and hand back
+-- a stage function that later fails far away in Dispatch — refuse the extra argument at the call
+local function checkOneArg(fn: string, extra: number)
+	if extra > 0 then
+		errNS.errorBeforeNearest(`Quad0281 {fn}: takes the class name only - write q.{fn} "Class" "Name" (…) (3.3's q.{fn}(name, …) form is gone)`, SURFACE)
 	end
 end
 
@@ -46,34 +53,21 @@ end
 
 local descriptorStages: { [string]: any } = {}
 local makers: { [string]: (string, any) -> any } = {}
-function descriptorStages.OnChange(className: any): any
+function descriptorStages.OnChange(className: any, ...: any): any
 	checkClass("OnChange", className)
+	checkOneArg("OnChange", select("#", ...))
 	return curried(makers.OnChange)
 end
-function descriptorStages.OnEvent(className: any): any
+function descriptorStages.OnEvent(className: any, ...: any): any
 	checkClass("OnEvent", className)
+	checkOneArg("OnEvent", select("#", ...))
 	return curried(makers.OnEvent)
 end
-function descriptorStages.Out(className: any): any
+function descriptorStages.Out(className: any, ...: any): any
 	checkClass("Out", className)
+	checkOneArg("Out", select("#", ...))
 	return curried(makers.Out)
 end
--- coexistence arms (removed in unit 6): one argument = the class stage; otherwise the old two-argument form
-function descriptorStages.OnChangeEither(a: any, ...: any): any
-	if select("#", ...) == 0 then
-		checkClass("OnChange", a)
-		return curried(makers.OnChange)
-	end
-	return makers.OnChange(a, ...)
-end
-function descriptorStages.OutEither(a: any, ...: any): any
-	if select("#", ...) == 0 then
-		checkClass("Out", a)
-		return curried(makers.Out)
-	end
-	return makers.Out(a, ...)
-end
-
 -- install(quad, makeOnChange, makeOut, makeOnEvent) -> the extension fields (merged by `UseProvider`). The three
 -- `make*` are the untagged descriptor bodies.
 local function install(quad: any, makeOnChange: (string, any) -> any, makeOut: (string, any) -> any, makeOnEvent: (string, any) -> any): { [string]: any }
@@ -82,8 +76,7 @@ local function install(quad: any, makeOnChange: (string, any) -> any, makeOut: (
 		makers.OnChange = makeOnChange
 		makers.Out = makeOut
 		makers.OnEvent = makeOnEvent
-		errNS.setFuncLevel(SURFACE, descriptorStages.OnChange, descriptorStages.OnEvent, descriptorStages.Out,
-			descriptorStages.OnChangeEither, descriptorStages.OutEither)
+		errNS.setFuncLevel(SURFACE, descriptorStages.OnChange, descriptorStages.OnEvent, descriptorStages.Out)
 	end
 	local rawModifier = quad.Raw.Modifier
 	local rawSpread = quad.Raw.Spread
@@ -111,7 +104,7 @@ local function install(quad: any, makeOnChange: (string, any) -> any, makeOut: (
 		return elemOf(className)
 	end
 	function surface.Modifier(className: any): any
-		checkClass("Modifier", className)
+		checkClass("Modifier", className, " - base's untyped constructor is q.Raw.Modifier(...) since 3.4.0")
 		return rawModifier.TypedFactory(className) -- cannot fail on a non-empty string
 	end
 	function surface.Spread(className: any): any
@@ -134,15 +127,14 @@ local function install(quad: any, makeOnChange: (string, any) -> any, makeOut: (
 	end
 	errNS.setFuncLevel(SURFACE, forClasses.ForClasses)
 
-	-- `Modifier` is not returned during coexistence: base's own `q.Modifier` takes the one-string form until the
-	-- switch (Dispatch/Modifier `__call`), so no wrapper sits over its tagged call
 	return {
 		Elem = surface.Elem,
+		Modifier = surface.Modifier,
 		Spread = surface.Spread,
 		Mapper = surface.Mapper,
-		OnChange = descriptorStages.OnChangeEither,
+		OnChange = surface.OnChange,
 		OnEvent = surface.OnEvent,
-		Out = descriptorStages.OutEither,
+		Out = surface.Out,
 		ForClasses = forClasses.ForClasses,
 	}
 end

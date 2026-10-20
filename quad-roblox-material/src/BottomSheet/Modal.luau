@@ -51,7 +51,7 @@ local StateModule = require("../Sheet/State")
 local Anchored = require("../Sheet/Anchored")
 local Parts = require("../Sheet/Parts")
 local Sheet = require("./Sheet")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 
 export type OpenOptions = {
 	read Children: q.Slot<Instance>?,
@@ -155,7 +155,7 @@ local function open(o: OpenOptions?): Handle
 				Direction = m.Direction,
 			})
 		end)
-		return D.Frame {
+		return Frame {
 			Name = "ModalBottomSheet",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,

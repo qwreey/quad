@@ -120,14 +120,15 @@ end)
 -- AutomaticSize loop). Here the UIScales are real mock instances (one or two nested), and the layout (AbsoluteSize =
 -- 40 * product) is set by hand.
 H.section("ripple under ancestor UIScales: local-unit Offsets that cover the WHOLE host (the modal's mode toggle)", function()
-	local D = q.Declaration
+	local Frame = q.Elem "Frame"
+	local UIScale = q.Elem "UIScale"
 	local Ripple = require("../src/Ripple")
 	for _, scales in { { 0.8 }, { 0.92, 0.85 }, { 1.25 } } do
 		local b = make({ Name = "ModeToggle", Glyph = "\u{270E}", Position = UDim2.fromOffset(296, 56), OnClick = function() end })
 		local root: any = b
 		local k = 1
 		for _, sc in scales do
-			root = D.Frame { D.UIScale { Scale = sc }, root }
+			root = Frame { UIScale { Scale = sc }, root }
 			k *= sc
 		end
 		local layer: any = H.find(b, "StateLayer")

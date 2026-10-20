@@ -30,13 +30,18 @@ local Tokens = require("../Tokens")
 local Theme = require("../Theme")
 local Util = require("../Util")
 local Parts = require("../Sheet/Parts")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ScrollingFrame = q.Elem "ScrollingFrame"
+local UICorner = q.Elem "UICorner"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local FrameModifier = q.Modifier "Frame"
 
 export type Props = {
 	read Children: q.Slot<Instance>?,
 	read Width: number?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -52,16 +57,16 @@ local function sheet(kind: Kind, props: Props?): Frame
 	local modal = kind == "Modal"
 	local width = math.clamp(p.Width or MAX_WIDTH, MIN_WIDTH, MAX_WIDTH)
 	local color = if modal then theme.Color.SurfaceContainerLow else theme.Color.Surface
-	return D.Frame {
+	return Frame {
 		Util.frameName(kind .. "DrawerSheet"),
-		D.Modifier.Frame():Size(UDim2.new(0, width, 1, 0)),
+		FrameModifier():Size(UDim2.new(0, width, 1, 0)),
 		BackgroundColor3 = color,
 		BorderSizePixel = 0,
 		Active = true, -- 3D / camera input only; inside a modal drawer the holder's ClickSink sinks the click (header)
 		p.Modifier or q.None,
-		if modal then D.UICorner { CornerRadius = UDim.new(0, CORNER) } else q.None,
+		if modal then UICorner { CornerRadius = UDim.new(0, CORNER) } else q.None,
 		if modal then Parts.patch("Left", CORNER, color) else q.None,
-		D.ScrollingFrame {
+		ScrollingFrame {
 			Name = "Scroll",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
@@ -73,8 +78,8 @@ local function sheet(kind: Kind, props: Props?): Frame
 			ScrollBarThickness = 4,
 			ScrollBarImageColor3 = theme.Color.OnSurface,
 			ScrollBarImageTransparency = 1 - Tokens.State.Opacity.ScrollBar,
-			D.UIPadding { PaddingTop = UDim.new(0, 12), PaddingBottom = UDim.new(0, 8) },
-			D.UIListLayout {
+			UIPadding { PaddingTop = UDim.new(0, 12), PaddingBottom = UDim.new(0, 8) },
+			UIListLayout {
 				FillDirection = Enum.FillDirection.Vertical,
 				HorizontalAlignment = Enum.HorizontalAlignment.Center,
 				SortOrder = Enum.SortOrder.LayoutOrder,

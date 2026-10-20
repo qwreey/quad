@@ -95,7 +95,7 @@ local q = require("../Quad")
 local Theme = require("../Theme")
 local Tokens = require("../Tokens")
 local Style = require("../Button/Style")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 
 export type SizeName = "XS" | "S" | "M" | "L" | "XL"
 
@@ -248,7 +248,7 @@ local function new(o: GeometryOptions?): Geometry
 	end
 
 	local function clip(name: string, position: UDim2 | q.State<UDim2>, size: UDim2 | q.State<UDim2>, visible: q.State<boolean>, fill: Frame): Frame
-		return D.Frame {
+		return Frame {
 			Name = name,
 			AnchorPoint = SEGMENT_ANCHOR,
 			Position = position,
@@ -262,7 +262,7 @@ local function new(o: GeometryOptions?): Geometry
 	end
 
 	local function fill(position: UDim2 | q.State<UDim2>, size: UDim2 | q.State<UDim2>, radius: UDim, color: Animated, transparency: Animated): Frame
-		return D.Frame {
+		return Frame {
 			Name = "Fill",
 			Position = position,
 			Size = size,
@@ -376,7 +376,7 @@ local function new(o: GeometryOptions?): Geometry
 	end
 
 	local function stop(p: StopOptions): Frame
-		return D.Frame {
+		return Frame {
 			Name = p.Name,
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = point(if p.End == "Min" then UDim.new(0, INSET) else UDim.new(1, -INSET)),
@@ -446,7 +446,7 @@ local function new(o: GeometryOptions?): Geometry
 			end, onAT, onIT)
 			table.insert(
 				out,
-				D.Frame {
+				Frame {
 					Name = "Tick",
 					AnchorPoint = Vector2.new(0.5, 0.5),
 					Position = point(x(tf)),

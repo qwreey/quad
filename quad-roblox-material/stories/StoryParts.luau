@@ -14,7 +14,11 @@
 ]]
 local Material = require("../src")
 local q = require("./Quad")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ScrollingFrame = q.Elem "ScrollingFrame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
 
 local ICON = "rbxassetid://6031094678" -- placeholder image asset (the kit ships none)
 local captionStyle = Material.Text.Label("BodyMedium")
@@ -32,18 +36,18 @@ function StoryParts.themed(scheme: q.Source<any>): (Material.Theme, q.Effect)
 end
 
 function StoryParts.page(theme: Material.Theme, follow: q.Effect, children: { Instance }): Frame
-	return D.Frame {
+	return Frame {
 		Name = "Story",
 		Size = UDim2.fromScale(1, 1),
 		BorderSizePixel = 0,
 		BackgroundColor3 = theme.Color.Surface,
-		D.UIPadding {
+		UIPadding {
 			PaddingTop = UDim.new(0, 24),
 			PaddingBottom = UDim.new(0, 24),
 			PaddingLeft = UDim.new(0, 24),
 			PaddingRight = UDim.new(0, 24),
 		},
-		D.UIListLayout {
+		UIListLayout {
 			FillDirection = Enum.FillDirection.Vertical,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = UDim.new(0, 16),
@@ -54,7 +58,7 @@ function StoryParts.page(theme: Material.Theme, follow: q.Effect, children: { In
 end
 
 function StoryParts.scrollPage(theme: Material.Theme, follow: q.Effect, children: { Instance }, gap: number?): ScrollingFrame
-	return D.ScrollingFrame {
+	return ScrollingFrame {
 		Name = "Story",
 		Size = UDim2.fromScale(1, 1),
 		BorderSizePixel = 0,
@@ -66,19 +70,19 @@ function StoryParts.scrollPage(theme: Material.Theme, follow: q.Effect, children
 		ScrollBarImageColor3 = theme.Color.OnSurface,
 		ScrollBarImageTransparency = 1 - Material.Tokens.State.Opacity.ScrollBar,
 		follow,
-		D.Frame {
+		Frame {
 			Name = "Page",
 			Size = UDim2.fromScale(1, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIPadding {
+			UIPadding {
 				PaddingTop = UDim.new(0, 24),
 				PaddingBottom = UDim.new(0, 24),
 				PaddingLeft = UDim.new(0, 24),
 				PaddingRight = UDim.new(0, 24),
 			},
-			D.UIListLayout {
+			UIListLayout {
 				FillDirection = Enum.FillDirection.Vertical,
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding = UDim.new(0, gap or 16),
@@ -89,13 +93,13 @@ function StoryParts.scrollPage(theme: Material.Theme, follow: q.Effect, children
 end
 
 function StoryParts.row(children: { Instance }): Frame
-	return D.Frame {
+	return Frame {
 		Name = "Row",
 		Size = UDim2.new(1, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIListLayout {
+		UIListLayout {
 			FillDirection = Enum.FillDirection.Horizontal,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Wraps = true,
@@ -107,7 +111,7 @@ function StoryParts.row(children: { Instance }): Frame
 end
 
 function StoryParts.holder(height: number, child: Instance): Frame
-	return D.Frame {
+	return Frame {
 		Name = "Holder",
 		Size = UDim2.new(1, 0, 0, height),
 		BackgroundTransparency = 1,
@@ -117,7 +121,7 @@ function StoryParts.holder(height: number, child: Instance): Frame
 end
 
 function StoryParts.caption(theme: Material.Theme, text: string | q.State<string>): TextLabel
-	return D.TextLabel {
+	return TextLabel {
 		Name = "Caption",
 		captionStyle,
 		Size = UDim2.fromOffset(0, 0),

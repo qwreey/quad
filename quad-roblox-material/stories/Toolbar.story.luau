@@ -5,7 +5,8 @@ local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local StoryParts = require("./StoryParts")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local FrameModifier = q.Modifier "Frame"
 local themed = StoryParts.themed
 
 type Config = { Colors: Material.FloatingToolbarColors, FabAtStart: boolean }
@@ -36,7 +37,7 @@ return StoryKit.story({
 			return { Colors = if self:Get() == "Vibrant" then "Vibrant" else "Standard", FabAtStart = start:Get() == true }
 		end, c.FabAtStart)
 		local screen = StoryKit.rebuild<<Config>>(config, function(cfg: Config)
-			return D.Frame {
+			return Frame {
 				Name = "Screen",
 				Size = UDim2.fromOffset(640, 400),
 				BackgroundColor3 = theme.Color.Surface,
@@ -45,7 +46,7 @@ return StoryKit.story({
 					Theme = theme,
 					Expanded = expanded,
 					Colors = cfg.Colors,
-					Modifier = D.Modifier.Frame():Position(UDim2.fromOffset(16, 16)),
+					Modifier = FrameModifier():Position(UDim2.fromOffset(16, 16)),
 					LeadingContent = {
 						{ Icon = "edit", Label = "Bold", Checked = bold, OnCheckedChange = function(v: boolean)
 							bold:Set(v)
@@ -58,7 +59,7 @@ return StoryKit.story({
 					Theme = theme,
 					Expanded = expanded,
 					Colors = cfg.Colors,
-					Modifier = D.Modifier.Frame():Position(UDim2.fromOffset(16, 112)),
+					Modifier = FrameModifier():Position(UDim2.fromOffset(16, 112)),
 					Content = { a("check", "Done"), a("calendar", "Calendar"), a("edit", "Edit") },
 					FloatingActionButton = { Icon = "edit", OnClick = did("FAB") },
 					FloatingActionButtonPosition = if cfg.FabAtStart then "Start" else "End",
@@ -67,7 +68,7 @@ return StoryKit.story({
 					Theme = theme,
 					Expanded = expanded,
 					Colors = cfg.Colors,
-					Modifier = D.Modifier.Frame():AnchorPoint(Vector2.new(1, 0)):Position(UDim2.new(1, -112, 0, 16)),
+					Modifier = FrameModifier():AnchorPoint(Vector2.new(1, 0)):Position(UDim2.new(1, -112, 0, 16)),
 					LeadingContent = { a("chevronLeft", "Back") },
 					Content = { a("check", "Done"), a("edit", "Edit") },
 					TrailingContent = { a("close", "Close") },
@@ -76,7 +77,7 @@ return StoryKit.story({
 					Theme = theme,
 					Expanded = expanded,
 					Colors = cfg.Colors,
-					Modifier = D.Modifier.Frame():AnchorPoint(Vector2.new(1, 0)):Position(UDim2.new(1, -16, 0, 16)),
+					Modifier = FrameModifier():AnchorPoint(Vector2.new(1, 0)):Position(UDim2.new(1, -16, 0, 16)),
 					Content = { a("check", "Done"), a("edit", "Edit") },
 					FloatingActionButton = { Icon = "edit", OnClick = did("FAB") },
 					FloatingActionButtonPosition = if cfg.FabAtStart then "Top" else "Bottom",

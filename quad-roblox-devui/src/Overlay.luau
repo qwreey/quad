@@ -64,7 +64,8 @@ local Pointer = require("./Pointer")
 local PopupHits = require("./PopupHits")
 local Quad = require("./Quad")
 local q = Quad
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
 
 type State<T> = Quad.State<T>
 type Source<T> = Quad.Source<T>
@@ -129,7 +130,7 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 	-- open popups, newest last (CloseAll walks it; Close removes its own entry)
 	local open: { Popup } = {}
 
-	local layer = D.Frame({
+	local layer = Frame({
 		Name = "OverlayLayer",
 		Size = UDim2.fromScale(1, 1),
 		BackgroundTransparency = 1,
@@ -196,7 +197,7 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 
 		local closeImpl: () -> () = function() end
 
-		local holder = D.Frame({
+		local holder = Frame({
 			Name = "PopupHolder",
 			AutomaticSize = Enum.AutomaticSize.XY,
 			Size = UDim2.fromOffset(0, 0),
@@ -207,14 +208,14 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 			opts.Content,
 		})
 
-		local entry = D.Frame({
+		local entry = Frame({
 			Name = "Popup",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			Active = false,
 			if closeOutside
-				then D.TextButton({
+				then TextButton({
 					Name = "Catcher",
 					Size = UDim2.fromScale(1, 1),
 					BackgroundTransparency = 1,

@@ -32,15 +32,16 @@ local Style = require("../Button/Style")
 local Behavior = require("../Slider/Behavior")
 local Bubble = require("../Slider/Bubble")
 local Ticks = require("./SliderTicks")
-local D = q.Declaration
-local sliderName = D.Modifier.Frame():Name("M2Slider")
+local Frame = q.Elem "Frame"
+local FrameModifier = q.Modifier "Frame"
+local sliderName = FrameModifier():Name("M2Slider")
 
 export type Props = Behavior.SliderProps
 
 local INSET = 10 -- handle radius: rail margin on both sides
 local BAR = 4
 
-local baseModifier = D.Modifier.Frame():Size(UDim2.new(1, 0, 0, 40)):BackgroundTransparency(1):BorderSizePixel(0)
+local baseModifier = FrameModifier():Size(UDim2.new(1, 0, 0, 40)):BackgroundTransparency(1):BorderSizePixel(0)
 
 local function Slider(props: Props)
 	local theme = Theme.resolve(props.Theme)
@@ -86,7 +87,7 @@ local function Slider(props: Props)
 		return UDim2.fromScale(self:Get(), 0.5)
 	end)
 
-	return D.Frame {
+	return Frame {
 		sliderName,
 		baseModifier,
 		props.Modifier or q.None,
@@ -95,13 +96,13 @@ local function Slider(props: Props)
 		b.KeyHook,
 		Interactable = b.Interactable,
 		Selectable = b.Interactable,
-		D.Frame {
+		Frame {
 			Name = "Rail",
 			Position = UDim2.fromOffset(INSET, 0),
 			Size = UDim2.new(1, -2 * INSET, 1, 0),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.Frame {
+			Frame {
 				Name = "Inactive",
 				AnchorPoint = Vector2.new(0, 0.5),
 				Position = UDim2.fromScale(0, 0.5),
@@ -111,7 +112,7 @@ local function Slider(props: Props)
 				BorderSizePixel = 0,
 				UICorner = corner,
 			},
-			D.Frame {
+			Frame {
 				Name = "Active",
 				AnchorPoint = Vector2.new(0, 0.5),
 				Position = UDim2.fromScale(0, 0.5),
@@ -122,7 +123,7 @@ local function Slider(props: Props)
 				UICorner = corner,
 			},
 			q.Slot<<Instance>>(ticks),
-			D.Frame {
+			Frame {
 				Name = "Halo",
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				Position = haloPosition,
@@ -130,7 +131,7 @@ local function Slider(props: Props)
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				layer,
-				D.Frame {
+				Frame {
 					Name = "Handle",
 					AnchorPoint = Vector2.new(0.5, 0.5),
 					Position = UDim2.fromScale(0.5, 0.5),

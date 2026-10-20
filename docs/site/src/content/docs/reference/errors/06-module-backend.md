@@ -7,11 +7,11 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 ### Quad0026
 
-`newMapperClass: className must be a non-empty string (got {typeof(className)})` — `quad-base/src/Claim.luau`
+`Raw.Mapper: className must be a non-empty string (got {typeof(className)})` — `quad-base/src/Claim.luau`
 
-- **언제**: `q.newMapperClass(className)`에 넘긴 `className`이 문자열이 아니거나 빈 문자열일 때.
+- **언제**: `q.Raw.Mapper(className)`에 넘긴 `className`이 문자열이 아니거나 빈 문자열일 때(3.3까지는 `q.newMapperClass`). 백엔드의 타입드 `q.Mapper "Frame"`은 클래스 단계에서 먼저 `Quad0278`로 거부합니다.
 - **고치려면**: 클래스 이름을 비어 있지 않은 문자열로 주세요.
-- **참고**: [`q.newMapperClass(className)`](/reference/roblox/04-claim-mapper/#qnewmapperclassclassname)
+- **참고**: [`q.Raw`](/reference/core/01-quad-module/#qraw), [`q.Mapper`](/reference/roblox/04-claim-mapper/#qmapper-class-keyprops)
 
 ### Quad0027
 
@@ -31,9 +31,9 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 ### Quad0029
 
-`Claim: {tostring(inst)} is already claimed by quad - a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)` — `quad-base/src/Claim.luau`
+`Claim: {tostring(inst)} is already claimed by quad - an Instance quad made (q.Elem) or already Claimed cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)` — `quad-base/src/Claim.luau`
 
-- **언제**: 디스크립터가 해석한 Instance가 **같은 quad 모듈 인스턴스**에 이미 소유돼 있을 때 — `D.New`로 만들었거나 먼저 `Claim`된 것(루트도 자식도 해당)입니다. 다른 모듈 인스턴스(`Quad.New()`)가 소유한 것은 여기서 걸리지 않고 그대로 claim됩니다(정의되지 않은 동작 — [Claim 계약 셋](/reference/roblox/04-claim-mapper/)).
+- **언제**: 디스크립터가 해석한 Instance가 **같은 quad 모듈 인스턴스**에 이미 소유돼 있을 때 — `q.Elem`으로 만들었거나 먼저 `Claim`된 것(루트도 자식도 해당)입니다. 다른 모듈 인스턴스(`Quad.NewModule()`)가 소유한 것은 여기서 걸리지 않고 그대로 claim됩니다(정의되지 않은 동작 — [Claim 계약 셋](/reference/roblox/04-claim-mapper/)).
 - **고치려면**: 그 자식을 디스크립터에서 빼고 따로 다루거나, `q.dispose`한 뒤 새로 만드세요.
 - **참고**: [`q.Claim(inst, desc)`](/reference/roblox/04-claim-mapper/#qclaiminst-desc)
 
@@ -70,10 +70,10 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 ### Quad0034
 
-`Claim: second argument must be a D.Mapper descriptor` — `quad-base/src/Claim.luau`
+`Claim: second argument must be a mapper descriptor (q.Mapper "Frame" (key) {…})` — `quad-base/src/Claim.luau`
 
-- **언제**: `q.Claim(inst, desc)`의 둘째 인자가 `D.Mapper` 디스크립터가 아닐 때.
-- **고치려면**: `D.Mapper.<Class>(key)(props)`(또는 `q.newMapperClass`)로 만든 디스크립터를 넘기세요.
+- **언제**: `q.Claim(inst, desc)`의 둘째 인자가 매퍼 디스크립터가 아닐 때.
+- **고치려면**: `q.Mapper "Class" (key)(props)`(또는 `q.Raw.Mapper`)로 만든 디스크립터를 넘기세요.
 - **참고**: [`q.Claim(inst, desc)`](/reference/roblox/04-claim-mapper/#qclaiminst-desc)
 
 ### Quad0102
@@ -110,17 +110,17 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 
 ### Quad0106
 
-`{what}: this value was made by another quad module instance (one made with q.New()) - values cannot cross instances` — `quad-base/src/ModuleIdentity.luau`
+`{what}: this value was made by another quad module instance (one made with q.NewModule()) - values cannot cross instances` — `quad-base/src/ModuleIdentity.luau`
 
 - **언제**: 한 quad 모듈 인스턴스가 만든 Observer·Effect·Slot·State를 다른 인스턴스의 트리 자리(숫자 키, 프로퍼티 값, `:List`의 데이터, `Slot`의 원소 자리 등)에 놓았을 때. `{what}`은 그 값이 놓인 자리를 가리키는 이름(`"Observer"`/`"Slot"` 등)입니다.
 - **고치려면**: 값을 만든 인스턴스와 놓는 인스턴스를 같게 맞추세요. quad_base 사본이 둘 섞인 경우는 이 에러로 오지 않습니다 — 사본이 다르면 브랜드가 갈려 `isState`류가 거짓이라 `Quad0076`(빗나간 프로바이더 안내)·`Quad0240`·`Quad0151`류가 납니다.
-- **참고**: [`q.New()`](/reference/core/01-quad-module/#qnew)
+- **참고**: [`q.NewModule()`](/reference/core/01-quad-module/#qnewmodule)
 
 ### Quad0108
 
-`quad: {name} is not available - no backend has installed {what} (install a provider with quad:UseProvider - a bare Quad.New() has none{hint or ""})` — `quad-base/src/NotInstalled.luau`
+`quad: {name} is not available - no backend has installed {what} (install a provider with quad:UseProvider - a bare Quad.NewModule() has none{hint or ""})` — `quad-base/src/NotInstalled.luau`
 
-- **언제**: 프로바이더를 설치하지 않은 `Quad.New()`에서 백엔드가 채워야 할 op(생명주기 hold op, 엔진 op, 시간 op 등)를 부를 때 — `{name}`은 그 op 이름입니다.
+- **언제**: 프로바이더를 설치하지 않은 `Quad.NewModule()`에서 백엔드가 채워야 할 op(생명주기 hold op, 엔진 op, 시간 op 등)나 백엔드 표면(`q.Elem`·`q.Modifier`·`q.Spread`·`q.Mapper`·`q.OnChange`·`q.OnEvent`·`q.Out`·`q.ForClasses`)을 부를 때 — `{name}`은 그 op나 표면의 이름입니다.
 - **고치려면**: `quad:UseProvider(...)`로 백엔드를 설치하세요. 헤드리스 테스트라면 필요한 op를 채운 자기 프로바이더를 `quad:UseProvider`로 설치하세요 — 이 저장소의 테스트용 mock은 배포되지 않습니다([헤드리스 테스트](/how-to/06-headless-testing/)).
 - **참고**: [`q.Backend.bindLifetime(inst, value)`](/reference/core/10-lifetime-sentinels/#qbackendbindlifetimeinst-value)
 
@@ -201,7 +201,7 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 `UseProvider: this Quad module already has a provider - a module cannot serve two backends` — `quad-base/src/init.luau`
 
 - **언제**: 이미 다른 프로바이더 함수(identity 기준)로 `UseProvider`를 부른 모듈에 다시 (다른) `providerFn`으로 `UseProvider`를 부를 때 — 같은 함수를 다시 넘기는 것은 멱등 no-op이라 에러가 아닙니다.
-- **고치려면**: 모듈당 프로바이더는 하나입니다 — 새 모듈 인스턴스(`q.New()`)를 만들어 다른 백엔드를 설치하세요.
+- **고치려면**: 모듈당 프로바이더는 하나입니다 — 새 모듈 인스턴스(`q.NewModule()`)를 만들어 다른 백엔드를 설치하세요.
 - **참고**: [`q:UseProvider(providerFn)`](/reference/core/01-quad-module/#quseproviderproviderfn)
 
 ### Quad0265

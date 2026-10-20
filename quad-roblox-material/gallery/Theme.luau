@@ -14,7 +14,8 @@
 local q = require("./Quad")
 local Common = require("./Common")
 local Material = require("../src")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
 
 type Ctx = Common.Ctx
 type Role = Material.Role
@@ -86,14 +87,14 @@ return function(ctx: Ctx): Instance
 		local bg, fg = pair[1], pair[2]
 		table.insert(
 			swatches,
-			D.Frame {
+			Frame {
 				Name = bg,
 				Size = UDim2.fromOffset(148, 56),
 				BorderSizePixel = 0,
 				BackgroundColor3 = theme.Color[bg],
 				UICorner = UDim.new(0, 12),
 				UIPaddingOffset = 8,
-				D.TextLabel {
+				TextLabel {
 					labelStyle,
 					Size = UDim2.fromScale(1, 1),
 					BackgroundTransparency = 1,

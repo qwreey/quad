@@ -19,7 +19,9 @@
 
 local Quad = require("./Quad")
 local q = Quad
-local D = q.Declaration
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local UIStroke = q.Elem "UIStroke"
 local Interaction = require("./Interaction")
 local Style = require("./Style")
 local Util = require("./Util")
@@ -87,7 +89,7 @@ end
 
 function Common.label(style: Style, text: string | State<string>, enabled: State<boolean>, order: number): TextLabel
 	local look = Common.textLook(style, enabled)
-	return D.TextLabel({
+	return TextLabel({
 		Name = "Label",
 		LayoutOrder = order,
 		Text = text,
@@ -116,7 +118,7 @@ function Common.setter(value: Quad.Source<number>, onChange: ((n: number) -> ())
 end
 
 function Common.stroke(style: Style): UIStroke
-	return D.UIStroke({
+	return UIStroke({
 		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 		Thickness = style.Metrics.FrameBorderSize,
 		Color = style.Color.Border,
@@ -135,7 +137,7 @@ function Common.hooks(list: { any }?): { any }
 end
 
 function Common.rowLayout(style: Style): UIListLayout
-	return D.UIListLayout({
+	return UIListLayout({
 		FillDirection = Enum.FillDirection.Horizontal,
 		SortOrder = Enum.SortOrder.LayoutOrder,
 		Padding = Util.pxX(style.Metrics.ItemInnerSpacing),

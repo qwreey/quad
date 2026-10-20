@@ -76,8 +76,14 @@ local Text = require("./Text")
 local Style = require("@self/Style")
 local ColorTokens = require("./Tokens/Color")
 local IconView = require("./IconView")
-local D = q.Declaration
-local buttonName = D.Modifier.TextButton():Name("Button")
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local UIStroke = q.Elem "UIStroke"
+local TextButtonModifier = q.Modifier "TextButton"
+local buttonName = TextButtonModifier():Name("Button")
 
 export type Variant = "Filled" | "Tonal" | "Elevated" | "Outlined" | "Text"
 export type IconPosition = "Leading" | "Trailing"
@@ -92,7 +98,7 @@ export type Props = {
 	read OnClick: (() -> ())?,
 	read Width: (number | UDim)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.TextButtonModifier?,
+	read Modifier: q.ModifierInto<TextButton>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -135,7 +141,7 @@ local Specs: { [Variant]: Spec } = {
 local ICON_SIZE = 18 -- md.comp.<variant>-button.with-icon.icon.size / ButtonDefaults.IconSize
 local ICON_GAP = 8 -- material-web button/internal/_shared.scss gap / ButtonDefaults.IconSpacing
 
-local baseModifier = D.Modifier.TextButton()
+local baseModifier = TextButtonModifier()
 	:Size(UDim2.fromOffset(0, 40))
 	:AutomaticSize(Enum.AutomaticSize.X)
 	:BorderSizePixel(0)
@@ -158,10 +164,10 @@ local function Button(props: Props)
 	local hooks = Util.hooks(props.Hooks)
 	local width = props.Width
 	local fixed = width ~= nil
-	local sizing: q.TextButtonModifier? = nil
+	local sizing: q.Modifier<TextButton>? = nil
 	if width ~= nil then
 		local x = if type(width) == "number" then UDim.new(0, width) else width
-		sizing = D.Modifier.TextButton():Size(UDim2.new(x, UDim.new(0, 40))):AutomaticSize(Enum.AutomaticSize.None)
+		sizing = TextButtonModifier():Size(UDim2.new(x, UDim.new(0, 40))):AutomaticSize(Enum.AutomaticSize.None)
 	end
 
 	local contentColor = Style.disabledPick(disabled, theme.Raw[spec.Content], theme.Raw.OnSurface)
@@ -190,7 +196,7 @@ local function Button(props: Props)
 
 	local stroke: Instance? = nil
 	if spec.Stroke then
-		stroke = D.UIStroke {
+		stroke = UIStroke {
 			Name = "Outline",
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 			Thickness = 1,
@@ -202,7 +208,7 @@ local function Button(props: Props)
 	local icon: Instance? = nil
 	local layout: Instance? = nil
 	if hasIcon or fixed then
-		layout = D.UIListLayout {
+		layout = UIListLayout {
 			FillDirection = Enum.FillDirection.Horizontal,
 			-- Left in an auto-sized Content: a centered layout places its children by the frame's width, the very
 			-- width AutomaticSize derives from them (see SIZING); Center only inside a fixed `Width`
@@ -224,7 +230,7 @@ local function Button(props: Props)
 	end
 	local pad = if not hasIcon then spec.Pad elseif trailing then spec.PadTrailing else spec.PadLeading
 
-	return D.TextButton {
+	return TextButton {
 		buttonName,
 		baseModifier,
 		sizing or q.None,
@@ -242,20 +248,20 @@ local function Button(props: Props)
 		shadow or q.None,
 		stroke or q.None,
 		fx.Layer,
-		D.Frame {
+		Frame {
 			Name = "Content",
 			-- auto width: at (0, 0), as wide as its content (see SIZING); fixed width: fills the host
 			Size = if fixed then UDim2.fromScale(1, 1) else UDim2.fromScale(0, 1),
 			AutomaticSize = if fixed then Enum.AutomaticSize.None else Enum.AutomaticSize.X,
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIPadding {
+			UIPadding {
 				PaddingLeft = UDim.new(0, pad[1]),
 				PaddingRight = UDim.new(0, pad[2]),
 			},
 			layout or q.None,
 			icon or q.None,
-			D.TextLabel {
+			TextLabel {
 				Name = "Label",
 				labelStyle,
 				Size = UDim2.fromScale(0, 1),

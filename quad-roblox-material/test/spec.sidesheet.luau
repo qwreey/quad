@@ -5,7 +5,7 @@ local H = require("./support/harness")
 local ClickSink = require("./support/clicksink")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Tokens = require("../src/Tokens")
 local Overlay = require("../src/Overlay")
 local Anchored = require("../src/Sheet/Anchored")
@@ -52,7 +52,7 @@ local function sideState(initial: SheetStateModule.SheetValue): SheetStateModule
 end
 
 H.section("standard: tokens (surface, no corner, no shadow, 256 wide, docked at the end), header, instance counts", function()
-	local s: any = SideSheet({ Children = q.Slot<<Instance>>({ D.Frame { Name = "Row" } }) })
+	local s: any = SideSheet({ Children = q.Slot<<Instance>>({ Frame { Name = "Row" } }) })
 	assert(s.Name == "SideSheet" and s.BackgroundColor3 == L.Surface and s.Active == true)
 	assert(s.Size == UDim2.new(0, 256, 1, 0) and s.AnchorPoint == Vector2.new(1, 0) and s.Position == UDim2.fromScale(1, 0))
 	assert(own(s, "UICorner") == nil and own(s, "UIShadow") == nil and H.find(s, "CornerPatch") == nil)
@@ -148,7 +148,7 @@ end)
 
 H.section("modal: tokens (surfaceContainerLow, inner corner 16, shadow 1), slides in, Overlay scrim, Escape / scrim / drag / Close", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local results: { any } = {}
 	local handle = ModalSideSheet.open({
 		Overlay = overlay,
@@ -220,7 +220,7 @@ end)
 
 H.section("modal: layer death finalizes, nothing left", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local closes = 0
 	local handle = ModalSideSheet.open({
 		Overlay = overlay,
@@ -238,7 +238,7 @@ end)
 
 H.section("detached standard: 16 off the top / bottom / edge, four corners 16, still surface and no shadow, Inner clips; hidden = width + margin out", function()
 	local state = sideState("Expanded")
-	local s: any = SideSheet({ SheetState = state, Detached = true, Children = q.Slot<<Instance>>({ D.Frame { Name = "Row" } }) })
+	local s: any = SideSheet({ SheetState = state, Detached = true, Children = q.Slot<<Instance>>({ Frame { Name = "Row" } }) })
 	assert(s.Size == UDim2.new(0, 256, 1, -32), "256 wide, 16 short at the top and the bottom " .. tostring(s.Size))
 	assert(s.AnchorPoint == Vector2.new(1, 0) and s.Position == UDim2.new(1, -16, 0, 16), "16 in from the end edge and the top " .. tostring(s.Position))
 	assert(own(s, "UICorner").CornerRadius == UDim.new(0, 16) and H.find(s, "CornerPatch") == nil, "all four corners: a UICorner and no patch")
@@ -287,7 +287,7 @@ end)
 
 H.section("detached modal: four corners (no patch), the modal color + level-1 shadow, enters from fully past the edge, drag / close as docked", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local handle = ModalSideSheet.open({ Overlay = overlay, Headline = "Details", Detached = true })
 	local s: any = H.find(screen, "SideSheet")
 	assert(s.BackgroundColor3 == L.SurfaceContainerLow and own(s, "UICorner").CornerRadius == UDim.new(0, 16))

@@ -48,7 +48,7 @@ local Interaction = require("./Interaction")
 local Ripple = require("./Ripple")
 local StateLayer = require("./StateLayer")
 local Theme = require("./Theme")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 
 export type Options = {
 	Theme: Theme.Theme?,
@@ -77,7 +77,7 @@ export type Interactive = {
 local hiddenSelection: Frame? = nil
 local function noSelectionImage(): Frame
 	if hiddenSelection == nil then
-		hiddenSelection = D.Frame {
+		hiddenSelection = Frame {
 			Name = "NoSelectionImage",
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,

@@ -52,16 +52,16 @@ local counted = setmetatable({}, {
 }) :: any
 local gameShim = mock.gameShim(counted)
 
-local q: any = Quad.New():UseProvider(QuadRoblox)
+local q: any = Quad.NewModule():UseProvider(QuadRoblox)
 ;(getfenv(installProperty) :: any).game = gameShim -- Property 모듈 env에 주입
 ;(getfenv(installEvent) :: any).game = gameShim -- Event 모듈도 같은 심(이벤트 미선언 → 매치 없음)
-;(getfenv(q.Declaration.New) :: any).Instance = { new = mock.Instance.new }
+;(getfenv(q.Elem) :: any).Instance = { new = mock.Instance.new }
 q.Backend.isInst = mock.isMockInstance -- 주입 술어 교체(파일 헤더)
 q.errorNamespace.setFuncLevel((require("../luau_packages/quad_types") :: any).ERROR_LEVEL_SURFACE, q.Backend.isInst)
 
 print("=== 1. Property — Reflection 멤버십 매치로 실프로퍼티만 세팅 ===")
 do
-	local f = q.Declaration.Frame({ Name = "Styled", Size = 42, Visible = true }) :: any
+	local f = q.Elem "Frame"({ Name = "Styled", Size = 42, Visible = true }) :: any
 	assert(f.Name == "Styled" and f.Size == 42 and f.Visible == true, "properties assigned through the pipeline")
 	print("PASS")
 end
@@ -70,7 +70,7 @@ print()
 print("=== 2. 비프로퍼티 문자열 키·Parent 키 — 매치 핸들러 없음 error(H-142 배선) ===")
 do
 	local ok, err = pcall(function()
-		q.Declaration.Frame({ Bogus = 1 })
+		q.Elem "Frame"({ Bogus = 1 })
 	end)
 	assert(not ok, "a non-property string key must not silently pass")
 	mock.assertBlamesUser(err, SPEC_FILE, "bogus key")
@@ -96,7 +96,7 @@ do
 	local c1, c2 = Instance.new("TextLabel"), Instance.new("TextLabel")
 	q.Backend.nativeClaim(c1); q.Backend.nativeClaim(c2) -- 2026-09-16: static children must be quad-owned (spec 11)
 	c1.Name, c2.Name = "A", "B"
-	local f = q.Declaration.Frame({ c1, c2 }) :: any
+	local f = q.Elem "Frame"({ c1, c2 }) :: any
 	assert(c1.Parent == f and c2.Parent == f, "both static children mounted")
 	assert(q.Bookkeeping.getOffsetAt(f, 1) == 0 and q.Bookkeeping.getOffsetAt(f, 2) == 1, "H-39/H-134: each terminal registered length 1 — offsets 0,1")
 	print("PASS")
@@ -108,7 +108,7 @@ do
 	local c1, c3 = Instance.new("TextLabel"), Instance.new("TextLabel")
 	q.Backend.nativeClaim(c1); q.Backend.nativeClaim(c3)
 	c1.Name, c3.Name = "Old", "New"
-	local f = q.Declaration.Frame({ c1 }) :: any
+	local f = q.Elem "Frame"({ c1 }) :: any
 
 	-- 같은 값 재발행 — dedup: Parent가 nil로 내려가는 전이가 없어야 한다
 	local nilTransitions = 0
@@ -142,7 +142,7 @@ do
 	q.Backend.nativeClaim(c1); q.Backend.nativeClaim(c2)
 	c1.Name, c2.Name = "R1", "R2"
 	local src = q.Source(c1)
-	local f = q.Declaration.Frame({ src }) :: any
+	local f = q.Elem "Frame"({ src }) :: any
 	assert(c1.Parent == f, "reactive child mounted through StateHandler unwrap")
 	src:Set(c2)
 	assert(c1.Parent == nil and c2.Parent == f, "re-emission demotes old, mounts new")
@@ -155,7 +155,7 @@ do
 	-- 이 우선순위가 회귀하면 mock에선 `inst.Size = <State 테이블>`이 조용히
 	-- 성공한다(property bag) — 그래서 실값 단언으로 핀한다
 	local src = q.Source(10)
-	local f = q.Declaration.Frame({ Size = src }) :: any
+	local f = q.Elem "Frame"({ Size = src }) :: any
 	assert(f.Size == 10, "reactive property drove the unwrapped value, not the State table")
 	src:Set(20)
 	assert(f.Size == 20, "re-emission reaches the property")
@@ -171,12 +171,12 @@ print()
 print("=== 7. Reflection 캐시(탐사자 🟡-2a·b 승격) — 클래스당 정확히 1회 + 멤버십 분리 ===")
 do
 	local before = reflectionCalls.Frame or 0
-	q.Declaration.Frame({ Visible = true })
-	q.Declaration.Frame({ Visible = false })
+	q.Elem "Frame"({ Visible = true })
+	q.Elem "Frame"({ Visible = false })
 	assert((reflectionCalls.Frame or 0) - before <= 1, "GetPropertiesOfClass is cached per class (at most one new call)")
 	-- 클래스별 분리 — TextLabel의 Text는 Frame에선 프로퍼티가 아니다
 	local ok = pcall(function()
-		q.Declaration.Frame({ Text = "nope" })
+		q.Elem "Frame"({ Text = "nope" })
 	end)
 	assert(not ok, "membership is per-class (Text is not a Frame property)")
 	print("PASS")
@@ -188,7 +188,7 @@ do
 	local c1, c2, sib = Instance.new("TextLabel"), Instance.new("TextLabel"), Instance.new("TextLabel")
 	q.Backend.nativeClaim(c1); q.Backend.nativeClaim(c2); q.Backend.nativeClaim(sib)
 	local src = q.Source(c1 :: any)
-	local f = q.Declaration.Frame({ src, sib }) :: any
+	local f = q.Elem "Frame"({ src, sib }) :: any
 	assert(c1.Parent == f and q.Bookkeeping.getOffsetAt(f, 2) == 1, "reactive child contributes length 1")
 
 	src:Set(q.None) -- NoneHandler → nil 재귀 → NilHandler(길이 0)
@@ -216,7 +216,7 @@ print()
 print("=== 9. Property nil 쓰기(Q33 (a), 2026-09-08 — M10 skip-defense 역전) — None/nil 재발행은 nil을 쓴다(오브젝트 참조 해제 경로; 못 받는 타입은 엔진이 에러) ===")
 do
 	local src = q.Source(true)
-	local f = q.Declaration.Frame({ Visible = src }) :: any
+	local f = q.Elem "Frame"({ Visible = src }) :: any
 	assert(f.Visible == true, "initial reactive write")
 	-- mock의 프로퍼티 백은 nil 대입을 받아주므로 회귀는 "값이 nil이 됐는가"로 핀한다
 	src:Set(q.None) -- NoneHandler → nil 재귀 → Property(키 매치, v == nil)
@@ -233,8 +233,8 @@ print()
 print("=== 10. Modifier(M7 단위 ②) — D.Frame { mod, … }: flatten이 drive 안에서 돌아 필드가 프로퍼티로 앉는다 ===")
 do
 	local src = q.Source(3)
-	local mod = q.Modifier():Name("FromMod"):ZIndex(src):Visible(false)
-	local f = q.Declaration.Frame({ mod, Visible = true }) :: any
+	local mod = q.Raw.Modifier():Name("FromMod"):ZIndex(src):Visible(false)
+	local f = q.Elem "Frame"({ mod, Visible = true }) :: any
 	assert(f.Name == "FromMod" and f.ZIndex == 3, "modifier fields landed as properties (State unwrapped)")
 	assert(f.Visible == true, "inline key beats the modifier")
 	src:Set(4)
@@ -242,7 +242,7 @@ do
 	-- 자식과 섞여도 오프셋 무영향
 	local c = Instance.new("TextLabel")
 	q.Backend.nativeClaim(c)
-	local f2 = q.Declaration.Frame({ q.Modifier():Name("M"), c }) :: any
+	local f2 = q.Elem "Frame"({ q.Raw.Modifier():Name("M"), c }) :: any
 	assert(c.Parent == f2 and q.Bookkeeping.getOffsetAt(f2, 2) == 0 and f2.Name == "M", "sentinel slot contributes 0; child mounts")
 	print("PASS")
 end
@@ -255,11 +255,11 @@ do
 	-- real predicate (gchold setup) — no override needed.
 	local foreign, owned = Instance.new("TextLabel"), Instance.new("TextLabel")
 	q.Backend.nativeClaim(owned)
-	local ok, err = pcall(function() return q.Declaration.Frame({ foreign }) end)
+	local ok, err = pcall(function() return q.Elem "Frame"({ foreign }) end)
 	assert(not ok and string.find(tostring(err), "Quad0219 Dispatch: this Instance is not claimed by quad", 1, true) ~= nil, "unclaimed static child rejected: " .. tostring(err))
 	assert(foreign.Parent == nil, "no bookkeeping/parenting happened before the raise")
 	mock.assertBlamesUser(err, "spec.handlers.luau", "static-child gate blames the D.Frame line")
-	local f = q.Declaration.Frame({ owned }) :: any
+	local f = q.Elem "Frame"({ owned }) :: any
 	assert(owned.Parent == f, "claimed child mounts")
 	print("PASS")
 end
@@ -267,61 +267,61 @@ end
 print()
 print("=== 12. 정적 자식 소유권 자리(round10 Q48 (a), 2026-09-17 사용자 결정) — Slot과 같은 레지스트리, 한 값은 한 자리 ===")
 do
-	local c = q.Declaration.TextLabel({}) :: any
-	local a = q.Declaration.Frame({ c }) :: any
+	local c = q.Elem "TextLabel"({}) :: any
+	local a = q.Elem "Frame"({ c }) :: any
 	assert(c.Parent == a, "first static seat mounts")
 	-- (1) a second static seat refuses instead of silently re-parenting
-	local ok, err = pcall(function() return q.Declaration.Frame({ c }) end)
+	local ok, err = pcall(function() return q.Elem "Frame"({ c }) end)
 	assert(not ok and string.find(tostring(err), "Bookkeeping.claimOwnerAt: this element is already mounted elsewhere", 1, true) ~= nil, "double static mount rejected: " .. tostring(err))
 	assert(c.Parent == a, "the first tree keeps its child")
 	mock.assertBlamesUser(err, SPEC_FILE, "double-mount raise blames the D.Frame line")
 	-- (2) the same child twice in one Declaration
-	local c2 = q.Declaration.TextLabel({}) :: any
-	local ok2, err2 = pcall(function() return q.Declaration.Frame({ c2, c2 }) end)
+	local c2 = q.Elem "TextLabel"({}) :: any
+	local ok2, err2 = pcall(function() return q.Elem "Frame"({ c2, c2 }) end)
 	assert(not ok2 and string.find(tostring(err2), "already mounted elsewhere", 1, true) ~= nil, "{c, c} rejected: " .. tostring(err2))
 	-- (3) a Slot cannot take a statically seated child, and a static seat cannot take a Slot element
 	local ok3, err3 = pcall(function() return q.Slot():Add(c) end)
 	-- [2026-10-06 round14 Q170 (최종)] caught by rawAdd's claimOwner (no pre-pass owner check): subject `Slot:`, Quad0172
 	assert(not ok3 and string.find(tostring(err3), "Quad0172 Slot: this element is already mounted", 1, true) ~= nil, "Slot refuses a static child: " .. tostring(err3))
 	mock.assertBlamesUser(err3, SPEC_FILE, "Quad0172 blames the Add line")
-	local e = q.Declaration.TextLabel({}) :: any
+	local e = q.Elem "TextLabel"({}) :: any
 	local s = q.Slot({ e })
-	local ok4, err4 = pcall(function() return q.Declaration.Frame({ e }) end)
+	local ok4, err4 = pcall(function() return q.Elem "Frame"({ e }) end)
 	assert(not ok4 and string.find(tostring(err4), "already mounted elsewhere", 1, true) ~= nil, "static seat refuses a Slot element: " .. tostring(err4))
 	-- (4) dispose refuses a seated child; after the seat is retracted it is disposable
 	local ok5, err5 = pcall(function() q.dispose(c) end)
 	assert(not ok5 and string.find(tostring(err5), "dispose: this value is still held by a Slot or a mounted position", 1, true) ~= nil, "dispose refuses a seated static child: " .. tostring(err5))
 	-- (c2 stays seated in the half-built Frame above — a raise mid-Declaration leaves the seats
 	-- taken so far, as any handler raise does; use a fresh child here)
-	local c4 = q.Declaration.TextLabel({}) :: any
+	local c4 = q.Elem "TextLabel"({}) :: any
 	local st = q.Source(c4)
-	local b = q.Declaration.Frame({ st }) :: any
+	local b = q.Elem "Frame"({ st }) :: any
 	assert(c4.Parent == b, "reactive static seat mounts")
 	st:Set(nil)
 	assert(c4.Parent == nil, "retracted")
 	q.dispose(c4) -- seat released by the retractor — allowed now
 	-- (5) `H-154` dedup: re-emitting the same child keeps the seat (no release/reclaim) and stays mounted
-	local c3 = q.Declaration.TextLabel({}) :: any
+	local c3 = q.Elem "TextLabel"({}) :: any
 	local st3 = q.Source(c3)
-	local p3 = q.Declaration.Frame({ st3 }) :: any
+	local p3 = q.Elem "Frame"({ st3 }) :: any
 	st3:Set(c3)
 	assert(c3.Parent == p3, "same-value re-emit keeps the child mounted")
-	local ok6 = pcall(function() return q.Declaration.Frame({ c3 }) end)
+	local ok6 = pcall(function() return q.Elem "Frame"({ c3 }) end)
 	assert(not ok6, "still seated after the dedup re-emit")
 	s:Clear()
 	q.dispose(e)
 	-- (6) (checkpoint code-review) a bad position key through the public process never seats the child
-	local c5 = q.Declaration.TextLabel({}) :: any
-	local host5 = q.Declaration.Frame({}) :: any
+	local c5 = q.Elem "TextLabel"({}) :: any
+	local host5 = q.Elem "Frame"({}) :: any
 	local ok7 = pcall(function() q.Dispatch.process(host5, 0, c5, 1) end)
 	assert(not ok7, "key 0 matches no handler")
-	local host6 = q.Declaration.Frame({ c5 }) :: any
+	local host6 = q.Elem "Frame"({ c5 }) :: any
 	assert(c5.Parent == host6, "no seat leaked from the rejected call")
 	-- (7) 2026-10-01 `source:SetAndDispose`: the (4) sequence in one call — the retractor releases
 	-- the seat during the Set, then the replaced child is disposed; the new one takes the seat
-	local o1, o2 = q.Declaration.TextLabel({}) :: any, q.Declaration.TextLabel({}) :: any
+	local o1, o2 = q.Elem "TextLabel"({}) :: any, q.Elem "TextLabel"({}) :: any
 	local st7 = q.Source(o1)
-	local p7 = q.Declaration.Frame({ st7 }) :: any
+	local p7 = q.Elem "Frame"({ st7 }) :: any
 	st7:SetAndDispose(o2)
 	assert(mock.isDestroyed(o1) and o2.Parent == p7, "old child disposed after its seat was released; new child seated")
 	st7:SetAndDispose(nil)
@@ -336,7 +336,7 @@ do
 	local env = getfenv(q.Dispatch.addHandler) :: any
 	local oldPrint = rawget(env, "print")
 	env.print = function(...: any) table.insert(printed, table.concat({ ... }, " ")) end
-	local q2: any = Quad.New()
+	local q2: any = Quad.NewModule()
 	q2.debug = true
 	q2:UseProvider(QuadRoblox)
 	env.print = oldPrint
@@ -355,9 +355,9 @@ do
 	-- H-545: a cycle through the static seat is refused before any bookkeeping (Slot's H-500 twin) —
 	-- [2026-10-01 user decision] a debug-layer check: only with q.debug on
 	q.debug = true
-	local host = q.Declaration.Frame({}) :: any
+	local host = q.Elem "Frame"({}) :: any
 	local seat = q.Source(nil :: any)
-	local f = q.Declaration.Frame({ seat }) :: any
+	local f = q.Elem "Frame"({ seat }) :: any
 	f.Parent = host
 	local ok, err = pcall(function() seat:Set(f) end)
 	assert(not ok and string.find(tostring(err), "Quad0220 Dispatch: cannot place an Instance inside itself", 1, true) ~= nil, "self: " .. tostring(err))
@@ -367,18 +367,18 @@ do
 	assert(f.Parent == host and host.Parent == nil, "tree untouched")
 	-- an OCCUPIED State seat: the old child is already down before the guard raises (Q60 shape,
 	-- same as the two sibling arms — documented in CHANGELOG)
-	local old = q.Declaration.TextLabel({}) :: any
+	local old = q.Elem "TextLabel"({}) :: any
 	local seat2 = q.Source(old)
-	local f2 = q.Declaration.Frame({ seat2 }) :: any
+	local f2 = q.Elem "Frame"({ seat2 }) :: any
 	f2.Parent = host
 	local okc = pcall(function() seat2:Set(host) end)
 	assert(not okc and old.Parent == nil, "the previous occupant is retracted before the rejection (Q60)")
 	q.debug = false
 	-- debug OFF: no ancestor walk — the engine's own circular-reference raise at `v.Parent = inst`
 	-- stops it (the mock mirrors it), after the seat was taken (no integrity promise after a throw)
-	local host3 = q.Declaration.Frame({}) :: any
+	local host3 = q.Elem "Frame"({}) :: any
 	local seat3 = q.Source(nil :: any)
-	local f3 = q.Declaration.Frame({ seat3 }) :: any
+	local f3 = q.Elem "Frame"({ seat3 }) :: any
 	f3.Parent = host3
 	local ok9, err9 = pcall(function() seat3:Set(host3) end)
 	assert(not ok9 and string.find(tostring(err9), "Quad0220", 1, true) == nil
@@ -387,7 +387,7 @@ do
 	q.dispose(old)
 	q.dispose(host) -- nothing seated by the rejected calls
 	-- H-546: the two public seat ops fail fast on nil, like their six Bookkeeping siblings
-	local c = q.Declaration.TextLabel({}) :: any
+	local c = q.Elem "TextLabel"({}) :: any
 	local ok3, err3 = pcall(function() return q.Bookkeeping.claimOwnerAt(nil, c, 1) end)
 	assert(not ok3 and string.find(tostring(err3), "Bookkeeping.claimOwnerAt: element must not be nil", 1, true) ~= nil, tostring(err3))
 	local ok4, err4 = pcall(function() return q.Bookkeeping.claimOwnerAt(c, nil, 1) end)
@@ -400,16 +400,16 @@ do
 	assert(not ok6 and string.find(tostring(err6), "Bookkeeping.releaseOwner: ownerKey must not be nil", 1, true) ~= nil, tostring(err6))
 	q.dispose(c) -- nothing was seated by the rejected calls
 	-- H-548: a destroyed quad Instance is "not claimed" right away (not after the next GC)
-	local corpse = q.Declaration.TextLabel({}) :: any
+	local corpse = q.Elem "TextLabel"({}) :: any
 	assert(q.Backend.isClaimed(corpse), "alive: claimed")
 	corpse:Destroy()
 	assert(not q.Backend.isClaimed(corpse), "destroyed: not claimed, before any GC")
 	local ok7, err7 = pcall(function() return q.Slot({ corpse }) end)
 	assert(not ok7 and string.find(tostring(err7), "not claimed", 1, true) ~= nil, "Slot refuses the corpse deterministically: " .. tostring(err7))
 	-- H-544: the nil-hole message names the half-built Instance as the recovery path
-	local c1 = q.Declaration.TextLabel({}) :: any
-	local c3 = q.Declaration.TextLabel({}) :: any
-	local ok8, err8 = pcall(function() return q.Declaration.Frame({ c1, nil :: any, c3 }) end)
+	local c1 = q.Elem "TextLabel"({}) :: any
+	local c3 = q.Elem "TextLabel"({}) :: any
+	local ok8, err8 = pcall(function() return q.Elem "Frame"({ c1, nil :: any, c3 }) end)
 	assert(not ok8 and string.find(tostring(err8), "stay seated in the half-built Instance", 1, true) ~= nil, tostring(err8))
 	assert(c1.Parent ~= nil, "the child placed before the raise sits in the half-built Frame")
 	q.dispose(c1.Parent) -- the documented recovery: dispose the half-built host
@@ -438,7 +438,7 @@ do
 	end
 	local made: { any } = {}
 	local function frame(props: any): any
-		local f = q.Declaration.Frame(props) :: any
+		local f = q.Elem "Frame"(props) :: any
 		table.insert(made, f)
 		return f
 	end

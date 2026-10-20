@@ -8,7 +8,8 @@ local q = require("../Quad")
 local Util = require("../Util")
 local Text = require("../Text")
 local Ctx = require("./Ctx")
-local D = q.Declaration
+local TextLabel = q.Elem "TextLabel"
+local UIPadding = q.Elem "UIPadding"
 
 local SupportHeight = 20
 local bodySmall = Text.Label("BodySmall")
@@ -38,7 +39,7 @@ local function build(c: Ctx.Ctx): Instance?
 		local counterText: q.State<string> = c.Value:Compute(function(self)
 			return `{charCount(self:Get())}/{max}`
 		end)
-		counter = D.TextLabel {
+		counter = TextLabel {
 			Name = "Counter",
 			bodySmall,
 			Size = UDim2.fromScale(1, 1),
@@ -50,7 +51,7 @@ local function build(c: Ctx.Ctx): Instance?
 			TextXAlignment = Enum.TextXAlignment.Right,
 		}
 	end
-	return D.TextLabel {
+	return TextLabel {
 		Name = "Supporting",
 		bodySmall,
 		Size = UDim2.new(1, 0, 0, SupportHeight),
@@ -62,7 +63,7 @@ local function build(c: Ctx.Ctx): Instance?
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextYAlignment = Enum.TextYAlignment.Top,
 		LayoutOrder = 2,
-		D.UIPadding {
+		UIPadding {
 			PaddingLeft = UDim.new(0, 16),
 			PaddingRight = UDim.new(0, 16),
 			PaddingTop = UDim.new(0, 4),

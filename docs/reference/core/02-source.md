@@ -123,7 +123,7 @@ SetIfChanged: (self: Source<T>, v: T) -> Source<T>
 **쓰는 자리** — 기본은 `:Set`이고, 이 메서드는 **되먹임 고리를 끊어야 하는 좁은 자리**를 위한 것입니다.
 
 - [`Effect`](./05-observer-effect.md#qeffectfn-deps)가 자기 의존성을 다듬어 되쓸 때 — `:Set`으로 쓰면 같은 값도 전파해 지연 재실행이 수렴하지 않고(정의되지 않은 고리) 늘 켜진 한도 `Quad0263`으로 끝납니다. `:SetIfChanged`면 값이 자리 잡는 순간 반복이 끝납니다.
-- 엔진 → `Source` 브릿지와 입력 핸들러 — 프로퍼티 변경 신호나 입력 이벤트가 이미 들고 있는 값을 다시 올려 보낼 때. [`q.Out`](../roblox/05-onchange.md#qoutname-src)이 안에서 이것으로 되씁니다.
+- 엔진 → `Source` 브릿지와 입력 핸들러 — 프로퍼티 변경 신호나 입력 이벤트가 이미 들고 있는 값을 다시 올려 보낼 때. [`q.Out`](../roblox/05-onchange.md#qout-class-name-src)이 안에서 이것으로 되씁니다.
 - Observer 콜백이 **자기 상류**를 되쓰는 것은 이 메서드를 써도 여전히 정의되지 않은 동작입니다 — [`state:Observer(fn)`](./05-observer-effect.md#stateobserverfn)의 "Observer는 최종 소비자입니다" 문단이 정본입니다.
 
 **예제**

@@ -62,7 +62,10 @@ local Overlay = require("./Overlay")
 local Actions = require("./AppBar/Actions")
 local Motion = require("./Navigation/Motion")
 local ColorTokens = require("./Tokens/Color")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local UIListLayout = q.Elem "UIListLayout"
+local FrameModifier = q.Modifier "Frame"
+local TextButtonModifier = q.Modifier "TextButton"
 
 export type Colors = "Standard" | "Vibrant"
 export type Fab = {
@@ -81,7 +84,7 @@ export type HorizontalProps = {
 	read Overlay: Overlay.Overlay?,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -96,7 +99,7 @@ export type VerticalProps = {
 	read Overlay: Overlay.Overlay?,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -111,7 +114,7 @@ type Common = {
 	Overlay: Overlay.Overlay?,
 	LayoutOrder: (number | q.State<number>)?,
 	Theme: Theme.Theme?,
-	Modifier: q.FrameModifier?,
+	Modifier: q.ModifierInto<Frame>?,
 	Hooks: Util.Hooks?,
 }
 
@@ -140,14 +143,14 @@ local function toolbar(name: string, vertical: boolean, props: Common): Frame
 
 	-- a group of entries laid out along the axis
 	local function row(list: { Instance }, length: number, anchor: Vector2, position: UDim2): Frame
-		return D.Frame {
+		return Frame {
 			Name = "Row",
 			AnchorPoint = anchor,
 			Position = position,
 			Size = if vertical then UDim2.fromOffset(ITEM, length) else UDim2.fromOffset(length, ITEM),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIListLayout {
+			UIListLayout {
 				FillDirection = if vertical then Enum.FillDirection.Vertical else Enum.FillDirection.Horizontal,
 				HorizontalAlignment = Enum.HorizontalAlignment.Center,
 				VerticalAlignment = Enum.VerticalAlignment.Center,
@@ -190,7 +193,7 @@ local function toolbar(name: string, vertical: boolean, props: Common): Frame
 			end)
 			local anchor = if far then (if vertical then Vector2.new(0, 1) else Vector2.new(1, 0)) else Vector2.new(0, 0)
 			local position = if far then (if vertical then UDim2.fromScale(0, 1) else UDim2.fromScale(1, 0)) else UDim2.new()
-			return D.Frame {
+			return Frame {
 				Name = groupName,
 				Position = clipPos,
 				Size = clipSize,
@@ -204,9 +207,9 @@ local function toolbar(name: string, vertical: boolean, props: Common): Frame
 		local contentPos: q.State<UDim2> = e:Compute(function(self)
 			return pos2(math.round(PAD + leadLength * self:Get()), PAD)
 		end)
-		return D.Frame {
+		return Frame {
 			Util.frameName(name),
-			D.Modifier.Frame():Size(hostSize),
+			FrameModifier():Size(hostSize),
 			BackgroundColor3 = theme.Color[palette.Container],
 			BorderSizePixel = 0,
 			LayoutOrder = props.LayoutOrder,
@@ -218,7 +221,7 @@ local function toolbar(name: string, vertical: boolean, props: Common): Frame
 			group("Leading", leading, leadLength, function(_p: number): number
 				return PAD
 			end, vertical),
-			D.Frame {
+			Frame {
 				Name = "Content",
 				Position = contentPos,
 				Size = size2(contentLength, ITEM),
@@ -258,15 +261,15 @@ local function toolbar(name: string, vertical: boolean, props: Common): Frame
 	local level: q.State<number> = e:Compute(function(self)
 		return self:Get()
 	end)
-	return D.Frame {
+	return Frame {
 		Util.frameName(name),
-		D.Modifier.Frame():Size(size2(total, FAB_MAX)),
+		FrameModifier():Size(size2(total, FAB_MAX)),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		LayoutOrder = props.LayoutOrder,
 		props.Modifier or q.None,
 		motion,
-		D.Frame {
+		Frame {
 			Name = "Toolbar",
 			Position = toolbarPos,
 			Size = toolbarSize,
@@ -274,7 +277,7 @@ local function toolbar(name: string, vertical: boolean, props: Common): Frame
 			BorderSizePixel = 0,
 			UICorner = corner,
 			Elevation.Shadow({ Level = level, Theme = theme }),
-			D.Frame {
+			Frame {
 				Name = "Clip",
 				Size = UDim2.fromScale(1, 1),
 				BackgroundTransparency = 1,
@@ -289,7 +292,7 @@ local function toolbar(name: string, vertical: boolean, props: Common): Frame
 			Color = palette.Fab,
 			Theme = theme,
 			OnClick = spec.OnClick,
-			Modifier = D.Modifier.TextButton():Size(fabSize):Position(fabPos),
+			Modifier = TextButtonModifier():Size(fabSize):Position(fabPos),
 		}),
 		table.unpack(Util.hooks(props.Hooks)),
 	}

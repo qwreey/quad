@@ -147,7 +147,7 @@ end
 print()
 print("=== 7. 인스턴스별 팩토리 (H-174) — Of가 자기 quad의 Source를 만든다 ===")
 do
-	local other = Quad.New()
+	local other = Quad.NewModule()
 	local s = other.Store({} :: {})
 	local d = s:Of("x")
 	assert(getmetatable(d :: any) == getmetatable(other.Source(0) :: any), "Of uses the module's own Source, read at call time")

@@ -23,9 +23,11 @@
 
 local Quad = require("./Quad")
 local q = Quad
-local D = q.Declaration
-local buttonName = D.Modifier.TextButton():Name("Button")
-local smallButtonName = D.Modifier.TextButton():Name("SmallButton")
+local TextButton = q.Elem "TextButton"
+local UIPadding = q.Elem "UIPadding"
+local TextButtonModifier = q.Modifier "TextButton"
+local buttonName = TextButtonModifier():Name("Button")
+local smallButtonName = TextButtonModifier():Name("SmallButton")
 local Common = require("./Common")
 local Interaction = require("./Interaction")
 local Style = require("./Style")
@@ -41,7 +43,7 @@ export type ButtonProps = {
 	read Toggled: (boolean | State<boolean>)?,
 	read Hooks: { any }?,
 	read Style: Style?,
-	read Modifier: Quad.TextButtonModifier?,
+	read Modifier: Quad.ModifierInto<TextButton>?,
 }
 
 local function button(props: ButtonProps, small: boolean): TextButton
@@ -63,7 +65,7 @@ local function button(props: ButtonProps, small: boolean): TextButton
 	local padX, framePadY = Common.padXY(style.Metrics.FramePadding)
 	local padY: State<UDim> | UDim = if small then UDim.new(0, 0) else framePadY
 	local onClick = props.OnClick
-	return D.TextButton({
+	return TextButton({
 		if small then smallButtonName else buttonName,
 		props.Modifier or q.None,
 		hover.Hook,
@@ -86,7 +88,7 @@ local function button(props: ButtonProps, small: boolean): TextButton
 			end
 			else q.None,
 		UICorner = style.Metrics.FrameRounding,
-		D.UIPadding({ PaddingLeft = padX, PaddingRight = padX, PaddingTop = padY, PaddingBottom = padY }),
+		UIPadding({ PaddingLeft = padX, PaddingRight = padX, PaddingTop = padY, PaddingBottom = padY }),
 		Common.stroke(style),
 		table.unpack(Common.hooks(props.Hooks)),
 	})

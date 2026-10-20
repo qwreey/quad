@@ -38,7 +38,8 @@ local Tokens = require("./Tokens")
 local Ripple = require("./Ripple")
 local Theme = require("./Theme")
 local Util = require("./Util")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local UIStroke = q.Elem "UIStroke"
 
 export type ColorInput = Color3 | Theme.Animated | q.State<Color3>
 
@@ -81,7 +82,7 @@ local function new(o: Options): Frame
 
 	local ring: Instance? = nil
 	if o.FocusRing ~= nil then
-		ring = D.UIStroke {
+		ring = UIStroke {
 			Name = "FocusRing",
 			Color = o.FocusRing,
 			Thickness = 3,
@@ -92,7 +93,7 @@ local function new(o: Options): Frame
 		}
 	end
 
-	return D.Frame {
+	return Frame {
 		Name = "StateLayer",
 		Size = UDim2.fromScale(1, 1),
 		BackgroundColor3 = o.Color,

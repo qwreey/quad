@@ -39,7 +39,7 @@ local StyleEditorWindow = require("@self/StyleEditor")
 local RuntimeInfoWindow = require("@self/RuntimeInfo")
 local q = require("@self/Quad")
 
-local D = q.Declaration
+local ScreenGui = q.Elem "ScreenGui"
 local Kids = Devui.Kids
 
 export type DemoProps = {
@@ -156,7 +156,7 @@ function Demo.mount(parent: Instance?): ScreenGui
 	local runtimeOpen = q.Source(false)
 	local manager = Devui.WindowManager.new()
 	local gui: ScreenGui
-	gui = D.ScreenGui({
+	gui = ScreenGui({
 		Name = "QuadDevuiDemo",
 		ResetOnSpawn = false,
 		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,

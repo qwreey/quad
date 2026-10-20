@@ -40,7 +40,7 @@ local QuadError = require("./luau_packages/quad_error")
 -- `fn(self, previous?, ...deps)` — 전부 lazy 핸들, 값은 `:Get()`으로만
 -- (`.claude/base/source-state-plan.md` "self 인자도 lazy 핸들로 통일").
 -- ⭐ [2026-09-07 사용자 결정 — 공변/불변 문제] **마커 타입** `StateMarker<T>`: '입력받는
--- 자리'(children 유니언, 생성 Declaration 슬롯 `PVn`, Modifier setter `Field<T>`, Slot 요소 자리 등)는
+-- 자리'(children 유니언, 백엔드 props 값 자리, Modifier setter `ModifierField<T>`, Slot 요소 자리 등)는
 -- 전체형 `State<T>` 대신 이 마커를 요구한다. 전체형은 `Set(T)`/`Get(): T`가 양쪽 위치라
 -- **불변**이어서 `State<number>`가 `State<number | UDim>` 자리에 못 들어갔고(`H-326`/`H-327`/
 -- `H-353` — 멤버별 팔 나열로 우회), 읽기 전용 팬텀 필드만 든 마커는 **T에 공변**이라 한 팔로
@@ -92,7 +92,7 @@ export type KeyGone = { read __quadKeyGone: true }
 -- `None` 센티널의 구조 타입(`H-300` (a), 2026-09-02 사용자 확정) — 실값은
 -- quad-base `None.luau`(2026-10-01 최상위로 — 옛 `Dispatch/None.luau`)의 frozen 테이블이고 판정은 언제나 신원
 -- (`v == None`)이다. 이 타입은 조언층: 마커 필드 하나로 빈-테이블
--- 타입이 모든 테이블에 매치되는 문제를 피해, 생성된 `Declaration` 유니언(스칼라·
+-- 타입이 모든 테이블에 매치되는 문제를 피해, 백엔드 props 유니언(스칼라·
 -- 이벤트·children)이 None을 실을 수 있게 한다.
 export type None = { read __quadNone: true }
 
@@ -184,20 +184,19 @@ export type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 
 -- ── 반응형 코어(M2 단위 2) ────────────────────────────────────────────
 export type StateData<T> = { read __quadState: true, read __quadStateValue: T, Get: (self: StateData<T>) -> T }
--- [2026-09-15 공개 표면 (32) 후속 — 사용자 결정] State/Source(와 FieldOut)를 StateData 바로 뒤로 끌어올림: 비균일 재귀
+-- [2026-09-15 공개 표면 (32) 후속 — 사용자 결정] State/Source(와 ModifierFieldOut)를 StateData 바로 뒤로 끌어올림: 비균일 재귀
 -- 제네릭(`Compute: <U> -> State<U>`)보다 먼저 선언된 비제네릭 별칭이 그걸 인스턴스화하면 참조가 통째로 에러 타입(any)이
 -- 된다(두 솔버, opus 조사 — 옵션 `Time`·Operator 반환이 조용히 무검사였다). State/Source를 참조하는 별칭은 이 뒤에 둘 것.
--- Modifier 필드에 "저장된 그대로"의 값 — `Peek` 반환과 setter 변환 함수의 `old`(생성 Declaration의 `Field<T>`)가
+-- Modifier 필드에 "저장된 그대로"의 값 — `Peek` 반환과 setter 변환 함수의 `old`(quad-roblox `ModifierField<T>`)가
 -- 공유하는 출력 타입: 리터럴 | State 핸들 자체(값이 아니라 — 반응성 유지) | None(명시 해제).
 -- State 팔 하나(저장된 것의 상한, round3 Q23 (a)). 입력 팔은 마커(8.11). quad-base는 필드에 무엇이
 -- 저장되는지(엔진 값 어휘)를 모른다 — 백엔드가 `T` 자리에 자기 값 대수를 넣어 별칭한다: quad-roblox
--- `types.luau`의 `FieldOut<T> = QuadTypes.FieldOut<T | Tween<T>>`(= `T | Tween<T> | State<T | Tween<T>> | None`,
--- 2026-09-07 Tween 이동 전과 같은 전개형; 생성 Declaration은 그걸 재별칭 — Declaration 안 전개는 typing-limits 8.12).
--- ⚠️ 프로바이더 아래에서도 base `Modifier()`의 `Peek`는 이 정의를 쓰므로 `Peek<<UDim2>>`는 Tween 팔이 없다 —
+-- `types.luau`의 `FieldOut<T> = QuadTypes.ModifierFieldOut<T | Tween<T>>`(= `T | Tween<T> | State<T | Tween<T>> | None`,
+-- 2026-09-07 Tween 이동 전과 같은 전개형).
+-- ⚠️ 프로바이더 아래에서도 base `Raw.Modifier()`의 `Peek`는 이 정의를 쓰므로 `Peek<<UDim2>>`는 Tween 팔이 없다 —
 -- 그 필드가 Tween을 품을 수 있으면 `Peek<<UDim2 | Tween<UDim2>>>`로 부를 것(T = 값 대수 전부, `H-459`).
-export type FieldOut<T> = T | State<T> | None
--- [2026-10-20 3.4.0] the new name (declaration-naming-table 5절 — 부모 접두); `FieldOut` goes at the 3.4.0 switch
-export type ModifierFieldOut<T> = FieldOut<T>
+-- [2026-10-20 3.4.0] named `FieldOut` until 3.4.0 (declaration-naming-table 5절 — 부모 접두)
+export type ModifierFieldOut<T> = T | State<T> | None
 
 export type State<T> = StateData<T> & {
 	-- deps는 `...any`다 — 타입팩 `D...`로 위치 인자를 좁히는 형태는 strict에서 콜백 dep
@@ -410,10 +409,10 @@ export type Modifier = {
 	-- 각자 선언한다(단위 ④, 11절). 런타임 값에도 실제로 있다(Dispatch/Modifier/init.luau)
 	read __quadModifier: true,
 	-- 정본 9절 `:Peek<<T>>(key)` — `store:Of<<T>>`와 같은 명시 인스턴스화 관례.
-	-- [2026-09-07 회신 4차 Q24 후속] 반환은 `FieldOut<T>?` — 변환 함수의 `old`와 같은 "저장된 그대로"
+	-- [2026-09-07 회신 4차 Q24 후속] 반환은 `ModifierFieldOut<T>?` — 변환 함수의 `old`와 같은 "저장된 그대로"
 	-- 값. `T`는 그 필드의 값 대수 전부(백엔드 값 어휘 포함 — quad-roblox라면 `X | Tween<X>`); 생성
 	-- `<Class>Modifier`의 `Peek`가 그 별칭으로 덮는다
-	Peek: <T>(self: Modifier, key: string) -> FieldOut<T>?,
+	Peek: <T>(self: Modifier, key: string) -> ModifierFieldOut<T>?,
 	-- ⚠️ self·factory 둘 다 `any`(typing-limits 8.9절): 자기 타입을 참조하는
 	-- 함수 필드가 유니언 멤버(`Tag`/`State`)의 같은 이름 메소드와 만나면 새
 	-- 솔버의 유니언 검사가 조용히 통과한다 — children 자리의 클래스 소속
@@ -647,7 +646,7 @@ export type Backend = {
 	-- [2026-09-16 사용자 결정 — question.md §2 Slot foreign Instance] claim 여부 술어: quad-roblox는 `nativeClaim`이
 	-- 남긴 셋업(gchold) 유무 + gcconn 생존, mock은 `Data.claimed` 플래그(`Instance.new`는 태어날 때 claim, `Instance.foreign`은
 	-- `nativeClaim`/lazy hold 뒤 — round11 Q64). `Claim`의 해석 패스도 모든 inst에 묻는다. Slot이 요소를 받을 때 미claim이면 거부한다
-	-- (자동 claim은 마법 — 사용자가 `Claim`/`Declaration`으로 먼저 소유해야 한다).
+	-- (자동 claim은 마법 — 사용자가 `Claim`/`q.Elem`으로 먼저 소유해야 한다).
 	isClaimed: (inst: any) -> boolean,
 	-- 매퍼 키 해석 op(claim-plan — 조회라 조합 폴백 예외, 미주입이면 error).
 	nativeFindChild: (inst: any, key: any, className: string?) -> any, -- 클래스가 다르면 nil(round10 Q49 (a), 2026-09-17)
@@ -663,8 +662,7 @@ export type Backend = {
 export type Quad = {
 	Version: "3.3.0", -- quad-base/pesde.toml의 version과 항상 맞출 것
 	debug: boolean,
-	New: () -> Quad,
-	-- [2026-10-20 3.4.0] the new name of `New` (`New` is removed at the 3.4.0 switch)
+	-- [2026-10-20 3.4.0] a new independent module instance (was `New` until 3.4.0 — the name says what it makes)
 	NewModule: () -> Quad,
 	-- [2026-10-20 3.4.0] base raw materials (untyped) — a backend builds its typed `q.Modifier "Frame"` /
 	-- `q.Spread "Frame" {…}` / `q.Mapper "Frame"` on these. The Spread result type is deliberately unnamed
@@ -679,7 +677,7 @@ export type Quad = {
 	-- 백엔드(프로바이더) 설치 전용(`H-305` (d′), 2026-09-02 사용자 확정) —
 	-- AddPlugin과 타입 모양은 같지만 계약이 다르다: 모듈당 1슬롯 fn
 	-- identity 락(같은 fn 재호출 no-op / 다른 identity — 다른 프로바이더든
-	-- 같은 백엔드의 다른 사본·버전이든 — error). 백엔드 표면(`Declaration` 등)은
+	-- 같은 백엔드의 다른 사본·버전이든 — error). 백엔드 표면(`Elem` 등)은
 	-- 이 반환 교집합 `Self & P`로 타입이 실린다 — quad-types엔 안 실림.
 	UseProvider: <Self, P>(self: Self, providerFn: (Self) -> P) -> Self & P,
 
@@ -785,11 +783,9 @@ export type Quad = {
 	-- `Claim(inst, desc) -> inst` — 이미 있는 트리를 quad 소유로(claim-plan §2;
 	-- 타입 인자 없음·반환은 넣은 inst 그대로가 사용자 확정)
 	Claim: <T>(inst: T, desc: MapperDescriptor) -> T,
-	-- `Claim`의 매퍼 부속(M5 단위 ④, `H-25` 단위 ⑤ 확인분) — 루트 키
-	-- 센티널 값(재노출은 `D.Mapper.Root`)과 제네릭 디스크립터 팩토리
-	-- (백엔드 `D.Mapper.<Class>` 별칭의 원천, claim-plan §7-1).
+	-- `Claim`의 매퍼 부속(M5 단위 ④, `H-25` 단위 ⑤ 확인분) — 루트 키 센티널 값. 제네릭 디스크립터 팩토리는
+	-- 3.4.0부터 `Raw.Mapper`(옛 `newMapperClass`; 백엔드 `q.Mapper "Frame"`의 원천, claim-plan §7-1).
 	MapperRoot: MapperRoot,
-	newMapperClass: (className: string) -> (key: any) -> (props: any) -> MapperDescriptor,
 
 
 	-- M10 (round16 spike) — Tag/Attr 표면(`H-25`의 "마일스톤마다 갱신" 몫)
@@ -801,7 +797,7 @@ export type Quad = {
 	-- 제네릭 추론을 오염시키던 시절의 것. 실측·잔여 구멍(__call 인자
 	-- 무검사)은 typing-limits 8.6절이 소스)
 	Tag: TagConstructor,
-	Modifier: ModifierConstructor, -- M7 단위 ①
+	-- `Modifier` is the backend's typed `q.Modifier "Frame"` since 3.4.0 (base's own constructor is `Raw.Modifier`)
 	Attr: AttrConstructor,
 	AttrKey: AttrKeyConstructor,
 	StringAttr: AttrSugar<string>,

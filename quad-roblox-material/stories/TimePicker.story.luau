@@ -5,7 +5,11 @@
 local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local FrameModifier = q.Modifier "Frame"
+local TextButtonModifier = q.Modifier "TextButton"
 local StoryParts = require("./StoryParts")
 local themed = StoryParts.themed
 
@@ -20,7 +24,7 @@ type Config = {
 }
 
 local function text(theme: Material.Theme, value: string | q.State<string>, order: number): TextLabel
-	return D.TextLabel {
+	return TextLabel {
 		Material.Text.Label("BodyMedium"),
 		LayoutOrder = order,
 		Size = UDim2.fromOffset(820, 22),
@@ -54,12 +58,12 @@ return StoryKit.story({
 		end, c.LayoutType, c.Locale)
 
 		local pickers = StoryKit.rebuild<<Config>>(config, function(cfg: Config)
-			return D.Frame {
+			return Frame {
 				Name = "Pickers",
 				Size = UDim2.fromScale(1, 1),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIListLayout {
+				UIListLayout {
 					FillDirection = Enum.FillDirection.Horizontal,
 					SortOrder = Enum.SortOrder.LayoutOrder,
 					Padding = UDim.new(0, 24),
@@ -70,26 +74,26 @@ return StoryKit.story({
 					Is24Hour = cfg.Is24Hour,
 					LayoutType = cfg.LayoutType,
 					Locale = cfg.Locale,
-					Modifier = D.Modifier.Frame():LayoutOrder(1),
+					Modifier = FrameModifier():LayoutOrder(1),
 				}),
 				TimePicker.Input({
 					Theme = theme,
 					Value = time,
 					Is24Hour = cfg.Is24Hour,
 					Locale = cfg.Locale,
-					Modifier = D.Modifier.Frame():LayoutOrder(2),
+					Modifier = FrameModifier():LayoutOrder(2),
 				}),
 			}
 		end, { Size = UDim2.fromOffset(820, 400), AutomaticSize = Enum.AutomaticSize.None, LayoutOrder = 1 })
 
-		return D.Frame {
+		return Frame {
 			follow,
 			Name = "TimePickerStory",
 			Size = UDim2.fromScale(1, 1),
 			BorderSizePixel = 0,
 			BackgroundColor3 = theme.Color.Surface,
 			UIPaddingOffset = 24,
-			D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12) },
+			UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12) },
 			pickers,
 			text(theme, time:Compute(function(self: q.StateData<Time>): string
 				local t = self:Get()
@@ -102,7 +106,7 @@ return StoryKit.story({
 				Theme = theme,
 				Variant = "Tonal",
 				Label = "Open modal picker",
-				Modifier = D.Modifier.TextButton():LayoutOrder(4),
+				Modifier = TextButtonModifier():LayoutOrder(4),
 				OnClick = function()
 					TimePicker.Modal.open({
 						Value = modalTime,

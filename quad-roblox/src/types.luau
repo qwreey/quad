@@ -8,7 +8,7 @@
 
 	`Tween<T>` — the value-level wrapper `tween-plan.md`'s "확정: `Tween{...}`
 	최종 모양" section pins down. M5 needed the TYPE first because the
-	generated `Declaration` prop unions include it (round14 `H-298` (a)); M11 unit ①
+	(then generated, since 3.4.0 type-function) prop unions include it (round14 `H-298` (a)); M11 unit ①
 	(2026-09-06) put the value type into quad-types (engine-free — Roblox
 	types as `any`) with this file re-exporting it AS-IS; **2026-09-07 (user
 	decision, tween-plan "패키지 경계")** the whole value — type here, runtime
@@ -18,12 +18,10 @@
 	PropertyHandler consumption is unit ②.
 
 	`NewChild` — the backend-agnostic core of the children-array element
-	union. Since 2026-09-03 the generated `Declaration.<Class>Param<E>` is instantiated
-	with a per-class alias `<Class>Elem = NewChild | <Class>OnChange |
-	State<<Class>OnChange> | { read __quadModifier: "<Class>" | … }` (src/Declaration,
-	`base/onchange-plan.md` "타이핑" 절; the last member is the class-tag
-	marker of M7 unit ④ — `base/modifier-plan.md` 11절) —
-	array-part descriptor kinds join THAT alias, not this union
+	union. The per-class array item (`PropsArrayItem<C>`, `Surface/init.luau` since 3.4.0 — the generated
+	`<Class>Elem` before it) is `NewChild` plus the descriptor kinds and the class-tag markers
+	(`base/onchange-plan.md` "타이핑" 절, `base/modifier-plan.md` 11절) —
+	array-part descriptor kinds join THAT item, not this union
 	(claim-plan §7-12). M5-era union: what actually works through
 	`drive` by the end of this milestone — a static child Instance
 	(InstanceChildHandler, unit ③) or a reactive one (StateHandler → unwrap).
@@ -121,13 +119,14 @@ export type Tween<T> = TweenData<T> & {
 -- 순수 제네릭 함수(`H-343`): 문자열 `Override` 덕에 `Tween`엔 필드가 없어 콜러블 테이블이
 -- 필요 없다 — 제네릭 `__call`의 `T` 오염(`H-324`, `luau-test/33` A 블록)이 함께 소멸.
 export type TweenConstructor = <T>(opts: TweenOptions<T>) -> Tween<T>
--- Modifier 필드에 "저장된 그대로"의 값(`Peek` 반환·setter 변환 함수의 `old`) — quad-types의
--- `FieldOut<X> = X | State<X> | None`에 이 백엔드의 값 대수 `X = T | Tween<T>`를 넣은 것(전개형
--- `T | Tween<T> | State<T | Tween<T>> | None`, round3 Q23 (a)/Q24 후속). **여기서 별칭하고 생성 Declaration은
--- `Types.FieldOut<T>`로 다시 별칭한다** — 같은 전개를 Declaration 안에서 하면(인라인 유니언이든
--- `QuadTypes.FieldOut<T | Tween<T>>` 인스턴스화든) `export type Declaration`이 솔버 제약 한도를 넘어
--- "too complex"(2026-09-07 실측, typing-limits 8.12).
-export type FieldOut<T> = QuadTypes.FieldOut<T | Tween<T>>
+-- Modifier 필드에 "저장된 그대로"의 값(`Peek` 반환·setter 변환 함수의 `old`, round3 Q23 (a)/Q24 후속) — 이 백엔드의
+-- 값 대수 `T | Tween<T>`에 State 팔과 None. [2026-10-20 3.4.0] Tween·State 팔은 전체형 대신 읽기 뷰다(Tween은 `Value`,
+-- State는 `Get`): 타입 함수가 멤버마다 만드는 Modifier 표면은 제네릭 별칭(`State<X>`·`Tween<X>`)을 그 자리에서
+-- 인스턴스화할 수 없고 전체 State 타입은 아예 타입 함수에 못 들어간다("*error-type*" — 2026-10-20 실측). 손으로 쓰는
+-- 커스텀 Modifier 타입(`ModifierField<T>`)과 `Peek`도 같은 뷰를 써야 서로 맞는다. 공개 이름은 루트의 `ModifierFieldOut<T>`.
+export type TweenView<T> = { read __quadTween: true, read Value: T }
+export type StateView<X> = { read __quadState: true, read __quadStateValue: X, Get: (self: any) -> X }
+export type ModifierFieldOut<T> = T | TweenView<T> | StateView<T | TweenView<T>> | QuadTypes.None
 
 -- `Animate(info)` options (M11 단위 ③, tween-plan "`Animate` 콤비네이터" 절): `Tween`
 -- 옵션(`Value` 제외) + `CanAnimate`, 각 필드는 `T | State<T>`([2026-09-07 마커] State 자리는
@@ -166,8 +165,8 @@ export type AnimateFn = (info: AnimateInfo) -> (self: any) -> QuadTypes.State<Tw
 -- [2026-09-03 M10 widening] the quad-base array-part VALUES join here: `Tag(...)`
 -- and `Attr(...)` (the typed scalar sugar `StringAttr(name, v)` etc.
 -- returns an `Attr`, so it rides the same member) + their State forms
--- (StateHandler unwraps array elements). OnChange descriptors are NOT here — they
--- are per-class (`<Class>Elem` in the generated Declaration, `base/onchange-plan.md`).
+-- (StateHandler unwraps array elements). OnChange/OnEvent descriptors, Spread and the class-tag Modifier markers are
+-- NOT here — they are per-class (`PropsArrayItem<C>` in `Surface/init.luau`, `base/onchange-plan.md`).
 export type NewChild =
 	Instance
 	-- ⭐ [2026-09-07 사용자 결정 — 공변/불변] State·Slot 팔은 **마커**(`StateMarker`/`SlotMarker`,
@@ -198,15 +197,13 @@ export type NewChild =
 	-- 직접 넣으면 큰 클래스의 캐스트 자리에서 "too complex"(2026-09-04 실측,
 	-- typing-limits 8.8절). 여기(`true`)는 무타입 base `Modifier()`의 명시 허용이고,
 	-- 클래스 태그 마커 `{ read __quadModifier: "Frame" | "GuiObject" | … }`(자기 +
-	-- 조상 체인)는 생성 `<Class>Elem`이 담는다 — 그래서 형제 클래스 Modifier는
+	-- 조상 체인)는 `PropsArrayItem<C>`(3.4.0 전엔 생성 `<Class>Elem`)가 담는다 — 그래서 형제 클래스 Modifier는
 	-- 거부된다(단위 ④, modifier-plan 11절). `State<Modifier>`는 7절이 error라 없다.
 	| QuadTypes.ModifierMarker
 
--- `OnChange(name, fn)` descriptor (M10, `base/onchange-plan.md` — array-part
--- value since the 2026-09-03 reversal): frozen `{ Name, Callback }`,
--- Handlers/OnChange.luau. This is the RUNTIME shape; the checked factory
--- type (`OnChangeFn`, name → callback parameter via `index<PropTypesRead, K>` — 읽기 표면, Q19 2026-09-07)
--- and the per-class descriptor unions are generated (src/Declaration).
+-- OnChange descriptor (M10, `base/onchange-plan.md` — array-part value since the 2026-09-03 reversal): frozen
+-- `{ Name, Callback }`, Handlers/OnChange.luau. This is the RUNTIME shape; the checked curried factory
+-- (`q.OnChange "Class" "Name" (fn)` — callback parameter from the class's read surface) is `Surface/init.luau`.
 export type OnChangeDescriptor = { read Name: string, read Callback: (any) -> () }
 
 return {}

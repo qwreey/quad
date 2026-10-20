@@ -52,9 +52,17 @@ local GlyphButton = require("./GlyphButton")
 local Style = require("./Button/Style")
 local ColorTokens = require("./Tokens/Color")
 local KeyedSlot = require("@self/KeyedSlot")
-local D = q.Declaration
-local chipSetName = D.Modifier.Frame():Name("ChipSet")
-local chipName = D.Modifier.TextButton():Name("Chip")
+local Frame = q.Elem "Frame"
+local ImageLabel = q.Elem "ImageLabel"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local UIStroke = q.Elem "UIStroke"
+local FrameModifier = q.Modifier "Frame"
+local TextButtonModifier = q.Modifier "TextButton"
+local chipSetName = FrameModifier():Name("ChipSet")
+local chipName = TextButtonModifier():Name("Chip")
 
 type Kind = "Assist" | "Filter" | "Input" | "Suggestion"
 
@@ -66,7 +74,7 @@ export type AssistProps = {
 	read Disabled: (boolean | q.State<boolean>)?,
 	read OnClick: (() -> ())?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.TextButtonModifier?,
+	read Modifier: q.ModifierInto<TextButton>?,
 	read Hooks: Util.Hooks?,
 }
 export type SuggestionProps = AssistProps
@@ -81,7 +89,7 @@ export type FilterProps = {
 	read OnChange: ((selected: boolean) -> ())?,
 	read OnClick: (() -> ())?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.TextButtonModifier?,
+	read Modifier: q.ModifierInto<TextButton>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -94,7 +102,7 @@ export type InputProps = {
 	read Disabled: (boolean | q.State<boolean>)?,
 	read OnClick: (() -> ())?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.TextButtonModifier?,
+	read Modifier: q.ModifierInto<TextButton>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -112,7 +120,7 @@ type Core = {
 	Disabled: (boolean | q.State<boolean>)?,
 	OnClick: (() -> ())?,
 	Theme: Theme.Theme?,
-	Modifier: q.TextButtonModifier?,
+	Modifier: q.ModifierInto<TextButton>?,
 }
 
 local HEIGHT = 32
@@ -121,7 +129,7 @@ local REMOVE = 24
 local TouchTarget = 48
 local RemoveInset = 8 -- the right padding next to the remove slot
 
-local baseModifier = D.Modifier.TextButton()
+local baseModifier = TextButtonModifier()
 	:Size(UDim2.fromOffset(0, HEIGHT))
 	:AutomaticSize(Enum.AutomaticSize.X)
 	:BorderSizePixel(0)
@@ -140,7 +148,7 @@ local function glyphIcon(
 	visible: q.State<boolean>?
 ): Instance
 	if asset ~= nil then
-		return D.ImageLabel {
+		return ImageLabel {
 			Name = name,
 			Size = UDim2.fromOffset(ICON, ICON),
 			BackgroundTransparency = 1,
@@ -152,7 +160,7 @@ local function glyphIcon(
 			Visible = visible,
 		}
 	end
-	return D.TextLabel {
+	return TextLabel {
 		Name = name,
 		labelStyle,
 		Size = UDim2.fromOffset(ICON, ICON),
@@ -224,7 +232,7 @@ local function build(p: Core): TextButton
 			end
 			return if dis:Get() then Style.DisabledContainerTransparency else 0
 		end, disabled)
-		stroke = D.UIStroke {
+		stroke = UIStroke {
 			Name = "Outline",
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 			Thickness = 1,
@@ -241,7 +249,7 @@ local function build(p: Core): TextButton
 
 	local icon: Instance? = nil
 	if p.Icon ~= nil then
-		icon = D.ImageLabel {
+		icon = ImageLabel {
 			Name = "Icon",
 			Size = UDim2.fromOffset(ICON, ICON),
 			BackgroundTransparency = 1,
@@ -289,7 +297,7 @@ local function build(p: Core): TextButton
 	local onChange = p.OnChange
 	local onClick = p.OnClick
 	local sel = p.Selected
-	return D.TextButton {
+	return TextButton {
 		chipName,
 		baseModifier,
 		p.Modifier or q.None,
@@ -318,14 +326,14 @@ local function build(p: Core): TextButton
 		fx.Layer,
 		-- the padding and the row layout live on a CONTENT frame: a UIPadding / UIListLayout on the host itself
 		-- would also inset / lay out the state layer (a child GuiObject of the host)
-		D.Frame {
+		Frame {
 			Name = "Content",
 			Size = UDim2.fromScale(0, 1),
 			AutomaticSize = Enum.AutomaticSize.X,
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIPadding { PaddingLeft = padLeft, PaddingRight = padRight },
-			D.UIListLayout {
+			UIPadding { PaddingLeft = padLeft, PaddingRight = padRight },
+			UIListLayout {
 				FillDirection = Enum.FillDirection.Horizontal,
 				-- Left, not Center: Content is AutomaticSize X, and a centered layout places the label from the frame's
 				-- width — the width AutomaticSize derives from the label (a loop that settles over several layout passes;
@@ -337,7 +345,7 @@ local function build(p: Core): TextButton
 			},
 			icon or q.None,
 			check or q.None,
-			D.TextLabel {
+			TextLabel {
 				Name = "Label",
 				labelStyle,
 				Size = UDim2.fromScale(0, 1),
@@ -425,11 +433,11 @@ export type ChipSetProps<T> = {
 	read Key: (item: T) -> string | number,
 	read Render: (item: q.State<T>, order: q.State<number>) -> Instance,
 	read Gap: number?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
-local chipSetBase = D.Modifier.Frame()
+local chipSetBase = FrameModifier()
 	:Size(UDim2.new(1, 0, 0, 0))
 	:AutomaticSize(Enum.AutomaticSize.Y)
 	:BackgroundTransparency(1)
@@ -449,11 +457,11 @@ local chipSetBase = D.Modifier.Frame()
 ]]
 local function ChipSet<T>(props: ChipSetProps<T>): Frame
 	local gap = props.Gap or 8
-	return D.Frame {
+	return Frame {
 		chipSetName,
 		chipSetBase,
 		props.Modifier or q.None,
-		D.UIListLayout {
+		UIListLayout {
 			FillDirection = Enum.FillDirection.Horizontal,
 			Wraps = true,
 			SortOrder = Enum.SortOrder.LayoutOrder,

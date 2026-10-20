@@ -72,8 +72,7 @@ local function New(): Quad
 		return predicate
 	end
 	local module = {
-		New = New,
-		-- [2026-10-20 3.4.0] the new name of `New` (declaration-surface-plan 5절, 사용자 동의 2026-10-16); `New` goes at the switch
+		-- [2026-10-20 3.4.0] a new independent instance — named `New` until 3.4.0 (declaration-surface-plan 5절, 사용자 동의 2026-10-16)
 		NewModule = New,
 		-- [2026-10-20 3.4.0] base raw materials — the untyped constructors a backend builds its typed surface on
 		-- (declaration-surface-plan 5절 `q.Raw`, 사용자 2026-10-16). `Mapper` is filled by Claim's Init (per instance).
@@ -136,7 +135,7 @@ local function New(): Quad
 		-- setmetatable<A,B> 타입 표기로 리터럴 `:: Quad`를 그대로 통과한다 —
 		-- fork의 잠정 `:: any` 캐스트는 통합에서 제거(typing-limits 8.6절)
 		Tag = TagModule.Tag,
-		Modifier = ModifierModule.Modifier,
+		-- `q.Modifier` is the backend's typed constructor since 3.4.0 (a stub until a provider installs it — BackendStubs)
 		Attr = AttrModule.Attr,
 		AttrKey = AttrKeyModule.AttrKey,
 		-- [2026-09-03 사용자 확정] 스칼라 패밀리는 그룹 위의 타입드 슈가

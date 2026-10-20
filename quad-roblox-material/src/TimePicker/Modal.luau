@@ -62,7 +62,11 @@ local Model = require("./Model")
 local Strings = require("./Strings")
 local Dial = require("./Dial")
 local Input = require("./Input")
-local D = q.Declaration
+local CanvasGroup = q.Elem "CanvasGroup"
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local TextButtonModifier = q.Modifier "TextButton"
 
 type Time = Clock.Time
 type State<T> = q.State<T>
@@ -219,7 +223,7 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 		end
 	end
 
-	return D.CanvasGroup {
+	return CanvasGroup {
 		Name = "TimePickerModal",
 		Active = true, -- 3D / camera input only; a GUI click is sunk by the ClickSink child (a plain frame passes it down)
 		Util.clickSink(),
@@ -238,7 +242,7 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 				input.Focus()
 			end
 		end),
-		D.TextLabel {
+		TextLabel {
 			Name = "Title",
 			titleStyle,
 			Size = UDim2.fromOffset(200, 16),
@@ -251,7 +255,7 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 		},
 		picker.Frame,
 		input.Frame,
-		D.Frame {
+		Frame {
 			Name = "Actions",
 			Size = actionsSize,
 			Position = actionsPosition,
@@ -268,12 +272,12 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 					setMode(if mode:Get() == "Picker" then "Input" else "Picker")
 				end,
 			}),
-			D.Frame {
+			Frame {
 				Name = "Buttons",
 				Size = UDim2.fromScale(1, 1),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIListLayout {
+				UIListLayout {
 					FillDirection = Enum.FillDirection.Horizontal,
 					HorizontalAlignment = Enum.HorizontalAlignment.Right,
 					VerticalAlignment = Enum.VerticalAlignment.Center,
@@ -287,7 +291,7 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 					OnClick = function()
 						handle.Close()
 					end,
-					Modifier = D.Modifier.TextButton():LayoutOrder(1),
+					Modifier = TextButtonModifier():LayoutOrder(1),
 					Hooks = {
 						Util.preHook(function(inst: GuiObject)
 							onCancelButton(inst)
@@ -304,7 +308,7 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 							onConfirm(draft:Get())
 						end
 					end,
-					Modifier = D.Modifier.TextButton():LayoutOrder(2),
+					Modifier = TextButtonModifier():LayoutOrder(2),
 				}),
 			},
 		},

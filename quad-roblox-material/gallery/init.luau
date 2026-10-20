@@ -52,14 +52,17 @@ local Navigation = require("@self/Navigation")
 local ChipsTabsProgress = require("@self/ChipsTabsProgress")
 local Pickers = require("@self/Pickers")
 local ThemeSection = require("@self/Theme")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ScreenGui = q.Elem "ScreenGui"
+local ScrollingFrame = q.Elem "ScrollingFrame"
+local FrameModifier = q.Modifier "Frame"
 
 export type Props = {
 	read Theme: Material.Theme?,
 	read Overlay: Material.OverlayType?,
 	read Selected: q.Source<string>?,
 	read Icon: string?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 }
 
 local PLACEHOLDER_ICON = "rbxassetid://6031094678"
@@ -88,7 +91,7 @@ local BUILDERS: { [string]: (ctx: Common.Ctx) -> Instance } = {
 	Theme = ThemeSection,
 }
 
-local tabsPosition = D.Modifier.Frame():Size(UDim2.new(1, 0, 0, 48))
+local tabsPosition = FrameModifier():Size(UDim2.new(1, 0, 0, 48))
 
 local Gallery = {}
 
@@ -121,7 +124,7 @@ function Gallery.GalleryPanel(props: Props?): Frame
 		return build(ctx), nil
 	end)
 
-	return D.Frame {
+	return Frame {
 		Name = "Gallery",
 		Size = UDim2.fromScale(1, 1),
 		BorderSizePixel = 0,
@@ -138,7 +141,7 @@ function Gallery.GalleryPanel(props: Props?): Frame
 			Tabs = TABS,
 			Modifier = tabsPosition,
 		}),
-		D.ScrollingFrame {
+		ScrollingFrame {
 			Name = "Scroller",
 			Position = UDim2.fromOffset(0, 48),
 			Size = UDim2.new(1, 0, 1, -48),
@@ -150,7 +153,7 @@ function Gallery.GalleryPanel(props: Props?): Frame
 			ScrollBarThickness = 6,
 			ScrollBarImageColor3 = theme.Color.OnSurface,
 			ScrollBarImageTransparency = 1 - Material.Tokens.State.Opacity.ScrollBar,
-			D.Frame {
+			Frame {
 				Name = "Page",
 				Size = UDim2.fromScale(1, 0),
 				AutomaticSize = Enum.AutomaticSize.Y,
@@ -166,7 +169,7 @@ end
 -- A ScreenGui with the panel and its own overlay layer. Returns the ScreenGui.
 function Gallery.mount(parent: Instance?): ScreenGui
 	local overlay = Material.Overlay.new()
-	local gui = D.ScreenGui {
+	local gui = ScreenGui {
 		Name = "MaterialGallery",
 		ResetOnSpawn = false,
 		IgnoreGuiInset = false,

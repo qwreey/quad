@@ -6,7 +6,11 @@
 
 local Quad = require("../Quad")
 local q = Quad
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ImageButton = q.Elem "ImageButton"
+local ImageLabel = q.Elem "ImageLabel"
+local TextLabel = q.Elem "TextLabel"
+local UIPadding = q.Elem "UIPadding"
 local Common = require("../Common")
 local Interaction = require("../Interaction")
 local Style = require("../Style")
@@ -40,7 +44,7 @@ local function titleButton(style: Style, icon: string | State<string>, onClick: 
 		local s = math.floor(0.7 * self:Get())
 		return UDim2.fromOffset(s, s)
 	end)
-	return D.ImageButton({
+	return ImageButton({
 		hover.Hook,
 		-- closing the window hides an ANCESTOR of the button: no MouseLeave comes, so drop the hover look explicitly
 		q.Effect(function()
@@ -61,7 +65,7 @@ local function titleButton(style: Style, icon: string | State<string>, onClick: 
 			onClick()
 		end,
 		UICorner = 100,
-		D.ImageLabel({
+		ImageLabel({
 			Name = "Icon",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.fromScale(0.5, 0.5),
@@ -130,7 +134,7 @@ function TitleBar.new(spec: TitleBarSpec): Frame
 		return UDim2.new(1, 0, 0, self:Get())
 	end)
 
-	return D.Frame({
+	return Frame({
 		if spec.Drag then spec.Drag.Hook else q.None,
 		Name = "TitleBar",
 		Size = barSize,
@@ -138,13 +142,13 @@ function TitleBar.new(spec: TitleBarSpec): Frame
 		BackgroundTransparency = bgAlpha,
 		BorderSizePixel = 0,
 		Active = true,
-		D.UIPadding({ PaddingLeft = sidePad, PaddingRight = sidePad }),
+		UIPadding({ PaddingLeft = sidePad, PaddingRight = sidePad }),
 		if spec.NoCollapse
 			then q.None
 			else titleButton(style, arrow, function()
 				collapsed:Set(not collapsed:Get())
 			end, "Left", buttonSize, spec.Open),
-		D.TextLabel({
+		TextLabel({
 			Name = "Title",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
@@ -156,7 +160,7 @@ function TitleBar.new(spec: TitleBarSpec): Frame
 			TextTransparency = style.Transparency.Text,
 			TextXAlignment = align,
 			TextTruncate = Enum.TextTruncate.AtEnd,
-			D.UIPadding({ PaddingLeft = leftPad, PaddingRight = rightPad }),
+			UIPadding({ PaddingLeft = leftPad, PaddingRight = rightPad }),
 		}),
 		if spec.NoClose
 			then q.None

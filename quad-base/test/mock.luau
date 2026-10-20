@@ -813,7 +813,7 @@ end
 -- 3벌 복사가 추출 트리거). mock이 install 표면의 소유자라 여기가 집이다.
 local Quad = require("../src")
 local function newQuad(): any
-	local q = Quad.New()
+	local q = Quad.NewModule()
 	installLifetime(q) -- mockProvider가 생명주기+native*+isInst 전부 설치
 	return q
 end

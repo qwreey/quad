@@ -84,8 +84,10 @@ local Preview = require("@self/Material/Preview")
 local HexField = require("@self/Material/HexField")
 local Fields = require("@self/Material/Fields")
 local SwatchesModule = require("@self/Material/Swatches")
-local D = q.Declaration
-local pickerName = D.Modifier.Frame():Name("ColorPicker")
+local Frame = q.Elem "Frame"
+local UIListLayout = q.Elem "UIListLayout"
+local FrameModifier = q.Modifier "Frame"
+local pickerName = FrameModifier():Name("ColorPicker")
 
 export type HSV = ColorModel.HSV
 export type Mode = Model.Mode
@@ -104,7 +106,7 @@ export type PanelProps = {
 	read Surface: (Color3 | q.State<Color3>)?,
 	read Disabled: (boolean | q.State<boolean>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -126,7 +128,7 @@ export type ModalOptions = {
 	read Theme: Theme.Theme?,
 }
 
-local baseModifier = D.Modifier.Frame()
+local baseModifier = FrameModifier()
 	:Size(UDim2.fromScale(1, 0))
 	:AutomaticSize(Enum.AutomaticSize.Y)
 	:BackgroundTransparency(1)
@@ -151,37 +153,37 @@ local function Panel(props: PanelProps)
 		Model = model,
 		Theme = theme,
 		Disabled = props.Disabled,
-		Modifier = D.Modifier.Frame():Size(UDim2.new(1, -68, 0, 0)),
+		Modifier = FrameModifier():Size(UDim2.new(1, -68, 0, 0)),
 	})
 	local veil: q.State<number> = disabled:Compute(function(self)
 		return if self:Get() then 0.38 else 1
 	end)
 
-	return D.Frame {
+	return Frame {
 		pickerName,
 		baseModifier,
 		props.Modifier or q.None,
 		model.Sync or q.None,
 		hex.Sync,
-		D.Frame {
+		Frame {
 			Name = "Content",
 			Size = UDim2.fromScale(1, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIListLayout {
+			UIListLayout {
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding = UDim.new(0, 12),
 			},
 			SVArea({ Model = model, Theme = theme, Height = props.AreaHeight, Disabled = disabled, LayoutOrder = 1 }),
 			HueSlider({ Model = model, Theme = theme, Disabled = disabled, LayoutOrder = 2 }),
-			D.Frame {
+			Frame {
 				Name = "ValueRow",
 				Size = UDim2.new(1, 0, 0, 56),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				LayoutOrder = 3,
-				D.UIListLayout {
+				UIListLayout {
 					FillDirection = Enum.FillDirection.Horizontal,
 					VerticalAlignment = Enum.VerticalAlignment.Center,
 					SortOrder = Enum.SortOrder.LayoutOrder,
@@ -193,7 +195,7 @@ local function Panel(props: PanelProps)
 			if props.ShowChannels == false then q.None else Fields({ Model = model, Theme = theme, LayoutOrder = 4 }),
 			SwatchesModule.Swatches({ Model = model, Theme = theme, Swatches = props.Swatches, LayoutOrder = 5 }),
 		},
-		D.Frame {
+		Frame {
 			Name = "DisabledVeil",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundColor3 = surface,

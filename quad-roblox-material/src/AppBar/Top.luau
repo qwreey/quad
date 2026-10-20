@@ -62,7 +62,10 @@ local Style = require("../Button/Style")
 local Overlay = require("../Overlay")
 local Actions = require("./Actions")
 local Scroll = require("./Scroll")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local FrameModifier = q.Modifier "Frame"
 
 export type Alignment = "Start" | "Center"
 
@@ -79,7 +82,7 @@ export type Props = {
 	read Overlay: Overlay.Overlay?,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -161,7 +164,7 @@ local function slots(props: Props, theme: Theme.Theme): Built
 	if entry ~= nil then
 		local list, width = Actions.build({ entry }, { Theme = theme, Color = R.OnSurface, Overlay = props.Overlay })
 		navWidth = width
-		nav = D.Frame {
+		nav = Frame {
 			Name = "NavigationIcon",
 			AnchorPoint = Vector2.new(0, 0.5),
 			Position = UDim2.new(0, PAD, 0.5, 0),
@@ -181,14 +184,14 @@ local function slots(props: Props, theme: Theme.Theme): Built
 			MaxItemCount = props.MaxItemCount,
 		})
 		actionsWidth = width
-		actions = D.Frame {
+		actions = Frame {
 			Name = "Actions",
 			AnchorPoint = Vector2.new(1, 0.5),
 			Position = UDim2.new(1, -PAD, 0.5, 0),
 			Size = UDim2.fromOffset(width, Actions.SIZE),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIListLayout {
+			UIListLayout {
 				FillDirection = Enum.FillDirection.Horizontal,
 				HorizontalAlignment = Enum.HorizontalAlignment.Right,
 				VerticalAlignment = Enum.VerticalAlignment.Center,
@@ -234,7 +237,7 @@ local function titleNode(s: TitleSpec): Instance
 		color: any,
 		at: { Anchor: Vector2?, Position: UDim2, Size: UDim2 }
 	): Instance
-		return D.TextLabel {
+		return TextLabel {
 			Name = name,
 			Text.Label(role),
 			AnchorPoint = at.Anchor,
@@ -252,7 +255,7 @@ local function titleNode(s: TitleSpec): Instance
 	if s.Subtitle == nil then
 		return label("Title", s.Title, s.TitleRole, theme.Color.OnSurface, { Anchor = anchor, Position = position, Size = size })
 	end
-	return D.Frame {
+	return Frame {
 		Name = "TitleColumn",
 		AnchorPoint = anchor,
 		Position = position,
@@ -298,9 +301,9 @@ local function singleRow(name: string, props: Props, center: boolean): Frame
 	end
 
 	local start = math.max(TITLE_INSET, PAD + built.NavWidth)
-	local bar = D.Frame {
+	local bar = Frame {
 		Util.frameName(name),
-		D.Modifier.Frame():Size(height),
+		FrameModifier():Size(height),
 		BackgroundColor3 = color,
 		BorderSizePixel = 0,
 		ClipsDescendants = true,
@@ -383,15 +386,15 @@ local function twoRows(name: string, props: Props, spec: TwoRowSpec): Frame
 	fromBottom = math.max(0, math.round(fromBottom))
 
 	local start = math.max(TITLE_INSET, PAD + built.NavWidth)
-	local bar = D.Frame {
+	local bar = Frame {
 		Util.frameName(name),
-		D.Modifier.Frame():Size(hostSize),
+		FrameModifier():Size(hostSize),
 		BackgroundColor3 = color,
 		BorderSizePixel = 0,
 		ClipsDescendants = true,
 		LayoutOrder = props.LayoutOrder,
 		props.Modifier or q.None,
-		D.Frame {
+		Frame {
 			Name = "TopRow",
 			Size = UDim2.new(1, 0, 0, collapsed),
 			BackgroundTransparency = 1,
@@ -412,7 +415,7 @@ local function twoRows(name: string, props: Props, spec: TwoRowSpec): Frame
 			}),
 			built.Actions or q.None,
 		},
-		D.Frame {
+		Frame {
 			Name = "BottomRow",
 			Position = UDim2.fromOffset(0, collapsed),
 			Size = bottomSize,

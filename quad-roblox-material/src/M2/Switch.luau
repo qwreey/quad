@@ -34,8 +34,10 @@ local Interactive = require("../Interactive")
 local Elevation = require("../Elevation")
 local Style = require("../Button/Style")
 local Behavior = require("../Switch/Behavior")
-local D = q.Declaration
-local switchName = D.Modifier.TextButton():Name("M2Switch")
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
+local TextButtonModifier = q.Modifier "TextButton"
+local switchName = TextButtonModifier():Name("M2Switch")
 
 export type Props = Behavior.Props
 
@@ -44,7 +46,7 @@ local OFF_X, ON_X = 20, 36 -- thumb centers
 local THUMB = 20
 local TRACK_W, TRACK_H = 36, 14
 
-local baseModifier = D.Modifier.TextButton()
+local baseModifier = TextButtonModifier()
 	:Size(UDim2.fromOffset(W, H))
 	:BackgroundTransparency(1)
 	:BorderSizePixel(0)
@@ -98,7 +100,7 @@ local function Switch(props: Props)
 	end, s.DragFrac)
 	local slide = Tokens.Motion.options("Short4", "Standard")
 
-	return D.TextButton {
+	return TextButton {
 		switchName,
 		baseModifier,
 		props.Modifier or q.None,
@@ -106,7 +108,7 @@ local function Switch(props: Props)
 		s.DragHook,
 		Interactable = s.Interactable,
 		Activated = s.Activated,
-		D.Frame {
+		Frame {
 			Name = "Track",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.fromOffset((OFF_X + ON_X) / 2, H / 2), -- 28 = W / 2
@@ -116,7 +118,7 @@ local function Switch(props: Props)
 			BorderSizePixel = 0,
 			UICorner = corner,
 		},
-		D.Frame {
+		Frame {
 			Name = "Halo",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = haloPosition:Apply(q.Animate({
@@ -129,7 +131,7 @@ local function Switch(props: Props)
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			fx.Layer,
-			D.Frame {
+			Frame {
 				Name = "Thumb",
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				Position = UDim2.fromScale(0.5, 0.5),

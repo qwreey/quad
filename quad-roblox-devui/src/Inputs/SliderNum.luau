@@ -10,7 +10,7 @@
 			Format: string?,                       default "%d" for an integral Step, else "%.3f"
 			OnChange: ((n: number) -> ())?,        after Value changed through the UI
 			Disabled: (boolean | State<boolean>)?,
-			Style: Style?, Modifier: FrameModifier?, TrackModifier: FrameModifier?,
+			Style: Style?, Modifier: FrameModifier?, TrackModifier: FrameModifier?, TrackSpread: Spread<Frame>?,
 		}
 
 	Press / drag anywhere on the track: the grab centre follows the pointer (x taken from the input position against
@@ -20,9 +20,12 @@
 
 local Quad = require("../Quad")
 local q = Quad
-local D = q.Declaration
-local sliderNumName = D.Modifier.Frame():Name("SliderNum")
-local trackName = D.Modifier.Frame():Name("Track")
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIFlexItem = q.Elem "UIFlexItem"
+local FrameModifier = q.Modifier "Frame"
+local sliderNumName = FrameModifier():Name("SliderNum")
+local trackName = FrameModifier():Name("Track")
 local Common = require("../Common")
 local Interaction = require("../Interaction")
 local NumberFormat = require("./NumberFormat")
@@ -42,8 +45,9 @@ export type SliderNumProps = {
 	read OnChange: ((n: number) -> ())?,
 	read Disabled: (boolean | State<boolean>)?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
-	read TrackModifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
+	read TrackModifier: Quad.ModifierInto<Frame>?,
+	read TrackSpread: Quad.SpreadInto<Frame>?, -- [3.4.0] spread into the track (refs, hooks, descriptors)
 }
 
 local function SliderNum(props: SliderNumProps): Frame
@@ -100,7 +104,7 @@ local function SliderNum(props: SliderNumProps): Frame
 	local grabLook = Style.interactive(style, "SliderGrab", hover.Hovered, drag.Dragging)
 	local textLook = Common.textLook(style, enabled)
 
-	return D.Frame({
+	return Frame({
 		sliderNumName,
 		props.Modifier or q.None,
 		AutomaticSize = Enum.AutomaticSize.Y,
@@ -108,9 +112,10 @@ local function SliderNum(props: SliderNumProps): Frame
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Common.rowLayout(style),
-		D.Frame({
+		Frame({
 			trackName,
 			props.TrackModifier or q.None,
+			props.TrackSpread or q.None,
 			trackRef,
 			hover.Hook,
 			drag.Hook,
@@ -121,8 +126,8 @@ local function SliderNum(props: SliderNumProps): Frame
 			BorderSizePixel = 0,
 			UICorner = style.Metrics.FrameRounding,
 			Common.stroke(style),
-			D.UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill }),
-			D.Frame({
+			UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill }),
+			Frame({
 				Name = "Grab",
 				AnchorPoint = grabAnchor,
 				Position = grabPos,
@@ -132,7 +137,7 @@ local function SliderNum(props: SliderNumProps): Frame
 				BorderSizePixel = 0,
 				UICorner = style.Metrics.GrabRounding,
 			}),
-			D.TextLabel({
+			TextLabel({
 				Name = "ValueText",
 				ZIndex = 2,
 				Size = UDim2.fromScale(1, 1),

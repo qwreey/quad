@@ -2,7 +2,10 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ScreenGui = q.Elem "ScreenGui"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
 local Overlay = require("../src/Overlay")
 Overlay.warnUnmounted = false -- these specs open popups on a bare layer (no ScreenGui); the debug line has its own spec in spec.overlay
 local Tooltip = require("../src/Tooltip")
@@ -16,7 +19,7 @@ end
 H.section("hover delay shows it at the mouse; leaving hides; no pending timer afterwards", function()
 	local o = Overlay.new()
 	local tip = Tooltip.hook({ Text = "Saves the file", Overlay = o })
-	local target = D.TextButton({ tip.Hook, Text = "Save" })
+	local target = TextButton({ tip.Hook, Text = "Save" })
 	assert(tip.Visible:Get() == false and o.Count:Get() == 0 and H.pendingTimers() == 0)
 
 	H.setMouse(100, 50)
@@ -47,7 +50,7 @@ H.section("the GUI inset is subtracted from the mouse position", function()
 	end
 	local o = Overlay.new()
 	local tip = Tooltip.hook({ Text = "hint", Overlay = o })
-	local target = D.TextButton({ tip.Hook, Text = "t" })
+	local target = TextButton({ tip.Hook, Text = "t" })
 	H.setMouse(100, 86)
 	H.fire(target, "MouseEnter", 100, 86)
 	H.advance(0.6)
@@ -62,7 +65,7 @@ end)
 H.section("leaving before the delay cancels the timer; repeat cycles stay clean", function()
 	local o = Overlay.new()
 	local tip = Tooltip.hook({ Text = "t", Delay = 1, Overlay = o })
-	local target = D.TextButton({ tip.Hook, Text = "x" })
+	local target = TextButton({ tip.Hook, Text = "x" })
 	for _ = 1, 3 do
 		H.fire(target, "MouseEnter", 0, 0)
 		assert(H.pendingTimers() == 1)
@@ -90,7 +93,7 @@ H.section("Text as a State: the open tooltip follows it", function()
 	local o = Overlay.new()
 	local text = q.Source("one")
 	local tip = Tooltip.hook({ Text = text, Delay = 0, Overlay = o })
-	local target = D.Frame({ tip.Hook })
+	local target = Frame({ tip.Hook })
 	H.fire(target, "MouseEnter", 0, 0)
 	H.advance(0.01)
 	local label = get(o.Layer, "Tooltip")
@@ -110,12 +113,12 @@ H.section("Content factory: a fresh element per show, destroyed by the Overlay o
 		Overlay = o,
 		Delay = 0.1,
 		Content = function()
-			local f = D.Frame({ Name = "Rich", D.TextLabel({ Text = "rich" }) })
+			local f = Frame({ Name = "Rich", TextLabel({ Text = "rich" }) })
 			table.insert(made, f)
 			return f
 		end,
 	})
-	local target = D.Frame({ tip.Hook })
+	local target = Frame({ tip.Hook })
 	for cycle = 1, 2 do
 		H.fire(target, "MouseEnter", 0, 0)
 		H.advance(0.2)
@@ -131,7 +134,7 @@ end)
 H.section("pressing the target hides it; destroying the target cancels / closes with no leak", function()
 	local o = Overlay.new()
 	local tip = Tooltip.hook({ Text = "t", Delay = 0.5, Overlay = o })
-	local target = D.TextButton({ tip.Hook, Text = "x" })
+	local target = TextButton({ tip.Hook, Text = "x" })
 	H.fire(target, "MouseEnter", 0, 0)
 	H.advance(0.6)
 	assert(o.Count:Get() == 1)
@@ -149,7 +152,7 @@ H.section("pressing the target hides it; destroying the target cancels / closes 
 
 	-- destroyed while the delay is pending
 	local tip2 = Tooltip.hook({ Text = "t", Delay = 0.5, Overlay = o })
-	local target2 = D.TextButton({ tip2.Hook, Text = "y" })
+	local target2 = TextButton({ tip2.Hook, Text = "y" })
 	H.fire(target2, "MouseEnter", 0, 0)
 	assert(H.pendingTimers() == 1)
 	q.dispose(target2)
@@ -170,8 +173,8 @@ end)
 H.section("a tooltip whose overlay died shows nothing and does not throw from the timer thread", function()
 	local o = Overlay.new()
 	local tip = Tooltip.hook({ Text = "t", Overlay = o })
-	local target = D.TextButton({ tip.Hook, Text = "x" })
-	local gui = D.ScreenGui({ o.Layer })
+	local target = TextButton({ tip.Hook, Text = "x" })
+	local gui = ScreenGui({ o.Layer })
 	H.fire(target, "MouseEnter", 0, 0)
 	assert(H.pendingTimers() == 1)
 	q.dispose(gui) -- the layer dies while the timer is pending
@@ -219,8 +222,8 @@ end)
 H.section("a target hidden while the timer runs (its window closed) shows nothing; shown again, a new hover works", function()
 	local o = Overlay.new()
 	local tip = Tooltip.hook({ Text = "hint", Overlay = o })
-	local win = D.Frame({})
-	local target = D.TextButton({ tip.Hook, Text = "t" })
+	local win = Frame({})
+	local target = TextButton({ tip.Hook, Text = "t" })
 	target.Parent = win
 	H.fire(target, "MouseEnter", 10, 10)
 	win.Visible = false -- an ancestor hidden: no MouseLeave reaches the target
@@ -238,7 +241,7 @@ H.section("a target hidden while the timer runs (its window closed) shows nothin
 	H.advance(0.6)
 	assert(o.Count:Get() == 0, "target hidden")
 	target.Visible = true
-	local gui = D.ScreenGui({ ZIndexBehavior = Enum.ZIndexBehavior.Sibling })
+	local gui = ScreenGui({ ZIndexBehavior = Enum.ZIndexBehavior.Sibling })
 	win.Parent = gui
 	H.fire(target, "MouseEnter", 10, 10)
 	gui.Enabled = false

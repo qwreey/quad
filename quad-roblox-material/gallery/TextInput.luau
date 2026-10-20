@@ -10,7 +10,8 @@
 local q = require("./Quad")
 local Common = require("./Common")
 local Material = require("../src")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local UIGradient = q.Elem "UIGradient"
 
 type Ctx = Common.Ctx
 
@@ -142,7 +143,7 @@ return function(ctx: Ctx): Instance
 		return Material.Theme.new({ Scheme = "light" })
 	end)
 	local function backdrop(name: string, color: Color3 | q.State<Color3>, gradient: Instance?, field: Instance): Instance
-		return D.Frame {
+		return Frame {
 			Name = name,
 			Size = UDim2.fromOffset(280, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
@@ -164,7 +165,7 @@ return function(ctx: Ctx): Instance
 		backdrop(
 			"Pictured",
 			Color3.new(1, 1, 1),
-			D.UIGradient {
+			UIGradient {
 				Rotation = 35,
 				Color = ColorSequence.new({
 					ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 214, 140)),

@@ -13,13 +13,13 @@ local NotInstalled = require("./NotInstalled")
 -- name -> what the stub says is missing
 local TOP_LEVEL: { { name: string, what: string } } = {
 	{ name = "Elem", what = "the element constructors (q.Elem)" },
+	{ name = "Modifier", what = "the typed Modifier constructors (q.Modifier - the untyped one is q.Raw.Modifier)" },
 	{ name = "Spread", what = "the typed Spread (q.Spread - the untyped one is q.Raw.Spread)" },
 	{ name = "Mapper", what = "the typed mapper descriptors (q.Mapper - the untyped one is q.Raw.Mapper)" },
 	{ name = "OnChange", what = "property-change descriptors (q.OnChange)" },
 	{ name = "OnEvent", what = "event descriptors (q.OnEvent)" },
 	{ name = "Out", what = "property write-back descriptors (q.Out)" },
 	{ name = "ForClasses", what = "the typed surface over your own class map (q.ForClasses)" },
-	-- `Modifier` joins when base's own `q.Modifier` moves to `q.Raw.Modifier` (3.4.0 switch, plan unit 6)
 }
 
 local function Init(module: any)

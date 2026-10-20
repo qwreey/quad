@@ -13,7 +13,8 @@
 local q = require("./Quad")
 local Common = require("./Common")
 local Material = require("../src")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local FrameModifier = q.Modifier "Frame"
 
 type Ctx = Common.Ctx
 
@@ -262,7 +263,7 @@ return function(ctx: Ctx): Instance
 	local function tall(caption: string, control: Instance): Frame
 		return Common.Column({
 			Common.Caption(ctx, caption, false),
-			D.Frame {
+			Frame {
 				Name = "Tall",
 				Size = UDim2.fromOffset(120, 200),
 				BackgroundTransparency = 1,
@@ -271,8 +272,8 @@ return function(ctx: Ctx): Instance
 			},
 		}, 120, 4)
 	end
-	local function vModifier(width: number): q.FrameModifier
-		return D.Modifier.Frame():Position(UDim2.fromOffset(120 - width, 0)):Size(UDim2.fromOffset(width, 200))
+	local function vModifier(width: number): q.Modifier<Frame>
+		return FrameModifier():Position(UDim2.fromOffset(120 - width, 0)):Size(UDim2.fromOffset(width, 200))
 	end
 	local variants: { Instance } = {
 		Common.Column(sizeRows, 320, 8),

@@ -21,21 +21,21 @@ local REFLECTED: { [string]: { any } } = {
 	UICorner = { { Name = "Name", Permits = W }, { Name = "CornerRadius", Permits = W } },
 }
 local gameShim = mock.gameShim(REFLECTED)
-local q: any = Quad.New():UseProvider(QuadRoblox)
+local q: any = Quad.NewModule():UseProvider(QuadRoblox)
 ;(getfenv(installProperty) :: any).game = gameShim
 ;(getfenv(installProperty) :: any).TweenInfo = mock.tweenInfoShim
 ;(getfenv(installProperty) :: any).Enum = { EasingStyle = { Quad = "Quad" }, EasingDirection = { Out = "Out" } }
 ;(getfenv(installEvent) :: any).game = gameShim
 ;(getfenv(installShorthand) :: any).UDim = { new = function(s: number, o: number) return { Scale = s, Offset = o } end }
-;(getfenv(q.Declaration.New) :: any).Instance = { new = mock.Instance.new }
+;(getfenv(q.Elem) :: any).Instance = { new = mock.Instance.new }
 q.Backend.isInst = mock.isMockInstance
 
-local D, None, Modifier = q.Declaration, q.None, q.Modifier
+local None, Modifier = q.None, q.Raw.Modifier
 
 -- ── 예제 ① 단일 루트 컴포넌트 — 정본 관용구 그대로 ─────────────────────────
--- props: { Text: string?, Corner: number?, Modifier: TextButtonModifier?, Ref: Ref<TextButton?>?, Content: Instance? }
+-- props: { Text: string?, Corner: number?, Modifier: ModifierInto<TextButton>?, Ref: Ref<TextButton?>?, Content: Instance? }
 local function MaterialButton(props: any): any
-	return D.TextButton({
+	return q.Elem "TextButton" ({
 		props.Modifier or None, -- ⭐ 필수 관용구: nil-hole 방지(정본 "최종 결론" 1)
 		props.Ref or None,
 		props.Content or None,
@@ -48,7 +48,7 @@ end
 local function ItemList(props: any): any
 	local slot = q.Slot()
 	for _, name in props.Items do
-		slot:Add(D.TextLabel({ Text = name }))
+		slot:Add(q.Elem "TextLabel" ({ Text = name }))
 	end
 	return slot
 end
@@ -56,11 +56,11 @@ end
 print("=== 1. 단일 루트 — Modifier/Ref/자식이 named parameter로 경계를 넘어 내부 루트에 꽂힌다 ===")
 do
 	local ref = q.Ref()
-	local content = D.TextLabel({ Text = "icon" })
+	local content = q.Elem "TextLabel" ({ Text = "icon" })
 	local btn = MaterialButton({
 		Text = "OK",
 		Corner = 8,
-		Modifier = D.Modifier.TextButton():BackgroundTransparency(0.5),
+		Modifier = q.Modifier "TextButton" ():BackgroundTransparency(0.5),
 		Ref = ref,
 		Content = content,
 	})
@@ -84,7 +84,7 @@ do
 	assert(n == 0, "no stray children from None slots")
 	-- Ref만 넘겨도(Modifier nil) 위치가 밀리지 않는다 — None이 자리를 지킨다
 	local ref = q.Ref()
-	local btn2 = MaterialButton({ Ref = ref, Content = D.TextLabel({ Text = "x" }) })
+	local btn2 = MaterialButton({ Ref = ref, Content = q.Elem "TextLabel" ({ Text = "x" }) })
 	assert(ref.Value == btn2, "ref still binds with a None before it")
 	print("PASS")
 end
@@ -92,8 +92,8 @@ end
 print()
 print("=== 3. Modifier.Overridden — caller가 여러 modifier를 한 슬롯에 밀어넣는다(뒤가 이김) ===")
 do
-	local theme = D.Modifier.TextButton():BackgroundTransparency(0.2):Text("theme")
-	local override = D.Modifier.TextButton():BackgroundTransparency(0.9)
+	local theme = q.Modifier "TextButton" ():BackgroundTransparency(0.2):Text("theme")
+	local override = q.Modifier "TextButton" ():BackgroundTransparency(0.9)
 	local btn = MaterialButton({ Text = "merged", Modifier = Modifier.Overridden(theme, override) })
 	assert(btn.BackgroundTransparency == 0.9, "later modifier wins per field")
 	assert(btn.Text == "merged", "props의 Text(해시 키)가 modifier의 Text보다 뒤 — 해시 파트 순서(정본 flatten 규칙)")
@@ -103,17 +103,17 @@ end
 print()
 print("=== 4. Slot 반환 컴포넌트 — 형제 레벨에 래퍼 없이 펼쳐지고, 추가 항목이 그 자리에 끼어든다 ===")
 do
-	local header = D.TextLabel({ Text = "H" })
-	local footer = D.TextLabel({ Text = "F" })
+	local header = q.Elem "TextLabel" ({ Text = "H" })
+	local footer = q.Elem "TextLabel" ({ Text = "F" })
 	local list = ItemList({ Items = { "a", "b" } })
-	local frame = D.Frame({ header, list, footer })
+	local frame = q.Elem "Frame" ({ header, list, footer })
 	local names = {}
 	for _, c in frame:GetChildren() do table.insert(names, c.Text) end
 	assert(table.concat(names, ",") == "H,a,b,F", "flattened between siblings: " .. table.concat(names, ","))
 	-- 논리 순서는 Length/Offset 부기(정본 slot-plan) — 물리 자식 순서는 백엔드 몫이라
 	-- mock의 GetChildren은 부착 순서일 뿐(ROADMAP 백로그 "Slot 형제 순서 보장")
 	assert(q.Bookkeeping.getOffsetAt(frame, 3) == 3, "footer sits after header(1) + list(2)")
-	list:Add(D.TextLabel({ Text = "c" }))
+	list:Add(q.Elem "TextLabel" ({ Text = "c" }))
 	assert(q.Bookkeeping.getOffsetAt(frame, 3) == 4, "later Add shifts the footer's logical offset")
 	local found = false
 	for _, c in frame:GetChildren() do if c.Text == "c" then found = c.Parent == frame end end
@@ -131,7 +131,7 @@ do
 	assert(not pcall(function() return mod:AsTextButton() end), "checked upcast is rejected by design")
 	local function MaterialButtonComp(props: any): any
 		local forwarded = if props.Modifier then props.Modifier:As("TextButton") else None
-		return D.TextButton({ forwarded, Text = "m" })
+		return q.Elem "TextButton" ({ forwarded, Text = "m" })
 	end
 	local btn = MaterialButtonComp({ Modifier = mod })
 	assert(btn.BackgroundTransparency == 0.3 and btn.Text == "m", "subtype modifier forwarded as a TextButton modifier")
@@ -139,7 +139,7 @@ do
 	-- 아니라 None을 디스패치하고(정본 `None` 센티널), TextButton엔 Elevation 핸들러가 없어 error.
 	local withField = Material({ Elevation = 2 })
 	local ok, err = pcall(function()
-		return D.TextButton({ withField:Elevation(None):As("TextButton") })
+		return q.Elem "TextButton" ({ withField:Elevation(None):As("TextButton") })
 	end)
 	assert(not ok and string.find(tostring(err), "no handler matched key Elevation", 1, true) ~= nil, "observed gap (H-340): " .. tostring(err))
 	print("PASS")

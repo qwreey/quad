@@ -2,13 +2,13 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Theme = require("../src/Theme")
 local Tokens = require("../src/Tokens")
 
 H.section("default theme: light roles bound to a property, switch tweens to dark", function()
 	local theme = Theme.new({ Scheme = "light" })
-	local f = D.Frame {
+	local f = Frame {
 		BackgroundColor3 = theme.Color.Primary,
 		BorderColor3 = theme.Color.Outline,
 	}

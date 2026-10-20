@@ -473,7 +473,7 @@ end
 print()
 print("=== 11. 미주입 백엔드 — 맨 Quad.New()에선 setTimeout 스텁이 안내 에러(첫 신호 때) ===")
 do
-	local bare = Quad.New()
+	local bare = Quad.NewModule()
 	local s = bare.Source(0)
 	local g: State<number> = s:Apply(bare.Debounce({ Time = 1 }))
 	assert(g:Get() == 0, "Apply itself needs no timer")
@@ -488,7 +488,7 @@ print()
 print("=== 12. round11 H-541/H-542 (2026-09-17) — 게이트 핸들 Flush의 blame은 사용자 줄; Trailing = false Debounce는 MaxTime을 읽지도 않는다 ===")
 do
 	-- H-541: the per-gate handle's Flush is public surface — a backend-less throw blames this file
-	local bare = Quad.New()
+	local bare = Quad.NewModule()
 	local s = bare.Source(0)
 	local handle = bare.Ref(nil :: GateHandle?)
 	local g: State<number> = s:Apply(bare.Debounce({ Time = 1, Handle = handle }))

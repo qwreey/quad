@@ -35,8 +35,12 @@
 
 local Quad = require("./Quad")
 local q = Quad
-local D = q.Declaration
-local tabBarName = D.Modifier.Frame():Name("TabBar")
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local FrameModifier = q.Modifier "Frame"
+local tabBarName = FrameModifier():Name("TabBar")
 local Common = require("./Common")
 local Interaction = require("./Interaction")
 local Style = require("./Style")
@@ -65,7 +69,7 @@ export type TabBarProps<K> = {
 	read OnChange: ((key: K) -> ())?,
 	read NoPages: boolean?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 local function Tab<K>(props: TabProps<K>): TabDef<K>
@@ -117,7 +121,7 @@ local function TabBar<K>(props: TabBarProps<K>): Frame
 			return if self:Get() then active:Get() else normal:Get()
 		end, look.Transparency, style.Transparency.TabActive)
 
-		buttons[i] = D.TextButton({
+		buttons[i] = TextButton({
 			hover.Hook,
 			Name = `Tab:{label}`,
 			LayoutOrder = i,
@@ -141,11 +145,11 @@ local function TabBar<K>(props: TabBarProps<K>): Frame
 				end
 			end,
 			UICorner = metrics.TabRounding,
-			D.UIPadding({ PaddingLeft = padX, PaddingRight = padX, PaddingTop = padY, PaddingBottom = padY }),
+			UIPadding({ PaddingLeft = padX, PaddingRight = padX, PaddingTop = padY, PaddingBottom = padY }),
 		})
 
 		if not noPages then
-			pages[i] = D.Frame({
+			pages[i] = Frame({
 				Name = `Page:{label}`,
 				LayoutOrder = i,
 				Visible = isSelected,
@@ -153,7 +157,7 @@ local function TabBar<K>(props: TabBarProps<K>): Frame
 				Size = UDim2.new(1, 0, 0, 0),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIListLayout({
+				UIListLayout({
 					FillDirection = Enum.FillDirection.Vertical,
 					SortOrder = Enum.SortOrder.LayoutOrder,
 					Padding = Util.pxY(metrics.ItemSpacing),
@@ -163,33 +167,33 @@ local function TabBar<K>(props: TabBarProps<K>): Frame
 		end
 	end
 
-	return D.Frame({
+	return Frame({
 		tabBarName,
 		props.Modifier or q.None,
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIListLayout({
+		UIListLayout({
 			FillDirection = Enum.FillDirection.Vertical,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = UDim.new(0, 0),
 		}),
-		D.Frame({
+		Frame({
 			Name = "Bar",
 			LayoutOrder = 0,
 			AutomaticSize = Enum.AutomaticSize.Y,
 			Size = UDim2.new(1, 0, 0, 0),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIListLayout({
+			UIListLayout({
 				FillDirection = Enum.FillDirection.Horizontal,
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding = Util.pxX(metrics.ItemInnerSpacing),
 			}),
 			q.Slot(buttons),
 		}),
-		D.Frame({
+		Frame({
 			Name = "Underline",
 			LayoutOrder = 1,
 			Size = UDim2.new(1, 0, 0, 1),
@@ -199,14 +203,14 @@ local function TabBar<K>(props: TabBarProps<K>): Frame
 		}),
 		if noPages
 			then q.None
-			else D.Frame({
+			else Frame({
 				Name = "Pages",
 				LayoutOrder = 2,
 				AutomaticSize = Enum.AutomaticSize.Y,
 				Size = UDim2.new(1, 0, 0, 0),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIPadding({ PaddingTop = Util.pxY(metrics.ItemSpacing) }),
+				UIPadding({ PaddingTop = Util.pxY(metrics.ItemSpacing) }),
 				q.Slot(pages),
 			}),
 	})

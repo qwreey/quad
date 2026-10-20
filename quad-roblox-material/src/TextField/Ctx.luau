@@ -42,7 +42,7 @@ export type Props = {
 	-- draws the focused look while true (Select: menu open)
 	read ForceFocused: q.State<boolean>?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 

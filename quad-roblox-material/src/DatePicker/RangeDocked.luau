@@ -38,8 +38,9 @@ local Calendar = require("./Calendar")
 local Docked = require("./Docked")
 local Status = require("./Status")
 local View = require("./View")
-local D = q.Declaration
-local pickerName = D.Modifier.Frame():Name("DockedRangePicker")
+local Frame = q.Elem "Frame"
+local FrameModifier = q.Modifier "Frame"
+local pickerName = FrameModifier():Name("DockedRangePicker")
 
 type Date = Calendar.Date
 
@@ -55,11 +56,11 @@ export type Props = {
 	read UtcOffset: number?,
 	read OnChange: ((start: Date, finish: Date?) -> ())?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
-local baseModifier = D.Modifier.Frame():Size(UDim2.fromOffset(Body.Width, Body.Height)):BorderSizePixel(0)
+local baseModifier = FrameModifier():Size(UDim2.fromOffset(Body.Width, Body.Height)):BorderSizePixel(0)
 
 local function RangeDocked(props: Props): Frame
 	local theme = Theme.resolve(props.Theme)
@@ -102,7 +103,7 @@ local function RangeDocked(props: Props): Frame
 		end,
 	})
 
-	return D.Frame {
+	return Frame {
 		pickerName,
 		baseModifier,
 		props.Modifier or q.None,

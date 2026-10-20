@@ -7,7 +7,8 @@ local ClickSink = require("./support/clicksink")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local FrameModifier = q.Modifier "Frame"
 local Tokens = require("../src/Tokens")
 local Overlay = require("../src/Overlay")
 local Icons = require("../src/Icons")
@@ -375,7 +376,7 @@ end)
 
 local function setupModal(w: number?, h: number?)
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	if w ~= nil and h ~= nil then
 		H.setAbs(overlay.Layer, 0, 0, w, h)
 	end
@@ -524,7 +525,7 @@ H.section("Hooks / Modifier on the hosts; ripples bounded; dispose leaves nothin
 		end) }
 	end
 	local value = q.Source(Clock.time(10, 10))
-	local dial = TimePicker.Dial({ Value = value, Hooks = hooks(), Modifier = D.Modifier.Frame():Position(UDim2.fromOffset(5, 6)) })
+	local dial = TimePicker.Dial({ Value = value, Hooks = hooks(), Modifier = FrameModifier():Position(UDim2.fromOffset(5, 6)) })
 	local input = TimePicker.Input({ Value = value, Hooks = hooks() })
 	assert(seen[1] == dial and seen[2] == input, "Hooks reached the hosts")
 	assert(dial.Position == UDim2.fromOffset(5, 6))

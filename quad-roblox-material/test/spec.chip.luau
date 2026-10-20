@@ -3,7 +3,8 @@ local H = require("./support/harness")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextButtonModifier = q.Modifier "TextButton"
 local Tokens = require("../src/Tokens")
 local Chip = require("../src/Chip")
 local Icons = require("../src/Icons")
@@ -185,7 +186,7 @@ H.section("ChipSet: keyed insert/remove reuses elements, order follows the data"
 			end)
 			return Chip.Input({
 				Label = name,
-				Modifier = D.Modifier.TextButton():LayoutOrder(order),
+				Modifier = TextButtonModifier():LayoutOrder(order),
 				OnRemove = function() end,
 			})
 		end,
@@ -223,7 +224,7 @@ end)
 
 H.section("dispose: everything destroyed, nothing leaks", function()
 	local on = q.Source(true)
-	local root = D.Frame {
+	local root = Frame {
 		Chip.Assist({ Label = "A", Elevated = true }),
 		Chip.Filter({ Label = "F", Selected = on }),
 		Chip.Input({ Label = "I", OnRemove = function() end }),

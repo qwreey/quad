@@ -14,7 +14,8 @@
 local q = require("./Quad")
 local Common = require("./Common")
 local Material = require("../src")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextButtonModifier = q.Modifier "TextButton"
 
 type Ctx = Common.Ctx
 
@@ -313,7 +314,7 @@ return function(ctx: Ctx): Instance
 		local state = Material.SheetState({ InitialValue = "Expanded", EnabledValues = { "Hidden", "Expanded" } })
 		local atEnd = edge == "End"
 		return Common.Screen(ctx, name, 460, 300, {
-			D.Frame {
+			Frame {
 				Name = "Content",
 				Size = UDim2.fromScale(1, 1),
 				BorderSizePixel = 0,
@@ -323,8 +324,7 @@ return function(ctx: Ctx): Instance
 				Theme = theme,
 				Variant = "Outlined",
 				Label = if atEnd then "Toggle detached" else "Toggle start",
-				Modifier = D.Modifier
-					.TextButton()
+				Modifier = TextButtonModifier()
 					:AnchorPoint(Vector2.new(if atEnd then 0 else 1, 0))
 					:Position(UDim2.new(if atEnd then 0 else 1, if atEnd then 16 else -16, 0, 16)),
 				OnClick = function()
@@ -384,7 +384,7 @@ return function(ctx: Ctx): Instance
 				Theme = theme,
 				Variant = "Outlined",
 				Label = "Toggle side sheet",
-				Modifier = D.Modifier.TextButton():Position(UDim2.fromOffset(16, 16)),
+				Modifier = TextButtonModifier():Position(UDim2.fromOffset(16, 16)),
 				OnClick = function()
 					if sideState.TargetValue:Get() == "Hidden" then
 						sideState.Expand()

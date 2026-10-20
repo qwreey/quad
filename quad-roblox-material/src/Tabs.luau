@@ -53,8 +53,14 @@ local Text = require("./Text")
 local Style = require("./Button/Style")
 local ColorTokens = require("./Tokens/Color")
 local KeyedSlot = require("./Chip/KeyedSlot")
-local D = q.Declaration
-local tabsName = D.Modifier.Frame():Name("Tabs")
+local Frame = q.Elem "Frame"
+local ImageLabel = q.Elem "ImageLabel"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
+local UIFlexItem = q.Elem "UIFlexItem"
+local UIListLayout = q.Elem "UIListLayout"
+local FrameModifier = q.Modifier "Frame"
+local tabsName = FrameModifier():Name("Tabs")
 
 export type Variant = "Primary" | "Secondary"
 export type Tab<K> = { read Key: K, read Label: string, read Icon: string? }
@@ -68,7 +74,7 @@ export type Props<K> = {
 	read OnChange: ((key: K) -> ())?,
 	read OnClick: ((key: K) -> ())?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -77,7 +83,7 @@ type Geo = { Index: number, Count: number }
 local ICON = 24
 local MIN_INDICATOR = 24
 
-local baseModifier = D.Modifier.Frame():BackgroundTransparency(1):BorderSizePixel(0)
+local baseModifier = FrameModifier():BackgroundTransparency(1):BorderSizePixel(0)
 local labelStyle = Text.Label("TitleSmall")
 
 local function Tabs<K>(props: Props<K>): Frame
@@ -163,7 +169,7 @@ local function Tabs<K>(props: Props<K>): Frame
 			local s: q.State<string> = item:Compute(function(self)
 				return self:Get().Icon or ""
 			end)
-			icon = D.ImageLabel {
+			icon = ImageLabel {
 				Name = "Icon",
 				Size = UDim2.fromOffset(ICON, ICON),
 				BackgroundTransparency = 1,
@@ -175,7 +181,7 @@ local function Tabs<K>(props: Props<K>): Frame
 		end
 		local stacked = primary and hasIcon
 
-		return D.TextButton {
+		return TextButton {
 			Name = "Tab",
 			Size = UDim2.fromScale(0, 1),
 			BackgroundTransparency = 1,
@@ -194,9 +200,9 @@ local function Tabs<K>(props: Props<K>): Frame
 					props.OnClick(key)
 				end
 			end,
-			D.UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
+			UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
 			fx.Layer,
-			D.Frame {
+			Frame {
 				Name = "Content",
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				Position = UDim2.fromScale(0.5, 0.5),
@@ -204,7 +210,7 @@ local function Tabs<K>(props: Props<K>): Frame
 				AutomaticSize = Enum.AutomaticSize.XY,
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIListLayout {
+				UIListLayout {
 					FillDirection = if stacked then Enum.FillDirection.Vertical else Enum.FillDirection.Horizontal,
 					HorizontalAlignment = Enum.HorizontalAlignment.Center,
 					VerticalAlignment = Enum.VerticalAlignment.Center,
@@ -212,7 +218,7 @@ local function Tabs<K>(props: Props<K>): Frame
 					Padding = UDim.new(0, if stacked then 2 else 8),
 				},
 				icon or q.None,
-				D.TextLabel {
+				TextLabel {
 					Name = "Label",
 					labelStyle,
 					Size = UDim2.fromScale(0, 0),
@@ -223,7 +229,7 @@ local function Tabs<K>(props: Props<K>): Frame
 					TextColor3 = contentColor,
 					LayoutOrder = 2,
 					if primary
-						then q.OnChange("AbsoluteSize", function(v: Vector2)
+						then q.OnChange "TextLabel" "AbsoluteSize" (function(v: Vector2)
 							if labelWidths[key] ~= v.X then
 								labelWidths[key] = v.X
 								widthsVersion:Set(widthsVersion:Get() + 1)
@@ -239,16 +245,16 @@ local function Tabs<K>(props: Props<K>): Frame
 	end
 
 	local trackBase = UDim2.new(1, 0, 0, trackHeight)
-	return D.Frame {
+	return Frame {
 		tabsName,
 		baseModifier:Size(UDim2.new(1, 0, 0, height)),
 		props.Modifier or q.None,
-		D.Frame {
+		Frame {
 			Name = "Row",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIListLayout {
+			UIListLayout {
 				FillDirection = Enum.FillDirection.Horizontal,
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				VerticalAlignment = Enum.VerticalAlignment.Center,
@@ -257,7 +263,7 @@ local function Tabs<K>(props: Props<K>): Frame
 				return t.Key
 			end, tab),
 		},
-		D.Frame {
+		Frame {
 			Name = "Divider",
 			AnchorPoint = Vector2.new(0, 1),
 			Position = UDim2.fromScale(0, 1),
@@ -265,7 +271,7 @@ local function Tabs<K>(props: Props<K>): Frame
 			BorderSizePixel = 0,
 			BackgroundColor3 = theme.Color.OutlineVariant,
 		},
-		D.Frame {
+		Frame {
 			Name = "Track",
 			AnchorPoint = Vector2.new(0, 1),
 			Position = UDim2.fromScale(0, 1),
@@ -273,7 +279,7 @@ local function Tabs<K>(props: Props<K>): Frame
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			ClipsDescendants = true,
-			D.Frame {
+			Frame {
 				Name = "Indicator",
 				AnchorPoint = if primary then Vector2.new(0.5, 0) else Vector2.new(0, 0),
 				Position = position:Apply(motion),

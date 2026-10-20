@@ -2,7 +2,8 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local TextBox = q.Elem "TextBox"
+local TextButton = q.Elem "TextButton"
 
 H.section("mount + event + q.Out + tween", function()
 	local clicks = 0
@@ -11,8 +12,8 @@ H.section("mount + event + q.Out + tween", function()
 	local color = hover:Compute(function(self)
 		return if self:Get() then Color3.new(1, 0, 0) else Color3.new(0, 0, 1)
 	end):Apply(q.Animate({ Time = 0.2 }))
-	local box = D.TextBox({ Text = text, q.Out("Text", text) })
-	local btn = D.TextButton({
+	local box = TextBox({ Text = text, q.Out "TextBox" "Text" (text) })
+	local btn = TextButton({
 		Text = text,
 		BackgroundColor3 = color,
 		Size = UDim2.fromOffset(10, 10),

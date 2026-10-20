@@ -27,13 +27,18 @@
 
 local Quad = require("./Quad")
 local q = Quad
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ImageLabel = q.Elem "ImageLabel"
+local TextButton = q.Elem "TextButton"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local FrameModifier = q.Modifier "Frame"
 -- the host Name is an argument here; a closed set of names, so each builds one Modifier
-local hostNames: { [string]: Quad.FrameModifier } = {}
-local function hostName(name: string): Quad.FrameModifier
+local hostNames: { [string]: Quad.Modifier<Frame> } = {}
+local function hostName(name: string): Quad.Modifier<Frame>
 	local m = hostNames[name]
 	if m == nil then
-		m = D.Modifier.Frame():Name(name)
+		m = FrameModifier():Name(name)
 		hostNames[name] = m
 	end
 	return m
@@ -56,7 +61,7 @@ export type TreeProps = {
 	read SpanAvailWidth: boolean?,
 	read NoIndent: boolean?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 export type CollapsingHeaderProps = {
@@ -65,7 +70,7 @@ export type CollapsingHeaderProps = {
 	read OnChange: ((open: boolean) -> ())?,
 	read Children: Slot<Instance>?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 local function build(
@@ -78,7 +83,7 @@ local function build(
 	indented: boolean,
 	collapsing: boolean,
 	styleProp: Style?,
-	modifier: Quad.FrameModifier?
+	modifier: Quad.ModifierInto<Frame>?
 ): Frame
 	local style = styleProp or Style.default
 	local open: Source<boolean> = openProp or q.Source(false)
@@ -105,7 +110,7 @@ local function build(
 	local padX, padY = Common.padXY(metrics.FramePadding)
 	local indent: State<UDim> | UDim = if indented then Util.px(metrics.IndentSpacing) else UDim.new(0, 0)
 
-	local header = D.TextButton({
+	local header = TextButton({
 		hover.Hook,
 		Name = "Header",
 		Text = text,
@@ -128,8 +133,8 @@ local function build(
 			end
 		end,
 		UICorner = metrics.FrameRounding,
-		D.UIPadding({ PaddingLeft = padLeft, PaddingRight = padX, PaddingTop = padY, PaddingBottom = padY }),
-		D.ImageLabel({
+		UIPadding({ PaddingLeft = padLeft, PaddingRight = padX, PaddingTop = padY, PaddingBottom = padY }),
+		ImageLabel({
 			Name = "Arrow",
 			AnchorPoint = Vector2.new(0, 0.5),
 			Position = arrowPos,
@@ -142,21 +147,21 @@ local function build(
 		}),
 	})
 
-	return D.Frame({
+	return Frame({
 		hostName(name),
 		modifier or q.None,
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIListLayout({
+		UIListLayout({
 			FillDirection = Enum.FillDirection.Vertical,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = Util.pxY(metrics.ItemSpacing),
 		}),
 		header,
 		if children
-			then D.Frame({
+			then Frame({
 				Name = "Children",
 				LayoutOrder = 1,
 				Visible = open,
@@ -164,8 +169,8 @@ local function build(
 				Size = UDim2.new(1, 0, 0, 0),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIPadding({ PaddingLeft = indent }),
-				D.UIListLayout({
+				UIPadding({ PaddingLeft = indent }),
+				UIListLayout({
 					FillDirection = Enum.FillDirection.Vertical,
 					SortOrder = Enum.SortOrder.LayoutOrder,
 					Padding = Util.pxY(metrics.ItemSpacing),

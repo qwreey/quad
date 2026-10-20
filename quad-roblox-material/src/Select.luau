@@ -52,7 +52,7 @@ export type Props<T> = {
 	read Overlay: Overlay.Overlay?,
 	read MaxMenuHeight: number?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 

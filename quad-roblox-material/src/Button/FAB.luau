@@ -31,8 +31,14 @@ local Text = require("../Text")
 local Style = require("./Style")
 local ColorTokens = require("../Tokens/Color")
 local ShapeTokens = require("../Tokens/Shape")
-local D = q.Declaration
-local fabName = D.Modifier.TextButton():Name("FAB")
+local Frame = q.Elem "Frame"
+local ImageLabel = q.Elem "ImageLabel"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local TextButtonModifier = q.Modifier "TextButton"
+local fabName = TextButtonModifier():Name("FAB")
 
 export type Size = "Small" | "Regular" | "Large"
 export type ColorName = "Surface" | "Primary" | "Secondary" | "Tertiary"
@@ -46,7 +52,7 @@ export type Props = {
 	read Disabled: (boolean | q.State<boolean>)?,
 	read OnClick: (() -> ())?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.TextButtonModifier?,
+	read Modifier: q.ModifierInto<TextButton>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -93,7 +99,7 @@ local function FAB(props: Props)
 		return if self:Get() then 4 else 3
 	end, disabled)
 
-	local base = D.Modifier.TextButton()
+	local base = TextButtonModifier()
 		:Size(if extended then UDim2.fromOffset(0, 56) else UDim2.fromOffset(sz.Box, sz.Box))
 		:BorderSizePixel(0)
 		:AutoButtonColor(false)
@@ -103,7 +109,7 @@ local function FAB(props: Props)
 	end
 
 	local iconSize = if extended then 24 else sz.Icon
-	local icon = D.ImageLabel {
+	local icon = ImageLabel {
 		Name = "Icon",
 		AnchorPoint = if extended then Vector2.new(0, 0.5) else Vector2.new(0.5, 0.5),
 		Position = if extended then UDim2.fromScale(0, 0.5) else UDim2.fromScale(0.5, 0.5),
@@ -118,7 +124,7 @@ local function FAB(props: Props)
 
 	local content: Instance? = nil
 	if extended then
-		content = D.Frame {
+		content = Frame {
 			Name = "Content",
 			-- at (0, 0) by offset: the host is AutomaticSize X, so a centered (scale) position would depend on the width
 			-- being computed (Button/init.luau "SIZING")
@@ -126,8 +132,8 @@ local function FAB(props: Props)
 			AutomaticSize = Enum.AutomaticSize.X,
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIPadding { PaddingLeft = UDim.new(0, 16), PaddingRight = UDim.new(0, 20) },
-			D.UIListLayout {
+			UIPadding { PaddingLeft = UDim.new(0, 16), PaddingRight = UDim.new(0, 20) },
+			UIListLayout {
 				FillDirection = Enum.FillDirection.Horizontal,
 				HorizontalAlignment = Enum.HorizontalAlignment.Left, -- auto-sized Content: Left (Button/init.luau "SIZING")
 				VerticalAlignment = Enum.VerticalAlignment.Center,
@@ -135,7 +141,7 @@ local function FAB(props: Props)
 				Padding = UDim.new(0, 8),
 			},
 			icon,
-			D.TextLabel {
+			TextLabel {
 				Name = "Label",
 				labelStyle,
 				Size = UDim2.fromScale(0, 1),
@@ -151,7 +157,7 @@ local function FAB(props: Props)
 	end
 	local hooks = Util.hooks(props.Hooks)
 
-	return D.TextButton {
+	return TextButton {
 		fabName,
 		base,
 		props.Modifier or q.None,

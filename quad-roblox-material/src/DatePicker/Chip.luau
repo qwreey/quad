@@ -46,7 +46,8 @@ local Interaction = require("../Interaction")
 local Interactive = require("../Interactive")
 local Util = require("../Util")
 local Text = require("../Text")
-local D = q.Declaration
+local TextButton = q.Elem "TextButton"
+local UIStroke = q.Elem "UIStroke"
 
 export type Status = "Hidden" | "Disabled" | "Normal" | "Today" | "Selected" | "InRange" | "RangeStart" | "RangeEnd"
 
@@ -210,7 +211,7 @@ local function new(o: Options): TextButton
 		end)
 	end
 
-	return D.TextButton {
+	return TextButton {
 		Name = o.Name or "Chip",
 		Text.Button(o.Role or "BodyLarge"),
 		ix.Hook,
@@ -247,7 +248,7 @@ local function new(o: Options): TextButton
 				o.OnBlurred()
 			end
 		end,
-		D.UIStroke {
+		UIStroke {
 			Name = "Ring",
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 			Color = ringColor,

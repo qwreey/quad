@@ -2,7 +2,7 @@
 local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
-local D = q.Declaration
+local TextButtonModifier = q.Modifier "TextButton"
 local StoryParts = require("./StoryParts")
 local ICON = StoryParts.ICON
 local row = StoryParts.row
@@ -63,7 +63,7 @@ return StoryKit.story({
 						Label = item,
 						Disabled = c.Disabled,
 						Theme = theme,
-						Modifier = D.Modifier.TextButton():LayoutOrder(order),
+						Modifier = TextButtonModifier():LayoutOrder(order),
 						OnRemove = function()
 							local gone = item:Get()
 							local keep: { string } = {}

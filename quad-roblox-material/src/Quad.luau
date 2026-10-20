@@ -32,34 +32,19 @@ export type Context = QuadTypes.Context
 export type Provider<T> = QuadTypes.Provider<T>
 export type KeyGone = QuadTypes.KeyGone
 
--- generated Declaration types (quad-roblox module root — the only public path to them)
-export type Field<T> = RobloxModule.Field<T>
-export type FieldOut<T> = RobloxModule.FieldOut<T>
+-- typed surface (quad-roblox module root): one generic per axis, the class is the type argument
+export type Modifier<C> = RobloxModule.Modifier<C>
+export type ModifierInto<C> = RobloxModule.ModifierInto<C>
+export type Spread<C> = RobloxModule.Spread<C>
+export type SpreadInto<C> = RobloxModule.SpreadInto<C>
+export type Props<C> = RobloxModule.Props<C>
+export type ElemCtor<C> = RobloxModule.ElemCtor<C>
+export type OnChangeDescriptor<K> = RobloxModule.OnChangeDescriptor<K>
+export type OnEventDescriptor<K> = RobloxModule.OnEventDescriptor<K>
+export type ModifierField<T> = RobloxModule.ModifierField<T>
+export type ModifierFieldOut<T> = RobloxModule.ModifierFieldOut<T>
 export type Tween<T> = RobloxModule.Tween<T>
 export type TweenOptions<T> = RobloxModule.TweenOptions<T>
 export type AnimateInfo = RobloxModule.AnimateInfo
-export type OnChangeFn = RobloxModule.OnChangeFn
-export type GuiObjectModifier = RobloxModule.GuiObjectModifier
-export type IntoGuiObject = RobloxModule.IntoGuiObject
-export type GuiButtonModifier = RobloxModule.GuiButtonModifier
-export type IntoGuiButton = RobloxModule.IntoGuiButton
-export type FrameModifier = RobloxModule.FrameModifier
-export type IntoFrame = RobloxModule.IntoFrame
-export type TextLabelModifier = RobloxModule.TextLabelModifier
-export type IntoTextLabel = RobloxModule.IntoTextLabel
-export type TextButtonModifier = RobloxModule.TextButtonModifier
-export type IntoTextButton = RobloxModule.IntoTextButton
-export type TextBoxModifier = RobloxModule.TextBoxModifier
-export type IntoTextBox = RobloxModule.IntoTextBox
-export type ImageLabelModifier = RobloxModule.ImageLabelModifier
-export type IntoImageLabel = RobloxModule.IntoImageLabel
-export type ImageButtonModifier = RobloxModule.ImageButtonModifier
-export type IntoImageButton = RobloxModule.IntoImageButton
-export type ScrollingFrameModifier = RobloxModule.ScrollingFrameModifier
-export type IntoScrollingFrame = RobloxModule.IntoScrollingFrame
-export type CanvasGroupModifier = RobloxModule.CanvasGroupModifier
-export type IntoCanvasGroup = RobloxModule.IntoCanvasGroup
-export type ScreenGuiModifier = RobloxModule.ScreenGuiModifier
-export type IntoScreenGui = RobloxModule.IntoScreenGui
 
 return q

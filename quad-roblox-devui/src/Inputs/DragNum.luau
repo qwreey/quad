@@ -10,7 +10,7 @@
 			Format: string?,                       default "%d" for an integral Step, else "%.3f"
 			OnChange: ((n: number) -> ())?,        after Value changed through the UI
 			Disabled: (boolean | State<boolean>)?,
-			Style: Style?, Modifier: FrameModifier?, FieldModifier: TextBoxModifier?,
+			Style: Style?, Modifier: FrameModifier?, FieldModifier: TextBoxModifier?, FieldSpread: Spread<TextBox>?,
 		}
 
 	The drag uses Interaction.drag (global pointer tracking only while the button is held; closed on release, focus
@@ -20,8 +20,9 @@
 
 local Quad = require("../Quad")
 local q = Quad
-local D = q.Declaration
-local dragNumName = D.Modifier.Frame():Name("DragNum")
+local Frame = q.Elem "Frame"
+local FrameModifier = q.Modifier "Frame"
+local dragNumName = FrameModifier():Name("DragNum")
 local Common = require("../Common")
 local NumberField = require("./NumberField")
 local NumberFormat = require("./NumberFormat")
@@ -42,15 +43,16 @@ export type DragNumProps = {
 	read OnChange: ((n: number) -> ())?,
 	read Disabled: (boolean | State<boolean>)?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
-	read FieldModifier: Quad.TextBoxModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
+	read FieldModifier: Quad.ModifierInto<TextBox>?,
+	read FieldSpread: Quad.SpreadInto<TextBox>?, -- [3.4.0] spread into the inner box (refs, hooks, descriptors)
 }
 
 local function DragNum(props: DragNumProps): Frame
 	local style = props.Style or Style.default
 	local value: Source<number> = props.Value or q.Source(NumberFormat.normalize(0, props.Min, props.Max, props.Step))
 	local enabled = Common.enabled(props.Disabled)
-	return D.Frame({
+	return Frame({
 		dragNumName,
 		props.Modifier or q.None,
 		AutomaticSize = Enum.AutomaticSize.Y,
@@ -69,6 +71,7 @@ local function DragNum(props: DragNumProps): Frame
 			Enabled = enabled,
 			Style = style,
 			Modifier = props.FieldModifier,
+			Spread = props.FieldSpread,
 			LayoutOrder = 1,
 		}),
 		if props.Text then Common.label(style, props.Text, enabled, 2) else q.None,

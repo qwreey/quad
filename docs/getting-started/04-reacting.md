@@ -122,5 +122,5 @@ const card = D.Frame {
 
 ## 더 알고 싶다면
 
-- [레퍼런스: `D` — 문자 키](../reference/roblox/02-d.md#문자-키--프로퍼티와-이벤트) — 이벤트 값 자리에 올 수 있는 것, 콜백이 아닌 값을 넣었을 때의 에러
+- [레퍼런스: `D` — 문자 키](../reference/roblox/02-elem.md#문자-키--프로퍼티와-이벤트) — 이벤트 값 자리에 올 수 있는 것, 콜백이 아닌 값을 넣었을 때의 에러
 - [04. RemoteEvent와 엔진 입력을 상태로 브릿징하기](../how-to/04-network-and-input-bridge.md) — `RemoteEvent`·`UserInputService`를 `Source:Set`으로 격리하기

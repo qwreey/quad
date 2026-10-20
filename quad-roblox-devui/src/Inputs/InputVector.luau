@@ -24,9 +24,10 @@
 
 local Quad = require("../Quad")
 local q = Quad
-local D = q.Declaration
-local inputVector2Name = D.Modifier.Frame():Name("InputVector2")
-local inputUDim2Name = D.Modifier.Frame():Name("InputUDim2")
+local Frame = q.Elem "Frame"
+local FrameModifier = q.Modifier "Frame"
+local inputVector2Name = FrameModifier():Name("InputVector2")
+local inputUDim2Name = FrameModifier():Name("InputUDim2")
 local Common = require("../Common")
 local NumberField = require("./NumberField")
 local Style = require("../Style")
@@ -47,7 +48,7 @@ export type InputVector2Props = {
 	read OnChange: ((v: Vector2) -> ())?,
 	read Disabled: (boolean | State<boolean>)?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 export type InputUDim2Props = {
@@ -57,7 +58,7 @@ export type InputUDim2Props = {
 	read OnChange: ((v: UDim2) -> ())?,
 	read Disabled: (boolean | State<boolean>)?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 export type FieldOptions = {
@@ -128,7 +129,7 @@ function InputVector.InputVector2(props: InputVector2Props): Frame
 		Enabled = enabled,
 		Style = style,
 	}
-	return D.Frame({
+	return Frame({
 		inputVector2Name,
 		props.Modifier or q.None,
 		AutomaticSize = Enum.AutomaticSize.Y,
@@ -157,7 +158,7 @@ function InputVector.InputUDim2(props: InputUDim2Props): Frame
 	local drag = props.Drag == true
 	local scale: FieldOptions = { Drag = drag, Format = "%.3f", Speed = 0.01, Enabled = enabled, Style = style }
 	local offset: FieldOptions = { Drag = drag, Step = 1, Speed = 1, Enabled = enabled, Style = style }
-	return D.Frame({
+	return Frame({
 		inputUDim2Name,
 		props.Modifier or q.None,
 		AutomaticSize = Enum.AutomaticSize.Y,

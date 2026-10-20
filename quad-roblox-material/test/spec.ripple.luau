@@ -2,7 +2,8 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
 local Interactive = require("../src/Interactive")
 local Ripple = require("../src/Ripple")
 local Theme = require("../src/Theme")
@@ -20,7 +21,7 @@ local FULL = UDim.new(0.5, 0)
 local function mountButton(opts: Interactive.Options?)
 	local o: Interactive.Options = opts or { OnColor = theme.Color.OnPrimary, Corner = FULL }
 	local fx = Interactive.new(o)
-	local btn = D.TextButton {
+	local btn = TextButton {
 		fx.Hook,
 		fx.Layer,
 		Size = UDim2.fromOffset(100, 40),
@@ -217,7 +218,7 @@ H.section("StateLayer used standalone (no ripple): pressed static, dragged .16",
 		Focused = foc,
 		Dragged = drg,
 	})
-	local host = D.Frame { layer }
+	local host = Frame { layer }
 	prs:Set(true)
 	H.finishTweens()
 	assert(math.abs(layer.BackgroundTransparency - 0.9) < 1e-9)
@@ -231,7 +232,7 @@ end)
 
 H.section("Ripple.new standalone: Press/Release/Count with a host that has no size is a no-op", function()
 	local r = Ripple.new({ Color = Color3.new(1, 1, 1) })
-	local host = D.Frame { r.Hook, r.Slot }
+	local host = Frame { r.Hook, r.Slot }
 	r:Press(Vector2.new(5, 5)) -- AbsoluteSize is zero in the mock until set
 	assert(r:Count() == 0)
 	H.setAbs(host, 0, 0, 50, 50)
@@ -247,7 +248,7 @@ end)
 H.section("wide host (160x48, pressed in the middle): the box stays inside the host and is a part of one circle", function()
 	-- Studio QA 2026-10-07 (tab bar): a UICorner could not draw the arcs of a circle cut top and bottom
 	local r = Ripple.new({ Color = Color3.new(1, 1, 1), Corner = UDim.new(0, 8) })
-	local host = D.Frame { r.Hook, r.Slot }
+	local host = Frame { r.Hook, r.Slot }
 	H.setAbs(host, 10.4, 10.7, 160, 48) -- fractional position
 	r:Press(Vector2.new(90.4, 34.7)) -- rel (80, 24) -> center
 	local circle = H.find(host, "RippleCircle")
@@ -291,7 +292,7 @@ end)
 
 H.section("a press adds 3 instances (CanvasGroup, UICorner, disc)", function()
 	local r = Ripple.new({ Color = Color3.new(1, 1, 1) })
-	local host = D.Frame { r.Hook, r.Slot }
+	local host = Frame { r.Hook, r.Slot }
 	H.setAbs(host, 0, 0, 160, 48)
 	local before = H.countDescendants(host)
 	r:Press(nil)
@@ -365,7 +366,7 @@ end
 
 H.section("under a UIScale 0.8 (DatePicker modal fitted to a small layer): offsets in local units, box covers the host", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	-- fit = min(1, (W - 32) / 360, (H - 32) / 569) = 0.8 (DatePicker/Modal.luau)
 	H.setAbs(overlay.Layer, 0, 0, 1280, 0.8 * 569 + 32)
 	-- a picked date: OK is enabled (an empty draft disables it)

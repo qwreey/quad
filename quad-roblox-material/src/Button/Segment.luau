@@ -71,7 +71,10 @@ local Ripple = require("../Ripple")
 local StateLayer = require("../StateLayer")
 local Elevation = require("../Elevation")
 local Style = require("./Style")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
+local UIPadding = q.Elem "UIPadding"
+local UIStroke = q.Elem "UIStroke"
 
 export type Side = "Leading" | "Trailing" | "Middle"
 
@@ -232,7 +235,7 @@ local function new(o: Options): TextButton
 		local stroke: Instance? = nil
 		local strokeSpec = o.Stroke
 		if strokeSpec ~= nil then
-			stroke = D.UIStroke {
+			stroke = UIStroke {
 				Name = "Outline",
 				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 				BorderStrokePosition = Enum.BorderStrokePosition.Inner,
@@ -244,7 +247,7 @@ local function new(o: Options): TextButton
 		local overlay: Instance? = nil
 		local ot = overlayT
 		if ot ~= nil then
-			overlay = D.Frame {
+			overlay = Frame {
 				Name = "Selected",
 				Size = UDim2.fromScale(1, 1),
 				BackgroundColor3 = contentColor,
@@ -264,7 +267,7 @@ local function new(o: Options): TextButton
 			local x0 = clipSpan(self:Get(), clipFrom)
 			return UDim2.fromOffset(0 - x0, reach)
 		end)
-		return D.Frame {
+		return Frame {
 			Name = name,
 			Position = position,
 			Size = faceSize,
@@ -296,7 +299,7 @@ local function new(o: Options): TextButton
 			local _x0, span = clipSpan(self:Get(), from)
 			return UDim2.fromOffset(span, height + 2 * reach)
 		end)
-		return D.Frame {
+		return Frame {
 			Name = name,
 			Position = position,
 			Size = size,
@@ -323,13 +326,13 @@ local function new(o: Options): TextButton
 	local ringOn: q.State<boolean> = ix.Focused:Compute(function(self, _prev, dis)
 		return self:Get() and not dis:Get()
 	end, disabled)
-	local ring = D.Frame {
+	local ring = Frame {
 		Name = "FocusRing",
 		Size = faceSize,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		UICorner = if middle then innerCorner else UDim.new(0, outer),
-		D.UIStroke {
+		UIStroke {
 			Name = "Ring",
 			Color = theme.Color.Secondary,
 			Thickness = 3,
@@ -347,7 +350,7 @@ local function new(o: Options): TextButton
 		return UDim2.fromOffset(math.floor((self:Get() - cw:Get()) / 2) + shift, 0)
 	end, contentWidth, innerTarget)
 	local contentMotion = Tokens.Motion.options("Short4", "Standard")
-	local content = D.Frame {
+	local content = Frame {
 		Name = "Content",
 		measure,
 		-- a shared fixed width follows its container (a window being resized): the content is placed, not slid
@@ -363,11 +366,11 @@ local function new(o: Options): TextButton
 		AutomaticSize = Enum.AutomaticSize.X,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIPadding { PaddingLeft = UDim.new(0, o.Pad[1]), PaddingRight = UDim.new(0, o.Pad[2]) },
+		UIPadding { PaddingLeft = UDim.new(0, o.Pad[1]), PaddingRight = UDim.new(0, o.Pad[2]) },
 		table.unpack(o.Content),
 	}
 
-	local host = D.TextButton {
+	local host = TextButton {
 		Name = o.Name,
 		Size = faceSize,
 		BackgroundTransparency = 1,

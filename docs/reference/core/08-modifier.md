@@ -39,7 +39,7 @@ type FieldOut<T> = T | State<T> | None
 
 `Peek`/`As`는 결과 타입을 호출자가 명시하는 자리이고(`mod:Peek<<UDim2>>("Size")`), `Apply`의 `self`와 factory 인자가 `any`인 것은 children 유니언의 클래스 검사를 살리기 위한 의도된 절충입니다.
 
-**`Peek<<T>>`의 `T`는 어디까지인가 — 층 나눔.** `FieldOut<T>`가 감싸는 것은 **quad-base가 소유한 층뿐**입니다 — `State<T>`, `None`, 그리고 반환의 `?`(값이 없음). 백엔드가 더하는 값 층(Roblox의 `Tween<T>` 같은 것)은 quad-base가 알 수 없으므로 **`T` 안에 호출자가 넣습니다.** 백엔드마다 어떤 층이 있는지는 그 백엔드의 레퍼런스가 적습니다(quad-roblox: [roblox/03](../roblox/03-d-modifier.md)). 백엔드가 생성한 클래스별 Modifier의 `Peek`는 그 층을 이미 채워 두므로, 호출자가 층을 챙겨야 하는 것은 **무타입 `q.Modifier()`**를 쓸 때뿐입니다.
+**`Peek<<T>>`의 `T`는 어디까지인가 — 층 나눔.** `FieldOut<T>`가 감싸는 것은 **quad-base가 소유한 층뿐**입니다 — `State<T>`, `None`, 그리고 반환의 `?`(값이 없음). 백엔드가 더하는 값 층(Roblox의 `Tween<T>` 같은 것)은 quad-base가 알 수 없으므로 **`T` 안에 호출자가 넣습니다.** 백엔드마다 어떤 층이 있는지는 그 백엔드의 레퍼런스가 적습니다(quad-roblox: [roblox/03](../roblox/03-modifier-spread.md)). 백엔드가 생성한 클래스별 Modifier의 `Peek`는 그 층을 이미 채워 두므로, 호출자가 층을 챙겨야 하는 것은 **무타입 `q.Modifier()`**를 쓸 때뿐입니다.
 
 ## 숫자 키 자리에 놓는다
 
@@ -95,7 +95,7 @@ Modifier: setmetatable<{
 - `Quad0060 Modifier: field "{k}" collides with a reserved Modifier method`
 - `Quad0061 Modifier: field "{k}" matches the reserved cast prefix As<Class> - casts are methods, not fields`
 - `Quad0062 Modifier: field "{k}" starts with "__" - metamethod-looking names are never properties`
-- `Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function - a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)`
+- `Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function - a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the element, or wrap it in a State)`
 - `Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`
 
 **예제**
@@ -147,7 +147,7 @@ setter는 런타임에 어떤 이름으로든 생기지만, **타입은 클래�
 **에러**
 
 - `Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`
-- `Quad0264 Modifier: the transform for field "{key}" returned a function - a field cannot hold a function (an event handler does not belong in a Modifier; put it as an inline key on the Declaration, or wrap it in a State)`
+- `Quad0264 Modifier: the transform for field "{key}" returned a function - a field cannot hold a function (an event handler does not belong in a Modifier; put it as an inline key on the element, or wrap it in a State)`
 - `Quad0058 Modifier: setter keys must be strings (got {typeof(key)}) - put a non-string key in the props table itself (Frame { [key] = value })`
 
 **예제**

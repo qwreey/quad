@@ -42,7 +42,7 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 -- ── debug-only checks (quad-base `architecture.md` "debug 층"; kept out of the logic below) ──
 -- round11 `H-545` (탐사 A′): the static seat's twin of Slot's `H-500` cycle guard — `src:Set(host)`
--- would make `host.Parent == host`. Walk the ancestor chain: O(1) on the Declaration path (Parent is
+-- would make `host.Parent == host`. Walk the ancestor chain: O(1) on the element-constructor path (Parent is
 -- nil at creation), O(D) on a State swap with `inst` at depth D (round11 L′ 5: +17µs at D=256).
 -- [2026-10-01 user decision — "순환 가드는 … 같은 결정을 따라가자. debug 로 내리기에 동의해"] the walk runs
 -- only with `q.debug` on. With it off the engine's own "circular reference" raise at `v.Parent = inst`
@@ -77,13 +77,13 @@ local function install(quad: any)
 			-- [2026-09-16 사용자 결정 — question.md §2, Slot 게이트와 대칭] a child quad does not own
 			-- (never claimed: `Instance.new`, another library's tree) is rejected before any
 			-- bookkeeping — otherwise its death outside quad leaves a length-1 entry pointing at a
-			-- corpse. Ownership starts explicitly: `Claim` or the Declaration. errorBefore so the
+			-- corpse. Ownership starts explicitly: `Claim` or `q.Elem`. errorBefore so the
 			-- blame lands on the user's `D.<Class> { … }` line (dispatch depth, `H-330`).
 			-- round13 Q90 ① (user decision 2026-09-28): subject `Dispatch:` for 0219/0220, as `Quad0076` —
 			-- the handler name is not a user surface and the entry (`D.<Class>{…}`, `drive`, `Claim`, a seat
 			-- State) is unknown here; the blame line says where the user entered (round8 O-1).
 			if not quad.Backend.isClaimed(v) then
-				Err.errorBefore("Quad0219 Dispatch: this Instance is not claimed by quad - build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one - a destroyed Instance cannot be reused)", SURFACE)
+				Err.errorBefore("Quad0219 Dispatch: this Instance is not claimed by quad - build it with q.Elem or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one - a destroyed Instance cannot be reused)", SURFACE)
 			end
 			if quad.debug then
 				checkNotOwnAncestor(Err, inst, v) -- `H-545` cycle guard (debug-only, see above)

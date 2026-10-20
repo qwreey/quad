@@ -18,9 +18,14 @@
 
 local Quad = require("./Quad")
 local q = Quad
-local D = q.Declaration
-local textName = D.Modifier.TextLabel():Name("Text")
-local labelTextName = D.Modifier.Frame():Name("LabelText")
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local FrameModifier = q.Modifier "Frame"
+local TextLabelModifier = q.Modifier "TextLabel"
+local textName = TextLabelModifier():Name("Text")
+local labelTextName = FrameModifier():Name("LabelText")
 local Common = require("./Common")
 local Style = require("./Style")
 local Util = require("./Util")
@@ -33,7 +38,7 @@ export type TextProps = {
 	read RichText: boolean?,
 	read Hooks: { any }?,
 	read Style: Style?,
-	read Modifier: Quad.TextLabelModifier?,
+	read Modifier: Quad.ModifierInto<TextLabel>?,
 }
 
 export type TextColoredProps = {
@@ -42,7 +47,7 @@ export type TextColoredProps = {
 	read RichText: boolean?,
 	read Hooks: { any }?,
 	read Style: Style?,
-	read Modifier: Quad.TextLabelModifier?,
+	read Modifier: Quad.ModifierInto<TextLabel>?,
 }
 
 export type LabelTextProps = {
@@ -50,7 +55,7 @@ export type LabelTextProps = {
 	read Text: string | State<string>,
 	read Hooks: { any }?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 local function label(
@@ -60,10 +65,10 @@ local function label(
 	alpha: State<number>,
 	wrapped: boolean,
 	richText: boolean?,
-	modifier: Quad.TextLabelModifier?,
+	modifier: Quad.ModifierInto<TextLabel>?,
 	hooks: { any }?
 ): TextLabel
-	return D.TextLabel({
+	return TextLabel({
 		textName,
 		modifier or q.None,
 		Text = text,
@@ -78,7 +83,7 @@ local function label(
 		BorderSizePixel = 0,
 		AutomaticSize = if wrapped then Enum.AutomaticSize.Y else Enum.AutomaticSize.XY,
 		Size = if wrapped then UDim2.new(1, 0, 0, 0) else UDim2.fromOffset(0, 0),
-		D.UIPadding({ PaddingTop = UDim.new(0, 2), PaddingBottom = UDim.new(0, 2) }),
+		UIPadding({ PaddingTop = UDim.new(0, 2), PaddingBottom = UDim.new(0, 2) }),
 		table.unpack(Common.hooks(hooks)),
 	})
 end
@@ -117,21 +122,21 @@ end
 function Text.LabelText(props: LabelTextProps): Frame
 	local style = props.Style or Style.default
 	local spacing: State<UDim> = Util.pxX(style.Metrics.ItemInnerSpacing)
-	return D.Frame({
+	return Frame({
 		labelTextName,
 		props.Modifier or q.None,
 		AutomaticSize = Enum.AutomaticSize.XY,
 		Size = UDim2.fromOffset(0, 0),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIListLayout({
+		UIListLayout({
 			FillDirection = Enum.FillDirection.Horizontal,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = spacing,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
 		}),
-		label(style, props.Text, style.Color.Text, style.Transparency.Text, false, nil, D.Modifier.TextLabel():LayoutOrder(1), nil),
-		label(style, props.Label, style.Color.Text, style.Transparency.Text, false, nil, D.Modifier.TextLabel():LayoutOrder(2), nil),
+		label(style, props.Text, style.Color.Text, style.Transparency.Text, false, nil, TextLabelModifier():LayoutOrder(1), nil),
+		label(style, props.Label, style.Color.Text, style.Transparency.Text, false, nil, TextLabelModifier():LayoutOrder(2), nil),
 		table.unpack(Common.hooks(props.Hooks)),
 	})
 end

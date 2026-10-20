@@ -14,14 +14,19 @@
 	kit scale (330 files), the M1~M4 rounds, unit 0's large mixed file.
 	⚠️ A type function has no pcall: a member whose type makes `parameters()`/`properties()` fail turns that class's
 	whole surface into `never`. Deny such a member in `gen-d.py` and keep the surface gate green.
-
-	Coexists with the generated `Declaration` until the 3.4.0 switch (plan unit 6) — nothing here is public yet.
 ]]
 
 local QuadTypes = require("../luau_packages/quad_types")
 local Types = require("./types")
 local Data = require("@self/Data")
 
+-- the Modifier's OUTPUT shape `Peek` (the stored value as-is — round3 Q23 (a)), passed in whole because it is generic.
+-- Its State arm is `StateData<T>` (the read view with `Get`), not the full `State<T>`: the full recursive State type
+-- cannot enter a type function ("types of the form *error-type*" — 2026-10-20 measured; `StateData<T>` and `Tween<T>`
+-- can). The transform's `old` builds the same view per member inside `Build`.
+type ModifierOutShapes = {
+	Peek: <T>(self: any, key: string) -> Types.ModifierFieldOut<T>?,
+}
 -- the policy the built-in surface reads (the two GUI-scope maps of `Data` name the classes `q.*` accept)
 type Policy = {
 	DenyIn: Data.DenyIn,
@@ -30,6 +35,7 @@ type Policy = {
 	Shorthand: Data.Shorthand,
 	Child: Types.NewChild,
 	Classes: Data.ModClassMap,
+	Out: ModifierOutShapes,
 }
 -- a Mapper's array part also admits nested mapper descriptors; `mapperctor` reads its key and result types here
 type MapperPolicy = {
@@ -39,6 +45,7 @@ type MapperPolicy = {
 	Shorthand: Data.Shorthand,
 	Child: Types.NewChild | QuadTypes.MapperDescriptor,
 	Classes: Data.ModClassMap,
+	Out: ModifierOutShapes,
 	MapperKey: string | QuadTypes.MapperRoot,
 	MapperResult: QuadTypes.MapperDescriptor,
 }
@@ -50,6 +57,7 @@ type PolicyFor<M> = {
 	Shorthand: Data.Shorthand,
 	Child: Types.NewChild,
 	Classes: M,
+	Out: ModifierOutShapes,
 }
 type MapperPolicyFor<M> = {
 	DenyIn: Data.DenyIn,
@@ -58,6 +66,7 @@ type MapperPolicyFor<M> = {
 	Shorthand: Data.Shorthand,
 	Child: Types.NewChild | QuadTypes.MapperDescriptor,
 	Classes: M,
+	Out: ModifierOutShapes,
 	MapperKey: string | QuadTypes.MapperRoot,
 	MapperResult: QuadTypes.MapperDescriptor,
 }
@@ -132,6 +141,18 @@ export type function Build(mode: type, cls: type, policy: type)
 		number = true, boolean = true, CFrame = true, Rect = true, Color3 = true,
 		UDim = true, UDim2 = true, Vector2 = true, Vector2int16 = true, Vector3 = true,
 	}
+	-- a union value type (a shorthand's `number | UDim`) is tweenable when every member is (gen-d's old rule, Q34 (a))
+	local function isTweenable(t: type): boolean
+		if t.tag == "union" then
+			for _, c in t:components() do
+				if not tweenable[tostring(c)] then
+					return false
+				end
+			end
+			return true
+		end
+		return tweenable[tostring(t)] == true
+	end
 	local denyIn = sub(policy, "DenyIn")
 	local denyWriteIn = sub(policy, "DenyWriteIn")
 	local inject = sub(policy, "Inject")
@@ -277,7 +298,7 @@ export type function Build(mode: type, cls: type, policy: type)
 	local function slotArms(i: Info): type
 		local arms: { type } = { i.ty }
 		local tw: type? = nil
-		if tweenable[tostring(i.ty)] then
+		if isTweenable(i.ty) then
 			tw = rotbl({ __quadTween = TRUE, Value = i.ty })
 			arms[#arms + 1] = tw :: type
 		end
@@ -324,9 +345,10 @@ export type function Build(mode: type, cls: type, policy: type)
 		local t = types.newtable()
 		modCache[key] = t
 		t:setreadproperty(types.singleton("__quadModifier"), types.singleton(key))
-		local T = types.generic("T")
-		t:setproperty(types.singleton("Peek"),
-			types.newfunction({ head = { t, types.string } }, { head = { types.unionof(T, NIL) } }, { T }))
+		local peek = sub(sub(policy, "Out"), "Peek")
+		if peek ~= nil then
+			t:setproperty(types.singleton("Peek"), peek)
+		end
 		local U = types.generic("U")
 		t:setproperty(types.singleton("Apply"),
 			types.newfunction({ head = { types.any, types.newfunction({ head = { types.any } }, { head = { U } }) } },
@@ -346,7 +368,21 @@ export type function Build(mode: type, cls: type, policy: type)
 			local i = info[n]
 			if i.kind == "prop" or i.kind == "shorthand" then
 				local v = slotArms(i)
-				local transform = types.newfunction({ head = { types.unionof(i.ty, NIL) } }, { head = { v } })
+				-- `old` = the stored value as-is (round3 Q23 (a)): literal | Tween (tweenable only) | a State's read view
+				-- (`StateData` shape — `old:Get()` works; see `ModifierOutShapes`) | None | nil
+				local oldArms: { type } = { i.ty }
+				local stored: type = i.ty
+				if isTweenable(i.ty) then
+					local tw = rotbl({ __quadTween = TRUE, Value = i.ty })
+					oldArms[#oldArms + 1] = tw
+					stored = types.unionof(i.ty, tw)
+				end
+				local view = rotbl({ __quadState = TRUE, __quadStateValue = stored })
+				view:setproperty(types.singleton("Get"), types.newfunction({ head = { types.any } }, { head = { stored } }))
+				oldArms[#oldArms + 1] = view
+				oldArms[#oldArms + 1] = NONE
+				oldArms[#oldArms + 1] = NIL
+				local transform = types.newfunction({ head = { types.unionof(table.unpack(oldArms)) } }, { head = { v } })
 				t:setproperty(types.singleton(n),
 					types.newfunction({ head = { t, types.unionof(v, transform) } }, { head = { t } }))
 			end
@@ -543,7 +579,7 @@ export type Surface<CM, MM, P, MP> = {
 	OnEvent: <C0>(class: C0 & keyof<MM>) -> <K>(name: K & keyof<Build<"events", index<MM, C0>, P>>)
 		-> (fn: index<Build<"events", index<MM, C0>, P>, K>) -> OnEventDescriptor<K>,
 	Out: <C0>(class: C0 & keyof<MM>) -> <K>(name: K & keyof<Build<"readmap", index<MM, C0>, P>>)
-		-> (src: QuadTypes.Source<index<Build<"readmap", index<MM, C0>, P>, K>>) -> OnChangeDescriptor<K>,
+		-> (src: QuadTypes.Source<index<Build<"readmap", index<MM, C0>, P>, K>>) -> OnChangeDescriptor<K>, -- type-surface: allow — writable input, marker+Set fails under the new solver (8.25)
 }
 export type BuiltinSurface = Surface<Data.CreatableMap, Data.ModClassMap, Policy, MapperPolicy>
 export type ForClasses = <M>() -> Surface<M, M, PolicyFor<M>, MapperPolicyFor<M>>
@@ -554,7 +590,7 @@ export type SurfaceBrief<C> = Build<"brief", C, Policy>
 -- [2026-10-20 3.4.0] a custom Modifier class's setter value / stored value (the generated D's `Field<T>`/`FieldOut<T>`
 -- under the decided names — declaration-naming-table 5절): literal | Tween | State marker | None | transform (old =
 -- the stored value as-is). Not type functions — a kit writes them in its own Modifier type.
-export type ModifierFieldOut<T> = Types.FieldOut<T>
+export type ModifierFieldOut<T> = Types.ModifierFieldOut<T>
 export type ModifierField<T> =
 	(T | Types.Tween<T> | QuadTypes.StateMarker<T | Types.Tween<T>> | QuadTypes.None)?
 	| ((old: ModifierFieldOut<T>?) -> (T | Types.Tween<T> | QuadTypes.StateMarker<T | Types.Tween<T>> | QuadTypes.None)?)

@@ -106,8 +106,11 @@ local IconView = require("../IconView")
 local Style = require("./Style")
 local Segment = require("./Segment")
 local ColorTokens = require("../Tokens/Color")
-local D = q.Declaration
-local groupName = D.Modifier.Frame():Name("ButtonGroup")
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local FrameModifier = q.Modifier "Frame"
+local groupName = FrameModifier():Name("ButtonGroup")
 
 export type Variant = "Filled" | "Tonal" | "Elevated" | "Outlined"
 
@@ -130,7 +133,7 @@ export type Props = {
 	read OnValuesChange: ((values: { [string]: boolean }) -> ())?,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -199,7 +202,7 @@ local DISABLED_CONTAINER_T = Style.DisabledButtonContainerTransparency -- <Varia
 local DISABLED_CONTENT_T = 1 - 0.38 -- DisabledLabelTextOpacity
 
 local labelStyle = Text.Label("LabelLarge")
-local baseModifier = D.Modifier.Frame()
+local baseModifier = FrameModifier()
 	:Size(UDim2.fromOffset(0, HEIGHT))
 	:AutomaticSize(Enum.AutomaticSize.X)
 	:BackgroundTransparency(1)
@@ -249,11 +252,11 @@ local function ButtonGroup(props: Props)
 	-- a fixed `Width`: the host's measured width (local px) is shared equally; 0 until measured (cells = content width)
 	local fixed = props.Width
 	local hostWidth = q.Source(0)
-	local sizing: q.FrameModifier? = nil
+	local sizing: q.Modifier<Frame>? = nil
 	local measureHost: unknown = q.None
 	if fixed ~= nil then
 		local x = if type(fixed) == "number" then UDim.new(0, fixed) else fixed
-		sizing = D.Modifier.Frame():Size(UDim2.new(x, UDim.new(0, HEIGHT))):AutomaticSize(Enum.AutomaticSize.None)
+		sizing = FrameModifier():Size(UDim2.new(x, UDim.new(0, HEIGHT))):AutomaticSize(Enum.AutomaticSize.None)
 		measureHost = Util.preHook(function(inst: GuiObject)
 			local function read()
 				local k = Ripple.localScale(inst)
@@ -363,7 +366,7 @@ local function ButtonGroup(props: Props)
 		if iconValue ~= nil then
 			table.insert(
 				content,
-				D.UIListLayout {
+				UIListLayout {
 					FillDirection = Enum.FillDirection.Horizontal,
 					HorizontalAlignment = Enum.HorizontalAlignment.Left,
 					VerticalAlignment = Enum.VerticalAlignment.Center,
@@ -383,7 +386,7 @@ local function ButtonGroup(props: Props)
 		end
 		table.insert(
 			content,
-			D.TextLabel {
+			TextLabel {
 				Name = "Label",
 				labelStyle,
 				Size = UDim2.fromScale(0, 1),
@@ -451,14 +454,14 @@ local function ButtonGroup(props: Props)
 		table.insert(tail, hook)
 	end
 
-	return D.Frame {
+	return Frame {
 		groupName,
 		baseModifier,
 		sizing or q.None,
 		props.Modifier or q.None,
 		measureHost,
 		LayoutOrder = props.LayoutOrder,
-		D.UIListLayout {
+		UIListLayout {
 			FillDirection = Enum.FillDirection.Horizontal,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			VerticalAlignment = Enum.VerticalAlignment.Center,

@@ -37,16 +37,16 @@
 	  - [2026-09-04 M7 단위 ② — seam closed] flatten is owned by
 	    `Dispatch.drive` (round17 §0 Q4 (a)), so this path gets Modifier
 	    consumption for free by calling `drive` — nothing Claim-specific;
-	  - generic descriptor factory `newMapperClass(className)` + root
-	    sentinel `MapperRoot` live HERE (base) and `D.Mapper` re-exposes
-	    them as cast aliases / `D.Mapper.Root` (the confirmed user surface).
+	  - generic descriptor factory (`q.Raw.Mapper(className)`, 3.3's
+	    `newMapperClass`) + root sentinel `MapperRoot` live HERE (base); the
+	    backend's typed `q.Mapper "Frame"` is built on it (3.3: `D.Mapper`).
 ]]
 
 local Brand = require("./Brand")
 local QuadTypes = require("../luau_packages/quad_types")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
--- root key sentinel — the value; `D.Mapper.Root` re-exposes it (claim-plan §7-1)
+-- root key sentinel — the value (`q.MapperRoot`; 3.3 also re-exposed it as `D.Mapper.Root`) (claim-plan §7-1)
 local MapperRoot = table.freeze(setmetatable({ __quadMapperRoot = true :: true }, {
 	__tostring = function()
 		return "MapperRoot"
@@ -56,12 +56,12 @@ local MapperRoot = table.freeze(setmetatable({ __quadMapperRoot = true :: true }
 local function Init(module: any)
 	local Err = module.errorNamespace
 
-	-- (className)(key)(props) -> descriptor. `D.Mapper.<Class>`는 이 커링에
-	-- 캐스트만 얹은 생성기 산출물(별칭) — `D.<Class>`와 `New`의 관계 동형.
+	-- (className)(key)(props) -> descriptor. 백엔드의 `q.Mapper "Frame"`은 이 커링에
+	-- 타입만 얹은 것(3.3의 `D.Mapper.<Class>` 별칭도 같은 관계였다).
 	local function newMapperClass(className: string): (key: any) -> (props: any) -> any
 		if type(className) ~= "string" or className == "" then
 			-- round11 `H-568` (탐사 G′ 9): the sibling factories (`Modifier.TypedFactory`/`DefineSubtype`) gate the name
-			Err.errorBeforeNearest(`Quad0026 newMapperClass: className must be a non-empty string (got {typeof(className)})`, SURFACE)
+			Err.errorBeforeNearest(`Quad0026 Raw.Mapper: className must be a non-empty string (got {typeof(className)})`, SURFACE)
 		end
 		local function keyed(key: any): (props: any) -> any
 			local function staged(props: any): any
@@ -90,7 +90,7 @@ local function Init(module: any)
 	-- a missing/wrong-class child left root (and every earlier sibling) claimed and a fixed
 	-- retry died on "already claimed" instead of the real cause — the very shape `H-425`/
 	-- `H-471` had already fixed for the props gate. What remains non-atomic: the drive
-	-- itself (a handler throw mid-tree — the Declaration's general mid-throw UB). An already-
+	-- itself (a handler throw mid-tree — the element constructor's general mid-throw UB). An already-
 	-- claimed child used to be the other case — closed by round11 Q64 (b): pass 1 asks
 	-- `Backend.isClaimed` on every instance (the mock's "claimed" became one flag so it can).
 	type Step = { inst: any, desc: any, children: { [number]: any } }
@@ -112,7 +112,7 @@ local function Init(module: any)
 		-- 여야 Claim 가능한다도 맞는 수순". The root goes through here too, so a double claim of the root
 		-- now carries the Instance's name instead of the provider's bare line.
 		if module.Backend.isClaimed(inst) then
-			Err.errorBeforeNearest(`Quad0029 Claim: {tostring(inst)} is already claimed by quad - a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)`, SURFACE)
+			Err.errorBeforeNearest(`Quad0029 Claim: {tostring(inst)} is already claimed by quad - an Instance quad made (q.Elem) or already Claimed cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)`, SURFACE)
 		end
 		-- 7순회 `H-425` (`H-256` (a) third site): a non-table props used to die in the
 		-- `for` below AFTER `nativeClaim`/`_fired` were committed — a fixed retry then
@@ -196,7 +196,7 @@ local function Init(module: any)
 			Err.errorBeforeNearest(`Quad0033 Claim: first argument must be an Instance of the installed backend (got {typeof(inst)})`, SURFACE)
 		end
 		if not Brand.isMapperDescriptor(desc) then
-			Err.errorBeforeNearest("Quad0034 Claim: second argument must be a D.Mapper descriptor", SURFACE)
+			Err.errorBeforeNearest("Quad0034 Claim: second argument must be a mapper descriptor (q.Mapper \"Frame\" (key) {…})", SURFACE)
 		end
 		-- round10 G-4 (claim-plan §7-1: a DEBUG check, not a runtime guard — §3 principle): the root
 		-- descriptor's key is never read, so `M.Frame("SomeName")` at the root claims `inst` itself
@@ -211,8 +211,7 @@ local function Init(module: any)
 
 	module.Claim = Claim
 	module.MapperRoot = MapperRoot
-	module.newMapperClass = newMapperClass
-	module.Raw.Mapper = newMapperClass -- [2026-10-20 3.4.0] the new name (`newMapperClass` goes at the switch)
+	module.Raw.Mapper = newMapperClass -- [2026-10-20 3.4.0] was `q.newMapperClass` until 3.4.0
 	-- isMapperDescriptor는 init.luau 리터럴이 단일 소유(리뷰 — 이중 대입 제거)
 	Err.setFuncLevel(SURFACE, Claim, newMapperClass)
 end

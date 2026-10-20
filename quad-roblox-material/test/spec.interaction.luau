@@ -3,7 +3,8 @@ local H = require("./support/harness")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
 local Interaction = require("../src/Interaction")
 
 local UIS = H.UserInputService
@@ -24,7 +25,7 @@ H.section("hover / press / focus states follow the element events", function()
 			table.insert(ends, cancelled)
 		end,
 	})
-	local btn = D.TextButton { ix.Hook }
+	local btn = TextButton { ix.Hook }
 	assert(not ix.Hovered:Get() and not ix.Pressed:Get() and not ix.Focused:Get())
 	H.fire(btn, "MouseEnter")
 	assert(ix.Hovered:Get())
@@ -56,7 +57,7 @@ end)
 H.section("disabled: nothing turns on, everything can turn off", function()
 	local disabled = q.Source(false)
 	local ix = Interaction.new({ Disabled = disabled })
-	local btn = D.TextButton { ix.Hook }
+	local btn = TextButton { ix.Hook }
 	H.fire(btn, "MouseEnter")
 	assert(ix.Hovered:Get())
 	disabled:Set(true)
@@ -75,7 +76,7 @@ H.section("derived States update (hover -> computed value)", function()
 	local label: Q.State<string> = ix.Hovered:Compute(function(self)
 		return if self:Get() then "hot" else "cold"
 	end)
-	local t = D.TextButton { ix.Hook, Text = label }
+	local t = TextButton { ix.Hook, Text = label }
 	assert(t.Text == "cold")
 	H.fire(t, "MouseEnter")
 	assert(t.Text == "hot")
@@ -95,7 +96,7 @@ H.section("drag: global connections only while dragging, closed at end / focus l
 			table.insert(log, `ended {x},{y},{cancelled}`)
 		end,
 	})
-	local el = D.Frame { drag.Hook }
+	local el = Frame { drag.Hook }
 	assert(uisConns() == base, "no global connection while idle")
 	assert(not drag.Dragging:Get())
 
@@ -136,7 +137,7 @@ H.section("drag: global connections only while dragging, closed at end / focus l
 
 	-- Cancel() and a second drag works after a cancelled one
 	local drag2 = Interaction.drag({}) -- a tracker serves ONE element (its Hook is a one-shot PreRef)
-	local el2 = D.Frame { drag2.Hook }
+	local el2 = Frame { drag2.Hook }
 	H.fire(el2, "InputBegan", H.input({ Position = Vector3.new(0, 0, 0) }))
 	assert(drag2.Dragging:Get())
 	drag2:Cancel()
@@ -148,7 +149,7 @@ end)
 
 H.section("drag disabled ignores begin", function()
 	local drag = Interaction.drag({ Disabled = true })
-	local el = D.Frame { drag.Hook }
+	local el = Frame { drag.Hook }
 	H.fire(el, "InputBegan", H.input({}))
 	assert(not drag.Dragging:Get() and uisConns() == base)
 	q.dispose(el)

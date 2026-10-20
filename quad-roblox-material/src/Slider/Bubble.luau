@@ -32,7 +32,8 @@ local Text = require("../Text")
 local Tokens = require("../Tokens")
 local Typography = require("../Tokens/Typography")
 local Style = require("../Button/Style")
-local D = q.Declaration
+local TextLabel = q.Elem "TextLabel"
+local UIPadding = q.Elem "UIPadding"
 
 export type BubbleStyle = {
 	Height: number,
@@ -77,7 +78,7 @@ local function build(o: Options): TextLabel
 	local text: q.State<string> = o.Value:Compute(function(self)
 		return format(self:Get())
 	end)
-	return D.TextLabel {
+	return TextLabel {
 		Name = "Label",
 		style.Text,
 		AnchorPoint = o.AnchorPoint or Vector2.new(0.5, 1),
@@ -91,7 +92,7 @@ local function build(o: Options): TextLabel
 		TextColor3 = theme.Color[style.Content],
 		TextTransparency = bubbleTransparency:Apply(Style.animation()),
 		UICorner = Tokens.Shape.corner("Full"),
-		D.UIPadding { PaddingLeft = UDim.new(0, style.Padding), PaddingRight = UDim.new(0, style.Padding) },
+		UIPadding { PaddingLeft = UDim.new(0, style.Padding), PaddingRight = UDim.new(0, style.Padding) },
 	}
 end
 

@@ -64,8 +64,13 @@ local Style = require("./Button/Style")
 local Destination = require("./Navigation/Destination")
 local Item = require("./Navigation/Item")
 local Motion = require("./Navigation/Motion")
-local D = q.Declaration
-local barName = D.Modifier.Frame():Name("ShortNavigationBar")
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local UISizeConstraint = q.Elem "UISizeConstraint"
+local FrameModifier = q.Modifier "Frame"
+local barName = FrameModifier():Name("ShortNavigationBar")
 
 export type Arrangement = "EqualWeight" | "Centered"
 export type IconPosition = "Top" | "Start"
@@ -79,7 +84,7 @@ export type Props<K> = {
 	read IconPosition: IconPosition?,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -95,7 +100,7 @@ local START_SIDE = 16 -- ActiveIndicatorLeadingSpace / TrailingSpace
 local START_GAP = 4 -- NavigationBarTokens.ItemActiveIndicatorIconLabelSpace
 
 local labelStyle = Text.Label("LabelMedium")
-local barBase = D.Modifier.Frame():Size(UDim2.new(1, 0, 0, HEIGHT))
+local barBase = FrameModifier():Size(UDim2.new(1, 0, 0, HEIGHT))
 
 -- the share of the bar the items take with Centered (calculateCenteredContentHorizontalPadding)
 local function centeredShare(n: number): number
@@ -126,7 +131,7 @@ local function ShortNavigationBar<K>(props: Props<K>): Frame
 		local labelColor = Style.choose(isSel, if start then R.OnSecondaryContainer else R.Secondary, R.OnSurfaceVariant)
 		local fx = Interactive.new({ Theme = theme, OnColor = theme.Color.OnSurface, Corner = corner })
 		local labelWidth = q.Source(0)
-		local measure = q.OnChange("AbsoluteSize", function(v: Vector2)
+		local measure = q.OnChange "TextLabel" "AbsoluteSize" (function(v: Vector2)
 			labelWidth:SetIfChanged(v.X)
 		end)
 
@@ -173,10 +178,10 @@ local function ShortNavigationBar<K>(props: Props<K>): Frame
 				local content = if start then self:Get().X else math.max(PILL_W, w:Get())
 				return Vector2.new(content, 0)
 			end, labelWidth)
-			minWidth = D.UISizeConstraint { MinSize = min }
+			minWidth = UISizeConstraint { MinSize = min }
 		end
 
-		return D.TextButton {
+		return TextButton {
 			Name = "NavigationItem",
 			Size = cellWidth,
 			BackgroundTransparency = 1,
@@ -190,7 +195,7 @@ local function ShortNavigationBar<K>(props: Props<K>): Frame
 				Destination.click(selected, key, props.OnChange, props.OnClick)
 			end,
 			minWidth or q.None,
-			D.Frame {
+			Frame {
 				Name = "Indicator",
 				AnchorPoint = pillAnchor,
 				Position = pillPosition,
@@ -204,7 +209,7 @@ local function ShortNavigationBar<K>(props: Props<K>): Frame
 				AnchorPoint = if start then Vector2.new(0, 0.5) else Vector2.new(0.5, 0),
 				Position = iconAt,
 			}),
-			D.TextLabel {
+			TextLabel {
 				Name = "Label",
 				labelStyle,
 				AnchorPoint = if start then Vector2.new(0, 0.5) else Vector2.new(0.5, 0),
@@ -217,7 +222,7 @@ local function ShortNavigationBar<K>(props: Props<K>): Frame
 				TextColor3 = labelColor,
 				measure,
 			},
-			D.Frame {
+			Frame {
 				Name = "Target",
 				AnchorPoint = pillAnchor,
 				Position = pillPosition,
@@ -234,19 +239,19 @@ local function ShortNavigationBar<K>(props: Props<K>): Frame
 		table.insert(cells, cell(dest, i))
 	end
 
-	return D.Frame {
+	return Frame {
 		barName,
 		barBase,
 		BackgroundColor3 = theme.Color.SurfaceContainer,
 		BorderSizePixel = 0,
 		LayoutOrder = props.LayoutOrder,
 		props.Modifier or q.None,
-		D.Frame {
+		Frame {
 			Name = "Row",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIListLayout {
+			UIListLayout {
 				FillDirection = Enum.FillDirection.Horizontal,
 				HorizontalAlignment = if centered then Enum.HorizontalAlignment.Center else Enum.HorizontalAlignment.Left,
 				VerticalAlignment = Enum.VerticalAlignment.Center,

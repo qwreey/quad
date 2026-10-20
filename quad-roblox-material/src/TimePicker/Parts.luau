@@ -38,7 +38,9 @@ local StateLayer = require("../StateLayer")
 local Ripple = require("../Ripple")
 local Model = require("./Model")
 local Strings = require("./Strings")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
 
 type State<T> = q.State<T>
 
@@ -77,7 +79,7 @@ local function selector(o: SelectorOptions): TextButton
 	local contentAnimated = content:Apply(animation())
 	local corner = Tokens.Shape.corner("Small")
 	local fx = Interactive.new({ Theme = theme, OnColor = contentAnimated, Corner = corner })
-	return D.TextButton {
+	return TextButton {
 		Name = o.Name,
 		fx.Hook,
 		fx.Layer,
@@ -91,7 +93,7 @@ local function selector(o: SelectorOptions): TextButton
 		Activated = function()
 			o.OnClick()
 		end,
-		D.TextLabel {
+		TextLabel {
 			Name = "Label",
 			Text.Label(o.Role),
 			Size = UDim2.fromScale(1, 1),
@@ -111,7 +113,7 @@ export type SeparatorOptions = {
 }
 
 local function separator(o: SeparatorOptions): TextLabel
-	return D.TextLabel {
+	return TextLabel {
 		Name = "Separator",
 		Text.Label(o.Role),
 		LineHeight = 1,
@@ -183,7 +185,7 @@ local function periodToggle(o: ToggleOptions): Frame
 				ripple:Release()
 			end,
 		})
-		return D.TextButton {
+		return TextButton {
 			Name = if pm then "PM" else "AM",
 			ix.Hook,
 			Size = UDim2.fromOffset(itemW, itemH),
@@ -205,7 +207,7 @@ local function periodToggle(o: ToggleOptions): Frame
 				Ripple = ripple,
 				FocusRing = theme.Color.Secondary,
 			}),
-			D.TextLabel {
+			TextLabel {
 				Name = "Label",
 				Text.Label("TitleMedium"),
 				FontFace = font,
@@ -219,7 +221,7 @@ local function periodToggle(o: ToggleOptions): Frame
 	end
 
 	local second = if o.Horizontal then UDim2.fromOffset(itemW + GAP, 0) else UDim2.fromOffset(0, itemH + GAP)
-	return D.Frame {
+	return Frame {
 		Name = "PeriodToggle",
 		Size = UDim2.fromOffset(o.Size.X, o.Size.Y),
 		Position = o.Position,

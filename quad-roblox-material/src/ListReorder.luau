@@ -147,7 +147,11 @@ local Elevation = require("./Elevation")
 local GlyphButton = require("./GlyphButton")
 local Icons = require("./Icons")
 local Style = require("./Button/Style")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local UICorner = q.Elem "UICorner"
+local UIFlexItem = q.Elem "UIFlexItem"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
 
 local RunService = game:GetService("RunService")
 
@@ -812,7 +816,7 @@ local function new(cfg: Config): Reorder
 			Hooks = { tracker.Hook, keys },
 		})
 
-		local host = D.Frame {
+		local host = Frame {
 			Name = "ReorderRow",
 			Size = size,
 			AutomaticSize = automatic,
@@ -823,7 +827,7 @@ local function new(cfg: Config): Reorder
 			Util.preHook(function(inst: GuiObject)
 				row.host = inst
 			end),
-			D.Frame {
+			Frame {
 				Name = "Lift",
 				Size = UDim2.new(1, 0, 0, 0),
 				AutomaticSize = Enum.AutomaticSize.Y,
@@ -834,22 +838,22 @@ local function new(cfg: Config): Reorder
 				Util.preHook(function(inst: GuiObject)
 					row.lift = inst
 				end),
-				D.UICorner { CornerRadius = corner:Apply(q.Animate(LIFT)) },
+				UICorner { CornerRadius = corner:Apply(q.Animate(LIFT)) },
 				Elevation.Shadow({ Level = level, Theme = theme }),
-				D.UIListLayout {
+				UIListLayout {
 					FillDirection = Enum.FillDirection.Horizontal,
 					SortOrder = Enum.SortOrder.LayoutOrder,
 					VerticalAlignment = Enum.VerticalAlignment.Center,
 				},
-				D.UIPadding { PaddingRight = UDim.new(0, END_PADDING) },
-				D.Frame {
+				UIPadding { PaddingRight = UDim.new(0, END_PADDING) },
+				Frame {
 					Name = "Body",
 					Size = UDim2.fromScale(0, 0),
 					AutomaticSize = Enum.AutomaticSize.Y,
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
 					LayoutOrder = 1,
-					D.UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
+					UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
 					content,
 				},
 				handle,

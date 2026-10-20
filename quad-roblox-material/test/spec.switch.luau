@@ -3,7 +3,7 @@ local H = require("./support/harness")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Tokens = require("../src/Tokens")
 local Switch = require("../src/Switch")
 local M2 = require("../src/M2")
@@ -47,7 +47,7 @@ H.section("click toggles; handle position + size animate; Source round trip", fu
 			table.insert(changes, x)
 		end,
 	})
-	local root = D.Frame { sw }
+	local root = Frame { sw }
 	local halo, handle = H.find(sw, "Halo"), H.find(sw, "Handle")
 	H.fire(sw, "Activated", H.input({}), 1)
 	assert(v:Get() == true and changes[1] == true)
@@ -209,7 +209,7 @@ for _, c in cases do
 		local sw = c.Make({ Value = v, OnChange = function(x: boolean)
 			table.insert(changes, x)
 		end })
-		local root = D.Frame { sw }
+		local root = Frame { sw }
 		local halo = H.find(sw, "Halo")
 		pressAt(sw, 100)
 		assert(uisConns() == baseConns + 3)

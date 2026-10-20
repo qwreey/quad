@@ -17,21 +17,23 @@
 local q = require("./Quad")
 local Theme = require("./Theme")
 local Util = require("./Util")
-local D = q.Declaration
-local dividerName = D.Modifier.Frame():Name("Divider")
+local Frame = q.Elem "Frame"
+local UIPadding = q.Elem "UIPadding"
+local FrameModifier = q.Modifier "Frame"
+local dividerName = FrameModifier():Name("Divider")
 
 export type Props = {
 	read Orientation: ("Horizontal" | "Vertical")?,
 	read Inset: ("None" | "Start" | "Both")?,
 	read LayoutOrder: number?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
 local InsetPx = 16
-local horizontalBase = D.Modifier.Frame():Size(UDim2.new(1, 0, 0, 1)):BorderSizePixel(0)
-local verticalBase = D.Modifier.Frame():Size(UDim2.new(0, 1, 1, 0)):BorderSizePixel(0)
+local horizontalBase = FrameModifier():Size(UDim2.new(1, 0, 0, 1)):BorderSizePixel(0)
+local verticalBase = FrameModifier():Size(UDim2.new(0, 1, 1, 0)):BorderSizePixel(0)
 
 local function Divider(props: Props?): Frame
 	local p: Props = props or {}
@@ -41,7 +43,7 @@ local function Divider(props: Props?): Frame
 	local base = if vertical then verticalBase else horizontalBase
 
 	if inset == "None" then
-		return D.Frame {
+		return Frame {
 			dividerName,
 			base,
 			p.Modifier or q.None,
@@ -53,19 +55,19 @@ local function Divider(props: Props?): Frame
 
 	local startPad = UDim.new(0, InsetPx)
 	local endPad = if inset == "Both" then UDim.new(0, InsetPx) else UDim.new(0, 0)
-	return D.Frame {
+	return Frame {
 		dividerName,
 		base,
 		p.Modifier or q.None,
 		BackgroundTransparency = 1,
 		LayoutOrder = p.LayoutOrder,
-		D.UIPadding {
+		UIPadding {
 			PaddingLeft = if vertical then UDim.new(0, 0) else startPad,
 			PaddingRight = if vertical then UDim.new(0, 0) else endPad,
 			PaddingTop = if vertical then startPad else UDim.new(0, 0),
 			PaddingBottom = if vertical then endPad else UDim.new(0, 0),
 		},
-		D.Frame {
+		Frame {
 			Name = "Line",
 			Size = UDim2.fromScale(1, 1),
 			BorderSizePixel = 0,

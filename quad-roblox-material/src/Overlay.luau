@@ -95,7 +95,8 @@ local q = require("./Quad")
 local Tokens = require("./Tokens")
 local Theme = require("./Theme")
 local Util = require("./Util")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
 
 local Input = require("./Input")
 local GuiService = game:GetService("GuiService")
@@ -250,7 +251,7 @@ local function new(o: Options?): Overlay
 		return false
 	end
 
-	local layer = D.Frame {
+	local layer = Frame {
 		Name = "Overlay",
 		Size = UDim2.fromScale(1, 1),
 		BackgroundTransparency = 1,
@@ -452,7 +453,7 @@ local function new(o: Options?): Overlay
 			local src = q.Source(1)
 			scrimTransparency = src
 			local dismissable = if oo.Dismissable ~= nil then oo.Dismissable else true
-			scrim = D.TextButton {
+			scrim = TextButton {
 				Name = "Scrim",
 				Size = UDim2.fromScale(1, 1),
 				Text = "",
@@ -473,7 +474,7 @@ local function new(o: Options?): Overlay
 			}
 		end
 
-		local e = D.Frame {
+		local e = Frame {
 			Name = "OverlayEntry",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,

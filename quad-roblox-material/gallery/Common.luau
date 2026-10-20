@@ -20,7 +20,10 @@
 
 local q = require("./Quad")
 local Material = require("../src")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local UIStroke = q.Elem "UIStroke"
 
 export type Ctx = {
 	read Theme: Material.Theme,
@@ -61,7 +64,7 @@ end
 -- Small OnSurfaceVariant text: full width and wrapped by default; `wrap = false` shrink-wraps it (one line, sits
 -- beside controls in a flow row and works inside a shrink-wrapping Card).
 function Common.Caption(ctx: Ctx, text: string | q.State<string>, wrap: boolean?): TextLabel
-	return D.TextLabel {
+	return TextLabel {
 		Name = "Caption",
 		captionStyle,
 		Size = if wrap == false then UDim2.fromOffset(0, 0) else UDim2.fromScale(1, 0),
@@ -79,20 +82,20 @@ end
 -- IconButton). Checkbox and Radio HAVE one (`Label = "…"`: the text is part of the control and a tap on it toggles) — use
 -- that, not this wrapper (review 2026-10-13: the Overlays tab wrapped checkboxes here, so their text did nothing).
 function Common.Labeled(ctx: Ctx, control: Instance, text: string | q.State<string>): Frame
-	return D.Frame {
+	return Frame {
 		Name = "Labeled",
 		Size = UDim2.fromOffset(0, 0),
 		AutomaticSize = Enum.AutomaticSize.XY,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIListLayout {
+		UIListLayout {
 			FillDirection = Enum.FillDirection.Horizontal,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
 			Padding = UDim.new(0, 4),
 		},
 		control,
-		D.TextLabel {
+		TextLabel {
 			Name = "Label",
 			bodyStyle,
 			Size = UDim2.fromOffset(0, 0),
@@ -107,13 +110,13 @@ end
 
 -- A flow row: its children wrap onto new lines at the available width.
 function Common.Flow(children: { Instance }, gap: number?): Frame
-	return D.Frame {
+	return Frame {
 		Name = "Flow",
 		Size = UDim2.fromScale(1, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIListLayout {
+		UIListLayout {
 			FillDirection = Enum.FillDirection.Horizontal,
 			Wraps = true,
 			SortOrder = Enum.SortOrder.LayoutOrder,
@@ -131,13 +134,13 @@ end
 
 -- A vertical stack with a fixed width (text fields and sliders want a width; the host stack shrink-wraps its height).
 function Common.Column(children: { Instance }, width: number?, gap: number?): Frame
-	return D.Frame {
+	return Frame {
 		Name = "Column",
 		Size = if width then UDim2.fromOffset(width, 0) else UDim2.fromScale(1, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIListLayout {
+		UIListLayout {
 			FillDirection = Enum.FillDirection.Vertical,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = UDim.new(0, gap or 12),
@@ -149,13 +152,13 @@ end
 -- A mock app screen for the layout pieces (sheets, drawers): a fixed-size surface frame with an outline that CLIPS (a
 -- docked sheet waits past its edge, a closed drawer past its left edge), holding `children`.
 function Common.Screen(ctx: Ctx, name: string, width: number, height: number, children: { Instance }): Frame
-	return D.Frame {
+	return Frame {
 		Name = name,
 		Size = UDim2.fromOffset(width, height),
 		BackgroundColor3 = ctx.Theme.Color.Surface,
 		BorderSizePixel = 0,
 		ClipsDescendants = true,
-		D.UIStroke {
+		UIStroke {
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 			Color = ctx.Theme.Color.OutlineVariant,
 			Thickness = 1,
@@ -167,7 +170,7 @@ end
 -- A titled group: title (TitleSmall, primary) + optional note + a flow row of the components.
 function Common.Group(ctx: Ctx, title: string, children: { Instance }, note: string?): Frame
 	local parts: { Instance } = {
-		D.TextLabel {
+		TextLabel {
 			Name = "GroupTitle",
 			titleStyle,
 			Size = UDim2.fromScale(1, 0),
@@ -183,13 +186,13 @@ function Common.Group(ctx: Ctx, title: string, children: { Instance }, note: str
 		table.insert(parts, Common.Caption(ctx, note))
 	end
 	table.insert(parts, Common.Flow(children))
-	return D.Frame {
+	return Frame {
 		Name = "Group",
 		Size = UDim2.fromScale(1, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIListLayout {
+		UIListLayout {
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = UDim.new(0, 8),
 		},
@@ -200,7 +203,7 @@ end
 -- A section: a heading and the groups under it, 16 px inset, 24 px between groups.
 function Common.Section(ctx: Ctx, name: string, heading: string, groups: { Instance }): Frame
 	local parts: { Instance } = {
-		D.TextLabel {
+		TextLabel {
 			Name = "Heading",
 			headingStyle,
 			Size = UDim2.fromScale(1, 0),
@@ -215,14 +218,14 @@ function Common.Section(ctx: Ctx, name: string, heading: string, groups: { Insta
 	for _, g in groups do
 		table.insert(parts, g)
 	end
-	return D.Frame {
+	return Frame {
 		Name = name,
 		Size = UDim2.fromScale(1, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		UIPaddingOffset = 16,
-		D.UIListLayout {
+		UIListLayout {
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = UDim.new(0, 24),
 		},

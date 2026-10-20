@@ -5,7 +5,9 @@
 local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
 local StoryParts = require("./StoryParts")
 local themed = StoryParts.themed
 
@@ -30,7 +32,7 @@ return StoryKit.story({
 
 		local function body(): q.Slot<Instance>
 			return q.Slot<<Instance>>({
-				D.TextLabel {
+				TextLabel {
 					Material.Text.Label("TitleMedium"),
 					Name = "Title",
 					Size = UDim2.fromOffset(260, 0),
@@ -41,7 +43,7 @@ return StoryKit.story({
 					TextColor3 = theme.Color.OnSurface,
 					Text = c.Title,
 				},
-				D.TextLabel {
+				TextLabel {
 					Material.Text.Label("BodyMedium"),
 					Name = "Body",
 					Size = UDim2.fromOffset(260, 0),
@@ -80,20 +82,20 @@ return StoryKit.story({
 			})
 		end, { Size = UDim2.new(), AutomaticSize = Enum.AutomaticSize.XY, LayoutOrder = 2 })
 
-		return D.Frame {
+		return Frame {
 			follow,
 			Name = "CardStory",
 			Size = UDim2.fromScale(1, 1),
 			BorderSizePixel = 0,
 			BackgroundColor3 = theme.Color.Surface,
 			UIPaddingOffset = 24,
-			D.UIListLayout {
+			UIListLayout {
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding = UDim.new(0, 16),
 			},
 			static,
 			interactive,
-			D.TextLabel {
+			TextLabel {
 				Material.Text.Label("LabelMedium"),
 				Name = "Clicks",
 				LayoutOrder = 3,

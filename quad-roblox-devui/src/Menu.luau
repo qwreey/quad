@@ -44,8 +44,11 @@
 
 local Quad = require("./Quad")
 local q = Quad
-local D = q.Declaration
-local menuBarName = D.Modifier.Frame():Name("MenuBar")
+local Frame = q.Elem "Frame"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local FrameModifier = q.Modifier "Frame"
+local menuBarName = FrameModifier():Name("MenuBar")
 local Overlay = require("./Overlay")
 local PopupParts = require("./PopupParts")
 local Style = require("./Style")
@@ -68,7 +71,7 @@ export type MenuScope = {
 export type MenuBarProps = {
 	read Children: Slot<Instance>?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 export type MenuProps = {
@@ -116,7 +119,7 @@ end
 
 function Menu.MenuBar(props: MenuBarProps): Frame
 	local style = props.Style or Style.default
-	return D.Frame({
+	return Frame({
 		menuBarName,
 		props.Modifier or q.None,
 		AutomaticSize = Enum.AutomaticSize.Y,
@@ -124,7 +127,7 @@ function Menu.MenuBar(props: MenuBarProps): Frame
 		BackgroundColor3 = style.Color.MenubarBg,
 		BackgroundTransparency = style.Transparency.MenubarBg,
 		BorderSizePixel = 0,
-		D.UIListLayout({
+		UIListLayout({
 			FillDirection = Enum.FillDirection.Horizontal,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
@@ -136,7 +139,7 @@ end
 -- the popup body: a vertical list that sizes to its widest row
 local function panel(style: Style, children: Slot<Instance>): Frame
 	local pad: State<UDim> = Util.pxY(style.Metrics.ItemInnerSpacing)
-	return D.Frame({
+	return Frame({
 		Name = "MenuPanel",
 		AutomaticSize = Enum.AutomaticSize.XY,
 		Size = UDim2.fromOffset(0, 0),
@@ -146,8 +149,8 @@ local function panel(style: Style, children: Slot<Instance>): Frame
 		Active = true,
 		UICorner = style.Metrics.PopupRounding,
 		PopupParts.stroke(style),
-		D.UIPadding({ PaddingTop = pad, PaddingBottom = pad }),
-		D.UIListLayout({
+		UIPadding({ PaddingTop = pad, PaddingBottom = pad }),
+		UIListLayout({
 			FillDirection = Enum.FillDirection.Vertical,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 		}),

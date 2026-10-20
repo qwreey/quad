@@ -3,7 +3,7 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Anchored = require("../src/Sheet/Anchored")
 local SheetStateModule = require("../src/Sheet/State")
 local BottomSheet = require("../src/BottomSheet")
@@ -33,12 +33,12 @@ local function drawer(state: any): any
 	return Nav.ModalNavigationDrawer({
 		DrawerState = state,
 		DrawerContent = Nav.ModalDrawerSheet({ Children = q.Slot<<Instance>>({}) }),
-		Content = q.Slot<<Instance>>({ D.Frame { Name = "Page" } }),
+		Content = q.Slot<<Instance>>({ Frame { Name = "Page" } }),
 	})
 end
 local function sheet(state: any, contentH: number): (any, any)
-	local host: any = BottomSheet.BottomSheetScaffold({ SheetState = state, SheetContent = q.Slot<<Instance>>({ D.Frame { Name = "Row" } }) })
-	local screen = D.Frame { host }
+	local host: any = BottomSheet.BottomSheetScaffold({ SheetState = state, SheetContent = q.Slot<<Instance>>({ Frame { Name = "Row" } }) })
+	local screen = Frame { host }
 	local s: any = H.find(host, "BottomSheet")
 	H.setAbs(host, 0, 0, 400, 800)
 	H.setAbs(H.find(s, "Content"), 0, 0, 400, contentH)
@@ -144,7 +144,7 @@ end)
 H.section("A6 Slider: the default Format never ends in a bare point", function()
 	local v = q.Source(0)
 	local s: any = Slider({ Value = v, ShowLabel = true })
-	local _screen = D.Frame { s }
+	local _screen = Frame { s }
 	local label: any = H.find(s, "Label")
 	local function text(x: number): string
 		v:Set(x)
@@ -182,7 +182,7 @@ end)
 
 H.section("C1 SplitButton: the first layout places the content without a tween; a press still animates the optical shift", function()
 	local host: any = SplitButton({ Label = "Save" })
-	local _screen = D.Frame { host }
+	local _screen = Frame { host }
 	local trailing: any = H.find(host, "Trailing")
 	local lc: any, tc: any = H.find(H.find(host, "Leading"), "Content"), H.find(trailing, "Content")
 	H.mock.resetTweenLog()
@@ -238,14 +238,14 @@ local function buttonByLabel(root: any, text: string): any
 end
 local function overlayRig(): (any, any)
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	H.setAbs(overlay.Layer, 0, 0, 800, 600)
 	return overlay, screen
 end
 
 H.section("R1 closing phase: a second tap on a menu item / Select option within the exit time does nothing", function()
 	local overlay, screen = overlayRig()
-	local anchor: any = D.Frame { Name = "Anchor" }
+	local anchor: any = Frame { Name = "Anchor" }
 	H.setAbs(anchor, 100, 50, 200, 56)
 	local clicks, closes = 0, 0
 	local handle = Menu.open({
@@ -413,7 +413,7 @@ end)
 
 H.section("R2 Menu: the anchor being destroyed closes the menu (and the Select's)", function()
 	local overlay, screen = overlayRig()
-	local anchor: any = D.Frame { Name = "Anchor" }
+	local anchor: any = Frame { Name = "Anchor" }
 	H.setAbs(anchor, 100, 50, 200, 56)
 	local reasons: { string } = {}
 	local handle = Menu.open({ Anchor = anchor, Overlay = overlay, Items = { { Label = "A" } }, OnClose = function(reason: string)
@@ -425,7 +425,7 @@ H.section("R2 Menu: the anchor being destroyed closes the menu (and the Select's
 	H.advance(0.5)
 	assert(overlay.Count:Get() == 0 and H.find(screen, "Scrim") == nil, "no scrim left to swallow clicks")
 	-- a menu closed normally drops the anchor connection: destroying the anchor later is silent
-	local anchor2: any = D.Frame { Name = "Anchor" }
+	local anchor2: any = Frame { Name = "Anchor" }
 	H.setAbs(anchor2, 100, 50, 200, 56)
 	local closes = 0
 	local h2 = Menu.open({ Anchor = anchor2, Overlay = overlay, Items = { { Label = "A" } }, OnClose = function()
@@ -436,7 +436,7 @@ H.section("R2 Menu: the anchor being destroyed closes the menu (and the Select's
 	q.dispose(anchor2)
 	assert(closes == 1)
 	local field: any = Select({ Label = "F", Options = { "A", "B" }, Value = q.Source(nil :: string?), Overlay = overlay })
-	local holder = D.Frame { field }
+	local holder = Frame { field }
 	local container: any = H.find(field, "Container")
 	H.setAbs(container, 50, 20, 240, 56)
 	H.fire(container, "InputBegan", H.input({}))
@@ -455,7 +455,7 @@ H.section("R3 Disabled set during a drag: a Switch release and the color areas w
 	local sw: any = Switch({ Value = value, Disabled = disabled, OnChange = function()
 		changes += 1
 	end })
-	local root = D.Frame { sw }
+	local root = Frame { sw }
 	H.fire(sw, "InputBegan", H.input({ Position = Vector3.new(100, 10, 0) }))
 	mouseMove(105, 10)
 	mouseMove(135, 10)
@@ -466,7 +466,7 @@ H.section("R3 Disabled set during a drag: a Switch release and the color areas w
 	-- the same drag without Disabled still switches
 	local v2 = q.Source(false)
 	local sw2: any = Switch({ Value = v2 })
-	local root2 = D.Frame { sw2 }
+	local root2 = Frame { sw2 }
 	H.fire(sw2, "InputBegan", H.input({ Position = Vector3.new(100, 10, 0) }))
 	mouseMove(105, 10)
 	mouseMove(135, 10)
@@ -539,7 +539,7 @@ H.section("R5 DatePicker keys: Home / End stop at the selectable day nearest to 
 		local w = Calendar.weekday(d)
 		return w == 0 or w == 6
 	end })
-	local root = D.Frame { picker }
+	local root = Frame { picker }
 	local function focusOn(day: number)
 		for _, c in named(picker, "Day") do
 			if c.Text == tostring(day) and c.Visible then

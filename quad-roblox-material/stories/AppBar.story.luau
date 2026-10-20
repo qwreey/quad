@@ -7,7 +7,10 @@ local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local StoryParts = require("./StoryParts")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ScrollingFrame = q.Elem "ScrollingFrame"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
 local themed = StoryParts.themed
 
 type Config = { Kind: string, Behavior: string, Subtitle: boolean, Center: boolean }
@@ -73,7 +76,7 @@ return StoryKit.story({
 			for i = 1, 30 do
 				table.insert(rows, StoryParts.caption(theme, `List item {i}`))
 			end
-			return D.Frame {
+			return Frame {
 				Name = "Screen",
 				Size = UDim2.fromOffset(400, 480),
 				BackgroundTransparency = 1,
@@ -83,18 +86,18 @@ return StoryKit.story({
 					ContainerColor = theme.Color.Surface,
 					TopBar = bar,
 					Content = function(innerPadding: Material.PaddingValues): GuiObject
-						return D.ScrollingFrame {
+						return ScrollingFrame {
 							Name = "Content",
 							Size = UDim2.fromScale(1, 1),
 							BackgroundTransparency = 1,
 							CanvasSize = UDim2.fromOffset(0, 0),
 							AutomaticCanvasSize = Enum.AutomaticSize.Y,
 							if behavior then behavior.Hook else q.None,
-							D.UIPadding {
+							UIPadding {
 								PaddingTop = innerPadding.Top,
 								PaddingLeft = UDim.new(0, 16),
 							},
-							D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 24) },
+							UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 24) },
 							q.Slot<<Instance>>(rows),
 						}
 					end,
@@ -105,11 +108,11 @@ return StoryKit.story({
 		return StoryParts.page(theme, follow, {
 			StoryParts.caption(theme, StoryParts.show<<string>>(last, "Last action = ", StoryParts.tostr)),
 			screen,
-			D.Frame {
+			Frame {
 				Name = "Bottom",
 				Size = UDim2.fromOffset(400, 156),
 				BackgroundTransparency = 1,
-				D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12) },
+				UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12) },
 				Material.FlexibleBottomAppBar({
 					Theme = theme,
 					LayoutOrder = 1,

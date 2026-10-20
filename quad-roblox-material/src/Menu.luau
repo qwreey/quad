@@ -88,7 +88,15 @@ local Interactive = require("./Interactive")
 local Elevation = require("./Elevation")
 local Overlay = require("./Overlay")
 local Button = require("./Button")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ImageLabel = q.Elem "ImageLabel"
+local ScrollingFrame = q.Elem "ScrollingFrame"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
+local UIFlexItem = q.Elem "UIFlexItem"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local UIScale = q.Elem "UIScale"
 
 export type Item = {
 	read Label: string,
@@ -181,7 +189,7 @@ local function itemRow(
 
 	local leadingIcon: Instance? = nil
 	if item.Leading ~= nil then
-		leadingIcon = D.ImageLabel {
+		leadingIcon = ImageLabel {
 			Name = "Leading",
 			AnchorPoint = Vector2.new(0, 0.5),
 			Position = UDim2.new(0, 12, 0.5, 0),
@@ -196,7 +204,7 @@ local function itemRow(
 	local trailingEl: Instance? = nil
 	if trailing ~= nil then
 		if trailingIsImage then
-			trailingEl = D.ImageLabel {
+			trailingEl = ImageLabel {
 				Name = "Trailing",
 				AnchorPoint = Vector2.new(1, 0.5),
 				Position = UDim2.new(1, -12, 0.5, 0),
@@ -208,7 +216,7 @@ local function itemRow(
 				ImageTransparency = transparency,
 			}
 		else
-			trailingEl = D.TextLabel {
+			trailingEl = TextLabel {
 				Name = "Trailing",
 				labelLarge,
 				AnchorPoint = Vector2.new(1, 0),
@@ -248,7 +256,7 @@ local function itemRow(
 		end
 	end
 
-	return D.TextButton {
+	return TextButton {
 		Name = "Item",
 		Size = if fitting then UDim2.fromOffset(0, ItemHeight) else UDim2.new(1, 0, 0, ItemHeight),
 		AutomaticSize = if fitting then Enum.AutomaticSize.X else Enum.AutomaticSize.None,
@@ -266,17 +274,17 @@ local function itemRow(
 		end),
 		Activated = activate,
 		-- (fit) the row is as wide as its label, then stretched to the widest row of the list
-		if fitting then D.UIFlexItem { ItemLineAlignment = Enum.ItemLineAlignment.Stretch } else q.None,
+		if fitting then UIFlexItem { ItemLineAlignment = Enum.ItemLineAlignment.Stretch } else q.None,
 		fx.Layer,
 		leadingIcon or q.None,
-		D.TextLabel {
+		TextLabel {
 			Name = "Label",
 			labelLarge,
 			Position = UDim2.fromOffset(left, 0),
 			Size = if fitting then UDim2.fromScale(0, 1) else UDim2.new(1, -(left + right), 1, 0),
 			AutomaticSize = if fitting then Enum.AutomaticSize.X else Enum.AutomaticSize.None,
 			-- (fit) the label's own width carries the trailing room, so the row's automatic width includes it
-			if fitting then D.UIPadding { PaddingRight = labelPadRight } else q.None,
+			if fitting then UIPadding { PaddingRight = labelPadRight } else q.None,
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			Text = item.Label,
@@ -290,15 +298,15 @@ local function itemRow(
 end
 
 local function dividerRow(theme: Theme.Theme, fit: boolean)
-	return D.Frame {
+	return Frame {
 		Name = "Divider",
 		-- (fit) a scale width inside the automatic-width list feeds back into it (Studio 2026-10-15: the panel grew to
 		-- half the layer); stretched like the rows instead
 		Size = if fit then UDim2.fromOffset(0, DividerHeight) else UDim2.new(1, 0, 0, DividerHeight),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		if fit then D.UIFlexItem { ItemLineAlignment = Enum.ItemLineAlignment.Stretch } else q.None,
-		D.Frame {
+		if fit then UIFlexItem { ItemLineAlignment = Enum.ItemLineAlignment.Stretch } else q.None,
+		Frame {
 			Name = "Line",
 			Position = UDim2.fromOffset(0, 8),
 			Size = UDim2.new(1, 0, 0, 1),
@@ -406,7 +414,7 @@ local function open(o: OpenOptions): Overlay.Handle
 			end
 			if fit then
 				-- the minimum width: a 0-high spacer (the rows stretch to the widest sibling — header WIDTH)
-				table.insert(rows, 1, D.Frame { Name = "MinWidth", Size = UDim2.fromOffset(MinWidth, 0), BackgroundTransparency = 1, BorderSizePixel = 0 })
+				table.insert(rows, 1, Frame { Name = "MinWidth", Size = UDim2.fromOffset(MinWidth, 0), BackgroundTransparency = 1, BorderSizePixel = 0 })
 			end
 			local slot = q.Slot(rows)
 
@@ -415,14 +423,14 @@ local function open(o: OpenOptions): Overlay.Handle
 				return if self:Get() and not closing:Get() then 1 else ClosedScale
 			end, handle.Closing)
 
-			local list = D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder }
-			local pad = D.UIPadding { PaddingTop = UDim.new(0, ListPadding), PaddingBottom = UDim.new(0, ListPadding) }
+			local list = UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder }
+			local pad = UIPadding { PaddingTop = UDim.new(0, ListPadding), PaddingBottom = UDim.new(0, ListPadding) }
 			local body: Instance
 			-- (fit) the list is as wide as its widest row and the panel as wide as the list
 			local bodySize = if fit then UDim2.fromScale(0, 1) else UDim2.fromScale(1, 1)
 			local bodyAuto = if fit then Enum.AutomaticSize.X else Enum.AutomaticSize.None
 			if scrolls then
-				body = D.ScrollingFrame {
+				body = ScrollingFrame {
 					Name = "Scroll",
 					Size = bodySize,
 					AutomaticSize = bodyAuto,
@@ -442,7 +450,7 @@ local function open(o: OpenOptions): Overlay.Handle
 					slot,
 				}
 			else
-				body = D.Frame {
+				body = Frame {
 					Name = "List",
 					Size = bodySize,
 					AutomaticSize = bodyAuto,
@@ -454,12 +462,12 @@ local function open(o: OpenOptions): Overlay.Handle
 				}
 			end
 
-			local uiScale = D.UIScale { Scale = scale:Apply(q.Animate(Tokens.Motion.options("Short4", "EmphasizedDecelerate"))) }
+			local uiScale = UIScale { Scale = scale:Apply(q.Animate(Tokens.Motion.options("Short4", "EmphasizedDecelerate"))) }
 			panelScale = uiScale
 			if fitCtx then
 				fitCtx.Scale = uiScale
 			end
-			local built = D.Frame {
+			local built = Frame {
 				Name = "Menu",
 				-- pivot at the TOP-CENTER (bottom-center when flipped): UIScale scales about the AnchorPoint, so a left
 				-- pivot made the opening scale look glued to the left edge (Studio QA 2026-10-07)
@@ -565,7 +573,7 @@ export type ButtonProps = {
 	read Disabled: (boolean | q.State<boolean>)?,
 	read Overlay: Overlay.Overlay?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.TextButtonModifier?,
+	read Modifier: q.ModifierInto<TextButton>?,
 	read Hooks: Util.Hooks?,
 }
 

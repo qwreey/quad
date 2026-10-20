@@ -49,7 +49,10 @@ local StateLayer = require("../StateLayer")
 local Style = require("../Button/Style")
 local Text = require("../Text")
 local Ctx = require("./Ctx")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UISizeConstraint = q.Elem "UISizeConstraint"
+local UIStroke = q.Elem "UIStroke"
 
 local Corner = Tokens.Shape.corner("ExtraSmall")
 local DisabledOutlineTransparency = 1 - Tokens.State.Opacity.DisabledContainer
@@ -128,7 +131,7 @@ local function label(c: Ctx.Ctx, inset: number): (Instance?, Notch?)
 		-- an empty label has nothing to measure (and nothing to cut)
 		notch = { Width = q.Source(0), Measured = q.Source(text:Get() == "") }
 	end
-	return D.TextLabel {
+	return TextLabel {
 		Name = "Label",
 		bodyLarge,
 		if notch ~= nil then measure(notch) else q.None,
@@ -162,7 +165,7 @@ export type Seats = {
 type StrokeLook = { Thickness: any, Color: any, Transparency: any }
 
 local function outlineStroke(look: StrokeLook): Instance
-	return D.UIStroke {
+	return UIStroke {
 		Name = "Outline",
 		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 		BorderStrokePosition = Enum.BorderStrokePosition.Inner,
@@ -174,7 +177,7 @@ end
 
 -- one copy of the outline (see the header): a transparent rounded Frame with the stroke
 local function outlineBox(look: StrokeLook, anchor: Vector2, position: UDim2, size: UDim2): Instance
-	return D.Frame {
+	return Frame {
 		Name = "Box",
 		AnchorPoint = anchor,
 		Position = position,
@@ -201,7 +204,7 @@ local function notchedOutline(c: Ctx.Ctx, notch: Notch, look: StrokeLook): (Inst
 	local endVisible: q.State<boolean> = floated:Compute(function(self, _prev, m)
 		return m:Get() or not self:Get()
 	end, notch.Measured)
-	local bottom = D.Frame {
+	local bottom = Frame {
 		Name = "OutlineBottom",
 		Position = UDim2.fromOffset(-Margin, Band),
 		Size = UDim2.new(1, 2 * Margin, 0, height - Band + Margin),
@@ -210,7 +213,7 @@ local function notchedOutline(c: Ctx.Ctx, notch: Notch, look: StrokeLook): (Inst
 		ClipsDescendants = true,
 		outlineBox(look, topLeft, UDim2.fromOffset(Margin, -Band), UDim2.new(1, -2 * Margin, 0, height)),
 	}
-	local startWindow = D.Frame {
+	local startWindow = Frame {
 		Name = "OutlineStart",
 		Position = UDim2.fromOffset(-Margin, -Margin),
 		Size = UDim2.fromOffset(Margin + CutStart, Margin + Band),
@@ -219,7 +222,7 @@ local function notchedOutline(c: Ctx.Ctx, notch: Notch, look: StrokeLook): (Inst
 		ClipsDescendants = true,
 		outlineBox(look, topLeft, UDim2.fromOffset(Margin, Margin), UDim2.fromOffset(32, 32)),
 	}
-	local endWindow = D.Frame {
+	local endWindow = Frame {
 		Name = "OutlineEnd",
 		AnchorPoint = Vector2.new(1, 0),
 		Position = UDim2.new(1, Margin, 0, -Margin),
@@ -236,7 +239,7 @@ local function notchedOutline(c: Ctx.Ctx, notch: Notch, look: StrokeLook): (Inst
 		-- a label wider than the field: the window's width would go negative (a negative-size window draws mirrored,
 		-- past the field's right edge — Studio 2026-10-13). A UISizeConstraint holds it at 0: the cut then reaches the
 		-- field's right edge, as Compose's does (`right.coerceAtMost(size.width)`).
-		D.UISizeConstraint {},
+		UISizeConstraint {},
 		outlineBox(look, Vector2.new(1, 0), UDim2.new(1, -Margin, 0, Margin), UDim2.fromOffset(BoxSpan, 32)),
 	}
 	return bottom, startWindow, endWindow
@@ -270,7 +273,7 @@ local function container(c: Ctx.Ctx, seats: Seats): Frame
 		local indicatorHeight: q.State<UDim2> = thickness:Compute(function(self)
 			return UDim2.new(1, 0, 0, self:Get())
 		end)
-		indicator = D.Frame {
+		indicator = Frame {
 			Name = "Indicator",
 			AnchorPoint = Vector2.new(0, 1),
 			Position = UDim2.fromScale(0, 1),
@@ -300,7 +303,7 @@ local function container(c: Ctx.Ctx, seats: Seats): Frame
 	-- Container itself; with a label the Container draws nothing (the outline copies carry their own corners).
 	local fill: Instance? = nil
 	if filled then
-		fill = D.Frame {
+		fill = Frame {
 			Name = "Fill",
 			Size = UDim2.new(1, 0, 0, height + Corner.Offset),
 			BackgroundColor3 = fillColor,
@@ -310,7 +313,7 @@ local function container(c: Ctx.Ctx, seats: Seats): Frame
 			layer or q.None,
 		}
 	end
-	return D.Frame {
+	return Frame {
 		Name = "Container",
 		Size = UDim2.new(1, 0, 0, height),
 		BackgroundTransparency = 1,

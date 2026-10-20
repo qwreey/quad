@@ -7,7 +7,10 @@
 local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local FrameModifier = q.Modifier "Frame"
 local StoryParts = require("./StoryParts")
 local themed = StoryParts.themed
 
@@ -15,7 +18,7 @@ type Item = { Id: number, Name: string }
 type Config = { Lines: number, Clickable: boolean }
 
 local function avatar(theme: Material.Theme): Frame
-	return D.Frame {
+	return Frame {
 		Name = "Avatar",
 		Size = UDim2.fromOffset(40, 40),
 		BorderSizePixel = 0,
@@ -25,7 +28,7 @@ local function avatar(theme: Material.Theme): Frame
 end
 
 local function header(theme: Material.Theme, text: string, order: number): TextLabel
-	return D.TextLabel {
+	return TextLabel {
 		Material.Text.Label("LabelLarge"),
 		LayoutOrder = order,
 		Size = UDim2.fromOffset(360, 20),
@@ -84,7 +87,7 @@ return StoryKit.story({
 
 		local static = Material.List({
 			Theme = theme,
-			Modifier = D.Modifier.Frame():Size(UDim2.fromOffset(360, 0)),
+			Modifier = FrameModifier():Size(UDim2.fromOffset(360, 0)),
 			LayoutOrder = 4,
 			Children = q.Slot<<Instance>>({
 				Material.ListItem({
@@ -130,7 +133,7 @@ return StoryKit.story({
 					end,
 				})
 			end,
-			Modifier = D.Modifier.Frame():Size(UDim2.fromOffset(360, 0)),
+			Modifier = FrameModifier():Size(UDim2.fromOffset(360, 0)),
 		})
 
 		local tracks = q.Source<<{ Item }>>({
@@ -176,29 +179,29 @@ return StoryKit.story({
 					apply()
 				end
 			end,
-			Modifier = D.Modifier.Frame():Size(UDim2.fromOffset(360, 0)),
+			Modifier = FrameModifier():Size(UDim2.fromOffset(360, 0)),
 		})
 
-		return D.Frame {
+		return Frame {
 			follow,
 			Name = "ListStory",
 			Size = UDim2.fromScale(1, 1),
 			BorderSizePixel = 0,
 			BackgroundColor3 = theme.Color.Surface,
 			UIPaddingOffset = 24,
-			D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8) },
+			UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8) },
 			header(theme, "ListItem (controls)", 1),
 			single,
 			header(theme, "List (static children + divider)", 3),
 			static,
 			header(theme, "ListData (keyed)", 5),
-			D.Frame {
+			Frame {
 				Name = "DataButtons",
 				LayoutOrder = 6,
 				Size = UDim2.fromOffset(360, 40),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIListLayout {
+				UIListLayout {
 					FillDirection = Enum.FillDirection.Horizontal,
 					SortOrder = Enum.SortOrder.LayoutOrder,
 					VerticalAlignment = Enum.VerticalAlignment.Center,
@@ -228,7 +231,7 @@ return StoryKit.story({
 					end,
 				}),
 			},
-			D.Frame {
+			Frame {
 				Name = "DataHost",
 				LayoutOrder = 7,
 				Size = UDim2.fromOffset(360, 0),
@@ -237,7 +240,7 @@ return StoryKit.story({
 				BorderSizePixel = 0,
 				data,
 			},
-			D.TextLabel {
+			TextLabel {
 				Material.Text.Label("LabelMedium"),
 				Name = "Picked",
 				LayoutOrder = 8,
@@ -251,7 +254,7 @@ return StoryKit.story({
 				end),
 			},
 			header(theme, "ListData (drag to reorder: OnReorder)", 9),
-			D.Frame {
+			Frame {
 				Name = "ReorderHost",
 				LayoutOrder = 10,
 				Size = UDim2.fromOffset(360, 0),

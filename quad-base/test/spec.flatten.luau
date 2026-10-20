@@ -17,7 +17,7 @@ local ProcessedModifier = ModifierModule.ProcessedModifier
 
 local q = mock.newQuad()
 local Instance = mock.Instance
-local Modifier = q.Modifier
+local Modifier = q.Raw.Modifier
 local None = q.None
 
 print("=== 1. 순수 flatten — in-place, 나중 modifier 우선, 인라인(None 포함) 무조건 우선, 비Modifier 항목 통과 ===")

@@ -5,7 +5,7 @@ local H = require("./support/harness")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Button = require("../src/Button")
 local IconButton = require("../src/Button/IconButton")
 local FAB = require("../src/Button/FAB")
@@ -53,7 +53,7 @@ H.section("every host: its default Name is unchanged, and the caller's Modifier 
 		local custom = "Custom_" .. label
 		-- Card and ListItem take any GuiObject modifier (an `IntoGuiObject`, cast to the host class); the rest take the host class's
 		local modClass = if string.find(label, "^Card") or string.find(label, "^ListItem") then "GuiObject" else class
-		local mod = ((D.Modifier :: any)[modClass] :: any)():Name(custom)
+		local mod = ((q.Modifier :: any)(modClass) :: any)():Name(custom)
 		local host = build(mod)
 		assert(host.Name == custom, label .. ": Modifier Name did not win (" .. tostring(host.Name) .. ")")
 		checked += 1
@@ -91,7 +91,7 @@ H.section("every host: its default Name is unchanged, and the caller's Modifier 
 		return ListModule.ListData<<number>>({
 			Items = q.Source({ 1 }),
 			Key = function(n: number) return n end,
-			Render = function(item: Q.State<number>) return D.Frame {} end,
+			Render = function(item: Q.State<number>) return Frame {} end,
 			Modifier = m,
 		})
 	end)
@@ -105,7 +105,7 @@ H.section("every host: its default Name is unchanged, and the caller's Modifier 
 		return Chip.ChipSet<<number>>({
 			Items = q.Source({ 1 }),
 			Key = function(n: number) return n end,
-			Render = function() return D.Frame {} end,
+			Render = function() return Frame {} end,
 			Modifier = m,
 		})
 	end)
@@ -158,7 +158,7 @@ H.section("every host: its default Name is unchanged, and the caller's Modifier 
 	probe("HorizontalFloatingToolbar (FAB)", "HorizontalFloatingToolbar", function(m)
 		return Toolbar.HorizontalFloatingToolbar({ Expanded = true, Content = {}, FloatingActionButton = { Icon = "x" }, Modifier = m })
 	end)
-	probe("Scaffold", "Scaffold", function(m) return ScaffoldModule.Scaffold({ Content = D.Frame {}, Modifier = m }) end)
+	probe("Scaffold", "Scaffold", function(m) return ScaffoldModule.Scaffold({ Content = Frame {}, Modifier = m }) end)
 	assert(checked == 72, "probed " .. checked)
 	H.assertNoDebugOutput("host names")
 end)

@@ -208,7 +208,7 @@ readmap은 `collect(c, true)`로 `DenyWrite`를 건너뜁니다(`src/Lib2.luau`�
 
 ### M3. Modifier의 As* / Into / Overridden / 숏핸드 setter
 
-**실측: 지금 생성 표면의 목록** (`quad-roblox/src/Declaration/init.luau`)
+**실측: 지금 생성 표면의 목록** (옛 `quad-roblox/src/Declaration/init.luau`)
 - `<Class>Modifier`는 47벌입니다(5050~5096행 ModifierNS). 예약 메소드는 모두 같습니다.
   - `Peek`
   - `Apply(self: any)`

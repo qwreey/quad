@@ -32,7 +32,7 @@ export type CheckboxProps = {
 	read Disabled: (boolean | State<boolean>)?,
 	read Hooks: { any }?,
 	read Style: Style?,
-	read Modifier: Quad.TextButtonModifier?,
+	read Modifier: Quad.ModifierInto<TextButton>?,
 }
 
 local function Checkbox(props: CheckboxProps): TextButton

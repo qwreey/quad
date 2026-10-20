@@ -5,7 +5,8 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ScrollingFrame = q.Elem "ScrollingFrame"
 local Tokens = require("../src/Tokens")
 local Overlay = require("../src/Overlay")
 local AppBar = require("../src/AppBar")
@@ -138,7 +139,7 @@ end)
 
 H.section("actions: toggles (IconToggleButton look, OnCheckedChange with the new value), overflow menu past MaxItemCount", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	H.setAbs(overlay.Layer, 0, 0, 800, 600)
 	local fav = q.Source(false)
 	local bar: any = AppBar.TopAppBar({
@@ -197,7 +198,7 @@ end)
 -- ── scrolling ───────────────────────────────────────────────────────────────
 
 local function scroller(behavior: any, maxY: number?): any
-	local frame: any = D.ScrollingFrame { Name = "List", behavior.Hook }
+	local frame: any = ScrollingFrame { Name = "List", behavior.Hook }
 	-- layout stand-in: the furthest scroll (canvas - window) the settle clamps its canvas target to
 	frame.AbsoluteWindowSize = Vector2.new(360, 300)
 	frame.AbsoluteCanvasSize = Vector2.new(360, 300 + (maxY or 1700))

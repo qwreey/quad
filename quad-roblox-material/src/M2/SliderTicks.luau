@@ -11,7 +11,7 @@
 
 local q = require("../Quad")
 local Theme = require("../Theme")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 
 export type Options = {
 	Frac: q.State<number>,
@@ -59,7 +59,7 @@ local function build(o: Options): { Instance }
 		end, lowIndex, tickActive, tickInactive)
 		table.insert(
 			ticks,
-			D.Frame {
+			Frame {
 				Name = "Tick",
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				Position = UDim2.new(i * step / range, 0, 0.5, 0),

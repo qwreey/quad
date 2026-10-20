@@ -11,7 +11,10 @@
 local q = require("./Quad")
 local Common = require("./Common")
 local Material = require("../src")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local GuiObjectModifier = q.Modifier "GuiObject"
 
 type Ctx = Common.Ctx
 type Row = { Id: number, Title: string }
@@ -21,7 +24,7 @@ local bodyStyle = Material.Text.Label("BodyMedium")
 local titleStyle = Material.Text.Label("TitleMedium")
 
 local function cardWidth()
-	return D.Modifier.GuiObject():Size(UDim2.fromOffset(240, 0)):AutomaticSize(Enum.AutomaticSize.Y)
+	return GuiObjectModifier():Size(UDim2.fromOffset(240, 0)):AutomaticSize(Enum.AutomaticSize.Y)
 end
 
 -- `dim`: the content of a DISABLED card. The Card colors its container, outline and shadow; its children are the
@@ -30,7 +33,7 @@ local function cardBody(ctx: Ctx, title: string, body: string, dim: boolean?): {
 	local theme = ctx.Theme
 	local textTransparency = if dim then 1 - Material.Tokens.State.Opacity.DisabledContent else 0
 	return {
-		D.TextLabel {
+		TextLabel {
 			Name = "Title",
 			titleStyle,
 			Size = UDim2.fromOffset(208, 0),
@@ -42,7 +45,7 @@ local function cardBody(ctx: Ctx, title: string, body: string, dim: boolean?): {
 			TextTransparency = textTransparency,
 			Text = title,
 		},
-		D.TextLabel {
+		TextLabel {
 			Name = "Body",
 			bodyStyle,
 			Size = UDim2.fromOffset(208, 0),
@@ -66,14 +69,14 @@ return function(ctx: Ctx): Instance
 	for level = 0, 5 do
 		table.insert(
 			levels,
-			D.Frame {
+			Frame {
 				Name = `Level{level}`,
 				Size = UDim2.fromOffset(72, 56),
 				BorderSizePixel = 0,
 				BackgroundColor3 = theme.Color.SurfaceContainerLow,
 				UICorner = UDim.new(0, 12),
 				Material.Elevation.Shadow({ Level = level, Theme = theme }),
-				D.TextLabel {
+				TextLabel {
 					bodyStyle,
 					Size = UDim2.fromScale(1, 1),
 					BackgroundTransparency = 1,
@@ -166,12 +169,12 @@ return function(ctx: Ctx): Instance
 			Material.Divider({ Theme = theme }),
 			Material.Divider({ Theme = theme, Inset = "Start" }),
 			Material.Divider({ Theme = theme, Inset = "Both" }),
-			D.Frame {
+			Frame {
 				Name = "VerticalDemo",
 				Size = UDim2.new(1, 0, 0, 32),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIListLayout {
+				UIListLayout {
 					FillDirection = Enum.FillDirection.Horizontal,
 					SortOrder = Enum.SortOrder.LayoutOrder,
 					VerticalAlignment = Enum.VerticalAlignment.Center,

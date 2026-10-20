@@ -3,7 +3,9 @@ local H = require("./support/harness")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ScreenGui = q.Elem "ScreenGui"
+local FrameModifier = q.Modifier "Frame"
 local Tokens = require("../src/Tokens")
 local Progress = require("../src/Progress")
 
@@ -21,7 +23,7 @@ local function always(_: any): boolean
 	return true
 end
 local function live<T>(host: T): (T, any)
-	local gui = D.ScreenGui { host :: any }
+	local gui = ScreenGui { host :: any }
 	for _, d in H.findAll(gui, always) do
 		local anyD: any = d
 		anyD.AncestryChanged:Fire(d, gui)
@@ -74,7 +76,7 @@ H.section("Linear: plain Value, Visible, Modifier overrides the base", function(
 	local bar = Progress.LinearProgress({
 		Value = 0.5,
 		Visible = false,
-		Modifier = D.Modifier.Frame():Size(UDim2.fromOffset(200, 6)),
+		Modifier = FrameModifier():Size(UDim2.fromOffset(200, 6)),
 	})
 	assert(bar.Visible == false and bar.Size == UDim2.fromOffset(200, 6))
 	assert(H.find(bar, "Indicator").Size == UDim2.new(0.5, 0, 1, 0))
@@ -418,7 +420,7 @@ H.section("A-M1 the loop follows the host's ancestry: detaching the subtree disc
 	local anyBar: any = bar
 	anyBar.AncestryChanged:Fire(bar, nil)
 	assert(beats() == baseBeats, "detached: no loop")
-	local gui2 = D.ScreenGui {}
+	local gui2 = ScreenGui {}
 	bar.Parent = gui2
 	anyBar.AncestryChanged:Fire(bar, gui2)
 	assert(beats() == baseBeats + 1, "re-mounted: loop again")
@@ -430,7 +432,7 @@ H.section("A-M1 the loop follows the host's ancestry: detaching the subtree disc
 end)
 
 H.section("a mixed tree: two loops, determinate ones hold no connection, dispose leaves none", function()
-	local root, gui = live(D.Frame {
+	local root, gui = live(Frame {
 		Progress.LinearProgress({}),
 		Progress.CircularProgress({}),
 		Progress.LinearProgress({ Value = 0.3 }),

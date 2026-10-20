@@ -5,7 +5,7 @@ local H = require("./support/harness")
 local ClickSink = require("./support/clicksink")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Tokens = require("../src/Tokens")
 local Overlay = require("../src/Overlay")
 local Anchored = require("../src/Sheet/Anchored")
@@ -84,9 +84,9 @@ local function offsetOf(sheet: any): number
 end
 
 local function scaffold(props: any): (any, any, any)
-	local body = D.Frame { Name = "Body content", Size = UDim2.fromOffset(100, 200) }
+	local body = Frame { Name = "Body content", Size = UDim2.fromOffset(100, 200) }
 	local host = Scaffold(props)
-	local screen = D.Frame { host }
+	local screen = Frame { host }
 	local sheet = H.find(host, "BottomSheet")
 	H.setAbs(host, 0, 0, 400, 800)
 	H.setAbs(H.find(sheet, "Content"), 0, 0, 400, props.ContentHeight or 200)
@@ -97,7 +97,7 @@ end
 -- ── standard ────────────────────────────────────────────────────────────────
 
 H.section("scaffold: structure, tokens, instance count", function()
-	local host = Scaffold({ SheetContent = q.Slot<<Instance>>({ D.Frame { Name = "Row" } }), Content = q.Slot<<Instance>>({ D.Frame { Name = "Page" } }) })
+	local host = Scaffold({ SheetContent = q.Slot<<Instance>>({ Frame { Name = "Row" } }), Content = q.Slot<<Instance>>({ Frame { Name = "Page" } }) })
 	assert(host.Name == "BottomSheetScaffold" and host.BackgroundColor3 == L.Surface and host.ClipsDescendants == true)
 	assert(host.Size == UDim2.fromScale(1, 1))
 	local body = H.find(host, "Body")
@@ -347,7 +347,7 @@ end)
 
 local function setup(): (Overlay.Overlay, any)
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	return overlay, screen
 end
 
@@ -364,7 +364,7 @@ H.section("modal: opens Hidden, shows after the first layout (rises), scrim foll
 	local closes: { any } = {}
 	local handle = Modal.open({
 		Overlay = overlay,
-		Children = q.Slot<<Instance>>({ D.Frame { Name = "Row" } }),
+		Children = q.Slot<<Instance>>({ Frame { Name = "Row" } }),
 		OnClose = function(r: unknown?)
 			table.insert(closes, r or "nil")
 		end,

@@ -2520,7 +2520,7 @@ do
 		local src = qa.Source(0)
 		local handlerLayer: { [string]: any } = {
 			Ref = qa.Ref(), PreRef = qa.PreRef(), PostRef = qa.PostRef(),
-			Observer = src:Observer(function() end), Effect = qa.Effect(function() end), Modifier = qa.Modifier(),
+			Observer = src:Observer(function() end), Effect = qa.Effect(function() end), Modifier = qa.Raw.Modifier(),
 		}
 		for name, value in handlerLayer do
 			raises("Quad0238", name .. " as an element (Add)", function() qa.Slot():Add(value) end)

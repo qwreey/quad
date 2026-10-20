@@ -160,7 +160,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Modifier: initial-field table keys must be non-empty field names (got {if k == "" then '""' else typeof(k)} at argument #{i})` — `quad-base/src/Dispatch/Modifier/init.luau`
 
-- **언제**: `q.Modifier{ ... }`/`D.Modifier.<Class>{ ... }` 생성자에 넘긴 필드 테이블의 키가 빈 문자열이거나 문자열이 아닐 때.
+- **언제**: `q.Raw.Modifier{ ... }`/`q.Modifier "Class" { ... }` 생성자에 넘긴 필드 테이블의 키가 빈 문자열이거나 문자열이 아닐 때.
 - **고치려면**: 필드 이름은 비어있지 않은 문자열로 쓰세요.
 - **참고**: [`q.Modifier(...)`](../core/08-modifier.md#qmodifier)
 
@@ -190,10 +190,10 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 ### Quad0063
 
-`Modifier: field "{k}" in an initial-field table cannot be a function - a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)` — `quad-base/src/Dispatch/Modifier/init.luau`
+`Modifier: field "{k}" in an initial-field table cannot be a function - a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the element, or wrap it in a State)` — `quad-base/src/Dispatch/Modifier/init.luau`
 
 - **언제**: 초기 필드 테이블의 값으로 함수를 줬을 때 — setter 자리에서 함수는 변환 함수라는 다른 뜻이라, 생성자에서 그대로 받으면 두 경로가 조용히 갈립니다.
-- **고치려면**: 변환이 필요하면 `mod:{k}(fn)`을 쓰고, 이벤트 핸들러라면 Modifier가 아니라 Declaration의 인라인 키나 State로 넘기세요.
+- **고치려면**: 변환이 필요하면 `mod:{k}(fn)`을 쓰고, 이벤트 핸들러라면 Modifier가 아니라 요소의 인라인 키나 State로 넘기세요.
 - **참고**: [`q.Modifier(...)`](../core/08-modifier.md#qmodifier)
 
 ### Quad0064
@@ -208,7 +208,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 `Modifier: argument #{i} must be a Modifier or a plain field table (got {typeof(arg)})` — `quad-base/src/Dispatch/Modifier/init.luau`
 
-- **언제**: `q.Modifier(...)`/`D.Modifier.<Class>(...)`에 넘긴 인자가 Modifier도, 메타테이블 없는 평범한 필드 테이블도 아닐 때(`Source`/`Ref`/`Tag` 같은 다른 quad 값을 넘긴 경우 등).
+- **언제**: `q.Raw.Modifier(...)`/`q.Modifier "Class" (...)`에 넘긴 인자가 Modifier도, 메타테이블 없는 평범한 필드 테이블도 아닐 때(`Source`/`Ref`/`Tag` 같은 다른 quad 값을 넘긴 경우 등).
 - **고치려면**: Modifier나 평범한 `{ field = value }` 테이블만 넘기세요.
 - **참고**: [`q.Modifier(...)`](../core/08-modifier.md#qmodifier)
 
@@ -383,10 +383,10 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 ### Quad0264
 
-`Modifier: the transform for field "{key}" returned a function - a field cannot hold a function (an event handler does not belong in a Modifier; put it as an inline key on the Declaration, or wrap it in a State)` — `quad-base/src/Dispatch/Modifier/init.luau`
+`Modifier: the transform for field "{key}" returned a function - a field cannot hold a function (an event handler does not belong in a Modifier; put it as an inline key on the element, or wrap it in a State)` — `quad-base/src/Dispatch/Modifier/init.luau`
 
 - **언제**: `mod:Field(fn)`의 변환 함수가 **함수를 돌려줬을 때**(지금 필드 값이 평범한 값인 갈래) — 흔히 `q.Modifier():Activated(function(_old) return function() … end end)`처럼 이벤트 핸들러를 Modifier에 넣으려는 우회입니다. 초기 필드 테이블로 같은 값을 넣으면 [`Quad0063`](#quad0063)으로 거부되는데, 이 길로는 생 함수가 필드에 들어가 두 경로가 갈렸습니다. 지금 필드 값이 `State`면 변환이 `:Compute`로 미뤄져 여기서 걸리지 않습니다.
-- **고치려면**: 이벤트 핸들러는 Modifier가 아니라 Declaration의 인라인 키(`D.TextButton { Activated = fn }`)로 넘기세요. 꼭 Modifier로 옮겨야 하면 `State`에 담아 넘기세요.
+- **고치려면**: 이벤트 핸들러는 Modifier가 아니라 요소의 인라인 키(`q.Elem "TextButton" { Activated = fn }`)로 넘기세요. 꼭 Modifier로 옮겨야 하면 `State`에 담아 넘기세요.
 - **참고**: [`mod:<Field>(value)`](../core/08-modifier.md#modfieldvalue)
 
 ### Quad0266

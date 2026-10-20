@@ -2,7 +2,7 @@
 --[[
 	M10 엔진 축 둘째 단위(2026-09-03) — `Handlers/Event.luau`(문자열 키 +
 	`GetEventsOfClass` 리플렉션, self 미전달, `None`/`nil`이면 Connect 안 함)와
-	`Handlers/OnChange.luau`(`OnChange(name, fn)` 배열부 디스크립터 —
+	`Handlers/OnChange.luau`(`q.OnChange "C" "name" (fn)` 배열부 디스크립터 —
 	2026-09-03 역전 — + `GetPropertyChangedSignal` 바인딩, 초기값 발화 계약).
 	정본: `base/event-plan.md` 두 절, `base/onchange-plan.md` "확정" 절,
 	`bind-system-plan.md` "인스턴스 생성 / 이벤트 네이밍 인체공학" 절.
@@ -37,10 +37,10 @@ mock.declareEvents("TextButton", { "MouseButton1Click", "Activated" })
 mock.declareEvents("Frame", { "MouseEnter" })
 local gameShim = mock.gameShim(REFLECTED)
 
-local q = Quad.New():UseProvider(QuadRoblox)
+local q = Quad.NewModule():UseProvider(QuadRoblox)
 ;(getfenv(installProperty)).game = gameShim
 ;(getfenv(installEvent)).game = gameShim
-;(getfenv(q.Declaration.New)).Instance = { new = mock.Instance.new }
+;(getfenv(q.Elem)).Instance = { new = mock.Instance.new }
 q.Backend.isInst = mock.isMockInstance
 q.errorNamespace.setFuncLevel(require("../luau_packages/quad_types").ERROR_LEVEL_SURFACE, q.Backend.isInst)
 
@@ -53,7 +53,7 @@ end
 print("=== 1. Event — 리플렉션 매치로 Connect, 엔진 인자만 그대로(self 없음) ===")
 do
 	local got = nil
-	local b = q.Declaration.TextButton({
+	local b = q.Elem "TextButton"({
 		Name = "Btn",
 		Activated = function(...)
 			got = { n = select("#", ...), ... }
@@ -69,7 +69,7 @@ print()
 print("=== 2. 클래스별 판별 — 다른 클래스의 이벤트 이름은 매치 안 됨(no-match error, 사용자 blame) ===")
 do
 	local ok, err = pcall(function()
-		q.Declaration.Frame({ MouseButton1Click = function() end })
+		q.Elem "Frame"({ MouseButton1Click = function() end })
 	end)
 	assert(not ok, "MouseButton1Click is not a Frame event")
 	mock.assertBlamesUser(err, SPEC_FILE, "foreign event key")
@@ -83,7 +83,7 @@ do
 	local src = q.Source(function()
 		calls += 1
 	end)
-	local b = q.Declaration.TextButton({ MouseButton1Click = src })
+	local b = q.Elem "TextButton"({ MouseButton1Click = src })
 	local sig = b.MouseButton1Click
 	assert(liveConnections(sig) == 1, "reactive callback connected once")
 	sig:Fire()
@@ -117,15 +117,15 @@ end
 print()
 print("=== 4. OnChange — 배열부 디스크립터, 초기값 발화 계약(배열→해시 순서), 같은 이름 둘 ===")
 do
-	local OnChange = q.OnChange
+	local OnChange = q.OnChange "TextButton"
 	local seen = {}
 	local seen2 = {}
-	local b = q.Declaration.TextButton({
+	local b = q.Elem "TextButton"({
 		Text = "a", -- 해시 파트 — 배열부의 Connect 뒤에 대입되므로 초기값도 콜백에 닿는다(계약)
-		OnChange("Text", function(v)
+		OnChange "Text" (function(v)
 			table.insert(seen, v)
 		end),
-		OnChange("Text", function(v)
+		OnChange "Text" (function(v)
 			table.insert(seen2, v)
 		end),
 	})
@@ -138,19 +138,19 @@ do
 	-- 길이 0 말단: 형제 자식 오프셋에 기여하지 않는다(H-39)
 	assert(q.Bookkeeping.getOffsetAt(b, 3) == 0, "descriptors contribute length 0")
 
-	local d = OnChange("Text", function() end)
+	local d = OnChange "Text" (function() end)
 	assert(d.Name == "Text" and type(d.Callback) == "function", "descriptor shape { Name, Callback }")
-	assert(OnChange("Text", function() end) ~= d, "no cache — every call is a fresh value")
+	assert(OnChange "Text" (function() end) ~= d, "no cache — every call is a fresh value")
 	local ok, err = pcall(function()
-		return OnChange(42, function() end)
+		return OnChange (42)(function() end)
 	end)
 	assert(not ok, "non-string name rejected")
 	mock.assertBlamesUser(err, SPEC_FILE, "OnChange(42)")
 	local ok2, err2 = pcall(function()
-		return OnChange("Text", "nope")
+		return OnChange "Text" ("nope")
 	end)
 	assert(not ok2, "non-function callback rejected")
-	mock.assertBlamesUser(err2, SPEC_FILE, "OnChange(name, non-fn)")
+	mock.assertBlamesUser(err2, SPEC_FILE, "OnChange (name)(non-fn)")
 	print("PASS")
 end
 
@@ -163,9 +163,9 @@ do
 		emits += 1
 	end):Subscribe()
 	assert(emits == 1, "observer baseline")
-	local b = q.Declaration.TextButton({
+	local b = q.Elem "TextButton"({
 		Text = src, -- in
-		q.Out("Text", src), -- out
+		q.Out "TextButton" "Text" (src), -- out
 	})
 	assert(b.Text == "a" and emits == 1, "initial write echoes back the value src already holds — skipped, no extra emit")
 	b.Text = "typed" -- the engine side changes the property
@@ -174,24 +174,24 @@ do
 	assert(emits == 2, "same value again: skipped")
 	src:Set("ext") -- Source → property → signal → callback sees its own value → skipped
 	assert(b.Text == "ext" and emits == 3, "no echo emit on the way back")
-	local d = q.Out("Text", src)
+	local d = q.Out "TextButton" "Text" (src)
 	assert(d.Name == "Text" and type(d.Callback) == "function", "an OnChange descriptor — no new brand")
-	local okN, errN = pcall(function() return q.Out(42, src) end)
+	local okN, errN = pcall(function() return q.Out "TextButton" (42)(src) end)
 	assert(not okN, "non-string name rejected")
 	mock.assertBlamesUser(errN, SPEC_FILE, "Out(42)")
-	local okV, errV = pcall(function() return q.Out("Text", 5) end)
+	local okV, errV = pcall(function() return q.Out "TextButton" "Text" (5) end)
 	assert(not okV and string.find(errV, "must be a Source", 1, true) ~= nil, "non-Source rejected: " .. tostring(errV))
 	mock.assertBlamesUser(errV, SPEC_FILE, "Out(name, 5)")
-	local okS, errS = pcall(function() return q.Out("Text", src:Compute(function(s) return s:Get() end)) end)
+	local okS, errS = pcall(function() return q.Out "TextButton" "Text" (src:Compute(function(s) return s:Get() end)) end)
 	assert(not okS and string.find(errS, "read-only State", 1, true) ~= nil, "a :Compute State is named as read-only: " .. tostring(errS))
 	-- 2026-10-01: the write is `src:SetIfChanged(v)` now (was a hand-written `if v ~= src:Get() then src:Set(v) end`).
 	-- An error raised deep in the wave that write starts still blames that write line inside the Out callback —
 	-- the same frame the old `src:Set(v)` line was (both are tagged surfaces; probe-compared against the old body).
-	local slot = q.Slot({ q.Declaration.Frame({}) })
-	q.Declaration.Frame({ slot })
+	local slot = q.Slot({ q.Elem "Frame"({}) })
+	q.Elem "Frame"({ slot })
 	local seat = q.Source(nil :: any)
-	q.Declaration.Frame({ seat })
-	local dOut = q.Out("Text", seat :: any)
+	q.Elem "Frame"({ seat })
+	local dOut = q.Out "TextButton" "Text" (seat :: any)
 	local okW, errW = pcall(function()
 		dOut.Callback(slot) -- as the engine would call it; the Slot is already mounted → Quad0160 inside the wave
 	end)
@@ -204,10 +204,10 @@ print()
 print("=== 5. OnChange store-bind — State<디스크립터> 교체·None으로 끄기·재연결·철거 ===")
 do
 	local calls = 0
-	local src = q.Source(q.OnChange("Text", function()
+	local src = q.Source(q.OnChange "TextButton" "Text" (function()
 		calls += 1
 	end))
-	local b = q.Declaration.TextButton({ src })
+	local b = q.Elem "TextButton"({ src })
 	local sig = b:GetPropertyChangedSignal("Text")
 	assert(liveConnections(sig) == 1, "connected once through StateHandler unwrap")
 	b.Text = "b"
@@ -218,7 +218,7 @@ do
 	b.Text = "c"
 	assert(calls == 1, "off: nothing runs, nothing crashes")
 
-	src:Set(q.OnChange("Text", function()
+	src:Set(q.OnChange "TextButton" "Text" (function()
 		calls += 10
 	end))
 	b.Text = "d"
@@ -232,7 +232,7 @@ end
 print()
 print("=== 6. 교대 — 같은 이벤트 자리의 평문/State 교체가 연결을 하나로 유지, OnChange 팩토리는 quad 간 공유 ===")
 do
-	local b = q.Declaration.TextButton({ MouseButton1Click = function() end })
+	local b = q.Elem "TextButton"({ MouseButton1Click = function() end })
 	local sig = b.MouseButton1Click
 	local src = q.Source(function() end)
 	q.Dispatch.process(b, "MouseButton1Click", src, 1) -- 평문 → State
@@ -240,15 +240,15 @@ do
 	src:Set(function() end) -- 같은 자리 재발행: Disconnect+Connect 1회(churn 허용, dedup 없음)
 	assert(liveConnections(sig) == 1, "re-emission keeps one connection")
 
-	local q2 = Quad.New():UseProvider(QuadRoblox)
+	local q2 = Quad.NewModule():UseProvider(QuadRoblox)
 	assert(q2.OnChange == q.OnChange, "module-level factory shared across quad instances")
 	print("PASS")
 end
 
-print("=== 7. round3 H-440 (외부 리뷰 G-10, H-417 짝) — OnChange(\"\", fn)은 생성자에서 거부(엔진 GetPropertyChangedSignal에 디스패치 깊이로 닿던 것) ===")
+print("=== 7. round3 H-440 (외부 리뷰 G-10, H-417 짝) — OnChange (\"\")(fn)은 생성자에서 거부(엔진 GetPropertyChangedSignal에 디스패치 깊이로 닿던 것) ===")
 do
 	local ok, err = pcall(function()
-		return q.OnChange("", function() end)
+		return q.OnChange "TextButton" "" (function() end)
 	end)
 	assert(not ok and string.find(tostring(err), "must be a non-empty string", 1, true) ~= nil, "empty name rejected: " .. tostring(err))
 	mock.assertBlamesUser(err, "spec.events.luau", "OnChange empty-name blame")
@@ -260,13 +260,13 @@ print()
 print("=== 8. round8 H-507 (Studio 실측 2026-09-08) — 비함수 핸들러는 quad가 거부(엔진은 던지지 않고 콘솔에만 남긴다) ===")
 do
 	for label, v in { number = 5, str = "str", tbl = {} } :: { [string]: any } do
-		local ok, err = pcall(function() return q.Declaration.TextButton({ MouseButton1Click = v }) end)
+		local ok, err = pcall(function() return q.Elem "TextButton"({ MouseButton1Click = v }) end)
 		assert(not ok and string.find(tostring(err), 'Event: handler for "MouseButton1Click" must be a function (got', 1, true) ~= nil, label .. ": " .. tostring(err))
 		mock.assertBlamesUser(err, SPEC_FILE, "Event value gate (" .. label .. ")")
 	end
 	-- a State that later carries a non-function: the gate fires at that Set (StateHandler re-dispatch)
 	local st = q.Source(function() end)
-	local b = q.Declaration.TextButton({ MouseButton1Click = st })
+	local b = q.Elem "TextButton"({ MouseButton1Click = st })
 	assert(liveConnections(b.MouseButton1Click) == 1, "function via State connects")
 	local ok2, err2 = pcall(function() st:Set(5) end)
 	assert(not ok2 and string.find(tostring(err2), "must be a function (got number)", 1, true) ~= nil, "State-carried non-function rejected: " .. tostring(err2))
@@ -286,9 +286,9 @@ do
 		if ctx.Prev ~= nil then
 			return ctx.Prev
 		end
-		return q.Declaration.TextButton({
+		return q.Elem "TextButton"({
 			Text = ctx.Item,
-			q.OnChange("Text", function(v)
+			q.OnChange "TextButton" "Text" (function(v)
 				if v == "a" and not fired then
 					fired = true
 					data:Set({ "a", "b" }) -- inside the mount (initial-value firing, synchronous)
@@ -298,7 +298,7 @@ do
 	end, function(item)
 		return item
 	end)
-	local host = q.Declaration.Frame({ outer })
+	local host = q.Elem "Frame"({ outer })
 	assert(fired, "the OnChange fired during the mount")
 	assert(outer.Length:Get() == 2 and #host:GetChildren() == 2, `the Set made inside the mount window is applied (Length {outer.Length:Get()}, children {#host:GetChildren()})`)
 	print("PASS")
@@ -337,9 +337,9 @@ do
 	local src = q.Source("a")
 	local b
 	capture(function()
-		b = q.Declaration.TextButton({
+		b = q.Elem "TextButton"({
 			Text = src,
-			q.OnChange("Text", function(v)
+			q.OnChange "TextButton" "Text" (function(v)
 				src:SetIfChanged(string.lower(v))
 			end),
 		})
@@ -351,11 +351,11 @@ do
 	local raw = q.Source("x")
 	local b2
 	capture(function()
-		b2 = q.Declaration.TextButton({
+		b2 = q.Elem "TextButton"({
 			Text = raw:Compute(function(s)
 				return string.upper(s:Get())
 			end),
-			q.Out("Text", raw),
+			q.Out "TextButton" "Text" (raw),
 		})
 		raw:Set("y")
 	end)
@@ -373,7 +373,7 @@ do
 				s3:Set(r)
 			end
 		end)
-		q.Declaration.Frame({ s3 })
+		q.Elem "Frame"({ s3 })
 	end)
 	assert(count() == 1, "Ref callback feedback: one line: " .. table.concat(lines, " | "))
 	q.debug = false

@@ -4,7 +4,10 @@ local ClickSink = require("./support/clicksink")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextBox = q.Elem "TextBox"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
 local Tokens = require("../src/Tokens")
 local Overlay = require("../src/Overlay")
 local Dialog = require("../src/Dialog")
@@ -34,7 +37,7 @@ end
 
 local function setup()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	return overlay, screen
 end
 
@@ -183,7 +186,7 @@ end)
 
 H.section("Body can be an element; confirm and alert results", function()
 	local overlay, screen = setup()
-	local custom = D.TextLabel { Name = "Custom", Text = "custom body" }
+	local custom = TextLabel { Name = "Custom", Text = "custom body" }
 	local h = Dialog.open({ Overlay = overlay, Headline = "x", Body = custom })
 	assert(H.find(H.find(screen, "Body"), "Custom") == custom)
 	h.Close()
@@ -235,7 +238,7 @@ H.section("destroying the overlay layer while open: no leaked connection or time
 end)
 
 H.section("default overlay: open + close leaves the layer empty; theme dark", function()
-	local screen = D.Frame { Overlay.default().Layer }
+	local screen = Frame { Overlay.default().Layer }
 	local h = Dialog.open({ Headline = "default" })
 	assert(H.find(screen, "Dialog") ~= nil)
 	h.Close()
@@ -269,8 +272,8 @@ end
 H.section("D2 gamepad: selection starts on the first enabled action, is trapped, and returns on close", function()
 	local overlay, screen = setup()
 	;(UIS :: any).GetLastInputType = function() return Enum.UserInputType.Gamepad1 end
-	local prev = D.TextButton { Name = "Prev" }
-	local prevHost = D.Frame { prev }
+	local prev = TextButton { Name = "Prev" }
+	local prevHost = Frame { prev }
 	GS.SelectedObject = prev
 	local h = Dialog.open({
 		Overlay = overlay,
@@ -296,7 +299,7 @@ end)
 
 H.section("D4 Escape is ignored while a TextBox is focused (and when the engine processed it), ButtonB is not", function()
 	local overlay, screen = setup()
-	local box = D.TextBox { Name = "Typing" }
+	local box = TextBox { Name = "Typing" }
 	local h = Dialog.open({ Overlay = overlay, Headline = "x", Actions = { { Label = "ok" } } })
 	;(UIS :: any).FocusedTextBox = box
 	UIS.InputBegan:Fire(H.input({ KeyCode = Enum.KeyCode.Escape, UserInputType = Enum.UserInputType.Keyboard }), false)
@@ -377,7 +380,7 @@ end)
 H.section("body height: the wrapper is min(body, cap) tall, follows a body that grows or shrinks, in local units", function()
 	local overlay, screen = setup()
 	H.setAbs(overlay.Layer, 0, 0, 300, 400)
-	local custom = D.Frame { Name = "Custom" }
+	local custom = Frame { Name = "Custom" }
 	local h = Dialog.open({
 		Overlay = overlay,
 		Headline = "H",
@@ -456,7 +459,7 @@ H.section("cap: the headline's laid-out height comes off the body's cap, the car
 	local h = Dialog.open({
 		Overlay = overlay,
 		Headline = "A headline",
-		Body = D.Frame { Name = "Custom" },
+		Body = Frame { Name = "Custom" },
 		Width = 560,
 		Actions = { { Label = "Cancel" }, { Label = "OK" } },
 	})
@@ -526,7 +529,7 @@ H.section("cap: the headline's laid-out height comes off the body's cap, the car
 		Overlay = overlay,
 		Icon = "rbxassetid://7",
 		Headline = "H",
-		Body = D.Frame { Name = "Custom" },
+		Body = Frame { Name = "Custom" },
 		Width = 560,
 		Actions = { { Label = "OK" } },
 	})
@@ -539,7 +542,7 @@ H.section("cap: the headline's laid-out height comes off the body's cap, the car
 	assert(48 + 24 + 24 + window() + 48 + 3 * 16 == 400 - 48, "icon + headline + body + actions = layer - 48")
 	icon.Close()
 	H.advance(0.3)
-	local bare = Dialog.open({ Overlay = overlay, Body = D.Frame { Name = "Custom" }, Width = 560, Actions = { { Label = "OK" } } })
+	local bare = Dialog.open({ Overlay = overlay, Body = Frame { Name = "Custom" }, Width = 560, Actions = { { Label = "OK" } } })
 	dlg = H.find(screen, "Dialog")
 	scroll = H.find(dlg, "BodyScroll")
 	assert(H.find(dlg, "Headline") == nil)
@@ -561,7 +564,7 @@ H.section("body height: no Body = no wrapper; Fit = true keeps the body in the c
 	assert(H.find(d0, "BodyScroll") == nil and H.find(d0, "BodyRoom") == nil and H.find(d0, "Body") == nil)
 	bare.Close()
 	H.advance(0.3)
-	local custom = D.Frame { Name = "Custom" }
+	local custom = Frame { Name = "Custom" }
 	local fit = Dialog.open({ Overlay = overlay, Headline = "fit", Body = custom, Width = 560, Fit = true, Actions = { { Label = "OK" } } })
 	local d1 = H.find(screen, "Dialog")
 	assert(d1.Size == UDim2.fromOffset(560, 0), "Fit: no width cap")

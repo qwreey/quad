@@ -1,7 +1,8 @@
 --!strict
 --[[
 	OnChange — the `GetPropertyChangedSignal` binding as an ARRAY-PART VALUE:
-	`OnChange(propertyName, fn)` returns a descriptor the children array
+	`q.OnChange "Frame" "Text" (fn)` (3.4.0 class-first stages in `Surface/Runtime.luau`; 3.3 wrote
+	`q.OnChange("Text", fn)`) returns a descriptor the children array
 	carries, like `Tag(...)` and the lifecycle hooks (`base/onchange-plan.md`
 	"확정" 절, as-is — the 2026-09-03 reversal from the hash-key form
 	`[OnChange "x"] = fn`, `archive/onchange-hash-key-reversed.md`).
@@ -10,8 +11,8 @@
 
 	  Frame {
 	      Text = "a",
-	      OnChange("Text", function(v: string) ... end),
-	      OnChange("Text", function(v) ... end),   -- same name twice is fine
+	      q.OnChange "TextLabel" "Text" (function(v: string) ... end),
+	      q.OnChange "TextLabel" "Text" (function(v) ... end),   -- same name twice is fine
 	      State<descriptor>,                        -- reactive via StateHandler
 	  }
 
@@ -35,14 +36,13 @@
 	array element goes to NoneHandler/NilHandler, never to this handler), no
 	same-value dedup (`Connect` is not idempotent — Handlers/Event.luau
 	reasoning), no property-membership check (an unknown name raises the
-	engine's own error inside process — the generated `OnChangeFn` type
-	catches it statically first, D/init.luau).
+	engine's own error inside process — the surface type catches it
+	statically first).
 
-	Typing lives in the GENERATED file: `PropTypes` (property name → type
-	across the D scope — the READ surface `PropTypesRead` since Q19, 2026-09-07),
-	`OnChangeFn = <K>(name: K & keyof<PropTypesRead>,
-	fn: (index<PropTypesRead, K>) -> ()) -> …` — `RobloxExtension.OnChange`
-	carries that type over this untyped runtime (luau-test `30`).
+	Typing lives in `Surface/init.luau` (3.4.0; the generated `OnChangeFn` before it): the curried
+	`q.OnChange "Class" "Name" (fn)` takes the name from the class's READ surface (Q19, 2026-09-07) and
+	types the callback parameter from it — `RobloxExtension.OnChange` carries that type over the
+	untyped runtime (`Surface/Runtime.luau` → `makeOnChange` here).
 ]]
 
 local QuadTypes = require("../../luau_packages/quad_types")
@@ -61,8 +61,8 @@ local function isOnChange(x: any): boolean
 	return descriptors[x] == true
 end
 
--- untagged bodies: the tagged public `OnChange`/`Out` below and the 3.4.0 curried stages (`Surface/Runtime.luau` —
--- a tagged stage calling a tagged factory would blame the stage's line, not the user's) both call these
+-- untagged bodies: the 3.4.0 curried stages (`Surface/Runtime.luau` — tagged) call these; a tagged stage calling a
+-- tagged factory would blame the stage's line, not the user's
 local function makeOnChange(name: string, fn: (any) -> ()): OnChangeDescriptor
 	if type(name) ~= "string" or name == "" then
 		-- round3 `H-440` (외부 리뷰 G-10, `H-417` 짝): "" reached `GetPropertyChangedSignal` at dispatch depth
@@ -101,12 +101,6 @@ local function makeOut(name: string, src: any): OnChangeDescriptor
 	end)
 end
 
-local function OnChange(name: string, fn: (any) -> ()): OnChangeDescriptor
-	return makeOnChange(name, fn)
-end
-local function Out(name: string, src: any): OnChangeDescriptor
-	return makeOut(name, src)
-end
 
 -- [2026-10-06 user decision, round14 Q174 보강 2 (1)] the ONE function the engine's changed signal reaches quad
 -- through: it calls the `OnChange` callback (an `Out` callback is one). A write back from there is the engine
@@ -127,7 +121,6 @@ local function install(quad: any)
 	quad._reentryFrames[Frames.fireOnChange] = true
 	if errNS == nil then
 		errNS = quad.errorNamespace
-		errNS.setFuncLevel(SURFACE, OnChange, Out) -- `H-238`: public factories tagged
 		isSource = quad.isSource
 		isState = quad.isState
 	end
@@ -159,9 +152,7 @@ local function install(quad: any)
 end
 
 return {
-	OnChange = OnChange,
-	Out = Out,
-	makeOnChange = makeOnChange, -- untagged (Surface/Runtime.luau)
+	makeOnChange = makeOnChange, -- untagged — the tagged stages are `Surface/Runtime.luau`'s `q.OnChange "C" "Name" (fn)`
 	makeOut = makeOut,
 	isOnChange = isOnChange,
 	install = install,

@@ -13,7 +13,7 @@ type Effect = QuadTypes.Effect
 -- strict 모드에서 `collectgarbage`는 선언 안 된 전역 — 표준 luau CLI엔 있다(Roblox엔 없음)
 local collectgarbage = (_G :: any).collectgarbage :: () -> ()
 
-local quad = Quad.New()
+local quad = Quad.NewModule()
 mock.installLifetime(quad)
 local Source, Ref, Effect = quad.Source, quad.Ref, quad.Effect
 local Instance = mock.Instance
@@ -656,7 +656,7 @@ end
 
 print("=== 15. 2026-10-01 — rawRerun 반복 한도(1만 회)는 늘 켜져 있다(q.debug 무관 — 사용자 결정): 넘으면 Quad0263(설치든 emit이든 — 지연 재실행이라 같은 값 되쓰기가 끝없이 돈다); 한도 안에서 수렴하는 루프는 그대로 ===")
 do
-	local dq = Quad.New()
+	local dq = Quad.NewModule()
 	mock.installLifetime(dq)
 	assert(not dq.debug, "the limit is checked with debug OFF")
 	-- install: an unconditional same-value write to its own dep (a Source propagates an equal value — H-68)
@@ -714,7 +714,7 @@ do
 	local okB, errB, nB = countdown(10000)
 	assert(not okB and string.find(tostring(errB), "Quad0263", 1, true) ~= nil and nB == 10000, "10000 re-runs exceed it: " .. tostring(errB) .. " / " .. nB)
 	-- the debug flag changes nothing here
-	local dq2 = Quad.New()
+	local dq2 = Quad.NewModule()
 	mock.installLifetime(dq2)
 	dq2.debug = true
 	local s4 = dq2.Source(0)

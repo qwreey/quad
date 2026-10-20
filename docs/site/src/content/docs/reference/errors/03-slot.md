@@ -228,7 +228,7 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 `Slot: cannot mutate a Slot while it is being mounted or while one of its elements is being inserted/removed (it, or a Slot inside it, is mid-operation) - a :List/:Single updateFn, an Observer that fires during that mount, or a backend signal callback that runs synchronously inside the insert/remove (an element's parent changed) must not CRUD this Slot or an ancestor Slot; run it through slot:WhenIdle(fn) - fn runs as soon as the operation has finished (or an earlier operation on this Slot or a Slot inside it threw mid-way - then this Slot stays unusable: dispose its host Instance)` — `quad-base/src/Slot/init.luau`
 
 - **언제**: 이 `Slot`이나 그 안의 `Slot`이 마운트되는 동안(`_materializing`) 이 `Slot`에 CRUD나 `:List`/`:Single` 설치를 쓰려고 할 때 — 중첩된 `:List`의 첫 `updateFn`이나 그 안에서 도는 `Observer`가 조상 `Slot`을 건드리면 여기 걸립니다. 이미 마운트된 트리에 `Add`/`Splice`/`Replace`로 `:List` Slot을 넣을 때도 같고, 이때 막히는 범위는 바로 위 부모만이 아니라 **맨 위까지의 조상 `Slot` 전부**입니다(3.3.0부터 — 3.2.0에는 이 거부가 없어 조상을 고치면 내부 에러로 죽거나 조부모를 지울 때 유령 자리가 남았습니다).
-- **언제(엔진 호출 안)**: [3.3.0부터] 원소를 붙이거나 떼는 **엔진 호출이 도는 동안**에도 같은 표시가 섭니다 — 그 호출 안에서 동기로 불리는 신호 콜백(Roblox에서 `SignalBehavior`가 Immediate일 때 원소의 `Parent` 변경 신호 — `q.OnChange("Parent", fn)`의 `fn`)이 **그 연산이 진행 중인 `Slot`과 그 위의 조상 `Slot`들**(원소를 받거나 내보내는 `Slot`과 맨 위까지의 조상, 통째로 붙고 있는 `Slot`과 그 안의 `Slot`, 파괴되고 있는 `Slot`)을 CRUD하면 여기 걸립니다. 조상까지 막는 이유는 자식 `Slot`의 `Length`가 엔진 호출이 끝난 뒤에야 갱신되기 때문입니다 — 그 사이 조상이 자식 뒤 자리를 계산하면 낡은 길이를 씁니다. 그 연산은 끝까지 마쳐지고 부기는 온전합니다(막힌 것은 콜백의 CRUD뿐). Deferred에서는 콜백이 연산이 끝난 뒤에 불리므로 걸리지 않습니다. 같은 부모 아래의 형제 `Slot`과 무관한 `Slot`은 막지 않고, 언마운트 도중의 콜백은 이미 떼어진 `Slot`을 보므로 막지 않습니다.
+- **언제(엔진 호출 안)**: [3.3.0부터] 원소를 붙이거나 떼는 **엔진 호출이 도는 동안**에도 같은 표시가 섭니다 — 그 호출 안에서 동기로 불리는 신호 콜백(Roblox에서 `SignalBehavior`가 Immediate일 때 원소의 `Parent` 변경 신호 — `q.OnChange "Frame" "Parent" (fn)`의 `fn`)이 **그 연산이 진행 중인 `Slot`과 그 위의 조상 `Slot`들**(원소를 받거나 내보내는 `Slot`과 맨 위까지의 조상, 통째로 붙고 있는 `Slot`과 그 안의 `Slot`, 파괴되고 있는 `Slot`)을 CRUD하면 여기 걸립니다. 조상까지 막는 이유는 자식 `Slot`의 `Length`가 엔진 호출이 끝난 뒤에야 갱신되기 때문입니다 — 그 사이 조상이 자식 뒤 자리를 계산하면 낡은 길이를 씁니다. 그 연산은 끝까지 마쳐지고 부기는 온전합니다(막힌 것은 콜백의 CRUD뿐). Deferred에서는 콜백이 연산이 끝난 뒤에 불리므로 걸리지 않습니다. 같은 부모 아래의 형제 `Slot`과 무관한 `Slot`은 막지 않고, 언마운트 도중의 콜백은 이미 떼어진 `Slot`을 보므로 막지 않습니다.
 - **고치려면**: 그 일을 [`slot:WhenIdle(fn)`](/reference/core/06-slot/#slotwhenidlefn)에 넘기세요 — `fn(slot)`은 그 `Slot`이 한가하면 바로, 연산 중이면 그 연산이 끝난 직후에 실행됩니다(신호 설정과 무관하게 같은 코드). index는 `fn` 안에서 다시 구하세요(`slot:IndexOf(element)`). `updateFn` 안에서 조상을 바꾸려던 것이라면 먼저 그 일이 `updateFn`의 몫인지 보세요 — `updateFn`은 항목 하나를 원소로 바꾸는 함수입니다. "`Observer`에서"라도 그 `Observer`가 마운트 중에 동기로 발화하면(첫 발화 포함) 같은 에러이고 처방도 같습니다. 앞선 연산이 도중에 던진 뒤에 이 에러가 난다면 그 예외의 원인을 고치세요.
 - **관측(계약 아님)**: 엔진 호출 자체가 던지면(예: 인스턴스를 자기 자손에 넣어 엔진이 순환을 거부) 그 `Slot`에 표시가 남아 이후의 CRUD가 이 에러로 막힙니다.
 - **관측(계약 아님)**: 마운트 도중 어디서든 던지면 그 마운트에 걸린 사슬 전체에 "마운트 중" 표시가 남아, 그 뒤 **이 `Slot`과 그 조상 `Slot`들**은 이 에러로 계속 막힙니다(quad는 사용자 코드의 예외를 복구하지 않습니다). `D.Frame({ outer })`처럼 호스트를 만드는 호출 자체가 던진 경우엔 호스트가 반환되지 않습니다.
@@ -396,10 +396,10 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ### Quad0241
 
-`Slot: this element is not claimed by quad - build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one - a destroyed Instance cannot be reused)` — `quad-base/src/Slot/Elements.luau`
+`Slot: this element is not claimed by quad - build it with q.Elem or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one - a destroyed Instance cannot be reused)` — `quad-base/src/Slot/Elements.luau`
 
 - **언제**: quad 밖에서 만들어졌거나(`Instance.new`, 다른 라이브러리) 아직 `Claim`으로 넘겨받지 않은 값, 다른 quad 모듈 인스턴스가 만든 값, 또는 이미 파괴된 값을 `Slot`의 원소로 넣으려 할 때 — 죽음을 추적할 수 없는 값은 받지 않습니다.
-- **고치려면**: `Declaration`으로 만들거나 [`Claim`](/reference/roblox/04-claim-mapper/)으로 먼저 넘겨받으세요. `Slot`이 대신 claim해 주지 않습니다.
+- **고치려면**: `q.Elem`으로 만들거나 [`Claim`](/reference/roblox/04-claim-mapper/)으로 먼저 넘겨받으세요. `Slot`이 대신 claim해 주지 않습니다.
 - **참고**: [원소 대수](/reference/core/06-slot/#원소-대수--넣는-자리와-꺼내는-자리의-타입이-다르다), [`Claim`](/reference/roblox/04-claim-mapper/)
 
 ### Quad0242

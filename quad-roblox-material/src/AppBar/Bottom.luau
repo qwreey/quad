@@ -37,9 +37,13 @@ local Icons = require("../Icons")
 local FAB = require("../Button/FAB")
 local Overlay = require("../Overlay")
 local Actions = require("./Actions")
-local D = q.Declaration
-local flexibleName = D.Modifier.Frame():Name("FlexibleBottomAppBar")
-local bottomName = D.Modifier.Frame():Name("BottomAppBar")
+local Frame = q.Elem "Frame"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local FrameModifier = q.Modifier "Frame"
+local TextButtonModifier = q.Modifier "TextButton"
+local flexibleName = FrameModifier():Name("FlexibleBottomAppBar")
+local bottomName = FrameModifier():Name("BottomAppBar")
 
 export type Fab = {
 	read Icon: string,
@@ -52,7 +56,7 @@ export type BottomProps = {
 	read Overlay: Overlay.Overlay?,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -65,7 +69,7 @@ export type FlexibleProps = {
 	read Overlay: Overlay.Overlay?,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -77,21 +81,21 @@ local FLEX_HEIGHT = 64 -- DockedToolbarTokens.ContainerHeight
 local FLEX_PAD = 16 -- ContainerLeadingSpace / TrailingSpace
 local FIXED_GAP = 32 -- ContainerMaxSpacing
 
-local bottomBase = D.Modifier.Frame():Size(UDim2.new(1, 0, 0, HEIGHT))
+local bottomBase = FrameModifier():Size(UDim2.new(1, 0, 0, HEIGHT))
 
 local function BottomAppBar(props: BottomProps): Frame
 	local theme = Theme.resolve(props.Theme)
 	local holder: Instance? = nil
 	if props.Actions ~= nil and #props.Actions > 0 then
 		local list, width = Actions.build(props.Actions, { Theme = theme, Color = theme.Raw.OnSurface, Overlay = props.Overlay })
-		holder = D.Frame {
+		holder = Frame {
 			Name = "Actions",
 			AnchorPoint = Vector2.new(0, 0.5),
 			Position = UDim2.fromOffset(PAD, PAD + (HEIGHT - PAD) / 2),
 			Size = UDim2.fromOffset(width, Actions.SIZE),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIListLayout {
+			UIListLayout {
 				FillDirection = Enum.FillDirection.Horizontal,
 				VerticalAlignment = Enum.VerticalAlignment.Center,
 				SortOrder = Enum.SortOrder.LayoutOrder,
@@ -107,10 +111,10 @@ local function BottomAppBar(props: BottomProps): Frame
 			Color = "Secondary",
 			Theme = theme,
 			OnClick = spec.OnClick,
-			Modifier = D.Modifier.TextButton():AnchorPoint(Vector2.new(1, 0)):Position(UDim2.new(1, -FAB_END, 0, FAB_TOP)),
+			Modifier = TextButtonModifier():AnchorPoint(Vector2.new(1, 0)):Position(UDim2.new(1, -FAB_END, 0, FAB_TOP)),
 		})
 	end
-	return D.Frame {
+	return Frame {
 		bottomName,
 		bottomBase,
 		BackgroundColor3 = theme.Color.SurfaceContainer,
@@ -131,20 +135,20 @@ local function FlexibleBottomAppBar(props: FlexibleProps): Frame
 		height = FLEX_HEIGHT
 	end
 	local list = Actions.build(props.Actions, { Theme = theme, Color = theme.Raw.OnSurface, Overlay = props.Overlay })
-	return D.Frame {
+	return Frame {
 		flexibleName,
-		D.Modifier.Frame():Size(UDim2.new(1, 0, 0, height :: number)),
+		FrameModifier():Size(UDim2.new(1, 0, 0, height :: number)),
 		BackgroundColor3 = theme.Color.SurfaceContainer,
 		BorderSizePixel = 0,
 		LayoutOrder = props.LayoutOrder,
 		props.Modifier or q.None,
-		D.Frame {
+		Frame {
 			Name = "Row",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIPadding { PaddingLeft = UDim.new(0, FLEX_PAD), PaddingRight = UDim.new(0, FLEX_PAD) },
-			D.UIListLayout {
+			UIPadding { PaddingLeft = UDim.new(0, FLEX_PAD), PaddingRight = UDim.new(0, FLEX_PAD) },
+			UIListLayout {
 				FillDirection = Enum.FillDirection.Horizontal,
 				VerticalAlignment = Enum.VerticalAlignment.Center,
 				HorizontalAlignment = if fixed then Enum.HorizontalAlignment.Center else Enum.HorizontalAlignment.Left,

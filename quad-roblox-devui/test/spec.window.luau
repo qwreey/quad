@@ -254,8 +254,10 @@ H.section("press-to-front: hidden windows and popups are not hit; one listener p
 	OverlayModule.warnUnmounted = false
 	local overlay = OverlayModule.new()
 	H.setAbs(overlay.Layer, 0, 0, 1000, 1000)
-	local D = q.Declaration
-	local sub = overlay:Open({ Content = D.Frame({ D.TextButton({ Text = "" }) }), Position = Vector2.new(400, 400), CloseOnClickOutside = false })
+	local Frame = q.Elem "Frame"
+	local TextButton = q.Elem "TextButton"
+	local TextLabel = q.Elem "TextLabel"
+	local sub = overlay:Open({ Content = Frame({ TextButton({ Text = "" }) }), Position = Vector2.new(400, 400), CloseOnClickOutside = false })
 	H.setAbs(sub.Holder, 400, 400, 50, 20)
 	press(5, 5) -- not on the popup: focus moves as usual
 	local focusedNow = manager.Focused:Get()
@@ -268,12 +270,12 @@ H.section("press-to-front: hidden windows and popups are not hit; one listener p
 	sub:Close()
 	press(5, 5)
 	focusedNow = manager.Focused:Get()
-	local tip = overlay:Open({ Content = D.TextLabel({ Text = "hint" }), Position = Vector2.new(400, 400), CloseOnClickOutside = false })
+	local tip = overlay:Open({ Content = TextLabel({ Text = "hint" }), Position = Vector2.new(400, 400), CloseOnClickOutside = false })
 	H.setAbs(tip.Holder, 400, 400, 50, 20)
 	press(410, 405) -- on the tooltip, over `under`
 	assert(manager.Focused:Get() ~= focusedNow, "a tooltip takes no input: the window under it is focused")
 	tip:Close()
-	local modal = overlay:Open({ Content = q.Declaration.Frame({}), Position = Vector2.new(0, 0) })
+	local modal = overlay:Open({ Content = q.Elem "Frame"({}), Position = Vector2.new(0, 0) })
 	local focusedModal = manager.Focused:Get()
 	press(5, 5) -- anywhere on the layer = the catcher of a click-outside popup
 	assert(manager.Focused:Get() == focusedModal, "press on the catcher: no focus change")

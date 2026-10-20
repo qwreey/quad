@@ -37,7 +37,8 @@ local q = require("./Quad")
 local Tokens = require("./Tokens")
 local Theme = require("./Theme")
 local Util = require("./Util")
-local D = q.Declaration
+local ImageLabel = q.Elem "ImageLabel"
+local UIShadow = q.Elem "UIShadow"
 
 local ElevationTokens = require("./Tokens/Elevation")
 
@@ -78,7 +79,7 @@ local function Shadow(o: Options?)
 		return self:Get().Dp > 0
 	end)
 
-	return D.UIShadow {
+	local shadow = UIShadow {
 		Name = "Elevation",
 		BlurRadius = blur:Apply(q.Animate(animate)),
 		Offset = offset:Apply(q.Animate(animate)),
@@ -86,8 +87,11 @@ local function Shadow(o: Options?)
 		Transparency = transparency:Apply(q.Animate(animate)),
 		Color = theme.Color.Shadow,
 		Enabled = enabled,
-		ShowBehindParent = true,
 	}
+	-- `ShowBehindParent` is newer than the type definitions some checkers ship (the repo-pinned luau-lsp defs lack it), and
+	-- quad's typed surface is built from the checker's own class types — so it is set here, past the typed props table
+	;(shadow :: any).ShowBehindParent = true
+	return shadow
 end
 
 local function Backdrop(o: Options?)
@@ -104,7 +108,7 @@ local function Backdrop(o: Options?)
 	local transparency: q.State<number> = tok:Compute(function(self)
 		return self:Get().Transparency
 	end)
-	return D.ImageLabel {
+	return ImageLabel {
 		Name = "ElevationBackdrop",
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		BackgroundTransparency = 1,

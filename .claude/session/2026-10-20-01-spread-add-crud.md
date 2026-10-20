@@ -59,3 +59,11 @@ gen-d.py: LEGACY_KEEP(정의 클래스 기준, 태그 무관 — Transparency �
 ## 12. 단위 5 완료(변환 스크립트)
 
 `scripts/migrate-3.4.py`. 레포 사본 적용: 킷 Lune 스펙 원본과 동일 통과(184·507), 못 정함 1·캐스트 D 1(시제품과 같은 자리). 스펙 쪽 손 몫과 `InstanceShorthand`의 `Declaration.New` 내부 의존은 단위 6.
+
+## 13. 단위 6 완료(갈아타기 — BREAKING)
+
+옛 표면(생성 `Declaration`·`q.New`·base `q.Modifier`·`newMapperClass`·3.3 OnChange/Out 꼴·클래스별 타입 이름) 제거, 루트가 일반 이름과 `RobloxExtension`(표면 일곱 + ForClasses)을 내보냄. 스크립트를 레포 스펙·킷에 실제로 적용, 손 몫은 스펙 열둘 남짓과 킷 셋(Sheet hostHook·Elevation `ShowBehindParent` 체커 차이·textfield). devui `FieldSpread`/`TrackSpread`.
+
+계획에서 벗어난 것 둘 — 사용자에게 보고: 변환 함수 `old`·`Peek`의 State·Tween 팔이 읽기 뷰(`StateView`·`TweenView`)다. 타입 함수 안에 전체 `QuadTypes.State<T>`를 넣으면 "*error-type*"으로 깨져서다(실측). round3 Q23 (a)는 전체형이었다. 둘째, 커스텀 클래스 Modifier가 `ModifierInto<C>` 마커에 바로 들어가지 않는다(3.3 `Into<Class>`는 메소드 인터페이스였다). 새 에러 `Quad0281`(클래스 단계에 인자 둘 이상 — 3.3 `q.OnChange("Text", fn)`이 조용히 단계 함수가 되어 요소에 놓이던 것).
+
+doc-coverage가 새 표면 헤딩을 요구해 단위 7 일부를 당겼다: reference/roblox 01~05 다시 씀(파일 이름 `02-elem.md`·`03-modifier-spread.md`), core/01·core/10·errors·00-index·CHANGELOG BREAKING. 문서 쓰며 확인한 것(신 솔버·한도 플래그 셋): `q.Out "UIStroke" "Color"`가 올바른 `Source<Color3>`를 받는다(3.3의 충돌 이름 거짓 양성 해소), `q.Out "BillboardGui" "Adornee"`가 `Source<Instance?>`를 받는다, `q.OnChange "UIStroke" "Color" (function(v: number))`·`"Parent"` 콜백에 `Instance` 주석·`Source(5)`를 `Size`에 — 전부 거부.

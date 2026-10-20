@@ -62,7 +62,7 @@ do
 	local q = require("./mock").newQuad()
 	for _, v in { q.PreRef(0), q.PostRef(0) } do
 		local ok = pcall(function()
-			q.Modifier():X(v)
+			q.Raw.Modifier():X(v)
 		end)
 		assert(not ok, "Modifier field rejects PreRef/PostRef (handler-layer value, isRef)")
 		-- Source/State는 M2 가드가 isModifier만 본다 — `State<Ref>`는 정본이 설계한

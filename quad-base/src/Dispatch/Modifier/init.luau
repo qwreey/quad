@@ -216,7 +216,7 @@ function methods.Apply(self: any, factory: (any) -> any): any
 	return factory(self) -- nothing more, nothing less (8절)
 end
 
--- mod:As() — unchecked cast (11절): the "go somewhere Declaration does not know" path.
+-- mod:As() — unchecked cast (11절): the "go somewhere the backend's class map does not know" path.
 -- No name: the value itself (a type-level cast only, tag untouched — nothing
 -- to retag to). A name: retag after an EXISTENCE check (typo guard), no
 -- ancestry check — that is what the checked `As<Name>()` is for.
@@ -325,7 +325,7 @@ local function setterClosure(key: string): (any, any) -> any
 			-- refuses the same value (`Quad0063`), and `modifier-plan.md` 3절 refuses functions so the
 			-- two construction paths agree. Only the plain-field branch can get here (a State field's
 			-- transform makes a State; a literal function is always a transform).
-			error(`Quad0264 Modifier: the transform for field "{key}" returned a function - a field cannot hold a function (an event handler does not belong in a Modifier; put it as an inline key on the Declaration, or wrap it in a State)`, 2)
+			error(`Quad0264 Modifier: the transform for field "{key}" returned a function - a field cannot hold a function (an event handler does not belong in a Modifier; put it as an inline key on the element, or wrap it in a State)`, 2)
 		end
 		local newFields = table.clone(oldFields)
 		newFields[key] = value
@@ -420,7 +420,7 @@ local function construct(tag: any, ...: any): any
 					-- [2026-09-16 hunt C] the old hint "use mod:{k}(fn)" pointed an EVENT handler at the
 					-- transform-function arm (the setter would call it once with old=nil and store nil).
 					-- Modifiers carry no events (modifier-plan: the generated <Class>Modifier omits them).
-					Err.errorBeforeNearest(`Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function - a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the Declaration, or wrap it in a State)`, SURFACE)
+					Err.errorBeforeNearest(`Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function - a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the element, or wrap it in a State)`, SURFACE)
 				end
 				if isHandlerLayerValue(v) then
 					Err.errorBeforeNearest(`Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`, SURFACE)
@@ -446,8 +446,8 @@ end
 -- component authors register theirs the same way (a `MaterialButtonModifier`
 -- with custom fields is as first-class as `FrameModifier`). Dedup: the same
 -- name always returns the same constructor (two modules may both ask).
--- untagged body of TypedFactory (also the 3.4.0 coexistence string arm of `Modifier(...)` below)
-local function typedFactoryOf(name: any): any
+local function TypedFactory(name: any): any
+	checkName("TypedFactory", "name", name)
 	local existing = constructors[name]
 	if existing ~= nil then
 		return existing
@@ -456,14 +456,9 @@ local function typedFactoryOf(name: any): any
 	local ctor = function(...: any): any
 		return construct(name, ...)
 	end
-	Err.setFuncLevel(SURFACE, ctor) -- `H-238`: the user's `D.Modifier.Frame(...)` line is blamed
+	Err.setFuncLevel(SURFACE, ctor) -- `H-238`: the user's `q.Modifier "Frame" (...)` line is blamed
 	constructors[name] = ctor
 	return ctor
-end
-
-local function TypedFactory(name: any): any
-	checkName("TypedFactory", "name", name)
-	return typedFactoryOf(name)
 end
 
 -- Modifier.DefineSubtype(parent, subtype) (11절): ONE job — register the edge
@@ -489,14 +484,6 @@ end
 
 local Modifier = setmetatable({ Overridden = Overridden, TypedFactory = TypedFactory, DefineSubtype = DefineSubtype }, {
 	__call = function(_self: any, ...: any): any
-		-- [2026-10-20 3.4.0 coexistence — removed at the switch, plan unit 6] `q.Modifier "Frame"` (one string) is the
-		-- typed factory the backend surface gives; here so quad-roblox needs no wrapper over this tagged call (a
-		-- wrapper would make every old-form error blame the wrapper's line)
-		local first = ...
-		if type(first) == "string" and select("#", ...) == 1 then
-			checkName("call", "the class name", first)
-			return typedFactoryOf(first)
-		end
 		return construct(true, ...)
 	end,
 })

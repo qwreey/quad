@@ -86,8 +86,10 @@ local Behavior = require("@self/Behavior")
 local Unit = require("./Unit")
 local Track = require("@self/Track")
 local Bubble = require("@self/Bubble")
-local D = q.Declaration
-local sliderName = D.Modifier.Frame():Name("Slider")
+local Frame = q.Elem "Frame"
+local UIStroke = q.Elem "UIStroke"
+local FrameModifier = q.Modifier "Frame"
+local sliderName = FrameModifier():Name("Slider")
 
 export type Size = Track.SizeName
 export type Orientation = Track.Orientation
@@ -106,7 +108,7 @@ export type Props = {
 	read OnChange: ((value: number) -> ())?,
 	read OnChangeEnd: ((value: number) -> ())?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 	-- M3 variants
 	read Size: Size?,
@@ -395,9 +397,9 @@ local function Slider(props: Props)
 		})
 	end
 
-	return D.Frame {
+	return Frame {
 		sliderName,
-		D.Modifier.Frame():Size(g.hostSize()):BackgroundTransparency(1):BorderSizePixel(0),
+		FrameModifier():Size(g.hostSize()):BackgroundTransparency(1):BorderSizePixel(0),
 		props.Modifier or q.None,
 		b.InteractionHook,
 		b.DragHook,
@@ -406,7 +408,7 @@ local function Slider(props: Props)
 		Selectable = b.Interactable,
 		q.Slot<<Instance>>(pieces),
 		q.Slot<<Instance>>(ticks),
-		D.Frame {
+		Frame {
 			Name = "Handle",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = handlePosition,
@@ -416,7 +418,7 @@ local function Slider(props: Props)
 			BorderSizePixel = 0,
 			ZIndex = 2,
 			UICorner = Tokens.Shape.corner("Full"),
-			D.UIStroke {
+			UIStroke {
 				Name = "FocusRing",
 				Color = theme.Color.Secondary,
 				Thickness = 3,

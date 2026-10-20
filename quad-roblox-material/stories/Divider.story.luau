@@ -4,14 +4,16 @@
 local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
 local StoryParts = require("./StoryParts")
 local themed = StoryParts.themed
 
 type Config = { Orientation: "Horizontal" | "Vertical", Inset: "None" | "Start" | "Both" }
 
 local function caption(theme: Material.Theme, text: string, order: number): TextLabel
-	return D.TextLabel {
+	return TextLabel {
 		Material.Text.Label("BodyMedium"),
 		LayoutOrder = order,
 		Size = UDim2.fromOffset(120, 24),
@@ -37,13 +39,13 @@ return StoryKit.story({
 
 		local demo = StoryKit.rebuild<<Config>>(config, function(cfg: Config)
 			local vertical = cfg.Orientation == "Vertical"
-			return D.Frame {
+			return Frame {
 				Name = "Demo",
 				Size = if vertical then UDim2.fromOffset(280, 56) else UDim2.fromOffset(280, 0),
 				AutomaticSize = if vertical then Enum.AutomaticSize.None else Enum.AutomaticSize.Y,
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIListLayout {
+				UIListLayout {
 					FillDirection = if vertical then Enum.FillDirection.Horizontal else Enum.FillDirection.Vertical,
 					SortOrder = Enum.SortOrder.LayoutOrder,
 					VerticalAlignment = Enum.VerticalAlignment.Center,
@@ -55,23 +57,23 @@ return StoryKit.story({
 			}
 		end, { Size = UDim2.fromOffset(280, 72), AutomaticSize = Enum.AutomaticSize.None, LayoutOrder = 1 })
 
-		return D.Frame {
+		return Frame {
 			follow,
 			Name = "DividerStory",
 			Size = UDim2.fromScale(1, 1),
 			BorderSizePixel = 0,
 			BackgroundColor3 = theme.Color.Surface,
 			UIPaddingOffset = 24,
-			D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 16) },
+			UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 16) },
 			demo,
-			D.Frame {
+			Frame {
 				Name = "Samples",
 				LayoutOrder = 2,
 				Size = UDim2.fromOffset(280, 0),
 				AutomaticSize = Enum.AutomaticSize.Y,
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12) },
+				UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12) },
 				Material.Divider({ Theme = theme, LayoutOrder = 1 }),
 				Material.Divider({ Theme = theme, Inset = "Start", LayoutOrder = 2 }),
 				Material.Divider({ Theme = theme, Inset = "Both", LayoutOrder = 3 }),

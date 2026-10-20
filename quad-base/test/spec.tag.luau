@@ -46,7 +46,7 @@ end
 print()
 print("=== 2. 미주입 스텁 — 백엔드 없는 quad에서 Tag를 걸면 안내 에러(blame은 사용자 줄) ===")
 do
-	local q = Quad.New()
+	local q = Quad.NewModule()
 	-- [M10 엔진 축] mockProvider가 이제 tag op까지 심으므로(installLifetime은
 	-- 그 위임 래퍼) "생명주기만 설치"가 불가능해졌다 — 모듈 자신의 스텁을
 	-- 붙잡아 뒀다가 프로바이더 설치 뒤 그 op만 되돌린다(Tag.luau는

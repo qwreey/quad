@@ -43,8 +43,12 @@ local Util = require("./Util")
 local Interactive = require("./Interactive")
 local Style = require("./Button/Style")
 local Behavior = require("@self/Behavior")
-local D = q.Declaration
-local switchName = D.Modifier.TextButton():Name("Switch")
+local Frame = q.Elem "Frame"
+local ImageLabel = q.Elem "ImageLabel"
+local TextButton = q.Elem "TextButton"
+local UIStroke = q.Elem "UIStroke"
+local TextButtonModifier = q.Modifier "TextButton"
+local switchName = TextButtonModifier():Name("Switch")
 
 export type Props = Behavior.Props
 
@@ -53,7 +57,7 @@ local OFF_X, ON_X = 16, 36 -- handle centers
 local DisabledContent = Style.DisabledContentTransparency
 local DisabledContainer = Style.DisabledContainerTransparency
 
-local baseModifier = D.Modifier.TextButton()
+local baseModifier = TextButtonModifier()
 	:Size(UDim2.fromOffset(TRACK_W, TRACK_H))
 	:BorderSizePixel(0)
 	:AutoButtonColor(false)
@@ -171,7 +175,7 @@ local function Switch(props: Props)
 		local iconTransparency: q.State<number> = disabled:Compute(function(self)
 			return if self:Get() then DisabledContent else 0
 		end)
-		icon = D.ImageLabel {
+		icon = ImageLabel {
 			Name = "Icon",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.fromScale(0.5, 0.5),
@@ -184,7 +188,7 @@ local function Switch(props: Props)
 		}
 	end
 
-	return D.TextButton {
+	return TextButton {
 		switchName,
 		baseModifier,
 		props.Modifier or q.None,
@@ -195,7 +199,7 @@ local function Switch(props: Props)
 		Interactable = s.Interactable,
 		Activated = s.Activated,
 		UICorner = corner,
-		D.UIStroke {
+		UIStroke {
 			Name = "Outline",
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 			BorderStrokePosition = Enum.BorderStrokePosition.Inner,
@@ -203,7 +207,7 @@ local function Switch(props: Props)
 			Color = Style.animated(outlineRaw),
 			Transparency = outlineTransparency:Apply(Style.animation()),
 		},
-		D.Frame {
+		Frame {
 			Name = "Halo",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			-- mounted snapped at the current end, later flips slide; a drag moves it directly
@@ -212,7 +216,7 @@ local function Switch(props: Props)
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			fx.Layer,
-			D.Frame {
+			Frame {
 				Name = "Handle",
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				Position = UDim2.fromScale(0.5, 0.5),

@@ -47,7 +47,7 @@ export type Props = {
 	read Headline: (string | q.State<string>)?,
 	read Children: q.Slot<Instance>?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 

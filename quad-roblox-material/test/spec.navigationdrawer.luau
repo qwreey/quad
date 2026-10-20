@@ -6,7 +6,7 @@ local H = require("./support/harness")
 local ClickSink = require("./support/clicksink")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Tokens = require("../src/Tokens")
 local Overlay = require("../src/Overlay")
 local Dialog = require("../src/Dialog")
@@ -175,7 +175,7 @@ end)
 -- ── sheets ──────────────────────────────────────────────────────────────────
 
 H.section("sheets: modal surfaceContainerLow + end corners 16, standard surface, width 360 (240..360), scrolling list", function()
-	local m: any = Nav.ModalDrawerSheet({ Children = q.Slot<<Instance>>({ D.Frame { Name = "Row" } }) })
+	local m: any = Nav.ModalDrawerSheet({ Children = q.Slot<<Instance>>({ Frame { Name = "Row" } }) })
 	assert(m.Name == "ModalDrawerSheet" and m.Size == UDim2.new(0, 360, 1, 0) and m.BackgroundColor3 == L.SurfaceContainerLow and m.Active)
 	assert(own(m, "UICorner").CornerRadius == UDim.new(0, 16) and own(m, "UIShadow") == nil, "end corners 16, no shadow")
 	local patch = H.find(m, "CornerPatch")
@@ -208,7 +208,7 @@ local function modalDrawer(state: Nav.DrawerState, props: any?): (any, any, any)
 		DrawerState = state,
 		GesturesEnabled = p.GesturesEnabled,
 		DrawerContent = Nav.ModalDrawerSheet({ Children = q.Slot<<Instance>>({ Nav.NavigationDrawerItems<<string>>({ Items = ITEMS, Selected = q.Source("inbox") }) }) }),
-		Content = q.Slot<<Instance>>({ D.Frame { Name = "Page" } }),
+		Content = q.Slot<<Instance>>({ Frame { Name = "Page" } }),
 	})
 	return host, H.find(host, "Drawer"), H.find(host, "Scrim")
 end
@@ -311,7 +311,7 @@ H.section("Escape / B close an open drawer through the shared Overlay stack (a d
 	local overlay = Overlay.new()
 	local state = Nav.DrawerState()
 	local host = modalDrawer(state)
-	local screen = D.Frame { host, overlay.Layer }
+	local screen = Frame { host, overlay.Layer }
 	assert(beganConns() == baseBegan, "nothing registered while closed")
 	state.Open()
 	assert(beganConns() == baseBegan + 1, "registered once open")
@@ -336,7 +336,7 @@ H.section("DismissibleNavigationDrawer pushes the content; PermanentNavigationDr
 	local host: any = Nav.DismissibleNavigationDrawer({
 		DrawerState = state,
 		DrawerContent = Nav.DismissibleDrawerSheet({}),
-		Content = q.Slot<<Instance>>({ D.Frame { Name = "Page" } }),
+		Content = q.Slot<<Instance>>({ Frame { Name = "Page" } }),
 	})
 	assert(H.find(host, "Scrim") == nil, "no scrim")
 	local content = H.find(host, "Content")
@@ -353,7 +353,7 @@ H.section("DismissibleNavigationDrawer pushes the content; PermanentNavigationDr
 	q.dispose(host)
 	local perm: any = Nav.PermanentNavigationDrawer({
 		DrawerContent = Nav.PermanentDrawerSheet({ Width = 240 }),
-		Content = q.Slot<<Instance>>({ D.Frame { Name = "Page" } }),
+		Content = q.Slot<<Instance>>({ Frame { Name = "Page" } }),
 	})
 	assert(own(perm, "UIListLayout").FillDirection == Enum.FillDirection.Horizontal)
 	assert(H.find(perm, "PermanentDrawerSheet").Size == UDim2.new(0, 240, 1, 0))

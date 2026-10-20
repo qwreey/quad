@@ -63,7 +63,7 @@ round13 자율 루프 탐사 E76. E69(`../../round13-e69-mutation/`)와 E73(`../
 | E73 `CL06` | 〃 | 17 | `errors/02-dispatch-bookkeeping.md` Quad0076(문자 키의 quad 값 꼬리) | 죽음 |
 | E73 `CL17` | 〃 | 18. drive는 안쪽부터 바깥으로 | `roblox/04-claim-mapper.md` 동작 3 · `.claude/base/claim-plan.md` §4 | 죽음 |
 | E73 `EO12` | `quad-roblox/test/spec.timers.luau` | 4. NaN delay Quad0216 | `errors/07-roblox.md` Quad0216 | 죽음 |
-| E73 `DC02` | `quad-roblox/test/spec.d.luau` | 6. GuiObject에서 직계 하위로의 검사형 캐스트 | `roblox/03-d-modifier.md` 캐스트 예(`GuiObject():AsTextLabel()`) | 죽음 |
+| E73 `DC02` | 옛 `quad-roblox/test/spec.d.luau` | 6. GuiObject에서 직계 하위로의 검사형 캐스트 | `roblox/03-d-modifier.md` 캐스트 예(`GuiObject():AsTextLabel()`) | 죽음 |
 | E69 `BK02` | — | 초안 없음(문항 대기) | — | 생존 |
 | E69 `BK04` | — | 초안 없음(문항 대기) | — | 생존 |
 | E69 `ST04` | — | 초안 없음(문항 대기) | — | 생존 |

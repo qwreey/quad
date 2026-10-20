@@ -35,8 +35,16 @@
 
 local Quad = require("./Quad")
 local q = Quad
-local D = q.Declaration
-local comboName = D.Modifier.Frame():Name("Combo")
+local Frame = q.Elem "Frame"
+local ImageLabel = q.Elem "ImageLabel"
+local ScrollingFrame = q.Elem "ScrollingFrame"
+local TextButton = q.Elem "TextButton"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local UISizeConstraint = q.Elem "UISizeConstraint"
+local FrameModifier = q.Modifier "Frame"
+local TextLabelModifier = q.Modifier "TextLabel"
+local comboName = FrameModifier():Name("Combo")
 local Common = require("./Common")
 local Interaction = require("./Interaction")
 local Overlay = require("./Overlay")
@@ -59,7 +67,7 @@ export type ComboProps<T> = {
 	read Overlay: Overlay.Overlay?,
 	read MaxHeight: number?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 export type ComboArrayProps<T> = {
@@ -72,7 +80,7 @@ export type ComboArrayProps<T> = {
 	read Overlay: Overlay.Overlay?,
 	read MaxHeight: number?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 export type ComboEnumProps = {
@@ -85,7 +93,7 @@ export type ComboEnumProps = {
 	read Overlay: Overlay.Overlay?,
 	read MaxHeight: number?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 -- one list row: `Key` identifies it (a value for Combo, an index for ComboArray), `Label` is its text
@@ -102,7 +110,7 @@ type CoreSpec = {
 	Overlay: Overlay.Overlay?,
 	MaxHeight: number?,
 	Style: Style?,
-	Modifier: Quad.FrameModifier?,
+	Modifier: Quad.ModifierInto<Frame>?,
 }
 
 type RowUD = { label: Source<string> }
@@ -171,7 +179,7 @@ local function core(spec: CoreSpec): Frame
 			return entry.Key
 		end)
 
-		return D.ScrollingFrame({
+		return ScrollingFrame({
 			Name = "ComboList",
 			Size = UDim2.fromOffset(width, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
@@ -187,8 +195,8 @@ local function core(spec: CoreSpec): Frame
 			Active = true,
 			UICorner = style.Metrics.PopupRounding,
 			PopupParts.stroke(style),
-			D.UISizeConstraint({ MaxSize = Vector2.new(math.huge, maxHeight) }),
-			D.UIListLayout({
+			UISizeConstraint({ MaxSize = Vector2.new(math.huge, maxHeight) }),
+			UIListLayout({
 				FillDirection = Enum.FillDirection.Vertical,
 				SortOrder = Enum.SortOrder.LayoutOrder,
 			}),
@@ -242,7 +250,7 @@ local function core(spec: CoreSpec): Frame
 		return UDim2.new(1, self:Get() + pad:Get().X, 0.5, 0)
 	end, style.Metrics.FramePadding)
 
-	box = D.TextButton({
+	box = TextButton({
 		hover.Hook,
 		Name = "Box",
 		Text = spec.Preview,
@@ -266,8 +274,8 @@ local function core(spec: CoreSpec): Frame
 			end
 		end,
 		UICorner = style.Metrics.FrameRounding,
-		D.UIPadding({ PaddingLeft = padX, PaddingRight = padRight, PaddingTop = padY, PaddingBottom = padY }),
-		D.ImageLabel({
+		UIPadding({ PaddingLeft = padX, PaddingRight = padRight, PaddingTop = padY, PaddingBottom = padY }),
+		ImageLabel({
 			Name = "Arrow",
 			AnchorPoint = Vector2.new(1, 0.5),
 			Position = arrowPos,
@@ -280,21 +288,21 @@ local function core(spec: CoreSpec): Frame
 		}),
 	})
 
-	return D.Frame({
+	return Frame({
 		comboName,
 		spec.Modifier or q.None,
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Size = UDim2.new(1, 0, 0, 0),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIListLayout({
+		UIListLayout({
 			FillDirection = Enum.FillDirection.Horizontal,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = Util.pxX(style.Metrics.ItemInnerSpacing),
 			VerticalAlignment = Enum.VerticalAlignment.Center,
 		}),
 		box :: TextButton,
-		Text.Text({ Text = spec.Text, Style = style, Modifier = D.Modifier.TextLabel():LayoutOrder(2) }),
+		Text.Text({ Text = spec.Text, Style = style, Modifier = TextLabelModifier():LayoutOrder(2) }),
 		q.OnDestroyed(function()
 			close()
 		end),

@@ -17,8 +17,11 @@
 
 local Quad = require("../Quad")
 local q = Quad
-local D = q.Declaration
-local inputColor3Name = D.Modifier.Frame():Name("InputColor3")
+local Frame = q.Elem "Frame"
+local TextBox = q.Elem "TextBox"
+local UIPadding = q.Elem "UIPadding"
+local FrameModifier = q.Modifier "Frame"
+local inputColor3Name = FrameModifier():Name("InputColor3")
 local Common = require("../Common")
 local Interaction = require("../Interaction")
 local InputVector = require("./InputVector")
@@ -36,7 +39,7 @@ export type InputColor3Props = {
 	read OnChange: ((c: Color3) -> ())?,
 	read Disabled: (boolean | State<boolean>)?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 local function byte(x: number): number
@@ -54,7 +57,7 @@ local function hexField(style: Style, value: Source<Color3>, enabled: State<bool
 	local look = Common.fieldLook(style, hover, enabled)
 	local textLook = Common.textLook(style, enabled)
 	local padX: State<UDim> = Util.pxX(style.Metrics.FramePadding)
-	return D.TextBox({
+	return TextBox({
 		boxRef,
 		hover.Hook,
 		Name = "Hex",
@@ -92,7 +95,7 @@ local function hexField(style: Style, value: Source<Color3>, enabled: State<bool
 			refresh:Set(refresh:Get() + 1)
 		end,
 		UICorner = style.Metrics.FrameRounding,
-		D.UIPadding({ PaddingLeft = padX, PaddingRight = padX }),
+		UIPadding({ PaddingLeft = padX, PaddingRight = padX }),
 		Common.stroke(style),
 	})
 end
@@ -106,7 +109,7 @@ local function InputColor3(props: InputColor3Props): Frame
 	local swatchSize: State<UDim2> = style.FrameHeight:Compute(function(self)
 		return UDim2.fromOffset(self:Get(), self:Get())
 	end)
-	return D.Frame({
+	return Frame({
 		inputColor3Name,
 		props.Modifier or q.None,
 		AutomaticSize = Enum.AutomaticSize.Y,
@@ -114,7 +117,7 @@ local function InputColor3(props: InputColor3Props): Frame
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Common.rowLayout(style),
-		D.Frame({
+		Frame({
 			Name = "Swatch",
 			LayoutOrder = 0,
 			Size = swatchSize,

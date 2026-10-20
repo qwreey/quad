@@ -328,7 +328,7 @@ local box = D.Frame({ BackgroundTransparency = size })
 
 **콜백이 던지면** — 에러는 그 콜백을 부른 줄(값을 바꾼 `:Set` 등)로 나옵니다. 그 뒤 그 자리의 상태는 정해져 있지 않습니다 — quad는 던진 콜백을 복구하지 않습니다(정의되지 않은 동작). 관측(계약 아님): 같은 전이에서 던진 콜백 뒤에 올 콜백(새 값의 `Started` 등)은 불리지 않았고, 다음 값보다 철거가 먼저 오면 그 트윈이 끊기지 않고 끝까지 돌 수 있었습니다. 다음 값이 오면 이어지는 것처럼 보이는 경우가 많지만, 던지기 전과 같은 목표를 다시 보내면 중간값에 머무는 경우도 관측돼 기대어서는 안 됩니다.
 
-**숏핸드([02장](/reference/roblox/02-d/#숏핸드-키-넷))에 건 Tween의 콜백은 값 하나에 한 번**, `(숏핸드를 건 인스턴스, "UICorner"·"UIPadding" 같은 숏핸드 키, 여러분이 준 값)`으로 불립니다 — 네 숏핸드 모두 같고, 관리 자식의 프로퍼티 넷에 같은 Tween을 거는 `UIPadding`/`UIPaddingOffset`은 마지막 프로퍼티(`PaddingBottom`)가 보고할 때 부릅니다. 반면 **같은 Tween/State를 프로퍼티 둘 이상에 직접 걸면 자리마다 한 번씩**, 각자의 `prop`으로 불립니다 — 한 번만 반응하려면 `prop`으로 거르거나 [`tween:Wrapped`](#tweenwrappedwrap)로 감싸세요.
+**숏핸드([02장](/reference/roblox/02-elem/#숏핸드-키-넷))에 건 Tween의 콜백은 값 하나에 한 번**, `(숏핸드를 건 인스턴스, "UICorner"·"UIPadding" 같은 숏핸드 키, 여러분이 준 값)`으로 불립니다 — 네 숏핸드 모두 같고, 관리 자식의 프로퍼티 넷에 같은 Tween을 거는 `UIPadding`/`UIPaddingOffset`은 마지막 프로퍼티(`PaddingBottom`)가 보고할 때 부릅니다. 반면 **같은 Tween/State를 프로퍼티 둘 이상에 직접 걸면 자리마다 한 번씩**, 각자의 `prop`으로 불립니다 — 한 번만 반응하려면 `prop`으로 거르거나 [`tween:Wrapped`](#tweenwrappedwrap)로 감싸세요.
 
 **인자는 부르는 순간 읽습니다** — 엔진 트윈의 연결은 인스턴스를 클로저로 잡지 않고, 발화 때 트윈이 원래 쥔 인스턴스를 읽어 넘깁니다. 그래서 인자를 받는다고 인스턴스 수명이 늘지 않습니다(연결은 기록이 트윈을 쥐는 동안 살아 있고, Luau의 약한 키 테이블은 ephemeron이 아니라서 포획이었다면 인스턴스가 수거되지 않았을 것입니다). 받은 `inst`를 오래 쥐는 것은 여러분 클로저의 일입니다 — 오래 필요한 값은 [원천을 거쳐 프로퍼티로 흘리는 모양](/getting-started/17-animation/#끝났을-때-알기--startedcompletedcancelled)을 권합니다.
 
@@ -336,6 +336,6 @@ local box = D.Frame({ BackgroundTransparency = size })
 
 **관련**
 
-- [D — 문자 키](/reference/roblox/02-d/#문자-키--프로퍼티와-이벤트) — Tween 팔이 있는 프로퍼티
+- [D — 문자 키](/reference/roblox/02-elem/#문자-키--프로퍼티와-이벤트) — Tween 팔이 있는 프로퍼티
 - [17. 움직이게 하기 — `Tween`과 `Animate`](/getting-started/17-animation/)
 - [05. 디자인 토큰과 테마 전환](/how-to/05-theme-and-dynamic-styling/)

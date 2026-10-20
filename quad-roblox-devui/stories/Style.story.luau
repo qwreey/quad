@@ -5,7 +5,7 @@ local Devui = require("../src")
 local q = require("../src/Quad")
 local StoryKit = require("./StoryKit")
 local Shared = require("./Shared")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Kids = Devui.Kids
 
 local function noCleanup(_dying: boolean) end
@@ -21,7 +21,7 @@ return StoryKit.story({
 		local color = q.Source(Color3.fromRGB(66, 150, 250))
 		local flavor = q.Source("a")
 		-- control Sources -> the story's own Style (an Effect: it writes a different Source than it reads)
-		local bridge = D.Frame({
+		local bridge = Frame({
 			Name = "StyleBridge",
 			Visible = false,
 			Size = UDim2.fromOffset(0, 0),

@@ -50,7 +50,7 @@
 
 **그때 근거가 지금도 성립하는가** — 셋 중 (3)이 **만료됐습니다.** 같은 문단이 스스로 괄호로 정정해 뒀습니다: *"**[2026-09-04 M7 단위 ③]** 실물은 타입 `<Class>Modifier`(생성 `D` 모듈 export) + 값 `D.Modifier.<Class>()`"*. 즉 타입 이름은 `D.FrameModifier`가 아니라 `FrameModifier`라 **타입 프리픽스가 짧아야 할 이유가 애초에 사라졌습니다.** (1)·(2)는 이름의 길이와 무관한 논거라 그대로 성립하고, 긴 이름으로 바꿔도 훼손되지 않습니다. 그리고 유일한 단점으로 적힌 "이름만으로 뜻이 안 드러난다"가 정확히 동료분이 짚은 그 지점이고, 보완책이 문서 규약(사람이 지켜야 하는 것)뿐이라는 것도 그대로입니다.
 
-**비용 실측** — 코드 쪽은 작습니다. 실제로 바꿔야 하는 자리는 위에 적은 **여섯 곳**(RobloxFactory 반환 키, init.luau의 `export type D`와 `RobloxExtension` 필드, gen-d.py의 타입 이름·런타임 테이블, InstanceShorthand의 내부 읽기 한 줄)에 스펙 파일 몇 개(`quad-roblox/test/spec.d.luau`·`spec.component.luau` 등 `q.D`를 읽는 파일 열 개 남짓)입니다. 생성 파일 옛 `quad-roblox/src/D/init.luau`(지금은 `Declaration/`)는 생성기를 고치고 재생성하면 되고 `gen-d.py check` 게이트가 정합성을 잡아 줍니다. 문서 쪽은 기계 치환입니다 — `docs/` 전체에서 `q.D`가 **393곳**, 그 중 별칭을 만드는 `const D = q.D` 꼴이 **154곳**이고, 별칭 뒤의 `D.<무엇>` 사용은 **4,729곳**인데 **별칭 관례를 유지하면 이 4,729곳은 한 글자도 안 바뀝니다.** 실질 치환 대상은 `q.D`가 나오는 393곳 + `docs/skills/quad-ui-dev` 두 곳뿐입니다.
+**비용 실측** — 코드 쪽은 작습니다. 실제로 바꿔야 하는 자리는 위에 적은 **여섯 곳**(RobloxFactory 반환 키, init.luau의 `export type D`와 `RobloxExtension` 필드, gen-d.py의 타입 이름·런타임 테이블, InstanceShorthand의 내부 읽기 한 줄)에 스펙 파일 몇 개(옛 `quad-roblox/test/spec.d.luau`·`spec.component.luau` 등 `q.D`를 읽는 파일 열 개 남짓)입니다. 생성 파일 옛 `quad-roblox/src/D/init.luau`(지금은 `Declaration/`)는 생성기를 고치고 재생성하면 되고 `gen-d.py check` 게이트가 정합성을 잡아 줍니다. 문서 쪽은 기계 치환입니다 — `docs/` 전체에서 `q.D`가 **393곳**, 그 중 별칭을 만드는 `const D = q.D` 꼴이 **154곳**이고, 별칭 뒤의 `D.<무엇>` 사용은 **4,729곳**인데 **별칭 관례를 유지하면 이 4,729곳은 한 글자도 안 바뀝니다.** 실질 치환 대상은 `q.D`가 나오는 393곳 + `docs/skills/quad-ui-dev` 두 곳뿐입니다.
 
 **갈래별 판단**
 

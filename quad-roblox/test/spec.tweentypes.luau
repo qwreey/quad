@@ -15,7 +15,7 @@ local QuadTypes = require("../luau_packages/quad_types")
 local QuadRoblox = require("../src").QuadRoblox
 local Types = require("../src/types")
 
-local q = Quad.New():UseProvider(QuadRoblox)
+local q = Quad.NewModule():UseProvider(QuadRoblox)
 
 local function _types()
 	-- 생성자 제네릭 추론(리터럴·엔진 타입 필드 포함)
@@ -23,7 +23,7 @@ local function _types()
 	local refined: Types.TweenData<UDim2> = t -- 데이터부 자리(D 유니언 멤버)에 전체형이 든다
 	local info: TweenInfo? = t.Info -- 엔진 타입 필드가 정밀하다(2026-09-07 — quad-types 시절엔 any)
 	-- D 슬롯: Tween 직접 / Info 우선 + Override 센티널 / State<Tween<T>> / Mapped 결과
-	local f1 = q.Declaration.Frame({
+	local f1 = q.Elem "Frame"({
 		Position = t,
 		Size = q.Tween({ Value = UDim2.new(), Info = TweenInfo.new(0.2), Override = "Finish" }),
 		BackgroundTransparency = q.Tween({ Value = 0 }):Mapped(function(v: number): number
@@ -36,11 +36,11 @@ local function _types()
 	local anim: QuadTypes.State<Types.Tween<UDim2>> = src:Compute(function(h: QuadTypes.StateData<UDim2>): Types.Tween<UDim2>
 		return q.Tween({ Value = h:Get(), Time = 0.3 })
 	end)
-	local f2 = q.Declaration.Frame({ Position = anim })
+	local f2 = q.Elem "Frame"({ Position = anim })
 	-- Animate(단위 ③, H-334): factory 결과는 State<Tween<T>>로 선언 — D 슬롯·setter에 들어간다
 	local animated: QuadTypes.State<Types.Tween<UDim2>> = src:Apply(q.Animate({ Time = 0.3, Style = Enum.EasingStyle.Bounce, CanAnimate = q.Source(true) }))
-	local f3 = q.Declaration.Frame({ Position = animated })
-	local m3 = q.Declaration.Modifier.Frame():Position(animated)
+	local f3 = q.Elem "Frame"({ Position = animated })
+	local m3 = q.Modifier "Frame"():Position(animated)
 	-- 센티널·옵션 타입
 	local o: Types.TweenOverride = "Cancel"
 	local opts: Types.TweenOptions<number> = { Value = 1, Reverses = true }
@@ -67,8 +67,8 @@ local function _types()
 			end
 		end)
 	end)
-	local f4 = q.Declaration.Frame({ Rotation = w, BackgroundTransparency = w2 })
-	local c4 = q.Declaration.UICorner({ CornerRadius = m4 })
+	local f4 = q.Elem "Frame"({ Rotation = w, BackgroundTransparency = w2 })
+	local c4 = q.Elem "UICorner"({ CornerRadius = m4 })
 	return refined, info, f1, f2, f3, m3, o, t2, f4, c4
 end
 

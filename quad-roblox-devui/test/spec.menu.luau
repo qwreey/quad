@@ -3,7 +3,8 @@ local H = require("./support/harness")
 local Quad = require("../src/Quad")
 local q = H.attach(Quad)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ScreenGui = q.Elem "ScreenGui"
 local Overlay = require("../src/Overlay")
 Overlay.warnUnmounted = false -- these specs open popups on a bare layer (no ScreenGui); the debug line has its own spec in spec.overlay
 local MenuModule = require("../src/Menu")
@@ -258,7 +259,7 @@ H.section("dispose: destroying the bar with a menu open closes it and leaves no 
 	local o = Overlay.new()
 	local base = nBegan()
 	local bar = build(o)
-	local screen = D.ScreenGui({ bar, o.Layer })
+	local screen = ScreenGui({ bar, o.Layer })
 	click(titles(bar)[1])
 	H.fire(byName(o.Layer, "Menu")[1], "MouseEnter", 0, 0)
 	assert(o.Count:Get() == 2 and nBegan() == base + 1)
@@ -331,7 +332,7 @@ end)
 
 H.section("the layer dying with a menu chain open: popups close, Escape listener released, no throw", function()
 	local o = Overlay.new()
-	local gui = D.ScreenGui({ o.Layer })
+	local gui = ScreenGui({ o.Layer })
 	local bar = build(o)
 	local file = titles(bar)[1]
 	local base = nBegan()
@@ -357,7 +358,7 @@ H.section("the default overlay is resolved when the menu opens (a rebuilt defaul
 			}),
 		}),
 	})
-	q.dispose(D.ScreenGui({ first.Layer })) -- the first default dies
+	q.dispose(ScreenGui({ first.Layer })) -- the first default dies
 	local second = Overlay.getDefault()
 	assert(second ~= first)
 	click(titles(bar)[1])
@@ -371,7 +372,7 @@ end)
 
 H.section("closing the window the menu bar is in closes the open chain (submenu included); watchers only while open", function()
 	local o = Overlay.new()
-	local win = D.Frame({})
+	local win = Frame({})
 	local bar = build(o)
 	bar.Parent = win
 	local file = titles(bar)[1]

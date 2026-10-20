@@ -4,7 +4,9 @@
 local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local UIListLayout = q.Elem "UIListLayout"
+local TextButtonModifier = q.Modifier "TextButton"
 local StoryParts = require("./StoryParts")
 local themed = StoryParts.themed
 
@@ -38,18 +40,18 @@ return StoryKit.story({
 				Variant = "Tonal",
 				Label = "Hover or select me",
 				Hooks = { tip.Hook },
-				Modifier = D.Modifier.TextButton():Position(UDim2.fromOffset(0, 40)),
+				Modifier = TextButtonModifier():Position(UDim2.fromOffset(0, 40)),
 			})
 		end, { Size = UDim2.fromOffset(240, 100), AutomaticSize = Enum.AutomaticSize.None, LayoutOrder = 1 })
 
-		return D.Frame {
+		return Frame {
 			follow,
 			Name = "TooltipStory",
 			Size = UDim2.fromScale(1, 1),
 			BorderSizePixel = 0,
 			BackgroundColor3 = theme.Color.Surface,
 			UIPaddingOffset = 24,
-			D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 16) },
+			UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 16) },
 			target,
 			Material.Tooltip.Plain({ Theme = theme, Text = c.Text }),
 		}

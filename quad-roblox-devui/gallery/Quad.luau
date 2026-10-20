@@ -21,4 +21,14 @@ export type Source<T> = QuadTypes.Source<T>
 export type Slot<T> = QuadTypes.Slot<T>
 export type Effect = QuadTypes.Effect
 
+-- typed surface (quad-roblox module root)
+export type Modifier<C> = RobloxModule.Modifier<C>
+export type ModifierInto<C> = RobloxModule.ModifierInto<C>
+export type Spread<C> = RobloxModule.Spread<C>
+export type SpreadInto<C> = RobloxModule.SpreadInto<C>
+export type Props<C> = RobloxModule.Props<C>
+export type ElemCtor<C> = RobloxModule.ElemCtor<C>
+export type OnChangeDescriptor<K> = RobloxModule.OnChangeDescriptor<K>
+export type OnEventDescriptor<K> = RobloxModule.OnEventDescriptor<K>
+
 return q

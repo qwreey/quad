@@ -15,23 +15,25 @@
 
 local q = require("./Quad")
 local Typography = require("./Tokens/Typography")
-local D = q.Declaration
+local TextBoxModifier = q.Modifier "TextBox"
+local TextButtonModifier = q.Modifier "TextButton"
+local TextLabelModifier = q.Modifier "TextLabel"
 
 export type Role = Typography.Role
 
 local function Label(role: Role, family: string?)
 	local e = Typography.Scale[role]
-	return D.Modifier.TextLabel():FontFace(Typography.font(role, family)):TextSize(e.Size):LineHeight(Typography.lineHeightScale(role))
+	return TextLabelModifier():FontFace(Typography.font(role, family)):TextSize(e.Size):LineHeight(Typography.lineHeightScale(role))
 end
 
 local function Button(role: Role, family: string?)
 	local e = Typography.Scale[role]
-	return D.Modifier.TextButton():FontFace(Typography.font(role, family)):TextSize(e.Size):LineHeight(Typography.lineHeightScale(role))
+	return TextButtonModifier():FontFace(Typography.font(role, family)):TextSize(e.Size):LineHeight(Typography.lineHeightScale(role))
 end
 
 local function Box(role: Role, family: string?)
 	local e = Typography.Scale[role]
-	return D.Modifier.TextBox():FontFace(Typography.font(role, family)):TextSize(e.Size):LineHeight(Typography.lineHeightScale(role))
+	return TextBoxModifier():FontFace(Typography.font(role, family)):TextSize(e.Size):LineHeight(Typography.lineHeightScale(role))
 end
 
 return {

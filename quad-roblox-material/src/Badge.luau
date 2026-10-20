@@ -25,13 +25,17 @@ local Tokens = require("./Tokens")
 local Theme = require("./Theme")
 local Util = require("./Util")
 local Text = require("./Text")
-local D = q.Declaration
-local badgeName = D.Modifier.Frame():Name("Badge")
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIPadding = q.Elem "UIPadding"
+local UISizeConstraint = q.Elem "UISizeConstraint"
+local FrameModifier = q.Modifier "Frame"
+local badgeName = FrameModifier():Name("Badge")
 
 export type Props = {
 	read Text: (string | q.State<string>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -44,15 +48,15 @@ local LARGE_Y = 14 -- BadgeWithContentVerticalOffset
 local ANCHOR = 24 -- the navigation icon size
 
 local labelStyle = Text.Label("LabelSmall")
-local smallBase = D.Modifier.Frame():Size(UDim2.fromOffset(SMALL, SMALL))
-local largeBase = D.Modifier.Frame():Size(UDim2.fromOffset(0, LARGE)):AutomaticSize(Enum.AutomaticSize.X)
+local smallBase = FrameModifier():Size(UDim2.fromOffset(SMALL, SMALL))
+local largeBase = FrameModifier():Size(UDim2.fromOffset(0, LARGE)):AutomaticSize(Enum.AutomaticSize.X)
 
 local function Badge(props: Props?): Frame
 	local p: Props = props or {}
 	local theme = Theme.resolve(p.Theme)
 	local corner = Tokens.Shape.corner("Full")
 	if p.Text == nil then
-		return D.Frame {
+		return Frame {
 			badgeName,
 			smallBase,
 			BackgroundColor3 = theme.Color.Error,
@@ -62,15 +66,15 @@ local function Badge(props: Props?): Frame
 			table.unpack(Util.hooks(p.Hooks)),
 		}
 	end
-	return D.Frame {
+	return Frame {
 		badgeName,
 		largeBase,
 		BackgroundColor3 = theme.Color.Error,
 		BorderSizePixel = 0,
 		p.Modifier or q.None,
 		UICorner = corner,
-		D.UIPadding { PaddingLeft = UDim.new(0, PADDING), PaddingRight = UDim.new(0, PADDING) },
-		D.TextLabel {
+		UIPadding { PaddingLeft = UDim.new(0, PADDING), PaddingRight = UDim.new(0, PADDING) },
+		TextLabel {
 			Name = "Text",
 			labelStyle,
 			Size = UDim2.fromOffset(0, LARGE),
@@ -80,7 +84,7 @@ local function Badge(props: Props?): Frame
 			Text = p.Text,
 			TextColor3 = theme.Color.OnError,
 			TextXAlignment = Enum.TextXAlignment.Center,
-			D.UISizeConstraint { MinSize = Vector2.new(LARGE - 2 * PADDING, 0) },
+			UISizeConstraint { MinSize = Vector2.new(LARGE - 2 * PADDING, 0) },
 		},
 		table.unpack(Util.hooks(p.Hooks)),
 	}

@@ -52,7 +52,8 @@ local Chip = require("./Chip")
 local View = require("./View")
 local Calendar = require("./Calendar")
 local KeyNav = require("../KeyNav")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
 
 local GuiService = game:GetService("GuiService")
 
@@ -208,7 +209,7 @@ local function new(o: Options): MonthView
 	for i, wd in Calendar.weekdayOrder(o.FirstDayOfWeek) do
 		table.insert(
 			header,
-			D.TextLabel {
+			TextLabel {
 				Name = "Weekday",
 				weekdayStyle,
 				Size = UDim2.fromOffset(COL_W, WEEKDAY_H),
@@ -267,7 +268,7 @@ local function new(o: Options): MonthView
 			local shown: State<boolean> = ends:Compute(function(self)
 				return (if which == "Start" then self:Get().Start else self:Get().End) ~= nil
 			end)
-			return D.Frame {
+			return Frame {
 				Name = name,
 				Size = UDim2.fromOffset(COL_W // 2, CHIP),
 				Position = pos,
@@ -283,7 +284,7 @@ local function new(o: Options): MonthView
 
 	-- the day columns line up with the weekday labels: both start PAD px in (the grid's 7 * 48 px sit inside the
 	-- 12 px side padding, like the header row)
-	local gridFrame = D.Frame {
+	local gridFrame = Frame {
 		Name = "Days",
 		Size = UDim2.fromOffset(7 * COL_W, Metrics.GridHeight),
 		Position = UDim2.fromOffset(PAD, WEEKDAY_H),
@@ -292,7 +293,7 @@ local function new(o: Options): MonthView
 		table.unpack(gridChildren),
 	}
 
-	local frame = D.Frame {
+	local frame = Frame {
 		Name = "Month",
 		Size = UDim2.fromOffset(Metrics.Width, WEEKDAY_H + Metrics.GridHeight),
 		Visible = Util.visible(o.Visible),

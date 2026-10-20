@@ -104,7 +104,7 @@ do
 		assert(not ok2 and string.find(tostring(err2), `Relate:{m}: key must not be nil`, 1, true) ~= nil, m .. " key: " .. tostring(err2))
 	end
 	-- (the batch Blocker accessor left the public surface 2026-10-01 — `_getBlocker`, internal)
-	local q = Quad.New()
+	local q = Quad.NewModule()
 	assert((q.Bookkeeping :: any).getBlocker == nil, "getBlocker is not public")
 	-- `H-504` (round8 K-2): the sibling public surfaces too — no leaf-module name (`Relate:`) in the message
 	local cases: { { any } } = { { "getBookkeeping", 1 }, { "getOffsetAt", 1 }, { "setLength", 1, 1 }, { "setOffsetSource", 1, q.None }, { "setEmpty", 1 } }

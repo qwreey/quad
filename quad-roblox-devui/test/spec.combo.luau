@@ -2,7 +2,8 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ScreenGui = q.Elem "ScreenGui"
 local Overlay = require("../src/Overlay")
 Overlay.warnUnmounted = false -- these specs open popups on a bare layer (no ScreenGui); the debug line has its own spec in spec.overlay
 local Combo = require("../src/Combo")
@@ -177,7 +178,7 @@ H.section("dispose: everything gone, connections at baseline", function()
 	local base = nBegan()
 	local value = q.Source("a")
 	local combo = Combo.Combo<<string>>({ Text = "t", Value = value, Options = { "a", "b" }, Overlay = o })
-	local screen = D.ScreenGui({ combo, o.Layer })
+	local screen = ScreenGui({ combo, o.Layer })
 	H.fire(get(combo, "Box"), "Activated", H.input({}), 1)
 	q.dispose(screen)
 	assert(H.isDestroyed(combo) and nBegan() == base)
@@ -234,7 +235,7 @@ end)
 
 H.section("the layer dying with the list open: popup closed, Escape listener back to baseline, reopening is quiet", function()
 	local o = Overlay.new()
-	local gui = D.ScreenGui({ o.Layer })
+	local gui = ScreenGui({ o.Layer })
 	local value = q.Source("a")
 	local combo = Combo.Combo<<string>>({ Text = "Pick", Value = value, Options = { "a", "b" }, Overlay = o })
 	local box = get(combo, "Box")
@@ -252,8 +253,8 @@ end)
 
 H.section("closing the window the combo is in (an ANCESTOR hidden) closes the open list; watchers only while open", function()
 	local o = Overlay.new()
-	local win = D.Frame({})
-	local inner = D.Frame({})
+	local win = Frame({})
+	local inner = Frame({})
 	inner.Parent = win
 	local combo = Combo.Combo<<number>>({ Text = "n", Value = q.Source(1), Options = { 1, 2 }, Overlay = o })
 	combo.Parent = inner
@@ -274,7 +275,7 @@ H.section("closing the window the combo is in (an ANCESTOR hidden) closes the op
 	assert(o.Count:Get() == 0, "box hidden")
 	box.Visible = true
 	-- the ScreenGui disabled
-	local gui = D.ScreenGui({ ZIndexBehavior = Enum.ZIndexBehavior.Sibling })
+	local gui = ScreenGui({ ZIndexBehavior = Enum.ZIndexBehavior.Sibling })
 	win.Parent = gui
 	H.fire(box, "Activated", H.input({}), 1)
 	gui.Enabled = false

@@ -11,7 +11,7 @@ local mock = require("./mock")
 local collectgarbage = (_G :: any).collectgarbage :: () -> ()
 print("=== 1. 미주입 스텁 — hold op 넷(holdLifetime/releaseLifetime/isHeld/isHeldBy, round11 Q59) + 조합 불가 엔진 op 다섯(onDestroying/isInst/nativeClaim/isClaimed/nativeFindChild, 2순회 H-373 + 2026-09-16) 전부 영어 메시지로 error, 호출부를 가리킴 ===")
 do
-	local fresh = Quad.New()
+	local fresh = Quad.NewModule()
 	for _, name in { "holdLifetime", "releaseLifetime", "isHeld", "isHeldBy", "onDestroying", "isInst", "nativeClaim", "isClaimed", "nativeFindChild" } do
 		local ok, err = pcall(function()
 			return (fresh :: any).Backend[name]({}, {})
@@ -28,7 +28,7 @@ end
 print()
 print("=== 1a. 생명주기 넷은 quad-base 것(round11 Q59, 2026-09-18) — 백엔드 없이도 함수이고, 부르면 hold op 스텁에 닿아 그 op 이름으로 error, blame은 호출부 ===")
 do
-	local fresh = Quad.New()
+	local fresh = Quad.NewModule()
 	for _, pair in { { "bindLifetime", "isHeld" }, { "unbindLifetime", "releaseLifetime" }, { "canBound", "isHeld" }, { "canExecute", "isHeld" } } do
 		local name, stub = pair[1], pair[2]
 		assert(type((fresh :: any).Backend[name]) == "function", name .. " is installed by quad-base itself")
@@ -44,7 +44,7 @@ end
 print()
 print("=== 1b. 스텁의 에러 깊이 — 아홉 전부 errorBefore(최외곽): 태그된 래퍼(핸들러 프레임 상당)를 타넘어 그 호출자를 blame (H-348, 3순회 H-378로 복원) ===")
 do
-	local fresh = Quad.New()
+	local fresh = Quad.NewModule()
 	local QuadTypes = require("../luau_packages/quad_types")
 	-- a SURFACE-tagged wrapper stands in for a public method / handler frame
 	local lineUser = 0
@@ -82,7 +82,7 @@ do
 	print("PASS")
 end
 
-local quad = Quad.New()
+local quad = Quad.NewModule()
 mock.installLifetime(quad)
 local Instance = mock.Instance
 
@@ -223,7 +223,7 @@ end
 print()
 print("=== 8. installLifetime은 quad 인스턴스별 — 다른 New()엔 안 퍼짐, 두 번 불러도 무시 ===")
 do
-	local other = Quad.New()
+	local other = Quad.NewModule()
 	local ok = pcall(function()
 		other.Backend.canBound({})
 	end)
@@ -258,7 +258,7 @@ do
 	child2.Parent = root2
 	-- (mock has no Property/InstanceChild handlers, so a root-only descriptor:
 	-- the claim itself is the observation — child resolution is `spec.claim`'s)
-	local M = quad.newMapperClass
+	local M = quad.Raw.Mapper
 	local out = quad.Claim(root2, M("Frame")(quad.MapperRoot)({}))
 	assert(out == root2, "Claim returns the root")
 	local okC = pcall(function()

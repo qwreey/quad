@@ -1,8 +1,8 @@
 ---
-title: "에러 코드 — Roblox: Declaration·Claim·핸들러"
+title: "에러 코드 — Roblox: Elem·Claim·핸들러"
 description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지는 에러"
 ---
-# [레퍼런스] 에러 코드 — Roblox: Declaration·Claim·핸들러
+# [레퍼런스] 에러 코드 — Roblox: Elem·Claim·핸들러
 
 각 절은 `### QuadNNNN` — 메시지 원문(자리표시자는 `{…}`), 언제 나는가, 어떻게 고치는가. 번호로 찾으려면 [색인](./00-index.md).
 
@@ -37,15 +37,15 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 - **언제**: `D.<Class> { EventName = v }`에서 이벤트 이름 키의 값 `v`가 함수도, `None`/`nil`(연결 해제 전용)도 아닐 때.
 - **고치려면**: 콜백 함수나 `q.None`/`nil`을 넘기세요.
-- **참고**: [D — 문자 키](../roblox/02-d.md#문자-키--프로퍼티와-이벤트)
+- **참고**: [Elem — 문자 키](../roblox/02-elem.md#문자-키--프로퍼티와-이벤트)
 
 ### Quad0219
 
-`Dispatch: this Instance is not claimed by quad - build it with the Declaration or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one - a destroyed Instance cannot be reused)` — `quad-roblox/src/Handlers/InstanceChild.luau`
+`Dispatch: this Instance is not claimed by quad - build it with q.Elem or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one - a destroyed Instance cannot be reused)` — `quad-roblox/src/Handlers/InstanceChild.luau`
 
 - **언제**: 숫자 키 자리에 quad가 소유하지 않은 Instance(`Instance.new`나 다른 라이브러리가 만든 것, 다른 quad 모듈 인스턴스가 만든 것, 또는 이미 파괴된 것)를 놓았을 때.
 - **고치려면**: `D.<Class> { ... }`로 만들었거나 [`Claim`](../roblox/04-claim-mapper.md#qclaiminst-desc)으로 넘겨받은 Instance만 자식 자리에 놓으세요.
-- **참고**: [D — 숫자 키](../roblox/02-d.md#숫자-키--자식과-디스크립터)
+- **참고**: [Elem — 숫자 키](../roblox/02-elem.md#숫자-키--자식과-디스크립터)
 
 ### Quad0220
 
@@ -53,7 +53,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 - **언제**: [`q.debug`](../core/01-quad-module.md#qdebug)가 켜져 있을 때, 어떤 Instance를 자기 자신이나 자기 자손의 숫자 키 자리에 자식으로 놓으려 할 때 — 놓이는 자리의 Instance에서 조상 사슬을 따라 올라가며 그 Instance를 만나는지 검사합니다. **(3.3.0부터)** 조상 사슬 걷기라 debug 층으로 내려갔습니다 — 꺼 두면 Roblox 엔진의 `… would result in circular reference` 에러가 대신 멈춥니다. 다만 그 에러는 quad가 자리를 잡은 **뒤**에 나므로, 그 요소의 부기는 그 뒤로 믿을 수 없습니다(던진 뒤의 무결은 약속하지 않습니다).
 - **고치려면**: 순환이 생기지 않게 트리 구조를 바꾸세요.
-- **참고**: [D — 숫자 키](../roblox/02-d.md#숫자-키--자식과-디스크립터)
+- **참고**: [Elem — 숫자 키](../roblox/02-elem.md#숫자-키--자식과-디스크립터)
 
 ### Quad0221
 
@@ -61,7 +61,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 - **언제**: `q.OnChange(name, fn)`의 `name`이 문자열이 아니거나 빈 문자열일 때.
 - **고치려면**: 비어 있지 않은 프로퍼티 이름 문자열을 넘기세요.
-- **참고**: [`q.OnChange(name, fn)`](../roblox/05-onchange.md#qonchangename-fn)
+- **참고**: [`q.OnChange(name, fn)`](../roblox/05-onchange.md#qonchange-class-name-fn)
 
 ### Quad0222
 
@@ -69,7 +69,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 - **언제**: `q.OnChange(name, fn)`의 `fn`이 함수가 아닐 때.
 - **고치려면**: `(newValue) -> ()` 모양의 함수를 넘기세요.
-- **참고**: [`q.OnChange(name, fn)`](../roblox/05-onchange.md#qonchangename-fn)
+- **참고**: [`q.OnChange(name, fn)`](../roblox/05-onchange.md#qonchange-class-name-fn)
 
 ### Quad0223
 
@@ -77,7 +77,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 - **언제**: `q.Out(name, src)`의 `name`이 문자열이 아니거나 빈 문자열일 때.
 - **고치려면**: 비어 있지 않은 프로퍼티 이름 문자열을 넘기세요.
-- **참고**: [`q.Out(name, src)`](../roblox/05-onchange.md#qoutname-src)
+- **참고**: [`q.Out(name, src)`](../roblox/05-onchange.md#qout-class-name-src)
 
 ### Quad0224
 
@@ -85,7 +85,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 - **언제**: `q.Out(name, src)`의 `src`가 `Source`가 아닐 때 — `:Compute` 결과 같은 읽기 전용 `State`는 `Set`이 없어 `{got}`가 `"a read-only State (a :Compute result?)"`로 나옵니다.
 - **고치려면**: `Source`를 넘기세요.
-- **참고**: [`q.Out(name, src)`](../roblox/05-onchange.md#qoutname-src)
+- **참고**: [`q.Out(name, src)`](../roblox/05-onchange.md#qout-class-name-src)
 
 ### Quad0225
 
@@ -135,3 +135,10 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 - **언제**: `q.OnEvent "Frame" "MouseEnter" (fn)`의 `fn`이 함수가 아닐 때.
 - **고치려면**: 그 이벤트의 인자를 받는 함수를 넘기세요.
+
+### Quad0281
+
+`{fn}: takes the class name only - write q.{fn} "Class" "Name" (…) (3.3's q.{fn}(name, …) form is gone)` — `quad-roblox/src/Surface/Runtime.luau`
+
+- **언제**: `q.OnChange`·`q.Out`·`q.OnEvent`의 클래스 단계에 인자를 둘 이상 넘겼을 때 — 흔히 3.3의 `q.OnChange("Text", fn)`을 그대로 둔 코드입니다. 이 꼴은 첫 인자 `"Text"`를 클래스 이름으로 받아 단계 함수를 돌려주므로, 막지 않으면 그 함수가 요소에 놓여 한참 뒤 Dispatch에서 엉뚱한 에러가 납니다.
+- **고치려면**: 클래스 → 이름 → 콜백 순서로 따로 부르세요(`q.OnChange "TextLabel" "Text" (fn)`). 옮기기는 `scripts/migrate-3.4.py`가 해 줍니다.

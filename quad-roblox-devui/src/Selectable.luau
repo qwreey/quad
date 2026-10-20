@@ -21,8 +21,10 @@
 
 local Quad = require("./Quad")
 local q = Quad
-local D = q.Declaration
-local selectableName = D.Modifier.TextButton():Name("Selectable")
+local TextButton = q.Elem "TextButton"
+local UIPadding = q.Elem "UIPadding"
+local TextButtonModifier = q.Modifier "TextButton"
+local selectableName = TextButtonModifier():Name("Selectable")
 local Common = require("./Common")
 local Interaction = require("./Interaction")
 local Style = require("./Style")
@@ -38,7 +40,7 @@ export type SelectableProps = {
 	read Disabled: (boolean | State<boolean>)?,
 	read Hooks: { any }?,
 	read Style: Style?,
-	read Modifier: Quad.TextButtonModifier?,
+	read Modifier: Quad.ModifierInto<TextButton>?,
 }
 
 export type SelectableOptionProps<T> = {
@@ -49,7 +51,7 @@ export type SelectableOptionProps<T> = {
 	read Disabled: (boolean | State<boolean>)?,
 	read Hooks: { any }?,
 	read Style: Style?,
-	read Modifier: Quad.TextButtonModifier?,
+	read Modifier: Quad.ModifierInto<TextButton>?,
 }
 
 type RowProps = {
@@ -58,7 +60,7 @@ type RowProps = {
 	read Disabled: (boolean | State<boolean>)?,
 	read Hooks: { any }?,
 	read Style: Style?,
-	read Modifier: Quad.TextButtonModifier?,
+	read Modifier: Quad.ModifierInto<TextButton>?,
 }
 
 -- the shared row: `selected` highlights it, `toggle` is the click action
@@ -81,7 +83,7 @@ local function row(
 		return if selectedNow:Get() then rest:Get() else 1
 	end, look.Transparency, selected, style.Transparency.Header)
 	local padX, padY = Common.padXY(style.Metrics.FramePadding)
-	return D.TextButton({
+	return TextButton({
 		selectableName,
 		props.Modifier or q.None,
 		hover.Hook,
@@ -107,7 +109,7 @@ local function row(
 			end
 		end,
 		UICorner = style.Metrics.FrameRounding,
-		D.UIPadding({ PaddingLeft = padX, PaddingRight = padX, PaddingTop = padY, PaddingBottom = padY }),
+		UIPadding({ PaddingLeft = padX, PaddingRight = padX, PaddingTop = padY, PaddingBottom = padY }),
 		table.unpack(Common.hooks(props.Hooks)),
 	})
 end

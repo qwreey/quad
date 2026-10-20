@@ -2,7 +2,11 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ScreenGui = q.Elem "ScreenGui"
+local TextBox = q.Elem "TextBox"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
 local Overlay = require("../src/Overlay")
 local Tokens = require("../src/Tokens")
 
@@ -11,12 +15,12 @@ local function near(a: number, b: number): boolean
 end
 
 local function dialog(text: string)
-	return D.Frame { Name = "Dialog", D.TextLabel { Name = "Msg", Text = text } }
+	return Frame { Name = "Dialog", TextLabel { Name = "Msg", Text = text } }
 end
 
 H.section("layer: transparent full-screen frame, empty at first", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local layer = overlay.Layer
 	assert(layer.Size == UDim2.fromScale(1, 1) and layer.BackgroundTransparency == 1 and layer.Name == "Overlay")
 	assert(layer.ZIndex == 100)
@@ -30,7 +34,7 @@ H.section("q.debug: the first Open under a ScreenGui that is not ZIndexBehavior 
 		overlay:Open({ Content = function() return dialog("x") end }).Close()
 	end
 	local global = Overlay.new()
-	local screenGlobal = D.ScreenGui { Name = "App", ZIndexBehavior = Enum.ZIndexBehavior.Global, global.Layer }
+	local screenGlobal = ScreenGui { Name = "App", ZIndexBehavior = Enum.ZIndexBehavior.Global, global.Layer }
 	openOnce(global)
 	local out = H.output()
 	assert(#out == 1 and string.find(out[1], "ZIndexBehavior = Global", 1, true) ~= nil and string.find(out[1], "\"App\"", 1, true) ~= nil, "one line naming the ScreenGui: " .. table.concat(out, " | "))
@@ -38,15 +42,15 @@ H.section("q.debug: the first Open under a ScreenGui that is not ZIndexBehavior 
 	assert(#H.output() == 1, "once per overlay")
 	H.resetOutput()
 	local sibling = Overlay.new()
-	local screenSibling = D.ScreenGui { ZIndexBehavior = Enum.ZIndexBehavior.Sibling, sibling.Layer }
+	local screenSibling = ScreenGui { ZIndexBehavior = Enum.ZIndexBehavior.Sibling, sibling.Layer }
 	openOnce(sibling)
 	local bare = Overlay.new()
-	local holder = D.Frame { bare.Layer }
+	local holder = Frame { bare.Layer }
 	openOnce(bare)
 	H.assertNoDebugOutput("Sibling / no ScreenGui")
 	q.debug = false
 	local quiet = Overlay.new()
-	local screenQuiet = D.ScreenGui { ZIndexBehavior = Enum.ZIndexBehavior.Global, quiet.Layer }
+	local screenQuiet = ScreenGui { ZIndexBehavior = Enum.ZIndexBehavior.Global, quiet.Layer }
 	openOnce(quiet)
 	q.debug = true
 	H.assertNoDebugOutput("debug off")
@@ -59,7 +63,7 @@ end)
 
 H.section("open with scrim: mounts snapped, fades in to .32 opacity, click dismisses", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local closed = 0
 	local handle = overlay:Open({
 		Content = dialog("Hello"),
@@ -91,10 +95,10 @@ end)
 
 H.section("builder content gets the handle and can close itself", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local handle = overlay:Open({
 		Content = function(h)
-			return D.TextButton {
+			return TextButton {
 				Name = "Ok",
 				Activated = function()
 					h.Close()
@@ -113,7 +117,7 @@ end)
 
 H.section("non-dismissable scrim ignores clicks; no scrim means no blocker", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local modal = overlay:Open({ Content = dialog("Modal"), Scrim = true, Dismissable = false })
 	H.fire(H.find(screen, "Scrim"), "Activated", H.input({}), 1)
 	assert(modal.IsOpen:Get(), "scrim click does nothing")
@@ -130,7 +134,7 @@ end)
 
 H.section("custom scrim opacity and the Layer dying with pending closes", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local handle = overlay:Open({ Content = dialog("X"), Scrim = true, ScrimOpacity = 0.5 })
 	H.finishTweens()
 	assert(near(H.find(screen, "Scrim").BackgroundTransparency, 0.5))
@@ -143,7 +147,7 @@ H.section("custom scrim opacity and the Layer dying with pending closes", functi
 end)
 
 H.section("default overlay exists and works", function()
-	local screen = D.Frame { Overlay.default().Layer }
+	local screen = Frame { Overlay.default().Layer }
 	local h = Overlay.default():Open({ Content = dialog("Default"), ExitTime = 0 })
 	assert(H.find(screen, "Dialog") ~= nil)
 	h.Close()
@@ -156,7 +160,7 @@ H.section("dark scheme scrim color follows the theme", function()
 	local Theme = require("../src/Theme")
 	local theme = Theme.new({ Scheme = "dark", Overrides = { Dark = { Scrim = Color3.fromRGB(10, 0, 0) } } })
 	local overlay = Overlay.new({ Theme = theme })
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	overlay:Open({ Content = dialog("D"), Scrim = true })
 	assert(H.find(screen, "Scrim").BackgroundColor3 == Color3.fromRGB(10, 0, 0))
 	q.dispose(screen)
@@ -176,7 +180,7 @@ end
 H.section("A-H1 Overlay.default() is lazy and self-healing; Open on a dead overlay errors loudly", function()
 	local first = Overlay.default()
 	assert(Overlay.default() == first, "stable while alive")
-	local screen = D.Frame { first.Layer }
+	local screen = Frame { first.Layer }
 	assert(first.Alive:Get() == true)
 	q.dispose(screen)
 	assert(first.Alive:Get() == false, "layer death flips Alive")
@@ -187,7 +191,7 @@ H.section("A-H1 Overlay.default() is lazy and self-healing; Open on a dead overl
 	assert(first.Count:Get() == 0)
 	local second = Overlay.default()
 	assert(second ~= first and second.Alive:Get() == true, "a fresh default after the old layer died")
-	local screen2 = D.Frame { second.Layer }
+	local screen2 = Frame { second.Layer }
 	local h = second:Open({ Content = dialog("alive"), ExitTime = 0 })
 	assert(H.find(screen2, "Dialog") ~= nil)
 	h.Close()
@@ -197,7 +201,7 @@ end)
 
 H.section("A-H2 layer death finalizes every live handle (open, closing, scrim), no leaked Escape connection or timer", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local reasons: { string } = {}
 	local function onClose(tag: string): (string, unknown?) -> ()
 		return function(reason: string, _result: unknown?)
@@ -237,16 +241,16 @@ end
 
 H.section("scrim is not Selectable; selection group is set on open and released (and the previous selection restored) on close", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
-	local prev = D.TextButton { Name = "Prev", Selectable = true }
-	local prevHost = D.Frame { prev }
+	local screen = Frame { overlay.Layer }
+	local prev = TextButton { Name = "Prev", Selectable = true }
+	local prevHost = Frame { prev }
 	;(UIS :: any).GetLastInputType = function() return Enum.UserInputType.Gamepad1 end
 	GS.SelectedObject = prev
 	local inner: any = nil
 	local h = overlay:Open({
 		Content = function()
-			inner = D.TextButton { Name = "First", Selectable = true }
-			return D.Frame { Name = "Menu", inner }
+			inner = TextButton { Name = "First", Selectable = true }
+			return Frame { Name = "Menu", inner }
 		end,
 		Scrim = true,
 		TrapSelection = true,
@@ -279,7 +283,7 @@ end)
 
 H.section("Escape / B: top-most dismissable entry only, shielded by a non-dismissable modal, ignored while processed or typing", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local reasons: { string } = {}
 	local function track(tag: string): (string, unknown?) -> ()
 		return function(reason: string, _result: unknown?)
@@ -291,7 +295,7 @@ H.section("Escape / B: top-most dismissable entry only, shielded by a non-dismis
 	assert(inputBeganConns() == baseConns + 1, "ONE shared connection for both")
 	key(Enum.KeyCode.Escape, nil, true)
 	assert(#reasons == 0, "Escape the engine already processed is ignored")
-	local box = D.TextBox { Name = "Typing" }
+	local box = TextBox { Name = "Typing" }
 	;(UIS :: any).FocusedTextBox = box
 	key(Enum.KeyCode.Escape)
 	assert(#reasons == 0, "a focused TextBox keeps Escape for itself")
@@ -322,7 +326,7 @@ end)
 
 H.section("A-L1 a throwing OnClose does not wedge the entry", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local h = overlay:Open({
 		Content = dialog("T"),
 		OnClose = function()
@@ -342,7 +346,7 @@ end)
 
 H.section("R2-1 default() detects layer death synchronously (Deferred Destroying: Parent is nil, handlers have not run yet)", function()
 	local first = Overlay.default()
-	local screen = D.Frame { first.Layer }
+	local screen = Frame { first.Layer }
 	local reasons: { string } = {}
 	local h = first:Open({
 		Content = dialog("old"),
@@ -370,7 +374,7 @@ H.section("R2-1 default() detects layer death synchronously (Deferred Destroying
 	assert(first.Alive:Get() == false and first.Count:Get() == 0 and not h.Closing:Get())
 	assert(inputBeganConns() == baseConns, "Escape connection at baseline")
 	assert(H.pendingTimers() == 0, "no timers left")
-	local screen2 = D.Frame { second.Layer }
+	local screen2 = Frame { second.Layer }
 	local h2 = second:Open({ Content = dialog("new"), ExitTime = 0 })
 	assert(H.find(screen2, "Dialog") ~= nil and second.Count:Get() == 1)
 	h2.Close()
@@ -382,7 +386,7 @@ end)
 H.section("R2-2 a builder that closes its own handle synchronously seats nothing (ExitTime 0 and > 0)", function()
 	for _, exitTime in { 0, 0.2 } do
 		local overlay = Overlay.new()
-		local screen = D.Frame { overlay.Layer }
+		local screen = Frame { overlay.Layer }
 		local made: Instance? = nil
 		local reasons = 0
 		local h = overlay:Open({

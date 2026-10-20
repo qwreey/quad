@@ -1,7 +1,7 @@
 # E33 — 레퍼런스 시그니처 전수 대조 (2026-09-27, HEAD `47fad75f`)
 
 `docs/reference/**/*.md`(errors/ 제외)의 **시그니처** 블록(코드 블록형·인라인형 둘 다)·**인자** 표·**반환** 문장을
-`quad-types/src/init.luau`·`quad-roblox/src/{types,init}.luau`·생성 `quad-roblox/src/Declaration/init.luau`·
+`quad-types/src/init.luau`·`quad-roblox/src/{types,init}.luau`·생성 옛 `quad-roblox/src/Declaration/init.luau`·
 `quad-error/src/init.luau`와 대조했다. 레포 파일 무변경, 산출물은 이 폴더뿐.
 
 ## 숫자

@@ -11,7 +11,7 @@
 - **배경 자료**:
   - `.claude/research/declaration-surface-plan.md` 5절 (2026-10-16 결정 사항)
   - `.claude/audit/decl-typefn-probe-2026-10-16/REPORT.md` 및 `src/Lib.luau` (타입 함수 프로브)
-  - `quad-roblox/src/init.luau`, `quad-roblox/src/Declaration/init.luau`, `quad-types/src/init.luau` (현재 공개 표면)
+  - `quad-roblox/src/init.luau`, 옛 `quad-roblox/src/Declaration/init.luau`, `quad-types/src/init.luau` (현재 공개 표면)
   - `scripts/roblox-defs/globalTypes.d.luau` (Roblox 엔진 전역 정의)
 - **1절 원칙 기준**:
   1. **길이는 사용 빈도에 맞춘다**: 매일 쓰는 이름은 짧게, 드문 이름은 길어도 정확하게, 흔한 단어 소진 금지.

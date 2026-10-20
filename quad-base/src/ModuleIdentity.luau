@@ -22,7 +22,7 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 local ModuleIdentity = {}
 
 local function message(what: string): string
-	return `Quad0106 {what}: this value was made by another quad module instance (one made with q.New()) - values cannot cross instances`
+	return `Quad0106 {what}: this value was made by another quad module instance (one made with q.NewModule()) - values cannot cross instances`
 end
 
 -- dispatch depth (handlers): outermost, like the other handler raises (`H-272`)

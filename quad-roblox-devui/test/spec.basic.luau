@@ -199,7 +199,7 @@ H.section("Button Disabled: no OnClick, resting colours under hover, dim text; L
 	assert(clicks == 1)
 	q.dispose(b)
 
-	local l = Devui.LabelText({ Label = "k", Text = "v", Modifier = q.Declaration.Modifier.Frame():Visible(false) })
+	local l = Devui.LabelText({ Label = "k", Text = "v", Modifier = q.Modifier "Frame"():Visible(false) })
 	assert((l :: any).Visible == false and (l :: any).Name == "LabelText", "the Modifier lands on the row Frame")
 	q.dispose(l)
 	H.assertNoDebugOutput("button disabled")

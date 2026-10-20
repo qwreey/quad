@@ -32,8 +32,8 @@ do
 		runCount += 1
 	end
 
-	local a = Quad.New()
-	local b = Quad.New()
+	local a = Quad.NewModule()
+	local b = Quad.NewModule()
 	assert(a ~= b, "New()는 매번 독립된 module을 만들어야 함")
 
 	a:RunInit(initFn)
@@ -46,7 +46,7 @@ end
 print()
 print("=== 4. 서로 다른 initFn은 서로의 실행 여부에 영향을 안 줌 ===")
 do
-	local m = Quad.New()
+	local m = Quad.NewModule()
 	local aRan, bRan = false, false
 	local function initA(_module)
 		aRan = true

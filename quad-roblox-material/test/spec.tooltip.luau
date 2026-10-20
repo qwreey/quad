@@ -3,7 +3,9 @@ local H = require("./support/harness")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
+local TextButtonModifier = q.Modifier "TextButton"
 local Tokens = require("../src/Tokens")
 local Overlay = require("../src/Overlay")
 local Tooltip = require("../src/Tooltip")
@@ -13,7 +15,7 @@ local L = Tokens.Color.Light
 
 local function setup()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	return overlay, screen
 end
 
@@ -51,7 +53,7 @@ end)
 H.section("hover shows after the delay, snapped then faded in; leave hides and cleans up", function()
 	local overlay, screen = setup()
 	local tip = Tooltip.hook({ Text = "Add", Overlay = overlay })
-	local btn: any = D.TextButton { tip.Hook, Name = "Target", Size = UDim2.fromOffset(100, 40) }
+	local btn: any = TextButton { tip.Hook, Name = "Target", Size = UDim2.fromOffset(100, 40) }
 	screen.Name = "Screen"
 	H.setAbs(btn, 200, 100, 100, 40)
 	H.fire(btn, "MouseEnter")
@@ -80,7 +82,7 @@ end)
 H.section("leaving before the delay cancels it; press hides and does not re-show", function()
 	local overlay, screen = setup()
 	local tip = Tooltip.hook({ Text = "x", Overlay = overlay, Delay = 1 })
-	local btn: any = D.TextButton { tip.Hook }
+	local btn: any = TextButton { tip.Hook }
 	H.fire(btn, "MouseEnter")
 	H.advance(0.5)
 	H.fire(btn, "MouseLeave")
@@ -113,14 +115,14 @@ end)
 H.section("destroying the target cancels the timer and closes an open tooltip", function()
 	local overlay, screen = setup()
 	local tip = Tooltip.hook({ Text = "x", Overlay = overlay })
-	local btn: any = D.TextButton { tip.Hook }
+	local btn: any = TextButton { tip.Hook }
 	H.fire(btn, "MouseEnter")
 	q.dispose(btn)
 	assert(H.pendingTimers() == 0, "timer cancelled on destroy")
 	H.advance(1)
 	assert(tipOf(screen) == nil)
 	local tip2 = Tooltip.hook({ Text = "y", Overlay = overlay })
-	local btn2: any = D.TextButton { tip2.Hook }
+	local btn2: any = TextButton { tip2.Hook }
 	H.fire(btn2, "MouseEnter")
 	H.advance(0.6)
 	assert(tipOf(screen) ~= nil)
@@ -138,7 +140,7 @@ H.section("gamepad focus shows it, selection lost hides; Disabled and State text
 	local text = q.Source("one")
 	local disabled = q.Source(true)
 	local tip = Tooltip.hook({ Text = text, Overlay = overlay, Disabled = disabled, Delay = 0.1 })
-	local btn: any = D.TextButton { tip.Hook }
+	local btn: any = TextButton { tip.Hook }
 	H.fire(btn, "SelectionGained")
 	H.advance(0.2)
 	assert(tipOf(screen) == nil, "disabled: nothing shows")
@@ -161,7 +163,7 @@ H.section("edge placement: flips above at the bottom, aligns to the edge near th
 	H.setAbs(overlay.Layer, 0, 0, 1000, 600)
 	local function place(x: number, y: number): any
 		local tip = Tooltip.hook({ Text = "p", Overlay = overlay, Delay = 0 })
-		local btn: any = D.TextButton { tip.Hook }
+		local btn: any = TextButton { tip.Hook }
 		H.setAbs(btn, x, y, 80, 40)
 		H.fire(btn, "MouseEnter")
 		H.advance(0.01)
@@ -188,9 +190,9 @@ end)
 H.section("works on a kit Button host; dispose leaves nothing", function()
 	local overlay, screen = setup()
 	local tip = Tooltip.hook({ Text = "Save file", Overlay = overlay })
-	local btn: any = Button({ Label = "Save", Modifier = D.Modifier.TextButton():Size(UDim2.fromOffset(90, 40)) })
+	local btn: any = Button({ Label = "Save", Modifier = TextButtonModifier():Size(UDim2.fromOffset(90, 40)) })
 	-- the hook is placed on a plain host next to the button (Button has no array-part pass-through)
-	local wrap: any = D.Frame { tip.Hook, btn }
+	local wrap: any = Frame { tip.Hook, btn }
 	H.fire(wrap, "MouseEnter")
 	H.advance(0.6)
 	assert(tipOf(screen) ~= nil)
@@ -204,8 +206,8 @@ end)
 H.section("A-H2 tooltip: the layer dying under an open tooltip does not strand the hook (it can show again elsewhere)", function()
 	local overlay, screen = setup()
 	local tip = Tooltip.hook({ Text = "Add", Overlay = overlay })
-	local btnHost = D.Frame {}
-	local btn: any = D.TextButton { tip.Hook, Name = "Target", Size = UDim2.fromOffset(100, 40) }
+	local btnHost = Frame {}
+	local btn: any = TextButton { tip.Hook, Name = "Target", Size = UDim2.fromOffset(100, 40) }
 	btn.Parent = btnHost
 	H.setAbs(btn, 200, 100, 100, 40)
 	H.fire(btn, "MouseEnter")

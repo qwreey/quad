@@ -21,12 +21,12 @@ local REFLECTED: { [string]: { any } } = {
 	UIScale = { { Name = "Name", Permits = W }, { Name = "Scale", Permits = W } },
 }
 local gameShim = mock.gameShim(REFLECTED)
-local q: any = Quad.New():UseProvider(QuadRoblox)
+local q: any = Quad.NewModule():UseProvider(QuadRoblox)
 ;(getfenv(installProperty) :: any).game = gameShim
 ;(getfenv(installProperty) :: any).TweenInfo = mock.tweenInfoShim
 ;(getfenv(installProperty) :: any).Enum = { EasingStyle = { Quad = "Quad" }, EasingDirection = { Out = "Out" }, PlaybackState = { Completed = "Completed", Cancelled = "Cancelled" } }
 ;(getfenv(installEvent) :: any).game = gameShim
-;(getfenv(q.Declaration.New) :: any).Instance = { new = mock.Instance.new }
+;(getfenv(q.Elem) :: any).Instance = { new = mock.Instance.new }
 q.Backend.isInst = mock.isMockInstance
 -- UDim 심 — 엔진 전역이 없는 CLI에서 `UDim.new(0, n)`을 테이블로
 -- 엔진처럼 값 동등(`UDim.new(0, 8) == UDim.new(0, 8)`) — Q25 값 dedup이 그 위에 선다
@@ -52,11 +52,11 @@ end
 
 print("=== 1. UICorner = 8 — 관리 자식 _quad_round 생성·부착, CornerRadius = UDim(0, 8); UDim은 그대로 ===")
 do
-	local f = q.Declaration.Frame({ UICorner = 8 }) :: any
+	local f = q.Elem "Frame"({ UICorner = 8 }) :: any
 	local c = childNamed(f, "_quad_round")
 	assert(c ~= nil and c.ClassName == "UICorner" and c.Parent == f, "managed child created and parented")
 	assert(c.CornerRadius.Offset == 8 and c.CornerRadius.Scale == 0, "number → offset UDim")
-	local f2 = q.Declaration.Frame({ UICorner = UDimNew(0.5, 0) }) :: any
+	local f2 = q.Elem "Frame"({ UICorner = UDimNew(0.5, 0) }) :: any
 	assert(childNamed(f2, "_quad_round").CornerRadius.Scale == 0.5, "UDim passes through")
 	print("PASS")
 end
@@ -65,7 +65,7 @@ print()
 print("=== 2. 반응형 — State<number> 변경은 자식을 재생성하지 않고 프로퍼티만 갱신(Relate 조회) ===")
 do
 	local s = q.Source(4)
-	local f = q.Declaration.Frame({ UICorner = s }) :: any
+	local f = q.Elem "Frame"({ UICorner = s }) :: any
 	local c = childNamed(f, "_quad_round")
 	s:Set(12)
 	assert(childNamed(f, "_quad_round") == c and c.CornerRadius.Offset == 12, "same child, property updated")
@@ -77,7 +77,7 @@ print()
 print("=== 3. nil — 자식 파괴(retractFrom 뒤), 다시 숫자면 재생성(첫 값 스냅); None 경유도 같은 경로 ===")
 do
 	local s = q.Source(4 :: any)
-	local f = q.Declaration.Frame({ UICorner = s }) :: any
+	local f = q.Elem "Frame"({ UICorner = s }) :: any
 	local c1 = childNamed(f, "_quad_round")
 	s:Set(nil)
 	assert(childNamed(f, "_quad_round") == nil and mock.isDestroyed(c1), "child destroyed on nil")
@@ -94,7 +94,7 @@ print("=== 4. Tween — Tween<number>이 Mapped로 UDim Tween이 되어 (child, 
 do
 	mock.resetTweenLog()
 	local s = q.Source(4 :: any)
-	local f = q.Declaration.Frame({ UICorner = s }) :: any
+	local f = q.Elem "Frame"({ UICorner = s }) :: any
 	local c = childNamed(f, "_quad_round")
 	s:Set(Tween({ Value = 10, Time = 0.2 }))
 	local log = mock.tweenLog
@@ -106,15 +106,15 @@ end
 print()
 print("=== 5. UIPadding(UDim)·UIPaddingOffset(number) — 같은 _quad_padding 자식, 네 프로퍼티; UIScale ===")
 do
-	local f = q.Declaration.Frame({ UIPadding = UDimNew(0, 4) }) :: any
+	local f = q.Elem "Frame"({ UIPadding = UDimNew(0, 4) }) :: any
 	local p = childNamed(f, "_quad_padding")
 	assert(p ~= nil and p.PaddingLeft.Offset == 4 and p.PaddingRight.Offset == 4 and p.PaddingTop.Offset == 4 and p.PaddingBottom.Offset == 4, "all four paddings")
-	local f2 = q.Declaration.Frame({ UIPaddingOffset = 6 }) :: any
+	local f2 = q.Elem "Frame"({ UIPaddingOffset = 6 }) :: any
 	assert(childNamed(f2, "_quad_padding").PaddingTop.Offset == 6, "offset form")
-	local f3 = q.Declaration.Frame({ UIScale = 1.5 }) :: any
+	local f3 = q.Elem "Frame"({ UIScale = 1.5 }) :: any
 	assert(childNamed(f3, "_quad_scale").Scale == 1.5, "UIScale")
 	-- 두 키가 한 인스턴스에 같이 — 자식 하나, 나중 process가 이김(H-335)
-	local f4 = q.Declaration.Frame({ UIPadding = UDimNew(0, 1), UIPaddingOffset = 2 }) :: any
+	local f4 = q.Elem "Frame"({ UIPadding = UDimNew(0, 1), UIPaddingOffset = 2 }) :: any
 	local kids = 0
 	for _, c in f4:GetChildren() do if c.Name == "_quad_padding" then kids += 1 end end
 	assert(kids == 1, "shared managed child")
@@ -134,7 +134,7 @@ print("=== 7. Q25 (2026-09-08) — Animate 아래 같은 값 재발행: Mapped�
 do
 	mock.resetTweenLog()
 	local s = q.Source(4 :: any)
-	local f = q.Declaration.Frame({ UICorner = s:Apply(q.Animate({ Time = 0.2 })) }) :: any
+	local f = q.Elem "Frame"({ UICorner = s:Apply(q.Animate({ Time = 0.2 })) }) :: any
 	local c = childNamed(f, "_quad_round")
 	local log = mock.tweenLog
 	s:Set(10)
@@ -149,12 +149,12 @@ end
 print()
 print("=== 8. 관리 자식 소유권 자리(round10 Q48 (a)·G-6) — dispose 거부, nil로 내리면 자리도 풀린다 ===")
 do
-	local f = q.Declaration.Frame({ UICorner = 8 }) :: any
+	local f = q.Elem "Frame"({ UICorner = 8 }) :: any
 	local child = f:FindFirstChild("_quad_round")
 	assert(child ~= nil, "managed child exists")
 	local ok, err = pcall(function() q.dispose(child) end)
 	assert(not ok and string.find(tostring(err), "dispose: this value is still held by a Slot or a mounted position", 1, true) ~= nil, "dispose refuses the managed child: " .. tostring(err))
-	local ok2, err2 = pcall(function() return q.Declaration.Frame({ child }) end)
+	local ok2, err2 = pcall(function() return q.Elem "Frame"({ child }) end)
 	assert(not ok2 and string.find(tostring(err2), "already mounted elsewhere", 1, true) ~= nil, "a static seat cannot take the managed child: " .. tostring(err2))
 	q.Dispatch.process(f, "UICorner", nil, 1) -- destroys the managed child and frees its seat
 	assert(f:FindFirstChild("_quad_round") == nil, "managed child destroyed")
@@ -166,7 +166,7 @@ print("=== 9. round10 Q53 (a) (2026-09-17) — 체인 철거는 진행 중 엔�
 do
 	mock.resetTweenLog()
 	local s = q.Source(4 :: any)
-	local f = q.Declaration.Frame({ UICorner = s:Apply(q.Animate({ Time = 0.2 })) }) :: any
+	local f = q.Elem "Frame"({ UICorner = s:Apply(q.Animate({ Time = 0.2 })) }) :: any
 	local log = mock.tweenLog
 	s:Set(10) -- engine tween running on the managed child
 	assert(#log == 1 and log[1].tween.cancels == 0, "tween playing")
@@ -175,7 +175,7 @@ do
 	-- direct chain teardown on a plain property with NO running tween: the { Value = 7 } snap record survives
 	-- (Q65) — the property really holds 7, so a same-target Tween is (correctly) deduped and a new target animates
 	mock.resetTweenLog()
-	local g = q.Declaration.Frame({ Size = q.Tween({ Value = 7, Time = 0.1 }) }) :: any -- first set snaps, slot { Value = 7 }
+	local g = q.Elem "Frame"({ Size = q.Tween({ Value = 7, Time = 0.1 }) }) :: any -- first set snaps, slot { Value = 7 }
 	q.Dispatch.retractFrom(g, "Size", 1)
 	q.Dispatch.process(g, "Size", q.Tween({ Value = 7, Time = 0.1 }), 1)
 	assert(g.Size == 7 and #log == 0, "same target after teardown: dedup holds (the property holds 7, nothing was running)")
@@ -193,7 +193,7 @@ do
 			local log = mock.tweenLog
 			local mkVal = if key == "UIPadding" then function(n: number): any return UDimNew(0, n) end else function(n: number): any return n end
 			local s = q.Source(mkVal(0))
-			local f = q.Declaration.Frame({ Name = "P", [key] = s }) :: any
+			local f = q.Elem "Frame"({ Name = "P", [key] = s }) :: any
 			local step, S, C, X = 0, 0, 0, 0
 			local args: { string } = {}
 			local function mk(n: number): any

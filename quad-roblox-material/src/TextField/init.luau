@@ -82,7 +82,7 @@ export type Props = {
 	read OnSubmit: ((text: string) -> ())?,
 	read OnFocusChanged: ((focused: boolean) -> ())?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 

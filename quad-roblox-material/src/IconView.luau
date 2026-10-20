@@ -21,7 +21,8 @@ local q = require("./Quad")
 local Icons = require("./Icons")
 local Text = require("./Text")
 local Theme = require("./Theme")
-local D = q.Declaration
+local ImageLabel = q.Elem "ImageLabel"
+local TextLabel = q.Elem "TextLabel"
 
 export type ColorIn = Color3 | q.State<Color3> | Theme.Animated
 export type NumberIn = number | q.State<number> | Theme.Animated
@@ -58,7 +59,7 @@ local function new(o: Options): (Instance, Icons.Kind)
 	end
 	local size = UDim2.fromOffset(o.Size, o.Size)
 	if kind == "Image" then
-		return D.ImageLabel {
+		return ImageLabel {
 			Name = o.Name or "Icon",
 			Size = size,
 			Position = o.Position,
@@ -74,7 +75,7 @@ local function new(o: Options): (Instance, Icons.Kind)
 		},
 			kind
 	end
-	return D.TextLabel {
+	return TextLabel {
 		Name = o.Name or "Icon",
 		glyphStyle,
 		Size = size,

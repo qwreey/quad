@@ -13,7 +13,9 @@ local q = require("../../Quad")
 local Tokens = require("../../Tokens")
 local Theme = require("../../Theme")
 local Model = require("./Model")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local UIGradient = q.Elem "UIGradient"
+local UIStroke = q.Elem "UIStroke"
 
 export type Props = {
 	read Model: Model.Model,
@@ -35,14 +37,14 @@ local function Preview(props: Props)
 		})
 	end, model.color)
 
-	return D.Frame {
+	return Frame {
 		Name = "Preview",
 		Size = UDim2.fromOffset(size, size),
 		BackgroundColor3 = Color3.new(1, 1, 1),
 		BorderSizePixel = 0,
 		UICorner = Tokens.Shape.corner("Large"),
-		D.UIGradient { Color = split },
-		D.UIStroke {
+		UIGradient { Color = split },
+		UIStroke {
 			Name = "Outline",
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 			Color = theme.Color.OutlineVariant,

@@ -112,8 +112,10 @@ local Tokens = require("../Tokens")
 local Theme = require("../Theme")
 local Util = require("../Util")
 local Loop = require("./Loop")
-local D = q.Declaration
-local wavyName = D.Modifier.Frame():Name("WavyProgress")
+local Frame = q.Elem "Frame"
+local ImageLabel = q.Elem "ImageLabel"
+local FrameModifier = q.Modifier "Frame"
+local wavyName = FrameModifier():Name("WavyProgress")
 
 export type Props = {
 	read Value: number | q.State<number>,
@@ -122,7 +124,7 @@ export type Props = {
 	read Wavy: (boolean | q.State<boolean>)?,
 	read Visible: (boolean | q.State<boolean>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -189,7 +191,7 @@ local function WavyProgress(props: Props): Frame
 	end)
 
 	local function period(k: number): ImageLabel
-		return D.ImageLabel {
+		return ImageLabel {
 			Name = "Period",
 			Position = UDim2.fromOffset(k * lambda, 0),
 			Size = UDim2.fromOffset(lambda, height),
@@ -282,7 +284,7 @@ local function WavyProgress(props: Props): Frame
 	end)
 
 	local function cap(name: string, position: UDim2, set: (GuiObject) -> ())
-		return D.Frame {
+		return Frame {
 			Name = name,
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = position,
@@ -313,14 +315,14 @@ local function WavyProgress(props: Props): Frame
 	end)
 
 	local startAmp = maxAmp * (1 - frame:Get() / LAST)
-	local root = D.Frame {
+	local root = Frame {
 		wavyName,
-		D.Modifier.Frame():Size(UDim2.new(1, 0, 0, height)):BackgroundTransparency(1):BorderSizePixel(0),
+		FrameModifier():Size(UDim2.new(1, 0, 0, height)):BackgroundTransparency(1):BorderSizePixel(0),
 		props.Modifier or q.None,
 		Visible = visible,
 		hook,
 		effect,
-		D.Frame {
+		Frame {
 			Name = "Track",
 			AnchorPoint = Vector2.new(0, 0.5),
 			Position = trackPosition:Apply(motion),
@@ -329,7 +331,7 @@ local function WavyProgress(props: Props): Frame
 			BorderSizePixel = 0,
 			BackgroundColor3 = theme.Color.SecondaryContainer,
 			UICorner = full,
-			D.Frame {
+			Frame {
 				Name = "Stop",
 				AnchorPoint = Vector2.new(1, 0.5),
 				Position = UDim2.fromScale(1, 0.5),
@@ -339,7 +341,7 @@ local function WavyProgress(props: Props): Frame
 				UICorner = full,
 			},
 		},
-		D.Frame {
+		Frame {
 			Name = "Wave",
 			Size = waveSize:Apply(motion),
 			BackgroundTransparency = 1,
@@ -347,7 +349,7 @@ local function WavyProgress(props: Props): Frame
 			Util.preHook(function(inst)
 				wave = inst
 			end),
-			D.Frame {
+			Frame {
 				Name = "Clip",
 				-- from the start cap's centre to the end cap's (r inset at both ends, "ROUND ENDS")
 				Position = UDim2.fromOffset(inset, 0),
@@ -359,7 +361,7 @@ local function WavyProgress(props: Props): Frame
 				Util.preHook(function(inst)
 					clip = inst
 				end),
-				D.Frame {
+				Frame {
 					Name = "Strip",
 					-- periods start at the strip's left edge, so growing the clip as Value tweens does not move the wave
 					Size = UDim2.new(0, lambda, 1, 0),

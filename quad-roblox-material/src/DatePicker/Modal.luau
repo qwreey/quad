@@ -62,7 +62,12 @@ local InputMode = require("./InputMode")
 local Status = require("./Status")
 local Strings = require("./Strings")
 local View = require("./View")
-local D = q.Declaration
+local CanvasGroup = q.Elem "CanvasGroup"
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local TextButtonModifier = q.Modifier "TextButton"
 
 type Date = Calendar.Date
 type State<T> = q.State<T>
@@ -195,7 +200,7 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 	end)
 	local motion = Tokens.Motion.options("Short4", "Standard")
 
-	return D.CanvasGroup {
+	return CanvasGroup {
 		Name = "DatePickerModal",
 		Active = true, -- 3D / camera input only; a GUI click is sunk by the ClickSink child (a plain frame passes it down)
 		Util.clickSink(),
@@ -210,7 +215,7 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 		Util.postHook(function()
 			entered:Set(true)
 		end),
-		D.TextLabel {
+		TextLabel {
 			Name = "Supporting",
 			supportStyle,
 			Size = UDim2.fromOffset(WIDTH - 48, 16),
@@ -221,7 +226,7 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 			TextColor3 = theme.Color.OnSurfaceVariant,
 			TextXAlignment = Enum.TextXAlignment.Left,
 		},
-		D.TextLabel {
+		TextLabel {
 			Name = "Headline",
 			headlineStyle,
 			Size = UDim2.fromOffset(WIDTH - 24 - 72, 40),
@@ -248,7 +253,7 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 				end
 			end,
 		}),
-		D.Frame {
+		Frame {
 			Name = "Divider",
 			Size = UDim2.fromOffset(WIDTH, 1),
 			Position = UDim2.fromOffset(0, HEAD_H),
@@ -257,20 +262,20 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 		},
 		body.Frame,
 		input.Frame,
-		D.Frame {
+		Frame {
 			Name = "Actions",
 			Size = UDim2.fromOffset(WIDTH, ACTIONS_H),
 			Position = UDim2.fromOffset(0, HEAD_H + 1 + BODY_H),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIListLayout {
+			UIListLayout {
 				FillDirection = Enum.FillDirection.Horizontal,
 				HorizontalAlignment = Enum.HorizontalAlignment.Right,
 				VerticalAlignment = Enum.VerticalAlignment.Center,
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding = UDim.new(0, 8),
 			},
-			D.UIPadding { PaddingRight = UDim.new(0, 12) },
+			UIPadding { PaddingRight = UDim.new(0, 12) },
 			Button({
 				Variant = "Text",
 				Label = strings.Cancel,
@@ -278,7 +283,7 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 				OnClick = function()
 					handle.Close()
 				end,
-				Modifier = D.Modifier.TextButton():LayoutOrder(1),
+				Modifier = TextButtonModifier():LayoutOrder(1),
 				Hooks = {
 					Util.preHook(function(inst: GuiObject)
 						onCancelButton(inst)
@@ -296,7 +301,7 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 						onConfirm(d)
 					end
 				end,
-				Modifier = D.Modifier.TextButton():LayoutOrder(2),
+				Modifier = TextButtonModifier():LayoutOrder(2),
 			}),
 		},
 	}

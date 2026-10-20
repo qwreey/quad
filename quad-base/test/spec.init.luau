@@ -13,7 +13,7 @@ type Quad = QuadTypes.Quad
 
 print("=== 1. New()마다 M2 첫 단위 탑레벨 값이 실려 있음 ===")
 do
-	local m: Quad = Quad.New()
+	local m: Quad = Quad.NewModule()
 	assert(type(m.Relate) == "function" and type(m.Void) == "function" and type(m.Ref) == "function", "Relate/Void/Ref constructors")
 	assert(type(m.Source) == "function" and type(m.Store) == "function", "Source/Store constructors (unit 2, per instance)")
 	assert(type(m.Effect) == "function" and m.Effect ~= Quad.Effect, "Effect constructor (unit 3, per instance)")
@@ -40,7 +40,7 @@ do
 	local collectgarbage = (_G :: any).collectgarbage :: () -> ()
 	local weak = setmetatable({}, { __mode = "v" }) :: { any }
 	local function make()
-		local q = Quad.New()
+		local q = Quad.NewModule()
 		mock.installLifetime(q)
 		local s = q.Source(1)
 		q.Effect(function() end, s):Subscribe() -- 강한 레지스트리까지 채워도 인스턴스째 죽어야 한다
@@ -56,7 +56,7 @@ end
 print()
 print("=== 3. round11 H-566 (2026-09-17) — RunInit 인자 게이트(형제 AddPlugin/UseProvider와 같은 모양) ===")
 do
-	local q = Quad.New()
+	local q = Quad.NewModule()
 	local ok, err = pcall(function()
 		q:RunInit(nil :: any)
 	end)

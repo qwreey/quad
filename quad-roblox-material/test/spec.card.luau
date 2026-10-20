@@ -3,7 +3,10 @@ local H = require("./support/harness")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local FrameModifier = q.Modifier "Frame"
+local GuiObjectModifier = q.Modifier "GuiObject"
 local Theme = require("../src/Theme")
 local Tokens = require("../src/Tokens")
 local Card = require("../src/Card")
@@ -65,13 +68,13 @@ H.section("Filled and Outlined variants", function()
 end)
 
 H.section("children Slot, padding, gap, caller Modifier overrides the base size", function()
-	local children = q.Slot({ D.TextLabel { Name = "A", Text = "a" }, D.TextLabel { Name = "B", Text = "b" } } :: { Instance })
+	local children = q.Slot({ TextLabel { Name = "A", Text = "a" }, TextLabel { Name = "B", Text = "b" } } :: { Instance })
 	local card = Card({
 		Children = children,
 		Padding = 16,
 		Gap = 8,
 		LayoutOrder = 3,
-		Modifier = D.Modifier.GuiObject():Size(UDim2.fromOffset(200, 100)),
+		Modifier = GuiObjectModifier():Size(UDim2.fromOffset(200, 100)),
 	})
 	assert(H.find(card, "A") ~= nil and H.find(card, "B") ~= nil, "children mounted")
 	assert(card.Size == UDim2.fromOffset(200, 100) and card.LayoutOrder == 3, "caller Modifier wins over the base")
@@ -82,7 +85,7 @@ H.section("children Slot, padding, gap, caller Modifier overrides the base size"
 	assert(pad.Parent == content and class(card, "UIListLayout")[1].Parent == content, "padding + layout on Content")
 	assert(H.find(card, "A").Parent == content, "children under Content")
 	assert(#class(card, "UIPadding") == 1 and pad.Parent ~= card)
-	children:Add(D.TextLabel { Name = "C", Text = "c" })
+	children:Add(TextLabel { Name = "C", Text = "c" })
 	assert(H.find(card, "C") ~= nil, "Slot CRUD reaches the card")
 	q.dispose(card)
 	H.assertNoDebugOutput("children")
@@ -166,8 +169,8 @@ H.section("disabled interactive cards: the composited canon colors (Card.kt), fo
 end)
 
 H.section("dispose destroys everything (card tree with a pressed ripple)", function()
-	local root = D.Frame {
-		Card({ OnClick = function() end, Children = q.Slot({ D.TextLabel { Text = "x" } } :: { Instance }) }),
+	local root = Frame {
+		Card({ OnClick = function() end, Children = q.Slot({ TextLabel { Text = "x" } } :: { Instance }) }),
 		Card({ Variant = "Outlined" }),
 	}
 	local all = H.findAll(root, function()
@@ -194,7 +197,7 @@ H.section("Divider: full, inset, middle inset, vertical", function()
 	local mid = Divider({ Inset = "Both" })
 	local mp = class(mid, "UIPadding")[1]
 	assert(mp.PaddingLeft == UDim.new(0, 16) and mp.PaddingRight == UDim.new(0, 16))
-	local vert = Divider({ Orientation = "Vertical", Inset = "Both", LayoutOrder = 2, Modifier = D.Modifier.Frame():Size(UDim2.new(0, 2, 1, 0)) })
+	local vert = Divider({ Orientation = "Vertical", Inset = "Both", LayoutOrder = 2, Modifier = FrameModifier():Size(UDim2.new(0, 2, 1, 0)) })
 	local vp = class(vert, "UIPadding")[1]
 	assert(vert.Size == UDim2.new(0, 2, 1, 0) and vert.LayoutOrder == 2, "caller Modifier wins")
 	assert(vp.PaddingTop == UDim.new(0, 16) and vp.PaddingBottom == UDim.new(0, 16) and vp.PaddingLeft == UDim.new(0, 0))

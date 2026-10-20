@@ -3,7 +3,7 @@
 	RobloxFactory(module) — mutates a quad-base module instance into the
 	Roblox backend: installs the lifetime primitives + `nativeClaim`
 	(LifetimeHandle.luau) and the M5 engine ops (EngineOps.luau), then
-	returns the typed extension (`RobloxExtension` — `D`) for the
+	returns the typed extension (`RobloxExtension` — the class-first surface, 3.4.0) for the
 	`UseProvider` merge.
 
 	Passing this factory to `AddPlugin` (instead of `UseProvider`) is UB — the
@@ -23,7 +23,6 @@
 local installTween = require("./Tween") -- 2026-09-07: Tween is a quad-roblox value (tween-plan "패키지 경계")
 local installLifetime = require("./LifetimeHandle")
 local installEngineOps = require("./EngineOps")
-local InitDeclaration = require("./Declaration")
 local installPropertyHandler = require("./Handlers/Property")
 local installInstanceChildHandler = require("./Handlers/InstanceChild")
 local installEventHandler = require("./Handlers/Event")
@@ -50,19 +49,13 @@ local function RobloxFactory(module: any): any
 	installInstanceShorthandHandler(module) -- UICorner/UIPadding/UIPaddingOffset/UIScale — PropertyHandler보다 높은 우선순위(H-138)
 	OnChangeModule.install(module)
 	OnEventModule.install(module)
-	-- `H-299` → `H-305` (d′): `Declaration`은 module.Declaration 직접 대입이 아니라
-	-- `UseProvider`의 확장 병합으로 실린다 — 반환 테이블이 그 확장이고,
-	-- `RobloxExtension` 타입(init.luau)이 이 모양의 정본. 사용법은 동일:
-	-- `local D = quad.Declaration`(병합 후) 또는 반환 교집합에서 바로 `q.Declaration`.
-	-- `OnChange`(M10)도 같은 병합으로 실린다 — 디스크립터 팩토리는 모듈
-	-- 레벨, 타입은 생성 `OnChangeFn`(init.luau `RobloxExtension`)이 입힌다.
-	-- [2026-10-20 3.4.0 unit 4] the curried surface coexists with `Declaration` until the switch (unit 6): the same-name
-	-- `OnChange`/`Out` take both shapes (Surface/Runtime.luau; base's `q.Modifier` takes the one-string form itself), typed as
-	-- the old ones until then
+	-- `H-299` → `H-305` (d′): the surface rides `UseProvider`'s extension merge (not direct module writes) — the returned
+	-- table is that extension and `RobloxExtension` (init.luau) types it. [2026-10-20 3.4.0] the class-first curried
+	-- surface (`Surface/Runtime.luau`) replaced the generated `Declaration`; the descriptor stages are module-level.
 	local surface = SurfaceRuntime.install(module, OnChangeModule.makeOnChange, OnChangeModule.makeOut, OnEventModule.OnEvent)
 	return {
-		Declaration = InitDeclaration(module),
 		Elem = surface.Elem,
+		Modifier = surface.Modifier,
 		Spread = surface.Spread,
 		Mapper = surface.Mapper,
 		OnEvent = surface.OnEvent,

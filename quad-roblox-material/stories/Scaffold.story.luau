@@ -7,7 +7,12 @@ local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local StoryParts = require("./StoryParts")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ScrollingFrame = q.Elem "ScrollingFrame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local TextButtonModifier = q.Modifier "TextButton"
 local themed = StoryParts.themed
 
 type Config = { TopBar: string, Behavior: string, BottomBar: string, Fab: string, FabPosition: string }
@@ -76,10 +81,10 @@ return StoryKit.story({
 				fab = Material.FAB({ Theme = theme, Icon = Material.Icons.asset("edit") or "", Label = if cfg.Fab == "Extended" then "Compose" else nil, OnClick = snack })
 			end
 			local rows: { Instance } = {
-				Material.Button({ Theme = theme, Label = "Show snackbar", Variant = "Tonal", OnClick = snack, Modifier = D.Modifier.TextButton():LayoutOrder(0) }),
+				Material.Button({ Theme = theme, Label = "Show snackbar", Variant = "Tonal", OnClick = snack, Modifier = TextButtonModifier():LayoutOrder(0) }),
 			}
 			for i = 1, 30 do
-				table.insert(rows, D.TextLabel {
+				table.insert(rows, TextLabel {
 					Name = "Row",
 					Material.Text.Label("BodyLarge"),
 					Size = UDim2.new(1, 0, 0, 48),
@@ -90,7 +95,7 @@ return StoryKit.story({
 					Text = `List item {i}`,
 				})
 			end
-			return D.Frame {
+			return Frame {
 				Name = "Screen",
 				Size = UDim2.fromOffset(400, 520),
 				BackgroundTransparency = 1,
@@ -103,7 +108,7 @@ return StoryKit.story({
 					FloatingActionButtonPosition = cfg.FabPosition :: Material.FabPosition,
 					SnackbarHost = layer.Layer,
 					Content = function(innerPadding: Material.PaddingValues): GuiObject
-						return D.ScrollingFrame {
+						return ScrollingFrame {
 							Name = "Content",
 							Size = UDim2.fromScale(1, 1),
 							BackgroundTransparency = 1,
@@ -112,8 +117,8 @@ return StoryKit.story({
 							ScrollBarThickness = 4,
 							ScrollBarImageColor3 = theme.Color.OnSurface,
 							behavior.Hook,
-							D.UIPadding { PaddingTop = innerPadding.Top, PaddingLeft = UDim.new(0, 16) },
-							D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder },
+							UIPadding { PaddingTop = innerPadding.Top, PaddingLeft = UDim.new(0, 16) },
+							UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder },
 							q.Slot<<Instance>>(rows),
 						}
 					end,

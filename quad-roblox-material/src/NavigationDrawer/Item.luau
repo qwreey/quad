@@ -51,11 +51,19 @@ local Interactive = require("../Interactive")
 local IconView = require("../IconView")
 local Style = require("../Button/Style")
 local Destination = require("../Navigation/Destination")
-local D = q.Declaration
-local itemsName = D.Modifier.Frame():Name("NavigationDrawerItems")
-local dividerName = D.Modifier.Frame():Name("NavigationDrawerDivider")
-local headlineName = D.Modifier.TextLabel():Name("NavigationDrawerHeadline")
-local itemName = D.Modifier.TextButton():Name("NavigationDrawerItem")
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
+local UIFlexItem = q.Elem "UIFlexItem"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local FrameModifier = q.Modifier "Frame"
+local TextButtonModifier = q.Modifier "TextButton"
+local TextLabelModifier = q.Modifier "TextLabel"
+local itemsName = FrameModifier():Name("NavigationDrawerItems")
+local dividerName = FrameModifier():Name("NavigationDrawerDivider")
+local headlineName = TextLabelModifier():Name("NavigationDrawerHeadline")
+local itemName = TextButtonModifier():Name("NavigationDrawerItem")
 
 export type ItemProps = {
 	read Label: string | q.State<string>,
@@ -65,7 +73,7 @@ export type ItemProps = {
 	read OnClick: (() -> ())?,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.TextButtonModifier?,
+	read Modifier: q.ModifierInto<TextButton>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -73,14 +81,14 @@ export type HeadlineProps = {
 	read Text: string | q.State<string>,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.TextLabelModifier?,
+	read Modifier: q.ModifierInto<TextLabel>?,
 	read Hooks: Util.Hooks?,
 }
 
 export type DividerProps = {
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -93,7 +101,7 @@ export type ItemsProps<K> = {
 	read OnClick: ((key: K) -> ())?,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -103,14 +111,14 @@ local ICON = 24 -- NavigationDrawerTokens.IconSize
 local HEADLINE_HEIGHT = 48 -- listPreferredItemHeightSmall
 local INSET = 28 -- m3_navigation_menu_headline / divider_horizontal_padding
 
-local headlineBase = D.Modifier.TextLabel():Size(UDim2.new(1, 0, 0, HEADLINE_HEIGHT))
-local dividerBase = D.Modifier.Frame():Size(UDim2.new(1, 0, 0, 1 + 2 * 8))
-local itemsBase = D.Modifier.Frame():Size(UDim2.fromScale(1, 0)):AutomaticSize(Enum.AutomaticSize.Y)
+local headlineBase = TextLabelModifier():Size(UDim2.new(1, 0, 0, HEADLINE_HEIGHT))
+local dividerBase = FrameModifier():Size(UDim2.new(1, 0, 0, 1 + 2 * 8))
+local itemsBase = FrameModifier():Size(UDim2.fromScale(1, 0)):AutomaticSize(Enum.AutomaticSize.Y)
 
 local labelStyle = Text.Label("LabelLarge")
 local headlineStyle = Text.Label("TitleSmall")
 
-local itemBase = D.Modifier.TextButton()
+local itemBase = TextButtonModifier()
 	:Size(UDim2.new(1, -2 * ITEM_PADDING, 0, HEIGHT))
 	:BorderSizePixel(0)
 	:AutoButtonColor(false)
@@ -132,7 +140,7 @@ local function NavigationDrawerItem(props: ItemProps): TextButton
 	end
 	local badge: Instance? = nil
 	if props.Badge ~= nil then
-		badge = D.TextLabel {
+		badge = TextLabel {
 			Name = "Badge",
 			labelStyle,
 			Size = UDim2.fromScale(0, 1),
@@ -145,7 +153,7 @@ local function NavigationDrawerItem(props: ItemProps): TextButton
 		}
 	end
 
-	return D.TextButton {
+	return TextButton {
 		itemName,
 		itemBase,
 		props.Modifier or q.None,
@@ -160,20 +168,20 @@ local function NavigationDrawerItem(props: ItemProps): TextButton
 			end
 		end,
 		fx.Layer,
-		D.Frame {
+		Frame {
 			Name = "Content",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIPadding { PaddingLeft = UDim.new(0, 16), PaddingRight = UDim.new(0, 24) },
-			D.UIListLayout {
+			UIPadding { PaddingLeft = UDim.new(0, 16), PaddingRight = UDim.new(0, 24) },
+			UIListLayout {
 				FillDirection = Enum.FillDirection.Horizontal,
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				VerticalAlignment = Enum.VerticalAlignment.Center,
 				Padding = UDim.new(0, 12),
 			},
 			icon or q.None,
-			D.TextLabel {
+			TextLabel {
 				Name = "Label",
 				labelStyle,
 				Size = UDim2.fromScale(0, 1),
@@ -184,7 +192,7 @@ local function NavigationDrawerItem(props: ItemProps): TextButton
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextTruncate = Enum.TextTruncate.AtEnd,
 				LayoutOrder = 2,
-				D.UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
+				UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
 			},
 			badge or q.None,
 		},
@@ -194,7 +202,7 @@ end
 
 local function NavigationDrawerHeadline(props: HeadlineProps): TextLabel
 	local theme = Theme.resolve(props.Theme)
-	return D.TextLabel {
+	return TextLabel {
 		headlineName,
 		headlineStyle,
 		headlineBase,
@@ -206,7 +214,7 @@ local function NavigationDrawerHeadline(props: HeadlineProps): TextLabel
 		TextTruncate = Enum.TextTruncate.AtEnd,
 		LayoutOrder = props.LayoutOrder,
 		props.Modifier or q.None,
-		D.UIPadding { PaddingLeft = UDim.new(0, INSET), PaddingRight = UDim.new(0, INSET) },
+		UIPadding { PaddingLeft = UDim.new(0, INSET), PaddingRight = UDim.new(0, INSET) },
 		table.unpack(Util.hooks(props.Hooks)),
 	}
 end
@@ -214,20 +222,20 @@ end
 local function NavigationDrawerDivider(props: DividerProps?): Frame
 	local p: DividerProps = props or {}
 	local theme = Theme.resolve(p.Theme)
-	return D.Frame {
+	return Frame {
 		dividerName,
 		dividerBase,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		LayoutOrder = p.LayoutOrder,
 		p.Modifier or q.None,
-		D.UIPadding {
+		UIPadding {
 			PaddingLeft = UDim.new(0, INSET),
 			PaddingRight = UDim.new(0, INSET),
 			PaddingTop = UDim.new(0, 8),
 			PaddingBottom = UDim.new(0, 8),
 		},
-		D.Frame {
+		Frame {
 			Name = "Line",
 			Size = UDim2.fromScale(1, 1),
 			BorderSizePixel = 0,
@@ -265,14 +273,14 @@ local function NavigationDrawerItems<K>(props: ItemsProps<K>): Frame
 			)
 		end
 	end
-	return D.Frame {
+	return Frame {
 		itemsName,
 		itemsBase,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		LayoutOrder = props.LayoutOrder,
 		props.Modifier or q.None,
-		D.UIListLayout {
+		UIListLayout {
 			FillDirection = Enum.FillDirection.Vertical,
 			HorizontalAlignment = Enum.HorizontalAlignment.Center,
 			SortOrder = Enum.SortOrder.LayoutOrder,

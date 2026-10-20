@@ -30,7 +30,13 @@ local Interaction = require("../../Interaction")
 local Style = require("../../Button/Style")
 local Text = require("../../Text")
 local Model = require("./Model")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextBox = q.Elem "TextBox"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
+local UIFlexItem = q.Elem "UIFlexItem"
+local UIListLayout = q.Elem "UIListLayout"
+local UIStroke = q.Elem "UIStroke"
 
 export type Props = {
 	read Model: Model.Model,
@@ -62,7 +68,7 @@ local function Segment(model: Model.Model, theme: Theme.Theme, mode: Model.Mode,
 			})
 	end, ix.Hovered, ix.Focused, ix.Pressed)
 	local textColor = Style.choose(selected, R.OnSecondaryContainer, R.OnSurface):Apply(Style.animation())
-	return D.TextButton {
+	return TextButton {
 		Name = `Mode{mode}`,
 		ix.Hook,
 		toggleStyle,
@@ -82,14 +88,14 @@ local function Segment(model: Model.Model, theme: Theme.Theme, mode: Model.Mode,
 end
 
 local function Toggle(model: Model.Model, theme: Theme.Theme)
-	return D.Frame {
+	return Frame {
 		Name = "ModeToggle",
 		Size = UDim2.new(1, 0, 0, 40),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		LayoutOrder = 1,
 		UICorner = Tokens.Shape.corner("Full"),
-		D.UIStroke {
+		UIStroke {
 			Name = "Outline",
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 			Color = theme.Color.Outline,
@@ -125,21 +131,21 @@ local function NumberBox(model: Model.Model, theme: Theme.Theme, i: number, refs
 		end
 	end
 
-	return D.Frame {
+	return Frame {
 		Name = `Box{i}`,
 		Size = UDim2.fromScale(0, 1),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		LayoutOrder = i,
 		UICorner = Tokens.Shape.corner("ExtraSmall"),
-		D.UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
-		D.UIStroke {
+		UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
+		UIStroke {
 			Name = "Outline",
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 			Color = outline,
 			Thickness = thickness,
 		},
-		D.TextLabel {
+		TextLabel {
 			Name = "Label",
 			labelStyle,
 			Position = UDim2.fromOffset(10, 0),
@@ -149,11 +155,11 @@ local function NumberBox(model: Model.Model, theme: Theme.Theme, i: number, refs
 			Text = model.fieldLabel(i),
 			TextColor3 = theme.Color.OnSurfaceVariant,
 		},
-		D.TextBox {
+		TextBox {
 			Name = `Channel{i}`,
 			boxStyle,
 			refs[i],
-			q.OnChange("Text", function(v: string)
+			q.OnChange "TextBox" "Text" (function(v: string)
 				if string.find(v, "\t", 1, true) then
 					-- Tab arrives as a character: drop it (republish so the bound Text loses it) and move on
 					buffer:Set((string.gsub(v, "\t", "")))
@@ -203,13 +209,13 @@ local function Row(model: Model.Model, theme: Theme.Theme)
 		q.PreRef(nil :: TextBox?),
 		q.PreRef(nil :: TextBox?),
 	}
-	return D.Frame {
+	return Frame {
 		Name = "ChannelRow",
 		Size = UDim2.new(1, 0, 0, 40),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		LayoutOrder = 2,
-		D.UIListLayout {
+		UIListLayout {
 			FillDirection = Enum.FillDirection.Horizontal,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = UDim.new(0, 8),
@@ -222,14 +228,14 @@ end
 
 local function Fields(props: Props)
 	local theme = Theme.resolve(props.Theme)
-	return D.Frame {
+	return Frame {
 		Name = "Channels",
 		LayoutOrder = props.LayoutOrder or 0,
 		Size = UDim2.fromScale(1, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIListLayout {
+		UIListLayout {
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = UDim.new(0, 8),
 		},

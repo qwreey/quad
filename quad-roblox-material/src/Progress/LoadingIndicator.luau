@@ -29,15 +29,17 @@ local q = require("../Quad")
 local Theme = require("../Theme")
 local Util = require("../Util")
 local Loop = require("./Loop")
-local D = q.Declaration
-local indicatorName = D.Modifier.Frame():Name("LoadingIndicator")
+local Frame = q.Elem "Frame"
+local UICorner = q.Elem "UICorner"
+local FrameModifier = q.Modifier "Frame"
+local indicatorName = FrameModifier():Name("LoadingIndicator")
 
 export type Props = {
 	read Size: number?,
 	read Contained: boolean?,
 	read Visible: (boolean | q.State<boolean>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -102,7 +104,7 @@ local function LoadingIndicator(props: Props): Frame
 	local frames: { GuiObject } = {}
 	local corners: { UICorner } = {}
 	local function shapeFrame(i: number): Frame
-		return D.Frame {
+		return Frame {
 			Name = "Shape" .. i,
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.fromScale(0.5, 0.5),
@@ -112,7 +114,7 @@ local function LoadingIndicator(props: Props): Frame
 			Util.preHook(function(inst)
 				frames[i] = inst
 			end),
-			D.UICorner {
+			UICorner {
 				CornerRadius = UDim.new(KEYS[1].c, 0),
 				q.PreRef(nil :: UICorner?):Callback(function(c: UICorner?)
 					if c ~= nil then
@@ -140,9 +142,9 @@ local function LoadingIndicator(props: Props): Frame
 		end
 	end)
 
-	return D.Frame {
+	return Frame {
 		indicatorName,
-		D.Modifier.Frame():Size(UDim2.fromOffset(size, size)):BorderSizePixel(0),
+		FrameModifier():Size(UDim2.fromOffset(size, size)):BorderSizePixel(0),
 		props.Modifier or q.None,
 		BackgroundColor3 = theme.Color.PrimaryContainer,
 		BackgroundTransparency = if contained then 0 else 1,

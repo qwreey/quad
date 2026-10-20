@@ -2,7 +2,7 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Interaction = require("../src/Interaction")
 local Input = require("../src/Input")
 
@@ -61,7 +61,7 @@ H.section("a drag follows the swapped-in listener", function()
 			table.insert(log, `end {x},{y} {cancelled}`)
 		end,
 	})
-	local f = D.Frame({ drag.Hook })
+	local f = Frame({ drag.Hook })
 	H.fire(f, "InputBegan", mouseDown(10, 20))
 	assert(drag.Dragging:Get() == true)
 	assert(count(listener.InputChanged) == 1 and count(listener.InputEnded) == 1)
@@ -118,7 +118,7 @@ H.section("a listener without MouseMoved works; restore reaches the engine again
 	assert(Input.service():GetMouseLocation() == Vector2.zero)
 	Input.use(nil)
 	local drag = Interaction.drag({ OnMove = function() end })
-	local f = D.Frame({ drag.Hook })
+	local f = Frame({ drag.Hook })
 	H.fire(f, "InputBegan", mouseDown(1, 1))
 	assert(count(UIS.InputChanged) >= 1 and count(l.InputChanged) == 0)
 	UIS.InputEnded:Fire(mouseUp(1, 1), false)

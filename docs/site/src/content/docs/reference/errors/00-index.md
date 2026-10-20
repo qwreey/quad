@@ -21,7 +21,7 @@ Main.client.luau:12: Quad0042 Slot:List: duplicate key "a"
 | [Ref·Observer·Effect·훅](/reference/errors/04-ref-observer-effect/) | `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/생명주기 훅 |
 | [Tag·Attr](/reference/errors/05-tag-attr/) | `Tag`/`Attr`/`AttrKey`/타입드 Attr |
 | [모듈·백엔드 계약](/reference/errors/06-module-backend/) | `UseProvider`/플러그인/`Brand`/`ModuleIdentity`/미설치 op 스텁/`bindLifetime`·`unbindLifetime`/`Relate`/`Claim`(base) |
-| [Roblox — Declaration·Claim·핸들러](/reference/errors/07-roblox/) | `D.*`/`Mapper`/`Claim`/`Property`/`Event`/`OnChange`/`Out`/숏핸드 |
+| [Roblox — Elem·Claim·핸들러](/reference/errors/07-roblox/) | `Elem`/`Modifier`/`Spread`/`Mapper`/`Claim`/`Property`/`Event`/`OnChange`/`OnEvent`/`Out`/숏핸드 |
 | [Roblox — Tween·Animate](/reference/errors/08-roblox-tween/) | `Tween`/`Animate` |
 | [슈거](/reference/errors/09-sugar/) | `Fallback`/`Traceback`(버전 검사 `type_version_check`는 타입 시점 진단이라 이 번호 체계 밖) |
 

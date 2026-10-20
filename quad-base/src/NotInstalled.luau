@@ -28,7 +28,7 @@ local function notInstalled(name: string, what: string, hint: string?): (...any)
 	local stub = function(...: any)
 		Err.errorBefore(
 			`Quad0108 quad: {name} is not available - no backend has installed {what} `
-				.. `(install a provider with quad:UseProvider - a bare Quad.New() has none{hint or ""})`,
+				.. `(install a provider with quad:UseProvider - a bare Quad.NewModule() has none{hint or ""})`,
 			SURFACE
 		)
 	end

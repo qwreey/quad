@@ -78,8 +78,12 @@ local q = require("./Quad")
 local Theme = require("./Theme")
 local Util = require("./Util")
 local Top = require("./AppBar/Top")
-local D = q.Declaration
-local scaffoldName = D.Modifier.Frame():Name("Scaffold")
+local Frame = q.Elem "Frame"
+local UIFlexItem = q.Elem "UIFlexItem"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local FrameModifier = q.Modifier "Frame"
+local scaffoldName = FrameModifier():Name("Scaffold")
 
 export type FabPosition = "Start" | "Center" | "End" | "EndOverlay"
 
@@ -96,7 +100,7 @@ export type Props = {
 	read FloatingActionButtonPosition: FabPosition?,
 	read ContainerColor: (Color3 | q.State<Color3>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -109,7 +113,7 @@ local ALIGN: { [FabPosition]: Enum.HorizontalAlignment } = {
 	EndOverlay = Enum.HorizontalAlignment.Right,
 }
 
-local baseModifier = D.Modifier.Frame():Size(UDim2.fromScale(1, 1)):BorderSizePixel(0)
+local baseModifier = FrameModifier():Size(UDim2.fromScale(1, 1)):BorderSizePixel(0)
 
 -- a bar's current height (+ its expanded height when it is a kit top app bar)
 local function heightOf(bar: GuiObject): (q.State<number>, number?)
@@ -179,12 +183,12 @@ local function Scaffold(props: Props): Frame
 		end
 		local stack: { Instance } = {}
 		if fab ~= nil then
-			table.insert(stack, D.UIPadding {
+			table.insert(stack, UIPadding {
 				PaddingLeft = UDim.new(0, FAB_SPACING),
 				PaddingRight = UDim.new(0, FAB_SPACING),
 				PaddingBottom = UDim.new(0, FAB_SPACING),
 			})
-			table.insert(stack, D.UIListLayout {
+			table.insert(stack, UIListLayout {
 				FillDirection = Enum.FillDirection.Vertical,
 				VerticalAlignment = Enum.VerticalAlignment.Bottom,
 				HorizontalAlignment = align,
@@ -192,13 +196,13 @@ local function Scaffold(props: Props): Frame
 			})
 			if snackbar ~= nil then
 				-- above the FAB: fills the height the FAB leaves (LayoutOrder -1 sorts it before a FAB at the default 0)
-				table.insert(stack, D.Frame {
+				table.insert(stack, Frame {
 					Name = "SnackbarHost",
 					Size = UDim2.fromScale(1, 0),
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
 					LayoutOrder = -1,
-					D.UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
+					UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
 					snackbar,
 				})
 			end
@@ -206,7 +210,7 @@ local function Scaffold(props: Props): Frame
 		elseif snackbar ~= nil then
 			table.insert(stack, snackbar)
 		end
-		floating = D.Frame {
+		floating = Frame {
 			Name = "Floating",
 			Size = size,
 			BackgroundTransparency = 1,
@@ -216,12 +220,12 @@ local function Scaffold(props: Props): Frame
 		}
 	end
 
-	return D.Frame {
+	return Frame {
 		scaffoldName,
 		baseModifier,
 		BackgroundColor3 = props.ContainerColor or theme.Color.Background,
 		props.Modifier or q.None,
-		D.Frame {
+		Frame {
 			Name = "Body",
 			Position = bodyPosition,
 			Size = bodySize,

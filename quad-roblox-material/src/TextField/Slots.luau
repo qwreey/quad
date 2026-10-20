@@ -23,7 +23,8 @@ local Icons = require("../Icons")
 local Style = require("../Button/Style")
 local Text = require("../Text")
 local Ctx = require("./Ctx")
-local D = q.Declaration
+local ImageLabel = q.Elem "ImageLabel"
+local TextLabel = q.Elem "TextLabel"
 
 local bodyLarge = Text.Label("BodyLarge")
 
@@ -37,7 +38,7 @@ local function leading(c: Ctx.Ctx): Instance?
 		return nil
 	end
 	local R = c.Theme.Raw
-	return D.ImageLabel {
+	return ImageLabel {
 		Name = "LeadingIcon",
 		AnchorPoint = Vector2.new(0, 0.5),
 		Position = UDim2.new(0, 12, 0, iconY(c)),
@@ -57,7 +58,7 @@ local function trailing(c: Ctx.Ctx): (Instance?, Instance?)
 	-- the trailing slot yields to the error mark while Error is on (M3: the error icon replaces the trailing icon)
 	local notError: q.State<boolean> = Util.negate(c.Error)
 	if props.TrailingIcon ~= nil then
-		el = D.ImageLabel {
+		el = ImageLabel {
 			Name = "TrailingIcon",
 			AnchorPoint = Vector2.new(1, 0.5),
 			Position = UDim2.new(1, -12, 0, iconY(c)),
@@ -70,7 +71,7 @@ local function trailing(c: Ctx.Ctx): (Instance?, Instance?)
 			Visible = notError,
 		}
 	elseif props.TrailingGlyph ~= nil then
-		el = D.TextLabel {
+		el = TextLabel {
 			Name = "TrailingGlyph",
 			AnchorPoint = Vector2.new(1, 0.5),
 			Position = UDim2.new(1, -12, 0, iconY(c)),
@@ -89,7 +90,7 @@ local function trailing(c: Ctx.Ctx): (Instance?, Instance?)
 	-- error state is not color alone: a bold "!" mark in the trailing slot (only for fields that can enter the state)
 	local mark: Instance? = nil
 	if props.Error ~= nil then
-		mark = D.TextLabel {
+		mark = TextLabel {
 			Name = "ErrorMark",
 			AnchorPoint = Vector2.new(1, 0.5),
 			Position = UDim2.new(1, -12, 0, iconY(c)),
@@ -137,7 +138,7 @@ end
 -- `transparency`: `affixTransparency(c)`, built once and shared by the prefix and the suffix
 local function affix(c: Ctx.Ctx, name: string, text: string, transparency: Theme.Animated): Instance
 	local R = c.Theme.Raw
-	return D.TextLabel {
+	return TextLabel {
 		Name = name,
 		bodyLarge,
 		Size = UDim2.fromScale(0, 1),

@@ -36,9 +36,14 @@ local Util = require("./Util")
 local Interactive = require("./Interactive")
 local Style = require("./Button/Style")
 local ControlLabel = require("./ControlLabel")
-local D = q.Declaration
-local groupName = D.Modifier.Frame():Name("RadioGroup")
-local radioName = D.Modifier.TextButton():Name("Radio")
+local Frame = q.Elem "Frame"
+local ImageLabel = q.Elem "ImageLabel"
+local TextButton = q.Elem "TextButton"
+local UIListLayout = q.Elem "UIListLayout"
+local FrameModifier = q.Modifier "Frame"
+local TextButtonModifier = q.Modifier "TextButton"
+local groupName = FrameModifier():Name("RadioGroup")
+local radioName = TextButtonModifier():Name("Radio")
 
 local RunService = game:GetService("RunService")
 
@@ -65,7 +70,7 @@ export type Props<T> = {
 	read OnChange: ((option: T) -> ())?,
 	read Label: (string | q.State<string>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.TextButtonModifier?,
+	read Modifier: q.ModifierInto<TextButton>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -79,7 +84,7 @@ export type GroupProps<T> = {
 	read Disabled: (boolean | q.State<boolean>)?,
 	read OnChange: ((option: T) -> ())?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -89,7 +94,7 @@ local FRAME = 40 -- px per frame in the sheet
 local LAST = 9 -- frames 0..9
 local STEP_TIME = 0.2 -- the whole 0 -> 9 run (the original's 0.2 s, linear)
 
-local baseModifier = D.Modifier.TextButton()
+local baseModifier = TextButtonModifier()
 	:Size(UDim2.fromOffset(48, 48))
 	:BackgroundTransparency(1)
 	:BorderSizePixel(0)
@@ -172,7 +177,7 @@ local function Radio<T>(props: Props<T>)
 	local tint = contentTransparency:Apply(Style.animation())
 
 	local hasLabel = props.Label ~= nil
-	return D.TextButton {
+	return TextButton {
 		radioName,
 		baseModifier,
 		if hasLabel then ControlLabel.host else q.None,
@@ -189,7 +194,7 @@ local function Radio<T>(props: Props<T>)
 				props.OnChange(option)
 			end
 		end,
-		D.Frame {
+		Frame {
 			Name = "Target",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = if hasLabel then ControlLabel.TargetPosition else UDim2.fromScale(0.5, 0.5),
@@ -197,7 +202,7 @@ local function Radio<T>(props: Props<T>)
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			fx.Layer,
-			D.ImageLabel {
+			ImageLabel {
 				Name = "Sprite",
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				Position = UDim2.fromScale(0.5, 0.5),
@@ -216,7 +221,7 @@ local function Radio<T>(props: Props<T>)
 	}
 end
 
-local baseGroup = D.Modifier.Frame():Size(UDim2.fromOffset(0, 0)):AutomaticSize(Enum.AutomaticSize.XY):BackgroundTransparency(1):BorderSizePixel(0)
+local baseGroup = FrameModifier():Size(UDim2.fromOffset(0, 0)):AutomaticSize(Enum.AutomaticSize.XY):BackgroundTransparency(1):BorderSizePixel(0)
 
 local function RadioGroup<T>(props: GroupProps<T>)
 	local theme = Theme.resolve(props.Theme)
@@ -243,16 +248,16 @@ local function RadioGroup<T>(props: GroupProps<T>)
 				Disabled = optDisabled,
 				OnChange = props.OnChange,
 				Theme = theme,
-				Modifier = D.Modifier.TextButton():LayoutOrder(i),
+				Modifier = TextButtonModifier():LayoutOrder(i),
 			})
 		)
 	end
 
-	return D.Frame {
+	return Frame {
 		groupName,
 		baseGroup,
 		props.Modifier or q.None,
-		D.UIListLayout {
+		UIListLayout {
 			FillDirection = if horizontal then Enum.FillDirection.Horizontal else Enum.FillDirection.Vertical,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			-- side by side, a gap between one row's text and the next radio (a column needs none)

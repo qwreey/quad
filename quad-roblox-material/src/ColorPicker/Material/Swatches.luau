@@ -31,7 +31,12 @@ local Text = require("../../Text")
 local Icons = require("../../Icons")
 local ColorModel = require("../ColorModel")
 local Model = require("./Model")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ImageButton = q.Elem "ImageButton"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local UIStroke = q.Elem "UIStroke"
 
 export type Props = {
 	read Model: Model.Model,
@@ -92,7 +97,7 @@ local function swatch(model: Model.Model, theme: Theme.Theme, color: Color3, ord
 		model.setColor(color)
 		model.remember()
 	end
-	local ring = D.UIStroke {
+	local ring = UIStroke {
 		Name = "Ring",
 		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 		Thickness = thickness:Apply(Style.animation()),
@@ -105,7 +110,7 @@ local function swatch(model: Model.Model, theme: Theme.Theme, color: Color3, ord
 		local checkTransparency: q.State<number> = selected:Compute(function(self)
 			return if self:Get() then 0 else 1
 		end)
-		return D.ImageButton {
+		return ImageButton {
 			Name = "Swatch",
 			ix.Hook,
 			AutoButtonColor = false,
@@ -126,7 +131,7 @@ local function swatch(model: Model.Model, theme: Theme.Theme, color: Color3, ord
 	local selectedText: q.State<string> = selected:Compute(function(self)
 		return if self:Get() then Icons.glyph("check") else ""
 	end)
-	return D.TextButton {
+	return TextButton {
 		Name = "Swatch",
 		ix.Hook,
 		AutoButtonColor = false,
@@ -181,7 +186,7 @@ local function Swatches(props: Props)
 	end)
 
 	local function label(text: string, order: number, visible: (q.State<boolean>)?)
-		return D.TextLabel {
+		return TextLabel {
 			Name = `{text}Label`,
 			labelStyle,
 			Size = UDim2.new(1, 0, 0, 16),
@@ -195,7 +200,7 @@ local function Swatches(props: Props)
 		}
 	end
 	local function wrap(name: string, order: number, visible: (q.State<boolean>)?, content: q.Slot<Instance>)
-		return D.Frame {
+		return Frame {
 			Name = name,
 			Size = UDim2.fromScale(1, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
@@ -203,7 +208,7 @@ local function Swatches(props: Props)
 			BorderSizePixel = 0,
 			LayoutOrder = order,
 			Visible = visible or true,
-			D.UIListLayout {
+			UIListLayout {
 				FillDirection = Enum.FillDirection.Horizontal,
 				Wraps = true,
 				SortOrder = Enum.SortOrder.LayoutOrder,
@@ -213,14 +218,14 @@ local function Swatches(props: Props)
 		}
 	end
 
-	return D.Frame {
+	return Frame {
 		Name = "Swatches",
 		LayoutOrder = props.LayoutOrder or 0,
 		Size = UDim2.fromScale(1, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIListLayout {
+		UIListLayout {
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = UDim.new(0, 6),
 		},

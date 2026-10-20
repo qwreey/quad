@@ -19,15 +19,16 @@ local q = require("./Quad")
 local Theme = require("./Theme")
 local Text = require("./Text")
 local Style = require("./Button/Style")
-local D = q.Declaration
+local TextLabel = q.Elem "TextLabel"
+local TextButtonModifier = q.Modifier "TextButton"
 
 local Slot = 48
 
-local host = D.Modifier.TextButton():Size(UDim2.fromOffset(0, Slot)):AutomaticSize(Enum.AutomaticSize.X)
+local host = TextButtonModifier():Size(UDim2.fromOffset(0, Slot)):AutomaticSize(Enum.AutomaticSize.X)
 local textStyle = Text.Label("BodyLarge")
 
 local function new(text: string | q.State<string>, theme: Theme.Theme, disabled: q.State<boolean>): TextLabel
-	return D.TextLabel {
+	return TextLabel {
 		Name = "Label",
 		textStyle,
 		Position = UDim2.fromOffset(Slot, 0),

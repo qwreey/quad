@@ -43,6 +43,10 @@ local m2 = FrameModifier():Visible(5) -- NEG setter value
 local g1 = GuiModifier():AsFrame():BackgroundTransparency(0.1) -- OK checked down-cast
 local f8 = Frame { m1, g1, GuiModifier() } -- OK same class and ancestors
 local f9 = Frame { LabelModifier() } -- NEG sibling-class Modifier
+local m3 = FrameModifier():Size(function(old) return old end) -- OK the stored value as-is goes back in
+local m4 = FrameModifier():Size(function(old) local _u: UDim2 = old; return nil end) -- NEG old may be a Tween/State/None
+local pk = FrameModifier():Peek<<UDim2>>("Size")
+local pkNeg: UDim2? = pk -- NEG Peek may return a Tween/State/None
 
 -- Spread
 local s1 = FrameSpread { Visible = true, LayoutOrder = 1 }

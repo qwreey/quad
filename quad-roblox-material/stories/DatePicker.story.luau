@@ -5,7 +5,10 @@
 local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local FrameModifier = q.Modifier "Frame"
 local StoryParts = require("./StoryParts")
 local themed = StoryParts.themed
 
@@ -25,7 +28,7 @@ local MIN = Calendar.date(2026, 9, 15)
 local MAX = Calendar.date(2026, 11, 20)
 
 local function text(theme: Material.Theme, value: string | q.State<string>, order: number): TextLabel
-	return D.TextLabel {
+	return TextLabel {
 		Material.Text.Label("BodyMedium"),
 		LayoutOrder = order,
 		Size = UDim2.fromOffset(740, 22),
@@ -68,12 +71,12 @@ return StoryKit.story({
 		end, c.FirstDayOfWeek, c.MinOn, c.MaxOn, c.UtcOffsetHours)
 
 		local calendars = StoryKit.rebuild<<Config>>(config, function(cfg: Config)
-			return D.Frame {
+			return Frame {
 				Name = "Calendars",
 				Size = UDim2.fromScale(1, 1),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIListLayout {
+				UIListLayout {
 					FillDirection = Enum.FillDirection.Horizontal,
 					SortOrder = Enum.SortOrder.LayoutOrder,
 					Padding = UDim.new(0, 20),
@@ -86,7 +89,7 @@ return StoryKit.story({
 					Min = cfg.Min,
 					Max = cfg.Max,
 					UtcOffset = cfg.UtcOffset,
-					Modifier = D.Modifier.Frame():LayoutOrder(1),
+					Modifier = FrameModifier():LayoutOrder(1),
 				}),
 				DatePicker.RangeDocked({
 					Theme = theme,
@@ -97,19 +100,19 @@ return StoryKit.story({
 					Min = cfg.Min,
 					Max = cfg.Max,
 					UtcOffset = cfg.UtcOffset,
-					Modifier = D.Modifier.Frame():LayoutOrder(2),
+					Modifier = FrameModifier():LayoutOrder(2),
 				}),
 			}
 		end, { Size = UDim2.fromOffset(740, 400), AutomaticSize = Enum.AutomaticSize.None, LayoutOrder = 1 })
 
-		return D.Frame {
+		return Frame {
 			follow,
 			Name = "DatePickerStory",
 			Size = UDim2.fromScale(1, 1),
 			BorderSizePixel = 0,
 			BackgroundColor3 = theme.Color.Surface,
 			UIPaddingOffset = 24,
-			D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12) },
+			UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12) },
 			calendars,
 			text(theme, docked:Compute(function(self: q.StateData<Date?>): string
 				return `Docked: {iso(self:Get())}`

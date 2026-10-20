@@ -12,13 +12,18 @@
 
 local Quad = require("../Quad")
 local q = Quad
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ImageLabel = q.Elem "ImageLabel"
+local TextButton = q.Elem "TextButton"
+local UICorner = q.Elem "UICorner"
+local UIPadding = q.Elem "UIPadding"
+local TextButtonModifier = q.Modifier "TextButton"
 -- the host Name is an argument here; a closed set of names, so each builds one Modifier
-local hostNames: { [string]: Quad.TextButtonModifier } = {}
-local function hostName(name: string): Quad.TextButtonModifier
+local hostNames: { [string]: Quad.Modifier<TextButton> } = {}
+local function hostName(name: string): Quad.Modifier<TextButton>
 	local m = hostNames[name]
 	if m == nil then
-		m = D.Modifier.TextButton():Name(name)
+		m = TextButtonModifier():Name(name)
 		hostNames[name] = m
 	end
 	return m
@@ -38,7 +43,7 @@ export type ChoiceProps = {
 	Round: boolean,
 	OnActivate: () -> (),
 	Style: Style,
-	Modifier: Quad.TextButtonModifier?,
+	Modifier: Quad.ModifierInto<TextButton>?,
 	Hooks: { any }?,
 }
 
@@ -68,7 +73,7 @@ function Choice.build(props: ChoiceProps): TextButton
 
 	local mark: Instance
 	if props.Round then
-		mark = D.Frame({
+		mark = Frame({
 			Name = "Dot",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.fromScale(0.5, 0.5),
@@ -77,10 +82,10 @@ function Choice.build(props: ChoiceProps): TextButton
 			BackgroundTransparency = style.Transparency.CheckMark,
 			BorderSizePixel = 0,
 			Visible = props.Selected,
-			D.UICorner({ CornerRadius = UDim.new(0.5, 0) }),
+			UICorner({ CornerRadius = UDim.new(0.5, 0) }),
 		})
 	else
-		mark = D.ImageLabel({
+		mark = ImageLabel({
 			Name = "Check",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.fromScale(0.5, 0.5),
@@ -94,7 +99,7 @@ function Choice.build(props: ChoiceProps): TextButton
 		})
 	end
 
-	return D.TextButton({
+	return TextButton({
 		hostName(props.Name),
 		props.Modifier or q.None,
 		hover.Hook,
@@ -114,8 +119,8 @@ function Choice.build(props: ChoiceProps): TextButton
 				onActivate()
 			end
 		end,
-		D.UIPadding({ PaddingLeft = indent, PaddingTop = padY, PaddingBottom = padY }),
-		D.Frame({
+		UIPadding({ PaddingLeft = indent, PaddingTop = padY, PaddingBottom = padY }),
+		Frame({
 			Name = "Box",
 			AnchorPoint = Vector2.new(0, 0.5),
 			Position = boxPos,

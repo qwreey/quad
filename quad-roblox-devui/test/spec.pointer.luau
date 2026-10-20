@@ -5,7 +5,9 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
 local Devui = require("../src")
 local Interaction = require("../src/Interaction")
 local Overlay = require("../src/Overlay")
@@ -35,9 +37,9 @@ local function fixture()
 	local function win(name: string, x: number, y: number): Win
 		local slot = manager:Register()
 		local hover = Interaction.hover()
-		local row = D.TextButton({ hover.Hook, Name = name .. "Row", Text = "" })
-		local sink = D.TextButton({ Name = "ClickSink", ZIndex = 0, Text = "" })
-		local root = D.Frame({ slot.Hook, Name = name, ZIndex = slot.ZIndex, sink, row })
+		local row = TextButton({ hover.Hook, Name = name .. "Row", Text = "" })
+		local sink = TextButton({ Name = "ClickSink", ZIndex = 0, Text = "" })
+		local root = Frame({ slot.Hook, Name = name, ZIndex = slot.ZIndex, sink, row })
 		H.setAbs(root, x, y, 200, 100)
 		H.setAbs(sink, x, y, 200, 100)
 		H.setAbs(row, x + 10, y + 10, 100, 20)
@@ -90,7 +92,7 @@ H.section("hover and tooltip: an open popup's click-outside catcher covers every
 	H.setMouse(20, 20)
 	H.fire(a.Row, "MouseEnter", 20, 20)
 	assert(a.Hover.Hovered:Get() == true)
-	local popup = o:Open({ Content = D.Frame({ Name = "Menu" }), Position = Vector2.new(300, 300) })
+	local popup = o:Open({ Content = Frame({ Name = "Menu" }), Position = Vector2.new(300, 300) })
 	H.setAbs(H.find(o.Layer, "Catcher") :: any, 0, 0, 1000, 1000)
 	H.advance(0)
 	assert(a.Hover.Hovered:Get() == false, "the catcher takes the click, so it takes the hover")
@@ -102,7 +104,7 @@ H.section("hover and tooltip: an open popup's click-outside catcher covers every
 	-- a tooltip waiting on a covered target does not show
 	local b = win("B", 50, 0)
 	local tip = Tooltip.hook({ Text = "hint", Overlay = o })
-	local target = D.TextButton({ tip.Hook, Name = "Target", Text = "" })
+	local target = TextButton({ tip.Hook, Name = "Target", Text = "" })
 	H.setAbs(target, 60, 10, 20, 20)
 	target.Parent = a.Root
 	H.setMouse(65, 15)
@@ -128,7 +130,7 @@ H.section("press-to-front: through a tooltip raises the window; a popup row or a
 	local b = win("B", 50, 0)
 	b.Slot:Focus()
 	-- a tooltip-like popup (no catcher, takes no input) over A only
-	local label = D.TextLabel({ Name = "Hint", Text = "hint" })
+	local label = TextLabel({ Name = "Hint", Text = "hint" })
 	local tipPopup = o:Open({ Content = label, Position = Vector2.new(0, 0), CloseOnClickOutside = false })
 	H.setAbs(label, 0, 0, 40, 40)
 	pressOn(UIS.InputBegan, 20, 20)
@@ -137,8 +139,8 @@ H.section("press-to-front: through a tooltip raises the window; a popup row or a
 
 	-- a popup without catcher that holds a button (a submenu) over B: the press is the popup's
 	b.Slot:Focus()
-	local rowBtn = D.TextButton({ Name = "Item", Text = "" })
-	local sub = o:Open({ Content = D.Frame({ rowBtn }), Position = Vector2.new(0, 0), CloseOnClickOutside = false })
+	local rowBtn = TextButton({ Name = "Item", Text = "" })
+	local sub = o:Open({ Content = Frame({ rowBtn }), Position = Vector2.new(0, 0), CloseOnClickOutside = false })
 	H.setAbs(rowBtn, 0, 0, 40, 40)
 	pressOn(UIS.InputBegan, 20, 20)
 	assert(manager.Focused:Get() == b.Slot.Id, "a press on a popup's button changes nothing")
@@ -148,7 +150,7 @@ H.section("press-to-front: through a tooltip raises the window; a popup row or a
 	local hud = Instance.new("ScreenGui")
 	hud.DisplayOrder = 10
 	hud.Parent = pg
-	local hudButton = D.TextButton({ Name = "Hud", Text = "" })
+	local hudButton = TextButton({ Name = "Hud", Text = "" })
 	H.setAbs(hudButton, 0, 0, 40, 40)
 	hudButton.Parent = hud
 	pressOn(UIS.InputBegan, 20, 20)
@@ -196,11 +198,11 @@ H.section("no PlayerGui (story host): hover is the engine's MouseEnter; a toolti
 	local slotA = manager:Register()
 	local slotB = manager:Register()
 	local hover = Interaction.hover()
-	local row = D.TextButton({ hover.Hook, Text = "" })
+	local row = TextButton({ hover.Hook, Text = "" })
 	local container = Instance.new("ScreenGui")
 	container.Parent = Instance.new("Folder") -- placed, but not in a PlayerGui (a plugin widget stand-in)
-	local rootA = D.Frame({ slotA.Hook, ZIndex = slotA.ZIndex, row })
-	local rootB = D.Frame({ slotB.Hook, ZIndex = slotB.ZIndex })
+	local rootA = Frame({ slotA.Hook, ZIndex = slotA.ZIndex, row })
+	local rootB = Frame({ slotB.Hook, ZIndex = slotB.ZIndex })
 	rootA.Parent = container
 	rootB.Parent = container
 	H.setAbs(rootA, 0, 0, 200, 100)
@@ -211,7 +213,7 @@ H.section("no PlayerGui (story host): hover is the engine's MouseEnter; a toolti
 	slotB:Focus()
 	local o = Overlay.new()
 	o.Layer.Parent = container
-	local label = D.TextLabel({ Text = "hint" })
+	local label = TextLabel({ Text = "hint" })
 	local p = o:Open({ Content = label, Position = Vector2.new(0, 0), CloseOnClickOutside = false })
 	H.setAbs(o.Layer, 0, 0, 1000, 1000)
 	H.setAbs(H.find(o.Layer, "PopupHolder") :: any, 0, 0, 40, 40)

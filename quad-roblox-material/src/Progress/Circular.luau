@@ -123,8 +123,10 @@ local Tokens = require("../Tokens")
 local Theme = require("../Theme")
 local Util = require("../Util")
 local Loop = require("./Loop")
-local D = q.Declaration
-local circularName = D.Modifier.Frame():Name("CircularProgress")
+local Frame = q.Elem "Frame"
+local ImageLabel = q.Elem "ImageLabel"
+local FrameModifier = q.Modifier "Frame"
+local circularName = FrameModifier():Name("CircularProgress")
 
 export type Props = {
 	read Value: (number | q.State<number>)?,
@@ -132,7 +134,7 @@ export type Props = {
 	read Thickness: number?,
 	read Visible: (boolean | q.State<boolean>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -237,7 +239,7 @@ local function newArc(prefix: string, color: Theme.Animated, z: number, thick: n
 	local list: { Instance } = {}
 	local pieces: { [number]: ImageLabel } = {}
 	for bit = if step == 1 then 0 else 1, 8 do
-		local piece = D.ImageLabel {
+		local piece = ImageLabel {
 			Name = prefix .. tostring(bit32.lshift(1, bit)),
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
@@ -254,7 +256,7 @@ local function newArc(prefix: string, color: Theme.Animated, z: number, thick: n
 		table.insert(list, piece)
 	end
 	local function cap(name: string): Frame
-		return D.Frame {
+		return Frame {
 			Name = name,
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Size = UDim2.fromScale(ratio, ratio),
@@ -350,7 +352,7 @@ local function CircularProgress(props: Props): Frame
 	local indicator, indicatorParts = newArc("Arc", theme.Color.Primary, 2, thick, step)
 	local tree: { [any]: any } = {
 		circularName,
-		D.Modifier.Frame():Size(UDim2.fromOffset(size, size)):BackgroundTransparency(1):BorderSizePixel(0),
+		FrameModifier():Size(UDim2.fromOffset(size, size)):BackgroundTransparency(1):BorderSizePixel(0),
 		props.Modifier or q.None,
 		Visible = visible,
 	}
@@ -361,7 +363,7 @@ local function CircularProgress(props: Props): Frame
 		for _, h in Util.hooks(props.Hooks) do
 			table.insert(tree, h)
 		end
-		return D.Frame(tree :: any)
+		return Frame(tree :: any)
 	end
 
 	if props.Value == nil then

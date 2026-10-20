@@ -55,8 +55,15 @@
 
 local Quad = require("./Quad")
 local q = Quad
-local D = q.Declaration
-local windowName = D.Modifier.Frame():Name("Window")
+local Frame = q.Elem "Frame"
+local ImageButton = q.Elem "ImageButton"
+local ScrollingFrame = q.Elem "ScrollingFrame"
+local TextButton = q.Elem "TextButton"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local UIStroke = q.Elem "UIStroke"
+local FrameModifier = q.Modifier "Frame"
+local windowName = FrameModifier():Name("Window")
 local Interaction = require("./Interaction")
 local Style = require("./Style")
 local Util = require("./Util")
@@ -89,7 +96,7 @@ export type WindowProps = {
 	read MinSize: Vector2?,
 	read Manager: Manager.Manager?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 local function Window(props: WindowProps): Frame
@@ -289,7 +296,7 @@ local function Window(props: WindowProps): Frame
 			end)
 		else q.None
 
-	local built = D.Frame({
+	local built = Frame({
 		windowName,
 		raiseOnOpen,
 		focusRequest,
@@ -306,7 +313,7 @@ local function Window(props: WindowProps): Frame
 		BackgroundTransparency = rootAlpha,
 		BorderSizePixel = 0,
 		UICorner = style.Metrics.WindowRounding,
-		D.UIStroke({
+		UIStroke({
 			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 			Thickness = strokeThickness,
 			Color = style.Color.Border,
@@ -315,7 +322,7 @@ local function Window(props: WindowProps): Frame
 		-- a press on the window's empty area must not fall through to a window beneath: a plain Frame / ScrollingFrame
 		-- passes a click on to the GuiButton under it (`Active` does not stop it), only a GuiButton sinks it. Direct
 		-- child at ZIndex 0 (the root lays nothing out), so every other child stays above it (user decision 2026-10-15).
-		D.TextButton({
+		TextButton({
 			Name = "ClickSink",
 			Size = UDim2.fromScale(1, 1),
 			ZIndex = 0,
@@ -337,7 +344,7 @@ local function Window(props: WindowProps): Frame
 				NoClose = props.NoClose == true,
 				Drag = titleDrag,
 			}),
-		D.ScrollingFrame({
+		ScrollingFrame({
 			Name = "Content",
 			Position = contentPos,
 			Size = contentSize,
@@ -351,14 +358,14 @@ local function Window(props: WindowProps): Frame
 			ScrollBarThickness = style.Metrics.ScrollbarSize,
 			ScrollBarImageColor3 = style.Color.ScrollbarGrab,
 			ScrollBarImageTransparency = style.Transparency.ScrollbarGrab,
-			if availableOut then q.Out("AbsoluteWindowSize", visibleArea) else q.None,
-			D.UIPadding({
+			if availableOut then q.Out "ScrollingFrame" "AbsoluteWindowSize" (visibleArea) else q.None,
+			UIPadding({
 				PaddingLeft = Util.pxX(style.Metrics.WindowPadding),
 				PaddingRight = Util.pxX(style.Metrics.WindowPadding),
 				PaddingTop = Util.pxY(style.Metrics.WindowPadding),
 				PaddingBottom = Util.pxY(style.Metrics.WindowPadding),
 			}),
-			D.UIListLayout({
+			UIListLayout({
 				FillDirection = Enum.FillDirection.Vertical,
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding = Util.pxY(style.Metrics.ItemSpacing),
@@ -374,7 +381,7 @@ local function Window(props: WindowProps): Frame
 			end
 		end),
 		if grip
-			then D.ImageButton({
+			then ImageButton({
 				gripHover.Hook,
 				grip.Hook,
 				Name = "ResizeGrip",

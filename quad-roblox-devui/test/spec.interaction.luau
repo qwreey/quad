@@ -2,7 +2,8 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
 local Interaction = require("../src/Interaction")
 
 local UIS = H.UserInputService
@@ -29,7 +30,7 @@ end
 
 H.section("hover / pressed states", function()
 	local hover = Interaction.hover()
-	local f = D.TextButton({ hover.Hook, Text = "x" })
+	local f = TextButton({ hover.Hook, Text = "x" })
 	assert(hover.Hovered:Get() == false and hover.Pressed:Get() == false)
 	H.fire(f, "MouseEnter", 1, 1)
 	assert(hover.Hovered:Get() == true)
@@ -53,7 +54,7 @@ end)
 
 H.section("pointerDown fires for primary input only", function()
 	local n = 0
-	local f = D.Frame({
+	local f = Frame({
 		Interaction.pointerDown(function()
 			n += 1
 		end),
@@ -79,7 +80,7 @@ H.section("mouse drag: begin, move deltas, end; connections only while dragging"
 			table.insert(log, `end {x},{y} d{dx},{dy} {cancelled}`)
 		end,
 	})
-	local f = D.Frame({ drag.Hook })
+	local f = Frame({ drag.Hook })
 	assert(conns() == base and drag.Dragging:Get() == false, "nothing global before a drag")
 
 	H.fire(f, "InputBegan", mouseDown(10, 20))
@@ -120,7 +121,7 @@ H.section("drag OnFrame: every frame while dragging (also without moves), with t
 			table.insert(frames, `{dt} {x},{y}`)
 		end,
 	})
-	local f = D.Frame({ drag.Hook })
+	local f = Frame({ drag.Hook })
 	H.advance(0.1)
 	assert(#frames == 0 and #(H.RunService.Heartbeat :: any).connections == beats0, "nothing before a drag")
 	H.fire(f, "InputBegan", mouseDown(10, 20))
@@ -145,7 +146,7 @@ H.section("touch drag tracks only its own touch", function()
 			moves += 1
 		end,
 	})
-	local f = D.Frame({ drag.Hook })
+	local f = Frame({ drag.Hook })
 	local touch = H.input({ UserInputType = Enum.UserInputType.Touch, Position = Vector3.new(0, 0, 0) })
 	local other = H.input({ UserInputType = Enum.UserInputType.Touch, Position = Vector3.new(50, 50, 0) })
 	H.fire(f, "InputBegan", touch)
@@ -169,7 +170,7 @@ H.section("focus loss and Cancel end the drag as cancelled", function()
 			table.insert(cancelled, c)
 		end,
 	})
-	local f = D.Frame({ drag.Hook })
+	local f = Frame({ drag.Hook })
 	H.fire(f, "InputBegan", mouseDown(0, 0))
 	UIS.WindowFocusReleased:Fire()
 	assert(cancelled[1] == true and conns() == base and drag.Dragging:Get() == false)
@@ -190,7 +191,7 @@ H.section("destroying the element mid-drag closes the connections (no OnEnd)", f
 			ended = true
 		end,
 	})
-	local f = D.Frame({ drag.Hook })
+	local f = Frame({ drag.Hook })
 	H.fire(f, "InputBegan", mouseDown(0, 0))
 	assert(conns() == base + 3)
 	q.dispose(f)
@@ -201,7 +202,7 @@ end)
 
 H.section("hover and pressed reset when the element turns invisible (no MouseLeave ever comes)", function()
 	local hover = Interaction.hover()
-	local f = D.TextButton({ hover.Hook, Text = "x" })
+	local f = TextButton({ hover.Hook, Text = "x" })
 	H.fire(f, "MouseEnter", 1, 1)
 	H.fire(f, "InputBegan", mouseDown(0, 0))
 	assert(hover.Hovered:Get() and hover.Pressed:Get())
@@ -223,7 +224,7 @@ H.section("drag Enabled = false: a press opens no global connection", function()
 			moved += 1
 		end,
 	})
-	local f = D.Frame({ drag.Hook })
+	local f = Frame({ drag.Hook })
 	H.fire(f, "InputBegan", mouseDown(0, 0))
 	assert(conns() == base and not drag.Dragging:Get(), "disabled: nothing opened")
 	on:Set(true)

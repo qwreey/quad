@@ -3,7 +3,8 @@ local H = require("./support/harness")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ScrollingFrame = q.Elem "ScrollingFrame"
 local Tokens = require("../src/Tokens")
 local Overlay = require("../src/Overlay")
 local ColorPicker = require("../src/ColorPicker")
@@ -259,10 +260,10 @@ end)
 
 H.section("D1 SV engage mode: A engages (pin four, thick outline), A / B disengage, B never dismisses the dialog meanwhile", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local dismissed = 0
 	local h = overlay:Open({
-		Content = function() return D.Frame { Name = "Content" } end,
+		Content = function() return Frame { Name = "Content" } end,
 		Scrim = true,
 		DismissOnEscape = true,
 		OnClose = function() dismissed += 1 end,
@@ -292,7 +293,7 @@ H.section("D1 SV engage mode: A engages (pin four, thick outline), A / B disenga
 	assert(dismissed == 1 and not h.IsOpen:Get(), "B dismisses once nothing is engaged any more")
 	H.fire(r.area, "SelectionLost")
 	-- selection loss while engaged releases the hold too
-	local h2 = overlay:Open({ Content = function() return D.Frame {} end, DismissOnEscape = true })
+	local h2 = overlay:Open({ Content = function() return Frame {} end, DismissOnEscape = true })
 	key(Enum.KeyCode.ButtonA)
 	H.fire(r.area, "SelectionGained")
 	key(Enum.KeyCode.Return, Enum.UserInputType.Keyboard)
@@ -533,7 +534,7 @@ end)
 
 H.section("modal: draft vs committed, OK / Cancel / scrim, overlay back to baseline", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local committed = q.Source(Color3.fromRGB(0, 0, 255))
 	local recent = q.Source({} :: { Color3 })
 	local confirms: { Color3 } = {}
@@ -660,7 +661,7 @@ end)
 
 H.section("R2-11 a drag inside a scrolling body switches its scrolling off for the drag and restores it (release, cancel, destroy)", function()
 	local r = rig(Color3.fromRGB(100, 40, 200))
-	local sf: any = D.ScrollingFrame { ScrollingEnabled = true, r.root }
+	local sf: any = ScrollingFrame { ScrollingEnabled = true, r.root }
 	assert(sf.ScrollingEnabled == true)
 	press(r.area, 150, 100)
 	assert(sf.ScrollingEnabled == false, "SV drag locks the body scroll")
@@ -680,7 +681,7 @@ end)
 -- modal style); the mock has no layout, so the card's laid-out AbsoluteSize is set by hand (ratio = natural height / width).
 H.section("modal on a small layer: the whole card scales to fit (no width cap, no scrolling body); the ripple under it", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	H.setAbs(overlay.Layer, 0, 0, 400, 360)
 	local handle = ColorPicker.Modal.open({ Value = Color3.fromRGB(0, 120, 255), Overlay = overlay })
 	local dlg: any = H.find(screen, "Dialog")

@@ -5,7 +5,7 @@
 local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local StoryParts = require("./StoryParts")
 local themed = StoryParts.themed
 
@@ -63,7 +63,7 @@ return StoryKit.story({
 					Content = content,
 				})
 			end
-			return D.Frame {
+			return Frame {
 				Name = "Screen",
 				Size = UDim2.fromOffset(640, 440),
 				BackgroundTransparency = 1,

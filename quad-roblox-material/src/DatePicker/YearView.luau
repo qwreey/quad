@@ -34,7 +34,7 @@ local Util = require("../Util")
 local Chip = require("./Chip")
 local View = require("./View")
 local Calendar = require("./Calendar")
-local D = q.Declaration
+local ScrollingFrame = q.Elem "ScrollingFrame"
 
 type State<T> = q.State<T>
 
@@ -143,7 +143,7 @@ local function new(o: Options): ScrollingFrame
 		end
 	end
 
-	return D.ScrollingFrame {
+	return ScrollingFrame {
 		Name = "Years",
 		ref,
 		Size = UDim2.fromOffset(COLS * COL_W, height),
@@ -154,7 +154,7 @@ local function new(o: Options): ScrollingFrame
 		ScrollBarThickness = 0,
 		ScrollingDirection = Enum.ScrollingDirection.Y,
 		Visible = o.Shown,
-		q.OnChange("CanvasPosition", function(pos: Vector2)
+		q.OnChange "ScrollingFrame" "CanvasPosition" (function(pos: Vector2)
 			firstRow:SetIfChanged(rowOf(pos.Y))
 		end),
 		Util.postHook(function()

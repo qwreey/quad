@@ -6,7 +6,9 @@ local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
 local StoryParts = require("./StoryParts")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local FrameModifier = q.Modifier "Frame"
+local TextButtonModifier = q.Modifier "TextButton"
 local themed = StoryParts.themed
 
 type Config = { Count: number, Arrangement: Material.ShortNavigationBarArrangement, IconPosition: Material.NavigationItemIconPosition, Badges: boolean }
@@ -57,11 +59,11 @@ return StoryKit.story({
 		end
 
 		local screens = StoryKit.rebuild<<Config>>(config, function(cfg: Config)
-			return D.Frame {
+			return Frame {
 				Name = "Screens",
 				Size = UDim2.fromOffset(640, 736),
 				BackgroundTransparency = 1,
-				D.Frame {
+				Frame {
 					Name = "BarScreen",
 					Size = UDim2.fromOffset(640, 160),
 					BackgroundColor3 = theme.Color.Surface,
@@ -72,10 +74,10 @@ return StoryKit.story({
 						Selected = page,
 						Arrangement = cfg.Arrangement,
 						IconPosition = cfg.IconPosition,
-						Modifier = D.Modifier.Frame():AnchorPoint(Vector2.new(0, 1)):Position(UDim2.fromScale(0, 1)),
+						Modifier = FrameModifier():AnchorPoint(Vector2.new(0, 1)):Position(UDim2.fromScale(0, 1)),
 					}),
 				},
-				D.Frame {
+				Frame {
 					Name = "RailScreen",
 					Position = UDim2.fromOffset(0, 176),
 					Size = UDim2.fromOffset(640, 560), -- six destinations of the collapsed rail fit (the page scrolls)
@@ -91,7 +93,7 @@ return StoryKit.story({
 							Icon = Material.Icons.asset("menu") or "",
 							TouchTarget = true,
 							OnClick = rail.Toggle,
-							Modifier = D.Modifier.TextButton():Position(UDim2.fromOffset(24, 0)),
+							Modifier = TextButtonModifier():Position(UDim2.fromOffset(24, 0)),
 						}),
 					}),
 				},
@@ -101,7 +103,7 @@ return StoryKit.story({
 		return StoryParts.scrollPage(theme, follow, {
 			StoryParts.caption(theme, StoryParts.show<<string>>(page, "Selected = ", StoryParts.tostr)),
 			screens,
-			D.Frame { Name = "Sync", Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1, sync },
+			Frame { Name = "Sync", Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1, sync },
 		})
 	end,
 })

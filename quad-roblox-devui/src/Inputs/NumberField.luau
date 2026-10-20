@@ -4,7 +4,7 @@
 	rows). One TextBox that SHOWS a number and reports user edits through `OnSet`; it owns no value itself, so the
 	vector widgets can feed it one component of a bigger value.
 
-		NumberField.Edit { Value, OnSet, Min?, Max?, Step?, Format?, Enabled, Style?, Modifier?, Name? }
+		NumberField.Edit { Value, OnSet, Min?, Max?, Step?, Format?, Enabled, Style?, Modifier?, Spread?, Name? }
 			type, then commit on FocusLost/Enter: parse -> clamp/snap -> `OnSet(n)`. Invalid text reverts to the current value.
 			Leaving the box with the text it was showing (focus without an edit) calls nothing.
 		NumberField.Drag { same + Speed? }
@@ -25,13 +25,16 @@
 
 local Quad = require("../Quad")
 local q = Quad
-local D = q.Declaration
+local TextBox = q.Elem "TextBox"
+local UIFlexItem = q.Elem "UIFlexItem"
+local UIPadding = q.Elem "UIPadding"
+local TextBoxModifier = q.Modifier "TextBox"
 -- the host Name is an argument here; a closed set of names, so each builds one Modifier
-local hostNames: { [string]: Quad.TextBoxModifier } = {}
-local function hostName(name: string): Quad.TextBoxModifier
+local hostNames: { [string]: Quad.Modifier<TextBox> } = {}
+local function hostName(name: string): Quad.Modifier<TextBox>
 	local m = hostNames[name]
 	if m == nil then
-		m = D.Modifier.TextBox():Name(name)
+		m = TextBoxModifier():Name(name)
 		hostNames[name] = m
 	end
 	return m
@@ -56,7 +59,9 @@ export type FieldProps = {
 	read Speed: number?,
 	read Enabled: State<boolean>,
 	read Style: Style?,
-	read Modifier: Quad.TextBoxModifier?,
+	read Modifier: Quad.ModifierInto<TextBox>?,
+	-- [3.4.0] anything the element table can hold, spread into the box (refs, hooks, OnEvent descriptors, properties)
+	read Spread: Quad.SpreadInto<TextBox>?,
 	read Name: string?,
 	read LayoutOrder: number?,
 }
@@ -161,9 +166,10 @@ local function build(props: FieldProps, dragging: boolean): TextBox
 		dragHook = drag.Hook
 	end
 
-	return D.TextBox({
+	return TextBox({
 		hostName(props.Name or (if dragging then "DragField" else "InputField")),
 		props.Modifier or q.None,
+		props.Spread or q.None,
 		boxRef,
 		hover.Hook,
 		dragHook,
@@ -189,9 +195,9 @@ local function build(props: FieldProps, dragging: boolean): TextBox
 			end
 		end,
 		UICorner = style.Metrics.FrameRounding,
-		D.UIPadding({ PaddingLeft = padX, PaddingRight = padX }),
+		UIPadding({ PaddingLeft = padX, PaddingRight = padX }),
 		Common.stroke(style),
-		D.UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill }),
+		UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill }),
 	})
 end
 

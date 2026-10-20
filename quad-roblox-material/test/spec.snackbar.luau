@@ -3,7 +3,7 @@ local H = require("./support/harness")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Tokens = require("../src/Tokens")
 local Overlay = require("../src/Overlay")
 local Snackbar = require("../src/Snackbar")
@@ -13,7 +13,7 @@ local L = Tokens.Color.Light
 
 local function setup()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	return overlay, screen
 end
 
@@ -225,7 +225,7 @@ H.section("the overlay layer dying while an item is up: timer cancelled, no stuc
 end)
 
 H.section("default host and theme", function()
-	local screen = D.Frame { Overlay.default().Layer }
+	local screen = Frame { Overlay.default().Layer }
 	local item = Snackbar.show({ Text = "default", Duration = 1 })
 	assert(H.find(screen, "Message").Text == "default")
 	item.Dismiss()
@@ -344,13 +344,13 @@ end)
 
 H.section("the default host follows Overlay.default(): rebuilt after its layer died", function()
 	local o1 = Overlay.default()
-	local s1 = D.Frame { o1.Layer }
+	local s1 = Frame { o1.Layer }
 	local h1 = Snackbar.default()
 	assert(Snackbar.default() == h1)
 	q.dispose(s1)
 	local o2 = Overlay.default()
 	assert(o2 ~= o1)
-	local s2 = D.Frame { o2.Layer }
+	local s2 = Frame { o2.Layer }
 	local h2 = Snackbar.default()
 	assert(h2 ~= h1, "a new host bound to the new overlay")
 	local item = Snackbar.show({ Text = "again", Duration = 1 })

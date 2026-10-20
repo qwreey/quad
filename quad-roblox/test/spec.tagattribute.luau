@@ -25,7 +25,7 @@ local SPEC_FILE = "spec.tagattribute.luau"
 ;(getfenv(installEngineOps) :: any).game = mock.gameShim({})
 
 local function newQuad()
-	return Quad.New():UseProvider(QuadRoblox)
+	return Quad.NewModule():UseProvider(QuadRoblox)
 end
 
 local function tagsOf(inst)
@@ -35,7 +35,7 @@ end
 print("=== 1. 설치 — 프로바이더가 세 op을 심는다(스텁 아님), H-238 태깅 ===")
 do
 	local q = newQuad()
-	local bare = Quad.New()
+	local bare = Quad.NewModule()
 	assert(q.Backend.addTag ~= bare.Backend.addTag and q.Backend.removeTag ~= bare.Backend.removeTag and q.Backend.setAttr ~= bare.Backend.setAttr, "ops replaced the base stubs")
 	local ok, err = pcall(function()
 		bare.Backend.addTag(Instance.new("Frame"), { "a" })

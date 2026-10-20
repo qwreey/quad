@@ -75,7 +75,7 @@ return function(ctx: Ctx): Instance
 					Label = Common.text<<Tag>>(tag, function(t: Tag)
 						return t.Name
 					end),
-					Modifier = q.Declaration.Modifier.TextButton():LayoutOrder(order),
+					Modifier = q.Modifier "TextButton"():LayoutOrder(order),
 					OnRemove = function()
 						removeTag(tag:Get().Id)
 					end,

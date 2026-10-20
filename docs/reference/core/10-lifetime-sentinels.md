@@ -10,7 +10,7 @@ description: None/Detach/KeyGone/Void 센티널, q.dispose, 매퍼 루트, 그�
 
 센티널은 전부 `table.freeze`된 테이블 하나이고 **판정은 언제나 신원 비교**(`v == q.None`)입니다. 타입에 붙어 있는 마커 필드(`__quadNone` 등)는 유니언 타입을 표현하기 위한 조언층일 뿐, 그걸로 판정하지 않습니다.
 
-이 페이지의 심볼: [q.None](#qnone) · [q.Detach](#qdetach) · [q.KeyGone](#qkeygone) · [q.Void](#qvoid) · [q.dispose(value)](#qdisposevalue) · [q.MapperRoot](#qmapperroot) · [q.newMapperClass(className)](#qnewmapperclassclassname) · [q.Backend.bindLifetime(inst, value)](#qbackendbindlifetimeinst-value) · [q.Backend.unbindLifetime(value)](#qbackendunbindlifetimevalue) · [q.Backend.canBound(value)](#qbackendcanboundvalue) · [q.Backend.canExecute(value)](#qbackendcanexecutevalue) · [q.Backend.isClaimed(inst)](#qbackendisclaimedinst)
+이 페이지의 심볼: [q.None](#qnone) · [q.Detach](#qdetach) · [q.KeyGone](#qkeygone) · [q.Void](#qvoid) · [q.dispose(value)](#qdisposevalue) · [q.MapperRoot](#qmapperroot) · [q.Backend.bindLifetime(inst, value)](#qbackendbindlifetimeinst-value) · [q.Backend.unbindLifetime(value)](#qbackendunbindlifetimevalue) · [q.Backend.canBound(value)](#qbackendcanboundvalue) · [q.Backend.canExecute(value)](#qbackendcanexecutevalue) · [q.Backend.isClaimed(inst)](#qbackendisclaimedinst)
 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
@@ -143,17 +143,7 @@ MapperRoot: MapperRoot
 -- export type MapperRoot = { read __quadMapperRoot: true }
 ```
 
-**동작** — `Claim`의 매퍼 디스크립터에서 "이 노드가 루트다"를 뜻하는 키 센티널. quad-roblox에서는 `D.Mapper.Root`로 다시 노출됩니다. 자세한 사용법은 [`../roblox/04-claim-mapper.md`](../roblox/04-claim-mapper.md).
-
-## `q.newMapperClass(className)`
-
-**시그니처**
-
-```luau
-newMapperClass: (className: string) -> (key: any) -> (props: any) -> MapperDescriptor
-```
-
-**동작** — 클래스 이름 하나를 받아 매퍼 디스크립터 팩토리를 만드는 제네릭 생성자. 백엔드의 `D.Mapper.<Class>` 별칭이 전부 여기서 나옵니다. 결과 디스크립터는 `q.isMapperDescriptor`가 참이고, `q.Claim(inst, desc)`에 넘깁니다 — [`../roblox/04-claim-mapper.md`](../roblox/04-claim-mapper.md).
+**동작** — `Claim`의 매퍼 디스크립터에서 "이 노드가 루트다"를 뜻하는 키 센티널. 루트 디스크립터의 키 자리에 그대로 씁니다(`q.Mapper "Frame" (q.MapperRoot) {…}`). 타입 없는 매퍼 팩토리는 [`q.Raw.Mapper`](./01-quad-module.md#qraw)(3.3까지 `q.newMapperClass`)입니다. 자세한 사용법은 [`../roblox/04-claim-mapper.md`](../roblox/04-claim-mapper.md).
 
 ## `q.Backend.bindLifetime(inst, value)`
 

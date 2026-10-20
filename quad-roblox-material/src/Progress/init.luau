@@ -42,15 +42,16 @@ local Loop = require("@self/Loop")
 local LoadingModule = require("@self/LoadingIndicator")
 local WavyModule = require("@self/Wavy")
 local CircularModule = require("@self/Circular")
-local D = q.Declaration
-local linearName = D.Modifier.Frame():Name("LinearProgress")
+local Frame = q.Elem "Frame"
+local FrameModifier = q.Modifier "Frame"
+local linearName = FrameModifier():Name("LinearProgress")
 
 
 export type LinearProps = {
 	read Value: (number | q.State<number>)?,
 	read Visible: (boolean | q.State<boolean>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -79,11 +80,11 @@ end
 
 -- ── Linear ───────────────────────────────────────────────────────────────────────────────────────────────────
 
-local linearBase = D.Modifier.Frame():Size(UDim2.new(1, 0, 0, LINEAR_HEIGHT)):BackgroundTransparency(1):BorderSizePixel(0)
+local linearBase = FrameModifier():Size(UDim2.new(1, 0, 0, LINEAR_HEIGHT)):BackgroundTransparency(1):BorderSizePixel(0)
 local full = UDim.new(0.5, 0)
 
 local function bar(name: string, color: Theme.Animated, onHost: (inst: GuiObject) -> ()): Frame
-	return D.Frame {
+	return Frame {
 		Name = name,
 		Size = UDim2.fromScale(0, 1),
 		Visible = false,
@@ -123,7 +124,7 @@ local function LinearProgress(props: LinearProps): Frame
 			shown1 = place(bar1, smooth((p - 0.15) / 0.6), smooth(p / 0.6), shown1)
 			shown2 = place(bar2, smooth((p - 0.55) / 0.45), smooth((p - 0.35) / 0.55), shown2)
 		end)
-		return D.Frame {
+		return Frame {
 			linearName,
 			linearBase,
 			props.Modifier or q.None,
@@ -161,19 +162,19 @@ local function LinearProgress(props: LinearProps): Frame
 		return self:Get() < 1
 	end)
 
-	return D.Frame {
+	return Frame {
 		linearName,
 		linearBase,
 		props.Modifier or q.None,
 		Visible = visible,
-		D.Frame {
+		Frame {
 			Name = "Indicator",
 			Size = indicatorSize:Apply(motion),
 			BorderSizePixel = 0,
 			BackgroundColor3 = theme.Color.Primary,
 			UICorner = full,
 		},
-		D.Frame {
+		Frame {
 			Name = "Track",
 			Position = trackPosition:Apply(motion),
 			Size = trackSize:Apply(motion),
@@ -181,7 +182,7 @@ local function LinearProgress(props: LinearProps): Frame
 			BorderSizePixel = 0,
 			BackgroundColor3 = theme.Color.SecondaryContainer,
 			UICorner = full,
-			D.Frame {
+			Frame {
 				Name = "Stop",
 				AnchorPoint = Vector2.new(1, 0.5),
 				Position = UDim2.fromScale(1, 0.5),

@@ -58,8 +58,16 @@ local Palette = require("./Palette")
 local Slots = require("./Slots")
 local Container = require("./Container")
 local Support = require("./Support")
-local D = q.Declaration
-local fieldName = D.Modifier.Frame():Name("TextField")
+local Frame = q.Elem "Frame"
+local TextBox = q.Elem "TextBox"
+local TextLabel = q.Elem "TextLabel"
+local UIFlexItem = q.Elem "UIFlexItem"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local FrameModifier = q.Modifier "Frame"
+local TextBoxModifier = q.Modifier "TextBox"
+local TextLabelModifier = q.Modifier "TextLabel"
+local fieldName = FrameModifier():Name("TextField")
 
 export type Variant = Ctx.Variant
 export type Props = Ctx.Props
@@ -68,7 +76,7 @@ export type Parts = Ctx.Parts
 local FieldHeight = 56
 local MultiLineHeight = 120
 
-local hostModifier = D.Modifier.Frame()
+local hostModifier = FrameModifier()
 	:Size(UDim2.fromOffset(210, 0))
 	:AutomaticSize(Enum.AutomaticSize.Y)
 	:BackgroundTransparency(1)
@@ -220,13 +228,13 @@ local function build(props: Props): Parts
 		local empty: q.State<boolean> = nonEmpty:Compute(function(self)
 			return not self:Get()
 		end)
-		local phMod = D.Modifier.TextLabel():TextXAlignment(Enum.TextXAlignment.Left)
+		local phMod = TextLabelModifier():TextXAlignment(Enum.TextXAlignment.Left)
 		if multi then
 			phMod = phMod:TextWrapped(true):TextYAlignment(Enum.TextYAlignment.Top)
 		else
 			phMod = phMod:TextWrapped(false):TextYAlignment(Enum.TextYAlignment.Center)
 		end
-		placeholder = D.TextLabel {
+		placeholder = TextLabel {
 			Name = "Placeholder",
 			placeholderStyle,
 			phMod,
@@ -241,7 +249,7 @@ local function build(props: Props): Parts
 		}
 	end
 
-	local inputMod = D.Modifier.TextBox():TextXAlignment(Enum.TextXAlignment.Left)
+	local inputMod = TextBoxModifier():TextXAlignment(Enum.TextXAlignment.Left)
 	if multi then
 		inputMod = inputMod:MultiLine(true):TextWrapped(true):TextYAlignment(Enum.TextYAlignment.Top)
 	else
@@ -264,7 +272,7 @@ local function build(props: Props): Parts
 		end
 	end
 
-	local input = D.TextBox {
+	local input = TextBox {
 		Name = "Input",
 		inputStyle,
 		inputMod,
@@ -279,12 +287,12 @@ local function build(props: Props): Parts
 		-- read-only: not focusable, does not sink input, so the container's press hook gets the click
 		Interactable = if readOnly then false else interactable,
 		LayoutOrder = 2,
-		D.UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
+		UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
 		placeholder or q.None,
 		if readOnly
 			then q.None
-			elseif maxLength ~= nil or onChange ~= nil then q.OnChange("Text", writeBack)
-			else q.Out("Text", value),
+			elseif maxLength ~= nil or onChange ~= nil then q.OnChange "TextBox" "Text" (writeBack)
+			else q.Out "TextBox" "Text" (value),
 		if readOnly
 			then q.None
 			else Util.preHook(function(inst: GuiObject)
@@ -317,18 +325,18 @@ local function build(props: Props): Parts
 	-- the prefix / suffix fade (Slots.luau AFFIX), shared by both
 	local affixFade = if props.Prefix ~= nil or props.Suffix ~= nil then Slots.affixTransparency(c) else nil
 
-	local row = D.Frame {
+	local row = Frame {
 		Name = "Row",
 		Size = UDim2.fromScale(1, 1),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIPadding {
+		UIPadding {
 			PaddingLeft = UDim.new(0, inset),
 			PaddingRight = rightPad,
 			PaddingTop = UDim.new(0, padTop),
 			PaddingBottom = UDim.new(0, padBottom),
 		},
-		D.UIListLayout {
+		UIListLayout {
 			FillDirection = Enum.FillDirection.Horizontal,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
 			SortOrder = Enum.SortOrder.LayoutOrder,
@@ -351,11 +359,11 @@ local function build(props: Props): Parts
 		ErrorMark = errorMark,
 	})
 
-	local host = D.Frame {
+	local host = Frame {
 		fieldName,
 		hostModifier,
 		props.Modifier or q.None,
-		D.UIListLayout {
+		UIListLayout {
 			FillDirection = Enum.FillDirection.Vertical,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 		},

@@ -52,7 +52,11 @@ local Interactive = require("./Interactive")
 local Text = require("./Text")
 local Style = require("./Button/Style")
 local ColorTokens = require("./Tokens/Color")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ImageButton = q.Elem "ImageButton"
+local ImageLabel = q.Elem "ImageLabel"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
 
 export type Options = {
 	Glyph: (string | q.State<string>)?,
@@ -102,7 +106,7 @@ local function new(o: Options): GuiButton
 	local iconSize = o.TextSize or 24
 	-- an image asset is drawn as a centered `ImageLabel` of icon size (never stretched over the hit area)
 	local function iconImage(asset: string | q.State<string>): Instance
-		return D.ImageLabel {
+		return ImageLabel {
 			Name = "Icon",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.fromScale(0.5, 0.5),
@@ -123,7 +127,7 @@ local function new(o: Options): GuiButton
 		if o.Asset ~= nil then
 			glyph = iconImage(o.Asset)
 		else
-			glyph = D.TextLabel {
+			glyph = TextLabel {
 				Name = "Label",
 				Text.Label(o.Role or "TitleLarge"),
 				Size = UDim2.fromScale(1, 1),
@@ -138,7 +142,7 @@ local function new(o: Options): GuiButton
 				TextYAlignment = Enum.TextYAlignment.Center,
 			}
 		end
-		return D.TextButton {
+		return TextButton {
 			Name = o.Name or "Glyph",
 			Size = hostSize,
 			Position = o.Position,
@@ -152,7 +156,7 @@ local function new(o: Options): GuiButton
 			Interactable = interactable,
 			Activated = activated,
 			hostHook,
-			D.Frame {
+			Frame {
 				Name = "Visual",
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				Position = UDim2.fromScale(0.5, 0.5),
@@ -168,7 +172,7 @@ local function new(o: Options): GuiButton
 	end
 
 	if o.Asset ~= nil then
-		return D.ImageButton {
+		return ImageButton {
 			Name = o.Name or "Glyph",
 			Size = hostSize,
 			Position = o.Position,
@@ -187,7 +191,7 @@ local function new(o: Options): GuiButton
 			table.unpack(hooks),
 		}
 	end
-	return D.TextButton {
+	return TextButton {
 		Name = o.Name or "Glyph",
 		style,
 		Size = hostSize,

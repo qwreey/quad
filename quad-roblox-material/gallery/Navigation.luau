@@ -21,7 +21,14 @@
 local q = require("./Quad")
 local Common = require("./Common")
 local Material = require("../src")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ScrollingFrame = q.Elem "ScrollingFrame"
+local TextLabel = q.Elem "TextLabel"
+local UIFlexItem = q.Elem "UIFlexItem"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local FrameModifier = q.Modifier "Frame"
+local TextButtonModifier = q.Modifier "TextButton"
 
 type Ctx = Common.Ctx
 
@@ -70,13 +77,13 @@ end
 -- a top bar inside the mock screen: an optional menu button, the selected destination as the title
 local function topBar(ctx: Ctx, page: q.State<string>, onMenu: (() -> ())?): Frame
 	local theme = ctx.Theme
-	return D.Frame {
+	return Frame {
 		Name = "TopBar",
 		Size = UDim2.new(1, 0, 0, 64),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		D.UIPadding { PaddingLeft = UDim.new(0, 4), PaddingRight = UDim.new(0, 16) },
-		D.UIListLayout {
+		UIPadding { PaddingLeft = UDim.new(0, 4), PaddingRight = UDim.new(0, 16) },
+		UIListLayout {
 			FillDirection = Enum.FillDirection.Horizontal,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
@@ -90,7 +97,7 @@ local function topBar(ctx: Ctx, page: q.State<string>, onMenu: (() -> ())?): Fra
 				TouchTarget = true,
 			})
 			else q.None,
-		D.TextLabel {
+		TextLabel {
 			Name = "Title",
 			titleStyle,
 			Size = UDim2.fromOffset(0, 28),
@@ -108,14 +115,14 @@ end
 
 local function screenContent(ctx: Ctx, page: q.State<string>, onMenu: (() -> ())?, note: string): q.Slot<Instance>
 	return q.Slot<<Instance>>({
-		D.Frame {
+		Frame {
 			Name = "Page",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8) },
+			UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8) },
 			topBar(ctx, page, onMenu),
-			D.Frame {
+			Frame {
 				Name = "Body",
 				Size = UDim2.fromScale(1, 0),
 				AutomaticSize = Enum.AutomaticSize.Y,
@@ -142,16 +149,16 @@ end
 -- a fill frame under the screen's bar / beside its rail with the selected page as a caption
 local function pageCaption(ctx: Ctx, page: q.State<string>, note: string, order: number?, prefix: string?): Frame
 	local label = prefix or "Page: "
-	return D.Frame {
+	return Frame {
 		Name = "Body",
 		Size = UDim2.fromScale(1, 1),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		LayoutOrder = order,
 		UIPaddingOffset = 16,
-		D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8) },
-		D.UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
-		D.TextLabel {
+		UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8) },
+		UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
+		TextLabel {
 			Name = "Title",
 			titleStyle,
 			Size = UDim2.new(1, 0, 0, 28),
@@ -175,7 +182,7 @@ local function scrollScreen(ctx: Ctx, name: string, behavior: Material.TopAppBar
 	for i = 1, 24 do
 		table.insert(
 			rows,
-			D.TextLabel {
+			TextLabel {
 				Name = "Row",
 				Material.Text.Label("BodyLarge"),
 				Size = UDim2.new(1, 0, 0, 48),
@@ -193,7 +200,7 @@ local function scrollScreen(ctx: Ctx, name: string, behavior: Material.TopAppBar
 			Theme = ctx.Theme,
 			TopBar = bar,
 			Content = function(innerPadding: Material.PaddingValues): GuiObject
-				return D.ScrollingFrame {
+				return ScrollingFrame {
 					Name = "Content",
 					Size = UDim2.fromScale(1, 1),
 					BackgroundTransparency = 1,
@@ -204,11 +211,11 @@ local function scrollScreen(ctx: Ctx, name: string, behavior: Material.TopAppBar
 					ScrollBarThickness = 4,
 					ScrollBarImageColor3 = ctx.Theme.Color.OnSurface,
 					behavior.Hook,
-					D.UIPadding {
+					UIPadding {
 						PaddingTop = innerPadding.Top,
 						PaddingLeft = UDim.new(0, 16),
 					},
-					D.UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder },
+					UIListLayout { SortOrder = Enum.SortOrder.LayoutOrder },
 					q.Slot<<Instance>>(rows),
 				}
 			end,
@@ -360,12 +367,12 @@ return function(ctx: Ctx): Instance
 	-- ── navigation rail ──
 	local railState = Material.WideNavigationRailState()
 	local rail = Common.Screen(ctx, "NavigationRailScreen", 640, 440, {
-		D.Frame {
+		Frame {
 			Name = "Row",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.UIListLayout { FillDirection = Enum.FillDirection.Horizontal, SortOrder = Enum.SortOrder.LayoutOrder },
+			UIListLayout { FillDirection = Enum.FillDirection.Horizontal, SortOrder = Enum.SortOrder.LayoutOrder },
 			Material.WideNavigationRail<<string>>({
 				Theme = theme,
 				State = railState,
@@ -378,7 +385,7 @@ return function(ctx: Ctx): Instance
 					TouchTarget = true,
 					ContentColor = theme.Raw.OnSurfaceVariant,
 					OnClick = railState.Toggle,
-					Modifier = D.Modifier.TextButton():Position(UDim2.fromOffset(24, 0)),
+					Modifier = TextButtonModifier():Position(UDim2.fromOffset(24, 0)),
 				}),
 				Items = {
 					{ Key = "home", Label = "Home", Icon = HOME },
@@ -518,7 +525,7 @@ return function(ctx: Ctx): Instance
 			Theme = theme,
 			Overlay = ctx.Overlay,
 			Expanded = toolbarExpanded,
-			Modifier = D.Modifier.Frame():AnchorPoint(Vector2.new(0.5, 1)):Position(UDim2.new(0.5, 0, 1, -16)),
+			Modifier = FrameModifier():AnchorPoint(Vector2.new(0.5, 1)):Position(UDim2.new(0.5, 0, 1, -16)),
 			LeadingContent = {
 				{ Icon = BOLD, Label = "Bold", Checked = bold, OnCheckedChange = function(v: boolean)
 					bold:Set(v)
@@ -533,7 +540,7 @@ return function(ctx: Ctx): Instance
 			Overlay = ctx.Overlay,
 			Expanded = toolbarExpanded,
 			Colors = "Vibrant",
-			Modifier = D.Modifier.Frame():AnchorPoint(Vector2.new(1, 0)):Position(UDim2.new(1, -16, 0, 16)),
+			Modifier = FrameModifier():AnchorPoint(Vector2.new(1, 0)):Position(UDim2.new(1, -16, 0, 16)),
 			Content = { { Icon = SEARCH, Label = "Search", OnClick = did("Search") }, { Icon = STAR, Label = "Star", OnClick = did("Star") } },
 			FloatingActionButton = { Icon = ADD, OnClick = did("Toolbar FAB") },
 		}),
@@ -541,7 +548,7 @@ return function(ctx: Ctx): Instance
 			Theme = theme,
 			Overlay = ctx.Overlay,
 			Expanded = toolbarExpanded,
-			Modifier = D.Modifier.Frame():Position(UDim2.fromOffset(16, 16)),
+			Modifier = FrameModifier():Position(UDim2.fromOffset(16, 16)),
 			Content = { { Icon = IMAGE, Label = "Image", OnClick = did("Image") }, { Icon = "edit", Label = "Edit", OnClick = did("Edit") } },
 			FloatingActionButton = { Icon = ADD, OnClick = did("FAB") },
 		}),

@@ -24,7 +24,8 @@ quad 모듈 인스턴스를 만들고, 초기화 함수·플러그인·백엔드
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.New()` | [core/01 — Quad 모듈](./core/01-quad-module.md#qnew) |
+| `q.NewModule()`(3.3까지 `q.New()`) | [core/01 — Quad 모듈](./core/01-quad-module.md#qnewmodule) |
+| `q.Raw` | [core/01](./core/01-quad-module.md#qraw) |
 | `q:RunInit(initFn)` | [core/01](./core/01-quad-module.md#qruninitinitfn) |
 | `q:AddPlugin(pluginFn)` | [core/01](./core/01-quad-module.md#qaddpluginpluginfn) |
 | `q:UseProvider(providerFn)` | [core/01](./core/01-quad-module.md#quseproviderproviderfn) · [roblox/01 — 설치](./roblox/01-install.md) |
@@ -140,19 +141,22 @@ quad가 만든 인스턴스를 손에 쥐는 세 종류의 참조와, 채워질 
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.Modifier(...)` | [core/08 — Modifier](./core/08-modifier.md) |
-| `mod:<Field>(value)` | [core/08](./core/08-modifier.md) · [roblox/03](./roblox/03-d-modifier.md) |
+| `q.Raw.Modifier(...)`(3.3까지 `q.Modifier(...)`) | [core/08 — Modifier](./core/08-modifier.md) |
+| `mod:<Field>(value)` | [core/08](./core/08-modifier.md) · [roblox/03](./roblox/03-modifier-spread.md#modfieldvalue) |
 | `mod:Peek<<T>>(key)` | [core/08](./core/08-modifier.md) |
 | `mod:Apply(factory)` | [core/08](./core/08-modifier.md) |
 | `mod:Overridden(...)` | [core/08](./core/08-modifier.md) |
 | `mod:As(name)` | [core/08](./core/08-modifier.md) |
-| `mod:As<Class>()` | [core/08](./core/08-modifier.md) · [roblox/03](./roblox/03-d-modifier.md) |
-| `q.Modifier.Overridden(...)` | [core/08](./core/08-modifier.md) |
-| `q.Modifier.TypedFactory<<T>>(name)` | [core/08](./core/08-modifier.md) |
-| `q.Modifier.DefineSubtype(parent, subtype)` | [core/08](./core/08-modifier.md) |
-| `D.Modifier.<Class>(...)` | [roblox/03 — D.Modifier](./roblox/03-d-modifier.md) |
-| `mod:As()` / `mod:As<<T>>()` | [roblox/03](./roblox/03-d-modifier.md#modas--modasname--modast) · [core/08](./core/08-modifier.md) |
-| `Into<Class>` / `<Class>Modifier` | [roblox/03](./roblox/03-d-modifier.md#intoclass--classmodifier) |
+| `mod:As<Class>()` | [core/08](./core/08-modifier.md) · [roblox/03](./roblox/03-modifier-spread.md#modasclass) |
+| `q.Raw.Modifier.Overridden(...)` | [core/08](./core/08-modifier.md) |
+| `q.Raw.Modifier.TypedFactory<<T>>(name)` | [core/08](./core/08-modifier.md) |
+| `q.Raw.Modifier.DefineSubtype(parent, subtype)` | [core/08](./core/08-modifier.md) |
+| `q.Modifier "Class" (...)`(3.3까지 `D.Modifier.<Class>(...)`) | [roblox/03 — Modifier와 Spread](./roblox/03-modifier-spread.md#qmodifier-class-) |
+| `mod:As()` / `mod:As<<T>>()` | [roblox/03](./roblox/03-modifier-spread.md#modas--modasname--modast) · [core/08](./core/08-modifier.md) |
+| `Modifier<C>` / `ModifierInto<C>`(3.3까지 `<Class>Modifier` / `Into<Class>`) | [roblox/03](./roblox/03-modifier-spread.md#modifierc--modifierintoc--spreadc--spreadintoc) |
+| `q.Spread "Class" (props)` / `spread:Append(other)` | [roblox/03](./roblox/03-modifier-spread.md#qspread-class-props) |
+| `Spread<C>` / `SpreadInto<C>` | [roblox/03](./roblox/03-modifier-spread.md#modifierc--modifierintoc--spreadc--spreadintoc) |
+| `q.Raw.Spread(t)` | [core/01](./core/01-quad-module.md#qraw) |
 
 ## Tag / Attr
 
@@ -188,7 +192,7 @@ quad가 만든 인스턴스를 손에 쥐는 세 종류의 참조와, 채워질 
 | `q.Void` | [core/10](./core/10-lifetime-sentinels.md#qvoid) |
 | `q.dispose(value)` | [core/10](./core/10-lifetime-sentinels.md#qdisposevalue) · [core/06](./core/06-slot.md) |
 | `q.MapperRoot` | [core/10](./core/10-lifetime-sentinels.md#qmapperroot) · [roblox/04](./roblox/04-claim-mapper.md) |
-| `q.newMapperClass(className)` | [core/10](./core/10-lifetime-sentinels.md#qnewmapperclassclassname) |
+| `q.Raw.Mapper(className)`(3.3까지 `q.newMapperClass`) | [core/01](./core/01-quad-module.md#qraw) |
 | `q.Backend.bindLifetime(inst, value)` | [core/10](./core/10-lifetime-sentinels.md#qbackendbindlifetimeinst-value) · [extend/01](./extend/01-backend-provider-contract.md) |
 | `q.Backend.unbindLifetime(value)` | [core/10](./core/10-lifetime-sentinels.md#qbackendunbindlifetimevalue) · [extend/01](./extend/01-backend-provider-contract.md) |
 | `q.Backend.canBound(value)` | [core/10](./core/10-lifetime-sentinels.md#qbackendcanboundvalue) · [extend/01](./extend/01-backend-provider-contract.md) |
@@ -248,15 +252,16 @@ quad가 만든 인스턴스를 손에 쥐는 세 종류의 참조와, 채워질 
 
 | 심볼 | 페이지 |
 |---|---|
-| `q.Declaration`(3.1.0까지는 `q.D`) | [roblox/01 — 설치](./roblox/01-install.md) · [roblox/02](./roblox/02-d.md#qdeclaration--네임스페이스와-생성되는-클래스) |
-| `D.<Class>(props)` | [roblox/02 — Declaration](./roblox/02-d.md) |
-| `D.New<<T>>(className)(props)` | [roblox/02](./roblox/02-d.md) |
-| 숏핸드 키 `UICorner` / `UIPadding` / `UIPaddingOffset` / `UIScale` | [roblox/02](./roblox/02-d.md#숏핸드-키-넷) |
-| `q.Claim(inst, descriptor)` | [roblox/04 — Claim·D.Mapper](./roblox/04-claim-mapper.md) |
-| `D.Mapper.<Class>(key)(props)` | [roblox/04](./roblox/04-claim-mapper.md) |
-| `D.Mapper.Root` | [roblox/04](./roblox/04-claim-mapper.md) |
-| `q.OnChange(name, fn)` | [roblox/05 — OnChange](./roblox/05-onchange.md) |
-| `q.Out(name, src)` | [roblox/05 — OnChange](./roblox/05-onchange.md#qoutname-src) |
+| `q.Elem "Class" (props)`(3.3까지 `q.Declaration` — `D.<Class>(props)`·`D.New`) | [roblox/02 — Elem](./roblox/02-elem.md#qelem-class-props) |
+| 숏핸드 키 `UICorner` / `UIPadding` / `UIPaddingOffset` / `UIScale` | [roblox/02](./roblox/02-elem.md#숏핸드-키-넷) |
+| `q.ForClasses<<Map>>()` | [roblox/02](./roblox/02-elem.md#qforclassesmap) |
+| `Props<C>` / `ElemCtor<C>` / `PropertyMap<C>` | [roblox/02](./roblox/02-elem.md#타입-이름--propsc--elemctorc--propertymapc) |
+| `q.Claim(inst, descriptor)` | [roblox/04 — Claim·Mapper](./roblox/04-claim-mapper.md) |
+| `q.Mapper "Class" (key)(props)`(3.3까지 `D.Mapper.<Class>`) | [roblox/04](./roblox/04-claim-mapper.md#qmapper-class-keyprops) |
+| `q.MapperRoot`(3.3까지 `D.Mapper.Root`도) | [roblox/04](./roblox/04-claim-mapper.md#qmapperroot) |
+| `q.OnChange "Class" "Name" (fn)` | [roblox/05 — OnChange·OnEvent·Out](./roblox/05-onchange.md#qonchange-class-name-fn) |
+| `q.OnEvent "Class" "Name" (fn)` | [roblox/05](./roblox/05-onchange.md#qonevent-class-name-fn) |
+| `q.Out "Class" "Name" (src)` | [roblox/05](./roblox/05-onchange.md#qout-class-name-src) |
 | `q.Tween(opts)` | [roblox/06 — Tween·Animate](./roblox/06-tween-animate.md) |
 | `tween:Mapped(fn)` | [roblox/06](./roblox/06-tween-animate.md) |
 | `q.Animate(info)` | [roblox/06](./roblox/06-tween-animate.md) |

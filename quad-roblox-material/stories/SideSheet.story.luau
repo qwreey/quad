@@ -6,7 +6,7 @@
 local Material = require("../src")
 local q = require("./Quad")
 local StoryKit = require("./StoryKit")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local StoryParts = require("./StoryParts")
 local themed = StoryParts.themed
 
@@ -33,7 +33,7 @@ return StoryKit.story({
 			return { Edge = self:Get(), Header = header:Get() == true, Detached = detached:Get() == true }
 		end, c.Header, c.Detached)
 		local standard = StoryKit.rebuild<<Config>>(config, function(cfg: Config)
-			return D.Frame {
+			return Frame {
 				Name = "Screen",
 				Size = UDim2.fromOffset(520, 320),
 				BackgroundColor3 = theme.Color.SurfaceContainerHigh,

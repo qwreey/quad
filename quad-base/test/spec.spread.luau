@@ -191,16 +191,17 @@ end
 print()
 print("=== 6. 스텁 — q.Elem 등 백엔드 계약 이름은 프로바이더 전엔 Quad0108, q.NewModule·q.Raw.Mapper가 있다 ===")
 do
-	local bare = require("../src").New()
-	for _, name in { "Elem", "Spread", "Mapper", "OnChange", "OnEvent", "Out", "ForClasses" } do
+	local bare = require("../src").NewModule()
+	for _, name in { "Elem", "Modifier", "Spread", "Mapper", "OnChange", "OnEvent", "Out", "ForClasses" } do
 		local ok, err = pcall(function()
 			bare[name]("Frame")
 		end)
 		assert(not ok and string.find(tostring(err), "Quad0108", 1, true) ~= nil and string.find(tostring(err), name, 1, true) ~= nil, name .. " stub: " .. tostring(err))
 	end
 	assert(type(bare.NewModule) == "function" and bare.NewModule ~= nil, "q.NewModule")
-	assert(type(bare.Raw.Mapper) == "function" and bare.Raw.Mapper == bare.newMapperClass, "q.Raw.Mapper is the mapper class factory")
-	assert(bare.Raw.Modifier == bare.Modifier, "q.Raw.Modifier is base's Modifier constructor")
+	assert(type(bare.Raw.Mapper) == "function" and (bare :: any).newMapperClass == nil, "q.Raw.Mapper is the mapper class factory (q.newMapperClass is gone)")
+	assert(getmetatable(bare.Raw.Modifier) ~= nil and bare.Raw.Modifier.TypedFactory ~= nil, "q.Raw.Modifier is base's Modifier constructor")
+	assert((bare :: any).New == nil, "q.New is gone (q.NewModule)")
 	print("PASS")
 end
 

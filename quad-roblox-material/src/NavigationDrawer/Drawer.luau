@@ -44,8 +44,11 @@ local Anchored = require("../Sheet/Anchored")
 local Slide = require("../Sheet/Slide")
 local Parts = require("../Sheet/Parts")
 local StateModule = require("./State")
-local D = q.Declaration
-local permanentName = D.Modifier.Frame():Name("PermanentNavigationDrawer")
+local Frame = q.Elem "Frame"
+local UIFlexItem = q.Elem "UIFlexItem"
+local UIListLayout = q.Elem "UIListLayout"
+local FrameModifier = q.Modifier "Frame"
+local permanentName = FrameModifier():Name("PermanentNavigationDrawer")
 
 export type ModalProps = {
 	read DrawerContent: Instance,
@@ -53,7 +56,7 @@ export type ModalProps = {
 	read DrawerState: StateModule.DrawerState?,
 	read GesturesEnabled: boolean?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -63,7 +66,7 @@ export type PermanentProps = {
 	read DrawerContent: Instance,
 	read Content: q.Slot<Instance>?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -71,7 +74,7 @@ local POSITIONAL = 0.5 -- DrawerPositionalThreshold
 local VELOCITY = 400 -- DrawerVelocityThreshold
 local DEFAULT_WIDTH = 360 -- DrawerDefaults.MaximumDrawerWidth
 
-local hostBase = D.Modifier.Frame():Size(UDim2.fromScale(1, 1)):BackgroundTransparency(1):BorderSizePixel(0):ClipsDescendants(true)
+local hostBase = FrameModifier():Size(UDim2.fromScale(1, 1)):BackgroundTransparency(1):BorderSizePixel(0):ClipsDescendants(true)
 
 local function contentWidth(content: Instance): number
 	local ok, size = pcall(function(): UDim2
@@ -144,7 +147,7 @@ local function slidingDrawer(props: ModalProps, modal: boolean): Frame
 		return nil :: any
 	end, rec.Target)
 
-	local holder = D.Frame {
+	local holder = Frame {
 		Name = "Drawer",
 		Size = UDim2.new(0, width, 1, 0),
 		Position = drawerPosition,
@@ -164,7 +167,7 @@ local function slidingDrawer(props: ModalProps, modal: boolean): Frame
 	local content: Instance
 	local scrim: Instance? = nil
 	if modal then
-		content = D.Frame {
+		content = Frame {
 			Name = "Content",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
@@ -196,7 +199,7 @@ local function slidingDrawer(props: ModalProps, modal: boolean): Frame
 			local p = self:Get()
 			return tween(UDim2.fromOffset(width + p.Offset, 0), p)
 		end)
-		content = D.Frame {
+		content = Frame {
 			Name = "Content",
 			Size = UDim2.fromScale(1, 1),
 			Position = contentPosition,
@@ -206,7 +209,7 @@ local function slidingDrawer(props: ModalProps, modal: boolean): Frame
 		}
 	end
 
-	return D.Frame {
+	return Frame {
 		Util.frameName(who),
 		hostBase,
 		props.Modifier or q.None,
@@ -234,19 +237,19 @@ local function PermanentNavigationDrawer(props: PermanentProps): Frame
 		error("PermanentNavigationDrawer: DrawerContent is required (a PermanentDrawerSheet)", 2)
 	end
 	local _ = Theme.resolve(props.Theme)
-	return D.Frame {
+	return Frame {
 		permanentName,
 		hostBase,
 		props.Modifier or q.None,
-		D.UIListLayout { FillDirection = Enum.FillDirection.Horizontal, SortOrder = Enum.SortOrder.LayoutOrder },
+		UIListLayout { FillDirection = Enum.FillDirection.Horizontal, SortOrder = Enum.SortOrder.LayoutOrder },
 		props.DrawerContent,
-		D.Frame {
+		Frame {
 			Name = "Content",
 			Size = UDim2.fromScale(0, 1),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			LayoutOrder = 2,
-			D.UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
+			UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
 			props.Content or q.None,
 		},
 		table.unpack(Util.hooks(props.Hooks)),

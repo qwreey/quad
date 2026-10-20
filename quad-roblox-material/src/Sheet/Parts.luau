@@ -52,7 +52,8 @@ local MotionTokens = require("../Tokens/Motion")
 local Theme = require("../Theme")
 local Util = require("../Util")
 local Interactive = require("../Interactive")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
 
 export type Motion = { Time: number, Style: Enum.EasingStyle, Direction: Enum.EasingDirection }
 
@@ -94,7 +95,7 @@ local function patch(side: Side, radius: number, color: any): Frame
 	else
 		size, position, anchor = UDim2.new(0, radius, 1, 0), UDim2.fromScale(1, 0), Vector2.new(1, 0)
 	end
-	return D.Frame {
+	return Frame {
 		Name = "CornerPatch",
 		Size = size,
 		Position = position,
@@ -152,7 +153,7 @@ local function dragHandle(o: HandleOptions): TextButton
 			return nil :: any
 		end, dragging)
 	end
-	return D.TextButton {
+	return TextButton {
 		Name = "DragHandle",
 		Size = UDim2.fromOffset(HANDLE_WIDTH, HANDLE_BOX),
 		AnchorPoint = Vector2.new(0.5, 0),
@@ -172,7 +173,7 @@ local function dragHandle(o: HandleOptions): TextButton
 			end
 		end,
 		fx.Layer,
-		D.Frame {
+		Frame {
 			Name = "Bar",
 			Size = UDim2.fromOffset(HANDLE_WIDTH, HANDLE_HEIGHT),
 			AnchorPoint = Vector2.new(0.5, 0.5),
@@ -195,7 +196,7 @@ export type ScrimOptions = {
 }
 
 local function scrim(o: ScrimOptions): TextButton
-	return D.TextButton {
+	return TextButton {
 		Name = "Scrim",
 		Size = UDim2.fromScale(1, 1),
 		Text = "",

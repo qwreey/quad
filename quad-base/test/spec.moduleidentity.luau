@@ -9,7 +9,7 @@
 local Quad = require("../src")
 local mock = require("./mock")
 
-local A, B = Quad.New(), Quad.New()
+local A, B = Quad.NewModule(), Quad.NewModule()
 mock.installLifetime(A)
 mock.installLifetime(B)
 local Instance = mock.Instance

@@ -3,7 +3,8 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local ScreenGui = q.Elem "ScreenGui"
 local Devui = require("../src")
 local Input = require("../src/Inputs")
 local Overlay = require("../src/Overlay")
@@ -130,11 +131,11 @@ end)
 
 H.section("R3 q.debug: the first Open under a ScreenGui that is not ZIndexBehavior Sibling says so, once", function()
 	local function openOnce(overlay: any)
-		overlay:Open({ Content = D.Frame({}), Position = Vector2.new(0, 0) }):Close()
+		overlay:Open({ Content = Frame({}), Position = Vector2.new(0, 0) }):Close()
 	end
 	H.resetOutput()
 	local global = Overlay.new()
-	local screenGlobal = D.ScreenGui({ Name = "App", ZIndexBehavior = Enum.ZIndexBehavior.Global, global.Layer })
+	local screenGlobal = ScreenGui({ Name = "App", ZIndexBehavior = Enum.ZIndexBehavior.Global, global.Layer })
 	openOnce(global)
 	local out = H.output()
 	assert(
@@ -145,21 +146,21 @@ H.section("R3 q.debug: the first Open under a ScreenGui that is not ZIndexBehavi
 	assert(#H.output() == 1, "once per overlay")
 	H.resetOutput()
 	local sibling = Overlay.new()
-	local screenSibling = D.ScreenGui({ ZIndexBehavior = Enum.ZIndexBehavior.Sibling, sibling.Layer })
+	local screenSibling = ScreenGui({ ZIndexBehavior = Enum.ZIndexBehavior.Sibling, sibling.Layer })
 	openOnce(sibling)
 	H.assertNoDebugOutput("Sibling")
 	-- a layer not under a ScreenGui yet keeps the check for later (only the "not mounted" line speaks)
 	local late = Overlay.new()
-	local holder = D.Frame({ late.Layer })
+	local holder = Frame({ late.Layer })
 	openOnce(late)
 	H.assertNoDebugOutput("no ScreenGui yet")
-	local screenLate = D.ScreenGui({ Name = "Late", ZIndexBehavior = Enum.ZIndexBehavior.Global, holder })
+	local screenLate = ScreenGui({ Name = "Late", ZIndexBehavior = Enum.ZIndexBehavior.Global, holder })
 	openOnce(late)
 	assert(#H.output() == 1, "said once the layer is under a ScreenGui")
 	H.resetOutput()
 	q.debug = false
 	local quiet = Overlay.new()
-	local screenQuiet = D.ScreenGui({ ZIndexBehavior = Enum.ZIndexBehavior.Global, quiet.Layer })
+	local screenQuiet = ScreenGui({ ZIndexBehavior = Enum.ZIndexBehavior.Global, quiet.Layer })
 	openOnce(quiet)
 	q.debug = true
 	H.assertNoDebugOutput("q.debug off")

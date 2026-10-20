@@ -14,7 +14,7 @@ local QuadRoblox = require("../src").QuadRoblox
 local Types = require("../src/types")
 local QuadTypes = require("../luau_packages/quad_types")
 local mock = require("../../quad-base/test/mock")
-local Quad = QuadBase.New():UseProvider(QuadRoblox)
+local Quad = QuadBase.NewModule():UseProvider(QuadRoblox)
 local Tween = Quad.Tween
 
 -- 타입 양성(strict — 본문 실행 없음): 생성자 제네릭 추론, `Mapped`의 U 전환,

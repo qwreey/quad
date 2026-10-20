@@ -3,7 +3,8 @@ local H = require("./support/harness")
 local ClickSink = require("./support/clicksink")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
 local Menu = require("../src/Menu")
 local Overlay = require("../src/Overlay")
 local Tokens = require("../src/Tokens")
@@ -13,9 +14,9 @@ local L = Tokens.Color.Light
 
 local function setup()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	H.setAbs(overlay.Layer, 0, 0, 800, 600)
-	local anchor = D.Frame { Name = "Anchor" }
+	local anchor = Frame { Name = "Anchor" }
 	H.setAbs(anchor, 100, 50, 200, 56)
 	return overlay, screen, anchor
 end
@@ -322,8 +323,8 @@ H.section("D5 Escape / B close the menu; items are the selection group; the prev
 	local log: { string } = {}
 	local reasons: { string } = {}
 	;(UIS :: any).GetLastInputType = function() return Enum.UserInputType.Gamepad1 end
-	local prev = D.TextButton { Name = "Prev" }
-	local prevHost = D.Frame { prev }
+	local prev = TextButton { Name = "Prev" }
+	local prevHost = Frame { prev }
 	GS.SelectedObject = prev
 	local handle = Menu.open({
 		Anchor = anchor,

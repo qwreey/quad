@@ -12,7 +12,7 @@ local Quad = require("../luau_packages/quad_base")
 local QuadRoblox = require("../src").QuadRoblox
 local mock = require("../../quad-base/test/mock")
 
-local q: any = Quad.New():UseProvider(QuadRoblox)
+local q: any = Quad.NewModule():UseProvider(QuadRoblox)
 local Animate = q.Animate
 
 print("=== 1. 기본 — :Apply(Animate{…}) → State<Tween<T>>, 옵션은 plain으로 실림, Value는 소스 값 ===")
@@ -196,7 +196,7 @@ print("=== round13 Q104·Q115·Q116 (a) (user decision 2026-09-28) — Animate g
 do
 	-- Q104: a State-only factory; on a Modifier / Tag it used to die inside quad (VM error)
 	local okM, errM = pcall(function()
-		return q.Modifier():Apply(Animate({ Time = 0.2 }))
+		return q.Raw.Modifier():Apply(Animate({ Time = 0.2 }))
 	end)
 	assert(not okM and string.find(tostring(errM), "Quad0252 Animate: Apply target must be a State (got Modifier)", 1, true) ~= nil, "Modifier target: " .. tostring(errM))
 	mock.assertBlamesUser(errM, "spec.animate.luau", "Modifier:Apply(Animate) blames the user's :Apply line")

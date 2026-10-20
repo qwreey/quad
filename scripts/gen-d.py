@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""gen-d.py — `quad-roblox/src/Declaration/init.luau` 코드 생성기 (M5 단위 ②).
+"""gen-d.py — 덤프 정규화 + 타입 함수가 읽는 정책 데이터 `quad-roblox/src/Surface/Data.luau` 생성기 (M5 단위 ②에서 시작;
+[2026-10-20 3.4.0] 옛 생성 `Declaration` 모듈은 없어졌다 — 표면은 `quad-roblox/src/Surface/init.luau`의 타입 함수가 만든다).
 
 두 단계(round14 Q5 (a) — 덤프를 재사용 가능한 형태로 남긴다):
   normalize <raw-API-Dump.json> <clientVersionUpload>
@@ -7,10 +8,10 @@
         M7 단위 ③·④가 같은 emit()을 확장해 <Class>Modifier 타입도 여기서 생성,
         Parent 제외는 여기 덤프 층)
   emit
-      → quad-roblox/src/Declaration/init.luau  (커밋되는 최종 산출물)
-      → quad-roblox/src/Surface/Data.luau      ([2026-10-20 3.4.0 단위 1] 타입 함수가 읽는 데이터만 — 클래스 맵 둘,
-        정의 클래스 기준 정책(normalized `policy` — 만들 수 있는 모든 클래스 사슬), Inject·Shorthand. 옛 Declaration과
-        공존하다 3.4.0 갈아타기(`research/release-3.4.0-plan.md` 단위 6)에서 옛 쪽이 떨어진다)
+      → quad-roblox/src/Surface/Data.luau      ([2026-10-20 3.4.0] 타입 함수가 읽는 데이터만 — 클래스 맵 둘,
+        정의 클래스 기준 정책(normalized `policy` — 만들 수 있는 모든 클래스 사슬), Inject·Shorthand, 런타임 Superclass 표)
+  check
+      → emit과 같은 계산을 하고 커밋된 Data.luau와 다르면 실패(test.sh 게이트)
 
 raw 덤프 취득(재생성 때만 네트워크 필요 — 테스트 경로 의존 아님):
   VER=$(curl -s https://clientsettings.roblox.com/v2/client-version/WindowsStudio64 \
@@ -43,8 +44,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SURFACE = ROOT / "quad-roblox" / "dump" / "api-surface.json"
-OUT = ROOT / "quad-roblox" / "src" / "Declaration" / "init.luau"
-ROOT_INIT = ROOT / "quad-roblox" / "src" / "init.luau"  # [2026-09-15] generated root export block lives here
 DATA_OUT = ROOT / "quad-roblox" / "src" / "Surface" / "Data.luau"  # [2026-10-20 3.4.0] data only — the type functions read it
 
 SCOPE_ROOTS = ("GuiObject", "UIComponent", "LayerCollector")
@@ -83,34 +82,6 @@ LEGACY_KEEP = {("GuiObject", "Transparency")} | {
 HIDDEN_CORE_KEEP = {("BasePart", "Position"), ("BasePart", "Orientation"), ("Attachment", "Position"),
     ("Attachment", "Orientation"), ("Attachment", "WorldPosition"), ("Attachment", "WorldOrientation")}
 EVENT_TAG_EXCLUDE = {"Deprecated", "Hidden"}
-# [Q34 (a), 2026-09-08] property types TweenService can interpolate — the ONLY ones that get a Tween arm
-TWEENABLE = {"number", "boolean", "CFrame", "Rect", "Color3", "UDim", "UDim2", "Vector2", "Vector2int16", "Vector3"}
-
-
-def tweenable(t):
-    return all(m.strip() in TWEENABLE for m in t.split("|"))
-
-
-def legacy_doc(p):
-    """`---` doc comment above the field — luau-lsp shows it on hover of a member access
-    (실측). Table-key completion does NOT carry it (`documentation: null`), so there is no
-    warning at the `D.TextLabel { Font = … }` 작성 지점 — 문서(마이그레이션 가이드)가 그 몫."""
-    tags = p.get("legacy")
-    return [f"\t--- \u26a0\ufe0f **deprecated** \u2014 Roblox {'/'.join(tags)}"] if tags else []
-
-
-def legacy_note(p):
-    """trailing marker for engine-legacy props — a comment is the only channel: Luau
-    `@deprecated` attaches to functions only (table-type fields are a syntax error), and
-    quad의 Modifier setter는 런타임 `__index`라 함수 정의 경로도 못 쓴다."""
-    tags = p.get("legacy")
-    return f" -- @deprecated (Roblox {'/'.join(tags)})" if tags else ""
-
-
-def field_alias(t, nilable=False):
-    if nilable or t in CLASS_VALUE_TYPES:
-        return "FieldN" if tweenable(t) else "FieldPN"
-    return "Field" if tweenable(t) else "FieldP"
 PRIMITIVES = {
     "int": "number", "int64": "number", "float": "number", "double": "number",
     "bool": "boolean", "string": "string",
@@ -122,15 +93,6 @@ PRIMITIVES = {
 # defs에서 읽어 `string`으로 — QDir/QFont/BinaryString/ProtectedString도 같은 규칙(SKIP 해제).
 DATATYPE_RENAME = {"OptionalCoordinateFrame": "CFrame"}
 DATATYPE_SKIP = {"SystemAddress"}
-# [Q126] object-reference value types (defs types whose `extends` chain reaches Instance — filled
-# by emit()). The engine accepts a nil write there, so the State arm also carries nil/None.
-CLASS_VALUE_TYPES = set()
-
-
-def nil_marker(inner):
-    """State arm of a slot whose runtime takes a State's nil/None as a feature (nil write, disconnect,
-    destroy, detach) — NewChild's shape: `StateMarker<(X | None)?>`."""
-    return f"StateMarker<({inner} | None)?>"
 _STRING_ALIASES = None
 
 
@@ -385,537 +347,37 @@ def normalize(raw_path, version):
     print(f"normalize: {len(surface)} classes, {len(out['dropped'])} dropped notes -> {SURFACE}")
 
 
-def luau_event_sig(ev):
-    args = ", ".join(f"{p['name']}: {p['type']}" for p in ev["params"])
-    return f"({args}) -> ()"
-
-
 def emit():
+    """[2026-10-20 3.4.0 단위 6] data only — the generated `Declaration` module and the generated root export block
+    are gone (the type functions in `quad-roblox/src/Surface/init.luau` build the surface from the checker's class types
+    and this data)."""
     data = json.loads(SURFACE.read_text())
-    # [Q126] object-reference value types = defs types whose `extends` chain reaches Instance
-    # (the normalized surface keeps only the Luau type string, not the Dump's Category)
-    ext = dict(re.findall(r"^declare extern type (\w+) extends (\w+) with", DEFS.read_text(), re.M))
-    def reaches_instance(n):
-        while n:
-            if n == "Instance":
-                return True
-            n = ext.get(n)
-        return False
-    for cname in set(ext) | {"Instance"}:
-        if reaches_instance(cname):
-            CLASS_VALUE_TYPES.add(cname)
     classes = data["classes"]
-    L = []
-    L.append("--!strict")
-    L.append("--[[")
-    L.append("\tGENERATED FILE — do not edit by hand. `scripts/gen-d.py` (M5 단위 ②).")
-    L.append(f"\tdump: {data['dumpVersion']} (API {data['apiVersion']}); 재생성 방법은 생성기 헤더.")
-    L.append("\t표면 계약: bind-system-plan.md 인스턴스 생성 절(New 커링·①~④ 파이프라인·")
-    L.append("\tD는 캐스트 별칭·Parent 제외 H-142), claim-plan §7-12(<Class>Param<E> 공유),")
-    L.append("\tround14 H-295~H-298·H-300. 유니언: 스칼라 T | TweenData<T> | StateMarker<T | Tween<T>> | None(Tween 팔은 보간 가능 타입만 — Q34; 그 밖은 T | StateMarker<T> | None)")
-    L.append("\t(H-326 → 2026-09-07 마커: State 팔은 공변 StateMarker 하나, typing-limits 8.11),")
-    L.append("\t이벤트 콜백 | StateMarker<콜백> | None (None 표현은 H-300 (a) — QuadTypes.None).")
-    L.append("\t이벤트 필드의 런타임 핸들러는 Handlers/Event.luau(M10, 2026-09-03 구현됨 —")
-    L.append("\t`base/event-plan.md`); M5엔 타입이 먼저 왔다(ROADMAP M5 체크박스의 계약).")
-    L.append("\tOnChange(M10, 2026-09-03 역전 — base/onchange-plan.md): 배열부 디스크립터.")
-    L.append("\tPropTypes(스코프 전체 프로퍼티 이름 → 타입, 클래스 간 충돌 이름은 any) +")
-    L.append("\tOnChangeFn(`K & keyof<PropTypesRead>` / `index<PropTypesRead, K>` — 읽기 표면(Q19); 이름 오타·콜백")
-    L.append("\t타입까지 — 무주석 콜백은 검사만, hover·자동완성은 주석이 있어야; luau-test 30) + 클래스별 <Class>OnChange 유니언이 E에")
-    L.append("\t합류(클래스 밖 이름은 생성자 자리에서 거부).")
-    L.append("\tModifier(M7 단위 ③, round17): 클래스별 <Class>Modifier(필드 setter — 값은")
-    L.append("\tField<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None | nil(필드 부재 — round13 Q103) | 변환 함수(H-327 → 마커), 자기 타입 반환; 예약 메소드")
-    L.append("\tApply/Peek/Overridden; 이벤트는 제외 — 함수 인자는 변환 함수라 콜백과 겹친다)")
-    L.append("\t+ D.Modifier.<Class>() 타입드 생성자(round17 Q3 (a) — 단위 ③엔 quad.Modifier 캐스트 별칭,")
-    L.append("\t단위 ④부터 아래 TypedFactory 태그 생성자)")
-    L.append("\t+ children엔 마커만(<Class>Modifier를 유니언에 직접 넣으면 큰 클래스에서 too complex —")
-    L.append("\ttyping-limits 8.8절): 무타입 base는 `{ read __quadModifier: true }`(NewChild, types.luau),")
-    L.append("\t클래스 태그는 조상 체인 마커 `{ read __quadModifier: \"Frame\" | \"GuiObject\" | … }`(<Class>Elem).")
-    L.append("\t단위 ④(2026-09-04, 사용자 설계 — modifier-plan 11절): 상위 클래스 Modifier 타입도 전부")
-    L.append("\t생성(스코프 클래스의 조상 전부 — GuiObjectModifier류; 개수는 이 파일의 <Class>Modifier 선언이")
-    L.append("\t소스), 검사형 하강 `As<Class>()`(하위 클래스 + 항등),")
-    L.append("\t무검사 `As<<T>>()`, 인터페이스 `Into<Class> = { As<Class>: (self: any) -> <Class>Modifier }`,")
-    L.append("\tApply는 self·factory 둘 다 any(8.9절 — 재귀 필드 + 유니언 멤버 메소드 이름 충돌 시")
-    L.append("\t유니언 검사가 조용히 통과하는 솔버 결함을 피해 클래스 소속 검사를 되찾음). 런타임은")
-    L.append("\tquad.Modifier.TypedFactory(name)이 돌려주는 태그 생성자 + DefineSubtype(parent, name) 간선.")
-    L.append("\tRef/PreRef/PostRef(M8 단위 ③, round18 H-321 — 사용자 확정): children엔 클래스별 반공변")
-    L.append("\t팬텀 마커 <Class>RefMarker = { read __quadRefAccepts: (<Class>) -> () }(+ State<…>)만 — Ref<T>를")
-    L.append("\t직접 넣으면 8.9절 결함으로 형제 클래스 Ref가 샌다(실측). Ref<<Class>?>·상위 박스 통과, 형제·Ref<nil> 거부.")
-    L.append("]]")
-    L.append("")
-    L.append('local QuadTypes = require("../luau_packages/quad_types")')
-    L.append('local Types = require("./types")')
-    L.append("")
-    L.append("type State<T> = QuadTypes.State<T>")
-    L.append("type StateMarker<T> = QuadTypes.StateMarker<T> -- 입력 자리의 State 팔(2026-09-07 마커, typing-limits 8.11)")
-    L.append("type Tween<T> = Types.Tween<T>")
-    L.append("type TweenData<T> = Types.TweenData<T> -- 유니언 멤버용 데이터부(H-326, 8.8절)")
-    L.append("type NewChild = Types.NewChild")
-    L.append("type None = QuadTypes.None")
-    L.append("type MapperDescriptor = QuadTypes.MapperDescriptor")
-    L.append("type MapperRoot = QuadTypes.MapperRoot")
-    L.append("-- Modifier 필드 setter의 값 타입(modifier-plan 4·4-1·10절): 리터럴 T | Tween<T> |")
-    L.append("-- State(마커, T | Tween<T>를 품음) | None(unsetter) | 변환 함수(old는 '현재 저장된 그대로').")
-    L.append("-- [2026-09-07 마커] 옛 `State<T> | State<Tween<T>>` 두 팔(H-327 — State 불변성)은 공변 마커")
-    L.append("-- `StateMarker<T | Tween<T>>` 하나로; old(출력)만 전체형 `FieldOut<T>`(State 팔 하나 — Q23 (a) 사용자 확정).")
-    # [2026-09-06 M11 단위 ① H-327] 옛 Field<V>에 V = T | Tween<T>를 넣던 모양은 새 솔버의
-    # State 불변성 때문에 State<T>를 거부했다(M7 하자 — m:Position(state)가 strict에서
-    # 막힘, 실측). 프로퍼티 setter의 값 타입은 T와 Tween<T>의 State 형을 각각 나열한다.
-    # setter 쪽은 전체형 Tween<T>(Mapped 포함): 함수 멤버가 든 이 유니언에서 데이터부
-    # TweenData<T>는 교집합 Tween 값을 받지 못했다(2026-09-06 실측 — Param 슬롯의 리터럴
-    # 자리와 달리 호출 인자 자리). Modifier 타입은 클래스별이라 복잡도 문제도 없다.
-    # (옛 규칙 "값/함수 인자/함수 반환 셋이 같은 유니언 — 별칭 하나로"는 마커로 깨졌다: 입력 둘은
-    # FieldV, 출력 old는 FieldOut — round3 H-432/Q23)
-    # [2026-09-07 마커] 입력 팔은 StateMarker 하나(공변 — State<T>·State<Tween<T>>·정직한
-    # State<T | Tween<T>>·유니언 T의 멤버 State 전부, 스파이크 35). 변환 함수의 old는 출력이라
-    # 전체형(FieldOut) — 사용자가 old:Get()을 부를 수 있게. 값 팔 Tween<T>는 그대로 전체형.
-    L.append("export type FieldV<T> = T | Tween<T> | StateMarker<T | Tween<T>> | None")
-    # [2026-09-07 Tween 이동] quad-types의 `FieldOut<X> = X | State<X> | None`은 엔진 값 어휘를 모른다 —
-    # 이 백엔드의 필드 값 대수 `T | Tween<T>`를 X에 넣은 별칭은 types.luau가 만들고 여기선 그걸
-    # 다시 별칭만 한다(전개형은 이동 전과 같다: `T | Tween<T> | State<T | Tween<T>> | None`, Q23 (a)/
-    # Q24 후속). ⚠️ 이 파일 안에서 전개하면(인라인이든 `QuadTypes.FieldOut<T | Tween<T>>`든) `export
-    # type Declaration`이 솔버 제약 한도를 넘어 "too complex" — 실측 2026-09-07, typing-limits 8.12.
-    L.append("export type FieldOut<T> = Types.FieldOut<T> -- 변환 함수 old·Peek 반환(출력, 전체형 — 정의는 types.luau, 전개는 D 밖에서)")
-    L.append("export type Field<T> = FieldV<T>? | ((old: FieldOut<T>?) -> FieldV<T>?) -- round13 Q103 (a): nil = field absent (modifier-plan M-5)")
-    # [Q34 (a)] non-interpolable property types get the Tween-less shape — same three roles
-    # (value / transform input / transform old), no Tween arm anywhere
-    L.append("export type FieldPV<T> = T | StateMarker<T> | None -- 보간 불가 타입의 setter 값(Q34 — Tween 팔 없음)")
-    L.append("export type FieldOutP<T> = QuadTypes.FieldOut<T> -- 보간 불가 타입의 old·Peek(전체형, Tween 없음)")
-    L.append("export type FieldP<T> = FieldPV<T>? | ((old: FieldOutP<T>?) -> FieldPV<T>?)")
-    # [Q126] nil-accepting setters (object references, shorthand keys): the State arm carries nil/None
-    L.append(f"export type FieldNV<T> = T | Tween<T> | {nil_marker('T | Tween<T>')} | None -- [Q126] nil을 받는 자리(숏핸드)")
-    L.append("export type FieldN<T> = FieldNV<T>? | ((old: FieldOut<T>?) -> FieldNV<T>?)")
-    L.append(f"export type FieldPNV<T> = T | {nil_marker('T')} | None -- [Q126] nil을 받는 자리(객체 참조)")
-    L.append("export type FieldPN<T> = FieldPNV<T>? | ((old: FieldOutP<T>?) -> FieldPNV<T>?)")
-    L.append("")
     names = sorted(classes.keys())
-    # [2026-09-15 사용자 결정] Declaration/DeclarationMapper 테이블은 클래스 이름과 예약 이름이 같은
-    # 테이블에 산다 — 엔진이 그 이름의 클래스를 내놓으면 예약 필드를 조용히 덮으므로 여기서 멈춘다.
-    for name in names:
-        if name in ("New", "Mapper", "Modifier", "Root"):
-            raise SystemExit(f"gate: class {name} collides with a reserved Declaration/DeclarationMapper field (New/Mapper/Modifier/Root)")
-    # [2026-09-06 M11 단위 ① H-326] + State<Tween<T>> — tween-plan "타입 대수"의
-    # T' = T | Tween<T> 확장(Animate가 State<Tween<T>>를 돌려준다). 새 솔버는
-    # State<T>가 불변이라 State<T | Tween<T>> 하나로는 State<T>를 못 받는다(실측).
-    # 프로퍼티 값 유니언은 타입별 별칭 하나로(PVn) — 같은 유니언을 수백 자리에
-    # 인라인하면 State<Tween<T>>가 더해진 뒤 DeclarationMapper 인스턴스화에서 "too complex"
-    # (Tarjan 640000·다른 한도 플래그로도 안 풀림, 실측). State 안은 전체형 Tween<T>:
-    # State<X>는 불변이라 Animate/`:Compute`가 돌려주는 State<Tween<T>>와 X가 글자
-    # 그대로 같아야 들어간다(데이터부·정밀판 별칭은 거부). 바깥은 데이터부(8.8절).
-    # [round20 H-336] UI 편의 숏핸드 키 넷(ui-shorthand-plan "메커니즘"·"결론" 절) — GuiObject
-    # 계열(자기 또는 조상에 GuiObject)의 Param과 Modifier setter에만 얹는다. 런타임은
-    # Handlers/InstanceShorthand.luau(우선순위 NORMAL+1). PropTypes/OnChange엔 넣지 않는다
-    # (실프로퍼티가 아니라 GetPropertyChangedSignal 대상이 아님).
+    # [round20 H-336] UI 편의 숏핸드 키 넷(ui-shorthand-plan "메커니즘"·"결론" 절) — GuiObject 계열에만. 런타임은
+    # Handlers/InstanceShorthand.luau(우선순위 NORMAL+1).
     SHORTHAND = [("UICorner", "number | UDim"), ("UIPadding", "UDim"), ("UIPaddingOffset", "number"), ("UIScale", "number")]
-    # [post-implementation review Q3 ⑦, 2026-09-07] the KEY set is gated against the runtime
-    # table (`Handlers/InstanceShorthand.luau` `TABLE`) — the types stay here (the runtime keeps
-    # `wrap` functions, not type strings), but a key added/renamed on one side only fails generation
-    # instead of drifting silently (file-head rule: no silent truncation).
+    # [post-implementation review Q3 ⑦, 2026-09-07] the KEY set is gated against the runtime table (`TABLE`) — a key
+    # added/renamed on one side only fails generation instead of drifting silently (no silent truncation)
     sh_src = (ROOT / "quad-roblox" / "src" / "Handlers" / "InstanceShorthand.luau").read_text()
     sh_blk = re.search(r"^local TABLE\b[^\n]*=\s*\{\n(.*?)^\}", sh_src, re.S | re.M)
     if not sh_blk:
         raise SystemExit("gate: could not find `local TABLE = {` in Handlers/InstanceShorthand.luau")
     sh_keys = set(re.findall(r"^\t([A-Za-z_][A-Za-z0-9_]*)\s*=\s*\{", sh_blk.group(1), re.M))
-    if sh_keys != {s for s, _ in SHORTHAND}:
-        raise SystemExit(f"gate: SHORTHAND keys {sorted(s for s, _ in SHORTHAND)} != InstanceShorthand.luau TABLE keys {sorted(sh_keys)}")
-    # [7순회 H-424] `parent_of` itself is a free variable of `ancestors` — it was assembled
-    # ~90 lines later, so H-412's move only shifted the same latent NameError one step
-    parent_of = {}
-    for name in names:
-        chain = [name] + classes[name]["chain"]
-        for i, node in enumerate(chain):
-            parent_of[node] = chain[i + 1] if i + 1 < len(chain) else None
-    # [6순회 H-412] bound BEFORE is_gui_object (which closes over it) — it used to be defined
-    # ~90 lines later and the earlier call only survived because `node in classes` was always true
-    def ancestors(node):
-        out = []
-        node = parent_of.get(node)
-        while node:
-            out.append(node)
-            node = parent_of.get(node)
-        return out
-
-    def is_gui_object(node):
-        return node == "GuiObject" or "GuiObject" in ((classes[node]["chain"] if node in classes else ancestors(node)))
-    prop_types = []
-    for name in names:
-        for p in classes[name]["props"]:
-            if p["type"] not in prop_types:
-                prop_types.append(p["type"])
-    # [Q126] shorthand value types no longer need a PVn — they get their own PSn below
-    def union_members(t):
-        return [m.strip() for m in t.split("|")]
-    # [2026-09-07 마커 — 사용자 결정] 슬롯 값 유니언은 `T | TweenData<T> | StateMarker<T | Tween<T>> | None`
-    # 한 벌. 옛 모양(`State<T> | State<Tween<T>>` + 유니언 T의 멤버별 팔 — H-353/H-362/H-363, PV73이
-    # 11팔)은 State 불변성(H-326/H-327)의 우회였고, 공변 마커는 `State<m>`·`State<Tween<m>>`·정직한
-    # `State<T | Tween<T>>`(H-334가 "too complex"로 포기한 팔)를 전부 한 팔로 받는다(스파이크 35).
-    # 바깥 값 팔은 데이터부 TweenData(8.8), 마커 안은 전체형 Tween(State<Tween<T>>의 필드형 그대로).
-    # H-362의 SHF(숏핸드 setter 멤버별 값 팔) 별칭도 같이 사라진다 — Field<number | UDim> 하나로 충분.
-    # [Q34 (a), 사용자 결정 2026-09-08 — round3 §11] the Tween arm exists only where TweenService can
-    # interpolate (engine docs: number/boolean/CFrame/Rect/Color3/UDim/UDim2/Vector2/Vector2int16/Vector3).
-    # string/Instance/Enum/Content/Font/…Sequence used to accept `Tween{…}` in strict and die in
-    # `TweenService:Create` at runtime (H-103 NOOP marker); the plain arms are also far lighter.
-    def pv_arms(t, nilable=False):
-        nilable = nilable or t in CLASS_VALUE_TYPES
-        if tweenable(t):
-            st = nil_marker(f"{t} | Tween<{t}>") if nilable else f"StateMarker<{t} | Tween<{t}>>"
-            return [t, f"TweenData<{t}>", st, "None"]
-        return [t, nil_marker(t) if nilable else f"StateMarker<{t}>", "None"]
-    pv_name = {}
-    for i, t in enumerate(prop_types):
-        pv_name[t] = f"PV{i}"
-        L.append(f"type PV{i} = {' | '.join(pv_arms(t))} -- {t}")
-    # [Q126] shorthand keys destroy the managed child on nil/None — their own aliases (the
-    # value types are shared with real properties that the engine refuses nil on)
-    ps_name = {}
-    for i, (_, t) in enumerate(SHORTHAND):
-        if t not in ps_name:
-            ps_name[t] = f"PS{len(ps_name)}"
-            L.append(f"type {ps_name[t]} = {' | '.join(pv_arms(t, True))} -- {t} (숏핸드)")
-    L.append("")
-    for name in names:
-        c = classes[name]
-        L.append(f"export type {name}Param<E> = {{")
-        L.append("\t[number]: E,")
-        for p in c["props"]:
-            t = p["type"]
-            L.extend(legacy_doc(p))
-            L.append(f"\t{p['name']}: {pv_name[t]}?,{legacy_note(p)}")
-        if is_gui_object(name):
-            for sname, t in SHORTHAND:
-                L.append(f"\t{sname}: {ps_name[t]}?, -- 숏핸드(H-336)")
-        for ev in c["events"]:
-            sig = luau_event_sig(ev)
-            L.append(f"\t{ev['name']}: (({sig}) | {nil_marker(f'({sig})')} | None)?,")
-        L.append("}")
-        L.append("")
-    # OnChange 타이핑(onchange-plan 2026-09-03 역전, luau-test 30 실측):
-    #  - PropTypes: 스코프 전체 (이름 → 타입). 같은 이름이 클래스마다 다른
-    #    타입이면 `any`(index<>가 유니언을 주면 주석 콜백이 반공변으로 거부됨 —
-    #    실측 6건: Style/CanvasSize/Color/Offset/Transparency/Padding).
-    #  - 이름 싱글톤 유니언을 `K &`로 직접 교차하면 "too complex"(실측) —
-    #    `keyof<PropTypes>`는 같은 유니언이지만 index<>와 짝일 때만 통과했다.
-    prop_types = {}
-    for name in names:
-        for p in classes[name]["props"]:
-            prop_types.setdefault(p["name"], set()).add(p["type"])
-    def emit_prop_map(tname, mapping, comment):
-        L.append(f"-- {comment}")
-        L.append(f"export type {tname} = {{")
-        for pname in sorted(mapping):
-            ts = sorted(mapping[pname])
-            L.append(f"\t{pname}: {ts[0] if len(ts) == 1 else 'any'},")
-        L.append("}")
-    emit_prop_map("PropTypes", prop_types, "PropTypes(D 스코프 전체 쓰기 프로퍼티 이름 → 타입; 클래스 간 충돌은 any)")
-    # [round1 Q19 (a), 2026-09-07] the READ surface (write props + ReadOnly props) — OnChange's
-    # name/callback typing only; `OnChange("AbsoluteSize", fn)` used to be a strict TypeError (H-414)
-    read_types = {k: set(v) for k, v in prop_types.items()}
-    for name in names:
-        for p in classes[name].get("readProps", []):
-            read_types.setdefault(p["name"], set()).add(p["type"])
-    emit_prop_map("PropTypesRead", read_types, "OnChange — PropTypesRead(쓰기 표면 + ReadOnly 프로퍼티; AbsoluteSize/AbsolutePosition/TextBounds…, Q19)")
-    L.append("export type OnChangeDescriptor<K> = { Name: K, Callback: (index<PropTypesRead, K>) -> () }")
-    L.append("export type OnChangeFn = <K>(name: K & keyof<PropTypesRead>, fn: (index<PropTypesRead, K>) -> ()) -> OnChangeDescriptor<K>")
-    L.append("")
-    # ── 클래스 계층(M7 단위 ④) ──────────────────────────────────────────
-    # 조상(비생성 추상 클래스)도 Modifier 타입을 갖는다 — 프로퍼티는 스코프 하위
-    # 클래스들의 owner 필드로 되짚는다(surface `chain`/`owner`, normalize가 기록).
-    mod_classes = sorted(parent_of)  # 스코프 + 조상 (parent_of는 위 H-412 자리에서 조립)
-
-    def descendants(node):
-        return sorted(m for m in mod_classes if m != node and node in ancestors(m))
-
-    def mod_props(node):
-        if node in classes:
-            return classes[node]["props"]
-        above = set(ancestors(node)) | {node}
-        acc = {}
-        for n in names:
-            if node in ancestors(n):
-                for p in classes[n]["props"]:
-                    if p["owner"] in above:
-                        acc[p["name"]] = p
-        return [acc[k] for k in sorted(acc)]
-
-    # ── 생성기 게이트(단위 ④) — 조용한 구멍 금지 ────────────────────────
-    # (1) `As` + 대문자 프로퍼티는 런타임 캐스트 접두와 충돌 → 생성 실패.
-    # (2) children 유니언 멤버(Instance·State·Tag·Attr·OnChange 디스크립터)의
-    #     함수 필드와 같은 이름의 setter는 typing-limits 8.9절의 솔버 결함(재귀
-    #     필드 + 같은 이름 함수 필드 → 유니언 검사가 조용히 통과)을 다시 연다 →
-    #     생성 실패. 이름 집합은 defs(Instance/Object의 function 멤버)와 quad-types
-    #     소스(State/StateData/Tag/Attr 블록의 키)에서 읽는다.
-    defs_text = DEFS.read_text()
-    # OnChangeDescriptor's function fields (`Callback`) — read from quad-roblox `types.luau`, not
-    # hand-copied (Q3 ⑦); `type_body`/`function_fields` are defined below, so this is resolved there
-    union_member_functions = set()
-    # defs: `declare extern type Instance extends Object with` / `declare extern type Object with`
-    # — 못 찾으면 게이트가 조용히 비는 대신 생성을 실패시킨다(리뷰 반영)
-    for cls in ("Instance", "Object"):
-        blk = re.search(rf"^declare extern type {cls}\b[^\n]*\n(.*?)^end", defs_text, re.S | re.M)
-        if not blk:
-            raise SystemExit(f"gate: could not find `declare extern type {cls}` in {DEFS}")
-        union_member_functions |= set(re.findall(r"^\s+function ([A-Za-z_]+)", blk.group(1), re.M))
-    # [4순회 H-388] comments are stripped ONCE, before both scanners: `type_body`'s brace balance
-    # and `function_fields`' depth-0 scan must see the same text (a brace or paren inside a
-    # comment silently shifted the harvest). One alternation — a block comment wins where it
-    # starts, a line comment swallows a `--[[` that follows it on the same line.
-    def strip_comments(text):
-        return re.sub(r"--\[\[.*?\]\]|--[^\n]*", "", text, flags=re.S)
-    qt = strip_comments((ROOT / "quad-types" / "src" / "init.luau").read_text())  # one regex for every scanner (round3 H-438)
-    rt = strip_comments((ROOT / "quad-roblox" / "src" / "types.luau").read_text())
-
-    def type_body(tname, text=qt, where="quad-types"):
-        # `export type X = ... {` 뒤 중괄호 균형으로 본문을 끊는다 — 한 줄 선언
-        # (`Attr = { NameMap: … }`)도 다음 선언으로 넘치지 않게(리뷰 반영)
-        m = re.search(rf"^export type {re.escape(tname)} = ", text, re.M)
-        if not m:
-            raise SystemExit(f"gate: could not find `export type {tname}` in {where}")
-        i = text.index("{", m.end())
-        depth, j = 0, i
-        while j < len(text):
-            if text[j] == "{":
-                depth += 1
-            elif text[j] == "}":
-                depth -= 1
-                if depth == 0:
-                    return text[i + 1:j]
-            j += 1
-        raise SystemExit(f"gate: unbalanced braces in `export type {tname}`")
-
-    # [0순회 H-364] `Slot<T>` joined NewChild (H-351) — its function fields must be gated too. The
-    # regex is narrowed to FUNCTION fields (`name: (` / `name: <`): Slot's data fields (`Length`/
-    # `Offset: Source<number>`) are not the 8.9 hazard and `Offset` is a real setter (UIGradient).
-    # [1순회 H-369] the old regex without `re.M` only matched the body start — every field after a
-    # comment line (`State<T>`'s `Compute`/`Observer`/`Gate`/`Apply`, the recursive function fields
-    # 8.9 is about) was silently not harvested. [3순회 H-381] a regex cannot tell a depth-0 field
-    # from a parameter on its own line inside a multi-line signature (`fn`/`factory`/`keyFn` were
-    # harvested; a PascalCase parameter would have been a phantom collision → SystemExit), so the
-    # harvest is a depth-0 scan of the type body instead.
-    def function_fields(body):
-        names, depth, i, n = set(), 0, 0, len(body)
-        while i < n:
-            c = body[i]
-            if body.startswith("->", i):
-                i += 2
-                continue
-            if c in "(<{[":
-                depth += 1
-            elif c in ")>}]":
-                depth -= 1
-            elif depth == 0 and (c.isalpha() or c == "_"):
-                j = i
-                while j < n and (body[j].isalnum() or body[j] == "_"):
-                    j += 1
-                k = j
-                while k < n and body[k] in " \t":
-                    k += 1
-                if k < n and body[k] == ":":
-                    k += 1
-                    while k < n and body[k] in " \t\n":
-                        k += 1
-                    if k < n and body[k] in "(<":
-                        names.add(body[i:j])
-                i = j
-                continue
-            i += 1
-        if depth != 0:
-            # a string literal type with a bracket, or an unbalanced body — never a silent
-            # shrink of the gate (file-head rule: no silent truncation)
-            raise SystemExit(f"gate: depth-0 scan ended at depth {depth} — cannot harvest function fields")
-        return names
-    for tname in ("StateData<T>", "State<T>", "Tag", "Attr", "Slot<T>", "Observer", "Effect"):
-        union_member_functions |= function_fields(type_body(tname))
-    # `<Class>Elem` = NewChild | <Class>OnChange | … — the descriptor's function fields join too
-    union_member_functions |= function_fields(type_body("OnChangeDescriptor", rt, "quad-roblox types.luau"))
-    if "Callback" not in union_member_functions:
-        raise SystemExit("gate: OnChangeDescriptor.Callback not harvested from quad-roblox types.luau")
-    # reserved Modifier methods — read from the runtime `methods` table in `Dispatch/Modifier/init.luau`
-    # (`function methods.X(` / `methods.X = `), not hand-copied (Q3 ⑦); the cast prefix `As` is
-    # a method there too, so it lands in the set as well as in the prefix check below
-    mod_src = strip_comments((ROOT / "quad-base" / "src" / "Dispatch" / "Modifier" / "init.luau").read_text())
-    reserved = set(re.findall(r"^function methods\.([A-Za-z_][A-Za-z0-9_]*)\s*\(", mod_src, re.M))
-    reserved |= set(re.findall(r"^methods\.([A-Za-z_][A-Za-z0-9_]*)\s*=", mod_src, re.M))
-    if not {"Apply", "Peek", "Overridden", "As"} <= reserved:
-        raise SystemExit(f"gate: reserved Modifier methods harvested from Dispatch/Modifier/init.luau look wrong: {sorted(reserved)}")
-    for node in mod_classes:
-        for p in mod_props(node):
-            if p["name"] in reserved:
-                # 런타임 `__index`가 예약 메소드를 먼저 잡아 그런 setter는 존재할 수
-                # 없다 — 조용한 절단 금지(파일 머리 규칙): 생성 자체를 실패시킨다
-                raise SystemExit(f"{node}.{p['name']}: property collides with a reserved Modifier method")
-            if re.match(r"^As[A-Z]", p["name"]):
-                raise SystemExit(f"{node}.{p['name']}: property matches the reserved cast prefix As<Class>")
-            if p["name"] in union_member_functions:
-                raise SystemExit(f"{node}.{p['name']}: setter name collides with a children-union member method (typing-limits 8.9)")
-
-    def emit_modifier(node):
-        props = mod_props(node)
-        desc = descendants(node)
-        L.append(f"export type {node}Modifier = {{")
-        L.append(f'\tread __quadModifier: "{node}", -- 클래스 태그(H-300 관례) — 런타임 값의 태그와 같은 리터럴')
-        L.append(f"\tPeek: <T>(self: {node}Modifier, key: string) -> FieldOut<T>?, -- 저장된 그대로(Q24 후속: old와 같은 타입)")
-        L.append("\tApply: <U>(self: any, factory: (any) -> U) -> U, -- any: 8.9절(재귀 필드 이름 충돌)")
-        L.append(f"\tOverridden: (self: {node}Modifier, ...any) -> any,")
-        L.append(f"\tAs: <T>(self: {node}Modifier, name: string?) -> T, -- 무검사(11절)")
-        L.append(f"\tAs{node}: (self: {node}Modifier) -> {node}Modifier, -- 항등(Into<{node}> 구현)")
-        for d in desc:
-            L.append(f"\tAs{d}: (self: {node}Modifier) -> {d}Modifier,")
-        for p in props:
-            t = p["type"]
-            L.extend(legacy_doc(p))
-            L.append(f"\t{p['name']}: (self: {node}Modifier, value: {field_alias(t)}<{t}>) -> {node}Modifier,{legacy_note(p)}")
-        if is_gui_object(node):
-            for sname, t in SHORTHAND:
-                L.append(f"\t{sname}: (self: {node}Modifier, value: {field_alias(t, True)}<{t}>) -> {node}Modifier, -- 숏핸드(H-336; 유니언 T도 마커 한 벌)")
-        L.append("}")
-        # Into<Class> — "이 클래스로 갈 수 있는 모든 것"(상위·자기·커스텀 구현체).
-        # self는 any여야 한다: self를 인터페이스 타입으로 두면 반공변 때문에
-        # setter를 가진 실제 Modifier가 안 들어온다(실측)
-        L.append(f"export type Into{node} = {{ As{node}: (self: any) -> {node}Modifier }}")
-
-    for name in mod_classes:
-        if name not in classes:
-            emit_modifier(name)
-            L.append("")
-            continue
-        c = classes[name]
-        L.append(f"export type {name}OnChange =")
-        # Q19: the per-class OnChange union takes the READ surface too (ReadOnly props)
-        members = [f'\t{{ Name: "{p["name"]}", Callback: ({p["type"]}) -> () }}' for p in c["props"] + c.get("readProps", [])]
-        # 리뷰 반영: 프로퍼티가 0개인 클래스(지금은 없음 — 최소 Folder 4개)가
-        # 생기면 우변 없는 별칭이 찍혀 파일 전체가 깨진다 → never
-        L.append("\n\t| ".join(members) if members else "\tnever")
-        # <Class>Modifier — 프로퍼티만(이벤트 제외: setter의 함수 인자는 변환 함수라
-        # 콜백과 구분 불가 — modifier-plan 4절)
-        emit_modifier(name)
-        # ⚠️ <Class>Modifier는 Elem에 직접 넣지 않는다 — 재귀 메소드 수십 개짜리
-        # 테이블 타입이 유니언에 들어가면 큰 클래스의 캐스트 자리에서 솔버가
-        # "too complex"(2026-09-04 실측 — typing-limits 8.8절). 대신 조상 체인 마커
-        # 하나로 폭 서브타이핑: 자기 클래스와 조상 클래스의 Modifier만 들어온다
-        # (다른 클래스는 태그 불일치로 거부 — 단위 ④가 되찾은 클래스 소속 검사).
-        # 배열 원소 유니언은 클래스당 별칭 하나 — Declaration/DeclarationMapper 타입과 런타임 캐스트
-        # 네 자리가 같은 별칭을 참조한다(손 나열 드리프트 방지, 리뷰 반영)
-        marker = " | ".join(f'"{n}"' for n in [name] + ancestors(name))
-        # M8 단위 ③(round18 H-321): Ref/PreRef/PostRef는 반공변 팬텀 마커로 —
-        # `Ref<T>`의 `__quadRefAccepts: (T) -> ()`에 (<Class>) -> ()를 대조하면 상위
-        # 박스(`Ref<GuiObject?>`)는 받고 형제·`Ref<nil>`은 거부. `State<Ref>`는 8.7
-        # 캐비엇 5대로 마커로 캐스트해 만든다(`q.Source(ref :: FrameRefMarker)`);
-        # `State<PreRef>`는 타입이 못 가르고 런타임 가드(Ref.luau)가 잡는다.
-        L.append(f"export type {name}RefMarker = {{ read __quadRefAccepts: ({name}) -> () }}")
-        # [2026-09-07 마커] State 팔은 StateMarker — `State<Ref<Frame?>>`가 캐스트 없이 `StateMarker<FrameRefMarker>`에
-        # 든다(공변 + Ref의 반공변 팬텀이 폭 서브타이핑으로 대조됨), 8.7 캐비엇 5의 캐스트 관용구는 불필요
-        L.append(f"export type {name}Elem = NewChild | {name}OnChange | {nil_marker(f"{name}OnChange")} | {{ read __quadModifier: {marker} }} | {name}RefMarker | {nil_marker(f"{name}RefMarker")}")
-        L.append(f"export type {name}MapperElem = {name}Elem | MapperDescriptor")
-        L.append("")
-    L.append("-- Declaration 네임스페이스 타입(H-305 (d′)) — `UseProvider` 확장 `RobloxExtension`이")
-    L.append("-- 싣는 풀 타입 표면. 아래 런타임 별칭 캐스트와 1:1 — 손 나열 금지 계약대로")
-    L.append("-- 생성기가 같이 찍는다.")
-    L.append("export type DeclarationMapper = {")
-    L.append("\tRoot: MapperRoot,")
-    for name in names:
-        L.append(
-            f"\t{name}: (key: string | MapperRoot) -> ({name}Param<{name}MapperElem>) -> MapperDescriptor,"
-        )
-    L.append("}")
-    L.append("export type DeclarationModifier = {")
-    for name in mod_classes:
-        L.append(f"\t{name}: (...({name}Modifier | {{ [string]: any }})) -> {name}Modifier,")
-    L.append("}")
-    L.append("export type Declaration = {")
-    L.append("\tNew: <T>(className: string) -> (props: any) -> T,")
-    L.append("\tMapper: DeclarationMapper,")
-    L.append("\tModifier: DeclarationModifier,")
-    for name in names:
-        L.append(f"\t{name}: ({name}Param<{name}Elem>) -> {name},")
-    L.append("}")
-    L.append("")
-    L.append("--[[ InitDeclaration(quad) — `UseProvider` 확장(`RobloxExtension.Declaration`)으로 실린다")
-    L.append("\t(round14 H-299의 module.Declaration 직접 대입 채널을 H-305 (d′)가 병합 채널로 이동).")
-    L.append("\tNew의 ①~④ 순서는 bind-system-plan 파이프라인 의사코드가 계약. ]]")
-    L.append("return function(quad: any): Declaration")
-    L.append("\tlocal function New<T>(className: string): (props: any) -> T")
-    L.append("\t\tlocal function stage(props: any): T")
-    L.append("\t\t\tlocal inst = Instance.new(className) -- ①")
-    L.append("\t\t\tquad.Backend.nativeClaim(inst) -- ② 생성 직후 무조건, ③④보다 먼저")
-    L.append("\t\t\t-- ③④ — flatten(Modifier 소진)은 drive의 첫 pre-pass(round17 Q4 (a),")
-    L.append("\t\t\t-- 2026-09-04): New와 Claim이 같은 호출 자리를 쓴다")
-    L.append("\t\t\tquad.Dispatch.drive(inst, props)")
-    L.append("\t\t\treturn inst :: any")
-    L.append("\t\tend")
-    L.append("\t\t-- H-238: 범위 밖 클래스의 D.New(name)(props) 경로도 blame이 사용자")
-    L.append("\t\t-- 줄에 닿아야 한다 — 스테이지를 만들 때 태그(별칭도 이 경로로 만들어져")
-    L.append("\t\t-- 전부 태그됨; 리뷰 발견 반영)")
-    L.append("\t\tquad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, stage)")
-    L.append("\t\treturn stage")
-    L.append("\tend")
-    L.append("\t-- D.Mapper — Claim용 디스크립터 생성기(claim-plan §2; 본체는 quad-base")
-    L.append("\t-- Claim.luau의 newMapperClass — 여기선 클래스별 캐스트 별칭만, D.<Class> 동형)")
-    L.append("\tlocal Mapper: { [string]: any } = { Root = quad.MapperRoot }")
-    L.append("\t-- D.Modifier — 클래스별 타입드 Modifier 생성자(round17 §0 Q3 (a); 단위 ④):")
-    L.append("\t-- quad.Modifier.TypedFactory(name)이 돌려주는 태그 생성자(런타임 병합 본문은")
-    L.append("\t-- base 하나) + DefineSubtype(parent, name) 간선 — 둘 다 dedup이라 순서 자유")
-    L.append("\tlocal ModifierNS: { [string]: any } = {}")
-    L.append("\tlocal D: { [string]: any } = { New = New, Mapper = Mapper, Modifier = ModifierNS }")
-    for name in names:
-        L.append(f'\tD.{name} = (New("{name}") :: any) :: ({name}Param<{name}Elem>) -> {name}')
-    for name in names:
-        L.append(
-            f'\tMapper.{name} = (quad.newMapperClass("{name}") :: any) :: (key: string | MapperRoot) -> ({name}Param<{name}MapperElem>) -> MapperDescriptor'
-        )
-    for name in mod_classes:
-        L.append(f'\tModifierNS.{name} = (quad.Modifier.TypedFactory("{name}") :: any) :: (...({name}Modifier | {{ [string]: any }})) -> {name}Modifier')
-    for name in mod_classes:
-        parent = parent_of[name]
-        if parent:
-            L.append(f'\tquad.Modifier.DefineSubtype("{parent}", "{name}")')
-    L.append("\tquad.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, New) -- 별칭·스테이지는 New 안에서 태그됨")
-    L.append("\treturn (D :: any) :: Declaration")
-    L.append("end")
-    text = "\n".join(L) + "\n"
-    # [2026-09-15 공개 표면 (28) 잠정 — 사용자: "일부 export 표면이 자동화 될 수 있도록, auto gen 영역이
-    # init 에 박히는것"] the per-class types users write get a generated re-export block in the package
-    # root — the only public path under pesde (the generated module sits under `.pesde/…`). The contract is
-    # the root's names; the generated module's layout may change.
-    # Same day, user: "바뀌지 않을 것만 넣어줘" — at the time D was due to be factored with type
-    # functions, so only the class-independent value aliases went public.
-    # [2026-09-16 user decision — docs-review 2-2 / HUMAN_TODO D] the generated Declaration is the
-    # STABLE surface (type-function path is a separate unstable backlog), so the per-class names the
-    # docs and specs actually write go public too: `<Class>Modifier` / `Into<Class>` (all Modifier
-    # classes, ancestors included) and `<Class>Elem` (scope classes). `<Class>Param<E>`, `FieldP`/
-    # `FieldOutP`, `<Class>OnChange`/`RefMarker`/`MapperElem` stay generated-module-only.
-    R = []
-    R.append("export type Field<T> = DeclarationModule.Field<T>")
-    R.append("export type FieldOut<T> = DeclarationModule.FieldOut<T>")
-    for name in mod_classes:
-        R.append(f"export type {name}Modifier = DeclarationModule.{name}Modifier")
-        R.append(f"export type Into{name} = DeclarationModule.Into{name}")
-    for name in names:
-        R.append(f"export type {name}Elem = DeclarationModule.{name}Elem")
-    root_text = ROOT_INIT.read_text()
-    m = re.search(r"(-- BEGIN GENERATED ROOT EXPORTS[^\n]*\n)(.*?)(-- END GENERATED ROOT EXPORTS)", root_text, re.S)
-    if not m:
-        raise SystemExit(f"gate: GENERATED ROOT EXPORTS markers not found in {ROOT_INIT}")
-    new_root = root_text[:m.start(2)] + "\n".join(R) + "\n" + root_text[m.start(3):]
+    if sh_keys != {k for k, _ in SHORTHAND}:
+        raise SystemExit(f"gate: SHORTHAND keys {sorted(k for k, _ in SHORTHAND)} != InstanceShorthand.luau TABLE keys {sorted(sh_keys)}")
+    # the Modifier/Spread name map = the scope plus every ancestor on its chains (normalize recorded `chain`)
+    mod_classes = sorted({n for name in names for n in [name] + classes[name]["chain"]})
     data_text = emit_data(data, names, mod_classes, SHORTHAND)
     if CHECK_ONLY:
-        current_data = DATA_OUT.read_text() if DATA_OUT.exists() else ""
-        if current_data != data_text:
+        current = DATA_OUT.read_text() if DATA_OUT.exists() else ""
+        if current != data_text:
             raise SystemExit(f"gen-d check: {DATA_OUT} differs from a fresh emit — run `python3 scripts/gen-d.py emit` and commit")
-        if new_root != root_text:
-            raise SystemExit(f"gen-d check: the generated root export block in {ROOT_INIT} is stale — run `python3 scripts/gen-d.py emit` and commit")
-        # [7순회 H-423] `check` — test.sh gate: the committed D must equal a fresh emit
-        # (deterministic: every output walk is sorted, every input is tracked). Also runs
-        # every SystemExit gate above without touching the tree.
-        current = OUT.read_text() if OUT.exists() else ""
-        if current != text:
-            raise SystemExit(f"gen-d check: {OUT} differs from a fresh emit — run `python3 scripts/gen-d.py emit` and commit")
-        print(f"check: {len(names)} classes, generated Declaration is up to date")
+        print(f"check: {len(names)} classes, {DATA_OUT.relative_to(ROOT)} is up to date")
         return
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(text)
     DATA_OUT.parent.mkdir(parents=True, exist_ok=True)
     DATA_OUT.write_text(data_text)
-    ROOT_INIT.write_text(new_root)
-    print(f"emit: {len(names)} classes -> {OUT}")
+    print(f"emit: {len(names)} classes -> {DATA_OUT}")
 
 
 def luau_key(n):

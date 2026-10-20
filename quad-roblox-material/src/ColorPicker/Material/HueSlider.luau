@@ -26,7 +26,9 @@ local Interactive = require("../../Interactive")
 local Ripple = require("../../Ripple")
 local KeyNav = require("../../KeyNav")
 local Model = require("./Model")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local UIGradient = q.Elem "UIGradient"
+local UIStroke = q.Elem "UIStroke"
 
 local INSET = 10 -- handle radius
 local STEP = 0.01
@@ -131,7 +133,7 @@ local function HueSlider(props: Props)
 		return UDim2.fromScale(self:Get(), 0.5)
 	end)
 
-	return D.Frame {
+	return Frame {
 		Name = "HueSlider",
 		LayoutOrder = props.LayoutOrder or 0,
 		fx.Hook,
@@ -144,7 +146,7 @@ local function HueSlider(props: Props)
 		Active = true,
 		Selectable = interactable,
 		Interactable = interactable,
-		D.Frame {
+		Frame {
 			Name = "Rail",
 			AnchorPoint = Vector2.new(0, 0.5),
 			Position = UDim2.new(0, INSET, 0.5, 0),
@@ -152,8 +154,8 @@ local function HueSlider(props: Props)
 			BackgroundColor3 = Color3.new(1, 1, 1),
 			BorderSizePixel = 0,
 			UICorner = corner,
-			D.UIGradient { Color = RAINBOW },
-			D.Frame {
+			UIGradient { Color = RAINBOW },
+			Frame {
 				Name = "Halo",
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				Position = haloPos,
@@ -161,7 +163,7 @@ local function HueSlider(props: Props)
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				fx.Layer,
-				D.Frame {
+				Frame {
 					Name = "Handle",
 					AnchorPoint = Vector2.new(0.5, 0.5),
 					Position = UDim2.fromScale(0.5, 0.5),
@@ -169,7 +171,7 @@ local function HueSlider(props: Props)
 					BackgroundColor3 = model.hueColor,
 					BorderSizePixel = 0,
 					UICorner = corner,
-					D.UIStroke {
+					UIStroke {
 						Name = "Ring",
 						ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 						Thickness = 3,

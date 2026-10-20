@@ -5,7 +5,8 @@ local H = require("./support/harness")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
 local Util = require("../src/Util")
 local Overlay = require("../src/Overlay")
 local Button = require("../src/Button")
@@ -132,7 +133,7 @@ H.section("every host component takes `Hooks` (array-part values) and the hook s
 		return ListModule.ListData<<number>>({
 			Items = q.Source({ 1 }),
 			Key = function(n: number) return n end,
-			Render = function(item: Q.State<number>) return D.Frame {} end,
+			Render = function(item: Q.State<number>) return Frame {} end,
 			Hooks = h,
 		})
 	end)
@@ -146,7 +147,7 @@ H.section("every host component takes `Hooks` (array-part values) and the hook s
 		return Chip.ChipSet<<number>>({
 			Items = q.Source({ 1 }),
 			Key = function(n: number) return n end,
-			Render = function() return D.Frame {} end,
+			Render = function() return Frame {} end,
 			Hooks = h,
 		})
 	end)
@@ -199,7 +200,7 @@ H.section("every host component takes `Hooks` (array-part values) and the hook s
 	probe("HorizontalFloatingToolbar (FAB)", function(h)
 		return Toolbar.HorizontalFloatingToolbar({ Expanded = true, Content = {}, FloatingActionButton = { Icon = "x" }, Hooks = h })
 	end)
-	probe("Scaffold", function(h) return ScaffoldModule.Scaffold({ Content = D.Frame {}, Hooks = h }) end)
+	probe("Scaffold", function(h) return ScaffoldModule.Scaffold({ Content = Frame {}, Hooks = h }) end)
 	assert(checked == 71, "probed " .. checked)
 	H.assertNoDebugOutput("hooks")
 end)
@@ -207,18 +208,18 @@ end)
 -- ── one handle shape ────────────────────────────────────────────────────────
 H.section("every opened thing returns closures without self: Close(result?) + IsOpen State", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	H.setAbs(overlay.Layer, 0, 0, 800, 600)
-	local anchor = D.Frame {}
+	local anchor = Frame {}
 	H.setAbs(anchor, 100, 50, 200, 56)
 	local bar = Snackbar.new({ Overlay = overlay })
-	local tipTarget = D.Frame { Name = "TipTarget" }
+	local tipTarget = Frame { Name = "TipTarget" }
 	local tip = Tooltip.hook({ Text = "t", Overlay = overlay })
-	local tipHost = D.TextButton { tip.Hook }
+	local tipHost = TextButton { tip.Hook }
 	H.fire(tipHost, "MouseEnter")
 	H.advance(1)
 	local handles: { [string]: any } = {
-		Overlay = overlay:Open({ Content = D.Frame {}, ExitTime = 0 }),
+		Overlay = overlay:Open({ Content = Frame {}, ExitTime = 0 }),
 		Menu = Menu.open({ Anchor = anchor, Items = { { Label = "a" } }, Overlay = overlay }),
 		Dialog = Dialog.open({ Headline = "x", Overlay = overlay }),
 		DatePickerModal = DatePicker.Modal.open({ Overlay = overlay }),
@@ -251,7 +252,7 @@ end)
 
 H.section("Dialog.Close(result) reports the result (unknown) and the Overlay hands it to OnClose", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local got: { unknown } = {}
 	local d = Dialog.open({
 		Headline = "x",
@@ -266,7 +267,7 @@ H.section("Dialog.Close(result) reports the result (unknown) and the Overlay han
 	assert(#got == 1 and (got[1] :: any).picked == 3 and (d.Result:Get() :: any).picked == 3)
 	local seen: { unknown } = {}
 	local h = overlay:Open({
-		Content = D.Frame {},
+		Content = Frame {},
 		ExitTime = 0,
 		OnClose = function(reason: string, result: unknown?)
 			table.insert(seen, reason)
@@ -282,9 +283,9 @@ end)
 -- ── naming ──────────────────────────────────────────────────────────────────
 H.section("Menu.Item: `Label`, `Disabled` as a State (skipped by keyboard navigation, no-op on activate)", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	H.setAbs(overlay.Layer, 0, 0, 800, 600)
-	local anchor = D.Frame {}
+	local anchor = Frame {}
 	H.setAbs(anchor, 100, 50, 200, 56)
 	local locked = q.Source(true)
 	local log: { string } = {}
@@ -364,7 +365,7 @@ H.section("OnChange: TextField (user edits only), Select (item click), Chip.Filt
 	q.dispose(tf)
 	-- Select
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	H.setAbs(overlay.Layer, 0, 0, 800, 600)
 	local choice = q.Source(nil :: string?)
 	local picked: { string } = {}
@@ -376,7 +377,7 @@ H.section("OnChange: TextField (user edits only), Select (item click), Chip.Filt
 			table.insert(picked, o)
 		end,
 	})
-	local root = D.Frame { sel }
+	local root = Frame { sel }
 	H.setAbs(H.find(sel, "Container"), 100, 50, 200, 56)
 	H.fire(H.find(sel, "Container"), "InputBegan", H.input({ UserInputType = Enum.UserInputType.MouseButton1 }))
 	H.fire(H.find(sel, "Container"), "InputEnded", H.input({ UserInputType = Enum.UserInputType.MouseButton1 }))

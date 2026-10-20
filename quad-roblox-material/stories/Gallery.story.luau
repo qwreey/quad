@@ -18,7 +18,7 @@ return StoryKit.story({
 			theme.Scheme:SetIfChanged(c.Scheme:Get())
 		end, c.Scheme)
 		-- the follow Effect needs a host to live on (GalleryPanel has no Hooks): a transparent full-size wrapper
-		return q.Declaration.Frame {
+		return q.Elem "Frame" {
 			follow,
 			Name = "GalleryStory",
 			Size = UDim2.fromScale(1, 1),

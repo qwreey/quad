@@ -3,7 +3,8 @@ local H = require("./support/harness")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local FrameModifier = q.Modifier "Frame"
 local Tokens = require("../src/Tokens")
 local Tabs = require("../src/Tabs")
 
@@ -193,7 +194,7 @@ H.section("hover on a tab lights its state layer; Modifier overrides the base si
 	local tabs = Tabs<<string>>({
 		Selected = q.Source("a"),
 		Tabs = three,
-		Modifier = D.Modifier.Frame():Size(UDim2.fromOffset(300, 56)),
+		Modifier = FrameModifier():Size(UDim2.fromOffset(300, 56)),
 	})
 	assert(tabs.Size == UDim2.fromOffset(300, 56))
 	local bt = tabButtons(tabs)
@@ -206,7 +207,7 @@ end)
 
 H.section("dispose: nothing leaks", function()
 	local list = q.Source(three)
-	local root = D.Frame { Tabs<<string>>({ Selected = q.Source("a"), TabsState = list }) }
+	local root = Frame { Tabs<<string>>({ Selected = q.Source("a"), TabsState = list }) }
 	local all = H.findAll(root, function()
 		return true
 	end)

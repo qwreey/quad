@@ -74,8 +74,12 @@ local Anchored = require("../Sheet/Anchored")
 local Slide = require("../Sheet/Slide")
 local Parts = require("../Sheet/Parts")
 local StateModule = require("../Sheet/State")
-local D = q.Declaration
-local surfaceName = D.Modifier.Frame():Name("SideSheet")
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UICorner = q.Elem "UICorner"
+local UIListLayout = q.Elem "UIListLayout"
+local FrameModifier = q.Modifier "Frame"
+local surfaceName = FrameModifier():Name("SideSheet")
 
 export type Edge = "End" | "Start"
 
@@ -93,7 +97,7 @@ export type Config = {
 	OnCloseClick: () -> (),
 	Children: q.Slot<Instance>?,
 	OnGo: ((value: string, kind: Anchored.Kind) -> ())?,
-	Modifier: q.FrameModifier?,
+	Modifier: q.ModifierInto<Frame>?,
 	Hooks: { any }?,
 }
 
@@ -176,12 +180,12 @@ local function build(cfg: Config): Built
 	local header: Instance? = nil
 	local hasHeader = cfg.Headline ~= nil
 	if hasHeader then
-		header = D.Frame {
+		header = Frame {
 			Name = "Header",
 			Size = UDim2.new(1, 0, 0, HEADLINE_HEIGHT),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			D.TextLabel {
+			TextLabel {
 				Name = "Headline",
 				headlineStyle,
 				Size = UDim2.new(1, if cfg.ShowClose then -48 else 0, 1, 0),
@@ -208,9 +212,9 @@ local function build(cfg: Config): Built
 	local bodyTop = if hasHeader then HEADLINE_HEIGHT + HEADLINE_GAP else 0
 
 	local container = if cfg.Modal then theme.Color.SurfaceContainerLow else theme.Color.Surface
-	local sheet = D.Frame {
+	local sheet = Frame {
 		surfaceName,
-		D.Modifier.Frame():Size(UDim2.new(0, width, 1, -2 * margin)),
+		FrameModifier():Size(UDim2.new(0, width, 1, -2 * margin)),
 		AnchorPoint = Vector2.new(if atEnd then 1 else 0, 0),
 		Position = position,
 		BackgroundColor3 = container,
@@ -219,11 +223,11 @@ local function build(cfg: Config): Built
 		-- the drag hook goes where the press lands: the sink when there is one (the Frame below it never gets InputBegan)
 		if cfg.Modal then Util.clickSink({ slide.Hook() }) else slide.Hook() :: any,
 		cfg.Modifier or q.None,
-		if cfg.Modal or detached then D.UICorner { CornerRadius = UDim.new(0, CORNER) } else q.None,
+		if cfg.Modal or detached then UICorner { CornerRadius = UDim.new(0, CORNER) } else q.None,
 		if cfg.Modal then Elevation.Shadow({ Level = 1, Theme = theme }) else q.None,
 		-- docked: square the two corners on the edge; detached: all four stay round
 		if cfg.Modal and not detached then Parts.patch(if atEnd then "Right" else "Left", CORNER, container) else q.None,
-		D.Frame {
+		Frame {
 			Name = "Inner",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
@@ -232,13 +236,13 @@ local function build(cfg: Config): Built
 			ClipsDescendants = detached,
 			UIPaddingOffset = PADDING,
 			header or q.None,
-			D.Frame {
+			Frame {
 				Name = "Body",
 				Position = UDim2.fromOffset(0, bodyTop),
 				Size = UDim2.new(1, 0, 1, -bodyTop),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				D.UIListLayout { FillDirection = Enum.FillDirection.Vertical, SortOrder = Enum.SortOrder.LayoutOrder },
+				UIListLayout { FillDirection = Enum.FillDirection.Vertical, SortOrder = Enum.SortOrder.LayoutOrder },
 				cfg.Children or q.None,
 			},
 		},

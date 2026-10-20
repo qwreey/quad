@@ -69,8 +69,11 @@ local Destination = require("./Navigation/Destination")
 local Item = require("./Navigation/Item")
 local Motion = require("./Navigation/Motion")
 local StateModule = require("@self/State")
-local D = q.Declaration
-local railName = D.Modifier.Frame():Name("WideNavigationRail")
+local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
+local FrameModifier = q.Modifier "Frame"
+local railName = FrameModifier():Name("WideNavigationRail")
 
 export type Arrangement = "Top" | "Center" | "Bottom"
 export type Value = StateModule.Value
@@ -87,7 +90,7 @@ export type Props<K> = {
 	read Arrangement: Arrangement?,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -109,7 +112,7 @@ local TOP_MIN_H = 64 -- NavigationRailBaselineItemTokens.ContainerHeight
 local A11Y_MIN = 48 -- LocalMinimumInteractiveComponentSize
 local SPACING = 4 -- NavigationRailCollapsedTokens.ItemVerticalSpace
 
-local railBase = D.Modifier.Frame():Size(UDim2.new(0, COLLAPSED_W, 1, 0))
+local railBase = FrameModifier():Size(UDim2.new(0, COLLAPSED_W, 1, 0))
 
 local function lerp(a: number, b: number, t: number): number
 	return a + (b - a) * t
@@ -219,7 +222,7 @@ local function WideNavigationRail<K>(props: Props<K>): Frame
 		local isSel = Destination.isSelected(selected, key)
 		local sel, selMotion = Motion.progress(isSel, duration)
 		local labelWidth = q.Source(0)
-		local measure = q.OnChange("AbsoluteSize", function(v: Vector2)
+		local measure = q.OnChange "TextLabel" "AbsoluteSize" (function(v: Vector2)
 			if labelWidth:Get() ~= v.X then
 				labelWidth:Set(v.X)
 				labelWidths[index] = v.X
@@ -292,7 +295,7 @@ local function WideNavigationRail<K>(props: Props<K>): Frame
 		local labelColor = Style.animated(Style.choose(isSel, selectedLabel, R.OnSurfaceVariant))
 		local fx = Interactive.new({ Theme = theme, OnColor = theme.Color.OnSurface, Corner = corner })
 
-		return D.TextButton {
+		return TextButton {
 			Name = "NavigationItem",
 			Position = position,
 			Size = size,
@@ -306,7 +309,7 @@ local function WideNavigationRail<K>(props: Props<K>): Frame
 			Activated = function()
 				Destination.click(selected, key, props.OnChange, props.OnClick)
 			end,
-			D.Frame {
+			Frame {
 				Name = "Indicator",
 				Position = pillPosition,
 				Size = indicatorSize,
@@ -316,7 +319,7 @@ local function WideNavigationRail<K>(props: Props<K>): Frame
 				UICorner = corner,
 			},
 			Item.icon(dest, iconColor, theme, { Position = iconPosition }),
-			D.TextLabel {
+			TextLabel {
 				Name = "Label",
 				FontFace = labelFont,
 				TextSize = labelSize,
@@ -331,7 +334,7 @@ local function WideNavigationRail<K>(props: Props<K>): Frame
 				TextTransparency = labelTransparency,
 				measure,
 			},
-			D.Frame {
+			Frame {
 				Name = "Target",
 				Position = pillPosition,
 				Size = pillSize,
@@ -348,7 +351,7 @@ local function WideNavigationRail<K>(props: Props<K>): Frame
 	end
 	local headerHolder: Instance? = nil
 	if header ~= nil then
-		headerHolder = D.Frame {
+		headerHolder = Frame {
 			Name = "Header",
 			Position = UDim2.fromOffset(0, TOP),
 			Size = UDim2.new(1, 0, 0, heightOf(header)),
@@ -362,7 +365,7 @@ local function WideNavigationRail<K>(props: Props<K>): Frame
 		return UDim2.new(0, math.round(self:Get()), 1, 0)
 	end)
 
-	return D.Frame {
+	return Frame {
 		railName,
 		railBase:Size(width),
 		BackgroundColor3 = theme.Color.Surface,

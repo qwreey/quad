@@ -32,9 +32,12 @@
 
 local Quad = require("./Quad")
 local q = Quad
-local D = q.Declaration
-local plotHistogramName = D.Modifier.Frame():Name("PlotHistogram")
-local plotLinesName = D.Modifier.Frame():Name("PlotLines")
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
+local FrameModifier = q.Modifier "Frame"
+local plotHistogramName = FrameModifier():Name("PlotHistogram")
+local plotLinesName = FrameModifier():Name("PlotLines")
 local Style = require("./Style")
 
 type State<T> = Quad.State<T>
@@ -48,7 +51,7 @@ export type PlotProps = {
 	read Height: number?,
 	read Text: (string | State<string>)?,
 	read Style: Style?,
-	read Modifier: Quad.FrameModifier?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 local MAX_POINTS = 200
@@ -112,7 +115,7 @@ local function overlay(props: PlotProps, style: Style): TextLabel | typeof(q.Non
 	if props.Text == nil then
 		return q.None
 	end
-	return D.TextLabel({
+	return TextLabel({
 		Name = "Overlay",
 		Size = UDim2.fromScale(1, 1),
 		Text = props.Text,
@@ -151,7 +154,7 @@ function Plot.PlotHistogram(props: PlotProps): Frame
 			local v = self:Get()[index] or lo:Get()
 			return UDim2.new(1 / n:Get(), 0, fraction(v, low:Get(), high:Get()), 0)
 		end, lo, hi, count)
-		return D.Frame({
+		return Frame({
 			Name = "Bar",
 			LayoutOrder = index,
 			Size = size,
@@ -163,7 +166,7 @@ function Plot.PlotHistogram(props: PlotProps): Frame
 	end, function(_item: number, i: number): any
 		return i
 	end)
-	return D.Frame({
+	return Frame({
 		plotHistogramName,
 		props.Modifier or q.None,
 		Size = UDim2.new(1, 0, 0, props.Height or 80),
@@ -172,7 +175,7 @@ function Plot.PlotHistogram(props: PlotProps): Frame
 		BorderSizePixel = 0,
 		ClipsDescendants = true,
 		UICorner = style.Metrics.FrameRounding,
-		D.UIListLayout({
+		UIListLayout({
 			FillDirection = Enum.FillDirection.Horizontal,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			VerticalAlignment = Enum.VerticalAlignment.Bottom,
@@ -234,7 +237,7 @@ function Plot.PlotLines(props: PlotProps): Frame
 		local rotation: State<number> = geo:Compute(function(self)
 			return self:Get().Rotation
 		end)
-		return D.Frame({
+		return Frame({
 			Name = "Segment",
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = position,
@@ -248,7 +251,7 @@ function Plot.PlotLines(props: PlotProps): Frame
 	end, function(_item: number, i: number): any
 		return i
 	end)
-	return D.Frame({
+	return Frame({
 		plotLinesName,
 		props.Modifier or q.None,
 		Size = UDim2.new(1, 0, 0, props.Height or 80),
@@ -257,7 +260,7 @@ function Plot.PlotLines(props: PlotProps): Frame
 		BorderSizePixel = 0,
 		ClipsDescendants = true,
 		UICorner = style.Metrics.FrameRounding,
-		q.Out("AbsoluteSize", pixels),
+		q.Out "Frame" "AbsoluteSize" (pixels),
 		segments,
 		overlay(props, style),
 	})

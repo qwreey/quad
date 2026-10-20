@@ -3,7 +3,8 @@ local H = require("./support/harness")
 local Q = require("../src/Quad")
 local q = H.attach(Q)
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextButtonModifier = q.Modifier "TextButton"
 local Theme = require("../src/Theme")
 local Tokens = require("../src/Tokens")
 local Button = require("../src/Button")
@@ -251,7 +252,7 @@ H.section("theme: dark switch, per-component theme, caller Modifier overrides th
 	local btn = Button({
 		Label = "Themed",
 		Theme = theme,
-		Modifier = D.Modifier.TextButton():Size(UDim2.new(1, 0, 0, 48)),
+		Modifier = TextButtonModifier():Size(UDim2.new(1, 0, 0, 48)),
 	})
 	assert(btn.Size == UDim2.new(1, 0, 0, 48), "caller Modifier wins over the base size")
 	assert(btn.BackgroundColor3 == L.Primary)
@@ -365,7 +366,7 @@ end)
 
 H.section("Hooks pass-through: Tooltip.hook on Button / IconButton / FAB, plus a plain hook; Util.asState default", function()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	local tip = Tooltip.hook({ Text = "Save it", Overlay = overlay })
 	local created = 0
 	local btn: any = Button({
@@ -410,7 +411,7 @@ H.section("Hooks pass-through: Tooltip.hook on Button / IconButton / FAB, plus a
 end)
 
 H.section("dispose: a whole row of buttons is destroyed, nothing leaks", function()
-	local root = D.Frame {
+	local root = Frame {
 		Button({ Label = "A" }),
 		Button({ Variant = "Outlined", Label = "B", Icon = "rbxassetid://1" }),
 		IconButton({ Icon = "rbxassetid://2" }),

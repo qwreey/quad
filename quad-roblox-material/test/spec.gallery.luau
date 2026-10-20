@@ -2,7 +2,7 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Gallery = require("../gallery")
 local Theme = require("../src/Theme")
 local Tokens = require("../src/Tokens")
@@ -545,7 +545,7 @@ H.section("dispose: overlay, connections and timers back to baseline", function(
 end)
 
 H.section("GalleryPanel without an Overlay brings its own layer and works inside a plain host", function()
-	local host = D.Frame { Size = UDim2.fromOffset(800, 600), Gallery.GalleryPanel({}) }
+	local host = Frame { Size = UDim2.fromOffset(800, 600), Gallery.GalleryPanel({}) }
 	assert(#named(host, "Overlay") == 1, "own overlay layer inside the panel")
 	click(tabButton(host, "Overlays"))
 	click(button(host, "Alert"))

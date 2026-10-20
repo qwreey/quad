@@ -19,7 +19,8 @@ local q = require("./Quad")
 
 type Context = Context.Context
 
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local UIListLayout = q.Elem "UIListLayout"
 local Kids = Devui.Kids
 
 type Scheme = typeof(Devui.Style.default.Scheme:Get())
@@ -46,12 +47,12 @@ local function buildPreview(c: Config): Instance
 	})
 	local on = q.Source(true)
 	local value = q.Source(35)
-	return D.Frame({
+	return Frame({
 		Name = "Preview",
 		Size = UDim2.new(1, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundTransparency = 1,
-		D.UIListLayout({ SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4) }),
+		UIListLayout({ SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4) }),
 		Devui.Button({ Text = "Preview button", Style = pStyle }),
 		Devui.Checkbox({ Text = "Preview checkbox", Value = on, Style = pStyle }),
 		Devui.SliderNum({ Text = "slider", Value = value, Min = 0, Max = 100, Style = pStyle }),
@@ -116,12 +117,12 @@ local function StyleEditorWindow(props: StyleEditorProps): Frame
 			Devui.InputColor3({ Text = "FrameBg", Value = field, Style = style }),
 			Devui.DragNum({ Text = "FrameRounding", Value = rounding, Min = 0, Max = 12, Step = 1, Style = style }),
 			Devui.DragNum({ Text = "TextSize", Value = textSize, Min = 9, Max = 24, Step = 1, Style = style }),
-			D.Frame({
+			Frame({
 				Name = "PreviewHost",
 				Size = UDim2.new(1, 0, 0, 0),
 				AutomaticSize = Enum.AutomaticSize.Y,
 				BackgroundTransparency = 1,
-				D.UIListLayout({ SortOrder = Enum.SortOrder.LayoutOrder }),
+				UIListLayout({ SortOrder = Enum.SortOrder.LayoutOrder }),
 				preview,
 			})
 		),

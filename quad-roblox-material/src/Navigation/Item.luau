@@ -21,7 +21,8 @@ local Theme = require("../Theme")
 local IconView = require("../IconView")
 local Badge = require("../Badge")
 local Destination = require("./Destination")
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local FrameModifier = q.Modifier "Frame"
 
 local ICON = 24
 
@@ -46,7 +47,7 @@ local function icon<K>(dest: Destination.Destination<K>, color: q.State<Color3>,
 		return view
 	end
 	local hasText = badge ~= ""
-	return D.Frame {
+	return Frame {
 		Name = "IconBox",
 		Size = UDim2.fromOffset(ICON, ICON),
 		AnchorPoint = at.AnchorPoint,
@@ -57,7 +58,7 @@ local function icon<K>(dest: Destination.Destination<K>, color: q.State<Color3>,
 		Badge.Badge({
 			Text = if hasText then badge else nil,
 			Theme = theme,
-			Modifier = D.Modifier.Frame():Position(Badge.position(hasText)):ZIndex(2),
+			Modifier = FrameModifier():Position(Badge.position(hasText)):ZIndex(2),
 		}),
 	}
 end

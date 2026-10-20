@@ -604,7 +604,7 @@ do
 	local inst = mock.Instance.new("Frame")
 	local s = q.Source(1)
 	local d = s:Compute(function()
-		return q.Modifier({})
+		return q.Raw.Modifier({})
 	end)
 	local ok, err = pcall(function()
 		q.Dispatch.drive(inst, { Name = d })

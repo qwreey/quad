@@ -1,27 +1,29 @@
 ---
-title: "Claim과 D.Mapper"
-description: "이미 있는 Instance 트리를 quad가 소유하고 props대로 처리하기 — 디스크립터 해석, 계약과 에러"
+title: "Claim과 Mapper"
+description: "이미 있는 Instance 트리를 quad가 소유하고 props대로 처리하기 — q.Mapper 디스크립터 해석, 계약과 에러"
 ---
-# `Claim`과 `D.Mapper`
+# `Claim`과 `q.Mapper`
+
+> **[3.4.0]** 3.3까지는 `D.Mapper.<Class>(key)(props)`·`D.Mapper.Root`·`q.newMapperClass(name)`이었습니다. 3.4.0부터 클래스를 먼저 받는 `q.Mapper "Frame" (key) {…}`, 루트 센티널은 `q.MapperRoot`, 타입 없는 원본은 [`q.Raw.Mapper`](../core/01-quad-module.md#qraw)입니다.
 
 Studio에서 만든 GUI, `template:Clone()` 사본처럼 **이미 존재하는 트리**를 quad가 소유하고,
-`D.<Class>{…}`로 만든 것과 똑같이 props를 처리하게 만드는 경로입니다. `D.Mapper` 디스크립터가
+[`q.Elem`](./02-elem.md)으로 만든 것과 똑같이 props를 처리하게 만드는 경로입니다. `q.Mapper` 디스크립터가
 "이 자리는 이름이 `Title`인 자식"이라고 지목하고, `Claim`이 그걸 실제 Instance로 해석합니다.
 
 이 페이지의 심볼: [`q.Claim(inst, desc)`](#qclaiminst-desc) ·
-[`D.Mapper.<Class>(key)(props)`](#dmapperclasskeyprops) · [`D.Mapper.Root`](#dmapperroot) ·
-[`q.MapperRoot`](#qmapperroot) · [`q.newMapperClass(className)`](#qnewmapperclassclassname)
+[`q.Mapper "Class" (key)(props)`](#qmapper-class-keyprops) · [`q.MapperRoot`](#qmapperroot)
 
 :::note
 `Claim` 자체는 `quad-base`에 있지만, 자식을 찾는 op(`nativeFindChild` — 이름과 클래스로)와 소유 op(`nativeClaim`)는
-백엔드가 주입합니다. `D.Mapper`는 `quad-roblox` 전용입니다.
+백엔드가 주입합니다. `q.Mapper`는 `quad-roblox` 전용입니다.
 :::
 
 ```luau
 -- 01장의 설정 모듈: quad_base에 quad_roblox를 설치하고 타입을 다시 내보낸다(시작하기 01 참고)
 local q = require("@game/ReplicatedStorage/Client/UI/Quad")
-local D = q.Declaration
-local M = D.Mapper
+local MapFrame = q.Mapper "Frame"
+local MapLabel = q.Mapper "TextLabel"
+local Root = q.MapperRoot
 ```
 
 ---
@@ -41,7 +43,7 @@ Claim: <T>(inst: T, desc: MapperDescriptor) -> T
 | 이름 | 타입 | 설명 |
 |---|---|---|
 | `inst` | Instance | 소유할 트리의 루트. 설치된 백엔드의 Instance여야 한다 |
-| `desc` | `MapperDescriptor` | `D.Mapper.<Class>(M.Root)(props)`로 만든 루트 디스크립터 |
+| `desc` | `MapperDescriptor` | `q.Mapper "Class" (q.MapperRoot)(props)`로 만든 루트 디스크립터 |
 
 **반환** — 넘긴 `inst` 그대로(타입도 그대로). 체이닝하기 좋습니다.
 
@@ -52,11 +54,11 @@ Claim: <T>(inst: T, desc: MapperDescriptor) -> T
 local function bindCard(template: Frame): Frame
 	local title = q.Source("안녕")
 
-	local root = q.Claim(template, M.Frame(M.Root)({
+	local root = q.Claim(template, MapFrame(Root)({
 		BackgroundTransparency = 0.25,               -- 루트 자신의 props
-		M.TextLabel("Title")({ Text = title }),      -- 이름이 "Title"인 직계 자식
-		M.Frame("List")({                            -- 중첩도 된다
-			M.TextLabel("Inner")({ Text = "깊은 자식" }),
+		MapLabel("Title")({ Text = title }),         -- 이름이 "Title"인 직계 자식
+		MapFrame("List")({                           -- 중첩도 된다
+			MapLabel("Inner")({ Text = "깊은 자식" }),
 		}),
 	}))
 
@@ -70,21 +72,21 @@ end
 1. 인자를 검사합니다(아래 에러 표).
 2. 디스크립터를 DFS로 내려가며, 자식 자리의 디스크립터를 **키로 자식을 찾아** 실제 Instance로
    해석합니다.
-3. 해석된 Instance마다 **먼저 소유**하고(그 뒤에야 props 처리 — `D.New`의 순서와 같습니다),
+3. 해석된 Instance마다 **먼저 소유**하고(그 뒤에야 props 처리 — `q.Elem`의 순서와 같습니다),
    **안쪽부터 바깥으로** props를 처리합니다.
 4. 해석된 자식이 있던 숫자 키 자리는 **그 Instance로 치환**됩니다 — 그래서 그 뒤로는 평범한 정적 자식과
    구분이 없습니다.
 
-props 테이블은 **제자리에서** 바뀝니다(사본을 만들지 않습니다). `D.<Class>{…}`가 쓰는 것과 같은
-props 처리 경로를 타므로 `Modifier` 소진, 숫자 키/문자 키 순서, `q.None` 메꾸기가 전부 동일하게 동작합니다.
+props 테이블은 **제자리에서** 바뀝니다(사본을 만들지 않습니다). `q.Elem`의 생성자가 쓰는 것과 같은
+props 처리 경로를 타므로 Spread 펼치기, `Modifier` 소진, 숫자 키/문자 키 순서, `q.None` 메꾸기가 전부 동일하게 동작합니다.
 
 ```luau
 -- 새로 만든 자식과 매핑 자식을 한 배열에 섞어도 된다
 local function bindMixed(template: Frame)
-	return q.Claim(template, M.Frame(M.Root)({
-		M.TextLabel("Title")({ Text = "매핑" }),
-		D.TextLabel({ Text = "새로 만든 것" }),
-		D.Modifier.Frame():BackgroundTransparency(0.5),
+	return q.Claim(template, MapFrame(Root)({
+		MapLabel("Title")({ Text = "매핑" }),
+		q.Elem "TextLabel" { Text = "새로 만든 것" },
+		q.Modifier "Frame" ():BackgroundTransparency(0.5),
 		q.None,
 	}))
 end
@@ -95,34 +97,34 @@ end
 | 상황 | 문구 |
 |---|---|
 | 첫 인자가 Instance가 아님 | `Quad0033 Claim: first argument must be an Instance of the installed backend (got {typeof(inst)})` |
-| 둘째 인자가 디스크립터가 아님 | `Quad0034 Claim: second argument must be a D.Mapper descriptor` |
+| 둘째 인자가 디스크립터가 아님 | `Quad0034 Claim: second argument must be a mapper descriptor (q.Mapper "Frame" (key) {…})` |
 | 디스크립터를 두 번 씀 | `Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)` |
 | 디스크립터의 props가 테이블이 아님 | `Quad0030 Claim: mapper props must be a table (got {typeof(desc._props)})` |
 | 디스크립터 둘이 같은 자식(같은 이름)을 가리킴 | `Quad0028 Claim: two mapper descriptors resolved to the same Instance {tostring(inst)} - each child needs exactly one descriptor` |
-| 이미 quad가 소유한 Instance(루트든 자식이든 — 백엔드의 `nativeClaim`보다 먼저 `isClaimed`로 걸립니다) | `Quad0029 Claim: {inst} is already claimed by quad - a Declaration-made or already-Claimed Instance cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)` |
+| 이미 quad가 소유한 Instance(루트든 자식이든 — 백엔드의 `nativeClaim`보다 먼저 `isClaimed`로 걸립니다) | `Quad0029 Claim: {inst} is already claimed by quad - an Instance quad made (q.Elem) or already Claimed cannot be claimed again (leave it out of the descriptor and drive it separately, or dispose it and rebuild)` |
 | 매퍼 키에 해당하는 자식이 없거나, 이름은 맞는데 그 클래스(`IsA`)가 아님 | `Quad0032 Claim: no child matched key {key} under {inst} (mapper {class}) - a child with that name must also be a {class}` |
 
-`D.<Class>{…}`의 숫자 키 자리에 디스크립터를 넣으면 매치되는 핸들러가 없어 일반 no-match 에러가
+`q.Elem` 생성자의 숫자 키 자리에 디스크립터를 넣으면 매치되는 핸들러가 없어 일반 no-match 에러가
 납니다 — 디스크립터는 `Claim` 전용입니다.
 
-위 표의 `Claim: …` 에러는 **아무것도 claim하기 전에** 납니다 — `Claim`은 먼저 트리 전체를 훑는 매핑 패스로 props 안의 디스크립터를 찾아 실제 자식 Instance로 해석하고(키·클래스·1회용 재사용·같은 자식으로 해석되는 디스크립터 둘·props가 테이블인지) 그다음에야 루트부터 claim하고 아래에서 위로, `D.New`와 같은 순서로 적용합니다. 그래서 자식 이름을 고쳐 같은 루트에 다시 걸면 그대로 됩니다. 이미 quad 소유인 인스턴스(루트든 자식이든 — 위젯을 템플릿에 꽂아 둔 경우, 먼저 `Claim`한 자식)도 같은 해석 패스에서 `Claim: <이름> is already claimed by quad …`로 거부되어 아무것도 남기지 않습니다 — 그 자식은 디스크립터에서 빼고 따로 다루세요. 예외 하나: 적용 단계(프로퍼티·핸들러)에서 던지면 claim은 트리 전체가 끝난 뒤라 그 시점까지 적용된 것과 함께 남습니다(`D.New`가 중간에 던질 때와 같은 정의되지 않은 동작). 해석 패스는 디스크립터를 찾아 해석하는 매핑만 하고 보는 것은 위 괄호의 범위와 이미 소유된 인스턴스뿐입니다 — 그 밖의 것은 적용 단계(`Dispatch.drive`와 핸들러)가 `D.New`에서와 똑같이 판정하므로 이 예외에 듭니다. 양의 정수가 아닌 배열 키(`{ [0] = … }`·`[2.5]`·음수 — 그 자리 값이 디스크립터든 아니든 `Quad0085`), 문자 키나 `State` 안에 놓인 디스크립터, 숫자 키 자리에 그대로 넣은 평범한 Instance(claim되지 않았거나 이미 다른 곳에 있는 것)가 여기 듭니다. `Modifier`의 필드에 넣은 디스크립터는 그 `Modifier`를 만드는 줄에서 거부됩니다(`Quad0057`/`Quad0064`). 또 `q.Claim`은 **루트 인스턴스의 클래스는 대조하지 않습니다** — 루트 디스크립터의 클래스와 다른 인스턴스를 넘겨도 해석 패스는 통과하고(클래스 대조는 자식을 찾을 때 `nativeFindChild`가 하는 것뿐), 차이는 적용 단계의 프로퍼티 대입에서 드러납니다.
+위 표의 `Claim: …` 에러는 **아무것도 claim하기 전에** 납니다 — `Claim`은 먼저 트리 전체를 훑는 매핑 패스로 props 안의 디스크립터를 찾아 실제 자식 Instance로 해석하고(키·클래스·1회용 재사용·같은 자식으로 해석되는 디스크립터 둘·props가 테이블인지) 그다음에야 루트부터 claim하고 아래에서 위로, `q.Elem`과 같은 순서로 적용합니다. 그래서 자식 이름을 고쳐 같은 루트에 다시 걸면 그대로 됩니다. 이미 quad 소유인 인스턴스(루트든 자식이든 — 위젯을 템플릿에 꽂아 둔 경우, 먼저 `Claim`한 자식)도 같은 해석 패스에서 `Claim: <이름> is already claimed by quad …`로 거부되어 아무것도 남기지 않습니다 — 그 자식은 디스크립터에서 빼고 따로 다루세요. 예외 하나: 적용 단계(프로퍼티·핸들러)에서 던지면 claim은 트리 전체가 끝난 뒤라 그 시점까지 적용된 것과 함께 남습니다(`q.Elem`의 생성자가 중간에 던질 때와 같은 정의되지 않은 동작). 해석 패스는 디스크립터를 찾아 해석하는 매핑만 하고 보는 것은 위 괄호의 범위와 이미 소유된 인스턴스뿐입니다 — 그 밖의 것은 적용 단계(`Dispatch.drive`와 핸들러)가 `q.Elem`에서와 똑같이 판정하므로 이 예외에 듭니다. 양의 정수가 아닌 배열 키(`{ [0] = … }`·`[2.5]`·음수 — 그 자리 값이 디스크립터든 아니든 `Quad0085`), 문자 키나 `State` 안에 놓인 디스크립터, 숫자 키 자리에 그대로 넣은 평범한 Instance(claim되지 않았거나 이미 다른 곳에 있는 것)가 여기 듭니다. `Modifier`의 필드에 넣은 디스크립터는 그 `Modifier`를 만드는 줄에서 거부됩니다(`Quad0057`/`Quad0064`). 또 `q.Claim`은 **루트 인스턴스의 클래스는 대조하지 않습니다** — 루트 디스크립터의 클래스와 다른 인스턴스를 넘겨도 해석 패스는 통과하고(클래스 대조는 자식을 찾을 때 `nativeFindChild`가 하는 것뿐), 차이는 적용 단계의 프로퍼티 대입에서 드러납니다.
 
 **계약 셋**
 
-1. **한 번만 claim합니다.** 한 Instance는 생애 동안 정확히 한 번 소유됩니다. `D.New`로 만든 것은
-   이미 소유된 상태라 다시 걸면 위의 "already claimed"입니다 — **같은 quad 모듈 인스턴스 안에서**의 이야기입니다(소유 장부는 모듈 인스턴스마다 따로라, `Quad.New()`로 만든 다른 인스턴스는 그 Instance를 모르고 그대로 claim합니다 — 아래 UB). 여러 quad 인스턴스가 한 트리를 나눠
+1. **한 번만 claim합니다.** 한 Instance는 생애 동안 정확히 한 번 소유됩니다. `q.Elem`으로 만든 것은
+   이미 소유된 상태라 다시 걸면 위의 "already claimed"입니다 — **같은 quad 모듈 인스턴스 안에서**의 이야기입니다(소유 장부는 모듈 인스턴스마다 따로라, `Quad.NewModule()`로 만든 다른 인스턴스는 그 Instance를 모르고 그대로 claim합니다 — 아래 UB). 여러 quad 인스턴스가 한 트리를 나눠
    claim하는 것은 UB입니다. 이미 파괴된 Instance를 claim하는 것도 UB입니다 — 막지 않습니다.
 2. **그려지는 직계 자식은 전부 매핑합니다.** quad는 claim한 Instance의 자식 자리를
    [부기](../core/06-slot.md)합니다. 그리는 직계 자식 중 매핑되지 않은 것이 남으면 삽입 위치와
    길이/오프셋 계산이 어긋납니다.
    - **디스크립터 배열의 순서가 정본**입니다. 기존 트리의 순서가 다르면 맞추는 건 사용자 책임입니다
      — quad는 재정렬하지 않습니다.
-   - **[숏핸드 키](./02-d.md#숏핸드-키-넷)가 만든 `UI*`는 부기 대상이 아닙니다** — 그려지지 않고
+   - **[숏핸드 키](./02-elem.md#숏핸드-키-넷)가 만든 `UI*`는 부기 대상이 아닙니다** — 그려지지 않고
      매달릴 뿐이라 quad가 자리로 세지 않습니다. 반대로 템플릿에 이미 있는 `UI*`를
-     `M.UICorner("UICorner")({ … })`처럼 **디스크립터로 매핑하면 평범한 숫자 키 자리**이고, 그건 부기
+     `q.Mapper "UICorner" ("UICorner")({ … })`처럼 **디스크립터로 매핑하면 평범한 숫자 키 자리**이고, 그건 부기
      대상입니다. 둘을 섞으면(템플릿에 `UICorner`가 있는데 숏핸드 키도 쓰면) `UICorner`가 둘 생기니
      한쪽만 쓰세요.
-   - 이름 **중복**은 UB입니다(`FindFirstChild`가 고르는 쪽). 부재는 즉시 에러입니다 — `Quad0032 Claim: no child matched key {key} under {inst} (mapper {class}) - a child with that name must also be a {class}`. 이름은 맞는데 클래스가 다른 자식(`M.TextLabel("Kid")`인데 실제로는 `ImageLabel`)도 같은 에러입니다 — 하위 클래스는 통과합니다(`IsA`).
+   - 이름 **중복**은 UB입니다(`FindFirstChild`가 고르는 쪽). 부재는 즉시 에러입니다 — `Quad0032 Claim: no child matched key {key} under {inst} (mapper {class}) - a child with that name must also be a {class}`. 이름은 맞는데 클래스가 다른 자식(`q.Mapper "TextLabel" ("Kid")`인데 실제로는 `ImageLabel`)도 같은 에러입니다 — 하위 클래스는 통과합니다(`IsA`).
 3. **`PlayerGui`/`CoreGui`는 대상이 아닙니다.** 엔진과 여러 스크립트가 자식을 넣고 빼는 공유
    컨테이너라 "소유"가 성립하지 않습니다. 런타임 검사가 아니라 **설계상 대상 밖**이라는 뜻이니
    걸지 마세요. 대신 quad 트리의 **루트는 밖에서 `.Parent`를 설정해도 됩니다**(루트의 부모는 어떤
@@ -130,43 +132,43 @@ end
 
    ```luau
    local function mount(existingScreenGui: ScreenGui, playerGui: Instance)
-   	local screen = q.Claim(existingScreenGui, M.ScreenGui(M.Root)({}))
+   	local screen = q.Claim(existingScreenGui, q.Mapper "ScreenGui" (q.MapperRoot)({}))
    	screen.Parent = playerGui -- 허용: 루트의 Parent는 부기 밖
    end
    ```
 
-`props`에 `Parent`를 넣는 것은 `Claim`에서도 금지입니다 — [`D`와 같은 이유](./02-d.md#문자-키--프로퍼티와-이벤트).
+`props`에 `Parent`를 넣는 것은 `Claim`에서도 금지입니다 — [`q.Elem`과 같은 이유](./02-elem.md#문자-키--프로퍼티와-이벤트).
 
 ---
 
-## `D.Mapper.<Class>(key)(props)`
+## `q.Mapper "Class" (key)(props)`
 
 **시그니처**
 
 ```luau
--- 클래스마다 하나씩 생성된 별칭. Frame이라면:
-D.Mapper.Frame: (key: string | MapperRoot) -> (FrameParam<FrameMapperElem>) -> MapperDescriptor
+Mapper: <K>(name: K & keyof<CreatableMap>) -> (key: string | MapperRoot) -> (props: MapperProps<Class>) -> MapperDescriptor
 ```
 
 **인자**
 
 | 이름 | 타입 | 설명 |
 |---|---|---|
-| `key` | `string` 또는 `MapperRoot` | 이 자리에 놓일 자식의 이름. 루트 자리면 `M.Root` 센티널 |
-| `props` | 클래스의 props 테이블 | `D.<Class>`와 **같은 모양** — 문자 키·숫자 키 그대로 |
+| `name` | 클래스 이름 | [`q.Elem`과 같은 맵](./02-elem.md#클래스-맵--어떤-이름을-받는가)(만들 수 있는 31개). 그 밖은 [`q.ForClasses`](./02-elem.md#qforclassesmap)의 `Mapper` |
+| `key` | `string` 또는 `MapperRoot` | 이 자리에 놓일 자식의 이름. 루트 자리면 [`q.MapperRoot`](#qmapperroot) |
+| `props` | 클래스의 props 테이블 | `q.Elem`의 생성자와 **같은 모양** — 문자 키·숫자 키 그대로 |
 
 **반환** — `MapperDescriptor`. **1회용**입니다 — 한 번 `Claim`에 쓰이면 다시 못 씁니다.
 
 **동작**
 
-`D.<Class>`와 커링 모양이 같지만 한 단계 더 있습니다(`(key)` → `(props)`). props의 숫자 키 자리에는
-`D.<Class>`가 받는 것 전부에 더해 **다른 디스크립터**가 들어갑니다 — 그게 중첩 매핑입니다.
+`q.Elem`과 커링 모양이 같지만 한 단계 더 있습니다(클래스 → `(key)` → `(props)`). props의 숫자 키 자리에는
+`q.Elem`의 생성자가 받는 것 전부에 더해 **다른 디스크립터**가 들어갑니다 — 그게 중첩 매핑입니다.
 
 디스크립터를 재사용하려면 값을 저장하지 말고 **호출을 팩토리로 감싸세요**.
 
 ```luau
 local function CardDescriptor(text: string)
-	return M.Frame(M.Root)({ M.TextLabel("Title")({ Text = text }) })
+	return MapFrame(Root)({ MapLabel("Title")({ Text = text }) })
 end
 
 local function bindAll(cards: { Frame })
@@ -176,55 +178,24 @@ local function bindAll(cards: { Frame })
 end
 ```
 
-생성되는 Mapper 별칭의 이름 집합은 `D`의 클래스 별칭과 **정확히 같습니다**(31개).
-
----
-
-## `D.Mapper.Root`
-
-`Claim`의 인자로 넘기는 **루트 디스크립터의 키** 자리에 쓰는 센티널입니다. "이 자리는 이름으로 찾지
-말고 `Claim`이 받은 Instance 자신"이라는 뜻입니다.
-
-```luau
-q.Claim(template, M.Frame(M.Root)({ … }))
-```
-
-값은 `q.MapperRoot`와 같은 객체이고 `tostring`은 `MapperRoot`입니다.
+타입 없는 원본은 `q.Raw.Mapper(className)`입니다([core/01](../core/01-quad-module.md#qraw)). 클래스 이름은 런타임에서
+문자열인지만 봅니다(`Quad0278`; `q.Raw.Mapper`는 `Quad0026`).
 
 ---
 
 ## `q.MapperRoot`
 
-`D.Mapper.Root`가 다시 내놓는 원본 센티널입니다([`quad-base` 소유](../core/10-lifetime-sentinels.md)).
-`D`를 거치지 않고 디스크립터를 만들 때 쓰면 됩니다.
-
-```luau
-assert(D.Mapper.Root == q.MapperRoot)
-```
-
----
-
-## `q.newMapperClass(className)`
-
 **시그니처**
 
 ```luau
-newMapperClass: (className: string) -> (key: any) -> (props: any) -> MapperDescriptor
 MapperRoot: MapperRoot -- export type MapperRoot = { read __quadMapperRoot: true }
 ```
 
-`D.Mapper.<Class>` 별칭들이 얹혀 있는 **타입 없는 원본 팩토리**입니다
-([`quad-base` 소유](../core/10-lifetime-sentinels.md) — `D.<Class>`와 `D.New`의 관계와 같습니다). `D.Mapper`에 별칭이 없는 클래스를 매핑해야 할 때만
-쓰세요. props는 `any`라 클래스별 검사가 없습니다.
+`Claim`의 인자로 넘기는 **루트 디스크립터의 키** 자리에 쓰는 센티널입니다([`quad-base` 소유](../core/10-lifetime-sentinels.md)).
+"이 자리는 이름으로 찾지 말고 `Claim`이 받은 Instance 자신"이라는 뜻입니다. `tostring`은 `MapperRoot`입니다.
 
 ```luau
-local MapPart = q.newMapperClass("Part")
-
-local function bindModel(model: Model)
-	return q.Claim(model, q.newMapperClass("Model")(q.MapperRoot)({
-		MapPart("Body")({ Anchored = true }),
-	}))
-end
+q.Claim(template, q.Mapper "Frame" (q.MapperRoot)({ … }))
 ```
 
 ---
@@ -232,5 +203,5 @@ end
 **관련**
 
 - [07. Studio에서 만든 UI에 반응성 붙이기](../../how-to/07-studio-ui-binding-and-claim.md) — Clone 패턴과 실전 레시피
-- [Declaration — Instance 생성](./02-d.md) — props 테이블의 모양
+- [Elem — Instance 생성](./02-elem.md) — props 테이블의 모양
 - [Quadnomicon Vol. 7 — Instance 신원과 GC 철학](../../quadnomicon/07-instance-identity-and-gc-philosophy.md)

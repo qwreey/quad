@@ -1208,7 +1208,7 @@ Luau 쪽 한계라 quad 결함이 아니고, 처방은 미정이다 — 상류 �
 
 ## 8.28. luau-lsp에 한도 플래그 셋을 빼면 생성 `Declaration`이 "Code is too complex"로 무너져 그 타입을 쓰는 호출부의 특정 진단이 조용히 사라진다 — 배치/단독과 무관 (2026-09-27 T1 실측, luau-lsp 1.69.0)
 
-`scripts/test.sh`의 quad-roblox 게이트 명령(`--flag:LuauSolverV2=true --flag:LuauTarjanChildLimit=160000 --flag:LuauSubtypingIterationLimit=100000 --flag:LuauTypeInferIterationLimit=1000000 --definitions=scripts/roblox-defs/globalTypes.d.luau`)에서 한도 플래그 셋을 빼면 `quad-roblox/src/Declaration/init.luau` 자체에 `TypeError: Internal error: Code is too complex to typecheck!`가 여러 줄 뜨고, how-to 08 §7 17행 재현(`D.TextLabel({ Text = 42 })`)의 TypeError가 **통째로 사라진다**(18행 `Op.Sum` 비숫자는 남음) — 단독 실행에서도 같다. 에러 타입으로 무너진 뒤 하위 검사가 스킵되는 Luau 일반 동작으로 추정(소스 미확인).
+`scripts/test.sh`의 quad-roblox 게이트 명령(`--flag:LuauSolverV2=true --flag:LuauTarjanChildLimit=160000 --flag:LuauSubtypingIterationLimit=100000 --flag:LuauTypeInferIterationLimit=1000000 --definitions=scripts/roblox-defs/globalTypes.d.luau`)에서 한도 플래그 셋을 빼면 옛 `quad-roblox/src/Declaration/init.luau` 자체에 `TypeError: Internal error: Code is too complex to typecheck!`가 여러 줄 뜨고, how-to 08 §7 17행 재현(`D.TextLabel({ Text = 42 })`)의 TypeError가 **통째로 사라진다**(18행 `Op.Sum` 비숫자는 남음) — 단독 실행에서도 같다. 에러 타입으로 무너진 뒤 하위 검사가 스킵되는 Luau 일반 동작으로 추정(소스 미확인).
 
 반면 **게이트 명령 그대로**(플래그 포함)는 파일 수·전체 진단 수(219까지)·파일 위치(앞/중간/뒤)·D-heavy 필러 추가 어느 조건에서도 진단 소실이 없었다 — 세 게이트(luau-analyze quad-base·luau-lsp quad-base·luau-lsp quad-roblox) 모두. S2가 보고한 "배치 0/단독 정확" 비대칭은 재현되지 않았고(S2의 정확한 명령·나머지 프로브를 복원할 수 없어 원인 미확정 — 플래그 조합 차이가 가장 유력), 이 항목이 확인한 것은 방향이 반대인 별개 함정이다. 규칙은 `conventions.md` 2026-09-08 항목에 한 줄: **임시 프로브·스윕은 test.sh 플래그를 그대로 복사한다.**
 

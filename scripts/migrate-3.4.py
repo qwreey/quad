@@ -497,7 +497,9 @@ class Rewriter:
                 # the typed one-string form stays: `q.Modifier "Frame"` / `q.Modifier("Frame")`
                 if re.match(r"\s*\"\s*\"", rest) or re.match(r"\s*\(\s*\"[^\"\n]*\"\s*\)", rest):
                     continue
-                if re.match(r"\s*(\(|\.\s*(Overridden|TypedFactory|DefineSubtype)\b|\s*::)", rest) or re.match(r"\s*[,)}\]]", rest):
+                # a call or a member is base's untyped constructor; the bare value too, but only where no provider is
+                # installed (quad-base code) — under a provider `(q.Modifier :: any)(cls)` is the typed factory
+                if re.match(r"\s*(\(|\.\s*(Overridden|TypedFactory|DefineSubtype)\b)", rest) or "quad-base/" in self.rel:
                     self.edit(m.start(), m.end(), f"{qn}.Raw.Modifier")
                     rep["base"].append((self.ln(m.start()), "Modifier → Raw.Modifier"))
             for m in re.finditer(r"(?<![\w.:])" + re.escape(qn) + r"\s*\.\s*newMapperClass\b", ms):

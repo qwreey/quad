@@ -2,7 +2,7 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
 local Select = require("../src/Select")
 local Overlay = require("../src/Overlay")
 local Tokens = require("../src/Tokens")
@@ -11,7 +11,7 @@ local L = Tokens.Color.Light
 
 local function setup()
 	local overlay = Overlay.new()
-	local screen = D.Frame { overlay.Layer }
+	local screen = Frame { overlay.Layer }
 	H.setAbs(overlay.Layer, 0, 0, 800, 600)
 	return overlay, screen
 end
@@ -154,7 +154,7 @@ H.section("A-H2 select: the open look resets when the overlay layer dies under t
 	local overlay, screen = setup()
 	local v = q.Source(nil :: string?)
 	local sel = Select({ Label = "Fruit", Options = { "Apple" }, Value = v, Overlay = overlay })
-	local selHost = D.Frame {}
+	local selHost = Frame {}
 	sel.Parent = selHost
 	local container = H.find(sel, "Container")
 	H.setAbs(container, 50, 20, 240, 56)

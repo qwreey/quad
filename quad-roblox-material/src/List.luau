@@ -71,10 +71,18 @@ local Interactive = require("./Interactive")
 local Text = require("./Text")
 local Style = require("./Button/Style")
 local ListReorder = require("./ListReorder")
-local D = q.Declaration
-local listName = D.Modifier.Frame():Name("List")
-local itemFrameName = D.Modifier.Frame():Name("ListItem")
-local itemButtonName = D.Modifier.TextButton():Name("ListItem")
+local Frame = q.Elem "Frame"
+local ImageLabel = q.Elem "ImageLabel"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
+local UIFlexItem = q.Elem "UIFlexItem"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local FrameModifier = q.Modifier "Frame"
+local TextButtonModifier = q.Modifier "TextButton"
+local listName = FrameModifier():Name("List")
+local itemFrameName = FrameModifier():Name("ListItem")
+local itemButtonName = TextButtonModifier():Name("ListItem")
 
 export type Text = string | q.State<string>
 export type Slotted = string | q.State<string> | Instance
@@ -94,7 +102,7 @@ export type ItemProps = {
 	read Disabled: (boolean | q.State<boolean>)?,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.IntoGuiObject?,
+	read Modifier: q.ModifierInto<GuiObject>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -103,7 +111,7 @@ export type Props = {
 	read Gap: number?,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -113,11 +121,11 @@ local headlineStyle = Text.Label("BodyLarge")
 local supportingStyle = Text.Label("BodyMedium")
 local overlineStyle = Text.Label("LabelSmall")
 
-local baseFrame = D.Modifier.Frame():BorderSizePixel(0)
-local baseButton = D.Modifier.TextButton():BorderSizePixel(0):AutoButtonColor(false):Text("")
+local baseFrame = FrameModifier():BorderSizePixel(0)
+local baseButton = TextButtonModifier():BorderSizePixel(0):AutoButtonColor(false):Text("")
 
 local function label(name: string, style: any, text: Text, color: any, transparency: any, height: number, wrap: boolean, order: number): TextLabel
-	return D.TextLabel {
+	return TextLabel {
 		Name = name,
 		style,
 		Size = UDim2.new(1, 0, 0, height),
@@ -184,15 +192,15 @@ local function ListItem(props: ItemProps): GuiObject
 			label("Supporting", supportingStyle, props.Supporting :: Text, variantColor, contentTransparency, if twoLines then 40 else 20, twoLines, 3)
 		)
 	end
-	local column = D.Frame {
+	local column = Frame {
 		Name = "Text",
 		Size = UDim2.fromScale(0, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		LayoutOrder = 2,
-		D.UIListLayout { FillDirection = Enum.FillDirection.Vertical, SortOrder = Enum.SortOrder.LayoutOrder },
-		D.UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
+		UIListLayout { FillDirection = Enum.FillDirection.Vertical, SortOrder = Enum.SortOrder.LayoutOrder },
+		UIFlexItem { FlexMode = Enum.UIFlexMode.Fill },
 		table.unpack(textParts),
 	}
 
@@ -201,7 +209,7 @@ local function ListItem(props: ItemProps): GuiObject
 			return nil
 		end
 		if type(v) == "string" or q.isState(v) then
-			return D.ImageLabel {
+			return ImageLabel {
 				Name = name,
 				Size = UDim2.fromOffset(size, size),
 				BackgroundTransparency = 1,
@@ -212,7 +220,7 @@ local function ListItem(props: ItemProps): GuiObject
 				LayoutOrder = order,
 			}
 		end
-		return D.Frame {
+		return Frame {
 			Name = name,
 			Size = UDim2.fromOffset(0, 0),
 			AutomaticSize = Enum.AutomaticSize.XY,
@@ -228,7 +236,7 @@ local function ListItem(props: ItemProps): GuiObject
 	local trailing = side("Trailing", props.Trailing, 24, 3)
 	local trailingText: Instance? = nil
 	if props.TrailingText ~= nil then
-		trailingText = D.TextLabel {
+		trailingText = TextLabel {
 			Name = "TrailingText",
 			overlineStyle,
 			Size = UDim2.fromOffset(0, 16),
@@ -243,13 +251,13 @@ local function ListItem(props: ItemProps): GuiObject
 	end
 	local hasTrailing = trailing ~= nil or trailingText ~= nil
 
-	local layout = D.UIListLayout {
+	local layout = UIListLayout {
 		FillDirection = Enum.FillDirection.Horizontal,
 		SortOrder = Enum.SortOrder.LayoutOrder,
 		VerticalAlignment = if threeLine then Enum.VerticalAlignment.Top else Enum.VerticalAlignment.Center,
 		Padding = UDim.new(0, 16),
 	}
-	local padding = D.UIPadding {
+	local padding = UIPadding {
 		PaddingLeft = UDim.new(0, 16),
 		PaddingRight = UDim.new(0, if hasTrailing then 16 else 24),
 		PaddingTop = UDim.new(0, if threeLine then 12 else 0),
@@ -260,11 +268,11 @@ local function ListItem(props: ItemProps): GuiObject
 	if interactive then
 		local fx = Interactive.new({ Theme = theme, Disabled = disabled, OnColor = theme.Color.OnSurface, Corner = UDim.new(0, 0) })
 		local interactable: q.State<boolean> = Util.interactable(disabled)
-		return D.TextButton {
+		return TextButton {
 			itemButtonName,
 			baseButton,
-			D.Modifier.TextButton():Size(size),
-			if props.Modifier then props.Modifier:AsGuiObject():AsTextButton() else q.None,
+			TextButtonModifier():Size(size),
+			if props.Modifier then props.Modifier else q.None,
 			fx.Hook,
 			BackgroundColor3 = theme.Color.SecondaryContainer,
 			BackgroundTransparency = containerAnim,
@@ -276,7 +284,7 @@ local function ListItem(props: ItemProps): GuiObject
 				end
 			end,
 			fx.Layer,
-			D.Frame {
+			Frame {
 				Name = "Content",
 				Size = UDim2.fromScale(1, 1),
 				BackgroundTransparency = 1,
@@ -292,11 +300,11 @@ local function ListItem(props: ItemProps): GuiObject
 		} :: GuiObject
 	end
 
-	return D.Frame {
+	return Frame {
 		itemFrameName,
 		baseFrame,
-		D.Modifier.Frame():Size(size),
-		if props.Modifier then props.Modifier:AsGuiObject():AsFrame() else q.None,
+		FrameModifier():Size(size),
+		if props.Modifier then props.Modifier else q.None,
 		BackgroundColor3 = theme.Color.SecondaryContainer,
 		BackgroundTransparency = containerAnim,
 		LayoutOrder = props.LayoutOrder,
@@ -310,23 +318,23 @@ local function ListItem(props: ItemProps): GuiObject
 	} :: GuiObject
 end
 
-local listBase = D.Modifier.Frame():Size(UDim2.fromScale(1, 0)):AutomaticSize(Enum.AutomaticSize.Y):BackgroundTransparency(1):BorderSizePixel(0)
+local listBase = FrameModifier():Size(UDim2.fromScale(1, 0)):AutomaticSize(Enum.AutomaticSize.Y):BackgroundTransparency(1):BorderSizePixel(0)
 
 local function container(
 	theme: Theme.Theme?,
 	gap: number?,
 	order: (number | q.State<number>)?,
-	modifier: q.FrameModifier?,
+	modifier: q.ModifierInto<Frame>?,
 	hooks: Util.Hooks?,
 	content: q.Slot<Instance>
 ): Frame
 	local _ = Theme.resolve(theme)
-	return D.Frame {
+	return Frame {
 		listName,
 		listBase,
 		modifier or q.None,
 		LayoutOrder = order,
-		D.UIListLayout {
+		UIListLayout {
 			FillDirection = Enum.FillDirection.Vertical,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = UDim.new(0, gap or 0),
@@ -350,7 +358,7 @@ export type DataProps<T> = {
 	read Gap: number?,
 	read LayoutOrder: (number | q.State<number>)?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 

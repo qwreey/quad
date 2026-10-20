@@ -180,7 +180,7 @@ return function(ctx: Ctx): Instance
 	local committedText: q.State<string> = committed:Compute(function(self)
 		return `Modal committed: {hex(self:Get())}`
 	end)
-	local swatch = q.Declaration.Frame {
+	local swatch = q.Elem "Frame" {
 		Name = "ModalSwatch",
 		Size = UDim2.fromOffset(48, 48),
 		BorderSizePixel = 0,

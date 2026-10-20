@@ -1,42 +1,18 @@
 ---
 title: Quad 모듈
-description: require 결과가 곧 기본 인스턴스 — New/RunInit/AddPlugin/UseProvider와 모듈 표면 필드
+description: require 결과가 곧 기본 인스턴스 — NewModule/Raw/RunInit/AddPlugin/UseProvider와 모듈 표면 필드
 ---
-`require(quad-base)`가 돌려주는 것은 클래스나 팩토리가 아니라 **이미 만들어진 quad 모듈 인스턴스**입니다. 바로 `q.Source(...)`를 부를 수 있고, 백엔드는 그 인스턴스에 `UseProvider`로 설치합니다. 여러 개의 독립 인스턴스가 필요한 드문 경우에만 `q.New()`를 씁니다.
+`require(quad-base)`가 돌려주는 것은 클래스나 팩토리가 아니라 **이미 만들어진 quad 모듈 인스턴스**입니다. 바로 `q.Source(...)`를 부를 수 있고, 백엔드는 그 인스턴스에 `UseProvider`로 설치합니다. 여러 개의 독립 인스턴스가 필요한 드문 경우에만 `q.NewModule()`을 씁니다.
 
 한 인스턴스는 자기만의 디스패치 핸들러 레지스트리, 부기(bookkeeping), 프로바이더 슬롯을 가집니다. `Void`/`Ref`/`Relate`/`Blocker` 같은 의존 없는 잎 모듈은 인스턴스끼리 공유되지만, `Source`/`Effect`처럼 인스턴스 상태를 닫아 쥐는 팩토리는 인스턴스마다 다른 함수입니다.
 
-이 페이지의 심볼: [q.New()](#qnew) · [q.NewModule()](#qnewmodule) · [q.Raw](#qraw) · [q:RunInit(initFn)](#qruninitinitfn) · [q:AddPlugin(pluginFn)](#qaddpluginpluginfn) · [q:UseProvider(providerFn)](#quseproviderproviderfn) · [q.Version](#qversion) · [q.debug](#qdebug) · [q.errorNamespace](#qerrornamespace) · [q.moduleIdentity](#qmoduleidentity) · [q.Relate()](#qrelate)
+이 페이지의 심볼: [q.NewModule()](#qnewmodule) · [q.Raw](#qraw) · [q:RunInit(initFn)](#qruninitinitfn) · [q:AddPlugin(pluginFn)](#qaddpluginpluginfn) · [q:UseProvider(providerFn)](#quseproviderproviderfn) · [q.Version](#qversion) · [q.debug](#qdebug) · [q.errorNamespace](#qerrornamespace) · [q.moduleIdentity](#qmoduleidentity) · [q.Relate()](#qrelate)
 
 ```luau
 -- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
 local Quad = require("@game/ReplicatedStorage/roblox_packages/quad_base")
 local QuadRoblox = require("@game/ReplicatedStorage/roblox_packages/quad_roblox").QuadRoblox
-local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
-local D = q.Declaration
-```
-
-## `q.New()`
-
-**시그니처**
-
-```luau
-New: () -> Quad
-```
-
-**반환** — 새 `Quad` 모듈 인스턴스.
-
-**동작** — 완전히 독립적인 모듈 인스턴스를 만듭니다. 서브시스템(디버그 표면, 생명주기 스텁, 반응형 코어, 디스패치, Ref, Claim, Slot, Tag/Attr, 시간 게이트, 생명주기 훅)이 그 자리에서 설치됩니다.
-
-- **프로바이더는 들어 있지 않습니다.** `Quad.New()`로 만든 인스턴스는 백엔드가 없어서 `holdLifetime`·`isInst` 같은 슬롯이 안내 스텁 상태이고, `bindLifetime`을 부르면 그 스텁에 닿습니다 — [생명주기와 센티널](/reference/core/10-lifetime-sentinels/) 참고.
-- 인스턴스는 참조를 놓으면 수거됩니다. 모듈을 키로 삼는 전역 맵이 인스턴스를 붙잡지 않습니다 — 단 그 인스턴스가 만든 Instance를 `Destroy` 하지 않은 채 참조만 놓으면 그 Instance의 체인이 모듈의 클로저를 붙들어 둘 다 남습니다("quad가 만든 Instance는 `Destroy`로만 회수" 계약의 귀결 — [2026-09-27 mock 실측]; `Destroy`하면 둘 다 수거).
-- 잎 모듈은 공유됩니다: `Quad.New().Void == Quad.Void`, `Quad.New().Ref == Quad.Ref`. 반면 `Quad.New().Source ~= Quad.Source`입니다. 능력(프로토콜) 브랜드도 사본 단위라 공유됩니다 — `Quad.New().Protocols.DispatchHint == Quad.Protocols.DispatchHint`([`q.Protocols.DispatchHint`](/reference/extend/02-dispatch-handler-contract/#qprotocolsdispatchhint), 3.3.0부터).
-- **인스턴스끼리 값을 섞지 마세요.** 한 인스턴스가 만든 Observer·Effect·Slot·State를 다른 인스턴스의 트리 자리(숫자 키, 프로퍼티 값, `:List`의 데이터, `Slot`의 원소 자리 — `Add`/생성자/`Replace`/`Extract`/`Splice`, `State`에 담아서도)에 놓거나 `q.dispose`에 넘기면 그 자리에서 `…: this value was made by another quad module instance …`를 던집니다 — 생명주기 기록이 인스턴스마다 따로라, 막지 않으면 에러 없이 그 값이 돌지 않기 때문입니다. 소비자 프로젝트에 `quad_base` **사본이 둘** 생긴 경우는 다릅니다 — 브랜드 집합이 사본마다 따로라 다른 사본의 값은 이쪽의 `isState`류가 전부 거짓이고 이 가드까지 오지 못합니다. 그때 보이는 것은 `Quad0076 … check that the provider … is initialized`(원인과 무관한 안내)·`Quad0240`·`Quad0151`·`Quad0198`류이며, 프로퍼티 자리에선 그 테이블이 날값으로 엔진까지 갑니다([술어 레퍼런스](/reference/core/11-predicates/)의 사본 경계). 사본이 둘인지 먼저 의심하세요. **팩토리도 섞지 마세요** — `A.Source(0):Apply(Bare.Debounce{…})`처럼 다른 인스턴스의 `Debounce`/`Throttle`을 쓰면 가드는 지나지만 시간 op를 팩토리를 만든 인스턴스의 `Backend`에서 읽어 `Quad0108 … setTimeout is not available`이 나거나 남의 시계로 돕니다. 공유 잎 모듈의 값(`Ref`·`Blocker` 등)은 주인 인스턴스가 없어 검사하지 않으며, 그것을 두 인스턴스에 걸쳐 쓰는 것은 정의되지 않은 동작입니다. 의존성으로만 잇는 것(`q.Effect(fn, 다른 인스턴스의 Source)`)은 생명주기가 없어 검사하지 않지만, 그쪽도 **정의되지 않은 동작**입니다 — 막지 않을 뿐 보장하지 않습니다.
-
-**예제**
-
-```luau
-local isolated = Quad.New() -- 테스트나 격리된 서브시스템용
+local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: q.Elem 등과 Tween/Animate가 생긴다
 ```
 
 ## `q.NewModule()`
@@ -47,9 +23,21 @@ local isolated = Quad.New() -- 테스트나 격리된 서브시스템용
 NewModule: () -> Quad
 ```
 
-**반환** — 새 `Quad` 모듈 인스턴스. [`q.New()`](#qnew)와 같은 함수입니다.
+**반환** — 새 `Quad` 모듈 인스턴스.
 
-**동작** — 3.4.0에서 `q.New()`의 새 이름입니다. 무엇을 만드는지가 이름에 드러나도록 바꿨고, `q.New()`는 3.4.0에서 빠집니다. 동작은 위 `q.New()` 그대로입니다.
+**동작** — 완전히 독립적인 모듈 인스턴스를 만듭니다. 서브시스템(디버그 표면, 생명주기 스텁, 반응형 코어, 디스패치, Ref, Claim, Slot, Tag/Attr, 시간 게이트, 생명주기 훅)이 그 자리에서 설치됩니다.
+
+- **[3.4.0]** 3.3까지의 이름은 `q.New()`였습니다. 무엇을 만드는지가 이름에 드러나도록 바꿨고, 옛 이름은 없습니다.
+- **프로바이더는 들어 있지 않습니다.** `Quad.NewModule()`로 만든 인스턴스는 백엔드가 없어서 `holdLifetime`·`isInst` 같은 슬롯이 안내 스텁 상태이고, `bindLifetime`을 부르면 그 스텁에 닿습니다 — [생명주기와 센티널](/reference/core/10-lifetime-sentinels/) 참고.
+- 인스턴스는 참조를 놓으면 수거됩니다. 모듈을 키로 삼는 전역 맵이 인스턴스를 붙잡지 않습니다 — 단 그 인스턴스가 만든 Instance를 `Destroy` 하지 않은 채 참조만 놓으면 그 Instance의 체인이 모듈의 클로저를 붙들어 둘 다 남습니다("quad가 만든 Instance는 `Destroy`로만 회수" 계약의 귀결 — [2026-09-27 mock 실측]; `Destroy`하면 둘 다 수거).
+- 잎 모듈은 공유됩니다: `Quad.NewModule().Void == Quad.Void`, `Quad.NewModule().Ref == Quad.Ref`. 반면 `Quad.NewModule().Source ~= Quad.Source`입니다. 능력(프로토콜) 브랜드도 사본 단위라 공유됩니다 — `Quad.NewModule().Protocols.DispatchHint == Quad.Protocols.DispatchHint`([`q.Protocols.DispatchHint`](/reference/extend/02-dispatch-handler-contract/#qprotocolsdispatchhint), 3.3.0부터).
+- **인스턴스끼리 값을 섞지 마세요.** 한 인스턴스가 만든 Observer·Effect·Slot·State를 다른 인스턴스의 트리 자리(숫자 키, 프로퍼티 값, `:List`의 데이터, `Slot`의 원소 자리 — `Add`/생성자/`Replace`/`Extract`/`Splice`, `State`에 담아서도)에 놓거나 `q.dispose`에 넘기면 그 자리에서 `…: this value was made by another quad module instance …`를 던집니다 — 생명주기 기록이 인스턴스마다 따로라, 막지 않으면 에러 없이 그 값이 돌지 않기 때문입니다. 소비자 프로젝트에 `quad_base` **사본이 둘** 생긴 경우는 다릅니다 — 브랜드 집합이 사본마다 따로라 다른 사본의 값은 이쪽의 `isState`류가 전부 거짓이고 이 가드까지 오지 못합니다. 그때 보이는 것은 `Quad0076 … check that the provider … is initialized`(원인과 무관한 안내)·`Quad0240`·`Quad0151`·`Quad0198`류이며, 프로퍼티 자리에선 그 테이블이 날값으로 엔진까지 갑니다([술어 레퍼런스](/reference/core/11-predicates/)의 사본 경계). 사본이 둘인지 먼저 의심하세요. **팩토리도 섞지 마세요** — `A.Source(0):Apply(Bare.Debounce{…})`처럼 다른 인스턴스의 `Debounce`/`Throttle`을 쓰면 가드는 지나지만 시간 op를 팩토리를 만든 인스턴스의 `Backend`에서 읽어 `Quad0108 … setTimeout is not available`이 나거나 남의 시계로 돕니다. 공유 잎 모듈의 값(`Ref`·`Blocker` 등)은 주인 인스턴스가 없어 검사하지 않으며, 그것을 두 인스턴스에 걸쳐 쓰는 것은 정의되지 않은 동작입니다. 의존성으로만 잇는 것(`q.Effect(fn, 다른 인스턴스의 Source)`)은 생명주기가 없어 검사하지 않지만, 그쪽도 **정의되지 않은 동작**입니다 — 막지 않을 뿐 보장하지 않습니다.
+
+**예제**
+
+```luau
+local isolated = Quad.NewModule() -- 테스트나 격리된 서브시스템용
+```
 
 ## `q.Raw`
 
@@ -65,7 +53,7 @@ Raw: {
 
 **동작** — 백엔드가 자기 타입드 표면(`q.Modifier "Frame"`, `q.Spread "Frame" {…}`, `q.Mapper "Frame"`)을 짓는 base의 원재료입니다. 셋 다 클래스를 모르고 타입도 붙지 않습니다. 앱 코드는 보통 백엔드가 주는 타입드 쪽을 씁니다 — `q.Raw`는 백엔드·플러그인 작성자, 그리고 자기 Modifier 클래스를 정의하는 사람의 자리입니다.
 
-- **`q.Raw.Modifier`** — base의 Modifier 생성자 묶음(`Overridden`·`TypedFactory`·`DefineSubtype` 포함). 3.4.0 전까지 `q.Modifier`였던 것입니다.
+- **`q.Raw.Modifier`** — base의 Modifier 생성자 묶음(`Overridden`·`TypedFactory`·`DefineSubtype` 포함). 3.4.0 전까지 `q.Modifier`였던 것입니다(그 이름은 이제 백엔드의 타입드 생성자 `q.Modifier "Frame"`입니다 — [Modifier와 Spread](/reference/roblox/03-modifier-spread/)).
 - **`q.Raw.Spread(t)`** — 요소 테이블처럼 쓴 테이블로 Spread를 만듭니다. 안에 놓인 Spread는 그 자리에서 펴지고(깊이 1), 같은 키는 먼저 자리 잡은 쪽이 이깁니다(인라인 키가 첫 층). `spread:Append(other)`는 다른 Spread만 받아 끝에 펴 넣고 아무것도 돌려주지 않습니다. 요소에 놓이거나 다른 Spread에 펴진 Spread는 잠겨 `:Append`가 [`Quad0275`](/reference/errors/02-dispatch-bookkeeping/#quad0275)이 됩니다.
 - **`q.Raw.Mapper(className)`** — Claim 매퍼 디스크립터의 클래스별 팩토리. 3.4.0 전까지 `q.newMapperClass`였던 것입니다.
 
@@ -95,7 +83,7 @@ local function InitCounter(_module)
 	runs += 1
 end
 
-local m = Quad.New()
+local m = Quad.NewModule()
 m:RunInit(InitCounter)
 m:RunInit(InitCounter) -- no-op
 print(runs) --> 1
@@ -138,7 +126,7 @@ local function doublePlugin(_self)
 	}
 end
 
-local m = Quad.New():AddPlugin(doublePlugin)
+local m = Quad.NewModule():AddPlugin(doublePlugin)
 print(m:Double(21)) --> 42
 ```
 
@@ -154,7 +142,7 @@ UseProvider: <Self, P>(self: Self, providerFn: (Self) -> P) -> Self & P
 |---|---|---|
 | `providerFn` | `(Self) -> P` | 백엔드 프로바이더 함수 — 모듈의 주입 슬롯을 채우고 백엔드 고유 표면을 돌려줍니다 |
 
-**반환** — 같은 모듈. 타입은 `Self & P`이므로 여기서부터 `q.Declaration`/`q.Tween` 같은 백엔드 표면이 타입에 실립니다.
+**반환** — 같은 모듈. 타입은 `Self & P`이므로 여기서부터 `q.Elem`/`q.Tween` 같은 백엔드 표면이 타입에 실립니다.
 
 **동작** — 병합 자체는 `AddPlugin`과 같지만 계약이 다릅니다: **모듈당 프로바이더는 하나**이고, 잠금은 프로바이더 함수의 identity로 겁니다.
 
@@ -221,7 +209,7 @@ debug: boolean
 - 같은 노드의 앞선 계산이 다른 코루틴에서 멈춘 채(계산 함수 안 yield) 새 계산이 시작될 때 — `State: Compute fn entered while an earlier run of this node has not returned - …`. 던져서 끝난 계산은 지금 구현상 새 세대에 다시 도는 경로(관측 — 계약 아님)라 알리지 않습니다.
 - `state:Observer(fn)`의 콜백이 도는 도중 같은 핸들에 변경이 다시 도착했을 때 — 콜백이 자기 상류를 되먹였다는 뜻입니다: `Observer: a change reached this Observer while its own fn was running - …`. 첫 발화(설치) 도중에 와서 보류되는 변경도 알립니다. props 자리에 놓인 `State`도 대상입니다 — 그 값을 처리하는 동안 불린 콜백(`Ref`·`Tween` 콜백, 이벤트 연결 등)이 그 `State`를 되쓰면 알립니다 — 단 정의된 경로 둘은 알리지 않습니다: `q.Out`·`OnChange` 엔진 왕복(엔진이 바뀐 프로퍼티를 그 콜백으로 다시 올려 보내는 것 — 신호가 즉시 배달되면 처리 도중 동기로 돌아와도)과 `Tween`의 `Completed`에서 다음 트윈을 잇는 것(스냅이면 동기로 불려도; `Started`·`Cancelled`에서의 되쓰기는 알립니다). 이 둘이 빼 주는 것은 그 `State`의 처리뿐이라, 바깥의 사용자 `Observer`가 그 `State`를 `:Set`해 시작된 연쇄가 그 `Observer`의 상류를 되쓰면 알립니다. 핸들마다 한 번만 알립니다. 규칙과 정의된 예외는 [`state:Observer`](/reference/core/05-observer-effect/#stateobserverfn)의 "Observer는 최종 소비자" 문단 — Slot 자리 계산을 거친 고리(마운트·다시 앉히기 포함)와 quad가 자리 계산·목록에 내부로 쓰는 Observer는 알리지 않습니다.
 - [`q.Debounce`/`q.Throttle`](/reference/sugar/03-debounce-throttle/#handlecancel) 게이트가 값을 내보내는 도중(창 끝·`MaxTime`·`handle:Flush()`·leading 통과) 그 통지를 받은 하류 콜백 안에서 같은 게이트의 `handle:Cancel()`이나 `handle:Flush()`가 불렸을 때(정의되지 않은 동작) — `Debounce: handle:Cancel() was called from a callback this gate's own flush reached …`(`Flush`면 `handle:Flush()`). 부를 때마다 알립니다(호출 스택을 걸어 봅니다).
-- quad가 claim하지 않은 인스턴스 — 파괴됐거나(`q.dispose`든 quad 밖이든) quad가 만들지 않은 것 — 에 디스패치가 돌 때(정의되지 않은 동작 — 핸들러가 그 시체 위에서 돌 수 있습니다, 예: 짝이 오지 않는 `Tween`의 `Started`) — `Dispatch: process on an instance that is not claimed by quad … at key {k} …`. `D.<Class> { … }`·`q.Dispatch.drive`·`q.Dispatch.process` 모두 이 한 자리를 지나며, 키마다 알립니다.
+- quad가 claim하지 않은 인스턴스 — 파괴됐거나(`q.dispose`든 quad 밖이든) quad가 만들지 않은 것 — 에 디스패치가 돌 때(정의되지 않은 동작 — 핸들러가 그 시체 위에서 돌 수 있습니다, 예: 짝이 오지 않는 `Tween`의 `Started`) — `Dispatch: process on an instance that is not claimed by quad … at key {k} …`. `q.Elem "Class" { … }`·`q.Dispatch.drive`·`q.Dispatch.process` 모두 이 한 자리를 지나며, 키마다 알립니다.
 - 마운트 대상 인스턴스가 더는 claim돼 있지 않은 `Slot`(호스트를 `q.dispose`했거나 quad 밖에서 파괴)에 CRUD를 부를 때(정의되지 않은 동작 — [06-slot](/reference/core/06-slot/#죽은-slot과-마운트-규칙)의 "마운트 대상이 파괴된 Slot") — `Slot: CRUD on a Slot whose host Instance is no longer claimed by quad …`. 부를 때마다 알립니다.
 
 이 일곱도 켜도 동작은 바뀌지 않습니다(정의되지 않은 동작을 정의된 동작으로 바꾸지 않습니다 — 보여 줄 뿐입니다). 진단 줄은 `print`이고 `QuadNNNN` 번호가 없습니다(에러가 아니라서 — 번호는 에러에만 붙습니다). **[2026-10-01 기준]** 3.2.0에는 첫 항목(우선순위 동률)만 있고 나머지는 3.3.0부터입니다([변경 이력](/changelog/) `[3.3.0]`).
@@ -230,7 +218,7 @@ debug: boolean
 
 - 디스패치 핸들러의 `process`가 함수가 아닌 retractor(`true`·숫자·테이블)를 돌려줄 때 — `Quad0077`([핸들러 계약](/reference/extend/02-dispatch-handler-contract/#handler-레코드); 꺼져 있어도 `nil`은 늘 검사합니다).
 - `State`의 값 사슬이 자기에게 돌아올 때(`a:Set(b); b:Set(a)`, `s:Set(s)`) — `Quad0070`(props 자리에 놓인 `State`를 벗길 때와 Slot에 넣은 `State` 원소; 사슬을 끝까지 따라가는 검사; 꺼져 있으면 스택 오버플로로 끝나는 정의되지 않은 동작).
-- 중괄호를 잊은 `D.Frame(value)`에서 그 값이 메타테이블 없는 **프로바이더 브랜드** 값일 때 — `Quad0083`(모듈에 등록된 브랜드 술어를 전부 훑는 검사; 메타테이블이 있는 값과 quad-base 값은 꺼져 있어도 늘 잡습니다 — [핸들러 계약](/reference/extend/02-dispatch-handler-contract/#qdispatchdriveinst-flattened)).
+- 중괄호를 잊은 `q.Elem "Frame" (value)`에서 그 값이 메타테이블 없는 **프로바이더 브랜드** 값일 때 — `Quad0083`(모듈에 등록된 브랜드 술어를 전부 훑는 검사; 메타테이블이 있는 값과 quad-base 값은 꺼져 있어도 늘 잡습니다 — [핸들러 계약](/reference/extend/02-dispatch-handler-contract/#qdispatchdriveinst-flattened)).
 - `slot:List`의 `data` 배열에 배열이 아닌 키가 **덧붙어** 있을 때 — `Quad0143`(재조정마다 키 전수 검사; 배열 부분이 비어 있는 딕셔너리는 꺼져 있어도 늘 잡습니다 — [06-slot](/reference/core/06-slot/#slotlistdata-updatefn-keyfn-opts)).
 - `slot:List`의 `data` 배열이나 `q.Slot({ … })`의 `initial` 배열 **중간에 `nil` 구멍**이 있을 때 — `Quad0269`(`:List`)·`Quad0270`(`initial`). 위 `Quad0143` 검사가 이미 도는 키 훑기에 얹은 검사입니다(키 개수와 가장 큰 키가 다르면 구멍). 꺼져 있으면 정의되지 않은 동작 그대로입니다 — 목록이 구멍에서 끝나고, `:List`는 구멍 뒤 항목의 원소를 파괴합니다([06-slot](/reference/core/06-slot/#slotlistdata-updatefn-keyfn-opts)).
 - `Slot`을 자기 자신이나 조상 Slot에 원소로 넣을 때 — `Quad0173`(원소 관계를 따라 올라가는 검사; 꺼져 있으면 넣는 줄은 통과하고 그 순환은 정의되지 않은 동작입니다 — 관측(계약 아님): 그 순환 트리의 다음 CRUD나 해체가 스택 오버플로나 내부 불변식 에러로 죽고(어느 쪽인지는 연산마다 다릅니다), 그 뒤의 부기 무결은 약속하지 않습니다).
@@ -279,7 +267,7 @@ read moduleIdentity: {}
 
 **동작** — 이 모듈 인스턴스의 identity 토큰입니다. 내용이 없는 빈 테이블이고 모듈을 붙잡지 않으며, 계약은 "인스턴스마다 하나, 서로 다름"뿐입니다.
 
-- quad-base는 Observer·Effect·Slot·State가 자기 인스턴스의 것인지 이 토큰으로 판정합니다(위 `q.New()`의 "인스턴스끼리 값을 섞지 마세요").
+- quad-base는 Observer·Effect·Slot·State가 자기 인스턴스의 것인지 이 토큰으로 판정합니다(위 `q.NewModule()`의 "인스턴스끼리 값을 섞지 마세요").
 - **백엔드·플러그인이 자기 값에 같은 검사를 하고 싶다면** 이 토큰을 값이 사는 곳에 붙여 두고 비교하세요. 어디에 둘지는 구현자 몫입니다 — 평범한 테이블이면 필드(메타테이블 쪽에 두면 값마다 칸이 들지 않음), userdata처럼 필드를 못 붙이는 값이면 [`q.Relate()`](#qrelate) 같은 약한 관계로.
 
 **예제**
@@ -320,7 +308,7 @@ Relate: () -> Relate
 
 ```luau
 local rel = q.Relate()
-local host = D.Frame {}
+local host = q.Elem "Frame" {}
 
 rel:SetStrong(host, "meta", { label = "hello" })
 print(rel:GetStrong(host, "meta").label) --> hello

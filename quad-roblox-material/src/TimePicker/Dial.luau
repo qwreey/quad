@@ -42,8 +42,9 @@ local Clock = require("./Clock")
 local Model = require("./Model")
 local Parts = require("./Parts")
 local ClockFace = require("./ClockFace")
-local D = q.Declaration
-local dialName = D.Modifier.Frame():Name("TimePickerDial")
+local Frame = q.Elem "Frame"
+local FrameModifier = q.Modifier "Frame"
+local dialName = FrameModifier():Name("TimePickerDial")
 
 type State<T> = q.State<T>
 type Time = Clock.Time
@@ -58,7 +59,7 @@ export type Props = {
 	read Locale: Locale?,
 	read OnChange: ((time: Time) -> ())?,
 	read Theme: Theme.Theme?,
-	read Modifier: q.FrameModifier?,
+	read Modifier: q.ModifierInto<Frame>?,
 	read Hooks: Util.Hooks?,
 }
 
@@ -184,7 +185,7 @@ local function build(o: BuildOptions): Built
 		end
 		table.insert(children, ClockFace.new({ Theme = o.Theme, Model = model, Position = UDim2.fromOffset(math.floor((total.X - DIAL) / 2), BOX_H + DISPLAY_GAP) }))
 	end
-	local frame = D.Frame {
+	local frame = Frame {
 		Name = o.Name or "TimePicker",
 		Size = UDim2.fromOffset(total.X, total.Y),
 		Position = o.Position or UDim2.new(),
@@ -202,9 +203,9 @@ local function Dial(props: Props): Frame
 	local layout: LayoutType = props.LayoutType or "Vertical"
 	local built = build({ Model = model, Theme = theme, Locale = props.Locale or "en", LayoutType = layout })
 	local total = built.Size
-	return D.Frame {
+	return Frame {
 		dialName,
-		D.Modifier.Frame():Size(UDim2.fromOffset(total.X, total.Y)):BorderSizePixel(0):BackgroundTransparency(1),
+		FrameModifier():Size(UDim2.fromOffset(total.X, total.Y)):BorderSizePixel(0):BackgroundTransparency(1),
 		props.Modifier or q.None,
 		model.Sync,
 		built.Frame,

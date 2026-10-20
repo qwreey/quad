@@ -277,12 +277,9 @@ def patch_stage_tooling(stage, twin_names, quad_base_is_roblox):
     sub1(test_sh, r'--ignore "\*\*/luau_packages/\*\*" \\',
          '--ignore "**/luau_packages/**" --ignore "**/roblox_packages/**" \\\\',
          'test.sh luau-lsp ignore 확장', expect=2)
-    # 3) gen-d.py — 생성 `D`가 박아 넣는 require 한 줄
-    gen_d = os.path.join(stage, 'scripts', 'gen-d.py')
-    if 'quad_types' in twin_names:
-        sub1(gen_d, r'\.\./luau_packages/quad_types', '../roblox_packages/quad_types',
-             'gen-d.py require 경로')
-        run(['python3', 'scripts/gen-d.py', 'emit'], cwd=stage, check=True)
+    # 3) [2026-10-20 3.4.0] (옛: gen-d.py가 생성 `D`에 박던 require 한 줄을 고치고 다시 emit) — 생성 산출물
+    #    `Surface/Data.luau`는 require가 없는 데이터라 고칠 것이 없다; 손으로 쓴 `Surface/init.luau`의 require는
+    #    위 1)의 소스 일괄 치환이 덮는다.
     # 4) default.project.json — quad-roblox의 링크 폴더가 이름을 바꾼다
     proj = os.path.join(stage, 'default.project.json')
     if os.path.exists(proj):

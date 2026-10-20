@@ -3,7 +3,7 @@
 	3.4.0 curried surface — the runtime of `Surface/Runtime.luau` + `Handlers/OnEvent.luau` (plan
 	`.claude/research/release-3.4.0-plan.md` 단위 4; canon `research/declaration-surface-plan.md` 5절). The types are
 	gated by `scripts/surface-gate.py`; this spec runs the values on the CLI mock (spec.events shims).
-	Coexistence: `q.OnChange`/`q.Out`/`q.Modifier` still take the old shapes too (unit 6 removes them).
+	3.4.0 removed the 3.3 shapes (`q.OnChange(name, fn)`, base's `q.Modifier(...)` — now `q.Raw.Modifier`).
 ]]
 
 local Quad = require("../luau_packages/quad_base")
@@ -25,11 +25,11 @@ mock.declareEvents("TextButton", { "MouseButton1Click", "Activated", "MouseLeave
 mock.declareEvents("Frame", { "MouseEnter", "MouseLeave" })
 local gameShim = mock.gameShim(REFLECTED)
 
-local q = Quad.New():UseProvider(QuadRoblox)
+local q = Quad.NewModule():UseProvider(QuadRoblox)
 ;(getfenv(installProperty)).game = gameShim
 ;(getfenv(installEvent)).game = gameShim
 ;(getfenv(q.Elem)).Instance = { new = mock.Instance.new }
-;(getfenv(q.Declaration.New)).Instance = { new = mock.Instance.new }
+;(getfenv(q.Elem)).Instance = { new = mock.Instance.new }
 q.Backend.isInst = mock.isMockInstance
 q.errorNamespace.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, q.Backend.isInst)
 
@@ -58,7 +58,7 @@ do
 end
 
 print()
-print("=== 2. Modifier \"Class\" — 타입드 팩토리(As 간선은 Superclass 데이터로 설치 때 등록), 옛 q.Modifier(...)도 그대로 ===")
+print("=== 2. Modifier \"Class\" — 타입드 팩토리(As 간선은 Superclass 데이터로 설치 때 등록), base 무타입은 q.Raw.Modifier ===")
 do
 	local FrameModifier = q.Modifier "Frame"
 	local GuiModifier = q.Modifier "GuiObject"
@@ -74,13 +74,16 @@ do
 	end, "Quad0056", "sibling cast still refused")
 	local f = q.Elem "Frame" { m, Name = "M" }
 	assert(f.Visible == false, "a typed Modifier flattens into the element")
-	-- coexistence: the old untyped constructor and its fields
-	local old = q.Modifier({ Visible = true })
-	assert(old.__quadModifier == true and q.Modifier().__quadModifier == true, "q.Modifier() / q.Modifier({...}) unchanged")
-	assert(q.Modifier.TypedFactory ~= nil and q.Modifier.DefineSubtype ~= nil and q.Modifier.Overridden ~= nil, "old fields kept")
+	-- base's untyped constructor and its fields moved to q.Raw.Modifier
+	local old = q.Raw.Modifier({ Visible = true })
+	assert(old.__quadModifier == true and q.Raw.Modifier().__quadModifier == true, "q.Raw.Modifier() / q.Raw.Modifier({...})")
+	assert(q.Raw.Modifier.TypedFactory ~= nil and q.Raw.Modifier.DefineSubtype ~= nil and q.Raw.Modifier.Overridden ~= nil, "its fields")
+	expectError(function()
+		q.Modifier({ Visible = true })
+	end, "Quad0278", "the 3.3 untyped q.Modifier({...}) is refused (the message points at q.Raw.Modifier)")
 	expectError(function()
 		q.Modifier ""
-	end, "Quad0066", "Modifier rejects the empty class name (base's own one-string arm during coexistence — Quad0278 after unit 6)")
+	end, "Quad0278", "Modifier rejects the empty class name")
 	print("PASS")
 end
 
@@ -137,7 +140,7 @@ do
 end
 
 print()
-print("=== 5. OnChange·Out 커리 — 새 꼴(클래스 → 이름 → fn/src)과 옛 꼴(name, fn) 공존 ===")
+print("=== 5. OnChange·Out 커리 — 클래스 → 이름 → fn/src, 옛 두 인자 꼴은 3.4.0에서 없어졌다 ===")
 do
 	local seen = {}
 	local src = q.Source("a")
@@ -147,15 +150,13 @@ do
 			table.insert(seen, v)
 		end),
 		q.Out "TextBox" "Text" (src),
-		q.OnChange("Name", function(v) -- the old form still works during coexistence
-			table.insert(seen, "name:" .. v)
-		end),
 	}
 	assert(seen[1] == "a", "initial-value firing through the curried form")
 	box.Text = "typed"
 	assert(src:Get() == "typed", "Out writes back")
-	box.Name = "N"
-	assert(table.find(seen, "name:N"), "old OnChange(name, fn) still binds")
+	expectError(function()
+		q.OnChange("Name", function() end)
+	end, "Quad0281", "the 3.3 two-argument form is refused at the call")
 	expectError(function()
 		q.OnChange "TextBox" "" (function() end)
 	end, "Quad0221", "member stage reuses OnChange's name check")
@@ -171,10 +172,11 @@ do
 	local desc = q.Mapper "Frame" ("Card") { Visible = true }
 	assert(q.isMapperDescriptor(desc), "a mapper descriptor")
 	local World = q.ForClasses()
-	assert(World.Elem == q.Elem and World.Spread == q.Spread and World.Mapper == q.Mapper and World.OnEvent == q.OnEvent, "same runtime functions")
-	assert(type(World.Modifier) == "function" and World.Modifier "Part" ().__quadModifier == "Part", "ForClasses Modifier is the typed arm only")
-	assert(World.OnChange ~= q.OnChange and World.Out ~= q.Out, "ForClasses has no old-form arms")
-	assert(Quad.New():UseProvider(QuadRoblox).OnEvent == q.OnEvent, "descriptor stages are module-level (like OnChange)")
+	for _, name in { "Elem", "Modifier", "Spread", "Mapper", "OnChange", "OnEvent", "Out" } do
+		assert(World[name] == q[name], name .. ": the same runtime function (only the types differ)")
+	end
+	assert(World.Modifier "Part" ().__quadModifier == "Part", "a class outside the GUI map")
+	assert(Quad.NewModule():UseProvider(QuadRoblox).OnEvent == q.OnEvent, "descriptor stages are module-level (like OnChange)")
 	expectError(function()
 		World.Modifier({})
 	end, "Quad0278", "ForClasses Modifier takes only a class name")

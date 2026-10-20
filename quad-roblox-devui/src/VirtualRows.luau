@@ -46,8 +46,10 @@ local RowWindow = require("./RowWindow")
 local Style = require("./Style")
 
 local q = Quad
-local D = q.Declaration
-local rootName = D.Modifier.ScrollingFrame():Name("VirtualRows")
+local Frame = q.Elem "Frame"
+local ScrollingFrame = q.Elem "ScrollingFrame"
+local ScrollingFrameModifier = q.Modifier "ScrollingFrame"
+local rootName = ScrollingFrameModifier():Name("VirtualRows")
 
 type State<T> = Quad.State<T>
 type Source<T> = Quad.Source<T>
@@ -60,7 +62,7 @@ export type VirtualRowsProps = {
 	read Overscan: number?,
 	read ScrollToRow: Source<number?>?,
 	read Style: Style?,
-	read Modifier: Quad.ScrollingFrameModifier?,
+	read Modifier: Quad.ModifierInto<ScrollingFrame>?,
 }
 
 type PoolSlot = { Index: Source<number?> }
@@ -118,7 +120,7 @@ local function VirtualRows(props: VirtualRowsProps): ScrollingFrame
 		end)
 		-- the Row builder runs once per slot
 		local content = buildRow(index)
-		local container = D.Frame({
+		local container = Frame({
 			Name = "Row",
 			Position = position,
 			Size = rowSize,
@@ -172,7 +174,7 @@ local function VirtualRows(props: VirtualRowsProps): ScrollingFrame
 		end)
 		else q.None
 
-	local built = D.ScrollingFrame({
+	local built = ScrollingFrame({
 		rootName,
 		props.Modifier or q.None,
 		scrollToObserver,
@@ -185,13 +187,13 @@ local function VirtualRows(props: VirtualRowsProps): ScrollingFrame
 			update()
 		end),
 		-- the viewport size and the scroll position come from the engine
-		q.OnChange("AbsoluteWindowSize", function(v: Vector2)
+		q.OnChange "ScrollingFrame" "AbsoluteWindowSize" (function(v: Vector2)
 			if v.Y ~= viewport then
 				viewport = v.Y
 				update()
 			end
 		end),
-		q.OnChange("CanvasPosition", function(v: Vector2)
+		q.OnChange "ScrollingFrame" "CanvasPosition" (function(v: Vector2)
 			if v.Y ~= scrollY then
 				scrollY = v.Y
 				update()

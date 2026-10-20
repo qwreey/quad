@@ -10,13 +10,14 @@
 local Quad = require("../luau_packages/quad_base")
 local QuadRoblox = require("../src").QuadRoblox
 local QuadTypes = require("../luau_packages/quad_types")
-local DeclarationModule = require("../src/Declaration")
+local DeclarationModule = require("../src") -- 3.4.0: the root exports the type names
 type Ref<T> = QuadTypes.Ref<T>
 
-local q = Quad.New():UseProvider(QuadRoblox)
+local q = Quad.NewModule():UseProvider(QuadRoblox)
 
 local function _neverCalled()
-	local D = q.Declaration
+	local Frame = q.Elem "Frame"
+	local TextLabel = q.Elem "TextLabel"
 	-- 자기 클래스 박스(nil 가능·불가능 둘 다), 상위 클래스 박스, 체이닝 뒤, PreRef/PostRef
 	local rF = q.Ref(nil :: Frame?)
 	local rFixed = q.Ref(Instance.new("Frame"))
@@ -24,9 +25,9 @@ local function _neverCalled()
 	local rI = q.Ref(nil :: Instance?)
 	local pre = q.PreRef(nil :: Frame?):Callback(function(v) end)
 	local post = q.PostRef(nil :: Frame?)
-	-- State<Ref>: `State<T>` 불변성 — 마커로 캐스트해 만든다(8.7 캐비엇 5, OnChange·Modifier와 같은 규칙)
-	local reactive = q.Source(rF :: DeclarationModule.FrameRefMarker)
-	local f = D.Frame({
+	-- State<Ref>: the State arm is a covariant marker since 2026-09-07 — no cast (the 3.3 `:: FrameRefMarker` was 8.7 caveat 5)
+	local reactive = q.Source(rF)
+	local f = Frame({
 		rF,
 		rFixed,
 		rG,
@@ -37,11 +38,11 @@ local function _neverCalled()
 		reactive,
 		Name = "typed",
 	})
-	local l = D.TextLabel({ q.Ref(nil :: TextLabel?), q.Ref(nil :: GuiObject?), q.PostRef(nil :: TextLabel?) })
-	local mapped = D.Mapper.Frame("Body")({ rG, q.PreRef(nil :: Frame?) })
+	local l = TextLabel({ q.Ref(nil :: TextLabel?), q.Ref(nil :: GuiObject?), q.PostRef(nil :: TextLabel?) })
+	local mapped = q.Mapper "Frame"("Body")({ rG, q.PreRef(nil :: Frame?) })
 	-- 콜백 시그니처: 두 번째 인자는 Ref 자신(Epoch)
 	local withRef = q.Ref(nil :: Frame?):Callback(function(v: Frame?, ref: Ref<Frame?>) end)
-	local f2 = D.Frame({ withRef })
+	local f2 = Frame({ withRef })
 	return f, l, mapped, f2
 end
 

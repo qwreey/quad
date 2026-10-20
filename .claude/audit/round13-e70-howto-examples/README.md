@@ -82,7 +82,7 @@ mock 쪽 require 처리: 설정 모듈은 하네스의 `q`, `quad_types`는 빈 
    남는다. 자기 `Activated` 안에서 `Set(nil)` 뒤 `q.dispose(모달)`이 정상 동작하는 것은 E15가 이미 확인했다. 고칠 곳: 두 콜백에 옛 값을 잡아
    `q.dispose`하는 두 줄을 넣거나, 131행을 "이 예제는 정리를 생략했다"로 한정.
 5. **(문서 경미, 낡은 경로) quadnomicon/04-covariant-markers.md:99 주석 "생성된 `D/init.luau`의 실제 한 줄"** — 생성 폴더는 2026-09-14 개명 뒤
-   `quad-roblox/src/Declaration/init.luau`이고, 인용된 `type PV2 = …` 줄 자체는 그 파일 61행과 글자 그대로 일치한다. 이 경로 이름을 쓰는 곳은
+   옛 `quad-roblox/src/Declaration/init.luau`이고, 인용된 `type PV2 = …` 줄 자체는 그 파일 61행과 글자 그대로 일치한다. 이 경로 이름을 쓰는 곳은
    `docs/` 원문에서 이 한 줄뿐(사이트 `dist/` 빌드 산출물 제외). 고칠 곳: `Declaration/init.luau`로.
 
 코드 결함: 0. 새 strict 유형: 1(발견 3).

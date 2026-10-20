@@ -1,6 +1,6 @@
 ---
 title: "설치와 프로바이더"
-description: "QuadRoblox 프로바이더 함수, UseProvider 계약, RobloxExtension 여섯 키, 타입 검사 플래그"
+description: "QuadRoblox 프로바이더 함수, UseProvider 계약, RobloxExtension의 키, 타입 검사 설정"
 ---
 `quad-base`는 엔진을 모릅니다. Roblox Instance를 만들고 프로퍼티를 쓰고 이벤트에 붙는 일은
 **`quad-roblox` 백엔드**가 하고, 그 백엔드는 `UseProvider` 한 줄로 설치됩니다.
@@ -10,7 +10,7 @@ description: "QuadRoblox 프로바이더 함수, UseProvider 계약, RobloxExten
 
 :::note
 이 폴더(`reference/roblox/`)의 모든 것은 **`quad-roblox` 백엔드를 설치한 뒤에만** 존재합니다.
-`quad-base`만 require한 모듈에서 `q.Declaration`/`q.Tween`/`q.Animate`/`q.OnChange`/`q.Out`/`q.isTween`는 전부 `nil`입니다.
+`quad-base`만 require한 모듈에서 `q.Elem`·`q.Modifier`·`q.Spread`·`q.Mapper`·`q.OnChange`·`q.OnEvent`·`q.Out`·`q.ForClasses`는 `Quad0108` 안내 스텁이고, `q.Tween`/`q.Animate`/`q.isTween`는 `nil`입니다.
 :::
 
 이 문서의 모든 예제는 아래 프롤로그를 전제합니다.
@@ -19,8 +19,8 @@ description: "QuadRoblox 프로바이더 함수, UseProvider 계약, RobloxExten
 -- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
 local Quad = require("@game/ReplicatedStorage/roblox_packages/quad_base")
 local QuadRoblox = require("@game/ReplicatedStorage/roblox_packages/quad_roblox").QuadRoblox
-local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: D/Tween/Animate/OnChange가 생긴다
-local D = q.Declaration
+local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: q.Elem 등과 Tween/Animate가 생긴다
+local Frame = q.Elem "Frame"
 ```
 
 ---
@@ -87,12 +87,12 @@ QuadRoblox: <T>(quad: T) -> RobloxExtension
 UseProvider: <Self, P>(self: Self, providerFn: (Self) -> P) -> Self & P
 ```
 
-**반환** — 같은 모듈 인스턴스. 다만 타입은 `Self & P` 교집합이라, 반환값을 받아 쓰면 `q.Declaration`이 캐스트
+**반환** — 같은 모듈 인스턴스. 다만 타입은 `Self & P` 교집합이라, 반환값을 받아 쓰면 `q.Elem`이 캐스트
 없이 그대로 타입드입니다.
 
 ```luau
 local q = Quad:UseProvider(QuadRoblox)
-local D = q.Declaration -- 병합된 확장. `Quad.Declaration`으로도 같은 값에 닿는다
+local Frame = q.Elem "Frame" -- 병합된 확장. `Quad.Elem`으로도 같은 값에 닿는다(타입은 반환값 쪽에만 붙는다)
 ```
 
 **동작 — 모듈당 프로바이더 하나**
@@ -112,19 +112,19 @@ local D = q.Declaration -- 병합된 확장. `Quad.Declaration`으로도 같은 
   것입니다. 그래서 `RobloxFactory`를 직접 부르면 이 잠금도 확장 병합도 거치지 않고, `AddPlugin`으로
   우회하면 확장 병합은 되지만 1슬롯 identity 보호가 없습니다 — 둘 다 지원 대상이 아닙니다.
 
-두 모듈 인스턴스가 필요하면 `Quad.New()`로 격리된 인스턴스를 만들어 각각 설치하세요.
+두 모듈 인스턴스가 필요하면 `Quad.NewModule()`로 격리된 인스턴스를 만들어 각각 설치하세요.
 
 ---
 
 ## `RobloxExtension`
 
-`QuadRoblox`가 돌려주고 `UseProvider`가 모듈에 병합하는 확장 표면입니다. 여섯 키가 전부입니다.
+`QuadRoblox`가 돌려주고 `UseProvider`가 모듈에 병합하는 확장 표면입니다.
 
 ```luau
 export type RobloxExtension = {
-	Declaration: DeclarationModule.Declaration,
-	OnChange: OnChangeFn,
-	Out: OutFn,
+	Elem: …, Modifier: …, Spread: …, Mapper: …,       -- 클래스를 먼저 받는 생성자(타입 함수가 계산)
+	OnChange: …, OnEvent: …, Out: …,                 -- 숫자 키 자리 디스크립터
+	ForClasses: <M>() -> …,                          -- 같은 표면을 여러분의 클래스 맵으로
 	Animate: AnimateFn,
 	Tween: Types.TweenConstructor,
 	isTween: (x: any) -> boolean,
@@ -133,9 +133,12 @@ export type RobloxExtension = {
 
 | 키 | 무엇 | 상세 |
 |---|---|---|
-| `Declaration` | Instance 생성기 네임스페이스 — 클래스별 별칭 + `New`/`Mapper`/`Modifier` | [Declaration — Instance 생성](/reference/roblox/02-d/), [D.Modifier](/reference/roblox/03-d-modifier/), [Claim과 D.Mapper](/reference/roblox/04-claim-mapper/) |
-| `OnChange` | 프로퍼티 변경 신호 디스크립터 팩토리 | [q.OnChange](/reference/roblox/05-onchange/) |
-| `Out` | 프로퍼티 값을 `Source`에 되쓰는 슈거(`OnChange` 위) | [q.Out](/reference/roblox/05-onchange/#qoutname-src) |
+| `Elem` | Instance 생성자 — `q.Elem "Frame" {…}` | [Elem — Instance 생성](/reference/roblox/02-elem/) |
+| `Modifier` | 클래스별 타입드 Modifier 생성자 | [Modifier와 Spread](/reference/roblox/03-modifier-spread/) |
+| `Spread` | 요소 테이블 조각 묶음 | [Modifier와 Spread](/reference/roblox/03-modifier-spread/#qspread-class-props) |
+| `Mapper` | `Claim`용 매퍼 디스크립터 | [Claim과 Mapper](/reference/roblox/04-claim-mapper/) |
+| `OnChange` / `OnEvent` / `Out` | 프로퍼티 변경·이벤트·되쓰기 디스크립터 | [OnChange·OnEvent·Out](/reference/roblox/05-onchange/) |
+| `ForClasses` | 위 일곱을 여러분의 클래스 맵으로 | [Elem — q.ForClasses](/reference/roblox/02-elem/#qforclassesmap) |
 | `Animate` | `state:Apply`용 트윈 콤비네이터 | [Tween과 Animate](/reference/roblox/06-tween-animate/) |
 | `Tween` | 값-레벨 트윈 래퍼 생성자 | [Tween과 Animate](/reference/roblox/06-tween-animate/) |
 | `isTween` | 그 값이 `Tween`인지 판정하는 술어 | [Tween과 Animate](/reference/roblox/06-tween-animate/) |
@@ -143,34 +146,33 @@ export type RobloxExtension = {
 `Tween`/`isTween`은 모듈에도 직접 놓입니다 — 형제 설치자(Property 핸들러, 숏핸드 핸들러, `Animate`)와
 `quad-base`의 브랜드 진단 프로브가 그 자리를 보기 때문입니다. 사용자 입장에서는 `q.Tween` 하나로 같습니다.
 
-**타입 재익스포트** — `quad-roblox` 모듈 자체는 값 표면 외에 타입도 내보냅니다.
-`Tween<T>` / `TweenData<T>` / `TweenOptions<T>` / `TweenOverride` / `TweenConstructor` / `NewChild` /
-`OnChangeDescriptor` / `AnimateInfo` / `AnimateFn` / `OutFn`과, 생성 모듈에서 온 `Declaration` / `DeclarationMapper` / `PropTypes` /
-`OnChangeFn` / `Field<T>` / `FieldOut<T>`, 그리고 위 여섯 키의 모양인 `RobloxExtension`입니다.
+**타입 이름** — `quad-roblox` 모듈은 값 표면 외에 타입도 내보냅니다.
+
+- 클래스를 인자로 받는 이름: `Props<C>` / `PropsHashPart<C>` / `PropsArrayItem<C>` / `MapperProps<C>` / `ElemCtor<C>` /
+  `PropertyMap<C>`([02-elem](/reference/roblox/02-elem/#타입-이름--propsc--elemctorc--propertymapc)), `Modifier<C>` / `ModifierInto<C>` /
+  `Spread<C>` / `SpreadInto<C>`([03-modifier-spread](/reference/roblox/03-modifier-spread/#modifierc--modifierintoc--spreadc--spreadintoc))
+- 디스크립터: `OnChangeDescriptor<K>` / `OnEventDescriptor<K>`
+- Modifier 필드 값: `ModifierField<T>` / `ModifierFieldOut<T>`
+- 값 층: `Tween<T>` / `TweenData<T>` / `TweenOptions<T>` / `TweenOverride` / `TweenConstructor` / `NewChild` / `AnimateInfo` / `AnimateFn`
+- 위 키들의 모양인 `RobloxExtension`
 
 ```luau
 local RobloxModule = require("@game/ReplicatedStorage/roblox_packages/quad_roblox")
 local fade: RobloxModule.Tween<number> = q.Tween({ Value = 0, Time = 0.2 })
+local function Button(props: { read Modifier: RobloxModule.ModifierInto<TextButton>? }): TextButton
 ```
 
-클래스별 타입도 같은 경로로 닿습니다 — 생성기가 루트에 찍어 두는 재익스포트 블록에 **`<Class>Modifier`**(`FrameModifier`,
-상위 클래스 `GuiObjectModifier`까지), **`Into<Class>`**(`IntoTextButton`), **`<Class>Elem`**(`FrameElem`)이 들어 있습니다.
-**[3.3.0 기준 — 4.0.0 전까지 바뀔 수 있음]** 이 클래스별 이름들은 모양이 바뀔 수 있습니다 — 클래스마다 복제한 이름 대신 타입 함수로 조립하는 쪽을 검토하고 있습니다(`Field`/`FieldOut`은 해당 없음).
-
-```luau
-local function Button(props: { read Modifier: RobloxModule.TextButtonModifier? }): TextButton
-```
-
-`<Class>Param<E>`·`FieldP<T>`·`<Class>OnChange`처럼 그 블록에 없는 이름은 안정 표면이 아니라 **생성 모듈**
-(`quad-roblox/src/Declaration`)에서만 가져갈 수 있고, 모양이 바뀔 수 있습니다.
+**[3.4.0]** 3.3의 클래스별 이름(`FrameModifier`·`IntoFrame`·`FrameElem`)과 생성 모듈의 이름(`Declaration`·`DeclarationMapper`·
+`PropTypes`·`OnChangeFn`·`OutFn`·`Field<T>`·`FieldOut<T>`)은 없어졌습니다 — 위의 클래스를 인자로 받는 이름이 그 자리입니다
+(`FrameModifier` → `Modifier<Frame>`, `IntoFrame` → `ModifierInto<Frame>`, `Field<T>` → `ModifierField<T>`).
 
 ---
 
 ## 타입 검사 설정
 
-`quad-roblox`는 Roblox 전역 타입(`Instance`/`Enum`/`TweenInfo`/`UDim2` …)을 쓰고, 생성된 `Declaration` 타입은
-대형 유니언·교집합 덩어리입니다. 그래서 **새 솔버(Solver V2)**와 한도 플래그 셋이 필요합니다.
-저장소가 자기 코드를 검사할 때 쓰는 명령이 그대로 참고 형태입니다.
+`quad-roblox`는 Roblox 전역 타입(`Instance`/`Enum`/`TweenInfo`/`UDim2` …)을 쓰고, 생성자·Modifier·Spread의 타입은
+**타입 함수**가 그 클래스 타입에서 계산합니다. 그래서 **새 솔버(Solver V2)**가 필요합니다. 저장소가 자기 코드를 검사할 때
+쓰는 명령이 그대로 참고 형태입니다.
 
 ```sh
 luau-lsp analyze --flag:LuauSolverV2=true \
@@ -181,14 +183,10 @@ luau-lsp analyze --flag:LuauSolverV2=true \
   <검사할 경로>
 ```
 
-| 플래그 | 없으면 생기는 일 |
-|---|---|
-| `LuauSolverV2=true` | `quad-types`의 타입 함수가 "syntax not supported"로 죽는다 |
-| `LuauTarjanChildLimit` | 클래스별 `Param`·`Modifier`를 인스턴스화하는 `Declaration`/`DeclarationModifier` 선언이 "Code is too complex" |
-| `LuauSubtypingIterationLimit` | 클래스별 `OnChange` 유니언에 멤버 많은 콜백을 대조할 때 "Code is too complex" |
-| `LuauTypeInferIterationLimit` | 조상 클래스 Modifier(`As<Class>` 메소드가 수십 개)의 캐스트·`Apply` 자리가 "too complex" |
-
-이 값들은 저장소 코드 기준으로 고른 것이라, 여러분의 코드가 더 크면 더 올려야 할 수 있습니다.
+`LuauSolverV2=true`가 없으면 타입 함수가 "syntax not supported"로 죽습니다. 나머지 셋은 한도를 넉넉히 두는 것입니다 —
+**[2026-10-20 실측]** 3.4.0 표면은 VS Code 확장의 기본값과 Studio의 기본값(override 없음)에서도 too complex 없이 검사됐습니다(두 킷
+330파일, 생성자·디스크립터를 섞은 5730줄 모듈). 3.3의 생성 `Declaration`은 이 플래그 없이 무너졌습니다. 아주 큰 모듈에서 걸리는
+한도는 [02-elem](/reference/roblox/02-elem/#qelem-class-props)의 "왜 파일 머리에서 꺼내 두는가"를 보세요.
 
 `--definitions`는 `luau-analyze`가 아니라 **`luau-lsp`의 기능**입니다.
 

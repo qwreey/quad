@@ -2,7 +2,8 @@
 local H = require("./support/harness")
 local q = H.attach(require("../src/Quad"))
 q.debug = true
-local D = q.Declaration
+local Frame = q.Elem "Frame"
+local TextLabel = q.Elem "TextLabel"
 local VirtualRows = require("../src/VirtualRows")
 
 local function rows(list: any): { any }
@@ -33,7 +34,7 @@ H.section("pool: only the rows in view exist; scrolling rebinds indices, creates
 		Overscan = 0,
 		Row = function(index)
 			made += 1
-			local label = D.TextLabel({
+			local label = TextLabel({
 				Size = UDim2.fromScale(1, 1),
 				Text = (index :: any):Compute(function(self: any): string
 					local i = self:Get()
@@ -71,7 +72,7 @@ H.section("ScrollToRow: the install value is ignored; a row out of view moves th
 		Overscan = 1,
 		ScrollToRow = scrollTo,
 		Row = function(_index)
-			return D.Frame({ Size = UDim2.fromScale(1, 1) })
+			return Frame({ Size = UDim2.fromScale(1, 1) })
 		end,
 	})
 	;(list :: any).CanvasPosition = Vector2.zero -- the engine always has one; the mock starts with nil

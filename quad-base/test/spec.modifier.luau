@@ -14,7 +14,7 @@ local FieldsKey = ModifierModule._FieldsKey
 
 local SPEC_FILE = "spec.modifier.luau"
 local q = mock.newQuad()
-local Modifier = q.Modifier
+local Modifier = q.Raw.Modifier
 local None = q.None
 
 local function fieldOf(mod, key)
@@ -353,32 +353,32 @@ print()
 print("=== 13. 3순회 H-377 — 브랜드는 메타테이블이 아니다: AttrKey/MapperDescriptor는 필드 테이블이 아니다(Name이 필드로 병합돼 조용히 rename되던 것) ===")
 do
 	local okK, errK = pcall(function()
-		q.Modifier(q.AttrKey("Selected"))
+		q.Raw.Modifier(q.AttrKey("Selected"))
 	end)
 	assert(not okK and string.find(tostring(errK), "must be a Modifier or a plain field table", 1, true) ~= nil, "AttrKey is not a field table: " .. tostring(errK))
 	mock.assertBlamesUser(errK, "spec.modifier.luau", "AttrKey-arg blame")
-	local desc = q.newMapperClass("Frame")("k")({})
+	local desc = q.Raw.Mapper("Frame")("k")({})
 	local okD, errD = pcall(function()
-		q.Modifier(desc)
+		q.Raw.Modifier(desc)
 	end)
 	assert(not okD and string.find(tostring(errD), "must be a Modifier or a plain field table", 1, true) ~= nil, "MapperDescriptor is not a field table: " .. tostring(errD))
 	-- positive control — a real plain table still merges
-	assert(q.Modifier({ Name = "x" }):Peek("Name") == "x", "plain field table untouched")
+	assert(q.Raw.Modifier({ Name = "x" }):Peek("Name") == "x", "plain field table untouched")
 	print("PASS")
 end
 
 print("=== 14. 회신 3차 Q11 (a) — 제네릭 setter도 construct처럼 문자열 키만(H-310 거울): m[AttrKey]는 즉시 error, 사용자 줄 blame ===")
 do
-	local m = q.Modifier({})
+	local m = q.Raw.Modifier({})
 	local okK, errK = pcall(function()
 		return (m :: any)[q.AttrKey("Hp")]
 	end)
 	assert(not okK and string.find(tostring(errK), "setter keys must be strings", 1, true) ~= nil, "non-string setter key: " .. tostring(errK))
 	mock.assertBlamesUser(errK, "spec.modifier.luau", "setter key blame")
-	assert(q.Modifier({}):Name("x"):Peek("Name") == "x", "string setters untouched")
+	assert(q.Raw.Modifier({}):Name("x"):Peek("Name") == "x", "string setters untouched")
 	-- round3 `H-448`: construct refuses the keys the setter path can never produce
 	for _, bad in { { AsTextLabl = 1 }, { Apply = 1 }, { [""] = 1 } } :: { any } do
-		local okB, errB = pcall(function() return q.Modifier(bad) end)
+		local okB, errB = pcall(function() return q.Raw.Modifier(bad) end)
 		assert(not okB and (string.find(tostring(errB), "reserved", 1, true) ~= nil or string.find(tostring(errB), "non-empty", 1, true) ~= nil), "construct rejects: " .. tostring(errB))
 		mock.assertBlamesUser(errB, "spec.modifier.luau", "construct key blame")
 	end

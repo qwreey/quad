@@ -108,7 +108,7 @@ D.TextButton { props.Modifier or None, props.Ref or None, Text = "x" }
 
 ## 3. 스타일 합성 및 우선순위 3대 불변식
 
-컴포넌트가 자체 기본 디자인을 가지면서도 호출자의 커스텀 스타일을 수용해야 할 때가 있습니다. 병합 규칙은 셋뿐입니다(`Modifier` 값 자체의 표면은 [레퍼런스: `Modifier`](../reference/core/08-modifier.md), 클래스별 생성자는 [레퍼런스: `D.Modifier`](../reference/roblox/03-d-modifier.md)에 있습니다).
+컴포넌트가 자체 기본 디자인을 가지면서도 호출자의 커스텀 스타일을 수용해야 할 때가 있습니다. 병합 규칙은 셋뿐입니다(`Modifier` 값 자체의 표면은 [레퍼런스: `Modifier`](../reference/core/08-modifier.md), 클래스별 생성자는 [레퍼런스: `D.Modifier`](../reference/roblox/03-modifier-spread.md)에 있습니다).
 
 1. **직접 적은 문자 키가 이긴다**:
    `D.TextButton { props.Modifier or None, Text = "확정" }`에서 `Text`는 어떤 `Modifier`가 무엇을 갖고 오든 그대로 유지됩니다. 평탄화는 이미 채워진 키를 건너뛰기 때문입니다.
@@ -154,7 +154,7 @@ local function CustomButton(props: ButtonProps): TextButton
 end
 ```
 
-`D.Modifier.<Class>`는 위처럼 테이블을 넘기는 형태와 빌더 체인 형태(`D.Modifier.TextButton():TextSize(16):Text("x")`) 둘 다 지원합니다. 다만 **타입 검사는 체인 형태에서만 삽니다** — 테이블 형태의 필드는 이름도 값 타입도 검사되지 않고(`{ Sise = 1 }`도 통과), 틀린 것은 런타임 drive에서 `Quad0076`류로 잡힙니다. strict의 도움을 받고 싶으면 체인 형태로 쓰세요([Modifier 레퍼런스](../reference/roblox/03-d-modifier.md)).
+`D.Modifier.<Class>`는 위처럼 테이블을 넘기는 형태와 빌더 체인 형태(`D.Modifier.TextButton():TextSize(16):Text("x")`) 둘 다 지원합니다. 다만 **타입 검사는 체인 형태에서만 삽니다** — 테이블 형태의 필드는 이름도 값 타입도 검사되지 않고(`{ Sise = 1 }`도 통과), 틀린 것은 런타임 drive에서 `Quad0076`류로 잡힙니다. strict의 도움을 받고 싶으면 체인 형태로 쓰세요([Modifier 레퍼런스](../reference/roblox/03-modifier-spread.md)).
 
 ### 사용하는 쪽에서의 유연성
 

@@ -20,7 +20,13 @@
 local Input = require("./Input")
 local Quad = require("./Quad")
 local q = Quad
-local D = q.Declaration
+local ImageLabel = q.Elem "ImageLabel"
+local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
+local UIFlexItem = q.Elem "UIFlexItem"
+local UIListLayout = q.Elem "UIListLayout"
+local UIPadding = q.Elem "UIPadding"
+local UIStroke = q.Elem "UIStroke"
 local Interaction = require("./Interaction")
 local Style = require("./Style")
 local Util = require("./Util")
@@ -78,7 +84,7 @@ function PopupParts.whileOpen(anchor: Instance, close: () -> ()): () -> ()
 end
 
 function PopupParts.stroke(style: Style): UIStroke
-	return D.UIStroke({
+	return UIStroke({
 		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 		Thickness = style.Metrics.PopupBorderSize,
 		Color = style.Color.Border,
@@ -144,7 +150,7 @@ function PopupParts.row(spec: RowSpec): TextButton
 	end
 
 	local function makeLabel(): TextLabel
-		return D.TextLabel({
+		return TextLabel({
 			Name = "Label",
 			Text = spec.Text,
 			FontFace = style.Metrics.TextFont,
@@ -157,11 +163,11 @@ function PopupParts.row(spec: RowSpec): TextButton
 			AutomaticSize = Enum.AutomaticSize.XY,
 			Size = UDim2.fromOffset(0, 0),
 			LayoutOrder = 2,
-			D.UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill }),
+			UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill }),
 		})
 	end
 
-	return D.TextButton({
+	return TextButton({
 		hover.Hook,
 		Name = spec.Name or "Row",
 		-- simple rows carry the text themselves (one instance); composite rows hold labels in a list
@@ -189,18 +195,18 @@ function PopupParts.row(spec: RowSpec): TextButton
 				end
 			end
 			else q.None,
-		D.UIPadding({ PaddingLeft = padX, PaddingRight = padX, PaddingTop = padY, PaddingBottom = padY }),
-		if width == "Stretch" then D.UIFlexItem({ ItemLineAlignment = Enum.ItemLineAlignment.Stretch }) else q.None,
+		UIPadding({ PaddingLeft = padX, PaddingRight = padX, PaddingTop = padY, PaddingBottom = padY }),
+		if width == "Stretch" then UIFlexItem({ ItemLineAlignment = Enum.ItemLineAlignment.Stretch }) else q.None,
 		if simple
 			then q.None
-			else D.UIListLayout({
+			else UIListLayout({
 				FillDirection = Enum.FillDirection.Horizontal,
 				SortOrder = Enum.SortOrder.LayoutOrder,
 				Padding = gap,
 				VerticalAlignment = Enum.VerticalAlignment.Center,
 			}),
 		if checkAlpha
-			then D.ImageLabel({
+			then ImageLabel({
 				Name = "Check",
 				LayoutOrder = 1,
 				Size = textSquare,
@@ -213,7 +219,7 @@ function PopupParts.row(spec: RowSpec): TextButton
 			else q.None,
 		if simple then q.None else makeLabel(),
 		if spec.Shortcut
-			then D.TextLabel({
+			then TextLabel({
 				Name = "Shortcut",
 				LayoutOrder = 3,
 				Text = spec.Shortcut,
@@ -228,7 +234,7 @@ function PopupParts.row(spec: RowSpec): TextButton
 			})
 			else q.None,
 		if spec.Arrow
-			then D.ImageLabel({
+			then ImageLabel({
 				Name = "Arrow",
 				LayoutOrder = 3,
 				Size = textSquare,

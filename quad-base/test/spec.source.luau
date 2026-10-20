@@ -90,7 +90,7 @@ end
 print()
 print("=== 6. 인스턴스별 팩토리 (H-174) — 다른 New()의 Source는 다른 임플, 브랜드는 공유 ===")
 do
-	local other = Quad.New()
+	local other = Quad.NewModule()
 	local a, b = Quad.Source(1), other.Source(1)
 	assert(getmetatable(a :: any) ~= getmetatable(b :: any), "each quad instance has its own Source impl")
 	assert(Quad.isSource(b) and other.isSource(a), "brands are shared leaf modules")

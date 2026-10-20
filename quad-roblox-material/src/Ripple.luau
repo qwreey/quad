@@ -109,7 +109,8 @@
 local q = require("./Quad")
 local Tokens = require("./Tokens")
 local Theme = require("./Theme")
-local D = q.Declaration
+local CanvasGroup = q.Elem "CanvasGroup"
+local ImageLabel = q.Elem "ImageLabel"
 
 local Motion = Tokens.Motion
 local RunService = game:GetService("RunService")
@@ -298,7 +299,7 @@ local function new(opts: Options): Ripple
 			return false
 		end
 
-		local circle = D.ImageLabel {
+		local circle = ImageLabel {
 			Name = "RippleCircle",
 			circleRef,
 			Image = DISC_IMAGE,
@@ -326,7 +327,7 @@ local function new(opts: Options): Ripple
 				end)
 			end),
 		}
-		local g = D.CanvasGroup {
+		local g = CanvasGroup {
 			Name = "Ripple",
 			Size = UDim2.fromScale(1, 1),
 			-- painted (1 - opacity) only from full cover on, in the ripple color, under the group's corner
