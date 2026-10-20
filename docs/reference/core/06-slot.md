@@ -448,7 +448,7 @@ Quad0167 Slot: cannot mutate a Slot while it is being mounted or while one of it
 
 **예제**
 
-`--!strict`에서는 `updateFn`의 **`ctx` 파라미터와 반환 팩**에 주석을 달아야 합니다 — 반환이 갈래마다 다른 타입이라, 주석이 없으면 첫 `return`에서 반환 타입이 굳어 나머지 갈래가 거부됩니다. `ctx` 타입이 길면 파일 안에 별칭을 하나 두면 됩니다.
+`--!strict`에서는 `updateFn`의 **`ctx` 파라미터와 반환 팩**에 주석을 달아야 합니다 — 반환이 갈래마다 다른 타입이라, 주석이 없으면 첫 `return`에서 반환 타입이 굳어 나머지 갈래가 거부됩니다. `ctx` 타입이 길면 파일 안에 별칭을 하나 두면 됩니다(아래 예제의 `RowCtx`). **(3.4.0 다음 릴리즈부터)** 같은 모양에 `QuadTypes.SlotCtx<Item, UD, T>`(항목, 사용자 데이터, 원소 타입)라는 이름이 있어 `type RowCtx = QuadTypes.SlotCtx<Row, nil, Instance>` 한 줄로 쓸 수 있습니다.
 
 ```luau
 type Row = { Id: string, Title: string }

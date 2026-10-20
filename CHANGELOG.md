@@ -9,6 +9,10 @@
 
 _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다. 비어 있으면 게시된 최신 버전이 곧 현재 상태입니다._
 
+### Added
+
+- `QuadTypes.SlotCtx<Item, UD, T>` — `slot:List`·`slot:Single`의 `updateFn`이 받는 `ctx`의 타입 이름(항목, 사용자 데이터, 원소 타입). 파일마다 같은 레코드를 다시 적던 자리를 `type RowCtx = QuadTypes.SlotCtx<Row, nil, Instance>` 한 줄로 쓸 수 있습니다.
+
 ### Changed
 
 - quad(quad-base·quad-roblox)의 `q.debug` 진단 줄이 모두 `[quad debug] `로 시작합니다 — Studio 출력에서 자기 `print`와 구분됩니다. 진단 문구를 통째로 비교하던 테스트는 접두를 넣거나 부분 일치로 바꾸세요.

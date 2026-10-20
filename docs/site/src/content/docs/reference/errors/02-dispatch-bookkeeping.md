@@ -290,7 +290,7 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 ### Quad0076
 
-`Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}[, brand: {brands}])` + 꼬리 힌트 하나(+ nil 안내) — `brand:`는 브랜드가 있을 때만 붙습니다 — `quad-base/src/Dispatch/init.luau`
+`Dispatch: no handler matched key {tostring(k)} (value: {typeof(v)}[, brand: {brands}])` + 꼬리 힌트 하나(+ nil 안내) — `brand:`는 브랜드가 있을 때만 붙습니다 — `quad-base/src/Dispatch/Diagnostics.luau`(던지는 자리는 `quad-base/src/Dispatch/init.luau`)
 
 `brand:` 뒤에는 그 값이 답하는 브랜드 이름이 **전부, 이름순으로** 쉼표로 이어 붙습니다 — 모듈의 `is<Brand>` 필드 가운데 [`q.BrandPredicates`](/reference/core/11-predicates/#qbrandpredicates)에 등록된 술어만 묻습니다(quad-base의 `q.isX` 술어도 모듈이 만들어질 때 같은 집합에 등록됩니다). 그래서 `q.PreRef()`는 `Epoch, PreRef, Ref`, `q.Source(1)`은 `Epoch, Source, State`처럼 포함 관계에 있는 이름이 함께 나옵니다. 등록되지 않은 `is*` 헬퍼는 묻지 않고, 등록된 술어가 던지면 그 술어는 걸리지 않은 것으로 칩니다.
 

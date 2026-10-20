@@ -76,7 +76,7 @@ end
 
 local function time(h: number, m: number): Time
 	if not isValid(h, m) then
-		error(`Clock.time: {tostring(h)}:{tostring(m)} is not a time of day (hour 0..23, minute 0..59, integers)`, 2)
+		error(`Material.Clock.time: {tostring(h)}:{tostring(m)} is not a time of day (hour 0..23, minute 0..59, integers)`, 2)
 	end
 	return table.freeze({ Hour = h, Minute = m })
 end

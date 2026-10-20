@@ -54,24 +54,24 @@ end
 local function check(unit: Unit, level: number?)
 	local at = (level or 1) + 1
 	if type(unit) ~= "table" then
-		error(`Unit: expected a table \{ Scale, Decimals?, Prefix?, Suffix? \} (got {typeof(unit)})`, at)
+		error(`Material.Unit: expected a table \{ Scale, Decimals?, Prefix?, Suffix? \} (got {typeof(unit)})`, at)
 	end
 	local scale = unit.Scale
 	if type(scale) ~= "number" or not (scale > 0) or scale == math.huge then
-		error(`Unit: Scale must be a positive, finite number (got {tostring(scale)})`, at)
+		error(`Material.Unit: Scale must be a positive, finite number (got {tostring(scale)})`, at)
 	end
 	local decimals = unit.Decimals
 	if decimals ~= nil and (type(decimals) ~= "number" or decimals < 0 or decimals > 15 or decimals % 1 ~= 0) then
-		error(`Unit: Decimals must be a whole number from 0 to 15 (got {tostring(decimals)})`, at)
+		error(`Material.Unit: Decimals must be a whole number from 0 to 15 (got {tostring(decimals)})`, at)
 	end
 	if decimals == nil and decimalsOf(unit) == nil then
-		error(`Unit: Decimals is required when Scale ({scale}) is not a power of ten`, at)
+		error(`Material.Unit: Decimals is required when Scale ({scale}) is not a power of ten`, at)
 	end
 	if unit.Prefix ~= nil and type(unit.Prefix) ~= "string" then
-		error(`Unit: Prefix must be a string (got {typeof(unit.Prefix)})`, at)
+		error(`Material.Unit: Prefix must be a string (got {typeof(unit.Prefix)})`, at)
 	end
 	if unit.Suffix ~= nil and type(unit.Suffix) ~= "string" then
-		error(`Unit: Suffix must be a string (got {typeof(unit.Suffix)})`, at)
+		error(`Material.Unit: Suffix must be a string (got {typeof(unit.Suffix)})`, at)
 	end
 end
 

@@ -5,6 +5,8 @@
 	(`Calendar.parseLocalized` accepts more: `2026/10/5`, `2026.10.5`, `2026년 10월 5일`, English month names).
 ]]
 
+local Util = require("../Util")
+
 export type Pack = {
 	SelectDate: string,
 	SelectRange: string,
@@ -71,7 +73,7 @@ local function get(locale: string?): Pack
 	local k = locale or "en"
 	local p = packs[k]
 	if not p then
-		error(`DatePicker: unknown locale "{k}" (available: en, ko)`, 3)
+		Util.fail("DatePicker", `unknown locale "{k}" (available: en, ko)`)
 	end
 	return p
 end

@@ -19,6 +19,7 @@
 
 local q = require("../Quad")
 local Anchored = require("../Sheet/Anchored")
+local Util = require("../Util")
 
 export type DrawerValue = "Closed" | "Open"
 
@@ -40,7 +41,7 @@ local function DrawerState(o: Options?): DrawerState
 	local opts: Options = o or {}
 	local initial: DrawerValue = opts.InitialValue or "Closed"
 	if initial ~= "Closed" and initial ~= "Open" then
-		error(`DrawerState: InitialValue must be "Closed" or "Open" (got {tostring(initial)})`, 2)
+		Util.fail("DrawerState", `InitialValue must be "Closed" or "Open" (got {tostring(initial)})`)
 	end
 	local confirm = opts.ConfirmStateChange
 	local rec = Anchored.new(initial, { Closed = true, Open = true }, if confirm then function(v: string): boolean
@@ -61,12 +62,13 @@ local function DrawerState(o: Options?): DrawerState
 		end,
 		SnapTo = function(value: DrawerValue)
 			if value ~= "Closed" and value ~= "Open" then
-				error(`DrawerState.SnapTo: "Closed" or "Open" (got {tostring(value)})`, 2)
+				Util.fail("DrawerState.SnapTo", `"Closed" or "Open" (got {tostring(value)})`)
 			end
 			Anchored.snap(rec, value)
 		end,
 	}
 	Anchored.bind(state, rec)
+	Util.tagSurface(state) -- `SnapTo` & co. are public surface (a usage error blames the caller)
 	return state
 end
 

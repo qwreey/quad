@@ -114,13 +114,7 @@ type CoreSpec = {
 }
 
 type RowUD = { label: Source<string> }
-type RowCtx = {
-	Item: Entry | Quad.KeyGone,
-	Index: number,
-	Offset: State<number>,
-	Prev: Quad.SlotItem<Instance>?,
-	UserData: RowUD?,
-}
+type RowCtx = Quad.SlotCtx<Entry, RowUD, Instance>
 
 local Combo = {}
 

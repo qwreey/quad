@@ -29,6 +29,7 @@
 
 local q = require("../Quad")
 local Anchored = require("./Anchored")
+local Util = require("../Util")
 
 export type SheetValue = "Hidden" | "PartiallyExpanded" | "Expanded"
 
@@ -55,15 +56,15 @@ local function SheetState(o: Options?): SheetState
 	local enabled: { [string]: boolean } = {}
 	for _, v in opts.EnabledValues or { "Hidden", "PartiallyExpanded", "Expanded" } :: { SheetValue } do
 		if not VALID[v] then
-			error(`SheetState: unknown value "{tostring(v)}" (Hidden | PartiallyExpanded | Expanded)`, 2)
+			Util.fail("SheetState", `unknown value "{tostring(v)}" (Hidden | PartiallyExpanded | Expanded)`)
 		end
 		enabled[v] = true
 	end
 	if not enabled.Expanded then
-		error("SheetState: Expanded must be one of the enabled values", 2)
+		Util.fail("SheetState", "Expanded must be one of the enabled values")
 	end
 	if not enabled[initial] then
-		error(`SheetState: the initial value "{initial}" must be one of the enabled values`, 2)
+		Util.fail("SheetState", `the initial value "{initial}" must be one of the enabled values`)
 	end
 	local confirm = opts.ConfirmValueChange
 	local rec = Anchored.new(initial, enabled, if confirm then function(v: string): boolean
@@ -84,7 +85,7 @@ local function SheetState(o: Options?): SheetState
 		end,
 		PartialExpand = function()
 			if not enabled.PartiallyExpanded then
-				error("SheetState.PartialExpand: PartiallyExpanded is not one of the enabled values", 2)
+				Util.fail("SheetState.PartialExpand", "PartiallyExpanded is not one of the enabled values")
 			end
 			request("PartiallyExpanded", "Hide")
 		end,
@@ -95,12 +96,13 @@ local function SheetState(o: Options?): SheetState
 		end,
 		Hide = function()
 			if not enabled.Hidden then
-				error("SheetState.Hide: Hidden is not one of the enabled values", 2)
+				Util.fail("SheetState.Hide", "Hidden is not one of the enabled values")
 			end
 			request("Hidden", "Hide")
 		end,
 	}
 	Anchored.bind(state, rec)
+	Util.tagSurface(state) -- `PartialExpand` / `Hide` & co. are public surface (a usage error blames the caller)
 	return state
 end
 

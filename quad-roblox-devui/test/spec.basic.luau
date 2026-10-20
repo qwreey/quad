@@ -205,5 +205,39 @@ H.section("Button Disabled: no OnClick, resting colours under hover, dim text; L
 	H.assertNoDebugOutput("button disabled")
 end)
 
+H.section("usage errors: `Devui.<Widget>: ` prefix, the caller's line is blamed at any depth", function()
+	local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
+	-- src/Util.luau mirrors quad-types' surface layer (the setup module hands out only `q`): pinned here
+	assert(
+		q.errorNamespace.getFuncLevel(Devui.Button) == QuadTypes.ERROR_LEVEL_SURFACE,
+		"the exports are tagged at quad's public-surface layer"
+	)
+	local function blame(label: string, fn: () -> (), want: string)
+		local ok, err = pcall(fn)
+		assert(not ok, label .. ": expected an error")
+		H.mock.assertBlamesUser(err, "spec.basic", label)
+		assert(string.find(tostring(err), want, 1, true) ~= nil, label .. ": " .. tostring(err))
+	end
+	blame("direct", function()
+		Devui.MenuToggle({ Text = "x", Value = q.Source(false), Checked = q.Source(true) })
+	end, "Devui.MenuToggle: give `Value`")
+	-- the check sits in a helper one frame below `Style.new`
+	blame("helper", function()
+		Style.new({ Dark = { ButtonColour = Color3.new() } :: any })
+	end, 'Devui.Style.new: Dark override "ButtonColour" must end in')
+	-- a method of a built object (Style.new tags it) and a lazy token read (the metamethod is tagged)
+	local style = Style.new()
+	blame("method", function()
+		style:SetScheme("Blue" :: any)
+	end, 'Devui.Style:SetScheme: expected "Dark" or "Light"')
+	blame("token", function()
+		local _ = (style.Color :: any).Nope
+	end, 'Devui.Style: unknown colour token "Nope"')
+	-- quad's own error inside a widget: the widget is a library frame too, so the widget call is blamed
+	blame("quad inside a widget", function()
+		Devui.Button({ Text = "x", Modifier = 5 :: any })
+	end, "Quad0076")
+	H.assertNoDebugOutput("usage errors")
+end)
 
 H.done()

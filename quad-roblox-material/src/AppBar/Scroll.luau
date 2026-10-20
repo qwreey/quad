@@ -144,7 +144,7 @@ end
 local function recOf(state: TopAppBarState): Rec
 	local rec = records[state]
 	if rec == nil then
-		error("TopAppBarScrollBehavior: State must come from Material.TopAppBarState", 3)
+		Util.fail("TopAppBarScrollBehavior", "State must come from Material.TopAppBarState")
 	end
 	return rec
 end

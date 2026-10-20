@@ -26,6 +26,7 @@
 ]]
 
 local Quad = require("./Quad")
+local Util = require("./Util")
 local q = Quad
 type State<T> = Quad.State<T>
 type Source<T> = Quad.Source<T>
@@ -465,16 +466,18 @@ end
 -- Lazy token table: `tokens.Name` derives (and caches) one State per name; unknown names raise.
 local function lazyTokens(isValid: (key: string) -> boolean, what: string, derive: (key: string) -> unknown): any
 	local cache: { [string]: unknown } = {}
-	return setmetatable(cache, {
+	local mt = {
 		__index = function(t, key: any)
 			if type(key) ~= "string" or not isValid(key) then
-				error(`Style: unknown {what} token "{tostring(key)}"`, 2)
+				Util.fail("Style", `unknown {what} token "{tostring(key)}"`)
 			end
 			local v = derive(key)
 			rawset(t, key, v)
 			return v
 		end,
-	})
+	}
+	Util.tagSurface(mt) -- the reading line (`style.Color.Nope`) is blamed, not this metamethod
+	return setmetatable(cache, mt)
 end
 
 local function applyPaletteOverrides(
@@ -487,25 +490,22 @@ local function applyPaletteOverrides(
 		return
 	end
 	for key, value in overrides do
-		local name, isColor
-		if string.sub(key, -5) == "Color" then
-			name, isColor = string.sub(key, 1, -6), true
-		elseif string.sub(key, -12) == "Transparency" then
-			name, isColor = string.sub(key, 1, -13), false
-		else
-			error(`Style.new: {scheme} override "{key}" must end in "Color" or "Transparency"`, 3)
+		local isColor = string.sub(key, -5) == "Color"
+		if not isColor and string.sub(key, -12) ~= "Transparency" then
+			Util.fail("Style.new", `{scheme} override "{key}" must end in "Color" or "Transparency"`)
 		end
+		local name = string.sub(key, 1, if isColor then -6 else -13)
 		if colors[name] == nil then
-			error(`Style.new: {scheme} override "{key}" names an unknown token "{name}"`, 3)
+			Util.fail("Style.new", `{scheme} override "{key}" names an unknown token "{name}"`)
 		end
 		if isColor then
 			if typeof(value) ~= "Color3" then
-				error(`Style.new: {scheme} override "{key}" must be a Color3`, 3)
+				Util.fail("Style.new", `{scheme} override "{key}" must be a Color3`)
 			end
 			colors[name] = value :: Color3
 		else
 			if type(value) ~= "number" then
-				error(`Style.new: {scheme} override "{key}" must be a number`, 3)
+				Util.fail("Style.new", `{scheme} override "{key}" must be a number`)
 			end
 			alphas[name] = value :: number
 		end
@@ -526,7 +526,7 @@ function Style.new(overrides: StyleOverrides?): Style
 	if o.Metrics then
 		for key, value in o.Metrics do
 			if DEFAULT_METRICS[key] == nil then
-				error(`Style.new: unknown metric "{key}"`, 2)
+				Util.fail("Style.new", `unknown metric "{key}"`)
 			end
 			defaultMetrics[key] = value
 			clearMetrics[key] = value
@@ -540,7 +540,7 @@ function Style.new(overrides: StyleOverrides?): Style
 	if o.Icons then
 		for key, value in o.Icons do
 			if icons[key] == nil then
-				error(`Style.new: unknown icon "{key}"`, 2)
+				Util.fail("Style.new", `unknown icon "{key}"`)
 			end
 			icons[key] = value
 		end
@@ -595,13 +595,13 @@ function Style.new(overrides: StyleOverrides?): Style
 		FrameHeight = (nil :: any) :: State<number>,
 		SetScheme = function(_self: Style, name: SchemeName)
 			if name ~= "Dark" and name ~= "Light" then
-				error(`Style:SetScheme: expected "Dark" or "Light" (got {tostring(name)})`, 2)
+				Util.fail("Style:SetScheme", `expected "Dark" or "Light" (got {tostring(name)})`)
 			end
 			scheme:SetIfChanged(name)
 		end,
 		SetDensity = function(_self: Style, name: DensityName)
 			if name ~= "Default" and name ~= "Clear" then
-				error(`Style:SetDensity: expected "Default" or "Clear" (got {tostring(name)})`, 2)
+				Util.fail("Style:SetDensity", `expected "Default" or "Clear" (got {tostring(name)})`)
 			end
 			density:SetIfChanged(name)
 		end,
@@ -622,6 +622,7 @@ function Style.new(overrides: StyleOverrides?): Style
 		return (self:Get() :: number) + 2 * (padding:Get() :: Vector2).Y
 	end, metricTokens.FramePadding)
 	style.FrameHeight = frameHeight
+	Util.tagSurface(style) -- `:SetScheme` & co. are public surface (a usage error blames the caller)
 	return style
 end
 

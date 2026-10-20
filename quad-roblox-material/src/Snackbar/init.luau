@@ -121,7 +121,7 @@ local function new(o: Options?): Host
 	local offset = opts.Offset or 16
 	local place: Position = opts.Position or "Bottom"
 	if place ~= "Bottom" and place ~= "Top" then
-		error(`Snackbar.new: Position must be "Bottom" or "Top" (got {tostring(place)})`, 2)
+		Util.fail("Snackbar.new", `Position must be "Bottom" or "Top" (got {tostring(place)})`)
 	end
 	local clock: () -> number = opts.Clock or os.clock
 
@@ -347,10 +347,10 @@ local function new(o: Options?): Host
 		Pending = pending,
 		Show = function(_self: Host, so: ShowOptions): Item
 			if destroyed then
-				error("Snackbar:Show: the host was destroyed", 2)
+				Util.fail("Snackbar:Show", "the host was destroyed")
 			end
 			if not overlay.Alive:Get() then
-				error("Snackbar:Show: the host's overlay layer was destroyed — build a new host (Snackbar.default() does)", 2)
+				Util.fail("Snackbar:Show", "the host's overlay layer was destroyed — build a new host (Snackbar.default() does)")
 			end
 			local e: Entry = {
 				Opts = so,
@@ -397,6 +397,7 @@ local function new(o: Options?): Host
 			current = nil
 		end,
 	}
+	Util.tagSurface(host) -- `:Show` / `:Destroy` are public surface (a usage error blames the caller)
 	return host
 end
 

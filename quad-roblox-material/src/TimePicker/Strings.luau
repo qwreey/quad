@@ -6,6 +6,8 @@
 	date picker's (Compose's samples spell them "Cancel" / "Ok" — TimePickerSamples.kt 195, 198; the kit keeps one "OK").
 ]]
 
+local Util = require("../Util")
+
 export type Pack = {
 	AM: string,
 	PM: string,
@@ -60,7 +62,7 @@ local function get(locale: string?): Pack
 	local k = locale or "en"
 	local p = packs[k]
 	if not p then
-		error(`TimePicker: unknown locale "{k}" (available: en, ko)`, 3)
+		Util.fail("TimePicker", `unknown locale "{k}" (available: en, ko)`)
 	end
 	return p
 end

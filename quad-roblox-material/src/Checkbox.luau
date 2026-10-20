@@ -94,7 +94,7 @@ local function Checkbox(props: Props)
 	local theme = Theme.resolve(props.Theme)
 	local R = theme.Raw
 	if props.Value ~= nil and props.Checked ~= nil then
-		error("Checkbox: pass `Value` (two-way Source) or `Checked` (controlled State), not both", 2)
+		Util.fail("Checkbox", "pass `Value` (two-way Source) or `Checked` (controlled State), not both")
 	end
 	-- `own` is written by a click; the controlled form (`Checked`) has none: the owner writes in OnChange
 	local own: q.Source<boolean>? = props.Value or (if props.Checked == nil then q.Source(false) else nil)

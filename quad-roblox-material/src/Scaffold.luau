@@ -133,7 +133,7 @@ local function Scaffold(props: Props): Frame
 	local fabPosition: FabPosition = props.FloatingActionButtonPosition or "End"
 	local align = ALIGN[fabPosition]
 	if align == nil then
-		error(`Scaffold: FloatingActionButtonPosition must be "Start", "Center", "End" or "EndOverlay" (got {fabPosition})`, 2)
+		Util.fail("Scaffold", `FloatingActionButtonPosition must be "Start", "Center", "End" or "EndOverlay" (got {fabPosition})`)
 	end
 	local topBar, bottomBar = props.TopBar, props.BottomBar
 	local fab, snackbar = props.FloatingActionButton, props.SnackbarHost

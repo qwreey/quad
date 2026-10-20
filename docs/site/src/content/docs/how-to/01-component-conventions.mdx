@@ -360,6 +360,44 @@ Getting Started의 예제들은 Roblox 기본 모드(`--!nonstrict`)를 가정�
 상태 위에 얹는 연산 조합자는 `q.Operator` 네임스페이스에 있고, `:Apply`로 붙입니다 — 예: `price:Apply(q.Operator.Sum(tax, shipping))`, `reduceMotion:Apply(q.Operator.Not)`. 인자는 리터럴이어도 State여도 됩니다.
 :::
 
+### 값이든 State든 받는 prop — 본문에서 State 하나로
+
+`Disabled = true`로도, `Disabled = someState`로도 받고 싶은 prop이 많습니다. 받는 자리는 `T | StateMarker<T>`로 두고, 본문 첫머리에서 **State 하나로 정규화**해 두면 그 뒤 코드는 갈래 없이 `:Compute`·`:Get`만 씁니다. 리터럴은 새 `Source`로 감싸고, State는 그대로 씁니다.
+
+```luau
+type ToggleProps = {
+    read Disabled: (boolean | QuadTypes.StateMarker<boolean>)?,
+    read Width: (number | QuadTypes.StateMarker<number>)?,
+}
+
+-- 타입마다 하나씩 — 리터럴인지는 `type(v)`로 가른다
+local function boolState(v: (boolean | QuadTypes.StateMarker<boolean>)?, default: boolean): q.State<boolean>
+    if v == nil then
+        return q.Source(default)
+    elseif type(v) == "boolean" then
+        return q.Source(v)
+    end
+    return v :: any -- 입력 마커를 메소드가 있는 State로(아래 제네릭 레시피와 같은 캐스트)
+end
+
+local function numberState(v: (number | QuadTypes.StateMarker<number>)?, default: number): q.State<number>
+    if v == nil then
+        return q.Source(default)
+    elseif type(v) == "number" then
+        return q.Source(v)
+    end
+    return v :: any
+end
+
+local function Toggle(props: ToggleProps)
+    local disabled = boolState(props.Disabled, false)
+    local width = numberState(props.Width, 120)
+    -- 이 아래는 갈래 없이 disabled:Compute(...), width:Get() ...
+end
+```
+
+헬퍼를 `T` 하나로 묶은 제네릭 판(`asState<T>(v: T | StateMarker<T>)`)은 만들지 마세요. State를 넘기는 호출에서 신 솔버가 그 State 자체를 `T`로 잡아(`T = State<number>`), 결과를 `q.State<number>`로 받는 줄이 타입 에러가 납니다 — 바로 아래 절의 제네릭 추론 문제와 같은 뿌리입니다([2026-10-20 실측, luau-lsp 1.70.1]). 리터럴을 가르는 `type(v)` 검사도 타입마다 다릅니다. 그래서 쓰는 타입마다 하나씩 두는 것이 정본입니다(쓰는 타입은 몇 안 됩니다 — 불린·숫자·문자열 정도).
+
 ### 제네릭 컴포넌트의 타입 — 라이브러리 저자를 위한 레시피(`--!strict`)
 
 값의 타입을 제네릭으로 받는 컴포넌트(`RadioButton<T>`, `Combo<T>`, `ValueLabel<T>`)를 만들면, props를 `q.State<T>`나 `q.Source<T>`로 받는 순간 신 솔버가 `T`를 추론하지 못하고 *"No valid instantiation could be inferred for generic type parameter T … at least: number | nil, at most: number"*로 죽습니다. `q.State<EnumItem>` 자리에 `q.Source(Enum.EasingStyle.Quad)`가 안 들어가는 것도 같은 뿌리입니다. quad 탓이라기보다 Luau 타입 검사기의 한계(교집합 타입 안에서 `T`가 쓰기·인자 자리에 설 때)이고, quad가 자기 입력 자리에 쓰는 방법을 그대로 쓰면 오늘 풀립니다 — **State props는 `q.StateMarker<T>`로 받고, 메소드가 필요하면 본문에서 캐스트합니다.** 설정 모듈([시작하기 01](/getting-started/01-setup/))의 타입 재수출에 한 줄을 더하세요 — `export type StateMarker<T> = QuadTypes.StateMarker<T>`.

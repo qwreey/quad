@@ -82,7 +82,7 @@ local function initialSelection<K>(props: TabBarProps<K>): Source<K>
 	end
 	local first = props.Tabs[1]
 	if first == nil then
-		error("TabBar: `Tabs` is empty (pass at least one Tab, or pass your own `Selected` Source)", 3)
+		Util.fail("TabBar", "`Tabs` is empty (pass at least one Tab, or pass your own `Selected` Source)")
 	end
 	return q.Source(first.Key)
 end
@@ -99,7 +99,7 @@ local function TabBar<K>(props: TabBarProps<K>): Frame
 	if noPages then
 		for _, def in tabs do
 			if def.Children ~= nil then
-				error(`TabBar: NoPages draws no pages - Tab "{tostring(def.Key)}" has Children with nowhere to go`, 2)
+				Util.fail("TabBar", `NoPages draws no pages - Tab "{tostring(def.Key)}" has Children with nowhere to go`)
 			end
 		end
 	end

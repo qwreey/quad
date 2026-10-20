@@ -508,6 +508,8 @@
 
 **[2026-10-20 사용자]** *"192 결과 보고 오자."* — 실측은 메인이 이번 진행에서 한다(결과는 §7).
 
+**[2026-10-20 닫힘 — `SlotCtx<Item, UD, T>`]** 실측 결과(§7)와 메인 의견(이름에 `List`를 넣지 않음 — `:List`·`:Single` 둘 다 받으므로; 인자는 소비자가 바꾸는 것부터 항목·사용자 데이터·원소 타입; 엔진을 모르는 패키지라 `T`에 기본값 없음)에 사용자: *"둘은 네 의견대로 가면 될 것 같아. 딱히 대안이나 떠오르는건 없었어."* 반영: `quad-types/src/init.luau`(그룹 밖 별칭, 시그니처 주석이 가리킴), 킷 `Quad.luau` 둘 재수출, 재선언 셋(devui `Combo`·`Table`, material `ListReorder`)을 한 줄로, core/06 산문 한 줄, 루트 CHANGELOG Added. 예제는 다음 릴리즈 때(§7 "남은 것").
+
 **Q193. quad-mock 착수 시기와 그 전까지의 하네스 사본**(H-906).
 
 두 킷이 같은 테스트 하네스(약 700줄)를 따로 들고 있고 이미 갈라지기 시작했다. 레포 밖 사용자에게는 자기 컴포넌트를 시험할 길이 없다.
@@ -527,7 +529,9 @@
 - **(나) 킷이 `quad_error`를 직접 의존해 자기 네임스페이스를 만든다.** 킷 설정 모듈이 바깥에 맡기는 require 경로가 하나 늘고, 보류 중인 킷 패키지화의 의존 구성에 한 줄이 더해진다. 태그 맵이 quad와 갈려 경계 탐색이 끊긴다(위 안내가 피하라는 것).
 - **(다) 레벨 인자를 받는 형식 통일에서 멈춘다.**
 
-메인 의견(2026-10-20, 이 문항을 쓰다 `q.errorNamespace` 문서를 확인하고 덧붙임): (가). 사용자: *"고민해볼만한 표면"* — 열린 문항. 답이 오기 전까지 `Util.fail`은 하지 않는다(어느 갈래냐에 따라 헬퍼 본문이 갈린다).
+메인 의견(2026-10-20, 이 문항을 쓰다 `q.errorNamespace` 문서를 확인하고 덧붙임): (가). 사용자: *"고민해볼만한 표면"*.
+
+**[2026-10-20 닫힘 — (가)]** 사용자: *"둘은 네 의견대로 가면 될 것 같아. 딱히 대안이나 떠오르는건 없었어."* 킷은 `q.errorNamespace`를 쓴다 — 킷 공개 생성자를 SURFACE로 태깅하고 `Util.fail`은 그 위의 `errorBeforeNearest`(레벨 숫자 없음). `docs/reference/extend/01-backend-provider-contract.md`에 `errorNamespace` 사용법을 같이 채운다.
 
 ## §5 떨어뜨린 것
 
@@ -860,11 +864,12 @@ E가 낸 갈래는 이렇다. `Util.fail`의 본문을 quad-error 네임스페�
 
 게이트: `./scripts/test.sh` exit 0, `quad-roblox-devui/test/run.sh`·`quad-roblox-material/test/run.sh` exit 0, doc-check ERROR 0.
 
-**Q192 실측(2026-10-20, luau-lsp 1.70.1 신 솔버, test.sh 한도 플래그 셋).** quad-types에 재귀 그룹 **밖** 별칭 `SlotListCtx<Item, T, UD>`(= `:List`/`:Single`의 인라인 ctx 모양)를 임시로 넣고 `pesde install` 뒤 프로브를 돌렸다. 결과는 인라인 타입과 똑같다. `:List` 구체 꼴(devui `Combo` 모양)과 제네릭 + 명시 인스턴스화 꼴(devui `Table`·material `ListReorder` 모양 `slot:List<<T, UD<T>>>(…)`)이 통과했고, UserData를 틀린 타입에 대입하는 음성 대조도 그대로 에러였다. `:Single`에 Item을 정확히 적은 ctx 주석은 별칭이든 인라인이든 똑같이 *"No valid instantiation could be inferred for generic type parameter Item"*으로 실패했다. 명시 타입 인자를 줘도 같다. 이것은 이미 기록된 `base/typing-limits.md` 8.19의 한계이고 별칭과 무관하다. `Slot` 자기 시그니처는 그룹 안이라 지금처럼 인라인으로 둬야 한다. 공개 별칭은 소비자 전용으로 시그니처 옆에 따로 두는 형태다. quad-types는 되돌렸다. **남은 결정은 이름과 타입 인자 순서**다(§4 Q192, 사용자).
+**Q192 실측(2026-10-20, luau-lsp 1.70.1 신 솔버, test.sh 한도 플래그 셋).** quad-types에 재귀 그룹 **밖** 별칭 `SlotListCtx<Item, T, UD>`(= `:List`/`:Single`의 인라인 ctx 모양)를 임시로 넣고 `pesde install` 뒤 프로브를 돌렸다. 결과는 인라인 타입과 똑같다. `:List` 구체 꼴(devui `Combo` 모양)과 제네릭 + 명시 인스턴스화 꼴(devui `Table`·material `ListReorder` 모양 `slot:List<<T, UD<T>>>(…)`)이 통과했고, UserData를 틀린 타입에 대입하는 음성 대조도 그대로 에러였다. `:Single`에 Item을 정확히 적은 ctx 주석은 별칭이든 인라인이든 똑같이 *"No valid instantiation could be inferred for generic type parameter Item"*으로 실패했다. 명시 타입 인자를 줘도 같다. 이것은 이미 기록된 `base/typing-limits.md` 8.19의 한계이고 별칭과 무관하다. `Slot` 자기 시그니처는 그룹 안이라 지금처럼 인라인으로 둬야 한다. 공개 별칭은 소비자 전용으로 시그니처 옆에 따로 두는 형태다. quad-types는 되돌렸다(실측 때 쓴 임시 이름 `SlotListCtx`). 남은 결정이던 이름과 타입 인자 순서는 같은 날 §4 Q192에서 닫혔다 — `SlotCtx<Item, UD, T>`.
 
 **남은 것.**
-- 문서 묶음: H-907(라이브러리를 quad 위에 얹는 법), H-909 (나)(how-to 09 레시피 셋), H-924 (a)(값-또는-State 정규화 레시피), H-925(`:Set` 문장), 근거 기록 H-918 (b)·H-919·H-920(55로 정정)·H-926.
-- 킷 내부: H-908(ListReorder 기하부터), H-918 (a)(Heartbeat 드라이버 — material 일곱, devui 둘은 다른 킷), H-921(Q194 답 뒤), H-928 devui 쪽(`Table`·`Combo`의 키별 재활용 본문 — 다른 킷이라 devui에 헬퍼를 따로 둘지부터).
-- 범위 한정·낮은 우선: H-902(진단·레지스트리만), H-929 나머지(Backend op 스무 개를 표로, `onDestroying` 무조건 덮어쓰기 가드).
+- 문서 묶음 — **[2026-10-20 같은 날 반영]** H-907(새 `docs/how-to/11-library-on-quad.md` — 설정 모듈·같은 quad 인스턴스 확인(`moduleIdentity`)·타입 재수출·`q.errorNamespace`), H-909 (나)(`docs/how-to/09-overlays-modal-toast.md` §6 죽지 않는 기본 레이어·§7 바깥 누름으로 닫기·§8 Escape 스택 — opus 서브에이전트, 두 킷 코드에 기댄 레시피를 mock 실측·strict 검사, Deferred 순서·토글 문제 등은 `[2026-10-20 기준]` 미실측 표시), H-924 (a)(how-to 01 "값이든 State든 받는 prop" — 타입별 헬퍼는 통과·제네릭 판은 State 인자에서 타입 에러, luau-lsp 1.70.1 실측), H-925(how-to 02 §6 "길이 제한" + onchange `q.Out` 한 줄), 근거 기록 H-918 (b)(ROADMAP 렌더 스텝 op)·H-919(`backlog/additional-operator-sugar.md`)·H-920(`research/component-flatten-sugar-plan.md` 끝, 55로 정정)·H-926(`research/debug-tooling-plan.md` 핵심 설계 방향 1절).
+- 킷 내부: H-908(ListReorder 기하부터), H-918 (a)(Heartbeat 드라이버 — material 일곱, devui 둘은 다른 킷), **H-921은 [2026-10-20] 반영**(opus 서브에이전트: 킷마다 `Util.fail(component, msg)` = `q.errorNamespace.errorBeforeNearest("<Kit>.<Component>: …", SURFACE)`, `Util.tagSurface`로 내보내기 테이블을 한 번 순회해 태깅(devui 함수 80·material 223), 생성자가 만든 객체 메소드는 생성자가 태깅; 순수 모듈 셋(`Unit`·`TimePicker/Clock`·`DatePicker/Calendar`)은 Quad 없이 require되므로 접두만 바꾸고 손 레벨 유지, 공개 `Unit.check(unit, level?)`의 레벨 인자도 계약이라 유지 — 없애려면 새 이름이 필요; 부수 효과로 킷 컴포넌트 안에서 quad가 던지는 에러도 컴포넌트를 부른 사용자 줄을 가리킨다 — 킷 CHANGELOG 둘에 적음; `fail`·`tagSurface`는 킷 내부용으로 README 표기, extend/01에 `errorNamespace` 사용법), H-928 devui 쪽(`Table`·`Combo`의 키별 재활용 본문 — 다른 킷이라 devui에 헬퍼를 따로 둘지부터).
+- 범위 한정·낮은 우선: H-929 나머지(Backend op 스무 개를 표로, `onDestroying` 무조건 덮어쓰기 가드). **[2026-10-20 같은 날] H-902는 진단만 반영** — `quad-base/src/Dispatch/Diagnostics.luau`(`brandNamesOf`·`brandNameOf`·`noMatchMessage`, 모듈의 등록 술어와 `DispatchHint` 브랜드만 읽는 순수 조각). 레지스트리(`handlers`·`debugHandlers`·버킷·`rebuildBuckets`)는 `getHandler`·`addHandler`와 가변 상태를 나눠 떼면 상태를 인자로 넘기는 층이 생기므로 남겼다(A의 조건 "단독 spec 후보가 있을 때" — 아직 없음). `drive`는 drive-hook-plan 결정 뒤 그대로.
 - **H-930은 보류로 낮춘다(메인 판단).** owned 갈래는 원소를 먼저 파괴하고 관찰자를 나중에 푼다. teardown은 관찰자부터 푼다. 이 차이가 의도인지 주석에도 `base/slot-plan.md`에도 근거가 없고 관측된 장애도 없다. 헬퍼로 합치면 순서 하나를 강제하게 되므로 오히려 위험하다.
+- **다음 릴리즈 때**: `QuadTypes.SlotCtx`(Q192, 2026-10-20 반영)가 게시되면 `ctx` 레코드를 손으로 적은 예제 다섯(`docs/reference/core/06-slot.md` 둘, `docs/skills/quad-ui-dev/SKILL.md`, `docs/skills/quad-ui-dev/references/code-recipes.md`, `docs/how-to/08-migrating-from-v1.md`)을 `SlotCtx` 한 줄로 — 게시 전에 바꾸면 3.4.0 사용자에게 컴파일되지 않는 예제가 된다.
 - H-922: 새 컴포넌트부터라 지금 할 일 없음. H-939: 킷 게시 때(material README의 `.claude/` 포인터가 797행 하나가 아니라 748행까지 둘). H-901·H-912·H-938: 보류 그대로.

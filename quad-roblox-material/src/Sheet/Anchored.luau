@@ -33,6 +33,7 @@
 ]]
 
 local q = require("../Quad")
+local Util = require("../Util")
 
 export type Kind = "Show" | "Hide" | "Settle"
 export type Anchor = { Value: string, Pos: number }
@@ -80,7 +81,7 @@ end
 function Anchored.recOf(public: any, who: string): Rec
 	local rec = records[public]
 	if rec == nil then
-		error(`{who}: expected a state made by Material.SheetState / Material.DrawerState (got {typeof(public)})`, 3)
+		Util.fail(who, `expected a state made by Material.SheetState / Material.DrawerState (got {typeof(public)})`)
 	end
 	return rec
 end

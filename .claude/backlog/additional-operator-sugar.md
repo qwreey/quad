@@ -10,6 +10,8 @@
 `And`/`Or`는 *"솔찍히 비추. if else 우리가 쓰던 이유가 있는데, 그거에 부딛힘"*. 순수 슈거지만 **타입 표면 결정이 필요**하다(`IfElse`의 두 갈래 타입). 범위 논의 원문은
 `base/operator-plan.md`의 "포함 범위" 절, ROADMAP 백로그 줄이 같은 묶음(아래 컬렉션 계열과 함께).
 
+**[2026-10-20 실측 근거 — round15 `H-919`]** 소비자 킷 둘에 "불린 State로 두 값 중 고르기"(`x:Compute(function(self, _prev, a, b) return if self:Get() then a:Get() else b:Get() end, A, B)`)가 한 줄 꼴만 42건, `return if self:Get() then` 꼴로 넓히면 80건이다(3.4.0 기준 재계수, `qa-request/code-quality-review-round15.md` §7). `IfElse`가 생기면 가장 먼저 줄어들 자리. 결정 거리는 그대로 두 갈래의 타입 표면.
+
 ## 열린 질문 — 컬렉션 계열 후보: `Concat`/`Sorted`/`Filtered`
 
 사용자 제안(2026-08-12 세션). 위 산술/논리/비트 스칼라 연산과 달리 문자열

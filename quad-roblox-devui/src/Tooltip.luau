@@ -77,7 +77,7 @@ function Tooltip.hook(props: TooltipProps): TooltipHandle
 	local makeContent = props.Content
 	local text = props.Text
 	if makeContent == nil and text == nil then
-		error("Tooltip.hook: give Text or Content", 2)
+		Util.fail("Tooltip.hook", "give Text or Content")
 	end
 
 	local visible: Source<boolean> = q.Source(false)

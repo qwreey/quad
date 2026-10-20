@@ -300,7 +300,7 @@ function Menu.MenuToggle(props: MenuToggleProps): TextButton
 	local scope = props.Scope
 	local style = props.Style or (if scope then scope.Style else Style.default)
 	if props.Value ~= nil and props.Checked ~= nil then
-		error("MenuToggle: give `Value` (a Source) or `Checked` (a State, controlled), not both", 2)
+		Util.fail("MenuToggle", "give `Value` (a Source) or `Checked` (a State, controlled), not both")
 	end
 	local own: Source<boolean>? = props.Value
 	if own == nil and props.Checked == nil then

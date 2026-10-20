@@ -207,7 +207,7 @@ local function SplitButton(props: Props)
 	local variant: Variant = props.Variant or "Filled"
 	local spec = Specs[variant]
 	if spec == nil then
-		error(`SplitButton: Variant must be "Filled", "Tonal", "Elevated" or "Outlined", got {tostring(variant)}`, 2)
+		Util.fail("SplitButton", `Variant must be "Filled", "Tonal", "Elevated" or "Outlined", got {tostring(variant)}`)
 	end
 	local disabled = Util.asState(props.Disabled)
 	local selected = Util.asState(props.Selected)

@@ -75,13 +75,7 @@ export type TableProps<T> = {
 -- per-row data kept in Slot:List userdata (the reused row's State/Source handles)
 type RowUD<T> = { row: Source<T>, index: Source<number> }
 
-type RowCtx<T> = {
-	Item: T | Quad.KeyGone,
-	Index: number,
-	Offset: State<number>,
-	Prev: Quad.SlotItem<Instance>?,
-	UserData: RowUD<T>?,
-}
+type RowCtx<T> = Quad.SlotCtx<T, RowUD<T>, Instance>
 
 local function cellSizing(width: number?): UDim2
 	return UDim2.new(0, width or 0, 0, 0)

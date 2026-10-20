@@ -205,13 +205,7 @@ type Row = {
 }
 
 type RowUD = { item: q.Source<any>, index: q.Source<number>, row: Row }
-type RowCtx = {
-	Item: any,
-	Index: number,
-	Offset: q.State<number>,
-	Prev: q.SlotItem<Instance>?,
-	UserData: RowUD?,
-}
+type RowCtx = q.SlotCtx<any, RowUD, Instance>
 
 local function findScroller(inst: Instance): ScrollingFrame?
 	local p: Instance? = inst.Parent

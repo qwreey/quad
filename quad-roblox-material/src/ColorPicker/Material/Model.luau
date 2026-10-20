@@ -37,6 +37,7 @@
 
 local q = require("../../Quad")
 local ColorModel = require("../ColorModel")
+local Util = require("../../Util")
 
 export type HSV = ColorModel.HSV
 export type Mode = "RGB" | "HSV"
@@ -110,7 +111,7 @@ end
 
 local function new(o: Options): Model
 	if o.HSV ~= nil and o.Value ~= nil then
-		error("ColorPicker: pass either HSV or Value, not both", 3)
+		Util.fail("ColorPicker", "pass either HSV or Value, not both")
 	end
 	local valueIn = o.Value
 	local hsv: q.Source<HSV> = o.HSV

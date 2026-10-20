@@ -17,6 +17,7 @@
 ]]
 
 local q = require("../Quad")
+local Util = require("../Util")
 
 export type Value = "Collapsed" | "Expanded"
 
@@ -43,16 +44,16 @@ export type Internal = {
 
 local records: { [any]: Internal } = setmetatable({}, { __mode = "k" }) :: any
 
-local function check(value: any, who: string)
+local function check(value: any, who: string, lead: string)
 	if value ~= "Collapsed" and value ~= "Expanded" then
-		error(`{who}: "Collapsed" or "Expanded" (got {tostring(value)})`, 3)
+		Util.fail(who, `{lead}"Collapsed" or "Expanded" (got {tostring(value)})`)
 	end
 end
 
 local function WideNavigationRailState(o: Options?): WideNavigationRailState
 	local opts: Options = o or {}
 	local initial: Value = opts.InitialValue or "Collapsed"
-	check(initial, "WideNavigationRailState: InitialValue must be")
+	check(initial, "WideNavigationRailState", "InitialValue must be ")
 	local rec: Internal = {
 		Target = q.Source<<Value>>(initial),
 		Current = q.Source<<Value>>(initial),
@@ -78,20 +79,21 @@ local function WideNavigationRailState(o: Options?): WideNavigationRailState
 			go(if rec.Target:Get() == "Expanded" then "Collapsed" else "Expanded")
 		end,
 		SnapTo = function(value: Value)
-			check(value, "WideNavigationRailState.SnapTo:")
+			check(value, "WideNavigationRailState.SnapTo", "")
 			rec.Target:SetIfChanged(value)
 			rec.Snap:Set(rec.Snap:Get() + 1)
 			rec.Current:SetIfChanged(value)
 		end,
 	}
 	records[state] = rec
+	Util.tagSurface(state) -- `SnapTo` & co. are public surface (a usage error blames the caller)
 	return state
 end
 
 local function recOf(state: WideNavigationRailState): Internal
 	local rec = records[state]
 	if rec == nil then
-		error("WideNavigationRail: State must come from Material.WideNavigationRailState", 3)
+		Util.fail("WideNavigationRail", "State must come from Material.WideNavigationRailState")
 	end
 	return rec
 end

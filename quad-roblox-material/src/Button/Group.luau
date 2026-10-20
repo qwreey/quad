@@ -224,27 +224,27 @@ local function ButtonGroup(props: Props)
 	local variant: Variant = props.Variant or "Filled"
 	local spec = Specs[variant]
 	if spec == nil then
-		error(`ButtonGroup: Variant must be "Filled", "Tonal", "Elevated" or "Outlined", got {tostring(variant)}`, 2)
+		Util.fail("ButtonGroup", `Variant must be "Filled", "Tonal", "Elevated" or "Outlined", got {tostring(variant)}`)
 	end
 	local items = props.Items
 	local count = #items
 	if count < 2 then
-		error(`ButtonGroup: Items needs at least 2 items, got {count}`, 2)
+		Util.fail("ButtonGroup", `Items needs at least 2 items, got {count}`)
 	end
 	local seen: { [string]: boolean } = {}
 	for index, item in items do
 		if type(item.Key) ~= "string" then
-			error(`ButtonGroup: Items[{index}].Key must be a string, got {typeof(item.Key)}`, 2)
+			Util.fail("ButtonGroup", `Items[{index}].Key must be a string, got {typeof(item.Key)}`)
 		elseif seen[item.Key] then
-			error(`ButtonGroup: Items[{index}].Key "{item.Key}" is used twice`, 2)
+			Util.fail("ButtonGroup", `Items[{index}].Key "{item.Key}" is used twice`)
 		end
 		seen[item.Key] = true
 	end
 	local single, multiple = props.Value, props.Values
 	if single ~= nil and multiple ~= nil then
-		error("ButtonGroup: give Value (single selection) or Values (multiple selection), not both", 2)
+		Util.fail("ButtonGroup", "give Value (single selection) or Values (multiple selection), not both")
 	elseif single == nil and multiple == nil then
-		error("ButtonGroup: Value (single selection) or Values (multiple selection) is required", 2)
+		Util.fail("ButtonGroup", "Value (single selection) or Values (multiple selection) is required")
 	end
 	local required = if props.Required ~= nil then props.Required else single ~= nil
 	local groupDisabled = Util.asState(props.Disabled)

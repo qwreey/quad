@@ -422,6 +422,33 @@ q.Elem "TextBox" {
 
 <!-- mock 실측 2026-10-01(같은 probe): 치는 동안 입력창 "hello world " 그대로·파생은 "hello world"; FocusLost 발화 뒤 입력창·원본 "hello world", 원본 소비자 1회(같은 값 되쓰기는 q.Out이 건너뜀) — 동기 발화·Deferred 흉내 둘 다 -->
 
+### 길이 제한 — 잘라서 되쓸 땐 `:Set`
+
+다듬기와 달리 **최대 길이**는 치는 순간 막아야 합니다. 넘친 글자가 입력창에 보이면 안 되기 때문입니다. 그래서 확정 이벤트가 아니라 되쓰기 자리에서 자르는데, 이때는 `q.Out` 대신 `OnChange` 콜백을 직접 쓰고, 잘린 값을 **`:Set`** 으로 적습니다.
+
+```luau
+local MAX = 12
+
+local function clip(s: string, max: number): string
+    local n = utf8.len(s)
+    if n == nil or n <= max then
+        return s
+    end
+    return string.sub(s, 1, (utf8.offset(s, max + 1) :: number) - 1)
+end
+
+q.Elem "TextBox" {
+    Text = store.Username,
+    q.OnChange "TextBox" "Text" (function(text: string)
+        store.Username:Set(clip(text, MAX)) -- SetIfChanged가 아니라 Set
+    end),
+}
+```
+
+`:SetIfChanged`(그리고 같은 값을 건너뛰는 `q.Out`)로는 이 경우가 막히지 않습니다. 원본이 이미 열두 글자일 때 열세 번째 글자를 치면, 잘린 값이 원본과 **같아서** 아무 일도 일어나지 않습니다. 그러면 입력창에는 넘친 글자가 그대로 남습니다 — 프로퍼티 바인딩은 원본이 새로 발행할 때만 입력창을 다시 쓰기 때문입니다. `:Set`은 같은 값도 전파하므로([`source:Set(v)`](../reference/core/02-source.md#sourcesetv)), `Text = store.Username` 바인딩이 입력창을 잘린 값으로 되돌립니다. 대가는 원본을 보는 소비자가 넘친 키 하나마다 같은 값을 한 번 더 받는다는 것입니다.
+
+이 `:Set`도 이벤트 핸들러(엔진 → 원본 방향) 안의 쓰기라 정상 경로입니다 — 위 `FocusLost`와 같은 자리입니다.
+
 ---
 
 ## 7. 핵심 모범 사례
@@ -441,7 +468,8 @@ q.Elem "TextBox" {
 5. **여러 필드를 묶을 땐 후행 의존성.** `stateA:Compute(fn, stateB)` 한 줄이면
    중간 노드 없이 하나로 모입니다.
 6. **`:Compute` 콜백은 순수하게.** 계산 중에 다른 상태를 `:Set`하지 마세요.
-7. **입력 다듬기는 원본을 두고 파생으로.** 입력창은 원본 `Source`와 양방향으로 두고, 다듬은 값은 `:Compute`로 따로 만들어 판정·제출이 읽게 하세요. 입력창 표시까지 다듬으려면 `FocusLost` 같은 확정 시점 이벤트에서 한 번 `:Set`합니다.
+7. **잘라서 되쓰는 자리(최대 길이)는 `:Set`.** 잘린 값이 원본과 같을 때도 입력창을 되돌려야 하므로 같은 값을 건너뛰는 `:SetIfChanged`·`q.Out`으로는 안 됩니다(§6 길이 제한).
+8. **입력 다듬기는 원본을 두고 파생으로.** 입력창은 원본 `Source`와 양방향으로 두고, 다듬은 값은 `:Compute`로 따로 만들어 판정·제출이 읽게 하세요. 입력창 표시까지 다듬으려면 `FocusLost` 같은 확정 시점 이벤트에서 한 번 `:Set`합니다.
 
 ---
 

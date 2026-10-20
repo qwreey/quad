@@ -112,7 +112,9 @@
 	HOW TO WRITE A MATERIAL COMPONENT (the checklist every component of this kit follows)
 	1. Plain function `Component(props: Props)` returning the host instance. `Props` is an exported type with
 	   `read` fields; optional inputs are `T?`. Reactive inputs are `T | State<T>` (convert once with
-	   `Util.asState(props.Disabled)` — never branch on State vs plain per use).
+	   `Util.asState(props.Disabled)` — never branch on State vs plain per use). A bad prop raises with
+	   `Util.fail("Component", "what is wrong")` — never `error(msg, n)`; exports are tagged below, a method of a built
+	   object is tagged by its constructor (`Util.tagSurface(obj)`).
 	2. Theme: `local theme = Theme.resolve(props.Theme)`. Plug `theme.Color.<Role>` (animated State<Color3>)
 	   straight into properties. For color MATH or choosing between roles use `theme.Raw.<Role>` inside a
 	   `:Compute`, then `:Apply(q.Animate(...))` once on the result (see Button/Style.luau `disabledPick`).
@@ -334,7 +336,7 @@ export type ScaffoldProps = ScaffoldModule.Props
 export type FabPosition = ScaffoldModule.FabPosition
 export type PaddingValues = ScaffoldModule.PaddingValues
 
-return {
+local Material = {
 	Tokens = require("@self/Tokens"),
 	Theme = ThemeModule,
 	Text = require("@self/Text"),
@@ -431,3 +433,9 @@ return {
 	-- screen layout
 	Scaffold = ScaffoldModule.Scaffold,
 }
+
+-- every exported function is public surface: tag the table as built, so a usage error (`Util.fail`) blames the
+-- caller's line and a new export needs no hand list
+Util.tagSurface(Material)
+
+return Material

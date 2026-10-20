@@ -159,7 +159,7 @@ local function Button(props: Props)
 	local hasIcon = iconValue ~= nil
 	local trailing = hasIcon and props.IconPosition == "Trailing"
 	if props.IconPosition ~= nil and props.IconPosition ~= "Leading" and props.IconPosition ~= "Trailing" then
-		error(`Button: IconPosition must be "Leading" or "Trailing", got {tostring(props.IconPosition)}`, 2)
+		Util.fail("Button", `IconPosition must be "Leading" or "Trailing", got {tostring(props.IconPosition)}`)
 	end
 	local hooks = Util.hooks(props.Hooks)
 	local width = props.Width

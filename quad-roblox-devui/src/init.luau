@@ -47,7 +47,9 @@
 
 	HOW TO WRITE A DEVUI WIDGET (follow this so the kit stays uniform)
 	1. A widget is a plain function `Widget(props: WidgetProps): Frame | TextButton | ...` returning ONE instance
-	   (or a Slot when it produces siblings). Props type: `read` fields, optional ones `?`.
+	   (or a Slot when it produces siblings). Props type: `read` fields, optional ones `?`. A bad prop raises with
+	   `Util.fail("Widget", "what is wrong")` — never `error(msg, n)`; exports are tagged below, a method of a built
+	   object is tagged by its constructor (`Util.tagSurface(obj)`).
 	2. Standard props, in this order of appearance in the type: the widget's own data (`Text`, `Value`, ...), callbacks
 	   (`OnClick`, `OnChange` — plain functions, called from engine events), then `Style: Style?` and
 	   `Modifier: ModifierInto<Class>?` (`Quad.ModifierInto<Frame>` etc. — the generic re-exports in `src/Quad.luau`;
@@ -167,7 +169,7 @@ export type InputVector2Props = Inputs.InputVector2Props
 export type InputUDim2Props = Inputs.InputUDim2Props
 export type InputColor3Props = Inputs.InputColor3Props
 
-return {
+local Devui = {
 	-- infrastructure
 	Style = Style,
 	Interaction = Interaction,
@@ -226,3 +228,9 @@ return {
 	MenuToggle = Menu.MenuToggle,
 	Tooltip = Tooltip.Tooltip,
 }
+
+-- every exported function is public surface: tag the table as built, so a usage error (`Util.fail`) blames the
+-- caller's line and a new export needs no hand list
+Util.tagSurface(Devui)
+
+return Devui

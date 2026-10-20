@@ -31,6 +31,7 @@ export type Store<T> = QuadTypes.Store<T>
 export type Context = QuadTypes.Context
 export type Provider<T> = QuadTypes.Provider<T>
 export type KeyGone = QuadTypes.KeyGone
+export type SlotCtx<Item, UD, T> = QuadTypes.SlotCtx<Item, UD, T>
 
 -- typed surface (quad-roblox module root): one generic per axis, the class is the type argument
 export type Modifier<C> = RobloxModule.Modifier<C>

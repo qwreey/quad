@@ -89,7 +89,7 @@ end
 local function slidingDrawer(props: ModalProps, modal: boolean): Frame
 	local who = if modal then "ModalNavigationDrawer" else "DismissibleNavigationDrawer"
 	if props.DrawerContent == nil then
-		error(`{who}: DrawerContent is required (a {if modal then "ModalDrawerSheet" else "DismissibleDrawerSheet"})`, 3)
+		Util.fail(who, `DrawerContent is required (a {if modal then "ModalDrawerSheet" else "DismissibleDrawerSheet"})`)
 	end
 	local theme = Theme.resolve(props.Theme)
 	local state = props.DrawerState or StateModule.DrawerState()
@@ -234,7 +234,7 @@ end
 
 local function PermanentNavigationDrawer(props: PermanentProps): Frame
 	if props.DrawerContent == nil then
-		error("PermanentNavigationDrawer: DrawerContent is required (a PermanentDrawerSheet)", 2)
+		Util.fail("PermanentNavigationDrawer", "DrawerContent is required (a PermanentDrawerSheet)")
 	end
 	local _ = Theme.resolve(props.Theme)
 	return Frame {

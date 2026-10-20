@@ -18,6 +18,10 @@
 	Hooks           the shared `Hooks = { any }` alias every component's `Hooks` prop uses: values that are placed in the
 	                host's array part (a `Tooltip.hook(...).Hook`, a `q.OnChange(...)`, a `q.Ref(...)`, ...). Only the array
 	                part — named properties go through `Modifier`.
+	fail(component, msg)   raise a usage error "Material.<component>: <msg>" that blames the caller of the nearest public
+	                kit function (below) — never `error(msg, n)` with a hand-counted level
+	tagSurface(...)  mark functions (and every function reachable through plain tables given) as public kit surface,
+	                so `fail` and quad's own errors see them as library frames (below)
 ]]
 
 local q = require("./Quad")
@@ -157,7 +161,50 @@ local function fitScale(layer: Vector2, content: Vector2, margin: number): numbe
 	return math.max(FIT_MIN, math.min(1, (layer.X - margin) / content.X, (layer.Y - margin) / content.Y))
 end
 
+-- ── usage errors ────────────────────────────────────────────────────────────────────────────────────────────────────
+-- Errors go through quad's shared error namespace (`q.errorNamespace`, the one quad tags its own public functions in)
+-- instead of `error(msg, n)`: a hand-counted level is right only for one call depth, and a helper frame between the
+-- check and the component (Slider -> Behavior -> config) silently moved the blame onto a kit line. Here every public
+-- kit function is TAGGED once, and `fail` blames whoever called the nearest tagged frame — however deep the check sits.
+--
+-- The layer number is quad-types' `ERROR_LEVEL_SURFACE`. The setup module (`Quad.luau`) hands out only `q`, and a
+-- require of quad_types here would add a second place that knows where quad lives, so the value is mirrored and the
+-- api spec pins it to quad-types.
+local SURFACE = 1
+
+-- Raise "Material.<component>: <msg>" at the line that called the nearest tagged (public) kit function. With no tagged
+-- frame on the stack (a check reached only from an engine event) the error points at this helper instead.
+local function fail(component: string, msg: string): never
+	return q.errorNamespace.errorBeforeNearest(`Material.{component}: {msg}`, SURFACE)
+end
+
+-- Tag functions as public kit surface. A table argument is walked: every function reachable through tables WITHOUT a
+-- metatable (module tables, not States / instances / lazy token tables) is tagged, so `init.luau` tags the whole export
+-- table at once and a new export needs no hand list. Constructors tag the methods of what they build (an Overlay's
+-- `Open`, a state's `SnapTo`): those are created after the export walk. `fail` itself is never tagged (it would become
+-- the frame it blames past).
+local function tagSurface(...: any)
+	local seen: { [any]: boolean } = {}
+	local function visit(v: any)
+		if type(v) == "function" then
+			if v ~= fail then
+				q.errorNamespace.setFuncLevel(SURFACE, v)
+			end
+		elseif type(v) == "table" and getmetatable(v) == nil and not seen[v] then
+			seen[v] = true
+			for _, child in v do
+				visit(child)
+			end
+		end
+	end
+	for i = 1, select("#", ...) do
+		visit((select(i, ...)))
+	end
+end
+
 return {
+	fail = fail,
+	tagSurface = tagSurface,
 	fitScale = fitScale,
 	negate = negate,
 	interactable = interactable,

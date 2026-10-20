@@ -533,9 +533,10 @@ export type SlotListOpts = { read OwnsElements: boolean? }
 -- (`ctx.Item`/`Index`/`Offset`/`Prev`/`UserData`, `:List`·`:Single` 같은 모양; 필드에 `read`를 안 붙이는 건 사용자가 평범한
 -- 레코드로 주석을 달면 반공변 자리에서 어긋나기 때문). `result`는
 -- 요소 | nil/None(파괴) | Detach(홀드). `item`엔 `KeyGone` 센티널도 온다.
--- (별도 alias로 빼지 않는다 — `Slot<T>`↔`SlotElement<T>` 재귀 그룹 안에서
+-- (시그니처 안에서는 별도 alias로 빼지 않는다 — `Slot<T>`↔`SlotElement<T>` 재귀 그룹 안에서
 -- 메소드 제네릭 `<Item, UD>`를 인자로 받는 alias는 "다른 파라미터의 재귀"로
--- 거부된다 — 2026-09-03 실측, typing-limits §1①과 같은 제약.)
+-- 거부된다 — 2026-09-03 실측, typing-limits §1①과 같은 제약. 소비자가 `ctx`에 주석을 달 이름은
+-- 그룹 **밖**의 `SlotCtx`(아래) — 같은 모양이고, 둘을 고칠 땐 같이 고칠 것.)
 export type Slot<T> = {
 	read __quadSlot: true, -- 런타임 `Slot_mt.__quadSlot = true`
 	read __quadSlotValue: T, -- 순수 팬텀(StateMarker와 같은 층)
@@ -579,6 +580,18 @@ export type Slot<T> = {
 	-- [2026-10-15 사용자 결정] 한 번만 짓는 설치 — `fn`은 이 Slot이 처음 마운트될 때 한 번 불리고, 돌려준 값 하나
 	-- (원소·State·Slot, 또는 nil)가 내용이 된다. 다시 붙여도 다시 불리지 않는다. 반환이 둘 이상이면 런타임 `Quad0272`.
 	Lazy: (self: Slot<T>, fn: () -> (SlotElement<T> | None)?) -> Slot<T>, -- None = empty content, like nil (runtime List.luau)
+}
+
+-- [2026-10-20 사용자 결정 — round15 Q192] `slot:List`/`slot:Single`의 `updateFn`이 받는 `ctx`의 이름 — 위 두 시그니처의
+-- 인라인 모양과 같다(재귀 그룹 밖이라 별칭이 된다; 그룹 안 시그니처는 인라인 그대로). 인자 순서는 소비자가 바꾸는 것부터:
+-- 항목 `Item`, 사용자 데이터 `UD`, 원소 타입 `T`(엔진을 모르는 패키지라 기본값을 두지 않는다 — 킷은 `Instance`로 한 줄 별칭).
+-- 2026-10-20 실측(luau-lsp 1.70.1 신 솔버): `:List` 구체·제네릭+명시 인스턴스화 꼴이 인라인과 똑같이 통과·거부한다.
+export type SlotCtx<Item, UD, T> = {
+	Item: Item | KeyGone,
+	Index: number,
+	Offset: State<number>,
+	Prev: SlotItem<T>?,
+	UserData: UD?,
 }
 
 -- ── 공개 표면 — `Quad`(quad-base가 구현), `CheckedQuad`, 런타임 값(`Brand` 팩토리·상수) ───────

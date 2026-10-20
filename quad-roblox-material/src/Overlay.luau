@@ -296,7 +296,7 @@ local function new(o: Options?): Overlay
 	local zIndexChecked = false
 	local function open(_self: Overlay, oo: OpenOptions): Handle
 		if isDead() then
-			error("Overlay:Open: the overlay layer was destroyed — build a new Overlay (Overlay.default() rebuilds itself)", 2)
+			Util.fail("Overlay:Open", "the overlay layer was destroyed — build a new Overlay (Overlay.default() rebuilds itself)")
 		end
 		if q.debug and not zIndexChecked then
 			-- by ClassName, not IsA("LayerCollector"): the spec mock has no class hierarchy (test/support/harness)
@@ -521,6 +521,7 @@ local function new(o: Options?): Overlay
 	end
 
 	local overlay: Overlay = { Layer = layer, Count = count, Alive = alive, Open = open }
+	Util.tagSurface(overlay) -- `:Open` is public surface (its usage error blames the caller)
 	deadChecks[overlay] = isDead
 	return overlay
 end

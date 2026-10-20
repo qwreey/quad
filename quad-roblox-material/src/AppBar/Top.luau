@@ -345,7 +345,7 @@ local function twoRows(name: string, props: Props, spec: TwoRowSpec): Frame
 	local collapsed = props.CollapsedHeight or SMALL_HEIGHT
 	local expanded = props.ExpandedHeight or (if subtitle ~= nil then spec.ExpandedWithSubtitle else spec.Expanded)
 	if expanded < collapsed then
-		error(`{name}: ExpandedHeight ({expanded}) must be at least CollapsedHeight ({collapsed})`, 3)
+		Util.fail(name, `ExpandedHeight ({expanded}) must be at least CollapsedHeight ({collapsed})`)
 	end
 	local bottom = expanded - collapsed
 	local built = slots(props, theme)

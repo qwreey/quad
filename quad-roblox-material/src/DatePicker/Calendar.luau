@@ -102,7 +102,7 @@ Calendar.isLeapYear = isLeapYear
 
 local function daysInMonth(y: number, m: number): number
 	if not isInt(m) or m < 1 or m > 12 then
-		error(("Calendar.daysInMonth: month must be an integer 1..12, got %s"):format(tostring(m)), 2)
+		error(("Material.Calendar.daysInMonth: month must be an integer 1..12, got %s"):format(tostring(m)), 2)
 	end
 	if m == 2 and isLeapYear(y) then
 		return 29
@@ -129,7 +129,7 @@ end
 function Calendar.date(y: number, m: number, d: number): Date
 	if not isValid(y, m, d) then
 		error(
-			("Calendar.date: %s-%s-%s is not a valid date (years %d..%d, proleptic Gregorian)"):format(
+			("Material.Calendar.date: %s-%s-%s is not a valid date (years %d..%d, proleptic Gregorian)"):format(
 				tostring(y),
 				tostring(m),
 				tostring(d),
@@ -165,7 +165,7 @@ local MAX_ORD = toOrdinal(Calendar.MAX_DATE)
 
 local function fromOrdinal(n: number): Date
 	if not isInt(n) then
-		error("Calendar.fromOrdinal: ordinal must be an integer", 2)
+		error("Material.Calendar.fromOrdinal: ordinal must be an integer", 2)
 	end
 	if n < MIN_ORD then
 		return Calendar.MIN_DATE
@@ -275,7 +275,7 @@ local function checkFirstDay(fdow: any): number
 		return 0
 	end
 	if not isInt(fdow) or fdow < 0 or fdow > 6 then
-		error(("Calendar: FirstDayOfWeek must be an integer 0..6, got %s"):format(tostring(fdow)), 3)
+		error(("Material.Calendar: FirstDayOfWeek must be an integer 0..6, got %s"):format(tostring(fdow)), 3)
 	end
 	return fdow
 end
@@ -291,7 +291,7 @@ end
 
 function Calendar.monthGrid(year: number, month: number, opts: GridOptions?): { { Cell } }
 	if not isValid(year, month, 1) then
-		error(("Calendar.monthGrid: invalid month %s-%s"):format(tostring(year), tostring(month)), 2)
+		error(("Material.Calendar.monthGrid: invalid month %s-%s"):format(tostring(year), tostring(month)), 2)
 	end
 	local f = checkFirstDay(opts and opts.FirstDayOfWeek)
 	local fixed = true
@@ -374,7 +374,7 @@ function Calendar.moveFocus(date: Date, action: FocusAction, opts: FocusOptions?
 	elseif action == "end" then
 		result = addDays(date, 6 - ((weekday(date) - f) % 7))
 	else
-		error(("Calendar.moveFocus: unknown action %q"):format(tostring(action)), 2)
+		error(("Material.Calendar.moveFocus: unknown action %q"):format(tostring(action)), 2)
 	end
 	return clamp(result, opts and opts.Min, opts and opts.Max)
 end
@@ -407,7 +407,7 @@ local function getLocale(key: string?): Locale
 	local k = key or "en"
 	local loc = (Calendar.locales :: { [string]: Locale })[k]
 	if not loc then
-		error(("Calendar: unknown locale %q"):format(tostring(k)), 3)
+		error(("Material.Calendar: unknown locale %q"):format(tostring(k)), 3)
 	end
 	return loc
 end

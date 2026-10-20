@@ -63,6 +63,7 @@ under Deferred signals) (the ScreenGui was rebuilt, e.g. ResetOnSpawn) makes a f
 local Pointer = require("./Pointer")
 local PopupHits = require("./PopupHits")
 local Quad = require("./Quad")
+local Util = require("./Util")
 local q = Quad
 local Frame = q.Elem "Frame"
 local TextButton = q.Elem "TextButton"
@@ -166,7 +167,7 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 	local unmountedWarned = false
 	local function openPopup(self: Overlay, opts: PopupOptions): Popup
 		if isDead() then
-			error("Overlay:Open: the overlay layer was destroyed", 2)
+			Util.fail("Overlay:Open", "the overlay layer was destroyed")
 		end
 		-- not debug-gated (once per overlay, not per frame): an invisible popup is otherwise silent
 		if Overlay.warnUnmounted and not unmountedWarned and layer.Parent == nil then
@@ -302,6 +303,7 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 
 	layerRef = layer
 	local overlay: Overlay = { Layer = layer, Count = count, Alive = alive, Open = openPopup, CloseAll = closeAll }
+	Util.tagSurface(overlay) -- `:Open` / `:CloseAll` are public surface (a usage error blames the caller)
 	deadChecks[overlay] = isDead
 	return overlay
 end

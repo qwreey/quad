@@ -143,10 +143,10 @@ local function Slider(props: Props)
 	}
 	local hasIcons = next(iconProps) ~= nil
 	if hasIcons and centered then
-		error("Slider: track icons are for the standard slider (not Centered)", 2)
+		Util.fail("Slider", "track icons are for the standard slider (not Centered)")
 	end
 	if hasIcons and g.ICON == nil then
-		error(`Slider: track icons need Size "M", "L" or "XL" (got {props.Size or "XS"})`, 2)
+		Util.fail("Slider", `track icons need Size "M", "L" or "XL" (got {props.Size or "XS"})`)
 	end
 	local b = Behavior.single(props, { Name = "Slider", Inset = g.INSET, Vertical = g.Vertical, Flip = g.Flip, Centered = centered })
 	local disabled, frac, length = b.Disabled, b.Frac, b.Length

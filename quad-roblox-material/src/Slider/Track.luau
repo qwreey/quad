@@ -95,6 +95,7 @@ local q = require("../Quad")
 local Theme = require("../Theme")
 local Tokens = require("../Tokens")
 local Style = require("../Button/Style")
+local Util = require("../Util")
 local Frame = q.Elem "Frame"
 
 export type SizeName = "XS" | "S" | "M" | "L" | "XL"
@@ -498,17 +499,17 @@ local function new(o: GeometryOptions?): Geometry
 	}) :: any
 end
 
--- a look's geometry from its props, validated (errors at level 3: the caller of the look — Slider / RangeSlider)
+-- a look's geometry from its props, validated (`Util.fail` blames the caller of the look — Slider / RangeSlider)
 local function forLook(name: string, size: SizeName?, orientation: Orientation?, topToBottom: boolean?): Geometry
 	if size ~= nil and SIZES[size] == nil then
-		error(`{name}: Size must be "XS", "S", "M", "L" or "XL", got {tostring(size)}`, 3)
+		Util.fail(name, `Size must be "XS", "S", "M", "L" or "XL", got {tostring(size)}`)
 	end
 	if orientation ~= nil and orientation ~= "Horizontal" and orientation ~= "Vertical" then
-		error(`{name}: Orientation must be "Horizontal" or "Vertical", got {tostring(orientation)}`, 3)
+		Util.fail(name, `Orientation must be "Horizontal" or "Vertical", got {tostring(orientation)}`)
 	end
 	local vertical = orientation == "Vertical"
 	if topToBottom ~= nil and not vertical then
-		error(`{name}: TopToBottom is for Orientation = "Vertical"`, 3)
+		Util.fail(name, `TopToBottom is for Orientation = "Vertical"`)
 	end
 	return new({ Size = size, Vertical = vertical, Flip = vertical and topToBottom ~= true })
 end

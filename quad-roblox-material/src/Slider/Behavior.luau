@@ -174,7 +174,10 @@ type Config = {
 	flip: boolean,
 }
 
--- validated static configuration (`level` 4: config -> Behavior.single/range -> the look's constructor -> its caller)
+-- validated static configuration. A bad prop raises through `Util.fail`, which blames the caller of the nearest public
+-- (tagged) function — the look's constructor (Slider / RangeSlider / M2.*) — however many frames sit between. The one
+-- hand-counted level left is `Unit.check(unit, 4)`: Unit is a pure module whose public `check` takes the level as an
+-- argument (4: config -> Behavior.single/range -> the look's constructor -> its caller).
 local function config(
 	name: string,
 	min0: number?,
@@ -189,11 +192,11 @@ local function config(
 	local min: number = min0 or 0
 	local max: number = max0 or 1
 	if not (max > min) then
-		error(name .. ": Max must be greater than Min", 4)
+		Util.fail(name, "Max must be greater than Min")
 	end
 	local range = max - min
 	if step ~= nil and not (step > 0) then
-		error(name .. ": Step must be positive", 4)
+		Util.fail(name, "Step must be positive")
 	end
 	if step ~= nil then
 		-- MDC `BaseSlider.validateStepSize` ("The stepSize must be 0, or a factor of the valueFrom-valueTo range");
@@ -201,7 +204,7 @@ local function config(
 		-- at 9) while the end stop is drawn at Max. A small tolerance for float steps (1 / 0.1 is 10.000000000000002).
 		local count = range / step
 		if math.abs(count - math.floor(count + 0.5)) > 1e-6 then
-			error(`{name}: Max - Min ({range}) must be a multiple of Step ({step})`, 4)
+			Util.fail(name, `Max - Min ({range}) must be a multiple of Step ({step})`)
 		end
 	end
 	local unitFormat: ((value: number) -> string)? = nil

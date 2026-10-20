@@ -97,7 +97,7 @@ local function Tabs<K>(props: Props<K>): Frame
 	elseif props.Tabs ~= nil then
 		tabsState = q.Source(props.Tabs)
 	else
-		error("Tabs: pass `Tabs` (a plain array) or `TabsState` (a State of the array)", 2)
+		Util.fail("Tabs", "pass `Tabs` (a plain array) or `TabsState` (a State of the array)")
 	end
 
 	local hasIcons = false

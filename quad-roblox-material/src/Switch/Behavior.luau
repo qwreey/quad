@@ -75,7 +75,7 @@ local SUPPRESS = 0.1
 
 local function new(props: Props, look: Look): Switch
 	if props.Value ~= nil and props.Checked ~= nil then
-		error(look.Name .. ": pass `Value` (two-way Source) or `Checked` (controlled State), not both", 3)
+		Util.fail(look.Name, "pass `Value` (two-way Source) or `Checked` (controlled State), not both")
 	end
 	local own: q.Source<boolean>? = props.Value or (if props.Checked == nil then q.Source(false) else nil)
 	local on: q.State<boolean> = props.Checked or own :: q.Source<boolean>

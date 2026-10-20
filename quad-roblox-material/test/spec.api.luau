@@ -479,4 +479,39 @@ H.section("Util helpers: negate / interactable / visible / hooks", function()
 	H.assertNoDebugOutput("util")
 end)
 
+H.section("usage errors: `Material.<Component>: ` prefix, the caller's line is blamed at any depth", function()
+	local Material = require("../src")
+	local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
+	-- src/Util.luau mirrors quad-types' surface layer (the setup module hands out only `q`): pinned here
+	assert(
+		q.errorNamespace.getFuncLevel(Material.Checkbox) == QuadTypes.ERROR_LEVEL_SURFACE,
+		"the exports are tagged at quad's public-surface layer"
+	)
+	local function blame(label: string, fn: () -> (), want: string)
+		local ok, err = pcall(fn)
+		assert(not ok, label .. ": expected an error")
+		H.mock.assertBlamesUser(err, "spec.api", label)
+		assert(string.find(tostring(err), want, 1, true) ~= nil, label .. ": " .. tostring(err))
+	end
+	blame("direct", function()
+		Material.Checkbox({ Value = q.Source(false), Checked = q.Source(true) })
+	end, "Material.Checkbox: pass `Value`")
+	-- the check sits three frames below the constructor (Slider -> Behavior.single -> config)
+	blame("deep", function()
+		Material.Slider({ Min = 1, Max = 1 })
+	end, "Material.Slider: Max must be greater than Min")
+	-- a shared helper two frames down (Anchored.recOf) — this once blamed a line inside the kit
+	local content = Frame({})
+	blame("helper", function()
+		Material.ModalNavigationDrawer({ DrawerContent = content, DrawerState = {} :: any })
+	end, "Material.ModalNavigationDrawer: expected a state")
+	q.dispose(content)
+	-- a method of a built object (its constructor tags it)
+	local drawer = Material.DrawerState()
+	blame("method", function()
+		drawer.SnapTo("Half" :: any)
+	end, 'Material.DrawerState.SnapTo: "Closed" or "Open"')
+	H.assertNoDebugOutput("usage errors")
+end)
+
 H.done()

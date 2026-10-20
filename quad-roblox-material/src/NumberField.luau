@@ -90,10 +90,10 @@ local function NumberField(props: Props): Frame
 	end
 	local min, max, step = props.Min, props.Max, props.Step
 	if min ~= nil and max ~= nil and max < min then
-		error("NumberField: Max must not be less than Min", 2)
+		Util.fail("NumberField", "Max must not be less than Min")
 	end
 	if step ~= nil and not (step > 0) then
-		error("NumberField: Step must be positive", 2)
+		Util.fail("NumberField", "Step must be positive")
 	end
 
 	-- the editable text is the bare number: the unit without its prefix / suffix

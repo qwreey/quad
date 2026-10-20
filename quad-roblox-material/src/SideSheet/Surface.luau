@@ -116,9 +116,9 @@ local function build(cfg: Config): Built
 	local theme = cfg.Theme
 	local rec = Anchored.recOf(cfg.State, cfg.Who)
 	if rec.Enabled.PartiallyExpanded then
-		error(
-			`{cfg.Who}: a side sheet has no PartiallyExpanded state (MDC SideSheetBehavior: STATE_EXPANDED / STATE_HIDDEN) — make its SheetState with EnabledValues = \{ "Hidden", "Expanded" }`,
-			3
+		Util.fail(
+			cfg.Who,
+			`a side sheet has no PartiallyExpanded state (MDC SideSheetBehavior: STATE_EXPANDED / STATE_HIDDEN) — make its SheetState with EnabledValues = \{ "Hidden", "Expanded" }`
 		)
 	end
 	local width = cfg.Width

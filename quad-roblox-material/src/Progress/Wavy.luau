@@ -151,7 +151,7 @@ end
 
 local function WavyProgress(props: Props): Frame
 	if props.Value == nil then
-		error("WavyProgress: Value is required (use LinearProgress({}) for indeterminate progress)", 2)
+		Util.fail("WavyProgress", "Value is required (use LinearProgress({}) for indeterminate progress)")
 	end
 	local theme = Theme.resolve(props.Theme)
 	local visible = Util.asState(props.Visible, true)
