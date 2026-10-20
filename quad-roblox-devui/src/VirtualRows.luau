@@ -10,13 +10,13 @@
 			Row: (index: State<number?>) -> Instance,  -- builds ONE pool slot's content, bound to `index` (see below)
 			RowHeight: (number | State<number>)?,      -- px; default: style FrameHeight rounded
 			Overscan: number?,                         -- extra rows kept above and below the viewport (default 2)
-			ScrollTo: Source<number?>?,                -- write a row index to scroll it into view (see below)
+			ScrollToRow: Source<number?>?,             -- write a row index to scroll it into view (see below)
 			Style: Style?, Modifier: ScrollingFrameModifier?,
 		}                                              -> ScrollingFrame
 
 	HOW IT DIFFERS from the other widgets
 	  - It is a row FACTORY, not a container: it takes a `Row` builder instead of `Children`.
-	  - `ScrollTo` is a Source the caller writes, like Window's `Open:Set(true)`: quad's `Set` always propagates, so
+	  - `ScrollToRow` is a Source the caller writes, like Window's `Open:Set(true)`: quad's `Set` always propagates, so
 	    `scrollTo:Set(i)` with the same i scrolls there again. The widget never writes it. The value it holds at install
 	    is ignored (the viewport size is not known yet). A row already in view does not move the list; otherwise the
 	    list moves the least it takes to bring the row to the nearest edge.
@@ -58,7 +58,7 @@ export type VirtualRowsProps = {
 	read Row: (index: State<number?>) -> Instance,
 	read RowHeight: (number | State<number>)?,
 	read Overscan: number?,
-	read ScrollTo: Source<number?>?,
+	read ScrollToRow: Source<number?>?,
 	read Style: Style?,
 	read Modifier: Quad.ScrollingFrameModifier?,
 }
@@ -149,8 +149,8 @@ local function VirtualRows(props: VirtualRowsProps): ScrollingFrame
 		end
 	end
 
-	-- ScrollTo: the install run is skipped (the same way as Window's raise-on-open)
-	local scrollTo = props.ScrollTo
+	-- ScrollToRow: the install run is skipped (the same way as Window's raise-on-open)
+	local scrollTo = props.ScrollToRow
 	local scrollInstalled = false
 	local scrollToObserver = if scrollTo
 		then scrollTo:Observer(function(self)

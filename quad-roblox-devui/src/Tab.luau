@@ -2,8 +2,8 @@
 --[[
 	TabBar / Tab (Iris: TabBar / Tab).
 
-		TabBar<K> { Tabs: { TabDef<K> }, Selected: Source<K>?, OnChange: ((key: K) -> ())?, Style: Style?,
-		            Modifier: FrameModifier? }
+		TabBar<K> { Tabs: { TabDef<K> }, Selected: Source<K>?, OnChange: ((key: K) -> ())?, NoPages: boolean?,
+		            Style: Style?, Modifier: FrameModifier? }
 		Tab<K>    { Key: K, Text: string | State<string>, Children: Slot<Instance>? }   -- returns a plain descriptor
 
 	API shape: `Tab{...}` builds NO instance — it is a descriptor (identity + label + content Slot) the TabBar reads, so the
@@ -26,6 +26,11 @@
 	change it); closable/hideable tabs are not provided. A `Selected` value that matches no Key shows no page.
 
 	Structure: root Frame (vertical) > Bar (horizontal row of tab TextButtons) + Underline (1px) + Pages (one Frame per tab).
+
+	`NoPages = true` [2026-10-20 user decision, a consumer hand-built tab buttons twice]: only the Bar and the Underline —
+	a tab strip / segmented selector whose content the caller shows elsewhere from `Selected`. A Tab with `Children`
+	then has nowhere to go: that is an error (its Slot would be left unmounted). Tab corners use the `TabRounding`
+	metric (same default as FrameRounding).
 ]]
 
 local Quad = require("./Quad")
@@ -58,6 +63,7 @@ export type TabBarProps<K> = {
 	read Tabs: { TabDef<K> },
 	read Selected: Source<K>?,
 	read OnChange: ((key: K) -> ())?,
+	read NoPages: boolean?,
 	read Style: Style?,
 	read Modifier: Quad.FrameModifier?,
 }
@@ -85,6 +91,14 @@ local function TabBar<K>(props: TabBarProps<K>): Frame
 
 	local metrics = style.Metrics
 	local padX, padY = Common.padXY(metrics.FramePadding)
+	local noPages = props.NoPages == true
+	if noPages then
+		for _, def in tabs do
+			if def.Children ~= nil then
+				error(`TabBar: NoPages draws no pages - Tab "{tostring(def.Key)}" has Children with nowhere to go`, 2)
+			end
+		end
+	end
 
 	local buttons: { Instance } = {}
 	local pages: { Instance } = {}
@@ -126,25 +140,27 @@ local function TabBar<K>(props: TabBarProps<K>): Frame
 					end
 				end
 			end,
-			UICorner = metrics.FrameRounding,
+			UICorner = metrics.TabRounding,
 			D.UIPadding({ PaddingLeft = padX, PaddingRight = padX, PaddingTop = padY, PaddingBottom = padY }),
 		})
 
-		pages[i] = D.Frame({
-			Name = `Page:{label}`,
-			LayoutOrder = i,
-			Visible = isSelected,
-			AutomaticSize = Enum.AutomaticSize.Y,
-			Size = UDim2.new(1, 0, 0, 0),
-			BackgroundTransparency = 1,
-			BorderSizePixel = 0,
-			D.UIListLayout({
-				FillDirection = Enum.FillDirection.Vertical,
-				SortOrder = Enum.SortOrder.LayoutOrder,
-				Padding = Util.pxY(metrics.ItemSpacing),
-			}),
-			def.Children or q.None,
-		})
+		if not noPages then
+			pages[i] = D.Frame({
+				Name = `Page:{label}`,
+				LayoutOrder = i,
+				Visible = isSelected,
+				AutomaticSize = Enum.AutomaticSize.Y,
+				Size = UDim2.new(1, 0, 0, 0),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				D.UIListLayout({
+					FillDirection = Enum.FillDirection.Vertical,
+					SortOrder = Enum.SortOrder.LayoutOrder,
+					Padding = Util.pxY(metrics.ItemSpacing),
+				}),
+				def.Children or q.None,
+			})
+		end
 	end
 
 	return D.Frame({
@@ -181,16 +197,18 @@ local function TabBar<K>(props: TabBarProps<K>): Frame
 			BackgroundTransparency = style.Transparency.TabActive,
 			BorderSizePixel = 0,
 		}),
-		D.Frame({
-			Name = "Pages",
-			LayoutOrder = 2,
-			AutomaticSize = Enum.AutomaticSize.Y,
-			Size = UDim2.new(1, 0, 0, 0),
-			BackgroundTransparency = 1,
-			BorderSizePixel = 0,
-			D.UIPadding({ PaddingTop = Util.pxY(metrics.ItemSpacing) }),
-			q.Slot(pages),
-		}),
+		if noPages
+			then q.None
+			else D.Frame({
+				Name = "Pages",
+				LayoutOrder = 2,
+				AutomaticSize = Enum.AutomaticSize.Y,
+				Size = UDim2.new(1, 0, 0, 0),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				D.UIPadding({ PaddingTop = Util.pxY(metrics.ItemSpacing) }),
+				q.Slot(pages),
+			}),
 	})
 end
 

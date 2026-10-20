@@ -63,13 +63,13 @@ H.section("pool: only the rows in view exist; scrolling rebinds indices, creates
 	H.assertNoDebugOutput("pool")
 end)
 
-H.section("ScrollTo: the install value is ignored; a row out of view moves the list the least; in view does not move", function()
+H.section("ScrollToRow: the install value is ignored; a row out of view moves the list the least; in view does not move", function()
 	local scrollTo = q.Source(500 :: number?)
 	local list = VirtualRows({
 		Count = q.Source(1000),
 		RowHeight = 10,
 		Overscan = 1,
-		ScrollTo = scrollTo,
+		ScrollToRow = scrollTo,
 		Row = function(_index)
 			return D.Frame({ Size = UDim2.fromScale(1, 1) })
 		end,
@@ -84,7 +84,7 @@ H.section("ScrollTo: the install value is ignored; a row out of view moves the l
 	scrollTo:Set(1)
 	assert((list :: any).CanvasPosition.Y == 0)
 	q.dispose(list)
-	H.assertNoDebugOutput("ScrollTo")
+	H.assertNoDebugOutput("ScrollToRow")
 end)
 
 H.done()

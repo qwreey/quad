@@ -27,6 +27,10 @@
 			OnBegin = function(x, y) ... end,                  -- optional; pointer position at press
 			OnMove = function(x, y, dx, dy) ... end,           -- current position + delta since press (numbers: no allocation)
 			OnEnd = function(x, y, dx, dy, cancelled) ... end, -- optional; cancelled = focus lost / drag:Cancel()
+			OnFrame = function(dt, x, y) ... end,              -- optional; every frame while the drag is active, also when
+			                                                   -- the pointer does not move (edge auto-scroll); x, y = last
+			                                                   -- pointer position (RunService.Heartbeat, connected only
+			                                                   -- during the drag)
 			Enabled = state,                                   -- optional State<boolean>; while false a press starts nothing
 			                                                   -- (no global connection is opened for a disabled widget)
 		})
@@ -64,6 +68,7 @@ export type DragOptions = {
 	OnBegin: ((x: number, y: number) -> ())?,
 	OnMove: (x: number, y: number, dx: number, dy: number) -> (),
 	OnEnd: ((x: number, y: number, dx: number, dy: number, cancelled: boolean) -> ())?,
+	OnFrame: ((dt: number, x: number, y: number) -> ())?,
 	Enabled: State<boolean>?,
 }
 
@@ -162,7 +167,7 @@ end
 
 function Interaction.drag(options: DragOptions): DragHandle
 	local dragging: Source<boolean> = q.Source(false)
-	local onBegin, onMove, onEnd = options.OnBegin, options.OnMove, options.OnEnd
+	local onBegin, onMove, onEnd, onFrame = options.OnBegin, options.OnMove, options.OnEnd, options.OnFrame
 	local enabled = options.Enabled
 
 	local began: InputObject? = nil
@@ -171,6 +176,7 @@ function Interaction.drag(options: DragOptions): DragHandle
 	local cChanged: RBXScriptConnection? = nil
 	local cEnded: RBXScriptConnection? = nil
 	local cFocus: RBXScriptConnection? = nil
+	local cFrame: RBXScriptConnection? = nil
 
 	local function disconnect()
 		if cChanged then
@@ -184,6 +190,10 @@ function Interaction.drag(options: DragOptions): DragHandle
 		if cFocus then
 			cFocus:Disconnect()
 			cFocus = nil
+		end
+		if cFrame then
+			cFrame:Disconnect()
+			cFrame = nil
 		end
 	end
 
@@ -244,6 +254,14 @@ function Interaction.drag(options: DragOptions): DragHandle
 		cFocus = uis.WindowFocusReleased:Connect(function()
 			finish(true, false)
 		end)
+		if onFrame then
+			local frame = onFrame
+			cFrame = game:GetService("RunService").Heartbeat:Connect(function(dt: number)
+				if began ~= nil then
+					frame(dt, lastX, lastY)
+				end
+			end)
+		end
 		dragging:SetIfChanged(true)
 		if onBegin then
 			onBegin(startX, startY)

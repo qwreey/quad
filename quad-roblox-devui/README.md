@@ -131,10 +131,10 @@ Heartbeat는 `gallery/Clock.luau`의 `ticker`만 건드리고, 그 연결은 그
 | 창 | `Window`, `WindowManager` | 드래그·크기 조절·접기·닫기 되는 창, 클릭하면 맨 앞으로(`ZIndex` 관리) |
 | 레이아웃 | `SameLine`, `Group`, `Indent`, `Separator`, `SeparatorText` | 가로 줄 / 세로 묶음 / 들여쓰기 / 구분선 |
 | 글 | `Text`, `TextWrapped`, `TextColored`, `TextDisabled`, `LabelText` | 한 줄·줄바꿈·색·흐림·`값 라벨` 한 줄 |
-| 버튼 | `Button`, `SmallButton` | 클릭 가능한 버튼(작은 쪽은 세로 패딩 없음) |
+| 버튼 | `Button`, `SmallButton` | 클릭 가능한 버튼(작은 쪽은 세로 패딩 없음), `Toggled`로 켜짐 모양(토글 단추·필터 칩) |
 | 선택 | `Checkbox`, `RadioButton`, `Selectable`, `SelectableOption` | 체크 / 라디오(같은 `Source` 공유) / 한 줄 선택 행 |
 | 입력 | `InputText`, `InputNum`, `DragNum`, `SliderNum`, `InputVector2`, `InputUDim2`, `InputColor3` | 글·숫자(±버튼)·드래그 숫자·슬라이더·벡터·UDim2·색 |
-| 구조 | `Tree`, `CollapsingHeader`, `TabBar` / `Tab`, `Table`, `VirtualRows` | 접히는 노드·헤더, 탭, 키로 재활용되는 표, 가상화된 고정 높이 행 목록 |
+| 구조 | `Tree`, `CollapsingHeader`, `TabBar` / `Tab`, `Table`, `VirtualRows` | 접히는 노드·헤더, 탭(`NoPages`면 단추 줄만 — 세그먼트 고르기), 키로 재활용되는 표, 가상화된 고정 높이 행 목록 |
 | 표시 | `ProgressBar`, `PlotLines`, `PlotHistogram` | 진행 막대, 선 그래프, 막대 그래프 |
 | 팝업 | `Combo`, `ComboArray`, `ComboEnum`, `MenuBar` / `Menu` / `MenuItem` / `MenuToggle`, `Tooltip` | 드롭다운, 메뉴(중첩 가능), 호버 툴팁 |
 | 기반 | `Style`, `Interaction`, `Overlay`, `WindowManager`, `NumberFormat` | 테마·입력 훅·팝업 층·창 z-순서·숫자/색 문자열 도우미 |
@@ -161,6 +161,10 @@ DEVUI WIDGET"입니다.
 - `OnChange` 같은 콜백은 **사용자가 바꾼 경우에만** 불립니다(바깥 `:Set`에는 안 불림) — `Checkbox`/`RadioButton`/입력 위젯/`Combo*`/
   `Tree`/`CollapsingHeader`/`TabBar` 모두 같은 약속입니다.
 - 위젯은 자기 `Source`에 쓸 때 이벤트 핸들러에서 `:Set`/`:SetIfChanged`를 부르고, `Compute`에서는 절대 쓰지 않습니다.
+- **[2026-10-20] `Source` prop의 방향은 셋입니다** — 이름이 아니라 이 규약과 위젯 머리 주석이 방향을 말합니다(세 모델 이름 검토가 함께 짚은 점).
+  - **양방향**(위 제어 `Source`): 위젯이 쓰고, 밖에서 쓰면 위젯이 따릅니다 — `Value`류, `Open`, `Window.Focused`·`InputText.Focused`(써서 포커스를 요청).
+  - **출력**: 위젯만 씁니다. 밖에서 써도 아무 일도 없습니다 — `Window.AvailableSize`.
+  - **명령**: 주인만 씁니다. 쓸 때마다 위젯이 동작합니다(같은 값도 — quad의 `Set`은 늘 전파) — `VirtualRows.ScrollToRow`.
 
 ### 이름 규약 (키트 전체)
 
@@ -190,7 +194,9 @@ Devui.Button { Text = "red", Style = mine }
 
 토큰 이름은 Iris 설정 이름에서 `Color` 접미사를 뗀 것입니다(`Style.Color.Button`, `Style.Metrics.TextSize` …). 오버라이드는
 `Style.new{...}` 시점에 정해집니다 — **토큰 하나만 실시간으로 바꾸는 setter는 없습니다**(Style Editor 창이 미리보기 Style을
-다시 만들어 보여주는 이유).
+다시 만들어 보여주는 이유). 창·팝업 배경은 기본으로 살짝 투명합니다(0.06, Iris와 같음 — 2026-10-20 유지 결정). 불투명하게 쓰려면
+`Devui.Style.new({ Dark = { WindowBgTransparency = 0, PopupBgTransparency = 0 } })`처럼 만들어 넘기세요. 탭 단추 모서리는
+`TabRounding` 지표가 정합니다(기본은 `FrameRounding`과 같음).
 
 **Overlay** — 팝업이 그려지는 화면 루트의 한 층입니다. 두 가지 쓰는 법이 있습니다.
 
@@ -218,8 +224,8 @@ ScreenGui는 **`ResetOnSpawn = false`**로 만드세요 — 층은 quad가 만�
 `manager:Register()`를 쓰면 `slot.Hook`을 그 루트의 배열부에 넣어야 이 동작이 붙습니다. 포커스된 창을 닫거나 파괴하면 남은 열린 창 가운데 맨 위
 창이 포커스를 받고, 닫았던 창을 다시 열면 맨 앞으로 오며 포커스를 받습니다. **남은 높이 채우기**: 창 안 자식 하나에
 `D.UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill })`을 주면 다른 자식이 남긴 높이를 차지하고 창 크기를 따라갑니다(Studio 확인 2026-10-20 —
-창보다 자식이 크면 스크롤 대신 그 자식이 줄어듭니다). 숫자가 필요하면 `ContentSize = Source<Vector2>`를 넘기세요 — 자식이 쓸 수 있는
-크기(보이는 내용 영역에서 스크롤바와 창 안쪽 여백을 뺀 값)를 창이 거기 씁니다. 밖에서 창을 다루는 길은 주인이 쥔 Source입니다 — 넘긴 `Open`에 `:Set(true)`를 하면 이미 열린 창도 맨 앞으로 올라오고(quad의 `Set`은 같은 값도 전파합니다; 상태만 맞추고 올리지 않으려면 `:SetIfChanged(true)`), `Focused = Source<boolean>`을 넘기면 창이 포커스 여부를 거기 씁니다(핸들 객체는 없습니다)(Dear ImGui와 같음 — 처음부터 열린 창은 포커스를 빼앗지 않음). 창의 빈 곳을 누른
+창보다 자식이 크면 스크롤 대신 그 자식이 줄어듭니다). 숫자가 필요하면 `AvailableSize = Source<Vector2>`를 넘기세요 — 자식이 쓸 수 있는
+크기(보이는 내용 영역에서 스크롤바와 창 안쪽 여백을 뺀 값)를 창이 거기 씁니다. 밖에서 창을 다루는 길은 주인이 쥔 Source입니다 — 넘긴 `Open`에 `:Set(true)`를 하면 이미 열린 창도 맨 앞으로 올라오고(quad의 `Set`은 같은 값도 전파합니다; 상태만 맞추고 올리지 않으려면 `:SetIfChanged(true)`), `Focused = Source<boolean>`은 양방향입니다 — 창이 포커스 여부를 거기 쓰고, 밖에서 `true`를 쓰면 그 창을 앞으로 올려 포커스를 주고 `false`를 쓰면 포커스를 놓습니다(어느 창도 포커스 없음; 닫힌 창은 `true`를 무시하니 `Open:Set(true)`로 여세요; 핸들 객체는 없습니다)(Dear ImGui와 같음 — 처음부터 열린 창은 포커스를 빼앗지 않음. 다만 처음부터 `true`인 `Focused`를 넘기면 그것은 요청으로 봅니다). 창의 빈 곳을 누른
 것은 창 전체를 덮는 투명 버튼 `ClickSink`(ZIndex 0)에서 멈춰 아래 창의 위젯으로 새지 않습니다. 타이틀바로 끌 때 창은 컨테이너 안에 타이틀바가 남도록 잘리고(Dear ImGui와 같은 규칙 — 가로로 `FrameHeight`(기본 19)
 픽셀, 세로로 타이틀바 전체), 컨테이너가 **줄어들면** 바깥으로 나간 창을 안으로 데려옵니다(`Position` Source에 씀). 프로그램이 준 위치는 그 밖에는
 건드리지 않습니다.

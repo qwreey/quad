@@ -126,6 +126,7 @@
 - `gemini-core-2026-10-15/` — **[2026-10-15, Gemini 격리 worktree·메인 판정]** 3.2.0 이후 코어 변경의 라운드 사이 상호작용 — 주장한 결함 셋은 UB 장면·결정된 결과·무해로 판정(확정 결함 0), CHANGELOG 43행 BREAKING 표기만 반영.
 - `naming-defer-2026-10-15/` — **[2026-10-15, sonnet·Gemini 이름 검토]** 한 번만 짓는 Slot 설치의 이름 — 둘 다 `Lazy` 추천(`Defer`는 `task.defer`와 겹침), 사용자 동의로 `slot:Lazy(fn)`.
 - `naming-spread-2026-10-15/` — **[2026-10-15, sonnet·Gemini 이름 탐색]** 펴 넣는 묶음 도구의 이름 — 둘 다 `Spread` 추천, 사용자 동의(`research/component-flatten-sugar-plan.md` 5절).
+- `naming-devui-2026-10-20/` — **[2026-10-20, Gemini·sonnet·codex luna 이름 검토 — codex 첫 실사용]** devui 새 prop 넷과 구현한 셋 — `Toggled`(셋 다)·`NoPages`·`TabRounding` 유지·`OnFrame`(둘)·`AvailableSize`(Roblox `AbsoluteContentSize`와 반대 뜻)·`ScrollToRow`·`Focused` 양방향, 사용자 전부 동의.
 - `naming-onevent-2026-10-16/` — **[2026-10-16, sonnet·Gemini 이름 탐색]** `OnChange`의 짝인 배열부 이벤트 디스크립터 — 둘 다 `OnEvent` 추천(차선 sonnet `On`, Gemini `Connect`).
 - `code-review-2026-10-16/` — **[2026-10-16, `/code-review high`]** 10-15 재검사 뒤 코드(`:List`·`slot:Lazy`·devui 창·material·`publish.py`) — 셋 고침(Lazy None 타입·Quad0156 문구·429 판정), 다섯 사용자 결정 대기(Lazy Quad0272 정리, devui 전역 누름 넷).
 - `naming-ctor-2026-10-16/` — **[2026-10-16, sonnet·Gemini 이름 탐색]** 클래스 이름으로 요소 생성자를 꺼내는 함수 X·`q.New()` 개명·공용 모듈 네임스페이스 — X는 sonnet `Class`/Gemini `New`, 둘 다 `NewModule`·별도 테이블 권고.

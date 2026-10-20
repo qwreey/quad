@@ -53,6 +53,28 @@ H.section("TabBar: first tab selected by default, only its page visible", functi
 	H.assertNoDebugOutput("tabbar default")
 end)
 
+H.section("TabBar NoPages: bar and underline only; a Tab with Children is an error; corners from TabRounding", function()
+	local sel = q.Source("x")
+	local bar = TabBar<<string>>({
+		Selected = sel,
+		NoPages = true,
+		Tabs = { Tab<<string>>({ Key = "x", Text = "X" }), Tab<<string>>({ Key = "y", Text = "Y" }) },
+	})
+	assert(H.find(bar, "Pages") == nil and H.find(bar, "Bar") ~= nil and H.find(bar, "Underline") ~= nil)
+	H.fire(get(bar, "Tab:y"), "Activated", H.input({}), 1)
+	assert(sel:Get() == "y", "the strip still selects")
+	local corner = H.findAll(get(bar, "Tab:x"), function(i: any)
+		return i.ClassName == "UICorner"
+	end)[1] :: any
+	assert(corner ~= nil and corner.CornerRadius == UDim.new(0, style.Metrics.TabRounding:Get()))
+	q.dispose(bar)
+	local ok, err = pcall(function()
+		TabBar<<string>>({ NoPages = true, Tabs = { Tab<<string>>({ Key = "x", Text = "X", Children = Kids(Text.Text({ Text = "p" })) }) } })
+	end)
+	assert(not ok and string.find(tostring(err), "NoPages", 1, true) ~= nil, tostring(err))
+	H.assertNoDebugOutput("NoPages")
+end)
+
 H.section("TabBar: Selected Source round trip", function()
 	local sel = q.Source("c")
 	local bar = build(sel)

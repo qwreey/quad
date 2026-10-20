@@ -10,8 +10,9 @@
 			Open: Source<boolean>?,             -- the close button sets it false; every `:Set(true)` shows the window AND brings it
 			                                    -- to the front with the focus (also when it is already open — `:SetIfChanged(true)`
 			                                    -- only syncs the state without raising)
-			Focused: Source<boolean>?,          -- output: the window writes whether it is the focused one (like Position on a drag)
-			ContentSize: Source<Vector2>?,      -- output: the room the children get (visible content area minus padding)
+			Focused: Source<boolean>?,          -- two-way: the window writes whether it is the focused one; set true to raise
+			                                    -- and focus it, false to drop its focus (no window focused)
+			AvailableSize: Source<Vector2>?,    -- output: the room the children get (visible content area minus padding)
 			Collapsed: Source<boolean>?,        -- the arrow toggles it; collapsed = title bar only
 			NoTitleBar / NoResize / NoMove / NoClose / NoCollapse: boolean?,   -- static flags
 			MinSize: Vector2?,                  -- resize floor (default 2 x frame height square)
@@ -23,7 +24,8 @@
 	FILLING THE HEIGHT [2026-10-20, Studio-confirmed]: give one child `D.UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill })`
 	and it takes the height the other children leave (the content list is a UIListLayout): a 300 x 300 window gave a
 	20 px-tall fill 258 px, and it follows a resize; when the window is smaller than the children it shrinks below its
-	own Size instead of scrolling. `ContentSize` (an output Source, like `Focused`) is the room the children get — the
+	own Size instead of scrolling. `AvailableSize` (an output Source the window writes; named after ImGui's content region
+	"avail" — Roblox's AbsoluteContentSize means the children's total, the opposite) is the room the children get — the
 	content area's visible size (AbsoluteWindowSize: a shown scrollbar is left out) minus the window padding — for
 	layouts that need a number; a container that sets the window's size (a future dock) moves both the same way.
 
@@ -77,7 +79,7 @@ export type WindowProps = {
 	read Size: Source<Vector2>?,
 	read Open: Source<boolean>?,
 	read Focused: Source<boolean>?,
-	read ContentSize: Source<Vector2>?,
+	read AvailableSize: Source<Vector2>?,
 	read Collapsed: Source<boolean>?,
 	read NoTitleBar: boolean?,
 	read NoResize: boolean?,
@@ -236,8 +238,12 @@ local function Window(props: WindowProps): Frame
 	end
 
 	-- [2026-10-15 user decision] the owner drives the window through the Sources it already holds, no handle:
-	-- `open:Set(true)` raises (quad's `Set` re-emits an equal value, `SetIfChanged` does not), and `Focused` is an
-	-- output Source. The install run of the Observer is skipped — a window open from the start does not steal the focus.
+	-- `open:Set(true)` raises (quad's `Set` re-emits an equal value, `SetIfChanged` does not). The install run of the
+	-- Observer is skipped — a window open from the start does not steal the focus.
+	-- [2026-10-20 user decision] `Focused` is TWO-WAY like InputText's (one meaning for `Focused` across the kit, after a
+	-- three-model naming review flagged the output-only / two-way split): the window writes its focus state, and a
+	-- write from outside asks — true raises and focuses (`slot:Focus()`), false drops the focus (`slot:Blur()`). A
+	-- `true` the Source already holds when the window is built is a request too (an explicit ask, unlike the default).
 	local openInstalled = false
 	local raiseOnOpen = open:Observer(function(self)
 		if not openInstalled then
@@ -249,31 +255,46 @@ local function Window(props: WindowProps): Frame
 		end
 	end)
 	local focusedOut = props.Focused
+	-- the outside asks through `Focused` (runs before the mirror below; the mirror's own writes come back here as no-ops:
+	-- true on the focused top window and false on an unfocused one change nothing). A closed window ignores a true —
+	-- open it with `Open:Set(true)`, which focuses it.
+	local focusRequest = if focusedOut
+		then focusedOut:Observer(function(self)
+			if self:Get() then
+				if open:Get() then
+					slot:Focus()
+				end
+			elseif slot.Focused:Get() then
+				slot:Blur()
+			end
+		end)
+		else q.None
 	local focusedMirror = if focusedOut
 		then slot.Focused:Observer(function(self)
 			focusedOut:SetIfChanged(self:Get())
 		end)
 		else q.None
 
-	-- `ContentSize` (output): the content area's visible size minus the window padding (see the header)
-	local contentOut = props.ContentSize
+	-- `AvailableSize` (output): the content area's visible size minus the window padding (see the header)
+	local availableOut = props.AvailableSize
 	local visibleArea: Source<Vector2> = q.Source(Vector2.zero)
-	local contentMirror = if contentOut
+	local availableMirror = if availableOut
 		then visibleArea
 			:Compute(function(self, _prev, pad)
 				local v, p = self:Get(), pad:Get()
 				return Vector2.new(math.max(0, v.X - 2 * p.X), math.max(0, v.Y - 2 * p.Y))
 			end, style.Metrics.WindowPadding)
 			:Observer(function(self)
-				contentOut:SetIfChanged(self:Get())
+				availableOut:SetIfChanged(self:Get())
 			end)
 		else q.None
 
 	local built = D.Frame({
 		windowName,
 		raiseOnOpen,
+		focusRequest,
 		focusedMirror,
-		contentMirror,
+		availableMirror,
 		props.Modifier or q.None,
 		slot.Hook,
 		Position = position,
@@ -330,7 +351,7 @@ local function Window(props: WindowProps): Frame
 			ScrollBarThickness = style.Metrics.ScrollbarSize,
 			ScrollBarImageColor3 = style.Color.ScrollbarGrab,
 			ScrollBarImageTransparency = style.Transparency.ScrollbarGrab,
-			if contentOut then q.Out("AbsoluteWindowSize", visibleArea) else q.None,
+			if availableOut then q.Out("AbsoluteWindowSize", visibleArea) else q.None,
 			D.UIPadding({
 				PaddingLeft = Util.pxX(style.Metrics.WindowPadding),
 				PaddingRight = Util.pxX(style.Metrics.WindowPadding),

@@ -151,6 +151,7 @@ export type MetricTokens = {
 	read WindowTitleAlign: State<Enum.LeftRight>,
 	read PopupBorderSize: State<number>,
 	read PopupRounding: State<number>,
+	read TabRounding: State<number>,
 	read ScrollbarSize: State<number>,
 	read GrabMinSize: State<number>,
 	read SeparatorTextBorderSize: State<number>,
@@ -399,6 +400,7 @@ local DEFAULT_METRICS: { [string]: MetricValue } = {
 	TextSize = 13,
 	FrameBorderSize = 0,
 	FrameRounding = 0,
+	TabRounding = 0, -- [2026-10-20] tab buttons (ImGui TabRounding); same as FrameRounding
 	GrabRounding = 0,
 	WindowRounding = 0,
 	WindowBorderSize = 1,
@@ -428,6 +430,7 @@ local CLEAR_METRICS: { [string]: MetricValue } = {
 	TextSize = 15,
 	FrameBorderSize = 1,
 	FrameRounding = 4,
+	TabRounding = 4, -- [2026-10-20] tab buttons (ImGui TabRounding); same as FrameRounding
 	GrabRounding = 4,
 	WindowRounding = 4,
 	WindowBorderSize = 1,

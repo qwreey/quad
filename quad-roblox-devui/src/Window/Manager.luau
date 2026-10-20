@@ -20,6 +20,8 @@
 		slot.Focused  : State<boolean>                 -- is this the focused window
 		slot.Hook     : GuiHook                        -- put in the window ROOT's array part (press-to-front, see below)
 		slot:Focus()                                   -- raise to front + focus (idempotent when already focused)
+		slot:Blur()                                    -- drop the focus if this window has it (no window focused; the
+		                                               -- order is kept) — the false side of Window's two-way `Focused`
 		slot:Release()                                 -- leave the manager (idempotent); the others close ranks
 		manager.Focused : State<number>                -- id of the focused window (0 = none)
 
@@ -68,6 +70,7 @@ export type Slot = {
 	Focused: State<boolean>,
 	Hook: Types.GuiHook,
 	Focus: (self: Slot) -> (),
+	Blur: (self: Slot) -> (),
 	Release: (self: Slot) -> (),
 }
 
@@ -234,6 +237,11 @@ function Manager.new(): Manager
 				Hook = rootHook,
 				Focus = function(_slot: Slot)
 					focus(entry)
+				end,
+				Blur = function(_slot: Slot)
+					if focusedId:Get() == id then
+						focusedId:Set(0)
+					end
 				end,
 				Release = function(_slot: Slot)
 					local at = table.find(order, entry)

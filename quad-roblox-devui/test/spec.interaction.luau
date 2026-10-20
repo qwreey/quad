@@ -111,6 +111,32 @@ H.section("mouse drag: begin, move deltas, end; connections only while dragging"
 	H.assertNoDebugOutput("mouse drag")
 end)
 
+H.section("drag OnFrame: every frame while dragging (also without moves), with the last position; only during the drag", function()
+	local beats0 = #(H.RunService.Heartbeat :: any).connections
+	local frames: { string } = {}
+	local drag = Interaction.drag({
+		OnMove = function() end,
+		OnFrame = function(dt, x, y)
+			table.insert(frames, `{dt} {x},{y}`)
+		end,
+	})
+	local f = D.Frame({ drag.Hook })
+	H.advance(0.1)
+	assert(#frames == 0 and #(H.RunService.Heartbeat :: any).connections == beats0, "nothing before a drag")
+	H.fire(f, "InputBegan", mouseDown(10, 20))
+	assert(#(H.RunService.Heartbeat :: any).connections == beats0 + 1)
+	H.advance(0.1)
+	H.advance(0.1)
+	UIS.InputChanged:Fire(mouseMove(15, 25), false)
+	H.advance(0.05)
+	assert(#frames == 3 and frames[1] == "0.1 10,20" and frames[3] == "0.05 15,25", table.concat(frames, "|"))
+	UIS.InputEnded:Fire(mouseUp(15, 25), false)
+	H.advance(0.1)
+	assert(#frames == 3 and #(H.RunService.Heartbeat :: any).connections == beats0, "closed with the drag")
+	q.dispose(f)
+	H.assertNoDebugOutput("drag OnFrame")
+end)
+
 H.section("touch drag tracks only its own touch", function()
 	local base = conns()
 	local moves = 0
