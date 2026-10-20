@@ -27,6 +27,10 @@
 	검사 게이트를 깨뜨린다. 아래 타입 케이스는 양성만이고, 음성이 실제로
 	무는지는 스크래치로 확인했다(`CheckVersion<"0.0.0", "9.9.9">` →
 	`TypeError: type-version-check: version "0.0.0" does not match pattern "9.9.9"`).
+
+	**[2026-10-20 round15 `H-936`] 세 번째 사본의 대조표이기도 하다** — `scripts/check-version.py`(test.sh
+	게이트)가 이 파일의 `expect("…", "…", true|false)` 줄을 정규식으로 읽어 Python 포트 `matches_pattern`에
+	그대로 먹인다. 케이스는 이 호출 모양(문자열 리터럴 둘 + 불린 리터럴) 그대로 쓸 것.
 ]]
 
 local TypeVersionCheck = require("../../type-version-check/src")

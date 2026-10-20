@@ -308,8 +308,8 @@ print()
 print("=== 10. round14 Q174 보강 2 (2026-10-06) — q.debug 되먹임 감지기: OnChange·Out 엔진 왕복(속성 쓰기 → 동기 Changed → 콜백이 상류를 되씀)은 core/05가 정의한 정상 경로 — 0줄; 같은 State를 Ref 콜백이 되쓰는 진짜 되먹임은 1줄(음성 대조) ===")
 do
 	local LINE = "Observer: a change reached this Observer while its own fn was running"
-	-- the print lives in quad-base's Observer.luau — capture that module's env (spec.observer 14's technique)
-	local env = getfenv(q.Source(0):Observer().WeakSubscribe)
+	-- every quad-base `q.debug` line leaves through DebugPrint.luau — capture that module's env
+	local env = getfenv((q :: any)._debugPrint)
 	local lines = {}
 	local function capture(f)
 		table.clear(lines)

@@ -48,6 +48,7 @@ local Void = require("./Void")
 local InitDispatch = require("./Dispatch")
 local ModuleIdentity = require("./ModuleIdentity")
 local QuadTypes = require("../luau_packages/quad_types")
+local debugPrint = require("./DebugPrint") -- `q.debug` diagnostics (prefix + one channel)
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local ObserverBrand = Brand.ObserverBrand
@@ -126,7 +127,7 @@ local function checkUpstreamFeedback(observer: any, warned: { [any]: true }, mod
 	if observer._running and not observer._internal and warned[observer] == nil
 		and fedBackDirectly(observer.fn, bookkeeping._recompute, bookkeeping.setOffsetSource, module._reentryFrames, runners) then
 		warned[observer] = true
-		print("Observer: a change reached this Observer while its own fn was running - the fn (for a State placed in props: quad's dispatch of its value, with the callbacks and engine signals it set off) fed its own upstream, directly or through other handles (undefined; set other targets, or use an Effect for a self-correcting write)")
+		debugPrint("Observer: a change reached this Observer while its own fn was running - the fn (for a State placed in props: quad's dispatch of its value, with the callbacks and engine signals it set off) fed its own upstream, directly or through other handles (undefined; set other targets, or use an Effect for a self-correcting write)")
 	end
 end
 
@@ -202,15 +203,12 @@ local function createImpl(module: any)
 		if from == self._state and self._seenRevision == from.Revision then -- only a Source emits itself as `from`
 			return
 		end
+		if module.debug then
+			checkUpstreamFeedback(self, debugWarned, module, runners)
+		end
 		if module.Backend.canExecute(self) then -- read at fire time (`H-174`)
-			if module.debug then
-				checkUpstreamFeedback(self, debugWarned, module, runners)
-			end
 			run(self, from)
 		else
-			if module.debug then
-				checkUpstreamFeedback(self, debugWarned, module, runners)
-			end
 			self._rerunRequired = true -- `H-159`: change before binding (or in the install window) is held — replayed once when bound
 		end
 	end
@@ -232,7 +230,7 @@ local function createImpl(module: any)
 	-- "사용자 호출부"), the `H-378` lesson for a tagged intermediate frame.
 	function Impl._assertBindable(self: any)
 		if self._running then
-			Err.errorBefore("Quad0109 Observer: cannot bind an Observer from inside its own fn", SURFACE) -- `H-183`
+			Err.errorBefore("Quad0109 Observer: cannot bind an Observer from inside its own fn (or after its fn threw - a throw leaves the in-run flag up)", SURFACE) -- `H-183`
 		end
 	end
 
@@ -248,7 +246,7 @@ local function createImpl(module: any)
 	-- ── four entry points (`lifecycle-pattern.md` (2)) ───────────────
 	function Impl.WeakSubscribe(self: any): any
 		if self._running then
-			Err.errorBeforeNearest("Quad0110 Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183` (`H-147` symmetric)
+			Err.errorBeforeNearest("Quad0110 Observer: cannot change subscription from inside its own fn (or after its fn threw - a throw leaves the in-run flag up)", SURFACE) -- `H-183` (`H-147` symmetric)
 		end
 		if not module.Backend.canBound(self) then -- same gate as bindLifetime (shared isBoundAlive)
 			Err.errorBeforeNearest( -- error-code: inline if
@@ -279,7 +277,7 @@ local function createImpl(module: any)
 
 	function Impl.Subscribe(self: any): any
 		if self._running then
-			Err.errorBeforeNearest("Quad0113 Observer: cannot change subscription from inside its own fn", SURFACE) -- `H-183`
+			Err.errorBeforeNearest("Quad0113 Observer: cannot change subscription from inside its own fn (or after its fn threw - a throw leaves the in-run flag up)", SURFACE) -- `H-183`
 		end
 		-- `H-149`: NOT delegated to WeakSubscribe — level 2 must point at the user's call,
 		-- and colon delegation would resolve to a subtype's override.

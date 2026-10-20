@@ -75,7 +75,7 @@ Quad0097 Effect: must be an array item, not the value of a string key
 
 첫 메시지의 꼬리 힌트는 값이 무엇인지에 따라 갈립니다. `Tag`·`Slot`·`Ref`처럼 quad가 알아보는 브랜드 값이면 위처럼 "숫자 키 자리로 가라"고 알려 주고, 브랜드가 없는 값(예: 숫자 키
 자리에 놓인 `false`)이면 "프로바이더가 초기화됐는지 보라"(`- check that the provider for this value (e.g. quad-roblox) is initialized`)고
-말하되, 문자 키 자리라면 두 원인을 나란히 적습니다(`- this key may not be a field of this element (…), or the provider that handles it (e.g. quad-roblox) is not initialized`) — 같은 증상이 **키를 잘못 쓴 경우**와 **그 값을 맡을 핸들러를 심는 쪽이 아직 안 붙은 경우** 둘 다에서 나기 때문입니다.
+말하고(그 값이 함수면 — `{ q.Elem "Frame" }`처럼 호출을 빠뜨린 경우 — 대신 "호출하지 않은 생성자나 컴포넌트가 아니냐"고 묻습니다), 문자 키 자리라면 두 원인을 나란히 적습니다(`- this key may not be a field of this element (…), or the provider that handles it (e.g. quad-roblox) is not initialized`) — 같은 증상이 **키를 잘못 쓴 경우**와 **그 값을 맡을 핸들러를 심는 쪽이 아직 안 붙은 경우** 둘 다에서 나기 때문입니다.
 
 </details>
 

@@ -161,7 +161,7 @@ local function Init(module: any)
 			-- unconditionally — value may be a plain closure; the brand guarantees the field.
 			local isGlobal = BindableBrand:Is(value) and value.Subscribed == true
 			-- 5순회 `H-395`: say WHICH Instance holds it — the same handle at two
-			-- positions of one Instance (`D.Frame { eff, eff }`) is not "another"
+			-- positions of one Instance (`q.Elem "Frame" { eff, eff }`) is not "another"
 			Err.errorBefore( -- error-code: inline if
 				if isGlobal
 					then "Quad0104 bindLifetime: value is already subscribed"

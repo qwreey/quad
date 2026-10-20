@@ -163,8 +163,6 @@ function Plot.PlotHistogram(props: PlotProps): Frame
 			BorderSizePixel = 0,
 		}),
 			nil
-	end, function(_item: number, i: number): any
-		return i
 	end)
 	return Frame({
 		plotHistogramName,
@@ -248,8 +246,6 @@ function Plot.PlotLines(props: PlotProps): Frame
 			BorderSizePixel = 0,
 		}),
 			nil
-	end, function(_item: number, i: number): any
-		return i
 	end)
 	return Frame({
 		plotLinesName,

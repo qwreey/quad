@@ -1605,7 +1605,7 @@ print("=== 소비자 킷 C0 (2026-10-06 사용자 회신) — q.debug일 때 Slo
 do
 	local LINE = "Slot: CRUD on a Slot whose host Instance is no longer claimed by quad"
 	local qc = mock.newQuad()
-	local env: any = getfenv(qc.Slot().Add)
+	local env: any = getfenv(qc._debugPrint) -- every `q.debug` line leaves through DebugPrint.luau
 	local lines: { string } = {}
 	local function capture(f: () -> ())
 		table.clear(lines)

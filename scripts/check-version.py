@@ -97,6 +97,7 @@ def matches_places(actual, pattern):
 
 def matches_pattern(actual, pattern):
     """type-version-check/src/init.luau의 matchesPattern과 같은 규칙(포트) — 규칙이 바뀌면 여기도 같이.
+    check()가 Luau spec의 케이스를 이 함수에도 먹인다(self_test_matcher).
     [2026-09-27 round13 E12] 숫자 파서만 다르다: 여기는 int(x, 10)이라 "0x10"/"1e2"가 False인데, Luau 쪽은 tonumber라
     16진수·지수 표기도 숫자로 본다(caret 자리 "16^"에 "0x10"이 통과). SemVer 자리에 그런 표기는 없어 실무 차이는 없다.
     [2026-09-15] `|` 대안, 프리릴리즈 꼬리 유무 일치, core·prerelease 따로 사전식 판정."""
@@ -154,8 +155,27 @@ def check():
             print(f'  STALE LOCK {s}')
         print('  run `mise exec -- pesde install` (it rewrites the lock files; then relink — ./scripts/test.sh does)')
         ok = False
+    if not self_test_matcher():
+        ok = False
     if not ok:
         sys.exit(1)
+
+
+MATCHER_SPEC = 'quad-base/test/spec.versioncheck.luau'
+
+
+def self_test_matcher():
+    """[2026-10-20 round15 H-936] matches_pattern is the third copy of the pattern rule (runtime, type function,
+    this port) and the Luau spec checked only the first two. Its `expect(actual, pattern, want)` lines ARE the case
+    table — read them here instead of keeping a second list that would drift the same way."""
+    cases = re.findall(r'expect\("([^"]*)", "([^"]*)", (true|false)\)', read(MATCHER_SPEC))
+    if len(cases) < 50:  # the spec moved or changed shape: say so instead of passing on nothing
+        print(f'  MATCHER SELF-TEST: only {len(cases)} expect(...) cases found in {MATCHER_SPEC} (expected 50+)')
+        return False
+    bad = [(a, pat, w) for a, pat, w in cases if matches_pattern(a, pat) != (w == 'true')]
+    for a, pat, w in bad:
+        print(f'  MATCHER SELF-TEST: matches_pattern({a!r}, {pat!r}) != {w} (the Luau rule says {w})')
+    return not bad
 
 
 def check_semver(new):

@@ -71,6 +71,7 @@ local Interactive = require("./Interactive")
 local Text = require("./Text")
 local Style = require("./Button/Style")
 local ListReorder = require("./ListReorder")
+local KeyedSlot = require("./KeyedSlot")
 local Frame = q.Elem "Frame"
 local ImageLabel = q.Elem "ImageLabel"
 local TextButton = q.Elem "TextButton"
@@ -362,15 +363,6 @@ export type DataProps<T> = {
 	read Hooks: Util.Hooks?,
 }
 
-type RowUD<T> = { item: q.Source<T>, index: q.Source<number> }
-type RowCtx<T> = {
-	Item: T | q.KeyGone,
-	Index: number,
-	Offset: q.State<number>,
-	Prev: q.SlotItem<Instance>?,
-	UserData: RowUD<T>?,
-}
-
 local function ListData<T>(props: DataProps<T>): Frame
 	local onReorder = props.OnReorder
 	if onReorder ~= nil then
@@ -388,25 +380,10 @@ local function ListData<T>(props: DataProps<T>): Frame
 		table.move(Util.hooks(props.Hooks), 1, #Util.hooks(props.Hooks), #hooks + 1, hooks)
 		return container(props.Theme, props.Gap, props.LayoutOrder, props.Modifier, hooks, reorder.Slot)
 	end
-	local slot = q.Slot<<Instance>>()
 	-- `Render`'s third argument in a list that cannot be reordered: one never-true State for the whole list
 	local neverDragged: q.State<boolean> = q.Source(false)
-	slot:List(props.Items, function(ctx: RowCtx<T>): (any, RowUD<T>?)
-		if ctx.Item == q.KeyGone then
-			return nil, ctx.UserData
-		end
-		local data = ctx.Item :: T
-		local prev, ud = ctx.Prev, ctx.UserData
-		if prev and ud then
-			ud.item:SetIfChanged(data)
-			ud.index:SetIfChanged(ctx.Index)
-			return prev, ud
-		end
-		local item = q.Source(data)
-		local index = q.Source(ctx.Index)
-		return props.Render(item, index, neverDragged), { item = item, index = index }
-	end, function(item: T): any
-		return props.Key(item)
+	local slot = KeyedSlot.new(props.Items, props.Key, function(item: q.State<T>, index: q.State<number>): Instance
+		return props.Render(item, index, neverDragged)
 	end)
 	-- a keyed Slot is a manual-CRUD-free `:List` slot: the host owns it
 	return container(props.Theme, props.Gap, props.LayoutOrder, props.Modifier, props.Hooks, slot)

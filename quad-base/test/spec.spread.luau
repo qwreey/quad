@@ -156,7 +156,7 @@ end
 print()
 print("=== 5. q.debug — 앞 Spread에 밀려난 함수 값만 한 줄(직접 쓴 키에 덮인 것·함수 아닌 값은 0줄, debug 꺼지면 0줄) ===")
 do
-	local env: any = getfenv(SpreadModule.expand)
+	local env: any = getfenv(q._debugPrint) -- every `q.debug` line leaves through DebugPrint.luau
 	local lines: { string } = {}
 	local function capture(f: () -> ())
 		table.clear(lines)

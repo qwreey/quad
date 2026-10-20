@@ -192,8 +192,7 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 	-- the card must fit a small layer: a constant extra factor on the animated UIScale (1 when unmeasured / roomy)
 	local fit = 1
 	if layerSize.X > 0 and layerSize.Y > 0 then
-		fit = math.min(1, (layerSize.X - 32) / WIDTH, (layerSize.Y - 32) / CARD_H)
-		fit = math.max(fit, 0.25)
+		fit = Util.fitScale(layerSize, Vector2.new(WIDTH, CARD_H), 32)
 	end
 	local scale: State<number> = shown:Compute(function(self)
 		return (if self:Get() then 1 else 0.92) * fit

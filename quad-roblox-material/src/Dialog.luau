@@ -169,7 +169,6 @@ local HeadlineEstimate = 32
 -- for the body's own automatic height, so any value no body reaches
 local BodyRoom = 100000
 local ScrollBodyFloor = 1 -- the scroll wrapper's least height (header, "BODY HEIGHT" 4)
-local FitMin = 0.25 -- the DatePicker modal's floor (DatePicker/Modal.luau)
 local headlineStyle = Text.Label("HeadlineSmall")
 local bodyStyle = Text.Label("BodyMedium")
 
@@ -456,8 +455,7 @@ local function open(o: OpenOptions): Handle
 							return
 						end
 						local natural = abs.Y / abs.X * width
-						local f = math.min(1, (layerSize.X - 2 * LayerMargin) / width, (layerSize.Y - 2 * LayerMargin) / natural)
-						f = math.max(f, FitMin)
+						local f = Util.fitScale(layerSize, Vector2.new(width, natural), 2 * LayerMargin)
 						if math.abs(f - fit:Get()) > 1e-3 then
 							fit:Set(f)
 						end

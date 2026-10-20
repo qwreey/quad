@@ -30,6 +30,7 @@
 local Brand = require("../Brand")
 local QuadTypes = require("../../luau_packages/quad_types")
 local Err = require("../ErrorNamespace")
+local debugPrint = require("../DebugPrint") -- `q.debug` diagnostics (prefix + one channel)
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local SpreadBrand = Brand.SpreadBrand
@@ -150,12 +151,12 @@ local function expand(input: { [any]: any }, debug: boolean?): { [any]: any }
 					input[k] = val
 					fromSpread[k] = true
 				elseif debug and type(val) == "function" and fromSpread[k] then
-					print(`Spread: key "{tostring(k)}" (a function) was dropped - an earlier Spread on this element already set it (the first one in place wins); handlers that must all run belong in OnEvent descriptors`)
+					debugPrint(`Spread: key "{tostring(k)}" (a function) was dropped - an earlier Spread on this element already set it (the first one in place wins); handlers that must all run belong in OnEvent descriptors`)
 				end
 			end
 			if debug and st.dropped then
 				for _, k in st.dropped do
-					print(`Spread: key "{k}" (a function) was dropped while building this Spread - an earlier Spread already set it (the first one in place wins); handlers that must all run belong in OnEvent descriptors`)
+					debugPrint(`Spread: key "{k}" (a function) was dropped while building this Spread - an earlier Spread already set it (the first one in place wins); handlers that must all run belong in OnEvent descriptors`)
 				end
 			end
 			table.move(st.array, 1, #st.array, #out + 1, out)

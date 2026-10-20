@@ -174,7 +174,7 @@ type Config = {
 	flip: boolean,
 }
 
--- validated static configuration (`level` 3: the caller of the look's constructor)
+-- validated static configuration (`level` 4: config -> Behavior.single/range -> the look's constructor -> its caller)
 local function config(
 	name: string,
 	min0: number?,

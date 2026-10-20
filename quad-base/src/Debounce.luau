@@ -75,6 +75,7 @@ local Brand = require("./Brand")
 local Blocker = require("./Blocker")
 local QuadTypes = require("../luau_packages/quad_types")
 local Err = require("./ErrorNamespace")
+local debugPrint = require("./DebugPrint") -- `q.debug` diagnostics (prefix + one channel)
 
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 local isState = Brand.isState
@@ -138,7 +139,7 @@ local function checkHandleInFlush(name: string, method: string, commitIdle: any,
 			return
 		end
 		if f == commitIdle or f == flush or f == onUpstreamEmit then
-			print(`{name}: handle:{method}() was called from a callback this gate's own flush reached (undefined - the window may reopen); call it outside that callback`)
+			debugPrint(`{name}: handle:{method}() was called from a callback this gate's own flush reached (undefined - the window may reopen); call it outside that callback`)
 			return
 		end
 		level += 1
@@ -363,7 +364,7 @@ local function make(module: any, name: string, reset: boolean, opts: any): any
 	if module.debug then
 		for key in opts do
 			if not KNOWN_OPTIONS[key] then
-				print(`{name}: unknown option "{tostring(key)}" is ignored (known: Time, Leading, Trailing, MaxTime, Handle)`)
+				debugPrint(`{name}: unknown option "{tostring(key)}" is ignored (known: Time, Leading, Trailing, MaxTime, Handle)`)
 			end
 		end
 	end

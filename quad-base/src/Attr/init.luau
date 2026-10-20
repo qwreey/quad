@@ -52,6 +52,7 @@ local Relate = require("./Relate")
 local AttrKeyModule = require("@self/Key")
 local QuadTypes = require("../luau_packages/quad_types")
 local Err = require("./ErrorNamespace")
+local InitDispatch = require("./Dispatch")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local AttrBrand = Brand.AttrBrand
@@ -223,8 +224,6 @@ local BooleanAttr = scalarSugar("BooleanAttr", "boolean")
 -- `H-238`: tag the public surface (see Tag.luau — same reasoning; the
 -- handler-process raises below stay errorBefore, dispatch depth `H10-2`)
 Err.setFuncLevel(SURFACE, getmetatable(Attr).__call, Attr.Merged, Attr.Overridden, AttrImpl.NameMap) -- `H-410`
-
-local InitDispatch = require("./Dispatch")
 
 local function Init(quad: any)
 	quad.Attr = Attr

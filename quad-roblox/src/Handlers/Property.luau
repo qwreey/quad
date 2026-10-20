@@ -16,7 +16,8 @@
 	value until 2026-09-17). A string key that is neither raises the
 	regular no-match error.
 
-	process is one line (`inst[k] = v`) — hash keys touch no Length/Offset
+	A plain value is one write (`inst[k] = v`); a Tween value is the playback
+	state machine below (fire/settle/announce/snap). Either way hash keys touch no Length/Offset
 	bookkeeping (`H-39` is about ARRAY positions only). A property cannot be
 	"unset", and a descending-diff replacement simply writes the next value — so
 	the retractor does nothing on a value swap. [round10 Q53 (a), user decision

@@ -378,7 +378,7 @@ function Combo.ComboArray<T>(props: ComboArrayProps<T>): Frame
 		Text = props.Text,
 		Preview = preview,
 		Entries = entries,
-		SelectedKey = index :: any, -- `:: any`: same reason as ComboEnum's SelectedKey cast (State<number> -> State<any>, invariant)
+		SelectedKey = index :: any, -- `:: any`: same reason as Combo.Combo's SelectedKey cast (State<number> -> State<any>, invariant)
 		OnPick = function(key: any)
 			if index:Get() ~= key then
 				index:Set(key :: number)

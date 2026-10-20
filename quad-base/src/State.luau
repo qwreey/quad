@@ -53,6 +53,7 @@ local StateHandler = require("./StateHandler")
 local Void = require("./Void")
 local QuadTypes = require("../luau_packages/quad_types")
 local Err = require("./ErrorNamespace")
+local debugPrint = require("./DebugPrint") -- `q.debug` diagnostics (prefix + one channel)
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 export type StateData<T> = QuadTypes.StateData<T>
@@ -109,7 +110,7 @@ local function checkOverlappingRun(node: any, recompute: any, runThreads: { [any
 		return
 	end
 	if stackHas(recompute, prior) then
-		print("State: Compute fn entered while an earlier run of this node has not returned - the fn yielded or re-entered (undefined)")
+		debugPrint("State: Compute fn entered while an earlier run of this node has not returned - the fn yielded or re-entered (undefined)")
 	end
 end
 

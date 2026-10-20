@@ -9,8 +9,14 @@
 	뮤테이션만 하면 됨 — 자기 자신의 가드를 따로 안 둠.
 ]]
 
+local debugPrint = require("./DebugPrint")
+
 local function Init(module: any)
 	module.debug = false
+	-- the diagnostic channel itself, reachable per instance — internal (`_`), not a surface: the specs and
+	-- the kit harnesses swap `print` in ITS environment (`getfenv(q._debugPrint)`) to capture the lines, now
+	-- that they all leave through one file. Ref: H-915
+	module._debugPrint = debugPrint
 end
 
 return Init

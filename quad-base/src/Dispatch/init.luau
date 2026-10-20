@@ -20,8 +20,8 @@
 	    tie warning printed only when `module.debug`; `listHandlers` is a pure
 	    query (returns, never prints — `D-8`).
 	  - `bind-system-plan.md` "`New(name)(props)` 파이프라인 의사코드" — `drive`
-	    (stages ⓪ + (b) + ⓪' as of M3 unit 2; the (a) PreRef/PostRef pre-pass
-	    and (c) postRefList come with M8, where those values are born).
+	    runs every stage: ⓪ + (b) + ⓪', the (a) PreRef/PostRef pre-pass and the
+	    (c) postRefList (`Dispatch/RefPrePass.luau`).
 	  - Length/Offset bookkeeping: NOT implemented here — `H-277` moved the
 	    whole subsystem to `src/Bookkeeping.luau` (its header carries those
 	    sources); this file only re-exports the same function objects on the
@@ -46,10 +46,11 @@ local ModifierModule = require("@self/Modifier")
 local flatten = ModifierModule.flatten -- M7 단위 ② — drive의 첫 pre-pass(round17 Q4 (a))
 local expandSpreads = require("@self/Spread").expand -- [2026-10-20 3.4.0] the pre-pass before flatten
 local ProcessedModifier = ModifierModule.ProcessedModifier -- M7 단위 ② — flatten's consumed-slot sentinel
-local RefPrePass = require("@self/Ref") -- M8 단위 ② — (a) PreRef/PostRef pre-pass + (c) postRefList
+local RefPrePass = require("@self/RefPrePass") -- (a) PreRef/PostRef pre-pass + (c) postRefList
 
 local QuadTypes = require("../luau_packages/quad_types")
 local HandlerModule = require("@self/Handler")
+local debugPrint = require("./DebugPrint") -- `q.debug` diagnostics (prefix + one channel)
 
 export type Handler = HandlerModule.Handler
 export type Dispatch = QuadTypes.Dispatch
@@ -115,7 +116,7 @@ end
 -- instance (the handle bound to it fails `canExecute` once the instance dies, so its change is held).
 local function checkClaimedTarget(inst: any, k: any, isClaimed: (any) -> boolean)
 	if inst ~= nil and not isClaimed(inst) then
-		print(`Dispatch: process on an instance that is not claimed by quad (destroyed - by q.dispose or outside quad - or not made by quad) at key {tostring(k)} - what the handlers do there is undefined; build a new instance`)
+		debugPrint(`Dispatch: process on an instance that is not claimed by quad (destroyed - by q.dispose or outside quad - or not made by quad) at key {tostring(k)} - what the handlers do there is undefined; build a new instance`)
 	end
 end
 
@@ -183,7 +184,7 @@ local function Init(module: any)
 	-- `H-484` (round7 Q37 (a), user decision 2026-09-08): per-key-type scan lists,
 	-- each = the handlers DECLARING that `keyType` ∪ the undeclared ones, in the
 	-- same priority order as `handlers`. Rebuilt on every addHandler (cold path).
-	-- Measured before: a 10-string-prop `D.Frame` asked 22 handlers 150 times;
+	-- Measured before: a 10-string-prop `Frame` element asked 22 handlers 150 times;
 	-- 12 of them can only ever match number keys.
 	-- `debugOnly`: two sets of the same three buckets: `buckets` without the `debugOnly`
 	-- handlers (what production scans), `debugBuckets` with them. `getHandler` picks one by reading
@@ -260,7 +261,7 @@ local function Init(module: any)
 	end
 
 	-- Subject `Dispatch:` (namespace, no function — round8 O-1): both raises are OUTERMOST
-	-- and reach the user through any entry (`D.Frame{…}`, `Dispatch.drive`, a direct
+	-- and reach the user through any entry (`q.Elem "Frame" {…}`, `Dispatch.drive`, a direct
 	-- `Dispatch.process`, a delegating handler), so naming one function (`drive:` in
 	-- `H-494`, `process:` in K-3) was wrong for the others. The blame line already says
 	-- where the user entered.
@@ -287,6 +288,11 @@ local function Init(module: any)
 		local tail = if hint ~= nil then " - " .. hint
 			elseif brand == nil and type(k) == "string"
 			then " - this key may not be a field of this element (a typo, a read-only field, or one from another class), or the provider that handles it (e.g. quad-roblox) is not initialized"
+			-- round15 `H-916`: no handler takes a bare function at an array position, so it is almost always
+			-- a constructor or component left uncalled (`{ Elem }` for `{ Elem {} }`) — the provider tail
+			-- below sent the user to check their setup instead.
+			elseif brand == nil and type(v) == "function"
+			then " - a function in an array slot: a constructor or component that was not called? (a missing {} or ())"
 			elseif brand == nil
 			then " - check that the provider for this value (e.g. quad-roblox) is initialized"
 			elseif type(k) == "string" then " - a quad value at a string key: it belongs in a numeric (array) slot"
@@ -530,7 +536,7 @@ local function Init(module: any)
 				local ekt = existing.keyType
 				local canCompete = kt == nil or ekt == nil or kt == ekt
 				if canCompete and existing.priority == handler.priority then
-					print(
+					debugPrint(
 						`Dispatch.addHandler: handler priority tie between {describeHandler(existing)}`
 							.. ` and {describeHandler(handler)}`
 							.. " - ties have no defined order; offset from a HANDLER_PRIORITY_* band"
@@ -578,7 +584,7 @@ local function Init(module: any)
 		if type(flattened) ~= "table" then
 			Err.errorBefore(`Quad0082 Dispatch.drive: props must be a table (got {typeof(flattened)})`, SURFACE)
 		end
-		-- `H-470` (탐사 A): the braces-forgotten form `D.Frame(q.Source(1))` — every sibling
+		-- `H-470` (탐사 A): the braces-forgotten form `q.Elem "Frame" (q.Source(1))` — every sibling
 		-- constructor refuses a quad value where a plain table is due (`H-204`/`H-377`/
 		-- `H-386`/`H-389`), and canon says `flattened` is always a plain table
 		-- (dispatch-core-plan "`flattened`는 항상 평범한 Luau 테이블이다"). Without this the
@@ -596,9 +602,8 @@ local function Init(module: any)
 		if inst == nil then
 			Err.errorBefore("Quad0084 Dispatch.drive: inst must not be nil", SURFACE) -- round3 `H-442` (G-12): died in Relate with `table index is nil`
 		end
-		-- Pipeline stages ⓪ + (b) + ⓪' (M3 unit 2 wired the batch gating; the
-		-- (a) PreRef/PostRef pre-pass and (c) postRefList join in M8 — between
-		-- the gate opening and this loop / after it, respectively).
+		-- Pipeline stages ⓪ + (b) + ⓪'; the (a) PreRef/PostRef pre-pass runs
+		-- between the gate opening and this loop, the (c) postRefList after it.
 		-- ⓪ batch Blocker — only when there IS an array part (`H-17` guard:
 		-- otherwise every childless `Frame { Size = … }` eagerly grows a
 		-- Blocker + bk). Single generalized `for` gives array part before hash
@@ -622,7 +627,7 @@ local function Init(module: any)
 		end
 		-- (a) M8 단위 ②: PreRef fires here (hoisted, index order), PostRef is
 		-- collected; both slots become `Processed*Ref` so the array stays
-		-- hole-free for the body loop (Dispatch/Ref.luau). AFTER the gate opens
+		-- hole-free for the body loop (Dispatch/RefPrePass.luau). AFTER the gate opens
 		-- (canon ⓪ → (a)): a PreRef callback that touches this inst's
 		-- bookkeeping must be absorbed like everything else in the batch
 		-- (review finding — before the gate it crashed in recompute).

@@ -4,10 +4,13 @@
 	installed as the `module.Bookkeeping` namespace (`H-277`,
 	user-directed split: Dispatch's mandate is process/handler matching, and
 	this half — prefix sums, cursors, batch Blockers — is a separate concern
-	that M6's Slot must reach WITHOUT going through Dispatch. Dependency
-	direction is {Slot, Dispatch} -> Bookkeeping: this module knows neither;
-	the SlotBrand probe below is brand-leaf discrimination, not a Slot
-	dependency).
+	that Slot must reach WITHOUT going through Dispatch). Dependency direction
+	is {Slot, Dispatch} -> Bookkeeping: this module requires neither. It does
+	know the Slot owner's shape — a Slot keeps its bk as `ownerKey._bk`
+	(getBookkeeping) and its Offset/Length are Sources read and set here
+	(getOffsetAt, recompute) — and Slot in turn installs two functions on this
+	namespace after the fact (`claimOwnerAt`/`releaseOwner`, Slot/init.luau),
+	so `QuadTypes.Bookkeeping` is filled from both files.
 
 	[2026-09-15 공개 표면 (30) 사용자 결정] The public calling surface is this namespace itself —
 	`quad.Bookkeeping.setLength` etc., typed `QuadTypes.Bookkeeping`. Before, the six were re-exported
@@ -65,10 +68,8 @@ local function Init(module: any)
 	-- observers stored in bk hold gatedRecompute closures that capture
 	-- ownerKey, so a strong Relate value would back-reference its own weak key
 	-- (`H-71` — the exact chains leak, one shelf over).
-	-- M6 note (`H-232` (a), user-confirmed): a Slot ownerKey cannot be
-	-- bindLifetime'd (not claimable) and its bk must outlive unmounts, so the
-	-- SLOT owns its bk strongly as `slot._bk` — getBookkeeping branches on
-	-- SlotBrand when M6 lands. Until then only claimable insts reach this path.
+	-- Only claimable insts use this weak map: a Slot ownerKey keeps its bk
+	-- strongly as `slot._bk` (getBookkeeping's SlotBrand branch, `H-232` (a)).
 	local bookkeeping = Relate()
 	-- ownerKey(weak) -> batch Blocker. Strong is fine here: a Blocker holds no
 	-- reference back to the ownerKey, so the weak key still collects.
@@ -132,7 +133,6 @@ local function Init(module: any)
 	-- reject it) and its bk must survive unmounts, so the Slot owns its bk
 	-- STRONGLY as `slot._bk` (Slot constructor seeds it nil; this fills it
 	-- lazily). Physical-inst owners keep the weak Relate + gchold anchor path.
-	-- The header predicted this branch "when M6 lands" — this is that.
 	local function getBookkeeping(ownerKey: any): any
 		checkOwner("getBookkeeping", ownerKey)
 		if Brand.isSlot(ownerKey) then

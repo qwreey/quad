@@ -142,9 +142,9 @@
 
 **H-904. 같은 `@self/Ref` 문자열이 두 모듈을 가리킨다.**
 
-상황: `quad-base/src/init.luau` 20행의 `RefModule = require("@self/Ref")`는 `Ref/init.luau`(값 타입)이다. `quad-base/src/Dispatch/init.luau` 48행의 `RefPrePass = require("@self/Ref")`는 `Dispatch/Ref.luau`(drive 선행 패스)다.
+상황: `quad-base/src/init.luau` 20행의 `RefModule = require("@self/Ref")`는 `Ref/init.luau`(값 타입)이다. `quad-base/src/Dispatch/init.luau` 48행의 `RefPrePass = require("@self/Ref")`는 옛 `Dispatch/Ref.luau`(drive 선행 패스, 2026-10-20부터 `RefPrePass.luau`)다.
 
-문제: grep과 코드 탐색에서 같은 모듈처럼 읽힌다. `Dispatch/Ref.luau` 머리가 "왜 Dispatch 밑에 사나"를 따로 설명해야 했다는 것 자체가 그 혼란의 방증이다.
+문제: grep과 코드 탐색에서 같은 모듈처럼 읽힌다. 옛 `Dispatch/Ref.luau` 머리가 "왜 Dispatch 밑에 사나"를 따로 설명해야 했다는 것 자체가 그 혼란의 방증이다.
 
 제안: `Dispatch/RefPrePass.luau`로 파일 이름만 바꾼다(내부 경로). 옛 이름 인용은 conventions의 `옛 \`X.luau\`` 표기를 따른다.
 
@@ -285,7 +285,7 @@
 
 ## §3 DX 빈칸
 
-**H-915. `q.debug` 진단이 맨 `print` 열여덟 곳으로 흩어져 있다.**
+**H-915. `q.debug` 진단이 맨 `print` 열여덟 곳으로 흩어져 있다.** (개수는 처음부터 하나 많았다 — 열일곱, §7에서 정정)
 
 상황: 진단은 quad-base 열넷과 quad-roblox 넷이다.
 - quad-base: `Source.luau` 53, `State.luau` 112, `Observer.luau` 129, `Slot/init.luau` 102, `Slot/List.luau` 362, `Dispatch/init.luau` 117·532, `Debounce.luau` 141·366, `Claim.luau` 144·204, `DebugKeyFilter.luau` 53, `init.luau` 193
@@ -356,7 +356,7 @@
 
 판정: **채택 권고(근거 기록)**. BREAKING 아님.
 
-**H-920. `table.unpack(Util.hooks(props.Hooks))` 43번과 "마지막 자리여야 한다" 함정.**
+**H-920. `table.unpack(Util.hooks(props.Hooks))` 43번과 "마지막 자리여야 한다" 함정.** (실제는 55번 — §7에서 정정)
 
 상황: material 킷의 숫자 키 끝에 이 꼴이 43번 나온다. `quad-roblox-material/src/Button/Group.luau` 447행 주석은 "두 번째 `table.unpack`은 잘린다"며 배열을 하나로 합치는 우회를 적는다.
 
@@ -472,6 +472,8 @@
 - **(나) 킷마다 두고 how-to 09에 레시피(죽지 않는 레이어·바깥 클릭·Escape 스택)만 보탠다.** 승격은 세 번째 소비자가 같은 모양을 원할 때 다시 본다. 네 리뷰어 모두 수렴했고 판정자 권고도 이것이다.
 - **(다) 그대로.**
 
+**[2026-10-20 닫힘 — (나)]** 사용자: *"189 도 의견인 나에 동의함."* 재료에서 메인은 3.4.0 뒤 devui에 `Pointer.luau`가 더해져 갈림이 커졌음을 알렸고, 그래도 두 킷의 계약 차이가 디자인 언어 차이라 공통 층은 이르다고 권했다. how-to 09 레시피(죽지 않는 레이어·바깥 클릭·Escape 스택)가 남은 일이다.
+
 **Q190. `q.debug` 진단 출력에 번호나 공개 수신 훅을 줄까**(H-915).
 
 내부 헬퍼로 출력을 모으는 것(H-915 (a))은 공개 표면이 없어 채택 권고다. 그 위에 얹을 것을 고르는 문항이다.
@@ -482,6 +484,8 @@
 
 판정자 권고는 (가)다. 리뷰어 넷 모두 (나)·(다)를 지금 열지 말자는 쪽이었다.
 
+**[2026-10-20 닫힘 — (가) + 공통 접두]** 사용자: *"q190 - 동의. 공통 접두의 필요도 동의함."* 메인이 재료에서 덧붙인 공통 접두(§6 H-915 의견)까지 받았다. 구현: `quad-base/src/DebugPrint.luau`(접두 `[quad debug] `, 한 채널), quad-roblox는 별 패키지라 `Tween.luau`에 같은 접두의 짝을 두고 `Animate`에 넘긴다. spec·하네스가 진단을 잡던 길은 `getfenv(q._debugPrint)` 하나로 모였다(`_debugPrint`는 `Debug/init.luau`가 다는 비공개 필드). `warn` 전환은 다음 단계 그대로.
+
 **Q191. 킷 에러에 번호를 줄까**(H-921).
 
 킷 내부 `Util.fail`로 형식과 레벨을 모으는 것은 채택 권고다.
@@ -490,6 +494,8 @@
 - **(나) 킷마다 자기 번호 체계와 문서 절을 둔다.** quad의 `QuadNNNN`과 대역이 겹치지 않게 접두를 따로 둔다. 소비자가 에러 문구로 킷 문서를 찾을 수 있게 되지만, 킷 문서와 검사 스크립트가 늘어난다.
 
 판정자 권고는 (가)다. 킷은 아직 도그푸딩 단계다.
+
+**[2026-10-20 닫힘 — (가)]** 사용자: *"191 이것도 형식만. 다만 quad error 를 quad에 실어줄지, 아니면 각자 의존을 할지는 고민해볼만한 표면 같긴 하네."* 형식만 통일한다. §6의 "레벨 숫자를 없애는 quad-error 위 구현"은 킷이 quad-error에 닿는 길이 정해져야 하므로 그 갈래를 새 문항 Q194로 뗐다(아래).
 
 **Q192. `Slot:List`/`:Single`의 `ctx`에 공개 타입 이름을 줄까**(H-923, 실측 뒤).
 
@@ -500,6 +506,8 @@
 
 실측은 싸다. 판정자는 (가)의 실측까지는 권하고, 이름은 결과를 본 뒤에 정하자고 권한다.
 
+**[2026-10-20 사용자]** *"192 결과 보고 오자."* — 실측은 메인이 이번 진행에서 한다(결과는 §7).
+
 **Q193. quad-mock 착수 시기와 그 전까지의 하네스 사본**(H-906).
 
 두 킷이 같은 테스트 하네스(약 700줄)를 따로 들고 있고 이미 갈라지기 시작했다. 레포 밖 사용자에게는 자기 컴포넌트를 시험할 길이 없다.
@@ -509,6 +517,17 @@
 - **(다) 그대로.**
 
 판정자 권고는 (나)를 지금, (가)는 3.4 뒤 우선순위 회의 때 다시 보는 것이다.
+
+**[2026-10-20 닫힘 — 공용 하네스 하나, 시기는 미룸]** 3.4.0 뒤 재확인에서 전제가 바뀌었다 — devui가 `warn` 캡처와 PlayerGui 대역(`GetGuiObjectsAtPosition`)을 더해 두 사본 차이가 7줄에서 98줄이 됐고, 이제 양쪽이 서로 없는 것을 갖는다(차이는 전부 덧붙이기라 합집합에 충돌 없음). 메인 재료: 두 사본을 합친 하나를 레포 안 공용 자리에 두고 두 킷이 상대 경로로 require(지금도 `../../quad-base/test/mock`을 그렇게 끌어온다), quad-mock은 그 다음 출발점. 사용자: *"193 도 동의함. 아무래도 에이전트가 개발하는데 필요한 부분이였을것 같기도 하고. 다만 시기는 devui 의 독이나 여러 처리가 끝나고 나서 하는게 어떨지? 각자 필요한게 더 생길 수도 있고. 바꿀 부분이 더 쌓일 가능성이 없진 않다고 봐서. 어느정도 안착하면 그 때 작업하게 약간 미루더라도 문제는 없는것 같아"* — 방향은 공용 하네스, 착수는 devui 독 등이 안착한 뒤(루트 `ROADMAP.md` 백로그).
+
+**Q194. 킷이 quad-error에 닿는 길 — quad가 실어 줄까, 킷이 각자 의존할까**(Q191에서 뗌, 2026-10-20 신설).
+
+킷 에러 형식을 `Util.fail` 하나로 모을 때, 레벨 숫자(지금 2·3·4가 섞여 있고 주석과 어긋난 자리도 있다 — H-933)를 손으로 세지 않으려면 quad-error의 `errorBeforeNearest`와 태그 층을 써야 한다. 지금 킷 둘은 quad-error에 닿지 않는다. 갈래는 셋이다.
+- **(가) 킷이 이미 공개된 `q.errorNamespace`를 쓴다.** `docs/reference/core/01-quad-module.md`의 `q.errorNamespace` 절은 *"백엔드와 플러그인은 자기 quad-error 사본으로 새 네임스페이스를 만들지 말고 이 값을 받아 자기 표면을 태깅해야 합니다 — 사본마다 태그 맵이 갈리면 경계 탐색이 끊깁니다"*라고 이미 안내한다. 다만 그 절이 "자세한 사용법"으로 가리키는 `docs/reference/extend/01-backend-provider-contract.md`에는 `errorNamespace` 사용법이 한 줄도 없다(감사 3라운드) — (가)를 고르면 그 빈칸을 같이 채운다. 킷 하네스는 이미 `q.errorNamespace.setFuncLevel`을 쓴다. 새 이름도 새 의존도 없다. 킷 컴포넌트가 quad의 태그 층에 SURFACE로 들어가므로, 킷 안에서 quad가 던지는 에러도 킷 파일이 아니라 사용자 줄을 가리키게 된다. 걸리는 것은 "소비자 위에 얹은 라이브러리"를 그 안내가 말하는 플러그인으로 봐도 되느냐는 문서상의 자리 매김 하나다.
+- **(나) 킷이 `quad_error`를 직접 의존해 자기 네임스페이스를 만든다.** 킷 설정 모듈이 바깥에 맡기는 require 경로가 하나 늘고, 보류 중인 킷 패키지화의 의존 구성에 한 줄이 더해진다. 태그 맵이 quad와 갈려 경계 탐색이 끊긴다(위 안내가 피하라는 것).
+- **(다) 레벨 인자를 받는 형식 통일에서 멈춘다.**
+
+메인 의견(2026-10-20, 이 문항을 쓰다 `q.errorNamespace` 문서를 확인하고 덧붙임): (가). 사용자: *"고민해볼만한 표면"* — 열린 문항. 답이 오기 전까지 `Util.fail`은 하지 않는다(어느 갈래냐에 따라 헬퍼 본문이 갈린다).
 
 ## §5 떨어뜨린 것
 
@@ -543,7 +562,7 @@
 E는 1단계에서 발견 20건(O1~O20)을 냈다. 2단계에서 기존 결정과 부딪히는 것 하나를 철회했고 하나는 범위를 줄였다. 메인이 파일:줄을 직접 열어 확인한 것은 O1·O2·O6·O7·O8·O9·O10 (d)·O11·O16이다. 인용은 전부 맞았다. 나머지는 E의 확인에 기댄다.
 
 E가 스스로 밝힌 미독 범위가 있다.
-- quad-base: `Ref/*`, Store, Blocker, Debounce 본문, `Dispatch/Ref.luau`, StateHandler, `Slot/List`·Owner·Elements 본문, Bookkeeping 본문
+- quad-base: `Ref/*`, Store, Blocker, Debounce 본문, 옛 `Dispatch/Ref.luau`, StateHandler, `Slot/List`·Owner·Elements 본문, Bookkeeping 본문
 - quad-roblox: `Handlers/Property.luau` 본문, InstanceChild, InstanceShorthand, Event
 - devui: Menu, Overlay, Style, Inputs, `Window/Manager`, TitleBar
 - material: 대부분(Overlay, ListReorder, TextField, Snackbar 등)
@@ -598,11 +617,11 @@ round14 확인 패스가 `warnInfoOverlap`을 Tween 쪽 하나로 모으면서 "
 
 비용: 작음. 내부 정리다.
 
-판정: **채택 권고**(가). BREAKING 아님.
+판정: **채택 권고**(가). BREAKING 아님. **[2026-10-20 반영 — (가)를 변형]** install 반환 대신 잎 모듈 `quad-roblox/src/TweenOptions.luau`(§7).
 
 **H-928. 키별 재활용 `:List` 본문이 킷 여러 자리에 손으로 다시 쓰였고, 공용 헬퍼가 이미 있다**(O2).
 
-상황: `quad-roblox-material/src/Chip/KeyedSlot.luau`가 "키별 재활용 `:List`" 모양을 이미 헬퍼로 갖고 있다. 모양은 이렇다.
+상황: 옛 `quad-roblox-material/src/Chip/KeyedSlot.luau`(2026-10-20부터 `quad-roblox-material/src/KeyedSlot.luau`)가 "키별 재활용 `:List`" 모양을 이미 헬퍼로 갖고 있다. 모양은 이렇다.
 - KeyGone이면 nil을 돌려준다.
 - 앞 UserData가 있으면 `SetIfChanged` 두 번 하고 그대로 돌려준다.
 - 없으면 Source 둘을 만들어 render한다.
@@ -626,7 +645,7 @@ KeyGone 갈래의 반환이 이미 세 모양으로 갈렸다(메인 확인).
 
 비용: 작음. 킷 내부다.
 
-판정: **채택 권고**. BREAKING 아님. H-923(공개 `ctx` 타입 실측)과 같이 보면 재선언과 본문 사본이 한 번에 준다.
+판정: **채택 권고**. BREAKING 아님. H-923(공개 `ctx` 타입 실측)과 같이 보면 재선언과 본문 사본이 한 번에 준다. **[2026-10-20 material 쪽 반영]** `KeyedSlot`은 `Util` 옆이 아니라 킷 루트 `quad-roblox-material/src/KeyedSlot.luau`로(§7). devui `Table`·`Combo`는 남음.
 
 **H-929. 백엔드 op 스텁이 세 파일에 흩어져 있고, `LifetimeHandle.luau`가 무관한 스텁 창고를 겸한다**(O4).
 
@@ -664,6 +683,8 @@ KeyGone 갈래의 반환이 이미 세 모양으로 갈렸다(메인 확인).
 비용: 중간. 순서 차이가 의도인지 먼저 확인해야 한다. E도 메인도 아직 확인하지 않았다.
 
 판정: **채택 권고(순서 차이 확인이 선행)**. BREAKING 아님.
+
+**[2026-10-20 보류로 낮춤 — 메인 판단, §7]** 순서 차이(관찰자를 풀기 전후에 원소를 파괴하느냐까지)가 의도인지 근거가 없고 장애도 없어, 헬퍼로 합쳐 순서를 강제하지 않는다.
 
 **H-931. 커서 둘을 당기는 두 줄이 `Slot/Raw.luau`에 세 벌 있다**(O6).
 
@@ -811,3 +832,39 @@ E가 낸 갈래는 이렇다. `Util.fail`의 본문을 quad-error 네임스페�
 - Slot 공개 CRUD 층의 `assertMutable` 관문.
 
 **실행 수.** opus 하나, 두 단계(이어 쓰기)다. 미완: 없음. 단 E가 밝힌 미독 범위(이 절 머리)는 이번 패스도 보지 않은 곳이다.
+
+## §7 3.4.0 뒤 재확인과 첫 반영 묶음 (2026-10-20)
+
+> 경과 `session/2026-10-20-02-round15-quality.md`. 원장은 3.4.0 이전(생성 Declaration 시절) 코드를 보고 썼으므로, 반영 전에 항목마다 3.4.0 코드(HEAD `0d181bbc`)에 대고 다시 확인했다(sonnet 탐사 하나, 읽기 전용; 하네스 차이와 Tree 해체 순서는 메인이 직접).
+
+**재확인 결과.** 3.4.0 때문에 대상이 사라진 항목은 없다. 이미 해소된 것은 H-929의 새 최상위 스텁 표(`quad-base/src/BackendStubs.luau`)뿐이고, 나머지는 줄 번호만 밀린 채 유효하다. 원장 서술이 처음부터 틀렸던 곳이 셋 있었다. H-915의 print 개수는 열여덟이 아니라 열일곱이었다(3.4.0 Spread가 둘을 더해 지금 quad-base 열다섯·quad-roblox 넷). H-920의 `table.unpack(Util.hooks(…))`는 43번이 아니라 55번이었다(원장 작성 커밋에서도 55). H-930은 두 해체 갈래의 순서 차이가 "`_detachCleanup`과 `_listObserver`의 앞뒤"만이 아니라 `bk.observers`를 풀기 전후에 원소를 파괴하느냐까지 포함한다. 또 원장이 인용한 "The two destroySlotTree loops got the same line" 주석은 `Slot/Tree.luau`가 아니라 `Slot/Raw.luau`에 있다. 3.4.0이 새로 만든 같은 부류도 있었다. `D.*`를 지운 뒤에도 현재형 `D.Frame` 주석이 일곱 곳 남았고(H-933 부류), `Quad0076`의 함수 값 갈래 부재는 `q.Elem "X"`의 괄호 누락에도 걸린다(H-916). H-906은 전제가 바뀌었다(§4 Q193 닫힘 문단).
+
+**이번 묶음에서 반영한 것**(공개 표면 변화 없음 — 진단·에러 문구 변화는 루트 `CHANGELOG.md` `[Unreleased]` Changed 세 줄):
+- H-899: 미래형 주석(다섯 파일 일곱 자리)을 현재형으로(`Dispatch/init.luau` 머리와 drive 본문, `Bookkeeping.luau` 두 자리, `EngineOps.luau`, `InstanceChild.luau`, `Property.luau`).
+- H-903 (a): `Bookkeeping.luau` 머리를 실제 계층에 맞춤(Slot 소유자의 모양을 안다는 것, Slot이 `claimOwnerAt`/`releaseOwner`를 사후에 꽂는다는 것).
+- H-933과 3.4.0 잔재: 틀린 주석 넷(`Context.luau` — `:With`는 일부러 없음, `Slot/init.luau` 사라진 래퍼 셋, devui `Combo.luau`, material `Slider/Behavior.luau` 레벨 4 — 호출 사슬로 확인)과 `D.Frame` 주석 일곱을 `q.Elem "Frame"` 꼴로.
+- H-904: 옛 `quad-base/src/Dispatch/Ref.luau` → `quad-base/src/Dispatch/RefPrePass.luau`(내부 경로; `base/architecture.md` 트리·`base/dispatch-core-plan.md`·`research/drive-hook-plan.md`·에러 문서 02의 경로 갱신, 옛 이름은 `옛` 표기).
+- H-910: `Tag.luau`·`Attr/init.luau`·`Attr/Key.luau`의 파일 중간 `require("./Dispatch")`를 머리로(순환 회피가 아님을 확인 — 모듈 수준 require라 자리와 무관). `Ref/init.luau`의 `Init = registerDispatchHandlers` 이름 불일치는 A 의견대로 뺐다.
+- H-911: `Effect.luau` 머리에 다섯 플래그의 "사건 × 조건 → 동작" 표. 칸마다 spec을 붙이는 것은 E 의견대로 하지 않았다.
+- H-916: `noMatchMessage`에 함수 값 갈래(숫자 키 자리, 등록된 브랜드 없음 — 감사 2라운드가 짚어 조건을 `brand == nil and type(v) == "function"`으로 좁혀 문서와 맞춤) + `spec.dispatch` 케이스 + 에러 문서 02 `Quad0076` 절.
+- H-937: `Quad0109`·`Quad0110`·`Quad0113` 문구에 "(or after its fn threw - a throw leaves the in-run flag up)" + 에러 문서 04·core/05.
+- H-931: `invalidateFrom`을 `Slot/Raw.luau` 위로 올리고 두 splice가 부른다.
+- H-932 (가): `Detach`·`KeyGone`·`MapperRoot`를 `Dispatch/Handler.luau`의 `sentinel`로 만들고 그 주석의 사용처 목록을 맞춤.
+- H-935 (a)·(b): Observer `_receive`의 중복 debug 호출을 분기 위로, devui `Plot.luau`의 기본값과 같은 keyFn 둘 삭제. (d)는 닫음 — 에러 문서 06 `Quad0209` 절이 "AddPlugin은 자기 자리에서 먼저 검사하므로 이 문은 사실상 UseProvider 경로에서만 닿는다"고 이미 의도를 적어 두었다.
+- H-927 (가): `quad-roblox/src/TweenOptions.luau`(옵션 어휘 하나 + 콜백 부분집합)를 Tween·Animate가 같이 쓴다. 디버그 줄의 "known:" 목록도 거기서 만든다. 원장 제안의 "install 반환에 실어 보내기" 대신 잎 모듈로 했다(Animate의 모듈 수준 함수가 쓰므로). 타입 쪽 같은 이름(`types.luau`)은 그대로 — 머리 주석이 가리킨다.
+- H-905: `quad-base/test/mock.luau`에 `untaggedSurface`(모듈 표·값 메소드 표를 실제로 순회) + `quad-base/test/spec.surfacetags.luau`·`quad-roblox/test/spec.surfacetags.luau`. 첫 실행에서 누락은 0이었고, 예외는 이유와 함께 spec 머리에 적었다(술어·브랜드 집합의 `Is`/`Register`, `q.errorNamespace`, `q.Relate`, `q.Void`, `q.NewModule`, 메소드 표에 앉은 내부 생성자 `Observer:new`).
+- H-936 (가): `scripts/check-version.py`가 `spec.versioncheck.luau`의 `expect(…)` 줄 62개를 읽어 Python 포트에 먹인다(test.sh 게이트). 일부러 `|` 처리를 깨뜨려 실패하는 것을 확인했다.
+- H-915 (a) + Q190 접두: `quad-base/src/DebugPrint.luau`, quad-roblox `Tween.luau`의 짝, spec 아홉 곳의 가로채기를 `getfenv(q._debugPrint)` 하나로, `docs/reference/core/01-quad-module.md`의 `q.debug` 절에 접두 한 문장.
+- H-928 (가, material 쪽): `KeyedSlot`을 `quad-roblox-material/src/KeyedSlot.luau`(킷 루트)로 옮기고 `ListData`가 쓴다 — `List.luau`의 `RowCtx`/`RowUD` 재선언과 본문 사본이 사라졌다. KeyGone 반환이 `return nil, ctx.UserData`에서 `return nil`이 되어, 사라진 키의 UserData를 붙잡지 않는다. devui의 `Table`·`Combo`는 다른 킷이라 이 헬퍼를 쓸 수 없다(devui 쪽 헬퍼는 따로 볼 일).
+- H-934: material `Util.fitScale(layer, content, margin)`과 하한 상수 하나를 Dialog·DatePicker 모달·TimePicker 모달이 쓴다. 여백 48과 32는 인자로 남겼다. 식은 같되 하나가 달라졌다 — 내용 크기가 0이라 `0/0`(NaN)이 나오면 옛 `math.max(f, 0.25)`는 NaN, 새 `math.max(0.25, …)`는 0.25(하한이 지켜지는 쪽).
+
+게이트: `./scripts/test.sh` exit 0, `quad-roblox-devui/test/run.sh`·`quad-roblox-material/test/run.sh` exit 0, doc-check ERROR 0.
+
+**Q192 실측(2026-10-20, luau-lsp 1.70.1 신 솔버, test.sh 한도 플래그 셋).** quad-types에 재귀 그룹 **밖** 별칭 `SlotListCtx<Item, T, UD>`(= `:List`/`:Single`의 인라인 ctx 모양)를 임시로 넣고 `pesde install` 뒤 프로브를 돌렸다. 결과는 인라인 타입과 똑같다. `:List` 구체 꼴(devui `Combo` 모양)과 제네릭 + 명시 인스턴스화 꼴(devui `Table`·material `ListReorder` 모양 `slot:List<<T, UD<T>>>(…)`)이 통과했고, UserData를 틀린 타입에 대입하는 음성 대조도 그대로 에러였다. `:Single`에 Item을 정확히 적은 ctx 주석은 별칭이든 인라인이든 똑같이 *"No valid instantiation could be inferred for generic type parameter Item"*으로 실패했다. 명시 타입 인자를 줘도 같다. 이것은 이미 기록된 `base/typing-limits.md` 8.19의 한계이고 별칭과 무관하다. `Slot` 자기 시그니처는 그룹 안이라 지금처럼 인라인으로 둬야 한다. 공개 별칭은 소비자 전용으로 시그니처 옆에 따로 두는 형태다. quad-types는 되돌렸다. **남은 결정은 이름과 타입 인자 순서**다(§4 Q192, 사용자).
+
+**남은 것.**
+- 문서 묶음: H-907(라이브러리를 quad 위에 얹는 법), H-909 (나)(how-to 09 레시피 셋), H-924 (a)(값-또는-State 정규화 레시피), H-925(`:Set` 문장), 근거 기록 H-918 (b)·H-919·H-920(55로 정정)·H-926.
+- 킷 내부: H-908(ListReorder 기하부터), H-918 (a)(Heartbeat 드라이버 — material 일곱, devui 둘은 다른 킷), H-921(Q194 답 뒤), H-928 devui 쪽(`Table`·`Combo`의 키별 재활용 본문 — 다른 킷이라 devui에 헬퍼를 따로 둘지부터).
+- 범위 한정·낮은 우선: H-902(진단·레지스트리만), H-929 나머지(Backend op 스무 개를 표로, `onDestroying` 무조건 덮어쓰기 가드).
+- **H-930은 보류로 낮춘다(메인 판단).** owned 갈래는 원소를 먼저 파괴하고 관찰자를 나중에 푼다. teardown은 관찰자부터 푼다. 이 차이가 의도인지 주석에도 `base/slot-plan.md`에도 근거가 없고 관측된 장애도 없다. 헬퍼로 합치면 순서 하나를 강제하게 되므로 오히려 위험하다.
+- H-922: 새 컴포넌트부터라 지금 할 일 없음. H-939: 킷 게시 때(material README의 `.claude/` 포인터가 797행 하나가 아니라 748행까지 둘). H-901·H-912·H-938: 보류 그대로.

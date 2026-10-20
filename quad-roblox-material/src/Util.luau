@@ -149,7 +149,16 @@ local function frameName(name: string): q.Modifier<Frame>
 	return m
 end
 
+-- the factor that shrinks a modal card to fit a small layer: 1 when there is room, never below FIT_MIN (a card too
+-- small to read helps nobody — past it the card overflows instead). `margin` is the total kept free on each axis.
+-- Shared by Dialog and the DatePicker/TimePicker modals.
+local FIT_MIN = 0.25
+local function fitScale(layer: Vector2, content: Vector2, margin: number): number
+	return math.max(FIT_MIN, math.min(1, (layer.X - margin) / content.X, (layer.Y - margin) / content.Y))
+end
+
 return {
+	fitScale = fitScale,
 	negate = negate,
 	interactable = interactable,
 	visible = visible,

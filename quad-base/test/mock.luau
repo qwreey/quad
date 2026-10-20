@@ -980,6 +980,59 @@ end
 local getTags = readTags
 local getAttributes = readAttributes
 
+-- round15 `H-905`: every public function must carry the SURFACE tag, or a raise inside it blames a quad file
+-- instead of the user's line — and nothing fails when a new method forgets `setFuncLevel`. Walks the module
+-- table (sub-tables included, `_`-prefixed and the given exempt paths skipped) and the method tables of the
+-- given values (their metatable `__index` chain); returns the paths of untagged functions, sorted.
+-- Iterates with `next` — a table with `__call` (Attr, Tag) would otherwise be CALLED by generalized iteration.
+local function untaggedSurface(q: any, values: { [string]: any }, exempt: { [string]: boolean }): { string }
+	local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
+	local Err = q.errorNamespace
+	local out: { string } = {}
+	local seen: { [any]: boolean } = {}
+	local function walk(t: any, path: string, depth: number)
+		if seen[t] or depth > 4 then
+			return
+		end
+		seen[t] = true
+		for k, v in next, t do
+			local here = path .. "." .. tostring(k)
+			if type(k) == "string" and string.sub(k, 1, 1) ~= "_" and not exempt[here] then
+				if type(v) == "function" then
+					if Err.getFuncLevel(v) ~= SURFACE then
+						table.insert(out, here)
+					end
+				elseif type(v) == "table" then
+					walk(v, here, depth + 1)
+					local mt: any = getmetatable(v)
+					if type(mt) == "table" and type(rawget(mt, "__call")) == "function" and Err.getFuncLevel(mt.__call) ~= SURFACE then
+						table.insert(out, here .. "()")
+					end
+				end
+			end
+		end
+	end
+	walk(q, "q", 0)
+	for name, v in values do
+		local mt: any = getmetatable(v)
+		local idx: any = if type(mt) == "table" then rawget(mt, "__index") else nil
+		local guard = 0
+		while type(idx) == "table" and guard < 8 do
+			guard += 1
+			for k, f in next, idx do
+				local here = name .. ":" .. tostring(k)
+				if type(k) == "string" and string.sub(k, 1, 1) ~= "_" and type(f) == "function" and not exempt[here] and Err.getFuncLevel(f) ~= SURFACE then
+					table.insert(out, here)
+				end
+			end
+			local up: any = getmetatable(idx)
+			idx = if type(up) == "table" then rawget(up, "__index") else nil
+		end
+	end
+	table.sort(out)
+	return out
+end
+
 -- isDestroyed(inst) — spec predicate for "Destroy() ran on this mock
 -- instance" (the proxy exposes no field for it; `inst._destroyed` reads nil
 -- and made spec.slot 12's assertion vacuous — M6 잔여 마감 발견).
@@ -1002,6 +1055,7 @@ return {
 	newQuad = newQuad,
 	addSpecLeaf = addSpecLeaf,
 	assertBlamesUser = assertBlamesUser,
+	untaggedSurface = untaggedSurface, -- round15 `H-905`
 	installTagAttrOps = installTagAttrOps,
 	getTags = getTags,
 	getAttributes = getAttributes,

@@ -44,14 +44,12 @@
 
 local Brand = require("./Brand")
 local QuadTypes = require("../luau_packages/quad_types")
+local sentinel = require("./Dispatch/Handler").sentinel
+local debugPrint = require("./DebugPrint") -- `q.debug` diagnostics (prefix + one channel)
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 -- root key sentinel — the value (`q.MapperRoot`; 3.3 also re-exposed it as `D.Mapper.Root`) (claim-plan §7-1)
-local MapperRoot = table.freeze(setmetatable({ __quadMapperRoot = true :: true }, {
-	__tostring = function()
-		return "MapperRoot"
-	end,
-}))
+local MapperRoot = sentinel("MapperRoot")
 
 local function Init(module: any)
 	local Err = module.errorNamespace
@@ -141,7 +139,7 @@ local function Init(module: any)
 				-- round10 G-5 (§7-1 debug check): a non-string key (M.Root in a child slot, a number) is
 				-- backend-defined — Roblox's FindFirstChild raises its own error on it
 				if module.debug and type(v._key) ~= "string" then
-					print(`Claim: child descriptor key is a {typeof(v._key)} - M.Root is only for the root descriptor; a child key is a name`)
+					debugPrint(`Claim: child descriptor key is a {typeof(v._key)} - M.Root is only for the root descriptor; a child key is a name`)
 				end
 				-- round10 Q49 (a) (user decision 2026-09-17): the descriptor's class goes to the backend —
 				-- a same-name child of another class is "not matched" (Roblox: `IsA`; mock: ClassName)
@@ -201,7 +199,7 @@ local function Init(module: any)
 		-- round10 G-4 (claim-plan §7-1: a DEBUG check, not a runtime guard — §3 principle): the root
 		-- descriptor's key is never read, so `M.Frame("SomeName")` at the root claims `inst` itself
 		if module.debug and desc._key ~= MapperRoot then
-			print(`Claim: the root descriptor's key {tostring(desc._key)} is ignored - the root takes M.Root; put a keyed descriptor in the root's props instead`)
+			debugPrint(`Claim: the root descriptor's key {tostring(desc._key)} is ignored - the root takes M.Root; put a keyed descriptor in the root's props instead`)
 		end
 		local plan: { Step } = {}
 		resolve(inst, desc, plan, {})

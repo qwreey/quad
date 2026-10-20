@@ -532,8 +532,8 @@ print("=== 13. flush 도중 하류가 같은 게이트의 handle:Cancel()/Flush(
 do
 	local LINE = "handle:Cancel() was called from a callback this gate's own flush reached"
 	local lines: { string } = {}
-	-- the print lives in Debounce.luau — capture that module's env (spec.observer 14's technique)
-	local env: any = getfenv(q.Debounce :: any)
+	-- every `q.debug` line leaves through DebugPrint.luau — capture that module's env
+	local env: any = getfenv(q._debugPrint)
 	local function capture(f: () -> ())
 		table.clear(lines)
 		local old = rawget(env, "print")

@@ -1,8 +1,9 @@
 --!strict
 --[[
-	quad-roblox EngineOps — the injected engine ops this backend implements
-	in M5. The op *inventory* source is the `architecture.md` EngineOps line;
-	this file carries the M5 share only (round14 Q4 (a)):
+	quad-roblox EngineOps — the injected engine ops this file implements. The
+	op *inventory* source is the `architecture.md` EngineOps line; the lifetime
+	ops (holdLifetime and friends) live in LifetimeHandle.luau, and this file
+	carries the rest (round14 Q4 (a)):
 
 	  native* physical-tree layer (signatures: `base/slot-plan.md` "native*"):
 	    nativeInsert (target, offset, elements)

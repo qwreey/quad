@@ -111,8 +111,8 @@ export type Observer = {
 - 아직 살아나지 않은(구독도 바인딩도 안 된) 핸들에도 emit은 **도착합니다**. 다만 실행 자격이 없어 **보류**되고, 그 사이 몇 번이 왔든 살아나는 시점에 **정확히 한 번**, `emitFrom = nil`로 재생됩니다.
 - `Source`를 직접 관측하는 핸들은 **이미 돈 리비전으로 다시 돌지 않습니다.** 파동 도중 다른 콜백이 이 핸들을 살려(구독·바인딩) 재생이 먼저 돌았거나, 다른 콜백이 같은 `Source`를 다시 `:Set`해 안쪽 파동이 먼저 이 핸들에 닿았다면, 뒤늦게 도착하는 같은 리비전의 통지는 건너뜁니다. 이 보장은 `Source`를 직접 관측할 때뿐입니다 — 파생 State(`:Compute` 등)를 관측하는 핸들은 같은 두 경우에 같은 값으로 한 번 더 돌 수 있습니다([2026-09-30 mock 실측]; 몇 번째로 닿는지는 발화 순서처럼 정해져 있지 않습니다).
 - 콜백은 **자기 자신을 구독하거나 묶을 수 없습니다**. 콜백 안에서 `:Subscribe()`/`:WeakSubscribe()`를 부르면
-  `Observer: cannot change subscription from inside its own fn`
-  (**그 핸들 자신**의 콜백이 도는 동안 같은 핸들을 숫자 키 자리에 놓으면 `Quad0109 Observer: cannot bind an Observer from inside its own fn` — 콜백 안에서 **새로 만든** `Observer`를 놓는 것은 통과합니다). 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 콜백 안에서도 됩니다 — 해제는 콜백을 다시 부르지 않습니다.
+  `Observer: cannot change subscription from inside its own fn (or after its fn threw - a throw leaves the in-run flag up)`
+  (**그 핸들 자신**의 콜백이 도는 동안 같은 핸들을 숫자 키 자리에 놓으면 `Quad0109 Observer: cannot bind an Observer from inside its own fn (or after its fn threw - a throw leaves the in-run flag up)` — 콜백 안에서 **새로 만든** `Observer`를 놓는 것은 통과합니다). 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 콜백 안에서도 됩니다 — 해제는 콜백을 다시 부르지 않습니다.
 - 살아난 뒤의 콜백이 자기 관측 대상을 `:Set`하는 것도 자기 상류 되먹임이라 정의되지 않은 동작입니다. 관측(계약 아님): 지금은 새 파동이 콜백 안에서 곧바로 이 핸들을 다시 부르고(`Effect`처럼 끝난 뒤로 미루지 않습니다), 바깥 실행의 나머지는 되쓰기 전에 읽은 옛 값을 들고 이어집니다. 조건 없이 되쓰는 콜백은 `Source`가 같은 값도 전파하므로 스택이 자라 넘칩니다. 대상을 되써 수렴시켜야 하면 `Effect`로 옮기세요.
 - 콜백이 예외를 던지면 그 핸들은 **굳습니다** — 이후 (재)구독과 다른 인스턴스에 묶기는 위 문구로 거부됩니다. 발화 자체는 막히지 않아 상류가 바뀌면 콜백은 계속 돕니다(quad는 예외를 잡지 않으므로 "던졌다"는 사실을 따로 기억하지 못합니다). 정리하려면 `:Unsubscribe()`(강한 구독) 또는 묶인 인스턴스의 파괴로 놓아주세요.
 - 인자 검증: `Quad0190 State: Observer fn must be a function or nil (got {typeof(fn)}) - nil makes the always-observe utility`
@@ -161,7 +161,7 @@ print(#log) --> 3
 
 **동작** — **강한 구독**. 전역 레지스트리가 핸들을 강하게 잡으므로, 참조를 어디에도 남기지 않아도 수거되지 않습니다. `.Subscribed`를 올리고, 보류된 변경이 있으면 그 자리에서 한 번 재생합니다.
 
-**에러** — 이미 살아 있으면 `Quad0114 Observer: already subscribed` / `Quad0235 Observer: already bound to an Instance`. 콜백 안에서 부르면 `Quad0113 Observer: cannot change subscription from inside its own fn`.
+**에러** — 이미 살아 있으면 `Quad0114 Observer: already subscribed` / `Quad0235 Observer: already bound to an Instance`. 콜백 안에서 부르면 `Quad0113 Observer: cannot change subscription from inside its own fn (or after its fn threw - a throw leaves the in-run flag up)`.
 
 ---
 

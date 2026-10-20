@@ -492,12 +492,8 @@ do
 	local q: any = mock.newQuad()
 	local Src = q.Source
 	local host = mock.Instance.new("Frame") -- Observer/Effect fire only while bound (canExecute)
-	-- the two prints live in State.luau (a) and Source.luau (b) — capture both envs
-	local probeSrc = Src(0)
-	local probeState = probeSrc:Compute(function(x)
-		return x:Get()
-	end)
-	local envs = { getfenv((probeSrc :: any).Set) :: any, getfenv((probeState :: any).Get) :: any }
+	-- both lines (State.luau (a), Source.luau (b)) leave through DebugPrint.luau — capture that one env
+	local envs = { getfenv(q._debugPrint) :: any }
 	local lines: { string } = {}
 	local olds = {}
 	for i, env in envs do

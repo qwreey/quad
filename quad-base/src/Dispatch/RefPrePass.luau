@@ -33,7 +33,7 @@
 	One-shot: a fired PreRef/PostRef placed again is an error at the pre-pass
 	(stale `.Value` would silently re-fire callbacks). `errorBefore`: the
 	pre-pass runs inside the tagged `drive`, so the outermost surface's caller
-	(the user's `D.Frame{}` line) is blamed (`H-272` reasoning, same as the
+	(the user's `q.Elem "Frame" {}` line) is blamed (`H-272` reasoning, same as the
 	flatten `H-312` rejection).
 ]]
 

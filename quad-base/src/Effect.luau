@@ -30,6 +30,28 @@
 	    `resubscribeTail` replays a held change after registration,
 	    `Unsubscribe` consumes the cleanup.
 
+	State table — the five flags read together (the bodies below carry the why, line by line).
+	R `_running`, P `_pending`, C `_cleanupRunning`, D `_dying`, H `_rerunRequired` (the hold);
+	"executable" is `module.Backend.canExecute(self)`, skipped only by the constructor's forced install.
+
+	  event                       | when                          | does
+	  ----------------------------+-------------------------------+------------------------------------------------
+	  rawRerun (Rerun, _receive)  | R up                          | P = true — the running loop goes round again
+	                              | C up, D up, or not executable | H = true — held, replayed once by bind/subscribe
+	                              | otherwise                     | R up; repeat { consume cleanup; lost executability?
+	                              |                               |   → P down, stop; P down, H down; fn; store its
+	                              |                               |   cleanup; lost executability? → consume it, P down,
+	                              |                               |   stop } while P; R down
+	  fn or cleanup throws        |                               | R (or C) stays up: dead by contract — bind/subscribe
+	                              |                               |   refuse (Quad0087/0088/0090), unsubscribe still passes
+	  _consumeCleanup             |                               | H = true; run the cleanup (if any) under C, arg = D
+	  Destroying callback         | its binding is still current  | D = true; drop the connection; consume the cleanup
+	  bind (_bindDestroying)      |                               | D = false; reconnect; H up → Rerun
+	  WeakSubscribe / Subscribe   | R or C up → error             | D = false; drop a stale connection; H up → Rerun
+	  Unsubscribe                 | strong keep present           | consume the cleanup (the last one, exactly once)
+	  constructor                 |                               | H = true; rawRerun(force = true)
+	H goes down in one place only: right before fn runs. Ref: H-911
+
 	Assembly (`H-174`): `Effect.Init(module)` — gates (`module.Backend.canExecute` /
 	`module.Backend.canBound`) and the injected `module.Backend.onDestroying` are read at call
 	time; the registries come from `Observer.luau` (`H-99`), pulled in with

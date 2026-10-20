@@ -37,6 +37,7 @@ local Relate = require("../Relate")
 local QuadTypes = require("../../luau_packages/quad_types")
 local Err = require("../ErrorNamespace")
 local NotInstalled = require("../NotInstalled")
+local InitDispatch = require("../Dispatch")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local AttrKeyBrand = Brand.AttrKeyBrand
@@ -87,8 +88,6 @@ local module = {
 local function notInstalled(name: string): (...any) -> ...any
 	return NotInstalled(name, "the attribute op")
 end
-
-local InitDispatch = require("../Dispatch")
 
 function module.Init(quad: any)
 	quad.AttrKey = AttrKey

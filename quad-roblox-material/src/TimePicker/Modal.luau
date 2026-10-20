@@ -202,7 +202,7 @@ local function card(o: OpenOptions, handle: Overlay.Handle, layerSize: Vector2, 
 			return 1
 		end
 		local c = geo(m).Card
-		return math.max(0.25, math.min(1, (layerSize.X - 32) / c.X, (layerSize.Y - 32) / c.Y))
+		return Util.fitScale(layerSize, c, 32)
 	end
 	local scale: State<number> = shown:Compute(function(self, _prev, m)
 		return (if self:Get() then 1 else 0.92) * fitFor(m:Get())

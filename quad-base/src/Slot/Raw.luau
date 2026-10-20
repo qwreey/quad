@@ -34,6 +34,14 @@ return function(S: Types.SlotInternal, module: any)
 		end
 	end
 
+	-- invalidateFrom — raw* regulation 3 (`H-3`/`H-113`): after a splice or a
+	-- permutation, pull BOTH cursors to one before the lowest touched position — `math.min`
+	-- with the position itself is exactly the formula `H-113` disproved.
+	local function invalidateFrom(bk: any, lowest: number)
+		bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, lowest - 1)
+		bk.offsetSetUpTo = math.min(bk.offsetSetUpTo, lowest - 1)
+	end
+
 	local function spliceArraysUp(self: any, index: number)
 		local bk = S.BK.getBookkeeping(self)
 		local n = bk.N or 0
@@ -46,8 +54,7 @@ return function(S: Types.SlotInternal, module: any)
 		bk.sourceList[index] = S.None
 		bk.observers[index] = nil
 		bk.N = n + 1
-		bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, index - 1)
-		bk.offsetSetUpTo = math.min(bk.offsetSetUpTo, index - 1)
+		invalidateFrom(bk, index)
 	end
 
 	local function spliceArraysDown(self: any, index: number)
@@ -62,8 +69,7 @@ return function(S: Types.SlotInternal, module: any)
 		bk.sourceList[n] = nil
 		bk.observers[n] = nil
 		bk.N = if n > 0 then n - 1 else 0
-		bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, index - 1)
-		bk.offsetSetUpTo = math.min(bk.offsetSetUpTo, index - 1)
+		invalidateFrom(bk, index)
 	end
 
 	-- maybeRecompute — THE recompute gate for explicit calls (`H-119`): the
@@ -310,14 +316,6 @@ return function(S: Types.SlotInternal, module: any)
 			for i = from, to + 1, -1 do arr[i] = arr[i - 1] end
 		end
 		arr[to] = v
-	end
-
-	-- invalidateFrom — raw* regulation 3 (`H-3`/`H-113`): after a permutation,
-	-- pull BOTH cursors to one before the lowest touched position — `math.min`
-	-- with the position itself is exactly the formula `H-113` disproved.
-	local function invalidateFrom(bk: any, lowest: number)
-		bk.offsetCacheValidUpTo = math.min(bk.offsetCacheValidUpTo, lowest - 1)
-		bk.offsetSetUpTo = math.min(bk.offsetSetUpTo, lowest - 1)
 	end
 
 	local function rawMove(self: any, fromIndex: number, toIndex: number)

@@ -3,7 +3,8 @@
 	InstanceChildHandler — static child Instance at a NUMBER key
 	(`Frame { Frame {} }`). Canon: `dispatch-core-plan.md`의 `H-134` 블록
 	(다섯째 — 의사코드가 없던 핸들러를 사용자 확정으로 채운 자리)과
-	`ROADMAP.md` M5 체크박스 — 이 파일은 그 두 줄의 1:1 전사다.
+	`ROADMAP.md` M5 체크박스에서 출발했고, 그 뒤 결정(ownership seat 등록,
+	이미 부모가 있는 Instance 거부 등)이 아래에 붙었다.
 
 	Terminal handler ⇒ registers its array position without exception
 	(`H-39`): constant length 1, no offset source, no 5th `element` argument
@@ -26,7 +27,7 @@
 	[2026-09-17 round10 Q48 (a) — user decision] ownership seat in the SAME registry the
 	Slot paths use: `Bookkeeping.claimOwnerAt(v, inst, k)` before the bookkeeping,
 	`releaseOwner(v, inst)` in the retractor. A child already held elsewhere (another
-	static seat, a Slot, `D.Frame { c, c }`) is refused instead of silently re-parented,
+	static seat, a Slot, `q.Elem "Frame" { c, c }`) is refused instead of silently re-parented,
 	and `q.dispose(c)` refuses it while it sits here. `claimOwnerAt` returning false means
 	exactly this seat already holds it — only reachable through the `H-154` dedup path,
 	which returns before releasing, so the physical attach is skipped too.

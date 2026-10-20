@@ -38,10 +38,10 @@
 
 	`sentinel(name)` (2026-10-01 — moved here from 옛 `Dispatch/None.luau` when `None`
 	became a top-level value module that requires Dispatch): the one constructor for
-	every frozen marker sentinel — `None` (top-level `None.luau`) and the drive's own
+	every frozen marker sentinel — `None` (top-level `None.luau`), the drive's own
 	`ProcessedModifier` (`Dispatch/Modifier/init.luau`) / `ProcessedPreRef`·`PostRef`
-	(`Dispatch/Ref.luau`). It must sit in a leaf both sides can require: `None.luau` →
-	`Dispatch/init.luau` → `Dispatch/Ref.luau` would otherwise loop back to `None.luau`.
+	(`Dispatch/RefPrePass.luau`), Slot's `Detach`/`KeyGone` and Claim's `MapperRoot`. It must sit in a leaf both sides can require: `None.luau` →
+	`Dispatch/init.luau` → `Dispatch/RefPrePass.luau` would otherwise loop back to `None.luau`.
 ]]
 
 local QuadTypes = require("../../luau_packages/quad_types")

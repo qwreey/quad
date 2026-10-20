@@ -24,8 +24,9 @@
 	Keys are table identities (no string collisions across modules); the value
 	map is keyed by the Provider table. `Set` MUTATES the bag it is called on
 	(chaining returns self) — extending a parent's bag for a subtree is the
-	creator's business (copy first); an immutable-clone `With` is an open item
-	(`question.md`). Dependency-free leaf, shared across quad instances.
+	creator's business (copy first). There is deliberately no immutable-clone
+	`With`: one bag is the single source of truth, so debugging reads one place
+	(`base/context-plan.md` "불변 확장은 만들지 않는다"). Dependency-free leaf, shared across quad instances.
 ]]
 
 local Brand = require("./Brand")

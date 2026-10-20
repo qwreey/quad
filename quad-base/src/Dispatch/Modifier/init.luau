@@ -526,7 +526,7 @@ local function flatten(input: { [any]: any }): { [any]: any }
 	-- key's handler a raw table (engine error blamed inside quad). Reject
 	-- here, before any slot is consumed. errorBefore: flatten runs inside
 	-- the tagged `drive`, so the OUTERMOST tagged frame's caller (the
-	-- user's `D.Frame{}` / `drive` line) is charged (`H-272` reasoning).
+	-- user's `q.Elem "Frame" {}` / `drive` line) is charged (`H-272` reasoning).
 	-- Walk the HASH part only (review: a full pass would visit the array part
 	-- twice on every drive): `next` continued from the last array key skips
 	-- the hole-free array part; sparse numeric keys live in the hash part and

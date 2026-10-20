@@ -62,7 +62,7 @@ local function RobloxFactory(module: any): any
 		ForClasses = surface.ForClasses,
 		OnChange = surface.OnChange,
 		Out = surface.Out, -- write-back sugar over OnChange (2026-09-21, `archive/surveys/2026-09-21-upward-flow-plan.md` 8절)
-		Animate = installAnimate(module, tween.validateFields, tween.tweenOutermost, tween.warnInfoOverlap), -- `H-464`: eager literal-option check shares Tween's validator (and its debug Info-overlap line)
+		Animate = installAnimate(module, tween.validateFields, tween.tweenOutermost, tween.warnInfoOverlap, tween.debugPrint), -- `H-464`: eager literal-option check shares Tween's validator (and its debug Info-overlap line)
 		Tween = tween.Tween, -- already on the module (install) — listed so the typed extension is honest
 		isTween = tween.isTween,
 	}

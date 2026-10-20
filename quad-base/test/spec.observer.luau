@@ -599,8 +599,8 @@ do
 	local LINE = "Observer: a change reached this Observer while its own fn was running"
 	local lines: { string } = {}
 	local dq = mock.newQuad()
-	-- the print lives in Observer.luau — capture that module's env (spec.state 17's technique)
-	local env: any = getfenv((dq.Source(0):Observer() :: any).WeakSubscribe)
+	-- every `q.debug` line leaves through DebugPrint.luau — capture that module's env
+	local env: any = getfenv(dq._debugPrint)
 	local function capture(f: () -> ())
 		table.clear(lines)
 		local old = rawget(env, "print")
@@ -766,7 +766,7 @@ do
 	local LINE = "Observer: a change reached this Observer while its own fn was running"
 	local lines: { string } = {}
 	local dq = mock.newQuad()
-	local env: any = getfenv((dq.Source(0):Observer() :: any).WeakSubscribe)
+	local env: any = getfenv(dq._debugPrint)
 	local function capture(f: () -> ())
 		table.clear(lines)
 		local old = rawget(env, "print")

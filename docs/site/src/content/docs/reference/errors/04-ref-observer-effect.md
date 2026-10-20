@@ -136,7 +136,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 ### Quad0109
 
-`Observer: cannot bind an Observer from inside its own fn` — `quad-base/src/Observer.luau`
+`Observer: cannot bind an Observer from inside its own fn (or after its fn threw - a throw leaves the in-run flag up)` — `quad-base/src/Observer.luau`
 
 - **언제**: **그 핸들 자신**의 콜백이 도는 동안 같은 핸들을 다시 바인딩하려 할 때. 콜백 안에서 **새로 만든** `Observer`를 놓는 것은 통과합니다.
 - **고치려면**: 자기 자신을 실행 중에 다시 놓지 마세요. 콜백이 던진 것이 원인이면 그 예외의 원인을 고치세요.
@@ -145,7 +145,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 ### Quad0110
 
-`Observer: cannot change subscription from inside its own fn` — `quad-base/src/Observer.luau`
+`Observer: cannot change subscription from inside its own fn (or after its fn threw - a throw leaves the in-run flag up)` — `quad-base/src/Observer.luau`
 
 - **언제**: `observer:WeakSubscribe()`를 그 `Observer` 자신의 콜백 실행 중에 부를 때.
 - **고치려면**: 구독/재구독은 콜백 밖에서 하세요. 해제(`:Unsubscribe()`/`:WeakUnsubscribe()`)는 콜백 안에서도 됩니다. 콜백이 던진 것이 원인이면 그 예외의 원인을 고치세요.
@@ -170,7 +170,7 @@ description: "Ref/PreRef/PostRef/Observer/Effect/생명주기 훅이 던지는 �
 
 ### Quad0113
 
-`Observer: cannot change subscription from inside its own fn` — `quad-base/src/Observer.luau`
+`Observer: cannot change subscription from inside its own fn (or after its fn threw - a throw leaves the in-run flag up)` — `quad-base/src/Observer.luau`
 
 - **언제**: `observer:Subscribe()`를 그 `Observer` 자신의 콜백 실행 중에 부를 때.
 - **고치려면**: 구독/재구독은 콜백 밖에서 하세요. 해제는 그 안에서도 됩니다. 콜백이 던진 것이 원인이면 그 예외의 원인을 고치세요.

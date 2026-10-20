@@ -42,14 +42,16 @@ local InitDispatch = require("./Dispatch")
 local Types = require("@self/types")
 local QuadTypes = require("../luau_packages/quad_types")
 local ModuleIdentity = require("./ModuleIdentity") -- round10 H-4: element doors + dispose are cross-instance doors too
+local sentinel = require("./Dispatch/Handler").sentinel
+local debugPrint = require("./DebugPrint") -- `q.debug` diagnostics (prefix + one channel)
 
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 -- Sentinels — identity is the judgement (like None); the marker field is the
 -- TYPE-narrowing aid only (`H6-16` (a), user decision 2026-09-03 — same shape
 -- as None's `__quadNone`, `H-300`). Re-exported at top level.
-local Detach = table.freeze(setmetatable({ __quadDetach = true :: true }, { __tostring = function() return "Detach" end }))
-local KeyGone = table.freeze(setmetatable({ __quadKeyGone = true :: true }, { __tostring = function() return "KeyGone" end }))
+local Detach = sentinel("Detach")
+local KeyGone = sentinel("KeyGone")
 
 -- ── debug-only checks (`architecture.md` "debug 층"; kept out of the logic below) ──
 -- `H-500` (2026-09-08 2차 감사 G-1): a Slot inside itself or inside one of its own descendants —
@@ -99,7 +101,7 @@ end
 local function checkHostClaimed(self: any, isClaimed: (any) -> boolean)
 	local host = self._mountedInst
 	if host ~= nil and not isClaimed(host) then
-		print("Slot: CRUD on a Slot whose host Instance is no longer claimed by quad (destroyed - by q.dispose or outside quad - or not made by quad) - the change goes to a dead Instance (undefined); stop using this Slot, or build a new one")
+		debugPrint("Slot: CRUD on a Slot whose host Instance is no longer claimed by quad (destroyed - by q.dispose or outside quad - or not made by quad) - the change goes to a dead Instance (undefined); stop using this Slot, or build a new one")
 	end
 end
 
@@ -149,8 +151,7 @@ local function Init(module: any)
 	-- ⚠️ [2026-09-07 split] `S` — the module-instance-internal table the five sibling
 	-- files receive. The prelude values below are the ones that are stable for this
 	-- module instance; anything that must be read LATE off `module` stays an inline
-	-- `module.xxx` at its use site, except the three wrappers above (they read late
-	-- themselves, so passing the WRAPPER preserves `H-174`).
+	-- `module.xxx` at its use site (`H-174` — Backend primitives included).
 	local S = {
 		Slot_mt = Slot_mt,
 		BK = BK,

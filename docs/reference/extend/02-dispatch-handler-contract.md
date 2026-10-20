@@ -166,7 +166,7 @@ process: (inst: any, key: any, value: any, index: number) -> ()
 Quad0076 Dispatch: no handler matched key {키} (value: {typeof}, brand: {브랜드 이름들}) - this quad value has no handler at an array position
 ```
 
-꼬리 힌트는 키와 값에 따라 갈립니다. 값이 [`q.Protocols.DispatchHint`](#qprotocolsdispatchhint)에 속하면 그 값이 직접 원인 문장을 줍니다(`Store`·`Blocker`·`Tween` 등 — 아래 절). 그 밖에는 위처럼 숫자 키에 등록된 브랜드의 값이 온 경우의 일반 꼬리입니다(등록됐다는 것이 그 브랜드의 주인이 설치됐다는 뜻이라, quad-base 값이든 설치된 프로바이더의 값이든 같습니다). 등록된 술어에 하나도 걸리지 않는 값이면 숫자 키에선 `- check that the provider for this value (e.g. quad-roblox) is initialized`, **문자 키**에선 키 이름이 틀렸을 가능성과 프로바이더 미설치를 함께 적습니다. 전체 갈래는 [`Quad0076`](../errors/02-dispatch-bookkeeping.md#quad0076).
+꼬리 힌트는 키와 값에 따라 갈립니다. 값이 [`q.Protocols.DispatchHint`](#qprotocolsdispatchhint)에 속하면 그 값이 직접 원인 문장을 줍니다(`Store`·`Blocker`·`Tween` 등 — 아래 절). 그 밖에는 위처럼 숫자 키에 등록된 브랜드의 값이 온 경우의 일반 꼬리입니다(등록됐다는 것이 그 브랜드의 주인이 설치됐다는 뜻이라, quad-base 값이든 설치된 프로바이더의 값이든 같습니다). 등록된 술어에 하나도 걸리지 않는 값이면 숫자 키에선 `- check that the provider for this value (e.g. quad-roblox) is initialized`(값이 함수면 대신 호출을 빠뜨린 생성자·컴포넌트인지 묻는 꼬리), **문자 키**에선 키 이름이 틀렸을 가능성과 프로바이더 미설치를 함께 적습니다. 전체 갈래는 [`Quad0076`](../errors/02-dispatch-bookkeeping.md#quad0076).
 
 **`Slot`은 양의 정수 키 자리에만 놓입니다.** 내장 Slot 핸들러의 조건이 "키가 1 이상의 정수이고 값이 `Slot`"이라, `process`를 직접 불러 `Slot`을 `0`·음수·소수 키에 놓으면 위 `Quad0076`(`brand: Slot`)으로 거부됩니다 — 문자 키의 `Slot`과 같은 거부이고 꼬리 문장만 다릅니다. `q.Elem "<Class>" { … }`의 배열부는 늘 1부터의 정수 키라 사용자 코드는 닿지 않습니다.
 

@@ -23,6 +23,7 @@
 
 local QuadTypes = require("../luau_packages/quad_types")
 local Void = require("./Void")
+local debugPrint = require("./DebugPrint") -- `q.debug` diagnostics (prefix + one channel)
 
 -- the tight lower bound: above Property (NORMAL) and InstanceShorthand (NORMAL + 1), the two
 -- built-in handlers that swallow a quad value at a property-name key; Event (NORMAL - 1) is below
@@ -50,7 +51,7 @@ local function register(dispatch: QuadTypes.Dispatch, name: string, kindOf: (v: 
 			end
 			if seen[k] == nil then
 				seen[k] = true
-				print(`{kind}: found at string key "{k}" - must be an array item (a string key hands it to whichever handler takes that key, usually the property of that name)`)
+				debugPrint(`{kind}: found at string key "{k}" - must be an array item (a string key hands it to whichever handler takes that key, usually the property of that name)`)
 			end
 			return false -- never selected: the dispatch continues as if this handler did not exist
 		end,

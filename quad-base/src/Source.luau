@@ -31,6 +31,7 @@ local Brand = require("./Brand")
 local State = require("./State")
 local QuadTypes = require("../luau_packages/quad_types")
 local Err = require("./ErrorNamespace")
+local debugPrint = require("./DebugPrint") -- `q.debug` diagnostics (prefix + one channel)
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 export type Source<T> = QuadTypes.Source<T>
@@ -50,7 +51,7 @@ local WEAK_KEY_MT = { __mode = "k" }
 local function checkWriteInCompute(module: any, source: any, warned: { [any]: true })
 	if warned[source] == nil and State.computeFnOnStack(module) then
 		warned[source] = true
-		print("Source: Set/Emit inside a Compute fn - a Compute only reads and combines (undefined)")
+		debugPrint("Source: Set/Emit inside a Compute fn - a Compute only reads and combines (undefined)")
 	end
 end
 

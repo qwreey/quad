@@ -333,7 +333,7 @@ print()
 print("=== 13. round10 Q58 (나) (2026-09-17) — quad-roblox 핸들러끼리는 우선순위 동률이 없다(q.debug 설치 시 tie 출력 0): Event·OnChange는 NORMAL - 1 ===")
 do
 	local printed = {}
-	local env = getfenv(q.Dispatch.addHandler) :: any
+	local env = getfenv(q._debugPrint) :: any -- every quad-base `q.debug` line leaves through DebugPrint.luau
 	local oldPrint = rawget(env, "print")
 	env.print = function(...: any) table.insert(printed, table.concat({ ... }, " ")) end
 	local q2: any = Quad.NewModule()
@@ -429,8 +429,8 @@ do
 		assert(filters[name] ~= nil, "filter registered: " .. name)
 		assert(filters[name].priority == q.Dispatch.HANDLER_PRIORITY_NORMAL + 2 and filters[name].keyType == "string", "band NORMAL + 2, string keys only: " .. name)
 	end
-	-- every filter's isHandlable lives in DebugKeyFilter.luau — one env to capture
-	local env = getfenv(filters.RefStringKeyDebugFilter.isHandlable) :: any
+	-- every quad-base `q.debug` line leaves through DebugPrint.luau — one env to capture
+	local env = getfenv(q._debugPrint) :: any
 	local oldPrint = rawget(env, "print")
 	local lines: { string } = {}
 	env.print = function(...: any)
@@ -461,7 +461,7 @@ do
 	end
 	assert(#lines == 2, `one line for 21 values at one (inst, key) (got {#lines})`)
 	frame({ Visible = q.Tag("t") })
-	assert(#lines == 3 and string.find(lines[3], "Tag:", 1, true) == 1, "another key, another kind: " .. tostring(lines[3]))
+	assert(#lines == 3 and string.find(lines[3], "[quad debug] Tag:", 1, true) == 1, "another key, another kind: " .. tostring(lines[3]))
 	-- (4) toggled off while the bound State keeps emitting: no lines, value tracks
 	q.debug = false
 	local last = q.Ref(nil)

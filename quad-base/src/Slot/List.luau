@@ -13,6 +13,7 @@
 local Types = require("./types")
 local ModuleIdentity = require("../ModuleIdentity")
 local StateHandler = require("../StateHandler") -- round13 Q113 (a): the shared Quad0070 chain walk
+local debugPrint = require("../DebugPrint") -- `q.debug` diagnostics (prefix + one channel)
 
 -- `H-571` data-key gate: the one Quad0143 literal — reconcile's O(1) check and the debug pass below both raise it.
 local function notArrayKey(k: any): boolean
@@ -359,7 +360,7 @@ return function(S: Types.SlotInternal, module: any)
 			-- only under `q.debug`; execution continues
 			for key in opts do
 				if key ~= "OwnsElements" then
-					print(`Slot:List/:Single: unknown option "{tostring(key)}" is ignored (known: OwnsElements)`)
+					debugPrint(`Slot:List/:Single: unknown option "{tostring(key)}" is ignored (known: OwnsElements)`)
 				end
 			end
 		end

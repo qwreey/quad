@@ -63,11 +63,18 @@
 ]]
 
 local Brand = require("./Brand")
+local TweenOptions = require("./TweenOptions")
 local QuadTypes = require("../luau_packages/quad_types")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local TweenBrand = Brand.TweenBrand
 local isTween = Brand.isTween
+
+-- the `q.debug` diagnostic channel of quad-roblox: the same `[quad debug] ` prefix as quad-base's `DebugPrint.luau`
+-- (a separate package — this file cannot require it). `Animate.luau` gets it from `install` below. Ref: H-915 Q190
+local function debugPrint(line: string)
+	print("[quad debug] " .. line)
+end
 
 local NUMBER_FIELDS = { "Time", "RepeatCount", "DelayTime" }
 -- [2026-09-21 사용자 결정 — docs-review 1-5] three optional callbacks (round13 묶음 1 2026-09-28: called `(inst, prop, value)`,
@@ -75,17 +82,17 @@ local NUMBER_FIELDS = { "Time", "RepeatCount", "DelayTime" }
 -- (bare names, not `On*` — the `On*` prefix means "a factory called to fill a numeric-key slot" in this
 -- library). WHEN they fire is the consumer's contract: `Handlers/Property.luau` header. `Mapped(fn)` carries them
 -- unchanged (the copy's value arg is then the MAPPED value); `Mapped(fn, wrap)`/`Wrapped(wrap)` rewrite them.
-local CALLBACK_FIELDS = { "Started", "Completed", "Cancelled" }
+local CALLBACK_FIELDS = TweenOptions.CALLBACK_FIELDS
 
 -- ── debug layer: unknown option keys ──
 -- [2026-09-15 사용자 결정] unknown keys (typos) are reported only under `q.debug`, execution continues.
 -- Checked on the user's constructor call (`Tween(opts)`), not in `validate` — `Mapped` re-validates per emit.
 -- Body kept out of the constructor (`architecture.md` "debug 층": the logic carries one line).
-local KNOWN_OPTIONS = {
-	Value = true, Info = true, Time = true, Style = true, Direction = true,
-	RepeatCount = true, Reverses = true, DelayTime = true, Override = true, Dedup = true,
-	Started = true, Completed = true, Cancelled = true,
-}
+local KNOWN_OPTIONS: { [string]: boolean } = { Value = true }
+for _, name in TweenOptions.OPTION_FIELDS do
+	KNOWN_OPTIONS[name] = true
+end
+local KNOWN_LIST = "Value, " .. table.concat(TweenOptions.OPTION_FIELDS, ", ")
 -- [2026-10-06 user decision, round14 Q179] the same pass names the convenience fields an `Info` overrides:
 -- `Info` wins (`Handlers/Property.luau` `buildInfo`), so `Time`/`Style`/… given next to it are ignored — a
 -- `Time` State fed through `Animate` that "does not follow" was the case the user named.
@@ -109,9 +116,9 @@ local function warnInfoOverlap(who: string, opts: { [any]: any }, infoIsState: b
 	end
 	local list, verb = table.concat(ignored, ", "), if #ignored == 1 then "is" else "are"
 	if infoIsState then
-		print(`{who}: Info is a State, so {list} {verb} ignored while it holds a value (Info wins over the convenience fields; they apply only while Info holds nil - put them in the TweenInfo, or drop Info)`)
+		debugPrint(`{who}: Info is a State, so {list} {verb} ignored while it holds a value (Info wins over the convenience fields; they apply only while Info holds nil - put them in the TweenInfo, or drop Info)`)
 	else
-		print(`{who}: Info is given, so {list} {verb} ignored (Info wins over the convenience fields - put them in the TweenInfo, or drop Info)`)
+		debugPrint(`{who}: Info is given, so {list} {verb} ignored (Info wins over the convenience fields - put them in the TweenInfo, or drop Info)`)
 	end
 end
 local function warnUnknownOptions(opts: any)
@@ -120,7 +127,7 @@ local function warnUnknownOptions(opts: any)
 	end
 	for key in opts do
 		if not KNOWN_OPTIONS[key] then
-			print(`Tween: unknown option "{tostring(key)}" is ignored (known: Value, Info, Time, Style, Direction, RepeatCount, Reverses, DelayTime, Override, Dedup, Started, Completed, Cancelled)`)
+			debugPrint(`Tween: unknown option "{tostring(key)}" is ignored (known: {KNOWN_LIST})`)
 		end
 	end
 	warnInfoOverlap("Tween", opts, false) -- a Tween's own fields are plain values (a State Info fails `validate`)
@@ -337,7 +344,7 @@ local function install(quad: any): any
 		return newTween(opts, Err.errorBefore)
 	end
 	-- `warnInfoOverlap` — the debug Info-overlap line (file head), shared with `Animate` the same way
-	return { Tween = Tween, isTween = isTween, validateFields = validateFields, tweenOutermost = tweenOutermost, warnInfoOverlap = warnInfoOverlap }
+	return { Tween = Tween, isTween = isTween, validateFields = validateFields, tweenOutermost = tweenOutermost, warnInfoOverlap = warnInfoOverlap, debugPrint = debugPrint }
 end
 
 return install

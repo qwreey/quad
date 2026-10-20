@@ -1,6 +1,6 @@
 --!strict
 --[[
-	KeyedSlot: the "data array -> one element per key" pattern shared by `ChipSet` and `Tabs` (internal to the kit).
+	KeyedSlot: the "data array -> one element per key" pattern shared by `ChipSet`, `Tabs` and `ListData` (internal to the kit).
 
 	    local slot = KeyedSlot.new(items, function(item) return item.Id end, function(item, order)
 	        return Chip.Assist({ Label = item:Compute(...), Modifier = q.Modifier "TextButton" ():LayoutOrder(order) })
@@ -15,7 +15,7 @@
 	array part (it mounts its elements directly under that parent, no container Frame).
 ]]
 
-local q = require("../Quad")
+local q = require("./Quad")
 
 export type Render<T> = (item: q.State<T>, order: q.State<number>) -> Instance
 

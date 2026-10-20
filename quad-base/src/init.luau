@@ -48,6 +48,7 @@ local LifecycleHooks = require("@self/LifecycleHooks") -- `OnCreated`/`OnRendere
 local FallbackModule = require("@self/Fallback") -- `Fallback`/`Traceback`(base/fallback-plan) — 의존 없는 잎
 local ContextModule = require("@self/Context") -- 2026-09-08 `Context`/`Provider`(base/context-plan) — 의존 없는 잎
 local OperatorModule = require("@self/Operator") -- 2026-09-08 `Operator.*`(base/operator-plan) — 의존 없는 잎
+local debugPrint = require("@self/DebugPrint") -- `q.debug` diagnostics (prefix + one channel)
 
 type Quad = QuadTypes.Quad
 
@@ -200,7 +201,7 @@ local function New(): Quad
 			for k, v in extension do
 				local existing = self[k]
 				if existing ~= nil and existing ~= v then
-					print(
+					debugPrint(
 						`AddPlugin: plugin overwrites existing module field "{tostring(k)}"`
 							.. " - intended if the plugin extends a core part on purpose; otherwise rename the plugin's field"
 					)

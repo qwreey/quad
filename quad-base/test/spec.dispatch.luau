@@ -189,6 +189,12 @@ do
 		q.Dispatch.process(inst, 4, setmetatable({}, {}), 1)
 	end)
 	assert(not okN2 and string.find(tostring(errN2), "check that the provider for this value", 1, true) ~= nil, `unbranded at a numeric key: provider hint: {tostring(errN2)}`)
+	-- round15 `H-916`: a bare function at a numeric key is an uncalled constructor/component, not a setup problem
+	local okF, errF = pcall(function()
+		q.Dispatch.process(inst, 5, function() end, 1)
+	end)
+	assert(not okF and string.find(tostring(errF), "a function in an array slot", 1, true) ~= nil
+		and string.find(tostring(errF), "provider", 1, true) == nil, `function at a numeric key: uncalled hint: {tostring(errF)}`)
 	print("PASS")
 end
 
@@ -1072,7 +1078,7 @@ print("=== round14 debug 감지기 3 (2026-10-06) — q.debug일 때 Dispatch.pr
 do
 	local LINE = "Dispatch: process on an instance that is not claimed by quad"
 	local q = newQuad()
-	local env: any = getfenv(q.Dispatch.process)
+	local env: any = getfenv(q._debugPrint) -- every `q.debug` line leaves through DebugPrint.luau
 	local lines: { string } = {}
 	local function capture(f: () -> ())
 		table.clear(lines)

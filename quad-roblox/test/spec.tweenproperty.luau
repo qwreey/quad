@@ -520,8 +520,8 @@ print()
 print("=== round14 Q174 보강 (b) (2026-10-06) — q.debug 되먹임 감지기: Completed에서 같은 원천에 다음 Tween을 잇는 연쇄는 스냅(동기)이어도 정의(Q163·Q164 (a′)) — 0줄; Started·Cancelled 안 되쓰기는 정의되지 않음(Q163) — 1줄 ===")
 do
 	local LINE = "Observer: a change reached this Observer while its own fn was running"
-	-- the print lives in quad-base's Observer.luau — capture that module's env (spec.observer 14's technique)
-	local env: any = getfenv((q.Source(0):Observer() :: any).WeakSubscribe)
+	-- every quad-base `q.debug` line leaves through DebugPrint.luau — capture that module's env
+	local env: any = getfenv(q._debugPrint)
 	local lines: { string } = {}
 	local function capture(f: () -> ())
 		table.clear(lines)

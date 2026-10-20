@@ -220,7 +220,7 @@ Err.setFuncLevel(SURFACE, RefImpl.Set, RefImpl.Callback, RefImpl.WeakCallback, R
 -- Canon: ref-plan "`Ref`의 retract" 절 pseudocode as-is (with the round18 Q4
 -- order: bindLifetime → relate:SetWeak → v:Set), "이중 배치 방지" 절, "동적
 -- 경로 가드 Handler도 거울상으로 하나 더" 절. `Processed*Ref` handlers and the
--- pre-pass are Dispatch's (Dispatch/Ref.luau).
+-- pre-pass are Dispatch's (Dispatch/RefPrePass.luau).
 local function registerDispatchHandlers(module: any)
 	module:RunInit(InitDispatch) -- idempotent pull (the `H-174` idiom)
 	local dispatch: QuadTypes.Dispatch = module.Dispatch

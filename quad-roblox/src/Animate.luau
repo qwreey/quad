@@ -32,6 +32,7 @@
 ]]
 
 local QuadTypes = require("../luau_packages/quad_types")
+local TweenOptions = require("./TweenOptions")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 -- `Dedup` rides along as a plain Tween field ([2026-09-08 user decision, round3 Q25] — the
@@ -40,8 +41,11 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 -- Tween object — the 2026-09-07 Q12 identity model was replaced because identity broke under
 -- any value transform, e.g. the shorthand handler's `Mapped`).
 -- [2026-09-21] the three callbacks ride along too (functions pass `resolve` untouched — not States).
-local FIELDS = { "Info", "Time", "Style", "Direction", "RepeatCount", "Reverses", "DelayTime", "Override", "Dedup", "Started", "Completed", "Cancelled" }
-local CALLBACK_FIELDS: { [string]: boolean } = { Started = true, Completed = true, Cancelled = true } -- round13 Q115 (a)
+local FIELDS = TweenOptions.OPTION_FIELDS -- shared with `Tween.luau` (`TweenOptions.luau`)
+local CALLBACK_FIELDS: { [string]: boolean } = {} -- round13 Q115 (a)
+for _, name in TweenOptions.CALLBACK_FIELDS do
+	CALLBACK_FIELDS[name] = true
+end
 
 -- ── debug layer: unknown option keys ──
 -- [2026-09-15 사용자 결정] unknown keys (typos such as `Duration`) are reported only under `q.debug`;
@@ -57,16 +61,16 @@ end
 -- (one helper for both — round14 확인 패스 code-review 5), handed over by `RobloxFactory` with the validator;
 -- an `Info` State gets the "while it holds a value" wording (code-review 4: one holding nil leaves the
 -- tween Info-less, the convenience fields then apply).
-local function warnUnknownOptions(info: { [any]: any }, warnInfoOverlap: (string, any, boolean) -> (), isState: (any) -> boolean)
+local function warnUnknownOptions(info: { [any]: any }, warnInfoOverlap: (string, any, boolean) -> (), isState: (any) -> boolean, debugPrint: (string) -> ())
 	for key in info do
 		if not KNOWN_OPTIONS[key] then
-			print(`Animate: unknown option "{tostring(key)}" is ignored (known: {table.concat(FIELDS, ", ")}, CanAnimate)`)
+			debugPrint(`Animate: unknown option "{tostring(key)}" is ignored (known: {table.concat(FIELDS, ", ")}, CanAnimate)`)
 		end
 	end
 	warnInfoOverlap("Animate", info, isState(info.Info))
 end
 
-local function install(quad: any, validateFields: (any, any?) -> (), tweenOutermost: (any) -> any, warnInfoOverlap: (string, any, boolean) -> ()): any
+local function install(quad: any, validateFields: (any, any?) -> (), tweenOutermost: (any) -> any, warnInfoOverlap: (string, any, boolean) -> (), debugPrint: (string) -> ()): any
 	local isState = quad.isState
 	local None = quad.None
 	local Err = quad.errorNamespace -- shared namespace (`H-231`)
@@ -86,7 +90,7 @@ local function install(quad: any, validateFields: (any, any?) -> (), tweenOuterm
 			Err.errorBeforeNearest(`Quad0214 Animate: options must be a table, e.g. Animate\{ Time = ... \} (got {typeof(info)})`, SURFACE)
 		end
 		if quad.debug then
-			warnUnknownOptions(info, warnInfoOverlap, isState) -- debug layer (top of file)
+			warnUnknownOptions(info, warnInfoOverlap, isState, debugPrint) -- debug layer (top of file)
 		end
 		-- `H-464`: validate the LITERAL options here, while the user's line is still on the
 		-- stack — the Tween is built lazily inside Compute, where a raise blamed `Animate.luau`.

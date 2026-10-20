@@ -39,6 +39,7 @@ local Relate = require("./Relate")
 local QuadTypes = require("../luau_packages/quad_types")
 local Err = require("./ErrorNamespace")
 local NotInstalled = require("./NotInstalled")
+local InitDispatch = require("./Dispatch")
 local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 
 local TagBrand = Brand.TagBrand
@@ -246,8 +247,6 @@ Err.setFuncLevel(SURFACE, getmetatable(Tag).__call, Tag.Merged, TagImpl.Added, T
 local function notInstalled(name: string): (...any) -> ...any
 	return NotInstalled(name, "the tag ops")
 end
-
-local InitDispatch = require("./Dispatch")
 
 local function Init(module: any)
 	module.Tag = Tag

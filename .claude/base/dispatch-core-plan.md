@@ -588,7 +588,7 @@ StoreBind 도 마찬가지. Effect 처럼 State 정의 부분 안에 넣고 최�
 모양). `InitDispatch` 자신이 등록하는 것은 디스패치 자기 말단뿐 — `NilHandler`(숫자 키의 진짜 `nil`은 객체가 아니라 빈 자리)와
 `Processed*` nop 셋(drive 단계의 소진 센티널; 공장 `addProcessedHandler`는 `Dispatch/init.luau`의 지역 함수). 옛 결정(round13 §0
 Q3 (a) — StoreBind를 "하강 diff 자신의 재귀"로 보고 `InitDispatch` 꼬리에 둠)은 이것으로 뒤집혔다. frozen 마커 센티널 생성자
-`sentinel`은 `Dispatch/Handler.luau`(잎)로 갔다 — `None.luau`가 Dispatch를 require하므로, 그 생성자를 쓰는 `Dispatch/Ref.luau`·
+`sentinel`은 `Dispatch/Handler.luau`(잎)로 갔다 — `None.luau`가 Dispatch를 require하므로, 그 생성자를 쓰는 `Dispatch/RefPrePass.luau`·
 `Dispatch/Modifier/init.luau`가 `None.luau`를 require하면 순환이다. 등록 순서가 바뀌어 HIGH 밴드의 동률 정렬 순서가 달라지지만
 그 밴드의 술어는 서로 배타라 매치는 같다(`spec.dispatch` 24절이 표본 키·값으로 확인).
 
