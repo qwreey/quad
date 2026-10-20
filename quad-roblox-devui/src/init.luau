@@ -152,6 +152,12 @@ export type MenuItemProps = Menu.MenuItemProps
 export type MenuToggleProps = Menu.MenuToggleProps
 export type TooltipProps = Tooltip.TooltipProps
 export type TooltipHandle = Tooltip.TooltipHandle
+-- [2026-10-20 user decision] every devui type is reachable from this module; quad's own types (State, Source, Ref,
+-- Slot, ...) are NOT re-exported here — they come from the kit's Quad module (`src/Quad.luau`), the one door to quad
+export type HoverHandle = Interaction.HoverHandle
+export type DragOptions = Interaction.DragOptions
+export type DragHandle = Interaction.DragHandle
+export type InputListener = InputService.Listener
 export type InputTextProps = Inputs.InputTextProps
 export type InputNumProps = Inputs.InputNumProps
 export type DragNumProps = Inputs.DragNumProps

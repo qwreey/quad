@@ -103,6 +103,10 @@ local QuadTypes = require("../../quad-roblox/luau_packages/quad_types")
 `UseProvider`는 같은 프로바이더에 대해 멱등이므로, 게임이 같은 설치 사본에서 자기 설정 모듈을 이미 돌렸다면 같은
 quad 인스턴스를 공유합니다(게임의 `State`와 키트의 `State`가 그대로 섞입니다).
 
+**타입은 두 문에서 옵니다.** quad의 타입(`State`·`Source`·`Ref`·`Slot` 등)은 키트의 `Quad` 모듈에서(`local Quad = require(<키트>/src/Quad)`
+→ `Quad.State<T>` — 값을 만들 `q.Source`도 어차피 여기서 옵니다), devui 자기 타입은 `Devui`에서(`Devui.Style`, `Devui.HoverHandle`,
+`Devui.InputTextProps` …) 얻습니다. devui는 quad 타입을 다시 내보내지 않습니다 — quad 타입의 문을 하나로 두려는 것입니다(2026-10-20 결정).
+
 ## 데모
 
 ```luau
@@ -248,6 +252,13 @@ Devui.Input.use(Environment.InputListener)   -- 스토리 모드: 드래그·Esc
 -- ... 스토리가 끝날 때
 Devui.Input.use(nil)                          -- 엔진 서비스로 복원
 ```
+
+**앱 코드도 이 문을 쓰면 좋은 경우.** 스토리 호스트나 스펙에서도 돌릴 화면이라면 앱 코드도 `UserInputService`·`GetGuiInset()`
+대신 `Devui.Input.service()`·`Devui.Input.guiInset()`을 쓰세요. 그러면 `Devui.Input.use(listener)` 한 번으로 그 화면 전체에 가짜
+입력을 넣을 수 있습니다 — 스펙이나 에이전트가 `InputBegan`/`InputChanged`/`InputEnded` 신호를 가진 테이블을 만들어 `InputObject`
+모양의 값(마우스·터치·키)을 쏘면 실제 장치 없이 터치 같은 경로도 시험됩니다. 게임 안에서만 도는 코드는 엔진 서비스를 직접 써도
+됩니다. 키트가 오래 쥐는 연결(창 올리기, hover 추적)은 `use`가 새 서비스로 다시 잇지만, 앱이 직접 연 연결은 따라가지 않으니
+`use` 뒤에 다시 연결하세요(2026-10-20 결정).
 
 `Input.service()`는 사용 시점에 현재 서비스를 돌려주므로 require 뒤에 바꿔도 된다. 덮어쓰는 동안 `GetMouseLocation()`은
 마지막 `MouseMoved` 위치, `GuiInset`은 `Vector2.zero`, `MouseIconEnabled = false` 같은 쓰기는 엔진에 닿지 않고 로컬에만 남는다.

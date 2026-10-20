@@ -5,7 +5,9 @@
 		Visibility.isShown(inst)            false when inst or a GUI ancestor has Visible = false, or the LayerCollector
 		                                    above it has Enabled = false; true otherwise (also when no LayerCollector
 		                                    is found: an unmounted element is not judged here)
-		Visibility.isOnScreen(inst)         isShown AND a LayerCollector is above it (a detached element is not on screen)
+		Visibility.isOnScreen(inst)         isShown AND a LayerCollector that is itself parented is above it (a detached
+		                                    element, or one in a ScreenGui not yet placed, is not on screen — CaptureFocus
+		                                    on a box there is lost at once, Studio 2026-10-20)
 		Visibility.layerOf(inst)            the nearest LayerCollector at or above inst, or nil
 		Visibility.isGuiObject(inst)        inst is one of the GuiObject classes below
 		Visibility.hasArea(inst)            inst is a GuiObject or a LayerCollector (it has AbsolutePosition / AbsoluteSize)
@@ -79,7 +81,8 @@ function Visibility.isShown(inst: Instance): boolean
 end
 
 function Visibility.isOnScreen(inst: Instance): boolean
-	return Visibility.layerOf(inst) ~= nil and Visibility.isShown(inst)
+	local layer = Visibility.layerOf(inst)
+	return layer ~= nil and layer.Parent ~= nil and Visibility.isShown(inst)
 end
 
 function Visibility.whenHidden(inst: Instance, fn: () -> ()): () -> ()

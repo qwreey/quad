@@ -9,6 +9,7 @@ local Kids = Devui.Kids
 local UIS = H.UserInputService
 -- windows the press-to-front must hit live in a LayerCollector (a detached window is not on screen)
 local screen = Instance.new("ScreenGui")
+screen.Parent = Instance.new("Folder") -- a placed ScreenGui (not a PlayerGui: the rectangle path)
 local function conns(): number
 	local function n(sig: any): number
 		return #sig.connections

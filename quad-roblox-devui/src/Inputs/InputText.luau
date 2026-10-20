@@ -11,8 +11,18 @@
 			OnChange: ((text: string) -> ())?,     after Value was written by the user
 			OnSubmit: ((text: string) -> ())?,     Enter pressed (FocusLost with enterPressed)
 			Disabled: (boolean | State<boolean>)?,
+			Focused: Source<boolean>?,             two-way focus: true asks for it, false releases it, the user's own
+			                                       focus changes are written back
 			Style: Style?, Modifier: FrameModifier?, FieldModifier: TextBoxModifier?,
 		}
+
+	`Focused` [2026-10-20 user decision, a consumer focused nine boxes by hand after mount]: `CaptureFocus` does nothing
+	on a box that is not on screen yet (no LayerCollector above it, or one that is not placed itself — a capture there is
+	lost at once, Studio 2026-10-20), so a `true` set before that is kept and taken when the box gets there (its own
+	AncestryChanged, which the engine fires on descendants: a box mounted with `Focused` already true takes the focus
+	once its ScreenGui is placed — one task.defer after it, because a capture inside that signal is lost at once).
+	A box hidden by an ANCESTOR fires nothing — set `Focused` again after showing it. A disabled box does not take the
+	focus. Clicking elsewhere writes `false`, clicking the box writes `true`.
 
 	"change" mode is the plain `Text = value` + `q.Out("Text", value)` pair (with an `OnChange` callback it is the
 	equivalent `q.OnChange` write-back that only calls back for changes the user made — an echo of a programmatic
@@ -30,6 +40,7 @@ local Common = require("../Common")
 local Interaction = require("../Interaction")
 local Style = require("../Style")
 local Util = require("../Util")
+local Visibility = require("../Visibility")
 
 type State<T> = Quad.State<T>
 type Source<T> = Quad.Source<T>
@@ -43,6 +54,7 @@ export type InputTextProps = {
 	read OnChange: ((text: string) -> ())?,
 	read OnSubmit: ((text: string) -> ())?,
 	read Disabled: (boolean | State<boolean>)?,
+	read Focused: Source<boolean>?,
 	read Style: Style?,
 	read Modifier: Quad.FrameModifier?,
 	read FieldModifier: Quad.TextBoxModifier?,
@@ -76,6 +88,41 @@ local function InputText(props: InputTextProps): Frame
 		end
 	end
 
+	-- two-way focus (see the header)
+	local focused = props.Focused
+	local function takeFocus()
+		local box = boxRef.Value
+		if focused == nil or box == nil or not focused:Get() or not enabled:Get() then
+			return
+		end
+		if Visibility.isOnScreen(box) and not box:IsFocused() then
+			box:CaptureFocus()
+		end
+	end
+	local focusFollow: any = if focused
+		then focused:Observer(function(self)
+			if self:Get() then
+				takeFocus()
+			else
+				local box = boxRef.Value
+				if box ~= nil and box:IsFocused() then
+					box:ReleaseFocus()
+				end
+			end
+		end)
+		else q.None
+	local focusPlaced: any = if focused
+		then q.PostRef(nil :: TextBox?):Callback(function(box: TextBox?)
+			if box ~= nil then
+				-- deferred: a CaptureFocus inside AncestryChanged (the engine is mid-reparent) is lost in the same frame —
+				-- Focused then FocusLost at once; one task.defer later it holds (Studio 2026-10-20)
+				box.AncestryChanged:Connect(function()
+					task.defer(takeFocus)
+				end)
+			end
+		end)
+		else q.None
+
 	return D.Frame({
 		inputTextName,
 		props.Modifier or q.None,
@@ -90,6 +137,8 @@ local function InputText(props: InputTextProps): Frame
 			boxRef,
 			hover.Hook,
 			writeBack,
+			focusFollow,
+			focusPlaced,
 			LayoutOrder = 1,
 			Text = value,
 			PlaceholderText = props.Placeholder or "",
@@ -105,7 +154,15 @@ local function InputText(props: InputTextProps): Frame
 			BackgroundTransparency = look.Transparency,
 			BorderSizePixel = 0,
 			Size = Common.frameHeight(style),
+			Focused = if focused
+				then function()
+					focused:SetIfChanged(true)
+				end
+				else nil,
 			FocusLost = function(enterPressed: boolean, _input: InputObject)
+				if focused then
+					focused:SetIfChanged(false)
+				end
 				local box = boxRef.Value
 				if submitMode and box ~= nil then
 					local text = box.Text

@@ -198,6 +198,7 @@ H.section("no PlayerGui (story host): hover is the engine's MouseEnter; a toolti
 	local hover = Interaction.hover()
 	local row = D.TextButton({ hover.Hook, Text = "" })
 	local container = Instance.new("ScreenGui")
+	container.Parent = Instance.new("Folder") -- placed, but not in a PlayerGui (a plugin widget stand-in)
 	local rootA = D.Frame({ slotA.Hook, ZIndex = slotA.ZIndex, row })
 	local rootB = D.Frame({ slotB.Hook, ZIndex = slotB.ZIndex })
 	rootA.Parent = container
