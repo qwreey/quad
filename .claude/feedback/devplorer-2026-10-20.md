@@ -25,6 +25,7 @@ devui의 세 번째 소비자 `devplorer`(사용자 프로젝트, `/code/Project
 **가. 포인터 아래 맨 위 판정 — U2(막힘)·D10·U15 (b)와 10-16 코드 리뷰 5·6·8.**
 - **현황(메인이 소스로 확인).** devui에서 "이 점에 무엇이 맨 위에 있나"를 묻는 곳은 창 관리자의 누름 판정 하나다(`quad-roblox-devui/src/Window/Manager.luau` 126행 `PopupHits.covers`). hover(`Interaction.luau` 105~108행)는 `MouseEnter`/`MouseLeave`만 본다. 그래서 다른 창이나 팝업에 가린 행이 hover되고 툴팁이 뜬다. devplorer가 Studio Play에서 실측했다.
 - **같은 장치의 반대편.** 10-16 코드 리뷰(`audit/code-review-2026-10-16/README.md` 5·6·8)는 누름 판정이 창 사각형만 대조해 겹친 다른 GUI를 무시한다는 것을 짚었다. 5번은 그때 "관측된 문제가 아니라 원칙상 미룰 수도"였다. 이제 U2가 실제 관측이므로 그 단서가 풀렸다.
+- **[2026-10-20 메인 Studio 실측 — 사용자 질문 "TextButton 같은거로 가리면 아래로 MouseEnter 안 내려가지 않나"]** 내려간다. quad-test Play(Client)에서 같은 ScreenGui 안 형제 둘(아래 TextButton, 위 덮개, ZIndex 2 대 1, Sibling)을 놓고 실제 마우스(`user_mouse_input`)로 덮인 자리에 들어갔다. 덮개가 Frame(`Active` 거짓·참), TextButton(`Active` 참·거짓), TextLabel, ScrollingFrame 여섯 가지 모두에서 아래 요소의 `MouseEnter`가 덮개와 같은 횟수로 왔다. 깨끗하게 한 번만 지나간 재측정(TextButton 덮개)도 아래 1·덮개 1이었다. 즉 엔진의 `MouseEnter`/`MouseLeave`는 가림을 모르고, 덮개를 입력 받는 요소로 바꾸는 것으로는 U2가 풀리지 않는다. 같은 자리에서 `PlayerGui:GetGuiObjectsAtPosition`은 **위에 그려진 것부터** 돌려줬다(덮개 → 아래 → DisplayOrder가 낮은 다른 ScreenGui). 좌표는 `AbsolutePosition` 공간(상단바 인셋 58을 뺀 값)이다.
 - **같이 정할 것.** 툴팁이 PopupHits에 등록돼 뒤 창이 안 올라오는 문제(8번)와 D10(팝업이 열리면 툴팁 숨김)도 같은 질문이다. 질문은 "툴팁은 가림막인가"다.
 - **갈래.**
   - (가) devui 안에 판정 장치 하나를 두고 hover·누름·툴팁·영역 단축키(U15 (b))가 모두 그것을 쓴다. 판정 순서는 팝업(PopupHits) → 창 순서(Manager) → 그 밖 GUI(`GetGuiObjectsAtPosition`)다.
