@@ -18,7 +18,8 @@ entries = []
 for r in reps:
     if not r["file"].startswith(kit + "/") or r.get("setup"):
         continue
-    newsrc = open(os.path.join(root.replace("base", "new") if variant == "base" else root, r["file"])).read().split("\n")
+    # original line numbers (the report) index the UNCONVERTED file — the header shifts the new one
+    newsrc = open(os.path.join(os.path.dirname(os.path.abspath(repf)), "..", "base", r["file"])).read().split("\n") if os.path.exists(os.path.join(os.path.dirname(os.path.abspath(repf)), "..", "base", r["file"])) else open(os.path.join(root, r["file"])).read().split("\n")
     for ln, old, new, kind, field in r.get("types", []):
         if kind != "input" or "ModifierInto" not in new:
             continue

@@ -1,0 +1,217 @@
+quad-roblox-material/src/Elevation.luau(90,3): TypeError: Expected this to be 'number', but got '"ShowBehindParent"'
+quad-roblox-material/src/Elevation.luau(90,22): TypeError: Expected this to be 'Instance | { read __quadSlot: true, read __quadSlotValue: Instance } | { read __quadState: true, read __quadStateValue: (Instance | { read __quadAttr: true } | { read __quadEffect: true } | { read __quadNone: true } | { read __quadObserver: true } | { read __quadSlot: true, read __quadSlotValue: Instance } | { read __q
+quad-roblox-material/src/BottomSheet/Sheet.luau(237,19): TypeError: Argument count mismatch. Function expects 1 argument, but 2 are specified
+quad-roblox-material/src/BottomSheet/Sheet.luau(242,9): TypeError: Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+quad-roblox-material/src/BottomSheet/Sheet.luau(245,14): TypeError: Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+quad-roblox-material/src/ZzPropsProbe.luau(53,43): TypeError: Expected this to be
+	'{ read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" }?'
+but got
+	't1 where t1 = { Active: (t1, (((boolean?) -> (boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { read Value: boolean, read __quadTween: true } })?) | boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { r
+quad-roblox-material/src/ZzPropsProbe.luau(56,48): TypeError: Expected this to be
+	'{ read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiLabel" | "GuiObject" | "Instance" | "TextLabel" }?'
+quad-roblox-material/src/ZzPropsProbe.luau(59,43): TypeError: Expected this to be
+	'{ read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" }?'
+	't1 where t1 = { Apply: <U>(any, (any) -> U) -> U, Archivable: (t1, (((boolean?) -> (boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { read Value: boolean, read __quadTween: true } })?) | boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true
+quad-roblox-material/src/ZzPropsProbe.luau(62,53): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(65,51): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(68,49): TypeError: Expected this to be
+	'{ read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiButton" | "GuiObject" | "Instance" | "TextButton" }?'
+quad-roblox-material/src/ZzPropsProbe.luau(71,43): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(74,43): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(77,43): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(80,47): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(83,44): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(86,44): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(89,50): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(92,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(95,50): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(98,54): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(101,49): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(104,53): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(107,52): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(110,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(113,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(116,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(119,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(122,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(125,51): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(128,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(131,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(134,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(137,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(140,46): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(143,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(146,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(149,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(152,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(155,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(158,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(161,51): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(164,56): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(167,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(170,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(173,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(176,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(179,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(182,51): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(185,51): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(188,50): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(191,51): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(194,53): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(197,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(200,45): TypeError: Expected this to be
+quad-roblox-material/src/ZzPropsProbe.luau(51,7): LocalUnused: Variable 'ok0' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(52,7): LocalUnused: Variable 'anc0' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(53,7): LocalUnused: Variable 'neg0' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(54,7): LocalUnused: Variable 'ok1' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(55,7): LocalUnused: Variable 'anc1' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(56,7): LocalUnused: Variable 'neg1' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(57,7): LocalUnused: Variable 'ok2' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(58,7): LocalUnused: Variable 'anc2' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(59,7): LocalUnused: Variable 'neg2' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(60,7): LocalUnused: Variable 'ok3' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(61,7): LocalUnused: Variable 'anc3' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(62,7): LocalUnused: Variable 'neg3' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(63,7): LocalUnused: Variable 'ok4' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(64,7): LocalUnused: Variable 'anc4' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(65,7): LocalUnused: Variable 'neg4' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(66,7): LocalUnused: Variable 'ok5' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(67,7): LocalUnused: Variable 'anc5' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(68,7): LocalUnused: Variable 'neg5' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(69,7): LocalUnused: Variable 'ok6' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(70,7): LocalUnused: Variable 'anc6' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(71,7): LocalUnused: Variable 'neg6' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(72,7): LocalUnused: Variable 'ok7' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(73,7): LocalUnused: Variable 'anc7' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(74,7): LocalUnused: Variable 'neg7' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(75,7): LocalUnused: Variable 'ok8' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(76,7): LocalUnused: Variable 'anc8' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(77,7): LocalUnused: Variable 'neg8' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(78,7): LocalUnused: Variable 'ok9' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(79,7): LocalUnused: Variable 'anc9' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(80,7): LocalUnused: Variable 'neg9' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(81,7): LocalUnused: Variable 'ok10' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(82,7): LocalUnused: Variable 'anc10' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(83,7): LocalUnused: Variable 'neg10' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(84,7): LocalUnused: Variable 'ok11' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(85,7): LocalUnused: Variable 'anc11' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(86,7): LocalUnused: Variable 'neg11' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(87,7): LocalUnused: Variable 'ok12' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(88,7): LocalUnused: Variable 'anc12' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(89,7): LocalUnused: Variable 'neg12' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(90,7): LocalUnused: Variable 'ok13' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(91,7): LocalUnused: Variable 'anc13' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(92,7): LocalUnused: Variable 'neg13' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(93,7): LocalUnused: Variable 'ok14' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(94,7): LocalUnused: Variable 'anc14' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(95,7): LocalUnused: Variable 'neg14' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(96,7): LocalUnused: Variable 'ok15' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(97,7): LocalUnused: Variable 'anc15' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(98,7): LocalUnused: Variable 'neg15' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(99,7): LocalUnused: Variable 'ok16' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(100,7): LocalUnused: Variable 'anc16' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(101,7): LocalUnused: Variable 'neg16' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(102,7): LocalUnused: Variable 'ok17' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(103,7): LocalUnused: Variable 'anc17' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(104,7): LocalUnused: Variable 'neg17' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(105,7): LocalUnused: Variable 'ok18' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(106,7): LocalUnused: Variable 'anc18' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(107,7): LocalUnused: Variable 'neg18' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(108,7): LocalUnused: Variable 'ok19' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(109,7): LocalUnused: Variable 'anc19' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(110,7): LocalUnused: Variable 'neg19' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(111,7): LocalUnused: Variable 'ok20' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(112,7): LocalUnused: Variable 'anc20' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(113,7): LocalUnused: Variable 'neg20' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(114,7): LocalUnused: Variable 'ok21' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(115,7): LocalUnused: Variable 'anc21' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(116,7): LocalUnused: Variable 'neg21' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(117,7): LocalUnused: Variable 'ok22' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(118,7): LocalUnused: Variable 'anc22' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(119,7): LocalUnused: Variable 'neg22' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(120,7): LocalUnused: Variable 'ok23' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(121,7): LocalUnused: Variable 'anc23' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(122,7): LocalUnused: Variable 'neg23' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(123,7): LocalUnused: Variable 'ok24' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(124,7): LocalUnused: Variable 'anc24' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(125,7): LocalUnused: Variable 'neg24' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(126,7): LocalUnused: Variable 'ok25' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(127,7): LocalUnused: Variable 'anc25' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(128,7): LocalUnused: Variable 'neg25' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(129,7): LocalUnused: Variable 'ok26' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(130,7): LocalUnused: Variable 'anc26' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(131,7): LocalUnused: Variable 'neg26' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(132,7): LocalUnused: Variable 'ok27' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(133,7): LocalUnused: Variable 'anc27' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(134,7): LocalUnused: Variable 'neg27' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(135,7): LocalUnused: Variable 'ok28' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(136,7): LocalUnused: Variable 'anc28' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(137,7): LocalUnused: Variable 'neg28' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(138,7): LocalUnused: Variable 'ok29' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(139,7): LocalUnused: Variable 'anc29' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(140,7): LocalUnused: Variable 'neg29' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(141,7): LocalUnused: Variable 'ok30' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(142,7): LocalUnused: Variable 'anc30' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(143,7): LocalUnused: Variable 'neg30' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(144,7): LocalUnused: Variable 'ok31' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(145,7): LocalUnused: Variable 'anc31' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(146,7): LocalUnused: Variable 'neg31' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(147,7): LocalUnused: Variable 'ok32' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(148,7): LocalUnused: Variable 'anc32' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(149,7): LocalUnused: Variable 'neg32' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(150,7): LocalUnused: Variable 'ok33' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(151,7): LocalUnused: Variable 'anc33' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(152,7): LocalUnused: Variable 'neg33' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(153,7): LocalUnused: Variable 'ok34' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(154,7): LocalUnused: Variable 'anc34' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(155,7): LocalUnused: Variable 'neg34' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(156,7): LocalUnused: Variable 'ok35' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(157,7): LocalUnused: Variable 'anc35' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(158,7): LocalUnused: Variable 'neg35' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(159,7): LocalUnused: Variable 'ok36' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(160,7): LocalUnused: Variable 'anc36' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(161,7): LocalUnused: Variable 'neg36' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(162,7): LocalUnused: Variable 'ok37' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(163,7): LocalUnused: Variable 'anc37' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(164,7): LocalUnused: Variable 'neg37' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(165,7): LocalUnused: Variable 'ok38' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(166,7): LocalUnused: Variable 'anc38' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(167,7): LocalUnused: Variable 'neg38' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(168,7): LocalUnused: Variable 'ok39' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(169,7): LocalUnused: Variable 'anc39' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(170,7): LocalUnused: Variable 'neg39' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(171,7): LocalUnused: Variable 'ok40' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(172,7): LocalUnused: Variable 'anc40' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(173,7): LocalUnused: Variable 'neg40' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(174,7): LocalUnused: Variable 'ok41' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(175,7): LocalUnused: Variable 'anc41' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(176,7): LocalUnused: Variable 'neg41' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(177,7): LocalUnused: Variable 'ok42' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(178,7): LocalUnused: Variable 'anc42' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(179,7): LocalUnused: Variable 'neg42' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(180,7): LocalUnused: Variable 'ok43' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(181,7): LocalUnused: Variable 'anc43' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(182,7): LocalUnused: Variable 'neg43' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(183,7): LocalUnused: Variable 'ok44' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(184,7): LocalUnused: Variable 'anc44' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(185,7): LocalUnused: Variable 'neg44' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(186,7): LocalUnused: Variable 'ok45' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(187,7): LocalUnused: Variable 'anc45' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(188,7): LocalUnused: Variable 'neg45' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(189,7): LocalUnused: Variable 'ok46' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(190,7): LocalUnused: Variable 'anc46' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(191,7): LocalUnused: Variable 'neg46' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(192,7): LocalUnused: Variable 'ok47' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(193,7): LocalUnused: Variable 'anc47' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(194,7): LocalUnused: Variable 'neg47' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(195,7): LocalUnused: Variable 'ok48' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(196,7): LocalUnused: Variable 'anc48' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(197,7): LocalUnused: Variable 'neg48' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(198,7): LocalUnused: Variable 'ok49' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(199,7): LocalUnused: Variable 'anc49' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzPropsProbe.luau(200,7): LocalUnused: Variable 'neg49' is never used; prefix with '_' to silence
+quad-roblox-material/src/ZzCanary.luau(10,30): TypeError: Expected this to be
+quad-roblox-material/src/ZzCanary.luau(11,30): TypeError: Expected this to be '(boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { read Value: boolean, read __quadTween: true } })?', but got 'number'
+quad-roblox-material/src/ZzCanary.luau(12,20): TypeError: Expected this to be 'number', but got 'GuiObject'
+quad-roblox-material/src/ZzCanary.luau(13,29): TypeError: Expected this to be '("Elevated" | "Filled" | "Outlined")?', but got '"Nope"'
+quad-roblox-material/src/ZzCanary.luau(14,30): TypeError: Expected this to be '{ read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" }?', but got 'number'

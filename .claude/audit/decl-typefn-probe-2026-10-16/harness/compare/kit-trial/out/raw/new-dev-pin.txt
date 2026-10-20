@@ -1,0 +1,10 @@
+quad-roblox-devui/src/ZzCanary.luau(10,59): TypeError: Expected this to be
+	'{ read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" }?'
+but got
+	't1 where t1 = { Active: (t1, (((boolean?) -> (boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { read Value: boolean, read __quadTween: true } })?) | boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { r
+quad-roblox-devui/src/ZzCanary.luau(11,30): TypeError: Expected this to be '(boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { read Value: boolean, read __quadTween: true } })?', but got 'number'
+quad-roblox-devui/src/ZzCanary.luau(12,20): TypeError: Expected this to be 'number', but got 'Frame'
+quad-roblox-devui/src/ZzCanary.luau(13,43): TypeError: Expected this to be 'number | t1 where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number
+quad-roblox-devui/gallery/Quad.luau(17,7): ImportUnused: Import 'RT' is never used; prefix with '_' to silence
+quad-roblox-devui/test/spec.stories.luau(38,115): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead
+quad-roblox-devui/test/spec.stories.luau(39,9): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead

@@ -1,0 +1,373 @@
+base-mat-pin.txt: canary NEG 5/5 OK 1/1 | kit lines 0 in 0 files ({}) too-complex lines 0 | dependency lines 0 (too-complex 0)
+base-mat-sync.txt: canary NEG 3/5 OK 1/1 | kit lines 47 in 26 files ({'src': 24, 'gallery': 12, 'test': 9, 'stories': 2}) too-complex lines 11 | dependency lines 6 (too-complex 5)
+      30  ambiguous call
+      11  too complex
+       3  unknown key / missing prop
+       2  cannot call
+       1  type mismatch (Expected …)
+      quad-roblox-material/src/Overlay.luau:404  x51  Cannot call a value of type *error-type* in union:
+      quad-roblox-material/src/Dialog.luau:443  x14  Cannot call a value of type ((GuiObject) -> ()) & ~nil in union:
+      quad-roblox-material/src/ColorPicker/Material/Fields.luau:156  x14  Code is too complex to typecheck! Consider simplifying the code around this area
+      quad-roblox-material/src/TextField/Field.luau:286  x21  Code is too complex to typecheck! Consider simplifying the code around this area
+      quad-roblox-material/src/TextField/Field.luau:287  x21  Code is too complex to typecheck! Consider simplifying the code around this area
+      quad-roblox-material/src/Menu.luau:393  x21  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/src/Menu.luau:395  x21  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/src/AppBar/Actions.luau:131  x19  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/src/TimePicker/ClockFace.luau:94  x17  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/src/Slider/Track.luau:447  x16  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/src/DatePicker/MonthView.luau:209  x19  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/src/Button/Group.luau:364  x14  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/src/Button/Group.luau:384  x14  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/src/Card.luau:214  x14  Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+      quad-roblox-material/src/Card.luau:237  x14  Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+      quad-roblox-material/src/Button/Split.luau:217  x14  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/src/Button/Split.luau:237  x14  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/src/List.luau:267  x14  Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+      quad-roblox-material/src/List.luau:299  x14  Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+      quad-roblox-material/src/M2/SliderTicks.luau:60  x17  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/src/Radio.luau:236  x14  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/src/Scaffold.luau:182  x14  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/src/Scaffold.luau:187  x14  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/src/Scaffold.luau:195  x14  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/gallery/Navigation.luau:176  x2  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/gallery/Theme.luau:87  x2  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/gallery/Surfaces.luau:67  x2  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/gallery/Selection.luau:259  x2  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/gallery/Buttons.luau:41  x2  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/gallery/Buttons.luau:57  x2  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/gallery/Buttons.luau:59  x2  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/gallery/Buttons.luau:60  x2  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/gallery/Buttons.luau:64  x2  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/gallery/Buttons.luau:124  x2  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/gallery/Buttons.luau:163  x2  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/gallery/Buttons.luau:215  x2  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/test/spec.hostname.luau:85  x1  Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+      quad-roblox-material/test/spec.hostname.luau:98  x1  Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+      quad-roblox-material/test/spec.hostname.luau:86  x1  Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+      quad-roblox-material/test/spec.hostname.luau:99  x1  Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+      quad-roblox-material/test/spec.progress.luau:22  x1  Expected this to be 'T', but got 'boolean'
+      quad-roblox-material/test/spec.progress.luau:473  x3  Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+      quad-roblox-material/test/spec.progress.luau:540  x3  Key 'Size' is missing from 'boolean', 'userdata', 'number', 'string', 'thread', 'buffer', 'function' in the type '((any?) & ~nil) | ((any?) & ~nil)'
+      quad-roblox-material/test/spec.progress.luau:541  x2  Type '(userdata & { read AnchorPoint: unknown } & { read BackgroundColor3: unknown } & { read Size: unknown }) | { read AnchorPoint: unknown, read BackgroundColor3: unknown, read Size: unknown }' does not have key 'Visible'
+      quad-roblox-material/test/spec.scaffold.luau:44  x1  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/stories/Scaffold.story.luau:82  x1  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+      quad-roblox-material/stories/Theme.story.luau:47  x1  Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+base-mat-vsc.txt: canary NEG 5/5 OK 1/1 | kit lines 5 in 2 files ({'src': 1, 'test': 4}) too-complex lines 0 | dependency lines 1 (too-complex 0)
+       3  unknown key / missing prop
+       1  cannot call
+       1  type mismatch (Expected …)
+      quad-roblox-material/src/Dialog.luau:443  x14  Cannot call a value of type ((GuiObject) -> ()) & ~nil in union:
+      quad-roblox-material/test/spec.progress.luau:22  x1  Expected this to be 'T', but got 'boolean'
+      quad-roblox-material/test/spec.progress.luau:473  x3  Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+      quad-roblox-material/test/spec.progress.luau:540  x3  Key 'Size' is missing from 'boolean', 'userdata', 'number', 'string', 'thread', 'buffer', 'function' in the type '((any?) & ~nil) | ((any?) & ~nil)'
+      quad-roblox-material/test/spec.progress.luau:541  x2  Type '(userdata & { read AnchorPoint: unknown } & { read BackgroundColor3: unknown } & { read Size: unknown }) | { read AnchorPoint: unknown, read BackgroundColor3: unknown, read Size: unknown }' does not have key 'Visible'
+base-dev-pin.txt: canary NEG 3/4 OK 1/1 | kit lines 0 in 0 files ({}) too-complex lines 0 | dependency lines 0 (too-complex 0)
+base-dev-sync.txt: canary NEG 2/4 OK 1/1 | kit lines 3 in 2 files ({'src': 2, 'test': 1}) too-complex lines 3 | dependency lines 6 (too-complex 5)
+       3  too complex
+      quad-roblox-devui/src/Inputs/InputText.luau:68  x13  Code is too complex to typecheck! Consider simplifying the code around this area
+      quad-roblox-devui/src/Inputs/InputText.luau:75  x13  Code is too complex to typecheck! Consider simplifying the code around this area
+      quad-roblox-devui/test/spec.smoke.luau:14  x1  Code is too complex to typecheck! Consider simplifying the code around this area
+base-dev-vsc.txt: canary NEG 3/4 OK 1/1 | kit lines 0 in 0 files ({}) too-complex lines 0 | dependency lines 1 (too-complex 0)
+new-mat-pin.txt: canary NEG 5/5 OK 1/1 | kit lines 4 in 2 files ({'src': 4}) too-complex lines 0 | dependency lines 0 (too-complex 0)
+       2  other: Property '"AbsoluteSize"' does not exist on type 'ModClassMa
+       1  type mismatch (Expected …)
+       1  call arity
+      quad-roblox-material/src/Elevation.luau:90  x98  Expected this to be 'number', but got '"ShowBehindParent"'
+      quad-roblox-material/src/BottomSheet/Sheet.luau:237  x17  Argument count mismatch. Function expects 1 argument, but 2 are specified
+      quad-roblox-material/src/BottomSheet/Sheet.luau:242  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+      quad-roblox-material/src/BottomSheet/Sheet.luau:245  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+new-mat-sync.txt: canary NEG 5/5 OK 1/1 | kit lines 8 in 3 files ({'src': 4, 'test': 4}) too-complex lines 0 | dependency lines 1 (too-complex 0)
+       3  unknown key / missing prop
+       2  other: Property '"AbsoluteSize"' does not exist on type 'ModClassMa
+       1  cannot call
+       1  call arity
+       1  type mismatch (Expected …)
+      quad-roblox-material/src/Dialog.luau:450  x14  Cannot call a value of type ((GuiObject) -> ()) & ~nil in union:
+      quad-roblox-material/src/BottomSheet/Sheet.luau:237  x17  Argument count mismatch. Function expects 1 argument, but 2 are specified
+      quad-roblox-material/src/BottomSheet/Sheet.luau:242  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+      quad-roblox-material/src/BottomSheet/Sheet.luau:245  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+      quad-roblox-material/test/spec.progress.luau:24  x1  Expected this to be 'T', but got 'boolean'
+      quad-roblox-material/test/spec.progress.luau:475  x3  Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+      quad-roblox-material/test/spec.progress.luau:542  x3  Key 'Size' is missing from 'boolean', 'userdata', 'number', 'string', 'thread', 'buffer', 'function' in the type '((any?) & ~nil) | ((any?) & ~nil)'
+      quad-roblox-material/test/spec.progress.luau:543  x2  Type '(userdata & { read AnchorPoint: unknown } & { read BackgroundColor3: unknown } & { read Size: unknown }) | { read AnchorPoint: unknown, read BackgroundColor3: unknown, read Size: unknown }' does not have key 'Visible'
+new-mat-vsc.txt: canary NEG 5/5 OK 1/1 | kit lines 8 in 3 files ({'src': 4, 'test': 4}) too-complex lines 0 | dependency lines 1 (too-complex 0)
+       3  unknown key / missing prop
+       2  other: Property '"AbsoluteSize"' does not exist on type 'ModClassMa
+       1  cannot call
+       1  call arity
+       1  type mismatch (Expected …)
+      quad-roblox-material/src/Dialog.luau:450  x14  Cannot call a value of type ((GuiObject) -> ()) & ~nil in union:
+      quad-roblox-material/src/BottomSheet/Sheet.luau:237  x17  Argument count mismatch. Function expects 1 argument, but 2 are specified
+      quad-roblox-material/src/BottomSheet/Sheet.luau:242  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+      quad-roblox-material/src/BottomSheet/Sheet.luau:245  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+      quad-roblox-material/test/spec.progress.luau:24  x1  Expected this to be 'T', but got 'boolean'
+      quad-roblox-material/test/spec.progress.luau:475  x3  Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+      quad-roblox-material/test/spec.progress.luau:542  x3  Key 'Size' is missing from 'boolean', 'userdata', 'number', 'string', 'thread', 'buffer', 'function' in the type '((any?) & ~nil) | ((any?) & ~nil)'
+      quad-roblox-material/test/spec.progress.luau:543  x2  Type '(userdata & { read AnchorPoint: unknown } & { read BackgroundColor3: unknown } & { read Size: unknown }) | { read AnchorPoint: unknown, read BackgroundColor3: unknown, read Size: unknown }' does not have key 'Visible'
+new-dev-pin.txt: canary NEG 4/4 OK 1/1 | kit lines 0 in 0 files ({}) too-complex lines 0 | dependency lines 0 (too-complex 0)
+new-dev-sync.txt: canary NEG 4/4 OK 1/1 | kit lines 0 in 0 files ({}) too-complex lines 0 | dependency lines 1 (too-complex 0)
+new-dev-vsc.txt: canary NEG 4/4 OK 1/1 | kit lines 0 in 0 files ({}) too-complex lines 0 | dependency lines 1 (too-complex 0)
+new-req-mat-pin.txt: canary NEG 5/5 OK 1/1 | kit lines 4 in 2 files ({'src': 4}) too-complex lines 0 | dependency lines 0 (too-complex 0)
+       2  other: Property '"AbsoluteSize"' does not exist on type 'ModClassMa
+       1  type mismatch (Expected …)
+       1  call arity
+      quad-roblox-material/src/Elevation.luau:90  x98  Expected this to be 'number', but got '"ShowBehindParent"'
+      quad-roblox-material/src/BottomSheet/Sheet.luau:237  x17  Argument count mismatch. Function expects 1 argument, but 2 are specified
+      quad-roblox-material/src/BottomSheet/Sheet.luau:242  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+      quad-roblox-material/src/BottomSheet/Sheet.luau:245  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+new-req-mat-sync.txt: canary NEG 5/5 OK 1/1 | kit lines 8 in 3 files ({'src': 4, 'test': 4}) too-complex lines 0 | dependency lines 6 (too-complex 5)
+       3  unknown key / missing prop
+       2  other: Property '"AbsoluteSize"' does not exist on type 'ModClassMa
+       1  cannot call
+       1  call arity
+       1  type mismatch (Expected …)
+      quad-roblox-material/src/Dialog.luau:450  x14  Cannot call a value of type ((GuiObject) -> ()) & ~nil in union:
+      quad-roblox-material/src/BottomSheet/Sheet.luau:237  x17  Argument count mismatch. Function expects 1 argument, but 2 are specified
+      quad-roblox-material/src/BottomSheet/Sheet.luau:242  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+      quad-roblox-material/src/BottomSheet/Sheet.luau:245  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+      quad-roblox-material/test/spec.progress.luau:24  x1  Expected this to be 'T', but got 'boolean'
+      quad-roblox-material/test/spec.progress.luau:475  x3  Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+      quad-roblox-material/test/spec.progress.luau:542  x3  Key 'Size' is missing from 'boolean', 'userdata', 'number', 'string', 'thread', 'buffer', 'function' in the type '((any?) & ~nil) | ((any?) & ~nil)'
+      quad-roblox-material/test/spec.progress.luau:543  x2  Type '(userdata & { read AnchorPoint: unknown } & { read BackgroundColor3: unknown } & { read Size: unknown }) | { read AnchorPoint: unknown, read BackgroundColor3: unknown, read Size: unknown }' does not have key 'Visible'
+new-req-mat-vsc.txt: canary NEG 5/5 OK 1/1 | kit lines 8 in 3 files ({'src': 4, 'test': 4}) too-complex lines 0 | dependency lines 1 (too-complex 0)
+       3  unknown key / missing prop
+       2  other: Property '"AbsoluteSize"' does not exist on type 'ModClassMa
+       1  cannot call
+       1  call arity
+       1  type mismatch (Expected …)
+      quad-roblox-material/src/Dialog.luau:450  x14  Cannot call a value of type ((GuiObject) -> ()) & ~nil in union:
+      quad-roblox-material/src/BottomSheet/Sheet.luau:237  x17  Argument count mismatch. Function expects 1 argument, but 2 are specified
+      quad-roblox-material/src/BottomSheet/Sheet.luau:242  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+      quad-roblox-material/src/BottomSheet/Sheet.luau:245  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+      quad-roblox-material/test/spec.progress.luau:24  x1  Expected this to be 'T', but got 'boolean'
+      quad-roblox-material/test/spec.progress.luau:475  x3  Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+      quad-roblox-material/test/spec.progress.luau:542  x3  Key 'Size' is missing from 'boolean', 'userdata', 'number', 'string', 'thread', 'buffer', 'function' in the type '((any?) & ~nil) | ((any?) & ~nil)'
+      quad-roblox-material/test/spec.progress.luau:543  x2  Type '(userdata & { read AnchorPoint: unknown } & { read BackgroundColor3: unknown } & { read Size: unknown }) | { read AnchorPoint: unknown, read BackgroundColor3: unknown, read Size: unknown }' does not have key 'Visible'
+new-req-dev-pin.txt: canary NEG 4/4 OK 1/1 | kit lines 0 in 0 files ({}) too-complex lines 0 | dependency lines 0 (too-complex 0)
+new-req-dev-sync.txt: canary NEG 4/4 OK 1/1 | kit lines 0 in 0 files ({}) too-complex lines 0 | dependency lines 6 (too-complex 5)
+new-req-dev-vsc.txt: canary NEG 4/4 OK 1/1 | kit lines 0 in 0 files ({}) too-complex lines 0 | dependency lines 1 (too-complex 0)
+base-neg-all-pin.txt: ZZNEG hit 194/194  gallery 14/14  src 107/107  stories 27/27  test 46/46
+base-neg-all-sync.txt: ZZNEG hit 0/194  gallery 0/14  src 0/107  stories 0/27  test 0/46
+base-neg-all-vsc.txt: ZZNEG hit 194/194  gallery 14/14  src 107/107  stories 27/27  test 46/46
+new-neg-all-pin.txt: ZZNEG hit 194/194  gallery 14/14  src 107/107  stories 27/27  test 46/46
+new-neg-all-sync.txt: ZZNEG hit 194/194  gallery 14/14  src 107/107  stories 27/27  test 46/46
+new-neg-all-vsc.txt: ZZNEG hit 194/194  gallery 14/14  src 107/107  stories 27/27  test 46/46
+pf-base-sync.tsv   n=173 wall med 1.08s p90 1.28s max 2.82s sum 184s | RSS med 107 p90 108 max 129 MiB | files w/ own diag 17 | runs w/ too-complex 154 | slowest src/init.luau 2.82, src/init.luau 1.81, src/ColorPicker/init.luau 1.72
+pf-new-sync.tsv    n=173 wall med 0.74s p90 1.00s max 3.65s sum 134s | RSS med 86 p90 108 max 133 MiB | files w/ own diag 2 | runs w/ too-complex 0 | slowest src/init.luau 3.65, src/init.luau 1.80, src/DatePicker/init.luau 1.40
+pf-base-vsc.tsv    n=173 wall med 1.25s p90 1.63s max 5.56s sum 227s | RSS med 108 p90 114 max 183 MiB | files w/ own diag 1 | runs w/ too-complex 0 | slowest src/init.luau 5.56, src/ColorPicker/init.luau 3.22, src/init.luau 2.98
+pf-new-vsc.tsv     n=173 wall med 0.74s p90 0.98s max 3.51s sum 133s | RSS med 86 p90 107 max 132 MiB | files w/ own diag 2 | runs w/ too-complex 0 | slowest src/init.luau 3.51, src/init.luau 1.56, src/DatePicker/init.luau 1.35
+pf-base-pin.tsv    n=173 wall med 1.72s p90 2.67s max 10.99s sum 330s | RSS med 112 p90 149 max 212 MiB | files w/ own diag 0 | runs w/ too-complex 0 | slowest src/init.luau 10.99, src/init.luau 5.15, src/DatePicker/Modal.luau 4.65
+pf-new-pin.tsv     n=173 wall med 1.18s p90 1.54s max 5.04s sum 213s | RSS med 98 p90 119 max 145 MiB | files w/ own diag 2 | runs w/ too-complex 0 | slowest src/init.luau 5.04, src/init.luau 2.43, src/DatePicker/init.luau 1.97
+gap-child-mat.txt:  kit lines 93 in 59 files ({'src': 59, 'gallery': 7, 'test': 8, 'stories': 19}) too-complex lines 0 | dependency lines 1 (too-complex 0)
+      86  type mismatch (Expected …)
+       3  unknown key / missing prop
+       2  other: Property '"AbsoluteSize"' does not exist on type 'ModClassMa
+       1  cannot call
+       1  call arity
+      quad-roblox-material/src/StateLayer.luau:104  x84  Expected this to be
+      quad-roblox-material/src/Overlay.luau:288  x51  Expected this to be
+      quad-roblox-material/src/Dialog.luau:450  x14  Cannot call a value of type ((GuiObject) -> ()) & ~nil in union:
+      quad-roblox-material/src/ColorPicker/Material/Swatches.luau:217  x14  Expected this to be
+      quad-roblox-material/src/ColorPicker/init.luau:166  x13  Expected this to be '(false | Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObj
+      quad-roblox-material/src/ColorPicker/init.luau:167  x13  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/src/NavigationDrawer/Item.luau:288  x14  Expected this to be
+      quad-roblox-material/src/NavigationDrawer/Drawer.luau:175  x14  Expected this to be
+      quad-roblox-material/src/NavigationDrawer/Drawer.luau:208  x14  Expected this to be
+      quad-roblox-material/src/NavigationDrawer/Drawer.luau:216  x14  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/src/NavigationDrawer/Drawer.luau:220  x14  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/src/NavigationDrawer/Drawer.luau:253  x14  Expected this to be
+      quad-roblox-material/src/NavigationDrawer/Sheet.luau:87  x14  Expected this to be
+      quad-roblox-material/src/Menu.luau:450  x21  Expected this to be
+      quad-roblox-material/src/Menu.luau:461  x21  Expected this to be
+      quad-roblox-material/src/SideSheet/Surface.luau:246  x17  Expected this to be
+      quad-roblox-material/src/SideSheet/Surface.luau:249  x17  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/src/DatePicker/InputMode.luau:121  x16  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/src/DatePicker/YearView.luau:163  x19  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" |
+      quad-roblox-material/src/DatePicker/YearView.luau:168  x19  Expected this to be
+      quad-roblox-material/src/List.luau:342  x14  Expected this to be
+      quad-roblox-material/src/NavigationBar.luau:260  x14  Expected this to be
+      quad-roblox-material/src/BottomSheet/Sheet.luau:229  x17  Expected this to be
+      quad-roblox-material/src/BottomSheet/Sheet.luau:232  x17  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/src/BottomSheet/Sheet.luau:237  x17  Argument count mismatch. Function expects 1 argument, but 2 are specified
+      quad-roblox-material/src/BottomSheet/Sheet.luau:242  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+      quad-roblox-material/src/BottomSheet/Sheet.luau:245  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+      quad-roblox-material/src/BottomSheet/Scaffold.luau:113  x15  Expected this to be
+      quad-roblox-material/src/TimePicker/ClockFace.luau:328  x17  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/src/TimePicker/Dial.luau:210  x16  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/src/TimePicker/Input.luau:325  x16  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/src/TimePicker/Input.luau:326  x16  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/src/TimePicker/Input.luau:351  x16  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/src/TimePicker/Modal.luau:238  x15  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "CanvasGroup" | "GuiBase" | "GuiBase2d" | "GuiObject
+      quad-roblox-material/src/Toolbar.luau:159  x14  Expected this to be
+      quad-roblox-material/src/AppBar/Top.luau:174  x16  Expected this to be
+      quad-roblox-material/src/AppBar/Top.luau:200  x16  Expected this to be
+      quad-roblox-material/src/Scaffold.luau:219  x14  Expected this to be
+      quad-roblox-material/src/AppBar/Bottom.luau:103  x15  Expected this to be
+      quad-roblox-material/src/AppBar/Bottom.luau:159  x15  Expected this to be
+      quad-roblox-material/src/M2/RangeSlider.luau:156  x15  Expected this to be
+      quad-roblox-material/src/M2/Slider.luau:125  x15  Expected this to be
+      quad-roblox-material/src/Card.luau:209  x14  Expected this to be
+      quad-roblox-material/src/NavigationRail/init.luau:377  x14  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/src/NavigationRail/init.luau:385  x14  Expected this to be
+      quad-roblox-material/src/Radio.luau:186  x14  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiButton" | "GuiObject" 
+      quad-roblox-material/src/Radio.luau:266  x14  Expected this to be
+      quad-roblox-material/src/Tabs.luau:239  x14  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiLabel" | "GuiObject" |
+      quad-roblox-material/src/Tabs.luau:262  x14  Expected this to be
+      quad-roblox-material/src/Slider/Range.luau:214  x14  Expected this to be
+      quad-roblox-material/src/Slider/Range.luau:215  x14  Expected this to be
+      quad-roblox-material/src/Slider/init.luau:409  x14  Expected this to be
+      quad-roblox-material/src/Slider/init.luau:410  x14  Expected this to be
+      quad-roblox-material/src/Checkbox.luau:310  x14  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiButton" | "GuiObject" 
+      quad-roblox-material/src/Chip/init.luau:471  x14  Expected this to be
+      quad-roblox-material/src/Progress/Wavy.luau:373  x15  Expected this to be
+      quad-roblox-material/src/Progress/Wavy.luau:324  x15  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/src/Progress/LoadingIndicator.luau:154  x15  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/src/Progress/init.luau:136  x14  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/gallery/Common.luau:131  x11  Expected this to be
+      quad-roblox-material/gallery/Common.luau:148  x11  Expected this to be
+      quad-roblox-material/gallery/Common.luau:166  x11  Expected this to be
+      quad-roblox-material/gallery/Common.luau:199  x11  Expected this to be
+      quad-roblox-material/gallery/Common.luau:232  x11  Expected this to be
+      quad-roblox-material/gallery/Navigation.luau:219  x2  Expected this to be
+      quad-roblox-material/gallery/init.luau:162  x1  Expected this to be
+      quad-roblox-material/test/spec.ripple.luau:235  x1  Expected this to be
+      quad-roblox-material/test/spec.ripple.luau:251  x1  Expected this to be
+      quad-roblox-material/test/spec.ripple.luau:295  x1  Expected this to be
+      quad-roblox-material/test/spec.progress.luau:24  x1  Expected this to be 'T', but got 'boolean'
+      quad-roblox-material/test/spec.progress.luau:475  x3  Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+      quad-roblox-material/test/spec.progress.luau:542  x3  Key 'Size' is missing from 'boolean', 'userdata', 'number', 'string', 'thread', 'buffer', 'function' in the type '((any?) & ~nil) | ((any?) & ~nil)'
+      quad-roblox-material/test/spec.progress.luau:543  x2  Type '(userdata & { read AnchorPoint: unknown } & { read BackgroundColor3: unknown } & { read Size: unknown }) | { read AnchorPoint: unknown, read BackgroundColor3: unknown, read Size: unknown }' does not have key 'Visible'
+      quad-roblox-material/test/spec.scaffold.luau:57  x1  Expected this to be
+      quad-roblox-material/stories/StoryKit.luau:106  x2  Expected this to be
+      quad-roblox-material/stories/StoryParts.luau:55  x2  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/stories/StoryParts.luau:72  x2  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" |
+      quad-roblox-material/stories/Dialog.story.luau:46  x1  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/stories/NavigationBar.story.luau:106  x1  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/stories/AppBar.story.luau:101  x1  Expected this to be
+      quad-roblox-material/stories/List.story.luau:186  x1  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/stories/TimePicker.story.luau:90  x1  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/stories/Tooltip.story.luau:48  x1  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/stories/Card.story.luau:86  x1  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/stories/ColorPicker.story.luau:50  x1  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/stories/Scaffold.story.luau:122  x1  Expected this to be
+      quad-roblox-material/stories/Divider.story.luau:61  x1  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/stories/DatePicker.story.luau:109  x1  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/stories/Theme.story.luau:97  x1  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/stories/Theme.story.luau:136  x1  Expected this to be
+      quad-roblox-material/stories/Snackbar.story.luau:52  x1  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/stories/Snackbar.story.luau:54  x1  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-material/stories/Gallery.story.luau:23  x1  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+gap-child-dev.txt:  kit lines 28 in 15 files ({'src': 23, 'gallery': 2, 'stories': 3}) too-complex lines 0 | dependency lines 1 (too-complex 0)
+      28  type mismatch (Expected …)
+      quad-roblox-devui/src/Plot.luau:182  x11  Expected this to be
+      quad-roblox-devui/src/Plot.luau:262  x11  Expected this to be
+      quad-roblox-devui/src/Overlay.luau:136  x16  Expected this to be
+      quad-roblox-devui/src/Overlay.luau:146  x16  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-devui/src/PopupParts.luau:249  x15  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiButton" | "GuiObject" 
+      quad-roblox-devui/src/Menu.luau:135  x12  Expected this to be
+      quad-roblox-devui/src/Menu.luau:157  x12  Expected this to be
+      quad-roblox-devui/src/Layout.luau:96  x12  Expected this to be
+      quad-roblox-devui/src/Layout.luau:114  x12  Expected this to be
+      quad-roblox-devui/src/Layout.luau:139  x12  Expected this to be
+      quad-roblox-devui/src/Combo.luau:203  x12  Expected this to be
+      quad-roblox-devui/src/Combo.luau:306  x12  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-devui/src/Table.luau:166  x12  Expected this to be
+      quad-roblox-devui/src/Table.luau:293  x12  Expected this to be
+      quad-roblox-devui/src/Tab.luau:150  x12  Expected this to be
+      quad-roblox-devui/src/Tab.luau:178  x12  Expected this to be
+      quad-roblox-devui/src/Tab.luau:196  x12  Expected this to be
+      quad-roblox-devui/src/Window/TitleBar.luau:50  x13  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiButton" | "GuiObject" 
+      quad-roblox-devui/src/Window/init.luau:327  x12  Expected this to be
+      quad-roblox-devui/src/Window/init.luau:258  x12  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-devui/src/Window/init.luau:259  x12  Expected this to be
+      quad-roblox-devui/src/Window/init.luau:329  x12  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-devui/src/Tree.luau:177  x12  Expected this to be
+      quad-roblox-devui/gallery/StyleEditor.luau:126  x2  Expected this to be
+      quad-roblox-devui/gallery/Clock.luau:35  x4  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-devui/stories/StoryKit.luau:104  x2  Expected this to be
+      quad-roblox-devui/stories/Style.story.luau:28  x1  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+      quad-roblox-devui/stories/Style.story.luau:32  x1  Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "I
+gap-ref-mat.txt:  kit lines 11 in 6 files ({'src': 7, 'test': 4}) too-complex lines 0 | dependency lines 1 (too-complex 0)
+       4  type mismatch (Expected …)
+       3  unknown key / missing prop
+       2  other: Property '"AbsoluteSize"' does not exist on type 'ModClassMa
+       1  cannot call
+       1  call arity
+      quad-roblox-material/src/ColorPicker/Material/Fields.luau:161  x14  Expected this to be
+      quad-roblox-material/src/Ripple.luau:304  x86  Expected this to be
+      quad-roblox-material/src/Dialog.luau:450  x14  Cannot call a value of type ((GuiObject) -> ()) & ~nil in union:
+      quad-roblox-material/src/BottomSheet/Sheet.luau:237  x17  Argument count mismatch. Function expects 1 argument, but 2 are specified
+      quad-roblox-material/src/BottomSheet/Sheet.luau:242  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+      quad-roblox-material/src/BottomSheet/Sheet.luau:245  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+      quad-roblox-material/src/DatePicker/YearView.luau:148  x19  Expected this to be
+      quad-roblox-material/test/spec.progress.luau:24  x1  Expected this to be 'T', but got 'boolean'
+      quad-roblox-material/test/spec.progress.luau:475  x3  Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+      quad-roblox-material/test/spec.progress.luau:542  x3  Key 'Size' is missing from 'boolean', 'userdata', 'number', 'string', 'thread', 'buffer', 'function' in the type '((any?) & ~nil) | ((any?) & ~nil)'
+      quad-roblox-material/test/spec.progress.luau:543  x2  Type '(userdata & { read AnchorPoint: unknown } & { read BackgroundColor3: unknown } & { read Size: unknown }) | { read AnchorPoint: unknown, read BackgroundColor3: unknown, read Size: unknown }' does not have key 'Visible'
+gap-ref-dev.txt:  kit lines 40 in 16 files ({'src': 21, 'test': 19}) too-complex lines 0 | dependency lines 1 (too-complex 0)
+      40  type mismatch (Expected …)
+      quad-roblox-devui/src/Selectable.luau:89  x12  Expected this to be
+      quad-roblox-devui/src/PopupParts.luau:171  x15  Expected this to be
+      quad-roblox-devui/src/Tree.luau:113  x12  Expected this to be
+      quad-roblox-devui/src/Inputs/Choice.luau:105  x14  Expected this to be
+      quad-roblox-devui/src/Button.luau:55  x14  Expected this to be
+      quad-roblox-devui/src/Inputs/InputText.luau:95  x13  Expected this to be
+      quad-roblox-devui/src/Inputs/InputText.luau:96  x13  Expected this to be
+      quad-roblox-devui/src/Inputs/NumberField.luau:170  x17  Expected this to be
+      quad-roblox-devui/src/Inputs/NumberField.luau:171  x17  Expected this to be
+      quad-roblox-devui/src/Inputs/InputColor3.luau:61  x13  Expected this to be
+      quad-roblox-devui/src/Inputs/InputColor3.luau:62  x13  Expected this to be
+      quad-roblox-devui/src/Inputs/SliderNum.luau:117  x13  Expected this to be
+      quad-roblox-devui/src/Inputs/SliderNum.luau:118  x13  Expected this to be
+      quad-roblox-devui/src/Inputs/SliderNum.luau:119  x13  Expected this to be
+      quad-roblox-devui/src/Tab.luau:111  x12  Expected this to be
+      quad-roblox-devui/src/Window/TitleBar.luau:48  x13  Expected this to be
+      quad-roblox-devui/src/Window/TitleBar.luau:138  x13  Expected this to be
+      quad-roblox-devui/src/Window/init.luau:339  x12  Expected this to be
+      quad-roblox-devui/src/Window/init.luau:340  x12  Expected this to be
+      quad-roblox-devui/src/Window/init.luau:261  x12  Expected this to be
+      quad-roblox-devui/src/Combo.luau:254  x12  Expected this to be
+      quad-roblox-devui/test/spec.input.luau:64  x1  Expected this to be
+      quad-roblox-devui/test/spec.input.luau:121  x1  Expected this to be
+      quad-roblox-devui/test/spec.interaction.luau:33  x1  Expected this to be
+      quad-roblox-devui/test/spec.interaction.luau:58  x1  Expected this to be
+      quad-roblox-devui/test/spec.interaction.luau:83  x1  Expected this to be
+      quad-roblox-devui/test/spec.interaction.luau:123  x1  Expected this to be
+      quad-roblox-devui/test/spec.interaction.luau:147  x1  Expected this to be
+      quad-roblox-devui/test/spec.interaction.luau:168  x1  Expected this to be
+      quad-roblox-devui/test/spec.interaction.luau:179  x1  Expected this to be
+      quad-roblox-devui/test/spec.interaction.luau:201  x1  Expected this to be
+      quad-roblox-devui/test/spec.tooltip.luau:22  x1  Expected this to be
+      quad-roblox-devui/test/spec.tooltip.luau:53  x1  Expected this to be
+      quad-roblox-devui/test/spec.tooltip.luau:68  x1  Expected this to be
+      quad-roblox-devui/test/spec.tooltip.luau:96  x1  Expected this to be
+      quad-roblox-devui/test/spec.tooltip.luau:121  x1  Expected this to be
+      quad-roblox-devui/test/spec.tooltip.luau:137  x1  Expected this to be
+      quad-roblox-devui/test/spec.tooltip.luau:155  x1  Expected this to be
+      quad-roblox-devui/test/spec.tooltip.luau:176  x1  Expected this to be
+      quad-roblox-devui/test/spec.tooltip.luau:226  x1  Expected this to be
+gap-tween-mat.txt:  kit lines 18 in 6 files ({'src': 14, 'test': 4}) too-complex lines 0 | dependency lines 1 (too-complex 0)
+      11  type mismatch (Expected …)
+       3  unknown key / missing prop
+       2  other: Property '"AbsoluteSize"' does not exist on type 'ModClassMa
+       1  cannot call
+       1  call arity
+      quad-roblox-material/src/TextField/Field.luau:247  x21  Expected this to be
+      quad-roblox-material/src/Dialog.luau:450  x14  Cannot call a value of type ((GuiObject) -> ()) & ~nil in union:
+      quad-roblox-material/src/TimePicker/ClockFace.luau:355  x17  Expected this to be
+      quad-roblox-material/src/TimePicker/ClockFace.luau:356  x17  Expected this to be
+      quad-roblox-material/src/TimePicker/ClockFace.luau:369  x17  Expected this to be
+      quad-roblox-material/src/TimePicker/ClockFace.luau:373  x17  Expected this to be
+      quad-roblox-material/src/TimePicker/ClockFace.luau:362  x17  Expected this to be
+      quad-roblox-material/src/TimePicker/ClockFace.luau:352  x17  Expected this to be
+      quad-roblox-material/src/BottomSheet/Sheet.luau:237  x17  Argument count mismatch. Function expects 1 argument, but 2 are specified
+      quad-roblox-material/src/BottomSheet/Sheet.luau:242  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+      quad-roblox-material/src/BottomSheet/Sheet.luau:245  x17  Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+      quad-roblox-material/src/DatePicker/Chip.luau:229  x22  Expected this to be
+      quad-roblox-material/src/DatePicker/Chip.luau:230  x22  Expected this to be
+      quad-roblox-material/src/DatePicker/Chip.luau:231  x22  Expected this to be
+      quad-roblox-material/test/spec.progress.luau:24  x1  Expected this to be 'T', but got 'boolean'
+      quad-roblox-material/test/spec.progress.luau:475  x3  Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+      quad-roblox-material/test/spec.progress.luau:542  x3  Key 'Size' is missing from 'boolean', 'userdata', 'number', 'string', 'thread', 'buffer', 'function' in the type '((any?) & ~nil) | ((any?) & ~nil)'
+      quad-roblox-material/test/spec.progress.luau:543  x2  Type '(userdata & { read AnchorPoint: unknown } & { read BackgroundColor3: unknown } & { read Size: unknown }) | { read AnchorPoint: unknown, read BackgroundColor3: unknown, read Size: unknown }' does not have key 'Visible'
+gap-tween-dev.txt:  kit lines 0 in 0 files ({}) too-complex lines 0 | dependency lines 1 (too-complex 0)

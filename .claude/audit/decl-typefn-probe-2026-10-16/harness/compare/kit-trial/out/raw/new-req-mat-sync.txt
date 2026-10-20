@@ -1,0 +1,34 @@
+quad-roblox/src/Declaration/init.luau(5055,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/src/Declaration/init.luau(5056,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/src/Declaration/init.luau(5059,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/src/Declaration/init.luau(5062,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+../../../../../../..(1,1): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox-material/src/Dialog.luau(450,6): TypeError: Cannot call a value of type ((GuiObject) -> ()) & ~nil in union:
+  (((GuiObject) -> ()) & ~nil) | ((GuiObject) -> ())
+quad-roblox-material/src/BottomSheet/Sheet.luau(237,19): TypeError: Argument count mismatch. Function expects 1 argument, but 2 are specified
+quad-roblox-material/src/BottomSheet/Sheet.luau(242,9): TypeError: Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+quad-roblox-material/src/BottomSheet/Sheet.luau(245,14): TypeError: Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+quad-roblox-material/src/ZzCanary.luau(10,30): TypeError: Expected this to be
+	'{ read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" }?'
+but got
+	't1 where t1 = { Active: (t1, (((boolean?) -> (boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { read Value: boolean, read __quadTween: true } })?) | boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { r
+quad-roblox-material/src/ZzCanary.luau(11,30): TypeError: Expected this to be '(boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { read Value: boolean, read __quadTween: true } })?', but got 'number'
+quad-roblox-material/src/ZzCanary.luau(12,20): TypeError: Expected this to be 'number', but got 'GuiObject'
+quad-roblox-material/src/ZzCanary.luau(13,29): TypeError: Expected this to be '("Elevated" | "Filled" | "Outlined")?', but got '"Nope"'
+quad-roblox-material/src/ZzCanary.luau(14,30): TypeError: Expected this to be '{ read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" }?', but got 'number'
+quad-roblox-material/gallery/Quad.luau(17,7): ImportUnused: Import 'RT' is never used; prefix with '_' to silence
+quad-base/test/mock.luau(63,21): TypeError: Expected this to be 'T', but got 'boolean'
+quad-roblox-material/test/spec.api.luau(460,8): LocalShadow: Variable 'input' shadows previous declaration at line 356
+quad-roblox-material/test/spec.stories.luau(39,115): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead
+quad-roblox-material/test/spec.stories.luau(40,9): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead
+quad-roblox-material/test/spec.datepicker.luau(469,8): LocalShadow: Variable 'before' shadows previous declaration at line 455
+quad-roblox-material/test/spec.progress.luau(24,10): TypeError: Expected this to be 'T', but got 'boolean'
+quad-roblox-material/test/spec.progress.luau(475,11): TypeError: Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+quad-roblox-material/test/spec.progress.luau(475,44): TypeError: Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+quad-roblox-material/test/spec.progress.luau(475,111): TypeError: Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+quad-roblox-material/test/spec.progress.luau(542,10): TypeError: Key 'Size' is missing from 'boolean', 'userdata', 'number', 'string', 'thread', 'buffer', 'function' in the type '((any?) & ~nil) | ((any?) & ~nil)'
+quad-roblox-material/test/spec.progress.luau(542,49): TypeError: Type '(userdata & { read Size: unknown }) | { read Size: unknown }' does not have key 'AnchorPoint'
+quad-roblox-material/test/spec.progress.luau(542,94): TypeError: Type '(userdata & { read AnchorPoint: unknown } & { read Size: unknown }) | { read AnchorPoint: unknown, read Size: unknown }' does not have key 'BackgroundColor3'
+quad-roblox-material/test/spec.progress.luau(543,43): TypeError: Type '(userdata & { read AnchorPoint: unknown } & { read BackgroundColor3: unknown } & { read Size: unknown }) | { read AnchorPoint: unknown, read BackgroundColor3: unknown, read Size: unknown }' does not have key 'Visible'
+quad-roblox-material/test/spec.progress.luau(543,67): TypeError: Type '(userdata & { read AnchorPoint: unknown, read Visible: true } & { read BackgroundColor3: unknown, read Visible: true } & { read Size: unknown, read Visible: true }) | { read AnchorPoint: unknown, read BackgroundColor3: unknown, read Size: unknown, read Visible: true }' does not have key 'Parent'
+quad-roblox-material/stories/Quad.luau(18,7): ImportUnused: Import 'RT' is never used; prefix with '_' to silence

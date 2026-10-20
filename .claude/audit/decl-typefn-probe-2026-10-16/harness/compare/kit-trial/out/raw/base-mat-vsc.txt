@@ -1,0 +1,24 @@
+quad-roblox-material/src/Dialog.luau(443,6): TypeError: Cannot call a value of type ((GuiObject) -> ()) & ~nil in union:
+  (((GuiObject) -> ()) & ~nil) | ((GuiObject) -> ())
+quad-roblox-material/src/ZzCanary.luau(10,30): TypeError: Expected this to be
+	'IntoGuiObject?'
+but got
+	'FrameModifier'
+quad-roblox-material/src/ZzCanary.luau(11,32): TypeError: Expected this to be '(None | StateMarker<(TweenData<boolean> & t1) | boolean> | TweenData<boolean> | boolean)? where t1 = { Mapped: <T, U>({ read Cancelled: ((Instance, string, any) -> ())?, read Completed: ((Instance, string, any) -> ())?, read Dedup: boolean?, read DelayTime: number?, read Direction: Enum.EasingDirection?, read Info: Twee
+quad-roblox-material/src/ZzCanary.luau(12,20): TypeError: Expected this to be 'number', but got 'GuiObject'
+quad-roblox-material/src/ZzCanary.luau(13,29): TypeError: Expected this to be '("Elevated" | "Filled" | "Outlined")?', but got '"Nope"'
+quad-roblox-material/src/ZzCanary.luau(14,30): TypeError: Expected this to be 'IntoGuiObject?', but got 'number'
+quad-base/test/mock.luau(63,21): TypeError: Expected this to be 'T', but got 'boolean'
+quad-roblox-material/test/spec.api.luau(459,8): LocalShadow: Variable 'input' shadows previous declaration at line 355
+quad-roblox-material/test/spec.stories.luau(39,115): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead
+quad-roblox-material/test/spec.stories.luau(40,9): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead
+quad-roblox-material/test/spec.datepicker.luau(469,8): LocalShadow: Variable 'before' shadows previous declaration at line 455
+quad-roblox-material/test/spec.progress.luau(22,10): TypeError: Expected this to be 'T', but got 'boolean'
+quad-roblox-material/test/spec.progress.luau(473,11): TypeError: Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+quad-roblox-material/test/spec.progress.luau(473,44): TypeError: Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+quad-roblox-material/test/spec.progress.luau(473,111): TypeError: Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+quad-roblox-material/test/spec.progress.luau(540,10): TypeError: Key 'Size' is missing from 'boolean', 'userdata', 'number', 'string', 'thread', 'buffer', 'function' in the type '((any?) & ~nil) | ((any?) & ~nil)'
+quad-roblox-material/test/spec.progress.luau(540,49): TypeError: Type '(userdata & { read Size: unknown }) | { read Size: unknown }' does not have key 'AnchorPoint'
+quad-roblox-material/test/spec.progress.luau(540,94): TypeError: Type '(userdata & { read AnchorPoint: unknown } & { read Size: unknown }) | { read AnchorPoint: unknown, read Size: unknown }' does not have key 'BackgroundColor3'
+quad-roblox-material/test/spec.progress.luau(541,43): TypeError: Type '(userdata & { read AnchorPoint: unknown } & { read BackgroundColor3: unknown } & { read Size: unknown }) | { read AnchorPoint: unknown, read BackgroundColor3: unknown, read Size: unknown }' does not have key 'Visible'
+quad-roblox-material/test/spec.progress.luau(541,67): TypeError: Type '(userdata & { read AnchorPoint: unknown, read Visible: true } & { read BackgroundColor3: unknown, read Visible: true } & { read Size: unknown, read Visible: true }) | { read AnchorPoint: unknown, read BackgroundColor3: unknown, read Size: unknown, read Visible: true }' does not have key 'Parent'

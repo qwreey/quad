@@ -1,5 +1,5 @@
 --!strict
--- [2026-10-20 kit trial] q = Omit<Quad, "Modifier"> & Ext4 — the backend contract (Elem·Spread·Modifier·Mapper·OnChange·
+-- [2026-10-20 kit trial] q = Quad & Ext4 — the backend contract (Elem·Spread·Modifier·Mapper·OnChange·
 -- OnEvent·Out) typed by Lib4, plus the non-Declaration members of today's `RobloxExtension` (Animate·Tween·isTween).
 -- Same merge as round 1 `qmerge/Ext.luau` / round 2 `qtypeof/Ext2.luau`; differences:
 --   * base `Modifier` would be dropped from the Quad half (2026-10-16 decision) — see the note at `Q`: not possible from

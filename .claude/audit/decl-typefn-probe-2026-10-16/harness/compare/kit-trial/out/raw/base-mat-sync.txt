@@ -1,0 +1,67 @@
+quad-roblox/src/Declaration/init.luau(5055,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/src/Declaration/init.luau(5056,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/src/Declaration/init.luau(5059,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox/src/Declaration/init.luau(5062,2): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+../../../../../../..(1,1): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox-material/src/Overlay.luau(404,5): TypeError: Cannot call a value of type *error-type* in union:
+  ((Instance) -> nil) | *error-type*
+quad-roblox-material/src/Dialog.luau(443,6): TypeError: Cannot call a value of type ((GuiObject) -> ()) & ~nil in union:
+  (((GuiObject) -> ()) & ~nil) | ((GuiObject) -> ())
+quad-roblox-material/src/ColorPicker/Material/Fields.luau(156,4): TypeError: Code is too complex to typecheck! Consider simplifying the code around this area
+quad-roblox-material/src/TextField/Field.luau(286,52): TypeError: Code is too complex to typecheck! Consider simplifying the code around this area
+quad-roblox-material/src/TextField/Field.luau(287,9): TypeError: Code is too complex to typecheck! Consider simplifying the code around this area
+quad-roblox-material/src/Menu.luau(393,6): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/src/Menu.luau(395,6): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/src/AppBar/Actions.luau(131,3): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/src/TimePicker/ClockFace.luau(94,3): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/src/Slider/Track.luau(447,4): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/src/DatePicker/MonthView.luau(209,3): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/src/Button/Group.luau(364,4): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/src/Button/Group.luau(384,3): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/src/Card.luau(214,27): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox-material/src/Card.luau(237,26): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox-material/src/Button/Split.luau(217,3): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/src/Button/Split.luau(237,2): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/src/List.luau(267,27): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox-material/src/List.luau(299,26): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox-material/src/M2/SliderTicks.luau(60,3): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/src/Radio.luau(236,3): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/src/Scaffold.luau(182,4): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/src/Scaffold.luau(187,4): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/src/Scaffold.luau(195,5): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/src/ZzCanary.luau(12,20): TypeError: Expected this to be 'number', but got 'GuiObject'
+quad-roblox-material/src/ZzCanary.luau(13,29): TypeError: Expected this to be '("Elevated" | "Filled" | "Outlined")?', but got '"Nope"'
+quad-roblox-material/src/ZzCanary.luau(14,30): TypeError: Expected this to be 'IntoGuiObject?', but got 'number'
+quad-roblox-material/gallery/Navigation.luau(176,3): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/gallery/Theme.luau(87,3): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/gallery/Surfaces.luau(67,3): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/gallery/Selection.luau(259,3): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/gallery/Buttons.luau(41,3): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/gallery/Buttons.luau(57,3): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/gallery/Buttons.luau(59,2): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/gallery/Buttons.luau(60,2): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/gallery/Buttons.luau(64,3): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/gallery/Buttons.luau(124,3): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/gallery/Buttons.luau(163,2): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/gallery/Buttons.luau(215,3): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-base/test/mock.luau(63,21): TypeError: Expected this to be 'T', but got 'boolean'
+quad-roblox-material/test/spec.hostname.luau(85,43): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox-material/test/spec.hostname.luau(98,51): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox-material/test/spec.hostname.luau(86,57): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox-material/test/spec.hostname.luau(99,65): TypeError: Internal error: Code is too complex to typecheck! Consider adding type annotations around this area
+quad-roblox-material/test/spec.api.luau(459,8): LocalShadow: Variable 'input' shadows previous declaration at line 355
+quad-roblox-material/test/spec.stories.luau(39,115): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead
+quad-roblox-material/test/spec.stories.luau(40,9): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead
+quad-roblox-material/test/spec.datepicker.luau(469,8): LocalShadow: Variable 'before' shadows previous declaration at line 455
+quad-roblox-material/test/spec.progress.luau(22,10): TypeError: Expected this to be 'T', but got 'boolean'
+quad-roblox-material/test/spec.progress.luau(473,11): TypeError: Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+quad-roblox-material/test/spec.progress.luau(473,44): TypeError: Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+quad-roblox-material/test/spec.progress.luau(473,111): TypeError: Type '((*error-type* | { read BackgroundColor3: unknown }) & ~nil) | ((any?) & ~nil) | ((any?) & ~nil)' does not have key 'Size'
+quad-roblox-material/test/spec.progress.luau(540,10): TypeError: Key 'Size' is missing from 'boolean', 'userdata', 'number', 'string', 'thread', 'buffer', 'function' in the type '((any?) & ~nil) | ((any?) & ~nil)'
+quad-roblox-material/test/spec.progress.luau(540,49): TypeError: Type '(userdata & { read Size: unknown }) | { read Size: unknown }' does not have key 'AnchorPoint'
+quad-roblox-material/test/spec.progress.luau(540,94): TypeError: Type '(userdata & { read AnchorPoint: unknown } & { read Size: unknown }) | { read AnchorPoint: unknown, read Size: unknown }' does not have key 'BackgroundColor3'
+quad-roblox-material/test/spec.progress.luau(541,43): TypeError: Type '(userdata & { read AnchorPoint: unknown } & { read BackgroundColor3: unknown } & { read Size: unknown }) | { read AnchorPoint: unknown, read BackgroundColor3: unknown, read Size: unknown }' does not have key 'Visible'
+quad-roblox-material/test/spec.progress.luau(541,67): TypeError: Type '(userdata & { read AnchorPoint: unknown, read Visible: true } & { read BackgroundColor3: unknown, read Visible: true } & { read Size: unknown, read Visible: true }) | { read AnchorPoint: unknown, read BackgroundColor3: unknown, read Size: unknown, read Visible: true }' does not have key 'Parent'
+quad-roblox-material/test/spec.scaffold.luau(44,3): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/stories/Scaffold.story.luau(82,5): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.
+quad-roblox-material/stories/Theme.story.luau(47,4): TypeError: Calling function (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) with argument pack {Instance}, *error-type* is ambiguous.

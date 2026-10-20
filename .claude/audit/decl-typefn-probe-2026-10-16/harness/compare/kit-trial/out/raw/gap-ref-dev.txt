@@ -1,0 +1,55 @@
+quad-roblox-devui/src/Selectable.luau(89,3): TypeError: Expected this to be
+	'Instance | { read __quadSlot: true, read __quadSlotValue: Instance } | { read __quadState: true, read __quadStateValue: (Instance | { read __quadAttr: true } | { read __quadEffect: true } | { read __quadNone: true } | { read __quadObserver: true } | { read __quadSlot: true, read __quadSlotValue: Instance } | { read __quadTag: true })? } | { read __quadNone: true } | { read __quadTag: true } | { 
+but got
+	'Ref<GuiObject?> & { read __quadPostRef: true }'
+quad-roblox-devui/src/PopupParts.luau(171,3): TypeError: Expected this to be
+quad-roblox-devui/src/Tree.luau(113,3): TypeError: Expected this to be
+quad-roblox-devui/src/Inputs/Choice.luau(105,3): TypeError: Expected this to be
+quad-roblox-devui/src/Button.luau(55,3): TypeError: Expected this to be
+quad-roblox-devui/src/Inputs/InputText.luau(95,4): TypeError: Expected this to be
+	'Ref<TextBox?>'
+quad-roblox-devui/src/Inputs/InputText.luau(96,4): TypeError: Expected this to be
+quad-roblox-devui/src/Inputs/NumberField.luau(170,3): TypeError: Expected this to be
+quad-roblox-devui/src/Inputs/NumberField.luau(171,3): TypeError: Expected this to be
+quad-roblox-devui/src/Inputs/InputColor3.luau(61,3): TypeError: Expected this to be
+quad-roblox-devui/src/Inputs/InputColor3.luau(62,3): TypeError: Expected this to be
+quad-roblox-devui/src/Inputs/SliderNum.luau(117,4): TypeError: Expected this to be
+	'Ref<Frame?>'
+quad-roblox-devui/src/Inputs/SliderNum.luau(118,4): TypeError: Expected this to be
+quad-roblox-devui/src/Inputs/SliderNum.luau(119,4): TypeError: Expected this to be
+quad-roblox-devui/src/Tab.luau(111,4): TypeError: Expected this to be
+quad-roblox-devui/src/Window/TitleBar.luau(48,3): TypeError: Expected this to be
+quad-roblox-devui/src/Window/TitleBar.luau(138,21): TypeError: Expected this to be
+quad-roblox-devui/src/Window/init.luau(339,5): TypeError: Expected this to be
+quad-roblox-devui/src/Window/init.luau(340,5): TypeError: Expected this to be
+quad-roblox-devui/src/Window/init.luau(261,3): TypeError: Expected this to be
+quad-roblox-devui/src/Combo.luau(254,3): TypeError: Expected this to be
+quad-roblox-devui/src/ZzCanary.luau(10,59): TypeError: Expected this to be
+	'{ read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" }?'
+	't1 where t1 = { Active: (t1, (((boolean?) -> (boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { read Value: boolean, read __quadTween: true } })?) | boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { r
+quad-roblox-devui/src/ZzCanary.luau(11,30): TypeError: Expected this to be '(boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { read Value: boolean, read __quadTween: true } })?', but got 'number'
+quad-roblox-devui/src/ZzCanary.luau(12,20): TypeError: Expected this to be 'number', but got 'Frame'
+quad-roblox-devui/src/ZzCanary.luau(13,43): TypeError: Expected this to be 'number | t1 where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number
+quad-roblox-devui/gallery/Quad.luau(17,7): ImportUnused: Import 'RT' is never used; prefix with '_' to silence
+quad-base/test/mock.luau(63,21): TypeError: Expected this to be 'T', but got 'boolean'
+quad-roblox-devui/test/spec.input.luau(64,20): TypeError: Expected this to be
+quad-roblox-devui/test/spec.input.luau(121,20): TypeError: Expected this to be
+quad-roblox-devui/test/spec.interaction.luau(33,25): TypeError: Expected this to be
+quad-roblox-devui/test/spec.interaction.luau(58,3): TypeError: Expected this to be
+quad-roblox-devui/test/spec.interaction.luau(83,20): TypeError: Expected this to be
+quad-roblox-devui/test/spec.interaction.luau(123,20): TypeError: Expected this to be
+quad-roblox-devui/test/spec.interaction.luau(147,20): TypeError: Expected this to be
+quad-roblox-devui/test/spec.interaction.luau(168,20): TypeError: Expected this to be
+quad-roblox-devui/test/spec.interaction.luau(179,25): TypeError: Expected this to be
+quad-roblox-devui/test/spec.interaction.luau(201,20): TypeError: Expected this to be
+quad-roblox-devui/test/spec.stories.luau(38,115): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead
+quad-roblox-devui/test/spec.stories.luau(39,9): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead
+quad-roblox-devui/test/spec.tooltip.luau(22,30): TypeError: Expected this to be
+quad-roblox-devui/test/spec.tooltip.luau(53,30): TypeError: Expected this to be
+quad-roblox-devui/test/spec.tooltip.luau(68,30): TypeError: Expected this to be
+quad-roblox-devui/test/spec.tooltip.luau(96,25): TypeError: Expected this to be
+quad-roblox-devui/test/spec.tooltip.luau(121,25): TypeError: Expected this to be
+quad-roblox-devui/test/spec.tooltip.luau(137,30): TypeError: Expected this to be
+quad-roblox-devui/test/spec.tooltip.luau(155,31): TypeError: Expected this to be
+quad-roblox-devui/test/spec.tooltip.luau(176,30): TypeError: Expected this to be
+quad-roblox-devui/test/spec.tooltip.luau(226,30): TypeError: Expected this to be

@@ -1,0 +1,5 @@
+quad-roblox-devui/src/ZzCanary.luau(11,32): TypeError: Expected this to be '(None | StateMarker<(TweenData<boolean> & t1) | boolean> | TweenData<boolean> | boolean)? where t1 = { Mapped: <T, U>({ read Cancelled: ((Instance, string, any) -> ())?, read Completed: ((Instance, string, any) -> ())?, read Dedup: boolean?, read DelayTime: number?, read Direction: Enum.EasingDirection?, read Info: TweenIn
+quad-roblox-devui/src/ZzCanary.luau(12,20): TypeError: Expected this to be 'number', but got 'Frame'
+quad-roblox-devui/src/ZzCanary.luau(13,43): TypeError: Expected this to be 'number | t1 where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number
+quad-roblox-devui/test/spec.stories.luau(38,115): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead
+quad-roblox-devui/test/spec.stories.luau(39,9): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead

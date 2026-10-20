@@ -1,0 +1,49 @@
+quad-roblox-devui/src/Plot.luau(182,3): TypeError: Expected this to be
+	'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadEvent: "AncestryChanged" | "AttributeChanged" | "Changed" | "ChildAdded" | "C
+but got
+	'Slot<Instance>'
+quad-roblox-devui/src/Plot.luau(262,3): TypeError: Expected this to be
+quad-roblox-devui/src/Overlay.luau(136,3): TypeError: Expected this to be
+quad-roblox-devui/src/Overlay.luau(146,3): TypeError: Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadEven
+quad-roblox-devui/src/PopupParts.luau(249,9): TypeError: Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiButton" | "GuiObject" | "Instance" | "TextButton" } | { read __quadSpread: "GuiBase" | "GuiBase2d" | "GuiButton" | "GuiObject" | "Insta
+quad-roblox-devui/src/Menu.luau(135,3): TypeError: Expected this to be
+	'(false | Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadEvent: "AncestryChanged" | "AttributeChanged" | "Changed" | "ChildAd
+	'Slot<Instance>?'; 
+`Slot<Instance>` is not a subtype of `(false | Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadEvent: "AncestryChanged" | "Attr
+quad-roblox-devui/src/Menu.luau(157,3): TypeError: Expected this to be
+quad-roblox-devui/src/Layout.luau(96,3): TypeError: Expected this to be
+quad-roblox-devui/src/Layout.luau(114,3): TypeError: Expected this to be
+quad-roblox-devui/src/Layout.luau(139,3): TypeError: Expected this to be
+quad-roblox-devui/src/Combo.luau(203,4): TypeError: Expected this to be
+	'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" | "ScrollingFrame" } | { read __quadSpread: "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" | "ScrollingFrame" } | { read __quadEvent: "AncestryChanged" | "AttributeChanged" | "Changed" |
+quad-roblox-devui/src/Combo.luau(306,3): TypeError: Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadEvent:
+quad-roblox-devui/src/Table.luau(166,4): TypeError: Expected this to be
+quad-roblox-devui/src/Table.luau(293,4): TypeError: Expected this to be
+quad-roblox-devui/src/Tab.luau(150,4): TypeError: Expected this to be
+quad-roblox-devui/src/Tab.luau(178,4): TypeError: Expected this to be
+quad-roblox-devui/src/Tab.luau(196,4): TypeError: Expected this to be
+quad-roblox-devui/src/Window/TitleBar.luau(50,3): TypeError: Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiButton" | "GuiObject" | "ImageButton" | "Instance" } | { read __quadSpread: "GuiBase" | "GuiBase2d" | "GuiButton" | "GuiObject" | "
+quad-roblox-devui/src/Window/init.luau(327,4): TypeError: Expected this to be
+	'(false | Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" | "ScrollingFrame" } | { read __quadSpread: "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" | "ScrollingFrame" } | { read __quadEvent: "AncestryChanged" | "AttributeChanged" | "C
+`Slot<Instance>` is not a subtype of `(false | Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" | "ScrollingFrame" } | { read __quadSpread: "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" | "ScrollingFrame" } | { read __quadEvent: "Ancest
+quad-roblox-devui/src/Window/init.luau(258,3): TypeError: Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quad
+quad-roblox-devui/src/Window/init.luau(259,3): TypeError: Expected this to be
+	'None | Observer'; 
+`Observer` is not a subtype of `Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadEvent: "AncestryChanged" | "AttributeChanged" |
+quad-roblox-devui/src/Window/init.luau(329,3): TypeError: Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quad
+quad-roblox-devui/src/Tree.luau(177,5): TypeError: Expected this to be
+quad-roblox-devui/src/ZzCanary.luau(10,59): TypeError: Expected this to be
+	'{ read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" }?'
+	't1 where t1 = { Active: (t1, (((boolean?) -> (boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { read Value: boolean, read __quadTween: true } })?) | boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { r
+quad-roblox-devui/src/ZzCanary.luau(11,30): TypeError: Expected this to be '(boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { read Value: boolean, read __quadTween: true } })?', but got 'number'
+quad-roblox-devui/src/ZzCanary.luau(12,20): TypeError: Expected this to be 'number', but got 'Frame'
+quad-roblox-devui/src/ZzCanary.luau(13,43): TypeError: Expected this to be 'number | t1 where t1 = { Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number } & { Apply: (({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number }, { read __apply: any }) -> any) & (<U>({ Get: (*CYCLE*) -> number, read __quadState: true, read __quadStateValue: number
+quad-roblox-devui/gallery/StyleEditor.luau(126,5): TypeError: Expected this to be
+quad-roblox-devui/gallery/Clock.luau(35,3): TypeError: Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadEve
+quad-roblox-devui/gallery/Quad.luau(17,7): ImportUnused: Import 'RT' is never used; prefix with '_' to silence
+quad-base/test/mock.luau(63,21): TypeError: Expected this to be 'T', but got 'boolean'
+quad-roblox-devui/test/spec.stories.luau(38,115): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead
+quad-roblox-devui/test/spec.stories.luau(39,9): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead
+quad-roblox-devui/stories/StoryKit.luau(104,3): TypeError: Expected this to be
+quad-roblox-devui/stories/Style.story.luau(28,4): TypeError: Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __q
+quad-roblox-devui/stories/Style.story.luau(32,4): TypeError: Expected this to be 'Instance | { read __quadState: true, read __quadStateValue: Instance? } | { read __quadNone: true } | { read __quadModifier: true } | { read __quadModifier: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __quadSpread: "Frame" | "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" } | { read __q

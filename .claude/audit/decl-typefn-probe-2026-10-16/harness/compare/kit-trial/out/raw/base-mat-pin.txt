@@ -1,0 +1,12 @@
+quad-roblox-material/src/ZzCanary.luau(10,30): TypeError: Expected this to be
+	'IntoGuiObject?'
+but got
+	'FrameModifier'
+quad-roblox-material/src/ZzCanary.luau(11,32): TypeError: Expected this to be '(None | StateMarker<(TweenData<boolean> & t1) | boolean> | TweenData<boolean> | boolean)? where t1 = { Mapped: <T, U>({ read Cancelled: ((Instance, string, any) -> ())?, read Completed: ((Instance, string, any) -> ())?, read Dedup: boolean?, read DelayTime: number?, read Direction: Enum.EasingDirection?, read Info: Twee
+quad-roblox-material/src/ZzCanary.luau(12,20): TypeError: Expected this to be 'number', but got 'GuiObject'
+quad-roblox-material/src/ZzCanary.luau(13,29): TypeError: Expected this to be '("Elevated" | "Filled" | "Outlined")?', but got '"Nope"'
+quad-roblox-material/src/ZzCanary.luau(14,30): TypeError: Expected this to be 'IntoGuiObject?', but got 'number'
+quad-roblox-material/test/spec.api.luau(459,8): LocalShadow: Variable 'input' shadows previous declaration at line 355
+quad-roblox-material/test/spec.stories.luau(39,115): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead
+quad-roblox-material/test/spec.stories.luau(40,9): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead
+quad-roblox-material/test/spec.datepicker.luau(469,8): LocalShadow: Variable 'before' shadows previous declaration at line 455

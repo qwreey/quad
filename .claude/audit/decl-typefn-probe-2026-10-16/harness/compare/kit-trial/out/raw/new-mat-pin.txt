@@ -1,0 +1,19 @@
+quad-roblox-material/src/Elevation.luau(90,3): TypeError: Expected this to be 'number', but got '"ShowBehindParent"'
+quad-roblox-material/src/Elevation.luau(90,22): TypeError: Expected this to be 'Instance | { read __quadSlot: true, read __quadSlotValue: Instance } | { read __quadState: true, read __quadStateValue: (Instance | { read __quadAttr: true } | { read __quadEffect: true } | { read __quadNone: true } | { read __quadObserver: true } | { read __quadSlot: true, read __quadSlotValue: Instance } | { read __q
+quad-roblox-material/src/BottomSheet/Sheet.luau(237,19): TypeError: Argument count mismatch. Function expects 1 argument, but 2 are specified
+quad-roblox-material/src/BottomSheet/Sheet.luau(242,9): TypeError: Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+quad-roblox-material/src/BottomSheet/Sheet.luau(245,14): TypeError: Property '"AbsoluteSize"' does not exist on type 'ModClassMap'
+quad-roblox-material/src/ZzCanary.luau(10,30): TypeError: Expected this to be
+	'{ read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" }?'
+but got
+	't1 where t1 = { Active: (t1, (((boolean?) -> (boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { read Value: boolean, read __quadTween: true } })?) | boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { r
+quad-roblox-material/src/ZzCanary.luau(11,30): TypeError: Expected this to be '(boolean | { read Value: boolean, read __quadTween: true } | { read __quadNone: true } | { read __quadState: true, read __quadStateValue: boolean | { read Value: boolean, read __quadTween: true } })?', but got 'number'
+quad-roblox-material/src/ZzCanary.luau(12,20): TypeError: Expected this to be 'number', but got 'GuiObject'
+quad-roblox-material/src/ZzCanary.luau(13,29): TypeError: Expected this to be '("Elevated" | "Filled" | "Outlined")?', but got '"Nope"'
+quad-roblox-material/src/ZzCanary.luau(14,30): TypeError: Expected this to be '{ read __quadModifier: "GuiBase" | "GuiBase2d" | "GuiObject" | "Instance" }?', but got 'number'
+quad-roblox-material/gallery/Quad.luau(17,7): ImportUnused: Import 'RT' is never used; prefix with '_' to silence
+quad-roblox-material/test/spec.api.luau(460,8): LocalShadow: Variable 'input' shadows previous declaration at line 356
+quad-roblox-material/test/spec.stories.luau(39,115): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead
+quad-roblox-material/test/spec.stories.luau(40,9): DeprecatedApi: Function 'getfenv' is deprecated; consider using 'debug.info' instead
+quad-roblox-material/test/spec.datepicker.luau(469,8): LocalShadow: Variable 'before' shadows previous declaration at line 455
+quad-roblox-material/stories/Quad.luau(18,7): ImportUnused: Import 'RT' is never used; prefix with '_' to silence

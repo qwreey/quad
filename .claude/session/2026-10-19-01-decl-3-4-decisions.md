@@ -34,3 +34,9 @@
 ## 7. 2026-10-20 — devplorer 상향 보고서 판정
 
 devplorer가 `quad-upstream-2026-10-20.md`를 냈다(사용자: 핵심 셋 — quad 코어로 못 한 것 없음, 가장 큰 덩어리는 "있는데 못 찾음", 진짜 결핍은 devui의 막힘 셋 U2·U3·U7). 메인이 원문을 다 읽고 `feedback/devplorer-2026-10-20.md`에 판정: devui 결핍·상향 후보를 장치별 묶음 여섯(가 포인터 아래 맨 위 판정 — 10-16 코드 리뷰 5·6·8과 같은 장치, 메인이 `Window/Manager.luau` 126행·`Interaction.luau` 105~108행으로 확인; 나 입력 상자; 다 팝업; 라 목록 가상화; 마 창 채우기; 바 위젯 prop·Style)으로, 문서 공백은 devui README·위젯 주석에서 quad 스킬로 가는 링크 한 처방으로. 묶음은 전부 사용자 결정, 문서 줄과 U17(PlotLines X 모양) 원인 조사는 메인 자율.
+
+## 8. 2026-10-20 — 킷 규모 시험 결과, 문서 손질, U17, Studio
+
+- **킷 규모 시험**(opus, `audit/decl-typefn-probe-2026-10-16/REPORT.md` 끝 절): 두 킷 330파일을 변환 시제품으로 새 표면에 옮겨 검사 — 마커 결정 때문의 새 오류 0, too complex 세 모드 0, 입력 Modifier에 메소드가 필요한 자리 0; sync(override 없음)에서 기준선은 파일마다 심은 오류 0/194를 잡고(생성 D가 무너져 검사가 꺼진 상태) 변환본은 194/194; 옛 b2 놓침 81/81 닫힘. 기계 변환 1382/1384, 못 바꾼 자리 둘(모듈 밖으로 나가는 OnChange 훅, any 캐스트로 묶은 D). 실제 타입 함수 구현에 필요한 보강 셋(진짜 `NewChild`, Ref 마커 팔, `StateMarker<T | Tween<T>>`)과 base `Modifier`는 quad-types를 직접 고쳐야 뺄 수 있다는 것, 변환 스크립트 고칠 점 열하나.
+- **devui 문서 손질**(`2237890c`) — devplorer 보고 S 묶음. **U17** 재현 안 됨(모의·Studio). **Studio**: 18번 `[RW]` 줄이 리눅스와 같음(Studio도 읽기 전용 표시 없음), `studio-analysis`가 목록 일부만 읽어 19~29번 미완.
+- 사용자에게 묶음 가(포인터 아래 맨 위 판정 — 10-16 리뷰 5·6·7·8 포함) 결정 재료 전달.

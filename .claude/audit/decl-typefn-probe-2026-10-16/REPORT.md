@@ -634,3 +634,139 @@ raw 덤프는 레포 밖 스크래치패드에 있습니다. 다시 받는 방�
 - **우회: 2차 파일만 남김.** `probe-r2.project.json`으로 18~29번과 라이브러리만 싱크하고, Studio에서 00~17번을 지웠다. 원본은 레포에 있고 전체 싱크로 다시 들어간다. 그러자 요약은 1027건, 읽힌 행은 104줄이었고 그중 2차 파일은 18번 하나뿐이었다(27줄). 여전히 도구 쪽 한계로 보인다 — 사용자 툴링 문제로 보고.
 - **18번 `[RW]` 줄은 리눅스 sync·vsc·pin과 글자까지 같다**(`out/r2/studio-analysis-r2d.json`). Studio 체커에도 읽기 전용 표시가 없다(`AbsoluteSize=rw`). 쓰기 표면에서 ReadOnly를 빼는 일은 덤프 데이터(`DenyWrite`)가 맡는다는 2차 M2 결론이 Studio에서도 선다.
 - **19~29번의 Studio 진단은 아직 못 읽었다**(미완). 파일 하나씩 남겨 읽거나 도구가 고쳐진 뒤에 읽는다.
+
+## Declaration 3.4.0 킷 규모 시험 보고 (2026-10-20) [opus 서브에이전트, 본문 그대로 저장]
+
+결정이 아니라 판단 재료입니다. 킷 원본, quad 소스, 기존 프로브 파일은 고치지 않았습니다. git stash·checkout·commit도 하지 않았습니다. 무거운 실행은 모두 `choom 1000`과 `prlimit 3 GiB`를 걸고 순차로 돌렸고, 코어 덤프는 막았습니다.
+
+**한 줄 결론:** 두 킷 전체(330파일)를 기계로 바꾼 결과, 마커 결정 때문에 생긴 새 오류는 0건입니다. too complex도 세 모드 모두 0입니다. sync에서 지금 킷은 타입 검사가 사실상 꺼져 있는데(파일마다 심은 오류를 0/194 잡음), 변환본은 194/194를 잡습니다.
+
+### 1. 무엇을 만들었나
+- **Lib4** (`src/Lib4.luau`, Lib3 복사본)
+  - `ModifierInto<C>`는 타입 함수 모드 `intomarker`가 만듭니다. `chainOf`로 클래스 사슬을 걷고 `Policy.Classes`(ModClassMap)에 있는 이름만 남겨 `{ read __quadModifier: "C" | 조상들 }`을 돌려줍니다. 메소드는 없습니다.
+  - Modifier 값의 As 트리는 2차와 같은 full 정책 그대로입니다.
+- **Lib3 대비 꼭 필요했던 보강 셋(실측).** 모두 Lib3에 없던 빈칸이라 (다)로 분류합니다. 각 보강을 하나씩 되돌려 sync에서 잰 킷 오류 줄 수입니다.
+  - 진짜 `NewChild`(quad-roblox `types.luau`. Slot·Tag·Attr·Observer·Effect 마커 포함): 없으면 +113줄
+  - 배열부의 Ref 마커 팔 `{ read __quadRefAccepts: (C) -> () }`와 그 State 팔: 없으면 +43줄
+  - 쓰기 자리 State 팔을 `StateMarker<T | Tween<T>>`로: 없으면 +10줄
+- **확장 모듈** (`harness/compare/kit-trial/Ext4.luau`)
+  - 값 `Elem`·`Spread`(:Add 포함)·`Modifier`·`Mapper`·`OnChange`·`OnEvent`·`Out`. 모두 클래스를 먼저 받는 커리입니다.
+  - 지금 RobloxExtension에서 Declaration 밖 멤버(`Animate`·`Tween`·`isTween`).
+  - 타입 `Modifier<C>`·`ModifierInto<C>`·`Spread<C>`·`Props<C>`·`PropsArrayItem<C>`·`ElemCtor<C>`·`OnChangeDescriptor<K>`·`OnEventDescriptor<K>`.
+  - quad_types는 킷이 쓰는 사본(`quad-roblox/luau_packages/quad_types`)에서 가져옵니다.
+- **실측: base `Modifier`는 바깥에서 뺄 수 없습니다.** 테이블에서 키를 빼는 타입 함수 `OmitKeys<QT.Quad,"Modifier">`를 시도했지만, Quad 멤버 하나가 `CheckReservedKeys<keyof<T>>` 꼴이라 "Type functions do not currently support…" 에러가 나고 q 전체가 무너집니다. 그래서 1차와 같은 교집합 `QT.Quad & Ext`로 갔습니다. 실제 3.4.0에서는 quad-types를 직접 고쳐야 합니다.
+- **변환 범위:** 킷의 `test/run.sh` strict 패스와 같습니다. src·gallery·test·stories를 넣고, test/support와 gallery/*.client.luau는 뺐습니다. 330파일에 설정 모듈 5개입니다.
+- **설정 모듈(`Quad.luau`)**
+  - `local q: Ext.Q = …UseProvider(...) :: any`로 바꿨습니다.
+  - 클래스별 재수출 `<C>Modifier`·`Into<C>`·`OnChangeFn`·`Field`·`FieldOut`을 지우고 위 제네릭 여덟 개로 바꿨습니다.
+  - quad-roblox는 `(require :: any)`로 불러 생성 D 모듈이 검사에 들어오지 않게 했습니다(3.4.0 근사).
+  - 진짜 require로 한 번 더 돌린 변형(`new-req`)도 킷 진단은 같았습니다. 의존성 쪽 too complex 5건만 늘었고, 이는 생성 D 모듈 자체에서 나옵니다.
+
+### 2. 기준선 대 변환본 (실측, 킷 파일의 고유 진단 줄 기준)
+
+| | pin 기준선 | pin 변환본 | sync 기준선 | sync 변환본 | vsc 기준선 | vsc 변환본 |
+|---|---|---|---|---|---|---|
+| 킷 진단 줄 (material+devui) | 0 | 4 | 50 | 8 | 5 | 8 |
+| 그중 too complex | 0 | 0 | 14 | 0 | 0 | 0 |
+| 파일마다 심은 오류 194개 중 잡힌 수 | 194 | 194 | **0** | **194** | 194 | 194 |
+| 카나리 NEG (mat 5 / dev 4) | 5 / 3 | 5 / 4 | 3 / 2 | 5 / 4 | 5 / 3 | 5 / 4 |
+| 전체 검사 시간·max RSS, material | 15.8 s / 209 MiB | 10.1 s / 164 MiB | 5.1 s / 150 MiB | 7.0 s / 151 MiB | 8.9 s / 182 MiB | 6.8 s / 151 MiB |
+| 전체 검사 시간·max RSS, devui | 8.0 s / 200 MiB | 4.0 s / 123 MiB | 2.9 s / 119 MiB | 2.6 s / 115 MiB | 5.0 s / 163 MiB | 3.0 s / 116 MiB |
+| 파일당 차가운 검사 중앙값/p90/최대 (src 173파일) | 1.72/2.67/10.99 s | 1.18/1.54/5.04 s | 1.08/1.28/2.82 s | 0.74/1.00/3.65 s | 1.25/1.63/5.56 s | 0.74/0.98/3.51 s |
+| 파일당 RSS 중앙값/최대 | 112/212 MiB | 98/145 MiB | 107/129 MiB | 86/133 MiB | 108/183 MiB | 86/132 MiB |
+
+- sync 기준선이 빨라 보이는 것은 생성 D가 too complex로 일찍 포기하기 때문입니다. 차가운 파일 검사 173회 중 154회에 too complex가 붙었습니다.
+- 파일당 차가운 검사는 파일 하나와 그 파일이 require하는 것 전부를 한 프로세스로 잰 값입니다. 파일당 순수 증분이 아닙니다. 타임트레이스는 이 빌드에서 동작하지 않았습니다.
+
+**거짓 클린 배제:**
+- 카나리(킷 모듈을 require해서 쓰는 한 줄짜리 NEG/OK)를 넣어 돌렸습니다.
+- 생성자를 쓰는 파일 194개마다 같은 스코프에 `{ Name = 5 }`를 하나씩 심어 전부 걸리는지 봤습니다. 위 표의 행입니다.
+
+### 3. 새 오류 원인별 (변환본에서 기준선에 없던 것)
+- **(가) 마커 결정 때문: 0건.** 마커 prop에 세터를 부르는 꼴의 오류("missing key")도 0건입니다.
+- **(나) 변환 스크립트 결함 또는 기계로 못 바꾼 자리**
+  - 진단이 남은 것: `src/BottomSheet/Sheet.luau` 237·242·245행(3줄). 놓을 요소를 못 찾아 바꾸지 않은 OnChange입니다.
+  - 진단 없이 숨은 것: `test/spec.textfield.luau` 391·393행의 `local D = (require("../src/Quad") :: any).Declaration`. any라서 타입 검사는 깨끗하지만 3.4.0 런타임에서는 깨집니다.
+  - 시제품 첫 판의 결함 넷(stories/Quad.luau를 설정 모듈로 못 알아봄, `local q = H.attach(Q)` 별칭, 줄을 넘긴 `D.Modifier\n.TextButton()`, 가림 처리 때문에 require 문자열을 못 봄)은 고쳤고, 위 표는 고친 판의 결과입니다.
+- **(다) 새 표면 자체의 빈칸**
+  - 남은 것: pin에서만 `src/Elevation.luau:90`의 `ShowBehindParent`(UIShadow)가 거부됩니다. 레포 핀 defs에 그 프로퍼티가 없기 때문입니다. 생성 D는 덤프에서 가져와 갖고 있었습니다. 2026-10-19에 "체커마다 다른 요소는 문서화해 인정"하기로 한 범주가 킷에서 실제로 처음 걸린 사례입니다.
+  - Lib3 시절 빈칸 셋(+113 / +43 / +10줄)은 Lib4에서 메웠습니다(1절).
+  - 숏핸드·Spread·Mapper 꼴은 킷에서 0회라 빈칸이 드러나지 않았습니다. 숏핸드 props(`UICorner =`·`UIScale =`)는 쓰이고 통과합니다.
+- **(라) 원래 있던 것(기준선 vsc에도 있음):** `src/Dialog.luau:450`(기준선 443행) `Cannot call ((GuiObject) -> ()) & ~nil`, `test/spec.progress.luau` 4줄. 1.70.1 바이너리에서만 나고 pin에는 없습니다.
+
+### 4. 마커로 바꿔서 해결된 것 (실측)
+- **옛 b2 놓침(형제 클래스 Modifier가 들어가던 것).** 변환으로 생긴 입력 prop 103개 가운데 export된 81개를 필드 단위로 검사했습니다(`index<M.Props,"Modifier">`).
+  - 기준선: 형제 클래스 Modifier를 pin·vsc에서 79/81, sync에서 81/81 통과시켰습니다. 거부한 둘은 `IntoGuiObject` 자리입니다.
+  - 변환본: 세 모드 모두 81/81 거부, 같은 클래스 81/81 통과.
+  - 조상 클래스 Modifier(Frame 자리에 GuiObject 등)는 양쪽 모두 통과합니다. 마커에서는 설계상 통과입니다.
+  - devui 카나리: TextLabel Modifier를 ProgressBar의 `FrameModifier?` 자리에 넣는 줄을 기준선은 세 모드 모두 놓쳤고 변환본은 잡았습니다.
+- **sync(override 없는 사용자 설정)에서 검사가 살아납니다.** 심은 오류를 기준선은 0/194 잡고 변환본은 194/194 잡습니다. 킷 too complex는 14줄에서 0줄이 됩니다. 테이블 연산 ambiguous 30줄처럼 error 타입에서 번진 연쇄 오류도 사라집니다.
+- **As 체인 4곳이 그냥 놓기로 바뀌었습니다.** `props.Modifier:AsGuiObject():AsTextButton()` 꼴을 `props.Modifier`로 바꿨습니다(Card 214·237, List 267·299). M3 후속에서 sync가 무너지던 자리가 사라진 셈입니다.
+
+### 5. 입력 Modifier에 메소드가 필요한 자리: 0곳
+- 변환 스크립트의 같은 파일 필드명 검출에서 0곳이고, 타입 검사에서도 마커에 세터·Peek·Apply를 부르는 오류가 0건입니다.
+- 입력 자리 103곳은 모두 테이블 타입 필드였고 함수 파라미터는 0곳입니다. 필드 이름은 `Modifier` 96, `FieldModifier` 3, `modifier` 3, `TrackModifier` 1입니다.
+- 전체형으로 남은 12곳은 입력이 아닙니다. 반환 타입, 지역 변수 주석, 모듈 수준 이름 캐시 맵(`{ [string]: q.Modifier<Frame> }`)입니다.
+  - material: Tooltip 143, Util 142·143, Button/init 161, Button/Group 252, gallery/Selection 274
+  - devui: Tree 31·32, Inputs/Choice 17·18, Inputs/NumberField 30·31
+
+### 6. 기계 변환 성공률
+- 코드 안의 `D.<C>`·`D.Modifier.<C>`·`q.Declaration.*`: 1384곳 중 1382곳(spec.textfield의 any 캐스트 2곳 제외)
+- 파일 머리 꺼내 두기: 생성자 지역 506개, Modifier 지역 120개. 이름 충돌 0
+- 타입 재작성 115/115: 입력 → `ModifierInto<C>` 103(`<C>Modifier` 101 + `Into<C>` 2), 그 밖 → `Modifier<C>` 12
+- As 체인 지우기 4/4
+- 동적 꼴 `(D.Modifier :: any)[cls]`를 `(q.Modifier :: any)(cls)`로 2/2
+- 살려 두기용 `local _ = D` 1곳 삭제
+- OnChange/Out 코드 13곳 중 12곳 변환: 감싼 요소에서 클래스를 정한 것 8, 변수를 따라가서 정한 것 4(NavigationBar 129, NavigationRail 222, devui InputText 68·75 — 이 둘은 `writeBack: any`라 원래 검사가 꺼진 자리). 1곳은 못 정함.
+- 주석·문서 문자열은 손대지 않았습니다. `D.` 48곳, 옛 타입 이름 36곳, `q.OnChange(` 8곳은 별도 문서 패스가 필요합니다.
+
+### 7. 기계로 못 바꾼 자리
+- `quad-roblox-material/src/BottomSheet/Sheet.luau:235`: `local hostHook = q.OnChange("AbsoluteSize", …)`을 `HostHook`으로 내보내고 놓는 곳은 다른 모듈입니다. 요소 클래스를 기계로 정할 수 없습니다. 추상 클래스 `OnChange "GuiObject" "AbsoluteSize"`로 두는 방법은 재지 않았습니다.
+- `quad-roblox-material/test/spec.textfield.luau:391` (393행에서 사용): `(require(...) :: any).Declaration`으로 묶은 D. 스크립트가 감지하지 못하고 any라서 타입 검사도 침묵합니다.
+
+### 8. 3.4.0 실제 변환 스크립트(`scripts/`)로 옮길 때 고칠 점
+1. 설정 모듈은 파일 이름이 아니라 `UseProvider`가 있는지로 찾을 것. stories/Quad.luau가 있었습니다.
+2. Quad 별칭 추적: `local q = Quad`, `local q = H.attach(Q)`, `local q = H.attach(require(...))`.
+3. `(... :: any).Declaration` 같은 캐스트 경유 묶음과 D를 값으로 쓰는 자리를 반드시 목록으로 낼 것. 타입 검사가 못 잡는 런타임 잔재입니다.
+4. 공백·줄바꿈 허용(`D.Modifier\n.TextButton()`), 동적 인덱스 규칙, 살려 두기용 줄 처리.
+5. 분석은 주석·문자열을 가린 사본에서 하되, require 문자열은 원문에서 읽을 것.
+6. OnChange/Out 클래스는 "감싼 요소, 아니면 변수의 첫 사용"으로 정하고, 모듈 밖으로 나가는 훅은 사람이 정하도록 목록으로 낼 것.
+7. 입력/전체형 판정 규칙: 테이블 타입 필드와 파라미터는 마커, `local`·반환·`]:`·캐스트는 전체형. 메소드 호출 검출은 같은 파일만 보므로 다른 파일 쪽은 타입 검사가 받쳐 줍니다.
+8. 보고서 줄 번호는 원본 기준으로 낼 것. 머리 삽입으로 줄이 밀리고, 이번에 프로브 생성기가 실제로 한 번 틀렸습니다.
+9. 주석·문서는 별도 패스(92곳).
+10. Lib4 보강 셋(진짜 `NewChild`, Ref 팔, `StateMarker<T|Tween<T>>`)은 실제 타입 함수 구현에 필수입니다.
+11. base `Modifier`를 Quad에서 빼는 일은 quad-types를 직접 고쳐야 합니다(1절).
+
+### 9. 종합 (재료)
+- 마커 결정은 킷 규모에서 비용 없이 섰습니다: 새 오류 0, 메소드가 필요한 입력 0곳.
+- override 없는 설정(Studio 기본 한도)에서 타입 검사가 되살아나고, 옛 b2 놓침이 81/81 닫힙니다.
+- 검사 시간·메모리는 세 모드 모두 같거나 줄었습니다. sync 전체 검사만 숫자상 늘었는데, 기준선이 무너져 일찍 끝나서입니다.
+- 남은 비용:
+  - 모듈 밖으로 나가는 OnChange 훅 1곳은 사람이 정해야 합니다.
+  - any 캐스트로 묶은 D처럼 타입이 못 보는 잔재를 스크립트가 반드시 보고해야 합니다.
+  - 핀 defs와 확장 defs 차이(ShowBehindParent)가 새 표면에서는 진단으로 드러납니다.
+- **미측정:** Studio, LSP의 hover·자동완성(킷 파일 안), 추상 클래스로 OnChange를 거는 꼴, export되지 않은 입력 타입 22곳의 필드 검사, 심은 오류를 Modifier 쪽 위반으로 넣는 것.
+
+### 10. 새 파일 (`.claude/audit/decl-typefn-probe-2026-10-16/` 아래)
+- `src/Lib4.luau`, `harness/codemod-proto.py`
+- `harness/compare/kit-trial/`:
+  - 확장 모듈 `Ext4.luau`
+  - 도구 `run.py`, `summarize.py`, `inject-neg.py`, `neg-tally.py`, `props-probe.py`, `perfile.py`, `pf-stats.py`
+  - 카나리 `canary-{mat,dev}-{base,new}.luau` (레포 위치에서는 require가 안 풀리는 참고 사본)
+- `harness/compare/kit-trial/out/`:
+  - `summary.txt` — 위 표들의 원천
+  - `codemod-report.json`
+  - `codemod.diff` — 변환 전후 전체, 13k줄
+  - `raw/` — 모드·변형별 원 출력. 중복 줄을 지우고 400자에서 잘랐습니다. 파일당 시간 TSV, 오류를 심은 자리 목록 포함
+  - `probe/props-probe-{mat,dev}-{base,new}.luau`
+- 참고: 마지막에 본 `git status`에서 `kit-trial/Ext4.luau`와 `props-probe.py`가 `M`(이미 추적 중)으로 나옵니다. 작업 도중 메인 세션이 커밋한 것으로 보입니다. 그 뒤 제가 바꾼 것은 Ext4 머리 주석 한 줄과 props-probe의 줄 번호 수정입니다.
+- 스크래치(레포 밖): `/tmp/claude-0/-code-Projects-quad/375233bc-c5ce-4803-af8f-62ebd7b9d5c7/scratchpad/kit-trial/`
+  - `base`: 기준선 사본
+  - `new`: 변환본
+  - `new-req`: quad-roblox를 진짜 require한 변형
+  - `base-neg`·`new-neg`: 오류를 심은 사본
+  - `base-pp`·`new-pp`: 필드 프로브
+  - `gap-{child,ref,tween}`: Lib3 빈칸 되돌림
+  - `out/`: 원 출력 원본
+
+메인 확인: 심은 오류 집계(`harness/compare/kit-trial/out/summary.txt` 149~154행 — 기준선 sync 0/194, 변환본 세 모드 194/194)와 기준선 sync의 Card·List As 체인 too complex(같은 파일 21~26행)를 원 출력에서 대조했다.
