@@ -31,7 +31,7 @@
 7. **`*-components.md`·`how-to/01-component-conventions.md` — 컴포넌트 경계.** 함수 상자 하나에 들어오는 props(문자 키: 값·State / 숫자 키: `Children` Slot·`Ref`·`Modifier`)와 나가는 인스턴스. "마법은 없다"를 그림으로.
 8. **`*-context.md` — 가방 넘기기.** 진입점(가방에 담음) → 중간 컴포넌트(가방만 통과, 안을 모름) → 말단(자기 열쇠로 엶). React식 "거슬러 올라가 조회"와 대비되는 화살표 방향.
 9. **`*-setup.md` — 파일 배치.** `ReplicatedStorage/roblox_packages/…`, 설정 모듈 `Client/UI/Quad`, 진입점 `StarterPlayerScripts/Main.client` 트리 한 장(지금은 코드 주석으로만).
-10. **`how-to/07-studio-ui-binding-and-claim.md` — 템플릿 → `:Clone()` → `Claim` → `D.Mapper` 매핑.** 정적 프로퍼티는 템플릿에 구워 두고 동적 바인딩만 Claim이 심는다는 그림(C 실측 2번과 같이).
+10. **`how-to/07-studio-ui-binding-and-claim.md` — 템플릿 → `:Clone()` → `Claim` → `q.Mapper` 매핑.** 정적 프로퍼티는 템플릿에 구워 두고 동적 바인딩만 Claim이 심는다는 그림(C 실측 2번과 같이).
 11. **`overview/01-why-quad.md` §1·§6 — 전파 모델 셋 나란히.** Fusion(push 무효화+pull, eager 표시) / Vide(순수 push, 깊이우선) / Quad(신호만 push, 계산은 pull). 3번 그림의 확장판이라 같이 그리면 된다.
 12. ~~**`docs/README.md` Diátaxis 사분면** — 17번 그대로.~~ **[2026-09-11 해소 — 17번과 함께 스킵]**
 13. ~~**[2026-09-11 밤 신설] `*-observer-effect.md` §4 게임패드 선택 예제** — `GuiService.SelectedObject`를 `Effect`에서 걸고 cleanup에서 푸는 것이 실기기에서 그대로 되는지(mock은 `{ SelectedObject = nil }` 셰임으로만 확인). 파괴 때 cleanup이 선택을 풀어 죽은 버튼이 선택된 채 남지 않는지.~~ **[2026-09-21 실측 완료 — `audit/round11-studio-2026-09-21/REPORT.md` 6번]** 정상 사용(PlayerGui 아래)에서 서술대로; 파괴 때 선택을 비우는 건 엔진이 아니라 cleanup(대조군). 캐비엇 둘(PlayerGui 밖이면 대입이 던짐, 파괴 cleanup은 한 틱 뒤)은 문서 묶음.
@@ -52,7 +52,7 @@
 #### C. 실기기(Studio, 별도 계정) 실측 — 결과만 알려 주면 문장 확정은 에이전트가
 
 1. **`*-slot.md` 새 배치 스크린샷** — card / panel / host 예시(사용자 SVG와 같은 구조)를 실제로 띄운 화면. 문서 그림과 실물이 맞는지, 라벨 치우침 없는지.
-2. **템플릿 → `:Clone()` → `Claim` 패턴 실측**(how-to 07) — 정적 프로퍼티가 템플릿에서 그대로 오고 동적 바인딩만 Claim이 심는지, `D.Mapper` 매핑이 직계 자식만 보는지.
+2. **템플릿 → `:Clone()` → `Claim` 패턴 실측**(how-to 07) — 정적 프로퍼티가 템플릿에서 그대로 오고 동적 바인딩만 Claim이 심는지, `q.Mapper` 매핑이 직계 자식만 보는지.
 3. **StyleRule vs quad 프로퍼티 직접 대입의 우선순위** — `q.Tag("Card")`에 StyleRule로 `BackgroundColor3`를 걸고 같은 프로퍼티를 quad가 `State`로 바인딩할 때 누가 이기는지(정적/동적 각각). 오버뷰 (6)과 `*-tag-attr.md`가 지금 이 사실을 **어느 쪽으로도 안 적는다** — 결과에 따라 한 문장 추가.
 4. **PostRef/`OnRendered` 시점의 `Parent`** — 리터럴 중첩(예상 nil)과 `Claim`한 인스턴스(예상 이미 있음) 둘에서 실제 값. 문서 캐비엇의 근거.
 5. **`State<Instance?>`를 자리에 놓고 갈아 끼울 때 옛 원소가 파괴되지 않고 `Parent = nil`로 남는지**(mock 실측만 있음) — `*-slot.md` §6 서술의 실기기 확인.
@@ -74,7 +74,7 @@
 - ~~**[2026-09-11 열린 탐사 — 급함] 문서가 게시된 3.0.0이 아니라 HEAD를 서술한다.**~~ **[같은 날 해소 — 3.1.0 bump]** 게시(E 절)만 남았다. 문서의 `Indexed` 표시는 "3.0.0에서는 `Index`, 3.1.0부터 `Indexed`"로 바꿔 게시 시점과 무관하게 참.
 - **범위 밖 안내 절을 둘지** — 시니어가 첫날 묻는데 문서가 침묵하는 넷: 서버 사이드·`SurfaceGui`/`BillboardGui`, `StreamingEnabled`와 바인딩, Roact/Fusion 화면과의 공존, 핫 리로드(스토리북 도구는 예정). 답을 만들지 않더라도 how-to에 "아직 답이 없는 것" 절로 경계를 그어 두자는 제안(열린 탐사) — 둘지, 어느 항목을 넣을지.
 - **"현재 상태" 단락** — 오버뷰나 랜딩에 트랙 레코드(언제부터, 어디서 쓰이는지, 어느 규모까지 굴려 봤는지, 성능 수치) 한 단락을 둘지. 내용은 사용자만 안다.
-- ~~**클래스별 `Modifier`/`OnChange` 타입의 공개 경로**~~ **[2026-09-16 해소 — docs-review 2-2 (d), 사용자 "권고대로"] 루트 재수출 블록에 `<Class>Modifier`/`Into<Class>`/`<Class>Elem` 편입, how-to 01·05는 `RobloxModule.<Class>Modifier`.** 이전 상태: **[2026-09-16 방향 확정 — 사용자 결정]** 생성 `Declaration`이 stable, 클래스 매개 type function 경로(`ModifierOf<Class>`류)는 **unstable**로 따로 연다(ROADMAP 백로그, 착수 시점은 사용자). ~~그 경로가 생기면 이 문항의 예제는 그쪽으로 옮기고, 그 전까지는 생성 모듈 직접 require 안내 그대로.~~(같은 날 (d)로 대체) ~~**[2026-09-15 보류 — D 타입 함수 팩토리화 뒤]** 루트 자동 생성 재수출 블록(`gen-d.py` → `quad-roblox/src/init.luau`)은 생겼고 지금은 클래스 무관 `Field`/`FieldOut`만 싣는다; 클래스별 이름은 팩토리화에서 바뀔 수 있어 사용자 지시로 보류(원장 (28)).~~ `<Class>OnChange`는 재수출 대상이 아니다(설치 문서가 명시). 원래 문항: 레퍼런스 roblox/03·05, how-to 01·05의 예제가 `require(<quad-roblox D 모듈 경로>)`로 `TextButtonModifier` 같은 클래스별 타입을 가져오는데, pesde 설치에서 `quad_roblox`는 링크 파일이라 `/Declaration` 하위가 없고 그 타입들은 `.pesde/…/quad_roblox/src/Declaration` 아래에만 있다(루트가 재수출하는 건 `Declaration`·`Tween`·`PropTypes` 같은 네임스페이스 타입뿐). `.pesde` 경로를 문서에 적는 건 버전 고정 관용구를 새로 발명하는 것이라 안 했다 — quad_roblox 루트가 클래스별 타입도 재수출하게 할지(소스 변경), 아니면 `typeof(q.Declaration.Modifier.TextButton)` 같은 우회를 문서화할지 결정.
+- ~~**클래스별 `Modifier`/`OnChange` 타입의 공개 경로**~~ **[2026-09-16 해소 — docs-review 2-2 (d), 사용자 "권고대로"] 루트 재수출 블록에 `<Class>Modifier`/`Into<Class>`/`<Class>Elem` 편입, how-to 01·05는 `RobloxModule.<Class>Modifier`. [2026-10-20 — 3.4.0에서 이 클래스별 이름들은 지워지고 `Modifier<C>`·`ModifierInto<C>`·`PropsArrayItem<C>`로 대체]** 이전 상태: **[2026-09-16 방향 확정 — 사용자 결정]** 생성 `Declaration`이 stable, 클래스 매개 type function 경로(`ModifierOf<Class>`류)는 **unstable**로 따로 연다(ROADMAP 백로그, 착수 시점은 사용자). ~~그 경로가 생기면 이 문항의 예제는 그쪽으로 옮기고, 그 전까지는 생성 모듈 직접 require 안내 그대로.~~(같은 날 (d)로 대체) ~~**[2026-09-15 보류 — D 타입 함수 팩토리화 뒤]** 루트 자동 생성 재수출 블록(`gen-d.py` → `quad-roblox/src/init.luau`)은 생겼고 지금은 클래스 무관 `Field`/`FieldOut`만 싣는다; 클래스별 이름은 팩토리화에서 바뀔 수 있어 사용자 지시로 보류(원장 (28)).~~ `<Class>OnChange`는 재수출 대상이 아니다(설치 문서가 명시). 원래 문항: 레퍼런스 roblox/03·05, how-to 01·05의 예제가 `require(<quad-roblox D 모듈 경로>)`로 `TextButtonModifier` 같은 클래스별 타입을 가져오는데, pesde 설치에서 `quad_roblox`는 링크 파일이라 `/Declaration` 하위가 없고 그 타입들은 `.pesde/…/quad_roblox/src/Declaration` 아래에만 있다(루트가 재수출하는 건 `Declaration`·`Tween`·`PropTypes` 같은 네임스페이스 타입뿐). `.pesde` 경로를 문서에 적는 건 버전 고정 관용구를 새로 발명하는 것이라 안 했다 — quad_roblox 루트가 클래스별 타입도 재수출하게 할지(소스 변경), 아니면 `typeof(q.Declaration.Modifier.TextButton)` 같은 우회를 문서화할지 결정.
 - **레퍼런스·how-to 예제의 `local` vs GS의 `const`** — 프롤로그는 통일했지만(01장 설정 모듈) 본문 `local`은 그대로 뒀다. 예제 전부를 `const`로 바꿀지(툴체인 하한과 같이).
 
 #### F. [2026-09-14 신설] BREAKING 허용 주간 — 끝나는 시점을 알려 줄 것
@@ -91,7 +91,7 @@ docs-review 3-1 (4)의 답을 쓰려면 사용자 기기가 필요하다(사용�
 
 #### H. [2026-09-27 신설] 생성기 입력(API dump) 신선도 — 사람만 다시 받을 수 있다
 
-`scripts/gen-d.py`가 읽는 정규화 산출물 `quad-roblox/dump/api-surface.json`의 `dumpVersion`은 2026-09-02 최초 생성 이후 한 번도 바뀌지 않았다(재생성 다섯 번은 전부 같은 고정 dump 재사용; `scripts/roblox-defs/globalTypes.d.luau`도 09-02). `gen-d.py check`는 "커밋된 산출물끼리의 일관성"만 보고 raw dump가 최신인지는 보지 않으므로, Roblox가 새 GUI 클래스·프로퍼티를 추가해도 **자동으로 알 길이 없다**(round13 G1 감사). 사람 몫: 릴리즈(특히 4.0.0) 전에 한 번 raw API Dump·`globalTypes.d.luau`를 새로 받아 `normalize <dump> <version>` → 재생성 → `gen-d.py check`·test.sh — 바뀐 클래스/프로퍼티가 있으면 CHANGELOG Added. 지금 커버리지는 GUI 후손 45 중 생성 31 + 화이트리스트 3, 제외 17(추상 12·문서화 태그 5)로 누락 없음.
+`scripts/gen-d.py`가 읽는 정규화 산출물 `quad-roblox/dump/api-surface.json`의 `dumpVersion`은 2026-09-02 최초 생성 이후 한 번도 바뀌지 않았다(재생성 다섯 번은 전부 같은 고정 dump 재사용; `scripts/roblox-defs/globalTypes.d.luau`도 09-02). `gen-d.py check`는 "커밋된 산출물끼리의 일관성"만 보고 raw dump가 최신인지는 보지 않으므로, Roblox가 새 GUI 클래스·프로퍼티를 추가해도 **자동으로 알 길이 없다**(round13 G1 감사). 사람 몫: 릴리즈(특히 4.0.0) 전에 한 번 raw API Dump·`globalTypes.d.luau`를 새로 받아 `normalize <dump> <version>` → 재생성 → `gen-d.py check`·test.sh — 바뀐 클래스/프로퍼티가 있으면 CHANGELOG Added. [2026-09-27 기준, 3.3 생성 D 시절] 커버리지는 GUI 후손 45 중 생성 31 + 화이트리스트 3, 제외 17(추상 12·문서화 태그 5)로 누락 없음. [2026-10-20] 3.4.0부터 `gen-d.py emit`은 `quad-roblox/src/Surface/Data.luau`(클래스 맵 31·47과 정책 데이터)만 만들고 타입은 사용자 검사기의 클래스 타입에서 나오므로, dump가 낡으면 영향은 정책 데이터(Deny·되살린 레거시·클래스 맵 목록) 쪽이다.
 
 #### I. [2026-09-27 신설] round13 자율 루프가 남긴 실기기(Studio) 실측 후보 — 결정을 막는 것 + 정보만(개수는 초안 파일이 소스 — 루프가 도는 동안 계속 늘었다)
 

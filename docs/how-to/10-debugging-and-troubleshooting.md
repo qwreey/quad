@@ -107,7 +107,7 @@ Quad0135 Ref:Unwrap: the Ref is empty (Value is nil) - not filled yet, or never 
 ### 함정 3: `Ref`를 `Modifier` 안에 넣기, 또는 문자 키로 넘기기
 
 - **증상**: `Modifier`에 넣으면
-  `Quad0064 Modifier: field "Ref" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`(세터 체인 `:Field`로 넣었으면 같은 문구에 `Quad0057`).
+  `Quad0064 Modifier: field "Ref" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/Spread/mapper descriptor)`(세터 체인 `:Field`로 넣었으면 같은 문구에 `Quad0057`).
   문자 키로 주면 평범한 `Ref`는
   `Quad0076 Dispatch: no handler matched key Ref (value: table, brand: Epoch, Ref) - a quad value at a string key: it belongs in a numeric (array) slot`가, `PreRef`/`PostRef`는 `Quad0137 PreRef: must be an array item, not the value of a string key`(주어만 바뀜)가 납니다 — 단 그 문자 키가 **실제 반영 프로퍼티나 이벤트 이름**이면 이 에러에 닿기 전에 프로퍼티·이벤트 핸들러가 값을 받아 다른 결과가 납니다(`Name = ref`는 번호 없는 타입 에러, `Size = ref`는 에러 없이 `Ref` 테이블이 대입되는 조용한 오염, `Activated = ref`는 `Quad0218` — [Ref 레퍼런스](../reference/core/07-ref.md)의 "숫자 키 자리에만 놓는다" 절; strict가 이 자리를 잡아 줍니다).
 - **원인**: `Modifier`는 여러 인스턴스에 재사용되는 스타일 가방이라, 단일

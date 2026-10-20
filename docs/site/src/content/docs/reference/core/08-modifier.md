@@ -93,7 +93,7 @@ Modifier: setmetatable<{
 - `Quad0061 Modifier: field "{k}" matches the reserved cast prefix As<Class> - casts are methods, not fields`
 - `Quad0062 Modifier: field "{k}" starts with "__" - metamethod-looking names are never properties`
 - `Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function - a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the element, or wrap it in a State)`
-- `Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`
+- `Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/Spread/mapper descriptor)`
 
 **예제**
 
@@ -143,7 +143,7 @@ setter는 런타임에 어떤 이름으로든 생기지만, **타입은 클래�
 
 **에러**
 
-- `Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`
+- `Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/Spread/mapper descriptor)`
 - `Quad0264 Modifier: the transform for field "{key}" returned a function - a field cannot hold a function (an event handler does not belong in a Modifier; put it as an inline key on the element, or wrap it in a State)`
 - `Quad0058 Modifier: setter keys must be strings (got {typeof(key)}) - put a non-string key in the props table itself (Frame { [key] = value })`
 

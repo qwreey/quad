@@ -142,6 +142,14 @@ do
 	expectError(function()
 		q.Dispatch.drive(Instance.new("Frame"), { Hooks = Spread {} })
 	end, "Quad0277", "a Spread at a key in an element")
+	-- a Modifier field also lands at a string key — refused when the Modifier is built (drive's Quad0277
+	-- check runs before the fields are merged, so it would not see it)
+	expectError(function()
+		Modifier { Hooks = Spread {} }
+	end, "Quad0064", "a Spread as a Modifier field (initial table)")
+	expectError(function()
+		Modifier():Hooks(Spread {})
+	end, "Quad0057", "a Spread as a Modifier field (setter)")
 	print("PASS")
 end
 

@@ -110,9 +110,20 @@ local FieldsKey = table.freeze({})
 -- round14 (user decision 2026-10-02): `type` first — every handler-layer value is a table, so the six
 -- brand lookups run only for tables; numbers/strings/booleans/userdata (most field values) skip them.
 -- Both callers (the setter and the initial-field table) go through here.
+-- A Spread joins the list (3.4.0): a field lands at a string key, and a Spread at a string key is always an
+-- error (Quad0274 at creation, Quad0277 in drive) — but drive's check runs before the Modifier fields are
+-- merged in, so a Spread reaching a field would slip past it into the Property handler. Ref: 3.4.0 review
 local function isHandlerLayerValue(v: any): boolean
 	return type(v) == "table"
-		and (isRef(v) or isObserver(v) or isEffect(v) or Brand.isSlot(v) or isModifier(v) or Brand.isMapperDescriptor(v))
+		and (
+			isRef(v)
+			or isObserver(v)
+			or isEffect(v)
+			or Brand.isSlot(v)
+			or isModifier(v)
+			or Brand.isMapperDescriptor(v)
+			or Brand.isSpread(v)
+		)
 end
 
 local ModifierMT = {}
@@ -317,7 +328,7 @@ local function setterClosure(key: string): (any, any) -> any
 		if isHandlerLayerValue(value) then
 			-- level 2 = the user's `mod:Field(...)` line (the closure is not
 			-- table-reached, so no tag — `H-250`)
-			error(`Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`, 2)
+			error(`Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/Spread/mapper descriptor)`, 2)
 		end
 		if type(value) == "function" then
 			-- round13 Q79 (a) (user decision 2026-10-01): a transform that RETURNS a function stored a raw
@@ -423,7 +434,7 @@ local function construct(tag: any, ...: any): any
 					Err.errorBeforeNearest(`Quad0063 Modifier: field "{k}" in an initial-field table cannot be a function - a transform goes through mod:{k}(fn); an event handler does not belong in a Modifier (put it as an inline key on the element, or wrap it in a State)`, SURFACE)
 				end
 				if isHandlerLayerValue(v) then
-					Err.errorBeforeNearest(`Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`, SURFACE)
+					Err.errorBeforeNearest(`Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/Spread/mapper descriptor)`, SURFACE)
 				end
 				merged[k] = v
 			end

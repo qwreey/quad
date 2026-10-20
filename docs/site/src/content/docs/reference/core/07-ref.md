@@ -54,7 +54,7 @@ type PostRef<T> = Ref<T> & { read __quadPostRef: true }
 
 평범한 `Ref`는 전용 가드가 없습니다 — 문자 키에 두면 `Quad0076 Dispatch: no handler matched key … (value: table, brand: Epoch, Ref) - a quad value at a string key: it belongs in a numeric (array) slot`(3.2.0엔 같은 안내를 `Quad0137 Ref: …`로 냈는데 겹치는 가드라 걷어냈습니다). 숫자 키 자리에 닿기만 하면 되므로 `Source`/`Store` 값에 담아 넣어도 그대로 채워지는 것은 `Ref`만이고, `PreRef`/`PostRef`는 State에 담아 숫자 키에 넣어도 `Quad0136`으로 거부됩니다(위 문단).
 
-- Modifier 필드 — `Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)`
+- Modifier 필드 — `Quad0064 Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/Spread/mapper descriptor)`
 - 문자 키(반영 프로퍼티·이벤트가 **아닌** 이름 — `Parent`·오타 등) — `Quad0076`의 문자 키 꼬리 ` - a quad value at a string key: it belongs in a numeric (array) slot`(3.2.0엔 `Quad0137 Ref: …`, 그 전엔 `Quad0076`의 프로바이더 안내가 나왔습니다)
 - 반영 프로퍼티 키 — 생성된 props 타입이 그 값 자리에서 `Ref`를 거부합니다. 타입 검사 없이 넘기면 가드가 아니라 **프로퍼티 핸들러**가 먼저 받아 `inst[k] = ref`로 대입합니다 — mock에서는 `Name = ref`가 번호 없는 `Name must be a string`(핸들러 줄 blame), `Size`/`Visible`은 에러 없이 `Ref` 테이블이 들어가고 `PostRef`는 소비도 발화도 되지 않습니다; 실엔진은 엔진 대입 에러로 추정(미실측, [2026-09-27 기준]). 이벤트 키(`Activated = ref`)는 `Quad0218 Event: handler … must be a function (got table)`. `q.debug`가 켜져 있으면 어느 쪽이든 그 앞에 `Ref: found at string key "Size" - must be an array item (…)` 경고 한 줄이 먼저 나옵니다.
 

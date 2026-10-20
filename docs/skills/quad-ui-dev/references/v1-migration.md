@@ -6,7 +6,7 @@ Read `SKILL.md` first; this file only covers what changes coming *from v1*.
 
 ## 0. Toolchain (do this before anything else)
 
-Nothing type-checks without all four flags:
+The new solver is required; the three limit flags are recommended (the same four the repo's gates use):
 
 ```
 luau-lsp analyze --flag:LuauSolverV2=true --flag:LuauTarjanChildLimit=160000 \
@@ -15,8 +15,9 @@ luau-lsp analyze --flag:LuauSolverV2=true --flag:LuauTarjanChildLimit=160000 \
 ```
 
 - No `LuauSolverV2` → type-checking quad's own sources fails: `TypeError: read keyword is illegal here`.
-- No `LuauTarjanChildLimit` → even `q.Elem "Frame" { Name = "x" }` dies:
-  `TypeError: Internal error: Code is too complex to typecheck!`
+- Without the three limit flags almost everything still checks (3.4.0); the known exception is an annotation that
+  compares an ancestor-class Modifier type (`local m: Modifier<GuiObject> = …`, a `Modifier<GuiButton>` parameter) —
+  `Code is too complex to typecheck!` there. Prefer a concrete class, `ModifierInto<C>`, or no annotation.
 
 Bootstrap: `require(path).Init(id)` → two modules plus `Quad:UseProvider(QuadRoblox)`.
 `require(quad-base)` **is** the default instance; there is no id-keyed instance registry
@@ -27,7 +28,7 @@ Bootstrap: `require(path).Init(id)` → two modules plus `Quad:UseProvider(QuadR
 | v1 | v2 |
 | :--- | :--- |
 | `Class "Frame"` → `Frame {...}` | `q.Elem "Frame" {...}` |
-| `Class "<class not in D>"` | `q.Elem<<T>>("ClassName")(props)` |
+| `Class "<class not in the class map>"` | `local W = q.ForClasses<<{ Part: Part }>>()` then `W.Elem "Part" {...}` (or a cast) |
 | `Frame "id" {...}` | removed (id lookup is gone) |
 | `Mount(parent, obj)` | `obj.Parent = parent` (`Parent` is never a prop) |
 | `Mount(to, a, b)` | array part; a children **variable** only as `{ table.unpack(children) }`, last element |
@@ -97,17 +98,16 @@ it is *not* the port of `:With`. Never map by name alone.
 | prebuilt props table `q.Elem "Frame" (props)` | `Expected this to be 'FrameParam<…>' … 'string' is not exactly 'StateMarker<string>'` | bidirectional inference only works at the literal site |
 | children array variable `q.Elem "ScreenGui" (children)` | same family of param mismatch | `q.Elem "ScreenGui" { table.unpack(children) }` |
 | `q.Store()` then `store.Text = v` | `Cannot add property 'Text' to table '{ } & { Names: …, Of: … }'` | declare in defaults, or `store:Of<<string>>("Text")` |
-| `State<Frame>` into a `State<Instance>` param | `'Frame' is not exactly 'Instance'` (hundreds of lines) | `State<T>` is invariant — declare inputs as the generated prop type (covariant marker) or `State<Instance>` |
+| `State<Frame>` into a `State<Instance>` param | `'Frame' is not exactly 'Instance'` (hundreds of lines) | `State<T>` is invariant — declare inputs as the prop type (covariant marker) or `State<Instance>` |
 | `Slot:List` updateFn returning `nil` first | `Expected this to be 'nil', but got 'TextLabel'` | annotate both `ctx` and the return pack: `function(ctx: RowCtx): (any, RowUD?)` (the return pack alone clears the diagnostic but leaves `ctx.Item` fields unchecked; `== q.KeyGone` does not narrow, so cast `ctx.Item :: Row` after it) |
 | `q.Context.Provider("Theme")` uncast | `Get()` resolves to `unknown`, fails at the prop site | `q.Context.Provider<<Theme>>("Theme")` |
 | `q.Ref(nil)` | `… but got 'Ref<nil>'` | `q.Ref<<Frame?>>(nil)` |
 | `[q.AttrKey("Hp")] = v` | `Expected this to be 'number', but got 'AttrKeyObject'` | runtime is fine, types are not opened — use array-part `q.Attr{...}` / `q.NumberAttr(...)` |
-| `q.Elem("Folder")({...})` result used | `Type 'unknown' does not have key 'Name'` | `q.Elem<<Folder>>("Folder")({...})` |
 | `Text = 42` | `Expected this to be '(None \| StateMarker<string> \| string)?', but got 'number'` | `tostring(42)` |
 | `Op.Sum(UDim2 …)` | `None of the overloads for function that accept 2 arguments are compatible` | arithmetic/bitwise operators are number-only; other types go through `:Compute` |
 
 Explicit type arguments use **double** angle brackets: `q.Slot<<Instance>>()`,
-`q.OnCreated<<Frame>>(fn)`, `store:Of<<string>>("Text")`, `q.Elem<<Folder>>("Folder")`,
+`q.OnCreated<<Frame>>(fn)`, `store:Of<<string>>("Text")`, `q.ForClasses<<{ Part: Part }>>()`,
 `q.Operator.Indexed<<Color3>>("Primary")`, `q.Ref<<Frame?>>(nil)`.
 
 ## 4. What strict mode does NOT catch

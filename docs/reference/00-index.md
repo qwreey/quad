@@ -255,7 +255,9 @@ quad가 만든 인스턴스를 손에 쥐는 세 종류의 참조와, 채워질 
 | `q.Elem "Class" (props)`(3.3까지 `q.Declaration` — `D.<Class>(props)`·`D.New`) | [roblox/02 — Elem](./roblox/02-elem.md#qelem-class-props) |
 | 숏핸드 키 `UICorner` / `UIPadding` / `UIPaddingOffset` / `UIScale` | [roblox/02](./roblox/02-elem.md#숏핸드-키-넷) |
 | `q.ForClasses<<Map>>()` | [roblox/02](./roblox/02-elem.md#qforclassesmap) |
-| `Props<C>` / `ElemCtor<C>` / `PropertyMap<C>` | [roblox/02](./roblox/02-elem.md#타입-이름--propsc--elemctorc--propertymapc) |
+| `Props<C>` / `PropsHashPart<C>` / `PropsArrayItem<C>` / `MapperProps<C>` / `ElemCtor<C>` / `PropertyMap<C>` | [roblox/02](./roblox/02-elem.md#타입-이름--propsc--elemctorc--propertymapc) |
+| `Modifier<C>` / `ModifierInto<C>` / `Spread<C>` / `SpreadInto<C>` / `ModifierField<T>` / `ModifierFieldOut<T>` | [roblox/03](./roblox/03-modifier-spread.md#modifierc--modifierintoc--spreadc--spreadintoc) |
+| `OnChangeDescriptor<K>` / `OnEventDescriptor<K>` | [roblox/05](./roblox/05-onchange.md#qonchange-class-name-fn) |
 | `q.Claim(inst, descriptor)` | [roblox/04 — Claim·Mapper](./roblox/04-claim-mapper.md) |
 | `q.Mapper "Class" (key)(props)`(3.3까지 `D.Mapper.<Class>`) | [roblox/04](./roblox/04-claim-mapper.md#qmapper-class-keyprops) |
 | `q.MapperRoot`(3.3까지 `D.Mapper.Root`도) | [roblox/04](./roblox/04-claim-mapper.md#qmapperroot) |

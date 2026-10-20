@@ -484,11 +484,19 @@ class Rewriter:
     # ---- quad-base renames
     def base_renames(self):
         ms, rep = self.ms, self.rep
-        for mod in sorted(self.base_mod):
+        # every quad instance had `New()` in 3.3 (base module, provider-installed `q`, setup-module aliases)
+        known = self.q | self.base_mod
+        for mod in sorted(known):
             for m in re.finditer(r"(?<![\w.:])" + re.escape(mod) + r"\s*\.\s*New\s*\(\s*\)", ms):
                 if self.free(m.start(), m.end()):
                     self.edit(m.start(), m.end(), f"{mod}.NewModule()")
                     rep["base"].append((self.ln(m.start()), "New() → NewModule()"))
+        # `.New()` on a name not recognised as quad (an Instance-path require, a field of another table, ...) —
+        # not rewritten (it may not be quad), but reported so it is not silently left behind
+        for m in re.finditer(r"\.\s*New\s*\(\s*\)", ms):
+            if not self.free(m.start(), m.end()):
+                continue
+            rep["unresolved"].append((self.ln(m.start()), "`.New()` on a module not recognised as quad: if it is one, rename to `.NewModule()`"))
         for qn in sorted(self.q | self.base_mod):
             for m in re.finditer(r"(?<![\w.:])" + re.escape(qn) + r"\s*\.\s*Modifier\b(?!\s*\.\s*(?:Raw)\b)", ms):
                 if not self.free(m.start(), m.end()):
@@ -499,7 +507,8 @@ class Rewriter:
                     continue
                 # a call or a member is base's untyped constructor; the bare value too, but only where no provider is
                 # installed (quad-base code) — under a provider `(q.Modifier :: any)(cls)` is the typed factory
-                if re.match(r"\s*(\(|\.\s*(Overridden|TypedFactory|DefineSubtype)\b)", rest) or "quad-base/" in self.rel:
+                # `q.Modifier { … }` (3.3's table-call form) is the untyped constructor too
+                if re.match(r"\s*(\(|\{|\.\s*(Overridden|TypedFactory|DefineSubtype)\b)", rest) or "quad-base/" in self.rel:
                     self.edit(m.start(), m.end(), f"{qn}.Raw.Modifier")
                     rep["base"].append((self.ln(m.start()), "Modifier → Raw.Modifier"))
             for m in re.finditer(r"(?<![\w.:])" + re.escape(qn) + r"\s*\.\s*newMapperClass\b", ms):

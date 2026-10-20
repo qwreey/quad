@@ -80,7 +80,7 @@ Activated = function(inputObject, clickCount) end
 -- Activated = function(self, inputObject) end
 ```
 
-In `--!strict` the declared handler type must match the generated prop type exactly,
+In `--!strict` the declared handler type must match the prop type (`Props<C>` member) exactly,
 arity included — a `() -> ()` field does not satisfy
 `Activated: (((inputObject: InputObject, clickCount: number) -> ()) | StateMarker<...> | None)?`. Spell the
 engine signature out in component prop types.

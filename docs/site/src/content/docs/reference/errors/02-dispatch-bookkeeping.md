@@ -137,9 +137,9 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 ### Quad0057
 
-`Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)` — `quad-base/src/Dispatch/Modifier/init.luau`
+`Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/Spread/mapper descriptor)` — `quad-base/src/Dispatch/Modifier/init.luau`
 
-- **언제**: `mod:Field(value)`의 `value`(리터럴이든 변환 함수의 반환이든)가 `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier` 같은 핸들러 계층 값이거나 `Claim`/`Mapper`의 디스크립터(`q.Mapper "Frame" ("Title")` 등 — 숫자 키 자리에서만 해석되는 값)일 때. `State`/`Source`는 통과합니다(`State`가 디스크립터를 담은 경우는 만들 때 값을 읽지 않으므로 여기서 걸리지 않습니다).
+- **언제**: `mod:Field(value)`의 `value`(리터럴이든 변환 함수의 반환이든)가 `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier`/`Spread` 같은 핸들러 계층 값이거나 `Claim`/`Mapper`의 디스크립터(`q.Mapper "Frame" ("Title")` 등 — 숫자 키 자리에서만 해석되는 값)일 때. `State`/`Source`는 통과합니다(`State`가 디스크립터를 담은 경우는 만들 때 값을 읽지 않으므로 여기서 걸리지 않습니다).
 - **고치려면**: 그 값은 필드가 아니라 props의 숫자 키 자리에 놓으세요.
 - **참고**: [`mod:<Field>(value)`](/reference/core/08-modifier/#modfieldvalue)
 
@@ -193,9 +193,9 @@ description: "Dispatch/Bookkeeping/Modifier/None/핸들러 계약이 던지는 �
 
 ### Quad0064
 
-`Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)` — `quad-base/src/Dispatch/Modifier/init.luau`
+`Modifier: field "{k}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/Spread/mapper descriptor)` — `quad-base/src/Dispatch/Modifier/init.luau`
 
-- **언제**: 초기 필드 테이블의 값이 핸들러 계층 값(`Ref`/`Observer`/`Effect`/`Slot`/`Modifier`)이거나 `Claim`/`Mapper`의 디스크립터일 때 — setter 경로(Quad0057)와 같은 규칙을 생성자에도 적용합니다.
+- **언제**: 초기 필드 테이블의 값이 핸들러 계층 값(`Ref`/`Observer`/`Effect`/`Slot`/`Modifier`/`Spread`)이거나 `Claim`/`Mapper`의 디스크립터일 때 — setter 경로(Quad0057)와 같은 규칙을 생성자에도 적용합니다.
 - **고치려면**: 그 값은 필드가 아니라 props의 숫자 키 자리에 놓으세요.
 - **참고**: [`q.Raw.Modifier(...)`](/reference/core/08-modifier/#qrawmodifier)
 

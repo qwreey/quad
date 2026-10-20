@@ -159,7 +159,7 @@ end)
 [2026-09-27 mock 실측]).
 
 ```
-Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/mapper descriptor)
+Quad0057 Modifier: field "{key}" cannot hold a handler-layer value (Ref/Observer/Effect/Slot/Modifier/Spread/mapper descriptor)
 ```
 
 `State`/`Source`는 통과합니다. 핸들러 층 값은 필드가 아니라 **props의 숫자 키 자리**에 놓는 것이 자리입니다 — 그런 것까지
@@ -325,7 +325,7 @@ Append: (self: Spread<C>, other: SpreadInto<C>) -> ()
 붙습니다. 넣은 Spread는 잠깁니다.
 
 ```luau
-local function Field(props: { Spread: q.SpreadInto<TextBox>? })
+local function Field(props: { Spread: RobloxModule.SpreadInto<TextBox>? })
 	local own = q.Spread "TextBox" { focusHook, ClearTextOnFocus = false }
 	if props.Spread then
 		own:Append(props.Spread)        -- 호출자가 넘긴 것을 뒤에(같은 키는 컴포넌트 쪽이 이김)

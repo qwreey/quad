@@ -22,29 +22,43 @@ local SURFACE = QuadTypes.ERROR_LEVEL_SURFACE
 -- `Handlers/OnChange.luau`'s factories (one function across quad instances — spec.events "module-level factory")
 local errNS: any = nil
 
--- the class stage of every curried constructor
-local function checkClass(fn: string, name: any, hint: string?)
+-- the class stage of every curried constructor. `ns` is the error namespace the calling stage is tagged in (the
+-- module-level descriptor stages: the first installer's; the per-install surface: that quad's own)
+local function checkClass(ns: any, fn: string, name: any, hint: string?)
 	if type(name) ~= "string" or name == "" then
-		errNS.errorBeforeNearest(`Quad0278 {fn}: the first argument must be a class name string (got {if name == "" then '""' else typeof(name)}){hint or ""}`, SURFACE)
+		ns.errorBeforeNearest(`Quad0278 {fn}: the first argument must be a class name string (got {if name == "" then '""' else typeof(name)}){hint or ""}`, SURFACE)
 	end
 end
 
--- the 3.3 two-argument descriptor forms (`q.OnChange("Text", fn)`) would pass the class check with "Text" and hand back
--- a stage function that later fails far away in Dispatch — refuse the extra argument at the call
+-- the 3.3 two-argument descriptor forms (`q.OnChange("Text", fn)`, or the same pair one stage later after a hand
+-- migration: `q.OnChange "TextLabel" ("Text", fn)`) would hand back a stage function that later fails far away in
+-- Dispatch, or drop the callback — refuse the extra argument at the call (class and member stage alike)
 local function checkOneArg(fn: string, extra: number)
 	if extra > 0 then
-		errNS.errorBeforeNearest(`Quad0281 {fn}: takes the class name only - write q.{fn} "Class" "Name" (…) (3.3's q.{fn}(name, …) form is gone)`, SURFACE)
+		errNS.errorBeforeNearest(`Quad0281 {fn}: each stage takes one argument - write q.{fn} "Class" "Name" (…) (3.3's q.{fn}(name, …) form is gone)`, SURFACE)
 	end
 end
 
 -- the member and value stages of OnChange/Out/OnEvent (tagged — they are what the user's line calls). `make` is an
--- UNTAGGED descriptor body: a tagged function calling a tagged one would blame quad's own frame (quad-error header)
-local function curried(make: (string, any) -> any): any
-	local function member(name: any): any
-		local function value(v: any): any
-			return make(name, v) -- the member name is checked here (Quad0221/0223/0279)
+-- UNTAGGED descriptor body: a tagged function calling a tagged one would blame quad's own frame (quad-error header).
+-- The class lives only in the types, so the member stage is one function per descriptor kind and the value stage one
+-- per (kind, member name) — cached, so an inline `q.OnEvent "Frame" "MouseEnter" (fn)` in a list renderer allocates
+-- only the descriptor itself, as 3.3's module-level factories did. Ref: 3.4.0 review
+local function curried(fn: string, make: (string, any) -> any): any
+	local values: { [any]: any } = {}
+	local function member(name: any, ...: any): any
+		checkOneArg(fn, select("#", ...))
+		local value = values[name]
+		if value == nil then
+			function value(v: any): any
+				return make(name, v) -- the member name is checked here (Quad0221/0223/0279)
+			end
+			errNS.setFuncLevel(SURFACE, value)
+			-- only string names are cached: anything else fails in `make`, and must not grow the table
+			if type(name) == "string" then
+				values[name] = value
+			end
 		end
-		errNS.setFuncLevel(SURFACE, value)
 		return value
 	end
 	errNS.setFuncLevel(SURFACE, member)
@@ -52,30 +66,30 @@ local function curried(make: (string, any) -> any): any
 end
 
 local descriptorStages: { [string]: any } = {}
-local makers: { [string]: (string, any) -> any } = {}
+local members: { [string]: any } = {}
 function descriptorStages.OnChange(className: any, ...: any): any
-	checkClass("OnChange", className)
+	checkClass(errNS, "OnChange", className)
 	checkOneArg("OnChange", select("#", ...))
-	return curried(makers.OnChange)
+	return members.OnChange
 end
 function descriptorStages.OnEvent(className: any, ...: any): any
-	checkClass("OnEvent", className)
+	checkClass(errNS, "OnEvent", className)
 	checkOneArg("OnEvent", select("#", ...))
-	return curried(makers.OnEvent)
+	return members.OnEvent
 end
 function descriptorStages.Out(className: any, ...: any): any
-	checkClass("Out", className)
+	checkClass(errNS, "Out", className)
 	checkOneArg("Out", select("#", ...))
-	return curried(makers.Out)
+	return members.Out
 end
 -- install(quad, makeOnChange, makeOut, makeOnEvent) -> the extension fields (merged by `UseProvider`). The three
 -- `make*` are the untagged descriptor bodies.
 local function install(quad: any, makeOnChange: (string, any) -> any, makeOut: (string, any) -> any, makeOnEvent: (string, any) -> any): { [string]: any }
 	if errNS == nil then
 		errNS = quad.errorNamespace
-		makers.OnChange = makeOnChange
-		makers.Out = makeOut
-		makers.OnEvent = makeOnEvent
+		members.OnChange = curried("OnChange", makeOnChange)
+		members.Out = curried("Out", makeOut)
+		members.OnEvent = curried("OnEvent", makeOnEvent)
 		errNS.setFuncLevel(SURFACE, descriptorStages.OnChange, descriptorStages.OnEvent, descriptorStages.Out)
 	end
 	local rawModifier = quad.Raw.Modifier
@@ -87,45 +101,56 @@ local function install(quad: any, makeOnChange: (string, any) -> any, makeOut: (
 		rawModifier.DefineSubtype(parent, sub)
 	end
 
+	-- this quad's own namespace for everything made per install (a second quad-base copy installed under another
+	-- quad keeps the blame on the user's line — 3.3's `Declaration.New` tagged the same way)
+	local ns = quad.errorNamespace
+
+	-- one stage per class name, made on first use (an inline `q.Elem "TextLabel" {…}` in a renderer must not allocate
+	-- and tag a closure per call — 3.3's `D.TextLabel` was made once)
+	local elemStages: { [string]: any } = {}
 	local function elemOf(className: string): any
-		local function stage(props: any): any
-			local inst = Instance.new(className)
-			quad.Backend.nativeClaim(inst) -- right after creation, before any dispatch (bind-system-plan pipeline)
-			quad.Dispatch.drive(inst, props)
-			return inst
+		local stage = elemStages[className]
+		if stage == nil then
+			function stage(props: any): any
+				local inst = Instance.new(className)
+				quad.Backend.nativeClaim(inst) -- right after creation, before any dispatch (bind-system-plan pipeline)
+				quad.Dispatch.drive(inst, props)
+				return inst
+			end
+			ns.setFuncLevel(SURFACE, stage)
+			elemStages[className] = stage
 		end
-		errNS.setFuncLevel(SURFACE, stage)
 		return stage
 	end
 
 	local surface: { [string]: any } = {}
 	function surface.Elem(className: any): any
-		checkClass("Elem", className)
+		checkClass(ns, "Elem", className)
 		return elemOf(className)
 	end
 	function surface.Modifier(className: any): any
-		checkClass("Modifier", className, " - base's untyped constructor is q.Raw.Modifier(...) since 3.4.0")
+		checkClass(ns, "Modifier", className, " - base's untyped constructor is q.Raw.Modifier(...) since 3.4.0")
 		return rawModifier.TypedFactory(className) -- cannot fail on a non-empty string
 	end
 	function surface.Spread(className: any): any
-		checkClass("Spread", className)
+		checkClass(ns, "Spread", className)
 		return rawSpread
 	end
 	function surface.Mapper(className: any): any
-		checkClass("Mapper", className)
+		checkClass(ns, "Mapper", className)
 		return rawMapper(className) -- cannot fail on a non-empty string
 	end
 	surface.OnChange = descriptorStages.OnChange
 	surface.OnEvent = descriptorStages.OnEvent
 	surface.Out = descriptorStages.Out
-	errNS.setFuncLevel(SURFACE, surface.Elem, surface.Modifier, surface.Spread, surface.Mapper)
+	ns.setFuncLevel(SURFACE, surface.Elem, surface.Modifier, surface.Spread, surface.Mapper)
 	table.freeze(surface)
 
 	local forClasses = {}
 	function forClasses.ForClasses(): any
 		return surface
 	end
-	errNS.setFuncLevel(SURFACE, forClasses.ForClasses)
+	ns.setFuncLevel(SURFACE, forClasses.ForClasses)
 
 	return {
 		Elem = surface.Elem,

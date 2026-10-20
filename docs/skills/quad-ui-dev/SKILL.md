@@ -74,7 +74,7 @@ layout if it differs.
 --!strict
 -- install path depends on the project layout
 local Quad = require(<quad-base module>)              -- already a live instance
-local RobloxModule = require(<quad-roblox module>)   -- value + the ONLY public path to generated types (RobloxModule.Modifier<TextButton>, .Field<T>, …)
+local RobloxModule = require(<quad-roblox module>)   -- value + the ONLY public path to the class-parameterised types (RobloxModule.Modifier<TextButton>, .ModifierField<T>, …)
 local QuadRoblox = RobloxModule.QuadRoblox
 local QuadTypes = require(<quad-types module>)        -- types only
 local q = Quad:UseProvider(QuadRoblox)                -- installs Elem / Modifier / Spread / Mapper / OnChange / OnEvent / Out / ForClasses / Animate / Tween / isTween
@@ -207,7 +207,7 @@ local primary    = theme:Apply(Op.Indexed<<string>>("Primary"))  -- caller suppl
 
 A component is a plain function returning an `Instance` or a `Slot`. Do not mutate its
 `props` table (convention — quad neither freezes nor copies it). quad itself does mutate the
-table you hand to `D.<Class>`: `drive` rewrites it **in place** — every Modifier in the array
+table you hand to `q.Elem "<Class>"`: `drive` rewrites it **in place** — every Modifier in the array
 part is replaced by a processed marker and its fields are merged into the hash part.
 
 ```luau
@@ -269,10 +269,10 @@ local unchecked = base:As<<RobloxModule.Modifier<TextLabel>>>()     -- UNCHECKED
 
 `:As<<T>>()` performs no ancestry check. Its optional string argument must be an already
 registered Modifier class name (`Modifier.TypedFactory`/`DefineSubtype`); an unknown name raises
-`Quad0052 Modifier: unknown modifier class "..."`, and a known one only retags. Prefer the generated
-`:As<Class>()` methods — their existence is the check.
+`Quad0052 Modifier: unknown modifier class "..."`, and a known one only retags. Prefer the
+`:As<Class>()` methods (one per ancestor → descendant edge of the class map) — their existence is the check.
 
-A reusable style is a plain function that returns a Modifier; annotate its return with the generated class
+A reusable style is a plain function that returns a Modifier; annotate its return with the class-parameterised
 type from the module root (`: RobloxModule.Modifier<GuiObject>`, `: RobloxModule.Modifier<TextButton>`, …).
 Chain setters take a `State` as well as a plain value — `:BackgroundColor3(accentState)` stays reactive
 (the property follows every publish).
@@ -520,7 +520,7 @@ The first assignment snaps to the value; later emissions run an engine tween.
   A `nil` **argument** (a vararg slot of `q.Tag(...)`, the argument of `:Added`/`:Removed`, a slot of `Merged`) means "nothing" and is fine — `tag:Added(if cond then "Even" else nil)` is the idiom. A `nil` **hole inside a name list** (`{ "a", nil, "b" }`) and are errors — a hole in a list is `Quad0203`, `q.Tag(q.None)` (a value with a metatable) is `Quad0237`; filter lists before passing.
 - `q.Attr{ Level = 3 }`, `q.StringAttr("Title", v)`, `q.NumberAttr`, `q.BooleanAttr` —
   array part. `[q.AttrKey("Hp")] = hpState` is a hash key; it drives correctly but the
-  generated prop types do not cover it, so prefer the array-part forms in `--!strict`.
+  prop types (`Props<C>`) do not cover it, so prefer the array-part forms in `--!strict`.
 - `q.None` as an attribute value deletes the attribute in the engine. A **State whose value
   becomes `nil` also deletes it** (`setAttr(inst, name, nil)`). In a group table `Attr{ X = nil }`
   the key simply does not exist (no entry, no error); a value that DISAPPEARS from a replaced

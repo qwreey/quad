@@ -138,7 +138,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 ### Quad0281
 
-`{fn}: takes the class name only - write q.{fn} "Class" "Name" (…) (3.3's q.{fn}(name, …) form is gone)` — `quad-roblox/src/Surface/Runtime.luau`
+`{fn}: each stage takes one argument - write q.{fn} "Class" "Name" (…) (3.3's q.{fn}(name, …) form is gone)` — `quad-roblox/src/Surface/Runtime.luau`
 
-- **언제**: `q.OnChange`·`q.Out`·`q.OnEvent`의 클래스 단계에 인자를 둘 이상 넘겼을 때 — 흔히 3.3의 `q.OnChange "TextBox" "Text" (fn)`을 그대로 둔 코드입니다. 이 꼴은 첫 인자 `"Text"`를 클래스 이름으로 받아 단계 함수를 돌려주므로, 막지 않으면 그 함수가 요소에 놓여 한참 뒤 Dispatch에서 엉뚱한 에러가 납니다.
+- **언제**: `q.OnChange`·`q.Out`·`q.OnEvent`의 클래스 단계나 이름 단계에 인자를 둘 이상 넘겼을 때 — 흔히 3.3의 `q.OnChange("Text", fn)`을 그대로 둔 코드이거나, 손으로 옮기다 클래스만 앞에 붙인 `q.OnChange "TextLabel" ("Text", fn)`입니다. 앞의 꼴은 `"Text"`를 클래스 이름으로 받아 단계 함수를 돌려주고 뒤의 꼴은 콜백을 버리므로, 막지 않으면 그 함수가 요소에 놓여 한참 뒤 Dispatch에서 엉뚱한 에러가 납니다.
 - **고치려면**: 클래스 → 이름 → 콜백 순서로 따로 부르세요(`q.OnChange "TextLabel" "Text" (fn)`). 옮기기는 `scripts/migrate-3.4.py`가 해 줍니다.

@@ -187,7 +187,9 @@ luau-lsp analyze --flag:LuauSolverV2=true \
 
 `LuauSolverV2=true`가 없으면 타입 함수가 "syntax not supported"로 죽습니다. 나머지 셋은 한도를 넉넉히 두는 것입니다 —
 **[2026-10-20 실측]** 3.4.0 표면은 VS Code 확장의 기본값과 Studio의 기본값(override 없음)에서도 too complex 없이 검사됐습니다(두 킷
-330파일, 생성자·디스크립터를 섞은 5730줄 모듈). 3.3의 생성 `Declaration`은 이 플래그 없이 무너졌습니다. 아주 큰 모듈에서 걸리는
+330파일, 생성자·디스크립터를 섞은 5730줄 모듈). 3.3의 생성 `Declaration`은 이 플래그 없이 무너졌습니다. 예외 하나 — 조상 클래스의 Modifier 타입을 주석으로 단 자리
+(`local m: Modifier<GuiObject> = …`, `Modifier<GuiButton>` 파라미터에 값 넘기기)는 기본 한도에서 too complex가 날 수 있어 셋을
+권장으로 둡니다([설치 문서](../../getting-started/00-installation.md)). 아주 큰 모듈에서 걸리는
 한도는 [02-elem](./02-elem.md#qelem-class-props)의 "왜 파일 머리에서 꺼내 두는가"를 보세요.
 <!-- 저장소가 실측으로 고른 값 -->
 

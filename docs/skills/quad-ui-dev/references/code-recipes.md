@@ -7,7 +7,7 @@ this prologue once per module; nothing else is implicit.
 --!strict
 -- install path depends on the project layout
 local Quad = require(<quad-base module>)              -- already a live instance
-local RobloxModule = require(<quad-roblox module>)   -- value + the only public path to generated types (RobloxModule.Modifier<TextButton> …)
+local RobloxModule = require(<quad-roblox module>)   -- value + the only public path to the class-parameterised types (RobloxModule.Modifier<TextButton> …)
 local QuadRoblox = RobloxModule.QuadRoblox
 local QuadTypes = require(<quad-types module>)        -- types only: State<T>, Source<T>, Slot<T>, Provider<T>
 local q = Quad:UseProvider(QuadRoblox)                -- installs Elem / Modifier / Spread / Mapper / OnChange / OnEvent / Out / ForClasses / Animate / Tween / isTween
