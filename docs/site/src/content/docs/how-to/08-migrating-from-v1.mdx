@@ -380,18 +380,18 @@ v1에 없던 것도 챙겨두면 좋습니다 — `q.Tag`/`q.Attr`(선언적 메
 
 ## 7. strict 체크리스트
 
-v1 코드를 직역하면 아래 열아홉 가지에서 막힙니다. 진단 문구는 실제로 나오는 문자열의 머리 부분입니다(**[2026-10-20]** 3.4.0 표면에서 바뀐 네 줄 — 이벤트 콜백 `self`, 미리 만든 props 테이블, `Text = 42`, 맵에 없는 클래스 — 은 그날 다시 쟀습니다).
+v1 코드를 직역하면 아래 열아홉 가지에서 막힙니다. 진단 문구는 실제로 나오는 문자열의 머리 부분입니다(**[2026-10-20]** 3.4.0 표면에서 바뀐 여섯 줄 — 인라인 `:Compute`, 이벤트 콜백 `self`, 숫자 키 `nil`, 미리 만든 props 테이블, `Text = 42`, 맵에 없는 클래스 — 은 그날 다시 쟀습니다. 요소 표면에 닿는 나머지(`Corner` 키, `Frame`에 `Activated`, `q.Ref(nil)`, `AttrKey` 문자 키)도 그날 같은 문구를 확인했습니다).
 
 | v1 직역 모양 | 진단 | 처방 |
 |---|---|---|
-| 프로퍼티 자리에 인라인 무주석 `:Compute` | `Expected this to be '(StateData<number>, UDim2?, ...any) -> UDim2' but got '(t1) -> UDim2 …'` | 콜백 파라미터에 `q.StateData<T>` 주석을 붙이고, 가능하면 지역 변수로 빼세요 |
+| 프로퍼티 자리에 인라인 무주석 `:Compute` | 진단이 나지 않습니다(3.4.0 — 3.3에선 `Expected this to be '(StateData<number>, UDim2?, ...any) -> UDim2' …`가 났습니다). 다만 **`:Compute` 결과의 반환 타입은 어느 꼴로 써도 프로퍼티 타입과 대조되지 않습니다** — `Position = n:Compute(function(h) return h:Get() end)`(숫자)도 통과합니다 | 콜백 파라미터에 `q.StateData<T>` 주석을 붙여 콜백 안을 검사받고, 반환 타입은 손으로 프로퍼티에 맞추세요 |
 | `q.Slot()` — 타입 인자 없음 | `… but got 'Slot<unknown>'` | `q.Slot<<Instance>>()`. **홑화살괄호 `q.Slot<Instance>()`는 문법 오류입니다** |
 | `q.OnCreated(function(inst: Frame) end)` — 콜백 파라미터에 타입 주석 | `Type functions do not currently support types of the form '*error-type*'` | `q.OnCreated<<Frame>>(fn)` (`OnRendered`도 같음) |
 | `q.OnCreated(function(inst) end)` — 콜백 파라미터가 완전 무주석 | 진단이 나지 않습니다 — 조용히 통과하지만 `inst`가 특화 타입을 얻지 못해 자동완성이 안 뜹니다 | 위와 똑같이 `q.OnCreated<<Frame>>(fn)` |
 | 타입 표면에 없는 키(v1의 `Corner`/`PaddingAllOffset`/`Scale`) | `Expected this to be 'number', but got '"Corner"'` + 배열 유니언 불일치 한 줄 | 두 줄짜리 이 모양은 "그런 프로퍼티가 없다"는 뜻입니다(키가 배열 인덱스로 오독됩니다). `UICorner`/`UIPaddingOffset`/`UIScale` 숏핸드로 바꾸세요 |
 | 이벤트 콜백 첫 인자에 `self`(예: `Activated`) | `Expected this to be '(((InputObject, number) -> ()) \| { read __quadNone: true } \| { read __quadState: true, … })?' but got '(InputObject, number, unknown) -> ()'` | `self`를 지우고 엔진 그대로의 인자 수·순서로 맞추세요 — **정확히 2개로만 줄이면**(`function(self, inputObject)`) **진단 없이 통과합니다**: 양방향 추론이 `self`를 `InputObject`, 둘째를 `number`(clickCount)에 맞춰버려 런타임에 인자가 한 칸 밀립니다. `self` 없이 `function(inputObject, clickCount)`로 쓰세요 |
 | `Frame`에 `Activated` | `Expected this to be 'number', but got '"Activated"'` | `TextButton` / `ImageButton` 같은 `GuiButton` 계열로 |
-| 숫자 키 자리에 `nil`이 들어감 | `the 2nd component of the union is 'nil', which is not a subtype of …` | `props.Modifier or q.None` |
+| 숫자 키 자리에 `nil`이 들어감 | `` `nil` is not a subtype of `Instance \| { read __quadSlot: true, … } \| …` `` | `props.Modifier or q.None` |
 | 미리 만들어둔 props 테이블을 `q.Elem "Frame" (props)` | `Expected this to be '{ [number]: Instance | … }'` … ``Expected property `Name` to be exactly `{ read __quadState: true, read __quadStateValue: string }`, but got `string` `` | 양방향 추론은 **리터럴 자리에서만** 삽니다. 테이블 리터럴로 직접 쓰세요 |
 | 자식 배열 변수를 `q.Elem "ScreenGui" (children)` | 같은 계열의 파라미터 불일치 | `q.Elem "ScreenGui" { table.unpack(children) }` — 리터럴의 **마지막** 원소일 때만 전부 펼쳐집니다 |
 | `q.Store()` 뒤 `store.Text = v` | `Cannot add property 'Text' to table '{ } & { Names: …, Of: … }'` | `defaults`에 선언하거나 `store:Of<<string>>("Text")` |

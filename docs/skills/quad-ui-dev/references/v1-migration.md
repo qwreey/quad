@@ -87,14 +87,14 @@ it is *not* the port of `:With`. Never map by name alone.
 
 | Literal v1 translation | Diagnostic | Fix |
 | :--- | :--- | :--- |
-| inline unannotated `:Compute` in a prop table | `Expected this to be '(StateData<number>, UDim2?, ...any) -> UDim2' but got '(t1) -> UDim2 …'` | annotate params `QuadTypes.StateData<T>`; hoist to a local |
+| inline unannotated `:Compute` in a prop table | none in 3.4.0 (3.3 printed `Expected this to be '(StateData<number>, UDim2?, ...any) -> UDim2' …`) — but a `:Compute` result's return type is never checked against the prop in any form: `Position = n:Compute(function(h) return h:Get() end)` (a number) passes | annotate params `QuadTypes.StateData<T>` so the callback body is checked; match the return to the prop by hand |
 | `q.Slot()` | `… but got 'Slot<unknown>'` | `q.Slot<<Instance>>()`; single angle brackets are a **SyntaxError** |
 | `q.OnCreated(function(inst: Frame) end)` — annotated param | `Type functions do not currently support types of the form '*error-type*'` | `q.OnCreated<<Frame>>(fn)` (same for `OnRendered`) |
 | `q.OnCreated(function(inst) end)` — fully unannotated param | none — passes silently, but `inst` never gets a specialized type (no autocomplete) | same fix: `q.OnCreated<<Frame>>(fn)` |
 | key not on the typed surface (v1 `Corner`/`PaddingAllOffset`/`Scale`) | `Expected this to be 'number', but got '"Corner"'` + an array-union mismatch line | this two-line shape means "no such property" (the key is read as an array index) |
 | event callback with leading `self` (v1's `fn(self, …)`, e.g. `Activated`) | `Expected this to be '(((InputObject, number) -> ()) \| { read __quadNone: true } \| { read __quadState: true, … })?' but got '(InputObject, number, unknown) -> ()'` | drop `self` and match the engine's exact arity — **shrinking to exactly 2 args instead** (`function(self, inputObject)`) passes with **zero diagnostics**: bidirectional inference binds `self` to `InputObject` and the second param to `number` (clickCount), so arguments are shifted by one at runtime. Write `function(inputObject, clickCount)` with no `self` |
 | `Activated` on a `Frame` | `Expected this to be 'number', but got '"Activated"'` | use a `GuiButton` class |
-| `nil` in the array part | `the 2nd component of the union is 'nil', which is not a subtype of …` | `props.X or q.None` |
+| `nil` in the array part | `` `nil` is not a subtype of `Instance \| { read __quadSlot: true, … } \| …` `` | `props.X or q.None` |
 | prebuilt props table `q.Elem "Frame" (props)` | `Expected this to be '{ [number]: Instance | … }'` … ``Expected property `Name` to be exactly `{ read __quadState: true, read __quadStateValue: string }`, but got `string` `` | bidirectional inference only works at the literal site |
 | children array variable `q.Elem "ScreenGui" (children)` | same family of param mismatch | `q.Elem "ScreenGui" { table.unpack(children) }` |
 | `q.Store()` then `store.Text = v` | `Cannot add property 'Text' to table '{ } & { Names: …, Of: … }'` | declare in defaults, or `store:Of<<string>>("Text")` |
