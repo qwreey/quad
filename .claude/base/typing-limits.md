@@ -1131,6 +1131,8 @@ indexer`; (b) `Param & { [AttrKey]: V }` 교집합은 평범한 배열 리터럴
 
 ## 8.22. 수출하는 type function은 정의 모듈에서 한 번 인스턴스화해 둘 것(프라이밍); 클래스 타입 데이터는 체커마다 다르고 읽기 전용 표시는 어디에도 없다 (2026-09-16 실측 — 생성 `Declaration` 팩토리화 조사)
 
+> **⚠️ [2026-10-20 뒤집힘 — 3.4.0]** 아래 "결정(사용자, 2026-09-16): 지금의 생성 `Declaration`이 stable 표면이다"는 2026-10-16 사용자 결정("이전 D는 포기하자")으로 뒤집혔고 3.4.0에서 생성 `Declaration`은 지워졌다 — 표면은 타입 함수(`base/surface-plan.md`). 프라이밍·체커마다 다른 클래스 데이터 관측은 그대로 유효하다.
+
 생성 `Declaration`(5250줄)을 Luau type function으로 대체할 수 있는지 luau-lsp 1.69.0(핀 defs)·사용자 VSCode(확장 — 정의 파일은 확장이 받는 globalTypes PluginSecurity 판, 레포 밖)·Studio 셋에서 실측했다(팩·결과 `audit/d-factory-studio-probe-2026-09-16/`, 결정 `session/2026-09-16-01-d-typefunction-measurement.md`). 남기는 사실:
 
 - **프라이밍 규칙** — 8.18 정정 참고. `export type function F(...)`를 두는 모듈은 `type _Prime = F<…>` 같은 인스턴스화를 하나 둔다(`export`는 불필요하고 공개 이름만 늘린다 — code-review 실측)(`type-version-check`에 2026-09-16 적용). 이 세션이 만들 뻔한 팩토리 생성기 출력에도 같은 규칙이 든다.
@@ -1207,6 +1209,8 @@ Luau 쪽 한계라 quad 결함이 아니고, 처방은 미정이다 — 상류 �
 **통과하는 모양**(긍정 열·부정 일곱 전부 기대대로, 생성 `PropTypesRead` 무변경): 충돌 이름 여섯만 클래스별 `Source` 유니언으로 적은 보조 맵을 `& { [string]: never }`로 닫고 `index<…, K> | Source<index<PropTypesRead, K>>` 합집합 팔로 받는 것(스파이크 C4, 진단 9 → 부정 각 1). 그룹 타입 검사 시간 차이는 잡음 범위(orig 3748~3796ms vs C4 3723~3774ms). 그 맵은 생성기가 아는 지식의 사본이라 어디에 둘지(생성 파일 vs `init.luau` 인라인)는 Q87의 결정 — 채택 전까지 `OutFn`은 그대로다.
 
 ## 8.28. luau-lsp에 한도 플래그 셋을 빼면 생성 `Declaration`이 "Code is too complex"로 무너져 그 타입을 쓰는 호출부의 특정 진단이 조용히 사라진다 — 배치/단독과 무관 (2026-09-27 T1 실측, luau-lsp 1.69.0)
+
+> **[2026-10-20 — 3.4.0]** 생성 `Declaration`은 지워졌다. 3.4.0 표면의 한도 플래그 상황은 8.40.
 
 `scripts/test.sh`의 quad-roblox 게이트 명령(`--flag:LuauSolverV2=true --flag:LuauTarjanChildLimit=160000 --flag:LuauSubtypingIterationLimit=100000 --flag:LuauTypeInferIterationLimit=1000000 --definitions=scripts/roblox-defs/globalTypes.d.luau`)에서 한도 플래그 셋을 빼면 옛 `quad-roblox/src/Declaration/init.luau` 자체에 `TypeError: Internal error: Code is too complex to typecheck!`가 여러 줄 뜨고, how-to 08 §7 17행 재현(`D.TextLabel({ Text = 42 })`)의 TypeError가 **통째로 사라진다**(18행 `Op.Sum` 비숫자는 남음) — 단독 실행에서도 같다. 에러 타입으로 무너진 뒤 하위 검사가 스킵되는 Luau 일반 동작으로 추정(소스 미확인).
 
@@ -1287,3 +1291,11 @@ E56). 무주석 매개변수를 가진 함수 값은 제네릭 함수라 `any` �
 1. **고의 오용 스펙의 정적 거부가 늘었다** — `q.Tag(123)`, `q.Tag({ "a", nil, "c" })`, `Operator.Band(Source(nil :: any))`(`Source<any>`를 `StateData<number>` 자리에서 거부). 런타임 게이트를 재는 줄이라 `:: any` 캐스트(이미 쓰던 관용구).
 2. **재대입되는 옵셔널 함수 업밸류를 `~= nil`로 좁혀 부르면 "Cannot call a value of type `((GuiObject) -> ()) & ~nil` in union"** — 지역 사본으로 옮겨도 같다. 옵셔널 대신 아무 일도 안 하는 기본 함수로 둔다(material `Dialog.luau`).
 3. **제네릭 함수 `live<T>` 안의 인라인 람다 `return true`가 바깥의 `T`와 대조된다**("Expected this to be 'T', but got 'boolean'") — 람다를 제네릭 함수 밖 지역 함수로 꺼낸다(material `test/spec.progress.luau`).
+
+## 8.39. 타입 함수 안에서는 전체 `QuadTypes.State<T>`를 쓸 수 없다 — Modifier 변환 함수 `old`·`Peek`의 State·Tween 팔은 읽기 뷰 (2026-10-20 3.4.0 단위 6 실측, luau-lsp 1.70.1)
+
+클래스 먼저 표면(`base/surface-plan.md`)의 타입 함수가 Modifier setter의 변환 함수 `old`(그리고 `Peek` 반환)를 프로퍼티마다 만들 때, 3.3 생성 D처럼 "저장된 그대로"의 전체형 `QuadTypes.State<T | Tween<T>>`를 넣으면 그 자리가 `*error-type*`으로 깨졌다 — 메소드가 든 큰 재귀 타입을 타입 함수 안에서 조립하는 경로의 한계로 보이나 좁히지 않았다. 처방: `quad-roblox/src/types.luau`의 읽기 뷰 `StateView<X> = { Get: (any) -> X, __quadState… }`·`TweenView<T> = { Value: T, __quadTween… }`로 팔을 만든다(`ModifierFieldOut<T> = T | TweenView<T> | StateView<T | TweenView<T>> | None`). `old:Get()`은 되고 `:Compute` 등은 타입에 없다 — 필요하면 `q.isState(old)` 뒤 캐스트(문서 `docs/reference/roblox/03-modifier-spread.md`). round3 Q23 (a)의 "전체형"에서 한 걸음 물러난 것이라 사용자 보고 항목이다(`session/2026-10-20-01-spread-add-crud.md` §13).
+
+## 8.40. 3.4.0 표면은 한도 플래그 없이 검사된다 — 단, 조상 클래스 `Modifier<C>`를 주석으로 비교하는 자리는 기본 한도에서 too complex (2026-10-20 단위 7 실측, luau-lsp 1.70.1)
+
+8.28(생성 `Declaration`이 한도 셋 없이 무너짐)의 3.4.0 판. Luau 기본값과 Studio 동기값(`LuauSolverConstraintLimit=1500`) 둘 다에서 킷 둘(src·gallery·test·stories) strict 진단 0건. quad-roblox 스펙은 두 자리만 too complex였고 원인은 한 꼴이다 — **조상(추상) 클래스 Modifier의 타입을 주석에 적고 값을 그 자리로 넘길 때**(`local gui: Modifier<GuiObject> = q.Modifier "GuiObject" ()`, 파라미터 `m: Modifier<GuiButton>`에 값 넘기기). 구체 클래스(`Modifier<Frame>`·`<TextButton>`), 입력 마커 `ModifierInto<C>`, 무주석 추론은 깨끗(프로브). 따로 만들어진 사본끼리 큰 `As<Desc>` 트리를 구조 비교하는 비용이라 2026-10-20 M3("추상 클래스 Modifier를 표기가 다른 주석 자리로 넘기면 too complex")의 남은 한 칸이다. 대응: 설치 문서를 "새 솔버 필수, 한도 셋 권장"으로 고치고 그 한 꼴을 피하라고 적었다(Studio는 플래그를 못 바꾼다). `scripts/test.sh`와 킷 `test/run.sh`의 한도 셋은 유지 — quad-roblox 스펙이 그 꼴을 일부러 쓴다. 근본 처방(조상 클래스 Modifier의 As 트리 줄이기 등)은 새 메커니즘이라 사용자 몫.

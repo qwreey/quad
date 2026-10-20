@@ -1,5 +1,7 @@
 # 이벤트 바인딩 — self 미전달, `None`/`nil`로 disconnect
 
+> **[2026-10-20 — 3.4.0]** 문자 키 이벤트는 그대로(한 이벤트에 콜백 하나 — 손으로 쓸 때의 편의). 같은 이벤트를 여럿 거는 배열부 디스크립터 `q.OnEvent "Class" "Name" (fn)`이 생겼다(`quad-roblox/src/Handlers/OnEvent.luau`, `base/surface-plan.md`).
+
 > **[2026-08-13 아홉 번째 세션] `bind-system-plan.md`에서 분리됨.**
 > 사용자가 "이벤트 연결은 다른 base 문서가 되어야 할 듯"이라고 직접
 > 지목한 부분. **내용은 옮기기만 했고 결정은 하나도 안 바뀜.**

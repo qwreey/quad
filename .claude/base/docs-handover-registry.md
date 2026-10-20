@@ -8,7 +8,7 @@
 
 1. **코드가 진실이다.** 인용된 심볼·시그니처·에러 문자열은 `quad-base/src`·`quad-roblox/src`·`quad-types/src`와 스펙(`quad-*/test/spec.*.luau`)에서
    grep으로 확인한다. `.claude/base/`는 확정 설계, `.claude/archive/`는 기각된 설계 — 후자를 현행처럼 쓰지 않는다.
-2. **예제는 돌아야 한다.** 설치 프롤로그(`Quad:UseProvider(QuadRoblox)`)가 있어야 `q.Declaration`이 생긴다. 스니펫은 `quad-base/test/mock.luau` 위에서
+2. **예제는 돌아야 한다.** 설치 프롤로그(`Quad:UseProvider(QuadRoblox)`)가 있어야 `q.Elem` 등 백엔드 표면이 생긴다(**[2026-10-20 3.4.0]** 옛 `q.Declaration`). 스니펫은 `quad-base/test/mock.luau` 위에서
    실제로 실행하고, 신 솔버(`luau-lsp --flag:LuauSolverV2=true`, `scripts/test.sh`와 같은 플래그·defs)로 타입 검사한다.
 3. **검증 안 되는 것은 지운다.** 측정 없는 성능 수치, Fusion/Vide/React 내부 비교(`.claude/reference/comparison-fusion-vide.md`가 지지하는 범위만),
    "수학적 증명" 어투, 사용자 인용문 창작, `H-nnn`/`Q-nn` 원장 번호는 사용자 문서에 두지 않는다.
@@ -87,11 +87,11 @@
 - **`Blocker`**: 읽기를 지연시키지 않고 emit 전파만 묶는다. **`state:Apply(blocker)`로 붙여야 효력**이 있다(`On`/`Off`만으로는 아무 일도 없음).
 
 ### 4) Modifier 및 디스패치 불변식
-- **네임스페이스 유지**: `D.Frame { ... }` 그대로(구조분해 안 함).
+- **[2026-10-20 3.4.0] 생성 표기**: `q.Elem "Frame" { ... }` — 튜토리얼은 인라인, 큰 파일은 머리에서 꺼내 두기(`local Frame = q.Elem "Frame"`). 옛 규칙 "`D.Frame { ... }` 네임스페이스 유지"는 `Declaration`과 함께 사라졌다.
 - **nil-hole 방어**: 선택적 Modifier/Ref는 **숫자 키 부분**에 `props.Modifier or None` — 이유는 배열 리터럴의 `nil`이 순회를 깨기 때문(디스패치 엔진의 "구분 불가"가 아님, 정정).
   `Ref`/`PreRef`/`PostRef`/`Observer`/`Effect`/`Slot`/`Modifier`는 문자 키 값으로 올 수 없다(런타임 거부).
-- **우선순위 셋**: ① 인라인 문자 키 최우선, ② 숫자 키 자리 내 뒤쪽 Modifier 승(역방향 스캔 first-writer-wins), ③ `Modifier.Overridden(A, B)`/`A:Overridden(B)`는 B 승.
-- **타입드 Modifier 팩토리**: `D.Modifier.<Class>()` 빌더 체인 또는 `D.Modifier.<Class>{...}`. 다운캐스트는 **`mod:AsFrame()`류(생성 `As<Name>` 키)가 검사형**, `mod:As<<T>>()`(타입 인자만, 런타임 무동작)와 `mod:As(name)`(이름 존재만 확인)은 **무검사**(~~"`:As<Name>()` 검사형" 표기~~ 정정).
+- **우선순위**: ① 인라인 문자 키 최우선, ② Spread는 먼저 자리 잡은 것이 승(**[2026-10-20]** — JS 펼치기와 반대, 이유를 같이 적는다), ③ 숫자 키 자리 내 뒤쪽 Modifier 승(역방향 스캔 first-writer-wins), ④ `Modifier.Overridden(A, B)`/`A:Overridden(B)`는 B 승.
+- **타입드 Modifier 팩토리**: `q.Modifier "Class" ()` 빌더 체인 또는 `q.Modifier "Class" {...}`(**[2026-10-20]** 옛 `D.Modifier.<Class>`). 컴포넌트 입력 자리는 마커 `ModifierInto<C>`. 다운캐스트는 **`mod:AsFrame()`류(생성 `As<Name>` 키)가 검사형**, `mod:As<<T>>()`(타입 인자만, 런타임 무동작)와 `mod:As(name)`(이름 존재만 확인)은 **무검사**(~~"`:As<Name>()` 검사형" 표기~~ 정정).
 - **`Parent`는 프로퍼티가 아니다** — 만든 뒤 밖에서 `.Parent =`.
 
 ### 5) 인스턴스 바인딩 및 Ref 생명주기
@@ -110,7 +110,7 @@
 - **순환**: `A:Add(B); B:Add(A)`는 즉시 런타임 에러(~~무한 재귀~~ 정정). 성능 수치(O(1) 등)는 적지 않는다.
 
 ### 7) `Claim` 및 Studio 협업
-- **패턴**: Studio 템플릿 `:Clone()` 뒤 `q.Claim(clone, q.Declaration.Mapper...)` — 둘째 인자는 props가 아니라 **매퍼 디스크립터**(1회용). ~~"5~10배 빠름"~~은 미실측(정정, 수치 삭제).
+- **패턴**: Studio 템플릿 `:Clone()` 뒤 `q.Claim(clone, q.Mapper "Frame" (q.MapperRoot) {…})` — 둘째 인자는 props가 아니라 **매퍼 디스크립터**(1회용). ~~"5~10배 빠름"~~은 미실측(정정, 수치 삭제).
 - **계약 셋**: ① claim-once(이중 claim은 `nativeClaim: Instance is already claimed by quad`), ② **그려지는 직계 자식은 전부 매핑**(부분 매핑 기각 — ~~"직계 자식 전속 관할권"~~ 정정),
   ③ `PlayerGui`류 공동 소유 컨테이너는 **대상 밖**(런타임 검사 없음 — 전용 `ScreenGui`를 만들어 거기에).
 

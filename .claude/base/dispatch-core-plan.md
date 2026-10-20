@@ -1,5 +1,7 @@
 # 디스패치 코어 — Handler 계약 / Dispatch 체인 / 재디스패치 하강 diff
 
+> **[2026-10-20 — 3.4.0]** `drive`의 첫 선처리로 Spread 전개 `expand`(`quad-base/src/Dispatch/Spread.luau`)가 Modifier `flatten` 앞에 들어갔다 — 순서는 Spread 전개 → Modifier → PreRef → 본문(`base/surface-plan.md` 3절).
+
 > **[2026-09-15 표기 변경 — 공개 표면 (30) 사용자 결정]** 백엔드가 심는 계약 op는 `module.Backend.<op>`(`native*`·`isInst`·`nativeClaim`·`isClaimed`·`nativeFindChild`·`onDestroying`·`addTag`/`removeTag`/`setAttr`·`setTimeout`/`clearTimeout`·**[2026-09-18 round11 Q59]** hold op 넷 `holdLifetime`/`releaseLifetime`/`isHeld`/`isHeldBy`, 이름 그대로 — `bindLifetime`/`unbindLifetime`/`canBound`/`canExecute`도 같은 네임스페이스에 살지만 그 넷은 quad-base가 직접 구현한다, `lifecycle-pattern.md` (1-2))로, Length/Offset 부기는 `module.Bookkeeping.<fn>`(옛 `Dispatch.setLength` 등 재수출·비공개 `_bookkeeping`)으로 옮겨졌다. 이 문서 본문의 `module.<op>`·`Dispatch.setLength` 표기는 그 전 이름이다 — 설계 내용은 그대로 유효.
 
 **상태**: base — 2026-08-13 열네 번째 세션에 `bind-system-plan.md`에서

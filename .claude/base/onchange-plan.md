@@ -1,5 +1,7 @@
 # `OnChange(name, fn)` — 배열부 디스크립터로 `GetPropertyChangedSignal` 바인딩
 
+> **[2026-10-20 — 3.4.0 표면]** 공개 꼴이 클래스 먼저 커리 `q.OnChange "Class" "Name" (fn)`·`q.Out "Class" "Name" (src)`로 바뀌었고, 짝인 이벤트 디스크립터 `q.OnEvent "Class" "Name" (fn)`이 생겼다(`base/surface-plan.md`). 이름 집합은 생성 `PropTypesRead` 대신 그 클래스의 읽기 표면. 디스크립터 런타임·초기값 발화 계약은 그대로.
+
 **상태**: base — 2026-08-10 세션 확정, **⭐ [2026-09-03 역전·재확정] 해시
 파트 특수 키(`[OnChange "x"] = fn`)에서 배열부 값 `OnChange(name, fn)`으로
 전면 재작성**(사용자 제안·동의 원문은

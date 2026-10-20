@@ -75,3 +75,11 @@ doc-coverage가 새 표면 헤딩을 요구해 단위 7 일부를 당겼다: ref
 실측: 한도 플래그 없이 킷 둘은 깨끗, quad-roblox 스펙 두 자리만 too complex — 조상 클래스 Modifier 타입을 주석으로 비교하는 자리(`Modifier<GuiObject>`·`Modifier<GuiButton>` 주석). 구체 클래스·마커·무주석은 깨끗. 설치 문서를 "새 솔버 필수, 한도 셋 권장"으로. 사용자 보고 항목: Studio에서는 플래그를 못 바꾸므로 그 한 자리는 피하라고 문서에 적었다 — 처방(예: 조상 클래스 `Modifier<C>`의 As 트리를 줄이는 것)은 새 메커니즘이라 사용자 몫.
 
 `Quad0224` 메시지 "second argument" → `"{name}" needs a Source to write back into`(커리 꼴에서 둘째 인자가 아님).
+
+## 15. 3.4.0 단위 8 — base 승격·Studio 확인
+
+**승격.** 새 `base/surface-plan.md`(지금 유효한 결정과 이유 한 줄 — 모양, 타입 원천·공개 이름·비노출, Spread, 런타임 배치). `typing-limits.md`에 8.39(타입 함수 안의 전체 `State<T>` → 읽기 뷰)·8.40(3.4.0은 한도 플래그 없이 검사됨, 조상 클래스 `Modifier<C>` 주석 비교만 예외), 8.22·8.28에 뒤집힘 배너. `architecture.md` 소스 트리(Surface/·BackendStubs·Dispatch/Spread·Handlers/OnEvent, Declaration/ 제거)와 대문자 규칙 4번. claim·modifier·onchange·event·bind-system·dispatch-core 머리에 3.4.0 배너, `docs-handover-registry.md` §4 표기. research 세 문서·README 행에 "구현됨 — 정본 base" 표시. todos·ROADMAP·session-summary.
+
+**한도 플래그 재기.** 단위 7 실측 그대로 — 킷은 플래그 없이 깨끗, quad-roblox 스펙 두 자리가 의도적으로 조상 클래스 Modifier 주석을 써서 test.sh·킷 run.sh의 셋은 유지(8.40).
+
+**Studio(quad-test, HEAD `ae26f291` + 문서 변경 싱크).** Script Analysis 처음 읽기는 경고 992건이었는데 거의 전부 ServerScriptService의 옛 `declprobe`(2026-10-16 프로브 사본 — 생성 D 시절) 잔재였다. 그것과 패키지 사본의 `test/`를 Studio에서 지우고 다시 읽으니 8건 — 전부 material `gallery/Buttons`의 `table.insert(list, Material.Button(...))`에서 "`*error-type*` is ambiguous". 프로브로 좁혀 보니 같은 호출이 다른 스크립트·같은 폴더 모듈·Buttons 안에 줄을 더한 사본에서 모두 `TextButton`으로 추론되었고, 다시 싱크해 원본으로 되돌리자 Buttons도 0건 — 싱크 직후 분석 상태의 일시적 잔상으로 판단(재현 안 됨). 최종: 킷 둘(src·gallery·stories)·quad-base·quad-roblox src 진단 0, 남은 8건은 패키지 사본 `quad_base/test/spec.versioncheck`의 require 경로(3.4.0 전부터, 무관). Play: 두 갤러리 마운트, material 탭 아홉 순회, 출력에 quad 에러·경고 0(로블록스 코어 UIBlox 경고만), 화면 정상.

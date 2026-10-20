@@ -1,5 +1,7 @@
 # 이미 있는 트리를 quad가 소유하기 — `Claim` + `D.Mapper`
 
+> **[2026-10-20 — 3.4.0 표면]** 이 문서의 `D.Mapper.<Class>(key)(props)`·`D.Mapper.Root`·`q.newMapperClass`는 지금 `q.Mapper "Class" (key) {…}`·`q.MapperRoot`·`q.Raw.Mapper`다(`base/surface-plan.md`). Claim 본체·계약(한 번만 claim, 직계 자식 전부 매핑, 해석 패스)은 그대로. 옛 이름이 든 본문은 그 시점 서술로 읽을 것.
+
 > **[2026-08-28 신설·같은 날 확정 — `research/`에서 승격(옛 파일명 `existing-mount-plan`)]**
 > 10라운드 `H-148`(`Parent` 거부 문구)을 논의하다 **루트 마운트 표면의 부재**가
 > 드러나 사용자 발의로 만든 문서. 방향(§1~§4)은 `session/2026-08-28-01-handtrace-round10-resolution.md`에서,

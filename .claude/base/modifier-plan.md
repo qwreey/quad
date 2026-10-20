@@ -1,5 +1,7 @@
 # Modifier 설계 (정적 merge, immutable 체이닝)
 
+> **[2026-10-20 — 3.4.0 표면]** 무타입 base 생성자 `q.Modifier(...)`는 `q.Raw.Modifier(...)`로, 클래스별 `D.Modifier.<Class>()`는 `q.Modifier "Class" ()`(타입 함수 표면)로 바뀌었다. 11절의 `Into<Class>` 인터페이스는 입력 자리 마커 `ModifierInto<C>`로 물러났다(`base/surface-plan.md` 2절). 값 런타임·병합 규칙·예약 메소드는 그대로.
+
 **상태**: base — 핵심 메커니즘(런타임 plug 아님/정적 merge, immutable
 값+clone 기반 체이닝, 이중 setter)은 2026-08-04 세션 채팅 논의로 확정.
 **Getter는 별도로 안 만들기로 확정(2026-08-06 후속 세션)** — 아래 "4.
@@ -911,7 +913,7 @@ error" 규칙에 안 걸림(`Tween<T>`는 `process`/`retract`를 가진 dispatch
 방지) 조상 검사 없이 재태그한다. 상향(TextLabel → GuiObject)도 이 길 — 검사형
 상향 메소드는 상하위 상호 참조 순환으로 분석 시간이 3배가 돼 두지 않는다.
 
-> **[2026-10-20 사용자 결정 — 3.4.0에서 바뀜, 구현 전]** 타입 함수 표면에서 `ModifierInto<C>`는 아래 인터페이스가 아니라 **마커**(`{ read __quadModifier: "C" | 조상 이름들 }`, 메소드 없음 — "C에 들어갈 수 있는 Modifier")가 된다. 인터페이스 꼴은 추상 클래스 Modifier 사본끼리의 구조 비교로 override 없는 설정에서 too complex였고 킷 사용은 0. 근거·실측은 `research/declaration-surface-plan.md` 5절 끝 문단(2026-10-20). 아래 서술은 3.3.x까지의 생성 D 기준이다.
+> **[2026-10-20 사용자 결정 — 3.4.0에서 바뀜, 같은 날 구현됨(`base/surface-plan.md`)]** 타입 함수 표면에서 `ModifierInto<C>`는 아래 인터페이스가 아니라 **마커**(`{ read __quadModifier: "C" | 조상 이름들 }`, 메소드 없음 — "C에 들어갈 수 있는 Modifier")가 된다. 인터페이스 꼴은 추상 클래스 Modifier 사본끼리의 구조 비교로 override 없는 설정에서 too complex였고 킷 사용은 0. 근거·실측은 `research/declaration-surface-plan.md` 5절 끝 문단(2026-10-20). 아래 서술은 3.3.x까지의 생성 D 기준이다.
 
 **`Into<Class> = { As<Class>: (self: any) -> <Class>Modifier }`** — Rust `Into`처럼
 "그 클래스로 갈 수 있는 모든 것"의 인터페이스(사용자 제안). 상위 클래스
