@@ -81,7 +81,7 @@ return function(S: Types.SlotInternal, module: any)
 			self._lazyFn = nil
 			local out = table.pack(fn())
 			if out.n > 1 then
-				S.Err.errorBefore(`Quad0272 Slot:Lazy: fn must return one value (got {out.n}) - put several elements in a Slot and return that`, S.SURFACE)
+				S.Err.errorBefore(`Quad0272 Slot:Lazy: fn must return one value (got {out.n}) - put several elements in a Slot and return that (what fn returned is not cleaned up; the Slot stays empty)`, S.SURFACE)
 			end
 			local result = out[1]
 			if result ~= nil and result ~= S.None then

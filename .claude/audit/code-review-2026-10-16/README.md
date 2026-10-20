@@ -10,7 +10,7 @@
    변이 확인(되돌리면 `Expected … but got 'None'`). `quad-base/test/spec.slot.luau`는 `--!nocheck`라 타입 판별을 못 한다(첫 스펙은 거기 넣어 변이가 통과했다 — 그래서 strict 스펙으로 옮김).
 2. **[고침 `1673b859`] Lazy 슬롯의 중복 마운트 `Quad0156` 문구가 `:List`·`updateFn` 원인만 말함** — 문구와 `docs/reference/errors/03-slot.md`에 `:Lazy` 원인, `spec.slot` (8), 변이 확인.
 3. **[고침 `1673b859`] `publish.py`가 출력의 아무 '429'에나 반응** — `\b429 Too Many Requests\b`로 좁힘.
-4. **[사용자 결정 대기] Lazy `fn`이 값 둘 이상을 돌려 `Quad0272`로 던질 때 만든 원소를 정리하지 않고, Slot은 빈 채 굳음** — 지금은 사용자 예외 뒤 상태처럼 미정의. quad 자신의 검증 raise라
+4. **[고치지 않음 2026-10-20 — 사용자 결정: "고치면 약간 마법 … Fallback 이나 다른 곳도 사용자 문제나 에러로 인해 깨진 경우에 뒷 처리를 안 해주는데" — 대신 메시지와 문서에 '남는다'를 적음]** Lazy `fn`이 값 둘 이상을 돌려 `Quad0272`로 던질 때 만든 원소를 정리하지 않고, Slot은 빈 채 굳음** — 지금은 사용자 예외 뒤 상태처럼 미정의. quad 자신의 검증 raise라
    결과를 dispose하고 던지는 비용은 작다(리뷰 의견) — 새 동작이라 사용자 몫.
 5. **[고침 2026-10-20 — 사용자 결정(devplorer 묶음 가와 한 번에), 내부 `Pointer` 판정]** devui 전역 누름이 실제로 누름을 받은 GUI를 보지 않고 창 사각형만 대조** — 창 위에 DisplayOrder 높은 HUD나 material 팝업이 겹치면 그 누름에 아래 창이 앞으로 온다
    (옛 창 루트 `InputBegan`은 막힌 누름에 반응하지 않았다). 서로 다른 ScreenGui의 창이 `Manager.default`를 같이 쓰면 화면 순서와 관리자 순서가 다를 수 있다. 처방(`GetGuiObjectsAtPosition`

@@ -444,8 +444,8 @@ description: "Slot CRUD·:List·:Single·dispose가 던지는 에러"
 
 ### Quad0272
 
-`Slot:Lazy: fn must return one value (got {n}) - put several elements in a Slot and return that` — `quad-base/src/Slot/List.luau`
+`Slot:Lazy: fn must return one value (got {n}) - put several elements in a Slot and return that (what fn returned is not cleaned up; the Slot stays empty)` — `quad-base/src/Slot/List.luau`
 
-- **언제**: `slot:Lazy(fn)`의 `fn`이 값을 둘 이상 돌려줬을 때 — 그 Slot이 처음 마운트되는 자리에서 납니다.
+- **언제**: `slot:Lazy(fn)`의 `fn`이 값을 둘 이상 돌려줬을 때 — 그 Slot이 처음 마운트되는 자리에서 납니다. 던진 뒤 `fn`이 이미 만들어 돌려준 원소들은 **정리되지 않고 남습니다** — quad는 사용자 실수로 깨진 자리를 대신 치우지 않습니다(다른 에러 뒤와 같습니다). 그 Slot은 빈 채로 남고 `fn`은 다시 돌지 않습니다.
 - **고치려면**: 여러 원소는 `q.Slot{ a, b, c }`에 담아 그 Slot 하나를 돌려주세요.
 - **참고**: [`slot:Lazy(fn)`](../core/06-slot.md#slotlazyfn)

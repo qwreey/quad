@@ -573,7 +573,7 @@ Window({
 - `fn`은 `:List`/`:Single`의 첫 `updateFn`과 같은 자리(마운트 작업 안)에서 불립니다. 그래서 같은 규칙을 따릅니다 — 자기가 돌려줄 원소와 그 안의 Slot은 지어도 되지만, 이 Slot의 조상 Slot을 CRUD하면 `Quad0167`입니다(그 자리에서 고쳐야 하면 [`slot:WhenIdle`](#slotwhenidlefn)).
 - 설치 규칙과 잠금은 `:List`/`:Single`과 같습니다. 한 Slot에 한 번만 걸 수 있고(`Quad0148`), 수동 CRUD를 쓴 Slot에는 걸 수 없으며(`Quad0149`), 건 뒤의 수동 CRUD는 `Quad0166`입니다.
 - 지은 원소는 이 Slot이 소유합니다 — Slot이 파괴되면 같이 파괴됩니다.
-- 인자·반환 에러: `Quad0271 Slot:Lazy: fn must be a function (got {typeof(fn)})`, `Quad0272 Slot:Lazy: fn must return one value (got {n}) - put several elements in a Slot and return that`(여럿을 돌려주려면 `q.Slot{ … }`에 담아 하나로).
+- 인자·반환 에러: `Quad0271 Slot:Lazy: fn must be a function (got {typeof(fn)})`, `Quad0272 Slot:Lazy: fn must return one value (got {n}) - put several elements in a Slot and return that (what fn returned is not cleaned up; the Slot stays empty)`(여럿을 돌려주려면 `q.Slot{ … }`에 담아 하나로). `Quad0272` 뒤 `fn`이 만든 원소는 치워지지 않고 남습니다 — quad는 사용자 실수로 깨진 자리를 대신 정리하지 않습니다.
 - `fn`이 던지면 그 에러가 마운트한 쪽으로 그대로 나갑니다(감싸지 않습니다). 그 뒤의 상태는 `:List`의 `updateFn`이 던진 경우와 같이 정의되지 않습니다 — 다음 마운트에서 `fn`을 다시 부르지도 않습니다.
 
 ## `q.Detach`
