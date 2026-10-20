@@ -1,0 +1,75 @@
+{
+	"name": "quad-decl-typefn-probe-r2",
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"$className": "ReplicatedStorage",
+			"quad-roblox": {
+				"$className": "Folder",
+				"src": {
+					"$path": "../../../quad-roblox/src"
+				},
+				"luau_packages": {
+					"$path": "../../../quad-roblox/luau_packages"
+				}
+			}
+		},
+		"ServerScriptService": {
+			"$className": "ServerScriptService",
+			"declprobe": {
+				"$className": "Folder",
+				"18-read-surface": {
+					"$path": "src/18-read-surface.luau"
+				},
+				"19-typeof-q": {
+					"$path": "src/19-typeof-q.luau"
+				},
+				"20-modifier-as": {
+					"$path": "src/20-modifier-as.luau"
+				},
+				"21-into-ident": {
+					"$path": "src/21-into-ident.luau"
+				},
+				"22-mapsize-position": {
+					"$path": "src/22-mapsize-position.luau"
+				},
+				"23-fullmap": {
+					"$path": "src/23-fullmap.luau"
+				},
+				"24-cat3d": {
+					"$path": "src/24-cat3d.luau"
+				},
+				"25-modinto-t2": {
+					"$path": "src/25-modinto-t2.luau"
+				},
+				"26-modinto-t4": {
+					"$path": "src/26-modinto-t4.luau"
+				},
+				"27-modinto-full-thinhand": {
+					"$path": "src/27-modinto-full-thinhand.luau"
+				},
+				"28-modinto-tagfn": {
+					"$path": "src/28-modinto-tagfn.luau"
+				},
+				"29-modinto-iso-into": {
+					"$path": "src/29-modinto-iso-into.luau"
+				},
+				"Lib": {
+					"$path": "src/Lib.luau"
+				},
+				"Lib2": {
+					"$path": "src/Lib2.luau"
+				},
+				"Lib3": {
+					"$path": "src/Lib3.luau"
+				},
+				"FullMaps": {
+					"$path": "src/FullMaps.luau"
+				},
+				"FullMapsKeep": {
+					"$path": "src/FullMapsKeep.luau"
+				}
+			}
+		}
+	}
+}

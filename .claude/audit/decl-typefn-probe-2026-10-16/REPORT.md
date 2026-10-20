@@ -627,3 +627,10 @@ raw 덤프는 레포 밖 스크래치패드에 있습니다. 다시 받는 방�
 계기: 킷의 Into 자리(material `Card.luau` 214·237행, `List.luau` 267·299행)는 하강한 Modifier에 세터를 더 부르지 않고 요소에 **놓기만** 한다. 런타임은 놓는 자리에서 태그를 보지 않는다(`quad-base/src/Dispatch/Modifier/init.luau` 84행 "a tag only ever gates `As<Name>()`"). 그래서 As 없이 놓는 꼴 둘을 쟀다(정책 full, `harness/compare/modinto/`).
 - **`main-place.luau`** — prop을 전체형 `Modifier<GuiObject>?`로 두고 As 없이 놓기, 그리고 원래 설계의 헬퍼 꼴 `Bold(m: Into<TextLabel>)`(`base/modifier-plan.md` 11절). sync: too complex 7(23·24행 호출 자리, 31·35행 GuiObject Modifier를 잎 Into에), NEG 5/7·OK 5/9; vsc: too complex 0, NEG 5/7(25·26행 MISS — Frame·ScreenGui Modifier가 `Modifier<GuiObject>?`에 들어감, 2차 b2와 같은 솔버 동작), OK 9/9. 즉 **사본 비교 문제는 Into 고유가 아니다** — 추상 클래스 Modifier를 다른 표기의 주석 자리로 넘기면 어디서든 sync에서 무너진다(잎 클래스 사이는 2차대로 깨끗).
 - **`main-marker.luau`** — prop을 마커 `{ read __quadModifier: "GuiObject" | "GuiBase2d" | "GuiBase" | "Instance" }?`(C와 조상 태그만, 메소드 없음)로 두고 `props.Modifier or None`을 TextButton·Frame에 그대로 놓기. **sync·vsc·pin 모두 too complex 0, NEG 5/5, OK 5/5** — 조상 Instance Modifier 통과, Frame·ScreenGui Modifier 거부(전체형이 놓치던 둘), 없는 세터·숫자 거부, 비GUI 요소(UIListLayout)에 놓기 거부.
+
+## Studio 확인 (2차 실측 파일) [2026-10-20, 메인]
+
+- **`studio-analysis`가 목록 일부만 읽는다.** quad-test에 프로브 전체를 싱크하자 Script Analysis 요약은 경고 1334건인데 읽힌 행은 224~232줄이었다. 늘 17번 파일 근처에서 끊겼고, 12분을 기다려도 같았다. 도구의 `notes`에는 아무것도 없었다(조용히 끊김).
+- **우회: 2차 파일만 남김.** `probe-r2.project.json`으로 18~29번과 라이브러리만 싱크하고, Studio에서 00~17번을 지웠다. 원본은 레포에 있고 전체 싱크로 다시 들어간다. 그러자 요약은 1027건, 읽힌 행은 104줄이었고 그중 2차 파일은 18번 하나뿐이었다(27줄). 여전히 도구 쪽 한계로 보인다 — 사용자 툴링 문제로 보고.
+- **18번 `[RW]` 줄은 리눅스 sync·vsc·pin과 글자까지 같다**(`out/r2/studio-analysis-r2d.json`). Studio 체커에도 읽기 전용 표시가 없다(`AbsoluteSize=rw`). 쓰기 표면에서 ReadOnly를 빼는 일은 덤프 데이터(`DenyWrite`)가 맡는다는 2차 M2 결론이 Studio에서도 선다.
+- **19~29번의 Studio 진단은 아직 못 읽었다**(미완). 파일 하나씩 남겨 읽거나 도구가 고쳐진 뒤에 읽는다.
