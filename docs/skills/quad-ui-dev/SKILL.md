@@ -215,9 +215,8 @@ export type ButtonProps = {
     Text: string | QuadTypes.State<string>,
     -- the handler type must match the engine signature exactly, arity included
     OnClick: (inputObject: InputObject, clickCount: number) -> (),
-    Modifier: any?,   -- typed boundary: RobloxModule.Modifier<TextButton>? (plug it in as-is). RobloxModule.ModifierInto<TextButton>?
-                      -- accepts parent-class modifiers too, but then plug `props.Modifier:AsTextButton()` — the interface
-                      -- type itself is NOT a valid array-part value (strict rejects it)
+    Modifier: RobloxModule.ModifierInto<TextButton>?, -- marker: takes this class's and ancestors' Modifiers, plug it in as-is;
+                      -- it has no methods — take RobloxModule.Modifier<TextButton>? instead if the component calls setters
 }
 
 local function Button(props: ButtonProps)

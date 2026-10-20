@@ -53,11 +53,11 @@ q.Claim(template, q.Mapper "Frame" (q.MapperRoot)({
 **커링 세 단계**입니다.
 
 ```
-M.<ClassName>(<키>)(<props 테이블>)
+q.Mapper "<ClassName>" (<키>) (<props 테이블>)
 ```
 
 - 루트 자리의 키는 센티널 `q.MapperRoot`, 자식은 이름으로 찾습니다.
-- props 테이블 안은 `D.<Class>`와 똑같습니다: 문자 키에 프로퍼티·이벤트,
+- props 테이블 안은 `q.Elem "<Class>"`와 똑같습니다: 문자 키에 프로퍼티·이벤트,
   숫자 키 자리에 자식 디스크립터·`Slot`·`Modifier`·`Ref` 같은 값.
 - **디스크립터는 1회용입니다.** 두 번 쓰면
   `Quad0027 Claim: mapper descriptor was already used (descriptors are one-shot)` —

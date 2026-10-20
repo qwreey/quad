@@ -186,13 +186,9 @@ local function ThemedButton(props: {
     read OnClick: () -> (),
     read Modifier: RobloxModule.ModifierInto<TextButton>?,
 })
-    -- 호출자 오버라이드가 있으면 기본 스타일 위에 얹는다(뒤가 이긴다)
-    local effective = if props.Modifier
-        then q.Raw.Modifier.Overridden(Styles.Button, props.Modifier:AsTextButton())
-        else Styles.Button
-
     return q.Elem "TextButton" {
-        effective,
+        Styles.Button,                -- 기본 스타일
+        props.Modifier or q.None,     -- 호출자 오버라이드 — 뒤에 놓인 Modifier가 이긴다
         Text = props.Text or "",
         TextColor3 = Color3.fromRGB(255, 255, 255),
         FontFace = Font.fromEnum(Enum.Font.GothamBold),
@@ -213,10 +209,11 @@ return ThemedButton
 
 - `Modifier.Overridden(a, b, ...)`는 **필드 단위로 합치고 뒤 인자가
   이깁니다**. 닷 형태와 콜론 형태(`a:Overridden(b)`)가 같은 함수입니다. 결과는 두 `Modifier`를 숫자 키 자리에 순서대로 놓은 것([01](/how-to/01-component-conventions/))과 같습니다 — 합친 값을 변수 하나로 들고 다니거나 넘겨야 할 때 이쪽을 씁니다.
-- props로 받은 `Modifier`는 입력 자리 마커 `ModifierInto<TextButton>`으로 받고
-  `:AsTextButton()`으로 검사형 하강을 합니다 — 상위 클래스 Modifier
-  (`q.Modifier "GuiObject" ()`)도 그대로 들어옵니다. `mod:As<<T>>()`는 **무검사**
-  캐스트이니 필요할 때만 쓰세요.
+- props로 받은 `Modifier`는 입력 자리 마커 `ModifierInto<TextButton>`으로 받아 숫자 키 자리에 그대로
+  놓습니다 — 상위 클래스 Modifier(`q.Modifier "GuiObject" ()`)도 들어오고 형제 클래스 것은 타입이
+  거부합니다. 마커에는 메소드가 없으니, 컴포넌트 안에서 setter를 불러야 하면 `Modifier<TextButton>`으로
+  받으세요(그때 호출자는 상위 클래스 값을 `:AsTextButton()`으로 내려 넘깁니다). `mod:As<<T>>()`는
+  **무검사** 캐스트이니 필요할 때만 쓰세요.
 - `Modifier`는 숫자 키 자리에 놓습니다. 선택적이면 `props.Modifier or q.None`
   관용구를 씁니다.
 

@@ -77,7 +77,7 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 - [`05-theme-and-dynamic-styling.md`](./how-to/05-theme-and-dynamic-styling.md) — 디자인 토큰, `state:Apply(q.Animate{...})`, `Modifier.Overridden`, 명시적 `q.Context`로 계층 건너 전달.
 - [`06-headless-testing.md`](./how-to/06-headless-testing.md) — 반응형 그래프(`Source`/`Compute`/`Store`/`Blocker`)는 평범한 `luau` CLI에서 실측된 require 경로로 그대로 검증됩니다. 프로바이더 주입·`Observer`/`Effect`의 생명주기 결합·`Slot` 조립은 공개 `quad-mock`이 아직 없어 자기 프로바이더가 필요합니다. 이 저장소 자체의 테스트는 `CONTRIBUTING.md`.
 - [`07-studio-ui-binding-and-claim.md`](./how-to/07-studio-ui-binding-and-claim.md) — `q.Claim(inst, q.Mapper...)` 디스크립터, claim-once·직계 자식 전부 매핑·공동 소유 컨테이너는 대상 밖.
-- [`08-migrating-from-v1.md`](./how-to/08-migrating-from-v1.md) — quad v1(`Init(id)`/`Class "Frame"`/`Store.GetStore`)에서의 이관: 툴체인 플래그, 개념 대응표, 제거된 기능과 경로, strict 블로커 열여덟.
+- [`08-migrating-from-v1.md`](./how-to/08-migrating-from-v1.md) — quad v1(`Init(id)`/`Class "Frame"`/`Store.GetStore`)에서의 이관: 툴체인 플래그, 개념 대응표, 제거된 기능과 경로, strict 블로커 표.
 - [`09-overlays-modal-toast.md`](./how-to/09-overlays-modal-toast.md) — **[2026-09-25 신설]** 떠 있는 것 열고 닫기: `Visible` 유지 vs 조건부 자식(`State<Instance?>`)으로 모달을 열고 닫기, `q.Context`로 깊은 트리거에서 뿌리의 오버레이를 열기, `Slot:List`로 토스트 큐, `q.Fallback`으로 던진 에러를 에러 모달에 담기.
 - [`10-debugging-and-troubleshooting.md`](./how-to/10-debugging-and-troubleshooting.md) — **부록**(순서 없음): 에러 메시지 모양(`주어: 이유`, 받은 값을 말할 땐 `(got X)`)과 표면 blame의 한계, 현업 함정 일곱(문구는 소스 verbatim).
 
