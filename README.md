@@ -39,7 +39,7 @@ local QuadRoblox = require(ReplicatedStorage.roblox_packages.quad_roblox).QuadRo
 local q = Quad:UseProvider(QuadRoblox) -- quad-roblox 백엔드 설치: q.Elem 등과 Tween/Animate가 생긴다
 ```
 
-`Quad:UseProvider(QuadRoblox)` 전에는 `q.Elem`·`q.Modifier`·`q.OnChange` 같은 백엔드 표면과 `Tween`/`Animate`가 없습니다. 이어지는 카운터 컴포넌트는 [02. 첫 화면](./docs/getting-started/02-first-screen.md)부터 이어지는 열여섯 장에서 한 걸음씩 만듭니다.
+`Quad:UseProvider(QuadRoblox)` 전에는 `q.Elem`·`q.Modifier`·`q.OnChange` 같은 백엔드 표면과 `Tween`/`Animate`가 없습니다. 이어지는 카운터 컴포넌트는 [02. 첫 화면](./docs/getting-started/02-first-screen.md)부터 이어지는 장들에서 한 걸음씩 만듭니다.
 
 ## 변경 이력과 버전
 

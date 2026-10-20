@@ -784,7 +784,7 @@ enum은 문자열 싱글톤 `"a" | "b"`로 — Fusion 관례와 같다).
 런타임 값에도 실제 필드), 클래스별 타입은 폭 서브타이핑으로 통과시킨다. 같은
 이유로 `<Class>Modifier`끼리의 구조적 서브타이핑은 애초에 안 선다(§2, 스파이크
 `09`). **[2026-09-04 단위 ④ 갱신]** 마커는 이제 **클래스 태그**다 — 무타입
-base는 `{ read __quadModifier: true }`(`QuadTypes.ModifierMarker`, `NewChild`),
+base는 `{ read __quadModifier: true }`(`QuadTypes.ModifierMarker`, `NewChild` — **[2026-10-20 3.4.0]** 이 `NewChild` 팔은 삭제, `base/surface-plan.md` 3절),
 클래스별 `<Class>Elem`은 조상 체인 문자열 유니언 `{ read __quadModifier: "Frame"
 | "GuiObject" | … }` 한 멤버. 이걸로 잃었던 children 자리의 **클래스 소속
 검사**가 돌아왔다(`H-313` 닫힘) — 단, 그 검사가 실제로 서려면 8.9절의 처방

@@ -1,6 +1,6 @@
 # Modifier 설계 (정적 merge, immutable 체이닝)
 
-> **[2026-10-20 — 3.4.0 표면]** 무타입 base 생성자 `q.Modifier(...)`는 `q.Raw.Modifier(...)`로, 클래스별 `D.Modifier.<Class>()`는 `q.Modifier "Class" ()`(타입 함수 표면)로 바뀌었다. 11절의 `Into<Class>` 인터페이스는 입력 자리 마커 `ModifierInto<C>`로 물러났다(`base/surface-plan.md` 2절). 값 런타임·병합 규칙·예약 메소드는 그대로.
+> **[2026-10-20 — 3.4.0 표면]** 무타입 base 생성자 `q.Modifier(...)`는 `q.Raw.Modifier(...)`로, 클래스별 `D.Modifier.<Class>()`는 `q.Modifier "Class" ()`(타입 함수 표면)로 바뀌었다. 11절의 `Into<Class>` 인터페이스는 입력 자리 마커 `ModifierInto<C>`로 물러났다(`base/surface-plan.md` 2절). 타입드 요소가 무타입 Modifier(`true` 태그)를 받던 팔도 걷혔다(같은 문서 3절). 값 런타임·병합 규칙·예약 메소드는 그대로.
 
 **상태**: base — 핵심 메커니즘(런타임 plug 아님/정적 merge, immutable
 값+clone 기반 체이닝, 이중 setter)은 2026-08-04 세션 채팅 논의로 확정.
@@ -939,7 +939,7 @@ error다 — **사용자 요구**: *"As로 시작하는건 전부 Cast 프리디
 | "GuiBase2d" | "GuiBase" | "Instance" }` 한 멤버(자기 + 조상 체인)를 담는다 —
 자기 클래스와 상위 클래스의 Modifier만 들어오고 형제 클래스는 태그 불일치로
 거부(**`H-313` 닫힘**). 무타입 base 값은 `NewChild`의 `{ read __quadModifier:
-true }`로 명시 허용. 컴포넌트가 무엇을 받을지는 컴포넌트 param 타입이 정한다
+true }`로 명시 허용(**[2026-10-20 3.4.0] 이 팔은 삭제됐다** — 타입드 요소는 무타입 Modifier를 받지 않는다, `base/surface-plan.md` 3절). 컴포넌트가 무엇을 받을지는 컴포넌트 param 타입이 정한다
 (`IntoMaterialButton`이든 마커든) — `<Class>Elem`은 `D.<Class>` 자리에만 걸린다.
 flatten과 나중의 "PreRef/Ref/PostRef 추출 + flatten" 슈가는 태그를 보지 않는다.
 

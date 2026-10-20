@@ -104,7 +104,7 @@ board.Parent = screen
 **`Main.client.luau`**
 
 ```luau
--- (Main.client.luau — 01장부터 지금까지 전체 모습. Players·game.Loaded:Wait()·q·D·playerGui·screen은 01장 그대로입니다)
+-- (Main.client.luau — 01장부터 지금까지 전체 모습. Players·game.Loaded:Wait()·q·playerGui·screen은 01장 그대로입니다)
 const Players = game:GetService("Players")
 
 if not game:IsLoaded() then game.Loaded:Wait() end

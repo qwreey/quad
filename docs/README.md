@@ -84,7 +84,7 @@ Diátaxis(tutorial / how-to / reference / explanation) 4분면을 따르고, **O
 ### API Reference — 손으로 관리하는 심볼 레퍼런스(35편 + 색인 — core 11·sugar 6·roblox 6·extend 2·errors 10)
 **[2026-09-09 사용자 결정]** 관례 조사(Roblox 엔진 레퍼런스·Fusion·Vide·Lune·Squash) 뒤 확정: **타입당 1페이지**, 메소드는 `##` 절(앵커), 페이지 템플릿은
 시그니처(quad-types에서 복사) → 인자 표 → 반환 → 동작(불변식·**에러 문구 verbatim**) → 예제(mock 실행·신 솔버 검사) → 관련. **생성기 없음** — 손으로 쓴 심볼은
-전부 손으로 "관리"한다(사용자: 아키텍처가 견고해 자동화 이점이 작다). `D.<Class>` 31개 페이지도 만들지 않는다 — 표면 한 페이지·한 예시만 두고 각 클래스의 프로퍼티·이벤트는
+전부 손으로 "관리"한다(사용자: 아키텍처가 견고해 자동화 이점이 작다). 클래스별 31개 페이지도 만들지 않는다 — 표면 한 페이지·한 예시만 두고 각 클래스의 프로퍼티·이벤트는
 Roblox 공식 레퍼런스로 유도(React가 DOM 요소를 설명하지 않듯). 빠진 심볼은 `scripts/doc-coverage.py`(test.sh 게이트)가 잡는다.
 - [`00-index.md`](./reference/00-index.md) — 심볼 → 페이지 색인.
 - `core/`(quad-base) 11편 — [모듈](./reference/core/01-quad-module.md)(New/RunInit/AddPlugin/UseProvider) · [Source](./reference/core/02-source.md) · [State](./reference/core/03-state.md) · [Store](./reference/core/04-store.md) · [Observer·Effect](./reference/core/05-observer-effect.md) · [Slot](./reference/core/06-slot.md) · [Ref](./reference/core/07-ref.md) · [Modifier](./reference/core/08-modifier.md) · [Tag·Attr](./reference/core/09-tag-attr.md) · [센티널·수명 스텁](./reference/core/10-lifetime-sentinels.md) · [술어 `is*`](./reference/core/11-predicates.md).

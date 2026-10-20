@@ -35,7 +35,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 
 `Event: handler for "{k}" must be a function (got {typeof(v)})` — `quad-roblox/src/Handlers/Event.luau`
 
-- **언제**: `D.<Class> { EventName = v }`에서 이벤트 이름 키의 값 `v`가 함수도, `None`/`nil`(연결 해제 전용)도 아닐 때.
+- **언제**: `q.Elem "<Class>" { EventName = v }`에서 이벤트 이름 키의 값 `v`가 함수도, `None`/`nil`(연결 해제 전용)도 아닐 때.
 - **고치려면**: 콜백 함수나 `q.None`/`nil`을 넘기세요.
 - **참고**: [Elem — 문자 키](../roblox/02-elem.md#문자-키--프로퍼티와-이벤트)
 
@@ -44,7 +44,7 @@ description: "D.*/Mapper/Claim/Property/Event/OnChange/Out/숏핸드가 던지�
 `Dispatch: this Instance is not claimed by quad - build it with q.Elem or take it over with Claim first (an Instance made by another quad module instance also counts as not claimed here, and so does a destroyed one - a destroyed Instance cannot be reused)` — `quad-roblox/src/Handlers/InstanceChild.luau`
 
 - **언제**: 숫자 키 자리에 quad가 소유하지 않은 Instance(`Instance.new`나 다른 라이브러리가 만든 것, 다른 quad 모듈 인스턴스가 만든 것, 또는 이미 파괴된 것)를 놓았을 때.
-- **고치려면**: `D.<Class> { ... }`로 만들었거나 [`Claim`](../roblox/04-claim-mapper.md#qclaiminst-desc)으로 넘겨받은 Instance만 자식 자리에 놓으세요.
+- **고치려면**: `q.Elem "<Class>" { ... }`로 만들었거나 [`Claim`](../roblox/04-claim-mapper.md#qclaiminst-desc)으로 넘겨받은 Instance만 자식 자리에 놓으세요.
 - **참고**: [Elem — 숫자 키](../roblox/02-elem.md#숫자-키--자식과-디스크립터)
 
 ### Quad0220
