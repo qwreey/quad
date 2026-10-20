@@ -19,3 +19,9 @@
 ## 3. 이름 확정
 
 세 계열(`audit/naming-spread-into-2026-10-20/`): `SpreadInto` 셋 다 유지, `:Add`는 codex `Merge`·sonnet 유지(대안 `Append`)·Gemini `Append`, 키트 필드는 codex·Gemini 유지·sonnet `FieldExtras`. 메인 권고 `Append`·나머지 유지 → 사용자 확정. 사용자가 "먼저가 이김"의 근거를 보충(Luau 테이블은 인라인 키와 배열 값 사이 순서를 남기지 않음 — research 5절 끝).
+
+## 4. 3.4.0 이름 정리 — 읽기 쪽 맵·탈출구
+
+메인이 이름 전에 모양을 쟀다(REPORT 끝 절): 읽기는 클래스 타입 `index<>`로 충분(차이는 Q127뿐), 탈출구는 클래스 타입 직접(`ElemOf<<Part>>`)과 사용자 맵(`With<<{…}>>()`) 둘 다 큰 클래스에서 깨끗 — 사용자 맵은 이름 하나·오타 거름·모듈 경계 OK. 권고: 읽기 맵 비노출, 사용자 맵, 타입 없는 탈출구 없음. 사용자: 셋 다 동의. `With` 자리 이름은 세 계열 검토.
+
+세 계열(`audit/naming-classmap-escape-2026-10-20/`): 셋 다 `With` 변경, 1순위 codex `For`·sonnet `Classes`·Gemini `ForClasses`. 메인 권고 `ForClasses`(한 번만 적는 드문 이름 — 원칙 1·2)와 문서 주의 셋(합쳐지지 않음·거짓 맵·130 한도) → 사용자 "확인. 전부 동의해".

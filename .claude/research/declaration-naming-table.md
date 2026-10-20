@@ -100,7 +100,7 @@
   조합)은 **지금은 내보내지 않는다** — 사용자: *"바리에이션에 대해서는 좀 더 논의해보고. 지금은 내지 않고, 정해지는게 생기면 낼 지 보는정도로"*.
 - **이름→타입 맵은 `PropertyMap` 계열**(`EventMap`과 짝 — 읽기 쪽 이름은 미정), 나머지 표 행(`Props<C>`·`PropsArrayItem<C>`·`PropsHashPart<C>`·`MapperProps<C>`·`OnEventDescriptor`·
   부품 비노출)도 동의.
-- **표에 빠졌던 축**(Gemini 발견, 메인 확인 — 이름은 다음 개정에서): 공용 모듈 레코드 타입(`Declaration`·`DeclarationMapper`·`DeclarationModifier`), 서명 타입 `OnChangeFn`·`OutFn`(·`OnEventFn`),
+- **표에 빠졌던 축**(Gemini 발견, 메인 확인 — 이름은 다음 개정에서; **[2026-10-20]** 공용 모듈 레코드는 D와 함께 삭제, 서명 타입·읽기 쪽 맵은 비노출, 매퍼 루트는 값·타입 짝, 탈출구는 사용자 클래스 맵 함수 `q.ForClasses<<Map>>()` 하나 — `research/declaration-surface-plan.md` 5절 끝): 공용 모듈 레코드 타입(`Declaration`·`DeclarationMapper`·`DeclarationModifier`), 서명 타입 `OnChangeFn`·`OutFn`(·`OnEventFn`),
   31 클래스 밖 동적 탈출구(지금 `D.New(name)`, 프로브 `NewLoose`), 매퍼 루트 센티널 타입.
 - **OnEvent·OnChange 커리** — 사용자: *"커리 꼴이 되면 타이핑 문제에 해결이 보일것 같다 … 오버라이딩으로 선택될 수 있는지 보는게 필요"*. 실측(`audit/decl-typefn-probe-2026-10-16/REPORT.md`
   끝 절): 클래스 먼저 커리 `OnEvent "Frame" "MouseEnter" (fn)`는 제네릭·오버로드 둘 다 콜백에 문맥 타입이 흐르나 **오버로드는 이름 자동완성을 잃는다** — 확정 여부는 사용자 몫.

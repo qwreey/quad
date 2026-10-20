@@ -770,3 +770,10 @@ raw 덤프는 레포 밖 스크래치패드에 있습니다. 다시 받는 방�
   - `out/`: 원 출력 원본
 
 메인 확인: 심은 오류 집계(`harness/compare/kit-trial/out/summary.txt` 149~154행 — 기준선 sync 0/194, 변환본 세 모드 194/194)와 기준선 sync의 Card·List As 체인 too complex(같은 파일 21~26행)를 원 출력에서 대조했다.
+
+## 탈출구 모양·읽기 쪽 맵 — `harness/compare/escape/`, 스크래치 `index<>` 확인 [2026-10-20, 메인]
+
+이름 정리(읽기 쪽 맵·탈출구) 재료. 정책 데이터는 `src/FullMapsKeep.luau`(M4 산물)를 그대로 썼다. 모드 sync·vsc.
+- **클래스 타입을 직접 주는 탈출구**(`typed.luau` — `ElemOf<<Part>>("Part")`, `ModifierOf<<BasePart>>`, `SpreadOf<<BasePart>>`): M4에서 이름 바운드 때문에 too complex였던 큰 클래스(Beam·MeshPart·VehicleSeat·Tool·Trail·HumanoidRigDescription)가 sync·vsc 모두 깨끗, NEG 7/7(값·ReadOnly·Spread 값), OK 줄 무진단. 약점: 이름과 타입을 대조하지 못한다 — `ElemOf<<Part>>("Frame")` 통과(예상대로 MISS).
+- **사용자 클래스 맵을 받는 탈출구**(`usermap.luau` — `local W = With<<{ Part: Part, Beam: Beam, … }>>()` 뒤 `W.Elem "Part"`·`W.Modifier`·`W.Spread`): sync·vsc 모두 NEG 전부(오타 `W.Elem "Prt"`는 사용자 맵 이름 유니언으로 거부), too complex 0, 0.52 s. 맵을 모듈에서 꺼내 내보내고 다른 파일에서 쓰는 꼴(`worldmod.luau`→`worlduse.luau`)도 같은 진단 10건, too complex 0. 약점: 맵의 키와 타입이 어긋나는 것(`{ Part: Frame }`)과 추상 클래스 생성은 사용자 몫.
+- **읽기 쪽**: 체커의 클래스 타입에 `index<Frame, "AbsoluteSize">`·`index<Part, "Position">`이 ReadOnly를 포함해 그대로 읽히고 틀린 값은 거부(스크래치 확인). 따로 내보낸 읽기 맵과의 차이는 Q127 규칙(Instance 계열 `T?`)뿐.
