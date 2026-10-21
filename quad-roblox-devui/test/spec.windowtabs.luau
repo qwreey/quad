@@ -407,6 +407,43 @@ H.section("OnCloseRequest on a tab's ×; NoClose has none", function()
 	H.assertNoDebugOutput("close request")
 end)
 
+H.section("a group narrower than its tabs: a tab past the strip's end is not drawn (nothing clips the tabs)", function()
+	local container = newContainer(1000, 700)
+	local m = Devui.WindowManager.new()
+	local a, b = pair(m, container)
+	dragTitle(b, 510, 310, { { 250, 200 } })
+	lay(container, { a, b })
+	assert(#shownTabs({ a, b }) == 2)
+	local function shrinkTo(width: number)
+		local grip = part(b, "WindowResizeGrip")
+		local gx = grip.AbsolutePosition.X - 5
+		H.fire(grip, "InputBegan", mouse(M1, gx, 295))
+		moveTo(gx - (frameOf(b).Size.X.Offset - width), 295)
+		release(gx - (frameOf(b).Size.X.Offset - width), 295)
+		lay(container, { a, b })
+		assert(frameOf(b).Size.X.Offset == width, `shrunk to {width} ({frameOf(b).Size})`)
+	end
+	local function inside(): boolean
+		local right = frameOf(b).Position.X.Offset + frameOf(b).Size.X.Offset
+		for _, w in shownTabs({ a, b }) do
+			if tabOf(w).Position.X.Offset + tabOf(w).Size.X.Offset > right then
+				return false
+			end
+		end
+		return true
+	end
+	shrinkTo(100) -- room for one tab at its minimum width
+	assert(#shownTabs({ a, b }) == 1 and inside(), `one tab left ({#shownTabs({ a, b })})`)
+	shrinkTo(45) -- narrower than one tab
+	assert(#shownTabs({ a, b }) == 0, "no tab drawn over the neighbour")
+	shrinkTo(300)
+	assert(#shownTabs({ a, b }) == 2 and inside(), "widened: both back")
+	q.dispose(a)
+	q.dispose(b)
+	q.dispose(container)
+	H.assertNoDebugOutput("narrow strip")
+end)
+
 H.section("a group shrinking to one window: it takes the group's rectangle and is a plain window again", function()
 	local container = newContainer(1000, 700)
 	local m = Devui.WindowManager.new()

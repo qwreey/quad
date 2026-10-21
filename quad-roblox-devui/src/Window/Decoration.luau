@@ -78,7 +78,8 @@
 	Each open window shows its own `WindowTab` over that row, all laid out by `tabSlots` (the one place that decides
 	where the strip and its tabs sit): after the collapse arrow, as wide as `TAB_IDEAL` x FrameHeight each, shrinking
 	evenly down to `TAB_MIN` x FrameHeight when they do not fit (title truncated), and leaving `TAB_GRAB` x FrameHeight
-	at the strip's right end free (the empty area that drags the group). A tab is `Tab` / `TabHovered` and the
+	at the strip's right end free (the empty area that drags the group). A tab that still does not fit (a frame narrower
+	than its tabs at TAB_MIN — the tabs are the frame's siblings, nothing clips them) is not drawn. A tab is `Tab` / `TabHovered` and the
 	selected one `TabActive`; its close button shows on the selected tab and on the hovered one (none with that
 	window's NoClose) and asks that window's OnCloseRequest like the title bar's. Pressing a tab selects it (and the
 	manager's press focuses the group); dragging it inside the strip row moves it among the tabs, and dragging it out of
@@ -672,7 +673,15 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 			return nil
 		end
 		local lead, w = tabSlots()
-		return Vector2.new(lead + index * w, w)
+		local x = lead + index * w
+		-- the tabs are the frame's siblings (nothing clips them): a tab past the strip's right end is not drawn, so a
+		-- frame shrunk below its tabs (a narrow docked leaf, floors given way) does not draw them over its neighbour.
+		-- Only a tab at TAB_MIN width can cross the end (wider ones fit by construction), so hiding equals clipping
+		-- every visible pixel down to a stub narrower than TAB_MIN
+		if x + w > frameSize:Get().X.Offset - style.Metrics.FramePadding:Get().X then
+			return nil
+		end
+		return Vector2.new(x, w)
 	end, frameSize, style.FrameHeight, style.Metrics.TextSize, style.Metrics.FramePadding)
 	-- the pointer's x in window units from the frame's left edge
 	local function stripX(x: number): number
