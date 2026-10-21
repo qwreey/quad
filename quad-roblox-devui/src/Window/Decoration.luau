@@ -966,8 +966,18 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 
 	-- the dock strip (header DOCKED)
 	local stripHover = Interaction.hover()
-	local stripBg: State<Color3> = restLook(stripHover, colorOf)
-	local stripAlpha: State<number> = restLook(stripHover, alphaOf)
+	-- [2026-10-21 user decision] a collapsed panel's strip rests in TitleBgCollapsed (see-through by default, like Dear
+	-- ImGui's collapsed title bar): a strip left at the screen edge should not block the game behind it
+	local function stripLook(pick: (token: string) -> State<any>): State<any>
+		return iconic:Compute(function(self, _prev, open, hovered, isPressed, collapsedLook)
+			if self:Get() and not hovered:Get() and not isPressed:Get() then
+				return collapsedLook:Get()
+			end
+			return open:Get()
+		end, restLook(stripHover, pick), stripHover.Hovered, stripHover.Pressed, pick("TitleBgCollapsed"))
+	end
+	local stripBg: State<Color3> = stripLook(colorOf)
+	local stripAlpha: State<number> = stripLook(alphaOf)
 	local stripAnchor: State<Vector2> = side:Compute(function(self)
 		return if self:Get() == "Right" then Vector2.new(1, 0) else Vector2.new(0, 0)
 	end)

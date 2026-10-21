@@ -158,6 +158,17 @@ H.section("Layout containers take Slot children", function()
 
 	local sep = Devui.Separator({})
 	assert(sep.Size == UDim2.new(1, 0, 0, 1) and sep.BackgroundColor3 == Color3.fromRGB(110, 110, 128))
+	-- under a parent that sizes its width to its children (a menu panel): 0 wide, stretched to the widest sibling
+	local panel = q.Elem "Frame" ({ AutomaticSize = Enum.AutomaticSize.XY })
+	sep.Parent = panel
+	H.fire(sep, "AncestryChanged", sep, panel) -- (the mock fires none)
+	assert(sep.Size == UDim2.new(0, 0, 0, 1), `stretched under an auto-width parent ({sep.Size})`)
+	local fixed = q.Elem "Frame" ({ AutomaticSize = Enum.AutomaticSize.Y })
+	sep.Parent = fixed
+	H.fire(sep, "AncestryChanged", sep, fixed)
+	assert(sep.Size == UDim2.new(1, 0, 0, 1), "the parent's width again")
+	q.dispose(panel)
+	q.dispose(fixed)
 	local st = Devui.SeparatorText({ Text = "Section" })
 	local order = {}
 	for _, ch in st:GetChildren() do

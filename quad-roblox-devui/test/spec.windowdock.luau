@@ -154,10 +154,13 @@ H.section("strip press: collapsed -> expand + focus, expanded without focus -> f
 	assert(part(a, "WindowDecoration").Visible == false and (a :: any).Visible == false and strip.Visible == true, "only the strip")
 	assert(get(a, "WindowIcon").Visible == false, "a docked window has no icon")
 	assert(arrow.Rotation == 0, "collapsed left dock: `>`")
+	local style = Devui.Style.default
+	assert(strip.BackgroundTransparency == style.Transparency.TitleBgCollapsed:Get() and strip.BackgroundTransparency > 0, "the collapsed strip is see-through (TitleBgCollapsed)")
 	press(400, 150) -- B again
 	pressStrip() -- collapsed: expand + raise + focus
 	assert(collapsed:Get() == false and m.Focused:Get() == aId and (a :: any).ZIndex > (b :: any).ZIndex, "expanded, raised, focused")
 	assert(arrow.Rotation == 180)
+	assert(strip.BackgroundTransparency == style.Transparency.TitleBgActive:Get(), "expanded: the title colours again")
 
 	-- gamepad / keyboard: no global press, the current focus decides
 	H.fire(strip, "Activated", H.input({ UserInputType = Enum.UserInputType.Gamepad1 }), 1)
