@@ -254,6 +254,7 @@ export type Control = {
 	BackZ: State<number>, -- the frame (below the surface)
 	FrontZ: State<number>, -- the grip (above the surface)
 	Focused: State<boolean>,
+	UnitFocused: State<boolean>, -- this window or another of its unit is focused (the unit's own parts: dock strip, icon)
 	Raise: () -> (),
 	Changed: (() -> ())?, -- Position / Size / Open / Collapsed / the dock changed (the manager's Layout output; keyed windows)
 	-- the dock (header DOCKED): the manager owns the side (one open window per side) and the width
@@ -919,7 +920,8 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 				setPos(clampToContainer(UDim2.new(iconStart.X.Scale, iconStart.X.Offset + dx, iconStart.Y.Scale, iconStart.Y.Offset + dy)))
 			end,
 	})
-	-- pressed > hovered > focused > idle (the title bar's colours at rest, the button's under the pointer)
+	-- pressed > hovered > focused > idle (the title bar's colours at rest, the button's under the pointer). For the
+	-- unit's own parts (dock strip, icon): the lead window draws them, but in a split another leaf may hold the focus
 	local function restLook(hover: Interaction.HoverHandle, pick: (token: string) -> State<any>): State<any>
 		return hover.Hovered:Compute(function(self, _prev, isPressed, isFocused, idle, active, hovered, pressed)
 			if isPressed:Get() then
@@ -930,7 +932,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 				return active:Get()
 			end
 			return idle:Get()
-		end, hover.Pressed, control.Focused, pick("TitleBg"), pick("TitleBgActive"), pick("ButtonHovered"), pick("ButtonActive"))
+		end, hover.Pressed, control.UnitFocused, pick("TitleBg"), pick("TitleBgActive"), pick("ButtonHovered"), pick("ButtonActive"))
 	end
 	local function colorOf(token: string): State<any>
 		return style:ColorOf(token)

@@ -38,3 +38,7 @@
 ### Removed
 
 - **BREAKING** `Style`의 `TitleBgCollapsed` 색·투명도 토큰(어두운·밝은 테마 둘 다) — 접힌 창이 제목줄 대신 아이콘이 되면서 쓰는 곳이 없어졌습니다. 옮기는 법: `Style.new`의 덮어쓰기와 `ColorOf("TitleBgCollapsed")`·`AlphaOf("TitleBgCollapsed")`에서 이 이름을 지우세요(남아 있으면 모르는 토큰 에러).
+
+### Fixed
+
+- 붙은 나뉜 덩어리의 화면 끝 띠가 오른쪽 아래 칸의 창이 포커스일 때만 활성 색이던 것 — 이제 덩어리 안 어느 창이든 포커스면 활성 색입니다.

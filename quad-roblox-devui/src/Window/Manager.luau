@@ -2764,6 +2764,23 @@ function Manager.new(): Manager
 			local isFocused: State<boolean> = focusedId:Compute(function(self)
 				return self:Get() == id
 			end)
+			-- (re-judged on every view write too: joining or leaving a unit writes the view)
+			local unitFocused: State<boolean> = focusedId:Compute(function(self, _prev, _view)
+				local focusedNow = self:Get()
+				if focusedNow == id then
+					return true
+				end
+				local u = unitOf(entry)
+				if u == nil then
+					return false
+				end
+				for _, m in membersOf(u) do
+					if m.Entry ~= nil and m.Entry.Id == focusedNow then
+						return true
+					end
+				end
+				return false
+			end, entry.View)
 			local surfaceZ: State<number> = rank:Compute(function(self)
 				return (self:Get() - 1) * SPAN + 2
 			end)
@@ -2961,6 +2978,7 @@ function Manager.new(): Manager
 						BackZ = backZ,
 						FrontZ = frontZ,
 						Focused = isFocused,
+						UnitFocused = unitFocused,
 						Raise = function()
 							focus(entry, true) -- (a drag's raise: a small side stays small)
 						end,
