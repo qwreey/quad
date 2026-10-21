@@ -49,6 +49,31 @@ H.section("open anchors content, click-outside closes, destroys content", functi
 	q.dispose(o.Layer)
 end)
 
+H.section("a press on the content's empty area does not close the popup: a sink under the content, sized from it", function()
+	local o = Overlay.new()
+	local content = Frame({ Name = "Body", Active = true })
+	content.AbsoluteSize = Vector2.new(120, 80)
+	local closed = 0
+	local p = o:Open({ Content = content, Position = Vector2.new(10, 10), OnClose = function()
+		closed += 1
+	end })
+	local holder = p.Holder :: any
+	local sink = holder:FindFirstChild("ClickSink") :: any
+	assert(sink ~= nil and sink.ClassName == "TextButton" and sink.ZIndex == 0, "a button under the content (the content keeps the default ZIndex 1)")
+	assert(sink.Size == UDim2.fromOffset(120, 80), "the content's size (not a scale: the holder sizes to its children)")
+	content.AbsoluteSize = Vector2.new(150, 90)
+	assert(sink.Size == UDim2.fromOffset(150, 90), "follows it")
+	H.fire(sink, "Activated", H.input({}), 1)
+	assert(closed == 0 and o.Count:Get() == 1, "pressing the empty area keeps it open")
+	o:CloseAll()
+	-- a tooltip-style popup (no click-outside) needs no sink
+	local tip = o:Open({ Content = Frame({}), Position = Vector2.zero, CloseOnClickOutside = false })
+	assert((tip.Holder :: any):FindFirstChild("ClickSink") == nil)
+	o:CloseAll()
+	q.dispose(o.Layer)
+	H.assertNoDebugOutput("click sink")
+end)
+
 H.section("tooltip-style popup has no catcher; later popups draw above; CloseAll", function()
 	local o = Overlay.new()
 	local tip = o:Open({ Content = TextLabel({ Text = "tip" }), Position = Vector2.new(0, 0), CloseOnClickOutside = false })

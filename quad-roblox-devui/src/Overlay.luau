@@ -64,6 +64,7 @@ under Deferred signals) (the ScreenGui was rebuilt, e.g. ResetOnSpawn) makes a f
 local Pointer = require("./Pointer")
 local PopupHits = require("./PopupHits")
 local Quad = require("./Quad")
+local Visibility = require("./Visibility")
 local Util = require("./Util")
 local q = Quad
 local Frame = q.Elem "Frame"
@@ -199,6 +200,28 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 
 		local closeImpl: () -> () = function() end
 
+		-- [2026-10-21 — devplorer U19 (a), Studio-confirmed there] a press on the content's empty area (a menu panel's
+		-- padding: a Frame, even Active, does not stop a click) fell through to the catcher and closed the popup. A
+		-- transparent button under the content takes it. Sized from the content's AbsoluteSize, not by scale: a scale
+		-- child of the auto-sized holder would grow the holder to the layer
+		local sink: Instance | typeof(q.None) = q.None
+		if closeOutside and Visibility.isGuiObject(opts.Content) then
+			local content = opts.Content :: GuiObject
+			local sinkSize: Source<UDim2> = q.Source(UDim2.fromOffset(content.AbsoluteSize.X, content.AbsoluteSize.Y))
+			content:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+				sinkSize:SetIfChanged(UDim2.fromOffset(content.AbsoluteSize.X, content.AbsoluteSize.Y))
+			end)
+			sink = TextButton({
+				Name = "ClickSink",
+				Size = sinkSize,
+				ZIndex = 0,
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				AutoButtonColor = false,
+				Text = "",
+			})
+		end
+
 		local holder = Frame({
 			Name = "PopupHolder",
 			AutomaticSize = Enum.AutomaticSize.XY,
@@ -207,6 +230,7 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 			Position = UDim2.fromOffset(pos.X, pos.Y),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
+			sink,
 			opts.Content,
 		})
 
