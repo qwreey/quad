@@ -5,6 +5,7 @@
 		Window {
 			Title: string | State<string>,
 			Children: Slot<Instance>?,          -- the content (laid out top-down; use Layout.* / Text / Button inside)
+			MenuBar: Instance?,                 -- a bar right under the title bar, outside the padding (see MENU BAR)
 			Position: Source<UDim2>?,           -- two-way: dragging the title bar writes it (default: an internal Source)
 			Size: Source<Vector2>?,             -- pixels; two-way: the resize grip writes it (default 300 x 200)
 			Open: Source<boolean>?,             -- the close button sets it false (unless OnCloseRequest is given); every `:Set(true)` shows the window AND brings it
@@ -88,7 +89,14 @@
 	content area's visible size (AbsoluteWindowSize: a shown scrollbar is left out) minus the window padding — for
 	layouts that need a number; a docked panel (sized by its edge, not by `Size`) moves both the same way.
 
-	Returns the surface root Frame (named "Window"): root > Content (ScrollingFrame + UIListLayout + UIPadding). It is
+	MENU BAR [2026-10-21 user decision — devplorer U21; the name `MenuBar` after a three-model review]: `MenuBar = an
+	element` (usually `Devui.MenuBar({ ... })`, which is built for this slot but works anywhere; any GuiObject fits — a
+	row of icon buttons too) is put at the top of the surface, outside the window padding, full width (its own Size
+	decides; `Devui.MenuBar` is the full width and its rows' height) and not scrolling. The content starts under it:
+	the window follows the bar's AbsoluteSize, so the content area and `AvailableSize` lose its height by themselves. In
+	a tab group each window's bar comes with its surface, so the selected tab's bar shows.
+
+	Returns the surface root Frame (named "Window"): root > [MenuBar] + Content (ScrollingFrame + UIListLayout + UIPadding). It is
 	shown while the window is open and not collapsed. Closing keeps the instances and hides them — `Open:Set(true)`
 	brings the window back with its state intact.
 
@@ -113,6 +121,7 @@ local FrameModifier = q.Modifier "Frame"
 local windowName = FrameModifier():Name("Window")
 local Style = require("./Style")
 local Util = require("./Util")
+local Visibility = require("./Visibility")
 local Manager = require("@self/Manager")
 local Compositor = require("@self/Compositor")
 
@@ -129,6 +138,7 @@ export type WindowState = Manager.WindowState
 export type WindowProps = {
 	read Title: string | State<string>,
 	read Children: Slot<Instance>?,
+	read MenuBar: Instance?,
 	read Position: Source<UDim2>?,
 	read Size: Source<Vector2>?,
 	read Open: Source<boolean>?,
@@ -231,6 +241,30 @@ local function Window(props: WindowProps): Frame
 		end)
 		else q.None
 
+	-- [2026-10-21 user decision — devplorer U21; name by a three-model review] the menu bar: drawn at the top of the
+	-- surface, outside the window padding, full width and not scrolling; the content starts under it, so the content
+	-- area (and `AvailableSize`, which is measured from it) loses its height by itself. In a tab group each window's
+	-- bar comes with its surface (the selected tab's shows)
+	local menuBar = props.MenuBar
+	local barHeight: Source<number> = q.Source(0)
+	if menuBar ~= nil then
+		if not Visibility.isGuiObject(menuBar) then
+			Util.fail("Window", `MenuBar must be a GuiObject (e.g. Devui.MenuBar(...)), got {menuBar.ClassName}`)
+		end
+		local bar = menuBar :: GuiObject
+		bar.Position = UDim2.fromOffset(0, 0)
+		barHeight:Set(bar.AbsoluteSize.Y)
+		bar:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+			barHeight:SetIfChanged(bar.AbsoluteSize.Y)
+		end)
+	end
+	local contentPosition: State<UDim2> = barHeight:Compute(function(self)
+		return UDim2.fromOffset(0, self:Get())
+	end)
+	local contentSize: State<UDim2> = barHeight:Compute(function(self)
+		return UDim2.new(1, 0, 1, -self:Get())
+	end)
+
 	-- `AvailableSize` (output): the content area's visible size minus the window padding (see the header)
 	local availableOut = props.AvailableSize
 	local visibleArea: Source<Vector2> = q.Source(Vector2.zero)
@@ -261,9 +295,11 @@ local function Window(props: WindowProps): Frame
 		-- the decoration frame under the surface paints the window background (Window/Decoration.luau header)
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
+		menuBar or q.None,
 		ScrollingFrame({
 			Name = "Content",
-			Size = UDim2.fromScale(1, 1),
+			Position = contentPosition,
+			Size = contentSize,
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			Active = true,
