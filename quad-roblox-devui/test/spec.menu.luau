@@ -322,6 +322,10 @@ H.section("MenuButton: split (body runs OnClick, the arrow opens, a disabled bod
 	o:CloseAll()
 	local whole = MenuModule.MenuButton({ Icon = "rbxassetid://1", Overlay = o, Children = items })
 	assert(H.find(whole, "MenuButtonArrow") == nil and H.find(get(whole, "MenuButtonBody"), "Arrow") ~= nil, "one piece with a ▾")
+	-- the ▾ is a small glyph; the split form's ▾ part a narrow column (14 / 24 of the frame height), not a square button
+	assert((H.find(get(whole, "MenuButtonBody"), "Arrow") :: any).Size == UDim2.fromOffset(6, 6), "a 0.45 TextSize ▾")
+	local column = get(splitButton, "MenuButtonArrow") :: any
+	assert(column.Size == UDim2.fromOffset(11, 19), `a narrow ▾ column ({column.Size})`)
 	click(get(whole, "MenuButtonBody"))
 	assert(o.Count:Get() == 1, "the whole button opens it")
 	o:CloseAll()

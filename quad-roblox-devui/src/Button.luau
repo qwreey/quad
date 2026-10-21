@@ -94,10 +94,22 @@ local function button(props: ButtonProps, small: boolean, trailing: Instance?): 
 			})
 		)
 	end
-	if icon ~= nil then
-		local side: State<UDim2> = style.Metrics.TextSize:Compute(function(self)
-			return UDim2.fromOffset(self:Get(), self:Get())
+	-- [2026-10-21 user, after using it in devplorer: "아이콘 버튼이 padding 이 커서 너무 작게 나오더라"] a button
+	-- with an icon and no text keeps the frame height but gives the icon one pixel more on every side (FramePadding.Y
+	-- - 1, at least 1): icon images carry their own margin (Material glyphs fill about 20 of 24), so at TextSize the
+	-- glyph read smaller than the text beside other buttons
+	local iconOnly = not small and text == nil and icon ~= nil
+	local inset: State<UDim>? = nil
+	if iconOnly then
+		inset = style.Metrics.FramePadding:Compute(function(self)
+			return UDim.new(0, math.max(1, self:Get().Y - 1))
 		end)
+	end
+	if icon ~= nil then
+		local side: State<UDim2> = style.Metrics.TextSize:Compute(function(self, _prev, pad)
+			local grow = if iconOnly then 2 * (pad:Get().Y - math.max(1, pad:Get().Y - 1)) else 0
+			return UDim2.fromOffset(self:Get() + grow, self:Get() + grow)
+		end, style.Metrics.FramePadding)
 		table.insert(
 			inner,
 			ImageLabel({
@@ -134,8 +146,9 @@ local function button(props: ButtonProps, small: boolean, trailing: Instance?): 
 		if trailing ~= nil then
 			table.insert(inner, trailing)
 		end
-		if text == nil and trailing == nil then
-			padX = padY -- (a square icon button: the same padding on every side)
+		if inset ~= nil then
+			-- (an icon button: the same inset on every side — square alone, icon + arrow with a trailing one)
+			padX, padY = inset, inset
 		end
 	end
 	return TextButton({
@@ -180,5 +193,31 @@ end
 
 -- (internal: MenuButton's one-piece form — a button with a trailing element)
 Button.withTrailing = button
+
+-- (internal: MenuButton's split form — the narrow ▾ column: the button look, FrameHeight tall, 0.58 of it wide)
+function Button.arrowPart(style: Style, onClick: () -> (), glyph: Instance): TextButton
+	local hover = Interaction.hover()
+	local look = Common.look(style, "Button", hover, q.Source(true))
+	local size: State<UDim2> = style.FrameHeight:Compute(function(self)
+		local h = math.floor(self:Get() + 0.5)
+		return UDim2.fromOffset(math.floor(h * 14 / 24 + 0.5), h)
+	end)
+	return TextButton({
+		hover.Hook,
+		Name = "MenuButtonArrow",
+		Text = "",
+		Size = size,
+		BackgroundColor3 = look.Color,
+		BackgroundTransparency = look.Transparency,
+		BorderSizePixel = 0,
+		AutoButtonColor = false,
+		Activated = function()
+			onClick()
+		end,
+		UICorner = style.Metrics.FrameRounding,
+		Common.stroke(style),
+		glyph,
+	})
+end
 
 return Button

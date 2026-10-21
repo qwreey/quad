@@ -200,8 +200,8 @@ local function dragSplitter(win: Instance, dx: number, dy: number)
 	release(x0 + dx, y0 + dy)
 	relay()
 end
--- a splitter drag held mid-way: moves, then returns the release
-local function holdSplitter(win: Instance, dx: number, dy: number): () -> ()
+-- a splitter drag held mid-way: moves, then returns the release (given a delta, it moves there first)
+local function holdSplitter(win: Instance, dx: number, dy: number): (toDx: number?, toDy: number?) -> ()
 	relay()
 	local sp = splitterOf(win)
 	local x0, y0 = sp.AbsolutePosition.X + 2, sp.AbsolutePosition.Y + 2
@@ -209,8 +209,12 @@ local function holdSplitter(win: Instance, dx: number, dy: number): () -> ()
 	H.fire(sp, "InputBegan", mouse(M1, x0, y0))
 	moveTo(x0 + dx, y0 + dy)
 	relay()
-	return function()
-		release(x0 + dx, y0 + dy)
+	return function(toDx: number?, toDy: number?)
+		local ex, ey = x0 + (toDx or dx), y0 + (toDy or dy)
+		if toDx ~= nil or toDy ~= nil then
+			moveTo(ex, ey)
+		end
+		release(ex, ey)
 		relay()
 	end
 end
@@ -408,11 +412,15 @@ H.section("the splitter moves the seam, kept above both sides' floors; Ratio is 
 	dragSplitter(b.win, 30, 0)
 	assert(at(a.win, 100, 100, 180, 200) and at(b.win, 280, 100, 120, 200), `moved ({where(a.win)})`)
 	assert(math.abs(nodeOf(m:ExportLayout()).Ratio - 0.6) < 1e-6, "Ratio = A's share")
-	-- (past a floor by less than half a FrameHeight: the seam stops there; further, the side becomes small — below)
-	dragSplitter(b.win, 25, 0)
+	-- the seam stops at a floor (a release there would make that side small — below — so these let go short of it)
+	local letGo = holdSplitter(b.win, 25, 0)
 	assert(at(a.win, 100, 100, 200, 200) and at(b.win, 300, 100, 100, 200), `B stops at its floor ({where(b.win)})`)
-	dragSplitter(b.win, -125, 0)
+	letGo(-10)
+	assert(at(b.win, 270, 100, 130, 200), `let go short of it ({where(b.win)})`)
+	letGo = holdSplitter(b.win, -125, 0)
 	assert(at(a.win, 100, 100, 80, 200) and at(b.win, 180, 100, 220, 200), `A stops at its floor ({where(a.win)})`)
+	letGo(-60)
+	assert(at(a.win, 100, 100, 110, 200) and nodeOf(m:ExportLayout()).Small == nil, `ordinary ({where(a.win)})`)
 	-- a top / bottom split: the splitter is over the first side's bottom
 	local container2 = newContainer(1000, 700)
 	local m2 = Devui.WindowManager.new()
@@ -583,21 +591,23 @@ H.section("a small side: pushed to the far end it shrinks to a dimmed peek on re
 	local function veil(w: Win): number
 		return H.find(w.win, "WindowDim").BackgroundTransparency
 	end
-	-- [2026-10-21 user decision] past B's floor (100) the seam stops there and B's veil fades in with the way to the
-	-- far end; released short of the end, B only stays at its floor
-	local letGo = holdSplitter(b.win, 130, 0)
-	assert(at(b.win, 300, 100, 100, 200) and veiled(b), `stopped at the floor, previewed ({where(b.win)})`)
-	assert(veil(b) > full and veil(b) < 1, `a part veil ({veil(b)})`)
+	-- [2026-10-21 user decisions] nearing B's floor (100) fades B's veil in — 80 % at the floor — and a release more
+	-- than 6 px short of the floor leaves an ordinary seam
+	local letGo = holdSplitter(b.win, 40, 0)
+	assert(at(b.win, 290, 100, 110, 200) and veiled(b), `approaching: still following ({where(b.win)})`)
+	local approaching = veil(b)
+	assert(approaching > full and approaching < 1, `a part veil ({approaching})`)
 	letGo()
-	assert(at(b.win, 300, 100, 100, 200) and not veiled(b) and nodeOf(m:ExportLayout()).Small == nil, "short of the end: not small")
-	-- pushed to the end (and over): full veil while held, B is the small side on release, a peek of 4 FrameHeights (76)
-	letGo = holdSplitter(b.win, 200, 0)
-	assert(at(b.win, 300, 100, 100, 200) and math.abs(veil(b) - full) < 1e-6, "full veil at the end, still at the floor")
-	letGo()
+	assert(at(b.win, 290, 100, 110, 200) and not veiled(b) and nodeOf(m:ExportLayout()).Small == nil, "10 px short: not small")
+	-- past the floor: the seam stops, the veil darkens on (the last 20 % toward the far end)
+	letGo = holdSplitter(b.win, 60, 0)
+	assert(at(b.win, 300, 100, 100, 200) and veil(b) < approaching and veil(b) > full, `past the floor ({veil(b)})`)
+	-- moved back to 6 px short of the floor and let go: B is the small side, a peek of 4 FrameHeights (76)
+	letGo(4)
 	assert(at(a.win, 100, 100, 224, 200) and at(b.win, 324, 100, 76, 200), `B small ({where(b.win)})`)
-	assert(veiled(b) and not veiled(a), "B dimmed")
+	assert(veiled(b) and not veiled(a) and math.abs(veil(b) - full) < 1e-6, "B dimmed, the full veil")
 	local saved = m:ExportLayout()
-	assert(nodeOf(saved).Small == 2 and math.abs(nodeOf(saved).Ratio - 2 / 3) < 1e-6, "saved: Small = 2, the Ratio at the floor")
+	assert(nodeOf(saved).Small == 2 and math.abs(nodeOf(saved).Ratio - 194 / 300) < 1e-6, "saved: Small = 2, the Ratio where it was let go")
 	-- a press on the veil swaps: B grows, A becomes the peek (its floor, 38 — a peek is never wider than the floor)
 	press(360, 200)
 	release(360, 200)

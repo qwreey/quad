@@ -195,11 +195,12 @@ end)
 H.section("Button Icon: icon only (square padding), icon + text (icon first), tinted and dimmed like the text", function()
 	local only = Devui.Button({ Icon = "rbxassetid://1", OnClick = function() end })
 	local icon = H.find(only, "Icon") :: any
-	assert(only.Text == "" and icon ~= nil and icon.Image == "rbxassetid://1" and icon.Size == UDim2.fromOffset(13, 13), "an inner ImageLabel, TextSize square")
+	assert(only.Text == "" and icon ~= nil and icon.Image == "rbxassetid://1" and icon.Size == UDim2.fromOffset(15, 15), "an inner ImageLabel, a pixel bigger on every side than TextSize")
 	local pad = H.findAll(only, function(i: any)
 		return i.ClassName == "UIPadding"
 	end)[1] :: any
-	assert(pad.PaddingLeft == pad.PaddingTop and pad.PaddingRight == pad.PaddingBottom, "even padding: square")
+	assert(pad.PaddingLeft == UDim.new(0, 2) and pad.PaddingLeft == pad.PaddingTop and pad.PaddingRight == pad.PaddingBottom, "even padding (FramePadding.Y - 1): square, the frame height kept")
+	assert(H.find(Devui.Button({ Icon = "rbxassetid://1", Text = "x" }), "Icon").Size == UDim2.fromOffset(13, 13), "with text: TextSize")
 	assert(H.find(only, "Label") == nil)
 	local on = q.Source(false)
 	local both = Devui.Button({ Icon = q.Source("rbxassetid://2"), Text = "Copy", Disabled = on })

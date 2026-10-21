@@ -13,6 +13,9 @@
 		           a button with a menu. With `OnClick` a split button: the body runs it (its `Disabled` is the body's —
 		           the menu still opens) and a ▾ part (its own hover) opens the menu; without, the whole button
 		           (text / icon + ▾) opens it. A right-click anywhere on it opens the menu too. The menu opens under it.
+		           [2026-10-21 user, after devplorer: "V모양이 너무 커 … 다른 아이콘 버튼 처럼 보이더라"] the ▾ is a small
+		           glyph (0.45 TextSize) and the split form's ▾ part is a narrow column (0.58 FrameHeight wide — devplorer's
+		           measured 14 of 24), not a second square button.
 		PopupPanel { Children: Slot<Instance>?, Style?, Modifier? }   the popup body a menu draws (PopupBg, corner, border,
 		           padding, a vertical list sized to its widest row) — for popups an app opens itself with `Overlay:Open`
 
@@ -397,9 +400,23 @@ function Menu.MenuButton(props: MenuButtonProps): Frame
 		end
 	end)
 	local arrowSide: State<UDim2> = style.Metrics.TextSize:Compute(function(self)
-		local side = math.floor(self:Get() * 0.8)
+		local side = math.max(5, math.floor(self:Get() * 0.45 + 0.5))
 		return UDim2.fromOffset(side, side)
 	end)
+	local function arrowGlyph(order: number?): ImageLabel
+		return ImageLabel({
+			Name = "Arrow",
+			LayoutOrder = order,
+			AnchorPoint = if order == nil then Vector2.new(0.5, 0.5) else nil,
+			Position = if order == nil then UDim2.fromScale(0.5, 0.5) else nil,
+			Size = arrowSide,
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			Image = style.Icons.DownTriangle,
+			ImageColor3 = style.Color.Text,
+			ImageTransparency = style.Transparency.Text,
+		})
+	end
 	local parts: { Instance }
 	if split then
 		parts = {
@@ -412,12 +429,7 @@ function Menu.MenuButton(props: MenuButtonProps): Frame
 				Style = style,
 				Modifier = q.Modifier "TextButton"():Name("MenuButtonBody"),
 			}),
-			Button.Button({
-				Icon = style.Icons.DownTriangle,
-				OnClick = openMenu,
-				Style = style,
-				Modifier = q.Modifier "TextButton"():Name("MenuButtonArrow"),
-			}),
+			Button.arrowPart(style, openMenu, arrowGlyph(nil)),
 		}
 	else
 		parts = {
@@ -429,16 +441,7 @@ function Menu.MenuButton(props: MenuButtonProps): Frame
 				Hooks = props.Hooks,
 				Style = style,
 				Modifier = q.Modifier "TextButton"():Name("MenuButtonBody"),
-			}, false, ImageLabel({
-				Name = "Arrow",
-				LayoutOrder = 3,
-				Size = arrowSide,
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				Image = style.Icons.DownTriangle,
-				ImageColor3 = style.Color.Text,
-				ImageTransparency = style.Transparency.Text,
-			})),
+			}, false, arrowGlyph(3)),
 		}
 	end
 	return Frame({

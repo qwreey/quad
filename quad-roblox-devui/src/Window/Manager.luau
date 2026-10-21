@@ -183,10 +183,12 @@
 	  size change through `Control.Resized`). Hidden while either side is a folded leaf, or with an open NoResize window in
 	  the unit.
 	- SMALL SIDE [2026-10-21 user decision — VS Code / One UI style, asked for devplorer on a short mobile screen]: a
-	  seam pushed past a side's floor stops there while that side's veil fades in the nearer the pointer gets to the
-	  far end (within half a FrameHeight of it = full); RELEASING there makes that side the split's small one — a push
-	  short of the end only widens the other side as far as the floor allows [same day, after use: the first cut went
-	  small half a FrameHeight past the floor, mid-drag, and a small side gave no answer until its threshold]
+	  seam nearing a side's floor fades that side's veil in (from 3 FrameHeights before it to AT_FLOOR = 80 % at it),
+	  stops at the floor, and pushing on toward the far end adds the last 20 % (full within half a FrameHeight of the
+	  end); a RELEASE at the floor — up to SNAP_SLACK (6 px) short of it — or past it makes that side the split's small
+	  one [same day, two rounds after use: the first cut went small half a FrameHeight past the floor mid-drag and a
+	  small side gave no answer until its threshold; the second asked for the far end and the veil showed long before
+	  a release would do anything — user: "그 멈추는 지점보다 6px 정도까지는 접히게 … 넘기 전 80% 넘은 후 20%"]
 	  (`Split.Small`, saved as the node's `Small = 1 | 2`; the preview is `Split.Pending`, never saved): it shrinks to a peek of PEEK x FrameHeight (never wider than its floor) and its
 	  leaves' surfaces are veiled (`WindowDim`, inside each Window root so every part — the splitter above all — stays on
 	  top). The veil eats the press (nothing unseen under it is clicked); a press on a small side's window (veil, tab,
@@ -388,10 +390,16 @@ type SplitDrag = {
 	Length: number,
 	Min1: number,
 	Min2: number,
-	-- how near the far end the pointer must be for a release to make a side small
+	-- half a FrameHeight: how near the far end counts as the end (the veil's last 20 % reaches full there)
 	Snap: number,
+	-- how far before a floor the veil starts fading in (3 FrameHeights)
+	Approach: number,
 	-- the side that was small when the drag began, until the drag opened it (header SPLITS "SMALL SIDE")
 	WasSmall: number?,
+	-- the side that was small when the drag began (kept: opening it never previews closing it again)
+	StartedSmall: number?,
+	-- the side a release now makes small (the pointer within SNAP_SLACK of its floor or past it)
+	Commit: number?,
 }
 
 -- the press the strip rule asks about (header DOCK): the window the last global press went to and whether its unit
@@ -402,6 +410,10 @@ type PressRecord = { Entry: Entry, WasFocused: boolean }
 local SPAN = 3
 -- a small side's peek along its split, in FrameHeights (header SPLITS "SMALL SIDE")
 local PEEK = 4
+-- a release this many px short of a floor still makes that side small (header SPLITS "SMALL SIDE")
+local SNAP_SLACK = 6
+-- the veil's strength at a floor: the rest comes pushing past it to the far end
+local AT_FLOOR = 0.8
 -- the parts whose press acts on the seam or the whole unit: pressing one keeps a small side small (any other press on
 -- a small side's window — its veil, tab, strip — swaps the sides)
 local KEEPS_SMALL: { [string]: boolean } = {
@@ -2422,11 +2434,10 @@ function Manager.new(): Manager
 			local d = splitDrag
 			splitDrag = nil
 			-- (header SPLITS "SMALL SIDE") a preview pushed all the way makes its side small; anything else drops it
-			if d ~= nil and units[d.Unit] and d.Split.Pending ~= nil then
-				local p = d.Split.Pending :: { Side: number, Strength: number }
+			if d ~= nil and units[d.Unit] and (d.Split.Pending ~= nil or d.Commit ~= nil) then
 				batch(function()
-					if p.Strength >= 1 and d.WasSmall == nil then
-						d.Split.Small = p.Side
+					if d.Commit ~= nil and d.WasSmall == nil then
+						d.Split.Small = d.Commit
 					end
 					d.Split.Pending = nil
 					pushView(d.Unit)
@@ -2466,7 +2477,10 @@ function Manager.new(): Manager
 					Min1 = info.Min1,
 					Min2 = info.Min2,
 					Snap = h.Style.FrameHeight:Get() / 2,
+					Approach = h.Style.FrameHeight:Get() * 3,
 					WasSmall = sp.Split.Small,
+					StartedSmall = sp.Split.Small,
+					Commit = nil,
 				}
 			end
 			return
@@ -2477,10 +2491,11 @@ function Manager.new(): Manager
 		end
 		local hi = d.Length - d.Min2
 		local raw = d.Start + delta
-		-- [2026-10-21 user decision, after using the first cut] (header SPLITS "SMALL SIDE"): pushing past a floor
-		-- stops the seam there and veils that side more the nearer the pointer is to the far end; only a release
-		-- there makes it small (a push short of the end only widens the other side as far as the floor allows). A
-		-- side that was small fades its veil out as it is dragged open and becomes an ordinary seam at its floor.
+		-- [2026-10-21 user decisions, after using two cuts] (header SPLITS "SMALL SIDE"): nearing a side's floor fades
+		-- its veil in (to AT_FLOOR at the floor), the seam stops at the floor and pushing on toward the far end adds the
+		-- rest; a release at the floor (up to SNAP_SLACK short of it) or past it makes that side small. A side that was
+		-- small fades its veil out as it is dragged open and is an ordinary seam past its floor (no closing preview on
+		-- the way back out).
 		local mid = if hi < d.Min1 then d.Length / 2 else nil
 		local side: number? = nil
 		if raw < d.Min1 and (mid == nil or raw < mid) then
@@ -2490,6 +2505,7 @@ function Manager.new(): Manager
 		end
 		local small: number? = nil
 		local pending: { Side: number, Strength: number }? = nil
+		local commit: number? = nil
 		if side ~= nil and d.WasSmall == side then
 			-- still opening the side that was small: it stays small, its veil fading with the way to its floor
 			small = side
@@ -2502,14 +2518,34 @@ function Manager.new(): Manager
 			if side == nil then
 				d.WasSmall = nil -- opened (or never small): from here on an ordinary drag
 			end
-			if side == 1 then
-				local reach = math.max(1, d.Min1 - d.Snap)
-				pending = { Side = 1, Strength = math.clamp((d.Min1 - raw) / reach, 0, 1) }
-			elseif side == 2 then
-				local reach = math.max(1, d.Length - d.Snap - hi)
-				pending = { Side = 2, Strength = math.clamp((raw - hi) / reach, 0, 1) }
+			-- the side being closed: past a floor, or within the approach before it (the nearer floor)
+			local near1, near2 = raw - d.Min1, hi - raw -- distance before each floor (negative = past it)
+			local toward: number? = side
+			if toward == nil and mid == nil then
+				if near1 < d.Approach and near1 <= near2 then
+					toward = 1
+				elseif near2 < d.Approach then
+					toward = 2
+				end
+			end
+			if toward ~= nil and d.StartedSmall ~= toward then
+				local before = if toward == 1 then near1 else near2
+				local strength
+				if before >= 0 then
+					strength = AT_FLOOR * (1 - math.clamp(before / math.max(1, d.Approach), 0, 1))
+				else
+					local reach = if toward == 1 then math.max(1, d.Min1 - d.Snap) else math.max(1, d.Length - d.Snap - hi)
+					strength = AT_FLOOR + (1 - AT_FLOOR) * math.clamp(-before / reach, 0, 1)
+				end
+				if strength > 0 then
+					pending = { Side = toward, Strength = strength }
+				end
+				if before <= SNAP_SLACK then
+					commit = toward
+				end
 			end
 		end
+		d.Commit = commit
 		local seam = if hi < d.Min1 then d.Min1 else math.clamp(raw, d.Min1, hi)
 		local ratio = if small ~= nil then d.Split.Ratio else math.clamp(seam / d.Length, 0.01, 0.99)
 		local old = d.Split.Pending
