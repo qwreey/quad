@@ -106,6 +106,7 @@ local Quad = require("./Quad")
 local q = Quad
 local Frame = q.Elem "Frame"
 local ScrollingFrame = q.Elem "ScrollingFrame"
+local TextButton = q.Elem "TextButton"
 local UIListLayout = q.Elem "UIListLayout"
 local UIPadding = q.Elem "UIPadding"
 local FrameModifier = q.Modifier "Frame"
@@ -285,6 +286,21 @@ local function Window(props: WindowProps): Frame
 				Padding = Util.pxY(style.Metrics.ItemSpacing),
 			}),
 			props.Children or q.None,
+		}),
+		-- [2026-10-21 user decision] a small side's veil (Manager header SPLITS "SMALL SIDE"): it eats the press so
+		-- nothing unseen under it is clicked — the press focuses this window, which swaps the sides. Inside the root
+		-- (under every decoration part, so the seam's splitter stays on top)
+		TextButton({
+			Name = "WindowDim",
+			Size = UDim2.fromScale(1, 1),
+			ZIndex = 2,
+			Visible = placement.Dimmed,
+			Active = true,
+			AutoButtonColor = false,
+			Text = "",
+			BackgroundColor3 = style.Color.NavWindowingDimBg,
+			BackgroundTransparency = style.Transparency.NavWindowingDimBg,
+			BorderSizePixel = 0,
 		}),
 		-- leaving the manager disposes the decoration too
 		q.OnDestroyed(function()

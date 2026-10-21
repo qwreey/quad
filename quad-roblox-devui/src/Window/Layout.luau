@@ -42,13 +42,15 @@
 	SPLITS [2026-10-21 user decisions — docking stage 4]: a node is either a tab set (a LEAF)
 		{ Tabs = { key, ... }, Selected = key, Collapsed = true? }
 	or a split
-		{ Split = "LeftRight" | "TopBottom", Ratio = 0.5, Children = { <node>, <node> } }
+		{ Split = "LeftRight" | "TopBottom", Ratio = 0.5, Children = { <node>, <node> }, Small = 1 | 2? }
 	`Split` names the two children's places (left | right, top / bottom — "Horizontal" / "Vertical" were avoided: tools
 	disagree on what they mean), `Ratio` is the FIRST child's share of the split's length (left / top), strictly between 0
 	and 1, and `Children` holds exactly two nodes (splits nest to any depth). A leaf's `Collapsed` says that leaf is
 	folded inside its split (written only when true and only for a leaf inside a split; read as false when absent, and
 	ignored on a leaf that is the whole node). The group-level `Collapsed` of a node with a split is the docked panel's
-	(a floating split unit is never an icon — read as false there). A key may appear only once in the whole layout.
+	(a floating split unit is never an icon — read as false there). A split's `Small` [2026-10-21 user decision] names
+	the child shrunk to a peek (dimmed; a press on it swaps the two — Manager header SPLITS); absent = none, and the
+	`Ratio` is kept for when it is dragged out. A key may appear only once in the whole layout.
 	The saved rectangles of a split unit follow the tab-group rule below with "the node" = the whole tree: a key gets its
 	own kept rectangle in `Windows[key]` when the tree holds two or more saved keys.
 	A TAB'S OWN RECTANGLE [2026-10-21 user decision]: while grouped, a window's Position / Size Sources keep the
@@ -95,7 +97,7 @@ export type SplitAxis = "LeftRight" | "TopBottom"
 -- a leaf: a tab set (`Collapsed` = folded inside its split; header SPLITS)
 export type TabNode = { Tabs: { string }, Selected: string, Collapsed: boolean?, Split: nil }
 -- a two-way split: `Ratio` = the first child's share
-export type SplitNode = { Split: SplitAxis, Ratio: number, Children: { Node }, Tabs: nil }
+export type SplitNode = { Split: SplitAxis, Ratio: number, Children: { Node }, Small: number?, Tabs: nil }
 export type Node = TabNode | SplitNode
 
 export type DockGroup = {
@@ -204,7 +206,7 @@ end
 -- a private copy of a node tree
 function Layout.cloneNode(node: Node): Node
 	if node.Split ~= nil then
-		local split: SplitNode = { Split = node.Split, Ratio = node.Ratio, Children = { Layout.cloneNode(node.Children[1]), Layout.cloneNode(node.Children[2]) } }
+		local split: SplitNode = { Split = node.Split, Ratio = node.Ratio, Children = { Layout.cloneNode(node.Children[1]), Layout.cloneNode(node.Children[2]) }, Small = node.Small }
 		return split
 	end
 	local out: TabNode = { Tabs = table.clone(node.Tabs), Selected = node.Selected }
@@ -388,7 +390,11 @@ local function readNode(component: string, where: string, node: any, keys: { str
 		end
 		local first = readNode(component, `{where}.Children[1]`, children[1], keys, seen)
 		local second = readNode(component, `{where}.Children[2]`, children[2], keys, seen)
-		local split: SplitNode = { Split = axis, Ratio = ratio, Children = { first, second } }
+		local small = node.Small
+		if small ~= nil and small ~= 1 and small ~= 2 then
+			Util.fail(component, `{where}.Small must be 1, 2 or nil (the child shrunk to a peek), got {tostring(small)}`)
+		end
+		local split: SplitNode = { Split = axis, Ratio = ratio, Children = { first, second }, Small = small }
 		return split
 	end
 	if type(node.Tabs) ~= "table" then

@@ -117,9 +117,10 @@ H.section("mount: structure, bindings, small instance count", function()
 	-- width handle (17), hidden while floating (21) + its tab for a tab group (tab + corner + title + padding + close
 	-- button + its corner + icon: 28), hidden while not grouped + drop preview + its stroke, hidden until a drag is over
 	-- an edge or a window (30) + the fold bar of a leaf folded in a left | right split + its arrow and the splitter of a
-	-- split, hidden until the window is in a split (33); the 2 widgets add 6 more
-	assert(1 + H.countDescendants(win) == 10, `surface instance count {1 + H.countDescendants(win)}`)
-	assert(countAll(win) == 43, `unexpected instance count {countAll(win)}`)
+	-- split, hidden until the window is in a split (33); the 2 widgets add 6 more, and the surface's small-side veil
+	-- (hidden until its leaf is a small side) 1
+	assert(1 + H.countDescendants(win) == 11, `surface instance count {1 + H.countDescendants(win)}`)
+	assert(countAll(win) == 44, `unexpected instance count {countAll(win)}`)
 
 	q.dispose(win)
 	assert(H.isDestroyed(frame) and H.isDestroyed(grip), "disposing the surface disposes its decoration")

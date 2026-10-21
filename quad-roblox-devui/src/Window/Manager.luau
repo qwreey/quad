@@ -182,6 +182,17 @@
 	  current height a seam that would cross a floor stops at it, the saved Ratio unchanged — relaid on every container
 	  size change through `Control.Resized`). Hidden while either side is a folded leaf, or with an open NoResize window in
 	  the unit.
+	- SMALL SIDE [2026-10-21 user decision — VS Code / One UI style, asked for devplorer on a short mobile screen]: a
+	  seam pushed past a side's floor by half a FrameHeight makes that side the split's small one (`Split.Small`, saved
+	  as the node's `Small = 1 | 2`): it shrinks to a peek of PEEK x FrameHeight (never wider than its floor) and its
+	  leaves' surfaces are veiled (`WindowDim`, inside each Window root so every part — the splitter above all — stays on
+	  top). The veil eats the press (nothing unseen under it is clicked); a press on a small side's window (veil, tab,
+	  strip) focuses it and every split whose small child holds it makes the other child small — the sides swap (an
+	  app's `Focused:Set(true)` too). A press on a part that acts on the seam or the unit (KEEPS_SMALL) and a drag's raise
+	  keep it. Dragging the seam back inside the floors makes it an ordinary seam at the pointer; the Ratio waits under
+	  the small side. Seams inside a small side are inactive. Exclusive with folding: folding a child of the split
+	  clears its Small, and a fold on either side takes the split over a Small read from a layout. Tabs switch windows
+	  within one leaf; this switches between two areas of windows.
 	- Folding: a leaf's collapse arrow folds only that leaf and its sibling takes the space — along a top / bottom
 	  split it keeps its strip row, along a left | right split it is a bar FrameHeight wide holding the arrow. THE FOLD
 	  RULE [2026-10-21 user decision, after review]: a leaf may be folded only while its sibling subtree (the other side
@@ -325,6 +336,7 @@ type Split = {
 	Axis: SplitAxis,
 	Ratio: number,
 	Children: { Node },
+	Small: number?, -- the child shrunk to a peek (1 | 2; header SPLITS "SMALL SIDE"); the Ratio waits under it
 	Parent: Split?,
 }
 
@@ -355,6 +367,7 @@ type SplitterInfo = { Split: Split, Box: { number }, Enabled: boolean }
 type Arrangement = {
 	Boxes: { [Leaf]: { number } }, -- { x0f, x0p, x1f, x1p, y0f, y0p, y1f, y1p } of the unit's rectangle
 	Folds: { [Leaf]: Decoration.FoldSide },
+	Dims: { [Leaf]: boolean }, -- the leaves inside a small side (dimmed; a press swaps)
 	Splitters: { [Leaf]: SplitterInfo }, -- by the leaf whose drawn window draws it
 	Infos: { [Split]: SplitInfo },
 	Lead: Leaf?, -- the leaf at the unit's bottom-right corner: its drawn window draws the unit's own parts
@@ -362,7 +375,7 @@ type Arrangement = {
 
 -- a splitter drag in progress (header SPLITS): the split, its unit and the seam's range in window units (its start
 -- and the floors of both sides)
-type SplitDrag = { Split: Split, Unit: Unit, Start: number, Length: number, Min1: number, Min2: number }
+type SplitDrag = { Split: Split, Unit: Unit, Start: number, Length: number, Min1: number, Min2: number, Snap: number }
 
 -- the press the strip rule asks about (header DOCK): the window the last global press went to and whether its unit
 -- had the focus before that press focused it
@@ -370,6 +383,17 @@ type PressRecord = { Entry: Entry, WasFocused: boolean }
 
 -- ZIndex values per window (decoration frame, surface, resize grip): see the header
 local SPAN = 3
+-- a small side's peek along its split, in FrameHeights (header SPLITS "SMALL SIDE")
+local PEEK = 4
+-- the parts whose press acts on the seam or the whole unit: pressing one keeps a small side small (any other press on
+-- a small side's window — its veil, tab, strip — swaps the sides)
+local KEEPS_SMALL: { [string]: boolean } = {
+	WindowSplitter = true,
+	WindowResizeGrip = true,
+	WindowDockResize = true,
+	WindowDockStrip = true,
+	WindowIcon = true,
+}
 
 local Manager = {}
 
@@ -462,7 +486,8 @@ local function savedSides(node: Layout.Node): (Layout.Node?, Layout.Node?)
 end
 -- a saved split keeping both its (pruned) sides
 local function savedSplit(node: Layout.Node, first: Layout.Node, second: Layout.Node): Layout.Node
-	local out: Layout.SplitNode = { Split = (node :: Layout.SplitNode).Split, Ratio = (node :: Layout.SplitNode).Ratio, Children = { first, second } }
+	local saved = node :: Layout.SplitNode
+	local out: Layout.SplitNode = { Split = saved.Split, Ratio = saved.Ratio, Children = { first, second }, Small = saved.Small }
 	return out
 end
 
@@ -777,7 +802,7 @@ function Manager.new(): Manager
 	-- pixels (f = 0, seams kept inside both sides' floors and rounded), a docked panel's height is the container's (f
 	-- carries the ratio, p the folds)
 	local function arrange(u: Unit): Arrangement
-		local out: Arrangement = { Boxes = {}, Folds = {}, Splitters = {}, Infos = {}, Lead = nil }
+		local out: Arrangement = { Boxes = {}, Folds = {}, Dims = {}, Splitters = {}, Infos = {}, Lead = nil }
 		local root = visibleOf(u.Root)
 		if root == nil then
 			return out
@@ -794,9 +819,12 @@ function Manager.new(): Manager
 			local deco = if face ~= nil then face.Deco else nil
 			panelH = if deco ~= nil then deco.PanelHeight() else 0
 		end
-		local function place(node: Node, x: { number }, y: { number })
+		local function place(node: Node, x: { number }, y: { number }, dim: boolean)
 			if node.Tag == "Leaf" then
 				out.Boxes[node] = { x[1], x[2], x[3], x[4], y[1], y[2], y[3], y[4] }
+				if dim then
+					out.Dims[node] = true
+				end
 				return
 			end
 			local c1 = visibleOf(node.Children[1]) :: Node
@@ -822,12 +850,21 @@ function Manager.new(): Manager
 				min1 = math.min(min1, plain)
 				min2 = math.min(min2, plain)
 			end
+			-- a small side (header SPLITS "SMALL SIDE"): its peek, never wider than its floor (a seam there could already
+			-- go that far); a fold on either side takes the split instead
+			local small = if fold1 or fold2 then nil else node.Small
 			local mf, mp
 			-- (never both: the fold rule — normalizeFolds — unfolds the second side first)
 			if fold1 and c1.Tag == "Leaf" then
 				mf, mp = iv[1], iv[2] + foldSize(c1)
 			elseif fold2 and c2.Tag == "Leaf" then
 				mf, mp = iv[3], iv[4] - foldSize(c2)
+			elseif small == 1 then
+				local s = math.min(PEEK * foldSize(edgeLeaf(c1, false)), min1)
+				mf, mp = iv[1], if pixel then math.round(iv[2] + s) else iv[2] + s
+			elseif small == 2 then
+				local s = math.min(PEEK * foldSize(edgeLeaf(c2, false)), min2)
+				mf, mp = iv[3], if pixel then math.round(iv[4] - s) else iv[4] - s
 			elseif pixel then
 				local a, b = iv[2], iv[4]
 				local lo, hi = a + min1, b - min2
@@ -865,18 +902,20 @@ function Manager.new(): Manager
 			local box = if alongX
 				then { mf, mp, mf, mp + t, y[1], y[2], y[3], y[4] }
 				else { x[1], x[2], x[3], x[4], mf, mp - t, mf, mp }
-			out.Splitters[owner] = { Split = node, Box = box, Enabled = not fold1 and not fold2 }
+			-- (a seam inside a small side is inactive like the rest of it)
+			out.Splitters[owner] = { Split = node, Box = box, Enabled = not fold1 and not fold2 and not dim }
 			local first = { iv[1], iv[2], mf, mp }
 			local second = { mf, mp, iv[3], iv[4] }
+			local dim1, dim2 = dim or small == 1, dim or small == 2
 			if alongX then
-				place(c1, first, y)
-				place(c2, second, y)
+				place(c1, first, y, dim1)
+				place(c2, second, y, dim2)
 			else
-				place(c1, x, first)
-				place(c2, x, second)
+				place(c1, x, first, dim1)
+				place(c2, x, second, dim2)
 			end
 		end
-		place(root, { 0, 0, 0, lx }, if ly ~= nil then { 0, 0, 0, ly } else { 0, 0, 1, 0 })
+		place(root, { 0, 0, 0, lx }, if ly ~= nil then { 0, 0, 0, ly } else { 0, 0, 1, 0 }, false)
 		out.Lead = edgeLeaf(root, true)
 		return out
 	end
@@ -954,11 +993,13 @@ function Manager.new(): Manager
 			end
 			local box: { number }? = nil
 			local fold: Decoration.FoldSide? = nil
+			local dimmed = false
 			local splitter: SplitterInfo? = nil
 			local lead = not split
 			if arr ~= nil then
 				box = arr.Boxes[leaf]
 				fold = arr.Folds[leaf]
+				dimmed = arr.Dims[leaf] == true
 				splitter = arr.Splitters[leaf]
 				lead = arr.Lead == leaf
 				-- (the arrow is not offered where the fold rule refuses a fold; a folded leaf keeps it to unfold)
@@ -987,6 +1028,7 @@ function Manager.new(): Manager
 						NoDock = noDock,
 						Split = split,
 						Fold = fold,
+						Dimmed = dimmed,
 						PanelCollapsed = panelCollapsed,
 						Splitter = if isDrawn and splitter ~= nil
 							then { Axis = splitter.Split.Axis, Box = splitter.Box, Enabled = splitter.Enabled and not noResize }
@@ -1446,6 +1488,7 @@ function Manager.new(): Manager
 			Split = node.Axis,
 			Ratio = node.Ratio,
 			Children = { savedTree(node.Children[1], openKey), savedTree(node.Children[2], openKey) },
+			Small = node.Small,
 		}
 		return out
 	end
@@ -1725,14 +1768,38 @@ function Manager.new(): Manager
 
 	-- raise to the top with the focus. A window of a unit raises the whole unit; an OPEN window that is not its
 	-- leaf's drawn one is selected first (an explicit ask for it: `Open:Set(true)`, `Focused:Set(true)`, its tab)
-	local function focus(target: Entry)
+	-- a leaf inside a small side comes out (header SPLITS "SMALL SIDE"): every split above it whose small child holds it
+	-- makes the other child the small one. Returns whether a split changed
+	local function bringOut(leaf: Leaf): boolean
+		local changed = false
+		local child: Node = leaf
+		local parent = leaf.Parent
+		while parent ~= nil do
+			local small = parent.Small
+			if small ~= nil and parent.Children[small] == child then
+				parent.Small = if small == 1 then 2 else 1
+				changed = true
+			end
+			child = parent
+			parent = parent.Parent
+		end
+		return changed
+	end
+
+	-- focus `target` (raise its unit, select its tab). `keepSmall`: a small side stays small — a drag's raise, or a
+	-- press on a part that acts on the seam or the unit (KEEPS_SMALL)
+	local function focus(target: Entry, keepSmall: boolean?)
 		local entry = target
 		local leaf = entry.Leaf
 		local u = if leaf ~= nil then leaf.Unit else nil
 		if leaf ~= nil and u ~= nil then
-			if drawnOf(leaf) ~= entry and isOpenWindow(entry) then
+			local reselect = drawnOf(leaf) ~= entry and isOpenWindow(entry)
+			local swapped = not keepSmall and isOpenWindow(entry) and bringOut(leaf)
+			if reselect or swapped then
 				batch(function()
-					leaf.Selected = memberOf(leaf, entry) :: Member
+					if reselect then
+						leaf.Selected = memberOf(leaf, entry) :: Member
+					end
 					pushView(u)
 					layoutDirty = true
 				end)
@@ -1834,6 +1901,7 @@ function Manager.new(): Manager
 	end
 
 	-- the window whose root or decoration instance is `inst`
+	-- the window `inst` is (its surface root) or a decoration part of
 	local function ownerOf(inst: Instance): Entry?
 		for _, entry in order do
 			if entry.Root == inst then
@@ -1847,17 +1915,17 @@ function Manager.new(): Manager
 		return nil
 	end
 
-	-- the innermost window whose root or decoration is o or above it
-	local function windowOf(o: Instance): Entry?
+	-- the innermost window whose root or decoration is o or above it, and that root or part
+	local function windowOf(o: Instance): (Entry?, Instance?)
 		local cursor: Instance? = o
 		while cursor ~= nil do
 			local entry = ownerOf(cursor)
 			if entry ~= nil then
-				return entry
+				return entry, cursor
 			end
 			cursor = cursor.Parent
 		end
-		return nil
+		return nil, nil
 	end
 
 	local function focusedEntry(): Entry?
@@ -1873,13 +1941,13 @@ function Manager.new(): Manager
 	-- a press went to `entry`: remember whether its unit had the focus before (the strip rule), then focus it. A
 	-- press on any part of a leaf (a tab included) focuses the leaf's drawn window: selecting a tab is the tab's own
 	-- press
-	local function pressed(entry: Entry)
+	local function pressed(entry: Entry, keepSmall: boolean?)
 		local target = faceOf(entry)
 		local before = focusedEntry()
 		local u = unitOf(target)
 		local was = before == target or (u ~= nil and unitOf(before) == u)
 		lastPress = { Entry = target, WasFocused = was }
-		focus(target)
+		focus(target, keepSmall)
 	end
 
 	local function onPress(input: InputObject)
@@ -1900,9 +1968,9 @@ function Manager.new(): Manager
 		end
 		if list ~= nil then
 			for _, o in list do
-				local entry = windowOf(o)
+				local entry, hit = windowOf(o)
 				if entry ~= nil then
-					pressed(entry)
+					pressed(entry, hit ~= nil and KEEPS_SMALL[hit.Name] == true)
 					return
 				elseif Pointer.takesClick(o) then
 					return -- the press went to something that is not a window (a popup, another ScreenGui's button)
@@ -1929,7 +1997,20 @@ function Manager.new(): Manager
 					end
 				end
 				if hit then
-					pressed(entry)
+					-- a unit's splitters and handles lie over its surfaces' edges, above all of them: one under the point
+					-- takes the press, whichever member was found first
+					local keep = false
+					local u = unitOf(entry)
+					local lump = if u ~= nil then membersOf(u) else { { Key = nil, Entry = entry } :: Member }
+					for _, m in lump do
+						local d = if m.Entry ~= nil then m.Entry.Deco else nil
+						for _, part in if d ~= nil then d.Parts else {} do
+							if KEEPS_SMALL[part.Name] and holds(part, x, y) then
+								keep = true
+							end
+						end
+					end
+					pressed(entry, keep)
 					return
 				end
 			end
@@ -2342,7 +2423,16 @@ function Manager.new(): Manager
 				start = (seam[1] - iv[1]) * panel + (seam[2] - iv[2])
 			end
 			if length > 0 then
-				splitDrag = { Split = sp.Split, Unit = u, Start = start, Length = length, Min1 = info.Min1, Min2 = info.Min2 }
+				local h = entry.Hints :: Decoration.Hints
+				splitDrag = {
+					Split = sp.Split,
+					Unit = u,
+					Start = start,
+					Length = length,
+					Min1 = info.Min1,
+					Min2 = info.Min2,
+					Snap = h.Style.FrameHeight:Get() / 2,
+				}
 			end
 			return
 		end
@@ -2351,13 +2441,22 @@ function Manager.new(): Manager
 			return
 		end
 		local hi = d.Length - d.Min2
-		local seam = d.Start + delta
-		seam = if hi < d.Min1 then d.Min1 else math.clamp(seam, d.Min1, hi)
-		local ratio = math.clamp(seam / d.Length, 0.01, 0.99)
-		if ratio ~= d.Split.Ratio then
+		local raw = d.Start + delta
+		-- pushed past a side's floor (by half a FrameHeight): that side becomes the small one (header SPLITS "SMALL
+		-- SIDE"); back inside the floors: an ordinary seam again, at the pointer
+		local small: number? = nil
+		if raw <= d.Min1 - d.Snap then
+			small = 1
+		elseif raw >= hi + d.Snap then
+			small = 2
+		end
+		local seam = if hi < d.Min1 then d.Min1 else math.clamp(raw, d.Min1, hi)
+		local ratio = if small ~= nil then d.Split.Ratio else math.clamp(seam / d.Length, 0.01, 0.99)
+		if ratio ~= d.Split.Ratio or small ~= d.Split.Small then
 			-- (one layout build per move: the views and the Ratio in one batch)
 			batch(function()
 				d.Split.Ratio = ratio
+				d.Split.Small = small
 				pushView(d.Unit)
 				layoutDirty = true
 			end)
@@ -2514,7 +2613,7 @@ function Manager.new(): Manager
 						if saved.Split ~= nil then
 							local x = grow(saved.Children[1])
 							local y = grow(saved.Children[2])
-							local split: Split = { Tag = "Split", Axis = saved.Split, Ratio = saved.Ratio, Children = { x, y }, Parent = nil }
+							local split: Split = { Tag = "Split", Axis = saved.Split, Ratio = saved.Ratio, Children = { x, y }, Small = saved.Small, Parent = nil }
 							x.Parent = split
 							y.Parent = split
 							return split
@@ -2863,7 +2962,7 @@ function Manager.new(): Manager
 						FrontZ = frontZ,
 						Focused = isFocused,
 						Raise = function()
-							focus(entry)
+							focus(entry, true) -- (a drag's raise: a small side stays small)
 						end,
 						Changed = if key ~= nil then refresh else nil,
 						Side = entry.Side,
@@ -3015,6 +3114,11 @@ function Manager.new(): Manager
 									return
 								end
 								g.Fold = true
+								-- a fold and a small side are exclusive (user decision): the fold takes the split
+								local parent = g.Parent
+								if parent ~= nil then
+									parent.Small = nil
+								end
 							else
 								if not g.Fold and not u.Collapsed then
 									return
