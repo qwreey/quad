@@ -183,14 +183,17 @@
 	  size change through `Control.Resized`). Hidden while either side is a folded leaf, or with an open NoResize window in
 	  the unit.
 	- SMALL SIDE [2026-10-21 user decision — VS Code / One UI style, asked for devplorer on a short mobile screen]: a
-	  seam pushed past a side's floor by half a FrameHeight makes that side the split's small one (`Split.Small`, saved
-	  as the node's `Small = 1 | 2`): it shrinks to a peek of PEEK x FrameHeight (never wider than its floor) and its
+	  seam pushed past a side's floor stops there while that side's veil fades in the nearer the pointer gets to the
+	  far end (within half a FrameHeight of it = full); RELEASING there makes that side the split's small one — a push
+	  short of the end only widens the other side as far as the floor allows [same day, after use: the first cut went
+	  small half a FrameHeight past the floor, mid-drag, and a small side gave no answer until its threshold]
+	  (`Split.Small`, saved as the node's `Small = 1 | 2`; the preview is `Split.Pending`, never saved): it shrinks to a peek of PEEK x FrameHeight (never wider than its floor) and its
 	  leaves' surfaces are veiled (`WindowDim`, inside each Window root so every part — the splitter above all — stays on
 	  top). The veil eats the press (nothing unseen under it is clicked); a press on a small side's window (veil, tab,
 	  strip) focuses it and every split whose small child holds it makes the other child small — the sides swap (an
 	  app's `Focused:Set(true)` too). A press on a part that acts on the seam or the unit (KEEPS_SMALL) and a drag's raise
-	  keep it. Dragging the seam back inside the floors makes it an ordinary seam at the pointer; the Ratio waits under
-	  the small side. Seams inside a small side are inactive. Exclusive with folding: folding a child of the split
+	  keep it. Dragging a small side's seam open fades its veil out on the way to its floor; past the floor it is an
+	  ordinary seam at the pointer. The Ratio waits under the small side. Seams inside a small side are inactive. Exclusive with folding: folding a child of the split
 	  clears its Small, and a fold on either side takes the split over a Small read from a layout. Tabs switch windows
 	  within one leaf; this switches between two areas of windows.
 	- Folding: a leaf's collapse arrow folds only that leaf and its sibling takes the space — along a top / bottom
@@ -337,6 +340,9 @@ type Split = {
 	Ratio: number,
 	Children: { Node },
 	Small: number?, -- the child shrunk to a peek (1 | 2; header SPLITS "SMALL SIDE"); the Ratio waits under it
+	-- while a seam drag previews a side becoming small (or a small side opening): that side's veil strength 0..1
+	-- (header SPLITS "SMALL SIDE"); never saved
+	Pending: { Side: number, Strength: number }?,
 	Parent: Split?,
 }
 
@@ -367,7 +373,7 @@ type SplitterInfo = { Split: Split, Box: { number }, Enabled: boolean }
 type Arrangement = {
 	Boxes: { [Leaf]: { number } }, -- { x0f, x0p, x1f, x1p, y0f, y0p, y1f, y1p } of the unit's rectangle
 	Folds: { [Leaf]: Decoration.FoldSide },
-	Dims: { [Leaf]: boolean }, -- the leaves inside a small side (dimmed; a press swaps)
+	Dims: { [Leaf]: number }, -- the leaves inside a small side: veil strength (1 = small; less = a drag's preview)
 	Splitters: { [Leaf]: SplitterInfo }, -- by the leaf whose drawn window draws it
 	Infos: { [Split]: SplitInfo },
 	Lead: Leaf?, -- the leaf at the unit's bottom-right corner: its drawn window draws the unit's own parts
@@ -375,7 +381,18 @@ type Arrangement = {
 
 -- a splitter drag in progress (header SPLITS): the split, its unit and the seam's range in window units (its start
 -- and the floors of both sides)
-type SplitDrag = { Split: Split, Unit: Unit, Start: number, Length: number, Min1: number, Min2: number, Snap: number }
+type SplitDrag = {
+	Split: Split,
+	Unit: Unit,
+	Start: number,
+	Length: number,
+	Min1: number,
+	Min2: number,
+	-- how near the far end the pointer must be for a release to make a side small
+	Snap: number,
+	-- the side that was small when the drag began, until the drag opened it (header SPLITS "SMALL SIDE")
+	WasSmall: number?,
+}
 
 -- the press the strip rule asks about (header DOCK): the window the last global press went to and whether its unit
 -- had the focus before that press focused it
@@ -819,11 +836,11 @@ function Manager.new(): Manager
 			local deco = if face ~= nil then face.Deco else nil
 			panelH = if deco ~= nil then deco.PanelHeight() else 0
 		end
-		local function place(node: Node, x: { number }, y: { number }, dim: boolean)
+		local function place(node: Node, x: { number }, y: { number }, dim: number)
 			if node.Tag == "Leaf" then
 				out.Boxes[node] = { x[1], x[2], x[3], x[4], y[1], y[2], y[3], y[4] }
-				if dim then
-					out.Dims[node] = true
+				if dim > 0 then
+					out.Dims[node] = dim
 				end
 				return
 			end
@@ -903,10 +920,14 @@ function Manager.new(): Manager
 				then { mf, mp, mf, mp + t, y[1], y[2], y[3], y[4] }
 				else { x[1], x[2], x[3], x[4], mf, mp - t, mf, mp }
 			-- (a seam inside a small side is inactive like the rest of it)
-			out.Splitters[owner] = { Split = node, Box = box, Enabled = not fold1 and not fold2 and not dim }
+			out.Splitters[owner] = { Split = node, Box = box, Enabled = not fold1 and not fold2 and dim < 1 }
 			local first = { iv[1], iv[2], mf, mp }
 			local second = { mf, mp, iv[3], iv[4] }
-			local dim1, dim2 = dim or small == 1, dim or small == 2
+			-- a drag's preview sets its side's veil; otherwise the small side is fully veiled
+			local pending = if fold1 or fold2 then nil else node.Pending
+			local own1 = if pending ~= nil and pending.Side == 1 then pending.Strength elseif small == 1 then 1 else 0
+			local own2 = if pending ~= nil and pending.Side == 2 then pending.Strength elseif small == 2 then 1 else 0
+			local dim1, dim2 = math.max(dim, own1), math.max(dim, own2)
 			if alongX then
 				place(c1, first, y, dim1)
 				place(c2, second, y, dim2)
@@ -915,7 +936,7 @@ function Manager.new(): Manager
 				place(c2, x, second, dim2)
 			end
 		end
-		place(root, { 0, 0, 0, lx }, if ly ~= nil then { 0, 0, 0, ly } else { 0, 0, 1, 0 }, false)
+		place(root, { 0, 0, 0, lx }, if ly ~= nil then { 0, 0, 0, ly } else { 0, 0, 1, 0 }, 0)
 		out.Lead = edgeLeaf(root, true)
 		return out
 	end
@@ -993,13 +1014,13 @@ function Manager.new(): Manager
 			end
 			local box: { number }? = nil
 			local fold: Decoration.FoldSide? = nil
-			local dimmed = false
+			local dimmed = 0
 			local splitter: SplitterInfo? = nil
 			local lead = not split
 			if arr ~= nil then
 				box = arr.Boxes[leaf]
 				fold = arr.Folds[leaf]
-				dimmed = arr.Dims[leaf] == true
+				dimmed = arr.Dims[leaf] or 0
 				splitter = arr.Splitters[leaf]
 				lead = arr.Lead == leaf
 				-- (the arrow is not offered where the fold rule refuses a fold; a folded leaf keeps it to unfold)
@@ -2398,7 +2419,20 @@ function Manager.new(): Manager
 	local splitDrag: SplitDrag? = nil
 	local function dragSplitter(entry: Entry, phase: "Begin" | "Move" | "End", delta: number)
 		if phase == "End" then
+			local d = splitDrag
 			splitDrag = nil
+			-- (header SPLITS "SMALL SIDE") a preview pushed all the way makes its side small; anything else drops it
+			if d ~= nil and units[d.Unit] and d.Split.Pending ~= nil then
+				local p = d.Split.Pending :: { Side: number, Strength: number }
+				batch(function()
+					if p.Strength >= 1 and d.WasSmall == nil then
+						d.Split.Small = p.Side
+					end
+					d.Split.Pending = nil
+					pushView(d.Unit)
+					layoutDirty = true
+				end)
+			end
 			return
 		end
 		if phase == "Begin" then
@@ -2432,6 +2466,7 @@ function Manager.new(): Manager
 					Min1 = info.Min1,
 					Min2 = info.Min2,
 					Snap = h.Style.FrameHeight:Get() / 2,
+					WasSmall = sp.Split.Small,
 				}
 			end
 			return
@@ -2442,21 +2477,50 @@ function Manager.new(): Manager
 		end
 		local hi = d.Length - d.Min2
 		local raw = d.Start + delta
-		-- pushed past a side's floor (by half a FrameHeight): that side becomes the small one (header SPLITS "SMALL
-		-- SIDE"); back inside the floors: an ordinary seam again, at the pointer
+		-- [2026-10-21 user decision, after using the first cut] (header SPLITS "SMALL SIDE"): pushing past a floor
+		-- stops the seam there and veils that side more the nearer the pointer is to the far end; only a release
+		-- there makes it small (a push short of the end only widens the other side as far as the floor allows). A
+		-- side that was small fades its veil out as it is dragged open and becomes an ordinary seam at its floor.
+		local mid = if hi < d.Min1 then d.Length / 2 else nil
+		local side: number? = nil
+		if raw < d.Min1 and (mid == nil or raw < mid) then
+			side = 1
+		elseif raw > hi and (mid == nil or raw >= mid) then
+			side = 2
+		end
 		local small: number? = nil
-		if raw <= d.Min1 - d.Snap then
-			small = 1
-		elseif raw >= hi + d.Snap then
-			small = 2
+		local pending: { Side: number, Strength: number }? = nil
+		if side ~= nil and d.WasSmall == side then
+			-- still opening the side that was small: it stays small, its veil fading with the way to its floor
+			small = side
+			local from, floor = d.Start, if side == 1 then d.Min1 else hi
+			local strength = if floor == from then 1 else 1 - math.clamp((raw - from) / (floor - from), 0, 1)
+			if strength < 1 then
+				pending = { Side = side, Strength = strength }
+			end
+		else
+			if side == nil then
+				d.WasSmall = nil -- opened (or never small): from here on an ordinary drag
+			end
+			if side == 1 then
+				local reach = math.max(1, d.Min1 - d.Snap)
+				pending = { Side = 1, Strength = math.clamp((d.Min1 - raw) / reach, 0, 1) }
+			elseif side == 2 then
+				local reach = math.max(1, d.Length - d.Snap - hi)
+				pending = { Side = 2, Strength = math.clamp((raw - hi) / reach, 0, 1) }
+			end
 		end
 		local seam = if hi < d.Min1 then d.Min1 else math.clamp(raw, d.Min1, hi)
 		local ratio = if small ~= nil then d.Split.Ratio else math.clamp(seam / d.Length, 0.01, 0.99)
-		if ratio ~= d.Split.Ratio or small ~= d.Split.Small then
+		local old = d.Split.Pending
+		local samePending = (old == nil and pending == nil)
+			or (old ~= nil and pending ~= nil and old.Side == pending.Side and old.Strength == pending.Strength)
+		if ratio ~= d.Split.Ratio or small ~= d.Split.Small or not samePending then
 			-- (one layout build per move: the views and the Ratio in one batch)
 			batch(function()
 				d.Split.Ratio = ratio
 				d.Split.Small = small
+				d.Split.Pending = pending
 				pushView(d.Unit)
 				layoutDirty = true
 			end)

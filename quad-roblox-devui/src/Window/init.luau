@@ -337,7 +337,10 @@ local function Window(props: WindowProps): Frame
 			AutoButtonColor = false,
 			Text = "",
 			BackgroundColor3 = style.Color.NavWindowingDimBg,
-			BackgroundTransparency = style.Transparency.NavWindowingDimBg,
+			-- (a seam drag's preview fades it in or out: strength 0..1 over the token's own transparency)
+			BackgroundTransparency = placement.DimStrength:Compute(function(self, _prev, full)
+				return 1 - (1 - full:Get()) * self:Get()
+			end, style.Transparency.NavWindowingDimBg),
 			BorderSizePixel = 0,
 		}),
 		-- leaving the manager disposes the decoration too

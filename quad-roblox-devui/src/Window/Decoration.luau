@@ -194,6 +194,7 @@ export type Placement = {
 	Size: State<UDim2>,
 	Visible: State<boolean>,
 	Dimmed: State<boolean>, -- the surface is the drawn one of a small side's leaf (Manager header SPLITS "SMALL SIDE")
+	DimStrength: State<number>, -- its veil's strength 0..1 (less than 1 while a seam drag previews — same header)
 }
 
 -- where a folded leaf sits in its split (header SPLITS): the side of the split's rectangle it keeps
@@ -229,7 +230,7 @@ export type GroupView = {
 	NoDock: boolean,
 	Split: boolean, -- the unit is split (its Collapsed is the docked panel's; a leaf folds)
 	Fold: FoldSide?, -- this window's leaf is folded inside its split
-	Dimmed: boolean, -- this window's leaf lies in a small side (dimmed; a press swaps — Manager header SPLITS)
+	Dimmed: number, -- this window's leaf lies in a small side: veil strength 0..1, 0 = none (a press swaps — Manager header SPLITS)
 	PanelCollapsed: boolean, -- (a split unit) its docked panel is collapsed
 	Splitter: SplitterView?,
 }
@@ -519,10 +520,13 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		return self:Get() and f:Get() == nil
 	end, fold)
 	-- dimmed: the drawn surface of a leaf in a small side (the Window draws the veil inside its root, under every part)
-	local surfaceDimmed: State<boolean> = view:Compute(function(self, _prev, isDrawn)
+	local dimStrength: State<number> = view:Compute(function(self, _prev, isDrawn)
 		local g = self:Get()
-		return g ~= nil and g.Dimmed and isDrawn:Get()
+		return if g ~= nil and isDrawn:Get() then g.Dimmed else 0
 	end, drawn)
+	local surfaceDimmed: State<boolean> = dimStrength:Compute(function(self)
+		return self:Get() > 0
+	end)
 	local iconSide: State<number> = style.FrameHeight:Compute(function(self)
 		return self:Get() * 2
 	end)
@@ -1613,7 +1617,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		RowHeight = function(): number
 			return titleHeight:Get() * frameScale()
 		end,
-		Surface = { Position = surfacePosition, Size = surfaceSize, Visible = surfaceShown, Dimmed = surfaceDimmed },
+		Surface = { Position = surfacePosition, Size = surfaceSize, Visible = surfaceShown, Dimmed = surfaceDimmed, DimStrength = dimStrength },
 		LeafRect = function(): (UDim2, UDim2)
 			return framePosition:Get(), frameSize:Get()
 		end,

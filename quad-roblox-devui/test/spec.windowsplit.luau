@@ -200,6 +200,20 @@ local function dragSplitter(win: Instance, dx: number, dy: number)
 	release(x0 + dx, y0 + dy)
 	relay()
 end
+-- a splitter drag held mid-way: moves, then returns the release
+local function holdSplitter(win: Instance, dx: number, dy: number): () -> ()
+	relay()
+	local sp = splitterOf(win)
+	local x0, y0 = sp.AbsolutePosition.X + 2, sp.AbsolutePosition.Y + 2
+	press(x0, y0)
+	H.fire(sp, "InputBegan", mouse(M1, x0, y0))
+	moveTo(x0 + dx, y0 + dy)
+	relay()
+	return function()
+		release(x0 + dx, y0 + dy)
+		relay()
+	end
+end
 local function clickArrow(win: Instance)
 	H.fire(get(win, "CollapseButton"), "Activated", H.input({}), 1)
 	relay()
@@ -554,7 +568,7 @@ H.section("a docked top / bottom split keeps its seam off the floors when the co
 	H.assertNoDebugOutput("docked seam floor")
 end)
 
-H.section("a small side: pushed past its floor it shrinks to a dimmed peek; a press on it swaps; the seam drags it out", function()
+H.section("a small side: pushed to the far end it shrinks to a dimmed peek on release; a press on it swaps; the seam drags it out", function()
 	local container = newContainer(1000, 700)
 	local m = Devui.WindowManager.new()
 	local a = window(m, container, "a", 100, 100, 300, 200)
@@ -565,12 +579,25 @@ H.section("a small side: pushed past its floor it shrinks to a dimmed peek; a pr
 		return H.find(w.win, "WindowDim").Visible == true
 	end
 	assert(not veiled(a) and not veiled(b), "no veil in an ordinary split")
-	-- past B's floor (100) by more than half a FrameHeight: B is the small side, a peek of 4 FrameHeights (76)
-	dragSplitter(b.win, 200, 0)
+	local full = Devui.Style.default.Transparency.NavWindowingDimBg:Get()
+	local function veil(w: Win): number
+		return H.find(w.win, "WindowDim").BackgroundTransparency
+	end
+	-- [2026-10-21 user decision] past B's floor (100) the seam stops there and B's veil fades in with the way to the
+	-- far end; released short of the end, B only stays at its floor
+	local letGo = holdSplitter(b.win, 130, 0)
+	assert(at(b.win, 300, 100, 100, 200) and veiled(b), `stopped at the floor, previewed ({where(b.win)})`)
+	assert(veil(b) > full and veil(b) < 1, `a part veil ({veil(b)})`)
+	letGo()
+	assert(at(b.win, 300, 100, 100, 200) and not veiled(b) and nodeOf(m:ExportLayout()).Small == nil, "short of the end: not small")
+	-- pushed to the end (and over): full veil while held, B is the small side on release, a peek of 4 FrameHeights (76)
+	letGo = holdSplitter(b.win, 200, 0)
+	assert(at(b.win, 300, 100, 100, 200) and math.abs(veil(b) - full) < 1e-6, "full veil at the end, still at the floor")
+	letGo()
 	assert(at(a.win, 100, 100, 224, 200) and at(b.win, 324, 100, 76, 200), `B small ({where(b.win)})`)
 	assert(veiled(b) and not veiled(a), "B dimmed")
 	local saved = m:ExportLayout()
-	assert(nodeOf(saved).Small == 2 and math.abs(nodeOf(saved).Ratio - 0.5) < 1e-6, "saved: Small = 2, the Ratio kept")
+	assert(nodeOf(saved).Small == 2 and math.abs(nodeOf(saved).Ratio - 2 / 3) < 1e-6, "saved: Small = 2, the Ratio at the floor")
 	-- a press on the veil swaps: B grows, A becomes the peek (its floor, 38 — a peek is never wider than the floor)
 	press(360, 200)
 	release(360, 200)
@@ -584,6 +611,11 @@ H.section("a small side: pushed past its floor it shrinks to a dimmed peek; a pr
 	-- a press on the seam does not swap; dragging it back inside the floors makes an ordinary seam at the pointer
 	dragSplitter(b.win, 0, 0)
 	assert(at(b.win, 324, 100, 76, 200) and veiled(b), "the seam's press keeps B small")
+	-- dragged open part of the way to its floor (100): still the peek, the veil fading; let go, small again
+	letGo = holdSplitter(b.win, -12, 0)
+	assert(at(b.win, 324, 100, 76, 200) and veil(b) > full and veil(b) < 1, `opening: a part veil ({veil(b)})`)
+	letGo()
+	assert(at(b.win, 324, 100, 76, 200) and math.abs(veil(b) - full) < 1e-6 and nodeOf(m:ExportLayout()).Small == 2, "let go short: small")
 	dragSplitter(b.win, -100, 0)
 	assert(at(a.win, 100, 100, 124, 200) and not veiled(b) and nodeOf(m:ExportLayout()).Small == nil, `dragged out ({where(a.win)})`)
 	-- the layout brings it back
