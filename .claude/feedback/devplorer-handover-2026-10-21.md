@@ -40,6 +40,15 @@ CommandPalette(위쪽에 놓이고 입력 포커스 — `PopupPanel` + `AnchorRe
 - 앱이 "입력을 받는 팝업이 열렸나"를 물을 길 — 지금 `Overlay.Count`는 툴팁까지 센다.
 - TabBar 탭의 `Hooks`(툴팁).
 
+## 같은 날 더 들어간 것 (devplorer 쪽 걷어낼 자리)
+
+- **`OpenCopyDialog({ Title?, Text, Window?, Modal? })`** → `App/CopyDialog.luau`(211줄)와 `Popups.CopyText`. 동작은 devplorer 것 그대로(전체 선택 포커스, 안에서 포커스를 잃으면 선택째 되잡기, 글 되돌리기, Select All·Close, 하나만). 차이: 바깥 클릭으로 닫히지 않고 Escape로 닫힌다(대화상자 규칙), 배경은 `Style` 기본(불투명이 필요하면 `Style`을 넘길 것).
+- **`Selection`** → `App/Rows/Select.luau`. 모드 이름이 바뀌었다: `"Single"` → `"Replace"`, `"Range"` → `"Extend"`(`"Toggle"` 그대로). 세 곳(Explorer·BookmarksWindow·OutputView)의 Shift/Ctrl 판정은 `Selection.modeFromKeys()`로(Cmd도 Toggle). `LogSelection.range`도 흡수 대상.
+- **`TreeRows`** → `App/Rows/Flatten.luau`. 접근자 `Extra` → `MoreCount`, 나머지(`flatten`·`expand`·`collapse`·`toggle`·`reveal`·`indexOf`·`indexByKey`·`newPaging`·`loadMore`·`signatures`·`sameRows`, 행의 `More`)는 이름 그대로. 스펙 21개도 같이 옮겨졌다.
+- **`VirtualRows`의 `Follow = true`** → `InspectUi.follower()`(Modifier·ScrollTo·Update 세 조각이 prop 하나로). **`Devui.RowIndexAt(list, y)`** → `Explorer` `rowIndexAt`·`LogSelection.indexAtY`(y는 AbsolutePosition 공간, `GetMouseLocation() - inset`).
+- **휠 막기**는 Overlay 기본이 됐다(위 "바꿔 쓸 것"에도 적음) → `PopupShield.start`.
+- **`ColorPicker3` / `OpenColorPicker` / `ColorModel`**, `InputColor3` 견본이 피커를 연다 → `PropPanels.ColorPanel` 전체와 `Editors`의 색 파싱 중복. 적용은 끄는 동안 바로(devplorer의 0.1초 적용은 소비자 쪽 `q.Throttle`로), 취소는 연 때 색을 다시 쓴다(devplorer `audit/2026-10-20-color-cancel.md`와 같은 규칙). **차이**: devplorer 패널은 Properties 목록 틀 안의 Frame(창 밖으로 안 나감)이었고 devui 피커는 Overlay 대화상자(그 창을 막음)다.
+
 ## 만드는 중 (2026-10-21, 순서대로)
 
-복사 대화상자 → 선택 규칙·트리 평탄화·`VirtualRows` 끝 따라가기와 y→행 번호 → 색 편집기(대화상자와 패널을 따로 공개, 색 계산 모듈도 공개, `InputColor3` 견본이 연다) → 검색되는 가상 Combo(키보드 고르기 포함 — Insert 팝업의 일반 부분: 항목 목록, 행 앞 아이콘 칸, 막힌 이유, 고르면 닫기) → 가상 표. 미룬 것: 창 자리 자동 정하기, 불투명 Style 프리셋, 차트. 끝나면 이 문서에 이어 적는다.
+~~복사 대화상자 → 선택 규칙·트리 평탄화·`VirtualRows` 끝 따라가기와 y→행 번호 → 색 편집기~~(위 절, 같은 날 들어감) → 검색되는 가상 Combo(키보드 고르기 포함 — Insert 팝업의 일반 부분: 항목 목록, 행 앞 아이콘 칸, 막힌 이유, 고르면 닫기) → 가상 표. 미룬 것: 창 자리 자동 정하기, 불투명 Style 프리셋, 차트. 끝나면 이 문서에 이어 적는다.
