@@ -2954,6 +2954,11 @@ function Manager.new(): Manager
 									end
 								end
 								quiet -= 1
+								-- a split panel's leaf boxes are laid out from the unit's width: lay them out again (the
+								-- width handle would otherwise move alone until the next relayout)
+								if isSplit(u) then
+									pushView(u)
+								end
 								return
 							end
 							local c = hints.Collapsed:Get()

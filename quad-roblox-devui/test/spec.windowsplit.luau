@@ -490,6 +490,17 @@ H.section("a docked split: top / bottom stacking on the side; the panel collapse
 	assert(part(b.win, "WindowDockStrip").Visible and not part(a.win, "WindowDockStrip").Visible)
 	assert(part(b.win, "WindowDockResize").Visible and not part(a.win, "WindowDockResize").Visible)
 	assert(splitterOf(b.win).Visible and splitterOf(b.win).Position == UDim2.new(0, 19, 0.5, -6) and splitterOf(b.win).Size == UDim2.new(0, 300, 0, 6))
+	-- the width handle widens both leaves at once (not only the handle)
+	local handle = part(b.win, "WindowDockResize")
+	local hx, hy = handle.AbsolutePosition.X + 2, 300
+	press(hx, hy)
+	H.fire(handle, "InputBegan", mouse(M1, hx, hy))
+	moveTo(hx + 80, hy)
+	release(hx + 80, hy)
+	relay()
+	assert(frameOf(a.win).Size == UDim2.new(0, 380, 0.5, 0) and frameOf(b.win).Size == UDim2.new(0, 380, 0.5, 0), `both leaves 380 wide ({where(a.win)} / {where(b.win)})`)
+	assert(part(b.win, "WindowDockResize").Position == UDim2.fromOffset(19 + 380, 0) and splitterOf(b.win).Size == UDim2.new(0, 380, 0, 6), "the handle and the splitter follow")
+	assert((m:ExportLayout().Left :: any).Width == 380, "saved as shown")
 	-- the splitter on the panel: 700 tall, 100 px up = Ratio (350 - 100) / 700
 	dragSplitter(b.win, 0, -100)
 	assert(math.abs((m:ExportLayout().Left :: any).Node.Ratio - 250 / 700) < 1e-6, "the ratio of the panel's height")
