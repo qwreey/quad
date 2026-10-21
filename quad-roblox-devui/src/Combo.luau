@@ -47,6 +47,7 @@ local TextLabelModifier = q.Modifier "TextLabel"
 local comboName = FrameModifier():Name("Combo")
 local Common = require("./Common")
 local Interaction = require("./Interaction")
+local KeyedSlot = require("./KeyedSlot")
 local Overlay = require("./Overlay")
 local PopupParts = require("./PopupParts")
 local Style = require("./Style")
@@ -113,8 +114,6 @@ type CoreSpec = {
 	Modifier: Quad.ModifierInto<Frame>?,
 }
 
-type RowUD = { label: Source<string> }
-type RowCtx = Quad.SlotCtx<Entry, RowUD, Instance>
 
 local Combo = {}
 
@@ -139,23 +138,18 @@ local function core(spec: CoreSpec): Frame
 	end
 
 	local function buildList(width: number): ScrollingFrame
-		local rows = q.Slot<<Instance>>()
-		rows:List(spec.Entries, function(ctx: RowCtx): (any, RowUD?)
-			if ctx.Item == q.KeyGone then
-				return nil
-			end
-			local entry = ctx.Item :: Entry
-			local prev, ud = ctx.Prev, ctx.UserData
-			if prev and ud then
-				ud.label:SetIfChanged(entry.Label)
-				return prev, ud
-			end
-			local label: Source<string> = q.Source(entry.Label)
-			local key = entry.Key
+		-- one option row per key, kept while its key stays (KeyedSlot): the label follows the entry
+		local rows = KeyedSlot.new<<Entry>>(spec.Entries, function(entry: Entry): any
+			return entry.Key
+		end, function(item: State<Entry>, _order: State<number>): Instance
+			local key = item:Get().Key
+			local label: State<string> = item:Compute(function(self)
+				return self:Get().Label
+			end)
 			local selected: State<boolean> = spec.SelectedKey:Compute(function(self)
 				return self:Get() == key
 			end)
-			local row = PopupParts.row({
+			return PopupParts.row({
 				Style = style,
 				Name = "Option",
 				Text = label,
@@ -168,9 +162,6 @@ local function core(spec: CoreSpec): Frame
 					spec.OnPick(key)
 				end,
 			})
-			return row, { label = label }
-		end, function(entry: Entry): any
-			return entry.Key
 		end)
 
 		return ScrollingFrame({

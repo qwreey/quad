@@ -16,7 +16,7 @@
 
 	`Width` is in pixels; columns without one share the remaining width equally (UIFlexItem Fill).
 
-	ROWS ARE RECYCLED BY KEY (Slot:List). When a key survives a data change its row Frame and all its cell instances are
+	ROWS ARE RECYCLED BY KEY (Slot:List, through the kit's KeyedSlot). When a key survives a data change its row Frame and all its cell instances are
 	kept: `Cell` is NOT called again — instead the `row` State it received is republished when the row value changed
 	(`~=`, so replace the row table; mutating it in place is not seen) — bind the cell content to it
 	(`row:Compute(function(self) return self:Get().Name end)`). Row order follows the data order through `LayoutOrder`
@@ -48,6 +48,7 @@ local UIPadding = q.Elem "UIPadding"
 local UIStroke = q.Elem "UIStroke"
 local FrameModifier = q.Modifier "Frame"
 local tableName = FrameModifier():Name("Table")
+local KeyedSlot = require("./KeyedSlot")
 local Style = require("./Style")
 local Util = require("./Util")
 
@@ -71,11 +72,6 @@ export type TableProps<T> = {
 	read Style: Style?,
 	read Modifier: Quad.ModifierInto<Frame>?,
 }
-
--- per-row data kept in Slot:List userdata (the reused row's State/Source handles)
-type RowUD<T> = { row: Source<T>, index: Source<number> }
-
-type RowCtx<T> = Quad.SlotCtx<T, RowUD<T>, Instance>
 
 local function cellSizing(width: number?): UDim2
 	return UDim2.new(0, width or 0, 0, 0)
@@ -202,21 +198,8 @@ local function Table<T>(props: TableProps<T>): Frame
 		})
 	end
 
-	local rows = q.Slot<<Instance>>()
-	rows:List<<T, RowUD<T>>>(props.Rows, function(ctx: RowCtx<T>): (any, RowUD<T>?)
-		if ctx.Item == q.KeyGone then
-			return nil, nil
-		end
-		local item = ctx.Item :: T
-		local prev, ud = ctx.Prev, ctx.UserData
-		if prev and ud then
-			ud.row:SetIfChanged(item)
-			ud.index:SetIfChanged(ctx.Index)
-			return prev, ud
-		end
-
-		local rowSrc: Source<T> = q.Source(item)
-		local indexSrc: Source<number> = q.Source(ctx.Index)
+	-- one row per key, kept while its key stays (KeyedSlot): the row's State and its 1-based index
+	local rows = KeyedSlot.new(props.Rows, keyFn, function(rowSrc: State<T>, indexSrc: State<number>): Instance
 		local bgColor: State<Color3>
 		local bgAlpha: State<number>
 		if props.RowBg == true then
@@ -235,7 +218,7 @@ local function Table<T>(props: TableProps<T>): Frame
 		for col = 1, last do
 			cells[col] = cellFrame(col, cellFn(rowSrc, col))
 		end
-		local row = Frame({
+		return Frame({
 			Name = "Row",
 			LayoutOrder = indexSrc,
 			AutomaticSize = Enum.AutomaticSize.Y,
@@ -246,9 +229,6 @@ local function Table<T>(props: TableProps<T>): Frame
 			cellsRow(q.Slot(cells)),
 			if borders then hairline(false, false) else q.None,
 		})
-		return row, { row = rowSrc, index = indexSrc }
-	end, function(item: T, _i: number): any
-		return keyFn(item)
 	end)
 
 	return Frame({
