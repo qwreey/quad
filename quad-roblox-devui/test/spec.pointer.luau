@@ -223,3 +223,5 @@ H.section("no PlayerGui (story host): hover is the engine's MouseEnter; a toolti
 	container:Destroy()
 	H.assertNoDebugOutput("story host")
 end)
+
+H.done()

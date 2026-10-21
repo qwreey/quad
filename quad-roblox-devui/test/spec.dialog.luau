@@ -131,3 +131,5 @@ H.section("OpenCopyDialog: read-only box focused with all selected; text put bac
 	q.dispose(o.Layer)
 	H.assertNoDebugOutput("copy")
 end)
+
+H.done()

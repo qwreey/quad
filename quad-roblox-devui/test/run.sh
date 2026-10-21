@@ -52,6 +52,11 @@ done
 # (test/support/mirror.py); error line numbers match the originals.
 MIRROR="${TMPDIR:-/tmp}/quad-kit-mirror-$KIT-$$"
 python3 "$KIT/test/support/mirror.py" "$KIT" "$MIRROR" >/dev/null || fail=1
+# a component spec that never calls H.done() exits 0 even when its sections FAIL (H.done sets the exit code)
+for f in "$KIT"/test/spec.*.luau; do
+	case "$f" in */spec.pure.*) continue ;; esac
+	grep -q "^H.done()" "$f" || { echo "FAIL: $f does not end with H.done() — its failures would not fail the run"; fail=1; }
+done
 specs=("$KIT"/test/spec.*.luau)
 if [ "$#" -gt 0 ]; then specs=("$@"); fi
 for f in "${specs[@]}"; do

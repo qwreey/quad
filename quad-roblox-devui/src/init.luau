@@ -110,6 +110,7 @@ local PlotModule = require("@self/Plot")
 local Combo = require("@self/Combo")
 local Menu = require("@self/Menu")
 local Dialog = require("@self/Dialog")
+local Selection = require("@self/Selection")
 local Tooltip = require("@self/Tooltip")
 local VirtualRows = require("@self/VirtualRows")
 
@@ -164,6 +165,7 @@ export type DialogHandle = Dialog.DialogHandle
 export type OpenDialogProps = Dialog.OpenDialogProps
 export type OpenConfirmProps = Dialog.OpenConfirmProps
 export type OpenCopyDialogProps = Dialog.OpenCopyDialogProps
+export type SelectionMode = Selection.Mode
 export type TooltipProps = Tooltip.TooltipProps
 export type TooltipHandle = Tooltip.TooltipHandle
 export type VirtualRowsProps = VirtualRows.VirtualRowsProps
@@ -244,6 +246,7 @@ local Devui = {
 	OpenDialog = Dialog.OpenDialog,
 	OpenConfirm = Dialog.OpenConfirm,
 	OpenCopyDialog = Dialog.OpenCopyDialog,
+	Selection = Selection,
 	Tooltip = Tooltip.Tooltip,
 }
 
