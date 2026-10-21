@@ -24,7 +24,11 @@
 
 	Structure: root Frame (row) > Box (TextButton: preview text + arrow image) + label. Clicking the box opens the list in
 	the Overlay under the box (position and width read from the box's AbsolutePosition / AbsoluteSize at open time); the
-	list is a ScrollingFrame of rows (PopupParts.row, `Slot:List` over the options) capped at MaxHeight (default 200).
+	list is a ScrollingFrame of rows (PopupParts.row, `Slot:List` over the options) as tall as its rows, capped at
+	MaxHeight (default 200) and at the room left in the layer — above the box instead when the list needs more than the
+	room below and there is more above. The height is set from the rows' content size, not left to AutomaticSize: an
+	automatically sized ScrollingFrame ignores a UISizeConstraint (Studio 2026-10-21: 61 rows under a 163 cap grew to
+	1159 px — devplorer U20).
 	Choosing a row writes the Source and closes; Escape, a click outside (the Overlay's catcher) and destroying the Combo
 	close it too. Every open builds a fresh list (the Overlay owns and destroys it), so a closed Combo holds nothing but
 	the box. While open, a changing `Options` State updates the list in place.
@@ -41,7 +45,6 @@ local ScrollingFrame = q.Elem "ScrollingFrame"
 local TextButton = q.Elem "TextButton"
 local UIListLayout = q.Elem "UIListLayout"
 local UIPadding = q.Elem "UIPadding"
-local UISizeConstraint = q.Elem "UISizeConstraint"
 local FrameModifier = q.Modifier "Frame"
 local TextLabelModifier = q.Modifier "TextLabel"
 local comboName = FrameModifier():Name("Combo")
@@ -137,7 +140,11 @@ local function core(spec: CoreSpec): Frame
 		end
 	end
 
-	local function buildList(width: number): ScrollingFrame
+	local function buildList(width: number, room: number): ScrollingFrame
+		local content: Source<Vector2> = q.Source(Vector2.zero)
+		local listSize: State<UDim2> = content:Compute(function(self)
+			return UDim2.fromOffset(width, math.max(0, math.min(self:Get().Y, maxHeight, room)))
+		end)
 		-- one option row per key, kept while its key stays (KeyedSlot): the label follows the entry
 		local rows = KeyedSlot.new<<Entry>>(spec.Entries, function(entry: Entry): any
 			return entry.Key
@@ -166,8 +173,7 @@ local function core(spec: CoreSpec): Frame
 
 		return ScrollingFrame({
 			Name = "ComboList",
-			Size = UDim2.fromOffset(width, 0),
-			AutomaticSize = Enum.AutomaticSize.Y,
+			Size = listSize,
 			AutomaticCanvasSize = Enum.AutomaticSize.Y,
 			CanvasSize = UDim2.fromOffset(0, 0),
 			ScrollingDirection = Enum.ScrollingDirection.Y,
@@ -180,10 +186,10 @@ local function core(spec: CoreSpec): Frame
 			Active = true,
 			UICorner = style.Metrics.PopupRounding,
 			PopupParts.stroke(style),
-			UISizeConstraint({ MaxSize = Vector2.new(math.huge, maxHeight) }),
 			UIListLayout({
 				FillDirection = Enum.FillDirection.Vertical,
 				SortOrder = Enum.SortOrder.LayoutOrder,
+				q.Out "UIListLayout" "AbsoluteContentSize" (content),
 			}),
 			rows,
 		})
@@ -200,10 +206,17 @@ local function core(spec: CoreSpec): Frame
 			return
 		end
 		local pos, size = anchor.AbsolutePosition, anchor.AbsoluteSize
+		-- the room below and above the box in the layer (unknown size, e.g. a layer not laid out: no limit, below)
+		local layerPos, layerSize = overlay.Layer.AbsolutePosition, overlay.Layer.AbsoluteSize
+		local below = if layerSize.Y > 0 then layerPos.Y + layerSize.Y - (pos.Y + size.Y) else math.huge
+		local above = if layerSize.Y > 0 then pos.Y - layerPos.Y else 0
+		local need = math.min(maxHeight, #spec.Entries:Get() * style.FrameHeight:Get())
+		local up = need > below and above > below
 		local disconnectEscape: (() -> ())? = nil
 		popup = overlay:Open({
-			Content = buildList(size.X),
-			Position = Vector2.new(pos.X, pos.Y + size.Y),
+			Content = buildList(size.X, if up then above else below),
+			Position = if up then Vector2.new(pos.X, pos.Y) else Vector2.new(pos.X, pos.Y + size.Y),
+			Anchor = if up then Vector2.new(0, 1) else nil,
 			OnClose = function()
 				popup = nil
 				local off = disconnectEscape

@@ -87,6 +87,45 @@ H.section("open under the box, choose writes the Source and closes (cycles leave
 	H.assertNoDebugOutput("open/choose")
 end)
 
+H.section("the list is as tall as its rows, capped at MaxHeight and the room left; opens above when below is short", function()
+	local o = Overlay.new()
+	H.setAbs(o.Layer, 0, 0, 800, 600)
+	local opts: { string } = {}
+	for i = 1, 61 do
+		opts[i] = `option {i}`
+	end
+	local combo = Combo.Combo<<string>>({ Text = "t", Value = q.Source("option 1"), Options = opts, Overlay = o, MaxHeight = 163 })
+	local box = get(combo, "Box")
+	local function openAt(y: number): (any, any)
+		H.setAbs(box, 30, y, 200, 19)
+		H.fire(box, "Activated", H.input({}), 1)
+		local list = get(o.Layer, "ComboList")
+		local layout = H.findAll(list, function(i: any)
+			return i.ClassName == "UIListLayout"
+		end)[1] :: any
+		layout.AbsoluteContentSize = Vector2.new(200, 61 * 19) -- (the engine lays the rows out)
+		return list, get(o.Layer, "PopupHolder")
+	end
+	local list, holder = openAt(40)
+	assert(list.Size == UDim2.fromOffset(200, 163), `capped at MaxHeight ({list.Size})`)
+	assert(holder.AnchorPoint == Vector2.zero and holder.Position == UDim2.fromOffset(30, 59), "under the box")
+	o:CloseAll()
+	list, holder = openAt(500) -- 81 px left below, 500 above
+	assert(holder.AnchorPoint == Vector2.new(0, 1) and holder.Position == UDim2.fromOffset(30, 500), "above the box")
+	assert(list.Size == UDim2.fromOffset(200, 163))
+	o:CloseAll()
+	list = openAt(300) -- 281 below: room enough, a short list stays its own height
+	local layout = H.findAll(list, function(i: any)
+		return i.ClassName == "UIListLayout"
+	end)[1] :: any
+	layout.AbsoluteContentSize = Vector2.new(200, 57)
+	assert(list.Size == UDim2.fromOffset(200, 57), `as tall as its rows ({list.Size})`)
+	o:CloseAll()
+	q.dispose(combo)
+	q.dispose(o.Layer)
+	H.assertNoDebugOutput("list height")
+end)
+
 H.section("the chosen option shows the selected look; Escape / click-outside / destroy close", function()
 	local o = Overlay.new()
 	local value = q.Source(2)
