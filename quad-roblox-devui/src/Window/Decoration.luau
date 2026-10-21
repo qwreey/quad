@@ -15,9 +15,11 @@
 			Arrow (ImageLabel)
 		WindowResizeGrip (ImageButton, anchored at the outer rectangle's bottom-right corner; floating only)
 		WindowDockResize (TextButton, the docked panel's width handle along its inner edge; docked only)
-	The grip and the dock handle are left out with NoResize. The frame sits BELOW the surface (it paints the background
+		WindowDockPreview (Frame, the edge-dock preview while a title-bar drag is at an edge — see DOCKED)
+	The grip and the dock handle are left out with NoResize, the preview with NoMove or NoDock. The frame sits BELOW the surface (it paints the background
 	the surface is drawn on) and the grip ABOVE it (it overlaps the content's corner): the manager gives each window
-	three consecutive ZIndex ranks (frame, surface, grip). The icon, the strip and the dock handle take the grip's rank.
+	three consecutive ZIndex ranks (frame, surface, grip). The icon, the strip and the dock handle take the grip's rank;
+	the preview takes the one above it (the drag raised the window first, so it draws over every window).
 
 	COLLAPSED = ICON [2026-10-20 user decision — one `Collapsed`, its look decided by where the window is]: a collapsed
 	floating window shows only a small square icon (2 x FrameHeight) at its `Position` (the outer rectangle's top-left,
@@ -44,8 +46,10 @@
 	panel's inner edge sets the dock width, kept in [MinSize.X (default 2 x FrameHeight), half the container's width]
 	(also when the container shrinks).
 	Docking: while the title bar is dragged, a pointer within the strip width of the container's left or right edge
-	shows a preview of the strip and panel (an input-less popup of the default Overlay; without a mounted layer there
-	is only the Overlay's own warning and no preview), and releasing there docks the window (its Position goes back to
+	shows a preview of the strip and panel (a decoration part in the window's container, input-less — drawn by the
+	compositor like the strip, so it shows whichever Overlay the app mounts, or none [2026-10-21 user decision; it
+	was a popup of the default Overlay and did not show where that layer was not mounted, e.g. a UI Labs story]),
+	and releasing there docks the window (its Position goes back to
 	where the drag began — the floating rectangle it keeps). The first dock width is the window's Size.X in the range
 	above; docking again uses the dock width it keeps. Not offered when that edge is held by another open window, with NoDock or NoMove, or from the icon.
 	Undocking: dragging a docked window's title bar past the press-or-drag threshold makes it float again, at its kept
@@ -85,7 +89,6 @@ local ImageLabel = q.Elem "ImageLabel"
 local UICorner = q.Elem "UICorner"
 local Input = require("../Input")
 local Interaction = require("../Interaction")
-local Overlay = require("../Overlay")
 local Style = require("../Style")
 local Visibility = require("../Visibility")
 local Layout = require("./Layout")
@@ -355,43 +358,15 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 	end
 	local offTopbar = Input.onTopbarChanged(measureTop)
 
-	-- ── the edge-dock preview (header DOCKED): an input-less popup of the default Overlay ─────────────────────────
-	local preview: Overlay.Popup? = nil
+	-- ── the edge-dock preview (header DOCKED): the edge a drag would dock on, and the strip + panel width there ────
+	local previewSide: Source<Side?> = q.Source(nil :: Side?)
+	local previewWidth: Source<number> = q.Source(0)
 	local function closePreview()
-		local p = preview
-		if p then
-			preview = nil
-			p:Close()
-		end
+		previewSide:SetIfChanged(nil)
 	end
 	local function openPreview(at: Side)
-		local overlay = Overlay.getDefault()
-		local container = containerOf(frame)
-		if not overlay.Alive:Get() or container == nil then
-			return
-		end
-		local cp, cs = container.AbsolutePosition, container.AbsoluteSize
-		local scale = scaleOf(frame, size:Get().X)
-		local w = (stripWidth:Get() + dropWidth()) * scale
-		local x = if at == "Left" then cp.X else cp.X + cs.X - w
-		preview = overlay:Open({
-			Content = Frame({
-				Name = "WindowDockPreview",
-				Size = UDim2.fromOffset(w, cs.Y),
-				BackgroundColor3 = style.Color.Header,
-				BackgroundTransparency = style.Transparency.Header,
-				BorderSizePixel = 0,
-				Active = false,
-				UIStroke({
-					ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-					Thickness = style.Metrics.WindowBorderSize,
-					Color = style.Color.HeaderActive,
-					Transparency = style.Transparency.HeaderActive,
-				}),
-			}),
-			Position = Vector2.new(x, cp.Y),
-			CloseOnClickOutside = false,
-		})
+		previewWidth:SetIfChanged(stripWidth:Get() + dropWidth())
+		previewSide:SetIfChanged(at)
 	end
 
 	-- title-bar drag: moves a floating window (pixel deltas added to the Position offsets), docks it at an edge, and
@@ -856,6 +831,41 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 				BorderSizePixel = 0,
 				AutoButtonColor = false,
 				Text = "",
+			})
+		)
+	end
+	-- the edge-dock preview: only a window a drag can dock
+	if titleDrag ~= nil and not hints.NoDock then
+		table.insert(
+			parts,
+			Frame({
+				Name = "WindowDockPreview",
+				AnchorPoint = previewSide:Compute(function(self)
+					return if self:Get() == "Right" then Vector2.new(1, 0) else Vector2.new(0, 0)
+				end),
+				Position = previewSide:Compute(function(self)
+					return if self:Get() == "Right" then UDim2.fromScale(1, 0) else UDim2.fromScale(0, 0)
+				end),
+				Size = previewWidth:Compute(function(self)
+					return UDim2.new(0, self:Get(), 1, 0)
+				end),
+				-- one above this window's grip: the drag raised it to the top, so above every window
+				ZIndex = control.FrontZ:Compute(function(self)
+					return self:Get() + 1
+				end),
+				Visible = previewSide:Compute(function(self)
+					return self:Get() ~= nil
+				end),
+				Active = false,
+				BackgroundColor3 = style.Color.Header,
+				BackgroundTransparency = style.Transparency.Header,
+				BorderSizePixel = 0,
+				UIStroke({
+					ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+					Thickness = style.Metrics.WindowBorderSize,
+					Color = style.Color.HeaderActive,
+					Transparency = style.Transparency.HeaderActive,
+				}),
 			})
 		)
 	end

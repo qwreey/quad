@@ -45,6 +45,7 @@ return StoryKit.story({
 				Name = text,
 				Position = UDim2.new(0, x, 1, -40),
 				Size = UDim2.fromOffset(150, 24),
+				ZIndex = 0, -- the story's own controls stay under the windows (a docked panel covers them)
 				BackgroundTransparency = 1,
 				Devui.Button({ Text = text, OnClick = onClick }),
 			})
@@ -78,6 +79,7 @@ return StoryKit.story({
 				Name = "Saved",
 				Position = UDim2.new(0, 20, 1, -70),
 				Size = UDim2.fromOffset(470, 24),
+				ZIndex = 0,
 				BackgroundTransparency = 1,
 				Devui.Text({ Text = savedText }),
 			}),

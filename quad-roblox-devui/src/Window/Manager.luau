@@ -16,7 +16,8 @@
 	number of live windows (an ever-increasing counter would climb above the Overlay layer's ZIndex 1000 after enough
 	focus switches and draw windows over popups). The window that was focused last is `Focused` (its title bar draws in
 	the "active" colour). A window releases its slot when it is destroyed (Window does it), so ranks stay compact.
-	Supports up to 333 live windows below the default Overlay layer.
+	Supports up to 333 live windows below the default Overlay layer. A title-bar drag at a screen edge shows its preview
+	one value above the dragged (raised, so top) window's chunk [Window/Decoration.luau header "DOCKED"].
 
 	USAGE
 		local Manager = require("./Manager")

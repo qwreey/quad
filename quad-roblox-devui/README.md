@@ -267,8 +267,8 @@ Devui.Window({ Title = "Tools", Open = win.Open, Focused = win.Focused, Children
 ### 가장자리 붙이기
 
 창의 제목줄을 끌어 포인터를 컨테이너(창 루트의 부모)의 **왼쪽이나 오른쪽 끝**에 가져가면 붙을 자리가 미리보기로 보이고, 그 자리에서 놓으면 창이
-그쪽 가장자리에 붙습니다. 미리보기는 기본 Overlay(`Devui.Overlay.getDefault()`)의 입력 없는 팝업이라, 그 층을 ScreenGui에 놓지 않았으면 미리보기
-없이 붙기만 합니다(경고는 Combo·Menu와 같이 Overlay가 한 번 냅니다).
+그쪽 가장자리에 붙습니다. 미리보기(`WindowDockPreview`)는 띠처럼 관리자가 창과 같은 컨테이너에 그리는 입력 없는 사각형이고, 끌고 있는 창을
+포함한 모든 창 위에 놓입니다 — Overlay 층을 어디에 놓았는지(또는 놓지 않았는지)와 무관하게 보입니다.
 
 - **모양**: 붙은 쪽 화면 끝에 컨테이너 세로 전체를 차지하는 **띠**(`WindowDockStrip`, 너비 = `FrameHeight`)가 생기고, 그 바로 안쪽에 패널(창틀·제목줄·
   내용)이 놓입니다 — 왼쪽이면 `|띠|패널|`, 오른쪽은 거울상. 패널 높이는 컨테이너를 따라가고(`AvailableSize`도 따라감), 컨테이너가 Roblox 상단바

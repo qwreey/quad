@@ -114,9 +114,10 @@ H.section("mount: structure, bindings, small instance count", function()
 
 	-- surface = root + Content + padding/list (4); decoration = frame + corner/stroke + ClickSink + title bar (10 with
 	-- its buttons and icons) + collapsed icon + its corner/stroke (13) + dock strip + its arrow (15) + grip (16) + dock
-	-- width handle (17), hidden while floating (21); the 2 widgets add 6 more
+	-- width handle (17), hidden while floating (21) + edge-dock preview + its stroke, hidden until a drag is at an edge
+	-- (23); the 2 widgets add 6 more
 	assert(1 + H.countDescendants(win) == 10, `surface instance count {1 + H.countDescendants(win)}`)
-	assert(countAll(win) == 31, `unexpected instance count {countAll(win)}`)
+	assert(countAll(win) == 33, `unexpected instance count {countAll(win)}`)
 
 	q.dispose(win)
 	assert(H.isDestroyed(frame) and H.isDestroyed(grip), "disposing the surface disposes its decoration")

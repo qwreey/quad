@@ -57,13 +57,11 @@ local function dragTitle(win: Instance, x0: number, y0: number, path: { { number
 	end
 end
 
--- the default overlay's layer, mounted (the preview is one of its popups)
-local overlayScreen = Instance.new("ScreenGui")
-overlayScreen.Parent = Instance.new("Folder")
-local overlay = Devui.Overlay.getDefault()
-overlay.Layer.Parent = overlayScreen
-local function previewOf(): any
-	return H.find(overlay.Layer, "WindowDockPreview")
+-- the window's edge-dock preview while it shows (a decoration part in the container — no Overlay layer is mounted
+-- in this spec), else nil
+local function previewOf(win: Instance): any
+	local p = part(win, "WindowDockPreview")
+	return if p ~= nil and p.Visible then p else nil
 end
 
 -- a placed container (a LayerCollector holds it: press-to-front needs windows on screen)
@@ -88,16 +86,16 @@ H.section("drag the title bar to the left edge: a preview of strip + panel, rele
 
 	dragTitle(win, 250, 110, { { 10, 110 } }, true)
 	assert(pos:Get() == UDim2.fromOffset(-40, 100), `still a plain move while dragging ({pos:Get()})`)
-	local preview = previewOf()
-	assert(preview ~= nil and preview.Size == UDim2.fromOffset(19 + 300, 600), "preview = strip (19) + panel (Size.X) over the full height")
-	assert(preview.Parent.Position == UDim2.fromOffset(0, 0), "at the container's left edge")
-	assert(overlay.Count:Get() == 1)
+	local preview = previewOf(win)
+	assert(preview ~= nil and preview.Size == UDim2.new(0, 19 + 300, 1, 0), "preview = strip (19) + panel (Size.X) over the full height")
+	assert(preview.Parent == container and preview.AnchorPoint == Vector2.zero and preview.Position == UDim2.fromScale(0, 0), "in the container, at its left edge")
+	assert(preview.ZIndex == frame.ZIndex + 3, "above the dragged window's chunk (frame, surface, grip)")
 	UIS.InputChanged:Fire(mouse(Enum.UserInputType.MouseMovement, 300, 110), false)
-	assert(previewOf() == nil and overlay.Count:Get() == 0, "off the edge: no preview")
+	assert(previewOf(win) == nil, "off the edge: no preview")
 	UIS.InputChanged:Fire(mouse(Enum.UserInputType.MouseMovement, 5, 110), false)
-	assert(previewOf() ~= nil, "back at the edge")
+	assert(previewOf(win) ~= nil, "back at the edge")
 	UIS.InputEnded:Fire(mouse(M1, 5, 110, Enum.UserInputState.End), false)
-	assert(previewOf() == nil and overlay.Count:Get() == 0, "released: the preview closes")
+	assert(previewOf(win) == nil, "released: the preview closes")
 
 	assert(pos:Get() == UDim2.fromOffset(200, 100), "Position goes back to where the drag began (the floating rectangle)")
 	assert(frame.Position == UDim2.fromOffset(19, 0) and frame.Size == UDim2.new(0, 300, 1, 0), "the panel right inside the strip, full height")
@@ -322,7 +320,7 @@ H.section("not offered: NoDock (a layout still docks it), an edge held by an ope
 	local nd = Devui.Window({ Title = "N", Key = "n", Manager = m, NoDock = true })
 	nd.Parent = container
 	dragTitle(nd, 100, 70, { { 3, 70 } }, true)
-	assert(previewOf() == nil, "NoDock: no preview")
+	assert(part(nd, "WindowDockPreview") == nil, "NoDock: no preview part")
 	UIS.InputEnded:Fire(mouse(M1, 3, 70, Enum.UserInputState.End), false)
 	assert(part(nd, "WindowDockStrip").Visible == false, "NoDock: not docked")
 	m:ImportWindow("n", { Kind = "n", Open = true, Collapsed = false, Dock = "Left", DockWidth = 200 })
@@ -330,7 +328,7 @@ H.section("not offered: NoDock (a layout still docks it), an edge held by an ope
 	local other = Devui.Window({ Title = "O", Manager = m })
 	other.Parent = container
 	dragTitle(other, 300, 70, { { 3, 70 } }, true)
-	assert(previewOf() == nil, "the edge is held: no preview")
+	assert(previewOf(other) == nil, "the edge is held: no preview")
 	UIS.InputEnded:Fire(mouse(M1, 3, 70, Enum.UserInputState.End), false)
 	assert(part(other, "WindowDockStrip").Visible == false, "and no dock")
 	-- the collapsed icon never docks
@@ -339,7 +337,7 @@ H.section("not offered: NoDock (a layout still docks it), an edge held by an ope
 	local icon = get(iconWin, "WindowIcon")
 	H.fire(icon, "InputBegan", mouse(M1, 300, 300))
 	UIS.InputChanged:Fire(mouse(Enum.UserInputType.MouseMovement, 795, 300), false)
-	assert(previewOf() == nil)
+	assert(previewOf(iconWin) == nil)
 	UIS.InputEnded:Fire(mouse(M1, 795, 300, Enum.UserInputState.End), false)
 	assert(part(iconWin, "WindowDockStrip").Visible == false, "the icon only moves")
 	-- the pointer outside the container (a Frame smaller than the screen) docks nothing
@@ -373,7 +371,7 @@ H.section("close and reopen: the edge is kept; taken meanwhile -> opens floating
 
 	oa:Set(false)
 	dragTitle(b, 450, 110, { { 3, 110 } }, true)
-	assert(previewOf() ~= nil, "the closed window freed the edge")
+	assert(previewOf(b) ~= nil, "the closed window freed the edge")
 	UIS.InputEnded:Fire(mouse(M1, 3, 110, Enum.UserInputState.End), false)
 	assert(part(b, "WindowDockStrip").Visible == true, "B docked left")
 	-- saved: B holds the edge, closed A is saved floating
@@ -400,8 +398,8 @@ H.section("a window without a Key docks the same and is left out of the layout; 
 	local loose = Devui.Window({ Title = "loose", Manager = m })
 	loose.Parent = container
 	dragTitle(loose, 100, 70, { { 795, 70 } }, true)
-	local preview = previewOf()
-	assert(preview ~= nil and preview.Parent.Position == UDim2.fromOffset(800 - 319, 0), "the preview at the right edge")
+	local preview = previewOf(loose)
+	assert(preview ~= nil and preview.AnchorPoint == Vector2.new(1, 0) and preview.Position == UDim2.fromScale(1, 0), "the preview at the right edge")
 	UIS.InputEnded:Fire(mouse(M1, 795, 70, Enum.UserInputState.End), false)
 	local frame = part(loose, "WindowDecoration")
 	local strip = part(loose, "WindowDockStrip")
