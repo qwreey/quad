@@ -8,6 +8,10 @@
 
 ### Added
 
+- `OpenSearchList({ At, Items, Format?, ItemIcon?, DisabledReason?, OnPick, Placeholder?, Width?, MaxHeight? })` — 검색 상자 아래 가상 목록을 지금 엽니다(수천 개 항목). 대소문자 무시 부분 일치이고 앞부분 일치가 먼저 옵니다. ↑↓로 고를 행을 옮기고(고를 수 없는 행은 건너뜀) Enter로 고르며 Escape로 닫습니다. `DisabledReason`이 문자열을 돌려주는 항목은 흐리게 이유를 붙이고 고를 수 없습니다.
+- `SearchCombo<<T>>({ Text, Value, Options, Format?, OnChange?, Placeholder?, ... })` — `Combo`와 같은 규약의 상자이고, 누르면 그 아래에 `OpenSearchList`가 열립니다.
+- `VirtualTable({ Columns, Rows, Key?, SelectedKeys?, OnRowClick?, RowHeight?, Header?, RowBg?, Follow?, ScrollToRow? })` — 머리줄과 고정 높이 글 행의 가상화된 표. 열은 `{ Title, Width?, Text, Align?, Color? }`이고, 폭 없는 열 하나가 남는 폭을 채우며 그 앞 열은 왼쪽부터, 뒤 열은 오른쪽 끝부터 놓입니다(폭 없는 열이 둘 이상이면 오류).
+- `Overlay.BlockingCount` — 열린 팝업 중 입력을 받는 것(메뉴·Combo 목록·대화상자)의 수. `Count`와 달리 툴팁을 세지 않으므로 "메뉴나 대화상자가 열려 있나"는 이것으로 물으세요.
 - `Tab`의 `Hooks: { any }?` — 탭 머리 단추에 붙는 훅(툴팁 핸들의 `.Hook` 등, `Button`과 같은 규약).
 - `Window`의 `Key: string?`(창의 신원 — 한 `WindowManager` 안에서 유일, 겹치면 `Devui.Window:` 에러)·`Kind: string?`(창의 종류, 생략하면 `Key`)·`Icon: string?`(접힌 창 아이콘의 이미지, 없으면 제목 첫 글자).
 - `WindowManager:ExportLayout(): WindowLayout`·`:ImportLayout(layout, factories?)`·`:ExportWindow(key): WindowState?`·`:ImportWindow(key, state)`와 출력 `WindowManager.Layout: State<WindowLayout>`, 타입 `Devui.WindowLayout`·`Devui.WindowState` — 키 있는 창의 열림·접힘·위치·크기를 JSON으로 바꿀 수 있는 평범한 표로 내주고 받습니다(저장은 앱 몫, 창 내용은 저장하지 않음). 불러오기는 언제 불러도 되고, 아직 없는 키는 그 창이 등록될 때 적용되며, 배치에 없는 창은 그대로 둡니다. `factories`(`Kind` → `function(key)`)는 저장 때 열려 있었고 아직 등록되지 않은 키에만 불립니다. `Floating`의 차례가 키 있는 창들의 겹침 순서(아래에서 위)라서 불러온 뒤 창을 어떤 차례로 만들어도 저장된 대로 쌓입니다. 형식은 README의 "창 배치 저장" 절.

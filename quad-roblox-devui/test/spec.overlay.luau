@@ -69,7 +69,14 @@ H.section("a press on the content's empty area does not close the popup: a sink 
 	-- a tooltip-style popup (no click-outside) needs no sink
 	local tip = o:Open({ Content = Frame({}), Position = Vector2.zero, CloseOnClickOutside = false })
 	assert((tip.Holder :: any):FindFirstChild("ClickSink") == nil)
+	-- BlockingCount leaves the tooltip out: Count 1, BlockingCount 0; a menu-style popup counts in both
+	assert(o.Count:Get() == 1 and o.BlockingCount:Get() == 0, "a tooltip is not an input popup")
+	local menu = o:Open({ Content = Frame({}), Position = Vector2.zero })
+	assert(o.Count:Get() == 2 and o.BlockingCount:Get() == 1)
+	menu:Close()
+	assert(o.Count:Get() == 1 and o.BlockingCount:Get() == 0)
 	o:CloseAll()
+	assert(o.Count:Get() == 0 and o.BlockingCount:Get() == 0)
 	q.dispose(o.Layer)
 	H.assertNoDebugOutput("click sink")
 end)

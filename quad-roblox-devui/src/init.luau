@@ -114,6 +114,8 @@ local Selection = require("@self/Selection")
 local TreeRows = require("@self/TreeRows")
 local ColorModel = require("@self/ColorModel")
 local ColorPicker = require("@self/ColorPicker")
+local SearchList = require("@self/SearchList")
+local VirtualTable = require("@self/VirtualTable")
 local Tooltip = require("@self/Tooltip")
 local VirtualRowsModule = require("@self/VirtualRows")
 
@@ -174,6 +176,11 @@ export type TreeRow<N> = TreeRows.Row<N>
 export type TreePaging = TreeRows.Paging
 export type ColorPicker3Props = ColorPicker.ColorPicker3Props
 export type OpenColorPickerProps = ColorPicker.OpenColorPickerProps
+export type OpenSearchListProps<T> = SearchList.OpenSearchListProps<T>
+export type SearchListHandle = SearchList.SearchListHandle
+export type SearchComboProps<T> = Combo.SearchComboProps<T>
+export type VirtualTableProps<T> = VirtualTable.VirtualTableProps<T>
+export type VirtualColumn<T> = VirtualTable.VirtualColumn<T>
 export type TooltipProps = Tooltip.TooltipProps
 export type TooltipHandle = Tooltip.TooltipHandle
 export type VirtualRowsProps = VirtualRowsModule.VirtualRowsProps
@@ -260,6 +267,9 @@ local Devui = {
 	ColorModel = ColorModel,
 	ColorPicker3 = ColorPicker.ColorPicker3,
 	OpenColorPicker = ColorPicker.OpenColorPicker,
+	OpenSearchList = SearchList.OpenSearchList,
+	SearchCombo = Combo.SearchCombo,
+	VirtualTable = VirtualTable,
 	Tooltip = Tooltip.Tooltip,
 }
 

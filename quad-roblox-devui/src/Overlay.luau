@@ -25,7 +25,10 @@
 		popup:Close()                            -- idempotent; destroys Content
 		popup.IsOpen                             -- State<boolean>
 		overlay:CloseAll()                       -- close every popup (e.g. when the owning window closes)
-		overlay.Count                            -- State<number> of open popups
+		overlay.Count                            -- State<number> of open popups (tooltips included)
+		overlay.BlockingCount                    -- State<number> of open popups that take input: menus, combo lists,
+		                                         -- dialogs — not tooltips [2026-10-21 user decision: an app asking
+		                                         -- "is a menu or dialog open?" must not see a tooltip]
 		overlay.Alive                            -- State<boolean>: false once the layer was destroyed
 
 	A popup with CloseOnClickOutside gets a transparent full-screen button behind its content; pressing it closes the
@@ -104,6 +107,7 @@ export type Popup = {
 export type Overlay = {
 	Layer: Frame,
 	Count: State<number>,
+	BlockingCount: State<number>,
 	Alive: State<boolean>,
 	Open: (self: Overlay, options: PopupOptions) -> Popup,
 	CloseAll: (self: Overlay) -> (),
@@ -123,6 +127,7 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 
 	local slot: Slot<Instance> = q.Slot({} :: { Instance })
 	local count: Source<number> = q.Source(0)
+	local inputCount: Source<number> = q.Source(0)
 	local alive: Source<boolean> = q.Source(true)
 	local dead = false
 	local everMounted = false
@@ -147,6 +152,16 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 	local open: { Popup } = {}
 	-- popups that take input (header WHEEL): their holder covers what the wheel must not reach
 	local takesInput: { [Popup]: boolean } = setmetatable({}, { __mode = "k" }) :: any
+	local function recount()
+		local n = 0
+		for _, p in open do
+			if takesInput[p] then
+				n += 1
+			end
+		end
+		count:Set(#open)
+		inputCount:Set(n)
+	end
 	-- the ScrollingFrames turned off while the pointer is over a popup (only those are turned back on)
 	local shielded: { ScrollingFrame } = {}
 	local shieldOn = false
@@ -402,7 +417,7 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 			if i then
 				table.remove(open, i)
 			end
-			count:Set(#open)
+			recount()
 			watchPointer()
 			if shieldOn then
 				refreshShield()
@@ -439,7 +454,7 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 		Pointer.invalidate()
 		table.insert(open, popup)
 		takesInput[popup] = hits ~= nil
-		count:Set(#open)
+		recount()
 		watchPointer()
 		return popup
 	end
@@ -453,7 +468,7 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 	end
 
 	layerRef = layer
-	local overlay: Overlay = { Layer = layer, Count = count, Alive = alive, Open = openPopup, CloseAll = closeAll }
+	local overlay: Overlay = { Layer = layer, Count = count, BlockingCount = inputCount, Alive = alive, Open = openPopup, CloseAll = closeAll }
 	Util.tagSurface(overlay) -- `:Open` / `:CloseAll` are public surface (a usage error blames the caller)
 	deadChecks[overlay] = isDead
 	return overlay

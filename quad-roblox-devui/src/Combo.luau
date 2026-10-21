@@ -14,6 +14,9 @@
 		                the same, but the Source holds the 1-based INDEX into Options (duplicates are fine)
 		ComboEnum     { Text, Value: Source<EnumItem>, Enum: Enum, Format?, OnChange: ((EnumItem) -> ())?, ... }
 		              options = Enum:GetEnumItems()
+		SearchCombo<T> { the Combo props + Placeholder: string? }   [2026-10-21] the box opens OpenSearchList under it
+		              (SearchList.luau: a search box over a VIRTUALIZED list — thousands of options; Up / Down / Enter);
+		              MaxHeight defaults to 320 there
 
 	Call `Combo<<T>>{ ... }` / `ComboArray<<T>>{ ... }` with the type argument — the solver cannot infer `T` from a
 	`Source<T>` argument (typing-limits: a generic call that takes a `Source<T>` does not infer).
@@ -52,6 +55,8 @@ local Common = require("./Common")
 local Interaction = require("./Interaction")
 local KeyedSlot = require("./KeyedSlot")
 local Overlay = require("./Overlay")
+local Visibility = require("./Visibility")
+local SearchList = require("./SearchList")
 local PopupParts = require("./PopupParts")
 local Style = require("./Style")
 local Text = require("./Text")
@@ -68,6 +73,20 @@ export type ComboProps<T> = {
 	read Format: ((T) -> string)?,
 	read OnChange: ((value: T) -> ())?,
 	read Disabled: (boolean | State<boolean>)?,
+	read Overlay: Overlay.Overlay?,
+	read MaxHeight: number?,
+	read Style: Style?,
+	read Modifier: Quad.ModifierInto<Frame>?,
+}
+
+export type SearchComboProps<T> = {
+	read Text: string | State<string>,
+	read Value: Source<T>,
+	read Options: { T } | State<{ T }>,
+	read Format: ((T) -> string)?,
+	read OnChange: ((value: T) -> ())?,
+	read Disabled: (boolean | State<boolean>)?,
+	read Placeholder: string?,
 	read Overlay: Overlay.Overlay?,
 	read MaxHeight: number?,
 	read Style: Style?,
@@ -115,6 +134,8 @@ type CoreSpec = {
 	MaxHeight: number?,
 	Style: Style?,
 	Modifier: Quad.ModifierInto<Frame>?,
+	-- SearchCombo: open a search list (SearchList.luau) instead of the row list
+	Search: { Placeholder: string? }?,
 }
 
 
@@ -208,6 +229,34 @@ local function core(spec: CoreSpec): Frame
 			return
 		end
 		local pos, size = anchor.AbsolutePosition, anchor.AbsoluteSize
+		local search = spec.Search
+		if search ~= nil then
+			local offWatch: (() -> ())? = nil
+			popup = SearchList.open({
+				At = Rect.new(pos.X, pos.Y, pos.X + size.X, pos.Y + size.Y),
+				Items = spec.Entries,
+				Format = function(entry: Entry): string
+					return entry.Label
+				end,
+				OnPick = function(entry: Entry)
+					spec.OnPick(entry.Key)
+				end,
+				Placeholder = search.Placeholder,
+				MaxHeight = spec.MaxHeight,
+				Overlay = overlay,
+				Style = style,
+			}, function()
+				popup = nil
+				local off = offWatch
+				if off then
+					offWatch = nil
+					off()
+				end
+			end) :: any
+			-- (Escape is the search list's own; this closes it when the box is hidden)
+			offWatch = Visibility.whenHidden(anchor, close)
+			return
+		end
 		-- the room below and above the box in the layer (unknown size, e.g. a layer not laid out: no limit, below)
 		local layerPos, layerSize = overlay.Layer.AbsolutePosition, overlay.Layer.AbsoluteSize
 		local below = if layerSize.Y > 0 then layerPos.Y + layerSize.Y - (pos.Y + size.Y) else math.huge
@@ -321,7 +370,7 @@ local function tostr(v: any): string
 	return tostring(v)
 end
 
-function Combo.Combo<T>(props: ComboProps<T>): Frame
+local function combo<T>(props: ComboProps<T>, search: { Placeholder: string? }?): Frame
 	local value = props.Value
 	local onChange = props.OnChange
 	local options = toState(props.Options)
@@ -355,7 +404,16 @@ function Combo.Combo<T>(props: ComboProps<T>): Frame
 		MaxHeight = props.MaxHeight,
 		Style = props.Style,
 		Modifier = props.Modifier,
+		Search = search,
 	})
+end
+
+function Combo.Combo<T>(props: ComboProps<T>): Frame
+	return combo(props, nil)
+end
+
+function Combo.SearchCombo<T>(props: SearchComboProps<T>): Frame
+	return combo(props :: any, { Placeholder = props.Placeholder })
 end
 
 function Combo.ComboArray<T>(props: ComboArrayProps<T>): Frame
