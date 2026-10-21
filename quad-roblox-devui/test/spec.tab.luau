@@ -55,11 +55,23 @@ end)
 
 H.section("TabBar NoPages: bar and underline only; a Tab with Children is an error; corners from TabRounding", function()
 	local sel = q.Source("x")
+	local seenA: any, seenB: any = nil, nil
+	local hookA = q.PostRef(nil :: TextButton?):Callback(function(inst: TextButton?)
+		seenA = inst
+	end)
+	local hookB = q.PostRef(nil :: TextButton?):Callback(function(inst: TextButton?)
+		seenB = inst
+	end)
 	local bar = TabBar<<string>>({
 		Selected = sel,
 		NoPages = true,
-		Tabs = { Tab<<string>>({ Key = "x", Text = "X" }), Tab<<string>>({ Key = "y", Text = "Y" }) },
+		Tabs = {
+			Tab<<string>>({ Key = "x", Text = "X" }),
+			-- Hooks go on the header button, all of them
+			Tab<<string>>({ Key = "y", Text = "Y", Hooks = { hookA, hookB } }),
+		},
 	})
+	assert(seenA == get(bar, "Tab:y") and seenB == get(bar, "Tab:y"), "tab Hooks")
 	assert(H.find(bar, "Pages") == nil and H.find(bar, "Bar") ~= nil and H.find(bar, "Underline") ~= nil)
 	H.fire(get(bar, "Tab:y"), "Activated", H.input({}), 1)
 	assert(sel:Get() == "y", "the strip still selects")

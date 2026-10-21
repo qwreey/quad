@@ -4,7 +4,8 @@
 
 		TabBar<K> { Tabs: { TabDef<K> }, Selected: Source<K>?, OnChange: ((key: K) -> ())?, NoPages: boolean?,
 		            Style: Style?, Modifier: ModifierInto<Frame>? }
-		Tab<K>    { Key: K, Text: string | State<string>, Children: Slot<Instance>? }   -- returns a plain descriptor
+		Tab<K>    { Key: K, Text: string | State<string>, Children: Slot<Instance>?, Hooks: { any }? }   -- returns a plain descriptor
+		          (`Hooks` [2026-10-21 user decision] go on the tab's header button, as Button's: a Tooltip handle's `.Hook` ...)
 
 	API shape: `Tab{...}` builds NO instance — it is a descriptor (identity + label + content Slot) the TabBar reads, so the
 	TabBar can put the header button in the bar row and the content in a page container without re-parenting anything:
@@ -55,12 +56,14 @@ export type TabProps<K> = {
 	read Key: K,
 	read Text: string | State<string>,
 	read Children: Slot<Instance>?,
+	read Hooks: { any }?,
 }
 
 export type TabDef<K> = {
 	read Key: K,
 	read Text: string | State<string>,
 	read Children: Slot<Instance>?,
+	read Hooks: { any }?,
 }
 
 export type TabBarProps<K> = {
@@ -73,7 +76,7 @@ export type TabBarProps<K> = {
 }
 
 local function Tab<K>(props: TabProps<K>): TabDef<K>
-	return { Key = props.Key, Text = props.Text, Children = props.Children }
+	return { Key = props.Key, Text = props.Text, Children = props.Children, Hooks = props.Hooks }
 end
 
 local function initialSelection<K>(props: TabBarProps<K>): Source<K>
@@ -146,6 +149,8 @@ local function TabBar<K>(props: TabBarProps<K>): Frame
 			end,
 			UICorner = metrics.TabRounding,
 			UIPadding({ PaddingLeft = padX, PaddingRight = padX, PaddingTop = padY, PaddingBottom = padY }),
+			-- (last: a call expands to all its values only as the constructor's last item)
+			table.unpack(Common.hooks(def.Hooks)),
 		})
 
 		if not noPages then
