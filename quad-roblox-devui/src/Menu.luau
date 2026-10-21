@@ -4,8 +4,21 @@
 
 		MenuBar    { Children: Slot<Instance>?, Style?, Modifier: ModifierInto<Frame>? }       a horizontal bar (MenubarBg)
 		Menu       { Text, Children: (scope: MenuScope) -> Slot<Instance>, Scope: MenuScope?, Disabled?, Overlay?, Style? }
-		MenuItem   { Text, OnClick: () -> (), Shortcut: string?, Disabled?, Scope: MenuScope?, Hooks: { any }?, Style? }
-		MenuToggle { Text, Value: Source<boolean>? | Checked: State<boolean>? + OnToggle?, Shortcut?, Disabled?, Scope?, Hooks?, Style? }
+		MenuItem   { Text, OnClick: () -> (), Shortcut: string?, Disabled?, Scope: MenuScope?, KeepOpen: boolean?, Hooks: { any }?, Style? }
+		MenuToggle { Text, Value: Source<boolean>? | Checked: State<boolean>? + OnToggle?, Shortcut?, Disabled?, Scope?, KeepOpen?, Hooks?, Style? }
+		OpenMenu   { At: Vector2 | Rect, Children: (scope: MenuScope) -> Slot<Instance>, Overlay?, Style? } -> MenuHandle
+		           opens a menu NOW at a screen point (a right-click menu) or under a rectangle — the same factory,
+		           items and nested menus as `Menu`; MenuHandle = { IsOpen: State<boolean>, Close: (self) -> () }
+		MenuButton { Text?, Icon?, OnClick: (() -> ())?, Children: (scope) -> Slot<Instance>, Disabled?, Hooks?, Overlay?, Style?, Modifier? }
+		           a button with a menu. With `OnClick` a split button: the body runs it (its `Disabled` is the body's —
+		           the menu still opens) and a ▾ part (its own hover) opens the menu; without, the whole button
+		           (text / icon + ▾) opens it. A right-click anywhere on it opens the menu too. The menu opens under it.
+		PopupPanel { Children: Slot<Instance>?, Style?, Modifier? }   the popup body a menu draws (PopupBg, corner, border,
+		           padding, a vertical list sized to its widest row) — for popups an app opens itself with `Overlay:Open`
+
+	[2026-10-21 user decisions — research/devui-popup-model-plan.md; names `PopupPanel` `OpenMenu` `MenuButton` (`Children`)
+	`KeepOpen` by a three-model review, audit/naming-devui-2026-10-21b/] `KeepOpen = true` on an item or a toggle: clicking it
+	runs it and leaves the menu open (several toggles in a row — Dear ImGui's DontClosePopups).
 		           an item with a check mark. Two forms: `Value = source` (the item flips the Source, then calls OnToggle),
 		           or CONTROLLED `Checked = state` + `OnToggle = function(new) ... end` (the item only reports; the caller
 		           decides, e.g. maps it onto an enum Source). Neither given: an internal Source. Both given: an error.
@@ -47,10 +60,13 @@
 local Quad = require("./Quad")
 local q = Quad
 local Frame = q.Elem "Frame"
+local ImageLabel = q.Elem "ImageLabel"
 local UIListLayout = q.Elem "UIListLayout"
 local UIPadding = q.Elem "UIPadding"
 local FrameModifier = q.Modifier "Frame"
 local menuBarName = FrameModifier():Name("MenuBar")
+local Button = require("./Button")
+local Common = require("./Common")
 local Overlay = require("./Overlay")
 local PopupParts = require("./PopupParts")
 local Style = require("./Style")
@@ -69,6 +85,36 @@ export type MenuScope = {
 	read Style: Style,
 	read CloseAll: () -> (),
 	read CloseSubmenu: (self: MenuScope) -> (),
+}
+
+export type MenuHandle = {
+	IsOpen: State<boolean>,
+	Close: (self: MenuHandle) -> (),
+}
+
+export type OpenMenuProps = {
+	read At: Vector2 | Rect,
+	read Children: (scope: MenuScope) -> Slot<Instance>,
+	read Overlay: Overlay.Overlay?,
+	read Style: Style?,
+}
+
+export type MenuButtonProps = {
+	read Text: (string | State<string>)?,
+	read Icon: (string | State<string>)?,
+	read OnClick: (() -> ())?,
+	read Children: (scope: MenuScope) -> Slot<Instance>,
+	read Disabled: (boolean | State<boolean>)?,
+	read Hooks: { any }?,
+	read Overlay: Overlay.Overlay?,
+	read Style: Style?,
+	read Modifier: Quad.ModifierInto<Frame>?,
+}
+
+export type PopupPanelProps = {
+	read Children: Slot<Instance>?,
+	read Style: Style?,
+	read Modifier: Quad.ModifierInto<Frame>?,
 }
 
 export type MenuBarProps = {
@@ -92,6 +138,7 @@ export type MenuItemProps = {
 	read Shortcut: string?,
 	read Disabled: (boolean | State<boolean>)?,
 	read Scope: MenuScope?,
+	read KeepOpen: boolean?,
 	read Hooks: { any }?,
 	read Style: Style?,
 }
@@ -104,6 +151,7 @@ export type MenuToggleProps = {
 	read Shortcut: string?,
 	read Disabled: (boolean | State<boolean>)?,
 	read Scope: MenuScope?,
+	read KeepOpen: boolean?,
 	read Hooks: { any }?,
 	read Style: Style?,
 }
@@ -173,9 +221,10 @@ function Menu.MenuBar(props: MenuBarProps): Frame
 end
 
 -- the popup body: a vertical list that sizes to its widest row
-local function panel(style: Style, children: Slot<Instance>): Frame
+local function panel(style: Style, children: Slot<Instance> | typeof(q.None), modifier: any?): Frame
 	local pad: State<UDim> = Util.pxY(style.Metrics.ItemInnerSpacing)
 	return Frame({
+		modifier or q.None,
 		Name = "MenuPanel",
 		AutomaticSize = Enum.AutomaticSize.XY,
 		Size = UDim2.fromOffset(0, 0),
@@ -191,6 +240,183 @@ local function panel(style: Style, children: Slot<Instance>): Frame
 			SortOrder = Enum.SortOrder.LayoutOrder,
 		}),
 		children,
+	})
+end
+
+function Menu.PopupPanel(props: PopupPanelProps): Frame
+	return panel(props.Style or Style.default, props.Children or q.None, props.Modifier)
+end
+
+-- the handle of one open level: its own submenu is closed through CloseSubmenu (openChild — see the top)
+local function newScope(overlay: Overlay.Overlay, style: Style, closeAll: () -> ()): MenuScope
+	return {
+		Overlay = overlay,
+		Style = style,
+		CloseAll = closeAll,
+		CloseSubmenu = function(self: MenuScope)
+			local c = openChild[self]
+			if c then
+				c:Close()
+			end
+		end,
+	}
+end
+
+local function closeChildOf(scope: MenuScope)
+	local c = openChild[scope]
+	openChild[scope] = nil
+	if c then
+		c:Close()
+	end
+end
+
+function Menu.OpenMenu(props: OpenMenuProps): MenuHandle
+	local style = props.Style or Style.default
+	local overlay = props.Overlay or Overlay.getDefault()
+	local isOpen: Source<boolean> = q.Source(false)
+	local popup: Overlay.Popup? = nil
+	local function closeAll()
+		local p = popup
+		if p then
+			p:Close()
+		end
+	end
+	local handle: MenuHandle = {
+		IsOpen = isOpen,
+		Close = function(_self: MenuHandle)
+			closeAll()
+		end,
+	}
+	if not overlay.Alive:Get() then
+		return handle
+	end
+	local at = props.At
+	local position: Vector2, rect: Rect
+	if typeof(at) == "Rect" then
+		local r = at :: Rect
+		position, rect = Vector2.new(r.Min.X, r.Max.Y), r
+	else
+		local p = at :: Vector2
+		position, rect = p, Rect.new(p, p)
+	end
+	local scope = newScope(overlay, style, closeAll)
+	local offEscape: (() -> ())? = nil
+	popup = overlay:Open({
+		Content = panel(style, props.Children(scope)),
+		Position = position,
+		AnchorRect = rect,
+		OnClose = function()
+			popup = nil
+			isOpen:Set(false)
+			closeChildOf(scope)
+			local off = offEscape
+			if off then
+				offEscape = nil
+				off()
+			end
+		end,
+	})
+	isOpen:Set(true)
+	offEscape = PopupParts.onEscape(closeAll)
+	return handle
+end
+
+function Menu.MenuButton(props: MenuButtonProps): Frame
+	local style = props.Style or Style.default
+	local split = props.OnClick ~= nil
+	local disabled = Common.enabled(props.Disabled)
+	local root: Frame? = nil
+	local open: MenuHandle? = nil
+	local function openMenu()
+		local r = root
+		if r == nil or (not split and not disabled:Get()) then
+			return
+		end
+		local o = open
+		if o ~= nil and o.IsOpen:Get() then
+			o:Close()
+			return
+		end
+		local p, s = r.AbsolutePosition, r.AbsoluteSize
+		open = Menu.OpenMenu({
+			At = Rect.new(p.X, p.Y, p.X + s.X, p.Y + s.Y),
+			Children = props.Children,
+			Overlay = props.Overlay,
+			Style = style,
+		})
+	end
+	-- a right-click anywhere on it opens the menu
+	local placed = q.PostRef(nil :: Frame?)
+	placed:Callback(function(inst)
+		root = inst
+		if inst ~= nil then
+			inst.InputBegan:Connect(function(input: InputObject)
+				if input.UserInputType == Enum.UserInputType.MouseButton2 then
+					openMenu()
+				end
+			end)
+		end
+	end)
+	local arrowSide: State<UDim2> = style.Metrics.TextSize:Compute(function(self)
+		local side = math.floor(self:Get() * 0.8)
+		return UDim2.fromOffset(side, side)
+	end)
+	local parts: { Instance }
+	if split then
+		parts = {
+			Button.Button({
+				Text = props.Text,
+				Icon = props.Icon,
+				OnClick = props.OnClick,
+				Disabled = props.Disabled,
+				Hooks = props.Hooks,
+				Style = style,
+				Modifier = q.Modifier "TextButton"():Name("MenuButtonBody"),
+			}),
+			Button.Button({
+				Icon = style.Icons.DownTriangle,
+				OnClick = openMenu,
+				Style = style,
+				Modifier = q.Modifier "TextButton"():Name("MenuButtonArrow"),
+			}),
+		}
+	else
+		parts = {
+			Button.withTrailing({
+				Text = props.Text,
+				Icon = props.Icon,
+				OnClick = openMenu,
+				Disabled = props.Disabled,
+				Hooks = props.Hooks,
+				Style = style,
+				Modifier = q.Modifier "TextButton"():Name("MenuButtonBody"),
+			}, false, ImageLabel({
+				Name = "Arrow",
+				LayoutOrder = 3,
+				Size = arrowSide,
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				Image = style.Icons.DownTriangle,
+				ImageColor3 = style.Color.Text,
+				ImageTransparency = style.Transparency.Text,
+			})),
+		}
+	end
+	return Frame({
+		props.Modifier or q.None,
+		placed,
+		Name = "MenuButton",
+		AutomaticSize = Enum.AutomaticSize.XY,
+		Size = UDim2.fromOffset(0, 0),
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		UIListLayout({
+			FillDirection = Enum.FillDirection.Horizontal,
+			SortOrder = Enum.SortOrder.LayoutOrder,
+			VerticalAlignment = Enum.VerticalAlignment.Center,
+			Padding = UDim.new(0, 1),
+		}),
+		q.Slot<<Instance>>(parts),
 	})
 end
 
@@ -231,17 +457,7 @@ function Menu.Menu(props: MenuProps): TextButton
 			parent:CloseSubmenu()
 		end
 		-- the scope handed to this menu's children (fresh per open)
-		local scope: MenuScope = {
-			Overlay = overlay,
-			Style = style,
-			CloseAll = if parent then parent.CloseAll else closeRoot,
-			CloseSubmenu = function(self: MenuScope)
-				local c = openChild[self]
-				if c then
-					c:Close()
-				end
-			end,
-		}
+		local scope = newScope(overlay, style, if parent then parent.CloseAll else closeRoot)
 		local pos, size = anchor.AbsolutePosition, anchor.AbsoluteSize
 		local at = if parent then Vector2.new(pos.X + size.X, pos.Y) else Vector2.new(pos.X, pos.Y + size.Y)
 		local disconnectEscape: (() -> ())? = nil
@@ -256,11 +472,7 @@ function Menu.Menu(props: MenuProps): TextButton
 			OnClose = function()
 				popup = nil
 				isOpen:Set(false)
-				local c = openChild[scope]
-				openChild[scope] = nil
-				if c then
-					c:Close()
-				end
+				closeChildOf(scope)
 				if parent and openChild[parent] == opened then
 					openChild[parent] = nil
 				end
@@ -352,7 +564,7 @@ function Menu.MenuItem(props: MenuItemProps): TextButton
 		Shortcut = props.Shortcut,
 		Disabled = disabledState(props.Disabled),
 		Width = "Stretch",
-		OnClick = closeThen(scope, props.OnClick),
+		OnClick = if props.KeepOpen then props.OnClick else closeThen(scope, props.OnClick),
 		OnHover = if scope
 			then function()
 				scope:CloseSubmenu()
@@ -373,6 +585,15 @@ function Menu.MenuToggle(props: MenuToggleProps): TextButton
 	end
 	local shown: State<boolean> = props.Checked or (own :: Source<boolean>)
 	local onToggle = props.OnToggle
+	local function flip()
+		local nextValue = not shown:Get()
+		if own then
+			own:Set(nextValue)
+		end
+		if onToggle then
+			onToggle(nextValue)
+		end
+	end
 	return PopupParts.row({
 		Style = style,
 		Name = "MenuToggle",
@@ -382,15 +603,7 @@ function Menu.MenuToggle(props: MenuToggleProps): TextButton
 		Checked = shown,
 		Disabled = disabledState(props.Disabled),
 		Width = "Stretch",
-		OnClick = closeThen(scope, function()
-			local nextValue = not shown:Get()
-			if own then
-				own:Set(nextValue)
-			end
-			if onToggle then
-				onToggle(nextValue)
-			end
-		end),
+		OnClick = if props.KeepOpen then flip else closeThen(scope, flip),
 		OnHover = if scope
 			then function()
 				scope:CloseSubmenu()

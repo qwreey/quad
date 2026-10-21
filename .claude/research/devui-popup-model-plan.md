@@ -72,3 +72,5 @@
 
 - **[2026-10-21]** 사용자 동의: 분할·메뉴 단추 하나로 합치기, 메뉴 유지 옵션, 팝업 몸통 공개(이름은 세 모델 검토 뒤). 5절 1~5는 대기.
 - **[2026-10-21]** 사용자: *"확인. 권고대로 갈게. … 순서도 동의."* — 5절 1~5 모두 권고대로 닫힘: 배치(뒤집기 → 밀기 → 줄이기)를 Overlay 기본 동작으로, 막는 범위 셋 + 대화상자 기본값 "여는 창", 대화상자는 처음엔 끌지 않음, 메뉴 선언 (가), 순서 4절. 1단계 이름(앵커 사각형 옵션)과 2단계 이름 넷은 세 모델 검토(`audit/naming-devui-2026-10-21b/`).
+- **[2026-10-21] 1·2단계 구현.** 이름 세 모델 검토(`audit/naming-devui-2026-10-21b/`): `AnchorRect`(sonnet·luna; Gemini `AttachTo`), `PopupPanel`(셋), `OpenMenu`(luna·Gemini; sonnet `ContextMenu`), `MenuButton`(셋)과 그 팩토리 `Children`(sonnet·luna; Gemini `Menu`), `KeepOpen`(셋). 1단계: `Overlay:Open`이 내용 크기가 정해질 때마다 넘치는 축을 `AnchorRect` 반대쪽으로 뒤집고 안으로 밈 — 메뉴·하위 메뉴·Combo·툴팁이 넘김. 2단계: `PopupPanel`·`OpenMenu`·`MenuButton`·`KeepOpen`. 줄이기(스크롤 되는 내용만)는 Combo가 자체로 하고, 긴 메뉴 스크롤은 아직(후보 목록 5번). 3단계(막는 범위·대화상자)는 다음.
+

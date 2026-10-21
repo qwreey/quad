@@ -55,7 +55,8 @@ export type ButtonProps = {
 	read Modifier: Quad.ModifierInto<TextButton>?,
 }
 
-local function button(props: ButtonProps, small: boolean): TextButton
+-- `trailing`: an element after the text (MenuButton's ▾ — internal, not a prop)
+local function button(props: ButtonProps, small: boolean, trailing: Instance?): TextButton
 	local style = props.Style or Style.default
 	local hover = Interaction.hover()
 	local enabled = Common.enabled(props.Disabled)
@@ -79,12 +80,10 @@ local function button(props: ButtonProps, small: boolean): TextButton
 	if text == nil and icon == nil then
 		Util.fail(if small then "SmallButton" else "Button", "give Text, Icon or both")
 	end
-	-- with an icon the button's own text is empty: icon (+ text) are laid out inside it
+	-- with an icon (or a trailing element) the button's own text is empty: icon, text and trailing are laid out inside
 	local inner: { any } = {}
-	if icon ~= nil then
-		local side: State<UDim2> = style.Metrics.TextSize:Compute(function(self)
-			return UDim2.fromOffset(self:Get(), self:Get())
-		end)
+	local listed = icon ~= nil or trailing ~= nil
+	if listed then
 		table.insert(
 			inner,
 			UIListLayout({
@@ -94,6 +93,11 @@ local function button(props: ButtonProps, small: boolean): TextButton
 				Padding = Util.pxX(style.Metrics.ItemInnerSpacing),
 			})
 		)
+	end
+	if icon ~= nil then
+		local side: State<UDim2> = style.Metrics.TextSize:Compute(function(self)
+			return UDim2.fromOffset(self:Get(), self:Get())
+		end)
 		table.insert(
 			inner,
 			ImageLabel({
@@ -107,6 +111,8 @@ local function button(props: ButtonProps, small: boolean): TextButton
 				ImageTransparency = textLook.Transparency,
 			})
 		)
+	end
+	if listed then
 		if text ~= nil then
 			table.insert(
 				inner,
@@ -125,7 +131,10 @@ local function button(props: ButtonProps, small: boolean): TextButton
 				})
 			)
 		end
-		if text == nil then
+		if trailing ~= nil then
+			table.insert(inner, trailing)
+		end
+		if text == nil and trailing == nil then
 			padX = padY -- (a square icon button: the same padding on every side)
 		end
 	end
@@ -133,7 +142,7 @@ local function button(props: ButtonProps, small: boolean): TextButton
 		if small then smallButtonName else buttonName,
 		props.Modifier or q.None,
 		hover.Hook,
-		Text = if icon ~= nil then "" else text :: string | State<string>,
+		Text = if listed then "" else text :: string | State<string>,
 		FontFace = style.Metrics.TextFont,
 		TextSize = style.Metrics.TextSize,
 		TextColor3 = textLook.Color,
@@ -168,5 +177,8 @@ end
 function Button.SmallButton(props: ButtonProps): TextButton
 	return button(props, true)
 end
+
+-- (internal: MenuButton's one-piece form — a button with a trailing element)
+Button.withTrailing = button
 
 return Button

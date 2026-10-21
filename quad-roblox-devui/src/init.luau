@@ -154,6 +154,10 @@ export type MenuBarProps = Menu.MenuBarProps
 export type MenuProps = Menu.MenuProps
 export type MenuItemProps = Menu.MenuItemProps
 export type MenuToggleProps = Menu.MenuToggleProps
+export type MenuHandle = Menu.MenuHandle
+export type OpenMenuProps = Menu.OpenMenuProps
+export type MenuButtonProps = Menu.MenuButtonProps
+export type PopupPanelProps = Menu.PopupPanelProps
 export type TooltipProps = Tooltip.TooltipProps
 export type TooltipHandle = Tooltip.TooltipHandle
 export type VirtualRowsProps = VirtualRows.VirtualRowsProps
@@ -228,6 +232,9 @@ local Devui = {
 	Menu = Menu.Menu,
 	MenuItem = Menu.MenuItem,
 	MenuToggle = Menu.MenuToggle,
+	OpenMenu = Menu.OpenMenu,
+	MenuButton = Menu.MenuButton,
+	PopupPanel = Menu.PopupPanel,
 	Tooltip = Tooltip.Tooltip,
 }
 

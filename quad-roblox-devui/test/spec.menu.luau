@@ -222,6 +222,96 @@ H.section("Hooks on MenuItem / MenuToggle ride on the row", function()
 	H.assertNoDebugOutput("menu hooks")
 end)
 
+H.section("OpenMenu: opens now at a point with the Menu factory; Escape / Close close it; KeepOpen leaves it open", function()
+	local o = Overlay.new()
+	local ran, flag = 0, q.Source(false)
+	local m = MenuModule.OpenMenu({
+		At = Vector2.new(50, 60),
+		Overlay = o,
+		Children = function(scope)
+			return q.Slot<<Instance>>({
+				MenuModule.MenuItem({ Text = "Run", Scope = scope, OnClick = function()
+					ran += 1
+				end }),
+				MenuModule.MenuToggle({ Text = "Wrap", Value = flag, KeepOpen = true, Scope = scope }),
+				MenuModule.MenuItem({ Text = "Again", Scope = scope, KeepOpen = true, OnClick = function()
+					ran += 1
+				end }),
+			})
+		end,
+	})
+	assert(m.IsOpen:Get() and o.Count:Get() == 1 and get(o.Layer, "PopupHolder").Position == UDim2.fromOffset(50, 60), "at the point")
+	click(byName(o.Layer, "MenuToggle")[1])
+	assert(flag:Get() == true and o.Count:Get() == 1, "KeepOpen toggle: flipped, still open")
+	click(byName(o.Layer, "MenuItem")[2])
+	assert(ran == 1 and o.Count:Get() == 1, "KeepOpen item: ran, still open")
+	click(byName(o.Layer, "MenuItem")[1])
+	assert(ran == 2 and o.Count:Get() == 0 and not m.IsOpen:Get(), "an ordinary item closes it")
+	local m2 = MenuModule.OpenMenu({ At = Rect.new(10, 10, 110, 29), Overlay = o, Children = function(scope)
+		return q.Slot<<Instance>>({ MenuModule.MenuItem({ Text = "x", Scope = scope, OnClick = function() end }) })
+	end })
+	assert(get(o.Layer, "PopupHolder").Position == UDim2.fromOffset(10, 29), "under a rectangle")
+	local base = nBegan()
+	escape()
+	assert(not m2.IsOpen:Get() and nBegan() == base - 1, "Escape closes and disconnects")
+	local m3 = MenuModule.OpenMenu({ At = Vector2.zero, Overlay = o, Children = function(_scope)
+		return q.Slot<<Instance>>({})
+	end })
+	m3:Close()
+	assert(o.Count:Get() == 0 and not m3.IsOpen:Get())
+	q.dispose(o.Layer)
+	H.assertNoDebugOutput("open menu")
+end)
+
+H.section("MenuButton: split (body runs OnClick, the arrow opens, a disabled body still opens) and whole (it all opens)", function()
+	local o = Overlay.new()
+	local clicked = 0
+	local function items(scope: any): any
+		return q.Slot<<Instance>>({ MenuModule.MenuItem({ Text = "Copy filtered", Scope = scope, OnClick = function() end }) })
+	end
+	local splitButton = MenuModule.MenuButton({ Text = "Copy", OnClick = function()
+		clicked += 1
+	end, Disabled = false, Overlay = o, Children = items })
+	H.setAbs(splitButton, 20, 30, 80, 19)
+	click(get(splitButton, "MenuButtonBody"))
+	assert(clicked == 1 and o.Count:Get() == 0, "the body runs OnClick")
+	click(get(splitButton, "MenuButtonArrow"))
+	assert(o.Count:Get() == 1 and get(o.Layer, "PopupHolder").Position == UDim2.fromOffset(20, 49), "the arrow opens it under the button")
+	click(get(splitButton, "MenuButtonArrow"))
+	assert(o.Count:Get() == 0, "and closes it")
+	H.fire(splitButton, "InputBegan", H.input({ UserInputType = Enum.UserInputType.MouseButton2 }))
+	assert(o.Count:Get() == 1, "a right-click opens it")
+	o:CloseAll()
+	local off = MenuModule.MenuButton({ Text = "Copy", OnClick = function()
+		clicked += 1
+	end, Disabled = true, Overlay = o, Children = items })
+	click(get(off, "MenuButtonBody"))
+	assert(clicked == 1, "a disabled body does not run")
+	click(get(off, "MenuButtonArrow"))
+	assert(o.Count:Get() == 1, "but its menu opens")
+	o:CloseAll()
+	local whole = MenuModule.MenuButton({ Icon = "rbxassetid://1", Overlay = o, Children = items })
+	assert(H.find(whole, "MenuButtonArrow") == nil and H.find(get(whole, "MenuButtonBody"), "Arrow") ~= nil, "one piece with a ▾")
+	click(get(whole, "MenuButtonBody"))
+	assert(o.Count:Get() == 1, "the whole button opens it")
+	o:CloseAll()
+	local wholeOff = MenuModule.MenuButton({ Text = "Filter", Disabled = true, Overlay = o, Children = items })
+	click(get(wholeOff, "MenuButtonBody"))
+	H.fire(wholeOff, "InputBegan", H.input({ UserInputType = Enum.UserInputType.MouseButton2 }))
+	assert(o.Count:Get() == 0, "a disabled one-piece button opens nothing")
+	for _, b in { splitButton, off, whole, wholeOff } do
+		q.dispose(b)
+	end
+	q.dispose(o.Layer)
+	H.assertNoDebugOutput("menu button")
+end)
+
+H.section("PopupPanel: the menu's popup body for app-made popups", function()
+	local body = MenuModule.PopupPanel({ Children = q.Slot<<Instance>>({ Frame({ Name = "Row" }) }) })
+	assert(body.Name == "MenuPanel" and body.AutomaticSize == Enum.AutomaticSize.XY and H.find(body, "Row") ~= nil)
+	q.dispose(body)
+end)
+
 H.section("MenuToggle flips its Source and closes; the check mark follows the Source", function()
 	local o = Overlay.new()
 	local bar, probe = build(o)
