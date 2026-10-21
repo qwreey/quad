@@ -112,6 +112,8 @@ local Menu = require("@self/Menu")
 local Dialog = require("@self/Dialog")
 local Selection = require("@self/Selection")
 local TreeRows = require("@self/TreeRows")
+local ColorModel = require("@self/ColorModel")
+local ColorPicker = require("@self/ColorPicker")
 local Tooltip = require("@self/Tooltip")
 local VirtualRowsModule = require("@self/VirtualRows")
 
@@ -170,6 +172,8 @@ export type SelectionMode = Selection.Mode
 export type TreeAccessor<N> = TreeRows.Accessor<N>
 export type TreeRow<N> = TreeRows.Row<N>
 export type TreePaging = TreeRows.Paging
+export type ColorPicker3Props = ColorPicker.ColorPicker3Props
+export type OpenColorPickerProps = ColorPicker.OpenColorPickerProps
 export type TooltipProps = Tooltip.TooltipProps
 export type TooltipHandle = Tooltip.TooltipHandle
 export type VirtualRowsProps = VirtualRowsModule.VirtualRowsProps
@@ -253,6 +257,9 @@ local Devui = {
 	OpenCopyDialog = Dialog.OpenCopyDialog,
 	Selection = Selection,
 	TreeRows = TreeRows,
+	ColorModel = ColorModel,
+	ColorPicker3 = ColorPicker.ColorPicker3,
+	OpenColorPicker = ColorPicker.OpenColorPicker,
 	Tooltip = Tooltip.Tooltip,
 }
 

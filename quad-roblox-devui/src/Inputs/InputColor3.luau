@@ -7,17 +7,21 @@
 			Value: Source<Color3>?,                two-way; an internal Source (white) when omitted
 			OnChange: ((c: Color3) -> ())?,        after Value changed through the UI
 			Disabled: (boolean | State<boolean>)?,
+			NoPicker: boolean?,                    the swatch does not open the picker
 			Style: Style?, Modifier: ModifierInto<Frame>?,
 		}
 
-	Swatch (Frame, UICorner + UIStroke) | R | G | B (DragNum fields: drag, or click to type, 0-255 integers) | hex box
-	("#rrggbb"; also accepts "rgb" / "rrggbb" / "#rgb"; invalid text reverts on Enter / focus loss). No popup picker —
-	this is the compact inline form. Returns a row Frame.
+	Swatch | R | G | B (DragNum fields: drag, or click to type, 0-255 integers) | hex box ("#rrggbb"; also accepts "rgb" /
+	"rrggbb" / "#rgb"; invalid text reverts on Enter / focus loss). Returns a row Frame. [2026-10-21] Clicking the swatch
+	opens `OpenColorPicker` on the same Value (live; Cancel puts the colour back) over the window the row is in — that
+	window is blocked while it is open (Modal "Window"), or the whole screen outside a devui window. `NoPicker = true`
+	keeps the swatch a plain swatch (the picker's own row uses it).
 ]]
 
 local Quad = require("../Quad")
 local q = Quad
 local Frame = q.Elem "Frame"
+local TextButton = q.Elem "TextButton"
 local TextBox = q.Elem "TextBox"
 local UIPadding = q.Elem "UIPadding"
 local FrameModifier = q.Modifier "Frame"
@@ -38,6 +42,7 @@ export type InputColor3Props = {
 	read Value: Source<Color3>?,
 	read OnChange: ((c: Color3) -> ())?,
 	read Disabled: (boolean | State<boolean>)?,
+	read NoPicker: boolean?,
 	read Style: Style?,
 	read Modifier: Quad.ModifierInto<Frame>?,
 }
@@ -102,8 +107,21 @@ local function hexField(style: Style, value: Source<Color3>, enabled: State<bool
 	})
 end
 
+-- the devui Window root a row is in (its content surface, named "Window"), nil outside one
+local function windowOf(inst: Instance?): Instance?
+	local cursor = inst and inst.Parent
+	while cursor ~= nil do
+		if cursor.Name == "Window" and cursor.ClassName == "Frame" then
+			return cursor
+		end
+		cursor = cursor.Parent
+	end
+	return nil
+end
+
 local function InputColor3(props: InputColor3Props): Frame
 	local style = props.Style or Style.default
+	local swatchRef = q.Ref(nil :: TextButton?)
 	local value: Source<Color3> = props.Value or q.Source(Color3.new(1, 1, 1))
 	local enabled = Common.enabled(props.Disabled)
 	local o: InputVector.FieldOptions =
@@ -119,15 +137,42 @@ local function InputColor3(props: InputColor3Props): Frame
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Common.rowLayout(style),
-		Frame({
-			Name = "Swatch",
-			LayoutOrder = 0,
-			Size = swatchSize,
-			BackgroundColor3 = value,
-			BorderSizePixel = 0,
-			UICorner = style.Metrics.FrameRounding,
-			Common.stroke(style),
-		}),
+		if props.NoPicker
+			then Frame({
+				Name = "Swatch",
+				LayoutOrder = 0,
+				Size = swatchSize,
+				BackgroundColor3 = value,
+				BorderSizePixel = 0,
+				UICorner = style.Metrics.FrameRounding,
+				Common.stroke(style),
+			})
+			else TextButton({
+				Name = "Swatch",
+				LayoutOrder = 0,
+				Size = swatchSize,
+				BackgroundColor3 = value,
+				BorderSizePixel = 0,
+				AutoButtonColor = false,
+				Text = "",
+				UICorner = style.Metrics.FrameRounding,
+				Common.stroke(style),
+				Activated = function(_input: InputObject, _count: number)
+					if not enabled:Get() then
+						return
+					end
+					-- (required here, not at the top: the picker's own row is an InputColor3)
+					local ColorPicker = require("../ColorPicker") :: any
+					ColorPicker.OpenColorPicker({
+						Title = if type(props.Text) == "string" then props.Text else nil,
+						Value = value,
+						OnChange = props.OnChange,
+						Window = windowOf(swatchRef.Value),
+						Style = style,
+					})
+				end,
+				swatchRef,
+			}),
 		InputVector.component<<Color3>>(value, function(c: Color3)
 			return byte(c.R)
 		end, function(c: Color3, n: number)
