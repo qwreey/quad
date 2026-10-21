@@ -8,7 +8,7 @@
 			Delay = 0.5,                                      -- seconds of hovering before it shows (default 0.5)
 			Offset = Vector2.new(12, 16),                     -- from the mouse (default 12, 16)
 			MaxWidth = 300,                                   -- wrap width for Text (default 300)
-			Enabled = true | State<boolean>,                     -- false: no tooltip shows (default true)
+			Enabled = true | State<boolean>,                     -- false: no tooltip shows (default true); an empty Text shows none either
 			Overlay = ..., Style = ...,
 		})
 		Devui.Button({ Text = "Save", Hooks = { tip.Hook } })   -- leaf widgets take `Hooks`; on a raw element put `tip.Hook`
@@ -92,6 +92,14 @@ function Tooltip.hook(props: TooltipProps): TooltipHandle
 		end
 		return (enabledProp :: State<boolean>):Get()
 	end
+	-- an empty Text shows nothing (a hint whose text is set later, or cleared, needs no Enabled of its own)
+	local function hasText(): boolean
+		if text == nil then
+			return true
+		end
+		local value = if type(text) == "string" then text else (text :: State<string>):Get()
+		return value ~= ""
+	end
 
 	local visible: Source<boolean> = q.Source(false)
 	-- the element the hook was placed on
@@ -146,7 +154,7 @@ function Tooltip.hook(props: TooltipProps): TooltipHandle
 		-- the target (or its window) was hidden while the timer ran: hiding an ancestor sends no MouseLeave, so the
 		-- timer was not cancelled — do not show a hint for something that is no longer on screen
 		local t = target
-		if t == nil or not Visibility.isShown(t) or not enabled() then
+		if t == nil or not Visibility.isShown(t) or not enabled() or not hasText() then
 			return
 		end
 		-- GetMouseLocation ignores the GUI inset; AbsolutePosition space includes it (see the header)

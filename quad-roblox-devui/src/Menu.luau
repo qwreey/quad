@@ -61,6 +61,7 @@ local Quad = require("./Quad")
 local q = Quad
 local Frame = q.Elem "Frame"
 local ImageLabel = q.Elem "ImageLabel"
+local ScrollingFrame = q.Elem "ScrollingFrame"
 local UIListLayout = q.Elem "UIListLayout"
 local UIPadding = q.Elem "UIPadding"
 local FrameModifier = q.Modifier "Frame"
@@ -221,8 +222,40 @@ function Menu.MenuBar(props: MenuBarProps): Frame
 end
 
 -- the popup body: a vertical list that sizes to its widest row
-local function panel(style: Style, children: Slot<Instance> | typeof(q.None), modifier: any?): Frame
+local function panel(style: Style, children: Slot<Instance> | typeof(q.None), modifier: any?, room: number?): Frame
 	local pad: State<UDim> = Util.pxY(style.Metrics.ItemInnerSpacing)
+	local scroll: ScrollingFrame? = nil
+	if room ~= nil then
+		-- taller than the room on screen: the rows scroll (Overlay "STAYING ON SCREEN" — shrink only what can scroll).
+		-- The height is set directly: an AutomaticSize ScrollingFrame ignores a UISizeConstraint (Combo, Studio)
+		local cap = math.max(style.FrameHeight:Get(), room - 2 * style.Metrics.ItemInnerSpacing:Get().Y)
+		local content: Source<Vector2> = q.Source(Vector2.zero)
+		scroll = ScrollingFrame({
+			Name = "MenuScroll",
+			AutomaticSize = Enum.AutomaticSize.X,
+			Size = content:Compute(function(self)
+				return UDim2.fromOffset(0, math.min(self:Get().Y, cap))
+			end),
+			CanvasSize = UDim2.fromOffset(0, 0),
+			AutomaticCanvasSize = Enum.AutomaticSize.Y,
+			ScrollingDirection = Enum.ScrollingDirection.Y,
+			VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar,
+			-- (a bar only when it scrolls: an AutomaticSize ScrollingFrame widens itself by the bar's thickness — Studio)
+			ScrollBarThickness = content:Compute(function(self)
+				return if self:Get().Y > cap then style.Metrics.ScrollbarSize:Get() else 0
+			end),
+			ScrollBarImageColor3 = style.Color.ScrollbarGrab,
+			ScrollBarImageTransparency = style.Transparency.ScrollbarGrab,
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			UIListLayout({
+				FillDirection = Enum.FillDirection.Vertical,
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				q.Out "UIListLayout" "AbsoluteContentSize" (content),
+			}),
+			children,
+		})
+	end
 	return Frame({
 		modifier or q.None,
 		Name = "MenuPanel",
@@ -235,12 +268,18 @@ local function panel(style: Style, children: Slot<Instance> | typeof(q.None), mo
 		UICorner = style.Metrics.PopupRounding,
 		PopupParts.stroke(style),
 		UIPadding({ PaddingTop = pad, PaddingBottom = pad }),
-		UIListLayout({
+		scroll or UIListLayout({
 			FillDirection = Enum.FillDirection.Vertical,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 		}),
-		children,
+		if scroll then q.None else children,
 	})
+end
+
+-- the layer's height for a menu opening now (nil while the layer is not laid out: no cap)
+local function roomOf(overlay: Overlay.Overlay): number?
+	local h = overlay.Layer.AbsoluteSize.Y
+	return if h > 0 then h else nil
 end
 
 function Menu.PopupPanel(props: PopupPanelProps): Frame
@@ -302,7 +341,7 @@ function Menu.OpenMenu(props: OpenMenuProps): MenuHandle
 	local scope = newScope(overlay, style, closeAll)
 	local offEscape: (() -> ())? = nil
 	popup = overlay:Open({
-		Content = panel(style, props.Children(scope)),
+		Content = panel(style, props.Children(scope), nil, roomOf(overlay)),
 		Position = position,
 		AnchorRect = rect,
 		OnClose = function()
@@ -463,7 +502,7 @@ function Menu.Menu(props: MenuProps): TextButton
 		local disconnectEscape: (() -> ())? = nil
 		local opened: Overlay.Popup? = nil
 		local newPopup = overlay:Open({
-			Content = panel(style, factory(scope)),
+			Content = panel(style, factory(scope), nil, roomOf(overlay)),
 			Position = at,
 			-- (flipped above / to the left of its title or item when it does not fit — Overlay "STAYING ON SCREEN")
 			AnchorRect = Rect.new(pos.X, pos.Y, pos.X + size.X, pos.Y + size.Y),

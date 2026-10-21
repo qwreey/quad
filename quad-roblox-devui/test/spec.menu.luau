@@ -263,6 +263,36 @@ H.section("OpenMenu: opens now at a point with the Menu factory; Escape / Close 
 	H.assertNoDebugOutput("open menu")
 end)
 
+H.section("a menu taller than the layer scrolls (rows in MenuScroll capped at the layer's height); a short one stays a plain list", function()
+	local o = Overlay.new()
+	H.setAbs(o.Layer, 0, 0, 800, 300)
+	local function items(n: number): any
+		return function(scope: any): any
+			local t: { Instance } = {}
+			for i = 1, n do
+				table.insert(t, MenuModule.MenuItem({ Text = `item {i}`, Scope = scope, OnClick = function() end }))
+			end
+			return q.Slot<<Instance>>(t)
+		end
+	end
+	local long = MenuModule.OpenMenu({ At = Vector2.new(10, 10), Overlay = o, Children = items(40) })
+	local scroll = H.find(o.Layer, "MenuScroll") :: any
+	assert(scroll ~= nil and #byName(scroll, "MenuItem") == 40, "the rows are in the scroll")
+	local layout: any = nil
+	for _, child in scroll:GetChildren() do
+		if child.ClassName == "UIListLayout" then
+			layout = child
+		end
+	end
+	layout.AbsoluteContentSize = Vector2.new(120, 40 * 19) -- (the engine lays the rows out)
+	assert(scroll.Size.Y.Offset < 300 and scroll.Size.Y.Offset > 250 and scroll.ScrollBarThickness > 0, `capped ({scroll.Size})`)
+	layout.AbsoluteContentSize = Vector2.new(120, 3 * 19)
+	assert(scroll.Size.Y.Offset == 57 and scroll.ScrollBarThickness == 0, "fits: no bar (it would widen the menu)")
+	long:Close()
+	q.dispose(o.Layer)
+	H.assertNoDebugOutput("menu scroll")
+end)
+
 H.section("MenuButton: split (body runs OnClick, the arrow opens, a disabled body still opens) and whole (it all opens)", function()
 	local o = Overlay.new()
 	local clicked = 0
