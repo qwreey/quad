@@ -13,4 +13,5 @@
 | `table-sim-2026-10-16.md` | table-sim 클라이언트 UI의 quad 사용 리뷰(opus, 코드 읽기) — 스킬에 넣을 것 A1~A8(문안 초안), table-sim에 전할 코드 메모(【UB】 셋·`hand[2]` nil 우선), quad 빈칸(Spread 누적 근거 다섯·distinct 파생). 스킬 사본이 10-11에 멈춘 배포 공백 |
 | `devplorer-2026-10-20.md` | devui 세 번째 소비자 devplorer(사용자 프로젝트, Dex 재구현)의 상향 보고서 판정 — quad 코어 한계 0, 문서 공백 13은 "있는데 못 찾음"(devui README·위젯 주석에서 quad 스킬로 가는 길이 없음), devui 결핍을 장치별 묶음 여섯으로(포인터 아래 맨 위 판정은 10-16 코드 리뷰 5·6·8과 같은 장치). 원문은 레포 밖 devplorer `.claude/feedback/quad-upstream-2026-10-20.md` |
 | `devplorer-2026-10-21.md` | devplorer 상향 보고서 2차(U21~U28 + 직접 구현 후보 목록) 판정 — 결함 둘(메뉴 안 구분선, Combo `MaxHeight`)은 메인, 나머지(창 메뉴바 자리, 메뉴 작은 결핍 셋, 아이콘 단추, 분할·메뉴 단추, 1차 묶음 다의 보류 해제)는 사용자 결정. 원문은 레포 밖 devplorer `.claude/feedback/quad-upstream-2026-10-21.md` |
+| `devplorer-handover-2026-10-21.md` | devplorer에 넘길 것 — devui 갱신분별 갈아탈 자리와 동작 차이(sonnet 감사 기반), devplorer 쪽에서 본 결함(툴팁이 단축키를 죽임, Insert 기준 둘 등), 사용자 결정 거리 셋, 만드는 중인 목록 |
 | `consumer-kits-uilabs-2026-10-16.md` | 사용자가 UI Labs로 두 킷 스토리 전부를 확인한 결과 — 거의 전부 정상(HUMAN_TODO J 닫힘), 남은 지적 셋(placeholder 전환·큰 스토리 둘의 스크롤) |

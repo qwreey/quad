@@ -11,6 +11,12 @@
 		              OnResult: (ok: boolean) -> (), Overlay?, Style? } -> DialogHandle
 		            "Delete this? [Delete] [Cancel]" in one call: `OnResult(true)` from the confirm button, `false` from
 		            the cancel button, Escape, `:Close()` or the window closing — exactly once
+		OpenCopyDialog { Title?, Text: string, Window?, Modal?, Overlay?, Style? } -> DialogHandle
+		            game scripts have no clipboard API: the text is shown in a read-only multi-line box that takes the
+		            focus with everything selected, so the user presses Ctrl+C. Losing the focus inside the dialog (a
+		            press on its scrollbar) takes it back with the selection it had; [Select All] and [Close] buttons
+		            (in a game Escape also opens the Roblox menu, so a button closes it). One open at a time: opening
+		            another closes the previous one. Its Modal defaults to "Global" when no Window is given
 
 	A dialog does not close on an outside click (it waits for an answer). What it blocks while open is `Modal` — the
 	user's model, "a popup and a top-level dialog differ by how far the background is dimmed":
@@ -31,7 +37,9 @@ local Quad = require("./Quad")
 local q = Quad
 local Frame = q.Elem "Frame"
 local TextButton = q.Elem "TextButton"
+local TextBox = q.Elem "TextBox"
 local TextLabel = q.Elem "TextLabel"
+local ScrollingFrame = q.Elem "ScrollingFrame"
 local UIListLayout = q.Elem "UIListLayout"
 local UIPadding = q.Elem "UIPadding"
 local Button = require("./Button")
@@ -57,6 +65,15 @@ export type OpenDialogProps = {
 	read Window: Instance?,
 	read Modal: DialogModal?,
 	read OnClose: (() -> ())?,
+	read Overlay: Overlay.Overlay?,
+	read Style: Style?,
+}
+
+export type OpenCopyDialogProps = {
+	read Title: (string | State<string>)?,
+	read Text: string,
+	read Window: Instance?,
+	read Modal: DialogModal?,
 	read Overlay: Overlay.Overlay?,
 	read Style: Style?,
 }
@@ -305,6 +322,155 @@ function Dialog.OpenConfirm(props: OpenConfirmProps): DialogHandle
 			}),
 		}),
 	})
+	return handle
+end
+
+-- the copy dialog open now (one at a time)
+local currentCopy: DialogHandle? = nil
+
+function Dialog.OpenCopyDialog(props: OpenCopyDialogProps): DialogHandle
+	local style = props.Style or Style.default
+	local previous = currentCopy
+	if previous ~= nil then
+		previous:Close()
+	end
+	local text = props.Text
+	local closed = false
+	local box: TextBox? = nil
+	-- the selection when the focus was lost (restored when it is taken back)
+	local lastStart, lastCursor = 1, #text + 1
+	local function selectAll()
+		local b = box
+		if closed or b == nil then
+			return
+		end
+		b:CaptureFocus()
+		b.SelectionStart = 1
+		b.CursorPosition = #b.Text + 1
+	end
+	local handle: DialogHandle
+	handle = Dialog.OpenDialog({
+		Title = props.Title or "Copy",
+		Window = props.Window,
+		Modal = props.Modal or (if props.Window == nil then "Global" else "Window"),
+		Overlay = props.Overlay,
+		Style = style,
+		OnClose = function()
+			closed = true
+			if currentCopy == handle then
+				currentCopy = nil
+			end
+		end,
+		Children = q.Slot<<Instance>>({
+			TextLabel({
+				Name = "CopyHint",
+				LayoutOrder = 1,
+				AutomaticSize = Enum.AutomaticSize.XY,
+				Size = UDim2.fromOffset(0, 0),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				Text = "Press Ctrl+C to copy",
+				FontFace = style.Metrics.TextFont,
+				TextSize = style.Metrics.TextSize,
+				TextColor3 = style.Color.TextDisabled,
+				TextTransparency = style.Transparency.TextDisabled,
+				TextXAlignment = Enum.TextXAlignment.Left,
+			}),
+			ScrollingFrame({
+				Name = "CopyScroll",
+				LayoutOrder = 2,
+				Size = UDim2.fromOffset(460, 260),
+				CanvasSize = UDim2.fromOffset(0, 0),
+				AutomaticCanvasSize = Enum.AutomaticSize.XY,
+				ScrollingDirection = Enum.ScrollingDirection.XY,
+				ScrollBarThickness = style.Metrics.ScrollbarSize,
+				ScrollBarImageColor3 = style.Color.ScrollbarGrab,
+				ScrollBarImageTransparency = style.Transparency.ScrollbarGrab,
+				BackgroundColor3 = style.Color.FrameBg,
+				BackgroundTransparency = style.Transparency.FrameBg,
+				BorderSizePixel = 0,
+				TextBox({
+					Name = "CopyText",
+					q.PostRef(nil :: TextBox?):Callback(function(inst: TextBox?)
+						box = inst
+					end),
+					ClipsDescendants = true,
+					Size = UDim2.fromOffset(0, 0),
+					AutomaticSize = Enum.AutomaticSize.XY,
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					MultiLine = true,
+					TextEditable = false,
+					ClearTextOnFocus = false,
+					TextWrapped = false,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					TextYAlignment = Enum.TextYAlignment.Top,
+					FontFace = Font.fromEnum(Enum.Font.Code),
+					TextSize = style.Metrics.TextSize,
+					TextColor3 = style.Color.Text,
+					TextTransparency = style.Transparency.Text,
+					Text = text,
+					-- read-only already; put the text back should anything change it
+					q.OnChange "TextBox" "Text"(function(value: string)
+						local b = box
+						if b and value ~= text then
+							b.Text = text
+						end
+					end),
+					-- not a close: a press on the scrollbar takes the focus; take it back with the selection (a tick
+					-- later — a press outside that closed the dialog has set `closed` by then)
+					FocusLost = function()
+						local b = box
+						if b then
+							lastStart, lastCursor = b.SelectionStart, b.CursorPosition
+						end
+						task.defer(function()
+							local now = box
+							if closed or now == nil or now:IsFocused() then
+								return
+							end
+							now:CaptureFocus()
+							if lastStart ~= -1 then
+								now.SelectionStart = lastStart
+								now.CursorPosition = lastCursor
+							end
+						end)
+					end,
+				}),
+			}),
+			Frame({
+				Name = "CopyButtons",
+				LayoutOrder = 3,
+				AutomaticSize = Enum.AutomaticSize.XY,
+				Size = UDim2.fromOffset(0, 0),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				UIListLayout({
+					FillDirection = Enum.FillDirection.Horizontal,
+					SortOrder = Enum.SortOrder.LayoutOrder,
+					Padding = Util.pxX(style.Metrics.ItemSpacing),
+				}),
+				Button.Button({
+					Text = "Select All",
+					Style = style,
+					Modifier = q.Modifier "TextButton"():Name("SelectAllButton"):LayoutOrder(1),
+					OnClick = selectAll,
+				}),
+				Button.Button({
+					Text = "Close",
+					Style = style,
+					Modifier = q.Modifier "TextButton"():Name("CloseButton"):LayoutOrder(2),
+					OnClick = function()
+						handle:Close()
+					end,
+				}),
+			}),
+		}),
+	})
+	if handle.IsOpen:Get() then
+		currentCopy = handle
+		selectAll()
+	end
 	return handle
 end
 

@@ -110,3 +110,24 @@ H.section("OpenConfirm: OnResult once — true from the confirm button, false fr
 	q.dispose(o.Layer)
 	H.assertNoDebugOutput("confirm")
 end)
+
+H.section("OpenCopyDialog: read-only box focused with all selected; text put back; focus taken back; one at a time; Close", function()
+	local o = Overlay.new()
+	local d = Devui.OpenCopyDialog({ Title = "Log", Text = "line 1\nline 2", Overlay = o })
+	assert(d.IsOpen:Get() and H.find(o.Layer, "DialogScrim") ~= nil, "no Window: Global")
+	local box = H.find(o.Layer, "CopyText") :: any
+	assert(box.TextEditable == false and box.MultiLine == true and box:IsFocused(), "focused")
+	assert(box.SelectionStart == 1 and box.CursorPosition == #"line 1\nline 2" + 1, "all selected")
+	box.Text = "edited"
+	assert(box.Text == "line 1\nline 2", "put back")
+	box.SelectionStart, box.CursorPosition = 3, 5
+	box:ReleaseFocus()
+	H.flushDeferred()
+	assert(box:IsFocused() and box.SelectionStart == 3 and box.CursorPosition == 5, "taken back with its selection")
+	local second = Devui.OpenCopyDialog({ Text = "other", Overlay = o })
+	assert(not d.IsOpen:Get() and second.IsOpen:Get(), "one at a time")
+	click(H.find(o.Layer, "CloseButton"))
+	assert(not second.IsOpen:Get() and o.Count:Get() == 0)
+	q.dispose(o.Layer)
+	H.assertNoDebugOutput("copy")
+end)
