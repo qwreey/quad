@@ -74,6 +74,35 @@ H.section("a press on the content's empty area does not close the popup: a sink 
 	H.assertNoDebugOutput("click sink")
 end)
 
+H.section("staying on screen: flipped about the anchor rectangle when that overflows less, then slid inside; re-placed on resize", function()
+	local o = Overlay.new()
+	H.setAbs(o.Layer, 0, 0, 800, 600)
+	local function openAt(position: Vector2, rect: Rect?, w: number, h: number): any
+		local p = o:Open({ Content = Frame({}), Position = position, AnchorRect = rect })
+		local holder = p.Holder :: any
+		holder.AbsoluteSize = Vector2.new(w, h) -- (the engine lays the content out)
+		return holder
+	end
+	-- a dropdown under a box near the bottom: flipped above the box
+	local h1 = openAt(Vector2.new(100, 560), Rect.new(100, 540, 300, 560), 200, 150)
+	assert(h1.AnchorPoint == Vector2.zero and h1.Position == UDim2.fromOffset(100, 390), `above the box ({h1.Position})`)
+	-- a submenu right of an item at the right edge: flipped to its left
+	local h2 = openAt(Vector2.new(780, 100), Rect.new(650, 100, 780, 120), 120, 80)
+	assert(h2.Position == UDim2.fromOffset(530, 100), `left of the item ({h2.Position})`)
+	-- no rectangle: only slid inside
+	local h3 = openAt(Vector2.new(760, 580), nil, 100, 50)
+	assert(h3.Position == UDim2.fromOffset(700, 550), `slid inside ({h3.Position})`)
+	-- the mirror overflowing more: stays and slides (a box at the top, a list taller than the room above)
+	local h4 = openAt(Vector2.new(0, 60), Rect.new(0, 40, 200, 60), 200, 580)
+	assert(h4.Position == UDim2.fromOffset(0, 20), `kept below, slid up ({h4.Position})`)
+	-- the content grows: placed again
+	h3.AbsoluteSize = Vector2.new(300, 50)
+	assert(h3.Position == UDim2.fromOffset(500, 550))
+	o:CloseAll()
+	q.dispose(o.Layer)
+	H.assertNoDebugOutput("on screen")
+end)
+
 H.section("tooltip-style popup has no catcher; later popups draw above; CloseAll", function()
 	local o = Overlay.new()
 	local tip = o:Open({ Content = TextLabel({ Text = "tip" }), Position = Vector2.new(0, 0), CloseOnClickOutside = false })

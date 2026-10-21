@@ -57,8 +57,13 @@ under Deferred signals) (the ScreenGui was rebuilt, e.g. ResetOnSpawn) makes a f
 	through it raises the window behind). Opening and closing a popup makes hover looks re-judge what is on top.
 
 	Positioning: `Position` is converted into layer space at open time (minus Layer.AbsolutePosition), so the layer may
-	sit under a ScreenGui with or without GuiInset. Anchor the content with `Anchor` to open upward/leftward; clamping
-	to the screen edge needs the content's size (known only after layout) — do it in the opener if needed.
+	sit under a ScreenGui with or without GuiInset. Anchor the content with `Anchor` to open upward/leftward.
+	STAYING ON SCREEN [2026-10-21 user decision — research/devui-popup-model-plan.md 3.1, like Wayland's xdg_positioner]:
+	once the content has a size (and again whenever it or the layer is resized) the popup is kept inside the layer —
+	given `AnchorRect` (the screen rectangle it is attached to: a menu title, a dropdown box, a zero-size rect at the
+	mouse), an axis it overflows is FLIPPED to the other side of that rectangle when that overflows less (below ->
+	above, right -> left); then it is SLID inside. Content larger than the layer is not shrunk here — a list that can
+	scroll caps its own height (Combo). With no size yet (a layer not laid out, the spec mock) the requested place stays.
 ]]
 
 local Pointer = require("./Pointer")
@@ -78,6 +83,7 @@ export type PopupOptions = {
 	Content: Instance,
 	Position: Vector2,
 	Anchor: Vector2?,
+	AnchorRect: Rect?,
 	CloseOnClickOutside: boolean?,
 	OnClose: (() -> ())?,
 }
@@ -195,6 +201,10 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 		-- (`or`: engines always have it; the test mock has no layout engine until a spec sets AbsolutePosition)
 		local origin: Vector2 = layer.AbsolutePosition or Vector2.new(0, 0)
 		local pos = opts.Position - origin
+		local requestAnchor = opts.Anchor or Vector2.new(0, 0)
+		local rect = opts.AnchorRect
+		local rectMin: Vector2? = if rect then rect.Min - origin else nil
+		local rectMax: Vector2? = if rect then rect.Max - origin else nil
 		local closeOutside = opts.CloseOnClickOutside ~= false
 		local onClose = opts.OnClose
 
@@ -233,6 +243,35 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 			sink,
 			opts.Content,
 		})
+
+		-- keep it on screen (header STAYING ON SCREEN): per axis, the requested top-left or its mirror about the anchor
+		-- rectangle — whichever overflows the layer less — then clamped inside
+		local function place()
+			local size: Vector2? = holder.AbsoluteSize
+			local room: Vector2? = layer.AbsoluteSize
+			if size == nil or room == nil or size.X <= 0 or size.Y <= 0 or room.X <= 0 or room.Y <= 0 then
+				return
+			end
+			local function axis(p: number, a: number, s: number, r: number, lo: number?, hi: number?): number
+				local function over(t: number): number
+					return math.max(0, -t) + math.max(0, t + s - r)
+				end
+				local t = p - a * s
+				if lo ~= nil and hi ~= nil and over(t) > 0 then
+					local mirrored = (lo + hi - p) - (1 - a) * s
+					if over(mirrored) < over(t) then
+						t = mirrored
+					end
+				end
+				return math.clamp(t, 0, math.max(0, r - s))
+			end
+			local x = axis(pos.X, requestAnchor.X, size.X, room.X, rectMin and rectMin.X, rectMax and rectMax.X)
+			local y = axis(pos.Y, requestAnchor.Y, size.Y, room.Y, rectMin and rectMin.Y, rectMax and rectMax.Y)
+			holder.AnchorPoint = Vector2.zero
+			holder.Position = UDim2.fromOffset(math.round(x), math.round(y))
+		end
+		holder:GetPropertyChangedSignal("AbsoluteSize"):Connect(place)
+		local layerConn = layer:GetPropertyChangedSignal("AbsoluteSize"):Connect(place)
 
 		local entry = Frame({
 			Name = "Popup",
@@ -274,6 +313,7 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 				return
 			end
 			isOpen:Set(false)
+			layerConn:Disconnect()
 			if hits then
 				PopupHits.remove(hits)
 			end

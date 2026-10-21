@@ -163,6 +163,8 @@ function Tooltip.hook(props: TooltipProps): TooltipHandle
 		popup = overlay:Open({
 			Content = build(),
 			Position = mouse + offset,
+			-- (near the screen's right / bottom edge it moves to the other side of the pointer)
+			AnchorRect = Rect.new(mouse.X, mouse.Y, mouse.X, mouse.Y),
 			CloseOnClickOutside = false,
 			OnClose = function()
 				popup = nil

@@ -55,6 +55,7 @@ local Overlay = require("./Overlay")
 local PopupParts = require("./PopupParts")
 local Style = require("./Style")
 local Util = require("./Util")
+local Visibility = require("./Visibility")
 
 type State<T> = Quad.State<T>
 type Source<T> = Quad.Source<T>
@@ -114,6 +115,34 @@ local openChild: { [MenuScope]: Overlay.Popup? } = setmetatable({}, { __mode = "
 -- a bar (the bar items' parent) -> its open root menu: the title and how to close it (hover to switch — header)
 type OpenRoot = { Item: Instance, Close: () -> () }
 local openRootIn: { [Instance]: OpenRoot? } = setmetatable({}, { __mode = "k" }) :: any
+-- a bar title -> how to open its menu (a press on another title of the bar while one is open switches — header)
+local openTitle: { [Instance]: () -> () } = setmetatable({}, { __mode = "k" }) :: any
+
+-- a press while a bar's menu is open: on another title of that bar it switches menus at once (touch has no hover; the
+-- catcher would otherwise eat the press and only close). The new menu's catcher was not pressed, so the release does
+-- not activate it
+local function pressSwitch(bar: Instance, current: Instance, input: InputObject)
+	local t = input.UserInputType
+	if t ~= Enum.UserInputType.MouseButton1 and t ~= Enum.UserInputType.Touch then
+		return
+	end
+	local x, y = input.Position.X, input.Position.Y
+	for _, child in bar:GetChildren() do
+		local openIt = openTitle[child]
+		if openIt ~= nil and child ~= current and Visibility.isShown(child) then
+			local g = child :: GuiObject
+			local p, s = g.AbsolutePosition, g.AbsoluteSize
+			if x >= p.X and y >= p.Y and x < p.X + s.X and y < p.Y + s.Y then
+				local root = openRootIn[bar]
+				if root ~= nil then
+					root.Close()
+				end
+				openIt()
+				return
+			end
+		end
+	end
+end
 
 local function disabledState(d: (boolean | State<boolean>)?): State<boolean>?
 	if d == nil then
@@ -220,6 +249,8 @@ function Menu.Menu(props: MenuProps): TextButton
 		local newPopup = overlay:Open({
 			Content = panel(style, factory(scope)),
 			Position = at,
+			-- (flipped above / to the left of its title or item when it does not fit — Overlay "STAYING ON SCREEN")
+			AnchorRect = Rect.new(pos.X, pos.Y, pos.X + size.X, pos.Y + size.Y),
 			-- only the root has the catcher: submenus sit above it, so a click inside the chain never reaches it
 			CloseOnClickOutside = parent == nil,
 			OnClose = function()
@@ -251,8 +282,12 @@ function Menu.Menu(props: MenuProps): TextButton
 		if parent then
 			openChild[parent] = newPopup
 		else
-			disconnectEscape = PopupParts.whileOpen(anchor, scope.CloseAll)
 			local bar = anchor.Parent
+			disconnectEscape = PopupParts.whileOpen(anchor, scope.CloseAll, if bar ~= nil
+				then function(input: InputObject)
+					pressSwitch(bar, anchor, input)
+				end
+				else nil)
 			if bar ~= nil then
 				openRootIn[bar] = { Item = anchor, Close = closeRoot }
 			end
@@ -291,6 +326,9 @@ function Menu.Menu(props: MenuProps): TextButton
 			end,
 		OnDestroyed = closeRoot,
 	})
+	if not parent then
+		openTitle[item :: TextButton] = open
+	end
 	return item :: TextButton
 end
 

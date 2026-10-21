@@ -217,6 +217,7 @@ local function core(spec: CoreSpec): Frame
 			Content = buildList(size.X, if up then above else below),
 			Position = if up then Vector2.new(pos.X, pos.Y) else Vector2.new(pos.X, pos.Y + size.Y),
 			Anchor = if up then Vector2.new(0, 1) else nil,
+			AnchorRect = Rect.new(pos.X, pos.Y, pos.X + size.X, pos.Y + size.Y),
 			OnClose = function()
 				popup = nil
 				local off = disconnectEscape

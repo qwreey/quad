@@ -9,7 +9,8 @@
 		PopupParts.onEscape(fn)       connects UserInputService.InputBegan and calls `fn` on Escape; returns the
 		                              disconnect function. Open it when a popup opens and call the disconnect from the
 		                              popup's OnClose — nothing is connected while no popup is open.
-		PopupParts.whileOpen(anchor, close)   onEscape(close) + Visibility.whenHidden(anchor, close) in one disconnect:
+		PopupParts.whileOpen(anchor, close, other?)   onEscape(close, other) + Visibility.whenHidden(anchor, close) in one disconnect
+		                                      (`other` sees every other InputBegan on the same connection — Menu's press-to-switch):
 		                              a popup also closes when its anchor (or the window it is in) is hidden — hiding
 		                              an ancestor fires nothing on the anchor, so a closed window would leave it open.
 
@@ -65,10 +66,12 @@ local PopupParts = {}
 -- a never-changing `false` shared by every row that has no Selected / Active / Disabled state
 local NEVER: State<boolean> = q.Source(false)
 
-function PopupParts.onEscape(fn: () -> ()): () -> ()
+function PopupParts.onEscape(fn: () -> (), other: ((input: InputObject) -> ())?): () -> ()
 	local conn = Input.service().InputBegan:Connect(function(input: InputObject)
 		if input.KeyCode == Enum.KeyCode.Escape then
 			fn()
+		elseif other ~= nil then
+			other(input)
 		end
 	end)
 	return function()
@@ -76,8 +79,8 @@ function PopupParts.onEscape(fn: () -> ()): () -> ()
 	end
 end
 
-function PopupParts.whileOpen(anchor: Instance, close: () -> ()): () -> ()
-	local offEscape = PopupParts.onEscape(close)
+function PopupParts.whileOpen(anchor: Instance, close: () -> (), other: ((input: InputObject) -> ())?): () -> ()
+	local offEscape = PopupParts.onEscape(close, other)
 	local offHidden = Visibility.whenHidden(anchor, close)
 	return function()
 		offEscape()
