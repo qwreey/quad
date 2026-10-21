@@ -25,7 +25,9 @@ local TextLabel = q.Elem "TextLabel"
 local UIPadding = q.Elem "UIPadding"
 local Common = require("../Common")
 local Interaction = require("../Interaction")
+local Overlay = require("../Overlay")
 local Style = require("../Style")
+local Tooltip = require("../Tooltip")
 local Util = require("../Util")
 
 type State<T> = Quad.State<T>
@@ -121,6 +123,32 @@ function TitleBar.close(open: Source<boolean>, request: (() -> ())?)
 end
 
 -- the round button's side for a title bar of this style (TextSize + the frame padding's vertical part, minus a pixel each)
+-- [2026-10-21 user decision] the full title as a hover tooltip while the label cuts it off (Dear ImGui shows a clipped
+-- tab's name the same way): the three array-part entries for a title TextLabel. `TextFits` is false exactly while the
+-- truncated text does not fit the padded label (Studio-confirmed 2026-10-21, padding included). It shows on the default
+-- Overlay only while that layer is mounted (re-read on every enter): a hint the app never asked for must not make the
+-- overlay warn in a host that shows no popups (a UI Labs story)
+function TitleBar.fullTitleTip(style: Style, title: string | State<string>): (any, any, any)
+	local fits: Source<boolean> = q.Source(true)
+	local mounted: Source<boolean> = q.Source(true)
+	local tip = Tooltip.hook({
+		Text = title,
+		Style = style,
+		Enabled = fits:Compute(function(self, _prev, isMounted)
+			return not self:Get() and isMounted:Get()
+		end, mounted),
+	})
+	local watch = q.PostRef(nil :: GuiObject?)
+	watch:Callback(function(inst)
+		if inst ~= nil then
+			inst.MouseEnter:Connect(function()
+				mounted:SetIfChanged(Overlay.getDefault().Layer.Parent ~= nil)
+			end)
+		end
+	end)
+	return q.Out "TextLabel" "TextFits" (fits), watch, tip.Hook
+end
+
 function TitleBar.buttonSize(style: Style): State<number>
 	return style.Metrics.TextSize:Compute(function(self, _prev, padding)
 		return self:Get() + (padding:Get().Y - 1) * 2
@@ -176,6 +204,7 @@ function TitleBar.new(spec: TitleBarSpec): Frame
 		return UDim2.new(1, 0, 0, self:Get())
 	end)
 
+	local fitsOut, mountWatch, titleTip = TitleBar.fullTitleTip(style, spec.Title)
 	return Frame({
 		if spec.Drag then spec.Drag.Hook else q.None,
 		Name = "TitleBar",
@@ -206,6 +235,9 @@ function TitleBar.new(spec: TitleBarSpec): Frame
 			TextXAlignment = align,
 			TextTruncate = Enum.TextTruncate.AtEnd,
 			Visible = untabbed,
+			fitsOut,
+			mountWatch,
+			titleTip,
 			UIPadding({ PaddingLeft = leftPad, PaddingRight = rightPad }),
 		}),
 		if spec.NoClose

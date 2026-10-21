@@ -8,6 +8,7 @@
 			Delay = 0.5,                                      -- seconds of hovering before it shows (default 0.5)
 			Offset = Vector2.new(12, 16),                     -- from the mouse (default 12, 16)
 			MaxWidth = 300,                                   -- wrap width for Text (default 300)
+			Enabled = true | State<boolean>,                     -- false: no tooltip shows (default true)
 			Overlay = ..., Style = ...,
 		})
 		Devui.Button({ Text = "Save", Hooks = { tip.Hook } })   -- leaf widgets take `Hooks`; on a raw element put `tip.Hook`
@@ -18,7 +19,9 @@
 	MouseLeave / Destroying. On enter a `task.delay` is scheduled; on leave or destroy it is cancelled and an open
 	tooltip is closed — nothing is left behind. When the timer fires the target must still be shown (its own and its
 	ancestors' `Visible`, the ScreenGui's `Enabled`): hiding an ancestor — closing the window the target is in — sends
-	no MouseLeave, so without that check a hint would appear for a closed window. It must also be ON TOP under the
+	no MouseLeave, so without that check a hint would appear for a closed window. `Enabled` [2026-10-21 user decision] is
+	read on enter and again when the timer fires (a hint for a window title that is cut off only — the window kit's tab
+	and title bar); turning it false while the tooltip shows does not close it — the next MouseLeave does. It must also be ON TOP under the
 	pointer (the internal Pointer rule — the engine sends MouseEnter to covered elements too): no hint for a row under
 	another window or under an open popup. A tooltip already showing when its
 	window closes goes on the next mouse move (the engine re-evaluates hover and sends MouseLeave — Studio-confirmed). The tooltip appears at the mouse position read when it SHOWS
@@ -56,6 +59,7 @@ export type TooltipProps = {
 	read Text: (string | State<string>)?,
 	read Content: (() -> Instance)?,
 	read Delay: number?,
+	read Enabled: (boolean | State<boolean>)?,
 	read Offset: Vector2?,
 	read MaxWidth: number?,
 	read Overlay: Overlay.Overlay?,
@@ -78,6 +82,15 @@ function Tooltip.hook(props: TooltipProps): TooltipHandle
 	local text = props.Text
 	if makeContent == nil and text == nil then
 		Util.fail("Tooltip.hook", "give Text or Content")
+	end
+	local enabledProp = props.Enabled
+	local function enabled(): boolean
+		if enabledProp == nil then
+			return true
+		elseif type(enabledProp) == "boolean" then
+			return enabledProp
+		end
+		return (enabledProp :: State<boolean>):Get()
 	end
 
 	local visible: Source<boolean> = q.Source(false)
@@ -133,7 +146,7 @@ function Tooltip.hook(props: TooltipProps): TooltipHandle
 		-- the target (or its window) was hidden while the timer ran: hiding an ancestor sends no MouseLeave, so the
 		-- timer was not cancelled — do not show a hint for something that is no longer on screen
 		local t = target
-		if t == nil or not Visibility.isShown(t) then
+		if t == nil or not Visibility.isShown(t) or not enabled() then
 			return
 		end
 		-- GetMouseLocation ignores the GUI inset; AbsolutePosition space includes it (see the header)
@@ -166,7 +179,7 @@ function Tooltip.hook(props: TooltipProps): TooltipHandle
 		end
 		target = inst
 		inst.MouseEnter:Connect(function()
-			if pending == nil and popup == nil then
+			if pending == nil and popup == nil and enabled() then
 				pending = task.delay(delay, show)
 			end
 		end)

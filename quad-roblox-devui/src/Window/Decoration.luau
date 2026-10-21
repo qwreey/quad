@@ -1441,6 +1441,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 	-- the row takes the window out of the group and goes on as its title-bar drag
 	if not hints.NoTitleBar then
 		local tabHover = Interaction.hover()
+		local tabFitsOut, tabMountWatch, tabTip = TitleBar.fullTitleTip(style, hints.Title)
 		local tabLook = Style.interactive(style, "Tab", tabHover.Hovered, tabHover.Pressed)
 		local tabColor: State<Color3> = drawn:Compute(function(self, _prev, normal, active)
 			return if self:Get() then active:Get() else normal:Get()
@@ -1552,6 +1553,9 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 					TextTransparency = style.Transparency.Text,
 					TextXAlignment = Enum.TextXAlignment.Left,
 					TextTruncate = Enum.TextTruncate.AtEnd,
+					tabFitsOut,
+					tabMountWatch,
+					tabTip,
 					UIPadding({ PaddingLeft = sidePad, PaddingRight = titleRight }),
 				}),
 				if hints.NoClose

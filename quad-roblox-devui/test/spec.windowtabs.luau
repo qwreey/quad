@@ -407,6 +407,41 @@ H.section("OnCloseRequest on a tab's ×; NoClose has none", function()
 	H.assertNoDebugOutput("close request")
 end)
 
+H.section("a cut-off title shows the full title as a hover tooltip (title bar and tab); a title that fits shows none", function()
+	local container = newContainer(1000, 700)
+	local m = Devui.WindowManager.new()
+	local a, b = pair(m, container)
+	local layer = Devui.Overlay.getDefault().Layer
+	local function hoverShows(label: any): string?
+		H.setMouse(10, 10)
+		H.fire(label, "MouseEnter", 10, 10)
+		H.advance(0.6)
+		local tip = H.find(layer, "Tooltip")
+		local text = if tip ~= nil then tip.Text else nil
+		H.fire(label, "MouseLeave")
+		return text
+	end
+	local title = get(a, "Title")
+	title.TextFits = false -- (the engine reports the cut-off label)
+	assert(layer.Parent == nil and hoverShows(title) == nil, "the default overlay not mounted: no tooltip (and no warning)")
+	layer.Parent = container
+	title.TextFits = true
+	assert(hoverShows(title) == nil, "fits: no tooltip")
+	title.TextFits = false
+	assert(hoverShows(title) == "A", "cut off: the full title")
+	dragTitle(b, 510, 310, { { 250, 200 } })
+	lay(container, { a, b })
+	local tabTitle = H.find(tabOf(b), "Title")
+	assert(hoverShows(tabTitle) == nil)
+	tabTitle.TextFits = false
+	assert(hoverShows(tabTitle) == "B", "a cut-off tab")
+	layer.Parent = nil
+	q.dispose(a)
+	q.dispose(b)
+	q.dispose(container)
+	H.assertNoDebugOutput("title tooltip")
+end)
+
 H.section("a group narrower than its tabs: a tab past the strip's end is not drawn (nothing clips the tabs)", function()
 	local container = newContainer(1000, 700)
 	local m = Devui.WindowManager.new()
