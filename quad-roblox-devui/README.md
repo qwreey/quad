@@ -130,7 +130,7 @@ Heartbeat는 `gallery/Clock.luau`의 `ticker`만 건드리고, 그 연결은 그
 | 창 | `Window`, `WindowManager` | 드래그·크기 조절·아이콘으로 접기·닫기 되는 창, 클릭하면 맨 앞으로(`ZIndex` 관리), 배치 내보내기·불러오기 |
 | 레이아웃 | `SameLine`, `Group`, `Indent`, `Separator`, `SeparatorText` | 가로 줄 / 세로 묶음 / 들여쓰기 / 구분선 |
 | 글 | `Text`, `TextWrapped`, `TextColored`, `TextDisabled`, `LabelText` | 한 줄·줄바꿈·색·흐림·`값 라벨` 한 줄 |
-| 버튼 | `Button`, `SmallButton` | 클릭 가능한 버튼(작은 쪽은 세로 패딩 없음), `Toggled`로 켜짐 모양(토글 단추·필터 칩) |
+| 버튼 | `Button`, `SmallButton` | 클릭 가능한 버튼(작은 쪽은 세로 패딩 없음), `Toggled`로 켜짐 모양(토글 단추·필터 칩), `Icon`(이미지 id — 글과 함께면 아이콘이 앞, 혼자면 정사각 아이콘 단추; 글 색을 따름) |
 | 선택 | `Checkbox`, `RadioButton`, `Selectable`, `SelectableOption` | 체크 / 라디오(같은 `Source` 공유) / 한 줄 선택 행 |
 | 입력 | `InputText`, `InputNum`, `DragNum`, `SliderNum`, `InputVector2`, `InputUDim2`, `InputColor3` | 글·숫자(±버튼)·드래그 숫자·슬라이더·벡터·UDim2·색 |
 | 구조 | `Tree`, `CollapsingHeader`, `TabBar` / `Tab`, `Table`, `VirtualRows` | 접히는 노드·헤더, 탭(`NoPages`면 단추 줄만 — 세그먼트 고르기), 키로 재활용되는 표, 가상화된 고정 높이 행 목록 |

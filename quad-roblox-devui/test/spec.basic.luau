@@ -192,6 +192,33 @@ H.section("Layout containers take Slot children", function()
 	H.assertNoDebugOutput("layout")
 end)
 
+H.section("Button Icon: icon only (square padding), icon + text (icon first), tinted and dimmed like the text", function()
+	local only = Devui.Button({ Icon = "rbxassetid://1", OnClick = function() end })
+	local icon = H.find(only, "Icon") :: any
+	assert(only.Text == "" and icon ~= nil and icon.Image == "rbxassetid://1" and icon.Size == UDim2.fromOffset(13, 13), "an inner ImageLabel, TextSize square")
+	local pad = H.findAll(only, function(i: any)
+		return i.ClassName == "UIPadding"
+	end)[1] :: any
+	assert(pad.PaddingLeft == pad.PaddingTop and pad.PaddingRight == pad.PaddingBottom, "even padding: square")
+	assert(H.find(only, "Label") == nil)
+	local on = q.Source(false)
+	local both = Devui.Button({ Icon = q.Source("rbxassetid://2"), Text = "Copy", Disabled = on })
+	local label = H.find(both, "Label") :: any
+	local icon2 = H.find(both, "Icon") :: any
+	assert(label.Text == "Copy" and icon2.LayoutOrder < label.LayoutOrder, "icon, then text")
+	assert(icon2.ImageColor3 == label.TextColor3 and icon2.ImageTransparency == label.TextTransparency, "the text colour")
+	local before = icon2.ImageColor3
+	on:Set(true)
+	assert(icon2.ImageColor3 == label.TextColor3 and icon2.ImageColor3 ~= before, "dimmed together (the disabled text colour)")
+	local ok, e = pcall(function()
+		Devui.Button({})
+	end)
+	assert(not ok and string.find(tostring(e), "give Text, Icon or both", 1, true) ~= nil, tostring(e))
+	q.dispose(only)
+	q.dispose(both)
+	H.assertNoDebugOutput("button icon")
+end)
+
 H.section("Button Disabled: no OnClick, resting colours under hover, dim text; LabelText Modifier targets the row Frame", function()
 	local clicks = 0
 	local off = q.Source(true)

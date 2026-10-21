@@ -2,7 +2,7 @@
 --[[
 	Buttons (Iris: Button / SmallButton).
 
-		Button      { Text: string | State<string>, OnClick: (() -> ())?, Size: UDim2 | State<UDim2>?,
+		Button      { Text: (string | State<string>)?, Icon: (string | State<string>)?, OnClick: (() -> ())?, Size: UDim2 | State<UDim2>?,
 		              Disabled: (boolean | State<boolean>)?, Toggled: (boolean | State<boolean>)?, Hooks: { any }?,
 		              Style: Style?, Modifier: ModifierInto<TextButton>? }
 		SmallButton { same }                 no vertical padding (inline with text)
@@ -15,6 +15,10 @@
 	`GuiObject.Active` and `GuiButton.Selected` are engine properties]: while true the button shows its pressed look
 	(the `ButtonActive` tokens) — a toggle button or filter chip. The button never writes it: `OnClick` flips your Source.
 	A disabled button shows its resting look either way.
+	`Icon` [2026-10-21 user decision — devplorer U22; name by a three-model review]: an image id drawn TextSize square in
+	the text colour (dimmed with it); with `Text` the icon comes first, then the text; alone it is a square icon button
+	(even padding on every side). The icon is an ImageLabel inside the button, not the button's own image — a
+	button's image fills the whole button and ignores its UIPadding (devplorer, Studio). Give `Text`, `Icon` or both.
 
 	One TextButton (+ UICorner / UIStroke / UIPadding helpers). Background colour/transparency follow
 	Button / ButtonHovered / ButtonActive tokens via Interaction.hover(); size defaults to auto (text + FramePadding).
@@ -23,7 +27,10 @@
 
 local Quad = require("./Quad")
 local q = Quad
+local ImageLabel = q.Elem "ImageLabel"
 local TextButton = q.Elem "TextButton"
+local TextLabel = q.Elem "TextLabel"
+local UIListLayout = q.Elem "UIListLayout"
 local UIPadding = q.Elem "UIPadding"
 local TextButtonModifier = q.Modifier "TextButton"
 local buttonName = TextButtonModifier():Name("Button")
@@ -31,12 +38,14 @@ local smallButtonName = TextButtonModifier():Name("SmallButton")
 local Common = require("./Common")
 local Interaction = require("./Interaction")
 local Style = require("./Style")
+local Util = require("./Util")
 
 type State<T> = Quad.State<T>
 type Style = Style.Style
 
 export type ButtonProps = {
-	read Text: string | State<string>,
+	read Text: (string | State<string>)?,
+	read Icon: (string | State<string>)?,
 	read OnClick: (() -> ())?,
 	read Size: (UDim2 | State<UDim2>)?,
 	read Disabled: (boolean | State<boolean>)?,
@@ -62,14 +71,69 @@ local function button(props: ButtonProps, small: boolean): TextButton
 	end
 	local look = Common.look(style, "Button", lookHover, enabled)
 	local textLook = Common.textLook(style, enabled)
-	local padX, framePadY = Common.padXY(style.Metrics.FramePadding)
+	local framePadX, framePadY = Common.padXY(style.Metrics.FramePadding)
+	local padX: State<UDim> | UDim = framePadX
 	local padY: State<UDim> | UDim = if small then UDim.new(0, 0) else framePadY
 	local onClick = props.OnClick
+	local text, icon = props.Text, props.Icon
+	if text == nil and icon == nil then
+		Util.fail(if small then "SmallButton" else "Button", "give Text, Icon or both")
+	end
+	-- with an icon the button's own text is empty: icon (+ text) are laid out inside it
+	local inner: { any } = {}
+	if icon ~= nil then
+		local side: State<UDim2> = style.Metrics.TextSize:Compute(function(self)
+			return UDim2.fromOffset(self:Get(), self:Get())
+		end)
+		table.insert(
+			inner,
+			UIListLayout({
+				FillDirection = Enum.FillDirection.Horizontal,
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				VerticalAlignment = Enum.VerticalAlignment.Center,
+				Padding = Util.pxX(style.Metrics.ItemInnerSpacing),
+			})
+		)
+		table.insert(
+			inner,
+			ImageLabel({
+				Name = "Icon",
+				LayoutOrder = 1,
+				Size = side,
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				Image = icon,
+				ImageColor3 = textLook.Color,
+				ImageTransparency = textLook.Transparency,
+			})
+		)
+		if text ~= nil then
+			table.insert(
+				inner,
+				TextLabel({
+					Name = "Label",
+					LayoutOrder = 2,
+					AutomaticSize = Enum.AutomaticSize.XY,
+					Size = UDim2.fromOffset(0, 0),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					Text = text,
+					FontFace = style.Metrics.TextFont,
+					TextSize = style.Metrics.TextSize,
+					TextColor3 = textLook.Color,
+					TextTransparency = textLook.Transparency,
+				})
+			)
+		end
+		if text == nil then
+			padX = padY -- (a square icon button: the same padding on every side)
+		end
+	end
 	return TextButton({
 		if small then smallButtonName else buttonName,
 		props.Modifier or q.None,
 		hover.Hook,
-		Text = props.Text,
+		Text = if icon ~= nil then "" else text :: string | State<string>,
 		FontFace = style.Metrics.TextFont,
 		TextSize = style.Metrics.TextSize,
 		TextColor3 = textLook.Color,
@@ -90,6 +154,7 @@ local function button(props: ButtonProps, small: boolean): TextButton
 		UICorner = style.Metrics.FrameRounding,
 		UIPadding({ PaddingLeft = padX, PaddingRight = padX, PaddingTop = padY, PaddingBottom = padY }),
 		Common.stroke(style),
+		q.Slot(inner :: { Instance }),
 		table.unpack(Common.hooks(props.Hooks)),
 	})
 end
