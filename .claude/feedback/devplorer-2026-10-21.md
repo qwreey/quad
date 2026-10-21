@@ -23,3 +23,9 @@
 
 - 보고서 4절(칩 폭과 자동 크기, `TextBounds` 순환)은 요청이 아니라 함정 기록 — devui가 칩을 만들 때 볼 것. 이 판정 세션에 메인이 잘린 제목 툴팁을 `TextFits`로 판정했다(Studio 실측: 잘리면 false, 패딩 반영) — 글 폭을 재는 다른 길.
 - 후보 목록의 "그 사이 devui가 이미 가져간 것"(VirtualRows, NoPages/Toggled 등)은 devplorer 쪽 걷어내기 몫.
+
+## [2026-10-21 추가] U29·U30 — 결함, 같은 날 고침
+
+- **U29 글 상자가 글을 자르지 않음.** devui의 글 상자 셋(`InputText`, 숫자 칸 `NumberField` — `InputNum`·`DragNum`, `InputColor3`의 Hex)에 `ClipsDescendants = true`(devplorer가 Studio에서 확인한 고침 그대로).
+- **U30 스크롤바가 행을 덮음.** `VerticalScrollBarInset = ScrollBar`를 `VirtualRows`·Combo 목록에, 그리고 같은 문제를 가진 `Window` 내용에도(`AvailableSize`가 이미 "스크롤바를 뺀 크기"라 그와 맞춤).
+

@@ -46,6 +46,7 @@ H.section("pool: only the rows in view exist; scrolling rebinds indices, creates
 		end,
 	})
 	assert(#rows(list) == 0, "no rows before layout")
+	assert((list :: any).VerticalScrollBarInset == Enum.ScrollBarInset.ScrollBar, "a shown scrollbar narrows the rows (not over their right end)")
 	assert((list :: any).CanvasSize == UDim2.fromOffset(0, 200000))
 	;(list :: any).AbsoluteWindowSize = Vector2.new(200, 100)
 	-- 100 px / 20 px = 5 rows in view; the pool bound is 5 + 1

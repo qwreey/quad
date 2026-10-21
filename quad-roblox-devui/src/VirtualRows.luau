@@ -176,6 +176,8 @@ local function VirtualRows(props: VirtualRowsProps): ScrollingFrame
 
 	local built = ScrollingFrame({
 		rootName,
+		-- a shown scrollbar takes its width from the rows instead of covering their right end (a row's ▾ / +). Ref: devplorer U30
+		VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar,
 		props.Modifier or q.None,
 		scrollToObserver,
 		-- the count and the row height change the range (both run once at install)

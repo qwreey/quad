@@ -173,6 +173,8 @@ local function core(spec: CoreSpec): Frame
 
 		return ScrollingFrame({
 			Name = "ComboList",
+			-- a shown scrollbar takes its width from the rows instead of covering their right end (a row's ▾ / +). Ref: devplorer U30
+			VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar,
 			Size = listSize,
 			AutomaticCanvasSize = Enum.AutomaticSize.Y,
 			CanvasSize = UDim2.fromOffset(0, 0),

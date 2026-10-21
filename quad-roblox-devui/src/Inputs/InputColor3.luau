@@ -60,6 +60,8 @@ local function hexField(style: Style, value: Source<Color3>, enabled: State<bool
 	return TextBox({
 		boxRef,
 		hover.Hook,
+		-- clip the text: a long text would run out of the box's left edge, a placeholder out of a narrow box. Ref: devplorer U29
+		ClipsDescendants = true,
 		Name = "Hex",
 		LayoutOrder = 5,
 		Text = shown,

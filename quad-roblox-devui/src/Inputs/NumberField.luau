@@ -172,6 +172,8 @@ local function build(props: FieldProps, dragging: boolean): TextBox
 		props.Spread or q.None,
 		boxRef,
 		hover.Hook,
+		-- clip the text: a long text would run out of the box's left edge, a placeholder out of a narrow box. Ref: devplorer U29
+		ClipsDescendants = true,
 		dragHook,
 		LayoutOrder = props.LayoutOrder or 0,
 		Text = shown,

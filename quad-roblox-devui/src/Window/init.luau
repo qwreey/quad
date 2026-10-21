@@ -298,6 +298,8 @@ local function Window(props: WindowProps): Frame
 		menuBar or q.None,
 		ScrollingFrame({
 			Name = "Content",
+			-- a shown scrollbar takes its width from the content instead of covering it (AvailableSize already leaves it out)
+			VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar,
 			Position = contentPosition,
 			Size = contentSize,
 			BackgroundTransparency = 1,
