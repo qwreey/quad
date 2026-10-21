@@ -135,7 +135,7 @@ Heartbeat는 `gallery/Clock.luau`의 `ticker`만 건드리고, 그 연결은 그
 | 입력 | `InputText`, `InputNum`, `DragNum`, `SliderNum`, `InputVector2`, `InputUDim2`, `InputColor3` | 글·숫자(±버튼)·드래그 숫자·슬라이더·벡터·UDim2·색 |
 | 구조 | `Tree`, `CollapsingHeader`, `TabBar` / `Tab`, `Table`, `VirtualRows` | 접히는 노드·헤더, 탭(`NoPages`면 단추 줄만 — 세그먼트 고르기), 키로 재활용되는 표, 가상화된 고정 높이 행 목록 |
 | 표시 | `ProgressBar`, `PlotLines`, `PlotHistogram` | 진행 막대, 선 그래프, 막대 그래프 |
-| 팝업 | `Combo`, `ComboArray`, `ComboEnum`, `MenuBar` / `Menu` / `MenuItem` / `MenuToggle`, `Tooltip` | 드롭다운, 메뉴(중첩 가능), 호버 툴팁 |
+| 팝업 | `Combo`, `ComboArray`, `ComboEnum`, `MenuBar` / `Menu` / `MenuItem` / `MenuToggle`, `Tooltip` | 드롭다운, 메뉴(중첩 가능 — 막대의 메뉴가 열린 동안 다른 제목에 마우스를 올리면 그 메뉴로 바뀜, 항목은 `Hooks`로 툴팁), 호버 툴팁 |
 | 기반 | `Style`, `Interaction`, `Overlay`, `WindowManager`, `NumberFormat` | 테마·입력 훅·팝업 층·창 z-순서·숫자/색 문자열 도우미 |
 
 `Kids(a, b)`는 위젯이 아니라 **함수**입니다 — `q.Slot({ a, b })`(수동 CRUD `Slot<Instance>`)를 돌려주는 도우미로, 컨테이너의

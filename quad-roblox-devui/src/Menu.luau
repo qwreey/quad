@@ -4,8 +4,8 @@
 
 		MenuBar    { Children: Slot<Instance>?, Style?, Modifier: ModifierInto<Frame>? }       a horizontal bar (MenubarBg)
 		Menu       { Text, Children: (scope: MenuScope) -> Slot<Instance>, Scope: MenuScope?, Disabled?, Overlay?, Style? }
-		MenuItem   { Text, OnClick: () -> (), Shortcut: string?, Disabled?, Scope: MenuScope?, Style? }
-		MenuToggle { Text, Value: Source<boolean>? | Checked: State<boolean>? + OnToggle?, Shortcut?, Disabled?, Scope?, Style? }
+		MenuItem   { Text, OnClick: () -> (), Shortcut: string?, Disabled?, Scope: MenuScope?, Hooks: { any }?, Style? }
+		MenuToggle { Text, Value: Source<boolean>? | Checked: State<boolean>? + OnToggle?, Shortcut?, Disabled?, Scope?, Hooks?, Style? }
 		           an item with a check mark. Two forms: `Value = source` (the item flips the Source, then calls OnToggle),
 		           or CONTROLLED `Checked = state` + `OnToggle = function(new) ... end` (the item only reports; the caller
 		           decides, e.g. maps it onto an enum Source). Neither given: an internal Source. Both given: an error.
@@ -31,9 +31,11 @@
 
 	Open behaviour: a bar item opens its popup under itself on click (toggle). The root popup has the Overlay's
 	click-outside catcher, so any click outside the chain closes it (the click does not reach the UI underneath);
-	Escape closes the whole chain. NOT implemented: Dear ImGui's hover-to-switch between open top-level menus — the
-	catcher covers the bar while a menu is open, so the bar items never see the hover (a second click on another
-	title closes the open one, a third opens it).
+	Escape closes the whole chain. HOVER TO SWITCH [2026-10-21 — devplorer U27, Dear ImGui's behaviour]: while a bar's
+	menu is open, the pointer entering another title of the same bar closes the open menu and opens that one. The
+	catcher covers the bar then, but the engine still sends MouseEnter to covered elements (Studio-confirmed
+	2026-10-20), and a bar item's hover is that raw MouseEnter. `Hooks` on MenuItem / MenuToggle (as on Button — a
+	tooltip's `.Hook`, devplorer U25) are appended to the row.
 
 	Escape is listened for only while a root menu is open (one UserInputService.InputBegan connection). The Overlay is
 	resolved when a menu OPENS (`Scope.Overlay`, else `props.Overlay`, else `Overlay.getDefault()`), and the scope handed to
@@ -89,6 +91,7 @@ export type MenuItemProps = {
 	read Shortcut: string?,
 	read Disabled: (boolean | State<boolean>)?,
 	read Scope: MenuScope?,
+	read Hooks: { any }?,
 	read Style: Style?,
 }
 
@@ -100,6 +103,7 @@ export type MenuToggleProps = {
 	read Shortcut: string?,
 	read Disabled: (boolean | State<boolean>)?,
 	read Scope: MenuScope?,
+	read Hooks: { any }?,
 	read Style: Style?,
 }
 
@@ -107,6 +111,9 @@ local Menu = {}
 
 -- scope -> its open submenu popup (weak keys: a dropped scope takes its entry along)
 local openChild: { [MenuScope]: Overlay.Popup? } = setmetatable({}, { __mode = "k" }) :: any
+-- a bar (the bar items' parent) -> its open root menu: the title and how to close it (hover to switch — header)
+type OpenRoot = { Item: Instance, Close: () -> () }
+local openRootIn: { [Instance]: OpenRoot? } = setmetatable({}, { __mode = "k" }) :: any
 
 local function disabledState(d: (boolean | State<boolean>)?): State<boolean>?
 	if d == nil then
@@ -231,6 +238,11 @@ function Menu.Menu(props: MenuProps): TextButton
 					disconnectEscape = nil
 					off()
 				end
+				local bar = anchor.Parent
+				local root = if bar ~= nil then openRootIn[bar] else nil
+				if root ~= nil and root.Item == anchor then
+					openRootIn[bar :: Instance] = nil
+				end
 			end,
 		})
 		opened = newPopup
@@ -240,6 +252,10 @@ function Menu.Menu(props: MenuProps): TextButton
 			openChild[parent] = newPopup
 		else
 			disconnectEscape = PopupParts.whileOpen(anchor, scope.CloseAll)
+			local bar = anchor.Parent
+			if bar ~= nil then
+				openRootIn[bar] = { Item = anchor, Close = closeRoot }
+			end
 		end
 	end
 
@@ -261,8 +277,18 @@ function Menu.Menu(props: MenuProps): TextButton
 		Arrow = parent ~= nil,
 		Width = if parent then "Stretch" else nil,
 		OnClick = if parent then open else toggle,
-		-- nested menus open on hover (a bar item needs a click)
-		OnHover = if parent then open else nil,
+		-- nested menus open on hover; a bar item opens on hover only while another menu of its bar is open
+		OnHover = if parent
+			then open
+			else function()
+				local self = item
+				local bar = if self ~= nil then self.Parent else nil
+				local root = if bar ~= nil then openRootIn[bar] else nil
+				if root ~= nil and root.Item ~= self then
+					root.Close()
+					open()
+				end
+			end,
 		OnDestroyed = closeRoot,
 	})
 	return item :: TextButton
@@ -283,6 +309,7 @@ function Menu.MenuItem(props: MenuItemProps): TextButton
 	return PopupParts.row({
 		Style = style,
 		Name = "MenuItem",
+		Hooks = props.Hooks,
 		Text = props.Text,
 		Shortcut = props.Shortcut,
 		Disabled = disabledState(props.Disabled),
@@ -311,6 +338,7 @@ function Menu.MenuToggle(props: MenuToggleProps): TextButton
 	return PopupParts.row({
 		Style = style,
 		Name = "MenuToggle",
+		Hooks = props.Hooks,
 		Text = props.Text,
 		Shortcut = props.Shortcut,
 		Checked = shown,

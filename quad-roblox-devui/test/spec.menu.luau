@@ -171,6 +171,48 @@ H.section("a bar item toggles its own menu; the catcher / Escape close; disabled
 	H.assertNoDebugOutput("close paths")
 end)
 
+H.section("hover to switch: while a bar menu is open, entering another title opens that one; closed, hovering does nothing", function()
+	local o = Overlay.new()
+	local bar = build(o)
+	local file, edit = titles(bar)[1], titles(bar)[2]
+	H.fire(edit, "MouseEnter", 0, 0)
+	assert(o.Count:Get() == 0, "nothing open: hovering a title opens nothing")
+	click(file)
+	assert(rowText(byName(o.Layer, "MenuItem")[1]) == "Open")
+	H.fire(edit, "MouseEnter", 0, 0)
+	assert(o.Count:Get() == 1 and rowText(byName(o.Layer, "MenuItem")[1]) == "Undo", "switched to Edit")
+	H.fire(edit, "MouseEnter", 0, 0)
+	assert(o.Count:Get() == 1, "the open one's own title: no change")
+	H.fire(file, "MouseEnter", 0, 0)
+	assert(rowText(byName(o.Layer, "MenuItem")[1]) == "Open", "and back")
+	escape()
+	assert(o.Count:Get() == 0)
+	H.fire(edit, "MouseEnter", 0, 0)
+	assert(o.Count:Get() == 0, "closed again: hovering opens nothing")
+	q.dispose(bar)
+	q.dispose(o.Layer)
+	H.assertNoDebugOutput("hover switch")
+end)
+
+H.section("Hooks on MenuItem / MenuToggle ride on the row", function()
+	local seen: { string } = {}
+	local function marker(tag: string): any
+		local ref = q.PostRef(nil :: Instance?)
+		ref:Callback(function(inst)
+			if inst ~= nil then
+				table.insert(seen, `{tag}:{inst.Name}`)
+			end
+		end)
+		return ref
+	end
+	local item = MenuModule.MenuItem({ Text = "Copy", OnClick = function() end, Hooks = { marker("item") } })
+	local toggle = MenuModule.MenuToggle({ Text = "Wrap", Hooks = { marker("toggle") } })
+	assert(table.concat(seen, ",") == "item:MenuItem,toggle:MenuToggle", table.concat(seen, ","))
+	q.dispose(item)
+	q.dispose(toggle)
+	H.assertNoDebugOutput("menu hooks")
+end)
+
 H.section("MenuToggle flips its Source and closes; the check mark follows the Source", function()
 	local o = Overlay.new()
 	local bar, probe = build(o)

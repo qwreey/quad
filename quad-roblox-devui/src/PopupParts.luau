@@ -56,6 +56,8 @@ export type RowSpec = {
 	Width: ("Fill" | "Stretch")?,
 	-- run when the row is destroyed (Menu closes its popup here)
 	OnDestroyed: (() -> ())?,
+	-- hook values appended at the end of the row's array part (a menu item's tooltip — the `Hooks` prop)
+	Hooks: { any }?,
 }
 
 local PopupParts = {}
@@ -250,6 +252,7 @@ function PopupParts.row(spec: RowSpec): TextButton
 				onDestroyed()
 			end)
 			else q.None,
+		table.unpack(spec.Hooks or {}),
 	})
 end
 
