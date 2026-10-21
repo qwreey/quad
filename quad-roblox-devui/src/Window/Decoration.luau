@@ -557,6 +557,12 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		if container ~= nil and container.AbsoluteSize.X > 0 then
 			local half = container.AbsoluteSize.X / frameScale() / 2
 			w = math.min(w, half)
+			-- a split panel whose leaves' floors do not fit in half the container: they give way (header SPLITS — the
+			-- seams shrink both sides to the plain floor), so the width handle keeps a range down to that floor
+			local v = view:Get()
+			if v ~= nil and v.Split and floor > half then
+				floor = 2 * style.FrameHeight:Get()
+			end
 		end
 		return math.round(math.max(floor, w))
 	end

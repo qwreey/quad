@@ -175,7 +175,9 @@
 	- Splitters: one per split (the `WindowSplitter` of its second side's first visible leaf); dragging it sets Ratio,
 	  kept so neither side goes below its floor — a leaf's floor is its windows' largest MinSize (a folded one: its row
 	  along the fold); along a split's axis its floor is the sum of its sides', across it the larger. The unit's resize
-	  floor is its tree's. A floating unit's and a docked panel's width are pixels (the seam is kept inside the floors
+	  floor is its tree's. [2026-10-21 user decision] Floors that cannot both fit in a split give way: both sides may
+	  then shrink to the plain floor (2 x FrameHeight), so the seam always moves; a docked split panel whose tree floor
+	  is over half its container has the same plain floor for its width handle. A floating unit's and a docked panel's width are pixels (the seam is kept inside the floors
 	  and rounded as it is drawn); a docked panel's height is the container's (the ratio is a share of it; at the panel's
 	  current height a seam that would cross a floor stops at it, the saved Ratio unchanged — relaid on every container
 	  size change through `Control.Resized`). Hidden while either side is a folded leaf, or with an open NoResize window in
@@ -805,8 +807,21 @@ function Manager.new(): Manager
 			local fold1 = c1.Tag == "Leaf" and c1.Fold
 			local fold2 = c2.Tag == "Leaf" and c2.Fold
 			local m1, m2 = minOf(c1, node.Axis), minOf(c2, node.Axis)
-			local min1 = if alongX then m1.X else m1.Y
-			local min2 = if alongX then m2.X else m2.Y
+			local min1: number = if alongX then m1.X else m1.Y
+			local min2: number = if alongX then m2.X else m2.Y
+			-- [2026-10-21 user decision] floors that cannot both fit give way: both sides may then shrink to the plain
+			-- floor (2 x FrameHeight), so the seam (and the panel's width handle) always moves — a window narrower than
+			-- its MinSize is then the user's own choice. Ref: devplorer Output (MinSize 560) beside the 300-wide main
+			-- window on a docked panel pinned both handles
+			local span: number = if pixel
+				then iv[4] - iv[2]
+				elseif panelH > 0 then (iv[3] - iv[1]) * panelH + (iv[4] - iv[2])
+				else math.huge
+			if min1 + min2 > span then
+				local plain: number = 2 * foldSize(edgeLeaf(c1, false))
+				min1 = math.min(min1, plain)
+				min2 = math.min(min2, plain)
+			end
 			local mf, mp
 			-- (never both: the fold rule — normalizeFolds — unfolds the second side first)
 			if fold1 and c1.Tag == "Leaf" then

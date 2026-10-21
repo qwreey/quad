@@ -553,6 +553,38 @@ H.section("a docked top / bottom split keeps its seam off the floors when the co
 	H.assertNoDebugOutput("docked seam floor")
 end)
 
+H.section("floors that cannot both fit give way: the seam and the docked panel's width handle still move", function()
+	-- the devplorer shape: a 300-wide main window docked left, an Output with MinSize 560 split off its right
+	local container = newContainer(1000, 700)
+	local m = Devui.WindowManager.new()
+	local a = window(m, container, "a", 100, 100, 300, 200, { MinSize = Vector2.new(300, 150) })
+	local o = window(m, container, "o", 500, 300, 560, 300, { MinSize = Vector2.new(560, 300) })
+	dragTitle(a.win, 150, 110, { { 3, 110 } })
+	dragTitle(o.win, 550, 310, { { 300, 350 } }) -- A's right band
+	relay()
+	assert(frameOf(a.win).Size == UDim2.new(0, 150, 1, 0) and frameOf(o.win).Position == UDim2.new(0, 19 + 150, 0, 0), `cut in half, floors relaxed ({where(a.win)} / {where(o.win)})`)
+	-- the seam moves although 300 + 560 > 300
+	dragSplitter(o.win, 50, 0)
+	assert(frameOf(a.win).Size == UDim2.new(0, 200, 1, 0), `the seam moved ({where(a.win)})`)
+	-- the width handle: the unit's floor (860) is over half the container (500), so its range goes down to the plain floor
+	local handle = part(o.win, "WindowDockResize")
+	local hx, hy = handle.AbsolutePosition.X + 2, 300
+	press(hx, hy)
+	H.fire(handle, "InputBegan", mouse(M1, hx, hy))
+	moveTo(hx + 100, hy)
+	release(hx + 100, hy)
+	relay()
+	assert((m:ExportLayout().Left :: any).Width == 400, `widened to 400 (not pinned at 860) — {(m:ExportLayout().Left :: any).Width}`)
+	press(hx + 100, hy)
+	H.fire(part(o.win, "WindowDockResize"), "InputBegan", mouse(M1, hx + 100, hy))
+	moveTo(hx - 100, hy)
+	release(hx - 100, hy)
+	relay()
+	assert((m:ExportLayout().Left :: any).Width == 200, "narrowed to 200")
+	disposeAll(container, { a, o })
+	H.assertNoDebugOutput("floors give way")
+end)
+
 H.section("a strip's empty area moves the whole unit (floating and docked); a tab dragged out leaves its leaf", function()
 	local container = newContainer(1000, 700)
 	local m = Devui.WindowManager.new()
