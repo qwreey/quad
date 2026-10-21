@@ -109,6 +109,7 @@ local ProgressModule = require("@self/Progress")
 local PlotModule = require("@self/Plot")
 local Combo = require("@self/Combo")
 local Menu = require("@self/Menu")
+local Dialog = require("@self/Dialog")
 local Tooltip = require("@self/Tooltip")
 local VirtualRows = require("@self/VirtualRows")
 
@@ -158,6 +159,10 @@ export type MenuHandle = Menu.MenuHandle
 export type OpenMenuProps = Menu.OpenMenuProps
 export type MenuButtonProps = Menu.MenuButtonProps
 export type PopupPanelProps = Menu.PopupPanelProps
+export type DialogModal = Dialog.DialogModal
+export type DialogHandle = Dialog.DialogHandle
+export type OpenDialogProps = Dialog.OpenDialogProps
+export type OpenConfirmProps = Dialog.OpenConfirmProps
 export type TooltipProps = Tooltip.TooltipProps
 export type TooltipHandle = Tooltip.TooltipHandle
 export type VirtualRowsProps = VirtualRows.VirtualRowsProps
@@ -235,6 +240,8 @@ local Devui = {
 	OpenMenu = Menu.OpenMenu,
 	MenuButton = Menu.MenuButton,
 	PopupPanel = Menu.PopupPanel,
+	OpenDialog = Dialog.OpenDialog,
+	OpenConfirm = Dialog.OpenConfirm,
 	Tooltip = Tooltip.Tooltip,
 }
 

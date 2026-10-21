@@ -129,6 +129,7 @@
 - `naming-devui-2026-10-20/` — **[2026-10-20, Gemini·sonnet·codex luna 이름 검토 — codex 첫 실사용]** devui 새 prop 넷과 구현한 셋 — `Toggled`(셋 다)·`NoPages`·`TabRounding` 유지·`OnFrame`(둘)·`AvailableSize`(Roblox `AbsoluteContentSize`와 반대 뜻)·`ScrollToRow`·`Focused` 양방향, 사용자 전부 동의.
 - `naming-devui-2026-10-21/` — **[2026-10-21, Gemini·sonnet·codex luna 이름 검토]** devui 창 메뉴바 자리 `MenuBar`(luna·Gemini; sonnet은 `Header`)와 버튼 아이콘 `Icon`(Gemini·sonnet; luna는 `IconImage`) — 다수안으로 구현, 위젯 `Devui.MenuBar`는 셋 다 범용 유지.
 - `naming-devui-2026-10-21b/` — **[2026-10-21, 세 계열 이름 검토]** devui 팝업 다섯 — `AnchorRect`·`PopupPanel`·`OpenMenu`·`MenuButton`(`Children`)·`KeepOpen`, 다수안으로 구현.
+- `naming-devui-2026-10-21c/` — **[2026-10-21, 세 계열 이름 검토]** devui 대화상자 — `OpenDialog`·`Modal`(`"None"|"Window"|"Global"`)·`OpenConfirm`(`ConfirmLabel`/`CancelLabel`, `OnResult`), 다수안으로 구현.
 - `naming-spread-into-2026-10-20/` — **[2026-10-20, Gemini·sonnet·codex luna 이름 검토]** Spread 입력 이름 — `SpreadInto<C>`(셋 다 유지)·`FieldSpread`/`TrackSpread` 유지·`:Add`→`:Append`(먼저가 이김 규칙에서 `Add`는 덮어쓰기로 읽힘), 사용자 확정(`research/component-flatten-sugar-plan.md` 5절 끝).
 - `naming-classmap-escape-2026-10-20/` — **[2026-10-20, Gemini·sonnet·codex luna 이름 검토]** 사용자 클래스 맵 탈출구 — 셋 다 `With` 변경, 1순위 `For`·`Classes`·`ForClasses`로 갈림 → `q.ForClasses` 사용자 확정(`research/declaration-surface-plan.md` 5절 끝).
 - `naming-onevent-2026-10-16/` — **[2026-10-16, sonnet·Gemini 이름 탐색]** `OnChange`의 짝인 배열부 이벤트 디스크립터 — 둘 다 `OnEvent` 추천(차선 sonnet `On`, Gemini `Connect`).
