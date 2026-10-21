@@ -33,15 +33,27 @@
 		WindowState = { Kind = "outline", Open = true, Collapsed = false, Position = { 0, 60, 0, 60 }, Size = { 300, 200 },
 		                Dock = "Left", DockWidth = 280 }   -- Dock / DockWidth: nil = floating
 
-	The layout is a TREE from the start (`.claude/research/devui-docking-plan.md` 2.5): a node is a tab set (later also
-	a two-way split), and a floating window is a group whose node is a tab set with one tab. [2026-10-21 user decisions —
-	docking stage 3] A node may hold several tabs (a tab group: unique keys, `Selected` one of them; a closed tab stays
-	in its node with `Windows[key].Open = false`); a split is still rejected. A window's own facts (its Kind, whether it
-	is open) live in `Windows`, the group's (rectangle, collapsed, edge) in `Floating`, `Left` and `Right`. Every key
-	of `Windows` has exactly one place (one node of a floating group or an edge).
+	The layout is a TREE from the start (`.claude/research/devui-docking-plan.md` 2.5): a node is a tab set or a two-way
+	split, and a floating window is a group whose node is a tab set with one tab. [2026-10-21 user decisions — docking
+	stage 3] A tab set may hold several tabs (a tab group: unique keys, `Selected` one of them; a closed tab stays in its
+	node with `Windows[key].Open = false`). A window's own facts (its Kind, whether it is open) live in `Windows`, the
+	group's (rectangle, collapsed, edge) in `Floating`, `Left` and `Right`. Every key of `Windows` has exactly one place
+	(one tab set somewhere in one node tree of a floating group or an edge).
+	SPLITS [2026-10-21 user decisions — docking stage 4]: a node is either a tab set (a LEAF)
+		{ Tabs = { key, ... }, Selected = key, Collapsed = true? }
+	or a split
+		{ Split = "LeftRight" | "TopBottom", Ratio = 0.5, Children = { <node>, <node> } }
+	`Split` names the two children's places (left | right, top / bottom — "Horizontal" / "Vertical" were avoided: tools
+	disagree on what they mean), `Ratio` is the FIRST child's share of the split's length (left / top), strictly between 0
+	and 1, and `Children` holds exactly two nodes (splits nest to any depth). A leaf's `Collapsed` says that leaf is
+	folded inside its split (written only when true and only for a leaf inside a split; read as false when absent, and
+	ignored on a leaf that is the whole node). The group-level `Collapsed` of a node with a split is the docked panel's
+	(a floating split unit is never an icon — read as false there). A key may appear only once in the whole layout.
+	The saved rectangles of a split unit follow the tab-group rule below with "the node" = the whole tree: a key gets its
+	own kept rectangle in `Windows[key]` when the tree holds two or more saved keys.
 	A TAB'S OWN RECTANGLE [2026-10-21 user decision]: while grouped, a window's Position / Size Sources keep the
 	rectangle it had before it joined (the group's rectangle is the node's). `Windows[key].Position` / `Size` carry
-	that kept rectangle — written only in a node of two or more saved (keyed) tabs, for a member that has one
+	that kept rectangle — written only in a node (tree) of two or more saved (keyed) tabs, for a member that has one
 	(a window that joined by a drag has one; one grouped by a load without these fields has none), read back as that
 	window's kept rectangle (it goes back to it when its tab is dragged out). A window without them is dragged out at
 	the group's Size. A single window's rectangle stays in its node's group, as before.
@@ -78,12 +90,18 @@ export type WindowEntry = {
 	Size: { number }?,
 }
 
-export type TabNode = { Tabs: { string }, Selected: string }
+export type SplitAxis = "LeftRight" | "TopBottom"
+
+-- a leaf: a tab set (`Collapsed` = folded inside its split; header SPLITS)
+export type TabNode = { Tabs: { string }, Selected: string, Collapsed: boolean?, Split: nil }
+-- a two-way split: `Ratio` = the first child's share
+export type SplitNode = { Split: SplitAxis, Ratio: number, Children: { Node }, Tabs: nil }
+export type Node = TabNode | SplitNode
 
 export type DockGroup = {
 	Width: number,
 	Collapsed: boolean,
-	Node: TabNode,
+	Node: Node,
 	Position: { number }?, -- the floating rectangle it goes back to when undocked (exported for a live window; a pending key may lack it)
 	Size: { number }?,
 }
@@ -95,7 +113,7 @@ export type WindowLayout = {
 		Position: { number },
 		Size: { number },
 		Collapsed: boolean,
-		Node: TabNode,
+		Node: Node,
 	} },
 	Left: DockGroup?,
 	Right: DockGroup?,
@@ -103,8 +121,7 @@ export type WindowLayout = {
 
 -- what the manager hands `build` per saved group (a plain window is a unit of one tab), in stacking order
 export type Unit = {
-	Tabs: { string },
-	Selected: string,
+	Node: Node,
 	Windows: { [string]: WindowEntry },
 	Collapsed: boolean,
 	Position: { number }?, -- the group's floating rectangle (nil only for a pending edge state read without one)
@@ -113,10 +130,11 @@ export type Unit = {
 	Width: number?,
 }
 
--- what `read` hands the manager per node (docked ones first, then `Floating` in order)
+-- what `read` hands the manager per group (docked ones first, then `Floating` in order): its node tree (checked, a
+-- private copy) and its keys in tree order
 export type ReadNode = {
-	Tabs: { string },
-	Selected: string,
+	Node: Node,
+	Keys: { string },
 	Collapsed: boolean,
 	Position: { number }?,
 	Size: { number }?,
@@ -167,6 +185,35 @@ function Layout.copyState(s: WindowState): WindowState
 	}
 end
 
+-- THE pruning rule of a node tree (header SPLITS), shared by saving, loading and the manager's live tree so the three
+-- never disagree: a leaf `keep` refuses is dropped, a split left with one side is that side, a split keeping both is
+-- `rebuild(split, first, second)`. `sides` tells a split's children (nil for a leaf). nil = nothing left.
+function Layout.prune<N>(node: N, sides: (N) -> (N?, N?), keep: (N) -> boolean, rebuild: (N, N, N) -> N): N?
+	local a, b = sides(node)
+	if a == nil or b == nil then
+		return if keep(node) then node else nil
+	end
+	local x = Layout.prune(a, sides, keep, rebuild)
+	local y = Layout.prune(b, sides, keep, rebuild)
+	if x ~= nil and y ~= nil then
+		return rebuild(node, x, y)
+	end
+	return x or y
+end
+
+-- a private copy of a node tree
+function Layout.cloneNode(node: Node): Node
+	if node.Split ~= nil then
+		local split: SplitNode = { Split = node.Split, Ratio = node.Ratio, Children = { Layout.cloneNode(node.Children[1]), Layout.cloneNode(node.Children[2]) } }
+		return split
+	end
+	local out: TabNode = { Tabs = table.clone(node.Tabs), Selected = node.Selected }
+	if node.Collapsed == true then
+		out.Collapsed = true
+	end
+	return out
+end
+
 -- an empty layout (no window)
 function Layout.empty(): WindowLayout
 	return { Version = Layout.VERSION, Windows = {}, Floating = {} }
@@ -180,7 +227,7 @@ function Layout.build(units: { Unit }, holders: { [Side]: Unit }): WindowLayout
 		for key, w in unit.Windows do
 			out.Windows[key] = { Kind = w.Kind, Open = w.Open, Position = cloneOpt(w.Position), Size = cloneOpt(w.Size) }
 		end
-		local node: TabNode = { Tabs = table.clone(unit.Tabs), Selected = unit.Selected }
+		local node = Layout.cloneNode(unit.Node)
 		local side = unit.Dock
 		if side ~= nil and holders[side] == unit then
 			local group: DockGroup = {
@@ -310,13 +357,42 @@ function Layout.readState(component: string, state: any): WindowState
 	return Layout.copyState(state)
 end
 
--- a tab-set node: one or more unique string keys, Selected one of them; returns its tabs
-local function readNode(component: string, where: string, node: any): { string }
-	if type(node) ~= "table" or type(node.Tabs) ~= "table" then
-		Util.fail(component, `{where}.Node must be a tab set \{ Tabs = \{ key, ... }, Selected = key }`)
+-- a node tree (header SPLITS): every leaf a tab set of one or more string keys, Selected one of them; every split a
+-- known `Split`, a `Ratio` in (0, 1) and exactly two children; no key twice in the tree. Returns a private copy, and
+-- appends the keys to `keys` in tree order.
+local function readNode(component: string, where: string, node: any, keys: { string }, seen: { [string]: true }): Node
+	if type(node) ~= "table" then
+		return Util.fail(component, `{where} must be a tab set \{ Tabs = \{ key, ... }, Selected = key } or a split \{ Split = "LeftRight" | "TopBottom", Ratio = number, Children = \{ node, node } }`)
 	end
 	if node.Split ~= nil then
-		Util.fail(component, `{where}.Node: splits are not supported by this devui yet (a node is a tab set)`)
+		if node.Tabs ~= nil then
+			Util.fail(component, `{where}: a node is either a tab set (Tabs) or a split (Split), not both`)
+		end
+		local axis = node.Split
+		if axis ~= "LeftRight" and axis ~= "TopBottom" then
+			Util.fail(component, `{where}.Split must be "LeftRight" or "TopBottom", got {tostring(axis)}`)
+		end
+		local ratio = node.Ratio
+		if not isFinite(ratio) or ratio <= 0 or ratio >= 1 then
+			Util.fail(component, `{where}.Ratio must be a number strictly between 0 and 1 (the first child's share), got {tostring(ratio)}`)
+		end
+		local children = node.Children
+		local count = 0
+		if type(children) == "table" then
+			for _ in children do
+				count += 1
+			end
+		end
+		if type(children) ~= "table" or count ~= 2 or children[1] == nil or children[2] == nil then
+			Util.fail(component, `{where}.Children must be an array of exactly two nodes`)
+		end
+		local first = readNode(component, `{where}.Children[1]`, children[1], keys, seen)
+		local second = readNode(component, `{where}.Children[2]`, children[2], keys, seen)
+		local split: SplitNode = { Split = axis, Ratio = ratio, Children = { first, second } }
+		return split
+	end
+	if type(node.Tabs) ~= "table" then
+		Util.fail(component, `{where} must be a tab set \{ Tabs = \{ key, ... }, Selected = key } or a split \{ Split = "LeftRight" | "TopBottom", Ratio = number, Children = \{ node, node } }`)
 	end
 	local tabs = node.Tabs
 	local n = #tabs
@@ -325,23 +401,32 @@ local function readNode(component: string, where: string, node: any): { string }
 		count += 1
 	end
 	if n == 0 or count ~= n then
-		Util.fail(component, `{where}.Node.Tabs must be a non-empty array of keys`)
+		Util.fail(component, `{where}.Tabs must be a non-empty array of keys`)
 	end
-	local seen: { [string]: true } = {}
+	local own: { [string]: true } = {}
 	for i = 1, n do
 		local key = tabs[i]
 		if type(key) ~= "string" then
-			Util.fail(component, `{where}.Node.Tabs[{i}] must be a string key`)
+			Util.fail(component, `{where}.Tabs[{i}] must be a string key`)
 		end
 		if seen[key] then
-			Util.fail(component, `{where}.Node.Tabs lists "{key}" twice`)
+			Util.fail(component, `{where}.Tabs lists "{key}" twice`)
 		end
 		seen[key] = true
+		own[key] = true
+		table.insert(keys, key)
 	end
-	if type(node.Selected) ~= "string" or not seen[node.Selected] then
-		Util.fail(component, `{where}.Node: Selected must be one of its Tabs`)
+	if type(node.Selected) ~= "string" or not own[node.Selected] then
+		Util.fail(component, `{where}: Selected must be one of its Tabs`)
 	end
-	return table.clone(tabs)
+	if node.Collapsed ~= nil and type(node.Collapsed) ~= "boolean" then
+		Util.fail(component, `{where}.Collapsed must be a boolean or nil (the leaf folded inside its split)`)
+	end
+	local out: TabNode = { Tabs = table.clone(tabs), Selected = node.Selected }
+	if node.Collapsed == true then
+		out.Collapsed = true
+	end
+	return out
 end
 
 local function windowOf(component: string, windows: any, key: string): WindowEntry
@@ -359,11 +444,11 @@ local function windowOf(component: string, windows: any, key: string): WindowEnt
 	return w
 end
 
--- a WindowLayout from the app (ImportLayout): its windows as keys in stacking order (the edge-docked nodes first, then
+-- a WindowLayout from the app (ImportLayout): its windows as keys in stacking order (the edge-docked groups first, then
 -- the floating ones in Floating order — the stacking an import applies: docked windows under the floating), a private
--- state per key and the nodes (groups). A key of a node with several tabs gets the node's collapsed / edge and its
--- own kept rectangle (`Windows[key].Position` / `Size`, nil when absent); a key alone in its node gets the node's
--- rectangle, as before.
+-- state per key and the groups (their node trees). A key of a tree with several tabs gets the group's collapsed / edge
+-- and its own kept rectangle (`Windows[key].Position` / `Size`, nil when absent); a key alone in its tree gets the
+-- group's rectangle, as before.
 function Layout.read(component: string, layout: any): ({ string }, { [string]: WindowState }, { ReadNode })
 	if type(layout) ~= "table" then
 		Util.fail(component, `layout must be a WindowLayout table, got {typeof(layout)}`)
@@ -387,15 +472,20 @@ function Layout.read(component: string, layout: any): ({ string }, { [string]: W
 		placedAt[key] = where
 		table.insert(keys, key)
 	end
-	-- one node's keys: placed, and a state each (`rect` = the group's floating rectangle)
+	-- one group's keys: placed, and a state each (`rect` = the group's floating rectangle). A leaf at the root of the
+	-- tree drops its `Collapsed` (header SPLITS: only a leaf inside a split folds)
 	local function readGroup(where: string, group: any, side: Side?, width: number?)
-		local tabs = readNode(component, where, group.Node)
+		local tabs: { string } = {}
+		local tree = readNode(component, `{where}.Node`, group.Node, tabs, {})
+		if tree.Split == nil then
+			tree.Collapsed = nil
+		end
 		local position: { number }? = if group.Position ~= nil then table.clone(group.Position) else nil
 		local size: { number }? = if group.Size ~= nil then table.clone(group.Size) else nil
+		local alone = #tabs == 1
 		for _, key in tabs do
 			place(key, where)
 			local w = windowOf(component, windows, key)
-			local alone = #tabs == 1
 			states[key] = {
 				Kind = w.Kind,
 				Open = w.Open,
@@ -407,8 +497,8 @@ function Layout.read(component: string, layout: any): ({ string }, { [string]: W
 			}
 		end
 		table.insert(nodes, {
-			Tabs = tabs,
-			Selected = group.Node.Selected,
+			Node = tree,
+			Keys = tabs,
 			Collapsed = group.Collapsed,
 			Position = position,
 			Size = size,
@@ -421,7 +511,7 @@ function Layout.read(component: string, layout: any): ({ string }, { [string]: W
 		if found ~= nil then
 			local where = `layout.{side}`
 			if type(found) ~= "table" then
-				Util.fail(component, `{where} must be \{ Width = number, Collapsed = boolean, Node = \{ Tabs = \{ key }, Selected = key } } or nil`)
+				Util.fail(component, `{where} must be \{ Width = number, Collapsed = boolean, Node = <tab set or split> } or nil`)
 			end
 			local group: any = found
 			checkWidth(`{where}.Width`, component, group.Width)

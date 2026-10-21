@@ -8,7 +8,12 @@
 	in the title bar's place. The strip IS the drawn window's title bar with its title and close button hidden
 	(`Tabbed`): the same background colours by focus, the collapse arrow at the left (hidden by `CanCollapse` when a
 	window of the group has NoCollapse), and its empty area drags the group. The tabs themselves are decoration parts of
-	each window, laid over this row by Window/Decoration.luau ("TABS").
+	each window, laid over this row by Window/Decoration.luau ("TABS"). In a split every leaf shows its strip, even with
+	one window.
+
+	FOLDED [2026-10-21 user decision — docking stage 4]: a leaf of a split folded along a top / bottom split keeps just
+	this row, its arrow pointing right (Dear ImGui's collapsed arrow); folded along a left | right split it is a bar the
+	decoration draws instead, and this row hides (`Shown`).
 ]]
 
 local Quad = require("../Quad")
@@ -39,6 +44,8 @@ export type TitleBarSpec = {
 	Drag: Interaction.DragHandle?,
 	Tabbed: State<boolean>, -- the tab strip replaces the title and the close button (header TAB STRIP)
 	CanCollapse: State<boolean>, -- the group allows collapsing (the arrow's Visible)
+	Shown: State<boolean>, -- the bar's Visible (a leaf folded to a bar hides it — header FOLDED)
+	Folded: State<boolean>, -- the leaf is folded to this row: the arrow points right (header FOLDED)
 }
 
 local TitleBar = {}
@@ -51,7 +58,8 @@ local function titleButton(
 	side: "Left" | "Right",
 	size: State<number>,
 	shown: State<boolean>,
-	visible: State<boolean>?
+	visible: State<boolean>?,
+	rotation: State<number>?
 )
 	local hover = Interaction.hover()
 	local look = Common.headerLook(style, hover, nil, false)
@@ -93,6 +101,7 @@ local function titleButton(
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			Image = icon,
+			Rotation = rotation or 0,
 			ImageColor3 = style.Color.Text,
 			ImageTransparency = style.Transparency.Text,
 		}),
@@ -175,12 +184,15 @@ function TitleBar.new(spec: TitleBarSpec): Frame
 		BackgroundTransparency = bgAlpha,
 		BorderSizePixel = 0,
 		Active = true,
+		Visible = spec.Shown,
 		UIPadding({ PaddingLeft = sidePad, PaddingRight = sidePad }),
 		if spec.NoCollapse
 			then q.None
 			else titleButton(style, arrow, function()
 				collapsed:Set(not collapsed:Get())
-			end, "Left", buttonSize, shown, spec.CanCollapse),
+			end, "Left", buttonSize, shown, spec.CanCollapse, spec.Folded:Compute(function(self)
+				return if self:Get() then -90 else 0
+			end)),
 		TextLabel({
 			Name = "Title",
 			Size = UDim2.fromScale(1, 1),

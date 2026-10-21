@@ -242,20 +242,28 @@ H.section("join by the title row: the preview covers the target, release makes o
 	H.assertNoDebugOutput("title row")
 end)
 
-H.section("join by the centre (last tab); the four bands are kept for splits: no preview, no join", function()
+H.section("join by the centre (last tab); the four bands preview a split of the target (docking stage 4)", function()
 	local container = newContainer(1000, 700)
 	local m = Devui.WindowManager.new()
 	local a, b = pair(m, container)
+	-- (stage 3 kept these bands empty; since stage 4 they split the target — the split itself is spec.windowsplit's,
+	-- here only the half previews, and a release away from A)
+	local function previewIs(x: number, y: number, w: number, h: number): boolean
+		local p = previewOf(b)
+		return p ~= nil and p.Position == UDim2.fromOffset(x, y) and p.Size == UDim2.fromOffset(w, h)
+	end
 	dragTitle(b, 510, 310, { { 120, 200 } }, true) -- x 0.07: the left band
-	assert(previewOf(b) == nil, "left band")
+	assert(previewIs(100, 100, 150, 200), "left band: A's left half")
 	moveTo(250, 290) -- y 0.95: the bottom band
-	assert(previewOf(b) == nil, "bottom band")
+	assert(previewIs(100, 200, 300, 100), "bottom band: A's bottom half")
 	moveTo(250, 125) -- y 0.125 (below the title row): the top band
-	assert(previewOf(b) == nil, "top band")
+	assert(previewIs(100, 100, 300, 100), "top band: A's top half")
 	moveTo(390, 200)
-	assert(previewOf(b) == nil, "right band")
-	release(390, 200)
-	assert(frameOf(a).Visible and frameOf(b).Visible and tabOf(a).Visible == false, "released in a band: nothing joined")
+	assert(previewIs(250, 100, 150, 200), "right band: A's right half")
+	moveTo(800, 600)
+	assert(previewOf(b) == nil, "away from A: no preview")
+	release(800, 600)
+	assert(frameOf(a).Visible and frameOf(b).Visible and tabOf(a).Visible == false, "released away: nothing joined")
 	lay(container, { a, b })
 	dragTitle(b, 400, 260, { { 250, 200 } }, true) -- the centre
 	assert(previewOf(b) ~= nil and previewOf(b).Position == frameOf(a).Position)
@@ -424,7 +432,7 @@ H.section("a group shrinking to one window: it takes the group's rectangle and i
 	assert(frameOf(a).Visible and get(a, "Title").Visible and tabOf(a).Visible == false and frameOf(a).Position == UDim2.fromOffset(150, 150))
 	assert(s.sb:Get() == Vector2.new(200, 150), "B at its own size")
 	local layout = m:ExportLayout()
-	assert(#layout.Floating == 2 and #layout.Floating[1].Node.Tabs == 1 and layout.Windows.a.Position == nil, "two plain windows")
+	assert(#layout.Floating == 2 and #(layout.Floating[1].Node :: any).Tabs == 1 and layout.Windows.a.Position == nil, "two plain windows")
 	q.dispose(a)
 	q.dispose(b)
 	q.dispose(container)
@@ -699,7 +707,8 @@ H.section("layout: a tab group round-trips (closed tab, kept rectangles, keyless
 	H.resetOutput() -- (the key-less notice)
 	assert(#layout.Floating == 1, "one group")
 	local g = layout.Floating[1]
-	assert(table.concat(g.Node.Tabs, ",") == "a,b,c" and g.Node.Selected == "c", `tabs {table.concat(g.Node.Tabs, ",")}`)
+	local gn: any = g.Node
+	assert(table.concat(gn.Tabs, ",") == "a,b,c" and gn.Selected == "c", `tabs {table.concat(gn.Tabs, ",")}`)
 	assert(g.Position[2] == 100 and g.Position[4] == 100 and g.Size[1] == 300 and g.Size[2] == 200, "the group's rectangle")
 	assert(layout.Windows.b.Open == false and layout.Windows.k == nil, "the closed tab is kept; the keyless one is left out")
 	local wb, wc = layout.Windows.b :: any, layout.Windows.c :: any
@@ -754,7 +763,8 @@ H.section("layout: a group the keyless windows leave with one saved tab is saved
 	local layout = m:ExportLayout()
 	H.resetOutput() -- (the key-less notice)
 	local g = layout.Floating[1]
-	assert(#layout.Floating == 1 and #g.Node.Tabs == 1 and g.Node.Tabs[1] == "a", "only the keyed window is saved")
+	local gn: any = g.Node
+	assert(#layout.Floating == 1 and #gn.Tabs == 1 and gn.Tabs[1] == "a", "only the keyed window is saved")
 	assert((layout.Windows.a :: any).Position == nil and (layout.Windows.a :: any).Size == nil, "a one-tab node carries no own rectangle")
 	for _, w in { a, k } do
 		q.dispose(w)
@@ -832,11 +842,11 @@ H.section("rebuilding the UI: a destroyed keyed tab waits in its group and comes
 	dragTitle(k, 710, 460, { { 250, 200 } })
 	q.dispose(k)
 	H.resetOutput()
-	assert(#(m:ExportLayout().Floating[1].Node.Tabs) == 2)
+	assert(#((m:ExportLayout().Floating[1].Node :: any).Tabs) == 2)
 	H.resetOutput()
 	q.dispose(b)
 	assert(frameOf(a).Visible and get(a, "Title").Visible, "A alone open: a plain look (B waits in the group)")
-	assert(#(m:ExportLayout().Floating[1].Node.Tabs) == 2, "B still a tab of the saved group")
+	assert(#((m:ExportLayout().Floating[1].Node :: any).Tabs) == 2, "B still a tab of the saved group")
 	local b2 = Devui.Window({ Title = "B", Key = "b", Manager = m })
 	b2.Parent = container
 	lay(container, { a, b2 })
@@ -868,7 +878,7 @@ H.section("an import never writes a state it hands in: a pending group dissolved
 	assert(#layout.Floating == 2, "two plain windows")
 	local byKey: { [string]: any } = {}
 	for _, g in layout.Floating do
-		byKey[g.Node.Tabs[1]] = g
+		byKey[(g.Node :: any).Tabs[1]] = g
 	end
 	assert(byKey.a.Position[2] == 111 and byKey.a.Size[1] == 200, `a ({byKey.a.Position[2]}, {byKey.a.Size[1]})`)
 	assert(byKey.b.Position[2] == 222 and byKey.b.Size[1] == 210, `b ({byKey.b.Position[2]}, {byKey.b.Size[1]})`)
@@ -889,7 +899,7 @@ H.section("a pending tab registering on an edge an open window holds: its group 
 	assert((m:ExportWindow("a") :: WindowState).Dock == nil and (m:ExportWindow("b") :: WindowState).Dock == nil, "the group floats")
 	assert(part(w, "WindowDockStrip").Visible and not part(a, "WindowDockStrip").Visible and not part(b, "WindowDockStrip").Visible, "one strip")
 	local layout = m:ExportLayout()
-	assert((layout.Left :: any).Node.Tabs[1] == "w" and #layout.Floating == 1 and #layout.Floating[1].Node.Tabs == 2)
+	assert((layout.Left :: any).Node.Tabs[1] == "w" and #layout.Floating == 1 and #(layout.Floating[1].Node :: any).Tabs == 2)
 	for _, x in { w, a, b } do
 		q.dispose(x)
 	end
@@ -958,7 +968,7 @@ H.section("a layout cannot make a tab of a NoTitleBar window or of one in anothe
 	local layout = m:ExportLayout()
 	local tabsOf = {}
 	for _, g in layout.Floating do
-		table.insert(tabsOf, table.concat(g.Node.Tabs, ","))
+		table.insert(tabsOf, table.concat((g.Node :: any).Tabs, ","))
 	end
 	table.sort(tabsOf)
 	assert(table.concat(tabsOf, " ") == "a,c f n", table.concat(tabsOf, " "))
@@ -976,7 +986,8 @@ H.section("a layout cannot make a tab of a NoTitleBar window or of one in anothe
 	t.Parent = other
 	local counts = {}
 	for _, g in m:ExportLayout().Floating do
-		counts[g.Node.Tabs[1]] = #g.Node.Tabs
+		local gn: any = g.Node
+		counts[gn.Tabs[1]] = #gn.Tabs
 	end
 	assert(counts.p == 1 and counts.r == 1 and counts.s == 1 and counts.t == 1, "no group left")
 	assert(frameOf(r).Position == UDim2.fromOffset(300, 50) and frameOf(t).Position == UDim2.fromOffset(500, 50), "at their node's rectangle")

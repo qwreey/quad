@@ -16,9 +16,9 @@
 	number of live windows (an ever-increasing counter would climb above the Overlay layer's ZIndex 1000 after enough
 	focus switches and draw windows over popups). The window that was focused last is `Focused` (its title bar draws in
 	the "active" colour). A window releases its slot when it is destroyed (Window does it), so ranks stay compact.
-	Supports up to 333 live windows below the default Overlay layer (a tab group's windows keep a chunk each — header
-	TABS). A drag's drop preview sits one value above the dragged (raised, so top) window's chunk or its group's tabs
-	[Window/Decoration.luau headers "DOCKED", "TABS"].
+	Supports up to 333 live windows below the default Overlay layer (the windows of a tab group or a split keep a chunk
+	each — headers TABS, SPLITS). A drag's drop preview sits one value above the dragged (raised, so top) window's chunk
+	or its unit's tabs and splitters [Window/Decoration.luau headers "DOCKED", "TABS"].
 
 	USAGE
 		local Manager = require("./Manager")
@@ -45,9 +45,10 @@
 	saved with it so a loader can make it again. A window without a Key behaves the same and is only left out of the
 	layout (with `q.debug`, one notice per manager once the app uses the layout API). What is saved per window: Open,
 	Collapsed, Position and Size (the floating outer rectangle, also for a docked window), the edge it is docked on and
-	its dock width (header DOCK), its tab group (the node's tabs and selection, the group's rectangle, and the window's
-	own kept rectangle — header TABS), and the stacking order of the keyed FLOATING groups (the export order). Not
-	saved: the title, the content, the focus, the stacking of the docked groups.
+	its dock width (header DOCK), its tab group and split (the node tree: tabs and selection, splits and ratios, folded
+	leaves; the unit's rectangle, and the window's own kept rectangle — headers TABS, SPLITS), and the stacking order
+	of the keyed FLOATING units (the export order). Not saved: the title, the content, the focus, the stacking of the
+	docked units.
 		manager:ExportLayout() -> WindowLayout          every known key (live or pending): floating bottom first, docked
 		                                                on its edge (`Left` / `Right`)
 		manager:ImportLayout(layout, factories?)          put the windows where the layout says (rules below)
@@ -103,14 +104,17 @@
 
 	TABS [2026-10-21 user decisions — docking stage 3, tab groups; the look and the drags are in Window/Decoration.luau
 	header "TABS"]. A GROUP is several windows sharing one rectangle and one decoration, only the selected one's surface
-	shown. Nothing is reparented: the manager keeps a `Group` per group (its members in tab order — a live window or a
-	pending key —, the selected one, the floating rectangle, Collapsed, the edge and dock width) and tells each window's
-	decoration what it is in it (`GroupView`: the group's rectangle, whether it draws the group, its tab slot, the
-	group's flags). The drawn window is the selected one when it is open (else the first open one); it is the focused
-	window of the group (`Focused` / `slot.Focused`).
+	shown. Nothing is reparented: the manager keeps a `Unit` per group (the floating rectangle, Collapsed, the edge and
+	dock width, and a tree of `Leaf` tab sets — one leaf for a tab group, more in a split, header SPLITS; a leaf holds
+	its members in tab order — a live window or a pending key — and the selected one) and tells each window's
+	decoration what it is in it (`GroupView`: the unit's rectangle, its leaf's box in it, whether it draws its leaf,
+	its tab slot, the flags). The drawn window is the selected one when it is open (else the first open one); it is the
+	focused window of the group (`Focused` / `slot.Focused`).
 	- Forming: a drag of a window (or of a whole group, by its strip's empty area, all its tabs in order, or of a tab
 	  torn out of one) released over another window's / group's title-bar row or centre, or over a held edge's band,
-	  joins its group (made when it is a plain window: its rectangle, edge and Collapsed become the group's). Eligible:
+	  joins its group (made when it is a plain window: its rectangle, edge and Collapsed become the group's) — the
+	  four 20% bands around the centre split instead [2026-10-21 user decision — docking stage 4, header SPLITS; they
+	  were left empty in stage 3]. Eligible:
 	  the same manager and the same container (the surface roots' parent), both with a title bar (NoTitleBar never joins
 	  nor is joined), the target open and expanded (an icon is no target; a dragged icon never joins), the dragged one
 	  movable. NoDock does not stop joining [2026-10-21 user decision — it is edge docking only]. The window on top
@@ -120,7 +124,7 @@
 	  rectangle it had before it joined (its KEPT rectangle; a window grouped by a load gets it from the layout's
 	  `Windows[key].Position` / `Size`, or has none). Moving / resizing / docking the group changes only the group.
 	- Shared: Collapsed (writing any window's collapses the whole group — the manager spreads it; a collapsed floating
-	  group is the drawn window's icon) and the edge. The dock width is shared only while the group is DOCKED: joining
+	  group is the drawn window's icon; in a split a leaf folds instead — header SPLITS) and the edge. The dock width is shared only while the group is DOCKED: joining
 	  a floating group leaves each window the dock width it keeps (header DOCK: docking again uses it), a floating group
 	  docked by a drag takes its drawn window's drop width and then every window follows, and a window leaving a docked
 	  group keeps the group's width. An import that docks a group stores the width that fits the container. Flags: a NoMove window stops the group's drag,
@@ -135,10 +139,10 @@
 	  first; a keyless window destroyed (or a forgotten key's) leaves; a keyed window destroyed stays a PENDING tab of
 	  its group (rebuilding the UI brings it back to its tab). A group left with one member (open or closed, live or
 	  pending) is no group: that window takes the group's rectangle into its own Position / Size and stays in place.
-	- Stacking: a group is one LUMP — its windows sit next to each other in `order` (tab order, where its topmost one
-	  was), keep a ZIndex chunk each (only the drawn one's parts show) and the tabs take the lump's top grip rank, so
-	  nothing of another window interleaves; raising any window raises the lump. `known` keeps a group's keys together
-	  the same way (the saved `Floating` order is the groups' stacking).
+	- Stacking: a group is one LUMP — its windows sit next to each other in `order` (tree and tab order, where its
+	  topmost one was), keep a ZIndex chunk each (only the drawn ones' parts show) and the tabs and splitters take the
+	  lump's top grip rank, so nothing of another window interleaves; raising any window raises the lump. `known` keeps
+	  a group's keys together the same way (the saved `Floating` order is the groups' stacking).
 	- Saving (Window/Layout.luau): a group is a node with several tabs (keyed members only, in tab order; the selected
 	  one, or the first keyed open one); `Windows[key].Position` / `Size` carry a member's kept rectangle when it has
 	  one and the node keeps two or more tabs (a node the keyless windows leave with one tab is a plain window). A layout's node of several tabs makes a group of the windows it names (each named window first leaves its
@@ -148,6 +152,60 @@
 	  another container than the group's, is placed as a plain window as if alone in its node (its own rectangle, else
 	  the node's) and leaves the group; with fewer than two windows left there is no group. An import opens windows
 	  without selecting or focusing them (header STACKING).
+
+	SPLITS [2026-10-21 user decisions — docking stage 4, Dear ImGui's shape; the look and the drags are in
+	Window/Decoration.luau header "SPLITS"]. A unit's tree is binary: a node is a LEAF (a tab set, as above) or a SPLIT
+	(`Axis` "LeftRight" | "TopBottom", `Ratio` = the first child's share, two children), nested to any depth. The unit
+	keeps one rectangle (floating, or the docked panel); each leaf's window draws its own frame and strip at its box in
+	it (`GroupView.Box`).
+	- Splitting: a drag released over a joinable window's leaf judges, from the top: its strip / title row = join as a
+	  tab at the pointer (as TABS); in a split unit, the band 2 x FrameHeight inside the unit's OUTER edges = split the
+	  whole unit (its root) on that side, the preview half the whole unit (the long overlay); else, inside the leaf, the
+	  centre [0.2, 0.8]^2 = join as the last tab and the 20% bands = split THAT leaf in half on that side, the preview that
+	  half. Only the root and the leaf are reached (Dear ImGui's outer and inner targets); an unsplit unit's root is its
+	  leaf. The target keeps its rectangle and is cut in half (Ratio 0.5); a corner goes to the side it is deeper in. The
+	  dragged window becomes a new leaf; a dragged unit (by its strip's empty area) goes in with its whole tree as that
+	  side (joining as tabs, its windows all become tabs, tree and tab order). A held edge's band joins the docked unit's
+	  leaf its focus was last in (else its first visible leaf) as a tab. Docked panels split in all four directions (a
+	  top / bottom split stacks on the side).
+	- Tab strips: in a split every leaf shows its strip, even with one open window. Dragging a tab tears that window
+	  off (as TABS); dragging a strip's empty area moves the whole unit (a docked one undocks as a whole to its floating
+	  rectangle: the pointer keeps its share of the unit's width and its height in the pressed leaf's row, that leaf's
+	  top taken where it sits in the floating rectangle).
+	- Splitters: one per split (the `WindowSplitter` of its second side's first visible leaf); dragging it sets Ratio,
+	  kept so neither side goes below its floor — a leaf's floor is its windows' largest MinSize (a folded one: its row
+	  along the fold); along a split's axis its floor is the sum of its sides', across it the larger. The unit's resize
+	  floor is its tree's. A floating unit's and a docked panel's width are pixels (the seam is kept inside the floors
+	  and rounded as it is drawn); a docked panel's height is the container's (the ratio is a share of it, kept inside
+	  the floors only while dragging). Hidden while either side is a folded leaf, or with an open NoResize window in
+	  the unit.
+	- Folding: a leaf's collapse arrow folds only that leaf and its sibling takes the space — along a top / bottom
+	  split it keeps its strip row, along a left | right split it is a bar FrameHeight wide holding the arrow. THE FOLD
+	  RULE [2026-10-21 user decision, after review]: a leaf may be folded only while its sibling subtree (the other side
+	  of its nearest split with a side still there) holds a visible UNFOLDED leaf to take the room — a pending key saved
+	  open counts as there, so a load whose windows register one by one keeps its folds. Where the rule refuses, the
+	  arrow is not offered and an app's true is written back to false; when it stops holding (the sibling closes, a
+	  load, a leaf torn out) the fold clears and the leaf's windows' Collapsed become false, and of two folded sides the
+	  second one opens (so both sides are never folded). A floating split unit never becomes an icon; a docked split
+	  panel still collapses as a whole by its strip. The windows' `Collapsed` Sources: a window's Collapsed = its leaf
+	  folded OR (docked) its panel collapsed; the leaves keep their folds while the panel is collapsed (expanding it
+	  restores them; an app's true on a window of a collapsed panel is recorded as its leaf's fold). An app writing true folds
+	  that window's leaf, false unfolds it and expands a collapsed panel. A leaf's windows share its fold.
+	- Hiding and leaving: a leaf whose windows are all closed hides and its sibling takes the space; `Open:Set(true)`
+	  brings it back at its slot (TABS); all leaves closed = the unit hidden. A leaf left without members (its last tab
+	  torn out, imported elsewhere, a keyless window destroyed) leaves the tree: its sibling takes its parent's place. A
+	  root left as one leaf is a tab group again (the folds dropped), and with one window it dissolves (TABS: that
+	  window takes the unit's rectangle). A window that leaves a split is expanded (its Collapsed was its leaf's fold).
+	- The unit's own parts (grip, dock strip and width handle) are drawn by its LEAD: the drawn window of the leaf at
+	  its bottom-right corner (the last visible leaf). Focus: a press focuses the pressed leaf's drawn window, so only
+	  that leaf's strip has the active colour; the strip rule (header DOCK) asks whether the focus was anywhere in the
+	  unit before the press. One lump (TABS).
+	- Saving (Window/Layout.luau header SPLITS): the node tree with keyed members only (a leaf without any is dropped,
+	  a split left with one side is that side — `Layout.prune`, the one rule saving, loading and the live tree use), `Ratio`, `Collapsed = true` on a folded leaf inside a split, the
+	  windows' own kept rectangles when the tree holds two or more keys. A floating split's group `Collapsed` is false.
+	  Loading builds the tree of the windows that may be tabs (the eligibility of TABS; the others are placed plainly
+	  and the rest of the tree still builds); a pending key joins its leaf at its saved slot. `ImportWindow` takes a
+	  window out first; `ExportWindow` carries no tree.
 
 	PRESS TO FRONT. A press stops at the first GuiButton / TextBox under the pointer (engine rule): the window frame
 	behind a button, a checkbox or a text box never sees an InputBegan. So the manager listens to ONE global press
@@ -234,30 +292,77 @@ type Entry = {
 	-- the edge dock (header DOCK): the side it is docked on (nil = floating; kept while closed) and its panel width
 	Side: Source<Side?>,
 	DockWidth: Source<number>,
-	-- the tab group (header TABS): nil = a plain window; View = what its decoration is told
-	Group: Group?,
+	-- the leaf (tab set) of the unit it is in (headers TABS, SPLITS): nil = a plain window; View = what its decoration
+	-- is told
+	Leaf: Leaf?,
 	View: Source<GroupView?>,
 	-- its Position / Size Sources hold a rectangle of its own (false: grouped by a load that did not carry one — it
 	-- leaves its group at the group's Size)
 	KeptRect: boolean,
 }
 
--- one tab of a group: a live window, or a key whose window is not registered (pending)
+type SplitAxis = Layout.SplitAxis
+
+-- one tab of a leaf: a live window, or a key whose window is not registered (pending)
 type Member = { Key: string?, Entry: Entry? }
 
--- a tab group (header TABS): one rectangle, one edge, one Collapsed for all its windows
-type Group = {
-	Members: { Member }, -- tab order
+-- a LEAF of a unit's tree (header SPLITS): one tab set — its members in tab order and the selected one
+type Leaf = {
+	Tag: "Leaf",
+	Members: { Member },
 	Selected: Member,
-	Position: UDim2, -- the group's floating outer rectangle
+	Fold: boolean, -- folded inside its split (header SPLITS; false for a leaf that is the whole unit)
+	Unit: Unit,
+	Parent: Split?,
+}
+
+-- a two-way split of a unit's tree: `Ratio` = the first child's share (left / top)
+type Split = {
+	Tag: "Split",
+	Axis: SplitAxis,
+	Ratio: number,
+	Children: { Node },
+	Parent: Split?,
+}
+
+type Node = Leaf | Split
+
+-- a UNIT (headers TABS, SPLITS): windows sharing one rectangle and one edge — a tab group when its tree is one leaf, a
+-- split unit otherwise. `Collapsed` is the whole group's while unsplit (icon / panel), the docked panel's while split
+type Unit = {
+	Root: Node,
+	Position: UDim2, -- the unit's floating outer rectangle
 	Size: Vector2,
 	Collapsed: boolean,
 	Side: Side?,
 	Width: number,
+	-- the leaf its focus was last in (a held edge joins it — header SPLITS); nil = none yet
+	FocusLeaf: Leaf?,
 }
 
--- the press the strip rule asks about (header DOCK): the window the last global press went to and whether it had
--- the focus before that press focused it
+-- where every visible leaf of a split unit goes (header SPLITS), computed when its views are written
+type SplitInfo = {
+	Interval: { number }, -- the split's extent along its axis: { f0, p0, f1, p1 } of the unit's length
+	At: { number }, -- the seam: { f, p }
+	Pixel: boolean, -- the axis length is known in pixels (else: a fraction of the docked panel's height)
+	Min1: number, -- the children's floors along the axis
+	Min2: number,
+}
+type SplitterInfo = { Split: Split, Box: { number }, Enabled: boolean }
+type Arrangement = {
+	Boxes: { [Leaf]: { number } }, -- { x0f, x0p, x1f, x1p, y0f, y0p, y1f, y1p } of the unit's rectangle
+	Folds: { [Leaf]: Decoration.FoldSide },
+	Splitters: { [Leaf]: SplitterInfo }, -- by the leaf whose drawn window draws it
+	Infos: { [Split]: SplitInfo },
+	Lead: Leaf?, -- the leaf at the unit's bottom-right corner: its drawn window draws the unit's own parts
+}
+
+-- a splitter drag in progress (header SPLITS): the split, its unit and the seam's range in window units (its start
+-- and the floors of both sides)
+type SplitDrag = { Split: Split, Unit: Unit, Start: number, Length: number, Min1: number, Min2: number }
+
+-- the press the strip rule asks about (header DOCK): the window the last global press went to and whether its unit
+-- had the focus before that press focused it
 type PressRecord = { Entry: Entry, WasFocused: boolean }
 
 -- ZIndex values per window (decoration frame, surface, resize grip): see the header
@@ -280,21 +385,106 @@ local function holds(gui: Instance, x: number, y: number): boolean
 	return x >= p.X and y >= p.Y and x < p.X + s.X and y < p.Y + s.Y and Visibility.isOnScreen(g)
 end
 
-local function sameView(a: GroupView?, b: GroupView?): boolean
-	if a == nil or b == nil then
-		return a == b
+-- the leaves of a node in tree order (first child first)
+local function leavesIn(node: Node, out: { Leaf })
+	if node.Tag == "Leaf" then
+		table.insert(out, node)
+	else
+		leavesIn(node.Children[1], out)
+		leavesIn(node.Children[2], out)
 	end
-	for k, v in a :: any do
-		if (b :: any)[k] ~= v then
-			return false
+end
+
+local function leavesOf(u: Unit): { Leaf }
+	local out: { Leaf } = {}
+	leavesIn(u.Root, out)
+	return out
+end
+
+-- every member of a unit, in tree order then tab order
+local function membersOf(u: Unit): { Member }
+	local out: { Member } = {}
+	for _, leaf in leavesOf(u) do
+		for _, m in leaf.Members do
+			table.insert(out, m)
 		end
 	end
-	for k in b :: any do
-		if (a :: any)[k] == nil then
-			return false
-		end
+	return out
+end
+
+local function isSplit(u: Unit): boolean
+	return u.Root.Tag == "Split"
+end
+
+local function unitOf(e: Entry?): Unit?
+	local leaf = if e ~= nil then e.Leaf else nil
+	return if leaf ~= nil then leaf.Unit else nil
+end
+
+-- the window's Collapsed in its leaf (header SPLITS): the leaf's fold or the docked panel's in a split unit, the whole
+-- group's otherwise
+local function collapsedOf(leaf: Leaf): boolean
+	local u = leaf.Unit
+	if isSplit(u) then
+		return leaf.Fold or (u.Side ~= nil and u.Collapsed)
 	end
-	return true
+	return u.Collapsed
+end
+
+-- put `node` where `old` is in its unit's tree (its parent's child, or the root)
+local function replaceNode(u: Unit, old: Node, node: Node)
+	local parent = old.Parent
+	node.Parent = parent
+	if parent == nil then
+		u.Root = node
+	elseif parent.Children[1] == old then
+		parent.Children[1] = node
+	else
+		parent.Children[2] = node
+	end
+end
+
+-- the two sides of a live / saved node for Layout.prune (nil, nil = a leaf)
+local function liveSides(node: Node): (Node?, Node?)
+	if node.Tag == "Split" then
+		return node.Children[1], node.Children[2]
+	end
+	return nil, nil
+end
+local function savedSides(node: Layout.Node): (Layout.Node?, Layout.Node?)
+	if node.Split ~= nil then
+		return node.Children[1], node.Children[2]
+	end
+	return nil, nil
+end
+-- a saved split keeping both its (pruned) sides
+local function savedSplit(node: Layout.Node, first: Layout.Node, second: Layout.Node): Layout.Node
+	local out: Layout.SplitNode = { Split = (node :: Layout.SplitNode).Split, Ratio = (node :: Layout.SplitNode).Ratio, Children = { first, second } }
+	return out
+end
+
+-- a group's saved Collapsed as a unit holds it (header SPLITS): a floating split unit is never collapsed — its leaves
+-- fold; a docked one's is its panel's. (`Unit.Collapsed` keeps this invariant; this reads it off saved data.)
+local function groupCollapsed(collapsed: boolean, side: Side?, split: boolean): boolean
+	return collapsed and (side ~= nil or not split)
+end
+
+-- every node of a tree belongs to `u` (a tree moved into another unit)
+local function adoptTree(node: Node, u: Unit)
+	if node.Tag == "Leaf" then
+		node.Unit = u
+	else
+		adoptTree(node.Children[1], u)
+		adoptTree(node.Children[2], u)
+	end
+end
+
+-- the axis and order a drop side makes: Left / Top put the dropped node first
+local function axisOf(at: Decoration.DropSide): (SplitAxis, boolean)
+	if at == "Left" or at == "Right" then
+		return "LeftRight", at == "Left"
+	end
+	return "TopBottom", at == "Top"
 end
 
 function Manager.new(): Manager
@@ -321,10 +511,12 @@ function Manager.new(): Manager
 	local keylessNoticed = false
 	local keyless: { [Entry]: string } = {} -- decorated windows without a Key -> their title (for the notice)
 
-	-- TABS (header TABS): the live groups, and the group of each pending key that is a tab of one
-	local groups: { [Group]: true } = {}
-	local pendingGroup: { [string]: Group } = {}
-	-- > 0 while the manager writes a group's shared facts into its windows (their Sync must not echo them back)
+	-- TABS / SPLITS (headers TABS, SPLITS): the live units, the leaf of each pending key that is a tab of one, and each
+	-- split unit's last arrangement (a splitter drag reads it)
+	local units: { [Unit]: true } = {}
+	local pendingLeaf: { [string]: Leaf } = {}
+	local arranged: { [Unit]: Arrangement } = setmetatable({}, { __mode = "k" }) :: any
+	-- > 0 while the manager writes a unit's shared facts into its windows (their Sync must not echo them back)
 	local quiet = 0
 	-- > 0 while an import writes states: opening a window then neither selects nor focuses it (header STACKING: an
 	-- import moves nothing to the front)
@@ -346,15 +538,15 @@ function Manager.new(): Manager
 	-- the press the strip rule asks about (header DOCK); nil = the last press went to no window
 	local lastPress: PressRecord? = nil
 
-	-- ── groups (header TABS) ──────────────────────────────────────────────────────────────────────────────────────
+	-- ── units (headers TABS, SPLITS) ──────────────────────────────────────────────────────────────────────────────
 
 	local function isOpenWindow(e: Entry?): boolean
 		local h = if e ~= nil then e.Hints else nil
 		return h ~= nil and h.Open:Get()
 	end
 
-	local function memberOf(g: Group, e: Entry): Member?
-		for _, m in g.Members do
+	local function memberOf(leaf: Leaf, e: Entry): Member?
+		for _, m in leaf.Members do
 			if m.Entry == e then
 				return m
 			end
@@ -362,14 +554,14 @@ function Manager.new(): Manager
 		return nil
 	end
 
-	-- the window that draws the group: the selected one when it is live and open, else the first open one, else the
-	-- selected (closed: the whole group is hidden), else any live one
-	local function drawnOf(g: Group): Entry?
-		local selected = g.Selected.Entry
+	-- the window that draws the leaf: the selected one when it is live and open, else the first open one, else the
+	-- selected (closed: the whole leaf is hidden), else any live one
+	local function drawnOf(leaf: Leaf): Entry?
+		local selected = leaf.Selected.Entry
 		if isOpenWindow(selected) then
 			return selected
 		end
-		for _, m in g.Members do
+		for _, m in leaf.Members do
 			if isOpenWindow(m.Entry) then
 				return m.Entry
 			end
@@ -377,7 +569,7 @@ function Manager.new(): Manager
 		if selected ~= nil then
 			return selected
 		end
-		for _, m in g.Members do
+		for _, m in leaf.Members do
 			if m.Entry ~= nil then
 				return m.Entry
 			end
@@ -385,37 +577,42 @@ function Manager.new(): Manager
 		return nil
 	end
 
-	-- the window a press or a focus of `e` means: its group's drawn one
+	-- the window a press or a focus of `e` means: its leaf's drawn one
 	local function faceOf(e: Entry): Entry
-		local g = e.Group
-		return if g ~= nil then drawnOf(g) or e else e
+		local leaf = e.Leaf
+		return if leaf ~= nil then drawnOf(leaf) or e else e
 	end
 
 	-- the neighbour that takes the selection when a tab closes or leaves: the next open window from `nextFrom`, else
-	-- the previous open one from `prevFrom` down, else the member now there (the group stays hidden)
-	local function neighbour(g: Group, nextFrom: number, prevFrom: number): Member
-		for i = nextFrom, #g.Members do
-			if isOpenWindow(g.Members[i].Entry) then
-				return g.Members[i]
+	-- the previous open one from `prevFrom` down, else the member now there (the leaf stays hidden)
+	local function neighbour(leaf: Leaf, nextFrom: number, prevFrom: number): Member
+		for i = nextFrom, #leaf.Members do
+			if isOpenWindow(leaf.Members[i].Entry) then
+				return leaf.Members[i]
 			end
 		end
 		for i = prevFrom, 1, -1 do
-			if isOpenWindow(g.Members[i].Entry) then
-				return g.Members[i]
+			if isOpenWindow(leaf.Members[i].Entry) then
+				return leaf.Members[i]
 			end
 		end
-		return g.Members[math.clamp(nextFrom, 1, #g.Members)]
+		return leaf.Members[math.clamp(nextFrom, 1, #leaf.Members)]
 	end
 
-	local function groupOfKey(key: string): Group?
+	local function leafOfKey(key: string): Leaf?
 		local entry = live[key]
 		if entry ~= nil then
-			return entry.Group
+			return entry.Leaf
 		end
-		return pendingGroup[key]
+		return pendingLeaf[key]
 	end
 
-	-- the resize floor of one window (header TABS: a group's is the largest of its windows' per axis)
+	local function unitOfKey(key: string): Unit?
+		local leaf = leafOfKey(key)
+		return if leaf ~= nil then leaf.Unit else nil
+	end
+
+	-- the resize floor of one window (header TABS: a leaf's is the largest of its windows' per axis)
 	local function floorOf(e: Entry): Vector2
 		local h = e.Hints :: Decoration.Hints
 		local min = h.MinSize
@@ -426,16 +623,255 @@ function Manager.new(): Manager
 		return Vector2.new(fh, fh)
 	end
 
-	-- tell every window of `g` where the group is and what it is in it. Every window's view change re-judges the
-	-- layout (its decoration's Changed): held back and flushed once, so a group drag rebuilds the layout once per move
-	local writeViews: (g: Group) -> ()
-	local function pushView(g: Group)
-		if not groups[g] then
+	local function leafFloor(leaf: Leaf): Vector2
+		local x, y = 0, 0
+		for _, m in leaf.Members do
+			local e = m.Entry
+			if e ~= nil then
+				local f = floorOf(e)
+				x, y = math.max(x, f.X), math.max(y, f.Y)
+			end
+		end
+		return Vector2.new(x, y)
+	end
+
+	-- ── the split layout (header SPLITS) ──────────────────────────────────────────────────────────────────────────
+
+	local function hasOpen(leaf: Leaf): boolean
+		for _, m in leaf.Members do
+			if isOpenWindow(m.Entry) then
+				return true
+			end
+		end
+		return false
+	end
+
+	-- the node as it shows: a leaf with an open window; a split whose two sides both show (else the side that shows
+	-- takes its place — a leaf whose windows are all closed is hidden and its sibling takes the space)
+	local function visibleOf(node: Node): Node?
+		if node.Tag == "Leaf" then
+			return if hasOpen(node) then node else nil
+		end
+		local a, b = visibleOf(node.Children[1]), visibleOf(node.Children[2])
+		if a ~= nil and b ~= nil then
+			return node
+		end
+		return a or b
+	end
+
+	-- the first / last visible leaf of a visible node (the last one holds its bottom-right corner)
+	local function edgeLeaf(node: Node, last: boolean): Leaf
+		local cursor: Node = node
+		while cursor.Tag == "Split" do
+			cursor = visibleOf(cursor.Children[if last then 2 else 1]) :: Node
+		end
+		return cursor :: Leaf
+	end
+
+	-- a folded leaf keeps one title-bar row (its drawn window's FrameHeight)
+	local function foldSize(leaf: Leaf): number
+		local e = drawnOf(leaf)
+		local h = if e ~= nil then e.Hints else nil
+		return if h ~= nil then h.Style.FrameHeight:Get() else 0
+	end
+
+	-- the floor of a visible node: a leaf's is its windows' largest (a folded one: its row along the fold), a split's
+	-- is the sum of its sides along its axis and the larger across
+	local function minOf(node: Node, parentAxis: SplitAxis?): Vector2
+		if node.Tag == "Leaf" then
+			local f = leafFloor(node)
+			if node.Fold and parentAxis ~= nil then
+				local row = foldSize(node)
+				return if parentAxis == "LeftRight" then Vector2.new(row, row) else Vector2.new(f.X, row)
+			end
+			return f
+		end
+		local a = minOf(visibleOf(node.Children[1]) :: Node, node.Axis)
+		local b = minOf(visibleOf(node.Children[2]) :: Node, node.Axis)
+		if node.Axis == "LeftRight" then
+			return Vector2.new(a.X + b.X, math.max(a.Y, b.Y))
+		end
+		return Vector2.new(math.max(a.X, b.X), a.Y + b.Y)
+	end
+
+	-- a leaf that stands in its unit for the fold rule: an open window, or a pending key saved open (a load whose
+	-- windows register one by one must not lose the folds it brought — the rest of the unit is on its way)
+	local function stands(leaf: Leaf): boolean
+		if hasOpen(leaf) then
+			return true
+		end
+		for _, m in leaf.Members do
+			local key = m.Key
+			local waiting = if m.Entry == nil and key ~= nil then pending[key] else nil
+			if waiting ~= nil and waiting.Open then
+				return true
+			end
+		end
+		return false
+	end
+	local function present(node: Node): boolean
+		if node.Tag == "Leaf" then
+			return stands(node)
+		end
+		return present(node.Children[1]) or present(node.Children[2])
+	end
+
+	-- a standing leaf of `node` that is not folded
+	local function hasUnfolded(node: Node): boolean
+		if node.Tag == "Leaf" then
+			return stands(node) and not node.Fold
+		end
+		return hasUnfolded(node.Children[1]) or hasUnfolded(node.Children[2])
+	end
+
+	-- THE fold rule (header SPLITS — user decision): a leaf may be folded only while its sibling subtree (the other
+	-- side of its nearest split that has a standing side there) holds a standing UNFOLDED leaf to take the room. A leaf
+	-- with no standing sibling (the rest closed) has nothing to fold against
+	local function canFold(leaf: Leaf): boolean
+		local child: Node = leaf
+		local parent = leaf.Parent
+		while parent ~= nil do
+			local other = if parent.Children[1] == child then parent.Children[2] else parent.Children[1]
+			if present(other) then
+				return hasUnfolded(other)
+			end
+			child = parent
+			parent = parent.Parent
+		end
+		return false
+	end
+
+	-- the fold rule kept after any change (a sibling closed, a load, a leaf torn out, both sides folded): a visible
+	-- leaf that may no longer be folded unfolds — the later side first (tree order backwards), so of two folded sides
+	-- the second one opens. Returns whether a fold changed (its windows' Collapsed follow — spreadCollapsed)
+	local function normalizeFolds(u: Unit): boolean
+		local leaves = leavesOf(u)
+		local changed = false
+		for i = #leaves, 1, -1 do
+			local leaf = leaves[i]
+			if leaf.Fold and hasOpen(leaf) and not canFold(leaf) then
+				leaf.Fold = false
+				changed = true
+			end
+		end
+		return changed
+	end
+
+	-- the unit's resize floor: its visible tree's (a unit of one leaf: its windows' largest)
+	local function unitFloor(u: Unit): Vector2
+		local root = visibleOf(u.Root)
+		if root == nil then
+			if u.Root.Tag == "Leaf" then
+				return leafFloor(u.Root)
+			end
+			return Vector2.zero
+		end
+		return minOf(root, nil)
+	end
+
+	-- where every visible leaf, fold and splitter of a split unit goes. Boundaries are { f, p } pairs of the unit's
+	-- rectangle (f = a fraction of its length, p = pixels): a floating unit's lengths and a docked one's width are
+	-- pixels (f = 0, seams kept inside both sides' floors and rounded), a docked panel's height is the container's (f
+	-- carries the ratio, p the folds)
+	local function arrange(u: Unit): Arrangement
+		local out: Arrangement = { Boxes = {}, Folds = {}, Splitters = {}, Infos = {}, Lead = nil }
+		local root = visibleOf(u.Root)
+		if root == nil then
+			return out
+		end
+		local docked = u.Side ~= nil
+		local lx = if docked then u.Width else u.Size.X
+		local ly: number? = if docked then nil else u.Size.Y
+		local function place(node: Node, x: { number }, y: { number })
+			if node.Tag == "Leaf" then
+				out.Boxes[node] = { x[1], x[2], x[3], x[4], y[1], y[2], y[3], y[4] }
+				return
+			end
+			local c1 = visibleOf(node.Children[1]) :: Node
+			local c2 = visibleOf(node.Children[2]) :: Node
+			local alongX = node.Axis == "LeftRight"
+			local iv = if alongX then x else y
+			local pixel = alongX or ly ~= nil
+			local fold1 = c1.Tag == "Leaf" and c1.Fold
+			local fold2 = c2.Tag == "Leaf" and c2.Fold
+			local m1, m2 = minOf(c1, node.Axis), minOf(c2, node.Axis)
+			local min1 = if alongX then m1.X else m1.Y
+			local min2 = if alongX then m2.X else m2.Y
+			local mf, mp
+			-- (never both: the fold rule — normalizeFolds — unfolds the second side first)
+			if fold1 and c1.Tag == "Leaf" then
+				mf, mp = iv[1], iv[2] + foldSize(c1)
+			elseif fold2 and c2.Tag == "Leaf" then
+				mf, mp = iv[3], iv[4] - foldSize(c2)
+			elseif pixel then
+				local a, b = iv[2], iv[4]
+				local lo, hi = a + min1, b - min2
+				local m = a + node.Ratio * (b - a)
+				m = if hi < lo then lo else math.clamp(m, lo, hi)
+				mf, mp = 0, math.round(m)
+			else
+				mf = iv[1] + node.Ratio * (iv[3] - iv[1])
+				mp = iv[2] + node.Ratio * (iv[4] - iv[2])
+			end
+			if fold1 and c1.Tag == "Leaf" then
+				out.Folds[c1] = if alongX then "Left" else "Top"
+			end
+			if fold2 and c2.Tag == "Leaf" then
+				out.Folds[c2] = if alongX then "Right" else "Bottom"
+			end
+			out.Infos[node] = { Interval = table.clone(iv), At = { mf, mp }, Pixel = pixel, Min1 = min1, Min2 = min2 }
+			-- the splitter: drawn by the second side's first leaf (one leaf per split). LeftRight: [seam, seam + t] over
+			-- the second side's leading edge (its padding, not the first side's scrollbar); TopBottom: [seam - t, seam]
+			-- over the first side's bottom (not the second side's tab row)
+			local owner = edgeLeaf(c2, false)
+			local ownerDrawn = drawnOf(owner)
+			local t = if ownerDrawn ~= nil and ownerDrawn.Hints ~= nil
+				then (ownerDrawn.Hints :: Decoration.Hints).Style.Metrics.WindowResizePadding:Get().X
+				else 6
+			local box = if alongX
+				then { mf, mp, mf, mp + t, y[1], y[2], y[3], y[4] }
+				else { x[1], x[2], x[3], x[4], mf, mp - t, mf, mp }
+			out.Splitters[owner] = { Split = node, Box = box, Enabled = not fold1 and not fold2 }
+			local first = { iv[1], iv[2], mf, mp }
+			local second = { mf, mp, iv[3], iv[4] }
+			if alongX then
+				place(c1, first, y)
+				place(c2, second, y)
+			else
+				place(c1, x, first)
+				place(c2, x, second)
+			end
+		end
+		place(root, { 0, 0, 0, lx }, if ly ~= nil then { 0, 0, 0, ly } else { 0, 0, 1, 0 })
+		out.Lead = edgeLeaf(root, true)
+		return out
+	end
+
+	-- every window of `u` takes its Collapsed (its leaf's fold, the panel's or the group's — no echo through Sync)
+	local function spreadCollapsed(u: Unit)
+		quiet += 1
+		for _, leaf in leavesOf(u) do
+			local c = collapsedOf(leaf)
+			for _, m in leaf.Members do
+				local e = m.Entry
+				if e ~= nil then
+					(e.Hints :: Decoration.Hints).Collapsed:SetIfChanged(c)
+				end
+			end
+		end
+		quiet -= 1
+	end
+
+	-- tell every window of `u` where its leaf is and what it is in it. Every window's view change re-judges the
+	-- layout (its decoration's Changed): held back and flushed once, so a unit drag rebuilds the layout once per move
+	local writeViews: (u: Unit) -> ()
+	local function pushView(u: Unit)
+		if not units[u] then
 			return
 		end
 		batching += 1
 		local ok, err = pcall(function()
-			writeViews(g)
+			writeViews(u)
 		end)
 		batching -= 1
 		if batching == 0 and layoutDirty then
@@ -445,12 +881,20 @@ function Manager.new(): Manager
 			error(err, 0)
 		end
 	end
-	writeViews = function(g: Group)
-		local drawn = drawnOf(g)
-		local shown: { Entry } = {}
+	writeViews = function(u: Unit)
+		local split = isSplit(u)
+		if split and normalizeFolds(u) then
+			spreadCollapsed(u)
+		end
+		local arr: Arrangement? = if split then arrange(u) else nil
+		if arr ~= nil then
+			arranged[u] = arr
+		else
+			arranged[u] = nil
+		end
 		local top = 0
-		local noMove, noResize, noCollapse, noDock = false, false, false, false
-		for _, m in g.Members do
+		local noMove, noResize, noDock = false, false, false
+		for _, m in membersOf(u) do
 			local e = m.Entry
 			if e ~= nil then
 				local h = e.Hints :: Decoration.Hints
@@ -458,78 +902,132 @@ function Manager.new(): Manager
 				noMove = noMove or h.NoMove
 				noDock = noDock or h.NoDock
 				if h.Open:Get() then
-					table.insert(shown, e)
 					noResize = noResize or h.NoResize
-					noCollapse = noCollapse or h.NoCollapse
 				end
 			end
 		end
-		local tabbed = #shown >= 2
-		for _, m in g.Members do
-			local e = m.Entry
-			if e ~= nil then
-				local at = table.find(shown, e)
-				local nextView: GroupView = {
-					Position = g.Position,
-					Size = g.Size,
-					Drawn = e == drawn,
-					Tabbed = tabbed,
-					TabIndex = if tabbed and at ~= nil then at - 1 else nil,
-					TabCount = #shown,
-					TabZ = top * SPAN,
-					NoMove = noMove,
-					NoResize = noResize,
-					NoCollapse = noCollapse,
-					NoDock = noDock,
-				}
-				if not sameView(e.View:Get(), nextView) then
-					e.View:Set(nextView)
+		local panelCollapsed = split and u.Side ~= nil and u.Collapsed
+		for _, leaf in leavesOf(u) do
+			local drawn = drawnOf(leaf)
+			local shown: { Entry } = {}
+			local noCollapse = false
+			for _, m in leaf.Members do
+				local e = m.Entry
+				if e ~= nil and isOpenWindow(e) then
+					table.insert(shown, e)
+					noCollapse = noCollapse or (e.Hints :: Decoration.Hints).NoCollapse
+				end
+			end
+			local box: { number }? = nil
+			local fold: Decoration.FoldSide? = nil
+			local splitter: SplitterInfo? = nil
+			local lead = not split
+			if arr ~= nil then
+				box = arr.Boxes[leaf]
+				fold = arr.Folds[leaf]
+				splitter = arr.Splitters[leaf]
+				lead = arr.Lead == leaf
+				-- (the arrow is not offered where the fold rule refuses a fold; a folded leaf keeps it to unfold)
+				noCollapse = noCollapse or (not leaf.Fold and not canFold(leaf))
+			end
+			-- in a split every leaf shows its tab strip, even with one window (Dear ImGui)
+			local tabbed = #shown >= (if split then 1 else 2)
+			for _, m in leaf.Members do
+				local e = m.Entry
+				if e ~= nil then
+					local at = table.find(shown, e)
+					local isDrawn = e == drawn
+					local nextView: GroupView = {
+						Position = u.Position,
+						Size = u.Size,
+						Box = box,
+						Drawn = isDrawn,
+						Lead = isDrawn and lead,
+						Tabbed = tabbed,
+						TabIndex = if tabbed and at ~= nil then at - 1 else nil,
+						TabCount = #shown,
+						TabZ = top * SPAN,
+						NoMove = noMove,
+						NoResize = noResize,
+						NoCollapse = noCollapse,
+						NoDock = noDock,
+						Split = split,
+						Fold = fold,
+						PanelCollapsed = panelCollapsed,
+						Splitter = if isDrawn and splitter ~= nil
+							then { Axis = splitter.Split.Axis, Box = splitter.Box, Enabled = splitter.Enabled and not noResize }
+							else nil,
+					}
+					if not Layout.same(e.View:Get(), nextView) then
+						e.View:Set(nextView)
+					end
 				end
 			end
 		end
 	end
 
-	-- `e` takes `g`'s shared facts (its edge, Collapsed, and the dock width while the group is docked — a floating
-	-- group leaves each window the dock width it keeps) and joins it (no echo through Sync)
-	local function adopt(e: Entry, g: Group)
+	-- the tree of `u` changed shape: a leaf that is the whole unit folds no more (the group's Collapsed is the whole
+	-- group's again — a floating split unit was never collapsed), and every window takes its Collapsed
+	local function restructured(u: Unit)
+		local root = u.Root
+		if root.Tag == "Leaf" then
+			root.Fold = false
+			root.Parent = nil
+		end
+		spreadCollapsed(u)
+	end
+
+	-- `e` takes `u`'s shared facts (its edge, its Collapsed, and the dock width while the unit is docked — a floating
+	-- unit leaves each window the dock width it keeps) and joins `leaf` (no echo through Sync)
+	local function adopt(e: Entry, leaf: Leaf)
+		local u = leaf.Unit
 		local h = e.Hints :: Decoration.Hints
 		quiet += 1
-		e.Group = g
-		e.Side:SetIfChanged(g.Side)
-		if g.Side ~= nil then
-			e.DockWidth:SetIfChanged(g.Width)
+		e.Leaf = leaf
+		e.Side:SetIfChanged(u.Side)
+		if u.Side ~= nil then
+			e.DockWidth:SetIfChanged(u.Width)
 		end
-		h.Collapsed:SetIfChanged(g.Collapsed)
+		h.Collapsed:SetIfChanged(collapsedOf(leaf))
 		quiet -= 1
 	end
 
-	-- a new group of one window (a drag is about to join it): its rectangle, edge and Collapsed become the group's
-	local function newGroup(target: Entry): Group
+	local function newLeaf(u: Unit, members: { Member }, selected: Member): Leaf
+		return { Tag = "Leaf", Members = members, Selected = selected, Fold = false, Unit = u, Parent = nil }
+	end
+
+	-- a new unit of one window (a drag is about to join or split it): its rectangle, edge and Collapsed become the
+	-- unit's
+	local function newUnit(target: Entry): Leaf
 		local h = target.Hints :: Decoration.Hints
 		local m: Member = { Key = liveKey(target), Entry = target }
-		local g: Group = {
-			Members = { m },
-			Selected = m,
+		local u: Unit = {
+			Root = nil :: any,
+			FocusLeaf = nil,
 			Position = h.Position:Get(),
 			Size = h.Size:Get(),
 			Collapsed = h.Collapsed:Get(),
 			Side = target.Side:Get(),
 			Width = target.DockWidth:Get(),
 		}
-		groups[g] = true
+		local leaf = newLeaf(u, { m }, m)
+		u.Root = leaf
+		units[u] = true
 		target.KeptRect = true
-		target.Group = g
-		return g
+		target.Leaf = leaf
+		return leaf
 	end
 
-	-- a group left with one window (open or closed, live or pending) is no group: that window takes the group's
-	-- rectangle into its own Position / Size (it stays where it was) and its edge, and is a plain window again
-	local function dissolveIfSmall(g: Group): boolean
-		if #g.Members >= 2 then
+	-- a unit left with one window (open or closed, live or pending) in one leaf is no unit: that window takes the
+	-- unit's rectangle into its own Position / Size (it stays where it was) and its edge, and is a plain window again
+	local function dissolveIfSmall(u: Unit): boolean
+		local root = u.Root
+		if root.Tag == "Split" or #root.Members >= 2 then
 			return false
 		end
-		groups[g] = nil
-		local m = g.Members[1]
+		units[u] = nil
+		arranged[u] = nil
+		local m = root.Members[1]
 		if m == nil then
 			return true
 		end
@@ -537,106 +1035,138 @@ function Manager.new(): Manager
 		if e ~= nil then
 			local h = e.Hints :: Decoration.Hints
 			quiet += 1
-			e.Group = nil
-			h.Position:SetIfChanged(g.Position)
-			h.Size:SetIfChanged(g.Size)
+			e.Leaf = nil
+			h.Position:SetIfChanged(u.Position)
+			h.Size:SetIfChanged(u.Size)
+			h.Collapsed:SetIfChanged(u.Collapsed)
 			e.KeptRect = true
 			e.View:Set(nil)
 			quiet -= 1
 		else
 			local key = m.Key :: string
-			pendingGroup[key] = nil
+			pendingLeaf[key] = nil
 			local waiting = pending[key]
 			if waiting ~= nil then
 				-- a fresh table: a state is never written in place (an import's own state tables stay what it read)
 				local st = Layout.copyState(waiting)
-				st.Position = Layout.positionOf(g.Position)
-				st.Size = Layout.sizeOf(g.Size)
-				st.Collapsed = g.Collapsed
-				st.Dock = g.Side
-				st.DockWidth = if g.Side ~= nil then g.Width else nil
+				st.Position = Layout.positionOf(u.Position)
+				st.Size = Layout.sizeOf(u.Size)
+				st.Collapsed = u.Collapsed
+				st.Dock = u.Side
+				st.DockWidth = if u.Side ~= nil then u.Width else nil
 				pending[key] = st
 			end
 		end
 		return true
 	end
 
-	-- drop member `at` of `g` (it left, or its window went away for good); the selection moves to a neighbour
-	local function dropMember(g: Group, at: number)
-		local m = table.remove(g.Members, at) :: Member
-		if g.Selected == m and #g.Members > 0 then
-			g.Selected = neighbour(g, at, at - 1)
+	-- drop member `at` of `leaf` (it left, or its window went away for good); the selection moves to a neighbour. An
+	-- emptied leaf leaves the tree (its sibling takes its parent's place — header SPLITS), a unit left with one window
+	-- dissolves
+	local function dropMember(leaf: Leaf, at: number)
+		local m = table.remove(leaf.Members, at) :: Member
+		if leaf.Selected == m and #leaf.Members > 0 then
+			leaf.Selected = neighbour(leaf, at, at - 1)
 		end
-		if not dissolveIfSmall(g) then
-			pushView(g)
+		local u = leaf.Unit
+		if #leaf.Members == 0 and leaf.Parent ~= nil then
+			-- (Layout.prune: the rule saving and loading use; a kept split keeps its table)
+			local root = Layout.prune(u.Root, liveSides, function(n: Node): boolean
+				return n.Tag == "Leaf" and #n.Members > 0
+			end, function(n: Node, first: Node, second: Node): Node
+				local split = n :: Split
+				split.Children[1] = first
+				split.Children[2] = second
+				first.Parent = split
+				second.Parent = split
+				return split
+			end) :: Node
+			root.Parent = nil
+			u.Root = root
+			restructured(u)
+		end
+		if not dissolveIfSmall(u) then
+			pushView(u)
 		end
 	end
 
-	-- a live window leaves its group (a tab dragged out, ImportWindow / ImportLayout naming it). `float`: off the
-	-- group's edge too. Without a rectangle of its own it takes the group's Size.
+	-- a live window leaves its leaf (a tab dragged out, ImportWindow / ImportLayout naming it). `float`: off the unit's
+	-- edge too. Without a rectangle of its own it takes the unit's Size; out of a split it is expanded (its Collapsed
+	-- was its leaf's fold)
 	local function leave(e: Entry, float: boolean)
-		local g = e.Group
-		if g == nil then
+		local leaf = e.Leaf
+		if leaf == nil then
 			return
 		end
-		local m = memberOf(g, e) :: Member
-		local at = table.find(g.Members, m) :: number
+		local u = leaf.Unit
+		local m = memberOf(leaf, e) :: Member
+		local at = table.find(leaf.Members, m) :: number
 		local h = e.Hints :: Decoration.Hints
 		quiet += 1
-		e.Group = nil
+		e.Leaf = nil
 		if not e.KeptRect then
-			h.Size:SetIfChanged(g.Size)
+			h.Size:SetIfChanged(u.Size)
 			e.KeptRect = true
 		end
 		if float then
 			e.Side:SetIfChanged(nil)
 		end
+		if isSplit(u) then
+			h.Collapsed:SetIfChanged(false)
+		end
 		e.View:Set(nil)
 		quiet -= 1
-		dropMember(g, at)
+		dropMember(leaf, at)
 	end
 
-	-- a pending key leaves its group
+	-- a pending key leaves its leaf
 	local function leavePending(key: string)
-		local g = pendingGroup[key]
-		if g == nil then
+		local leaf = pendingLeaf[key]
+		if leaf == nil then
 			return
 		end
-		pendingGroup[key] = nil
-		for i, m in g.Members do
+		pendingLeaf[key] = nil
+		for i, m in leaf.Members do
 			if m.Entry == nil and m.Key == key then
-				dropMember(g, i)
+				dropMember(leaf, i)
 				return
 			end
 		end
 	end
 
-	-- the group's edge (header DOCK: one group per edge); every window of it follows — and takes the group's dock
-	-- width while it is docked (undocked, each keeps the width it had)
-	local function setGroupSide(g: Group, side: Side?, width: number?)
-		g.Side = side
+	-- the unit's edge (header DOCK: one unit per edge); every window of it follows — and takes the unit's dock width
+	-- while it is docked (undocked, each keeps the width it had). A split unit that floats is expanded (only its panel
+	-- collapses)
+	local function setUnitSide(u: Unit, side: Side?, width: number?)
+		u.Side = side
 		if width ~= nil then
-			g.Width = width
+			u.Width = width
+		end
+		if side == nil and isSplit(u) then
+			u.Collapsed = false
 		end
 		quiet += 1
-		for _, m in g.Members do
+		for _, m in membersOf(u) do
 			local e = m.Entry
 			if e ~= nil then
 				if side ~= nil then
-					e.DockWidth:SetIfChanged(g.Width)
+					e.DockWidth:SetIfChanged(u.Width)
 				end
 				e.Side:SetIfChanged(side)
 			end
 		end
 		quiet -= 1
+		if isSplit(u) then
+			spreadCollapsed(u)
+		end
 	end
 
-	-- the open window (or group) docked on `side` other than `except` and its group (header DOCK: one per edge)
+	-- the open window (or unit) docked on `side` other than `except` and its unit (header DOCK: one per edge)
 	local function occupant(side: Side, except: Entry?): Entry?
-		local exceptGroup = if except ~= nil then except.Group else nil
+		local exceptUnit = unitOf(except)
 		for _, entry in order do
 			local h = entry.Hints
-			if entry ~= except and (exceptGroup == nil or entry.Group ~= exceptGroup) and h ~= nil and entry.Side:Get() == side and h.Open:Get() then
+			if entry ~= except and (exceptUnit == nil or unitOf(entry) ~= exceptUnit) and h ~= nil and entry.Side:Get() == side and h.Open:Get() then
 				return entry
 			end
 		end
@@ -725,13 +1255,14 @@ function Manager.new(): Manager
 			return snapshot(entry)
 		end
 		local st = pending[key]
-		local g = pendingGroup[key]
-		if g ~= nil then
-			-- a pending tab: its group's shared facts
+		local leaf = pendingLeaf[key]
+		if leaf ~= nil then
+			-- a pending tab: its unit's shared facts
+			local u = leaf.Unit
 			local copy = Layout.copyState(st)
-			copy.Collapsed = g.Collapsed
-			copy.Dock = g.Side
-			copy.DockWidth = if g.Side ~= nil then g.Width else nil
+			copy.Collapsed = collapsedOf(leaf)
+			copy.Dock = u.Side
+			copy.DockWidth = if u.Side ~= nil then u.Width else nil
 			return copy
 		end
 		return st
@@ -766,15 +1297,15 @@ function Manager.new(): Manager
 		settle(entry)
 	end
 
-	-- a window of a group gets its saved state: the group's shared facts, its own kept rectangle when the state has
+	-- a window of a unit gets its saved state: the unit's shared facts, its own kept rectangle when the state has
 	-- one (header TABS — `Windows[key].Position` / `Size`), and its Open. The edge follows `apply`'s rule for the
-	-- whole group: an OPEN window cannot bring its group onto an edge another open window / group holds — the group
+	-- whole unit: an OPEN window cannot bring its unit onto an edge another open window / unit holds — the unit
 	-- floats; a closed one keeps the edge remembered (header DOCK).
-	local function applyMember(entry: Entry, state: WindowState, g: Group)
+	local function applyMember(entry: Entry, state: WindowState, leaf: Leaf)
+		local u = leaf.Unit
 		local h = entry.Hints :: Decoration.Hints
 		quiet += 1
-		entry.Group = g
-		h.Collapsed:SetIfChanged(g.Collapsed)
+		entry.Leaf = leaf
 		local size, position = state.Size, state.Position
 		if size ~= nil then
 			h.Size:SetIfChanged(Layout.toSize(size))
@@ -783,19 +1314,22 @@ function Manager.new(): Manager
 			h.Position:SetIfChanged(Layout.toPosition(position))
 		end
 		entry.KeptRect = size ~= nil
-		local side = g.Side
+		local side = u.Side
 		if side ~= nil then
-			-- the width that fits this container is the group's (exported as it shows)
+			-- the width that fits this container is the unit's (exported as it shows)
 			local deco = entry.Deco
 			if deco ~= nil then
-				g.Width = deco.FitDockWidth(g.Width)
+				u.Width = deco.FitDockWidth(u.Width)
 			end
-			entry.DockWidth:SetIfChanged(g.Width)
+			entry.DockWidth:SetIfChanged(u.Width)
 			if state.Open and occupant(side, entry) ~= nil then
-				setGroupSide(g, nil, nil)
+				quiet -= 1
+				setUnitSide(u, nil, nil)
+				quiet += 1
 			end
 		end
-		entry.Side:SetIfChanged(g.Side)
+		entry.Side:SetIfChanged(u.Side)
+		h.Collapsed:SetIfChanged(collapsedOf(leaf))
 		quiet -= 1
 		h.Open:SetIfChanged(state.Open)
 	end
@@ -812,7 +1346,7 @@ function Manager.new(): Manager
 		return out
 	end
 
-	-- `e` may be a tab of a group whose windows sit in `container` (nil = not known yet)
+	-- `e` may be a tab of a unit whose windows sit in `container` (nil = not known yet)
 	local function groupable(e: Entry, container: Instance?): boolean
 		local h, root = e.Hints, e.Root
 		if h == nil or h.NoTitleBar then
@@ -822,16 +1356,16 @@ function Manager.new(): Manager
 		return container == nil or parent == nil or parent == container
 	end
 
-	-- the unit saved on each edge: the open group / window there (none when it has no Key), else the topmost known
-	-- key whose state (or group) remembers that edge; every other unit remembering an edge is saved as floating
+	-- the unit saved on each edge: the open unit / window there (none when it has no Key), else the topmost known
+	-- key whose state (or unit) remembers that edge; every other unit remembering an edge is saved as floating
 	local function holders(): { [Side]: any }
 		local out: { [Side]: any } = {}
 		for _, side: Side in { "Left" :: Side, "Right" :: Side } do
 			local holder = occupant(side, nil)
 			if holder ~= nil then
-				local g = holder.Group
-				if g ~= nil then
-					out[side] = g
+				local u = unitOf(holder)
+				if u ~= nil then
+					out[side] = u
 				else
 					local key = liveKey(holder)
 					if key ~= nil then
@@ -841,10 +1375,10 @@ function Manager.new(): Manager
 			else
 				for i = #known, 1, -1 do
 					local key = known[i]
-					local g = groupOfKey(key)
-					local dock = if g ~= nil then g.Side else stateOf(key).Dock
+					local u = unitOfKey(key)
+					local dock = if u ~= nil then u.Side else stateOf(key).Dock
 					if dock == side then
-						out[side] = g or key
+						out[side] = u or key
 						break
 					end
 				end
@@ -853,32 +1387,66 @@ function Manager.new(): Manager
 		return out
 	end
 
-	-- a group as a saved unit: its keyed windows in tab order (nil when it has none)
-	local function unitOfGroup(g: Group): Layout.Unit?
-		local tabs: { string } = {}
-		local windows: { [string]: Layout.WindowEntry } = {}
-		local kept: { [string]: boolean } = {}
-		local firstOpen: string? = nil
-		for _, m in g.Members do
-			local key = m.Key
-			if key ~= nil then
-				table.insert(tabs, key)
-				local st = stateOf(key)
-				local w: Layout.WindowEntry = { Kind = st.Kind, Open = st.Open }
-				local e = m.Entry
-				kept[key] = if e ~= nil then e.KeptRect else (st.Position ~= nil and st.Size ~= nil)
-				windows[key] = w
-				if firstOpen == nil and st.Open then
-					firstOpen = key
+	-- a unit's tree as saved (header SPLITS): keyed members only (a leaf may come out empty — Layout.prune drops it); a
+	-- leaf's Collapsed when it is folded (the caller drops it on a root leaf)
+	local function savedTree(node: Node, openKey: { [string]: boolean }): Layout.Node
+		if node.Tag == "Leaf" then
+			local tabs: { string } = {}
+			local firstOpen: string? = nil
+			for _, m in node.Members do
+				local key = m.Key
+				if key ~= nil then
+					table.insert(tabs, key)
+					if firstOpen == nil and openKey[key] then
+						firstOpen = key
+					end
 				end
 			end
+			local out: Layout.TabNode = { Tabs = tabs, Selected = node.Selected.Key or firstOpen or tabs[1] or "" }
+			if node.Fold then
+				out.Collapsed = true
+			end
+			return out
 		end
-		if #tabs == 0 then
+		local out: Layout.SplitNode = {
+			Split = node.Axis,
+			Ratio = node.Ratio,
+			Children = { savedTree(node.Children[1], openKey), savedTree(node.Children[2], openKey) },
+		}
+		return out
+	end
+
+	-- a unit as a saved group: its keyed windows (nil when it has none)
+	local function savedUnit(u: Unit): Layout.Unit?
+		local openKey: { [string]: boolean } = {}
+		local windows: { [string]: Layout.WindowEntry } = {}
+		local kept: { [string]: boolean } = {}
+		for _, m in membersOf(u) do
+			local key = m.Key
+			if key ~= nil then
+				local st = stateOf(key)
+				openKey[key] = st.Open
+				windows[key] = { Kind = st.Kind, Open = st.Open }
+				local e = m.Entry
+				kept[key] = if e ~= nil then e.KeptRect else (st.Position ~= nil and st.Size ~= nil)
+			end
+		end
+		local node = Layout.prune(savedTree(u.Root, openKey), savedSides, function(leaf: Layout.Node): boolean
+			return #(leaf :: Layout.TabNode).Tabs > 0
+		end, savedSplit)
+		if node == nil then
 			return nil
 		end
-		-- a tab's own rectangle (header TABS): only in a saved node of several tabs (a node the keyless windows leave
-		-- with one tab loads as a plain window at the node's rectangle), and only a window that has one
-		if #tabs >= 2 then
+		if node.Split == nil then
+			node.Collapsed = nil
+		end
+		local count = 0
+		for _ in windows do
+			count += 1
+		end
+		-- a tab's own rectangle (header TABS): only in a saved tree of several keys (a tree the keyless windows leave
+		-- with one key loads as a plain window at the group's rectangle), and only a window that has one
+		if count >= 2 then
 			for key, w in windows do
 				if kept[key] then
 					local st = stateOf(key)
@@ -888,22 +1456,21 @@ function Manager.new(): Manager
 			end
 		end
 		return {
-			Tabs = tabs,
-			Selected = g.Selected.Key or firstOpen or tabs[1],
+			Node = node,
 			Windows = windows,
-			Collapsed = g.Collapsed,
-			Position = Layout.positionOf(g.Position),
-			Size = Layout.sizeOf(g.Size),
-			Dock = g.Side,
-			Width = if g.Side ~= nil then g.Width else nil,
+			-- (the invariant of `Unit.Collapsed`: a floating split's is false)
+			Collapsed = u.Collapsed,
+			Position = Layout.positionOf(u.Position),
+			Size = Layout.sizeOf(u.Size),
+			Dock = u.Side,
+			Width = if u.Side ~= nil then u.Width else nil,
 		}
 	end
 
-	local function unitOfKey(key: string): Layout.Unit
+	local function plainUnit(key: string): Layout.Unit
 		local s = stateOf(key)
 		return {
-			Tabs = { key },
-			Selected = key,
+			Node = { Tabs = { key }, Selected = key },
 			Windows = { [key] = { Kind = s.Kind, Open = s.Open } },
 			Collapsed = s.Collapsed,
 			Position = s.Position,
@@ -915,23 +1482,23 @@ function Manager.new(): Manager
 
 	local function build(): WindowLayout
 		local tokens = holders()
-		local units: { Layout.Unit } = {}
+		local saved: { Layout.Unit } = {}
 		local byToken: { [any]: Layout.Unit } = {}
-		local seen: { [Group]: true } = {}
+		local seen: { [Unit]: true } = {}
 		for _, key in known do
-			local g = groupOfKey(key)
-			if g ~= nil then
-				if not seen[g] then
-					seen[g] = true
-					local unit = unitOfGroup(g)
+			local u = unitOfKey(key)
+			if u ~= nil then
+				if not seen[u] then
+					seen[u] = true
+					local unit = savedUnit(u)
 					if unit ~= nil then
-						table.insert(units, unit)
-						byToken[g] = unit
+						table.insert(saved, unit)
+						byToken[u] = unit
 					end
 				end
 			else
-				local unit = unitOfKey(key)
-				table.insert(units, unit)
+				local unit = plainUnit(key)
+				table.insert(saved, unit)
 				byToken[key] = unit
 			end
 		end
@@ -942,7 +1509,7 @@ function Manager.new(): Manager
 				holderUnits[side] = unit
 			end
 		end
-		return Layout.build(units, holderUnits)
+		return Layout.build(saved, holderUnits)
 	end
 
 	local function refresh()
@@ -993,25 +1560,26 @@ function Manager.new(): Manager
 		end
 	end
 
-	-- a group stacks as one lump (header TABS): its live windows sit together, in tab order, where its topmost one is
+	-- a unit stacks as one lump (headers TABS, SPLITS): its live windows sit together, in tree and tab order, where
+	-- its topmost one is
 	local function gatherOrder()
-		if next(groups) == nil then
+		if next(units) == nil then
 			return
 		end
-		local topOf: { [Group]: number } = {}
+		local topOf: { [Unit]: number } = {}
 		for i, e in order do
-			local g = e.Group
-			if g ~= nil then
-				topOf[g] = i
+			local u = unitOf(e)
+			if u ~= nil then
+				topOf[u] = i
 			end
 		end
 		local out: { Entry } = {}
 		for i, e in order do
-			local g = e.Group
-			if g == nil then
+			local u = unitOf(e)
+			if u == nil then
 				table.insert(out, e)
-			elseif topOf[g] == i then
-				for _, m in g.Members do
+			elseif topOf[u] == i then
+				for _, m in membersOf(u) do
 					if m.Entry ~= nil then
 						table.insert(out, m.Entry)
 					end
@@ -1023,13 +1591,13 @@ function Manager.new(): Manager
 		end
 	end
 
-	-- the same for the saved order: a group's keys sit together where its topmost key is
+	-- the same for the saved order: a unit's keys sit together where its topmost key is
 	local function gatherKnown()
-		local topOf: { [Group]: number } = {}
+		local topOf: { [Unit]: number } = {}
 		for i, key in known do
-			local g = groupOfKey(key)
-			if g ~= nil then
-				topOf[g] = i
+			local u = unitOfKey(key)
+			if u ~= nil then
+				topOf[u] = i
 			end
 		end
 		if next(topOf) == nil then
@@ -1037,11 +1605,11 @@ function Manager.new(): Manager
 		end
 		local out: { string } = {}
 		for i, key in known do
-			local g = groupOfKey(key)
-			if g == nil then
+			local u = unitOfKey(key)
+			if u == nil then
 				table.insert(out, key)
-			elseif topOf[g] == i then
-				for _, m in g.Members do
+			elseif topOf[u] == i then
+				for _, m in membersOf(u) do
 					local k = m.Key
 					if k ~= nil and (live[k] ~= nil or pending[k] ~= nil) then
 						table.insert(out, k)
@@ -1057,9 +1625,9 @@ function Manager.new(): Manager
 		for i, entry in order do
 			entry.Rank:SetIfChanged(i)
 		end
-		-- (the tabs' ZIndex is the group's top rank)
-		for g in groups do
-			pushView(g)
+		-- (the tabs' and splitters' ZIndex is the unit's top rank)
+		for u in units do
+			pushView(u)
 		end
 		-- what is on top under a still pointer may have changed (hover looks re-judge)
 		Pointer.invalidate()
@@ -1121,21 +1689,25 @@ function Manager.new(): Manager
 		known = out
 	end
 
-	-- raise to the top with the focus. A window of a group raises the whole group; an OPEN window that is not the
-	-- group's drawn one is selected first (an explicit ask for it: `Open:Set(true)`, `Focused:Set(true)`, its tab)
+	-- raise to the top with the focus. A window of a unit raises the whole unit; an OPEN window that is not its
+	-- leaf's drawn one is selected first (an explicit ask for it: `Open:Set(true)`, `Focused:Set(true)`, its tab)
 	local function focus(target: Entry)
 		local entry = target
-		local g = entry.Group
-		if g ~= nil then
-			if drawnOf(g) ~= entry and isOpenWindow(entry) then
-				g.Selected = memberOf(g, entry) :: Member
-				pushView(g)
-				refresh()
+		local leaf = entry.Leaf
+		local u = if leaf ~= nil then leaf.Unit else nil
+		if leaf ~= nil and u ~= nil then
+			if drawnOf(leaf) ~= entry and isOpenWindow(entry) then
+				batch(function()
+					leaf.Selected = memberOf(leaf, entry) :: Member
+					pushView(u)
+					layoutDirty = true
+				end)
 			end
-			entry = drawnOf(g) or entry
+			entry = drawnOf(leaf) or entry
+			u.FocusLeaf = leaf
 		end
 		local topEntry = order[#order]
-		local onTop = topEntry == entry or (g ~= nil and topEntry ~= nil and topEntry.Group == g)
+		local onTop = topEntry == entry or (u ~= nil and unitOf(topEntry) == u)
 		if focusedId:Get() == entry.Id and onTop then
 			return -- already focused AND on top (a newer registration may cover a focused window)
 		end
@@ -1143,8 +1715,8 @@ function Manager.new(): Manager
 			return -- released
 		end
 		local lump: { Entry } = {}
-		if g ~= nil then
-			for _, m in g.Members do
+		if u ~= nil then
+			for _, m in membersOf(u) do
 				if m.Entry ~= nil then
 					table.insert(lump, m.Entry)
 				end
@@ -1162,11 +1734,11 @@ function Manager.new(): Manager
 			table.insert(order, e)
 		end
 		renumber()
-		-- a keyed window raised: its key goes to the top of the saved order (header STACKING), a group's keys together
+		-- a keyed window raised: its key goes to the top of the saved order (header STACKING), a unit's keys together
 		-- (its pending tabs' too)
 		local keys: { string } = {}
-		if g ~= nil then
-			for _, m in g.Members do
+		if u ~= nil then
+			for _, m in membersOf(u) do
 				local key = m.Key
 				if key ~= nil and table.find(known, key) ~= nil then
 					table.insert(keys, key)
@@ -1214,7 +1786,7 @@ function Manager.new(): Manager
 		return open:Get() and container ~= nil and Visibility.isOnScreen(container)
 	end
 
-	-- the focused window went away (closed or released): the topmost window still open takes the focus (a group is one
+	-- the focused window went away (closed or released): the topmost window still open takes the focus (a leaf is one
 	-- window: its drawn one)
 	local function succeed()
 		for i = #order, 1, -1 do
@@ -1254,11 +1826,25 @@ function Manager.new(): Manager
 		return nil
 	end
 
-	-- a press went to `entry`: remember whether it had the focus before (the strip rule), then focus it. A press on
-	-- any part of a group (a tab included) focuses the group's drawn window: selecting a tab is the tab's own press
+	local function focusedEntry(): Entry?
+		local id = focusedId:Get()
+		for _, e in order do
+			if e.Id == id then
+				return e
+			end
+		end
+		return nil
+	end
+
+	-- a press went to `entry`: remember whether its unit had the focus before (the strip rule), then focus it. A
+	-- press on any part of a leaf (a tab included) focuses the leaf's drawn window: selecting a tab is the tab's own
+	-- press
 	local function pressed(entry: Entry)
 		local target = faceOf(entry)
-		lastPress = { Entry = target, WasFocused = focusedId:Get() == target.Id }
+		local before = focusedEntry()
+		local u = unitOf(target)
+		local was = before == target or (u ~= nil and unitOf(before) == u)
+		lastPress = { Entry = target, WasFocused = was }
 		focus(target)
 	end
 
@@ -1327,23 +1913,23 @@ function Manager.new(): Manager
 		end
 	end
 
-	-- a tab whose surface root is put in another container than its group's other windows (an import or a pending
-	-- tab grouped it before its root had a parent, or the app moved it) leaves the group as a plain window: its own
-	-- kept rectangle, or the group's (header TABS)
+	-- a tab whose surface root is put in another container than its unit's other windows (an import or a pending
+	-- tab grouped it before its root had a parent, or the app moved it) leaves the unit as a plain window: its own
+	-- kept rectangle, or the unit's (header TABS)
 	local function leaveIfElsewhere(e: Entry)
-		local g, root = e.Group, e.Root
+		local u, root = unitOf(e), e.Root
 		local container = if root ~= nil then root.Parent else nil
-		if g == nil or container == nil then
+		if u == nil or container == nil then
 			return
 		end
-		for _, m in g.Members do
+		for _, m in membersOf(u) do
 			local other = m.Entry
 			local otherRoot = if other ~= nil then other.Root else nil
 			local otherContainer = if otherRoot ~= nil then otherRoot.Parent else nil
 			if other ~= e and otherContainer ~= nil and otherContainer ~= container then
 				local h = e.Hints :: Decoration.Hints
 				if not e.KeptRect then
-					h.Position:SetIfChanged(g.Position)
+					h.Position:SetIfChanged(u.Position)
 				end
 				leave(e, true)
 				renumber()
@@ -1353,36 +1939,141 @@ function Manager.new(): Manager
 		end
 	end
 
-	-- ── joining (header TABS) ─────────────────────────────────────────────────────────────────────────────────────
+	-- ── joining and splitting (headers TABS, SPLITS) ──────────────────────────────────────────────────────────────
 
-	-- `e` may be joined by a drag from `container`: a decorated window with a title bar there, open, expanded, drawn
+	-- `e` may be joined by a drag from `container`: a decorated window with a title bar there, open, expanded (a
+	-- folded leaf of a split counts: only a collapsed panel or an icon does not), its leaf's drawn one
 	local function joinable(e: Entry, container: Instance): boolean
 		local h, deco, root = e.Hints, e.Deco, e.Root
 		if h == nil or deco == nil or root == nil or h.NoTitleBar or root.Parent ~= container then
 			return false
 		end
-		if not h.Open:Get() or h.Collapsed:Get() then
+		if not h.Open:Get() then
 			return false
 		end
-		local g = e.Group
-		return g == nil or drawnOf(g) == e
+		local leaf = e.Leaf
+		local u = if leaf ~= nil then leaf.Unit else nil
+		if u ~= nil and isSplit(u) then
+			if u.Side ~= nil and u.Collapsed then
+				return false
+			end
+		elseif h.Collapsed:Get() then
+			return false
+		end
+		return leaf == nil or drawnOf(leaf) == e
 	end
 
-	-- the window / group under the pointer a drag of `entry` would join, and how (header TABS)
+	-- the on-screen rectangle of a unit: around its visible leaves' frames
+	local function unitScreenRect(u: Unit): (Vector2?, Vector2?)
+		local lo, hi = nil :: Vector2?, nil :: Vector2?
+		for _, leaf in leavesOf(u) do
+			local e = drawnOf(leaf)
+			local deco = if e ~= nil then e.Deco else nil
+			if e ~= nil and deco ~= nil and isOpenWindow(e) and deco.Frame.Visible then
+				local p, s = deco.Frame.AbsolutePosition, deco.Frame.AbsoluteSize
+				local q0, q1 = p, p + s
+				lo = if lo ~= nil then Vector2.new(math.min(lo.X, q0.X), math.min(lo.Y, q0.Y)) else q0
+				hi = if hi ~= nil then Vector2.new(math.max(hi.X, q1.X), math.max(hi.Y, q1.Y)) else q1
+			end
+		end
+		return lo, hi
+	end
+
+	-- the band of a target's rectangle the point is in (the side nearest it among those closer than `band`), nil =
+	-- none
+	local function bandAt(p: Vector2, s: Vector2, x: number, y: number, bandX: number, bandY: number): Decoration.DropSide?
+		local best: Decoration.DropSide? = nil
+		local bestD = math.huge
+		local function try(at: Decoration.DropSide, d: number, limit: number, length: number)
+			-- (compared as a share of the band, so a corner goes to the side it is deeper in)
+			if d >= 0 and d < limit and length > 0 and d / limit < bestD then
+				best = at
+				bestD = d / limit
+			end
+		end
+		try("Left", x - p.X, bandX, s.X)
+		try("Right", p.X + s.X - x, bandX, s.X)
+		try("Top", y - p.Y, bandY, s.Y)
+		try("Bottom", p.Y + s.Y - y, bandY, s.Y)
+		return best
+	end
+
+	-- half of a rectangle (UDim2s in the container) on a side: the preview of a split
+	local function half(position: UDim2, size: UDim2, at: Decoration.DropSide): (UDim2, UDim2)
+		local hx = UDim.new(size.X.Scale / 2, math.round(size.X.Offset / 2))
+		local hy = UDim.new(size.Y.Scale / 2, math.round(size.Y.Offset / 2))
+		if at == "Left" then
+			return position, UDim2.new(hx, size.Y)
+		elseif at == "Right" then
+			local x = UDim.new(position.X.Scale + hx.Scale, position.X.Offset + size.X.Offset - hx.Offset)
+			return UDim2.new(x, position.Y), UDim2.new(UDim.new(size.X.Scale - hx.Scale, hx.Offset), size.Y)
+		elseif at == "Top" then
+			return position, UDim2.new(size.X, hy)
+		end
+		local y = UDim.new(position.Y.Scale + hy.Scale, position.Y.Offset + size.Y.Offset - hy.Offset)
+		return UDim2.new(position.X, y), UDim2.new(size.X, UDim.new(size.Y.Scale - hy.Scale, hy.Offset))
+	end
+
+	-- what a drop on the joinable window `e` (its leaf's drawn one) at the pointer does (header SPLITS): its leaf's
+	-- strip row joins as a tab where the pointer is; in a split unit, the band 2 x FrameHeight inside the unit's outer
+	-- edges splits the whole unit on that side; else, inside its leaf, the centre joins as the last tab and the 20%
+	-- bands split that leaf in half on that side (an unsplit unit: root = leaf)
+	local function judgeOver(e: Entry, x: number, y: number): Decoration.Drop?
+		local deco = e.Deco :: Decoration.Decoration
+		local f = deco.Frame
+		local leafPos, leafSize = deco.LeafRect()
+		local p, s = f.AbsolutePosition, f.AbsoluteSize
+		local inFrame = holds(f, x, y)
+		local view = e.View:Get()
+		local fold = if view ~= nil then view.Fold else nil
+		local row = deco.RowHeight()
+		if inFrame and fold ~= "Left" and fold ~= "Right" and y < p.Y + row then
+			return { Target = e, Index = deco.InsertAt(x), Split = nil, Outer = false, Position = leafPos, Size = leafSize }
+		end
+		local u = unitOf(e)
+		if u ~= nil and isSplit(u) then
+			local lo, hi = unitScreenRect(u)
+			if lo ~= nil and hi ~= nil then
+				local band = 2 * row
+				local outer = if x >= lo.X and x < hi.X and y >= lo.Y and y < hi.Y then bandAt(lo, hi - lo, x, y, band, band) else nil
+				if outer ~= nil then
+					local unitPos, unitSize = deco.UnitRect()
+					local hp, hs = half(unitPos, unitSize, outer :: Decoration.DropSide)
+					return { Target = e, Index = nil, Split = outer :: Decoration.DropSide, Outer = true, Position = hp, Size = hs }
+				end
+			end
+		end
+		if not inFrame or fold ~= nil then
+			return nil
+		end
+		local fx, fy = (x - p.X) / s.X, (y - p.Y) / s.Y
+		local lo, hi = Decoration.CENTRE_LO, Decoration.CENTRE_HI
+		if fx >= lo and fx <= hi and fy >= lo and fy <= hi then
+			return { Target = e, Index = nil, Split = nil, Outer = false, Position = leafPos, Size = leafSize }
+		end
+		local at = bandAt(p, s, x, y, s.X * lo, s.Y * lo)
+		if at == nil then
+			return nil
+		end
+		local hp, hs = half(leafPos, leafSize, at)
+		return { Target = e, Index = nil, Split = at, Outer = false, Position = hp, Size = hs }
+	end
+
+	-- the window / unit under the pointer a drag of `entry` would join or split, and how (headers TABS, SPLITS)
 	local function dropAt(entry: Entry, x: number, y: number): Decoration.Drop?
 		local root = entry.Root
 		local container = if root ~= nil then root.Parent else nil
 		if container == nil then
 			return nil
 		end
-		local own = entry.Group
+		local own = unitOf(entry)
 		-- the first window from the top with something on screen under the pointer decides (its drawn frame, tabs,
-		-- icon, strip or surface; a group's hidden windows show nothing): only a joinable one is judged, anything else
-		-- covers what is under it
+		-- icon, strip, splitter or surface; a leaf's hidden windows show nothing): only a joinable one is judged,
+		-- anything else covers what is under it
 		for i = #order, 1, -1 do
 			local e = order[i]
 			local eRoot = e.Root
-			if e ~= entry and (own == nil or e.Group ~= own) and eRoot ~= nil and eRoot.Parent == container then
+			if e ~= entry and (own == nil or unitOf(e) ~= own) and eRoot ~= nil and eRoot.Parent == container then
 				local hit = holds(eRoot, x, y)
 				local deco = e.Deco
 				if not hit and deco ~= nil then
@@ -1394,27 +2085,34 @@ function Manager.new(): Manager
 					end
 				end
 				if hit then
-					if deco == nil or not joinable(e, container) or not holds(deco.Frame, x, y) then
+					-- the window that judges: the hit window's leaf's drawn one (the hit may be an unselected tab); in a
+					-- split, when its frame does not hold the pointer (a splitter over the neighbour's edge), the leaf
+					-- whose frame does
+					local face = faceOf(e)
+					local u = unitOf(face)
+					local faceDeco = face.Deco
+					if u ~= nil and isSplit(u) and (faceDeco == nil or not holds(faceDeco.Frame, x, y)) then
+						for _, leaf in leavesOf(u) do
+							local d = drawnOf(leaf)
+							local dd = if d ~= nil then d.Deco else nil
+							if d ~= nil and dd ~= nil and isOpenWindow(d) and holds(dd.Frame, x, y) then
+								face = d
+								break
+							end
+						end
+					end
+					if face.Deco == nil or not joinable(face, container) then
 						return nil
 					end
-					local f = deco.Frame
-					local p, s = f.AbsolutePosition, f.AbsoluteSize
-					if y < p.Y + deco.RowHeight() then
-						return { Target = e, Index = deco.InsertAt(x), Frame = f }
-					end
-					local fx, fy = (x - p.X) / s.X, (y - p.Y) / s.Y
-					local lo, hi = Decoration.CENTRE_LO, Decoration.CENTRE_HI
-					if fx >= lo and fx <= hi and fy >= lo and fy <= hi then
-						return { Target = e, Index = nil, Frame = f }
-					end
-					return nil -- a band: kept for splits
+					return judgeOver(face, x, y)
 				end
 			end
 		end
 		return nil
 	end
 
-	-- the group holding `side` (header TABS: a held edge joins), when a drag of `entry` may join it
+	-- the unit holding `side` (header TABS: a held edge joins), when a drag of `entry` may join it: the leaf of its
+	-- focused window, else its first visible leaf
 	local function edgeJoin(entry: Entry, side: Side): Decoration.Drop?
 		local root = entry.Root
 		local container = if root ~= nil then root.Parent else nil
@@ -1423,19 +2121,33 @@ function Manager.new(): Manager
 			return nil
 		end
 		local target = faceOf(holder)
+		local u = unitOf(holder)
+		if u ~= nil then
+			-- (the drag focused the dragged window: the unit's own focus is the leaf it was last in)
+			local leaf = u.FocusLeaf
+			if leaf ~= nil and leaf.Unit == u and hasOpen(leaf) and visibleOf(u.Root) ~= nil then
+				target = drawnOf(leaf) or target
+			else
+				local shown = visibleOf(u.Root)
+				if shown ~= nil then
+					target = drawnOf(edgeLeaf(shown, false)) or target
+				end
+			end
+		end
 		if not joinable(target, container) then
 			return nil
 		end
-		return { Target = target, Index = nil, Frame = (target.Deco :: Decoration.Decoration).Frame }
+		local position, size = (target.Deco :: Decoration.Decoration).LeafRect()
+		return { Target = target, Index = nil, Split = nil, Outer = false, Position = position, Size = size }
 	end
 
-	-- the position in `g.Members` before the `index`-th shown (open, live) tab; nil or past the last = the end
-	local function insertionPoint(g: Group, index: number?): number
+	-- the position in `leaf.Members` before the `index`-th shown (open, live) tab; nil or past the last = the end
+	local function insertionPoint(leaf: Leaf, index: number?): number
 		if index == nil then
-			return #g.Members + 1
+			return #leaf.Members + 1
 		end
 		local shownAt = 0
-		for i, m in g.Members do
+		for i, m in leaf.Members do
 			if isOpenWindow(m.Entry) then
 				if shownAt == index then
 					return i
@@ -1443,29 +2155,36 @@ function Manager.new(): Manager
 				shownAt += 1
 			end
 		end
-		return #g.Members + 1
+		return #leaf.Members + 1
 	end
 
-	-- `entry` (a window, or the whole group it draws) joins the target's group (made when the target is plain)
-	local function join(entry: Entry, drop: Decoration.Drop)
-		local target: Entry = drop.Target
-		local from = entry.Group
-		if target == entry or (from ~= nil and target.Group == from) or table.find(order, target) == nil then
-			return
+	-- the dragged unit (when `entry` is in one) gives up its own unit; returns it (its tree is moved by the caller)
+	local function takeUnit(entry: Entry): Unit?
+		local from = unitOf(entry)
+		if from ~= nil then
+			units[from] = nil
+			arranged[from] = nil
 		end
+		return from
+	end
+
+	-- `entry` (a window, or the whole unit it is in) joins the target's leaf as tabs (made when the target is plain):
+	-- a split unit's windows all become tabs there, in tree and tab order
+	local function joinTabs(entry: Entry, drop: Decoration.Drop)
+		local target: Entry = drop.Target
+		local from = takeUnit(entry)
 		local moving: { Member }
 		local selected: Member
 		if from ~= nil then
-			-- a whole group joins with all its tabs in order
-			moving = from.Members
-			selected = memberOf(from, faceOf(entry)) or from.Selected
-			groups[from] = nil
+			moving = membersOf(from)
+			local face = faceOf(entry)
+			selected = (entry.Leaf and memberOf(entry.Leaf, face)) or moving[1]
 			for _, m in moving do
 				local e = m.Entry
 				if e ~= nil then
-					e.Group = nil
+					e.Leaf = nil
 				else
-					pendingGroup[m.Key :: string] = nil
+					pendingLeaf[m.Key :: string] = nil
 				end
 			end
 		else
@@ -1474,27 +2193,141 @@ function Manager.new(): Manager
 			moving = { alone }
 			entry.KeptRect = true
 		end
-		local g = target.Group or newGroup(target)
-		local at = insertionPoint(g, drop.Index)
+		local leaf = target.Leaf or newUnit(target)
+		local at = insertionPoint(leaf, drop.Index)
 		for i, m in moving do
-			table.insert(g.Members, at + i - 1, m)
+			table.insert(leaf.Members, at + i - 1, m)
 		end
 		for _, m in moving do
 			local e = m.Entry
 			if e ~= nil then
-				adopt(e, g)
+				adopt(e, leaf)
 			else
-				pendingGroup[m.Key :: string] = g
+				pendingLeaf[m.Key :: string] = leaf
 			end
 		end
-		g.Selected = selected
+		leaf.Selected = selected
 		gatherKnown()
 		renumber()
-		local face = drawnOf(g)
+		local face = drawnOf(leaf)
 		if face ~= nil then
 			focus(face)
 		end
 		refresh()
+	end
+
+	-- `entry` (a window, or the whole unit it is in — its tree as one side) splits the target's leaf, or the target's
+	-- whole unit for an outer band, in half on the drop's side (header SPLITS: the target keeps its rectangle, Ratio 0.5)
+	local function splitInto(entry: Entry, drop: Decoration.Drop)
+		local target: Entry = drop.Target
+		local at = drop.Split :: Decoration.DropSide
+		local targetLeaf = target.Leaf or newUnit(target)
+		local u = targetLeaf.Unit
+		local from = takeUnit(entry)
+		local moving: Node
+		if from ~= nil then
+			moving = from.Root
+			adoptTree(moving, u)
+		else
+			local alone: Member = { Key = liveKey(entry), Entry = entry }
+			moving = newLeaf(u, { alone }, alone)
+			entry.KeptRect = true
+		end
+		local beside: Node = if drop.Outer then u.Root else targetLeaf
+		local axis, movingFirst = axisOf(at)
+		local split: Split = {
+			Tag = "Split",
+			Axis = axis,
+			Ratio = 0.5,
+			Children = if movingFirst then { moving, beside } else { beside, moving },
+			Parent = nil,
+		}
+		replaceNode(u, beside, split)
+		beside.Parent = split
+		moving.Parent = split
+		-- (a split unit is expanded: the target was, and only a docked panel collapses)
+		u.Collapsed = false
+		local movedLeaves: { Leaf } = {}
+		leavesIn(moving, movedLeaves)
+		for _, leaf in movedLeaves do
+			for _, m in leaf.Members do
+				local e = m.Entry
+				if e ~= nil then
+					adopt(e, leaf)
+				else
+					pendingLeaf[m.Key :: string] = leaf
+				end
+			end
+		end
+		restructured(u)
+		gatherKnown()
+		renumber()
+		focus(faceOf(entry))
+		refresh()
+	end
+
+	local function join(entry: Entry, drop: Decoration.Drop)
+		local target: Entry = drop.Target
+		local own = unitOf(entry)
+		if target == entry or (own ~= nil and unitOf(target) == own) or table.find(order, target) == nil then
+			return
+		end
+		if drop.Split ~= nil then
+			splitInto(entry, drop)
+		else
+			joinTabs(entry, drop)
+		end
+	end
+
+	-- a splitter drag in progress (header SPLITS)
+	local splitDrag: SplitDrag? = nil
+	local function dragSplitter(entry: Entry, phase: "Begin" | "Move" | "End", delta: number)
+		if phase == "End" then
+			splitDrag = nil
+			return
+		end
+		if phase == "Begin" then
+			splitDrag = nil
+			local leaf = entry.Leaf
+			local u = if leaf ~= nil then leaf.Unit else nil
+			local arr = if u ~= nil then arranged[u] else nil
+			local sp = if arr ~= nil and leaf ~= nil then arr.Splitters[leaf] else nil
+			if u == nil or arr == nil or sp == nil or not sp.Enabled then
+				return
+			end
+			local info = arr.Infos[sp.Split]
+			local iv, seam = info.Interval, info.At
+			local length, start
+			if info.Pixel then
+				length = iv[4] - iv[2]
+				start = seam[2] - iv[2]
+			else
+				local deco = entry.Deco
+				local panel = if deco ~= nil then deco.PanelHeight() else 0
+				length = (iv[3] - iv[1]) * panel + (iv[4] - iv[2])
+				start = (seam[1] - iv[1]) * panel + (seam[2] - iv[2])
+			end
+			if length > 0 then
+				splitDrag = { Split = sp.Split, Unit = u, Start = start, Length = length, Min1 = info.Min1, Min2 = info.Min2 }
+			end
+			return
+		end
+		local d = splitDrag
+		if d == nil or not units[d.Unit] then
+			return
+		end
+		local hi = d.Length - d.Min2
+		local seam = d.Start + delta
+		seam = if hi < d.Min1 then d.Min1 else math.clamp(seam, d.Min1, hi)
+		local ratio = math.clamp(seam / d.Length, 0.01, 0.99)
+		if ratio ~= d.Split.Ratio then
+			-- (one layout build per move: the views and the Ratio in one batch)
+			batch(function()
+				d.Split.Ratio = ratio
+				pushView(d.Unit)
+				layoutDirty = true
+			end)
+		end
 	end
 
 	local focusedOut: State<number> = focusedId
@@ -1562,18 +2395,22 @@ function Manager.new(): Manager
 					end
 				end
 				-- a window already on screen moves to its saved place (one an app Source destroyed meanwhile waits); a
-				-- node of several tabs becomes a group (header TABS) of the windows that may be tabs together
+				-- tree of several tabs becomes a unit (headers TABS, SPLITS) of the windows that may be tabs together
 				for _, node in nodes do
-					if #node.Tabs == 1 then
-						place(node.Tabs[1], states[node.Tabs[1]])
+					if #node.Keys == 1 then
+						place(node.Keys[1], states[node.Keys[1]])
 						continue
 					end
-					-- the group's container: its selected window's when on screen, else the first one's
-					local container: Instance? = nil
-					local order_ = { node.Selected }
-					for _, key in node.Tabs do
+					-- the unit's container: its first leaf's selected window's when on screen, else the first one's
+					local first: Layout.Node = node.Node
+					while first.Split ~= nil do
+						first = first.Children[1]
+					end
+					local order_ = { (first :: Layout.TabNode).Selected }
+					for _, key in node.Keys do
 						table.insert(order_, key)
 					end
+					local container: Instance? = nil
 					for _, key in order_ do
 						local e = live[key]
 						local root = if e ~= nil then e.Root else nil
@@ -1582,38 +2419,41 @@ function Manager.new(): Manager
 							break
 						end
 					end
-					local tabs: { string } = {}
+					local tabbable: { [string]: true } = {}
+					local count = 0
 					local loose: { string } = {}
-					for _, key in node.Tabs do
+					for _, key in node.Keys do
 						local e = live[key]
 						if e == nil or groupable(e, container) then
-							table.insert(tabs, key)
+							tabbable[key] = true
+							count += 1
 						else
 							table.insert(loose, key)
 						end
 					end
-					if #tabs < 2 then
-						for _, key in tabs do
+					if count < 2 then
+						for key in tabbable do
 							table.insert(loose, key)
 						end
-						tabs = {}
+						tabbable = {}
 					end
+					local unitCollapsed = groupCollapsed(node.Collapsed, node.Dock, node.Node.Split ~= nil)
 					for _, key in loose do
-						place(key, plainState(states[key], node.Position, node.Size, node.Collapsed, node.Dock, node.Width))
+						place(key, plainState(states[key], node.Position, node.Size, unitCollapsed, node.Dock, node.Width))
 					end
-					if #tabs == 0 then
+					if count < 2 then
 						continue
 					end
 					local fallback: Entry? = nil
-					for _, key in tabs do
+					for key in tabbable do
 						fallback = fallback or live[key]
 					end
 					local fh = if fallback ~= nil then fallback.Hints else nil
 					local nodePosition, nodeSize = node.Position, node.Size
-					local g: Group = {
-						Members = {},
-						Selected = nil :: any,
-						-- (an edge group without a floating rectangle: a window's own, or Window's default)
+					local u: Unit = {
+						Root = nil :: any,
+						FocusLeaf = nil,
+						-- (an edge unit without a floating rectangle: a window's own, or Window's default)
 						Position = if nodePosition ~= nil
 							then Layout.toPosition(nodePosition)
 							elseif fh ~= nil then fh.Position:Get()
@@ -1622,41 +2462,73 @@ function Manager.new(): Manager
 							then Layout.toSize(nodeSize)
 							elseif fh ~= nil then fh.Size:Get()
 							else Layout.toSize(Layout.DEFAULT_SIZE),
-						Collapsed = node.Collapsed,
+						Collapsed = unitCollapsed,
 						Side = node.Dock,
 						Width = node.Width or 0,
 					}
-					local selected: Member? = nil
-					for _, key in tabs do
-						local m: Member = { Key = key, Entry = live[key] }
-						table.insert(g.Members, m)
-						if key == node.Selected then
-							selected = m
+					-- the saved tree with only the windows that may be tabs (Layout.prune — the rule saving uses: a leaf left
+					-- without any is dropped, a split left with one side is that side)
+					local kept = Layout.prune(node.Node, savedSides, function(leaf: Layout.Node): boolean
+						for _, key in (leaf :: Layout.TabNode).Tabs do
+							if tabbable[key] then
+								return true
+							end
+						end
+						return false
+					end, savedSplit) :: Layout.Node
+					local function grow(saved: Layout.Node): Node
+						if saved.Split ~= nil then
+							local x = grow(saved.Children[1])
+							local y = grow(saved.Children[2])
+							local split: Split = { Tag = "Split", Axis = saved.Split, Ratio = saved.Ratio, Children = { x, y }, Parent = nil }
+							x.Parent = split
+							y.Parent = split
+							return split
+						end
+						local members: { Member } = {}
+						local selected: Member? = nil
+						for _, key in saved.Tabs do
+							if tabbable[key] then
+								local m: Member = { Key = key, Entry = live[key] }
+								table.insert(members, m)
+								if key == saved.Selected then
+									selected = m
+								end
+							end
+						end
+						local leaf = newLeaf(u, members, selected or members[1])
+						leaf.Fold = saved.Collapsed == true
+						return leaf
+					end
+					u.Root = grow(kept)
+					if u.Root.Tag == "Leaf" then
+						u.Root.Fold = false
+					end
+					units[u] = true
+					local all = membersOf(u)
+					for _, leaf in leavesOf(u) do
+						for _, m in leaf.Members do
+							local e = m.Entry
+							if e ~= nil then
+								e.Leaf = leaf
+							else
+								pendingLeaf[m.Key :: string] = leaf
+							end
 						end
 					end
-					g.Selected = selected or g.Members[1]
-					groups[g] = true
-					for _, m in g.Members do
+					-- (applyMember keeps an open unit off an edge another open window / unit holds — header DOCK)
+					for _, m in all do
 						local e = m.Entry
 						if e ~= nil then
-							e.Group = g
-						else
-							pendingGroup[m.Key :: string] = g
+							applyMember(e, states[m.Key :: string], e.Leaf :: Leaf)
 						end
 					end
-					-- (applyMember keeps an open group off an edge another open window / group holds — header DOCK)
-					for _, m in g.Members do
-						local e = m.Entry
-						if e ~= nil then
-							applyMember(e, states[m.Key :: string], g)
-						end
+					-- every window on the unit's (fitted) dock width
+					if u.Side ~= nil then
+						setUnitSide(u, u.Side, u.Width)
 					end
-					-- every window on the group's (fitted) dock width
-					if g.Side ~= nil then
-						setGroupSide(g, g.Side, g.Width)
-					end
-					pushView(g)
-					for _, m in g.Members do
+					pushView(u)
+					for _, m in all do
 						if m.Entry ~= nil then
 							settle(m.Entry)
 						end
@@ -1751,7 +2623,7 @@ function Manager.new(): Manager
 				Kind = "",
 				Side = q.Source(nil :: Side?),
 				DockWidth = q.Source(0),
-				Group = nil,
+				Leaf = nil,
 				View = q.Source(nil :: GroupView?),
 				KeptRect = true,
 			}
@@ -1840,16 +2712,18 @@ function Manager.new(): Manager
 					-- a keyed window that goes away leaves its last state pending (an app tearing its UI down and building
 					-- it again gets its windows back where they were; the Layout output does not change, except when a
 					-- docked window leaves its edge to another key that remembers it — below) — unless the app asked to
-					-- forget it. A keyed tab stays a (pending) tab of its group; any other leaves it (header TABS).
+					-- forget it. A keyed tab stays a (pending) tab of its leaf; any other leaves it (header TABS).
 					local key = entry.Key
-					local g = entry.Group
+					local g = entry.Leaf
 					local stays = false
+					local forgot = false
 					if key ~= nil and live[key] == entry then
 						live[key] = nil
 						if forgetting[key] then
+							-- (the layout is rebuilt below, once the member is out of its leaf: a forgotten key has no state)
 							forgetting[key] = nil
 							table.remove(known, table.find(known, key) :: number)
-							refresh()
+							forgot = true
 						else
 							local st = snapshot(entry)
 							if g ~= nil and not entry.KeptRect then
@@ -1861,15 +2735,17 @@ function Manager.new(): Manager
 						end
 					end
 					if g ~= nil then
-						entry.Group = nil
+						entry.Leaf = nil
 						local m = memberOf(g, entry) :: Member
 						if stays then
 							m.Entry = nil
-							pendingGroup[key :: string] = g
-							pushView(g)
+							pendingLeaf[key :: string] = g
+							pushView(g.Unit)
 						else
 							dropMember(g, table.find(g.Members, m) :: number)
 						end
+						refresh()
+					elseif forgot then
 						refresh()
 					end
 					renumber()
@@ -1908,21 +2784,22 @@ function Manager.new(): Manager
 						entry.Hints = hints
 						-- a state waiting for this key (ImportLayout / ImportWindow before the window existed) is its
 						-- initial state: written into its Sources before anything is built from them. A pending tab
-						-- takes its place in its group (header TABS).
+						-- takes its place in its leaf (header TABS).
 						local waiting = pending[key]
 						remember(key)
 						live[key] = entry
 						if waiting ~= nil then
 							pending[key] = nil
-							local g = pendingGroup[key]
+							local g = pendingLeaf[key]
 							if g ~= nil and hints.NoTitleBar then
 								-- a window that cannot be a tab (header TABS) is placed as if alone in its node, and
 								-- its tab is dropped
-								local plain = plainState(waiting, Layout.positionOf(g.Position), Layout.sizeOf(g.Size), g.Collapsed, g.Side, g.Width)
+								local u = g.Unit
+								local plain = plainState(waiting, Layout.positionOf(u.Position), Layout.sizeOf(u.Size), u.Collapsed, u.Side, u.Width)
 								leavePending(key)
 								apply(entry, plain)
 							elseif g ~= nil then
-								pendingGroup[key] = nil
+								pendingLeaf[key] = nil
 								for _, m in g.Members do
 									if m.Entry == nil and m.Key == key then
 										m.Entry = entry
@@ -1961,12 +2838,12 @@ function Manager.new(): Manager
 							return occupant(side, entry) ~= nil
 						end,
 						-- (refresh also for a window without a Key: who holds an edge decides where the keyed windows that remember
-						-- it are saved; an unchanged layout emits nothing). A group docks and undocks as one.
+						-- it are saved; an unchanged layout emits nothing). A unit docks and undocks as one.
 						Dock = function(side: Side, width: number)
-							local g = entry.Group
-							if g ~= nil then
-								setGroupSide(g, side, width)
-								pushView(g)
+							local u = unitOf(entry)
+							if u ~= nil then
+								setUnitSide(u, side, width)
+								pushView(u)
 							else
 								entry.DockWidth:SetIfChanged(width)
 								entry.Side:SetIfChanged(side)
@@ -1975,10 +2852,10 @@ function Manager.new(): Manager
 							refresh()
 						end,
 						Undock = function()
-							local g = entry.Group
-							if g ~= nil then
-								setGroupSide(g, nil, nil)
-								pushView(g)
+							local u = unitOf(entry)
+							if u ~= nil then
+								setUnitSide(u, nil, nil)
+								pushView(u)
 							else
 								entry.Side:SetIfChanged(nil)
 							end
@@ -1997,32 +2874,24 @@ function Manager.new(): Manager
 						end,
 						Group = entry.View,
 						SetRect = function(position: UDim2?, size: Vector2?)
-							local g = entry.Group
-							if g == nil then
+							local u = unitOf(entry)
+							if u == nil then
 								return
 							end
 							if position ~= nil then
-								g.Position = position
+								u.Position = position
 							end
 							if size ~= nil then
-								g.Size = size
+								u.Size = size
 							end
-							pushView(g)
+							pushView(u)
 						end,
 						MinSize = function(): Vector2
-							local g = entry.Group
-							if g == nil then
+							local u = unitOf(entry)
+							if u == nil then
 								return floorOf(entry)
 							end
-							local x, y = 0, 0
-							for _, m in g.Members do
-								local e = m.Entry
-								if e ~= nil then
-									local f = floorOf(e)
-									x, y = math.max(x, f.X), math.max(y, f.Y)
-								end
-							end
-							return Vector2.new(x, y)
+							return unitFloor(u)
 						end,
 						DropAt = function(x: number, y: number): Decoration.Drop?
 							return dropAt(entry, x, y)
@@ -2034,13 +2903,13 @@ function Manager.new(): Manager
 							join(entry, drop)
 						end,
 						SelectTab = function()
-							local g = entry.Group
+							local g = entry.Leaf
 							if g ~= nil and isOpenWindow(entry) then
 								focus(entry)
 							end
 						end,
 						MoveTab = function(index: number)
-							local g = entry.Group
+							local g = entry.Leaf
 							if g == nil then
 								return
 							end
@@ -2060,31 +2929,83 @@ function Manager.new(): Manager
 							renumber()
 							refresh()
 						end,
-						Sync = function()
-							local g = entry.Group
+						-- this window's Collapsed or dock width changed by the app or its own parts (header SPLITS). The dock
+						-- width is the unit's only while it is docked. Collapsed: unsplit, the whole group follows; in a split,
+						-- true folds its leaf where the fold rule allows (else it is refused — written back, as the arrow is not
+						-- offered there; it is recorded also while the panel is collapsed) and false unfolds it and expands a
+						-- collapsed panel (the panel itself collapses by its strip: CollapseUnit)
+						Sync = function(what: "Collapsed" | "DockWidth")
+							local g = entry.Leaf
 							if quiet > 0 or g == nil then
 								return
 							end
-							-- (the dock width is the group's only while it is docked)
-							local docked = g.Side ~= nil
-							local c = hints.Collapsed:Get()
-							local w = if docked then entry.DockWidth:Get() else g.Width
-							if c == g.Collapsed and w == g.Width then
-								return
-							end
-							g.Collapsed = c
-							g.Width = w
-							quiet += 1
-							for _, m in g.Members do
-								local e = m.Entry
-								if e ~= nil and e ~= entry then
-									(e.Hints :: Decoration.Hints).Collapsed:SetIfChanged(c)
-									if docked then
+							local u = g.Unit
+							if what == "DockWidth" then
+								local w = entry.DockWidth:Get()
+								if u.Side == nil or w == u.Width then
+									return
+								end
+								u.Width = w
+								quiet += 1
+								for _, m in membersOf(u) do
+									local e = m.Entry
+									if e ~= nil and e ~= entry then
 										e.DockWidth:SetIfChanged(w)
 									end
 								end
+								quiet -= 1
+								return
 							end
-							quiet -= 1
+							local c = hints.Collapsed:Get()
+							local split = isSplit(u)
+							if not split then
+								if c == u.Collapsed then
+									return
+								end
+								u.Collapsed = c
+							elseif c then
+								if g.Fold then
+									return
+								end
+								if not canFold(g) then
+									if not collapsedOf(g) then
+										quiet += 1
+										hints.Collapsed:Set(false)
+										quiet -= 1
+									end
+									return
+								end
+								g.Fold = true
+							else
+								if not g.Fold and not u.Collapsed then
+									return
+								end
+								g.Fold = false
+								u.Collapsed = false
+							end
+							spreadCollapsed(u)
+							if split then
+								pushView(u)
+							end
+						end,
+						CollapseUnit = function(c: boolean)
+							local u = unitOf(entry)
+							if u == nil then
+								hints.Collapsed:Set(c)
+								return
+							end
+							if u.Collapsed ~= c then
+								-- (one layout build: pushView inside a batch, flushed once)
+								batch(function()
+									u.Collapsed = c
+									spreadCollapsed(u)
+									pushView(u)
+									layoutDirty = true
+								end)
+							end
+						end,
+						Splitter = function(phase: "Begin" | "Move" | "End", delta: number)
+							dragSplitter(entry, phase, delta)
 						end,
 					})
 					entry.Deco = deco
@@ -2098,25 +3019,26 @@ function Manager.new(): Manager
 				setOpen = function(open: boolean)
 					Pointer.invalidate()
 					local wasDocked = entry.Side:Get() ~= nil
-					local g = entry.Group
+					local g = entry.Leaf
 					if g ~= nil then
+						local u = g.Unit
 						local m = memberOf(g, entry) :: Member
 						if open then
-							-- back in its group at its tab, selected (header TABS; an import selects nothing — its saved
-							-- selection stands); a group whose edge another one took while all its windows were closed opens
-							-- floating
+							-- back in its leaf at its tab, selected (header TABS; an import selects nothing — its saved
+							-- selection stands; a hidden leaf of a split shows again at its place); a unit whose edge another
+							-- one took while all its windows were closed opens floating
 							if importing == 0 then
 								g.Selected = m
 							end
-							local at = g.Side
+							local at = u.Side
 							if at ~= nil and occupant(at, entry) ~= nil then
-								setGroupSide(g, nil, nil)
+								setUnitSide(u, nil, nil)
 							end
 						elseif g.Selected == m then
 							local i = table.find(g.Members, m) :: number
 							g.Selected = neighbour(g, i + 1, i - 1)
 						end
-						pushView(g)
+						pushView(u)
 					end
 					if open then
 						-- a docked window opening again goes back to its edge, unless another open window took it meanwhile: then it

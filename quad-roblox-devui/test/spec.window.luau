@@ -116,9 +116,10 @@ H.section("mount: structure, bindings, small instance count", function()
 	-- its buttons and icons) + collapsed icon + its corner/stroke (13) + dock strip + its arrow (15) + grip (16) + dock
 	-- width handle (17), hidden while floating (21) + its tab for a tab group (tab + corner + title + padding + close
 	-- button + its corner + icon: 28), hidden while not grouped + drop preview + its stroke, hidden until a drag is over
-	-- an edge or a window (30); the 2 widgets add 6 more
+	-- an edge or a window (30) + the fold bar of a leaf folded in a left | right split + its arrow and the splitter of a
+	-- split, hidden until the window is in a split (33); the 2 widgets add 6 more
 	assert(1 + H.countDescendants(win) == 10, `surface instance count {1 + H.countDescendants(win)}`)
-	assert(countAll(win) == 40, `unexpected instance count {countAll(win)}`)
+	assert(countAll(win) == 43, `unexpected instance count {countAll(win)}`)
 
 	q.dispose(win)
 	assert(H.isDestroyed(frame) and H.isDestroyed(grip), "disposing the surface disposes its decoration")
@@ -493,7 +494,7 @@ H.section("flags remove parts", function()
 	local pos = q.Source(UDim2.fromOffset(0, 0))
 	local fixed = Devui.Window({ Title = "f", Position = pos, NoMove = true, NoResize = true, NoClose = true, NoCollapse = true })
 	assert(lookup(fixed, "WindowResizeGrip") == nil and lookup(fixed, "CloseButton") == nil and lookup(fixed, "CollapseButton") == nil)
-	assert(#Compositor.partsOf(fixed) == 4, "NoResize + NoMove: the frame, the (hidden) icon, dock strip and tab only")
+	assert(#Compositor.partsOf(fixed) == 5, "NoResize + NoMove: the frame, the (hidden) icon, dock strip, tab and fold bar only")
 	H.fire(get(fixed, "TitleBar"), "InputBegan", mouse(Enum.UserInputType.MouseButton1, 0, 0))
 	assert(conns() == base and pos:Get() == UDim2.fromOffset(0, 0), "NoMove: no drag starts")
 	q.dispose(fixed)

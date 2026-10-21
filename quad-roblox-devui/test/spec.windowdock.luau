@@ -378,7 +378,7 @@ H.section("close and reopen: the edge is kept; taken meanwhile -> opens floating
 	assert(part(b, "WindowDockStrip").Visible == true, "B docked left")
 	-- saved: B holds the edge, closed A is saved floating
 	local layout = m:ExportLayout()
-	assert((layout.Left :: any).Node.Tabs[1] == "b" and #layout.Floating == 1 and layout.Floating[1].Node.Tabs[1] == "a", "one window per edge")
+	assert((layout.Left :: any).Node.Tabs[1] == "b" and #layout.Floating == 1 and (layout.Floating[1].Node :: any).Tabs[1] == "a", "one window per edge")
 	assert(layout.Floating[1].Position[2] == 200, "A's floating rectangle")
 	local ok = pcall(function()
 		m:ImportLayout(layout)

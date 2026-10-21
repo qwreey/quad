@@ -88,7 +88,8 @@ H.section("ExportLayout: version + tree shape, JSON-ready values only, round-tri
 	assert(layout.Version == 1)
 	assert(#layout.Floating == 2, "one floating group per window")
 	local ga, gb = layout.Floating[1], layout.Floating[2]
-	assert(ga.Node.Tabs[1] == "a" and #ga.Node.Tabs == 1 and ga.Node.Selected == "a", "registration order; a one-tab node")
+	local gan: any = ga.Node
+	assert(gan.Tabs[1] == "a" and #gan.Tabs == 1 and gan.Selected == "a", "registration order; a one-tab node")
 	assert(ga.Position[1] == 0.5 and ga.Position[2] == -40 and ga.Position[3] == 0 and ga.Position[4] == 20, "UDim2 as 4 numbers")
 	assert(ga.Size[1] == 320 and ga.Size[2] == 240 and ga.Collapsed == false)
 	assert(gb.Collapsed == true and layout.Windows.b.Open == false and layout.Windows.a.Open == true)
@@ -142,7 +143,7 @@ H.section("ImportLayout with the window on screen moves it; a window the layout 
 	assert(pc:Get() == UDim2.fromOffset(70, 70), "the key-less window left as it was")
 	-- the export keeps b (after the layout's own keys)
 	local after = m:ExportLayout()
-	assert(after.Floating[1].Node.Tabs[1] == "a" and after.Floating[2].Node.Tabs[1] == "b" and #after.Floating == 2)
+	assert((after.Floating[1].Node :: any).Tabs[1] == "a" and (after.Floating[2].Node :: any).Tabs[1] == "b" and #after.Floating == 2)
 	q.dispose(a)
 	q.dispose(b)
 	q.dispose(loose)
@@ -191,7 +192,7 @@ H.section("factories: by Kind, called with the key, only for keys open when save
 	}
 	local live = Devui.Window({ Title = "outline", Key = "outline", Manager = m })
 	local function group(key: string, x: number)
-		return { Position = { 0, x, 0, 0 }, Size = { 200, 100 }, Collapsed = false, Node = { Tabs = { key }, Selected = key } }
+		return { Position = { 0, x, 0, 0 }, Size = { 200, 100 }, Collapsed = false, Node = { Tabs = { key }, Selected = key } :: any }
 	end
 	m:ImportLayout({
 		Version = 1,
@@ -250,7 +251,7 @@ H.section("the Layout output: emitted when the layout changes (a raise reorders 
 	assert(#seen == base + 3)
 	oa:Set(true) -- raises and focuses A: the stacking is part of the layout (the focus is not)
 	assert(m.Focused:Get() ~= 0 and #seen == base + 4, "a raise reorders the layout")
-	assert(seen[#seen].Floating[2].Node.Tabs[1] == "a", "A on top now")
+	assert((seen[#seen].Floating[2].Node :: any).Tabs[1] == "a", "A on top now")
 	oa:Set(true) -- already on top and focused
 	assert(#seen == base + 4, "raising the top window again changes nothing")
 	local loose = Devui.Window({ Title = "loose", Manager = m })
@@ -287,7 +288,7 @@ end
 local function tabsOf(layout: WindowLayout): string
 	local out: { string } = {}
 	for _, g in layout.Floating do
-		table.insert(out, g.Node.Tabs[1])
+		table.insert(out, (g.Node :: any).Tabs[1])
 	end
 	return table.concat(out, ",")
 end
@@ -401,7 +402,7 @@ H.section("ExportWindow / ImportWindow: one window's state, live or pending", fu
 	H.assertNoDebugOutput("window round trip")
 end)
 
-H.section("a bad layout raises: unknown version, a split, a bad tab set, a window without a place", function()
+H.section("a bad layout raises: unknown version, a bad split, a bad tab set, a window without a place", function()
 	local m = Devui.WindowManager.new()
 	local e = err(function()
 		m:ImportLayout({ Version = 2, Windows = {}, Floating = {} } :: any)
@@ -442,8 +443,9 @@ H.section("a bad layout raises: unknown version, a split, a bad tab set, a windo
 	bad({ Version = 1, Windows = wa, Floating = { one("a", { Position = { 0, 0 / 0, 0, 0 } }) } }, "Position must be an array of 4 numbers")
 	bad({ Version = 1, Windows = wa, Floating = { one("a", { Size = { 1, 1, extra = 1 } }) } }, "Size must be an array of 2 numbers")
 	bad({ Version = 1, Windows = wa, Floating = { one("a", { Node = { Tabs = { "a" }, Selected = "b" } }) } }, "Selected must be one of its Tabs")
-	bad({ Version = 1, Windows = wa, Floating = { one("a", { Node = { Split = "Horizontal" } }) } }, "must be a tab set")
-	bad({ Version = 1, Windows = wa, Floating = { one("a", { Node = { Tabs = { "a" }, Selected = "a", Split = "Horizontal" } }) } }, "splits are not supported")
+	-- (docking stage 4 reads splits: an unknown Split value and a node that is both raise — spec.windowsplit has the rest)
+	bad({ Version = 1, Windows = wa, Floating = { one("a", { Node = { Split = "Horizontal" } }) } }, 'Node.Split must be "LeftRight" or "TopBottom"')
+	bad({ Version = 1, Windows = wa, Floating = { one("a", { Node = { Tabs = { "a" }, Selected = "a", Split = "LeftRight" } }) } }, "a node is either a tab set (Tabs) or a split (Split), not both")
 	bad({ Version = 1, Windows = { a = { Kind = 5, Open = true } }, Floating = { one("a") } }, 'layout.Windows["a"] must be')
 	assert(string.find(err(function()
 		m:ImportWindow("a", { Kind = 5, Open = true, Collapsed = false, Position = { 0, 0, 0, 0 }, Size = { 1, 1 } } :: any)
@@ -504,7 +506,7 @@ H.section("Left / Right: written with the floating rectangle, read back (JSON ro
 	local left, right = layout.Left :: any, layout.Right :: any
 	assert(left.Width == 280 and left.Node.Tabs[1] == "explorer" and left.Position[2] == 40 and left.Size[1] == 260)
 	assert(right.Width == 220 and right.Collapsed == true and right.Node.Selected == "props")
-	assert(#layout.Floating == 1 and layout.Floating[1].Node.Tabs[1] == "out", "Floating holds only the floating key")
+	assert(#layout.Floating == 1 and (layout.Floating[1].Node :: any).Tabs[1] == "out", "Floating holds only the floating key")
 	assert(layout.Windows.explorer.Open == true and layout.Windows.props.Kind == "props", "Windows lists the docked keys too")
 	local back = json(layout)
 	assert(back.Left.Width == 280 and back.Right.Node.Tabs[1] == "props", "JSON round trip")
@@ -596,7 +598,7 @@ H.section("one window per edge: a pending docked key finds its edge held -> floa
 	assert((layout.Left :: any).Node.Tabs[1] == "holder", "the open one holds the edge")
 	local floating: { string } = {}
 	for _, g in layout.Floating do
-		table.insert(floating, g.Node.Tabs[1])
+		table.insert(floating, (g.Node :: any).Tabs[1])
 	end
 	table.sort(floating)
 	assert(table.concat(floating, ",") == "closed,late", table.concat(floating, ","))

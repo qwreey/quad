@@ -17,14 +17,18 @@
 		WindowDockResize (TextButton, the docked panel's width handle along its inner edge; docked only)
 		WindowTab (TextButton, this window's tab in its group's tab strip — see TABS)
 			Title (TextLabel), CloseButton (ImageButton > Icon)
-		WindowDockPreview (Frame, the drop preview while a drag is over an edge or a window it would join — see DOCKED
-			and TABS)
-	The grip and the dock handle are left out with NoResize, the preview with NoMove or NoTitleBar, the tab with
-	NoTitleBar, its close button with NoClose. The frame sits BELOW the surface (it paints the background the surface is
-	drawn on) and the grip ABOVE it (it overlaps the content's corner): the manager gives each window three consecutive
-	ZIndex ranks (frame, surface, grip). The icon, the strip and the dock handle take the grip's rank; a tab takes its
-	group's top rank (`GroupView.TabZ`, the grip rank of the group's highest window); the preview takes the one above
-	the higher of the two (the drag raised the window first, so it draws over every window).
+		WindowDockPreview (Frame, the drop preview while a drag is over an edge or a window it would join or split — see
+			DOCKED, TABS and SPLITS)
+		WindowFoldBar (TextButton, this window's leaf folded inside a left | right split — see SPLITS)
+			Arrow (ImageLabel)
+		WindowSplitter (TextButton, the seam of a split this window's leaf draws — see SPLITS)
+	The grip and the dock handle are left out with NoResize, the preview with NoMove or NoTitleBar, the tab and the fold
+	bar with NoTitleBar, the splitter with NoTitleBar or NoResize, the tab's close button with NoClose. The frame sits
+	BELOW the surface (it paints the background the surface is drawn on) and the grip ABOVE it (it overlaps the
+	content's corner): the manager gives each window three consecutive ZIndex ranks (frame, surface, grip). The icon,
+	the strip, the dock handle and the fold bar take the grip's rank; a tab and a splitter take their unit's top rank
+	(`GroupView.TabZ`, the grip rank of the unit's highest window); the preview takes the one above the higher of the
+	two (the drag raised the window first, so it draws over every window).
 
 	COLLAPSED = ICON [2026-10-20 user decision — one `Collapsed`, its look decided by where the window is]: a collapsed
 	floating window shows only a small square icon (2 x FrameHeight) at its `Position` (the outer rectangle's top-left,
@@ -70,7 +74,7 @@
 	rectangle (`GroupView.Position` / `Size`) and every move / resize writes the GROUP's rectangle (`Control.SetRect`),
 	never the window's own Position / Size Sources, which keep the rectangle it had before it joined.
 	The tab strip: with two or more OPEN windows in the group the drawn window's title bar becomes the strip (its title
-	and close button hide — Window/TitleBar.luau "TAB STRIP"; with one open window the group looks like a plain window).
+	and close button hide — Window/TitleBar.luau "TAB STRIP"; with one open window the group looks like a plain window — except inside a split, header SPLITS).
 	Each open window shows its own `WindowTab` over that row, all laid out by `tabSlots` (the one place that decides
 	where the strip and its tabs sit): after the collapse arrow, as wide as `TAB_IDEAL` x FrameHeight each, shrinking
 	evenly down to `TAB_MIN` x FrameHeight when they do not fit (title truncated), and leaving `TAB_GRAB` x FrameHeight
@@ -86,12 +90,33 @@
 	eligibility rules let it join is judged — anything else on top (a NoTitleBar window, an icon, a window of another
 	container is not in the walk) covers what is beneath and nothing happens. On a joinable one:
 	its title-bar / strip row -> joins as a tab where the pointer is among the tabs (`InsertAt`); else its centre
-	(x and y in [0.2, 0.8] of its outer rectangle) -> joins as the last tab; the four 20% bands are kept for splits
-	(nothing happens there yet). The row wins over the top band. A screen-edge band held by an open group joins that
-	group (`Control.EdgeJoin`). The preview then covers the target's whole outer rectangle; releasing there joins
-	(`Control.Join` — the dragged window's Position goes back to where the drag began, its kept rectangle). A tab torn
-	out and joined elsewhere in the same drag keeps the tear-off point as its kept Position (the drag began there —
-	the same as a window undocked and docked again in one drag).
+	(x and y in [0.2, 0.8] of its outer rectangle) -> joins as the last tab; the four 20% bands split it (SPLITS —
+	[2026-10-21 user decision, docking stage 4]; they were empty in stage 3). The row wins over the top band. A
+	screen-edge band held by an open group joins that group (`Control.EdgeJoin`). The preview then covers the target's
+	whole outer rectangle (a leaf's, in a split); releasing there joins (`Control.Join` — the dragged window's Position
+	goes back to where the drag began, its kept rectangle). A tab torn out and joined elsewhere in the same drag keeps
+	the tear-off point as its kept Position (the drag began there — the same as a window undocked and docked again in
+	one drag).
+
+	SPLITS [2026-10-21 user decisions — docking stage 4, Dear ImGui's shape; the tree and its rules are Window/Manager
+	header SPLITS]: in a split unit `GroupView.Box` places this window's leaf inside the unit's rectangle (each boundary
+	a fraction of the unit's length plus pixels: a docked panel's height is the container's), and the frame, strip,
+	tabs and surface follow that box; the unit's own rectangle (`UnitRect`) still holds the grip, and only the LEAD
+	window (`GroupView.Lead`, the bottom-right leaf's) draws the grip, the dock strip and the width handle. Every leaf
+	shows its tab strip, even with one open window. Dropping on a 20% band of a leaf splits that leaf in half on that
+	side; on the band 2 x FrameHeight inside a split unit's outer edges, the whole unit (the strip row still wins); the
+	preview covers the half the dropped window will take (`Drop.Position` / `Size`). The splitter (`WindowSplitter`,
+	drawn by the second side's first leaf over the seam — over the second side's leading edge for a left | right split,
+	over the first side's bottom for a top / bottom one, so it covers neither a scrollbar nor a tab row; the
+	ResizeGrip look) moves the seam (`Control.Splitter`, in window units; the manager keeps both sides above their
+	floors); it hides while a side is folded (at most one side is — the manager's fold rule). A folded leaf (`GroupView.Fold`, its window's Collapsed): along a top /
+	bottom split its frame is just the strip row (the arrow points right, the surface hides); along a left | right split
+	it is a bar FrameHeight wide (`WindowFoldBar`, the strip's look, its arrow pointing where the leaf opens, the title
+	bar and tabs hidden) — pressing the bar unfolds it. In a split the window's Collapsed is its leaf's fold, so the
+	icon never shows for a floating split, and a docked split panel collapses as a whole by its strip
+	(`Control.CollapseUnit`; `GroupView.PanelCollapsed`). Dragging the strip's empty area moves the whole unit; off a
+	docked panel the whole unit floats, the pointer keeping its share of the unit's width and its place in the pressed
+	leaf.
 
 	Why the background and border are decoration, not surface: they enclose the whole outer rectangle (title bar
 	included), which only the compositor knows; a collapsed window swaps the whole frame for its icon, which only the
@@ -169,28 +194,53 @@ export type Placement = {
 	Visible: State<boolean>,
 }
 
--- what the manager tells a grouped window (header TABS); nil = a plain window
+-- where a folded leaf sits in its split (header SPLITS): the side of the split's rectangle it keeps
+export type FoldSide = "Left" | "Right" | "Top" | "Bottom"
+-- the side of a target a drop splits off (header SPLITS)
+export type DropSide = "Left" | "Right" | "Top" | "Bottom"
+
+-- the splitter a window draws (header SPLITS): its box in the unit's rectangle (the same encoding as GroupView.Box)
+export type SplitterView = {
+	Axis: "LeftRight" | "TopBottom",
+	Box: { number },
+	Enabled: boolean, -- false while a side is folded (or a window of the unit has NoResize)
+}
+
+-- what the manager tells a window of a unit (headers TABS, SPLITS); nil = a plain window
 export type GroupView = {
-	Position: UDim2, -- the group's floating outer rectangle
+	Position: UDim2, -- the unit's floating outer rectangle
 	Size: Vector2,
-	Drawn: boolean, -- this window draws the group (the selected one)
-	Tabbed: boolean, -- two or more open windows: the tab strip replaces the title bar
+	-- this window's leaf in the unit's rectangle: { x0f, x0p, x1f, x1p, y0f, y0p, y1f, y1p } — each boundary a
+	-- fraction f of the unit's length plus p pixels; nil = the whole unit (a tab group, or a hidden leaf)
+	Box: { number }?,
+	Drawn: boolean, -- this window draws its leaf (the selected one)
+	Lead: boolean, -- this window draws the unit's own parts (grip, dock strip and handle, icon)
+	Tabbed: boolean, -- the tab strip replaces the title bar (two or more open windows; any open window in a split)
 	TabIndex: number?, -- this window's tab among the shown ones (0-based); nil = no tab (closed, or not tabbed)
 	TabCount: number, -- the shown tabs
-	TabZ: number, -- the ZIndex of the tabs (the group's top grip rank)
-	-- the group's flags (any window's NoMove; any open window's NoResize / NoCollapse; any window's NoDock)
+	TabZ: number, -- the ZIndex of the tabs and splitters (the unit's top grip rank)
+	-- the flags (any window's NoMove; any open window's NoResize; the leaf's open windows' NoCollapse — and a leaf of
+	-- a split with nothing to fold against; any window's NoDock)
 	NoMove: boolean,
 	NoResize: boolean,
 	NoCollapse: boolean,
 	NoDock: boolean,
+	Split: boolean, -- the unit is split (its Collapsed is the docked panel's; a leaf folds)
+	Fold: FoldSide?, -- this window's leaf is folded inside its split
+	PanelCollapsed: boolean, -- (a split unit) its docked panel is collapsed
+	Splitter: SplitterView?,
 }
 
--- a window or group a drag would join (Control.DropAt / EdgeJoin): `Index` = before which shown tab (nil = last),
--- `Frame` = its decoration frame (the preview covers it)
+-- what a drag would do to a window or unit (Control.DropAt / EdgeJoin): `Index` = join as a tab before that shown tab
+-- (nil = the last); `Split` = split off that side instead (`Outer`: of the whole unit, else of the target's leaf);
+-- `Position` / `Size` = the preview's rectangle in the container
 export type Drop = {
 	Target: any,
 	Index: number?,
-	Frame: GuiObject,
+	Split: DropSide?,
+	Outer: boolean,
+	Position: UDim2,
+	Size: UDim2,
 }
 
 -- what a drag would do on release (an edge to dock on, or a group to join)
@@ -221,12 +271,17 @@ export type Control = {
 	SelectTab: () -> (),
 	MoveTab: (index: number) -> (), -- move this window's tab to that shown slot (0-based)
 	DetachTab: () -> (), -- take this window out of its group (it floats; header TABS)
-	Sync: () -> (), -- this window's Collapsed or dock width changed: the group follows (all its windows share them)
+	Sync: (what: "Collapsed" | "DockWidth") -> (), -- this window's Collapsed / dock width changed: the unit follows (header SPLITS)
+	CollapseUnit: (collapsed: boolean) -> (), -- a split unit's docked panel collapses / expands (its strip)
+	Splitter: (phase: "Begin" | "Move" | "End", delta: number) -> (), -- this window's splitter dragged (window units)
 }
 
 export type Decoration = {
 	Parts: { Instance },
-	Frame: Frame, -- the outer frame (WindowDecoration)
+	Frame: Frame, -- the outer frame (WindowDecoration; a leaf's in a split unit)
+	LeafRect: () -> (UDim2, UDim2), -- the frame's Position / Size in the container
+	UnitRect: () -> (UDim2, UDim2), -- the whole unit's (= LeafRect unsplit)
+	PanelHeight: () -> number, -- a docked panel's height in window units (0 when unknown)
 	InsertAt: (x: number) -> number, -- the shown tab a drop at screen x would go before (count = after the last)
 	RowHeight: () -> number, -- the title-bar / strip row's height in screen pixels
 	Surface: Placement,
@@ -271,6 +326,14 @@ local function containerOf(f: GuiObject?): GuiBase2d?
 		return nil
 	end
 	return container :: GuiBase2d
+end
+
+-- a part of the unit's extent along one axis (header SPLITS): from f0 x length + p0 to f1 x length + p1 after `origin`
+-- (both ends rounded, so neighbouring leaves meet without a gap)
+local function sub(origin: UDim, length: UDim, f0: number, p0: number, f1: number, p1: number): (UDim, UDim)
+	local startOffset = math.round(origin.Offset + f0 * length.Offset + p0)
+	local endOffset = math.round(origin.Offset + f1 * length.Offset + p1)
+	return UDim.new(origin.Scale + f0 * length.Scale, startOffset), UDim.new((f1 - f0) * length.Scale, endOffset - startOffset)
 end
 
 function Decoration.new(hints: Hints, control: Control): Decoration
@@ -338,12 +401,47 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		local g = self:Get()
 		return g == nil or g.Drawn
 	end)
+	-- this window draws the unit's own parts (the grip, the dock strip and handle, the icon — header SPLITS)
+	local lead: State<boolean> = view:Compute(function(self)
+		local g = self:Get()
+		return g == nil or g.Lead
+	end)
 	local tabbed: State<boolean> = view:Compute(function(self)
 		local g = self:Get()
 		return g ~= nil and g.Tabbed
 	end)
+	-- its leaf folded inside a split (header SPLITS): Left / Right = a bar with the arrow, Top / Bottom = its strip row
+	local fold: State<FoldSide?> = view:Compute(function(self): FoldSide?
+		local g = self:Get()
+		return if g ~= nil then g.Fold else nil
+	end)
+	local barFolded: State<boolean> = fold:Compute(function(self)
+		local f = self:Get()
+		return f == "Left" or f == "Right"
+	end)
+	local rowFolded: State<boolean> = fold:Compute(function(self)
+		local f = self:Get()
+		return f == "Top" or f == "Bottom"
+	end)
 
-	local expanded: State<boolean> = collapsed:Compute(function(self)
+	-- hidden behind its icon or its dock strip: a split unit's docked panel collapsed, else this window's Collapsed (in
+	-- a split the window's Collapsed is its leaf's fold — header SPLITS)
+	local iconic: State<boolean> = collapsed:Compute(function(self, _prev, v)
+		local g = v:Get()
+		if g ~= nil and g.Split then
+			return g.PanelCollapsed
+		end
+		return self:Get()
+	end, view)
+	local function setIconic(value: boolean)
+		local g = view:Get()
+		if g ~= nil and g.Split then
+			control.CollapseUnit(value)
+		else
+			collapsed:Set(value)
+		end
+	end
+	local expanded: State<boolean> = iconic:Compute(function(self)
 		return not self:Get()
 	end)
 	local docked: State<boolean> = side:Compute(function(self)
@@ -363,11 +461,12 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 	local dockedShown: State<boolean> = shown:Compute(function(self, _prev, isDocked)
 		return self:Get() and isDocked:Get()
 	end, docked)
-	local stripShown: State<boolean> = open:Compute(function(self, _prev, isDocked, isDrawn)
-		return self:Get() and isDocked:Get() and isDrawn:Get()
-	end, docked, drawn)
+	local stripShown: State<boolean> = open:Compute(function(self, _prev, isDocked, isLead)
+		return self:Get() and isDocked:Get() and isLead:Get()
+	end, docked, lead)
 
-	local framePosition: State<UDim2> = rectPos:Compute(function(self, _prev, at, w, sw, top)
+	-- the unit's outer rectangle in the container: its floating one, or the panel at its edge
+	local unitPosition: State<UDim2> = rectPos:Compute(function(self, _prev, at, w, sw, top)
 		local edge = at:Get()
 		if edge == "Left" then
 			return UDim2.fromOffset(sw:Get(), top:Get())
@@ -376,16 +475,44 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		end
 		return self:Get()
 	end, side, dockWidth, stripWidth, panelTop)
-	local frameSize: State<UDim2> = rectSize:Compute(function(self, _prev, at, w, top)
+	local unitSize: State<UDim2> = rectSize:Compute(function(self, _prev, at, w, top)
 		if at:Get() ~= nil then
 			return UDim2.new(0, w:Get(), 1, -top:Get())
 		end
 		local s = self:Get()
 		return UDim2.fromOffset(s.X, s.Y)
 	end, side, dockWidth, panelTop)
-	local iconShown: State<boolean> = open:Compute(function(self, _prev, isCollapsed, isDocked, isDrawn)
-		return self:Get() and isCollapsed:Get() and not isDocked:Get() and isDrawn:Get()
-	end, collapsed, docked, drawn)
+	-- this window's frame: its leaf's box inside the unit's rectangle (header SPLITS), the whole unit otherwise
+	local function boxRect(position: UDim2, extent: UDim2, box: { number }): (UDim2, UDim2)
+		local x, w = sub(position.X, extent.X, box[1], box[2], box[3], box[4])
+		local y, h = sub(position.Y, extent.Y, box[5], box[6], box[7], box[8])
+		return UDim2.new(x, y), UDim2.new(w, h)
+	end
+	local framePosition: State<UDim2> = unitPosition:Compute(function(self, _prev, extent, v)
+		local g = v:Get()
+		local box = if g ~= nil then g.Box else nil
+		if box == nil then
+			return self:Get()
+		end
+		local p = boxRect(self:Get(), extent:Get(), box)
+		return p
+	end, unitSize, view)
+	local frameSize: State<UDim2> = unitSize:Compute(function(self, _prev, at, v)
+		local g = v:Get()
+		local box = if g ~= nil then g.Box else nil
+		if box == nil then
+			return self:Get()
+		end
+		local _, s = boxRect(at:Get(), self:Get(), box)
+		return s
+	end, unitPosition, view)
+	local iconShown: State<boolean> = open:Compute(function(self, _prev, isIconic, isDocked, isLead)
+		return self:Get() and isIconic:Get() and not isDocked:Get() and isLead:Get()
+	end, iconic, docked, lead)
+	-- the surface: shown while its frame is, and its leaf is not folded
+	local surfaceShown: State<boolean> = shown:Compute(function(self, _prev, f)
+		return self:Get() and f:Get() == nil
+	end, fold)
 	local iconSide: State<number> = style.FrameHeight:Compute(function(self)
 		return self:Get() * 2
 	end)
@@ -414,6 +541,10 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 	-- assigned right after the frame / icon are built; read only from event handlers
 	local frame: Frame? = nil
 	local iconButton: TextButton? = nil
+	-- screen pixels per window unit, measured on the frame (a leaf's frame in a split: its own width)
+	local function frameScale(): number
+		return scaleOf(frame, frameSize:Get().X.Offset)
+	end
 
 	-- the width range of a dock panel (header DOCKED): [MinSize.X or 2 x FrameHeight (a group's: its largest), half the
 	-- container's width]
@@ -423,8 +554,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		local f = frame
 		local container = containerOf(f)
 		if container ~= nil and container.AbsoluteSize.X > 0 then
-			local current = if side:Get() ~= nil then dockWidth:Get() else rectSize:Get().X
-			local half = container.AbsoluteSize.X / scaleOf(f, current) / 2
+			local half = container.AbsoluteSize.X / frameScale() / 2
 			w = math.min(w, half)
 		end
 		return math.round(math.max(floor, w))
@@ -443,7 +573,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 			return pos -- docked: laid out from the edge
 		end
 		-- a collapsed window is its icon: the icon is the whole window (its band too)
-		local isIcon = collapsed:Get()
+		local isIcon = iconic:Get()
 		local f: GuiObject? = if isIcon then iconButton else frame
 		local container = containerOf(f)
 		if f == nil or container == nil then
@@ -458,7 +588,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		local iconW = iconSide:Get()
 		local w = if isIcon then iconW else s.X
 		local h = if isIcon then iconW else s.Y
-		local scale = scaleOf(f, w)
+		local scale = if isIcon then scaleOf(f, w) else frameScale()
 		local cw, ch = area.X / scale, area.Y / scale
 		local safe = style.Metrics.DisplaySafeAreaPadding:Get()
 		local frameH = style.FrameHeight:Get()
@@ -482,8 +612,8 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 	end
 
 	local function reclamp()
-		-- (a grouped window that does not draw its group leaves the shared rectangle to the one that does)
-		if side:Get() ~= nil or not drawn:Get() then
+		-- (a window of a unit that does not lead it leaves the shared rectangle to the one that does)
+		if side:Get() ~= nil or not lead:Get() then
 			return
 		end
 		local current = rectPos:Get()
@@ -504,8 +634,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		end
 		-- AbsolutePosition is measured below the GUI inset, TopbarInset from the very top of the screen
 		local top = container.AbsolutePosition.Y + Input.guiInset().Y
-		local current = if side:Get() ~= nil then dockWidth:Get() else rectSize:Get().X
-		panelTop:SetIfChanged(math.round(math.max(0, bar - top) / scaleOf(f, current)))
+		panelTop:SetIfChanged(math.round(math.max(0, bar - top) / frameScale()))
 	end
 	local offTopbar = Input.onTopbarChanged(measureTop)
 
@@ -531,16 +660,13 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 	local tabPlace: State<Vector2?> = view:Compute(function(self, _prev, _size, _frameH, _text, _pad): Vector2?
 		local g = self:Get()
 		local index = if g ~= nil and g.Tabbed then g.TabIndex else nil
-		if index == nil then
+		-- (a leaf folded to a bar shows no tabs)
+		if index == nil or (g ~= nil and (g.Fold == "Left" or g.Fold == "Right")) then
 			return nil
 		end
 		local lead, w = tabSlots()
 		return Vector2.new(lead + index * w, w)
 	end, frameSize, style.FrameHeight, style.Metrics.TextSize, style.Metrics.FramePadding)
-	-- screen pixels per window unit along x, measured on the frame
-	local function frameScale(): number
-		return scaleOf(frame, frameSize:Get().X.Offset)
-	end
 	-- the pointer's x in window units from the frame's left edge
 	local function stripX(x: number): number
 		local f = frame
@@ -586,10 +712,10 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 			previewPosition:SetIfChanged(if at == "Right" then UDim2.fromScale(1, 0) else UDim2.fromScale(0, 0))
 			previewSize:SetIfChanged(UDim2.new(0, stripWidth:Get() + dropWidth(), 1, 0))
 		elseif drop ~= nil then
-			local target = drop.Frame
-			previewAnchor:SetIfChanged(target.AnchorPoint)
-			previewPosition:SetIfChanged(target.Position)
-			previewSize:SetIfChanged(target.Size)
+			-- (a target's leaf, the half a split gives the dropped window, or half the whole unit — header SPLITS)
+			previewAnchor:SetIfChanged(Vector2.zero)
+			previewPosition:SetIfChanged(drop.Position)
+			previewSize:SetIfChanged(drop.Size)
 		end
 		previewShown:SetIfChanged(true)
 	end
@@ -601,7 +727,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		if da == nil or db == nil then
 			return da == db and a.Side == b.Side
 		end
-		return da.Target == db.Target and da.Index == db.Index and da.Frame == db.Frame
+		return da.Target == db.Target and da.Index == db.Index and da.Split == db.Split and da.Outer == db.Outer
 	end
 
 	-- the edge band the pointer is in (nil = none): within the strip width inside the container's left or right edge
@@ -618,7 +744,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		if x < cp.X or x > cp.X + cs.X or y < cp.Y or y > cp.Y + cs.Y then
 			return nil
 		end
-		local band = stripWidth:Get() * scaleOf(frame, rectSize:Get().X)
+		local band = stripWidth:Get() * frameScale()
 		return if x < cp.X + band then "Left" elseif x >= cp.X + cs.X - band then "Right" else nil
 	end
 
@@ -688,10 +814,22 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		local top = (pressY - grabY - origin.Y) / scale
 		startPos = UDim2.fromOffset(math.round(left), math.round(top))
 	end
-	-- where on the frame the press was (for placeUnder)
-	local function grab(x: number, y: number)
+	-- where on the frame the press was (for placeUnder). `whole`: a split unit comes off its edge as a whole — the
+	-- pointer keeps its share of the unit's width and its place in the pressed leaf, that leaf's top taken in the
+	-- floating rectangle (header SPLITS)
+	local function grab(x: number, y: number, whole: boolean)
 		local f = frame
-		if f ~= nil then
+		local g = view:Get()
+		local box = if g ~= nil then g.Box else nil
+		if f ~= nil and whole and box ~= nil then
+			local fp = f.AbsolutePosition
+			local scale = frameScale()
+			local unitW = if side:Get() ~= nil then dockWidth:Get() else rectSize:Get().X
+			local left = fp.X - (box[1] * unitW + box[2]) * scale
+			grabFraction = if unitW > 0 then math.clamp((x - left) / (unitW * scale), 0, 1) else 0.5
+			local float = rectSize:Get()
+			grabY = math.max(0, y - fp.Y) + (box[5] * float.Y + box[6]) * scale
+		elseif f ~= nil then
 			local fp, fs = f.AbsolutePosition, f.AbsoluteSize
 			grabFraction = if fs.X > 0 then math.clamp((x - fp.X) / fs.X, 0, 1) else 0.5
 			grabY = math.max(0, y - fp.Y)
@@ -712,7 +850,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 				pressX, pressY = x, y
 				candidate = nil
 				if side:Get() ~= nil then
-					grab(x, y)
+					grab(x, y, true)
 				end
 			end,
 			OnMove = function(x, y, dx, dy)
@@ -721,7 +859,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 					if dx * dx + dy * dy < t * t then
 						return
 					end
-					local scale = scaleOf(frame, dockWidth:Get())
+					local scale = frameScale()
 					control.Undock()
 					placeUnder(pressX, pressY, scale)
 				end
@@ -818,19 +956,19 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 	local arrowRotation: State<number> = side:Compute(function(self, _prev, isCollapsed)
 		local pointsRight = (self:Get() == "Right") ~= isCollapsed:Get()
 		return if pointsRight then 0 else 180
-	end, collapsed)
+	end, iconic)
 	local arrowSize: State<UDim2> = stripWidth:Compute(function(self)
 		local s = math.floor(self:Get() * 0.6)
 		return UDim2.fromOffset(s, s)
 	end)
 	local function pressStrip(wasFocused: boolean)
-		if collapsed:Get() then
-			collapsed:Set(false)
+		if iconic:Get() then
+			setIconic(false)
 			control.Raise()
 		elseif not wasFocused then
 			control.Raise()
 		else
-			collapsed:Set(true)
+			setIconic(true)
 		end
 	end
 
@@ -861,7 +999,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 			OnBegin = function()
 				control.Raise()
 				startWidth = dockWidth:Get()
-				widthScale = scaleOf(frame, startWidth)
+				widthScale = frameScale()
 			end,
 			OnMove = function(_x, _y, dx, _dy)
 				local delta = dx / widthScale
@@ -870,12 +1008,12 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 			end,
 		})
 	end
-	local gripShown: State<boolean> = floatingShown:Compute(function(self, _prev, can)
-		return self:Get() and can:Get()
-	end, canResize)
-	local dockHandleShown: State<boolean> = dockedShown:Compute(function(self, _prev, can)
-		return self:Get() and can:Get()
-	end, canResize)
+	local gripShown: State<boolean> = floatingShown:Compute(function(self, _prev, can, isLead)
+		return self:Get() and can:Get() and isLead:Get()
+	end, canResize, lead)
+	local dockHandleShown: State<boolean> = dockedShown:Compute(function(self, _prev, can, isLead)
+		return self:Get() and can:Get() and isLead:Get()
+	end, canResize, lead)
 	local dockHandleAnchor: State<Vector2> = side:Compute(function(self)
 		return if self:Get() == "Right" then Vector2.new(1, 0) else Vector2.new(0, 0)
 	end)
@@ -937,6 +1075,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		end)
 	end
 
+	local collapsedInstalled = false
 	local built = Frame({
 		Name = "WindowDecoration",
 		Position = framePosition,
@@ -982,11 +1121,25 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 				Drag = titleDrag,
 				Tabbed = tabbed,
 				CanCollapse = canCollapse,
+				Shown = barFolded:Compute(function(self)
+					return not self:Get()
+				end),
+				Folded = rowFolded,
 			}),
-		-- a grouped window's Collapsed and dock width are its group's (the manager spreads a change to the others)
+		-- a grouped window's Collapsed and dock width are its unit's (the manager spreads a change to the others). Two
+		-- effects: in a split an app writing an EQUAL Collapsed (true on a collapsed panel) is still a request for its
+		-- leaf's fold, so the manager must know which one fired; the install run of the Collapsed one is skipped (it
+		-- reports nothing — the manager wrote that value)
 		q.Effect(function()
-			control.Sync()
-		end, collapsed, dockWidth),
+			if not collapsedInstalled then
+				collapsedInstalled = true
+				return
+			end
+			control.Sync("Collapsed")
+		end, collapsed),
+		q.Effect(function()
+			control.Sync("DockWidth")
+		end, dockWidth),
 	})
 	frame = built
 	local icon = TextButton({
@@ -1125,6 +1278,137 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		)
 	end
 
+	-- (a NoTitleBar window is never in a unit: no fold bar, no splitter — and a NoResize one draws no splitter)
+	if not hints.NoTitleBar then
+		-- a leaf folded in a left | right split (header SPLITS): a bar as wide as the strip row, its arrow pointing where the
+		-- leaf opens; pressing it unfolds the leaf (the window's Collapsed false — the manager maps it to the leaf)
+		local foldHover = Interaction.hover()
+		local foldBg: State<Color3> = restLook(foldHover, colorOf)
+		local foldAlpha: State<number> = restLook(foldHover, alphaOf)
+		local foldShown: State<boolean> = shown:Compute(function(self, _prev, isBar)
+			return self:Get() and isBar:Get()
+		end, barFolded)
+		local foldRotation: State<number> = fold:Compute(function(self)
+			return if self:Get() == "Right" then 180 else 0
+		end)
+		table.insert(
+			parts,
+			TextButton({
+				foldHover.Hook,
+				q.Effect(function()
+					if not foldShown:Get() then
+						foldHover.Reset()
+					end
+				end, foldShown),
+				Name = "WindowFoldBar",
+				Position = framePosition,
+				Size = frameSize,
+				ZIndex = control.FrontZ,
+				Visible = foldShown,
+				Active = true,
+				AutoButtonColor = false,
+				BackgroundColor3 = foldBg,
+				BackgroundTransparency = foldAlpha,
+				BorderSizePixel = 0,
+				Text = "",
+				Activated = function()
+					collapsed:Set(false)
+				end,
+				ImageLabel({
+					Name = "Arrow",
+					AnchorPoint = Vector2.new(0.5, 0.5),
+					-- (in the middle of the top row, where the arrow sits in a strip)
+					Position = stripWidth:Compute(function(self)
+						return UDim2.new(0.5, 0, 0, math.floor(self:Get() / 2))
+					end),
+					Size = arrowSize,
+					Rotation = foldRotation,
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					Image = style.Icons.RightTriangle,
+					ImageColor3 = style.Color.Text,
+					ImageTransparency = style.Transparency.Text,
+				}),
+			})
+		)
+		if not hints.NoResize then
+			-- the splitter between two sides of a split (header SPLITS): drawn by the second side's first leaf, over the seam;
+			-- dragging it moves the seam (the manager keeps both sides above their floors); hidden while a side is folded
+			local splitterHover = Interaction.hover()
+			local splitterLook = Style.interactive(style, "ResizeGrip", splitterHover.Hovered, splitterHover.Pressed)
+			local splitterShown: State<boolean> = shown:Compute(function(self, _prev, v)
+				local g = v:Get()
+				local sp = if g ~= nil then g.Splitter else nil
+				return self:Get() and sp ~= nil and sp.Enabled
+			end, view)
+			local splitterBox: State<{ number }?> = view:Compute(function(self): { number }?
+				local g = self:Get()
+				local sp = if g ~= nil then g.Splitter else nil
+				return if sp ~= nil then sp.Box else nil
+			end)
+			local splitterPosition: State<UDim2> = unitPosition:Compute(function(self, _prev, extent, b)
+				local box = b:Get()
+				if box == nil then
+					return self:Get()
+				end
+				local p = boxRect(self:Get(), extent:Get(), box)
+				return p
+			end, unitSize, splitterBox)
+			local splitterSize: State<UDim2> = unitSize:Compute(function(self, _prev, at, b)
+				local box = b:Get()
+				if box == nil then
+					return UDim2.new()
+				end
+				local _, sz = boxRect(at:Get(), self:Get(), box)
+				return sz
+			end, unitPosition, splitterBox)
+			local splitterZ: State<number> = view:Compute(function(self, _prev, front)
+				local g = self:Get()
+				return if g ~= nil then g.TabZ else front:Get()
+			end, control.FrontZ)
+			local splitterAlongX = true
+			local splitterDrag = Interaction.drag({
+				Enabled = splitterShown,
+				OnBegin = function()
+					control.Raise()
+					local g = view:Get()
+					local sp = if g ~= nil then g.Splitter else nil
+					splitterAlongX = sp == nil or sp.Axis == "LeftRight"
+					control.Splitter("Begin", 0)
+				end,
+				OnMove = function(_x, _y, dx, dy)
+					control.Splitter("Move", (if splitterAlongX then dx else dy) / frameScale())
+				end,
+				OnEnd = function()
+					control.Splitter("End", 0)
+				end,
+			})
+			table.insert(
+				parts,
+				TextButton({
+					splitterHover.Hook,
+					splitterDrag.Hook,
+					q.Effect(function()
+						if not splitterShown:Get() then
+							splitterHover.Reset()
+						end
+					end, splitterShown),
+					Name = "WindowSplitter",
+					Position = splitterPosition,
+					Size = splitterSize,
+					ZIndex = splitterZ,
+					Visible = splitterShown,
+					Active = true,
+					AutoButtonColor = false,
+					BackgroundColor3 = splitterLook.Color,
+					BackgroundTransparency = splitterLook.Transparency,
+					BorderSizePixel = 0,
+					Text = "",
+				})
+			)
+		end
+	end
+
 	-- this window's tab in its group's strip (header TABS): press selects, drag inside the row reorders, drag out of
 	-- the row takes the window out of the group and goes on as its title-bar drag
 	if not hints.NoTitleBar then
@@ -1190,7 +1474,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 				end
 				-- out of the row: the window leaves its group under the pointer and the drag goes on as its own
 				local scale = frameScale()
-				grab(tabPressX, tabPressY)
+				grab(tabPressX, tabPressY, false)
 				control.DetachTab()
 				placeUnder(tabPressX, tabPressY, scale)
 				candidate = nil
@@ -1287,7 +1571,20 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		RowHeight = function(): number
 			return titleHeight:Get() * frameScale()
 		end,
-		Surface = { Position = surfacePosition, Size = surfaceSize, Visible = shown },
+		Surface = { Position = surfacePosition, Size = surfaceSize, Visible = surfaceShown },
+		LeafRect = function(): (UDim2, UDim2)
+			return framePosition:Get(), frameSize:Get()
+		end,
+		UnitRect = function(): (UDim2, UDim2)
+			return unitPosition:Get(), unitSize:Get()
+		end,
+		PanelHeight = function(): number
+			local container = containerOf(frame)
+			if container == nil then
+				return 0
+			end
+			return math.max(0, container.AbsoluteSize.Y / frameScale() - panelTop:Get())
+		end,
 		SetParent = function(parent: Instance?)
 			for _, part in parts do
 				if alive(part) and part.Parent ~= parent then

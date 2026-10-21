@@ -59,16 +59,25 @@
 	TAB GROUPS [2026-10-21 user decisions — docking stage 3]: drag a window's title bar onto another window of the same
 	manager and container — its title bar (where among the tabs) or its centre (the last tab), a preview shows — and
 	release: both become one GROUP, one rectangle with a tab strip in the title bar's place (`WindowTab` per window,
-	shown while two or more are open), only the selected window's surface shown. Press a tab to select it, drag it
+	shown while two or more are open; in a split always — SPLITS below), only the selected window's surface shown. Press a tab to select it, drag it
 	along the strip to reorder, drag it out of the strip to take the window out (it floats at its own size under the
 	pointer and the drag goes on). While grouped, `Position` / `Size` keep the window's own rectangle from before it
 	joined (the group's rectangle is the manager's); closing a tab hides it and keeps its slot (`Open:Set(true)` brings
 	it back there, selected); `Collapsed` is the whole group's (the selected window's icon). NoTitleBar windows never
 	group; NoDock does not stop grouping. Rules in Window/Manager header "TABS" and Window/Decoration.luau "TABS".
 
+	SPLITS [2026-10-21 user decisions — docking stage 4]: release over the 20% band along one side of another window (or
+	of one leaf of a split) and that window is cut in half there, the dropped one taking the half the preview shows;
+	over the band 2 x frame height inside a split's outer edge, the whole split is cut. Every part (LEAF) of a split
+	shows its tab strip, even with one window; the splitter between two parts (`WindowSplitter`) moves the seam; a
+	part's collapse arrow folds only that part (a strip row or a thin bar — `WindowFoldBar`) and its neighbour takes the
+	room, so a window's `Collapsed` in a split is its part's fold (or its docked panel's collapse). Dragging a strip's
+	empty area moves the whole split; dragging a tab out takes that window out (a split left with one part is a tab
+	group again). Rules in Window/Manager header "SPLITS" and Window/Decoration.luau "SPLITS".
+
 	SAVING THE LAYOUT: give a window `Key` (its identity — unique among its manager's live windows, a duplicate raises)
 	and optionally `Kind` (its type, default = the Key; two windows of one type get the same Kind and different Keys).
-	The manager then exports / imports its Position, Size, Open and Collapsed, its edge and its tab group as plain
+	The manager then exports / imports its Position, Size, Open and Collapsed, its edge and its tab group and split as plain
 	JSON-ready tables (Window/Manager header "LAYOUT"). A window without a Key works the same and is just left out of the layout.
 
 	FILLING THE HEIGHT [2026-10-20, Studio-confirmed]: give one child `q.Elem "UIFlexItem" ({ FlexMode = Enum.UIFlexMode.Fill })`
