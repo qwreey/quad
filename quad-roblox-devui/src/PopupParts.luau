@@ -21,6 +21,7 @@
 local Input = require("./Input")
 local Quad = require("./Quad")
 local q = Quad
+local Frame = q.Elem "Frame"
 local ImageLabel = q.Elem "ImageLabel"
 local TextButton = q.Elem "TextButton"
 local TextLabel = q.Elem "TextLabel"
@@ -168,9 +169,22 @@ function PopupParts.row(spec: RowSpec): TextButton
 			AutomaticSize = Enum.AutomaticSize.XY,
 			Size = UDim2.fromOffset(0, 0),
 			LayoutOrder = 2,
-			UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill }),
 		})
 	end
+	-- [2026-10-21 — devplorer, Studio] the label is NOT a Fill flex item: an automatically sized row does not count a
+	-- Fill item's text, so a menu of only toggle rows was as wide as the check column and its text spilled out of the
+	-- panel (off the screen at its edge). An empty Fill spacer before a shortcut / submenu arrow pushes it to the
+	-- right end when the row is stretched to the widest sibling.
+	local spacer = if spec.Shortcut ~= nil or spec.Arrow
+		then Frame({
+			Name = "Spacer",
+			LayoutOrder = 3,
+			Size = UDim2.fromOffset(0, 0),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			UIFlexItem({ FlexMode = Enum.UIFlexMode.Fill }),
+		})
+		else q.None
 
 	return TextButton({
 		hover.Hook,
@@ -223,10 +237,11 @@ function PopupParts.row(spec: RowSpec): TextButton
 			})
 			else q.None,
 		if simple then q.None else makeLabel(),
+		spacer,
 		if spec.Shortcut
 			then TextLabel({
 				Name = "Shortcut",
-				LayoutOrder = 3,
+				LayoutOrder = 4,
 				Text = spec.Shortcut,
 				FontFace = style.Metrics.TextFont,
 				TextSize = style.Metrics.TextSize,
@@ -241,7 +256,7 @@ function PopupParts.row(spec: RowSpec): TextButton
 		if spec.Arrow
 			then ImageLabel({
 				Name = "Arrow",
-				LayoutOrder = 3,
+				LayoutOrder = 4,
 				Size = textSquare,
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,

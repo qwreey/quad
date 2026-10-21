@@ -134,6 +134,9 @@ H.section("click opens under the item; item click runs OnClick after closing the
 		assert(holder.Position == UDim2.fromOffset(10, 24), "under the bar item")
 		local open = byName(o.Layer, "MenuItem")
 		assert(open[1].Text == "" and get(open[1], "Label").Text == "Open" and get(open[1], "Shortcut").Text == "Ctrl+O")
+		-- the label sizes itself (a Fill label is not counted by an automatically sized row: a menu of toggle rows was
+		-- as wide as its check column); an empty Fill spacer pushes the shortcut right
+		assert(H.find(get(open[1], "Label"), "UIFlexItem") == nil and H.find(get(open[1], "Spacer"), "UIFlexItem") ~= nil)
 		click(open[1])
 		assert(probe.opened == cycle, "OnClick ran")
 		assert(o.Count:Get() == 0 and #o.Layer:GetChildren() == 0 and nBegan() == base, "chain closed, layer empty")
