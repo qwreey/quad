@@ -113,7 +113,7 @@ local Dialog = require("@self/Dialog")
 local Selection = require("@self/Selection")
 local TreeRows = require("@self/TreeRows")
 local Tooltip = require("@self/Tooltip")
-local VirtualRows = require("@self/VirtualRows")
+local VirtualRowsModule = require("@self/VirtualRows")
 
 export type Style = Style.Style
 export type Overlay = Overlay.Overlay
@@ -172,7 +172,7 @@ export type TreeRow<N> = TreeRows.Row<N>
 export type TreePaging = TreeRows.Paging
 export type TooltipProps = Tooltip.TooltipProps
 export type TooltipHandle = Tooltip.TooltipHandle
-export type VirtualRowsProps = VirtualRows.VirtualRowsProps
+export type VirtualRowsProps = VirtualRowsModule.VirtualRowsProps
 -- [2026-10-20 user decision] every devui type is reachable from this module; quad's own types (State, Source, Ref,
 -- Slot, ...) are NOT re-exported here — they come from the kit's Quad module (`src/Quad.luau`), the one door to quad
 export type HoverHandle = Interaction.HoverHandle
@@ -230,7 +230,8 @@ local Devui = {
 	Tab = TabModule.Tab,
 	TabBar = TabModule.TabBar,
 	Table = TableModule.Table,
-	VirtualRows = VirtualRows,
+	VirtualRows = VirtualRowsModule.VirtualRows,
+	RowIndexAt = VirtualRowsModule.RowIndexAt,
 	Selectable = SelectableModule.Selectable,
 	SelectableOption = SelectableModule.SelectableOption,
 	ProgressBar = ProgressModule.ProgressBar,

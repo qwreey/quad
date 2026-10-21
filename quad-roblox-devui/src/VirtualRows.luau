@@ -11,6 +11,7 @@
 			RowHeight: (number | State<number>)?,      -- px; default: style FrameHeight rounded
 			Overscan: number?,                         -- extra rows kept above and below the viewport (default 2)
 			ScrollToRow: Source<number?>?,             -- write a row index to scroll it into view (see below)
+			Follow: boolean?,                          -- keep the end in view as rows are added (see below)
 			Style: Style?, Modifier: ModifierInto<ScrollingFrame>?,
 		}                                              -> ScrollingFrame
 
@@ -21,6 +22,14 @@
 	    is ignored (the viewport size is not known yet). A row already in view does not move the list; otherwise the
 	    list moves the least it takes to bring the row to the nearest edge.
 	  - Rows have one fixed height (no variable heights) and touch each other (no ItemSpacing between them).
+
+	FOLLOW [2026-10-21 — devplorer `follower`; name by a three-model review, audit/naming-devui-2026-10-21d/]: a log-like
+	list. While the list is scrolled to its end (it starts there), a grown Count or a resized viewport scrolls to the
+	new end; scrolling up stops it, scrolling back to the end resumes it.
+
+	ROW AT A POINT: `Devui.RowIndexAt(list, y) -> number?` — the row index under screen Y (AbsolutePosition space, as
+	`Devui.Pointer.mouse()`), for drag-select and drop targets; nil outside 1..Count or for an Instance VirtualRows did
+	not build. Rows above or below the viewport count (a drag past the edge).
 
 	THE POOL. Only as many slots as the viewport needs (RowWindow.poolSize, at most Count) are made, and the pool never
 	shrinks. A slot is a container Frame ("Row": the widget owns its Position / Size / Visible) holding the Instance
@@ -61,6 +70,7 @@ export type VirtualRowsProps = {
 	read RowHeight: (number | State<number>)?,
 	read Overscan: number?,
 	read ScrollToRow: Source<number?>?,
+	read Follow: boolean?,
 	read Style: Style?,
 	read Modifier: Quad.ModifierInto<ScrollingFrame>?,
 }
@@ -81,6 +91,9 @@ local function resolveRowHeight(given: (number | State<number>)?, style: Style):
 	end)
 	return derived
 end
+
+-- a built list -> how to read its row height and count (RowIndexAt)
+local built: { [Instance]: { Height: State<number>, Count: () -> number } } = setmetatable({}, { __mode = "k" }) :: any
 
 local function VirtualRows(props: VirtualRowsProps): ScrollingFrame
 	local style = props.Style or Style.default
@@ -151,6 +164,29 @@ local function VirtualRows(props: VirtualRowsProps): ScrollingFrame
 		end
 	end
 
+	-- FOLLOW (header): whether the list is at its end; set by the engine's scroll position, read when the count or
+	-- the viewport changes
+	local follow = props.Follow == true
+	local atEnd = true
+	local function endY(): number
+		return math.max(0, RowWindow.canvasHeight(count, rowHeight:Get()) - viewport)
+	end
+	local function stick()
+		local frame = scroller
+		if not follow or not atEnd or frame == nil or viewport <= 0 then
+			return
+		end
+		-- deferred: the new CanvasSize must be applied first, or the engine clamps the position to the old one
+		task.defer(function()
+			local y = endY()
+			if atEnd and frame.Parent ~= nil and y ~= scrollY then
+				scrollY = y
+				frame.CanvasPosition = Vector2.new(frame.CanvasPosition.X, y)
+				update()
+			end
+		end)
+	end
+
 	-- ScrollToRow: the install run is skipped (the same way as Window's raise-on-open)
 	local scrollTo = props.ScrollToRow
 	local scrollInstalled = false
@@ -174,7 +210,7 @@ local function VirtualRows(props: VirtualRowsProps): ScrollingFrame
 		end)
 		else q.None
 
-	local built = ScrollingFrame({
+	local list = ScrollingFrame({
 		rootName,
 		-- a shown scrollbar takes its width from the rows instead of covering their right end (a row's ▾ / +). Ref: devplorer U30
 		VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar,
@@ -184,6 +220,7 @@ local function VirtualRows(props: VirtualRowsProps): ScrollingFrame
 		countState:Observer(function(self)
 			count = math.max(0, math.floor(self:Get()))
 			update()
+			stick()
 		end),
 		rowHeight:Observer(function(_self)
 			update()
@@ -193,12 +230,17 @@ local function VirtualRows(props: VirtualRowsProps): ScrollingFrame
 			if v.Y ~= viewport then
 				viewport = v.Y
 				update()
+				stick()
 			end
 		end),
 		q.OnChange "ScrollingFrame" "CanvasPosition" (function(v: Vector2)
 			if v.Y ~= scrollY then
 				scrollY = v.Y
 				update()
+			end
+			-- (before the first layout the viewport is 0 and every position would read as "not at the end")
+			if viewport > 0 then
+				atEnd = v.Y >= endY() - 2
 			end
 		end),
 		Size = UDim2.fromScale(1, 1),
@@ -213,8 +255,30 @@ local function VirtualRows(props: VirtualRowsProps): ScrollingFrame
 		ScrollBarImageTransparency = style.Transparency.ScrollbarGrab,
 		pool,
 	})
-	scroller = built
-	return built
+	scroller = list
+	built[list] = {
+		Height = rowHeight,
+		Count = function(): number
+			return count
+		end,
+	}
+	return list
 end
 
-return VirtualRows
+local function RowIndexAt(list: Instance, y: number): number?
+	local info = built[list]
+	if info == nil then
+		return nil
+	end
+	local frame = list :: ScrollingFrame
+	local index = math.floor((y - frame.AbsolutePosition.Y + frame.CanvasPosition.Y) / info.Height:Get()) + 1
+	if index < 1 or index > info.Count() then
+		return nil
+	end
+	return index
+end
+
+return {
+	VirtualRows = VirtualRows,
+	RowIndexAt = RowIndexAt,
+}

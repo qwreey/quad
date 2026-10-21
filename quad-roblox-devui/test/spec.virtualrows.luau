@@ -4,7 +4,8 @@ local q = H.attach(require("../src/Quad"))
 q.debug = true
 local Frame = q.Elem "Frame"
 local TextLabel = q.Elem "TextLabel"
-local VirtualRows = require("../src/VirtualRows")
+local VirtualRowsModule = require("../src/VirtualRows")
+local VirtualRows = VirtualRowsModule.VirtualRows
 
 local function rows(list: any): { any }
 	return H.findAll(list, function(i: any)
@@ -63,6 +64,42 @@ H.section("pool: only the rows in view exist; scrolling rebinds indices, creates
 	assert(#idx == 3 and idx[3] == 3, "fewer rows than the pool: spares hidden")
 	q.dispose(list)
 	H.assertNoDebugOutput("pool")
+end)
+
+H.section("Follow: a grown Count keeps the end in view; scrolling up stops it, back to the end resumes; RowIndexAt", function()
+	local count = q.Source(10)
+	local list: any = VirtualRows({
+		Count = count,
+		RowHeight = 20,
+		Follow = true,
+		Row = function(_index)
+			return Frame({})
+		end,
+	})
+	list.Parent = Frame({})
+	list.CanvasPosition = Vector2.zero -- (the mock has no property defaults)
+	list.AbsoluteWindowSize = Vector2.new(200, 100)
+	H.flushDeferred()
+	assert(list.CanvasPosition.Y == 100, `starts at the end ({list.CanvasPosition})`) -- 10 rows = 200 px, view 100
+	count:Set(20)
+	H.flushDeferred()
+	assert(list.CanvasPosition.Y == 300, `followed ({list.CanvasPosition})`)
+	list.CanvasPosition = Vector2.new(0, 120) -- the user scrolls up
+	count:Set(30)
+	H.flushDeferred()
+	assert(list.CanvasPosition.Y == 120, "stopped while scrolled up")
+	list.CanvasPosition = Vector2.new(0, 500) -- back to the end
+	count:Set(31)
+	H.flushDeferred()
+	assert(list.CanvasPosition.Y == 520, "resumed")
+	-- RowIndexAt: screen Y -> row under it (AbsolutePosition 50 + canvas 520)
+	list.AbsolutePosition = Vector2.new(0, 50)
+	assert(VirtualRowsModule.RowIndexAt(list, 50) == 27 and VirtualRowsModule.RowIndexAt(list, 69) == 27)
+	assert(VirtualRowsModule.RowIndexAt(list, 70) == 28)
+	assert(VirtualRowsModule.RowIndexAt(list, 50 + 600) == nil, "past the last row")
+	assert(VirtualRowsModule.RowIndexAt(Frame({}), 10) == nil, "not a VirtualRows")
+	q.dispose(list)
+	H.assertNoDebugOutput("follow")
 end)
 
 H.section("ScrollToRow: the install value is ignored; a row out of view moves the list the least; in view does not move", function()
