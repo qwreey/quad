@@ -4,7 +4,7 @@
 
 | 자리 | sonnet | luna | Gemini | 결과 |
 |---|---|---|---|---|
-| 1(a) 지금 여는 함수 | OpenSearchList | OpenQuickPick | OpenPicker | **셋이 갈리고 순위 합도 6·6·6 동률 — 사용자 결정 거리**, 가칭 `OpenSearchList`(1(b)와 짝) |
+| 1(a) 지금 여는 함수 | OpenSearchList | OpenQuickPick | OpenPicker | 셋이 갈리고 순위 합도 6·6·6 동률 → **사용자 결정(2026-10-21) `OpenSearchList`**(1(b) `SearchCombo`와 `Search`로 짝 — 메인 권고를 받음) |
 | 1(b) 상자 위젯 | SearchCombo | SearchCombo | ComboSearch | `SearchCombo` |
 | 1(c) 항목 | Items | Items | Options | `Items` |
 | 1(d) 막힌 이유 | Blocked | DisabledReason | DisabledReason | `DisabledReason` |

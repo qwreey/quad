@@ -51,7 +51,7 @@ CommandPalette(위쪽에 놓이고 입력 포커스 — `PopupPanel` + `AnchorRe
 
 - **`Overlay.BlockingCount`** → devplorer가 `Overlay.Count > 0`으로 "메뉴·대화상자가 열렸나"를 묻는 자리 전부(Explorer 단축키, 행 + 단추 숨김). 툴팁을 세지 않으므로 툴팁이 뜬 동안 단축키가 죽던 문제가 풀린다(사용자 결정 2026-10-21).
 - **`Tab`의 `Hooks`** → 탭 머리 단추에 툴팁.
-- **`OpenSearchList` / `SearchCombo`** → `Popups.Insert`의 일반 부분(검색 상자 + 가상 목록 + 키보드). 클래스 아이콘은 `ItemIcon`, "만들 수 없음"은 `DisabledReason`이 이유 문자열을 돌려주게. **클라이언트·서버 거름 기준이 다른 문제(위 감사 절)는 devplorer 쪽 일**이다 — 같은 판정 함수를 `DisabledReason`에 넣을 것. 여는 함수 이름은 사용자 결정 대기(가칭 `OpenSearchList`).
+- **`OpenSearchList` / `SearchCombo`** → `Popups.Insert`의 일반 부분(검색 상자 + 가상 목록 + 키보드). 클래스 아이콘은 `ItemIcon`, "만들 수 없음"은 `DisabledReason`이 이유 문자열을 돌려주게. **클라이언트·서버 거름 기준이 다른 문제(위 감사 절)는 devplorer 쪽 일**이다 — 같은 판정 함수를 `DisabledReason`에 넣을 것. 여는 함수 이름은 `OpenSearchList`로 확정(사용자 결정).
 - **`VirtualTable`** → `InspectUi.listRows`·`header`(Properties·Attributes 등 글 표). 열의 `Text`·`Color`·`Align`, 채움 열 규칙은 devplorer와 같다. 행 끝 액션 단추는 없다(필요하면 다음에).
 
 ## 만드는 중 (2026-10-21, 순서대로)

@@ -3,7 +3,7 @@
 	OpenSearchList — a search box over a virtualized list, opened NOW at a point or under a rectangle (an auto-complete
 	picker for thousands of items: "insert an Instance class"). SearchCombo (Combo.luau) opens it under its box.
 	[2026-10-21 user decision with the devplorer candidate list (devplorer `Popups.Insert`); names by a three-model
-	review, audit/naming-devui-2026-10-21e/ — the opener's own name was a three-way tie, provisional.]
+	review, audit/naming-devui-2026-10-21e/ — the opener's own name was a three-way tie, decided by the user.]
 
 		OpenSearchList<T> {
 			At: Vector2 | Rect,                      a point (top-left), or a rectangle to open under (its width by default)
