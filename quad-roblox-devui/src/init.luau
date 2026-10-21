@@ -111,6 +111,7 @@ local Combo = require("@self/Combo")
 local Menu = require("@self/Menu")
 local Dialog = require("@self/Dialog")
 local Selection = require("@self/Selection")
+local TreeRows = require("@self/TreeRows")
 local Tooltip = require("@self/Tooltip")
 local VirtualRows = require("@self/VirtualRows")
 
@@ -166,6 +167,9 @@ export type OpenDialogProps = Dialog.OpenDialogProps
 export type OpenConfirmProps = Dialog.OpenConfirmProps
 export type OpenCopyDialogProps = Dialog.OpenCopyDialogProps
 export type SelectionMode = Selection.Mode
+export type TreeAccessor<N> = TreeRows.Accessor<N>
+export type TreeRow<N> = TreeRows.Row<N>
+export type TreePaging = TreeRows.Paging
 export type TooltipProps = Tooltip.TooltipProps
 export type TooltipHandle = Tooltip.TooltipHandle
 export type VirtualRowsProps = VirtualRows.VirtualRowsProps
@@ -247,6 +251,7 @@ local Devui = {
 	OpenConfirm = Dialog.OpenConfirm,
 	OpenCopyDialog = Dialog.OpenCopyDialog,
 	Selection = Selection,
+	TreeRows = TreeRows,
 	Tooltip = Tooltip.Tooltip,
 }
 

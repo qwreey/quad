@@ -134,7 +134,7 @@ Heartbeat는 `gallery/Clock.luau`의 `ticker`만 건드리고, 그 연결은 그
 | 선택 | `Checkbox`, `RadioButton`, `Selectable`, `SelectableOption` | 체크 / 라디오(같은 `Source` 공유) / 한 줄 선택 행 |
 | 입력 | `InputText`, `InputNum`, `DragNum`, `SliderNum`, `InputVector2`, `InputUDim2`, `InputColor3` | 글·숫자(±버튼)·드래그 숫자·슬라이더·벡터·UDim2·색 |
 | 구조 | `Tree`, `CollapsingHeader`, `TabBar` / `Tab`, `Table`, `VirtualRows` | 접히는 노드·헤더, 탭(`NoPages`면 단추 줄만 — 세그먼트 고르기), 키로 재활용되는 표, 가상화된 고정 높이 행 목록 |
-| 규칙(위젯 아님) | `Selection` | 다중 선택 규칙 — 클릭·Ctrl/Cmd·Shift 결과와 기준점, 사라진 키 빼기, 지금 눌린 키로 모드 |
+| 규칙(위젯 아님) | `Selection`, `TreeRows` | 다중 선택 규칙 — 클릭·Ctrl/Cmd·Shift 결과와 기준점, 사라진 키 빼기, 지금 눌린 키로 모드; 트리 평탄화 — 펼친 노드만 보이는 행으로(지연 자식·페이징), `VirtualRows`와 짝지어 가상 트리 |
 | 표시 | `ProgressBar`, `PlotLines`, `PlotHistogram` | 진행 막대, 선 그래프, 막대 그래프 |
 | 팝업 | `Combo`, `ComboArray`, `ComboEnum`, `MenuBar` / `Menu` / `MenuItem` / `MenuToggle`, `OpenMenu`, `MenuButton`, `PopupPanel`, `OpenDialog`, `OpenConfirm`, `OpenCopyDialog`, `Tooltip` | 드롭다운, 메뉴(중첩 가능 — 막대의 메뉴가 열린 동안 다른 제목에 마우스를 올리거나 누르면 그 메뉴로 바뀜, 항목은 `Hooks`로 툴팁, `KeepOpen`이면 눌러도 메뉴가 열려 있음), `OpenMenu`(아무 좌표·사각형에서 지금 여는 메뉴 — 우클릭 메뉴), `MenuButton`(`OnClick`이 있으면 본체 + ▾ 분할 단추, 없으면 단추 전체가 메뉴; 우클릭도 메뉴), `PopupPanel`(메뉴가 쓰는 팝업 몸통 — 직접 여는 팝업용). 대화상자 `OpenDialog`(여는 창이나 화면 가운데에 지금 열림, 바깥을 눌러도 안 닫힘; `Modal`로 막는 범위 — `"Window"`(기본, 그 창 내용을 덮어 입력을 막음), `"Global"`(화면 전체), `"None"`)와 확인 도우미 `OpenConfirm`(`OnResult(ok)`가 한 번 — 확인 단추만 true, 취소·Escape·닫기는 false). 복사 대화상자 `OpenCopyDialog`(클립보드 API가 없는 게임에서 글을 전체 선택해 두고 Ctrl+C로 가져가게 함). 팝업은 화면 안에 머뭅니다(넘치면 붙은 사각형 반대쪽으로 뒤집고 안으로 밈), 호버 툴팁 |
 | 기반 | `Style`, `Interaction`, `Overlay`, `WindowManager`, `NumberFormat` | 테마·입력 훅·팝업 층·창 z-순서·숫자/색 문자열 도우미 |
