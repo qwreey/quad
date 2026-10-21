@@ -176,8 +176,9 @@
 	  kept so neither side goes below its floor — a leaf's floor is its windows' largest MinSize (a folded one: its row
 	  along the fold); along a split's axis its floor is the sum of its sides', across it the larger. The unit's resize
 	  floor is its tree's. A floating unit's and a docked panel's width are pixels (the seam is kept inside the floors
-	  and rounded as it is drawn); a docked panel's height is the container's (the ratio is a share of it, kept inside
-	  the floors only while dragging). Hidden while either side is a folded leaf, or with an open NoResize window in
+	  and rounded as it is drawn); a docked panel's height is the container's (the ratio is a share of it; at the panel's
+	  current height a seam that would cross a floor stops at it, the saved Ratio unchanged — relaid on every container
+	  size change through `Control.Resized`). Hidden while either side is a folded leaf, or with an open NoResize window in
 	  the unit.
 	- Folding: a leaf's collapse arrow folds only that leaf and its sibling takes the space — along a top / bottom
 	  split it keeps its strip row, along a left | right split it is a bar FrameHeight wide holding the arrow. THE FOLD
@@ -782,6 +783,15 @@ function Manager.new(): Manager
 		local docked = u.Side ~= nil
 		local lx = if docked then u.Width else u.Size.X
 		local ly: number? = if docked then nil else u.Size.Y
+		-- a docked panel's height follows its container (a fraction); its current height in window units (0 = not
+		-- known yet) keeps a fractional seam off the sides' floors — the saved Ratio itself is left as it is, so the
+		-- seam goes back to it when the container grows again
+		local panelH = 0
+		if docked then
+			local face = drawnOf(edgeLeaf(root, true))
+			local deco = if face ~= nil then face.Deco else nil
+			panelH = if deco ~= nil then deco.PanelHeight() else 0
+		end
 		local function place(node: Node, x: { number }, y: { number })
 			if node.Tag == "Leaf" then
 				out.Boxes[node] = { x[1], x[2], x[3], x[4], y[1], y[2], y[3], y[4] }
@@ -812,6 +822,15 @@ function Manager.new(): Manager
 			else
 				mf = iv[1] + node.Ratio * (iv[3] - iv[1])
 				mp = iv[2] + node.Ratio * (iv[4] - iv[2])
+				if panelH > 0 then
+					local length = (iv[3] - iv[1]) * panelH + (iv[4] - iv[2])
+					local seam = node.Ratio * length
+					if seam < min1 or length - min2 < min1 then
+						mf, mp = iv[1], iv[2] + min1
+					elseif seam > length - min2 then
+						mf, mp = iv[3], iv[4] - min2
+					end
+				end
 			end
 			if fold1 and c1.Tag == "Leaf" then
 				out.Folds[c1] = if alongX then "Left" else "Top"
@@ -3011,6 +3030,13 @@ function Manager.new(): Manager
 						end,
 						Splitter = function(phase: "Begin" | "Move" | "End", delta: number)
 							dragSplitter(entry, phase, delta)
+						end,
+						Resized = function()
+							-- a docked split's seams keep off the floors at the new panel height
+							local u = unitOf(entry)
+							if u ~= nil and u.Side ~= nil and isSplit(u) then
+								pushView(u)
+							end
 						end,
 					})
 					entry.Deco = deco

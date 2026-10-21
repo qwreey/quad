@@ -274,6 +274,7 @@ export type Control = {
 	Sync: (what: "Collapsed" | "DockWidth") -> (), -- this window's Collapsed / dock width changed: the unit follows (header SPLITS)
 	CollapseUnit: (collapsed: boolean) -> (), -- a split unit's docked panel collapses / expands (its strip)
 	Splitter: (phase: "Begin" | "Move" | "End", delta: number) -> (), -- this window's splitter dragged (window units)
+	Resized: () -> (), -- this docked window's container changed size (a split panel lays its seams out again)
 }
 
 export type Decoration = {
@@ -1062,6 +1063,9 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 			local shrank = area.X < lastArea.X or area.Y < lastArea.Y
 			lastArea = area
 			measureTop()
+			if side:Get() ~= nil then
+				control.Resized()
+			end
 			if shrank and area.X > 0 and area.Y > 0 then
 				if side:Get() ~= nil then
 					local fitted = fitDockWidth(dockWidth:Get())
