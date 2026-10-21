@@ -3,6 +3,12 @@
 	Window title bar (internal part of the window decoration, Window/Decoration.luau): collapse arrow, title, close
 	button. One Frame + three children (ImageButton / TextLabel / ImageButton). Drag and focus are wired by the caller
 	(`Drag` handle).
+
+	TAB STRIP [2026-10-21 user decision — docking stage 3]: a tab group with two or more open windows shows a tab strip
+	in the title bar's place. The strip IS the drawn window's title bar with its title and close button hidden
+	(`Tabbed`): the same background colours by focus, the collapse arrow at the left (hidden by `CanCollapse` when a
+	window of the group has NoCollapse), and its empty area drags the group. The tabs themselves are decoration parts of
+	each window, laid over this row by Window/Decoration.luau ("TABS").
 ]]
 
 local Quad = require("../Quad")
@@ -31,12 +37,22 @@ export type TitleBarSpec = {
 	NoClose: boolean,
 	OnCloseRequest: (() -> ())?,
 	Drag: Interaction.DragHandle?,
+	Tabbed: State<boolean>, -- the tab strip replaces the title and the close button (header TAB STRIP)
+	CanCollapse: State<boolean>, -- the group allows collapsing (the arrow's Visible)
 }
 
 local TitleBar = {}
 
--- transparent until hovered/pressed, then the Header look
-local function titleButton(style: Style, icon: string | State<string>, onClick: () -> (), side: "Left" | "Right", size: State<number>, shown: State<boolean>)
+-- transparent until hovered/pressed, then the Header look (also the close button of a tab, Window/Decoration.luau)
+local function titleButton(
+	style: Style,
+	icon: string | State<string>,
+	onClick: () -> (),
+	side: "Left" | "Right",
+	size: State<number>,
+	shown: State<boolean>,
+	visible: State<boolean>?
+)
 	local hover = Interaction.hover()
 	local look = Common.headerLook(style, hover, nil, false)
 	local box: State<UDim2> = size:Compute(function(self)
@@ -59,6 +75,7 @@ local function titleButton(style: Style, icon: string | State<string>, onClick: 
 		AnchorPoint = Vector2.new(if side == "Left" then 0 else 1, 0.5),
 		Position = UDim2.new(if side == "Left" then 0 else 1, 0, 0.5, 0),
 		Size = box,
+		Visible = visible or true,
 		BackgroundColor3 = look.Color,
 		BackgroundTransparency = look.Transparency,
 		BorderSizePixel = 0,
@@ -82,15 +99,35 @@ local function titleButton(style: Style, icon: string | State<string>, onClick: 
 	})
 end
 
+TitleBar.button = titleButton
+
+-- the close button's rule (the title bar's and a tab's): a close REQUEST when the app asked for one (it may ask to
+-- save first), else the close itself
+function TitleBar.close(open: Source<boolean>, request: (() -> ())?)
+	if request ~= nil then
+		request()
+	else
+		open:Set(false)
+	end
+end
+
+-- the round button's side for a title bar of this style (TextSize + the frame padding's vertical part, minus a pixel each)
+function TitleBar.buttonSize(style: Style): State<number>
+	return style.Metrics.TextSize:Compute(function(self, _prev, padding)
+		return self:Get() + (padding:Get().Y - 1) * 2
+	end, style.Metrics.FramePadding)
+end
+
 function TitleBar.new(spec: TitleBarSpec): Frame
 	local style = spec.Style
 	local icons = style.Icons
 	local collapsed = spec.Collapsed
 
 	local height = style.FrameHeight
-	local buttonSize: State<number> = style.Metrics.TextSize:Compute(function(self, _prev, padding)
-		return self:Get() + (padding:Get().Y - 1) * 2
-	end, style.Metrics.FramePadding)
+	local buttonSize: State<number> = TitleBar.buttonSize(style)
+	local untabbed: State<boolean> = spec.Tabbed:Compute(function(self)
+		return not self:Get()
+	end)
 	local sidePad: State<UDim> = Util.pxX(style.Metrics.FramePadding)
 
 	-- background: focused > idle (colour and transparency). The bar is never seen collapsed — a collapsed window is
@@ -143,7 +180,7 @@ function TitleBar.new(spec: TitleBarSpec): Frame
 			then q.None
 			else titleButton(style, arrow, function()
 				collapsed:Set(not collapsed:Get())
-			end, "Left", buttonSize, shown),
+			end, "Left", buttonSize, shown, spec.CanCollapse),
 		TextLabel({
 			Name = "Title",
 			Size = UDim2.fromScale(1, 1),
@@ -156,19 +193,14 @@ function TitleBar.new(spec: TitleBarSpec): Frame
 			TextTransparency = style.Transparency.Text,
 			TextXAlignment = align,
 			TextTruncate = Enum.TextTruncate.AtEnd,
+			Visible = untabbed,
 			UIPadding({ PaddingLeft = leftPad, PaddingRight = rightPad }),
 		}),
 		if spec.NoClose
 			then q.None
 			else titleButton(style, closeIcon, function()
-				-- a close REQUEST when the app asked for one (it may ask to save first), else the close itself
-				local request = spec.OnCloseRequest
-				if request ~= nil then
-					request()
-				else
-					spec.Open:Set(false)
-				end
-			end, "Right", buttonSize, shown),
+				TitleBar.close(spec.Open, spec.OnCloseRequest)
+			end, "Right", buttonSize, shown, untabbed),
 	})
 end
 

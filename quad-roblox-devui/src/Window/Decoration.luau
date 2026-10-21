@@ -15,11 +15,16 @@
 			Arrow (ImageLabel)
 		WindowResizeGrip (ImageButton, anchored at the outer rectangle's bottom-right corner; floating only)
 		WindowDockResize (TextButton, the docked panel's width handle along its inner edge; docked only)
-		WindowDockPreview (Frame, the edge-dock preview while a title-bar drag is at an edge — see DOCKED)
-	The grip and the dock handle are left out with NoResize, the preview with NoMove or NoDock. The frame sits BELOW the surface (it paints the background
-	the surface is drawn on) and the grip ABOVE it (it overlaps the content's corner): the manager gives each window
-	three consecutive ZIndex ranks (frame, surface, grip). The icon, the strip and the dock handle take the grip's rank;
-	the preview takes the one above it (the drag raised the window first, so it draws over every window).
+		WindowTab (TextButton, this window's tab in its group's tab strip — see TABS)
+			Title (TextLabel), CloseButton (ImageButton > Icon)
+		WindowDockPreview (Frame, the drop preview while a drag is over an edge or a window it would join — see DOCKED
+			and TABS)
+	The grip and the dock handle are left out with NoResize, the preview with NoMove or NoTitleBar, the tab with
+	NoTitleBar, its close button with NoClose. The frame sits BELOW the surface (it paints the background the surface is
+	drawn on) and the grip ABOVE it (it overlaps the content's corner): the manager gives each window three consecutive
+	ZIndex ranks (frame, surface, grip). The icon, the strip and the dock handle take the grip's rank; a tab takes its
+	group's top rank (`GroupView.TabZ`, the grip rank of the group's highest window); the preview takes the one above
+	the higher of the two (the drag raised the window first, so it draws over every window).
 
 	COLLAPSED = ICON [2026-10-20 user decision — one `Collapsed`, its look decided by where the window is]: a collapsed
 	floating window shows only a small square icon (2 x FrameHeight) at its `Position` (the outer rectangle's top-left,
@@ -45,19 +50,52 @@
 	collapse. A gamepad / keyboard activation (no global press) uses the current focus. The width handle along the
 	panel's inner edge sets the dock width, kept in [MinSize.X (default 2 x FrameHeight), half the container's width]
 	(also when the container shrinks).
-	Docking: while the title bar is dragged, a pointer within the strip width of the container's left or right edge
-	shows a preview of the strip and panel (a decoration part in the window's container, input-less — drawn by the
+	Docking: while the title bar (or a tab — TABS) is dragged, a pointer within the strip width of the container's left
+	or right edge shows a preview of the strip and panel (a decoration part in the window's container, input-less — drawn by the
 	compositor like the strip, so it shows whichever Overlay the app mounts, or none [2026-10-21 user decision; it
 	was a popup of the default Overlay and did not show where that layer was not mounted, e.g. a UI Labs story]),
 	and releasing there docks the window (its Position goes back to
 	where the drag began — the floating rectangle it keeps). The first dock width is the window's Size.X in the range
-	above; docking again uses the dock width it keeps. Not offered when that edge is held by another open window, with NoDock or NoMove, or from the icon.
+	above; docking again uses the dock width it keeps. Not offered when that edge is held by another open window or
+	group (then the drag JOINS that group as a tab when it may — TABS), with NoDock (any window of a dragged group), or
+	from the icon; NoMove has no drag at all.
 	Undocking: dragging a docked window's title bar past the press-or-drag threshold makes it float again, at its kept
 	Size, placed so the pointer holds the same spot of its title bar, and the drag goes on (NoMove: no undock).
 
+	TABS [2026-10-21 user decisions — docking stage 3, tab groups]: the manager may put several windows in one GROUP —
+	one rectangle, one decoration, one surface shown at a time. Nothing is reparented: every window of a group keeps
+	its own decoration, and the manager tells each one through `Control.Group` (a `GroupView`, nil = a plain window)
+	where the group is and whether it is the one DRAWN (the selected window: its frame, title bar / strip, grip, dock
+	strip and icon show; the others' are hidden, and so is their surface). While grouped, the frame follows the group's
+	rectangle (`GroupView.Position` / `Size`) and every move / resize writes the GROUP's rectangle (`Control.SetRect`),
+	never the window's own Position / Size Sources, which keep the rectangle it had before it joined.
+	The tab strip: with two or more OPEN windows in the group the drawn window's title bar becomes the strip (its title
+	and close button hide — Window/TitleBar.luau "TAB STRIP"; with one open window the group looks like a plain window).
+	Each open window shows its own `WindowTab` over that row, all laid out by `tabSlots` (the one place that decides
+	where the strip and its tabs sit): after the collapse arrow, as wide as `TAB_IDEAL` x FrameHeight each, shrinking
+	evenly down to `TAB_MIN` x FrameHeight when they do not fit (title truncated), and leaving `TAB_GRAB` x FrameHeight
+	at the strip's right end free (the empty area that drags the group). A tab is `Tab` / `TabHovered` and the
+	selected one `TabActive`; its close button shows on the selected tab and on the hovered one (none with that
+	window's NoClose) and asks that window's OnCloseRequest like the title bar's. Pressing a tab selects it (and the
+	manager's press focuses the group); dragging it inside the strip row moves it among the tabs, and dragging it out of
+	the row (above or below it, or past the group's sides) takes the window out of the group: it floats at its own
+	kept Size (the group's when it has none), placed so the pointer holds the same spot of its title bar, and the drag
+	goes on as a title-bar drag (it may dock or join elsewhere; NoMove: the tab only reorders).
+	Joining: during a title-bar drag (a window, or a group by the strip's empty area) or a dragged-out tab the pointer
+	is judged over the topmost OTHER window under it (`Control.DropAt`): only a window or group the manager's
+	eligibility rules let it join is judged — anything else on top (a NoTitleBar window, an icon, a window of another
+	container is not in the walk) covers what is beneath and nothing happens. On a joinable one:
+	its title-bar / strip row -> joins as a tab where the pointer is among the tabs (`InsertAt`); else its centre
+	(x and y in [0.2, 0.8] of its outer rectangle) -> joins as the last tab; the four 20% bands are kept for splits
+	(nothing happens there yet). The row wins over the top band. A screen-edge band held by an open group joins that
+	group (`Control.EdgeJoin`). The preview then covers the target's whole outer rectangle; releasing there joins
+	(`Control.Join` — the dragged window's Position goes back to where the drag began, its kept rectangle). A tab torn
+	out and joined elsewhere in the same drag keeps the tear-off point as its kept Position (the drag began there —
+	the same as a window undocked and docked again in one drag).
+
 	Why the background and border are decoration, not surface: they enclose the whole outer rectangle (title bar
 	included), which only the compositor knows; a collapsed window swaps the whole frame for its icon, which only the
-	compositor draws; and a future group of surfaces (tabs) shares one frame. The surface stays transparent, and a
+	compositor draws; and a group of surfaces (tabs) shares one frame. The surface stays transparent, and a
 	press on its empty area falls through to the frame's ClickSink right under it (still this window's chunk).
 
 	The surface's placement is answered here too (`Surface`): under the title bar, the rest of the frame, shown while
@@ -87,9 +125,12 @@ local TextButton = q.Elem "TextButton"
 local UIStroke = q.Elem "UIStroke"
 local ImageLabel = q.Elem "ImageLabel"
 local UICorner = q.Elem "UICorner"
+local TextLabel = q.Elem "TextLabel"
+local UIPadding = q.Elem "UIPadding"
 local Input = require("../Input")
 local Interaction = require("../Interaction")
 local Style = require("../Style")
+local Util = require("../Util")
 local Visibility = require("../Visibility")
 local Layout = require("./Layout")
 local PressOrDrag = require("./PressOrDrag")
@@ -128,6 +169,33 @@ export type Placement = {
 	Visible: State<boolean>,
 }
 
+-- what the manager tells a grouped window (header TABS); nil = a plain window
+export type GroupView = {
+	Position: UDim2, -- the group's floating outer rectangle
+	Size: Vector2,
+	Drawn: boolean, -- this window draws the group (the selected one)
+	Tabbed: boolean, -- two or more open windows: the tab strip replaces the title bar
+	TabIndex: number?, -- this window's tab among the shown ones (0-based); nil = no tab (closed, or not tabbed)
+	TabCount: number, -- the shown tabs
+	TabZ: number, -- the ZIndex of the tabs (the group's top grip rank)
+	-- the group's flags (any window's NoMove; any open window's NoResize / NoCollapse; any window's NoDock)
+	NoMove: boolean,
+	NoResize: boolean,
+	NoCollapse: boolean,
+	NoDock: boolean,
+}
+
+-- a window or group a drag would join (Control.DropAt / EdgeJoin): `Index` = before which shown tab (nil = last),
+-- `Frame` = its decoration frame (the preview covers it)
+export type Drop = {
+	Target: any,
+	Index: number?,
+	Frame: GuiObject,
+}
+
+-- what a drag would do on release (an edge to dock on, or a group to join)
+type Candidate = { Side: Side?, Drop: Drop? }
+
 -- what the manager hands the decoration
 export type Control = {
 	BackZ: State<number>, -- the frame (below the surface)
@@ -143,10 +211,24 @@ export type Control = {
 	Undock: () -> (),
 	Insets: () -> (number, number), -- the strip widths (left, right) that wall this floating window in its container
 	FocusedBeforePress: () -> boolean, -- this window had the focus before the press now being released (strip rule)
+	-- tab groups (header TABS)
+	Group: State<GroupView?>,
+	SetRect: (position: UDim2?, size: Vector2?) -> (), -- a grouped window: write the group's rectangle
+	MinSize: () -> Vector2, -- the resize floor (a group's: the largest of its windows' per axis)
+	DropAt: (x: number, y: number) -> Drop?, -- the window / group under the pointer a drag of this window would join
+	EdgeJoin: (side: Side) -> Drop?, -- the group holding that edge, when a drag of this window may join it
+	Join: (drop: Drop) -> (), -- join it (this window, or this window's whole group)
+	SelectTab: () -> (),
+	MoveTab: (index: number) -> (), -- move this window's tab to that shown slot (0-based)
+	DetachTab: () -> (), -- take this window out of its group (it floats; header TABS)
+	Sync: () -> (), -- this window's Collapsed or dock width changed: the group follows (all its windows share them)
 }
 
 export type Decoration = {
 	Parts: { Instance },
+	Frame: Frame, -- the outer frame (WindowDecoration)
+	InsertAt: (x: number) -> number, -- the shown tab a drop at screen x would go before (count = after the last)
+	RowHeight: () -> number, -- the title-bar / strip row's height in screen pixels
 	Surface: Placement,
 	SetParent: (parent: Instance?) -> (),
 	Reclamp: () -> (), -- a strip appeared: bring this floating window out of it (the container-shrink path)
@@ -155,6 +237,18 @@ export type Decoration = {
 }
 
 local Decoration = {}
+
+-- a tab's width in FrameHeights: as wide as TAB_IDEAL, shrinking evenly down to TAB_MIN when the tabs overflow the strip
+-- (Dear ImGui's tabs size to their label; the kit has no text measuring, so a tab is as wide as a short title)
+local TAB_IDEAL = 8
+local TAB_MIN = 2
+-- the strip's right end kept free of tabs (FrameHeights), so a group whose tabs would fill its strip can still be
+-- grabbed by the strip's empty area (Studio: two tabs in a 280 px window left a 5 px sliver)
+local TAB_GRAB = 2
+-- the drop zones of a target's outer rectangle (header TABS): the centre joins, the bands around it are for splits
+local CENTRE_LO, CENTRE_HI = 0.2, 0.8
+Decoration.CENTRE_LO = CENTRE_LO
+Decoration.CENTRE_HI = CENTRE_HI
 
 -- a part destroyed by the engine (its parent went first) is no longer quad's: leave it alone (its Parent is locked)
 local function alive(inst: Instance): boolean
@@ -188,6 +282,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 	local side = control.Side
 	local dockWidth = control.DockWidth
 	local stripWidth = style.FrameHeight
+	local view = control.Group
 
 	-- title bar height (0 without a title bar)
 	local noHeight: State<number> = q.Source(0)
@@ -198,26 +293,81 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 	-- under the bar (a ScreenGui without IgnoreGuiInset)
 	local panelTop: Source<number> = q.Source(0)
 
+	-- the floating outer rectangle the decoration is drawn at: the window's own, or its group's (header TABS)
+	local rectPos: State<UDim2> = position:Compute(function(self, _prev, v)
+		local g = v:Get()
+		return if g ~= nil then g.Position else self:Get()
+	end, view)
+	local rectSize: State<Vector2> = size:Compute(function(self, _prev, v)
+		local g = v:Get()
+		return if g ~= nil then g.Size else self:Get()
+	end, view)
+	-- writes go to the group while grouped (the window's own Sources keep the rectangle it had before it joined)
+	local function setPos(p: UDim2)
+		if view:Get() ~= nil then
+			control.SetRect(p, nil)
+		else
+			position:Set(p)
+		end
+	end
+	local function setSize(s: Vector2)
+		if view:Get() ~= nil then
+			control.SetRect(nil, s)
+		else
+			size:Set(s)
+		end
+	end
+	local function flagOf(name: "NoMove" | "NoResize" | "NoCollapse"): State<boolean>
+		return view:Compute(function(self)
+			local g = self:Get()
+			if g == nil then
+				return true
+			end
+			return not (if name == "NoMove" then g.NoMove elseif name == "NoResize" then g.NoResize else g.NoCollapse)
+		end)
+	end
+	local canMove: State<boolean> = flagOf("NoMove")
+	local canResize: State<boolean> = flagOf("NoResize")
+	local canCollapse: State<boolean> = flagOf("NoCollapse")
+	-- docking by a drag: this window's NoDock, or any of its group's
+	local function noDock(): boolean
+		local g = view:Get()
+		return if g ~= nil then g.NoDock else hints.NoDock
+	end
+	local drawn: State<boolean> = view:Compute(function(self)
+		local g = self:Get()
+		return g == nil or g.Drawn
+	end)
+	local tabbed: State<boolean> = view:Compute(function(self)
+		local g = self:Get()
+		return g ~= nil and g.Tabbed
+	end)
+
 	local expanded: State<boolean> = collapsed:Compute(function(self)
 		return not self:Get()
 	end)
 	local docked: State<boolean> = side:Compute(function(self)
 		return self:Get() ~= nil
 	end)
-	local shown: State<boolean> = open:Compute(function(self, _prev, isExpanded)
+	-- open and expanded (this window's own; a tab shows on it)
+	local present: State<boolean> = open:Compute(function(self, _prev, isExpanded)
 		return self:Get() and isExpanded:Get()
 	end, expanded)
+	-- ... and drawing its group (the frame, the surface)
+	local shown: State<boolean> = present:Compute(function(self, _prev, isDrawn)
+		return self:Get() and isDrawn:Get()
+	end, drawn)
 	local floatingShown: State<boolean> = shown:Compute(function(self, _prev, isDocked)
 		return self:Get() and not isDocked:Get()
 	end, docked)
 	local dockedShown: State<boolean> = shown:Compute(function(self, _prev, isDocked)
 		return self:Get() and isDocked:Get()
 	end, docked)
-	local stripShown: State<boolean> = open:Compute(function(self, _prev, isDocked)
-		return self:Get() and isDocked:Get()
-	end, docked)
+	local stripShown: State<boolean> = open:Compute(function(self, _prev, isDocked, isDrawn)
+		return self:Get() and isDocked:Get() and isDrawn:Get()
+	end, docked, drawn)
 
-	local framePosition: State<UDim2> = position:Compute(function(self, _prev, at, w, sw, top)
+	local framePosition: State<UDim2> = rectPos:Compute(function(self, _prev, at, w, sw, top)
 		local edge = at:Get()
 		if edge == "Left" then
 			return UDim2.fromOffset(sw:Get(), top:Get())
@@ -226,16 +376,16 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		end
 		return self:Get()
 	end, side, dockWidth, stripWidth, panelTop)
-	local frameSize: State<UDim2> = size:Compute(function(self, _prev, at, w, top)
+	local frameSize: State<UDim2> = rectSize:Compute(function(self, _prev, at, w, top)
 		if at:Get() ~= nil then
 			return UDim2.new(0, w:Get(), 1, -top:Get())
 		end
 		local s = self:Get()
 		return UDim2.fromOffset(s.X, s.Y)
 	end, side, dockWidth, panelTop)
-	local iconShown: State<boolean> = open:Compute(function(self, _prev, isCollapsed, isDocked)
-		return self:Get() and isCollapsed:Get() and not isDocked:Get()
-	end, collapsed, docked)
+	local iconShown: State<boolean> = open:Compute(function(self, _prev, isCollapsed, isDocked, isDrawn)
+		return self:Get() and isCollapsed:Get() and not isDocked:Get() and isDrawn:Get()
+	end, collapsed, docked, drawn)
 	local iconSide: State<number> = style.FrameHeight:Compute(function(self)
 		return self:Get() * 2
 	end)
@@ -252,10 +402,10 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		return UDim2.fromOffset(s.X.Offset, math.max(0, s.Y.Offset - titleH:Get()))
 	end, titleHeight)
 
-	local gripPosition: State<UDim2> = position:Compute(function(self, _prev, sz)
+	local gripPosition: State<UDim2> = rectPos:Compute(function(self, _prev, sz)
 		local p, s = self:Get(), sz:Get()
 		return UDim2.new(p.X.Scale, p.X.Offset + s.X, p.Y.Scale, p.Y.Offset + s.Y)
-	end, size)
+	end, rectSize)
 	local gripSize: State<UDim2> = style.Metrics.TextSize:Compute(function(self, _prev, padding)
 		local s = self:Get() + padding:Get().X
 		return UDim2.fromOffset(s, s)
@@ -265,15 +415,15 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 	local frame: Frame? = nil
 	local iconButton: TextButton? = nil
 
-	-- the width range of a dock panel (header DOCKED): [MinSize.X or 2 x FrameHeight, half the container's width]
+	-- the width range of a dock panel (header DOCKED): [MinSize.X or 2 x FrameHeight (a group's: its largest), half the
+	-- container's width]
 	local function fitDockWidth(width: number): number
-		local minSize = hints.MinSize
-		local floor = if minSize then minSize.X else style.FrameHeight:Get() * 2
+		local floor = control.MinSize().X
 		local w = width
 		local f = frame
 		local container = containerOf(f)
 		if container ~= nil and container.AbsoluteSize.X > 0 then
-			local current = if side:Get() ~= nil then dockWidth:Get() else size:Get().X
+			local current = if side:Get() ~= nil then dockWidth:Get() else rectSize:Get().X
 			local half = container.AbsoluteSize.X / scaleOf(f, current) / 2
 			w = math.min(w, half)
 		end
@@ -284,7 +434,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 	-- docked)
 	local function dropWidth(): number
 		local kept = dockWidth:Get()
-		return fitDockWidth(if kept > 0 then kept else size:Get().X)
+		return fitDockWidth(if kept > 0 then kept else rectSize:Get().X)
 	end
 
 	-- keep the window reachable inside its container (header "STAYING ON SCREEN"); `pos` unchanged when it already is
@@ -303,7 +453,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		if area.X <= 0 or area.Y <= 0 then
 			return pos -- (a zero-sized container: minimised / not laid out yet — Dear ImGui skips it too)
 		end
-		local s = size:Get()
+		local s = rectSize:Get()
 		local titleH = titleHeight:Get()
 		local iconW = iconSide:Get()
 		local w = if isIcon then iconW else s.X
@@ -332,13 +482,14 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 	end
 
 	local function reclamp()
-		if side:Get() ~= nil then
+		-- (a grouped window that does not draw its group leaves the shared rectangle to the one that does)
+		if side:Get() ~= nil or not drawn:Get() then
 			return
 		end
-		local current = position:Get()
+		local current = rectPos:Get()
 		local inside = clampToContainer(current)
 		if inside ~= current then
-			position:Set(inside)
+			setPos(inside)
 		end
 	end
 
@@ -353,35 +504,109 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		end
 		-- AbsolutePosition is measured below the GUI inset, TopbarInset from the very top of the screen
 		local top = container.AbsolutePosition.Y + Input.guiInset().Y
-		local current = if side:Get() ~= nil then dockWidth:Get() else size:Get().X
+		local current = if side:Get() ~= nil then dockWidth:Get() else rectSize:Get().X
 		panelTop:SetIfChanged(math.round(math.max(0, bar - top) / scaleOf(f, current)))
 	end
 	local offTopbar = Input.onTopbarChanged(measureTop)
 
-	-- ── the edge-dock preview (header DOCKED): the edge a drag would dock on, and the strip + panel width there ────
-	local previewSide: Source<Side?> = q.Source(nil :: Side?)
-	local previewWidth: Source<number> = q.Source(0)
-	local function closePreview()
-		previewSide:SetIfChanged(nil)
+	-- ── the tab strip (header TABS): where the strip's tabs sit — the ONE place that lays the strip out ──────────
+	local buttonSize: State<number> = TitleBar.buttonSize(style)
+	-- (lead = where the first tab starts, after the frame padding and the collapse arrow; width = each tab's; window
+	-- units, from the frame's left edge; the strip is the title-bar row at the top of the frame)
+	local function tabSlots(): (number, number, number)
+		local g = view:Get()
+		local count = if g ~= nil then g.TabCount else 1
+		local pad = style.Metrics.FramePadding:Get().X
+		local lead = pad
+		if not hints.NoCollapse and canCollapse:Get() then
+			lead += buttonSize:Get() + 4
+		end
+		local stripW = frameSize:Get().X.Offset
+		local frameH = style.FrameHeight:Get()
+		local room = math.max(0, stripW - lead - pad - TAB_GRAB * frameH)
+		local w = math.floor(math.max(TAB_MIN * frameH, math.min(TAB_IDEAL * frameH, room / math.max(1, count))))
+		return lead, w, count
 	end
-	local function openPreview(at: Side)
-		previewWidth:SetIfChanged(stripWidth:Get() + dropWidth())
-		previewSide:SetIfChanged(at)
-	end
-
-	-- title-bar drag: moves a floating window (pixel deltas added to the Position offsets), docks it at an edge, and
-	-- takes a docked one off its edge (header DOCKED)
-	local startPos = UDim2.new()
-	local grabFraction, grabY = 0.5, 0
-	local candidate: Side? = nil
-	local titleDrag: Interaction.DragHandle? = nil
-
-	-- the edge the pointer is at (nil = none, or not offered): within the strip width inside the container's left or
-	-- right edge (a pointer outside the container — a Frame container smaller than the screen — docks nothing)
-	local function edgeAt(x: number, y: number): Side?
-		if hints.NoDock then
+	-- this window's tab: { X, Width } in the strip, nil = no tab
+	local tabPlace: State<Vector2?> = view:Compute(function(self, _prev, _size, _frameH, _text, _pad): Vector2?
+		local g = self:Get()
+		local index = if g ~= nil and g.Tabbed then g.TabIndex else nil
+		if index == nil then
 			return nil
 		end
+		local lead, w = tabSlots()
+		return Vector2.new(lead + index * w, w)
+	end, frameSize, style.FrameHeight, style.Metrics.TextSize, style.Metrics.FramePadding)
+	-- screen pixels per window unit along x, measured on the frame
+	local function frameScale(): number
+		return scaleOf(frame, frameSize:Get().X.Offset)
+	end
+	-- the pointer's x in window units from the frame's left edge
+	local function stripX(x: number): number
+		local f = frame
+		local origin = if f ~= nil then f.AbsolutePosition.X else 0
+		return (x - origin) / frameScale()
+	end
+	-- the shown tab a drop at screen x goes before (header TABS): by the tabs' middles; a window without a strip is
+	-- one tab as wide as its title bar
+	local function insertAt(x: number): number
+		local rel = stripX(x)
+		local g = view:Get()
+		if g == nil or not g.Tabbed then
+			return if rel < frameSize:Get().X.Offset / 2 then 0 else 1
+		end
+		local lead, w, count = tabSlots()
+		local at = 0
+		for i = 0, count - 1 do
+			if rel > lead + i * w + w / 2 then
+				at = i + 1
+			end
+		end
+		return at
+	end
+	-- the shown slot under screen x (a tab dragged inside the row)
+	local function slotAt(x: number): number
+		local lead, w, count = tabSlots()
+		return math.clamp(math.floor((stripX(x) - lead) / math.max(1, w)), 0, count - 1)
+	end
+
+	-- ── the drop preview (headers DOCKED and TABS): an edge's strip + panel, or the outer rectangle of a target ────
+	local previewShown: Source<boolean> = q.Source(false)
+	local previewAnchor: Source<Vector2> = q.Source(Vector2.zero)
+	local previewPosition: Source<UDim2> = q.Source(UDim2.new())
+	local previewSize: Source<UDim2> = q.Source(UDim2.new())
+	local function showPreview(c: Candidate?)
+		if c == nil then
+			previewShown:SetIfChanged(false)
+			return
+		end
+		local at, drop = c.Side, c.Drop
+		if at ~= nil then
+			previewAnchor:SetIfChanged(if at == "Right" then Vector2.new(1, 0) else Vector2.zero)
+			previewPosition:SetIfChanged(if at == "Right" then UDim2.fromScale(1, 0) else UDim2.fromScale(0, 0))
+			previewSize:SetIfChanged(UDim2.new(0, stripWidth:Get() + dropWidth(), 1, 0))
+		elseif drop ~= nil then
+			local target = drop.Frame
+			previewAnchor:SetIfChanged(target.AnchorPoint)
+			previewPosition:SetIfChanged(target.Position)
+			previewSize:SetIfChanged(target.Size)
+		end
+		previewShown:SetIfChanged(true)
+	end
+	local function sameCandidate(a: Candidate?, b: Candidate?): boolean
+		if a == nil or b == nil then
+			return a == b
+		end
+		local da, db = a.Drop, b.Drop
+		if da == nil or db == nil then
+			return da == db and a.Side == b.Side
+		end
+		return da.Target == db.Target and da.Index == db.Index and da.Frame == db.Frame
+	end
+
+	-- the edge band the pointer is in (nil = none): within the strip width inside the container's left or right edge
+	-- (a pointer outside the container — a Frame container smaller than the screen — is at no edge)
+	local function edgeAt(x: number, y: number): Side?
 		local container = containerOf(frame)
 		if container == nil then
 			return nil
@@ -393,41 +618,101 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		if x < cp.X or x > cp.X + cs.X or y < cp.Y or y > cp.Y + cs.Y then
 			return nil
 		end
-		local band = stripWidth:Get() * scaleOf(frame, size:Get().X)
-		local at: Side? = if x < cp.X + band then "Left" elseif x >= cp.X + cs.X - band then "Right" else nil
-		if at ~= nil and control.SideTaken(at) then
-			return nil
-		end
-		return at
+		local band = stripWidth:Get() * scaleOf(frame, rectSize:Get().X)
+		return if x < cp.X + band then "Left" elseif x >= cp.X + cs.X - band then "Right" else nil
 	end
 
-	-- a docked window comes off its edge under the pointer: the same spot of its title bar (the same fraction of the
-	-- width, the same height) stays under the press point, so the drag goes on from there
-	local function undock(pressX: number, pressY: number)
-		local f = frame
-		local container = containerOf(f)
+	-- what releasing at the pointer would do: dock on a free edge, join the group holding an edge, or join the window
+	-- / group under the pointer (headers DOCKED and TABS)
+	local function judge(x: number, y: number): Candidate?
+		local at = edgeAt(x, y)
+		if at ~= nil then
+			if not control.SideTaken(at) then
+				if not noDock() then
+					return { Side = at }
+				end
+			else
+				local held = control.EdgeJoin(at)
+				if held ~= nil then
+					return { Drop = held }
+				end
+			end
+		end
+		local drop = control.DropAt(x, y)
+		return if drop ~= nil then { Drop = drop } else nil
+	end
+
+	-- a drag of the floating window (its title bar, the group's strip, or a dragged-out tab): moves it, previews a drop
+	local startPos = UDim2.new()
+	local grabFraction, grabY = 0.5, 0
+	local candidate: Candidate? = nil
+	local function dragMove(x: number, y: number, dx: number, dy: number)
+		setPos(clampToContainer(UDim2.new(startPos.X.Scale, startPos.X.Offset + dx, startPos.Y.Scale, startPos.Y.Offset + dy)))
+		local c = judge(x, y)
+		if not sameCandidate(c, candidate) then
+			candidate = c
+			showPreview(c)
+		end
+	end
+	local function dragEnd(cancelled: boolean)
+		local c = candidate
+		candidate = nil
+		showPreview(nil)
+		if cancelled or c == nil or side:Get() ~= nil then
+			return
+		end
+		local at, drop = c.Side, c.Drop
+		if at ~= nil then
+			if control.SideTaken(at) then
+				return
+			end
+			-- the floating rectangle it keeps is where the drag began, not the edge it was dropped on
+			local width = dropWidth()
+			setPos(startPos)
+			control.Dock(at, width)
+		elseif drop ~= nil then
+			-- (the same for a join: the window keeps the rectangle it had before it was dragged)
+			setPos(startPos)
+			control.Join(drop)
+		end
+	end
+
+	-- the window comes off its edge or out of its group under the pointer: the same spot of its title bar (the same
+	-- fraction of the width, the same height) stays under the press point, so the drag goes on from there. `scale` =
+	-- screen pixels per window unit, measured before it left.
+	local function placeUnder(pressX: number, pressY: number, scale: number)
+		local container = containerOf(frame)
 		local origin = if container then container.AbsolutePosition else Vector2.zero
-		local scale = scaleOf(f, dockWidth:Get())
-		local s = size:Get()
+		local s = rectSize:Get()
 		local left = (pressX - origin.X) / scale - grabFraction * s.X
 		local top = (pressY - grabY - origin.Y) / scale
 		startPos = UDim2.fromOffset(math.round(left), math.round(top))
-		control.Undock()
+	end
+	-- where on the frame the press was (for placeUnder)
+	local function grab(x: number, y: number)
+		local f = frame
+		if f ~= nil then
+			local fp, fs = f.AbsolutePosition, f.AbsoluteSize
+			grabFraction = if fs.X > 0 then math.clamp((x - fp.X) / fs.X, 0, 1) else 0.5
+			grabY = math.max(0, y - fp.Y)
+		end
 	end
 
+	-- title-bar drag (also the tab strip's empty area): moves a floating window (pixel deltas added to the Position
+	-- offsets), docks it at an edge or joins it to a group, and takes a docked one off its edge (headers DOCKED, TABS)
+	local titleDrag: Interaction.DragHandle? = nil
 	if not hints.NoMove then
 		local pressX, pressY = 0, 0
 		titleDrag = Interaction.drag({
+			-- a group with a NoMove window does not move (header TABS)
+			Enabled = canMove,
 			OnBegin = function(x, y)
 				control.Raise()
-				startPos = position:Get()
+				startPos = rectPos:Get()
 				pressX, pressY = x, y
 				candidate = nil
-				local f = frame
-				if side:Get() ~= nil and f ~= nil then
-					local fp, fs = f.AbsolutePosition, f.AbsoluteSize
-					grabFraction = if fs.X > 0 then math.clamp((x - fp.X) / fs.X, 0, 1) else 0.5
-					grabY = math.max(0, y - fp.Y)
+				if side:Get() ~= nil then
+					grab(x, y)
 				end
 			end,
 			OnMove = function(x, y, dx, dy)
@@ -436,49 +721,41 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 					if dx * dx + dy * dy < t * t then
 						return
 					end
-					undock(pressX, pressY)
+					local scale = scaleOf(frame, dockWidth:Get())
+					control.Undock()
+					placeUnder(pressX, pressY, scale)
 				end
-				position:Set(clampToContainer(UDim2.new(startPos.X.Scale, startPos.X.Offset + dx, startPos.Y.Scale, startPos.Y.Offset + dy)))
-				local at = edgeAt(x, y)
-				if at ~= candidate then
-					closePreview()
-					candidate = at
-					if at ~= nil then
-						openPreview(at)
-					end
-				end
+				dragMove(x, y, dx, dy)
 			end,
 			OnEnd = function(_x, _y, _dx, _dy, cancelled)
-				local at = candidate
-				candidate = nil
-				closePreview()
-				if cancelled or at == nil or side:Get() ~= nil or control.SideTaken(at) then
-					return
-				end
-				-- the floating rectangle it keeps is where the drag began, not the edge it was dropped on
-				local width = dropWidth()
-				position:Set(startPos)
-				control.Dock(at, width)
+				dragEnd(cancelled)
 			end,
 		})
 	end
 
 	-- the collapsed window's icon: press expands, drag moves (kept on screen with the icon as the window)
 	local iconStart = UDim2.new()
+	local iconMovable = not hints.NoMove
 	local iconGesture = PressOrDrag.new({
 		OnPress = function()
 			collapsed:Set(false)
 		end,
-		OnDragBegin = if hints.NoMove
+		OnDragBegin = if not iconMovable
 			then nil
 			else function()
+				if not canMove:Get() then
+					return
+				end
 				control.Raise()
-				iconStart = position:Get()
+				iconStart = rectPos:Get()
 			end,
-		OnDrag = if hints.NoMove
+		OnDrag = if not iconMovable
 			then nil
 			else function(dx: number, dy: number)
-				position:Set(clampToContainer(UDim2.new(iconStart.X.Scale, iconStart.X.Offset + dx, iconStart.Y.Scale, iconStart.Y.Offset + dy)))
+				if not canMove:Get() then
+					return
+				end
+				setPos(clampToContainer(UDim2.new(iconStart.X.Scale, iconStart.X.Offset + dx, iconStart.Y.Scale, iconStart.Y.Offset + dy)))
 			end,
 	})
 	-- pressed > hovered > focused > idle (the title bar's colours at rest, the button's under the pointer)
@@ -559,7 +836,6 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 
 	-- resize grip (floating)
 	local startSize = Vector2.new()
-	local minSize = hints.MinSize
 	local grip: Interaction.DragHandle? = nil
 	local gripHover = Interaction.hover()
 	local gripLook = Style.interactive(style, "ResizeGrip", gripHover.Hovered, gripHover.Pressed)
@@ -569,17 +845,19 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 	local dockLook = Style.interactive(style, "ResizeGrip", dockHover.Hovered, dockHover.Pressed)
 	if not hints.NoResize then
 		grip = Interaction.drag({
+			Enabled = canResize,
 			OnBegin = function()
 				control.Raise()
-				startSize = size:Get()
+				startSize = rectSize:Get()
 			end,
 			OnMove = function(_x, _y, dx, dy)
-				local floor = if minSize then minSize else Vector2.new(style.FrameHeight:Get() * 2, style.FrameHeight:Get() * 2)
-				size:Set(Vector2.new(math.max(floor.X, startSize.X + dx), math.max(floor.Y, startSize.Y + dy)))
+				local floor = control.MinSize()
+				setSize(Vector2.new(math.max(floor.X, startSize.X + dx), math.max(floor.Y, startSize.Y + dy)))
 			end,
 		})
 		local startWidth, widthScale = 0, 1
 		dockResize = Interaction.drag({
+			Enabled = canResize,
 			OnBegin = function()
 				control.Raise()
 				startWidth = dockWidth:Get()
@@ -592,6 +870,12 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 			end,
 		})
 	end
+	local gripShown: State<boolean> = floatingShown:Compute(function(self, _prev, can)
+		return self:Get() and can:Get()
+	end, canResize)
+	local dockHandleShown: State<boolean> = dockedShown:Compute(function(self, _prev, can)
+		return self:Get() and can:Get()
+	end, canResize)
 	local dockHandleAnchor: State<Vector2> = side:Compute(function(self)
 		return if self:Get() == "Right" then Vector2.new(1, 0) else Vector2.new(0, 0)
 	end)
@@ -696,14 +980,20 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 				NoClose = hints.NoClose,
 				OnCloseRequest = hints.OnCloseRequest,
 				Drag = titleDrag,
+				Tabbed = tabbed,
+				CanCollapse = canCollapse,
 			}),
+		-- a grouped window's Collapsed and dock width are its group's (the manager spreads a change to the others)
+		q.Effect(function()
+			control.Sync()
+		end, collapsed, dockWidth),
 	})
 	frame = built
 	local icon = TextButton({
 		iconHover.Hook,
 		iconGesture.Hook,
 		Name = "WindowIcon",
-		Position = position,
+		Position = rectPos,
 		Size = iconBox,
 		ZIndex = control.FrontZ,
 		Visible = iconShown,
@@ -744,11 +1034,11 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 				ScaleType = Enum.ScaleType.Fit,
 			})
 			else q.None,
-		-- the manager's Layout output (keyed windows only): any of the floating facts or the dock changed
+		-- the manager's Layout output (keyed windows only): any of the floating facts, the dock or the group changed
 		if control.Changed ~= nil
 			then q.Effect(function()
 				(control.Changed :: () -> ())()
-			end, position, size, open, collapsed, side, dockWidth)
+			end, position, size, open, collapsed, side, dockWidth, view)
 			else q.None,
 	})
 	iconButton = icon
@@ -804,7 +1094,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 				Position = gripPosition,
 				Size = gripSize,
 				ZIndex = control.FrontZ,
-				Visible = floatingShown,
+				Visible = gripShown,
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				AutoButtonColor = false,
@@ -825,7 +1115,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 				Position = dockHandlePosition,
 				Size = dockHandleSize,
 				ZIndex = control.FrontZ,
-				Visible = dockedShown,
+				Visible = dockHandleShown,
 				BackgroundColor3 = dockLook.Color,
 				BackgroundTransparency = dockLook.Transparency,
 				BorderSizePixel = 0,
@@ -834,28 +1124,148 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 			})
 		)
 	end
-	-- the edge-dock preview: only a window a drag can dock
-	if titleDrag ~= nil and not hints.NoDock then
+
+	-- this window's tab in its group's strip (header TABS): press selects, drag inside the row reorders, drag out of
+	-- the row takes the window out of the group and goes on as its title-bar drag
+	if not hints.NoTitleBar then
+		local tabHover = Interaction.hover()
+		local tabLook = Style.interactive(style, "Tab", tabHover.Hovered, tabHover.Pressed)
+		local tabColor: State<Color3> = drawn:Compute(function(self, _prev, normal, active)
+			return if self:Get() then active:Get() else normal:Get()
+		end, tabLook.Color, style.Color.TabActive)
+		local tabAlpha: State<number> = drawn:Compute(function(self, _prev, normal, active)
+			return if self:Get() then active:Get() else normal:Get()
+		end, tabLook.Transparency, style.Transparency.TabActive)
+		local tabShown: State<boolean> = present:Compute(function(self, _prev, place)
+			return self:Get() and place:Get() ~= nil
+		end, tabPlace)
+		local tabPosition: State<UDim2> = framePosition:Compute(function(self, _prev, place)
+			local p, t = self:Get(), place:Get()
+			return UDim2.new(p.X.Scale, p.X.Offset + (if t ~= nil then t.X else 0), p.Y.Scale, p.Y.Offset)
+		end, tabPlace)
+		local tabSize: State<UDim2> = tabPlace:Compute(function(self, _prev, titleH)
+			local t = self:Get()
+			return UDim2.fromOffset(if t ~= nil then t.Y else 0, titleH:Get())
+		end, titleHeight)
+		local tabZ: State<number> = view:Compute(function(self, _prev, front)
+			local g = self:Get()
+			return if g ~= nil then g.TabZ else front:Get()
+		end, control.FrontZ)
+		local closeShown: State<boolean> = drawn:Compute(function(self, _prev, hovered)
+			return self:Get() or hovered:Get()
+		end, tabHover.Hovered)
+		local sidePad: State<UDim> = Util.pxX(style.Metrics.FramePadding)
+		local titleRight: State<UDim> = buttonSize:Compute(function(self)
+			return UDim.new(0, if hints.NoClose then 0 else self:Get() + 2)
+		end)
+
+		local detached = false
+		local tabPressX, tabPressY = 0, 0
+		local tabGesture = PressOrDrag.new({
+			OnPress = function()
+				control.SelectTab()
+			end,
+			OnDragBegin = function(px: number, py: number)
+				detached = false
+				tabPressX, tabPressY = px, py
+				control.SelectTab()
+			end,
+			OnDrag = function(dx: number, dy: number, x: number, y: number)
+				if detached then
+					dragMove(x, y, dx, dy)
+					return
+				end
+				local f = frame
+				if view:Get() == nil or f == nil then
+					return -- (the group went away under the drag)
+				end
+				local p, s = f.AbsolutePosition, f.AbsoluteSize
+				local inRow = y >= p.Y and y < p.Y + titleHeight:Get() * frameScale() and x >= p.X and x < p.X + s.X
+				if inRow then
+					control.MoveTab(slotAt(x))
+					return
+				end
+				if hints.NoMove then
+					return -- (it only reorders)
+				end
+				-- out of the row: the window leaves its group under the pointer and the drag goes on as its own
+				local scale = frameScale()
+				grab(tabPressX, tabPressY)
+				control.DetachTab()
+				placeUnder(tabPressX, tabPressY, scale)
+				candidate = nil
+				detached = true
+				control.Raise()
+				dragMove(x, y, dx, dy)
+			end,
+			OnDragEnd = function(cancelled: boolean)
+				if detached then
+					detached = false
+					dragEnd(cancelled)
+				end
+			end,
+		})
+		table.insert(
+			parts,
+			TextButton({
+				tabHover.Hook,
+				tabGesture.Hook,
+				-- hiding the tab (closed, collapsed, the strip gone) sends no MouseLeave: drop the hover look
+				q.Effect(function()
+					if not tabShown:Get() then
+						tabHover.Reset()
+					end
+				end, tabShown),
+				Name = "WindowTab",
+				Position = tabPosition,
+				Size = tabSize,
+				ZIndex = tabZ,
+				Visible = tabShown,
+				Active = true,
+				AutoButtonColor = false,
+				BackgroundColor3 = tabColor,
+				BackgroundTransparency = tabAlpha,
+				BorderSizePixel = 0,
+				Text = "",
+				UICorner = style.Metrics.TabRounding,
+				TextLabel({
+					Name = "Title",
+					Size = UDim2.fromScale(1, 1),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					Text = hints.Title,
+					FontFace = style.Metrics.TextFont,
+					TextSize = style.Metrics.TextSize,
+					TextColor3 = style.Color.Text,
+					TextTransparency = style.Transparency.Text,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					TextTruncate = Enum.TextTruncate.AtEnd,
+					UIPadding({ PaddingLeft = sidePad, PaddingRight = titleRight }),
+				}),
+				if hints.NoClose
+					then q.None
+					else TitleBar.button(style, style.Icons.Close, function()
+						TitleBar.close(open, hints.OnCloseRequest)
+					end, "Right", buttonSize, tabShown, closeShown),
+			})
+		)
+	end
+
+	-- the drop preview: a window a drag can move (header DOCKED: also NoDock — it can still join a group)
+	if titleDrag ~= nil and not hints.NoTitleBar then
 		table.insert(
 			parts,
 			Frame({
 				Name = "WindowDockPreview",
-				AnchorPoint = previewSide:Compute(function(self)
-					return if self:Get() == "Right" then Vector2.new(1, 0) else Vector2.new(0, 0)
-				end),
-				Position = previewSide:Compute(function(self)
-					return if self:Get() == "Right" then UDim2.fromScale(1, 0) else UDim2.fromScale(0, 0)
-				end),
-				Size = previewWidth:Compute(function(self)
-					return UDim2.new(0, self:Get(), 1, 0)
-				end),
-				-- one above this window's grip: the drag raised it to the top, so above every window
-				ZIndex = control.FrontZ:Compute(function(self)
-					return self:Get() + 1
-				end),
-				Visible = previewSide:Compute(function(self)
-					return self:Get() ~= nil
-				end),
+				AnchorPoint = previewAnchor,
+				Position = previewPosition,
+				Size = previewSize,
+				-- one above this window's (or its group's tabs') top: the drag raised it, so above every window
+				ZIndex = control.FrontZ:Compute(function(self, _prev, v)
+					local g = v:Get()
+					return math.max(self:Get(), if g ~= nil then g.TabZ else 0) + 1
+				end, view),
+				Visible = previewShown,
 				Active = false,
 				BackgroundColor3 = style.Color.Header,
 				BackgroundTransparency = style.Transparency.Header,
@@ -872,6 +1282,11 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 
 	return {
 		Parts = parts,
+		Frame = built,
+		InsertAt = insertAt,
+		RowHeight = function(): number
+			return titleHeight:Get() * frameScale()
+		end,
 		Surface = { Position = surfacePosition, Size = surfaceSize, Visible = shown },
 		SetParent = function(parent: Instance?)
 			for _, part in parts do
@@ -886,7 +1301,7 @@ function Decoration.new(hints: Hints, control: Control): Decoration
 		Destroy = function()
 			unwatch()
 			offTopbar()
-			closePreview()
+			showPreview(nil)
 			for _, part in parts do
 				if alive(part) then
 					q.dispose(part)

@@ -16,8 +16,9 @@
 	number of live windows (an ever-increasing counter would climb above the Overlay layer's ZIndex 1000 after enough
 	focus switches and draw windows over popups). The window that was focused last is `Focused` (its title bar draws in
 	the "active" colour). A window releases its slot when it is destroyed (Window does it), so ranks stay compact.
-	Supports up to 333 live windows below the default Overlay layer. A title-bar drag at a screen edge shows its preview
-	one value above the dragged (raised, so top) window's chunk [Window/Decoration.luau header "DOCKED"].
+	Supports up to 333 live windows below the default Overlay layer (a tab group's windows keep a chunk each — header
+	TABS). A drag's drop preview sits one value above the dragged (raised, so top) window's chunk or its group's tabs
+	[Window/Decoration.luau headers "DOCKED", "TABS"].
 
 	USAGE
 		local Manager = require("./Manager")
@@ -44,13 +45,16 @@
 	saved with it so a loader can make it again. A window without a Key behaves the same and is only left out of the
 	layout (with `q.debug`, one notice per manager once the app uses the layout API). What is saved per window: Open,
 	Collapsed, Position and Size (the floating outer rectangle, also for a docked window), the edge it is docked on and
-	its dock width (header DOCK), and the stacking order of the keyed FLOATING windows (the export order). Not saved:
-	the title, the content, the focus, the stacking of the docked windows.
+	its dock width (header DOCK), its tab group (the node's tabs and selection, the group's rectangle, and the window's
+	own kept rectangle — header TABS), and the stacking order of the keyed FLOATING groups (the export order). Not
+	saved: the title, the content, the focus, the stacking of the docked groups.
 		manager:ExportLayout() -> WindowLayout          every known key (live or pending): floating bottom first, docked
 		                                                on its edge (`Left` / `Right`)
 		manager:ImportLayout(layout, factories?)          put the windows where the layout says (rules below)
-		manager:ExportWindow(key) -> WindowState?         one window's state (nil = an unknown key)
-		manager:ImportWindow(key, state)                  one window: the same rules, no factory, no stacking
+		manager:ExportWindow(key) -> WindowState?         one window's state (nil = an unknown key; no group membership —
+		                                                other keys are involved, only ExportLayout carries it)
+		manager:ImportWindow(key, state)                  one window: the same rules, no factory, no stacking (a
+		                                                grouped window leaves its group first)
 		manager:ForgetWindow(key)                         drop a key from the layout (rules below)
 		manager.Layout : State<WindowLayout>              re-emitted when the layout changes (frozen tables; an Observer
 		                                                  on it is the app's auto-save — debounce it, a drag writes on
@@ -81,8 +85,9 @@
 	Window/Decoration.luau header "DOCKED"]. A docked window is still one window of `order`: the same ZIndex chunk, the
 	same raise / focus / succession rules (expanding it raises and focuses it, a press brings it to the front, a press on
 	another window brings that one up — a panel covers floating windows, nothing is pushed aside). Only its placement
-	differs. Per window the manager keeps the edge (`Side`, nil = floating) and the dock width; one OPEN window per edge
-	per manager (a second edge drag shows no preview and does not dock). Closing a docked window hides its panel and
+	differs. Per window the manager keeps the edge (`Side`, nil = floating) and the dock width; one OPEN window — or
+	tab group, whose windows share the edge and width — per edge per manager (a drag to a held edge does not dock: it
+	joins that group as a tab when it may, header TABS). Closing a docked window hides its panel and
 	strip and frees the edge, but the window keeps the edge and width: `Open:Set(true)` docks it there again, or floats
 	it (its kept Position / Size) when another open window took that edge meanwhile. A layout state with a `Dock` docks
 	the window the same way (an open one floats when the edge is held; a closed one keeps the edge remembered); a
@@ -95,6 +100,54 @@
 	Key docks the same and is only left out of the layout. Strip press rule: the strip asks whether its window had the
 	focus BEFORE the press — the manager's global press (PRESS TO FRONT) focuses first and records that (`lastPress`,
 	read once by the strip's Activated); a gamepad / keyboard activation (no global press) reads the current focus.
+
+	TABS [2026-10-21 user decisions — docking stage 3, tab groups; the look and the drags are in Window/Decoration.luau
+	header "TABS"]. A GROUP is several windows sharing one rectangle and one decoration, only the selected one's surface
+	shown. Nothing is reparented: the manager keeps a `Group` per group (its members in tab order — a live window or a
+	pending key —, the selected one, the floating rectangle, Collapsed, the edge and dock width) and tells each window's
+	decoration what it is in it (`GroupView`: the group's rectangle, whether it draws the group, its tab slot, the
+	group's flags). The drawn window is the selected one when it is open (else the first open one); it is the focused
+	window of the group (`Focused` / `slot.Focused`).
+	- Forming: a drag of a window (or of a whole group, by its strip's empty area, all its tabs in order, or of a tab
+	  torn out of one) released over another window's / group's title-bar row or centre, or over a held edge's band,
+	  joins its group (made when it is a plain window: its rectangle, edge and Collapsed become the group's). Eligible:
+	  the same manager and the same container (the surface roots' parent), both with a title bar (NoTitleBar never joins
+	  nor is joined), the target open and expanded (an icon is no target; a dragged icon never joins), the dragged one
+	  movable. NoDock does not stop joining [2026-10-21 user decision — it is edge docking only]. The window on top
+	  under the pointer decides: when it cannot be joined (a NoTitleBar window, an icon, a hand-made root) it covers
+	  what is beneath and nothing joins. The joined window is selected and the group raised and focused.
+	- The rectangle is the group's: while grouped nothing writes a window's Position / Size Sources, which keep the
+	  rectangle it had before it joined (its KEPT rectangle; a window grouped by a load gets it from the layout's
+	  `Windows[key].Position` / `Size`, or has none). Moving / resizing / docking the group changes only the group.
+	- Shared: Collapsed (writing any window's collapses the whole group — the manager spreads it; a collapsed floating
+	  group is the drawn window's icon) and the edge. The dock width is shared only while the group is DOCKED: joining
+	  a floating group leaves each window the dock width it keeps (header DOCK: docking again uses it), a floating group
+	  docked by a drag takes its drawn window's drop width and then every window follows, and a window leaving a docked
+	  group keeps the group's width. An import that docks a group stores the width that fits the container. Flags: a NoMove window stops the group's drag,
+	  an OPEN NoResize window hides its grip, an OPEN NoCollapse window hides its collapse arrow; the resize floor is the
+	  largest MinSize per axis.
+	- Closing a tab hides it and keeps its slot (the window stays a member; the layout keeps it with `Open = false`); the
+	  selection moves to the next open tab, else the previous one; a group whose windows are all closed is hidden.
+	  `Open:Set(true)` brings the window back at its slot, selected, the group raised and focused; `Focused:Set(true)`
+	  on an open hidden tab selects it too. A press on any part of a group focuses its drawn window (the tab's own press
+	  selects).
+	- Leaving: a tab torn out floats at its kept Size (the group's when it has none); `ImportWindow` takes a window out
+	  first; a keyless window destroyed (or a forgotten key's) leaves; a keyed window destroyed stays a PENDING tab of
+	  its group (rebuilding the UI brings it back to its tab). A group left with one member (open or closed, live or
+	  pending) is no group: that window takes the group's rectangle into its own Position / Size and stays in place.
+	- Stacking: a group is one LUMP — its windows sit next to each other in `order` (tab order, where its topmost one
+	  was), keep a ZIndex chunk each (only the drawn one's parts show) and the tabs take the lump's top grip rank, so
+	  nothing of another window interleaves; raising any window raises the lump. `known` keeps a group's keys together
+	  the same way (the saved `Floating` order is the groups' stacking).
+	- Saving (Window/Layout.luau): a group is a node with several tabs (keyed members only, in tab order; the selected
+	  one, or the first keyed open one); `Windows[key].Position` / `Size` carry a member's kept rectangle when it has
+	  one and the node keeps two or more tabs (a node the keyless windows leave with one tab is a plain window). A layout's node of several tabs makes a group of the windows it names (each named window first leaves its
+	  group); a pending key joins its group at its saved slot when its window registers, and an open one cannot bring
+	  its group onto an edge another open window / group holds (the group floats — the same rule as one window). The
+	  joining rules hold there too: a named NoTitleBar window, or one whose surface root sits (or is later put) in
+	  another container than the group's, is placed as a plain window as if alone in its node (its own rectangle, else
+	  the node's) and leaves the group; with fewer than two windows left there is no group. An import opens windows
+	  without selecting or focusing them (header STACKING).
 
 	PRESS TO FRONT. A press stops at the first GuiButton / TextBox under the pointer (engine rule): the window frame
 	behind a button, a checkbox or a text box never sees an InputBegan. So the manager listens to ONE global press
@@ -114,13 +167,16 @@
 	or decoration AbsolutePosition / AbsoluteSize rectangle holds the point is focused.
 
 	FOCUS SUCCESSION (Dear ImGui: closing the focused window gives focus to the topmost remaining one). When the focused
-	window is closed or released, the topmost window still open is focused (and raised); none left = `Focused` 0.
+	window is closed or released, the topmost window still open is focused (and raised); none left = `Focused` 0. A
+	group counts as one window (its drawn one): closing the focused tab leaves the focus with the group when another
+	of its tabs is open.
 	"Open" is the window's own state, told by Window through the Compositor port (`Open`), NOT its root's `Visible`:
-	the surface root is also hidden while collapsed (and, later, while another surface of its group is shown), and
+	the surface root is also hidden while collapsed (and while another surface of its tab group is shown), and
 	that must not pass the focus on. Still open = open AND its container on screen (shown, ancestors shown, in a
 	placed LayerCollector). An undecorated window (a hand-made root) keeps the older rule: its root's `Visible` going
 	false is a close, and "still open" = its root on screen. A closed window keeps its slot; when it is opened again
-	it comes to the front WITH the focus (Dear ImGui focuses an appearing window — user decision 2026-10-15). A window
+	it comes to the front WITH the focus (Dear ImGui focuses an appearing window — user decision 2026-10-15), except
+	when a layout import opens it (header STACKING: an import moves nothing to the front). A window
 	that is open from the start does not steal the focus (the line above).
 ]]
 
@@ -139,6 +195,7 @@ local Layout = require("./Layout")
 
 type State<T> = Quad.State<T>
 type Source<T> = Quad.Source<T>
+type GroupView = Decoration.GroupView
 
 export type Slot = {
 	Id: number,
@@ -177,6 +234,26 @@ type Entry = {
 	-- the edge dock (header DOCK): the side it is docked on (nil = floating; kept while closed) and its panel width
 	Side: Source<Side?>,
 	DockWidth: Source<number>,
+	-- the tab group (header TABS): nil = a plain window; View = what its decoration is told
+	Group: Group?,
+	View: Source<GroupView?>,
+	-- its Position / Size Sources hold a rectangle of its own (false: grouped by a load that did not carry one — it
+	-- leaves its group at the group's Size)
+	KeptRect: boolean,
+}
+
+-- one tab of a group: a live window, or a key whose window is not registered (pending)
+type Member = { Key: string?, Entry: Entry? }
+
+-- a tab group (header TABS): one rectangle, one edge, one Collapsed for all its windows
+type Group = {
+	Members: { Member }, -- tab order
+	Selected: Member,
+	Position: UDim2, -- the group's floating outer rectangle
+	Size: Vector2,
+	Collapsed: boolean,
+	Side: Side?,
+	Width: number,
 }
 
 -- the press the strip rule asks about (header DOCK): the window the last global press went to and whether it had
@@ -203,6 +280,23 @@ local function holds(gui: Instance, x: number, y: number): boolean
 	return x >= p.X and y >= p.Y and x < p.X + s.X and y < p.Y + s.Y and Visibility.isOnScreen(g)
 end
 
+local function sameView(a: GroupView?, b: GroupView?): boolean
+	if a == nil or b == nil then
+		return a == b
+	end
+	for k, v in a :: any do
+		if (b :: any)[k] ~= v then
+			return false
+		end
+	end
+	for k in b :: any do
+		if (a :: any)[k] == nil then
+			return false
+		end
+	end
+	return true
+end
+
 function Manager.new(): Manager
 	local nextId = 0
 	local focusedId: Source<number> = q.Source(0)
@@ -227,6 +321,17 @@ function Manager.new(): Manager
 	local keylessNoticed = false
 	local keyless: { [Entry]: string } = {} -- decorated windows without a Key -> their title (for the notice)
 
+	-- TABS (header TABS): the live groups, and the group of each pending key that is a tab of one
+	local groups: { [Group]: true } = {}
+	local pendingGroup: { [string]: Group } = {}
+	-- > 0 while the manager writes a group's shared facts into its windows (their Sync must not echo them back)
+	local quiet = 0
+	-- > 0 while an import writes states: opening a window then neither selects nor focuses it (header STACKING: an
+	-- import moves nothing to the front)
+	local importing = 0
+	-- the Layout output's flush (`refresh`, defined below): pushView holds the output back while it writes the views
+	local flushLayout: () -> ()
+
 	local function remember(key: string)
 		if live[key] == nil and pending[key] == nil then
 			table.insert(known, key)
@@ -241,11 +346,297 @@ function Manager.new(): Manager
 	-- the press the strip rule asks about (header DOCK); nil = the last press went to no window
 	local lastPress: PressRecord? = nil
 
-	-- the open window docked on `side` other than `except` (header DOCK: one open window per edge)
+	-- ── groups (header TABS) ──────────────────────────────────────────────────────────────────────────────────────
+
+	local function isOpenWindow(e: Entry?): boolean
+		local h = if e ~= nil then e.Hints else nil
+		return h ~= nil and h.Open:Get()
+	end
+
+	local function memberOf(g: Group, e: Entry): Member?
+		for _, m in g.Members do
+			if m.Entry == e then
+				return m
+			end
+		end
+		return nil
+	end
+
+	-- the window that draws the group: the selected one when it is live and open, else the first open one, else the
+	-- selected (closed: the whole group is hidden), else any live one
+	local function drawnOf(g: Group): Entry?
+		local selected = g.Selected.Entry
+		if isOpenWindow(selected) then
+			return selected
+		end
+		for _, m in g.Members do
+			if isOpenWindow(m.Entry) then
+				return m.Entry
+			end
+		end
+		if selected ~= nil then
+			return selected
+		end
+		for _, m in g.Members do
+			if m.Entry ~= nil then
+				return m.Entry
+			end
+		end
+		return nil
+	end
+
+	-- the window a press or a focus of `e` means: its group's drawn one
+	local function faceOf(e: Entry): Entry
+		local g = e.Group
+		return if g ~= nil then drawnOf(g) or e else e
+	end
+
+	-- the neighbour that takes the selection when a tab closes or leaves: the next open window from `nextFrom`, else
+	-- the previous open one from `prevFrom` down, else the member now there (the group stays hidden)
+	local function neighbour(g: Group, nextFrom: number, prevFrom: number): Member
+		for i = nextFrom, #g.Members do
+			if isOpenWindow(g.Members[i].Entry) then
+				return g.Members[i]
+			end
+		end
+		for i = prevFrom, 1, -1 do
+			if isOpenWindow(g.Members[i].Entry) then
+				return g.Members[i]
+			end
+		end
+		return g.Members[math.clamp(nextFrom, 1, #g.Members)]
+	end
+
+	local function groupOfKey(key: string): Group?
+		local entry = live[key]
+		if entry ~= nil then
+			return entry.Group
+		end
+		return pendingGroup[key]
+	end
+
+	-- the resize floor of one window (header TABS: a group's is the largest of its windows' per axis)
+	local function floorOf(e: Entry): Vector2
+		local h = e.Hints :: Decoration.Hints
+		local min = h.MinSize
+		if min ~= nil then
+			return min
+		end
+		local fh = h.Style.FrameHeight:Get() * 2
+		return Vector2.new(fh, fh)
+	end
+
+	-- tell every window of `g` where the group is and what it is in it. Every window's view change re-judges the
+	-- layout (its decoration's Changed): held back and flushed once, so a group drag rebuilds the layout once per move
+	local writeViews: (g: Group) -> ()
+	local function pushView(g: Group)
+		if not groups[g] then
+			return
+		end
+		batching += 1
+		local ok, err = pcall(function()
+			writeViews(g)
+		end)
+		batching -= 1
+		if batching == 0 and layoutDirty then
+			flushLayout()
+		end
+		if not ok then
+			error(err, 0)
+		end
+	end
+	writeViews = function(g: Group)
+		local drawn = drawnOf(g)
+		local shown: { Entry } = {}
+		local top = 0
+		local noMove, noResize, noCollapse, noDock = false, false, false, false
+		for _, m in g.Members do
+			local e = m.Entry
+			if e ~= nil then
+				local h = e.Hints :: Decoration.Hints
+				top = math.max(top, e.Rank:Get())
+				noMove = noMove or h.NoMove
+				noDock = noDock or h.NoDock
+				if h.Open:Get() then
+					table.insert(shown, e)
+					noResize = noResize or h.NoResize
+					noCollapse = noCollapse or h.NoCollapse
+				end
+			end
+		end
+		local tabbed = #shown >= 2
+		for _, m in g.Members do
+			local e = m.Entry
+			if e ~= nil then
+				local at = table.find(shown, e)
+				local nextView: GroupView = {
+					Position = g.Position,
+					Size = g.Size,
+					Drawn = e == drawn,
+					Tabbed = tabbed,
+					TabIndex = if tabbed and at ~= nil then at - 1 else nil,
+					TabCount = #shown,
+					TabZ = top * SPAN,
+					NoMove = noMove,
+					NoResize = noResize,
+					NoCollapse = noCollapse,
+					NoDock = noDock,
+				}
+				if not sameView(e.View:Get(), nextView) then
+					e.View:Set(nextView)
+				end
+			end
+		end
+	end
+
+	-- `e` takes `g`'s shared facts (its edge, Collapsed, and the dock width while the group is docked — a floating
+	-- group leaves each window the dock width it keeps) and joins it (no echo through Sync)
+	local function adopt(e: Entry, g: Group)
+		local h = e.Hints :: Decoration.Hints
+		quiet += 1
+		e.Group = g
+		e.Side:SetIfChanged(g.Side)
+		if g.Side ~= nil then
+			e.DockWidth:SetIfChanged(g.Width)
+		end
+		h.Collapsed:SetIfChanged(g.Collapsed)
+		quiet -= 1
+	end
+
+	-- a new group of one window (a drag is about to join it): its rectangle, edge and Collapsed become the group's
+	local function newGroup(target: Entry): Group
+		local h = target.Hints :: Decoration.Hints
+		local m: Member = { Key = liveKey(target), Entry = target }
+		local g: Group = {
+			Members = { m },
+			Selected = m,
+			Position = h.Position:Get(),
+			Size = h.Size:Get(),
+			Collapsed = h.Collapsed:Get(),
+			Side = target.Side:Get(),
+			Width = target.DockWidth:Get(),
+		}
+		groups[g] = true
+		target.KeptRect = true
+		target.Group = g
+		return g
+	end
+
+	-- a group left with one window (open or closed, live or pending) is no group: that window takes the group's
+	-- rectangle into its own Position / Size (it stays where it was) and its edge, and is a plain window again
+	local function dissolveIfSmall(g: Group): boolean
+		if #g.Members >= 2 then
+			return false
+		end
+		groups[g] = nil
+		local m = g.Members[1]
+		if m == nil then
+			return true
+		end
+		local e = m.Entry
+		if e ~= nil then
+			local h = e.Hints :: Decoration.Hints
+			quiet += 1
+			e.Group = nil
+			h.Position:SetIfChanged(g.Position)
+			h.Size:SetIfChanged(g.Size)
+			e.KeptRect = true
+			e.View:Set(nil)
+			quiet -= 1
+		else
+			local key = m.Key :: string
+			pendingGroup[key] = nil
+			local waiting = pending[key]
+			if waiting ~= nil then
+				-- a fresh table: a state is never written in place (an import's own state tables stay what it read)
+				local st = Layout.copyState(waiting)
+				st.Position = Layout.positionOf(g.Position)
+				st.Size = Layout.sizeOf(g.Size)
+				st.Collapsed = g.Collapsed
+				st.Dock = g.Side
+				st.DockWidth = if g.Side ~= nil then g.Width else nil
+				pending[key] = st
+			end
+		end
+		return true
+	end
+
+	-- drop member `at` of `g` (it left, or its window went away for good); the selection moves to a neighbour
+	local function dropMember(g: Group, at: number)
+		local m = table.remove(g.Members, at) :: Member
+		if g.Selected == m and #g.Members > 0 then
+			g.Selected = neighbour(g, at, at - 1)
+		end
+		if not dissolveIfSmall(g) then
+			pushView(g)
+		end
+	end
+
+	-- a live window leaves its group (a tab dragged out, ImportWindow / ImportLayout naming it). `float`: off the
+	-- group's edge too. Without a rectangle of its own it takes the group's Size.
+	local function leave(e: Entry, float: boolean)
+		local g = e.Group
+		if g == nil then
+			return
+		end
+		local m = memberOf(g, e) :: Member
+		local at = table.find(g.Members, m) :: number
+		local h = e.Hints :: Decoration.Hints
+		quiet += 1
+		e.Group = nil
+		if not e.KeptRect then
+			h.Size:SetIfChanged(g.Size)
+			e.KeptRect = true
+		end
+		if float then
+			e.Side:SetIfChanged(nil)
+		end
+		e.View:Set(nil)
+		quiet -= 1
+		dropMember(g, at)
+	end
+
+	-- a pending key leaves its group
+	local function leavePending(key: string)
+		local g = pendingGroup[key]
+		if g == nil then
+			return
+		end
+		pendingGroup[key] = nil
+		for i, m in g.Members do
+			if m.Entry == nil and m.Key == key then
+				dropMember(g, i)
+				return
+			end
+		end
+	end
+
+	-- the group's edge (header DOCK: one group per edge); every window of it follows — and takes the group's dock
+	-- width while it is docked (undocked, each keeps the width it had)
+	local function setGroupSide(g: Group, side: Side?, width: number?)
+		g.Side = side
+		if width ~= nil then
+			g.Width = width
+		end
+		quiet += 1
+		for _, m in g.Members do
+			local e = m.Entry
+			if e ~= nil then
+				if side ~= nil then
+					e.DockWidth:SetIfChanged(g.Width)
+				end
+				e.Side:SetIfChanged(side)
+			end
+		end
+		quiet -= 1
+	end
+
+	-- the open window (or group) docked on `side` other than `except` and its group (header DOCK: one per edge)
 	local function occupant(side: Side, except: Entry?): Entry?
+		local exceptGroup = if except ~= nil then except.Group else nil
 		for _, entry in order do
 			local h = entry.Hints
-			if entry ~= except and h ~= nil and entry.Side:Get() == side and h.Open:Get() then
+			if entry ~= except and (exceptGroup == nil or entry.Group ~= exceptGroup) and h ~= nil and entry.Side:Get() == side and h.Open:Get() then
 				return entry
 			end
 		end
@@ -330,7 +721,20 @@ function Manager.new(): Manager
 
 	local function stateOf(key: string): WindowState
 		local entry = live[key]
-		return if entry ~= nil then snapshot(entry) else pending[key]
+		if entry ~= nil then
+			return snapshot(entry)
+		end
+		local st = pending[key]
+		local g = pendingGroup[key]
+		if g ~= nil then
+			-- a pending tab: its group's shared facts
+			local copy = Layout.copyState(st)
+			copy.Collapsed = g.Collapsed
+			copy.Dock = g.Side
+			copy.DockWidth = if g.Side ~= nil then g.Width else nil
+			return copy
+		end
+		return st
 	end
 
 	-- write a saved state into a window's own Sources (the app's Sources change; the window follows them). The
@@ -362,21 +766,85 @@ function Manager.new(): Manager
 		settle(entry)
 	end
 
-	-- the key saved on each edge: the open window there (none when it has no Key), else the topmost known key whose
-	-- state remembers that edge (a closed or pending one); every other key remembering an edge is saved as floating
-	local function holders(): { [Side]: string }
-		local out: { [Side]: string } = {}
+	-- a window of a group gets its saved state: the group's shared facts, its own kept rectangle when the state has
+	-- one (header TABS — `Windows[key].Position` / `Size`), and its Open. The edge follows `apply`'s rule for the
+	-- whole group: an OPEN window cannot bring its group onto an edge another open window / group holds — the group
+	-- floats; a closed one keeps the edge remembered (header DOCK).
+	local function applyMember(entry: Entry, state: WindowState, g: Group)
+		local h = entry.Hints :: Decoration.Hints
+		quiet += 1
+		entry.Group = g
+		h.Collapsed:SetIfChanged(g.Collapsed)
+		local size, position = state.Size, state.Position
+		if size ~= nil then
+			h.Size:SetIfChanged(Layout.toSize(size))
+		end
+		if position ~= nil then
+			h.Position:SetIfChanged(Layout.toPosition(position))
+		end
+		entry.KeptRect = size ~= nil
+		local side = g.Side
+		if side ~= nil then
+			-- the width that fits this container is the group's (exported as it shows)
+			local deco = entry.Deco
+			if deco ~= nil then
+				g.Width = deco.FitDockWidth(g.Width)
+			end
+			entry.DockWidth:SetIfChanged(g.Width)
+			if state.Open and occupant(side, entry) ~= nil then
+				setGroupSide(g, nil, nil)
+			end
+		end
+		entry.Side:SetIfChanged(g.Side)
+		quiet -= 1
+		h.Open:SetIfChanged(state.Open)
+	end
+
+	-- a window of a layout node (or a pending tab) that cannot be a tab (header TABS: NoTitleBar, another container)
+	-- is placed as if alone in its node: its own rectangle when it has one, else the node's, and the node's edge
+	local function plainState(st: WindowState, position: { number }?, size: { number }?, collapsed: boolean, side: Side?, width: number?): WindowState
+		local out = Layout.copyState(st)
+		out.Position = if st.Position ~= nil then table.clone(st.Position) elseif position ~= nil then table.clone(position) else nil
+		out.Size = if st.Size ~= nil then table.clone(st.Size) elseif size ~= nil then table.clone(size) else nil
+		out.Collapsed = collapsed
+		out.Dock = side
+		out.DockWidth = if side ~= nil then width else nil
+		return out
+	end
+
+	-- `e` may be a tab of a group whose windows sit in `container` (nil = not known yet)
+	local function groupable(e: Entry, container: Instance?): boolean
+		local h, root = e.Hints, e.Root
+		if h == nil or h.NoTitleBar then
+			return false
+		end
+		local parent = if root ~= nil then root.Parent else nil
+		return container == nil or parent == nil or parent == container
+	end
+
+	-- the unit saved on each edge: the open group / window there (none when it has no Key), else the topmost known
+	-- key whose state (or group) remembers that edge; every other unit remembering an edge is saved as floating
+	local function holders(): { [Side]: any }
+		local out: { [Side]: any } = {}
 		for _, side: Side in { "Left" :: Side, "Right" :: Side } do
 			local holder = occupant(side, nil)
 			if holder ~= nil then
-				local key = liveKey(holder)
-				if key ~= nil then
-					out[side] = key
+				local g = holder.Group
+				if g ~= nil then
+					out[side] = g
+				else
+					local key = liveKey(holder)
+					if key ~= nil then
+						out[side] = key
+					end
 				end
 			else
 				for i = #known, 1, -1 do
-					if stateOf(known[i]).Dock == side then
-						out[side] = known[i]
+					local key = known[i]
+					local g = groupOfKey(key)
+					local dock = if g ~= nil then g.Side else stateOf(key).Dock
+					if dock == side then
+						out[side] = g or key
 						break
 					end
 				end
@@ -385,17 +853,111 @@ function Manager.new(): Manager
 		return out
 	end
 
+	-- a group as a saved unit: its keyed windows in tab order (nil when it has none)
+	local function unitOfGroup(g: Group): Layout.Unit?
+		local tabs: { string } = {}
+		local windows: { [string]: Layout.WindowEntry } = {}
+		local kept: { [string]: boolean } = {}
+		local firstOpen: string? = nil
+		for _, m in g.Members do
+			local key = m.Key
+			if key ~= nil then
+				table.insert(tabs, key)
+				local st = stateOf(key)
+				local w: Layout.WindowEntry = { Kind = st.Kind, Open = st.Open }
+				local e = m.Entry
+				kept[key] = if e ~= nil then e.KeptRect else (st.Position ~= nil and st.Size ~= nil)
+				windows[key] = w
+				if firstOpen == nil and st.Open then
+					firstOpen = key
+				end
+			end
+		end
+		if #tabs == 0 then
+			return nil
+		end
+		-- a tab's own rectangle (header TABS): only in a saved node of several tabs (a node the keyless windows leave
+		-- with one tab loads as a plain window at the node's rectangle), and only a window that has one
+		if #tabs >= 2 then
+			for key, w in windows do
+				if kept[key] then
+					local st = stateOf(key)
+					w.Position = st.Position
+					w.Size = st.Size
+				end
+			end
+		end
+		return {
+			Tabs = tabs,
+			Selected = g.Selected.Key or firstOpen or tabs[1],
+			Windows = windows,
+			Collapsed = g.Collapsed,
+			Position = Layout.positionOf(g.Position),
+			Size = Layout.sizeOf(g.Size),
+			Dock = g.Side,
+			Width = if g.Side ~= nil then g.Width else nil,
+		}
+	end
+
+	local function unitOfKey(key: string): Layout.Unit
+		local s = stateOf(key)
+		return {
+			Tabs = { key },
+			Selected = key,
+			Windows = { [key] = { Kind = s.Kind, Open = s.Open } },
+			Collapsed = s.Collapsed,
+			Position = s.Position,
+			Size = s.Size,
+			Dock = s.Dock,
+			Width = s.DockWidth,
+		}
+	end
+
+	local function build(): WindowLayout
+		local tokens = holders()
+		local units: { Layout.Unit } = {}
+		local byToken: { [any]: Layout.Unit } = {}
+		local seen: { [Group]: true } = {}
+		for _, key in known do
+			local g = groupOfKey(key)
+			if g ~= nil then
+				if not seen[g] then
+					seen[g] = true
+					local unit = unitOfGroup(g)
+					if unit ~= nil then
+						table.insert(units, unit)
+						byToken[g] = unit
+					end
+				end
+			else
+				local unit = unitOfKey(key)
+				table.insert(units, unit)
+				byToken[key] = unit
+			end
+		end
+		local holderUnits: { [Side]: Layout.Unit } = {}
+		for side, token in tokens do
+			local unit = byToken[token]
+			if unit ~= nil then
+				holderUnits[side] = unit
+			end
+		end
+		return Layout.build(units, holderUnits)
+	end
+
 	local function refresh()
 		if batching > 0 then
 			layoutDirty = true
 			return
 		end
 		layoutDirty = false
-		local nextLayout = Layout.build(known, stateOf, holders())
+		local nextLayout = build()
 		if not Layout.same(nextLayout, layoutOut:Get()) then
 			layoutOut:Set(Layout.freeze(nextLayout))
 		end
 	end
+
+	flushLayout = refresh
 
 	-- run `body` with the Layout output held back, then emit once (also when body throws: the error goes on)
 	local function batch(body: () -> ())
@@ -405,6 +967,16 @@ function Manager.new(): Manager
 		if batching == 0 and layoutDirty then
 			refresh()
 		end
+		if not ok then
+			error(err, 0)
+		end
+	end
+
+	-- an import's batch: opening a window there neither selects nor focuses it (header STACKING)
+	local function importBatch(body: () -> ())
+		importing += 1
+		local ok, err = pcall(batch, body)
+		importing -= 1
 		if not ok then
 			error(err, 0)
 		end
@@ -421,9 +993,73 @@ function Manager.new(): Manager
 		end
 	end
 
+	-- a group stacks as one lump (header TABS): its live windows sit together, in tab order, where its topmost one is
+	local function gatherOrder()
+		if next(groups) == nil then
+			return
+		end
+		local topOf: { [Group]: number } = {}
+		for i, e in order do
+			local g = e.Group
+			if g ~= nil then
+				topOf[g] = i
+			end
+		end
+		local out: { Entry } = {}
+		for i, e in order do
+			local g = e.Group
+			if g == nil then
+				table.insert(out, e)
+			elseif topOf[g] == i then
+				for _, m in g.Members do
+					if m.Entry ~= nil then
+						table.insert(out, m.Entry)
+					end
+				end
+			end
+		end
+		for i, e in out do
+			order[i] = e
+		end
+	end
+
+	-- the same for the saved order: a group's keys sit together where its topmost key is
+	local function gatherKnown()
+		local topOf: { [Group]: number } = {}
+		for i, key in known do
+			local g = groupOfKey(key)
+			if g ~= nil then
+				topOf[g] = i
+			end
+		end
+		if next(topOf) == nil then
+			return
+		end
+		local out: { string } = {}
+		for i, key in known do
+			local g = groupOfKey(key)
+			if g == nil then
+				table.insert(out, key)
+			elseif topOf[g] == i then
+				for _, m in g.Members do
+					local k = m.Key
+					if k ~= nil and (live[k] ~= nil or pending[k] ~= nil) then
+						table.insert(out, k)
+					end
+				end
+			end
+		end
+		known = out
+	end
+
 	local function renumber()
+		gatherOrder()
 		for i, entry in order do
 			entry.Rank:SetIfChanged(i)
+		end
+		-- (the tabs' ZIndex is the group's top rank)
+		for g in groups do
+			pushView(g)
 		end
 		-- what is on top under a still pointer may have changed (hover looks re-judge)
 		Pointer.invalidate()
@@ -485,22 +1121,80 @@ function Manager.new(): Manager
 		known = out
 	end
 
-	local function focus(entry: Entry)
-		if focusedId:Get() == entry.Id and order[#order] == entry then
+	-- raise to the top with the focus. A window of a group raises the whole group; an OPEN window that is not the
+	-- group's drawn one is selected first (an explicit ask for it: `Open:Set(true)`, `Focused:Set(true)`, its tab)
+	local function focus(target: Entry)
+		local entry = target
+		local g = entry.Group
+		if g ~= nil then
+			if drawnOf(g) ~= entry and isOpenWindow(entry) then
+				g.Selected = memberOf(g, entry) :: Member
+				pushView(g)
+				refresh()
+			end
+			entry = drawnOf(g) or entry
+		end
+		local topEntry = order[#order]
+		local onTop = topEntry == entry or (g ~= nil and topEntry ~= nil and topEntry.Group == g)
+		if focusedId:Get() == entry.Id and onTop then
 			return -- already focused AND on top (a newer registration may cover a focused window)
 		end
-		local at = table.find(order, entry)
-		if at == nil then
+		if table.find(order, entry) == nil then
 			return -- released
 		end
-		table.remove(order, at)
-		table.insert(order, entry)
+		local lump: { Entry } = {}
+		if g ~= nil then
+			for _, m in g.Members do
+				if m.Entry ~= nil then
+					table.insert(lump, m.Entry)
+				end
+			end
+		else
+			lump = { entry }
+		end
+		for _, e in lump do
+			local at = table.find(order, e)
+			if at ~= nil then
+				table.remove(order, at)
+			end
+		end
+		for _, e in lump do
+			table.insert(order, e)
+		end
 		renumber()
-		-- a keyed window raised: its key goes to the top of the saved order (header STACKING)
-		local key = liveKey(entry)
-		if key ~= nil and known[#known] ~= key then
-			table.remove(known, table.find(known, key) :: number)
-			table.insert(known, key)
+		-- a keyed window raised: its key goes to the top of the saved order (header STACKING), a group's keys together
+		-- (its pending tabs' too)
+		local keys: { string } = {}
+		if g ~= nil then
+			for _, m in g.Members do
+				local key = m.Key
+				if key ~= nil and table.find(known, key) ~= nil then
+					table.insert(keys, key)
+				end
+			end
+		else
+			local key = liveKey(entry)
+			if key ~= nil then
+				table.insert(keys, key)
+			end
+		end
+		local n = #keys
+		local already = n > 0 and #known >= n
+		if already then
+			for i = 1, n do
+				if known[#known - n + i] ~= keys[i] then
+					already = false
+					break
+				end
+			end
+		end
+		if n > 0 and not already then
+			for _, key in keys do
+				table.remove(known, table.find(known, key) :: number)
+			end
+			for _, key in keys do
+				table.insert(known, key)
+			end
 			refresh()
 		end
 		focusedId:SetIfChanged(entry.Id) -- (a focused window that was only covered: the rank changed, the focus did not)
@@ -520,11 +1214,13 @@ function Manager.new(): Manager
 		return open:Get() and container ~= nil and Visibility.isOnScreen(container)
 	end
 
-	-- the focused window went away (closed or released): the topmost window still open takes the focus
+	-- the focused window went away (closed or released): the topmost window still open takes the focus (a group is one
+	-- window: its drawn one)
 	local function succeed()
 		for i = #order, 1, -1 do
-			if isOpen(order[i]) then
-				focus(order[i])
+			local target = faceOf(order[i])
+			if isOpen(target) then
+				focus(target)
 				return
 			end
 		end
@@ -558,10 +1254,12 @@ function Manager.new(): Manager
 		return nil
 	end
 
-	-- a press went to `entry`: remember whether it had the focus before (the strip rule), then focus it
+	-- a press went to `entry`: remember whether it had the focus before (the strip rule), then focus it. A press on
+	-- any part of a group (a tab included) focuses the group's drawn window: selecting a tab is the tab's own press
 	local function pressed(entry: Entry)
-		lastPress = { Entry = entry, WasFocused = focusedId:Get() == entry.Id }
-		focus(entry)
+		local target = faceOf(entry)
+		lastPress = { Entry = target, WasFocused = focusedId:Get() == target.Id }
+		focus(target)
 	end
 
 	local function onPress(input: InputObject)
@@ -629,6 +1327,176 @@ function Manager.new(): Manager
 		end
 	end
 
+	-- a tab whose surface root is put in another container than its group's other windows (an import or a pending
+	-- tab grouped it before its root had a parent, or the app moved it) leaves the group as a plain window: its own
+	-- kept rectangle, or the group's (header TABS)
+	local function leaveIfElsewhere(e: Entry)
+		local g, root = e.Group, e.Root
+		local container = if root ~= nil then root.Parent else nil
+		if g == nil or container == nil then
+			return
+		end
+		for _, m in g.Members do
+			local other = m.Entry
+			local otherRoot = if other ~= nil then other.Root else nil
+			local otherContainer = if otherRoot ~= nil then otherRoot.Parent else nil
+			if other ~= e and otherContainer ~= nil and otherContainer ~= container then
+				local h = e.Hints :: Decoration.Hints
+				if not e.KeptRect then
+					h.Position:SetIfChanged(g.Position)
+				end
+				leave(e, true)
+				renumber()
+				refresh()
+				return
+			end
+		end
+	end
+
+	-- ── joining (header TABS) ─────────────────────────────────────────────────────────────────────────────────────
+
+	-- `e` may be joined by a drag from `container`: a decorated window with a title bar there, open, expanded, drawn
+	local function joinable(e: Entry, container: Instance): boolean
+		local h, deco, root = e.Hints, e.Deco, e.Root
+		if h == nil or deco == nil or root == nil or h.NoTitleBar or root.Parent ~= container then
+			return false
+		end
+		if not h.Open:Get() or h.Collapsed:Get() then
+			return false
+		end
+		local g = e.Group
+		return g == nil or drawnOf(g) == e
+	end
+
+	-- the window / group under the pointer a drag of `entry` would join, and how (header TABS)
+	local function dropAt(entry: Entry, x: number, y: number): Decoration.Drop?
+		local root = entry.Root
+		local container = if root ~= nil then root.Parent else nil
+		if container == nil then
+			return nil
+		end
+		local own = entry.Group
+		-- the first window from the top with something on screen under the pointer decides (its drawn frame, tabs,
+		-- icon, strip or surface; a group's hidden windows show nothing): only a joinable one is judged, anything else
+		-- covers what is under it
+		for i = #order, 1, -1 do
+			local e = order[i]
+			local eRoot = e.Root
+			if e ~= entry and (own == nil or e.Group ~= own) and eRoot ~= nil and eRoot.Parent == container then
+				local hit = holds(eRoot, x, y)
+				local deco = e.Deco
+				if not hit and deco ~= nil then
+					for _, part in deco.Parts do
+						if holds(part, x, y) then
+							hit = true
+							break
+						end
+					end
+				end
+				if hit then
+					if deco == nil or not joinable(e, container) or not holds(deco.Frame, x, y) then
+						return nil
+					end
+					local f = deco.Frame
+					local p, s = f.AbsolutePosition, f.AbsoluteSize
+					if y < p.Y + deco.RowHeight() then
+						return { Target = e, Index = deco.InsertAt(x), Frame = f }
+					end
+					local fx, fy = (x - p.X) / s.X, (y - p.Y) / s.Y
+					local lo, hi = Decoration.CENTRE_LO, Decoration.CENTRE_HI
+					if fx >= lo and fx <= hi and fy >= lo and fy <= hi then
+						return { Target = e, Index = nil, Frame = f }
+					end
+					return nil -- a band: kept for splits
+				end
+			end
+		end
+		return nil
+	end
+
+	-- the group holding `side` (header TABS: a held edge joins), when a drag of `entry` may join it
+	local function edgeJoin(entry: Entry, side: Side): Decoration.Drop?
+		local root = entry.Root
+		local container = if root ~= nil then root.Parent else nil
+		local holder = occupant(side, entry)
+		if holder == nil or container == nil then
+			return nil
+		end
+		local target = faceOf(holder)
+		if not joinable(target, container) then
+			return nil
+		end
+		return { Target = target, Index = nil, Frame = (target.Deco :: Decoration.Decoration).Frame }
+	end
+
+	-- the position in `g.Members` before the `index`-th shown (open, live) tab; nil or past the last = the end
+	local function insertionPoint(g: Group, index: number?): number
+		if index == nil then
+			return #g.Members + 1
+		end
+		local shownAt = 0
+		for i, m in g.Members do
+			if isOpenWindow(m.Entry) then
+				if shownAt == index then
+					return i
+				end
+				shownAt += 1
+			end
+		end
+		return #g.Members + 1
+	end
+
+	-- `entry` (a window, or the whole group it draws) joins the target's group (made when the target is plain)
+	local function join(entry: Entry, drop: Decoration.Drop)
+		local target: Entry = drop.Target
+		local from = entry.Group
+		if target == entry or (from ~= nil and target.Group == from) or table.find(order, target) == nil then
+			return
+		end
+		local moving: { Member }
+		local selected: Member
+		if from ~= nil then
+			-- a whole group joins with all its tabs in order
+			moving = from.Members
+			selected = memberOf(from, faceOf(entry)) or from.Selected
+			groups[from] = nil
+			for _, m in moving do
+				local e = m.Entry
+				if e ~= nil then
+					e.Group = nil
+				else
+					pendingGroup[m.Key :: string] = nil
+				end
+			end
+		else
+			local alone: Member = { Key = liveKey(entry), Entry = entry }
+			selected = alone
+			moving = { alone }
+			entry.KeptRect = true
+		end
+		local g = target.Group or newGroup(target)
+		local at = insertionPoint(g, drop.Index)
+		for i, m in moving do
+			table.insert(g.Members, at + i - 1, m)
+		end
+		for _, m in moving do
+			local e = m.Entry
+			if e ~= nil then
+				adopt(e, g)
+			else
+				pendingGroup[m.Key :: string] = g
+			end
+		end
+		g.Selected = selected
+		gatherKnown()
+		renumber()
+		local face = drawnOf(g)
+		if face ~= nil then
+			focus(face)
+		end
+		refresh()
+	end
+
 	local focusedOut: State<number> = focusedId
 	local layoutState: State<WindowLayout> = layoutOut
 	local manager: Manager = {
@@ -637,10 +1505,10 @@ function Manager.new(): Manager
 		ExportLayout = function(_self: Manager): WindowLayout
 			layoutUsed = true
 			noticeKeyless()
-			return Layout.build(known, stateOf, holders())
+			return build()
 		end,
 		ImportLayout = function(_self: Manager, layout: WindowLayout, factories: { [string]: (key: string) -> () }?)
-			local keys, states = Layout.read("WindowManager:ImportLayout", layout)
+			local keys, states, nodes = Layout.read("WindowManager:ImportLayout", layout)
 			if factories ~= nil and type(factories) ~= "table" then
 				Util.fail("WindowManager:ImportLayout", `factories must be a table \{ [Kind] = function(key) }, got {typeof(factories)}`)
 			end
@@ -654,7 +1522,19 @@ function Manager.new(): Manager
 			end
 			layoutUsed = true
 			noticeKeyless()
-			batch(function()
+			importBatch(function()
+				-- every named key leaves the group it is in: the layout says where it goes (a group left with one
+				-- window it does not name becomes that plain window, where it was). First, before any of this layout's
+				-- states is stored: a group dissolving here writes the window it leaves behind, never a state this
+				-- import hands in.
+				for _, key in keys do
+					local entry = live[key]
+					if entry ~= nil then
+						leave(entry, false)
+					else
+						leavePending(key)
+					end
+				end
 				-- any key without a window waits for it (known and pending together: an app Source that throws in the
 				-- loop below leaves no known key without a state)
 				for _, key in keys do
@@ -672,19 +1552,120 @@ function Manager.new(): Manager
 						entry.Side:SetIfChanged(nil)
 					end
 				end
-				-- a window already on screen moves to its saved place (one an app Source destroyed meanwhile waits)
-				for _, key in keys do
+				-- one key placed as a plain window (a node of one tab, or a window that cannot be a tab)
+				local function place(key: string, state: WindowState)
 					local entry = live[key]
 					if entry ~= nil then
-						apply(entry, states[key])
+						apply(entry, state)
 					else
-						pending[key] = states[key]
+						pending[key] = state
 					end
 				end
-				-- the stacking after the moves (opening a closed window above raised it) and before the factories (a
-				-- window a factory makes takes its place by `known` as it registers, so a factory that throws leaves
-				-- the order applied)
+				-- a window already on screen moves to its saved place (one an app Source destroyed meanwhile waits); a
+				-- node of several tabs becomes a group (header TABS) of the windows that may be tabs together
+				for _, node in nodes do
+					if #node.Tabs == 1 then
+						place(node.Tabs[1], states[node.Tabs[1]])
+						continue
+					end
+					-- the group's container: its selected window's when on screen, else the first one's
+					local container: Instance? = nil
+					local order_ = { node.Selected }
+					for _, key in node.Tabs do
+						table.insert(order_, key)
+					end
+					for _, key in order_ do
+						local e = live[key]
+						local root = if e ~= nil then e.Root else nil
+						if e ~= nil and groupable(e, nil) and root ~= nil and root.Parent ~= nil then
+							container = root.Parent
+							break
+						end
+					end
+					local tabs: { string } = {}
+					local loose: { string } = {}
+					for _, key in node.Tabs do
+						local e = live[key]
+						if e == nil or groupable(e, container) then
+							table.insert(tabs, key)
+						else
+							table.insert(loose, key)
+						end
+					end
+					if #tabs < 2 then
+						for _, key in tabs do
+							table.insert(loose, key)
+						end
+						tabs = {}
+					end
+					for _, key in loose do
+						place(key, plainState(states[key], node.Position, node.Size, node.Collapsed, node.Dock, node.Width))
+					end
+					if #tabs == 0 then
+						continue
+					end
+					local fallback: Entry? = nil
+					for _, key in tabs do
+						fallback = fallback or live[key]
+					end
+					local fh = if fallback ~= nil then fallback.Hints else nil
+					local nodePosition, nodeSize = node.Position, node.Size
+					local g: Group = {
+						Members = {},
+						Selected = nil :: any,
+						-- (an edge group without a floating rectangle: a window's own, or Window's default)
+						Position = if nodePosition ~= nil
+							then Layout.toPosition(nodePosition)
+							elseif fh ~= nil then fh.Position:Get()
+							else Layout.toPosition(Layout.DEFAULT_POSITION),
+						Size = if nodeSize ~= nil
+							then Layout.toSize(nodeSize)
+							elseif fh ~= nil then fh.Size:Get()
+							else Layout.toSize(Layout.DEFAULT_SIZE),
+						Collapsed = node.Collapsed,
+						Side = node.Dock,
+						Width = node.Width or 0,
+					}
+					local selected: Member? = nil
+					for _, key in tabs do
+						local m: Member = { Key = key, Entry = live[key] }
+						table.insert(g.Members, m)
+						if key == node.Selected then
+							selected = m
+						end
+					end
+					g.Selected = selected or g.Members[1]
+					groups[g] = true
+					for _, m in g.Members do
+						local e = m.Entry
+						if e ~= nil then
+							e.Group = g
+						else
+							pendingGroup[m.Key :: string] = g
+						end
+					end
+					-- (applyMember keeps an open group off an edge another open window / group holds — header DOCK)
+					for _, m in g.Members do
+						local e = m.Entry
+						if e ~= nil then
+							applyMember(e, states[m.Key :: string], g)
+						end
+					end
+					-- every window on the group's (fitted) dock width
+					if g.Side ~= nil then
+						setGroupSide(g, g.Side, g.Width)
+					end
+					pushView(g)
+					for _, m in g.Members do
+						if m.Entry ~= nil then
+							settle(m.Entry)
+						end
+					end
+				end
+				-- the stacking after the moves and before the factories (a window a factory makes takes its place by
+				-- `known` as it registers, so a factory that throws leaves the order applied)
 				stackAs(keys)
+				gatherKnown()
 				restack()
 				layoutDirty = true
 				-- "make the window of this identity exist": only for keys open when saved, never for a registered one;
@@ -710,8 +1691,10 @@ function Manager.new(): Manager
 			if entry ~= nil then
 				return snapshot(entry)
 			end
-			local waiting = pending[key]
-			return if waiting ~= nil then Layout.copyState(waiting) else nil
+			if pending[key] ~= nil then
+				return Layout.copyState(stateOf(key))
+			end
+			return nil
 		end,
 		ImportWindow = function(_self: Manager, key: string, state: WindowState)
 			if type(key) ~= "string" then
@@ -720,15 +1703,21 @@ function Manager.new(): Manager
 			local copy = Layout.readState("WindowManager:ImportWindow", state)
 			layoutUsed = true
 			noticeKeyless()
-			batch(function()
+			importBatch(function()
 				forgetting[key] = nil
 				local entry = live[key]
+				-- a window's own state knows no group: a grouped window leaves its group first (header TABS), and
+				-- out of its lump (its ZIndex no longer between its old group's)
 				if entry ~= nil then
+					leave(entry, false)
+					renumber()
 					apply(entry, copy)
 				else
+					leavePending(key)
 					remember(key)
 					pending[key] = copy
 				end
+				gatherKnown()
 				layoutDirty = true
 			end)
 		end,
@@ -741,6 +1730,7 @@ function Manager.new(): Manager
 			if live[key] ~= nil then
 				forgetting[key] = true -- dropped when its window goes away (Release)
 			elseif pending[key] ~= nil then
+				leavePending(key)
 				pending[key] = nil
 				table.remove(known, table.find(known, key) :: number)
 				refresh()
@@ -761,6 +1751,9 @@ function Manager.new(): Manager
 				Kind = "",
 				Side = q.Source(nil :: Side?),
 				DockWidth = q.Source(0),
+				Group = nil,
+				View = q.Source(nil :: GroupView?),
+				KeptRect = true,
 			}
 			table.insert(order, entry)
 			local isFocused: State<boolean> = focusedId:Compute(function(self)
@@ -779,9 +1772,11 @@ function Manager.new(): Manager
 					return
 				end
 				deco.SetParent(root.Parent)
+				leaveIfElsewhere(entry)
 				settle(entry)
 				parentConn = root:GetPropertyChangedSignal("Parent"):Connect(function()
 					deco.SetParent(root.Parent)
+					leaveIfElsewhere(entry) -- a tab put in another container than its group's is no tab (header TABS)
 					settle(entry) -- moved to another container: a docked window walls that one now, a floating one meets its strips
 				end)
 			end
@@ -828,7 +1823,6 @@ function Manager.new(): Manager
 						return
 					end
 					table.remove(order, at)
-					renumber()
 					Compositor.unbind(slot, entry.Root)
 					if entry.Root ~= nil then
 						entry.Root = nil
@@ -846,8 +1840,10 @@ function Manager.new(): Manager
 					-- a keyed window that goes away leaves its last state pending (an app tearing its UI down and building
 					-- it again gets its windows back where they were; the Layout output does not change, except when a
 					-- docked window leaves its edge to another key that remembers it — below) — unless the app asked to
-					-- forget it
+					-- forget it. A keyed tab stays a (pending) tab of its group; any other leaves it (header TABS).
 					local key = entry.Key
+					local g = entry.Group
+					local stays = false
 					if key ~= nil and live[key] == entry then
 						live[key] = nil
 						if forgetting[key] then
@@ -855,9 +1851,28 @@ function Manager.new(): Manager
 							table.remove(known, table.find(known, key) :: number)
 							refresh()
 						else
-							pending[key] = snapshot(entry)
+							local st = snapshot(entry)
+							if g ~= nil and not entry.KeptRect then
+								st.Position = nil
+								st.Size = nil
+							end
+							pending[key] = st
+							stays = g ~= nil
 						end
 					end
+					if g ~= nil then
+						entry.Group = nil
+						local m = memberOf(g, entry) :: Member
+						if stays then
+							m.Entry = nil
+							pendingGroup[key :: string] = g
+							pushView(g)
+						else
+							dropMember(g, table.find(g.Members, m) :: number)
+						end
+						refresh()
+					end
+					renumber()
 					keyless[entry] = nil
 					local record = lastPress
 					if record ~= nil and record.Entry == entry then
@@ -892,13 +1907,32 @@ function Manager.new(): Manager
 						entry.Kind = hints.Kind or key
 						entry.Hints = hints
 						-- a state waiting for this key (ImportLayout / ImportWindow before the window existed) is its
-						-- initial state: written into its Sources before anything is built from them
+						-- initial state: written into its Sources before anything is built from them. A pending tab
+						-- takes its place in its group (header TABS).
 						local waiting = pending[key]
 						remember(key)
 						live[key] = entry
 						if waiting ~= nil then
 							pending[key] = nil
-							apply(entry, waiting)
+							local g = pendingGroup[key]
+							if g ~= nil and hints.NoTitleBar then
+								-- a window that cannot be a tab (header TABS) is placed as if alone in its node, and
+								-- its tab is dropped
+								local plain = plainState(waiting, Layout.positionOf(g.Position), Layout.sizeOf(g.Size), g.Collapsed, g.Side, g.Width)
+								leavePending(key)
+								apply(entry, plain)
+							elseif g ~= nil then
+								pendingGroup[key] = nil
+								for _, m in g.Members do
+									if m.Entry == nil and m.Key == key then
+										m.Entry = entry
+										break
+									end
+								end
+								applyMember(entry, waiting, g)
+							else
+								apply(entry, waiting)
+							end
 						end
 						-- its place among the keyed windows (header STACKING)
 						restack()
@@ -927,15 +1961,27 @@ function Manager.new(): Manager
 							return occupant(side, entry) ~= nil
 						end,
 						-- (refresh also for a window without a Key: who holds an edge decides where the keyed windows that remember
-						-- it are saved; an unchanged layout emits nothing)
+						-- it are saved; an unchanged layout emits nothing). A group docks and undocks as one.
 						Dock = function(side: Side, width: number)
-							entry.DockWidth:SetIfChanged(width)
-							entry.Side:SetIfChanged(side)
+							local g = entry.Group
+							if g ~= nil then
+								setGroupSide(g, side, width)
+								pushView(g)
+							else
+								entry.DockWidth:SetIfChanged(width)
+								entry.Side:SetIfChanged(side)
+							end
 							settle(entry)
 							refresh()
 						end,
 						Undock = function()
-							entry.Side:SetIfChanged(nil)
+							local g = entry.Group
+							if g ~= nil then
+								setGroupSide(g, nil, nil)
+								pushView(g)
+							else
+								entry.Side:SetIfChanged(nil)
+							end
 							refresh()
 						end,
 						Insets = function(): (number, number)
@@ -949,6 +1995,97 @@ function Manager.new(): Manager
 							end
 							return isFocused:Get()
 						end,
+						Group = entry.View,
+						SetRect = function(position: UDim2?, size: Vector2?)
+							local g = entry.Group
+							if g == nil then
+								return
+							end
+							if position ~= nil then
+								g.Position = position
+							end
+							if size ~= nil then
+								g.Size = size
+							end
+							pushView(g)
+						end,
+						MinSize = function(): Vector2
+							local g = entry.Group
+							if g == nil then
+								return floorOf(entry)
+							end
+							local x, y = 0, 0
+							for _, m in g.Members do
+								local e = m.Entry
+								if e ~= nil then
+									local f = floorOf(e)
+									x, y = math.max(x, f.X), math.max(y, f.Y)
+								end
+							end
+							return Vector2.new(x, y)
+						end,
+						DropAt = function(x: number, y: number): Decoration.Drop?
+							return dropAt(entry, x, y)
+						end,
+						EdgeJoin = function(side: Side): Decoration.Drop?
+							return edgeJoin(entry, side)
+						end,
+						Join = function(drop: Decoration.Drop)
+							join(entry, drop)
+						end,
+						SelectTab = function()
+							local g = entry.Group
+							if g ~= nil and isOpenWindow(entry) then
+								focus(entry)
+							end
+						end,
+						MoveTab = function(index: number)
+							local g = entry.Group
+							if g == nil then
+								return
+							end
+							local m = memberOf(g, entry) :: Member
+							local from = table.find(g.Members, m) :: number
+							table.remove(g.Members, from)
+							local at = insertionPoint(g, index)
+							table.insert(g.Members, at, m)
+							if at ~= from then
+								gatherKnown()
+								renumber()
+								refresh()
+							end
+						end,
+						DetachTab = function()
+							leave(entry, true)
+							renumber()
+							refresh()
+						end,
+						Sync = function()
+							local g = entry.Group
+							if quiet > 0 or g == nil then
+								return
+							end
+							-- (the dock width is the group's only while it is docked)
+							local docked = g.Side ~= nil
+							local c = hints.Collapsed:Get()
+							local w = if docked then entry.DockWidth:Get() else g.Width
+							if c == g.Collapsed and w == g.Width then
+								return
+							end
+							g.Collapsed = c
+							g.Width = w
+							quiet += 1
+							for _, m in g.Members do
+								local e = m.Entry
+								if e ~= nil and e ~= entry then
+									(e.Hints :: Decoration.Hints).Collapsed:SetIfChanged(c)
+									if docked then
+										e.DockWidth:SetIfChanged(w)
+									end
+								end
+							end
+							quiet -= 1
+						end,
 					})
 					entry.Deco = deco
 					entry.Open = hints.Open
@@ -961,6 +2098,26 @@ function Manager.new(): Manager
 				setOpen = function(open: boolean)
 					Pointer.invalidate()
 					local wasDocked = entry.Side:Get() ~= nil
+					local g = entry.Group
+					if g ~= nil then
+						local m = memberOf(g, entry) :: Member
+						if open then
+							-- back in its group at its tab, selected (header TABS; an import selects nothing — its saved
+							-- selection stands); a group whose edge another one took while all its windows were closed opens
+							-- floating
+							if importing == 0 then
+								g.Selected = m
+							end
+							local at = g.Side
+							if at ~= nil and occupant(at, entry) ~= nil then
+								setGroupSide(g, nil, nil)
+							end
+						elseif g.Selected == m then
+							local i = table.find(g.Members, m) :: number
+							g.Selected = neighbour(g, i + 1, i - 1)
+						end
+						pushView(g)
+					end
 					if open then
 						-- a docked window opening again goes back to its edge, unless another open window took it meanwhile: then it
 						-- opens floating, at its kept Position / Size (header DOCK)
@@ -969,12 +2126,22 @@ function Manager.new(): Manager
 							entry.Side:Set(nil)
 						end
 						settle(entry)
-						focus(entry) -- opened (or asked again with `Open:Set(true)`): to the front with the focus
+						-- opened (or asked again with `Open:Set(true)`): to the front with the focus — not when an import
+						-- opened it (header STACKING: an import moves nothing to the front)
+						if importing == 0 then
+							focus(entry)
+						end
 					elseif focusedId:Get() == id then
-						succeed()
+						-- a closed tab leaves the focus with its group when another of its windows is open
+						local face = if g ~= nil then drawnOf(g) else nil
+						if face ~= nil and isOpenWindow(face) then
+							focus(face)
+						else
+							succeed()
+						end
 					end
-					if wasDocked then
-						refresh() -- an edge freed or taken again (see Dock above)
+					if wasDocked or g ~= nil then
+						refresh() -- an edge freed or taken again (see Dock above), or a group's selection moved
 					end
 				end,
 				parts = function(): { Instance }

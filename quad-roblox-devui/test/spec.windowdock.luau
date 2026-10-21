@@ -320,7 +320,7 @@ H.section("not offered: NoDock (a layout still docks it), an edge held by an ope
 	local nd = Devui.Window({ Title = "N", Key = "n", Manager = m, NoDock = true })
 	nd.Parent = container
 	dragTitle(nd, 100, 70, { { 3, 70 } }, true)
-	assert(part(nd, "WindowDockPreview") == nil, "NoDock: no preview part")
+	assert(part(nd, "WindowDockPreview") ~= nil and previewOf(nd) == nil, "NoDock: no edge preview (the part is there for tab joins)")
 	UIS.InputEnded:Fire(mouse(M1, 3, 70, Enum.UserInputState.End), false)
 	assert(part(nd, "WindowDockStrip").Visible == false, "NoDock: not docked")
 	m:ImportWindow("n", { Kind = "n", Open = true, Collapsed = false, Dock = "Left", DockWidth = 200 })
@@ -328,9 +328,11 @@ H.section("not offered: NoDock (a layout still docks it), an edge held by an ope
 	local other = Devui.Window({ Title = "O", Manager = m })
 	other.Parent = container
 	dragTitle(other, 300, 70, { { 3, 70 } }, true)
-	assert(previewOf(other) == nil, "the edge is held: no preview")
-	UIS.InputEnded:Fire(mouse(M1, 3, 70, Enum.UserInputState.End), false)
-	assert(part(other, "WindowDockStrip").Visible == false, "and no dock")
+	-- (docking stage 3: a held edge offers joining its group as a tab — the preview covers that panel; spec.windowtabs)
+	local held = previewOf(other)
+	assert(held ~= nil and held.Position == part(nd, "WindowDecoration").Position, "the edge is held: the join preview over its panel")
+	UIS.WindowFocusReleased:Fire() -- cancel the drag
+	assert(previewOf(other) == nil and part(other, "WindowDockStrip").Visible == false, "cancelled: no dock, no join")
 	-- the collapsed icon never docks
 	local iconWin = Devui.Window({ Title = "I", Manager = m, Collapsed = q.Source(true) })
 	iconWin.Parent = container

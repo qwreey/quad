@@ -9,13 +9,15 @@
 			Size: Source<Vector2>?,             -- pixels; two-way: the resize grip writes it (default 300 x 200)
 			Open: Source<boolean>?,             -- the close button sets it false (unless OnCloseRequest is given); every `:Set(true)` shows the window AND brings it
 			                                    -- to the front with the focus (also when it is already open — `:SetIfChanged(true)`
-			                                    -- only syncs the state without raising)
+			                                    -- only syncs the state without raising; a layout import that opens it does
+			                                    -- not raise it — Manager header STACKING)
 			Focused: Source<boolean>?,          -- two-way: the window writes whether it is the focused one; set true to raise
 			                                    -- and focus it, false to drop its focus (no window focused)
 			AvailableSize: Source<Vector2>?,    -- output: the room the children get (visible content area minus padding)
 			Collapsed: Source<boolean>?,        -- the arrow sets it; collapsed = a small icon (press: expand, drag: move)
 			NoTitleBar / NoResize / NoMove / NoClose / NoCollapse: boolean?,   -- static flags
-			NoDock: boolean?,                   -- static: dragging the title bar to a screen edge does not dock it (a layout may)
+			NoDock: boolean?,                   -- static: dragging the title bar to a screen edge does not dock it (a layout may;
+			                                    -- it still joins tab groups)
 			OnCloseRequest: (() -> ())?,        -- given: the close button only calls it and leaves Open alone — the app decides
 			                                    -- (ask in a dialog, then `Open:Set(false)`, destroy, `ForgetWindow`); nil: it closes
 			MinSize: Vector2?,                  -- resize floor (default 2 x frame height square)
@@ -45,7 +47,7 @@
 	left or right edge of the container (a preview shows) and release: the window docks there — a strip over the
 	container's full height at the edge (`WindowDockStrip`, floating windows of that container never enter it) and the
 	panel right inside it, as wide as the dock width and as tall as the container (below the Roblox top bar when the
-	container reaches under it). One open window per edge. Pressing the strip expands a collapsed panel (and focuses
+	container reaches under it). One open window or tab group per edge (a drag to a held edge joins its group). Pressing the strip expands a collapsed panel (and focuses
 	it), focuses an expanded one without the focus, and collapses the focused one (`Collapsed`: the panel hides, the
 	strip stays). A handle on the panel's inner edge (`WindowDockResize`) sets the width; dragging the title bar off the
 	edge makes the window float again. While docked, `Position` / `Size` keep the FLOATING rectangle (an app writing
@@ -54,10 +56,20 @@
 	`NoDock` stops the drag from docking (a layout may still dock it); `NoMove` stops docking and undocking by drag.
 	Rules in Window/Decoration.luau header "DOCKED" and Window/Manager header "DOCK".
 
+	TAB GROUPS [2026-10-21 user decisions — docking stage 3]: drag a window's title bar onto another window of the same
+	manager and container — its title bar (where among the tabs) or its centre (the last tab), a preview shows — and
+	release: both become one GROUP, one rectangle with a tab strip in the title bar's place (`WindowTab` per window,
+	shown while two or more are open), only the selected window's surface shown. Press a tab to select it, drag it
+	along the strip to reorder, drag it out of the strip to take the window out (it floats at its own size under the
+	pointer and the drag goes on). While grouped, `Position` / `Size` keep the window's own rectangle from before it
+	joined (the group's rectangle is the manager's); closing a tab hides it and keeps its slot (`Open:Set(true)` brings
+	it back there, selected); `Collapsed` is the whole group's (the selected window's icon). NoTitleBar windows never
+	group; NoDock does not stop grouping. Rules in Window/Manager header "TABS" and Window/Decoration.luau "TABS".
+
 	SAVING THE LAYOUT: give a window `Key` (its identity — unique among its manager's live windows, a duplicate raises)
 	and optionally `Kind` (its type, default = the Key; two windows of one type get the same Kind and different Keys).
-	The manager then exports / imports its Position, Size, Open and Collapsed as plain JSON-ready tables (Window/Manager
-	header "LAYOUT"). A window without a Key works the same and is just left out of the layout.
+	The manager then exports / imports its Position, Size, Open and Collapsed, its edge and its tab group as plain
+	JSON-ready tables (Window/Manager header "LAYOUT"). A window without a Key works the same and is just left out of the layout.
 
 	FILLING THE HEIGHT [2026-10-20, Studio-confirmed]: give one child `q.Elem "UIFlexItem" ({ FlexMode = Enum.UIFlexMode.Fill })`
 	and it takes the height the other children leave (the content list is a UIListLayout): a 300 x 300 window gave a
@@ -75,7 +87,7 @@
 	destroy). Pressing anywhere in the window — a button, a text box or any other widget in it, or its decoration —
 	focuses it (raises it to the front): the manager's one global press listener (Manager header "PRESS TO FRONT").
 	Closing the focused window passes the focus to the topmost open one; opening it again brings it to the front with
-	the focus — the window reports its `Open` state to the manager (collapsing hides the root but is not a close). A
+	the focus (not when a layout import opens it) — the window reports its `Open` state to the manager (collapsing hides the root but is not a close). A
 	press on the window's empty area stops at an invisible full-cover `ClickSink` button in the decoration frame, right
 	under the surface, instead of falling through to a widget of a window beneath. Staying on screen while dragging and
 	when the container shrinks: Window/Decoration.luau header "STAYING ON SCREEN".
