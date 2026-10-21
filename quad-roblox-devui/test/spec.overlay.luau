@@ -74,6 +74,41 @@ H.section("a press on the content's empty area does not close the popup: a sink 
 	H.assertNoDebugOutput("click sink")
 end)
 
+H.section("wheel: while the pointer is over a popup that takes input, the gui's ScrollingFrames outside the layer stop scrolling", function()
+	local screen = Instance.new("ScreenGui")
+	screen.Parent = Instance.new("Folder")
+	local list: any = Instance.new("ScrollingFrame")
+	list.ScrollingEnabled = true
+	list.Parent = screen
+	local off = Instance.new("ScrollingFrame")
+	off.ScrollingEnabled = false -- (already off: left off afterwards)
+	off.Parent = screen
+	local o = Overlay.new()
+	o.Layer.Parent = screen
+	H.setAbs(o.Layer, 0, 0, 800, 600)
+	local UIS = H.UserInputService
+	local function move(x: number, y: number)
+		H.setMouse(x, y)
+		UIS.InputChanged:Fire(H.input({ UserInputType = Enum.UserInputType.MouseMovement }), false)
+	end
+	local p = o:Open({ Content = Frame({}), Position = Vector2.new(100, 100) })
+	H.setAbs(p.Holder, 100, 100, 50, 40)
+	local tip = o:Open({ Content = Frame({}), Position = Vector2.new(400, 400), CloseOnClickOutside = false })
+	H.setAbs(tip.Holder, 400, 400, 50, 40)
+	move(120, 110)
+	assert(list.ScrollingEnabled == false, "over the popup: off")
+	move(300, 300)
+	assert(list.ScrollingEnabled == true, "left: back on")
+	move(420, 410)
+	assert(list.ScrollingEnabled == true, "a tooltip does not count")
+	move(120, 110)
+	p:Close()
+	assert(list.ScrollingEnabled == true and (off :: any).ScrollingEnabled == false, "closed: back on; one that was off stays off")
+	tip:Close()
+	q.dispose(o.Layer)
+	H.assertNoDebugOutput("wheel")
+end)
+
 H.section("staying on screen: flipped about the anchor rectangle when that overflows less, then slid inside; re-placed on resize", function()
 	local o = Overlay.new()
 	H.setAbs(o.Layer, 0, 0, 800, 600)

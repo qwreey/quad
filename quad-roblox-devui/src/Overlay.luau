@@ -63,9 +63,16 @@ under Deferred signals) (the ScreenGui was rebuilt, e.g. ResetOnSpawn) makes a f
 	given `AnchorRect` (the screen rectangle it is attached to: a menu title, a dropdown box, a zero-size rect at the
 	mouse), an axis it overflows is FLIPPED to the other side of that rectangle when that overflows less (below ->
 	above, right -> left); then it is SLID inside. Content larger than the layer is not shrunk here — a list that can
-	scroll caps its own height (Combo). With no size yet (a layer not laid out, the spec mock) the requested place stays.
+	scroll caps its own height (Combo, Menu). With no size yet (a layer not laid out, the spec mock) the requested place stays.
+
+	WHEEL [2026-10-21 — devplorer U19 (b), Studio-measured there]: the engine scrolls a ScrollingFrame under the pointer
+	even when a popup covers it (an Active root, even a transparent ScrollingFrame over it, did not stop it); only that
+	frame's ScrollingEnabled = false did. So while the pointer is over a popup that takes input, the ScrollingFrames of
+	the layer's ScreenGui outside the layer have ScrollingEnabled off; the ones turned off are turned back on when the
+	pointer leaves or the last popup closes. A tooltip (takes no input) does not count.
 ]]
 
+local Input = require("./Input")
 local Pointer = require("./Pointer")
 local PopupHits = require("./PopupHits")
 local Quad = require("./Quad")
@@ -138,6 +145,79 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 	end
 	-- open popups, newest last (CloseAll walks it; Close removes its own entry)
 	local open: { Popup } = {}
+	-- popups that take input (header WHEEL): their holder covers what the wheel must not reach
+	local takesInput: { [Popup]: boolean } = setmetatable({}, { __mode = "k" }) :: any
+	-- the ScrollingFrames turned off while the pointer is over a popup (only those are turned back on)
+	local shielded: { ScrollingFrame } = {}
+	local shieldOn = false
+	local function setShield(on: boolean)
+		if on == shieldOn then
+			return
+		end
+		shieldOn = on
+		if not on then
+			for _, frame in shielded do
+				if frame.Parent ~= nil then
+					frame.ScrollingEnabled = true
+				end
+			end
+			table.clear(shielded)
+			return
+		end
+		local l = layerRef
+		local gui: any = l and l.Parent
+		while gui ~= nil and gui.ClassName ~= "ScreenGui" and gui.ClassName ~= "SurfaceGui" and gui.ClassName ~= "BillboardGui" do
+			gui = gui.Parent
+		end
+		if gui == nil or l == nil then
+			return
+		end
+		-- (a walk by GetChildren, skipping the layer: the spec mock has no GetDescendants)
+		local function walk(node: Instance)
+			for _, item: any in node:GetChildren() do
+				if item ~= l then
+					if item.ClassName == "ScrollingFrame" and item.ScrollingEnabled then
+						item.ScrollingEnabled = false
+						table.insert(shielded, item)
+					end
+					walk(item)
+				end
+			end
+		end
+		walk(gui)
+	end
+	local function refreshShield()
+		local mouse = Pointer.mouse()
+		for _, p in open do
+			if takesInput[p] then
+				local h = p.Holder :: GuiObject
+				local at, size = h.AbsolutePosition, h.AbsoluteSize
+				if at ~= nil and size ~= nil and mouse.X >= at.X and mouse.Y >= at.Y and mouse.X < at.X + size.X and mouse.Y < at.Y + size.Y then
+					setShield(true)
+					return
+				end
+			end
+		end
+		setShield(false)
+	end
+	local moveConn: RBXScriptConnection? = nil
+	-- connected only while a popup is open
+	local function watchPointer()
+		if #open > 0 and moveConn == nil then
+			moveConn = Input.service().InputChanged:Connect(function(input: InputObject)
+				if input.UserInputType == Enum.UserInputType.MouseMovement then
+					refreshShield()
+				end
+			end)
+		elseif #open == 0 then
+			local c = moveConn
+			moveConn = nil
+			if c then
+				c:Disconnect()
+			end
+			setShield(false)
+		end
+	end
 
 	local layer = Frame({
 		Name = "OverlayLayer",
@@ -323,6 +403,10 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 				table.remove(open, i)
 			end
 			count:Set(#open)
+			watchPointer()
+			if shieldOn then
+				refreshShield()
+			end
 			-- skip Slot ops when the layer is dead, or when the entry was already detached (Deferred signal ordering:
 			-- descendants' Destroying may run before the layer's OnDestroyed)
 			if not isDead() and entry.Parent == layer then
@@ -354,7 +438,9 @@ function Overlay.new(options: { ZIndex: number? }?): Overlay
 		end
 		Pointer.invalidate()
 		table.insert(open, popup)
+		takesInput[popup] = hits ~= nil
 		count:Set(#open)
+		watchPointer()
 		return popup
 	end
 
