@@ -49,6 +49,11 @@ CommandPalette(위쪽에 놓이고 입력 포커스 — `PopupPanel` + `AnchorRe
 - **휠 막기**는 Overlay 기본이 됐다(위 "바꿔 쓸 것"에도 적음) → `PopupShield.start`.
 - **`ColorPicker3` / `OpenColorPicker` / `ColorModel`**, `InputColor3` 견본이 피커를 연다 → `PropPanels.ColorPanel` 전체와 `Editors`의 색 파싱 중복. 적용은 끄는 동안 바로(devplorer의 0.1초 적용은 소비자 쪽 `q.Throttle`로), 취소는 연 때 색을 다시 쓴다(devplorer `audit/2026-10-20-color-cancel.md`와 같은 규칙). **차이**: devplorer 패널은 Properties 목록 틀 안의 Frame(창 밖으로 안 나감)이었고 devui 피커는 Overlay 대화상자(그 창을 막음)다.
 
+- **`Overlay.BlockingCount`** → devplorer가 `Overlay.Count > 0`으로 "메뉴·대화상자가 열렸나"를 묻는 자리 전부(Explorer 단축키, 행 + 단추 숨김). 툴팁을 세지 않으므로 툴팁이 뜬 동안 단축키가 죽던 문제가 풀린다(사용자 결정 2026-10-21).
+- **`Tab`의 `Hooks`** → 탭 머리 단추에 툴팁.
+- **`OpenSearchList` / `SearchCombo`** → `Popups.Insert`의 일반 부분(검색 상자 + 가상 목록 + 키보드). 클래스 아이콘은 `ItemIcon`, "만들 수 없음"은 `DisabledReason`이 이유 문자열을 돌려주게. **클라이언트·서버 거름 기준이 다른 문제(위 감사 절)는 devplorer 쪽 일**이다 — 같은 판정 함수를 `DisabledReason`에 넣을 것. 여는 함수 이름은 사용자 결정 대기(가칭 `OpenSearchList`).
+- **`VirtualTable`** → `InspectUi.listRows`·`header`(Properties·Attributes 등 글 표). 열의 `Text`·`Color`·`Align`, 채움 열 규칙은 devplorer와 같다. 행 끝 액션 단추는 없다(필요하면 다음에).
+
 ## 만드는 중 (2026-10-21, 순서대로)
 
-~~복사 대화상자 → 선택 규칙·트리 평탄화·`VirtualRows` 끝 따라가기와 y→행 번호 → 색 편집기~~(위 절, 같은 날 들어감) → 검색되는 가상 Combo(키보드 고르기 포함 — Insert 팝업의 일반 부분: 항목 목록, 행 앞 아이콘 칸, 막힌 이유, 고르면 닫기) → 가상 표. 미룬 것: 창 자리 자동 정하기, 불투명 Style 프리셋, 차트. 끝나면 이 문서에 이어 적는다.
+~~복사 대화상자 → 선택 규칙·트리 평탄화·`VirtualRows` 끝 따라가기와 y→행 번호 → 색 편집기~~(위 절, 같은 날 들어감) → ~~검색되는 가상 Combo~~(키보드 고르기 포함 — Insert 팝업의 일반 부분: 항목 목록, 행 앞 아이콘 칸, 막힌 이유, 고르면 닫기) → 가상 표. 미룬 것: 창 자리 자동 정하기, 불투명 Style 프리셋, 차트. 끝나면 이 문서에 이어 적는다.
