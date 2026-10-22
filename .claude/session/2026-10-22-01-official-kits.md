@@ -20,3 +20,9 @@
 - **레포 정체성**: *"quad-kits@roblox-devui 같은걸 만들고, quad-kit 서브 워크스페이스가 되는지 본다면 약간 격리된 공간에서 개발이 가능해질 것 같아. 공식 커뮤니티 공간이라고 보면 되지 않나"*.
 - **도구**: 나중에 디버그 툴킷이 플러그인으로, material icons는 거기 묶일 수 있음, web 도구까지 셋 — `quad-tools@roblox-material-icons-plugin`, `quad-tools@roblox-debug-plugin` 식.
 - 메인 회신 요지와 확인할 것은 채팅(이 세션) — 결정되면 이 절을 갱신.
+
+## 4. 1번 라이선스(했음)·2번 pesde 실측(sonnet 탐사, pesde 0.7.4, `target.environment = "luau"` 스크래치)
+
+- 이름 문제(사용자): `quad@base` 꼴 별도 범위로 갈까, 그러면 개인 프로젝트 모양이 아니게 됨, 패키지 이름에 `/`를 더 못 넣음. 메인 의견: `qwreey/` 유지 + 이름 앞 `quad_kit_`을 묶음 표시로, 범위 이동은 하더라도 4.0 같은 끊김에 맞춤, `@`는 문서에서 부르는 이름으로만(실제 폴더 `kits/roblox-devui`).
+- 1번: 두 킷에 `LICENSE`(MIT)·`NOTICE.md`가 이미 있었다. material에 `LICENSE.material-icons`(범위 서술 + Apache 2.0 원문, apache.org sha256 cfc7749b…), devui NOTICE에 기본 아이콘 id가 Iris 자산이라는 고지(빠져 있던 것).
+- 2번 실측: 중첩 워크스페이스는 **안 됨**(안쪽 `workspace_members`가 무시되고 안쪽 멤버가 설치되지 않음). 루트에 **글롭 `kits/*`는 됨** — 글롭 멤버가 루트 멤버를 `workspace =` 의존으로 받고 멤버 폴더에서 install해도 성공. 이름 규칙: 범위·이름 모두 소문자·숫자·밑줄만, 범위 3~32자·이름 1~32자, 밑줄로 시작·끝 금지, 숫자만인 이름 금지 — `qwreey/quad_kit_devui`·`quad/base` 허용, 하이픈 거부. 범위 소유: 미확인(로그인이 GitHub 기기 코드 흐름이고 서버가 범위별 게시 권한을 판정한다는 정황까지만).
