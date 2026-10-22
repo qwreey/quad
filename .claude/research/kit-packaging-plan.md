@@ -55,6 +55,18 @@ quad 쪽에 이미 있는 것: q는 quad_base 모듈 표 자체(`Version = "3.4.
 
 **3.6 레포 안 개발·시험.** 스펙·스토리·갤러리는 레포의 q로 `Kit(q)`를 불러 쓴다. 지금 `Quad.luau`가 하는 "레포 안에서는 워크스페이스 사본을 가리킨다"는 시험용 진입 모듈 하나로 옮긴다. devplorer(레포 밖 소비자)는 vendor 경로와 진입 방식이 바뀌므로 넘김 문서에 적는다.
 
+## 3.7 base 표면 둘 — 작업 계획 (2026-10-22, 사용자 결정 위에)
+
+**선언 자리 확정(사용자 2026-10-22)**: `q.Backend.provider = { name, version }` — camelCase(*"실제로 백엔드가 주입해야할 목록으로 늘어났다고 보면 … 똑같이 데이터일 뿐 생성자는 아니니까"*). 백엔드가 주입하는 목록에 한 줄이 느는 것: quad-types `Backend` 타입에 `provider: { read name: string, read version: string }?`, base는 아무것도 넣지 않는다(스텁 대상 아님 — 없으면 `AssertProvider`가 알린다). quad-roblox는 `EngineOps`가 op를 채우는 자리 옆에서 `{ name = "quad-roblox", version = <자기 버전> }`.
+
+**`q:GetOrCreate(key, build)`**: 저장은 `New()` 안의 지역 표 하나(q의 메서드 클로저가 쥠 — q에 필드를 안 늘리고, 강-강이며 q와 함께 사라짐; `Bookkeeping`은 Length/Offset 부기 네임스페이스라 다른 일을 섞지 않는다). 첫 호출은 "만드는 중" 표시 → `build(q)` → 결과 저장; 만드는 중인 키를 다시 부르면 에러, `build`가 던지면 표시를 지우고 그대로 다시 던진다(재시도 가능 — `UseProvider`의 "마킹은 성공 후"와 같은 교훈), `build`가 nil을 돌려주면 에러(nil은 "없음"과 구별 불가). 입구 검사: key nil, build가 함수 아님.
+
+**`q:AssertProvider(name, versionPattern)`**: `Backend.provider`가 없으면 "게임 설정 모듈에서 `UseProvider`를 먼저", 이름이 다르면 둘 다 보여 주는 에러, 버전이 패턴에 안 맞으면 그 에러; 반환 없음. 입구 검사: 둘 다 문자열.
+
+**열린 점 하나 — 버전 패턴 검사기**: quad-roblox는 `type_version_check`의 `matchesPattern`을 쓴다(`3.4^.0^` 꼴). base가 같은 문법을 받으려면 quad-base가 `type_version_check`에 새로 의존해야 한다(작고 엔진 무관, 4.0 전 lockstep 다섯 중 하나) — 메인 권고: 의존을 더한다(문법을 둘로 만들지 않음).
+
+**같은 단위에 들어갈 것**: 에러 코드 `Quad0282~`(`scripts/error-codes.py --next`) + `docs/reference/errors/` 절, 레퍼런스 문서 두 항목, 스펙(캐시 재사용·키별 분리·순환 에러·build 실패 후 재시도·NewModule 분리·GC로 q와 함께 사라짐; 단언 세 실패·통과), quad-roblox의 `provider` 기록과 스펙, 본체 CHANGELOG Added. 버전은 다음 3.x minor(3.5.0). 이 단위가 끝난 뒤 킷 `Kit(q)` 전환(4절 2번).
+
 ## 4. 순서
 
 1. **폴더 이동 + 공개 표면 검사** — `kits/roblox-devui`·`kits/roblox-material`로 옮기고 test.sh·`consumer-kits.project.json`·문서 경로·`run.sh`를 고친다. 킷이 quad 내부 경로(`quad-base/src/…` 같은 공개 패키지 루트 밖)를 require하지 않는지 보는 검사를 게이트에 넣는다. 문서의 `^3.4.0` 안내를 `~`로.
