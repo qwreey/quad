@@ -10,3 +10,5 @@
 | 3 이름·버전 선언 | `Provider = { Name, Version }` | 같음 | 같음 | `Provider = { Name, Version }` (셋 다: 최상위 `Version`은 병합 때 `q.Version`을 덮는다) |
 
 메인 메모(사용자 판정 전): 3의 `Provider`는 이미 공개 타입 `Provider<T>`(Context의 열쇠 타입, `docs/getting-started/01-setup.md`)와 같은 낱말이라, q에 `q.Provider` 필드로 병합되면 그 혼동이 커진다 — 선언은 확장 표에 두되 `UseProvider`가 q에 병합하지 않고 비공개 자리에 기록하는 갈래가 있다.
+
+**[2026-10-22 사용자 판정]** `GetOrCreate(key, build)`·`AssertProvider` 채택, 선언은 q 최상위가 아니라 `q.Backend` 아래(`Backend.Provider = { Name, Version }` — 대소문자는 열림, `research/kit-packaging-plan.md`).

@@ -37,6 +37,8 @@ quad 쪽에 이미 있는 것: q는 quad_base 모듈 표 자체(`Version = "3.4.
 
 **[2026-10-22 사용자 확정 — 캐싱 자리]** 문제는 키가 아니라 강/약이었다 — 팩토리 함수와 결과는 GC상 서로 무관한 둘이라 q 안의 `{ strong k : strong v }` 단일 표로 풀린다. `tostring` 키는 안 쓴다, `Relate` 위에도 얹지 않는다(사용자: Relate는 연관을 잡기 위한 구조이고, 여기선 단일 테이블이 가장 쉽고 싸다). 키는 아무 값(모듈 팩토리는 함수 자체, 킷 루트는 이름·B 문자열 — 메인 권고, 사용자 이견 없음). 남은 것: 두 표면의 이름(세 모델 검토), 프로바이더 확인이 실패 때 던질지 참·거짓만 줄지.
 
+**[2026-10-22 이름 — 세 모델 검토 `audit/naming-base-2026-10-22/` 뒤 사용자 결정]** 캐싱 표면 `q:GetOrCreate(key, build)`(다수안, 사용자 동의 — `Memo`는 반응형 memo/computed로 읽힘). 실패 시 던지는 단언 `q:AssertProvider(name, versionPattern)`(사용자: Check 말고 assert — Lua `assert`처럼 에러가 자연스럽고 내부 `_assert…`와 맞음; 다수안). 선언 자리는 `q.Backend` 아래(사용자: *"Backend.Provider = { Name, Version } 이 되면 짝이 맞겠다"*) — 프로바이더는 이미 `quad.Backend.nativeInsert = …`처럼 Backend를 직접 채우므로 같은 방식으로 적고, base에 병합 장치가 따로 필요 없다; 최상위 병합이 아니라서 `q.Version`을 덮는 문제도 없다. `UseProvider`라는 이름이 `Backend.*`·`BackendStubs` 옆에서 뜬금없어 보이는 것은 더 위의 걸림이지만, 사용자 판단으로 문제 아님(*"Provider 라는 말이 중립적 … quad 에 암묵적으로 Backend 가 필요하고 그걸 프로바이딩 한다는 맥락은 문제는 없는것 같기도"*). 열린 것: `Backend` 멤버가 전부 camelCase op(`nativeInsert`, `setTimeout`…)라 필드 대소문자 — 메인 권고 `Backend.provider = { name, version }`.
+
 **3.2 "한 번만" 자리.** `Kit(q)`가 결과를 어디에 기억하는가.
 
 - (가) **q에 문자열 키** — 사용자 안. 킷 사본이 둘이어도 같은 q면 같은 결과를 돌려준다. 키에 B(킷 API 세대)를 넣어야 한다 — `3.7.x` 사본과 `3.8.x` 사본이 한 키를 나누면 한쪽이 다른 API를 받는다. 예: `q.__quad_kit_roblox_material_7`. q 표에 필드가 생기지만 동작을 바꾸지 않는 캐시다.
