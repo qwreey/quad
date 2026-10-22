@@ -230,10 +230,15 @@ local function CustomProvider(quad: any)
     end
     -- ... 나머지 19개 슬롯 ...
 
-    -- [2] 백엔드 고유 표면을 확장 테이블로 반환한다
-    return {
+    -- [2] 백엔드 고유 표면을 확장 테이블로 만든다
+    local extension = {
         Widget = customWidgetNamespace,
     }
+
+    -- [3] 이름과 버전을 적는다 — 소비자가 `q:AssertProvider`로 확인한다
+    quad.Backend.provider = table.freeze({ name = "my-backend", version = "1.0.0" })
+
+    return extension
 end
 
 local q = Quad.NewModule():UseProvider(CustomProvider)

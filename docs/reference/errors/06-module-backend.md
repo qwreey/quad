@@ -245,7 +245,7 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 `AssertProvider: name and versionPattern must be strings (got {typeof(name)}, {typeof(versionPattern)})` — `quad-base/src/init.luau`
 
 - **언제**: `q:AssertProvider(name, versionPattern)`의 두 인자 중 하나가 문자열이 아닐 때.
-- **고치려면**: 프로바이더 이름(`"quad-roblox"`)과 버전 패턴(`"3.4^.0^"`)을 문자열로 넘기세요.
+- **고치려면**: 프로바이더 이름(`"quad-roblox"`)과 버전 패턴(`"3.5^.0^"`)을 문자열로 넘기세요.
 - **참고**: [`q:AssertProvider(name, versionPattern)`](../core/01-quad-module.md#qassertprovidername-versionpattern)
 
 ### Quad0287

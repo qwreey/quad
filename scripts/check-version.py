@@ -187,6 +187,10 @@ def check_semver(new):
 def cut_changelog(path, new):
     cl = read(path)
     head = f'## [{new}] - {datetime.date.today().isoformat()}'
+    # [2026-10-22] a rerun of the same bump must not add a second heading for that version (it did — the first
+    # run's cut leaves [Unreleased] empty, and an empty cut still wrote a heading)
+    if re.search(rf'(?m)^## \[{re.escape(new)}\]', cl):
+        return head
     # [2026-09-13 사용자] [Unreleased] 아래에는 고정 안내문 한 줄과 `---`가 있다(비어 있을 때 다음 버전 헤딩이 붙어 보이던 것을 가른다).
     # 안내문·hr은 남기고 그 사이의 항목만 새 버전 헤딩 아래로 옮긴다. 안내문/hr이 없으면 옛 방식(헤딩 바로 뒤에 삽입).
     m = re.search(r'## \[Unreleased\]\n\n(_[^\n]*_)\n\n(.*?)---\n', cl, re.S)

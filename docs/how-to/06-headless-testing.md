@@ -48,7 +48,7 @@ default = "https://github.com/pesde-pkg/index"
 environment = "luau"
 
 [dependencies]
-quad_base = { name = "qwreey/quad_base", version = "^3.4.0" }
+quad_base = { name = "qwreey/quad_base", version = "~3.5.0" }
 ```
 
 ```bash
@@ -60,7 +60,7 @@ pesde install
 ```
 luau_packages/
 ├── quad_base.luau                              -- 링커: require("./.pesde/.../quad_base/src")로 위임
-└── .pesde/qwreey+quad_base/3.4.0/quad_base/src/...
+└── .pesde/qwreey+quad_base/3.5.0/quad_base/src/...
 ```
 
 `quad_base.luau`도 그 아래 `.pesde/` 실체도 **전부 일반 파일**입니다 —
@@ -143,6 +143,8 @@ local q = Quad.NewModule():UseProvider(myProvider)
   에러입니다.
 - `require(quad-base)`가 돌려주는 값은 이미 만들어진 기본 인스턴스입니다.
   테스트마다 격리된 인스턴스가 필요하면 `Quad.NewModule()`를 쓰세요.
+
+테스트할 코드가 `q:AssertProvider(...)`를 부른다면(컴포넌트 킷이 그렇습니다) 프로바이더가 `q.Backend.provider`에 이름과 버전을 적어야 합니다 — [`q:AssertProvider`](../reference/core/01-quad-module.md#qassertprovidername-versionpattern)와 [`q.Backend.provider`](../reference/extend/01-backend-provider-contract.md#qbackendprovider)를 보세요. `"quad-roblox"`를 확인하는 킷을 테스트할 때는 그 이름을 빌려 쓴 가짜 프로바이더 대신 실제 quad-roblox 프로바이더를 쓰세요.
 
 ### 생명주기에 묶이기 전까지 `Observer`는 발화하지 않는다
 

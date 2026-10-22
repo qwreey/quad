@@ -165,7 +165,7 @@ quad-roblox는 설치 시점에 quad-base 버전을 확인하고, 맞지 않으�
 quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')
 ```
 
-`{VERSION_PATTERN}` 자리에는 그 quad-roblox가 요구하는 패턴이 들어갑니다(이 저장소의 현재 값은 `3.4^.0^` — 같은 메이저 안에서 3.4.0 이상).
+`{VERSION_PATTERN}` 자리에는 그 quad-roblox가 요구하는 패턴이 들어갑니다(이 저장소의 현재 값은 `3.5^.0^` — 같은 메이저 안에서 3.5.0 이상).
 
 **예제**
 
@@ -228,7 +228,7 @@ AssertProvider: (self: Quad, name: string, versionPattern: string) -> ()
 | 이름 | 타입 | 설명 |
 |---|---|---|
 | `name` | `string` | 필요한 프로바이더 이름(quad-roblox는 `"quad-roblox"`) |
-| `versionPattern` | `string` | 받아들일 프로바이더 버전 — [`q.Version`](#qversion)과 같은 패턴 문법(`"3.4^.0^"`) |
+| `versionPattern` | `string` | 받아들일 프로바이더 버전 — [`q.Version`](#qversion)과 같은 패턴 문법(`"3.5^.0^"`) |
 
 **반환** — 없음. 맞으면 아무 일도 하지 않습니다.
 
@@ -242,7 +242,7 @@ AssertProvider: (self: Quad, name: string, versionPattern: string) -> ()
 ```luau
 -- 킷의 진입 함수
 return function(q)
-	q:AssertProvider("quad-roblox", "3.4^.0^")
+	q:AssertProvider("quad-roblox", "3.5^.0^")
 	return q:GetOrCreate("my_kit_7", build)
 end
 ```

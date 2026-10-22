@@ -55,7 +55,7 @@ QuadRoblox: <T>(quad: T) -> RobloxExtension
    Quad0228 quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (got '{tostring(q.Version)}')
    ```
 
-   `{VERSION_PATTERN}`은 이 패키지에 박힌 상수이고 저장소 현재 값은 `"3.4^.0^"`(같은 메이저 안에서 3.4.0 이상), `{tostring(q.Version)}`은
+   `{VERSION_PATTERN}`은 이 패키지에 박힌 상수이고 저장소 현재 값은 `"3.5^.0^"`(같은 메이저 안에서 3.5.0 이상), `{tostring(q.Version)}`은
    넘어온 모듈의 `Version` 필드입니다. 하한은 릴리즈마다 그 릴리즈 버전으로 올라가고, 메이저 자리는
    정확 일치라 메이저가 바뀌면 통과하지 않습니다. 프리릴리즈 빌드는 그 빌드를 정확히 적은 패턴(`"3.4.0-rc.2"`)을 써서
    같은 프리릴리즈의 quad-base만 받습니다 — 중간 빌드끼리 섞지 않기 위해서입니다.

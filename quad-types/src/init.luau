@@ -676,7 +676,7 @@ export type Backend = {
 }
 
 export type Quad = {
-	Version: "3.4.0", -- quad-base/pesde.toml의 version과 항상 맞출 것
+	Version: "3.5.0", -- quad-base/pesde.toml의 version과 항상 맞출 것
 	debug: boolean,
 	-- [2026-10-20 3.4.0] a new independent module instance (was `New` until 3.4.0 — the name says what it makes)
 	NewModule: () -> Quad,

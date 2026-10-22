@@ -28,6 +28,8 @@ quad 모듈 인스턴스를 만들고, 초기화 함수·플러그인·백엔드
 | `q:AddPlugin(pluginFn)` | [core/01](/reference/core/01-quad-module/#qaddpluginpluginfn) |
 | `q:UseProvider(providerFn)` | [core/01](/reference/core/01-quad-module/#quseproviderproviderfn) · [roblox/01 — 설치](/reference/roblox/01-install/) |
 | `q.Version` | [core/01](/reference/core/01-quad-module/#qversion) |
+| `q:GetOrCreate(key, build)` | [core/01](/reference/core/01-quad-module/#qgetorcreatekey-build) |
+| `q:AssertProvider(name, versionPattern)` | [core/01](/reference/core/01-quad-module/#qassertprovidername-versionpattern) |
 | `q.debug` | [core/01](/reference/core/01-quad-module/#qdebug) |
 | `q.errorNamespace` | [core/01](/reference/core/01-quad-module/#qerrornamespace) · [extend/01](/reference/extend/01-backend-provider-contract/) |
 | `q.Relate()` | [core/01](/reference/core/01-quad-module/#qrelate) |
@@ -206,6 +208,7 @@ quad가 만든 인스턴스를 손에 쥐는 세 종류의 참조와, 채워질 
 | 심볼 | 페이지 |
 |---|---|
 | `q.Backend.isInst(value)` | [core/11](/reference/core/11-predicates/) · [extend/01](/reference/extend/01-backend-provider-contract/) |
+| `q.Backend.provider` | [extend/01](/reference/extend/01-backend-provider-contract/#qbackendprovider) · [core/01](/reference/core/01-quad-module/#qassertprovidername-versionpattern) |
 | `q.isTween(x)` | [core/11](/reference/core/11-predicates/) · [roblox/06](/reference/roblox/06-tween-animate/) |
 
 ## 슈거
