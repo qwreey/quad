@@ -1,0 +1,58 @@
+# 공식 킷 둘의 패키지화 — 폴더·이름·버전·`Kit(q)` 주입
+
+**[2026-10-22 신설 — 계획서, 결정 아님(1절은 이미 닫힌 것)]** devui·material 두 킷을 quad가 직접 관리하는 공식 킷으로 게시하기 위한 계획. 경위와 사용자 원문은 `session/2026-10-22-01-official-kits.md`, 루트 `ROADMAP.md`의 "킷 둘(devui·material)의 버전과 패키지화" 항목이 이 문서를 가리킨다.
+
+## 1. 이미 닫힌 것 (사용자 결정 2026-10-22)
+
+- **공식 킷 둘** — quad가 직접 관리하고 함께 검증한다. 근거(사용자): 흩어진 킷은 "업데이트를 받을 수 있나"라는 신뢰 문제, 바로 써 볼 킷이 눈앞에 있다는 것, 그리고 릴리즈 전에 설계 결함을 실제 소비로 잡는 방어선(*"설계 결함이라 철회해야하는 경우는 릴리즈 하고 나서는 늦어"*). 공식은 둘로 끝.
+- **조건** — 킷은 quad 공개 표면만 쓴다(기계 검사로), "필요에 따라 넓히는 참고 킷"(완전 커버리지 약속 없음), best practice를 보여 주고 자기 디자인 언어로 킷을 만드는 사람(과 그들의 AI)이 참고 자료로 쓸 수 있게.
+- **폴더** — `kits/roblox-devui/`, `kits/roblox-material/`(나중 도구는 `tools/…`). pesde 실측(0.7.4): 중첩 워크스페이스는 안 되고 루트 `workspace_members`의 글롭 `kits/*`는 된다 — 격리는 폴더·킷별 게이트·문서로.
+- **패키지 이름** — 소유자/패키지그룹_서브그룹_이름: `qwreey/quad_kit_roblox_devui`, `qwreey/quad_kit_roblox_material`. 범위는 `qwreey/` 유지(사용자: 소유자가 달라 보이면 trust 범위를 나눠 정의해야 하고, 실제로 개인 프로젝트다). `quad_kit_devui`는 기각 — Roblox 것인지 안 보이고 다른 쪽(웹) 구현과 일치하는 것처럼 읽힌다.
+- **버전 `A.B.C`** — A는 킷이 요구하는 quad 메이저, B는 킷 자신의 breaking마다 오르고 A가 바뀌어도 내려가지 않으며 **A만 바뀔 때는 오르지 않는다**(3.7.2 다음 quad 4 포팅은 4.7.0 — B가 킷 API 세대를 뜻함), C는 breaking 아닌 변경 전부. 본체와 lockstep이 아니다(2026-10-22 앞선 권고를 대체). 소비자는 `~A.B.C`로 적는다 — pesde `^`는 B 상승(=킷 breaking)을 받아들인다. 본체도 3.x minor가 breaking이라 문서의 `^3.4.0` 안내는 `~`가 맞다.
+- **라이선스** — 킷 폴더마다 `LICENSE`(MIT)·`NOTICE.md`, material은 `LICENSE.material-icons`(범위 서술 + Apache 2.0 원문, 2026-10-22 반영).
+- **주입 형태** — 킷 전체가 팩토리 `Kit(q)`. **설치 함수가 아니다**(사용자: 킷은 quad의 소비자이고 quad의 동작을 바꾸지 않으므로 quad에 설치되면 안 된다). `Kit(q)`의 결과는 q와 따로 둔다 — 근거는 타입 비용(`&`로 엮을수록 복잡해지고 큰 export 타깃 하나가 생긴다). 다만 런타임 어디서든 `Kit(q)`를 불러도 한 번만 만들어지고 이미 있으면 그것을 돌려준다(사용자 안: `q.__kit_roblox_material` 같은 자리).
+
+## 2. 지금 모양 (2026-10-22 실측)
+
+킷마다 설정 모듈 `src/Quad.luau` 하나가 quad를 잡는다: `quad_base`를 직접 require하고 `Quad:UseProvider(QuadRoblox)`를 부른 뒤 타입을 재export한다. 그 모듈을 모듈 로드 시점에 require하는 파일이 devui 55개 중 39개, material 136개 중 110개다(대부분 `local Frame = q.Elem "Frame"`처럼 로드 시점에 q를 쓴다). 킷 안에는 모듈 수준 상태가 있다 — devui `Overlay.getDefault()`·`Style.default`·`Pointer`, material `Theme` 기본값 등.
+
+문제(사용자 지적): 같은 quad 사본이면 게임과 킷이 한 모듈을 나눠 쓰지만(`UseProvider`가 같은 프로바이더에 멱등), 두 킷이 다른 quad 버전에 묶여 사본이 갈리면 한 킷의 State가 다른 킷 위젯에서 같은 것으로 인식되지 않는다. 그리고 킷이 `UseProvider`를 부르는 것 자체가 "quad에 설치하지 않는다"와 어긋난다.
+
+quad 쪽에 이미 있는 것: q는 quad_base 모듈 표 자체(`Version = "3.4.0"` 필드가 있고 얼어 있지 않음), `RunInit(initFn)`(같은 모듈에 같은 함수는 한 번 — 키가 함수 신원이라 킷 사본이 둘이면 둘 다 돈다), `AddPlugin`(q에 병합 — 설치라서 쓰지 않음), quad-roblox는 `TypeVersionCheck.matchesPattern(q.Version, "3.4^.0^")`로 버전을 검사한다. Roblox 프로바이더가 설치됐는지 묻는 공개 술어는 없다(확장이 더한 `q.Animate`·`q.Tween` 등으로 짐작만 가능).
+
+## 3. 정할 것
+
+**3.1 킷 안 모듈이 q를 받는 방법.** 두 갈래.
+
+- (가) **모듈마다 팩토리** — 모든 모듈이 `return function(ctx) … end`가 되고 `Kit(q)`가 순서대로 엮는다. 킷 하나를 q마다 여러 벌 만들 수 있다. 비용: 149개 파일의 기계적 변환, 형제 모듈을 `require` 대신 ctx로 받으면서 타입이 끊기기 쉽다(ctx 타입을 손으로 써야 함), 읽는 사람에게 낯선 모양 — best practice 참고 자료라는 목표와 부딪힌다.
+- (나) **킷 사본 하나 = q 하나에 묶기(늦은 결합)** — `Quad.luau`가 값을 갖지 않는 자리가 되고, `Kit(q)`가 그 자리에 q를 넣은 **뒤에** 안쪽 모듈 트리를 require한다(모듈 코드는 지금 모양 그대로 `require("./Quad")`). 같은 사본에 다른 q가 오면 에러로 알린다. 비용: 파일 대부분을 안 건드린다, 대신 한 사본으로 q 둘은 못 섬긴다(Roblox에서는 ModuleScript 트리를 Clone해 새 사본을 만들 수 있으나 그건 관측된 필요가 생길 때).
+
+메인 권고: **(나)**. 한 게임이 q를 둘 쓰는 경우는 관측된 적이 없고("드문 오용이나 가상의 미래 요구까지 방어하려고 구조를 복잡하게 만들지 않는다"), (가)는 참고 자료로서 킷 코드의 읽기 쉬움을 크게 깎는다. 사용자가 짚은 문제(킷마다 다른 quad)는 (나)에서도 풀린다 — 킷이 quad를 직접 require하지 않고 게임이 넘긴 q를 쓰기 때문이다.
+
+**3.2 "한 번만" 자리.** `Kit(q)`가 결과를 어디에 기억하는가.
+
+- (가) **q에 문자열 키** — 사용자 안. 킷 사본이 둘이어도 같은 q면 같은 결과를 돌려준다. 키에 B(킷 API 세대)를 넣어야 한다 — `3.7.x` 사본과 `3.8.x` 사본이 한 키를 나누면 한쪽이 다른 API를 받는다. 예: `q.__quad_kit_roblox_material_7`. q 표에 필드가 생기지만 동작을 바꾸지 않는 캐시다.
+- (나) **킷 쪽 약한 표(q를 키로)** — q를 건드리지 않지만 킷 사본마다 따로라 사본이 둘이면 두 번 만든다.
+- (다) **quad에 공개 메모 장치** — 예: `q:Memo(key, factory)`. 새 공개 표면이라 사용자 결정이 필요하고, 킷 말고 쓸 곳이 아직 없다.
+
+메인 권고: **(가)**, 키는 `__quad_kit_<이름>_<B>`. 같은 B의 두 사본(3.7.1과 3.7.4)은 먼저 만든 쪽을 나눠 쓴다 — C만 다르니 API가 같다는 것이 이 버전 규칙의 약속이다.
+
+**3.3 프로바이더와 버전 확인.** 킷은 `UseProvider`를 부르지 않는다(설치 금지). `Kit(q)`는 (1) `q.Version`이 A와 맞는지 quad-roblox와 같은 방법(`TypeVersionCheck.matchesPattern`)으로 보고, (2) Roblox 프로바이더가 이미 설치돼 있는지 확인해, 아니면 "게임의 설정 모듈에서 `UseProvider(QuadRoblox)`를 먼저"라고 알린다. (2)의 확인 수단이 문제 — 확장 필드로 짐작(`type(q.Animate) == "function"`)하거나, quad-roblox가 공개 술어를 내놓거나(새 표면 — 사용자 결정). 메인 권고: 지금은 짐작으로(오탐 경로가 "다른 프로바이더가 같은 이름을 넣은 경우"뿐), 공개 술어는 필요가 관측되면.
+
+**3.4 타입.** 킷의 공개 타입(Style·props·핸들)은 킷 루트 모듈이 정적으로 export하고(`local DevuiKit = require(Packages.quad_kit_roblox_devui)`, `type Style = DevuiKit.Style`), `DevuiKit(q)`는 평범한 표 타입(킷 공개 함수 묶음)을 돌려준다 — q와 `&`로 엮지 않는다(1절 근거). 열린 점: 지금 킷 모듈들이 `Quad.luau`가 재export하는 quad 타입(`State<T>` 등)을 쓰는데, 늦은 결합에서도 그 타입은 `quad_types`에서 정적으로 온다 — 실측으로 확인할 것(타입이 q 값에 매이지 않는지).
+
+**3.5 모듈 수준 상태.** (나)에서는 킷 사본 하나가 q 하나에 묶이므로 `Overlay.getDefault()`·`Style.default` 같은 모듈 수준 기본값은 지금 그대로 "그 사본의 기본"이다 — 바꿀 것 없음. (가)였다면 전부 ctx로 옮겨야 했다.
+
+**3.6 레포 안 개발·시험.** 스펙·스토리·갤러리는 레포의 q로 `Kit(q)`를 불러 쓴다. 지금 `Quad.luau`가 하는 "레포 안에서는 워크스페이스 사본을 가리킨다"는 시험용 진입 모듈 하나로 옮긴다. devplorer(레포 밖 소비자)는 vendor 경로와 진입 방식이 바뀌므로 넘김 문서에 적는다.
+
+## 4. 순서
+
+1. **폴더 이동 + 공개 표면 검사** — `kits/roblox-devui`·`kits/roblox-material`로 옮기고 test.sh·`consumer-kits.project.json`·문서 경로·`run.sh`를 고친다. 킷이 quad 내부 경로(`quad-base/src/…` 같은 공개 패키지 루트 밖)를 require하지 않는지 보는 검사를 게이트에 넣는다. 문서의 `^3.4.0` 안내를 `~`로.
+2. **`Kit(q)` 주입** — devui 먼저(작음), 그다음 material. 3.1~3.4가 정해진 뒤.
+3. **패키지화** — 매니페스트(`kits/*` 글롭 멤버 여부 포함), 첫 버전(A=3, B=0 → `3.0.0`), CHANGELOG `[Unreleased]` 절단, 게시 도구(`check-version.py`·`publish.py`)가 킷을 따로 다루게.
+4. **"킷 만드는 법" 안내 문서** — 패턴별로 킷의 어느 파일을 보면 되는지, 따라 할 패턴과 참고만 할 곳(devui `Window/Manager.luau`처럼 제품 수준 복잡도)을 갈라 적는다.
+
+## 5. 이 문서 밖으로 미룬 것
+
+- 이전 quad(v1, `master` 2.x)의 이름 — 사용자 제기(2026-10-22): "quad2"는 시리즈 이름이라 잘못된 지칭이고, 이전 것을 `quad-legacy` 류로 부르는 게 싸다(패키지로 올라간 적 없고 옛 클론은 `master`를 가리킨다). 나중에 `legacy/` 아래 재구현체 `quad-legacy`(인터페이스 같음·버그만 고침)와 `quad-legacy-compat`을 묶는 방향 — `v1-compat-plan.md`에 적는다.
+- 도구(`tools/`: 디버그 플러그인, material icons 플러그인, 웹 도구) — 마켓플레이스로 나가므로 도구마다 자기 버전·CHANGELOG(메인 의견, 사용자 이견 없음). 착수는 각 계획서(`debug-tooling-plan.md`, `icon-pack-plan.md`).

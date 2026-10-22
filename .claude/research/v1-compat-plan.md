@@ -306,3 +306,7 @@ docs-review 3-1 (3)("v1이 버그 수정을 계속 받는가")의 사용자 답:
 - **§2(a)의 `self("이름")` 링커 경로는 이 브랜치에서 죽어 있다**: `class.lua:526-540` `this.__call`이 `self.__props(name)`을 부르는데 `__props`는 파일 전체에서 이 한 곳뿐(실제 필드는 `__prop`) → 호출 즉시 `attempt to call a nil value`. `Link()` 자체(`class.lua:112-137`, `ProcessQuadProperty` 경유)는 정상. compat 레이어가 이 경로를 흉내 낼 이유가 없어졌다(v1 버그 수정 후보 — 사용자 판단).
 - 그 외 §2 서술은 줄 번호가 10~15줄 밀린 것 말고 일치. `exports.lua:29-63` `Init(id)`: id 없이 부르면 매번 새 인스턴스(캐시는 id가 있을 때만), `Uninit(id)`의 `cleanup()`은 빈 TODO. `lang.lua`의 `CurrentLocale`은 `module.init(shared)` 지역(72행)이라 **Store·Style과 똑같이 `Init` 인스턴스별 스코프** — 오버뷰 02가 "Lang만 전역 공유"라 적었던 것은 틀려서 고쳤다(`H-607`). `event.lua`: `Event::` 접두만 처리, 일반 이벤트 핸들러 첫 인자는 `self`(`t.self`로 오버라이드), `Property::X`는 `fn(대상, 값)`. `mount.lua`: 소유권 검사 없음, `Unmount`는 userdata면 무조건 `Destroy`. `signal.lua`: 커스텀 Bindable, `Fire`는 `task.spawn`, 자기 정리 경로 없음.
 
+## 10. [2026-10-22 사용자 제기 — 방향 메모, 착수 아님] 이전 quad의 이름과 `legacy/`
+
+사용자(`session/2026-10-22-01-official-kits.md`): "quad2"는 시리즈 이름이라 잘못된 지칭이다 — react 18/19가 react 18.x/19.x로 읽히듯 quad 4도 quad 4.x로 읽힌다. 정확히는 이전 quad와 지금 quad는 패키지 이름 단에서 다른 것이므로, 이전 것을 `quad-legacy`(또는 `quad-old`) 류로 부르는 게 싸다. 근거: 이전 quad는 패키지로 올라간 적이 없고(사용처는 사실상 회사 게임 하나), 그때는 `master`였으므로 옛 클론은 여전히 그곳을 가리킨다; quad 4는 넓게 쓰일 예정. 방향: 나중에 main의 `legacy/` 아래 이전 quad를 두되, 인터페이스는 같고 버그만 고치는 재구현체 `quad-legacy`(코드 품질 때문에 사실상 다시 구현해야 함)와 이 문서의 `quad-legacy-compat`(옛 이름 `quad-roblox-v1-compat`)을 묶는다. 이 문서의 "v1" 표기를 바꿀지는 그때 정한다.
+

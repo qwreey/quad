@@ -26,3 +26,8 @@
 - 이름 문제(사용자): `quad@base` 꼴 별도 범위로 갈까, 그러면 개인 프로젝트 모양이 아니게 됨, 패키지 이름에 `/`를 더 못 넣음. 메인 의견: `qwreey/` 유지 + 이름 앞 `quad_kit_`을 묶음 표시로, 범위 이동은 하더라도 4.0 같은 끊김에 맞춤, `@`는 문서에서 부르는 이름으로만(실제 폴더 `kits/roblox-devui`).
 - 1번: 두 킷에 `LICENSE`(MIT)·`NOTICE.md`가 이미 있었다. material에 `LICENSE.material-icons`(범위 서술 + Apache 2.0 원문, apache.org sha256 cfc7749b…), devui NOTICE에 기본 아이콘 id가 Iris 자산이라는 고지(빠져 있던 것).
 - 2번 실측: 중첩 워크스페이스는 **안 됨**(안쪽 `workspace_members`가 무시되고 안쪽 멤버가 설치되지 않음). 루트에 **글롭 `kits/*`는 됨** — 글롭 멤버가 루트 멤버를 `workspace =` 의존으로 받고 멤버 폴더에서 install해도 성공. 이름 규칙: 범위·이름 모두 소문자·숫자·밑줄만, 범위 3~32자·이름 1~32자, 밑줄로 시작·끝 금지, 숫자만인 이름 금지 — `qwreey/quad_kit_devui`·`quad/base` 허용, 하이픈 거부. 범위 소유: 미확인(로그인이 GitHub 기기 코드 흐름이고 서버가 범위별 게시 권한을 판정한다는 정황까지만).
+
+## 5. 이름·버전·주입 결정 → 계획서
+
+사용자 결정: 이름은 `qwreey/quad_kit_roblox_devui`·`qwreey/quad_kit_roblox_material`(*"소유주@패키지그룹_서브패키지그룹_패키지명"* — 범위를 따로 두면 소유자가 달라 보여 trust 범위를 나눠 정의해야 한다, 실제로 개인 프로젝트이고 quad 커뮤니티가 있는 것도 아님; `quad_kit_devui`는 Roblox 것인지 안 보이고 웹 구현과 일치하는 것처럼 읽혀 기각). 폴더 나누기 동의. 버전: semver는 이미 3.0.0부터 깨졌고 안정화 전까진 사실상 0.x — 킷은 *"베이스 버전을 앞쪽에 붙여 따라가고, 중간이 breaking으로 유지 … 중간 버전은 앞쪽이 바뀌더라도 내려감 없이 올라가는게"*; 메인이 짚은 둘(pesde `^`가 B 상승을 받아들임 → 소비자 `~`, A만 바뀔 때 B는 그대로 4.7.0) 모두 동의(*"서브 패키지는 확실히 ~ 가 맞다고 봐. quad 가 이미 겪었어"*). 주입: *"킷 전체를 팩토리 Kit(q)로 … 설치 함수는 절대 아님. 이건 정확히는 quad의 소비자고, quad의 동작을 바꾸지 않기에 quad에 설치되어선 안 된다"*, 결과는 따로(타입 비용 — `&`로 엮일수록 복잡, 큰 export 타깃 하나), 런타임 어디서든 `Kit(q)`가 한 번만 init(`quad.__kit_roblox_material` 같은 자리). 이전 quad 이름(`quad-legacy`·`legacy/`)은 `research/v1-compat-plan.md` 10절. 계획서 `research/kit-packaging-plan.md`(1절 닫힘, 3절 정할 것)를 쓰고 사용자와 다듬는 중.
+
