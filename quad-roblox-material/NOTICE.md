@@ -26,7 +26,7 @@
   more of the same set by id for its navigation demos: inbox, send, favorite, delete (drawer destinations); home, explore,
   bookmark, person, settings, search, star, arrow_back, add, share, attach_file, mic, image, format_bold, format_italic,
   format_underlined, undo, redo, palette (navigation bar / rail, app bars, toolbars — each checked as an image asset,
-  AssetTypeId 1, creator qwreey74_icon, 2026-10-08). Apache 2.0 text:
-  https://www.apache.org/licenses/LICENSE-2.0
+  AssetTypeId 1, creator qwreey74_icon, 2026-10-08). Apache 2.0 text: `LICENSE.material-icons` in this folder (what it
+  covers, then the license verbatim), also https://www.apache.org/licenses/LICENSE-2.0
 - **Ripple disc** — `assets/ripple-disc-1024.png` (the pressed-ripple texture, published as `rbxassetid://89858938964426`) was
   generated for this kit by `assets/gen-disc.py`; it is not derived from Material Design artwork or any third-party asset.

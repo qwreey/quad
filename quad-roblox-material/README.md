@@ -842,4 +842,4 @@ Lune mock은 레이아웃·렌더·엔진 입력 순서를 흉내 내지 못한�
 
 ## 크레딧
 
-Material Design 3 명세(Google), RoStrapUI(MIT), qwreey MaterialUI(MIT) — 자세한 출처와 라이선스는 [`NOTICE.md`](NOTICE.md). 이 키트 자체는 [`LICENSE`](LICENSE).
+Material Design 3 명세(Google), RoStrapUI(MIT), qwreey MaterialUI(MIT) — 자세한 출처와 라이선스는 [`NOTICE.md`](NOTICE.md). 이 키트 자체는 [`LICENSE`](LICENSE), 키트가 id로 가리키는 Material Design Icons 이미지는 Apache 2.0 — [`LICENSE.material-icons`](LICENSE.material-icons)(무엇에 해당하는지, 이어서 원문).

@@ -6,3 +6,7 @@ No Iris source code is copied; the API is quad's retained-mode reactive idiom, n
 
 Iris is distributed under the MIT License, Copyright (c) 2024 Michael_48.
 Iris itself is based on Dear ImGui (https://github.com/ocornut/imgui, MIT, Copyright (c) 2014-2026 Omar Cornut).
+
+The default icons (`Style.luau` `DEFAULT_ICONS`: RightTriangle, DownTriangle, Close, ResizeGrip, CheckMark,
+BlankSquare) are the image assets Iris uses (`lib/widgets/init.lua` `widgets.ICONS`, commit 801973f), referenced by the
+same asset ids; the kit ships no copy of the images. Replace them through a Style's `Icons` if you need your own.
