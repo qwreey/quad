@@ -208,6 +208,70 @@ description: "UseProvider/플러그인/Brand/ModuleIdentity/미설치 op 스텁/
 - **고치려면**: 모듈당 프로바이더는 하나입니다 — 새 모듈 인스턴스(`q.NewModule()`)를 만들어 다른 백엔드를 설치하세요.
 - **참고**: [`q:UseProvider(providerFn)`](../core/01-quad-module.md#quseproviderproviderfn)
 
+### Quad0282
+
+`GetOrCreate: key must not be nil` — `quad-base/src/init.luau`
+
+- **언제**: `q:GetOrCreate(key, build)`의 `key`가 `nil`일 때.
+- **고치려면**: 캐시 항목을 가를 값을 넘기세요 — 모듈 팩토리는 자기 `build` 함수, 사본끼리 나눠 쓸 킷 루트는 이름 문자열.
+- **참고**: [`q:GetOrCreate(key, build)`](../core/01-quad-module.md#qgetorcreatekey-build)
+
+### Quad0283
+
+`GetOrCreate: build must be a function (got {typeof(build)})` — `quad-base/src/init.luau`
+
+- **언제**: `build` 자리가 함수가 아닐 때.
+- **고치려면**: `(q) -> 값` 모양의 함수를 넘기세요.
+- **참고**: [`q:GetOrCreate(key, build)`](../core/01-quad-module.md#qgetorcreatekey-build)
+
+### Quad0284
+
+`GetOrCreate: "{tostring(key)}" is still being built - its build asked for itself (directly or through a sibling); move the late use into a function that runs after the build` — `quad-base/src/init.luau`
+
+- **언제**: 어떤 열쇠의 `build`가 도는 도중에 같은 열쇠로 다시 `GetOrCreate`를 불렀을 때 — 직접이든, 형제 모듈을 거쳐 돌아왔든. 그 시점엔 돌려줄 값이 없습니다.
+- **고치려면**: 순환을 끊으세요. 서로를 쓰는 두 모듈이라면 한쪽은 빌드 중에 상대를 부르지 말고, 상대가 필요한 자리(이벤트 처리 함수 안 등 빌드가 끝난 뒤 도는 곳)에서 부르세요.
+- **참고**: [`q:GetOrCreate(key, build)`](../core/01-quad-module.md#qgetorcreatekey-build)
+
+### Quad0285
+
+`GetOrCreate: the build for "{tostring(key)}" returned nil - return the value to cache (nil cannot be told apart from "not built yet")` — `quad-base/src/init.luau`
+
+- **언제**: `build`가 아무것도 돌려주지 않았을 때 — `return`을 빠뜨린 경우가 흔합니다.
+- **고치려면**: 캐시할 값을 돌려주세요. 만들 것이 없다면 이 표면이 아니라 `q:RunInit`이 맞습니다.
+- **참고**: [`q:GetOrCreate(key, build)`](../core/01-quad-module.md#qgetorcreatekey-build)
+
+### Quad0286
+
+`AssertProvider: name and versionPattern must be strings (got {typeof(name)}, {typeof(versionPattern)})` — `quad-base/src/init.luau`
+
+- **언제**: `q:AssertProvider(name, versionPattern)`의 두 인자 중 하나가 문자열이 아닐 때.
+- **고치려면**: 프로바이더 이름(`"quad-roblox"`)과 버전 패턴(`"3.4^.0^"`)을 문자열로 넘기세요.
+- **참고**: [`q:AssertProvider(name, versionPattern)`](../core/01-quad-module.md#qassertprovidername-versionpattern)
+
+### Quad0287
+
+`AssertProvider: no provider is installed on this quad module (expected "{name}") - call q:UseProvider(...) in the game's setup module before handing q over` — `quad-base/src/init.luau`
+
+- **언제**: 받은 q에 프로바이더가 설치돼 있지 않을 때 — 게임의 설정 모듈이 `UseProvider`를 부르기 전의 q(또는 맨 `Quad.NewModule()`)를 킷에 넘긴 경우입니다. 프로바이더가 설치돼 있어도 그 프로바이더가 [`q.Backend.provider`](../extend/01-backend-provider-contract.md#qbackendprovider)를 적지 않으면 같은 에러입니다.
+- **고치려면**: 게임의 설정 모듈에서 `q:UseProvider(...)`로 백엔드를 설치한 뒤 그 q를 넘기세요. 직접 만든 프로바이더라면 `Backend.provider`를 적게 하세요.
+- **참고**: [`q:AssertProvider(name, versionPattern)`](../core/01-quad-module.md#qassertprovidername-versionpattern)
+
+### Quad0288
+
+`AssertProvider: the installed provider is "{tostring(info.name)}", expected "{name}"` — `quad-base/src/init.luau`
+
+- **언제**: q에 설치된 프로바이더가 요구한 것과 다른 백엔드일 때.
+- **고치려면**: 그 소비자가 요구하는 백엔드를 설치한 q를 넘기세요 — 백엔드는 모듈 인스턴스당 하나입니다.
+- **참고**: [`q:AssertProvider(name, versionPattern)`](../core/01-quad-module.md#qassertprovidername-versionpattern)
+
+### Quad0289
+
+`AssertProvider: provider "{name}" is version '{tostring(info.version)}', which does not match '{versionPattern}'` — `quad-base/src/init.luau`
+
+- **언제**: 설치된 프로바이더의 버전이 소비자가 요구하는 패턴에 맞지 않을 때.
+- **고치려면**: 소비자가 요구하는 버전 범위의 프로바이더를 설치하거나, 지금 프로바이더 버전을 받는 소비자 버전으로 바꾸세요.
+- **참고**: [`q:AssertProvider(name, versionPattern)`](../core/01-quad-module.md#qassertprovidername-versionpattern)
+
 ### Quad0265
 
 `{fnName}: value must be a table, function or userdata (got {typeof(value)}) - a primitive has no identity to bind` — `quad-base/src/LifetimeHandle.luau`

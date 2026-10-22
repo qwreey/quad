@@ -33,6 +33,7 @@ SITES = [
     ('quad-base/src/init.luau', r'(?m)^(\s*Version = ")([^"]+)(",)'),
     ('quad-types/src/init.luau', r'(?m)^(\s*Version: ")([^"]+)(",)'),
     ('quad-base/test/smoke.plugin.luau', r'(Quad\.Version == ")([^"]+)(")'),
+    ('quad-roblox/src/init.luau', r'(?m)^(local VERSION = ")([^"]+)(")'),
 ]
 # [2026-09-15] the spec asserts the pattern string itself, so it is checked against VERSION_PATTERN (not the version)
 PATTERN_ECHO_SITE = ('quad-roblox/test/spec.robloxfactory.luau', r"(version pattern ')([^']+)(')")

@@ -11,6 +11,7 @@ direct = ["quad_base", { workspace = "qwreey/quad_base", version = "^", target =
 [graph."qwreey/quad_base@3.4.0 luau".dependencies]
 quad_error = ["qwreey/quad_error@3.4.0 luau", "standard"]
 quad_types = ["qwreey/quad_types@3.4.0 luau", "standard"]
+type_version_check = ["qwreey/type_version_check@3.4.0 luau", "standard"]
 
 [graph."qwreey/quad_base@3.4.0 luau".pkg_ref]
 ref_ty = "workspace"
@@ -19,6 +20,7 @@ path = "quad-base"
 [graph."qwreey/quad_base@3.4.0 luau".pkg_ref.dependencies]
 quad_error = [{ workspace = "qwreey/quad_error", version = "^" }, "standard"]
 quad_types = [{ workspace = "qwreey/quad_types", version = "^" }, "standard"]
+type_version_check = [{ workspace = "qwreey/type_version_check", version = "^" }, "standard"]
 
 [graph."qwreey/quad_error@3.4.0 luau".pkg_ref]
 ref_ty = "workspace"

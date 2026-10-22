@@ -11,6 +11,9 @@ _아직 게시되지 않은 변경입니다 — 다음 릴리즈에 실립니다
 
 ### Added
 
+- `q:GetOrCreate(key, build)` — 모듈 인스턴스마다의 결과 캐시. 처음 부를 때 `build(q)`를 돌려 값을 기억하고, 같은 열쇠로 다시 부르면 그 값을 돌려줍니다. 컴포넌트 킷처럼 q를 넘겨받아 쓰는 코드가 모듈을 q의 팩토리로 만들 때 씁니다(`require("./Common")(q)`가 같은 q에서 한 벌만 만들어짐). 캐시는 인스턴스와 함께 수거되고, 만드는 중인 열쇠를 다시 부르면 에러입니다.
+- `q:AssertProvider(name, versionPattern)` — 받은 q에 필요한 백엔드가 맞는 버전으로 설치돼 있는지 확인하고, 아니면 "설정 모듈에서 `UseProvider`를 먼저"라고 알리며 던집니다. 프로바이더 함수가 아니라 이름과 버전으로 비교하므로 패키지 사본이 달라도 같은 백엔드로 알아봅니다.
+- `q.Backend.provider` — 프로바이더가 자기 이름과 버전(`{ name, version }`)을 적는 자리. quad-roblox는 설치 때 `{ name = "quad-roblox", version = <자기 버전> }`을 적습니다. 직접 만든 프로바이더도 `AssertProvider`로 확인받으려면 여기에 적으세요.
 - `QuadTypes.SlotCtx<Item, UD, T>` — `slot:List`·`slot:Single`의 `updateFn`이 받는 `ctx`의 타입 이름(항목, 사용자 데이터, 원소 타입). 파일마다 같은 레코드를 다시 적던 자리를 `type RowCtx = QuadTypes.SlotCtx<Row, nil, Instance>` 한 줄로 쓸 수 있습니다.
 
 ### Changed

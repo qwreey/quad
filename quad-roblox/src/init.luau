@@ -35,6 +35,8 @@ local Surface = require("@self/Surface")
 -- [2026-09-15 사용자 결정] floor within the current major — base minors/patches at or above this release pass
 -- (major has no `^`: a post-release BREAKING bumps it for real). `check-version.py bump` rewrites the floor.
 local VERSION_PATTERN = "3.4^.0^"
+-- this package's own version, written into `Backend.provider` for `q:AssertProvider` (kept equal to pesde.toml by check-version.py)
+local VERSION = "3.4.0"
 
 -- [2026-10-20 3.4.0] the public type names (`research/declaration-naming-table.md` 5절): one generic per axis, the
 -- class is the type argument (`Modifier<Frame>`), computed by the type functions in `Surface/init.luau` from the
@@ -97,7 +99,10 @@ local function QuadRoblox<T>(quad: T): RobloxExtension
 			QuadTypes.ERROR_LEVEL_SURFACE
 		)
 	end
-	return RobloxFactory(q)
+	local extension = RobloxFactory(q)
+	-- written after the factory succeeded, like UseProvider's own mark (a provider that threw is not installed)
+	q.Backend.provider = table.freeze({ name = "quad-roblox", version = VERSION })
+	return extension
 end
 
 return {

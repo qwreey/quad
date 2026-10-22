@@ -670,6 +670,9 @@ export type Backend = {
 	addTag: (inst: any, names: { string }) -> (),
 	removeTag: (inst: any, names: { string }) -> (),
 	setAttr: (inst: any, name: string, v: any) -> (),
+	-- [2026-10-22 user decision] what the installed provider says it is — written by the provider next to its
+	-- ops (plain data, no stub), read by `q:AssertProvider(name, versionPattern)`. nil until a provider writes it.
+	provider: { read name: string, read version: string }?,
 }
 
 export type Quad = {
@@ -693,6 +696,11 @@ export type Quad = {
 	-- 같은 백엔드의 다른 사본·버전이든 — error). 백엔드 표면(`Elem` 등)은
 	-- 이 반환 교집합 `Self & P`로 타입이 실린다 — quad-types엔 안 실림.
 	UseProvider: <Self, P>(self: Self, providerFn: (Self) -> P) -> Self & P,
+	-- [2026-10-22 user decision] for consumers that are not providers (component kits): a per-instance
+	-- result cache (the first call for `key` runs `build(q)`, later calls return that value) and a check
+	-- that throws unless the game installed the named provider at a matching version (`Backend.provider`).
+	GetOrCreate: <Self, T>(self: Self, key: any, build: (Self) -> T) -> T,
+	AssertProvider: (self: Quad, name: string, versionPattern: string) -> (),
 
 	-- M2 공통 기반이 얹는 탑레벨 값(`ROADMAP.md` M2 `H-80`). `Source`/`Store`/
 	-- `Effect`/`Blocker`는 각 단위에서 추가된다.

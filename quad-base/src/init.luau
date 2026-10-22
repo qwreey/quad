@@ -23,6 +23,7 @@ local PreRef = require("@self/Ref/PreRef") -- M8 단위 ①
 local PostRef = require("@self/Ref/PostRef")
 local Void = require("@self/Void")
 local QuadTypes = require("./luau_packages/quad_types")
+local TypeVersionCheck = require("./luau_packages/type_version_check")
 local InitDebug = require("@self/Debug")
 local InitLifetimeHandle = require("@self/LifetimeHandle")
 local State = require("@self/State")
@@ -250,6 +251,83 @@ local function New(): Quad
 		return self :: any
 	end
 
+	-- `GetOrCreate` — a per-instance result cache for consumers that are not providers (component kits:
+	-- every kit module is a factory of q, `require("./Common")(q)`). Unlike `RunInit` it returns the stored
+	-- value. The store is a plain local table held by this instance's closures — strong key, strong value,
+	-- gone with the instance. A weak side table keyed by the instance would leak: the cached value (a kit
+	-- module table) holds the instance through its closures, and Luau has no ephemerons.
+	-- Ref: research/kit-packaging-plan.md 3.7 (user decision 2026-10-22)
+	local created: { [any]: any } = {}
+	local building: { [any]: true } = {}
+	function module.GetOrCreate(self, key, build)
+		if key == nil then
+			Err.errorBeforeNearest("Quad0282 GetOrCreate: key must not be nil", QuadTypes.ERROR_LEVEL_SURFACE)
+		end
+		if type(build) ~= "function" then
+			Err.errorBeforeNearest(`Quad0283 GetOrCreate: build must be a function (got {typeof(build)})`, QuadTypes.ERROR_LEVEL_SURFACE)
+		end
+		local existing = created[key]
+		if existing ~= nil then
+			return existing
+		end
+		if building[key] then
+			-- a cycle: the build of this key asked for itself, and there is no value to hand out yet
+			Err.errorBeforeNearest(
+				`Quad0284 GetOrCreate: "{tostring(key)}" is still being built - its build asked for itself (directly or through a sibling); move the late use into a function that runs after the build`,
+				QuadTypes.ERROR_LEVEL_SURFACE
+			)
+		end
+		-- marked during the build only, cleared on failure: a build that threw can be retried (the lesson of
+		-- UseProvider's mark-after-success, `H-307`)
+		building[key] = true
+		local ok, result = pcall(build, self)
+		building[key] = nil
+		if not ok then
+			error(result, 0) -- error-code: rethrow
+		end
+		if result == nil then
+			Err.errorBeforeNearest(
+				`Quad0285 GetOrCreate: the build for "{tostring(key)}" returned nil - return the value to cache (nil cannot be told apart from "not built yet")`,
+				QuadTypes.ERROR_LEVEL_SURFACE
+			)
+		end
+		created[key] = result
+		return result
+	end
+
+	-- `AssertProvider` — a consumer (a kit) checks that the game installed the backend it needs, without
+	-- installing anything itself. It compares the record the provider wrote in `Backend.provider`
+	-- (name + version) instead of the provider function: the kit's copy of the provider package may be a
+	-- different copy than the one the game installed.
+	-- Ref: research/kit-packaging-plan.md 3.7 (user decision 2026-10-22)
+	function module.AssertProvider(self, name, versionPattern)
+		if type(name) ~= "string" or type(versionPattern) ~= "string" then
+			Err.errorBeforeNearest(
+				`Quad0286 AssertProvider: name and versionPattern must be strings (got {typeof(name)}, {typeof(versionPattern)})`,
+				QuadTypes.ERROR_LEVEL_SURFACE
+			)
+		end
+		local info = (self :: any).Backend.provider
+		if type(info) ~= "table" then
+			Err.errorBeforeNearest(
+				`Quad0287 AssertProvider: no provider is installed on this quad module (expected "{name}") - call q:UseProvider(...) in the game's setup module before handing q over`,
+				QuadTypes.ERROR_LEVEL_SURFACE
+			)
+		end
+		if info.name ~= name then
+			Err.errorBeforeNearest(
+				`Quad0288 AssertProvider: the installed provider is "{tostring(info.name)}", expected "{name}"`,
+				QuadTypes.ERROR_LEVEL_SURFACE
+			)
+		end
+		if type(info.version) ~= "string" or not TypeVersionCheck.matchesPattern(info.version, versionPattern) then
+			Err.errorBeforeNearest(
+				`Quad0289 AssertProvider: provider "{name}" is version '{tostring(info.version)}', which does not match '{versionPattern}'`,
+				QuadTypes.ERROR_LEVEL_SURFACE
+			)
+		end
+	end
+
 	module:RunInit(InitDebug)
 	module:RunInit(InitLifetimeHandle) -- 생명주기 4종은 여기서 구현(round11 Q59); hold op 넷 등 엔진 op 에러 스텁 — 백엔드가 덮어씀
 	-- 반응형 코어(M2 단위 2) — `H-174`: 인스턴스별 팩토리. 각 Init이 자기 의존성을
@@ -275,7 +353,7 @@ local function New(): Quad
 	-- 서브시스템이 늘어날 때마다 이 자리에 module:RunInit(InitXxx)를 순서 무관하게 추가
 
 	-- `H-231`: 모듈 표면도 태그 레이어에 — 인스턴스별 클로저라 여기서
-	Err.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, module.RunInit, module.AddPlugin, module.UseProvider)
+	Err.setFuncLevel(QuadTypes.ERROR_LEVEL_SURFACE, module.RunInit, module.AddPlugin, module.UseProvider, module.GetOrCreate, module.AssertProvider)
 
 	return module
 end

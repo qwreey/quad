@@ -1,6 +1,6 @@
 ---
 title: Quad 모듈
-description: require 결과가 곧 기본 인스턴스 — NewModule/Raw/RunInit/AddPlugin/UseProvider와 모듈 표면 필드
+description: require 결과가 곧 기본 인스턴스 — NewModule/Raw/RunInit/AddPlugin/UseProvider/GetOrCreate/AssertProvider와 모듈 표면 필드
 ---
 # Quad 모듈
 
@@ -8,7 +8,7 @@ description: require 결과가 곧 기본 인스턴스 — NewModule/Raw/RunInit
 
 한 인스턴스는 자기만의 디스패치 핸들러 레지스트리, 부기(bookkeeping), 프로바이더 슬롯을 가집니다. `Void`/`Ref`/`Relate`/`Blocker` 같은 의존 없는 잎 모듈은 인스턴스끼리 공유되지만, `Source`/`Effect`처럼 인스턴스 상태를 닫아 쥐는 팩토리는 인스턴스마다 다른 함수입니다.
 
-이 페이지의 심볼: [q.NewModule()](#qnewmodule) · [q.Raw](#qraw) · [q:RunInit(initFn)](#qruninitinitfn) · [q:AddPlugin(pluginFn)](#qaddpluginpluginfn) · [q:UseProvider(providerFn)](#quseproviderproviderfn) · [q.Version](#qversion) · [q.debug](#qdebug) · [q.errorNamespace](#qerrornamespace) · [q.moduleIdentity](#qmoduleidentity) · [q.Relate()](#qrelate)
+이 페이지의 심볼: [q.NewModule()](#qnewmodule) · [q.Raw](#qraw) · [q:RunInit(initFn)](#qruninitinitfn) · [q:AddPlugin(pluginFn)](#qaddpluginpluginfn) · [q:UseProvider(providerFn)](#quseproviderproviderfn) · [q:GetOrCreate(key, build)](#qgetorcreatekey-build) · [q:AssertProvider(name, versionPattern)](#qassertprovidername-versionpattern) · [q.Version](#qversion) · [q.debug](#qdebug) · [q.errorNamespace](#qerrornamespace) · [q.moduleIdentity](#qmoduleidentity) · [q.Relate()](#qrelate)
 
 ```luau
 -- 설치 경로는 프로젝트 구성에 따라 다르다(00-installation 참고)
@@ -173,6 +173,78 @@ quad-roblox: requires a quad-base matching version pattern '{VERSION_PATTERN}' (
 local q = Quad:UseProvider(QuadRoblox)
 local q2 = q:UseProvider(QuadRoblox) -- 같은 함수 — 멱등 no-op
 print(q2 == q) --> true
+```
+
+## `q:GetOrCreate(key, build)`
+
+**시그니처**
+
+```luau
+GetOrCreate: <Self, T>(self: Self, key: any, build: (Self) -> T) -> T
+```
+
+| 이름 | 타입 | 설명 |
+|---|---|---|
+| `key` | `any` (nil 제외) | 캐시 항목의 열쇠 — 함수든 문자열이든 아무 값 |
+| `build` | `(Self) -> T` | 그 열쇠의 값이 아직 없을 때 이 모듈 인스턴스를 받아 값을 만드는 함수 |
+
+**반환** — 그 열쇠로 처음 만든 값. 처음 부를 때만 `build(q)`가 돌고, 그 뒤로는 같은 값을 돌려줍니다.
+
+**동작** — 프로바이더가 아닌 소비자(컴포넌트 킷 같은 것)를 위한 **인스턴스별 결과 캐시**입니다. `RunInit`은 "한 번만 실행"하고 값을 돌려주지 않지만, 이것은 만든 값을 이 인스턴스에 기억해 두고 돌려줍니다. 킷의 모듈을 q의 팩토리로 만들면, 형제 모듈이 서로를 `require("./Common")(q)`로 불러도 같은 q에서는 한 벌만 만들어집니다.
+
+- **캐시는 인스턴스 안에 있습니다.** 열쇠와 값을 강하게 쥐는 표 하나라, 인스턴스를 놓으면 캐시도 같이 수거됩니다 — 캐시된 값이 그 인스턴스를 붙잡고 있어도 그렇습니다. 다른 인스턴스(`q.NewModule()`)는 자기 캐시를 가집니다.
+- **만드는 중인 열쇠를 다시 부르면 던집니다** — `build`가 직접이든 형제를 거쳐서든 자기 열쇠를 다시 찾으면 돌려줄 값이 아직 없습니다. 그런 늦은 사용은 빌드가 끝난 뒤 도는 함수 안으로 옮기세요.
+- **`build`가 던지면 그 에러가 그대로 나가고, 같은 열쇠로 다시 시도할 수 있습니다**(만드는 중 표시는 실패하면 지워집니다).
+- **`build`가 `nil`을 돌려주면 던집니다** — `nil`은 "아직 없음"과 구별할 수 없어 캐시할 수 없습니다.
+- 열쇠가 `nil`이거나 `build`가 함수가 아니면 먼저 던집니다(`Quad0282`·`Quad0283`).
+
+**예제**
+
+```luau
+-- 킷의 모듈 하나 — 같은 q로 몇 번을 불러도 같은 표
+local function build(q)
+	local Frame = q.Elem "Frame"
+	local function Panel(props)
+		return Frame(props)
+	end
+	return { Panel = Panel }
+end
+
+return function(q)
+	return q:GetOrCreate(build, build)
+end
+```
+
+설치된 킷 사본이 둘이어도 같은 q에서 한 벌을 쓰게 하려면 사본마다 같은 문자열 열쇠를 넘깁니다(`q:GetOrCreate("my_kit_7", build)` — 열쇠에 킷의 호환 세대를 넣어 API가 다른 사본끼리는 섞이지 않게).
+
+## `q:AssertProvider(name, versionPattern)`
+
+**시그니처**
+
+```luau
+AssertProvider: (self: Quad, name: string, versionPattern: string) -> ()
+```
+
+| 이름 | 타입 | 설명 |
+|---|---|---|
+| `name` | `string` | 필요한 프로바이더 이름(quad-roblox는 `"quad-roblox"`) |
+| `versionPattern` | `string` | 받아들일 프로바이더 버전 — [`q.Version`](#qversion)과 같은 패턴 문법(`"3.4^.0^"`) |
+
+**반환** — 없음. 맞으면 아무 일도 하지 않습니다.
+
+**동작** — 받은 q에 필요한 백엔드가 설치돼 있는지 확인하고, 아니면 던집니다. q를 넘겨받아 쓰는 소비자(킷)가 무언가를 설치하지 않고 확인만 하는 자리입니다. 비교는 프로바이더 함수가 아니라 프로바이더가 적어 둔 [`q.Backend.provider`](../extend/01-backend-provider-contract.md#qbackendprovider)의 이름과 버전으로 합니다 — 킷이 가진 프로바이더 패키지 사본과 게임이 설치한 사본이 달라도 같은 프로바이더로 알아봅니다.
+
+- 프로바이더가 없으면: `Quad0287 AssertProvider: no provider is installed on this quad module (expected "{name}") - call q:UseProvider(...) in the game's setup module before handing q over`
+- 이름이 다르면 `Quad0288`, 버전이 패턴에 맞지 않으면 `Quad0289`, 인자가 문자열이 아니면 `Quad0286`.
+
+**예제**
+
+```luau
+-- 킷의 진입 함수
+return function(q)
+	q:AssertProvider("quad-roblox", "3.4^.0^")
+	return q:GetOrCreate("my_kit_7", build)
+end
 ```
 
 ## `q.Version`

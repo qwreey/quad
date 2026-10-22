@@ -16,3 +16,6 @@ lib = "src/init.luau"
 [dependencies]
 quad_types = { workspace = "qwreey/quad_types", version = "^" }
 quad_error = { workspace = "qwreey/quad_error", version = "^" }
+# [2026-10-22 user decision] AssertProvider matches the provider's declared version with the same pattern
+# grammar quad-roblox already uses (small, engine-agnostic, types-family like quad_types)
+type_version_check = { workspace = "qwreey/type_version_check", version = "^" }

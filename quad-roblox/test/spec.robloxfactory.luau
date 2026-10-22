@@ -384,4 +384,21 @@ do
 end
 
 print()
+print("=== Backend.provider — QuadRoblox records its name and version for q:AssertProvider (2026-10-22) ===")
+do
+	local q = Quad.NewModule()
+	assert(q.Backend.provider == nil, "a bare module has no provider record")
+	q:UseProvider(QuadRoblox)
+	local info = q.Backend.provider :: any
+	assert(info and info.name == "quad-roblox" and info.version == q.Version, "name + this package's version")
+	assert(table.isfrozen(info), "frozen")
+	q:AssertProvider("quad-roblox", "3.*.*")
+	local ok, err = pcall(function()
+		q:AssertProvider("quad-roblox", "9.*.*")
+	end)
+	assert(not ok and string.find(tostring(err), "Quad0289", 1, true), tostring(err))
+	print("PASS")
+end
+
+print()
 print("=== ALL PASS ===")

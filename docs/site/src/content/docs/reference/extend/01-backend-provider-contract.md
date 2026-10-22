@@ -260,6 +260,26 @@ local q = Quad.NewModule():UseProvider(CustomProvider)
 
  락은 프로바이더가 아니라 `UseProvider` 안에 있으므로, 프로바이더 작성자가 가드를 빠뜨려도 **바깥에서 두 번 부르는 것**은 구조적으로 막힙니다. 막지 않는 것 둘(둘 다 정의되지 않은 동작 — 아래 결과는 관측, 계약 아님; [2026-09-27 mock 관측]): (1) 프로바이더 **본문 안에서** `q:UseProvider(다른 것)`을 부르면 슬롯이 아직 비어 있어 둘이 다 병합되고 슬롯엔 바깥 것만 남습니다 — "roblox + 사내 확장"을 한 프로바이더로 감싸려면 `UseProvider`를 안에서 부르지 말고 확장을 `AddPlugin`으로 얹으세요(자기 자신을 다시 부르면 상한 없이 재귀합니다); (2) 설치 함수는 **yield하지 마세요** — 표시는 성공 뒤에 남으므로 yield 중 다른 스레드가 같은 함수로 `UseProvider`/`AddPlugin`을 부르면 본문이 두 번 돌고 핸들러가 두 번 등록됩니다(quad-roblox 자체엔 yield가 없습니다). `AddPlugin`은 같은 병합을 하되 락이 없습니다 — 백엔드 팩토리를 `AddPlugin`으로 넘기는 것은 지원 대상이 아닙니다.
 
+### `q.Backend.provider`
+
+```luau
+provider: { read name: string, read version: string }?
+```
+
+**동작** — 설치된 프로바이더가 자기 이름과 버전을 적어 두는 자리입니다. 프로바이더가 주입하는 목록의 하나지만 함수가 아니라 데이터이고, quad-base는 여기에 스텁을 두지 않습니다(적지 않으면 `nil`). [`q:AssertProvider(name, versionPattern)`](/reference/core/01-quad-module/#qassertprovidername-versionpattern)가 이 기록을 읽습니다 — 킷 같은 소비자가 "이 q에 내가 쓰는 백엔드가 깔려 있나"를 프로바이더 함수의 identity 대신 이름과 버전으로 확인합니다. 그래서 다른 패키지 사본끼리도 같은 프로바이더로 알아봅니다.
+
+- 다른 op처럼 프로바이더 본문에서 적습니다. 설치가 성공한 경우에만 남도록 확장을 다 만든 뒤에 적으세요. quad-roblox는 `{ name = "quad-roblox", version = <자기 버전> }`을 얼려서 적습니다.
+- `version`은 SemVer 문자열이고, `AssertProvider`는 위 패턴 문법으로 대조합니다.
+
+```luau
+local function CustomProvider(quad: any)
+	-- ... 슬롯을 채우고 확장 표를 만든다 ...
+	local extension = { Widget = customWidgetNamespace }
+	quad.Backend.provider = table.freeze({ name = "my-backend", version = "1.2.0" })
+	return extension
+end
+```
+
 ---
 
 ## 7. 슬롯이 비어 있으면 어떻게 되나

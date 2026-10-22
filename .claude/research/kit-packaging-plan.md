@@ -65,7 +65,7 @@ quad 쪽에 이미 있는 것: q는 quad_base 모듈 표 자체(`Version = "3.4.
 
 **열린 점 하나 — 버전 패턴 검사기**: quad-roblox는 `type_version_check`의 `matchesPattern`을 쓴다(`3.4^.0^` 꼴). base가 같은 문법을 받으려면 quad-base가 `type_version_check`에 새로 의존해야 한다(작고 엔진 무관, 4.0 전 lockstep 다섯 중 하나) — 메인 권고: 의존을 더한다(문법을 둘로 만들지 않음).
 
-**같은 단위에 들어갈 것**: 에러 코드 `Quad0282~`(`scripts/error-codes.py --next`) + `docs/reference/errors/` 절, 레퍼런스 문서 두 항목, 스펙(캐시 재사용·키별 분리·순환 에러·build 실패 후 재시도·NewModule 분리·GC로 q와 함께 사라짐; 단언 세 실패·통과), quad-roblox의 `provider` 기록과 스펙, 본체 CHANGELOG Added. 버전은 다음 3.x minor(3.5.0). 이 단위가 끝난 뒤 킷 `Kit(q)` 전환(4절 2번).
+**[2026-10-22 구현됨 — `[Unreleased]`, 게시 전]** 의존 추가는 사용자 동의(*"quad_roblox_types, quad_types, type_version_check 셋 전부 타입과 관련이고 작아서"*). 정본은 `base/module-lifecycle-plan.md`의 "프로바이더가 아닌 소비자의 표면" 절, 레퍼런스 `docs/reference/core/01-quad-module.md`·`extend/01-backend-provider-contract.md`. 버전 패턴은 자리 개수가 같아야 하므로 킷은 `"3.4^.0^"` 꼴로 적는다(이 문서 앞쪽의 `"3.4^"` 예시는 틀린 꼴). **같은 단위에 들어갈 것**: 에러 코드 `Quad0282~`(`scripts/error-codes.py --next`) + `docs/reference/errors/` 절, 레퍼런스 문서 두 항목, 스펙(캐시 재사용·키별 분리·순환 에러·build 실패 후 재시도·NewModule 분리·GC로 q와 함께 사라짐; 단언 세 실패·통과), quad-roblox의 `provider` 기록과 스펙, 본체 CHANGELOG Added. 버전은 다음 3.x minor(3.5.0). 이 단위가 끝난 뒤 킷 `Kit(q)` 전환(4절 2번).
 
 ## 4. 순서
 

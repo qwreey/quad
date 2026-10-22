@@ -225,6 +225,13 @@ return Init
   다른 `initFn`은 서로의 실행 여부에 영향 안 줌 — 셋 다 `luau`/
   `luau-analyze`/`selene` 클린으로 확인.
 
+## 프로바이더가 아닌 소비자의 표면 — `GetOrCreate`·`AssertProvider` (2026-10-22 신설, 사용자 결정)
+
+`UseProvider`·`AddPlugin`·`RunInit`은 프로바이더와 quad 내부를 위한 장치라, q를 넘겨받아 쓰기만 하는 중립적 킷(컴포넌트 킷·툴킷)이 기댈 자리가 base에 없었다(사용자). 둘을 더했다 — 경위·갈래는 `research/kit-packaging-plan.md` 3.1 뒤 회신 문단들과 3.7, 이름은 `audit/naming-base-2026-10-22/`.
+
+- **`q:GetOrCreate(key, build)`** — 인스턴스별 결과 캐시. 저장은 `New()` 안의 지역 표(q의 클로저가 쥠 — 강 키·강 값, q와 함께 수거). 약한 곁 표(`Relate` 포함 — 소유자를 약한 키로 쥐는 버킷)는 캐시된 값이 q를 붙잡으면 Luau에 ephemeron이 없어 새므로 쓰지 않는다(2026-10-22 실측; 사용자: Relate는 연관을 잡는 구조라 여기 맞지 않고 단일 표가 싸다). 키는 아무 값(`tostring` 안 씀). 만드는 중인 키 재호출은 `Quad0284`, `build`가 던지면 표시를 지우고 그대로 되던짐(재시도 가능 — `UseProvider`의 성공 뒤 표시와 같은 교훈), nil 결과는 `Quad0285`.
+- **`q:AssertProvider(name, versionPattern)`** — 실패 시 던지는 단언(사용자: Check 말고 assert). 프로바이더 함수 identity가 아니라 프로바이더가 적은 **`q.Backend.provider = { name, version }`**(camelCase — 백엔드 주입 목록의 데이터 한 줄, 스텁 없음)을 `type_version_check`의 패턴으로 대조 — 그래서 quad-base가 `type_version_check`에 새로 의존한다(사용자: 셋 다 타입 계열이고 작다). quad-roblox는 확장을 다 만든 뒤 얼린 기록을 적는다.
+
 ## Bind는 누가, 어떻게 구현하는가
 
 인터페이스 상 `bind`를 두고 이것도 pluggable하게 할지 고민 — 단 **1개만 존재할
